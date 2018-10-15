@@ -35,55 +35,55 @@
 class smiStatement;
 
 
-/* Table Meta Log Record¿¡ ÀúÀå µÇ´Â BODY
- * Column Á¤º¸ÀÇ °æ¿ì LOG Record ÀÇ BODY ¿¡ ÀúÀåÇÒ¶§
- * ¸Ç ¸¶Áö¸· ¹®ÀÚ¿­ Æ÷ÀÎÅÍ´Â Á¦¿Ü ÇÏ°í º¹»çÇÏ°í
- * ¸Ç ¸¶Áö¸· ¹®ÀÚ¿­ Æ÷ÀÎÅÍÀÇ °æ¿ì LOG RecordÀÇ BODY ¿¡ ¹®ÀÚ¿­À»
- * Á÷Á¢ º¹»çÇØ ÁØ´Ù. */
+/* Table Meta Log Recordì— ì €ì¥ ë˜ëŠ” BODY
+ * Column ì •ë³´ì˜ ê²½ìš° LOG Record ì˜ BODY ì— ì €ì¥í• ë•Œ
+ * ë§¨ ë§ˆì§€ë§‰ ë¬¸ìì—´ í¬ì¸í„°ëŠ” ì œì™¸ í•˜ê³  ë³µì‚¬í•˜ê³ 
+ * ë§¨ ë§ˆì§€ë§‰ ë¬¸ìì—´ í¬ì¸í„°ì˜ ê²½ìš° LOG Recordì˜ BODY ì— ë¬¸ìì—´ì„
+ * ì§ì ‘ ë³µì‚¬í•´ ì¤€ë‹¤. */
 #define RP_OLD_COLUMN_META_SIZE                 (ID_SIZEOF(smiColumnMeta) - ID_SIZEOF(SChar *))
 
-/* rpdReplication->mFlagsÀÇ »óÅÂ ºñÆ® */
-/* 1¹ø ºñÆ® : Endian bit : 0 - Big Endian, 1 - Little Endian */
+/* rpdReplication->mFlagsì˜ ìƒíƒœ ë¹„íŠ¸ */
+/* 1ë²ˆ ë¹„íŠ¸ : Endian bit : 0 - Big Endian, 1 - Little Endian */
 #define RP_LITTLE_ENDIAN                        (0x00000001)
 #define RP_BIG_ENDIAN                           (0x00000000)
 #define RP_ENDIAN_MASK                          (0x00000001)
 
-/* 2¹ø ºñÆ® : Start Sync Apply */
+/* 2ë²ˆ ë¹„íŠ¸ : Start Sync Apply */
 #define RP_START_SYNC_APPLY_FLAG_SET            (0x00000002)
 #define RP_START_SYNC_APPLY_FLAG_UNSET          (0x00000000)
 #define RP_START_SYNC_APPLY_MASK                (0x00000002)
 
-/* 3¹ø ºñÆ® : Wakeup Peer Sender */
+/* 3ë²ˆ ë¹„íŠ¸ : Wakeup Peer Sender */
 #define RP_WAKEUP_PEER_SENDER_FLAG_SET          (0x00000004)
 #define RP_WAKEUP_PEER_SENDER_FLAG_UNSET        (0x00000000)
 #define RP_WAKEUP_PEER_SENDER_MASK              (0x00000004)
 
-/* 4¹ø ºñÆ® : Recovery Request proj-1608 */
+/* 4ë²ˆ ë¹„íŠ¸ : Recovery Request proj-1608 */
 #define RP_RECOVERY_REQUEST_FLAG_SET            (0x00000008)
 #define RP_RECOVERY_REQUEST_FLAG_UNSET          (0x00000000)
 #define RP_RECOVERY_REQUEST_MASK                (0x00000008)
 
-/* 5¹ø ºñÆ® : Sender for Recovery proj-1608 */
+/* 5ë²ˆ ë¹„íŠ¸ : Sender for Recovery proj-1608 */
 #define RP_RECOVERY_SENDER_FLAG_SET             (0x00000010)
 #define RP_RECOVERY_SENDER_FLAG_UNSET           (0x00000000)
 #define RP_RECOVERY_SENDER_MASK                 (0x00000010)
 
-/* 6¹ø ºñÆ® : Sender for Offline PROJ-1915 */
+/* 6ë²ˆ ë¹„íŠ¸ : Sender for Offline PROJ-1915 */
 #define RP_OFFLINE_SENDER_FLAG_SET              (0x00000020)
 #define RP_OFFLINE_SENDER_FLAG_UNSET            (0x00000000)
 #define RP_OFFLINE_SENDER_MASK                  (0x00000020)
 
-/* 7¹ø ºñÆ® : Sender for Eager PROJ-2067 */
+/* 7ë²ˆ ë¹„íŠ¸ : Sender for Eager PROJ-2067 */
 #define RP_PARALLEL_SENDER_FLAG_SET             (0x00000040)
 #define RP_PARALLEL_SENDER_FLAG_UNSET           (0x00000000)
 #define RP_PARALLEL_SENDER_MASK                 (0x00000040)
 
-/* 8¹ø ºñÆ® : Incremental Sync Failback for Eager PROJ-2066 */
+/* 8ë²ˆ ë¹„íŠ¸ : Incremental Sync Failback for Eager PROJ-2066 */
 #define RP_FAILBACK_INCREMENTAL_SYNC_FLAG_SET   (0x00000080)
 #define RP_FAILBACK_INCREMENTAL_SYNC_FLAG_UNSET (0x00000000)
 #define RP_FAILBACK_INCREMENTAL_SYNC_MASK       (0x00000080)
 
-/* 9¹ø ºñÆ® : Server Startup Failback for Eager PROJ-2066 */
+/* 9ë²ˆ ë¹„íŠ¸ : Server Startup Failback for Eager PROJ-2066 */
 #define RP_FAILBACK_SERVER_STARTUP_FLAG_SET     (0x00000100)
 #define RP_FAILBACK_SERVER_STARTUP_FLAG_UNSET   (0x00000000)
 #define RP_FAILBACK_SERVER_STARTUP_MASK         (0x00000100)
@@ -131,10 +131,10 @@ typedef struct rpdReplications
     SInt                  mLastUsedHostNo;
 
     /*
-      For Parallel Logging : XLSNÀ» ·Î±×ÀÇ Sequence Number·Î
-      º¯°æÇÑ´Ù.(PRJ-1464)
-      RepliactionÀÌ Á¾·á ÈÄ ´Ù½Ã º¸³¾ °æ¿ì ´Ù½Ã º¸³»¾ßÇÒ
-      Ã¹¹øÂ° ·Î±×ÀÇ SN
+      For Parallel Logging : XLSNì„ ë¡œê·¸ì˜ Sequence Numberë¡œ
+      ë³€ê²½í•œë‹¤.(PRJ-1464)
+      Repliactionì´ ì¢…ë£Œ í›„ ë‹¤ì‹œ ë³´ë‚¼ ê²½ìš° ë‹¤ì‹œ ë³´ë‚´ì•¼í• 
+      ì²«ë²ˆì§¸ ë¡œê·¸ì˜ SN
     */
     smSN                  mXSN;
     SInt                  mIsStarted;
@@ -149,7 +149,7 @@ typedef struct rpdReplications
     SChar                 mRemoteFaultDetectTime[RP_DEFAULT_DATE_FORMAT_LEN + 1];
 
     /**************************************************************************
-     * Server Information (¼­¹ö ±âµ¿ Áß¿¡´Â ¹Ìº¯°æ)
+     * Server Information (ì„œë²„ ê¸°ë™ ì¤‘ì—ëŠ” ë¯¸ë³€ê²½)
      **************************************************************************/
     UInt                  mTransTblSize;
 
@@ -255,13 +255,13 @@ public:
     SChar                 mPartCondMinValues[QC_MAX_PARTKEY_COND_VALUE_LEN + 1];
     SChar                 mPartCondMaxValues[QC_MAX_PARTKEY_COND_VALUE_LEN + 1];
 
-    /* PROJ-1442 Replication Online Áß DDL Çã¿ë
-     * Column Ãß°¡/»èÁ¦ Áö¿øÀ» À§ÇØ Ãß°¡ÇÑ´Ù.
-     * Handshake ½Ã Receiver°¡ ±¸¼ºÇÏ´Â Á¤º¸ÀÌ¸ç, Receiver¸¸ »ç¿ëÇÑ´Ù.
+    /* PROJ-1442 Replication Online ì¤‘ DDL í—ˆìš©
+     * Column ì¶”ê°€/ì‚­ì œ ì§€ì›ì„ ìœ„í•´ ì¶”ê°€í•œë‹¤.
+     * Handshake ì‹œ Receiverê°€ êµ¬ì„±í•˜ëŠ” ì •ë³´ì´ë©°, Receiverë§Œ ì‚¬ìš©í•œë‹¤.
      */
     UInt                  mMapColID[SMI_COLUMN_ID_MAXIMUM];
     idBool                mIsReplCol[SMI_COLUMN_ID_MAXIMUM];
-    idBool                mHasOnlyReplCol;  // Replication ´ë»ó Column¸¸ ÀÖ´Â°¡
+    idBool                mHasOnlyReplCol;  // Replication ëŒ€ìƒ Columnë§Œ ìˆëŠ”ê°€
 
     UInt                  mCompressColCount;
     UInt                  mCompressCID[SMI_COLUMN_ID_MAXIMUM];
@@ -331,8 +331,8 @@ public :
     }
 
     /* PROJ-2563
-     * °­Á¦·Î A5ÇÁ·ÎÅäÄİÀ» »ç¿ëÇÒ¶§ Å×ÀÌºí¿¡ LOBÀÌ ÀÖÀ» °æ¿ì,
-     * ÀÌÁßÈ­ ±¸¼ºÀ» ÇÒ ¼ö ¾øµµ·Ï ÇÑ´Ù.
+     * ê°•ì œë¡œ A5í”„ë¡œí† ì½œì„ ì‚¬ìš©í• ë•Œ í…Œì´ë¸”ì— LOBì´ ìˆì„ ê²½ìš°,
+     * ì´ì¤‘í™” êµ¬ì„±ì„ í•  ìˆ˜ ì—†ë„ë¡ í•œë‹¤.
      */
     idBool mHasLOBColumn;
 
@@ -415,7 +415,7 @@ public:
                                  const idBool    * aIsReplColArr,
                                  idBool          * aIsValid );
 
-    /* PROJ-1442 Replication Online Áß DDL Çã¿ë
+    /* PROJ-1442 Replication Online ì¤‘ DDL í—ˆìš©
      * Callback for smiLogRec
      */
     static IDE_RC getMetaItem(const void  *  aMeta,
@@ -425,7 +425,7 @@ public:
     static const smiColumn * getSmiColumn(const void * aItem,
                                           UInt         aColumnID);
 
-    /* PROJ-1442 Replication Online Áß DDL Çã¿ë */
+    /* PROJ-1442 Replication Online ì¤‘ DDL í—ˆìš© */
     static IDE_RC insertOldMetaItem(smiStatement * aSmiStmt,
                                     rpdMetaItem  * aItem);
     static IDE_RC insertOldMetaRepl(smiStatement * aSmiStmt,
@@ -499,7 +499,7 @@ public:
 
     IDE_RC searchRemoteTable       ( rpdMetaItem** aItem, ULong  aContID );
 
-    /* PROJ-1915 Meta¸¦ º¹Á¦ÇÑ´Ù. */
+    /* PROJ-1915 Metaë¥¼ ë³µì œí•œë‹¤. */
     IDE_RC copyMeta(rpdMeta * aDestMeta);
     
     idBool isLobColumnExist( void );
@@ -517,8 +517,8 @@ public:
         return (mItems != NULL) ? ID_TRUE : ID_FALSE;
     }
 
-    /* rpdReplication->mFlagsÀÇ »óÅÂ bit¸¦ set/clear, maskÇÏ´Â ÇÔ¼öµé */
-    /* 1¹ø ºñÆ® : Endian bit : 0 - Big Endian, 1 - Little Endian */
+    /* rpdReplication->mFlagsì˜ ìƒíƒœ bitë¥¼ set/clear, maskí•˜ëŠ” í•¨ìˆ˜ë“¤ */
+    /* 1ë²ˆ ë¹„íŠ¸ : Endian bit : 0 - Big Endian, 1 - Little Endian */
     inline static void setReplFlagBigEndian(rpdReplications *aRepl)
     {
         aRepl->mFlags &= ~RP_LITTLE_ENDIAN;
@@ -532,7 +532,7 @@ public:
         return(aRepl->mFlags & RP_ENDIAN_MASK);
     }
 
-    /* 2¹ø ºñÆ® : Start Sync Apply */
+    /* 2ë²ˆ ë¹„íŠ¸ : Start Sync Apply */
     inline static idBool isRpStartSyncApply(rpdReplications *aRepl)
     {
         if((aRepl->mFlags & RP_START_SYNC_APPLY_MASK)
@@ -552,7 +552,7 @@ public:
         aRepl->mFlags &= ~RP_START_SYNC_APPLY_MASK;
     }
 
-    /* 3¹ø ºñÆ® : Wakeup Peer Sender */
+    /* 3ë²ˆ ë¹„íŠ¸ : Wakeup Peer Sender */
     inline static idBool isRpWakeupPeerSender(rpdReplications *aRepl)
     {
         if((aRepl->mFlags & RP_WAKEUP_PEER_SENDER_MASK)
@@ -572,7 +572,7 @@ public:
         aRepl->mFlags &= ~RP_WAKEUP_PEER_SENDER_MASK;
     }
 
-    /* 4¹ø ºñÆ® : recovery request*/
+    /* 4ë²ˆ ë¹„íŠ¸ : recovery request*/
     inline static idBool isRpRecoveryRequest(rpdReplications *aRepl)
     {
         if((aRepl->mFlags & RP_RECOVERY_REQUEST_MASK)
@@ -592,7 +592,7 @@ public:
         aRepl->mFlags &= ~RP_RECOVERY_REQUEST_MASK;
     }
 
-    /* 5¹ø ºñÆ® : Sender for Recovery proj-1608 */
+    /* 5ë²ˆ ë¹„íŠ¸ : Sender for Recovery proj-1608 */
     inline static idBool isRpRecoverySender(rpdReplications *aRepl)
     {
         if((aRepl->mFlags & RP_RECOVERY_SENDER_MASK)
@@ -669,7 +669,7 @@ public:
         return ID_FALSE;
     }
 
-    /* PROJ-1915 : OFF-LINE ¸®½Ã¹ö ¼¼ÆÃ */
+    /* PROJ-1915 : OFF-LINE ë¦¬ì‹œë²„ ì„¸íŒ… */
     inline static idBool isRpOfflineSender(rpdReplications *aRepl)
     {
         if((aRepl->mFlags & RP_OFFLINE_SENDER_MASK)
@@ -702,10 +702,10 @@ public:
     /* BUG-42851 */
     static idBool isTransWait( rpdReplications * aRepl );
 
-    /* BUG-45236 Local Replication Áö¿ø */
+    /* BUG-45236 Local Replication ì§€ì› */
     static idBool isLocalReplication( rpdMeta * aPeerMeta );
 
-    /* BUG-45236 Local Replication Áö¿ø */
+    /* BUG-45236 Local Replication ì§€ì› */
     static IDE_RC getPeerReplNameWithNewTransaction( SChar * aRepName,
                                                      SChar * aPeerRepName );
 

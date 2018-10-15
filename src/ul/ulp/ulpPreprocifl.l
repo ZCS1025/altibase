@@ -44,16 +44,16 @@ extern ulpCodeGen    gUlpCodeGen;
 /* extern of ulpMain.h */
 extern ulpMacroTable  gUlpMacroT;
 
-// defined Ã³¸® ÁßÀÎÁö ¾Ë·ÁÁÜ.
+// defined ì²˜ë¦¬ ì¤‘ì¸ì§€ ì•Œë ¤ì¤Œ.
 idBool gUlpIsDefined = ID_FALSE;
-// #if Á¶°Ç¹® ¾È¿¡ defined ID°¡ ¿Ã°æ¿ì ÇØ´ç id¸¦ expansion ÇÏ±âÀ§ÇØ ÇÊ¿ä
+// #if ì¡°ê±´ë¬¸ ì•ˆì— defined IDê°€ ì˜¬ê²½ìš° í•´ë‹¹ idë¥¼ expansion í•˜ê¸°ìœ„í•´ í•„ìš”
 struct ulpPPIFBufState
 {
     YY_BUFFER_STATE         mBufState;
     SChar                   mExpandText[MAX_MACRO_DEFINE_CONTENT_LEN];
 } gUlpPPIFBufState[MAX_ID_EXPANSION];
 
-// gUlpIDExpandStackÀÇ index °ª
+// gUlpIDExpandStackì˜ index ê°’
 SInt gUlpExpandIndex = 0;
 
 %}
@@ -91,13 +91,13 @@ IS          (u|U|l|L)*
 
     if ( yyleng == 2)
     {
-        // empty literal('')ÀÏ°æ¿ì cpp¿¡¼­µµ error¸¦ ¹ß»ıÇØÁØ´Ù.
+        // empty literal('')ì¼ê²½ìš° cppì—ì„œë„ errorë¥¼ ë°œìƒí•´ì¤€ë‹¤.
         ulpErrorMgr sErrorMgr;
         ulpSetErrorCode( &sErrorMgr,
                          ulpERR_ABORT_PREPROC_If_Empty_Char_Constant_Error );
         ulpPrintfErrorCode( stderr,
                             &sErrorMgr);
-        // ÇÁ·Î±×·¥ Á¾·áÇÔ.
+        // í”„ë¡œê·¸ë¨ ì¢…ë£Œí•¨.
     }
     else
     {
@@ -111,14 +111,14 @@ IS          (u|U|l|L)*
                                  ulpERR_ABORT_PREPROC_If_Empty_Char_Constant_Error );
                 ulpPrintfErrorCode( stderr,
                                     &sErrorMgr);
-                // ÇÁ·Î±×·¥ Á¾·áÇÔ.
+                // í”„ë¡œê·¸ë¨ ì¢…ë£Œí•¨.
             }
             else
             {
                 sTmp = (SInt) yytext[1];
             }
         }
-        else //yyleng °¡ 4ÀÌ»óÀÏ °æ¿ì
+        else //yyleng ê°€ 4ì´ìƒì¼ ê²½ìš°
         {
             if( yytext[1] == '\\' )
             {
@@ -165,15 +165,15 @@ IS          (u|U|l|L)*
                 }
                 if ( yyleng > 4 )
                 {
-                    // 'a' ¿Í 'aa' ¸¦ ´Ù¸¥ °ªÀ¸·Î Ã³¸®ÇÏ±â À§ÇØ, Æí¹ıÀÌÁö¸¸ ÀÓÀÇÀÇ ¼ıÀÚ 999¸¦ ´õÇÔ.
-                    // ¹®Á¦°¡ ¹ß»ıÇÒ °Í °°Áö´Â ¾Ê´Ù.
+                    // 'a' ì™€ 'aa' ë¥¼ ë‹¤ë¥¸ ê°’ìœ¼ë¡œ ì²˜ë¦¬í•˜ê¸° ìœ„í•´, í¸ë²•ì´ì§€ë§Œ ì„ì˜ì˜ ìˆ«ì 999ë¥¼ ë”í•¨.
+                    // ë¬¸ì œê°€ ë°œìƒí•  ê²ƒ ê°™ì§€ëŠ” ì•Šë‹¤.
                     sTmp += 999;
                 }
             }
             else
             {
-                // 'a' ¿Í 'aa' ¸¦ ´Ù¸¥ °ªÀ¸·Î Ã³¸®ÇÏ±â À§ÇØ, Æí¹ıÀÌÁö¸¸ 999¸¦ ´õÇÔ.
-                // ¹®Á¦°¡ ¹ß»ıÇÒ °Í °°Áö´Â ¾Ê´Ù.
+                // 'a' ì™€ 'aa' ë¥¼ ë‹¤ë¥¸ ê°’ìœ¼ë¡œ ì²˜ë¦¬í•˜ê¸° ìœ„í•´, í¸ë²•ì´ì§€ë§Œ 999ë¥¼ ë”í•¨.
+                // ë¬¸ì œê°€ ë°œìƒí•  ê²ƒ ê°™ì§€ëŠ” ì•Šë‹¤.
                 sTmp = (SInt) yytext[1] + 999;
             }
         }
@@ -213,7 +213,7 @@ IS          (u|U|l|L)*
         }
 
         // function
-        // bugbug : functionÀ» ½ÇÁ¦ Ã³¸®ÇÏÁö ¾Ê°í ÀÖÀ¸¸é 1 ¾øÀ¸¸é 0°ªÀÌ ¼³Á¤µÊ.
+        // bugbug : functionì„ ì‹¤ì œ ì²˜ë¦¬í•˜ì§€ ì•Šê³  ìˆìœ¼ë©´ 1 ì—†ìœ¼ë©´ 0ê°’ì´ ì„¤ì •ë¨.
         if( gUlpMacroT.ulpMLookup(sYYTEXT) != NULL )
         {
             PPIFlval.intval = 1;
@@ -230,8 +230,8 @@ IS          (u|U|l|L)*
         // id
         unput(sCh);
 
-        // defined Ã³¸®ÀÏ °æ¿ì
-        // ID¸¦ macroÅ×ÀÌºí¿¡¼­ Ã£¾Æº»´Ù.
+        // defined ì²˜ë¦¬ì¼ ê²½ìš°
+        // IDë¥¼ macroí…Œì´ë¸”ì—ì„œ ì°¾ì•„ë³¸ë‹¤.
         if( gUlpIsDefined != ID_TRUE )
         {
             if( (sMacroN = gUlpMacroT.ulpMLookup(sYYTEXT)) != NULL )
@@ -245,9 +245,9 @@ IS          (u|U|l|L)*
                                  "%s",
                                  sMacroN->mText);
 
-                // ÇöÀç buffer Á¤º¸ ±¸Á¶Ã¼ ÀúÀå. (YY_CURRENT_BUFFER)
+                // í˜„ì¬ buffer ì •ë³´ êµ¬ì¡°ì²´ ì €ì¥. (YY_CURRENT_BUFFER)
                 gUlpPPIFBufState[ gUlpExpandIndex ].mBufState = YY_CURRENT_BUFFER;
-                // »õ·Î Ã³¸®µÉ buffer Á¤º¸ ±¸Á¶Ã¼·Î switch. (return value of yy_scan_buffer)
+                // ìƒˆë¡œ ì²˜ë¦¬ë  buffer ì •ë³´ êµ¬ì¡°ì²´ë¡œ switch. (return value of yy_scan_buffer)
                 // The last two bytes of mText must be ASCII NUL.
                 yy_switch_to_buffer(
                                      yy_scan_buffer(
@@ -308,7 +308,7 @@ IS          (u|U|l|L)*
 .               { }
 
 <<EOF>>         {
-    // Expand stack¿¡ Ã³¸®ÁßÀÌ¾ú´ø buffer°¡ ¾øÀ¸¸é Ã³¸®¸¦ ¸¶Ä¡°í, ÀÖ¾úÀ¸¸é ÀÌ¾î¼­ lexing Ã³¸® ÇÑ´Ù.
+    // Expand stackì— ì²˜ë¦¬ì¤‘ì´ì—ˆë˜ bufferê°€ ì—†ìœ¼ë©´ ì²˜ë¦¬ë¥¼ ë§ˆì¹˜ê³ , ìˆì—ˆìœ¼ë©´ ì´ì–´ì„œ lexing ì²˜ë¦¬ í•œë‹¤.
     if( gUlpExpandIndex  <= 0 )
     {
         //printf("\n<EOF:%d>\n", gUlpExpandIndex);

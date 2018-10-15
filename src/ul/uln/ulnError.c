@@ -26,8 +26,8 @@
 #include <qcuErrorClient.h>
 
 /*
- * Note: ODBC3 / ODBC2 ¸ÅÇÎÀº ¸Å¹ø ÀÏ¾î³ª´Â °ÍÀÌ ¾Æ´Ï¶ó
- * »ç¿ëÀÚ°¡ GetDiagRec() ¸¦ È£ÃâÇÒ¶§¸¸ ÇØµµ µÇ°Ú³×
+ * Note: ODBC3 / ODBC2 ë§¤í•‘ì€ ë§¤ë²ˆ ì¼ì–´ë‚˜ëŠ” ê²ƒì´ ì•„ë‹ˆë¼
+ * ì‚¬ìš©ìžê°€ GetDiagRec() ë¥¼ í˜¸ì¶œí• ë•Œë§Œ í•´ë„ ë˜ê² ë„¤
  */
 
 aci_client_error_factory_t gUlnErrorFactory[] =
@@ -50,8 +50,8 @@ static aci_client_error_factory_t *gClientFactory[] =
 };
 
 /*
- * ÇÔ¼öÀÌ¸§ Á¤¸» ¸¶À½¿¡ ¾Èµç´Ù.
- * ±×·¸´Ù°í µüÈ÷ »ÏÁ·ÇÑ ÀÌ¸§ÀÌ ¶°¿À¸£´Â °Íµµ ¾Æ´Ï°í... _-;
+ * í•¨ìˆ˜ì´ë¦„ ì •ë§ ë§ˆìŒì— ì•ˆë“ ë‹¤.
+ * ê·¸ë ‡ë‹¤ê³  ë”±ížˆ ë¾°ì¡±í•œ ì´ë¦„ì´ ë– ì˜¤ë¥´ëŠ” ê²ƒë„ ì•„ë‹ˆê³ ... _-;
  */
 acp_char_t *ulnErrorMgrGetSQLSTATE_Server(acp_uint32_t aServerErrorCode)
 {
@@ -80,7 +80,7 @@ static void ulnErrorMgrSetErrorCode(ulnErrorMgr  *aManager, acp_uint32_t aErrorC
 }
 
 /*
- * ÇÔ¼ö ÀÌ¸§ Á¤¸» ¸¶À½¿¡ ¾Èµç´Ù -_-;;
+ * í•¨ìˆ˜ ì´ë¦„ ì •ë§ ë§ˆìŒì— ì•ˆë“ ë‹¤ -_-;;
  */
 static ACI_RC ulnErrorMgrSetErrorMessage(ulnErrorMgr  *aManager, acp_uint8_t* aVariable, acp_uint32_t aLen)
 {
@@ -106,9 +106,9 @@ static ACI_RC ulnErrorMgrSetErrorMessage(ulnErrorMgr  *aManager, acp_uint8_t* aV
 }
 
 /*
- * ÁÖÀÇ : ¾Æ·¡ ÇÔ¼ö ulnErrorMgrSetUlErrorVA() (ÇÔ¼öÀÌ¸§À» ¹»·Î ÇÏ³ª -_-);;
- *        ¿¡¼­´Â ¿¡·¯ÄÚµå¸¸ °¡Áö°í
- *        SQLSTATE, ErrorMessage ±îÁö ¼¼ÆÃÇØ ¹ö¸°´Ù.
+ * ì£¼ì˜ : ì•„ëž˜ í•¨ìˆ˜ ulnErrorMgrSetUlErrorVA() (í•¨ìˆ˜ì´ë¦„ì„ ë­˜ë¡œ í•˜ë‚˜ -_-);;
+ *        ì—ì„œëŠ” ì—ëŸ¬ì½”ë“œë§Œ ê°€ì§€ê³ 
+ *        SQLSTATE, ErrorMessage ê¹Œì§€ ì„¸íŒ…í•´ ë²„ë¦°ë‹¤.
  */
 void ulnErrorMgrSetUlErrorVA( ulnErrorMgr  *aErrorMgr,
                               acp_uint32_t  aErrorCode,
@@ -141,8 +141,8 @@ SQLRETURN ulnErrorDecideSqlReturnCode(acp_char_t *aSqlState)
     if (aSqlState[0] == '0')
     {
         /* PROJ-1789 Updatable Scrollable Cursor
-         * SQL_NO_DATA´Â Fetch °á°ú¸¦ º¸°í µû·Î ¼³Á¤ÇØÁØ´Ù.
-         * ¿©±â¼­´Â ´Ù¸¥ DBµé Ã³·³ '02*'µµ SUCCESS_WITH_INFO·Î ¼³Á¤ÇÑ´Ù. */
+         * SQL_NO_DATAëŠ” Fetch ê²°ê³¼ë¥¼ ë³´ê³  ë”°ë¡œ ì„¤ì •í•´ì¤€ë‹¤.
+         * ì—¬ê¸°ì„œëŠ” ë‹¤ë¥¸ DBë“¤ ì²˜ëŸ¼ '02*'ë„ SUCCESS_WITH_INFOë¡œ ì„¤ì •í•œë‹¤. */
         switch (aSqlState[1])
         {
             case '0':
@@ -166,23 +166,23 @@ static void ulnErrorBuildDiagRec(ulnDiagRec   *aDiagRec,
                                  acp_sint32_t  aColumnNumber)
 {
     /*
-     * ¸Þ¼¼Áö ÅØ½ºÆ® º¹»ç
-     * BUGBUG : ¸Þ¸ð¸® ºÎÁ·»óÈ² Ã³¸®
+     * ë©”ì„¸ì§€ í…ìŠ¤íŠ¸ ë³µì‚¬
+     * BUGBUG : ë©”ëª¨ë¦¬ ë¶€ì¡±ìƒí™© ì²˜ë¦¬
      */
     ulnDiagRecSetMessageText(aDiagRec, ulnErrorMgrGetErrorMessage(aErrorMgr));
 
     /*
-     * SQLSTATE º¹»ç
+     * SQLSTATE ë³µì‚¬
      */
     ulnDiagRecSetSqlState(aDiagRec, ulnErrorMgrGetSQLSTATE(aErrorMgr));
 
     /*
-     * NativeErrorCode ¼¼ÆÃ
+     * NativeErrorCode ì„¸íŒ…
      */
     ulnDiagRecSetNativeErrorCode(aDiagRec, ulnErrorMgrGetErrorCode(aErrorMgr));
 
     /*
-     * RowNumber, ColumnNumber ¼¼ÆÃ
+     * RowNumber, ColumnNumber ì„¸íŒ…
      */
     ulnDiagRecSetRowNumber(aDiagRec, aRowNumber);
     ulnDiagRecSetColumnNumber(aDiagRec, aColumnNumber);
@@ -207,7 +207,7 @@ static ACI_RC ulnErrorAddDiagRec(ulnFnContext *aFnContext,
             sDiagHeader = &aFnContext->mHandle.mObj->mDiagHeader;
 
             /*
-             * Diagnostic Record »ý¼º (¸Þ¸ð¸® ºÎÁ·ÇÏ¸é static record »ç¿ëÇÔ)
+             * Diagnostic Record ìƒì„± (ë©”ëª¨ë¦¬ ë¶€ì¡±í•˜ë©´ static record ì‚¬ìš©í•¨)
              */
             ulnDiagRecCreate(sDiagHeader, &sDiagRec);
             /* BUG-36729 Connection attribute will be added to unlock client mutex by force */
@@ -219,13 +219,13 @@ static ACI_RC ulnErrorAddDiagRec(ulnFnContext *aFnContext,
                                  aColumnNumber);
 
             /*
-             * Diagnostic Record ¸Å´Þ±â
+             * Diagnostic Record ë§¤ë‹¬ê¸°
              */
             ulnDiagHeaderAddDiagRec(sDiagHeader, sDiagRec);
 
             /*
-             * DiagHeader ¿¡ SQLRETURN ¼¼ÆÃ.
-             * BUGBUG : ¾Æ·¡ÀÇ ÇÔ¼ö(ulnDiagSetReturnCode) ÀÌ»óÇÏ´Ù -_-;; ´Ù½Ã ÇÑ¹ø º¸ÀÚ.
+             * DiagHeader ì— SQLRETURN ì„¸íŒ….
+             * BUGBUG : ì•„ëž˜ì˜ í•¨ìˆ˜(ulnDiagSetReturnCode) ì´ìƒí•˜ë‹¤ -_-;; ë‹¤ì‹œ í•œë²ˆ ë³´ìž.
              */
             // ulnDiagSetReturnCode(sDiagHeader, ulnErrorDecideSqlReturnCode(sDiagRec->mSQLSTATE));
             ULN_FNCONTEXT_SET_RC(aFnContext, ulnErrorDecideSqlReturnCode(sDiagRec->mSQLSTATE));
@@ -265,7 +265,7 @@ static ACI_RC ulnErrorHandleFetchError(ulnFnContext *aFnContext,
     sDiagHeader = &aFnContext->mHandle.mObj->mDiagHeader;
 
     /*
-     * DiagHeader ¿¡ not enough memory ¿¡·¯¿ëÀÇ static diag rec À» ÀÌ¿ëÇÑ´Ù.
+     * DiagHeader ì— not enough memory ì—ëŸ¬ìš©ì˜ static diag rec ì„ ì´ìš©í•œë‹¤.
      */
     sDiagRec = &sDiagHeader->mStaticDiagRec;
 
@@ -289,15 +289,15 @@ ACI_RC ulnError(ulnFnContext *aFnContext, acp_uint32_t aErrorCode, ...)
     ulnErrorMgr sErrorMgr;
 
     /*
-     * BUGBUG : ulnErrorMgr ¿¡¼­´Â ¿¡·¯ ¸Þ¼¼Áö¸¦ À§ÇÑ °ø°£À»
-     *          MAX_ERROR_MSG_LEN + 256 ¹ÙÀÌÆ®¸¸Å­
-     *          static À¸·Î °¡Áö°í ÀÖ´Ù. ¿¡·¯ ¸Þ¼¼Áö°¡ ¾ó¸¶³ª Ä¿ÁúÁö ¸ð¸£´Â »óÅÂ¿¡¼­ ÀÌÃ³·³
-     *          °íÁ¤ »çÀÌÁî¸¦ °¡Áö´Â °ÍÀº ÀÚÄ© Á¤º¸°¡ Àß¸± À§ÇèÀÌ ÀÖ´Ù.
-     *          »Ó¸¸ ¾Æ´Ï¶ó, ´ëºÎºÐÀÇ ¿¡·¯ ¸Þ¼¼Áö´Â Â©¸·Â©¸·ÇÑµ¥, ¹«·Á 2K °¡ ³Ñ´Â °ø°£À»
-     *          ¹Ù·Î ÇÒ´çÇÑ´Ù´Â °ÍÀº ½Ç·Î ¸Þ¸ð¸® ³¶ºñ°¡ ¾Æ´Ò ¼ö ¾ø´Ù. ºñ·Ï ½ºÅÃ¿µ¿ªÀÏÁö¶óµµ.
+     * BUGBUG : ulnErrorMgr ì—ì„œëŠ” ì—ëŸ¬ ë©”ì„¸ì§€ë¥¼ ìœ„í•œ ê³µê°„ì„
+     *          MAX_ERROR_MSG_LEN + 256 ë°”ì´íŠ¸ë§Œí¼
+     *          static ìœ¼ë¡œ ê°€ì§€ê³  ìžˆë‹¤. ì—ëŸ¬ ë©”ì„¸ì§€ê°€ ì–¼ë§ˆë‚˜ ì»¤ì§ˆì§€ ëª¨ë¥´ëŠ” ìƒíƒœì—ì„œ ì´ì²˜ëŸ¼
+     *          ê³ ì • ì‚¬ì´ì¦ˆë¥¼ ê°€ì§€ëŠ” ê²ƒì€ ìžì¹« ì •ë³´ê°€ ìž˜ë¦´ ìœ„í—˜ì´ ìžˆë‹¤.
+     *          ë¿ë§Œ ì•„ë‹ˆë¼, ëŒ€ë¶€ë¶„ì˜ ì—ëŸ¬ ë©”ì„¸ì§€ëŠ” ì§¤ë§‰ì§¤ë§‰í•œë°, ë¬´ë ¤ 2K ê°€ ë„˜ëŠ” ê³µê°„ì„
+     *          ë°”ë¡œ í• ë‹¹í•œë‹¤ëŠ” ê²ƒì€ ì‹¤ë¡œ ë©”ëª¨ë¦¬ ë‚­ë¹„ê°€ ì•„ë‹ ìˆ˜ ì—†ë‹¤. ë¹„ë¡ ìŠ¤íƒì˜ì—­ì¼ì§€ë¼ë„.
      *
-     *          ÀÌ ºÎºÐÀ» Àû´çÈ÷ malloc() À» ÇÏµµ·Ï ¼öÁ¤ÇØ¾ß ÇÑ´Ù.
-     *          Áö±ÝÀº ¹Ù»Ú°í ¸Ó¸® ¾ÆÇÁ´Ï ±×³É °¡ÀÚ -_-;;
+     *          ì´ ë¶€ë¶„ì„ ì ë‹¹ížˆ malloc() ì„ í•˜ë„ë¡ ìˆ˜ì •í•´ì•¼ í•œë‹¤.
+     *          ì§€ê¸ˆì€ ë°”ì˜ê³  ë¨¸ë¦¬ ì•„í”„ë‹ˆ ê·¸ëƒ¥ ê°€ìž -_-;;
      */
     va_start(sArgs, aErrorCode);
     ulnErrorMgrSetUlErrorVA(&sErrorMgr, aErrorCode, sArgs);
@@ -329,8 +329,8 @@ ACI_RC ulnError(ulnFnContext *aFnContext, acp_uint32_t aErrorCode, ...)
 }
 
 /*
- * BUGBUG : µÚ¿¡´Ù°¡ extended ¸¦ ÁÖ´Ï±î ²À M$ ÇÔ¼ö°°´Ù -_-;;;
- *          Á» ±Ã¸®ÇØ º¸°í ÀÚ¿¬½º·´°Ô µÇ´Â ¹æ¹ýÀ» »ý°¢ÇØ º¸ÀÚ. -_-;;
+ * BUGBUG : ë’¤ì—ë‹¤ê°€ extended ë¥¼ ì£¼ë‹ˆê¹Œ ê¼­ M$ í•¨ìˆ˜ê°™ë‹¤ -_-;;;
+ *          ì¢€ ê¶ë¦¬í•´ ë³´ê³  ìžì—°ìŠ¤ëŸ½ê²Œ ë˜ëŠ” ë°©ë²•ì„ ìƒê°í•´ ë³´ìž. -_-;;
  */
 ACI_RC ulnErrorExtended(ulnFnContext *aFnContext,
                         acp_sint32_t  aRowNumber,
@@ -341,15 +341,15 @@ ACI_RC ulnErrorExtended(ulnFnContext *aFnContext,
     ulnErrorMgr sErrorMgr;
 
     /*
-     * BUGBUG : ulnErrorMgr ¿¡¼­´Â ¿¡·¯ ¸Þ¼¼Áö¸¦ À§ÇÑ °ø°£À»
-     *          MAX_ERROR_MSG_LEN + 256 ¹ÙÀÌÆ®¸¸Å­
-     *          static À¸·Î °¡Áö°í ÀÖ´Ù. ¿¡·¯ ¸Þ¼¼Áö°¡ ¾ó¸¶³ª Ä¿ÁúÁö ¸ð¸£´Â »óÅÂ¿¡¼­ ÀÌÃ³·³
-     *          °íÁ¤ »çÀÌÁî¸¦ °¡Áö´Â °ÍÀº ÀÚÄ© Á¤º¸°¡ Àß¸± À§ÇèÀÌ ÀÖ´Ù.
-     *          »Ó¸¸ ¾Æ´Ï¶ó, ´ëºÎºÐÀÇ ¿¡·¯ ¸Þ¼¼Áö´Â Â©¸·Â©¸·ÇÑµ¥, ¹«·Á 2K °¡ ³Ñ´Â °ø°£À»
-     *          ¹Ù·Î ÇÒ´çÇÑ´Ù´Â °ÍÀº ½Ç·Î ¸Þ¸ð¸® ³¶ºñ°¡ ¾Æ´Ò ¼ö ¾ø´Ù. ºñ·Ï ½ºÅÃ¿µ¿ªÀÏÁö¶óµµ.
+     * BUGBUG : ulnErrorMgr ì—ì„œëŠ” ì—ëŸ¬ ë©”ì„¸ì§€ë¥¼ ìœ„í•œ ê³µê°„ì„
+     *          MAX_ERROR_MSG_LEN + 256 ë°”ì´íŠ¸ë§Œí¼
+     *          static ìœ¼ë¡œ ê°€ì§€ê³  ìžˆë‹¤. ì—ëŸ¬ ë©”ì„¸ì§€ê°€ ì–¼ë§ˆë‚˜ ì»¤ì§ˆì§€ ëª¨ë¥´ëŠ” ìƒíƒœì—ì„œ ì´ì²˜ëŸ¼
+     *          ê³ ì • ì‚¬ì´ì¦ˆë¥¼ ê°€ì§€ëŠ” ê²ƒì€ ìžì¹« ì •ë³´ê°€ ìž˜ë¦´ ìœ„í—˜ì´ ìžˆë‹¤.
+     *          ë¿ë§Œ ì•„ë‹ˆë¼, ëŒ€ë¶€ë¶„ì˜ ì—ëŸ¬ ë©”ì„¸ì§€ëŠ” ì§¤ë§‰ì§¤ë§‰í•œë°, ë¬´ë ¤ 2K ê°€ ë„˜ëŠ” ê³µê°„ì„
+     *          ë°”ë¡œ í• ë‹¹í•œë‹¤ëŠ” ê²ƒì€ ì‹¤ë¡œ ë©”ëª¨ë¦¬ ë‚­ë¹„ê°€ ì•„ë‹ ìˆ˜ ì—†ë‹¤. ë¹„ë¡ ìŠ¤íƒì˜ì—­ì¼ì§€ë¼ë„.
      *
-     *          ÀÌ ºÎºÐÀ» Àû´çÈ÷ malloc() À» ÇÏµµ·Ï ¼öÁ¤ÇØ¾ß ÇÑ´Ù.
-     *          Áö±ÝÀº ¹Ù»Ú°í ¸Ó¸® ¾ÆÇÁ´Ï ±×³É °¡ÀÚ -_-;;
+     *          ì´ ë¶€ë¶„ì„ ì ë‹¹ížˆ malloc() ì„ í•˜ë„ë¡ ìˆ˜ì •í•´ì•¼ í•œë‹¤.
+     *          ì§€ê¸ˆì€ ë°”ì˜ê³  ë¨¸ë¦¬ ì•„í”„ë‹ˆ ê·¸ëƒ¥ ê°€ìž -_-;;
      */
     va_start(sArgs, aErrorCode);
     ulnErrorMgrSetUlErrorVA(&sErrorMgr, aErrorCode, sArgs);
@@ -438,7 +438,7 @@ ACI_RC ulnCallbackErrorResult(cmiProtocolContext *aPtContext,
         if (ACI_E_ERROR_CODE(sErrorCode) ==
             ACI_E_ERROR_CODE(mmERR_IGNORE_UNSUPPORTED_PROPERTY))
         {
-            /* ¼­¹ö¿¡¼­ Áö¿øÇÏÁö ¾Ê´Â ÇÁ·ÎÆÛÆ¼´Â Off ÇÑ´Ù. */
+            /* ì„œë²„ì—ì„œ ì§€ì›í•˜ì§€ ì•ŠëŠ” í”„ë¡œí¼í‹°ëŠ” Off í•œë‹¤. */
             ACI_TEST(ulnSetConnectAttrOff(sFnContext,
                                           sDbc,
                                           sErrorIndex)
@@ -457,34 +457,34 @@ ACI_RC ulnCallbackErrorResult(cmiProtocolContext *aPtContext,
     if ((ACI_E_ACTION_MASK & sErrorCode) != ACI_E_ACTION_IGNORE)
     {
         /*
-         * ulnErrorMgr ÀÇ ¿¡·¯ÄÚµå ¼¼ÆÃ
+         * ulnErrorMgr ì˜ ì—ëŸ¬ì½”ë“œ ì„¸íŒ…
          */
         ulnErrorMgrSetErrorCode(&sErrorMgr, sErrorCode);
 
         /*
-         * ulnErrorMgr ÀÇ SQLSTATE ¼¼ÆÃ
+         * ulnErrorMgr ì˜ SQLSTATE ì„¸íŒ…
          */
         ulnErrorMgrSetSQLSTATE(&sErrorMgr,
                                ulnErrorMgrGetSQLSTATE_Server(sErrorCode));
 
         /*
-         * ulnErrorMgr ÀÇ ¿¡·¯ ¸Þ¼¼Áö ¼¼ÆÃ
+         * ulnErrorMgr ì˜ ì—ëŸ¬ ë©”ì„¸ì§€ ì„¸íŒ…
          */
         ACI_TEST_RAISE(ulnErrorMgrSetErrorMessage(&sErrorMgr, sErrorMessage, sErrorMessageLen)
                        != ACI_SUCCESS,
                        LABEL_MEM_MANAGE_ERR);
 
         /*
-         * ¸¸¾à FETCH REQ ¿¡ ´ëÇÑ ¿¡·¯¶ó¸é, ÀÏ´Ü ÆæµùÀ» ½ÃÅ°°í, ±×·¸Áö ¾ÊÀ¸¸é ÀÏ¹ÝÀûÀÎ ÁøÇà.
-         * ÀÌ·¸°Ô ÇÏ´Â ÀÌÀ¯´Â ´ë·« ´ÙÀ½°ú °°´Ù.
+         * ë§Œì•½ FETCH REQ ì— ëŒ€í•œ ì—ëŸ¬ë¼ë©´, ì¼ë‹¨ íŽœë”©ì„ ì‹œí‚¤ê³ , ê·¸ë ‡ì§€ ì•Šìœ¼ë©´ ì¼ë°˜ì ì¸ ì§„í–‰.
+         * ì´ë ‡ê²Œ í•˜ëŠ” ì´ìœ ëŠ” ëŒ€ëžµ ë‹¤ìŒê³¼ ê°™ë‹¤.
          *
-         * 1. ExecDirect´Â Prepare, Execute, Fetch¸¦ ÇÑ¹ø¿¡ º¸³»°í °á°úµµ ÇÑ¹ø¿¡ ¹Þ´Â´Ù.
-         *    ¶§¹®¿¡ Ææµù¾ÈÇÏ¸é, SELECT¸¦ ¼öÇàÇÑ°Ô ¾Æ´Ò °æ¿ì¿¡ Fetch °á°ú·Î ¿¡·¯°¡ ¶³¾îÁø´Ù.
-         * 2. Array Fetch´Â ¿¡·¯ Ã³¸® ¹æ¹ýÀÌ Á¶±Ý ´Ù¸£´Ù.
-         *    ¿¡·¯°¡ ÀÖ´Ù°í ¹Ù·Î ¹ÝÈ¯ÇÏ¸é ¾ÈµÈ´Ù.
+         * 1. ExecDirectëŠ” Prepare, Execute, Fetchë¥¼ í•œë²ˆì— ë³´ë‚´ê³  ê²°ê³¼ë„ í•œë²ˆì— ë°›ëŠ”ë‹¤.
+         *    ë•Œë¬¸ì— íŽœë”©ì•ˆí•˜ë©´, SELECTë¥¼ ìˆ˜í–‰í•œê²Œ ì•„ë‹ ê²½ìš°ì— Fetch ê²°ê³¼ë¡œ ì—ëŸ¬ê°€ ë–¨ì–´ì§„ë‹¤.
+         * 2. Array FetchëŠ” ì—ëŸ¬ ì²˜ë¦¬ ë°©ë²•ì´ ì¡°ê¸ˆ ë‹¤ë¥´ë‹¤.
+         *    ì—ëŸ¬ê°€ ìžˆë‹¤ê³  ë°”ë¡œ ë°˜í™˜í•˜ë©´ ì•ˆëœë‹¤.
          *
-         * ´Ü, Fetch out of sequence´Â ¹«È¿È­µÈ Cursor·Î Fetch¸¦ ÇØ¼­ ³­ ¿¡·¯ÀÌ¹Ç·Î
-         * ±×³É ¿¡·¯·Î Ã³¸®ÇÑ´Ù. (for PROJ-1381 FAC)
+         * ë‹¨, Fetch out of sequenceëŠ” ë¬´íš¨í™”ëœ Cursorë¡œ Fetchë¥¼ í•´ì„œ ë‚œ ì—ëŸ¬ì´ë¯€ë¡œ
+         * ê·¸ëƒ¥ ì—ëŸ¬ë¡œ ì²˜ë¦¬í•œë‹¤. (for PROJ-1381 FAC)
          */
         if ( (sOperationID == CMI_PROTOCOL_OPERATION(DB, Fetch)) &&
              (sErrorCode   != mmERR_ABORT_FETCH_OUT_OF_SEQ) )
@@ -498,8 +498,8 @@ ACI_RC ulnCallbackErrorResult(cmiProtocolContext *aPtContext,
         else
         {
             /*
-             * DiagRec ¸¦ ¸¸µé¾î¼­ object ¿¡ ºÙÀÌ±â
-             * BUGBUG : ÇÔ¼ö ÀÌ¸§, °³³ä, scope µîÀÌ ÀÌ»óÇÏ´Ù.
+             * DiagRec ë¥¼ ë§Œë“¤ì–´ì„œ object ì— ë¶™ì´ê¸°
+             * BUGBUG : í•¨ìˆ˜ ì´ë¦„, ê°œë…, scope ë“±ì´ ì´ìƒí•˜ë‹¤.
              */
             ulnErrorAddDiagRec(sFnContext,
                                &sErrorMgr,
@@ -540,7 +540,7 @@ ACI_RC ulnCallbackErrorResult(cmiProtocolContext *aPtContext,
     ACI_EXCEPTION_END;
 
     /*
-     * BUG ¾Æ´Ô. callback ÀÌ¹Ç·Î ACI_SUCCESS ¸®ÅÏÇØ¾ß ÇÔ.
+     * BUG ì•„ë‹˜. callback ì´ë¯€ë¡œ ACI_SUCCESS ë¦¬í„´í•´ì•¼ í•¨.
      */
     return ACI_SUCCESS;
 }
@@ -560,11 +560,11 @@ void ulnErrorMgrSetCmError( ulnDbc       *aDbc,
         /* TASK-5894 Permit sysdba via IPC */
         case cmERR_ABORT_CMN_ERR_FULL_IPC_CHANNEL:
             /*
-             * SYSDBA°¡ Á¢¼Ó ½ÇÆÐÇÏ¸é ÀÌ¹Ì SYSDBA°¡ Á¢¼ÓÁßÀÏ ¼öµµ ÀÖ°í,
-             * Non-SYSDBAÀÇ µ¿½ÃÁ¢¼Óµé¿¡ ÀÇÇØ Á¢¼ÓÀ» ¸øÇÑ °æ¿ìÀÏ ¼öµµ ÀÖ´Ù.
-             * Ã¤³ÎÀ» ÇÒ´ç¹Þ°í Connect ÇÁ·ÎÅäÄÝÀ» Àü¼Û¹Þ¾Æ¾ß SYSDBAÀÎÁö ¾Æ´ÑÁö
-             * ¾Ë ¼ö ÀÖ±â ¶§¹®¿¡ Á¤È®ÇÏ°Ô »óÈ²À» ¾Ë ¼ö ¾ø´Ù.
-             * ÀÏ¹ÝÀûÀÎ °æ¿ì¶ó °¡Á¤ÇÏ°í ADMIN_ALREADY_RUNNING ¿¡·¯¸¦ ÁØ´Ù.
+             * SYSDBAê°€ ì ‘ì† ì‹¤íŒ¨í•˜ë©´ ì´ë¯¸ SYSDBAê°€ ì ‘ì†ì¤‘ì¼ ìˆ˜ë„ ìžˆê³ ,
+             * Non-SYSDBAì˜ ë™ì‹œì ‘ì†ë“¤ì— ì˜í•´ ì ‘ì†ì„ ëª»í•œ ê²½ìš°ì¼ ìˆ˜ë„ ìžˆë‹¤.
+             * ì±„ë„ì„ í• ë‹¹ë°›ê³  Connect í”„ë¡œí† ì½œì„ ì „ì†¡ë°›ì•„ì•¼ SYSDBAì¸ì§€ ì•„ë‹Œì§€
+             * ì•Œ ìˆ˜ ìžˆê¸° ë•Œë¬¸ì— ì •í™•í•˜ê²Œ ìƒí™©ì„ ì•Œ ìˆ˜ ì—†ë‹¤.
+             * ì¼ë°˜ì ì¸ ê²½ìš°ë¼ ê°€ì •í•˜ê³  ADMIN_ALREADY_RUNNING ì—ëŸ¬ë¥¼ ì¤€ë‹¤.
              */
             if (ulnDbcGetPrivilege(aDbc) == ULN_PRIVILEGE_SYSDBA)
             {
@@ -645,7 +645,7 @@ void ulnErrorMgrSetCmError( ulnDbc       *aDbc,
 #endif /* COMPILE_SHARDCLI */
 
         default:
-            /* BUGBUG : ¹«Á¶°Ç 08S01 ·Î Áý¾î³ÖÀ» °ÍÀÌ ¾Æ´Ï¶ó Á» ´õ Á¤±³ÇÏ°Ô ÇØ¾ß ÇÑ´Ù. */
+            /* BUGBUG : ë¬´ì¡°ê±´ 08S01 ë¡œ ì§‘ì–´ë„£ì„ ê²ƒì´ ì•„ë‹ˆë¼ ì¢€ ë” ì •êµí•˜ê²Œ í•´ì•¼ í•œë‹¤. */
             ulnErrorMgrSetUlError( aErrorMgr,
                                    ulERR_ABORT_CM_GENERAL_ERROR,
                                    aciGetErrorMsg(aCmErrorCode) );

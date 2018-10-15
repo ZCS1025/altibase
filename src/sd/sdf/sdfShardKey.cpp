@@ -68,7 +68,7 @@ IDE_RC sdfShardKeyEstimate( mtcNode*     aNode,
 
     aTemplate->rows[aNode->table].execute[aNode->column] = sdfShardKeyExecute;
 
-    // Ã¹¹øÂ° ÀÎÀÚ´Â ÄÃ·³ÀÌ¾î¾ß ÇÑ´Ù.
+    // ì²«ë²ˆì§¸ ì¸ìžëŠ” ì»¬ëŸ¼ì´ì–´ì•¼ í•œë‹¤.
     IDE_TEST_RAISE(
         ( ( aTemplate->rows[aNode->arguments->table].lflag & MTC_TUPLE_VIEW_MASK )
           == MTC_TUPLE_VIEW_TRUE ) ||

@@ -19,13 +19,13 @@
 #include <ulnURL.h>
 
 /*
- * BUGBUG : Áö±İÀº ÀÏ´Ü URL Àº ¹«½ÃÇÏµµ·Ï ÇÏÀÚ.
- *          ¸®ÆÑÅä¸µ ÇÏ·Á°í º¸´Ï±î ±¸Á¶¿¡ ³Ê¹«³ª dependent ÇÏ´Ù.
+ * BUGBUG : ì§€ê¸ˆì€ ì¼ë‹¨ URL ì€ ë¬´ì‹œí•˜ë„ë¡ í•˜ì.
+ *          ë¦¬íŒ©í† ë§ í•˜ë ¤ê³  ë³´ë‹ˆê¹Œ êµ¬ì¡°ì— ë„ˆë¬´ë‚˜ dependent í•˜ë‹¤.
  */
 // ACI_RC ulnSetConnAttrUrl(ulnFnContext *aContext,  SChar *aAttr)
 // {
 //     /*
-//      * BUGBUG : ¸®ÆÑÅä¸µ ¸®ÆÑÅä¸µ ¸®ÆÑÅä¸µ !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+//      * BUGBUG : ë¦¬íŒ©í† ë§ ë¦¬íŒ©í† ë§ ë¦¬íŒ©í† ë§ !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 //      */
 //     ulnURL sUrl;
 //     ulnDbc *sDbc = aContext->mHandle.mDbc;
@@ -249,7 +249,7 @@ acp_char_t *urlCleanKeyWord(acp_char_t *aKeyString)
 acp_char_t * urlCleanValue(acp_char_t *aVal)
 {
     /*
-     * -_-;; ³ªÁß¿¡ ´Ù½Ã °ËÁõÇÏÀÚ.
+     * -_-;; ë‚˜ì¤‘ì— ë‹¤ì‹œ ê²€ì¦í•˜ì.
      */
 
     acp_char_t    sUp = 0;

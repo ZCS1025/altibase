@@ -44,7 +44,7 @@ static IDE_RC mtfMonths_betweenEstimate( mtcNode*     aNode,
 mtfModule mtfMonths_between = {
     1|MTC_NODE_OPERATOR_FUNCTION,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
+    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìê°€ ì•„ë‹˜)
     mtfMonths_betweenFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -132,7 +132,7 @@ IDE_RC mtfMonths_betweenCalculate( mtcNode*     aNode,
  * Implementation : 
  *    MONTHS_BETWEEN( startdate, enddate )
  *
- *    aStack[0] : startdate - enddate¸¦ °³¿ù ¼ö·Î º¸¿©ÁØ´Ù.
+ *    aStack[0] : startdate - enddateë¥¼ ê°œì›” ìˆ˜ë¡œ ë³´ì—¬ì¤€ë‹¤.
  *    aStack[1] : startdate
  *    aStack[2] : enddate
  *
@@ -209,7 +209,7 @@ IDE_RC mtfMonths_betweenCalculate( mtcNode*     aNode,
         sEndSecond = mtdDateInterface::second(sEndDate);
         sEndMicroSecond = mtdDateInterface::microSecond(sEndDate);
 
-        // ¸ğµç fmt¿¡ ´ëÇØ¼­ startdate - enddate ¸¦ ±¸ÇÑ´Ù.
+        // ëª¨ë“  fmtì— ëŒ€í•´ì„œ startdate - enddate ë¥¼ êµ¬í•œë‹¤.
         sDiffYear = sStartYear - sEndYear;
         sDiffMonth = sStartMonth - sEndMonth;
         sDiffDay = sStartDay - sEndDay;
@@ -218,7 +218,7 @@ IDE_RC mtfMonths_betweenCalculate( mtcNode*     aNode,
         sDiffSecond = sStartSecond - sEndSecond;
         sDiffMicroSecond = sStartMicroSecond - sEndMicroSecond;
 
-        // startdate°¡ À±³âÀÏ °æ¿ì
+        // startdateê°€ ìœ¤ë…„ì¼ ê²½ìš°
         if ( mtdDateInterface::isLeapYear( sStartYear ) == ID_TRUE )
         {
             sStartDateLastDays[2] = 29;
@@ -228,7 +228,7 @@ IDE_RC mtfMonths_betweenCalculate( mtcNode*     aNode,
             /* Nothing to do */
         }
 
-        // enddate°¡ À±³âÀÏ °æ¿ì
+        // enddateê°€ ìœ¤ë…„ì¼ ê²½ìš°
         if ( mtdDateInterface::isLeapYear( sEndYear ) == ID_TRUE )
         {
             sEndDateLastDays[2] = 29;
@@ -238,8 +238,8 @@ IDE_RC mtfMonths_betweenCalculate( mtcNode*     aNode,
             /* Nothing to do */
         }
 
-        // ÀÏÀÌ °°°Å³ª, ´Ù¸¥ ´ŞÀÇ ¸¶Áö¸· ³¯ÀÏ °æ¿ì¿¡µµ Á¤¼ö·Î Ãâ·ÂµÇ¾î¾ß ÇÔ.
-        // ÀÌ ¶§¿¡´Â hour, minute, ... ¿¡ »ó°ü¾øÀÌ ¹«Á¶°Ç Á¤¼ö·Î Ãâ·ÂµÊ.
+        // ì¼ì´ ê°™ê±°ë‚˜, ë‹¤ë¥¸ ë‹¬ì˜ ë§ˆì§€ë§‰ ë‚ ì¼ ê²½ìš°ì—ë„ ì •ìˆ˜ë¡œ ì¶œë ¥ë˜ì–´ì•¼ í•¨.
+        // ì´ ë•Œì—ëŠ” hour, minute, ... ì— ìƒê´€ì—†ì´ ë¬´ì¡°ê±´ ì •ìˆ˜ë¡œ ì¶œë ¥ë¨.
         if ( ( sStartDay == sEndDay ) || 
                ( ( sStartDay == sStartDateLastDays[sStartMonth] ) &&
                ( sEndDay == sEndDateLastDays[sEndMonth] ) ) )

@@ -134,15 +134,15 @@ abstract class CommonBitColumn extends AbstractBinaryColumn
     }
 
     /*
-     * ÀÌ ¸Þ¼ÒµåÀÇ ½ºÆåÀº 1¹ÙÀÌÆ®°¡ ³ÑÀ» °æ¿ì¿£ ¿¡·¯¸¦, 1¹ÙÀÌÆ®ÀÏ °æ¿ì ±× ¹ÙÀÌÆ®¸¦ ¸®ÅÏÇÑ´Ù.
+     * ì´ ë©”ì†Œë“œì˜ ìŠ¤íŽ™ì€ 1ë°”ì´íŠ¸ê°€ ë„˜ì„ ê²½ìš°ì—” ì—ëŸ¬ë¥¼, 1ë°”ì´íŠ¸ì¼ ê²½ìš° ê·¸ ë°”ì´íŠ¸ë¥¼ ë¦¬í„´í•œë‹¤.
      */
     protected byte getByteSub() throws SQLException
     {
         byte sResult = 0;
         mByteBuffer.rewind();
 
-        // bit 8°³°¡ 1¹ÙÀÌÆ®ÀÌ´Ù.
-        // 1¹ÙÀÌÆ®°¡ ¾Æ´Ï¸é byte·Î Çüº¯È¯ÇÒ ¼ö ¾ø´Ù.
+        // bit 8ê°œê°€ 1ë°”ì´íŠ¸ì´ë‹¤.
+        // 1ë°”ì´íŠ¸ê°€ ì•„ë‹ˆë©´ byteë¡œ í˜•ë³€í™˜í•  ìˆ˜ ì—†ë‹¤.
         if (mLength != 8)
         {
             Error.throwSQLException(ErrorDef.INVALID_DATA_CONVERSION, getStringSub(), "byte");
@@ -281,7 +281,7 @@ abstract class CommonBitColumn extends AbstractBinaryColumn
                                     aValue.getClass().getName(), getDBColumnTypeName());
         }
 
-        // ½ÇÁ¦ °ª¿¡ ¸Â°Ô PrecisionÀ» º¸Á¤. ¾È±×·¯¸é ´ÙÀ½°ú °°Àº ¿¡·¯°¡ ³¯ ¼ö ÀÖ´Ù:
+        // ì‹¤ì œ ê°’ì— ë§žê²Œ Precisionì„ ë³´ì •. ì•ˆê·¸ëŸ¬ë©´ ë‹¤ìŒê³¼ ê°™ì€ ì—ëŸ¬ê°€ ë‚  ìˆ˜ ìžˆë‹¤:
         // qpERR_ABORT_QCI_INVALID_HOST_DATA_SIZE
         // : ERR-311B8 [08000] Size of data to bind to host variable is invalid
         getColumnInfo().modifyPrecision(mLength);
@@ -299,8 +299,8 @@ abstract class CommonBitColumn extends AbstractBinaryColumn
             {
                 if (sIndex >= sLength)
                 {
-                    // bit length¿¡ µµ´ÞÇÏ¸é Áß´ÜÇÑ´Ù.
-                    // i´Â ÇöÀç byteÀÇ ³¡±îÁö °¡±â ¶§¹®¿¡ Áß´ÜÇØÁà¾ß ÇÑ´Ù.
+                    // bit lengthì— ë„ë‹¬í•˜ë©´ ì¤‘ë‹¨í•œë‹¤.
+                    // iëŠ” í˜„ìž¬ byteì˜ ëê¹Œì§€ ê°€ê¸° ë•Œë¬¸ì— ì¤‘ë‹¨í•´ì¤˜ì•¼ í•œë‹¤.
                     break;
                 }
                 aVisitor.visitBit(sIndex++, (sOneByte & i) != 0);

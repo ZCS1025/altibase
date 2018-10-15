@@ -34,10 +34,10 @@ IDE_RC loadProperty();
 
 /******************************************************************************
  * Description :
- *  Index persistent FileÀ» ÀĞ´Â Utility
+ *  Index persistent Fileì„ ì½ëŠ” Utility
  *
- *  aArgc - [IN]  ÀÎÀÚÀÇ ¼ö
- *  aArgv - [IN]  ÀÎÀÚÀÇ Æ÷ÀÎÅÍ ¹è¿­
+ *  aArgc - [IN]  ì¸ìì˜ ìˆ˜
+ *  aArgv - [IN]  ì¸ìì˜ í¬ì¸í„° ë°°ì—´
  ******************************************************************************/
 int main( SInt aArgc, SChar* aArgv[] )
 {
@@ -78,10 +78,10 @@ int main( SInt aArgc, SChar* aArgv[] )
 
 /******************************************************************************
  * Description :
- *  ÇÁ·Î±×·¥ÀÌ ³Ñ°Ü ¹ŞÀº ÀÎÀÚ¸¦ ÆÄ½ÌÇØ¼­ Àü¿ª º¯¼ö¿¡ ÁöÁ¤ÇÑ´Ù.
+ *  í”„ë¡œê·¸ë¨ì´ ë„˜ê²¨ ë°›ì€ ì¸ìë¥¼ íŒŒì‹±í•´ì„œ ì „ì—­ ë³€ìˆ˜ì— ì§€ì •í•œë‹¤.
  *
- *  aArgc - [IN]  ÀÎÀÚÀÇ ¼ö
- *  aArgv - [IN]  ÀÎÀÚÀÇ Æ÷ÀÎÅÍ ¹è¿­
+ *  aArgc - [IN]  ì¸ìì˜ ìˆ˜
+ *  aArgv - [IN]  ì¸ìì˜ í¬ì¸í„° ë°°ì—´
  ******************************************************************************/
 IDE_RC parseArgs( UInt aArgc, SChar **aArgv )
 {
@@ -89,8 +89,8 @@ IDE_RC parseArgs( UInt aArgc, SChar **aArgv )
 
     sOpr = idlOS::getopt( aArgc, aArgv, "f:e" );
 
-    // parseArgsÀÇ È£ÃâºÎ¿¡¼­ ¿¡·¯¸¦ Âï´Â´Ù.
-    // ¿©±â¼­ ¼³Á¤Àº ºÒÇÊ¿ä.
+    // parseArgsì˜ í˜¸ì¶œë¶€ì—ì„œ ì—ëŸ¬ë¥¼ ì°ëŠ”ë‹¤.
+    // ì—¬ê¸°ì„œ ì„¤ì •ì€ ë¶ˆí•„ìš”.
     IDE_TEST( sOpr == EOF );
 
     gFileName = NULL;
@@ -100,7 +100,7 @@ IDE_RC parseArgs( UInt aArgc, SChar **aArgv )
         switch( sOpr )
         {
             case 'f':
-                // f - º¯°æÇÒ ´ë»ó ÆÄÀÏÀÇ file name
+                // f - ë³€ê²½í•  ëŒ€ìƒ íŒŒì¼ì˜ file name
                 gFileName = optarg;
                 break;
             case 'e':
@@ -113,7 +113,7 @@ IDE_RC parseArgs( UInt aArgc, SChar **aArgv )
     }
     while( ( sOpr = idlOS::getopt( aArgc, aArgv, "f:e" ) ) != EOF ) ;
 
-    // ÀÎÀÚ°ªµéÀ» °ËÁõÇÑ´Ù.
+    // ì¸ìê°’ë“¤ì„ ê²€ì¦í•œë‹¤.
     IDE_TEST_RAISE( gFileName == NULL, invalid_argument_filename );
 
     IDE_TEST_RAISE( idlOS::access( gFileName, F_OK ) != 0,
@@ -137,7 +137,7 @@ IDE_RC parseArgs( UInt aArgc, SChar **aArgv )
 
 /******************************************************************************
  * Description :
- *  ÇÁ·Î±×·¥ÀÇ »ç¿ë¹ıÀ» »ç¿ëÀÚ¿¡°Ô Ãâ·ÂÇÑ´Ù.
+ *  í”„ë¡œê·¸ë¨ì˜ ì‚¬ìš©ë²•ì„ ì‚¬ìš©ìì—ê²Œ ì¶œë ¥í•œë‹¤.
  ******************************************************************************/
 void usage()
 {

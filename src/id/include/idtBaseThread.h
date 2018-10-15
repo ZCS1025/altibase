@@ -17,10 +17,10 @@
 /* **********************************************************************
  *   $Id: idtBaseThread.h 82088 2018-01-18 09:21:15Z yoonhee.kim $
  *   NAME
- *     idtBaseThread.h - ¾²·¹µå ±âº» Å¬·¡½º ¼±¾ğ
+ *     idtBaseThread.h - ì“°ë ˆë“œ ê¸°ë³¸ í´ë˜ìŠ¤ ì„ ì–¸
  *
  *   DESCRIPTION
- *      iSpeener¿¡¼­ »ç¿ëµÉ ¸ğµç ¾²·¹µåµéÀÇ Base Thread Class·Î »ç¿ëµÊ
+ *      iSpeenerì—ì„œ ì‚¬ìš©ë  ëª¨ë“  ì“°ë ˆë“œë“¤ì˜ Base Thread Classë¡œ ì‚¬ìš©ë¨
  *
  *   PUBLIC FUNCTION(S)
  *

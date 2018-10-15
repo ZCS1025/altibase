@@ -46,15 +46,15 @@ public class CmGetBindParamInfoResult extends CmStatementIdResult
     {
         if (mColumnInfoList.size() >= aParamIdx)
         {
-            // BUG-42879 ÀÌ¹Ì ÄÃ·³Á¤º¸°¡ ÀÖÀ»¶§´Â ÇØ´çÇÏ´Â Á¤º¸¸¦ ¼öÁ¤ÇÑ´Ù.
+            // BUG-42879 ì´ë¯¸ ì»¬ëŸ¼ì •ë³´ê°€ ìžˆì„ë•ŒëŠ” í•´ë‹¹í•˜ëŠ” ì •ë³´ë¥¼ ìˆ˜ì •í•œë‹¤.
             mColumnInfoList.set(aParamIdx - 1, aColumnInfo);
         }
         else
         {
             /*
-             * BUG-42879 deferred»óÅÂ¿¡¼­ ¼ø¼­¿¡ »ó°ü¾øÀÌ setXXX°¡ È£ÃâµÇ´Â °æ¿ì¸¦ À§ÇÑ Ã³¸®.
-             * ¿¹¸¦µé¾î setXXX(3, 1)°ú °°ÀÌ ¸ÕÀú 3¹øÂ° ÀÎµ¦½º°¡ ¸ÕÀú È£ÃâµÇ¸é ÄÃ·³Á¤º¸¸®½ºÆ®ÀÇ Ã¹¹øÂ°¿Í
-             * µÎ¹øÂ° ¸â¹ö¸¦ null·Î ÃÊ±âÈ­ÇÏ°í ¼¼¹øÂ° ¸â¹ö·Î nullÀ» Ãß°¡ÇÑ´Ù.
+             * BUG-42879 deferredìƒíƒœì—ì„œ ìˆœì„œì— ìƒê´€ì—†ì´ setXXXê°€ í˜¸ì¶œë˜ëŠ” ê²½ìš°ë¥¼ ìœ„í•œ ì²˜ë¦¬.
+             * ì˜ˆë¥¼ë“¤ì–´ setXXX(3, 1)ê³¼ ê°™ì´ ë¨¼ì € 3ë²ˆì§¸ ì¸ë±ìŠ¤ê°€ ë¨¼ì € í˜¸ì¶œë˜ë©´ ì»¬ëŸ¼ì •ë³´ë¦¬ìŠ¤íŠ¸ì˜ ì²«ë²ˆì§¸ì™€
+             * ë‘ë²ˆì§¸ ë©¤ë²„ë¥¼ nullë¡œ ì´ˆê¸°í™”í•˜ê³  ì„¸ë²ˆì§¸ ë©¤ë²„ë¡œ nullì„ ì¶”ê°€í•œë‹¤.
              */
             for (int i = mColumnInfoList.size(); i < aParamIdx - 1; i++)
             {

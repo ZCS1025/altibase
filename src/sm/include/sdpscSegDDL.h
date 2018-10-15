@@ -19,8 +19,8 @@
  *
  * $Id: sdpscSegDDL.h 82075 2018-01-17 06:39:52Z jina.kim $
  *
- * º» ÆÄÀÏÀº Circular-List Managed SegmentÀÇ Create, Extend ¿¬»ê°ü·Ã
- * Çì´õÆÄÀÏÀÌ´Ù.
+ * ë³¸ íŒŒì¼ì€ Circular-List Managed Segmentì˜ Create, Extend ì—°ì‚°ê´€ë ¨
+ * í—¤ë”íŒŒì¼ì´ë‹¤.
  *
  ***********************************************************************/
 
@@ -36,14 +36,14 @@ class sdpscSegDDL
 {
 public:
 
-    /* [ INTERFACE ] Segment ÇÒ´ç */
+    /* [ INTERFACE ] Segment í• ë‹¹ */
     static IDE_RC createSegment( idvSQL                * aStatistics,
                                  sdrMtx                * aMtx,
                                  scSpaceID               aSpaceID,
                                  sdpSegType              aSegType,
                                  sdpSegHandle          * aSegmentHandle );
 
-    /* Segment¿¡ 1°³ÀÌ»óÀÇ Extent¸¦ ÇÒ´çÇÑ´Ù. */
+    /* Segmentì— 1ê°œì´ìƒì˜ Extentë¥¼ í• ë‹¹í•œë‹¤. */
     static IDE_RC allocNewExts( idvSQL           * aStatistics,
                                 sdrMtxStartInfo  * aStartInfo,
                                 scSpaceID          aSpaceID,
@@ -54,8 +54,8 @@ public:
                                 scPageID         * aFstPIDOfExt,
                                 scPageID         * aFstDataPIDOfExt );
 
-    /* [INTERFACE] From ¼¼±×¸ÕÆ®¿¡¼­ To ¼¼±×¸ÕÆ®·Î Extent Dir¸¦ ¿Å±ä´Ù.
-       Extent DirÀÌµ¿½Ã from°ú toÀÇ extent ¼ö°¡ Æ²¸®¸é ³ª¸ÓÁö´Â freelist·Î º¸³½´Ù.  */
+    /* [INTERFACE] From ì„¸ê·¸ë¨¼íŠ¸ì—ì„œ To ì„¸ê·¸ë¨¼íŠ¸ë¡œ Extent Dirë¥¼ ì˜®ê¸´ë‹¤.
+       Extent Dirì´ë™ì‹œ fromê³¼ toì˜ extent ìˆ˜ê°€ í‹€ë¦¬ë©´ ë‚˜ë¨¸ì§€ëŠ” freelistë¡œ ë³´ë‚¸ë‹¤.  */
     static IDE_RC tryStealExts( idvSQL           * aStatistics,
                                 sdrMtxStartInfo  * aStartInfo,
                                 scSpaceID          aSpaceID,
@@ -69,14 +69,14 @@ public:
 
 private:
 
-    /* Segment¸¦ ÇÒ´çÇÑ´Ù */
+    /* Segmentë¥¼ í• ë‹¹í•œë‹¤ */
     static IDE_RC allocateSegment( idvSQL       * aStatistics,
                                    sdrMtx       * aMtx,
                                    scSpaceID      aSpaceID,
                                    sdpSegHandle * aSegHandle,
                                    sdpSegType     aSegType );
 
-    /* »õ·Î¿î ÇÏ³ªÀÇ Extent¸¦ Segment¿¡ ÇÒ´çÇÏ´Â ¿¬»êÀ» ¿Ï·á */
+    /* ìƒˆë¡œìš´ í•˜ë‚˜ì˜ Extentë¥¼ Segmentì— í• ë‹¹í•˜ëŠ” ì—°ì‚°ì„ ì™„ë£Œ */
     static IDE_RC addAllocExtDesc( idvSQL             * aStatistics,
                                    sdrMtx             * aMtx,
                                    scSpaceID            aSpaceID,
@@ -86,7 +86,7 @@ private:
                                    sdpscExtDesc       * aExtDesc,
                                    UInt               * aTotExtDescCnt );
 
-    /* »õ·Î¿î ÇÏ³ªÀÇ Extent Dir.¸¦ Segment¿¡ ÇÒ´çÇÏ´Â ¿¬»êÀ» ¿Ï·á */
+    /* ìƒˆë¡œìš´ í•˜ë‚˜ì˜ Extent Dir.ë¥¼ Segmentì— í• ë‹¹í•˜ëŠ” ì—°ì‚°ì„ ì™„ë£Œ */
     static IDE_RC addOrShrinkAllocExtDir( idvSQL                * aStatistics,
                                           sdrMtx                * aMtx,
                                           scSpaceID               aSpaceID,

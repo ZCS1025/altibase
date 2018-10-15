@@ -13,40 +13,40 @@
 #include <idl.h>
 
 /***********************************************************************
- * ¿©±â³ª¿Â ¸ÅÅ©·Î ÇÔ¼ö´Â ¸ðµÎ ÇØ½ÃÅ×ÀÌºí¿¡ °ü·ÃµÈ ¿¬»êÀ» ÇÏ´Âµ¥ ¾²ÀÎ´Ù.
+ * ì—¬ê¸°ë‚˜ì˜¨ ë§¤í¬ë¡œ í•¨ìˆ˜ëŠ” ëª¨ë‘ í•´ì‹œí…Œì´ë¸”ì— ê´€ë ¨ëœ ì—°ì‚°ì„ í•˜ëŠ”ë° ì“°ì¸ë‹¤.
  *
- * IDU_COMPRESSION_D_BITS : ÇØ½ÃÅ×ÀÌºíÀÇ Å°ÀÇ ºñÆ®¼ö¸¦ ³ªÅ¸³½´Ù. Áï ¸îºñÆ®ÀÇ Å°¸¦ »ý¼ºÇÒ 
- *                          °ÍÀÎÁö¸¦ ³ªÅ¸³¿. ÀÌ ºñÆ®¸¦ Á¶Á¤ÇÔÀ¸·Î ÇØ¼­ ÇØ½Ã Å×ÀÌºíÀÇ 
- *                          Å©±âµµ º¯°æ ÇÒ ¼ö ÀÖ´Ù. Áï, ¸Þ¸ð¸®»ç¿ëÀ» ÁÙÀÏ ¼öµµ, ´Ã¸±
- *                          ¼öµµ ÀÖ´Ù. compressÇÔ¼öÀÇ aWorkMemÀÇ Å©±â¿¡ ¿µÇâÀ» ÁØ´Ù.
+ * IDU_COMPRESSION_D_BITS : í•´ì‹œí…Œì´ë¸”ì˜ í‚¤ì˜ ë¹„íŠ¸ìˆ˜ë¥¼ ë‚˜íƒ€ë‚¸ë‹¤. ì¦‰ ëª‡ë¹„íŠ¸ì˜ í‚¤ë¥¼ ìƒì„±í•  
+ *                          ê²ƒì¸ì§€ë¥¼ ë‚˜íƒ€ëƒ„. ì´ ë¹„íŠ¸ë¥¼ ì¡°ì •í•¨ìœ¼ë¡œ í•´ì„œ í•´ì‹œ í…Œì´ë¸”ì˜ 
+ *                          í¬ê¸°ë„ ë³€ê²½ í•  ìˆ˜ ìžˆë‹¤. ì¦‰, ë©”ëª¨ë¦¬ì‚¬ìš©ì„ ì¤„ì¼ ìˆ˜ë„, ëŠ˜ë¦´
+ *                          ìˆ˜ë„ ìžˆë‹¤. compressí•¨ìˆ˜ì˜ aWorkMemì˜ í¬ê¸°ì— ì˜í–¥ì„ ì¤€ë‹¤.
  *
- * IDU_COMPRESSION_D_SIZE : ÇØ½ÃÅ×ÀÌºí Å°ÀÇ ÃÖ´ë Å©±â¸¦ ³ªÅ¸³¿. 
+ * IDU_COMPRESSION_D_SIZE : í•´ì‹œí…Œì´ë¸” í‚¤ì˜ ìµœëŒ€ í¬ê¸°ë¥¼ ë‚˜íƒ€ëƒ„. 
  *
- * IDU_COMPRESSION_D_MASK : IDU_COMPRESSION_D_BITS °³¼ö ¸¸Å­ÀÇ ÇÏÀ§ ºñÆ®°¡ ¸ðµÎ 1ÀÌ´Ù. 
- *                          ÀÌ°Í°ú and¿¬»êÀ» ÇÏ¸é ÇØ½ÃÅ°ÀÇ À¯È¿ ¹üÀ§¾È¿¡ µé¾î ¿Ã ¼ö ÀÖ´Ù.
+ * IDU_COMPRESSION_D_MASK : IDU_COMPRESSION_D_BITS ê°œìˆ˜ ë§Œí¼ì˜ í•˜ìœ„ ë¹„íŠ¸ê°€ ëª¨ë‘ 1ì´ë‹¤. 
+ *                          ì´ê²ƒê³¼ andì—°ì‚°ì„ í•˜ë©´ í•´ì‹œí‚¤ì˜ ìœ íš¨ ë²”ìœ„ì•ˆì— ë“¤ì–´ ì˜¬ ìˆ˜ ìžˆë‹¤.
  *
- * IDU_COMPRESSION_D_HIGH : IDU_COMPRESSION_D_MASKÀÇ ÃÖ »óÀ§ÀÎ ÇÑ bit¸¸ setµÈ °Í
+ * IDU_COMPRESSION_D_HIGH : IDU_COMPRESSION_D_MASKì˜ ìµœ ìƒìœ„ì¸ í•œ bitë§Œ setëœ ê²ƒ
  *
  **********************************************************************/
-#define IDU_COMPRESSION_D_BITS          (12)    // À¯È¿¹üÀ§ : (D_BITS >= 8) && (D_BITS <= 18)
+#define IDU_COMPRESSION_D_BITS          (12)    // ìœ íš¨ë²”ìœ„ : (D_BITS >= 8) && (D_BITS <= 18)
 #define IDU_COMPRESSION_D_SIZE          ((UInt)1UL << (IDU_COMPRESSION_D_BITS))
 #define IDU_COMPRESSION_D_MASK          (IDU_COMPRESSION_D_SIZE - 1)
 #define IDU_COMPRESSION_D_HIGH          ((IDU_COMPRESSION_D_MASK >> 1) + 1)
 
 
 /***********************************************************************
- * IDU_COMPRESSION_WORK_SIZE :	compessÇÔ¼öÀÇ ÀÎÀÚ·Î µé¾î°¡´Â aWorkMemÀÇ Å©±â´Â ¹Ýµå½Ã 
- *                              ÀÌ Å©±â·Î ¸¸µé¾î¾ß ÇÑ´Ù. ÀÌ°ÍÀÇ Å©±â´Â IDU_COMPRESSION_D_BITS¿¡
- *                              ¿µÇâÀ» ¹Þ´Â´Ù.  ¿Ö³ÄÇÏ¸é ÇØ½Ã Å°ÀÇ ¹üÀ§¿¡ µû¶ó ÇØ½Ã Å×ÀÌºíÀÇ
- *                              Å©±â°¡ ´Þ¶óÁö±â ¶§¹®ÀÌ°í, aWorkMemÀº ¹Ù·Î ÇØ½ÃÅ×ÀÌºíÀÌ±â
- *                              ¶§¹®ÀÌ´Ù. Áï ¾ÐÃàÇÏ´Âµ¥ ÀÖ¾î¼­ ÂüÁ¶ÇÏ´Â ÇØ½Ã Å×ÀÌºíÀ» ¾ÐÃàÇÒ¶§
- *                              °°ÀÌ º¸³» ÁÖ¾î¾ß ÇÑ´Ù. 
+ * IDU_COMPRESSION_WORK_SIZE :	compessí•¨ìˆ˜ì˜ ì¸ìžë¡œ ë“¤ì–´ê°€ëŠ” aWorkMemì˜ í¬ê¸°ëŠ” ë°˜ë“œì‹œ 
+ *                              ì´ í¬ê¸°ë¡œ ë§Œë“¤ì–´ì•¼ í•œë‹¤. ì´ê²ƒì˜ í¬ê¸°ëŠ” IDU_COMPRESSION_D_BITSì—
+ *                              ì˜í–¥ì„ ë°›ëŠ”ë‹¤.  ì™œëƒí•˜ë©´ í•´ì‹œ í‚¤ì˜ ë²”ìœ„ì— ë”°ë¼ í•´ì‹œ í…Œì´ë¸”ì˜
+ *                              í¬ê¸°ê°€ ë‹¬ë¼ì§€ê¸° ë•Œë¬¸ì´ê³ , aWorkMemì€ ë°”ë¡œ í•´ì‹œí…Œì´ë¸”ì´ê¸°
+ *                              ë•Œë¬¸ì´ë‹¤. ì¦‰ ì••ì¶•í•˜ëŠ”ë° ìžˆì–´ì„œ ì°¸ì¡°í•˜ëŠ” í•´ì‹œ í…Œì´ë¸”ì„ ì••ì¶•í• ë•Œ
+ *                              ê°™ì´ ë³´ë‚´ ì£¼ì–´ì•¼ í•œë‹¤. 
  *
- * IDU_COMPRESSION_MAX_OUTSIZE : compressÇÔ¼öÀÇ aSrcBuf´Â ÀÓÀÇÀÇ Å©±â·Î ÇÒ ¼ö ÀÖÀ¸³ª,
- *                               aDestBufÀÇ Å©±â´Â ¹Ýµå½Ã aSrcBuf size¸¦ ÀÎÀÚ·Î ÁÖ¾î ÀÌ
- *                               ¸ÅÅ©·Î ÇÔ¼ö¸¦ Àû¿ëÇÏ¿© Å©±â¸¦ »ý¼ºÇØ¾ß ÇÑ´Ù.
- *                               ÀÌ Å©±â¿¡ ´ëÇÑ ¼³¸íÀº iduCompression.cppÀÇ '¾ÐÃà°á°ú Å©±â ¿¹Ãø°¡´É'
- *                               ºÎºÐÀ» Âü°í ÇÏ±â ¹Ù¶õ´Ù.
+ * IDU_COMPRESSION_MAX_OUTSIZE : compressí•¨ìˆ˜ì˜ aSrcBufëŠ” ìž„ì˜ì˜ í¬ê¸°ë¡œ í•  ìˆ˜ ìžˆìœ¼ë‚˜,
+ *                               aDestBufì˜ í¬ê¸°ëŠ” ë°˜ë“œì‹œ aSrcBuf sizeë¥¼ ì¸ìžë¡œ ì£¼ì–´ ì´
+ *                               ë§¤í¬ë¡œ í•¨ìˆ˜ë¥¼ ì ìš©í•˜ì—¬ í¬ê¸°ë¥¼ ìƒì„±í•´ì•¼ í•œë‹¤.
+ *                               ì´ í¬ê¸°ì— ëŒ€í•œ ì„¤ëª…ì€ iduCompression.cppì˜ 'ì••ì¶•ê²°ê³¼ í¬ê¸° ì˜ˆì¸¡ê°€ëŠ¥'
+ *                               ë¶€ë¶„ì„ ì°¸ê³  í•˜ê¸° ë°”ëž€ë‹¤.
  *
  **********************************************************************/
 #define IDU_COMPRESSION_WORK_SIZE               ((UInt) (IDU_COMPRESSION_D_SIZE * sizeof(UChar *)))
@@ -55,8 +55,8 @@
 class iduCompression
 {
 /***********************************************************************
- * Description : ½ÇÁ¦ ¾ÐÃàÀ» ¼öÇàÇÏ´Â ºÎºÐ
- * ÆÄ¶ó¹ÌÅÍ´Â compress¿Í °°´Ù.
+ * Description : ì‹¤ì œ ì••ì¶•ì„ ìˆ˜í–‰í•˜ëŠ” ë¶€ë¶„
+ * íŒŒë¼ë¯¸í„°ëŠ” compressì™€ ê°™ë‹¤.
  *
  **********************************************************************/
     static UInt   compressInternal(UChar *aSrcBuf ,
@@ -67,49 +67,49 @@ class iduCompression
                                    void*  aWorkMem );
 public:
 /***********************************************************************
- * Description : ¾ÐÃàÀ» ¼öÇà ÇÒ ¶§ È£ÃâÇÏ´Â ÇÔ¼ö
+ * Description : ì••ì¶•ì„ ìˆ˜í–‰ í•  ë•Œ í˜¸ì¶œí•˜ëŠ” í•¨ìˆ˜
  * 
- * aSrc		- [IN] : ½ÇÁ¦ ¾ÐÃàÀ» ¼öÇàÇÏ°íÀÚ ÇÏ´Â ¼Ò½º°¡ µé¾î ÀÖ´Â ¹öÆÛ, ÀÌ¶§ ÀÓÀÇÀÇ Å©±â
- *			 ¸¦ Àû¿ë ÇÒ ¼ö ÀÖ´Ù. 
+ * aSrc		- [IN] : ì‹¤ì œ ì••ì¶•ì„ ìˆ˜í–‰í•˜ê³ ìž í•˜ëŠ” ì†ŒìŠ¤ê°€ ë“¤ì–´ ìžˆëŠ” ë²„í¼, ì´ë•Œ ìž„ì˜ì˜ í¬ê¸°
+ *			 ë¥¼ ì ìš© í•  ìˆ˜ ìžˆë‹¤. 
  *
- * aSrcLen	- [IN] : aSrc¹öÆÛÀÇ ±æÀÌ
+ * aSrcLen	- [IN] : aSrcë²„í¼ì˜ ê¸¸ì´
  *
- * aDest	- [IN] : ¾ÐÃàÀÌ ¼öÇàµÈ °á°ú°¡ ÀÔ·ÂµÇ´Â ¹öÆÛ, ÀÌ ¹öÆÛÀÇ Å©±â´Â ¹Ýµå½Ã
- *		 IDU_COMPRESSION_MAX_OUTSIZE(¼Ò½º¹öÆÛÀÇÅ©±â) ¸¦ Àû¿ëÇÏ¿© »ý¼ºÇÑ´Ù.
+ * aDest	- [IN] : ì••ì¶•ì´ ìˆ˜í–‰ëœ ê²°ê³¼ê°€ ìž…ë ¥ë˜ëŠ” ë²„í¼, ì´ ë²„í¼ì˜ í¬ê¸°ëŠ” ë°˜ë“œì‹œ
+ *		 IDU_COMPRESSION_MAX_OUTSIZE(ì†ŒìŠ¤ë²„í¼ì˜í¬ê¸°) ë¥¼ ì ìš©í•˜ì—¬ ìƒì„±í•œë‹¤.
  *
- * aDestLen	- [IN] : aDest¹öÆÛÀÇ ±æÀÌ 
+ * aDestLen	- [IN] : aDestë²„í¼ì˜ ê¸¸ì´ 
  *
- * aResultLen	- [OUT]: ¾ÐÃàµÈ ³»¿ëÀÇ ±æÀÌ
- * aWorkMem	- [IN] : ¾ÐÃà½Ã ÇØ½ÃÅ×ÀÌºí·Î »ç¿ëÇÒ ¸Þ¸ð¸®¸¦ °°ÀÌ ÁÖ¾î¼­ ½ÇÇà ½ÃÅ²´Ù.
- *		 ÀÌ¶§ À§ÀÇ IDU_COMPRESSION_WORK_SIZEÅ©±â·Î ¸Þ¸ð¸®¸¦ »ý¼ºÇÑ´Ù.
+ * aResultLen	- [OUT]: ì••ì¶•ëœ ë‚´ìš©ì˜ ê¸¸ì´
+ * aWorkMem	- [IN] : ì••ì¶•ì‹œ í•´ì‹œí…Œì´ë¸”ë¡œ ì‚¬ìš©í•  ë©”ëª¨ë¦¬ë¥¼ ê°™ì´ ì£¼ì–´ì„œ ì‹¤í–‰ ì‹œí‚¨ë‹¤.
+ *		 ì´ë•Œ ìœ„ì˜ IDU_COMPRESSION_WORK_SIZEí¬ê¸°ë¡œ ë©”ëª¨ë¦¬ë¥¼ ìƒì„±í•œë‹¤.
  *
  *
  *
- * aWorkMemÀÇ ÃÊ±âÈ­°¡ ÇÊ¿ä ¾ø´Ù.
- * ÇØ½Ã Å×ÀÌºíÀÇ ¿£Æ®¸®´Â srcBufÀÇ Æ¯Á¤ À§Ä¡¸¦ °¡¸®Å°´Â Æ÷ÀÎÅÍÀÌ´Ù.
- * ¿©±â¼­ ÇØ½Ã Å×ÀÌºíÀº workMemÀ» ¶æÇÑ´Ù. Áï ¿ÜºÎ¿¡¼­ ¹ÞÀº workMemÀ» ³»ºÎ¿¡¼­ 
- * ÇØ½Ã Å×ÀÌºí·Î »ç¿ëÇÑ´Ù. 
+ * aWorkMemì˜ ì´ˆê¸°í™”ê°€ í•„ìš” ì—†ë‹¤.
+ * í•´ì‹œ í…Œì´ë¸”ì˜ ì—”íŠ¸ë¦¬ëŠ” srcBufì˜ íŠ¹ì • ìœ„ì¹˜ë¥¼ ê°€ë¦¬í‚¤ëŠ” í¬ì¸í„°ì´ë‹¤.
+ * ì—¬ê¸°ì„œ í•´ì‹œ í…Œì´ë¸”ì€ workMemì„ ëœ»í•œë‹¤. ì¦‰ ì™¸ë¶€ì—ì„œ ë°›ì€ workMemì„ ë‚´ë¶€ì—ì„œ 
+ * í•´ì‹œ í…Œì´ë¸”ë¡œ ì‚¬ìš©í•œë‹¤. 
  *
- * ±×·¸±â ¶§¹®¿¡ ÇØ½Ã Å×ÀÌºíÀÇ ÃÖ´ëÅ©±â´Â 
- * "IDU_COMPRESSION_D_SIZE(ÇØ½ÃÅ°ÀÇ ÃÖ´ë Å©±â) * ÁÖ¼ÒÅ©±â" °¡ µÈ´Ù.
+ * ê·¸ë ‡ê¸° ë•Œë¬¸ì— í•´ì‹œ í…Œì´ë¸”ì˜ ìµœëŒ€í¬ê¸°ëŠ” 
+ * "IDU_COMPRESSION_D_SIZE(í•´ì‹œí‚¤ì˜ ìµœëŒ€ í¬ê¸°) * ì£¼ì†Œí¬ê¸°" ê°€ ëœë‹¤.
  *
- * iduCompression.cppÀÇ COMPRESSION_CHECK_MPOS_NON_DET(m_pos,m_off,aSrcBuf,sSrcPtr,M4_MAX_OFFSET)
- *	 ÀÌºÎºÐÀ» À¯½ÉÈ÷ º¸¸é ±× ÀÌÀ¯¸¦ ¾Ë ¼ö ÀÖ´Ù. 
+ * iduCompression.cppì˜ COMPRESSION_CHECK_MPOS_NON_DET(m_pos,m_off,aSrcBuf,sSrcPtr,M4_MAX_OFFSET)
+ *	 ì´ë¶€ë¶„ì„ ìœ ì‹¬ížˆ ë³´ë©´ ê·¸ ì´ìœ ë¥¼ ì•Œ ìˆ˜ ìžˆë‹¤. 
  *
- * Á¦´ë·Î µÈ °æ¿ì¸¦ Á¦¿ÜÇÑ ¾²·¹±â °ªÀÌ µé¾î°¡¼­ ¹®Á¦°¡ µÇ´Â °æ¿ì¸¦ »ý°¢ÇØ º¸¸é,
- * 1. srcBufÀÇ Ã³À½ ÁÖ¼Òº¸´Ù ÀÛÀº °ªÀÌ µé¾î ÀÖÀ» °æ¿ì( 0Æ÷ÇÔ) 
- *	=> À§ÀÇ ¸ÅÅ©·ÎÇÔ¼ö¿¡¼­ °Ë»çµÈ´Ù.
+ * ì œëŒ€ë¡œ ëœ ê²½ìš°ë¥¼ ì œì™¸í•œ ì“°ë ˆê¸° ê°’ì´ ë“¤ì–´ê°€ì„œ ë¬¸ì œê°€ ë˜ëŠ” ê²½ìš°ë¥¼ ìƒê°í•´ ë³´ë©´,
+ * 1. srcBufì˜ ì²˜ìŒ ì£¼ì†Œë³´ë‹¤ ìž‘ì€ ê°’ì´ ë“¤ì–´ ìžˆì„ ê²½ìš°( 0í¬í•¨) 
+ *	=> ìœ„ì˜ ë§¤í¬ë¡œí•¨ìˆ˜ì—ì„œ ê²€ì‚¬ëœë‹¤.
  *
- * 2. srcBufÀÇ ¸¶Áö¸· ÁÖ¼Òº¸´Ù Å« °ªÀÌ µé¾îÀÖÀ» °æ¿ì 
- *	=> À§ÀÇ ¸ÅÅ©·ÎÇÔ¼ö¸¦ º¸¸é ÇöÀçÀÇ À§Ä¡º¸´Ù Å« À§Ä¡ÀÇ °ªÀº Å»¶ôÇÏ°Ô µÇ¾îÀÖ´Ù.
+ * 2. srcBufì˜ ë§ˆì§€ë§‰ ì£¼ì†Œë³´ë‹¤ í° ê°’ì´ ë“¤ì–´ìžˆì„ ê²½ìš° 
+ *	=> ìœ„ì˜ ë§¤í¬ë¡œí•¨ìˆ˜ë¥¼ ë³´ë©´ í˜„ìž¬ì˜ ìœ„ì¹˜ë³´ë‹¤ í° ìœ„ì¹˜ì˜ ê°’ì€ íƒˆë½í•˜ê²Œ ë˜ì–´ìžˆë‹¤.
  *
- * 3. ÇöÀçÀÇ À§Ä¡º¸´Ù ÀÛ°í srcBufº¸´Ù Å« °ªÀÌ µé¾îÀÖÀ» °æ¿ì( Áï, ¾²·¹±â °ªÀÌ 
- *    ½ÇÁ¦·Î Á¤´çÇÑ ÁÖ¼ÒÀÎ ¾ç ÇÏ°í ÀÖÀ» °æ¿ì) 
- *	=> ÀÌ¶§´Â À§ÀÇ ¸ÅÅ©·Î¿¡¼­´Â Á¤´çÇÏ´Ù°í ÆÇ°áÀÌ ³­´Ù. ÇÏÁö¸¸ ¾Æ·¡¿¡¼­ 
- *	½ÇÁ¦·Î ¾²·¹±â ÁÖ¼Ò¸¦ Æ÷ÀÎÅÍ·Î ÇÏ¿© ½ÇÁ¦ µ¥ÀÌÅÍ¸¦ Ã£¾Æ¼­ °Ë»ç¸¦ ÇÏ°Ô µÈ´Ù. 
- *	Áï ¾Æ¹«¸® ¾²·¹±â °ªÀÌ¶ó°í ÇØµµ Æ÷ÀÎÅÍ·Î½á µ¿ÀÛÇÒ ¶§´Â ´õÀÌ»ó ¾²·¹±â°¡ ¾Æ´Ñ °ªÀÌ µÈ´Ù. 
- *	ÀÌ¶§¿¡ Á¤´çÇÏÁö ¾ÊÀ» °æ¿ì¿£ ¸¶Áö hash °ª¸¸ °°°í ½ÇÁ¦ µ¥ÀÌÅÍ´Â ´Ù¸¥ °ÍÃ³·³ °á·ÐÀÌ
- *	³ª°Ô µÇ¾î Å»¶ôÇÏ°Ô µÈ´Ù. 
+ * 3. í˜„ìž¬ì˜ ìœ„ì¹˜ë³´ë‹¤ ìž‘ê³  srcBufë³´ë‹¤ í° ê°’ì´ ë“¤ì–´ìžˆì„ ê²½ìš°( ì¦‰, ì“°ë ˆê¸° ê°’ì´ 
+ *    ì‹¤ì œë¡œ ì •ë‹¹í•œ ì£¼ì†Œì¸ ì–‘ í•˜ê³  ìžˆì„ ê²½ìš°) 
+ *	=> ì´ë•ŒëŠ” ìœ„ì˜ ë§¤í¬ë¡œì—ì„œëŠ” ì •ë‹¹í•˜ë‹¤ê³  íŒê²°ì´ ë‚œë‹¤. í•˜ì§€ë§Œ ì•„ëž˜ì—ì„œ 
+ *	ì‹¤ì œë¡œ ì“°ë ˆê¸° ì£¼ì†Œë¥¼ í¬ì¸í„°ë¡œ í•˜ì—¬ ì‹¤ì œ ë°ì´í„°ë¥¼ ì°¾ì•„ì„œ ê²€ì‚¬ë¥¼ í•˜ê²Œ ëœë‹¤. 
+ *	ì¦‰ ì•„ë¬´ë¦¬ ì“°ë ˆê¸° ê°’ì´ë¼ê³  í•´ë„ í¬ì¸í„°ë¡œì¨ ë™ìž‘í•  ë•ŒëŠ” ë”ì´ìƒ ì“°ë ˆê¸°ê°€ ì•„ë‹Œ ê°’ì´ ëœë‹¤. 
+ *	ì´ë•Œì— ì •ë‹¹í•˜ì§€ ì•Šì„ ê²½ìš°ì—” ë§ˆì§€ hash ê°’ë§Œ ê°™ê³  ì‹¤ì œ ë°ì´í„°ëŠ” ë‹¤ë¥¸ ê²ƒì²˜ëŸ¼ ê²°ë¡ ì´
+ *	ë‚˜ê²Œ ë˜ì–´ íƒˆë½í•˜ê²Œ ëœë‹¤. 
  *
  **********************************************************************/
     static IDE_RC compress(UChar *aSrc,
@@ -120,13 +120,13 @@ public:
                            void*  aWorkMem );
     
 /***********************************************************************
- * Description : ¾ÐÃàµÈ ³»¿ëÀ» ¿øº» ¼Ò½º·Î Ç®¶§ »ç¿ëÇÏ´Â ÇÔ¼ö
- * aSrc		- [IN] : ¾ÐÃà ³»¿ëÀÌ ÀÖ´Â ¹öÆÛ
- * aSrcLen	- [IN] : aSrcÀÇ Å©±â
- * aDest	- [IN] : ¾ÐÃà ÇØÁ¦ ³»¿ëÀ» ³ÖÀ» ¹öÆÛ, ÀÌ°ÍÀÇ Å©±â´Â compress¿¡¼­ÀÇ
- *			 ¿øº»ÀÇ Å©±â¿Í µ¿ÀÏÇÏ´Ù. ¾ÐÃàÀº Àü°ú ÈÄ°¡ Å©±â°¡ °°À½À» »ó±â
- * aDestLen	- [IN] : aDestÀÇ Å©±â
- * aResultLen	- [OUT]: ¾ÐÃà ÇØÁ¦ ³»¿ëÀÇ Å©±â
+ * Description : ì••ì¶•ëœ ë‚´ìš©ì„ ì›ë³¸ ì†ŒìŠ¤ë¡œ í’€ë•Œ ì‚¬ìš©í•˜ëŠ” í•¨ìˆ˜
+ * aSrc		- [IN] : ì••ì¶• ë‚´ìš©ì´ ìžˆëŠ” ë²„í¼
+ * aSrcLen	- [IN] : aSrcì˜ í¬ê¸°
+ * aDest	- [IN] : ì••ì¶• í•´ì œ ë‚´ìš©ì„ ë„£ì„ ë²„í¼, ì´ê²ƒì˜ í¬ê¸°ëŠ” compressì—ì„œì˜
+ *			 ì›ë³¸ì˜ í¬ê¸°ì™€ ë™ì¼í•˜ë‹¤. ì••ì¶•ì€ ì „ê³¼ í›„ê°€ í¬ê¸°ê°€ ê°™ìŒì„ ìƒê¸°
+ * aDestLen	- [IN] : aDestì˜ í¬ê¸°
+ * aResultLen	- [OUT]: ì••ì¶• í•´ì œ ë‚´ìš©ì˜ í¬ê¸°
  **********************************************************************/
     static IDE_RC decompress(UChar *aSrc,
                              UInt   aSrcLen,

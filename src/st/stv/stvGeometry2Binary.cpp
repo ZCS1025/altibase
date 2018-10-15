@@ -87,7 +87,7 @@ static IDE_RC stvGeo2BinaryEstimate( mtcNode*     aNode,
         = stvGeo2BinaryExecute;
 
     // To Fix BUG-16031
-    // Binary ¿¡ Geometry Data¸¦ ³Ö±â À§ÇØ¼­´Â HeaderÅ©±â¸¦ Æ÷ÇÔÇØ¾ß ÇÔ.
+    // Binary ì— Geometry Dataë¥¼ ë„£ê¸° ìœ„í•´ì„œëŠ” Headerí¬ê¸°ë¥¼ í¬í•¨í•´ì•¼ í•¨.
     sBinPrecision = aStack[1].column->precision + ID_SIZEOF(stdGeometryHeader);
     
     IDE_TEST( mtc::initializeColumn( aStack[0].column,
@@ -119,7 +119,7 @@ IDE_RC stvCalculate_Geometry2Binary( mtcNode*,
 
 
     // BUG-24514
-    // geometry Å¸ÀÔÀÇ null À» °Ë»çÇØ¾ß ÇÑ´Ù.
+    // geometry íƒ€ìž…ì˜ null ì„ ê²€ì‚¬í•´ì•¼ í•œë‹¤.
     if(aStack[1].column->module->isNull( aStack[1].column,
                                          aStack[1].value ) == ID_TRUE)
     {

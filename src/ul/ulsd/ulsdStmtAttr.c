@@ -25,7 +25,7 @@ SQLRETURN ulsdSetStmtAttr(ulnStmt      *aMetaStmt,
 
     ulsdGetShardFromDbc(aMetaStmt->mParentDbc, &sShard);
 
-    /* BUG-45411 data畴靛俊辑 刚历 荐青窍绊, 葛滴 己傍窍搁 meta畴靛俊辑 荐青茄促. */
+    /* BUG-45411 data雲鸽摐鞐愳劀 毹检爛 靾橅枆頃橁碃, 氇憪 靹标车頃橂┐ meta雲鸽摐鞐愳劀 靾橅枆頃滊嫟. */
     for ( i = 0; i < sShard->mNodeCount; i++ )
     {
         sRet = ulnSetStmtAttr(aMetaStmt->mShardStmtCxt.mShardNodeStmt[i],

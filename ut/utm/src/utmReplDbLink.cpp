@@ -25,7 +25,7 @@
 
 /* BUG-39658 Aexport should support 'FOR ANALYSIS' syntax. */
 /* BUG-39661 Aexport should support 'OPTIONS' syntax. */
-/* BUG-45236 Local Replication Áö¿ø */
+/* BUG-45236 Local Replication ì§€ì› */
 #define GET_REPLOBJ_QUERY                                            \
     "select /*+ NO_PLAN_CACHE */ distinct "                          \
     "       a.REPLICATION_NAME, "                                    \
@@ -52,8 +52,8 @@
     "where REPLICATION_NAME = ? "                                    \
     "order by PATH "
 
-// BUG-23990 partition table ¿¡ ´ëÇÑ ÀÌÁßÈ­ ½Ã aexport ¿¡¼­ ÀÌÁßÈ­ »ı¼º±¸¹®ÀÌ Àß¸ø³ª¿È
-// Áßº¹µÇ¾î ³ª¿À´Â°ÍÀ» DISTINCT ±¸¹®À¸·Î Á¦°ÅÇÔ
+// BUG-23990 partition table ì— ëŒ€í•œ ì´ì¤‘í™” ì‹œ aexport ì—ì„œ ì´ì¤‘í™” ìƒì„±êµ¬ë¬¸ì´ ì˜ëª»ë‚˜ì˜´
+// ì¤‘ë³µë˜ì–´ ë‚˜ì˜¤ëŠ”ê²ƒì„ DISTINCT êµ¬ë¬¸ìœ¼ë¡œ ì œê±°í•¨
 #define GET_REPLITEM_QUERY                                                  \
     "select /*+ NO_PLAN_CACHE */ distinct LOCAL_USER_NAME, "                \
            "LOCAL_TABLE_NAME, LOCAL_PARTITION_NAME, REMOTE_USER_NAME, "     \
@@ -158,7 +158,7 @@ SQLRETURN getReplQuery( FILE *aReplFp )
                     0,
                     &sRepInd ) != SQL_SUCCESS, stmt_error );
 
-    /* BUG-45236 Local Replication Áö¿ø */
+    /* BUG-45236 Local Replication ì§€ì› */
     IDE_TEST_RAISE(
         SQLBindCol( sResultStmt,
                     6,
@@ -245,7 +245,7 @@ SQLRETURN getReplQuery( FILE *aReplFp )
             idlOS::fprintf( aReplFp, "grouping\n" );
         }
 
-        /* BUG-45236 Local Replication Áö¿ø
+        /* BUG-45236 Local Replication ì§€ì›
          *  OPTIONS 32: LOCAL
          */
         if ( ( sRepOption & RP_OPTION_LOCAL_MASK ) == RP_OPTION_LOCAL_SET )
@@ -502,7 +502,7 @@ IDE_TEST_RAISE(
             sIsNeedNewLine = ID_FALSE;
         }
 
-        /* BUG-40249 ¹İµå½Ã ÇÊ¿äÇÑ ÄÚµå´Â ¾Æ´Ô.. */
+        /* BUG-40249 ë°˜ë“œì‹œ í•„ìš”í•œ ì½”ë“œëŠ” ì•„ë‹˜.. */
         if (sLocalPartInd == SQL_NULL_DATA)
         {
             sLocalPart[0]    = '\0';
@@ -666,9 +666,9 @@ SQLRETURN getReplOfflineLogPaths( FILE   *aReplFp,
 
 /***************************************************
  * Description: BUG-37050
- * ¸ğµç DB linkÀÇ ¸ŞÅ¸µ¥ÀÌÅÍ¸¦ Á¶È¸, 
- * ±× µ¥ÀÌÅÍ¸¦ Á¶ÇÕÇÏ¿© create DB link DDLÀ» »ı¼ºÇÑ´Ù.
- * »ı¼ºÇÑ DDL¹®À» ÆÄÀÏ¿¡ ±âÀÔÇÑ´Ù.
+ * ëª¨ë“  DB linkì˜ ë©”íƒ€ë°ì´í„°ë¥¼ ì¡°íšŒ, 
+ * ê·¸ ë°ì´í„°ë¥¼ ì¡°í•©í•˜ì—¬ create DB link DDLì„ ìƒì„±í•œë‹¤.
+ * ìƒì„±í•œ DDLë¬¸ì„ íŒŒì¼ì— ê¸°ì…í•œë‹¤.
  * 
  *   a_user  (IN): string of UserID 
  *   aLinkFp (IN): file pointer of ALL_CRT_LINK.sql
@@ -701,7 +701,7 @@ SQLRETURN getDBLinkQuery( SChar *a_user, FILE  *aLinkFp )
 
     idlOS::fprintf(stdout, "\n##### DATABASE LINK #####\n");
 
-    /* À¯Àú°¡ SYS°¡ ¾Æ´Ò¶§´Â ÇØ´ç À¯ÀúÀÇ Á¤º¸¸¸ °¡Á®¿Â´Ù. */
+    /* ìœ ì €ê°€ SYSê°€ ì•„ë‹ë•ŒëŠ” í•´ë‹¹ ìœ ì €ì˜ ì •ë³´ë§Œ ê°€ì ¸ì˜¨ë‹¤. */
     if( idlOS::strcasecmp( a_user, (SChar*)UTM_STR_SYS ) != 0 )
     {
         idlOS::sprintf( sQuery, GET_DBLINK_QUERY );

@@ -50,8 +50,8 @@ public:
 public:
     rpsSmExecutor();
 
-    // PROJ-1705 readRow¸¦ À§ÇÑ °ø°£ ÇÒ´çÀ» À§ÇÏ¿©
-    // meta Á¤º¸¸¦ ³Ñ°ÜÁØ´Ù. ·¹ÄÚµå ÃÖ´ëÅ©±â·Î ÇÒ´çÇÔ.
+    // PROJ-1705 readRowë¥¼ ìœ„í•œ ê³µê°„ í• ë‹¹ì„ ìœ„í•˜ì—¬
+    // meta ì •ë³´ë¥¼ ë„˜ê²¨ì¤€ë‹¤. ë ˆì½”ë“œ ìµœëŒ€í¬ê¸°ë¡œ í• ë‹¹í•¨.
     IDE_RC initialize( idvSQL  * aOpStatistics,
                        rpdMeta * aMeta,
                        idBool    aIsConflictWhenNotEnoughSpace );

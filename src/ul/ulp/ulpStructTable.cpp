@@ -43,7 +43,7 @@ void ulpStructTable::ulpInit()
 
     mCnt         = 0;
     mHash        = ulpHashFunc;
-    mSize        = MAX_SYMTABLE_ELEMENTS;  // ¸¶Áö¸· bucket Á¦¿Ü
+    mSize        = MAX_SYMTABLE_ELEMENTS;  // ë§ˆì§€ë§‰ bucket ì œì™¸
 }
 
 void ulpStructTable::ulpFinalize()
@@ -72,14 +72,14 @@ void ulpStructTable::ulpFinalize()
     }
 }
 
-// struct table¿¡ »õ·Î¿î tag¸¦ ÀúÀåÇÑ´Ù.
+// struct tableì— ìƒˆë¡œìš´ tagë¥¼ ì €ìž¥í•œë‹¤.
 ulpStructTNode *ulpStructTable::ulpStructAdd ( SChar *aTag, SInt aScope )
 {
     SInt            sIndex;
     ulpStructTNode *sStNode;
     ulpStructTNode *sStNode2;
 
-    // ÀÌ¹Ì °°Àº struct tag°¡ °°Àº scope»ó¿¡ Á¸ÀçÇÑ´ÂÁö È®ÀÎÇÑ´Ù.
+    // ì´ë¯¸ ê°™ì€ struct tagê°€ ê°™ì€ scopeìƒì— ì¡´ìž¬í•œëŠ”ì§€ í™•ì¸í•œë‹¤.
     IDE_TEST_RAISE( ulpStructLookup( aTag, aScope ) != NULL,
                     ERR_STRUCT_AREADY_EXIST );
 
@@ -95,13 +95,13 @@ ulpStructTNode *ulpStructTable::ulpStructAdd ( SChar *aTag, SInt aScope )
 
     sIndex = (*mHash)( (UChar *)sStNode->mName ) % ( mSize );
 
-    // bucket listÀÇ Á¦ÀÏ ¾Õ¿¡´Ù Ãß°¡ÇÔ.
+    // bucket listì˜ ì œì¼ ì•žì—ë‹¤ ì¶”ê°€í•¨.
     sStNode2 = mStructTable[sIndex];
 
     mStructTable[sIndex] = sStNode;
 
     // double linked-list
-    sStNode->mPrev = NULL; // bucket-listÀÇ Ã¹nodeÀÌ±â ¶§¹®.
+    sStNode->mPrev = NULL; // bucket-listì˜ ì²«nodeì´ê¸° ë•Œë¬¸.
     sStNode->mNext = sStNode2;
     if( sStNode2 != NULL )
     {
@@ -116,7 +116,7 @@ ulpStructTNode *ulpStructTable::ulpStructAdd ( SChar *aTag, SInt aScope )
 
     IDE_TEST_RAISE( sStNode->mChild == NULL, ERR_MEMORY_ALLOC );
 
-    // add to struct scope linked list Á¦ÀÏ ¾Õ¿¡´Ù Ãß°¡ÇÔ.
+    // add to struct scope linked list ì œì¼ ì•žì—ë‹¤ ì¶”ê°€í•¨.
     sStNode2 = mStructScopeT[aScope];
     mStructScopeT[aScope] = sStNode;
     sStNode->mSLink = sStNode2;
@@ -143,7 +143,7 @@ ulpStructTNode *ulpStructTable::ulpStructAdd ( SChar *aTag, SInt aScope )
 }
 
 
-// no tag struct node´Â hash table ¸¶Áö¸· bucket¿¡ Ãß°¡µÈ´Ù.
+// no tag struct nodeëŠ” hash table ë§ˆì§€ë§‰ bucketì— ì¶”ê°€ëœë‹¤.
 ulpStructTNode *ulpStructTable::ulpNoTagStructAdd ( void )
 {
     SInt            sIndex;
@@ -159,13 +159,13 @@ ulpStructTNode *ulpStructTable::ulpNoTagStructAdd ( void )
 
     sIndex = mSize;
 
-    // bucket listÀÇ Á¦ÀÏ ¾Õ¿¡´Ù Ãß°¡ÇÔ.
+    // bucket listì˜ ì œì¼ ì•žì—ë‹¤ ì¶”ê°€í•¨.
     sStNode2 = mStructTable[sIndex];
 
     mStructTable[sIndex] = sStNode;
 
     // double linked-list
-    sStNode->mPrev = NULL; // bucket-listÀÇ Ã¹nodeÀÌ±â ¶§¹®.
+    sStNode->mPrev = NULL; // bucket-listì˜ ì²«nodeì´ê¸° ë•Œë¬¸.
     sStNode->mNext = sStNode2;
     if( sStNode2 != NULL )
     {
@@ -194,7 +194,7 @@ ulpStructTNode *ulpStructTable::ulpNoTagStructAdd ( void )
     return NULL;
 }
 
-// Æ¯Á¤ ÀÌ¸§À» °®´Â tag¸¦ struct table¿¡¼­ scope¸¦ ÁÙ¿©°¡¸é¼­ °Ë»öÇÑ´Ù.
+// íŠ¹ì • ì´ë¦„ì„ ê°–ëŠ” tagë¥¼ struct tableì—ì„œ scopeë¥¼ ì¤„ì—¬ê°€ë©´ì„œ ê²€ìƒ‰í•œë‹¤.
 ulpStructTNode *ulpStructTable::ulpStructLookupAll( SChar *aTag, SInt aScope )
 {
     SInt sIndex;
@@ -217,7 +217,7 @@ ulpStructTNode *ulpStructTable::ulpStructLookupAll( SChar *aTag, SInt aScope )
 }
 
 
-// Æ¯Á¤ ÀÌ¸§À» °®´Â tag¸¦ Æ¯Á¤ scope¿¡¼­ Á¸ÀçÇÏ´ÂÁö struct tableÀ» °Ë»öÇÑ´Ù.
+// íŠ¹ì • ì´ë¦„ì„ ê°–ëŠ” tagë¥¼ íŠ¹ì • scopeì—ì„œ ì¡´ìž¬í•˜ëŠ”ì§€ struct tableì„ ê²€ìƒ‰í•œë‹¤.
 ulpStructTNode *ulpStructTable::ulpStructLookup( SChar *aTag, SInt aScope )
 {
     SInt sIndex;
@@ -240,7 +240,7 @@ ulpStructTNode *ulpStructTable::ulpStructLookup( SChar *aTag, SInt aScope )
 }
 
 
-// °°Àº scope»óÀÇ ¸ðµç struct Á¤º¸¸¦ struct table¿¡¼­ Á¦°ÅÇÑ´Ù.
+// ê°™ì€ scopeìƒì˜ ëª¨ë“  struct ì •ë³´ë¥¼ struct tableì—ì„œ ì œê±°í•œë‹¤.
 void ulpStructTable::ulpStructDelScope( SInt aScope )
 {
     ulpStructTNode *sStNode;
@@ -252,7 +252,7 @@ void ulpStructTable::ulpStructDelScope( SInt aScope )
     {
         sNStNode = sStNode -> mSLink;
         // update double linked-list
-        if( sStNode -> mPrev == NULL ) //bucket-list Ã³À½ nodeÀÏ°æ¿ì
+        if( sStNode -> mPrev == NULL ) //bucket-list ì²˜ìŒ nodeì¼ê²½ìš°
         {
             mStructTable[sStNode->mIndex] = sStNode->mNext;
             if ( sStNode->mNext != NULL )
@@ -292,7 +292,7 @@ void ulpStructTable::ulpPrintStructT()
     SInt   sCnt;
     SInt   sMLineCnt;
     SInt   sIDcnt;
-    idBool sIsIDEnd;    // id ±æÀÌ°¡ 15ÀÚ¸¦ ³ÑÀ» °æ¿ì ´ÙÀ½ ¶óÀÎ¿¡ Ãâ·ÂÇÏ±â À§ÇØ »ç¿ëµÊ.
+    idBool sIsIDEnd;    // id ê¸¸ì´ê°€ 15ìžë¥¼ ë„˜ì„ ê²½ìš° ë‹¤ìŒ ë¼ì¸ì— ì¶œë ¥í•˜ê¸° ìœ„í•´ ì‚¬ìš©ë¨.
     idBool sIsFirst;
     ulpStructTNode *sNode;
 
@@ -390,7 +390,7 @@ void ulpStructTable::ulpPrintStructT()
                 continue;
             }
 
-            // structure field Á¤º¸ Ãâ·Â
+            // structure field ì •ë³´ ì¶œë ¥
             if ( sNode->mChild != NULL )
             {
                 sNode->mChild->ulpPrintSymT( -1 );

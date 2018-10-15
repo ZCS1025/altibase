@@ -329,8 +329,8 @@ SInt Field::getSChar(SInt   sqlType,
     {
         case SQL_FLOAT:
         case SQL_NUMERIC:
-        case SQL_CLOB: /* clob, blobÀÇ °æ¿ì SQLBindCol¿¡ mLobLoc¸¦ */
-        case SQL_BLOB: /* »ç¿ëÇÏ±â ¶§¹®¿¡ mValue´Â Ç×»ó emptyÀÌ´Ù. */
+        case SQL_CLOB: /* clob, blobì˜ ê²½ìš° SQLBindColì— mLobLocë¥¼ */
+        case SQL_BLOB: /* ì‚¬ìš©í•˜ê¸° ë•Œë¬¸ì— mValueëŠ” í•­ìƒ emptyì´ë‹¤. */
             if ( aBuffSize < aWidth + 1 )
             {
                 sCopyLen = aBuffSize - 1;
@@ -458,7 +458,7 @@ IDE_RC Field::initialize(UShort aNo ,Row* aRow)
     mValue     = NULL;
     mType      = 0;
     mRow       = aRow;
-    //TASK-4212     auditÅøÀÇ ´ë¿ë·® Ã³¸®½Ã °³¼±
+    //TASK-4212     auditíˆ´ì˜ ëŒ€ìš©ëŸ‰ ì²˜ë¦¬ì‹œ ê°œì„ 
     mIsFileMode= false;
     IDE_TEST( mRow == NULL );
     return IDE_SUCCESS;
@@ -477,7 +477,7 @@ IDE_RC Field::bindColumn(SInt aType, void * )
     //mLinks = (SChar*)aLinks;
     mType  = mapType ( aType );
 
-    /* TASK-4212: auditÅøÀÇ ´ë¿ë·® Ã³¸®½Ã °³¼± */
+    /* TASK-4212: auditíˆ´ì˜ ëŒ€ìš©ëŸ‰ ì²˜ë¦¬ì‹œ ê°œì„  */
     // considering array fetch...
     if( mRow -> mArrayCount > 1 )
     {

@@ -145,7 +145,7 @@ SInt idlVA::getSystemMemory(ULong *PageSize,
                             ULong *MaxMem, ULong *AvailMem, ULong *FreeMem,
                             ULong *SwapMaxMem, ULong *SwapFreeMem)
 {
-    /* ÃÊ±âÈ­ */
+    /* ì´ˆê¸°í™” */
     *PageSize    = 0;
     *MaxMem      = 0;
     *AvailMem    = 0;
@@ -155,11 +155,11 @@ SInt idlVA::getSystemMemory(ULong *PageSize,
 
 #if defined(SPARC_SOLARIS) || defined(X86_SOLARIS)
     /* ------------------------------
-     * ¸ŞÀÎ ¸Ş¸ğ¸® Å©±â¸¦ ±¸ÇÑ´Ù.
+     * ë©”ì¸ ë©”ëª¨ë¦¬ í¬ê¸°ë¥¼ êµ¬í•œë‹¤.
      * -----------------------------*/
 
     /* ----------------
-     * [1] º¯¼ö ¼±¾ğ
+     * [1] ë³€ìˆ˜ ì„ ì–¸
      * ---------------*/
 
     kstat_t       *ks = NULL;
@@ -167,7 +167,7 @@ SInt idlVA::getSystemMemory(ULong *PageSize,
     kstat_named_t *kn = NULL;
 
     /* ----------------
-     * [2] PAGESIZE ¾ò±â
+     * [2] PAGESIZE ì–»ê¸°
      * ---------------*/
     *PageSize = (ULong)idlOS::sysconf(_SC_PAGESIZE);
 
@@ -204,11 +204,11 @@ SInt idlVA::getSystemMemory(ULong *PageSize,
 
 
     /* ------------------------------
-     * SWAP Å©±â¸¦ ±¸ÇÑ´Ù.
+     * SWAP í¬ê¸°ë¥¼ êµ¬í•œë‹¤.
      * -----------------------------*/
 
     /* ----------------
-     * [1] º¯¼ö ¼±¾ğ
+     * [1] ë³€ìˆ˜ ì„ ì–¸
      * ---------------*/
     struct anoninfo anon;
     SInt swtotal = 0;
@@ -217,7 +217,7 @@ SInt idlVA::getSystemMemory(ULong *PageSize,
     idlOS::memset(&anon, 0, sizeof(anoninfo));
 
     /* ----------------
-     * [2] SWAP Á¤º¸ ¾ò±â
+     * [2] SWAP ì •ë³´ ì–»ê¸°
      * ---------------*/
     if (swapctl(SC_AINFO, &anon) != -1)
     {
@@ -248,7 +248,7 @@ SInt idlVA::getSystemMemory(ULong *PageSize,
 #endif
 }
 
-// ½Ã½ºÅÛ¿¡ ¼³Ä¡µÈ CPU °¹¼ö¸¦ ±¸ÇÑ´Ù.
+// ì‹œìŠ¤í…œì— ì„¤ì¹˜ëœ CPU ê°¯ìˆ˜ë¥¼ êµ¬í•œë‹¤.
 SInt idlVA::getProcessorCount()
 {
     SInt cntCPU = 0;
@@ -263,15 +263,15 @@ SInt idlVA::getProcessorCount()
     GetSystemInfo(&systemInfo);
     cntCPU = systemInfo.dwNumberOfProcessors;
 #elif defined(HP_HPUX) || defined(IA64_HP_HPUX)
-    // BUGBUG : by gamestar : ³ªÁß¿¡ Àû¿ë °í·Á
+    // BUGBUG : by gamestar : ë‚˜ì¤‘ì— ì ìš© ê³ ë ¤
     // source from st library : server.c
     //#include <sys/mpctl.h>
     //n = mpctl(MPC_GETNUMSPUS, 0, 0);
     struct pst_dynamic store_pst_dynamic;
 
     pstat_getdynamic( &store_pst_dynamic, sizeof(store_pst_dynamic), 1, 0 );
-    /* BUG-21067: HPUX¿¡¼­ CPU°¹¼ö¸¦ °¡Á®¿Ã °æ¿ì¿¡ Active Processor°³¼ö¸¦ °¡Á®¿Í¾ß
-     *            ÇÕ´Ï´Ù. */
+    /* BUG-21067: HPUXì—ì„œ CPUê°¯ìˆ˜ë¥¼ ê°€ì ¸ì˜¬ ê²½ìš°ì— Active Processorê°œìˆ˜ë¥¼ ê°€ì ¸ì™€ì•¼
+     *            í•©ë‹ˆë‹¤. */
     cntCPU = (SInt)store_pst_dynamic.psd_proc_cnt;
 #elif defined(ITRON)
     /* empty */
@@ -281,7 +281,7 @@ SInt idlVA::getProcessorCount()
     //idlOS::printf("oops!! warning...did you check this?(%s:%d) \n",
     //              __FILE__, __LINE__);
 #  endif
-    cntCPU = 1; // default´Â 1·Î ÇÔ.
+    cntCPU = 1; // defaultëŠ” 1ë¡œ í•¨.
 #endif
     return ( cntCPU > 1 ? cntCPU : (SInt)1 );
 }
@@ -289,16 +289,16 @@ SInt idlVA::getProcessorCount()
 /*
  * BUG-44958  Physical core count is needed 
  *
- * ½Ã½ºÅÛ¿¡ ¼³Ä¡µÈ physical core °¹¼ö¸¦ ±¸ÇÑ´Ù.
+ * ì‹œìŠ¤í…œì— ì„¤ì¹˜ëœ physical core ê°¯ìˆ˜ë¥¼ êµ¬í•œë‹¤.
  * 
- * Supported System based on "Á¦Ç°º° Áö¿ø OS ÇöÈ²(2017.6.8)"
+ * Supported System based on "ì œí’ˆë³„ ì§€ì› OS í˜„í™©(2017.6.8)"
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  * AIX   / PowerPC
  * Linux / X86
  * Linux / PowerPC
  * HP    / IA64(itanium)
  * 
- * Áö¿øÇÏÁö ¾Ê´Â ½Ã½ºÅÛÀÌ°Å³ª Á¤º¸¸¦ ¾òÁö ¸øÇÏ°Ô µÇ¸é ±âÁ¸ÀÇ ³í¸®ÄÚ¾î°¹¼ö¸¦ ¸®ÅÏÇÏµµ·Ï ÇÑ´Ù.
+ * ì§€ì›í•˜ì§€ ì•ŠëŠ” ì‹œìŠ¤í…œì´ê±°ë‚˜ ì •ë³´ë¥¼ ì–»ì§€ ëª»í•˜ê²Œ ë˜ë©´ ê¸°ì¡´ì˜ ë…¼ë¦¬ì½”ì–´ê°¯ìˆ˜ë¥¼ ë¦¬í„´í•˜ë„ë¡ í•œë‹¤.
  */
 SInt idlVA::getPhysicalCoreCount()
 {
@@ -367,7 +367,7 @@ SInt idlVA::getPhysicalCoreCount()
 IDL_EXTERN_C int statvfs(const char *, struct statvfs *);
 #endif // DEC_TRU64
 
-// path·Î ÁöÁ¤µÈ ÆÄÀÏ½Ã½ºÅÛÀÇ °¡¿ë µğ½ºÅ© °ø°£À» ±¸ÇÑ´Ù
+// pathë¡œ ì§€ì •ëœ íŒŒì¼ì‹œìŠ¤í…œì˜ ê°€ìš© ë””ìŠ¤í¬ ê³µê°„ì„ êµ¬í•œë‹¤
 // RETURN : free space (byte)
 SLong idlVA::getDiskFreeSpace (const SChar *path)
 {
@@ -381,7 +381,7 @@ SLong idlVA::getDiskFreeSpace (const SChar *path)
 
     return (((SLong)buf.f_bavail * buf.f_frsize));
 #elif defined( VC_WIN32 )
-    // path°¡ ÆÄÀÏÀÎÁö µğ·ºÅä¸®ÀÎÁö ¾Ë¾Æº»´Ù.
+    // pathê°€ íŒŒì¼ì¸ì§€ ë””ë ‰í† ë¦¬ì¸ì§€ ì•Œì•„ë³¸ë‹¤.
     BOOL bFileIsDirectory = FALSE;
 #if defined (VC_WINCE)
     wchar_t *sPath;
@@ -421,7 +421,7 @@ SLong idlVA::getDiskFreeSpace (const SChar *path)
         }
     }
 
-    // local copy »ı¼º
+    // local copy ìƒì„±
     SChar *dirPath = new SChar[ strlen(path) + 1 ];
     if ( dirPath == NULL )
     {
@@ -431,7 +431,7 @@ SLong idlVA::getDiskFreeSpace (const SChar *path)
 
     if ( !bFileIsDirectory )
     {
-        // path¸¦ directory·Î ¸¸µé¾îÁØ´Ù.
+        // pathë¥¼ directoryë¡œ ë§Œë“¤ì–´ì¤€ë‹¤.
         // c:\altibase_home\logs\log0  -> c:\altibase_home\logs
         for (SInt i=strlen(dirPath); i>0; i--) {
             if ( dirPath[i-1] == IDL_FILE_SEPARATOR ) {
@@ -486,7 +486,7 @@ SLong idlVA::getDiskFreeSpace (const SChar *path)
 #if defined(DEC_TRU64) && (OS_MAJORVER <= 4)
 //===================================================================
 // To Fix PR-17754
-// ÀÏºÎ ÇÃ·§Æû¿¡ ¾ø´Â vsnprintf() ±¸ÇöÀ» À§ÇÑ ³»ºÎ ÇÔ¼ö
+// ì¼ë¶€ í”Œë«í¼ì— ì—†ëŠ” vsnprintf() êµ¬í˜„ì„ ìœ„í•œ ë‚´ë¶€ í•¨ìˆ˜
 //===================================================================
 
 /*
@@ -627,7 +627,7 @@ idlOS::vsnprintf(char *buf, size_t size, const char *format, va_list ap)
 #if defined(DEC_TRU64) && (OS_MAJORVER <= 4)
 //===================================================================
 // To Fix PR-17754
-// ÀÏºÎ ÇÃ·§Æû¿¡ ¾ø´Â vsnprintf()ÀÇ ±¸Çö
+// ì¼ë¶€ í”Œë«í¼ì— ì—†ëŠ” vsnprintf()ì˜ êµ¬í˜„
 //===================================================================
 
 /* This implementation relies on a working vasprintf.  */
@@ -678,14 +678,14 @@ idlOS::vsnprintf(char *buf, size_t size, const char *format, va_list ap)
     return result;
 
 #else
-    /* BUG-25100: HP s[v]nprintf Á¾·ùÀÇ ÇÔ¼ö¿¡¼­ ¹öÆÛº¸´Ù ÀÛÀº »çÀÌÁî°¡ º¹»çµÇ´Â
-     * °æ¿ì´Â ¸®ÅÏ °ªÀÌ -1ÀÔ´Ï´Ù.
+    /* BUG-25100: HP s[v]nprintf ì¢…ë¥˜ì˜ í•¨ìˆ˜ì—ì„œ ë²„í¼ë³´ë‹¤ ì‘ì€ ì‚¬ì´ì¦ˆê°€ ë³µì‚¬ë˜ëŠ”
+     * ê²½ìš°ëŠ” ë¦¬í„´ ê°’ì´ -1ì…ë‹ˆë‹¤.
      *
-     * snprintf, svnprintf´Â formatÀÇ ±æÀÌ°¡ sizeº¸´Ù Å©°Å³ª °°Àº°æ¿ì formatÀÇ
-     * ±æÀÌ¸¦ returnÇÏ°í HP´Â -1À» returnÇÑ´Ù. ÇÏÁö¸¸ »óÀ§¿¡¼­ formatÀÇ ±æÀÌ°¡
-     * °°°Å³ª ±ä°æ¿ì ½ÇÁ¦ buf¿¡ º¹»çµÈ dataÀÇ ±æÀÌ¸¦ returnÇÏ´Â °ÍÀ¸·Î ¾Ë°í ÀÖ´Ù.
-     * ÇÏ¿© sizeº¸´Ù formatÀÇ ±æÀÌ°¡ Å©°Å³ª °°Àº °æ¿ì size - 1°ªÀ» ¸®ÅÏÇÑ´Ù.
-     * -1À» ÇÏ´Â ÀÌÀ¯´Â bufÀÇ ¸¶Áö¸·Àº Ç×»ó null·Î ³¡³ª±â¶§¹®ÀÌ´Ù. */
+     * snprintf, svnprintfëŠ” formatì˜ ê¸¸ì´ê°€ sizeë³´ë‹¤ í¬ê±°ë‚˜ ê°™ì€ê²½ìš° formatì˜
+     * ê¸¸ì´ë¥¼ returní•˜ê³  HPëŠ” -1ì„ returní•œë‹¤. í•˜ì§€ë§Œ ìƒìœ„ì—ì„œ formatì˜ ê¸¸ì´ê°€
+     * ê°™ê±°ë‚˜ ê¸´ê²½ìš° ì‹¤ì œ bufì— ë³µì‚¬ëœ dataì˜ ê¸¸ì´ë¥¼ returní•˜ëŠ” ê²ƒìœ¼ë¡œ ì•Œê³  ìˆë‹¤.
+     * í•˜ì—¬ sizeë³´ë‹¤ formatì˜ ê¸¸ì´ê°€ í¬ê±°ë‚˜ ê°™ì€ ê²½ìš° size - 1ê°’ì„ ë¦¬í„´í•œë‹¤.
+     * -1ì„ í•˜ëŠ” ì´ìœ ëŠ” bufì˜ ë§ˆì§€ë§‰ì€ í•­ìƒ nullë¡œ ëë‚˜ê¸°ë•Œë¬¸ì´ë‹¤. */
     SInt result = ::vsnprintf (buf, size, format, ap);
 
     if( ( ( result == -1 ) || ( result >= (SInt)size ) ) && (size > 0) )
@@ -821,10 +821,10 @@ idlOS::strcasestr(const SChar *s, const SChar *w)
 time_t
 idlOS::mktime( struct tm *t )
 {
-    // mktimeÀ» »ç¿ëÇÒ ¼ö ÀÖ´Â ¹üÀ§°¡
-    // ½Ã½ºÅÛ¸¶´Ù Á¶±İ¾¿ ´Ù¸§.
-    // id¿¡¼­ °øÅë ¹üÀ§·Î Á¦¾àÇÔ
-    // 1970-01-01 ~ 2037-12-31±îÁö¸¸ À¯È¿ÇÔ
+    // mktimeì„ ì‚¬ìš©í•  ìˆ˜ ìˆëŠ” ë²”ìœ„ê°€
+    // ì‹œìŠ¤í…œë§ˆë‹¤ ì¡°ê¸ˆì”© ë‹¤ë¦„.
+    // idì—ì„œ ê³µí†µ ë²”ìœ„ë¡œ ì œì•½í•¨
+    // 1970-01-01 ~ 2037-12-31ê¹Œì§€ë§Œ ìœ íš¨í•¨
     if( t->tm_year < 70 || t->tm_year >= 138 )
     {
         return -1;
@@ -1592,13 +1592,13 @@ idlVA::recv_nn (PDL_SOCKET handle,
                              timeout);
 }
 
-// To Fix BUG-15181 [A3/A4] recv_nn_i°¡ timeoutÀ» ¹«½ÃÇÕ´Ï´Ù.
-// recv_nn Àº Á¶±İÀÌ¶óµµ ¹ŞÀº µ¥ÀÌÅÍ°¡ ÀÖÀ¸¸é timeoutÀ» ¹«½ÃÇÑ´Ù.
-// ( replication¿¡¼­ ÀÌ·¯ÇÑ ½Ã¸ÇÆ½À¸·Î recv_nnÀ» »ç¿ëÇÏ°í ÀÖ¾î¼­
-//   recv_nnÀ» Á÷Á¢ ¼öÁ¤ÇÒ ¼ö ¾øÀ½.)
+// To Fix BUG-15181 [A3/A4] recv_nn_iê°€ timeoutì„ ë¬´ì‹œí•©ë‹ˆë‹¤.
+// recv_nn ì€ ì¡°ê¸ˆì´ë¼ë„ ë°›ì€ ë°ì´í„°ê°€ ìˆìœ¼ë©´ timeoutì„ ë¬´ì‹œí•œë‹¤.
+// ( replicationì—ì„œ ì´ëŸ¬í•œ ì‹œë§¨í‹±ìœ¼ë¡œ recv_nnì„ ì‚¬ìš©í•˜ê³  ìˆì–´ì„œ
+//   recv_nnì„ ì§ì ‘ ìˆ˜ì •í•  ìˆ˜ ì—†ìŒ.)
 //
-// recv_nn_to´Â Á¶±İÀÌ¶óµµ ¹ŞÀº µ¥ÀÌÅÍ°¡ ÀÖ¾îµµ
-// timeout°É¸®¸é ¿¡·¯¸¦ ¸®ÅÏÇÑ´Ù.
+// recv_nn_toëŠ” ì¡°ê¸ˆì´ë¼ë„ ë°›ì€ ë°ì´í„°ê°€ ìˆì–´ë„
+// timeoutê±¸ë¦¬ë©´ ì—ëŸ¬ë¥¼ ë¦¬í„´í•œë‹¤.
 
 ssize_t
 idlVA::recv_nn_to (PDL_SOCKET handle,
@@ -1712,7 +1712,7 @@ clock_t idlOS::times(struct tms *buffer) {
     memcpy(&liKernelTime, &kernelTime, sizeof(liKernelTime));
     memcpy(&liUserTime, &userTime, sizeof(liUserTime));
 
-    // BUG - Â÷ÀÏµå process¸¦ ¾Ë¾Æ³»´Â WIN32 API¿Í ¸ÅÇÎµÇÁö ¾Ê¾ÒÀ½.
+    // BUG - ì°¨ì¼ë“œ processë¥¼ ì•Œì•„ë‚´ëŠ” WIN32 APIì™€ ë§¤í•‘ë˜ì§€ ì•Šì•˜ìŒ.
     buffer->tms_stime = buffer->tms_cstime =
         (clock_t) ((liKernelTime.QuadPart / 10000000.0) * CLOCKS_PER_SEC);
 
@@ -2271,12 +2271,12 @@ SInt idlVA::appendFormat(char *aBuffer, size_t aBufferSize, const char *aFormat,
     va_list ap;
 
     sLen = idlOS::strlen(aBuffer);
-    // BUG-28379 [SD] sdnbBTree::dumpNodeHdr( UChar *aPage ) ³»¿¡¼­ local ArrayÀÇ
-    // ptr¸¦ ¹İÈ¯ÇÏ°í ÀÖ½À´Ï´Ù.
+    // BUG-28379 [SD] sdnbBTree::dumpNodeHdr( UChar *aPage ) ë‚´ì—ì„œ local Arrayì˜
+    // ptrë¥¼ ë°˜í™˜í•˜ê³  ìˆìŠµë‹ˆë‹¤.
     //
-    // aBufferSize°¡ sLenº¸´Ù Ä¿¾ßÇÕ´Ï´Ù. ±×·¸Áö ¾ÊÀ¸¸é ÀÌÈÄ vsnprintfÇÔ¼ö È£Ãâ½Ã
-    // À½¼ö°ªÀÌ ³Ñ¾î°¡°í, ±× À½¼ö°ªÀÌ unsigned·Î ÇØ¼®µÇ¸é¼­ ¸Ş¸ğ¸®¸¦ ±ÜÀ» ¼ö 
-    // ÀÖ½À´Ï´Ù.
+    // aBufferSizeê°€ sLenë³´ë‹¤ ì»¤ì•¼í•©ë‹ˆë‹¤. ê·¸ë ‡ì§€ ì•Šìœ¼ë©´ ì´í›„ vsnprintfí•¨ìˆ˜ í˜¸ì¶œì‹œ
+    // ìŒìˆ˜ê°’ì´ ë„˜ì–´ê°€ê³ , ê·¸ ìŒìˆ˜ê°’ì´ unsignedë¡œ í•´ì„ë˜ë©´ì„œ ë©”ëª¨ë¦¬ë¥¼ ê¸ì„ ìˆ˜ 
+    // ìˆìŠµë‹ˆë‹¤.
     assert( aBufferSize > sLen );
 
     va_start(ap, aFormat);
@@ -2311,7 +2311,7 @@ SInt idlVA::appendString(char *aBuffer, size_t aBufferSize, char *aString, UInt 
 
 //===================================================================
 // To Fix PR-13963
-// ¿ä±¸ÇÑ Å©±â°¡ large heapÀ» ¿ä±¸ÇÑ°ÍÀÎÁö¸¦ ÆÇ´Ü
+// ìš”êµ¬í•œ í¬ê¸°ê°€ large heapì„ ìš”êµ¬í•œê²ƒì¸ì§€ë¥¼ íŒë‹¨
 //===================================================================
 
 void idlOS::checkLargeHeapUse (
@@ -2323,7 +2323,7 @@ void idlOS::checkLargeHeapUse (
     )
 {
 #ifndef BUILD_FOR_UTIL
-    // ¿ä±¸ÇÑ Å©±â°¡ Á¤ÇØÁø Å©±â¸¦ ³Ñ´Â´Ù¸é ·Î±×¿¡ Ãâ·Â
+    // ìš”êµ¬í•œ í¬ê¸°ê°€ ì •í•´ì§„ í¬ê¸°ë¥¼ ë„˜ëŠ”ë‹¤ë©´ ë¡œê·¸ì— ì¶œë ¥
     if( ( INSPECTION_LARGE_HEAP_THRESHOLD_INITIALIZED == ID_TRUE ) &&
         ( INSPECTION_LARGE_HEAP_THRESHOLD > 0 ) &&
         ( nbytes >= INSPECTION_LARGE_HEAP_THRESHOLD ) )
@@ -2338,7 +2338,7 @@ void idlOS::checkLargeHeapUse (
 
 void *idlOS::malloc ( size_t nbytes )
 {
-    // ¿ä±¸ÇÑ Å©±â°¡ Á¤ÇØÁø Å©±â¸¦ ³Ñ´Â´Ù¸é ·Î±×¿¡ Ãâ·Â
+    // ìš”êµ¬í•œ í¬ê¸°ê°€ ì •í•´ì§„ í¬ê¸°ë¥¼ ë„˜ëŠ”ë‹¤ë©´ ë¡œê·¸ì— ì¶œë ¥
     checkLargeHeapUse( nbytes );
 
     return PDL_OS::malloc( nbytes );
@@ -2346,14 +2346,14 @@ void *idlOS::malloc ( size_t nbytes )
 
 void *idlOS::calloc ( size_t elements, size_t sizeof_elements )
 {
-    // ¿ä±¸ÇÑ Å©±â°¡ Á¤ÇØÁø Å©±â¸¦ ³Ñ´Â´Ù¸é ·Î±×¿¡ Ãâ·Â
+    // ìš”êµ¬í•œ í¬ê¸°ê°€ ì •í•´ì§„ í¬ê¸°ë¥¼ ë„˜ëŠ”ë‹¤ë©´ ë¡œê·¸ì— ì¶œë ¥
     checkLargeHeapUse( elements * sizeof_elements );
     return PDL_OS::calloc( elements, sizeof_elements );
 }
 
 void *idlOS::realloc ( void *ptr, size_t nbytes )
 {
-    // ¿ä±¸ÇÑ Å©±â°¡ Á¤ÇØÁø Å©±â¸¦ ³Ñ´Â´Ù¸é ·Î±×¿¡ Ãâ·Â
+    // ìš”êµ¬í•œ í¬ê¸°ê°€ ì •í•´ì§„ í¬ê¸°ë¥¼ ë„˜ëŠ”ë‹¤ë©´ ë¡œê·¸ì— ì¶œë ¥
     checkLargeHeapUse( nbytes );
     return PDL_OS::realloc( ptr, nbytes );
 }
@@ -2373,8 +2373,8 @@ SChar idlOS::tolower(SChar c)
     return (c >= 'A' && c <= 'Z' ) ? c + ('a' - 'A') : c;
 }
 
-/* paddingÀÌ ºÙÀº ÀÚ·á ±¸Á¶¸¦ ÀÌ ÇÔ¼ö·Î ÃÊ±âÈ­ÇÑ´Ù.
-   ÀÌ ÇÔ¼ö´Â memory check½Ã¿¡¸¸ ÃÊ±âÈ­ÇÑ´Ù. */
+/* paddingì´ ë¶™ì€ ìë£Œ êµ¬ì¡°ë¥¼ ì´ í•¨ìˆ˜ë¡œ ì´ˆê¸°í™”í•œë‹¤.
+   ì´ í•¨ìˆ˜ëŠ” memory checkì‹œì—ë§Œ ì´ˆê¸°í™”í•œë‹¤. */
 void *idlOS::memsetOnMemCheck(void *s, int c, size_t len)
 {
 #if defined(ALTIBASE_MEMORY_CHECK)

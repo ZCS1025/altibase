@@ -18,12 +18,12 @@
 /*****************************************************************************
  * $Id: qcuProperty.h 82186 2018-02-05 05:17:56Z lswhh $
  *
- * QP¿¡¼­ »ç¿ëÇÏ´Â System Property¿¡ ´ëÇÑ Á¤ÀÇ
- * A4¿¡¼­ Á¦°øÇÏ´Â Property °ü¸®ÀÚ¸¦ ÀÌ¿ëÇÏ¿© Ã³¸®ÇÑ´Ù.
+ * QPì—ì„œ ì‚¬ìš©í•˜ëŠ” System Propertyì— ëŒ€í•œ ì •ì˜
+ * A4ì—ì„œ ì œê³µí•˜ëŠ” Property ê´€ë¦¬ìë¥¼ ì´ìš©í•˜ì—¬ ì²˜ë¦¬í•œë‹¤.
  *
- * ÁÖÀÇ : Readable Property¸¸À» °ü¸®ÇÑ´Ù.
- *        Writable PropertyÀÇ °æ¿ì, MMÀÇ Session¿¡¼­ °ü¸®µÇ¾î¾ß ÇÔ.
- *        TraceLogÀÇ °æ¿ì, °³³äÀûÀ¸·Î RunTime propertyÀÇ ÀÇ¹ÌÀÓ
+ * ì£¼ì˜ : Readable Propertyë§Œì„ ê´€ë¦¬í•œë‹¤.
+ *        Writable Propertyì˜ ê²½ìš°, MMì˜ Sessionì—ì„œ ê´€ë¦¬ë˜ì–´ì•¼ í•¨.
+ *        TraceLogì˜ ê²½ìš°, ê°œë…ì ìœ¼ë¡œ RunTime propertyì˜ ì˜ë¯¸ì„
  *
  **********************************************************************/
 
@@ -67,31 +67,31 @@
 
 #define QCU_STORED_PROC_MODE        ( QCU_PROPERTY(mSpMode) )
 
-// BUG-26017 [PSM] server restart½Ã ¼öÇàµÇ´Â psm load°úÁ¤¿¡¼­
-// °ü·ÃÇÁ·ÎÆÛÆ¼¸¦ ÂüÁ¶ÇÏÁö ¸øÇÏ´Â °æ¿ì ÀÖÀ½.
+// BUG-26017 [PSM] server restartì‹œ ìˆ˜í–‰ë˜ëŠ” psm loadê³¼ì •ì—ì„œ
+// ê´€ë ¨í”„ë¡œí¼í‹°ë¥¼ ì°¸ì¡°í•˜ì§€ ëª»í•˜ëŠ” ê²½ìš° ìˆìŒ.
 #define QCU_OPTIMIZER_MODE             ( QCU_PROPERTY(mOptimizerMode) )
 
 #define QCU_AUTO_REMOTE_EXEC           ( QCU_PROPERTY(mAutoRemoteExec) )
 
-// PROJ-1358 Stack SizeÀÇ Á¶Á¤
+// PROJ-1358 Stack Sizeì˜ ì¡°ì •
 #define QCU_QUERY_STACK_SIZE        ( QCU_PROPERTY(mQueryStackSize) )
 
 // PR-13395
-// °¡»ó Åë°è Á¤º¸¸¦ À§ÇÑ Scale Factor
+// ê°€ìƒ í†µê³„ ì •ë³´ë¥¼ ìœ„í•œ Scale Factor
 #define QCU_FAKE_TPCH_SCALE_FACTOR  ( QCU_PROPERTY(mFakeTpchScaleFactor) )
 #define QCU_FAKE_BUFFER_SIZE        ( QCU_PROPERTY(mFakeBufferSize) )
 
-// PROJ-1446 Host variableÀ» Æ÷ÇÔÇÑ ÁúÀÇ ÃÖÀûÈ­
+// PROJ-1446 Host variableì„ í¬í•¨í•œ ì§ˆì˜ ìµœì í™”
 #define QCU_HOST_OPTIMIZE_ENABLE    ( QCU_PROPERTY(mHostOptimizeEnable) )
 
 // BUG-13068
-// session´ç openÇÒ ¼ö ÀÖ´Â filehandle°³¼ö Á¦ÇÑ
+// sessionë‹¹ opení•  ìˆ˜ ìˆëŠ” filehandleê°œìˆ˜ ì œí•œ
 #define QCU_PSM_FILE_OPEN_LIMIT      ( QCU_PROPERTY(mFileOpenLimit) )
 
 // BUG-40854
 #define QCU_CONNECT_TYPE_OPEN_LIMIT ( QCU_PROPERTY(mSocketOpenLimit) )
 
-/* BUG-41307 User Lock Áö¿ø */
+/* BUG-41307 User Lock ì§€ì› */
 #define QCU_USER_LOCK_POOL_INIT_SIZE         ( QCU_PROPERTY(mUserLockPoolInitSize) )
 #define QCU_USER_LOCK_REQUEST_TIMEOUT        ( QCU_PROPERTY(mUserLockRequestTimeout) )
 #define QCU_USER_LOCK_REQUEST_CHECK_INTERVAL ( QCU_PROPERTY(mUserLockRequestCheckInterval) )
@@ -118,10 +118,10 @@
 // PROJ-1473
 #define QCU_OPTIMIZER_PUSH_PROJECTION  ( QCU_PROPERTY(mOptimizerPushProjection) )
 
-// BUG-23780 TEMP_TBS_MEMORY ÈùÆ® Àû¿ë¿©ºÎ¸¦ property·Î Á¦°ø
+// BUG-23780 TEMP_TBS_MEMORY íŒíŠ¸ ì ìš©ì—¬ë¶€ë¥¼ propertyë¡œ ì œê³µ
 #define QCU_OPTIMIZER_DEFAULT_TEMP_TBS_TYPE  ( QCU_PROPERTY(mOptimizerDefaultTempTbsType) )
 
-// BUG-38132 group byÀÇ temp table À» ¸Ş¸ğ¸®·Î °íÁ¤ÇÏ´Â ÇÁ·ÎÆÛÆ¼
+// BUG-38132 group byì˜ temp table ì„ ë©”ëª¨ë¦¬ë¡œ ê³ ì •í•˜ëŠ” í”„ë¡œí¼í‹°
 #define QCU_OPTIMIZER_FIXED_GROUP_MEMORY_TEMP ( QCU_PROPERTY(mOptimizerFixedGroupMemoryTemp) )
 // BUG-38339 Outer Join Elimination
 #define QCU_OPTIMIZER_OUTERJOIN_ELIMINATION ( QCU_PROPERTY(mOptimizerOuterJoinElimination) )
@@ -138,7 +138,7 @@
 #define QCU_ST_OBJECT_BUFFER_SIZE   ( QCU_PROPERTY(mSTObjBufSize) )
 
 // BUG-19089
-// FK°¡ ÀÖ´Â »óÅÂ¿¡¼­ CREATE REPLICATION ±¸¹®ÀÌ °¡´ÉÇÏµµ·Ï ÇÑ´Ù.
+// FKê°€ ìˆëŠ” ìƒíƒœì—ì„œ CREATE REPLICATION êµ¬ë¬¸ì´ ê°€ëŠ¥í•˜ë„ë¡ í•œë‹¤.
 #define QCU_CHECK_FK_IN_CREATE_REPLICATION_DISABLE ( QCU_PROPERTY(mCheckFkInCreateReplicationDisable) )
 
 // PROJ-1436
@@ -215,7 +215,7 @@
 // BUG-35713
 #define QCU_PSM_IGNORE_NO_DATA_FOUND_ERROR ( QCU_PROPERTY(mPSMIgnoreNoDataFoundError) )
 
-/* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø */
+/* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ì… ì§€ì› */
 #define QCU_INTERMEDIATE_TUPLE_LOB_OBJECT_LIMIT ( QCU_PROPERTY(mIntermediateTupleLobObjectLimit) )
 
 /* PROJ-2242 CSE, CFS, Feature enable */
@@ -292,7 +292,7 @@
 /* PROJ-2448 Subquery caching */
 #define QCU_FORCE_SUBQUERY_CACHE_DISABLE          ( QCU_PROPERTY(mForceSubqueryCacheDisable) )
 
-// PROJ-2551 simple query ÃÖÀûÈ­
+// PROJ-2551 simple query ìµœì í™”
 #define QCU_EXECUTOR_FAST_SIMPLE_QUERY  ( QCU_PROPERTY(mExecutorFastSimpleQuery) )
 
 /* PROJ-2553 Cache-aware Memory Hash Temp Table */ 
@@ -363,7 +363,7 @@
 /* BUG-42928 No Partition Lock */
 #define QCU_TABLE_LOCK_MODE     ( QCU_PROPERTY(mTableLockMode) )
 
-// BUG-43068 Indexable order by °³¼±
+// BUG-43068 Indexable order by ê°œì„ 
 #define QCU_OPTIMIZER_ORDER_PUSH_DOWN                       ( QCU_PROPERTY( mOptimizerOrderPushDown ) )
 
 /* BUG-43112 */
@@ -377,7 +377,7 @@
 #define QCU_PSM_STMT_LIST_COUNT                             ( QCU_PROPERTY( mPSMStmtListCount ) )
 #define QCU_PSM_STMT_POOL_COUNT                             ( QCU_PROPERTY( mPSMStmtPoolCount ) )
 
-// BUG-43443 temp table¿¡ ´ëÇØ¼­ work area size¸¦ estimateÇÏ´Â ±â´ÉÀ» off
+// BUG-43443 temp tableì— ëŒ€í•´ì„œ work area sizeë¥¼ estimateí•˜ëŠ” ê¸°ëŠ¥ì„ off
 #define QCU_DISK_TEMP_SIZE_ESTIMATE                         ( QCU_PROPERTY( mDiskTempSizeEstimate ) )
 
 // BUG-43421
@@ -410,12 +410,12 @@
 // BUG-44795
 #define QCU_OPTIMIZER_DBMS_STAT_POLICY ( QCU_PROPERTY(mOptimizerDBMSStatPolicy) )
 
-/* BUG-44850 Index NL , Inverse index NL Á¶ÀÎ ÃÖÀûÈ­ ¼öÇà½Ã ºñ¿ëÀÌ µ¿ÀÏÇÏ¸é primary key¸¦ ¿ì¼±ÀûÀ¸·Î ¼±ÅÃ. */
+/* BUG-44850 Index NL , Inverse index NL ì¡°ì¸ ìµœì í™” ìˆ˜í–‰ì‹œ ë¹„ìš©ì´ ë™ì¼í•˜ë©´ primary keyë¥¼ ìš°ì„ ì ìœ¼ë¡œ ì„ íƒ. */
 #define QCU_OPTIMIZER_INDEX_NL_JOIN_ACCESS_METHOD_POLICY ( QCU_PROPERTY( mOptimizerIndexNLJoinAccessMethodPolicy ) )
 
 #define QCU_OPTIMIZER_SEMI_JOIN_REMOVE ( QCU_PROPERTY( mOptimizerSemiJoinRemove ) )
 
-// ÂüÁ¶ : mmuPropertyArgument
+// ì°¸ì¡° : mmuPropertyArgument
 typedef struct qcuPropertyArgument
 {
     idpArgument mArg;
@@ -429,7 +429,7 @@ typedef struct qcuProperties
     idShmAddr mAddrSelf;
 
     //----------------------------------------------
-    // Shard °ü·Ã Properties
+    // Shard ê´€ë ¨ Properties
     //----------------------------------------------
 
     UInt   mShardMetaEnable;
@@ -437,49 +437,49 @@ typedef struct qcuProperties
     UInt   mShardAggrTransformDisable;
 
     //----------------------------------------------
-    // Trace Log °ü·Ã Properties
-    //    - Writable PropertyÀÇ °æ¿ì, MM ¿¡¼­ °ü¸®ÇÏ¿©¾ß ÇÏ³ª,
-    //    - Trace Log´Â System Property¶ó±â º¸´Ù´Â
-    //    - RunTime PropertyÀÇ ÀÇ¹ÌÀÌ´Ù.
+    // Trace Log ê´€ë ¨ Properties
+    //    - Writable Propertyì˜ ê²½ìš°, MM ì—ì„œ ê´€ë¦¬í•˜ì—¬ì•¼ í•˜ë‚˜,
+    //    - Trace LogëŠ” System Propertyë¼ê¸° ë³´ë‹¤ëŠ”
+    //    - RunTime Propertyì˜ ì˜ë¯¸ì´ë‹¤.
     //----------------------------------------------
 
-    // ¼öÇàÇÑ DML ±¸¹®ÀÇ Ãâ·Â
-    // TODO - Optimizer¿¡ ÇØ´ç Trace¿¡ ´ëÇÑ Ã³¸®°¡ ÇÊ¿äÇÔ.
+    // ìˆ˜í–‰í•œ DML êµ¬ë¬¸ì˜ ì¶œë ¥
+    // TODO - Optimizerì— í•´ë‹¹ Traceì— ëŒ€í•œ ì²˜ë¦¬ê°€ í•„ìš”í•¨.
     UInt   mTraceLog_DML_Sentence;
 
-    // PredicateÀÇ º¸´Ù ÀÚ¼¼ÇÑ Á¤º¸ Ãâ·Â
+    // Predicateì˜ ë³´ë‹¤ ìì„¸í•œ ì •ë³´ ì¶œë ¥
     UInt   mTraceLog_Detail_Predicate;
 
     // PROJ-1473
-    // ·¹ÄÚµåÀúÀå¹æ½ÄÀÇ ÁúÀÇÃ³¸®°úÁ¤¿¡ ´ëÇÑ Á¤º¸¸¦ ¾ò±âÀ§ÇÔ.
-    // mtrNode Á¤º¸ Ãâ·Â
+    // ë ˆì½”ë“œì €ì¥ë°©ì‹ì˜ ì§ˆì˜ì²˜ë¦¬ê³¼ì •ì— ëŒ€í•œ ì •ë³´ë¥¼ ì–»ê¸°ìœ„í•¨.
+    // mtrNode ì •ë³´ ì¶œë ¥
     UInt   mTraceLog_Detail_MtrNode;
 
     // PROJ-2462 Result Cache
     UInt   mTraceLog_Detail_ResultCache;
 
-    // Graph¿¡ ´ëÇÑ ÀÚ¼¼ÇÑ Á¤º¸ Ãâ·Â
+    // Graphì— ëŒ€í•œ ìì„¸í•œ ì •ë³´ ì¶œë ¥
     UInt   mTraceLog_Explain_Graph;
 
     // PROJ-2179
-    // Execution planÀÇ °¢ operatorº° °á°ú Á¤º¸ Ãâ·Â
+    // Execution planì˜ ê° operatorë³„ ê²°ê³¼ ì •ë³´ ì¶œë ¥
     UInt   mTraceLog_Result_Desc;
 
     // BUG-38192
-    // Partition graph ÀÇ children Á¤º¸ Ãâ·Â
+    // Partition graph ì˜ children ì •ë³´ ì¶œë ¥
     UInt   mTraceLogDisplayChildren;
 
     //----------------------------------------------
-    // Query Processor °ü·Ã Properties
-    //     - Read Only Property¸¸ °ü¸®ÇØ¾ß ÇÑ´Ù.
-    //     - Writable Property´Â MM ´Ü¿¡¼­ °ü¸®ÇÏ¸ç,
-    //     - Session Á¤º¸·ÎºÎÅÍ ±× °ªÀ» ¾ò´Â´Ù.
+    // Query Processor ê´€ë ¨ Properties
+    //     - Read Only Propertyë§Œ ê´€ë¦¬í•´ì•¼ í•œë‹¤.
+    //     - Writable PropertyëŠ” MM ë‹¨ì—ì„œ ê´€ë¦¬í•˜ë©°,
+    //     - Session ì •ë³´ë¡œë¶€í„° ê·¸ ê°’ì„ ì–»ëŠ”ë‹¤.
     //----------------------------------------------
 
-    // Normalization¿¡ ´ëÇÑ Node¼ö ¿¹Ãø ½ÃÀÇ ÇÑ°è°ª
+    // Normalizationì— ëŒ€í•œ Nodeìˆ˜ ì˜ˆì¸¡ ì‹œì˜ í•œê³„ê°’
     UInt   mNormalFormMaximum;
 
-    // DDL ¼öÇà °¡´É ¿©ºÎ
+    // DDL ìˆ˜í–‰ ê°€ëŠ¥ ì—¬ë¶€
     UInt   mExecDDLDisable;
 
     ULong  mIsolationLevel;
@@ -506,13 +506,13 @@ typedef struct qcuProperties
     UInt   mIndexInitTrans;
     UInt   mIndexMaxTrans;
 
-    // BUG-26017 [PSM] server restart½Ã ¼öÇàµÇ´Â psm load°úÁ¤¿¡¼­
-    //           °ü·ÃÇÁ·ÎÆÛÆ¼¸¦ ÂüÁ¶ÇÏÁö ¸øÇÏ´Â °æ¿ì ÀÖÀ½.
+    // BUG-26017 [PSM] server restartì‹œ ìˆ˜í–‰ë˜ëŠ” psm loadê³¼ì •ì—ì„œ
+    //           ê´€ë ¨í”„ë¡œí¼í‹°ë¥¼ ì°¸ì¡°í•˜ì§€ ëª»í•˜ëŠ” ê²½ìš° ìˆìŒ.
     UInt   mOptimizerMode;
 
     UInt   mAutoRemoteExec;
 
-    // PROJ-1358 Stack SizeÀÇ Á¶Á¤
+    // PROJ-1358 Stack Sizeì˜ ì¡°ì •
     UInt   mQueryStackSize;
 
     // PR-13395 TPC-H Scale Factor
@@ -521,7 +521,7 @@ typedef struct qcuProperties
     // PR-13395 Fake Buffer Size
     UInt   mFakeBufferSize;
 
-    // PROJ-1446 Host variableÀ» Æ÷ÇÔÇÑ ÁúÀÇ ÃÖÀûÈ­
+    // PROJ-1446 Host variableì„ í¬í•¨í•œ ì§ˆì˜ ìµœì í™”
     UInt   mHostOptimizeEnable;
 
     // BUG-13608 Filehandle Open Limit
@@ -530,7 +530,7 @@ typedef struct qcuProperties
     // BUG-40854
     UInt mSocketOpenLimit;
 
-    /* BUG-41307 User Lock Áö¿ø */
+    /* BUG-41307 User Lock ì§€ì› */
     UInt mUserLockPoolInitSize;
     UInt mUserLockRequestTimeout;
     UInt mUserLockRequestCheckInterval;
@@ -557,10 +557,10 @@ typedef struct qcuProperties
     // PROJ-1473
     UInt   mOptimizerPushProjection;
 
-    // BUG-23780 TEMP_TBS_MEMORY ÈùÆ® Àû¿ë¿©ºÎ¸¦ property·Î Á¦°ø
+    // BUG-23780 TEMP_TBS_MEMORY íŒíŠ¸ ì ìš©ì—¬ë¶€ë¥¼ propertyë¡œ ì œê³µ
     UInt   mOptimizerDefaultTempTbsType;
 
-    // BUG-38132 group byÀÇ temp table À» ¸Ş¸ğ¸®·Î °íÁ¤ÇÏ´Â ÇÁ·ÎÆÛÆ¼
+    // BUG-38132 group byì˜ temp table ì„ ë©”ëª¨ë¦¬ë¡œ ê³ ì •í•˜ëŠ” í”„ë¡œí¼í‹°
     UInt   mOptimizerFixedGroupMemoryTemp;
     // BUG-38339 Outer Join Elimination
     UInt   mOptimizerOuterJoinElimination;
@@ -577,7 +577,7 @@ typedef struct qcuProperties
     UInt   mSTObjBufSize;
 
     // BUG-19089
-    // FK°¡ ÀÖ´Â »óÅÂ¿¡¼­ CREATE REPLICATION ±¸¹®ÀÌ °¡´ÉÇÏµµ·Ï ÇÑ´Ù.
+    // FKê°€ ìˆëŠ” ìƒíƒœì—ì„œ CREATE REPLICATION êµ¬ë¬¸ì´ ê°€ëŠ¥í•˜ë„ë¡ í•œë‹¤.
     UInt   mCheckFkInCreateReplicationDisable;
 
     // PROJ-1436
@@ -589,8 +589,8 @@ typedef struct qcuProperties
     SChar  mSecurityEccPolicyName[QCS_POLICY_NAME_SIZE + 1];
 
     // BUG-29209
-    // Plan¿¡¼­ º¯°æÀº ÀÚÁÖ ÀÏ¾î³ª³ª display°¡ ²À ÇÊ¿äÇÏÁö ¾Ê´Â
-    // Á¤º¸´Â º¸¿©ÁÖÁö ¾Êµµ·Ï ÇÔ
+    // Planì—ì„œ ë³€ê²½ì€ ìì£¼ ì¼ì–´ë‚˜ë‚˜ displayê°€ ê¼­ í•„ìš”í•˜ì§€ ì•ŠëŠ”
+    // ì •ë³´ëŠ” ë³´ì—¬ì£¼ì§€ ì•Šë„ë¡ í•¨
     UInt   mDisplayPlanForNATC;
 
     // BUG-31040
@@ -653,10 +653,10 @@ typedef struct qcuProperties
     UInt   mQueryRewriteEnable;
 
     // BUG-35713
-    // sql·Î ºÎÅÍ invokeµÇ´Â function¿¡¼­ ¹ß»ıÇÏ´Â no_data_found ¿¡·¯¹«½Ã
+    // sqlë¡œ ë¶€í„° invokeë˜ëŠ” functionì—ì„œ ë°œìƒí•˜ëŠ” no_data_found ì—ëŸ¬ë¬´ì‹œ
     UInt   mPSMIgnoreNoDataFoundError;
 
-    /* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø */
+    /* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ì… ì§€ì› */
     UInt   mIntermediateTupleLobObjectLimit;
 
     /* PROJ-2242 CSE, FS, Feature enable */
@@ -728,7 +728,7 @@ typedef struct qcuProperties
     /* PROJ-2448 Subquery caching */
     UInt  mForceSubqueryCacheDisable;
 
-    // PROJ-2551 simple query ÃÖÀûÈ­
+    // PROJ-2551 simple query ìµœì í™”
     UInt  mExecutorFastSimpleQuery;
 
     /* PROJ-2553 Cache-aware Memory Hash Temp Table */ 
@@ -791,7 +791,7 @@ typedef struct qcuProperties
     // BUG-43039 inner join push down
     UInt  mOptimizerInnerJoinPushDown;
 
-    // BUG-43068 Indexable order by °³¼±
+    // BUG-43068 Indexable order by ê°œì„ 
     UInt  mOptimizerOrderPushDown;
 
     // BUG-43059 Target subquery unnest/removal disable
@@ -812,7 +812,7 @@ typedef struct qcuProperties
     /* BUG-42928 No Partition Lock */
     UInt  mTableLockMode;
 
-    // BUG-43443 temp table¿¡ ´ëÇØ¼­ work area size¸¦ estimateÇÏ´Â ±â´ÉÀ» off
+    // BUG-43443 temp tableì— ëŒ€í•´ì„œ work area sizeë¥¼ estimateí•˜ëŠ” ê¸°ëŠ¥ì„ off
     UInt  mDiskTempSizeEstimate;
 
     // BUG-43421
@@ -845,7 +845,7 @@ typedef struct qcuProperties
     // BUG-44795
     UInt   mOptimizerDBMSStatPolicy;
 
-    /* BUG-44850 Index NL , Inverse index NL Á¶ÀÎ ÃÖÀûÈ­ ¼öÇà½Ã ºñ¿ëÀÌ µ¿ÀÏÇÏ¸é primary key¸¦ ¿ì¼±ÀûÀ¸·Î ¼±ÅÃ. */
+    /* BUG-44850 Index NL , Inverse index NL ì¡°ì¸ ìµœì í™” ìˆ˜í–‰ì‹œ ë¹„ìš©ì´ ë™ì¼í•˜ë©´ primary keyë¥¼ ìš°ì„ ì ìœ¼ë¡œ ì„ íƒ. */
     UInt mOptimizerIndexNLJoinAccessMethodPolicy;
     
     UInt mOptimizerSemiJoinRemove;
@@ -864,14 +864,14 @@ public:
     static IDE_RC initProperty( idvSQL *aStatistics );
     static IDE_RC finalProperty( idvSQL *aStatistics );
 
-    // System ±¸µ¿ ½Ã °ü·Ã Property¸¦ Loading ÇÔ.
+    // System êµ¬ë™ ì‹œ ê´€ë ¨ Propertyë¥¼ Loading í•¨.
     static IDE_RC load();
 
-    // System ±¸µ¿ ½Ã °ü·Ã PropertyÀÇ callback À» µî·ÏÇÔ
+    // System êµ¬ë™ ì‹œ ê´€ë ¨ Propertyì˜ callback ì„ ë“±ë¡í•¨
     static IDE_RC setupUpdateCallback();
 
     //----------------------------------------------
-    // Writable Property¸¦ À§ÇÑ Call Back ÇÔ¼öµé
+    // Writable Propertyë¥¼ ìœ„í•œ Call Back í•¨ìˆ˜ë“¤
     //----------------------------------------------
 
     static IDE_RC changeTRCLOG_DML_SENTENCE( idvSQL* /* aStatistics */,
@@ -923,8 +923,8 @@ public:
 					  void  * aNewValue,
 					  void  * /* aArg */);
 
-    // BUG-26017 [PSM] server restart½Ã ¼öÇàµÇ´Â psm load°úÁ¤¿¡¼­
-    //           °ü·ÃÇÁ·ÎÆÛÆ¼¸¦ ÂüÁ¶ÇÏÁö ¸øÇÏ´Â °æ¿ì ÀÖÀ½.
+    // BUG-26017 [PSM] server restartì‹œ ìˆ˜í–‰ë˜ëŠ” psm loadê³¼ì •ì—ì„œ
+    //           ê´€ë ¨í”„ë¡œí¼í‹°ë¥¼ ì°¸ì¡°í•˜ì§€ ëª»í•˜ëŠ” ê²½ìš° ìˆìŒ.
     static IDE_RC changeOPTIMIZER_MODE( idvSQL* /* aStatistics */,
 					SChar * /* aName */,
 					void  * /* aOldValue */,
@@ -937,7 +937,7 @@ public:
 					  void  * aNewValue,
 					  void  * /* aArg */);
 
-    // PROJ-1358 Stack SizeÀÇ Á¶Á¤
+    // PROJ-1358 Stack Sizeì˜ ì¡°ì •
     static IDE_RC changeQUERY_STACK_SIZE( idvSQL* /* aStatistics */,
 					  SChar * /* aName */,
 					  void  * /* aOldValue */,
@@ -951,28 +951,28 @@ public:
 					    void  * aNewValue,
 					    void  * /* aArg */);
 
-    // PR-13395 TPC-H Scale Factor Á¶Á¤
+    // PR-13395 TPC-H Scale Factor ì¡°ì •
     static IDE_RC changeFAKE_STAT_TPCH_SCALE_FACTOR( idvSQL* /* aStatistics */,
 						     SChar * /* aName */,
 						     void  * /* aOldValue */,
 						     void  * aNewValue,
 						     void  * /* aArg */);
 
-    // PR-13395 °¡»ó Buffer Size Á¶Á¤
+    // PR-13395 ê°€ìƒ Buffer Size ì¡°ì •
     static IDE_RC changeFAKE_STAT_BUFFER_SIZE( idvSQL* /* aStatistics */,
 					       SChar * /* aName */,
 					       void  * /* aOldValue */,
 					       void  * aNewValue,
 					       void  * /* aArg */);
 
-    // PROJ-1446 Host variableÀ» Æ÷ÇÔÇÑ ÁúÀÇ ÃÖÀûÈ­
+    // PROJ-1446 Host variableì„ í¬í•¨í•œ ì§ˆì˜ ìµœì í™”
     static IDE_RC changeHOST_OPTIMIZE_ENABLE( idvSQL* /* aStatistics */,
 					      SChar * /* aName */,
 					      void  * /* aOldValue */,
 					      void  * aNewValue,
 					      void  * /* aArg */);
 
-    // BUG-13068 Filehandle Open Limit Á¶Á¤
+    // BUG-13068 Filehandle Open Limit ì¡°ì •
     static IDE_RC changePSM_FILE_OPEN_LIMIT( idvSQL* /* aStatistics */,
 					     SChar * /* aName */,
 					     void  * /* aOldValue */,
@@ -986,21 +986,21 @@ public:
                         void  * aNewValue,
                         void  * /* aArg */);
 
-    /* BUG-41307 User Lock Áö¿ø */
+    /* BUG-41307 User Lock ì§€ì› */
     static IDE_RC changeUSER_LOCK_REQUEST_TIMEOUT( idvSQL * /* aStatistics */,
                                                    SChar  * /* aName */,
                                                    void   * /* aOldValue */,
                                                    void   * aNewValue,
                                                    void   * /* aArg */ );
 
-    /* BUG-41307 User Lock Áö¿ø */
+    /* BUG-41307 User Lock ì§€ì› */
     static IDE_RC changeUSER_LOCK_REQUEST_CHECK_INTERVAL( idvSQL * /* aStatistics */,
                                                           SChar  * /* aName */,
                                                           void   * /* aOldValue */,
                                                           void   * aNewValue,
                                                           void   * /* aArg */ );
 
-    /* BUG-41307 User Lock Áö¿ø */
+    /* BUG-41307 User Lock ì§€ì› */
     static IDE_RC changeUSER_LOCK_REQUEST_LIMIT( idvSQL * /* aStatistics */,
                                                  SChar  * /* aName */,
                                                  void   * /* aOldValue */,
@@ -1039,7 +1039,7 @@ public:
 	void  * aNewValue,
 	void  * /* aArg */);
 
-    // BUG-23780 TEMP_TBS_MEMORY ÈùÆ® Àû¿ë¿©ºÎ¸¦ property·Î Á¦°ø
+    // BUG-23780 TEMP_TBS_MEMORY íŒíŠ¸ ì ìš©ì—¬ë¶€ë¥¼ propertyë¡œ ì œê³µ
     static IDE_RC changeOPTIMIZER_DEFAULT_TEMP_TBS_TYPE(
 	idvSQL* /* aStatistics */,
 	SChar * /* aName */,
@@ -1047,7 +1047,7 @@ public:
 	void  * aNewValue,
 	void  * /* aArg */);
 
-    // BUG-38132 group byÀÇ temp table À» ¸Ş¸ğ¸®·Î °íÁ¤ÇÏ´Â ÇÁ·ÎÆÛÆ¼
+    // BUG-38132 group byì˜ temp table ì„ ë©”ëª¨ë¦¬ë¡œ ê³ ì •í•˜ëŠ” í”„ë¡œí¼í‹°
     static IDE_RC changeOPTIMIZER_FIXED_GROUP_MEMORY_TEMP(
 	idvSQL* /* aStatistics */,
 	SChar * /* aName */,
@@ -1274,7 +1274,7 @@ public:
 	void  * aNewValue,
 	void  * aArg);
 
-    /* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø */
+    /* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ì… ì§€ì› */
     static IDE_RC changeINTERMEDIATE_TUPLE_LOB_OBJECT_LIMIT(
 	idvSQL* /* aStatistics */,
 	SChar * aName,
@@ -1592,7 +1592,7 @@ public:
                                                         void  * aNewValue,
                                                         void  * aArg );
 
-    // BUG-43068 Indexable order by °³¼±
+    // BUG-43068 Indexable order by ê°œì„ 
     static IDE_RC changeOPTIMIZER_ORDER_PUSH_DOWN( idvSQL* /* aStatistics */,
                                                    SChar * aName,
                                                    void  * aOldValue,
@@ -1684,7 +1684,7 @@ public:
                                                           void  * aNewValue,
                                                           void  * /* aArg */ );
 
-    /* BUG-44850 Index NL , Inverse index NL Á¶ÀÎ ÃÖÀûÈ­ ¼öÇà½Ã ºñ¿ëÀÌ µ¿ÀÏÇÏ¸é primary key¸¦ ¿ì¼±ÀûÀ¸·Î ¼±ÅÃ. */
+    /* BUG-44850 Index NL , Inverse index NL ì¡°ì¸ ìµœì í™” ìˆ˜í–‰ì‹œ ë¹„ìš©ì´ ë™ì¼í•˜ë©´ primary keyë¥¼ ìš°ì„ ì ìœ¼ë¡œ ì„ íƒ. */
     static IDE_RC changeOPTIMIZER_INDEX_NL_JOIN_ACCESS_METHOD_POLICY( idvSQL* /* aStatistics */,
                                                                       SChar * aName,
                                                                       void  * aOldValue,

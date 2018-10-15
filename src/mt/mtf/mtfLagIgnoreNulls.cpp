@@ -56,7 +56,7 @@ mtfModule mtfLagIgnoreNulls = {
     MTC_NODE_FUNCTION_ANALYTIC_TRUE |
     MTC_NODE_FUNCTION_RANKING_TRUE,
     ~( MTC_NODE_INDEX_MASK ),
-    1.0, /* default selectivity ( ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô ) */
+    1.0, /* default selectivity ( ë¹„êµ ì—°ì‚°ìžê°€ ì•„ë‹˜ ) */
     mtfLagIgnoreNullsName,
     NULL,
     mtf::initializeDefault,
@@ -125,14 +125,14 @@ IDE_RC mtfLagIgnoreNullsEstimate( mtcNode     * aNode,
     
     if ( sArguments == 1 )
     {
-        /* ÀÎÀÚ°¡ 1°³ÀÏ¶§´Â ÀÎÀÚÀÇ Å¸ÀÔ ±×´ë·Î »ç¿ëÇÑ´Ù. */
+        /* ì¸ìžê°€ 1ê°œì¼ë•ŒëŠ” ì¸ìžì˜ íƒ€ìž… ê·¸ëŒ€ë¡œ ì‚¬ìš©í•œë‹¤. */
         mtc::initializeColumn( aStack[0].column, aStack[1].column );
     }
     else
     {
         if ( sArguments == 2 )
         {
-            /* ÀÎÀÚ°¡ 2°³ÀÏ¶§µµ ÀÎÀÚÀÇ Å¸ÀÔ ±×´ë·Î »ç¿ëÇÑ´Ù. */
+            /* ì¸ìžê°€ 2ê°œì¼ë•Œë„ ì¸ìžì˜ íƒ€ìž… ê·¸ëŒ€ë¡œ ì‚¬ìš©í•œë‹¤. */
             sModules[0] = aStack[1].column->module;
             
             IDE_TEST( mtf::makeConversionNodes( aNode,
@@ -147,7 +147,7 @@ IDE_RC mtfLagIgnoreNullsEstimate( mtcNode     * aNode,
         }
         else
         {
-            /* ÀÎÀÚ°¡ 3°³ÀÏ¶§´Â default value¿ÍÀÇ ´ëÇ¥Å¸ÀÔÀ» »ç¿ëÇÑ´Ù. */
+            /* ì¸ìžê°€ 3ê°œì¼ë•ŒëŠ” default valueì™€ì˜ ëŒ€í‘œíƒ€ìž…ì„ ì‚¬ìš©í•œë‹¤. */
             IDE_TEST( mtf::getComparisonModule( &(sModules[0]),
                                                 aStack[1].column->module->no,
                                                 aStack[3].column->module->no )

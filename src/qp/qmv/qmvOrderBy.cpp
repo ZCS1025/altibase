@@ -113,12 +113,12 @@ IDE_RC qmvOrderBy::validate(qcStatement * aStatement)
     IDU_FIT_POINT_FATAL( "qmvOrderBy::validate::__FT__" );
 
     //---------------
-    // ±âº» ÃÊ±âÈ­
+    // ê¸°ë³¸ ì´ˆê¸°í™”
     //---------------
     sParseTree = (qmsParseTree*) aStatement->myPlan->parseTree;
 
     //---------------
-    // validate Ã³¸® ´Ü°è ¼³Á¤
+    // validate ì²˜ë¦¬ ë‹¨ê³„ ì„¤ì •
     //---------------
     sParseTree->querySet->processPhase = QMS_VALIDATE_ORDERBY;
     
@@ -267,9 +267,9 @@ IDE_RC qmvOrderBy::validate(qcStatement * aStatement)
         }
 
         // PROJ-1362
-        // Indicator°¡ °¡¸®Å°´Â Ä®·³ÀÌ Equal¿¬»êÀÌ ºÒ°¡´ÉÇÑ
-        // Å¸ÀÔ(Lob or Binary Type)ÀÎ °æ¿ì, ¿¡·¯ ¹ÝÈ¯
-        // BUG-22817 : ¸í½ÃÀûÀÎ °æ¿ì¿Í  ¾Ï½ÃÀûÀÎ °æ¿ì ¸ðµÎ °Ë»çÇØ¾ßÇÔ
+        // Indicatorê°€ ê°€ë¦¬í‚¤ëŠ” ì¹¼ëŸ¼ì´ Equalì—°ì‚°ì´ ë¶ˆê°€ëŠ¥í•œ
+        // íƒ€ìž…(Lob or Binary Type)ì¸ ê²½ìš°, ì—ëŸ¬ ë°˜í™˜
+        // BUG-22817 : ëª…ì‹œì ì¸ ê²½ìš°ì™€  ì•”ì‹œì ì¸ ê²½ìš° ëª¨ë‘ ê²€ì‚¬í•´ì•¼í•¨
         if ( ( sSortColumn->lflag & QTC_NODE_BINARY_MASK )
              == QTC_NODE_BINARY_EXIST )
         {
@@ -284,7 +284,7 @@ IDE_RC qmvOrderBy::validate(qcStatement * aStatement)
 
         /*
          * PROJ-1789 PROWID
-         * ordery by Àý¿¡ _prowid Áö¿øÇÏÁö ¾Ê´Â´Ù.
+         * ordery by ì ˆì— _prowid ì§€ì›í•˜ì§€ ì•ŠëŠ”ë‹¤.
          */
         if ((sSortColumn->lflag & QTC_NODE_COLUMN_RID_MASK) ==
             QTC_NODE_COLUMN_RID_EXIST)
@@ -302,7 +302,7 @@ IDE_RC qmvOrderBy::validate(qcStatement * aStatement)
                   sOverColumn != NULL;
                   sOverColumn = sOverColumn->next )
             {
-                // ¸®½ºÆ® Å¸ÀÔÀÇ »ç¿ë ¿©ºÎ È®ÀÎ
+                // ë¦¬ìŠ¤íŠ¸ íƒ€ìž…ì˜ ì‚¬ìš© ì—¬ë¶€ í™•ì¸
                 if ( ( sOverColumn->node->node.lflag & MTC_NODE_OPERATOR_MASK )
                      == MTC_NODE_OPERATOR_LIST )
                 {
@@ -315,7 +315,7 @@ IDE_RC qmvOrderBy::validate(qcStatement * aStatement)
                     // Nothing to do.
                 }
 
-                // ¼­ºêÄõ¸®°¡ »ç¿ë µÇ¾úÀ»¶§ Å¸°Ù ÄÃ·³ÀÌ µÎ°³ÀÌ»óÀÎÁö È®ÀÎ
+                // ì„œë¸Œì¿¼ë¦¬ê°€ ì‚¬ìš© ë˜ì—ˆì„ë•Œ íƒ€ê²Ÿ ì»¬ëŸ¼ì´ ë‘ê°œì´ìƒì¸ì§€ í™•ì¸
                 if ( ( sOverColumn->node->node.lflag & MTC_NODE_OPERATOR_MASK )
                      == MTC_NODE_OPERATOR_SUBQUERY )
                 {
@@ -335,7 +335,7 @@ IDE_RC qmvOrderBy::validate(qcStatement * aStatement)
                     // Nothing to do.
                 }
 
-                // BUG-35670 over Àý¿¡ lob, geometry type »ç¿ë ºÒ°¡
+                // BUG-35670 over ì ˆì— lob, geometry type ì‚¬ìš© ë¶ˆê°€
                 if ((sOverColumn->node->lflag & QTC_NODE_BINARY_MASK) ==
                     QTC_NODE_BINARY_EXIST)
                 {
@@ -374,8 +374,8 @@ IDE_RC qmvOrderBy::validate(qcStatement * aStatement)
         {
             if ( sParseTree->isSiblings == ID_TRUE )
             {
-                /* ORDER SIBLING BY ÀÇ ÄÃ·³Áß¿¡ Hierarhy¿Í °ü·ÃµÈ °Í¸¸ »Ì¾Æ¼­
-                 * ORDER SIBLING BY¸¦ Àç ±¸¼ºÇÑ´Ù.
+                /* ORDER SIBLING BY ì˜ ì»¬ëŸ¼ì¤‘ì— Hierarhyì™€ ê´€ë ¨ëœ ê²ƒë§Œ ë½‘ì•„ì„œ
+                 * ORDER SIBLING BYë¥¼ ìž¬ êµ¬ì„±í•œë‹¤.
                  */
                 sSibling   = &sTemp;
                 sTemp.next = NULL;
@@ -449,9 +449,9 @@ IDE_RC qmvOrderBy::validate(qcStatement * aStatement)
                         ERR_NOT_ALLOW_ORDER_SIBLINGS_BY );
     }
 
-    // BUG-41221 Lateral View¿¡¼­ÀÇ Order By Àý ¿ÜºÎÂüÁ¶
-    // Sort ColumnÀÇ depInfo°¡ QuerySetÀÇ depInfo ¹Û¿¡ ÀÖ´Ù¸é
-    // Sort ColumnÀÇ depInfo¸¦ QuerySetÀÇ lateralDepInfo¿¡ Ãß°¡ÇÑ´Ù.
+    // BUG-41221 Lateral Viewì—ì„œì˜ Order By ì ˆ ì™¸ë¶€ì°¸ì¡°
+    // Sort Columnì˜ depInfoê°€ QuerySetì˜ depInfo ë°–ì— ìžˆë‹¤ë©´
+    // Sort Columnì˜ depInfoë¥¼ QuerySetì˜ lateralDepInfoì— ì¶”ê°€í•œë‹¤.
     sQuerySet = sParseTree->querySet;
 
     for ( sCurrSort = sParseTree->orderBy;
@@ -462,8 +462,8 @@ IDE_RC qmvOrderBy::validate(qcStatement * aStatement)
                                       & sCurrSort->sortColumn->depInfo ) 
              == ID_FALSE )
         {
-            // QuerySetÀÇ depInfo ¹Û¿¡ ÀÖÀ¸´Ï, ¿ÜºÎ ÂüÁ¶
-            // ¿ì¼± SortColumnÀÇ depInfo¸¦ lateralDepInfo¿¡ ¼³Á¤
+            // QuerySetì˜ depInfo ë°–ì— ìžˆìœ¼ë‹ˆ, ì™¸ë¶€ ì°¸ì¡°
+            // ìš°ì„  SortColumnì˜ depInfoë¥¼ lateralDepInfoì— ì„¤ì •
             IDE_TEST( qtc::dependencyOr( & sQuerySet->lateralDepInfo,
                                          & sCurrSort->sortColumn->depInfo,
                                          & sQuerySet->lateralDepInfo )
@@ -471,11 +471,11 @@ IDE_RC qmvOrderBy::validate(qcStatement * aStatement)
         }
         else
         {
-            // QuerySetÀÇ depInfo ¾È¿¡ ÀÖÀ¸´Ï, ³»ºÎ ÂüÁ¶
+            // QuerySetì˜ depInfo ì•ˆì— ìžˆìœ¼ë‹ˆ, ë‚´ë¶€ ì°¸ì¡°
         }
     }
 
-    // BUG-41967 lateralDepInfo¿¡¼­ ÇöÀç dependency´Â Á¦¿Ü
+    // BUG-41967 lateralDepInfoì—ì„œ í˜„ìž¬ dependencyëŠ” ì œì™¸
     if ( qtc::haveDependencies( & sQuerySet->lateralDepInfo ) == ID_TRUE )
     {
         qtc::dependencyMinus( & sQuerySet->lateralDepInfo,
@@ -536,13 +536,13 @@ qmvOrderBy::validateSortWithGroup(qcStatement * aStatement)
 /***********************************************************************
  *
  * Description :
- *     GROUP BY°¡ ÇÔ²² Á¸ÀçÇÏ´Â ORDER BY¿¡ ´ëÇÑ Vaildation ¼öÇà
+ *     GROUP BYê°€ í•¨ê»˜ ì¡´ìž¬í•˜ëŠ” ORDER BYì— ëŒ€í•œ Vaildation ìˆ˜í–‰
  *
  * Implementation :
- *     - ORDER BY¿¡ Á¸ÀçÇÏ´Â ColumnÀÌ Target°ú µ¿ÀÏÇÑ °ÍÀÌ ÀÖ´Â Áö¸¦
- *       °Ë»çÇÏ¿© Indicator¸¦ ÀÛ¼ºÇÑ´Ù.
- *     - ORDER BY¿¡ Á¸ÀçÇÏ´Â ColumnÀÌ GROUP BY¿¡ Á¸ÀçÇÏ´Â ColumnÀÎÁö¸¦
- *       °Ë»çÇÑ´Ù.
+ *     - ORDER BYì— ì¡´ìž¬í•˜ëŠ” Columnì´ Targetê³¼ ë™ì¼í•œ ê²ƒì´ ìžˆëŠ” ì§€ë¥¼
+ *       ê²€ì‚¬í•˜ì—¬ Indicatorë¥¼ ìž‘ì„±í•œë‹¤.
+ *     - ORDER BYì— ì¡´ìž¬í•˜ëŠ” Columnì´ GROUP BYì— ì¡´ìž¬í•˜ëŠ” Columnì¸ì§€ë¥¼
+ *       ê²€ì‚¬í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -579,23 +579,23 @@ qmvOrderBy::validateSortWithGroup(qcStatement * aStatement)
          sCurrSort = sCurrSort->next)
     {
         //-----------------------------------------------
-        // ORDER BY°¡ indicatorÀÎÁö¸¦ °Ë»ç
-        // ¸í½ÃÀû indicatorÀÎ °æ¿ì
+        // ORDER BYê°€ indicatorì¸ì§€ë¥¼ ê²€ì‚¬
+        // ëª…ì‹œì  indicatorì¸ ê²½ìš°
         //     Ex) ORDER BY 1;
-        // Target°ú µ¿ÀÏÇÑ °æ¿ì(¾Ï½ÃÀû Indicator)
+        // Targetê³¼ ë™ì¼í•œ ê²½ìš°(ì•”ì‹œì  Indicator)
         //     Ex) SELECT t1.i1 FROM T1 GROUP BY I1 ORDER BY I1;
         //     Ex) SELECT t1.i1 A FROM T1 GROUP BY i1 ORDER BY A;
         //-----------------------------------------------
 
         //-----------------------------------------------
-        // 1. ¸í½ÃÀû indicatorÀÎÁö¸¦ °Ë»ç
+        // 1. ëª…ì‹œì  indicatorì¸ì§€ë¥¼ ê²€ì‚¬
         //-----------------------------------------------
 
         IDE_TEST(qtc::getSortColumnPosition(sCurrSort, QC_SHARED_TMPLATE(aStatement))
                  != IDE_SUCCESS);
 
         //-----------------------------------------------
-        // 2. ¾Ï½ÃÀû indicatorÀÎÁö¸¦ °Ë»ç
+        // 2. ì•”ì‹œì  indicatorì¸ì§€ë¥¼ ê²€ì‚¬
         //-----------------------------------------------
 
         if (sCurrSort->targetPosition < QMV_EMPTY_TARGET_POSITION)
@@ -620,16 +620,16 @@ qmvOrderBy::validateSortWithGroup(qcStatement * aStatement)
             }
             else
             {
-                // ¾Ï½ÃÀû IndicatorÀÎÁö °Ë»çÇÑ´Ù.
-                // TargetÀÇ ID¿Í ORDER BYÀÇ ID°¡ µ¿ÀÏÇÏ´Ù¸é
-                // IndicatorÀÇ ¿ªÈ°À» ÇÏ°Ô µÈ´Ù.
+                // ì•”ì‹œì  Indicatorì¸ì§€ ê²€ì‚¬í•œë‹¤.
+                // Targetì˜ IDì™€ ORDER BYì˜ IDê°€ ë™ì¼í•˜ë‹¤ë©´
+                // Indicatorì˜ ì—­í™œì„ í•˜ê²Œ ëœë‹¤.
 
                 for (sTarget = sSFWGH->target, sCurrTargetPos = 1;
                      sTarget != NULL;
                      sTarget = sTarget->next, sCurrTargetPos++)
                 {
                     // PROJ-2002 Column Security
-                    // targetÀý¿¡ º¸¾È ÄÃ·³ÀÌ ÀÖ´Â °æ¿ì decryptÇÔ¼ö°¡ »ý¼ºµÉ ¼ö ÀÖ´Ù.
+                    // targetì ˆì— ë³´ì•ˆ ì»¬ëŸ¼ì´ ìžˆëŠ” ê²½ìš° decryptí•¨ìˆ˜ê°€ ìƒì„±ë  ìˆ˜ ìžˆë‹¤.
                     if ( sTarget->targetColumn->node.module == &mtfDecrypt )
                     {
                         sTargetNode1 = (qtcNode *)
@@ -641,20 +641,20 @@ qmvOrderBy::validateSortWithGroup(qcStatement * aStatement)
                     }
 
                     // To Fix PR-8615, PR-8820, PR-9143
-                    // GROUP BY¿Í ÇÔ²² »ç¿ëµÈ TargetÀº
-                    // estimation °úÁ¤¿¡¼­ Pass Node·Î ´ëÃ¼µÉ ¼ö ÀÖ´Ù.
-                    // ÀÌ ¶§, TargetÀÇ Naming¿¡ µû¶ó
-                    // ORDER BYÀÇ ID´Â ´ÙÀ½°ú °°Àº ´Ù¾çÇÑ ÇüÅÂ·Î
-                    // °áÁ¤µÇ¾î ÀÖÀ» ¼ö ÀÖ´Ù.
-                    // Ex) ID°¡ °°À¸³ª Pass NodeÀÎ °æ¿ì
+                    // GROUP BYì™€ í•¨ê»˜ ì‚¬ìš©ëœ Targetì€
+                    // estimation ê³¼ì •ì—ì„œ Pass Nodeë¡œ ëŒ€ì²´ë  ìˆ˜ ìžˆë‹¤.
+                    // ì´ ë•Œ, Targetì˜ Namingì— ë”°ë¼
+                    // ORDER BYì˜ IDëŠ” ë‹¤ìŒê³¼ ê°™ì€ ë‹¤ì–‘í•œ í˜•íƒœë¡œ
+                    // ê²°ì •ë˜ì–´ ìžˆì„ ìˆ˜ ìžˆë‹¤.
+                    // Ex) IDê°€ ê°™ìœ¼ë‚˜ Pass Nodeì¸ ê²½ìš°
                     //     SELECT T1.i1 A FROM T1, T2 GROUP BY i1 ORDER BY i1;
-                    // Ex) ID°¡ ´Ù¸£°í Pass NodeÀÎ °æ¿ì
+                    // Ex) IDê°€ ë‹¤ë¥´ê³  Pass Nodeì¸ ê²½ìš°
                     //     SELECT i1 FROM T1 GROUP BY i1 ORDER BY T1.i1;
-                    // Áï, À§ÀÇ µÎ °æ¿ì ¸ðµÎ ¾Ï½ÃÀû Indicator·Î
-                    // Target PositionÀ» °áÁ¤ÇÒ ¼ö ÀÖ´Ù.
-                    // µû¶ó¼­, Target ÀÚÃ¼ÀÇ ID ¹× Pass NodeÀÏ °æ¿ì
-                    // ArgumentÀÇ ID¿Í µ¿ÀÏÇÑ ORDER BY ID¶ó¸é,
-                    // ¾Ï½ÃÀû Indicator·Î ´ëÃ¼ÇÒ ¼ö ÀÖ´Ù.
+                    // ì¦‰, ìœ„ì˜ ë‘ ê²½ìš° ëª¨ë‘ ì•”ì‹œì  Indicatorë¡œ
+                    // Target Positionì„ ê²°ì •í•  ìˆ˜ ìžˆë‹¤.
+                    // ë”°ë¼ì„œ, Target ìžì²´ì˜ ID ë° Pass Nodeì¼ ê²½ìš°
+                    // Argumentì˜ IDì™€ ë™ì¼í•œ ORDER BY IDë¼ë©´,
+                    // ì•”ì‹œì  Indicatorë¡œ ëŒ€ì²´í•  ìˆ˜ ìžˆë‹¤.
 
                     if ( sTargetNode1->node.module == &qtc::passModule )
                     {
@@ -667,7 +667,7 @@ qmvOrderBy::validateSortWithGroup(qcStatement * aStatement)
                     }
 
                     /* BUG-32102
-                     * target °ú orderby ÀýÀ» Àß¸ø ºñ±³ÇÏ¿© °á°ú°¡ ´Þ¶óÁü
+                     * target ê³¼ orderby ì ˆì„ ìž˜ëª» ë¹„êµí•˜ì—¬ ê²°ê³¼ê°€ ë‹¬ë¼ì§
                      */
                     IDE_TEST(qtc::isEquivalentExpression( aStatement,
                                                           sTargetNode2,
@@ -690,13 +690,13 @@ qmvOrderBy::validateSortWithGroup(qcStatement * aStatement)
         }
         else
         {
-            // ¸í½ÃÀû IndicatorÀÓ.
+            // ëª…ì‹œì  Indicatorìž„.
             IDE_TEST(transposePosValIntoTargetPtr( sCurrSort,
                                                    sSFWGH->target )
                      != IDE_SUCCESS);
             
             // PROJ-1413
-            // view ÄÃ·³ ÂüÁ¶ ³ëµå¸¦ µî·ÏÇÑ´Ù.
+            // view ì»¬ëŸ¼ ì°¸ì¡° ë…¸ë“œë¥¼ ë“±ë¡í•œë‹¤.
             IDE_TEST( qmvQTC::addViewColumnRefList( aStatement,
                                                     sCurrSort->sortColumn )
                       != IDE_SUCCESS );
@@ -705,35 +705,35 @@ qmvOrderBy::validateSortWithGroup(qcStatement * aStatement)
         if ( sCurrSort->targetPosition > QMV_EMPTY_TARGET_POSITION )
         {
             //-----------------------------------------------
-            // 3. Indicator¿¡ ´ëÇÑ Validation
+            // 3. Indicatorì— ëŒ€í•œ Validation
             //-----------------------------------------------
 
-            // Indicator°¡ Á¸ÀçÇÏ´Â °æ¿ì
+            // Indicatorê°€ ì¡´ìž¬í•˜ëŠ” ê²½ìš°
             if ( sCurrSort->targetPosition > sTargetMaxPos)
             {
                 IDE_RAISE( ERR_INVALID_ORDERBY_POS );
             }
 
             // To Fix PR-8115
-            // TARGET POSITIONÀÌ ÀÖ´Â ORDER BY´Â
-            // Order By Indicator ÃÖÀûÈ­°¡ Àû¿ëµÈ´Ù.
-            // ¾Æ·¡¿Í °°Àº ÁúÀÇÀÇ °æ¿ì Target PositionÀÌ ¾ø´Â °æ¿ì¶ó ÇÏ´õ¶óµµ,
-            // µ¿ÀÏÇÑ TargetÀÌ ÀÖ´Â °æ¿ì Target PositionÀ» »ý¼ºÇÏ°Ô µÇ´Âµ¥,
+            // TARGET POSITIONì´ ìžˆëŠ” ORDER BYëŠ”
+            // Order By Indicator ìµœì í™”ê°€ ì ìš©ëœë‹¤.
+            // ì•„ëž˜ì™€ ê°™ì€ ì§ˆì˜ì˜ ê²½ìš° Target Positionì´ ì—†ëŠ” ê²½ìš°ë¼ í•˜ë”ë¼ë„,
+            // ë™ì¼í•œ Targetì´ ìžˆëŠ” ê²½ìš° Target Positionì„ ìƒì„±í•˜ê²Œ ë˜ëŠ”ë°,
             // Ex) SELECT i1, MAX(i2) FROM T1 GROUP BY i1 ORDER BY i1;
             //  --> SELECT i1, MAX(i2) FROM T1 GROUP BY i1 ORDER BY 1;
             //                                                     ^^
-            // Order By Indicator ÃÖÀûÈ­¿Í Group By ExpressionÀÇ Pass Node
-            // »ç¿ë ±â¹ýÀº µ¿½Ã¿¡ »ç¿ëµÉ ¼ö ¾ø´Ù.
-            // ´Ü, Target¿¡ Á¸ÀçÇÏ´Â Order By ÄÃ·³ÀÏ °æ¿ì
-            // Target°ú Group By ÀÇ °Ë»ç¿¡ ÀÇÇÏ¿© Order By¿¡´Â
-            // Group By ÄÃ·³ ÀÌ¿Ü(AggregationÁ¦¿Ü)ÀÇ ÄÃ·³À» °¡Áú ¼ö ¾ø´Ù´Â
-            // Á¦¾à Á¶°ÇÀ» ¸¸Á·ÇÔÀ» º¸ÀåÇÒ ¼ö ÀÖ´Ù.
+            // Order By Indicator ìµœì í™”ì™€ Group By Expressionì˜ Pass Node
+            // ì‚¬ìš© ê¸°ë²•ì€ ë™ì‹œì— ì‚¬ìš©ë  ìˆ˜ ì—†ë‹¤.
+            // ë‹¨, Targetì— ì¡´ìž¬í•˜ëŠ” Order By ì»¬ëŸ¼ì¼ ê²½ìš°
+            // Targetê³¼ Group By ì˜ ê²€ì‚¬ì— ì˜í•˜ì—¬ Order Byì—ëŠ”
+            // Group By ì»¬ëŸ¼ ì´ì™¸(Aggregationì œì™¸)ì˜ ì»¬ëŸ¼ì„ ê°€ì§ˆ ìˆ˜ ì—†ë‹¤ëŠ”
+            // ì œì•½ ì¡°ê±´ì„ ë§Œì¡±í•¨ì„ ë³´ìž¥í•  ìˆ˜ ìžˆë‹¤.
 
             // Nothing To Do
         }
         else
         {
-            // Indicator°¡ Á¸ÀçÇÏÁö ¾Ê´Â °æ¿ì
+            // Indicatorê°€ ì¡´ìž¬í•˜ì§€ ì•ŠëŠ” ê²½ìš°
 
             // Nothing To Do
         }
@@ -745,7 +745,7 @@ qmvOrderBy::validateSortWithGroup(qcStatement * aStatement)
     
     if (sSFWGH->aggsDepth2 != NULL)
     {
-        // order byÀý¿¡¼­ Ãß°¡µÈ aggsDepth2´Â °Ë»çÇØ¾ßÇÑ´Ù.
+        // order byì ˆì—ì„œ ì¶”ê°€ëœ aggsDepth2ëŠ” ê²€ì‚¬í•´ì•¼í•œë‹¤.
         for ( sCurrSort = sParseTree->orderBy;
               sCurrSort != NULL;
               sCurrSort = sCurrSort->next)
@@ -770,9 +770,9 @@ qmvOrderBy::validateSortWithGroup(qcStatement * aStatement)
             }
         }
         
-        /* BUG-39332 group by°¡ ÀÖ°í aggsDepth2°¡ ÀÖ´Â °æ¿ì´Â °á°ú°¡ 1°ÇÀÌ¹Ç·Î
-         * order by¸¦ Á¦°ÅÇÑ´Ù.
-         * ±×¸®°í order byÀý¿¡¼­ Ãß°¡µÈ aggregationÀº Á¦°ÅÇÑ´Ù.
+        /* BUG-39332 group byê°€ ìžˆê³  aggsDepth2ê°€ ìžˆëŠ” ê²½ìš°ëŠ” ê²°ê³¼ê°€ 1ê±´ì´ë¯€ë¡œ
+         * order byë¥¼ ì œê±°í•œë‹¤.
+         * ê·¸ë¦¬ê³  order byì ˆì—ì„œ ì¶”ê°€ëœ aggregationì€ ì œê±°í•œë‹¤.
          */
         sParseTree->orderBy = NULL;
         
@@ -781,7 +781,7 @@ qmvOrderBy::validateSortWithGroup(qcStatement * aStatement)
     }
     else
     {
-        // GROUP BY ExpressionÀ» Æ÷ÇÔÇÏ´Â ExpressionÀÎÁö¸¦ °Ë»ç.
+        // GROUP BY Expressionì„ í¬í•¨í•˜ëŠ” Expressionì¸ì§€ë¥¼ ê²€ì‚¬.
         for ( sCurrSort = sParseTree->orderBy;
               sCurrSort != NULL;
               sCurrSort = sCurrSort->next )
@@ -882,7 +882,7 @@ IDE_RC qmvOrderBy::validateSortWithoutGroup(qcStatement * aStatement)
                  sTarget = sTarget->next, sCurrTargetPos++)
             {
                 // PROJ-2002 Column Security
-                // targetÀý¿¡ º¸¾È ÄÃ·³ÀÌ ÀÖ´Â °æ¿ì decryptÇÔ¼ö°¡ »ý¼ºµÉ ¼ö ÀÖ´Ù.
+                // targetì ˆì— ë³´ì•ˆ ì»¬ëŸ¼ì´ ìžˆëŠ” ê²½ìš° decryptí•¨ìˆ˜ê°€ ìƒì„±ë  ìˆ˜ ìžˆë‹¤.
                 if ( sTarget->targetColumn->node.module == &mtfDecrypt )
                 {
                     sTargetNode = (qtcNode *)
@@ -919,7 +919,7 @@ IDE_RC qmvOrderBy::validateSortWithoutGroup(qcStatement * aStatement)
                      != IDE_SUCCESS);
             
             // PROJ-1413
-            // view ÄÃ·³ ÂüÁ¶ ³ëµå¸¦ µî·ÏÇÑ´Ù.
+            // view ì»¬ëŸ¼ ì°¸ì¡° ë…¸ë“œë¥¼ ë“±ë¡í•œë‹¤.
             IDE_TEST( qmvQTC::addViewColumnRefList( aStatement,
                                                     sCurrSort->sortColumn )
                       != IDE_SUCCESS );
@@ -939,8 +939,8 @@ IDE_RC qmvOrderBy::validateSortWithoutGroup(qcStatement * aStatement)
             if (sCurrSort->targetPosition < QMV_EMPTY_TARGET_POSITION)
             {
                 // BUG-27597
-                // order byÀý¿¡¼­ analytic funcÀÌ ¾Æ´Ñ aggregationÀÎ °æ¿ì ¿¡·¯
-                // aggregationÀÇ argument·Î analytic funcÀº ÀÌ¹Ì °É·¯Á³À½
+                // order byì ˆì—ì„œ analytic funcì´ ì•„ë‹Œ aggregationì¸ ê²½ìš° ì—ëŸ¬
+                // aggregationì˜ argumentë¡œ analytic funcì€ ì´ë¯¸ ê±¸ëŸ¬ì¡ŒìŒ
                 if ( ( sCurrSort->sortColumn->lflag & QTC_NODE_ANAL_FUNC_MASK )
                      == QTC_NODE_ANAL_FUNC_ABSENT )
                 {
@@ -971,7 +971,7 @@ IDE_RC qmvOrderBy::validateSortWithoutGroup(qcStatement * aStatement)
                          != IDE_SUCCESS);
             }
 
-            // order byÀý¿¡¼­ Ãß°¡µÈ aggsDepth1´Â °Ë»çÇØ¾ßÇÑ´Ù.
+            // order byì ˆì—ì„œ ì¶”ê°€ëœ aggsDepth1ëŠ” ê²€ì‚¬í•´ì•¼í•œë‹¤.
             for ( sCurrSort = sParseTree->orderBy;
                   sCurrSort != NULL;
                   sCurrSort = sCurrSort->next)
@@ -996,9 +996,9 @@ IDE_RC qmvOrderBy::validateSortWithoutGroup(qcStatement * aStatement)
                 }
             }
             
-            /* BUG-39332 group by°¡ ¾ø°í aggsDepth1ÀÌ ÀÖ´Â °æ¿ì´Â °á°ú°¡ 1°ÇÀÌ¹Ç·Î
-             * order by¸¦ Á¦°ÅÇÑ´Ù.
-             * ±×¸®°í order byÀý¿¡¼­ Ãß°¡µÈ aggregationÀº Á¦°ÅÇÑ´Ù.
+            /* BUG-39332 group byê°€ ì—†ê³  aggsDepth1ì´ ìžˆëŠ” ê²½ìš°ëŠ” ê²°ê³¼ê°€ 1ê±´ì´ë¯€ë¡œ
+             * order byë¥¼ ì œê±°í•œë‹¤.
+             * ê·¸ë¦¬ê³  order byì ˆì—ì„œ ì¶”ê°€ëœ aggregationì€ ì œê±°í•œë‹¤.
              */
             sParseTree->orderBy = NULL;
             
@@ -1092,7 +1092,7 @@ IDE_RC qmvOrderBy::validateSortWithSet(qcStatement * aStatement)
             }
 
             // To Fix PR-9032
-            // SETÀ» Æ÷ÇÔÇÒ °æ¿ì ORDER BY¿¡ PRIOR ¸¦ »ç¿ëÇÒ ¼ö ¾ø´Ù.
+            // SETì„ í¬í•¨í•  ê²½ìš° ORDER BYì— PRIOR ë¥¼ ì‚¬ìš©í•  ìˆ˜ ì—†ë‹¤.
             if ( (sCurrSort->sortColumn->lflag & QTC_NODE_PRIOR_MASK)
                  == QTC_NODE_PRIOR_EXIST )
             {
@@ -1109,7 +1109,7 @@ IDE_RC qmvOrderBy::validateSortWithSet(qcStatement * aStatement)
                  sTarget = sTarget->next, sCurrTargetPos++)
             {
                 // PROJ-2002 Column Security
-                // targetÀý¿¡ º¸¾È ÄÃ·³ÀÌ ÀÖ´Â °æ¿ì decryptÇÔ¼ö°¡ »ý¼ºµÉ ¼ö ÀÖ´Ù.
+                // targetì ˆì— ë³´ì•ˆ ì»¬ëŸ¼ì´ ìžˆëŠ” ê²½ìš° decryptí•¨ìˆ˜ê°€ ìƒì„±ë  ìˆ˜ ìžˆë‹¤.
                 if ( sTarget->targetColumn->node.module == &mtfDecrypt )
                 {
                     sTargetNode = (qtcNode *)
@@ -1135,16 +1135,16 @@ IDE_RC qmvOrderBy::validateSortWithSet(qcStatement * aStatement)
                 if ( sCurrSort->targetPosition < 0 )
                 {
                     // BUG-21807 
-                    // position Á¤º¸°¡ ÁÖ¾îÁöÁö ¾ÊÀº °æ¿ì,
-                    // order by Ä®·³À» target list¿¡¼­ Ã£Áö ¸øÇßÀ½À»
-                    // ¿¡·¯ ¸Þ½ÃÁö·Î ¾Ë·ÁÁÖ¾î¾ß ÇÔ
+                    // position ì •ë³´ê°€ ì£¼ì–´ì§€ì§€ ì•Šì€ ê²½ìš°,
+                    // order by ì¹¼ëŸ¼ì„ target listì—ì„œ ì°¾ì§€ ëª»í–ˆìŒì„
+                    // ì—ëŸ¬ ë©”ì‹œì§€ë¡œ ì•Œë ¤ì£¼ì–´ì•¼ í•¨
                     IDE_RAISE( ERR_NOT_EXIST_SELECT_LIST );
                 }
                 else
                 {
-                    // position Á¤º¸°¡ ÁÖ¾îÁø °æ¿ì,
-                    // position Á¤º¸°¡ Àß¸ø µÇ¾úÀ½À»
-                    // ¿¡·¯ ¸Þ½ÃÁö·Î ¾Ë·ÁÁÖ¾î¾ß ÇÔ
+                    // position ì •ë³´ê°€ ì£¼ì–´ì§„ ê²½ìš°,
+                    // position ì •ë³´ê°€ ìž˜ëª» ë˜ì—ˆìŒì„
+                    // ì—ëŸ¬ ë©”ì‹œì§€ë¡œ ì•Œë ¤ì£¼ì–´ì•¼ í•¨
                     IDE_RAISE( ERR_INVALID_ORDERBY_POS );
                 }
             }
@@ -1211,8 +1211,8 @@ IDE_RC qmvOrderBy::transposePosValIntoTargetPtr(
                    ERR_ORDERBY_WITH_INVALID_TARGET_POS);
 
     // PROJ-2415 Grouping Sets Clause
-    // Grouping Sets Transform¿¡ ÀÇÇØ Target¿¡ Ãß°¡µÈ OrderByÀÇ Node¸¦
-    // Target¿¡ Ãß°¡µÇÁö ¾ÊÀº OrderByÀÇ PositionÀÌ ¹Ù¶óº¼ ¼ö ¾ø´Ù.
+    // Grouping Sets Transformì— ì˜í•´ Targetì— ì¶”ê°€ëœ OrderByì˜ Nodeë¥¼
+    // Targetì— ì¶”ê°€ë˜ì§€ ì•Šì€ OrderByì˜ Positionì´ ë°”ë¼ë³¼ ìˆ˜ ì—†ë‹¤.
     IDE_TEST_RAISE( ( ( sTarget->targetColumn->lflag & QTC_NODE_GBGS_ORDER_BY_NODE_MASK ) ==
                       QTC_NODE_GBGS_ORDER_BY_NODE_TRUE ) &&
                     ( ( aSortColumn->sortColumn->lflag & QTC_NODE_GBGS_ORDER_BY_NODE_MASK ) !=
@@ -1220,7 +1220,7 @@ IDE_RC qmvOrderBy::transposePosValIntoTargetPtr(
                     ERR_ORDERBY_WITH_INVALID_TARGET_POS );
 
     // PROJ-2002 Column Security
-    // targetÀý¿¡ º¸¾È ÄÃ·³ÀÌ ÀÖ´Â °æ¿ì decryptÇÔ¼ö°¡ »ý¼ºµÉ ¼ö ÀÖ´Ù.
+    // targetì ˆì— ë³´ì•ˆ ì»¬ëŸ¼ì´ ìžˆëŠ” ê²½ìš° decryptí•¨ìˆ˜ê°€ ìƒì„±ë  ìˆ˜ ìžˆë‹¤.
     if ( sTarget->targetColumn->node.module == &mtfDecrypt )
     {
         sTargetNode = (qtcNode *)
@@ -1230,7 +1230,7 @@ IDE_RC qmvOrderBy::transposePosValIntoTargetPtr(
     {
         sTargetNode = sTarget->targetColumn;
 
-        // PROJ-2179 ORDER BYÀý¿¡¼­ ÂüÁ¶µÇ¾úÀ½À» Ç¥½Ã
+        // PROJ-2179 ORDER BYì ˆì—ì„œ ì°¸ì¡°ë˜ì—ˆìŒì„ í‘œì‹œ
         sTarget->flag &= ~QMS_TARGET_ORDER_BY_MASK;
         sTarget->flag |= QMS_TARGET_ORDER_BY_TRUE;
     }
@@ -1268,7 +1268,7 @@ IDE_RC qmvOrderBy::disconnectConstantNode(
         IDE_FT_ASSERT( sCurrSort->sortColumn != NULL );
         
         // PROJ-1413
-        // constant¸¦ °Ë»çÇÏ´Â ¹æ¹ý º¯°æ
+        // constantë¥¼ ê²€ì‚¬í•˜ëŠ” ë°©ë²• ë³€ê²½
         if ( qtc::isConstNode4OrderBy( sCurrSort->sortColumn ) == ID_TRUE )
         {
             if (sPrevSort == NULL)

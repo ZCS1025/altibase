@@ -1,6 +1,6 @@
 include ../ulEnv.mk
 
-# �ҽ��ڵ忡 include �� �����ڵ� ȭ��
+# 소스코드에 include 될 에러코드 화일
 
 UL_E_HEADER = ulErrorCode.ih
 UT_E_HEADER = utErrorCode.ih
@@ -8,7 +8,7 @@ LA_E_HEADER = ulaErrorCode.ih LA_TRC_CODE.ih
 LA_E_CODE = LA_TRC_CODE.ic
 LP_E_HEADER = ulpErrorCode.ih
 
-# �����ڵ� �޽��� ȭ��
+# 에러코드 메시지 화일
 
 all:ofiles
 

@@ -43,8 +43,8 @@ typedef acp_uint64_t mtdLobLocator;
 extern const mtdCharType mtcdCharNull;
 
 #define MTD_CHAR_PRECISION_MINIMUM (0)    // to fix BUG-12597
-// BUG-19925 : ¸ğµç µ¥ÀÌÅÍÅ¸ÀÔÀÇ (GEOMETRYÁ¦¿Ü) ÃÖ´ë Å©±â¸¦
-// constant tupleÀÇ ÃÖ´ë Å©±âÀÎ 65536À¸·Î Á¦ÇÑÇÔ
+// BUG-19925 : ëª¨ë“  ë°ì´í„°íƒ€ì…ì˜ (GEOMETRYì œì™¸) ìµœëŒ€ í¬ê¸°ë¥¼
+// constant tupleì˜ ìµœëŒ€ í¬ê¸°ì¸ 65536ìœ¼ë¡œ ì œí•œí•¨
 #define MTD_CHAR_PRECISION_MAXIMUM ((acp_sint32_t)(65536 - sizeof(acp_uint16_t)))
 
 // fix BUG-22220
@@ -191,8 +191,8 @@ extern mtdDateType mtcdDateNull;
 #define MTD_NUMBER_FORMAT_BUFFER_LEN    (70)
 
 // BUG-18788
-// format¿¡ ´ëÇÑ Á¤º¸°¡ ¼öÁ¤µÇ´Â °æ¿ì, mtfTo_char.cppÀÇ
-// gFormatFuncSet ¶ÇÇÑ ÀûÀıÇÏ°Ô ¼öÁ¤µÇ¾î¾ß ÇÔ
+// formatì— ëŒ€í•œ ì •ë³´ê°€ ìˆ˜ì •ë˜ëŠ” ê²½ìš°, mtfTo_char.cppì˜
+// gFormatFuncSet ë˜í•œ ì ì ˆí•˜ê²Œ ìˆ˜ì •ë˜ì–´ì•¼ í•¨
 # define MTD_DATE_FORMAT_NONE                 (1)    // general character
 # define MTD_DATE_FORMAT_AM_U                 (2)    // AM
 # define MTD_DATE_FORMAT_AM_UL                (3)    // Am
@@ -246,11 +246,11 @@ extern mtdDateType mtcdDateNull;
 # define MTD_DATE_FORMAT_Y                    (51)   // Y
 # define MTD_DATE_FORMAT_DOUBLE_QUOTE_STRING  (52)   // "****"
 # define MTD_DATE_FORMAT_FM                   (53)   // FM, To fix BUG-17693
-# define MTD_DATE_FORMAT_SEPARATOR            (54)   // ±¸ºĞÀÚ
-# define MTD_DATE_FORMAT_IW                   (55)   /* BUG-42926 TO_CHAR()¿¡ IW Ãß°¡ */
-# define MTD_DATE_FORMAT_WW2                  (56)   /* BUG-42941 TO_CHAR()¿¡ WW2(Oracle Version WW) Ãß°¡ */
-# define MTD_DATE_FORMAT_SYYYY                (57)   /* BUG-36296 SYYYY Format Áö¿ø */
-# define MTD_DATE_FORMAT_SCC                  (58)   /* BUG-36296 SCC Format Áö¿ø */
+# define MTD_DATE_FORMAT_SEPARATOR            (54)   // êµ¬ë¶„ì
+# define MTD_DATE_FORMAT_IW                   (55)   /* BUG-42926 TO_CHAR()ì— IW ì¶”ê°€ */
+# define MTD_DATE_FORMAT_WW2                  (56)   /* BUG-42941 TO_CHAR()ì— WW2(Oracle Version WW) ì¶”ê°€ */
+# define MTD_DATE_FORMAT_SYYYY                (57)   /* BUG-36296 SYYYY Format ì§€ì› */
+# define MTD_DATE_FORMAT_SCC                  (58)   /* BUG-36296 SCC Format ì§€ì› */
 
 # define MTD_DATE_GREGORY_ONLY       (0)
 # define MTD_DATE_GREGORY_AND_JULIAN (1)
@@ -281,7 +281,7 @@ typedef struct mtdFormatInfo {
 } mtdFormatInfo;
 
 
-/* toDate()¿¡¼­ ÇÊ¿ä·Î ÇÏ´Â ÇÔ¼ö */
+/* toDate()ì—ì„œ í•„ìš”ë¡œ í•˜ëŠ” í•¨ìˆ˜ */
 ACI_RC mtdDateInterfaceToDateGetInteger( acp_uint8_t  ** aString,
                                          acp_uint32_t *  aLength,
                                          acp_uint32_t    aMax,
@@ -298,10 +298,10 @@ ACI_RC mtdDateInterfaceToDateGetRMMonth( acp_uint8_t  ** aString,
 ACP_INLINE acp_bool_t mtdDateInterfaceIsLeapYear( acp_sint16_t aYear )
 {
     // BUG-22710
-    // 4·Î ³ª´©¾î¶³¾îÁöÁö¸¸ 100À¸·Î ³ª´©¾î¶³¾îÁö¸é ¾ÈµÇ°í
-    // È¤Àº 400À¸·Î ³ª´©¾î¶³¾îÁöÁö¸¸ 4000À¸·Î ³ª´©¾î¶³¾îÁöÁöÁö
-    // ¾ÊÀ¸¸é À±³âÀÌ´Ù.
-    /* BUG-36296 ±×·¹°í¸®·ÂÀÇ À±³â ±ÔÄ¢Àº 1583³âºÎÅÍ Àû¿ëÇÑ´Ù. 1582³â ÀÌÀü¿¡´Â 4³â¸¶´Ù À±³âÀÌ´Ù. */
+    // 4ë¡œ ë‚˜ëˆ„ì–´ë–¨ì–´ì§€ì§€ë§Œ 100ìœ¼ë¡œ ë‚˜ëˆ„ì–´ë–¨ì–´ì§€ë©´ ì•ˆë˜ê³ 
+    // í˜¹ì€ 400ìœ¼ë¡œ ë‚˜ëˆ„ì–´ë–¨ì–´ì§€ì§€ë§Œ 4000ìœ¼ë¡œ ë‚˜ëˆ„ì–´ë–¨ì–´ì§€ì§€ì§€
+    // ì•Šìœ¼ë©´ ìœ¤ë…„ì´ë‹¤.
+    /* BUG-36296 ê·¸ë ˆê³ ë¦¬ë ¥ì˜ ìœ¤ë…„ ê·œì¹™ì€ 1583ë…„ë¶€í„° ì ìš©í•œë‹¤. 1582ë…„ ì´ì „ì—ëŠ” 4ë…„ë§ˆë‹¤ ìœ¤ë…„ì´ë‹¤. */
     if ( ( ( aYear % 4 ) == 0 ) &&
          ( ( aYear < 1583 ) || ( ( aYear % 100 ) != 0 ) || ( ( aYear % 400 ) == 0 ) ) )
     {
@@ -412,7 +412,7 @@ ACI_RC mtdDateInterfaceToDate(mtdDateType  * aDate,
                               acp_uint8_t  * aFormat,
                               acp_uint32_t   aFormatLen);
 
-// date format Á¤º¸¸¦ ¸ğ¸£´Â °æ¿ì
+// date format ì •ë³´ë¥¼ ëª¨ë¥´ëŠ” ê²½ìš°
 ACI_RC mtdDateInterfaceToChar(mtdDateType * aDate,
                               acp_uint8_t * aString,
                               acp_uint32_t* aStringLen,
@@ -465,9 +465,9 @@ extern const mtdBitType mtcdBitNull;
     ( sizeof( acp_uint32_t ) + BIT_TO_BYTE(valueLength) )
 
 // PROJ-1583, PR-15722
-// SQL_BINARY¿¡ ´ëÀÀÇÏ´Â mtdBinaryType
+// SQL_BINARYì— ëŒ€ì‘í•˜ëŠ” mtdBinaryType
 // PROJ-1583 large geometry 
-// mLengthÀÇ Å¸ÀÔÀ» acp_uint32_t·Î º¯°æ
+// mLengthì˜ íƒ€ì…ì„ acp_uint32_të¡œ ë³€ê²½
 typedef struct mtdBinaryType
 {
     acp_uint32_t mLength;
@@ -555,7 +555,7 @@ extern const mtdNibbleType mtcdNibbleNull;
 #define MTD_NCHAR_ALIGN                     (sizeof(acp_uint16_t))
 #define MTD_NCHAR_PRECISION_DEFAULT         (1)
 
-// BUG-25914 : UTF8ÀÇ ÇÑ ±ÛÀÚÀÇ Å©±â´Â 3ByteÀÓ.
+// BUG-25914 : UTF8ì˜ í•œ ê¸€ìì˜ í¬ê¸°ëŠ” 3Byteì„.
 // MTD_NCHAR_PRECISION_MAXIMUM / MTL_UTF8_PRECISION
 #define MTD_UTF8_NCHAR_PRECISION_MAXIMUM    ( (acp_sint32_t)((65536/3) - sizeof(acp_uint16_t)) )
 // MTD_NCHAR_PRECISION_MAXIMUM / MTL_UTF16_PRECISION
@@ -564,7 +564,7 @@ extern const mtdNibbleType mtcdNibbleNull;
 #define MTD_NCHAR_PRECISION_MINIMUM (0)    // to fix BUG-12597
 #define MTD_NCHAR_PRECISION_MAXIMUM ((acp_sint32_t)65536 - sizeof(acp_uint16_t) )
 
-// CHAR_PRECISION_MAXIMUM°ú SYNC¸¦ ¸ÂÃß¾î¾ß ÇÔ
+// CHAR_PRECISION_MAXIMUMê³¼ SYNCë¥¼ ë§ì¶”ì–´ì•¼ í•¨
 // MTD_NCHAR_PRECISION_MAXIMUM / MTL_UTF8_PRECISION
 #define MTD_UTF8_NCHAR_STORE_PRECISION_MAXIMUM    (10666)
 
@@ -573,7 +573,7 @@ extern const mtdNibbleType mtcdNibbleNull;
 
 
 typedef struct mtdNcharType {
-    acp_uint16_t length;      // ¹ÙÀÌÆ®¼ö
+    acp_uint16_t length;      // ë°”ì´íŠ¸ìˆ˜
     acp_uint8_t  value[1];
 } mtdNcharType;
 
@@ -694,11 +694,11 @@ extern const mtdEcharType mtcdEcharNull;
 
 #define MTD_ECHAR_STORE_PRECISION_MAXIMUM  (10000)
 
-// decryptµµ encrypt¿Í ¸¶Âù°¡Áö·Î block´ÜÀ§·Î º¹È£È­¸¦ ¼öÇàÇÏ¹Ç·Î
-// block Å©±â¸¸Å­ÀÇ °ø°£À» ´õ »ç¿ëÇÏ¿© º¹È£È­¸¦ ¼öÇàÇÑ´Ù.
-// ±×·¯¹Ç·Î decrypt½Ã º°µµÀÇ decrypt buffer¸¦ »ç¿ëÇØ¾ß ÇÑ´Ù.
-// ¶ÇÇÑ, salt(initial vector)¸¦ »ç¿ëÇÏ´Â °æ¿ì block size¿¡
-// salt size¸¦ Ãß°¡·Î °í·ÁÇØ¾ß ÇÑ´Ù.
+// decryptë„ encryptì™€ ë§ˆì°¬ê°€ì§€ë¡œ blockë‹¨ìœ„ë¡œ ë³µí˜¸í™”ë¥¼ ìˆ˜í–‰í•˜ë¯€ë¡œ
+// block í¬ê¸°ë§Œí¼ì˜ ê³µê°„ì„ ë” ì‚¬ìš©í•˜ì—¬ ë³µí˜¸í™”ë¥¼ ìˆ˜í–‰í•œë‹¤.
+// ê·¸ëŸ¬ë¯€ë¡œ decryptì‹œ ë³„ë„ì˜ decrypt bufferë¥¼ ì‚¬ìš©í•´ì•¼ í•œë‹¤.
+// ë˜í•œ, salt(initial vector)ë¥¼ ì‚¬ìš©í•˜ëŠ” ê²½ìš° block sizeì—
+// salt sizeë¥¼ ì¶”ê°€ë¡œ ê³ ë ¤í•´ì•¼ í•œë‹¤.
 //
 // 32byte block size + 32byte salt size -> 64 byte
 //

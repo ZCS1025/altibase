@@ -41,7 +41,7 @@
 // parsing function at ulpCompy.y
 int doCOMPparse( SChar *aFilename );
 
-// array bindingÀ» ÇØ¾ßÇÒÁö(isarrÀ» true·Î setÇÒÁö) ¿©ºÎ¸¦ Ã¼Å©ÇÏ±â À§ÇÑ ÇÔ¼ö.
+// array bindingì„ í•´ì•¼í• ì§€(isarrì„ trueë¡œ setí• ì§€) ì—¬ë¶€ë¥¼ ì²´í¬í•˜ê¸° ìœ„í•œ í•¨ìˆ˜.
 idBool ulpCOMPCheckArray( ulpSymTElement *aSymNode );
 
 // for validating host values
@@ -56,67 +56,67 @@ void ulpValidateHostValue( void         *yyvsp,
 IDE_RC ulpValidateFORStructArray(ulpSymTElement *aElement);
 
 /*
- * parsingÁß¿¡ Ã³¸®ÇÏ±â µÇ´Â host º¯¼öµé¿¡ ´ëÇÑ Á¤º¸¸¦
- * Àá½Ã ÀúÀåÇØµÎ±â À§ÇÑ class.
+ * parsingì¤‘ì— ì²˜ë¦¬í•˜ê¸° ë˜ëŠ” host ë³€ìˆ˜ë“¤ì— ëŒ€í•œ ì •ë³´ë¥¼
+ * ì ì‹œ ì €ì¥í•´ë‘ê¸° ìœ„í•œ class.
  */
 class ulpParseInfo
 {
     public:
         /* attributes */
 
-        // id ¸¦ ÀúÀåÇÒ °Å³Ä ¸»°Å³Ä Á¤º¸.
+        // id ë¥¼ ì €ì¥í•  ê±°ëƒ ë§ê±°ëƒ ì •ë³´.
         idBool          mSaveId;
-        // function ÀÎÀÚ ¼±¾ğºÎºĞÀÎÁö Á¤º¸.
+        // function ì¸ì ì„ ì–¸ë¶€ë¶„ì¸ì§€ ì •ë³´.
         idBool          mFuncDecl;
         // array depth
         SShort          mArrDepth;
-        // array ¼±¾ğºÎºĞÀÎÁö Á¤º¸.
+        // array ì„ ì–¸ë¶€ë¶„ì¸ì§€ ì •ë³´.
         idBool          mArrExpr;
         // constant_expr
         SChar           mConstantExprStr[MAX_EXPR_LEN];
-        // structure node pointer Á¤º¸.
+        // structure node pointer ì •ë³´.
         ulpStructTNode *mStructPtr;
-        // typedef °ü·Ã Á¤º¸.
+        // typedef ê´€ë ¨ ì •ë³´.
         ulpSymTElement *mHostValInfo4Typedef;
         
-        /* BUG-28118 : system Çì´õÆÄÀÏµéµµ ÆÄ½ÌµÅ¾ßÇÔ.                       *
-         * 6th. problem : Nested structure Á¤ÀÇÁß scope¸¦ Àß¸ø °è»êÇÏ´Â ¹®Á¦ */
-        // host value, struct type °ü·Ã Á¤º¸ ¹è¿­.
-        // ÁßÃ¸ ±¸Á¶Ã¼ÀÏ°æ¿ì¸¦ Ã³¸®ÇÏ±â À§ÇØ ¹è¿­·Î ¼±¾ğµÊ.
+        /* BUG-28118 : system í—¤ë”íŒŒì¼ë“¤ë„ íŒŒì‹±ë¼ì•¼í•¨.                       *
+         * 6th. problem : Nested structure ì •ì˜ì¤‘ scopeë¥¼ ì˜ëª» ê³„ì‚°í•˜ëŠ” ë¬¸ì œ */
+        // host value, struct type ê´€ë ¨ ì •ë³´ ë°°ì—´.
+        // ì¤‘ì²© êµ¬ì¡°ì²´ì¼ê²½ìš°ë¥¼ ì²˜ë¦¬í•˜ê¸° ìœ„í•´ ë°°ì—´ë¡œ ì„ ì–¸ë¨.
         // ex>
-        // int i;             <= mHostValInfo[0] ¿¡ º¯¼ö Á¤º¸ ÀúÀå.
-        // struct A           <= mHostValInfo[0]¿¡ ±¸Á¶Ã¼ Á¤º¸ ÀúÀå, mHostValInfo[1] µ¿Àû ÇÒ´çÈÄ ÃÊ±âÈ­.
+        // int i;             <= mHostValInfo[0] ì— ë³€ìˆ˜ ì •ë³´ ì €ì¥.
+        // struct A           <= mHostValInfo[0]ì— êµ¬ì¡°ì²´ ì •ë³´ ì €ì¥, mHostValInfo[1] ë™ì  í• ë‹¹í›„ ì´ˆê¸°í™”.
         // {
-        //    int a;          <= mHostValInfo[1] ¿¡ º¯¼ö Á¤º¸ ÀúÀå.
-        //    struct B        <= mHostValInfo[1]¿¡ ±¸Á¶Ã¼ Á¤º¸ ÀúÀå, mHostValInfo[2] µ¿Àû ÇÒ´çÈÄ ÃÊ±âÈ­.
+        //    int a;          <= mHostValInfo[1] ì— ë³€ìˆ˜ ì •ë³´ ì €ì¥.
+        //    struct B        <= mHostValInfo[1]ì— êµ¬ì¡°ì²´ ì •ë³´ ì €ì¥, mHostValInfo[2] ë™ì  í• ë‹¹í›„ ì´ˆê¸°í™”.
         //    {
-        //       int b;       <= mHostValInfo[2] ¿¡ º¯¼ö Á¤º¸ ÀúÀå.
-        //    } sB;           <= mHostValInfo[2] ÇØÁ¦.
-        // } ;                <= mHostValInfo[1] ÇØÁ¦.
+        //       int b;       <= mHostValInfo[2] ì— ë³€ìˆ˜ ì •ë³´ ì €ì¥.
+        //    } sB;           <= mHostValInfo[2] í•´ì œ.
+        // } ;                <= mHostValInfo[1] í•´ì œ.
         ulpSymTElement *mHostValInfo[MAX_NESTED_STRUCT_DEPTH];
-        // structure ¼±¾ğºÎºĞ depth Á¤º¸.
-        // mHostValInfoÀÇ index·Î »ç¿ëµÊ.
+        // structure ì„ ì–¸ë¶€ë¶„ depth ì •ë³´.
+        // mHostValInfoì˜ indexë¡œ ì‚¬ìš©ë¨.
         // ex> <depth 0>..struct {..<depth 1>..struct {..<depth 2>..}..}
         SShort          mStructDeclDepth;
 
-        // varchar º¯¼ö list
+        // varchar ë³€ìˆ˜ list
         iduList mVarcharVarList;
-        // varchar º¯¼ö¼±¾ğÁßÀÎÁö ¿©ºÎ.
+        // varchar ë³€ìˆ˜ì„ ì–¸ì¤‘ì¸ì§€ ì—¬ë¶€.
         idBool  mVarcharDecl;
 
         /* BUG-35518 Shared pointer should be supported in APRE */
         idBool  mIsSharedPtr;
         iduList mSharedPtrVarList;
 
-        // typedef Ã³¸®¸¦ skipÇÑ´Ù.
-        /* BUG-27875 : ±¸Á¶Ã¼¾ÈÀÇ typedef typeÀÎ½Ä¸øÇÔ. */
-        // ¾Æ·¡ ±¸¹®À» Ã³¸®ÇÏ±âÀ§ÇØ mSkipTypedef º¯¼ö Ãß°¡µÊ.
+        // typedef ì²˜ë¦¬ë¥¼ skipí•œë‹¤.
+        /* BUG-27875 : êµ¬ì¡°ì²´ì•ˆì˜ typedef typeì¸ì‹ëª»í•¨. */
+        // ì•„ë˜ êµ¬ë¬¸ì„ ì²˜ë¦¬í•˜ê¸°ìœ„í•´ mSkipTypedef ë³€ìˆ˜ ì¶”ê°€ë¨.
         // typedef struct Struct1 Struct1;
         // struct Struct1       <- mSkipTypedef = ID_TRUE  :
-        //                          Struct1Àº ºñ·Ï ÀÌÀü¿¡ typedefµÇ¾î ÀÖÁö¸¸ ·º¼­¿¡¼­ C_TYPE_NAMEÀÌ¾Æ´Ñ
-        // {                        C_IDENTIFIER·Î ÀÎ½ÄµÇ¾î¾ß ÇÑ´Ù.
+        //                          Struct1ì€ ë¹„ë¡ ì´ì „ì— typedefë˜ì–´ ìˆì§€ë§Œ ë ‰ì„œì—ì„œ C_TYPE_NAMEì´ì•„ë‹Œ
+        // {                        C_IDENTIFIERë¡œ ì¸ì‹ë˜ì–´ì•¼ í•œë‹¤.
         //    ...               <- mSkipTypedef = ID_FALSE :
-        //    ...                   ÇÊµå¿¡ typedef ÀÌ¸§ÀÌ ¿À¸é C_TYPE_NAMEÀ¸·Î ÀÎ½ÄµÅ¾ßÇÑ´Ù.
+        //    ...                   í•„ë“œì— typedef ì´ë¦„ì´ ì˜¤ë©´ C_TYPE_NAMEìœ¼ë¡œ ì¸ì‹ë¼ì•¼í•œë‹¤.
         // };
         idBool  mSkipTypedef;
 
@@ -131,10 +131,10 @@ class ulpParseInfo
         // finalize
         void ulpFinalize(void);
 
-        // host º¯¼ö Á¤º¸ ÃÊ±âÈ­ ÇÔ¼ö.
+        // host ë³€ìˆ˜ ì •ë³´ ì´ˆê¸°í™” í•¨ìˆ˜.
         void ulpInitHostInfo(void);
 
-        // typedef ±¸¹® Ã³¸®¸¦ À§ÇÑ ulpSymTElement copy ÇÔ¼ö.
+        // typedef êµ¬ë¬¸ ì²˜ë¦¬ë¥¼ ìœ„í•œ ulpSymTElement copy í•¨ìˆ˜.
         void ulpCopyHostInfo4Typedef( ulpSymTElement *aD, ulpSymTElement *aS );
 
         /* print host variable infos. for debugging */
@@ -146,54 +146,54 @@ class ulpParseInfo
 
 
 /*
- * COMPLexer¿¡¼­ »ç¿ëµÇ´Â internal functionµé.
+ * COMPLexerì—ì„œ ì‚¬ìš©ë˜ëŠ” internal functionë“¤.
  */
 
 IDE_RC ulpCOMPInitialize( SChar *aFileName );
 
 void   ulpCOMPFinalize();
 
-/* ÇöÀç buffer Á¤º¸ ±¸Á¶Ã¼ ÀúÀå. (YY_CURRENT_BUFFER) */
+/* í˜„ì¬ buffer ì •ë³´ êµ¬ì¡°ì²´ ì €ì¥. (YY_CURRENT_BUFFER) */
 void   ulpCOMPSaveBufferState( void );
 
-/* C comment Ã³¸® ÇÔ¼ö */
+/* C comment ì²˜ë¦¬ í•¨ìˆ˜ */
 IDE_RC ulpCOMPCommentC( idBool aSkip );
 
-/* C++ comment Ã³¸® ÇÔ¼ö */
+/* C++ comment ì²˜ë¦¬ í•¨ìˆ˜ */
 void   ulpCOMPCommentCplus( void );
 
-/* lexerÀÇ start conditionÀ» ¿øº¹ÇØÁÖ´Â ÇÔ¼ö. */
+/* lexerì˜ start conditionì„ ì›ë³µí•´ì£¼ëŠ” í•¨ìˆ˜. */
 void   ulpCOMPRestoreCond(void);
 
-/* ÆÄ½Ì ÇÒ ÇÊ¿ä ¾ø´Â macro ±¸¹®À» skipÇØÁÖ´Â ÇÔ¼ö. */
+/* íŒŒì‹± í•  í•„ìš” ì—†ëŠ” macro êµ¬ë¬¸ì„ skipí•´ì£¼ëŠ” í•¨ìˆ˜. */
 IDE_RC ulpCOMPSkipMacro(void);
 
-/* macro ±¸¹®¾ÈÀÇ '//n'¹®ÀÚ¸¦ Á¦°Å ÇØÁÖ´Â ÇÔ¼ö. */
+/* macro êµ¬ë¬¸ì•ˆì˜ '//n'ë¬¸ìë¥¼ ì œê±° í•´ì£¼ëŠ” í•¨ìˆ˜. */
 void   ulpCOMPEraseBN4MacroText( SChar *aTmpDefinedStr, idBool aIsIf );
 
-/* WHENEVER ±¸¹® DO function_name ÀÇ ÇÔ¼öÀÌ¸§À» ÀúÀåÇÏ´Â ÇÔ¼ö. */
+/* WHENEVER êµ¬ë¬¸ DO function_name ì˜ í•¨ìˆ˜ì´ë¦„ì„ ì €ì¥í•˜ëŠ” í•¨ìˆ˜. */
 void   ulpCOMPWheneverFunc( SChar *aTmpStr );
 
-/* EXEC SQL INCLUDE ÀÇ Çì´õÆÄÀÏ ÀÌ¸§À» ÀúÀåÇÏ±âÀ§ÇÑ ÇÔ¼ö. */
+/* EXEC SQL INCLUDE ì˜ í—¤ë”íŒŒì¼ ì´ë¦„ì„ ì €ì¥í•˜ê¸°ìœ„í•œ í•¨ìˆ˜. */
 void   ulpCOMPSetHeaderName( void );
 
-/* BUG-28061 : preprocessingÀ»¸¶Ä¡¸é marco tableÀ» ÃÊ±âÈ­ÇÏ°í, *
- *             ulpComp ¿¡¼­ Àç±¸ÃàÇÑ´Ù.                       */
-/* yyinput ´ë¿ë */
+/* BUG-28061 : preprocessingì„ë§ˆì¹˜ë©´ marco tableì„ ì´ˆê¸°í™”í•˜ê³ , *
+ *             ulpComp ì—ì„œ ì¬êµ¬ì¶•í•œë‹¤.                       */
+/* yyinput ëŒ€ìš© */
 SChar  ulpCOMPYYinput(void);
-/* unput ´ë¿ë */
+/* unput ëŒ€ìš© */
 void   ulpCOMPYYunput( SChar aCh );
-/* #if¾È¿¡ comment¿Ã°æ¿ì skip */
+/* #ifì•ˆì— commentì˜¬ê²½ìš° skip */
 void   ulpCOMPCommentCplus4IF();
 IDE_RC ulpCOMPCommentC4IF();
 
-/* BUG-28250 : :´ÙÀ½¿¡ º¯¼öÀÌ¸§ÀÌ¿À´Âµ¥ °ø¹éÀÌ ÀÖ¾î¼­´Â ¾ÈµË´Ï´Ù. */
-// : <È£½ºÆ®º¯¼öÀÌ¸§> ¿¡¼­ :¿Í ÀÌ¸§»çÀÌÀÇ °ø¹éÀ» Á¦°ÅÇØÁØ´Ù.
+/* BUG-28250 : :ë‹¤ìŒì— ë³€ìˆ˜ì´ë¦„ì´ì˜¤ëŠ”ë° ê³µë°±ì´ ìˆì–´ì„œëŠ” ì•ˆë©ë‹ˆë‹¤. */
+// : <í˜¸ìŠ¤íŠ¸ë³€ìˆ˜ì´ë¦„> ì—ì„œ :ì™€ ì´ë¦„ì‚¬ì´ì˜ ê³µë°±ì„ ì œê±°í•´ì¤€ë‹¤.
 void   ulpCOMPEraseHostValueSpaces( SChar *aString );
 
-/* BUG-28118 : system Çì´õÆÄÀÏµéµµ ÆÄ½ÌµÅ¾ßÇÔ.     *
- * 3th. problem : ¸ÅÅ©·Î ÇÔ¼ö°¡ È®ÀåµÇÁö ¾Ê´Â ¹®Á¦. */
-// Macro ÇÔ¼ö°¡ ¿Ã°æ¿ì id µÚÀÇ (...) ÅäÅ«À» ¼Ò¸ğÇØÁÖ±â À§ÇÑ ÇÔ¼ö.
+/* BUG-28118 : system í—¤ë”íŒŒì¼ë“¤ë„ íŒŒì‹±ë¼ì•¼í•¨.     *
+ * 3th. problem : ë§¤í¬ë¡œ í•¨ìˆ˜ê°€ í™•ì¥ë˜ì§€ ì•ŠëŠ” ë¬¸ì œ. */
+// Macro í•¨ìˆ˜ê°€ ì˜¬ê²½ìš° id ë’¤ì˜ (...) í† í°ì„ ì†Œëª¨í•´ì£¼ê¸° ìœ„í•œ í•¨ìˆ˜.
 void   ulpCOMPSkipMacroFunc( void );
 
 #endif

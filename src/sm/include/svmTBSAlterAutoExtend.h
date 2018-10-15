@@ -26,27 +26,27 @@
 
 
 /*
-  [Volatile] Alter Tablespace Auto Extend ±¸Çö
+  [Volatile] Alter Tablespace Auto Extend êµ¬í˜„
 
-  Âü°í> svm ¸ğµâ ¾ÈÀÇ ¼Ò½º´Â ´ÙÀ½°ú °°ÀÌ LayeringµÇ¾î ÀÖ´Ù.
+  ì°¸ê³ > svm ëª¨ë“ˆ ì•ˆì˜ ì†ŒìŠ¤ëŠ” ë‹¤ìŒê³¼ ê°™ì´ Layeringë˜ì–´ ìˆë‹¤.
   ----------------------------------------------------------------------------
-  svmTBSCreate          ; Create Tablespace ±¸Çö
-  svmTBSDrop            ; Drop Tablespace ±¸Çö
-  svmTBSAlterAutoExtend ; Alter Tablespace Auto Extend ±¸Çö
-  svmTBSStartupShutdown ; Startup, Shutdown½ÃÀÇ Tablespace°ü·Ã Ã³¸®¸¦ ±¸Çö
+  svmTBSCreate          ; Create Tablespace êµ¬í˜„
+  svmTBSDrop            ; Drop Tablespace êµ¬í˜„
+  svmTBSAlterAutoExtend ; Alter Tablespace Auto Extend êµ¬í˜„
+  svmTBSStartupShutdown ; Startup, Shutdownì‹œì˜ Tablespaceê´€ë ¨ ì²˜ë¦¬ë¥¼ êµ¬í˜„
   ----------------------------------------------------------------------------
-  svmManager       ; TablespaceÀÇ ³»ºÎ ±¸Çö 
-  svmFPLManager    ; Tablespace Free Page ListÀÇ ³»ºÎ ±¸Çö
-  svmExpandChunk   ; ChunkÀÇ ³»ºÎ±¸Á¶ ±¸Çö
+  svmManager       ; Tablespaceì˜ ë‚´ë¶€ êµ¬í˜„ 
+  svmFPLManager    ; Tablespace Free Page Listì˜ ë‚´ë¶€ êµ¬í˜„
+  svmExpandChunk   ; Chunkì˜ ë‚´ë¶€êµ¬ì¡° êµ¬í˜„
   ----------------------------------------------------------------------------
  */
 class svmTBSAlterAutoExtend
 {
 public :
-    // »ı¼ºÀÚ (¾Æ¹«°Íµµ ¾ÈÇÔ)
+    // ìƒì„±ì (ì•„ë¬´ê²ƒë„ ì•ˆí•¨)
     svmTBSAlterAutoExtend();
 
-    // ALTER TABLESPACE AUTOEXTEND ... ÀÇ ½ÇÇà ½Ç½Ã 
+    // ALTER TABLESPACE AUTOEXTEND ... ì˜ ì‹¤í–‰ ì‹¤ì‹œ 
     static IDE_RC alterTBSsetAutoExtend(void      * aTrans,
                                         scSpaceID   aTableSpaceID,
                                         idBool      aAutoExtendMode,
@@ -54,13 +54,13 @@ public :
                                         ULong       aMaxSize );
     
 private :
-    // ALTER TABLESPACE AUTOEXTEND ... ¿¡ ´ëÇÑ ¿¡·¯Ã³¸®
+    // ALTER TABLESPACE AUTOEXTEND ... ì— ëŒ€í•œ ì—ëŸ¬ì²˜ë¦¬
     static IDE_RC checkErrorOnAutoExtendAttrs( svmTBSNode * aTBSNode,
                                                idBool       aAutoExtendMode,
                                                ULong        aNextSize,
                                                ULong        aMaxSize );
     
-    //  Next Page Count ¿Í Max Page Count¸¦ °è»êÇÑ´Ù.
+    //  Next Page Count ì™€ Max Page Countë¥¼ ê³„ì‚°í•œë‹¤.
     static IDE_RC calcAutoExtendAttrs(
                       svmTBSNode * aTBSNode,
                       idBool       aAutoExtendMode,

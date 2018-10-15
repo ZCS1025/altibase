@@ -37,17 +37,17 @@ typedef enum idrPendingOpType
 #define IDR_PENDING_OP_PARAM_SIZE   (ID_SIZEOF(ULong) * IDR_PENDING_OP_PARAM_CNT)
 
 /******************************************************************************
- * Description : Shared Memory TxÀÇ Pending Operation ¼öÇàÀ» À§ÇÑ ±¸Á¶Ã¼
+ * Description : Shared Memory Txì˜ Pending Operation ìˆ˜í–‰ì„ ìœ„í•œ êµ¬ì¡°ì²´
  *****************************************************************************/
 typedef struct idrStPendingOp
 {
-    // Pending Operation°£ Node ¿¬°áÀ» À§ÇÑ ShmList Node
+    // Pending Operationê°„ Node ì—°ê²°ì„ ìœ„í•œ ShmList Node
     iduShmListNode      mNode;
-    // Pending Operation ±¸ºĞ
+    // Pending Operation êµ¬ë¶„
     idrPendingOpType    mPendingOpType;
-    // Pending Operation ¼öÇà½Ã Àü´ŞµÉ ParameterµéÀÇ »çÀÌÁî
+    // Pending Operation ìˆ˜í–‰ì‹œ ì „ë‹¬ë  Parameterë“¤ì˜ ì‚¬ì´ì¦ˆ
     UInt                mParamSize;
-    // Pending Operation ¼öÇà½Ã Àü´ŞµÉ Parameter
+    // Pending Operation ìˆ˜í–‰ì‹œ ì „ë‹¬ë  Parameter
     ULong               mParam[IDR_PENDING_OP_PARAM_SIZE / ID_SIZEOF(ULong)];
 } idrPendingOp;
 

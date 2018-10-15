@@ -66,7 +66,7 @@ void cmnLinkPeerFinalizeSvrReadIPCDA(void *aCtx)
 {
     cmiProtocolContext *sCtx = (cmiProtocolContext *)aCtx;
 
-    /* BUG-44125 [mm-cli] IPCDA ¸ðµå Å×½ºÆ® Áß hang - iloader CLOB */
+    /* BUG-44125 [mm-cli] IPCDA ëª¨ë“œ í…ŒìŠ¤íŠ¸ ì¤‘ hang - iloader CLOB */
     if (sCtx->mReadBlock != NULL)
     {
         ((cmbBlockIPCDA *)sCtx->mReadBlock)->mRFlag = CMB_IPCDA_SHM_DEACTIVATED;
@@ -104,17 +104,17 @@ IDE_RC cmnLinkPeerInitSvrWriteIPCDA(void *aCtx)
     IDE_TEST_CONT(sBlock->mWFlag == CMB_IPCDA_SHM_ACTIVATED, ContInitSvrWriteIPCDA);
 
     sBlock->mWFlag                  = CMB_IPCDA_SHM_ACTIVATED;
-    /* BUG-44705 ¸Þ¸ð¸® ¹è¸®¾î Ãß°¡
+    /* BUG-44705 ë©”ëª¨ë¦¬ ë°°ë¦¬ì–´ ì¶”ê°€
      * mData, mBlockSize, mCursor, mOperationCount
-     * ¿Í °°Àº º¯¼öµéÀº mWFlag°ªÀÌ º¯°æµÈ ÈÄ¿¡ ¼³Á¤µÇ¾î¾ß ÇÑ´Ù.*/
+     * ì™€ ê°™ì€ ë³€ìˆ˜ë“¤ì€ mWFlagê°’ì´ ë³€ê²½ëœ í›„ì— ì„¤ì •ë˜ì–´ì•¼ í•œë‹¤.*/
     IDL_MEM_BARRIER;
     sBlock->mBlock.mData            = &sBlock->mData;
     sBlock->mBlock.mBlockSize       = CMB_BLOCK_DEFAULT_SIZE - sizeof(cmbBlockIPCDA);
     sBlock->mBlock.mCursor          = CMP_HEADER_SIZE;
     sBlock->mOperationCount         = 0;
-    /* BUG-44705 ¸Þ¸ð¸® ¹è¸®¾î Ãß°¡
+    /* BUG-44705 ë©”ëª¨ë¦¬ ë°°ë¦¬ì–´ ì¶”ê°€
      * mData, mBlockSize, mCursor, mOperationCount
-     * ÀÇ º¯¼ö°ªÀÌ ¼³Á¤ÀÌ ³¡³­ÈÄ¿¡ mRFlag°ªÀÌ º¯°æµÇ¾î¾ß ÇÑ´Ù.*/
+     * ì˜ ë³€ìˆ˜ê°’ì´ ì„¤ì •ì´ ëë‚œí›„ì— mRFlagê°’ì´ ë³€ê²½ë˜ì–´ì•¼ í•œë‹¤.*/
     IDL_MEM_BARRIER;
     sBlock->mRFlag                  = CMB_IPCDA_SHM_ACTIVATED;
 
@@ -132,8 +132,8 @@ void cmnLinkPeerFinalizeSvrWriteIPCDA(void *aCtx)
     cmiProtocolContext *sCtx = (cmiProtocolContext *)aCtx;
     if (sCtx->mWriteBlock != NULL)
     {
-        /* BUG-44275 "IPCDA select test ¿¡¼­ fetch ÀÌ»ó"
-         * ID_SERIAL_BEGINÀ» ÅëÇÏ¿© µ¥ÀÌÅÍ Ã³¸® ¼ø¼­¸¦ º¸ÀåÇÑ´Ù */ 
+        /* BUG-44275 "IPCDA select test ì—ì„œ fetch ì´ìƒ"
+         * ID_SERIAL_BEGINì„ í†µí•˜ì—¬ ë°ì´í„° ì²˜ë¦¬ ìˆœì„œë¥¼ ë³´ìž¥í•œë‹¤ */ 
         /* Write marking for end-of-protocol. */
         ID_SERIAL_BEGIN(CMI_WOP(sCtx, CMP_OP_DB_IPCDALastOpEnded));
 
@@ -156,7 +156,7 @@ IDE_RC cmnLinkPeerInitializeServerIPCDA(cmnLink *aLink)
     cmnLinkPeerIPCDA *sLink = (cmnLinkPeerIPCDA *)aLink;
     cmnLinkDescIPCDA *sDesc = &sLink->mDesc;
 
-    /* ¸â¹ö ÃÊ±âÈ­ */
+    /* ë©¤ë²„ ì´ˆê¸°í™” */
     sDesc->mConnectFlag   = ID_TRUE;
     sDesc->mHandShakeFlag = ID_FALSE;
 
@@ -189,9 +189,9 @@ IDE_RC cmnLinkPeerFinalizeIPCDA(cmnLink *aLink)
 
 /*
  * !!!!!!!!!!!!!!!!!!!! WARNING !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
- * Å¬¶óÀÌ¾ðÆ®ÀÇ Á¾·á¸¦ ±â´Ù¸± ¶§ *Àý´ë·Î* mutex¸¦ Àâ¾Æ¼­´Â
- * ¾ÈµÈ´Ù. mutex¸¦ Àâ°í Á¾·á¸¦ ±â´Ù¸± °æ¿ì ½Ã½ºÅÛ ÀüÃ¼°¡
- * Á¤ÁöµÉ ¼ö ÀÖ´Ù.
+ * í´ë¼ì´ì–¸íŠ¸ì˜ ì¢…ë£Œë¥¼ ê¸°ë‹¤ë¦´ ë•Œ *ì ˆëŒ€ë¡œ* mutexë¥¼ ìž¡ì•„ì„œëŠ”
+ * ì•ˆëœë‹¤. mutexë¥¼ ìž¡ê³  ì¢…ë£Œë¥¼ ê¸°ë‹¤ë¦´ ê²½ìš° ì‹œìŠ¤í…œ ì „ì²´ê°€
+ * ì •ì§€ë  ìˆ˜ ìžˆë‹¤.
  * PR-4407
  */
 IDE_RC cmnLinkPeerCloseServerIPCDA(cmnLink *aLink)
@@ -221,7 +221,7 @@ IDE_RC cmnLinkPeerCloseServerIPCDA(cmnLink *aLink)
         {
             /*
              * BUG-32398
-             * °ªÀ» º¯°æÇØ ¿©·¯ Client·ÎÀÇ È¥¼±À» ¿¹¹æÇÏÀÚ.
+             * ê°’ì„ ë³€ê²½í•´ ì—¬ëŸ¬ Clientë¡œì˜ í˜¼ì„ ì„ ì˜ˆë°©í•˜ìž.
              */
             sChannelInfo = cmbShmIPCDAGetChannelInfo( gIPCDAShmInfo.mShmBuffer, sDesc->mChannelID );
             sChannelInfo->mTicketNum++;
@@ -236,7 +236,7 @@ IDE_RC cmnLinkPeerCloseServerIPCDA(cmnLink *aLink)
         IDE_ASSERT( gIPCDALock.unlock() == IDE_SUCCESS );
     }
 
-    /* socketÀÌ ¿­·ÁÀÖÀ¸¸é ´ÝÀ½ */
+    /* socketì´ ì—´ë ¤ìžˆìœ¼ë©´ ë‹«ìŒ */
     if (sLink->mDesc.mHandle != PDL_INVALID_SOCKET)
     {
         idlOS::closesocket(sLink->mDesc.mHandle);
@@ -333,7 +333,7 @@ IDE_RC cmnLinkPeerGetDescIPCDA(cmnLinkPeer *aLink, void *aDesc)
 {
     cmnLinkPeerIPCDA *sLink = (cmnLinkPeerIPCDA *)aLink;
 
-    /* Desc¸¦ µ¹·ÁÁÜ */
+    /* Descë¥¼ ëŒë ¤ì¤Œ */
     *(cmnLinkDescIPCDA **)aDesc = &sLink->mDesc;
 
     return IDE_SUCCESS;
@@ -347,15 +347,15 @@ IDE_RC cmnLinkPeerConnectIPCDA(cmnLinkPeer       *aLink,
     cmnLinkPeerIPCDA    *sLink = (cmnLinkPeerIPCDA *)aLink;
     UInt               sPathLen;
 
-    /* socket »ý¼º */
+    /* socket ìƒì„± */
     sLink->mDesc.mHandle = idlOS::socket(AF_UNIX, SOCK_STREAM, 0);
     IDE_TEST_RAISE(sLink->mDesc.mHandle == PDL_INVALID_SOCKET, SocketError);
 
-    /* IPCDA ÆÄÀÏÀÌ¸§ ±æÀÌ °Ë»ç */
+    /* IPCDA íŒŒì¼ì´ë¦„ ê¸¸ì´ ê²€ì‚¬ */
     sPathLen = idlOS::strlen(aConnectArg->mIPCDA.mFilePath);
     IDE_TEST_RAISE(ID_SIZEOF(sLink->mDesc.mAddr.sun_path) <= sPathLen, IpcPathTruncated);
 
-    /* IPC ÁÖ¼Ò ¼¼ÆÃ */
+    /* IPC ì£¼ì†Œ ì„¸íŒ… */
     sLink->mDesc.mAddr.sun_family = AF_UNIX;
     idlOS::snprintf(sLink->mDesc.mAddr.sun_path,
                     ID_SIZEOF(sLink->mDesc.mAddr.sun_path),
@@ -427,8 +427,8 @@ IDE_RC cmnLinkPeerAllocChannelServerIPCDA(cmnLinkPeer *aLink, SInt *aChannelID)
 
     gIPCDAShmInfo.mUsedChannelCount++;
 
-    // BUG-25420 [CodeSonar] Lock, Unlock ¿¡·¯ ÇÚµé¸µ ¿À·ù¿¡ ÀÇÇÑ Double Unlock
-    // unlock ¸¦ ÇÏ±âÀü¿¡ ¼¼ÆÃÀ»ÇØ¾ß Double Unlock À» ¸·À»¼ö ÀÖ´Ù.
+    // BUG-25420 [CodeSonar] Lock, Unlock ì—ëŸ¬ í•¸ë“¤ë§ ì˜¤ë¥˜ì— ì˜í•œ Double Unlock
+    // unlock ë¥¼ í•˜ê¸°ì „ì— ì„¸íŒ…ì„í•´ì•¼ Double Unlock ì„ ë§‰ì„ìˆ˜ ìžˆë‹¤.
     sLocked = ID_FALSE;
     /* BUG-44468 [cm] codesonar warning in CM */
     IDE_ASSERT( gIPCDALock.unlock() == IDE_SUCCESS );
@@ -483,18 +483,18 @@ IDE_RC cmnLinkPeerSetOperation(cmnLinkDescIPCDA *aDesc)
 {
     //=====================================================
     // bug-28340 rename semop name for readability
-    // °¡µ¶¼ºÀ» À§ÇØ semaphore op º¯¼ö¸íÀ» ´ÙÀ½°ú °°ÀÌ º¯°æ
+    // ê°€ë…ì„±ì„ ìœ„í•´ semaphore op ë³€ìˆ˜ëª…ì„ ë‹¤ìŒê³¼ ê°™ì´ ë³€ê²½
     //=====================================================
     // IPCDA_SEM_SERVER_DETECT  > IPCDA_SEM_CHECK_SVR_EXIT (0)
-    // server_detect_init     > InitSvrExit  : ¼­¹ö°¡ Àâ°í ½ÃÀÛ
-    // server_detect_try      > CheckSvrExit : ¼­¹ö°¡ Á×¾ú´ÂÁö È®ÀÎ
-    // server_detect_release  > SignSvrExit  : ¼­¹ö°¡ Á¾·á½ÅÈ£ º¸³¿
+    // server_detect_init     > InitSvrExit  : ì„œë²„ê°€ ìž¡ê³  ì‹œìž‘
+    // server_detect_try      > CheckSvrExit : ì„œë²„ê°€ ì£½ì—ˆëŠ”ì§€ í™•ì¸
+    // server_detect_release  > SignSvrExit  : ì„œë²„ê°€ ì¢…ë£Œì‹ í˜¸ ë³´ëƒ„
     //=====================================================
     // IPCDA_SEM_CLIENT_DETECT  > IPCDA_SEM_CHECK_CLI_EXIT (1)
-    // client_detect_init     > InitCliExit  : cli°¡ Àâ°í ½ÃÀÛ
-    // client_detect_try      > CheckCliExit : cli°¡ Á×¾ú´ÂÁö È®ÀÎ
-    // client_detect_hold     > WaitCliExit  : cli Á¾·á¶§±îÁö ´ë±â
-    // client_detect_release  > SignCliExit  : cli°¡ Á¾·á½ÅÈ£ º¸³¿
+    // client_detect_init     > InitCliExit  : cliê°€ ìž¡ê³  ì‹œìž‘
+    // client_detect_try      > CheckCliExit : cliê°€ ì£½ì—ˆëŠ”ì§€ í™•ì¸
+    // client_detect_hold     > WaitCliExit  : cli ì¢…ë£Œë•Œê¹Œì§€ ëŒ€ê¸°
+    // client_detect_release  > SignCliExit  : cliê°€ ì¢…ë£Œì‹ í˜¸ ë³´ëƒ„
     //=====================================================
 
     //=====================================================
@@ -656,8 +656,8 @@ IDE_RC cmnLinkPeerHandshakeServerIPCDA(cmnLinkPeer *aLink)
     sChannelInfo = cmbShmIPCDAGetChannelInfo( gIPCDAShmInfo.mShmBuffer, sDesc->mChannelID );
     /*
      * BUG-32398
-     * Å¸ÀÓ½ºÅÆÇÁ ´ë½Å Æ¼ÄÏ¹øÈ£À» »ç¿ëÇÑ´Ù.
-     * ÃÊ´ÜÀ§¶ó¼­ °°Àº °ªÀ» °¡Áö´Â Å¬¶óÀÌ¾ðÆ®°¡ Á¸ÀçÇÒ °¡´É¼ºÀÌ ÀÖ´Ù.
+     * íƒ€ìž„ìŠ¤íƒ¬í”„ ëŒ€ì‹  í‹°ì¼“ë²ˆí˜¸ì„ ì‚¬ìš©í•œë‹¤.
+     * ì´ˆë‹¨ìœ„ë¼ì„œ ê°™ì€ ê°’ì„ ê°€ì§€ëŠ” í´ë¼ì´ì–¸íŠ¸ê°€ ì¡´ìž¬í•  ê°€ëŠ¥ì„±ì´ ìžˆë‹¤.
      */
     sDesc->mTicketNum = sChannelInfo->mTicketNum;
 
@@ -798,11 +798,11 @@ IDE_RC cmnLinkPeerShutdownServerIPCDA(cmnLinkPeer    *aLink,
             /*
              * BUG-32398
              *
-             * Shutdown½Ã ±âÁ¸Ã³·³ ¸ðµå¿¡ µû¶ó ¼¼¸¶Æ÷¾î¸¦ Ç®¾îÁØ´Ù.
+             * Shutdownì‹œ ê¸°ì¡´ì²˜ëŸ¼ ëª¨ë“œì— ë”°ë¼ ì„¸ë§ˆí¬ì–´ë¥¼ í’€ì–´ì¤€ë‹¤.
              */
             if (aMode == CMN_SHUTDOWN_MODE_FORCE)
             {
-                // client°¡ Á¾·áÇß´Ù°í Ç¥½Ã.
+                // clientê°€ ì¢…ë£Œí–ˆë‹¤ê³  í‘œì‹œ.
                 while (0 != idlOS::semop(gIPCDAShmInfo.mSemChannelID[sDesc->mChannelID],
                                          sDesc->mOpSignCliExit,
                                          1))
@@ -1048,15 +1048,15 @@ IDE_RC cmnLinkPeerServerMapIPCDA(cmnLink *aLink)
 {
     cmnLinkPeer *sLink = (cmnLinkPeer *)aLink;
 
-    /* Link °Ë»ç */
+    /* Link ê²€ì‚¬ */
     IDE_ASSERT(aLink->mType == CMN_LINK_TYPE_PEER_SERVER);
     IDE_ASSERT(aLink->mImpl == CMN_LINK_IMPL_IPCDA);
 
-    /* ÇÔ¼ö Æ÷ÀÎÅÍ ¼¼ÆÃ */
+    /* í•¨ìˆ˜ í¬ì¸í„° ì„¸íŒ… */
     aLink->mOp     = &gCmnLinkPeerServerOpIPCDA;
     sLink->mPeerOp = &gCmnLinkPeerPeerServerOpIPCDA;
 
-    /* ¸â¹ö ÃÊ±âÈ­ */
+    /* ë©¤ë²„ ì´ˆê¸°í™” */
     sLink->mStatistics = NULL;
     sLink->mUserPtr    = NULL;
 

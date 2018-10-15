@@ -5,7 +5,7 @@ include ../../idEnv.mk
 LIBDIRS := $(LDROPT)$(PD_DIR)/src/lib $(LDROPT)$(ALTI_HOME)/lib $(LIBDIRS)
 INCLUDES := $(INCLUDES) $(IDROPT).
 
-# ¿¡·¯ÄÚµå ¸Þ½ÃÁö È­ÀÏ
+# ì—ëŸ¬ì½”ë“œ ë©”ì‹œì§€ í™”ì¼
 all: testSystem$(BINEXT)
 
 testSystem$(BINEXT): testSystem.$(OBJEXT)

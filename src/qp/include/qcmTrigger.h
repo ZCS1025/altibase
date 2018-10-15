@@ -22,11 +22,11 @@
  *
  *     [PROJ-1359] Trigger
  *
- *     Trigger¸¦ À§ÇÑ Meta ¹× Cache °ü¸®¸¦ À§ÇÑ ÇÔ¼ö
+ *     Triggerë¥¼ ìœ„í•œ Meta ë° Cache ê´€ë¦¬ë¥¼ ìœ„í•œ í•¨ìˆ˜
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  **********************************************************************/
 
@@ -35,8 +35,8 @@
 
 #include <qcm.h>
 
-// 100°³ÀÇ ¹®ÀÚ¿­À» ÀúÀåÇÒ ¶§,
-// ´ÙÀ½°ú °°Àº ¹®ÀåÀÌ Á¸ÀçÇÏ´Â °æ¿ì
+// 100ê°œì˜ ë¬¸ìì—´ì„ ì €ì¥í•  ë•Œ,
+// ë‹¤ìŒê³¼ ê°™ì€ ë¬¸ì¥ì´ ì¡´ì¬í•˜ëŠ” ê²½ìš°
 #define QCM_TRIGGER_SUBSTRING_LEN                  (100)
 #define QCM_TRIGGER_SUBSTRING_LEN_STR              "100"
 
@@ -44,7 +44,7 @@ class qcmTrigger
 {
 public:
 
-    // Trigger OID ¿Í Table IDÀÇ È¹µæ
+    // Trigger OID ì™€ Table IDì˜ íšë“
     static IDE_RC getTriggerOID( qcStatement    * aStatement,
                                  UInt             aUserID,
                                  qcNamePosition   aTriggerName,
@@ -52,22 +52,22 @@ public:
                                  UInt           * aTableID,
                                  idBool         * aIsExist );
 
-    // Trigger CycleÀÇ Á¸Àç ¿©ºÎ °Ë»ç
-    // aTableIDÀÇ Trigger°¡ Á¢±ÙÇÏ´Â TableÁß aCycleTableID°¡
-    // Á¸ÀçÇÒ °æ¿ì CycleÀÌ Á¸ÀçÇÔ.
+    // Trigger Cycleì˜ ì¡´ì¬ ì—¬ë¶€ ê²€ì‚¬
+    // aTableIDì˜ Triggerê°€ ì ‘ê·¼í•˜ëŠ” Tableì¤‘ aCycleTableIDê°€
+    // ì¡´ì¬í•  ê²½ìš° Cycleì´ ì¡´ì¬í•¨.
     static IDE_RC checkTriggerCycle( qcStatement * aStatement,
                                      UInt          aTableID,
                                      UInt          aCycleTableID );
 
-    // Meta Table¿¡ Trigger Á¤º¸¸¦ µî·ÏÇÑ´Ù.
+    // Meta Tableì— Trigger ì •ë³´ë¥¼ ë“±ë¡í•œë‹¤.
     static IDE_RC addMetaInfo( qcStatement * aStatement,
                                void        * sTriggerHandle );
 
-    // Meta Table¿¡¼­ Trigger Á¤º¸¸¦ »èÁ¦ÇÑ´Ù.
+    // Meta Tableì—ì„œ Trigger ì •ë³´ë¥¼ ì‚­ì œí•œë‹¤.
     static IDE_RC removeMetaInfo( qcStatement * aStatement,
                                   smOID         aTriggerOID );
 
-    // Meta Table·ÎºÎÅÍ Table CacheÀÇ Trigger Á¤º¸¸¦ ¼³Á¤ÇÑ´Ù.
+    // Meta Tableë¡œë¶€í„° Table Cacheì˜ Trigger ì •ë³´ë¥¼ ì„¤ì •í•œë‹¤.
     static IDE_RC getTriggerMetaCache( smiStatement * aSmiStmt,
                                        UInt           aTableID,
                                        qcmTableInfo * aTableInfo );

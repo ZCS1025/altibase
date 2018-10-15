@@ -48,7 +48,7 @@ static IDE_RC mtfBinary_lengthEstimate( mtcNode*     aNode,
 mtfModule mtfBinary_length = {
     1|MTC_NODE_OPERATOR_FUNCTION,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
+    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìê°€ ì•„ë‹˜)
     mtfBinary_lengthFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -148,7 +148,7 @@ IDE_RC mtfBinary_lengthEstimate( mtcNode*     aNode,
         }
         else
         {
-            /* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø */
+            /* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ì… ì§€ì› */
             aTemplate->rows[aNode->table].execute[aNode->column] = mtfExecute;
         }
     }
@@ -193,8 +193,8 @@ IDE_RC mtfBinary_lengthCalculate( mtcNode*     aNode,
  * Implementation :
  *    BINARY_LENGTH( char )
  *
- *    aStack[0] : ÀÔ·ÂµÈ ¹®ÀÚ¿­ÀÇ ±æÀÌ 
- *    aStack[1] : char ( ÀÔ·ÂµÈ ¹®ÀÚ¿­ )
+ *    aStack[0] : ì…ë ¥ëœ ë¬¸ìì—´ì˜ ê¸¸ì´ 
+ *    aStack[1] : char ( ì…ë ¥ëœ ë¬¸ìì—´ )
  *
  ***********************************************************************/
 

@@ -118,7 +118,7 @@ void dktNotifier::notify()
                 if ( ( sDblinkStarted == ID_FALSE ) ||
                      ( mSession->mIsNeedToDisconnect == ID_TRUE ) )
                 {
-                    /* altilinker°¡ stopÀÌ°Å³ª, need to disconnectÀÎ °æ¿ì */
+                    /* altilinkerê°€ stopì´ê±°ë‚˜, need to disconnectì¸ ê²½ìš° */
                     continue;
                 }
                 else
@@ -128,13 +128,13 @@ void dktNotifier::notify()
             }
             else
             {
-                /* DKT_LINKER_TYPE_DBLINKÀÎ °æ¿ì, notifyXaResult()¿¡¼­ mSessionÀ» »ç¿ëÇÑ´Ù. */
+                /* DKT_LINKER_TYPE_DBLINKì¸ ê²½ìš°, notifyXaResult()ì—ì„œ mSessionì„ ì‚¬ìš©í•œë‹¤. */
                 continue;
             }
         }
         else
         {
-            /* DKT_LINKER_TYPE_SHARDÀÎ °æ¿ì, notifyXaResult()¿¡¼­ mSessionÀ» »ç¿ëÇÏÁö ¾Ê´Â´Ù. */
+            /* DKT_LINKER_TYPE_SHARDì¸ ê²½ìš°, notifyXaResult()ì—ì„œ mSessionì„ ì‚¬ìš©í•˜ì§€ ì•ŠëŠ”ë‹¤. */
         }
 
         if ( notifyXaResult( sDtxInfo,
@@ -169,7 +169,7 @@ void dktNotifier::notify()
         }
         else
         {
-            /* ¿ø°İÀå¾Ö ½Ã°£ÀÌ ±ä °æ¿ì, Áö³ªÄ¡°Ô ¸¹Àº ·Î±ëÀÌ ¹ß»ıÇÒ °ÍÀÓ. */
+            /* ì›ê²©ì¥ì•  ì‹œê°„ì´ ê¸´ ê²½ìš°, ì§€ë‚˜ì¹˜ê²Œ ë§ì€ ë¡œê¹…ì´ ë°œìƒí•  ê²ƒì„. */
             writeNotifyFailLog( sFailXIDs,
                                 sFailErrCodes,
                                 sDtxInfo );
@@ -409,7 +409,7 @@ IDE_RC dktNotifier::notifyXaResultForShard( dktDtxInfo    * aDtxInfo,
             IDE_TEST( sdi::endPendingTran( &sDataNode, ID_FALSE ) != IDE_SUCCESS );
         }
 
-        /* xaCloseÇÏÁö ¾Ê°í ¹Ù·Î ²÷¾î¹ö¸°´Ù. */
+        /* xaCloseí•˜ì§€ ì•Šê³  ë°”ë¡œ ëŠì–´ë²„ë¦°ë‹¤. */
         sdi::freeConnectImmediately( &sDataNode );
     }
 
@@ -702,7 +702,7 @@ IDE_RC dktNotifier::createDtxInfo( UInt          aLocalTxId,
     return IDE_FAILURE;
 }
 
-/* sm recovery redoÁß¿¡ dtx info¸¦ ±¸¼ºÇÏ°í, Service ½ÃÀÛ ´Ü°è¿¡¼­ notifier¿¡°Ô ³Ñ°ÜÁØ´Ù */
+/* sm recovery redoì¤‘ì— dtx infoë¥¼ êµ¬ì„±í•˜ê³ , Service ì‹œì‘ ë‹¨ê³„ì—ì„œ notifierì—ê²Œ ë„˜ê²¨ì¤€ë‹¤ */
 IDE_RC  dktNotifier::manageDtxInfoListByLog( UInt    aLocalTxId,
                                              UInt    aGlobalTxId,
                                              UInt    aBranchTxInfoSize,
@@ -834,7 +834,7 @@ IDE_RC dktNotifier::getNotifierTransactionInfo( dktNotifierTransactionInfo ** aI
     return IDE_FAILURE;
 }
 
-/* notifier°¡ °¡Áø ¸ğµç branchTxÀÇ °¹¼ö¸¦ ¹İÈ¯. È£ÃâÇÏ´Â °÷¿¡¼­ mutex¸¦ Àâ¾Æ¾ßÇÑ´Ù. */
+/* notifierê°€ ê°€ì§„ ëª¨ë“  branchTxì˜ ê°¯ìˆ˜ë¥¼ ë°˜í™˜. í˜¸ì¶œí•˜ëŠ” ê³³ì—ì„œ mutexë¥¼ ì¡ì•„ì•¼í•œë‹¤. */
 UInt dktNotifier::getAllBranchTxCnt()
 {
     dktDtxInfo         * sDtxInfo = NULL;

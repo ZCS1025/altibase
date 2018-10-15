@@ -206,11 +206,11 @@ int shm_test()
 	shm_test_dummy_t *secShmPtr;
 	shm_test_dummy_t tstDummy;
 
-	// °øÀ¯¸Ş¸ğ¸® »ı¼º
+	// ê³µìœ ë©”ëª¨ë¦¬ ìƒì„±
 	shmId = idlOS::shmget(SHM_KEY, SHM_SIZE, 0666 | IPC_CREAT | IPC_EXCL);
 	IDE_TEST_RAISE(shmId==PDL_INVALID_HANDLE, shmget_error);
 
-	// °øÀ¯¸Ş¸ğ¸® Áßº¹ (-1 ³ª¿Í¾ßÇÔ)
+	// ê³µìœ ë©”ëª¨ë¦¬ ì¤‘ë³µ (-1 ë‚˜ì™€ì•¼í•¨)
 	rc = idlOS::shmget(SHM_KEY, SHM_SIZE, 0666 | IPC_CREAT | IPC_EXCL);
 	IDE_TEST_RAISE(rc!=-1, duplicate_shmget_not_detected_error);
 
@@ -234,7 +234,7 @@ int shm_test()
 
 	memcpy(&tstDummy, shmPtr2, sizeof(tstDummy));
 
-	// °øÀ¯¸Ş¸ğ¸® »ı¼º
+	// ê³µìœ ë©”ëª¨ë¦¬ ìƒì„±
 	secShmId = idlOS::shmget(SHM_KEY, SHM_SIZE, 0666 );
 	IDE_TEST_RAISE(secShmId==PDL_INVALID_HANDLE, sec_shmget_error);
 
@@ -316,7 +316,7 @@ int shm_test()
 int main(int argc, char *argv[])
 {
 
-	// ¾Æ¹«ÀÏµµ ¾ÈÇÏÁö¸¸ ¿¡·¯´Â ³ª¸é ¾ÈµÈ´Ù.
+	// ì•„ë¬´ì¼ë„ ì•ˆí•˜ì§€ë§Œ ì—ëŸ¬ëŠ” ë‚˜ë©´ ì•ˆëœë‹¤.
 	// hjohn modify
 	if ( idlVA::daemonize(".", 0) != 0) {
 		ERR_EXIT("set_handle_limit")

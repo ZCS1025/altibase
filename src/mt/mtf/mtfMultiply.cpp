@@ -49,7 +49,7 @@ mtfModule mtfMultiply = {
         MTC_NODE_PRINT_FMT_MISC|
         MTC_NODE_COMMUTATIVE_TRUE,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
+    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìê°€ ì•„ë‹˜)
     mtfMultiplyFunctionName,
     NULL,
     mtfMultiplyInitialize,
@@ -116,19 +116,19 @@ static mtfSubModule mtfXX[1] = {
 //};
 
 // To Fix PR-8722
-// [Overflow(Underflow)-PRONE ¿¬»êÀÇ Á¦°Å]
-// A4 ¿¡¼­´Â Parsing ´Ü°è¿¡¼­ ¼ıÀÚÇü¿¡ ´ëÇÑ Type °áÁ¤½Ã
-// ÇØ´ç ¼ıÀÚ°¡ Æ÷ÇÔµÉ ¼ö ÀÖ´Â ÃÖ¼Ò ¹üÀ§ ³»ÀÇ Data TypeÀ¸·Î
-// °áÁ¤µÈ´Ù.  ( ex) 1 ==> SMALLINT, 100000 ==> INTEGER )
-// ÀÌ ¶§, SMALLINT * SMALLINT °ª µîÀ» SMALLINT·Î Ã³¸®ÇÒ °æ¿ì
-// (24*60*60)°ú °°Àº °ªµéÀº SMALLINT °ªÀÇ ¹üÀ§¸¦ ¹ş¾î³ª
-// Àß¸øµÈ °á°ú°ªÀ» °®´Â °æ¿ì°¡ ¸¹´Ù.
-// ÀÌ·¯ÇÑ ¿¬»êÀº DATA Type¿¡ ´ëÇÑ Second°ªµîÀ» Áõ°¡½ÃÅ°±â À§ÇØ »ç¿ëµÇ´Â µ¥,
-// A3¿¡¼­´Â Parsing ´Ü°è¿¡¼­ ¸ğµç Á¤¼öÇüÀ» INTEGER·Î °áÁ¤ÇÏ±â ¶§¹®¿¡
-// ¹®Á¦°¡ ¹ß»ıÇÏÁö ¾Ê¾Ò´Ù.
-// ÀÌ·¯ÇÑ ¹®Á¦¸¦ ÇØ°áÇÏ±â À§ÇÏ¿© SMALLINT¸¸À» ÀÌ¿ëÇÑ ¿¬»ê ¹æ½ÄÀº Á¦°ÅÇÑ´Ù.
-// ¹°·Ğ, ÀÌ·¸°Ô ÇØ°áÇÑ´Ù ÇÏ´õ¶óµµ A3¿Í ¸¶Âù°¡Áö·Î
-// INTEGER * INTEGER µîÀÌ INTEGERÀÇ ¹üÀ§¸¦ ¹ş¾î³¯ ¼ö ÀÖ´Ù.
+// [Overflow(Underflow)-PRONE ì—°ì‚°ì˜ ì œê±°]
+// A4 ì—ì„œëŠ” Parsing ë‹¨ê³„ì—ì„œ ìˆ«ìí˜•ì— ëŒ€í•œ Type ê²°ì •ì‹œ
+// í•´ë‹¹ ìˆ«ìê°€ í¬í•¨ë  ìˆ˜ ìˆëŠ” ìµœì†Œ ë²”ìœ„ ë‚´ì˜ Data Typeìœ¼ë¡œ
+// ê²°ì •ëœë‹¤.  ( ex) 1 ==> SMALLINT, 100000 ==> INTEGER )
+// ì´ ë•Œ, SMALLINT * SMALLINT ê°’ ë“±ì„ SMALLINTë¡œ ì²˜ë¦¬í•  ê²½ìš°
+// (24*60*60)ê³¼ ê°™ì€ ê°’ë“¤ì€ SMALLINT ê°’ì˜ ë²”ìœ„ë¥¼ ë²—ì–´ë‚˜
+// ì˜ëª»ëœ ê²°ê³¼ê°’ì„ ê°–ëŠ” ê²½ìš°ê°€ ë§ë‹¤.
+// ì´ëŸ¬í•œ ì—°ì‚°ì€ DATA Typeì— ëŒ€í•œ Secondê°’ë“±ì„ ì¦ê°€ì‹œí‚¤ê¸° ìœ„í•´ ì‚¬ìš©ë˜ëŠ” ë°,
+// A3ì—ì„œëŠ” Parsing ë‹¨ê³„ì—ì„œ ëª¨ë“  ì •ìˆ˜í˜•ì„ INTEGERë¡œ ê²°ì •í•˜ê¸° ë•Œë¬¸ì—
+// ë¬¸ì œê°€ ë°œìƒí•˜ì§€ ì•Šì•˜ë‹¤.
+// ì´ëŸ¬í•œ ë¬¸ì œë¥¼ í•´ê²°í•˜ê¸° ìœ„í•˜ì—¬ SMALLINTë§Œì„ ì´ìš©í•œ ì—°ì‚° ë°©ì‹ì€ ì œê±°í•œë‹¤.
+// ë¬¼ë¡ , ì´ë ‡ê²Œ í•´ê²°í•œë‹¤ í•˜ë”ë¼ë„ A3ì™€ ë§ˆì°¬ê°€ì§€ë¡œ
+// INTEGER * INTEGER ë“±ì´ INTEGERì˜ ë²”ìœ„ë¥¼ ë²—ì–´ë‚  ìˆ˜ ìˆë‹¤.
 
 //static mtfSubModule mtfNN[5] = {
 //    { mtfNN+1, mtfMultiplyEstimateInteger  },
@@ -139,41 +139,41 @@ static mtfSubModule mtfXX[1] = {
 //};
 
 // fix BUG-13757
-// integer°è¿­ÀÇ °öÇÏ±â ¿¬»ê°á°ú¸¦ doubleÅ¸ÀÔÀ¸·Î Ã³¸®
+// integerê³„ì—´ì˜ ê³±í•˜ê¸° ì—°ì‚°ê²°ê³¼ë¥¼ doubleíƒ€ì…ìœ¼ë¡œ ì²˜ë¦¬
 // 
-// (1) ±âÁ¸Á¤Ã¥
+// (1) ê¸°ì¡´ì •ì±…
 //     smallint * smallint = integer
 //     integer  * integer  = integer
 //     bigint   * bigint   = bigint
 //
-//     a3, a4¿¡¼­ ÀÌ·¸°Ô Á¤Ã¥À» °áÁ¤ÇÏ°Ô µÈ ÀÌÀ¯´Â,
-//     ÀÎµ¦½º È°¿ëµµ¸¦ ³ôÀÌ±â À§ÇÔÀÓ
-//     ¿¹) i1ÀÌ integer columnÀÏ °æ¿ì,
-//         A. A2¿¡¼­´Â
-//            i1 = 3 * 3Àº integer = double(?)ÀÌ¹Ç·Î ÀÎµ¦½º¸¦ Å» ¼ö ¾øÀ½
-//         B. A3, A4¿¡¼­´Â
-//            i1 = 3 * 3Àº integer = integerÀÌ¹Ç·Î ÀÎµ¦½º¸¦ Å» ¼ö ÀÖÀ½.
+//     a3, a4ì—ì„œ ì´ë ‡ê²Œ ì •ì±…ì„ ê²°ì •í•˜ê²Œ ëœ ì´ìœ ëŠ”,
+//     ì¸ë±ìŠ¤ í™œìš©ë„ë¥¼ ë†’ì´ê¸° ìœ„í•¨ì„
+//     ì˜ˆ) i1ì´ integer columnì¼ ê²½ìš°,
+//         A. A2ì—ì„œëŠ”
+//            i1 = 3 * 3ì€ integer = double(?)ì´ë¯€ë¡œ ì¸ë±ìŠ¤ë¥¼ íƒˆ ìˆ˜ ì—†ìŒ
+//         B. A3, A4ì—ì„œëŠ”
+//            i1 = 3 * 3ì€ integer = integerì´ë¯€ë¡œ ì¸ë±ìŠ¤ë¥¼ íƒˆ ìˆ˜ ìˆìŒ.
 //
-// (2) º¯°æµÈÁ¤Ã¥
+// (2) ë³€ê²½ëœì •ì±…
 //     smallint * smallint = double
 //     integer  * integer  = double
 //     bigint   * bigint   = double
 //
-// Á¤Ã¥º¯°æÀ¸·Î ÀÎÇÑ ¹®Á¦Á¡°ú Å¸´ç¼º
-// (1) ¹®Á¦Á¡
-//     ¿¬»ê°á°ú¸¦ double typeÀ¸·Î conversionÇÏ´Â ºñ¿ëÀÌ ¹ß»ıÇÔ.
-// (2) Å¸´ç¼º
-//     A. ÀÎµ¦½º È°¿ëÀº ¿©ÀüÈ÷ À¯ÁöµÊ
-//        µ¿ÀÏ°è¿­ µ¥ÀÌÅ¸Å¸ÀÔÀÇ ÀÎµ¦½ºÈ°¿ëµµ°³¼±(PROJ-1364)À¸·Î ÀÎÇØ
-//        integer = doubleÀÎ °æ¿ì¿¡µµ ÀÎµ¦½º¸¦ Å» ¼ö ÀÖÀ½.
-//     B. isql»óÀÇ Ç¥±â ¹®Á¦
-//        °öÇÏ±â¿¬»êÀÇ °á°ú°¡ XXXX.0 À¸·Î ³ª¿À´Â °æ¿ì,
-//        .0À» Á¦°ÅÇÏ°í  XXXX·Î Ãâ·ÂµÊ.
-//        ¿¹) select 3*3 from t1ÀÏ °æ¿ì, 9.0ÀÌ ¾Æ´Ñ 9·Î Ãâ·ÂµÊ.
-//     C. client program¿¡¼­ °öÇÏ±â ¿¬»ê°á°ú¸¦ integer typeº¯¼ö¿¡ ÀúÀå½Ã,
-//        .°öÇÏ±â ¿¬»ê°á°ú°¡ integer¹üÀ§³»¿¡ µé °æ¿ì, Á¤»óµ¿ÀÛ
-//        .°öÇÏ±â ¿¬»ê°á°ú°¡ integer¹üÀ§¸¦ ³ÑÀ» °æ¿ì,client program¿¡¼­ ¿¡·¯³²
-//         ¿¹) (Error : [-1] The data value could not be converted to 
+// ì •ì±…ë³€ê²½ìœ¼ë¡œ ì¸í•œ ë¬¸ì œì ê³¼ íƒ€ë‹¹ì„±
+// (1) ë¬¸ì œì 
+//     ì—°ì‚°ê²°ê³¼ë¥¼ double typeìœ¼ë¡œ conversioní•˜ëŠ” ë¹„ìš©ì´ ë°œìƒí•¨.
+// (2) íƒ€ë‹¹ì„±
+//     A. ì¸ë±ìŠ¤ í™œìš©ì€ ì—¬ì „íˆ ìœ ì§€ë¨
+//        ë™ì¼ê³„ì—´ ë°ì´íƒ€íƒ€ì…ì˜ ì¸ë±ìŠ¤í™œìš©ë„ê°œì„ (PROJ-1364)ìœ¼ë¡œ ì¸í•´
+//        integer = doubleì¸ ê²½ìš°ì—ë„ ì¸ë±ìŠ¤ë¥¼ íƒˆ ìˆ˜ ìˆìŒ.
+//     B. isqlìƒì˜ í‘œê¸° ë¬¸ì œ
+//        ê³±í•˜ê¸°ì—°ì‚°ì˜ ê²°ê³¼ê°€ XXXX.0 ìœ¼ë¡œ ë‚˜ì˜¤ëŠ” ê²½ìš°,
+//        .0ì„ ì œê±°í•˜ê³   XXXXë¡œ ì¶œë ¥ë¨.
+//        ì˜ˆ) select 3*3 from t1ì¼ ê²½ìš°, 9.0ì´ ì•„ë‹Œ 9ë¡œ ì¶œë ¥ë¨.
+//     C. client programì—ì„œ ê³±í•˜ê¸° ì—°ì‚°ê²°ê³¼ë¥¼ integer typeë³€ìˆ˜ì— ì €ì¥ì‹œ,
+//        .ê³±í•˜ê¸° ì—°ì‚°ê²°ê³¼ê°€ integerë²”ìœ„ë‚´ì— ë“¤ ê²½ìš°, ì •ìƒë™ì‘
+//        .ê³±í•˜ê¸° ì—°ì‚°ê²°ê³¼ê°€ integerë²”ìœ„ë¥¼ ë„˜ì„ ê²½ìš°,client programì—ì„œ ì—ëŸ¬ë‚¨
+//         ì˜ˆ) (Error : [-1] The data value could not be converted to 
 //                      the data type specified by TargetType in SQLBindCol)
 
 static mtfSubModule mtfNN[3] = {
@@ -192,7 +192,7 @@ static mtfSubModule* mtfGroupTable[MTD_GROUP_MAXIMUM][MTD_GROUP_MAXIMUM] = {
 };
 
 // BUG-41994
-// high precision¿ë group table
+// high precisionìš© group table
 static mtfSubModule mtfNP[1] = {
     { NULL, mtfMultiplyEstimateFloat }
 };
@@ -646,7 +646,7 @@ IDE_RC mtfMultiplyEstimateFloat( mtcNode*     aNode,
  *
  * Description :
  *    Multiply Float : aStack[0] = aStack[1] * aStack[2] 
- *    ½ÇÁ¦ÀûÀÎ °è»êÀº idaMultiply ÀÌ·ç¾îÁø´Ù.
+ *    ì‹¤ì œì ì¸ ê³„ì‚°ì€ idaMultiply ì´ë£¨ì–´ì§„ë‹¤.
  * ---------------------------------------------------------------------------*/
  
 IDE_RC mtfMultiplyCalculateFloat( mtcNode*     aNode,
@@ -863,8 +863,8 @@ IDE_RC mtfMultiplyCalculateDouble( mtcNode*     aNode,
            *(mtdDoubleType*)aStack[1].value * *(mtdDoubleType*)aStack[2].value;
 
         // fix BUG-13757
-        // double'0' * double'-1' = double'-0' ÀÌ ³ª¿À¹Ç·Î
-        // -0 °ªÀ» 0 °ªÀ¸·Î Ã³¸®ÇÏ±â À§ÇÑ ÄÚµåÀÓ.
+        // double'0' * double'-1' = double'-0' ì´ ë‚˜ì˜¤ë¯€ë¡œ
+        // -0 ê°’ì„ 0 ê°’ìœ¼ë¡œ ì²˜ë¦¬í•˜ê¸° ìœ„í•œ ì½”ë“œì„.
         /* PATCH(BEGIN): GNU MATH LIBRARY - REMOVE MINUS ZERO */
         if( *(mtdDoubleType*)aStack[0].value == 0 )
         {

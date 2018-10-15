@@ -16,25 +16,25 @@
  
 /*
  * -----------------------------------------------------------------------------
- *  ALA_GetODBCCValue() ÇÔ¼ö´Â
- *      ALA_Value ¸¦ ÀÔ·ÂÀ¸·Î ¹Þ¾Æ¼­ »ç¿ëÀÚ°¡ aODBCCTypeID ¿¡ ÁöÁ¤ÇÑ Å¸ÀÔÀ¸·Î
- *      Å¸ÀÔÀ» º¯È¯ÇÑ ÈÄ ±× °á°ú µ¥ÀÌÅÍ¸¦
- *      aOutODBCCValueBuffer °¡ °¡¸®Å°´Â ¹öÆÛ¿¡ ´ã¾Æ ÁÖ´Â ÇÔ¼öÀÌ´Ù.
+ *  ALA_GetODBCCValue() í•¨ìˆ˜ëŠ”
+ *      ALA_Value ë¥¼ ìž…ë ¥ìœ¼ë¡œ ë°›ì•„ì„œ ì‚¬ìš©ìžê°€ aODBCCTypeID ì— ì§€ì •í•œ íƒ€ìž…ìœ¼ë¡œ
+ *      íƒ€ìž…ì„ ë³€í™˜í•œ í›„ ê·¸ ê²°ê³¼ ë°ì´í„°ë¥¼
+ *      aOutODBCCValueBuffer ê°€ ê°€ë¦¬í‚¤ëŠ” ë²„í¼ì— ë‹´ì•„ ì£¼ëŠ” í•¨ìˆ˜ì´ë‹¤.
  *
- *      ÀÌ ¶§, Å¸ÀÔÀÇ º¯È¯Àº
+ *      ì´ ë•Œ, íƒ€ìž…ì˜ ë³€í™˜ì€
  *
  *      mt --> cmt --> ulnColumn --> odbc
  *
- *      ÀÇ ¼ø¼­·Î ÀÌ·ç¾îÁø´Ù.
+ *      ì˜ ìˆœì„œë¡œ ì´ë£¨ì–´ì§„ë‹¤.
  *
- *      ±× Áß ul ÂÊÀÇ º¯È¯Àº uln ÀÇ ÇÔ¼öµéÀ» ÀÌ¿ëÇØ¼­ ÇÒ ¼ö ÀÖÀ¸³ª
- *      PROJ-1000 Client C Porting ´ç½Ã ¼­¹öÂÊÀÇ ¸ðµâÀº C ·Î Æ÷ÆÃÇÏÁö ¾Ê¾Æ¼­
- *      mt --> cmt ÀÇ º¯È¯¿¡ »ç¿ëµÈ mmcSession À» ÀÌ¿ëÇÒ ¼ö ¾ø´Â »óÈ²ÀÌ¾ú´Ù.
+ *      ê·¸ ì¤‘ ul ìª½ì˜ ë³€í™˜ì€ uln ì˜ í•¨ìˆ˜ë“¤ì„ ì´ìš©í•´ì„œ í•  ìˆ˜ ìžˆìœ¼ë‚˜
+ *      PROJ-1000 Client C Porting ë‹¹ì‹œ ì„œë²„ìª½ì˜ ëª¨ë“ˆì€ C ë¡œ í¬íŒ…í•˜ì§€ ì•Šì•„ì„œ
+ *      mt --> cmt ì˜ ë³€í™˜ì— ì‚¬ìš©ëœ mmcSession ì„ ì´ìš©í•  ìˆ˜ ì—†ëŠ” ìƒí™©ì´ì—ˆë‹¤.
  *
- *      º» ÆÄÀÏ (ulaConv.c) Àº mmcSession ÀÌ ¼öÇàÇÏ´ø mt --> cmt ÀÇ
- *      º¯È¯ ÄÚµå¸¦ ±×·¡µµ °¡Á®¿Í¼­ C ·Î Æ÷ÆÃÇÑ ÄÚµåÀÌ´Ù.
+ *      ë³¸ íŒŒì¼ (ulaConv.c) ì€ mmcSession ì´ ìˆ˜í–‰í•˜ë˜ mt --> cmt ì˜
+ *      ë³€í™˜ ì½”ë“œë¥¼ ê·¸ëž˜ë„ ê°€ì ¸ì™€ì„œ C ë¡œ í¬íŒ…í•œ ì½”ë“œì´ë‹¤.
  *
- *      mmcConvFmMT.cpp ÆÄÀÏ ÂüÁ¶.
+ *      mmcConvFmMT.cpp íŒŒì¼ ì°¸ì¡°.
  * -----------------------------------------------------------------------------
  */
 

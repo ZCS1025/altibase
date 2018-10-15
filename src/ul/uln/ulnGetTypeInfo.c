@@ -313,9 +313,9 @@ SQLRETURN ulnGetTypeInfo(ulnStmt *aStmt, acp_sint16_t aDataType)
      */
 
     // fix BUG-30312
-    // SQL_ATTR_LONGDATA_COMPAT ¼Ó¼º »ç¿ë½Ã
-    // SQL_LONGVARBINARY ¹× SQL_LONGVARCHARÀÇ Á¤º¸´Â
-    // X$DATATYPEÀÇ SQL_BLOB, SQL_CLOBÀÇ Á¤º¸¸¦ °®°í¿Àµµ·Ï ÇÑ´Ù.
+    // SQL_ATTR_LONGDATA_COMPAT ì†ì„± ì‚¬ìš©ì‹œ
+    // SQL_LONGVARBINARY ë° SQL_LONGVARCHARì˜ ì •ë³´ëŠ”
+    // X$DATATYPEì˜ SQL_BLOB, SQL_CLOBì˜ ì •ë³´ë¥¼ ê°–ê³ ì˜¤ë„ë¡ í•œë‹¤.
 
     if (ulnDbcGetLongDataCompat(aStmt->mParentDbc) == ACP_TRUE)
     {
@@ -331,9 +331,9 @@ SQLRETURN ulnGetTypeInfo(ulnStmt *aStmt, acp_sint16_t aDataType)
     }
 
     // BUG-17202
-    // X$DATATYPE¿¡¼­
-    // ODBC_DATA_TYPE°ú ODBC_SQL_DATA_TYPEÀ»
-    // DATA_TYPE°ú SQL_DATA_TYPEÀ¸·Î º¯È¯
+    // X$DATATYPEì—ì„œ
+    // ODBC_DATA_TYPEê³¼ ODBC_SQL_DATA_TYPEì„
+    // DATA_TYPEê³¼ SQL_DATA_TYPEìœ¼ë¡œ ë³€í™˜
 
     acpSnprintf(sQueryString,
                 ACI_SIZEOF(sQueryString),
@@ -362,7 +362,7 @@ SQLRETURN ulnGetTypeInfo(ulnStmt *aStmt, acp_sint16_t aDataType)
     if (aDataType != SQL_ALL_TYPES)
     {
         // fix BUG-31061
-        // DATE °ü·Ã TYPEÀº ¸ðµÎ DATE·Î ¼­¹ö·Î Àü¼ÛÇÑ´Ù.
+        // DATE ê´€ë ¨ TYPEì€ ëª¨ë‘ DATEë¡œ ì„œë²„ë¡œ ì „ì†¡í•œë‹¤.
         switch(aDataType)
         {
             case SQL_DATE:
@@ -388,7 +388,7 @@ SQLRETURN ulnGetTypeInfo(ulnStmt *aStmt, acp_sint16_t aDataType)
     }
 
     /*
-     * Protocol Context ÃÊ±âÈ­
+     * Protocol Context ì´ˆê¸°í™”
      */
     //fix BUG-17722
     ACI_TEST(ulnInitializeProtocolContext(&sFnContext,
@@ -420,7 +420,7 @@ SQLRETURN ulnGetTypeInfo(ulnStmt *aStmt, acp_sint16_t aDataType)
                                      aStmt->mParentDbc->mConnTimeoutValue) != ACI_SUCCESS);
 
     /*
-     * Protocol Context Á¤¸®
+     * Protocol Context ì •ë¦¬
      */
     sNeedFinPtContext = ACP_FALSE;
     //fix BUG-17722

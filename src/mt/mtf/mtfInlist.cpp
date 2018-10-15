@@ -164,7 +164,7 @@ IDE_RC mtfInlistEstimate( mtcNode*     aNode,
                                 != ID_TRUE, ERR_CONVERSION_NOT_APPLICABLE );
             }
 
-            // column conversion À» ºÙÀÎ´Ù.
+            // column conversion ì„ ë¶™ì¸ë‹¤.
             sModules[0] = sTarget;
             sModules[1] = &mtdChar;
 
@@ -197,7 +197,7 @@ IDE_RC mtfInlistEstimate( mtcNode*     aNode,
                                     != ID_TRUE, ERR_CONVERSION_NOT_APPLICABLE );
                 }
 
-                // column conversion À» ºÙÀÎ´Ù.
+                // column conversion ì„ ë¶™ì¸ë‹¤.
                 sModules[0] = sTarget;
                 sModules[1] = &mtdVarchar;
 
@@ -211,7 +211,7 @@ IDE_RC mtfInlistEstimate( mtcNode*     aNode,
             }
             else
             {
-                /*char varchar °¡ ¾Æ´Ñ °æ¿ì °­Á¦·Î varchar ·Î conversion */
+                /*char varchar ê°€ ì•„ë‹Œ ê²½ìš° ê°•ì œë¡œ varchar ë¡œ conversion */
                 IDE_TEST( mtf::getComparisonModule( &sTarget,
                                                     aStack[1].column->module->no,
                                                     mtdVarchar.no )
@@ -229,7 +229,7 @@ IDE_RC mtfInlistEstimate( mtcNode*     aNode,
                                     != ID_TRUE, ERR_CONVERSION_NOT_APPLICABLE );
                 }
 
-                // column conversion À» ºÙÀÎ´Ù.
+                // column conversion ì„ ë¶™ì¸ë‹¤.
                 sModules[0] = sTarget;
                 sModules[1] = &mtdVarchar;
 
@@ -365,7 +365,7 @@ IDE_RC mtfInlistExtractRange( mtcNode*       aNode,
             if ( aInfo->compValueType == MTD_COMPARE_FIXED_MTDVAL_FIXED_MTDVAL ||
                  aInfo->compValueType == MTD_COMPARE_MTDVAL_MTDVAL )
             {
-                // mtd typeÀÇ column value¿¡ ´ëÇÑ range callback
+                // mtd typeì˜ column valueì— ëŒ€í•œ range callback
                 sCurRange->minimum.callback     = mtk::rangeCallBackGT4Mtd;
                 sCurRange->maximum.callback     = mtk::rangeCallBackLT4Mtd;
             }
@@ -375,7 +375,7 @@ IDE_RC mtfInlistExtractRange( mtcNode*       aNode,
                      ( aInfo->compValueType == MTD_COMPARE_STOREDVAL_STOREDVAL ) )
                 {
                     /* MTD_COMPARE_STOREDVAL_MTDVAL
-                       stored typeÀÇ column value¿¡ ´ëÇÑ range callback */
+                       stored typeì˜ column valueì— ëŒ€í•œ range callback */
                     sCurRange->minimum.callback     = mtk::rangeCallBackGT4Stored;
                     sCurRange->maximum.callback     = mtk::rangeCallBackLT4Stored;
                 }
@@ -402,13 +402,13 @@ IDE_RC mtfInlistExtractRange( mtcNode*       aNode,
         else
         {
             //---------------------------
-            // RangeCallBack ¼³Á¤
+            // RangeCallBack ì„¤ì •
             //---------------------------
 
             if ( aInfo->compValueType == MTD_COMPARE_FIXED_MTDVAL_FIXED_MTDVAL ||
                  aInfo->compValueType == MTD_COMPARE_MTDVAL_MTDVAL )
             {
-                // mtd typeÀÇ column value¿¡ ´ëÇÑ range callback
+                // mtd typeì˜ column valueì— ëŒ€í•œ range callback
                 sCurRange->minimum.callback     = mtk::rangeCallBackGE4Mtd;
                 sCurRange->maximum.callback     = mtk::rangeCallBackLE4Mtd;
             }
@@ -418,7 +418,7 @@ IDE_RC mtfInlistExtractRange( mtcNode*       aNode,
                      ( aInfo->compValueType == MTD_COMPARE_STOREDVAL_STOREDVAL ) )
                 {
                     /* MTD_COMPARE_STOREDVAL_MTDVAL
-                       stored typeÀÇ column value¿¡ ´ëÇÑ range callback */
+                       stored typeì˜ column valueì— ëŒ€í•œ range callback */
                     sCurRange->minimum.callback     = mtk::rangeCallBackGE4Stored;
                     sCurRange->maximum.callback     = mtk::rangeCallBackLE4Stored;
                 }
@@ -431,7 +431,7 @@ IDE_RC mtfInlistExtractRange( mtcNode*       aNode,
             }
 
             //----------------------------------------------
-            // MinimumCallBack & MaximumCallBack Á¤º¸ ¼³Á¤
+            // MinimumCallBack & MaximumCallBack ì •ë³´ ì„¤ì •
             //----------------------------------------------
 
             sMinimumCallBack->columnIdx  = aInfo->columnIdx;
@@ -710,7 +710,7 @@ IDE_RC mtfInlistCalculate( mtcNode*     aNode,
         sIndex++;
     } /* while */
 
-    /* ¸¶Áö¸· , ¶Ç´Â ','°¡ ¾ø´Â °æ¿ì */
+    /* ë§ˆì§€ë§‰ , ë˜ëŠ” ','ê°€ ì—†ëŠ” ê²½ìš° */
     if ( ( sIndex == sSrcValue->length ) && ( sValue != MTD_BOOLEAN_TRUE ) )
     {
         if ( ( sModule == &mtdFloat ) || ( sModule == &mtdNumeric ) )
@@ -817,7 +817,7 @@ IDE_RC mtfInlistTokenize( const mtdModule * aModule,
 
     sSrcValue = (const mtdCharType *)aValue;
 
-    /* comma °³¼ö¸¦ ¼¼°í °¡Àå Å« ÅäÅ«ÀÇ ±æÀÌ¸¦ ¾ò´Â´Ù.*/
+    /* comma ê°œìˆ˜ë¥¼ ì„¸ê³  ê°€ì¥ í° í† í°ì˜ ê¸¸ì´ë¥¼ ì–»ëŠ”ë‹¤.*/
     sIndex          = 0;
     sCommaCount     = 0;
     sTokenLength    = 0;
@@ -927,7 +927,7 @@ IDE_RC mtfInlistTokenize( const mtdModule * aModule,
             sOffset = sIndex + 1;
             sTokenLength = 0;
 
-            /* BUG-43803 Áßº¹Á¦°Å¿Í Á¤·Ä */
+            /* BUG-43803 ì¤‘ë³µì œê±°ì™€ ì •ë ¬ */
             sIsDuplicate = ID_FALSE;
             for ( i = 0; i < sTokenIdx; i++ )
             {
@@ -949,7 +949,7 @@ IDE_RC mtfInlistTokenize( const mtdModule * aModule,
                 }
                 else if ( sCompare > 0 )
                 {
-                    /* ¿©±â¿¡ »ğÀÔ */
+                    /* ì—¬ê¸°ì— ì‚½ì… */
                     break;
                 }
                 else
@@ -960,7 +960,7 @@ IDE_RC mtfInlistTokenize( const mtdModule * aModule,
 
             if ( sIsDuplicate == ID_FALSE )
             {
-                /* i¹øÂ°¿¡ »ğÀÔÇÑ´Ù */
+                /* ië²ˆì§¸ì— ì‚½ì…í•œë‹¤ */
                 for ( j = sTokenIdx; j > i; j-- )
                 {
                     aInlistInfo->valueArray[j] = aInlistInfo->valueArray[j - 1];
@@ -976,7 +976,7 @@ IDE_RC mtfInlistTokenize( const mtdModule * aModule,
                 }
                 else
                 {
-                    /* char, varchar alignÀº °°´Ù */
+                    /* char, varchar alignì€ ê°™ë‹¤ */
                     sValueOffset += idlOS::align(
                         ((mtdCharType*)sTokenValue)->length + mtdChar.headerSize(),
                         mtdChar.align );
@@ -991,7 +991,7 @@ IDE_RC mtfInlistTokenize( const mtdModule * aModule,
         sIndex++;
     }
 
-    /* ¸¶Áö¸· , ¶Ç´Â ','°¡ ¾ø´Â °æ¿ì */
+    /* ë§ˆì§€ë§‰ , ë˜ëŠ” ','ê°€ ì—†ëŠ” ê²½ìš° */
     if ( ( aModule == &mtdFloat ) || ( aModule == &mtdNumeric ) )
     {
         sTokenValue = (mtdNumericType*)( (UChar *)aInlistInfo->valueBuf + sValueOffset );
@@ -1040,7 +1040,7 @@ IDE_RC mtfInlistTokenize( const mtdModule * aModule,
         }
         else if ( sCompare > 0 )
         {
-            /* ¿©±â¿¡ »ğÀÔ */
+            /* ì—¬ê¸°ì— ì‚½ì… */
             break;
         }
         else
@@ -1051,7 +1051,7 @@ IDE_RC mtfInlistTokenize( const mtdModule * aModule,
 
     if ( sIsDuplicate == ID_FALSE )
     {
-        /* i¹øÂ°¿¡ »ğÀÔÇÑ´Ù */
+        /* ië²ˆì§¸ì— ì‚½ì…í•œë‹¤ */
         for ( j = sTokenIdx; j > i; j-- )
         {
             aInlistInfo->valueArray[j] = aInlistInfo->valueArray[j - 1];

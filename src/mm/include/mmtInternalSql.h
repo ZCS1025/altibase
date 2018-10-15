@@ -15,8 +15,8 @@
  */
 
 /*****************************************************************************
- * Server ³»¿¡¼­ »ç¿ëÇÏ´Â SQLÃ³¸®¸¦ ´ã´çÇÑ´Ù.
- * ¸ğµç ÇÔ¼ö´Â callback functionÀÌ µÈ´Ù.
+ * Server ë‚´ì—ì„œ ì‚¬ìš©í•˜ëŠ” SQLì²˜ë¦¬ë¥¼ ë‹´ë‹¹í•œë‹¤.
+ * ëª¨ë“  í•¨ìˆ˜ëŠ” callback functionì´ ëœë‹¤.
  ****************************************************************************/
 
 #ifndef _O_MMT_INTERNAL_SQL_H_
@@ -32,13 +32,13 @@ public:
      *
      * static IDE_RC callbackFunction( void * aUserContext );
      *
-     * User Context Parameter´Â Çüº¯È¯ ÇÏ¿© »ç¿ëÇÑ´Ù.
+     * User Context ParameterëŠ” í˜•ë³€í™˜ í•˜ì—¬ ì‚¬ìš©í•œë‹¤.
      */
 
     static qciInternalSQLCallback mCallback;
 
 
-    // mmcStatement¸¦ ÇÏ³ª alloc
+    // mmcStatementë¥¼ í•˜ë‚˜ alloc
     static IDE_RC allocStmt( void * aUserContext );
 
     // sql prepare
@@ -48,8 +48,8 @@ public:
     static IDE_RC paramInfoSet( void * aUserContext );
 
 /*     BUG-19669 */
-/*     client¿¡¼­ qci::setBindColumnInfo()¸¦ »ç¿ëÇÏÁö ¾ÊÀ¸¹Ç·Î */
-/*     PSMµµ »ç¿ëÇÏÁö ¾Êµµ·Ï ¼öÁ¤ÇÑ´Ù. */
+/*     clientì—ì„œ qci::setBindColumnInfo()ë¥¼ ì‚¬ìš©í•˜ì§€ ì•Šìœ¼ë¯€ë¡œ */
+/*     PSMë„ ì‚¬ìš©í•˜ì§€ ì•Šë„ë¡ ìˆ˜ì •í•œë‹¤. */
 /*     // bind column info */
 /*     static IDE_RC columnInfoSet( void * aUserContext ); */
 
@@ -62,13 +62,13 @@ public:
     // fetch
     static IDE_RC fetch( void * aUserContext );
 
-    // mmcStatement¸¦ free
+    // mmcStatementë¥¼ free
     static IDE_RC freeStmt( void * aUserContext );
 
-    // bind parameter count¸¦ Ã¼Å©(prepareÀÌÈÄ)
+    // bind parameter countë¥¼ ì²´í¬(prepareì´í›„)
     static IDE_RC checkBindParamCount( void * aUserContext );
 
-    // bind column count¸¦ Ã¼Å©(fetchÀü¿¡)
+    // bind column countë¥¼ ì²´í¬(fetchì „ì—)
     static IDE_RC checkBindColumnCount( void * aUserContext );
 
     // PROJ-2197 PSM Renewal

@@ -69,7 +69,7 @@
  * 1st version of WIN32 porting
  *
  * Revision 1.11.6.1  2001/02/21 09:00:01  kmkim
- * win32 porting - ÄÄÆÄÀÏ¸¸ ¼º°ø
+ * win32 porting - ì»´íŒŒì¼ë§Œ ì„±ê³µ
  *
  * Revision 1.11  2000/12/22 03:47:50  jdlee
  * fix
@@ -108,10 +108,10 @@
  * change naming to id
  *
  * Revision 1.1  2000/05/31 07:33:57  sjkim
- * id ¶óÀÌºê·¯¸® »ı¼º
+ * id ë¼ì´ë¸ŒëŸ¬ë¦¬ ìƒì„±
  *
  * Revision 1.8  2000/05/22 10:12:26  sjkim
- * ¿¡·¯ Ã³¸® ·çÆ¾ ¼öÁ¤ : ACTION Ãß°¡
+ * ì—ëŸ¬ ì²˜ë¦¬ ë£¨í‹´ ìˆ˜ì • : ACTION ì¶”ê°€
  *
  * Revision 1.7  2000/04/20 07:25:43  assam
  * idaDate added.

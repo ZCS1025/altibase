@@ -23,17 +23,17 @@
  ***********************************************************************/
 
 /***********************************************************************
- * Abstraction : ¹öÆÛÇ®¿¡¼­ »ç¿ëÇÏ´Â prepare list¸¦ ±¸ÇöÇÑ ÆÄÀÏÀÌ´Ù.
- *               prepare list¶õ victimÀ» ºü¸£°Ô Ã£±âÀ§ÇØ flush list¿¡¼­
- *               flushµÇ¾î¼­ cleanÀÌ°Å³ª freeÀÎ BCBµéÀ» ÀúÀåÇÏ´Â listÀÌ´Ù.
- *               ¶§¹®¿¡ buffer miss½Ã victim ´ë»óÀ» Ã£À» ¶§
- *               prepare list¸¦ °¡Àå¸ÕÀú µÚÁø´Ù.
- *               prepare list·Î µé¾î¿Ã ¶© clean»óÅÂÀÌÁö¸¸ ÀÌ´Â ¾ö°İÈ÷
- *               ÁöÄÑÁöÁø ¾Ê´Â´Ù. ¹öÆÛÇ® Á¤Ã¥»ó BCB°¡ ¾î´À¸®½ºÆ®¿¡ ÀÖ°Ç
- *               hitµÈ ÈÄ dirty ¶Ç´Â inIOB »óÅÂ·Î µÉ ¼ö ÀÖ±â ¶§¹®ÀÌ´Ù.
- *               ±×·±µ¥, ÀÌµéÀ» »óÅÂ°¡ º¯ÇÏ´Â Áï½Ã Á¦°ÅÇÏÁö ¾Ê°í,
- *               victimÀ» Ã£±âÀ§ÇØ prepare List¸¦ Å½»öÇÏ´Â Æ®·£Àè¼ÇµéÀÌ
- *               ¿Å±â´Â ÀÛ¾÷À» ¼öÇàÇÑ´Ù.
+ * Abstraction : ë²„í¼í’€ì—ì„œ ì‚¬ìš©í•˜ëŠ” prepare listë¥¼ êµ¬í˜„í•œ íŒŒì¼ì´ë‹¤.
+ *               prepare listë€ victimì„ ë¹ ë¥´ê²Œ ì°¾ê¸°ìœ„í•´ flush listì—ì„œ
+ *               flushë˜ì–´ì„œ cleanì´ê±°ë‚˜ freeì¸ BCBë“¤ì„ ì €ì¥í•˜ëŠ” listì´ë‹¤.
+ *               ë•Œë¬¸ì— buffer missì‹œ victim ëŒ€ìƒì„ ì°¾ì„ ë•Œ
+ *               prepare listë¥¼ ê°€ì¥ë¨¼ì € ë’¤ì§„ë‹¤.
+ *               prepare listë¡œ ë“¤ì–´ì˜¬ ë• cleanìƒíƒœì´ì§€ë§Œ ì´ëŠ” ì—„ê²©íˆ
+ *               ì§€ì¼œì§€ì§„ ì•ŠëŠ”ë‹¤. ë²„í¼í’€ ì •ì±…ìƒ BCBê°€ ì–´ëŠë¦¬ìŠ¤íŠ¸ì— ìˆê±´
+ *               hitëœ í›„ dirty ë˜ëŠ” inIOB ìƒíƒœë¡œ ë  ìˆ˜ ìˆê¸° ë•Œë¬¸ì´ë‹¤.
+ *               ê·¸ëŸ°ë°, ì´ë“¤ì„ ìƒíƒœê°€ ë³€í•˜ëŠ” ì¦‰ì‹œ ì œê±°í•˜ì§€ ì•Šê³ ,
+ *               victimì„ ì°¾ê¸°ìœ„í•´ prepare Listë¥¼ íƒìƒ‰í•˜ëŠ” íŠ¸ëœì­ì…˜ë“¤ì´
+ *               ì˜®ê¸°ëŠ” ì‘ì—…ì„ ìˆ˜í–‰í•œë‹¤.
  *
  ***********************************************************************/
 #include <sdbPrepareList.h>
@@ -41,7 +41,7 @@
 
 /***********************************************************************
  * Description :
- *  aListID     - [IN]  prepare list ½Äº°ÀÚ
+ *  aListID     - [IN]  prepare list ì‹ë³„ì
  ***********************************************************************/
 IDE_RC sdbPrepareList::initialize(UInt aListID)
 {
@@ -69,7 +69,7 @@ IDE_RC sdbPrepareList::initialize(UInt aListID)
                                       IDV_WAIT_INDEX_LATCH_FREE_DRDB_PREPARE_LIST_WAIT)
              != IDE_SUCCESS);
 
-    // condition variable ÃÊ±âÈ­
+    // condition variable ì´ˆê¸°í™”
     idlOS::snprintf(sMutexName, 
                     ID_SIZEOF(sMutexName),
                     "PREPARE_LIST_COND_%"ID_UINT32_FMT, 
@@ -91,7 +91,7 @@ IDE_RC sdbPrepareList::initialize(UInt aListID)
 
 /***********************************************************************
  * Description :
- *  »èÁ¦ ÇÔ¼ö
+ *  ì‚­ì œ í•¨ìˆ˜
  ***********************************************************************/
 IDE_RC sdbPrepareList::destroy()
 {
@@ -114,17 +114,17 @@ IDE_RC sdbPrepareList::destroy()
 
 /***********************************************************************
  * Abstraction :
- *    prepare list¿¡¼­ last¸¦ ÇÏ³ª ¶¼¿Â´Ù.
- *    ¹İÈ¯µÇ´Â BCBÀÇ next, prev´Â ¸ğµÎ NULLÀÌ´Ù.
- *    µ¿½Ã¼ºÀº ³»ºÎÀûÀ¸·Î Á¦¾îµÈ´Ù.
+ *    prepare listì—ì„œ lastë¥¼ í•˜ë‚˜ ë–¼ì˜¨ë‹¤.
+ *    ë°˜í™˜ë˜ëŠ” BCBì˜ next, prevëŠ” ëª¨ë‘ NULLì´ë‹¤.
+ *    ë™ì‹œì„±ì€ ë‚´ë¶€ì ìœ¼ë¡œ ì œì–´ëœë‹¤.
  *
  * Implementation :
- *  Ã³À½¿¡ mutex¸¦ ÀâÁö¾Ê°í emptyÀÎÁö È®ÀÎÇØ º»´Ù.
- *  prepare list´Â emptyÀÎ °æ¿ì°¡ ¸¹´Ù. ±×¸®°í, Æ®·£Àè¼ÇµéÀº °¡Àå ¸ÕÀú prepare
- *  list¿¡ Á¢±ÙÀ» ÇÏ±â ¶§¹®¿¡, °æÇÕÀÌ ¸¹ÀÌ ÀÏ¾î³¯ ¼ö ÀÖ´Ù. ±×·¯¹Ç·Î emptyÆÇ´Ü
- *  ±îÁö´Â mutex¸¦ ÀâÁö ¾Ê°í ÇØº»´Ù.
+ *  ì²˜ìŒì— mutexë¥¼ ì¡ì§€ì•Šê³  emptyì¸ì§€ í™•ì¸í•´ ë³¸ë‹¤.
+ *  prepare listëŠ” emptyì¸ ê²½ìš°ê°€ ë§ë‹¤. ê·¸ë¦¬ê³ , íŠ¸ëœì­ì…˜ë“¤ì€ ê°€ì¥ ë¨¼ì € prepare
+ *  listì— ì ‘ê·¼ì„ í•˜ê¸° ë•Œë¬¸ì—, ê²½í•©ì´ ë§ì´ ì¼ì–´ë‚  ìˆ˜ ìˆë‹¤. ê·¸ëŸ¬ë¯€ë¡œ emptyíŒë‹¨
+ *  ê¹Œì§€ëŠ” mutexë¥¼ ì¡ì§€ ì•Šê³  í•´ë³¸ë‹¤.
  *
- *  aStatistics - [IN]  Åë°èÁ¤º¸
+ *  aStatistics - [IN]  í†µê³„ì •ë³´
  ***********************************************************************/
 sdbBCB* sdbPrepareList::removeLast( idvSQL *aStatistics )
 {
@@ -141,13 +141,13 @@ sdbBCB* sdbPrepareList::removeLast( idvSQL *aStatistics )
 
         if (mListLength == 0)
         {
-            // list¿¡ BCB°¡ ÇÏ³ªµµ ¾ø´Ù.
+            // listì— BCBê°€ í•˜ë‚˜ë„ ì—†ë‹¤.
             IDE_ASSERT( SMU_LIST_IS_EMPTY(mBase) == ID_TRUE );
             sRet = NULL;
         }
         else
         {
-            // list¿¡ ÃÖ¼ÒÇÑ ÇÏ³ª ÀÌ»óÀÇ BCB°¡ ÀÖ´Ù.
+            // listì— ìµœì†Œí•œ í•˜ë‚˜ ì´ìƒì˜ BCBê°€ ìˆë‹¤.
             sTarget = SMU_LIST_GET_LAST(mBase);
 
 
@@ -171,16 +171,16 @@ sdbBCB* sdbPrepareList::removeLast( idvSQL *aStatistics )
 
 /***********************************************************************
  * Description:
- *    flusher°¡ prepare list¿¡ BCB¸¦ Ãß°¡ÇÒ ¶§±îÁö Á¶°Ç´ë±â¸¦ ÇÑ´Ù.
- *    ÀÌ ÇÔ¼ö´Â prepare list, LRU list¿¡¼­ victimÀ» Ã£´Ù°¡ ½ÇÆĞÇØ
- *    prepare list¿¡ ´ëÇØ ´ë±â¸¦ ÇÏ°íÀÚÇÒ ¶§ »ç¿ëµÈ´Ù.
- *    timeover·Î ±ú¾î³¯ °æ¿ì¿£ aBCBAdded°¡ falseÀÌ°í BCB°¡ Ãß°¡µÇ¾î
- *    ±ú¾î³­ °æ¿ì¿£ ÀÌ ÆÄ¶ó¸ŞÅÍ°¡ true°¡ µÈ´Ù.
+ *    flusherê°€ prepare listì— BCBë¥¼ ì¶”ê°€í•  ë•Œê¹Œì§€ ì¡°ê±´ëŒ€ê¸°ë¥¼ í•œë‹¤.
+ *    ì´ í•¨ìˆ˜ëŠ” prepare list, LRU listì—ì„œ victimì„ ì°¾ë‹¤ê°€ ì‹¤íŒ¨í•´
+ *    prepare listì— ëŒ€í•´ ëŒ€ê¸°ë¥¼ í•˜ê³ ìí•  ë•Œ ì‚¬ìš©ëœë‹¤.
+ *    timeoverë¡œ ê¹¨ì–´ë‚  ê²½ìš°ì—” aBCBAddedê°€ falseì´ê³  BCBê°€ ì¶”ê°€ë˜ì–´
+ *    ê¹¨ì–´ë‚œ ê²½ìš°ì—” ì´ íŒŒë¼ë©”í„°ê°€ trueê°€ ëœë‹¤.
  *
- *  aStatistics - [IN]  Åë°èÁ¤º¸
- *  aTimeSec    - [IN]  Á¶°Ç ´ë±â¸¦ ¸îÃÊµ¿¾È ÇÒ °ÍÀÎ°¡¸¦ ÁöÁ¤
- *  aBCBAdded   - [OUT] BCB°¡ Ãß°¡µÈ °æ¿ì true, timeover·Î±ú¾î³­ °æ¿ì
- *                      false°¡ ¸®ÅÏµÈ´Ù.
+ *  aStatistics - [IN]  í†µê³„ì •ë³´
+ *  aTimeSec    - [IN]  ì¡°ê±´ ëŒ€ê¸°ë¥¼ ëª‡ì´ˆë™ì•ˆ í•  ê²ƒì¸ê°€ë¥¼ ì§€ì •
+ *  aBCBAdded   - [OUT] BCBê°€ ì¶”ê°€ëœ ê²½ìš° true, timeoverë¡œê¹¨ì–´ë‚œ ê²½ìš°
+ *                      falseê°€ ë¦¬í„´ëœë‹¤.
  ***********************************************************************/
 IDE_RC sdbPrepareList::timedWaitUntilBCBAdded(idvSQL *aStatistics,
                                               UInt    aTimeMilliSec,
@@ -198,7 +198,7 @@ IDE_RC sdbPrepareList::timedWaitUntilBCBAdded(idvSQL *aStatistics,
                                       IDU_IGNORE_TIMEDOUT)
                    != IDE_SUCCESS, err_cond_wait);
 
-    // cond_broadcast¸¦ ¹Ş°í ±ú¾î³­ °æ¿ì
+    // cond_broadcastë¥¼ ë°›ê³  ê¹¨ì–´ë‚œ ê²½ìš°
     *aBCBAdded = ID_TRUE;
     mWaitingClientCount--;
 
@@ -217,15 +217,15 @@ IDE_RC sdbPrepareList::timedWaitUntilBCBAdded(idvSQL *aStatistics,
 
 /***********************************************************************
  * Abstraction :
- *    prepare listÀÇ first¿¡ BCB ¸®½ºÆ®¸¦ Ãß°¡ÇÑ´Ù.
- *    ±×¸®°í ÀÌ prepare list¿¡ ´ë±âÁßÀÎ ¾²·¹µå°¡ ÀÖÀ¸¸é ±ú¿î´Ù.
+ *    prepare listì˜ firstì— BCB ë¦¬ìŠ¤íŠ¸ë¥¼ ì¶”ê°€í•œë‹¤.
+ *    ê·¸ë¦¬ê³  ì´ prepare listì— ëŒ€ê¸°ì¤‘ì¸ ì“°ë ˆë“œê°€ ìˆìœ¼ë©´ ê¹¨ìš´ë‹¤.
  *    
- *  aStatistics - [IN]  Åë°èÁ¤º¸
- *  aFirstBCB   - [IN]  Ãß°¡ÇÒ BCB listÀÇ Ã¹¹øÂ° BCB. ÀÌ BCBÀÇ prev´Â NULLÀÌ¾î¾ß
- *                      ÇÑ´Ù.
- *  aLastBCB    - [IN]  Ãß°¡ÇÒ BCB listÀÇ ¸¶Áö¸· BCB. ÀÌ BCBÀÇ next´Â
- *                      NULLÀÌ¾î¾ß ÇÑ´Ù.
- *  aLength     - [IN]  Ãß°¡µÇ´Â BCB listÀÇ ±æÀÌ.
+ *  aStatistics - [IN]  í†µê³„ì •ë³´
+ *  aFirstBCB   - [IN]  ì¶”ê°€í•  BCB listì˜ ì²«ë²ˆì§¸ BCB. ì´ BCBì˜ prevëŠ” NULLì´ì–´ì•¼
+ *                      í•œë‹¤.
+ *  aLastBCB    - [IN]  ì¶”ê°€í•  BCB listì˜ ë§ˆì§€ë§‰ BCB. ì´ BCBì˜ nextëŠ”
+ *                      NULLì´ì–´ì•¼ í•œë‹¤.
+ *  aLength     - [IN]  ì¶”ê°€ë˜ëŠ” BCB listì˜ ê¸¸ì´.
  ***********************************************************************/
 IDE_RC sdbPrepareList::addBCBList( idvSQL *aStatistics,
                                    sdbBCB *aFirstBCB,
@@ -238,7 +238,7 @@ IDE_RC sdbPrepareList::addBCBList( idvSQL *aStatistics,
     IDE_DASSERT(aFirstBCB != NULL);
     IDE_DASSERT(aLastBCB != NULL);
 
-    // ÀÔ·ÂµÇ´Â BCBÀÇ ¸®½ºÆ® Á¤º¸¸¦ ¼¼ÆÃÇÑ´Ù.
+    // ì…ë ¥ë˜ëŠ” BCBì˜ ë¦¬ìŠ¤íŠ¸ ì •ë³´ë¥¼ ì„¸íŒ…í•œë‹¤.
     for (i = 0, sNode = &aFirstBCB->mBCBListItem; i < aLength; i++)
     {
         ((sdbBCB*)sNode->mData)->mBCBListType = SDB_BCB_PREPARE_LIST;
@@ -257,11 +257,11 @@ IDE_RC sdbPrepareList::addBCBList( idvSQL *aStatistics,
 
     IDE_ASSERT(mMutex.unlock() == IDE_SUCCESS);
 
-    // prepare list¿¡ ´ë±âÇÏ°í ÀÖ´Â ¾²·¹µå°¡ ÀÖÀ¸¸é ±ú¿î´Ù.
+    // prepare listì— ëŒ€ê¸°í•˜ê³  ìˆëŠ” ì“°ë ˆë“œê°€ ìˆìœ¼ë©´ ê¹¨ìš´ë‹¤.
     if (mWaitingClientCount > 0)
     {
-        // mWaitingClientCount¸¸ ¿Ã¸®°í ¹ÌÃ³ cond_wait±îÁö ¸øÇÑ ¾²·¹µå¸¦ À§ÇØ
-        // mMutexForWait¸¦ È¹µæÇÑ ÈÄ broadcastÇÑ´Ù.
+        // mWaitingClientCountë§Œ ì˜¬ë¦¬ê³  ë¯¸ì²˜ cond_waitê¹Œì§€ ëª»í•œ ì“°ë ˆë“œë¥¼ ìœ„í•´
+        // mMutexForWaitë¥¼ íšë“í•œ í›„ broadcastí•œë‹¤.
         IDE_ASSERT(mMutexForWait.lock(aStatistics) == IDE_SUCCESS);
 
         IDE_TEST_RAISE(mCondVar.broadcast() != IDE_SUCCESS,
@@ -285,9 +285,9 @@ IDE_RC sdbPrepareList::addBCBList( idvSQL *aStatistics,
 
 /***********************************************************************
  * Description :
- *  sdbPrepareListÀÇ ¸ğµç BCBµéÀÌ Á¦´ë·Î ¿¬°áµÇ¾î ÀÖ´ÂÁö È®ÀÎÇÑ´Ù.
+ *  sdbPrepareListì˜ ëª¨ë“  BCBë“¤ì´ ì œëŒ€ë¡œ ì—°ê²°ë˜ì–´ ìˆëŠ”ì§€ í™•ì¸í•œë‹¤.
  *  
- *  aStatistics - [IN]  Åë°èÁ¤º¸
+ *  aStatistics - [IN]  í†µê³„ì •ë³´
  ***********************************************************************/
 IDE_RC sdbPrepareList::checkValidation(idvSQL *aStatistics)
 {

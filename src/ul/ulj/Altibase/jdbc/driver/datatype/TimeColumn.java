@@ -53,11 +53,11 @@ public class TimeColumn extends CommonDateTimeColumn
     }
 
     /*
-     * ÀÌ ¸Ş¼ÒµåÀÇ ½ºÆåÀº ´ÙÀ½°ú °°´Ù.
+     * ì´ ë©”ì†Œë“œì˜ ìŠ¤í™ì€ ë‹¤ìŒê³¼ ê°™ë‹¤.
      * 
-     * [0]: ½Ã
-     * [1]: ºĞ
-     * [2]: ÃÊ
+     * [0]: ì‹œ
+     * [1]: ë¶„
+     * [2]: ì´ˆ
      */
     protected byte[] getBytesSub() throws SQLException
     {

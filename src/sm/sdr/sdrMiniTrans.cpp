@@ -20,21 +20,21 @@
  *
  * Description :
  *
- * º» ÆÄÀÏÀº mini-transaction¿¡ ´ëÇÑ ±¸Çö ÆÄÀÏÀÌ´Ù.
+ * ë³¸ íŒŒì¼ì€ mini-transactionì— ëŒ€í•œ êµ¬í˜„ íŒŒì¼ì´ë‹¤.
  *
  *
- * # MtxÀÇ logging ¸ğµå¿Í flush list µî·Ï
+ * # Mtxì˜ logging ëª¨ë“œì™€ flush list ë“±ë¡
  *
- * MTX »ç¿ë»óÈ²  ·Î±ë ¸ğµå          flush list µî·Ï Á¶°Ç
+ * MTX ì‚¬ìš©ìƒí™©  ë¡œê¹… ëª¨ë“œ          flush list ë“±ë¡ ì¡°ê±´
  *-----------------------------------------------------------
  * temp table      no                  X latch page
  * ----------------------------------------------------------
- * redo ½Ã         no                  X latch page
+ * redo ì‹œ         no                  X latch page
  * ----------------------------------------------------------
- * normal          yes                 X latch page ¿Í
- *                                     begin, end LSN °ª ÀÖÀ»¶§
+ * normal          yes                 X latch page ì™€
+ *                                     begin, end LSN ê°’ ìˆì„ë•Œ
  * ----------------------------------------------------------
- * normal          no   -> ÀÌ·± °æ¿ìÀÇ mtx´Â »ç¿ëµÇÁö ¾Ê´Â´Ù.
+ * normal          no   -> ì´ëŸ° ê²½ìš°ì˜ mtxëŠ” ì‚¬ìš©ë˜ì§€ ì•ŠëŠ”ë‹¤.
  *
  **********************************************************************/
 
@@ -54,7 +54,7 @@
 
 
 /* --------------------------------------------------------------------
- * sdrMtxLatchMode¿¡ µû¸¥ releaseÇÔ¼ö
+ * sdrMtxLatchModeì— ë”°ë¥¸ releaseí•¨ìˆ˜
  * ----------------------------------------------------------------- */
 sdrMtxLatchItemApplyInfo sdrMiniTrans::mItemVector[SDR_MTX_RELEASE_FUNC_NUM] =
 {
@@ -122,41 +122,41 @@ UInt sdrMiniTrans::mMtxRollbackTestSeq = 0;
 #endif
 
 /***********************************************************************
- * Description : sdrMiniTrans ÃÊ±âÈ­
+ * Description : sdrMiniTrans ì´ˆê¸°í™”
  *
- * ¶ÇÇÑdynamic ¹öÆÛ´Â ½Ã½ºÅÛ ±¸µ¿½Ã¿¡ Àü¿ª ÃÊ±âÈ­°¡ µÇ¾î¾ß ÇÏ¸ç,
- * ¾Æ·¡¿Í °°ÀÌ latch Á¾·ùº° latch release º¤ÅÍ ÃÊ±âÈ­°¡ ÇÊ¿äÇÏ´Ù.
- * + page latchÀÌ¸é  -> sdbBufferMgr::releasePage
- * + iduLatchÀÌ¸é    -> iduLatch::unlock
- * + iduMutexÀÌ¸é    -> object.unlock()
+ * ë˜í•œdynamic ë²„í¼ëŠ” ì‹œìŠ¤í…œ êµ¬ë™ì‹œì— ì „ì—­ ì´ˆê¸°í™”ê°€ ë˜ì–´ì•¼ í•˜ë©°,
+ * ì•„ë˜ì™€ ê°™ì´ latch ì¢…ë¥˜ë³„ latch release ë²¡í„° ì´ˆê¸°í™”ê°€ í•„ìš”í•˜ë‹¤.
+ * + page latchì´ë©´  -> sdbBufferMgr::releasePage
+ * + iduLatchì´ë©´    -> iduLatch::unlock
+ * + iduMutexì´ë©´    -> object.unlock()
  *
- * sdrMtx ÀÚ·á±¸Á¶¸¦ ÃÊ±âÈ­ÇÑ´Ù.
- * mtx ½ºÅÃÀ» ÃÊ±âÈ­ÇÏ°í, Æ®·£Àè¼ÇÀÇ ·Î±×¹öÆÛ¸¦ ÃÊ±âÈ­ÇÑ´Ù.
- * mtx ÀÎÅÍÆäÀÌ½º´Â Ç×»ó start, commit ¼øÀ¸·Î È£ÃâµÇ¾î¾ß ÇÑ´Ù.
- * dml¿¡ ´ëÇÑ ·Î±× ÀÛ¼ºÀ» À§ÇØ replication Á¤º¸¸¦ À§ÇÑ º¯¼öµéÀ»
- * ÃÊ±âÈ­ ÇÑ´Ù.
+ * sdrMtx ìë£Œêµ¬ì¡°ë¥¼ ì´ˆê¸°í™”í•œë‹¤.
+ * mtx ìŠ¤íƒì„ ì´ˆê¸°í™”í•˜ê³ , íŠ¸ëœì­ì…˜ì˜ ë¡œê·¸ë²„í¼ë¥¼ ì´ˆê¸°í™”í•œë‹¤.
+ * mtx ì¸í„°í˜ì´ìŠ¤ëŠ” í•­ìƒ start, commit ìˆœìœ¼ë¡œ í˜¸ì¶œë˜ì–´ì•¼ í•œë‹¤.
+ * dmlì— ëŒ€í•œ ë¡œê·¸ ì‘ì„±ì„ ìœ„í•´ replication ì •ë³´ë¥¼ ìœ„í•œ ë³€ìˆ˜ë“¤ì„
+ * ì´ˆê¸°í™” í•œë‹¤.
  *
  * - 1st. code design
- *   + stackÀ» ÃÊ±âÈ­ ÇÑ´Ù.
- *   + log mode¸¦ setÇÑ´Ù. -> setLoggingMode
- *   + trans¸¦ setÇÑ´Ù.
- *   + if (logging mode ¸ğµåÀÌ¸é)
- *        log¸¦ writeÇÏ±â À§ÇØ array¸¦ initializeÇÑ´Ù.
+ *   + stackì„ ì´ˆê¸°í™” í•œë‹¤.
+ *   + log modeë¥¼ setí•œë‹¤. -> setLoggingMode
+ *   + transë¥¼ setí•œë‹¤.
+ *   + if (logging mode ëª¨ë“œì´ë©´)
+ *        logë¥¼ writeí•˜ê¸° ìœ„í•´ arrayë¥¼ initializeí•œë‹¤.
  *
  * - 2nd. code design
- *   + stackÀ» ÃÊ±âÈ­ ÇÑ´Ù.      -> sdrMtxStack::initiailze
- *   + mtx ·Î±ë ¸ğµå¸¦ ¼³Á¤ÇÑ´Ù. -> sdrMiniTrans::setMtxMode
- *   + Æ®·£Àè¼ÇÀ» ¼³Á¤ÇÑ´Ù.
- *   + undoable ¿©ºÎ¸¦ ¼³Á¤ÇÑ´Ù.
- *   + modified¸¦ ÃÊ±âÈ­ÇÑ´Ù.
- *   + begin LSN, end LSN ÃÊ±âÈ­ÇÑ´Ù.
+ *   + stackì„ ì´ˆê¸°í™” í•œë‹¤.      -> sdrMtxStack::initiailze
+ *   + mtx ë¡œê¹… ëª¨ë“œë¥¼ ì„¤ì •í•œë‹¤. -> sdrMiniTrans::setMtxMode
+ *   + íŠ¸ëœì­ì…˜ì„ ì„¤ì •í•œë‹¤.
+ *   + undoable ì—¬ë¶€ë¥¼ ì„¤ì •í•œë‹¤.
+ *   + modifiedë¥¼ ì´ˆê¸°í™”í•œë‹¤.
+ *   + begin LSN, end LSN ì´ˆê¸°í™”í•œë‹¤.
  **********************************************************************/
 IDE_RC sdrMiniTrans::initialize( idvSQL*       aStatistics,
                                  sdrMtx*       aMtx,
                                  void*         aTrans,
                                  sdrMtxLogMode aLogMode,
                                  idBool        aUndoable,
-                                 UInt          aDLogAttr ) // disk logÀÇ attr, smrDef ÂüÁ¶
+                                 UInt          aDLogAttr ) // disk logì˜ attr, smrDef ì°¸ì¡°
 {
     UInt sState = 0;
 
@@ -175,12 +175,12 @@ IDE_RC sdrMiniTrans::initialize( idvSQL*       aStatistics,
     if( aLogMode == SDR_MTX_LOGGING )
     {
 
-        // dynamic ¹öÆÛ¸¦ ÃÊ±âÈ­ÇÑ´Ù. ÀÌ ÇÃ·¡±×°¡ ¼³Á¤µÇ¸é mtx¿¡¼­
-        // fix ÇÏ°í ÀÖ´Â pageµé¿¡ ´ëÇØ¼­ unfix ½Ã¿¡ BCB¿¡
-        // LSNÀÌ ¼³Á¤µÇ°í, ÀÌ ÈÄ¿¡ page flush °úÁ¤¿¡¼­
-        // physical header¿¡ mUpdateLSNÀ» ¼³Á¤ÇÑ´Ù.
-        // ¸¸¾à, mtx°¡ SDR_MTX_NOLOGGING ¸ğµå·Î ÃÊ±âÈ­°¡
-        // µÇ¾ú´Ù¸é, ÀÌ ÇÔ¼ö¸¦ È£ÃâÇÏÁö ¾Ê´Â´Ù.
+        // dynamic ë²„í¼ë¥¼ ì´ˆê¸°í™”í•œë‹¤. ì´ í”Œë˜ê·¸ê°€ ì„¤ì •ë˜ë©´ mtxì—ì„œ
+        // fix í•˜ê³  ìˆëŠ” pageë“¤ì— ëŒ€í•´ì„œ unfix ì‹œì— BCBì—
+        // LSNì´ ì„¤ì •ë˜ê³ , ì´ í›„ì— page flush ê³¼ì •ì—ì„œ
+        // physical headerì— mUpdateLSNì„ ì„¤ì •í•œë‹¤.
+        // ë§Œì•½, mtxê°€ SDR_MTX_NOLOGGING ëª¨ë“œë¡œ ì´ˆê¸°í™”ê°€
+        // ë˜ì—ˆë‹¤ë©´, ì´ í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•˜ì§€ ì•ŠëŠ”ë‹¤.
         IDE_TEST( smuDynArray::initialize( &aMtx->mLogBuffer )
                   != IDE_SUCCESS );
         sState=3;
@@ -205,20 +205,20 @@ IDE_RC sdrMiniTrans::initialize( idvSQL*       aStatistics,
     aMtx->mTableOID  = SM_NULL_OID;
     aMtx->mRefOffset = 0;
 
-    // mtx°¡ Á¢±ÙÇÏ´Â tablespaceÀÌ´Ù.
+    // mtxê°€ ì ‘ê·¼í•˜ëŠ” tablespaceì´ë‹¤.
     aMtx->mAccSpaceID = 0;
     aMtx->mLogCnt     = 0;
 
-    /* Flag¸¦ ÃÊ±âÈ­ ÇÑ´Ù. */
+    /* Flagë¥¼ ì´ˆê¸°í™” í•œë‹¤. */
     aMtx->mFlag  = SDR_MTX_DEFAULT_INIT ;
 
     // TASK-2398 Log Compress
     //
-    // ·Î±× ¾ĞÃà¿©ºÎ (±âº»°ª : ¾ĞÃà ½Ç½Ã )
-    //   ¸¸¾à ·Î±×¸¦ ¾ĞÃàÇÏÁö ¾Êµµ·Ï ¼³Á¤µÈ Tablespace¿¡ ´ëÇÑ
-    //   ·Î±×¸¦ ±â·ÏÇÏ°ÔµÇ¸é ÀÌ Flag¸¦ ID_FALSE·Î ¹Ù²Ù°Ô µÈ´Ù.
+    // ë¡œê·¸ ì••ì¶•ì—¬ë¶€ (ê¸°ë³¸ê°’ : ì••ì¶• ì‹¤ì‹œ )
+    //   ë§Œì•½ ë¡œê·¸ë¥¼ ì••ì¶•í•˜ì§€ ì•Šë„ë¡ ì„¤ì •ëœ Tablespaceì— ëŒ€í•œ
+    //   ë¡œê·¸ë¥¼ ê¸°ë¡í•˜ê²Œë˜ë©´ ì´ Flagë¥¼ ID_FALSEë¡œ ë°”ê¾¸ê²Œ ëœë‹¤.
 
-    /* Logging ¿©ºÎ ¼³Á¤ÇÔ */
+    /* Logging ì—¬ë¶€ ì„¤ì •í•¨ */
     aMtx->mFlag &= ~SDR_MTX_LOGGING_MASK;
     if( aLogMode == SDR_MTX_LOGGING )
     {
@@ -229,7 +229,7 @@ IDE_RC sdrMiniTrans::initialize( idvSQL*       aStatistics,
         aMtx->mFlag |= SDR_MTX_LOGGING_OFF;
     }
 
-    /* Mtx µ¿ÀÛ Áß Property°¡ ¹Ù²ğ ¼ö ÀÖ±â ¶§¹®¿¡, ¹Ì¸® ÀúÀåÇØµÒ. */
+    /* Mtx ë™ì‘ ì¤‘ Propertyê°€ ë°”ë€” ìˆ˜ ìˆê¸° ë•Œë¬¸ì—, ë¯¸ë¦¬ ì €ì¥í•´ë‘ . */
     aMtx->mFlag &= ~SDR_MTX_STARTUP_BUG_DETECTOR_MASK;
     if( smuProperty::getSmEnableStartupBugDetector() == 1 )
     {
@@ -240,7 +240,7 @@ IDE_RC sdrMiniTrans::initialize( idvSQL*       aStatistics,
         aMtx->mFlag |= SDR_MTX_STARTUP_BUG_DETECTOR_OFF;
     }
 
-    /* Undo°¡´É¿©ºÎ¸¦ ¼³Á¤ÇÔ */
+    /* Undoê°€ëŠ¥ì—¬ë¶€ë¥¼ ì„¤ì •í•¨ */
     aMtx->mFlag &= ~SDR_MTX_UNDOABLE_MASK;
     if( aUndoable == ID_TRUE )
     {
@@ -282,7 +282,7 @@ IDE_RC sdrMiniTrans::initialize( idvSQL*       aStatistics,
 
 }
 
-/* Mtx StartInfo¸¦ »ı¼ºÇÑ´Ù. */
+/* Mtx StartInfoë¥¼ ìƒì„±í•œë‹¤. */
 void sdrMiniTrans::makeStartInfo( sdrMtx* aMtx,
                                   sdrMtxStartInfo * aStartInfo )
 {
@@ -296,7 +296,7 @@ void sdrMiniTrans::makeStartInfo( sdrMtx* aMtx,
 
 
 /***********************************************************************
- * Description : sdrMiniTrans ÇØÁ¦
+ * Description : sdrMiniTrans í•´ì œ
  **********************************************************************/
 IDE_RC sdrMiniTrans::destroy( sdrMtx * aMtx )
 {
@@ -330,7 +330,7 @@ IDE_RC sdrMiniTrans::destroy( sdrMtx * aMtx )
 
 
 /***********************************************************************
- * Description : mtxÀÇ ÃÊ±âÈ­ ¹× ½ÃÀÛ
+ * Description : mtxì˜ ì´ˆê¸°í™” ë° ì‹œì‘
  *
  * initialize redirect
  **********************************************************************/
@@ -359,11 +359,11 @@ IDE_RC sdrMiniTrans::begin( idvSQL *      aStatistics,
 }
 
 /***********************************************************************
- * Description : mtxÀÇ ÃÊ±âÈ­ ¹× ½ÃÀÛ
+ * Description : mtxì˜ ì´ˆê¸°í™” ë° ì‹œì‘
  *
- * ´Ù¸¥ mtx·ÎºÎÅÍ trans, logmode Á¤º¸¸¦ ¾ò¾î
- * »õ·Î¿î trans¸¦ ½ÃÀÛÇÑ´Ù.
- * latch, stackÀ» º¹»çÇÏ´Â °ÍÀÌ ¾Æ´Ô.
+ * ë‹¤ë¥¸ mtxë¡œë¶€í„° trans, logmode ì •ë³´ë¥¼ ì–»ì–´
+ * ìƒˆë¡œìš´ transë¥¼ ì‹œì‘í•œë‹¤.
+ * latch, stackì„ ë³µì‚¬í•˜ëŠ” ê²ƒì´ ì•„ë‹˜.
  **********************************************************************/
 IDE_RC sdrMiniTrans::begin(idvSQL*          aStatistics,
                            sdrMtx*          aMtx,
@@ -390,44 +390,44 @@ IDE_RC sdrMiniTrans::begin(idvSQL*          aStatistics,
 }
 
 /***********************************************************************
- * Description : mtx¸¦ commitÇÑ´Ù.
+ * Description : mtxë¥¼ commití•œë‹¤.
  *
- * mtx¸¦ ÅëÇØ Æ®·£Àè¼Ç ·Î±×¹öÆÛ¿¡ ÀÛ¼ºµÈ ·Î±×µéÀ» ·Î±×ÆÄÀÏ¿¡ writeÇÏ°í,
- * ¸ğµç Item¿¡ ´ëÇØ latch item¸¦ ÇØÁ¦ÇÏ¿© fixÇß´ø ÆäÀÌÁöµî¸¦
- * unfixÇÏ´Â µîÀÇ ÀÛ¾÷À» ÇÑ´Ù. itemÀÇ ¸Ş¸ğ¸® ÇØÁ¦´Â ¸Ş¸ğ¸® »ı¼ºÇÑ
- * ÂÊÀÇ Ã¥ÀÓÀÌ´Ù.
+ * mtxë¥¼ í†µí•´ íŠ¸ëœì­ì…˜ ë¡œê·¸ë²„í¼ì— ì‘ì„±ëœ ë¡œê·¸ë“¤ì„ ë¡œê·¸íŒŒì¼ì— writeí•˜ê³ ,
+ * ëª¨ë“  Itemì— ëŒ€í•´ latch itemë¥¼ í•´ì œí•˜ì—¬ fixí–ˆë˜ í˜ì´ì§€ë“±ë¥¼
+ * unfixí•˜ëŠ” ë“±ì˜ ì‘ì—…ì„ í•œë‹¤. itemì˜ ë©”ëª¨ë¦¬ í•´ì œëŠ” ë©”ëª¨ë¦¬ ìƒì„±í•œ
+ * ìª½ì˜ ì±…ì„ì´ë‹¤.
  *
- * 1) BEGIN-LSN : mtxÀÇ ·Î±×¸¦ ½ÇÁ¦ ·Î±×¿¡ ¾µ ¶§ ½ÃÀÛ LSN
- * ÀÌ LSNÀº recovery ½Ã¿¡ ÃÖÃÊÀÇ LSNÀ» °áÁ¤ÇÏ±â À§ÇÏ¿© »ç¿ëµÈ´Ù.
- * releasePage ½Ã¿¡ ÀÌ °ªÀÌ BCBÀÇ firstModifiedLSN¿¡ ¾²¿©Áø´Ù.
+ * 1) BEGIN-LSN : mtxì˜ ë¡œê·¸ë¥¼ ì‹¤ì œ ë¡œê·¸ì— ì“¸ ë•Œ ì‹œì‘ LSN
+ * ì´ LSNì€ recovery ì‹œì— ìµœì´ˆì˜ LSNì„ ê²°ì •í•˜ê¸° ìœ„í•˜ì—¬ ì‚¬ìš©ëœë‹¤.
+ * releasePage ì‹œì— ì´ ê°’ì´ BCBì˜ firstModifiedLSNì— ì“°ì—¬ì§„ë‹¤.
  *
- * 2) END-LSN : mtxÀÇ ·Î±×¸¦ ½ÇÁ¦ ·Î±×¿¡ ¾µ ¶§ end LSN
- * ·Î±× tailÀÇ ¸¶Áö¸· LSNÀ» °¡¸£Å²´Ù. releasePage ½Ã¿¡ ÀÌ °ªÀÌ BCBÀÇ
- * lastModifiedLSN¿¡ ¾²¿©Áø´Ù. flush½Ã lastModifiedLSN±îÁöÀÇ ·Î±×¸¦
- * ³»¸±°ÍÀÌ´Ù.
+ * 2) END-LSN : mtxì˜ ë¡œê·¸ë¥¼ ì‹¤ì œ ë¡œê·¸ì— ì“¸ ë•Œ end LSN
+ * ë¡œê·¸ tailì˜ ë§ˆì§€ë§‰ LSNì„ ê°€ë¥´í‚¨ë‹¤. releasePage ì‹œì— ì´ ê°’ì´ BCBì˜
+ * lastModifiedLSNì— ì“°ì—¬ì§„ë‹¤. flushì‹œ lastModifiedLSNê¹Œì§€ì˜ ë¡œê·¸ë¥¼
+ * ë‚´ë¦´ê²ƒì´ë‹¤.
  *
- * redo¸¦ ¼öÇàÇÒ¶§´Â ³ë·Î±ëÀ¸·Î ÁøÇàµÇÁö¸¸
- * redo°¡ ¾îµğ±îÁö ¼öÇàµÆ´ÂÁö¸¦ ÆäÀÌÁö¿¡ Ç¥½ÃÇØ¾ß ÇÑ´Ù.
- * endLSNÀÎÀÚ´Â ¸¸¾à redo ¼öÇàÁßÀÌ¶ó¸é NULLÀÌ ¾Æ´Ñ °ªÀÌ setµÇ¸ç,
- * ÀÌ¸¦ flush½Ã¿¡ ÆäÀÌÁö¿¡ writeÇÒ ¼ö ÀÖµµ·Ï aMtx¿¡ setÇØ ÁÖ¾î¾ß ÇÑ´Ù.
- * ±âº»°ªÀº NULL
+ * redoë¥¼ ìˆ˜í–‰í• ë•ŒëŠ” ë…¸ë¡œê¹…ìœ¼ë¡œ ì§„í–‰ë˜ì§€ë§Œ
+ * redoê°€ ì–´ë””ê¹Œì§€ ìˆ˜í–‰ëëŠ”ì§€ë¥¼ í˜ì´ì§€ì— í‘œì‹œí•´ì•¼ í•œë‹¤.
+ * endLSNì¸ìëŠ” ë§Œì•½ redo ìˆ˜í–‰ì¤‘ì´ë¼ë©´ NULLì´ ì•„ë‹Œ ê°’ì´ setë˜ë©°,
+ * ì´ë¥¼ flushì‹œì— í˜ì´ì§€ì— writeí•  ìˆ˜ ìˆë„ë¡ aMtxì— setí•´ ì£¼ì–´ì•¼ í•œë‹¤.
+ * ê¸°ë³¸ê°’ì€ NULL
  *
  *
  * - 2st. code design
- *   + if ( logging mode¶ó¸é )
- *     ·Î±×¸¦ ½ÇÁ¦·Î write ÇÏ°í Begin LSN, End LSNÀ» ¾ò´Â´Ù.
- *     °æ¿ì¿¡ µû¶ó ´ÙÀ½°ú °°Àº ·Î±×°ü¸®ÀÚÀÇ interface¸¦ È£ÃâÇÑ´Ù.
- *     : redo ·Î±×¿Í undo recordÀÇ redo-undo ·Î±×ÀÏ¶§
+ *   + if ( logging modeë¼ë©´ )
+ *     ë¡œê·¸ë¥¼ ì‹¤ì œë¡œ write í•˜ê³  Begin LSN, End LSNì„ ì–»ëŠ”ë‹¤.
+ *     ê²½ìš°ì— ë”°ë¼ ë‹¤ìŒê³¼ ê°™ì€ ë¡œê·¸ê´€ë¦¬ìì˜ interfaceë¥¼ í˜¸ì¶œí•œë‹¤.
+ *     : redo ë¡œê·¸ì™€ undo recordì˜ redo-undo ë¡œê·¸ì¼ë•Œ
  *       - smrLogMgr::writeDiskLogRec
- *     : MRDB¿Í ¿¬°üÀÖ´Â ·Î±ëÀÌ ÇÊ¿äÇÑ NTA ·Î±×ÀÏ °æ¿ì
+ *     : MRDBì™€ ì—°ê´€ìˆëŠ” ë¡œê¹…ì´ í•„ìš”í•œ NTA ë¡œê·¸ì¼ ê²½ìš°
  *       - smrLogMgr::writeDiskNTALogRec
  *
- *   + while(¸ğµç ½ºÅÃÀÇ Item¿¡ ´ëÇØ)
- *     ÇÑ ItemÀ» popÇÑ´Ù.-> pop
- *     itemÀ» ÇØÁ¦ÇÑ´Ù. -> releaseLatchItem
+ *   + while(ëª¨ë“  ìŠ¤íƒì˜ Itemì— ëŒ€í•´)
+ *     í•œ Itemì„ popí•œë‹¤.-> pop
+ *     itemì„ í•´ì œí•œë‹¤. -> releaseLatchItem
  *
- *   + if( logging modeÀÏ¶§ )
- *        ¸ğµç ÀÚ¿øÀ» ÇØÁ¦ÇÑ´Ù.
+ *   + if( logging modeì¼ë•Œ )
+ *        ëª¨ë“  ìì›ì„ í•´ì œí•œë‹¤.
  *     -> sdrMtxStack::destroy
  **********************************************************************/
 IDE_RC sdrMiniTrans::commit( sdrMtx   * aMtx,
@@ -448,7 +448,7 @@ IDE_RC sdrMiniTrans::commit( sdrMtx   * aMtx,
     /* BUG-32579 The MiniTransaction commit should not be used in
      * exception handling area.
      * 
-     * ºÎºĞÀûÀ¸·Î ·Î±×°¡ ¾²¿©Áö¸é ¾ÈµÈ´Ù. */
+     * ë¶€ë¶„ì ìœ¼ë¡œ ë¡œê·¸ê°€ ì“°ì—¬ì§€ë©´ ì•ˆëœë‹¤. */
     IDE_ASSERT( aMtx->mRemainLogRecSize == 0 );
 
     sState = 1;
@@ -470,9 +470,9 @@ IDE_RC sdrMiniTrans::commit( sdrMtx   * aMtx,
 
     IDE_DASSERT( validate(aMtx) == ID_TRUE );
 
-    /* BUG-19122: Restart Recovery LSNÀÌ Àß¸ø ¼³Á¤µÉ ¼ö ÀÖ½À´Ï´Ù.
+    /* BUG-19122: Restart Recovery LSNì´ ì˜ëª» ì„¤ì •ë  ìˆ˜ ìˆìŠµë‹ˆë‹¤.
      *
-     * XLatch¸¦ ÀâÀº ÆäÀÌÁö¸¦ ·Î±ëÇÏ±âÀü¿¡ Dirty·Î µî·ÏÇÑ´Ù. */
+     * XLatchë¥¼ ì¡ì€ í˜ì´ì§€ë¥¼ ë¡œê¹…í•˜ê¸°ì „ì— Dirtyë¡œ ë“±ë¡í•œë‹¤. */
     if( sdrMtxStack::isEmpty( &aMtx->mXLatchPageStack ) != ID_TRUE)
     {
         IDE_TEST( sdrMtxStack::initialize( &sMtxDPStack )
@@ -501,8 +501,8 @@ IDE_RC sdrMiniTrans::commit( sdrMtx   * aMtx,
 
                 IDE_ASSERT( aMtx->mTrans != NULL );
 
-                /* BUG-29262 TSS ÇÒ´ç¿¡ ½ÇÆĞÇÑ Æ®·£Àè¼ÇÀÇ COMMIT ·Î±×¸¦ ±â·ÏÇØ¾ß ÇÕ´Ï´Ù.
-                 * Transaction log buffer¿¡ ±â·ÏµÈ ·Î±×°¡ ÀÖÀ¸¸é flush ÇØ¾ßÇÑ´Ù. */
+                /* BUG-29262 TSS í• ë‹¹ì— ì‹¤íŒ¨í•œ íŠ¸ëœì­ì…˜ì˜ COMMIT ë¡œê·¸ë¥¼ ê¸°ë¡í•´ì•¼ í•©ë‹ˆë‹¤.
+                 * Transaction log bufferì— ê¸°ë¡ëœ ë¡œê·¸ê°€ ìˆìœ¼ë©´ flush í•´ì•¼í•œë‹¤. */
                 if( ((smxTrans*)aMtx->mTrans)->isLogWritten() == ID_TRUE )
                 {
                     IDE_TEST( smrLogMgr::writeLog( aMtx->mStatSQL,
@@ -514,11 +514,11 @@ IDE_RC sdrMiniTrans::commit( sdrMtx   * aMtx,
                                != IDE_SUCCESS);
                 }
                 break;
-            case SM_DLOG_ATTR_MTX_LOGBUFF : /* xxx ÇÔ¼ö·Î »©¾ßÇÔ */
+            case SM_DLOG_ATTR_MTX_LOGBUFF : /* xxx í•¨ìˆ˜ë¡œ ë¹¼ì•¼í•¨ */
 
                 sAttrLog = SM_DLOG_ATTR_LOGTYPE_MASK & aMtx->mDLogAttr;
 
-                // BUG-25128 ·Î±ë µÈ°ÍÀÌ ¾ø¾îµµ CLR ·Î±×´Â ±â·ÏµÇ¾î¾ß ÇÔ
+                // BUG-25128 ë¡œê¹… ëœê²ƒì´ ì—†ì–´ë„ CLR ë¡œê·¸ëŠ” ê¸°ë¡ë˜ì–´ì•¼ í•¨
                 if( (isLogWritten(aMtx) == ID_TRUE) || (sAttrLog == SM_DLOG_ATTR_CLR) )
                 {
                     switch( sAttrLog )
@@ -612,8 +612,8 @@ IDE_RC sdrMiniTrans::commit( sdrMtx   * aMtx,
     }
 
     /* PROJ-2162 RestartRiskReduction
-     * MinitransactionÀ¸·Î Log¸¦ ÇÏ³ª ¾´ ÈÄ, ÀÌ Log¿¡ ´ëÇØ
-     * Redo¿Í ServiceThreadÀÇ ¼öÇà °á°ú°¡ µ¿ÀÏÇÑÁö °Ë»çÇÑ´Ù. */
+     * Minitransactionìœ¼ë¡œ Logë¥¼ í•˜ë‚˜ ì“´ í›„, ì´ Logì— ëŒ€í•´
+     * Redoì™€ ServiceThreadì˜ ìˆ˜í–‰ ê²°ê³¼ê°€ ë™ì¼í•œì§€ ê²€ì‚¬í•œë‹¤. */
     if( SDR_MTX_STARTUP_BUG_DETECTOR_IS_ON ( aMtx->mFlag ) )
     {
         if( ( getLogMode(aMtx) == SDR_MTX_LOGGING ) &&
@@ -623,11 +623,11 @@ IDE_RC sdrMiniTrans::commit( sdrMtx   * aMtx,
         {
             if( sState < 2 )
             {
-                /* »óÅÂ°¡ 2º¸´Ù ÀÛÀº °æ¿ì´Â, DirtyPage°¡ ¾ø´Ù°í ÆÇ´ÜµÇ¾î
-                 * DPStackÀ» ÃÊ±âÈ­ ÇÏÁö ¾ÊÀº °æ¿ì´Ù.
-                 * ÇÏÁö¸¸ ³»ºÎ °ËÁõ½Ã, Dirty ¾ÈµÇ¾î ÀÖ¾îµµ Logging ÀÖÀ¸¸é
-                 * Dirtypage¸¦ µÚÁö·Á°í ÇÏ´Â ¸¸Å­, ¿©±â¼­ 'ºñ¾ú´Ù'°í
-                 * ÃÊ±âÈ­¸¦ ÇØÁà¾ß ÇÑ´Ù. */
+                /* ìƒíƒœê°€ 2ë³´ë‹¤ ì‘ì€ ê²½ìš°ëŠ”, DirtyPageê°€ ì—†ë‹¤ê³  íŒë‹¨ë˜ì–´
+                 * DPStackì„ ì´ˆê¸°í™” í•˜ì§€ ì•Šì€ ê²½ìš°ë‹¤.
+                 * í•˜ì§€ë§Œ ë‚´ë¶€ ê²€ì¦ì‹œ, Dirty ì•ˆë˜ì–´ ìˆì–´ë„ Logging ìˆìœ¼ë©´
+                 * Dirtypageë¥¼ ë’¤ì§€ë ¤ê³  í•˜ëŠ” ë§Œí¼, ì—¬ê¸°ì„œ 'ë¹„ì—ˆë‹¤'ê³ 
+                 * ì´ˆê¸°í™”ë¥¼ í•´ì¤˜ì•¼ í•œë‹¤. */
                 IDE_TEST( sdrMtxStack::initialize( &sMtxDPStack )
                           != IDE_SUCCESS );
                 sState = 2;
@@ -644,11 +644,11 @@ IDE_RC sdrMiniTrans::commit( sdrMtx   * aMtx,
     }
 
     /* PROJ-2162 RestartRiskReduction
-     * Consistency ÇÏÁö ¾ÊÀ¸¸é, PageLSNÀ» ¼öÁ¤ÇÏÁö ¾Ê´Â´Ù. */
+     * Consistency í•˜ì§€ ì•Šìœ¼ë©´, PageLSNì„ ìˆ˜ì •í•˜ì§€ ì•ŠëŠ”ë‹¤. */
     if( ( smrRecoveryMgr::getConsistency() == ID_TRUE ) ||
         ( smuProperty::getCrashTolerance() == 2 ) )
     {
-        /* DirtyPageÀÇ PageLSN¼³Á¤ */
+        /* DirtyPageì˜ PageLSNì„¤ì • */
         if ( sState == 2 )
         {
             while( sdrMtxStack::isEmpty( &sMtxDPStack ) != ID_TRUE )
@@ -665,15 +665,15 @@ IDE_RC sdrMiniTrans::commit( sdrMtx   * aMtx,
         }
     }
 
-    /* ÀâÈù Latch¸¦ Ç¬´Ù. */
+    /* ì¡íŒ Latchë¥¼ í‘¼ë‹¤. */
     while( sdrMtxStack::isEmpty( &aMtx->mLatchStack ) != ID_TRUE )
     {
         sItem = sdrMtxStack::pop( &( aMtx->mLatchStack ) );
         IDE_TEST( releaseLatchItem( aMtx, sItem ) != IDE_SUCCESS );
     }
 
-    /* BUG-24730 [SD] DropµÈ Temp SegmentÀÇ Extent´Â ºü¸£°Ô Àç»ç¿ëµÇ¾î¾ß ÇÕ´Ï´Ù.
-     * Mtx°¡ CommitµÉ¶§ SpaceCache·Î FreeµÈ Extent¸¦ ¹İÈ¯ÇÕ´Ï´Ù. */ 
+    /* BUG-24730 [SD] Dropëœ Temp Segmentì˜ ExtentëŠ” ë¹ ë¥´ê²Œ ì¬ì‚¬ìš©ë˜ì–´ì•¼ í•©ë‹ˆë‹¤.
+     * Mtxê°€ Commitë ë•Œ SpaceCacheë¡œ Freeëœ Extentë¥¼ ë°˜í™˜í•©ë‹ˆë‹¤. */ 
     IDE_TEST( executePendingJob( aMtx,
                                  ID_TRUE)  //aDoCommitOp
               != IDE_SUCCESS );
@@ -706,8 +706,8 @@ IDE_RC sdrMiniTrans::commit( sdrMtx   * aMtx,
 
     /* BUG-31006 - Debug information must be recorded when an exception 
      *             occurs from mini transaction commit or rollback.
-     * mini transaction commit/rollback °úÁ¤ Áß ½ÇÆĞ½Ã µğ¹ö±ë Á¤º¸ Ãâ·ÂÇÏ°í
-     * ¼­¹ö¸¦ Á×ÀÎ´Ù. */
+     * mini transaction commit/rollback ê³¼ì • ì¤‘ ì‹¤íŒ¨ì‹œ ë””ë²„ê¹… ì •ë³´ ì¶œë ¥í•˜ê³ 
+     * ì„œë²„ë¥¼ ì£½ì¸ë‹¤. */
 
     /* dump sdrMtx */
     if ( sState != 0 )
@@ -751,9 +751,9 @@ IDE_RC sdrMiniTrans::commit( sdrMtx   * aMtx,
 }
 
 /***********************************************************************
- * Description : NOLOGGING Attribute ¼³Á¤
- * NOLOGGING mini-transaction¿¡ Nologging Persistent attribute¸¦ ¼³Á¤
- * LoggingÀº ¾ÈÇÏÁö¸¸ PersistentÇÑ ÆäÀÌÁöÀÓ (TempPage°¡ ¾Æ´Ñ ÆäÀÌÁö).
+ * Description : NOLOGGING Attribute ì„¤ì •
+ * NOLOGGING mini-transactionì— Nologging Persistent attributeë¥¼ ì„¤ì •
+ * Loggingì€ ì•ˆí•˜ì§€ë§Œ Persistentí•œ í˜ì´ì§€ì„ (TempPageê°€ ì•„ë‹Œ í˜ì´ì§€).
  **********************************************************************/
 void sdrMiniTrans::setNologgingPersistent( sdrMtx* aMtx )
 {
@@ -767,7 +767,7 @@ void sdrMiniTrans::setNologgingPersistent( sdrMtx* aMtx )
 }
 
 /***********************************************************************
- * Description : NTA ·Î±ë
+ * Description : NTA ë¡œê¹…
  **********************************************************************/
 void sdrMiniTrans::setNTA( sdrMtx   * aMtx,
                            scSpaceID  aSpaceID,
@@ -800,7 +800,7 @@ void sdrMiniTrans::setNTA( sdrMtx   * aMtx,
 }
 
 /***********************************************************************
- * Description : Index NTA ·Î±ë
+ * Description : Index NTA ë¡œê¹…
  **********************************************************************/
 void sdrMiniTrans::setRefNTA( sdrMtx   * aMtx,
                               scSpaceID  aSpaceID,
@@ -835,7 +835,7 @@ void sdrMiniTrans::setNullNTA( sdrMtx   * aMtx,
 }
 
 /***********************************************************************
- * Description : Æ¯Á¤ ¿¬»ê¿¡ ´ëÇÑ CLR ·Î±× ¼³Á¤
+ * Description : íŠ¹ì • ì—°ì‚°ì— ëŒ€í•œ CLR ë¡œê·¸ ì„¤ì •
  **********************************************************************/
 void sdrMiniTrans::setCLR( sdrMtx* aMtx,
                            smLSN*  aPPrevLSN )
@@ -854,10 +854,10 @@ void sdrMiniTrans::setCLR( sdrMtx* aMtx,
 }
 
 /***********************************************************************
- * Description : DML°ü·Ã undo/redo ·Î±× À§Ä¡ ±â·Ï
- * ref offsetÀº ÇÏ³ªÀÇ smrDiskLog¿¡ ±â·ÏµÈ ¿©·¯°³ÀÇ disk ·Î±×µé Áß
- * replication sender°¡ Âü°íÇÏ¿© ·Î±×¸¦ ÆÇµ¶ÇÏ°Å³ª transaction undo½Ã¿¡
- * ÆÇµ¶ÇÏ´Â DML°ü·Ã redo/undo ·Î±×°¡ ±â·ÏµÈ À§Ä¡¸¦ ÀÇ¹ÌÇÑ´Ù.
+ * Description : DMLê´€ë ¨ undo/redo ë¡œê·¸ ìœ„ì¹˜ ê¸°ë¡
+ * ref offsetì€ í•˜ë‚˜ì˜ smrDiskLogì— ê¸°ë¡ëœ ì—¬ëŸ¬ê°œì˜ disk ë¡œê·¸ë“¤ ì¤‘
+ * replication senderê°€ ì°¸ê³ í•˜ì—¬ ë¡œê·¸ë¥¼ íŒë…í•˜ê±°ë‚˜ transaction undoì‹œì—
+ * íŒë…í•˜ëŠ” DMLê´€ë ¨ redo/undo ë¡œê·¸ê°€ ê¸°ë¡ëœ ìœ„ì¹˜ë¥¼ ì˜ë¯¸í•œë‹¤.
  **********************************************************************/
 void sdrMiniTrans::setRefOffset( sdrMtx* aMtx,
                                  smOID   aTableOID )
@@ -877,7 +877,7 @@ void sdrMiniTrans::setRefOffset( sdrMtx* aMtx,
  *
  * Description :
  *
- * minitransÀÇ begin lsnÀ» return
+ * minitransì˜ begin lsnì„ return
  *
  * Implementation :
  *
@@ -894,7 +894,7 @@ void* sdrMiniTrans::getTrans( sdrMtx     * aMtx )
  *
  * Description :
  *
- * minitransÀÇ begin lsnÀ» return
+ * minitransì˜ begin lsnì„ return
  *
  * Implementation :
  *
@@ -913,7 +913,7 @@ void* sdrMiniTrans::getMtxTrans( void * aMtx )
 
 
 /***********************************************************************
- * Description : mtx ·Î±ë ¸ğµå¸¦ ¾ò´Â´Ù.
+ * Description : mtx ë¡œê¹… ëª¨ë“œë¥¼ ì–»ëŠ”ë‹¤.
  **********************************************************************/
 sdrMtxLogMode sdrMiniTrans::getLogMode(sdrMtx*        aMtx)
 {
@@ -932,7 +932,7 @@ sdrMtxLogMode sdrMiniTrans::getLogMode(sdrMtx*        aMtx)
 }
 
 /***********************************************************************
- * Description : disk log¸¦ À§ÇÑ attribute¸¦ ¾ò´Â´Ù..
+ * Description : disk logë¥¼ ìœ„í•œ attributeë¥¼ ì–»ëŠ”ë‹¤..
  **********************************************************************/
 UInt sdrMiniTrans::getDLogAttr( sdrMtx * aMtx )
 {
@@ -942,15 +942,15 @@ UInt sdrMiniTrans::getDLogAttr( sdrMtx * aMtx )
 }
 
 /***********************************************************************
- * Description : ·Î±× ·¹ÄÚµå¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+ * Description : ë¡œê·¸ ë ˆì½”ë“œë¥¼ ì´ˆê¸°í™”í•œë‹¤.
  *
- * ·Î±× Å¸ÀÔ°ú rid¸¦ ±â·ÏÇÏ°í, ±â·ÏÈÄ¿¡ ·Î±× ¹öÆÛÀÇ offsetÀ»
- * ¹İÈ¯ÇÑ´Ù.
+ * ë¡œê·¸ íƒ€ì…ê³¼ ridë¥¼ ê¸°ë¡í•˜ê³ , ê¸°ë¡í›„ì— ë¡œê·¸ ë²„í¼ì˜ offsetì„
+ * ë°˜í™˜í•œë‹¤.
  *
  * Implementation :
  *
- * log hdr¸¦ ±¸¼ºÇÑ´Ù.
- * log hdr¸¦ writeÇÑ´Ù.
+ * log hdrë¥¼ êµ¬ì„±í•œë‹¤.
+ * log hdrë¥¼ writeí•œë‹¤.
  *
  **********************************************************************/
 IDE_RC sdrMiniTrans::initLogRec( sdrMtx*        aMtx,
@@ -964,7 +964,7 @@ IDE_RC sdrMiniTrans::initLogRec( sdrMtx*        aMtx,
     /* BUG-32579 The MiniTransaction commit should not be used in
      * exception handling area. 
      *
-     * ºÎºĞÀûÀ¸·Î ·Î±×°¡ ¾²¿©Áö¸é ¾ÈµÈ´Ù. */
+     * ë¶€ë¶„ì ìœ¼ë¡œ ë¡œê·¸ê°€ ì“°ì—¬ì§€ë©´ ì•ˆëœë‹¤. */
 
     IDE_ASSERT( aMtx->mRemainLogRecSize == 0 );
 
@@ -995,8 +995,8 @@ IDE_RC sdrMiniTrans::initLogRec( sdrMtx*        aMtx,
     }
 
     // TASK-2398 Log Compression
-    // Tablespace¿¡ Log CompressionÀ» ÇÏÁö ¾Êµµ·Ï ¼³Á¤µÈ °æ¿ì
-    // ·Î±× ¾ĞÃàÀ» ÇÏÁö ¾Êµµ·Ï ¼³Á¤
+    // Tablespaceì— Log Compressionì„ í•˜ì§€ ì•Šë„ë¡ ì„¤ì •ëœ ê²½ìš°
+    // ë¡œê·¸ ì••ì¶•ì„ í•˜ì§€ ì•Šë„ë¡ ì„¤ì •
     IDE_TEST( checkTBSLogCompAttr(aMtx, sSpaceID) != IDE_SUCCESS );
 
     aMtx->mLogCnt++;
@@ -1013,12 +1013,12 @@ IDE_RC sdrMiniTrans::initLogRec( sdrMtx*        aMtx,
     return IDE_FAILURE;
 }
 
-/* Tablespace¿¡ Log CompressionÀ» ÇÏÁö ¾Êµµ·Ï ¼³Á¤µÈ °æ¿ì
-   ·Î±× ¾ĞÃàÀ» ÇÏÁö ¾Êµµ·Ï ¼³Á¤
+/* Tablespaceì— Log Compressionì„ í•˜ì§€ ì•Šë„ë¡ ì„¤ì •ëœ ê²½ìš°
+   ë¡œê·¸ ì••ì¶•ì„ í•˜ì§€ ì•Šë„ë¡ ì„¤ì •
 
    [IN] aMtx     - Mini Transaction
-   [IN] aSpaceID - Mini TransactionÀÌ ·Î±ëÇÏ·Á´Â µ¥ÀÌÅÍ°¡ ¼ÓÇÑ
-                   TablespaceÀÇ ID
+   [IN] aSpaceID - Mini Transactionì´ ë¡œê¹…í•˜ë ¤ëŠ” ë°ì´í„°ê°€ ì†í•œ
+                   Tablespaceì˜ ID
 */
 IDE_RC sdrMiniTrans::checkTBSLogCompAttr( sdrMtx*      aMtx,
                                           scSpaceID    aSpaceID )
@@ -1027,13 +1027,13 @@ IDE_RC sdrMiniTrans::checkTBSLogCompAttr( sdrMtx*      aMtx,
 
     IDE_DASSERT( aMtx != NULL );
 
-    // ¾ĞÃàÀ» ÇÏµµ·Ï ¼³Á¤µÇ¾î ÀÖ´Â °æ¿ì¿¡¸¸ Ã¼Å©
+    // ì••ì¶•ì„ í•˜ë„ë¡ ì„¤ì •ë˜ì–´ ìˆëŠ” ê²½ìš°ì—ë§Œ ì²´í¬
     if( ( aMtx->mFlag & SDR_MTX_LOG_SHOULD_COMPRESS_MASK ) ==
         SDR_MTX_LOG_SHOULD_COMPRESS_ON )
     {
-        // Ã¹¹øÂ° Á¢±ÙÇÑ TablespaceÀÌ°Å³ª
-        // Ã¹¹øÂ° Á¢±ÙÇÑ Tablespace¿Í ´Ù¸¥ Tablespace¶ó¸é
-        // TablespaceÀÇ ·Î±× ¾ĞÃà ¿©ºÎ Ã¼Å©
+        // ì²«ë²ˆì§¸ ì ‘ê·¼í•œ Tablespaceì´ê±°ë‚˜
+        // ì²«ë²ˆì§¸ ì ‘ê·¼í•œ Tablespaceì™€ ë‹¤ë¥¸ Tablespaceë¼ë©´
+        // Tablespaceì˜ ë¡œê·¸ ì••ì¶• ì—¬ë¶€ ì²´í¬
         if ( (aMtx->mLogCnt == 0) ||
              (aMtx->mAccSpaceID != aSpaceID ) )
         {
@@ -1063,8 +1063,8 @@ IDE_RC sdrMiniTrans::checkTBSLogCompAttr( sdrMtx*      aMtx,
 
 /***********************************************************************
  * Description :
- * RID ¹öÀü
- * multiple columnÀÇ redo log¸¦ writeÇÒ ¶§ »ç¿ëµÈ´Ù.
+ * RID ë²„ì „
+ * multiple columnì˜ redo logë¥¼ writeí•  ë•Œ ì‚¬ìš©ëœë‹¤.
  **********************************************************************/
 IDE_RC sdrMiniTrans::writeLogRec( sdrMtx*      aMtx,
                                   scGRID       aWriteGRID,
@@ -1101,15 +1101,15 @@ IDE_RC sdrMiniTrans::writeLogRec( sdrMtx*      aMtx,
 }
 
 /***********************************************************************
- * Description : page º¯°æºÎºĞ¿¡ ´ëÇÑ ·Î±×¸¸ ±â·ÏÇÑ´Ù.
+ * Description : page ë³€ê²½ë¶€ë¶„ì— ëŒ€í•œ ë¡œê·¸ë§Œ ê¸°ë¡í•œë‹¤.
  *
- * ·Î±× header ¹× body¸¦ µ¿½Ã¿¡ mtx ·Î±× ¹öÆÛ¿¡ write
- * write ½Ã¿¡´Â ÇØ´ç ¹öÆÛ ÇÁ·¹ÀÓ¿¡ x-latch°¡ mtx stack¿¡
- * ÀÖ¾î¾ß ÇÑ´Ù.
+ * ë¡œê·¸ header ë° bodyë¥¼ ë™ì‹œì— mtx ë¡œê·¸ ë²„í¼ì— write
+ * write ì‹œì—ëŠ” í•´ë‹¹ ë²„í¼ í”„ë ˆì„ì— x-latchê°€ mtx stackì—
+ * ìˆì–´ì•¼ í•œë‹¤.
  *
  * - 2nd. code design
- *   + ·Î±× Å¸ÀÔ°ú RID¸¦ ÃÊ±âÈ­ÇÑ´Ù.  -> sdrMiniTrans::initLogRec
- *   + value¸¦ log buffer¿¡ writeÇÑ´Ù -> sdrMiniTrans::write
+ *   + ë¡œê·¸ íƒ€ì…ê³¼ RIDë¥¼ ì´ˆê¸°í™”í•œë‹¤.  -> sdrMiniTrans::initLogRec
+ *   + valueë¥¼ log bufferì— writeí•œë‹¤ -> sdrMiniTrans::write
  **********************************************************************/
 IDE_RC sdrMiniTrans::writeLogRec( sdrMtx*      aMtx,
                                   UChar*       aWritePtr,
@@ -1136,9 +1136,9 @@ IDE_RC sdrMiniTrans::writeLogRec( sdrMtx*      aMtx,
             {
                 //----------------------------
                 // PROJ-1566
-                // insert°¡ append ¹æ½ÄÀ¸·Î ¼öÇàµÇ´Â °æ¿ì,
-                // consistent log¸¦ Á¦¿ÜÇÏ°í page¿¡ ´ëÇÏ¿© logging ÇÏÁö ¾ÊÀ½
-                // page flush ÇÒ ¶§, page ÀüÃ¼¿¡ ´ëÇÏ¿© logging ÇÏµµ·Ï µÇ¾îÀÖÀ½
+                // insertê°€ append ë°©ì‹ìœ¼ë¡œ ìˆ˜í–‰ë˜ëŠ” ê²½ìš°,
+                // consistent logë¥¼ ì œì™¸í•˜ê³  pageì— ëŒ€í•˜ì—¬ logging í•˜ì§€ ì•ŠìŒ
+                // page flush í•  ë•Œ, page ì „ì²´ì— ëŒ€í•˜ì—¬ logging í•˜ë„ë¡ ë˜ì–´ìˆìŒ
                 //----------------------------
 
                 ideLog::log(SM_TRC_LOG_LEVEL_MRECOV,
@@ -1149,8 +1149,8 @@ IDE_RC sdrMiniTrans::writeLogRec( sdrMtx*      aMtx,
                 IDE_ASSERT( 0 );
             }
         }
-        // table page typeÀÌ ¾Æ´Ï¸é ( extent or segment ),
-        // logging  ¼öÇà
+        // table page typeì´ ì•„ë‹ˆë©´ ( extent or segment ),
+        // logging  ìˆ˜í–‰
 
         sRID     = smLayerCallback::getRIDFromPagePtr( aWritePtr );
         sSpaceID = smLayerCallback::getSpaceID( smLayerCallback::getPageStartPtr( aWritePtr ) );
@@ -1181,20 +1181,20 @@ IDE_RC sdrMiniTrans::writeLogRec( sdrMtx*      aMtx,
 }
 
 /***********************************************************************
- * Description : page¿¡ ´ëÇØ º¯°æ°ú ÇÔ²² 1, 2, 4, 8 byte ·Î±×µµ ±â·ÏÇÑ´Ù.
+ * Description : pageì— ëŒ€í•´ ë³€ê²½ê³¼ í•¨ê»˜ 1, 2, 4, 8 byte ë¡œê·¸ë„ ê¸°ë¡í•œë‹¤.
  *
- * logtypeÀº °¢ byte¿¡ ¸Â´Â ¼ıÀÚ·Î ³Ñ¾î¿Â´Ù. Áï, logtypeÀÌ valueÀÇ
- * Å©±â·Îµµ »ç¿ëµÈ´Ù. SDR_1BYTE -> 1, SDR_2BYTE->2, SDR_4BYTE->4,
- * SDR_8BYTE->8 ÀÌ·± ½ÄÀ¸·Î Á¤ÀÇµÈ´Ù.
+ * logtypeì€ ê° byteì— ë§ëŠ” ìˆ«ìë¡œ ë„˜ì–´ì˜¨ë‹¤. ì¦‰, logtypeì´ valueì˜
+ * í¬ê¸°ë¡œë„ ì‚¬ìš©ëœë‹¤. SDR_1BYTE -> 1, SDR_2BYTE->2, SDR_4BYTE->4,
+ * SDR_8BYTE->8 ì´ëŸ° ì‹ìœ¼ë¡œ ì •ì˜ëœë‹¤.
  *
- * ÁÖÀÇ : ÀÌ ÇÔ¼ö´Â page¸¦ °°ÀÌ º¯°æÇÑ´Ù.
+ * ì£¼ì˜ : ì´ í•¨ìˆ˜ëŠ” pageë¥¼ ê°™ì´ ë³€ê²½í•œë‹¤.
  *
  * - 2st. code design
- *   + !!) Æ¯Á¤ pageÀÇ º¯°æ dest Æ÷ÀÎÅÍ¿¡ °ªÀ» ·Î±×Å¸ÀÔ¿¡ µû¶ó
- *     Æ¯Á¤ ±æÀÌ¸¸Å­ memcpyÇÑ´Ù.
- *   + type°ú RID¸¦ ¼³Á¤ÇÑ´Ù      -> sdrMiniTrans::initLogRec
- *   + value¸¦ writeÇÑ´Ù.         -> sdrMiniTrans::write
- *   + page¿¡ value¸¦ writeÇÑ´Ù.  -> idlOS::memcpy
+ *   + !!) íŠ¹ì • pageì˜ ë³€ê²½ dest í¬ì¸í„°ì— ê°’ì„ ë¡œê·¸íƒ€ì…ì— ë”°ë¼
+ *     íŠ¹ì • ê¸¸ì´ë§Œí¼ memcpyí•œë‹¤.
+ *   + typeê³¼ RIDë¥¼ ì„¤ì •í•œë‹¤      -> sdrMiniTrans::initLogRec
+ *   + valueë¥¼ writeí•œë‹¤.         -> sdrMiniTrans::write
+ *   + pageì— valueë¥¼ writeí•œë‹¤.  -> idlOS::memcpy
  **********************************************************************/
 IDE_RC sdrMiniTrans::writeNBytes( void*           aMtx,
                                   UChar*          aWritePtr,
@@ -1253,9 +1253,9 @@ IDE_RC sdrMiniTrans::writeNBytes( void*           aMtx,
         {
             //----------------------------
             // PROJ-1566
-            // insert°¡ append ¹æ½ÄÀ¸·Î ¼öÇàµÇ´Â °æ¿ì,
-            // page¿¡ ´ëÇÏ¿© logging ÇÏÁö ¾ÊÀ½
-            // page flush ÇÒ ¶§, page ÀüÃ¼¿¡ ´ëÇÏ¿© logging ÇÏµµ·Ï µÇ¾îÀÖÀ½
+            // insertê°€ append ë°©ì‹ìœ¼ë¡œ ìˆ˜í–‰ë˜ëŠ” ê²½ìš°,
+            // pageì— ëŒ€í•˜ì—¬ logging í•˜ì§€ ì•ŠìŒ
+            // page flush í•  ë•Œ, page ì „ì²´ì— ëŒ€í•˜ì—¬ logging í•˜ë„ë¡ ë˜ì–´ìˆìŒ
             //----------------------------
         }
     }
@@ -1279,12 +1279,12 @@ IDE_RC sdrMiniTrans::writeNBytes( void*           aMtx,
 }
 
 /***********************************************************************
- * Description : log¿¡ writeÇÑ´Ù.
+ * Description : logì— writeí•œë‹¤.
  *
- * mtxÀÇ dynamic ·Î±× ¹öÆÛ¿¡ Æ¯Á¤ ±æÀÌÀÇ value¸¦ ±â·ÏÇÑ´Ù.
+ * mtxì˜ dynamic ë¡œê·¸ ë²„í¼ì— íŠ¹ì • ê¸¸ì´ì˜ valueë¥¼ ê¸°ë¡í•œë‹¤.
  *
  * - 2nd. code design
- *   + Æ¯Á¤ Å©±âÀÇ value¸¦ mtx ·Î±× ¹öÆÛ¿¡ ±â·ÏÇÑ´Ù. -> smuDynBuffer::store
+ *   + íŠ¹ì • í¬ê¸°ì˜ valueë¥¼ mtx ë¡œê·¸ ë²„í¼ì— ê¸°ë¡í•œë‹¤. -> smuDynBuffer::store
  **********************************************************************/
 IDE_RC sdrMiniTrans::write(sdrMtx*        aMtx,
                            void*          aValue,
@@ -1296,9 +1296,9 @@ IDE_RC sdrMiniTrans::write(sdrMtx*        aMtx,
 
 #if defined(DEBUG)
     /* PROJ-2162 RestartRiskReduction
-     * __SM_MTX_ROLLBACK_TEST °ªÀÌ ¼³Á¤µÇ¸é (0ÀÌ ¾Æ´Ï¸é) ÀÌ °ªÀÌ
-     * MtxLogWrite½Ã¸¶´Ù Áõ°¡ÇÑ´Ù. ±×¸®°í À§ Property°ª¿¡ µµ´ŞÇÏ¸é
-     * °­Á¦·Î ¿¹¿ÜÃ³¸®ÇÑ´Ù. */
+     * __SM_MTX_ROLLBACK_TEST ê°’ì´ ì„¤ì •ë˜ë©´ (0ì´ ì•„ë‹ˆë©´) ì´ ê°’ì´
+     * MtxLogWriteì‹œë§ˆë‹¤ ì¦ê°€í•œë‹¤. ê·¸ë¦¬ê³  ìœ„ Propertyê°’ì— ë„ë‹¬í•˜ë©´
+     * ê°•ì œë¡œ ì˜ˆì™¸ì²˜ë¦¬í•œë‹¤. */
     if( smuProperty::getSmMtxRollbackTest() > 0 )
     {
         mMtxRollbackTestSeq ++;
@@ -1319,7 +1319,7 @@ IDE_RC sdrMiniTrans::write(sdrMtx*        aMtx,
 
     if( getLogMode(aMtx) == SDR_MTX_LOGGING )
     {
-        /* ÃÊ±â ¼³Á¤ÇÑ Å©±â¸¸Å­¸¸ Log¸¦ ³»·Á¾ß ÇÔ */
+        /* ì´ˆê¸° ì„¤ì •í•œ í¬ê¸°ë§Œí¼ë§Œ Logë¥¼ ë‚´ë ¤ì•¼ í•¨ */
         if( aMtx->mRemainLogRecSize < aLength )
         {
             ideLog::log( IDE_DUMP_0,
@@ -1333,8 +1333,8 @@ IDE_RC sdrMiniTrans::write(sdrMtx*        aMtx,
         }
         aMtx->mRemainLogRecSize -= aLength;
 
-        /* ¸Ş¸ğ¸® ºÎÁ· ¿Ü¿¡´Â ¸¶¶¥ÇÑ ÀÌÀ¯°¡ ¾øÀ¸¸ç,
-         * ¸Ş¸ğ¸® ºÎÁ·¿¡ ÀÇÇÑ ¿¹¿Üµµ ÀÏ¾î³¯ °¡´É¼ºÀÌ °ÅÀÇ ¾ø´Ù. */
+        /* ë©”ëª¨ë¦¬ ë¶€ì¡± ì™¸ì—ëŠ” ë§ˆë•…í•œ ì´ìœ ê°€ ì—†ìœ¼ë©°,
+         * ë©”ëª¨ë¦¬ ë¶€ì¡±ì— ì˜í•œ ì˜ˆì™¸ë„ ì¼ì–´ë‚  ê°€ëŠ¥ì„±ì´ ê±°ì˜ ì—†ë‹¤. */
         IDE_ERROR( smuDynArray::store( &aMtx->mLogBuffer,
                                        aValue,
                                        aLength )
@@ -1361,7 +1361,7 @@ IDE_RC sdrMiniTrans::write(sdrMtx*        aMtx,
         dump( aMtx, SDR_MTX_DUMP_DETAILED );
 
         /* PROJ-2162 RestartRiskReduction
-         * Undo ºÒ°¡´ÉÇÑ »óÅÂÀÌ¹Ç·Î ºñÁ¤»óÁ¾·á ½ÃÅ²´Ù. */
+         * Undo ë¶ˆê°€ëŠ¥í•œ ìƒíƒœì´ë¯€ë¡œ ë¹„ì •ìƒì¢…ë£Œ ì‹œí‚¨ë‹¤. */
         IDE_ASSERT( 0 );
     }
 
@@ -1370,10 +1370,10 @@ IDE_RC sdrMiniTrans::write(sdrMtx*        aMtx,
 }
 
 /***********************************************************************
- * Description : mtx stack¿¡ latch item(object¿Í ·¡Ä¡ ¸ğµå)¸¦ ³Ö´Â´Ù.
+ * Description : mtx stackì— latch item(objectì™€ ë˜ì¹˜ ëª¨ë“œ)ë¥¼ ë„£ëŠ”ë‹¤.
  *
  * - 1st. code design
- *   + latch stack¿¡ latch itemÀ» ³Ö´Â´Ù. -> sdrMtxStack::push
+ *   + latch stackì— latch itemì„ ë„£ëŠ”ë‹¤. -> sdrMtxStack::push
  **********************************************************************/
 IDE_RC sdrMiniTrans::push(void*         aMtx,
                           void*         aObject,
@@ -1428,12 +1428,12 @@ IDE_RC sdrMiniTrans::setDirtyPage( void*    aMtx,
     sPushItem.mObject = sdbBufferMgr::getBCBFromPagePtr( aPagePtr );
     sPushItem.mLatchMode = SDR_MTX_PAGE_X;
 
-    /* Áßº¹Á¦°Å */
+    /* ì¤‘ë³µì œê±° */
     if ( existObject( &sMtx->mXLatchPageStack,
                       sPushItem.mObject, 
                       SDR_MTX_BCB ) == NULL )
     {
-        /* Property ÄÑÀÖÀ»¶§¿¡¸¸, º¹»çº»À» À¯ÁöÇÔ */
+        /* Property ì¼œìˆì„ë•Œì—ë§Œ, ë³µì‚¬ë³¸ì„ ìœ ì§€í•¨ */
         if ( SDR_MTX_STARTUP_BUG_DETECTOR_IS_ON( sMtx->mFlag ) )
         {
             IDE_TEST( smuUtility::allocAlignedBuf( IDU_MEM_SM_SDR,
@@ -1461,16 +1461,16 @@ IDE_RC sdrMiniTrans::setDirtyPage( void*    aMtx,
 }
 
 /****************************************************************************
- * Description : Mini-transactionÀÇ Commit(¶Ç´Â Rollback)½Ã¿¡ ÁøÇàµÉ ÀÏµé
- *               À» µî·ÏÇÑ´Ù.
+ * Description : Mini-transactionì˜ Commit(ë˜ëŠ” Rollback)ì‹œì— ì§„í–‰ë  ì¼ë“¤
+ *               ì„ ë“±ë¡í•œë‹¤.
  *
- * BUG-24730 [SD] DropµÈ Temp SegmentÀÇ Extent´Â ºü¸£°Ô Àç»ç¿ëµÇ¾î¾ß ÇÕ´Ï´Ù. 
+ * BUG-24730 [SD] Dropëœ Temp Segmentì˜ ExtentëŠ” ë¹ ë¥´ê²Œ ì¬ì‚¬ìš©ë˜ì–´ì•¼ í•©ë‹ˆë‹¤. 
  *
- * aMtx         [in] PendingJobÀ» ´Ş ´ë»ó Mini-transaction 
- * aIsCommitJob [in] Commit½Ã ¼öÇàµÉ ÀÏÀÎ°¡?(T), Rollback½Ã ¼öÇàµÉ ÀÏÀÎ°¡(F)
- * aFreeData    [in] Destroy½Ã data¸¦ FreeÇØÁÙ °ÍÀÎ°¡?
- * aPendingFunc [in] ÀÌÈÄ¿¡ ½ÇÁ¦·Î ÀÏÀ» ¼öÇàÇÒ ÇÔ¼ö Æ÷ÀÎÅÍ
- * aData        [in] ÀÏÀ» ¼öÇàÇÒ aPendingFunc¿¡°Ô Àü´ŞµÇ´Â µ¥ÀÌÅÍ.
+ * aMtx         [in] PendingJobì„ ë‹¬ ëŒ€ìƒ Mini-transaction 
+ * aIsCommitJob [in] Commitì‹œ ìˆ˜í–‰ë  ì¼ì¸ê°€?(T), Rollbackì‹œ ìˆ˜í–‰ë  ì¼ì¸ê°€(F)
+ * aFreeData    [in] Destroyì‹œ dataë¥¼ Freeí•´ì¤„ ê²ƒì¸ê°€?
+ * aPendingFunc [in] ì´í›„ì— ì‹¤ì œë¡œ ì¼ì„ ìˆ˜í–‰í•  í•¨ìˆ˜ í¬ì¸í„°
+ * aData        [in] ì¼ì„ ìˆ˜í–‰í•  aPendingFuncì—ê²Œ ì „ë‹¬ë˜ëŠ” ë°ì´í„°.
  ***************************************************************************/
 IDE_RC sdrMiniTrans::addPendingJob( void              * aMtx,
                                     idBool              aIsCommitJob,
@@ -1512,8 +1512,8 @@ IDE_RC sdrMiniTrans::addPendingJob( void              * aMtx,
                     insufficient_memory );
     sState = 2;
 
-    /* Data¸¦ FreeÇÒ ÇÊ¿ä°¡ ¾ø°Å³ª, Data°¡ NullÀÌ ¾Æ´Ï¾î¾ß ÇÑ´Ù.
-     * ÀÌ Á¶°ÇÀ» ¾î±â¸é, FreeÇÒ ÇÊ¿ä°¡ ÀÖ°í Data°¡ NullÀÌ¶õ °ÍÀÌ´Ï ¿À·ù´Ù*/
+    /* Dataë¥¼ Freeí•  í•„ìš”ê°€ ì—†ê±°ë‚˜, Dataê°€ Nullì´ ì•„ë‹ˆì–´ì•¼ í•œë‹¤.
+     * ì´ ì¡°ê±´ì„ ì–´ê¸°ë©´, Freeí•  í•„ìš”ê°€ ìˆê³  Dataê°€ Nullì´ë€ ê²ƒì´ë‹ˆ ì˜¤ë¥˜ë‹¤*/
     IDE_ERROR( ( aFreeData == ID_FALSE ) || ( aData != NULL ) );
 
     sPendingJob->mIsCommitJob = aIsCommitJob;
@@ -1552,13 +1552,13 @@ IDE_RC sdrMiniTrans::addPendingJob( void              * aMtx,
 }
 
 /****************************************************************************
- * Description : Mini-transactionÀÇ Commit(¶Ç´Â Rollback)½Ã¿¡ ÁøÇàµÉ ÀÏµé
- *               À», µî·Ï½Ã¿¡ ³ÖÀº °¡»ó ÇÔ¼ö¸¦ È£ÃâÇÏ¿© ¼öÇàÇÑ´Ù.
+ * Description : Mini-transactionì˜ Commit(ë˜ëŠ” Rollback)ì‹œì— ì§„í–‰ë  ì¼ë“¤
+ *               ì„, ë“±ë¡ì‹œì— ë„£ì€ ê°€ìƒ í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•˜ì—¬ ìˆ˜í–‰í•œë‹¤.
  *
- * BUG-24730 [SD] DropµÈ Temp SegmentÀÇ Extent´Â ºü¸£°Ô Àç»ç¿ëµÇ¾î¾ß ÇÕ´Ï´Ù. 
+ * BUG-24730 [SD] Dropëœ Temp Segmentì˜ ExtentëŠ” ë¹ ë¥´ê²Œ ì¬ì‚¬ìš©ë˜ì–´ì•¼ í•©ë‹ˆë‹¤. 
  *
- * aMtx         [in] PendingJobÀÌ ´Ş¸° Mini-transaction 
- * aDoCommitJob [in] Commit½ÃÁ¡ÀÎ°¡? (T), Rollback½ÃÁ¡ÀÎ°¡?(F)
+ * aMtx         [in] PendingJobì´ ë‹¬ë¦° Mini-transaction 
+ * aDoCommitJob [in] Commitì‹œì ì¸ê°€? (T), Rollbackì‹œì ì¸ê°€?(F)
  ***************************************************************************/
 IDE_RC sdrMiniTrans::executePendingJob(void   * aMtx,
                                        idBool   aDoCommitJob)
@@ -1591,11 +1591,11 @@ IDE_RC sdrMiniTrans::executePendingJob(void   * aMtx,
 }
 
 /****************************************************************************
- * Description : PendingJob ¸®½ºÆ® ¹× ±¸Á¶Ã¼, Data¸¦ ÀüºÎ »èÁ¦ÇÑ´Ù.
+ * Description : PendingJob ë¦¬ìŠ¤íŠ¸ ë° êµ¬ì¡°ì²´, Dataë¥¼ ì „ë¶€ ì‚­ì œí•œë‹¤.
  *
- * BUG-24730 [SD] DropµÈ Temp SegmentÀÇ Extent´Â ºü¸£°Ô Àç»ç¿ëµÇ¾î¾ß ÇÕ´Ï´Ù. 
+ * BUG-24730 [SD] Dropëœ Temp Segmentì˜ ExtentëŠ” ë¹ ë¥´ê²Œ ì¬ì‚¬ìš©ë˜ì–´ì•¼ í•©ë‹ˆë‹¤. 
  *
- * aMtx         [in] PendingJobÀ» Áö¿ï ´ë»ó Mini-transaction 
+ * aMtx         [in] PendingJobì„ ì§€ìš¸ ëŒ€ìƒ Mini-transaction 
  ***************************************************************************/
 IDE_RC sdrMiniTrans::destroyPendingJob( void * aMtx )
 {
@@ -1636,14 +1636,14 @@ IDE_RC sdrMiniTrans::destroyPendingJob( void * aMtx )
     IDE_EXCEPTION_END;
 
     /* BUGBUG
-     * ÀÌ °æ¿ì·Î ¿Â °æ¿ì´Â PendingJob List°¡ ±úÁ³À» °æ¿ìÀÌ´Ù.
+     * ì´ ê²½ìš°ë¡œ ì˜¨ ê²½ìš°ëŠ” PendingJob Listê°€ ê¹¨ì¡Œì„ ê²½ìš°ì´ë‹¤.
      *
-     * Á¦´ë·Î ¸®½ºÆ®°¡ ±¸ÃàµÇ¾î ÀÖ´Âµ¥ ÀÌ¹Ì ´©±º°¡°¡ FreeÇØ¼­ ¹ß»ıÇÑ °æ¿ìÀÏ
-     * ¼öµµ ÀÖ°í,
-     * ¸®½ºÆ®°¡ ±úÁ®ÀÖ¾î¼­, ¾û¶×ÇÑ °´Ã¼¸¦ FreeÇÏ´Â °ÍÀÏ ¼öµµ ÀÖ´Ù.
+     * ì œëŒ€ë¡œ ë¦¬ìŠ¤íŠ¸ê°€ êµ¬ì¶•ë˜ì–´ ìˆëŠ”ë° ì´ë¯¸ ëˆ„êµ°ê°€ê°€ Freeí•´ì„œ ë°œìƒí•œ ê²½ìš°ì¼
+     * ìˆ˜ë„ ìˆê³ ,
+     * ë¦¬ìŠ¤íŠ¸ê°€ ê¹¨ì ¸ìˆì–´ì„œ, ì—‰ëš±í•œ ê°ì²´ë¥¼ Freeí•˜ëŠ” ê²ƒì¼ ìˆ˜ë„ ìˆë‹¤.
      *
-     * µû¶ó¼­ °è¼Ó ¸®½ºÆ®¸¦ ÁøÇàÇÏ¸é¼­ Free¸¦ ÁøÇàÇÒ ¼ö ¾ø´Â »óÈ²ÀÌ¸ç, ÀÌ¿¡
-     * µû¶ó ¸Ş¸ğ¸® LeakÀÌ ¹ß»ıÇÒ ¼ö ÀÖÁö¸¸, µüÈ÷ µµ¸®°¡ ¾ø´Ù. */
+     * ë”°ë¼ì„œ ê³„ì† ë¦¬ìŠ¤íŠ¸ë¥¼ ì§„í–‰í•˜ë©´ì„œ Freeë¥¼ ì§„í–‰í•  ìˆ˜ ì—†ëŠ” ìƒí™©ì´ë©°, ì´ì—
+     * ë”°ë¼ ë©”ëª¨ë¦¬ Leakì´ ë°œìƒí•  ìˆ˜ ìˆì§€ë§Œ, ë”±íˆ ë„ë¦¬ê°€ ì—†ë‹¤. */
 
     switch( sState )
     {
@@ -1693,9 +1693,9 @@ idBool sdrMiniTrans::needMtxRollback( sdrMtx * aMtx )
          ( ( aMtx->mFlag & SDR_MTX_IGNORE_UNDO_MASK ) 
            == SDR_MTX_IGNORE_UNDO_OFF ) )
     {
-        /* ±â·ÏµÈ Log°¡ ÀÖ°Å³ª,
-         * LogRecÀ» ¾²·Á°í ÁØºñÇß°Å³ª,
-         * XLatch¸¦ ÀâÀº ÆäÀÌÁö°¡ ÀÖÀ¸¸é RollbackÀÌ ÇÊ¿äÇÕ´Ï´Ù. */
+        /* ê¸°ë¡ëœ Logê°€ ìˆê±°ë‚˜,
+         * LogRecì„ ì“°ë ¤ê³  ì¤€ë¹„í–ˆê±°ë‚˜,
+         * XLatchë¥¼ ì¡ì€ í˜ì´ì§€ê°€ ìˆìœ¼ë©´ Rollbackì´ í•„ìš”í•©ë‹ˆë‹¤. */
         if ( ( isLogWritten(aMtx) == ID_TRUE ) ||
              ( aMtx->mRemainLogRecSize > 0 )   || 
              ( sdrMtxStack::isEmpty(&aMtx->mXLatchPageStack) == ID_FALSE ) )
@@ -1709,7 +1709,7 @@ idBool sdrMiniTrans::needMtxRollback( sdrMtx * aMtx )
     }
     else
     {
-        /* NologgingÀÌ°í Ignroe¸ğµå¸é ÀÇ¹Ì ¾ø½À´Ï´Ù. */
+        /* Nologgingì´ê³  Ignroeëª¨ë“œë©´ ì˜ë¯¸ ì—†ìŠµë‹ˆë‹¤. */
         sRet = ID_FALSE;
     }
 
@@ -1719,19 +1719,19 @@ idBool sdrMiniTrans::needMtxRollback( sdrMtx * aMtx )
 /***********************************************************************
  * Description :
  *
- * ¸ğµç undo log bufferÀÇ ³»¿ëÀ» ¹İ¿µÇÑ´Ù.
- * ¸ğµç latch¸¦ ÇØÁ¦ÇÑ´Ù.
- * ÀÌ ÇÔ¼ö´Â begin - commit »çÀÌÀÇ abort·Î ÀÎÇÏ¿©
- * exception ÀÌ ¹ß»ıÇßÀ» ¶§ È£ÃâµÈ´Ù.
+ * ëª¨ë“  undo log bufferì˜ ë‚´ìš©ì„ ë°˜ì˜í•œë‹¤.
+ * ëª¨ë“  latchë¥¼ í•´ì œí•œë‹¤.
+ * ì´ í•¨ìˆ˜ëŠ” begin - commit ì‚¬ì´ì˜ abortë¡œ ì¸í•˜ì—¬
+ * exception ì´ ë°œìƒí–ˆì„ ë•Œ í˜¸ì¶œëœë‹¤.
  *
- * ³ë·Î±ëÀÏ¶§´Â ¾Æ¿¹ ÀÌ ÇÔ¼ö¸¦ µé¾î¿Ã ¼ö ¾ø´Ù.
- * ÇöÀç ³ë·Î±ëÀÏ °æ¿ì¿¡´Â abort°¡ ÀÏ¾î³ª¼­´Â ¾ÈµÈ´Ù.
+ * ë…¸ë¡œê¹…ì¼ë•ŒëŠ” ì•„ì˜ˆ ì´ í•¨ìˆ˜ë¥¼ ë“¤ì–´ì˜¬ ìˆ˜ ì—†ë‹¤.
+ * í˜„ì¬ ë…¸ë¡œê¹…ì¼ ê²½ìš°ì—ëŠ” abortê°€ ì¼ì–´ë‚˜ì„œëŠ” ì•ˆëœë‹¤.
  *
  * Implementation :
  *
  * undo Log Buffer
  *
- * while( ¸ğµç stack item¿¡ ´ëÇØ )
+ * while( ëª¨ë“  stack itemì— ëŒ€í•´ )
  *     pop
  *     release
  *
@@ -1771,12 +1771,12 @@ IDE_RC sdrMiniTrans::rollback( sdrMtx * aMtx )
         }
         else
         {
-            /* CanUndo°¡ False¶óµµ, Restart °úÁ¤¿¡¼­´Â ¹«½ÃÇÑ´Ù.
-             * Restart °úÁ¤¿¡¼­ÀÇ RollbackÀÌ ½ÇÆĞÇÏ¸é
-             * ¹æ¹ıÀÌ ¾øÀ¸´Ï±î. */
+            /* CanUndoê°€ Falseë¼ë„, Restart ê³¼ì •ì—ì„œëŠ” ë¬´ì‹œí•œë‹¤.
+             * Restart ê³¼ì •ì—ì„œì˜ Rollbackì´ ì‹¤íŒ¨í•˜ë©´
+             * ë°©ë²•ì´ ì—†ìœ¼ë‹ˆê¹Œ. */
         }
 
-        /* OnlineRedo¸¦ ÅëÇØ UndoÇÔ */
+        /* OnlineRedoë¥¼ í†µí•´ Undoí•¨ */
         idlOS::memset( &sDummyStatistics, 0, ID_SIZEOF( idvSQL ) );
 
         while( sdrMtxStack::isEmpty(&aMtx->mXLatchPageStack) != ID_TRUE )
@@ -1786,8 +1786,8 @@ IDE_RC sdrMiniTrans::rollback( sdrMtx * aMtx )
             sTargetBCB = (sdbBCB*)sItem->mObject ;
 
 #if defined(DEBUG)
-            /* MtxRollbackÀº °ÅÀÇ ¹ß»ıÇÏÁö ¾Ê´Â ÀÏÀÌ´Ù. µû¶ó¼­ ¹ß»ı½Ã
-             * ¾î¶°ÇÑ ÀÌ»óÀÌ ÀÖ¾ú´ÂÁö ±â·ÏÇÏ±â À§ÇØ Á¤º¸¸¦ ³²±ä´Ù. */
+            /* MtxRollbackì€ ê±°ì˜ ë°œìƒí•˜ì§€ ì•ŠëŠ” ì¼ì´ë‹¤. ë”°ë¼ì„œ ë°œìƒì‹œ
+             * ì–´ë– í•œ ì´ìƒì´ ìˆì—ˆëŠ”ì§€ ê¸°ë¡í•˜ê¸° ìœ„í•´ ì •ë³´ë¥¼ ë‚¨ê¸´ë‹¤. */
             ideLog::logCallStack( IDE_SM_0 );
             ideLog::log( IDE_SM_0,
                          "-----------------------------------------------"
@@ -1820,7 +1820,7 @@ IDE_RC sdrMiniTrans::rollback( sdrMtx * aMtx )
             IDE_TEST( smuUtility::freeAlignedBuf( &sPagePtr )
                       != IDE_SUCCESS );
 
-            /* Frame¿¡ BCB Á¤º¸¸¦ ¼³Á¤ÇÔ */
+            /* Frameì— BCB ì •ë³´ë¥¼ ì„¤ì •í•¨ */
             sdbBufferMgr::getPool()->setFrameInfoAfterRecoverPage( 
                                                         sTargetBCB,
                                                         sOnlineTBSLSN4Idx );
@@ -1829,10 +1829,10 @@ IDE_RC sdrMiniTrans::rollback( sdrMtx * aMtx )
     }
     else
     {
-        /* Page¿¡ ´ëÇÑ RollbackÀ» ÇÏÁö ¾ÊÀ» °æ¿ì, Á¤¸» ÇÏÁö ¾Ê¾Æµµ
-         * µÇ´ÂÁö °ËÁõÇÔ.
-         * ´Ü ÀÌ¶§ Logging¿¡ Persistent, Áï LoggingÀÌ ÀÇ¹ÌÀÖ´Â °æ
-         * ¿ì¿©¾ß ÇÑ´Ù.*/
+        /* Pageì— ëŒ€í•œ Rollbackì„ í•˜ì§€ ì•Šì„ ê²½ìš°, ì •ë§ í•˜ì§€ ì•Šì•„ë„
+         * ë˜ëŠ”ì§€ ê²€ì¦í•¨.
+         * ë‹¨ ì´ë•Œ Loggingì— Persistent, ì¦‰ Loggingì´ ì˜ë¯¸ìˆëŠ” ê²½
+         * ìš°ì—¬ì•¼ í•œë‹¤.*/
         if ( ( SDR_MTX_STARTUP_BUG_DETECTOR_IS_ON (aMtx->mFlag) ) &&
              ( getLogMode(aMtx) == SDR_MTX_LOGGING )              &&
              ( isNologgingPersistent(aMtx) == ID_FALSE ) )
@@ -1852,7 +1852,7 @@ IDE_RC sdrMiniTrans::rollback( sdrMtx * aMtx )
                           != IDE_SUCCESS );
             }
         }
-        /* XLatchPageStack ºñ¿ì±â */
+        /* XLatchPageStack ë¹„ìš°ê¸° */
         while( sdrMtxStack::isEmpty(&aMtx->mXLatchPageStack) != ID_TRUE )
         {
             sItem = sdrMtxStack::pop( &( aMtx->mXLatchPageStack ) );
@@ -1868,8 +1868,8 @@ IDE_RC sdrMiniTrans::rollback( sdrMtx * aMtx )
                   != IDE_SUCCESS );
     }
 
-    /* BUG-24730 [SD] DropµÈ Temp SegmentÀÇ Extent´Â ºü¸£°Ô Àç»ç¿ëµÇ¾î¾ß ÇÕ´Ï´Ù.
-     * Mtx°¡ CommitµÉ¶§ SpaceCache·Î FreeµÈ Extent¸¦ ¹İÈ¯ÇÕ´Ï´Ù. */ 
+    /* BUG-24730 [SD] Dropëœ Temp Segmentì˜ ExtentëŠ” ë¹ ë¥´ê²Œ ì¬ì‚¬ìš©ë˜ì–´ì•¼ í•©ë‹ˆë‹¤.
+     * Mtxê°€ Commitë ë•Œ SpaceCacheë¡œ Freeëœ Extentë¥¼ ë°˜í™˜í•©ë‹ˆë‹¤. */ 
     IDE_TEST( executePendingJob( aMtx,
                                  ID_FALSE)  //aDoCommitOp
               != IDE_SUCCESS );
@@ -1885,8 +1885,8 @@ IDE_RC sdrMiniTrans::rollback( sdrMtx * aMtx )
 
     /* BUG-31006 - Debug information must be recorded when an exception occurs
      *             from mini transaction commit or rollback.
-     * mini transaction commit/rollback °úÁ¤ Áß ½ÇÆĞ½Ã µğ¹ö±ë Á¤º¸ Ãâ·ÂÇÏ°í
-     * ¼­¹ö¸¦ Á×ÀÎ´Ù. */
+     * mini transaction commit/rollback ê³¼ì • ì¤‘ ì‹¤íŒ¨ì‹œ ë””ë²„ê¹… ì •ë³´ ì¶œë ¥í•˜ê³ 
+     * ì„œë²„ë¥¼ ì£½ì¸ë‹¤. */
 
     /* dump sdrMtx */
     if ( sState != 0 )
@@ -1913,19 +1913,19 @@ IDE_RC sdrMiniTrans::rollback( sdrMtx * aMtx )
 /***********************************************************************
  * Description :
  *
- * save point±îÁö latch¸¦ ÇØÁ¦ÇÑ´Ù. page°¡ ¼öÁ¤µÇ¾úÀ» °æ¿ì
- * latch¸¦ ÇØÁ¦ÇØ¼­´Â ¾ÈµÈ´Ù. Áï savepoint´Â ¹«È¿È­µÈ´Ù.
- * ÀÌ¸¦ log bufferÀÇ Å©±â·Î ±¸ºĞÇÑ´Ù.
+ * save pointê¹Œì§€ latchë¥¼ í•´ì œí•œë‹¤. pageê°€ ìˆ˜ì •ë˜ì—ˆì„ ê²½ìš°
+ * latchë¥¼ í•´ì œí•´ì„œëŠ” ì•ˆëœë‹¤. ì¦‰ savepointëŠ” ë¬´íš¨í™”ëœë‹¤.
+ * ì´ë¥¼ log bufferì˜ í¬ê¸°ë¡œ êµ¬ë¶„í•œë‹¤.
  *
  * Implementation :
- * if( save pointÀÇ ·Î±× Å©±â != ÇöÀç ·Î±× Å©±â )
+ * if( save pointì˜ ë¡œê·¸ í¬ê¸° != í˜„ì¬ ë¡œê·¸ í¬ê¸° )
  *     return false
  *
- * if( savepointÀÇ Å©±â > ÇöÀç stackÀÇ Å©±â )
+ * if( savepointì˜ í¬ê¸° > í˜„ì¬ stackì˜ í¬ê¸° )
  *     return false
  *
  *
- * while( savepoint + 1±îÁöÀÇ stack index¿¡ ´ëÇØ )
+ * while( savepoint + 1ê¹Œì§€ì˜ stack indexì— ëŒ€í•´ )
  *     pop
  *     release
  *
@@ -1978,7 +1978,7 @@ IDE_RC sdrMiniTrans::releaseLatchToSP( sdrMtx       *aMtx,
 /***********************************************************************
  * Description :
  *
- * savepoint¸¦ ¼³Á¤ÇÑ´Ù.
+ * savepointë¥¼ ì„¤ì •í•œë‹¤.
  *
  **********************************************************************/
 void sdrMiniTrans::setSavePoint( sdrMtx       *aMtx,
@@ -2005,18 +2005,18 @@ void sdrMiniTrans::setSavePoint( sdrMtx       *aMtx,
 
 
 /***********************************************************************
- * Description : mtx ½ºÅÃÀÇ ÇÑ itemÀÇ release ÀÛ¾÷À» ¼öÇàÇÑ´Ù.
+ * Description : mtx ìŠ¤íƒì˜ í•œ itemì˜ release ì‘ì—…ì„ ìˆ˜í–‰í•œë‹¤.
  *
- * release¶õ ÇÑ itemÀÇ Á¤º¸¸¦ ±âÃÊ·Î commit ½Ã¿¡ ÇØÁÖ¾î¾ß ÇÒ ÀÛ¾÷À» ¸»ÇÑ´Ù.
- * ¿¹¸¦ µé¾î, latch¸¦ ÇØÁ¦ÇÏ°í, fix count¸¦ °¨¼Ò½ÃÅ°´Â µîÀÇ ÀÛ¾÷ÀÌ ÀÖ´Ù.
+ * releaseë€ í•œ itemì˜ ì •ë³´ë¥¼ ê¸°ì´ˆë¡œ commit ì‹œì— í•´ì£¼ì–´ì•¼ í•  ì‘ì—…ì„ ë§í•œë‹¤.
+ * ì˜ˆë¥¼ ë“¤ì–´, latchë¥¼ í•´ì œí•˜ê³ , fix countë¥¼ ê°ì†Œì‹œí‚¤ëŠ” ë“±ì˜ ì‘ì—…ì´ ìˆë‹¤.
  *
- * itemÀÌ °¡Áö°í ÀÖ´Â ¿ÀºêÁ§Æ®´Â sdbBCB, iduLatch, iduMutex µîµî 1°¡Áö
- * ÀÌ»óÀÇ latch Á¾·ù¸¦ °¡Áú ¼ö ÀÖÀ¸¸ç, Á¾·ù¿¡ µû¶ó release ÇØ¾ß ÇÑ´Ù.
+ * itemì´ ê°€ì§€ê³  ìˆëŠ” ì˜¤ë¸Œì íŠ¸ëŠ” sdbBCB, iduLatch, iduMutex ë“±ë“± 1ê°€ì§€
+ * ì´ìƒì˜ latch ì¢…ë¥˜ë¥¼ ê°€ì§ˆ ìˆ˜ ìˆìœ¼ë©°, ì¢…ë¥˜ì— ë”°ë¼ release í•´ì•¼ í•œë‹¤.
  *
- * sdbBCBÀÇ °æ¿ì´Â sdbÀÇ page release ÇÔ¼ö¸¦ È£ÃâÇÑ´Ù.
- * iduLatch¿Í iduMutexÀÇ °æ¿ì¿¡´Â latch, mutex¸¦ ÇØÁ¦ÇØ ÁÖ¸é µÈ´Ù.
- * ÀÌ¸¦ À§ÇØ °¢ Å¸ÀÔÀÇ release functionÀ» ÃÊ±âÈ­ ÇÑ ÈÄ
- * È£ÃâÇÑ´Ù.
+ * sdbBCBì˜ ê²½ìš°ëŠ” sdbì˜ page release í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•œë‹¤.
+ * iduLatchì™€ iduMutexì˜ ê²½ìš°ì—ëŠ” latch, mutexë¥¼ í•´ì œí•´ ì£¼ë©´ ëœë‹¤.
+ * ì´ë¥¼ ìœ„í•´ ê° íƒ€ì…ì˜ release functionì„ ì´ˆê¸°í™” í•œ í›„
+ * í˜¸ì¶œí•œë‹¤.
  *
  * object            latch mode     release function
  * ----------------------------------------------------------
@@ -2028,17 +2028,17 @@ void sdrMiniTrans::setSavePoint( sdrMtx       *aMtx,
  * iduMutex           X lock      Object.unlock
  *
  * - 1st. code design
- *   + if(object°¡ null) !!ASSERT
- *   + if( object°¡ Page¿¡ ´ëÇÑ °ÍÀÌ¸é )
- *     - BCB¸¦ releaseÇÑ´Ù. ->sdbBufferMgr::releasePage
- *   else if ( object°¡ iduLatch¿¡ ´ëÇÑ °ÍÀÌ¸é )
- *     - latch¸¦ ÇØÁ¦ÇÑ´Ù.->iduLatch::unlock
- *   else ( object°¡ iduMutex¿¡ ´ëÇÑ °ÍÀÌ¸é)
- *     - mutex¸¦ ÇØÁ¦ÇÑ´Ù.->object.unlock()
+ *   + if(objectê°€ null) !!ASSERT
+ *   + if( objectê°€ Pageì— ëŒ€í•œ ê²ƒì´ë©´ )
+ *     - BCBë¥¼ releaseí•œë‹¤. ->sdbBufferMgr::releasePage
+ *   else if ( objectê°€ iduLatchì— ëŒ€í•œ ê²ƒì´ë©´ )
+ *     - latchë¥¼ í•´ì œí•œë‹¤.->iduLatch::unlock
+ *   else ( objectê°€ iduMutexì— ëŒ€í•œ ê²ƒì´ë©´)
+ *     - mutexë¥¼ í•´ì œí•œë‹¤.->object.unlock()
  *
  * - 2nd. code design
- *   + if(object°¡ null) assert
- *   + latch item Å¸ÀÔ¿¡ µû¶ó release ÇÔ¼ö Æ÷ÀÎÅÍ¸¦ È£ÃâÇÑ´Ù.
+ *   + if(objectê°€ null) assert
+ *   + latch item íƒ€ì…ì— ë”°ë¼ release í•¨ìˆ˜ í¬ì¸í„°ë¥¼ í˜¸ì¶œí•œë‹¤.
  **********************************************************************/
 IDE_RC sdrMiniTrans::releaseLatchItem(sdrMtx*           aMtx,
                                       sdrMtxLatchItem*  aItem)
@@ -2062,15 +2062,15 @@ IDE_RC sdrMiniTrans::releaseLatchItem(sdrMtx*           aMtx,
 }
 
 /***********************************************************************
- * Descripition : mtx·Î StackÀÇ Æ¯Á¤ page Æ÷ÀÎÅÍ ¹İÈ¯
+ * Descripition : mtxë¡œ Stackì˜ íŠ¹ì • page í¬ì¸í„° ë°˜í™˜
  *
- * xLatch ½ºÅÃ¿¡ Æ¯Á¤ page ID¿¡ ÇØ´çÇÏ´Â BCB°¡ Á¸ÀçÇÒ °æ¿ì,
- * ÇØ´ç page frame¿¡ ´ëÇÑ Æ÷ÀÎÅÍ¸¦ ¹İÈ¯.
- * ¾øÀ¸¸é NULL
+ * xLatch ìŠ¤íƒì— íŠ¹ì • page IDì— í•´ë‹¹í•˜ëŠ” BCBê°€ ì¡´ì¬í•  ê²½ìš°,
+ * í•´ë‹¹ page frameì— ëŒ€í•œ í¬ì¸í„°ë¥¼ ë°˜í™˜.
+ * ì—†ìœ¼ë©´ NULL
  *
- * ÀÏ¹İ Stack°ú´Â ´Ù¸§. ¿Ö³ÄÇÏ¸é LoggingÀ» À§ÇØ, FixPage´Â ´Ù¸¥ MTX·Î ÇÏ°í
- * ´Ù¸¥ MTX¿¡¼­ SetDrity¸¸ ÇÑ ÄÉÀÌ½º°¡ ÀÖ±â ¶§¹®. µû¶ó¼­ XLatchStackÀ»
- * Ã£¾Æ¾ß ÇÔ.
+ * ì¼ë°˜ Stackê³¼ëŠ” ë‹¤ë¦„. ì™œëƒí•˜ë©´ Loggingì„ ìœ„í•´, FixPageëŠ” ë‹¤ë¥¸ MTXë¡œ í•˜ê³ 
+ * ë‹¤ë¥¸ MTXì—ì„œ SetDrityë§Œ í•œ ì¼€ì´ìŠ¤ê°€ ìˆê¸° ë•Œë¬¸. ë”°ë¼ì„œ XLatchStackì„
+ * ì°¾ì•„ì•¼ í•¨.
  *
  ***********************************************************************/
 UChar* sdrMiniTrans::getPagePtrFromPageID( sdrMtx       * aMtx,
@@ -2105,9 +2105,9 @@ UChar* sdrMiniTrans::getPagePtrFromPageID( sdrMtx       * aMtx,
 /***********************************************************************
  * Descripition :
  *
- * releaseToSP È¤Àº rollback½Ã¿¡ itemÀ» releaseÇÑ´Ù.
- * ´Ù¸¥ object´Â ±×³É releae¿Í °°ÀÌ unlockÀ» ¼öÇàÇÏ³ª,
- * pageÀÇ °æ¿ì flush list¿¡ ´Ş ÇÊ¿ä¾øÀÌ latch¸¸ ÇØÁ¦ÇÏ´Â Á¡ÀÌ ´Ù¸£´Ù.
+ * releaseToSP í˜¹ì€ rollbackì‹œì— itemì„ releaseí•œë‹¤.
+ * ë‹¤ë¥¸ objectëŠ” ê·¸ëƒ¥ releaeì™€ ê°™ì´ unlockì„ ìˆ˜í–‰í•˜ë‚˜,
+ * pageì˜ ê²½ìš° flush listì— ë‹¬ í•„ìš”ì—†ì´ latchë§Œ í•´ì œí•˜ëŠ” ì ì´ ë‹¤ë¥´ë‹¤.
  *
  *
  ***********************************************************************/
@@ -2131,11 +2131,11 @@ IDE_RC sdrMiniTrans::releaseLatchItem4Rollback(sdrMtx*           aMtx,
 }
 
 /***********************************************************************
- * Description : ½ºÅÃ¿¡ ¿ÀºêÁ§Æ®°¡ ÀÖ´ÂÁö È®ÀÎÇÑ´Ù.
- * Ã£À¸¸é stackÀÇ latch itemÀ», ¸øÃ£À¸¸é NULLÀ» ¸®ÅÏÇÑ´Ù.
+ * Description : ìŠ¤íƒì— ì˜¤ë¸Œì íŠ¸ê°€ ìˆëŠ”ì§€ í™•ì¸í•œë‹¤.
+ * ì°¾ìœ¼ë©´ stackì˜ latch itemì„, ëª»ì°¾ìœ¼ë©´ NULLì„ ë¦¬í„´í•œë‹¤.
  *
  * - 1st code design
- *   + ½ºÅÃ¿¡ ÇØ´ç ¾ÆÀÌÅÛÀÌ ÀÖ´ÂÁö È®ÀÎÇÑ´Ù. -> sdrMtxStack::find()
+ *   + ìŠ¤íƒì— í•´ë‹¹ ì•„ì´í…œì´ ìˆëŠ”ì§€ í™•ì¸í•œë‹¤. -> sdrMtxStack::find()
  **********************************************************************/
 sdrMtxLatchItem* sdrMiniTrans::existObject( sdrMtxStackInfo       * aLatchStack,
                                             void                  * aObject,
@@ -2161,7 +2161,7 @@ sdrMtxLatchItem* sdrMiniTrans::existObject( sdrMtxStackInfo       * aLatchStack,
  *
  * Description :
  *
- * minitransÀÇ begin lsnÀ» return
+ * minitransì˜ begin lsnì„ return
  *
  * Implementation :
  *
@@ -2181,7 +2181,7 @@ smLSN sdrMiniTrans::getBeginLSN( void     * aMtx )
  *
  * Description :
  *
- * minitransÀÇ end lsnÀ» return
+ * minitransì˜ end lsnì„ return
  *
  * Implementation :
  *
@@ -2199,7 +2199,7 @@ smLSN sdrMiniTrans::getEndLSN( void     * aMtx )
  *
  * Description :
  *
- * minitransÀÌ Log¸¦ writeÇÑ ÀûÀÌ ÀÖ´ÂÁö °Ë»çÇÑ´Ù.
+ * minitransì´ Logë¥¼ writeí•œ ì ì´ ìˆëŠ”ì§€ ê²€ì‚¬í•œë‹¤.
  *
  * Implementation :
  *
@@ -2226,7 +2226,7 @@ idBool sdrMiniTrans::isLogWritten( void     * aMtx )
  *
  * Description :
  *
- * minitrans ·Î±× ¸ğµå°¡ loggingÀÌ³Ä
+ * minitrans ë¡œê·¸ ëª¨ë“œê°€ loggingì´ëƒ
  *
  * Implementation :
  *
@@ -2245,7 +2245,7 @@ idBool sdrMiniTrans::isModeLogging( void     * aMtx )
  *
  * Description :
  *
- * minitrans ·Î±× ¸ğµå°¡ no loggingÀÌ³Ä
+ * minitrans ë¡œê·¸ ëª¨ë“œê°€ no loggingì´ëƒ
  *
  * Implementation :
  *
@@ -2264,11 +2264,11 @@ idBool sdrMiniTrans::isModeNoLogging( void     * aMtx )
  *
  * Description :
  *
- * minitransÀÇ ÇöÀç ³»¿ëÀ» dumpÇÑ´Ù.
+ * minitransì˜ í˜„ì¬ ë‚´ìš©ì„ dumpí•œë‹¤.
  *
  * Implementation :
  *
- * mtx struct¸¦ ¸ğµÎ hex dumpÇÑ´Ù.
+ * mtx structë¥¼ ëª¨ë‘ hex dumpí•œë‹¤.
  **********************************************************************/
 void sdrMiniTrans::dumpHex( sdrMtx  * aMtx )
 {
@@ -2279,7 +2279,7 @@ void sdrMiniTrans::dumpHex( sdrMtx  * aMtx )
     ideLog::log( IDE_SERVER_0, "[ Hex Dump MiniTrans ]" );
     ideLog::logMem( IDE_SERVER_0, (UChar*)aMtx, ID_SIZEOF(sdrMtx) );
 
-    /* dumpÇÒ ¸Ş¸ğ¸® Å©±â °è»ê */
+    /* dumpí•  ë©”ëª¨ë¦¬ í¬ê¸° ê³„ì‚° */
     sDumpBufSize = smuDynArray::getSize( &aMtx->mLogBuffer );
 
     if( sDumpBufSize > 0 )
@@ -2309,11 +2309,11 @@ void sdrMiniTrans::dumpHex( sdrMtx  * aMtx )
  *
  * Description :
  *
- * minitransÀÇ ÇöÀç ³»¿ëÀ» dumpÇÑ´Ù.
+ * minitransì˜ í˜„ì¬ ë‚´ìš©ì„ dumpí•œë‹¤.
  *
  * Implementation :
  *
- * mtx structÀ» ¸ğµÎ Ç¥½ÃÇÑ´Ù.
+ * mtx structì„ ëª¨ë‘ í‘œì‹œí•œë‹¤.
  **********************************************************************/
 void sdrMiniTrans::dump( sdrMtx          *aMtx,
                          sdrMtxDumpMode   aDumpMode )
@@ -2416,8 +2416,8 @@ idBool sdrMiniTrans::isEmpty( sdrMtx * aMtx )
 }
 
 /***********************************************************************
- * Description : NOLOGGING Persistent ÆÇ´Ü
- * NOLOGGING mini-transactionÀÇ persistent ¼³Á¤ ¿©ºÎ¸¦ return
+ * Description : NOLOGGING Persistent íŒë‹¨
+ * NOLOGGING mini-transactionì˜ persistent ì„¤ì • ì—¬ë¶€ë¥¼ return
  **********************************************************************/
 idBool sdrMiniTrans::isNologgingPersistent( void * aMtx )
 {
@@ -2434,11 +2434,11 @@ idBool sdrMiniTrans::isNologgingPersistent( void * aMtx )
 /***********************************************************************
  * PROJ-2162 RestartRiskReduction
  *
- * Description : Mtx Commit¸¶´Ù DRDB Redo±â´ÉÀ» °ËÁõÇÔ
+ * Description : Mtx Commitë§ˆë‹¤ DRDB Redoê¸°ëŠ¥ì„ ê²€ì¦í•¨
  *  
- * aMtx          - [IN] °ËÁõ´ë»óÀÎ Mtx
- * aMtxStack     - [IN] MiniTransactionÀÇ Dirtypage¸¦ ¸ğ¾ÆµĞ Stack
- * aLogBuffer    - [IN] ÀÌ¹ø¿¡ ±â·ÏÇÑ Logµé
+ * aMtx          - [IN] ê²€ì¦ëŒ€ìƒì¸ Mtx
+ * aMtxStack     - [IN] MiniTransactionì˜ Dirtypageë¥¼ ëª¨ì•„ë‘” Stack
+ * aLogBuffer    - [IN] ì´ë²ˆì— ê¸°ë¡í•œ Logë“¤
  **********************************************************************/
 IDE_RC sdrMiniTrans::validateDRDBRedo( sdrMtx          * aMtx,
                                        sdrMtxStackInfo * aMtxStack,
@@ -2458,10 +2458,10 @@ IDE_RC sdrMiniTrans::validateDRDBRedo( sdrMtx          * aMtx,
     idlOS::memset( &sDummyStatistics, 0, ID_SIZEOF( idvSQL ) );
 
     /*********************************************************************
-     * 1) MTX¿¡¼­ ±â·ÏÇÑ LogµéÀ» ºĞ¼®ÇÏ¿©, °»½ÅµÈ ÆäÀÌÁöµéÀ» Ã£À½
+     * 1) MTXì—ì„œ ê¸°ë¡í•œ Logë“¤ì„ ë¶„ì„í•˜ì—¬, ê°±ì‹ ëœ í˜ì´ì§€ë“¤ì„ ì°¾ìŒ
      *********************************************************************/
     
-    /* ±â·ÏµÈ Log¸¦ °¡Á®¿È */
+    /* ê¸°ë¡ëœ Logë¥¼ ê°€ì ¸ì˜´ */
     sRedoLogBufferSize = smuDynArray::getSize( aLogBuffer);
 
     /* sdrMiniTrans_validateDRDBRedo_malloc_RedoLogBuffer.tc */
@@ -2484,7 +2484,7 @@ IDE_RC sdrMiniTrans::validateDRDBRedo( sdrMtx          * aMtx,
                                                    (void**)&sHead )
               != IDE_SUCCESS );
 
-    /* °ËÁõ ½ÃÀÛ */
+    /* ê²€ì¦ ì‹œì‘ */
     sData = sHead;
     do
     {
@@ -2507,7 +2507,7 @@ IDE_RC sdrMiniTrans::validateDRDBRedo( sdrMtx          * aMtx,
     IDE_TEST( iduMemMgr::free( sRedoLogBuffer ) != IDE_SUCCESS );
 
     /*********************************************************************
-     * 2) Log´Â ¾È³²¾Ò´Âµ¥, SetDirtyµÈ ÆäÀÌÁöµéÀ» °ËÁõ
+     * 2) LogëŠ” ì•ˆë‚¨ì•˜ëŠ”ë°, SetDirtyëœ í˜ì´ì§€ë“¤ì„ ê²€ì¦
      *********************************************************************/
     for( i = 0 ; i < aMtxStack->mCurrSize ; i ++ )
     {
@@ -2541,17 +2541,17 @@ IDE_RC sdrMiniTrans::validateDRDBRedo( sdrMtx          * aMtx,
 /***********************************************************************
  * PROJ-2162 RestartRiskReduction
  *
- * Description : ½ÇÁ¦·Î °ËÁõÀ» ¼öÇàÇÔ.
+ * Description : ì‹¤ì œë¡œ ê²€ì¦ì„ ìˆ˜í–‰í•¨.
  * 
- * <<State¿¹¿Ü Ã³¸®. ¾ÈÇÔ. ¿©±â¼­ ¿¹¿Ü°¡ ¹ß»ıÇÏ¸é Á¾·á½ÃÅ³°ÍÀÌ±â ¶§¹®>>
+ * <<Stateì˜ˆì™¸ ì²˜ë¦¬. ì•ˆí•¨. ì—¬ê¸°ì„œ ì˜ˆì™¸ê°€ ë°œìƒí•˜ë©´ ì¢…ë£Œì‹œí‚¬ê²ƒì´ê¸° ë•Œë¬¸>>
  *
- * aStatistics    - [IN] Dummy Åë°èÁ¤º¸
- * aMtx           - [IN] °ËÁõ´ë»óÀÎ Mtx
- * aMtxStack      - [IN] MiniTransactionÀÇ Dirtypage¸¦ ¸ğ¾ÆµĞ Stack
- * aSPIDArray     - [IN] Áßº¹ °Ë»ç¸¦ ¸·±â À§ÇÑ Array
- * aSPIDCount     - [IN] Áßº¹ °Ë»ç¸¦ ¸·±â À§ÇÑ ArrayÀÇ °´Ã¼ °³¼ö
- * aSpaceID       - [IN] °ËÁõÇÒ ´ë»ó PageÀÇ SpaceID
- * aPageID        - [IN] °ËÁõÇÒ ´ë»ó PageÀÇ PageID
+ * aStatistics    - [IN] Dummy í†µê³„ì •ë³´
+ * aMtx           - [IN] ê²€ì¦ëŒ€ìƒì¸ Mtx
+ * aMtxStack      - [IN] MiniTransactionì˜ Dirtypageë¥¼ ëª¨ì•„ë‘” Stack
+ * aSPIDArray     - [IN] ì¤‘ë³µ ê²€ì‚¬ë¥¼ ë§‰ê¸° ìœ„í•œ Array
+ * aSPIDCount     - [IN] ì¤‘ë³µ ê²€ì‚¬ë¥¼ ë§‰ê¸° ìœ„í•œ Arrayì˜ ê°ì²´ ê°œìˆ˜
+ * aSpaceID       - [IN] ê²€ì¦í•  ëŒ€ìƒ Pageì˜ SpaceID
+ * aPageID        - [IN] ê²€ì¦í•  ëŒ€ìƒ Pageì˜ PageID
  **********************************************************************/
 
 IDE_RC sdrMiniTrans::validateDRDBRedoInternal( 
@@ -2575,7 +2575,7 @@ IDE_RC sdrMiniTrans::validateDRDBRedoInternal(
     UInt               i;
 
     /****************************************************************
-     * 1) Áßº¹ Ã¼Å© 
+     * 1) ì¤‘ë³µ ì²´í¬ 
      ****************************************************************/
     sSPID = ( (ULong)aSpaceID << 32 ) + aPageID;
     for( i = 0 ; i < (*aSPIDCount) ; i ++  )
@@ -2589,7 +2589,7 @@ IDE_RC sdrMiniTrans::validateDRDBRedoInternal(
     aSPIDArray[ (*aSPIDCount) ++ ] = sSPID;
 
     /****************************************************************
-     * 2) °ËÁõÇÒ µÎ Page °¡Á®¿À±â
+     * 2) ê²€ì¦í•  ë‘ Page ê°€ì ¸ì˜¤ê¸°
      ****************************************************************/
     sBCB.mSpaceID = aSpaceID;
     sBCB.mPageID  = aPageID;
@@ -2597,10 +2597,10 @@ IDE_RC sdrMiniTrans::validateDRDBRedoInternal(
                                  &sBCB,
                                  SDR_MTX_BCB );
 
-    /* Log´Â ±â·ÏÇß´Âµ¥ setDirty¸¦ ¾ÈÇÑ °æ¿ì·Î ¿À·ùÀÓ. */
+    /* LogëŠ” ê¸°ë¡í–ˆëŠ”ë° setDirtyë¥¼ ì•ˆí•œ ê²½ìš°ë¡œ ì˜¤ë¥˜ì„. */
     IDE_TEST( sFindItem == NULL );
 
-    /* Frame º¹»çÇØµÎ±â. */
+    /* Frame ë³µì‚¬í•´ë‘ê¸°. */
     IDE_ASSERT( smuUtility::allocAlignedBuf( IDU_MEM_SM_SDR,
                                              SD_PAGE_SIZE,
                                              SD_PAGE_SIZE,
@@ -2619,12 +2619,12 @@ IDE_RC sdrMiniTrans::validateDRDBRedoInternal(
                       SDR_MTX_BCB )
          == NULL )
     {
-        /* Latch¸¦ ÀâÁö ¾ÊÀº °æ¿ì´Â µÎ°³ÀÇ Mtx¸¦ ¾²´Â CreatePageµîÀ¸·Î,
-         * Latch´Â ´Ù¸¥ Mtx¿¡¼­ Àâ°í, ¿©±â¼­´Â SetDrityÇÏ°í Logging¸¸
-         * ÇÑ °æ¿ìÀÌ´Ù. 
-         * ÀÌ °æ¿ì¿¡´Â ÆäÀÌÁö¸¦ º¯°æÇÑ ÈÄ setDirty¸¦ ÇÏ´Â°æ¿ì°¡ ¸¹¾Æ¼­,
-         * Copyº»À¸·Î RedoÇß´Ù°¡´Â ´ÙÀ½ °æ¿ì¿¡ ¹®Á¦°¡ »ı±â±â ¶§¹®¿¡, 
-         * DiskFile·ÎºÎÅÍ Page¸¦ ÀĞ´Â´Ù.*/
+        /* Latchë¥¼ ì¡ì§€ ì•Šì€ ê²½ìš°ëŠ” ë‘ê°œì˜ Mtxë¥¼ ì“°ëŠ” CreatePageë“±ìœ¼ë¡œ,
+         * LatchëŠ” ë‹¤ë¥¸ Mtxì—ì„œ ì¡ê³ , ì—¬ê¸°ì„œëŠ” SetDrityí•˜ê³  Loggingë§Œ
+         * í•œ ê²½ìš°ì´ë‹¤. 
+         * ì´ ê²½ìš°ì—ëŠ” í˜ì´ì§€ë¥¼ ë³€ê²½í•œ í›„ setDirtyë¥¼ í•˜ëŠ”ê²½ìš°ê°€ ë§ì•„ì„œ,
+         * Copyë³¸ìœ¼ë¡œ Redoí–ˆë‹¤ê°€ëŠ” ë‹¤ìŒ ê²½ìš°ì— ë¬¸ì œê°€ ìƒê¸°ê¸° ë•Œë¬¸ì—, 
+         * DiskFileë¡œë¶€í„° Pageë¥¼ ì½ëŠ”ë‹¤.*/
         sReadFromDisk = ID_TRUE;
     }
     else
@@ -2633,19 +2633,19 @@ IDE_RC sdrMiniTrans::validateDRDBRedoInternal(
     }
 
     /****************************************************************
-     * 3) °ËÁõÇÒ±î ¸»±î?
+     * 3) ê²€ì¦í• ê¹Œ ë§ê¹Œ?
      ****************************************************************/
     sPageType = sdpPhyPage::getPageType( (sdpPhyPageHdr*)sBufferPage );
 
     /* BUG-32546 [sm-disk-index] The logging image of DRDB index meta page
      * can be different to page image.
-     * À§ ¹ö±× ÇØ°á ÈÄ SkipÀ» Ç®°Í. */
+     * ìœ„ ë²„ê·¸ í•´ê²° í›„ Skipì„ í’€ê²ƒ. */
     IDE_TEST_CONT( sPageType == SDP_PAGE_INDEX_META_BTREE, SKIP );
     IDE_TEST_CONT( sPageType == SDP_PAGE_INDEX_META_RTREE, SKIP );
 
-    /* Restart Recovery ½ÃÁ¡¿¡´Â AgerbleSCNÀÌ ¼³Á¤µÇ¾î ÀÖÁö ¾Ê±â ¶§¹®¿¡
-     * getCommitSCNÀ» ÅëÇÑ DelayedStampingÀ» ¸øÇÑ´Ù. µû¶ó¼­ Stamping
-     * ÀÌ ÇÊ¿äÇÑ °æ¿ì´Â °ËÁõÀ» ÇÏÁö ¾Ê´Â´Ù. */
+    /* Restart Recovery ì‹œì ì—ëŠ” AgerbleSCNì´ ì„¤ì •ë˜ì–´ ìˆì§€ ì•Šê¸° ë•Œë¬¸ì—
+     * getCommitSCNì„ í†µí•œ DelayedStampingì„ ëª»í•œë‹¤. ë”°ë¼ì„œ Stamping
+     * ì´ í•„ìš”í•œ ê²½ìš°ëŠ” ê²€ì¦ì„ í•˜ì§€ ì•ŠëŠ”ë‹¤. */
     IDE_TEST_CONT( ( smrRecoveryMgr::isRestart() == ID_TRUE ) &&
                     ( ( sPageType == SDP_PAGE_INDEX_BTREE ) ||
                       ( sPageType == SDP_PAGE_INDEX_RTREE ) ||
@@ -2654,10 +2654,10 @@ IDE_RC sdrMiniTrans::validateDRDBRedoInternal(
 
     if( SM_IS_LSN_INIT( sdpPhyPage::getPageLSN( sBufferPage ) ) )
     {
-        /* CreatePageµîÀ» ÇÑ °æ¿ì ¹Û¿¡ ¾øÀ½. µû¶ó¼­ ÀÌ °æ¿ì´Â
-         * RecoverdPage¿¡ BCBÀÇ ÀÌÀü FrameÀÇ ³»¿ëÀÌ ÀÖ±â ¶§¹®¿¡
-         * Page Á¤º¸°¡ Á¤È®ÇÏÁö ¾ÊÀ¸¹Ç·Î °ËÁõÇÏ¸é ¾ÈµÈ´Ù.
-         * sdbBufferPool::createPage Âü°í */
+        /* CreatePageë“±ì„ í•œ ê²½ìš° ë°–ì— ì—†ìŒ. ë”°ë¼ì„œ ì´ ê²½ìš°ëŠ”
+         * RecoverdPageì— BCBì˜ ì´ì „ Frameì˜ ë‚´ìš©ì´ ìˆê¸° ë•Œë¬¸ì—
+         * Page ì •ë³´ê°€ ì •í™•í•˜ì§€ ì•Šìœ¼ë¯€ë¡œ ê²€ì¦í•˜ë©´ ì•ˆëœë‹¤.
+         * sdbBufferPool::createPage ì°¸ê³  */
         sSuccess = ID_FALSE;
     }
     else
@@ -2678,7 +2678,7 @@ IDE_RC sdrMiniTrans::validateDRDBRedoInternal(
         IDE_TEST( sPageType 
                   != sdpPhyPage::getPageType( (sdpPhyPageHdr*)sRecovePage ) );
 
-        /* Logging¾øÀÌ ¼öÇàÇÏ´Â FastStampingÀ» À§ÇØ ¶È°°ÀÌ ¸ÂÃçÁØ´Ù. */
+        /* Loggingì—†ì´ ìˆ˜í–‰í•˜ëŠ” FastStampingì„ ìœ„í•´ ë˜‘ê°™ì´ ë§ì¶°ì¤€ë‹¤. */
         if( sPageType == SDP_PAGE_DATA )
         {
             IDE_TEST( sdcTableCTL::stampingAll4RedoValidation(aStatistics,
@@ -2718,7 +2718,7 @@ IDE_RC sdrMiniTrans::validateDRDBRedoInternal(
 
     dumpHex( aMtx );
     dump( aMtx, SDR_MTX_DUMP_DETAILED );
-    /* SetDirty°¡ ¾ÈµÈ °æ¿ì. Page Á¤º¸ Âï±â Àü¿¡ ¼­¹ö Á¾·á½ÃÅ´ */
+    /* SetDirtyê°€ ì•ˆëœ ê²½ìš°. Page ì •ë³´ ì°ê¸° ì „ì— ì„œë²„ ì¢…ë£Œì‹œí‚´ */
     IDE_ASSERT( sFindItem != NULL );
 
     sdpPhyPage::tracePage( IDE_SERVER_0,
@@ -2727,7 +2727,7 @@ IDE_RC sdrMiniTrans::validateDRDBRedoInternal(
     sdpPhyPage::tracePage( IDE_SERVER_0,
                            sBufferPage,
                            "BuffPage:");
-    /* PageTypeÀÌ ´Ş¶ó¼­ ¾ÈµÈ °æ¿ì. */
+    /* PageTypeì´ ë‹¬ë¼ì„œ ì•ˆëœ ê²½ìš°. */
     IDE_ASSERT( sdpPhyPage::getPageType( (sdpPhyPageHdr*)sRecovePage ) ==
                 sdpPhyPage::getPageType( (sdpPhyPageHdr*)sBufferPage ) );
     IDE_ASSERT( 0 );

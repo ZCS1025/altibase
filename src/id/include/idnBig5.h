@@ -27,7 +27,7 @@
  * BIG5
  */
 
-/* XOR À» ÇÏ±â À§ÇÑ ÀÓÀÇÀÇ °ª. Æ¯º°ÇÑ ÀÇ¹Ì¸¦ ³ªÅ¸³»Áö ¾Ê´Â´Ù. */
+/* XOR ì„ í•˜ê¸° ìœ„í•œ ìž„ì˜ì˜ ê°’. íŠ¹ë³„í•œ ì˜ë¯¸ë¥¼ ë‚˜íƒ€ë‚´ì§€ ì•ŠëŠ”ë‹¤. */
 #define BIG5_XOR_VALUE (1037)
 
 SInt convertMbToWc4Big5( void   * aSrc,

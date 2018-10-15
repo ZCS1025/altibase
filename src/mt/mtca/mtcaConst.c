@@ -36,7 +36,7 @@
  * fix PR-1570,1575
  *
  * Revision 1.10  2001/08/13 04:32:05  assam
- * PR/1411, PR/1412 ¼öÁ¤
+ * PR/1411, PR/1412 ìˆ˜ì •
  *
  * Revision 1.9  2001/06/21 03:15:19  jdlee
  * fix PR-1217
@@ -60,7 +60,7 @@
  * ida fix
  *
  * Revision 1.2  2000/06/15 05:53:09  bethy
- * idaTNumericType const value ÀçÁ¤ÀÇ
+ * idaTNumericType const value ì¬ì •ì˜
  *
  * Revision 1.1.1.1  2000/06/07 11:44:06  jdlee
  * init
@@ -69,7 +69,7 @@
  * change naming to id
  *
  * Revision 1.1  2000/05/31 07:33:56  sjkim
- * id ¶óÀÌºê·¯¸® »ı¼º
+ * id ë¼ì´ë¸ŒëŸ¬ë¦¬ ìƒì„±
  *
  * Revision 1.6  2000/04/19 11:48:26  assam
  * idaFloat,idaDouble,idaMod is fixed

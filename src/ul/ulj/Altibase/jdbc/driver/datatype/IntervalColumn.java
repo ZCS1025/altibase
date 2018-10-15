@@ -144,13 +144,13 @@ public class IntervalColumn extends AbstractColumn
 
     protected long getLongSub() throws SQLException
     {
-        // ÇÏÀ§ È£È¯¼º
+        // í•˜ìœ„ í˜¸í™˜ì„±
         return (long)getDoubleSub();
     }
 
     protected double getDoubleSub() throws SQLException
     {
-        // ÇÏÀ§ È£È¯¼º
+        // í•˜ìœ„ í˜¸í™˜ì„±
         return AltibaseInterval.toNumberOfDays(mSecond, mNanos);
     }
 
@@ -174,7 +174,7 @@ public class IntervalColumn extends AbstractColumn
         }
         else
         {
-            // Interval Å¸ÀÔÀº °ªÀ» ¼­¹ö·Î º¸³¾ ÀÏÀÌ ÀüÇô ¾ø´Ù.
+            // Interval íƒ€ì…ì€ ê°’ì„ ì„œë²„ë¡œ ë³´ë‚¼ ì¼ì´ ì „í˜€ ì—†ë‹¤.
             Error.throwInternalError(ErrorDef.INVALID_METHOD_INVOCATION);
         }
     }

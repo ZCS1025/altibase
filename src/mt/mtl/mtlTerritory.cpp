@@ -23,7 +23,7 @@
 #include <mtl.h>
 #include <mtlTerritory.h>
 
-/* ¼³Á¤ °¡´ÉÇÑ Territory ÀÌ¸§ */
+/* ì„¤ì • ê°€ëŠ¥í•œ Territory ì´ë¦„ */
 static const SChar * nlsTerritoryName[TERRITORY_MAX] =
 {
     "ALBANIA",
@@ -126,7 +126,7 @@ static const SChar * nlsTerritoryName[TERRITORY_MAX] =
     "YUGOSLAVIA" /* end of oracle in 11g2*/
 };
 
-/* °¢ Territory ¿¡ ÇØ´çÇÏ´Â ISO Currency Code */
+/* ê° Territory ì— í•´ë‹¹í•˜ëŠ” ISO Currency Code */
 static const SChar * nlsTeritoryCode[TERRITORY_MAX] =
 {
     "ALL",  // 0 ALBANIA
@@ -229,8 +229,8 @@ static const SChar * nlsTeritoryCode[TERRITORY_MAX] =
     "YUN"   //97 YUGOSLAVIA  end of oracle in 11g2
 };
 
-/* °¢ Territory ¿¡ ÇØ´çÇÏ´Â NLS_NUMERIC_CHARACTERS °ª
- * Ã¹ ¹øÂ° °¡ D( Decimal ) valueÀÌ°í µÎ¹øÂ°°¡ G( Group ) value
+/* ê° Territory ì— í•´ë‹¹í•˜ëŠ” NLS_NUMERIC_CHARACTERS ê°’
+ * ì²« ë²ˆì§¸ ê°€ D( Decimal ) valueì´ê³  ë‘ë²ˆì§¸ê°€ G( Group ) value
  */
 static const SChar * nlsNumericChar[TERRITORY_MAX] =
 {
@@ -347,8 +347,8 @@ typedef struct currencySymbol
     UChar      length;
 } currencySymbol;
 
-/* UTF 16 ±âÁØÀÇ Territory º° Currency Symbol °ª
- * UTF 16 °ª ¿©·¯°³·Î ÀÌ·ç¾îÁ® ÀÖÀ¸¸ç ¿À¶óÅ¬ 11g2 ¹öÁ¯ °ªÀ» »Ì¾Æ¼­ ±×´ë·Î Á¤ÀÇÇÔ.
+/* UTF 16 ê¸°ì¤€ì˜ Territory ë³„ Currency Symbol ê°’
+ * UTF 16 ê°’ ì—¬ëŸ¬ê°œë¡œ ì´ë£¨ì–´ì ¸ ìˆìœ¼ë©° ì˜¤ë¼í´ 11g2 ë²„ì ¼ ê°’ì„ ë½‘ì•„ì„œ ê·¸ëŒ€ë¡œ ì •ì˜í•¨.
  */
 static currencySymbol utf16Symbols[TERRITORY_MAX] =
 {
@@ -455,7 +455,7 @@ static currencySymbol utf16Symbols[TERRITORY_MAX] =
 /**
  * getNlsTerritoryName
  *
- *  ÀÔ·Â ¹ŞÀº enum°ª¿¡ ÇØ´çÇÏ´Â territoryÀÌ¸§À» ¹İÈ¯ÇÑ´Ù.
+ *  ì…ë ¥ ë°›ì€ enumê°’ì— í•´ë‹¹í•˜ëŠ” territoryì´ë¦„ì„ ë°˜í™˜í•œë‹¤.
  */
 const SChar * mtlTerritory::getNlsTerritoryName( SInt aNlsTerritory )
 {
@@ -474,7 +474,7 @@ const SChar * mtlTerritory::getNlsTerritoryName( SInt aNlsTerritory )
 /**
  * setNlsTerritoryName
  *
- *  ÀÔ·Â ¹ŞÀº enum °ª¿¡ ÇØ´çÇÏ´Â terrtiroy ÀÇ ÀÌ¸§À» Ã£¾Æ ¹öÆÛ¿¡ º¹»çÇÑ´Ù.
+ *  ì…ë ¥ ë°›ì€ enum ê°’ì— í•´ë‹¹í•˜ëŠ” terrtiroy ì˜ ì´ë¦„ì„ ì°¾ì•„ ë²„í¼ì— ë³µì‚¬í•œë‹¤.
  */
 IDE_RC mtlTerritory::setNlsTerritoryName( SInt    aNlsTerritory,
                                           SChar * aBuffer )
@@ -499,8 +499,8 @@ IDE_RC mtlTerritory::setNlsTerritoryName( SInt    aNlsTerritory,
 /**
  * searchNlsTerritory
  *
- *  ¹®ÀÚ¿­À» ÀÔ·ÂÀ¸·Î ¹Ş¾Æ ÇØ´çÇÏ´Â Territory°¡ ÀÖ´Ù¸é ÀÌ¿¡ ÇØ´çÇÏ´Â enum°ªÀ»
- *  ¹İÈ¯ÇÑ´Ù. ¸¸¾à Ã£Áö ¸øÇÑ´Ù¸é -1¸¦ ¹İÈ¯ÇÑ´Ù.
+ *  ë¬¸ìì—´ì„ ì…ë ¥ìœ¼ë¡œ ë°›ì•„ í•´ë‹¹í•˜ëŠ” Territoryê°€ ìˆë‹¤ë©´ ì´ì— í•´ë‹¹í•˜ëŠ” enumê°’ì„
+ *  ë°˜í™˜í•œë‹¤. ë§Œì•½ ì°¾ì§€ ëª»í•œë‹¤ë©´ -1ë¥¼ ë°˜í™˜í•œë‹¤.
  */
 IDE_RC mtlTerritory::searchNlsTerritory( SChar  * aValue,
                                          SInt   * aReturn )
@@ -543,9 +543,9 @@ IDE_RC mtlTerritory::searchNlsTerritory( SChar  * aValue,
 /**
  * setNlsISOCurrencyCode
  *
- *  ISO Currency´Â SessionÀÌ³ª System Property °ªÀº Territory ÀÌ¸§À¸·Î º¸¿©ÁÖ°í
- *  ½ÇÁ¦ TO_CHAR¿¡¼­ 'C'¸¦ ÅëÇØ »ç¿ëÇÒ¶§¸¸ ISOÀÌ¸§ÀÌ »ç¿ëµÈ´Ù.
- *  ÀÌ ÇÔ¼ö´Â ½ÇÁ¦ Currency Code ¹öÆÛ¿¡ º¹»çÇÑ´Ù.
+ *  ISO CurrencyëŠ” Sessionì´ë‚˜ System Property ê°’ì€ Territory ì´ë¦„ìœ¼ë¡œ ë³´ì—¬ì£¼ê³ 
+ *  ì‹¤ì œ TO_CHARì—ì„œ 'C'ë¥¼ í†µí•´ ì‚¬ìš©í• ë•Œë§Œ ISOì´ë¦„ì´ ì‚¬ìš©ëœë‹¤.
+ *  ì´ í•¨ìˆ˜ëŠ” ì‹¤ì œ Currency Code ë²„í¼ì— ë³µì‚¬í•œë‹¤.
  */
 IDE_RC mtlTerritory::setNlsISOCurrencyCode( SInt aNlsISOCurrency,
                                             SChar * aBuffer )
@@ -571,10 +571,10 @@ IDE_RC mtlTerritory::setNlsISOCurrencyCode( SInt aNlsISOCurrency,
 /**
  * searchISOCurrency
  *
- *  ISO Currency´Â SessionÀÌ³ª System Property °ªÀº Territory ÀÌ¸§À¸·Î º¸¿©ÁÖ°í
- *  ½ÇÁ¦ TO_CHAR¿¡¼­ 'C'¸¦ ÅëÇØ »ç¿ëÇÒ¶§¸¸ ISOÀÌ¸§ÀÌ »ç¿ëµÈ´Ù.
- *  ÀÌ ÇÔ¼ö´Â »ç¿ëÀÚ¿¡°Ô º¸¿©ÁÙ¶§ Territory¿¡ µû¸¥ TerritoryNameÀ» ¹öÆÛ¿¡ º¹»çÇØ¼­
- *  º¸¿©ÁÙ ¶§ È£ÃâµÈ´Ù.
+ *  ISO CurrencyëŠ” Sessionì´ë‚˜ System Property ê°’ì€ Territory ì´ë¦„ìœ¼ë¡œ ë³´ì—¬ì£¼ê³ 
+ *  ì‹¤ì œ TO_CHARì—ì„œ 'C'ë¥¼ í†µí•´ ì‚¬ìš©í• ë•Œë§Œ ISOì´ë¦„ì´ ì‚¬ìš©ëœë‹¤.
+ *  ì´ í•¨ìˆ˜ëŠ” ì‚¬ìš©ìì—ê²Œ ë³´ì—¬ì¤„ë•Œ Territoryì— ë”°ë¥¸ TerritoryNameì„ ë²„í¼ì— ë³µì‚¬í•´ì„œ
+ *  ë³´ì—¬ì¤„ ë•Œ í˜¸ì¶œëœë‹¤.
  */
 IDE_RC mtlTerritory::setNlsISOCurrencyName( SInt    aNlsISOCurrency,
                                             SChar * aBuffer )
@@ -592,7 +592,7 @@ IDE_RC mtlTerritory::setNlsISOCurrencyName( SInt    aNlsISOCurrency,
 /**
  * searchISOCurrency
  *
- *  ÀÔ·Â¹ŞÀº Territory ÀÌ¸§ÀÌ Á¸ÀçÇÏ´Â Áö¸¦ Âş´Â´Ù.
+ *  ì…ë ¥ë°›ì€ Territory ì´ë¦„ì´ ì¡´ì¬í•˜ëŠ” ì§€ë¥¼ ì°»ëŠ”ë‹¤.
  */
 IDE_RC mtlTerritory::searchISOCurrency( SChar * aValue,
                                         SInt  * aReturn )
@@ -610,8 +610,8 @@ IDE_RC mtlTerritory::searchISOCurrency( SChar * aValue,
 /**
  * setNlsCurrency
  *
- * ÀÎÀÚ·Î ÁÖ¾îÁø NLS_TERRITORY¿¡ µû¶ó currencySymbolTable·Î ºÎÅÍ ¼³Á¤µÈ °ªÀ»
- * ¹öÆÛ¿¡ º¹»çÇÑ´Ù.
+ * ì¸ìë¡œ ì£¼ì–´ì§„ NLS_TERRITORYì— ë”°ë¼ currencySymbolTableë¡œ ë¶€í„° ì„¤ì •ëœ ê°’ì„
+ * ë²„í¼ì— ë³µì‚¬í•œë‹¤.
  */
 IDE_RC mtlTerritory::setNlsCurrency( SInt aNlsTerritory, SChar * aBuffer )
 {
@@ -641,7 +641,7 @@ IDE_RC mtlTerritory::setNlsCurrency( SInt aNlsTerritory, SChar * aBuffer )
 /**
  * setNlsNumericChar
  *
- * ÀÎÀÚ·Î ÁÖ¾îÁø NLS_TERRITORY¿¡ µû¶ó ¹Ì¸® Á¤ÀÇµÈ Table·Î ºÎÅÍ ¹Ì¸® ¼³Á¤µÈ °ªÀ» ³Ö¾îÁØ´Ù.
+ * ì¸ìë¡œ ì£¼ì–´ì§„ NLS_TERRITORYì— ë”°ë¼ ë¯¸ë¦¬ ì •ì˜ëœ Tableë¡œ ë¶€í„° ë¯¸ë¦¬ ì„¤ì •ëœ ê°’ì„ ë„£ì–´ì¤€ë‹¤.
  */
 IDE_RC mtlTerritory::setNlsNumericChar( SInt aNlsTerritory, SChar * aBuffer )
 {
@@ -665,12 +665,12 @@ IDE_RC mtlTerritory::setNlsNumericChar( SInt aNlsTerritory, SChar * aBuffer )
 /**
  * validNlsNumericChar
  *
- * nls_numeric_characters °ªÀ» ¼³Á¤ÇÒ¶§ ¿Ã¹Ù¸¥ °ªÀÎÁö¸¦ °Ë»çÇÑ´Ù.
+ * nls_numeric_characters ê°’ì„ ì„¤ì •í• ë•Œ ì˜¬ë°”ë¥¸ ê°’ì¸ì§€ë¥¼ ê²€ì‚¬í•œë‹¤.
  *
- * Ã¹ ¹øÂ° °ªÀÌ D ( Decimal Symbol ) °ªÀÌµÇ°í µÎ ¹øÂ° °ªÀÌ G ( Group Symbol )
- *  °ªÀÌ µÈ´Ù.
+ * ì²« ë²ˆì§¸ ê°’ì´ D ( Decimal Symbol ) ê°’ì´ë˜ê³  ë‘ ë²ˆì§¸ ê°’ì´ G ( Group Symbol )
+ *  ê°’ì´ ëœë‹¤.
  *
- * '+', '-', '<', '>' °ªÀÌ ¿Ã ¼ö ¾ø°í °°Àº °ªÀÌ ¿Ã ¼ö ¾ø´Ù. ¶ÇÇÑ ASCII¹®ÀÚ¸¸ °¡´ÉÇÏ´Ù.
+ * '+', '-', '<', '>' ê°’ì´ ì˜¬ ìˆ˜ ì—†ê³  ê°™ì€ ê°’ì´ ì˜¬ ìˆ˜ ì—†ë‹¤. ë˜í•œ ASCIIë¬¸ìë§Œ ê°€ëŠ¥í•˜ë‹¤.
  */
 IDE_RC mtlTerritory::validNlsNumericChar( SChar * aNumChar, idBool * aIsValid )
 {
@@ -729,9 +729,9 @@ IDE_RC mtlTerritory::checkNlsNumericChar( SChar * aNumChar )
 /**
  * validCurrencySymbol
  *
- * nls_currency °ªÀ» ¼³Á¤ÇÒ ¶§ ¿Ã¹Ù¸¥ °ªÀÎÁö¸¦ Ã¼Å©ÇÑ´Ù.
+ * nls_currency ê°’ì„ ì„¤ì •í•  ë•Œ ì˜¬ë°”ë¥¸ ê°’ì¸ì§€ë¥¼ ì²´í¬í•œë‹¤.
  *
- * nls_currency´Â Ã¹ ¹øÂ° °ªÀÌ '+', '-', '<', '>' ´Â ¿Ã ¼ö ¾ø´Ù.
+ * nls_currencyëŠ” ì²« ë²ˆì§¸ ê°’ì´ '+', '-', '<', '>' ëŠ” ì˜¬ ìˆ˜ ì—†ë‹¤.
  */
 IDE_RC mtlTerritory::validCurrencySymbol( SChar * aSymbol, idBool * aIsValid )
 {
@@ -785,11 +785,11 @@ IDE_RC mtlTerritory::checkCurrencySymbol( SChar * aSymbol )
 /**
  * createCurrencySymbolTable
  *
- *  ÀÌ¹Ì Á¤ÀÇµÈ UTF16 ±âÁØÀÇ ÄÚµå °ªÀ» °¢ Ä³¸¯ÅÍ ¼Â º°·Î Convert¿¡¼­ TableÀ» ±¸¼ºÇÑ´Ù.
+ *  ì´ë¯¸ ì •ì˜ëœ UTF16 ê¸°ì¤€ì˜ ì½”ë“œ ê°’ì„ ê° ìºë¦­í„° ì…‹ ë³„ë¡œ Convertì—ì„œ Tableì„ êµ¬ì„±í•œë‹¤.
  *
- *  UTF16 °ª¿¡¼­ ConvertµÈ °ªÀÌ Ä³¸¯ÅÍ ¼Â¿¡ Æ÷ÇÔµÇÁö ¾Ê´Â °ªÀÏ °æ¿ì°¡ ÀÖ´Ù.
+ *  UTF16 ê°’ì—ì„œ Convertëœ ê°’ì´ ìºë¦­í„° ì…‹ì— í¬í•¨ë˜ì§€ ì•ŠëŠ” ê°’ì¼ ê²½ìš°ê°€ ìˆë‹¤.
  *
- *  ÀÌ·² °æ¿ì Á÷Á¢ °¢ Ä³¸¯ÅÍ¼Â¿¡¼­ ºñ½ÁÇÑ SymbolÀ» Ã£¾Æ¼­ ¼¼ÆÃÇØÁØ´Ù.
+ *  ì´ëŸ´ ê²½ìš° ì§ì ‘ ê° ìºë¦­í„°ì…‹ì—ì„œ ë¹„ìŠ·í•œ Symbolì„ ì°¾ì•„ì„œ ì„¸íŒ…í•´ì¤€ë‹¤.
  */
 IDE_RC mtlTerritory::createCurrencySymbolTable( void )
 {
@@ -843,7 +843,7 @@ IDE_RC mtlTerritory::createCurrencySymbolTable( void )
         }
     }
 
-    /* Big5 ¿£ Ç¥½Ã */
+    /* Big5 ì—” í‘œì‹œ */
     sCode.value1 = 0xA2;
     sCode.value2 = 0x44;
     sBuffer = currencySymbolsTable[IDN_BIG5_ID][TERRITORY_CHINA].symbol;
@@ -854,68 +854,68 @@ IDE_RC mtlTerritory::createCurrencySymbolTable( void )
     idlOS::memcpy( sBuffer, &sCode, 2 );
     *( sBuffer + 2 ) = 0;
 
-    /* GB2312 ¿£ Ç¥½Ã */
+    /* GB2312 ì—” í‘œì‹œ */
     sCode.value1 = 0xA3;
     sCode.value2 = 0xA4;
     sBuffer = currencySymbolsTable[IDN_GB231280_ID][TERRITORY_JAPAN].symbol;
     idlOS::memcpy( sBuffer, &sCode, 2 );
     *( sBuffer + 2 ) = 0;
 
-    /* GB2312 ÆÄ¿îµå Ç¥½Ã */
+    /* GB2312 íŒŒìš´ë“œ í‘œì‹œ */
     sCode.value1 = 0xA1;
     sCode.value2 = 0xEA;
     sBuffer = currencySymbolsTable[IDN_GB231280_ID][TERRITORY_UNITED_KINGDOM].symbol;
     idlOS::memcpy( sBuffer, &sCode, 2 );
     *( sBuffer + 2 ) = 0;
 
-    /* SHIFTJIS ¿£ Ç¥½Ã */
+    /* SHIFTJIS ì—” í‘œì‹œ */
     sCode.value1 = 0x81;
     sCode.value2 = 0x8F;
     sBuffer = currencySymbolsTable[IDN_SHIFTJIS_ID][TERRITORY_JAPAN].symbol;
     idlOS::memcpy( sBuffer, &sCode, 2 );
     *( sBuffer + 2 ) = 0;
 
-    /* EUCJP ¿£ Ç¥½Ã */
+    /* EUCJP ì—” í‘œì‹œ */
     sCode.value1 = 0xA1;
     sCode.value2 = 0xEF;
     sBuffer = currencySymbolsTable[IDN_EUCJP_ID][TERRITORY_JAPAN].symbol;
     idlOS::memcpy( sBuffer, &sCode, 2 );
     *( sBuffer + 2 ) = 0;
 
-    /* KSC5601 ¿£ Ç¥½Ã */
+    /* KSC5601 ì—” í‘œì‹œ */
     sCode.value1 = 0xA1;
     sCode.value2 = 0xCD;
     sBuffer = currencySymbolsTable[IDN_KSC5601_ID][TERRITORY_JAPAN].symbol;
     idlOS::memcpy( sBuffer, &sCode, 2 );
     *( sBuffer + 2 ) = 0;
 
-    /* KSC5601 ÆÄ¿îµå Ç¥½Ã */
+    /* KSC5601 íŒŒìš´ë“œ í‘œì‹œ */
     sCode.value1 = 0xA1;
     sCode.value2 = 0xCC;
     sBuffer = currencySymbolsTable[IDN_KSC5601_ID][TERRITORY_UNITED_KINGDOM].symbol;
     idlOS::memcpy( sBuffer, &sCode, 2 );
     *( sBuffer + 2 ) = 0;
 
-    /* MS949 ¿£ Ç¥½Ã */
+    /* MS949 ì—” í‘œì‹œ */
     sCode.value1 = 0xA1;
     sCode.value2 = 0xCD;
     sBuffer = currencySymbolsTable[IDN_MS949_ID][TERRITORY_JAPAN].symbol;
     idlOS::memcpy( sBuffer, &sCode, 2 );
     *( sBuffer + 2 ) = 0;
 
-    /* MS949 ÆÄ¿îµå Ç¥½Ã */
+    /* MS949 íŒŒìš´ë“œ í‘œì‹œ */
     sCode.value1 = 0xA1;
     sCode.value2 = 0xCC;
     sBuffer = currencySymbolsTable[IDN_MS949_ID][TERRITORY_UNITED_KINGDOM].symbol;
     idlOS::memcpy( sBuffer, &sCode, 2 );
     *( sBuffer + 2 ) = 0;
 
-    /* PROJ-2414 [±â´É¼º] GBK, CP936 character set Ãß°¡
+    /* PROJ-2414 [ê¸°ëŠ¥ì„±] GBK, CP936 character set ì¶”ê°€
      *
-     * MS936 ¿£ Ç¥½Ã
+     * MS936 ì—” í‘œì‹œ
      *
-     * MS936 Àº GB2312 ÀÇ ½´ÆÛ¼ÂÀ¸·Î Æ¯Á¤ ÄÚµåÆäÀÌÁö ¹üÀ§¸¦ °øÀ¯ÇÏ°í ÀÖ´Ù. ¿£ ±â
-     * È£¿Í ÆÄ¿îµå ±âÈ£µµ ¹üÀ§¿¡ ¼ÓÇÑ´Ù. µû¶ó¼­, °°Àº ÄÚµå °ªÀ» ÀÌ¿ëÇÑ´Ù.
+     * MS936 ì€ GB2312 ì˜ ìŠˆí¼ì…‹ìœ¼ë¡œ íŠ¹ì • ì½”ë“œí˜ì´ì§€ ë²”ìœ„ë¥¼ ê³µìœ í•˜ê³  ìˆë‹¤. ì—” ê¸°
+     * í˜¸ì™€ íŒŒìš´ë“œ ê¸°í˜¸ë„ ë²”ìœ„ì— ì†í•œë‹¤. ë”°ë¼ì„œ, ê°™ì€ ì½”ë“œ ê°’ì„ ì´ìš©í•œë‹¤.
      */
     sCode.value1 = 0xA3;
     sCode.value2 = 0xA4;
@@ -923,12 +923,12 @@ IDE_RC mtlTerritory::createCurrencySymbolTable( void )
     idlOS::memcpy( sBuffer, &sCode, 2 );
     *( sBuffer + 2 ) = 0;
 
-    /* PROJ-2414 [±â´É¼º] GBK, CP936 character set Ãß°¡
+    /* PROJ-2414 [ê¸°ëŠ¥ì„±] GBK, CP936 character set ì¶”ê°€
      *
-     * MS936 ÆÄ¿îµå Ç¥½Ã
+     * MS936 íŒŒìš´ë“œ í‘œì‹œ
      *
-     * Âü°í·Î LEBANON, SUDAN, SYRIA µµ ÆÄ¿îµå ±âÈ£¸¦ ÅëÈ­·Î »ç¿ëÇÏÁö¸¸, ¼³Á¤ÇÏÁö
-     * ¾Ê¾Ò´Ù.
+     * ì°¸ê³ ë¡œ LEBANON, SUDAN, SYRIA ë„ íŒŒìš´ë“œ ê¸°í˜¸ë¥¼ í†µí™”ë¡œ ì‚¬ìš©í•˜ì§€ë§Œ, ì„¤ì •í•˜ì§€
+     * ì•Šì•˜ë‹¤.
      */
     sCode.value1 = 0xA1;
     sCode.value2 = 0xEA;
@@ -938,10 +938,10 @@ IDE_RC mtlTerritory::createCurrencySymbolTable( void )
 
     /****************************************************************
      * 
-     * PROJ-2590 [±â´É¼º] CP932 database character set Áö¿ø
+     * PROJ-2590 [ê¸°ëŠ¥ì„±] CP932 database character set ì§€ì›
      *
-     * MS932 ¿£ Ç¥½Ã : ÀÏº» ÅëÈ­
-     * UTF16 0xA5(¡Í) -> CP932 ¾øÀ½. 0x818F·Î ¹Ù²ãÁØ´Ù.
+     * MS932 ì—” í‘œì‹œ : ì¼ë³¸ í†µí™”
+     * UTF16 0xA5(ï¿¥) -> CP932 ì—†ìŒ. 0x818Fë¡œ ë°”ê¿”ì¤€ë‹¤.
      *
      ***************************************************************/
     sCode.value1 = 0x81;
@@ -952,10 +952,10 @@ IDE_RC mtlTerritory::createCurrencySymbolTable( void )
  
     /****************************************************************
      * 
-     * PROJ-2590 [±â´É¼º] CP932 database character set Áö¿ø
+     * PROJ-2590 [ê¸°ëŠ¥ì„±] CP932 database character set ì§€ì›
      *
-     * MS932 ÆÄ¿îµå Ç¥½Ã : ·¹¹Ù³í, ¼ö´Ü, ½Ã¸®¾Æ, ¿µ±¹ ÅëÈ­
-     * UTF16 0xA3(¡Ì) -> CP932 ¾øÀ½. 0x8192·Î ¹Ù²ãÁØ´Ù.
+     * MS932 íŒŒìš´ë“œ í‘œì‹œ : ë ˆë°”ë…¼, ìˆ˜ë‹¨, ì‹œë¦¬ì•„, ì˜êµ­ í†µí™”
+     * UTF16 0xA3(ï¿¡) -> CP932 ì—†ìŒ. 0x8192ë¡œ ë°”ê¿”ì¤€ë‹¤.
      *
      ***************************************************************/
     sCode.value1 = 0x81;

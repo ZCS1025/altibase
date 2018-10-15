@@ -191,7 +191,7 @@ typedef struct idrLogHead
     UShort     mSize;
 } idrLogHead;
 
-#define idrLogTail UShort /* Tail¿¡´Â LogHeader¿¡ mSize¿Í µ¿ÀÏÇÑ °ªÀ» ¼³Á¤ÇÑ´Ù. */
+#define idrLogTail UShort /* Tailì—ëŠ” LogHeaderì— mSizeì™€ ë™ì¼í•œ ê°’ì„ ì„¤ì •í•œë‹¤. */
 
 typedef struct idrNTALogHead
 {

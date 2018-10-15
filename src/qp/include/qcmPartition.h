@@ -26,7 +26,7 @@
 #include    <qcm.h>
 
 // PROJ-1502 PARTITIONED DISK TABLE
-// partition ref¸¦ ±¸ÇÏ±â À§ÇÑ ÀÓ½Ã ±¸Á¶Ã¼.
+// partition refë¥¼ êµ¬í•˜ê¸° ìœ„í•œ ì„ì‹œ êµ¬ì¡°ì²´.
 typedef struct qcmSetRef
 {
     qcStatement * statement;
@@ -34,7 +34,7 @@ typedef struct qcmSetRef
 } qcmSetRef;
 
 // PROJ-1502 PARTITIONED DISK TABLE
-// ÆÄÆ¼¼Ç Á¤º¸ÀÇ ¸®½ºÆ®¸¦ ±¸Ãà
+// íŒŒí‹°ì…˜ ì •ë³´ì˜ ë¦¬ìŠ¤íŠ¸ë¥¼ êµ¬ì¶•
 typedef struct qcmPartitionInfoList
 {
     qcmTableInfo         * partitionInfo;
@@ -44,7 +44,7 @@ typedef struct qcmPartitionInfoList
 } qcmPartitionInfoList;
 
 // PROJ-1502 PARTITIONED DISK TABLE
-// Partition IDÀÇ ¸®½ºÆ®¸¦ ±¸Ãà
+// Partition IDì˜ ë¦¬ìŠ¤íŠ¸ë¥¼ êµ¬ì¶•
 typedef struct qcmPartitionIdList
 {
     UInt                 partId;
@@ -304,11 +304,11 @@ public:
         qmsPartitionRef  * aSource,
         qmsPartitionRef ** aDestination );
 
-    /* PROJ-2464 hybrid partitioned table Áö¿ø */
+    /* PROJ-2464 hybrid partitioned table ì§€ì› */
     static IDE_RC makePartitionSummary( qcStatement * aStatement,
                                         qmsTableRef * aTableRef );
 
-    /* BUG-42681 valgrind split Áß add column µ¿½Ã¼º ¹®Á¦ */
+    /* BUG-42681 valgrind split ì¤‘ add column ë™ì‹œì„± ë¬¸ì œ */
     static IDE_RC checkPartitionCount4Execute( qcStatement          * aStatement,
                                                qcmPartitionInfoList * aPartInfoList,
                                                UInt                   aTableID );

@@ -2982,7 +2982,7 @@ PDL::set_handle_limit (int new_limit)
     max_limit = rl.rlim_max;
 #endif /* PDL_LACKS_RLIMIT */
 
-    // new_limitÀÌ -1ÀÌ¸é Max°ªÀ¸·Î ¼³Á¤ÇÏ¶ó´Â °ÍÀÓ.
+    // new_limitì´ -1ì´ë©´ Maxê°’ìœ¼ë¡œ ì„¤ì •í•˜ë¼ëŠ” ê²ƒì„.
     if (new_limit == -1)
     {
         new_limit = max_limit;

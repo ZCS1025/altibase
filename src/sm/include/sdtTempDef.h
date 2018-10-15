@@ -30,7 +30,7 @@
 
 /*********************************************************************
  *
- * - SortTempÀÇ State Transition Diagram
+ * - SortTempì˜ State Transition Diagram
  *      +------------------------------------------------------+
  *      |                                                      |
  * +------------+                                         +----------+
@@ -45,29 +45,29 @@
  * |InMemoryScan|        |MergeScan| |IndexScan|---+      |   Scan   |
  * +------------+        +---------+ +---------+          +----------+
  *
- * À§ »óÅÂ¿¡ µû¶ó GroupµéÀÌ ±¸ºĞµÇ¸ç, Group¿¡ µû¶ó ¾Æ·¡ Copy ¿¬»êÀÌ ´Ş¶óÁø´Ù.
+ * ìœ„ ìƒíƒœì— ë”°ë¼ Groupë“¤ì´ êµ¬ë¶„ë˜ë©°, Groupì— ë”°ë¼ ì•„ë˜ Copy ì—°ì‚°ì´ ë‹¬ë¼ì§„ë‹¤.
  *
  *
  *
  * 1. InsertNSort
- *  InsertNSort´Â ÃÖ·Î·Î µ¥ÀÌÅÍ°¡ »ğÀÔµÇ´Â »óÅÂÀÌ´Ù. ´Ù¸¸ »ğÀÔÇÏ¸é¼­ µ¿½Ã¿¡
- * Á¤·Äµµ ÇÑ´Ù.
- *  ±×¸®°í ÀÌ »óÅÂ´Â Limit,MinMaxµî InMemoryOnly »óÅÂÀÌ³Ä, RangeÀÌ³Ä, ±×¿Ü³Ä
- *  ¿¡ µû¶ó GroupÀÇ ¸ğ¾çÀÌ ´Ş¶óÁø´Ù.
+ *  InsertNSortëŠ” ìµœë¡œë¡œ ë°ì´í„°ê°€ ì‚½ì…ë˜ëŠ” ìƒíƒœì´ë‹¤. ë‹¤ë§Œ ì‚½ì…í•˜ë©´ì„œ ë™ì‹œì—
+ * ì •ë ¬ë„ í•œë‹¤.
+ *  ê·¸ë¦¬ê³  ì´ ìƒíƒœëŠ” Limit,MinMaxë“± InMemoryOnly ìƒíƒœì´ëƒ, Rangeì´ëƒ, ê·¸ì™¸ëƒ
+ *  ì— ë”°ë¼ Groupì˜ ëª¨ì–‘ì´ ë‹¬ë¼ì§„ë‹¤.
  *
  * 1) InsertNSort( InMemoryOnly )
- *  Limit, MinMaxµî ¹İµå½Ã ÆäÀÌÁö ºÎÁ·ÀÌ ÀÏ¾î³ªÁö ¾Ê´Â´Ù´Â º¸ÀåÀÌ ÀÖÀ» °æ¿ì
- *  InMemoryOnly·Î ¼öÇàÇÑ´Ù.
+ *  Limit, MinMaxë“± ë°˜ë“œì‹œ í˜ì´ì§€ ë¶€ì¡±ì´ ì¼ì–´ë‚˜ì§€ ì•ŠëŠ”ë‹¤ëŠ” ë³´ì¥ì´ ìˆì„ ê²½ìš°
+ *  InMemoryOnlyë¡œ ìˆ˜í–‰í•œë‹¤.
  * +-------+ +-------+
  * | Sort1 |-| Sort2 |
  * +-------+ +-------+
  *     |         |
  *     +<-SWAP->-+
- * µÎ°³ÀÇ SortGroupÀÌ ÀÖ°í, ÇÑ SortGroupÀÌ °¡µæ Âû¶§¸¶´Ù Compaction¿ëµµ·Î
- * SWAPÀ» ¼öÇàÇÑ´Ù.
+ * ë‘ê°œì˜ SortGroupì´ ìˆê³ , í•œ SortGroupì´ ê°€ë“ ì°°ë•Œë§ˆë‹¤ Compactionìš©ë„ë¡œ
+ * SWAPì„ ìˆ˜í–‰í•œë‹¤.
  *
  * 2) InsertNSort ( Normal )
- *  ÀÏ¹İÀûÀÎ ÇüÅÂ·Î MergeµîÀ» ÇÏ´Â ÇüÅÂÀÌ´Ù.
+ *  ì¼ë°˜ì ì¸ í˜•íƒœë¡œ Mergeë“±ì„ í•˜ëŠ” í˜•íƒœì´ë‹¤.
  * +-------+ +-------+
  * | Sort  |-| Flush |
  * +-------+ +-------+
@@ -75,9 +75,9 @@
  *     +-NORMAL->-+
  *
  * 3) ExtractNSort ( RangeScan )
- *  RangeScanÀÌ ÇÊ¿äÇØ Index¸¦ ¸¸µå´Â ÇüÅÂÀÌ´Ù. Normal°ú °°Áö¸¸,
- * Key¿Í Row¸¦ µû·Î ÀúÀåÇÑ´Ù. Row¿¡´Â ¸ğµç Ä®·³ÀÌ µé¾îÀÖ°í, Key´Â IndexColumn
- * ¸¸ µé¾î°£´Ù. ÀÌÈÄ MergeµîÀÇ °úÁ¤À» Key¸¦ °¡Áö°í Ã³¸®ÇÑ´Ù.
+ *  RangeScanì´ í•„ìš”í•´ Indexë¥¼ ë§Œë“œëŠ” í˜•íƒœì´ë‹¤. Normalê³¼ ê°™ì§€ë§Œ,
+ * Keyì™€ Rowë¥¼ ë”°ë¡œ ì €ì¥í•œë‹¤. Rowì—ëŠ” ëª¨ë“  ì¹¼ëŸ¼ì´ ë“¤ì–´ìˆê³ , KeyëŠ” IndexColumn
+ * ë§Œ ë“¤ì–´ê°„ë‹¤. ì´í›„ Mergeë“±ì˜ ê³¼ì •ì„ Keyë¥¼ ê°€ì§€ê³  ì²˜ë¦¬í•œë‹¤.
  * +-------+ +-------+ +--------+
  * | Sort  |-| Flush |-|SubFlush|
  * +-------+ +-------+ +--------+
@@ -89,9 +89,9 @@
  *
  *
  *  2. ExtractNSort
- *  InsertNSortÀÇ 1.3°ú µ¿ÀÏÇÏÁö¸¸, insert´Â µ¥ÀÌÅÍ¸¦ QP·ÎºÎÅÍ ¹Ş´Âµ¥¹İÇØ
- *  Extract´Â 1.3 °úÁ¤¿¡¼­ SubFlush¿¡ º¹»çÇØµĞ Row¸¦ ´Ù½Ã ²¨³»¾î Á¤·ÄÇÑ´Ù´Â
- *  Á¡ÀÌ Æ¯Â¡ÀÌ´Ù.
+ *  InsertNSortì˜ 1.3ê³¼ ë™ì¼í•˜ì§€ë§Œ, insertëŠ” ë°ì´í„°ë¥¼ QPë¡œë¶€í„° ë°›ëŠ”ë°ë°˜í•´
+ *  ExtractëŠ” 1.3 ê³¼ì •ì—ì„œ SubFlushì— ë³µì‚¬í•´ë‘” Rowë¥¼ ë‹¤ì‹œ êº¼ë‚´ì–´ ì •ë ¬í•œë‹¤ëŠ”
+ *  ì ì´ íŠ¹ì§•ì´ë‹¤.
  * +-------+ +-------+ +--------+
  * | Sort  |-| Flush |-|SubFlush|
  * +-------+ +-------+ +--------+
@@ -103,18 +103,18 @@
  *
  *
  *  3. Merge
- *  SortGroup¿¡ HeaqÀ» ±¸¼ºÇÑ ÈÄ FlushGroupÀ¸·Î º¹»çÇÏ¸ç, FlushGroupÀ¸·Î
- *  RunÀ» ±¸¼ºÇÑ´Ù. Áï InsertNSort(Normal) 1.2¿Í µ¿ÀÏÇÏ´Ù.
+ *  SortGroupì— Heaqì„ êµ¬ì„±í•œ í›„ FlushGroupìœ¼ë¡œ ë³µì‚¬í•˜ë©°, FlushGroupìœ¼ë¡œ
+ *  Runì„ êµ¬ì„±í•œë‹¤. ì¦‰ InsertNSort(Normal) 1.2ì™€ ë™ì¼í•˜ë‹¤.
  *
  *
  *
  *  4. MakeIndex
- *  Merge¿Í À¯»çÇÏÁö¸¸, ExtraPage¶ó´Â °ÍÀ¸·Î Row¸¦ ÂÉ°µ´Ù. ¿Ö³ÄÇÏ¸é indexÀÇ
- *  ÇÑ Node¿¡´Â 2°³ÀÇ Key°¡ µé¾î°¡¾ß ¾ÈÁ¤ÀûÀÌ¸ç, µû¶ó¼­ 2°³ ÀÌ»óÀÇ Key°¡
- *  µé¾î°¥ ¼ö ÀÖµµ·Ï, Key°¡ 4000Byte¸¦ ³ÑÀ¸¸é ³²´Â Row°¡ 4000Byte°¡ µÇµµ·Ï
- *  4000Byte ÀÌÈÄÀÇ °ÍµéÀ» ExtraPage¿¡ ÀúÀå½ÃÅ²´Ù.
+ *  Mergeì™€ ìœ ì‚¬í•˜ì§€ë§Œ, ExtraPageë¼ëŠ” ê²ƒìœ¼ë¡œ Rowë¥¼ ìª¼ê° ë‹¤. ì™œëƒí•˜ë©´ indexì˜
+ *  í•œ Nodeì—ëŠ” 2ê°œì˜ Keyê°€ ë“¤ì–´ê°€ì•¼ ì•ˆì •ì ì´ë©°, ë”°ë¼ì„œ 2ê°œ ì´ìƒì˜ Keyê°€
+ *  ë“¤ì–´ê°ˆ ìˆ˜ ìˆë„ë¡, Keyê°€ 4000Byteë¥¼ ë„˜ìœ¼ë©´ ë‚¨ëŠ” Rowê°€ 4000Byteê°€ ë˜ë„ë¡
+ *  4000Byte ì´í›„ì˜ ê²ƒë“¤ì„ ExtraPageì— ì €ì¥ì‹œí‚¨ë‹¤.
  *
- *  1) LeafNode »ı¼º
+ *  1) LeafNode ìƒì„±
  * +-------+ +-------+ +--------+
  * | Sort  |-| Flush |-|SubFlush|
  * +-------+ +-------+ +--------+
@@ -123,9 +123,9 @@
  *   |                         |
  *   +-(copyExtraRow())-->->->-+
  *
- *  2) InternalNode »ı¼º
- *  LeafNode´Â Depth¸¦ ¾Æ·¡¿¡¼­ À§·Î ¿Ã¶ó°¡¸ç ¸¸µå´Â ¹æ½ÄÀÌ´Ù. ÇöÀç´Â
- *  BreadthFirst·Î ÁøÇàÇÏ¿© ¼Óµµ°¡ ´À¸®´Ï ÁÖÀÇ.
+ *  2) InternalNode ìƒì„±
+ *  LeafNodeëŠ” Depthë¥¼ ì•„ë˜ì—ì„œ ìœ„ë¡œ ì˜¬ë¼ê°€ë©° ë§Œë“œëŠ” ë°©ì‹ì´ë‹¤. í˜„ì¬ëŠ”
+ *  BreadthFirstë¡œ ì§„í–‰í•˜ì—¬ ì†ë„ê°€ ëŠë¦¬ë‹ˆ ì£¼ì˜.
  * +-------+ +-------+ +--------+
  * | Sort  |-| Flush |-|SubFlush|
  * +-------+ +-------+ +--------+
@@ -135,31 +135,31 @@
  *
  *
  *  5. InMemoryScan
- *  InsertNSort(Normal) 1.2¿Í µ¿ÀÏÇÏ´Ù.
+ *  InsertNSort(Normal) 1.2ì™€ ë™ì¼í•˜ë‹¤.
  *
  *
  *
  *  6. MergeScan
- *  Merge¿Í µ¿ÀÏÇÏ´Ù.
+ *  Mergeì™€ ë™ì¼í•˜ë‹¤.
  *
  *
  *
  *  7.IndexScan
- *  Copy´Â ¾ø´Ù.
+ *  CopyëŠ” ì—†ë‹¤.
  *  +-------+ +-------+
  *  | INode |-| LNode |
  *  +-------+ +-------+
  *
  * 8. InsertOnly
- *  InsertOnly ÃÖ·Î·Î µ¥ÀÌÅÍ°¡ »ğÀÔµÇ´Â »óÅÂÀÌ´Ù. ´Ù¸¸ »ğÀÔÇÏ¸é¼­
- *   Á¤·ÄÀ» ÇÏÁö ¾Ê´Â°ÍÀÌ InsertNSort ¿Í Â÷ÀÌÁ¡.
+ *  InsertOnly ìµœë¡œë¡œ ë°ì´í„°ê°€ ì‚½ì…ë˜ëŠ” ìƒíƒœì´ë‹¤. ë‹¤ë§Œ ì‚½ì…í•˜ë©´ì„œ
+ *   ì •ë ¬ì„ í•˜ì§€ ì•ŠëŠ”ê²ƒì´ InsertNSort ì™€ ì°¨ì´ì .
  *
  * 1) InsertOnly( InMemoryOnly )
- *   ¹İµå½Ã ÆäÀÌÁö ºÎÁ·ÀÌ ÀÏ¾î³ªÁö ¾Ê´Â´Ù´Â º¸ÀåÀÌ ÀÖÀ» °æ¿ì
- *  InMemoryOnly·Î ¼öÇàÇÑ´Ù.
+ *   ë°˜ë“œì‹œ í˜ì´ì§€ ë¶€ì¡±ì´ ì¼ì–´ë‚˜ì§€ ì•ŠëŠ”ë‹¤ëŠ” ë³´ì¥ì´ ìˆì„ ê²½ìš°
+ *  InMemoryOnlyë¡œ ìˆ˜í–‰í•œë‹¤.
  *
  * 2) InsertOnly ( Normal )
- *  ÀÏ¹İÀûÀÎ ÇüÅÂ·Î ÀúÀåµÈ ·±ÀÇ ¼ø¼­·Î ÀĞÀ½.
+ *  ì¼ë°˜ì ì¸ í˜•íƒœë¡œ ì €ì¥ëœ ëŸ°ì˜ ìˆœì„œë¡œ ì½ìŒ.
  */
 
 typedef enum sdtCopyPurpose
@@ -176,17 +176,17 @@ typedef enum sdtCopyPurpose
  * +------+------+------+------+------+
  * | Size |0 PID |0 Slot|1 PID |1 Slot|
  * +------+------+------+------+------+
- * MergeRunÀº À§¿Í°°Àº ¸ğ¾çÀÇ Array·Î, MergeRunCount * 2 + 1 °³·Î ±¸¼ºµÈ´Ù.
+ * MergeRunì€ ìœ„ì™€ê°™ì€ ëª¨ì–‘ì˜ Arrayë¡œ, MergeRunCount * 2 + 1 ê°œë¡œ êµ¬ì„±ëœë‹¤.
  */
 typedef struct sdtTempMergeRunInfo
 {
-    /* Run¹øÈ£.
-     * RunÀº LastºÎÅÍ ¿ŞÂÊÀ¸·Î ¹èÄ¡µÇ¸ç, ÇÏ³ªÀÇ RunÀº MaxRowPageCountÀÇ Å©±â¸¦
-     * °®±â ¶§¹®¿¡, LastWPID - MaxRowPageCnt * No ÇÏ¸é RunÀÇ WPID¸¦ ¾Ë ¼ö
-     * ÀÖ´Ù. */
+    /* Runë²ˆí˜¸.
+     * Runì€ Lastë¶€í„° ì™¼ìª½ìœ¼ë¡œ ë°°ì¹˜ë˜ë©°, í•˜ë‚˜ì˜ Runì€ MaxRowPageCountì˜ í¬ê¸°ë¥¼
+     * ê°–ê¸° ë•Œë¬¸ì—, LastWPID - MaxRowPageCnt * No í•˜ë©´ Runì˜ WPIDë¥¼ ì•Œ ìˆ˜
+     * ìˆë‹¤. */
     UInt    mRunNo;
-    UInt    mPIDSeq;  /*Run³» PageSequence */
-    SShort  mSlotNo;  /*PageÀÇ Slot¹øÈ£ */
+    UInt    mPIDSeq;  /*Runë‚´ PageSequence */
+    SShort  mSlotNo;  /*Pageì˜ Slotë²ˆí˜¸ */
 } sdtTempMergeRunInfo;
 
 #define SDT_TEMP_RUNINFO_NULL ( ID_UINT_MAX )
@@ -204,7 +204,7 @@ typedef scPageID sdtTempMergePos;
  * +------+-----+-------+-------+------+
  * | Size | pin | 0 PID | 1 PID |
  * +------+-----+-------+-------+------+
- *  ScanRund Àº  À§¿Í °°Àº ¸ğ¾çÀÇ array·Î RunCount +2  ·Î ±¸¼ºµÈ´Ù.
+ *  ScanRund ì€  ìœ„ì™€ ê°™ì€ ëª¨ì–‘ì˜ arrayë¡œ RunCount +2  ë¡œ êµ¬ì„±ëœë‹¤.
  */
 #define SDT_TEMP_SCANPOS_SIZEIDX     ( 0 )
 #define SDT_TEMP_SCANPOS_PINIDX      ( 1 )

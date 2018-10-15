@@ -24,15 +24,15 @@
 #include <dkdMisc.h>
 
 /************************************************************************
- * Description : ÀÌ remote statement °´Ã¼¸¦ type ¿¡ µû¶ó ÃÊ±âÈ­ÇØÁØ´Ù.
+ * Description : ì´ remote statement ê°ì²´ë¥¼ type ì— ë”°ë¼ ì´ˆê¸°í™”í•´ì¤€ë‹¤.
  *
- *  aGTxId      - [IN] ÀÌ remote statement °¡ ¼ÓÇÑ global transaction ÀÇ 
+ *  aGTxId      - [IN] ì´ remote statement ê°€ ì†í•œ global transaction ì˜ 
  *                     id
- *  aRTxId      - [IN] ÀÌ remote statement °¡ ¼ÓÇÑ remote transaction ÀÇ
+ *  aRTxId      - [IN] ì´ remote statement ê°€ ì†í•œ remote transaction ì˜
  *                     id
- *  aId         - [IN] Remote statement ÀÇ id
- *  aStmtType   - [IN] Remote statement ÀÇ type À¸·Î ´ÙÀ½Áß ÇÏ³ªÀÇ °ªÀ» 
- *                     °®´Â´Ù.
+ *  aId         - [IN] Remote statement ì˜ id
+ *  aStmtType   - [IN] Remote statement ì˜ type ìœ¼ë¡œ ë‹¤ìŒì¤‘ í•˜ë‚˜ì˜ ê°’ì„ 
+ *                     ê°–ëŠ”ë‹¤.
  *  
  *            ++ Remote Statement Types:
  *
@@ -42,7 +42,7 @@
  *              3. DKT_STMT_TYPE_REMOTE_EXECUTE_NON_QUERY_STATEMENT
  *              4. DKT_STMT_TYPE_REMOTE_TABLE_STORE
  *
- *  aStmtStr    - [IN] ¿ø°İ¼­¹ö¿¡¼­ ¼öÇàµÉ ±¸¹®
+ *  aStmtStr    - [IN] ì›ê²©ì„œë²„ì—ì„œ ìˆ˜í–‰ë  êµ¬ë¬¸
  *
  ************************************************************************/
 IDE_RC  dktRemoteStmt::initialize( UInt    aGlobalTxId,
@@ -156,10 +156,10 @@ IDE_RC  dktRemoteStmt::initialize( UInt    aGlobalTxId,
 }
 
 /************************************************************************
- * Description : ÀÌ remote statement °´Ã¼¿¡ µ¿Àû ÇÒ´çµÈ ÀÚ¿øÀ» ÇØÁ¦ÇØÁÖ°í 
- *               ¸â¹öµéÀ» ÃÊ±âÈ­ÇØÁØ´Ù. ³»ºÎÀûÀ¸·Î clean() À» È£ÃâÇÑ´Ù.
+ * Description : ì´ remote statement ê°ì²´ì— ë™ì  í• ë‹¹ëœ ìì›ì„ í•´ì œí•´ì£¼ê³  
+ *               ë©¤ë²„ë“¤ì„ ì´ˆê¸°í™”í•´ì¤€ë‹¤. ë‚´ë¶€ì ìœ¼ë¡œ clean() ì„ í˜¸ì¶œí•œë‹¤.
  *
- *  BUG-37487 : return °ªÀ» IDE_RC --> void ·Î º¯°æ.
+ *  BUG-37487 : return ê°’ì„ IDE_RC --> void ë¡œ ë³€ê²½.
  *
  ************************************************************************/
 void dktRemoteStmt::finalize()
@@ -168,9 +168,9 @@ void dktRemoteStmt::finalize()
 }
 
 /************************************************************************
- * Description : µ¿Àû ÇÒ´çµÈ ÀÚ¿øÀ» ÇØÁ¦ÇØÁÖ°í ¸â¹öµéÀ» ÃÊ±âÈ­ÇØÁØ´Ù.
+ * Description : ë™ì  í• ë‹¹ëœ ìì›ì„ í•´ì œí•´ì£¼ê³  ë©¤ë²„ë“¤ì„ ì´ˆê¸°í™”í•´ì¤€ë‹¤.
  *
- *  BUG-37487 : return °ªÀ» IDE_RC --> void ·Î º¯°æ.
+ *  BUG-37487 : return ê°’ì„ IDE_RC --> void ë¡œ ë³€ê²½.
  *
  ************************************************************************/
 void dktRemoteStmt::clean() 
@@ -246,15 +246,15 @@ void dktRemoteStmt::clean()
 }
 
 /************************************************************************
- * Description : Remote statement ¸¦ ¼öÇàÇÏ±â À§ÇÑ protocol operation 
- *               À» ¼öÇàÇÑ´Ù. 
+ * Description : Remote statement ë¥¼ ìˆ˜í–‰í•˜ê¸° ìœ„í•œ protocol operation 
+ *               ì„ ìˆ˜í–‰í•œë‹¤. 
  *
- *  aSession    - [IN] AltiLinker process ¿ÍÀÇ ¿¬°áÀ» À§ÇÑ Á¤º¸¸¦ °®°í 
- *                     ÀÖ´Â dksSession ±¸Á¶Ã¼
- *  aSessionId  - [IN] ÀÌ protocol operation À» ¼öÇàÇÏ·Á´Â ¼¼¼ÇÀÇ id
- *  aLinkObj    - [IN] ÀÌ ¼¼¼ÇÀÌ »ç¿ëÇÏ´Â database link °´Ã¼ÀÇ Á¤º¸
- *  aRemoteSessionId - [IN] database link ¸¦ ÅëÇØ ¿¬°áÇÏ·Á´Â remote 
- *                          session ÀÇ id
+ *  aSession    - [IN] AltiLinker process ì™€ì˜ ì—°ê²°ì„ ìœ„í•œ ì •ë³´ë¥¼ ê°–ê³  
+ *                     ìˆëŠ” dksSession êµ¬ì¡°ì²´
+ *  aSessionId  - [IN] ì´ protocol operation ì„ ìˆ˜í–‰í•˜ë ¤ëŠ” ì„¸ì…˜ì˜ id
+ *  aLinkObj    - [IN] ì´ ì„¸ì…˜ì´ ì‚¬ìš©í•˜ëŠ” database link ê°ì²´ì˜ ì •ë³´
+ *  aRemoteSessionId - [IN] database link ë¥¼ í†µí•´ ì—°ê²°í•˜ë ¤ëŠ” remote 
+ *                          session ì˜ id
  *
  ************************************************************************/
 IDE_RC  dktRemoteStmt::prepareProtocol( dksSession   * aSession, 
@@ -429,12 +429,12 @@ IDE_RC  dktRemoteStmt::prepare( dksSession    *aSession,
 }
 
 /************************************************************************
- * Description : Result set ÀÇ meta ¸¦ ¾ò¾î¿À±â À§ÇÑ protocol operation 
- *               À» ¼öÇàÇÑ´Ù. 
+ * Description : Result set ì˜ meta ë¥¼ ì–»ì–´ì˜¤ê¸° ìœ„í•œ protocol operation 
+ *               ì„ ìˆ˜í–‰í•œë‹¤. 
  *
- *  aSession    - [IN] AltiLinker process ¿ÍÀÇ ¿¬°áÀ» À§ÇÑ Á¤º¸¸¦ °®°í 
- *                     ÀÖ´Â dksSession ±¸Á¶Ã¼
- *  aSessionId  - [IN] ÀÌ protocol operation À» ¼öÇàÇÏ·Á´Â ¼¼¼ÇÀÇ id
+ *  aSession    - [IN] AltiLinker process ì™€ì˜ ì—°ê²°ì„ ìœ„í•œ ì •ë³´ë¥¼ ê°–ê³  
+ *                     ìˆëŠ” dksSession êµ¬ì¡°ì²´
+ *  aSessionId  - [IN] ì´ protocol operation ì„ ìˆ˜í–‰í•˜ë ¤ëŠ” ì„¸ì…˜ì˜ id
  *
  ************************************************************************/
 IDE_RC  dktRemoteStmt::requestResultSetMetaProtocol( dksSession *aSession, 
@@ -518,11 +518,11 @@ IDE_RC  dktRemoteStmt::requestResultSetMetaProtocol( dksSession *aSession,
 }
 
 /************************************************************************
- * Description : requestResultSetMetaProtocol ¿¡¼­ ¿ø°İ¼­¹ö·ÎºÎÅÍ °¡Á®¿Â
- *               result set meta ¸¦ ÀÌ¿ëÇØ type converter ¸¦ »ı¼ºÇÑ´Ù.
+ * Description : requestResultSetMetaProtocol ì—ì„œ ì›ê²©ì„œë²„ë¡œë¶€í„° ê°€ì ¸ì˜¨
+ *               result set meta ë¥¼ ì´ìš©í•´ type converter ë¥¼ ìƒì„±í•œë‹¤.
  *
- *  aColMetaArr - [IN] ¿ø°İ¼­¹ö·ÎºÎÅÍ °¡Á®¿Â result set meta arrary
- *  aColCount   - [IN] result set ÀÇ ÄÃ·³°³¼ö 
+ *  aColMetaArr - [IN] ì›ê²©ì„œë²„ë¡œë¶€í„° ê°€ì ¸ì˜¨ result set meta arrary
+ *  aColCount   - [IN] result set ì˜ ì»¬ëŸ¼ê°œìˆ˜ 
  *
  ************************************************************************/
 IDE_RC  dktRemoteStmt::createTypeConverter( dkpColumn *aColMetaArr,
@@ -563,7 +563,7 @@ IDE_RC  dktRemoteStmt::createTypeConverter( dkpColumn *aColMetaArr,
 }
 
 /************************************************************************
- * Description : type converter ¸¦ ¹İÈ¯ÇÑ´Ù.
+ * Description : type converter ë¥¼ ë°˜í™˜í•œë‹¤.
  *
  ************************************************************************/
 IDE_RC dktRemoteStmt::getTypeConverter( dkdTypeConverter ** aTypeConverter )
@@ -606,7 +606,7 @@ IDE_RC dktRemoteStmt::getTypeConverter( dkdTypeConverter ** aTypeConverter )
 }
 
 /************************************************************************
- * Description : type converter ¸¦ Á¦°ÅÇÑ´Ù.
+ * Description : type converter ë¥¼ ì œê±°í•œë‹¤.
  *
  ************************************************************************/
 IDE_RC  dktRemoteStmt::destroyTypeConverter()
@@ -644,14 +644,14 @@ IDE_RC  dktRemoteStmt::destroyTypeConverter()
 }
 
 /************************************************************************
- * Description : Remote statement ¸¦ ¼öÇàÇÏ±â À§ÇÑ protocol operation 
- *               À» ¼öÇàÇÑ´Ù. 
+ * Description : Remote statement ë¥¼ ìˆ˜í–‰í•˜ê¸° ìœ„í•œ protocol operation 
+ *               ì„ ìˆ˜í–‰í•œë‹¤. 
  *
- *  aSession    - [IN] AltiLinker process ¿ÍÀÇ ¿¬°áÀ» À§ÇÑ Á¤º¸¸¦ °®°í 
- *                     ÀÖ´Â dksSession ±¸Á¶Ã¼
- *  aSessionId  - [IN] ÀÌ protocol operation À» ¼öÇàÇÏ·Á´Â ¼¼¼ÇÀÇ id
- *  aLinkObj    - [IN] ÀÌ ¼¼¼ÇÀÌ »ç¿ëÇÏ´Â database link °´Ã¼ÀÇ Á¤º¸
- *  aResult     - [IN] Protocol operation ¼öÇàÀÇ °á°ú
+ *  aSession    - [IN] AltiLinker process ì™€ì˜ ì—°ê²°ì„ ìœ„í•œ ì •ë³´ë¥¼ ê°–ê³  
+ *                     ìˆëŠ” dksSession êµ¬ì¡°ì²´
+ *  aSessionId  - [IN] ì´ protocol operation ì„ ìˆ˜í–‰í•˜ë ¤ëŠ” ì„¸ì…˜ì˜ id
+ *  aLinkObj    - [IN] ì´ ì„¸ì…˜ì´ ì‚¬ìš©í•˜ëŠ” database link ê°ì²´ì˜ ì •ë³´
+ *  aResult     - [IN] Protocol operation ìˆ˜í–‰ì˜ ê²°ê³¼
  *
  ************************************************************************/
 IDE_RC  dktRemoteStmt::executeProtocol( dksSession    *aSession,
@@ -991,12 +991,12 @@ IDE_RC dktRemoteStmt::executeBatchProtocol( dksSession    *aSession,
 }
 
 /************************************************************************
- * Description : Remote statement ¸¦ abort ÇÏ±âÀ§ÇÑ  protocol operation 
- *               À» ¼öÇàÇÑ´Ù.
+ * Description : Remote statement ë¥¼ abort í•˜ê¸°ìœ„í•œ  protocol operation 
+ *               ì„ ìˆ˜í–‰í•œë‹¤.
  *
- *  aSession    - [IN] AltiLinker process ¿ÍÀÇ ¿¬°áÀ» À§ÇÑ Á¤º¸¸¦ °®°í 
- *                     ÀÖ´Â dksSession ±¸Á¶Ã¼
- *  aSessionId  - [IN] ÀÌ protocol operation À» ¼öÇàÇÏ·Á´Â ¼¼¼ÇÀÇ id
+ *  aSession    - [IN] AltiLinker process ì™€ì˜ ì—°ê²°ì„ ìœ„í•œ ì •ë³´ë¥¼ ê°–ê³  
+ *                     ìˆëŠ” dksSession êµ¬ì¡°ì²´
+ *  aSessionId  - [IN] ì´ protocol operation ì„ ìˆ˜í–‰í•˜ë ¤ëŠ” ì„¸ì…˜ì˜ id
  *
  ************************************************************************/
 IDE_RC  dktRemoteStmt::abortProtocol( dksSession    *aSession, 
@@ -1045,16 +1045,16 @@ IDE_RC  dktRemoteStmt::abortProtocol( dksSession    *aSession,
 }
 
 /************************************************************************
- * Description : Remote statement ¿¡ binding À» ¼öÇàÇÏ±â À§ÇØ bind 
- *               protocol operation À» ¼öÇàÇÑ´Ù. 
+ * Description : Remote statement ì— binding ì„ ìˆ˜í–‰í•˜ê¸° ìœ„í•´ bind 
+ *               protocol operation ì„ ìˆ˜í–‰í•œë‹¤. 
  *
- *  aSession     - [IN] AltiLinker process ¿ÍÀÇ ¿¬°áÀ» À§ÇÑ Á¤º¸¸¦ °®°í 
- *                     ÀÖ´Â dksSession ±¸Á¶Ã¼
- *  aSessionId   - [IN] ÀÌ protocol operation À» ¼öÇàÇÏ·Á´Â ¼¼¼ÇÀÇ id
- *  aBindVarIdx  - [IN] Bind ÇÒ º¯¼öÀÇ À§Ä¡¿¡ µû¶ó ºÎ¿©µÇ´Â index
- *  aBindVarType - [IN] Bind ÇÒ º¯¼öÀÇ Å¸ÀÔ
- *  aBindVarLen  - [IN] Bind ÇÒ º¯¼öÀÇ ±æÀÌ 
- *  aBindVar     - [IN] Bind ÇÒ º¯¼ö°ª
+ *  aSession     - [IN] AltiLinker process ì™€ì˜ ì—°ê²°ì„ ìœ„í•œ ì •ë³´ë¥¼ ê°–ê³  
+ *                     ìˆëŠ” dksSession êµ¬ì¡°ì²´
+ *  aSessionId   - [IN] ì´ protocol operation ì„ ìˆ˜í–‰í•˜ë ¤ëŠ” ì„¸ì…˜ì˜ id
+ *  aBindVarIdx  - [IN] Bind í•  ë³€ìˆ˜ì˜ ìœ„ì¹˜ì— ë”°ë¼ ë¶€ì—¬ë˜ëŠ” index
+ *  aBindVarType - [IN] Bind í•  ë³€ìˆ˜ì˜ íƒ€ì…
+ *  aBindVarLen  - [IN] Bind í•  ë³€ìˆ˜ì˜ ê¸¸ì´ 
+ *  aBindVar     - [IN] Bind í•  ë³€ìˆ˜ê°’
  *
  ************************************************************************/
 IDE_RC  dktRemoteStmt::bindProtocol( dksSession    *aSession, 
@@ -1186,12 +1186,12 @@ IDE_RC  dktRemoteStmt::bind( dksSession    *aSession,
 }
 
 /************************************************************************
- * Description : Remote query ÀÇ ¼öÇà°á°ú¸¦ fetch ÇØ¿Â´Ù.
+ * Description : Remote query ì˜ ìˆ˜í–‰ê²°ê³¼ë¥¼ fetch í•´ì˜¨ë‹¤.
  *
- *  aSession     - [IN] AltiLinker process ¿ÍÀÇ ¿¬°áÀ» À§ÇÑ Á¤º¸¸¦ °®°í 
- *                      ÀÖ´Â dksSession ±¸Á¶Ã¼
- *  aSessionId   - [IN] ÀÌ protocol operation À» ¼öÇàÇÏ·Á´Â ¼¼¼ÇÀÇ id
- *  aQcStatement - [IN] insertRow ÇÔ¼ö¿¡ ³Ñ°ÜÁÙ ÀÎÀÚ
+ *  aSession     - [IN] AltiLinker process ì™€ì˜ ì—°ê²°ì„ ìœ„í•œ ì •ë³´ë¥¼ ê°–ê³  
+ *                      ìˆëŠ” dksSession êµ¬ì¡°ì²´
+ *  aSessionId   - [IN] ì´ protocol operation ì„ ìˆ˜í–‰í•˜ë ¤ëŠ” ì„¸ì…˜ì˜ id
+ *  aQcStatement - [IN] insertRow í•¨ìˆ˜ì— ë„˜ê²¨ì¤„ ì¸ì
  *
  ************************************************************************/
 IDE_RC  dktRemoteStmt::fetchProtocol( dksSession    *aSession, 
@@ -1429,13 +1429,13 @@ IDE_RC  dktRemoteStmt::fetchProtocol( dksSession    *aSession,
 }
 
 /************************************************************************
- * Description : Remote query ÀÇ ¼öÇà°á°ú¸¦ ÀÏºÎ fetch ÇØ¿Â´Ù.
+ * Description : Remote query ì˜ ìˆ˜í–‰ê²°ê³¼ë¥¼ ì¼ë¶€ fetch í•´ì˜¨ë‹¤.
  *  
  *      @ Related Keyword : REMOTE_TABLE
  *
- *  aSession     - [IN] AltiLinker process ¿ÍÀÇ ¿¬°áÀ» À§ÇÑ Á¤º¸¸¦ °®°í 
- *                      ÀÖ´Â dksSession ±¸Á¶Ã¼
- *  aSessionId   - [IN] ÀÌ protocol operation À» ¼öÇàÇÏ·Á´Â ¼¼¼ÇÀÇ id
+ *  aSession     - [IN] AltiLinker process ì™€ì˜ ì—°ê²°ì„ ìœ„í•œ ì •ë³´ë¥¼ ê°–ê³  
+ *                      ìˆëŠ” dksSession êµ¬ì¡°ì²´
+ *  aSessionId   - [IN] ì´ protocol operation ì„ ìˆ˜í–‰í•˜ë ¤ëŠ” ì„¸ì…˜ì˜ id
  *
  ************************************************************************/
 IDE_RC  dktRemoteStmt::executeRemoteFetch( dksSession    *aSession, 
@@ -1594,13 +1594,13 @@ IDE_RC  dktRemoteStmt::executeRemoteFetch( dksSession    *aSession,
 }
 
 /************************************************************************
- * Description : Remote statement ¸¦ free ÇØÁÖ±â À§ÇØ ³»ºÎÀûÀ¸·Î protocol
- *               operation À» È£ÃâÇÏ¿© AltiLinker ÇÁ·Î¼¼½ºÀÇ ÀÚ¿øÀ» 
- *               Á¤¸®ÇÏµµ·Ï ÇÑ µÚ, dkt ¿¡¼­ ÇÒ´ç¹ŞÀº ÀÚ¿øµéµµ Á¤¸®ÇØÁØ´Ù.
+ * Description : Remote statement ë¥¼ free í•´ì£¼ê¸° ìœ„í•´ ë‚´ë¶€ì ìœ¼ë¡œ protocol
+ *               operation ì„ í˜¸ì¶œí•˜ì—¬ AltiLinker í”„ë¡œì„¸ìŠ¤ì˜ ìì›ì„ 
+ *               ì •ë¦¬í•˜ë„ë¡ í•œ ë’¤, dkt ì—ì„œ í• ë‹¹ë°›ì€ ìì›ë“¤ë„ ì •ë¦¬í•´ì¤€ë‹¤.
  *
- *  aSession    - [IN] AltiLinker process ¿ÍÀÇ ¿¬°áÀ» À§ÇÑ Á¤º¸¸¦ °®°í 
- *                     ÀÖ´Â dksSession ±¸Á¶Ã¼
- *  aSessionId  - [IN] ÀÌ protocol operation À» ¼öÇàÇÏ·Á´Â ¼¼¼ÇÀÇ id
+ *  aSession    - [IN] AltiLinker process ì™€ì˜ ì—°ê²°ì„ ìœ„í•œ ì •ë³´ë¥¼ ê°–ê³  
+ *                     ìˆëŠ” dksSession êµ¬ì¡°ì²´
+ *  aSessionId  - [IN] ì´ protocol operation ì„ ìˆ˜í–‰í•˜ë ¤ëŠ” ì„¸ì…˜ì˜ id
  *
  ************************************************************************/
 IDE_RC  dktRemoteStmt::freeProtocol( dksSession    *aSession, 
@@ -1781,9 +1781,9 @@ IDE_RC dktRemoteStmt::getResultBatch( SInt           aIndex,
 
 
 /************************************************************************
- * Description : ÀÌ remote statement °¡ query ±¸¹®À» À§ÇÑ °´Ã¼ÀÎ °æ¿ì 
- *               ¿ø°İ¼­¹ö·ÎºÎÅÍ Àü¼Û¹Ş´Â data ¸¦ ÀúÀå ¹× °ü¸®ÇÏ±â À§ÇØ 
- *               ÇÊ¿äÇÑ data manager ¸¦ »ı¼ºÇÑ´Ù.
+ * Description : ì´ remote statement ê°€ query êµ¬ë¬¸ì„ ìœ„í•œ ê°ì²´ì¸ ê²½ìš° 
+ *               ì›ê²©ì„œë²„ë¡œë¶€í„° ì „ì†¡ë°›ëŠ” data ë¥¼ ì €ì¥ ë° ê´€ë¦¬í•˜ê¸° ìœ„í•´ 
+ *               í•„ìš”í•œ data manager ë¥¼ ìƒì„±í•œë‹¤.
  *
  ************************************************************************/
 IDE_RC  dktRemoteStmt::createDataManager()
@@ -1824,11 +1824,11 @@ IDE_RC  dktRemoteStmt::createDataManager()
 }
 
 /************************************************************************
- * Description : ÀÌ remote statement °¡ query ±¸¹®À» À§ÇÑ °´Ã¼ÀÎ °æ¿ì 
- *               »ı¼º½Ã ÇÒ´çµÇ¾î »ç¿ëÀÌ ³¡³­ data manager ¸¦ Á¤¸®ÇØ
- *               ÁÖ°í Á¦°ÅÇÑ´Ù.
+ * Description : ì´ remote statement ê°€ query êµ¬ë¬¸ì„ ìœ„í•œ ê°ì²´ì¸ ê²½ìš° 
+ *               ìƒì„±ì‹œ í• ë‹¹ë˜ì–´ ì‚¬ìš©ì´ ëë‚œ data manager ë¥¼ ì •ë¦¬í•´
+ *               ì£¼ê³  ì œê±°í•œë‹¤.
  *
- *  BUG-37487 : return °ªÀ» IDE_RC --> void ·Î º¯°æ.
+ *  BUG-37487 : return ê°’ì„ IDE_RC --> void ë¡œ ë³€ê²½.
  *
  ************************************************************************/
 void dktRemoteStmt::destroyDataManager()
@@ -1847,8 +1847,8 @@ void dktRemoteStmt::destroyDataManager()
 }
 
 /************************************************************************
- * Description : ¿ø°İ¼­¹ö·ÎºÎÅÍ Àü¼Û¹Ş´Â ·¹ÄÚµå¸¦ °ü¸®ÇÏ±â À§ÇØ 
- *               ÇÊ¿äÇÑ remote table manager ¸¦ »ı¼ºÇÑ´Ù.
+ * Description : ì›ê²©ì„œë²„ë¡œë¶€í„° ì „ì†¡ë°›ëŠ” ë ˆì½”ë“œë¥¼ ê´€ë¦¬í•˜ê¸° ìœ„í•´ 
+ *               í•„ìš”í•œ remote table manager ë¥¼ ìƒì„±í•œë‹¤.
  *
  ************************************************************************/
 IDE_RC  dktRemoteStmt::createRemoteTableManager()
@@ -1896,12 +1896,12 @@ IDE_RC  dktRemoteStmt::createRemoteTableManager()
 }
 
 /************************************************************************
- * Description : Remote statement type ¿¡ µû¶ó remote data manager ¸¦ 
- *               È°¼ºÈ­ ½ÃÅ²´Ù. 
+ * Description : Remote statement type ì— ë”°ë¼ remote data manager ë¥¼ 
+ *               í™œì„±í™” ì‹œí‚¨ë‹¤. 
  *
- *  aQcStatement - [IN] Remote statement type ÀÌ REMOTE_TABLE_STORE ¶Ç´Â 
- *                      REMOTE_EXECUTE_QUERY_STATEMENT ÀÎ °æ¿ì 
- *                      data manager ¿¡ ³Ñ°ÜÁÙ ÀÎÀÚ
+ *  aQcStatement - [IN] Remote statement type ì´ REMOTE_TABLE_STORE ë˜ëŠ” 
+ *                      REMOTE_EXECUTE_QUERY_STATEMENT ì¸ ê²½ìš° 
+ *                      data manager ì— ë„˜ê²¨ì¤„ ì¸ì
  *
  ************************************************************************/
 IDE_RC  dktRemoteStmt::activateRemoteDataManager( void  *aQcStatement )
@@ -1941,9 +1941,9 @@ IDE_RC  dktRemoteStmt::activateRemoteDataManager( void  *aQcStatement )
 }
 
 /************************************************************************
- * Description : ÀÌ remote statement °¡ query ±¸¹®À» À§ÇÑ °´Ã¼ÀÎ °æ¿ì 
- *               »ı¼º½Ã ÇÒ´çµÇ¾î »ç¿ëÀÌ ³¡³­ remote table manager ¸¦ 
- *               Á¤¸®ÇØÁÖ°í Á¦°ÅÇÑ´Ù.
+ * Description : ì´ remote statement ê°€ query êµ¬ë¬¸ì„ ìœ„í•œ ê°ì²´ì¸ ê²½ìš° 
+ *               ìƒì„±ì‹œ í• ë‹¹ë˜ì–´ ì‚¬ìš©ì´ ëë‚œ remote table manager ë¥¼ 
+ *               ì •ë¦¬í•´ì£¼ê³  ì œê±°í•œë‹¤.
  *
  ************************************************************************/
 void dktRemoteStmt::destroyRemoteTableManager()
@@ -1962,14 +1962,14 @@ void dktRemoteStmt::destroyRemoteTableManager()
 }
 
 /************************************************************************
- * Description : ÀÌ remote statement ¼öÇà°á°ú°¡ error ÀÎ °æ¿ì, ÇÁ·ÎÅäÄİ
- *               À» ÅëÇØ AltiLinker ÇÁ·Î¼¼½º·ÎºÎÅÍ ¿ø°İ¼­¹öÀÇ error Á¤
- *               º¸¸¦ ¹Ş¾Æ¿Ã ¼ö ÀÖ´Âµ¥ ÀÌ·¸°Ô ¹Ş¾Æ¿Â error Á¤º¸¸¦ remote
- *               statement °´Ã¼¿¡ ÀúÀåÇÏ±â À§ÇØ ¼öÇàµÇ´Â ÇÔ¼ö
+ * Description : ì´ remote statement ìˆ˜í–‰ê²°ê³¼ê°€ error ì¸ ê²½ìš°, í”„ë¡œí† ì½œ
+ *               ì„ í†µí•´ AltiLinker í”„ë¡œì„¸ìŠ¤ë¡œë¶€í„° ì›ê²©ì„œë²„ì˜ error ì •
+ *               ë³´ë¥¼ ë°›ì•„ì˜¬ ìˆ˜ ìˆëŠ”ë° ì´ë ‡ê²Œ ë°›ì•„ì˜¨ error ì •ë³´ë¥¼ remote
+ *               statement ê°ì²´ì— ì €ì¥í•˜ê¸° ìœ„í•´ ìˆ˜í–‰ë˜ëŠ” í•¨ìˆ˜
  *
- *  aSession    - [IN] AltiLinker process ¿ÍÀÇ ¿¬°áÀ» À§ÇÑ Á¤º¸¸¦ °®°í 
- *                     ÀÖ´Â dksSession ±¸Á¶Ã¼
- *  aSessionId  - [IN] ÀÌ protocol operation À» ¼öÇàÇÏ·Á´Â ¼¼¼ÇÀÇ id
+ *  aSession    - [IN] AltiLinker process ì™€ì˜ ì—°ê²°ì„ ìœ„í•œ ì •ë³´ë¥¼ ê°–ê³  
+ *                     ìˆëŠ” dksSession êµ¬ì¡°ì²´
+ *  aSessionId  - [IN] ì´ protocol operation ì„ ìˆ˜í–‰í•˜ë ¤ëŠ” ì„¸ì…˜ì˜ id
  *
  ************************************************************************/
 IDE_RC  dktRemoteStmt::getErrorInfoFromProtocol( dksSession  *aSession,
@@ -2015,10 +2015,10 @@ IDE_RC  dktRemoteStmt::getErrorInfoFromProtocol( dksSession  *aSession,
 }
 
 /************************************************************************
- * Description : Performance view ¸¦ À§ÇØ ÀÌ remote statement ÀÇ Á¤º¸¸¦ 
- *               info ±¸Á¶Ã¼¿¡ ´ã¾ÆÁÖ´Â ÇÔ¼ö
+ * Description : Performance view ë¥¼ ìœ„í•´ ì´ remote statement ì˜ ì •ë³´ë¥¼ 
+ *               info êµ¬ì¡°ì²´ì— ë‹´ì•„ì£¼ëŠ” í•¨ìˆ˜
  *
- *  aInfo       - [IN] Remote statement Á¤º¸¸¦ ´ã¾ÆÁÙ ±¸Á¶Ã¼
+ *  aInfo       - [IN] Remote statement ì •ë³´ë¥¼ ë‹´ì•„ì¤„ êµ¬ì¡°ì²´
  *
  ************************************************************************/
 IDE_RC  dktRemoteStmt::getRemoteStmtInfo( dktRemoteStmtInfo *aInfo )
@@ -2033,12 +2033,12 @@ IDE_RC  dktRemoteStmt::getRemoteStmtInfo( dktRemoteStmtInfo *aInfo )
 }
 
 /************************************************************************
- * Description : ÀÔ·Â¹ŞÀº ¹®ÀÚ¿­À» ÀÌ remote statement °´Ã¼¿¡ copy ÇÑ´Ù.
- *               ³»ºÎÀûÀ¸·Î ¸Ş¸ğ¸®¸¦ ÇÒ´çÇÏ¹Ç·Î ´Ù¸¥ °÷¿¡¼­ ¸Ş¸ğ¸® ÇØÁ¦¸¦ 
- *               ÇØÁÖ¾î¾ß ÇÑ´Ù. ÀÌ remote statement °´Ã¼¸¦ Á¤¸®ÇÒ ¶§ °°ÀÌ
- *               ÇØÁØ´Ù.
+ * Description : ì…ë ¥ë°›ì€ ë¬¸ìì—´ì„ ì´ remote statement ê°ì²´ì— copy í•œë‹¤.
+ *               ë‚´ë¶€ì ìœ¼ë¡œ ë©”ëª¨ë¦¬ë¥¼ í• ë‹¹í•˜ë¯€ë¡œ ë‹¤ë¥¸ ê³³ì—ì„œ ë©”ëª¨ë¦¬ í•´ì œë¥¼ 
+ *               í•´ì£¼ì–´ì•¼ í•œë‹¤. ì´ remote statement ê°ì²´ë¥¼ ì •ë¦¬í•  ë•Œ ê°™ì´
+ *               í•´ì¤€ë‹¤.
  *
- *  aStmtStr    - [IN] ÀÔ·Â¹ŞÀº remote statement ±¸¹®
+ *  aStmtStr    - [IN] ì…ë ¥ë°›ì€ remote statement êµ¬ë¬¸
  *
  ************************************************************************/
 IDE_RC  dktRemoteStmt::setStmtStr( SChar   *aStmtStr )

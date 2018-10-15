@@ -1,10 +1,10 @@
 # $Id: Makefile 68602 2015-01-23 00:13:11Z sbjang $ #
 
-# ¼öÁ¤ÇØ¾ß ÇÒ  º¯¼ö
-#  DESTDIR  : Å×½ºÆÃ ¼½¼Ç µð·ºÅä¸®
-#  BINS     : ½ÇÇàÈ­ÀÏ¸í
-#  BINSRCS  : ½ÇÇàÈ­ÀÏ ¼Ò½º
-#  run.sh   : Å×½ºÆ® ¼öÇàÇÒ ¼Ò½º ÄÚµå
+# ìˆ˜ì •í•´ì•¼ í•   ë³€ìˆ˜
+#  DESTDIR  : í…ŒìŠ¤íŒ… ì„¹ì…˜ ë””ë ‰í† ë¦¬
+#  BINS     : ì‹¤í–‰í™”ì¼ëª…
+#  BINSRCS  : ì‹¤í–‰í™”ì¼ ì†ŒìŠ¤
+#  run.sh   : í…ŒìŠ¤íŠ¸ ìˆ˜í–‰í•  ì†ŒìŠ¤ ì½”ë“œ
 
 include ../tsmEnv.mk
 

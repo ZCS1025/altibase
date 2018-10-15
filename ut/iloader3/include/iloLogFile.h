@@ -33,8 +33,8 @@ public:
     SInt CloseFile();
 
     void PrintLogMsg(const SChar *szMsg);
-    // BUG-21640 iloader¿¡¼­ ¿¡·¯¸Þ½ÃÁö¸¦ ¾Ë¾Æº¸±â ÆíÇÏ°Ô Ãâ·ÂÇÏ±â
-    // ±âÁ¸ ¿¡·¯¸Þ½ÃÁö¿Í µ¿ÀÏÇÑ Çü½ÄÀ¸·Î Ãâ·ÂÇÏ´Â ÇÔ¼öÃß°¡
+    // BUG-21640 iloaderì—ì„œ ì—ëŸ¬ë©”ì‹œì§€ë¥¼ ì•Œì•„ë³´ê¸° íŽ¸í•˜ê²Œ ì¶œë ¥í•˜ê¸°
+    // ê¸°ì¡´ ì—ëŸ¬ë©”ì‹œì§€ì™€ ë™ì¼í•œ í˜•ì‹ìœ¼ë¡œ ì¶œë ¥í•˜ëŠ” í•¨ìˆ˜ì¶”ê°€
     void PrintLogErr(uteErrorMgr *aMgr);
 
     void PrintTime(const SChar *szPrnStr);

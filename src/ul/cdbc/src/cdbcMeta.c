@@ -42,7 +42,7 @@ static SQLRETURN altibase_affected_rows_core(SQLHSTMT aHstmt, SQLLEN *aRowCount)
         CDBCLOG_BACK_VAL("SQLNumRows", "%d", sRC);
         CDBC_TEST_RAISE(CDBC_CLI_NOT_SUCCEEDED(sRC), RETURN);
 
-        /* ¿¡·¯°¡ ³µÀ»¶§¸¸ -1À» Áà¾ßÇÑ´Ù. */
+        /* ì—ëŸ¬ê°€ ë‚¬ì„ë•Œë§Œ -1ì„ ì¤˜ì•¼í•œë‹¤. */
         if (sRowCount == -1)
         {
             sRowCount = 0;
@@ -63,10 +63,10 @@ static SQLRETURN altibase_affected_rows_core(SQLHSTMT aHstmt, SQLLEN *aRowCount)
 
 
 /**
- * INSERT, UPDATE, DELETE Äõ¸®¿¡ ¿µÇâ ¹ŞÀº ÇàÀÇ °³¼ö¸¦ ¾ò´Â´Ù.
+ * INSERT, UPDATE, DELETE ì¿¼ë¦¬ì— ì˜í–¥ ë°›ì€ í–‰ì˜ ê°œìˆ˜ë¥¼ ì–»ëŠ”ë‹¤.
  *
- * @param[in] aABConn ¿¬°á ÇÚµé
- * @return ¿µÇâ ¹ŞÀº ÇàÀÇ °³¼ö. ¿¡·¯°¡ ¹ß»ıÇÏ¸é ALTIBASE_INVALID_AFFECTEDROW
+ * @param[in] aABConn ì—°ê²° í•¸ë“¤
+ * @return ì˜í–¥ ë°›ì€ í–‰ì˜ ê°œìˆ˜. ì—ëŸ¬ê°€ ë°œìƒí•˜ë©´ ALTIBASE_INVALID_AFFECTEDROW
  */
 CDBC_EXPORT
 ALTIBASE_LONG altibase_affected_rows (ALTIBASE aABConn)
@@ -104,10 +104,10 @@ ALTIBASE_LONG altibase_affected_rows (ALTIBASE aABConn)
 }
 
 /**
- * INSERT, UPDATE, DELETE Äõ¸®¿¡ ¿µÇâ ¹ŞÀº ÇàÀÇ °³¼ö¸¦ ¾ò´Â´Ù.
+ * INSERT, UPDATE, DELETE ì¿¼ë¦¬ì— ì˜í–¥ ë°›ì€ í–‰ì˜ ê°œìˆ˜ë¥¼ ì–»ëŠ”ë‹¤.
  *
- * @param[in] aABStmt ¸í·É¹® ÇÚµé
- * @return ¿µÇâ ¹ŞÀº ÇàÀÇ °³¼ö. ¿¡·¯°¡ ¹ß»ıÇÏ¸é ALTIBASE_INVALID_AFFECTEDROW
+ * @param[in] aABStmt ëª…ë ¹ë¬¸ í•¸ë“¤
+ * @return ì˜í–¥ ë°›ì€ í–‰ì˜ ê°œìˆ˜. ì—ëŸ¬ê°€ ë°œìƒí•˜ë©´ ALTIBASE_INVALID_AFFECTEDROW
  */
 CDBC_EXPORT
 ALTIBASE_LONG altibase_stmt_affected_rows (ALTIBASE_STMT aABStmt)
@@ -146,10 +146,10 @@ ALTIBASE_LONG altibase_stmt_affected_rows (ALTIBASE_STMT aABStmt)
 }
 
 /**
- * °á°ú¼ÂÀÇ ÄÃ·³ ¼ö¸¦ ¾ò´Â´Ù.
+ * ê²°ê³¼ì…‹ì˜ ì»¬ëŸ¼ ìˆ˜ë¥¼ ì–»ëŠ”ë‹¤.
  *
- * @param[in] aABConn ¿¬°á ÇÚµé
- * @return °á°ú¼ÂÀÇ ÄÃ·³ ¼ö, ½ÇÆĞÇÏ¸é ALTIBASE_INVALID_FIELDCOUNT
+ * @param[in] aABConn ì—°ê²° í•¸ë“¤
+ * @return ê²°ê³¼ì…‹ì˜ ì»¬ëŸ¼ ìˆ˜, ì‹¤íŒ¨í•˜ë©´ ALTIBASE_INVALID_FIELDCOUNT
  */
 CDBC_EXPORT
 acp_sint32_t altibase_field_count (ALTIBASE aABConn)
@@ -189,10 +189,10 @@ acp_sint32_t altibase_field_count (ALTIBASE aABConn)
 }
 
 /**
- * °á°ú¼ÂÀÇ ÄÃ·³ ¼ö¸¦ ¾ò´Â´Ù.
+ * ê²°ê³¼ì…‹ì˜ ì»¬ëŸ¼ ìˆ˜ë¥¼ ì–»ëŠ”ë‹¤.
  *
- * @param[in] aABRes °á°ú¼Â ÇÚµé
- * @return °á°ú¼ÂÀÇ ÄÃ·³ ¼ö, ½ÇÆĞÇÏ¸é ALTIBASE_INVALID_FIELDCOUNT
+ * @param[in] aABRes ê²°ê³¼ì…‹ í•¸ë“¤
+ * @return ê²°ê³¼ì…‹ì˜ ì»¬ëŸ¼ ìˆ˜, ì‹¤íŒ¨í•˜ë©´ ALTIBASE_INVALID_FIELDCOUNT
  */
 CDBC_EXPORT
 acp_sint32_t altibase_num_fields (ALTIBASE_RES aABRes)
@@ -235,10 +235,10 @@ acp_sint32_t altibase_num_fields (ALTIBASE_RES aABRes)
 }
 
 /**
- * °á°ú¼ÂÀÇ ÄÃ·³ ¼ö¸¦ ¾ò´Â´Ù.
+ * ê²°ê³¼ì…‹ì˜ ì»¬ëŸ¼ ìˆ˜ë¥¼ ì–»ëŠ”ë‹¤.
  *
- * @param[in] aABStmt ¸í·É¹® ÇÚµé
- * @return °á°ú¼ÂÀÇ ÄÃ·³ ¼ö, ½ÇÆĞÇÏ¸é ALTIBASE_INVALID_FIELDCOUNT
+ * @param[in] aABStmt ëª…ë ¹ë¬¸ í•¸ë“¤
+ * @return ê²°ê³¼ì…‹ì˜ ì»¬ëŸ¼ ìˆ˜, ì‹¤íŒ¨í•˜ë©´ ALTIBASE_INVALID_FIELDCOUNT
  */
 CDBC_EXPORT
 acp_sint32_t altibase_stmt_field_count (ALTIBASE_STMT aABStmt)
@@ -281,11 +281,11 @@ acp_sint32_t altibase_stmt_field_count (ALTIBASE_STMT aABStmt)
 }
 
 /**
- * °á°ú¼ÂÀÇ ÇÊµå Á¤º¸¸¦ ¾ò´Â´Ù.
+ * ê²°ê³¼ì…‹ì˜ í•„ë“œ ì •ë³´ë¥¼ ì–»ëŠ”ë‹¤.
  *
- * @param[in] aABRes °á°ú¼Â ÇÚµé
- * @param[in] aIdx ÄÃ·³ ÀÎµ¦½º (0 ºÎÅÍ ½ÃÀÛ)
- * @return ÇÊµå Á¤º¸, ½ÇÆĞÇÏ¸é NULL
+ * @param[in] aABRes ê²°ê³¼ì…‹ í•¸ë“¤
+ * @param[in] aIdx ì»¬ëŸ¼ ì¸ë±ìŠ¤ (0 ë¶€í„° ì‹œì‘)
+ * @return í•„ë“œ ì •ë³´, ì‹¤íŒ¨í•˜ë©´ NULL
  */
 CDBC_EXPORT
 ALTIBASE_FIELD * altibase_field (ALTIBASE_RES aABRes, acp_sint32_t aIdx)
@@ -329,10 +329,10 @@ ALTIBASE_FIELD * altibase_field (ALTIBASE_RES aABRes, acp_sint32_t aIdx)
 }
 
 /**
- * °á°ú¼ÂÀÇ ÇÊµå Á¤º¸¸¦ ¸ğµÎ ¾ò´Â´Ù.
+ * ê²°ê³¼ì…‹ì˜ í•„ë“œ ì •ë³´ë¥¼ ëª¨ë‘ ì–»ëŠ”ë‹¤.
  *
- * @param[in] aABRes °á°ú¼Â ÇÚµé
- * @return °á°ú¼ÂÀÇ ¸ğµç ÇÊµå Á¤º¸, ½ÇÆĞÇÏ¸é NULL
+ * @param[in] aABRes ê²°ê³¼ì…‹ í•¸ë“¤
+ * @return ê²°ê³¼ì…‹ì˜ ëª¨ë“  í•„ë“œ ì •ë³´, ì‹¤íŒ¨í•˜ë©´ NULL
  */
 CDBC_EXPORT
 ALTIBASE_FIELD * altibase_fields (ALTIBASE_RES aABRes)
@@ -365,10 +365,10 @@ ALTIBASE_FIELD * altibase_fields (ALTIBASE_RES aABRes)
 }
 
 /**
- * ÇÊµåÀÇ ±âº» Á¤º¸°¡ ¾øÀ¸¸é ¾ò¾î¿Í Ã¤¿î´Ù.
+ * í•„ë“œì˜ ê¸°ë³¸ ì •ë³´ê°€ ì—†ìœ¼ë©´ ì–»ì–´ì™€ ì±„ìš´ë‹¤.
  *
- * @param[in] aABRes °á°ú¼Â ÇÚµé
- * @return ¼º°øÇÏ¸é ALTIBASE_SUCCESS, ±×·¸Áö ¾ÊÀ¸¸é ALTIBASE_ERROR
+ * @param[in] aABRes ê²°ê³¼ì…‹ í•¸ë“¤
+ * @return ì„±ê³µí•˜ë©´ ALTIBASE_SUCCESS, ê·¸ë ‡ì§€ ì•Šìœ¼ë©´ ALTIBASE_ERROR
  */
 CDBC_INTERNAL
 ALTIBASE_RC altibase_ensure_basic_fieldinfos (cdbcABRes *aABRes)
@@ -447,10 +447,10 @@ ALTIBASE_RC altibase_ensure_basic_fieldinfos (cdbcABRes *aABRes)
 }
 
 /**
- * ¾ò¾î¿ÀÁö ¾ÊÀº ÇÊµå Á¤º¸°¡ ¾øÀ¸¸é ¾ò¾î¿Í Ã¤¿î´Ù.
+ * ì–»ì–´ì˜¤ì§€ ì•Šì€ í•„ë“œ ì •ë³´ê°€ ì—†ìœ¼ë©´ ì–»ì–´ì™€ ì±„ìš´ë‹¤.
  *
- * @param[in] aABRes °á°ú¼Â ÇÚµé
- * @return ¼º°øÇÏ¸é ALTIBASE_SUCCESS, ±×·¸Áö ¾ÊÀ¸¸é ALTIBASE_ERROR
+ * @param[in] aABRes ê²°ê³¼ì…‹ í•¸ë“¤
+ * @return ì„±ê³µí•˜ë©´ ALTIBASE_SUCCESS, ê·¸ë ‡ì§€ ì•Šìœ¼ë©´ ALTIBASE_ERROR
  */
 CDBC_INTERNAL
 ALTIBASE_RC altibase_ensure_full_fieldinfos (cdbcABRes *aABRes)
@@ -521,10 +521,10 @@ ALTIBASE_RC altibase_ensure_full_fieldinfos (cdbcABRes *aABRes)
 }
 
 /**
- * ÁØºñµÈ ¹®ÀåÀÇ ÆÄ¶ó¹ÌÅÍ °³¼ö¸¦ ¾ò´Â´Ù.
+ * ì¤€ë¹„ëœ ë¬¸ì¥ì˜ íŒŒë¼ë¯¸í„° ê°œìˆ˜ë¥¼ ì–»ëŠ”ë‹¤.
  *
- * @param[in] aABStmt ¸í·É¹® ÇÚµé
- * @return ¼º°øÇßÀ¸¸é ÆÄ¶ó¹ÌÅÍ °³¼ö, ±×·¸Áö ¾ÊÀ¸¸é ALTIBASE_INVALID_PARAMCOUNT
+ * @param[in] aABStmt ëª…ë ¹ë¬¸ í•¸ë“¤
+ * @return ì„±ê³µí–ˆìœ¼ë©´ íŒŒë¼ë¯¸í„° ê°œìˆ˜, ê·¸ë ‡ì§€ ì•Šìœ¼ë©´ ALTIBASE_INVALID_PARAMCOUNT
  */
 CDBC_EXPORT
 acp_sint32_t altibase_stmt_param_count (ALTIBASE_STMT aABStmt)
@@ -560,10 +560,10 @@ acp_sint32_t altibase_stmt_param_count (ALTIBASE_STMT aABStmt)
 }
 
 /**
- * ÁØºñµÈ ¹®ÀåÀÇ ¸ŞÅ¸ Á¤º¸¸¦ ¾ò´Â´Ù.
+ * ì¤€ë¹„ëœ ë¬¸ì¥ì˜ ë©”íƒ€ ì •ë³´ë¥¼ ì–»ëŠ”ë‹¤.
  *
- * @param[in] aABStmt ¸í·É¹® ÇÚµé
- * @return ¼º°øÇßÀ¸¸é ¸ŞÅ¸ Á¤º¸¸¦ ´ãÀº °á°ú¼Â, ±×·¸Áö ¾ÊÀ¸¸é NULL
+ * @param[in] aABStmt ëª…ë ¹ë¬¸ í•¸ë“¤
+ * @return ì„±ê³µí–ˆìœ¼ë©´ ë©”íƒ€ ì •ë³´ë¥¼ ë‹´ì€ ê²°ê³¼ì…‹, ê·¸ë ‡ì§€ ì•Šìœ¼ë©´ NULL
  * @see altibase_stmt_prepare
  */
 CDBC_EXPORT

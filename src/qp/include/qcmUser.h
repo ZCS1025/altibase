@@ -93,7 +93,7 @@ public:
         qcmTriggerInfoList **aTriggerInfoList);
     
     // BUG-24957
-    // meta table¿¡¼­ user nameÀ» °¡Á®¿Â´Ù.
+    // meta tableì—ì„œ user nameì„ ê°€ì ¸ì˜¨ë‹¤.
     static IDE_RC getMetaUserName( smiStatement * aSmiStmt,
                                    UInt           aUserID,
                                    SChar        * aUserName );

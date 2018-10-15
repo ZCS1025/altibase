@@ -30,7 +30,7 @@
 class smcRecord
 {
 public:
-    /* Table¿¡ »õ·Î¿î Record¸¦ Insert */
+    /* Tableì— ìƒˆë¡œìš´ Recordë¥¼ Insert */
     static IDE_RC insertVersion( idvSQL          * aStatistics,
                                  void            * aTrans,
                                  void            * aTableInfoPtr,
@@ -41,7 +41,7 @@ public:
                                  const smiValue  * aValueList,
                                  UInt              aFlag );
 
-    /* TableÀÇ Record¸¦ MVCC±â¹İÀ¸·Î Update */
+    /* Tableì˜ Recordë¥¼ MVCCê¸°ë°˜ìœ¼ë¡œ Update */
     static IDE_RC updateVersion( idvSQL                * aStatistics,
                                  void                  * aTrans,
                                  smSCN                   aViewSCN,
@@ -80,7 +80,7 @@ public:
                                           UInt             *  aLogVarCount, 
                                           UInt             *  aImageSize );
 
-    /* TableÀÇ Record¸¦ Inplace·Î Update */
+    /* Tableì˜ Recordë¥¼ Inplaceë¡œ Update */
     static IDE_RC updateInplace(idvSQL               * aStatistics,
                                 void                 * aTrans,
                                 smSCN                  aViewSCN,
@@ -97,7 +97,7 @@ public:
                                 void*                /*aLobInfo4Update*/,
                                 ULong                * aModifyIdxBit); 
 
-    /* TableÀÇ Record¸¦ »èÁ¦. */
+    /* Tableì˜ Recordë¥¼ ì‚­ì œ. */
     static IDE_RC removeVersion( idvSQL               * aStatistics,
                                  void                 * aTrans,
                                  smSCN                  aViewSCN,
@@ -162,7 +162,7 @@ public:
     static IDE_RC setDropTable( void            * aTrans,
                                 SChar           * aRow);
 
-    /* Variable Column PieceÀÇ Header¿¡ Free Flag¸¦ ¼³Á¤ÇÑ´Ù. */
+    /* Variable Column Pieceì˜ Headerì— Free Flagë¥¼ ì„¤ì •í•œë‹¤. */
     static IDE_RC setFreeFlagAtVCPieceHdr( void         * aTrans,
                                            smOID          aTableOID,
                                            scSpaceID      aSpaceID,
@@ -194,7 +194,7 @@ public:
                               SChar          * aCurRow,
                               SChar         ** aNxtRow );
 
-    /* Memory tableÀÇ nullrowÀ» »ğÀÔÇÏ°í, Table header¿¡ AssignÇÑ´Ù. */
+    /* Memory tableì˜ nullrowì„ ì‚½ì…í•˜ê³ , Table headerì— Assigní•œë‹¤. */
     static IDE_RC makeNullRow( void*           aTrans,
                                smcTableHeader* aHeader,
                                smSCN           aSCN,
@@ -202,8 +202,8 @@ public:
                                UInt            aLoggingFlag,
                                smOID*          aNullRowOID );
 
-    /* 32k ÀÌ»óÀÇ Variable ColumnÀ» Out Mode·Î Insert.
-       Out-Mode : Variable ColumnÀ» TableÀÇ Variable Page List¿¡ InsertÇÑ´Ù.
+    /* 32k ì´ìƒì˜ Variable Columnì„ Out Modeë¡œ Insert.
+       Out-Mode : Variable Columnì„ Tableì˜ Variable Page Listì— Insertí•œë‹¤.
     */
     static IDE_RC insertLargeVarColumn( void            *aTrans,
                                         smcTableHeader  *aHeader,
@@ -234,44 +234,44 @@ public:
                                         smOID           * aCurVCPieceOID,
                                         UInt            * aVarPieceLen4Log /* BUG-43117 */);
 
-    /* aSize¿¡ ÇØ´çÇÏ´Â Variable ColumnÀúÀå½Ã ÇÊ¿äÇÑ Variable Column Piece °¹¼ö */
+    /* aSizeì— í•´ë‹¹í•˜ëŠ” Variable Columnì €ì¥ì‹œ í•„ìš”í•œ Variable Column Piece ê°¯ìˆ˜ */
     static inline UInt getVCPieceCount(UInt aSize);
 
-    /* Variable Column Descriptor¸¦ Return */
+    /* Variable Column Descriptorë¥¼ Return */
     static inline smVCDesc* getVCDesc(const smiColumn *aColumn,
                                       const SChar     *aFixedRow);
 
-    /* Variable Column Piece Header ¸¦ Return */
+    /* Variable Column Piece Header ë¥¼ Return */
     static IDE_RC getVCPieceHeader( const void      *  aRow,
                                     const smiColumn *  aColumn,
                                     smVCPieceHeader ** aVCPieceHeader,
                                     UShort          *  aOffsetIdx );
 
     static UInt getUnitedVCLogSize( const smcTableHeader  * aHeader, smOID aOID );
-    /* United Variable Column¿¡ µé¾îÀÖ´Â column ÀÇ °³¼ö¸¦ ±¸ÇÔ */
+    /* United Variable Columnì— ë“¤ì–´ìˆëŠ” column ì˜ ê°œìˆ˜ë¥¼ êµ¬í•¨ */
     static UInt getUnitedVCColCount( scSpaceID aSpaceID, smOID aOID );
-    /* MVCC: Variable Column After Image ÀÇ Log Size <- ÀÌ¸§ º¯°æ ? */
+    /* MVCC: Variable Column After Image ì˜ Log Size <- ì´ë¦„ ë³€ê²½ ? */
     static inline UInt getVCAMLogSize(UInt aLength);
-    /* MVCC: Variable Column Before Image ÀÇ Log Size */
+    /* MVCC: Variable Column Before Image ì˜ Log Size */
     static inline UInt getVCBMLogSize(UInt aLength);
-    /* MVCC: Fixed Column Image ÀÇ Log Size */
+    /* MVCC: Fixed Column Image ì˜ Log Size */
     static inline UInt getFCMVLogSize(UInt aLength);
 
-    /* Update Inplace: Fixed Column Image ÀÇ Log Size  */
+    /* Update Inplace: Fixed Column Image ì˜ Log Size  */
     static inline UInt getFCUILogSize(UInt aLength);
 
-    /* Update Inplace: Variable Column Before Image ÀÇ Log Size  */
+    /* Update Inplace: Variable Column Before Image ì˜ Log Size  */
     static inline UInt getVCUILogBMSize(smcLogReplOpt aIsReplSenderSend,
                                         SInt          aStoreMode,
                                         UInt          aLength);
-    /* Update Inplace: Variable Column After Image ÀÇ Log Size */
+    /* Update Inplace: Variable Column After Image ì˜ Log Size */
     static inline UInt getVCUILogAMSize(SInt aStoreMode, UInt aLength);
 
-    /* Variable ColumnÀÇ Store Mode¸¦ ±¸ÇÑ´Ù. */
+    /* Variable Columnì˜ Store Modeë¥¼ êµ¬í•œë‹¤. */
     static inline SInt getVCStoreMode(const smiColumn *aColumn,
                                       UInt aLength);
 
-    /* aVCDescÀÌ °¡¸®Å°´Â Variable ColumnÀ» »èÁ¦ÇÑ´Ù. */
+    /* aVCDescì´ ê°€ë¦¬í‚¤ëŠ” Variable Columnì„ ì‚­ì œí•œë‹¤. */
     static IDE_RC deleteVC(void              *aTrans,
                            smcTableHeader    *aHeader,
                            smOID              aFstOID);
@@ -334,7 +334,7 @@ private:
                                           void                  * aRowPtr,
                                           const smiDMLRetryInfo * aRetryInfo);
     
-    /* aVCDescÀÌ °¡¸®Å°´Â Variable ColumnÀ» »èÁ¦ÇÑ´Ù. */
+    /* aVCDescì´ ê°€ë¦¬í‚¤ëŠ” Variable Columnì„ ì‚­ì œí•œë‹¤. */
     static inline IDE_RC deleteVC(void              *aTrans,
                                   smcTableHeader    *aHeader,
                                   const smiColumn   *aColumn,
@@ -342,13 +342,13 @@ private:
 }; 
 
 /***********************************************************************
- * Description : MVCC·Î DML(Insert, Delete, Update) ·Î±×¿¡¼­ Variable Column¿¡´ëÇÑ
- *               LogÀÇ Log Size¸¦ ±¸ÇÑ´Ù. Variable Log´Â ´ÙÀ½°ú °°ÀÌ ±¸¼ºµÈ´Ù.
+ * Description : MVCCë¡œ DML(Insert, Delete, Update) ë¡œê·¸ì—ì„œ Variable Columnì—ëŒ€í•œ
+ *               Logì˜ Log Sizeë¥¼ êµ¬í•œë‹¤. Variable LogëŠ” ë‹¤ìŒê³¼ ê°™ì´ êµ¬ì„±ëœë‹¤.
  *
- *  °¢°¢ÀÇ variable Column¿¡ ´ëÇØ¼­ 
+ *  ê°ê°ì˜ variable Columnì— ëŒ€í•´ì„œ 
  *  Var Log : Column ID(UInt) | LENGTH(UInt) | Value | OID(1) OID(2) ... OID(n)
  *
- *  aLength - [IN] Variable Column ±æÀÌ
+ *  aLength - [IN] Variable Column ê¸¸ì´
  *
  ***********************************************************************/
 inline UInt smcRecord::getVCAMLogSize(UInt aLength)
@@ -361,14 +361,14 @@ inline UInt smcRecord::getVCAMLogSize(UInt aLength)
 }
 
 /***********************************************************************
- * Description : MVCC·Î DML(Insert, Delete, Update) ·Î±×¿¡¼­ Variable Column¿¡´ëÇÑ
- *               LogÀÇ Log Size¸¦ ±¸ÇÑ´Ù. Variable Log´Â ´ÙÀ½°ú °°ÀÌ ±¸¼ºµÈ´Ù.
+ * Description : MVCCë¡œ DML(Insert, Delete, Update) ë¡œê·¸ì—ì„œ Variable Columnì—ëŒ€í•œ
+ *               Logì˜ Log Sizeë¥¼ êµ¬í•œë‹¤. Variable LogëŠ” ë‹¤ìŒê³¼ ê°™ì´ êµ¬ì„±ëœë‹¤.
  *
- *  °¢°¢ÀÇ variable Column¿¡ ´ëÇØ¼­ 
+ *  ê°ê°ì˜ variable Columnì— ëŒ€í•´ì„œ 
  *  Var Log Header : Column ID(UInt) | LENGTH(UInt) 
  *  Body: Value
  *
- *  aLength - [IN] Variable Column ±æÀÌ
+ *  aLength - [IN] Variable Column ê¸¸ì´
  *
  ***********************************************************************/
 inline UInt smcRecord::getVCBMLogSize(UInt aLength)
@@ -377,16 +377,16 @@ inline UInt smcRecord::getVCBMLogSize(UInt aLength)
 }
 
 /***********************************************************************
- * Description : MVCC·Î DML(Insert, Delete, Update) ·Î±×¿¡¼­ Fixed Column¿¡´ëÇÑ
- *               LogÀÇ Log Size¸¦ ±¸ÇÑ´Ù. Fixed Column Log´Â ´ÙÀ½°ú °°ÀÌ ±¸¼ºµÈ´Ù.
- *               MVCCÀÇ Update Version½Ã UpdateµÇ´Â Fixed ColumnÀÇ Before Image°¡
- *               ´ÙÀ½°ú °°ÀÌ ±â·ÏµÈ´Ù.
+ * Description : MVCCë¡œ DML(Insert, Delete, Update) ë¡œê·¸ì—ì„œ Fixed Columnì—ëŒ€í•œ
+ *               Logì˜ Log Sizeë¥¼ êµ¬í•œë‹¤. Fixed Column LogëŠ” ë‹¤ìŒê³¼ ê°™ì´ êµ¬ì„±ëœë‹¤.
+ *               MVCCì˜ Update Versionì‹œ Updateë˜ëŠ” Fixed Columnì˜ Before Imageê°€
+ *               ë‹¤ìŒê³¼ ê°™ì´ ê¸°ë¡ëœë‹¤.
  *
- *  °¢°¢ÀÇ variable Column¿¡ ´ëÇØ¼­ 
+ *  ê°ê°ì˜ variable Columnì— ëŒ€í•´ì„œ 
  *  Var Log Header : Column ID(UInt) | LENGTH(UInt) 
  *  Body: Value
  *
- *  aLength - [IN] Fixed Column ±æÀÌ
+ *  aLength - [IN] Fixed Column ê¸¸ì´
  *
  ***********************************************************************/
 inline UInt smcRecord::getFCMVLogSize(UInt aLength)
@@ -395,18 +395,18 @@ inline UInt smcRecord::getFCMVLogSize(UInt aLength)
 }
 
 /***********************************************************************
- * Description : DML(Insert, Delete, Update) ·Î±×¿¡¼­ Fixed Column¿¡´ëÇÑ
- *               LogÀÇ Log Size¸¦ ±¸ÇÑ´Ù. Fixed Column Log´Â ´ÙÀ½°ú °°ÀÌ ±¸¼ºµÈ´Ù.
- *               ÀÌ Fixed Column·Î±×´Â Update Inplace½Ã¿¡¸¸ ±â·ÏµÈ´Ù.
+ * Description : DML(Insert, Delete, Update) ë¡œê·¸ì—ì„œ Fixed Columnì—ëŒ€í•œ
+ *               Logì˜ Log Sizeë¥¼ êµ¬í•œë‹¤. Fixed Column LogëŠ” ë‹¤ìŒê³¼ ê°™ì´ êµ¬ì„±ëœë‹¤.
+ *               ì´ Fixed Columnë¡œê·¸ëŠ” Update Inplaceì‹œì—ë§Œ ê¸°ë¡ëœë‹¤.
  *
- *  °¢°¢ÀÇ Fixed Column¿¡ ´ëÇØ¼­ 
+ *  ê°ê°ì˜ Fixed Columnì— ëŒ€í•´ì„œ 
  *    Flag   (SChar) : SMP_VCDESC_MODE(2st bit) | SMI_COLUMN_TYPE (1st bit)
  *    Offset (UInt)  : Offset
  *    ID     (UInt)  : Column ID
  *    Length (UInt)  : Column Length
  *  Body: Value
  *
- *  aLength - [IN] Fixed Column ±æÀÌ
+ *  aLength - [IN] Fixed Column ê¸¸ì´
  *
  ***********************************************************************/
 inline UInt smcRecord::getFCUILogSize(UInt aLength)
@@ -416,20 +416,20 @@ inline UInt smcRecord::getFCUILogSize(UInt aLength)
 }
 
 /***********************************************************************
- * Description : DML(Insert, Delete, Update) ·Î±×¿¡¼­ Variable Column¿¡´ëÇÑ
- *               LogÀÇ Log Size¸¦ ±¸ÇÑ´Ù. Variable Log´Â ´ÙÀ½°ú °°ÀÌ ±¸¼ºµÈ´Ù.
+ * Description : DML(Insert, Delete, Update) ë¡œê·¸ì—ì„œ Variable Columnì—ëŒ€í•œ
+ *               Logì˜ Log Sizeë¥¼ êµ¬í•œë‹¤. Variable LogëŠ” ë‹¤ìŒê³¼ ê°™ì´ êµ¬ì„±ëœë‹¤.
  *
- * aIsReplSenderSend - [IN] : Replication Sender°¡ ÀÌ ·Î±×¸¦ ÀĞ¾î¼­
- *                     º¸³½´Ù¸é SMC_LOG_REPL_SENDER_SEND_OKÀÌ°í ¾Æ´Ï¸é
- *                     SMC_LOG_REPL_SENDER_SEND_NO ÀÌ´Ù.
+ * aIsReplSenderSend - [IN] : Replication Senderê°€ ì´ ë¡œê·¸ë¥¼ ì½ì–´ì„œ
+ *                     ë³´ë‚¸ë‹¤ë©´ SMC_LOG_REPL_SENDER_SEND_OKì´ê³  ì•„ë‹ˆë©´
+ *                     SMC_LOG_REPL_SENDER_SEND_NO ì´ë‹¤.
  *
- * aDescFlag - [IN] : Variable ColumnÀÌ ÀúÀåµÇ´Â Mode
+ * aDescFlag - [IN] : Variable Columnì´ ì €ì¥ë˜ëŠ” Mode
  *              In-Mode : SM_VCDESC_MODE_IN
  *              Out-Mode : SM_VCDESC_MODE_OUT
  *
- * aLength - [IN] : Variable ColumnÀÇ ±æÀÌ
+ * aLength - [IN] : Variable Columnì˜ ê¸¸ì´
  *
- * °øÅë Head:
+ * ê³µí†µ Head:
  *    Flag   (SChar) : SMP_VCDESC_MODE(2st bit) | SMI_COLUMN_TYPE (1st bit)
  *    Offset (UInt)  : Offset
  *    ID     (UInt)  : Column ID
@@ -437,18 +437,18 @@ inline UInt smcRecord::getFCUILogSize(UInt aLength)
  * Body
  *    1. SMI_COLUMN_TYPE_VARIABLE | SM_VCDESC_MODE_OUT | REPLICATION
  *       Value  : Variable Column Value
- *       OID    : Variable ColumnÀ» ±¸¼ºÇÏ´Â Ã¹¹øÂ° VC Piece OID
+ *       OID    : Variable Columnì„ êµ¬ì„±í•˜ëŠ” ì²«ë²ˆì§¸ VC Piece OID
  *
  *    2. SMI_COLUMN_TYPE_VARIABLE | SM_VCDESC_MODE_IN | REPLICATION
  *       Value  : Variable Column Value
  *
  *    3. SMI_COLUMN_TYPE_VARIABLE | SM_VCDESC_MODE_OUT
- *       OID : Variable ColumnÀ» ±¸¼ºÇÏ´Â Ã¹¹øÂ° VC Piece OID
+ *       OID : Variable Columnì„ êµ¬ì„±í•˜ëŠ” ì²«ë²ˆì§¸ VC Piece OID
  *
  *    4. SMI_COLUMN_TYPE_VARIABLE | SM_VCDESC_MODE_IN 
  *       Value  : Variable Column Value
 
- *  aLength - [IN] Variable Column ±æÀÌ
+ *  aLength - [IN] Variable Column ê¸¸ì´
  *
  ***********************************************************************/
 inline UInt smcRecord::getVCUILogBMSize(smcLogReplOpt aIsReplSenderSend,
@@ -475,16 +475,16 @@ inline UInt smcRecord::getVCUILogBMSize(smcLogReplOpt aIsReplSenderSend,
 }
 
 /***********************************************************************
- * Description : DML(Insert, Delete, Update) ·Î±×¿¡¼­ Variable Column¿¡´ëÇÑ
- *               LogÀÇ Log Size¸¦ ±¸ÇÑ´Ù. Variable Log´Â ´ÙÀ½°ú °°ÀÌ ±¸¼ºµÈ´Ù.
+ * Description : DML(Insert, Delete, Update) ë¡œê·¸ì—ì„œ Variable Columnì—ëŒ€í•œ
+ *               Logì˜ Log Sizeë¥¼ êµ¬í•œë‹¤. Variable LogëŠ” ë‹¤ìŒê³¼ ê°™ì´ êµ¬ì„±ëœë‹¤.
  *
- * aDescFlag - [IN] : Variable ColumnÀÌ ÀúÀåµÇ´Â Mode
+ * aDescFlag - [IN] : Variable Columnì´ ì €ì¥ë˜ëŠ” Mode
  *              In-Mode : SM_VCDESC_MODE_IN
  *              Out-Mode : SM_VCDESC_MODE_OUT
  *
- * aLength - [IN] : Variable ColumnÀÇ ±æÀÌ
+ * aLength - [IN] : Variable Columnì˜ ê¸¸ì´
  *
- * °øÅë Head:
+ * ê³µí†µ Head:
  *    Flag   (SChar) : SMP_VCDESC_MODE(2st bit) | SMI_COLUMN_TYPE (1st bit)
  *    Offset (UInt)  : Offset
  *    ID     (UInt)  : Column ID
@@ -493,12 +493,12 @@ inline UInt smcRecord::getVCUILogBMSize(smcLogReplOpt aIsReplSenderSend,
  *    1. SMI_COLUMN_TYPE_VARIABLE | SM_VCDESC_MODE_OUT
  *       Value  : Variable Column Value
  *       OID Cnt:
- *       OID µé : Variable ColumnÀ» ±¸¼ºÇÏ´Â VC Piece OIDµé
+ *       OID ë“¤ : Variable Columnì„ êµ¬ì„±í•˜ëŠ” VC Piece OIDë“¤
  *
  *    2. SMI_COLUMN_TYPE_VARIABLE | SM_VCDESC_MODE_IN
  *       Value  : Variable Column Value
  *
- *  aLength - [IN] Variable Column ±æÀÌ
+ *  aLength - [IN] Variable Column ê¸¸ì´
  *
  ***********************************************************************/
 inline UInt smcRecord::getVCUILogAMSize(SInt aStoreMode, UInt aLength)
@@ -518,7 +518,7 @@ inline UInt smcRecord::getVCUILogAMSize(SInt aStoreMode, UInt aLength)
 }
 
 /***********************************************************************
- * Description : aRow¿¡¼­ aColumnÀÌ °¡¸®Å°´Â VCÀÇ VCDesc¸¦ ±¸ÇÑ´Ù.
+ * Description : aRowì—ì„œ aColumnì´ ê°€ë¦¬í‚¤ëŠ” VCì˜ VCDescë¥¼ êµ¬í•œë‹¤.
  *
  * aColumn    - [IN] Column Desc
  * aFixedRow  - [IN] Fixed Row Pointer
@@ -539,7 +539,7 @@ inline smVCDesc* smcRecord::getVCDesc(const smiColumn *aColumn,
 
 
 /***********************************************************************
- * Description : aColumnÀÌ °¡¸®Å°´Â VC°¡ ÀúÀåµÇ´Â Mode¸¦ ReturnÇÑ´Ù.
+ * Description : aColumnì´ ê°€ë¦¬í‚¤ëŠ” VCê°€ ì €ì¥ë˜ëŠ” Modeë¥¼ Returní•œë‹¤.
  *
  * aColumn    - [IN] Column Desc
  * aLength    - [IN] Column Length
@@ -565,9 +565,9 @@ inline SInt smcRecord::getVCStoreMode(const smiColumn *aColumn,
 }
 
 /***********************************************************************
- * Description : Variable ColumnÀÇ Å©±â°¡ aSizeÀÏ °æ¿ì VC Piece°³¼ö¸¦ ±¸ÇÑ´Ù.
+ * Description : Variable Columnì˜ í¬ê¸°ê°€ aSizeì¼ ê²½ìš° VC Pieceê°œìˆ˜ë¥¼ êµ¬í•œë‹¤.
  *
- * aSize    - [IN] Variable Column Å©±â
+ * aSize    - [IN] Variable Column í¬ê¸°
  ***********************************************************************/
 inline UInt smcRecord::getVCPieceCount(UInt aSize)
 {
@@ -577,7 +577,7 @@ inline UInt smcRecord::getVCPieceCount(UInt aSize)
 }
 
 /***********************************************************************
- * Description : aRowÀÇ aColumnÀÌ °¡¸®Å°´Â Variable ColumnÀ» Áö¿î´Ù.
+ * Description : aRowì˜ aColumnì´ ê°€ë¦¬í‚¤ëŠ” Variable Columnì„ ì§€ìš´ë‹¤.
  *
  * aTrans    - [IN] Transaction Pointer
  * aHeader   - [IN] Table Header
@@ -596,7 +596,7 @@ inline IDE_RC smcRecord::deleteVC(void              *aTrans,
 
     sVCDesc = getVCDesc(aColumn, aRow);
     
-    /* InMode ´Â »èÁ¦ÇÒ VC °¡ ¾ø´Ù */
+    /* InMode ëŠ” ì‚­ì œí•  VC ê°€ ì—†ë‹¤ */
     IDE_TEST_CONT( SM_VCDESC_IS_MODE_IN( sVCDesc ), SKIP );
     IDE_TEST( deleteVC( aTrans,
                         aHeader,
@@ -614,10 +614,10 @@ inline IDE_RC smcRecord::deleteVC(void              *aTrans,
 }
 
 /***********************************************************************
- * Description : aRowPtrÀÌ °¡¸®Å°´Â Row¿¡¼­ aColumn¿¡ ÇØ´çÇÏ´Â
- *               ColumnÀ» °¡Á®¿Â´Ù.
+ * Description : aRowPtrì´ ê°€ë¦¬í‚¤ëŠ” Rowì—ì„œ aColumnì— í•´ë‹¹í•˜ëŠ”
+ *               Columnì„ ê°€ì ¸ì˜¨ë‹¤.
  *      
- * aColumn - [IN] ColumnÁ¤º¸.
+ * aColumn - [IN] Columnì •ë³´.
  * aRowPtr - [IN] Row Pointer
  ***********************************************************************/
 inline SChar* smcRecord::getColumnPtr(const smiColumn *aColumn,
@@ -627,10 +627,10 @@ inline SChar* smcRecord::getColumnPtr(const smiColumn *aColumn,
 }
 
 /***********************************************************************
- * Description : aRowPtrÀÌ °¡¸®Å°´Â Row¿¡¼­ aColumn¿¡ ÇØ´çÇÏ´Â
- *               LOB ColumnÀÇ Desc¸¦ ±¸ÇÑ´Ù.
+ * Description : aRowPtrì´ ê°€ë¦¬í‚¤ëŠ” Rowì—ì„œ aColumnì— í•´ë‹¹í•˜ëŠ”
+ *               LOB Columnì˜ Descë¥¼ êµ¬í•œë‹¤.
  *      
- * aColumn - [IN] ColumnÁ¤º¸.
+ * aColumn - [IN] Columnì •ë³´.
  * aRowPtr - [IN] Row Pointer
  ***********************************************************************/
 smcLobDesc* smcRecord::getLOBDesc(const smiColumn *aColumn,

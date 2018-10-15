@@ -25,7 +25,7 @@
 #include <mtdTypes.h>
 
 //-----------------------------------------
-// LNNVL ¿¬»êÀÚÀÇ ÀÌ¸§¿¡ ´ëÇÑ Á¤º¸
+// LNNVL ì—°ì‚°ìžì˜ ì´ë¦„ì— ëŒ€í•œ ì •ë³´
 //-----------------------------------------
 
 static mtcName mtfFunctionName[1] = {
@@ -33,7 +33,7 @@ static mtcName mtfFunctionName[1] = {
 };
 
 //-----------------------------------------
-// LNNVL ¿¬»êÀÚÀÇ Module ¿¡ ´ëÇÑ Á¤º¸
+// LNNVL ì—°ì‚°ìžì˜ Module ì— ëŒ€í•œ ì •ë³´
 //-----------------------------------------
 
 static IDE_RC mtfEstimate( mtcNode*     aNode,
@@ -43,20 +43,20 @@ static IDE_RC mtfEstimate( mtcNode*     aNode,
                            mtcCallBack* aCallBack );
 
 mtfModule mtfLnnvl = {
-    1|                                // ÇÏ³ªÀÇ Column °ø°£
+    1|                                // í•˜ë‚˜ì˜ Column ê³µê°„
     MTC_NODE_OPERATOR_FUNCTION|MTC_NODE_COMPARISON_TRUE|MTC_NODE_EAT_NULL_TRUE|
-    MTC_NODE_PRINT_FMT_PREFIX_PA,     // Ãâ·Â format
-    ~(MTC_NODE_INDEX_MASK),           // Indexable Mask : Index »ç¿ë ºÒ°¡
+    MTC_NODE_PRINT_FMT_PREFIX_PA,     // ì¶œë ¥ format
+    ~(MTC_NODE_INDEX_MASK),           // Indexable Mask : Index ì‚¬ìš© ë¶ˆê°€
     1.0 / 2.0,                        // default selectivity
-    mtfFunctionName,                  // ÀÌ¸§ Á¤º¸
-    NULL,                             // Counter ¿¬»êÀÚ ¾øÀ½
-    mtf::initializeDefault,           // ¼­¹ö ±¸µ¿½Ã ÃÊ±âÈ­ ÇÔ¼ö, ¾øÀ½
-    mtf::finalizeDefault,             // ¼­¹ö Á¾·á½Ã Á¾·á ÇÔ¼ö, ¾øÀ½
-    mtfEstimate                       // Estimate ÇÒ ÇÔ¼ö
+    mtfFunctionName,                  // ì´ë¦„ ì •ë³´
+    NULL,                             // Counter ì—°ì‚°ìž ì—†ìŒ
+    mtf::initializeDefault,           // ì„œë²„ êµ¬ë™ì‹œ ì´ˆê¸°í™” í•¨ìˆ˜, ì—†ìŒ
+    mtf::finalizeDefault,             // ì„œë²„ ì¢…ë£Œì‹œ ì¢…ë£Œ í•¨ìˆ˜, ì—†ìŒ
+    mtfEstimate                       // Estimate í•  í•¨ìˆ˜
 };
 
 //-----------------------------------------
-// Assign ¿¬»êÀÚÀÇ ¼öÇà ÇÔ¼öÀÇ Á¤ÀÇ
+// Assign ì—°ì‚°ìžì˜ ìˆ˜í–‰ í•¨ìˆ˜ì˜ ì •ì˜
 //-----------------------------------------
 
 IDE_RC mtfLnnvlCalculate( mtcNode*     aNode,
@@ -66,14 +66,14 @@ IDE_RC mtfLnnvlCalculate( mtcNode*     aNode,
                           mtcTemplate* aTemplate );
 
 static const mtcExecute mtfExecute = {
-    mtf::calculateNA,     // Aggregation ÃÊ±âÈ­ ÇÔ¼ö, ¾øÀ½
-    mtf::calculateNA,     // Aggregation ¼öÇà ÇÔ¼ö, ¾øÀ½
+    mtf::calculateNA,     // Aggregation ì´ˆê¸°í™” í•¨ìˆ˜, ì—†ìŒ
+    mtf::calculateNA,     // Aggregation ìˆ˜í–‰ í•¨ìˆ˜, ì—†ìŒ
     mtf::calculateNA,
-    mtf::calculateNA,     // Aggregation Á¾·á ÇÔ¼ö, ¾øÀ½
-    mtfLnnvlCalculate,    // LNNVL ¿¬»êÀ» À§ÇÑ ÇÔ¼ö
-    NULL,                 // ¿¬»êÀ» À§ÇÑ ºÎ°¡ Á¤º¸, ¾øÀ½
-    mtk::estimateRangeNA, // Key Range Å©±â ÃßÃâ ÇÔ¼ö, ¾øÀ½ 
-    mtk::extractRangeNA   // Key Range »ý¼º ÇÔ¼ö, ¾øÀ½
+    mtf::calculateNA,     // Aggregation ì¢…ë£Œ í•¨ìˆ˜, ì—†ìŒ
+    mtfLnnvlCalculate,    // LNNVL ì—°ì‚°ì„ ìœ„í•œ í•¨ìˆ˜
+    NULL,                 // ì—°ì‚°ì„ ìœ„í•œ ë¶€ê°€ ì •ë³´, ì—†ìŒ
+    mtk::estimateRangeNA, // Key Range í¬ê¸° ì¶”ì¶œ í•¨ìˆ˜, ì—†ìŒ 
+    mtk::extractRangeNA   // Key Range ìƒì„± í•¨ìˆ˜, ì—†ìŒ
 };
 
 IDE_RC mtfEstimate( mtcNode*     aNode,
@@ -85,13 +85,13 @@ IDE_RC mtfEstimate( mtcNode*     aNode,
 /***********************************************************************
  *
  * Description :
- *    LNNVL ¿¬»êÀÚ¿¡ ´ëÇÏ¿© Estimate ¸¦ ¼öÇàÇÔ.
- *    LNNVL Node¿¡ ´ëÇÑ Column Á¤º¸ ¹× Execute Á¤º¸¸¦ SettingÇÑ´Ù.
+ *    LNNVL ì—°ì‚°ìžì— ëŒ€í•˜ì—¬ Estimate ë¥¼ ìˆ˜í–‰í•¨.
+ *    LNNVL Nodeì— ëŒ€í•œ Column ì •ë³´ ë° Execute ì •ë³´ë¥¼ Settingí•œë‹¤.
  *
  * Implementation :
  *
- *    LNNVL NodeÀÇ ColumnÁ¤º¸¸¦ Boolean TypeÀ¸·Î ¼³Á¤ÇÏ°í,
- *    LNNVL NodeÀÇ Execute Á¤º¸¸¦ SettingÇÔ
+ *    LNNVL Nodeì˜ Columnì •ë³´ë¥¼ Boolean Typeìœ¼ë¡œ ì„¤ì •í•˜ê³ ,
+ *    LNNVL Nodeì˜ Execute ì •ë³´ë¥¼ Settingí•¨
  ***********************************************************************/
 
     extern mtdModule mtdBoolean;
@@ -104,23 +104,23 @@ IDE_RC mtfEstimate( mtcNode*     aNode,
                     MTC_NODE_QUANTIFIER_TRUE,
                     ERR_NOT_AGGREGATION );
 
-    // Argument°¡ ÇÏ³ªÀÎÁö¸¦ °Ë»ç
+    // Argumentê°€ í•˜ë‚˜ì¸ì§€ë¥¼ ê²€ì‚¬
     IDE_TEST_RAISE( ( aNode->lflag & MTC_NODE_ARGUMENT_COUNT_MASK ) != 1,
                     ERR_INVALID_FUNCTION_ARGUMENT );
 
-    // Argument°¡ (³í¸®, ºñ±³) ¿¬»êÀÚÀÎÁö °Ë»ç
+    // Argumentê°€ (ë…¼ë¦¬, ë¹„êµ) ì—°ì‚°ìžì¸ì§€ ê²€ì‚¬
     sNode  = aNode->arguments;
 
-    // LNNVLÀÇ argument´Â LNNVL ¶Ç´Â ºñ±³¿¬»êÀÚ¸¸ °¡´É(AND, OR µî ºÒ°¡)
+    // LNNVLì˜ argumentëŠ” LNNVL ë˜ëŠ” ë¹„êµì—°ì‚°ìžë§Œ ê°€ëŠ¥(AND, OR ë“± ë¶ˆê°€)
     IDE_TEST_RAISE( ( sNode->lflag & MTC_NODE_COMPARISON_MASK ) != MTC_NODE_COMPARISON_TRUE,
                     ERR_CONVERSION_NOT_APPLICABLE );
 
     sNode->lflag &= ~(MTC_NODE_INDEX_MASK);
 
-    // NodeÀÇ Execute¸¦ ¼³Á¤
+    // Nodeì˜ Executeë¥¼ ì„¤ì •
     aTemplate->rows[aNode->table].execute[aNode->column] = mtfExecute;
 
-    // NodeÀÇ Column Á¤º¸¸¦ BooleanÀ¸·Î ¼³Á¤
+    // Nodeì˜ Column ì •ë³´ë¥¼ Booleanìœ¼ë¡œ ì„¤ì •
     /*
     IDE_TEST( mtdBoolean.estimate( aStack[0].column, 0, 0, 0 )
               != IDE_SUCCESS );
@@ -158,12 +158,12 @@ IDE_RC mtfLnnvlCalculate( mtcNode*     aNode,
  *
  * Description :
  *
- *    LNNVL ¿¬»êÀ» ¼öÇàÇÔ.
+ *    LNNVL ì—°ì‚°ì„ ìˆ˜í–‰í•¨.
  *
- *    LNNVL°ú ÀÏ¹Ý ³í¸® ¿¬»êÀÚÀÎ NOT°ú´Â ¹Ì¹¦ÇÑ Â÷ÀÌ°¡ ÀÖ´Ù.
+ *    LNNVLê³¼ ì¼ë°˜ ë…¼ë¦¬ ì—°ì‚°ìžì¸ NOTê³¼ëŠ” ë¯¸ë¬˜í•œ ì°¨ì´ê°€ ìžˆë‹¤.
  *
- *    NOTÀÇ Æ¯Â¡ÀÌ ´ÙÀ½°ú °°Àº ³í¸® Matrix¸¦ °®´Â ¹Ý¸é, LNNVLÀº Unknown
- *    ¿¡ ´ëÇÑ Ã³¸®°¡ NOT°ú ´Ù¸£´Ù.
+ *    NOTì˜ íŠ¹ì§•ì´ ë‹¤ìŒê³¼ ê°™ì€ ë…¼ë¦¬ Matrixë¥¼ ê°–ëŠ” ë°˜ë©´, LNNVLì€ Unknown
+ *    ì— ëŒ€í•œ ì²˜ë¦¬ê°€ NOTê³¼ ë‹¤ë¥´ë‹¤.
  *
  *    ----------------------------------------------------------
  *          A         |    NOT ( A )       |   LNNVL ( A )
@@ -175,35 +175,35 @@ IDE_RC mtfLnnvlCalculate( mtcNode*     aNode,
  *         UNKNOWN    |    UNKNOWN         |   TRUE
  *    ----------------------------------------------------------
  *
- *    À§ÀÇ Matrix¿¡¼­ º¸µíÀÌ, LNNVLÀº UNKNOWN¿¡ ´ëÇÑ Ã³¸®°¡ ´Ù¸£´Ù.
- *    ÀÌ´Â LNNVLÀÇ ¸ñÀûÀÌ NOT°ú ´Þ¸® Áßº¹ Data¸¦ Á¦°ÅÇÏ±â À§ÇÔÀÌ±â
- *    ¶§¹®ÀÌ´Ù.
- *    ¿¹¸¦ µé¾î, ´ÙÀ½°ú °°Àº ³í¸®½ÄÀÌ ÀÖ´Ù°í ÇÏÀÚ.
+ *    ìœ„ì˜ Matrixì—ì„œ ë³´ë“¯ì´, LNNVLì€ UNKNOWNì— ëŒ€í•œ ì²˜ë¦¬ê°€ ë‹¤ë¥´ë‹¤.
+ *    ì´ëŠ” LNNVLì˜ ëª©ì ì´ NOTê³¼ ë‹¬ë¦¬ ì¤‘ë³µ Dataë¥¼ ì œê±°í•˜ê¸° ìœ„í•¨ì´ê¸°
+ *    ë•Œë¬¸ì´ë‹¤.
+ *    ì˜ˆë¥¼ ë“¤ì–´, ë‹¤ìŒê³¼ ê°™ì€ ë…¼ë¦¬ì‹ì´ ìžˆë‹¤ê³  í•˜ìž.
  *        Ex)    A OR B
  *        ==>    [A] concatenation [B AND LNNVL(A)]
- *    [A OR B]´Â DNF·Î Ã³¸® ½Ã LNNVLÀ» ÀÌ¿ëÇÑ º¯È¯ÀÌ ÀÌ·ç¾îÁø´Ù.
- *    ¸ÕÀú, [A] ºÎºÐ¿¡¼­´Â [A]ÀÇ °á°ú°¡ TRUEÀÎ °á°ú¸¸ »ý¼ºµÇ°í,
- *    FALSE¹× UNKNOWNÀÎ °á°ú´Â »ý¼ºµÇÁö ¾Ê´Â´Ù.
- *    [B] ºÎºÐ¿¡¼­´Â [B]°¡ TRUEÀÎ °á°ú Áß¿¡¼­ [A]¿¡ Æ÷ÇÔµÈ °á°ú¸¦
- *    Á¦°ÅÇØ¾ß ÇÑ´Ù.  Áï, [LNNVL(A)]¿¡¼­´Â [A]¿¡¼­ ¼±ÅÃµÈ °á°úµéÀ»
- *    Á¦°ÅÇÏ·Á¸é, (A)ÀÇ °á°ú°¡ TRUEÀÎ °Í¸¸À» Á¦°ÅÇÏ¿©¾ß ÇÑ´Ù.
- *    Áï, (A)ÀÇ °á°ú°¡ FALSEÀÌ°Å³ª UNKNOWNÀÎ °á°ú¸¦ Æ÷ÇÔÇÏ¿©¾ß ÇÑ´Ù.
+ *    [A OR B]ëŠ” DNFë¡œ ì²˜ë¦¬ ì‹œ LNNVLì„ ì´ìš©í•œ ë³€í™˜ì´ ì´ë£¨ì–´ì§„ë‹¤.
+ *    ë¨¼ì €, [A] ë¶€ë¶„ì—ì„œëŠ” [A]ì˜ ê²°ê³¼ê°€ TRUEì¸ ê²°ê³¼ë§Œ ìƒì„±ë˜ê³ ,
+ *    FALSEë° UNKNOWNì¸ ê²°ê³¼ëŠ” ìƒì„±ë˜ì§€ ì•ŠëŠ”ë‹¤.
+ *    [B] ë¶€ë¶„ì—ì„œëŠ” [B]ê°€ TRUEì¸ ê²°ê³¼ ì¤‘ì—ì„œ [A]ì— í¬í•¨ëœ ê²°ê³¼ë¥¼
+ *    ì œê±°í•´ì•¼ í•œë‹¤.  ì¦‰, [LNNVL(A)]ì—ì„œëŠ” [A]ì—ì„œ ì„ íƒëœ ê²°ê³¼ë“¤ì„
+ *    ì œê±°í•˜ë ¤ë©´, (A)ì˜ ê²°ê³¼ê°€ TRUEì¸ ê²ƒë§Œì„ ì œê±°í•˜ì—¬ì•¼ í•œë‹¤.
+ *    ì¦‰, (A)ì˜ ê²°ê³¼ê°€ FALSEì´ê±°ë‚˜ UNKNOWNì¸ ê²°ê³¼ë¥¼ í¬í•¨í•˜ì—¬ì•¼ í•œë‹¤.
  *
  * Implementation :
  *
- *    Argument¸¦ ¼öÇàÇÏ°í, ArgumentÀÇ ³í¸®°ª¿¡ µû¶ó
- *    Matrix¿¡ ÀÇ°ÅÇÑ °ªÀ» ¼³Á¤ÇÑ´Ù.
+ *    Argumentë¥¼ ìˆ˜í–‰í•˜ê³ , Argumentì˜ ë…¼ë¦¬ê°’ì— ë”°ë¼
+ *    Matrixì— ì˜ê±°í•œ ê°’ì„ ì„¤ì •í•œë‹¤.
  *
  ***********************************************************************/
 
-    // LNNVL ³í¸®½Ä Matrix
+    // LNNVL ë…¼ë¦¬ì‹ Matrix
     static const mtdBooleanType sMatrix[3] = {
-        MTD_BOOLEAN_FALSE,   // TRUEÀÎ °æ¿ì, FALSE¸¦ ¼³Á¤
-        MTD_BOOLEAN_TRUE,    // FALSEÀÎ °æ¿ì, TRUE¸¦ ¼³Á¤
-        MTD_BOOLEAN_TRUE     // UNKNOWNÀÎ °æ¿ì, TRUE¸¦ ¼³Á¤
+        MTD_BOOLEAN_FALSE,   // TRUEì¸ ê²½ìš°, FALSEë¥¼ ì„¤ì •
+        MTD_BOOLEAN_TRUE,    // FALSEì¸ ê²½ìš°, TRUEë¥¼ ì„¤ì •
+        MTD_BOOLEAN_TRUE     // UNKNOWNì¸ ê²½ìš°, TRUEë¥¼ ì„¤ì •
     };
 
-    // Argument¸¦ ¼öÇà
+    // Argumentë¥¼ ìˆ˜í–‰
     IDE_TEST( mtf::postfixCalculate( aNode,
                                      aStack,
                                      aRemain,
@@ -211,7 +211,7 @@ IDE_RC mtfLnnvlCalculate( mtcNode*     aNode,
                                      aTemplate )
               != IDE_SUCCESS );
 
-    // ArgumentÀÇ °ª°ú Matrix¸¦ ÀÌ¿ëÇÏ¿© LNNVLÀÇ °ªÀ» °áÁ¤
+    // Argumentì˜ ê°’ê³¼ Matrixë¥¼ ì´ìš©í•˜ì—¬ LNNVLì˜ ê°’ì„ ê²°ì •
     *(mtdBooleanType*)aStack[0].value =
                                     sMatrix[*(mtdBooleanType*)aStack[1].value];
     

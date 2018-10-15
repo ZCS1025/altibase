@@ -41,41 +41,41 @@
 
 typedef struct sdsDiscardPageObj
 {
-    /* discard Á¶°Ç °Ë»ç ÇÔ¼ö */
+    /* discard ì¡°ê±´ ê²€ì‚¬ í•¨ìˆ˜ */
     sdsFiltFunc              mFilter;
-    /* Åë°èÁ¤º¸ */
+    /* í†µê³„ì •ë³´ */
     idvSQL                  *mStatistics;
-    /* mFilter¼öÇà¿¡ ÇÊ¿äÇÑ È¯°æ */
+    /* mFilterìˆ˜í–‰ì— í•„ìš”í•œ í™˜ê²½ */
     void                    *mEnv;
 }sdsDiscardPageObj;
 
 typedef struct sdsPageOutObj
 {
-    /* page out Á¶°Ç °Ë»ç ÇÔ¼ö */
+    /* page out ì¡°ê±´ ê²€ì‚¬ í•¨ìˆ˜ */
     sdsFiltFunc              mFilter;
-    /* mFilter¼öÇà¿¡ ÇÊ¿äÇÑ È¯°æ */
+    /* mFilterìˆ˜í–‰ì— í•„ìš”í•œ í™˜ê²½ */
     void                    *mEnv;
-    /* flush¸¦ ÇØ¾ßÇÏ´Â BCBµéÀ» ¸ğ¾ÆµĞ Å¥ */
+    /* flushë¥¼ í•´ì•¼í•˜ëŠ” BCBë“¤ì„ ëª¨ì•„ë‘” í */
     smuQueueMgr              mQueueForFlush;
-    /* make free¸¦ ÇØ¾ßÇÏ´Â BCBµéÀ» ¸ğ¾ÆµĞ Å¥ */
+    /* make freeë¥¼ í•´ì•¼í•˜ëŠ” BCBë“¤ì„ ëª¨ì•„ë‘” í */
     smuQueueMgr              mQueueForMakeFree;
 }sdsPageOutObj;
 
 typedef struct sdsFlushObj
 {
-    /* flush Á¶°Ç °Ë»ç ÇÔ¼ö */
+    /* flush ì¡°ê±´ ê²€ì‚¬ í•¨ìˆ˜ */
     sdsFiltFunc              mFilter;
-    /* mFilter¼öÇà¿¡ ÇÊ¿äÇÑ È¯°æ */
+    /* mFilterìˆ˜í–‰ì— í•„ìš”í•œ í™˜ê²½ */
     void                    *mEnv;
-    /* BCB¸¦ ¸ğ¾ÆµÎ´Â Å¥ */
+    /* BCBë¥¼ ëª¨ì•„ë‘ëŠ” í */
     smuQueueMgr              mQueue;
 }sdsFlushObj;
 
 typedef struct sdsBCBRange
 {
-    // mSpaceID¿¡ ¼ÓÇÏ¸é¼­
-    // mStartPID º¸´Ù Å©°Å³ª °°°í,
-    // mEndPIDº¸´Ù ÀÛ°Å³ª °°Àº ¸ğµç pid¸¦ ¹üÀ§¿¡ ¼ÓÇÏµµ·ÏÇÑ´Ù.
+    // mSpaceIDì— ì†í•˜ë©´ì„œ
+    // mStartPID ë³´ë‹¤ í¬ê±°ë‚˜ ê°™ê³ ,
+    // mEndPIDë³´ë‹¤ ì‘ê±°ë‚˜ ê°™ì€ ëª¨ë“  pidë¥¼ ë²”ìœ„ì— ì†í•˜ë„ë¡í•œë‹¤.
     scSpaceID   mSpaceID;
     scPageID    mStartPID;
     scPageID    mEndPID;
@@ -216,14 +216,14 @@ public:
     static IDE_RC removeBCB( idvSQL     * aStatistics,
                              sdsBCB     * aSBCB );
 
-    /* ¼­ºñ½º »óÅÂ¸¦ ¼³Á¤/¾ò¾î¿À±â À§ÇÑ ÇÔ¼ö */
+    /* ì„œë¹„ìŠ¤ ìƒíƒœë¥¼ ì„¤ì •/ì–»ì–´ì˜¤ê¸° ìœ„í•œ í•¨ìˆ˜ */
     static inline idBool isIdentifiable( void );
     static inline idBool isServiceable( void );
     static inline void setUnserviceable( void );
     static inline void setServiceable( void );
     static inline void setIdentifiable( void );
 
-    /* Åë°èÁ¤º¸¸¦ À§ÇÑ ÇÔ¼ö */
+    /* í†µê³„ì •ë³´ë¥¼ ìœ„í•œ í•¨ìˆ˜ */
     static inline void applyGetPages( void );
     static inline void applyVictimWaits( void );
     static inline UInt getPageSize( void );
@@ -272,12 +272,12 @@ private:
     static UInt                 mPageSize;
 
     static UInt                 mFrameCntInExtent;  
-    /* Secondary Buffer°¡ »ç¿ë°¡´ÉÇÑ°¡ */
+    /* Secondary Bufferê°€ ì‚¬ìš©ê°€ëŠ¥í•œê°€ */
     static sdsSBufferServieStage mServiceStage;
     /* cache type */
     static UInt                 mCacheType;
 
-    /* sdbCPListSetÀ» µû·Î °¡Áø´Ù. */
+    /* sdbCPListSetì„ ë”°ë¡œ ê°€ì§„ë‹¤. */
     static sdbCPListSet         mCPListSet;
 
     static sdbBCBHash           mHashTable;
@@ -287,7 +287,7 @@ private:
     static sdsFile              mSBufferFile;
 
     static sdsMeta              mMeta;
-    /* Buffer Pool °ü·Ã Åë°èÁ¤º¸ */
+    /* Buffer Pool ê´€ë ¨ í†µê³„ì •ë³´ */
     static sdsBufferMgrStat     mStatistics;
 };
 
@@ -365,7 +365,7 @@ void sdsBufferMgr::setIdentifiable()
     mServiceStage = SDS_IDENTIFIABLE;    
 
 }
-/* Åë°èÁ¤º¸¸¦ À§ÇÑ ÇÔ¼ö */
+/* í†µê³„ì •ë³´ë¥¼ ìœ„í•œ í•¨ìˆ˜ */
 void sdsBufferMgr::applyGetPages()
 {
     mStatistics.applyGetPages(); 
@@ -390,7 +390,7 @@ UInt sdsBufferMgr::getIOBSize()
  * Description : 
    aSpaceID   - [IN] : SpaceID
    aPageID    - [IN] : PageID
-   aSBCB      - [OUT]: ÇØ½¬¿¡¼­ °Ë»öµÈ Secondary Buffer BCB
+   aSBCB      - [OUT]: í•´ì‰¬ì—ì„œ ê²€ìƒ‰ëœ Secondary Buffer BCB
  ****************************************************************/
 IDE_RC sdsBufferMgr::findBCB( idvSQL     * aStatistics,
                               scSpaceID    aSpaceID, 
@@ -427,9 +427,9 @@ IDE_RC sdsBufferMgr::findBCB( idvSQL     * aStatistics,
 }
 
 /****************************************************************
- * Description:BCB ¸¦ free »óÅÂ·Î ¸¸µç´Ù. 
- *  flush´Â ÇØ¾ß ÇÏ¹Ç·Î Dirty´Â º¯°æÇÏÁö ¾ÊÀ½.
- *  aSBCB        [IN] : free »óÅÂ·Î ¹Ù²Ü BCB
+ * Description:BCB ë¥¼ free ìƒíƒœë¡œ ë§Œë“ ë‹¤. 
+ *  flushëŠ” í•´ì•¼ í•˜ë¯€ë¡œ DirtyëŠ” ë³€ê²½í•˜ì§€ ì•ŠìŒ.
+ *  aSBCB        [IN] : free ìƒíƒœë¡œ ë°”ê¿€ BCB
  ****************************************************************/
 IDE_RC sdsBufferMgr::pageOutBCB( idvSQL     * aStatistics,
                                  sdsBCB     * aSBCB )
@@ -451,7 +451,7 @@ IDE_RC sdsBufferMgr::pageOutBCB( idvSQL     * aStatistics,
     aSBCB->lockBCBMutex( aStatistics );
     sState = 2;
 
-    /* ³Ñ°Ü¹ŞÀº BCB¿Í lock ÀâÀº BCB°¡ °°¾Æ¾ß ÇÑ´Ù. */
+    /* ë„˜ê²¨ë°›ì€ BCBì™€ lock ì¡ì€ BCBê°€ ê°™ì•„ì•¼ í•œë‹¤. */
     IDE_TEST_CONT( (( sSpaceID != aSBCB->mSpaceID ) ||
                     ( sPageID  != aSBCB->mPageID ) ) ,
                    SKIP_SUCCESS );
@@ -469,7 +469,7 @@ IDE_RC sdsBufferMgr::pageOutBCB( idvSQL     * aStatistics,
             break;  
 
         case SDS_SBCB_DIRTY:
-            /* Secondary Buffer Flusher°¡ pageOut¼öÇà */ 
+            /* Secondary Buffer Flusherê°€ pageOutìˆ˜í–‰ */ 
             break;
 
         case SDS_SBCB_OLD:
@@ -561,7 +561,7 @@ ULong sdsBufferMgr::getTableOffset ( UInt aSeq )
 }
 
 /****************************************************************
- * Description : Secondary Flusher °¡ flush ÇØ¾ßÇÒ Extent°¡ ÀÖ´ÂÁö È®ÀÎ 
+ * Description : Secondary Flusher ê°€ flush í•´ì•¼í•  Extentê°€ ìˆëŠ”ì§€ í™•ì¸ 
  ****************************************************************/
 idBool sdsBufferMgr::getTargetFlushExtentIndex( UInt *aExtIndex )
 {
@@ -644,8 +644,8 @@ IDE_RC sdsBufferMgr::syncAllSB( idvSQL * aStatistics )
 
 /****************************************************************
  * Description :  
- *  aResetLogsLSN  [IN] - ºÒ¿ÏÀüº¹±¸½Ã ¼³Á¤µÇ´Â ResetLogsLSN
- *                        ¿ÏÀüº¹±¸ ½Ã¿¡´Â NULL
+ *  aResetLogsLSN  [IN] - ë¶ˆì™„ì „ë³µêµ¬ì‹œ ì„¤ì •ë˜ëŠ” ResetLogsLSN
+ *                        ì™„ì „ë³µêµ¬ ì‹œì—ëŠ” NULL
  ****************************************************************/
 IDE_RC sdsBufferMgr::repairFailureSBufferHdr( idvSQL * aStatistics,
                                               smLSN  * aResetLogsLSN )

@@ -20,10 +20,10 @@
 #ifndef _O_IDU_BRIDGE_TIME_H_
 # define _O_IDU_BRIDGE_TIME_H_ (1)
 
-/* iduTime°´Ã¼¸¦ iduBridge¸¦ ÅëÇØ ¾µ¶§ idvTime´ë½Å »ç¿ëÇÒ °´Ã¼ */
+/* iduTimeê°ì²´ë¥¼ iduBridgeë¥¼ í†µí•´ ì“¸ë•Œ idvTimeëŒ€ì‹  ì‚¬ìš©í•  ê°ì²´ */
 typedef struct iduBridgeTime 
 {
-    /* idvTime Å¸ÀÔÀÇ ÀÎ½ºÅÏ½º°¡ ÀúÀåµÉ °ø°£ */
+    /* idvTime íƒ€ì…ì˜ ì¸ìŠ¤í„´ìŠ¤ê°€ ì €ì¥ë  ê³µê°„ */
     ULong mIdvTime[4]; 
 } iduBridgeTime ;
 

@@ -96,7 +96,7 @@ void mmcTrans::begin(smiTrans *aTrans, idvSQL *aStatistics, UInt aFlag, mmcSessi
 
     if ( aTrans->isBegin() == ID_FALSE )
     {
-        /* session event¿¡ ÀÇÇÑ failÀ» ¹æÁöÇÑ´Ù. */
+        /* session eventì— ì˜í•œ failì„ ë°©ì§€í•œë‹¤. */
         IDU_SESSION_SET_BLOCK(*aSession->getEventFlag());
 
         IDE_ASSERT( aTrans->begin( &sDummySmiStmt, 
@@ -124,7 +124,7 @@ void mmcTrans::begin(smiTrans *aTrans, idvSQL *aStatistics, UInt aFlag, mmcSessi
     //PROJ-1677 DEQUEUE
     aSession->clearPartialRollbackFlag();
 
-    /* BUG-42853 LOCK TABLE¿¡ UNTIL NEXT DDL ±â´É Ãß°¡ */
+    /* BUG-42853 LOCK TABLEì— UNTIL NEXT DDL ê¸°ëŠ¥ ì¶”ê°€ */
     if ( aSession->getLockTableUntilNextDDL() == ID_TRUE )
     {
         aSession->setLockTableUntilNextDDL( ID_FALSE );
@@ -140,14 +140,14 @@ void mmcTrans::begin(smiTrans *aTrans, idvSQL *aStatistics, UInt aFlag, mmcSessi
 }
 
 /**
- * ¼³¸í :
- *   ¼­¹ö»çÀÌµå »þµù°ú °ü·ÃµÈ ÇÔ¼ö.
- *   »ç¿ë °¡´ÉÇÑ XA Æ®·£Àè¼ÇÀ» Ã£´Â´Ù.
+ * ì„¤ëª… :
+ *   ì„œë²„ì‚¬ì´ë“œ ìƒ¤ë”©ê³¼ ê´€ë ¨ëœ í•¨ìˆ˜.
+ *   ì‚¬ìš© ê°€ëŠ¥í•œ XA íŠ¸ëžœìž­ì…˜ì„ ì°¾ëŠ”ë‹¤.
  *
  * @param aXID[OUT]    XA Transaction ID
- * @param aFound[OUT]  ¼º°ø/½ÇÆÐ ÇÃ·¡±×
+ * @param aFound[OUT]  ì„±ê³µ/ì‹¤íŒ¨ í”Œëž˜ê·¸
  * @param aSlotID[OUT] Slot ID
- * @return ¼º°øÇÏ¸é IDE_SUCCESS, ¾Æ´Ï¸é IDE_FAILURE
+ * @return ì„±ê³µí•˜ë©´ IDE_SUCCESS, ì•„ë‹ˆë©´ IDE_FAILURE
  **/
 IDE_RC mmcTrans::findPreparedTrans( ID_XID * aXID,
                                     idBool * aFound,
@@ -204,16 +204,16 @@ IDE_RC mmcTrans::findPreparedTrans( ID_XID * aXID,
 }
 
 /**
- * ¼³¸í :
- *   ¼­¹ö»çÀÌµå »þµù°ú °ü·ÃµÈ ÇÔ¼ö.
- *   Æ®·£ÀèÀÌ sIsReadOnlyÀÌ ¾Æ´Ñ °æ¿ì¿¡, »ç¿ëÇÒ ¼ö ÀÖ´Â 2PC¿ë XA Æ®·£Àè¼ÇÀ»
- *   Ã£¾Æ¼­ XID¸¦ Transaction¿¡ ¼³Á¤ÇÏ°í, ¹ÝÈ¯ÇÑ´Ù.
+ * ì„¤ëª… :
+ *   ì„œë²„ì‚¬ì´ë“œ ìƒ¤ë”©ê³¼ ê´€ë ¨ëœ í•¨ìˆ˜.
+ *   íŠ¸ëžœìž­ì´ sIsReadOnlyì´ ì•„ë‹Œ ê²½ìš°ì—, ì‚¬ìš©í•  ìˆ˜ ìžˆëŠ” 2PCìš© XA íŠ¸ëžœìž­ì…˜ì„
+ *   ì°¾ì•„ì„œ XIDë¥¼ Transactionì— ì„¤ì •í•˜ê³ , ë°˜í™˜í•œë‹¤.
  *
  * @param aTrans[IN]     smiTrans
  * @param aSession[IN]   mmcSession
  * @param aXID[OUT]      XA Transaction ID
- * @param aReadOnly[OUT] Æ®·£Àè¼ÇÀÇ ReadOnly ¼Ó¼º
- * @return ¼º°øÇÏ¸é IDE_SUCCESS, ¾Æ´Ï¸é IDE_FAILURE
+ * @param aReadOnly[OUT] íŠ¸ëžœìž­ì…˜ì˜ ReadOnly ì†ì„±
+ * @return ì„±ê³µí•˜ë©´ IDE_SUCCESS, ì•„ë‹ˆë©´ IDE_FAILURE
  **/
 IDE_RC mmcTrans::prepare( smiTrans   * aTrans,
                           mmcSession * aSession,
@@ -227,7 +227,7 @@ IDE_RC mmcTrans::prepare( smiTrans   * aTrans,
 
     if ( sIsReadOnly == ID_TRUE )
     {
-        /* dblink³ª shard·Î ÀÎÇØ commitÀÌ ÇÊ¿äÇÒ ¼ö ÀÖ´Ù. */
+        /* dblinkë‚˜ shardë¡œ ì¸í•´ commitì´ í•„ìš”í•  ìˆ˜ ìžˆë‹¤. */
         sIsReadOnly = dkiIsReadOnly( aSession->getDatabaseLinkSession() );
     }
     else
@@ -281,7 +281,7 @@ IDE_RC mmcTrans::endPending( ID_XID * aXID,
 
     if ( sFound == ID_TRUE )
     {
-        /* ÇØ´ç ¼¼¼ÇÀÌ »ì¾ÆÀÖ´Â °æ¿ì commit/rollbackÇÒ ¼ö ¾ø´Ù. */
+        /* í•´ë‹¹ ì„¸ì…˜ì´ ì‚´ì•„ìžˆëŠ” ê²½ìš° commit/rollbackí•  ìˆ˜ ì—†ë‹¤. */
         IDE_TEST_RAISE( mmtSessionManager::existSessionByXID( aXID ) == ID_TRUE,
                         ERR_XID_INUSE );
 
@@ -500,8 +500,8 @@ IDE_RC mmcTrans::commitLocal( smiTrans * aTrans,
     smSCN  sCommitSCN;
     idBool sSetBlock = ID_FALSE;
 
-    /* non-autocommit ¸ðµåÀÇ beginµÈ txÀÌ°Å³ª, autocommit ¸ðµåÀÇ txÀÌ°Å³ª,
-       xaÀÇ txÀÌ°Å³ª, prepare txÀÎ °æ¿ì */
+    /* non-autocommit ëª¨ë“œì˜ beginëœ txì´ê±°ë‚˜, autocommit ëª¨ë“œì˜ txì´ê±°ë‚˜,
+       xaì˜ txì´ê±°ë‚˜, prepare txì¸ ê²½ìš° */
     if ( ( aSession->getReleaseTrans() == ID_FALSE ) ||
          ( aSession->getTransBegin() == ID_TRUE ) ||
          ( aSession->getCommitMode() == MMC_COMMITMODE_AUTOCOMMIT ) ||
@@ -537,7 +537,7 @@ IDE_RC mmcTrans::commitLocal( smiTrans * aTrans,
 
         if ( aSession->getTransPrepared() == ID_TRUE )
         {
-            /* global tx¿¡¼­´Â share session¿¡ Á÷Á¢Ä¿¹ÔÇÑ´Ù. */
+            /* global txì—ì„œëŠ” share sessionì— ì§ì ‘ì»¤ë°‹í•œë‹¤. */
             IDE_TEST( aSession->endTransShareSes( ID_TRUE ) != IDE_SUCCESS );
 
             aSession->setTransPrepared(NULL);
@@ -610,8 +610,8 @@ IDE_RC mmcTrans::rollbackLocal( smiTrans * aTrans,
 
     if (aSavePoint == NULL)
     {
-        /* non-autocommit ¸ðµåÀÇ beginµÈ txÀÌ°Å³ª, autocommit ¸ðµåÀÇ txÀÌ°Å³ª,
-           xaÀÇ txÀÌ°Å³ª, prepare txÀÎ °æ¿ì */
+        /* non-autocommit ëª¨ë“œì˜ beginëœ txì´ê±°ë‚˜, autocommit ëª¨ë“œì˜ txì´ê±°ë‚˜,
+           xaì˜ txì´ê±°ë‚˜, prepare txì¸ ê²½ìš° */
         if ( ( aSession->getReleaseTrans() == ID_FALSE ) ||
              ( aSession->getTransBegin() == ID_TRUE ) ||
              ( aSession->getCommitMode() == MMC_COMMITMODE_AUTOCOMMIT ) ||
@@ -663,7 +663,7 @@ IDE_RC mmcTrans::rollbackLocal( smiTrans * aTrans,
 
             if ( aSession->getTransPrepared() == ID_TRUE )
             {
-                /* global tx¿¡¼­´Â share session¿¡ Á÷Á¢Ä¿¹ÔÇÑ´Ù. */
+                /* global txì—ì„œëŠ” share sessionì— ì§ì ‘ì»¤ë°‹í•œë‹¤. */
                 IDE_TEST( aSession->endTransShareSes( ID_FALSE ) != IDE_SUCCESS );
 
                 aSession->setTransPrepared(NULL);

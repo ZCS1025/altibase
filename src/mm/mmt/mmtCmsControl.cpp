@@ -39,7 +39,7 @@ static IDE_RC answerCancelResult(cmiProtocolContext *aProtocolContext)
 
     IDE_EXCEPTION_END;
 
-    /* BUG-44124 ipcda ¸ğµå »ç¿ë Áß hang - iloader ÄÃ·³ÀÌ ¸¹Àº Å×ÀÌºí */
+    /* BUG-44124 ipcda ëª¨ë“œ ì‚¬ìš© ì¤‘ hang - iloader ì»¬ëŸ¼ì´ ë§ì€ í…Œì´ë¸” */
     if( (sWriteCheckState == CMI_WRITE_CHECK_ACTIVATED) && (cmiGetLinkImpl(aProtocolContext) == CMI_LINK_IMPL_IPCDA) )
     {
         IDE_SET(ideSetErrorCode(mmERR_ABORT_IPCDA_MESSAGE_TOO_LONG, CMB_BLOCK_DEFAULT_SIZE));
@@ -65,7 +65,7 @@ static IDE_RC answerTransactionResult(cmiProtocolContext *aProtocolContext)
 
     IDE_EXCEPTION_END;
 
-    /* BUG-44124 ipcda ¸ğµå »ç¿ë Áß hang - iloader ÄÃ·³ÀÌ ¸¹Àº Å×ÀÌºí */
+    /* BUG-44124 ipcda ëª¨ë“œ ì‚¬ìš© ì¤‘ hang - iloader ì»¬ëŸ¼ì´ ë§ì€ í…Œì´ë¸” */
     if( (sWriteCheckState == CMI_WRITE_CHECK_ACTIVATED) && (cmiGetLinkImpl(aProtocolContext) == CMI_LINK_IMPL_IPCDA) )
     {
         IDE_SET(ideSetErrorCode(mmERR_ABORT_IPCDA_MESSAGE_TOO_LONG, CMB_BLOCK_DEFAULT_SIZE));
@@ -84,8 +84,8 @@ IDE_RC mmtServiceThread::cancelProtocol(cmiProtocolContext *aProtocolContext,
 
     UInt          sStatementID;
 
-    /* PROJ-2160 CM Å¸ÀÔÁ¦°Å
-       ¸ğµÎ ÀĞÀº ´ÙÀ½¿¡ ÇÁ·ÎÅäÄİÀ» Ã³¸®ÇØ¾ß ÇÑ´Ù. */
+    /* PROJ-2160 CM íƒ€ì…ì œê±°
+       ëª¨ë‘ ì½ì€ ë‹¤ìŒì— í”„ë¡œí† ì½œì„ ì²˜ë¦¬í•´ì•¼ í•œë‹¤. */
     CMI_RD4(aProtocolContext, &sStatementID);
 
     IDE_CLEAR();
@@ -116,16 +116,16 @@ IDE_RC mmtServiceThread::cancelByCIDProtocol(cmiProtocolContext *aProtocolContex
 
     IDE_CLEAR();
 
-    /* PROJ-2160 CM Å¸ÀÔÁ¦°Å
-       ¸ğµÎ ÀĞÀº ´ÙÀ½¿¡ ÇÁ·ÎÅäÄİÀ» Ã³¸®ÇØ¾ß ÇÑ´Ù. */
+    /* PROJ-2160 CM íƒ€ì…ì œê±°
+       ëª¨ë‘ ì½ì€ ë‹¤ìŒì— í”„ë¡œí† ì½œì„ ì²˜ë¦¬í•´ì•¼ í•œë‹¤. */
     CMI_RD4(aProtocolContext, &sStmtCID);
 
     sSessionID = MMC_STMT_CID_SESSION(sStmtCID);
     IDE_TEST(mmtSessionManager::findSession(&sSession, sSessionID) != IDE_SUCCESS);
 
-    /* StmtCID·Î CancelÀ» ½ÃµµÇÒ ¶§´Â, ¾ÆÁ÷ Stmt°¡ ¾øÀ» ¼öµµ ÀÖ´Ù.
-     * ÀÌ¶§´Â Á¶¿ëÈ÷ ³Ñ¾î°¡¸ç, SUCCESS¸¦ ¹İÈ¯ÇÑ´Ù. (ERROR°¡ ¾Æ´Ï´Ù.)
-     * ¿¹) Alloc ÇÏÀÚ¸¶ÀÚ CancelÀ» ½ÃµµÇÑ °æ¿ì */
+    /* StmtCIDë¡œ Cancelì„ ì‹œë„í•  ë•ŒëŠ”, ì•„ì§ Stmtê°€ ì—†ì„ ìˆ˜ë„ ìˆë‹¤.
+     * ì´ë•ŒëŠ” ì¡°ìš©íˆ ë„˜ì–´ê°€ë©°, SUCCESSë¥¼ ë°˜í™˜í•œë‹¤. (ERRORê°€ ì•„ë‹ˆë‹¤.)
+     * ì˜ˆ) Alloc í•˜ìë§ˆì Cancelì„ ì‹œë„í•œ ê²½ìš° */
     sStmtID = sSession->getStmtIDFromMap(sStmtCID);
     if (sStmtID != MMC_STMT_ID_NONE)
     {
@@ -152,8 +152,8 @@ IDE_RC mmtServiceThread::transactionProtocol(cmiProtocolContext *aProtocolContex
 
     UChar       sOperation;
 
-    /* PROJ-2160 CM Å¸ÀÔÁ¦°Å
-       ¸ğµÎ ÀĞÀº ´ÙÀ½¿¡ ÇÁ·ÎÅäÄİÀ» Ã³¸®ÇØ¾ß ÇÑ´Ù. */
+    /* PROJ-2160 CM íƒ€ì…ì œê±°
+       ëª¨ë‘ ì½ì€ ë‹¤ìŒì— í”„ë¡œí† ì½œì„ ì²˜ë¦¬í•´ì•¼ í•œë‹¤. */
     CMI_RD1(aProtocolContext, sOperation);
 
     IDE_CLEAR();

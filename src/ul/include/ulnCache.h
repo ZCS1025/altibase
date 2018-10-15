@@ -37,28 +37,28 @@ typedef struct ulnColumn     ulnColumn;
 
 struct ulnRow
 {
-    acp_sint64_t  mRowNumber;                    /**< Position. ResultSet¿¡¼­ÀÇ ¼ø¹ø */
-    acp_uint8_t  *mRow;                          /**< Raw µ¥ÀÌÅ¸¸¦ ´ãÀº ¹öÆÛ Æ÷ÀÎÅÍ */
+    acp_sint64_t  mRowNumber;                    /**< Position. ResultSetì—ì„œì˜ ìˆœë²ˆ */
+    acp_uint8_t  *mRow;                          /**< Raw ë°ì´íƒ€ë¥¼ ë‹´ì€ ë²„í¼ í¬ì¸í„° */
 };
 
 struct ulnColumn
 {
     acp_uint16_t  mColumnNumber;
-    acp_uint16_t  mMtype;                        /* µ¥ÀÌÅÍ Å¸ÀÔ. ulnMTypeID ÀÎµ¥, enum ÀÌ¶ó¼­ »çÀÌÁî °áÁ¤ÇÏ±â°¡
-                                                    °Å½Ã±âÇÏ´Ù. ±×·¡¼­ ±×³É acp_uint16_t ·Î ÀâÀ½ */
-    ulvSLen       mDataLength;                   /* mBuffer ¿¡ µé¾îÀÖ´Â µ¥ÀÌÅÍÀÇ ±æÀÌ. mBuffer ÀÇ Å©±â°¡ ¾Æ´Ô! */
+    acp_uint16_t  mMtype;                        /* ë°ì´í„° íƒ€ì…. ulnMTypeID ì¸ë°, enum ì´ë¼ì„œ ì‚¬ì´ì¦ˆ ê²°ì •í•˜ê¸°ê°€
+                                                    ê±°ì‹œê¸°í•˜ë‹¤. ê·¸ë˜ì„œ ê·¸ëƒ¥ acp_uint16_t ë¡œ ì¡ìŒ */
+    ulvSLen       mDataLength;                   /* mBuffer ì— ë“¤ì–´ìˆëŠ” ë°ì´í„°ì˜ ê¸¸ì´. mBuffer ì˜ í¬ê¸°ê°€ ì•„ë‹˜! */
     ulvSLen       mMTLength;                     /* MT data size */
     acp_uint32_t  mPrecision;
     acp_uint8_t  *mBuffer;
 
-    acp_uint32_t  mGDState;                      /* GetData ½Ã ÄÃ·³ÀÇ »óÅÂ
+    acp_uint32_t  mGDState;                      /* GetData ì‹œ ì»¬ëŸ¼ì˜ ìƒíƒœ
                                                     ULN_GD_ST_INITIAL    1
                                                     ULN_GD_ST_RETRIEVING 2 */
 
-    ulvULen       mGDPosition;                   /* ´ÙÀ½ GetData() È£Ãâ½Ã ÀĞ°Ô µÉ ¹®ÀÚ À§Ä¡ */
+    ulvULen       mGDPosition;                   /* ë‹¤ìŒ GetData() í˜¸ì¶œì‹œ ì½ê²Œ ë  ë¬¸ì ìœ„ì¹˜ */
 
-    ulvULen       mRemainTextLen;                /* »ç¿ëÀÚ ¹öÆÛ¿¡ ´Ù ¸øÁÖ°í ³²Àº ¹®ÀÚ¿­ ±æÀÌ */
-    acp_uint8_t   mRemainText[ULN_MAX_CHARSIZE]; /* »ç¿ëÀÚ ¹öÆÛ¿¡ ´Ù ¸øÁÖ°í ³²Àº ¹®ÀÚ¿­ */
+    ulvULen       mRemainTextLen;                /* ì‚¬ìš©ì ë²„í¼ì— ë‹¤ ëª»ì£¼ê³  ë‚¨ì€ ë¬¸ìì—´ ê¸¸ì´ */
+    acp_uint8_t   mRemainText[ULN_MAX_CHARSIZE]; /* ì‚¬ìš©ì ë²„í¼ì— ë‹¤ ëª»ì£¼ê³  ë‚¨ì€ ë¬¸ìì—´ */
 };
 
 struct ulnColumnInfo
@@ -94,18 +94,18 @@ struct ulnColumnInfo
 
 typedef struct ulnRPAB
 {
-    acp_uint32_t   mCount;       /* mArray ¿¡ ÇöÀç ÇÒ´çµÇ¾î ÀÖ´Â element ÀÇ °¹¼ö */
-    acp_uint32_t   mUsedCount;   /* »ç¿ëÇÏ°í ÀÖ´Â element ÀÇ °¹¼ö */
-    ulnRow       **mBlock;       /* RPA ÀÇ ¹è¿­ */
+    acp_uint32_t   mCount;       /* mArray ì— í˜„ì¬ í• ë‹¹ë˜ì–´ ìˆëŠ” element ì˜ ê°¯ìˆ˜ */
+    acp_uint32_t   mUsedCount;   /* ì‚¬ìš©í•˜ê³  ìˆëŠ” element ì˜ ê°¯ìˆ˜ */
+    ulnRow       **mBlock;       /* RPA ì˜ ë°°ì—´ */
 } ulnRPAB;
 
 struct ulnCache
 {
     ulnStmt                 *mParentStmt;
-    acp_sint64_t             mResultSetSize;   /* ¼­¹ö¿¡¼­ »ı¼ºµÈ result set ÀÇ row ÀÇ ÀüÃ¼ °¹¼ö */
+    acp_sint64_t             mResultSetSize;   /* ì„œë²„ì—ì„œ ìƒì„±ëœ result set ì˜ row ì˜ ì „ì²´ ê°¯ìˆ˜ */
 
-    acp_sint64_t             mRowStartPosition; /**< Cache¿¡ ½×ÀÎ Ã¹ RowÀÇ Position */
-    acp_uint32_t             mRowCount;        /* ¼­¹ö·ÎºÎÅÍ ¼ö½ÅÇØ¼­ Ä³½¬°¡ ÀÌ·ç¾îÁø row ÀÇ °¹¼ö */
+    acp_sint64_t             mRowStartPosition; /**< Cacheì— ìŒ“ì¸ ì²« Rowì˜ Position */
+    acp_uint32_t             mRowCount;        /* ì„œë²„ë¡œë¶€í„° ìˆ˜ì‹ í•´ì„œ ìºì‰¬ê°€ ì´ë£¨ì–´ì§„ row ì˜ ê°¯ìˆ˜ */
 
     acp_uint32_t             mSingleRowSize;
 
@@ -113,39 +113,39 @@ struct ulnCache
 
     acp_uint16_t             mColumnInfoArraySize;
     acp_uint8_t             *mColumnInfoArray;
-    acp_uint8_t             *mColumnBuffer;    /* FIXED COLUMN DATA¸¦ ÀúÀåÇÒ °ø°£ */
+    acp_uint8_t             *mColumnBuffer;    /* FIXED COLUMN DATAë¥¼ ì €ì¥í•  ê³µê°„ */
     ulnDiagRec              *mServerError;
 
     // PROJ-1752
-    acl_mem_area_t          *mChunk;           /* COLLECTION DATA°¡ CACHINGµÉ ¸Ş¸ğ¸® °ø°£ */
+    acl_mem_area_t          *mChunk;           /* COLLECTION DATAê°€ CACHINGë  ë©”ëª¨ë¦¬ ê³µê°„ */
     acl_mem_area_snapshot_t  mChunkStatus;
     acp_bool_t               mHasLob;
 
     /* BUG-32474
-     * BUGBUG: HashSet ¾ø¾î¼­ HashTable »ç¿ë. ³ªÁß¿¡ core¿¡ Ãß°¡µÇ¸é ¹Ù²Ü°Í. */
+     * BUGBUG: HashSet ì—†ì–´ì„œ HashTable ì‚¬ìš©. ë‚˜ì¤‘ì— coreì— ì¶”ê°€ë˜ë©´ ë°”ê¿€ê²ƒ. */
     acl_hash_table_t         mReadLobLocatorHash;
 
     acp_bool_t               mIsInvalidated;
 };
 
 /* PROJ-2616 */
-/* SimpleQuery-Fetch½Ã¿¡ »ç¿ëµÇ´Â ¹öÆÛ¿¡ ´ëÇÑ Á¤º¸.*/
+/* SimpleQuery-Fetchì‹œì— ì‚¬ìš©ë˜ëŠ” ë²„í¼ì— ëŒ€í•œ ì •ë³´.*/
 typedef struct ulnCacheIPCDA
 {
     acp_uint32_t  mRemainingLength;
     acp_uint32_t  mReadLength;
     acp_bool_t    mIsParamDataInList;
-    acp_bool_t    mIsAllocFetchBuffer; /* mFetchBufferÀÇ ¸Ş¸ğ¸® »ı¼º À¯¹« */
-    acp_uint8_t  *mFetchBuffer;        /* ´Ù¼öÀÇ Statement »ı¼º½Ã Fetch Data¸¦ ÀúÀåÇÏ´Â Buffer
-                                        * statement°¡ 1°³ÀÏ¶§´Â shared memory ÁÖ¼Ò¸¦ °¡Áö°í ÀÖÀ¸¸ç,
-                                        * ´Ù¼öÀÇ statement »ı¼º½Ã memory°¡ »ı¼ºµÇ¾î shared memory¿¡ ÀúÀåµÇ¾î ÀÖ´ø µ¥ÀÌÅÍ¸¦ °¡Á®¿Â´Ù.*/
+    acp_bool_t    mIsAllocFetchBuffer; /* mFetchBufferì˜ ë©”ëª¨ë¦¬ ìƒì„± ìœ ë¬´ */
+    acp_uint8_t  *mFetchBuffer;        /* ë‹¤ìˆ˜ì˜ Statement ìƒì„±ì‹œ Fetch Dataë¥¼ ì €ì¥í•˜ëŠ” Buffer
+                                        * statementê°€ 1ê°œì¼ë•ŒëŠ” shared memory ì£¼ì†Œë¥¼ ê°€ì§€ê³  ìˆìœ¼ë©°,
+                                        * ë‹¤ìˆ˜ì˜ statement ìƒì„±ì‹œ memoryê°€ ìƒì„±ë˜ì–´ shared memoryì— ì €ì¥ë˜ì–´ ìˆë˜ ë°ì´í„°ë¥¼ ê°€ì ¸ì˜¨ë‹¤.*/
 } ulnCacheIPCDA;
 
 /*
- * Ä³½¬¿¡ ÀÖ´Â ÇÏ³ªÀÇ row ¸¦ »ç¿ëÀÚ¿¡°Ô °Ç³× ÁÖ¸é¼­ °¢°¢ÀÇ ÄÃ·³µéÀ» ÄÁ¹öÁ¯À» ÇÏ°Ô µÈ´Ù.
- * ÀÌ¶§, ¿¡·¯°¡ ¹ß»ıÇÏ°Å³ª, °æ°í°¡ ¹ß»ıÇÏ¸é ÄÁ¹öÁ¯ ÇÔ¼ö´Â ÀÌ¸¦ ¸®ÅÏÇÑ´Ù.
- * ÇÏ³ªÀÇ row °¡ ³¡³ª¸é, ¿©ÅÂ ÄÁ¹öÁ¯ ÇÔ¼ö°¡ °Ç³×ÁØ ¿¡·¯ / °æ°í ÄÚµåµéÀ» ORing ÇØ µĞ º¯¼ö¸¦
- * ÀĞ¾î¼­ ÇÃ·¡±×¸¦ ÃëÇÑ ÈÄ row status ¸¦ ¹«¾ùÀ¸·Î ÇÒÁö °áÁ¤ÇÑ´Ù.
+ * ìºì‰¬ì— ìˆëŠ” í•˜ë‚˜ì˜ row ë¥¼ ì‚¬ìš©ìì—ê²Œ ê±´ë„¤ ì£¼ë©´ì„œ ê°ê°ì˜ ì»¬ëŸ¼ë“¤ì„ ì»¨ë²„ì ¼ì„ í•˜ê²Œ ëœë‹¤.
+ * ì´ë•Œ, ì—ëŸ¬ê°€ ë°œìƒí•˜ê±°ë‚˜, ê²½ê³ ê°€ ë°œìƒí•˜ë©´ ì»¨ë²„ì ¼ í•¨ìˆ˜ëŠ” ì´ë¥¼ ë¦¬í„´í•œë‹¤.
+ * í•˜ë‚˜ì˜ row ê°€ ëë‚˜ë©´, ì—¬íƒœ ì»¨ë²„ì ¼ í•¨ìˆ˜ê°€ ê±´ë„¤ì¤€ ì—ëŸ¬ / ê²½ê³  ì½”ë“œë“¤ì„ ORing í•´ ë‘” ë³€ìˆ˜ë¥¼
+ * ì½ì–´ì„œ í”Œë˜ê·¸ë¥¼ ì·¨í•œ í›„ row status ë¥¼ ë¬´ì—‡ìœ¼ë¡œ í• ì§€ ê²°ì •í•œë‹¤.
  */
 #define ULN_ROW_SUCCESS             0x00
 #define ULN_ROW_SUCCESS_WITH_INFO   0x01
@@ -153,7 +153,7 @@ typedef struct ulnCacheIPCDA
 #define ULN_ROW_COMPOUND            0x03
 
 /*
- * »ı¼º°ú ¼Ò¸ê, ±×¸®°í ÃÊ±âÈ­
+ * ìƒì„±ê³¼ ì†Œë©¸, ê·¸ë¦¬ê³  ì´ˆê¸°í™”
  */
 ACI_RC ulnCacheCreate(ulnCache **aCache);
 void   ulnCacheDestroy(ulnCache *aCache);
@@ -180,8 +180,8 @@ ACP_INLINE ACI_RC ulnCacheInitialize(ulnCache *aCache)
         /* Nothing */
     }
 
-    /* BUG-32474 (¹æ¾îÄÚµå)
-     * Áß°£¿¡ ulnCacheInitialize()°¡ È£Ãâ µÉ ¶§´Â hash°¡ ºñ¾îÀÖ¾î¾ß ÇÑ´Ù. */
+    /* BUG-32474 (ë°©ì–´ì½”ë“œ)
+     * ì¤‘ê°„ì— ulnCacheInitialize()ê°€ í˜¸ì¶œ ë  ë•ŒëŠ” hashê°€ ë¹„ì–´ìˆì–´ì•¼ í•œë‹¤. */
     ACE_ASSERT(aclHashGetTotalRecordCount(&aCache->mReadLobLocatorHash) == 0);
 
     // (void)ulnCacheBackChunkToMark( aCache );
@@ -193,7 +193,7 @@ ACP_INLINE ACI_RC ulnCacheInitialize(ulnCache *aCache)
 ACI_RC ulnCachePrepareColumnInfoArray(ulnCache *aCache, acp_uint16_t aColumnCount);
 
 /*
- * cached row ¿Í °ü·ÃµÈ ¿¬»êµé
+ * cached row ì™€ ê´€ë ¨ëœ ì—°ì‚°ë“¤
  */
 ulnRow *ulnCacheGetRow(ulnCache *aCache, acp_uint32_t aPhysicalPos);
 ulnRow *ulnCacheGetCachedRow(ulnCache *aCache, acp_sint64_t aLogicalCurPos);
@@ -233,7 +233,7 @@ ACP_INLINE acp_bool_t ulnCacheHasLob(ulnCache *aCache)
 {
     acp_bool_t sHasLob = ACP_FALSE;
 
-    /* Cache°¡ ¾ÆÁ÷ ¸¸µé¾îÁöÁö ¾Ê¾Ò´Ù¸é core°¡ ³¯ ¼ö ÀÖ´Ù. */
+    /* Cacheê°€ ì•„ì§ ë§Œë“¤ì–´ì§€ì§€ ì•Šì•˜ë‹¤ë©´ coreê°€ ë‚  ìˆ˜ ìˆë‹¤. */
     if ((aCache != NULL)
      && (aCache->mHasLob == ACP_TRUE)
      && (aCache->mRowCount > 0))
@@ -245,7 +245,7 @@ ACP_INLINE acp_bool_t ulnCacheHasLob(ulnCache *aCache)
 }
 
 /*
- * Column Info ¸¦ ¸¸µå´Â ÇÔ¼ö
+ * Column Info ë¥¼ ë§Œë“œëŠ” í•¨ìˆ˜
  */
 ACP_INLINE ulnColumnInfo *ulnCacheGetColumnInfo(ulnCache *aCache, acp_uint16_t aColumnNumber)
 {
@@ -280,7 +280,7 @@ ACP_INLINE void ulnCacheSetColumnInfo(ulnCache     *aCache,
 }
 
 /*
- * Row ¿¡ µ¥ÀÌÅÍ¸¦ Ã¤¿ö³Ö°í, È¤Àº row ¿¡¼­ »ç¿ëÀÚ ¹öÆÛ·Î º¹»çÇÏ´Â ÇÔ¼öµé
+ * Row ì— ë°ì´í„°ë¥¼ ì±„ì›Œë„£ê³ , í˜¹ì€ row ì—ì„œ ì‚¬ìš©ì ë²„í¼ë¡œ ë³µì‚¬í•˜ëŠ” í•¨ìˆ˜ë“¤
  */
 
 // BUG-21746
@@ -307,8 +307,8 @@ ACI_RC ulnCacheRowCopyToUserBuffer(ulnFnContext *aFnContext,
  * =======================================================
  * Result Set
  *
- * ÀÏ´Ü ³¡±îÁö ÆäÄ¡ÇØ °¡¼­ È®½ÇÇÑ °¹¼ö¸¦ ¾Ë±â Àü¿¡´Â
- * ULN_ROWCOUNT_UNKNOWN = ID_SLONG_MAX ·Î ¼¼ÆÃµÇ¾î ÀÖ´Ù.
+ * ì¼ë‹¨ ëê¹Œì§€ í˜ì¹˜í•´ ê°€ì„œ í™•ì‹¤í•œ ê°¯ìˆ˜ë¥¼ ì•Œê¸° ì „ì—ëŠ”
+ * ULN_ROWCOUNT_UNKNOWN = ID_SLONG_MAX ë¡œ ì„¸íŒ…ë˜ì–´ ìˆë‹¤.
  * =======================================================
  */
 

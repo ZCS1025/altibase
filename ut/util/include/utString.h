@@ -34,7 +34,7 @@ public:
     static IDE_RC toUpper(SChar *a_Str);
 
     // To Fix BUG-17803
-    // ÇöÀç Error Handling ÇÒ ¹æ¹ıÀÌ ¾ø´Ù.
+    // í˜„ì¬ Error Handling í•  ë°©ë²•ì´ ì—†ë‹¤.
     static void    makeNameInSQL( SChar * aDstName,
                                   SInt    aDstLen,
                                   SChar * aSrcName,

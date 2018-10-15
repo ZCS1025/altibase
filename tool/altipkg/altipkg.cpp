@@ -265,18 +265,18 @@ int main(SInt argc, SChar *argv[])
                 debugMsg("test : %s:%d\n", __FILE__, __LINE__);
                 break;
                 
-            case 'a':  // Á¤º¸ Àü´Ş 
+            case 'a':  // ì •ë³´ ì „ë‹¬ 
                 sProcessed++;
                 gPkgArg[sArgNum++] = (SChar *)optarg; 
                 debugMsg("test : %s:%d\n", __FILE__, __LINE__);
                 break;
 
-            case 'r': // ÆĞÅ°Â¡ ÇÒ µğ·ºÅä¸®
+            case 'r': // íŒ¨í‚¤ì§• í•  ë””ë ‰í† ë¦¬
                 sPkgRootDir = (SChar *)optarg;
                 debugMsg("test : %s:%d\n", __FILE__, __LINE__);
                 break;
                 
-            case 'm': // ÆĞÅ°Áö ¸í¼¼ È­ÀÏ¸í 
+            case 'm': // íŒ¨í‚¤ì§€ ëª…ì„¸ í™”ì¼ëª… 
                 gPkgMapFile  = (SChar *)optarg;
                 debugMsg("test : %s:%d\n", __FILE__, __LINE__);
                 break;
@@ -311,9 +311,9 @@ int main(SInt argc, SChar *argv[])
     }
 
     /* ------------------------------------------------
-     *  Root Dir Ã³¸®
-     *  DefaultÀÏ °æ¿ì Àı´ë°æ·Î·Î ¹Ù²Ù¾î¼­ Ã³¸®ÇÏ°í,
-     *  ±×·¸Áö ¾ÊÀ» °æ¿ì, ÀÔ·ÂÀ» Àı´ë°æ·Î¶ó°í °¡Á¤ÇÔ.
+     *  Root Dir ì²˜ë¦¬
+     *  Defaultì¼ ê²½ìš° ì ˆëŒ€ê²½ë¡œë¡œ ë°”ê¾¸ì–´ì„œ ì²˜ë¦¬í•˜ê³ ,
+     *  ê·¸ë ‡ì§€ ì•Šì„ ê²½ìš°, ì…ë ¥ì„ ì ˆëŒ€ê²½ë¡œë¼ê³  ê°€ì •í•¨.
      * ----------------------------------------------*/
     if (sPkgRootDir == NULL)
     {
@@ -351,7 +351,7 @@ int main(SInt argc, SChar *argv[])
         gPkgRootDir = sPkgRootDir;
     }
     {
-      // gPkgRootDir¿¡¼­ ¸¶Áö¸· / or \ Á¦°Å
+      // gPkgRootDirì—ì„œ ë§ˆì§€ë§‰ / or \ ì œê±°
         ULong sLen;
         sLen = idlOS::strlen(gPkgRootDir) - 1;
         for ( ; gPkgRootDir[sLen] == IDL_FILE_SEPARATOR ; sLen--)
@@ -361,7 +361,7 @@ int main(SInt argc, SChar *argv[])
     }
 
     /* ------------------------------------------------
-     *  µ¿ÀÛ ¼öÇà 
+     *  ë™ì‘ ìˆ˜í–‰ 
      * ----------------------------------------------*/
     
     switch(sAction)
@@ -371,7 +371,7 @@ int main(SInt argc, SChar *argv[])
             UInt i;
 
             /* ------------------------------------------------
-             *  1. ÀÎÀÚ ÀûÇÕ¼º °Ë»ç.
+             *  1. ì¸ì ì í•©ì„± ê²€ì‚¬.
              * ----------------------------------------------*/
             
             if (sArgNum != ALTI_PKG_ARG_END_ARG)
@@ -388,12 +388,12 @@ int main(SInt argc, SChar *argv[])
             }
 
             /* ------------------------------------------------
-             *  2. Root Package Directory »ı¼º 
+             *  2. Root Package Directory ìƒì„± 
              * ----------------------------------------------*/
             makeDirectory(gPkgRootDir, (SChar *)"0755", gErrorIgnore); // force create 
 
             /* ------------------------------------------------
-             *  3. Report È­ÀÏ ÁØºñ 
+             *  3. Report í™”ì¼ ì¤€ë¹„ 
              * ----------------------------------------------*/
             {
                 time_t sCurTime;
@@ -436,7 +436,7 @@ int main(SInt argc, SChar *argv[])
                           );
 
 
-                // Package Information ±â·Ï
+                // Package Information ê¸°ë¡
                 reportMsg("\n\n"
                           "# Package Information ( * = ALL )\n");
 
@@ -453,7 +453,7 @@ int main(SInt argc, SChar *argv[])
             }
             
             /* ------------------------------------------------
-             *  4. Distribution ÀÛ¾÷ ¼öÇà!
+             *  4. Distribution ì‘ì—… ìˆ˜í–‰!
              * ----------------------------------------------*/
             
             doDistribution(gQuiet);

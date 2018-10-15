@@ -70,7 +70,7 @@ public class DatabaseMetaDataTest extends AltibaseTestCase
         assertEquals("NEWJDBC_TESTUSER", sRS.getString("TABLE_SCHEM"));
         assertEquals("mydb", sRS.getString("TABLE_CATALOG"));
         assertEquals(true, sRS.next());
-//      assertEquals("PUBLIC", sRS.getString("TABLE_SCHEM"));  // BUG-45071 username¸¸ Æ÷ÇÔ½ÃÅ°±â ¶§¹®¿¡ roleÀº ºüÁø´Ù.
+//      assertEquals("PUBLIC", sRS.getString("TABLE_SCHEM"));  // BUG-45071 usernameë§Œ í¬í•¨ì‹œí‚¤ê¸° ë•Œë¬¸ì— roleì€ ë¹ ì§„ë‹¤.
 //      assertEquals(true, sRS.next());
         assertEquals("SYS", sRS.getString("TABLE_SCHEM"));
         assertEquals(true, sRS.next());

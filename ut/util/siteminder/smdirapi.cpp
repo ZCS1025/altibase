@@ -56,7 +56,7 @@ SiteMinder Directory API sample.
 */
 typedef struct ProviderHandle_s
 {
-    SQLHENV  env;   // Environment¸¦ ÇÒ´ç ¹ÞÀ» handle.
+    SQLHENV  env;   // Environmentë¥¼ í• ë‹¹ ë°›ì„ handle.
 //    pthread_mutex_t mutex;
 
     char dns1[MSG_LEN];
@@ -290,7 +290,7 @@ int ReadConf(ProviderHandle_t* phProvider)
 
 void* CheckAlive(void *pHandle)
 {
-    SQLHENV  env;   // Environment¸¦ ÇÒ´ç ¹ÞÀ» handle.
+    SQLHENV  env;   // Environmentë¥¼ í• ë‹¹ ë°›ì„ handle.
     SQLHDBC dbc;
     SQLHSTMT stmt;
 
@@ -362,12 +362,12 @@ void* CheckAlive(void *pHandle)
         {
             my_log(phProvider, "_SQLDisconnect Error\n");
         }
-        //Ã¹¹øÂ° ¼º°øÇÞÀ¸¹Ç·Î 
+        //ì²«ë²ˆì§¸ ì„±ê³µí–‡ìœ¼ë¯€ë¡œ 
         phProvider->current = phProvider->dns1;
         my_log(phProvider , "dns1 connect success\n");
 
     }    
-    //fail-over°¡ ÀÏ¾î³­´Ù.
+    //fail-overê°€ ì¼ì–´ë‚œë‹¤.
     phProvider->current = phProvider->dns2;
     my_log(phProvider , "dns2 connect success\n");
     
@@ -589,7 +589,7 @@ const int                       nSearchTimeout
         return -1;
     }
 
-    //Connection µÈ ½Ã°£À» ±â·Ï ÇÑ´Ù.
+    //Connection ëœ ì‹œê°„ì„ ê¸°ë¡ í•œë‹¤.
     gettimeofday(&(phDir->connTime) , (void*)NULL );
 
     if( SQLAllocStmt(phDir->dbc , &(phDir->stmt)) != SQL_SUCCESS )
@@ -1160,7 +1160,7 @@ const char*                     lpszUserDN
 
     if( (rc = SQLFetch(phDir->stmt)) != SQL_NO_DATA && rc == SQL_SUCCESS )
     {
-        //»ç¿ëÀÚ°¡ ÀÖ´Â °æ¿ì¿¡ 0À» ¸®ÅÏÇÑ´Ù.
+        //ì‚¬ìš©ìžê°€ ìžˆëŠ” ê²½ìš°ì— 0ì„ ë¦¬í„´í•œë‹¤.
         return 0;
     }
     my_log(phProvider, "SQLFetch Error\n");
@@ -1226,7 +1226,7 @@ long chk_pwd(ProviderHandle_t* phProvider, UserHandle_t* phUser, const char *psz
         return -1;
     }
 
-    //Äõ¸® ½ÃÀÛ ½Ã°£ ±â·Ï
+    //ì¿¼ë¦¬ ì‹œìž‘ ì‹œê°„ ê¸°ë¡
     gettimeofday( &startTime , (void*)NULL );
 
     if( SQLExecute(phUser->phDir->stmt) != SQL_SUCCESS )
@@ -1234,7 +1234,7 @@ long chk_pwd(ProviderHandle_t* phProvider, UserHandle_t* phUser, const char *psz
         my_log(phProvider, "SQLExecute Error\n");
         return -1;
     }
-    //Äõ¸® ³¡ ½Ã°£ ±â·Ï
+    //ì¿¼ë¦¬ ë ì‹œê°„ ê¸°ë¡
     gettimeofday( &endTime , (void*) NULL );
 
     if( (rc = SQLFetch(phUser->phDir->stmt)) != SQL_NO_DATA && rc == SQL_SUCCESS )
@@ -1253,7 +1253,7 @@ long chk_pwd(ProviderHandle_t* phProvider, UserHandle_t* phUser, const char *psz
         isFind = false;
     }
 
-    //LOG Å×ÀÌºí¿¡ ±â·ÏÀ»ÇÑ´Ù.
+    //LOG í…Œì´ë¸”ì— ê¸°ë¡ì„í•œë‹¤.
     
     //make table name
     sTime = localtime( &(phUser->phDir->connTime.tv_sec) ); 
@@ -1817,7 +1817,7 @@ char**                          lpszAttrData
 
     sprintf(query , "SELECT %s FROM mmdb_master WHERE memberid = ?" , lpszAttrName);
     
-    //µé¾î ÀÖ´ÂÁö Ã¼Å© ÇÊ¿äÇÔ
+    //ë“¤ì–´ ìžˆëŠ”ì§€ ì²´í¬ í•„ìš”í•¨
     
     if( SQLFreeStmt(phUser->phDir->stmt, SQL_CLOSE) != SQL_SUCCESS)
     {

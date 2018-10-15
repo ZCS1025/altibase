@@ -45,30 +45,30 @@ IDE_RC qdtDrop::validate(qcStatement * aStatement)
  *
  * Description :
  *
- *    DROP TABLESPACE ... ÀÇ validation ¼öÇà
+ *    DROP TABLESPACE ... ì˜ validation ìˆ˜í–‰
  *
  * Implementation :
  *
- *    1. ±ÇÇÑ °Ë»ç qdpPrivilege::checkDDLAlterTableSpacePriv()
- *    2. ¸í½ÃÇÑ Å×ÀÌºí½ºÅ×ÀÌ½º¸íÀÌ µ¥ÀÌÅÍº£ÀÌ½º ³»¿¡ ÀÌ¹Ì Á¸ÀçÇÏ´ÂÁö
- *       ¸ÞÅ¸ °Ë»ö
- *    3. Å×ÀÌºí½ºÆäÀÌ½º°¡ SYSTEM TABLESPACE(DATA,TEMP,UNDO)ÀÌ¸é ¿À·ù
- *    4. INCLUDING CONTENTS ¸í½Ã ¿©ºÎ¿¡ µû¸¥ ¿À·ù °Ë»ç
- *    if ( INCLUDING CONTENTS ¸í½ÃÇÑ °æ¿ì )
+ *    1. ê¶Œí•œ ê²€ì‚¬ qdpPrivilege::checkDDLAlterTableSpacePriv()
+ *    2. ëª…ì‹œí•œ í…Œì´ë¸”ìŠ¤í…Œì´ìŠ¤ëª…ì´ ë°ì´í„°ë² ì´ìŠ¤ ë‚´ì— ì´ë¯¸ ì¡´ìž¬í•˜ëŠ”ì§€
+ *       ë©”íƒ€ ê²€ìƒ‰
+ *    3. í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ê°€ SYSTEM TABLESPACE(DATA,TEMP,UNDO)ì´ë©´ ì˜¤ë¥˜
+ *    4. INCLUDING CONTENTS ëª…ì‹œ ì—¬ë¶€ì— ë”°ë¥¸ ì˜¤ë¥˜ ê²€ì‚¬
+ *    if ( INCLUDING CONTENTS ëª…ì‹œí•œ ê²½ìš° )
  *    {
- *      if ( CASCADE CONSTRAINTS ¸í½ÃÇÑ °æ¿ì )
+ *      if ( CASCADE CONSTRAINTS ëª…ì‹œí•œ ê²½ìš° )
  *      {
  *        // nothing to do
  *      }
- *      else // CASCADE CONSTRAINTS ¸í½ÃÇÏÁö ¾ÊÀº °æ¿ì
+ *      else // CASCADE CONSTRAINTS ëª…ì‹œí•˜ì§€ ì•Šì€ ê²½ìš°
  *      {
- *        ¸í½ÃÇÑ Å×ÀÌºí½ºÆäÀÌ½º¿¡ ¼ÓÇÑ primary key,unique key ¿Í °ü·ÃµÈ
- *        referential constraint µéÀÌ ´Ù¸¥ Å×ÀÌºí½ºÆäÀÌ½º¿¡ Á¸ÀçÇÏ¸é ¿À·ù ¹ß»ý
+ *        ëª…ì‹œí•œ í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ì— ì†í•œ primary key,unique key ì™€ ê´€ë ¨ëœ
+ *        referential constraint ë“¤ì´ ë‹¤ë¥¸ í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ì— ì¡´ìž¬í•˜ë©´ ì˜¤ë¥˜ ë°œìƒ
  *      }
  *    }
- *    else // INCLUDING CONTENTS ¸í½ÃÇÏÁö ¾ÊÀº °æ¿ì
+ *    else // INCLUDING CONTENTS ëª…ì‹œí•˜ì§€ ì•Šì€ ê²½ìš°
  *    {
- *      Å×ÀÌºí½ºÆäÀÌ½º¿¡ ¼ÓÇÑ °´Ã¼°¡ ÇÏ³ª ÀÌ»ó Á¸ÀçÇÏ¸é ¿À·ù ¹ß»ý
+ *      í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ì— ì†í•œ ê°ì²´ê°€ í•˜ë‚˜ ì´ìƒ ì¡´ìž¬í•˜ë©´ ì˜¤ë¥˜ ë°œìƒ
  *    }
  *
  ***********************************************************************/
@@ -100,7 +100,7 @@ IDE_RC qdtDrop::validate(qcStatement * aStatement)
     sParseTree = (qdDropTBSParseTree *)aStatement->myPlan->parseTree;
 
     //-----------------------------------------
-    // ±ÇÇÑ °Ë»ç
+    // ê¶Œí•œ ê²€ì‚¬
     //-----------------------------------------
 
     IDE_TEST( qdpRole::checkDDLDropTableSpacePriv(
@@ -109,7 +109,7 @@ IDE_RC qdtDrop::validate(qcStatement * aStatement)
               != IDE_SUCCESS );
 
     //-----------------------------------------
-    // Å×ÀÌºí½ºÆäÀÌ½º ÀÌ¸§À¸·Î ¸ÞÅ¸Å×ÀÌºí °Ë»ö
+    // í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ ì´ë¦„ìœ¼ë¡œ ë©”íƒ€í…Œì´ë¸” ê²€ìƒ‰
     //-----------------------------------------
 
     IDE_TEST ( qcmTablespace::getTBSAttrByName(
@@ -119,22 +119,22 @@ IDE_RC qdtDrop::validate(qcStatement * aStatement)
                    &sTBSAttr) != IDE_SUCCESS );
 
     //-----------------------------------------
-    // ±âº»ÀûÀ¸·Î »ý¼ºµÇ´Â Å×ÀÌºí½ºÆäÀÌ½ºÀÎÁö °Ë»ç(MEMORY,DATA,UNDO)
+    // ê¸°ë³¸ì ìœ¼ë¡œ ìƒì„±ë˜ëŠ” í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ì¸ì§€ ê²€ì‚¬(MEMORY,DATA,UNDO)
     //-----------------------------------------
     IDE_TEST_RAISE( smiTableSpace::isSystemTableSpace( sTBSAttr.mID )
                     == ID_TRUE,
                     ERR_NO_DROP_SYSTEM_TBS);
 
-    /* To Fix BUG-17292 [PROJ-1548] Tablespace DDL½Ã Tablespace¿¡ X¶ô Àâ´Â´Ù
-     * Tablespace¿¡ LockÀ» ÀâÁö ¾Ê°í Tablespace¾ÈÀÇ TableÀ» Á¶È¸ÇÏ°Ô µÇ¸é
-     * ±× »çÀÌ¿¡ »õ·Î¿î TableÀÌ »ý°Ü³¯ ¼ö ÀÖ´Ù.
-     * ÀÌ·¯ÇÑ ¹®Á¦¸¦ ¹Ì¿¬¿¡ ¹æÁöÇÏ±â À§ÇØ
-     * Tablespace¿¡ X LockÀ» ¸ÕÀú Àâ°í Tablespace Validation/ExecutionÀ» ¼öÇà */
+    /* To Fix BUG-17292 [PROJ-1548] Tablespace DDLì‹œ Tablespaceì— Xë½ ìž¡ëŠ”ë‹¤
+     * Tablespaceì— Lockì„ ìž¡ì§€ ì•Šê³  Tablespaceì•ˆì˜ Tableì„ ì¡°íšŒí•˜ê²Œ ë˜ë©´
+     * ê·¸ ì‚¬ì´ì— ìƒˆë¡œìš´ Tableì´ ìƒê²¨ë‚  ìˆ˜ ìžˆë‹¤.
+     * ì´ëŸ¬í•œ ë¬¸ì œë¥¼ ë¯¸ì—°ì— ë°©ì§€í•˜ê¸° ìœ„í•´
+     * Tablespaceì— X Lockì„ ë¨¼ì € ìž¡ê³  Tablespace Validation/Executionì„ ìˆ˜í–‰ */
     IDE_TEST( smiValidateAndLockTBS(
                   QC_SMI_STMT( aStatement ),
                   sTBSAttr.mID,
                   SMI_TBS_LOCK_EXCLUSIVE,
-                  SMI_TBSLV_DROP_TBS, // TBS Validation ¿É¼Ç
+                  SMI_TBSLV_DROP_TBS, // TBS Validation ì˜µì…˜
                   ((smiGetDDLLockTimeOut() == -1) ?
                    ID_ULONG_MAX :
                    smiGetDDLLockTimeOut()*1000000) )
@@ -151,8 +151,8 @@ IDE_RC qdtDrop::validate(qcStatement * aStatement)
              == QDT_DROP_CASCADE_CONSTRAINTS_TRUE )
         {
             // Nothing To Do
-            // referential constraints°¡ ´Ù¸¥ Å×ÀÌºí½ºÆäÀÌ½º¿¡ Á¸ÀçÇÏ´ÂÁö
-            // validate ¶§ °Ë»çÇÒ ÇÊ¿ä ¾øÀÌ execute ¶§ delete.
+            // referential constraintsê°€ ë‹¤ë¥¸ í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ì— ì¡´ìž¬í•˜ëŠ”ì§€
+            // validate ë•Œ ê²€ì‚¬í•  í•„ìš” ì—†ì´ execute ë•Œ delete.
             IDE_TEST( qcmTablespace::findTableInfoListInTBS(
                           aStatement,
                           sTBSAttr.mID,
@@ -172,7 +172,7 @@ IDE_RC qdtDrop::validate(qcStatement * aStatement)
             // (2) DROP TABLESPACE tbs_name INCLUDING CONTENTS;
             //-----------------------------------------
 
-            // Å×ÀÌºí½ºÆäÀÌ½º¿¡ ¼ÓÇÑ Å×ÀÌºíÀ» Ã£¾Æ¼­  sTableInfoList·Î ¹Þ¾Æ ¿È.
+            // í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ì— ì†í•œ í…Œì´ë¸”ì„ ì°¾ì•„ì„œ  sTableInfoListë¡œ ë°›ì•„ ì˜´.
             IDE_TEST( qcmTablespace::findTableInfoListInTBS(
                           aStatement,
                           sTBSAttr.mID,
@@ -185,9 +185,9 @@ IDE_RC qdtDrop::validate(qcStatement * aStatement)
             {
                 sTableInfo = sTableInfoList->tableInfo;
 
-                // Å×ÀÌºíÀÇ primary key, unique key ¿Í °ü·ÃµÈ
-                // referential integrity constraints °¡
-                // ´Ù¸¥ Å×ÀÌºí½ºÆäÀÌ½º¿¡ Á¸Àç ÇÏ´ÂÁö  check
+                // í…Œì´ë¸”ì˜ primary key, unique key ì™€ ê´€ë ¨ëœ
+                // referential integrity constraints ê°€
+                // ë‹¤ë¥¸ í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ì— ì¡´ìž¬ í•˜ëŠ”ì§€  check
                 for (i=0; i<sTableInfo->uniqueKeyCount; i++)
                 {
                     sIndexInfo = sTableInfo->uniqueKeys[i].constraintIndex;
@@ -215,7 +215,7 @@ IDE_RC qdtDrop::validate(qcStatement * aStatement)
                 sTableInfoList = sTableInfoList->next;
             }
 
-            // Å×ÀÌºí½ºÆäÀÌ½º¿¡ ¼ÓÇÑ ÀÎµ¦½º¸¦ Ã£¾Æ¼­ sIndexInfoList·Î ¹Þ¾Æ ¿È.
+            // í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ì— ì†í•œ ì¸ë±ìŠ¤ë¥¼ ì°¾ì•„ì„œ sIndexInfoListë¡œ ë°›ì•„ ì˜´.
             IDE_TEST( qcmTablespace::findIndexInfoListInTBS(
                           aStatement,
                           sTBSAttr.mID,
@@ -240,9 +240,9 @@ IDE_RC qdtDrop::validate(qcStatement * aStatement)
                 }
                 IDE_TEST_RAISE( sIndexInfo == NULL, ERR_NOT_EXIST_INDEX);
 
-                // unique key ¿Í °ü·ÃµÈ
-                // referential integrity constraints °¡
-                // ´Ù¸¥ Å×ÀÌºí½ºÆäÀÌ½º¿¡ Á¸Àç ÇÏ´ÂÁö  check
+                // unique key ì™€ ê´€ë ¨ëœ
+                // referential integrity constraints ê°€
+                // ë‹¤ë¥¸ í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ì— ì¡´ìž¬ í•˜ëŠ”ì§€  check
                 if ( sIndexInfo->isUnique == ID_TRUE )
                 {
                     // BUG-28049
@@ -269,8 +269,8 @@ IDE_RC qdtDrop::validate(qcStatement * aStatement)
         }
 
         // PROJ-1502 PARTITIONED DISK TABLE
-        // Å×ÀÌºí½ºÆäÀÌ½º¿¡ Partitioned TableÀº Á¸ÀçÇÏÁö ¾Ê°í,
-        // Table_Partition¸¸ Á¸ÀçÇÑ´Ù¸é ÇØ´ç Å×ÀÌºí½ºÆäÀÌ½º´Â »èÁ¦µÉ ¼ö ¾ø´Ù.
+        // í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ì— Partitioned Tableì€ ì¡´ìž¬í•˜ì§€ ì•Šê³ ,
+        // Table_Partitionë§Œ ì¡´ìž¬í•œë‹¤ë©´ í•´ë‹¹ í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ëŠ” ì‚­ì œë  ìˆ˜ ì—†ë‹¤.
         IDE_TEST( qcmTablespace::findTablePartInfoListInTBS(
                       aStatement,
                       sTBSAttr.mID,
@@ -308,8 +308,8 @@ IDE_RC qdtDrop::validate(qcStatement * aStatement)
         }
 
         // PROJ-1502 PARTITIONED DISK TABLE
-        // Å×ÀÌºí½ºÆäÀÌ½º¿¡ Partitioned TableÀÌ³ª Partitioned Index°¡ Á¸ÀçÇÏÁö ¾Ê°í,
-        // Index Partition¸¸ Á¸ÀçÇÑ´Ù¸é ÇØ´ç Å×ÀÌºí½ºÆäÀÌ½º´Â »èÁ¦µÉ ¼ö ¾ø´Ù.
+        // í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ì— Partitioned Tableì´ë‚˜ Partitioned Indexê°€ ì¡´ìž¬í•˜ì§€ ì•Šê³ ,
+        // Index Partitionë§Œ ì¡´ìž¬í•œë‹¤ë©´ í•´ë‹¹ í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ëŠ” ì‚­ì œë  ìˆ˜ ì—†ë‹¤.
         IDE_TEST( qcmTablespace::findIndexPartInfoListInTBS(
                       aStatement,
                       sTBSAttr.mID,
@@ -345,8 +345,8 @@ IDE_RC qdtDrop::validate(qcStatement * aStatement)
                         break;
                     }
                     /*
-                     * BUG-24515 : ÀÎµ¦½º ÆÄÆ¼¼Ç¸¸ Á¸ÀçÇÏ´Â Å×ÀÌºí½ºÆäÀÌ½º »èÁ¦½Ã
-                     *             ¼­¹ö°¡ »ç¸ÁÇÕ´Ï´Ù.
+                     * BUG-24515 : ì¸ë±ìŠ¤ íŒŒí‹°ì…˜ë§Œ ì¡´ìž¬í•˜ëŠ” í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ ì‚­ì œì‹œ
+                     *             ì„œë²„ê°€ ì‚¬ë§í•©ë‹ˆë‹¤.
                      */
                     sIndexInfoList = sIndexInfoList->next;
                 }
@@ -364,13 +364,13 @@ IDE_RC qdtDrop::validate(qcStatement * aStatement)
         // (3) DROP TABLESPACE tbs_name;
         //-----------------------------------------
 
-        // Å×ÀÌºí½ºÆäÀÌ½º¿¡ ¼ÓÇÑ °´Ã¼°¡ ÀÖ´ÂÁö °Ë»ç
+        // í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ì— ì†í•œ ê°ì²´ê°€ ìžˆëŠ”ì§€ ê²€ì‚¬
         IDE_TEST( qcmTablespace::existObject( aStatement,
                                               sTBSAttr.mID,
                                               &sExist )
                   != IDE_SUCCESS );
 
-        // Å×ÀÌºí½ºÆäÀÌ½º¿¡ ¼ÓÇÑ °´Ã¼°¡ ÇÏ³ª¶óµµ ÀÖÀ¸¸é ¿¡·¯ Ãâ·Â
+        // í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ì— ì†í•œ ê°ì²´ê°€ í•˜ë‚˜ë¼ë„ ìžˆìœ¼ë©´ ì—ëŸ¬ ì¶œë ¥
         IDE_TEST_RAISE( sExist == ID_TRUE, ERR_OBJECT_EXIST );
     }
 
@@ -415,76 +415,76 @@ IDE_RC qdtDrop::execute(qcStatement * aStatement)
 /***********************************************************************
  *
  * Description :
- *    DROP TABLESPACE ... ÀÇ execution ¼öÇà
+ *    DROP TABLESPACE ... ì˜ execution ìˆ˜í–‰
  *
  * Implementation :
- *    if ( INCLUDING CONTENTS ¸í½ÃÇÑ °æ¿ì )
+ *    if ( INCLUDING CONTENTS ëª…ì‹œí•œ ê²½ìš° )
  *    {
- *        1. Å×ÀÌºí½ºÆäÀÌ½º¿¡ ³»ÀÇ Å×ÀÌºíÀ» Ã£¾Æ¼­ sTableInfoList¸¦ ¹Þ¾Æ ¿È.
+ *        1. í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ì— ë‚´ì˜ í…Œì´ë¸”ì„ ì°¾ì•„ì„œ sTableInfoListë¥¼ ë°›ì•„ ì˜´.
  *        while()
  *        {
- *            executeDropTableInTBS() È£Ãâ
- *            : °¢°¢ÀÇ Å×ÀÌºí¿¡ ´ëÇØ¼­ Å×ÀÌºí °´Ã¼¿Í qp metaÁ¤º¸¸¦ »èÁ¦
+ *            executeDropTableInTBS() í˜¸ì¶œ
+ *            : ê°ê°ì˜ í…Œì´ë¸”ì— ëŒ€í•´ì„œ í…Œì´ë¸” ê°ì²´ì™€ qp metaì •ë³´ë¥¼ ì‚­ì œ
  *        }
- *        2. MView View¿Í Materialized View¸¦ Á¦°ÅÇÏ°í, MVIew View List¸¦ ¹ÞÀ½
- *        3. Å×ÀÌºí½ºÆäÀÌ½º ³»ÀÇ ÀÎµ¦½º°¡ ¼Ò¼ÓµÈ Å×ÀÌºíÀ» Ã£¾Æ¼­ sIndexInfoList¸¦ ¹Þ¾Æ ¿È.
+ *        2. MView Viewì™€ Materialized Viewë¥¼ ì œê±°í•˜ê³ , MVIew View Listë¥¼ ë°›ìŒ
+ *        3. í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ ë‚´ì˜ ì¸ë±ìŠ¤ê°€ ì†Œì†ëœ í…Œì´ë¸”ì„ ì°¾ì•„ì„œ sIndexInfoListë¥¼ ë°›ì•„ ì˜´.
  *        while()
  *        {
- *            executeDropIndexInTBS() È£Ãâ
- *            : °¢°¢ÀÇ ÀÎµ¦½º¿¡ ´ëÇØ¼­ ÀÎµ¦½º °´Ã¼¿Í qp metaÁ¤º¸¸¦ »èÁ¦
+ *            executeDropIndexInTBS() í˜¸ì¶œ
+ *            : ê°ê°ì˜ ì¸ë±ìŠ¤ì— ëŒ€í•´ì„œ ì¸ë±ìŠ¤ ê°ì²´ì™€ qp metaì •ë³´ë¥¼ ì‚­ì œ
  *        }
  *    }
- *    else // INCLUDING CONTENTS ¸í½ÃÇÏÁö ¾ÊÀº °æ¿ì
+ *    else // INCLUDING CONTENTS ëª…ì‹œí•˜ì§€ ì•Šì€ ê²½ìš°
  *    {
  *        // nothing to do
  *    }
- *    4. Å×ÀÌºí½ºÆäÀÌ½º °´Ã¼¸¦ »èÁ¦
- *    if ( INCLUDING CONTENTS ¸í½ÃÇÑ °æ¿ì )
+ *    4. í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ ê°ì²´ë¥¼ ì‚­ì œ
+ *    if ( INCLUDING CONTENTS ëª…ì‹œí•œ ê²½ìš° )
  *    {
- *        5. Å×ÀÌºí½ºÆäÀÌ½º ³»ÀÇ ÀÎµ¦½º°¡ ¼Ò¼ÓµÈ Å×ÀÌºí¿¡ ´ëÇØ¼­ new cached meta¸¦ ¸¸µê
- *           : new cached meta¸¦ ¸¸µé´Ù°¡ ½ÇÆÐÇÒ °æ¿ì(ABORT¿¡·¯) ¿¹¿ÜÃ³¸®¸¦ À§ÇØ
- *           : sStage°¡ 1·Î À¯ÁöµÊ.
- *        6. Å×ÀÌºí½ºÆäÀÌ½º ³»ÀÇ Å×ÀÌºíÀÌ °¡Áö´Â Trigger cached metaÀÎ qcmTriggerInfo¸¦ »èÁ¦
- *        7. MVIew ViewÀÇ Trigger cached meta¸¦ »èÁ¦
- *        8. Å×ÀÌºí½ºÆäÀÌ½º ³»ÀÇ ÀÎµ¦½º°¡ ¼Ò¼ÓµÈ Å×ÀÌºí¿¡ ´ëÇØ¼­ old cached meta¸¦ »èÁ¦
- *        9. Å×ÀÌºí½ºÆäÀÌ½º ³»ÀÇ Å×ÀÌºí¿¡ ´ëÇØ¼­ cached meta¸¦ »èÁ¦
- *       10. MVIew ViewÀÇ cached meta¸¦ »èÁ¦
+ *        5. í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ ë‚´ì˜ ì¸ë±ìŠ¤ê°€ ì†Œì†ëœ í…Œì´ë¸”ì— ëŒ€í•´ì„œ new cached metaë¥¼ ë§Œë“¦
+ *           : new cached metaë¥¼ ë§Œë“¤ë‹¤ê°€ ì‹¤íŒ¨í•  ê²½ìš°(ABORTì—ëŸ¬) ì˜ˆì™¸ì²˜ë¦¬ë¥¼ ìœ„í•´
+ *           : sStageê°€ 1ë¡œ ìœ ì§€ë¨.
+ *        6. í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ ë‚´ì˜ í…Œì´ë¸”ì´ ê°€ì§€ëŠ” Trigger cached metaì¸ qcmTriggerInfoë¥¼ ì‚­ì œ
+ *        7. MVIew Viewì˜ Trigger cached metaë¥¼ ì‚­ì œ
+ *        8. í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ ë‚´ì˜ ì¸ë±ìŠ¤ê°€ ì†Œì†ëœ í…Œì´ë¸”ì— ëŒ€í•´ì„œ old cached metaë¥¼ ì‚­ì œ
+ *        9. í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ ë‚´ì˜ í…Œì´ë¸”ì— ëŒ€í•´ì„œ cached metaë¥¼ ì‚­ì œ
+ *       10. MVIew Viewì˜ cached metaë¥¼ ì‚­ì œ
  *    }
- *    else // INCLUDING CONTENTS ¸í½ÃÇÏÁö ¾ÊÀº °æ¿ì
+ *    else // INCLUDING CONTENTS ëª…ì‹œí•˜ì§€ ì•Šì€ ê²½ìš°
  *    {
  *        // nothing to do
  *    }
  *
  * Attention :
- *    À§ÀÇ ±¸Çö ¼ø¼­ Áß 5. 6. 7. 8, 9, 10ÀÇ ¼ø¼­°¡ ¸Å¿ì Áß¿ä ÇÔ.
+ *    ìœ„ì˜ êµ¬í˜„ ìˆœì„œ ì¤‘ 5. 6. 7. 8, 9, 10ì˜ ìˆœì„œê°€ ë§¤ìš° ì¤‘ìš” í•¨.
  *
- * < DDLÁß DROP EXECUTION ¿¡¼­ ¹Ýµå½Ã ÁöÄÑ¾ß ÇÒ ±ÔÄ¢ 2°¡Áö>
+ * < DDLì¤‘ DROP EXECUTION ì—ì„œ ë°˜ë“œì‹œ ì§€ì¼œì•¼ í•  ê·œì¹™ 2ê°€ì§€>
  *
- * (1) °´Ã¼¿Í, °´Ã¼¿Í °ü·ÃµÈ qp meta Å×ÀÌºíÀÇ ·¹ÄÚµå¸¦ »èÁ¦ ÈÄ
- *     QP¿¡¼­ À¯ÁöÇÏ°í ÀÖ´ø cached meta ¸¦ freeÇØ¾ß ÇÑ´Ù.
- *     ÀÌÀ¯´Â,
- *         °´Ã¼¿Í, qp meta Å×ÀÌºíÀÇ ·¹ÄÚµå¸¦ »èÁ¦ ÇÒ ¶§´Â
- *         sm ¸ðµâ¿¡¼­ log¸¦ ³²±â¹Ç·Î, Áß°£¿¡ ½ÇÆÐ¸¦ ÇÏ´õ¶óµµ ¿øº¹ÀÌ °¡´ÉÇÏ³ª
- *         cached meta´Â ÇÑ¹ø freeµÇ¸é ¿øº¹ÀÌ Èûµé´Ù.
- *         µû¶ó¼­ °´Ã¼¿Í qp meta Å×ÀÌºíÀÇ ·¹ÄÚµå¸¦ ¸ðµÎ ¼º°øÀûÀ¸·Î »èÁ¦ ÇÑ ´ÙÀ½¿¡
- *         cached meta¸¦ freeÇØ ÁØ´Ù.
- *         ±×¸®°í cached meta°¡ ½ÇÆÐÇÑ °æ¿ì´Â °ÅÀÇ ¾ø´Ù°í °¡Á¤À» ÇÏ¸ç
- *         ¸¸¾à ½ÇÆÐÇÑ °æ¿ì´Â FATAL ¿¡·¯°¡ ¸®ÅÏµÇ¾î ¼­¹ö°¡ Á¾·áµÈ´Ù.
+ * (1) ê°ì²´ì™€, ê°ì²´ì™€ ê´€ë ¨ëœ qp meta í…Œì´ë¸”ì˜ ë ˆì½”ë“œë¥¼ ì‚­ì œ í›„
+ *     QPì—ì„œ ìœ ì§€í•˜ê³  ìžˆë˜ cached meta ë¥¼ freeí•´ì•¼ í•œë‹¤.
+ *     ì´ìœ ëŠ”,
+ *         ê°ì²´ì™€, qp meta í…Œì´ë¸”ì˜ ë ˆì½”ë“œë¥¼ ì‚­ì œ í•  ë•ŒëŠ”
+ *         sm ëª¨ë“ˆì—ì„œ logë¥¼ ë‚¨ê¸°ë¯€ë¡œ, ì¤‘ê°„ì— ì‹¤íŒ¨ë¥¼ í•˜ë”ë¼ë„ ì›ë³µì´ ê°€ëŠ¥í•˜ë‚˜
+ *         cached metaëŠ” í•œë²ˆ freeë˜ë©´ ì›ë³µì´ íž˜ë“¤ë‹¤.
+ *         ë”°ë¼ì„œ ê°ì²´ì™€ qp meta í…Œì´ë¸”ì˜ ë ˆì½”ë“œë¥¼ ëª¨ë‘ ì„±ê³µì ìœ¼ë¡œ ì‚­ì œ í•œ ë‹¤ìŒì—
+ *         cached metaë¥¼ freeí•´ ì¤€ë‹¤.
+ *         ê·¸ë¦¬ê³  cached metaê°€ ì‹¤íŒ¨í•œ ê²½ìš°ëŠ” ê±°ì˜ ì—†ë‹¤ê³  ê°€ì •ì„ í•˜ë©°
+ *         ë§Œì•½ ì‹¤íŒ¨í•œ ê²½ìš°ëŠ” FATAL ì—ëŸ¬ê°€ ë¦¬í„´ë˜ì–´ ì„œë²„ê°€ ì¢…ë£Œëœë‹¤.
  *
- * (2) °´Ã¼¿Í °ü·ÃµÈ qp metaÅ×ÀÌºíµéÀÇ ·¹ÄÚµå¸¦ »èÁ¦ÇÒ ¶§
- *     ¹Ýµå½Ã °°Àº ¼ø¼­·Î Á¢±ÙÀ» ÇØ¾ß ÇÑ´Ù.
- *     ¿¹¸¦ µé¸é,
- *         qdd::executeDropTable¿¡¼­´Â
+ * (2) ê°ì²´ì™€ ê´€ë ¨ëœ qp metaí…Œì´ë¸”ë“¤ì˜ ë ˆì½”ë“œë¥¼ ì‚­ì œí•  ë•Œ
+ *     ë°˜ë“œì‹œ ê°™ì€ ìˆœì„œë¡œ ì ‘ê·¼ì„ í•´ì•¼ í•œë‹¤.
+ *     ì˜ˆë¥¼ ë“¤ë©´,
+ *         qdd::executeDropTableì—ì„œëŠ”
  *             delete SYS_CONSTRAINTS_
  *             delete SYS_TABLES_
- *         ¼ø¼­´ë·Î qp metaÅ×ÀÌºíÀ» Á¢±ÙÇÏ¿© ·¹ÄÚµå¸¦ »èÁ¦ÇÏ°í
- *         qdt::executeDropTableInTBS ¿¡¼­´Â
+ *         ìˆœì„œëŒ€ë¡œ qp metaí…Œì´ë¸”ì„ ì ‘ê·¼í•˜ì—¬ ë ˆì½”ë“œë¥¼ ì‚­ì œí•˜ê³ 
+ *         qdt::executeDropTableInTBS ì—ì„œëŠ”
  *             delete SYS_TABLES_
  *             delete SYS_CONSTRAINTS_
- *         ¼ø¼­´ë·Î qp metaÅ×ÀÌºíÀ» Á¢±ÙÇÏ¿© ·¹ÄÚµå¸¦ »èÁ¦ÇÏ°í
+ *         ìˆœì„œëŒ€ë¡œ qp metaí…Œì´ë¸”ì„ ì ‘ê·¼í•˜ì—¬ ë ˆì½”ë“œë¥¼ ì‚­ì œí•˜ê³ 
  *
- *         ´Ù¸¥ ¼¼¼Ç¿¡¼­ À§ÀÇ µÎ ÇÔ¼ö°¡ µ¿½Ã¿¡ È£ÃâµÉ °æ¿ì
- *         dead lockÀÌ ¹ß»ýÇÏ°Ô µÈ´Ù.
+ *         ë‹¤ë¥¸ ì„¸ì…˜ì—ì„œ ìœ„ì˜ ë‘ í•¨ìˆ˜ê°€ ë™ì‹œì— í˜¸ì¶œë  ê²½ìš°
+ *         dead lockì´ ë°œìƒí•˜ê²Œ ëœë‹¤.
  *
  ***********************************************************************/
 
@@ -512,29 +512,29 @@ IDE_RC qdtDrop::execute(qcStatement * aStatement)
     sTrans = (QC_SMI_STMT( aStatement ))->getTrans();
 
     // To Fix BUG-17292
-    //        [PROJ-1548] Tablespace DDL½Ã Tablespace¿¡ X¶ô Àâ´Â´Ù
+    //        [PROJ-1548] Tablespace DDLì‹œ Tablespaceì— Xë½ ìž¡ëŠ”ë‹¤
     //
-    // Tablespace¿¡ LockÀ» ÀâÁö ¾Ê°í Tablespace¾ÈÀÇ TableÀ» Á¶È¸ÇÏ°Ô µÇ¸é
-    // ±× »çÀÌ¿¡ »õ·Î¿î TableÀÌ »ý°Ü³¯ ¼ö ÀÖ´Ù.
+    // Tablespaceì— Lockì„ ìž¡ì§€ ì•Šê³  Tablespaceì•ˆì˜ Tableì„ ì¡°íšŒí•˜ê²Œ ë˜ë©´
+    // ê·¸ ì‚¬ì´ì— ìƒˆë¡œìš´ Tableì´ ìƒê²¨ë‚  ìˆ˜ ìžˆë‹¤.
     //
-    // ÀÌ·¯ÇÑ ¹®Á¦¸¦ ¹Ì¿¬¿¡ ¹æÁöÇÏ±â À§ÇØ
-    // Tablespace¿¡ X LockÀ» ¸ÕÀú Àâ°í Tablespace Validation/ExecutionÀ» ¼öÇà
+    // ì´ëŸ¬í•œ ë¬¸ì œë¥¼ ë¯¸ì—°ì— ë°©ì§€í•˜ê¸° ìœ„í•´
+    // Tablespaceì— X Lockì„ ë¨¼ì € ìž¡ê³  Tablespace Validation/Executionì„ ìˆ˜í–‰
     IDE_TEST( smiValidateAndLockTBS(
                   QC_SMI_STMT( aStatement ),
                   sParseTree->TBSAttr->mID,
                   SMI_TBS_LOCK_EXCLUSIVE,
-                  SMI_TBSLV_DROP_TBS, // TBS Validation ¿É¼Ç
+                  SMI_TBSLV_DROP_TBS, // TBS Validation ì˜µì…˜
                   ((smiGetDDLLockTimeOut() == -1) ?
                    ID_ULONG_MAX :
                    smiGetDDLLockTimeOut()*1000000) )
                   != IDE_SUCCESS );
 
-    // INCLUDING CONTENTS ±¸¹®À» »ç¿ëÇÑ °æ¿ì
-    // Å×ÀÌºí½ºÆäÀÌ½º ³»ÀÇ ¸ðµç °´Ã¼µéÀ» »èÁ¦ÇÑ´Ù.
+    // INCLUDING CONTENTS êµ¬ë¬¸ì„ ì‚¬ìš©í•œ ê²½ìš°
+    // í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ ë‚´ì˜ ëª¨ë“  ê°ì²´ë“¤ì„ ì‚­ì œí•œë‹¤.
     if ( ( sParseTree->flag & QDT_DROP_INCLUDING_CONTENTS_MASK )
          == QDT_DROP_INCLUDING_CONTENTS_TRUE )
     {
-        // Å×ÀÌºí½ºÆäÀÌ½º¿¡ ¼ÓÇÑ Å×ÀÌºíÀ» Ã£¾Æ¼­ sTableInfoList·Î ¹Þ¾Æ ¿È.
+        // í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ì— ì†í•œ í…Œì´ë¸”ì„ ì°¾ì•„ì„œ sTableInfoListë¡œ ë°›ì•„ ì˜´.
         IDE_TEST( qcmTablespace::findTableInfoListInTBS(
                       aStatement,
                       sParseTree->TBSAttr->mID,
@@ -542,15 +542,15 @@ IDE_RC qdtDrop::execute(qcStatement * aStatement)
                       &sTableInfoList) != IDE_SUCCESS );
 
         /* PROJ-1407 Temporary table
-         * session temporary tableÀÌ Á¸ÀçÇÏ´Â °æ¿ì tablespace¿¡
-         * DDLÀ» ÇÒ ¼ö ¾ø´Ù. */
+         * session temporary tableì´ ì¡´ìž¬í•˜ëŠ” ê²½ìš° tablespaceì—
+         * DDLì„ í•  ìˆ˜ ì—†ë‹¤. */
         for( sTempTableInfoList = sTableInfoList;
              sTempTableInfoList != NULL;
              sTempTableInfoList = sTempTableInfoList->next )
         {
-            /* tablespace lockÀÌ Àâ¾ÒÀ¸¹Ç·Î ´Ù¸¥ TransactionÀÌ
-             * table¿¡ DDLÀ» ÇÒ ¼ö ¾ø´Ù. table lockÀ» ÀâÁö¾Ê°íµµ
-             * table info¿¡ Á¢±Ù ÇÒ ¼ö ÀÖ´Ù.*/
+            /* tablespace lockì´ ìž¡ì•˜ìœ¼ë¯€ë¡œ ë‹¤ë¥¸ Transactionì´
+             * tableì— DDLì„ í•  ìˆ˜ ì—†ë‹¤. table lockì„ ìž¡ì§€ì•Šê³ ë„
+             * table infoì— ì ‘ê·¼ í•  ìˆ˜ ìžˆë‹¤.*/
             IDE_TEST_RAISE( qcuTemporaryObj::existSessionTable(
                                 sTempTableInfoList->tableInfo ) == ID_TRUE,
                             ERR_SESSION_TEMPORARY_TABLE_EXIST );
@@ -607,13 +607,13 @@ IDE_RC qdtDrop::execute(qcStatement * aStatement)
                               & sTablePartInfoList[i] )
                           != IDE_SUCCESS );
 
-                // ¸ðµç ÆÄÆ¼¼Ç¿¡ LOCK(X)
+                // ëª¨ë“  íŒŒí‹°ì…˜ì— LOCK(X)
                 /* To Fix BUG-17285
                  * [PROJ-1548-test] Disk Tablespace OFFLINE/DICARD
-                 * ÈÄ DROP½Ã ¿¡·¯¹ß»ý */
+                 * í›„ DROPì‹œ ì—ëŸ¬ë°œìƒ */
                 IDE_TEST( qcmPartition::validateAndLockPartitionInfoList( aStatement,
                                                                           sTablePartInfoList[i],
-                                                                          SMI_TBSLV_DROP_TBS, // TBS Validation ¿É¼Ç
+                                                                          SMI_TBSLV_DROP_TBS, // TBS Validation ì˜µì…˜
                                                                           SMI_TABLE_LOCK_X,
                                                                           ( ( smiGetDDLLockTimeOut() == -1 ) ?
                                                                             ID_ULONG_MAX :
@@ -630,10 +630,10 @@ IDE_RC qdtDrop::execute(qcStatement * aStatement)
             
                 /* To Fix BUG-17285
                  * [PROJ-1548-test] Disk Tablespace OFFLINE/DICARD
-                 * ÈÄ DROP½Ã ¿¡·¯¹ß»ý */
+                 * í›„ DROPì‹œ ì—ëŸ¬ë°œìƒ */
                 IDE_TEST( qdx::validateAndLockIndexTableList( aStatement,
                                                               sIndexTableList[i],
-                                                              SMI_TBSLV_DROP_TBS, // TBS Validation ¿É¼Ç
+                                                              SMI_TBSLV_DROP_TBS, // TBS Validation ì˜µì…˜
                                                               SMI_TABLE_LOCK_X,
                                                               ( ( smiGetDDLLockTimeOut() == -1 ) ?
                                                                 ID_ULONG_MAX :
@@ -644,7 +644,7 @@ IDE_RC qdtDrop::execute(qcStatement * aStatement)
             }
         }
 
-        // Å×ÀÌºí½ºÆäÀÌ½º¿¡ ¼ÓÇÑ ÀÎµ¦½º¸¦ Ã£¾Æ¼­ sIndexInfoList·Î ¹Þ¾Æ ¿È.
+        // í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ì— ì†í•œ ì¸ë±ìŠ¤ë¥¼ ì°¾ì•„ì„œ sIndexInfoListë¡œ ë°›ì•„ ì˜´.
         IDE_TEST( qcmTablespace::findIndexInfoListInTBS(
                       aStatement,
                       sParseTree->TBSAttr->mID,
@@ -696,13 +696,13 @@ IDE_RC qdtDrop::execute(qcStatement * aStatement)
                               & sIndexPartInfoList[i] )
                           != IDE_SUCCESS );
 
-                // ¸ðµç ÆÄÆ¼¼Ç¿¡ LOCK(X)
+                // ëª¨ë“  íŒŒí‹°ì…˜ì— LOCK(X)
                 /* To Fix BUG-17285
                  * [PROJ-1548-test] Disk Tablespace OFFLINE/DICARD
-                 * ÈÄ DROP½Ã ¿¡·¯¹ß»ý */
+                 * í›„ DROPì‹œ ì—ëŸ¬ë°œìƒ */
                 IDE_TEST( qcmPartition::validateAndLockPartitionInfoList( aStatement,
                                                                           sIndexPartInfoList[i],
-                                                                          SMI_TBSLV_DROP_TBS, // TBS Validation ¿É¼Ç
+                                                                          SMI_TBSLV_DROP_TBS, // TBS Validation ì˜µì…˜
                                                                           SMI_TABLE_LOCK_X,
                                                                           ( ( smiGetDDLLockTimeOut() == -1 ) ?
                                                                             ID_ULONG_MAX :
@@ -710,7 +710,7 @@ IDE_RC qdtDrop::execute(qcStatement * aStatement)
                           != IDE_SUCCESS );
 
                 // PROJ-1624 global non-partitioned index
-                // non-partitioned indexÇÏ³ª¸¸ lock
+                // non-partitioned indexí•˜ë‚˜ë§Œ lock
                 if ( sTempIndexInfoList->isPartitionedIndex == ID_FALSE )
                 {
                     sIndexTable = & sTempIndexInfoList->indexTable;
@@ -724,16 +724,16 @@ IDE_RC qdtDrop::execute(qcStatement * aStatement)
                 
                     /* To Fix BUG-17285
                      * [PROJ-1548-test] Disk Tablespace OFFLINE/DICARD
-                     * ÈÄ DROP½Ã ¿¡·¯¹ß»ý */
+                     * í›„ DROPì‹œ ì—ëŸ¬ë°œìƒ */
                     IDE_TEST(smiValidateAndLockObjects( (QC_SMI_STMT( aStatement ))->getTrans(),
                                                         sIndexTable->tableHandle,
                                                         sIndexTable->tableSCN,
-                                                        SMI_TBSLV_DROP_TBS, // TBS Validation ¿É¼Ç
+                                                        SMI_TBSLV_DROP_TBS, // TBS Validation ì˜µì…˜
                                                         SMI_TABLE_LOCK_X,
                                                         ((smiGetDDLLockTimeOut() == -1) ?
                                                          ID_ULONG_MAX :
                                                          smiGetDDLLockTimeOut()*1000000),
-                                                        ID_FALSE ) // BUG-28752 ¸í½ÃÀû Lock°ú ³»ÀçÀû LockÀ» ±¸ºÐÇÕ´Ï´Ù.
+                                                        ID_FALSE ) // BUG-28752 ëª…ì‹œì  Lockê³¼ ë‚´ìž¬ì  Lockì„ êµ¬ë¶„í•©ë‹ˆë‹¤.
                              != IDE_SUCCESS);
                 }
                 else
@@ -752,8 +752,8 @@ IDE_RC qdtDrop::execute(qcStatement * aStatement)
             sTableInfo = sTempTableInfoList->tableInfo;
 
             //-----------------------------------------
-            // °¢°¢ÀÇ Å×ÀÌºí¿¡ ´ëÇØ¼­
-            // Å×ÀÌºí °´Ã¼¿Í qp metaÁ¤º¸¸¦ »èÁ¦
+            // ê°ê°ì˜ í…Œì´ë¸”ì— ëŒ€í•´ì„œ
+            // í…Œì´ë¸” ê°ì²´ì™€ qp metaì •ë³´ë¥¼ ì‚­ì œ
             //-----------------------------------------
 
             if( sTableInfo->tablePartitionType == QCM_PARTITIONED_TABLE )
@@ -792,8 +792,8 @@ IDE_RC qdtDrop::execute(qcStatement * aStatement)
             sTableInfo = sTempIndexInfoList->tableInfo;
 
             //-----------------------------------------
-            // °¢°¢ÀÇ ÀÎµ¦½º¿¡ ´ëÇØ¼­
-            // ÀÎµ¦½º °´Ã¼¿Í qp metaÁ¤º¸¸¦ »èÁ¦
+            // ê°ê°ì˜ ì¸ë±ìŠ¤ì— ëŒ€í•´ì„œ
+            // ì¸ë±ìŠ¤ ê°ì²´ì™€ qp metaì •ë³´ë¥¼ ì‚­ì œ
             //-----------------------------------------
 
             if( sTableInfo->tablePartitionType == QCM_PARTITIONED_TABLE )
@@ -817,8 +817,8 @@ IDE_RC qdtDrop::execute(qcStatement * aStatement)
         }
 
         //-----------------------------------------
-        // AND DATAFILES ±¸¹®À» »ç¿ëÇÏ¸é,
-        // SMI_ALL_TOUCHÀ» ¼ÂÆÃÇØ¼­ sm¸ðµâ·Î ³Ñ°Ü ÁÜ.
+        // AND DATAFILES êµ¬ë¬¸ì„ ì‚¬ìš©í•˜ë©´,
+        // SMI_ALL_TOUCHì„ ì…‹íŒ…í•´ì„œ smëª¨ë“ˆë¡œ ë„˜ê²¨ ì¤Œ.
         //-----------------------------------------
 
         if ( ( sParseTree->flag & QDT_DROP_AND_DATAFILES_MASK )
@@ -837,7 +837,7 @@ IDE_RC qdtDrop::execute(qcStatement * aStatement)
     }
 
     //-----------------------------------------
-    // Å×ÀÌºí½ºÆäÀÌ½º °´Ã¼¸¦ »èÁ¦
+    // í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ ê°ì²´ë¥¼ ì‚­ì œ
     //-----------------------------------------
 
     IDE_TEST( smiTableSpace::drop(aStatement->mStatistics,
@@ -846,14 +846,14 @@ IDE_RC qdtDrop::execute(qcStatement * aStatement)
                                   sTouchMode)
           != IDE_SUCCESS );
 
-    // INCLUDING CONTENTS ±¸¹®À» »ç¿ëÇÑ °æ¿ì Å×ÀÌºí½ºÆäÀÌ½º ³»ÀÇ ¸ðµç °´Ã¼µéÀ» »èÁ¦ÇÑ´Ù.
+    // INCLUDING CONTENTS êµ¬ë¬¸ì„ ì‚¬ìš©í•œ ê²½ìš° í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ ë‚´ì˜ ëª¨ë“  ê°ì²´ë“¤ì„ ì‚­ì œí•œë‹¤.
     if ( ( sParseTree->flag & QDT_DROP_INCLUDING_CONTENTS_MASK )
          == QDT_DROP_INCLUDING_CONTENTS_TRUE )
     {
         //-----------------------------------------
-        // Å×ÀÌºí½ºÆäÀÌ½º ³»ÀÇ ÀÎµ¦½º°¡ ¼Ò¼ÓµÈ Å×ÀÌºí¿¡ ´ëÇØ¼­
-        // new cached meta¸¦ ¸¸µê
-        // ½ÇÆÐÇÑ °æ¿ìÀÇ ¿¹¿ÜÃ³¸®¸¦ À§ÇØ sStage°¡ 1·Î À¯ÁöµÊ
+        // í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ ë‚´ì˜ ì¸ë±ìŠ¤ê°€ ì†Œì†ëœ í…Œì´ë¸”ì— ëŒ€í•´ì„œ
+        // new cached metaë¥¼ ë§Œë“¦
+        // ì‹¤íŒ¨í•œ ê²½ìš°ì˜ ì˜ˆì™¸ì²˜ë¦¬ë¥¼ ìœ„í•´ sStageê°€ 1ë¡œ ìœ ì§€ë¨
         //-----------------------------------------
         for( sTempIndexInfoList = sIndexInfoList, i = 0;
              sTempIndexInfoList != NULL;
@@ -894,7 +894,7 @@ IDE_RC qdtDrop::execute(qcStatement * aStatement)
                 }
                 
                 // PROJ-1624 global non-partitioned index
-                // index table tableinfo´Â destroyÇÑ´Ù.
+                // index table tableinfoëŠ” destroyí•œë‹¤.
                 if ( sTempIndexInfoList->isPartitionedIndex == ID_FALSE )
                 {
                     sIndexTable = & sTempIndexInfoList->indexTable;
@@ -914,30 +914,30 @@ IDE_RC qdtDrop::execute(qcStatement * aStatement)
         }
 
         //-----------------------------------------
-        // Å×ÀÌºí½ºÆäÀÌ½º ³»ÀÇ Å×ÀÌºíÀÌ °¡Áö´Â
-        // Trigger cached metaÀÎ qcmTriggerInfo¸¦ »èÁ¦
+        // í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ ë‚´ì˜ í…Œì´ë¸”ì´ ê°€ì§€ëŠ”
+        // Trigger cached metaì¸ qcmTriggerInfoë¥¼ ì‚­ì œ
         //-----------------------------------------
 
         for( sTempTableInfoList = sTableInfoList;
              sTempTableInfoList != NULL;
              sTempTableInfoList = sTempTableInfoList->next )
         {
-            // Á¤»ó ½ÇÇàµÇ°Å³ª, ¿¡·¯ÀÌ¸é FATALÀÌ ÀÌ¹Ì ¼³Á¤µÇ¾î ÀÖÀ½.
+            // ì •ìƒ ì‹¤í–‰ë˜ê±°ë‚˜, ì—ëŸ¬ì´ë©´ FATALì´ ì´ë¯¸ ì„¤ì •ë˜ì–´ ìžˆìŒ.
             IDE_TEST( qdnTrigger::freeTriggerCaches4DropTable(
                           sTempTableInfoList->tableInfo ) != IDE_SUCCESS );
         }
 
         //-----------------------------------------
-        // Å×ÀÌºí½ºÆäÀÌ½º ³»ÀÇ ÀÎµ¦½º°¡ ¼Ò¼ÓµÈ Å×ÀÌºí¿¡ ´ëÇØ¼­
-        // old cached meta¸¦ »èÁ¦
+        // í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ ë‚´ì˜ ì¸ë±ìŠ¤ê°€ ì†Œì†ëœ í…Œì´ë¸”ì— ëŒ€í•´ì„œ
+        // old cached metaë¥¼ ì‚­ì œ
         //-----------------------------------------
 
-        // ÀÎµ¦½ºÀÇ »èÁ¦´Â tableInfo¸¦ º¯°æÇÒ »ÓÀÌ¹Ç·Î
-        // tableInfo¸¦ »èÁ¦ÇÏÁö´Â ¾Ê´Â´Ù.
+        // ì¸ë±ìŠ¤ì˜ ì‚­ì œëŠ” tableInfoë¥¼ ë³€ê²½í•  ë¿ì´ë¯€ë¡œ
+        // tableInfoë¥¼ ì‚­ì œí•˜ì§€ëŠ” ì•ŠëŠ”ë‹¤.
 
         //-----------------------------------------
-        // Å×ÀÌºí½ºÆäÀÌ½º ³»ÀÇ Å×ÀÌºí¿¡ ´ëÇØ¼­
-        // cached meta¸¦ »èÁ¦
+        // í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ ë‚´ì˜ í…Œì´ë¸”ì— ëŒ€í•´ì„œ
+        // cached metaë¥¼ ì‚­ì œ
         //-----------------------------------------
 
         for( sTempTableInfoList = sTableInfoList, i = 0;
@@ -1019,23 +1019,23 @@ IDE_RC qdtDrop::executeDropTableInTBS(qcStatement          * aStatement,
 /***********************************************************************
  *
  * Description :
- *    qdtDrop::execute·Î ºÎÅÍ È£Ãâ
- *    Å×ÀÌºí½ºÆäÀÌ½º ³»ÀÇ Å×ÀÌºí °´Ã¼¿Í qp metaÁ¤º¸¸¦ »èÁ¦
+ *    qdtDrop::executeë¡œ ë¶€í„° í˜¸ì¶œ
+ *    í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ ë‚´ì˜ í…Œì´ë¸” ê°ì²´ì™€ qp metaì •ë³´ë¥¼ ì‚­ì œ
  *
  * Implementation :
- *    1. Å×ÀÌºí¿¡ unique ÀÎµ¦½º°¡ ÀÖÀ» °æ¿ì referential constraint¸¦
- *       Ã£¾Æ¼­ »èÁ¦
- *    2. SYS_CONSTRAINTS_ ¿¡¼­ °ü·ÃµÈ constraint Á¤º¸ »èÁ¦
- *    3. SYS_INDICES_, SYS_INDEX_COLUMNS_ ¿¡¼­ Å×ÀÌºí Á¤º¸ »èÁ¦
- *    4. SYS_TABLES_, SYS_COLUMNS_ ¿¡¼­ Å×ÀÌºí Á¤º¸ »èÁ¦
- *    5. SYS_GRANT_OBJECT_ ¿¡¼­ Å×ÀÌºí°ú °ü·ÃµÈ privilege Á¤º¸ »èÁ¦
- *    6. Trigger °´Ã¼ »èÁ¦¿Í
- *       SYS_TRIGGERS_ ..µî ¿¡¼­ Å×ÀÌºí°ú °ü·ÃµÈ Trigger Á¤º¸ »èÁ¦
- *    7. related PSM À» invalid »óÅÂ·Î º¯°æ
- *    8. related VIEW À» invalid »óÅÂ·Î º¯°æ
- *    9. Constraint¿Í °ü·ÃµÈ Procedure¿¡ ´ëÇÑ Á¤º¸¸¦ »èÁ¦
- *   10. Index¿Í °ü·ÃµÈ Procedure¿¡ ´ëÇÑ Á¤º¸¸¦ »èÁ¦
- *   11. Å×ÀÌºíÀÇ °´Ã¼¸¦ »èÁ¦
+ *    1. í…Œì´ë¸”ì— unique ì¸ë±ìŠ¤ê°€ ìžˆì„ ê²½ìš° referential constraintë¥¼
+ *       ì°¾ì•„ì„œ ì‚­ì œ
+ *    2. SYS_CONSTRAINTS_ ì—ì„œ ê´€ë ¨ëœ constraint ì •ë³´ ì‚­ì œ
+ *    3. SYS_INDICES_, SYS_INDEX_COLUMNS_ ì—ì„œ í…Œì´ë¸” ì •ë³´ ì‚­ì œ
+ *    4. SYS_TABLES_, SYS_COLUMNS_ ì—ì„œ í…Œì´ë¸” ì •ë³´ ì‚­ì œ
+ *    5. SYS_GRANT_OBJECT_ ì—ì„œ í…Œì´ë¸”ê³¼ ê´€ë ¨ëœ privilege ì •ë³´ ì‚­ì œ
+ *    6. Trigger ê°ì²´ ì‚­ì œì™€
+ *       SYS_TRIGGERS_ ..ë“± ì—ì„œ í…Œì´ë¸”ê³¼ ê´€ë ¨ëœ Trigger ì •ë³´ ì‚­ì œ
+ *    7. related PSM ì„ invalid ìƒíƒœë¡œ ë³€ê²½
+ *    8. related VIEW ì„ invalid ìƒíƒœë¡œ ë³€ê²½
+ *    9. Constraintì™€ ê´€ë ¨ëœ Procedureì— ëŒ€í•œ ì •ë³´ë¥¼ ì‚­ì œ
+ *   10. Indexì™€ ê´€ë ¨ëœ Procedureì— ëŒ€í•œ ì •ë³´ë¥¼ ì‚­ì œ
+ *   11. í…Œì´ë¸”ì˜ ê°ì²´ë¥¼ ì‚­ì œ
  *
  ***********************************************************************/
 #define IDE_FN "qdtDrop::executeDropTableInTBS"
@@ -1049,16 +1049,16 @@ IDE_RC qdtDrop::executeDropTableInTBS(qcStatement          * aStatement,
     qdIndexTableList      * sIndexTable;
 
     //-----------------------------------------
-    // Å×ÀÌºí¿¡ unique ÀÎµ¦½º°¡ ÀÖÀ» °æ¿ì
-    // referential constraint¸¦ Ã£¾Æ¼­ »èÁ¦
+    // í…Œì´ë¸”ì— unique ì¸ë±ìŠ¤ê°€ ìžˆì„ ê²½ìš°
+    // referential constraintë¥¼ ì°¾ì•„ì„œ ì‚­ì œ
     //-----------------------------------------
 
     sTableInfo = aTableInfoList->tableInfo;
 
     /* PROJ-1407 Temporary table
-     * session temporary tableÀÌ Á¸ÀçÇÏ´Â °æ¿ì DDLÀ» ÇÒ ¼ö ¾ø´Ù.
-     * ¾Õ¿¡¼­ session tableÀÇ Á¸ÀçÀ¯¹«¸¦ ¹Ì¸® È®ÀÎÇÏ¿´´Ù.
-     * session tableÀÌ ÀÖÀ»¸® ¾ø´Ù.*/
+     * session temporary tableì´ ì¡´ìž¬í•˜ëŠ” ê²½ìš° DDLì„ í•  ìˆ˜ ì—†ë‹¤.
+     * ì•žì—ì„œ session tableì˜ ì¡´ìž¬ìœ ë¬´ë¥¼ ë¯¸ë¦¬ í™•ì¸í•˜ì˜€ë‹¤.
+     * session tableì´ ìžˆì„ë¦¬ ì—†ë‹¤.*/
     IDE_DASSERT( qcuTemporaryObj::existSessionTable( sTableInfo ) == ID_FALSE );
 
     // PROJ-1502 PARTITIONED DISK TABLE
@@ -1111,7 +1111,7 @@ IDE_RC qdtDrop::executeDropTableInTBS(qcStatement          * aStatement,
     }
 
     //-----------------------------------------
-    // SYS_CONSTRAINTS_ ¿¡¼­ °ü·ÃµÈ constraint Á¤º¸ »èÁ¦
+    // SYS_CONSTRAINTS_ ì—ì„œ ê´€ë ¨ëœ constraint ì •ë³´ ì‚­ì œ
     //-----------------------------------------
 
     IDE_TEST( qdd::deleteConstraintsFromMeta(aStatement,
@@ -1119,7 +1119,7 @@ IDE_RC qdtDrop::executeDropTableInTBS(qcStatement          * aStatement,
               != IDE_SUCCESS );
 
     //-----------------------------------------
-    // SYS_INDICES_, SYS_INDEX_COLUMNS_ ¿¡¼­ Å×ÀÌºí Á¤º¸ »èÁ¦
+    // SYS_INDICES_, SYS_INDEX_COLUMNS_ ì—ì„œ í…Œì´ë¸” ì •ë³´ ì‚­ì œ
     //-----------------------------------------
 
     IDE_TEST( qdd::deleteIndicesFromMeta(aStatement,
@@ -1127,7 +1127,7 @@ IDE_RC qdtDrop::executeDropTableInTBS(qcStatement          * aStatement,
               != IDE_SUCCESS );
 
     //-----------------------------------------
-    // SYS_TABLES_, SYS_COLUMNS_ ¿¡¼­ Å×ÀÌºí Á¤º¸ »èÁ¦
+    // SYS_TABLES_, SYS_COLUMNS_ ì—ì„œ í…Œì´ë¸” ì •ë³´ ì‚­ì œ
     //-----------------------------------------
 
     IDE_TEST( qdd::deleteTableFromMeta(aStatement,
@@ -1135,7 +1135,7 @@ IDE_RC qdtDrop::executeDropTableInTBS(qcStatement          * aStatement,
               != IDE_SUCCESS );
 
     //-----------------------------------------
-    // SYS_GRANT_OBJECT_ ¿¡¼­ Å×ÀÌºí°ú °ü·ÃµÈ privilege Á¤º¸ »èÁ¦
+    // SYS_GRANT_OBJECT_ ì—ì„œ í…Œì´ë¸”ê³¼ ê´€ë ¨ëœ privilege ì •ë³´ ì‚­ì œ
     //-----------------------------------------
 
     IDE_TEST( qdpDrop::removePriv4DropTable(aStatement,
@@ -1143,8 +1143,8 @@ IDE_RC qdtDrop::executeDropTableInTBS(qcStatement          * aStatement,
               != IDE_SUCCESS );
 
     //-----------------------------------------
-    // Trigger °´Ã¼¿Í
-    // SYS_TRIGGERS_ ..µî ¿¡¼­ Å×ÀÌºí°ú °ü·ÃµÈ Trigger Á¤º¸ »èÁ¦
+    // Trigger ê°ì²´ì™€
+    // SYS_TRIGGERS_ ..ë“± ì—ì„œ í…Œì´ë¸”ê³¼ ê´€ë ¨ëœ Trigger ì •ë³´ ì‚­ì œ
     //-----------------------------------------
 
     IDE_TEST(qdnTrigger::dropTrigger4DropTable(aStatement, sTableInfo )
@@ -1152,7 +1152,7 @@ IDE_RC qdtDrop::executeDropTableInTBS(qcStatement          * aStatement,
 
     /* PROJ-2197 PSM Renewal */
     //-----------------------------------------
-    // related PSM À» invalid »óÅÂ·Î º¯°æ
+    // related PSM ì„ invalid ìƒíƒœë¡œ ë³€ê²½
     //-----------------------------------------
 
     IDE_TEST( qcmProc::relSetInvalidProcOfRelated(
@@ -1164,7 +1164,7 @@ IDE_RC qdtDrop::executeDropTableInTBS(qcStatement          * aStatement,
 
     // PROJ-1073 Package
     //-----------------------------------------
-    // related PSM À» invalid »óÅÂ·Î º¯°æ
+    // related PSM ì„ invalid ìƒíƒœë¡œ ë³€ê²½
     //-----------------------------------------
     IDE_TEST( qcmPkg::relSetInvalidPkgOfRelated(
                 aStatement,
@@ -1174,7 +1174,7 @@ IDE_RC qdtDrop::executeDropTableInTBS(qcStatement          * aStatement,
                 QS_TABLE) != IDE_SUCCESS );
         
     //-----------------------------------------
-    // related VIEW À» invalid »óÅÂ·Î º¯°æ
+    // related VIEW ì„ invalid ìƒíƒœë¡œ ë³€ê²½
     //-----------------------------------------
 
     IDE_TEST( qcmView::setInvalidViewOfRelated(
@@ -1184,7 +1184,7 @@ IDE_RC qdtDrop::executeDropTableInTBS(qcStatement          * aStatement,
                   idlOS::strlen((SChar*)sTableInfo->name),
                   QS_TABLE) != IDE_SUCCESS );
 
-    /* BUG-35445 Check Constraint, Function-Based Index¿¡¼­ »ç¿ë ÁßÀÎ FunctionÀ» º¯°æ/Á¦°Å ¹æÁö */
+    /* BUG-35445 Check Constraint, Function-Based Indexì—ì„œ ì‚¬ìš© ì¤‘ì¸ Functionì„ ë³€ê²½/ì œê±° ë°©ì§€ */
     IDE_TEST( qcmProc::relRemoveRelatedToConstraintByTableID(
                     aStatement,
                     sTableInfo->tableID )
@@ -1197,7 +1197,7 @@ IDE_RC qdtDrop::executeDropTableInTBS(qcStatement          * aStatement,
 
     //-----------------------------------------
     // BUG-21387 COMMENT
-    // SYS_COMMENTS_¿¡¼­ Comment¸¦ »èÁ¦ÇÑ´Ù.
+    // SYS_COMMENTS_ì—ì„œ Commentë¥¼ ì‚­ì œí•œë‹¤.
     //-----------------------------------------
     IDE_TEST( qdbComment::deleteCommentTable(
                   aStatement,
@@ -1213,13 +1213,13 @@ IDE_RC qdtDrop::executeDropTableInTBS(qcStatement          * aStatement,
               != IDE_SUCCESS );
 
     // PROJ-2264 Dictionary table
-    // SYS_COMPRESSION_TABLES_ ¿¡¼­ °ü·Ã ·¹ÄÚµå¸¦ »èÁ¦ÇÑ´Ù.
+    // SYS_COMPRESSION_TABLES_ ì—ì„œ ê´€ë ¨ ë ˆì½”ë“œë¥¼ ì‚­ì œí•œë‹¤.
     IDE_TEST( qdd::deleteCompressionTableSpecFromMeta( aStatement,
                                                        sTableInfo->tableID )
               != IDE_SUCCESS );
 
     //-----------------------------------------
-    // Å×ÀÌºí °´Ã¼¸¦ »èÁ¦
+    // í…Œì´ë¸” ê°ì²´ë¥¼ ì‚­ì œ
     //-----------------------------------------
 
     IDE_TEST( smiTable::dropTable( QC_SMI_STMT( aStatement ),
@@ -1243,15 +1243,15 @@ IDE_RC qdtDrop::executeDropIndexInTBS(qcStatement          * aStatement,
 /***********************************************************************
  *
  * Description :
- *    qdtDrop::execute·Î ºÎÅÍ È£Ãâ
- *    Å×ÀÌºí½ºÆäÀÌ½º ³»ÀÇ ÀÎµ¦½º °´Ã¼¿Í qp metaÁ¤º¸¸¦ »èÁ¦
+ *    qdtDrop::executeë¡œ ë¶€í„° í˜¸ì¶œ
+ *    í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ ë‚´ì˜ ì¸ë±ìŠ¤ ê°ì²´ì™€ qp metaì •ë³´ë¥¼ ì‚­ì œ
  *
  * Implementation :
- *    1. unique ÀÎµ¦½º°¡ ÀÖÀ» °æ¿ì referential constraint¸¦
- *       Ã£¾Æ¼­ »èÁ¦
- *    2. ÀÎµ¦½º °´Ã¼¸¦ »èÁ¦
- *    3. SYS_INDICES_, SYS_INDEX_COLUMNS_ ¿¡¼­ ÀÎµ¦½º Á¤º¸ »èÁ¦
- *    4. related PSM À» invalid »óÅÂ·Î º¯°æ
+ *    1. unique ì¸ë±ìŠ¤ê°€ ìžˆì„ ê²½ìš° referential constraintë¥¼
+ *       ì°¾ì•„ì„œ ì‚­ì œ
+ *    2. ì¸ë±ìŠ¤ ê°ì²´ë¥¼ ì‚­ì œ
+ *    3. SYS_INDICES_, SYS_INDEX_COLUMNS_ ì—ì„œ ì¸ë±ìŠ¤ ì •ë³´ ì‚­ì œ
+ *    4. related PSM ì„ invalid ìƒíƒœë¡œ ë³€ê²½
  *
  ***********************************************************************/
 #define IDE_FN "qdtDrop::executeDropIndexInTBS"
@@ -1286,7 +1286,7 @@ IDE_RC qdtDrop::executeDropIndexInTBS(qcStatement          * aStatement,
     IDE_TEST_RAISE( sIndexInfo == NULL, ERR_NOT_EXIST_INDEX);
 
     //-----------------------------------------
-    // unique ÀÎµ¦½º°¡ ÀÖÀ» °æ¿ì referential constraint¸¦ Ã£¾Æ¼­ »èÁ¦
+    // unique ì¸ë±ìŠ¤ê°€ ìžˆì„ ê²½ìš° referential constraintë¥¼ ì°¾ì•„ì„œ ì‚­ì œ
     //-----------------------------------------
 
     // PROJ-1502 PARTITIONED DISK TABLE
@@ -1362,7 +1362,7 @@ IDE_RC qdtDrop::executeDropIndexInTBS(qcStatement          * aStatement,
     }
 
     //-----------------------------------------
-    // ÀÎµ¦½º °´Ã¼¸¦ »èÁ¦
+    // ì¸ë±ìŠ¤ ê°ì²´ë¥¼ ì‚­ì œ
     //-----------------------------------------
 
     IDE_TEST( smiTable::dropIndex(QC_SMI_STMT( aStatement ),
@@ -1372,7 +1372,7 @@ IDE_RC qdtDrop::executeDropIndexInTBS(qcStatement          * aStatement,
               != IDE_SUCCESS );
 
     //-----------------------------------------
-    // SYS_INDICES_, SYS_INDEX_COLUMNS_ ¿¡¼­ ÀÎµ¦½º Á¤º¸ »èÁ¦
+    // SYS_INDICES_, SYS_INDEX_COLUMNS_ ì—ì„œ ì¸ë±ìŠ¤ ì •ë³´ ì‚­ì œ
     //-----------------------------------------
 
     IDE_TEST( qdd::deleteIndicesFromMetaByIndexID(aStatement,
@@ -1381,8 +1381,8 @@ IDE_RC qdtDrop::executeDropIndexInTBS(qcStatement          * aStatement,
 
     //-----------------------------------------
     // BUG-17326
-    // Constraint·Î »ý¼ºµÈ ÀÎµ¦½ºÀÎ °æ¿ì Constraintµµ ÇÔ²² »èÁ¦
-    // SYS_CONSTRAINTS_, SYS_CONSTRAINT_COLUMNS_ ¿¡¼­ Constraint Á¤º¸ »èÁ¦
+    // Constraintë¡œ ìƒì„±ëœ ì¸ë±ìŠ¤ì¸ ê²½ìš° Constraintë„ í•¨ê»˜ ì‚­ì œ
+    // SYS_CONSTRAINTS_, SYS_CONSTRAINT_COLUMNS_ ì—ì„œ Constraint ì •ë³´ ì‚­ì œ
     //-----------------------------------------
 
     for ( i = 0; i < sTableInfo->uniqueKeyCount; i++ )
@@ -1417,25 +1417,25 @@ IDE_RC qdtDrop::executeDropIndexInTBS(qcStatement          * aStatement,
 /***********************************************************************
  *
  * Description :
- *    qdtDrop::execute()¿¡¼­ Materialized ViewÀÇ MVIew TableÀ» Á¦¿ÜÇÑ ºÎºÐÀ»
- *    Á¦°ÅÇÏ±â À§ÇØ È£ÃâÇÑ´Ù. (Meta Cache´Â Á¦¿Ü)
- *    ³ªÁß¿¡ Meta Cache¸¦ Á¦°ÅÇÏ±â À§ÇØ, MVIew View List¸¦ ¹ÝÈ¯ÇÑ´Ù.
+ *    qdtDrop::execute()ì—ì„œ Materialized Viewì˜ MVIew Tableì„ ì œì™¸í•œ ë¶€ë¶„ì„
+ *    ì œê±°í•˜ê¸° ìœ„í•´ í˜¸ì¶œí•œë‹¤. (Meta CacheëŠ” ì œì™¸)
+ *    ë‚˜ì¤‘ì— Meta Cacheë¥¼ ì œê±°í•˜ê¸° ìœ„í•´, MVIew View Listë¥¼ ë°˜í™˜í•œë‹¤.
  *
- *    Table List¿¡ MView TableÀÌ ÀÖÀ¸¸é,
- *    (1) MView View¸¦ Á¦°ÅÇÑ´Ù. (Meta Cache´Â Á¦¿Ü)
- *    (2) Materialized View¸¦ Meta Table¿¡¼­ Á¦°ÅÇÑ´Ù.
+ *    Table Listì— MView Tableì´ ìžˆìœ¼ë©´,
+ *    (1) MView Viewë¥¼ ì œê±°í•œë‹¤. (Meta CacheëŠ” ì œì™¸)
+ *    (2) Materialized Viewë¥¼ Meta Tableì—ì„œ ì œê±°í•œë‹¤.
  *
  * Implementation :
- *    MVIew TableÀÌ¸é, ¾Æ·¡ÀÇ ÀÛ¾÷À» ¼öÇàÇÑ´Ù.
+ *    MVIew Tableì´ë©´, ì•„ëž˜ì˜ ìž‘ì—…ì„ ìˆ˜í–‰í•œë‹¤.
  *    1. lock & get view information
- *    2. Meta Table¿¡¼­ View »èÁ¦
- *    3. Meta Table¿¡¼­ Object Privilege »èÁ¦ (View)
- *    4. Trigger »èÁ¦ (Meta Table, Object)
- *    5. related PSM À» Invalid »óÅÂ·Î º¯°æ (View)
- *    6. related VIEW À» Invalid »óÅÂ·Î º¯°æ (View)
+ *    2. Meta Tableì—ì„œ View ì‚­ì œ
+ *    3. Meta Tableì—ì„œ Object Privilege ì‚­ì œ (View)
+ *    4. Trigger ì‚­ì œ (Meta Table, Object)
+ *    5. related PSM ì„ Invalid ìƒíƒœë¡œ ë³€ê²½ (View)
+ *    6. related VIEW ì„ Invalid ìƒíƒœë¡œ ë³€ê²½ (View)
  *    7. smiTable::dropTable (View)
- *    8. Meta Table¿¡¼­ Materialized View »èÁ¦
- *    9. MVIew View List¿¡ View¸¦ Ãß°¡ÇÑ´Ù.
+ *    8. Meta Tableì—ì„œ Materialized View ì‚­ì œ
+ *    9. MVIew View Listì— Viewë¥¼ ì¶”ê°€í•œë‹¤.
  *
  ***********************************************************************/
 IDE_RC qdtDrop::executeDropMViewOfRelated(
@@ -1486,12 +1486,12 @@ IDE_RC qdtDrop::executeDropMViewOfRelated(
             IDE_TEST( smiValidateAndLockObjects( (QC_SMI_STMT( aStatement ))->getTrans(),
                                                  sViewHandle,
                                                  sViewSCN,
-                                                 SMI_TBSLV_DROP_TBS, // TBS Validation ¿É¼Ç
+                                                 SMI_TBSLV_DROP_TBS, // TBS Validation ì˜µì…˜
                                                  SMI_TABLE_LOCK_X,
                                                  ( ( smiGetDDLLockTimeOut() == -1 ) ?
                                                    ID_ULONG_MAX :
                                                    smiGetDDLLockTimeOut() * 1000000 ),
-                                                 ID_FALSE ) // BUG-28752 ¸í½ÃÀû Lock°ú ³»ÀçÀû LockÀ» ±¸ºÐÇÕ´Ï´Ù.
+                                                 ID_FALSE ) // BUG-28752 ëª…ì‹œì  Lockê³¼ ë‚´ìž¬ì  Lockì„ êµ¬ë¶„í•©ë‹ˆë‹¤.
                       != IDE_SUCCESS );
 
             IDE_TEST( smiGetTableTempInfo( sViewHandle,

@@ -181,37 +181,37 @@ mtdModule mtdNumeric = {
     {
         // Key Comparison
         {
-            // mt valueµé °£ÀÇ compare
+            // mt valueë“¤ ê°„ì˜ compare
             mtdNumericFixedMtdFixedMtdKeyAscComp, // Ascending Key Comparison
             mtdNumericFixedMtdFixedMtdKeyDescComp // Descending Key Comparison
         }
         ,
         {
-            // mt valueµé °£ÀÇ compare
+            // mt valueë“¤ ê°„ì˜ compare
             mtdNumericMtdMtdKeyAscComp, // Ascending Key Comparison
             mtdNumericMtdMtdKeyDescComp // Descending Key Comparison
         }
         ,
         {
-            // mt value¿Í stored value°£ÀÇ compare
+            // mt valueì™€ stored valueê°„ì˜ compare
             mtdNumericStoredMtdKeyAscComp, // Ascending Key Comparison
             mtdNumericStoredMtdKeyDescComp // Descending Key Comparison
         }
         ,
         {
-            // stored valueµé °£ÀÇ compare
+            // stored valueë“¤ ê°„ì˜ compare
             mtdNumericStoredStoredKeyAscComp, // Ascending Key Comparison
             mtdNumericStoredStoredKeyDescComp // Descending Key Comparison
         }
         ,
         {
-            /* PROJ-2433 : index Direct key¿Í fixed mt valueµé °£ÀÇ compare */
+            /* PROJ-2433 : index Direct keyì™€ fixed mt valueë“¤ ê°„ì˜ compare */
             mtdNumericFixedMtdFixedMtdKeyAscComp,
             mtdNumericFixedMtdFixedMtdKeyDescComp
         }
         ,
         {
-            /* PROJ-2433 : index Direct key¿Í mt valueµé °£ÀÇ compare */
+            /* PROJ-2433 : index Direct keyì™€ mt valueë“¤ ê°„ì˜ compare */
             mtdNumericMtdMtdKeyAscComp,
             mtdNumericMtdMtdKeyDescComp
         }
@@ -247,7 +247,7 @@ IDE_RC mtdInitialize( UInt aNo )
 {
     IDE_TEST( mtd::initializeModule( &mtdNumeric, aNo ) != IDE_SUCCESS );
     
-     // mtdColumnÀÇ ÃÊ±âÈ­
+     // mtdColumnì˜ ì´ˆê¸°í™”
     IDE_TEST( mtc::initializeColumn( & mtdColumn,
                                      & mtdNumeric,
                                      0,   // arguments
@@ -322,7 +322,7 @@ IDE_RC mtdValue( mtcTemplate* /* aTemplate */,
                   != IDE_SUCCESS );
 
         // To Fix BUG-12612
-        // precision, scale Àç ¼³Á¤ ÈÄ, estimate·Î semantic °Ë»ç
+        // precision, scale ì¬ ì„¤ì • í›„, estimateë¡œ semantic ê²€ì‚¬
 
         IDE_TEST( mtc::getPrecisionScaleFloat( sValue,
                                                &aColumn->precision,
@@ -399,7 +399,7 @@ SInt mtdNumericLogicalAscComp( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd Å¸ÀÔÀÇ Keyµé °£ÀÇ ascending compare
+ * Description : Mtd íƒ€ì…ì˜ Keyë“¤ ê°„ì˜ ascending compare
  *
  * Implementation :
  *
@@ -475,7 +475,7 @@ SInt mtdNumericLogicalDescComp( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd Å¸ÀÔÀÇ Keyµé °£ÀÇ descending compare
+ * Description : Mtd íƒ€ì…ì˜ Keyë“¤ ê°„ì˜ descending compare
  *
  * Implementation :
  *
@@ -550,7 +550,7 @@ SInt mtdNumericFixedMtdFixedMtdKeyAscComp( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd Å¸ÀÔÀÇ Keyµé °£ÀÇ ascending compare
+ * Description : Mtd íƒ€ì…ì˜ Keyë“¤ ê°„ì˜ ascending compare
  *
  * Implementation :
  *
@@ -626,7 +626,7 @@ SInt mtdNumericFixedMtdFixedMtdKeyDescComp( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd Å¸ÀÔÀÇ Keyµé °£ÀÇ descending compare
+ * Description : Mtd íƒ€ì…ì˜ Keyë“¤ ê°„ì˜ descending compare
  *
  * Implementation :
  *
@@ -701,7 +701,7 @@ SInt mtdNumericMtdMtdKeyAscComp( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd Å¸ÀÔÀÇ Keyµé °£ÀÇ ascending compare
+ * Description : Mtd íƒ€ì…ì˜ Keyë“¤ ê°„ì˜ ascending compare
  *
  * Implementation :
  *
@@ -787,7 +787,7 @@ SInt mtdNumericMtdMtdKeyDescComp( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd Å¸ÀÔÀÇ Keyµé °£ÀÇ descending compare
+ * Description : Mtd íƒ€ì…ì˜ Keyë“¤ ê°„ì˜ descending compare
  *
  * Implementation :
  *
@@ -872,7 +872,7 @@ SInt mtdNumericStoredMtdKeyAscComp( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd Å¸ÀÔÀÇ Key¿Í Stored Key °£ÀÇ ascending compare
+ * Description : Mtd íƒ€ì…ì˜ Keyì™€ Stored Key ê°„ì˜ ascending compare
  *
  * Implementation :
  *
@@ -951,7 +951,7 @@ SInt mtdNumericStoredMtdKeyDescComp( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd Å¸ÀÔÀÇ Key¿Í Stored Key °£ÀÇ descending compare
+ * Description : Mtd íƒ€ì…ì˜ Keyì™€ Stored Key ê°„ì˜ descending compare
  *
  * Implementation :
  *
@@ -1029,7 +1029,7 @@ SInt mtdNumericStoredStoredKeyAscComp( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Stored Keyµé °£ÀÇ ascending compare
+ * Description : Stored Keyë“¤ ê°„ì˜ ascending compare
  *
  * Implementation :
  *
@@ -1101,7 +1101,7 @@ SInt mtdNumericStoredStoredKeyDescComp( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Stored Keyµé °£ÀÇ descending compare
+ * Description : Stored Keyë“¤ ê°„ì˜ descending compare
  *
  * Implementation :
  *
@@ -1224,7 +1224,7 @@ IDE_RC mtdValidate( mtcColumn * aColumn,
 {
 /***********************************************************************
  *
- * Description : valueÀÇ semantic °Ë»ç ¹× mtcColum ÃÊ±âÈ­
+ * Description : valueì˜ semantic ê²€ì‚¬ ë° mtcColum ì´ˆê¸°í™”
  *
  * Implementation :
  *
@@ -1424,20 +1424,20 @@ static IDE_RC mtdStoredValue2MtdValue( UInt              aColumnSize,
 {
 /*******************************************************************    
  * PROJ-1705
- * µğ½ºÅ©Å×ÀÌºíÄÃ·³ÀÇ µ¥ÀÌÅ¸¸¦
- * qp ·¹ÄÚµåÃ³¸®¿µ¿ªÀÇ ÇØ´ç ÄÃ·³À§Ä¡¿¡ º¹»ç
+ * ë””ìŠ¤í¬í…Œì´ë¸”ì»¬ëŸ¼ì˜ ë°ì´íƒ€ë¥¼
+ * qp ë ˆì½”ë“œì²˜ë¦¬ì˜ì—­ì˜ í•´ë‹¹ ì»¬ëŸ¼ìœ„ì¹˜ì— ë³µì‚¬
  *******************************************************************/
 
     mtdNumericType* sNumericValue;
 
-    // °¡º¯±æÀÌ µ¥ÀÌÅ¸ Å¸ÀÔÀÌÁö¸¸,
-    // ÇÏ³ªÀÇ ÄÃ·³ µ¥ÀÌÅ¸°¡ ¿©·¯ÆäÀÌÁö¿¡ ³ª´©¾î ÀúÀåµÇ´Â °æ¿ì´Â ¾ø´Ù.
+    // ê°€ë³€ê¸¸ì´ ë°ì´íƒ€ íƒ€ì…ì´ì§€ë§Œ,
+    // í•˜ë‚˜ì˜ ì»¬ëŸ¼ ë°ì´íƒ€ê°€ ì—¬ëŸ¬í˜ì´ì§€ì— ë‚˜ëˆ„ì–´ ì €ì¥ë˜ëŠ” ê²½ìš°ëŠ” ì—†ë‹¤.
 
     sNumericValue = (mtdNumericType*)aDestValue;    
     
     if( aLength == 0 )
     {
-        // NULL µ¥ÀÌÅ¸
+        // NULL ë°ì´íƒ€
         sNumericValue->length = 0;
     }
     else
@@ -1465,9 +1465,9 @@ UInt mtdNullValueSize()
 {
 /*******************************************************************
  * PROJ-1705
- * °¢ µ¥ÀÌÅ¸Å¸ÀÔÀÇ null ValueÀÇ Å©±â ¹İÈ¯
- * ¿¹ ) mtdNumericType( UChar length; UChar signExponent; UChar mantissa[1] ) ¿¡¼­
- *      length Å¸ÀÔÀÎ UCharÀÇ Å©±â¸¦ ¹İÈ¯
+ * ê° ë°ì´íƒ€íƒ€ì…ì˜ null Valueì˜ í¬ê¸° ë°˜í™˜
+ * ì˜ˆ ) mtdNumericType( UChar length; UChar signExponent; UChar mantissa[1] ) ì—ì„œ
+ *      length íƒ€ì…ì¸ UCharì˜ í¬ê¸°ë¥¼ ë°˜í™˜
  *******************************************************************/
     return mtdActualSize( NULL, &mtdNumericNull );
 }
@@ -1476,10 +1476,10 @@ static UInt mtdHeaderSize()
 {
 /***********************************************************************
  * PROJ-1705
- * length¸¦ °¡Áö´Â µ¥ÀÌÅ¸Å¸ÀÔÀÇ length Á¤º¸¸¦ ÀúÀåÇÏ´Â º¯¼öÀÇ Å©±â ¹İÈ¯
- * ¿¹ ) mtdNumericType( UChar length; UChar signExponent; UChar mantissa[1] ) ¿¡¼­
- *      length Å¸ÀÔÀÎ UCharÀÇ Å©±â¸¦ ¹İÈ¯
- *  integer¿Í °°Àº °íÁ¤±æÀÌ µ¥ÀÌÅ¸Å¸ÀÔÀº 0 ¹İÈ¯
+ * lengthë¥¼ ê°€ì§€ëŠ” ë°ì´íƒ€íƒ€ì…ì˜ length ì •ë³´ë¥¼ ì €ì¥í•˜ëŠ” ë³€ìˆ˜ì˜ í¬ê¸° ë°˜í™˜
+ * ì˜ˆ ) mtdNumericType( UChar length; UChar signExponent; UChar mantissa[1] ) ì—ì„œ
+ *      length íƒ€ì…ì¸ UCharì˜ í¬ê¸°ë¥¼ ë°˜í™˜
+ *  integerì™€ ê°™ì€ ê³ ì •ê¸¸ì´ ë°ì´íƒ€íƒ€ì…ì€ 0 ë°˜í™˜
  **********************************************************************/
 
     return ID_SIZEOF(UChar);
@@ -1489,9 +1489,9 @@ static UInt mtdStoreSize( const smiColumn * /*aColumn*/ )
 {
 /***********************************************************************
  * PROJ-2399 row tmaplate 
- * sm¿¡ ÀúÀåµÇ´Â µ¥ÀÌÅÍÀÇ Å©±â¸¦ ¹İÈ¯ÇÑ´Ù.
- * variable Å¸ÀÔÀÇ µ¥ÀÌÅÍ Å¸ÀÔÀº ID_UINT_MAX¸¦ ¹İÈ¯
- * mtheader°¡ sm¿¡ ÀúÀåµÈ°æ¿ì°¡ ¾Æ´Ï¸é mtheaderÅ©±â¸¦ »©¼­ ¹İÈ¯
+ * smì— ì €ì¥ë˜ëŠ” ë°ì´í„°ì˜ í¬ê¸°ë¥¼ ë°˜í™˜í•œë‹¤.
+ * variable íƒ€ì…ì˜ ë°ì´í„° íƒ€ì…ì€ ID_UINT_MAXë¥¼ ë°˜í™˜
+ * mtheaderê°€ smì— ì €ì¥ëœê²½ìš°ê°€ ì•„ë‹ˆë©´ mtheaderí¬ê¸°ë¥¼ ë¹¼ì„œ ë°˜í™˜
  **********************************************************************/
 
     return ID_UINT_MAX;

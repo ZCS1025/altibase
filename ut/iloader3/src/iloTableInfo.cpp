@@ -27,7 +27,7 @@ void InsertSeq( ALTIBASE_ILOADER_HANDLE  aHandle,
 {
     iloaderHandle *sHandle = (iloaderHandle *) aHandle;
     
-    //±¸Á¶Ã¼¿¡ ³Ö¾îÁØ´Ù.
+    //êµ¬ì¡°ì²´ì— ë„£ì–´ì¤€ë‹¤.
     if ( sHandle->mTableInfomation.mSeqIndex > UT_MAX_SEQ_ARRAY_CNT)
     {
         uteSetErrorCode(sHandle->mErrorMgr, utERR_ABORT_too_many_Seq_Error, UT_MAX_SEQ_ARRAY_CNT);
@@ -53,7 +53,7 @@ iloTableNode::iloTableNode()
     m_pBrother = NULL;
     mSkipFlag = ILO_FALSE;
     mNoExpFlag = ILO_FALSE;
-    mOutFileFlag = ILO_FALSE;   //PROJ-2030, CT_CASE-3020 CHAR outfile Áö¿ø 
+    mOutFileFlag = ILO_FALSE;   //PROJ-2030, CT_CASE-3020 CHAR outfile ì§€ì› 
     mIsQueue = SQL_FALSE;
     mPrecision = 0;
     m_Hint     = NULL;
@@ -80,7 +80,7 @@ iloTableNode::iloTableNode(ETableNodeType eNodeType, SChar *szNodeValue,
     m_pBrother = pBrother;
     mSkipFlag = ILO_FALSE;
     mNoExpFlag = ILO_FALSE;
-    mOutFileFlag = ILO_FALSE;  //PROJ-2030, CT_CASE-3020 CHAR outfile Áö¿ø 
+    mOutFileFlag = ILO_FALSE;  //PROJ-2030, CT_CASE-3020 CHAR outfile ì§€ì› 
     mIsQueue = SQL_FALSE;
     m_Hint = szHint;
     m_Condition = NULL;
@@ -107,7 +107,7 @@ iloTableNode::iloTableNode(ETableNodeType eNodeType, SChar *szNodeValue,
     m_pBrother = pBrother;
     mSkipFlag = ILO_FALSE;
     mNoExpFlag = ILO_FALSE;
-    mOutFileFlag = ILO_FALSE;  //PROJ-2030, CT_CASE-3020 CHAR outfile Áö¿ø 
+    mOutFileFlag = ILO_FALSE;  //PROJ-2030, CT_CASE-3020 CHAR outfile ì§€ì› 
     mIsQueue = aIsQueue;
     m_Hint = szHint;
     m_Condition = NULL;
@@ -247,7 +247,7 @@ iloTableInfo::iloTableInfo()
     mStatusPtr          = NULL;
     (void)idlOS::memset(mSkipFlag, 0, ID_SIZEOF(mSkipFlag));
     (void)idlOS::memset(mNoExpFlag, 0, ID_SIZEOF(mNoExpFlag));
-    (void)idlOS::memset(mOutFileFlag, 0, ID_SIZEOF(mOutFileFlag)); //PROJ-2030, CT_CASE-3020 CHAR outfile Áö¿ø 
+    (void)idlOS::memset(mOutFileFlag, 0, ID_SIZEOF(mOutFileFlag)); //PROJ-2030, CT_CASE-3020 CHAR outfile ì§€ì› 
     (void)idlOS::memset(mPrecision, 0, ID_SIZEOF(mPrecision));
     (void)idlOS::memset(mScale, 0, ID_SIZEOF(mScale));
     (void)idlOS::memset(mAttrDateFormat, 0, ID_SIZEOF(mAttrDateFormat));
@@ -290,7 +290,7 @@ SInt iloTableInfo::GetTableInfo( ALTIBASE_ILOADER_HANDLE  aHandle,
     {
         m_bDownCond = ILO_FALSE;
     }
-    /* pNode->GetNodeValue() ´Â TABLE_DEF */
+    /* pNode->GetNodeValue() ëŠ” TABLE_DEF */
     idlOS::strcpy(m_TableName, pNode->GetNodeValue());
 
     mIsQueue = pNode->getIsQueue();
@@ -304,7 +304,7 @@ SInt iloTableInfo::GetTableInfo( ALTIBASE_ILOADER_HANDLE  aHandle,
         idlOS::strcpy(m_AttrName[m_AttrCount], pNode->GetSon()->GetNodeValue());
         mSkipFlag[m_AttrCount] = pNode->mSkipFlag;
         mNoExpFlag[m_AttrCount] = pNode->mNoExpFlag;
-        mOutFileFlag[m_AttrCount] = pNode->mOutFileFlag; //PROJ-2030, CT_CASE-3020 CHAR outfile Áö¿ø 
+        mOutFileFlag[m_AttrCount] = pNode->mOutFileFlag; //PROJ-2030, CT_CASE-3020 CHAR outfile ì§€ì› 
         mPrecision[m_AttrCount] = pNode->mPrecision;
         mScale[m_AttrCount] = pNode->mScale;
         if ( (sDateFormat = pNode->GetNodeValue()) != NULL )
@@ -588,8 +588,8 @@ SInt iloTableInfo::AllocTableAttr( ALTIBASE_ILOADER_HANDLE aHandle,
             mAttrCValEltLen[i] = 0;
             mAttrValEltLen[i] = ID_SIZEOF(SQLUBIGINT);
 
-            /* mLOBPhyOffs[i], mLOBPhyLen[i], mLOBLen[i]´Â
-             * i¹øÂ° ÄÃ·³ Å¸ÀÔÀÌ LOBÀÏ ¶§¸¸ ¸Þ¸ð¸® ÇÒ´çÇÑ´Ù. */
+            /* mLOBPhyOffs[i], mLOBPhyLen[i], mLOBLen[i]ëŠ”
+             * ië²ˆì§¸ ì»¬ëŸ¼ íƒ€ìž…ì´ LOBì¼ ë•Œë§Œ ë©”ëª¨ë¦¬ í• ë‹¹í•œë‹¤. */
             mLOBPhyOffs[i] = (ULong *)idlOS::malloc(
                                          (UInt)sArrayCount * ID_SIZEOF(ULong));
             IDE_TEST_RAISE(mLOBPhyOffs[i] == NULL, MAllocError);
@@ -618,7 +618,7 @@ SInt iloTableInfo::AllocTableAttr( ALTIBASE_ILOADER_HANDLE aHandle,
             mAttrCValEltLen[i] = (UInt)mPrecision[i] + 1;
             mAttrValEltLen[i] = 0;
             break;
-        /* DATEÅ¸ÀÔÀÇ string ±æÀÌ´Â ±æ¾î¾ß 64*3+1 À» ³ÑÁö ¾Ê½À´Ï´Ù. */
+        /* DATEíƒ€ìž…ì˜ string ê¸¸ì´ëŠ” ê¸¸ì–´ì•¼ 64*3+1 ì„ ë„˜ì§€ ì•ŠìŠµë‹ˆë‹¤. */
         case ISP_ATTR_DATE:
         case ISP_ATTR_TIMESTAMP:
             /* BUG - 18804 */
@@ -730,7 +730,7 @@ SChar *iloTableInfo::GetAttrName(SInt nAttr)
     }
 }
 
-/* BUG-17563 : iloader ¿¡¼­ Å«µû¿ÈÇ¥ ÀÌ¿ëÇÑ Naming Rule Á¦¾à Á¦°Å  */
+/* BUG-17563 : iloader ì—ì„œ í°ë”°ì˜´í‘œ ì´ìš©í•œ Naming Rule ì œì•½ ì œê±°  */
 SChar *iloTableInfo::GetTransAttrName(SInt nAttr, SChar *aName, UInt aLen)
 {
     if ((nAttr >= 0) && (nAttr < m_AttrCount))
@@ -825,11 +825,11 @@ IDE_RC iloTableInfo::SetAttrValue( ALTIBASE_ILOADER_HANDLE  aHandle,
     }
     
     /* BUG - 18804 */
-    /* type¿¡ µû¸¥ size±æÀÌ¿¡ ´ëÇÏ¿© ÃÖ´ë°ª 511byte(nullÁ¦¿Ü)¸¦ ³Ñ¾úÀ» °æ¿ì¿¡ ÃÖ¼ÒÇÑÀÇ errorÃ¼Å©¸¦ ÇÕ´Ï´Ù. */
+    /* typeì— ë”°ë¥¸ sizeê¸¸ì´ì— ëŒ€í•˜ì—¬ ìµœëŒ€ê°’ 511byte(nullì œì™¸)ë¥¼ ë„˜ì—ˆì„ ê²½ìš°ì— ìµœì†Œí•œì˜ errorì²´í¬ë¥¼ í•©ë‹ˆë‹¤. */
     switch (m_AttrType[nAttr])
     {
         case ISP_ATTR_CHAR:
-            // BUG-24610 load ½Ã¿¡ °ø¹éÀ» Á¦°ÅÇØ ¹ö¸³´Ï´Ù.
+            // BUG-24610 load ì‹œì— ê³µë°±ì„ ì œê±°í•´ ë²„ë¦½ë‹ˆë‹¤.
             IDE_TEST_RAISE( aLen >= mAttrCValEltLen[nAttr] , OverflowLengthError);
             break;
         case ISP_ATTR_FLOAT:
@@ -880,8 +880,8 @@ IDE_RC iloTableInfo::SetAttrValue( ALTIBASE_ILOADER_HANDLE  aHandle,
                 }
             }
 
-            // BUG-26426 iloader¿¡¼­ IntegerÇüÀÇ µ¥ÀÌÅÍ¿¡ °ø¹éÀÌ ÀÖÀ» °æ¿ì, ¿¡·¯°¡ ¹ß»ýÇÕ´Ï´Ù.
-            // ÀüºÎ °ø¹éÀÏ °æ¿ì¸¸ null ·Î Ã³¸®ÇÕ´Ï´Ù.
+            // BUG-26426 iloaderì—ì„œ Integerí˜•ì˜ ë°ì´í„°ì— ê³µë°±ì´ ìžˆì„ ê²½ìš°, ì—ëŸ¬ê°€ ë°œìƒí•©ë‹ˆë‹¤.
+            // ì „ë¶€ ê³µë°±ì¼ ê²½ìš°ë§Œ null ë¡œ ì²˜ë¦¬í•©ë‹ˆë‹¤.
             for(i = 0; i < (SInt)aLen; i++)
             {
                 if( *(szAttrValue + i) != ' ')
@@ -907,9 +907,9 @@ IDE_RC iloTableInfo::SetAttrValue( ALTIBASE_ILOADER_HANDLE  aHandle,
 
     //==========================================================
     // proj1778 nchar
-    // cpu°¡ little-endianÀÌ°í nchar/nvarchar ÄÃ·³ÀÌ°í, nchar_utf16=yesÀÌ¸é
-    // little-endianÀ¸·Î º¯È¯½ÃÅ²´Ù (datafile¿¡´Â big-endianÀ¸·Î¸¸ ÀúÀåµÇ¾î ÀÖ´Ù)
-    // ±×·¯¸é cli¿¡¼­ ´Ù½Ã big-endianÀ¸·Î º¯È¯½ÃÅ³ °ÍÀÌ´Ù
+    // cpuê°€ little-endianì´ê³  nchar/nvarchar ì»¬ëŸ¼ì´ê³ , nchar_utf16=yesì´ë©´
+    // little-endianìœ¼ë¡œ ë³€í™˜ì‹œí‚¨ë‹¤ (datafileì—ëŠ” big-endianìœ¼ë¡œë§Œ ì €ìž¥ë˜ì–´ ìžˆë‹¤)
+    // ê·¸ëŸ¬ë©´ cliì—ì„œ ë‹¤ì‹œ big-endianìœ¼ë¡œ ë³€í™˜ì‹œí‚¬ ê²ƒì´ë‹¤
 #ifndef ENDIAN_IS_BIG_ENDIAN
     if (((m_AttrType[nAttr] == ISP_ATTR_NCHAR) ||
         (m_AttrType[nAttr] == ISP_ATTR_NVARCHAR)) &&
@@ -996,9 +996,9 @@ IDE_RC iloTableInfo::SetAttrValue( ALTIBASE_ILOADER_HANDLE  aHandle,
     /* BUG - 18804 */
     IDE_EXCEPTION ( OverflowLengthError );
     {
-        // BUG-24823 iloader ¿¡¼­ ÆÄÀÏ¶óÀÎÀ» ¿¡·¯¸Þ½ÃÁö·Î Ãâ·ÂÇÏ°í ÀÖ¾î¼­ diff °¡ ¹ß»ýÇÕ´Ï´Ù.
-        // ÆÄÀÏ¸í°ú ¶óÀÎ¼ö¸¦ Ãâ·ÂÇÏ´Â ºÎºÐÀ» Á¦°ÅÇÕ´Ï´Ù.
-        // BUG-24898 iloader ÆÄ½Ì¿¡·¯ »ó¼¼È­
+        // BUG-24823 iloader ì—ì„œ íŒŒì¼ë¼ì¸ì„ ì—ëŸ¬ë©”ì‹œì§€ë¡œ ì¶œë ¥í•˜ê³  ìžˆì–´ì„œ diff ê°€ ë°œìƒí•©ë‹ˆë‹¤.
+        // íŒŒì¼ëª…ê³¼ ë¼ì¸ìˆ˜ë¥¼ ì¶œë ¥í•˜ëŠ” ë¶€ë¶„ì„ ì œê±°í•©ë‹ˆë‹¤.
+        // BUG-24898 iloader íŒŒì‹±ì—ëŸ¬ ìƒì„¸í™”
         uteSetErrorCode(sHandle->mErrorMgr, utERR_ABORT_Token_Value_Range_Error,
                         (SInt)(mAttrCValEltLen[nAttr] - 1),
                         GetTransAttrName(nAttr, sColName, (UInt)MAX_OBJNAME_LEN),
@@ -1034,19 +1034,19 @@ IDE_RC iloTableInfo::StrToD(SChar *aStr, double *aDVal)
 /**
  * ConvCharToBit.
  *
- * ¹®ÀÚ¿­ ÇüÅÂÀÇ BIT µ¥ÀÌÅÍ¸¦ BIT Å¸ÀÔ °íÀ¯ÀÇ ¹ÙÀÌ³Ê¸® ÇüÅÂ·Î º¯È¯ÇÑ´Ù.
- * BIT Å¸ÀÔ °íÀ¯ÀÇ ¹ÙÀÌ³Ê¸® ÇüÅÂ¶õ,
- * ¼±µÎ 4¹ÙÀÌÆ®¿¡ UInt ÇüÅÂÀÇ ºñÆ®¼ö°¡ ÀúÀåµÇ°í
- * ±× ÀÌÈÄ¿¡ 16Áø¼ö ÇüÅÂ·Î ºñÆ® µ¥ÀÌÅÍ°¡ ÀúÀåµÇ´Â ¹æ½ÄÀ» ¸»ÇÑ´Ù.
+ * ë¬¸ìžì—´ í˜•íƒœì˜ BIT ë°ì´í„°ë¥¼ BIT íƒ€ìž… ê³ ìœ ì˜ ë°”ì´ë„ˆë¦¬ í˜•íƒœë¡œ ë³€í™˜í•œë‹¤.
+ * BIT íƒ€ìž… ê³ ìœ ì˜ ë°”ì´ë„ˆë¦¬ í˜•íƒœëž€,
+ * ì„ ë‘ 4ë°”ì´íŠ¸ì— UInt í˜•íƒœì˜ ë¹„íŠ¸ìˆ˜ê°€ ì €ìž¥ë˜ê³ 
+ * ê·¸ ì´í›„ì— 16ì§„ìˆ˜ í˜•íƒœë¡œ ë¹„íŠ¸ ë°ì´í„°ê°€ ì €ìž¥ë˜ëŠ” ë°©ì‹ì„ ë§í•œë‹¤.
  *
  * @param[in] aCVal
- *  ¹®ÀÚ¿­ ÇüÅÂ BIT µ¥ÀÌÅÍ.
+ *  ë¬¸ìžì—´ í˜•íƒœ BIT ë°ì´í„°.
  * @param[in] aPrecision
- *  BIT Å¸ÀÔÀÇ ÄÃ·³Æø.
+ *  BIT íƒ€ìž…ì˜ ì»¬ëŸ¼í­.
  * @param[out] aRaw
- *  BIT Å¸ÀÔ °íÀ¯ÀÇ ¹ÙÀÌ³Ê¸® ÇüÅÂÀÇ BIT µ¥ÀÌÅÍ.
+ *  BIT íƒ€ìž… ê³ ìœ ì˜ ë°”ì´ë„ˆë¦¬ í˜•íƒœì˜ BIT ë°ì´í„°.
  * @param[out] aRawLen
- *  aRaw µ¥ÀÌÅÍÀÇ ±æÀÌ(Bytes).
+ *  aRaw ë°ì´í„°ì˜ ê¸¸ì´(Bytes).
  */
 IDE_RC iloTableInfo::ConvCharToBit(SChar *aCVal, UInt aPrecision, UChar *aRaw,
                                    SQLLEN *aRawLen)
@@ -1200,8 +1200,8 @@ SInt iloTableInfo::seqEqualChk( ALTIBASE_ILOADER_HANDLE aHandle, SInt index )
     
     for (j = 0; j < seqCount(sHandle); j++)
     {
-        /* BUG-17563 : iloader ¿¡¼­ Å«µû¿ÈÇ¥ ÀÌ¿ëÇÑ Naming Rule Á¦¾à Á¦°Å  */
-        // SEQUENCE ÄÃ·³ ÀÌ¸§ ´ë¼Ò¹®ÀÚ ±¸ºÐ.
+        /* BUG-17563 : iloader ì—ì„œ í°ë”°ì˜´í‘œ ì´ìš©í•œ Naming Rule ì œì•½ ì œê±°  */
+        // SEQUENCE ì»¬ëŸ¼ ì´ë¦„ ëŒ€ì†Œë¬¸ìž êµ¬ë¶„.
         utString::makeNameInSQL( sSeqCol,
                                  MAX_OBJNAME_LEN,
                                  localSeqArray[j].seqCol,
@@ -1237,8 +1237,8 @@ SInt iloTableInfo::seqColChk( ALTIBASE_ILOADER_HANDLE aHandle )
         exist = 0;
         for (i = 0; i < GetAttrCount(); i++)
         {
-            /* BUG-17563 : iloader ¿¡¼­ Å«µû¿ÈÇ¥ ÀÌ¿ëÇÑ Naming Rule Á¦¾à Á¦°Å  */
-            // SEQUENCE ÄÃ·³ ÀÌ¸§ ´ë¼Ò¹®ÀÚ ±¸ºÐ.
+            /* BUG-17563 : iloader ì—ì„œ í°ë”°ì˜´í‘œ ì´ìš©í•œ Naming Rule ì œì•½ ì œê±°  */
+            // SEQUENCE ì»¬ëŸ¼ ì´ë¦„ ëŒ€ì†Œë¬¸ìž êµ¬ë¶„.
             utString::makeNameInSQL( sSeqCol,
                                      MAX_OBJNAME_LEN,
                                      localSeqArray[j].seqCol,
@@ -1248,7 +1248,7 @@ SInt iloTableInfo::seqColChk( ALTIBASE_ILOADER_HANDLE aHandle )
                                      GetAttrName(i),
                                      idlOS::strlen(GetAttrName(i)) );
 
-            // SEQUENCE ÄÃ·³ ÀÌ¸§ÀÌ table ÄÃ·³ÀÌ¸§¿¡ Á¸ÀçÇÏ´ÂÁö È®ÀÎÇÔ.
+            // SEQUENCE ì»¬ëŸ¼ ì´ë¦„ì´ table ì»¬ëŸ¼ì´ë¦„ì— ì¡´ìž¬í•˜ëŠ”ì§€ í™•ì¸í•¨.
             if (idlOS::strcmp(sAttrName, sSeqCol)
                 == 0)
             {
@@ -1331,8 +1331,8 @@ SInt iloTableInfo::seqCount( ALTIBASE_ILOADER_HANDLE aHandle )
 /**
  * Reset.
  *
- * iloTableInfo °´Ã¼¿¡ ÇÒ´çµÈ ¸ðµç ¸Þ¸ð¸®¸¦ ÇØÁ¦ÇÏ°í
- * º¯¼ö¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+ * iloTableInfo ê°ì²´ì— í• ë‹¹ëœ ëª¨ë“  ë©”ëª¨ë¦¬ë¥¼ í•´ì œí•˜ê³ 
+ * ë³€ìˆ˜ë¥¼ ì´ˆê¸°í™”í•œë‹¤.
  */
 void iloTableInfo::Reset()
 {
@@ -1349,7 +1349,7 @@ void iloTableInfo::Reset()
     m_HintString[0] = '\0';
     (void)idlOS::memset(mSkipFlag, 0, ID_SIZEOF(mSkipFlag));
     (void)idlOS::memset(mNoExpFlag, 0, ID_SIZEOF(mNoExpFlag));
-    (void)idlOS::memset(mOutFileFlag, 0, ID_SIZEOF(mOutFileFlag)); //PROJ-2030, CT_CASE-3020 CHAR outfile Áö¿ø 
+    (void)idlOS::memset(mOutFileFlag, 0, ID_SIZEOF(mOutFileFlag)); //PROJ-2030, CT_CASE-3020 CHAR outfile ì§€ì› 
     (void)idlOS::memset(mPrecision, 0, ID_SIZEOF(mPrecision));
     (void)idlOS::memset(mScale, 0, ID_SIZEOF(mScale));
     mIsQueue = 0;
@@ -1481,15 +1481,15 @@ SChar *iloTableInfo::GetAttrFail(SInt nAttr)
 
 // BUG-28208
 /**
- * ¿¡·¯³­ ÅäÅ«À» mAttrFail[aIdx]¿¡ º¹»ç.
+ * ì—ëŸ¬ë‚œ í† í°ì„ mAttrFail[aIdx]ì— ë³µì‚¬.
  *
- * mAttrFail[aIdx]°¡ º¹»çÇÏ·Á´Â ÅäÅ« ±æÀÌº¸´Ù ÀÛÀ¸¸é
- * mAttrFail[aIdx]À» ´Ù½Ã ÇÒ´çÇÑ ÈÄ º¹»çÇÑ´Ù.
+ * mAttrFail[aIdx]ê°€ ë³µì‚¬í•˜ë ¤ëŠ” í† í° ê¸¸ì´ë³´ë‹¤ ìž‘ìœ¼ë©´
+ * mAttrFail[aIdx]ì„ ë‹¤ì‹œ í• ë‹¹í•œ í›„ ë³µì‚¬í•œë‹¤.
  *
- * @param [IN] aIdx      ¿¡·¯³­ ÇÊµå ÀÎµ¦½º
- * @param [IN] aToken    ¿¡·¯³­ µ¥ÀÌÅ¸
- * @param [IN] aTokenLen ¿¡·¯³­ µ¥ÀÌÅ¸ ±æÀÌ
- * @return Àß º¹»çÇßÀ¸¸é IDE_SUCCESS, ±×·¸Áö ¾ÊÀ¸¸é IDE_FAILURE
+ * @param [IN] aIdx      ì—ëŸ¬ë‚œ í•„ë“œ ì¸ë±ìŠ¤
+ * @param [IN] aToken    ì—ëŸ¬ë‚œ ë°ì´íƒ€
+ * @param [IN] aTokenLen ì—ëŸ¬ë‚œ ë°ì´íƒ€ ê¸¸ì´
+ * @return ìž˜ ë³µì‚¬í–ˆìœ¼ë©´ IDE_SUCCESS, ê·¸ë ‡ì§€ ì•Šìœ¼ë©´ IDE_FAILURE
  */
 IDE_RC iloTableInfo::SetAttrFail( ALTIBASE_ILOADER_HANDLE  aHandle, 
                                   SInt                     aIdx,
@@ -1501,7 +1501,7 @@ IDE_RC iloTableInfo::SetAttrFail( ALTIBASE_ILOADER_HANDLE  aHandle,
     
     if ( sHandle->mUseApi != SQL_TRUE )
     {
-        // ³»ºÎ¿¡¼­¸¸ »ç¿ëµÇ´Â ÇÔ¼öÀÌ¹Ç·Î Àý´ë ÀÌ·± ¿¡·¯°¡ ³ª¼­´Â ¾ÈµÈ´Ù.
+        // ë‚´ë¶€ì—ì„œë§Œ ì‚¬ìš©ë˜ëŠ” í•¨ìˆ˜ì´ë¯€ë¡œ ì ˆëŒ€ ì´ëŸ° ì—ëŸ¬ê°€ ë‚˜ì„œëŠ” ì•ˆëœë‹¤.
         IDE_DASSERT( (0 <= aIdx) && (aIdx < m_AttrCount) );
         IDE_DASSERT( (aToken != NULL) && (aTokenLen >= 0) );
     }
@@ -1537,7 +1537,7 @@ IDE_RC iloTableInfo::SetAttrFail( ALTIBASE_ILOADER_HANDLE  aHandle,
     return IDE_FAILURE;
 }
 
-/* BUG-17563 : iloader ¿¡¼­ Å«µû¿ÈÇ¥ ÀÌ¿ëÇÑ Naming Rule Á¦¾à Á¦°Å  */
+/* BUG-17563 : iloader ì—ì„œ í°ë”°ì˜´í‘œ ì´ìš©í•œ Naming Rule ì œì•½ ì œê±°  */
 SChar *iloTableInfo::GetTransTableName(SChar *aName, UInt aLen)
 {
     utString::makeNameInSQL( aName,

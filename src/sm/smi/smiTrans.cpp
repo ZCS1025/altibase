@@ -41,8 +41,8 @@ IDE_RC smiTrans::initialize()
                     insufficient_memory );
 
     /* PROJ-1381 Fetch Across Commits
-     * mStmtListHeadÀÇ mAllPrev/mAllNext´Â ÀÌ°÷¿¡¼­¸¸ ÃÊ±âÈ­ ÇÑ´Ù.
-     * Commit ÀÌÈÄ¿¡µµ Legacy TXÀÇ STMT¿¡ Á¢±ÙÇÒ ¼ö ÀÖ¾î¾ßÇÏ±â ¶§¹®ÀÌ´Ù. */
+     * mStmtListHeadì˜ mAllPrev/mAllNextëŠ” ì´ê³³ì—ì„œë§Œ ì´ˆê¸°í™” í•œë‹¤.
+     * Commit ì´í›„ì—ë„ Legacy TXì˜ STMTì— ì ‘ê·¼í•  ìˆ˜ ìˆì–´ì•¼í•˜ê¸° ë•Œë¬¸ì´ë‹¤. */
     mStmtListHead->mAllPrev =
     mStmtListHead->mAllNext = mStmtListHead;
 
@@ -176,7 +176,7 @@ IDE_RC smiTrans::begin(smiStatement** aStatement,
     {
         IDE_SET( ideSetErrorCode( smERR_ABORT_smiUpdateStatementExist ) );
 
-        /* BUG-42584 INC-30976 ÇØ°áÀ» À§ÇÑ µğ¹ö±× ÄÚµå Ãß°¡ */
+        /* BUG-42584 INC-30976 í•´ê²°ì„ ìœ„í•œ ë””ë²„ê·¸ ì½”ë“œ ì¶”ê°€ */
         ideLog::log( IDE_SM_0,
                 "Transaction has child statement.\n"
                 "Statement Info\n"
@@ -314,8 +314,8 @@ IDE_RC smiTrans::abortToPsmSvp( )
 }
 
 
-// partial rollback ¶Ç´Â total rollbackÀ» ÇÑ´Ù.
-// total rollback½Ã transaction slotÀ» freeÇÑ´Ù.
+// partial rollback ë˜ëŠ” total rollbackì„ í•œë‹¤.
+// total rollbackì‹œ transaction slotì„ freeí•œë‹¤.
 IDE_RC smiTrans::rollback(const SChar* aSavePoint,
                           UInt         aTransReleasePolicy )
 {
@@ -374,13 +374,13 @@ IDE_RC smiTrans::commit(smSCN * aCommitSCN,
                     ERR_UPDATE_STATEMENT_EXIST );
 
     /* PROJ-1381 Fetch Across Commits
-     * commit ½ÃÁ¡¿¡ ChildStmt°¡ ³²¾ÆÀÖÀ¸¸é fetch¸¦ °è¼Ó ÇÒ ¼ö ÀÖµµ·Ï
-     * Legacy Trans¸¦ »ı¼ºÇÑ´Ù. */
+     * commit ì‹œì ì— ChildStmtê°€ ë‚¨ì•„ìˆìœ¼ë©´ fetchë¥¼ ê³„ì† í•  ìˆ˜ ìˆë„ë¡
+     * Legacy Transë¥¼ ìƒì„±í•œë‹¤. */
     if ( mStmtListHead->mChildStmtCnt != 0 )
     {
-        /* Autocommit ModeÀÌ°Å³ª Æ®·£Á§¼ÇÀ» ¿ÏÀüÈ÷ Á¾·áÇÒ ¶§´Â
-         * Release Policy¸¦ SMI_RELEASE_TRANSACTIONÀ¸·Î ÇÑ´Ù.
-         * ÀÌ¶§´Â commit ½ÃÁ¡¿¡ ³²¾ÆÀÖ´Â ChildStmt°¡ ÀÖ¾î¼­´Â ¾ÈµÈ´Ù. */
+        /* Autocommit Modeì´ê±°ë‚˜ íŠ¸ëœì ì…˜ì„ ì™„ì „íˆ ì¢…ë£Œí•  ë•ŒëŠ”
+         * Release Policyë¥¼ SMI_RELEASE_TRANSACTIONìœ¼ë¡œ í•œë‹¤.
+         * ì´ë•ŒëŠ” commit ì‹œì ì— ë‚¨ì•„ìˆëŠ” ChildStmtê°€ ìˆì–´ì„œëŠ” ì•ˆëœë‹¤. */
         IDE_TEST_RAISE( aTransReleasePolicy == SMI_RELEASE_TRANSACTION,
                         ERR_STATEMENT_EXIST );
 
@@ -434,7 +434,7 @@ IDE_RC smiTrans::commit(smSCN * aCommitSCN,
     }
     IDE_EXCEPTION_END;
 
-    /* BUG-41342 Commit Log¸¦ ³²±ä ÈÄ¿¡´Â ¿¹¿ÜÃ³¸®ÇÏ¸é ¾ÈµÈ´Ù. */
+    /* BUG-41342 Commit Logë¥¼ ë‚¨ê¸´ í›„ì—ëŠ” ì˜ˆì™¸ì²˜ë¦¬í•˜ë©´ ì•ˆëœë‹¤. */
     IDE_ASSERT( sWriteCommitLog == ID_FALSE );
 
     return IDE_FAILURE;
@@ -443,7 +443,7 @@ IDE_RC smiTrans::commit(smSCN * aCommitSCN,
 smTID smiTrans::getTransID()
 {
     /* ------------------------------------------------
-     *  mTrans°¡ NULLÀÏ ¼ö ÀÖ±â ¶§¹®¿¡ ÀÓ½ÃÀúÀå ÈÄ check & getID
+     *  mTransê°€ NULLì¼ ìˆ˜ ìˆê¸° ë•Œë¬¸ì— ì„ì‹œì €ì¥ í›„ check & getID
      * ----------------------------------------------*/
     smxTrans *sTrans = (smxTrans*)mTrans;
     return (sTrans == NULL) ? 0 : ((smTID)((smxTrans*)sTrans)->mTransID);
@@ -487,7 +487,7 @@ IDE_RC smiTrans::isReadOnly(idBool *aIsReadOnly)
     sIsReadOnly = ((smxTrans *)mTrans)->isReadOnly();
     if ( sIsReadOnly == ID_TRUE )
     {
-        /* BUG-42991 smiTrans::isReadOnly()¿¡¼­ Volatile Tablespace¸¦ °Ë»çÇÏµµ·Ï ÇÕ´Ï´Ù. */
+        /* BUG-42991 smiTrans::isReadOnly()ì—ì„œ Volatile Tablespaceë¥¼ ê²€ì‚¬í•˜ë„ë¡ í•©ë‹ˆë‹¤. */
         sIsVolatileTBSTouched = ((smxTrans *)mTrans)->isVolatileTBSTouched();
         if ( sIsVolatileTBSTouched == ID_FALSE )
         {
@@ -530,8 +530,8 @@ UInt smiTrans::getFirstUpdateTime()
     }
 }
 
-// QP¿¡¼­ Meta°¡ Á¢±ÙµÈ °æ¿ì ÀÌ ÇÔ¼ö¸¦ È£ÃâÇÏ¿©
-// Transaction¿¡ MetaÁ¢±Ù ¿©ºÎ¸¦ ¼¼ÆÃÇÑ´Ù
+// QPì—ì„œ Metaê°€ ì ‘ê·¼ëœ ê²½ìš° ì´ í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•˜ì—¬
+// Transactionì— Metaì ‘ê·¼ ì—¬ë¶€ë¥¼ ì„¸íŒ…í•œë‹¤
 IDE_RC smiTrans::setMetaTableModified()
 {
     ((smxTrans*)mTrans)->setMetaTableModified();
@@ -549,7 +549,7 @@ smSN smiTrans::getCommitSN()
 }
 
 /*******************************************************************************
- * Description : DDL TransactionÀ» Ç¥½ÃÇÏ´Â Log Record¸¦ ±â·ÏÇÑ´Ù.
+ * Description : DDL Transactionì„ í‘œì‹œí•˜ëŠ” Log Recordë¥¼ ê¸°ë¡í•œë‹¤.
  ******************************************************************************/
 IDE_RC smiTrans::writeDDLLog()
 {
@@ -557,10 +557,10 @@ IDE_RC smiTrans::writeDDLLog()
 }
 
 /*******************************************************************************
- * Description : Staticstics¸¦ ¼¼Æ®ÇÑ´Ù.
+ * Description : Staticsticsë¥¼ ì„¸íŠ¸í•œë‹¤.
  *
- *  BUG-22651  smrLogMgr::updateTransLSNInfo¿¡¼­
- *             ºñÁ¤»óÁ¾·áµÇ´Â °æ¿ì°¡ Á¾Á¾ÀÖ½À´Ï´Ù.
+ *  BUG-22651  smrLogMgr::updateTransLSNInfoì—ì„œ
+ *             ë¹„ì •ìƒì¢…ë£Œë˜ëŠ” ê²½ìš°ê°€ ì¢…ì¢…ìˆìŠµë‹ˆë‹¤.
  ******************************************************************************/
 void smiTrans::setStatistics( idvSQL * aStatistics )
 {

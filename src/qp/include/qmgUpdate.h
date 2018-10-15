@@ -19,11 +19,11 @@
  * $Id: qmgUpdate.h 53265 2012-05-18 00:05:06Z seo0jun $
  *
  * Description :
- *     Update Graph¸¦ À§ÇÑ Á¤ÀÇ
+ *     Update Graphë¥¼ ìœ„í•œ ì •ì˜
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  **********************************************************************/
 
@@ -34,20 +34,20 @@
 #include <qmgDef.h>
 
 //---------------------------------------------------
-// Update GraphÀÇ Define »ó¼ö
+// Update Graphì˜ Define ìƒìˆ˜
 //---------------------------------------------------
 
 
 //---------------------------------------------------
-// Update Graph ¸¦ °ü¸®ÇÏ±â À§ÇÑ ÀÚ·á ±¸Á¶
+// Update Graph ë¥¼ ê´€ë¦¬í•˜ê¸° ìœ„í•œ ìë£Œ êµ¬ì¡°
 //---------------------------------------------------
 
 typedef struct qmgUPTE
 {
-    qmgGraph             graph;    // °øÅë Graph Á¤º¸
+    qmgGraph             graph;    // ê³µí†µ Graph ì •ë³´
 
     //---------------------------------
-    // update °ü·Ã Á¤º¸
+    // update ê´€ë ¨ ì •ë³´
     //---------------------------------
 
     /* PROJ-2204 JOIN UPDATE, DELETE */
@@ -69,7 +69,7 @@ typedef struct qmgUPTE
     UInt                 compressedTuple;
     mtdIsNullFunc      * isNull;
     
-    // sequence Á¤º¸
+    // sequence ì •ë³´
     qcParseSeqCaches   * nextValSeqs;
 
     // instead of trigger
@@ -78,27 +78,27 @@ typedef struct qmgUPTE
     qmoUpdateType        updateType;
 
     //---------------------------------
-    // cursor °ü·Ã Á¤º¸
+    // cursor ê´€ë ¨ ì •ë³´
     //---------------------------------
     
     smiCursorType        cursorType;
     idBool               inplaceUpdate;
     
     //---------------------------------
-    // partition °ü·Ã Á¤º¸
+    // partition ê´€ë ¨ ì •ë³´
     //---------------------------------
     
     qmsTableRef        * insertTableRef;
     idBool               isRowMovementUpdate;
     
     //---------------------------------
-    // Limitation °ü·Ã Á¤º¸
+    // Limitation ê´€ë ¨ ì •ë³´
     //---------------------------------
     
-    qmsLimit           * limit;   // limit Á¤º¸
+    qmsLimit           * limit;   // limit ì •ë³´
 
     //---------------------------------
-    // constraint Ã³¸®¸¦ À§ÇÑ Á¤º¸
+    // constraint ì²˜ë¦¬ë¥¼ ìœ„í•œ ì •ë³´
     //---------------------------------
     
     qcmParentInfo      * parentConstraints;
@@ -106,7 +106,7 @@ typedef struct qmgUPTE
     qdConstraintSpec   * checkConstrList;
 
     //---------------------------------
-    // return into Ã³¸®¸¦ À§ÇÑ Á¤º¸
+    // return into ì²˜ë¦¬ë¥¼ ìœ„í•œ ì •ë³´
     //---------------------------------
     
     /* PROJ-1584 DML Return Clause */
@@ -123,27 +123,27 @@ typedef struct qmgUPTE
 } qmgUPTE;
 
 //---------------------------------------------------
-// Update Graph ¸¦ °ü¸®ÇÏ±â À§ÇÑ ÇÔ¼ö
+// Update Graph ë¥¼ ê´€ë¦¬í•˜ê¸° ìœ„í•œ í•¨ìˆ˜
 //---------------------------------------------------
 
 class qmgUpdate
 {
 public:
-    // Graph ÀÇ ÃÊ±âÈ­
+    // Graph ì˜ ì´ˆê¸°í™”
     static IDE_RC  init( qcStatement * aStatement,
                          qmsQuerySet * aQuerySet,
                          qmgGraph    * aChildGraph,
                          qmgGraph   ** aGraph );
 
-    // GraphÀÇ ÃÖÀûÈ­ ¼öÇà
+    // Graphì˜ ìµœì í™” ìˆ˜í–‰
     static IDE_RC  optimize( qcStatement * aStatement, qmgGraph * aGraph );
 
-    // GraphÀÇ Plan Tree »ı¼º
+    // Graphì˜ Plan Tree ìƒì„±
     static IDE_RC  makePlan( qcStatement    * aStatement,
                              const qmgGraph * aParent,
                              qmgGraph       * aGraph );
 
-    // GraphÀÇ °øÅë Á¤º¸¸¦ Ãâ·ÂÇÔ.
+    // Graphì˜ ê³µí†µ ì •ë³´ë¥¼ ì¶œë ¥í•¨.
     static IDE_RC  printGraph( qcStatement  * aStatement,
                                qmgGraph     * aGraph,
                                ULong          aDepth,

@@ -22,11 +22,11 @@
 #include <iduShmKeyFile.h>
 
 /***********************************************************************
- * Description : Shared Memory¸¦ »ı¼ºÇÑ XDB Daemon ProcessÀÇ Startup ½Ã°£À»
- *               $ALTIBASE_XDB_HOME/conf/xdbaltibase_shm.date¿¡¼­ ÀĞ¾î¿Â´Ù.
- *               ¸¸¾à ÆÄÀÏÀÌ ¾ø´Ù¸é ÇöÀç ½Ã°£À» ³Ñ°ÜÁØ´Ù.
+ * Description : Shared Memoryë¥¼ ìƒì„±í•œ XDB Daemon Processì˜ Startup ì‹œê°„ì„
+ *               $ALTIBASE_XDB_HOME/conf/xdbaltibase_shm.dateì—ì„œ ì½ì–´ì˜¨ë‹¤.
+ *               ë§Œì•½ íŒŒì¼ì´ ì—†ë‹¤ë©´ í˜„ì¬ ì‹œê°„ì„ ë„˜ê²¨ì¤€ë‹¤.
  *
- * aStartUpTime - [OUT] XDB Daemon Proces°¡ StartupÇÑ ½Ã°£.
+ * aStartUpTime - [OUT] XDB Daemon Procesê°€ Startupí•œ ì‹œê°„.
  **********************************************************************/
 IDE_RC iduShmKeyFile::getStartupInfo( struct timeval * aStartUpTime,
                                       UInt           * aPrevShmKey )
@@ -129,11 +129,11 @@ IDE_RC iduShmKeyFile::getStartupInfo( struct timeval * aStartUpTime,
 }
 
 /***********************************************************************
- * Description : Shared Memory¸¦ »ı¼ºÇÑ Daemon ProcessÀÇ Startup Á¤º¸¸¦
- *               $ALTIBASE_XDB_HOME/conf/xdbaltibase_shm.info¿¡ ¼³Á¤ÇÑ´Ù.
- *               »ı¼ºÇÑ ½Ã°£°ú shmkey°¡ ÀúÀåµÊ.
+ * Description : Shared Memoryë¥¼ ìƒì„±í•œ Daemon Processì˜ Startup ì •ë³´ë¥¼
+ *               $ALTIBASE_XDB_HOME/conf/xdbaltibase_shm.infoì— ì„¤ì •í•œë‹¤.
+ *               ìƒì„±í•œ ì‹œê°„ê³¼ shmkeyê°€ ì €ì¥ë¨.
  *
- * aStartUpTime - [IN] XDB Daemon Proces°¡ StartupÇÑ ½Ã°£.
+ * aStartUpTime - [IN] XDB Daemon Procesê°€ Startupí•œ ì‹œê°„.
  **********************************************************************/
 IDE_RC iduShmKeyFile::setStartupInfo( struct timeval * aStartUpTime )
 {

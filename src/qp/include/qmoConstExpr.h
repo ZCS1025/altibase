@@ -19,11 +19,11 @@
  * $Id: qmoConstExpr.h 23857 2008-03-19 02:36:53Z sungminee $
  *
  * Description :
- *     PROJ-1413 constant exprssionÀÇ »ó¼ö º¯È¯À» À§ÇÑ ÀÚ·á ±¸Á¶ Á¤ÀÇ
+ *     PROJ-1413 constant exprssionì˜ ìƒìˆ˜ ë³€í™˜ì„ ìœ„í•œ ìë£Œ êµ¬ì¡° ì •ì˜
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  **********************************************************************/
 
@@ -38,7 +38,7 @@ class qmoConstExpr
 public:
 
     //------------------------------------------
-    // constant exprssionÀÇ »ó¼ö º¯È¯
+    // constant exprssionì˜ ìƒìˆ˜ ë³€í™˜
     //------------------------------------------
     
     static IDE_RC  processConstExpr( qcStatement  * aStatement,

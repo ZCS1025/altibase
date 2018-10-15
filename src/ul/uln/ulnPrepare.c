@@ -240,7 +240,7 @@ ACI_RC ulnSFID_45(ulnFnContext *aFnContext)
  */
 
 /*
- * SQLPrepare °¡ ¹ß»ı½ÃÅ³ ¼ö ÀÖ´Â ¿¡·¯µéÀÇ Á¤º¸
+ * SQLPrepare ê°€ ë°œìƒì‹œí‚¬ ìˆ˜ ìˆëŠ” ì—ëŸ¬ë“¤ì˜ ì •ë³´
  *
  * O : Implementation Complete
  * X : Do not need to implement
@@ -471,13 +471,13 @@ ACI_RC ulnCallbackPrepareResult(cmiProtocolContext *aProtocolContext,
     ACI_EXCEPTION_END;
 
     /*
-     * Note : ACI_SUCCESS ¸¦ ¸®ÅÏÇÏ´Â °ÍÀº ¹ö±×°¡ ¾Æ´Ï´Ù.
-     *        cm ÀÇ Äİ¹éÇÔ¼ö°¡ ACI_FAILURE ¸¦ ¸®ÅÏÇÏ¸é communication error ·Î Ãë±ŞµÇ¾î ¹ö¸®±â
-     *        ¶§¹®ÀÌ´Ù.
+     * Note : ACI_SUCCESS ë¥¼ ë¦¬í„´í•˜ëŠ” ê²ƒì€ ë²„ê·¸ê°€ ì•„ë‹ˆë‹¤.
+     *        cm ì˜ ì½œë°±í•¨ìˆ˜ê°€ ACI_FAILURE ë¥¼ ë¦¬í„´í•˜ë©´ communication error ë¡œ ì·¨ê¸‰ë˜ì–´ ë²„ë¦¬ê¸°
+     *        ë•Œë¬¸ì´ë‹¤.
      *
-     *        ¾îÂîµÇ¾ú´ø °£¿¡, Function Context ÀÇ ¸â¹öÀÎ mSqlReturn ¿¡ ÇÔ¼ö ¸®ÅÏ°ªÀÌ
-     *        ÀúÀåµÇ°Ô µÉ °ÍÀÌ¸ç, uln ÀÇ cmi ¸ÅÇÎ ÇÔ¼öÀÎ ulnReadProtocol() ÇÔ¼ö ¾È¿¡¼­
-     *        Function Context ÀÇ mSqlReturn À» Ã¼Å©ÇØ¼­ ÀûÀıÇÑ Á¶Ä¡¸¦ ÃëÇÏ°Ô µÉ °ÍÀÌ´Ù.
+     *        ì–´ì°Œë˜ì—ˆë˜ ê°„ì—, Function Context ì˜ ë©¤ë²„ì¸ mSqlReturn ì— í•¨ìˆ˜ ë¦¬í„´ê°’ì´
+     *        ì €ì¥ë˜ê²Œ ë  ê²ƒì´ë©°, uln ì˜ cmi ë§¤í•‘ í•¨ìˆ˜ì¸ ulnReadProtocol() í•¨ìˆ˜ ì•ˆì—ì„œ
+     *        Function Context ì˜ mSqlReturn ì„ ì²´í¬í•´ì„œ ì ì ˆí•œ ì¡°ì¹˜ë¥¼ ì·¨í•˜ê²Œ ë  ê²ƒì´ë‹¤.
      */
     return ACI_SUCCESS;
 }
@@ -531,7 +531,7 @@ ACI_RC ulnPrepDoText(ulnFnContext *aFnContext,
     ACI_TEST( aTextLength <= 0 );
 
     // PROJ-1579 NCHAR
-    // Å¬¶óÀÌ¾ğÆ® Ä³¸¯ÅÍ ¼Â => µ¥ÀÌÅÍº£ÀÌ½º Ä³¸¯ÅÍ ¼ÂÀ¸·Î º¯È¯ÇÑ´Ù.
+    // í´ë¼ì´ì–¸íŠ¸ ìºë¦­í„° ì…‹ => ë°ì´í„°ë² ì´ìŠ¤ ìºë¦­í„° ì…‹ìœ¼ë¡œ ë³€í™˜í•œë‹¤.
     ACI_TEST(ulnCharSetConvert(aCharSet,
                                aFnContext,
                                NULL,
@@ -543,7 +543,7 @@ ACI_RC ulnPrepDoText(ulnFnContext *aFnContext,
              != ACI_SUCCESS);
 
     /*
-     * Statement Text ¸¦ unescape ÇÑ´Ù.
+     * Statement Text ë¥¼ unescape í•œë‹¤.
      */
     ACI_TEST_RAISE(ulnEscapeUnescapeByLen(aEsc,
                                           (acp_char_t*)ulnCharSetGetConvertedText(aCharSet),
@@ -576,7 +576,7 @@ ACI_RC ulnPrepDoTextNchar(ulnFnContext *aFnContext,
     ACI_TEST( aTextLength <= 0 );
 
     // PROJ-1579 NCHAR
-    // Å¬¶óÀÌ¾ğÆ® Ä³¸¯ÅÍ ¼Â => µ¥ÀÌÅÍº£ÀÌ½º Ä³¸¯ÅÍ ¼ÂÀ¸·Î º¯È¯ÇÑ´Ù.
+    // í´ë¼ì´ì–¸íŠ¸ ìºë¦­í„° ì…‹ => ë°ì´í„°ë² ì´ìŠ¤ ìºë¦­í„° ì…‹ìœ¼ë¡œ ë³€í™˜í•œë‹¤.
     ACI_TEST(ulnCharSetConvertNLiteral(aCharSet,
                                        aFnContext,
                                        sDbc->mClientCharsetLangModule,    //BUG-22684
@@ -586,7 +586,7 @@ ACI_RC ulnPrepDoTextNchar(ulnFnContext *aFnContext,
              != ACI_SUCCESS);
 
     /*
-     * Statement Text ¸¦ unescape ÇÑ´Ù.
+     * Statement Text ë¥¼ unescape í•œë‹¤.
      */
     ACI_TEST_RAISE(ulnEscapeUnescapeByLen(aEsc,
                                           (acp_char_t*)ulnCharSetGetConvertedText(aCharSet),
@@ -644,7 +644,7 @@ void ulnPrepPreDowngrade(ulnFnContext *aFnContext)
 
     switch (ulnStmtGetAttrCursorType(sStmt))
     {
-        /* FORWARD_ONLY, STATICÀº INSENSITIVE + READ_ONLY¸¸ Áö¿ø */
+        /* FORWARD_ONLY, STATICì€ INSENSITIVE + READ_ONLYë§Œ ì§€ì› */
         case SQL_CURSOR_FORWARD_ONLY:
         case SQL_CURSOR_STATIC:
             if (ulnStmtGetAttrCursorSensitivity(sStmt) != SQL_INSENSITIVE)
@@ -664,7 +664,7 @@ void ulnPrepPreDowngrade(ulnFnContext *aFnContext)
             }
             break;
 
-        /* KEYSET_DRIVENÀº SQL_CONCUR_READ_ONLY, SQL_CONCUR_ROWVER¸¸ Áö¿ø */
+        /* KEYSET_DRIVENì€ SQL_CONCUR_READ_ONLY, SQL_CONCUR_ROWVERë§Œ ì§€ì› */
         case SQL_CURSOR_KEYSET_DRIVEN:
             if ((ulnStmtGetAttrConcurrency(sStmt) != SQL_CONCUR_READ_ONLY)
              && (ulnStmtGetAttrConcurrency(sStmt) != SQL_CONCUR_ROWVER))
@@ -691,8 +691,8 @@ void ulnPrepPostDowngrade(ulnFnContext *aFnContext)
 {
     ulnStmt *sStmt = aFnContext->mHandle.mStmt;
 
-    /* insensitive keyset-drivenÀº Áö¿øÇÏÁö ¾ÊÀ¸¹Ç·Î Ç×»ó staticÀ¸·Î ¶³±º´Ù.
-     * staticÀº forward-only¸¦ ÀÌ¿ëÇÏ¹Ç·Î ½ÇÆĞÇÒ ÀÏÀÌ ¾ø´Ù. */
+    /* insensitive keyset-drivenì€ ì§€ì›í•˜ì§€ ì•Šìœ¼ë¯€ë¡œ í•­ìƒ staticìœ¼ë¡œ ë–¨êµ°ë‹¤.
+     * staticì€ forward-onlyë¥¼ ì´ìš©í•˜ë¯€ë¡œ ì‹¤íŒ¨í•  ì¼ì´ ì—†ë‹¤. */
 
     ulnStmtSetAttrCursorType(sStmt, SQL_CURSOR_STATIC);
     ulnStmtSetAttrCursorSensitivity(sStmt, SQL_INSENSITIVE);
@@ -703,14 +703,14 @@ void ulnPrepPostDowngrade(ulnFnContext *aFnContext)
 }
 
 /**
- * °ø¹é°ú ÁÖ¼®À» Á¦¿ÜÇÑ ±¸¹®ÀÇ ½ÃÀÛ À§Ä¡¸¦ Ã£´Â´Ù.
+ * ê³µë°±ê³¼ ì£¼ì„ì„ ì œì™¸í•œ êµ¬ë¬¸ì˜ ì‹œì‘ ìœ„ì¹˜ë¥¼ ì°¾ëŠ”ë‹¤.
  *
  * @param[in] aFnContext   function context
- * @param[in] aSrcQstr     ¿øº» Äõ¸®¹®
- * @param[in] aSrcQstrSize Äõ¸®¹®ÀÇ ±æÀÌ(octet length)
- * @param[in] aStartPos    °Ë»öÀ» ½ÃÀÛÇÒ ÀÎµ¦½º(octet base)
+ * @param[in] aSrcQstr     ì›ë³¸ ì¿¼ë¦¬ë¬¸
+ * @param[in] aSrcQstrSize ì¿¼ë¦¬ë¬¸ì˜ ê¸¸ì´(octet length)
+ * @param[in] aStartPos    ê²€ìƒ‰ì„ ì‹œì‘í•  ì¸ë±ìŠ¤(octet base)
  *
- * @return 0ºÎÅÍ ½ÃÀÛÇÏ´Â octet ´ÜÀ§ index
+ * @return 0ë¶€í„° ì‹œì‘í•˜ëŠ” octet ë‹¨ìœ„ index
  */
 acp_sint32_t ulnPrepIndexOfNonWhitespaceAndComment(ulnFnContext     *aFnContext,
                                                    const acp_char_t *aSrcQstr,
@@ -793,14 +793,14 @@ acp_sint32_t ulnPrepIndexOfNonWhitespaceAndComment(ulnFnContext     *aFnContext,
 }
 
 /**
- * SELECT¹®ÀÇ ½ÃÀÛ À§Ä¡¸¦ Ã£´Â´Ù.
+ * SELECTë¬¸ì˜ ì‹œì‘ ìœ„ì¹˜ë¥¼ ì°¾ëŠ”ë‹¤.
  *
  * @param[in] aFnContext   function context
- * @param[in] aSrcQstr     ¿øº» Äõ¸®¹®
- * @param[in] aSrcQstrSize Äõ¸®¹®ÀÇ ±æÀÌ(octet length)
- * @param[in] aStartPos    °Ë»öÀ» ½ÃÀÛÇÒ ÀÎµ¦½º(octet base)
+ * @param[in] aSrcQstr     ì›ë³¸ ì¿¼ë¦¬ë¬¸
+ * @param[in] aSrcQstrSize ì¿¼ë¦¬ë¬¸ì˜ ê¸¸ì´(octet length)
+ * @param[in] aStartPos    ê²€ìƒ‰ì„ ì‹œì‘í•  ì¸ë±ìŠ¤(octet base)
  *
- * @return 0ºÎÅÍ ½ÃÀÛÇÏ´Â octet ´ÜÀ§ index. "SELECT"·Î ½ÃÀÛÇÏÁö ¾ÊÀ¸¸é -1
+ * @return 0ë¶€í„° ì‹œì‘í•˜ëŠ” octet ë‹¨ìœ„ index. "SELECT"ë¡œ ì‹œì‘í•˜ì§€ ì•Šìœ¼ë©´ -1
  */
 acp_sint32_t ulnPrepIndexOfSelect(ulnFnContext     *aFnContext,
                                   const acp_char_t *aSrcQstr,
@@ -849,14 +849,14 @@ ACP_INLINE acp_bool_t ulnPrepIsValidFromNextChar(acp_char_t aCh)
 }
 
 /**
- * FROMÀÇ ½ÃÀÛ À§Ä¡¸¦ Ã£´Â´Ù.
+ * FROMì˜ ì‹œì‘ ìœ„ì¹˜ë¥¼ ì°¾ëŠ”ë‹¤.
  *
  * @param[in] aFnContext   function context
- * @param[in] aSrcQstr     ¿øº» Äõ¸®¹®
- * @param[in] aSrcQstrSize Äõ¸®¹®ÀÇ ±æÀÌ(octet length)
- * @param[in] aStartPos    °Ë»öÀ» ½ÃÀÛÇÒ ÀÎµ¦½º(octet base)
+ * @param[in] aSrcQstr     ì›ë³¸ ì¿¼ë¦¬ë¬¸
+ * @param[in] aSrcQstrSize ì¿¼ë¦¬ë¬¸ì˜ ê¸¸ì´(octet length)
+ * @param[in] aStartPos    ê²€ìƒ‰ì„ ì‹œì‘í•  ì¸ë±ìŠ¤(octet base)
  *
- * @return FROM ÀıÀÌ ÀÖÀ¸¸é FROMÀÇ ½ÃÀÛ À§Ä¡(0 base), ¾Æ´Ï¸é -1
+ * @return FROM ì ˆì´ ìˆìœ¼ë©´ FROMì˜ ì‹œì‘ ìœ„ì¹˜(0 base), ì•„ë‹ˆë©´ -1
  */
 acp_sint32_t ulnPrepIndexOfFrom(ulnFnContext     *aFnContext,
                                 const acp_char_t *aSrcQstr,
@@ -923,7 +923,7 @@ acp_sint32_t ulnPrepIndexOfFrom(ulnFnContext     *aFnContext,
 
             case 'F':
             case 'f':
-                /* {°ø¹é/ºí·°}FROM{°ø¹é/ºí·°} ÀÎÁö È®ÀÎ */
+                /* {ê³µë°±/ë¸”ëŸ­}FROM{ê³µë°±/ë¸”ëŸ­} ì¸ì§€ í™•ì¸ */
                 if ((i == 0)
                  || (i+5 >= aSrcQstrSize)
                  || (ulnPrepIsValidFromPrevChar(aSrcQstr[i-1]) == ACP_FALSE))
@@ -950,15 +950,15 @@ acp_sint32_t ulnPrepIndexOfFrom(ulnFnContext     *aFnContext,
 }
 
 /**
- * ´ÙÀ½¿¡ ³ª¿À´Â Ã¹¹øÂ° non-space ¹®ÀÚ À§Ä¡¸¦ ¾ò´Â´Ù.
+ * ë‹¤ìŒì— ë‚˜ì˜¤ëŠ” ì²«ë²ˆì§¸ non-space ë¬¸ì ìœ„ì¹˜ë¥¼ ì–»ëŠ”ë‹¤.
  *
  * @param[in] aFnContext    function context
  * @param[in] aSrcStr       string
  * @param[in] aSrcStrSize   string length
  * @param[in] aStartPos     start position
  *
- * @return Ã³À½ ³ª¿À´Â °ø¹é(white-space) ¾Æ´Ñ ¹®ÀÚ À§Ä¡(0 base),
- *         °ø¹é¹Û¿¡ ¾øÀ¸¸é -1
+ * @return ì²˜ìŒ ë‚˜ì˜¤ëŠ” ê³µë°±(white-space) ì•„ë‹Œ ë¬¸ì ìœ„ì¹˜(0 base),
+ *         ê³µë°±ë°–ì— ì—†ìœ¼ë©´ -1
  */
 acp_sint32_t ulnPrepIndexOfNonSpace(ulnFnContext     *aFnContext,
                                     const acp_char_t *aSrcStr,
@@ -988,14 +988,14 @@ acp_sint32_t ulnPrepIndexOfNonSpace(ulnFnContext     *aFnContext,
 }
 
 /**
- * ´ÙÀ½¿¡ ³ª¿À´Â IDÀÇ ³¡ À§Ä¡¸¦ ¾ò´Â´Ù.
+ * ë‹¤ìŒì— ë‚˜ì˜¤ëŠ” IDì˜ ë ìœ„ì¹˜ë¥¼ ì–»ëŠ”ë‹¤.
  *
  * @param[in] aFnContext    function context
  * @param[in] aSrcStr       string
  * @param[in] aSrcStrSize   string length
  * @param[in] aStartPos     start position
  *
- * @return Ã³À½ ³ª¿À´Â IDÀÇ ³¡ À§Ä¡(0 base), ID°¡ ¾øÀ¸¸é -1
+ * @return ì²˜ìŒ ë‚˜ì˜¤ëŠ” IDì˜ ë ìœ„ì¹˜(0 base), IDê°€ ì—†ìœ¼ë©´ -1
  */
 acp_sint32_t ulnPrepIndexOfIdEnd(ulnFnContext     *aFnContext,
                                  const acp_char_t *aSrcStr,
@@ -1038,14 +1038,14 @@ acp_sint32_t ulnPrepIndexOfIdEnd(ulnFnContext     *aFnContext,
 }
 
 /**
- * FROMÀÇ ³¡ À§Ä¡¸¦ Ã£´Â´Ù.
+ * FROMì˜ ë ìœ„ì¹˜ë¥¼ ì°¾ëŠ”ë‹¤.
  *
  * @param[in] aFnContext     function context
- * @param[in] aSrcQstr       ¿øº» Äõ¸®¹®
- * @param[in] aSrcQstrSize   Äõ¸®¹®ÀÇ ±æÀÌ(octet length)
- * @param[in] aStartPos      °Ë»öÀ» ½ÃÀÛÇÒ ÀÎµ¦½º(octet base)
+ * @param[in] aSrcQstr       ì›ë³¸ ì¿¼ë¦¬ë¬¸
+ * @param[in] aSrcQstrSize   ì¿¼ë¦¬ë¬¸ì˜ ê¸¸ì´(octet length)
+ * @param[in] aStartPos      ê²€ìƒ‰ì„ ì‹œì‘í•  ì¸ë±ìŠ¤(octet base)
  *
- * @return FROM ÀıÀÌ ÀÖÀ¸¸é FROMÀÇ ³¡ À§Ä¡(0 base), ¾Æ´Ï¸é -1
+ * @return FROM ì ˆì´ ìˆìœ¼ë©´ FROMì˜ ë ìœ„ì¹˜(0 base), ì•„ë‹ˆë©´ -1
  */
 acp_sint32_t ulnPrepIndexOfFromEnd(ulnFnContext     *aFnContext,
                                    const acp_char_t *aSrcQstr,
@@ -1074,8 +1074,8 @@ acp_sint32_t ulnPrepIndexOfFromEnd(ulnFnContext     *aFnContext,
 
         sTokLen = sTokE - sTokB;
 
-        /* FROM Àı ´ÙÀ½¿¡ "AS"°¡ ³ª¿À°Å³ª,
-         * FROM Àı ´ÙÀ½¿¡ ³ª¿Ã ¼ö ÀÖ´Â ¿¹¾à¾î°¡ ¾Æ´Ï¸é AS ¾øÀÌ alias¸¦ ÇÑ°Å´Ù. */
+        /* FROM ì ˆ ë‹¤ìŒì— "AS"ê°€ ë‚˜ì˜¤ê±°ë‚˜,
+         * FROM ì ˆ ë‹¤ìŒì— ë‚˜ì˜¬ ìˆ˜ ìˆëŠ” ì˜ˆì•½ì–´ê°€ ì•„ë‹ˆë©´ AS ì—†ì´ aliasë¥¼ í•œê±°ë‹¤. */
         switch (sTokLen)
         {
             case 2:
@@ -1141,15 +1141,15 @@ acp_sint32_t ulnPrepIndexOfFromEnd(ulnFnContext     *aFnContext,
 }
 
 /**
- * SELECT Äõ¸®ÀÎÁö È®ÀÎ.
+ * SELECT ì¿¼ë¦¬ì¸ì§€ í™•ì¸.
  *
- * ´Ü¼øÈ÷ Äõ¸®¹®ÀÌ SELECT·Î ½ÃÀÛÇÏ´ÂÁö¸¸ º¸°í ÆÇ´ÜÇÑ´Ù.
+ * ë‹¨ìˆœíˆ ì¿¼ë¦¬ë¬¸ì´ SELECTë¡œ ì‹œì‘í•˜ëŠ”ì§€ë§Œ ë³´ê³  íŒë‹¨í•œë‹¤.
  *
  * @param[in] aFnContext     function context
  * @param[in] aStatementText query string
  * @param[in] aTextLength    octet length of query string
  *
- * @return SELECT Äõ¸®¸é ACI_TRUE, ¾Æ´Ï¸é ACI_FALSE
+ * @return SELECT ì¿¼ë¦¬ë©´ ACI_TRUE, ì•„ë‹ˆë©´ ACI_FALSE
  */
 acp_bool_t ulnPrepIsSelect(ulnFnContext *aFnContext,
                            acp_char_t   *aStatementText,
@@ -1162,15 +1162,15 @@ acp_bool_t ulnPrepIsSelect(ulnFnContext *aFnContext,
 }
 
 /**
- * Updatable/ScrollableÀ» À§ÇÑ SELECT Äõ¸®¹®¿¡¼­
- * ¿¡·¯ È®ÀÎÀ» À§ÇÑ Äõ¸®¹®À» ¸¸µç´Ù.
+ * Updatable/Scrollableì„ ìœ„í•œ SELECT ì¿¼ë¦¬ë¬¸ì—ì„œ
+ * ì—ëŸ¬ í™•ì¸ì„ ìœ„í•œ ì¿¼ë¦¬ë¬¸ì„ ë§Œë“ ë‹¤.
  *
  * @param[in]  aFnContext       function context
- * @param[out] aDestQstr        º¯È¯µÈ Äõ¸®¹®À» ´ãÀ» ¹öÆÛ
- * @param[in]  aDestQstrSize    ¹öÆÛ Å©±â(octet length)
- * @param[out] aDestQstrOutSize º¯È¯µÈ Äõ¸®¹®ÀÇ ±æÀÌ(octet length)¸¦ ´ãÀ» º¯¼ö
- * @param[in]  aSrcQstr         ¿øº» Äõ¸®¹®
- * @param[in]  aSrcQstrSize     Äõ¸®¹®ÀÇ ±æÀÌ(octet length)
+ * @param[out] aDestQstr        ë³€í™˜ëœ ì¿¼ë¦¬ë¬¸ì„ ë‹´ì„ ë²„í¼
+ * @param[in]  aDestQstrSize    ë²„í¼ í¬ê¸°(octet length)
+ * @param[out] aDestQstrOutSize ë³€í™˜ëœ ì¿¼ë¦¬ë¬¸ì˜ ê¸¸ì´(octet length)ë¥¼ ë‹´ì„ ë³€ìˆ˜
+ * @param[in]  aSrcQstr         ì›ë³¸ ì¿¼ë¦¬ë¬¸
+ * @param[in]  aSrcQstrSize     ì¿¼ë¦¬ë¬¸ì˜ ê¸¸ì´(octet length)
  *
  * @return ACI_SUCCESS if successful, or ACI_FAILURE otherwise
  */
@@ -1201,7 +1201,7 @@ ACI_RC ulnPrepBuildSelectForChkErr(ulnFnContext     *aFnContext,
               aSrcQstr + i, sCopyLen);
     aDestQstr[sOutLen] = '\0';
 
-    /*  Note. ³»ºÎ¿¡¼­¸¸ ¾²´Ï±î NULL Ã¼Å©´Â ±»ÀÌ ÇÏÁö ¾Ê´Â´Ù. */
+    /*  Note. ë‚´ë¶€ì—ì„œë§Œ ì“°ë‹ˆê¹Œ NULL ì²´í¬ëŠ” êµ³ì´ í•˜ì§€ ì•ŠëŠ”ë‹¤. */
     *aDestQstrOutSize = sOutLen;
 
     return ACI_SUCCESS;
@@ -1212,15 +1212,15 @@ ACI_RC ulnPrepBuildSelectForChkErr(ulnFnContext     *aFnContext,
 }
 
 /**
- * Updatable/ScrollableÀ» À§ÇÑ SELECT Äõ¸®¹®¿¡¼­
- * KeysetÀ» ½×±âÀ§ÇÑ Äõ¸®¹®À» ¸¸µç´Ù.
+ * Updatable/Scrollableì„ ìœ„í•œ SELECT ì¿¼ë¦¬ë¬¸ì—ì„œ
+ * Keysetì„ ìŒ“ê¸°ìœ„í•œ ì¿¼ë¦¬ë¬¸ì„ ë§Œë“ ë‹¤.
  *
  * @param[in]  aFnContext       function context
- * @param[out] aDestQstr        º¯È¯µÈ Äõ¸®¹®À» ´ãÀ» ¹öÆÛ
- * @param[in]  aDestQstrSize    ¹öÆÛ Å©±â(octet length)
- * @param[out] aDestQstrOutSize º¯È¯µÈ Äõ¸®¹®ÀÇ ±æÀÌ(octet length)¸¦ ´ãÀ» º¯¼ö
- * @param[in]  aSrcQstr         ¿øº» Äõ¸®¹®
- * @param[in]  aSrcQstrSize     Äõ¸®¹®ÀÇ ±æÀÌ(octet length)
+ * @param[out] aDestQstr        ë³€í™˜ëœ ì¿¼ë¦¬ë¬¸ì„ ë‹´ì„ ë²„í¼
+ * @param[in]  aDestQstrSize    ë²„í¼ í¬ê¸°(octet length)
+ * @param[out] aDestQstrOutSize ë³€í™˜ëœ ì¿¼ë¦¬ë¬¸ì˜ ê¸¸ì´(octet length)ë¥¼ ë‹´ì„ ë³€ìˆ˜
+ * @param[in]  aSrcQstr         ì›ë³¸ ì¿¼ë¦¬ë¬¸
+ * @param[in]  aSrcQstrSize     ì¿¼ë¦¬ë¬¸ì˜ ê¸¸ì´(octet length)
  *
  * @return ACI_SUCCESS if successful, or ACI_FAILURE otherwise
  */
@@ -1248,7 +1248,7 @@ ACI_RC ulnPrepBuildSelectForKeyset(ulnFnContext     *aFnContext,
               aSrcQstr + i, aSrcQstrSize - i);
     aDestQstr[sOutLen] = '\0';
 
-    /*  Note. ³»ºÎ¿¡¼­¸¸ ¾²´Ï±î NULL Ã¼Å©´Â ±»ÀÌ ÇÏÁö ¾Ê´Â´Ù. */
+    /*  Note. ë‚´ë¶€ì—ì„œë§Œ ì“°ë‹ˆê¹Œ NULL ì²´í¬ëŠ” êµ³ì´ í•˜ì§€ ì•ŠëŠ”ë‹¤. */
     *aDestQstrOutSize = sOutLen;
 
     return ACI_SUCCESS;
@@ -1259,12 +1259,12 @@ ACI_RC ulnPrepBuildSelectForKeyset(ulnFnContext     *aFnContext,
 }
 
 /**
- * Updatable/ScrollableÀ» À§ÇÑ SELECT Äõ¸®¹®¿¡¼­
- * RowsetÀ» ½×±âÀ§ÇÑ Äõ¸®¹®ÀÇ ±âÃÊ¸¦ ¸¸µç´Ù.
+ * Updatable/Scrollableì„ ìœ„í•œ SELECT ì¿¼ë¦¬ë¬¸ì—ì„œ
+ * Rowsetì„ ìŒ“ê¸°ìœ„í•œ ì¿¼ë¦¬ë¬¸ì˜ ê¸°ì´ˆë¥¼ ë§Œë“ ë‹¤.
  *
  * @param[in] aFnContext   function context
- * @param[in] aSrcQstr     ¿øº» Äõ¸®¹®
- * @param[in] aSrcQstrSize Äõ¸®¹®ÀÇ ±æÀÌ(octet length)
+ * @param[in] aSrcQstr     ì›ë³¸ ì¿¼ë¦¬ë¬¸
+ * @param[in] aSrcQstrSize ì¿¼ë¦¬ë¬¸ì˜ ê¸¸ì´(octet length)
  *
  * @return ACI_SUCCESS if successful, or ACI_FAILURE otherwise
  */
@@ -1291,10 +1291,10 @@ ACI_RC ulnPrepBuildSelectBaseForRowset(ulnFnContext      *aFnContext,
                               sPosStartOfTarget);
     ACI_TEST(i == -1);
 
-    /* keyset-drivenÀ¸·Î ¿­¾úÀ» ¶§¸¸ ÀÌ ÇÔ¼ö¸¦ »ç¿ëÇÑ´Ù.
-     * ±×·¯¹Ç·Î, ¿øº» Äõ¸®´Â ´ÜÀÏ Å×ÀÌºí¿¡ ´ëÇÑ ´Ü¼ø Äõ¸®¶ó°í °£ÁÖÇÒ ¼ö ÀÖ´Ù.
-     * (keyset-driven Á¦¾àÁ¶°ÇÀ¸·Î ÀÎÇÔ.)
-     * Áï, FROM Àı ÀÌÇÏ´Â ½Ï ³¯·Á¹ö·Áµµ ±¦Âú´Ù´Â°Å. */
+    /* keyset-drivenìœ¼ë¡œ ì—´ì—ˆì„ ë•Œë§Œ ì´ í•¨ìˆ˜ë¥¼ ì‚¬ìš©í•œë‹¤.
+     * ê·¸ëŸ¬ë¯€ë¡œ, ì›ë³¸ ì¿¼ë¦¬ëŠ” ë‹¨ì¼ í…Œì´ë¸”ì— ëŒ€í•œ ë‹¨ìˆœ ì¿¼ë¦¬ë¼ê³  ê°„ì£¼í•  ìˆ˜ ìˆë‹¤.
+     * (keyset-driven ì œì•½ì¡°ê±´ìœ¼ë¡œ ì¸í•¨.)
+     * ì¦‰, FROM ì ˆ ì´í•˜ëŠ” ì‹¹ ë‚ ë ¤ë²„ë ¤ë„ ê´œì°®ë‹¤ëŠ”ê±°. */
     sCopyLen = i - sPosStartOfTarget;
 
     sQstrLen = sCopyLen
@@ -1325,10 +1325,10 @@ ACI_RC ulnPrepBuildSelectBaseForRowset(ulnFnContext      *aFnContext,
 }
 
 /**
- * RowsetÀ» ½×±âÀ§ÇÑ Äõ¸®¹®À» ¸¸µç´Ù.
+ * Rowsetì„ ìŒ“ê¸°ìœ„í•œ ì¿¼ë¦¬ë¬¸ì„ ë§Œë“ ë‹¤.
  *
  * @param[in] aFnContext function context
- * @param[in] aRowCount  °¡Á®¿Ã Row °¹¼ö
+ * @param[in] aRowCount  ê°€ì ¸ì˜¬ Row ê°¯ìˆ˜
  *
  * @return ACI_SUCCESS if successful, or ACI_FAILURE otherwise
  */
@@ -1378,7 +1378,7 @@ ACI_RC ulnPrepBuildSelectForRowset(ulnFnContext      *aFnContext,
 }
 
 /**
- * UPDATE¸¦ À§ÇÑ Äõ¸®¹®À» ¸¸µç´Ù.
+ * UPDATEë¥¼ ìœ„í•œ ì¿¼ë¦¬ë¬¸ì„ ë§Œë“ ë‹¤.
  *
  * @param[in] aFnContext function context
  *
@@ -1483,7 +1483,7 @@ ACI_RC ulnPrepBuildUpdateQstr(ulnFnContext        *aFnContext,
 }
 
 /**
- * DELETE¸¦ À§ÇÑ Äõ¸®¹®À» ¸¸µç´Ù.
+ * DELETEë¥¼ ìœ„í•œ ì¿¼ë¦¬ë¬¸ì„ ë§Œë“ ë‹¤.
  *
  * @param[in] aFnContext function context
  *
@@ -1532,7 +1532,7 @@ ACI_RC ulnPrepBuildDeleteQstr(ulnFnContext *aFnContext)
 }
 
 /**
- * INSERT¸¦ À§ÇÑ Äõ¸®¹®À» ¸¸µç´Ù.
+ * INSERTë¥¼ ìœ„í•œ ì¿¼ë¦¬ë¬¸ì„ ë§Œë“ ë‹¤.
  *
  * @param[in] aFnContext function context
  *
@@ -1653,7 +1653,7 @@ ACI_RC ulnPrepBuildInsertQstr(ulnFnContext        *aFnContext,
 }
 
 /**
- * ¿øº» ResultSetÀÇ ColumnInfo¸¦ ÀúÀåÇØµĞ´Ù.
+ * ì›ë³¸ ResultSetì˜ ColumnInfoë¥¼ ì €ì¥í•´ë‘”ë‹¤.
  *
  * @param[in] aFnContext function context
  *
@@ -1663,10 +1663,10 @@ ACI_RC ulnPrepBackupColumnInfo(ulnFnContext *aFnContext)
 {
     ulnStmt *sStmt = aFnContext->mHandle.mStmt;
 
-    /* Error È®ÀÎÀ» À§ÇÑ Äõ¸®·ÎºÎÅÍ ¾òÀº ÄÃ·³ Á¤º¸¸¦ ÀúÀåÇØµĞ´Ù.
-     * ÀÌ ¶§, ÇÊ¿äÇÑ Á¤º¸¸¸ º¹»çÇØµÎ´Â°Ô ´õ ¹ø°Å·Î¿ì´Ï Ird¸¦ ÅëÂ°·Î ¶¾´Ù.
-     * ¿©±â¿¡´Â _PROWID Á¤º¸µµ Æ÷ÇÔµÇ¾îÀÖÀ¸¹Ç·Î ÀÌ¸¦ »©µÎ¸é ÁÁÁö¸¸,
-     * Ird´Â reallocÀ¸·Î ÇÒ´çÇÏ±â ¶§¹®¿¡ °Á ³öµÎ´Â°Ô ´õ ³´´Ù. */
+    /* Error í™•ì¸ì„ ìœ„í•œ ì¿¼ë¦¬ë¡œë¶€í„° ì–»ì€ ì»¬ëŸ¼ ì •ë³´ë¥¼ ì €ì¥í•´ë‘”ë‹¤.
+     * ì´ ë•Œ, í•„ìš”í•œ ì •ë³´ë§Œ ë³µì‚¬í•´ë‘ëŠ”ê²Œ ë” ë²ˆê±°ë¡œìš°ë‹ˆ Irdë¥¼ í†µì§¸ë¡œ ë—€ë‹¤.
+     * ì—¬ê¸°ì—ëŠ” _PROWID ì •ë³´ë„ í¬í•¨ë˜ì–´ìˆìœ¼ë¯€ë¡œ ì´ë¥¼ ë¹¼ë‘ë©´ ì¢‹ì§€ë§Œ,
+     * IrdëŠ” reallocìœ¼ë¡œ í• ë‹¹í•˜ê¸° ë•Œë¬¸ì— ê± ë†”ë‘ëŠ”ê²Œ ë” ë‚«ë‹¤. */
 
     if (sStmt->mIrd4KeysetDriven != NULL)
     {
@@ -1698,8 +1698,8 @@ ACI_RC ulnPrepBackupColumnInfo(ulnFnContext *aFnContext)
 }
 
 /**
- * APD°¡ ¾ø´Â(SQLBindParameter¸¦ ÇÏÁö ¾ÊÀº°ÍÀ¸·Î ÃßÁ¤µÇ´Â) ÆÄ¶ó¹ÌÅÍÀÇ IPD¸¦ Á¦°ÅÇÑ´Ù.
- * ÇÚµéÀ» Àç»ç¿ë ÇÒ °æ¿ì, »õ·Î Prepare ÇÑ Äõ¸®¿¡ ¸Â´Â IPD Á¤º¸¸¦ »ı¼ºÇÏ±â À§ÇÑ ÁØºñÀÛ¾÷.
+ * APDê°€ ì—†ëŠ”(SQLBindParameterë¥¼ í•˜ì§€ ì•Šì€ê²ƒìœ¼ë¡œ ì¶”ì •ë˜ëŠ”) íŒŒë¼ë¯¸í„°ì˜ IPDë¥¼ ì œê±°í•œë‹¤.
+ * í•¸ë“¤ì„ ì¬ì‚¬ìš© í•  ê²½ìš°, ìƒˆë¡œ Prepare í•œ ì¿¼ë¦¬ì— ë§ëŠ” IPD ì •ë³´ë¥¼ ìƒì„±í•˜ê¸° ìœ„í•œ ì¤€ë¹„ì‘ì—….
  *
  * @param[in] aStmt Statement Handle
  */
@@ -1717,7 +1717,7 @@ static void ulnStmtRemoveAllUnboundIpd(ulnStmt *aStmt)
         sDescRecApd = ulnStmtGetApdRec(aStmt, i);
         if ( (sDescRecApd == NULL) && (sDescRecIpd != NULL) )
         {
-            /* BUG-44858 ¸Ş¸ğ¸® ÀçÈ°¿ëÀ» À§ÇØ ACP_TRUE·Î ¼³Á¤ */
+            /* BUG-44858 ë©”ëª¨ë¦¬ ì¬í™œìš©ì„ ìœ„í•´ ACP_TRUEë¡œ ì„¤ì • */
             sRC = ulnDescRemoveDescRec(aStmt->mAttrIpd, sDescRecIpd, ACP_TRUE);
             ACE_ASSERT(sRC == ACI_SUCCESS);
         }
@@ -1725,7 +1725,7 @@ static void ulnStmtRemoveAllUnboundIpd(ulnStmt *aStmt)
 }
 
 /**
- * ½ÇÁ¦ Prepare¸¦ ¼öÇàÇÑ´Ù.
+ * ì‹¤ì œ Prepareë¥¼ ìˆ˜í–‰í•œë‹¤.
  *
  * @param[in] aFnContext     function context
  * @param[in] aPtContext     protocol context
@@ -1783,7 +1783,7 @@ ACI_RC ulnPrepareCore(ulnFnContext *aFnContext,
 
     ulnStmtResetTableNameForUpdate(sStmt);
 
-    /* Statement Text ÀÇ ±æÀÌ¸¦ °è»êÇÑ´Ù. */
+    /* Statement Text ì˜ ê¸¸ì´ë¥¼ ê³„ì‚°í•œë‹¤. */
     if (aTextLength == SQL_NTS)
     {
         aTextLength = acpCStrLen(aStatementText, ACP_SINT32_MAX);
@@ -1795,8 +1795,8 @@ ACI_RC ulnPrepareCore(ulnFnContext *aFnContext,
     if (sStmt->mIsSelect== ACP_TRUE)
     {
         /* PROJ-1381 Fetch Across Commit
-         * SELECTÀÌ¸é commit mode¿Í Holdability¸¦ È®ÀÎÇÑ´Ù.
-         * HOLD ONÀº FETCH°¡ ¾Æ´Ï¸é ¹«½ÃÇÏ°í, autocommitÀÏ ¶§´Â ¾µ ¼ö ¾ø´Ù. */
+         * SELECTì´ë©´ commit modeì™€ Holdabilityë¥¼ í™•ì¸í•œë‹¤.
+         * HOLD ONì€ FETCHê°€ ì•„ë‹ˆë©´ ë¬´ì‹œí•˜ê³ , autocommitì¼ ë•ŒëŠ” ì“¸ ìˆ˜ ì—†ë‹¤. */
         if ((sDbc->mAttrAutoCommit == SQL_AUTOCOMMIT_ON)
          && (ulnCursorGetHoldability(&sStmt->mCursor) == SQL_CURSOR_HOLD_ON))
         {
@@ -1860,7 +1860,7 @@ ACI_RC ulnPrepareCore(ulnFnContext *aFnContext,
     }
 
     /*
-     * statement text °ü·Ã Ã³¸®
+     * statement text ê´€ë ¨ ì²˜ë¦¬
      */
     sPrepareReplaceFunc = ulnPrepareReplaceMap[sDbc->mNlsNcharLiteralReplace];
     ACI_TEST(sPrepareReplaceFunc(aFnContext,
@@ -1870,8 +1870,8 @@ ACI_RC ulnPrepareCore(ulnFnContext *aFnContext,
                                  sPrepareTextLen) != ACI_SUCCESS);
 
     /*
-     * BUGBUG : ¾Æ·¡ÀÇ °ÍµéÀ» Prepare result ¸¦ ¹Ş¾ÒÀ» ¶§ ÇÏ¸é º¸´Ù ±ò²ûÇÒÅÙµ¥...
-     * stmt ÀÇ IRD ¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+     * BUGBUG : ì•„ë˜ì˜ ê²ƒë“¤ì„ Prepare result ë¥¼ ë°›ì•˜ì„ ë•Œ í•˜ë©´ ë³´ë‹¤ ê¹”ë”í• í…ë°...
+     * stmt ì˜ IRD ë¥¼ ì´ˆê¸°í™”í•œë‹¤.
      */
     sDescIrd = ulnStmtGetIrd(sStmt);
     ACI_TEST_RAISE(sDescIrd == NULL, LABEL_MEM_MAN_ERR);
@@ -1881,7 +1881,7 @@ ACI_RC ulnPrepareCore(ulnFnContext *aFnContext,
 
     /*
      * -----------------------
-     * Ä³½Ã ÃÊ±âÈ­
+     * ìºì‹œ ì´ˆê¸°í™”
      * -----------------------
      */
 
@@ -1906,7 +1906,7 @@ ACI_RC ulnPrepareCore(ulnFnContext *aFnContext,
     }
 
     /*
-     * stmt ÀÇ mParameterCount ¿Í mResultSetCount ¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+     * stmt ì˜ mParameterCount ì™€ mResultSetCount ë¥¼ ì´ˆê¸°í™”í•œë‹¤.
      */
     ulnStmtSetParamCount(sStmt, 0);
     ulnStmtSetResultSetCount(sStmt, 0);
@@ -1914,9 +1914,9 @@ ACI_RC ulnPrepareCore(ulnFnContext *aFnContext,
     ulnStmtSetCurrentResultSetID(sStmt, 0);
 
     /*
-     * prepare ¸¦ ÇÏ°Ô µÇ¸é, ¼­¹ö¿¡ ÀÖ´ø ¹ÙÀÎµå Á¤º¸°¡ ½Î±×¸® ´Ù ³¯¾Æ°¡ ¹ö¸®¹Ç·Î
-     * stmt ¿¡ µş·Á ÀÖ´Â ¸ğµç descriptor ÀÇ mBindInfo->mIsSent ¸¦ ACP_FALSE ·Î Àâ¾Æ ÁÖ¾î¼­
-     * ´Ù½Ã ÇÑ¹ø ¹ÙÀÎµå Á¤º¸°¡ Àü¼ÛµÇµµ·Ï ÇØ¾ß ÇÑ´Ù.
+     * prepare ë¥¼ í•˜ê²Œ ë˜ë©´, ì„œë²„ì— ìˆë˜ ë°”ì¸ë“œ ì •ë³´ê°€ ì‹¸ê·¸ë¦¬ ë‹¤ ë‚ ì•„ê°€ ë²„ë¦¬ë¯€ë¡œ
+     * stmt ì— ë”¸ë ¤ ìˆëŠ” ëª¨ë“  descriptor ì˜ mBindInfo->mIsSent ë¥¼ ACP_FALSE ë¡œ ì¡ì•„ ì£¼ì–´ì„œ
+     * ë‹¤ì‹œ í•œë²ˆ ë°”ì¸ë“œ ì •ë³´ê°€ ì „ì†¡ë˜ë„ë¡ í•´ì•¼ í•œë‹¤.
      */
     ulnStmtClearBindInfoSentFlagAll(sStmt);
     ulnStmtSetBuildBindInfo(sStmt, ACP_TRUE);
@@ -1925,15 +1925,15 @@ ACI_RC ulnPrepareCore(ulnFnContext *aFnContext,
     ulnStmtResetPD(sStmt);
 
     /*
-     * PREPARE REQ ¾²±â
+     * PREPARE REQ ì“°ê¸°
      */
     /* PROJ-2177 User Interface - Cancel
-     * ExecDirect¶§´Â StmtID¸¦ ¸ğ¸£¸é Cancel ÇÒ ¼ö ¾ø´Ù.
-     * ÀÌ ¶§´Â CID·Î PrepareÇØ¼­, CID·Î Cancel ÇÒ ¼ö ÀÖµµ·Ï ÇÑ´Ù. */
+     * ExecDirectë•ŒëŠ” StmtIDë¥¼ ëª¨ë¥´ë©´ Cancel í•  ìˆ˜ ì—†ë‹¤.
+     * ì´ ë•ŒëŠ” CIDë¡œ Prepareí•´ì„œ, CIDë¡œ Cancel í•  ìˆ˜ ìˆë„ë¡ í•œë‹¤. */
     if ((sPrepareModeExec == CMP_DB_PREPARE_MODE_EXEC_DIRECT)
      && (sStmt->mStatementID == ULN_STMT_ID_NONE))
     {
-        /* StmtCID »ı¼º¿¡ ½ÇÆĞÇØ¼­´Â ¾ÈµÈ´Ù. */
+        /* StmtCID ìƒì„±ì— ì‹¤íŒ¨í•´ì„œëŠ” ì•ˆëœë‹¤. */
         ACE_ASSERT(sStmt->mStmtCID != ULN_STMT_CID_NONE);
 
         ACI_TEST(ulnWritePrepareByCIDREQ(aFnContext,
@@ -1962,13 +1962,13 @@ ACI_RC ulnPrepareCore(ulnFnContext *aFnContext,
                                       sDbc->mConnTimeoutValue);
         if (sRC != ACI_SUCCESS)
         {
-            /* º¯È¯µÈ Äõ¸®¸¦ ¼öÇàÇßÀ» ¶§ ¹Ş¾Ò´ø ¿¡·¯¸¦ ³¯¸°´Ù. */
+            /* ë³€í™˜ëœ ì¿¼ë¦¬ë¥¼ ìˆ˜í–‰í–ˆì„ ë•Œ ë°›ì•˜ë˜ ì—ëŸ¬ë¥¼ ë‚ ë¦°ë‹¤. */
             ulnDiagRecRemoveAll(&sStmt->mObj);
 
             ulnPrepPostDowngrade(aFnContext);
 
-            /* PrepareÇÒ Äõ¸®¹®À» downgradeµÈ Ä¿¼­ ¼Ó¼º¿¡ ¸Â°Ô ´Ù½Ã ¼³Á¤.
-             * ÇöÀç´Â ´Ã staticÀ¸·Î ¹Ù²î¹Ç·Î, ´Ã ¿øº» Äõ¸®¹®À» ¼³Á¤ÇÑ´Ù. */
+            /* Prepareí•  ì¿¼ë¦¬ë¬¸ì„ downgradeëœ ì»¤ì„œ ì†ì„±ì— ë§ê²Œ ë‹¤ì‹œ ì„¤ì •.
+             * í˜„ì¬ëŠ” ëŠ˜ staticìœ¼ë¡œ ë°”ë€Œë¯€ë¡œ, ëŠ˜ ì›ë³¸ ì¿¼ë¦¬ë¬¸ì„ ì„¤ì •í•œë‹¤. */
             sPrepareText = aStatementText;
             sPrepareTextLen = aTextLength;
 
@@ -1977,8 +1977,8 @@ ACI_RC ulnPrepareCore(ulnFnContext *aFnContext,
         }
         else
         {
-            /* keyset-drivenÀÌ¸é ÄÃ·³ Á¤º¸¸¦ ¹Ì¸® ¹Ş¾ÆµÖ¾ß ÇÑ´Ù.
-             * Äõ¸®¹®ÀÌ ¹Ù²î¹Ç·Î ³ªÁß¿¡´Â Á¤º¸¸¦ Á¦´ë·Î ¾òÀ» ¼ö ¾ø´Ù. */
+            /* keyset-drivenì´ë©´ ì»¬ëŸ¼ ì •ë³´ë¥¼ ë¯¸ë¦¬ ë°›ì•„ë‘¬ì•¼ í•œë‹¤.
+             * ì¿¼ë¦¬ë¬¸ì´ ë°”ë€Œë¯€ë¡œ ë‚˜ì¤‘ì—ëŠ” ì •ë³´ë¥¼ ì œëŒ€ë¡œ ì–»ì„ ìˆ˜ ì—†ë‹¤. */
             ACI_TEST(ulnPrepBackupColumnInfo(aFnContext) != ACI_SUCCESS);
 
             ACI_TEST_RAISE(ulnPrepBuildSelectBaseForRowset(aFnContext,
@@ -2012,18 +2012,18 @@ ACI_RC ulnPrepareCore(ulnFnContext *aFnContext,
             ACI_TEST_RAISE(ulnKeysetInitialize(sStmt->mKeyset) != ACI_SUCCESS,
                            LABEL_MEM_MAN_ERR);
 
-            /* target Àı¸¸ ÁÙ¾îµå´Â°Å±â ¶§¹®¿¡ ¼º°ø ¿©ºÎ¸¦ È®ÀÎÇÒ ÇÊ¿ä ¾ø´Ù.
-             * FlushAndRead´Â ¹Ø¿¡¼­ Prepare Mode¿¡ µû¶ó ¼±ÅÃÀûÀ¸·Î ÇÑ´Ù. */
+            /* target ì ˆë§Œ ì¤„ì–´ë“œëŠ”ê±°ê¸° ë•Œë¬¸ì— ì„±ê³µ ì—¬ë¶€ë¥¼ í™•ì¸í•  í•„ìš” ì—†ë‹¤.
+             * FlushAndReadëŠ” ë°‘ì—ì„œ Prepare Modeì— ë”°ë¼ ì„ íƒì ìœ¼ë¡œ í•œë‹¤. */
         }
     }
 
     /*
      * BINDINFO GET REQ
      *
-     * Note : prepare ÇÒ ¶§¸¶´Ù BINDINFO GET REQ ÇØ¾ß ÇÑ´Ù.
+     * Note : prepare í•  ë•Œë§ˆë‹¤ BINDINFO GET REQ í•´ì•¼ í•œë‹¤.
      *
-     * Note : result set ÀÇ column °¹¼ö°¡ 0 ÀÌ»óÀÎ °ÍÀ» Ã¼Å©ÇÏÁö ¾Ê°í
-     *        0 ÀÌ¶óµµ º¸³»´Â ÀÌÀ¯´Â, io transaction À» ÁÙÀÌ±â À§ÇÑ Æí¹ı ÁßÀÇ ÇÏ³ªÀÌ´Ù.
+     * Note : result set ì˜ column ê°¯ìˆ˜ê°€ 0 ì´ìƒì¸ ê²ƒì„ ì²´í¬í•˜ì§€ ì•Šê³ 
+     *        0 ì´ë¼ë„ ë³´ë‚´ëŠ” ì´ìœ ëŠ”, io transaction ì„ ì¤„ì´ê¸° ìœ„í•œ í¸ë²• ì¤‘ì˜ í•˜ë‚˜ì´ë‹¤.
      */
     ACI_TEST(ulnWriteColumnInfoGetREQ(aFnContext, aPtContext, 0) != ACI_SUCCESS);
 
@@ -2039,7 +2039,7 @@ ACI_RC ulnPrepareCore(ulnFnContext *aFnContext,
     }
 
     /*
-     * ÆĞÅ¶ Àü¼Û ¹× RES ±â´Ù¸®±â
+     * íŒ¨í‚· ì „ì†¡ ë° RES ê¸°ë‹¤ë¦¬ê¸°
      *
      * PROJ-1891 Deferred Prepare
      * It will be sent just in case DeferredPrepare is disabled. 
@@ -2101,7 +2101,7 @@ ACI_RC ulnPrepareCore(ulnFnContext *aFnContext,
 /* 
  * PROJ-1721 Name-based Binding
  *
- * @aAnalyzeText : NULLÀÌ ¾Æ´Ï¸é aStatementText¸¦ ºĞ¼®ÇÑ´Ù.
+ * @aAnalyzeText : NULLì´ ì•„ë‹ˆë©´ aStatementTextë¥¼ ë¶„ì„í•œë‹¤.
  */
 SQLRETURN ulnPrepare(ulnStmt      *aStmt,
                      acp_char_t   *aStatementText,
@@ -2119,7 +2119,7 @@ SQLRETURN ulnPrepare(ulnStmt      *aStmt,
     ACI_TEST(ulnEnter(&sFnContext, NULL) != ACI_SUCCESS);
     sNeedExit = ACP_TRUE;
 
-    /* ³Ñ°ÜÁø °´Ã¼ÀÇ validity Ã¼Å©¸¦ Æ÷ÇÔÇÑ ODBC 3.0 ¿¡¼­ Á¤ÀÇÇÏ´Â °¢Á¾ Error Ã¼Å© */
+    /* ë„˜ê²¨ì§„ ê°ì²´ì˜ validity ì²´í¬ë¥¼ í¬í•¨í•œ ODBC 3.0 ì—ì„œ ì •ì˜í•˜ëŠ” ê°ì¢… Error ì²´í¬ */
     ACI_TEST(ulnPrepCheckArgs(&sFnContext, aStatementText, aTextLength) != ACI_SUCCESS);
 
     //fix BUG-17722

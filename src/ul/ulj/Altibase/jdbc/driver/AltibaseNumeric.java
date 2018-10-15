@@ -213,7 +213,7 @@ public final class AltibaseNumeric extends Number implements Comparable
 
     public BigDecimal toBigDecimal()
     {
-        // IMPROVEMENT (2013-03-25) ¿ä±¸°¡ »ı±â¸é Ã³¸®
+        // IMPROVEMENT (2013-03-25) ìš”êµ¬ê°€ ìƒê¸°ë©´ ì²˜ë¦¬
         return null;
     }
 
@@ -221,25 +221,25 @@ public final class AltibaseNumeric extends Number implements Comparable
 
     public int intValue()
     {
-        // IMPROVEMENT (2013-03-25) ¿ä±¸°¡ »ı±â¸é Ã³¸®
+        // IMPROVEMENT (2013-03-25) ìš”êµ¬ê°€ ìƒê¸°ë©´ ì²˜ë¦¬
         return 0;
     }
 
     public long longValue()
     {
-        // IMPROVEMENT (2013-03-25) ¿ä±¸°¡ »ı±â¸é Ã³¸®
+        // IMPROVEMENT (2013-03-25) ìš”êµ¬ê°€ ìƒê¸°ë©´ ì²˜ë¦¬
         return 0;
     }
 
     public float floatValue()
     {
-        // IMPROVEMENT (2013-03-25) ¿ä±¸°¡ »ı±â¸é Ã³¸®
+        // IMPROVEMENT (2013-03-25) ìš”êµ¬ê°€ ìƒê¸°ë©´ ì²˜ë¦¬
         return 0;
     }
 
     public double doubleValue()
     {
-        // IMPROVEMENT (2013-03-25) ¿ä±¸°¡ »ı±â¸é Ã³¸®
+        // IMPROVEMENT (2013-03-25) ìš”êµ¬ê°€ ìƒê¸°ë©´ ì²˜ë¦¬
         return 0;
     }
 
@@ -248,9 +248,9 @@ public final class AltibaseNumeric extends Number implements Comparable
     // #region Comparable interface
 
     /**
-     * ÁöÁ¤ÇÑ object¿Í ºñ±³ÇØ¼­ ÀÌ °´Ã¼°¡ Å©¸é ¾ç¼ö, °°À¸¸é 0, ÀÛÀ¸¸é À½¼ö¸¦ ¹İÈ¯ÇÑ´Ù.
+     * ì§€ì •í•œ objectì™€ ë¹„êµí•´ì„œ ì´ ê°ì²´ê°€ í¬ë©´ ì–‘ìˆ˜, ê°™ìœ¼ë©´ 0, ì‘ìœ¼ë©´ ìŒìˆ˜ë¥¼ ë°˜í™˜í•œë‹¤.
      *
-     * @return ÀÌ °´Ã¼°¡ Å©¸é ¾ç¼ö, °°À¸¸é 0, ÀÛÀ¸¸é À½¼ö
+     * @return ì´ ê°ì²´ê°€ í¬ë©´ ì–‘ìˆ˜, ê°™ìœ¼ë©´ 0, ì‘ìœ¼ë©´ ìŒìˆ˜
      * @throws ClassCastException <tt>aObject</tt> is not a BigInteger.
      */
     public int compareTo(Object aObject)
@@ -264,7 +264,7 @@ public final class AltibaseNumeric extends Number implements Comparable
 
     private int compareTo(AltibaseNumeric aNumeric)
     {
-        // IMPROVEMENT (2013-03-25) ¿ä±¸°¡ »ı±â¸é Ã³¸®
+        // IMPROVEMENT (2013-03-25) ìš”êµ¬ê°€ ìƒê¸°ë©´ ì²˜ë¦¬
         return 0;
     }
 

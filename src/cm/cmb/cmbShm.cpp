@@ -197,7 +197,7 @@ IDE_RC cmbShmCreate(SInt aMaxChannelCount)
     union  semun sArg;
 
     /*
-     * IPC ÃÊ±âÈ­
+     * IPC ì´ˆê¸°í™”
      */
 
     gIpcShmKey        = -1;
@@ -211,19 +211,19 @@ IDE_RC cmbShmCreate(SInt aMaxChannelCount)
     gIpcShmInfo.mMaxChannelCount = aMaxChannelCount;
     // fix BUG-18830
     // bug-27250 free Buf list can be crushed when client killed
-    // mMaxBufferCount´Â  ¿ø·¡ semaphore°ªÀ» ÃÊ±âÈ­ÇÏ´Âµ¥ »ç¿ëµÈ´Ù.
-    // º¯°æÀü: channel¼ö * extra_buffer ¼ö(8)
-    // º¯°æÈÄ: °íÁ¤°ª 10
+    // mMaxBufferCountëŠ”  ì›ë˜ semaphoreê°’ì„ ì´ˆê¸°í™”í•˜ëŠ”ë° ì‚¬ìš©ëœë‹¤.
+    // ë³€ê²½ì „: channelìˆ˜ * extra_buffer ìˆ˜(8)
+    // ë³€ê²½í›„: ê³ ì •ê°’ 10
     gIpcShmInfo.mMaxBufferCount  = CMB_SHM_SEMA_UNDO_VALUE;
 
     /*
-     * Shared Memory°¡ ÀÌ¹Ì Á¸ÀçÇÏ´ÂÁö °Ë»ç
+     * Shared Memoryê°€ ì´ë¯¸ ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬
      */
 
     IDE_TEST_RAISE(gIpcShmID != PDL_INVALID_HANDLE, ShmAlreadyCreated);
 
     /*
-     * ºñÁ¤»ó Á¾·á½Ã »ı¼ºÇÑ ÀÚ¿ø ÇØÁ¦
+     * ë¹„ì •ìƒ ì¢…ë£Œì‹œ ìƒì„±í•œ ìì› í•´ì œ
      */
 
     idlOS::snprintf(gIpcLogFile,
@@ -289,9 +289,9 @@ IDE_RC cmbShmCreate(SInt aMaxChannelCount)
         gIpcSemChannelKey[0] = gIpcShmKey + 10000;
 
         /* ------------------------------------------------
-         *  HP 64bitÀÇ °æ¿ì 32ºñÆ® Clinet¿¡¼­
-         *  Shared Memory¸¦ Attch ÇÒ ¼ö ÀÖµµ·Ï,
-         *  compatible option : IPC_SHARE32¸¦ ÁÖ¾î¾ß ÇÑ´Ù.
+         *  HP 64bitì˜ ê²½ìš° 32ë¹„íŠ¸ Clinetì—ì„œ
+         *  Shared Memoryë¥¼ Attch í•  ìˆ˜ ìˆë„ë¡,
+         *  compatible option : IPC_SHARE32ë¥¼ ì£¼ì–´ì•¼ í•œë‹¤.
          *  by gamestar
          * ----------------------------------------------*/
 #if (defined(HP_HPUX) ||defined(IA64_HP_HPUX))   && defined(COMPILE_64BIT)
@@ -334,7 +334,7 @@ IDE_RC cmbShmCreate(SInt aMaxChannelCount)
         gIpcShmBuffer = (SChar*) idlOS::shmat( gIpcShmID, NULL, 0 );
         IDE_TEST_RAISE( gIpcShmBuffer == (void*) -1, err_attach_shm );
 
-        // Shared Memory Buffer ÃÊ±âÈ­
+        // Shared Memory Buffer ì´ˆê¸°í™”
         sMaxCount = gIpcShmInfo.mMaxChannelCount;
         
         // create channel semaphores
@@ -383,14 +383,14 @@ IDE_RC cmbShmCreate(SInt aMaxChannelCount)
             } // while
 
             /* ------------------------------------------------
-             *  IPC2 Áö¿øÇÒ °æ¿ì
+             *  IPC2 ì§€ì›í•  ê²½ìš°
              * ----------------------------------------------*/
             {
                 cmbShmChannelInfo *sShmHeader;
                 sShmHeader = cmbShmGetChannelInfo(gIpcShmBuffer, i);
 
                 sShmHeader->mPID               = 0;
-                sShmHeader->mTicketNum         = 0;  // BUG-32398 Å¸ÀÓ½ºÅÆÇÁ¿¡¼­ Æ¼ÄÏ¹øÈ£·Î º¯°æ
+                sShmHeader->mTicketNum         = 0;  // BUG-32398 íƒ€ì„ìŠ¤íƒ¬í”„ì—ì„œ í‹°ì¼“ë²ˆí˜¸ë¡œ ë³€ê²½
             }
             IDE_TEST(cmbShmWriteLog(sLogFile, (void*)&gIpcSemChannelKey[i], ID_SIZEOF(key_t)) != IDE_SUCCESS);
             IDE_TEST(cmbShmWriteLog(sLogFile, (void*)&sSemCount, ID_SIZEOF(SInt)) != IDE_SUCCESS);
@@ -514,7 +514,7 @@ IDE_RC cmbShmDestroy()
     {
         idlOS::memset(&sSemCtlArg, 0, ID_SIZEOF(union semun));
 
-        // Channel Semaphore Á¦°Å
+        // Channel Semaphore ì œê±°
         if (gIpcSemChannelID != NULL)
         {
             for (i = 0; i < gIpcShmInfo.mMaxChannelCount; i++)
@@ -530,7 +530,7 @@ IDE_RC cmbShmDestroy()
 
         gIpcShmInfo.mMaxChannelCount = 0;
 
-        // Channel ¸Ş¸ğ¸® Á¦°Å
+        // Channel ë©”ëª¨ë¦¬ ì œê±°
         if (gIpcSemChannelID != NULL)
         {
             IDE_TEST(iduMemMgr::free(gIpcSemChannelID) != IDE_SUCCESS);
@@ -556,9 +556,9 @@ IDE_RC cmbShmDestroy()
             /*
              * BUG-32403 (for Windriver)
              *
-             * Windriver OS´Â shmdt() °úÁ¤¿¡¼­ °øÀ¯¸Ş¸ğ¸®°¡
-             * »èÁ¦µÇ¾î shmctl()¿¡¼­ Ç×»ó ¼­¹ö°¡ ºñÁ¤»ó Á¾·áµÈ´Ù.
-             * °øÀ¯¸Ş¸ğ¸® »óÅÂ¸¦ Ã¼Å©ÇÏ°í »èÁ¦ÇÏÀÚ.
+             * Windriver OSëŠ” shmdt() ê³¼ì •ì—ì„œ ê³µìœ ë©”ëª¨ë¦¬ê°€
+             * ì‚­ì œë˜ì–´ shmctl()ì—ì„œ í•­ìƒ ì„œë²„ê°€ ë¹„ì •ìƒ ì¢…ë£Œëœë‹¤.
+             * ê³µìœ ë©”ëª¨ë¦¬ ìƒíƒœë¥¼ ì²´í¬í•˜ê³  ì‚­ì œí•˜ì.
              */
             if (idlOS::shmget(gIpcShmKey, 0, 0) != -1)
             {

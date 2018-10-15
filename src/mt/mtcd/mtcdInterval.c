@@ -132,13 +132,13 @@ mtdModule mtcdInterval = {
     {
         // Key Comparison
         {
-            // mt valueµé °£ÀÇ compare 
+            // mt valueë“¤ ê°„ì˜ compare 
             mtdIntervalMtdMtdKeyAscComp, // Ascending Key Comparison
             mtdIntervalMtdMtdKeyDescComp // Descending Key Comparison
         }
         ,
         {
-            // ÀúÀåµÇÁö ¾Ê´Â Å¸ÀÔÀÌ¹Ç·Î ÀÌ ºÎºĞÀ¸·Î µé¾î¿Ã ¼ö ¾øÀ½ 
+            // ì €ì¥ë˜ì§€ ì•ŠëŠ” íƒ€ì…ì´ë¯€ë¡œ ì´ ë¶€ë¶„ìœ¼ë¡œ ë“¤ì–´ì˜¬ ìˆ˜ ì—†ìŒ 
             NULL,         // Ascending Key Comparison
             NULL          // Descending Key Comparison
         }
@@ -367,7 +367,7 @@ mtdIntervalMtdMtdKeyAscComp( mtdValueInfo* aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd Å¸ÀÔÀÇ Keyµé °£ÀÇ ascending compare
+ * Description : Mtd íƒ€ì…ì˜ Keyë“¤ ê°„ì˜ ascending compare
  *
  * Implementation :
  *
@@ -444,7 +444,7 @@ mtdIntervalMtdMtdKeyDescComp( mtdValueInfo* aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd Å¸ÀÔÀÇ Keyµé °£ÀÇ descending compare
+ * Description : Mtd íƒ€ì…ì˜ Keyë“¤ ê°„ì˜ descending compare
  *
  * Implementation :
  *
@@ -558,7 +558,7 @@ ACI_RC mtdValidate( mtcColumn*   aColumn,
 {
 /***********************************************************************
  *
- * Description : valueÀÇ semantic °Ë»ç ¹× mtcColum ÃÊ±âÈ­
+ * Description : valueì˜ semantic ê²€ì‚¬ ë° mtcColum ì´ˆê¸°í™”
  *
  * Implementation :
  *
@@ -569,9 +569,9 @@ ACI_RC mtdValidate( mtcColumn*   aColumn,
     ACI_TEST_RAISE( aValueSize != sizeof(mtdIntervalType),
                     ERR_INVALID_LENGTH );
 
-    // ÃÊ±âÈ­µÈ aColumnÀº cannonize() ½Ã¿¡ »ç¿ë
-    // ÀÌ¶§, data type moduleÀÇ precision Á¤º¸¸¸À» »ç¿ëÇÏ¹Ç·Î,
-    // language Á¤º¸ ¼³Á¤ÇÒ ÇÊ¿ä¾øÀ½ 
+    // ì´ˆê¸°í™”ëœ aColumnì€ cannonize() ì‹œì— ì‚¬ìš©
+    // ì´ë•Œ, data type moduleì˜ precision ì •ë³´ë§Œì„ ì‚¬ìš©í•˜ë¯€ë¡œ,
+    // language ì •ë³´ ì„¤ì •í•  í•„ìš”ì—†ìŒ 
     ACI_TEST( mtcInitializeColumn( aColumn,
                                    & mtcdInterval,
                                    0,   // arguments
@@ -602,22 +602,22 @@ static ACI_RC mtdStoredValue2MtdValue( acp_uint32_t    aColumnSize,
 {
 /*******************************************************************
  * PROJ-1705
- * µğ½ºÅ©Å×ÀÌºíÄÃ·³ÀÇ µ¥ÀÌÅ¸¸¦
- * qp ·¹ÄÚµåÃ³¸®¿µ¿ªÀÇ ÇØ´ç ÄÃ·³À§Ä¡¿¡ º¹»ç
+ * ë””ìŠ¤í¬í…Œì´ë¸”ì»¬ëŸ¼ì˜ ë°ì´íƒ€ë¥¼
+ * qp ë ˆì½”ë“œì²˜ë¦¬ì˜ì—­ì˜ í•´ë‹¹ ì»¬ëŸ¼ìœ„ì¹˜ì— ë³µì‚¬
  *******************************************************************/
 
     mtdIntervalType *sValue;
 
     ACP_UNUSED(aDestValueOffset);
     
-    // °íÁ¤±æÀÌ µ¥ÀÌÅ¸ Å¸ÀÔÀÇ °æ¿ì
-    // ÇÏ³ªÀÇ ÄÃ·³ µ¥ÀÌÅ¸°¡ ¿©·¯ÆäÀÌÁö¿¡ ³ª´©¾î ÀúÀåµÇ´Â °æ¿ì´Â ¾ø´Ù.
+    // ê³ ì •ê¸¸ì´ ë°ì´íƒ€ íƒ€ì…ì˜ ê²½ìš°
+    // í•˜ë‚˜ì˜ ì»¬ëŸ¼ ë°ì´íƒ€ê°€ ì—¬ëŸ¬í˜ì´ì§€ì— ë‚˜ëˆ„ì–´ ì €ì¥ë˜ëŠ” ê²½ìš°ëŠ” ì—†ë‹¤.
 
     sValue = (mtdIntervalType*)aDestValue;
 
     if( aLength == 0 )
     {
-        // NULL µ¥ÀÌÅ¸
+        // NULL ë°ì´íƒ€
         *sValue = mtcdIntervalNull;
     }
     else

@@ -273,12 +273,12 @@ ACI_RC ulsdCallbackAnalyzeResult(cmiProtocolContext *aProtocolContext,
             else if ( sShardSplitMethod == ULN_SHARD_SPLIT_CLONE )  /* clone */
             {
                 /* Nothing to do. */
-                /* Clone tableÀº NodeID¸¸ Àü´Ş¹Ş´Â´Ù. */
+                /* Clone tableì€ NodeIDë§Œ ì „ë‹¬ë°›ëŠ”ë‹¤. */
             }
             else if ( sShardSplitMethod == ULN_SHARD_SPLIT_SOLO )  /* solo */
             {
                 /* Nothing to do. */
-                /* Solo tableÀº NodeID¸¸ Àü´Ş¹Ş´Â´Ù. */
+                /* Solo tableì€ NodeIDë§Œ ì „ë‹¬ë°›ëŠ”ë‹¤. */
             }
             else
             {
@@ -306,12 +306,12 @@ ACI_RC ulsdCallbackAnalyzeResult(cmiProtocolContext *aProtocolContext,
                 else if ( sShardSubSplitMethod == ULN_SHARD_SPLIT_CLONE )  /* clone */
                 {
                     /* Nothing to do. */
-                    /* Clone tableÀº NodeID¸¸ Àü´Ş¹Ş´Â´Ù. */
+                    /* Clone tableì€ NodeIDë§Œ ì „ë‹¬ë°›ëŠ”ë‹¤. */
                 }
                 else if ( sShardSubSplitMethod == ULN_SHARD_SPLIT_SOLO )  /* solo */
                 {
                     /* Nothing to do. */
-                    /* Solo tableÀº NodeID¸¸ Àü´Ş¹Ş´Â´Ù. */
+                    /* Solo tableì€ NodeIDë§Œ ì „ë‹¬ë°›ëŠ”ë‹¤. */
                 }
                 else
                 {
@@ -448,7 +448,7 @@ SQLRETURN ulsdAnalyze(ulnStmt      *aStmt,
     ACI_TEST(ulnEnter(&sFnContext, NULL) != ACI_SUCCESS);
     sNeedExit = ACP_TRUE;
 
-    /* ³Ñ°ÜÁø °´Ã¼ÀÇ validity Ã¼Å©¸¦ Æ÷ÇÔÇÑ ODBC 3.0 ¿¡¼­ Á¤ÀÇÇÏ´Â °¢Á¾ Error Ã¼Å© */
+    /* ë„˜ê²¨ì§„ ê°ì²´ì˜ validity ì²´í¬ë¥¼ í¬í•¨í•œ ODBC 3.0 ì—ì„œ ì •ì˜í•˜ëŠ” ê°ì¢… Error ì²´í¬ */
     ACI_TEST(ulnPrepCheckArgs(&sFnContext, aStatementText, aTextLength) != ACI_SUCCESS);
 
     ACI_TEST( ulnInitializeProtocolContext(&sFnContext,
@@ -553,7 +553,7 @@ SQLRETURN ulsdPrepareNodes(ulnFnContext *aFnContext,
 
     ulsdGetShardFromDbc(aStmt->mParentDbc, &sShard);
 
-    /* mShardRangeInfoÀÇ ¸ğµç ³ëµå¿¡ prepare¸¦ ¼öÇàÇÑ´Ù. */
+    /* mShardRangeInfoì˜ ëª¨ë“  ë…¸ë“œì— prepareë¥¼ ìˆ˜í–‰í•œë‹¤. */
     for (i = 0; i < aStmt->mShardStmtCxt.mShardRangeInfoCnt; i++)
     {
         ACI_TEST(ulsdConvertNodeIdToNodeDbcIndex(
@@ -563,11 +563,11 @@ SQLRETURN ulsdPrepareNodes(ulnFnContext *aFnContext,
                      ULN_FID_PREPARE)
                  != SQL_SUCCESS);
 
-        /* ±â·Ï */
+        /* ê¸°ë¡ */
         sNodeDbcFlags[sNodeDbcIndex] = ACP_TRUE;
     }
 
-    /* default node ±â·Ï */
+    /* default node ê¸°ë¡ */
     if ( aStmt->mShardStmtCxt.mShardDefaultNodeID != ACP_UINT16_MAX )
     {
         ACI_TEST(ulsdConvertNodeIdToNodeDbcIndex(
@@ -577,7 +577,7 @@ SQLRETURN ulsdPrepareNodes(ulnFnContext *aFnContext,
                      ULN_FID_PREPARE)
                  != SQL_SUCCESS);
 
-        /* ±â·Ï */
+        /* ê¸°ë¡ */
         sNodeDbcFlags[sNodeDbcIndex] = ACP_TRUE;
     }
     else
@@ -604,7 +604,7 @@ SQLRETURN ulsdPrepareNodes(ulnFnContext *aFnContext,
         }
     }
 
-    /* node prepare º´·Ä¼öÇà */
+    /* node prepare ë³‘ë ¬ìˆ˜í–‰ */
     ulsdDoCallback( sCallback );
 
     for (i = 0; i < sShard->mNodeCount; i++)

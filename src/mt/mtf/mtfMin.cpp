@@ -46,7 +46,7 @@ static IDE_RC mtfMinEstimate( mtcNode*     aNode,
 mtfModule mtfMin = {
     1|MTC_NODE_OPERATOR_AGGREGATION|MTC_NODE_FUNCTION_WINDOWING_TRUE,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
+    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìžê°€ ì•„ë‹˜)
     mtfMinFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -107,13 +107,13 @@ IDE_RC mtfMinEstimate( mtcNode*     aNode,
                     ERR_INVALID_FUNCTION_ARGUMENT );
 
     // PROJ-2002 Column Security
-    // minÇÔ¼ö´Â ºñ±³¸¸À» ¼öÇàÇÏ¹Ç·Î minÇÔ¼ö ÀÚÃ¼´Â º¹È£È­°¡
-    // ÇÊ¿äÇÏÁö ¾Ê´Ù. ±×·¯³ª minÇÔ¼ö°¡ º¹È£È­ÇÑ °ªÀ» ¸®ÅÏÇÏ±â
-    // À§ÇØ¼­´Â ¸¶Áö¸· min°ª¿¡ ´ëÇØ º¹È£È­¸¦ ¼öÇàÇÒ ¼ö µµ ÀÖÁö¸¸
-    // ÀÌ °æ¿ì ¾ÏÈ£ Å¸ÀÔÀÇ ÀÓ½Ã º¯¼ö¸¦ ÀúÀåÇÒ °ø°£ÀÌ ÇÊ¿äÇÏ°í
-    // ¶Ç minÀÌ ÁßÃ¸µÇ´Â °æ¿ìµµ ÀÖÀ¸¹Ç·Î minÇÔ¼ö¿¡ º¸¾È Å¸ÀÔÀÌ
-    // ¿À´Â °æ¿ì º¸¾È Å¸ÀÔÀ¸·Î ¸®ÅÏÇÑ´Ù. ´Ü, º¹È£È­¸¦ À§ÇØ
-    // ÀÎÀÚÀÇ source¸¦ minÇÔ¼öÀÇ source·Î ¼³Á¤ÇÑ´Ù.
+    // miní•¨ìˆ˜ëŠ” ë¹„êµë§Œì„ ìˆ˜í–‰í•˜ë¯€ë¡œ miní•¨ìˆ˜ ìžì²´ëŠ” ë³µí˜¸í™”ê°€
+    // í•„ìš”í•˜ì§€ ì•Šë‹¤. ê·¸ëŸ¬ë‚˜ miní•¨ìˆ˜ê°€ ë³µí˜¸í™”í•œ ê°’ì„ ë¦¬í„´í•˜ê¸°
+    // ìœ„í•´ì„œëŠ” ë§ˆì§€ë§‰ minê°’ì— ëŒ€í•´ ë³µí˜¸í™”ë¥¼ ìˆ˜í–‰í•  ìˆ˜ ë„ ìžˆì§€ë§Œ
+    // ì´ ê²½ìš° ì•”í˜¸ íƒ€ìž…ì˜ ìž„ì‹œ ë³€ìˆ˜ë¥¼ ì €ìž¥í•  ê³µê°„ì´ í•„ìš”í•˜ê³ 
+    // ë˜ minì´ ì¤‘ì²©ë˜ëŠ” ê²½ìš°ë„ ìžˆìœ¼ë¯€ë¡œ miní•¨ìˆ˜ì— ë³´ì•ˆ íƒ€ìž…ì´
+    // ì˜¤ëŠ” ê²½ìš° ë³´ì•ˆ íƒ€ìž…ìœ¼ë¡œ ë¦¬í„´í•œë‹¤. ë‹¨, ë³µí˜¸í™”ë¥¼ ìœ„í•´
+    // ì¸ìžì˜ sourceë¥¼ miní•¨ìˆ˜ì˜ sourceë¡œ ì„¤ì •í•œë‹¤.
     //
     // ex) select _decrypt(min(i1)) from t1;
     //     select _decrypt(max(min(i2))) from t1 group by i1;
@@ -130,7 +130,7 @@ IDE_RC mtfMinEstimate( mtcNode*     aNode,
     aTemplate->rows[aNode->table].execute[aNode->column] = mtfExecute;
 
     // BUG-23102
-    // mtcColumnÀ¸·Î ÃÊ±âÈ­ÇÑ´Ù.
+    // mtcColumnìœ¼ë¡œ ì´ˆê¸°í™”í•œë‹¤.
     mtc::initializeColumn( aStack[0].column, aStack[1].column );
 
     return IDE_SUCCESS;

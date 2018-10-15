@@ -30,7 +30,7 @@ ACP_INLINE acl_conf_def_t *aclConfFindDef(acl_conf_def_t *aDef, acp_str_t *aKey)
     for (i = 0; aDef[i].mType != ACL_CONF_TYPE_NONE; i++)
     {
         /*
-         * UNNAMED_CONTAINER Å¸ÀÔÀÇ Def¸¦ Default Def·Î ¼¼ÆÃ
+         * UNNAMED_CONTAINER íƒ€ìž…ì˜ Defë¥¼ Default Defë¡œ ì„¸íŒ…
          */
         if ((sDefaultDef == NULL) &&
             (aDef[i].mType == ACL_CONF_TYPE_UNNAMED_CONTAINER))
@@ -43,7 +43,7 @@ ACP_INLINE acl_conf_def_t *aclConfFindDef(acl_conf_def_t *aDef, acp_str_t *aKey)
         }
 
         /*
-         * Key¸¦ ºñ±³ÇÏ¿© Def¸¦ Ã£À½
+         * Keyë¥¼ ë¹„êµí•˜ì—¬ Defë¥¼ ì°¾ìŒ
          */
         if (acpStrCmpCString(aKey, aDef[i].mKey, ACP_STR_CASE_INSENSITIVE) == 0)
         {
@@ -474,13 +474,13 @@ void aclConfAssignKey(aclConfContext *aContext, aclConfToken *aToken)
     acp_str_t      *sKey = NULL;
 
     /*
-     * TokenÀ¸·ÎºÎÅÍ Key¸¦ ¾ò¾î¿È
+     * Tokenìœ¼ë¡œë¶€í„° Keyë¥¼ ì–»ì–´ì˜´
      */
     sKey = &aContext->mKey[aContext->mDepth].mKey;
     acpStrSetConstCStringWithLen(sKey, aToken->mPtr, aToken->mLen);
 
     /*
-     * Error: »óÀ§ Key°¡ CONTAINER Å¸ÀÔÀÌ ¾Æ´Ô
+     * Error: ìƒìœ„ Keyê°€ CONTAINER íƒ€ìž…ì´ ì•„ë‹˜
      */
     if (aContext->mBaseDef[aContext->mDepth] == NULL)
     {
@@ -494,13 +494,13 @@ void aclConfAssignKey(aclConfContext *aContext, aclConfToken *aToken)
     }
 
     /*
-     * Key·Î Def¸¦ ¾ò¾î¿È
+     * Keyë¡œ Defë¥¼ ì–»ì–´ì˜´
      */
     sNewDef = aclConfFindDef(aContext->mBaseDef[aContext->mDepth], sKey);
     aContext->mCurrentDef[aContext->mDepth] = sNewDef;
 
     /*
-     * Error: Key¸¦ Ã£À» ¼ö ¾øÀ½
+     * Error: Keyë¥¼ ì°¾ì„ ìˆ˜ ì—†ìŒ
      */
     if (sNewDef == NULL)
     {
@@ -514,7 +514,7 @@ void aclConfAssignKey(aclConfContext *aContext, aclConfToken *aToken)
     }
 
     /*
-     * Error: Key°¡ ÀÌ¹Ì Á¤ÀÇµÇ¾úÀ½ (UNNAMED_CONTAINER Å¸ÀÔÀÌ¸é »ý·«)
+     * Error: Keyê°€ ì´ë¯¸ ì •ì˜ë˜ì—ˆìŒ (UNNAMED_CONTAINER íƒ€ìž…ì´ë©´ ìƒëžµ)
      */
     if ((sNewDef->mLineFound != 0) &&
         (sNewDef->mType != ACL_CONF_TYPE_UNNAMED_CONTAINER))
@@ -529,7 +529,7 @@ void aclConfAssignKey(aclConfContext *aContext, aclConfToken *aToken)
     }
 
     /*
-     * Error: Multiplicity ÃÊ°úÇÔ
+     * Error: Multiplicity ì´ˆê³¼í•¨
      */
     if (aContext->mDepth > 0)
     {
@@ -539,7 +539,7 @@ void aclConfAssignKey(aclConfContext *aContext, aclConfToken *aToken)
         if ((sCurDef->mMultiplicity > 0) && (sCurDef->mMultiplicity <= sIndex))
         {
             /*
-             * Error´Â Parse Tree¿¡ ÀÇÇØ ¹ß»ýµÊ
+             * ErrorëŠ” Parse Treeì— ì˜í•´ ë°œìƒë¨
              */
             aContext->mIgnoreDepth++;
             return;
@@ -555,7 +555,7 @@ void aclConfAssignKey(aclConfContext *aContext, aclConfToken *aToken)
     }
 
     /*
-     * Key°¡ ÀÔ·ÂµÊ
+     * Keyê°€ ìž…ë ¥ë¨
      */
     sNewDef->mLineFound = aContext->mLine;
 
@@ -564,7 +564,7 @@ void aclConfAssignKey(aclConfContext *aContext, aclConfToken *aToken)
     aContext->mDepth++;
 
     /*
-     * SubDef ¼¼ÆÃ
+     * SubDef ì„¸íŒ…
      */
     if (aContext->mDepth < ACL_CONF_DEPTH_MAX)
     {
@@ -587,7 +587,7 @@ void aclConfAssignNull(aclConfContext *aContext, aclConfToken *aToken)
     ACP_STR_DECLARE_CONST(sStr);
 
     /*
-     * ÇöÀç KeyÀÇ Def¸¦ ¾ò¾î¿È
+     * í˜„ìž¬ Keyì˜ Defë¥¼ ì–»ì–´ì˜´
      */
     if (aContext->mDepth > 0)
     {
@@ -603,7 +603,7 @@ void aclConfAssignNull(aclConfContext *aContext, aclConfToken *aToken)
     }
 
     /*
-     * Error: Multiplicity ÃÊ°úÇÔ
+     * Error: Multiplicity ì´ˆê³¼í•¨
      */
     if ((sDef->mMultiplicity > 0) &&
         (sDef->mMultiplicity <= aContext->mKey[aContext->mDepth - 1].mIndex))
@@ -619,7 +619,7 @@ void aclConfAssignNull(aclConfContext *aContext, aclConfToken *aToken)
     }
 
     /*
-     * Callback ÇÔ¼ö¸¦ ¾ò¾î¿È
+     * Callback í•¨ìˆ˜ë¥¼ ì–»ì–´ì˜´
      */
     if (sDef->mCallback != NULL)
     {
@@ -631,7 +631,7 @@ void aclConfAssignNull(aclConfContext *aContext, aclConfToken *aToken)
     }
 
     /*
-     * Value ¼¼ÆÃ
+     * Value ì„¸íŒ…
      */
     switch (sDef->mType)
     {
@@ -668,7 +668,7 @@ void aclConfAssignNull(aclConfContext *aContext, aclConfToken *aToken)
     }
 
     /*
-     * Callback ÇÔ¼ö È£Ãâ
+     * Callback í•¨ìˆ˜ í˜¸ì¶œ
      */
     if (sCallback != NULL)
     {
@@ -700,7 +700,7 @@ void aclConfAssignValue(aclConfContext *aContext, aclConfToken *aToken)
     acl_conf_set_callback_t *sCallback = NULL;
 
     /*
-     * ÇöÀç KeyÀÇ Def¸¦ ¾ò¾î¿È
+     * í˜„ìž¬ Keyì˜ Defë¥¼ ì–»ì–´ì˜´
      */
     if (aContext->mDepth > 0)
     {
@@ -716,7 +716,7 @@ void aclConfAssignValue(aclConfContext *aContext, aclConfToken *aToken)
     }
 
     /*
-     * Error: Multiplicity ÃÊ°úÇÔ
+     * Error: Multiplicity ì´ˆê³¼í•¨
      */
     if ((sDef->mMultiplicity > 0) &&
         (sDef->mMultiplicity <= aContext->mKey[aContext->mDepth - 1].mIndex))
@@ -732,7 +732,7 @@ void aclConfAssignValue(aclConfContext *aContext, aclConfToken *aToken)
     }
 
     /*
-     * Error: Value°¡ Quoted StringÀÏ °æ¿ì STRING Å¸ÀÔÀÌ¾î¾ß ÇÔ
+     * Error: Valueê°€ Quoted Stringì¼ ê²½ìš° STRING íƒ€ìž…ì´ì–´ì•¼ í•¨
      */
     if ((aToken->mIsQuotedString == ACP_TRUE) &&
         (sDef->mType != ACL_CONF_TYPE_STRING))
@@ -746,7 +746,7 @@ void aclConfAssignValue(aclConfContext *aContext, aclConfToken *aToken)
     }
 
     /*
-     * Callback ÇÔ¼ö¸¦ ¾ò¾î¿È
+     * Callback í•¨ìˆ˜ë¥¼ ì–»ì–´ì˜´
      */
     if (sDef->mCallback != NULL)
     {
@@ -758,7 +758,7 @@ void aclConfAssignValue(aclConfContext *aContext, aclConfToken *aToken)
     }
 
     /*
-     * Callback ÇÔ¼ö È£Ãâ
+     * Callback í•¨ìˆ˜ í˜¸ì¶œ
      */
     if (sCallback != NULL)
     {
@@ -807,7 +807,7 @@ void aclConfAssignDefault(aclConfContext *aContext, acl_conf_def_t *aDef)
     ACP_STR_DECLARE_CONST(sStr);
 
     /*
-     * Callback ÇÔ¼ö¸¦ ¾ò¾î¿È
+     * Callback í•¨ìˆ˜ë¥¼ ì–»ì–´ì˜´
      */
     if (aDef->mCallback != NULL)
     {
@@ -819,7 +819,7 @@ void aclConfAssignDefault(aclConfContext *aContext, acl_conf_def_t *aDef)
     }
 
     /*
-     * Key ¼¼ÆÃ
+     * Key ì„¸íŒ…
      */
     acpStrSetConstCString(&aContext->mKey[aContext->mDepth].mKey, aDef->mKey);
     aContext->mKey[aContext->mDepth].mIndex = 0;
@@ -827,7 +827,7 @@ void aclConfAssignDefault(aclConfContext *aContext, acl_conf_def_t *aDef)
     aContext->mDepth++;
 
     /*
-     * Value ¼¼ÆÃ
+     * Value ì„¸íŒ…
      */
     switch (aDef->mType)
     {
@@ -864,13 +864,13 @@ void aclConfAssignDefault(aclConfContext *aContext, acl_conf_def_t *aDef)
     }
 
     /*
-     * Callback ÇÔ¼ö È£Ãâ
+     * Callback í•¨ìˆ˜ í˜¸ì¶œ
      */
     if (sCallback != NULL)
     {
-        /* BUGBUG : default value¸¦ assign ÇÒ ¶§ configureÆÄÀÏ¿¡ Á¤ÀÇµÇ¾î
-         * ÀÖÁö ¾ÊÀº key°ª¿¡ ´ëÇÑ line number´Â ACL_CONF_TYPE_STRING(-1)À¸·Î
-         * ¼¼ÆÃÇÏ¿© ¸®ÅÏÇÑ´Ù.
+        /* BUGBUG : default valueë¥¼ assign í•  ë•Œ configureíŒŒì¼ì— ì •ì˜ë˜ì–´
+         * ìžˆì§€ ì•Šì€ keyê°’ì— ëŒ€í•œ line numberëŠ” ACL_CONF_TYPE_STRING(-1)ìœ¼ë¡œ
+         * ì„¸íŒ…í•˜ì—¬ ë¦¬í„´í•œë‹¤.
          */
         aContext->mCallbackResult = (*sCallback)(aContext->mDepth,
                                                  aContext->mKey,
@@ -892,7 +892,7 @@ void aclConfAssignDefault(aclConfContext *aContext, acl_conf_def_t *aDef)
     }
 
     /*
-     * Depth ¿øº¹
+     * Depth ì›ë³µ
      */
     aContext->mDepth--;
 }

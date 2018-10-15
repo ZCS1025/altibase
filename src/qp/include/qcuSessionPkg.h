@@ -61,7 +61,7 @@ public:
     static IDE_RC finiPkgCursors( qcStatement * aQcStmt, qsOID aObjectID );
 
     /* BUG-38844
-       execute ½ÃÁ¡¿¡ meta¿¡¼­ package°¡ ÀÖ´ÂÁö Ã£¾Æ¼­ qsxPkgInfo¸¦ ³Ñ°ÜÁØ´Ù. */
+       execute ì‹œì ì— metaì—ì„œ packageê°€ ìˆëŠ”ì§€ ì°¾ì•„ì„œ qsxPkgInfoë¥¼ ë„˜ê²¨ì¤€ë‹¤. */
     static IDE_RC getPkgInfo( qcStatement     * aStatement,
                               UInt              aUserID,
                               qcNamePosition    aPkgName,

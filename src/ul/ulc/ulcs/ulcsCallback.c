@@ -52,7 +52,7 @@ static ACI_RC ulcsDummyCheckConnStrConstraint(acp_char_t *aConnStr, SQLUSMALLINT
     ACP_UNUSED(aConnStr);
     ACP_UNUSED(aDriverCompletion);
 
-    // Prompt¸¦ ¶ç¿ï ÀÌÀ¯°¡ ¾øÀ½.
+    // Promptë¥¼ ë„ìš¸ ì´ìœ ê°€ ì—†ìŒ.
     *aIsPrompt = ACP_FALSE;
 
     return ACI_SUCCESS;

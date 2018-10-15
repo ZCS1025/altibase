@@ -18,7 +18,7 @@
 #include <iduProperty.h>
 
 /*
- * PROJ-2473 SNMP Áö¿ø
+ * PROJ-2473 SNMP ì§€ì›
  */
 
 /* 1.3.6.1.4.1.17180.2.1.2 AltiPropertyAlarmQueryTimeout */

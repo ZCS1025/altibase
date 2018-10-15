@@ -60,11 +60,11 @@ acp_sint32_t aciVaAppendFormat(acp_char_t *aBuffer, acp_size_t aBufferSize, cons
 
     sLen = acpCStrLen(aBuffer, aBufferSize);
     /*
-      BUG-28379 [SD] sdnbBTree::dumpNodeHdr( UChar *aPage ) ³»¿¡¼­ local ArrayÀÇ
-      ptr¸¦ ¹ÝÈ¯ÇÏ°í ÀÖ½À´Ï´Ù.
-      aBufferSize°¡ sLenº¸´Ù Ä¿¾ßÇÕ´Ï´Ù. ±×·¸Áö ¾ÊÀ¸¸é ÀÌÈÄ vsnprintfÇÔ¼ö È£Ãâ½Ã
-      À½¼ö°ªÀÌ ³Ñ¾î°¡°í, ±× À½¼ö°ªÀÌ unsigned·Î ÇØ¼®µÇ¸é¼­ ¸Þ¸ð¸®¸¦ ±ÜÀ» ¼ö 
-      ÀÖ½À´Ï´Ù.
+      BUG-28379 [SD] sdnbBTree::dumpNodeHdr( UChar *aPage ) ë‚´ì—ì„œ local Arrayì˜
+      ptrë¥¼ ë°˜í™˜í•˜ê³  ìžˆìŠµë‹ˆë‹¤.
+      aBufferSizeê°€ sLenë³´ë‹¤ ì»¤ì•¼í•©ë‹ˆë‹¤. ê·¸ë ‡ì§€ ì•Šìœ¼ë©´ ì´í›„ vsnprintfí•¨ìˆ˜ í˜¸ì¶œì‹œ
+      ìŒìˆ˜ê°’ì´ ë„˜ì–´ê°€ê³ , ê·¸ ìŒìˆ˜ê°’ì´ unsignedë¡œ í•´ì„ë˜ë©´ì„œ ë©”ëª¨ë¦¬ë¥¼ ê¸ì„ ìˆ˜ 
+      ìžˆìŠµë‹ˆë‹¤.
     */
     ACE_ASSERT( aBufferSize > sLen );
 

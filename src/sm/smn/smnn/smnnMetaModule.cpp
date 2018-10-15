@@ -36,8 +36,8 @@ smnIndexModule smnnMetaModule = {
     SMN_RANGE_DISABLE|SMN_DIMENSION_DISABLE,
     ID_SIZEOF( smnnIterator ),
 
-    /* smnnModuleÀÇ ÃÊ±âÈ­ ¹× ÆÄ±« ÀÛ¾÷°ú Áßº¹À¸·Î ÃÊ±âÈ­ ¹× ÆÄ±«¸¦ ¼öÇàÇÏÁö
-     * ¾Êµµ·Ï, smnMemoryFunc ÇÔ¼ö¿¡ smnnMetaAA ÇÔ¼ö Æ÷ÀÎÅÍ¸¦ ´Ş¾Æ³õ´Â´Ù. */
+    /* smnnModuleì˜ ì´ˆê¸°í™” ë° íŒŒê´´ ì‘ì—…ê³¼ ì¤‘ë³µìœ¼ë¡œ ì´ˆê¸°í™” ë° íŒŒê´´ë¥¼ ìˆ˜í–‰í•˜ì§€
+     * ì•Šë„ë¡, smnMemoryFunc í•¨ìˆ˜ì— smnnMetaAA í•¨ìˆ˜ í¬ì¸í„°ë¥¼ ë‹¬ì•„ë†“ëŠ”ë‹¤. */
     (smnMemoryFunc) smnnMetaAA,
     (smnMemoryFunc) smnnMetaAA,
     (smnMemoryFunc) NULL,

@@ -21,11 +21,11 @@
  * Description :
  *     SDIN(SharD INsert) Node
  *
- *     °ü°èÇü ¸ğµ¨¿¡¼­ insert¸¦ ¼öÇàÇÏ´Â Plan Node ÀÌ´Ù.
+ *     ê´€ê³„í˜• ëª¨ë¸ì—ì„œ insertë¥¼ ìˆ˜í–‰í•˜ëŠ” Plan Node ì´ë‹¤.
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  **********************************************************************/
 
@@ -61,7 +61,7 @@
 typedef struct qmncSDIN
 {
     //---------------------------------
-    // Code ¿µ¿ª °øÅë Á¤º¸
+    // Code ì˜ì—­ ê³µí†µ ì •ë³´
     //---------------------------------
 
     qmnPlan               plan;
@@ -69,13 +69,13 @@ typedef struct qmncSDIN
     UInt                  planID;
 
     //---------------------------------
-    // querySet °ü·Ã Á¤º¸
+    // querySet ê´€ë ¨ ì •ë³´
     //---------------------------------
 
     qmsTableRef         * tableRef;
 
     //---------------------------------
-    // insert °ü·Ã Á¤º¸
+    // insert ê´€ë ¨ ì •ë³´
     //---------------------------------
 
     idBool                isInsertSelect;
@@ -90,11 +90,11 @@ typedef struct qmncSDIN
     UInt                  canonizedTuple;
     void                * queueMsgIDSeq;
 
-    // sequence Á¤º¸
+    // sequence ì •ë³´
     qcParseSeqCaches    * nextValSeqs;
 
     //---------------------------------
-    // °íÀ¯ Á¤º¸
+    // ê³ ìœ  ì •ë³´
     //---------------------------------
 
     UInt                  shardDataIndex;
@@ -108,7 +108,7 @@ typedef struct qmncSDIN
     UShort                shardParamCount;
 
     //---------------------------------
-    // Display °ü·Ã Á¤º¸
+    // Display ê´€ë ¨ ì •ë³´
     //---------------------------------
 
     qmsNamePosition       tableOwnerName;     // Table Owner Name
@@ -120,7 +120,7 @@ typedef struct qmncSDIN
 typedef struct qmndSDIN
 {
     //---------------------------------
-    // Data ¿µ¿ª °øÅë Á¤º¸
+    // Data ì˜ì—­ ê³µí†µ ì •ë³´
     //---------------------------------
 
     qmndPlan              plan;
@@ -128,7 +128,7 @@ typedef struct qmndSDIN
     UInt                * flag;
 
     //---------------------------------
-    // INST °íÀ¯ Á¤º¸
+    // INST ê³ ìœ  ì •ë³´
     //---------------------------------
 
     /* BUG-42764 Multi Row */
@@ -146,11 +146,11 @@ public:
     // Base Function Pointer
     //------------------------
 
-    // ÃÊ±âÈ­
+    // ì´ˆê¸°í™”
     static IDE_RC init( qcTemplate * aTemplate,
                         qmnPlan    * aPlan );
 
-    // ¼öÇà ÇÔ¼ö
+    // ìˆ˜í–‰ í•¨ìˆ˜
     static IDE_RC doIt( qcTemplate * aTemplate,
                         qmnPlan    * aPlan,
                         qmcRowFlag * aFlag );
@@ -159,7 +159,7 @@ public:
     static IDE_RC padNull( qcTemplate * aTemplate,
                            qmnPlan    * aPlan );
 
-    // Plan Á¤º¸ Ãâ·Â
+    // Plan ì •ë³´ ì¶œë ¥
     static IDE_RC printPlan( qcTemplate   * aTemplate,
                              qmnPlan      * aPlan,
                              ULong          aDepth,
@@ -169,10 +169,10 @@ public:
 private:
 
     //------------------------
-    // ÃÊ±âÈ­ °ü·Ã ÇÔ¼ö
+    // ì´ˆê¸°í™” ê´€ë ¨ í•¨ìˆ˜
     //------------------------
 
-    // ÃÖÃÊ ÃÊ±âÈ­
+    // ìµœì´ˆ ì´ˆê¸°í™”
     static IDE_RC firstInit( qcTemplate * aTemplate,
                              qmncSDIN   * aCodePlan,
                              qmndSDIN   * aDataPlan );
@@ -181,27 +181,27 @@ private:
                                 qmncSDIN     * aCodePlan,
                                 sdiBindParam * aBindParams );
 
-    // È£ÃâµÇ¾î¼­´Â ¾ÈµÊ.
+    // í˜¸ì¶œë˜ì–´ì„œëŠ” ì•ˆë¨.
     static IDE_RC doItDefault( qcTemplate * aTemplate,
                                qmnPlan    * aPlan,
                                qmcRowFlag * aFlag );
 
-    // ÃÖÃÊ INSTÀ» ¼öÇà
+    // ìµœì´ˆ INSTì„ ìˆ˜í–‰
     static IDE_RC doItFirst( qcTemplate * aTemplate,
                              qmnPlan    * aPlan,
                              qmcRowFlag * aFlag );
 
-    // ´ÙÀ½ INSTÀ» ¼öÇà
+    // ë‹¤ìŒ INSTì„ ìˆ˜í–‰
     static IDE_RC doItNext( qcTemplate * aTemplate,
                             qmnPlan    * aPlan,
                             qmcRowFlag * aFlag );
 
-    // ÃÖÃÊ INSTÀ» ¼öÇà
+    // ìµœì´ˆ INSTì„ ìˆ˜í–‰
     static IDE_RC doItFirstMultiRows( qcTemplate * aTemplate,
                                       qmnPlan    * aPlan,
                                       qmcRowFlag * aFlag );
 
-    // ´ÙÀ½ INSTÀ» ¼öÇà
+    // ë‹¤ìŒ INSTì„ ìˆ˜í–‰
     static IDE_RC doItNextMultiRows( qcTemplate * aTemplate,
                                      qmnPlan    * aPlan,
                                      qmcRowFlag * aFlag );

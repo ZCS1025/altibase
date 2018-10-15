@@ -29,8 +29,8 @@ import Altibase.jdbc.driver.logging.TraceFlag;
 import Altibase.jdbc.driver.util.AltibaseProperties;
 
 /**
- * Semi-async prefetch ¹æ½ÄÀÇ auto-tuning ±â´ÉÀ¸·Î¼­,
- * network idle time À» ÃÖ¼ÒÈ­ÇÏµµ·Ï prefetch rows ¸¦ Áö¼ÓÀûÀ¸·Î Á¶ÀıÇÔ. ´Ü, LINUX OS platform ¸¸ Áö¿øÇÔ.
+ * Semi-async prefetch ë°©ì‹ì˜ auto-tuning ê¸°ëŠ¥ìœ¼ë¡œì„œ,
+ * network idle time ì„ ìµœì†Œí™”í•˜ë„ë¡ prefetch rows ë¥¼ ì§€ì†ì ìœ¼ë¡œ ì¡°ì ˆí•¨. ë‹¨, LINUX OS platform ë§Œ ì§€ì›í•¨.
  * (PROJ-2625 Semi-async Prefetch, Prefetch Auto-tuning)<br>
  * <pre>
  * [notation]
@@ -96,28 +96,28 @@ class SemiAsyncPrefetchAutoTuner
     private transient Logger             mAsyncLogger;
 
     // statistics
-    private long             mBeginTimeToMeasure;               // d, f time À» ÃøÁ¤ÇÏ±â À§ÇÑ ½ÃÀÛ ½Ã°£
-    private long             mEndTimeToMeasure;                 // d, f time À» ÃøÁ¤ÇÏ±â À§ÇÑ ³¡ ½Ã°£
+    private long             mBeginTimeToMeasure;               // d, f time ì„ ì¸¡ì •í•˜ê¸° ìœ„í•œ ì‹œì‘ ì‹œê°„
+    private long             mEndTimeToMeasure;                 // d, f time ì„ ì¸¡ì •í•˜ê¸° ìœ„í•œ ë ì‹œê°„
     private long             mTotalElapsedTime;                 // d + k time
     private long             mAppLoadTime;                      // d time
     private long             mPrefetchTime;                     // f time
     private double           mDFRatio;                          // d / f ratio
-    private int              mDecision;                         // prefetch rows Áõ/°¨ °áÁ¤
-    private int              mAppReadRows;                      // d time µ¿¾È application ¿¡¼­ read ÇÑ rows
-    private int              mFetchedRows;                      // f time µ¿¾È fetched rows
+    private int              mDecision;                         // prefetch rows ì¦/ê° ê²°ì •
+    private int              mAppReadRows;                      // d time ë™ì•ˆ application ì—ì„œ read í•œ rows
+    private int              mFetchedRows;                      // f time ë™ì•ˆ fetched rows
     private long             mNetworkIdleTime;                  // r time
     private long             mSockReadTime;                     // k time
 
     // state
     private AutoTuningState  mState = AutoTuningState.Init;     // auto-tuing state
-    private int              mPrefetchRows;                     // x_(t+1) : ¿¹ÃøµÈ prefetch rows
-    private int              mLastStablePrefetchRows;           // ¸¶Áö¸·À¸·Î stable ÇÑ prefetch rows
-    private boolean          mIsTrialOneMore;                   // Á¤È®ÇÑ feedback À» À§ÇØ ÇÑ¹ø ´õ Àû¿ëÇÒÁöÀÇ ¿©ºÎ
-    private int              mDFRatioUnstableCount;             // ÆøÁÖ »óÅÂ¸¦ °Ë»çÇÏ±â À§ÇØ d / f ºñÀ²»ó unstable È¸¼ö
-    private int              mConsecutiveCount;                 // µ¿ÀÏÇÑ prefetch rows ·Î ¿¹ÃøÇÑ ¿¬¼Ó È¸¼ö
-    private int              mRZeroCountOnOptimal;              // optimal »óÅÂ¿¡¼­ r = 0 È¸¼ö
-    private boolean          mIsAdjustedSockRcvBuf;             // socket receive buffer ¸¦ Á¶ÀıÇÏ¿´´ÂÁöÀÇ ¿©ºÎ
-    private int              mLastAdjustedSockRcvBufSize;       // auto-tuned prefetch rows ¿¡ ÀÇÇØ ¸¶Áö¸·À¸·Î Á¶ÀıµÈ socket receive buffer size
+    private int              mPrefetchRows;                     // x_(t+1) : ì˜ˆì¸¡ëœ prefetch rows
+    private int              mLastStablePrefetchRows;           // ë§ˆì§€ë§‰ìœ¼ë¡œ stable í•œ prefetch rows
+    private boolean          mIsTrialOneMore;                   // ì •í™•í•œ feedback ì„ ìœ„í•´ í•œë²ˆ ë” ì ìš©í• ì§€ì˜ ì—¬ë¶€
+    private int              mDFRatioUnstableCount;             // í­ì£¼ ìƒíƒœë¥¼ ê²€ì‚¬í•˜ê¸° ìœ„í•´ d / f ë¹„ìœ¨ìƒ unstable íšŒìˆ˜
+    private int              mConsecutiveCount;                 // ë™ì¼í•œ prefetch rows ë¡œ ì˜ˆì¸¡í•œ ì—°ì† íšŒìˆ˜
+    private int              mRZeroCountOnOptimal;              // optimal ìƒíƒœì—ì„œ r = 0 íšŒìˆ˜
+    private boolean          mIsAdjustedSockRcvBuf;             // socket receive buffer ë¥¼ ì¡°ì ˆí•˜ì˜€ëŠ”ì§€ì˜ ì—¬ë¶€
+    private int              mLastAdjustedSockRcvBufSize;       // auto-tuned prefetch rows ì— ì˜í•´ ë§ˆì§€ë§‰ìœ¼ë¡œ ì¡°ì ˆëœ socket receive buffer size
 
     // statistics for last prediction
     private AutoTuningState  mLastState = AutoTuningState.Init; // last auto-tuning state
@@ -147,8 +147,8 @@ class SemiAsyncPrefetchAutoTuner
     }
 
     /**
-     * auto-tuning ÇÏ°íÀÚ ÇÏ´Â ´ÙÀ½ result set À» ¼³Á¤ÇÑ´Ù.
-     * e.g.) µÑ ÀÌ»óÀÇ result set °®´Â ÇÁ·Î½ÃÁ® ¼öÇà, close cursor ÀÌÈÄ execute Àç¼öÇà
+     * auto-tuning í•˜ê³ ì í•˜ëŠ” ë‹¤ìŒ result set ì„ ì„¤ì •í•œë‹¤.
+     * e.g.) ë‘˜ ì´ìƒì˜ result set ê°–ëŠ” í”„ë¡œì‹œì ¸ ìˆ˜í–‰, close cursor ì´í›„ execute ì¬ìˆ˜í–‰
      */
     void nextResultSet(AltibaseForwardOnlyResultSet aResultSet)
     {
@@ -157,8 +157,8 @@ class SemiAsyncPrefetchAutoTuner
     }
 
     /**
-     * Auto-tuning À» µ¿ÀÛÇÒ ¼ö ÀÖ´ÂÁö ¿©ºÎ¸¦ È®ÀÎÇÑ´Ù. ¸¸¾à, auto-tuning µµÁß ¿¹¿Ü ¹ß»ıÇÏ¿© end ÇÏ¸é
-     * AutoTuningState.End »óÅÂ(last state = AutoTuningState.Failed)·Î ÀüÀÌµÈ´Ù.
+     * Auto-tuning ì„ ë™ì‘í•  ìˆ˜ ìˆëŠ”ì§€ ì—¬ë¶€ë¥¼ í™•ì¸í•œë‹¤. ë§Œì•½, auto-tuning ë„ì¤‘ ì˜ˆì™¸ ë°œìƒí•˜ì—¬ end í•˜ë©´
+     * AutoTuningState.End ìƒíƒœ(last state = AutoTuningState.Failed)ë¡œ ì „ì´ëœë‹¤.
      */
     boolean canAutoTuning()
     {
@@ -175,7 +175,7 @@ class SemiAsyncPrefetchAutoTuner
     }
 
     /**
-     * Auto-tuning ÀÇ »óÅÂ, Åë°è µîÀ» ÃÊ±âÈ­ÇÑ´Ù.
+     * Auto-tuning ì˜ ìƒíƒœ, í†µê³„ ë“±ì„ ì´ˆê¸°í™”í•œë‹¤.
      */
     private void initialize()
     {
@@ -212,7 +212,7 @@ class SemiAsyncPrefetchAutoTuner
     }
 
     /**
-     * »ç¿ëÀÚ°¡ ¼³Á¤ÇÑ auto-tuning °ü·Ã parameter µéÀ» trace logging ÇÑ´Ù.
+     * ì‚¬ìš©ìê°€ ì„¤ì •í•œ auto-tuning ê´€ë ¨ parameter ë“¤ì„ trace logging í•œë‹¤.
      */
     private void traceParameters() throws SQLException
     {
@@ -230,7 +230,7 @@ class SemiAsyncPrefetchAutoTuner
     }
 
     /**
-     * Auto-tuning Åë°è Á¤º¸¸¦ ¹ö¸°´Ù. ´Ü, ÀÌÀü¿¡ ¿¹ÃøÇÑ prefetch rows ¿Í »óÅÂ Á¤º¸´Â À¯ÁöÇÑ´Ù.
+     * Auto-tuning í†µê³„ ì •ë³´ë¥¼ ë²„ë¦°ë‹¤. ë‹¨, ì´ì „ì— ì˜ˆì¸¡í•œ prefetch rows ì™€ ìƒíƒœ ì •ë³´ëŠ” ìœ ì§€í•œë‹¤.
      */
     private void purgeStat()
     {
@@ -256,7 +256,7 @@ class SemiAsyncPrefetchAutoTuner
     }
 
     /**
-     * Network idle time (r time) À¸·Î d time °ú f time À» ºñ±³ ÃßÁ¤ÇÑ´Ù.
+     * Network idle time (r time) ìœ¼ë¡œ d time ê³¼ f time ì„ ë¹„êµ ì¶”ì •í•œë‹¤.
      */
     private int compareAppLoadTimeAndPrefetchTime()
     {
@@ -281,7 +281,7 @@ class SemiAsyncPrefetchAutoTuner
     }
 
     /**
-     * Auto-tuned prefetch rows ¸¦ ±â¹İÀ¸·Î ÃÖ´ë È®º¸µÇ¾î¾ß ÇÏ´Â socket receive buffer ¸¦ ¼³Á¤ÇÑ´Ù.
+     * Auto-tuned prefetch rows ë¥¼ ê¸°ë°˜ìœ¼ë¡œ ìµœëŒ€ í™•ë³´ë˜ì–´ì•¼ í•˜ëŠ” socket receive buffer ë¥¼ ì„¤ì •í•œë‹¤.
      */
     private void adjustAutoTunedSockRcvBuf() throws IOException
     {
@@ -336,7 +336,7 @@ class SemiAsyncPrefetchAutoTuner
     }
 
     /**
-     * ½Ç¼öÇü·Î °è»êµÈ prefetch rows ¸¦ ¼³Á¤ÇÑ´Ù.
+     * ì‹¤ìˆ˜í˜•ë¡œ ê³„ì‚°ëœ prefetch rows ë¥¼ ì„¤ì •í•œë‹¤.
      */
     private void setPrefetchRows(double aPredictedPrefetchRows)
     {
@@ -355,8 +355,8 @@ class SemiAsyncPrefetchAutoTuner
     }
 
     /**
-     * Áõ°¡½ÃÅ´À» º¸ÀåÇÑ´Ù. ¸¸¾à, ¸¶Áö¸· prefetch rows ¿Í µ¿ÀÏÇÏ´Ù¸é 1 Áõ°¡½ÃÅ²´Ù.
-     * ¿¹¸¦ µé¾î, ÀÌÀü prefetch rows °¡ 1 ÀÏ °æ¿ì, 1.5 ¹è Áõ°¡ÇÏ¿©µµ 1 ÀÌ¹Ç·Î 2 ·Î Áõ°¡½ÃÅ²´Ù.
+     * ì¦ê°€ì‹œí‚´ì„ ë³´ì¥í•œë‹¤. ë§Œì•½, ë§ˆì§€ë§‰ prefetch rows ì™€ ë™ì¼í•˜ë‹¤ë©´ 1 ì¦ê°€ì‹œí‚¨ë‹¤.
+     * ì˜ˆë¥¼ ë“¤ì–´, ì´ì „ prefetch rows ê°€ 1 ì¼ ê²½ìš°, 1.5 ë°° ì¦ê°€í•˜ì—¬ë„ 1 ì´ë¯€ë¡œ 2 ë¡œ ì¦ê°€ì‹œí‚¨ë‹¤.
      */
     private void checkToIncreasePrefetchRows()
     {
@@ -368,7 +368,7 @@ class SemiAsyncPrefetchAutoTuner
     }
 
     /**
-     * d < f (r = 0) ÀÎ °æ¿ìÀÌ¹Ç·Î prefetch rows ¸¦ Áõ°¡½ÃÅ²´Ù.
+     * d < f (r = 0) ì¸ ê²½ìš°ì´ë¯€ë¡œ prefetch rows ë¥¼ ì¦ê°€ì‹œí‚¨ë‹¤.
      */
     private void increase()
     {
@@ -420,7 +420,7 @@ class SemiAsyncPrefetchAutoTuner
     }
 
     /**
-     * d > f (r > r_threshold_max) ÀÎ °æ¿ìÀÌ¹Ç·Î prefetch rows ¸¦ °¨¼Ò½ÃÅ²´Ù.
+     * d > f (r > r_threshold_max) ì¸ ê²½ìš°ì´ë¯€ë¡œ prefetch rows ë¥¼ ê°ì†Œì‹œí‚¨ë‹¤.
      */
     private void decrease()
     {
@@ -471,7 +471,7 @@ class SemiAsyncPrefetchAutoTuner
             long sNextAppLoadTime = (long)(((double)(mAppLoadTime + mSockReadTime) /
                                           (double)mAppReadRows) * mFetchedRows);
 
-            // ¾Æ·¡ º¯¼öµéÀº ¼ö½Ä ¿¬»ê¿¡ »ç¿ëµÇ¹Ç·Î ÄÚµå °¡µ¶¼ºÀ» À§ÇØ coding convention À» µû¸£Áö ¾Ê´Â´Ù.
+            // ì•„ë˜ ë³€ìˆ˜ë“¤ì€ ìˆ˜ì‹ ì—°ì‚°ì— ì‚¬ìš©ë˜ë¯€ë¡œ ì½”ë“œ ê°€ë…ì„±ì„ ìœ„í•´ coding convention ì„ ë”°ë¥´ì§€ ì•ŠëŠ”ë‹¤.
             long x2   = mLastFetchedRows;
             long x1   = mFetchedRows;
             long y2_f = mLastPrefetchTime;
@@ -520,7 +520,7 @@ class SemiAsyncPrefetchAutoTuner
     }
 
     /**
-     * Stable »óÅÂ ¶Ç´Â flooded »óÅÂÀÎÁö Ã¼Å©ÇÑ´Ù.
+     * Stable ìƒíƒœ ë˜ëŠ” flooded ìƒíƒœì¸ì§€ ì²´í¬í•œë‹¤.
      */
     private void checkAutoTuningState()
     {
@@ -601,7 +601,7 @@ class SemiAsyncPrefetchAutoTuner
     }
 
     /**
-     * Trace logging À» À§ÇØ auto-tuning state °ªÀ» ÇÑ ¹®ÀÚ·Î º¯È¯ÇØ ÁØ´Ù.
+     * Trace logging ì„ ìœ„í•´ auto-tuning state ê°’ì„ í•œ ë¬¸ìë¡œ ë³€í™˜í•´ ì¤€ë‹¤.
      */
     private String getStateChar()
     {
@@ -626,7 +626,7 @@ class SemiAsyncPrefetchAutoTuner
     }
 
     /**
-     * Auto-tuning À» ½ÃÀÛÇÑ´Ù.
+     * Auto-tuning ì„ ì‹œì‘í•œë‹¤.
      */
     void beginAutoTuning() throws Throwable
     {
@@ -659,7 +659,7 @@ class SemiAsyncPrefetchAutoTuner
     }
 
     /**
-     * Socket receive buffer ·ÎºÎÅÍ read (or receive) ÀÌÀü¿¡ È£ÃâÇÏ¿© d time À» ÃøÁ¤ÇÑ´Ù.
+     * Socket receive buffer ë¡œë¶€í„° read (or receive) ì´ì „ì— í˜¸ì¶œí•˜ì—¬ d time ì„ ì¸¡ì •í•œë‹¤.
      */
     void doAutoTuningBeforeReceive()
     {
@@ -678,7 +678,7 @@ class SemiAsyncPrefetchAutoTuner
     }
 
     /**
-     * Auto-tuning À» ¼öÇàÇÏ¿© predicted prefetch rows ¸¦ ¹İÈ¯ÇÑ´Ù.
+     * Auto-tuning ì„ ìˆ˜í–‰í•˜ì—¬ predicted prefetch rows ë¥¼ ë°˜í™˜í•œë‹¤.
      */
     int doAutoTuning() throws Throwable
     {
@@ -758,7 +758,7 @@ class SemiAsyncPrefetchAutoTuner
     }
 
     /**
-     * »óÅÂ¿¡ µû¸¥ ÇÔ¼ö¸¦ È£ÃâÇÑ´Ù.
+     * ìƒíƒœì— ë”°ë¥¸ í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•œë‹¤.
      */
     private void callStateFunc() throws Throwable
     {
@@ -792,7 +792,7 @@ class SemiAsyncPrefetchAutoTuner
     }
 
     /**
-     * Properties ¼³Á¤¿¡ ÀÇÇØ prefetch rows ¸¦ Á¦ÇÑÇÑ´Ù.
+     * Properties ì„¤ì •ì— ì˜í•´ prefetch rows ë¥¼ ì œí•œí•œë‹¤.
      */
     private void limitPrefetchRows()
     {
@@ -813,8 +813,8 @@ class SemiAsyncPrefetchAutoTuner
     }
 
     /**
-     * Auto-tuning ÀÇ first prediction À¸·Î¼­,
-     * 'fetch_auto_tuning_init' ¶Ç´Â 'fetch_enough' ÇÁ·ÎÆÛÆ¼ °ªÀ¸·Î ½ÃÀÛÇÑ´Ù.
+     * Auto-tuning ì˜ first prediction ìœ¼ë¡œì„œ,
+     * 'fetch_auto_tuning_init' ë˜ëŠ” 'fetch_enough' í”„ë¡œí¼í‹° ê°’ìœ¼ë¡œ ì‹œì‘í•œë‹¤.
      */
     private void doAutoTuningStateInit() throws Throwable
     {
@@ -834,7 +834,7 @@ class SemiAsyncPrefetchAutoTuner
     }
 
     /**
-     * Network idle time À» ÃøÁ¤ÇÑ´Ù.
+     * Network idle time ì„ ì¸¡ì •í•œë‹¤.
      */
     private void measureNetworkIdleTime()
     {
@@ -860,7 +860,7 @@ class SemiAsyncPrefetchAutoTuner
     }
 
     /**
-     * Tuning »óÅÂ·Î¼­, network idle time À» ±â¹İÀ¸·Î ÃÖÀûÀÇ prefetch rows ¸¦ Ã£´Â´Ù.
+     * Tuning ìƒíƒœë¡œì„œ, network idle time ì„ ê¸°ë°˜ìœ¼ë¡œ ìµœì ì˜ prefetch rows ë¥¼ ì°¾ëŠ”ë‹¤.
      */
     private void doAutoTuningStateTuning() throws Throwable
     {
@@ -930,7 +930,7 @@ class SemiAsyncPrefetchAutoTuner
     }
 
     /**
-     * Flooded »óÅÂ·Î¼­, auto-tuning À» Æ÷±âÇÏ°í last stable prefetch rows ¸¦ Àû¿ëÇÑ´Ù.
+     * Flooded ìƒíƒœë¡œì„œ, auto-tuning ì„ í¬ê¸°í•˜ê³  last stable prefetch rows ë¥¼ ì ìš©í•œë‹¤.
      */
     private void doAutoTuningStateFlooded() throws Throwable
     {
@@ -947,8 +947,8 @@ class SemiAsyncPrefetchAutoTuner
     }
 
     /**
-     * Reset »óÅÂ·Î¼­, Auto-tuning Åë°è Á¤º¸¸¦ ÃÊ±âÈ­ ÇÑ´Ù.
-     * ºñµ¿±â ¿äÃ» ÀÌÈÄ ¹Ì¸® read ÇÒ °æ¿ì auto-tuning Åë°è Á¤º¸°¡ ºÎÁ¤È®ÇÏ±â ¶§¹®¿¡ ÃÊ±âÈ­ ÇÑ´Ù.
+     * Reset ìƒíƒœë¡œì„œ, Auto-tuning í†µê³„ ì •ë³´ë¥¼ ì´ˆê¸°í™” í•œë‹¤.
+     * ë¹„ë™ê¸° ìš”ì²­ ì´í›„ ë¯¸ë¦¬ read í•  ê²½ìš° auto-tuning í†µê³„ ì •ë³´ê°€ ë¶€ì •í™•í•˜ê¸° ë•Œë¬¸ì— ì´ˆê¸°í™” í•œë‹¤.
      */
     private void doAutoTuningStateReset()
     {
@@ -976,8 +976,8 @@ class SemiAsyncPrefetchAutoTuner
     }
 
     /**
-     * Auto-tuning Á¾·á ÈÄ ´Ù½Ã ½ÃÀÛÇÒ °æ¿ì,
-     * ¸¶Áö¸· auto-tuned prefetch rows ¸¦ Àû¿ëÇÏ°í Åë°è/»óÅÂ Á¤º¸´Â ÃÊ±âÈ­ ÇÑ´Ù.
+     * Auto-tuning ì¢…ë£Œ í›„ ë‹¤ì‹œ ì‹œì‘í•  ê²½ìš°,
+     * ë§ˆì§€ë§‰ auto-tuned prefetch rows ë¥¼ ì ìš©í•˜ê³  í†µê³„/ìƒíƒœ ì •ë³´ëŠ” ì´ˆê¸°í™” í•œë‹¤.
      */
     private void doAutoTuningStateEnd()
     {
@@ -995,7 +995,7 @@ class SemiAsyncPrefetchAutoTuner
     }
 
     /**
-     * ´Ù¸¥ ÇÁ·ÎÅäÄİ¿¡ ÀÇÇØ ÀÌ¹Ì read ÇÑ °æ¿ì Åë°è Á¤º¸°¡ À¯¿ëÇÏÁö ¾ÊÀ¸¹Ç·Î reset ÇÑ´Ù.
+     * ë‹¤ë¥¸ í”„ë¡œí† ì½œì— ì˜í•´ ì´ë¯¸ read í•œ ê²½ìš° í†µê³„ ì •ë³´ê°€ ìœ ìš©í•˜ì§€ ì•Šìœ¼ë¯€ë¡œ reset í•œë‹¤.
      */
     void skipAutoTuning()
     {
@@ -1013,7 +1013,7 @@ class SemiAsyncPrefetchAutoTuner
     }
 
     /**
-     * Server cursor close µÉ °æ¿ì auto-tuning À» Á¾·áÇÑ´Ù.
+     * Server cursor close ë  ê²½ìš° auto-tuning ì„ ì¢…ë£Œí•œë‹¤.
      */
     void endAutoTuning() throws SQLException
     {

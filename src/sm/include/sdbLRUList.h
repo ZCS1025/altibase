@@ -59,28 +59,28 @@ public:
 
     void dump();
 
-    // fixed table ±¸ÃàÀ» À§ÇÑ Á¤º¸
-    // µ¿½Ã¼ºÀÌ ÀüÇô °í·ÁµÇ¾î ÀÖÁö ¾ÊÀ½
+    // fixed table êµ¬ì¶•ì„ ìœ„í•œ ì •ë³´
+    // ë™ì‹œì„±ì´ ì „í˜€ ê³ ë ¤ë˜ì–´ ìžˆì§€ ì•ŠìŒ
     inline sdbBCB* getFirst();
     inline sdbBCB* getMid();
     inline sdbBCB* getLast();
 
 private:
-    /* LRUList ½Äº°ÀÚ. LRU¸®½ºÆ®¸¦ ¿©·¯°³ À¯ÁöÇÒ ¼ö ÀÖÀ¸¹Ç·Î, °¢ ¸®½ºÆ® ¸¶´Ù
-     * ½Äº°ÀÚ¸¦ µÐ´Ù.  ÀÌ ½Äº°ÀÚ¸¦ ÅëÇØ BCB³»¿¡ À¯ÁöÇÔÀ¸·Î ÇØ¼­ °¢ BCB°¡
-     * ¾î¶² ¸®½ºÆ®¿¡ ¼ÓÇØÀÖ´ÂÁö Á¤È®È÷ ¾Ë¾Æ³¾ ¼ö ÀÖ´Ù.*/
+    /* LRUList ì‹ë³„ìž. LRUë¦¬ìŠ¤íŠ¸ë¥¼ ì—¬ëŸ¬ê°œ ìœ ì§€í•  ìˆ˜ ìžˆìœ¼ë¯€ë¡œ, ê° ë¦¬ìŠ¤íŠ¸ ë§ˆë‹¤
+     * ì‹ë³„ìžë¥¼ ë‘”ë‹¤.  ì´ ì‹ë³„ìžë¥¼ í†µí•´ BCBë‚´ì— ìœ ì§€í•¨ìœ¼ë¡œ í•´ì„œ ê° BCBê°€
+     * ì–´ë–¤ ë¦¬ìŠ¤íŠ¸ì— ì†í•´ìžˆëŠ”ì§€ ì •í™•ížˆ ì•Œì•„ë‚¼ ìˆ˜ ìžˆë‹¤.*/
     UInt      mID;
 
-    /* LRUListÀÇ base */
+    /* LRUListì˜ base */
     smuList   mBaseObj;
     smuList  *mBase;
-    /* Cold first¸¦ mMid°¡ °¡¸®Å°°í ÀÖ´Ù. cold·Î »ðÀÔÇÒ¶§ mMidÀÇ mPrev·Î »ðÀÔÇÏ°í
-     * »ðÀÔÇÑ BCB¸¦ mMid·Î º¯°æÇÑ´Ù.*/
+    /* Cold firstë¥¼ mMidê°€ ê°€ë¦¬í‚¤ê³  ìžˆë‹¤. coldë¡œ ì‚½ìž…í• ë•Œ mMidì˜ mPrevë¡œ ì‚½ìž…í•˜ê³ 
+     * ì‚½ìž…í•œ BCBë¥¼ mMidë¡œ ë³€ê²½í•œë‹¤.*/
     smuList  *mMid;
 
-    /* LRU List¿¡¼­ ÇöÀç Hot BCBÀÇ °¹¼ö */
+    /* LRU Listì—ì„œ í˜„ìž¬ Hot BCBì˜ ê°¯ìˆ˜ */
     UInt      mHotLength;
-    /* LRU List°¡ °¡Áú¼ö ÀÖ´Â Hot BCBÀÇ ÃÖ´ëÄ¡ */
+    /* LRU Listê°€ ê°€ì§ˆìˆ˜ ìžˆëŠ” Hot BCBì˜ ìµœëŒ€ì¹˜ */
     UInt      mHotMax;
 
     iduMutex  mMutex;
@@ -107,8 +107,8 @@ UInt sdbLRUList::getHotLength()
 
 /***********************************************************************
  * Description :
- *  fixed table ±¸ÃàÀ» À§ÇÑ Á¤º¸. µ¿½Ã¼ºÀÌ ÀüÇô °í·ÁµÇ¾î ÀÖÁö ¾ÊÀ½.
- *  ¸®½ºÆ®ÀÇ °¡Àå Ã³À½ BCB¸¦ ¾ò¾î¿Â´Ù.
+ *  fixed table êµ¬ì¶•ì„ ìœ„í•œ ì •ë³´. ë™ì‹œì„±ì´ ì „í˜€ ê³ ë ¤ë˜ì–´ ìžˆì§€ ì•ŠìŒ.
+ *  ë¦¬ìŠ¤íŠ¸ì˜ ê°€ìž¥ ì²˜ìŒ BCBë¥¼ ì–»ì–´ì˜¨ë‹¤.
  ***********************************************************************/
 sdbBCB* sdbLRUList::getFirst()
 {
@@ -131,8 +131,8 @@ sdbBCB* sdbLRUList::getFirst()
 
 /***********************************************************************
  * Description :
- *  fixed table ±¸ÃàÀ» À§ÇÑ Á¤º¸. µ¿½Ã¼ºÀÌ ÀüÇô °í·ÁµÇ¾î ÀÖÁö ¾ÊÀ½.
- *  midPointÀÇ BCB¸¦ ¾ò¾î¿Â´Ù.
+ *  fixed table êµ¬ì¶•ì„ ìœ„í•œ ì •ë³´. ë™ì‹œì„±ì´ ì „í˜€ ê³ ë ¤ë˜ì–´ ìžˆì§€ ì•ŠìŒ.
+ *  midPointì˜ BCBë¥¼ ì–»ì–´ì˜¨ë‹¤.
  ***********************************************************************/
 sdbBCB* sdbLRUList::getMid()
 {
@@ -141,8 +141,8 @@ sdbBCB* sdbLRUList::getMid()
 
 /***********************************************************************
  * Description :
- *  fixed table ±¸ÃàÀ» À§ÇÑ Á¤º¸. µ¿½Ã¼ºÀÌ ÀüÇô °í·ÁµÇ¾î ÀÖÁö ¾ÊÀ½.
- *  ¸®½ºÆ®ÀÇ °¡Àå ¸¶Áö¸· BCB¸¦ ¾ò¾î¿Â´Ù.
+ *  fixed table êµ¬ì¶•ì„ ìœ„í•œ ì •ë³´. ë™ì‹œì„±ì´ ì „í˜€ ê³ ë ¤ë˜ì–´ ìžˆì§€ ì•ŠìŒ.
+ *  ë¦¬ìŠ¤íŠ¸ì˜ ê°€ìž¥ ë§ˆì§€ë§‰ BCBë¥¼ ì–»ì–´ì˜¨ë‹¤.
  ***********************************************************************/
 sdbBCB* sdbLRUList::getLast()
 {

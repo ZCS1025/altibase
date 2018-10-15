@@ -82,7 +82,7 @@ static IDE_RC convertMtBoolean(cmtAny *aTarget, void *aSource)
     }
     else
     {
-        //fix BUG-28927 MT->CM conversion function¿¡¼­ safeguard°¡ ÇÊ¿ä.
+        //fix BUG-28927 MT->CM conversion functionì—ì„œ safeguardê°€ í•„ìš”.
         IDE_TEST_RAISE( aSource == NULL,INVALID_SOURCE_DATA);
         IDE_TEST(cmtAnyWriteUChar(aTarget,
                                   (*(mtdBooleanType *)aSource == MTD_BOOLEAN_TRUE) ? 1 : 0)
@@ -108,7 +108,7 @@ static IDE_RC convertMtSmallInt(cmtAny *aTarget, void *aSource)
     }
     else
     {
-        //fix BUG-28927 MT->CM conversion function¿¡¼­ safeguard°¡ ÇÊ¿ä.
+        //fix BUG-28927 MT->CM conversion functionì—ì„œ safeguardê°€ í•„ìš”.
         IDE_TEST_RAISE( aSource == NULL,INVALID_SOURCE_DATA);
         IDE_TEST(cmtAnyWriteSShort(aTarget, *(mtdSmallintType *)aSource) != IDE_SUCCESS);
     }
@@ -132,7 +132,7 @@ static IDE_RC convertMtInteger(cmtAny *aTarget, void *aSource)
     }
     else
     {
-        //fix BUG-28927 MT->CM conversion function¿¡¼­ safeguard°¡ ÇÊ¿ä.
+        //fix BUG-28927 MT->CM conversion functionì—ì„œ safeguardê°€ í•„ìš”.
         IDE_TEST_RAISE( aSource == NULL,INVALID_SOURCE_DATA);
         IDE_TEST(cmtAnyWriteSInt(aTarget, *(mtdIntegerType *)aSource) != IDE_SUCCESS);
     }
@@ -156,7 +156,7 @@ static IDE_RC convertMtBigInt(cmtAny *aTarget, void *aSource)
     }
     else
     {
-        //fix BUG-28927 MT->CM conversion function¿¡¼­ safeguard°¡ ÇÊ¿ä.
+        //fix BUG-28927 MT->CM conversion functionì—ì„œ safeguardê°€ í•„ìš”.
         IDE_TEST_RAISE( aSource == NULL,INVALID_SOURCE_DATA);
         IDE_TEST(cmtAnyWriteSLong(aTarget, *(mtdBigintType *)aSource) != IDE_SUCCESS);
     }
@@ -180,7 +180,7 @@ static IDE_RC convertMtBlobLocator(cmtAny *aTarget, void *aSource, UInt aLobSize
     }
     else
     {
-        //fix BUG-28927 MT->CM conversion function¿¡¼­ safeguard°¡ ÇÊ¿ä.
+        //fix BUG-28927 MT->CM conversion functionì—ì„œ safeguardê°€ í•„ìš”.
         IDE_TEST_RAISE( aSource == NULL,INVALID_SOURCE_DATA);
         // bug-19174
         IDE_TEST(cmtAnyWriteLobLocator(aTarget, *(mtdBlobLocatorType *)aSource, aLobSize) != IDE_SUCCESS);
@@ -205,7 +205,7 @@ static IDE_RC convertMtClobLocator(cmtAny *aTarget, void *aSource, UInt aLobSize
     }
     else
     {
-        //fix BUG-28927 MT->CM conversion function¿¡¼­ safeguard°¡ ÇÊ¿ä.
+        //fix BUG-28927 MT->CM conversion functionì—ì„œ safeguardê°€ í•„ìš”.
         IDE_TEST_RAISE( aSource == NULL,INVALID_SOURCE_DATA);
         // bug-19174
         IDE_TEST(cmtAnyWriteLobLocator(aTarget, *(mtdBlobLocatorType *)aSource, aLobSize) != IDE_SUCCESS);
@@ -230,7 +230,7 @@ static IDE_RC convertMtReal(cmtAny *aTarget, void *aSource)
     }
     else
     {
-        //fix BUG-28927 MT->CM conversion function¿¡¼­ safeguard°¡ ÇÊ¿ä.
+        //fix BUG-28927 MT->CM conversion functionì—ì„œ safeguardê°€ í•„ìš”.
         IDE_TEST_RAISE( aSource == NULL,INVALID_SOURCE_DATA);
         IDE_TEST(cmtAnyWriteSFloat(aTarget, *(mtdRealType *)aSource) != IDE_SUCCESS);
     }
@@ -255,7 +255,7 @@ static IDE_RC convertMtDouble(cmtAny *aTarget, void *aSource)
     }
     else
     {
-        //fix BUG-28927 MT->CM conversion function¿¡¼­ safeguard°¡ ÇÊ¿ä.
+        //fix BUG-28927 MT->CM conversion functionì—ì„œ safeguardê°€ í•„ìš”.
         IDE_TEST_RAISE( aSource == NULL,INVALID_SOURCE_DATA);
         IDE_TEST(cmtAnyWriteSDouble(aTarget, *(mtdDoubleType *)aSource) != IDE_SUCCESS);
     }
@@ -283,7 +283,7 @@ static IDE_RC convertMtDate(cmtAny *aTarget, void *aSource)
     }
     else
     {
-        //fix BUG-28927 MT->CM conversion function¿¡¼­ safeguard°¡ ÇÊ¿ä.
+        //fix BUG-28927 MT->CM conversion functionì—ì„œ safeguardê°€ í•„ìš”.
         IDE_TEST_RAISE( aSource == NULL,INVALID_SOURCE_DATA);
         IDE_TEST(cmtAnyGetDateTimeForWrite(aTarget, &sCmDateTime) != IDE_SUCCESS);
 
@@ -318,7 +318,7 @@ static IDE_RC convertMtInterval(cmtAny *aTarget, void *aSource)
     }
     else
     {
-        //fix BUG-28927 MT->CM conversion function¿¡¼­ safeguard°¡ ÇÊ¿ä.
+        //fix BUG-28927 MT->CM conversion functionì—ì„œ safeguardê°€ í•„ìš”.
         IDE_TEST_RAISE( aSource == NULL,INVALID_SOURCE_DATA);
         IDE_TEST(cmtAnyGetIntervalForWrite(aTarget, &sCmInterval) != IDE_SUCCESS);
 
@@ -362,7 +362,7 @@ static IDE_RC convertMtNumeric(cmtAny       *aTarget,
     }
     else
     {
-        //fix BUG-28927 MT->CM conversion function¿¡¼­ safeguard°¡ ÇÊ¿ä.
+        //fix BUG-28927 MT->CM conversion functionì—ì„œ safeguardê°€ í•„ìš”.
         IDE_TEST_RAISE( aSource == NULL,INVALID_SOURCE_DATA);
         sMantissaLen = sMtNumeric->length - 1;
         IDE_TEST_RAISE( sMantissaLen > MTD_NUMERIC_MANTISSA_MAXIMUM,
@@ -425,9 +425,9 @@ static IDE_RC convertMtNumeric(cmtAny       *aTarget,
         }
 
         IDE_TEST(cmtAnyGetNumericForWrite(aTarget, &sCmNumeric, sSize) != IDE_SUCCESS);
-        //fix BUG-28927 MT->CM conversion function¿¡¼­ safeguard°¡ ÇÊ¿ä.
+        //fix BUG-28927 MT->CM conversion functionì—ì„œ safeguardê°€ í•„ìš”.
         /*
-          if(sScale !=0 ....) ¿¡¼­ else¸¦ Å¸¸é sConvMantisaa°¡ nullÀÌ´Ù.
+          if(sScale !=0 ....) ì—ì„œ elseë¥¼ íƒ€ë©´ sConvMantisaaê°€ nullì´ë‹¤.
          */
         if(sConvMantissa != NULL)
         {
@@ -472,7 +472,7 @@ static IDE_RC convertMtChar(cmiProtocolContext *aProtocolContext,
     }
     else
     {
-        //fix BUG-28927 MT->CM conversion function¿¡¼­ safeguard°¡ ÇÊ¿ä.
+        //fix BUG-28927 MT->CM conversion functionì—ì„œ safeguardê°€ í•„ìš”.
         IDE_TEST_RAISE( aSource == NULL,INVALID_SOURCE_DATA);
         if( (aProtocolContext != NULL) &&
             (cmiCheckInVariable( aProtocolContext, sChar->length ) == ID_TRUE) )
@@ -507,7 +507,7 @@ static IDE_RC convertMtNchar(cmiProtocolContext *aProtocolContext,
     }
     else
     {
-        //fix BUG-28927 MT->CM conversion function¿¡¼­ safeguard°¡ ÇÊ¿ä.
+        //fix BUG-28927 MT->CM conversion functionì—ì„œ safeguardê°€ í•„ìš”.
         IDE_TEST_RAISE( aSource == NULL,INVALID_SOURCE_DATA);
         if( (aProtocolContext != NULL) &&
             (cmiCheckInVariable( aProtocolContext, sNchar->length ) == ID_TRUE) )
@@ -541,7 +541,7 @@ static IDE_RC buildAnyMtChar(cmtAny             *aTarget,
     }
     else
     {
-        //fix BUG-28927 MT->CM conversion function¿¡¼­ safeguard°¡ ÇÊ¿ä.
+        //fix BUG-28927 MT->CM conversion functionì—ì„œ safeguardê°€ í•„ìš”.
         IDE_TEST_RAISE( aSource == NULL,INVALID_SOURCE_DATA);
         IDE_TEST(cmtAnyWriteInVariable(aTarget, sChar->value, sChar->length) != IDE_SUCCESS);
     }
@@ -567,7 +567,7 @@ static IDE_RC buildAnyMtNchar(cmtAny             *aTarget,
     }
     else
     {
-        //fix BUG-28927 MT->CM conversion function¿¡¼­ safeguard°¡ ÇÊ¿ä.
+        //fix BUG-28927 MT->CM conversion functionì—ì„œ safeguardê°€ í•„ìš”.
         IDE_TEST_RAISE( aSource == NULL,INVALID_SOURCE_DATA);
         IDE_TEST(cmtAnyWriteInVariable(aTarget, sNchar->value, sNchar->length) != IDE_SUCCESS);
     }
@@ -598,7 +598,7 @@ static IDE_RC convertMtBinary(cmiProtocolContext *aProtocolContext,
     }
     else
     {
-        //fix BUG-28927 MT->CM conversion function¿¡¼­ safeguard°¡ ÇÊ¿ä.
+        //fix BUG-28927 MT->CM conversion functionì—ì„œ safeguardê°€ í•„ìš”.
         IDE_TEST_RAISE( aSource == NULL,INVALID_SOURCE_DATA);
         if( (aProtocolContext != NULL) &&
             (cmiCheckInBinary( aProtocolContext, sBinary->mLength ) == ID_TRUE) )
@@ -633,7 +633,7 @@ static IDE_RC buildAnyMtBinary(cmtAny             *aTarget,
     }
     else
     {
-        //fix BUG-28927 MT->CM conversion function¿¡¼­ safeguard°¡ ÇÊ¿ä.
+        //fix BUG-28927 MT->CM conversion functionì—ì„œ safeguardê°€ í•„ìš”.
         IDE_TEST_RAISE( aSource == NULL,INVALID_SOURCE_DATA);
         IDE_TEST(cmtAnyWriteInBinary(aTarget, sBinary->mValue, sBinary->mLength) != IDE_SUCCESS);
     }
@@ -661,7 +661,7 @@ static IDE_RC convertMtByte(cmiProtocolContext *aProtocolContext,
     }
     else
     {
-        //fix BUG-28927 MT->CM conversion function¿¡¼­ safeguard°¡ ÇÊ¿ä.
+        //fix BUG-28927 MT->CM conversion functionì—ì„œ safeguardê°€ í•„ìš”.
         IDE_TEST_RAISE( aSource == NULL,INVALID_SOURCE_DATA);
         if( (aProtocolContext != NULL) &&
             (cmiCheckInBinary( aProtocolContext, sByte->length ) == ID_TRUE) )
@@ -695,7 +695,7 @@ static IDE_RC buildAnyMtByte(cmtAny             *aTarget,
     }
     else
     {
-        //fix BUG-28927 MT->CM conversion function¿¡¼­ safeguard°¡ ÇÊ¿ä.
+        //fix BUG-28927 MT->CM conversion functionì—ì„œ safeguardê°€ í•„ìš”.
         IDE_TEST_RAISE( aSource == NULL,INVALID_SOURCE_DATA);
         IDE_TEST(cmtAnyWriteInBinary(aTarget, sByte->value, sByte->length) != IDE_SUCCESS);
     }
@@ -723,7 +723,7 @@ static IDE_RC convertMtBit(cmiProtocolContext *aProtocolContext,
     }
     else
     {
-        //fix BUG-28927 MT->CM conversion function¿¡¼­ safeguard°¡ ÇÊ¿ä.
+        //fix BUG-28927 MT->CM conversion functionì—ì„œ safeguardê°€ í•„ìš”.
         IDE_TEST_RAISE( aSource == NULL,INVALID_SOURCE_DATA);
         if( (aProtocolContext != NULL) &&
             (cmiCheckInBit( aProtocolContext, sBit->length ) == ID_TRUE) )
@@ -757,7 +757,7 @@ static IDE_RC buildAnyMtBit(cmtAny             *aTarget,
     }
     else
     {
-        //fix BUG-28927 MT->CM conversion function¿¡¼­ safeguard°¡ ÇÊ¿ä.
+        //fix BUG-28927 MT->CM conversion functionì—ì„œ safeguardê°€ í•„ìš”.
         IDE_TEST_RAISE( aSource == NULL,INVALID_SOURCE_DATA);
         IDE_TEST(cmtAnyWriteInBit(aTarget, sBit->value, sBit->length) != IDE_SUCCESS);
     }
@@ -785,7 +785,7 @@ static IDE_RC convertMtNibble(cmiProtocolContext *aProtocolContext,
     }
     else
     {
-        //fix BUG-28927 MT->CM conversion function¿¡¼­ safeguard°¡ ÇÊ¿ä.
+        //fix BUG-28927 MT->CM conversion functionì—ì„œ safeguardê°€ í•„ìš”.
         IDE_TEST_RAISE( aSource == NULL,INVALID_SOURCE_DATA);
         if( (aProtocolContext != NULL) &&
             (cmiCheckInNibble( aProtocolContext, sNibble->length ) == ID_TRUE) )
@@ -819,7 +819,7 @@ static IDE_RC buildAnyMtNibble(cmtAny             *aTarget,
     }
     else
     {
-        //fix BUG-28927 MT->CM conversion function¿¡¼­ safeguard°¡ ÇÊ¿ä.
+        //fix BUG-28927 MT->CM conversion functionì—ì„œ safeguardê°€ í•„ìš”.
         IDE_TEST_RAISE( aSource == NULL,INVALID_SOURCE_DATA);
         IDE_TEST(cmtAnyWriteInNibble(aTarget, sNibble->value, sNibble->length) != IDE_SUCCESS);
     }
@@ -843,8 +843,8 @@ IDE_RC mmcConvFromMT::convert(cmiProtocolContext *aProtocolContext,
                               mmcSession         *aSession,
                               UInt                aLobSize)
 {
-    // BUG-22609 AIX ÃÖÀûÈ­ ¿À·ù ¼öÁ¤
-    // switch ¿¡ UInt ÇüÀ¸·Î À½¼ö°ªÀÌ 2¹øÀÌ»ó¿Ã¶§ ¼­¹ö Á×À½
+    // BUG-22609 AIX ìµœì í™” ì˜¤ë¥˜ ìˆ˜ì •
+    // switch ì— UInt í˜•ìœ¼ë¡œ ìŒìˆ˜ê°’ì´ 2ë²ˆì´ìƒì˜¬ë•Œ ì„œë²„ ì£½ìŒ
     SInt    sType   = (SInt)aSourceType;
 
     switch (sType)
@@ -959,8 +959,8 @@ IDE_RC mmcConvFromMT::buildAny(cmtAny             *aTarget,
                                mmcSession         *aSession,
                                UInt                aLobSize)
 {
-    // BUG-22609 AIX ÃÖÀûÈ­ ¿À·ù ¼öÁ¤
-    // switch ¿¡ UInt ÇüÀ¸·Î À½¼ö°ªÀÌ 2¹øÀÌ»ó¿Ã¶§ ¼­¹ö Á×À½
+    // BUG-22609 AIX ìµœì í™” ì˜¤ë¥˜ ìˆ˜ì •
+    // switch ì— UInt í˜•ìœ¼ë¡œ ìŒìˆ˜ê°’ì´ 2ë²ˆì´ìƒì˜¬ë•Œ ì„œë²„ ì£½ìŒ
     SInt    sType   = (SInt)aSourceType;
 
     switch (sType)

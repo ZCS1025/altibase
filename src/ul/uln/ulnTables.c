@@ -44,7 +44,7 @@ typedef struct ulnTablesQuery
 } ulnTablesQuery;
 
 // To Fix BUG-17681
-// SQLTables()ÇÔ¼ö´Â Catalog FunctionÀ¸·Î ÀÎÀÚ·Î ÆÐÅÏ ¹®ÀÚ¸¦ »ç¿ëÇÒ ¼ö ÀÖÀ½.
+// SQLTables()í•¨ìˆ˜ëŠ” Catalog Functionìœ¼ë¡œ ì¸ìžë¡œ íŒ¨í„´ ë¬¸ìžë¥¼ ì‚¬ìš©í•  ìˆ˜ ìžˆìŒ.
 static ulnTablesQuery gTablesQuery[] =
 {
     {
@@ -261,9 +261,9 @@ static ulnTablesQuery gTablesQuery[] =
     }
 };
 
-// bug-25043 SQLTables()¿¡¼­ SQL_ALL_CATALOGS("%")¸¦ Áö¿øÇØ¾ß ÇÑ´Ù
-// catalog list¸¦ selectÇÏ´Â sql: mydb ÇÏ³ª¹Û¿¡ ¾ø´Ù
-// catalog ¿ÜÀÇ ´Ù¸¥ columnÀº ¸ðµÎ NULLÀ» ¹ÝÈ¯ÇÏµµ·Ï ÇÑ´Ù
+// bug-25043 SQLTables()ì—ì„œ SQL_ALL_CATALOGS("%")ë¥¼ ì§€ì›í•´ì•¼ í•œë‹¤
+// catalog listë¥¼ selectí•˜ëŠ” sql: mydb í•˜ë‚˜ë°–ì— ì—†ë‹¤
+// catalog ì™¸ì˜ ë‹¤ë¥¸ columnì€ ëª¨ë‘ NULLì„ ë°˜í™˜í•˜ë„ë¡ í•œë‹¤
 static const acp_char_t gSelectAllCatalogsSQL[] =
 "SELECT "
 "(SELECT DB_NAME FROM V$DATABASE LIMIT 1) AS TABLE_CAT,"
@@ -273,8 +273,8 @@ static const acp_char_t gSelectAllCatalogsSQL[] =
 "NULL AS REMARKS "
 "FROM DUAL";
 
-// schema(user) list¸¦ selectÇÏ´Â sql
-// select °á°ú´Â ´ÙÀ½°ú °°´Ù
+// schema(user) listë¥¼ selectí•˜ëŠ” sql
+// select ê²°ê³¼ëŠ” ë‹¤ìŒê³¼ ê°™ë‹¤
 // ex) sys, system_, user1
 static const acp_char_t gSelectAllSchemasSQL[] =
 "SELECT "
@@ -286,8 +286,8 @@ static const acp_char_t gSelectAllSchemasSQL[] =
 "FROM SYSTEM_.SYS_USERS_ "
 "ORDER BY 2";
 
-// table type list¸¦ selectÇÏ´Â sql
-// select °á°ú´Â ´ÙÀ½°ú °°´Ù
+// table type listë¥¼ selectí•˜ëŠ” sql
+// select ê²°ê³¼ëŠ” ë‹¤ìŒê³¼ ê°™ë‹¤
 // queue, synonym, system table, system view, table, view, materialized view
 static const acp_char_t gSelectAllTableTypesSQL[] =
 // system table
@@ -471,11 +471,11 @@ static ACI_RC ulnTablesCreateQueryString(ulnFnContext *aFnContext,
     ACI_TEST_RAISE(aFnContext->mHandle.mStmt == NULL, ERR_HY009);
     sDbc = aFnContext->mHandle.mStmt->mParentDbc;
 
-    // bug-25043 SQLTables()¿¡¼­ SQL_ALL_CATALOGS("%")¸¦ Áö¿øÇØ¾ß ÇÑ´Ù
-    // catalog ¸ñ·ÏÀ» Á¶È¸ÇÏ´Â °æ¿ì excel¿¡¼­ ´ÙÀ½°ú °°ÀÌ È£ÃâÇÑ´Ù
+    // bug-25043 SQLTables()ì—ì„œ SQL_ALL_CATALOGS("%")ë¥¼ ì§€ì›í•´ì•¼ í•œë‹¤
+    // catalog ëª©ë¡ì„ ì¡°íšŒí•˜ëŠ” ê²½ìš° excelì—ì„œ ë‹¤ìŒê³¼ ê°™ì´ í˜¸ì¶œí•œë‹¤
     // SQLTables(stmt, "%", 1, "", 0, "", 0, NULL, 0)
     *aQueryString = 0;
-    // catalog ¸ñ·ÏÀ» Á¶È¸ÇÏ´Â °æ¿ì
+    // catalog ëª©ë¡ì„ ì¡°íšŒí•˜ëŠ” ê²½ìš°
     if ((aCatalogName != NULL) &&
         (acpCStrCmp(aCatalogName, SQL_ALL_CATALOGS,
                     acpCStrLen(SQL_ALL_CATALOGS, ACP_SINT32_MAX)) == 0))
@@ -486,7 +486,7 @@ static ACI_RC ulnTablesCreateQueryString(ulnFnContext *aFnContext,
                           gSelectAllCatalogsSQL);
         ACI_RAISE(label_success);
     }
-    // schema ¸ñ·ÏÀ» Á¶È¸ÇÏ´Â °æ¿ì
+    // schema ëª©ë¡ì„ ì¡°íšŒí•˜ëŠ” ê²½ìš°
     else if ((aSchemaName != NULL) &&
              (acpCStrCmp(aSchemaName, SQL_ALL_SCHEMAS,
                          acpCStrLen(SQL_ALL_SCHEMAS, ACP_SINT32_MAX)) == 0))
@@ -497,7 +497,7 @@ static ACI_RC ulnTablesCreateQueryString(ulnFnContext *aFnContext,
                           gSelectAllSchemasSQL);
         ACI_RAISE(label_success);
     }
-    // table type ¸ñ·ÏÀ» Á¶È¸ÇÏ´Â °æ¿ì
+    // table type ëª©ë¡ì„ ì¡°íšŒí•˜ëŠ” ê²½ìš°
     else if ((aTableType != NULL) &&
              (acpCStrCmp(aTableType, SQL_ALL_TABLE_TYPES,
                          acpCStrLen(SQL_ALL_TABLE_TYPES, ACP_SINT32_MAX)) == 0))
@@ -518,7 +518,7 @@ static ACI_RC ulnTablesCreateQueryString(ulnFnContext *aFnContext,
      */
 
     // bug-25905: conn nls not applied to client lang module
-    // aMtlModule ÀÎÀÚ Ãß°¡
+    // aMtlModule ì¸ìž ì¶”ê°€
     ACI_TEST_RAISE(ulnMakeNullTermNameInSQL(sDbc->mClientCharsetLangModule,
                                             sUserName,
                                             ACI_SIZEOF(sUserName),
@@ -563,7 +563,7 @@ static ACI_RC ulnTablesCreateQueryString(ulnFnContext *aFnContext,
     if(sTableTypeMask == 0)
     {
         // To Fix BUG-17681
-        // °¡´ÉÇÑ ¸ðµç TYPEÀ» ÀÇ¹ÌÇÔ
+        // ê°€ëŠ¥í•œ ëª¨ë“  TYPEì„ ì˜ë¯¸í•¨
         sTableTypeMask = ULN_TABLE_TYPE_ALL;
     }
 
@@ -629,7 +629,7 @@ static ACI_RC ulnTablesCreateQueryString(ulnFnContext *aFnContext,
     return ACI_SUCCESS;
 
     // bug-25905: conn nls not applied to client lang module
-    // error Ã³¸® if -> ACI_TEST_RAISE º¯°æ
+    // error ì²˜ë¦¬ if -> ACI_TEST_RAISE ë³€ê²½
     ACI_EXCEPTION(ERR_HY009)
     {
         ulnError(aFnContext, ulERR_ABORT_INVALID_USE_OF_NULL_POINTER);
@@ -674,7 +674,7 @@ static ACI_RC ulnTablesCheckArgs(ulnFnContext *aFnContext,
     ACI_TEST_RAISE( ulnCheckStringLength(aNameLength3, ULN_CATALOG_MAX_NAME_LEN) != ACI_SUCCESS, LABEL_INVALID_BUFFER_LEN3 );
 
     // To Fix BUG-17785
-    // Value List °¡ ¿Ã ¼ö ÀÖÀ¸¹Ç·Î º¸´Ù Å« SizeÀÇ Çã¿ëÄ¡°¡ ÇÊ¿äÇÔ.
+    // Value List ê°€ ì˜¬ ìˆ˜ ìžˆìœ¼ë¯€ë¡œ ë³´ë‹¤ í° Sizeì˜ í—ˆìš©ì¹˜ê°€ í•„ìš”í•¨.
     ACI_TEST_RAISE( ulnCheckStringLength(aNameLength4, ULN_CATALOG_MAX_TYPE_LEN) != ACI_SUCCESS, LABEL_INVALID_BUFFER_LEN4 );
 
     return ACI_SUCCESS;
@@ -755,7 +755,7 @@ SQLRETURN ulnTables(ulnStmt      *aStmt,
                                         ACI_SIZEOF(sQueryString)) != ACI_SUCCESS);
 
     /*
-     * Protocol Context ÃÊ±âÈ­
+     * Protocol Context ì´ˆê¸°í™”
      */
     //fix BUG-17722
     ACI_TEST(ulnInitializeProtocolContext(&sFnContext,
@@ -786,7 +786,7 @@ SQLRETURN ulnTables(ulnStmt      *aStmt,
                                      aStmt->mParentDbc->mConnTimeoutValue) != ACI_SUCCESS);
 
     /*
-     * Protocol Context Á¤¸®
+     * Protocol Context ì •ë¦¬
      */
     sNeedFinPtContext = ACP_FALSE;
     //fix BUG-17722

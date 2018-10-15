@@ -19,8 +19,8 @@
  * $Id: stfWKT.cpp 18883 2006-11-14 01:48:40Z sabbra $
  *
  * Description:
- * WKT(Well Known Text)·ÎºÎÅÍ Geometry °´Ã¼ »ý¼ºÇÏ´Â ÇÔ¼ö
- * »ó¼¼ ±¸ÇöÀº stdParsing.cpp ¿¡ ÀÖ´Ù.
+ * WKT(Well Known Text)ë¡œë¶€í„° Geometry ê°ì²´ ìƒì„±í•˜ëŠ” í•¨ìˆ˜
+ * ìƒì„¸ êµ¬í˜„ì€ stdParsing.cpp ì— ìžˆë‹¤.
  **********************************************************************/
 
 #include <idl.h>
@@ -33,11 +33,11 @@
 
 /***********************************************************************
  * Description:
- * WKT·ÎºÎÅÍ Geometry °´Ã¼¸¦ ÀÐ¾î µéÀÎ´Ù.
+ * WKTë¡œë¶€í„° Geometry ê°ì²´ë¥¼ ì½ì–´ ë“¤ì¸ë‹¤.
  *
- * void*    aWKT(In): ÀÐ¾î µéÀÏ ¹öÆÛ
- * void*    aBuf(Out): Ãâ·ÂÇÒ ¹öÆÛ
- * void*    aFence(In): Ãâ·ÂÇÒ ¹öÆÛ Ææ½º
+ * void*    aWKT(In): ì½ì–´ ë“¤ì¼ ë²„í¼
+ * void*    aBuf(Out): ì¶œë ¥í•  ë²„í¼
+ * void*    aFence(In): ì¶œë ¥í•  ë²„í¼ íŽœìŠ¤
  * IDE_RC*  aResult(Out): Error code
  **********************************************************************/
 IDE_RC stfWKT::geomFromText( iduMemory*   aQmxMem,
@@ -61,11 +61,11 @@ IDE_RC stfWKT::geomFromText( iduMemory*   aQmxMem,
 
 /***********************************************************************
  * Description:
- * WKT·ÎºÎÅÍ Æ÷ÀÎÆ® °´Ã¼¸¦ ÀÐ¾î µéÀÎ´Ù.
+ * WKTë¡œë¶€í„° í¬ì¸íŠ¸ ê°ì²´ë¥¼ ì½ì–´ ë“¤ì¸ë‹¤.
  *
- * void*    aWKT(In): ÀÐ¾î µéÀÏ ¹öÆÛ
- * void*    aBuf(Out): Ãâ·ÂÇÒ ¹öÆÛ
- * void*    aFence(In): Ãâ·ÂÇÒ ¹öÆÛ Ææ½º
+ * void*    aWKT(In): ì½ì–´ ë“¤ì¼ ë²„í¼
+ * void*    aBuf(Out): ì¶œë ¥í•  ë²„í¼
+ * void*    aFence(In): ì¶œë ¥í•  ë²„í¼ íŽœìŠ¤
  * IDE_RC*  aResult(Out): Error code
  **********************************************************************/
 IDE_RC stfWKT::pointFromText( iduMemory*   aQmxMem,
@@ -110,11 +110,11 @@ IDE_RC stfWKT::pointFromText( iduMemory*   aQmxMem,
 
 /***********************************************************************
  * Description:
- * WKT·ÎºÎÅÍ ¶óÀÎ °´Ã¼¸¦ ÀÐ¾î µéÀÎ´Ù.
+ * WKTë¡œë¶€í„° ë¼ì¸ ê°ì²´ë¥¼ ì½ì–´ ë“¤ì¸ë‹¤.
  *
- * void*    aWKT(In): ÀÐ¾î µéÀÏ ¹öÆÛ
- * void*    aBuf(Out): Ãâ·ÂÇÒ ¹öÆÛ
- * void*    aFence(In): Ãâ·ÂÇÒ ¹öÆÛ Ææ½º
+ * void*    aWKT(In): ì½ì–´ ë“¤ì¼ ë²„í¼
+ * void*    aBuf(Out): ì¶œë ¥í•  ë²„í¼
+ * void*    aFence(In): ì¶œë ¥í•  ë²„í¼ íŽœìŠ¤
  * IDE_RC*  aResult(Out): Error code
  **********************************************************************/
 IDE_RC stfWKT::lineFromText( iduMemory*   aQmxMem,
@@ -160,11 +160,11 @@ IDE_RC stfWKT::lineFromText( iduMemory*   aQmxMem,
 
 /***********************************************************************
  * Description:
- * WKT·ÎºÎÅÍ Æú¸®°ï °´Ã¼¸¦ ÀÐ¾î µéÀÎ´Ù.
+ * WKTë¡œë¶€í„° í´ë¦¬ê³¤ ê°ì²´ë¥¼ ì½ì–´ ë“¤ì¸ë‹¤.
  *
- * void*    aWKT(In): ÀÐ¾î µéÀÏ ¹öÆÛ
- * void*    aBuf(Out): Ãâ·ÂÇÒ ¹öÆÛ
- * void*    aFence(In): Ãâ·ÂÇÒ ¹öÆÛ Ææ½º
+ * void*    aWKT(In): ì½ì–´ ë“¤ì¼ ë²„í¼
+ * void*    aBuf(Out): ì¶œë ¥í•  ë²„í¼
+ * void*    aFence(In): ì¶œë ¥í•  ë²„í¼ íŽœìŠ¤
  * IDE_RC*  aResult(Out): Error code
  **********************************************************************/
 IDE_RC stfWKT::polyFromText( iduMemory*   aQmxMem,
@@ -210,11 +210,11 @@ IDE_RC stfWKT::polyFromText( iduMemory*   aQmxMem,
 
 /***********************************************************************
  * Description:
- *  WKT·ÎºÎÅÍ RECTANGLE °´Ã¼¸¦ ÀÐ¾î µéÀÎ´Ù.
+ *  WKTë¡œë¶€í„° RECTANGLE ê°ì²´ë¥¼ ì½ì–´ ë“¤ì¸ë‹¤.
  *
- *  void   * aWKT(In)     : ÀÐ¾î µéÀÏ ¹öÆÛ
- *  void   * aBuf(Out)    : Ãâ·ÂÇÒ ¹öÆÛ
- *  void   * aFence(In)   : Ãâ·ÂÇÒ ¹öÆÛ Ææ½º
+ *  void   * aWKT(In)     : ì½ì–´ ë“¤ì¼ ë²„í¼
+ *  void   * aBuf(Out)    : ì¶œë ¥í•  ë²„í¼
+ *  void   * aFence(In)   : ì¶œë ¥í•  ë²„í¼ íŽœìŠ¤
  *  IDE_RC * aResult(Out) : Error code
  **********************************************************************/
 IDE_RC stfWKT::rectFromText( iduMemory  * aQmxMem,
@@ -260,11 +260,11 @@ IDE_RC stfWKT::rectFromText( iduMemory  * aQmxMem,
 
 /***********************************************************************
  * Description:
- * WKT·ÎºÎÅÍ ¸ÖÆ¼Æ÷ÀÎÆ® °´Ã¼¸¦ ÀÐ¾î µéÀÎ´Ù.
+ * WKTë¡œë¶€í„° ë©€í‹°í¬ì¸íŠ¸ ê°ì²´ë¥¼ ì½ì–´ ë“¤ì¸ë‹¤.
  *
- * void*    aWKT(In): ÀÐ¾î µéÀÏ ¹öÆÛ
- * void*    aBuf(Out): Ãâ·ÂÇÒ ¹öÆÛ
- * void*    aFence(In): Ãâ·ÂÇÒ ¹öÆÛ Ææ½º
+ * void*    aWKT(In): ì½ì–´ ë“¤ì¼ ë²„í¼
+ * void*    aBuf(Out): ì¶œë ¥í•  ë²„í¼
+ * void*    aFence(In): ì¶œë ¥í•  ë²„í¼ íŽœìŠ¤
  * IDE_RC*  aResult(Out): Error code
  **********************************************************************/
 IDE_RC stfWKT::mpointFromText( iduMemory*   aQmxMem,
@@ -310,11 +310,11 @@ IDE_RC stfWKT::mpointFromText( iduMemory*   aQmxMem,
 
 /***********************************************************************
  * Description:
- * WKT·ÎºÎÅÍ ¸ÖÆ¼¶óÀÎ °´Ã¼¸¦ ÀÐ¾î µéÀÎ´Ù.
+ * WKTë¡œë¶€í„° ë©€í‹°ë¼ì¸ ê°ì²´ë¥¼ ì½ì–´ ë“¤ì¸ë‹¤.
  *
- * void*    aWKT(In): ÀÐ¾î µéÀÏ ¹öÆÛ
- * void*    aBuf(Out): Ãâ·ÂÇÒ ¹öÆÛ
- * void*    aFence(In): Ãâ·ÂÇÒ ¹öÆÛ Ææ½º
+ * void*    aWKT(In): ì½ì–´ ë“¤ì¼ ë²„í¼
+ * void*    aBuf(Out): ì¶œë ¥í•  ë²„í¼
+ * void*    aFence(In): ì¶œë ¥í•  ë²„í¼ íŽœìŠ¤
  * IDE_RC*  aResult(Out): Error code
  **********************************************************************/
 IDE_RC stfWKT::mlineFromText( iduMemory*   aQmxMem,
@@ -360,11 +360,11 @@ IDE_RC stfWKT::mlineFromText( iduMemory*   aQmxMem,
 
 /***********************************************************************
  * Description:
- * WKT·ÎºÎÅÍ ¸ÖÆ¼Æú¸®°ï °´Ã¼¸¦ ÀÐ¾î µéÀÎ´Ù.
+ * WKTë¡œë¶€í„° ë©€í‹°í´ë¦¬ê³¤ ê°ì²´ë¥¼ ì½ì–´ ë“¤ì¸ë‹¤.
  *
- * void*    aWKT(In): ÀÐ¾î µéÀÏ ¹öÆÛ
- * void*    aBuf(Out): Ãâ·ÂÇÒ ¹öÆÛ
- * void*    aFence(In): Ãâ·ÂÇÒ ¹öÆÛ Ææ½º
+ * void*    aWKT(In): ì½ì–´ ë“¤ì¼ ë²„í¼
+ * void*    aBuf(Out): ì¶œë ¥í•  ë²„í¼
+ * void*    aFence(In): ì¶œë ¥í•  ë²„í¼ íŽœìŠ¤
  * IDE_RC*  aResult(Out): Error code
  **********************************************************************/
 IDE_RC stfWKT::mpolyFromText( iduMemory*   aQmxMem,
@@ -410,11 +410,11 @@ IDE_RC stfWKT::mpolyFromText( iduMemory*   aQmxMem,
 
 /***********************************************************************
  * Description:
- * WKT·ÎºÎÅÍ ÄÝ·º¼Ç °´Ã¼¸¦ ÀÐ¾î µéÀÎ´Ù.
+ * WKTë¡œë¶€í„° ì½œë ‰ì…˜ ê°ì²´ë¥¼ ì½ì–´ ë“¤ì¸ë‹¤.
  *
- * void*    aWKT(In): ÀÐ¾î µéÀÏ ¹öÆÛ
- * void*    aBuf(Out): Ãâ·ÂÇÒ ¹öÆÛ
- * void*    aFence(In): Ãâ·ÂÇÒ ¹öÆÛ Ææ½º
+ * void*    aWKT(In): ì½ì–´ ë“¤ì¼ ë²„í¼
+ * void*    aBuf(Out): ì¶œë ¥í•  ë²„í¼
+ * void*    aFence(In): ì¶œë ¥í•  ë²„í¼ íŽœìŠ¤
  * IDE_RC*  aResult(Out): Error code
  **********************************************************************/
 IDE_RC stfWKT::geoCollFromText( iduMemory*   aQmxMem,

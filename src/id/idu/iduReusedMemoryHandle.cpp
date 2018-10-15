@@ -23,7 +23,7 @@
 #include <iduReusedMemoryHandle.h>
 
 
-// ∞¥√º ª˝º∫¿⁄,∆ƒ±´¿⁄ => æ∆π´¿œµµ ºˆ«‡«œ¡ˆ æ ¥¬¥Ÿ.
+// Í∞ùÏ≤¥ ÏÉùÏÑ±Ïûê,ÌååÍ¥¥Ïûê => ÏïÑÎ¨¥ÏùºÎèÑ ÏàòÌñâÌïòÏßÄ ÏïäÎäîÎã§.
 iduReusedMemoryHandle::iduReusedMemoryHandle()
 {
 }
@@ -33,20 +33,20 @@ iduReusedMemoryHandle::~iduReusedMemoryHandle()
 
 
 /*
-  Resizable Memory Handle¿ª √ ±‚»≠ «—¥Ÿ.
+  Resizable Memory HandleÏùÑ Ï¥àÍ∏∞Ìôî ÌïúÎã§.
 
-  [IN] aMemoryClient - iduMemMgrø° ≥—±Ê ∏ﬁ∏∏Æ «“¥Á Client
+  [IN] aMemoryClient - iduMemMgrÏóê ÎÑòÍ∏∏ Î©îÎ™®Î¶¨ Ìï†Îãπ Client
 */
 IDE_RC iduReusedMemoryHandle::initialize( iduMemoryClientIndex   aMemoryClient )
 {
-    /* ∞¥√º¿« virtual function table√ ±‚»≠ ¿ß«ÿº≠ new∏¶ »£√‚ */
+    /* Í∞ùÏ≤¥Ïùò virtual function tableÏ¥àÍ∏∞Ìôî ÏúÑÌï¥ÏÑú newÎ•º Ìò∏Ï∂ú */
     new (this) iduReusedMemoryHandle();
    
 #ifdef __CSURF__
     IDE_ASSERT( this != NULL );
 #endif   
     
-    /* ≈©±‚ 0, ∏ﬁ∏∏Æ NULL∑Œ √ ±‚»≠ */
+    /* ÌÅ¨Í∏∞ 0, Î©îÎ™®Î¶¨ NULLÎ°ú Ï¥àÍ∏∞Ìôî */
     mSize   = 0;
     mMemory = NULL;
     mMemoryClient = aMemoryClient;
@@ -57,9 +57,9 @@ IDE_RC iduReusedMemoryHandle::initialize( iduMemoryClientIndex   aMemoryClient )
 }
     
 /*
-  Resizable Memory Handle¿ª ∆ƒ±´ «—¥Ÿ.
+  Resizable Memory HandleÏùÑ ÌååÍ¥¥ ÌïúÎã§.
   
-  [IN] aHandle - ∆ƒ±´«“ Memory Handle
+  [IN] aHandle - ÌååÍ¥¥Ìï† Memory Handle
 */
 IDE_RC iduReusedMemoryHandle::destroy()
 {
@@ -83,13 +83,13 @@ IDE_RC iduReusedMemoryHandle::destroy()
 
     
 /*
-  Resizable Memory Handleø° aSize¿ÃªÛ¿« ∏ﬁ∏∏Æ∏¶ ªÁøÎ∞°¥…«œµµ∑œ ¡ÿ∫Ò«—¥Ÿ.
-  ¿ÃπÃ aSize¿ÃªÛ ∏ﬁ∏∏Æ∞° «“¥Áµ«æÓ ¿÷¥Ÿ∏È æ∆π´¿œµµ «œ¡ˆ æ ¥¬¥Ÿ.
+  Resizable Memory HandleÏóê aSizeÏù¥ÏÉÅÏùò Î©îÎ™®Î¶¨Î•º ÏÇ¨Ïö©Í∞ÄÎä•ÌïòÎèÑÎ°ù Ï§ÄÎπÑÌïúÎã§.
+  Ïù¥ÎØ∏ aSizeÏù¥ÏÉÅ Î©îÎ™®Î¶¨Í∞Ä Ìï†ÎãπÎêòÏñ¥ ÏûàÎã§Î©¥ ÏïÑÎ¨¥ÏùºÎèÑ ÌïòÏßÄ ÏïäÎäîÎã§.
 
-  [¬¸∞Ì] ∏ﬁ∏∏Æ¥‹∆Ì»≠ «ˆªÛ¿ª πÊ¡ˆ«œ±‚ ¿ß«ÿ 2¿« NΩ¬¿« ≈©±‚∑Œ∏∏ «“¥Á«—¥Ÿ.
+  [Ï∞∏Í≥†] Î©îÎ™®Î¶¨Îã®Ìé∏Ìôî ÌòÑÏÉÅÏùÑ Î∞©ÏßÄÌïòÍ∏∞ ÏúÑÌï¥ 2Ïùò NÏäπÏùò ÌÅ¨Í∏∞Î°úÎßå Ìï†ÎãπÌïúÎã§.
 
-  [IN] aSize   - ¡ÿ∫Ò«“ ∏ﬁ∏∏Æ ∞¯∞£¿« ≈©±‚
-  [OUT] aPreparedMemory - ¡ÿ∫Òµ» ∏ﬁ∏∏Æ¿« ¡÷º“
+  [IN] aSize   - Ï§ÄÎπÑÌï† Î©îÎ™®Î¶¨ Í≥µÍ∞ÑÏùò ÌÅ¨Í∏∞
+  [OUT] aPreparedMemory - Ï§ÄÎπÑÎêú Î©îÎ™®Î¶¨Ïùò Ï£ºÏÜå
 */
 
 IDE_RC iduReusedMemoryHandle::prepareMemory( UInt aSize,
@@ -137,7 +137,7 @@ IDE_RC iduReusedMemoryHandle::prepareMemory( UInt aSize,
 }
 
 /*
-    ¿Ã Memory Handle¿ª ≈Î«ÿ «“¥Áπﬁ¿∫ ∏ﬁ∏∏Æ¿« √—∑Æ¿ª ∏Æ≈œ
+    Ïù¥ Memory HandleÏùÑ ÌÜµÌï¥ Ìï†ÎãπÎ∞õÏùÄ Î©îÎ™®Î¶¨Ïùò Ï¥ùÎüâÏùÑ Î¶¨ÌÑ¥
  */
 ULong iduReusedMemoryHandle::getSize( void )
 {
@@ -148,7 +148,7 @@ ULong iduReusedMemoryHandle::getSize( void )
 
 
 /*
-  Resizable Memory Handle¿« ¿˚«’º∫ ∞À≈‰(ASSERT)
+  Resizable Memory HandleÏùò Ï†ÅÌï©ÏÑ± Í≤ÄÌÜ†(ASSERT)
 */
 void iduReusedMemoryHandle::assertConsistency()
 {
@@ -173,12 +173,12 @@ void iduReusedMemoryHandle::assertConsistency()
 }
 
 /*
-  aSize∏¶ 2¿« NΩ¬¿« ≈©±‚∑Œ Align up«—¥Ÿ.
+  aSizeÎ•º 2Ïùò NÏäπÏùò ÌÅ¨Í∏∞Î°ú Align upÌïúÎã§.
   
   ex> 1000 => 1024
       2017 => 2048
 
-  [IN] aSize - Align Up«“ ≈©±‚
+  [IN] aSize - Align UpÌï† ÌÅ¨Í∏∞
 */
 UInt iduReusedMemoryHandle::alignUpPowerOfTwo( UInt aSize )
 {

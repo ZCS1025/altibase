@@ -22,12 +22,12 @@
  *
  * Page
  *
- * # °³³ä
+ * # ê°œë…
  *
- * tablespaceÀÇ page¿¡ ´ëÇÑ ÀÚ·á±¸Á¶ °ü¸®
+ * tablespaceì˜ pageì— ëŒ€í•œ ìë£Œêµ¬ì¡° ê´€ë¦¬
  *
  *
- * # ±¸Á¶
+ * # êµ¬ì¡°
  *     __________________SM_PAGE_SIZE(32KB)__________________________________
  *    |                                                                      |
  *     __________sdpPageHdr___________________________________________
@@ -39,31 +39,31 @@
  *      |
  *      checksum
  *
- *  - sdpPageHdr(¸ğµç PageµéÀÇ °øÅëÀûÀÎ Physical Çì´õ)
+ *  - sdpPageHdr(ëª¨ë“  Pageë“¤ì˜ ê³µí†µì ì¸ Physical í—¤ë”)
  *
- *    + checksum :  page ½ÃÀÛ offset¿¡ 4bytes°ªÀ¸·Î ÀúÀå
+ *    + checksum :  page ì‹œì‘ offsetì— 4bytesê°’ìœ¼ë¡œ ì €ì¥
  *
- *    + sdpPageListNode : previous page id¿Í next page id¸¦ ÀúÀå
+ *    + sdpPageListNode : previous page idì™€ next page idë¥¼ ì €ì¥
  *
- *    + LSN : ÆäÀÌÁö¿¡ ´ëÇÑ ¸¶Áö¸· ¹İ¿µÇÑ ·Î±×ÀÇ LSN (update LSN)
- *            (!!) ÆäÀÌÁö¸¦ flushÇÏ±âÀü±îÁö´Â º» LSN±îÁö log°¡ µğ½ºÅ©¿¡ ¹İ¿µ
- *            µÇ¾î ÀÖ¾î¾ß ÇÔ
+ *    + LSN : í˜ì´ì§€ì— ëŒ€í•œ ë§ˆì§€ë§‰ ë°˜ì˜í•œ ë¡œê·¸ì˜ LSN (update LSN)
+ *            (!!) í˜ì´ì§€ë¥¼ flushí•˜ê¸°ì „ê¹Œì§€ëŠ” ë³¸ LSNê¹Œì§€ logê°€ ë””ìŠ¤í¬ì— ë°˜ì˜
+ *            ë˜ì–´ ìˆì–´ì•¼ í•¨
  *
- *    + ext.desc.RID : º» ÆäÀÌÁö¸¦ ÇÒ´çÇØ ÁØ extent desc.ÀÇ rid¸¦ ÀúÀå
- *                     ÆäÀÌÁö free½Ã ½±°Ô Ã³¸®ÇÏ±â À§ÇØ¼­ÀÓ.
+ *    + ext.desc.RID : ë³¸ í˜ì´ì§€ë¥¼ í• ë‹¹í•´ ì¤€ extent desc.ì˜ ridë¥¼ ì €ì¥
+ *                     í˜ì´ì§€ freeì‹œ ì‰½ê²Œ ì²˜ë¦¬í•˜ê¸° ìœ„í•´ì„œì„.
  *
- *    + SMO No : ÀÎµ¦½ºÀÇ ÁøÇà¿©ºÎ¸¦ ¾Ë±âÀ§ÇÑ ¹øÈ£ÀÌ´Ù.
+ *    + SMO No : ì¸ë±ìŠ¤ì˜ ì§„í–‰ì—¬ë¶€ë¥¼ ì•Œê¸°ìœ„í•œ ë²ˆí˜¸ì´ë‹¤.
  *
- *    + Free Offset : ÀÌ ÆäÀÌÁöÀÇ freeÀÎ À§Ä¡¸¦ °¡¸£Å²´Ù. ÀÌ À§Ä¡¿¡¼­
- *                    »õ·Î¿î slotÀ» ¸¸µé°í ÀÌÀÇ ÁÖ¼Ò¸¦ ¹İÈ¯ÇÑ´Ù.
- *                    °á±¹ ÀÌ´Â ÆäÀÌÁöÀÇ last slot°ú °°Àº ÀÇ¹Ì¸¦ °¡Áø´Ù.
+ *    + Free Offset : ì´ í˜ì´ì§€ì˜ freeì¸ ìœ„ì¹˜ë¥¼ ê°€ë¥´í‚¨ë‹¤. ì´ ìœ„ì¹˜ì—ì„œ
+ *                    ìƒˆë¡œìš´ slotì„ ë§Œë“¤ê³  ì´ì˜ ì£¼ì†Œë¥¼ ë°˜í™˜í•œë‹¤.
+ *                    ê²°êµ­ ì´ëŠ” í˜ì´ì§€ì˜ last slotê³¼ ê°™ì€ ì˜ë¯¸ë¥¼ ê°€ì§„ë‹¤.
  *
- *    + Free Size : ÀÌ ÆäÀÌÁöÀÇ freeÀÎ °ø°£À» ³ªÅ¸³½´Ù.
+ *    + Free Size : ì´ í˜ì´ì§€ì˜ freeì¸ ê³µê°„ì„ ë‚˜íƒ€ë‚¸ë‹¤.
  *
  *
- *  # °ü·Ã ÀÚ·á±¸Á¶
+ *  # ê´€ë ¨ ìë£Œêµ¬ì¡°
  *
- *    - sdpPageHdr ±¸Á¶Ã¼
+ *    - sdpPageHdr êµ¬ì¡°ì²´
  *
  **********************************************************************/
 
@@ -87,7 +87,7 @@ class sdpPhyPage
 {
 public:
 
-    // page ÇÒ´ç½Ã physical header ÃÊ±âÈ­ ¹× ·Î±ë
+    // page í• ë‹¹ì‹œ physical header ì´ˆê¸°í™” ë° ë¡œê¹…
     static IDE_RC initialize( sdpPhyPageHdr  *aPageHdr,
                               scPageID        aPageID,
                               sdpParentInfo  *aParentInfo,
@@ -141,8 +141,8 @@ public:
                                         sdrMtx         *aMtx,
                                         UChar         **aLogicalHdrStartPtr );
 
-    /* logcial page header¸¦ ÀúÀåÇÏ¸é¼­ physical pageÀÇ headerÀÇ
-     * total free size¿Í free offsetÀ» logical ÇÏ°Ô Ã³¸®ÇÑ´Ù. */
+    /* logcial page headerë¥¼ ì €ì¥í•˜ë©´ì„œ physical pageì˜ headerì˜
+     * total free sizeì™€ free offsetì„ logical í•˜ê²Œ ì²˜ë¦¬í•œë‹¤. */
     static UChar* initLogicalHdr( sdpPhyPageHdr  *aPageHdr,
                                   UInt            aSize );
 
@@ -150,7 +150,7 @@ public:
                                  UChar           aIdx,
                                  sdrMtx        * aMtx );
 
-    /* slotÀÌ ÇÒ´ç °¡´ÉÇÑ°¡. */
+    /* slotì´ í• ë‹¹ ê°€ëŠ¥í•œê°€. */
     static idBool canAllocSlot( sdpPhyPageHdr *aPageHdr,
                                 UInt           aSlotSize,
                                 idBool         aNeedAllocSlotEntry,
@@ -193,8 +193,8 @@ public:
     static idBool isPageCorrupted( scSpaceID  aSpaceID,
                                    UChar      *aStartPtr );
 
-    //TASK-4007 [SM]PBT¸¦ À§ÇÑ ±â´É Ãß°¡
-    //ÆäÀÌÁö¸¦ ¼ø¼ö HexÄÚµå·Î »Ñ·ÁÁØ´Ù.
+    //TASK-4007 [SM]PBTë¥¼ ìœ„í•œ ê¸°ëŠ¥ ì¶”ê°€
+    //í˜ì´ì§€ë¥¼ ìˆœìˆ˜ Hexì½”ë“œë¡œ ë¿Œë ¤ì¤€ë‹¤.
     static IDE_RC dumpHdr   ( const UChar *sPage ,
                               SChar       *aOutBuf ,
                               UInt         aOutSize );
@@ -213,8 +213,8 @@ public:
                                      const SChar  * aTitle,
                                      va_list        ap );
 
-    /* BUG-32528 disk page headerÀÇ BCB Pointer °¡ ±ÜÇûÀ» °æ¿ì¿¡ ´ëÇÑ
-     * µğ¹ö±ë Á¤º¸ Ãß°¡. */
+    /* BUG-32528 disk page headerì˜ BCB Pointer ê°€ ê¸í˜”ì„ ê²½ìš°ì— ëŒ€í•œ
+     * ë””ë²„ê¹… ì •ë³´ ì¶”ê°€. */
     static IDE_RC writeToPage( UChar * aDestPagePtr,
                                UChar * aSrcPtr,
                                UInt    aLength );
@@ -225,20 +225,20 @@ public:
                           scPageID        aSpaceID,
                           scPageID        aPageID );
 
-    // BUG-17930 : log¾øÀÌ page¸¦ »ı¼ºÇÒ ¶§(nologging index build, DPath insert),
-    // operationÀÌ ½ÃÀÛ ÈÄ ¿Ï·áµÇ±â Àü±îÁö´Â pageÀÇ physical header¿¡ ÀÖ´Â
-    // mIsConsistent¸¦ F·Î Ç¥½ÃÇÏ°í, operationÀÌ ¿Ï·áµÈ ÈÄ mIsConsistent¸¦
-    // T·Î Ç¥½ÃÇÏ¿© server failure ÈÄ recoveryµÉ ¶§ redo¸¦ ¼öÇàÇÏµµ·Ï ÇØ¾ß ÇÔ
+    // BUG-17930 : logì—†ì´ pageë¥¼ ìƒì„±í•  ë•Œ(nologging index build, DPath insert),
+    // operationì´ ì‹œì‘ í›„ ì™„ë£Œë˜ê¸° ì „ê¹Œì§€ëŠ” pageì˜ physical headerì— ìˆëŠ”
+    // mIsConsistentë¥¼ Fë¡œ í‘œì‹œí•˜ê³ , operationì´ ì™„ë£Œëœ í›„ mIsConsistentë¥¼
+    // Të¡œ í‘œì‹œí•˜ì—¬ server failure í›„ recoveryë  ë•Œ redoë¥¼ ìˆ˜í–‰í•˜ë„ë¡ í•´ì•¼ í•¨
     static IDE_RC setPageConsistency( sdrMtx        *aMtx,
                                       sdpPhyPageHdr *aPageHdr,
                                       UChar         *aIsConsistent );
 
     /* PROJ-2162 RestartRiskReduction
-     * Page¸¦ InconsistentÇÏ´Ù°í ¼³Á¤ÇÔ */
+     * Pageë¥¼ Inconsistentí•˜ë‹¤ê³  ì„¤ì •í•¨ */
     static IDE_RC setPageInconsistency( scSpaceID       aSpaceID,
                                         scPageID        aPID );
 
-    // PROJ-1665 : PageÀÇ consistent »óÅÂ ¿©ºÎ ¹İÈ¯
+    // PROJ-1665 : Pageì˜ consistent ìƒíƒœ ì—¬ë¶€ ë°˜í™˜
     static inline idBool isConsistentPage( UChar * aPageHdr );
 
     static idBool isSlotDirBasedPage( sdpPhyPageHdr    *aPageHdr );
@@ -254,101 +254,101 @@ public:
 /* inline function */
 public:
 
-    /* ÆäÀÌÁöÀÇ page id ¹İÈ¯ */
+    /* í˜ì´ì§€ì˜ page id ë°˜í™˜ */
     inline static scPageID  getPageID( UChar*  aStartPtr );
 
-    /* ÆäÀÌÁö³»ÀÇ ÀÓÀÇÀÇ Pointer¿¡¼­ page id ¹İÈ¯ */
+    /* í˜ì´ì§€ë‚´ì˜ ì„ì˜ì˜ Pointerì—ì„œ page id ë°˜í™˜ */
     inline static scPageID getPageIDFromPtr( void*  aPtr );
 
-    /* ÆäÀÌÁöÀÇ space id ¹İÈ¯*/
+    /* í˜ì´ì§€ì˜ space id ë°˜í™˜*/
     inline static scSpaceID  getSpaceID( UChar* aStartPtr );
 
-    /* ÆäÀÌÁöÀÇ page double linked list node ¹İÈ¯ */
+    /* í˜ì´ì§€ì˜ page double linked list node ë°˜í™˜ */
     inline static sdpDblPIDListNode* getDblPIDListNode( sdpPhyPageHdr* aPageHdr );
 
-    /* ÆäÀÌÁöÀÇ page double linked prev page id ¹İÈ¯ */
+    /* í˜ì´ì§€ì˜ page double linked prev page id ë°˜í™˜ */
     inline static scPageID  getPrvPIDOfDblList( sdpPhyPageHdr* aPageHdr );
 
-    /* ÆäÀÌÁöÀÇ page double linked next page id ¹İÈ¯ */
+    /* í˜ì´ì§€ì˜ page double linked next page id ë°˜í™˜ */
     inline static scPageID  getNxtPIDOfDblList( sdpPhyPageHdr* aPageHdr );
 
-    /* ÆäÀÌÁöÀÇ page single linked list node ¹İÈ¯ */
+    /* í˜ì´ì§€ì˜ page single linked list node ë°˜í™˜ */
     inline static sdpSglPIDListNode* getSglPIDListNode( sdpPhyPageHdr* aPageHdr );
 
-    /* ÆäÀÌÁöÀÇ single linked list next page id ¹İÈ¯ */
+    /* í˜ì´ì§€ì˜ single linked list next page id ë°˜í™˜ */
     inline static scPageID getNxtPIDOfSglList( sdpPhyPageHdr* aPageHdr );
 
-    /* ÆäÀÌÁöÀÇ pageLSN ¾ò±â */
+    /* í˜ì´ì§€ì˜ pageLSN ì–»ê¸° */
     inline static smLSN getPageLSN( UChar* aStartPtr );
 
-    /* ÆäÀÌÁöÀÇ pageLSN ¼³Á¤ */
+    /* í˜ì´ì§€ì˜ pageLSN ì„¤ì • */
     inline static void setPageLSN( UChar      * aPageHdr,
                                    smLSN      * aPageLSN );
 
-    /* ÆäÀÌÁöÀÇ checksum ¾ò±â*/
+    /* í˜ì´ì§€ì˜ checksum ì–»ê¸°*/
     inline static UInt getCheckSum( sdpPhyPageHdr* aPageHdr );
 
     inline static void calcAndSetCheckSum( UChar *aPageHdr );
 
-    /* ÆäÀÌÁöÀÇ Parent Node ¾ò±â */
+    /* í˜ì´ì§€ì˜ Parent Node ì–»ê¸° */
     inline static sdpParentInfo getParentInfo( UChar * aStartPtr );
 
-    /* smo number¸¦ getÇÑ´Ù.**/
+    /* smo numberë¥¼ getí•œë‹¤.**/
     inline static ULong getIndexSMONo( sdpPhyPageHdr * aPageHdr );
 
-    /* ÆäÀÌÁöÀÇ index smo no¸¦ setÇÑ´Ù. */
+    /* í˜ì´ì§€ì˜ index smo noë¥¼ setí•œë‹¤. */
     inline static void setIndexSMONo( UChar *aStartPtr, ULong aValue );
 
-    /* page »óÅÂ¸¦ getÇÑ´Ù.*/
+    /* page ìƒíƒœë¥¼ getí•œë‹¤.*/
     inline static UShort getState( sdpPhyPageHdr * aPageHdr );
 
-    /*  ÆäÀÌÁöÀÇ page state¸¦ setÇÑ´Ù.
-     * - SDR_2BYTES ·Î±ë */
+    /*  í˜ì´ì§€ì˜ page stateë¥¼ setí•œë‹¤.
+     * - SDR_2BYTES ë¡œê¹… */
     inline static IDE_RC setState( sdpPhyPageHdr   *aPageHdr,
                                    UShort           aValue,
                                    sdrMtx          *aMtx );
 
-    /* ÆäÀÌÁöÀÇ TypeÀ» setÇÑ´Ù.
-     * - SDR_2BYTES ·Î±ë */
+    /* í˜ì´ì§€ì˜ Typeì„ setí•œë‹¤.
+     * - SDR_2BYTES ë¡œê¹… */
     inline static IDE_RC setPageType( sdpPhyPageHdr   *aPageHdr,
                                       UShort           aValue,
                                       sdrMtx          *aMtx );
 
-    /* PROJ-2037 TMS: Segment¿¡¼­ PageÀÇ SeqNo¸¦ ¼³Á¤ÇÑ´Ù. */
+    /* PROJ-2037 TMS: Segmentì—ì„œ Pageì˜ SeqNoë¥¼ ì„¤ì •í•œë‹¤. */
     inline static IDE_RC setSeqNo( sdpPhyPageHdr *aPageHdr,
                                    ULong          aValue,
                                    sdrMtx         *aMtx );
 
-    /* Page TypeÀ»  GetÇÑ´Ù.*/
+    /* Page Typeì„  Getí•œë‹¤.*/
     inline static sdpPageType getPageType( sdpPhyPageHdr *aPageHdr );
 
     /* BUG-32091 [sm_collection] add TableOID in PageHeader
-     * TableOID¸¦ GetÇÑ´Ù.*/
+     * TableOIDë¥¼ Getí•œë‹¤.*/
     inline static smOID getTableOID( UChar * aPageHdr );
 
-    /* ÇÏÀ§ ·¹ÀÌ¾î¸¦ À§ÇÑ ÇÔ¼ö·Î½á,ÆäÀÌÁö Æ÷ÀÎÅÍ¿¡ ÇØ´çÇÏ´Â ÆäÀÌÁö Å¸ÀÔÀ»
-     * ¾ò´Â´Ù.  To fix BUG-13462 */
+    /* í•˜ìœ„ ë ˆì´ì–´ë¥¼ ìœ„í•œ í•¨ìˆ˜ë¡œì¨,í˜ì´ì§€ í¬ì¸í„°ì— í•´ë‹¹í•˜ëŠ” í˜ì´ì§€ íƒ€ì…ì„
+     * ì–»ëŠ”ë‹¤.  To fix BUG-13462 */
     inline static UInt getPhyPageType( UChar *aPagePtr );
 
-    /* ÇÏÀ§ ·¹ÀÌ¾î¸¦ À§ÇÑ ÇÔ¼ö·Î½á,Áö¿øµÇ´Â ÆäÀÌÁö Å¸ÀÔÀÇ °³¼ö¸¦ ¾ò´Â´Ù.
+    /* í•˜ìœ„ ë ˆì´ì–´ë¥¼ ìœ„í•œ í•¨ìˆ˜ë¡œì¨,ì§€ì›ë˜ëŠ” í˜ì´ì§€ íƒ€ì…ì˜ ê°œìˆ˜ë¥¼ ì–»ëŠ”ë‹¤.
      * To fix BUG-13462 */
     inline static UInt getPhyPageTypeCount( );
 
-    /* offsetÀ¸·ÎºÎÅÍ page pointer¸¦ ±¸ÇÑ´Ù. */
+    /* offsetìœ¼ë¡œë¶€í„° page pointerë¥¼ êµ¬í•œë‹¤. */
     inline static UChar* getPagePtrFromOffset( UChar       *aPagePtr,
                                                scOffset     aOffset );
 
-    /* page pointer·ÎºÎÅÍ offsetÀ» ±¸ÇÑ´Ù. */
+    /* page pointerë¡œë¶€í„° offsetì„ êµ¬í•œë‹¤. */
     inline static scOffset getOffsetFromPagePtr( UChar *aPagePtr );
 
     inline static scOffset getFreeSpaceBeginOffset( sdpPhyPageHdr *aPageHdr );
 
     inline static scOffset getFreeSpaceEndOffset( sdpPhyPageHdr *aPageHdr );
 
-    /* free sizeÀ» getÇÑ´Ù. */
+    /* free sizeì„ getí•œë‹¤. */
     inline static UInt getTotalFreeSize( sdpPhyPageHdr *aPageHdr );
 
-    /* ÆäÀÌÁöÀÇ free size¸¦ setÇÑ´Ù. */
+    /* í˜ì´ì§€ì˜ free sizeë¥¼ setí•œë‹¤. */
     /* not used
     inline static void setTotalFreeSize( sdpPhyPageHdr *aPageHdr,
                                          UShort         aValue );
@@ -358,93 +358,93 @@ public:
     inline static void setAvailableFreeSize( sdpPhyPageHdr *aPageHdr,
                                              UShort         aValue );
 
-    /* page empty ÀÏ¶§ ºó °ø°£À» °è»êÇÑ´Ù. */
+    /* page empty ì¼ë•Œ ë¹ˆ ê³µê°„ì„ ê³„ì‚°í•œë‹¤. */
     inline static UInt getEmptyPageFreeSize();
 
-    /* Fragment°¡ ¹ß»ıÇÏÁö ¾ÊÀº °ø°£ÀÇ »çÀÌÁî¸¦ ¾òÀ½ */
+    /* Fragmentê°€ ë°œìƒí•˜ì§€ ì•Šì€ ê³µê°„ì˜ ì‚¬ì´ì¦ˆë¥¼ ì–»ìŒ */
     inline static UShort getNonFragFreeSize( sdpPhyPageHdr *aPageHdr );
     
-    /* Fragment°¡ ¹ß»ıÇÏÁö ¾ÊÀº °ø°£ÀÇ »çÀÌÁî¸¦ ¾òÀ½ */
+    /* Fragmentê°€ ë°œìƒí•˜ì§€ ì•Šì€ ê³µê°„ì˜ ì‚¬ì´ì¦ˆë¥¼ ì–»ìŒ */
     inline static UShort getAllocSlotOffset( sdpPhyPageHdr * aPageHdr,
                                              UShort          aAlignedSaveSize );
 
-    /* ÇÑ ÆäÀÌÁö¿¡¼­ logical hdr°¡ ½ÃÀÛÇÏ´Â ºÎºĞÀ» return */
+    /* í•œ í˜ì´ì§€ì—ì„œ logical hdrê°€ ì‹œì‘í•˜ëŠ” ë¶€ë¶„ì„ return */
     inline static UChar* getLogicalHdrStartPtr( UChar   *aPagePtr );
 
-    /* ÇÑ ÆäÀÌÁö¿¡¼­ CTLÀÌ ½ÃÀÛÇÏ´Â ºÎºĞÀ» return */
+    /* í•œ í˜ì´ì§€ì—ì„œ CTLì´ ì‹œì‘í•˜ëŠ” ë¶€ë¶„ì„ return */
     inline static UChar* getCTLStartPtr( UChar   *aPagePtr );
 
-    /* ÇÑ ÆäÀÌÁö¿¡¼­ slot directory°¡ ½ÃÀÛÇÏ´Â ºÎºĞÀ» return */
+    /* í•œ í˜ì´ì§€ì—ì„œ slot directoryê°€ ì‹œì‘í•˜ëŠ” ë¶€ë¶„ì„ return */
     inline static UChar* getSlotDirStartPtr( UChar   *aPagePtr );
 
-    /* ÇÑ ÆäÀÌÁö¿¡¼­ slot directory°¡ ³¡³ª´Â ºÎºĞÀ» return */
+    /* í•œ í˜ì´ì§€ì—ì„œ slot directoryê°€ ëë‚˜ëŠ” ë¶€ë¶„ì„ return */
     inline static UChar* getSlotDirEndPtr( sdpPhyPageHdr    *aPhyPageHdr );
 
-    /* ÇÑ ÆäÀÌÁö¿¡¼­ page footer°¡ ½ÃÀÛÇÏ´Â ºÎºĞÀ» return */
+    /* í•œ í˜ì´ì§€ì—ì„œ page footerê°€ ì‹œì‘í•˜ëŠ” ë¶€ë¶„ì„ return */
     inline static UChar* getPageFooterStartPtr( UChar    *aPagePtr );
 
-    /* ÇÑ ÆäÀÌÁö¿¡¼­ physical hdr + logical hdr¸¦ Á¦¿ÜÇÑ
-     * data°¡ ½ÇÁ¦ ÀúÀåµÇ´Â ½ÃÀÛ offset */
+    /* í•œ í˜ì´ì§€ì—ì„œ physical hdr + logical hdrë¥¼ ì œì™¸í•œ
+     * dataê°€ ì‹¤ì œ ì €ì¥ë˜ëŠ” ì‹œì‘ offset */
     inline static UInt getDataStartOffset( UInt aLogicalHdrSize );
 
-    /* ÇÑ ÆäÀÌÁö³»¿¡ Æ÷ÀÎÅÍ°¡ ÁÖ¾îÁ³À»¶§ ÆäÀÌÁöÀÇ ½ÃÀÛÁ¡À» ±¸ÇÑ´Ù.
-       page³»ÀÇ Æ¯Á¤ pointer  */
+    /* í•œ í˜ì´ì§€ë‚´ì— í¬ì¸í„°ê°€ ì£¼ì–´ì¡Œì„ë•Œ í˜ì´ì§€ì˜ ì‹œì‘ì ì„ êµ¬í•œë‹¤.
+       pageë‚´ì˜ íŠ¹ì • pointer  */
     inline static UChar* getPageStartPtr( void *aPagePtr );
 
-    /* page°¡ temp table typeÀÎÁö °Ë»çÇÑ´Ù. */
+    /* pageê°€ temp table typeì¸ì§€ ê²€ì‚¬í•œë‹¤. */
 #if 0  // not used
     inline static idBool isPageTempType( UChar *aStartPtr );
 #endif
-    /* page°¡ TSS table typeÀÎÁö °Ë»çÇÑ´Ù. */
+    /* pageê°€ TSS table typeì¸ì§€ ê²€ì‚¬í•œë‹¤. */
     inline static idBool isPageTSSType( UChar *aStartPtr );
 
-    /* page°¡ index typeÀÎÁö °Ë»çÇÑ´Ù. */
+    /* pageê°€ index typeì¸ì§€ ê²€ì‚¬í•œë‹¤. */
     inline static idBool isPageIndexType( UChar *aStartPtr );
 
-    /* page°¡ index ¶Ç´Â IndexMeta typeÀÎÁö °Ë»çÇÑ´Ù. */
+    /* pageê°€ index ë˜ëŠ” IndexMeta typeì¸ì§€ ê²€ì‚¬í•œë‹¤. */
     inline static idBool isPageIndexOrIndexMetaType( UChar *aStartPtr );
 
-    /* ÇÑ ÆäÀÌÁö³»¿¡ Æ÷ÀÎÅÍ°¡ ÁÖ¾îÁ³À»¶§ Phy page hdr¸¦ ±¸ÇÑ´Ù.
-     * page³»ÀÇ Æ¯Á¤ pointer */
+    /* í•œ í˜ì´ì§€ë‚´ì— í¬ì¸í„°ê°€ ì£¼ì–´ì¡Œì„ë•Œ Phy page hdrë¥¼ êµ¬í•œë‹¤.
+     * pageë‚´ì˜ íŠ¹ì • pointer */
     inline static sdpPhyPageHdr* getHdr( UChar *aPagePtr );
 
-    /* physical hdrÀÇ Å©±â¸¦ ±¸ÇÑ´Ù. */
+    /* physical hdrì˜ í¬ê¸°ë¥¼ êµ¬í•œë‹¤. */
     inline static UShort getPhyHdrSize();
 
-    /* logical hdrÀÇ Å©±â¸¦ ±¸ÇÑ´Ù. */
+    /* logical hdrì˜ í¬ê¸°ë¥¼ êµ¬í•œë‹¤. */
     inline static UShort getLogicalHdrSize( sdpPhyPageHdr *aPageHdr);
 
-    /* CTL ÀÇ Å©±â¸¦ ±¸ÇÑ´Ù. */
+    /* CTL ì˜ í¬ê¸°ë¥¼ êµ¬í•œë‹¤. */
     inline static UShort getSizeOfCTL( sdpPhyPageHdr *aPageHdr );
     
-    /* Footer ÀÇ Å©±â¸¦ ±¸ÇÑ´Ù. */
+    /* Footer ì˜ í¬ê¸°ë¥¼ êµ¬í•œë‹¤. */
     inline static UShort getSizeOfFooter();
 
-    /* page pointer·ÎºÎÅÍ RID¸¦ ¾ò´Â´Ù. */
+    /* page pointerë¡œë¶€í„° RIDë¥¼ ì–»ëŠ”ë‹¤. */
     inline static sdRID getRIDFromPtr( void *aPtr );
 
-    /* page pointer·ÎºÎÅÍ SID¸¦ ¾ò´Â´Ù. */
+    /* page pointerë¡œë¶€í„° SIDë¥¼ ì–»ëŠ”ë‹¤. */
     /* not used 
     inline static sdRID getSIDFromPtr( void *aPtr );
     */
-    /* page¿¡ ÇÏ³ªÀÇ slot entry¸¦ ÀúÀåÇÒ °ø°£ÀÌ ÀÖ´Â Áö °Ë»çÇÑ´Ù. */
+    /* pageì— í•˜ë‚˜ì˜ slot entryë¥¼ ì €ì¥í•  ê³µê°„ì´ ìˆëŠ” ì§€ ê²€ì‚¬í•œë‹¤. */
     inline static idBool canMakeSlotEntry( sdpPhyPageHdr *aPageHdr );
 
-    /* page°¡ free °¡´ÉÇÑ ÆäÀÌÁö ÀÎÁö °Ë»çÇÑ´Ù. */
+    /* pageê°€ free ê°€ëŠ¥í•œ í˜ì´ì§€ ì¸ì§€ ê²€ì‚¬í•œë‹¤. */
 /* not used
     inline static idBool canPageFree( sdpPhyPageHdr *aPageHdr );
 */
-    /* PROJ-2037 TMS: Segment¿¡¼­ PageÀÇ SeqNo¸¦ ¾ò´Â´Ù. */
+    /* PROJ-2037 TMS: Segmentì—ì„œ Pageì˜ SeqNoë¥¼ ì–»ëŠ”ë‹¤. */
     inline static ULong getSeqNo( sdpPhyPageHdr *aPageHdr );
 
     // PROJ-1568 Buffer Manager Renewal
-    // sdb¿¡¼­ Æ¯Á¤ ÆäÀÌÁöÅ¸ÀÔ ¹øÈ£°¡ undo page typeÀÎÁö
-    // ¾ËÇÊ¿ä°¡ ÀÖ´Ù. ÀÌ´Â Åë°èÁ¤º¸ ±¸Ãà½Ã »ç¿ëµÈ´Ù.
+    // sdbì—ì„œ íŠ¹ì • í˜ì´ì§€íƒ€ì… ë²ˆí˜¸ê°€ undo page typeì¸ì§€
+    // ì•Œí•„ìš”ê°€ ìˆë‹¤. ì´ëŠ” í†µê³„ì •ë³´ êµ¬ì¶•ì‹œ ì‚¬ìš©ëœë‹¤.
     static UInt getUndoPageType();
 
 
 
-    // PROJ-1704 Disk MVCC ¸®´º¾ó
+    // PROJ-1704 Disk MVCC ë¦¬ë‰´ì–¼
     static void initCTL( sdpPhyPageHdr  * aPageHdr,
                          UInt             aHdrSize,
                          UChar         ** aHdrStartPtr );
@@ -466,7 +466,7 @@ public:
                                           scPageID  aPageID,
                                           UInt      aPageType );
 
-    /* checksumÀ» °è»ê */
+    /* checksumì„ ê³„ì‚° */
     inline static UInt calcCheckSum( sdpPhyPageHdr *aPageHdr );
     
     inline static UInt getSizeOfSlotDir( sdpPhyPageHdr *aPageHdr );
@@ -503,7 +503,7 @@ inline UInt sdpPhyPage::getUndoPageType()
 }
 
 
-/* ÆäÀÌÁöÀÇ page id ¹İÈ¯ */
+/* í˜ì´ì§€ì˜ page id ë°˜í™˜ */
 inline scPageID  sdpPhyPage::getPageID( UChar*  aStartPtr )
 {
     sdpPhyPageHdr *sPageHdr;
@@ -518,7 +518,7 @@ inline scPageID  sdpPhyPage::getPageID( UChar*  aStartPtr )
 
 }
 
-/* ÆäÀÌÁö³»ÀÇ ÀÓÀÇÀÇ Pointer¿¡¼­ page id ¹İÈ¯ */
+/* í˜ì´ì§€ë‚´ì˜ ì„ì˜ì˜ Pointerì—ì„œ page id ë°˜í™˜ */
 inline scPageID sdpPhyPage::getPageIDFromPtr( void*  aPtr )
 {
     sdpPhyPageHdr *sPageHdr;
@@ -530,7 +530,7 @@ inline scPageID sdpPhyPage::getPageIDFromPtr( void*  aPtr )
     return sPageHdr->mPageID;
 }
 
-/* ÆäÀÌÁöÀÇ space id ¹İÈ¯*/
+/* í˜ì´ì§€ì˜ space id ë°˜í™˜*/
 inline  scSpaceID  sdpPhyPage::getSpaceID( UChar*   aStartPtr )
 {
     sdpPhyPageHdr *sPageHdr;
@@ -542,46 +542,46 @@ inline  scSpaceID  sdpPhyPage::getSpaceID( UChar*   aStartPtr )
     return ( sPageHdr->mFrameHdr.mSpaceID );
 }
 
-/* ÆäÀÌÁöÀÇ page double linked list node ¹İÈ¯ */
+/* í˜ì´ì§€ì˜ page double linked list node ë°˜í™˜ */
 inline  sdpDblPIDListNode* sdpPhyPage::getDblPIDListNode( sdpPhyPageHdr* aPageHdr )
 {
     return &( aPageHdr->mListNode );
 }
 
-/* ÆäÀÌÁöÀÇ page double linked prev page id ¹İÈ¯ */
+/* í˜ì´ì§€ì˜ page double linked prev page id ë°˜í™˜ */
 inline  scPageID  sdpPhyPage::getPrvPIDOfDblList( sdpPhyPageHdr* aPageHdr )
 {
     return ( sdpDblPIDList::getPrvOfNode( getDblPIDListNode( aPageHdr ) ) );
 }
 
-/* ÆäÀÌÁöÀÇ page double linked next page id ¹İÈ¯ */
+/* í˜ì´ì§€ì˜ page double linked next page id ë°˜í™˜ */
 inline  scPageID  sdpPhyPage::getNxtPIDOfDblList( sdpPhyPageHdr* aPageHdr )
 {
     return sdpDblPIDList::getNxtOfNode( getDblPIDListNode( aPageHdr ) );
 }
 
-/* ÆäÀÌÁöÀÇ page single linked list node ¹İÈ¯ */
+/* í˜ì´ì§€ì˜ page single linked list node ë°˜í™˜ */
 inline  sdpSglPIDListNode* sdpPhyPage::getSglPIDListNode( sdpPhyPageHdr* aPageHdr )
 {
     return (sdpSglPIDListNode*)&( aPageHdr->mListNode );
 }
 
-/* ÆäÀÌÁöÀÇ single linked list next page id ¹İÈ¯ */
+/* í˜ì´ì§€ì˜ single linked list next page id ë°˜í™˜ */
 inline scPageID sdpPhyPage::getNxtPIDOfSglList( sdpPhyPageHdr* aPageHdr )
 {
     return sdpSglPIDList::getNxtOfNode( getSglPIDListNode( aPageHdr ) );
 }
 
-/* ÆäÀÌÁöÀÇ pageLSN ¾ò±â */
+/* í˜ì´ì§€ì˜ pageLSN ì–»ê¸° */
 inline smLSN sdpPhyPage::getPageLSN( UChar* aStartPtr )
 {
     IDE_DASSERT( aStartPtr == getPageStartPtr(aStartPtr));
     return ( getHdr(aStartPtr)->mFrameHdr.mPageLSN );
 }
 
-/* ÆäÀÌÁöÀÇ pageLSN ¼³Á¤
- * - ¹öÆÛ¸Å´ÏÀú°¡ flushÇÏ±â Àü¿¡ ¼³Á¤
- * - logging ÇÏÁö ¾ÊÀ½ */
+/* í˜ì´ì§€ì˜ pageLSN ì„¤ì •
+ * - ë²„í¼ë§¤ë‹ˆì €ê°€ flushí•˜ê¸° ì „ì— ì„¤ì •
+ * - logging í•˜ì§€ ì•ŠìŒ */
 inline void sdpPhyPage::setPageLSN( UChar   * aPageHdr,
                                     smLSN   * aPageLSN )
 {
@@ -599,13 +599,13 @@ inline void sdpPhyPage::setPageLSN( UChar   * aPageHdr,
     IDE_DASSERT( validate(sPageHdr) == ID_TRUE );
 }
 
-/* ÆäÀÌÁöÀÇ checksum ¾ò±â*/
+/* í˜ì´ì§€ì˜ checksum ì–»ê¸°*/
 inline UInt sdpPhyPage::getCheckSum( sdpPhyPageHdr* aPageHdr )
 {
     return ( aPageHdr->mFrameHdr.mCheckSum );
 }
 
-/* ÆäÀÌÁöÀÇ Leaf Á¤º¸ ¾ò±â */
+/* í˜ì´ì§€ì˜ Leaf ì •ë³´ ì–»ê¸° */
 inline sdpParentInfo sdpPhyPage::getParentInfo( UChar * aStartPtr )
 {
 
@@ -618,13 +618,13 @@ inline sdpParentInfo sdpPhyPage::getParentInfo( UChar * aStartPtr )
     return (sPageHdr->mParentInfo);
 }
 
-/* smo number¸¦ getÇÑ´Ù.**/
+/* smo numberë¥¼ getí•œë‹¤.**/
 inline ULong sdpPhyPage::getIndexSMONo( sdpPhyPageHdr * aPageHdr )
 {
     return ( aPageHdr->mFrameHdr.mIndexSMONo );
 }
 
-/* ÆäÀÌÁöÀÇ index smo no¸¦ setÇÑ´Ù. */
+/* í˜ì´ì§€ì˜ index smo noë¥¼ setí•œë‹¤. */
 inline void sdpPhyPage::setIndexSMONo( UChar *aStartPtr, ULong aValue )
 {
     sdpPhyPageHdr *sPageHdr;
@@ -636,14 +636,14 @@ inline void sdpPhyPage::setIndexSMONo( UChar *aStartPtr, ULong aValue )
     sPageHdr->mFrameHdr.mIndexSMONo = aValue;
 }
 
-/* page »óÅÂ¸¦ getÇÑ´Ù.*/
+/* page ìƒíƒœë¥¼ getí•œë‹¤.*/
 inline UShort sdpPhyPage::getState( sdpPhyPageHdr * aPageHdr )
 {
     return aPageHdr->mPageState;
 }
 
-/*  ÆäÀÌÁöÀÇ page state¸¦ setÇÑ´Ù.
- * - SDR_2BYTES ·Î±ë */
+/*  í˜ì´ì§€ì˜ page stateë¥¼ setí•œë‹¤.
+ * - SDR_2BYTES ë¡œê¹… */
 inline IDE_RC sdpPhyPage::setState( sdpPhyPageHdr   *aPageHdr,
                                     UShort           aValue,
                                     sdrMtx          *aMtx )
@@ -710,33 +710,33 @@ inline IDE_RC sdpPhyPage::setSeqNo( sdpPhyPageHdr *aPageHdr,
     return IDE_FAILURE;
 }
 
-/* Page TypeÀ»  GetÇÑ´Ù.*/
+/* Page Typeì„  Getí•œë‹¤.*/
 inline sdpPageType sdpPhyPage::getPageType( sdpPhyPageHdr *aPageHdr )
 {
     return (sdpPageType)(aPageHdr->mPageType);
 }
 /* BUG-32091 [sm_collection] add TableOID in PageHeader
- * TableOID¸¦ GetÇÑ´Ù.*/
+ * TableOIDë¥¼ Getí•œë‹¤.*/
 inline smOID sdpPhyPage::getTableOID( UChar * aPageHdr )
 {
     return (smOID)(((sdpPhyPageHdr *)aPageHdr)->mTableOID);
 }
 
-/* ÇÏÀ§ ·¹ÀÌ¾î¸¦ À§ÇÑ ÇÔ¼ö·Î½á,ÆäÀÌÁö Æ÷ÀÎÅÍ¿¡ ÇØ´çÇÏ´Â ÆäÀÌÁö Å¸ÀÔÀ»
- * ¾ò´Â´Ù.  To fix BUG-13462 */
+/* í•˜ìœ„ ë ˆì´ì–´ë¥¼ ìœ„í•œ í•¨ìˆ˜ë¡œì¨,í˜ì´ì§€ í¬ì¸í„°ì— í•´ë‹¹í•˜ëŠ” í˜ì´ì§€ íƒ€ì…ì„
+ * ì–»ëŠ”ë‹¤.  To fix BUG-13462 */
 inline UInt sdpPhyPage::getPhyPageType( UChar *aPagePtr )
 {
     return (UInt)getPageType( (sdpPhyPageHdr*)aPagePtr );
 }
 
-/* ÇÏÀ§ ·¹ÀÌ¾î¸¦ À§ÇÑ ÇÔ¼ö·Î½á,Áö¿øµÇ´Â ÆäÀÌÁö Å¸ÀÔÀÇ °³¼ö¸¦ ¾ò´Â´Ù.
+/* í•˜ìœ„ ë ˆì´ì–´ë¥¼ ìœ„í•œ í•¨ìˆ˜ë¡œì¨,ì§€ì›ë˜ëŠ” í˜ì´ì§€ íƒ€ì…ì˜ ê°œìˆ˜ë¥¼ ì–»ëŠ”ë‹¤.
  * To fix BUG-13462 */
 inline UInt sdpPhyPage::getPhyPageTypeCount( )
 {
     return SDP_PAGE_TYPE_MAX;
 }
 
-/* offsetÀ¸·ÎºÎÅÍ page pointer¸¦ ±¸ÇÑ´Ù. */
+/* offsetìœ¼ë¡œë¶€í„° page pointerë¥¼ êµ¬í•œë‹¤. */
 inline UChar* sdpPhyPage::getPagePtrFromOffset( UChar       *aPagePtr,
                                                 scOffset     aOffset )
 {
@@ -746,16 +746,16 @@ inline UChar* sdpPhyPage::getPagePtrFromOffset( UChar       *aPagePtr,
 
     sPagePtrFromOffset = ( getPageStartPtr(aPagePtr) + aOffset );
 
-    /* TASK-6105 ÇÔ¼ö inlineÈ­¸¦ À§ÇØ sdpPhyPage::getPagePtrFromOffset ÇÔ¼ö¸¦
-     * sdpSlotDirectory::getPagePtrFromOffset·Î Áßº¹À¸·Î Ãß°¡ÇÑ´Ù. 
-     * ÇÑ ÇÔ¼ö°¡ ¼öÁ¤µÇ¸é ³ª¸ÓÁö ÇÔ¼öµµ ¼öÁ¤ÇØ¾ß ÇÑ´Ù.*/
+    /* TASK-6105 í•¨ìˆ˜ inlineí™”ë¥¼ ìœ„í•´ sdpPhyPage::getPagePtrFromOffset í•¨ìˆ˜ë¥¼
+     * sdpSlotDirectory::getPagePtrFromOffsetë¡œ ì¤‘ë³µìœ¼ë¡œ ì¶”ê°€í•œë‹¤. 
+     * í•œ í•¨ìˆ˜ê°€ ìˆ˜ì •ë˜ë©´ ë‚˜ë¨¸ì§€ í•¨ìˆ˜ë„ ìˆ˜ì •í•´ì•¼ í•œë‹¤.*/
     IDE_DASSERT( sdpSlotDirectory::getPagePtrFromOffset(aPagePtr, aOffset) ==
                  sPagePtrFromOffset );
 
     return sPagePtrFromOffset;
 }
 
-/* page pointer·ÎºÎÅÍ offsetÀ» ±¸ÇÑ´Ù. */
+/* page pointerë¡œë¶€í„° offsetì„ êµ¬í•œë‹¤. */
 inline scOffset sdpPhyPage::getOffsetFromPagePtr( UChar *aPagePtr )
 {
     IDE_DASSERT( aPagePtr != NULL );
@@ -867,13 +867,13 @@ inline IDE_RC sdpPhyPage::logAndSetAvailableFreeSize(
 }
 
 
-/* free sizeÀ» getÇÑ´Ù. */
+/* free sizeì„ getí•œë‹¤. */
 inline UInt sdpPhyPage::getTotalFreeSize( sdpPhyPageHdr *aPageHdr )
 {
     return ( aPageHdr->mTotalFreeSize );
 }
 
-/* ÆäÀÌÁöÀÇ free size¸¦ setÇÑ´Ù. */
+/* í˜ì´ì§€ì˜ free sizeë¥¼ setí•œë‹¤. */
 /*
 inline void sdpPhyPage::setTotalFreeSize( sdpPhyPageHdr *aPageHdr,
                                           UShort         aValue )
@@ -900,7 +900,7 @@ inline void sdpPhyPage::setAvailableFreeSize( sdpPhyPageHdr *aPageHdr,
     aPageHdr->mAvailableFreeSize = aValue;
 }
 
-/* page empty ÀÏ¶§ ºó °ø°£À» °è»êÇÑ´Ù. */
+/* page empty ì¼ë•Œ ë¹ˆ ê³µê°„ì„ ê³„ì‚°í•œë‹¤. */
 inline UInt sdpPhyPage::getEmptyPageFreeSize()
 {
     return ( SD_PAGE_SIZE -
@@ -909,9 +909,9 @@ inline UInt sdpPhyPage::getEmptyPageFreeSize()
 
 /******************************************************************************
  * Description :
- *    CheckSum ¹æ½Ä¿¡ µû¶ó CheckSumÀ» ¼³Á¤ÇÑ´Ù.
+ *    CheckSum ë°©ì‹ì— ë”°ë¼ CheckSumì„ ì„¤ì •í•œë‹¤.
  *
- *  aPageHdr  - [IN] Page ½ÃÀÛ Æ÷ÀÎÅÍ
+ *  aPageHdr  - [IN] Page ì‹œì‘ í¬ì¸í„°
  *
  ******************************************************************************/
 inline void sdpPhyPage::calcAndSetCheckSum( UChar *aPageHdr )
@@ -938,20 +938,20 @@ inline void sdpPhyPage::calcAndSetCheckSum( UChar *aPageHdr )
     }
 }
 
-/* Fragment°¡ ¹ß»ıÇÏÁö ¾ÊÀº °ø°£ÀÇ »çÀÌÁî¸¦ ¾òÀ½ */
+/* Fragmentê°€ ë°œìƒí•˜ì§€ ì•Šì€ ê³µê°„ì˜ ì‚¬ì´ì¦ˆë¥¼ ì–»ìŒ */
 inline UShort sdpPhyPage::getNonFragFreeSize( sdpPhyPageHdr *aPageHdr )
 {
     return (aPageHdr->mFreeSpaceEndOffset - aPageHdr->mFreeSpaceBeginOffset);
 }
 
-/* Fragment°¡ ¹ß»ıÇÏÁö ¾ÊÀº °ø°£ÀÇ »çÀÌÁî¸¦ ¾òÀ½ */
+/* Fragmentê°€ ë°œìƒí•˜ì§€ ì•Šì€ ê³µê°„ì˜ ì‚¬ì´ì¦ˆë¥¼ ì–»ìŒ */
 inline UShort sdpPhyPage::getAllocSlotOffset( sdpPhyPageHdr * aPageHdr,
                                               UShort          aAlignedSaveSize)
 {
     return (aPageHdr->mFreeSpaceEndOffset - aAlignedSaveSize);
 }
 
-/* ÇÑ ÆäÀÌÁö¿¡¼­ logical hdr°¡ ½ÃÀÛÇÏ´Â ºÎºĞÀ» return */
+/* í•œ í˜ì´ì§€ì—ì„œ logical hdrê°€ ì‹œì‘í•˜ëŠ” ë¶€ë¶„ì„ return */
 inline UChar* sdpPhyPage::getLogicalHdrStartPtr( UChar   *aPagePtr )
 {
     IDE_ASSERT( aPagePtr != NULL );
@@ -960,7 +960,7 @@ inline UChar* sdpPhyPage::getLogicalHdrStartPtr( UChar   *aPagePtr )
              getPhyHdrSize() );
 }
 
-/* ÇÑ ÆäÀÌÁö¿¡¼­ logical hdr°¡ ½ÃÀÛÇÏ´Â ºÎºĞÀ» return */
+/* í•œ í˜ì´ì§€ì—ì„œ logical hdrê°€ ì‹œì‘í•˜ëŠ” ë¶€ë¶„ì„ return */
 inline UChar* sdpPhyPage::getCTLStartPtr( UChar   *aPagePtr )
 {
     IDE_DASSERT( aPagePtr != NULL );
@@ -972,7 +972,7 @@ inline UChar* sdpPhyPage::getCTLStartPtr( UChar   *aPagePtr )
 }
 
 
-/* ÇÑ ÆäÀÌÁö¿¡¼­ slot directory°¡ ½ÃÀÛÇÏ´Â ºÎºĞÀ» return */
+/* í•œ í˜ì´ì§€ì—ì„œ slot directoryê°€ ì‹œì‘í•˜ëŠ” ë¶€ë¶„ì„ return */
 inline UChar* sdpPhyPage::getSlotDirStartPtr( UChar   *aPagePtr )
 {
     UChar    *sStartPtr;
@@ -991,7 +991,7 @@ inline UChar* sdpPhyPage::getSlotDirStartPtr( UChar   *aPagePtr )
 /***********************************************************************
  *
  * Description :
- *  slot directoryÀÇ ³¡À§Ä¡(end point)¸¦ return.
+ *  slot directoryì˜ ëìœ„ì¹˜(end point)ë¥¼ return.
  *
  *  aPhyPageHdr - [IN] physical page header
  *
@@ -1005,16 +1005,16 @@ inline UChar* sdpPhyPage::getSlotDirEndPtr( sdpPhyPageHdr    *aPhyPageHdr )
 }
 
 
-/* ÇÑ ÆäÀÌÁö¿¡¼­ page footer°¡ ½ÃÀÛÇÏ´Â ºÎºĞÀ» return */
+/* í•œ í˜ì´ì§€ì—ì„œ page footerê°€ ì‹œì‘í•˜ëŠ” ë¶€ë¶„ì„ return */
 inline UChar* sdpPhyPage::getPageFooterStartPtr( UChar    *aPagePtr )
 {
 /***********************************************************************
  *
  * Description :
- * +1ÇÏ¿© align ÇÏ¹Ç·Î ÆäÀÌÁöÀÇ Ã¹ ÁÖ¼Ò¿¡ ´ëÇØ ÆäÀÌÁöÀÇ ¸¶Áö¸· ÁÖ¼Ò·Î
- * alignµÈ´Ù.
- * ÁÖÀÇ : ¸¸¾à ÆäÀÌÁöÀÇ ¸¶Áö¸· ÁÖ¼Ò¸¦ ³Ñ±â¸é ±× ´ÙÀ½ ÆäÀÌÁöÀÇ Ã¹
- * ÁÖ¼Ò·Î align µÇ¹Ç·Î ÀÌ·± °æ¿ì°¡ »ı°Ü¼­´Â ¾ÈµÈ´Ù.
+ * +1í•˜ì—¬ align í•˜ë¯€ë¡œ í˜ì´ì§€ì˜ ì²« ì£¼ì†Œì— ëŒ€í•´ í˜ì´ì§€ì˜ ë§ˆì§€ë§‰ ì£¼ì†Œë¡œ
+ * alignëœë‹¤.
+ * ì£¼ì˜ : ë§Œì•½ í˜ì´ì§€ì˜ ë§ˆì§€ë§‰ ì£¼ì†Œë¥¼ ë„˜ê¸°ë©´ ê·¸ ë‹¤ìŒ í˜ì´ì§€ì˜ ì²«
+ * ì£¼ì†Œë¡œ align ë˜ë¯€ë¡œ ì´ëŸ° ê²½ìš°ê°€ ìƒê²¨ì„œëŠ” ì•ˆëœë‹¤.
  *
  **********************************************************************/
 
@@ -1028,16 +1028,16 @@ inline UChar* sdpPhyPage::getPageFooterStartPtr( UChar    *aPagePtr )
 }
 
 
-/* ÇÑ ÆäÀÌÁö¿¡¼­ physical hdr + logical hdr¸¦ Á¦¿ÜÇÑ
- * data°¡ ½ÇÁ¦ ÀúÀåµÇ´Â ½ÃÀÛ offset */
+/* í•œ í˜ì´ì§€ì—ì„œ physical hdr + logical hdrë¥¼ ì œì™¸í•œ
+ * dataê°€ ì‹¤ì œ ì €ì¥ë˜ëŠ” ì‹œì‘ offset */
 inline UInt sdpPhyPage::getDataStartOffset( UInt aLogicalHdrSize )
 {
     return ( getPhyHdrSize() +
              idlOS::align8( aLogicalHdrSize ) );
 }
 
-/* ÇÑ ÆäÀÌÁö³»¿¡ Æ÷ÀÎÅÍ°¡ ÁÖ¾îÁ³À»¶§ ÆäÀÌÁöÀÇ ½ÃÀÛÁ¡À» ±¸ÇÑ´Ù. */
-inline UChar* sdpPhyPage::getPageStartPtr( void   *aPagePtr ) // page³»ÀÇ Æ¯Á¤ pointer
+/* í•œ í˜ì´ì§€ë‚´ì— í¬ì¸í„°ê°€ ì£¼ì–´ì¡Œì„ë•Œ í˜ì´ì§€ì˜ ì‹œì‘ì ì„ êµ¬í•œë‹¤. */
+inline UChar* sdpPhyPage::getPageStartPtr( void   *aPagePtr ) // pageë‚´ì˜ íŠ¹ì • pointer
 {
     UChar * sPageStartPtr;
 
@@ -1045,16 +1045,16 @@ inline UChar* sdpPhyPage::getPageStartPtr( void   *aPagePtr ) // page³»ÀÇ Æ¯Á¤ p
 
     sPageStartPtr = (UChar *)idlOS::alignDown( (void*)aPagePtr, (UInt)SD_PAGE_SIZE );
 
-    /* TASK-6105 ÇÔ¼ö inlineÈ­¸¦ À§ÇØ sdpPhyPage::getPageStartPtr ÇÔ¼ö¸¦
-     * sdpSlotDirectory::getPageStartPtr·Î Áßº¹À¸·Î Ãß°¡ÇÑ´Ù.
-     * ÇÑ ÇÔ¼ö°¡ ¼öÁ¤µÇ¸é ³ª¸ÓÁö ÇÔ¼öµµ ¼öÁ¤ÇØ¾ß ÇÑ´Ù.*/  
+    /* TASK-6105 í•¨ìˆ˜ inlineí™”ë¥¼ ìœ„í•´ sdpPhyPage::getPageStartPtr í•¨ìˆ˜ë¥¼
+     * sdpSlotDirectory::getPageStartPtrë¡œ ì¤‘ë³µìœ¼ë¡œ ì¶”ê°€í•œë‹¤.
+     * í•œ í•¨ìˆ˜ê°€ ìˆ˜ì •ë˜ë©´ ë‚˜ë¨¸ì§€ í•¨ìˆ˜ë„ ìˆ˜ì •í•´ì•¼ í•œë‹¤.*/  
     IDE_DASSERT( sdpSlotDirectory::getPageStartPtr( aPagePtr ) == 
                  sPageStartPtr );
 
     return sPageStartPtr;
 }
 
-/* page°¡ temp table typeÀÎÁö °Ë»çÇÑ´Ù. */
+/* pageê°€ temp table typeì¸ì§€ ê²€ì‚¬í•œë‹¤. */
 #if 0  // not used
 inline idBool sdpPhyPage::isPageTempType( UChar   *aStartPtr )
 {
@@ -1076,7 +1076,7 @@ inline idBool sdpPhyPage::isPageTempType( UChar   *aStartPtr )
 }
 #endif
 
-/* page°¡ index typeÀÎÁö °Ë»çÇÑ´Ù. */
+/* pageê°€ index typeì¸ì§€ ê²€ì‚¬í•œë‹¤. */
 inline idBool sdpPhyPage::isPageIndexType( UChar   *aStartPtr )
 {
     sdpPhyPageHdr *sPageHdr;
@@ -1086,7 +1086,7 @@ inline idBool sdpPhyPage::isPageIndexType( UChar   *aStartPtr )
              ID_TRUE : ID_FALSE );
 }
 
-/* page°¡ index ¶Ç´Â index meta typeÀÎÁö °Ë»çÇÑ´Ù. */
+/* pageê°€ index ë˜ëŠ” index meta typeì¸ì§€ ê²€ì‚¬í•œë‹¤. */
 inline idBool sdpPhyPage::isPageIndexOrIndexMetaType( UChar   *aStartPtr )
 {
     sdpPhyPageHdr *sPageHdr;
@@ -1098,7 +1098,7 @@ inline idBool sdpPhyPage::isPageIndexOrIndexMetaType( UChar   *aStartPtr )
                 ID_TRUE : ID_FALSE);
 }
 
-/* page°¡ TSS table typeÀÎÁö °Ë»çÇÑ´Ù. */
+/* pageê°€ TSS table typeì¸ì§€ ê²€ì‚¬í•œë‹¤. */
 inline idBool sdpPhyPage::isPageTSSType( UChar *aStartPtr )
 {
     sdpPhyPageHdr *sPageHdr;
@@ -1107,7 +1107,7 @@ inline idBool sdpPhyPage::isPageTSSType( UChar *aStartPtr )
             ID_TRUE : ID_FALSE);
 }
 
-/* checksumÀ» °è»ê */
+/* checksumì„ ê³„ì‚° */
 inline UInt sdpPhyPage::calcCheckSum( sdpPhyPageHdr *aPageHdr )
 {
     UChar *sCheckSumStartPtr;
@@ -1121,16 +1121,16 @@ inline UInt sdpPhyPage::calcCheckSum( sdpPhyPageHdr *aPageHdr )
                                    ID_SIZEOF(aPageHdr->mFrameHdr.mCheckSum) );
 }
 
-/* ÇÑ ÆäÀÌÁö³»¿¡ Æ÷ÀÎÅÍ°¡ ÁÖ¾îÁ³À»¶§ Phy page hdr¸¦ ±¸ÇÑ´Ù. */
-inline sdpPhyPageHdr* sdpPhyPage::getHdr( UChar *aPagePtr ) // page³»ÀÇ Æ¯Á¤ pointer
+/* í•œ í˜ì´ì§€ë‚´ì— í¬ì¸í„°ê°€ ì£¼ì–´ì¡Œì„ë•Œ Phy page hdrë¥¼ êµ¬í•œë‹¤. */
+inline sdpPhyPageHdr* sdpPhyPage::getHdr( UChar *aPagePtr ) // pageë‚´ì˜ íŠ¹ì • pointer
 {
     IDE_DASSERT( aPagePtr != NULL );
     return (sdpPhyPageHdr *)getPageStartPtr(aPagePtr);
 }
 
 
-/* physical hdrÀÇ Å©±â¸¦ ±¸ÇÑ´Ù. 8¿¡ align µÇ¾î¾ß ÇÔ.
- * 4·Î align µÉ¶§ µÚÀÇ Çì´õ¸¦ ÀĞÀ»¶§ ¹®Á¦°¡ »ı±æ ¼ö ÀÖ±â ¶§¹®ÀÌ´Ù. */
+/* physical hdrì˜ í¬ê¸°ë¥¼ êµ¬í•œë‹¤. 8ì— align ë˜ì–´ì•¼ í•¨.
+ * 4ë¡œ align ë ë•Œ ë’¤ì˜ í—¤ë”ë¥¼ ì½ì„ë•Œ ë¬¸ì œê°€ ìƒê¸¸ ìˆ˜ ìˆê¸° ë•Œë¬¸ì´ë‹¤. */
 inline UShort sdpPhyPage::getPhyHdrSize()
 {
     return idlOS::align8((UShort)ID_SIZEOF(sdpPhyPageHdr));
@@ -1151,7 +1151,7 @@ inline UShort sdpPhyPage::getSizeOfFooter()
     return ID_SIZEOF(sdpPageFooter);
 }
 
-/* page pointer·ÎºÎÅÍ RID¸¦ ¾ò´Â´Ù. */
+/* page pointerë¡œë¶€í„° RIDë¥¼ ì–»ëŠ”ë‹¤. */
 inline sdRID sdpPhyPage::getRIDFromPtr( void *aPtr )
 {
     UChar *sPtr =  (UChar*)aPtr;
@@ -1163,7 +1163,7 @@ inline sdRID sdpPhyPage::getRIDFromPtr( void *aPtr )
 }
 
 
-/* page pointer·ÎºÎÅÍ SID¸¦ ¾ò´Â´Ù. */
+/* page pointerë¡œë¶€í„° SIDë¥¼ ì–»ëŠ”ë‹¤. */
 /* not used 
 inline sdRID sdpPhyPage::getSIDFromPtr( void *aPtr )
 {
@@ -1189,7 +1189,7 @@ inline sdRID sdpPhyPage::getSIDFromPtr( void *aPtr )
 }
 */
 
-/* page¿¡ ÇÏ³ªÀÇ slot entry¸¦ ÀúÀåÇÒ °ø°£ÀÌ ÀÖ´Â Áö °Ë»çÇÑ´Ù. */
+/* pageì— í•˜ë‚˜ì˜ slot entryë¥¼ ì €ì¥í•  ê³µê°„ì´ ìˆëŠ” ì§€ ê²€ì‚¬í•œë‹¤. */
 inline idBool sdpPhyPage::canMakeSlotEntry( sdpPhyPageHdr   *aPageHdr )
 {
 
@@ -1205,7 +1205,7 @@ inline idBool sdpPhyPage::canMakeSlotEntry( sdpPhyPageHdr   *aPageHdr )
     }
 }
 
-/* page°¡ free °¡´ÉÇÑ ÆäÀÌÁö ÀÎÁö °Ë»çÇÑ´Ù. */
+/* pageê°€ free ê°€ëŠ¥í•œ í˜ì´ì§€ ì¸ì§€ ê²€ì‚¬í•œë‹¤. */
 /* not used
 inline idBool sdpPhyPage::canPageFree( sdpPhyPageHdr *aPageHdr )
 {
@@ -1257,7 +1257,7 @@ inline void sdpPhyPage::makeInitPageInfo( sdrInitPageInfo *aInitPageInfo,
 /***********************************************************************
  *
  * Description :
- *  slot directory¸¦ »ç¿ëÇÏ´Â ÆäÀÌÁöÀÎÁö ¿©ºÎ¸¦ ¾Ë·ÁÁØ´Ù.
+ *  slot directoryë¥¼ ì‚¬ìš©í•˜ëŠ” í˜ì´ì§€ì¸ì§€ ì—¬ë¶€ë¥¼ ì•Œë ¤ì¤€ë‹¤.
  *
  *  aPhyPageHdr - [IN] physical page header
  *
@@ -1307,8 +1307,8 @@ inline UInt sdpPhyPage::getSizeOfSlotDir( sdpPhyPageHdr *aPageHdr )
 }
 
 /********************************************************************
- * Description: aPageType°ªÀÌ SDP_PAGE_TYPE_MAXº¸´Ù Å©¸é
- *              Invalid·Î ID_FALSE, else ID_TRUE
+ * Description: aPageTypeê°’ì´ SDP_PAGE_TYPE_MAXë³´ë‹¤ í¬ë©´
+ *              Invalidë¡œ ID_FALSE, else ID_TRUE
  *
  * aSpaceID  - [IN] TableSpaceID
  * aPageID   - [IN] PageID
@@ -1336,11 +1336,11 @@ inline idBool sdpPhyPage::isValidPageType( scSpaceID aSpaceID,
 
 /***********************************************************************
  * PROJ-1665
- * Description : Consistent Page ¿©ºÎ °á°ú ¹İÈ¯
+ * Description : Consistent Page ì—¬ë¶€ ê²°ê³¼ ë°˜í™˜
  *
  * Implementation :
  *     - In  : Page Header Pointer
- *     - Out : Page consistent ¿©ºÎ
+ *     - Out : Page consistent ì—¬ë¶€
  **********************************************************************/
 inline idBool sdpPhyPage::isConsistentPage( UChar * aPageHdr )
 {

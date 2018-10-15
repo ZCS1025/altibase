@@ -20,7 +20,7 @@
  *
  * Description :
  *
- * º» ÆÄÀÏÀº DRDBÀÇ redo/undo function map¿¡ ´ëÇÑ Çì´õÆÄÀÏÀÌ´Ù.
+ * ë³¸ íŒŒì¼ì€ DRDBì˜ redo/undo function mapì— ëŒ€í•œ í—¤ë”íŒŒì¼ì´ë‹¤.
  *
  **********************************************************************/
 
@@ -35,16 +35,16 @@ class sdrUpdate
 {
 public:
 
-    /* ÃÊ±âÈ­ */
+    /* ì´ˆê¸°í™” */
     static void initialize();
 
     /* dummy function  */
     static void destroy();
 
-    /* BUG-25279 Btree for spatial°ú Disk BtreeÀÇ ÀÚ·á±¸Á¶ ¹× ·Î±ë ºĞ¸® 
-     * Btree for Spatial°ú ÀÏ¹İ Disk Btree°£ÀÇ ·Î±ë ºĞ¸®¿¡ µû¶ó
-     * Recovery½Ã¿¡ st layer¿¡ ¸Å´Ş¸° redo/undo/nta undo ÇÔ¼ö¸¦ È£ÃâÇØ¾ß ÇÑ´Ù.
-     * ÀÌ¸¦ À§ÇØ ¿ÜºÎÀûÀ¸·Î Undo Redo NTA Undo ÇÔ¼ö¸¦ ¸Å´Ş ¼ö ÀÖµµ·Ï ÇÑ´Ù. */
+    /* BUG-25279 Btree for spatialê³¼ Disk Btreeì˜ ìë£Œêµ¬ì¡° ë° ë¡œê¹… ë¶„ë¦¬ 
+     * Btree for Spatialê³¼ ì¼ë°˜ Disk Btreeê°„ì˜ ë¡œê¹… ë¶„ë¦¬ì— ë”°ë¼
+     * Recoveryì‹œì— st layerì— ë§¤ë‹¬ë¦° redo/undo/nta undo í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•´ì•¼ í•œë‹¤.
+     * ì´ë¥¼ ìœ„í•´ ì™¸ë¶€ì ìœ¼ë¡œ Undo Redo NTA Undo í•¨ìˆ˜ë¥¼ ë§¤ë‹¬ ìˆ˜ ìˆë„ë¡ í•œë‹¤. */
     static void appendExternalUndoFunction( UInt                aUndoMapID,
                                             sdrDiskUndoFunction aDiskUndoFunction );
 
@@ -54,21 +54,21 @@ public:
     static void appendExternalRefNTAUndoFunction( UInt                      aNTARefUndoMapID,
                                                   sdrDiskRefNTAUndoFunction aDiskRefNTAUndoFunction );
 
-    /* DRDB ·Î±×ÀÇ undo ¼öÇà */
+    /* DRDB ë¡œê·¸ì˜ undo ìˆ˜í–‰ */
     static IDE_RC doUndoFunction( idvSQL      * aStatistics,
                                   smTID         aTransID,
                                   smOID         aOID,
                                   SChar       * aData,
                                   smLSN       * aPrevLSN );
     
-    /* DRDB ·Î±×ÀÇ redo Ã³¸® */
+    /* DRDB ë¡œê·¸ì˜ redo ì²˜ë¦¬ */
     static IDE_RC doRedoFunction( SChar       * aValue,
                                   UInt          aValueLen,
                                   UChar       * aPageOffset,
                                   sdrRedoInfo * aRedoInfo,
                                   sdrMtx      * aMtx );
     
-    /* DRDB NTA·Î±×ÀÇ operational undo Ã³¸® */
+    /* DRDB NTAë¡œê·¸ì˜ operational undo ì²˜ë¦¬ */
     static IDE_RC doNTAUndoFunction( idvSQL      * aStatistics,
                                      void        * aTrans,
                                      UInt          aOPType,
@@ -77,7 +77,7 @@ public:
                                      ULong       * aArrData,
                                      UInt          aDataCount );
     
-    /* DRDB Index NTA·Î±×ÀÇ operational undo Ã³¸® */
+    /* DRDB Index NTAë¡œê·¸ì˜ operational undo ì²˜ë¦¬ */
     static IDE_RC doRefNTAUndoFunction( idvSQL      * aStatistics,
                                         void        * aTrans,
                                         UInt          aOPType,

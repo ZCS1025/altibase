@@ -39,7 +39,7 @@ typedef struct qsxProcInfo
     UInt               modifyCount;
 
     idBool             isValid;
-    UInt               sessionID; // BUG-36291 invalid·Î º¯°æÇÑ SessionID
+    UInt               sessionID; // BUG-36291 invalidë¡œ ë³€ê²½í•œ SessionID
 
     iduVarMemList    * qmsMem;
     qsProcParseTree  * planTree;

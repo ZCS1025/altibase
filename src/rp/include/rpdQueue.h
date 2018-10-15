@@ -50,34 +50,34 @@ typedef struct rpdLob
 
 typedef struct rpdXLog
 {
-    /* ÇöÀç ºÐ¼®ÁßÀÎ XLogÀÇ Å¸ÀÔ */
+    /* í˜„ìž¬ ë¶„ì„ì¤‘ì¸ XLogì˜ íƒ€ìž… */
     rpXLogType  mType;
-    /* ÇöÀç ºÐ¼®ÁßÀÎ LogÀÇ Æ®·£Àè¼Ç ID */
+    /* í˜„ìž¬ ë¶„ì„ì¤‘ì¸ Logì˜ íŠ¸ëžœìž­ì…˜ ID */
     smTID       mTID;
-    /* ÇöÀç ·Î±×ÀÇ SN */
+    /* í˜„ìž¬ ë¡œê·¸ì˜ SN */
     smSN        mSN;
     /* SyncSN */
     smSN        mSyncSN;
-    /* ÇöÀç ºÐ¼®ÁßÀÎ LogÀÇ Å×ÀÌºí OID */
+    /* í˜„ìž¬ ë¶„ì„ì¤‘ì¸ Logì˜ í…Œì´ë¸” OID */
     ULong       mTableOID;
 
     /* Column ID Array */
     UInt       *mCIDs;
-    /* ÇöÀç ºÐ¼®ÁßÀÎ ·Î±×ÀÇ Before Image Column Value Array */
+    /* í˜„ìž¬ ë¶„ì„ì¤‘ì¸ ë¡œê·¸ì˜ Before Image Column Value Array */
     smiValue   *mBCols;
-    /* ÇöÀç ºÐ¼®ÁßÀÎ ·Î±×ÀÇ After Image Column Value Array */
+    /* í˜„ìž¬ ë¶„ì„ì¤‘ì¸ ë¡œê·¸ì˜ After Image Column Value Array */
     smiValue   *mACols;
-    /* ÇöÀç ºÐ¼®ÁßÀÎ ·Î±×ÀÇ Primary Key Column Count */
+    /* í˜„ìž¬ ë¶„ì„ì¤‘ì¸ ë¡œê·¸ì˜ Primary Key Column Count */
     UInt        mPKColCnt;
-    /* ÇöÀç ºÐ¼®ÁßÀÎ ·Î±×ÀÇ Priamry Key Column ValueÀÇ Array */
+    /* í˜„ìž¬ ë¶„ì„ì¤‘ì¸ ë¡œê·¸ì˜ Priamry Key Column Valueì˜ Array */
     smiValue   *mPKCols;
 
-    /* ColumnÀÇ °³¼ö */
+    /* Columnì˜ ê°œìˆ˜ */
     UInt        mColCnt;
 
-    /* Savepoint ÀÌ¸§ÀÇ ±æÀÌ */
+    /* Savepoint ì´ë¦„ì˜ ê¸¸ì´ */
     UInt        mSPNameLen;
-    /* Savepoint ÀÌ¸§ */
+    /* Savepoint ì´ë¦„ */
     SChar      *mSPName;
 
     /* Flush Option */
@@ -91,7 +91,7 @@ typedef struct rpdXLog
     /* Restart SN */
     smSN        mRestartSN;     // BUG-17748
 
-    /* smiValue->value ¸Þ¸ð¸®¸¦ °ü¸® */
+    /* smiValue->value ë©”ëª¨ë¦¬ë¥¼ ê´€ë¦¬ */
     iduMemory   mMemory;
 
     /* Next XLog Pointer */

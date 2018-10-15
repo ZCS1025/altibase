@@ -60,10 +60,10 @@ static ACI_RC ulnGetDescHeaderField(ulnFnContext *aFnContext,
              *
              *          SQL_DESC_ARRAY_SIZE
              *
-             * ±×·¯³ª ´©°¡ 20¾ï°³ ÀÌ»óÀÇ ¿ø¼Ò°¡ ÀÖ´Â ¹è¿­À» array ·Î ¹ÙÀÎµå ÇÏ°Ú´Â°¡.
-             * ¸ÅÇÎ¸¸ ½ÃÅ°°í ³»ºÎ¿¡¼­´Â ´Ü¼øÈ÷ acp_uint32_t ¸¦ »ç¿ëÇÏµµ·Ï ÇÑ´Ù.
+             * ê·¸ëŸ¬ë‚˜ ëˆ„ê°€ 20ì–µê°œ ì´ìƒì˜ ì›ì†Œê°€ ìžˆëŠ” ë°°ì—´ì„ array ë¡œ ë°”ì¸ë“œ í•˜ê² ëŠ”ê°€.
+             * ë§¤í•‘ë§Œ ì‹œí‚¤ê³  ë‚´ë¶€ì—ì„œëŠ” ë‹¨ìˆœížˆ acp_uint32_t ë¥¼ ì‚¬ìš©í•˜ë„ë¡ í•œë‹¤.
              *
-             * ulnStmtSetAttrRowArraySize() ÇÔ¼öÀÇ ÁÖ¼® ÂüÁ¶
+             * ulnStmtSetAttrRowArraySize() í•¨ìˆ˜ì˜ ì£¼ì„ ì°¸ì¡°
              */
             *(ulvULen *)aValuePtr = (ulvULen)ulnDescGetArraySize(sDesc);
             break;
@@ -120,11 +120,11 @@ static ACI_RC ulnGetDescRecordField(ulnFnContext *aFnContext,
     ulnParamInOutType sParamType;
 
     /*
-     * BUGBUG : ulnColAttribute ¿Í Áßº¹µÈ ÄÚµå°¡ »ó´ç¼ö Á¸ÀçÇÑ´Ù.
-     *          ¹°·Ð SQLColAttribute() ÇÔ¼öÀÇ °æ¿ì¿¡´Â ¸ðµç °ªÀ» 32ºñÆ® integer ·Î
-     *          Ä³½ºÆÃ ÇØ¼­ »ç¿ëÀÚ¿¡°Ô µ¹·ÁÁÖ¾î¾ß ÇÑ´Ù´Â Â÷ÀÌ°¡ ÀÖÁö¸¸,
-     *          Àû¾îµµ °øÅëµÈ ·çÆ¾À» ÅëÇØ¼­ °ªÀ» °¡Á®¿Â ´ÙÀ½¿¡
-     *          ±× °ªÀ» Ä³½ºÆÃÇÏµµ·Ï ÇØ¾ß ÇÒ °ÍÀÌ´Ù.
+     * BUGBUG : ulnColAttribute ì™€ ì¤‘ë³µëœ ì½”ë“œê°€ ìƒë‹¹ìˆ˜ ì¡´ìž¬í•œë‹¤.
+     *          ë¬¼ë¡  SQLColAttribute() í•¨ìˆ˜ì˜ ê²½ìš°ì—ëŠ” ëª¨ë“  ê°’ì„ 32ë¹„íŠ¸ integer ë¡œ
+     *          ìºìŠ¤íŒ… í•´ì„œ ì‚¬ìš©ìžì—ê²Œ ëŒë ¤ì£¼ì–´ì•¼ í•œë‹¤ëŠ” ì°¨ì´ê°€ ìžˆì§€ë§Œ,
+     *          ì ì–´ë„ ê³µí†µëœ ë£¨í‹´ì„ í†µí•´ì„œ ê°’ì„ ê°€ì ¸ì˜¨ ë‹¤ìŒì—
+     *          ê·¸ ê°’ì„ ìºìŠ¤íŒ…í•˜ë„ë¡ í•´ì•¼ í•  ê²ƒì´ë‹¤.
      */
 
     ACI_TEST_RAISE(sDescRec == NULL, LABEL_INVALID_DESC_INDEX);
@@ -137,11 +137,11 @@ static ACI_RC ulnGetDescRecordField(ulnFnContext *aFnContext,
 
         case SQL_DESC_CONCISE_TYPE:
             /*
-             * Note : ÀÌÃ³·³ ulnTypes.cpp ¿¡¼­ ±Ùº»ÀûÀ¸·Î ¼öÁ¤ÇÏÁö ¾Ê°í,
-             *        »ç¿ëÀÚ¿¡°Ô Å¸ÀÔÀ» µ¹·ÁÁÖ´Â ÇÔ¼ö¸¶´Ù ±×¶§±×¶§ long type À» ¸ÅÇÎÇÏ´Â
-             *        ÇÔ¼ö¸¦ È£ÃâÇÏ´Â °ÍÀº ¹ö±×ÀÇ ¼ÒÁöµµ ÀÖ°í À§ÇèÇÑ ÁþÀÌÁö¸¸,
-             *        ulnTypes.cpp ¿¡ function context, dbc, stmt µîÀÇ ÁöÀúºÐÇÑ ´Ù¸¥
-             *        °ÍµéÀ» ¹Þ´Â ÇÔ¼ö¸¦ ¸¸µé°í ½ÍÁö ¾Ê¾Æ¼­ ±»ÀÌ ÀÌ¿Í°°ÀÌ Çß´Ù.
+             * Note : ì´ì²˜ëŸ¼ ulnTypes.cpp ì—ì„œ ê·¼ë³¸ì ìœ¼ë¡œ ìˆ˜ì •í•˜ì§€ ì•Šê³ ,
+             *        ì‚¬ìš©ìžì—ê²Œ íƒ€ìž…ì„ ëŒë ¤ì£¼ëŠ” í•¨ìˆ˜ë§ˆë‹¤ ê·¸ë•Œê·¸ë•Œ long type ì„ ë§¤í•‘í•˜ëŠ”
+             *        í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•˜ëŠ” ê²ƒì€ ë²„ê·¸ì˜ ì†Œì§€ë„ ìžˆê³  ìœ„í—˜í•œ ì§“ì´ì§€ë§Œ,
+             *        ulnTypes.cpp ì— function context, dbc, stmt ë“±ì˜ ì§€ì €ë¶„í•œ ë‹¤ë¥¸
+             *        ê²ƒë“¤ì„ ë°›ëŠ” í•¨ìˆ˜ë¥¼ ë§Œë“¤ê³  ì‹¶ì§€ ì•Šì•„ì„œ êµ³ì´ ì´ì™€ê°™ì´ í–ˆë‹¤.
              */
 
             sSQLTYPE = ulnMetaGetOdbcConciseType(&sDescRec->mMeta);
@@ -480,7 +480,7 @@ static ACI_RC ulnGetDescRecordField(ulnFnContext *aFnContext,
     ACI_EXCEPTION(LABEL_INVALID_BUFFERSIZE)
     {
         /*
-         * HY090 : ¾ò°íÀÚ ÇÏ´Â Á¤º¸°¡ ¹®ÀÚ Å¸ÀÔÀÎµ¥, aBufferLength ¿¡ À½¼ö¸¦ ÁÖ¾úÀ» °æ¿ì
+         * HY090 : ì–»ê³ ìž í•˜ëŠ” ì •ë³´ê°€ ë¬¸ìž íƒ€ìž…ì¸ë°, aBufferLength ì— ìŒìˆ˜ë¥¼ ì£¼ì—ˆì„ ê²½ìš°
          */
         ulnError(aFnContext, ulERR_ABORT_INVALID_BUFFER_LEN, aBufferLength);
     }

@@ -22,11 +22,11 @@
  *
  *     [PROJ-1359] Trigger
  *
- *     Trigger Ã³¸®¸¦ À§ÇÑ ÇÔ¼ö
+ *     Trigger ì²˜ë¦¬ë¥¼ ìœ„í•œ í•¨ìˆ˜
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  **********************************************************************/
 
@@ -56,11 +56,11 @@ qdnTrigger::parseCreate( qcStatement * aStatement )
 /***********************************************************************
  *
  * Description :
- *    ´ÙÀ½°ú °°Àº Post Parsing ÀÛ¾÷À» ¼öÇàÇÔ.
+ *    ë‹¤ìŒê³¼ ê°™ì€ Post Parsing ì‘ì—…ì„ ìˆ˜í–‰í•¨.
  *    - Syntax Validation
- *    - ¹ÌÁö¿ø ±â´ÉÀÇ °Ë»ç.
- *    - CREATE TRIGGER¸¦ À§ÇÑ ºÎ°¡ Parsing ÀÛ¾÷À» ¼öÇàÇÔ.
- *    - Action BodyÀÇ Post Parsing
+ *    - ë¯¸ì§€ì› ê¸°ëŠ¥ì˜ ê²€ì‚¬.
+ *    - CREATE TRIGGERë¥¼ ìœ„í•œ ë¶€ê°€ Parsing ì‘ì—…ì„ ìˆ˜í–‰í•¨.
+ *    - Action Bodyì˜ Post Parsing
  *
  * Implementation :
  *
@@ -80,8 +80,8 @@ qdnTrigger::parseCreate( qcStatement * aStatement )
     // Syntax Validation
     //---------------------------------------------------
 
-    // Action Granularity°¡ FOR EACH ROW°¡ ¾Æ´Ñ °æ¿ì¿¡´Â
-    // RERENCING ±¸¹®À» »ç¿ëÇÒ ¼ö ¾ø´Ù.
+    // Action Granularityê°€ FOR EACH ROWê°€ ì•„ë‹Œ ê²½ìš°ì—ëŠ”
+    // RERENCING êµ¬ë¬¸ì„ ì‚¬ìš©í•  ìˆ˜ ì—†ë‹¤.
 
     if ( sParseTree->actionCond.actionGranularity !=
          QCM_TRIGGER_ACTION_EACH_ROW )
@@ -95,8 +95,8 @@ qdnTrigger::parseCreate( qcStatement * aStatement )
     }
 
     //---------------------------------------------------
-    // parseTree->triggerEvent->eventTypelist¿¡ insert or
-    // delete or update.. ÀÇ Á¤º¸¸¦ ÅëÇÕ.
+    // parseTree->triggerEvent->eventTypelistì— insert or
+    // delete or update.. ì˜ ì •ë³´ë¥¼ í†µí•©.
     //---------------------------------------------------
 
     sEventTypeHeader = sParseTree->triggerEvent.eventTypeList;
@@ -118,10 +118,10 @@ qdnTrigger::parseCreate( qcStatement * aStatement )
     }
 
     //---------------------------------------------------
-    // ¹ÌÁö¿ø ±â´ÉÀÇ °Ë»ç
+    // ë¯¸ì§€ì› ê¸°ëŠ¥ì˜ ê²€ì‚¬
     //---------------------------------------------------
 
-    // TABLE referencing ±¸¹®Àº Áö¿øÇÏÁö ¾ÊÀ½.
+    // TABLE referencing êµ¬ë¬¸ì€ ì§€ì›í•˜ì§€ ì•ŠìŒ.
     for ( sRefer = sParseTree->triggerReference;
           sRefer != NULL;
           sRefer = sRefer->next )
@@ -139,8 +139,8 @@ qdnTrigger::parseCreate( qcStatement * aStatement )
     }
 
     //---------------------------------------------------
-    // Granularity°¡  FOR EACH ROWÀÎ °æ¿ì ValidationÀ» À§ÇÑ
-    // ºÎ°¡ Á¤º¸¸¦ ±¸ÃàÇØ ÁÖ¾î¾ß ÇÑ´Ù.
+    // Granularityê°€  FOR EACH ROWì¸ ê²½ìš° Validationì„ ìœ„í•œ
+    // ë¶€ê°€ ì •ë³´ë¥¼ êµ¬ì¶•í•´ ì£¼ì–´ì•¼ í•œë‹¤.
     //---------------------------------------------------
 
     switch ( sParseTree->actionCond.actionGranularity )
@@ -188,7 +188,7 @@ qdnTrigger::validateCreate( qcStatement * aStatement )
 /***********************************************************************
  *
  * Description :
- *    CREATE TRIGGER¸¦ À§ÇÑ ValidationÀ» ¼öÇàÇÔ.
+ *    CREATE TRIGGERë¥¼ ìœ„í•œ Validationì„ ìˆ˜í–‰í•¨.
  *
  * Implementation :
  *
@@ -202,56 +202,56 @@ qdnTrigger::validateCreate( qcStatement * aStatement )
 
     sParseTree = (qdnCreateTriggerParseTree *) aStatement->myPlan->parseTree;
 
-    // ÇöÀç session userID ÀúÀå
+    // í˜„ì¬ session userID ì €ì¥
     sSessionUserID = QCG_GET_SESSION_USER_ID( aStatement );
 
-    // Action BodyÀÇ ValidtionÀ» À§ÇÏ¿© ÇØ´ç Á¤º¸¸¦ ¼³Á¤ÇØ ÁÖ¾î¾ß ÇÔ.
+    // Action Bodyì˜ Validtionì„ ìœ„í•˜ì—¬ í•´ë‹¹ ì •ë³´ë¥¼ ì„¤ì •í•´ ì£¼ì–´ì•¼ í•¨.
     aStatement->spvEnv->createProc = & sParseTree->actionBody;
 
     // BUG-24570
-    // Trigger User¿¡ ´ëÇÑ Á¤º¸ ¼³Á¤
+    // Trigger Userì— ëŒ€í•œ ì •ë³´ ì„¤ì •
     IDE_TEST( setTriggerUser( aStatement, sParseTree ) != IDE_SUCCESS );
 
     //----------------------------------------
-    // CREATE TRIGGER ±¸¹®ÀÇ Validation
+    // CREATE TRIGGER êµ¬ë¬¸ì˜ Validation
     //----------------------------------------
 
     // BUG-24408
-    // triggerÀÇ ¼ÒÀ¯ÀÚ·Î validationÇÑ´Ù.
+    // triggerì˜ ì†Œìœ ìë¡œ validationí•œë‹¤.
     QCG_SET_SESSION_USER_ID( aStatement, sParseTree->triggerUserID );
 
-    // TriggerÀÇ ¸ğµç ±¸¹®¿¡¼­ Host º¯¼ö´Â Á¸ÀçÇÒ ¼ö ¾ø´Ù.
+    // Triggerì˜ ëª¨ë“  êµ¬ë¬¸ì—ì„œ Host ë³€ìˆ˜ëŠ” ì¡´ì¬í•  ìˆ˜ ì—†ë‹¤.
     IDE_TEST( qsv::checkHostVariable( aStatement ) != IDE_SUCCESS);
 
-    // Trigger »ı¼º¿¡ ´ëÇÑ ±ÇÇÑ °Ë»ç
+    // Trigger ìƒì„±ì— ëŒ€í•œ ê¶Œí•œ ê²€ì‚¬
     IDE_TEST( valPrivilege( aStatement, sParseTree ) != IDE_SUCCESS );
 
-    // Trigger Name¿¡ ´ëÇÑ Validation
+    // Trigger Nameì— ëŒ€í•œ Validation
     IDE_TEST( valTriggerName( aStatement, sParseTree ) != IDE_SUCCESS );
 
-    // Trigger Table¿¡ ´ëÇÑ Validation
+    // Trigger Tableì— ëŒ€í•œ Validation
     IDE_TEST( valTableName( aStatement, sParseTree ) != IDE_SUCCESS );
 
-    // Trigger Event¿Í Referncing ¿¡ ´ëÇÑ Validation
+    // Trigger Eventì™€ Referncing ì— ëŒ€í•œ Validation
     IDE_TEST( valEventReference( aStatement, sParseTree ) != IDE_SUCCESS );
 
-    // Action Condition¿¡ ´ëÇÑ Validation
+    // Action Conditionì— ëŒ€í•œ Validation
     IDE_TEST( valActionCondition( aStatement, sParseTree ) != IDE_SUCCESS );
 
-    // Action Body ¿¡ ´ëÇÑ Validation
+    // Action Body ì— ëŒ€í•œ Validation
     IDE_TEST( valActionBody( aStatement, sParseTree ) != IDE_SUCCESS );
 
-    //PROJ-1888 INSTEAD OF TRIGGER Á¦¾à»çÇ× °Ë»ç
+    //PROJ-1888 INSTEAD OF TRIGGER ì œì•½ì‚¬í•­ ê²€ì‚¬
     IDE_TEST( valInsteadOfTrigger( sParseTree ) != IDE_SUCCESS );
 
-    // session userID¸¦ ¿øº¹
+    // session userIDë¥¼ ì›ë³µ
     QCG_SET_SESSION_USER_ID( aStatement, sSessionUserID );
 
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
 
-    // session userID¸¦ ¿øº¹
+    // session userIDë¥¼ ì›ë³µ
     QCG_SET_SESSION_USER_ID( aStatement, sSessionUserID );
 
     return IDE_FAILURE;
@@ -265,7 +265,7 @@ qdnTrigger::validateReplace( qcStatement * aStatement )
 /***********************************************************************
  *
  * Description :
- *    CREATE TRIGGER¸¦ À§ÇÑ ValidationÀ» ¼öÇàÇÔ.
+ *    CREATE TRIGGERë¥¼ ìœ„í•œ Validationì„ ìˆ˜í–‰í•¨.
  *
  * Implementation :
  *
@@ -282,28 +282,28 @@ qdnTrigger::validateReplace( qcStatement * aStatement )
 
     sParseTree = (qdnCreateTriggerParseTree *) aStatement->myPlan->parseTree;
 
-    // ÇöÀç session userID ÀúÀå
+    // í˜„ì¬ session userID ì €ì¥
     sSessionUserID = QCG_GET_SESSION_USER_ID( aStatement );
 
-    // Action BodyÀÇ ValidtionÀ» À§ÇÏ¿© ÇØ´ç Á¤º¸¸¦ ¼³Á¤ÇØ ÁÖ¾î¾ß ÇÔ.
+    // Action Bodyì˜ Validtionì„ ìœ„í•˜ì—¬ í•´ë‹¹ ì •ë³´ë¥¼ ì„¤ì •í•´ ì£¼ì–´ì•¼ í•¨.
     aStatement->spvEnv->createProc = & sParseTree->actionBody;
 
     // BUG-24570
-    // Trigger User¿¡ ´ëÇÑ Á¤º¸ ¼³Á¤
+    // Trigger Userì— ëŒ€í•œ ì •ë³´ ì„¤ì •
     IDE_TEST( setTriggerUser( aStatement, sParseTree ) != IDE_SUCCESS );
 
     //----------------------------------------
-    // CREATE TRIGGER ±¸¹®ÀÇ Validation
+    // CREATE TRIGGER êµ¬ë¬¸ì˜ Validation
     //----------------------------------------
 
     // BUG-24408
-    // triggerÀÇ ¼ÒÀ¯ÀÚ·Î validationÇÑ´Ù.
+    // triggerì˜ ì†Œìœ ìë¡œ validationí•œë‹¤.
     QCG_SET_SESSION_USER_ID( aStatement, sParseTree->triggerUserID );
 
-    // TriggerÀÇ ¸ğµç ±¸¹®¿¡¼­ Host º¯¼ö´Â Á¸ÀçÇÒ ¼ö ¾ø´Ù.
+    // Triggerì˜ ëª¨ë“  êµ¬ë¬¸ì—ì„œ Host ë³€ìˆ˜ëŠ” ì¡´ì¬í•  ìˆ˜ ì—†ë‹¤.
     IDE_TEST( qsv::checkHostVariable( aStatement ) != IDE_SUCCESS);
 
-    // Trigger »ı¼º¿¡ ´ëÇÑ ±ÇÇÑ °Ë»ç
+    // Trigger ìƒì„±ì— ëŒ€í•œ ê¶Œí•œ ê²€ì‚¬
     IDE_TEST( valPrivilege( aStatement, sParseTree ) != IDE_SUCCESS );
 
     IDE_TEST(qcmTrigger::getTriggerOID( aStatement,
@@ -316,13 +316,13 @@ qdnTrigger::validateReplace( qcStatement * aStatement )
     if (sExist == ID_TRUE)
     {
         // To Fix BUG-20948
-        // ¿øº» Å×ÀÌºíÀÇ TABLEID¸¦ ÀúÀåÇÑ´Ù.
+        // ì›ë³¸ í…Œì´ë¸”ì˜ TABLEIDë¥¼ ì €ì¥í•œë‹¤.
         sParseTree->orgTableID = sTableID;
 
         // replace trigger
         sParseTree->common.execute = qdnTrigger::executeReplace;
 
-        // Trigger SCN ¼³Á¤
+        // Trigger SCN ì„¤ì •
         IDE_TEST(getTriggerSCN( sParseTree->triggerOID,
                                 &(sParseTree->triggerSCN) )
                  != IDE_SUCCESS);
@@ -334,10 +334,10 @@ qdnTrigger::validateReplace( qcStatement * aStatement )
         sParseTree->common.execute = qdnTrigger::executeCreate;
     }
 
-    // Trigger NameÀÇ ¼³Á¤
+    // Trigger Nameì˜ ì„¤ì •
     QC_STR_COPY( sParseTree->triggerName, sParseTree->triggerNamePos );
 
-    // Trigger Table¿¡ ´ëÇÑ Validation
+    // Trigger Tableì— ëŒ€í•œ Validation
     IDE_TEST( valTableName( aStatement, sParseTree ) != IDE_SUCCESS );
 
     //To Fix BUG-20948
@@ -345,7 +345,7 @@ qdnTrigger::validateReplace( qcStatement * aStatement )
     {
         if ( sParseTree->tableID != sParseTree->orgTableID )
         {
-            //TriggerÀÇ ¿øº» TableÀÌ º¯°æµÇ¾úÀ» °æ¿ìÀÇ Ã³¸®
+            //Triggerì˜ ì›ë³¸ Tableì´ ë³€ê²½ë˜ì—ˆì„ ê²½ìš°ì˜ ì²˜ë¦¬
             IDE_TEST( valOrgTableName ( aStatement, sParseTree ) != IDE_SUCCESS );
         }
         else
@@ -358,26 +358,26 @@ qdnTrigger::validateReplace( qcStatement * aStatement )
         //Nothing To Do.
     }
 
-    // Trigger Event¿Í Referncing ¿¡ ´ëÇÑ Validation
+    // Trigger Eventì™€ Referncing ì— ëŒ€í•œ Validation
     IDE_TEST( valEventReference( aStatement, sParseTree ) != IDE_SUCCESS );
 
-    // Action Condition¿¡ ´ëÇÑ Validation
+    // Action Conditionì— ëŒ€í•œ Validation
     IDE_TEST( valActionCondition( aStatement, sParseTree ) != IDE_SUCCESS );
 
-    // Action Body ¿¡ ´ëÇÑ Validation
+    // Action Body ì— ëŒ€í•œ Validation
     IDE_TEST( valActionBody( aStatement, sParseTree ) != IDE_SUCCESS );
 
-    //PROJ-1888 INSTEAD OF TRIGGER Á¦¾à»çÇ× °Ë»ç
+    //PROJ-1888 INSTEAD OF TRIGGER ì œì•½ì‚¬í•­ ê²€ì‚¬
     IDE_TEST( valInsteadOfTrigger( sParseTree ) != IDE_SUCCESS );
 
-    // session userID¸¦ ¿øº¹
+    // session userIDë¥¼ ì›ë³µ
     QCG_SET_SESSION_USER_ID( aStatement, sSessionUserID );
 
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
 
-    // session userID¸¦ ¿øº¹
+    // session userIDë¥¼ ì›ë³µ
     QCG_SET_SESSION_USER_ID( aStatement, sSessionUserID );
 
     return IDE_FAILURE;
@@ -391,7 +391,7 @@ qdnTrigger::validateRecompile( qcStatement * aStatement )
 /***********************************************************************
  *
  * Description :
- *    RecompileÀ» À§ÇÑ ValidationÀ» ¼öÇàÇÔ.
+ *    Recompileì„ ìœ„í•œ Validationì„ ìˆ˜í–‰í•¨.
  *
  * Implementation :
  *
@@ -405,54 +405,54 @@ qdnTrigger::validateRecompile( qcStatement * aStatement )
 
     sParseTree = (qdnCreateTriggerParseTree *) aStatement->myPlan->parseTree;
 
-    // ÇöÀç session userID ÀúÀå
+    // í˜„ì¬ session userID ì €ì¥
     sSessionUserID = QCG_GET_SESSION_USER_ID( aStatement );
 
-    // Action BodyÀÇ ValidtionÀ» À§ÇÏ¿© ÇØ´ç Á¤º¸¸¦ ¼³Á¤ÇØ ÁÖ¾î¾ß ÇÔ.
+    // Action Bodyì˜ Validtionì„ ìœ„í•˜ì—¬ í•´ë‹¹ ì •ë³´ë¥¼ ì„¤ì •í•´ ì£¼ì–´ì•¼ í•¨.
     aStatement->spvEnv->createProc = & sParseTree->actionBody;
 
     // BUG-24570
-    // Trigger User¿¡ ´ëÇÑ Á¤º¸ ¼³Á¤
+    // Trigger Userì— ëŒ€í•œ ì •ë³´ ì„¤ì •
     IDE_TEST( setTriggerUser( aStatement, sParseTree ) != IDE_SUCCESS );
 
     //----------------------------------------
-    // CREATE TRIGGER ±¸¹®ÀÇ Validation
+    // CREATE TRIGGER êµ¬ë¬¸ì˜ Validation
     //----------------------------------------
 
     // BUG-24408
-    // triggerÀÇ ¼ÒÀ¯ÀÚ·Î validationÇÑ´Ù.
+    // triggerì˜ ì†Œìœ ìë¡œ validationí•œë‹¤.
     QCG_SET_SESSION_USER_ID( aStatement, sParseTree->triggerUserID );
 
-    // TriggerÀÇ ¸ğµç ±¸¹®¿¡¼­ Host º¯¼ö´Â Á¸ÀçÇÒ ¼ö ¾ø´Ù.
+    // Triggerì˜ ëª¨ë“  êµ¬ë¬¸ì—ì„œ Host ë³€ìˆ˜ëŠ” ì¡´ì¬í•  ìˆ˜ ì—†ë‹¤.
     IDE_TEST( qsv::checkHostVariable( aStatement ) != IDE_SUCCESS);
 
-    // Trigger »ı¼º¿¡ ´ëÇÑ ±ÇÇÑ °Ë»ç
+    // Trigger ìƒì„±ì— ëŒ€í•œ ê¶Œí•œ ê²€ì‚¬
     IDE_TEST( valPrivilege( aStatement, sParseTree ) != IDE_SUCCESS );
 
-    // Trigger Name¿¡ ´ëÇÑ Validation
-    // Recompile °úÁ¤ÀÌ¹Ç·Î ¹İµå½Ã Á¸ÀçÇØ¾ß ÇÔ.
+    // Trigger Nameì— ëŒ€í•œ Validation
+    // Recompile ê³¼ì •ì´ë¯€ë¡œ ë°˜ë“œì‹œ ì¡´ì¬í•´ì•¼ í•¨.
     IDE_TEST( reValTriggerName( aStatement, sParseTree ) != IDE_SUCCESS );
 
-    // Trigger Table¿¡ ´ëÇÑ Validation
+    // Trigger Tableì— ëŒ€í•œ Validation
     IDE_TEST( valTableName( aStatement, sParseTree ) != IDE_SUCCESS );
 
-    // Trigger Event¿Í Referncing ¿¡ ´ëÇÑ Validation
+    // Trigger Eventì™€ Referncing ì— ëŒ€í•œ Validation
     IDE_TEST( valEventReference( aStatement, sParseTree ) != IDE_SUCCESS );
 
-    // Action Condition¿¡ ´ëÇÑ Validation
+    // Action Conditionì— ëŒ€í•œ Validation
     IDE_TEST( valActionCondition( aStatement, sParseTree ) != IDE_SUCCESS );
 
-    // Action Body ¿¡ ´ëÇÑ Validation
+    // Action Body ì— ëŒ€í•œ Validation
     IDE_TEST( valActionBody( aStatement, sParseTree ) != IDE_SUCCESS );
 
-    // session userID¸¦ ¿øº¹
+    // session userIDë¥¼ ì›ë³µ
     QCG_SET_SESSION_USER_ID( aStatement, sSessionUserID );
 
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
 
-    // session userID¸¦ ¿øº¹
+    // session userIDë¥¼ ì›ë³µ
     QCG_SET_SESSION_USER_ID( aStatement, sSessionUserID );
 
     return IDE_FAILURE;
@@ -466,7 +466,7 @@ qdnTrigger::optimizeCreate( qcStatement * aStatement )
 /***********************************************************************
  *
  * Description :
- *    CREATE TRIGGER¸¦ À§ÇÑ OptimizationÀ» ¼öÇàÇÔ.
+ *    CREATE TRIGGERë¥¼ ìœ„í•œ Optimizationì„ ìˆ˜í–‰í•¨.
  *
  *
  * Implementation :
@@ -481,15 +481,15 @@ qdnTrigger::optimizeCreate( qcStatement * aStatement )
 
     sParseTree = (qdnCreateTriggerParseTree *) aStatement->myPlan->parseTree;
 
-    // ÇöÀç session userID ÀúÀå
+    // í˜„ì¬ session userID ì €ì¥
     sSessionUserID = QCG_GET_SESSION_USER_ID( aStatement );
 
     //---------------------------------------------------
-    // Action BodyÀÇ Optimization
+    // Action Bodyì˜ Optimization
     //---------------------------------------------------
 
     // BUG-24408
-    // triggerÀÇ ¼ÒÀ¯ÀÚ·Î optimizeÇÑ´Ù.
+    // triggerì˜ ì†Œìœ ìë¡œ optimizeí•œë‹¤.
     QCG_SET_SESSION_USER_ID( aStatement, sParseTree->triggerUserID );
 
     IDE_TEST( sParseTree->actionBody.block->common.
@@ -497,14 +497,14 @@ qdnTrigger::optimizeCreate( qcStatement * aStatement )
                         (qsProcStmts *) (sParseTree->actionBody.block) )
               != IDE_SUCCESS);
 
-    // session userID¸¦ ¿øº¹
+    // session userIDë¥¼ ì›ë³µ
     QCG_SET_SESSION_USER_ID( aStatement, sSessionUserID );
 
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
 
-    // session userID¸¦ ¿øº¹
+    // session userIDë¥¼ ì›ë³µ
     QCG_SET_SESSION_USER_ID( aStatement, sSessionUserID );
 
     return IDE_FAILURE;
@@ -518,19 +518,19 @@ qdnTrigger::executeCreate( qcStatement * aStatement )
 /***********************************************************************
  *
  * Description :
- *    CREATE TRIGGER¸¦ À§ÇÑ ExecutionÀ» ¼öÇàÇÔ.
+ *    CREATE TRIGGERë¥¼ ìœ„í•œ Executionì„ ìˆ˜í–‰í•¨.
  *
- *    ÀÌÀüÀÇ PVO °úÁ¤¿¡¼­ ±¸ÃàµÈ Á¤º¸´Â Session¿¡ Á¾¼ÓÀûÀÎ Á¤º¸ÀÌ´Ù.
- *    µû¶ó¼­, Session¿¡ Á¾¼ÓÀûÀÌÁö ¾ÊÀº Á¤º¸¸¦ ±¸ÃàÇÏ±â À§ÇØ¼­´Â
- *    ¿µ±¸ÀûÀÎ Memory °ø°£À» ÇÒ´ç ¹Ş¾Æ »õ·ÎÀÌ PVO¸¦ ¼öÇàÇÏ¿©¾ß ÇÑ´Ù.
+ *    ì´ì „ì˜ PVO ê³¼ì •ì—ì„œ êµ¬ì¶•ëœ ì •ë³´ëŠ” Sessionì— ì¢…ì†ì ì¸ ì •ë³´ì´ë‹¤.
+ *    ë”°ë¼ì„œ, Sessionì— ì¢…ì†ì ì´ì§€ ì•Šì€ ì •ë³´ë¥¼ êµ¬ì¶•í•˜ê¸° ìœ„í•´ì„œëŠ”
+ *    ì˜êµ¬ì ì¸ Memory ê³µê°„ì„ í• ë‹¹ ë°›ì•„ ìƒˆë¡œì´ PVOë¥¼ ìˆ˜í–‰í•˜ì—¬ì•¼ í•œë‹¤.
  *
- *    ÀÌ¿Í °°Àº Recompile ÀÛ¾÷À» À§ÇÑ ÃÖ¼Ò Á¤º¸¸¸À» ±¸ÃàÇÏ¸ç,
- *    ÃÖÃÊ DML¹ß»ı½Ã Trigger Object Cache Á¤º¸¸¦ ÀÌ¿ëÇÏ¿© RecompileÇÏ°Ô µÈ´Ù.
+ *    ì´ì™€ ê°™ì€ Recompile ì‘ì—…ì„ ìœ„í•œ ìµœì†Œ ì •ë³´ë§Œì„ êµ¬ì¶•í•˜ë©°,
+ *    ìµœì´ˆ DMLë°œìƒì‹œ Trigger Object Cache ì •ë³´ë¥¼ ì´ìš©í•˜ì—¬ Recompileí•˜ê²Œ ëœë‹¤.
  *
- *    - Trigger Object »ı¼º(Trigger StringÀ» ¿µ±¸È÷ ±­¸®)
- *    - Trigger Object¿Í Trigger Object Cache Á¤º¸¸¦ ¿¬°á
- *      (CREATE TRIGGER ½ÃÁ¡°ú Server ±¸µ¿ ½ÃÁ¡¿¡ »ı¼ºµÈ´Ù)
- *    - °ü·Ã Meta Table¿¡ Á¤º¸ µî·Ï
+ *    - Trigger Object ìƒì„±(Trigger Stringì„ ì˜êµ¬íˆ ê´¸ë¦¬)
+ *    - Trigger Objectì™€ Trigger Object Cache ì •ë³´ë¥¼ ì—°ê²°
+ *      (CREATE TRIGGER ì‹œì ê³¼ Server êµ¬ë™ ì‹œì ì— ìƒì„±ëœë‹¤)
+ *    - ê´€ë ¨ Meta Tableì— ì •ë³´ ë“±ë¡
  *
  * Implementation :
  *
@@ -574,14 +574,14 @@ qdnTrigger::executeCreate( qcStatement * aStatement )
 
         IDE_TEST( qcmPartition::validateAndLockPartitionInfoList( aStatement,
                                                                   sAllPartInfoList,
-                                                                  SMI_TBSLV_DDL_DML, // TBS Validation ¿É¼Ç
+                                                                  SMI_TBSLV_DDL_DML, // TBS Validation ì˜µì…˜
                                                                   SMI_TABLE_LOCK_X,
                                                                   ( ( smiGetDDLLockTimeOut() == -1 ) ?
                                                                     ID_ULONG_MAX :
                                                                     smiGetDDLLockTimeOut() * 1000000 ) )
                   != IDE_SUCCESS );
 
-        // ¿¹¿Ü Ã³¸®¸¦ À§ÇÏ¿©, LockÀ» ÀâÀº ÈÄ¿¡ Partition List¸¦ ¼³Á¤ÇÑ´Ù.
+        // ì˜ˆì™¸ ì²˜ë¦¬ë¥¼ ìœ„í•˜ì—¬, Lockì„ ì¡ì€ í›„ì— Partition Listë¥¼ ì„¤ì •í•œë‹¤.
         sOldPartInfoList = sAllPartInfoList;
     }
     else
@@ -590,21 +590,21 @@ qdnTrigger::executeCreate( qcStatement * aStatement )
     }
 
     //---------------------------------------
-    // Trigger ObjectÀÇ »ı¼ºÇÏ°í
-    // CREATE TRIGGER ¸¦ À§ÇÑ ±¸¹® ÀÚÃ¼¸¦ ÀúÀåÇÑ´Ù.
+    // Trigger Objectì˜ ìƒì„±í•˜ê³ 
+    // CREATE TRIGGER ë¥¼ ìœ„í•œ êµ¬ë¬¸ ìì²´ë¥¼ ì €ì¥í•œë‹¤.
     //---------------------------------------
 
     IDE_TEST( createTriggerObject( aStatement, &sTriggerHandle )
               != IDE_SUCCESS );
 
     //---------------------------------------
-    // Trigger Object¿¡  Trigger Object Cache Á¤º¸ ±¸Ãà
+    // Trigger Objectì—  Trigger Object Cache ì •ë³´ êµ¬ì¶•
     //---------------------------------------
 
     sTriggerOID = smiGetTableId( sTriggerHandle ) ;
 
-    // Trigger Handle¿¡
-    // Trigger Object Cache¸¦ À§ÇÑ ÇÊ¿äÇÑ °ø°£À» ¼³Á¤ÇÑ´Ù.
+    // Trigger Handleì—
+    // Trigger Object Cacheë¥¼ ìœ„í•œ í•„ìš”í•œ ê³µê°„ì„ ì„¤ì •í•œë‹¤.
     IDE_TEST( allocTriggerCache( sTriggerHandle,
                                  sTriggerOID,
                                  & sCache )
@@ -613,14 +613,14 @@ qdnTrigger::executeCreate( qcStatement * aStatement )
     sStage = 1;
 
     //---------------------------------------
-    // Trigger¸¦ À§ÇÑ Meta Table¿¡ Á¤º¸ »ğÀÔ
+    // Triggerë¥¼ ìœ„í•œ Meta Tableì— ì •ë³´ ì‚½ì…
     //---------------------------------------
 
     IDE_TEST( qcmTrigger::addMetaInfo( aStatement, sTriggerHandle )
               != IDE_SUCCESS );
 
     //---------------------------------------
-    // Table ÀÇ Meta Cache Á¤º¸¸¦ Àç±¸ÃàÇÔ.
+    // Table ì˜ Meta Cache ì •ë³´ë¥¼ ì¬êµ¬ì¶•í•¨.
     //---------------------------------------
 
     IDE_TEST( qcm::touchTable(QC_SMI_STMT( aStatement ),
@@ -693,19 +693,19 @@ qdnTrigger::executeReplace( qcStatement * aStatement )
 /***********************************************************************
  *
  * Description :
- *    CREATE TRIGGER¸¦ À§ÇÑ ExecutionÀ» ¼öÇàÇÔ.
+ *    CREATE TRIGGERë¥¼ ìœ„í•œ Executionì„ ìˆ˜í–‰í•¨.
  *
- *    ÀÌÀüÀÇ PVO °úÁ¤¿¡¼­ ±¸ÃàµÈ Á¤º¸´Â Session¿¡ Á¾¼ÓÀûÀÎ Á¤º¸ÀÌ´Ù.
- *    µû¶ó¼­, Session¿¡ Á¾¼ÓÀûÀÌÁö ¾ÊÀº Á¤º¸¸¦ ±¸ÃàÇÏ±â À§ÇØ¼­´Â
- *    ¿µ±¸ÀûÀÎ Memory °ø°£À» ÇÒ´ç ¹Ş¾Æ »õ·ÎÀÌ PVO¸¦ ¼öÇàÇÏ¿©¾ß ÇÑ´Ù.
+ *    ì´ì „ì˜ PVO ê³¼ì •ì—ì„œ êµ¬ì¶•ëœ ì •ë³´ëŠ” Sessionì— ì¢…ì†ì ì¸ ì •ë³´ì´ë‹¤.
+ *    ë”°ë¼ì„œ, Sessionì— ì¢…ì†ì ì´ì§€ ì•Šì€ ì •ë³´ë¥¼ êµ¬ì¶•í•˜ê¸° ìœ„í•´ì„œëŠ”
+ *    ì˜êµ¬ì ì¸ Memory ê³µê°„ì„ í• ë‹¹ ë°›ì•„ ìƒˆë¡œì´ PVOë¥¼ ìˆ˜í–‰í•˜ì—¬ì•¼ í•œë‹¤.
  *
- *    ÀÌ¿Í °°Àº Recompile ÀÛ¾÷À» À§ÇÑ ÃÖ¼Ò Á¤º¸¸¸À» ±¸ÃàÇÏ¸ç,
- *    ÃÖÃÊ DML¹ß»ı½Ã Trigger Object Cache Á¤º¸¸¦ ÀÌ¿ëÇÏ¿© RecompileÇÏ°Ô µÈ´Ù.
+ *    ì´ì™€ ê°™ì€ Recompile ì‘ì—…ì„ ìœ„í•œ ìµœì†Œ ì •ë³´ë§Œì„ êµ¬ì¶•í•˜ë©°,
+ *    ìµœì´ˆ DMLë°œìƒì‹œ Trigger Object Cache ì •ë³´ë¥¼ ì´ìš©í•˜ì—¬ Recompileí•˜ê²Œ ëœë‹¤.
  *
- *    - Trigger Object »ı¼º(Trigger StringÀ» ¿µ±¸È÷ ±­¸®)
- *    - Trigger Object¿Í Trigger Object Cache Á¤º¸¸¦ ¿¬°á
- *      (CREATE TRIGGER ½ÃÁ¡°ú Server ±¸µ¿ ½ÃÁ¡¿¡ »ı¼ºµÈ´Ù)
- *    - °ü·Ã Meta Table¿¡ Á¤º¸ µî·Ï
+ *    - Trigger Object ìƒì„±(Trigger Stringì„ ì˜êµ¬íˆ ê´¸ë¦¬)
+ *    - Trigger Objectì™€ Trigger Object Cache ì •ë³´ë¥¼ ì—°ê²°
+ *      (CREATE TRIGGER ì‹œì ê³¼ Server êµ¬ë™ ì‹œì ì— ìƒì„±ëœë‹¤)
+ *    - ê´€ë ¨ Meta Tableì— ì •ë³´ ë“±ë¡
  *
  * Implementation :
  *
@@ -738,7 +738,7 @@ qdnTrigger::executeReplace( qcStatement * aStatement )
 
     //---------------------------------------
     // TASK-2176
-    // Table¿¡ ´ëÇÑ LockÀ» È®µæÇÑ´Ù.
+    // Tableì— ëŒ€í•œ Lockì„ í™•ë“í•œë‹¤.
     //---------------------------------------
 
     IDE_TEST( qcm::validateAndLockTable(aStatement,
@@ -760,14 +760,14 @@ qdnTrigger::executeReplace( qcStatement * aStatement )
 
         IDE_TEST( qcmPartition::validateAndLockPartitionInfoList( aStatement,
                                                                   sAllPartInfoList,
-                                                                  SMI_TBSLV_DDL_DML, // TBS Validation ¿É¼Ç
+                                                                  SMI_TBSLV_DDL_DML, // TBS Validation ì˜µì…˜
                                                                   SMI_TABLE_LOCK_X,
                                                                   ( ( smiGetDDLLockTimeOut() == -1 ) ?
                                                                     ID_ULONG_MAX :
                                                                     smiGetDDLLockTimeOut() * 1000000 ) )
                   != IDE_SUCCESS );
 
-        // ¿¹¿Ü Ã³¸®¸¦ À§ÇÏ¿©, LockÀ» ÀâÀº ÈÄ¿¡ Partition List¸¦ ¼³Á¤ÇÑ´Ù.
+        // ì˜ˆì™¸ ì²˜ë¦¬ë¥¼ ìœ„í•˜ì—¬, Lockì„ ì¡ì€ í›„ì— Partition Listë¥¼ ì„¤ì •í•œë‹¤.
         sOldPartInfoList = sAllPartInfoList;
     }
     else
@@ -777,9 +777,9 @@ qdnTrigger::executeReplace( qcStatement * aStatement )
 
     //------------------------------------------------------
     // BUG-20948
-    // Comment : ReplaceÇÒ TriggerÀÇ TABLE ID°¡ °°ÀºÁö ºñ±³ÇÑ´Ù.
-    //           TABLE ID°¡ ´Ù¸¦ °æ¿ì, TriggerÀÇ Meta Data»Ó¸¸ÀÌ³ª¶ó
-    //           ±âÁ¸ TABLE¿¡ ÀúÀåµÈ Trigger Á¤º¸ ¶ÇÇÑ »èÁ¦ÇØ¾ß ÇÑ´Ù.
+    // Comment : Replaceí•  Triggerì˜ TABLE IDê°€ ê°™ì€ì§€ ë¹„êµí•œë‹¤.
+    //           TABLE IDê°€ ë‹¤ë¥¼ ê²½ìš°, Triggerì˜ Meta Dataë¿ë§Œì´ë‚˜ë¼
+    //           ê¸°ì¡´ TABLEì— ì €ì¥ëœ Trigger ì •ë³´ ë˜í•œ ì‚­ì œí•´ì•¼ í•œë‹¤.
     //------------------------------------------------------
     if ( sParseTree->orgTableID != sParseTree->tableID )
     {
@@ -803,14 +803,14 @@ qdnTrigger::executeReplace( qcStatement * aStatement )
 
             IDE_TEST( qcmPartition::validateAndLockPartitionInfoList( aStatement,
                                                                       sAllPartInfoList,
-                                                                      SMI_TBSLV_DDL_DML, // TBS Validation ¿É¼Ç
+                                                                      SMI_TBSLV_DDL_DML, // TBS Validation ì˜µì…˜
                                                                       SMI_TABLE_LOCK_X,
                                                                       ( ( smiGetDDLLockTimeOut() == -1 ) ?
                                                                         ID_ULONG_MAX :
                                                                         smiGetDDLLockTimeOut() * 1000000 ) )
                       != IDE_SUCCESS );
 
-            // ¿¹¿Ü Ã³¸®¸¦ À§ÇÏ¿©, LockÀ» ÀâÀº ÈÄ¿¡ Partition List¸¦ ¼³Á¤ÇÑ´Ù.
+            // ì˜ˆì™¸ ì²˜ë¦¬ë¥¼ ìœ„í•˜ì—¬, Lockì„ ì¡ì€ í›„ì— Partition Listë¥¼ ì„¤ì •í•œë‹¤.
             sOrgOldPartInfoList = sAllPartInfoList;
         }
         else
@@ -824,8 +824,8 @@ qdnTrigger::executeReplace( qcStatement * aStatement )
     }
 
     //---------------------------------------
-    // Trigger ObjectÀÇ »ı¼ºÇÏ°í
-    // CREATE TRIGGER ¸¦ À§ÇÑ ±¸¹® ÀÚÃ¼¸¦ ÀúÀåÇÑ´Ù.
+    // Trigger Objectì˜ ìƒì„±í•˜ê³ 
+    // CREATE TRIGGER ë¥¼ ìœ„í•œ êµ¬ë¬¸ ìì²´ë¥¼ ì €ì¥í•œë‹¤.
     //---------------------------------------
 
     IDE_TEST( createTriggerObject( aStatement, &sNewTriggerHandle )
@@ -833,13 +833,13 @@ qdnTrigger::executeReplace( qcStatement * aStatement )
 
 
     //---------------------------------------
-    // Trigger Object¿¡  Trigger Object Cache Á¤º¸ ±¸Ãà
+    // Trigger Objectì—  Trigger Object Cache ì •ë³´ êµ¬ì¶•
     //---------------------------------------
 
     sTriggerOID = smiGetTableId( sNewTriggerHandle );
 
-    // Trigger Handle¿¡
-    // Trigger Object Cache¸¦ À§ÇÑ ÇÊ¿äÇÑ °ø°£À» ¼³Á¤ÇÑ´Ù.
+    // Trigger Handleì—
+    // Trigger Object Cacheë¥¼ ìœ„í•œ í•„ìš”í•œ ê³µê°„ì„ ì„¤ì •í•œë‹¤.
     IDE_TEST( allocTriggerCache( sNewTriggerHandle,
                                  sTriggerOID,
                                  & sNewTriggerCache )
@@ -848,7 +848,7 @@ qdnTrigger::executeReplace( qcStatement * aStatement )
     sStage = 1;
 
     //---------------------------------------
-    // Æ®¸®°Å SCN °Ë»ç fix BUG-20479
+    // íŠ¸ë¦¬ê±° SCN ê²€ì‚¬ fix BUG-20479
     //---------------------------------------
 
     sOldTriggerHandle = (void *)smiGetTable( sParseTree->triggerOID );
@@ -858,28 +858,28 @@ qdnTrigger::executeReplace( qcStatement * aStatement )
                    != IDE_SUCCESS, ERR_TRIGGER_MODIFIED);
 
     //---------------------------------------
-    // ÀÌÀü Æ®¸®°Å Á¤º¸ È¹µæ : old trigger Ä³½¬ Á¤º¸ È¹µæ
+    // ì´ì „ íŠ¸ë¦¬ê±° ì •ë³´ íšë“ : old trigger ìºì‰¬ ì •ë³´ íšë“
     //---------------------------------------
     IDE_TEST( smiObject::getObjectTempInfo( sOldTriggerHandle,
                                             (void**)&sOldTriggerCache )
               != IDE_SUCCESS );
 
     //---------------------------------------
-    // ÀÌÀü Æ®¸®°Å ¸ŞÅ¸¿¡¼­ »èÁ¦.
+    // ì´ì „ íŠ¸ë¦¬ê±° ë©”íƒ€ì—ì„œ ì‚­ì œ.
     //---------------------------------------
 
     IDE_TEST( qcmTrigger::removeMetaInfo( aStatement, sParseTree->triggerOID )
               != IDE_SUCCESS );
 
     //---------------------------------------
-    // NewTrigger¸¦ À§ÇÑ Meta Table¿¡ Á¤º¸ »ğÀÔ
+    // NewTriggerë¥¼ ìœ„í•œ Meta Tableì— ì •ë³´ ì‚½ì…
     //---------------------------------------
 
     IDE_TEST( qcmTrigger::addMetaInfo( aStatement, sNewTriggerHandle )
               != IDE_SUCCESS );
 
     //---------------------------------------
-    // Table ÀÇ Meta Cache Á¤º¸¸¦ Àç±¸ÃàÇÔ.
+    // Table ì˜ Meta Cache ì •ë³´ë¥¼ ì¬êµ¬ì¶•í•¨.
     //---------------------------------------
 
     IDE_TEST( qcm::touchTable(QC_SMI_STMT( aStatement ),
@@ -955,7 +955,7 @@ qdnTrigger::executeReplace( qcStatement * aStatement )
     }
 
     //---------------------------------------
-    // ÀÌÀü Æ®¸®°Å object »èÁ¦
+    // ì´ì „ íŠ¸ë¦¬ê±° object ì‚­ì œ
     //---------------------------------------
 
     IDE_TEST( dropTriggerObject( aStatement, sOldTriggerHandle )
@@ -1034,7 +1034,7 @@ qdnTrigger::parseAlter( qcStatement * /* aStatement */ )
 /***********************************************************************
  *
  * Description :
- *    ALTER TRIGGER¸¦ À§ÇÑ ºÎ°¡ Parsing ÀÛ¾÷À» ¼öÇàÇÔ.
+ *    ALTER TRIGGERë¥¼ ìœ„í•œ ë¶€ê°€ Parsing ì‘ì—…ì„ ìˆ˜í–‰í•¨.
  *
  * Implementation :
  *
@@ -1056,7 +1056,7 @@ qdnTrigger::validateAlter( qcStatement * aStatement )
 /***********************************************************************
  *
  * Description :
- *    ALTER TRIGGER¸¦ À§ÇÑ Validation.
+ *    ALTER TRIGGERë¥¼ ìœ„í•œ Validation.
  *
  * Implementation :
  *
@@ -1074,18 +1074,18 @@ qdnTrigger::validateAlter( qcStatement * aStatement )
     sParseTree = (qdnAlterTriggerParseTree *) aStatement->myPlan->parseTree;
 
     //----------------------------------------
-    // TriggerÀÇ User Á¤º¸ È¹µæ
+    // Triggerì˜ User ì •ë³´ íšë“
     //----------------------------------------
 
-    // Trigger User Á¤º¸ÀÇ È¹µæ
+    // Trigger User ì •ë³´ì˜ íšë“
     if ( QC_IS_NULL_NAME( sParseTree->triggerUserPos ) == ID_TRUE)
     {
-        // User ID È¹µæ
+        // User ID íšë“
         sParseTree->triggerUserID = QCG_GET_SESSION_USER_ID(aStatement);
     }
     else
     {
-        // User ID È¹µæ
+        // User ID íšë“
         IDE_TEST( qcmUser::getUserID( aStatement,
                                       sParseTree->triggerUserPos,
                                       & sParseTree->triggerUserID )
@@ -1093,10 +1093,10 @@ qdnTrigger::validateAlter( qcStatement * aStatement )
     }
 
     //----------------------------------------
-    // TriggerÀÇ Á¸Àç ¿©ºÎ °Ë»ç
+    // Triggerì˜ ì¡´ì¬ ì—¬ë¶€ ê²€ì‚¬
     //----------------------------------------
 
-    // Á¸ÀçÇÏ´Â TriggerÀÎÁö °Ë»ç
+    // ì¡´ì¬í•˜ëŠ” Triggerì¸ì§€ ê²€ì‚¬
     IDE_TEST( qcmTrigger::getTriggerOID( aStatement,
                                          sParseTree->triggerUserID,
                                          sParseTree->triggerNamePos,
@@ -1115,11 +1115,11 @@ qdnTrigger::validateAlter( qcStatement * aStatement )
     }
     else
     {
-        // ÇØ´ç Trigger°¡ Á¸ÀçÇÔ.
+        // í•´ë‹¹ Triggerê°€ ì¡´ì¬í•¨.
     }
 
     //----------------------------------------
-    // Alter Trigger ±ÇÇÑ °Ë»ç
+    // Alter Trigger ê¶Œí•œ ê²€ì‚¬
     //----------------------------------------
 
     IDE_TEST( qdpRole::checkDDLAlterTriggerPriv( aStatement,
@@ -1149,7 +1149,7 @@ qdnTrigger::optimizeAlter( qcStatement * /* aStatement */ )
 /***********************************************************************
  *
  * Description :
- *    ALTER TRIGGER¸¦ À§ÇÑ Optimization.
+ *    ALTER TRIGGERë¥¼ ìœ„í•œ Optimization.
  *
  * Implementation :
  *
@@ -1171,7 +1171,7 @@ qdnTrigger::executeAlter( qcStatement * aStatement )
 /***********************************************************************
  *
  * Description :
- *    ALTER TRIGGERÀÇ ¼öÇà.
+ *    ALTER TRIGGERì˜ ìˆ˜í–‰.
  *
  * Implementation :
  *
@@ -1193,7 +1193,7 @@ qdnTrigger::executeAlter( qcStatement * aStatement )
     qdnAlterTriggerParseTree * sParseTree;
 
     //----------------------------------------
-    // ±âº» Á¤º¸ÀÇ È¹µæ
+    // ê¸°ë³¸ ì •ë³´ì˜ íšë“
     //----------------------------------------
 
     sParseTree = (qdnAlterTriggerParseTree *) aStatement->myPlan->parseTree;
@@ -1220,21 +1220,21 @@ qdnTrigger::executeAlter( qcStatement * aStatement )
         }
     }
 
-    // ¹İµå½Ã ÇØ´ç Trigger Á¤º¸°¡ Á¸ÀçÇØ¾ß ÇÔ.
+    // ë°˜ë“œì‹œ í•´ë‹¹ Trigger ì •ë³´ê°€ ì¡´ì¬í•´ì•¼ í•¨.
     IDE_DASSERT( i < sTableInfo->triggerCount );
 
     sTriggerInfo = & sTableInfo->triggerInfo[i];
 
     //----------------------------------------
-    // ALTER TRIGGERÀÇ ¼öÇà
+    // ALTER TRIGGERì˜ ìˆ˜í–‰
     //----------------------------------------
 
     switch ( sParseTree->option )
     {
         //--------------------------------------------
         // ENABLE, DISABLE :
-        //    Table LockÀ» Àâ°í ¼öÇàÇÏ±â ¶§¹®¿¡
-        //    º°µµ·Î Meta Cache¸¦ Àç±¸¼ºÇÏÁö ¾Ê°í °ª¸¸ º¯°æ½ÃÅ²´Ù.
+        //    Table Lockì„ ì¡ê³  ìˆ˜í–‰í•˜ê¸° ë•Œë¬¸ì—
+        //    ë³„ë„ë¡œ Meta Cacheë¥¼ ì¬êµ¬ì„±í•˜ì§€ ì•Šê³  ê°’ë§Œ ë³€ê²½ì‹œí‚¨ë‹¤.
         //--------------------------------------------
         case QDN_TRIGGER_ALTER_ENABLE:
 
@@ -1244,7 +1244,7 @@ qdnTrigger::executeAlter( qcStatement * aStatement )
                       != IDE_SUCCESS );
 
             //---------------------------------------
-            // SYS_TRIGGERS_ ¿¡¼­ Á¤º¸ º¯°æ
+            // SYS_TRIGGERS_ ì—ì„œ ì •ë³´ ë³€ê²½
             // UPDATE SYS_TRIGGERS_ SET IS_ENABLE = QCM_TRIGGER_ENABLE
             //        WHERE TRIGGER_OID = triggerOID;
             //---------------------------------------
@@ -1267,7 +1267,7 @@ qdnTrigger::executeAlter( qcStatement * aStatement )
             IDE_DASSERT( sRowCnt == 1 );
 
             //----------------------------------
-            // Meta Cache¿¡ ENABLE ¼³Á¤
+            // Meta Cacheì— ENABLE ì„¤ì •
             //----------------------------------
 
             sTriggerInfo->enable = QCM_TRIGGER_ENABLE;
@@ -1282,7 +1282,7 @@ qdnTrigger::executeAlter( qcStatement * aStatement )
                       != IDE_SUCCESS );
 
             //---------------------------------------
-            // SYS_TRIGGERS_ ¿¡¼­ Á¤º¸ º¯°æ
+            // SYS_TRIGGERS_ ì—ì„œ ì •ë³´ ë³€ê²½
             // UPDATE SYS_TRIGGERS_ SET IS_ENABLE = QCM_TRIGGER_DISABLE
             //        WHERE TRIGGER_OID = triggerOID;
             //---------------------------------------
@@ -1304,7 +1304,7 @@ qdnTrigger::executeAlter( qcStatement * aStatement )
             IDE_DASSERT( sRowCnt == 1 );
 
             //----------------------------------
-            // Meta Cache¿¡ DISABLE ¼³Á¤
+            // Meta Cacheì— DISABLE ì„¤ì •
             //----------------------------------
 
             sTriggerInfo->enable = QCM_TRIGGER_DISABLE;
@@ -1314,7 +1314,7 @@ qdnTrigger::executeAlter( qcStatement * aStatement )
         case QDN_TRIGGER_ALTER_COMPILE:
 
             //----------------------------------
-            // RecompileÀ» ¼öÇàÇÑ´Ù.
+            // Recompileì„ ìˆ˜í–‰í•œë‹¤.
             //----------------------------------
 
             IDE_TEST( recompileTrigger( aStatement, sTriggerInfo )
@@ -1340,7 +1340,7 @@ qdnTrigger::parseDrop( qcStatement * /* aStatement */ )
 /***********************************************************************
  *
  * Description :
- *    DROP TRIGGER¸¦ À§ÇÑ ºÎ°¡ Parsing ÀÛ¾÷À» ¼öÇàÇÔ.
+ *    DROP TRIGGERë¥¼ ìœ„í•œ ë¶€ê°€ Parsing ì‘ì—…ì„ ìˆ˜í–‰í•¨.
  *
  * Implementation :
  *
@@ -1362,7 +1362,7 @@ qdnTrigger::validateDrop( qcStatement * aStatement )
 /***********************************************************************
  *
  * Description :
- *    DROP TRIGGER¸¦ À§ÇÑ Validation.
+ *    DROP TRIGGERë¥¼ ìœ„í•œ Validation.
  *
  * Implementation :
  *
@@ -1380,18 +1380,18 @@ qdnTrigger::validateDrop( qcStatement * aStatement )
     sParseTree = (qdnDropTriggerParseTree *) aStatement->myPlan->parseTree;
     
     //----------------------------------------
-    // TriggerÀÇ User Á¤º¸ È¹µæ
+    // Triggerì˜ User ì •ë³´ íšë“
     //----------------------------------------
 
-    // Trigger User Á¤º¸ÀÇ È¹µæ
+    // Trigger User ì •ë³´ì˜ íšë“
     if ( QC_IS_NULL_NAME( sParseTree->triggerUserPos ) == ID_TRUE)
     {
-        // User ID È¹µæ
+        // User ID íšë“
         sParseTree->triggerUserID = QCG_GET_SESSION_USER_ID(aStatement);
     }
     else
     {
-        // User ID È¹µæ
+        // User ID íšë“
         IDE_TEST( qcmUser::getUserID( aStatement,
                                       sParseTree->triggerUserPos,
                                       & sParseTree->triggerUserID )
@@ -1399,10 +1399,10 @@ qdnTrigger::validateDrop( qcStatement * aStatement )
     }
 
     //----------------------------------------
-    // TriggerÀÇ Á¸Àç ¿©ºÎ °Ë»ç
+    // Triggerì˜ ì¡´ì¬ ì—¬ë¶€ ê²€ì‚¬
     //----------------------------------------
 
-    // Á¸ÀçÇÏ´Â TriggerÀÎÁö °Ë»ç
+    // ì¡´ì¬í•˜ëŠ” Triggerì¸ì§€ ê²€ì‚¬
     IDE_TEST( qcmTrigger::getTriggerOID( aStatement,
                                          sParseTree->triggerUserID,
                                          sParseTree->triggerNamePos,
@@ -1421,7 +1421,7 @@ qdnTrigger::validateDrop( qcStatement * aStatement )
     }
     else
     {
-        // ÇØ´ç Trigger°¡ Á¸ÀçÇÔ.
+        // í•´ë‹¹ Triggerê°€ ì¡´ì¬í•¨.
     }
 
     IDE_TEST( qcm::getTableInfoByID( aStatement,
@@ -1437,7 +1437,7 @@ qdnTrigger::validateDrop( qcStatement * aStatement )
              != IDE_SUCCESS);
 
     //----------------------------------------
-    // Trigger »èÁ¦ ±ÇÇÑ °Ë»ç
+    // Trigger ì‚­ì œ ê¶Œí•œ ê²€ì‚¬
     //----------------------------------------
 
     IDE_TEST( qdpRole::checkDDLDropTriggerPriv( aStatement,
@@ -1445,7 +1445,7 @@ qdnTrigger::validateDrop( qcStatement * aStatement )
               != IDE_SUCCESS );
 
     //----------------------------------------
-    // Replication °Ë»ç
+    // Replication ê²€ì‚¬
     //----------------------------------------
     // PROJ-1567
     // IDE_TEST_RAISE( sParseTree->tableInfo->replicationCount > 0,
@@ -1474,7 +1474,7 @@ qdnTrigger::optimizeDrop( qcStatement * /* aStatement */ )
 /***********************************************************************
  *
  * Description :
- *    DROP TRIGGER¸¦ À§ÇÑ Optimization.
+ *    DROP TRIGGERë¥¼ ìœ„í•œ Optimization.
  *
  * Implementation :
  *
@@ -1496,7 +1496,7 @@ qdnTrigger::executeDrop( qcStatement * aStatement )
 /***********************************************************************
  *
  * Description :
- *    DROP TRIGGERÀÇ ¼öÇà.
+ *    DROP TRIGGERì˜ ìˆ˜í–‰.
  *
  * Implementation :
  *
@@ -1523,18 +1523,18 @@ qdnTrigger::executeDrop( qcStatement * aStatement )
 
     //---------------------------------------
     // To Fix PR-11552
-    // °ü·ÃµÈ PSM¸¦ Invalid ÇÔÀ» ¼³Á¤ÇØ ÁÖ¾î¾ß ÇÔ.
+    // ê´€ë ¨ëœ PSMë¥¼ Invalid í•¨ì„ ì„¤ì •í•´ ì£¼ì–´ì•¼ í•¨.
     // To Fix PR-12102
-    // °ü·Ã TableInfo¿¡ ¸ÕÀú XLatch¸¦ Àâ¾Æ¾ß ÇÔ
+    // ê´€ë ¨ TableInfoì— ë¨¼ì € XLatchë¥¼ ì¡ì•„ì•¼ í•¨
     //
     // DROP TRIGGER(DDL) ---->Table->TRIGGER
     // DML ------------------>
-    // À§¿Í °°ÀÌ ÂüÁ¶µÇ¹Ç·Î DROP TRIGGER¿¡¼­ ¹Ù·Î TRIGGER¿¡ Á¢±ÙÇÏ¿©
-    // »èÁ¦ÇÏ¸é ¾ÈµÊ
+    // ìœ„ì™€ ê°™ì´ ì°¸ì¡°ë˜ë¯€ë¡œ DROP TRIGGERì—ì„œ ë°”ë¡œ TRIGGERì— ì ‘ê·¼í•˜ì—¬
+    // ì‚­ì œí•˜ë©´ ì•ˆë¨
     //---------------------------------------
 
     //---------------------------------------
-    // TASK-2176 Table¿¡ ´ëÇÑ LockÀ» È¹µæÇÑ´Ù.
+    // TASK-2176 Tableì— ëŒ€í•œ Lockì„ íšë“í•œë‹¤.
     //---------------------------------------
 
     IDE_TEST( qcm::validateAndLockTable(aStatement,
@@ -1557,14 +1557,14 @@ qdnTrigger::executeDrop( qcStatement * aStatement )
 
         IDE_TEST( qcmPartition::validateAndLockPartitionInfoList( aStatement,
                                                                   sAllPartInfoList,
-                                                                  SMI_TBSLV_DDL_DML, // TBS Validation ¿É¼Ç
+                                                                  SMI_TBSLV_DDL_DML, // TBS Validation ì˜µì…˜
                                                                   SMI_TABLE_LOCK_X,
                                                                   ( ( smiGetDDLLockTimeOut() == -1 ) ?
                                                                     ID_ULONG_MAX :
                                                                     smiGetDDLLockTimeOut() * 1000000 ) )
                   != IDE_SUCCESS );
 
-        // ¿¹¿Ü Ã³¸®¸¦ À§ÇÏ¿©, LockÀ» ÀâÀº ÈÄ¿¡ Partition List¸¦ ¼³Á¤ÇÑ´Ù.
+        // ì˜ˆì™¸ ì²˜ë¦¬ë¥¼ ìœ„í•˜ì—¬, Lockì„ ì¡ì€ í›„ì— Partition Listë¥¼ ì„¤ì •í•œë‹¤.
         sOldPartInfoList = sAllPartInfoList;
     }
     else
@@ -1573,7 +1573,7 @@ qdnTrigger::executeDrop( qcStatement * aStatement )
     }
 
     //---------------------------------------
-    // Trigger Object »èÁ¦
+    // Trigger Object ì‚­ì œ
     //---------------------------------------
 
     sTriggerHandle = (void *)smiGetTable( sParseTree->triggerOID );
@@ -1581,14 +1581,14 @@ qdnTrigger::executeDrop( qcStatement * aStatement )
     IDE_TEST( dropTriggerObject( aStatement, sTriggerHandle ) != IDE_SUCCESS );
 
     //---------------------------------------
-    // Trigger¸¦ À§ÇÑ Meta TableÀÇ Á¤º¸ »èÁ¦
+    // Triggerë¥¼ ìœ„í•œ Meta Tableì˜ ì •ë³´ ì‚­ì œ
     //---------------------------------------
 
     IDE_TEST( qcmTrigger::removeMetaInfo( aStatement, sParseTree->triggerOID )
               != IDE_SUCCESS );
 
     //---------------------------------------
-    // Table ÀÇ Meta Cache Á¤º¸¸¦ Àç±¸ÃàÇÔ.
+    // Table ì˜ Meta Cache ì •ë³´ë¥¼ ì¬êµ¬ì¶•í•¨.
     //---------------------------------------
 
     IDE_TEST( qcm::touchTable( QC_SMI_STMT( aStatement ),
@@ -1625,9 +1625,9 @@ qdnTrigger::executeDrop( qcStatement * aStatement )
         /* Nothing to do */
     }
 
-    // To fix BUG-12102(BUG-12034¿Í °°Àº ³»¿ëÀÓ)
-    // SMÀÌ ´õÀÌ»ó ½ÇÆĞÇÒ ¿©Áö°¡ ¾øÀ» ¶§ QP¿¡¼­ À¯ÁöÇÏ°í
-    // ÀÖ´Â ¸Ş¸ğ¸®µéÀ» ÇØÁ¦ÇØ¾ß ÇÑ´Ù.
+    // To fix BUG-12102(BUG-12034ì™€ ê°™ì€ ë‚´ìš©ì„)
+    // SMì´ ë”ì´ìƒ ì‹¤íŒ¨í•  ì—¬ì§€ê°€ ì—†ì„ ë•Œ QPì—ì„œ ìœ ì§€í•˜ê³ 
+    // ìˆëŠ” ë©”ëª¨ë¦¬ë“¤ì„ í•´ì œí•´ì•¼ í•œë‹¤.
     IDE_TEST( smiObject::getObjectTempInfo( sTriggerHandle,
                                             (void**)&sTriggerCache )
               != IDE_SUCCESS );;
@@ -1673,9 +1673,9 @@ qdnTrigger::needTriggerRow( qcStatement         * aStatement,
 /***********************************************************************
  *
  * Description :
- *    °ü·ÃµÈ Triggerµé Áß Trigger¸¦ ¼öÇàÇÏ±â À§ÇÏ¿©
- *    OLD ROW, NEW ROW¿¡ ´ëÇÑ °ªÀ» ÂüÁ¶ÇÏ´Â Áö¸¦ °Ë»çÇÏ°í,
- *    ÀÌ¸¦ ±¸ÃàÇØ¾ß ÇÏ´Â Áö¸¦ ÆÇ´ÜÇÔ.
+ *    ê´€ë ¨ëœ Triggerë“¤ ì¤‘ Triggerë¥¼ ìˆ˜í–‰í•˜ê¸° ìœ„í•˜ì—¬
+ *    OLD ROW, NEW ROWì— ëŒ€í•œ ê°’ì„ ì°¸ì¡°í•˜ëŠ” ì§€ë¥¼ ê²€ì‚¬í•˜ê³ ,
+ *    ì´ë¥¼ êµ¬ì¶•í•´ì•¼ í•˜ëŠ” ì§€ë¥¼ íŒë‹¨í•¨.
  *
  * Implementation :
  *
@@ -1693,7 +1693,7 @@ qdnTrigger::needTriggerRow( qcStatement         * aStatement,
     qcmTriggerInfo * sTriggerInfo;
 
     //-------------------------------------------
-    // µ¿ÀÏÇÑ Trigger EventÁß Row Granularity°¡ Á¸ÀçÇÏ´Â Áö¸¦ °Ë»ç
+    // ë™ì¼í•œ Trigger Eventì¤‘ Row Granularityê°€ ì¡´ì¬í•˜ëŠ” ì§€ë¥¼ ê²€ì‚¬
     //-------------------------------------------
 
     sTriggerInfo = aTableInfo->triggerInfo;
@@ -1701,8 +1701,8 @@ qdnTrigger::needTriggerRow( qcStatement         * aStatement,
     for ( i = 0; i < aTableInfo->triggerCount; i++ )
     {
         // PROJ-2219 Row-level before update trigger
-        // sIsRebuildÀÇ °ªÀ» checkCondition()¿¡¼­ ¾ò¾î¿ÀÁö¸¸
-        // ÀÌ ÇÔ¼ö¿¡¼­´Â »ç¿ëÇÏÁö ¾Ê´Â´Ù.
+        // sIsRebuildì˜ ê°’ì„ checkCondition()ì—ì„œ ì–»ì–´ì˜¤ì§€ë§Œ
+        // ì´ í•¨ìˆ˜ì—ì„œëŠ” ì‚¬ìš©í•˜ì§€ ì•ŠëŠ”ë‹¤.
         IDE_TEST( checkCondition( aStatement,
                                   & sTriggerInfo[i],
                                   QCM_TRIGGER_ACTION_EACH_ROW,
@@ -1754,8 +1754,8 @@ qdnTrigger::fireTrigger( qcStatement         * aStatement,
 /***********************************************************************
  *
  * Description :
- *    ÇØ´ç ÀÔ·Â Á¶°Ç¿¡ ºÎÇÕÇÏ´Â Trigger¸¦ È¹µæÇÏ°í,
- *    Trigger Á¶°ÇÀ» ¸¸Á·ÇÒ °æ¿ì ÇØ´ç Trigger ActionÀ» ¼öÇàÇÑ´Ù.
+ *    í•´ë‹¹ ì…ë ¥ ì¡°ê±´ì— ë¶€í•©í•˜ëŠ” Triggerë¥¼ íšë“í•˜ê³ ,
+ *    Trigger ì¡°ê±´ì„ ë§Œì¡±í•  ê²½ìš° í•´ë‹¹ Trigger Actionì„ ìˆ˜í–‰í•œë‹¤.
  *
  * Implementation :
  *
@@ -1769,7 +1769,7 @@ qdnTrigger::fireTrigger( qcStatement         * aStatement,
     idBool sIsRebuild  = ID_FALSE;
 
     //-------------------------------------------
-    // Trigger Á¶°Ç °Ë»ç
+    // Trigger ì¡°ê±´ ê²€ì‚¬
     //-------------------------------------------
 
     for ( i = 0;  i < aTableInfo->triggerCount; i++ )
@@ -1777,8 +1777,8 @@ qdnTrigger::fireTrigger( qcStatement         * aStatement,
         sNeedAction = ID_FALSE;
 
         // PROJ-2219 Row-level before update trigger
-        // sIsRebuildÀÇ °ªÀ» checkCondition()¿¡¼­ ¾ò¾î¿ÀÁö¸¸
-        // ÀÌ ÇÔ¼ö¿¡¼­´Â »ç¿ëÇÏÁö ¾Ê´Â´Ù.
+        // sIsRebuildì˜ ê°’ì„ checkCondition()ì—ì„œ ì–»ì–´ì˜¤ì§€ë§Œ
+        // ì´ í•¨ìˆ˜ì—ì„œëŠ” ì‚¬ìš©í•˜ì§€ ì•ŠëŠ”ë‹¤.
         IDE_TEST( checkCondition( aStatement,
                                   & aTableInfo->triggerInfo[i],
                                   aGranularity,
@@ -1791,7 +1791,7 @@ qdnTrigger::fireTrigger( qcStatement         * aStatement,
 
         if ( sNeedAction == ID_TRUE )
         {
-            // Trigger Á¶°ÇÀÌ ºÎÇÕÇÏ´Â °æ¿ì·Î Trigger¸¦ ¼öÇàÇÑ´Ù.
+            // Trigger ì¡°ê±´ì´ ë¶€í•©í•˜ëŠ” ê²½ìš°ë¡œ Triggerë¥¼ ìˆ˜í–‰í•œë‹¤.
             IDE_TEST( fireTriggerAction( aStatement,
                                          aNewValueMem,
                                          aTableInfo,
@@ -1806,7 +1806,7 @@ qdnTrigger::fireTrigger( qcStatement         * aStatement,
         }
         else
         {
-            // Trigger ¼öÇà Á¶°ÇÀÌ ºÎÇÕµÇÁö ¾Ê´Â °æ¿ìÀÓ.
+            // Trigger ìˆ˜í–‰ ì¡°ê±´ì´ ë¶€í•©ë˜ì§€ ì•ŠëŠ” ê²½ìš°ì„.
             // Nothing To Do
         }
     }
@@ -1826,8 +1826,8 @@ qdnTrigger::loadAllTrigger( smiStatement * aSmiStmt )
 /***********************************************************************
  *
  * Description :
- *    Server ±¸µ¿ ½Ã µ¿ÀÛÇÏ¸ç, ¸ğµç Trigger Object¿¡ ´ëÇÏ¿©
- *    Trigger Object Cache¸¦ ±¸¼ºÇÑ´Ù.
+ *    Server êµ¬ë™ ì‹œ ë™ì‘í•˜ë©°, ëª¨ë“  Trigger Objectì— ëŒ€í•˜ì—¬
+ *    Trigger Object Cacheë¥¼ êµ¬ì„±í•œë‹¤.
  *
  * Implementation :
  *
@@ -1851,28 +1851,28 @@ qdnTrigger::loadAllTrigger( smiStatement * aSmiStmt )
     void                * sRow;
 
     //-------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //-------------------------------------------
 
     IDE_DASSERT( aSmiStmt != NULL );
 
     //-------------------------------------------
-    // ¸ğµç Trigger Record¸¦ ÀĞ´Â´Ù.
+    // ëª¨ë“  Trigger Recordë¥¼ ì½ëŠ”ë‹¤.
     //-------------------------------------------
 
-    // CursorÀÇ ÃÊ±âÈ­
+    // Cursorì˜ ì´ˆê¸°í™”
     sCursor.initialize();
 
-    // Cursor Property ÃÊ±âÈ­
+    // Cursor Property ì´ˆê¸°í™”
     SMI_CURSOR_PROP_INIT_FOR_META_FULL_SCAN( &sCursorProperty, NULL );
 
-    // INDEX (USER_ID, TRIGGER_NAME)À» ÀÌ¿ëÇÑ Cursor Open
+    // INDEX (USER_ID, TRIGGER_NAME)ì„ ì´ìš©í•œ Cursor Open
     IDE_TEST(
         sCursor.open( aSmiStmt,  // smiStatement
                       gQcmTriggers,                  // Table Handle
                       NULL,                          // Index Handle
                       smiGetRowSCN( gQcmTriggers ),  // Table SCN
-                      NULL,                          // Update ColumnÁ¤º¸
+                      NULL,                          // Update Columnì •ë³´
                       smiGetDefaultKeyRange(),       // Key Range
                       smiGetDefaultKeyRange(),       // Key Filter
                       smiGetDefaultFilter(),         // Filter
@@ -1884,10 +1884,10 @@ qdnTrigger::loadAllTrigger( smiStatement * aSmiStmt )
     sIsCursorOpen = ID_TRUE;
 
     //-------------------------------------------
-    // Trigger IDÀÇ È¹µæ
+    // Trigger IDì˜ íšë“
     //-------------------------------------------
 
-    // Data¸¦ ReadÇÔ.
+    // Dataë¥¼ Readí•¨.
     IDE_TEST( sCursor.beforeFirst() != IDE_SUCCESS );
     IDE_TEST( sCursor.readRow( (const void **) & sRow, & sRID, SMI_FIND_NEXT )
               != IDE_SUCCESS );
@@ -1905,12 +1905,12 @@ qdnTrigger::loadAllTrigger( smiStatement * aSmiStmt )
     while ( sRow != NULL )
     {
         //--------------------------------------------
-        // ÇÏ³ªÀÇ Trigger Object Á¤º¸¸¦ ¾òÀ½.
+        // í•˜ë‚˜ì˜ Trigger Object ì •ë³´ë¥¼ ì–»ìŒ.
         //--------------------------------------------
 
-        // Trigger OID¸¦ ¾òÀ½
+        // Trigger OIDë¥¼ ì–»ìŒ
         // To Fix PR-10648
-        // smOID ÀÇ È¹µæ ¹æ¹ıÀÌ Àß¸øµÊ.
+        // smOID ì˜ íšë“ ë°©ë²•ì´ ì˜ëª»ë¨.
         // *aTriggerOID = *(smOID *)
         //    ((UChar*)sRow+sColumn[QCM_TRIGGERS_TRIGGER_OID].column.offset );
 
@@ -1919,13 +1919,13 @@ qdnTrigger::loadAllTrigger( smiStatement * aSmiStmt )
             ( (UChar*)sRow + sTriggerOIDCol->column.offset );
 
         //--------------------------------------------
-        // Trigger Object Cache¸¦ À§ÇÑ Á¤º¸ ±¸Ãà
+        // Trigger Object Cacheë¥¼ ìœ„í•œ ì •ë³´ êµ¬ì¶•
         //--------------------------------------------
 
-        // Trigger HandleÀ» È¹µæ
+        // Trigger Handleì„ íšë“
         sTriggerHandle = (void *)smiGetTable( sTriggerOID );
 
-        // Trigger Handle¿¡ Trigger Cache¸¦ À§ÇÑ °ø°£ ÇÒ´ç
+        // Trigger Handleì— Trigger Cacheë¥¼ ìœ„í•œ ê³µê°„ í• ë‹¹
         IDE_TEST( allocTriggerCache( sTriggerHandle,
                                      sTriggerOID,
                                      & sTriggerCache )
@@ -1973,7 +1973,7 @@ qdnTrigger::freeTriggerCaches4DropTable( qcmTableInfo * aTableInfo )
                                                 (void**)& sTriggerCache )
                   != IDE_SUCCESS );
 
-        // Trigger Object Cache »èÁ¦
+        // Trigger Object Cache ì‚­ì œ
         IDE_TEST( freeTriggerCache( sTriggerCache )
                   != IDE_SUCCESS );
     }
@@ -1988,9 +1988,9 @@ qdnTrigger::freeTriggerCaches4DropTable( qcmTableInfo * aTableInfo )
 
 
 /* To Fix BUG-12034
-   ¸¸¾à ¿©±â¼­ freeTriggerCache±îÁö ÇÏ°ÔµÇ¸é,
-   ÀÌ ÇÔ¼ö¸¦ È£ÃâÇÏ´Â qdd::executeDropTable ÀÌ
-   ½ÇÆĞÇÒ °æ¿ì, ¸Ş¸ğ¸®¸¸ ÇØÁ¦µÇ°í, ¸ŞÅ¸Á¤º¸´Â ±×´ë·Î »ì¾ÆÀÖ°ÔµÇ´Â ¿À·ù°¡ ¹ß»ı.
+   ë§Œì•½ ì—¬ê¸°ì„œ freeTriggerCacheê¹Œì§€ í•˜ê²Œë˜ë©´,
+   ì´ í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•˜ëŠ” qdd::executeDropTable ì´
+   ì‹¤íŒ¨í•  ê²½ìš°, ë©”ëª¨ë¦¬ë§Œ í•´ì œë˜ê³ , ë©”íƒ€ì •ë³´ëŠ” ê·¸ëŒ€ë¡œ ì‚´ì•„ìˆê²Œë˜ëŠ” ì˜¤ë¥˜ê°€ ë°œìƒ.
    *
    */
 IDE_RC
@@ -2000,9 +2000,9 @@ qdnTrigger::dropTrigger4DropTable( qcStatement  * aStatement,
 /***********************************************************************
  *
  * Description :
- *    ÇØ´ç Table ID¸¦ Æ÷ÇÔÇÑ Trigger¸¦ Á¦°ÅÇÑ´Ù.
- *       - °ü·Ã Trigger Object¸¦ Á¦°ÅÇÑ ÈÄ,
- *       - °ü·Ã Meta Table¿¡¼­ Á¤º¸¸¦ Á¦°ÅÇÑ´Ù.
+ *    í•´ë‹¹ Table IDë¥¼ í¬í•¨í•œ Triggerë¥¼ ì œê±°í•œë‹¤.
+ *       - ê´€ë ¨ Trigger Objectë¥¼ ì œê±°í•œ í›„,
+ *       - ê´€ë ¨ Meta Tableì—ì„œ ì •ë³´ë¥¼ ì œê±°í•œë‹¤.
  *
  * Implementation :
  *
@@ -2018,21 +2018,21 @@ qdnTrigger::dropTrigger4DropTable( qcStatement  * aStatement,
     vSLong                 sRowCnt;
 
     //-------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //-------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aTableInfo != NULL );
 
     //-------------------------------------------
-    // Trigger Object ¹× Object Cache¸¦ »èÁ¦
+    // Trigger Object ë° Object Cacheë¥¼ ì‚­ì œ
     //-------------------------------------------
 
     for ( i = 0, sTriggerInfo = aTableInfo->triggerInfo;
           i < aTableInfo->triggerCount;
           i++ )
     {
-        // Trigger Object »èÁ¦
+        // Trigger Object ì‚­ì œ
         IDE_TEST( dropTriggerObject( aStatement,
                                      sTriggerInfo[i].triggerHandle )
                   != IDE_SUCCESS );
@@ -2041,7 +2041,7 @@ qdnTrigger::dropTrigger4DropTable( qcStatement  * aStatement,
     if ( aTableInfo->triggerCount > 0 )
     {
         //---------------------------------------
-        // StringÀ» À§ÇÑ °ø°£ È¹µæ
+        // Stringì„ ìœ„í•œ ê³µê°„ íšë“
         //---------------------------------------
 
         IDU_LIMITPOINT("qdnTrigger::dropTrigger4DropTable::malloc");
@@ -2050,7 +2050,7 @@ qdnTrigger::dropTrigger4DropTable( qcStatement  * aStatement,
                   != IDE_SUCCESS );
 
         //---------------------------------------
-        // SYS_TRIGGERS_ ¿¡¼­ Á¤º¸ »èÁ¦
+        // SYS_TRIGGERS_ ì—ì„œ ì •ë³´ ì‚­ì œ
         // DELETE FROM SYS_TRIGGERS_ WHERE TABLE_ID = aTableID;
         //---------------------------------------
 
@@ -2065,7 +2065,7 @@ qdnTrigger::dropTrigger4DropTable( qcStatement  * aStatement,
                   != IDE_SUCCESS );
 
         //---------------------------------------
-        // SYS_TRIGGER_STRINGS_ ¿¡¼­ Á¤º¸ »èÁ¦
+        // SYS_TRIGGER_STRINGS_ ì—ì„œ ì •ë³´ ì‚­ì œ
         // DELETE FROM SYS_TRIGGER_STRINGS_ WHERE TABLE_ID = aTableID;
         //---------------------------------------
 
@@ -2082,7 +2082,7 @@ qdnTrigger::dropTrigger4DropTable( qcStatement  * aStatement,
         IDE_DASSERT( sRowCnt > 0 );
 
         //---------------------------------------
-        // SYS_TRIGGER_UPDATE_COLUMNS_ ¿¡¼­ Á¤º¸ »èÁ¦
+        // SYS_TRIGGER_UPDATE_COLUMNS_ ì—ì„œ ì •ë³´ ì‚­ì œ
         //---------------------------------------
 
         idlOS::snprintf( sBuffer, QD_MAX_SQL_LENGTH,
@@ -2096,7 +2096,7 @@ qdnTrigger::dropTrigger4DropTable( qcStatement  * aStatement,
                   != IDE_SUCCESS );
 
         //---------------------------------------
-        // SYS_TRIGGER_DML_TABLES ¿¡ Á¤º¸ »ğÀÔ
+        // SYS_TRIGGER_DML_TABLES ì— ì •ë³´ ì‚½ì…
         //---------------------------------------
 
         idlOS::snprintf( sBuffer, QD_MAX_SQL_LENGTH,
@@ -2111,7 +2111,7 @@ qdnTrigger::dropTrigger4DropTable( qcStatement  * aStatement,
     }
     else
     {
-        // Table¿¡ Á¸ÀçÇÏ´Â Trigger°¡ ¾øÀ½
+        // Tableì— ì¡´ì¬í•˜ëŠ” Triggerê°€ ì—†ìŒ
     }
 
     return IDE_SUCCESS;
@@ -2128,8 +2128,8 @@ IDE_RC qdnTrigger::addGranularityInfo( qdnCreateTriggerParseTree * aParseTree )
 /***********************************************************************
  *
  * Description :
- *    TriggerÀÇ Action Granularity°¡ FOR EACH ROWÀÎ °æ¿ì
- *    REFERENCING Á¤º¸ ¹× WHEN Á¤º¸°¡ Á¸ÀçÇÒ ¼ö ÀÖ´Ù.
+ *    Triggerì˜ Action Granularityê°€ FOR EACH ROWì¸ ê²½ìš°
+ *    REFERENCING ì •ë³´ ë° WHEN ì •ë³´ê°€ ì¡´ì¬í•  ìˆ˜ ìˆë‹¤.
  *
  *    Ex) CREATE TRIGGER ...
  *        AFTER UPDATE ON t1
@@ -2137,19 +2137,19 @@ IDE_RC qdnTrigger::addGranularityInfo( qdnCreateTriggerParseTree * aParseTree )
  *        FOR EACH ROW WHEN ( old_row.i1 > new_row.i1 )
  *        ...;
  *
- *        À§¿Í °°Àº ±¸¹®¿¡¼­ WHEN ÀıÀ» Ã³¸®ÇÏ±â À§ÇØ¼­´Â
- *        new_row Á¤º¸, old_row Á¤º¸µîÀ» ½±°Ô ÂüÁ¶ÇÒ ¼ö ÀÖ¾î¾ß ÇÑ´Ù.
+ *        ìœ„ì™€ ê°™ì€ êµ¬ë¬¸ì—ì„œ WHEN ì ˆì„ ì²˜ë¦¬í•˜ê¸° ìœ„í•´ì„œëŠ”
+ *        new_row ì •ë³´, old_row ì •ë³´ë“±ì„ ì‰½ê²Œ ì°¸ì¡°í•  ìˆ˜ ìˆì–´ì•¼ í•œë‹¤.
  *
  * Implementation :
  *        // PROJ-1502 PARTITIONED DISK TABLE
- *        ÀÌ ÇÔ¼ö¸¦ È£ÃâÇÒ ¶§´Â ¹İµå½Ã row granularity°¡ ÀÖ¾î¾ß ÇÏ´Â »óÅÂÀÌ´Ù.
+ *        ì´ í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•  ë•ŒëŠ” ë°˜ë“œì‹œ row granularityê°€ ìˆì–´ì•¼ í•˜ëŠ” ìƒíƒœì´ë‹¤.
  ***********************************************************************/
 
 #define IDE_FN "qdnTrigger::addGranularityInfo"
     IDE_MSGLOG_FUNC(IDE_MSGLOG_BODY(""));
 
     //----------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //----------------------------------------
 
     IDE_DASSERT( aParseTree != NULL );
@@ -2165,8 +2165,8 @@ IDE_RC qdnTrigger::addGranularityInfo( qdnCreateTriggerParseTree * aParseTree )
     }
     else
     {
-        // reference´Â ¾ø´Âµ¥ whenConditionÀÌ ÀÖ´Â °æ¿ì.
-        // ¿¡·¯.
+        // referenceëŠ” ì—†ëŠ”ë° whenConditionì´ ìˆëŠ” ê²½ìš°.
+        // ì—ëŸ¬.
         IDE_TEST_RAISE( aParseTree->actionCond.whenCondition != NULL,
                         err_when_condition );
     }
@@ -2192,12 +2192,12 @@ qdnTrigger::addActionBodyInfo( qcStatement               * aStatement,
 /***********************************************************************
  *
  * Description :
- *     FOR EACH ROW granularity¿¡¼­ Action Body¸¦ À§ÇÏ¿©
- *     REFERENCING row ¹× Current RowÀÇ Á¤º¸¸¦ Ãß°¡ÇØ ÁÖ¾î¾ß ÇÑ´Ù.
- *     ÀÌ´Â PSM BodyÀÎ Action Body¿¡¼­ REFERENCING ¹× Subject Table¿¡ ´ëÇÑ
- *     Á¢±Ù ¿©ºÎ¸¦ ÆÇ´ÜÇÒ ¼ö ¾ø±â ¶§¹®ÀÌ´Ù.
+ *     FOR EACH ROW granularityì—ì„œ Action Bodyë¥¼ ìœ„í•˜ì—¬
+ *     REFERENCING row ë° Current Rowì˜ ì •ë³´ë¥¼ ì¶”ê°€í•´ ì£¼ì–´ì•¼ í•œë‹¤.
+ *     ì´ëŠ” PSM Bodyì¸ Action Bodyì—ì„œ REFERENCING ë° Subject Tableì— ëŒ€í•œ
+ *     ì ‘ê·¼ ì—¬ë¶€ë¥¼ íŒë‹¨í•  ìˆ˜ ì—†ê¸° ë•Œë¬¸ì´ë‹¤.
  *
- *     ÀÌ¸¦ À§ÇØ ´ÙÀ½°ú °°Àº °³³äÀ¸·Î Action BodyÀÇ Variable Á¤º¸¸¦ ¼³Á¤ÇÑ´Ù.
+ *     ì´ë¥¼ ìœ„í•´ ë‹¤ìŒê³¼ ê°™ì€ ê°œë…ìœ¼ë¡œ Action Bodyì˜ Variable ì •ë³´ë¥¼ ì„¤ì •í•œë‹¤.
  *     Ex)  CREATE TRIGGER ...
  *          ON t1 REFERENCING OLD old_row, NEW new_row
  *          FOR EACH ROW
@@ -2215,13 +2215,13 @@ qdnTrigger::addActionBodyInfo( qcStatement               * aStatement,
  *             INSERT INTO log_table VALUES ( old_row.i2, new_row.i3 );
  *          END;
  *
- *          Áï, À§¿Í °°ÀÌ °³³äÀûÀ¸·Î ROWTYPEÀÇ VariableÀ» Ãß°¡ÇÏ¿©
- *          BEGIN ... END ±îÁöÀÇ Body¿¡¼­ÀÇ Validation ¹× ExecutionÀÌ
- *          °¡´ÉÇÏ°Ô µÈ´Ù.
+ *          ì¦‰, ìœ„ì™€ ê°™ì´ ê°œë…ì ìœ¼ë¡œ ROWTYPEì˜ Variableì„ ì¶”ê°€í•˜ì—¬
+ *          BEGIN ... END ê¹Œì§€ì˜ Bodyì—ì„œì˜ Validation ë° Executionì´
+ *          ê°€ëŠ¥í•˜ê²Œ ëœë‹¤.
  *
  * Implementation :
  *
- *     REFERENCING ±¸¹®¿¡ Á¸ÀçÇÏ´Â row¿¡ ´ëÇÑ ROWTYPE Variable »ı¼º
+ *     REFERENCING êµ¬ë¬¸ì— ì¡´ì¬í•˜ëŠ” rowì— ëŒ€í•œ ROWTYPE Variable ìƒì„±
  *
  ***********************************************************************/
 
@@ -2233,7 +2233,7 @@ qdnTrigger::addActionBodyInfo( qcStatement               * aStatement,
     qtcNode       * sTypeNode[2];
 
     //----------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //----------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -2243,7 +2243,7 @@ qdnTrigger::addActionBodyInfo( qcStatement               * aStatement,
                  == QCM_TRIGGER_ACTION_EACH_ROW );
 
     //----------------------------------------
-    // REFERENCING ±¸¹®¿¡ Á¸ÀçÇÏ´Â row¿¡ ´ëÇÑ ROWTYPE Variable »ı¼º
+    // REFERENCING êµ¬ë¬¸ì— ì¡´ì¬í•˜ëŠ” rowì— ëŒ€í•œ ROWTYPE Variable ìƒì„±
     //----------------------------------------
     aParseTree->actionBody.paraDecls = NULL;
 
@@ -2251,16 +2251,16 @@ qdnTrigger::addActionBodyInfo( qcStatement               * aStatement,
           sRef != NULL;
           sRef = sRef->next )
     {
-        // REFERENCING Row¸¦ À§ÇÑ ROWTYPE VariableÀÇ »ı¼º
+        // REFERENCING Rowë¥¼ ìœ„í•œ ROWTYPE Variableì˜ ìƒì„±
         // Ex) ... ON user_name.table_name REFERENCING OLD ROW AS old_row
         //    => old_row  user_name.table_name%ROWTYPE;
-        // À¸·Î »ı¼º
+        // ìœ¼ë¡œ ìƒì„±
 
         //---------------------------------------------------
-        // Type ºÎºĞÀÇ Á¤º¸ »ı¼º
+        // Type ë¶€ë¶„ì˜ ì •ë³´ ìƒì„±
         //---------------------------------------------------
 
-        // old_row user_name.[table_name%ROWTYPE] À» À§ÇÑ Node »ı¼º
+        // old_row user_name.[table_name%ROWTYPE] ì„ ìœ„í•œ Node ìƒì„±
         IDE_TEST( qtc::makeProcVariable( aStatement,
                                          sTypeNode,
                                          & aParseTree->tableNamePos,
@@ -2268,13 +2268,13 @@ qdnTrigger::addActionBodyInfo( qcStatement               * aStatement,
                                          QTC_PROC_VAR_OP_NONE )
                   != IDE_SUCCESS );
 
-        // old_row [user_name].table_name%ROWTYPE ¿¡¼­ user_name Á¤º¸ÀÇ ¼³Á¤
+        // old_row [user_name].table_name%ROWTYPE ì—ì„œ user_name ì •ë³´ì˜ ì„¤ì •
         idlOS::memcpy( & sTypeNode[0]->tableName,
                        & aParseTree->userNamePos,
                        ID_SIZEOF(qcNamePosition) );
 
         //---------------------------------------------------
-        // ROWTYPE Variable Á¤º¸ÀÇ ¿Ï¼º
+        // ROWTYPE Variable ì •ë³´ì˜ ì™„ì„±
         //---------------------------------------------------
 
         IDU_LIMITPOINT("qdnTrigger::addActionBodyInfo::malloc");
@@ -2287,7 +2287,7 @@ qdnTrigger::addActionBodyInfo( qcStatement               * aStatement,
         sCurVar->defaultValueNode = NULL;
 
         // To fix BUG-12622
-        // BEFORE TRIGGER¿¡¼­ new row´Â º¯°æÀÌ °¡´ÉÇÏ´Ù.
+        // BEFORE TRIGGERì—ì„œ new rowëŠ” ë³€ê²½ì´ ê°€ëŠ¥í•˜ë‹¤.
         if( aParseTree->triggerEvent.eventTime == QCM_TRIGGER_BEFORE )
         {
             if( sRef->refType == QCM_TRIGGER_REF_NEW_ROW )
@@ -2315,17 +2315,17 @@ qdnTrigger::addActionBodyInfo( qcStatement               * aStatement,
                        & sRef->aliasNamePos,
                        ID_SIZEOF( qcNamePosition ) );
 
-        // REFERENCING Row ¿Í Action Body³»ÀÇ VariableÀÇ ¿¬°á
+        // REFERENCING Row ì™€ Action Bodyë‚´ì˜ Variableì˜ ì—°ê²°
         //sRef->rowVarTableID = sCurVar->common.table;
         //sRef->rowVarColumnID = sCurVar->common.column;
 
-        // PROJ-1075 table, columnÀ¸·Î Ã£À»¼ö¾øÀ½.
+        // PROJ-1075 table, columnìœ¼ë¡œ ì°¾ì„ìˆ˜ì—†ìŒ.
         sRef->rowVar = sCurVar;
 
         //---------------------------------------------------
-        // VariableÀÇ ¿¬°á
+        // Variableì˜ ì—°ê²°
         // PROJ-1502 PARTITIONED DISK TABLE
-        // parameter¿¡ ¿¬°áÇÑ´Ù.
+        // parameterì— ì—°ê²°í•œë‹¤.
         //---------------------------------------------------
 
         sCurVar->common.next = aParseTree->actionBody.paraDecls;
@@ -2349,7 +2349,7 @@ qdnTrigger::setTriggerUser( qcStatement               * aStatement,
 /***********************************************************************
  *
  * Description : BUG-24570
- *    CREATE TRIGGERÀÇ User¿¡ ´ëÇÑ Á¤º¸ ¼³Á¤
+ *    CREATE TRIGGERì˜ Userì— ëŒ€í•œ ì •ë³´ ì„¤ì •
  *
  * Implementation :
  *
@@ -2361,49 +2361,49 @@ qdnTrigger::setTriggerUser( qcStatement               * aStatement,
     SChar   sUserName[QC_MAX_OBJECT_NAME_LEN + 1];
 
     //---------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //---------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aParseTree != NULL );
 
     //---------------------------------------
-    // Trigger User Á¤º¸ÀÇ È¹µæ
+    // Trigger User ì •ë³´ì˜ íšë“
     //---------------------------------------
 
     if ( QC_IS_NULL_NAME( aParseTree->triggerUserPos ) == ID_TRUE)
     {
-        // User ID È¹µæ
+        // User ID íšë“
         if ( aParseTree->isRecompile == ID_FALSE )
         {
             aParseTree->triggerUserID = QCG_GET_SESSION_USER_ID(aStatement);
         }
         else
         {
-            // ÀÌ¹Ì ¼³Á¤ÇßÀ½
+            // ì´ë¯¸ ì„¤ì •í–ˆìŒ
 
             // Nothing to do.
         }
 
-        // User Name ¼³Á¤
+        // User Name ì„¤ì •
         IDE_TEST( qcmUser::getUserName( aStatement,
                                         aParseTree->triggerUserID,
                                         sUserName )
                   != IDE_SUCCESS );
-        // BUG-25419 [CodeSonar] Format String »ç¿ë Warning
+        // BUG-25419 [CodeSonar] Format String ì‚¬ìš© Warning
         idlOS::snprintf( aParseTree->triggerUserName, QC_MAX_OBJECT_NAME_LEN + 1, "%s", sUserName );
         aParseTree->triggerUserName[QC_MAX_OBJECT_NAME_LEN] = '\0';
 
     }
     else
     {
-        // User ID È¹µæ
+        // User ID íšë“
         IDE_TEST( qcmUser::getUserID( aStatement,
                                       aParseTree->triggerUserPos,
                                       & aParseTree->triggerUserID )
                   != IDE_SUCCESS);
 
-        // User Name ¼³Á¤
+        // User Name ì„¤ì •
         QC_STR_COPY( aParseTree->triggerUserName, aParseTree->triggerUserPos );
     }
 
@@ -2431,7 +2431,7 @@ qdnTrigger::valPrivilege( qcStatement               * aStatement,
 /***********************************************************************
  *
  * Description :
- *    CREATE TRIGGERÀÇ ±ÇÇÑ °Ë»ç
+ *    CREATE TRIGGERì˜ ê¶Œí•œ ê²€ì‚¬
  *
  * Implementation :
  *
@@ -2441,18 +2441,18 @@ qdnTrigger::valPrivilege( qcStatement               * aStatement,
     IDE_MSGLOG_FUNC(IDE_MSGLOG_BODY(""));
 
     //---------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //---------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aParseTree != NULL );
 
     //---------------------------------------
-    // Trigger »ı¼º ±ÇÇÑ °Ë»ç
+    // Trigger ìƒì„± ê¶Œí•œ ê²€ì‚¬
     //---------------------------------------
 
     // BUG-24570
-    // create, replace, alter½Ã¿¡¸¸ session user·Î trigger »ı¼º ±ÇÇÑ °Ë»ç
+    // create, replace, alterì‹œì—ë§Œ session userë¡œ trigger ìƒì„± ê¶Œí•œ ê²€ì‚¬
     if ( aParseTree->isRecompile == ID_FALSE )
     {
         // check grant
@@ -2481,7 +2481,7 @@ qdnTrigger::valTriggerName( qcStatement               * aStatement,
 /***********************************************************************
  *
  * Description :
- *    CREATE TRIGGER¸¦ À§ÇÑ Trigger NameÀÇ À¯È¿¼º °Ë»ç.
+ *    CREATE TRIGGERë¥¼ ìœ„í•œ Trigger Nameì˜ ìœ íš¨ì„± ê²€ì‚¬.
  *
  * Implementation :
  *
@@ -2496,13 +2496,13 @@ qdnTrigger::valTriggerName( qcStatement               * aStatement,
     idBool               sExist;
 
     //---------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //---------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aParseTree != NULL );
 
-    // ÀÌ¹Ì Á¸ÀçÇÏ´Â TriggerÀÎÁö °Ë»ç
+    // ì´ë¯¸ ì¡´ì¬í•˜ëŠ” Triggerì¸ì§€ ê²€ì‚¬
     IDE_TEST( qcmTrigger::getTriggerOID( aStatement,
                                          aParseTree->triggerUserID,
                                          aParseTree->triggerNamePos,
@@ -2520,11 +2520,11 @@ qdnTrigger::valTriggerName( qcStatement               * aStatement,
     }
     else
     {
-        // ÇØ´ç Trigger°¡ Á¸ÀçÇÏÁö ¾ÊÀ½
+        // í•´ë‹¹ Triggerê°€ ì¡´ì¬í•˜ì§€ ì•ŠìŒ
     }
     aParseTree->triggerOID = 0;
 
-    // Trigger NameÀÇ ¼³Á¤
+    // Trigger Nameì˜ ì„¤ì •
     QC_STR_COPY( aParseTree->triggerName, aParseTree->triggerNamePos );
 
     return IDE_SUCCESS;
@@ -2550,7 +2550,7 @@ qdnTrigger::reValTriggerName( qcStatement               * aStatement,
 /***********************************************************************
  *
  * Description :
- *    RecompileÀ» À§ÇÑ Trigger NameÀÇ À¯È¿¼º °Ë»ç.
+ *    Recompileì„ ìœ„í•œ Trigger Nameì˜ ìœ íš¨ì„± ê²€ì‚¬.
  *
  * Implementation :
  *
@@ -2563,13 +2563,13 @@ qdnTrigger::reValTriggerName( qcStatement               * aStatement,
     idBool               sExist;
 
     //---------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //---------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aParseTree != NULL );
 
-    // ÀÌ¹Ì Á¸ÀçÇÏ´Â TriggerÀÎÁö °Ë»ç
+    // ì´ë¯¸ ì¡´ì¬í•˜ëŠ” Triggerì¸ì§€ ê²€ì‚¬
     IDE_TEST( qcmTrigger::getTriggerOID( aStatement,
                                          aParseTree->triggerUserID,
                                          aParseTree->triggerNamePos,
@@ -2580,7 +2580,7 @@ qdnTrigger::reValTriggerName( qcStatement               * aStatement,
 
     IDE_DASSERT( sExist == ID_TRUE );
 
-    // Trigger NameÀÇ ¼³Á¤
+    // Trigger Nameì˜ ì„¤ì •
     QC_STR_COPY( aParseTree->triggerName, aParseTree->triggerNamePos );
 
     return IDE_SUCCESS;
@@ -2600,7 +2600,7 @@ qdnTrigger::valTableName( qcStatement               * aStatement,
 /***********************************************************************
  *
  * Description :
- *    CREATE TRIGGER¸¦ À§ÇÑ Table NameÀÇ À¯È¿¼º °Ë»ç.
+ *    CREATE TRIGGERë¥¼ ìœ„í•œ Table Nameì˜ ìœ íš¨ì„± ê²€ì‚¬.
  *
  * Implementation :
  *
@@ -2612,14 +2612,14 @@ qdnTrigger::valTableName( qcStatement               * aStatement,
     qcuSqlSourceInfo     sqlInfo;
     
     //---------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //---------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aParseTree != NULL );
 
     // BUG-24408
-    // triggerUserNameÀ» ¸í½ÃÇÑ °æ¿ì onÀıÀÇ tableUserNameµµ ¸í½ÃÇØ¾ß ÇÑ´Ù.
+    // triggerUserNameì„ ëª…ì‹œí•œ ê²½ìš° onì ˆì˜ tableUserNameë„ ëª…ì‹œí•´ì•¼ í•œë‹¤.
     if ( ( QC_IS_NULL_NAME( aParseTree->triggerUserPos ) != ID_TRUE ) &&
          ( QC_IS_NULL_NAME( aParseTree->userNamePos ) == ID_TRUE ) )
     {
@@ -2633,8 +2633,8 @@ qdnTrigger::valTableName( qcStatement               * aStatement,
         // Nothing to do.
     }
 
-    // TableÀÌ Á¸ÀçÇÏ¿©¾ß ÇÑ´Ù.
-    // Table Á¤º¸ È¹µæ ¹× Table¿¡ ´ëÇÑ IS Lock È¹µæ
+    // Tableì´ ì¡´ì¬í•˜ì—¬ì•¼ í•œë‹¤.
+    // Table ì •ë³´ íšë“ ë° Tableì— ëŒ€í•œ IS Lock íšë“
     IDE_TEST( qdbCommon::checkTableInfo( aStatement,
                                          aParseTree->userNamePos,
                                          aParseTree->tableNamePos,
@@ -2655,7 +2655,7 @@ qdnTrigger::valTableName( qcStatement               * aStatement,
     if (aParseTree->isRecompile != ID_TRUE)
     {
         // To Fix PR-10618
-        // Table Owner¿¡ ´ëÇÑ Validation
+        // Table Ownerì— ëŒ€í•œ Validation
         IDE_TEST( qdpRole::checkDDLCreateTriggerTablePriv(
                       aStatement,
                       aParseTree->tableInfo->tableOwnerID )
@@ -2670,8 +2670,8 @@ qdnTrigger::valTableName( qcStatement               * aStatement,
     }
 
     // To Fix PR-10708
-    // ÀÏ¹İ TableÀÎ °æ¿ì¿¡¸¸ Trigger¸¦ »ı¼ºÇÒ ¼ö ÀÖÀ½.
-    /* PROJ-1888 INSTEAD OF TRIGGER (view ¿¡ Æ®¸®°Å¸¦ »ı¼ºÇÒ ¼ö ÀÖÀ½ ) */
+    // ì¼ë°˜ Tableì¸ ê²½ìš°ì—ë§Œ Triggerë¥¼ ìƒì„±í•  ìˆ˜ ìˆìŒ.
+    /* PROJ-1888 INSTEAD OF TRIGGER (view ì— íŠ¸ë¦¬ê±°ë¥¼ ìƒì„±í•  ìˆ˜ ìˆìŒ ) */
     if ( ( aParseTree->tableInfo->tableType != QCM_USER_TABLE )  &&
          ( aParseTree->tableInfo->tableType != QCM_VIEW )        &&
          ( aParseTree->tableInfo->tableType != QCM_MVIEW_TABLE ) )
@@ -2686,14 +2686,14 @@ qdnTrigger::valTableName( qcStatement               * aStatement,
     /* if( aParseTree->isRecompile == ID_FALSE )
     {
         // To fix BUG-14584
-        // CREATE or REPLACEÀÎ °æ¿ì.
-        // ReplicationÀÌ °É·Á ÀÖ´Â Å×ÀÌºí¿¡ ´ëÇØ¼­´Â DDLÀ» ¹ß»ı½ÃÅ³ ¼ö ¾øÀ½
+        // CREATE or REPLACEì¸ ê²½ìš°.
+        // Replicationì´ ê±¸ë ¤ ìˆëŠ” í…Œì´ë¸”ì— ëŒ€í•´ì„œëŠ” DDLì„ ë°œìƒì‹œí‚¬ ìˆ˜ ì—†ìŒ
         IDE_TEST_RAISE( aParseTree->tableInfo->replicationCount > 0,
                         ERR_DDL_WITH_REPLICATED_TABLE );
     }
     else
     {
-        // recompileÀÎ °æ¿ì.
+        // recompileì¸ ê²½ìš°.
         // Nothing to do.
     } */
 
@@ -2724,8 +2724,8 @@ qdnTrigger::valTableName( qcStatement               * aStatement,
 
 //To FIX BUG-20948
 //--------------------------------------------------------------
-// Trigger Replace ½Ã Target TableÀÌ º¯°æµÇ¾úÀ» °æ¿ì, Original Table
-// Á¤º¸ È¹µæ ¹× Lock
+// Trigger Replace ì‹œ Target Tableì´ ë³€ê²½ë˜ì—ˆì„ ê²½ìš°, Original Table
+// ì •ë³´ íšë“ ë° Lock
 //--------------------------------------------------------------
 IDE_RC
 qdnTrigger::valOrgTableName( qcStatement               * aStatement,
@@ -2734,7 +2734,7 @@ qdnTrigger::valOrgTableName( qcStatement               * aStatement,
 /***********************************************************************
  *
  * BUG-20948
- * Original Table¿¡ ´ëÇÏ¿© Ã³¸®ÇÑ´Ù.
+ * Original Tableì— ëŒ€í•˜ì—¬ ì²˜ë¦¬í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -2742,13 +2742,13 @@ qdnTrigger::valOrgTableName( qcStatement               * aStatement,
     IDE_MSGLOG_FUNC(IDE_MSGLOG_BODY(""));
 
     //---------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //---------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aParseTree != NULL );
 
-    // Table Á¤º¸ È¹µæ ¹× Table¿¡ ´ëÇÑ IS Lock È¹µæ
+    // Table ì •ë³´ íšë“ ë° Tableì— ëŒ€í•œ IS Lock íšë“
 
     IDE_TEST( qcm::getTableHandleByID(  QC_SMI_STMT( aStatement ),
                                         aParseTree->orgTableID,
@@ -2768,7 +2768,7 @@ qdnTrigger::valOrgTableName( qcStatement               * aStatement,
     aParseTree->orgTableOID = aParseTree->orgTableInfo->tableOID;
 
     // To Fix PR-10618
-    // Table Owner¿¡ ´ëÇÑ Validation
+    // Table Ownerì— ëŒ€í•œ Validation
     IDE_TEST( qdpRole::checkDDLCreateTriggerTablePriv(
                   aStatement,
                   aParseTree->orgTableInfo->tableOwnerID )
@@ -2790,7 +2790,7 @@ qdnTrigger::valEventReference( qcStatement               * aStatement,
 /***********************************************************************
  *
  * Description :
- *    CREATE TRIGGER¸¦ À§ÇÑ Trigger Event ÀÇ À¯È¿¼º °Ë»ç.
+ *    CREATE TRIGGERë¥¼ ìœ„í•œ Trigger Event ì˜ ìœ íš¨ì„± ê²€ì‚¬.
  *
  * Implementation :
  *
@@ -2805,25 +2805,25 @@ qdnTrigger::valEventReference( qcStatement               * aStatement,
     qdnTriggerRef      * sRef;
 
     //---------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //---------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aParseTree != NULL );
 
     //----------------------------------------------
-    // Trigger Event ¿¡ ´ëÇÑ Validation
+    // Trigger Event ì— ëŒ€í•œ Validation
     //----------------------------------------------
 
-    // Post-Parsing ´Ü°è¿¡¼­ ÀÌ¹Ì °ËÁõµÈ ³»¿ë.
-    // - BEFORE Trigger Event´Â Áö¿øÇÏÁö ¾ÊÀ½.
+    // Post-Parsing ë‹¨ê³„ì—ì„œ ì´ë¯¸ ê²€ì¦ëœ ë‚´ìš©.
+    // - BEFORE Trigger EventëŠ” ì§€ì›í•˜ì§€ ì•ŠìŒ.
 
-    // UPDATE OF i1, i2 ON t1°ú °°ÀÌ ColumnÀÌ Á¸ÀçÇÏ´Â °æ¿ì¿¡ ´ëÇÑ Validation
+    // UPDATE OF i1, i2 ON t1ê³¼ ê°™ì´ Columnì´ ì¡´ì¬í•˜ëŠ” ê²½ìš°ì— ëŒ€í•œ Validation
     for ( sColumn = aParseTree->triggerEvent.eventTypeList->updateColumns;
           sColumn != NULL;
           sColumn = sColumn->next )
     {
-        // ÇØ´ç ColumnÀÌ Á¸ÀçÇÏ´Â Áö¸¦ °Ë»ç
+        // í•´ë‹¹ Columnì´ ì¡´ì¬í•˜ëŠ” ì§€ë¥¼ ê²€ì‚¬
         IDE_TEST(qcmCache::getColumn( aStatement,
                                       aParseTree->tableInfo,
                                       sColumn->namePos,
@@ -2833,14 +2833,14 @@ qdnTrigger::valEventReference( qcStatement               * aStatement,
     }
 
     //----------------------------------------------
-    // Trigger Referencing ¿¡ ´ëÇÑ Validation
+    // Trigger Referencing ì— ëŒ€í•œ Validation
     //----------------------------------------
 
-    // Post-Parsing ´Ü°è¿¡¼­ ÀÌ¹Ì °ËÁõµÈ ³»¿ë.
-    // - REFERENCINGÀº FOR EACH ROW Granularity¿¡¼­¸¸ »ç¿ë °¡´ÉÇÔ.
-    // - TABLE REFERENCINGÀº Áö¿øÇÏÁö ¾ÊÀ½.
+    // Post-Parsing ë‹¨ê³„ì—ì„œ ì´ë¯¸ ê²€ì¦ëœ ë‚´ìš©.
+    // - REFERENCINGì€ FOR EACH ROW Granularityì—ì„œë§Œ ì‚¬ìš© ê°€ëŠ¥í•¨.
+    // - TABLE REFERENCINGì€ ì§€ì›í•˜ì§€ ì•ŠìŒ.
 
-    // DML EVENT¿Í ºÎÇÕµÇÁö ¾Ê´Â REFERENCING¸¦ °Ë»çÇÑ´Ù.
+    // DML EVENTì™€ ë¶€í•©ë˜ì§€ ì•ŠëŠ” REFERENCINGë¥¼ ê²€ì‚¬í•œë‹¤.
     if (aParseTree->triggerEvent.eventTypeList->eventType
         == QCM_TRIGGER_EVENT_NONE)
     {
@@ -2881,8 +2881,8 @@ qdnTrigger::valEventReference( qcStatement               * aStatement,
     if( aParseTree->actionBody.paraDecls != NULL )
     {
         // PROJ-1502 PARTITIONED DISK TABLE
-        // old row, new row´Â ÀÌÁ¦ parameterÀÌ¹Ç·Î,
-        // parameterÀÇ validationÀ» ÅëÇØ »ı¼ºÀ» ÇØ¾ß ÇÑ´Ù.
+        // old row, new rowëŠ” ì´ì œ parameterì´ë¯€ë¡œ,
+        // parameterì˜ validationì„ í†µí•´ ìƒì„±ì„ í•´ì•¼ í•œë‹¤.
         IDE_TEST( qsvProcVar::validateParaDef(
                       aStatement,
                       aParseTree->actionBody.paraDecls )
@@ -2914,10 +2914,10 @@ qdnTrigger::valActionCondition( qcStatement               * aStatement,
 /***********************************************************************
  *
  * Description :
- *    CREATE TRIGGER¸¦ À§ÇÑ Action Condition¿¡ ´ëÇÑ Validation.
+ *    CREATE TRIGGERë¥¼ ìœ„í•œ Action Conditionì— ëŒ€í•œ Validation.
  *
- *    Row Action Granularity ÀÏ °æ¿ì »ı¼ºµÈ ºÎ°¡ Á¤º¸¿¡ ´ëÇÏ¿© ValidationÇÑ´Ù.
- *    WHEN ConditionÀÇ À¯È¿¼º °Ë»ç.
+ *    Row Action Granularity ì¼ ê²½ìš° ìƒì„±ëœ ë¶€ê°€ ì •ë³´ì— ëŒ€í•˜ì—¬ Validationí•œë‹¤.
+ *    WHEN Conditionì˜ ìœ íš¨ì„± ê²€ì‚¬.
  *
  * Implementation :
  *
@@ -2932,7 +2932,7 @@ qdnTrigger::valActionCondition( qcStatement               * aStatement,
     qtcNode             * sWhenCondition;
 
     //---------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //---------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -2942,7 +2942,7 @@ qdnTrigger::valActionCondition( qcStatement               * aStatement,
     aStatement->spvEnv->allParaDecls = aParseTree->actionBody.paraDecls;
 
     //----------------------------------------
-    // Row Granularity Á¤º¸ÀÇ Validation
+    // Row Granularity ì •ë³´ì˜ Validation
     //----------------------------------------
 
     if ( ( aParseTree->triggerReference != NULL ) &&
@@ -2950,9 +2950,9 @@ qdnTrigger::valActionCondition( qcStatement               * aStatement,
     {
         sWhenCondition = aParseTree->actionCond.whenCondition;
 
-        // when conditionÀÇ Ã¼Å©.
-        // estimate¸¦ ÇÑ ´ÙÀ½, ¹İµå½Ã booleanÅ¸ÀÔÀÌ ¸®ÅÏµÇ¾î¾ß ÇÑ´Ù.
-        // subquery´Â Á¸ÀçÇØ¼­´Â ¾ÈµÈ´Ù.
+        // when conditionì˜ ì²´í¬.
+        // estimateë¥¼ í•œ ë‹¤ìŒ, ë°˜ë“œì‹œ booleaníƒ€ì…ì´ ë¦¬í„´ë˜ì–´ì•¼ í•œë‹¤.
+        // subqueryëŠ” ì¡´ì¬í•´ì„œëŠ” ì•ˆëœë‹¤.
         IDE_TEST( qtc::estimate( sWhenCondition,
                                  QC_SHARED_TMPLATE(aStatement),
                                  aStatement,
@@ -2982,7 +2982,7 @@ qdnTrigger::valActionCondition( qcStatement               * aStatement,
                         != IDE_SUCCESS,
                         err_when_subquery );
 
-        // BUG-38137 TriggerÀÇ when condition¿¡¼­ PSMÀ» È£ÃâÇÒ ¼ö ¾ø´Ù.
+        // BUG-38137 Triggerì˜ when conditionì—ì„œ PSMì„ í˜¸ì¶œí•  ìˆ˜ ì—†ë‹¤.
         if ( checkNoSpFunctionCall( sWhenCondition )
             != IDE_SUCCESS )
         {
@@ -2997,7 +2997,7 @@ qdnTrigger::valActionCondition( qcStatement               * aStatement,
     }
     else
     {
-        // Statement Granularity triggerÀÓ.
+        // Statement Granularity triggerì„.
         // Nothing to do.
     }
 
@@ -3044,7 +3044,7 @@ qdnTrigger::valActionBody( qcStatement               * aStatement,
 /***********************************************************************
  *
  * Description :
- *    CREATE TRIGGER¸¦ À§ÇÑ Action Body¿¡ ´ëÇÑ Validation.
+ *    CREATE TRIGGERë¥¼ ìœ„í•œ Action Bodyì— ëŒ€í•œ Validation.
  *
  * Implementation :
  *
@@ -3054,27 +3054,27 @@ qdnTrigger::valActionBody( qcStatement               * aStatement,
     IDE_MSGLOG_FUNC(IDE_MSGLOG_BODY(""));
 
     //---------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //---------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aParseTree != NULL );
 
     //----------------------------------------
-    // Action Body ±¸¹®¿¡ ´ëÇÑ ValidationÀ»
-    // TRIGGER ¸¦ À§ÇÑ Mode·Î ¼öÇàÇÑ´Ù.
+    // Action Body êµ¬ë¬¸ì— ëŒ€í•œ Validationì„
+    // TRIGGER ë¥¼ ìœ„í•œ Modeë¡œ ìˆ˜í–‰í•œë‹¤.
     //----------------------------------------
 
-    // row, column Å¸ÀÔÀÇ º¯¼ö¸¦ ¸®½ºÆ®¿¡ Ãß°¡ÇÏ±â À§ÇØ¼­´Â
-    // aStatement->myPlan->parseTree´Â qsProcParseTree°¡ µÇ¾î¾ß ÇÑ´Ù.
+    // row, column íƒ€ì…ì˜ ë³€ìˆ˜ë¥¼ ë¦¬ìŠ¤íŠ¸ì— ì¶”ê°€í•˜ê¸° ìœ„í•´ì„œëŠ”
+    // aStatement->myPlan->parseTreeëŠ” qsProcParseTreeê°€ ë˜ì–´ì•¼ í•œë‹¤.
     aStatement->myPlan->parseTree = (qcParseTree *)&aParseTree->actionBody;
 
-    // stmtKind¸¦ º¯°æÇÏ´Â ÀÌÀ¯´Â Å×ÀÌºí¿¡ ´ëÇÑ IS lockÀ» ¾ò±â À§ÇÔÀÌ´Ù.
+    // stmtKindë¥¼ ë³€ê²½í•˜ëŠ” ì´ìœ ëŠ” í…Œì´ë¸”ì— ëŒ€í•œ IS lockì„ ì–»ê¸° ìœ„í•¨ì´ë‹¤.
     aStatement->myPlan->parseTree->stmtKind = QCI_STMT_MASK_DML;
 
     //----------------------------------------
-    // Action BodyÀÇ Post Parsing
-    // DMLÀÇ °æ¿ì post parsing½Ã validationÀ» ¼öÇàÇÑ´Ù.
+    // Action Bodyì˜ Post Parsing
+    // DMLì˜ ê²½ìš° post parsingì‹œ validationì„ ìˆ˜í–‰í•œë‹¤.
     //----------------------------------------
 
     IDE_TEST( aParseTree->actionBody.block->common.
@@ -3083,7 +3083,7 @@ qdnTrigger::valActionBody( qcStatement               * aStatement,
               != IDE_SUCCESS);
 
     //----------------------------------------
-    // Action BodyÀÇ Validation
+    // Action Bodyì˜ Validation
     //----------------------------------------
 
     IDE_TEST( aParseTree->actionBody.block->common.
@@ -3093,7 +3093,7 @@ qdnTrigger::valActionBody( qcStatement               * aStatement,
                         QS_PURPOSE_TRIGGER )
               != IDE_SUCCESS);
 
-    // validation ÀÌÈÄ¿¡´Â ÀÌÀü parseTree·Î º¹±¸ÇÑ´Ù.
+    // validation ì´í›„ì—ëŠ” ì´ì „ parseTreeë¡œ ë³µêµ¬í•œë‹¤.
     aStatement->myPlan->parseTree = (qcParseTree *)aParseTree;
 
     //----------------------------------------
@@ -3106,7 +3106,7 @@ qdnTrigger::valActionBody( qcStatement               * aStatement,
 
     IDE_EXCEPTION_END;
 
-    // validation ÀÌÈÄ¿¡´Â ÀÌÀü parseTree·Î º¹±¸ÇÑ´Ù.
+    // validation ì´í›„ì—ëŠ” ì´ì „ parseTreeë¡œ ë³µêµ¬í•œë‹¤.
     aStatement->myPlan->parseTree = (qcParseTree *)aParseTree;
 
     return IDE_FAILURE;
@@ -3120,20 +3120,20 @@ qdnTrigger::valInsteadOfTrigger( qdnCreateTriggerParseTree * aParseTree )
 /***********************************************************************
  *
  * Description :
- *    INSTEAD OF TRIGGERÀÇ CREATE, REPLACE ¸¦ À§ÇÑ Á¦¾à»ç Validation.
+ *    INSTEAD OF TRIGGERì˜ CREATE, REPLACE ë¥¼ ìœ„í•œ ì œì•½ì‚¬ Validation.
  *
  * Implementation :
  *
  ***********************************************************************/
 
     //---------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //---------------------------------------
 
     IDE_DASSERT( aParseTree != NULL );
 
-    // INSTEAD OF ´Â ¹İµå½Ã view
-    // INSTEAD OF ¸¦ ÀÏ¹İ Å×ÀÌºí¿¡ °É¼ö ¾ø´Ù.
+    // INSTEAD OF ëŠ” ë°˜ë“œì‹œ view
+    // INSTEAD OF ë¥¼ ì¼ë°˜ í…Œì´ë¸”ì— ê±¸ìˆ˜ ì—†ë‹¤.
     IDE_TEST_RAISE(
           ( aParseTree->triggerEvent.eventTime ==
             QCM_TRIGGER_INSTEAD_OF ) &&
@@ -3141,7 +3141,7 @@ qdnTrigger::valInsteadOfTrigger( qdnCreateTriggerParseTree * aParseTree )
             QCM_VIEW ),
         ERR_INSTEAD_OF_NOT_VIEW );
 
-    //VIEW Å×ÀÌºí¿¡ INSTEAD OF¿Ü¿¡ ´Ù¸¥ Æ®¸®°Å¸¦ »ı¼ºÇÒ¼ö ¾ø´Ù.
+    //VIEW í…Œì´ë¸”ì— INSTEAD OFì™¸ì— ë‹¤ë¥¸ íŠ¸ë¦¬ê±°ë¥¼ ìƒì„±í• ìˆ˜ ì—†ë‹¤.
     IDE_TEST_RAISE(
           ( aParseTree->triggerEvent.eventTime !=
             QCM_TRIGGER_INSTEAD_OF ) &&
@@ -3214,7 +3214,7 @@ qdnTrigger::checkCycle( qcStatement               * aStatement,
 /***********************************************************************
  *
  * Description :
- *    Trigger »ı¼º ½Ã Cycle¿¡ ´ëÇÑ °Ë»ç¸¦ ¼öÇàÇÑ´Ù.
+ *    Trigger ìƒì„± ì‹œ Cycleì— ëŒ€í•œ ê²€ì‚¬ë¥¼ ìˆ˜í–‰í•œë‹¤.
  *
  *    DML --> [T1] --> [Tr1]--DML--> [T2] --> [TrA] --> [T1]
  *             ^                     [T3]               ^^^^
@@ -3222,14 +3222,14 @@ qdnTrigger::checkCycle( qcStatement               * aStatement,
  *             |                                          |
  *             +------------------------------------------+
  *
- *    À§ÀÇ ±×¸²°ú °°ÀÌ CycleÀº ¿©·¯ ´Ü°è¿¡ °ÉÃÄ Á¸ÀçÇÒ ¼ö ÀÖ´Ù.
- *    ´Ü¼øÈ÷ Cache Á¤º¸¸¦ ÀÌ¿ëÇÏ¿© CycleÀ» DetectÇÒ °æ¿ì,
- *    IPR µîÀ¸·Î ÀÎÇØ ¼­¹ö°¡ »ç¸ÁÇÒ ¼ö ÀÖÀ¸¹Ç·Î µ¿½Ã¼º Á¦¾î¸¦
- *    ¸íÈ®ÇÏ°Ô °í·ÁÇÏ¿©¾ß ÇÑ´Ù.
+ *    ìœ„ì˜ ê·¸ë¦¼ê³¼ ê°™ì´ Cycleì€ ì—¬ëŸ¬ ë‹¨ê³„ì— ê±¸ì³ ì¡´ì¬í•  ìˆ˜ ìˆë‹¤.
+ *    ë‹¨ìˆœíˆ Cache ì •ë³´ë¥¼ ì´ìš©í•˜ì—¬ Cycleì„ Detectí•  ê²½ìš°,
+ *    IPR ë“±ìœ¼ë¡œ ì¸í•´ ì„œë²„ê°€ ì‚¬ë§í•  ìˆ˜ ìˆìœ¼ë¯€ë¡œ ë™ì‹œì„± ì œì–´ë¥¼
+ *    ëª…í™•í•˜ê²Œ ê³ ë ¤í•˜ì—¬ì•¼ í•œë‹¤.
  *
- *    Meta Cache¿¡ÀÇ ¿¬¼ÓÀû Á¢±ÙÀº µ¿½Ã¼º Á¦¾î¸¦ ÇÊ¿ä·Î ÇÏ°Ô µÇ¹Ç·Î,
- *    Action Body°¡ Á¢±ÙÇÏ´Â Table Á¤º¸¸¦ ±â·ÏÇÏ°í ÀÖ´Â
- *    SYS_TRIGGER_DML_TABLES_ ¸¦ ÀÌ¿ëÇÏ¿© °Ë»çÇÑ´Ù.
+ *    Meta Cacheì—ì˜ ì—°ì†ì  ì ‘ê·¼ì€ ë™ì‹œì„± ì œì–´ë¥¼ í•„ìš”ë¡œ í•˜ê²Œ ë˜ë¯€ë¡œ,
+ *    Action Bodyê°€ ì ‘ê·¼í•˜ëŠ” Table ì •ë³´ë¥¼ ê¸°ë¡í•˜ê³  ìˆëŠ”
+ *    SYS_TRIGGER_DML_TABLES_ ë¥¼ ì´ìš©í•˜ì—¬ ê²€ì‚¬í•œë‹¤.
  *
  * Implementation :
  *
@@ -3242,15 +3242,15 @@ qdnTrigger::checkCycle( qcStatement               * aStatement,
     qsModifiedTable     * sSameTable;
 
     //---------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //---------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aParseTree != NULL );
 
     //---------------------------------------
-    // Action Body°¡ DML·Î ÂüÁ¶ÇÏ´Â TableÁß
-    // ÀÚ½ÅÀÇ Table¿¡ Á¢±ÙÇÏ´Â TableÀÌ Á¸ÀçÇÏ´Â Áö¸¦ °Ë»ç
+    // Action Bodyê°€ DMLë¡œ ì°¸ì¡°í•˜ëŠ” Tableì¤‘
+    // ìì‹ ì˜ Tableì— ì ‘ê·¼í•˜ëŠ” Tableì´ ì¡´ì¬í•˜ëŠ” ì§€ë¥¼ ê²€ì‚¬
     //---------------------------------------
 
     for ( sCheckTable = aStatement->spvEnv->modifiedTableList;
@@ -3262,9 +3262,9 @@ qdnTrigger::checkCycle( qcStatement               * aStatement,
     }
 
     //---------------------------------------
-    // Action Body°¡ DML·Î ÂüÁ¶µÇ´Â Table·ÎºÎÅÍ ¹ß»ıµÇ´Â
-    // CycleÀÌ Á¸ÀçÇÏ´Â Áö °Ë»ç
-    // ÀÌ¹Ì °Ë»çÇÑ TableÀº ´Ù½Ã °Ë»çÇÏÁö ¾Ê´Â´Ù.
+    // Action Bodyê°€ DMLë¡œ ì°¸ì¡°ë˜ëŠ” Tableë¡œë¶€í„° ë°œìƒë˜ëŠ”
+    // Cycleì´ ì¡´ì¬í•˜ëŠ” ì§€ ê²€ì‚¬
+    // ì´ë¯¸ ê²€ì‚¬í•œ Tableì€ ë‹¤ì‹œ ê²€ì‚¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
     //---------------------------------------
 
     for ( sCheckTable = aStatement->spvEnv->modifiedTableList;
@@ -3277,7 +3277,7 @@ qdnTrigger::checkCycle( qcStatement               * aStatement,
         {
             if ( sSameTable->tableID == sCheckTable->tableID )
             {
-                // µ¿ÀÏÇÑ TableÀÌ ÀÌ¹Ì °Ë»çµÇ¾úÀ½.
+                // ë™ì¼í•œ Tableì´ ì´ë¯¸ ê²€ì‚¬ë˜ì—ˆìŒ.
                 break;
             }
             else
@@ -3288,8 +3288,8 @@ qdnTrigger::checkCycle( qcStatement               * aStatement,
 
         if ( sSameTable == sCheckTable )
         {
-            // ¾ÆÁ÷ °Ë»ç°¡ µÇÁö ¾ÊÀº TableÀÇ °æ¿ì
-            // °ü·Ã Table·ÎºÎÅÍ CycleÀÌ Á¸ÀçÇÏ´Â Áö¸¦ °Ë»çÇÑ´Ù.
+            // ì•„ì§ ê²€ì‚¬ê°€ ë˜ì§€ ì•Šì€ Tableì˜ ê²½ìš°
+            // ê´€ë ¨ Tableë¡œë¶€í„° Cycleì´ ì¡´ì¬í•˜ëŠ” ì§€ë¥¼ ê²€ì‚¬í•œë‹¤.
             IDE_TEST( qcmTrigger::checkTriggerCycle ( aStatement,
                                                       sCheckTable->tableID,
                                                       aParseTree->tableID )
@@ -3297,8 +3297,8 @@ qdnTrigger::checkCycle( qcStatement               * aStatement,
         }
         else
         {
-            // ÀÌ¹Ì °Ë»ç°¡ ¿Ï·áµÈ TableÀÎ °æ¿ì
-            // Áßº¹ °Ë»çÇÒ ÇÊ¿ä°¡ ¾ø´Ù.
+            // ì´ë¯¸ ê²€ì‚¬ê°€ ì™„ë£Œëœ Tableì¸ ê²½ìš°
+            // ì¤‘ë³µ ê²€ì‚¬í•  í•„ìš”ê°€ ì—†ë‹¤.
             // Nothing To Do
         }
     }
@@ -3323,8 +3323,8 @@ qdnTrigger::createTriggerObject( qcStatement     * aStatement,
 /***********************************************************************
  *
  * Description :
- *    Trigger »ı¼º ±¸¹®À» ÀúÀåÇÏ´Â Object¸¦ »ı¼ºÇÏ°í
- *    ÇØ´ç HandleÀ» ¾ò´Â´Ù.
+ *    Trigger ìƒì„± êµ¬ë¬¸ì„ ì €ì¥í•˜ëŠ” Objectë¥¼ ìƒì„±í•˜ê³ 
+ *    í•´ë‹¹ Handleì„ ì–»ëŠ”ë‹¤.
  *
  * Implementation :
  *
@@ -3334,14 +3334,14 @@ qdnTrigger::createTriggerObject( qcStatement     * aStatement,
     IDE_MSGLOG_FUNC(IDE_MSGLOG_BODY(""));
 
     //---------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //---------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aTriggerHandle != NULL );
 
     //---------------------------------------
-    // Trigger ObjectÀÇ »ı¼º
+    // Trigger Objectì˜ ìƒì„±
     //---------------------------------------
 
     IDE_TEST( smiObject::createObject( QC_SMI_STMT( aStatement ),
@@ -3369,7 +3369,7 @@ IDE_RC qdnTrigger::allocTriggerCache( void             * aTriggerHandle,
  *
  * Description :
  *
- *    Trigger Object¸¦ À§ÇÑ Cache Á¤º¸¸¦ ÇÒ´ç¹Ş´Â´Ù.
+ *    Trigger Objectë¥¼ ìœ„í•œ Cache ì •ë³´ë¥¼ í• ë‹¹ë°›ëŠ”ë‹¤.
  *
  *     [Trigger Handle] -- info ----> CREATE TRIGGER String
  *                      |
@@ -3387,7 +3387,7 @@ IDE_RC qdnTrigger::allocTriggerCache( void             * aTriggerHandle,
     UInt              sStage = 0;
 
     //---------------------------------------
-    // Permanant Memory ¿µ¿ªÀ» ÇÒ´ç¹Ş´Â´Ù.
+    // Permanant Memory ì˜ì—­ì„ í• ë‹¹ë°›ëŠ”ë‹¤.
     //---------------------------------------
 
     IDU_LIMITPOINT("qdnTrigger::allocTriggerCache::malloc1");
@@ -3399,8 +3399,8 @@ IDE_RC qdnTrigger::allocTriggerCache( void             * aTriggerHandle,
     sStage = 1;
 
     //---------------------------------------
-    // Statement Text¸¦ ÀúÀåÇÏ±â À§ÇÑ °ø°£ ÇÒ´ç
-    // remote °æ¿ì´Â ¿ø°İÀÇ stmt text, lenÀ» ¾ò¾î ¿Â´Ù.
+    // Statement Textë¥¼ ì €ì¥í•˜ê¸° ìœ„í•œ ê³µê°„ í• ë‹¹
+    // remote ê²½ìš°ëŠ” ì›ê²©ì˜ stmt text, lenì„ ì–»ì–´ ì˜¨ë‹¤.
     //---------------------------------------
 
     smiObject::getObjectInfoSize( aTriggerHandle,
@@ -3424,9 +3424,9 @@ IDE_RC qdnTrigger::allocTriggerCache( void             * aTriggerHandle,
     sStage = 2;
 
     //---------------------------------------
-    // Trigger CacheÁ¤º¸¸¦ ÃÊ±âÈ­ÇÑ´Ù.
-    // remote °æ¿ì´Â smiGetTableId·Î triggerOID ¾òÀ» ¼ö ¾ø´Ù.
-    // ÀÌ¹Ì triggerInfo¿¡ ¿ø°İÀÇ triggerOID°¡ Á¸Àç ÇÑ´Ù.
+    // Trigger Cacheì •ë³´ë¥¼ ì´ˆê¸°í™”í•œë‹¤.
+    // remote ê²½ìš°ëŠ” smiGetTableIdë¡œ triggerOID ì–»ì„ ìˆ˜ ì—†ë‹¤.
+    // ì´ë¯¸ triggerInfoì— ì›ê²©ì˜ triggerOIDê°€ ì¡´ì¬ í•œë‹¤.
     //---------------------------------------
 
     // bug-29598
@@ -3435,20 +3435,20 @@ IDE_RC qdnTrigger::allocTriggerCache( void             * aTriggerHandle,
                      "TRIGGER_%"ID_vULONG_FMT"_OBJECT_LATCH",
                      aTriggerOID );
 
-    // Latch Á¤º¸ÀÇ ÃÊ±âÈ­
+    // Latch ì •ë³´ì˜ ì´ˆê¸°í™”
     IDE_TEST( sTriggerCache->latch.initialize( sLatchName )
               != IDE_SUCCESS );
     sStage = 3;
 
-    // Valid ¿©ºÎÀÇ ÃÊ±âÈ­
+    // Valid ì—¬ë¶€ì˜ ì´ˆê¸°í™”
     sTriggerCache->isValid = ID_FALSE;
 
     //---------------------------------------
-    // Trigger StatementÀÇ ÃÊ±âÈ­
+    // Trigger Statementì˜ ì´ˆê¸°í™”
     //---------------------------------------
 
-    // ½ÇÁ¦ Stack Count´Â ¼öÇà ½ÃÁ¡¿¡ Template º¹»ç¿¡ ÀÇÇÏ¿©
-    // Session Á¤º¸·ÎºÎÅÍ °áÁ¤µÈ´Ù.
+    // ì‹¤ì œ Stack CountëŠ” ìˆ˜í–‰ ì‹œì ì— Template ë³µì‚¬ì— ì˜í•˜ì—¬
+    // Session ì •ë³´ë¡œë¶€í„° ê²°ì •ëœë‹¤.
     IDE_TEST( qcg::allocStatement( & sTriggerCache->triggerStatement,
                                    NULL,
                                    NULL,
@@ -3457,13 +3457,13 @@ IDE_RC qdnTrigger::allocTriggerCache( void             * aTriggerHandle,
     sStage = 4;
 
     /* BUG-44563
-       trigger »ı¼º ÈÄ server stopÇÏ¸é ºñÁ¤»ó Á¾·áÇÏ´Â °æ¿ì°¡ ¹ß»ıÇÕ´Ï´Ù. */
+       trigger ìƒì„± í›„ server stopí•˜ë©´ ë¹„ì •ìƒ ì¢…ë£Œí•˜ëŠ” ê²½ìš°ê°€ ë°œìƒí•©ë‹ˆë‹¤. */
     IDE_TEST( qcg::freeSession( & sTriggerCache->triggerStatement ) != IDE_SUCCESS );
 
     //--------------------------------------
-    // Handle¿¡ Trigger Object Cache Á¤º¸ÀÇ ¿¬°á
-    // triggerInfo->handle ¿ø°İÀÇ Á¤º¸ÀÌ±â ¶§¹®¿¡ remoteÀÎ °æ¿ì´Â
-    // handle¿¡ ¿¬°áÇÏÁö ¾Ê°í hash table¿¡¼­ ¾ò¾î¿Í¼­ »ç¿ëÇÑ´Ù.
+    // Handleì— Trigger Object Cache ì •ë³´ì˜ ì—°ê²°
+    // triggerInfo->handle ì›ê²©ì˜ ì •ë³´ì´ê¸° ë•Œë¬¸ì— remoteì¸ ê²½ìš°ëŠ”
+    // handleì— ì—°ê²°í•˜ì§€ ì•Šê³  hash tableì—ì„œ ì–»ì–´ì™€ì„œ ì‚¬ìš©í•œë‹¤.
     //--------------------------------------
 
     (void)smiObject::setObjectTempInfo( aTriggerHandle, (void*) sTriggerCache );
@@ -3503,7 +3503,7 @@ qdnTrigger::dropTriggerObject( qcStatement     * aStatement,
 /***********************************************************************
  *
  * Description :
- *    Trigger Object¸¦ »èÁ¦ÇÑ´Ù.
+ *    Trigger Objectë¥¼ ì‚­ì œí•œë‹¤.
  *
  * Implementation :
  *
@@ -3513,14 +3513,14 @@ qdnTrigger::dropTriggerObject( qcStatement     * aStatement,
     IDE_MSGLOG_FUNC(IDE_MSGLOG_BODY(""));
 
     //---------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //---------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aTriggerHandle != NULL );
 
     //---------------------------------------
-    // Trigger ObjectÀÇ »èÁ¦
+    // Trigger Objectì˜ ì‚­ì œ
     //---------------------------------------
 
     IDE_TEST( smiObject::dropObject( QC_SMI_STMT( aStatement ),
@@ -3542,7 +3542,7 @@ qdnTrigger::freeTriggerCache( qdnTriggerCache * aCache )
 /***********************************************************************
  *
  * Description :
- *    Trigger Handle¿¡ ÁöÁ¤µÈ  Trigger Object Cache¸¦ Á¦°ÅÇÑ´Ù.
+ *    Trigger Handleì— ì§€ì •ëœ  Trigger Object Cacheë¥¼ ì œê±°í•œë‹¤.
  *
  * Implementation :
  *
@@ -3552,7 +3552,7 @@ qdnTrigger::freeTriggerCache( qdnTriggerCache * aCache )
     IDE_MSGLOG_FUNC(IDE_MSGLOG_BODY(""));
 
     //---------------------------------------
-    // Trigger CacheÀÇ Statement °ø°£ÀÇ Á¦°Å
+    // Trigger Cacheì˜ Statement ê³µê°„ì˜ ì œê±°
     //---------------------------------------
 
     if ( qcg::freeStatement( & aCache->triggerStatement ) != IDE_SUCCESS )
@@ -3565,11 +3565,11 @@ qdnTrigger::freeTriggerCache( qdnTriggerCache * aCache )
     }
 
     //---------------------------------------
-    // Trigger CacheÀÇ Text °ø°£ÀÇ Á¦°Å
+    // Trigger Cacheì˜ Text ê³µê°„ì˜ ì œê±°
     //---------------------------------------
 
     // To Fix BUG-12034
-    // ÇÏ³ªÀÇ qdnTriggerCache¿¡ ´ëÇØ freeTriggerCache°¡ µÎ¹ø¾¿ È£ÃâµÇ¸é ¿À·ù!
+    // í•˜ë‚˜ì˜ qdnTriggerCacheì— ëŒ€í•´ freeTriggerCacheê°€ ë‘ë²ˆì”© í˜¸ì¶œë˜ë©´ ì˜¤ë¥˜!
     IDE_DASSERT( aCache->stmtText != NULL );
 
     if ( iduMemMgr::free( aCache->stmtText ) != IDE_SUCCESS )
@@ -3584,7 +3584,7 @@ qdnTrigger::freeTriggerCache( qdnTriggerCache * aCache )
     aCache->stmtText = NULL;
 
     //---------------------------------------
-    // Latch Á¦°Å
+    // Latch ì œê±°
     //---------------------------------------
 
     if ( aCache->latch.destroy() != IDE_SUCCESS )
@@ -3597,7 +3597,7 @@ qdnTrigger::freeTriggerCache( qdnTriggerCache * aCache )
     }
 
     //---------------------------------------
-    // Trigger CacheÀÇ Á¦°Å
+    // Trigger Cacheì˜ ì œê±°
     //---------------------------------------
 
     if ( iduMemMgr::free( aCache ) != IDE_SUCCESS )
@@ -3683,19 +3683,19 @@ qdnTrigger::checkCondition( qcStatement         * aStatement,
 /***********************************************************************
  *
  * Description :
- *    ÇØ´ç Trigger°¡ ¼öÇàÇØ¾ß ÇÏ´Â TriggerÀÎÁö °Ë»çÇÑ´Ù.
+ *    í•´ë‹¹ Triggerê°€ ìˆ˜í–‰í•´ì•¼ í•˜ëŠ” Triggerì¸ì§€ ê²€ì‚¬í•œë‹¤.
  *
  * Implementation :
  *
- *    Trigger Á¶°ÇÀÇ °Ë»ç
- *       - ENABLE ¿©ºÎ
- *       - µ¿ÀÏÇÑ Granularity ¿©ºÎ(ROW/STMT)
- *       - µ¿ÀÏÇÑ Event Time ¿©ºÎ(BEFORE/AFTER)
- *       - µ¿ÀÏÇÑ Event Type ¿©ºÎ(INSERT, DELETE, UPDATE)
- *           : UPDATEÀÏ °æ¿ì OFÀÇ °Ë»çµµ ÇÊ¿ä
+ *    Trigger ì¡°ê±´ì˜ ê²€ì‚¬
+ *       - ENABLE ì—¬ë¶€
+ *       - ë™ì¼í•œ Granularity ì—¬ë¶€(ROW/STMT)
+ *       - ë™ì¼í•œ Event Time ì—¬ë¶€(BEFORE/AFTER)
+ *       - ë™ì¼í•œ Event Type ì—¬ë¶€(INSERT, DELETE, UPDATE)
+ *           : UPDATEì¼ ê²½ìš° OFì˜ ê²€ì‚¬ë„ í•„ìš”
  *
- *       - WHEN ConditionÀÌ ÀÖÀ» °æ¿ì
- *           : ½ÇÁ¦ ¼öÇà½Ã¿¡ °Ë»çÇÑ´Ù.
+ *       - WHEN Conditionì´ ìˆì„ ê²½ìš°
+ *           : ì‹¤ì œ ìˆ˜í–‰ì‹œì— ê²€ì‚¬í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -3712,7 +3712,7 @@ qdnTrigger::checkCondition( qcStatement         * aStatement,
     UInt                         sStage = 0;
 
     //---------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //---------------------------------------
 
     IDE_DASSERT( aStatement    != NULL );
@@ -3721,29 +3721,29 @@ qdnTrigger::checkCondition( qcStatement         * aStatement,
     IDE_DASSERT( aIsRecompiled != NULL );
 
     //---------------------------------------
-    // Event Á¶°ÇÀÇ °Ë»ç
+    // Event ì¡°ê±´ì˜ ê²€ì‚¬
     //---------------------------------------
 
     sNeedAction = ID_FALSE;
 
-    /* BUG-44819 runDMLforDDL, runDMLforInternal ·Î µ¿ÀÛÇÏ´Â SQL ÀÇ °æ¿ì 
-     *           trigger °¡ µ¿ÀÛÇÏ¸é ¾ÈµË´Ï´Ù */
+    /* BUG-44819 runDMLforDDL, runDMLforInternal ë¡œ ë™ì‘í•˜ëŠ” SQL ì˜ ê²½ìš° 
+     *           trigger ê°€ ë™ì‘í•˜ë©´ ì•ˆë©ë‹ˆë‹¤ */
     if ( ( aStatement->session->mMmSession != NULL ) &&
          ( aTriggerInfo->enable == QCM_TRIGGER_ENABLE ) &&
          ( aTriggerInfo->granularity == aGranularity ) &&
          ( aTriggerInfo->eventTime == aEventTime ) &&
          ( (aTriggerInfo->eventType & aEventType) != 0 ) )
     {
-        // ¸ğµç Event Á¶°ÇÀÌ ºÎÇÕÇÏ´Â °æ¿ì
+        // ëª¨ë“  Event ì¡°ê±´ì´ ë¶€í•©í•˜ëŠ” ê²½ìš°
         if ( aEventType == QCM_TRIGGER_EVENT_UPDATE )
         {
             //-----------------------------------------
-            // UPDATE EventÀÎ °æ¿ì OF ±¸¹®µµ °Ë»çÇØ¾ß ÇÔ.
+            // UPDATE Eventì¸ ê²½ìš° OF êµ¬ë¬¸ë„ ê²€ì‚¬í•´ì•¼ í•¨.
             //-----------------------------------------
 
             // BUG-16543
-            // aTriggerInfo->uptColumnID´Â Á¤È®ÇÏÁö ¾ÊÀ¸¹Ç·Î ÂüÁ¶ÇÏÁö ¾Ê°í
-            // triggerStatement¸¦ ÂüÁ¶ÇÑ´Ù.
+            // aTriggerInfo->uptColumnIDëŠ” ì •í™•í•˜ì§€ ì•Šìœ¼ë¯€ë¡œ ì°¸ì¡°í•˜ì§€ ì•Šê³ 
+            // triggerStatementë¥¼ ì°¸ì¡°í•œë‹¤.
             if ( aTriggerInfo->uptCount == 0 )
             {
                 sNeedAction = ID_TRUE;
@@ -3773,13 +3773,13 @@ qdnTrigger::checkCondition( qcStatement         * aStatement,
                                                   aTriggerInfo )
                                 != IDE_SUCCESS )
                         {
-                            // rebuild error¶ó¸é ´Ù½Ã recompileÀ» ½ÃµµÇÑ´Ù.
+                            // rebuild errorë¼ë©´ ë‹¤ì‹œ recompileì„ ì‹œë„í•œë‹¤.
                             IDE_TEST( ideIsRebuild() != IDE_SUCCESS );
                         }
 
                         // PROJ-2219 Row-level before update trigger
-                        // qmnUPTE::firstInit()¿¡¼­ trigger¸¦ °Ë»çÇÏ¿©,
-                        // invalid »óÅÂÀÌ¸é compile ÇÏ°í, update DMLÀ» rebuild ÇÑ´Ù.
+                        // qmnUPTE::firstInit()ì—ì„œ triggerë¥¼ ê²€ì‚¬í•˜ì—¬,
+                        // invalid ìƒíƒœì´ë©´ compile í•˜ê³ , update DMLì„ rebuild í•œë‹¤.
                         *aIsRecompiled = ID_TRUE;
 
                         continue;
@@ -3837,7 +3837,7 @@ qdnTrigger::checkCondition( qcStatement         * aStatement,
     }
     else
     {
-        // Event Á¶°ÇÀÌ ºÎÇÕÇÏÁö ¾Ê´Â °æ¿ì
+        // Event ì¡°ê±´ì´ ë¶€í•©í•˜ì§€ ì•ŠëŠ” ê²½ìš°
         sNeedAction = ID_FALSE;
     }
 
@@ -3863,11 +3863,11 @@ qdnTrigger::checkCondition( qcStatement         * aStatement,
 
 /***********************************************************************
  *
- *   [Trigger ¼öÇàÀÇ µ¿½Ã¼º Á¦¾î]
+ *   [Trigger ìˆ˜í–‰ì˜ ë™ì‹œì„± ì œì–´]
  *
- *    ºñ°í) t1, t2 : table, r1, r2 : trigger
+ *    ë¹„ê³ ) t1, t2 : table, r1, r2 : trigger
  *
- *    - TriggerÀÇ ¼öÇà(r1)°ú Subject Table(t1)¿¡ ´ëÇÑ DDL
+ *    - Triggerì˜ ìˆ˜í–‰(r1)ê³¼ Subject Table(t1)ì— ëŒ€í•œ DDL
  *
  *
  *                DDL  |
@@ -3876,12 +3876,12 @@ qdnTrigger::checkCondition( qcStatement         * aStatement,
  *                     V
  *     DML --(IX)-->  [t1] --(LS)--> [r1] --(IX)--> [t2]
  *
- *     À§ÀÇ ±×¸²¿¡¼­ º¸µíÀÌ Subject Table¿¡ ´ëÇÑ DDLÀº X lock°ú
- *     DMLÀÇ IX lock¿¡ ÀÇÇÏ¿© Á¦¾îµÈ´Ù.
+ *     ìœ„ì˜ ê·¸ë¦¼ì—ì„œ ë³´ë“¯ì´ Subject Tableì— ëŒ€í•œ DDLì€ X lockê³¼
+ *     DMLì˜ IX lockì— ì˜í•˜ì—¬ ì œì–´ëœë‹¤.
  *
- *    - TriggerÀÇ ¼öÇà(r1)°ú Action Table(t2) ¿¡ ´ëÇÑ DDL
+ *    - Triggerì˜ ìˆ˜í–‰(r1)ê³¼ Action Table(t2) ì— ëŒ€í•œ DDL
  *
- *      PSM°ú µ¿ÀÏÇÑ ¹æ½ÄÀ¸·Î Ã³¸®ÇÒ °æ¿ì deadlockÀÌ ¹ß»ıÇÒ ¼ö ÀÖ´Ù.
+ *      PSMê³¼ ë™ì¼í•œ ë°©ì‹ìœ¼ë¡œ ì²˜ë¦¬í•  ê²½ìš° deadlockì´ ë°œìƒí•  ìˆ˜ ìˆë‹¤.
  *
  *
  *                                              DDL  |
@@ -3892,16 +3892,16 @@ qdnTrigger::checkCondition( qcStatement         * aStatement,
  *     DML --(IX)-->  [t1] --(LS)--> [r1]           [t2]
  *                                   [  ] --(IX)--> [  ]
  *
- *     À§ÀÇ ±×¸²¿¡¼­ º¸µíÀÌ DML·ÎºÎÅÍ ½ÃÀÛÇÏ´Â [r1] --> [t2]·ÎÀÇ IX¿Í
- *     DDL·ÎºÎÅÍ ½ÃÀÛÇÏ´Â [t2] --> [r1] À¸·ÎÀÇ (LX) ´Â ¼­·Î DDLÀÇ X¿Í
- *     DMLÀÇ (LS) ÀÇ release¸¦ ±â´Ù¸®°Ô µÇ¾î deadlock¿¡ ºüÁö°Ô µÈ´Ù.
- *     ÀÌ·¯ÇÑ ¹®Á¦´Â t2ÀÇ º¯°æÀ» r1¿¡ ¹İ¿µÇÏ·Á´Â ½Ãµµ·Î ÀÎÇØ ¹ß»ıÇÏ¸ç,
- *     PSM¿¡¼­´Â ÀÌ·¯ÇÑ ¹®Á¦¸¦ ÇØ°áÇÏ±â À§ÇØ ÇÑ¹ø invalid µÇ¸é,
- *     ¸í½ÃÀûÀ¸·Î recompileÇÏ±â Àü±îÁö´Â Ç×»ó recompileÇÏ°Ô µÇ´Â ¹®Á¦°¡
- *     Á¸ÀçÇÑ´Ù.
+ *     ìœ„ì˜ ê·¸ë¦¼ì—ì„œ ë³´ë“¯ì´ DMLë¡œë¶€í„° ì‹œì‘í•˜ëŠ” [r1] --> [t2]ë¡œì˜ IXì™€
+ *     DDLë¡œë¶€í„° ì‹œì‘í•˜ëŠ” [t2] --> [r1] ìœ¼ë¡œì˜ (LX) ëŠ” ì„œë¡œ DDLì˜ Xì™€
+ *     DMLì˜ (LS) ì˜ releaseë¥¼ ê¸°ë‹¤ë¦¬ê²Œ ë˜ì–´ deadlockì— ë¹ ì§€ê²Œ ëœë‹¤.
+ *     ì´ëŸ¬í•œ ë¬¸ì œëŠ” t2ì˜ ë³€ê²½ì„ r1ì— ë°˜ì˜í•˜ë ¤ëŠ” ì‹œë„ë¡œ ì¸í•´ ë°œìƒí•˜ë©°,
+ *     PSMì—ì„œëŠ” ì´ëŸ¬í•œ ë¬¸ì œë¥¼ í•´ê²°í•˜ê¸° ìœ„í•´ í•œë²ˆ invalid ë˜ë©´,
+ *     ëª…ì‹œì ìœ¼ë¡œ recompileí•˜ê¸° ì „ê¹Œì§€ëŠ” í•­ìƒ recompileí•˜ê²Œ ë˜ëŠ” ë¬¸ì œê°€
+ *     ì¡´ì¬í•œë‹¤.
  *
- *     ÀÌ·¯ÇÑ ¹®Á¦¸¦ ÇØ°áÇÏ±â À§ÇØ¼­´Â ´ÙÀ½ ±×¸²°ú °°ÀÌ
- *     Lock°ú LatchÀÇ ¹æÇâÀÌ ¼­·Î ´Ù¸¥ °æ¿ì°¡ ¾ø´Â Á¶°ÇÇÏ¿¡¼­ ÇØ°áÇÏ¿©¾ß ÇÑ´Ù.
+ *     ì´ëŸ¬í•œ ë¬¸ì œë¥¼ í•´ê²°í•˜ê¸° ìœ„í•´ì„œëŠ” ë‹¤ìŒ ê·¸ë¦¼ê³¼ ê°™ì´
+ *     Lockê³¼ Latchì˜ ë°©í–¥ì´ ì„œë¡œ ë‹¤ë¥¸ ê²½ìš°ê°€ ì—†ëŠ” ì¡°ê±´í•˜ì—ì„œ í•´ê²°í•˜ì—¬ì•¼ í•œë‹¤.
  *
  *
  *                                              DDL  |
@@ -3910,8 +3910,8 @@ qdnTrigger::checkCondition( qcStatement         * aStatement,
  *                                                   V
  *     DML --(IX)-->  [t1] --(LS)--> [r1] --(IX)--> [t2]
  *
- *     Áï, InvalidÀÇ ¿©ºÎ´Â Trigger¸¦ ¼öÇàÇÏ´Â ½ÃÁ¡¿¡¼­¸¸ ÆÇ´ÜÇÏ°í,
- *     Trigger¸¦ fireÇÏ´Â Session°£ÀÇ µ¿½Ã¼º Á¦¾î¸¸ °í·ÁÇÏ¸é µÈ´Ù.
+ *     ì¦‰, Invalidì˜ ì—¬ë¶€ëŠ” Triggerë¥¼ ìˆ˜í–‰í•˜ëŠ” ì‹œì ì—ì„œë§Œ íŒë‹¨í•˜ê³ ,
+ *     Triggerë¥¼ fireí•˜ëŠ” Sessionê°„ì˜ ë™ì‹œì„± ì œì–´ë§Œ ê³ ë ¤í•˜ë©´ ëœë‹¤.
  *
  *                            [DML]
  *                             |
@@ -3943,8 +3943,8 @@ qdnTrigger::fireTriggerAction( qcStatement           * aStatement,
 /***********************************************************************
  *
  * Description :
- *    Trigger Action¿¡ ´ëÇÑ Validation À» ÅëÇØ
- *    Recompile ¹× Trigger ActionÀ» ¼öÇàÇÑ´Ù.
+ *    Trigger Actionì— ëŒ€í•œ Validation ì„ í†µí•´
+ *    Recompile ë° Trigger Actionì„ ìˆ˜í–‰í•œë‹¤.
  *
  * Implementation :
  *
@@ -3958,14 +3958,14 @@ qdnTrigger::fireTriggerAction( qcStatement           * aStatement,
     UInt              sStage = 0;
 
     //---------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //---------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aTriggerInfo != NULL );
 
     //---------------------------------------
-    // Trigger CacheÁ¤º¸ÀÇ È¹µæ
+    // Trigger Cacheì •ë³´ì˜ íšë“
     //---------------------------------------
 
     IDE_TEST( smiObject::getObjectTempInfo( aTriggerInfo->triggerHandle,
@@ -3974,7 +3974,7 @@ qdnTrigger::fireTriggerAction( qcStatement           * aStatement,
 
     while ( 1 )
     {
-        // S Latch È¹µæ
+        // S Latch íšë“
         IDE_TEST( sCache->latch.lockRead (
                       NULL, /* idvSQL * */
                       NULL /* idvWeArgs* */ ) != IDE_SUCCESS );
@@ -3983,7 +3983,7 @@ qdnTrigger::fireTriggerAction( qcStatement           * aStatement,
         if ( sCache->isValid != ID_TRUE )
         {
             //----------------------------------------
-            // ValidÇÏÁö ¾Ê´Ù¸é Recompile ÇÑ´Ù.
+            // Validí•˜ì§€ ì•Šë‹¤ë©´ Recompile í•œë‹¤.
             //----------------------------------------
 
             // Release Latch
@@ -3994,7 +3994,7 @@ qdnTrigger::fireTriggerAction( qcStatement           * aStatement,
                                       aTriggerInfo )
                     != IDE_SUCCESS )
             {
-                // rebuild error¶ó¸é ´Ù½Ã recompileÀ» ½ÃµµÇÑ´Ù.
+                // rebuild errorë¼ë©´ ë‹¤ì‹œ recompileì„ ì‹œë„í•œë‹¤.
                 IDE_TEST( ideIsRebuild() != IDE_SUCCESS );
             }
 
@@ -4003,7 +4003,7 @@ qdnTrigger::fireTriggerAction( qcStatement           * aStatement,
         else
         {
             //----------------------------------------
-            // ValidÇÏ´Ù¸é Trigger ActionÀ» ¼öÇàÇÑ´Ù.
+            // Validí•˜ë‹¤ë©´ Trigger Actionì„ ìˆ˜í–‰í•œë‹¤.
             //----------------------------------------
 
             if ( runTriggerAction( aStatement,
@@ -4025,14 +4025,14 @@ qdnTrigger::fireTriggerAction( qcStatement           * aStatement,
                     case E_ACTION_REBUILD:
 
                         //------------------------------
-                        // Rebuild ÇØ¾ß ÇÔ.
+                        // Rebuild í•´ì•¼ í•¨.
                         //------------------------------
 
                         // Release Latch
                         sStage = 0;
                         IDE_TEST( sCache->latch.unlock() != IDE_SUCCESS );
 
-                        // X Latch È¹µæ
+                        // X Latch íšë“
                         IDE_TEST( sCache->latch.lockWrite (
                                       NULL, /* idvSQL* */
                                       NULL /* idvWeArgs* */ )
@@ -4048,7 +4048,7 @@ qdnTrigger::fireTriggerAction( qcStatement           * aStatement,
                     default:
 
                         //------------------------------
-                        // ´Ù¸¥ Error°¡ Á¸ÀçÇÔ.
+                        // ë‹¤ë¥¸ Errorê°€ ì¡´ì¬í•¨.
                         //------------------------------
 
                         // Release Latch
@@ -4103,7 +4103,7 @@ qdnTrigger::runTriggerAction( qcStatement           * aStatement,
 /***********************************************************************
  *
  * Description :
- *    Trigger ActionÀ» ¼öÇàÇÑ´Ù.
+ *    Trigger Actionì„ ìˆ˜í–‰í•œë‹¤.
  *
  * Implementation :
  *
@@ -4131,17 +4131,17 @@ qdnTrigger::runTriggerAction( qcStatement           * aStatement,
     idBool                 sLatched = ID_FALSE;
 
     //---------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //---------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aTriggerInfo != NULL );
 
-    // procPlanList ¹é¾÷
+    // procPlanList ë°±ì—…
     sOriProcPlanList = aStatement->spvEnv->procPlanList;
 
     //---------------------------------------
-    // Trigger CacheÁ¤º¸ÀÇ È¹µæ
+    // Trigger Cacheì •ë³´ì˜ íšë“
     //---------------------------------------
 
     IDE_TEST( smiObject::getObjectTempInfo( aTriggerInfo->triggerHandle,
@@ -4153,18 +4153,18 @@ qdnTrigger::runTriggerAction( qcStatement           * aStatement,
         (qdnCreateTriggerParseTree * ) sTriggerStatement->myPlan->parseTree;
 
     //---------------------------------------
-    // Trigger ÀÇ ¼öÇà
-    // Action BodyÀÇ ¼öÇàÀ» À§ÇÏ¿© EXEC proc1°ú À¯»çÇÑ routineÀ» »ç¿ëÇÔ.
+    // Trigger ì˜ ìˆ˜í–‰
+    // Action Bodyì˜ ìˆ˜í–‰ì„ ìœ„í•˜ì—¬ EXEC proc1ê³¼ ìœ ì‚¬í•œ routineì„ ì‚¬ìš©í•¨.
     //---------------------------------------
 
     // To Fix PR-11368
-    // ¸Ş¸ğ¸® ÇØÁ¦¸¦ À§ÇÑ À§Ä¡ ÀúÀå
+    // ë©”ëª¨ë¦¬ í•´ì œë¥¼ ìœ„í•œ ìœ„ì¹˜ ì €ì¥
     IDE_TEST( aStatement->qmtMem->getStatus( & sMemStatus )
               != IDE_SUCCESS );
 
     sStage = 1;
 
-    // Æ®¸®°ÅÀÇ 0¹ø templateÀ» º¹»çÇÑ´Ù.
+    // íŠ¸ë¦¬ê±°ì˜ 0ë²ˆ templateì„ ë³µì‚¬í•œë‹¤.
     IDU_LIMITPOINT("qdnTrigger::runTriggerAction::malloc");
     IDE_TEST( aStatement->qmtMem->alloc( ID_SIZEOF(qcTemplate),
                                          (void **)&sClonedTriggerTemplate )
@@ -4176,11 +4176,11 @@ qdnTrigger::runTriggerAction( qcStatement           * aStatement,
               != IDE_SUCCESS );
 
     // PROJ-2002 Column Security
-    // trigger ¼öÇà½Ã statement°¡ ÇÊ¿äÇÏ´Ù.
+    // trigger ìˆ˜í–‰ì‹œ statementê°€ í•„ìš”í•˜ë‹¤.
     sClonedTriggerTemplate->stmt = aStatement;
 
     //---------------------------------------
-    // REREFERENCING ROWÀÇ º¹»ç
+    // REREFERENCING ROWì˜ ë³µì‚¬
     //---------------------------------------
 
     IDE_TEST( setReferencingRow( sClonedTriggerTemplate,
@@ -4195,7 +4195,7 @@ qdnTrigger::runTriggerAction( qcStatement           * aStatement,
               != IDE_SUCCESS );
 
     //---------------------------------------
-    // WHEN Á¶°ÇÀÇ °Ë»ç
+    // WHEN ì¡°ê±´ì˜ ê²€ì‚¬
     //---------------------------------------
 
     sJudge = ID_TRUE;
@@ -4228,19 +4228,19 @@ qdnTrigger::runTriggerAction( qcStatement           * aStatement,
     }
 
     //---------------------------------------
-    // Trigger Action BodyÀÇ ¼öÇà
+    // Trigger Action Bodyì˜ ìˆ˜í–‰
     //---------------------------------------
 
     if ( sJudge == ID_TRUE )
     {
-        // WHEN Á¶°ÇÀ» ¸¸Á·ÇÏ´Â °æ¿ì
+        // WHEN ì¡°ê±´ì„ ë§Œì¡±í•˜ëŠ” ê²½ìš°
 
-        // Dummy Node ÃÊ±âÈ­
+        // Dummy Node ì´ˆê¸°í™”
         idlOS::memset( & sDummyNode, 0x00, ID_SIZEOF( qtcNode ) );
         sDummyNode.node.arguments = NULL;
 
         // BUG-20797
-        // Trigger¿¡¼­ »ç¿ëÇÑ PSMÀÇ s_latch È¹µæ
+        // Triggerì—ì„œ ì‚¬ìš©í•œ PSMì˜ s_latch íšë“
         if( sLatched == ID_FALSE )
         {
             IDE_TEST_RAISE( qsxRelatedProc::latchObjects( sTriggerStatement->spvEnv->procPlanList )
@@ -4255,14 +4255,14 @@ qdnTrigger::runTriggerAction( qcStatement           * aStatement,
             // Nothing to do.
         }
 
-        // TriggerÀÇ ¼öÇà½Ã PSMÀ» procPlanList¿¡¼­ °Ë»öÇÒ ¼ö ÀÖµµ·Ï ±â·Ï
+        // Triggerì˜ ìˆ˜í–‰ì‹œ PSMì„ procPlanListì—ì„œ ê²€ìƒ‰í•  ìˆ˜ ìˆë„ë¡ ê¸°ë¡
         aStatement->spvEnv->procPlanList = sTriggerStatement->spvEnv->procPlanList;
 
-        // Æ®¸®°Å ½ÇÇà ½Ã¿¡µµ statement¿¡ ´ëÇÑ Àçºôµå°¡ ÀÌ·ç¾î Áø´Ù.
+        // íŠ¸ë¦¬ê±° ì‹¤í–‰ ì‹œì—ë„ statementì— ëŒ€í•œ ì¬ë¹Œë“œê°€ ì´ë£¨ì–´ ì§„ë‹¤.
         aStatement->spvEnv->flag &= ~QSV_ENV_TRIGGER_MASK;
         aStatement->spvEnv->flag |= QSV_ENV_TRIGGER_TRUE;
 
-        // TriggerÀÇ ¼öÇà
+        // Triggerì˜ ìˆ˜í–‰
         IDE_TEST( qsx::callProcWithNode ( aStatement,
                                           & sTriggerParseTree->actionBody,
                                           & sDummyNode,
@@ -4270,7 +4270,7 @@ qdnTrigger::runTriggerAction( qcStatement           * aStatement,
                                           sClonedTriggerTemplate )
                   != IDE_SUCCESS );
 
-        // Trigger¿¡¼­ »ç¿ëÇÑ PSMÀÇ s_latch ÇØÁ¦
+        // Triggerì—ì„œ ì‚¬ìš©í•œ PSMì˜ s_latch í•´ì œ
         if( sLatched == ID_TRUE )
         {
             sLatched = ID_FALSE;
@@ -4290,11 +4290,11 @@ qdnTrigger::runTriggerAction( qcStatement           * aStatement,
     sStage = 0;
 
     //---------------------------------------
-    // REREFERENCING ROW¸¦ outputÀ¸·Î
+    // REREFERENCING ROWë¥¼ outputìœ¼ë¡œ
     //---------------------------------------
     // To fix BUG-12622
-    // before trigger¿¡¼­ new row¸¦ º¯°æÇÑ °æ¿ì
-    // valuelist·Î º¯°æµÈ ºÎºĞÀ» º¹»çÇÑ´Ù.
+    // before triggerì—ì„œ new rowë¥¼ ë³€ê²½í•œ ê²½ìš°
+    // valuelistë¡œ ë³€ê²½ëœ ë¶€ë¶„ì„ ë³µì‚¬í•œë‹¤.
     IDE_TEST( makeValueListFromReferencingRow(
                   sClonedTriggerTemplate,
                   aNewValueMem,
@@ -4307,7 +4307,7 @@ qdnTrigger::runTriggerAction( qcStatement           * aStatement,
     IDE_TEST( aStatement->qmtMem->setStatus( & sMemStatus )
               != IDE_SUCCESS );
 
-    // procPlanList ¿øº¹
+    // procPlanList ì›ë³µ
     aStatement->spvEnv->procPlanList = sOriProcPlanList;
 
     return IDE_SUCCESS;
@@ -4338,7 +4338,7 @@ qdnTrigger::runTriggerAction( qcStatement           * aStatement,
         // Nothing to do.
     }
 
-    // procPlanList ¿øº¹
+    // procPlanList ì›ë³µ
     aStatement->spvEnv->procPlanList = sOriProcPlanList;
 
     return IDE_FAILURE;
@@ -4361,9 +4361,9 @@ qdnTrigger::setReferencingRow( qcTemplate                * aClonedTemplate,
  *
  * Description :
  *
- *    WHEN Condition ¹× Trigger Action Body¸¦ ¼öÇàÇÏ±â À§ÇØ
- *    REFERENCING ROW Á¤º¸¸¦ TriggerÀÇ TemplateÀÌ º¹»çµÈ
- *    Cloned Template ¿¡ ¼³Á¤ÇÑ´Ù.
+ *    WHEN Condition ë° Trigger Action Bodyë¥¼ ìˆ˜í–‰í•˜ê¸° ìœ„í•´
+ *    REFERENCING ROW ì •ë³´ë¥¼ Triggerì˜ Templateì´ ë³µì‚¬ëœ
+ *    Cloned Template ì— ì„¤ì •í•œë‹¤.
  *
  * Implementation :
  *
@@ -4376,14 +4376,14 @@ qdnTrigger::setReferencingRow( qcTemplate                * aClonedTemplate,
     qsVariables               * sVariable;
 
     //---------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //---------------------------------------
 
     IDE_DASSERT( aClonedTemplate != NULL );
     IDE_DASSERT( aParseTree != NULL );
 
     //---------------------------------------
-    // REREFERENCING ROWÀÇ º¹»ç
+    // REREFERENCING ROWì˜ ë³µì‚¬
     //---------------------------------------
 
     for ( sRef = aParseTree->triggerReference;
@@ -4392,7 +4392,7 @@ qdnTrigger::setReferencingRow( qcTemplate                * aClonedTemplate,
     {
 
         //---------------------------------------
-        // WHEN Conditition ¹× Action Body¸¦ À§ÇÑ REREFERENCING ROWÀÇ º¹»ç
+        // WHEN Conditition ë° Action Bodyë¥¼ ìœ„í•œ REREFERENCING ROWì˜ ë³µì‚¬
         //---------------------------------------
 
         for ( sVariable =
@@ -4406,7 +4406,7 @@ qdnTrigger::setReferencingRow( qcTemplate                * aClonedTemplate,
             }
         }
 
-        // ¹İµå½Ã ÇØ´ç Variable ÀÌ Á¸ÀçÇØ¾ß ÇÔ.
+        // ë°˜ë“œì‹œ í•´ë‹¹ Variable ì´ ì¡´ì¬í•´ì•¼ í•¨.
         IDE_TEST_RAISE( sVariable == NULL, ERR_REF_ROW_NOT_FOUND );
 
         switch ( sRef->refType )
@@ -4416,7 +4416,7 @@ qdnTrigger::setReferencingRow( qcTemplate                * aClonedTemplate,
                 {
                     if ( (aOldRow != NULL) && (aOldRowColumns != NULL) )
                     {
-                        // trigger rowtype¿¡ table row¸¦ º¹»ç
+                        // trigger rowtypeì— table rowë¥¼ ë³µì‚¬
                         // instead of delete OLD_ROW smivalue
                         IDE_TEST( copyRowFromValueList(
                                       aClonedTemplate,
@@ -4435,7 +4435,7 @@ qdnTrigger::setReferencingRow( qcTemplate                * aClonedTemplate,
                 {
                     if ( (aOldRow != NULL) && (aOldRowColumns != NULL) )
                     {
-                        // trigger rowtype¿¡ table row¸¦ º¹»ç
+                        // trigger rowtypeì— table rowë¥¼ ë³µì‚¬
                         IDE_TEST( copyRowFromTableRow( aClonedTemplate,
                                                        aTableInfo,
                                                        sVariable,
@@ -4457,16 +4457,16 @@ qdnTrigger::setReferencingRow( qcTemplate                * aClonedTemplate,
                 if ( (aNewRow != NULL) && (aNewRowColumns != NULL) )
                 {
                     // To fix BUG-12622
-                    // before trigger´Â valuelist·ÎºÎÅÍ
-                    // trigger row¸¦ »ı¼ºÇÑ´Ù.
+                    // before triggerëŠ” valuelistë¡œë¶€í„°
+                    // trigger rowë¥¼ ìƒì„±í•œë‹¤.
                     if( ( aParseTree->triggerEvent.eventTime ==
                           QCM_TRIGGER_BEFORE ) ||
                         ( aParseTree->triggerEvent.eventTime ==
                         QCM_TRIGGER_INSTEAD_OF ) ) //PROJ-1888 INSTEAD OF TRIGGER
                     {
 
-                        // InsertÇÒ ¶§
-                        // aNewRow´Â rowÇüÅÂ°¡ ¾Æ´Ñ smivalueÇüÅÂÀÓ
+                        // Insertí•  ë•Œ
+                        // aNewRowëŠ” rowí˜•íƒœê°€ ì•„ë‹Œ smivalueí˜•íƒœì„
                         IDE_TEST( copyRowFromValueList(
                                       aClonedTemplate,
                                       aTableInfo,
@@ -4478,7 +4478,7 @@ qdnTrigger::setReferencingRow( qcTemplate                * aClonedTemplate,
                     else
                     {
                         // PROJ-1075
-                        // trigger rowtype¿¡ table row¸¦ º¹»ç
+                        // trigger rowtypeì— table rowë¥¼ ë³µì‚¬
                         IDE_TEST( copyRowFromTableRow( aClonedTemplate,
                                                        aTableInfo,
                                                        sVariable,
@@ -4529,7 +4529,7 @@ qdnTrigger::makeValueListFromReferencingRow(
 /***********************************************************************
  *
  * Description : To fix BUG-12622
- *    Before Trigger·Î ÀÎÇØ ¹Ù²ï new row¸¦ value list¿¡ º¹»çÇÑ´Ù.
+ *    Before Triggerë¡œ ì¸í•´ ë°”ë€ new rowë¥¼ value listì— ë³µì‚¬í•œë‹¤.
  *
  * Implementation :
  *
@@ -4538,7 +4538,7 @@ qdnTrigger::makeValueListFromReferencingRow(
     qsVariables               * sVariable;
 
     //---------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //---------------------------------------
 
     IDE_DASSERT( aClonedTemplate != NULL );
@@ -4546,7 +4546,7 @@ qdnTrigger::makeValueListFromReferencingRow(
     IDE_DASSERT( aParseTree != NULL );
 
     //---------------------------------------
-    // REREFERENCING ROWÀÇ º¹»ç
+    // REREFERENCING ROWì˜ ë³µì‚¬
     //---------------------------------------
 
     for ( sRef = aParseTree->triggerReference;
@@ -4576,7 +4576,7 @@ qdnTrigger::makeValueListFromReferencingRow(
                 if( aParseTree->triggerEvent.eventTime ==
                     QCM_TRIGGER_BEFORE )
                 {
-                    // InsertÇÒ ¶§
+                    // Insertí•  ë•Œ
                     IDE_TEST( copyValueListFromRow(
                                   aClonedTemplate,
                                   aNewValueMem,
@@ -4618,7 +4618,7 @@ qdnTrigger::checkObjects( qcStatement  * aStatement,
 /***********************************************************************
  *
  * Description : BUG-20797
- *    Trigger Statement¿¡ »ç¿ëµÈ PSMÀÇ º¯°æÀ» °Ë»çÇÑ´Ù.
+ *    Trigger Statementì— ì‚¬ìš©ëœ PSMì˜ ë³€ê²½ì„ ê²€ì‚¬í•œë‹¤.
  *
  * Implementation :
  *
@@ -4630,14 +4630,14 @@ qdnTrigger::checkObjects( qcStatement  * aStatement,
     idBool             sInvalidProc = ID_FALSE;
 
     //---------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //---------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aInvalidProc != NULL );
 
     //---------------------------------------
-    // Trigger¿¡¼­ »ç¿ëÇÑ PSMÀÇ º¯°æÀ» °Ë»ç
+    // Triggerì—ì„œ ì‚¬ìš©í•œ PSMì˜ ë³€ê²½ì„ ê²€ì‚¬
     //---------------------------------------
 
     if ( aStatement->spvEnv->procPlanList != NULL )
@@ -4682,11 +4682,11 @@ qdnTrigger::recompileTrigger( qcStatement     * aStatement,
 /***********************************************************************
  *
  * Description :
- *    »õ·ÎÀÌ PVO °úÁ¤À» ÅëÇÏ¿© Trigger Cache Á¤º¸¸¦ ±¸ÃàÇÑ´Ù.
+ *    ìƒˆë¡œì´ PVO ê³¼ì •ì„ í†µí•˜ì—¬ Trigger Cache ì •ë³´ë¥¼ êµ¬ì¶•í•œë‹¤.
  *
  * Implementation :
- *    X Latch¸¦ ÀâÀº ÈÄ¿¡ validation °Ë»ç¸¦ ÅëÇØ
- *    Recompile ¿©ºÎ¸¦ °áÁ¤ÇÑ´Ù.
+ *    X Latchë¥¼ ì¡ì€ í›„ì— validation ê²€ì‚¬ë¥¼ í†µí•´
+ *    Recompile ì—¬ë¶€ë¥¼ ê²°ì •í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -4706,14 +4706,14 @@ qdnTrigger::recompileTrigger( qcStatement     * aStatement,
     qcuSqlSourceInfo             sSqlInfo;
 
     //---------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //---------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aTriggerInfo != NULL );
 
     //---------------------------------------
-    // Trigger CacheÁ¤º¸ÀÇ È¹µæ
+    // Trigger Cacheì •ë³´ì˜ íšë“
     //---------------------------------------
 
     IDE_TEST( smiObject::getObjectTempInfo( aTriggerInfo->triggerHandle,
@@ -4722,7 +4722,7 @@ qdnTrigger::recompileTrigger( qcStatement     * aStatement,
 
     sTriggerStatement = & sCache->triggerStatement;
 
-    // X Latch È¹µæ
+    // X Latch íšë“
     IDE_TEST( sCache->latch.lockWrite (
                   NULL, /* idvSQL * */
                   NULL /* idvWeArgs* */ )
@@ -4733,7 +4733,7 @@ qdnTrigger::recompileTrigger( qcStatement     * aStatement,
               != IDE_SUCCESS );
 
     // fix BUG-18679
-    // ALTER TRIGGER COMPILE ½Ã¿¡´Â ¹«Á¶°Ç recompileÇÑ´Ù.
+    // ALTER TRIGGER COMPILE ì‹œì—ëŠ” ë¬´ì¡°ê±´ recompileí•œë‹¤.
     if( (aStatement->myPlan->parseTree->stmtKind != QCI_STMT_SCHEMA_DDL) &&
         (sCache->isValid == ID_TRUE) &&
         (sInvalidProc == ID_FALSE) )
@@ -4746,15 +4746,15 @@ qdnTrigger::recompileTrigger( qcStatement     * aStatement,
     }
 
     //---------------------------------------
-    // Trigger Cache StatementÀÇ ÃÊ±âÈ­
+    // Trigger Cache Statementì˜ ì´ˆê¸°í™”
     //---------------------------------------
 
-    // Trigger Statement¸¦ À§ÇÑ °ø°£ ÃÊ±âÈ­
+    // Trigger Statementë¥¼ ìœ„í•œ ê³µê°„ ì´ˆê¸°í™”
     IDE_TEST( qcg::freeStatement( sTriggerStatement )
               != IDE_SUCCESS );
 
-    // ½ÇÁ¦ Stack Count´Â ¼öÇà ½ÃÁ¡¿¡ Template º¹»ç¿¡ ÀÇÇÏ¿©
-    // Session Á¤º¸·ÎºÎÅÍ °áÁ¤µÈ´Ù.
+    // ì‹¤ì œ Stack CountëŠ” ìˆ˜í–‰ ì‹œì ì— Template ë³µì‚¬ì— ì˜í•˜ì—¬
+    // Session ì •ë³´ë¡œë¶€í„° ê²°ì •ëœë‹¤.
     IDE_TEST( qcg::allocStatement( sTriggerStatement,
                                    aStatement->session,
                                    NULL,
@@ -4764,8 +4764,8 @@ qdnTrigger::recompileTrigger( qcStatement     * aStatement,
     //fix BUG-18158
     sAllocFlag = ID_TRUE;
 
-    // PVO °úÁ¤ÀÌ ¹ß»ıÇÏ°Ô µÇ¹Ç·Î »õ·Î¿î smiStatement·Î ¼öÇàÇÑ´Ù.
-    // Parent´Â ³»·Á¿Â smiStatement¸¦ »ç¿ëÇÑ´Ù(by sjkim)
+    // PVO ê³¼ì •ì´ ë°œìƒí•˜ê²Œ ë˜ë¯€ë¡œ ìƒˆë¡œìš´ smiStatementë¡œ ìˆ˜í–‰í•œë‹¤.
+    // ParentëŠ” ë‚´ë ¤ì˜¨ smiStatementë¥¼ ì‚¬ìš©í•œë‹¤(by sjkim)
     IDE_TEST( sSmiStmt.begin( aStatement->mStatistics,
                               QC_SMI_STMT( aStatement ),
                               SMI_STATEMENT_NORMAL |
@@ -4776,25 +4776,25 @@ qdnTrigger::recompileTrigger( qcStatement     * aStatement,
     qcg::setSmiStmt( sTriggerStatement, & sSmiStmt );
     sStage = 2;
 
-    // Statement TextÁ¤º¸ÀÇ ¼³Á¤
+    // Statement Textì •ë³´ì˜ ì„¤ì •
     sTriggerStatement->myPlan->stmtTextLen = sCache->stmtTextLen;
     sTriggerStatement->myPlan->stmtText = sCache->stmtText;
 
     //---------------------------------------
-    // Trigger Cache StatementÀÇ PVO ¼öÇà
+    // Trigger Cache Statementì˜ PVO ìˆ˜í–‰
     //---------------------------------------
 
     // Parsing
     IDE_TEST( qcpManager::parseIt( sTriggerStatement ) != IDE_SUCCESS );
 
     // To Fix PR-10645
-    // ParsingÀ» °ÅÄ¡¸é DDL·Î ¼³Á¤µÇ¾î ONÀıÀÇ TableÁ¤º¸ È¹µæ½Ã Table X LockÀ»
-    // È¹µæÇÏ°Ô µÈ´Ù.  ÀÌ ¶§, ´Ù¸¥ DMLÀÌ ¼öÇà ÁßÀÌ¸é Table X LockÀ» È¸µæÇÏÁö
-    // ¸øÇÏ¿© RecompileÀÌ ½ÇÆĞÇÏ°Ô µÈ´Ù.
-    // ±×·¯³ª, Recompile °úÁ¤Àº DML°ú ALTER TRIGGER .. COMPILE
-    // ±¸¹®ÀÇ ¼öÇà ½Ã¿¡¸¸ ¼öÇàµÇ°í Meta Table ¹× Meta Cache¸¦ º¯°æ½ÃÅ°´Â
-    // ÀÛ¾÷ÀÌ ¾Æ´Ï´Ù.  µû¶ó¼­, DDL·Î ¼³Á¤µÇ¾î ÀÖ´Â Á¤º¸¸¦ DML·Î
-    // º¯°æ½ÃÄÑ ÁÖ¾î¾ß ÇÑ´Ù.  Table¿¡ ´ëÇÏ¿© IS Lock ¸¸À» ½ÃµµÇÏ°Ô ÇÑ´Ù.
+    // Parsingì„ ê±°ì¹˜ë©´ DDLë¡œ ì„¤ì •ë˜ì–´ ONì ˆì˜ Tableì •ë³´ íšë“ì‹œ Table X Lockì„
+    // íšë“í•˜ê²Œ ëœë‹¤.  ì´ ë•Œ, ë‹¤ë¥¸ DMLì´ ìˆ˜í–‰ ì¤‘ì´ë©´ Table X Lockì„ íšŒë“í•˜ì§€
+    // ëª»í•˜ì—¬ Recompileì´ ì‹¤íŒ¨í•˜ê²Œ ëœë‹¤.
+    // ê·¸ëŸ¬ë‚˜, Recompile ê³¼ì •ì€ DMLê³¼ ALTER TRIGGER .. COMPILE
+    // êµ¬ë¬¸ì˜ ìˆ˜í–‰ ì‹œì—ë§Œ ìˆ˜í–‰ë˜ê³  Meta Table ë° Meta Cacheë¥¼ ë³€ê²½ì‹œí‚¤ëŠ”
+    // ì‘ì—…ì´ ì•„ë‹ˆë‹¤.  ë”°ë¼ì„œ, DDLë¡œ ì„¤ì •ë˜ì–´ ìˆëŠ” ì •ë³´ë¥¼ DMLë¡œ
+    // ë³€ê²½ì‹œì¼œ ì£¼ì–´ì•¼ í•œë‹¤.  Tableì— ëŒ€í•˜ì—¬ IS Lock ë§Œì„ ì‹œë„í•˜ê²Œ í•œë‹¤.
     sTriggerStatement->myPlan->parseTree->stmtKind = QCI_STMT_MASK_DML;
     sTriggerStatement->myPlan->parseTree->validate = qdnTrigger::validateRecompile;
 
@@ -4802,19 +4802,19 @@ qdnTrigger::recompileTrigger( qcStatement     * aStatement,
         (qdnCreateTriggerParseTree * ) sTriggerStatement->myPlan->parseTree;
 
     // To Fix BUG-10899
-    // Æ®¸®°Å ¾×¼Ç ¹Ùµğ´Â ÇÁ·Î½ÃÀú ½ÇÇà·çÆ¾À» Å¸´Âµ¥,
-    // ÀÌ ¼Ó¿¡¼­ ¿¡·¯°¡ ³µÀ» ¶§ QC_NAME_POSITIONÀ¸·Î ¿¡·¯³­ À§Ä¡¸¦
-    // Á¤È®È÷ ÂïÀ¸·Á qcuSqlSourceInfo·çÆ¾À» Å¸´Âµ¥, ÀÌ¶§ ÀÌ ÇÊµåµéÀÌ ¾²ÀÎ´Ù.
+    // íŠ¸ë¦¬ê±° ì•¡ì…˜ ë°”ë””ëŠ” í”„ë¡œì‹œì € ì‹¤í–‰ë£¨í‹´ì„ íƒ€ëŠ”ë°,
+    // ì´ ì†ì—ì„œ ì—ëŸ¬ê°€ ë‚¬ì„ ë•Œ QC_NAME_POSITIONìœ¼ë¡œ ì—ëŸ¬ë‚œ ìœ„ì¹˜ë¥¼
+    // ì •í™•íˆ ì°ìœ¼ë ¤ qcuSqlSourceInfoë£¨í‹´ì„ íƒ€ëŠ”ë°, ì´ë•Œ ì´ í•„ë“œë“¤ì´ ì“°ì¸ë‹¤.
     sTriggerParseTree->actionBody.stmtText    = sCache->stmtText;
     sTriggerParseTree->actionBody.stmtTextLen = sCache->stmtTextLen;
 
     // To fix BUG-14584
-    // recompileÀ» replication°ú °ü°è¾øÀÌ ¼öÇàÇÏ±â À§ÇØ isRecompileÀ» TRUE·Î.
+    // recompileì„ replicationê³¼ ê´€ê³„ì—†ì´ ìˆ˜í–‰í•˜ê¸° ìœ„í•´ isRecompileì„ TRUEë¡œ.
     sTriggerParseTree->isRecompile = ID_TRUE;
     sTriggerParseTree->triggerUserID = aTriggerInfo->userID;
 
     // BUG-42989 Create trigger with enable/disable option.
-    // ±âÁ¸ÀÇ enable ¿É¼ÇÀ» À¯ÁöÇÑ´Ù.
+    // ê¸°ì¡´ì˜ enable ì˜µì…˜ì„ ìœ ì§€í•œë‹¤.
     sTriggerParseTree->actionCond.isEnable = aTriggerInfo->enable;
 
     (void)qdnTrigger::allocProcInfo( sTriggerStatement,
@@ -4845,13 +4845,13 @@ qdnTrigger::recompileTrigger( qcStatement     * aStatement,
     sTriggerParseTree->actionBody.procOID = aTriggerInfo->triggerOID;
 
     // PROJ-2219 Row-level before update trigger
-    // Row-level before update trigger¿¡¼­
-    // new row¸¦ ÅëÇØ ÂüÁ¶ÇÏ´Â column list¸¦ »ı¼ºÇÑ´Ù.
+    // Row-level before update triggerì—ì„œ
+    // new rowë¥¼ í†µí•´ ì°¸ì¡°í•˜ëŠ” column listë¥¼ ìƒì„±í•œë‹¤.
     IDE_TEST( qdnTrigger::makeRefColumnList( sTriggerStatement )
               != IDE_SUCCESS );
 
     // BUG-16543
-    // Meta Table¿¡ Á¤º¸¸¦ º¯°æÇÑ´Ù.
+    // Meta Tableì— ì •ë³´ë¥¼ ë³€ê²½í•œë‹¤.
     IDE_TEST( qcmTrigger::removeMetaInfo( sTriggerStatement,
                                           aTriggerInfo->triggerOID )
               != IDE_SUCCESS );
@@ -4906,7 +4906,7 @@ qdnTrigger::recompileTrigger( qcStatement     * aStatement,
         }
         else
         {
-            // rebuild error°¡ ¿Ã¶ó¿À´Â °æ¿ì
+            // rebuild errorê°€ ì˜¬ë¼ì˜¤ëŠ” ê²½ìš°
             // error pass
         }
     }
@@ -4958,11 +4958,11 @@ qdnTrigger::setInvalidTriggerCache4Table( qcmTableInfo * aTableInfo )
  *
  * Description :
  *    BUG-16543
- *    qdbAlter::executeDropCol¿¡¼­ column_id°¡ º¯°æµÉ ¼ö ÀÖÀ¸¹Ç·Î
- *    triggerCache¸¦ invalid·Î º¯°æÇÏ¿© recompileµÉ ¼ö ÀÖ°Ô ÇÑ´Ù.
+ *    qdbAlter::executeDropColì—ì„œ column_idê°€ ë³€ê²½ë  ìˆ˜ ìˆìœ¼ë¯€ë¡œ
+ *    triggerCacheë¥¼ invalidë¡œ ë³€ê²½í•˜ì—¬ recompileë  ìˆ˜ ìˆê²Œ í•œë‹¤.
  *
  * Implementation :
- *    X Latch¸¦ ÀâÀº ÈÄ¿¡ invalid·Î º¯°æÇÑ´Ù.
+ *    X Latchë¥¼ ì¡ì€ í›„ì— invalidë¡œ ë³€ê²½í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -4979,7 +4979,7 @@ qdnTrigger::setInvalidTriggerCache4Table( qcmTableInfo * aTableInfo )
                                                 (void**)&sCache )
                   != IDE_SUCCESS );
 
-        // X Latch È¹µæ
+        // X Latch íšë“
         IDE_TEST( sCache->latch.lockWrite (
                             NULL, /* idvSQL * */
                             NULL /* idvWeArgs* */ )
@@ -5019,15 +5019,15 @@ IDE_RC qdnTrigger::copyRowFromTableRow( qcTemplate       * aTemplate,
 {
 /***********************************************************************
  *
- * Description : PROJ-1075 triggerÀÇ tableRow¸¦ psmÈ£È¯ °¡´ÉÇÑ
- *               rowtype º¯¼ö¿¡ º¹»ç.
+ * Description : PROJ-1075 triggerì˜ tableRowë¥¼ psmí˜¸í™˜ ê°€ëŠ¥í•œ
+ *               rowtype ë³€ìˆ˜ì— ë³µì‚¬.
  *
  * Implementation :
- *             (1) psmÈ£È¯ rowtypeÀº ÇØ´ç columnÀÇ ´ÙÀ½ ÄÃ·³ºÎÅÍ
- *                 ³»ºÎ ÄÃ·³ÀÌ¹Ç·Î ³»ºÎÄÃ·³À» ¼øÈ¸ÇÏ¸ç
- *                 °¢ ÄÃ·³¸¶´Ù mtc::value¸¦ ÀÌ¿ëÇÏ¿©µ¥ÀÌÅÍ¸¦ °¡Á®¿È
- *             (2) trigger tableRowtypeµµ ¸¶Âù°¡Áö·Î ¼øÈ¸
- *             (3) memcpy·Î actual size¸¸Å­ º¹»ç.
+ *             (1) psmí˜¸í™˜ rowtypeì€ í•´ë‹¹ columnì˜ ë‹¤ìŒ ì»¬ëŸ¼ë¶€í„°
+ *                 ë‚´ë¶€ ì»¬ëŸ¼ì´ë¯€ë¡œ ë‚´ë¶€ì»¬ëŸ¼ì„ ìˆœíšŒí•˜ë©°
+ *                 ê° ì»¬ëŸ¼ë§ˆë‹¤ mtc::valueë¥¼ ì´ìš©í•˜ì—¬ë°ì´í„°ë¥¼ ê°€ì ¸ì˜´
+ *             (2) trigger tableRowtypeë„ ë§ˆì°¬ê°€ì§€ë¡œ ìˆœíšŒ
+ *             (3) memcpyë¡œ actual sizeë§Œí¼ ë³µì‚¬.
  *
  ***********************************************************************/
 #define IDE_FN "qdnTrigger::copyRowFromTableRow"
@@ -5047,9 +5047,9 @@ IDE_RC qdnTrigger::copyRowFromTableRow( qcTemplate       * aTemplate,
 
     sDstTuple = &aTemplate->tmplate.rows[sTable];
 
-    // sDstTupleÀº rowtypeº¯¼öÀÇ tupleÀÌ¹Ç·Î,
-    // ½ÇÁ¦ rowÀÇ ÄÃ·³ °³¼ö´Â 1À» »©¾ß ÇÑ´Ù.
-    // ¸Ç ¾ÕÀÇ ÄÃ·³Àº rowtypeº¯¼ö ÀÚÃ¼ÀÌ±â ¶§¹®ÀÌ´Ù.
+    // sDstTupleì€ rowtypeë³€ìˆ˜ì˜ tupleì´ë¯€ë¡œ,
+    // ì‹¤ì œ rowì˜ ì»¬ëŸ¼ ê°œìˆ˜ëŠ” 1ì„ ë¹¼ì•¼ í•œë‹¤.
+    // ë§¨ ì•ì˜ ì»¬ëŸ¼ì€ rowtypeë³€ìˆ˜ ìì²´ì´ê¸° ë•Œë¬¸ì´ë‹¤.
     for ( i = 0; i < sDstTuple->columnCount - 1; i++ )
     {
         IDE_ASSERT( aTableRowColumns != NULL );
@@ -5068,9 +5068,9 @@ IDE_RC qdnTrigger::copyRowFromTableRow( qcTemplate       * aTemplate,
         if ( (sSrcColumn->module->flag & MTD_ENCRYPT_TYPE_MASK)
              == MTD_ENCRYPT_TYPE_TRUE )
         {
-            // º¸¾È Å¸ÀÔÀ» »ç¿ëÇÏ´Â Å×ÀÌºíÀÇ trigger ¼öÇà½Ã
-            // referencing rowÀÇ Å¸ÀÔÀº ¿øº» Å¸ÀÔÀÌ¹Ç·Î
-            // decrypt°¡ ÇÊ¿äÇÏ´Ù.
+            // ë³´ì•ˆ íƒ€ì…ì„ ì‚¬ìš©í•˜ëŠ” í…Œì´ë¸”ì˜ trigger ìˆ˜í–‰ì‹œ
+            // referencing rowì˜ íƒ€ì…ì€ ì›ë³¸ íƒ€ì…ì´ë¯€ë¡œ
+            // decryptê°€ í•„ìš”í•˜ë‹¤.
 
             sColumnOrder = sSrcColumn->column.id & SMI_COLUMN_ID_MASK;
 
@@ -5087,7 +5087,7 @@ IDE_RC qdnTrigger::copyRowFromTableRow( qcTemplate       * aTemplate,
         }
         else
         {
-            /* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø */
+            /* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ì… ì§€ì› */
             if ( (sSrcColumn->module->id == MTD_BLOB_LOCATOR_ID) ||
                  (sSrcColumn->module->id == MTD_CLOB_LOCATOR_ID) ||
                  (sSrcColumn->module->id == MTD_BLOB_ID) ||
@@ -5106,7 +5106,7 @@ IDE_RC qdnTrigger::copyRowFromTableRow( qcTemplate       * aTemplate,
             }
             else
             {
-                // ÀûÇÕ¼º °Ë»ç. column»çÀÌÁî°¡ µ¿ÀÏÇØ¾ß µÈ´Ù.
+                // ì í•©ì„± ê²€ì‚¬. columnì‚¬ì´ì¦ˆê°€ ë™ì¼í•´ì•¼ ëœë‹¤.
                 IDE_DASSERT( sSrcColumn->column.size == sDstColumn->column.size );
 
                 sSrcActualSize = sSrcColumn->module->actualSize(
@@ -5136,9 +5136,9 @@ IDE_RC qdnTrigger::copyRowFromValueList( qcTemplate   * aTemplate,
 /***********************************************************************
  *
  * Description : To fix BUG-12622
- *               Row-level before insert/update trigger ¼öÇà Àü
- *               new row¸¦ »ı¼ºÇÏ±â À§ÇØ È£ÃâÇÏ´Â ÇÔ¼öÀÌ´Ù.
- *               dml¼öÇàÀü value list¸¦ rowtypeº¯¼ö¿¡ º¹»ç
+ *               Row-level before insert/update trigger ìˆ˜í–‰ ì „
+ *               new rowë¥¼ ìƒì„±í•˜ê¸° ìœ„í•´ í˜¸ì¶œí•˜ëŠ” í•¨ìˆ˜ì´ë‹¤.
+ *               dmlìˆ˜í–‰ì „ value listë¥¼ rowtypeë³€ìˆ˜ì— ë³µì‚¬
  *
  * Implementation :
  *
@@ -5164,9 +5164,9 @@ IDE_RC qdnTrigger::copyRowFromValueList( qcTemplate   * aTemplate,
 
     sSrcQcmColumn = aTableRowColumns;
 
-    // sDstTupleÀº rowtypeº¯¼öÀÇ tupleÀÌ°í,
-    // ¸Ç ¾ÕÀÇ ÄÃ·³Àº rowtypeº¯¼ö ÀÚÃ¼ÀÌ¹Ç·Î index¸¦ 1ºÎÅÍ ½ÃÀÛÇÑ´Ù.
-    // sSrcColumnÀº tableÀÇ column ¼ø¼­´ë·Î Á¤·ÄµÇ¾î ÀÖ´Ù.
+    // sDstTupleì€ rowtypeë³€ìˆ˜ì˜ tupleì´ê³ ,
+    // ë§¨ ì•ì˜ ì»¬ëŸ¼ì€ rowtypeë³€ìˆ˜ ìì²´ì´ë¯€ë¡œ indexë¥¼ 1ë¶€í„° ì‹œì‘í•œë‹¤.
+    // sSrcColumnì€ tableì˜ column ìˆœì„œëŒ€ë¡œ ì •ë ¬ë˜ì–´ ìˆë‹¤.
     for ( i = 1; i < sDstTuple->columnCount; i++ )
     {
         if ( sSrcQcmColumn == NULL )
@@ -5193,11 +5193,11 @@ IDE_RC qdnTrigger::copyRowFromValueList( qcTemplate   * aTemplate,
         if ( (sSrcColumn->module->flag & MTD_ENCRYPT_TYPE_MASK)
              == MTD_ENCRYPT_TYPE_TRUE )
         {
-            // º¸¾È Å¸ÀÔÀ» »ç¿ëÇÏ´Â Å×ÀÌºíÀÇ trigger ¼öÇà½Ã
-            // referencing rowÀÇ Å¸ÀÔÀº ¿øº» Å¸ÀÔÀÌ¹Ç·Î
-            // decrypt°¡ ÇÊ¿äÇÏ´Ù.
+            // ë³´ì•ˆ íƒ€ì…ì„ ì‚¬ìš©í•˜ëŠ” í…Œì´ë¸”ì˜ trigger ìˆ˜í–‰ì‹œ
+            // referencing rowì˜ íƒ€ì…ì€ ì›ë³¸ íƒ€ì…ì´ë¯€ë¡œ
+            // decryptê°€ í•„ìš”í•˜ë‹¤.
 
-            // variable nullÀÇ Çü½ÄÀ» ¸ÂÃá´Ù.
+            // variable nullì˜ í˜•ì‹ì„ ë§ì¶˜ë‹¤.
             if( sValueList->length == 0 )
             {
                 sSrcValue = sSrcColumn->module->staticNull;
@@ -5211,8 +5211,8 @@ IDE_RC qdnTrigger::copyRowFromValueList( qcTemplate   * aTemplate,
                                            sDstTuple->row,
                                            MTD_OFFSET_USE );
 
-            // º¸¾È Å¸ÀÔÀº MTD_DATA_STORE_MTDVALUE_TRUE ÀÌ¹Ç·Î
-            // memory¿Í disk¸¦ ±¸º°ÇÏÁö ¾Ê´Â´Ù.
+            // ë³´ì•ˆ íƒ€ì…ì€ MTD_DATA_STORE_MTDVALUE_TRUE ì´ë¯€ë¡œ
+            // memoryì™€ diskë¥¼ êµ¬ë³„í•˜ì§€ ì•ŠëŠ”ë‹¤.
 
             sColumnOrder = sSrcColumn->column.id & SMI_COLUMN_ID_MASK;
 
@@ -5229,14 +5229,14 @@ IDE_RC qdnTrigger::copyRowFromValueList( qcTemplate   * aTemplate,
         }
         else
         {
-            /* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø */
+            /* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ì… ì§€ì› */
             IDE_TEST_RAISE( (sSrcColumn->module->id == MTD_BLOB_LOCATOR_ID) ||
                             (sSrcColumn->module->id == MTD_CLOB_LOCATOR_ID) ||
                             (sSrcColumn->module->id == MTD_BLOB_ID) ||
                             (sSrcColumn->module->id == MTD_CLOB_ID),
                             ERR_NOT_SUPPORTED_DATATYPE );
 
-            // ÀûÇÕ¼º °Ë»ç. column»çÀÌÁî°¡ µ¿ÀÏÇØ¾ß µÈ´Ù.
+            // ì í•©ì„± ê²€ì‚¬. columnì‚¬ì´ì¦ˆê°€ ë™ì¼í•´ì•¼ ëœë‹¤.
             IDE_DASSERT( sSrcColumn->column.size == sDstColumn->column.size );
 
             if( ( sSrcColumn->column.flag & SMI_COLUMN_STORAGE_MASK )
@@ -5246,7 +5246,7 @@ IDE_RC qdnTrigger::copyRowFromValueList( qcTemplate   * aTemplate,
                 // MEMORY COLUMN
                 //---------------------------
 
-                // variable nullÀÇ Çü½ÄÀ» ¸ÂÃá´Ù.
+                // variable nullì˜ í˜•ì‹ì„ ë§ì¶˜ë‹¤.
                 if( sValueList->length == 0 )
                 {
                     sSrcValue = sSrcColumn->module->staticNull;
@@ -5307,10 +5307,10 @@ IDE_RC qdnTrigger::copyValueListFromRow( qcTemplate   * aTemplate,
 /***********************************************************************
  *
  * Description : To fix BUG-12622
- *               Row-level before insert/update trigger ¼öÇà ÈÄ
- *               new row¸¦ value list¿¡ º¹»çÇÏ±â À§ÇØ È£ÃâÇÏ´Â ÇÔ¼öÀÌ´Ù.
- *               row·ÎºÎÅÍ value list¸¦ ¸¸µç´Ù.
- *               ¹Ù²ï ÄÃ·³(l-value ¼Ó¼ºÀÇ column)¸¸ º¹»çÇÑ´Ù.
+ *               Row-level before insert/update trigger ìˆ˜í–‰ í›„
+ *               new rowë¥¼ value listì— ë³µì‚¬í•˜ê¸° ìœ„í•´ í˜¸ì¶œí•˜ëŠ” í•¨ìˆ˜ì´ë‹¤.
+ *               rowë¡œë¶€í„° value listë¥¼ ë§Œë“ ë‹¤.
+ *               ë°”ë€ ì»¬ëŸ¼(l-value ì†ì„±ì˜ column)ë§Œ ë³µì‚¬í•œë‹¤.
  *
  * Implementation :
  *
@@ -5343,9 +5343,9 @@ IDE_RC qdnTrigger::copyValueListFromRow( qcTemplate   * aTemplate,
 
     sDstQcmColumn = aTableRowColumns;
 
-    // sSrcTupleÀº rowtypeº¯¼öÀÇ tupleÀÌ°í,
-    // ¸Ç ¾ÕÀÇ ÄÃ·³Àº rowtypeº¯¼ö ÀÚÃ¼ÀÌ¹Ç·Î index¸¦ 1ºÎÅÍ ½ÃÀÛÇÑ´Ù.
-    // sDstColumnÀº tableÀÇ column ¼ø¼­´ë·Î Á¤·ÄµÇ¾î ÀÖ´Ù.
+    // sSrcTupleì€ rowtypeë³€ìˆ˜ì˜ tupleì´ê³ ,
+    // ë§¨ ì•ì˜ ì»¬ëŸ¼ì€ rowtypeë³€ìˆ˜ ìì²´ì´ë¯€ë¡œ indexë¥¼ 1ë¶€í„° ì‹œì‘í•œë‹¤.
+    // sDstColumnì€ tableì˜ column ìˆœì„œëŒ€ë¡œ ì •ë ¬ë˜ì–´ ìˆë‹¤.
     for ( i = 1,
              sNode = (qtcNode*)aVariable->variableTypeNode->node.arguments;
           (i < sSrcTuple->columnCount) || (sNode != NULL);
@@ -5372,8 +5372,8 @@ IDE_RC qdnTrigger::copyValueListFromRow( qcTemplate   * aTemplate,
             // Nothing to do.
         }
 
-        // QTC_NODE_LVALUE_ENABLE flag°¡ setµÇ¾îÀÖ´Â °æ¿ì
-        // º¯°æµÈ ÄÃ·³À¸·Î º¼ ¼ö ÀÖÀ½.
+        // QTC_NODE_LVALUE_ENABLE flagê°€ setë˜ì–´ìˆëŠ” ê²½ìš°
+        // ë³€ê²½ëœ ì»¬ëŸ¼ìœ¼ë¡œ ë³¼ ìˆ˜ ìˆìŒ.
         if ( ( sNode->lflag & QTC_NODE_LVALUE_MASK ) ==
              QTC_NODE_LVALUE_ENABLE )
         {
@@ -5385,9 +5385,9 @@ IDE_RC qdnTrigger::copyValueListFromRow( qcTemplate   * aTemplate,
             if ( (sDstColumn->module->flag & MTD_ENCRYPT_TYPE_MASK)
                  == MTD_ENCRYPT_TYPE_TRUE )
             {
-                // º¸¾È Å¸ÀÔÀ» »ç¿ëÇÏ´Â Å×ÀÌºíÀÇ trigger ¼öÇà½Ã
-                // referencing rowÀÇ Å¸ÀÔÀº ¿øº» Å¸ÀÔÀÌ¹Ç·Î
-                // encrypt°¡ ÇÊ¿äÇÏ´Ù.
+                // ë³´ì•ˆ íƒ€ì…ì„ ì‚¬ìš©í•˜ëŠ” í…Œì´ë¸”ì˜ trigger ìˆ˜í–‰ì‹œ
+                // referencing rowì˜ íƒ€ì…ì€ ì›ë³¸ íƒ€ì…ì´ë¯€ë¡œ
+                // encryptê°€ í•„ìš”í•˜ë‹¤.
 
                 sColumnOrder = sDstColumn->column.id & SMI_COLUMN_ID_MASK;
 
@@ -5437,19 +5437,19 @@ IDE_RC qdnTrigger::copyValueListFromRow( qcTemplate   * aTemplate,
 
                 if( sSrcStoringSize == 0 )
                 {
-                    // variable, lob, disk column¿¡ ´ëÇÑ Ã³¸®
+                    // variable, lob, disk columnì— ëŒ€í•œ ì²˜ë¦¬
                     sValueList->value = NULL;
                     sValueList->length = 0;
                 }
                 else
                 {
                     // PROJ-1705
-                    // QP¿¡¼­ smiValue->value´Â
-                    // mtdDataType value¸¦ source·Î ÇØ¼­
-                    // qdbCommon::mtdValue2StoringValue()ÇÔ¼ö¸¦ »ç¿ëÇØ¼­ ±¸¼ºÇÑ´Ù.
-                    // ÀÌ·¸°Ô ±¸¼ºµÈ smiValue->value·Î
-                    // qdbCommon::storingValue2mtdValue()ÇÔ¼ö¸¦ »ç¿ëÇØ¼­
-                    // ´Ù½Ã mtdDataType value¸¦ ÂüÁ¶ÇÏ´Â °æ¿ì°¡ ÀÖ±â¶§¹®ÀÌ´Ù.
+                    // QPì—ì„œ smiValue->valueëŠ”
+                    // mtdDataType valueë¥¼ sourceë¡œ í•´ì„œ
+                    // qdbCommon::mtdValue2StoringValue()í•¨ìˆ˜ë¥¼ ì‚¬ìš©í•´ì„œ êµ¬ì„±í•œë‹¤.
+                    // ì´ë ‡ê²Œ êµ¬ì„±ëœ smiValue->valueë¡œ
+                    // qdbCommon::storingValue2mtdValue()í•¨ìˆ˜ë¥¼ ì‚¬ìš©í•´ì„œ
+                    // ë‹¤ì‹œ mtdDataType valueë¥¼ ì°¸ì¡°í•˜ëŠ” ê²½ìš°ê°€ ìˆê¸°ë•Œë¬¸ì´ë‹¤.
                     IDU_LIMITPOINT("qdnTrigger::copyValueListFromRow::malloc2");
                     IDE_TEST( aNewValueMem->alloc(
                                   sSrcActualSize,
@@ -5503,14 +5503,14 @@ qdnTrigger::allocProcInfo( qcStatement * aStatement,
     sParseTree->procInfo.tmplate = QC_SHARED_TMPLATE(aStatement);
 
     // BUG-24408
-    // triggerÀÇ ¼ÒÀ¯ÀÚ·Î body¸¦ compileÇØ¾ß ÇÑ´Ù.
+    // triggerì˜ ì†Œìœ ìë¡œ bodyë¥¼ compileí•´ì•¼ í•œë‹¤.
     sParseTree->actionBody.userID = aTriggerUserID;
 
     sParseTree->actionBody.procInfo = &sParseTree->procInfo;
 
     aStatement->spvEnv->createProc = &sParseTree->actionBody;
 
-    // validation ½Ã¿¡ ÀáÁ¶µÇ±â ¶§¹®¿¡ ÀÓ½Ã·Î ÁöÁ¤ÇÑ´Ù.
+    // validation ì‹œì— ì ì¡°ë˜ê¸° ë•Œë¬¸ì— ì„ì‹œë¡œ ì§€ì •í•œë‹¤.
     aStatement->spvEnv->createProc->stmtText = aStatement->myPlan->stmtText;
     aStatement->spvEnv->createProc->stmtTextLen = aStatement->myPlan->stmtTextLen;
 
@@ -5535,16 +5535,16 @@ qdnTrigger::executeRenameTable( qcStatement  * aStatement,
 {
 /***********************************************************************
  *
- * Description : table ÀÌ¸§ÀÌ º¯°æµÇ¾úÀ» ¶§ º¯°æµÈ ÀÌ¸§ÀÇ tableÀ»
- *               ¿Ã¹Ù¸£°Ô ÂüÁ¶ÇÒ ¼ö ÀÖµµ·Ï triggerÁ¤º¸¸¦ º¯°æÇÑ´Ù.
+ * Description : table ì´ë¦„ì´ ë³€ê²½ë˜ì—ˆì„ ë•Œ ë³€ê²½ëœ ì´ë¦„ì˜ tableì„
+ *               ì˜¬ë°”ë¥´ê²Œ ì°¸ì¡°í•  ìˆ˜ ìˆë„ë¡ triggerì •ë³´ë¥¼ ë³€ê²½í•œë‹¤.
  *
  * Implementation :
- *   1. ±âÁ¸ trigger¸¦ parsingÇÏ¿© º¯°æµÈ ÀÌ¸§ÀÇ tableÀ» ÂüÁ¶ÇÏµµ·Ï
- *      trigger ±¸¹®À» »ı¼ºÇÑ´Ù.
- *   2. º¯°æµÈ trigger ±¸¹®À» object info¿¡ ÀúÀå
- *   3. »õ·Î¿î triggerÀÇ cache¸¦ »ı¼º
- *   4. SYS_TRIGGER_STRINGS_¿¡ ±âÁ¸ trigger »èÁ¦ ÈÄ »õ trigger ±â·Ï
- *   5. ±âÁ¸ triggerÀÇ cache¸¦ Á¦°Å
+ *   1. ê¸°ì¡´ triggerë¥¼ parsingí•˜ì—¬ ë³€ê²½ëœ ì´ë¦„ì˜ tableì„ ì°¸ì¡°í•˜ë„ë¡
+ *      trigger êµ¬ë¬¸ì„ ìƒì„±í•œë‹¤.
+ *   2. ë³€ê²½ëœ trigger êµ¬ë¬¸ì„ object infoì— ì €ì¥
+ *   3. ìƒˆë¡œìš´ triggerì˜ cacheë¥¼ ìƒì„±
+ *   4. SYS_TRIGGER_STRINGS_ì— ê¸°ì¡´ trigger ì‚­ì œ í›„ ìƒˆ trigger ê¸°ë¡
+ *   5. ê¸°ì¡´ triggerì˜ cacheë¥¼ ì œê±°
  *
  ***********************************************************************/
 
@@ -5559,7 +5559,7 @@ qdnTrigger::executeRenameTable( qcStatement  * aStatement,
     UInt                        sDstOffset = 0;
     UInt                        i;
 
-    // SYS_TRIGGER_STRINGS_ ¸¦ À§ÇÑ °ü¸® º¯¼ö
+    // SYS_TRIGGER_STRINGS_ ë¥¼ ìœ„í•œ ê´€ë¦¬ ë³€ìˆ˜
     SChar         sSubString[QCM_TRIGGER_SUBSTRING_LEN * 2 + 2];
     SInt          sCurrPos;
     SInt          sCurrLen;
@@ -5606,7 +5606,7 @@ qdnTrigger::executeRenameTable( qcStatement  * aStatement,
                                                     (void**)&sOldCaches[i] )
                       != IDE_SUCCESS );
 
-            // 1. ±âÁ¸ trigger¸¦ parsingÇÏ¿© º¯°æµÈ ÀÌ¸§ÀÇ tableÀ» ÂüÁ¶ÇÏµµ·Ï trigger ±¸¹®À» »ı¼ºÇÑ´Ù.
+            // 1. ê¸°ì¡´ triggerë¥¼ parsingí•˜ì—¬ ë³€ê²½ëœ ì´ë¦„ì˜ tableì„ ì°¸ì¡°í•˜ë„ë¡ trigger êµ¬ë¬¸ì„ ìƒì„±í•œë‹¤.
 
             sOldCaches[i]->triggerStatement.myPlan->stmtTextLen = sOldCaches[i]->stmtTextLen;
             sOldCaches[i]->triggerStatement.myPlan->stmtText = sOldCaches[i]->stmtText;
@@ -5621,7 +5621,7 @@ qdnTrigger::executeRenameTable( qcStatement  * aStatement,
             // BUG-42992
             if ( sOldCaches[i]->stmtTextLen + sNewTableNameLen + 1 > sTriggerStmtBufAllocSize )
             {
-                // Æ®¸®°Å º¯°æ Àü ±æÀÌ + º¯°æÇÏ´Â Å×ÀÌºí ÀÌ¸§ÀÇ ±æÀÌ + null
+                // íŠ¸ë¦¬ê±° ë³€ê²½ ì „ ê¸¸ì´ + ë³€ê²½í•˜ëŠ” í…Œì´ë¸” ì´ë¦„ì˜ ê¸¸ì´ + null
                 IDE_TEST( STRUCT_ALLOC_WITH_SIZE( aStatement->qmxMem,
                                                   SChar,
                                                   sOldCaches[i]->stmtTextLen + sNewTableNameLen + 1,
@@ -5635,14 +5635,14 @@ qdnTrigger::executeRenameTable( qcStatement  * aStatement,
                 // Nothing to do.
             }
 
-            // trigger statementÀÇ table ÀÌ¸§ Àü±îÁö º¹»ç
+            // trigger statementì˜ table ì´ë¦„ ì „ê¹Œì§€ ë³µì‚¬
             idlOS::memcpy(sTriggerStmtBuffer, sOldCaches[i]->stmtText, sParseTree->tableNamePos.offset);
             sDstOffset = sSrcOffset = sParseTree->tableNamePos.offset;
-            // º¯°æµÈ table ÀÌ¸§ º¹»ç
+            // ë³€ê²½ëœ table ì´ë¦„ ë³µì‚¬
             idlOS::strncpy(sTriggerStmtBuffer + sDstOffset, aTableInfo->name, QC_MAX_OBJECT_NAME_LEN);
             sDstOffset += sNewTableNameLen;
             sSrcOffset += sParseTree->tableNamePos.size;
-            // table ÀÌ¸§ µŞ ºÎºĞ º¹»ç
+            // table ì´ë¦„ ë’· ë¶€ë¶„ ë³µì‚¬
             idlOS::memcpy(sTriggerStmtBuffer + sDstOffset,
                           sOldCaches[i]->stmtText + sSrcOffset,
                           sOldCaches[i]->stmtTextLen - sSrcOffset);
@@ -5650,20 +5650,20 @@ qdnTrigger::executeRenameTable( qcStatement  * aStatement,
 
             sTriggerStmtBufferSize = sDstOffset;
 
-            // 2. º¯°æµÈ trigger ±¸¹®À» object info¿¡ ÀúÀå
+            // 2. ë³€ê²½ëœ trigger êµ¬ë¬¸ì„ object infoì— ì €ì¥
             IDE_TEST( smiObject::setObjectInfo( QC_SMI_STMT( aStatement ),
                                                 aTableInfo->triggerInfo[i].triggerHandle,
                                                 sTriggerStmtBuffer,
                                                 sTriggerStmtBufferSize )
                   != IDE_SUCCESS );
 
-            // 3. »õ·Î¿î triggerÀÇ cache¸¦ »ı¼º
+            // 3. ìƒˆë¡œìš´ triggerì˜ cacheë¥¼ ìƒì„±
             IDE_TEST( allocTriggerCache( aTableInfo->triggerInfo[i].triggerHandle,
                                          aTableInfo->triggerInfo[i].triggerOID,
                                          &sNewCaches[i] )
                   != IDE_SUCCESS );
 
-            // 4. SYS_TRIGGER_STRINGS_¿¡ ±âÁ¸ trigger »èÁ¦ ÈÄ »õ trigger ±â·Ï
+            // 4. SYS_TRIGGER_STRINGS_ì— ê¸°ì¡´ trigger ì‚­ì œ í›„ ìƒˆ trigger ê¸°ë¡
 
             idlOS::snprintf( sSqlStmtBuffer, QD_MAX_SQL_LENGTH,
                              "DELETE SYS_TRIGGER_STRINGS_ WHERE TRIGGER_OID="QCM_SQL_BIGINT_FMT,
@@ -5677,7 +5677,7 @@ qdnTrigger::executeRenameTable( qcStatement  * aStatement,
             sSubStringCnt = (sTriggerStmtBufferSize / QCM_TRIGGER_SUBSTRING_LEN ) +
                             (((sTriggerStmtBufferSize % QCM_TRIGGER_SUBSTRING_LEN) == 0) ? 0 : 1);
 
-            // qcmTrigger::addMetaInfo¿¡¼­ ÀÏºÎ ÄÚµå º¹»ç
+            // qcmTrigger::addMetaInfoì—ì„œ ì¼ë¶€ ì½”ë“œ ë³µì‚¬
             for ( sSeqNo = 0, sCurrLen = 0, sCurrPos = 0;
                   sSeqNo < sSubStringCnt;
                   sSeqNo++ )
@@ -5692,8 +5692,8 @@ qdnTrigger::executeRenameTable( qcStatement  * aStatement,
                     sCurrLen = sTriggerStmtBufferSize - sCurrPos;
                 }
 
-                // ['] ¿Í °°Àº ¹®ÀÚ¸¦ Ã³¸®ÇÏ±â À§ÇÏ¿© [\'] ¿Í °°Àº
-                // StringÀ¸·Î º¯È¯ÇÏ¿© º¹»çÇÑ´Ù.
+                // ['] ì™€ ê°™ì€ ë¬¸ìë¥¼ ì²˜ë¦¬í•˜ê¸° ìœ„í•˜ì—¬ [\'] ì™€ ê°™ì€
+                // Stringìœ¼ë¡œ ë³€í™˜í•˜ì—¬ ë³µì‚¬í•œë‹¤.
                 IDE_TEST(
                     qcmProc::prsCopyStrDupAppo ( sSubString,
                                                  sTriggerStmtBuffer + sCurrPos,
@@ -5721,8 +5721,8 @@ qdnTrigger::executeRenameTable( qcStatement  * aStatement,
                 IDE_DASSERT( sRowCnt == 1 );
             }
 
-            /* BUG-45516 RENAME DDL¿¡¼­ Trigger StringÀ» º¯°æÇÒ ¶§, SYS_TRIGGERS_ÀÇ SUBSTRING_CNT¿Í STRING_LENGTH¸¦ º¯°æÇÏÁö ¾Ê½À´Ï´Ù.
-             *  - SYS_TRIGGERS_¿¡¼­ ÇØ´çÇÏ´Â TRIGGER_OID·Î °Ë»öÇÏ°í, SUBSTRING_CNT, STRING_LENGTH¸¦ º¯°æÇÑ´Ù.
+            /* BUG-45516 RENAME DDLì—ì„œ Trigger Stringì„ ë³€ê²½í•  ë•Œ, SYS_TRIGGERS_ì˜ SUBSTRING_CNTì™€ STRING_LENGTHë¥¼ ë³€ê²½í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
+             *  - SYS_TRIGGERS_ì—ì„œ í•´ë‹¹í•˜ëŠ” TRIGGER_OIDë¡œ ê²€ìƒ‰í•˜ê³ , SUBSTRING_CNT, STRING_LENGTHë¥¼ ë³€ê²½í•œë‹¤.
              */
             idlOS::snprintf( sSqlStmtBuffer, QD_MAX_SQL_LENGTH,
                              "UPDATE SYS_TRIGGERS_ SET"
@@ -5742,7 +5742,7 @@ qdnTrigger::executeRenameTable( qcStatement  * aStatement,
         }
 
 
-        // 5. ±âÁ¸ triggerÀÇ cache¸¦ Á¦°Å
+        // 5. ê¸°ì¡´ triggerì˜ cacheë¥¼ ì œê±°
         for ( i = 0;  i < aTableInfo->triggerCount; i++ )
         {
             IDE_TEST(freeTriggerCache(sOldCaches[i]) != IDE_SUCCESS);
@@ -5757,7 +5757,7 @@ qdnTrigger::executeRenameTable( qcStatement  * aStatement,
 
     IDE_EXCEPTION_END;
 
-    // error ¹ß»ı ½Ã trigger cache º¹¿ø
+    // error ë°œìƒ ì‹œ trigger cache ë³µì›
     for ( i = 0;  i < aTableInfo->triggerCount; i++ )
     {
         if( sOldCaches != NULL )
@@ -5806,20 +5806,20 @@ IDE_RC qdnTrigger::executeCopyTable( qcStatement       * aStatement,
 {
 /***********************************************************************
  * Description :
- *      Target Table¿¡ Trigger¸¦ »ı¼ºÇÑ´Ù.
- *          - Source TableÀÇ Trigger Á¤º¸¸¦ »ç¿ëÇÏ¿©, Target TableÀÇ Trigger¸¦ »ı¼ºÇÑ´Ù. (SM)
- *              - TRIGGER_NAME¿¡ »ç¿ëÀÚ°¡ ÁöÁ¤ÇÑ Prefix¸¦ ºÙ¿©¼­ TRIGGER_NAMEÀ» »ı¼ºÇÑ´Ù.
- *              - Trigger Strings¿¡ »ı¼ºÇÑ TRIGGER_NAME°ú Target Table NameÀ» Àû¿ëÇÑ´Ù.
- *          - Meta Table¿¡ Target TableÀÇ Trigger Á¤º¸¸¦ Ãß°¡ÇÑ´Ù. (Meta Table)
+ *      Target Tableì— Triggerë¥¼ ìƒì„±í•œë‹¤.
+ *          - Source Tableì˜ Trigger ì •ë³´ë¥¼ ì‚¬ìš©í•˜ì—¬, Target Tableì˜ Triggerë¥¼ ìƒì„±í•œë‹¤. (SM)
+ *              - TRIGGER_NAMEì— ì‚¬ìš©ìê°€ ì§€ì •í•œ Prefixë¥¼ ë¶™ì—¬ì„œ TRIGGER_NAMEì„ ìƒì„±í•œë‹¤.
+ *              - Trigger Stringsì— ìƒì„±í•œ TRIGGER_NAMEê³¼ Target Table Nameì„ ì ìš©í•œë‹¤.
+ *          - Meta Tableì— Target Tableì˜ Trigger ì •ë³´ë¥¼ ì¶”ê°€í•œë‹¤. (Meta Table)
  *              - SYS_TRIGGERS_
- *                  - »ı¼ºÇÑ TRIGGER_NAMEÀ» »ç¿ëÇÑ´Ù.
- *                  - SM¿¡¼­ ¾òÀº Trigger OID°¡ SYS_TRIGGERS_¿¡ ÇÊ¿äÇÏ´Ù.
- *                  - º¯°æÇÑ Trigger StringÀ¸·Î SUBSTRING_CNT, STRING_LENGTH¸¦ ¸¸µé¾î¾ß ÇÑ´Ù.
- *                  - LAST_DDL_TIMEÀ» ÃÊ±âÈ­ÇÑ´Ù. (SYSDATE)
+ *                  - ìƒì„±í•œ TRIGGER_NAMEì„ ì‚¬ìš©í•œë‹¤.
+ *                  - SMì—ì„œ ì–»ì€ Trigger OIDê°€ SYS_TRIGGERS_ì— í•„ìš”í•˜ë‹¤.
+ *                  - ë³€ê²½í•œ Trigger Stringìœ¼ë¡œ SUBSTRING_CNT, STRING_LENGTHë¥¼ ë§Œë“¤ì–´ì•¼ í•œë‹¤.
+ *                  - LAST_DDL_TIMEì„ ì´ˆê¸°í™”í•œë‹¤. (SYSDATE)
  *              - SYS_TRIGGER_STRINGS_
- *                  - °»½ÅÇÑ Trigger StringsÀ» Àß¶ó ³Ö´Â´Ù.
+ *                  - ê°±ì‹ í•œ Trigger Stringsì„ ì˜ë¼ ë„£ëŠ”ë‹¤.
  *              - SYS_TRIGGER_UPDATE_COLUMNS_
- *                  - »õ·Î¿î TABLE_ID¸¦ ÀÌ¿ëÇÏ¿© COLUMN_ID¸¦ ¸¸µé¾î¾ß ÇÑ´Ù.
+ *                  - ìƒˆë¡œìš´ TABLE_IDë¥¼ ì´ìš©í•˜ì—¬ COLUMN_IDë¥¼ ë§Œë“¤ì–´ì•¼ í•œë‹¤.
  *              - SYS_TRIGGER_DML_TABLES_
  *
  * Implementation :
@@ -5880,7 +5880,7 @@ IDE_RC qdnTrigger::executeCopyTable( qcStatement       * aStatement,
                             QC_MAX_OBJECT_NAME_LEN,
                             ERR_TOO_LONG_OBJECT_NAME );
 
-            // TRIGGER_NAME¿¡ »ç¿ëÀÚ°¡ ÁöÁ¤ÇÑ Prefix¸¦ ºÙ¿©¼­ TRIGGER_NAMEÀ» »ı¼ºÇÑ´Ù.
+            // TRIGGER_NAMEì— ì‚¬ìš©ìê°€ ì§€ì •í•œ Prefixë¥¼ ë¶™ì—¬ì„œ TRIGGER_NAMEì„ ìƒì„±í•œë‹¤.
             QC_STR_COPY( sTargetTriggerName, aNamesPrefix );
             idlOS::strncat( sTargetTriggerName, aSourceTableInfo->triggerInfo[i].triggerName, QC_MAX_OBJECT_NAME_LEN );
 
@@ -5911,7 +5911,7 @@ IDE_RC qdnTrigger::executeCopyTable( qcStatement       * aStatement,
             if ( ( sSrcCache->stmtTextLen + sTargetTriggerNameLen + sTargetTableNameLen + 1 ) >
                  sTriggerStmtBufAllocSize )
             {
-                // º¯°æ Àü Trigger ±æÀÌ + º¯°æ ÈÄ Trigger Name ±æÀÌ + º¯°æ ÈÄ Table Name ±æÀÌ + '\0'
+                // ë³€ê²½ ì „ Trigger ê¸¸ì´ + ë³€ê²½ í›„ Trigger Name ê¸¸ì´ + ë³€ê²½ í›„ Table Name ê¸¸ì´ + '\0'
                 sTriggerStmtBufAllocSize = sSrcCache->stmtTextLen + sTargetTriggerNameLen + sTargetTableNameLen + 1;
 
                 IDU_FIT_POINT( "qdnTrigger::executeCopyTable::STRUCT_ALLOC_WITH_SIZE::sTriggerStmtBuffer-2",
@@ -5928,34 +5928,34 @@ IDE_RC qdnTrigger::executeCopyTable( qcStatement       * aStatement,
                 /* Nothing to do */
             }
 
-            // Trigger StatementÀÇ Trigger Name Àü±îÁö º¹»ç
+            // Trigger Statementì˜ Trigger Name ì „ê¹Œì§€ ë³µì‚¬
             idlOS::memcpy( sTriggerStmtBuffer,
                            sSrcCache->stmtText,
                            sParseTree->triggerNamePos.offset );
             sTarOffset = sSrcOffset = sParseTree->triggerNamePos.offset;
 
-            // º¯°æ ÈÄ Trigger Name º¹»ç
+            // ë³€ê²½ í›„ Trigger Name ë³µì‚¬
             idlOS::strncpy( sTriggerStmtBuffer + sTarOffset,
                             sTargetTriggerName,
                             QC_MAX_OBJECT_NAME_LEN );
             sTarOffset += sTargetTriggerNameLen;
             sSrcOffset += sParseTree->triggerNamePos.size;
 
-            // Trigger StatementÀÇ Table Name Àü±îÁö º¹»ç
+            // Trigger Statementì˜ Table Name ì „ê¹Œì§€ ë³µì‚¬
             idlOS::memcpy( sTriggerStmtBuffer + sTarOffset,
                            sSrcCache->stmtText + sSrcOffset,
                            sParseTree->tableNamePos.offset - sSrcOffset );
             sTarOffset += sParseTree->tableNamePos.offset - sSrcOffset;
             sSrcOffset = sParseTree->tableNamePos.offset;
 
-            // º¯°æ ÈÄ Table Name º¹»ç
+            // ë³€ê²½ í›„ Table Name ë³µì‚¬
             idlOS::strncpy( sTriggerStmtBuffer + sTarOffset,
                             aTargetTableInfo->name,
                             QC_MAX_OBJECT_NAME_LEN );
             sTarOffset += sTargetTableNameLen;
             sSrcOffset += sParseTree->tableNamePos.size;
 
-            // Table Name µŞ ºÎºĞ º¹»ç
+            // Table Name ë’· ë¶€ë¶„ ë³µì‚¬
             idlOS::memcpy( sTriggerStmtBuffer + sTarOffset,
                            sSrcCache->stmtText + sSrcOffset,
                            sSrcCache->stmtTextLen - sSrcOffset );
@@ -5963,7 +5963,7 @@ IDE_RC qdnTrigger::executeCopyTable( qcStatement       * aStatement,
 
             sTriggerStmtBuffer[sTarOffset] = '\0';
 
-            /* Source TableÀÇ Trigger Á¤º¸¸¦ »ç¿ëÇÏ¿©, Target TableÀÇ Trigger¸¦ »ı¼ºÇÑ´Ù. (SM) */
+            /* Source Tableì˜ Trigger ì •ë³´ë¥¼ ì‚¬ìš©í•˜ì—¬, Target Tableì˜ Triggerë¥¼ ìƒì„±í•œë‹¤. (SM) */
             sStatement.myPlan->stmtText    = sTriggerStmtBuffer;
             sStatement.myPlan->stmtTextLen = sTarOffset;
 
@@ -5978,7 +5978,7 @@ IDE_RC qdnTrigger::executeCopyTable( qcStatement       * aStatement,
                                          & sTarCache[i] )
                       != IDE_SUCCESS );
 
-            /* Meta Table¿¡ Target TableÀÇ Trigger Á¤º¸¸¦ Ãß°¡ÇÑ´Ù. (Meta Table) */
+            /* Meta Tableì— Target Tableì˜ Trigger ì •ë³´ë¥¼ ì¶”ê°€í•œë‹¤. (Meta Table) */
             IDE_TEST( qcmTrigger::copyTriggerMetaInfo( aStatement,
                                                        aTargetTableInfo->tableID,
                                                        sTriggerOID,
@@ -6034,27 +6034,27 @@ IDE_RC qdnTrigger::executeSwapTable( qcStatement       * aStatement,
 {
 /***********************************************************************
  * Description :
- *      º¯°æÇÑ Trigger Name°ú ±³È¯ÇÑ Table NameÀ» Trigger Strings¿¡ ¹İ¿µÇÏ°í Trigger¸¦ Àç»ı¼ºÇÑ´Ù.
- *          - Prefix¸¦ ÁöÁ¤ÇÑ °æ¿ì, SourceÀÇ TRIGGER_NAME¿¡ Prefix¸¦ ºÙÀÌ°í,
- *            TargetÀÇ TRIGGER_NAME¿¡¼­ Prefix¸¦ Á¦°ÅÇÑ´Ù. (Meta Table)
+ *      ë³€ê²½í•œ Trigger Nameê³¼ êµí™˜í•œ Table Nameì„ Trigger Stringsì— ë°˜ì˜í•˜ê³  Triggerë¥¼ ì¬ìƒì„±í•œë‹¤.
+ *          - Prefixë¥¼ ì§€ì •í•œ ê²½ìš°, Sourceì˜ TRIGGER_NAMEì— Prefixë¥¼ ë¶™ì´ê³ ,
+ *            Targetì˜ TRIGGER_NAMEì—ì„œ Prefixë¥¼ ì œê±°í•œë‹¤. (Meta Table)
  *              - SYS_TRIGGERS_
- *                  - TRIGGER_NAMEÀ» º¯°æÇÑ´Ù.
- *                  - º¯°æÇÑ Trigger StringÀ¸·Î SUBSTRING_CNT, STRING_LENGTH¸¦ ¸¸µé¾î¾ß ÇÑ´Ù.
- *                  - LAST_DDL_TIMEÀ» °»½ÅÇÑ´Ù. (SYSDATE)
- *          - Trigger Strings¿¡ º¯°æÇÑ Trigger Name°ú ±³È¯ÇÑ Table NameÀ» Àû¿ëÇÑ´Ù. (SM, Meta Table, Meta Cache)
- *              - Trigger ObjectÀÇ Trigger »ı¼º ±¸¹®À» º¯°æÇÑ´Ù. (SM)
+ *                  - TRIGGER_NAMEì„ ë³€ê²½í•œë‹¤.
+ *                  - ë³€ê²½í•œ Trigger Stringìœ¼ë¡œ SUBSTRING_CNT, STRING_LENGTHë¥¼ ë§Œë“¤ì–´ì•¼ í•œë‹¤.
+ *                  - LAST_DDL_TIMEì„ ê°±ì‹ í•œë‹¤. (SYSDATE)
+ *          - Trigger Stringsì— ë³€ê²½í•œ Trigger Nameê³¼ êµí™˜í•œ Table Nameì„ ì ìš©í•œë‹¤. (SM, Meta Table, Meta Cache)
+ *              - Trigger Objectì˜ Trigger ìƒì„± êµ¬ë¬¸ì„ ë³€ê²½í•œë‹¤. (SM)
  *                  - Call : smiObject::setObjectInfo()
- *              - New Trigger Cache¸¦ »ı¼ºÇÏ°í SM¿¡ µî·ÏÇÑ´Ù. (Meta Cache)
+ *              - New Trigger Cacheë¥¼ ìƒì„±í•˜ê³  SMì— ë“±ë¡í•œë‹¤. (Meta Cache)
  *                  - Call : qdnTrigger::allocTriggerCache()
- *              - Trigger StringsÀ» º¸°üÇÏ´Â Meta TableÀ» °»½ÅÇÑ´Ù. (Meta Table)
+ *              - Trigger Stringsì„ ë³´ê´€í•˜ëŠ” Meta Tableì„ ê°±ì‹ í•œë‹¤. (Meta Table)
  *                  - SYS_TRIGGER_STRINGS_
- *                      - DELETE & INSERT·Î Ã³¸®ÇÑ´Ù.
- *          - Trigger¸¦ µ¿ÀÛ½ÃÅ°´Â Column Á¤º¸¿¡´Â º¯°æ »çÇ×ÀÌ ¾ø´Ù.
+ *                      - DELETE & INSERTë¡œ ì²˜ë¦¬í•œë‹¤.
+ *          - Triggerë¥¼ ë™ì‘ì‹œí‚¤ëŠ” Column ì •ë³´ì—ëŠ” ë³€ê²½ ì‚¬í•­ì´ ì—†ë‹¤.
  *              - SYS_TRIGGER_UPDATE_COLUMNS_
- *          - ´Ù¸¥ Trigger°¡ Cycle Check¿¡ »ç¿ëÇÏ´Â Á¤º¸¸¦ °»½ÅÇÑ´Ù. (Meta Table)
+ *          - ë‹¤ë¥¸ Triggerê°€ Cycle Checkì— ì‚¬ìš©í•˜ëŠ” ì •ë³´ë¥¼ ê°±ì‹ í•œë‹¤. (Meta Table)
  *              - SYS_TRIGGER_DML_TABLES_
- *                  - DML_TABLE_ID = Table ID ÀÌ¸é, (TABLE_ID¿Í ¹«°üÇÏ°Ô) DML_TABLE_ID¸¦ PeerÀÇ Table ID·Î ±³Ã¼ÇÑ´Ù.
- *          - ÂüÁ¶ Call : qdnTrigger::executeRenameTable()
+ *                  - DML_TABLE_ID = Table ID ì´ë©´, (TABLE_IDì™€ ë¬´ê´€í•˜ê²Œ) DML_TABLE_IDë¥¼ Peerì˜ Table IDë¡œ êµì²´í•œë‹¤.
+ *          - ì°¸ì¡° Call : qdnTrigger::executeRenameTable()
  *
  * Implementation :
  *
@@ -6115,7 +6115,7 @@ IDE_RC qdnTrigger::executeSwapTable( qcStatement       * aStatement,
 
         for ( i = 0; i < aSourceTableInfo->triggerCount; i++ )
         {
-            // TRIGGER_NAME¿¡ »ç¿ëÀÚ°¡ ÁöÁ¤ÇÑ Prefix¸¦ ºÙ¿©¼­ TRIGGER_NAMEÀ» »ı¼ºÇÑ´Ù.
+            // TRIGGER_NAMEì— ì‚¬ìš©ìê°€ ì§€ì •í•œ Prefixë¥¼ ë¶™ì—¬ì„œ TRIGGER_NAMEì„ ìƒì„±í•œë‹¤.
             if ( QC_IS_NULL_NAME( aNamesPrefix ) != ID_TRUE )
             {
                 IDE_TEST_RAISE( ( idlOS::strlen( aSourceTableInfo->triggerInfo[i].triggerName ) + aNamesPrefix.size ) >
@@ -6142,7 +6142,7 @@ IDE_RC qdnTrigger::executeSwapTable( qcStatement       * aStatement,
             if ( ( sTriggerCache->stmtTextLen + sNewTriggerNameLen + sPeerTableNameLen + 1 ) >
                  sTriggerStmtBufAllocSize )
             {
-                // º¯°æ Àü Trigger ±æÀÌ + º¯°æ ÈÄ Trigger Name ±æÀÌ + º¯°æ ÈÄ Table Name ±æÀÌ + '\0'
+                // ë³€ê²½ ì „ Trigger ê¸¸ì´ + ë³€ê²½ í›„ Trigger Name ê¸¸ì´ + ë³€ê²½ í›„ Table Name ê¸¸ì´ + '\0'
                 sTriggerStmtBufAllocSize = sTriggerCache->stmtTextLen + sNewTriggerNameLen + sPeerTableNameLen + 1;
 
                 IDU_FIT_POINT( "qdnTrigger::executeSwapTable::STRUCT_ALLOC_WITH_SIZE::sTriggerStmtBuffer-2",
@@ -6203,7 +6203,7 @@ IDE_RC qdnTrigger::executeSwapTable( qcStatement       * aStatement,
 
         for ( i = 0; i < aTargetTableInfo->triggerCount; i++ )
         {
-            // TRIGGER_NAME¿¡¼­ »ç¿ëÀÚ°¡ ÁöÁ¤ÇÑ Prefix¸¦ Á¦°ÅÇÑ TRIGGER_NAMEÀ» »ı¼ºÇÑ´Ù.
+            // TRIGGER_NAMEì—ì„œ ì‚¬ìš©ìê°€ ì§€ì •í•œ Prefixë¥¼ ì œê±°í•œ TRIGGER_NAMEì„ ìƒì„±í•œë‹¤.
             if ( QC_IS_NULL_NAME( aNamesPrefix ) != ID_TRUE )
             {
                 IDE_TEST_RAISE( idlOS::strlen( aTargetTableInfo->triggerInfo[i].triggerName ) <=
@@ -6237,7 +6237,7 @@ IDE_RC qdnTrigger::executeSwapTable( qcStatement       * aStatement,
             if ( ( sTriggerCache->stmtTextLen + sNewTriggerNameLen + sPeerTableNameLen + 1 ) >
                  sTriggerStmtBufAllocSize )
             {
-                // º¯°æ Àü Trigger ±æÀÌ + º¯°æ ÈÄ Trigger Name ±æÀÌ + º¯°æ ÈÄ Table Name ±æÀÌ + '\0'
+                // ë³€ê²½ ì „ Trigger ê¸¸ì´ + ë³€ê²½ í›„ Trigger Name ê¸¸ì´ + ë³€ê²½ í›„ Table Name ê¸¸ì´ + '\0'
                 sTriggerStmtBufAllocSize = sTriggerCache->stmtTextLen + sNewTriggerNameLen + sPeerTableNameLen + 1;
 
                 IDU_FIT_POINT( "qdnTrigger::executeSwapTable::STRUCT_ALLOC_WITH_SIZE::sTriggerStmtBuffer-3",
@@ -6273,14 +6273,14 @@ IDE_RC qdnTrigger::executeSwapTable( qcStatement       * aStatement,
         /* Nothing to do */
     }
 
-    /* SYS_TRIGGERS_ÀÇ TRIGGER_NAMEÀ» º¯°æÇÑ´Ù. */
+    /* SYS_TRIGGERS_ì˜ TRIGGER_NAMEì„ ë³€ê²½í•œë‹¤. */
     IDE_TEST( qcmTrigger::renameTriggerMetaInfoForSwap( aStatement,
                                                         aSourceTableInfo,
                                                         aTargetTableInfo,
                                                         aNamesPrefix )
               != IDE_SUCCESS );
 
-    /* ´Ù¸¥ Trigger°¡ Cycle Check¿¡ »ç¿ëÇÏ´Â Á¤º¸¸¦ °»½ÅÇÑ´Ù. (Meta Table) */
+    /* ë‹¤ë¥¸ Triggerê°€ Cycle Checkì— ì‚¬ìš©í•˜ëŠ” ì •ë³´ë¥¼ ê°±ì‹ í•œë‹¤. (Meta Table) */
     IDE_TEST( qcmTrigger::swapTriggerDMLTablesMetaInfo( aStatement,
                                                         aTargetTableInfo->tableID,
                                                         aSourceTableInfo->tableID )
@@ -6356,34 +6356,34 @@ IDE_RC qdnTrigger::makeNewTriggerStringForSwap( qcStatement      * aStatement,
     IDE_TEST( qcpManager::parseIt( & sStatement ) != IDE_SUCCESS );
     sParseTree = (qdnCreateTriggerParseTree *)sStatement.myPlan->parseTree;
 
-    // Trigger StatementÀÇ Trigger Name Àü±îÁö º¹»ç
+    // Trigger Statementì˜ Trigger Name ì „ê¹Œì§€ ë³µì‚¬
     idlOS::memcpy( aTriggerStmtBuffer,
                    aTriggerCache->stmtText,
                    sParseTree->triggerNamePos.offset );
     sNewOffset = sOldOffset = sParseTree->triggerNamePos.offset;
 
-    // º¯°æ ÈÄ Trigger Name º¹»ç
+    // ë³€ê²½ í›„ Trigger Name ë³µì‚¬
     idlOS::strncpy( aTriggerStmtBuffer + sNewOffset,
                     aNewTriggerName,
                     QC_MAX_OBJECT_NAME_LEN );
     sNewOffset += aNewTriggerNameLen;
     sOldOffset += sParseTree->triggerNamePos.size;
 
-    // Trigger StatementÀÇ Table Name Àü±îÁö º¹»ç
+    // Trigger Statementì˜ Table Name ì „ê¹Œì§€ ë³µì‚¬
     idlOS::memcpy( aTriggerStmtBuffer + sNewOffset,
                    aTriggerCache->stmtText + sOldOffset,
                    sParseTree->tableNamePos.offset - sOldOffset );
     sNewOffset += sParseTree->tableNamePos.offset - sOldOffset;
     sOldOffset = sParseTree->tableNamePos.offset;
 
-    // º¯°æ ÈÄ Table Name º¹»ç
+    // ë³€ê²½ í›„ Table Name ë³µì‚¬
     idlOS::strncpy( aTriggerStmtBuffer + sNewOffset,
                     aPeerTableNameStr,
                     QC_MAX_OBJECT_NAME_LEN );
     sNewOffset += aPeerTableNameLen;
     sOldOffset += sParseTree->tableNamePos.size;
 
-    // Table Name µŞ ºÎºĞ º¹»ç
+    // Table Name ë’· ë¶€ë¶„ ë³µì‚¬
     idlOS::memcpy( aTriggerStmtBuffer + sNewOffset,
                    aTriggerCache->stmtText + sOldOffset,
                    aTriggerCache->stmtTextLen - sOldOffset );
@@ -6391,20 +6391,20 @@ IDE_RC qdnTrigger::makeNewTriggerStringForSwap( qcStatement      * aStatement,
 
     aTriggerStmtBuffer[sNewOffset] = '\0';
 
-    /* Trigger ObjectÀÇ Trigger »ı¼º ±¸¹®À» º¯°æÇÑ´Ù. (SM) */
+    /* Trigger Objectì˜ Trigger ìƒì„± êµ¬ë¬¸ì„ ë³€ê²½í•œë‹¤. (SM) */
     IDE_TEST( smiObject::setObjectInfo( QC_SMI_STMT( aStatement ),
                                         aTriggerHandle,
                                         aTriggerStmtBuffer,
                                         sNewOffset )
               != IDE_SUCCESS );
 
-    /* New Trigger Cache¸¦ »ı¼ºÇÏ°í SM¿¡ µî·ÏÇÑ´Ù. (Meta Cache) */
+    /* New Trigger Cacheë¥¼ ìƒì„±í•˜ê³  SMì— ë“±ë¡í•œë‹¤. (Meta Cache) */
     IDE_TEST( allocTriggerCache( aTriggerHandle,
                                  aTriggerOID,
                                  aNewTriggerCache )
               != IDE_SUCCESS );
 
-    /* Trigger StringsÀ» º¸°üÇÏ´Â Meta TableÀ» °»½ÅÇÑ´Ù. (Meta Table) */
+    /* Trigger Stringsì„ ë³´ê´€í•˜ëŠ” Meta Tableì„ ê°±ì‹ í•œë‹¤. (Meta Table) */
     IDE_TEST( qcmTrigger::updateTriggerStringsMetaInfo( aStatement,
                                                         aTableID,
                                                         aTriggerOID,
@@ -6493,8 +6493,8 @@ IDE_RC qdnTrigger::convertXlobToXlobValue( mtcTemplate       * aTemplate,
 
             if( aRefType == QCM_TRIGGER_REF_OLD_ROW )
             {
-                /* BUG-43961 trigger¸¦ ÅëÇØ lob¿¡ Á¢±ÙÇÒ °æ¿ì old reference¸¦ »ç¿ë½Ã
-                   old °ªÀ» Á¤»óÀûÀ¸·Î °¡Á®¿À±â À§ÇØ¼­´Â READ mode·Î Á¢±ÙÇØ¾ß ÇÑ´Ù. */ 
+                /* BUG-43961 triggerë¥¼ í†µí•´ lobì— ì ‘ê·¼í•  ê²½ìš° old referenceë¥¼ ì‚¬ìš©ì‹œ
+                   old ê°’ì„ ì •ìƒì ìœ¼ë¡œ ê°€ì ¸ì˜¤ê¸° ìœ„í•´ì„œëŠ” READ modeë¡œ ì ‘ê·¼í•´ì•¼ í•œë‹¤. */ 
                 IDE_TEST( mtc::openLobCursorWithGRID( aTableCursor,
                                                       aGRID,
                                                       & aSrcLobColumn->column,
@@ -6505,8 +6505,8 @@ IDE_RC qdnTrigger::convertXlobToXlobValue( mtcTemplate       * aTemplate,
             }
             else
             {
-                /* BUG-43838 trigger¸¦ ÅëÇØ lob¿¡ Á¢±ÙÇÒ °æ¿ì lob cursor¸¦ 
-                   READ_WRITE mode·Î Á¢±ÙÇØ¾ß Á¤»óÀûÀ¸·Î °ªÀ» °¡Á®¿Ã ¼ö ÀÖ´Ù. */
+                /* BUG-43838 triggerë¥¼ í†µí•´ lobì— ì ‘ê·¼í•  ê²½ìš° lob cursorë¥¼ 
+                   READ_WRITE modeë¡œ ì ‘ê·¼í•´ì•¼ ì •ìƒì ìœ¼ë¡œ ê°’ì„ ê°€ì ¸ì˜¬ ìˆ˜ ìˆë‹¤. */
                 IDE_TEST( mtc::openLobCursorWithGRID( aTableCursor,
                                                       aGRID,
                                                       & aSrcLobColumn->column,
@@ -6586,8 +6586,8 @@ IDE_RC qdnTrigger::convertXlobToXlobValue( mtcTemplate       * aTemplate,
 }
 
 // PROJ-2219 Row-level before update trigger
-// Row-level before update trigger¿¡¼­ new row¸¦ ÅëÇØ
-// ÂüÁ¶ÇÏ´Â column list¸¦ »ı¼ºÇÑ´Ù.
+// Row-level before update triggerì—ì„œ new rowë¥¼ í†µí•´
+// ì°¸ì¡°í•˜ëŠ” column listë¥¼ ìƒì„±í•œë‹¤.
 IDE_RC qdnTrigger::makeRefColumnList( qcStatement * aQcStmt )
 {
     qdnCreateTriggerParseTree * sParseTree;
@@ -6617,8 +6617,8 @@ IDE_RC qdnTrigger::makeRefColumnList( qcStatement * aQcStmt )
         {
             if ( sRef->refType == QCM_TRIGGER_REF_NEW_ROW )
             {
-                // sRefColumnList´Â ¹«Á¶°Ç NULLÀÎ »óÅÂÀÌ´Ù.
-                // NEW ROW´Â ÇÑ °³¸¸ Á¸ÀçÇÏ±â ¶§¹®ÀÌ´Ù.
+                // sRefColumnListëŠ” ë¬´ì¡°ê±´ NULLì¸ ìƒíƒœì´ë‹¤.
+                // NEW ROWëŠ” í•œ ê°œë§Œ ì¡´ì¬í•˜ê¸° ë•Œë¬¸ì´ë‹¤.
                 IDE_ERROR( sRefColumnList == NULL );
 
                 IDU_FIT_POINT( "qdnTrigger::makeRefColumnList::alloc::sRefColumnList",
@@ -6671,7 +6671,7 @@ IDE_RC qdnTrigger::makeRefColumnList( qcStatement * aQcStmt )
 }
 
 // PROJ-2219 Row-level before update trigger
-// Invalid ÇÑ trigger°¡ ÀÖÀ¸¸é compileÇÏ°í, DMLÀ» rebuild ÇÑ´Ù.
+// Invalid í•œ triggerê°€ ìˆìœ¼ë©´ compileí•˜ê³ , DMLì„ rebuild í•œë‹¤.
 IDE_RC qdnTrigger::verifyTriggers( qcStatement   * aQcStmt,
                                    qcmTableInfo  * aTableInfo,
                                    smiColumnList * aUptColumn,
@@ -6709,7 +6709,7 @@ IDE_RC qdnTrigger::verifyTriggers( qcStatement   * aQcStmt,
 
             while ( 1 )
             {
-                // S Latch È¹µæ
+                // S Latch íšë“
                 IDE_TEST( sTriggerCache->latch.lockRead (
                               NULL, /* idvSQL * */
                               NULL /* idvWeArgs* */ )
@@ -6718,7 +6718,7 @@ IDE_RC qdnTrigger::verifyTriggers( qcStatement   * aQcStmt,
 
                 if ( sTriggerCache->isValid != ID_TRUE )
                 {
-                    // ValidÇÏÁö ¾ÊÀ¸¸é Recompile ÇÑ´Ù.
+                    // Validí•˜ì§€ ì•Šìœ¼ë©´ Recompile í•œë‹¤.
 
                     // Release Latch
                     sStage = 0;
@@ -6728,7 +6728,7 @@ IDE_RC qdnTrigger::verifyTriggers( qcStatement   * aQcStmt,
                                               sTriggerInfo )
                             != IDE_SUCCESS )
                     {
-                        // rebuild error¶ó¸é ´Ù½Ã recompileÀ» ½ÃµµÇÑ´Ù.
+                        // rebuild errorë¼ë©´ ë‹¤ì‹œ recompileì„ ì‹œë„í•œë‹¤.
                         IDE_TEST( ideIsRebuild() != IDE_SUCCESS );
                     }
 
@@ -6768,7 +6768,7 @@ IDE_RC qdnTrigger::verifyTriggers( qcStatement   * aQcStmt,
     return IDE_FAILURE;
 }
 
-// BUG-38137 TriggerÀÇ when condition¿¡¼­ PSMÀ» È£ÃâÇÒ ¼ö ¾ø´Ù.
+// BUG-38137 Triggerì˜ when conditionì—ì„œ PSMì„ í˜¸ì¶œí•  ìˆ˜ ì—†ë‹¤.
 IDE_RC qdnTrigger::checkNoSpFunctionCall( qtcNode * aNode )
 {
     qtcNode * sNode;

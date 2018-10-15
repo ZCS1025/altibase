@@ -59,7 +59,7 @@ typedef struct HostVarNode
 {
     HostVarElement   element;
     HostVarNode    * next;
-    HostVarNode    * host_var_next;  // procedure ¼öÇà ½Ã È£½ºÆ® º¯¼öµéÀÇ ¼ø¼­
+    HostVarNode    * host_var_next;  // procedure ìˆ˜í–‰ ì‹œ í˜¸ìŠ¤íŠ¸ ë³€ìˆ˜ë“¤ì˜ ìˆœì„œ
 } HostVarNode;
 
 class iSQLHostVarMgr

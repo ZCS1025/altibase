@@ -29,18 +29,18 @@
  *
  * aclQueue is unbounded (no limitation of the number of queued object) queue.
  *
- * queued objectÀÇ °¹¼ö¿¡ ´ëÇÑ Á¦ÇÑÀ» ÁÙ ¼ö ÀÖ°í ÇöÀç queued objectÀÇ °¹¼ö¸¦
- * ¾ò´Â ÇÔ¼ö¸¦ ¸¸µé °èÈ¹ÀÌ¾îÀ¸³ª lockfree queue ´Â queue data structureÀüÃ¼¿¡
- * ´ëÇÑ lockÀ» ÀâÁö ¾Ê±â ¶§¹®¿¡ counterÀÇ Áõ°¨À» atomic operationÀ¸·Î
- * Ã³¸®ÇÏ´õ¶óµµ ÀÏ½ÃÀûÀ¸·Î Àß¸øµÈ °ªÀÌ µé¾î°¥ ¼ö ÀÖ´Ù.
+ * queued objectì˜ ê°¯ìˆ˜ì— ëŒ€í•œ ì œí•œì„ ì¤„ ìˆ˜ ìˆê³  í˜„ì¬ queued objectì˜ ê°¯ìˆ˜ë¥¼
+ * ì–»ëŠ” í•¨ìˆ˜ë¥¼ ë§Œë“¤ ê³„íšì´ì–´ìœ¼ë‚˜ lockfree queue ëŠ” queue data structureì „ì²´ì—
+ * ëŒ€í•œ lockì„ ì¡ì§€ ì•Šê¸° ë•Œë¬¸ì— counterì˜ ì¦ê°ì„ atomic operationìœ¼ë¡œ
+ * ì²˜ë¦¬í•˜ë”ë¼ë„ ì¼ì‹œì ìœ¼ë¡œ ì˜ëª»ëœ ê°’ì´ ë“¤ì–´ê°ˆ ìˆ˜ ìˆë‹¤.
  *
- * ¿¹¸¦ µé¸é, enqueue¿Í dequeue°¡ ¼ø¼­´ë·Î Ã³¸®µÇ°í counter°ªÀº
- * dequeue, enqueue¼ø¼­·Î Ã³¸®µÇ¸é ÀÏ½ÃÀûÀ¸·Î counter´Â À½¼ö°¡ µÉ ¼ö ÀÖ´Ù.
+ * ì˜ˆë¥¼ ë“¤ë©´, enqueueì™€ dequeueê°€ ìˆœì„œëŒ€ë¡œ ì²˜ë¦¬ë˜ê³  counterê°’ì€
+ * dequeue, enqueueìˆœì„œë¡œ ì²˜ë¦¬ë˜ë©´ ì¼ì‹œì ìœ¼ë¡œ counterëŠ” ìŒìˆ˜ê°€ ë  ìˆ˜ ìˆë‹¤.
  *
- * ¶ÇÇÑ, atomic increase/decrease°¡ atomic operationÀÌ ¼º°øÇÒ ¶§±îÁö ¹İº¹ÇÏ´Â
- * ¼º°İÀÇ operationÀÌ¹Ç·Î ¼º´É¿¡µµ ¿µÇâÀ» ¹ÌÄ¥ ¼ö ÀÖ´Ù.
+ * ë˜í•œ, atomic increase/decreaseê°€ atomic operationì´ ì„±ê³µí•  ë•Œê¹Œì§€ ë°˜ë³µí•˜ëŠ”
+ * ì„±ê²©ì˜ operationì´ë¯€ë¡œ ì„±ëŠ¥ì—ë„ ì˜í–¥ì„ ë¯¸ì¹  ìˆ˜ ìˆë‹¤.
  *
- * ±×·¯¹Ç·Î, aclQueue´Â ÀÌ¿¡ ´ëÇÑ Ã³¸®¸¦ ÇÏÁö ¾Êµµ·Ï ÇÏ¿´´Ù.
+ * ê·¸ëŸ¬ë¯€ë¡œ, aclQueueëŠ” ì´ì— ëŒ€í•œ ì²˜ë¦¬ë¥¼ í•˜ì§€ ì•Šë„ë¡ í•˜ì˜€ë‹¤.
  */
 
 #include <acpSpinLock.h>

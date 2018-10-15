@@ -56,7 +56,7 @@ ACI_RC cmnLinkPeerInitializeClientIPCDA(cmnLink *aLink)
     cmnLinkPeerIPCDA *sLink = (cmnLinkPeerIPCDA *)aLink;
     cmnLinkDescIPCDA *sDesc = &sLink->mDesc;
 
-    /* ¸â¹ö ÃÊ±âÈ­*/
+    /* ë©¤ë²„ ì´ˆê¸°í™”*/
     sDesc->mConnectFlag   = ACP_FALSE;
     sDesc->mHandShakeFlag = ACP_FALSE;
 
@@ -84,9 +84,9 @@ ACI_RC cmnLinkPeerFinalizeIPCDA(cmnLink *aLink)
 
 /*
  * !!!!!!!!!!!!!!!!!!!! WARNING !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
- * Å¬¶óÀÌ¾ğÆ®ÀÇ Á¾·á¸¦ ±â´Ù¸± ¶§ *Àı´ë·Î* mutex¸¦ Àâ¾Æ¼­´Â
- * ¾ÈµÈ´Ù. mutex¸¦ Àâ°í Á¾·á¸¦ ±â´Ù¸± °æ¿ì ½Ã½ºÅÛ ÀüÃ¼°¡
- * Á¤ÁöµÉ ¼ö ÀÖ´Ù.
+ * í´ë¼ì´ì–¸íŠ¸ì˜ ì¢…ë£Œë¥¼ ê¸°ë‹¤ë¦´ ë•Œ *ì ˆëŒ€ë¡œ* mutexë¥¼ ì¡ì•„ì„œëŠ”
+ * ì•ˆëœë‹¤. mutexë¥¼ ì¡ê³  ì¢…ë£Œë¥¼ ê¸°ë‹¤ë¦´ ê²½ìš° ì‹œìŠ¤í…œ ì „ì²´ê°€
+ * ì •ì§€ë  ìˆ˜ ìˆë‹¤.
  * PR-4407
  */
 ACI_RC cmnLinkPeerCloseClientIPCDA(cmnLink *aLink)
@@ -104,13 +104,13 @@ ACI_RC cmnLinkPeerCloseClientIPCDA(cmnLink *aLink)
                                                       sDesc->mChannelID );
 
             /* bug-29324 channel not closed when a client alive after disconn
-             * before: timestamp¸¦ ºñ±³ÇÏ¿© °°Àº °æ¿ì¸¸ Á¾·áÃ³¸®¸¦ ¼öÇàÇÔ.
+             * before: timestampë¥¼ ë¹„êµí•˜ì—¬ ê°™ì€ ê²½ìš°ë§Œ ì¢…ë£Œì²˜ë¦¬ë¥¼ ìˆ˜í–‰í•¨.
              * after :
-             * 1. Á¾·áÃ³¸®´Â ²À ÇÊ¿äÇÑ °úÁ¤ÀÌ¹Ç·Î timestamp ºñ±³¸¦ Á¦°ÅÇÔ.
-             * 2. Á¾·á½ÅÈ£ ¼Û½Å ½ÃÁ¡(mOpSignCliExit)ÀÌ Á¦ÀÏ ¸¶Áö¸·ÀÌ µÇµµ·Ï ¿øº¹
+             * 1. ì¢…ë£Œì²˜ë¦¬ëŠ” ê¼­ í•„ìš”í•œ ê³¼ì •ì´ë¯€ë¡œ timestamp ë¹„êµë¥¼ ì œê±°í•¨.
+             * 2. ì¢…ë£Œì‹ í˜¸ ì†¡ì‹  ì‹œì (mOpSignCliExit)ì´ ì œì¼ ë§ˆì§€ë§‰ì´ ë˜ë„ë¡ ì›ë³µ
              */
 
-            /* BUG-32398 Å¸ÀÓ½ºÅÆÇÁ(Æ¼ÄÏ¹øÈ£) ºñ±³ºÎºĞ º¹¿ø */
+            /* BUG-32398 íƒ€ì„ìŠ¤íƒ¬í”„(í‹°ì¼“ë²ˆí˜¸) ë¹„êµë¶€ë¶„ ë³µì› */
             if (sDesc->mTicketNum == sChannelInfo->mTicketNum)
             {
                 while(1)
@@ -131,7 +131,7 @@ ACI_RC cmnLinkPeerCloseClientIPCDA(cmnLink *aLink)
     }
 
     /*
-     * socketÀÌ ¿­·ÁÀÖÀ¸¸é ´İÀ½
+     * socketì´ ì—´ë ¤ìˆìœ¼ë©´ ë‹«ìŒ
      */
 
     if (sLink->mDesc.mSock.mHandle != CMN_INVALID_SOCKET_HANDLE)
@@ -238,7 +238,7 @@ ACI_RC cmnLinkPeerGetDescIPCDA(cmnLinkPeer *aLink, void *aDesc)
 {
     cmnLinkPeerIPCDA *sLink = (cmnLinkPeerIPCDA *)aLink;
 
-    /* Desc¸¦ µ¹·ÁÁÜ */
+    /* Descë¥¼ ëŒë ¤ì¤Œ */
     *(cmnLinkDescIPCDA **)aDesc = &sLink->mDesc;
 
     return ACI_SUCCESS;
@@ -255,7 +255,7 @@ ACI_RC cmnLinkPeerConnectIPCDA(cmnLinkPeer       *aLink,
     ACP_UNUSED(aOption);
 
     /*
-     * socket »ı¼º
+     * socket ìƒì„±
      */
     sRet = acpSockOpen(&sLink->mDesc.mSock,
                        ACP_AF_UNIX,
@@ -264,7 +264,7 @@ ACI_RC cmnLinkPeerConnectIPCDA(cmnLinkPeer       *aLink,
     ACI_TEST_RAISE(sRet != ACP_RC_SUCCESS, SocketError);
 
     /*
-     * IPC ÁÖ¼Ò ¼¼ÆÃ
+     * IPC ì£¼ì†Œ ì„¸íŒ…
      */
 
     sLink->mDesc.mAddr.sun_family = AF_UNIX;
@@ -274,7 +274,7 @@ ACI_RC cmnLinkPeerConnectIPCDA(cmnLinkPeer       *aLink,
                        aConnectArg->mIPCDA.mFilePath);
 
     /*
-     *  IPC ÆÄÀÏÀÌ¸§ ±æÀÌ °Ë»ç
+     *  IPC íŒŒì¼ì´ë¦„ ê¸¸ì´ ê²€ì‚¬
      */
 
     ACI_TEST_RAISE(ACP_RC_IS_ETRUNC(sRet), IPCDAPathTruncated);
@@ -332,18 +332,18 @@ ACI_RC cmnLinkPeerSetOperationIPCDA(cmnLinkDescIPCDA *aDesc)
     /*
      * =====================================================
      * bug-28340 rename semop name for readability
-     * °¡µ¶¼ºÀ» À§ÇØ semaphore op º¯¼ö¸íÀ» ´ÙÀ½°ú °°ÀÌ º¯°æ
+     * ê°€ë…ì„±ì„ ìœ„í•´ semaphore op ë³€ìˆ˜ëª…ì„ ë‹¤ìŒê³¼ ê°™ì´ ë³€ê²½
      * =====================================================
      * IPCDA_SEM_SERVER_DETECT  > IPCDA_SEM_CHECK_SVR_EXIT (0)
-     * server_detect_init     > InitSvrExit  : ¼­¹ö°¡ Àâ°í ½ÃÀÛ
-     * server_detect_try      > CheckSvrExit : ¼­¹ö°¡ Á×¾ú´ÂÁö È®ÀÎ
-     * server_detect_release  > SignSvrExit  : ¼­¹ö°¡ Á¾·á½ÅÈ£ º¸³¿
+     * server_detect_init     > InitSvrExit  : ì„œë²„ê°€ ì¡ê³  ì‹œì‘
+     * server_detect_try      > CheckSvrExit : ì„œë²„ê°€ ì£½ì—ˆëŠ”ì§€ í™•ì¸
+     * server_detect_release  > SignSvrExit  : ì„œë²„ê°€ ì¢…ë£Œì‹ í˜¸ ë³´ëƒ„
      * =====================================================
      * IPCDA_SEM_CLIENT_DETECT  > IPCDA_SEM_CHECK_CLI_EXIT (1)
-     * client_detect_init     > InitCliExit  : cli°¡ Àâ°í ½ÃÀÛ
-     * client_detect_try      > CheckCliExit : cli°¡ Á×¾ú´ÂÁö È®ÀÎ
-     * client_detect_hold     > WaitCliExit  : cli Á¾·á¶§±îÁö ´ë±â
-     * client_detect_release  > SignCliExit  : cli°¡ Á¾·á½ÅÈ£ º¸³¿
+     * client_detect_init     > InitCliExit  : cliê°€ ì¡ê³  ì‹œì‘
+     * client_detect_try      > CheckCliExit : cliê°€ ì£½ì—ˆëŠ”ì§€ í™•ì¸
+     * client_detect_hold     > WaitCliExit  : cli ì¢…ë£Œë•Œê¹Œì§€ ëŒ€ê¸°
+     * client_detect_release  > SignCliExit  : cliê°€ ì¢…ë£Œì‹ í˜¸ ë³´ëƒ„
      * =====================================================
      */
 
@@ -552,8 +552,8 @@ ACI_RC cmnLinkPeerHandshakeClientIPCDA(cmnLinkPeer *aLink)
     sDesc->mTicketNum = sChannelInfo->mTicketNum;
 
     /*
-     * BUG-25420 [CodeSonar] Lock, Unlock ¿¡·¯ ÇÚµé¸µ ¿À·ù¿¡ ÀÇÇÑ Double Unlock
-     * unlock ¸¦ ÇÏ±âÀü¿¡ ¼¼ÆÃÀ»ÇØ¾ß Double Unlock À» ¸·À»¼ö ÀÖ´Ù.
+     * BUG-25420 [CodeSonar] Lock, Unlock ì—ëŸ¬ í•¸ë“¤ë§ ì˜¤ë¥˜ì— ì˜í•œ Double Unlock
+     * unlock ë¥¼ í•˜ê¸°ì „ì— ì„¸íŒ…ì„í•´ì•¼ Double Unlock ì„ ë§‰ì„ìˆ˜ ìˆë‹¤.
      */
     sLocked = ACP_FALSE;
     rc = acpThrMutexUnlock(&gIPCDAMutex);
@@ -632,17 +632,17 @@ ACI_RC cmnLinkPeerShutdownClientIPCDA(cmnLinkPeer    *aLink,
 
     if (sDesc->mHandShakeFlag == ACP_TRUE)
     {
-        /* clinetÀÇ close flag¸¦ on : Áï, detect sem = 1 */
+        /* clinetì˜ close flagë¥¼ on : ì¦‰, detect sem = 1 */
         sChannelInfo = cmbShmIPCDAGetChannelInfo( gIPCDAShmInfo.mShmBuffer, sDesc->mChannelID );
 
-        /* BUG-32398 Å¸ÀÓ½ºÅÆÇÁ(Æ¼ÄÏ¹øÈ£) ºñ±³ºÎºĞ º¹¿ø */
+        /* BUG-32398 íƒ€ì„ìŠ¤íƒ¬í”„(í‹°ì¼“ë²ˆí˜¸) ë¹„êµë¶€ë¶„ ë³µì› */
         if (sDesc->mTicketNum == sChannelInfo->mTicketNum)
         {
             /*
-             * ClientÀÇ ConnectionÀÌ À¯È¿ÇÒ °æ¿ì¿¡¸¸ close ¿¬»êÀ» ¼öÇàÇØ¶ó.
+             * Clientì˜ Connectionì´ ìœ íš¨í•  ê²½ìš°ì—ë§Œ close ì—°ì‚°ì„ ìˆ˜í–‰í•´ë¼.
              * bug-27162: ipc server,client hang
-             * ¼ø¼­ º¯°æ
-             * why: server read¿¡¼­ client Á¾·á °¨ÁöºÎºĞ ÀÖÀ½
+             * ìˆœì„œ ë³€ê²½
+             * why: server readì—ì„œ client ì¢…ë£Œ ê°ì§€ë¶€ë¶„ ìˆìŒ
              * before:
              * release server read waiting -> mark client exited
              * after:
@@ -830,15 +830,15 @@ ACI_RC cmnLinkPeerClientMapIPCDA(cmnLink *aLink)
 {
     cmnLinkPeer *sLink = (cmnLinkPeer *)aLink;
 
-    /* Link °Ë»ç */
+    /* Link ê²€ì‚¬ */
     ACE_ASSERT(aLink->mType == CMN_LINK_TYPE_PEER_CLIENT);
     ACE_ASSERT(aLink->mImpl == CMN_LINK_IMPL_IPCDA);
 
-    /* ÇÔ¼ö Æ÷ÀÎÅÍ ¼¼ÆÃ */
+    /* í•¨ìˆ˜ í¬ì¸í„° ì„¸íŒ… */
     aLink->mOp     = &gCltCmnLinkPeerClientOpIPCDA;
     sLink->mPeerOp = &gCltCmnLinkPeerPeerClientOpIPCDA;
 
-    /* ¸â¹ö ÃÊ±âÈ­ */
+    /* ë©¤ë²„ ì´ˆê¸°í™” */
     sLink->mUserPtr    = NULL;
 
     return ACI_SUCCESS;
@@ -852,8 +852,8 @@ acp_uint32_t cmnLinkPeerClientSizeIPCDA()
 
 /*
  * bug-27250 free Buf list can be crushed when client killed.
- * cmiWriteBlock¿¡¼­ protocol end packet ¼Û½Å½Ã
- * pending blockÀÌ ÀÖ´Â °æ¿ì ÀÌ ÄÚµå ¼öÇà
+ * cmiWriteBlockì—ì„œ protocol end packet ì†¡ì‹ ì‹œ
+ * pending blockì´ ìˆëŠ” ê²½ìš° ì´ ì½”ë“œ ìˆ˜í–‰
  */
 ACI_RC cmnLinkPeerWaitSendClientIPCDA(cmnLink* aLink)
 {

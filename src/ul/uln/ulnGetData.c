@@ -71,7 +71,7 @@ ACI_RC ulnGDInitColumn(ulnFnContext *aFnContext, acp_uint16_t aColumnNumber)
     sCursor = ulnStmtGetCursor(sStmt);
     ACI_TEST_RAISE(ulnCursorGetPosition(sCursor) < 0, LABEL_INVALID_CURSOR_POSITION);
 
-    /* PROJ-1789 Updatable Scrollable Cursor : µ¥ÀÌÅ¸´Â RowsetStmt¿¡ ÀÖ´Ù. */
+    /* PROJ-1789 Updatable Scrollable Cursor : ë°ì´íƒ€ëŠ” RowsetStmtì— ìˆë‹¤. */
     if (ulnStmtGetAttrCursorType(sStmt) == SQL_CURSOR_KEYSET_DRIVEN)
     {
         sCache = ulnStmtGetCache(sStmt->mRowsetStmt);
@@ -82,7 +82,7 @@ ACI_RC ulnGDInitColumn(ulnFnContext *aFnContext, acp_uint16_t aColumnNumber)
     }
     ACI_TEST_RAISE(sCache == NULL, LABEL_MEM_MANAGE_ERR_CACHE);
 
-    /* Keyset-DrivenÀÌ¸é Hole, Invalidate·Î ÀÎÇØ Cache°¡ ºñ¾îÀÖÀ» ¼ö ÀÖ´Ù. */
+    /* Keyset-Drivenì´ë©´ Hole, Invalidateë¡œ ì¸í•´ Cacheê°€ ë¹„ì–´ìˆì„ ìˆ˜ ìˆë‹¤. */
     if (ulnStmtGetAttrCursorType(sStmt) != SQL_CURSOR_KEYSET_DRIVEN)
     {
         sRow = ulnCacheGetCachedRow(sCache, ulnCursorGetPosition(sCursor) + ulnCursorGetRowsetPosition(sCursor) - 1);
@@ -137,12 +137,12 @@ static ACI_RC ulnGDProcessOnTheFly(ulnFnContext     *aFnContext,
     void         *sBackupArg;
 
     /*
-     * Note : ÀÌ°÷ÀÇ protocol context ÃÊ±âÈ­´Â ¾ø¾Ö¼­´Â ¾ÈµÈ´Ù.
-     *        LOB À» GetData() ·Î ¹Ş¾Æ¿Ã ¶§ conversion ·çÆ¾ ¾È¿¡¼­ 
-     *        »ç¿ëÇÏ±â ¶§¹®ÀÌ´Ù.
+     * Note : ì´ê³³ì˜ protocol context ì´ˆê¸°í™”ëŠ” ì—†ì• ì„œëŠ” ì•ˆëœë‹¤.
+     *        LOB ì„ GetData() ë¡œ ë°›ì•„ì˜¬ ë•Œ conversion ë£¨í‹´ ì•ˆì—ì„œ 
+     *        ì‚¬ìš©í•˜ê¸° ë•Œë¬¸ì´ë‹¤.
      *
-     *        LOB ·çÆ¾¿¡ protocol context ¸¦ ½ÉÀº ÈÄ¿¡
-     *        ÀÌ°÷ÀÇ ºÒÇÊ¿äÇÑ protocol context ÃÊ±âÈ­¸¦ ¾ø¾Ö¾ß ÇÑ´Ù.
+     *        LOB ë£¨í‹´ì— protocol context ë¥¼ ì‹¬ì€ í›„ì—
+     *        ì´ê³³ì˜ ë¶ˆí•„ìš”í•œ protocol context ì´ˆê¸°í™”ë¥¼ ì—†ì• ì•¼ í•œë‹¤.
      */
     //fix BUG-17722 
     ACI_TEST(ulnInitializeProtocolContext(aFnContext,
@@ -207,10 +207,10 @@ static ACI_RC ulnGetDataMain(ulnFnContext *aFnContext,
     sTargetPosition = ulnCursorGetPosition(sCursor);
     ACI_TEST_RAISE(sTargetPosition < 0, LABEL_INVALID_CURSOR_POSITION_AE_OR_BS);
 
-    /* PROJ-1789 Updatable Scrollable Cursor: SQLSetPos()·Î ¼³Á¤ÇÑ °ª ÂüÁ¶ */
+    /* PROJ-1789 Updatable Scrollable Cursor: SQLSetPos()ë¡œ ì„¤ì •í•œ ê°’ ì°¸ì¡° */
     sTargetPosition = sTargetPosition + ulnCursorGetRowsetPosition(sCursor) - 1;
 
-    /* PROJ-1789 Updatable Scrollable Cursor: µ¥ÀÌÅ¸´Â RowsetStmt¿¡ ÀÖ´Ù. */
+    /* PROJ-1789 Updatable Scrollable Cursor: ë°ì´íƒ€ëŠ” RowsetStmtì— ìˆë‹¤. */
     if (ulnStmtGetAttrCursorType(sStmt) == SQL_CURSOR_KEYSET_DRIVEN)
     {
         sCache = ulnStmtGetCache(sStmt->mRowsetStmt);
@@ -239,7 +239,7 @@ static ACI_RC ulnGetDataMain(ulnFnContext *aFnContext,
         if (ulnStmtGetAttrCursorType(sStmt) == SQL_CURSOR_KEYSET_DRIVEN)
         {
             /* PROJ-1789 Updatable Scrollable Cursor
-             * HoleÀÎ RowÀÇ µ¥ÀÌÅ¸¸¦ ¾òÀ¸·Á°í ÇÏ¸é ¿¡·¯ */
+             * Holeì¸ Rowì˜ ë°ì´íƒ€ë¥¼ ì–»ìœ¼ë ¤ê³  í•˜ë©´ ì—ëŸ¬ */
             ACI_RAISE(LABEL_INVALID_CURSOR_POSITION);
         }
         else
@@ -249,10 +249,10 @@ static ACI_RC ulnGetDataMain(ulnFnContext *aFnContext,
     }
 
     /*
-     * ColumnNumber ÀÇ ¹üÀ§´Â ÀÌ¹Ì Ã¼Å©µÈ »óÅÂÀÓ.
+     * ColumnNumber ì˜ ë²”ìœ„ëŠ” ì´ë¯¸ ì²´í¬ëœ ìƒíƒœì„.
      */
 
-    /* PROJ-1789 Rowset PositionÀÌ ¹Ù²¼´Ù¸é, Column¸¦ ´Ù½Ã ¸¸µé¾î¾ß ÇÑ´Ù. */
+    /* PROJ-1789 Rowset Positionì´ ë°”ê¼ˆë‹¤ë©´, Columnë¥¼ ë‹¤ì‹œ ë§Œë“¤ì–´ì•¼ í•œë‹¤. */
     if (sTargetPosition != sStmt->mGDTargetPosition)
     {
         sSrc = sRow->mRow;
@@ -287,25 +287,25 @@ static ACI_RC ulnGetDataMain(ulnFnContext *aFnContext,
 
     sColumn = ulnCacheGetColumn(sCache, aColumnNumber);
 
-    /* PROJ-1789 Updatable Scrollable Cursor: Bookmark´Â Ird°¡ ¾ø´Ù. */
+    /* PROJ-1789 Updatable Scrollable Cursor: BookmarkëŠ” Irdê°€ ì—†ë‹¤. */
     if (aColumnNumber != 0)
     {
         sDescRecIrd = ulnStmtGetIrdRec(sCache->mParentStmt, aColumnNumber);
         ACI_TEST_RAISE(sDescRecIrd == NULL, LABEL_MEM_MANAGE_ERR_IRD);
     }
 
-    // fix BUG-24381 SQL_ARD_TYPEÀ» Áö¿øÇØ¾ß ÇÕ´Ï´Ù.
+    // fix BUG-24381 SQL_ARD_TYPEì„ ì§€ì›í•´ì•¼ í•©ë‹ˆë‹¤.
     if (aTargetType == SQL_ARD_TYPE)
     {
         sDescRecArd = ulnStmtGetArdRec(sStmt, aColumnNumber);
         ACI_TEST_RAISE(sDescRecArd == NULL, LABEL_MEM_MANAGE_ERR_IRD);
 
-        // ARD¿¡ ¼³Á¤µÈ °ªÀ¸·Î ¼¼ÆÃ
+        // ARDì— ì„¤ì •ëœ ê°’ìœ¼ë¡œ ì„¸íŒ…
         sAppBuffer.mCTYPE = ulnMetaGetCTYPE(&sDescRecArd->mMeta);
     }
     else
     {
-        // »ç¿ëÀÚ·ÎºÎÅÍ ¹ŞÀº °ªÀ¸·Î ¼¼ÆÃ
+        // ì‚¬ìš©ìë¡œë¶€í„° ë°›ì€ ê°’ìœ¼ë¡œ ì„¸íŒ…
         sAppBuffer.mCTYPE = ulnTypeMap_SQLC_CTYPE(aTargetType);
     }
 
@@ -321,13 +321,13 @@ static ACI_RC ulnGetDataMain(ulnFnContext *aFnContext,
     if (sColumn->mGDState == ULN_GD_ST_INITIAL)
     {
         /*
-         * µ¥ÀÌÅÍ¸¦ ´Ù °¡Á®°£ ÄÃ·³¿¡ ´ëÇÑ ÀçÈ£Ãâ
+         * ë°ì´í„°ë¥¼ ë‹¤ ê°€ì ¸ê°„ ì»¬ëŸ¼ì— ëŒ€í•œ ì¬í˜¸ì¶œ
          */
 
         ACI_TEST_RAISE(aColumnNumber == sStmt->mGDColumnNumber, LABEL_NO_DATA);
 
         /*
-         * ÃÖÃÊÀÇ GD È£Ãâ : ulnColumn ÀÇ GetData State ¸¦ "ÀĞ°íÀÖÀ½" À¸·Î ¹Ù²Û´Ù.
+         * ìµœì´ˆì˜ GD í˜¸ì¶œ : ulnColumn ì˜ GetData State ë¥¼ "ì½ê³ ìˆìŒ" ìœ¼ë¡œ ë°”ê¾¼ë‹¤.
          */
 
         sStmt->mGDColumnNumber = aColumnNumber;
@@ -352,9 +352,9 @@ static ACI_RC ulnGetDataMain(ulnFnContext *aFnContext,
     if (ULN_FNCONTEXT_GET_RC(aFnContext) == SQL_SUCCESS)
     {
         /*
-         * SQL_SUCCESS ¸¦ ¸®ÅÏÇÑ´Ù´Â °ÍÀº ´Ù ÀĞ¾ú´Ù´Â ¶æÀÌ¹Ç·Î
-         * ulnColumn ÀÇ GetData State ¸¦ ÃÊ±â»óÅÂ·Î ¹Ù²Û´Ù. ±×·¡¼­ ´ÙÀ½¹ø¿¡ °°Àº ÄÃ·³¿¡´Ù°¡
-         * È£ÃâÇÏ¸é SQL_NO_DATA °¡ ¸®ÅÏµÇµµ·Ï ÇÑ´Ù.
+         * SQL_SUCCESS ë¥¼ ë¦¬í„´í•œë‹¤ëŠ” ê²ƒì€ ë‹¤ ì½ì—ˆë‹¤ëŠ” ëœ»ì´ë¯€ë¡œ
+         * ulnColumn ì˜ GetData State ë¥¼ ì´ˆê¸°ìƒíƒœë¡œ ë°”ê¾¼ë‹¤. ê·¸ë˜ì„œ ë‹¤ìŒë²ˆì— ê°™ì€ ì»¬ëŸ¼ì—ë‹¤ê°€
+         * í˜¸ì¶œí•˜ë©´ SQL_NO_DATA ê°€ ë¦¬í„´ë˜ë„ë¡ í•œë‹¤.
          */
 
         sColumn->mGDState = ULN_GD_ST_INITIAL;
@@ -437,15 +437,15 @@ SQLRETURN ulnGetData(ulnStmt      *aStmt,
     ULN_INIT_FUNCTION_CONTEXT(sFnContext, ULN_FID_GETDATA, aStmt, ULN_OBJ_TYPE_STMT);
 
     /*
-     * Note : ODBC ¿¡ º¸¸é ¾Æ·¡¿Í °°Àº ÀÌ¾ß±â°¡ ÀÖ´Ù :
+     * Note : ODBC ì— ë³´ë©´ ì•„ë˜ì™€ ê°™ì€ ì´ì•¼ê¸°ê°€ ìˆë‹¤ :
      *
      *        SQLGetData does not interact directly with any descriptor fields.
      *
-     *        Áï, SQLGetData() ´Â ARD ¸¦ ¾È¸¸µç´Ù´Â ¶æÀÌ´Ù !!
-     *        µû¶ó¼­ SQLBindCol() À» ÀÌ¿ëÇØ¼­ ¹ÙÀÎµåÇÑ ÄÃ·³À»
-     *        SQLGetData() ·Î ´Ù¸¥ Å¸ÀÔÀ¸·Î fetch ÇØµµ
-     *        ´ÙÀ½¹ø¿¡ È£ÃâµÇ´Â SQLFetch() »çÀÌÅ¬¿¡¼­´Â
-     *        SQLBindCol() ·Î ¹ÙÀÎµåÇÑ Å¸ÀÔÀÌ ¸®ÅÏµÈ´Ù´Â ¶æÀÌ´Ù !!
+     *        ì¦‰, SQLGetData() ëŠ” ARD ë¥¼ ì•ˆë§Œë“ ë‹¤ëŠ” ëœ»ì´ë‹¤ !!
+     *        ë”°ë¼ì„œ SQLBindCol() ì„ ì´ìš©í•´ì„œ ë°”ì¸ë“œí•œ ì»¬ëŸ¼ì„
+     *        SQLGetData() ë¡œ ë‹¤ë¥¸ íƒ€ì…ìœ¼ë¡œ fetch í•´ë„
+     *        ë‹¤ìŒë²ˆì— í˜¸ì¶œë˜ëŠ” SQLFetch() ì‚¬ì´í´ì—ì„œëŠ”
+     *        SQLBindCol() ë¡œ ë°”ì¸ë“œí•œ íƒ€ì…ì´ ë¦¬í„´ëœë‹¤ëŠ” ëœ»ì´ë‹¤ !!
      */
 
     ACI_TEST(ulnEnter(&sFnContext, NULL) != ACI_SUCCESS);
@@ -485,7 +485,7 @@ SQLRETURN ulnGetData(ulnStmt      *aStmt,
     }
 
     /*
-     * GetData ¼öÇà
+     * GetData ìˆ˜í–‰
      */
     ACI_TEST(ulnGetDataMain(&sFnContext,
                             aColumnNumber,

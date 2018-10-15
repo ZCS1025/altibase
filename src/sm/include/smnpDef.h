@@ -40,7 +40,7 @@ typedef struct smnpIterator
     UInt                flag;
 
     smiCursorProperties  * mProperties;
-    /* smiIterator °øÅë º¯¼ö ³¡ */
+    /* smiIterator ê³µí†µ ë³€ìˆ˜ ë */
 
     const smiRange     * mRange;
     const smiRange     * mNxtRange;

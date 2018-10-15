@@ -41,7 +41,7 @@ private:
     qmcOpenedCursor * mTop;
     qmcOpenedCursor * mCurrent;
 
-    // BUG-40427 lob cursor 1°³¸¸ º¸°üÇÑ´Ù
+    // BUG-40427 lob cursor 1ê°œë§Œ ë³´ê´€í•œë‹¤
     smLobLocator      mOpenedLob;
 
 public:
@@ -52,7 +52,7 @@ public:
                             smiTableCursor * aCursor );
     IDE_RC getOpenedCursor( UShort aTableID, smiTableCursor ** aCursor, idBool * aFound );
 
-    // BUG-40427 ÃÖÃÊ·Î OpenÇÑ LOB CursorÀÎ °æ¿ì, qmcCursor¿¡ ±â·Ï
+    // BUG-40427 ìµœì´ˆë¡œ Opení•œ LOB Cursorì¸ ê²½ìš°, qmcCursorì— ê¸°ë¡
     IDE_RC addOpenedLobCursor( smLobLocator aLocator );
 
     IDE_RC closeAllCursor();

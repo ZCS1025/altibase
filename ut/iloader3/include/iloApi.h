@@ -65,43 +65,43 @@ typedef void * ALTIBASE_ILOADER_HANDLE;
 typedef struct ALTIBASE_ILOADER_OPTIONS_V1
 {
     int            version;            /* option version */
-    char           loginID[128 * 2];   /* »ç¿ëÀÚ ÀÌ¸§ */
-    char           password[128];      /* »ç¿ëÀÚ ÆĞ½º¿öµå */
-    char           serverName[128];    /* ¼­¹ö ÀÌ¸§ */
-    int            portNum;            /* Æ÷Æ® ¹øÈ£ */
-    char           NLS[128];           /* Ä³¸¯ÅÍ ¼Â */
-    char           DBName[128];        /* µ¥ÀÌÅ¸ º£ÀÌ½º ÀÌ¸§ */
-    char           tableOwner[50];     /* Æ¯Á¤ »ç¿ëÀÚ¿¡°Ô Á¸Àç ÇÏ´Â Å×ÀÌºí ÀÌ¸§ */
-    char           tableName[50];      /* Å×ÀÌºí ÀÌ¸§ */
-    char           formFile[1024];     /* Æ÷¸Ë ÆÄÀÏ ÀÌ¸§  */
-    char           dataFile[32][1024]; /* µ¥ÀÌÅ¸ ÆÄÀÏ ÀÌ¸§ */
-    int            dataFileNum;        /* µ¥ÀÌÅ¸ ÆÄÀÏ °³¼ö */
-    int            firstRow;           /* Ã¹¹øÂ° ÇàÀÇ ¹øÈ£ */
-    int            lastRow;            /* ¸¶Áö¸· ÇàÀÇ ¹øÈ£ */
-    char           fieldTerm[11];      /* ÇÊµå »çÀÌÀÇ ±¸ºĞÀÚ */
-    char           rowTerm[11];        /* Çà »çÀÌÀÇ ±¸ºĞÀÚ */
-    char           enclosingChar[11];  /* ÇÊµå¸¦ enclosing ½ÃÅ³ °ª */
-    iloBool        useLobFile;         /* LOB ÆÄÀÏ »çÀÌÁî */
-    iloBool        useSeparateFile;    /* LOB ÆÄÀÏÀ» »ç¿ëÇÒ ¶§ ÇÏ³ªÀÇ LOB entry¿¡ ´ëÇØ ÇÏ³ª¾¿ ÀúÀå */
-    char           lobFileSize[11];    /* LOB ÆÄÀÏÀÇ ÃÖ´ë »çÀÌÁî */
-    char           lobIndicator[11];   /* LOB ÆÄÀÏÀÇ indicator */
-    iloBool        replication;        /* ÀÌÁßÈ­ off µ¥ÀÌÅ¸ ·Îµù */
-    iloLoadMode    loadModeType;       /* µ¥ÀÌÅ¸ Ãâ·Â ÇüÅÂ ÁöÁ¤ */
-    char           bad[1024];          /* bad ÆÄÀÏ ÀÌ¸§ */ 
-    char           log[1024];          /* log ÆÄÀÏ ÀÌ¸§ */
-    int            splitRowCount;      /* ÆÄÀÏ ¸¶´Ù º¹»çÇÒ ·¹ÄÚµå °³¼ö */
-    int            errorCount;         /* ¿¡·¯ °³¼ö */
-    int            arrayCount;         /* array °³¼ö */
-    int            commitUnit;         /* commit °³¼ö ÁöÁ¤ */
-    iloBool        atomic;             /* atomic array insert ¼öÇà ÁöÁ¤ */
-    iloDirectMode  directLog;          /* nolog, log ¹æ½Ä ÁöÁ¤ */
-    int            parallelCount;      /* parallel °³¼ö ÁöÁ¤ */
+    char           loginID[128 * 2];   /* ì‚¬ìš©ì ì´ë¦„ */
+    char           password[128];      /* ì‚¬ìš©ì íŒ¨ìŠ¤ì›Œë“œ */
+    char           serverName[128];    /* ì„œë²„ ì´ë¦„ */
+    int            portNum;            /* í¬íŠ¸ ë²ˆí˜¸ */
+    char           NLS[128];           /* ìºë¦­í„° ì…‹ */
+    char           DBName[128];        /* ë°ì´íƒ€ ë² ì´ìŠ¤ ì´ë¦„ */
+    char           tableOwner[50];     /* íŠ¹ì • ì‚¬ìš©ìì—ê²Œ ì¡´ì¬ í•˜ëŠ” í…Œì´ë¸” ì´ë¦„ */
+    char           tableName[50];      /* í…Œì´ë¸” ì´ë¦„ */
+    char           formFile[1024];     /* í¬ë§· íŒŒì¼ ì´ë¦„  */
+    char           dataFile[32][1024]; /* ë°ì´íƒ€ íŒŒì¼ ì´ë¦„ */
+    int            dataFileNum;        /* ë°ì´íƒ€ íŒŒì¼ ê°œìˆ˜ */
+    int            firstRow;           /* ì²«ë²ˆì§¸ í–‰ì˜ ë²ˆí˜¸ */
+    int            lastRow;            /* ë§ˆì§€ë§‰ í–‰ì˜ ë²ˆí˜¸ */
+    char           fieldTerm[11];      /* í•„ë“œ ì‚¬ì´ì˜ êµ¬ë¶„ì */
+    char           rowTerm[11];        /* í–‰ ì‚¬ì´ì˜ êµ¬ë¶„ì */
+    char           enclosingChar[11];  /* í•„ë“œë¥¼ enclosing ì‹œí‚¬ ê°’ */
+    iloBool        useLobFile;         /* LOB íŒŒì¼ ì‚¬ì´ì¦ˆ */
+    iloBool        useSeparateFile;    /* LOB íŒŒì¼ì„ ì‚¬ìš©í•  ë•Œ í•˜ë‚˜ì˜ LOB entryì— ëŒ€í•´ í•˜ë‚˜ì”© ì €ì¥ */
+    char           lobFileSize[11];    /* LOB íŒŒì¼ì˜ ìµœëŒ€ ì‚¬ì´ì¦ˆ */
+    char           lobIndicator[11];   /* LOB íŒŒì¼ì˜ indicator */
+    iloBool        replication;        /* ì´ì¤‘í™” off ë°ì´íƒ€ ë¡œë”© */
+    iloLoadMode    loadModeType;       /* ë°ì´íƒ€ ì¶œë ¥ í˜•íƒœ ì§€ì • */
+    char           bad[1024];          /* bad íŒŒì¼ ì´ë¦„ */ 
+    char           log[1024];          /* log íŒŒì¼ ì´ë¦„ */
+    int            splitRowCount;      /* íŒŒì¼ ë§ˆë‹¤ ë³µì‚¬í•  ë ˆì½”ë“œ ê°œìˆ˜ */
+    int            errorCount;         /* ì—ëŸ¬ ê°œìˆ˜ */
+    int            arrayCount;         /* array ê°œìˆ˜ */
+    int            commitUnit;         /* commit ê°œìˆ˜ ì§€ì • */
+    iloBool        atomic;             /* atomic array insert ìˆ˜í–‰ ì§€ì • */
+    iloDirectMode  directLog;          /* nolog, log ë°©ì‹ ì§€ì • */
+    int            parallelCount;      /* parallel ê°œìˆ˜ ì§€ì • */
     int            readSize;           /* read size */
-    iloBool        informix;           /* ¸¶Áö¸· ÄÃ·³ ´ÙÀ½¿¡µµ ÄÃ·³ ±¸ºĞÀÚ ÀÎ½Ä */
-    iloBool        flock;              /* Æ÷¸Ë ÆÄÀÏ lock */
-    iloBool        mssql;              /* date Ãâ·Â ÇüÅÂ¸¦ mssql ÇüÅÂ·Î Ãâ·Â */
-    iloBool        getTotalRowCount;   /* µ¥ÀÌÅ¸ ÆÄÀÏÀÇ ÃÑ °³¼ö¸¦ ±¸ÇÏ¿© ¼ÂÆÃ ¿©ºÎ °áÁ¤ */
-    int            setRowFrequency;    /* Äİ¹é ÇÔ¼ö¸¦ È£Ãâ ÇÒ row °³¼ö ÁöÁ¤ */ 
+    iloBool        informix;           /* ë§ˆì§€ë§‰ ì»¬ëŸ¼ ë‹¤ìŒì—ë„ ì»¬ëŸ¼ êµ¬ë¶„ì ì¸ì‹ */
+    iloBool        flock;              /* í¬ë§· íŒŒì¼ lock */
+    iloBool        mssql;              /* date ì¶œë ¥ í˜•íƒœë¥¼ mssql í˜•íƒœë¡œ ì¶œë ¥ */
+    iloBool        getTotalRowCount;   /* ë°ì´íƒ€ íŒŒì¼ì˜ ì´ ê°œìˆ˜ë¥¼ êµ¬í•˜ì—¬ ì…‹íŒ… ì—¬ë¶€ ê²°ì • */
+    int            setRowFrequency;    /* ì½œë°± í•¨ìˆ˜ë¥¼ í˜¸ì¶œ í•  row ê°œìˆ˜ ì§€ì • */ 
 }ALTIBASE_ILOADER_OPTIONS_V1;
 
 typedef struct ALTIBASE_ILOADER_ERROR

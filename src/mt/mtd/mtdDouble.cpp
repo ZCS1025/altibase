@@ -173,37 +173,37 @@ mtdModule mtdDouble = {
     {
         // Key Comparison
         {
-            // mt valueµé °£ÀÇ compare
+            // mt valueë“¤ ê°„ì˜ compare
             mtdDoubleFixedMtdFixedMtdKeyAscComp, // Ascending Key Comparison
             mtdDoubleFixedMtdFixedMtdKeyDescComp // Descending Key Comparison
         }
         ,
         {
-            // mt valueµé °£ÀÇ compare
+            // mt valueë“¤ ê°„ì˜ compare
             mtdDoubleMtdMtdKeyAscComp, // Ascending Key Comparison
             mtdDoubleMtdMtdKeyDescComp // Descending Key Comparison
         }
         ,
         {
-            // mt value¿Í stored value°£ÀÇ compare
+            // mt valueì™€ stored valueê°„ì˜ compare
             mtdDoubleStoredMtdKeyAscComp, // Ascending Key Comparison
             mtdDoubleStoredMtdKeyDescComp // Descending Key Comparison
         }
         ,
         {
-            // stored valueµé °£ÀÇ compare
+            // stored valueë“¤ ê°„ì˜ compare
             mtdDoubleStoredStoredKeyAscComp, // Ascending Key Comparison
             mtdDoubleStoredStoredKeyDescComp // Descending Key Comparison
         }
         ,
         {
-            /* PROJ-2433 : index Direct key¿Í fixed mt valueµé °£ÀÇ compare */
+            /* PROJ-2433 : index Direct keyì™€ fixed mt valueë“¤ ê°„ì˜ compare */
             mtdDoubleFixedMtdFixedMtdKeyAscComp,
             mtdDoubleFixedMtdFixedMtdKeyDescComp
         }
         ,
         {
-            /* PROJ-2433 : index Direct key¿Í mt valueµé °£ÀÇ compare */
+            /* PROJ-2433 : index Direct keyì™€ mt valueë“¤ ê°„ì˜ compare */
             mtdDoubleMtdMtdKeyAscComp,
             mtdDoubleMtdMtdKeyDescComp
         }
@@ -241,7 +241,7 @@ IDE_RC mtdInitialize( UInt aNo )
     
     IDE_TEST( mtd::initializeModule( &mtdDouble, aNo ) != IDE_SUCCESS );
 
-    // mtdColumnÀÇ ÃÊ±âÈ­
+    // mtdColumnì˜ ì´ˆê¸°í™”
     IDE_TEST( mtc::initializeColumn( & mtdColumn,
                                      & mtdDouble,
                                      0,   // arguments
@@ -322,7 +322,7 @@ IDE_RC mtdValue( mtcTemplate* /* aTemplate */,
                             ERR_VALUE_OVERFLOW );
 
             // To fix BUG-12281
-            // underflow °Ë»ç
+            // underflow ê²€ì‚¬
             if( ( idlOS::fabs(*sValue) < MTD_DOUBLE_MINIMUM ) &&
                 ( *sValue != 0 ) )
             {
@@ -400,7 +400,7 @@ SInt mtdDoubleLogicalAscComp( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd Å¸ÀÔÀÇ Keyµé °£ÀÇ ascending compare
+ * Description : Mtd íƒ€ì…ì˜ Keyë“¤ ê°„ì˜ ascending compare
  *
  * Implementation :
  *
@@ -458,7 +458,7 @@ SInt mtdDoubleLogicalDescComp( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd Å¸ÀÔÀÇ Keyµé °£ÀÇ descending compare
+ * Description : Mtd íƒ€ì…ì˜ Keyë“¤ ê°„ì˜ descending compare
  *
  * Implementation :
  *
@@ -516,7 +516,7 @@ SInt mtdDoubleFixedMtdFixedMtdKeyAscComp( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd Å¸ÀÔÀÇ Keyµé °£ÀÇ ascending compare
+ * Description : Mtd íƒ€ì…ì˜ Keyë“¤ ê°„ì˜ ascending compare
  *
  * Implementation :
  *
@@ -574,7 +574,7 @@ SInt mtdDoubleFixedMtdFixedMtdKeyDescComp( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd Å¸ÀÔÀÇ Keyµé °£ÀÇ descending compare
+ * Description : Mtd íƒ€ì…ì˜ Keyë“¤ ê°„ì˜ descending compare
  *
  * Implementation :
  *
@@ -632,7 +632,7 @@ SInt mtdDoubleMtdMtdKeyAscComp( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd Å¸ÀÔÀÇ Keyµé °£ÀÇ ascending compare
+ * Description : Mtd íƒ€ì…ì˜ Keyë“¤ ê°„ì˜ ascending compare
  *
  * Implementation :
  *
@@ -700,7 +700,7 @@ SInt mtdDoubleMtdMtdKeyDescComp( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd Å¸ÀÔÀÇ Keyµé °£ÀÇ descending compare
+ * Description : Mtd íƒ€ì…ì˜ Keyë“¤ ê°„ì˜ descending compare
  *
  * Implementation :
  *
@@ -768,7 +768,7 @@ SInt mtdDoubleStoredMtdKeyAscComp( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd Å¸ÀÔÀÇ Key¿Í Stored Key °£ÀÇ descending compare
+ * Description : Mtd íƒ€ì…ì˜ Keyì™€ Stored Key ê°„ì˜ descending compare
  *
  * Implementation :
  *
@@ -836,7 +836,7 @@ SInt mtdDoubleStoredMtdKeyDescComp( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd Å¸ÀÔÀÇ Key¿Í Stored Key °£ÀÇ descending compare
+ * Description : Mtd íƒ€ì…ì˜ Keyì™€ Stored Key ê°„ì˜ descending compare
  *
  * Implementation :
  *
@@ -905,7 +905,7 @@ SInt mtdDoubleStoredStoredKeyAscComp( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Stored Key °£ÀÇ ascending compare
+ * Description : Stored Key ê°„ì˜ ascending compare
  *
  * Implementation :
  *
@@ -973,7 +973,7 @@ SInt mtdDoubleStoredStoredKeyDescComp( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Stored Keyµé °£ÀÇ descending compare
+ * Description : Stored Keyë“¤ ê°„ì˜ descending compare
  *
  * Implementation :
  *
@@ -1060,7 +1060,7 @@ IDE_RC mtdValidate( mtcColumn * aColumn,
 {
 /***********************************************************************
  *
- * Description : valueÀÇ semantic °Ë»ç ¹× mtcColum ÃÊ±âÈ­
+ * Description : valueì˜ semantic ê²€ì‚¬ ë° mtcColum ì´ˆê¸°í™”
  *
  * Implementation :
  *
@@ -1071,9 +1071,9 @@ IDE_RC mtdValidate( mtcColumn * aColumn,
     IDE_TEST_RAISE( aValueSize != ID_SIZEOF(mtdDoubleType),
                     ERR_INVALID_LENGTH );
 
-    // ÃÊ±âÈ­µÈ aColumnÀº cannonize() ½Ã¿¡ »ç¿ë
-    // ÀÌ¶§, data type moduleÀÇ precision Á¤º¸¸¸À» »ç¿ëÇÏ¹Ç·Î,
-    // language Á¤º¸ ¼³Á¤ÇÒ ÇÊ¿ä¾øÀ½
+    // ì´ˆê¸°í™”ëœ aColumnì€ cannonize() ì‹œì— ì‚¬ìš©
+    // ì´ë•Œ, data type moduleì˜ precision ì •ë³´ë§Œì„ ì‚¬ìš©í•˜ë¯€ë¡œ,
+    // language ì •ë³´ ì„¤ì •í•  í•„ìš”ì—†ìŒ
     IDE_TEST( mtc::initializeColumn( aColumn,
                                      & mtdDouble,
                                      0,   // arguments
@@ -1107,22 +1107,22 @@ SDouble mtdSelectivityDouble( void     * aColumnMax,
 /***********************************************************************
  *
  * Description :
- *    DOUBLE ÀÇ Selectivity ÃßÃâ ÇÔ¼ö
+ *    DOUBLE ì˜ Selectivity ì¶”ì¶œ í•¨ìˆ˜
  *
  * Implementation :
  *
- *      1. NULL °Ë»ç : S = DS
- *      2. ColumnMin > ColumnMax °ËÁõ (DASSERT)
- *      3. ColumnMin > ValueMax ¶Ç´Â ColumnMax < ValueMin °ËÁõ :
+ *      1. NULL ê²€ì‚¬ : S = DS
+ *      2. ColumnMin > ColumnMax ê²€ì¦ (DASSERT)
+ *      3. ColumnMin > ValueMax ë˜ëŠ” ColumnMax < ValueMin ê²€ì¦ :
  *         S = 1 / totalRecordCnt
- *      4. ValueMin, ValueMax º¸Á¤
- *       - ValueMin < ColumnMin °ËÁõ : ValueMin = ColumnMin (º¸Á¤)
- *       - ValueMax > ColumnMax °ËÁõ : ValueMax = ColumnMax (º¸Á¤)
- *      5. ColumnMax == ColumnMin °ËÁõ (ºĞ¸ğ°ª) : S = 1
- *      6. ValueMax <= ValueMin °ËÁõ (ºĞÀÚ°ª) : S = 1 / totalRecordCnt
+ *      4. ValueMin, ValueMax ë³´ì •
+ *       - ValueMin < ColumnMin ê²€ì¦ : ValueMin = ColumnMin (ë³´ì •)
+ *       - ValueMax > ColumnMax ê²€ì¦ : ValueMax = ColumnMax (ë³´ì •)
+ *      5. ColumnMax == ColumnMin ê²€ì¦ (ë¶„ëª¨ê°’) : S = 1
+ *      6. ValueMax <= ValueMin ê²€ì¦ (ë¶„ìê°’) : S = 1 / totalRecordCnt
  *         ex) i1 < 1 and i1 > 3  -> ValueMax:1, ValueMin:3
  *      7. Etc : S = (ValueMax - ValueMin) / (ColumnMax - ColumnMin)
- *       - <=, >=, BETWEEN ¿¡ ´ëÇØ °æ°è°ª º¸Á¤
+ *       - <=, >=, BETWEEN ì— ëŒ€í•´ ê²½ê³„ê°’ ë³´ì •
  *
  ***********************************************************************/
     
@@ -1135,8 +1135,8 @@ SDouble mtdSelectivityDouble( void     * aColumnMax,
     mtdValueInfo    sColumnMinInfo;
     mtdValueInfo    sValueMaxInfo;
     mtdValueInfo    sValueMinInfo;
-    SDouble         sDenominator;   // ºĞ¸ğ°ª
-    SDouble         sNumerator;     // ºĞÀÚ°ª
+    SDouble         sDenominator;   // ë¶„ëª¨ê°’
+    SDouble         sNumerator;     // ë¶„ìê°’
     SDouble         sSelectivity;
     
     sColumnMax = (mtdDoubleType*) aColumnMax;
@@ -1146,7 +1146,7 @@ SDouble mtdSelectivityDouble( void     * aColumnMax,
     sSelectivity = MTD_DEFAULT_SELECTIVITY;
 
     //------------------------------------------------------
-    // Selectivity °è»ê
+    // Selectivity ê³„ì‚°
     //------------------------------------------------------
 
     if ( ( mtdIsNull( NULL, aColumnMax ) == ID_TRUE ) ||
@@ -1155,7 +1155,7 @@ SDouble mtdSelectivityDouble( void     * aColumnMax,
          ( mtdIsNull( NULL, aValueMin  ) == ID_TRUE ) )
     {
         //------------------------------------------------------
-        // 1. NULL °Ë»ç : °è»êÇÒ ¼ö ¾øÀ½
+        // 1. NULL ê²€ì‚¬ : ê³„ì‚°í•  ìˆ˜ ì—†ìŒ
         //------------------------------------------------------
 
         // MTD_DEFAULT_SELECTIVITY;
@@ -1182,7 +1182,7 @@ SDouble mtdSelectivityDouble( void     * aColumnMax,
                                       &sColumnMaxInfo ) > 0 )
         {
             //------------------------------------------------------
-            // 2. ColumnMin > ColumnMax °ËÁõ (Àß¸øµÈ Åë°è Á¤º¸)
+            // 2. ColumnMin > ColumnMax ê²€ì¦ (ì˜ëª»ëœ í†µê³„ ì •ë³´)
             //------------------------------------------------------
 
             IDE_DASSERT_MSG( 1,
@@ -1200,7 +1200,7 @@ SDouble mtdSelectivityDouble( void     * aColumnMax,
                                             &sValueMinInfo ) < 0 ) )
             {
                 //------------------------------------------------------
-                // 3. ColumnMin > ValueMax ¶Ç´Â ColumnMax < ValueMin °ËÁõ
+                // 3. ColumnMin > ValueMax ë˜ëŠ” ColumnMax < ValueMin ê²€ì¦
                 //------------------------------------------------------
 
                 sSelectivity = 1 / aTotalRecordCnt;
@@ -1208,9 +1208,9 @@ SDouble mtdSelectivityDouble( void     * aColumnMax,
             else
             {
                 //------------------------------------------------------
-                // 4. º¸Á¤
-                //  - ValueMin < ColumnMin °ËÁõ : ValueMin = ColumnMin
-                //  - ValueMax > ColumnMax °ËÁõ : ValueMax = ColumnMax
+                // 4. ë³´ì •
+                //  - ValueMin < ColumnMin ê²€ì¦ : ValueMin = ColumnMin
+                //  - ValueMax > ColumnMax ê²€ì¦ : ValueMax = ColumnMax
                 //------------------------------------------------------
 
                 sValueMin = ( mtdDoubleLogicalAscComp(
@@ -1231,7 +1231,7 @@ SDouble mtdSelectivityDouble( void     * aColumnMax,
                        == MTD_DOUBLE_EXPONENT_MASK ) )
                 {
                     //------------------------------------------------------
-                    // 5. ColumnMax == ColumnMin °ËÁõ (ºĞ¸ğ°ª)
+                    // 5. ColumnMax == ColumnMin ê²€ì¦ (ë¶„ëª¨ê°’)
                     //------------------------------------------------------
 
                     sSelectivity = 1;
@@ -1247,7 +1247,7 @@ SDouble mtdSelectivityDouble( void     * aColumnMax,
                           == MTD_DOUBLE_EXPONENT_MASK ) )
                     {
                         //------------------------------------------------------
-                        // 6. ValueMax <= ValueMin °ËÁõ (ºĞÀÚ°ª)
+                        // 6. ValueMax <= ValueMin ê²€ì¦ (ë¶„ìê°’)
                         //------------------------------------------------------
                 
                         // PROJ-2242
@@ -1353,20 +1353,20 @@ static IDE_RC mtdStoredValue2MtdValue( UInt              aColumnSize,
 {
 /*******************************************************************
  * PROJ-1705
- * µğ½ºÅ©Å×ÀÌºíÄÃ·³ÀÇ µ¥ÀÌÅ¸¸¦
- * qp ·¹ÄÚµåÃ³¸®¿µ¿ªÀÇ ÇØ´ç ÄÃ·³À§Ä¡¿¡ º¹»ç
+ * ë””ìŠ¤í¬í…Œì´ë¸”ì»¬ëŸ¼ì˜ ë°ì´íƒ€ë¥¼
+ * qp ë ˆì½”ë“œì²˜ë¦¬ì˜ì—­ì˜ í•´ë‹¹ ì»¬ëŸ¼ìœ„ì¹˜ì— ë³µì‚¬
  *******************************************************************/
 
     mtdDoubleType  * sDoubleValue;
 
-    // °íÁ¤±æÀÌ µ¥ÀÌÅ¸ Å¸ÀÔÀÇ °æ¿ì
-    // ÇÏ³ªÀÇ ÄÃ·³ µ¥ÀÌÅ¸°¡ ¿©·¯ÆäÀÌÁö¿¡ ³ª´©¾î ÀúÀåµÇ´Â °æ¿ì´Â ¾ø´Ù.
+    // ê³ ì •ê¸¸ì´ ë°ì´íƒ€ íƒ€ì…ì˜ ê²½ìš°
+    // í•˜ë‚˜ì˜ ì»¬ëŸ¼ ë°ì´íƒ€ê°€ ì—¬ëŸ¬í˜ì´ì§€ì— ë‚˜ëˆ„ì–´ ì €ì¥ë˜ëŠ” ê²½ìš°ëŠ” ì—†ë‹¤.
 
     sDoubleValue = (mtdDoubleType*)aDestValue;
     
     if( aLength == 0 )
     {
-        // NULL µ¥ÀÌÅ¸
+        // NULL ë°ì´íƒ€
         *((ULong*)sDoubleValue) = mtdDoubleNull;
     }
     else
@@ -1394,7 +1394,7 @@ UInt mtdNullValueSize()
 {
 /*******************************************************************
  * PROJ-1705
- * °¢ µ¥ÀÌÅ¸Å¸ÀÔÀÇ null ValueÀÇ Å©±â ¹İÈ¯
+ * ê° ë°ì´íƒ€íƒ€ì…ì˜ null Valueì˜ í¬ê¸° ë°˜í™˜
  *******************************************************************/
     return mtdActualSize( NULL, &mtdDoubleNull );
 }

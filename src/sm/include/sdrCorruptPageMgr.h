@@ -20,27 +20,27 @@
  *
  * Description :
  *
- * º» ÆÄÀÏÀº DRDB º¹±¸°úÁ¤¿¡¼­ÀÇ Corrupt page °ü¸®ÀÚ¿¡ ´ëÇÑ Çì´õ ÆÄÀÏÀÌ´Ù.
+ * ë³¸ íŒŒì¼ì€ DRDB ë³µêµ¬ê³¼ì •ì—ì„œì˜ Corrupt page ê´€ë¦¬ìì— ëŒ€í•œ í—¤ë” íŒŒì¼ì´ë‹¤.
  *
- * DRDB¿¡ ´ëÇÑ restart recovery °úÁ¤Áß corrupted page¸¦ ¹ß°ß ÇÏ¿´À» ½Ã
- * ±×¿¡ ´ëÇÑ Ã³¸®¸¦ À§ÇÑ classÀÌ´Ù.
+ * DRDBì— ëŒ€í•œ restart recovery ê³¼ì •ì¤‘ corrupted pageë¥¼ ë°œê²¬ í•˜ì˜€ì„ ì‹œ
+ * ê·¸ì— ëŒ€í•œ ì²˜ë¦¬ë¥¼ ìœ„í•œ classì´ë‹¤.
  *
- * restart redo °úÁ¤ Áß corrupt page¸¦ ¹ß°ßÇÏ¸é corruptedPagesHash¿¡
- * ¸ğ¾Æ µÎ¾ú´Ù°¡ undo°úÁ¤À» ¸ğµÎ ¸¶Ä£ ÈÄ hash ¿¡ Æ÷ÇÔµÈ page¿¡ ´ëÇÏ¿©
- * page°¡ ¼ÓÇÑ extent°¡ free»óÅÂÀÎÁö È®ÀÎÇÑ´Ù.
- * freeÀÌ¸é ¹«½ÃÇÏ°í allocµÈ »óÅÂÀÌ¸é ¼­¹ö¸¦ Á¾·á½ÃÅ²´Ù.
+ * restart redo ê³¼ì • ì¤‘ corrupt pageë¥¼ ë°œê²¬í•˜ë©´ corruptedPagesHashì—
+ * ëª¨ì•„ ë‘ì—ˆë‹¤ê°€ undoê³¼ì •ì„ ëª¨ë‘ ë§ˆì¹œ í›„ hash ì— í¬í•¨ëœ pageì— ëŒ€í•˜ì—¬
+ * pageê°€ ì†í•œ extentê°€ freeìƒíƒœì¸ì§€ í™•ì¸í•œë‹¤.
+ * freeì´ë©´ ë¬´ì‹œí•˜ê³  allocëœ ìƒíƒœì´ë©´ ì„œë²„ë¥¼ ì¢…ë£Œì‹œí‚¨ë‹¤.
  *
- * ¼­¹ö Á¾·á ¿©ºÎ´Â CORRUPT_PAGE_ERR_POLICY ÇÁ·ÎÆÛÆ¼·Î Á¤ÇÒ¼ö ÀÖ´Ù
+ * ì„œë²„ ì¢…ë£Œ ì—¬ë¶€ëŠ” CORRUPT_PAGE_ERR_POLICY í”„ë¡œí¼í‹°ë¡œ ì •í• ìˆ˜ ìˆë‹¤
  *
- * 0 - restart recovery °úÁ¤ Áß¿¡ corrupt page¸¦ ¹ß°ß Çß´õ¶óµµ
- *     ¼­¹ö¸¦ Á¾·á½ÃÅ°Áö ¾Ê´Â´Ù. (default)
- * 1 - restart recovery °úÁ¤ Áß¿¡ corrupt page¸¦ ¹ß°ßÇÑ °æ¿ì
- *     corrupt page¸¦ ¹ß°ßÇÑ °æ¿ì ¼­¹ö¸¦ Á¾·áÇÑ´Ù.
+ * 0 - restart recovery ê³¼ì • ì¤‘ì— corrupt pageë¥¼ ë°œê²¬ í–ˆë”ë¼ë„
+ *     ì„œë²„ë¥¼ ì¢…ë£Œì‹œí‚¤ì§€ ì•ŠëŠ”ë‹¤. (default)
+ * 1 - restart recovery ê³¼ì • ì¤‘ì— corrupt pageë¥¼ ë°œê²¬í•œ ê²½ìš°
+ *     corrupt pageë¥¼ ë°œê²¬í•œ ê²½ìš° ì„œë²„ë¥¼ ì¢…ë£Œí•œë‹¤.
  *
- * restart redo°úÁ¤ Áß¿¡ corrupt page¸¦ ¹ß°ßÇÑ °æ¿ì¿¡¸¸ ÇØ´çµÇ¸ç
- * restart undo°úÁ¤ Áß¿¡ corrupt page¸¦ ¹ß°ßÇÏ¿´°Å³ª,
- * GG, LG Hdr page°¡ corrupt·Î ¹ß°ß µÈ °æ¿ì
- * ÇÁ·ÎÆÛÆ¼¿Í »ó°ü ¾øÀÌ ¹Ù·Î Á¾·áµÈ´Ù.
+ * restart redoê³¼ì • ì¤‘ì— corrupt pageë¥¼ ë°œê²¬í•œ ê²½ìš°ì—ë§Œ í•´ë‹¹ë˜ë©°
+ * restart undoê³¼ì • ì¤‘ì— corrupt pageë¥¼ ë°œê²¬í•˜ì˜€ê±°ë‚˜,
+ * GG, LG Hdr pageê°€ corruptë¡œ ë°œê²¬ ëœ ê²½ìš°
+ * í”„ë¡œí¼í‹°ì™€ ìƒê´€ ì—†ì´ ë°”ë¡œ ì¢…ë£Œëœë‹¤.
  *
  **********************************************************************/
 #ifndef _O_SDR_CORRUPT_PAGE_MGR_H_
@@ -56,14 +56,14 @@ public:
 
     static IDE_RC destroy();
 
-    // Corrupt Page¸¦ mCorruptedPages ¿¡ µî·Ï
+    // Corrupt Pageë¥¼ mCorruptedPages ì— ë“±ë¡
     static IDE_RC addCorruptPage( scSpaceID aSpaceID,
                                   scPageID  aPageID );
 
-    // Corrupt Page¸¦ mCorruptedPages ¿¡¼­ »èÁ¦
+    // Corrupt Pageë¥¼ mCorruptedPages ì—ì„œ ì‚­ì œ
     static IDE_RC delCorruptPage( scSpaceID aSpaceID,
                                   scPageID  aPageID );
-    // Corrupted Page »óÅÂ °Ë»ç
+    // Corrupted Page ìƒíƒœ ê²€ì‚¬
     static IDE_RC checkCorruptedPages();
 
     static idBool isOverwriteLog( sdrLogType aLogType );
@@ -75,25 +75,25 @@ public:
     static inline sdbCorruptPageReadPolicy getCorruptPageReadPolicy();
 
 private:
-    // ÇØ½¬ key »ı¼º ÇÔ¼ö
+    // í•´ì‰¬ key ìƒì„± í•¨ìˆ˜
     static UInt genHashValueFunc( void* aGRID );
 
-    // ÇØ½¬ ºñ±³ ÇÔ¼ö
+    // í•´ì‰¬ ë¹„êµ í•¨ìˆ˜
     static SInt compareFunc( void* aLhs, void* aRhs );
 
 private:
-    // corrupted page°¡ ÀúÀåµÈ Hash
+    // corrupted pageê°€ ì €ì¥ëœ Hash
     static smuHashBase   mCorruptedPages;
 
-    // ÇØ½Ã Å©±â
+    // í•´ì‹œ í¬ê¸°
     static UInt          mHashTableSize;
 
-    // corrupt page¸¦ ÀĞ¾úÀ» ¶§ÀÇ Á¤Ã¥ (fatal,abort,pass)
+    // corrupt pageë¥¼ ì½ì—ˆì„ ë•Œì˜ ì •ì±… (fatal,abort,pass)
     static sdbCorruptPageReadPolicy mCorruptPageReadPolicy;
 };
 
 /****************************************************************
- * Description: corrupt page ¸¦ ÀĞ¾úÀ» ¶§ ´ëÃ³¿¡ ´ëÇÑ Á¤Ã¥À» ¼³Á¤ÇÑ´Ù.
+ * Description: corrupt page ë¥¼ ì½ì—ˆì„ ë•Œ ëŒ€ì²˜ì— ëŒ€í•œ ì •ì±…ì„ ì„¤ì •í•œë‹¤.
  ****************************************************************/
 inline sdbCorruptPageReadPolicy sdrCorruptPageMgr::getCorruptPageReadPolicy()
 {

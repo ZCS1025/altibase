@@ -21,7 +21,7 @@
  *
  * Description :
  *
- * º» ÆÄÀÏÀº Collection LayerÀÇ Fixed Table Çì´õÆÄÀÏ ÀÔ´Ï´Ù.
+ * ë³¸ íŒŒì¼ì€ Collection Layerì˜ Fixed Table í—¤ë”íŒŒì¼ ì…ë‹ˆë‹¤.
  *
  **********************************************************************/
 
@@ -62,7 +62,7 @@ typedef struct sdcDumpDiskTableRow
 
 
 //-------------------------------
-// D$DISK_TABLE_CTS ÀÇ ±¸Á¶
+// D$DISK_TABLE_CTS ì˜ êµ¬ì¡°
 //-------------------------------
 
 typedef struct sdcDumpCTS
@@ -80,7 +80,7 @@ typedef struct sdcDumpCTS
 } sdcDumpCTS;
 
 //-------------------------------
-// D$DISK_TABLE_CTL ÀÇ ±¸Á¶
+// D$DISK_TABLE_CTL ì˜ êµ¬ì¡°
 //-------------------------------
 
 typedef struct sdcDumpCTL
@@ -112,18 +112,18 @@ typedef struct sdcDumpDiskTableSlotDir
 // D$DISK_TABLE_EXTLIST
 //-------------------------------
 
-/* TASK-4007 [SM] PBT¸¦ À§ÇÑ ±â´É Ãß°¡
- * DumpTBSInfo¸¦ Extent¿¡¼­µµ »ç¿ëÇÏ°í ÀÖ¾î ºĞ¸®ÇÑ´Ù. */
+/* TASK-4007 [SM] PBTë¥¼ ìœ„í•œ ê¸°ëŠ¥ ì¶”ê°€
+ * DumpTBSInfoë¥¼ Extentì—ì„œë„ ì‚¬ìš©í•˜ê³  ìˆì–´ ë¶„ë¦¬í•œë‹¤. */
 
 typedef struct sdcDumpDiskTableExtList
 {
     UChar              mSegType;     // SegmentType
-    sdRID              mExtRID;      // TBSÀÇ ¼ÓÇÑ Extent RID 
-    scPageID           mPID;         // Extent RID°ªÀÇ PageID 
-    scOffset           mOffset;      // Extent RID°ªÀÇ mOffset 
-    scPageID           mFstPID;      // ExtentÀÇ Ã¹¹øÂ° PID 
-    scPageID           mFstDataPID;  // ExtentÀÇ Ã¹¹øÂ° Data PID 
-    UInt               mPageCntInExt;// ExtentÀÇ ÆäÀÌÁö °¹¼ö 
+    sdRID              mExtRID;      // TBSì˜ ì†í•œ Extent RID 
+    scPageID           mPID;         // Extent RIDê°’ì˜ PageID 
+    scOffset           mOffset;      // Extent RIDê°’ì˜ mOffset 
+    scPageID           mFstPID;      // Extentì˜ ì²«ë²ˆì§¸ PID 
+    scPageID           mFstDataPID;  // Extentì˜ ì²«ë²ˆì§¸ Data PID 
+    UInt               mPageCntInExt;// Extentì˜ í˜ì´ì§€ ê°¯ìˆ˜ 
 } sdcDumpDiskTableExtList;
 
 
@@ -210,8 +210,8 @@ typedef struct sdcDumpDiskTableLobMeta
     scPageID    mNextPID;
 } sdcDumpDiskTableLobMeta;
 
-// Segment¸¦ ¼øÈ¸ÇÏ¸é¼­ DumpÇÒ °æ¿ì¸¦ À§ÇØ, 
-// Segement Header PID ¸¦ ³Ñ°ÜÁÖ±â À§ÇÑ Äİ¹é ÇÔ¼ö¸¦ ¸¸µç´Ù.
+// Segmentë¥¼ ìˆœíšŒí•˜ë©´ì„œ Dumpí•  ê²½ìš°ë¥¼ ìœ„í•´, 
+// Segement Header PID ë¥¼ ë„˜ê²¨ì£¼ê¸° ìœ„í•œ ì½œë°± í•¨ìˆ˜ë¥¼ ë§Œë“ ë‹¤.
 typedef IDE_RC (*sdcSegDumpCallback)( scSpaceID             aSpaceID,
                                       scPageID              aPageID,
                                       sdpSegType            aSegType,
@@ -312,14 +312,14 @@ public:
                                              void                 * aDumpObj,
                                              iduFixedTableMemory  * aMemory );
 
-    /* TASK-4007 [SM]PBT¸¦ À§ÇÑ ±â´É Ãß°¡
-     * Table, Index, LobÀ¸·ÎºÎÅÍ SegHdrPID¸¦ °¡Á®¿Â´Ù*/
+    /* TASK-4007 [SM]PBTë¥¼ ìœ„í•œ ê¸°ëŠ¥ ì¶”ê°€
+     * Table, Index, Lobìœ¼ë¡œë¶€í„° SegHdrPIDë¥¼ ê°€ì ¸ì˜¨ë‹¤*/
     static IDE_RC doAction4EachSeg( void                * aTable,
                                     sdcSegDumpCallback    aSegDumpFunc,
                                     void                * aHeader,
                                     iduFixedTableMemory * aMemory );
 
-    // ÇÑ Å×ÀÌºíÀÇ ¿©·¯ Segment·ÎºÎÅÍ ExtentList¸¦ °¡Á®¿Â´Ù.
+    // í•œ í…Œì´ë¸”ì˜ ì—¬ëŸ¬ Segmentë¡œë¶€í„° ExtentListë¥¼ ê°€ì ¸ì˜¨ë‹¤.
     static IDE_RC dumpExtList( scSpaceID             aSpaceID,
                                scPageID              aPageID,
                                sdpSegType            aSegType,
@@ -334,7 +334,7 @@ public:
 
 
 
-    // ÇÑ Å×ÀÌºíÀÇ ¿©·¯ Segment·ÎºÎÅÍ ExtentList¸¦ °¡Á®¿Â´Ù.
+    // í•œ í…Œì´ë¸”ì˜ ì—¬ëŸ¬ Segmentë¡œë¶€í„° ExtentListë¥¼ ê°€ì ¸ì˜¨ë‹¤.
     static IDE_RC dumpPidList( scSpaceID             aSpaceID,
                                scPageID              aPageID,
                                sdpSegType            aSegType,

@@ -100,7 +100,7 @@ IDE_RC qcmAudit::getOption( smiStatement      * aSmiStmt,
                   != IDE_SUCCESS );
     }
 
-    /* mtdModule ¼³Á¤ */
+    /* mtdModule ì„¤ì • */
     IDE_TEST( mtd::moduleById( &(sUserIDColumn->module),
                                sUserIDColumn->type.dataTypeId )
               != IDE_SUCCESS );
@@ -108,7 +108,7 @@ IDE_RC qcmAudit::getOption( smiStatement      * aSmiStmt,
                                sObjectNameColumn->type.dataTypeId )
               != IDE_SUCCESS );
 
-    /* mtlModule ¼³Á¤ */
+    /* mtlModule ì„¤ì • */
     IDE_TEST( mtl::moduleById( &(sUserIDColumn->language),
                                sUserIDColumn->type.languageId )
               != IDE_SUCCESS );
@@ -118,7 +118,7 @@ IDE_RC qcmAudit::getOption( smiStatement      * aSmiStmt,
 
     if ( aObjectNameSize > 0 )
     {
-        /* value ¼³Á¤ */
+        /* value ì„¤ì • */
         qtc::setVarcharValue( sObjectNameValue,
                               NULL,
                               aObjectName,
@@ -135,7 +135,7 @@ IDE_RC qcmAudit::getOption( smiStatement      * aSmiStmt,
     }
     else
     {
-        // °Ë»ö Á¶°Ç (user_id, null)
+        // ê²€ìƒ‰ ì¡°ê±´ (user_id, null)
         qtc::initializeMetaRange( &sRange,
                                   MTD_COMPARE_MTDVAL_MTDVAL );  // Meta is memory table
 
@@ -643,7 +643,7 @@ IDE_RC qcmAudit::updateObjectName( qcStatement  * aStatement,
     vSLong   sRowCnt = 0;
     SChar  * sSqlStr = NULL;
 
-    // ¸ÞÅ¸ º¯°æ
+    // ë©”íƒ€ ë³€ê²½
     IDE_TEST( STRUCT_ALLOC_WITH_SIZE( aStatement->qmxMem,
                                       SChar,
                                       QD_MAX_SQL_LENGTH,
@@ -664,8 +664,8 @@ IDE_RC qcmAudit::updateObjectName( qcStatement  * aStatement,
                                  &sRowCnt )
               != IDE_SUCCESS );
 
-    // 0°ÇÀÏ¼öµµ ÀÖ°í 1°ÇÀÏ¼öµµ ÀÖÀ¸¹Ç·Î
-    // sRowCnt´Â °Ë»çÇÏÁö ¾Ê´Â´Ù.
+    // 0ê±´ì¼ìˆ˜ë„ ìžˆê³  1ê±´ì¼ìˆ˜ë„ ìžˆìœ¼ë¯€ë¡œ
+    // sRowCntëŠ” ê²€ì‚¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
 
     return IDE_SUCCESS;
 
@@ -689,7 +689,7 @@ IDE_RC qcmAudit::deleteObject( qcStatement  * aStatement,
     vSLong   sRowCnt = 0;
     SChar  * sSqlStr = NULL;
 
-    // ¸ÞÅ¸ º¯°æ
+    // ë©”íƒ€ ë³€ê²½
     IDE_TEST( STRUCT_ALLOC_WITH_SIZE( aStatement->qmxMem,
                                       SChar,
                                       QD_MAX_SQL_LENGTH,
@@ -708,8 +708,8 @@ IDE_RC qcmAudit::deleteObject( qcStatement  * aStatement,
                                  &sRowCnt )
               != IDE_SUCCESS );
 
-    // 0°ÇÀÏ¼öµµ ÀÖ°í 1°ÇÀÏ¼öµµ ÀÖÀ¸¹Ç·Î
-    // sRowCnt´Â °Ë»çÇÏÁö ¾Ê´Â´Ù.
+    // 0ê±´ì¼ìˆ˜ë„ ìžˆê³  1ê±´ì¼ìˆ˜ë„ ìžˆìœ¼ë¯€ë¡œ
+    // sRowCntëŠ” ê²€ì‚¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
 
     return IDE_SUCCESS;
 

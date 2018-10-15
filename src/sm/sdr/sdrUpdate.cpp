@@ -20,7 +20,7 @@
  *
  * Description :
  *
- * º» ÆÄÀÏÀº DRDBÀÇ redo/undo function map ´ëÇÑ ±¸ÇöÆÄÀÏÀÌ´Ù.
+ * ë³¸ íŒŒì¼ì€ DRDBì˜ redo/undo function map ëŒ€í•œ êµ¬í˜„íŒŒì¼ì´ë‹¤.
  *
  **********************************************************************/
 
@@ -47,7 +47,7 @@ sdrDiskUndoFunction            gSdrDiskUndoFunction[SM_MAX_RECFUNCMAP_SIZE];
 sdrDiskRefNTAUndoFunction      gSdrDiskRefNTAUndoFunction[SM_MAX_RECFUNCMAP_SIZE];
 
 /* ------------------------------------------------
- * Description : DRDBÀÇ redo/undo ÇÔ¼ö Vector ÃÊ±âÈ­
+ * Description : DRDBì˜ redo/undo í•¨ìˆ˜ Vector ì´ˆê¸°í™”
  * ----------------------------------------------*/
 void sdrUpdate::initialize()
 {
@@ -174,11 +174,11 @@ void sdrUpdate::initialize()
     gSdrDiskRedoFunction[SDR_SDP_WRITE_PAGEIMG]
         = sdpUpdate::redo_SDR_SDP_WRITE_PAGEIMG;
 
-    // PROJ-1665 : Direct-Path Ins ¼öÇàµÈ Page ÀüÃ¼¿¡ ´ëÇÑ redo
+    // PROJ-1665 : Direct-Path Ins ìˆ˜í–‰ëœ Page ì „ì²´ì— ëŒ€í•œ redo
     gSdrDiskRedoFunction[SDR_SDP_WRITE_DPATH_INS_PAGE]
         = sdpUpdate::redo_SDR_SDP_WRITE_PAGEIMG;
 
-    // PROJ-1665 : Page¿¡ ´ëÇÑ Consistent Á¤º¸ ¼³Á¤
+    // PROJ-1665 : Pageì— ëŒ€í•œ Consistent ì •ë³´ ì„¤ì •
     gSdrDiskRedoFunction[SDR_SDP_PAGE_CONSISTENT]
         = sdpUpdate::redo_SDR_SDP_PAGE_CONSISTENT;
 
@@ -353,7 +353,7 @@ void sdrUpdate::appendExternalRefNTAUndoFunction(
 }
 
 /***********************************************************************
- * Description : DRDB ·Î±×-based undo ÇÔ¼ö
+ * Description : DRDB ë¡œê·¸-based undo í•¨ìˆ˜
  **********************************************************************/
 IDE_RC sdrUpdate::doUndoFunction( idvSQL * aStatistics,
                                   smTID    aTransID,
@@ -384,7 +384,7 @@ IDE_RC sdrUpdate::doUndoFunction( idvSQL * aStatistics,
 }
 
 /***********************************************************************
- * Description : DRDB ·Î±×-based redo ÇÔ¼ö
+ * Description : DRDB ë¡œê·¸-based redo í•¨ìˆ˜
  **********************************************************************/
 IDE_RC sdrUpdate::doRedoFunction( SChar       * aValue,
                                   UInt          aValueLen,
@@ -409,7 +409,7 @@ IDE_RC sdrUpdate::doRedoFunction( SChar       * aValue,
 
 
 /***********************************************************************
- * redo type:  DRDB NTA·Î±×ÀÇ logical undo ¼öÇà
+ * redo type:  DRDB NTAë¡œê·¸ì˜ logical undo ìˆ˜í–‰
  ***********************************************************************/
 IDE_RC sdrUpdate::doNTAUndoFunction( idvSQL   * aStatistics,
                                      void     * aTrans,
@@ -446,7 +446,7 @@ IDE_RC sdrUpdate::doNTAUndoFunction( idvSQL   * aStatistics,
                                                  SCT_SS_SKIP_UNDO )
                      == ID_TRUE )
                 {
-                    // Skip ÇÒ Undo ·Î±×¶ó¸é Dummy CLR¸¸ ·Î±ëÇÑ´Ù.
+                    // Skip í•  Undo ë¡œê·¸ë¼ë©´ Dummy CLRë§Œ ë¡œê¹…í•œë‹¤.
                 }
                 else
                 {
@@ -524,7 +524,7 @@ IDE_RC sdrUpdate::doNTAUndoFunction( idvSQL   * aStatistics,
 
             case SDR_OP_SDPTB_ALLOCATE_AN_EXTENT_FROM_TBS:
 
-                //ÇØÁ¦ÇÒ extentÀÇ °¹¼ö´Â 1°³~4°³ ÀÏ¼öÀÖ´Ù.
+                //í•´ì œí•  extentì˜ ê°¯ìˆ˜ëŠ” 1ê°œ~4ê°œ ì¼ìˆ˜ìˆë‹¤.
                 IDE_ERROR( aDataCount <= 4 );
 
                 IDE_TEST( sdptbExtent::freeExts( aStatistics,
@@ -612,9 +612,9 @@ IDE_RC sdrUpdate::doNTAUndoFunction( idvSQL   * aStatistics,
 
         /* ------------------------------------------------
          * !! CHECK RECOVERY POINT
-         * case) nta logical undo¸¦ ¼öÇàÇÑ ÀÌÈÄ¿¡ crash ¹ß»ı
-         * ÇØ´ç nta logical undoÀÇ prev undo lsnÀÇ ·Î±×ºÎÅÍ
-         * ÀÌ¾î¼­ undo¸¦ ÁøÇàÇÑ´Ù.
+         * case) nta logical undoë¥¼ ìˆ˜í–‰í•œ ì´í›„ì— crash ë°œìƒ
+         * í•´ë‹¹ nta logical undoì˜ prev undo lsnì˜ ë¡œê·¸ë¶€í„°
+         * ì´ì–´ì„œ undoë¥¼ ì§„í–‰í•œë‹¤.
          * ----------------------------------------------*/
     }
 
@@ -632,7 +632,7 @@ IDE_RC sdrUpdate::doNTAUndoFunction( idvSQL   * aStatistics,
 }
 
 /***********************************************************************
- * redo type:  DRDB Index/LOB/¿ÜºÎ NTA·Î±×ÀÇ logical undo ¼öÇà
+ * redo type:  DRDB Index/LOB/ì™¸ë¶€ NTAë¡œê·¸ì˜ logical undo ìˆ˜í–‰
  ***********************************************************************/
 IDE_RC sdrUpdate::doRefNTAUndoFunction( idvSQL   * aStatistics,
                                         void     * aTrans,
@@ -658,8 +658,8 @@ IDE_RC sdrUpdate::doRefNTAUndoFunction( idvSQL   * aStatistics,
                   != IDE_SUCCESS );
         sState = 1;
 
-        /* BUG-25279 Btree for spatial°ú Disk BtreeÀÇ ÀÚ·á±¸Á¶ ¹× ·Î±ë ºĞ¸®
-         * NTA Undoµµ ´Ù¸¥ undo³ª redo¿¬»êÃ³·³ MapÀ¸·Î ¼öÇàÇÑ´Ù. */
+        /* BUG-25279 Btree for spatialê³¼ Disk Btreeì˜ ìë£Œêµ¬ì¡° ë° ë¡œê¹… ë¶„ë¦¬
+         * NTA Undoë„ ë‹¤ë¥¸ undoë‚˜ redoì—°ì‚°ì²˜ëŸ¼ Mapìœ¼ë¡œ ìˆ˜í–‰í•œë‹¤. */
         idlOS::memcpy(&sLogHdr, aRefData, ID_SIZEOF(sdrLogHdr));
         IDE_ERROR( gSdrDiskRefNTAUndoFunction[sLogHdr.mType] != 0 );
         IDE_TEST(  gSdrDiskRefNTAUndoFunction[sLogHdr.mType] (
@@ -678,9 +678,9 @@ IDE_RC sdrUpdate::doRefNTAUndoFunction( idvSQL   * aStatistics,
 
         /* ------------------------------------------------
          * !! CHECK RECOVERY POINT
-         * case) nta logical undo¸¦ ¼öÇàÇÑ ÀÌÈÄ¿¡ crash ¹ß»ı
-         * ÇØ´ç nta logical undoÀÇ prev undo lsnÀÇ ·Î±×ºÎÅÍ
-         * ÀÌ¾î¼­ undo¸¦ ÁøÇàÇÑ´Ù.
+         * case) nta logical undoë¥¼ ìˆ˜í–‰í•œ ì´í›„ì— crash ë°œìƒ
+         * í•´ë‹¹ nta logical undoì˜ prev undo lsnì˜ ë¡œê·¸ë¶€í„°
+         * ì´ì–´ì„œ undoë¥¼ ì§„í–‰í•œë‹¤.
          * ----------------------------------------------*/
     }
 

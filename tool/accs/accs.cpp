@@ -31,8 +31,8 @@ SChar   ConfFile[256];
 SChar   dirBuffer[256];
 
 /*
- * ¿É¼Ç :
- * -s È­ÀÏ¸í : symbol tableÀ» »ı¼ºÇÔ.
+ * ì˜µì…˜ :
+ * -s í™”ì¼ëª… : symbol tableì„ ìƒì„±í•¨.
  */
 
 const SChar HelpMsg[] =
@@ -51,7 +51,7 @@ int main(SInt argc, SChar* argv[])
     idBool  symbolGen = ID_FALSE;
 
     /* --------------------
-     * [0] È¯°æº¯¼ö Á¸Àç °Ë»ç 
+     * [0] í™˜ê²½ë³€ìˆ˜ ì¡´ì¬ ê²€ì‚¬ 
      * -------------------*/
     SChar *envhome = idlOS::getenv(ENV_ACCS_HOME);
     if ( !(envhome && idlOS::strlen(envhome) > 0))
@@ -68,10 +68,10 @@ int main(SInt argc, SChar* argv[])
     {
         switch(opr)
         {
-        case 'd':  // È¨ µğ·ºÅä¸® ¸í½Ã
+        case 'd':  // í™ˆ ë””ë ‰í† ë¦¬ ëª…ì‹œ
             idlOS::strncpy(accsRoot, optarg, 255);
             break;
-        case 'f':  // Conf È­ÀÏ ¸í½Ã
+        case 'f':  // Conf í™”ì¼ ëª…ì‹œ
             idlOS::strncpy(ConfFile, optarg, 255);
              break;
         case 's':

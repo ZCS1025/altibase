@@ -154,7 +154,7 @@ IDE_RC smnpIWChildMgr::initialize( SInt aThreadCount)
     IDU_FIT_POINT_RAISE( "smnpIWChildMgr::initialize::calloc",
                           insufficient_memory );
 
-    // client ¸Þ¸ð¸® ÇÒ´ç
+    // client ë©”ëª¨ë¦¬ í• ë‹¹
     IDE_TEST_RAISE(iduMemMgr::calloc(IDU_MEM_SM_SMN,
                                aThreadCount,
                                ID_SIZEOF(smnpIWChild*),
@@ -175,7 +175,7 @@ IDE_RC smnpIWChildMgr::initialize( SInt aThreadCount)
         mChildArray[i] = new (mChildArray[i]) smnpIWChild();
     }
 
-    // ¸Å´ÏÀú ÃÊ±âÈ­
+    // ë§¤ë‹ˆì € ì´ˆê¸°í™”
     IDE_TEST(smtPJMgr::initialize(aThreadCount,
                                   (smtPJChild **)mChildArray,
                                   &mSuccess)
@@ -262,9 +262,9 @@ IDE_RC smnpIWChildMgr::assignJob(SInt    aReqChild,
         }
 
         // added for A4, fix BUG-7950
-        // disk table¿¡ ´ëÇØ¼­´Â
-        // persistent index write¸¦ skipÇÏµµ·Ï
-        // ÇÑ´Ù.
+        // disk tableì— ëŒ€í•´ì„œëŠ”
+        // persistent index writeë¥¼ skipí•˜ë„ë¡
+        // í•œë‹¤.
         while (1)
         {
             IDE_TEST( smcRecord::nextOIDall( mBaseTable,
@@ -284,7 +284,7 @@ IDE_RC smnpIWChildMgr::assignJob(SInt    aReqChild,
             sOID = SMP_SLOT_GET_NEXT_OID( sSlot );
             IDE_ASSERT(SM_IS_NULL_OID(sOID));
 
-            //disk tableÀÌ ¾Æ´Ï¸é break.
+            //disk tableì´ ì•„ë‹ˆë©´ break.
             if( ( SMI_TABLE_TYPE_IS_DISK( sCurTable )     == ID_FALSE ) &&
                 ( SMI_TABLE_TYPE_IS_VOLATILE( sCurTable ) == ID_FALSE ) )
             {
@@ -298,16 +298,16 @@ IDE_RC smnpIWChildMgr::assignJob(SInt    aReqChild,
 
             if( SMP_SLOT_IS_NOT_DROP( sSlot ) )
             {
-                // table header´Â versioningµÇÁö ¾Ê´Â´Ù.
+                // table headerëŠ” versioningë˜ì§€ ì•ŠëŠ”ë‹¤.
                 IDE_ASSERT(SM_SCN_IS_NOT_DELETED(sSlot->mCreateSCN));
 
                 while(1)
                 {
 
-                    // Å×ÀÌºíÀÌ »ý¼ºµÉ ¶§ NULL ROW°¡ ±âº»ÀûÀ¸·Î µé¾î°¡¹Ç·Î
-                    // ¸ðµç Å×ÀÌºíÀº ÃÖ¼ÒÇÑ ÇÏ³ªÀÇ ROW¸¦ Áö´Ï°Ô µÈ´Ù.
-                    // Áï, ÀÎµ¦½º¸¦ ºôµåÇÏ±â Àü¿¡
-                    // ¸ðµç Å×ÀÌºí¿¡ ´ëÇØ ROWÀ¯¹«¸¦ ºñ±³ÇÒ ÇÊ¿ä°¡ ¾ø´Ù.
+                    // í…Œì´ë¸”ì´ ìƒì„±ë  ë•Œ NULL ROWê°€ ê¸°ë³¸ì ìœ¼ë¡œ ë“¤ì–´ê°€ë¯€ë¡œ
+                    // ëª¨ë“  í…Œì´ë¸”ì€ ìµœì†Œí•œ í•˜ë‚˜ì˜ ROWë¥¼ ì§€ë‹ˆê²Œ ëœë‹¤.
+                    // ì¦‰, ì¸ë±ìŠ¤ë¥¼ ë¹Œë“œí•˜ê¸° ì „ì—
+                    // ëª¨ë“  í…Œì´ë¸”ì— ëŒ€í•´ ROWìœ ë¬´ë¥¼ ë¹„êµí•  í•„ìš”ê°€ ì—†ë‹¤.
                     if(sIndexCount !=0 )
                     {
                         mIndexBegin  = -1;
@@ -330,8 +330,8 @@ IDE_RC smnpIWChildMgr::assignJob(SInt    aReqChild,
             }//if
             else
             {
-                /* BUG-30378 ºñÁ¤»óÀûÀ¸·Î DropµÇ¾úÁö¸¸ refineµÅÁö ¾Ê´Â
-                 * Å×ÀÌºíÀÌ Á¸ÀçÇÕ´Ï´Ù.
+                /* BUG-30378 ë¹„ì •ìƒì ìœ¼ë¡œ Dropë˜ì—ˆì§€ë§Œ refineë¼ì§€ ì•ŠëŠ”
+                 * í…Œì´ë¸”ì´ ì¡´ìž¬í•©ë‹ˆë‹¤.
                  * CASE-26385*/
                 if( sIndexCount != 0 )
                 {
@@ -346,10 +346,10 @@ IDE_RC smnpIWChildMgr::assignJob(SInt    aReqChild,
 
 #if defined(DEBUG)
 #else
-                    /* Release ModeÀÏ °æ¿ì ¿©±â¿¡¼­ Á¾·á½ÃÅ°µµ·Ï ÇÕ´Ï´Ù.
-                     * Debug ModeÀÏ °æ¿ì, °ü·Ã Á¤º¸¸¸ Ãâ·ÂÇÏ°í Á¤»ó
-                     * Á¾·á ½ÃÅ´À¸·Î¼­, ÀÌÈÄ server start ´Ü°è/Refine°úÁ¤¿¡¼­
-                     * ºñÁ¤»óÁ¾·á ½ÃÅ°µµ·Ï ÇÕ´Ï´Ù. */
+                    /* Release Modeì¼ ê²½ìš° ì—¬ê¸°ì—ì„œ ì¢…ë£Œì‹œí‚¤ë„ë¡ í•©ë‹ˆë‹¤.
+                     * Debug Modeì¼ ê²½ìš°, ê´€ë ¨ ì •ë³´ë§Œ ì¶œë ¥í•˜ê³  ì •ìƒ
+                     * ì¢…ë£Œ ì‹œí‚´ìœ¼ë¡œì„œ, ì´í›„ server start ë‹¨ê³„/Refineê³¼ì •ì—ì„œ
+                     * ë¹„ì •ìƒì¢…ë£Œ ì‹œí‚¤ë„ë¡ í•©ë‹ˆë‹¤. */
                     IDE_ASSERT( 0 );
 #endif
                 }
@@ -403,10 +403,10 @@ IDE_RC smnpIWManager::doIt(SInt aLoaderCnt)
     IDE_TEST(sLoadMgr->waitToStart() != IDE_SUCCESS);
     IDE_TEST_RAISE(sLoadMgr->join() != IDE_SUCCESS, thr_join_error);
     IDE_TEST(sLoadMgr->destroy() != IDE_SUCCESS);
-    /* BUG-40933 thread ÇÑ°è»óÈ²¿¡¼­ FATAL¿¡·¯ ³»Áö ¾Êµµ·Ï ¼öÁ¤
-     * thread¸¦ ÇÏ³ªµµ »ý¼ºÇÏÁö ¸øÇÏ¿© ABORTµÈ °æ¿ì¿¡
-     * smnpIWChildMgr thread join ÈÄ ±× °á°ú¸¦ È®ÀÎÇÏ¿©
-     * ABORT¿¡·¯¸¦ ³¾ ¼ö ÀÖµµ·Ï ÇÑ´Ù. */
+    /* BUG-40933 thread í•œê³„ìƒí™©ì—ì„œ FATALì—ëŸ¬ ë‚´ì§€ ì•Šë„ë¡ ìˆ˜ì •
+     * threadë¥¼ í•˜ë‚˜ë„ ìƒì„±í•˜ì§€ ëª»í•˜ì—¬ ABORTëœ ê²½ìš°ì—
+     * smnpIWChildMgr thread join í›„ ê·¸ ê²°ê³¼ë¥¼ í™•ì¸í•˜ì—¬
+     * ABORTì—ëŸ¬ë¥¼ ë‚¼ ìˆ˜ ìžˆë„ë¡ í•œë‹¤. */
     IDE_TEST(sLoadMgr->getResult() == ID_FALSE);
 
     sState = 0;

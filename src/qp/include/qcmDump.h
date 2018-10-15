@@ -20,12 +20,12 @@
  *
  * Description :
  *
- *    D$XXXX °è¿­ÀÇ DUMP OBJECT¸¦ À§ÇÑ Á¤º¸ È¹µæ µîÀ» °ü¸®ÇÑ´Ù.
+ *    D$XXXX ê³„ì—´ì˜ DUMP OBJECTë¥¼ ìœ„í•œ ì •ë³´ íšë“ ë“±ì„ ê´€ë¦¬í•œë‹¤.
  *
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  *
  **********************************************************************/
@@ -45,8 +45,8 @@ public:
                                      qmsTableRef * aTableRef );
 private:
 
-    // ÀÎµ¦½º ÀÌ¸§À» ÀÎÀÚ·Î ³ÖÀ¸¸é, ÀÎµ¦½º Çì´õ(smnIndexHeader)
-    // ¸¦ dumpObj·Î ³Ö¾îÁØ´Ù.
+    // ì¸ë±ìŠ¤ ì´ë¦„ì„ ì¸ìë¡œ ë„£ìœ¼ë©´, ì¸ë±ìŠ¤ í—¤ë”(smnIndexHeader)
+    // ë¥¼ dumpObjë¡œ ë„£ì–´ì¤€ë‹¤.
     // for D$*_INDEX_*
     static IDE_RC getIndexInfo( qcStatement    * aStatement,
                                 qmsDumpObjList * aDumpObjList,
@@ -56,8 +56,8 @@ private:
 
 
     // for D$*_TABLE_*
-    // Å×ÀÌºí ÀÌ¸§À» ÀÎÀÚ·Î ³ÖÀ¸¸é, Å×ÀÌºí Çì´õ(smcTableHeader)
-    // ¸¦ dumpObj·Î ³Ö¾îÁØ´Ù.
+    // í…Œì´ë¸” ì´ë¦„ì„ ì¸ìë¡œ ë„£ìœ¼ë©´, í…Œì´ë¸” í—¤ë”(smcTableHeader)
+    // ë¥¼ dumpObjë¡œ ë„£ì–´ì¤€ë‹¤.
     static IDE_RC getTableInfo( qcStatement    * aStatement,
                                 qmsDumpObjList * aDumpObjList,
                                 idBool           aEnableDiskTable,
@@ -65,8 +65,8 @@ private:
                                 idBool           aEnableVolTable );
     
     // for D$*_TBS_*
-    // Å×ÀÌºí ½ºÆäÀÌ½º ÀÌ¸§À» ÀÎÀÚ·Î ³ÖÀ¸¸é, Å×ÀÌºí½ºÆäÀÌ½ºID
-    // ¸¦ dumpObj·Î ³Ö¾îÁØ´Ù.
+    // í…Œì´ë¸” ìŠ¤í˜ì´ìŠ¤ ì´ë¦„ì„ ì¸ìë¡œ ë„£ìœ¼ë©´, í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ID
+    // ë¥¼ dumpObjë¡œ ë„£ì–´ì¤€ë‹¤.
     static IDE_RC getTBSID( qcStatement    * aStatement,
                             qmsDumpObjList * aDumpObjList,
                             idBool           aEnableDiskTBS,
@@ -74,9 +74,9 @@ private:
                             idBool           aEnableVolTBS );
 
     // for D$*_DB_*
-    /* TASK-4007 [SM] PBT¸¦ À§ÇÑ ±â´É Ãß°¡
-     * Disk, Memory, volatile TablespaceÀÇ ÆäÀÌÁö¸¦ dumpÇÏ±â À§ÇØ
-     * SID¿Í PID¸¦ ÀÎÀÚ·Î ¹Ş¾ÆµéÀÓ */
+    /* TASK-4007 [SM] PBTë¥¼ ìœ„í•œ ê¸°ëŠ¥ ì¶”ê°€
+     * Disk, Memory, volatile Tablespaceì˜ í˜ì´ì§€ë¥¼ dumpí•˜ê¸° ìœ„í•´
+     * SIDì™€ PIDë¥¼ ì¸ìë¡œ ë°›ì•„ë“¤ì„ */
     static IDE_RC getGRID( qcStatement    * aStatement,
                            qmsDumpObjList * aDumpObjList,
                            idBool           aEnableDiskTBS,

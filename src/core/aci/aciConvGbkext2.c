@@ -1154,11 +1154,11 @@ acp_sint32_t aciConvConvertMbToWc4Gbkext2( void         * aSrc,
 /***********************************************************************
  *
  * Description :
- *     PROJ-2414 [±â´É¼º] GBK, CP936 character set Ãß°¡
+ *     PROJ-2414 [ê¸°ëŠ¥ì„±] GBK, CP936 character set ì¶”ê°€
  *     GBKEXT2 ==> UTF16BE
  *
  * Implementation :
- *     1) GBKEXT2 ÀÇ º¯È¯¹æ¾ÈÀ» Àû¿ë.
+ *     1) GBKEXT2 ì˜ ë³€í™˜ë°©ì•ˆì„ ì ìš©.
  *
  ***********************************************************************/
 
@@ -1178,7 +1178,7 @@ acp_sint32_t aciConvConvertMbToWc4Gbkext2( void         * aSrc,
         }
         else
         {
-            /* 1) GBKEXT2 ÀÇ º¯È¯¹æ¾ÈÀ» Àû¿ë */
+            /* 1) GBKEXT2 ì˜ ë³€í™˜ë°©ì•ˆì„ ì ìš© */
             if ( ( ( sSrcCharPtr[1] >= 0x40 ) && ( sSrcCharPtr[1] < 0x7f ) ) ||
                  ( ( sSrcCharPtr[1] >= 0x80 ) && ( sSrcCharPtr[1] < 0xa1 ) ) )
             {
@@ -1209,7 +1209,7 @@ acp_sint32_t aciConvConvertMbToWc4Gbkext2( void         * aSrc,
     }
     else
     {
-        /* GBK ¿¡¼­ ÀÌ¹Ì Ã¼Å©ÇÏ±â ¶§¹®¿¡, »ç½Ç»ó Á¢±ÙÇÒ ¼ö ¾ø´Â ºÐ±âÀÌ´Ù. */
+        /* GBK ì—ì„œ ì´ë¯¸ ì²´í¬í•˜ê¸° ë•Œë¬¸ì—, ì‚¬ì‹¤ìƒ ì ‘ê·¼í•  ìˆ˜ ì—†ëŠ” ë¶„ê¸°ì´ë‹¤. */
         *aSrcAdvance = 1;
         sRet = ACICONV_RET_ILSEQ;
     }

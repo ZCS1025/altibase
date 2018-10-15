@@ -87,7 +87,7 @@ static acp_sint32_t mtlKSC5601Extract_MatchSecond( acp_uint8_t* aSource,
 static acp_sint32_t mtlKSC5601Extract_MatchMicroSec( acp_uint8_t* aSource,
                                                      acp_uint32_t   aSourceLen );
 
-/* BUG-45730 ROUND, TRUNC «‘ºˆø°º≠ DATE ∆˜∏À IW √ﬂ∞° ¡ˆø¯ */
+/* BUG-45730 ROUND, TRUNC Ìï®ÏàòÏóêÏÑú DATE Ìè¨Îß∑ IW Ï∂îÍ∞Ä ÏßÄÏõê */
 static acp_sint32_t mtlKSC5601Extract_MatchISOWeek( acp_uint8_t  * aSource,
                                                     acp_uint32_t   aSourceLen );
 
@@ -105,7 +105,7 @@ mtlExtractFuncSet mtclKSC5601ExtractSet = {
     mtlKSC5601Extract_MatchMinute,
     mtlKSC5601Extract_MatchSecond,
     mtlKSC5601Extract_MatchMicroSec,
-    /* BUG-45730 ROUND, TRUNC «‘ºˆø°º≠ DATE ∆˜∏À IW √ﬂ∞° ¡ˆø¯ */
+    /* BUG-45730 ROUND, TRUNC Ìï®ÏàòÏóêÏÑú DATE Ìè¨Îß∑ IW Ï∂îÍ∞Ä ÏßÄÏõê */
     mtlKSC5601Extract_MatchISOWeek
 };
 
@@ -156,10 +156,10 @@ mtlNCRet mtlKSC5601NextChar( acp_uint8_t ** aSource, acp_uint8_t * aFence )
 {
 /***********************************************************************
  *
- * Description : PROJ-1755 Next Char √÷¿˚»≠
+ * Description : PROJ-1755 Next Char ÏµúÏ†ÅÌôî
  *
  * Implementation :
- *    ¥Ÿ¿Ω πÆ¿⁄ ¿ßƒ°∑Œ pointer ¿Ãµø
+ *    Îã§Ïùå Î¨∏Ïûê ÏúÑÏπòÎ°ú pointer Ïù¥Îèô
  *
  ***********************************************************************/    
 
@@ -204,14 +204,14 @@ static acp_sint32_t mtlKSC5601MaxPrecision( acp_sint32_t aLength )
 {
 /***********************************************************************
  *
- * Description : πÆ¿⁄∞πºˆ(aLength)¿« KSC5601¿« √÷¥Î precision ∞ËªÍ
+ * Description : Î¨∏ÏûêÍ∞ØÏàò(aLength)Ïùò KSC5601Ïùò ÏµúÎåÄ precision Í≥ÑÏÇ∞
  *
  * Implementation :
  *
- *    ¿Œ¿⁄∑Œ πﬁ¿∫ aLengthø°
- *    KSC5601 «—πÆ¿⁄¿« √÷¥Î ≈©±‚∏¶ ∞ˆ«— ∞™¿ª ∏Æ≈œ«‘.
+ *    Ïù∏ÏûêÎ°ú Î∞õÏùÄ aLengthÏóê
+ *    KSC5601 ÌïúÎ¨∏ÏûêÏùò ÏµúÎåÄ ÌÅ¨Í∏∞Î•º Í≥±Ìïú Í∞íÏùÑ Î¶¨ÌÑ¥Ìï®.
  *
- *    aLength¥¬ πÆ¿⁄∞πºˆ¿« ¿«πÃ∞° ¿÷¿Ω.
+ *    aLengthÎäî Î¨∏ÏûêÍ∞ØÏàòÏùò ÏùòÎØ∏Í∞Ä ÏûàÏùå.
  *
  ***********************************************************************/
     return aLength * MTL_KSC5601_PRECISION;
@@ -221,7 +221,7 @@ acp_sint32_t mtlKSC5601Extract_MatchCentury( acp_uint8_t* aSource,
                                              acp_uint32_t aSourceLen )
 {
     if( mtcStrCaselessMatch((acp_char_t*) aSource, aSourceLen, "CENTURY", 7 ) == 0 ||
-        mtcStrMatch((acp_char_t*)aSource, aSourceLen, "ºº±‚", 4 ) == 0 )
+        mtcStrMatch((acp_char_t*)aSource, aSourceLen, "ÏÑ∏Í∏∞", 4 ) == 0 )
     {
         return 0;
     }
@@ -232,7 +232,7 @@ acp_sint32_t mtlKSC5601Extract_MatchYear( acp_uint8_t* aSource,
                                           acp_uint32_t aSourceLen )
 {
     if( mtcStrCaselessMatch((acp_char_t*) aSource, aSourceLen, "YEAR", 4 ) == 0 ||
-        mtcStrMatch((acp_char_t*)aSource, aSourceLen, "≥‚", 2 ) == 0 )
+        mtcStrMatch((acp_char_t*)aSource, aSourceLen, "ÎÖÑ", 2 ) == 0 )
     {
         return 0;
     }
@@ -243,7 +243,7 @@ acp_sint32_t mtlKSC5601Extract_MatchQuarter( acp_uint8_t* aSource,
                                              acp_uint32_t aSourceLen )
 {
     if( mtcStrCaselessMatch((acp_char_t*) aSource, aSourceLen, "QUARTER", 7 ) == 0 ||
-        mtcStrMatch((acp_char_t*)aSource, aSourceLen, "∫–±‚", 4 ) == 0 )
+        mtcStrMatch((acp_char_t*)aSource, aSourceLen, "Î∂ÑÍ∏∞", 4 ) == 0 )
     {
         return 0;
     }
@@ -254,7 +254,7 @@ acp_sint32_t mtlKSC5601Extract_MatchMonth( acp_uint8_t* aSource,
                                            acp_uint32_t aSourceLen )
 {
     if( mtcStrCaselessMatch((acp_char_t*) aSource, aSourceLen, "MONTH", 5 ) == 0 ||
-        mtcStrMatch((acp_char_t*)aSource, aSourceLen, "ø˘", 2) == 0 )
+        mtcStrMatch((acp_char_t*)aSource, aSourceLen, "Ïõî", 2) == 0 )
     {
         return 0;
     }
@@ -265,7 +265,7 @@ acp_sint32_t mtlKSC5601Extract_MatchWeek( acp_uint8_t* aSource,
                                           acp_uint32_t aSourceLen )
 {
     if( mtcStrCaselessMatch((acp_char_t*) aSource, aSourceLen, "WEEK", 4 ) == 0 ||
-          mtcStrMatch((acp_char_t*)aSource, aSourceLen, "¡÷", 2 ) == 0 )
+          mtcStrMatch((acp_char_t*)aSource, aSourceLen, "Ï£º", 2 ) == 0 )
     {
         return 0;
     }
@@ -276,7 +276,7 @@ acp_sint32_t mtlKSC5601Extract_MatchWeekOfMonth( acp_uint8_t* aSource,
                                                  acp_uint32_t aSourceLen )
 {
     if( mtcStrCaselessMatch((acp_char_t*) aSource, aSourceLen, "WEEKOFMONTH", 11 ) == 0 ||
-        mtcStrMatch((acp_char_t*)aSource, aSourceLen, "ø˘¡ﬂ¡÷", 6 ) == 0 )
+        mtcStrMatch((acp_char_t*)aSource, aSourceLen, "ÏõîÏ§ëÏ£º", 6 ) == 0 )
     {
         return 0;
     }
@@ -287,7 +287,7 @@ acp_sint32_t mtlKSC5601Extract_MatchDay( acp_uint8_t* aSource,
                                          acp_uint32_t aSourceLen )
 {
     if( mtcStrCaselessMatch((acp_char_t*) aSource, aSourceLen,  "DAY", 3 ) == 0 ||
-        mtcStrMatch((acp_char_t*)aSource, aSourceLen, "¿œ", 2 ) == 0 )
+        mtcStrMatch((acp_char_t*)aSource, aSourceLen, "Ïùº", 2 ) == 0 )
     {
         return 0;
     }
@@ -298,7 +298,7 @@ acp_sint32_t mtlKSC5601Extract_MatchDayOfYear( acp_uint8_t* aSource,
                                                acp_uint32_t aSourceLen )
 {
     if( mtcStrCaselessMatch((acp_char_t*) aSource, aSourceLen, "DAYOFYEAR", 9 ) == 0 ||
-        mtcStrMatch((acp_char_t*)aSource, aSourceLen, "≥‚¡ﬂ¿œ", 6 ) == 0 )
+        mtcStrMatch((acp_char_t*)aSource, aSourceLen, "ÎÖÑÏ§ëÏùº", 6 ) == 0 )
     {
         return 0;
     }
@@ -309,7 +309,7 @@ acp_sint32_t mtlKSC5601Extract_MatchDayOfWeek( acp_uint8_t* aSource,
                                                acp_uint32_t aSourceLen )
 {
     if( mtcStrCaselessMatch((acp_char_t*) aSource, aSourceLen, "DAYOFWEEK", 9 ) == 0 ||
-        mtcStrMatch((acp_char_t*)aSource, aSourceLen, "¡÷¡ﬂ¿œ", 6 ) == 0 )
+        mtcStrMatch((acp_char_t*)aSource, aSourceLen, "Ï£ºÏ§ëÏùº", 6 ) == 0 )
     {
         return 0;
     }
@@ -320,7 +320,7 @@ acp_sint32_t mtlKSC5601Extract_MatchHour( acp_uint8_t* aSource,
                                           acp_uint32_t   aSourceLen )
 {
     if( mtcStrCaselessMatch((acp_char_t*) aSource, aSourceLen, "HOUR", 4 ) == 0 ||
-        mtcStrMatch((acp_char_t*)aSource, aSourceLen, "Ω√", 2  ) == 0 )
+        mtcStrMatch((acp_char_t*)aSource, aSourceLen, "Ïãú", 2  ) == 0 )
     {
         return 0;
     }
@@ -331,7 +331,7 @@ acp_sint32_t mtlKSC5601Extract_MatchMinute( acp_uint8_t* aSource,
                                             acp_uint32_t aSourceLen )
 {
     if( mtcStrCaselessMatch((acp_char_t*) aSource, aSourceLen, "MINUTE", 6 ) == 0 ||
-        mtcStrMatch((acp_char_t*)aSource, aSourceLen, "∫–", 2 ) == 0 )
+        mtcStrMatch((acp_char_t*)aSource, aSourceLen, "Î∂Ñ", 2 ) == 0 )
     {
         return 0;
     }
@@ -342,7 +342,7 @@ acp_sint32_t mtlKSC5601Extract_MatchSecond( acp_uint8_t* aSource,
                                             acp_uint32_t aSourceLen )
 {
     if( mtcStrCaselessMatch((acp_char_t*) aSource, aSourceLen, "SECOND", 6 ) == 0 ||
-        mtcStrMatch((acp_char_t*)aSource, aSourceLen, "√ ", 2 ) == 0 )
+        mtcStrMatch((acp_char_t*)aSource, aSourceLen, "Ï¥à", 2 ) == 0 )
     {
         return 0;
     }
@@ -353,7 +353,7 @@ acp_sint32_t mtlKSC5601Extract_MatchMicroSec( acp_uint8_t* aSource,
                                               acp_uint32_t aSourceLen )
 {
     if( mtcStrCaselessMatch((acp_char_t*) aSource, aSourceLen, "MICROSECOND", 11 ) == 0 ||
-        mtcStrMatch((acp_char_t*)aSource, aSourceLen, "∏∂¿Ã≈©∑Œ√ ", 10 ) == 0 )
+        mtcStrMatch((acp_char_t*)aSource, aSourceLen, "ÎßàÏù¥ÌÅ¨Î°úÏ¥à", 10 ) == 0 )
     {
         return 0;
     }
@@ -365,8 +365,8 @@ acp_sint32_t mtlKSC5601NextDay_MatchSunDay( acp_uint8_t* aSource,
 {
     if( mtcStrCaselessMatch((acp_char_t*) aSource, aSourceLen, "SUNDAY", 6 ) == 0 ||
         mtcStrCaselessMatch((acp_char_t*) aSource, aSourceLen, "SUN", 3 ) == 0 ||
-        mtcStrMatch((acp_char_t*)aSource, aSourceLen, "¿œø‰¿œ", 6 ) == 0 ||
-        mtcStrMatch((acp_char_t*)aSource, aSourceLen, "¿œ", 2 ) == 0 )
+        mtcStrMatch((acp_char_t*)aSource, aSourceLen, "ÏùºÏöîÏùº", 6 ) == 0 ||
+        mtcStrMatch((acp_char_t*)aSource, aSourceLen, "Ïùº", 2 ) == 0 )
     {
         return 0;
     }
@@ -378,8 +378,8 @@ acp_sint32_t mtlKSC5601NextDay_MatchMonDay( acp_uint8_t* aSource,
 {
     if( mtcStrCaselessMatch((acp_char_t*) aSource, aSourceLen, "MONDAY", 6 ) == 0 ||
         mtcStrCaselessMatch((acp_char_t*) aSource, aSourceLen, "MON", 3 ) == 0 ||
-        mtcStrMatch((acp_char_t*)aSource, aSourceLen, "ø˘ø‰¿œ", 6 ) == 0 ||
-        mtcStrMatch((acp_char_t*)aSource, aSourceLen, "ø˘", 2 ) == 0 )
+        mtcStrMatch((acp_char_t*)aSource, aSourceLen, "ÏõîÏöîÏùº", 6 ) == 0 ||
+        mtcStrMatch((acp_char_t*)aSource, aSourceLen, "Ïõî", 2 ) == 0 )
     {
         return 0;
     }
@@ -391,8 +391,8 @@ acp_sint32_t mtlKSC5601NextDay_MatchTueDay( acp_uint8_t* aSource,
 {
     if( mtcStrCaselessMatch((acp_char_t*) aSource, aSourceLen, "TUESDAY", 7 ) == 0 ||
         mtcStrCaselessMatch((acp_char_t*) aSource, aSourceLen, "TUE", 3 ) == 0 ||
-          mtcStrMatch((acp_char_t*)aSource, aSourceLen, "»≠ø‰¿œ", 6 ) == 0 ||
-          mtcStrMatch((acp_char_t*)aSource, aSourceLen, "»≠", 2 ) == 0 )
+          mtcStrMatch((acp_char_t*)aSource, aSourceLen, "ÌôîÏöîÏùº", 6 ) == 0 ||
+          mtcStrMatch((acp_char_t*)aSource, aSourceLen, "Ìôî", 2 ) == 0 )
     {
         return 0;
     }
@@ -404,8 +404,8 @@ acp_sint32_t mtlKSC5601NextDay_MatchWedDay( acp_uint8_t* aSource,
 {
     if( mtcStrCaselessMatch((acp_char_t*) aSource, aSourceLen, "WEDNESDAY", 9 ) == 0 ||
         mtcStrCaselessMatch((acp_char_t*) aSource, aSourceLen, "WED", 3 ) == 0 ||
-          mtcStrMatch((acp_char_t*)aSource, aSourceLen, "ºˆø‰¿œ", 6 ) == 0 ||
-          mtcStrMatch((acp_char_t*)aSource, aSourceLen, "ºˆ", 2 ) == 0 )
+          mtcStrMatch((acp_char_t*)aSource, aSourceLen, "ÏàòÏöîÏùº", 6 ) == 0 ||
+          mtcStrMatch((acp_char_t*)aSource, aSourceLen, "Ïàò", 2 ) == 0 )
     {
         return 0;
     }
@@ -417,8 +417,8 @@ acp_sint32_t mtlKSC5601NextDay_MatchThuDay( acp_uint8_t* aSource,
 {
     if( mtcStrCaselessMatch((acp_char_t*) aSource, aSourceLen, "THURSDAY", 8 ) == 0 ||
         mtcStrCaselessMatch((acp_char_t*) aSource, aSourceLen, "THU", 3 ) == 0 ||
-          mtcStrMatch((acp_char_t*)aSource, aSourceLen, "∏Òø‰¿œ", 6 ) == 0 ||
-          mtcStrMatch((acp_char_t*)aSource, aSourceLen, "∏Ò", 2 ) == 0 )
+          mtcStrMatch((acp_char_t*)aSource, aSourceLen, "Î™©ÏöîÏùº", 6 ) == 0 ||
+          mtcStrMatch((acp_char_t*)aSource, aSourceLen, "Î™©", 2 ) == 0 )
     {
         return 0;
     }
@@ -431,8 +431,8 @@ acp_sint32_t mtlKSC5601NextDay_MatchFriDay( acp_uint8_t* aSource,
 {
     if( mtcStrCaselessMatch((acp_char_t*) aSource, aSourceLen, "FRIDAY", 6 ) == 0 ||
         mtcStrCaselessMatch((acp_char_t*) aSource, aSourceLen, "FRI", 3 ) == 0 ||
-          mtcStrMatch((acp_char_t*)aSource, aSourceLen, "±›ø‰¿œ", 6 ) == 0 ||
-          mtcStrMatch((acp_char_t*)aSource, aSourceLen, "±›", 2 ) == 0 )
+          mtcStrMatch((acp_char_t*)aSource, aSourceLen, "Í∏àÏöîÏùº", 6 ) == 0 ||
+          mtcStrMatch((acp_char_t*)aSource, aSourceLen, "Í∏à", 2 ) == 0 )
     {
         return 0;
     }
@@ -444,15 +444,15 @@ acp_sint32_t mtlKSC5601NextDay_MatchSatDay( acp_uint8_t* aSource,
 {
     if( mtcStrCaselessMatch((acp_char_t*) aSource, aSourceLen, "SATURDAY", 8 ) == 0 ||
         mtcStrCaselessMatch((acp_char_t*) aSource, aSourceLen, "SAT", 3 ) == 0 ||
-          mtcStrMatch((acp_char_t*)aSource, aSourceLen, "≈‰ø‰¿œ", 6 ) == 0 ||
-          mtcStrMatch((acp_char_t*)aSource, aSourceLen, "≈‰", 2 ) == 0 )
+          mtcStrMatch((acp_char_t*)aSource, aSourceLen, "ÌÜ†ÏöîÏùº", 6 ) == 0 ||
+          mtcStrMatch((acp_char_t*)aSource, aSourceLen, "ÌÜ†", 2 ) == 0 )
     {
         return 0;
     }
     return 1;
 }
 
-/* BUG-45730 ROUND, TRUNC «‘ºˆø°º≠ DATE ∆˜∏À IW √ﬂ∞° ¡ˆø¯ */
+/* BUG-45730 ROUND, TRUNC Ìï®ÏàòÏóêÏÑú DATE Ìè¨Îß∑ IW Ï∂îÍ∞Ä ÏßÄÏõê */
 acp_sint32_t mtlKSC5601Extract_MatchISOWeek( acp_uint8_t  * aSource,
                                              acp_uint32_t   aSourceLen )
 {

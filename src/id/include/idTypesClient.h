@@ -33,8 +33,8 @@
 #define ID_MAXBQUALSIZE    64      /* maximum size in bytes of bqual */
 
 /*
- * fix BUG-23656 session,xid ,transactionÀ» ¿¬°èÇÑ performance view¸¦ Á¦°øÇÏ°í,
- * ±×µé°£ÀÇ °ü°è¸¦ Á¤È®È÷ À¯ÁöÇØ¾ß ÇÔ.
+ * fix BUG-23656 session,xid ,transactionì„ ì—°ê³„í•œ performance viewë¥¼ ì œê³µí•˜ê³ ,
+ * ê·¸ë“¤ê°„ì˜ ê´€ê³„ë¥¼ ì •í™•íˆ ìœ ì§€í•´ì•¼ í•¨.
  */
 #define ID_NULL_SESSION_ID  ACP_UINT32_MAX
 #define ID_NULL_TRANS_ID    ACP_UINT32_MAX

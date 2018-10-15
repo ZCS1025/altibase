@@ -108,9 +108,9 @@ public class CmErrorResult
     }
 
     /**
-     * ¹«½ÃÇØµµ µÇ´Â ¿¡·¯ÀÎÁö È®ÀÎÇÑ´Ù.
+     * ë¬´ì‹œí•´ë„ ë˜ëŠ” ì—ëŸ¬ì¸ì§€ í™•ì¸í•œë‹¤.
      *
-     * @return ¹«½ÃÇØµµ µÇ´ÂÁö ¿©ºÎ
+     * @return ë¬´ì‹œí•´ë„ ë˜ëŠ”ì§€ ì—¬ë¶€
      */
     public boolean isIgnorable()
     {
@@ -118,10 +118,10 @@ public class CmErrorResult
     }
 
     /**
-     * ignorable ¿¡·¯ Áß ½ÇÁ¦·Î SQLWarningÀ» »ı¼º½ÃÄÑ¾ß ÇÏ´ÂÁö È®ÀÎÇÑ´Ù.
-     * @param aErrorCode ¿¡·¯ÄÚµå
-     * @return true ³»ºÎ ±¸ÇöÀ¸·Î ÀÎÇÑ ignoreÀÌ±â ¶§¹®¿¡ SQLWarningÀ» ¹«½ÃÇÒ ¼ö ÀÖ´Ù.
-     * <br> false SQLWarningÀ» »ı¼º½ÃÄÑ¾ß ÇÑ´Ù.
+     * ignorable ì—ëŸ¬ ì¤‘ ì‹¤ì œë¡œ SQLWarningì„ ìƒì„±ì‹œì¼œì•¼ í•˜ëŠ”ì§€ í™•ì¸í•œë‹¤.
+     * @param aErrorCode ì—ëŸ¬ì½”ë“œ
+     * @return true ë‚´ë¶€ êµ¬í˜„ìœ¼ë¡œ ì¸í•œ ignoreì´ê¸° ë•Œë¬¸ì— SQLWarningì„ ë¬´ì‹œí•  ìˆ˜ ìˆë‹¤.
+     * <br> false SQLWarningì„ ìƒì„±ì‹œì¼œì•¼ í•œë‹¤.
      */
     public boolean canSkipSQLWarning(int aErrorCode)
     {

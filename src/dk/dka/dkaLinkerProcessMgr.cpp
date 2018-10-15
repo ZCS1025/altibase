@@ -33,7 +33,7 @@ dkcDblinkConf *     dkaLinkerProcessMgr::mConf;
 UInt                dkaLinkerProcessMgr::mAltilinkerRestartNumber;
 
 /************************************************************************
- * Description : AltiLinker process manager component ¸¦ ÃÊ±âÈ­ÇØÁØ´Ù. 
+ * Description : AltiLinker process manager component ë¥¼ ì´ˆê¸°í™”í•´ì¤€ë‹¤. 
  *              
  ************************************************************************/
 IDE_RC  dkaLinkerProcessMgr::initializeStatic()
@@ -132,7 +132,7 @@ IDE_RC  dkaLinkerProcessMgr::initializeStatic()
 }
 
 /************************************************************************
- * Description : AltiLinker process manager component ¸¦ Á¤¸®ÇØÁØ´Ù. 
+ * Description : AltiLinker process manager component ë¥¼ ì •ë¦¬í•´ì¤€ë‹¤. 
  *
  ************************************************************************/
 IDE_RC  dkaLinkerProcessMgr::finalizeStatic()
@@ -164,16 +164,16 @@ IDE_RC  dkaLinkerProcessMgr::finalizeStatic()
 }
 
 /************************************************************************
- * Description : AltiLinker ÇÁ·Î¼¼½º¸¦ start ½ÃÅ²´Ù. 
- *               ¿©±â¼­´Â AltiLinker ÇÁ·Î¼¼½º¿Í °ü·ÃµÈ ÇÁ·ÎÆÛÆ¼¸¦ load
- *               ÇÏ°í AltiLinker ÇÁ·Î¼¼½º¸¦ ¶ç¿öÁÖ´Â °Í±îÁö ¼öÇàÇÑ´Ù.
+ * Description : AltiLinker í”„ë¡œì„¸ìŠ¤ë¥¼ start ì‹œí‚¨ë‹¤. 
+ *               ì—¬ê¸°ì„œëŠ” AltiLinker í”„ë¡œì„¸ìŠ¤ì™€ ê´€ë ¨ëœ í”„ë¡œí¼í‹°ë¥¼ load
+ *               í•˜ê³  AltiLinker í”„ë¡œì„¸ìŠ¤ë¥¼ ë„ì›Œì£¼ëŠ” ê²ƒê¹Œì§€ ìˆ˜í–‰í•œë‹¤.
  *
- * Notice      : ÃÖÃÊ ÃÊ±âÈ­¸¦ ¼öÇàÇÑ ÈÄ AltiLinker ÇÁ·Î¼¼½º¸¦ ¿î¿µÁß¿¡ 
- *               AltiLinker ÇÁ·Î¼¼½º°¡ Á×°Å³ª »ç¿ëÀÚ¿¡ ÀÇÇØ shutdown 
- *               µÇ´Â °æ¿ì ÄÄÆ÷³ÍÆ®¸¦ ´Ù½Ã ÃÊ±âÈ­ ÇÏÁö ¾Ê°í AltiLinker
- *               ÇÁ·Î¼¼½º¸¦ ±âµ¿(startLinkerProcess) ½ÃÅ³ ¼ö ÀÖ¾î¾ß ÇÑ´Ù. 
- *               µû¶ó¼­ ÀÌ ÇÔ¼ö ¼öÇàÁß¿¡ AltiLinker process property µéÀ»
- *               (dblink.conf) ´Ù½Ã load ÇÒ ÇÊ¿ä°¡ ÀÖ´Ù. 
+ * Notice      : ìµœì´ˆ ì´ˆê¸°í™”ë¥¼ ìˆ˜í–‰í•œ í›„ AltiLinker í”„ë¡œì„¸ìŠ¤ë¥¼ ìš´ì˜ì¤‘ì— 
+ *               AltiLinker í”„ë¡œì„¸ìŠ¤ê°€ ì£½ê±°ë‚˜ ì‚¬ìš©ìì— ì˜í•´ shutdown 
+ *               ë˜ëŠ” ê²½ìš° ì»´í¬ë„ŒíŠ¸ë¥¼ ë‹¤ì‹œ ì´ˆê¸°í™” í•˜ì§€ ì•Šê³  AltiLinker
+ *               í”„ë¡œì„¸ìŠ¤ë¥¼ ê¸°ë™(startLinkerProcess) ì‹œí‚¬ ìˆ˜ ìˆì–´ì•¼ í•œë‹¤. 
+ *               ë”°ë¼ì„œ ì´ í•¨ìˆ˜ ìˆ˜í–‰ì¤‘ì— AltiLinker process property ë“¤ì„
+ *               (dblink.conf) ë‹¤ì‹œ load í•  í•„ìš”ê°€ ìˆë‹¤. 
  *
  ************************************************************************/
 IDE_RC  dkaLinkerProcessMgr::startLinkerProcessInternal()
@@ -582,17 +582,17 @@ IDE_RC dkaLinkerProcessMgr::startLinkerProcess( void )
 }
 
 /************************************************************************
- * Description : AltiLinker ÇÁ·Î¼¼½º¸¦ shutdown ½ÃÅ²´Ù. 
- *               ÀÌ ÇÔ¼ö´Â ³»ºÎÀûÀ¸·Î flag ¿¡ µû¶ó AltiLinker ÇÁ·Î¼¼½º·Î 
- *               ÇÏ¿©±İ Á¾·á´Ü°è¸¦ ¹â´Â operation À» Àü¼ÛÇÑ´Ù.
+ * Description : AltiLinker í”„ë¡œì„¸ìŠ¤ë¥¼ shutdown ì‹œí‚¨ë‹¤. 
+ *               ì´ í•¨ìˆ˜ëŠ” ë‚´ë¶€ì ìœ¼ë¡œ flag ì— ë”°ë¼ AltiLinker í”„ë¡œì„¸ìŠ¤ë¡œ 
+ *               í•˜ì—¬ê¸ˆ ì¢…ë£Œë‹¨ê³„ë¥¼ ë°ŸëŠ” operation ì„ ì „ì†¡í•œë‹¤.
  *
  * aFlag    - [IN] FORCE or not
- *                 ÀÌ flag °¡ ID_TRUE ·Î ¼³Á¤µÈ °æ¿ì, ÇöÀç operation À» 
- *                 ¼öÇàÁßÀÎ session ÀÌ ÀÖ´Ù ÇÒÁö¶óµµ °­Á¦·Î session À» 
- *                 close ÇÏ°í AltiLinker ÇÁ·Î¼¼½º¸¦ Á¾·áÇÑ´Ù. 
- *                 ÀÌ flag °¡ ID_FALSE ·Î ¼³Á¤µÈ °æ¿ì, ¸ğµç session ¿¡ 
- *                 ¼öÇàÁßÀÎ operation ÀÌ Á¸ÀçÇÏÁö ¾Ê´Â °æ¿ì¿¡¸¸
- *                 AltiLinker ÇÁ·Î¼¼½º¸¦ Á¾·áÇÑ´Ù. 
+ *                 ì´ flag ê°€ ID_TRUE ë¡œ ì„¤ì •ëœ ê²½ìš°, í˜„ì¬ operation ì„ 
+ *                 ìˆ˜í–‰ì¤‘ì¸ session ì´ ìˆë‹¤ í• ì§€ë¼ë„ ê°•ì œë¡œ session ì„ 
+ *                 close í•˜ê³  AltiLinker í”„ë¡œì„¸ìŠ¤ë¥¼ ì¢…ë£Œí•œë‹¤. 
+ *                 ì´ flag ê°€ ID_FALSE ë¡œ ì„¤ì •ëœ ê²½ìš°, ëª¨ë“  session ì— 
+ *                 ìˆ˜í–‰ì¤‘ì¸ operation ì´ ì¡´ì¬í•˜ì§€ ì•ŠëŠ” ê²½ìš°ì—ë§Œ
+ *                 AltiLinker í”„ë¡œì„¸ìŠ¤ë¥¼ ì¢…ë£Œí•œë‹¤. 
  *
  ************************************************************************/
 IDE_RC  dkaLinkerProcessMgr::shutdownLinkerProcessInternal( idBool  aFlag )
@@ -771,8 +771,8 @@ IDE_RC dkaLinkerProcessMgr::dumpStackTrace()
 }
 
 /************************************************************************
- * Description : AltiLinker ÇÁ·Î¼¼½º¸¦ À§ÇÑ ¼³Á¤ÆÄÀÏÀÎ dblink.conf ÆÄÀÏ·Î
- *               ºÎÅÍ ÇÁ·ÎÆÛÆ¼ °ªÀ» ÀĞ¾î¿Â´Ù.
+ * Description : AltiLinker í”„ë¡œì„¸ìŠ¤ë¥¼ ìœ„í•œ ì„¤ì •íŒŒì¼ì¸ dblink.conf íŒŒì¼ë¡œ
+ *               ë¶€í„° í”„ë¡œí¼í‹° ê°’ì„ ì½ì–´ì˜¨ë‹¤.
  *
  ************************************************************************/
 IDE_RC  dkaLinkerProcessMgr::loadLinkerProperties() 
@@ -823,9 +823,9 @@ IDE_RC  dkaLinkerProcessMgr::loadLinkerProperties()
 }
 
 /************************************************************************
- * Description : AltiLinker ÇÁ·Î¼¼½ºÀÇ Á¤º¸¸¦ ¾ò¾î¿Â´Ù.
+ * Description : AltiLinker í”„ë¡œì„¸ìŠ¤ì˜ ì •ë³´ë¥¼ ì–»ì–´ì˜¨ë‹¤.
  *
- *  aInfo       - [OUT] AltiLinker ÇÁ·Î¼¼½ºÀÇ Á¤º¸°¡ ´ã°ÜÁú ±¸Á¶Ã¼
+ *  aInfo       - [OUT] AltiLinker í”„ë¡œì„¸ìŠ¤ì˜ ì •ë³´ê°€ ë‹´ê²¨ì§ˆ êµ¬ì¡°ì²´
  *
  ************************************************************************/
 IDE_RC  dkaLinkerProcessMgr::getLinkerProcessInfo( dkaLinkerProcInfo **aInfo )
@@ -907,12 +907,12 @@ IDE_RC  dkaLinkerProcessMgr::getLinkerProcessInfo( dkaLinkerProcInfo **aInfo )
 }
 
 /************************************************************************
- * Description : Target ÀÌ¸§À» ÀÔ·Â¹Ş¾Æ ÇØ´çÇÏ´Â target Á¤º¸¸¦ ¾ò¾î¿Â´Ù.
- *               ÇØ´çÇÏ´Â target ÀÌ Á¸ÀçÇÏÁö ¾Ê´Â °æ¿ì IDE_FAILURE ¸¦ 
- *               ¹İÈ¯ÇÑ´Ù.
+ * Description : Target ì´ë¦„ì„ ì…ë ¥ë°›ì•„ í•´ë‹¹í•˜ëŠ” target ì •ë³´ë¥¼ ì–»ì–´ì˜¨ë‹¤.
+ *               í•´ë‹¹í•˜ëŠ” target ì´ ì¡´ì¬í•˜ì§€ ì•ŠëŠ” ê²½ìš° IDE_FAILURE ë¥¼ 
+ *               ë°˜í™˜í•œë‹¤.
  *
  *  aTargetName - [IN] Target name
- *  aInfo       - [OUT] Target Á¤º¸°¡ ´ã°ÜÁú ±¸Á¶Ã¼¸¦ °¡¸®Å°´Â Æ÷ÀÎÅÍ 
+ *  aInfo       - [OUT] Target ì •ë³´ê°€ ë‹´ê²¨ì§ˆ êµ¬ì¡°ì²´ë¥¼ ê°€ë¦¬í‚¤ëŠ” í¬ì¸í„° 
  *
  ************************************************************************/
 IDE_RC  dkaLinkerProcessMgr::getTargetInfo( SChar            *aTargetName,
@@ -1034,11 +1034,11 @@ IDE_RC  dkaLinkerProcessMgr::getTargetInfo( SChar            *aTargetName,
 }
 
 /************************************************************************
- * Description : Target ÀÌ¸§À» ÀÔ·Â¹Ş¾Æ ÇØ´çÇÏ´Â valid ÇÑ target Á¤º¸°¡ 
- *               Á¸ÀçÇÏ´Â °æ¿ì aIsValid ¿¡ ID_TRUE ¸¦ ¹İÈ¯ÇÑ´Ù.
+ * Description : Target ì´ë¦„ì„ ì…ë ¥ë°›ì•„ í•´ë‹¹í•˜ëŠ” valid í•œ target ì •ë³´ê°€ 
+ *               ì¡´ì¬í•˜ëŠ” ê²½ìš° aIsValid ì— ID_TRUE ë¥¼ ë°˜í™˜í•œë‹¤.
  *
- * Return      : aTargetName ¿¡ ÇØ´çÇÏ´Â valid ÇÑ target ÀÌ Á¸ÀçÇÏ´Â °æ¿ì
- *               ID_TRUE, ¾Æ´Ï¸é ID_FALSE.
+ * Return      : aTargetName ì— í•´ë‹¹í•˜ëŠ” valid í•œ target ì´ ì¡´ì¬í•˜ëŠ” ê²½ìš°
+ *               ID_TRUE, ì•„ë‹ˆë©´ ID_FALSE.
  *
  *  aTargetName - [IN] Target name
  *
@@ -1086,9 +1086,9 @@ idBool  dkaLinkerProcessMgr::validateTargetInfo( SChar  *aTargetName )
 }
 
 /************************************************************************
- * Description : Target list ÀÇ ±æÀÌ¸¦ ¹İÈ¯ÇÑ´Ù.
+ * Description : Target list ì˜ ê¸¸ì´ë¥¼ ë°˜í™˜í•œë‹¤.
  *
- * Return      : Target list ÀÇ ±æÀÌ
+ * Return      : Target list ì˜ ê¸¸ì´
  *
  ************************************************************************/
 UInt dkaLinkerProcessMgr::getTargetsLength( dkcDblinkConfTarget *aTargetItem )
@@ -1107,11 +1107,11 @@ UInt dkaLinkerProcessMgr::getTargetsLength( dkcDblinkConfTarget *aTargetItem )
 }
 
 /************************************************************************
- * Description : ÀÔ·Â¹ŞÀº target item ÀÇ ±æÀÌ¸¦ ¹İÈ¯ÇÑ´Ù.
+ * Description : ì…ë ¥ë°›ì€ target item ì˜ ê¸¸ì´ë¥¼ ë°˜í™˜í•œë‹¤.
  *
- * Return      : Target item ÀÇ ±æÀÌ
+ * Return      : Target item ì˜ ê¸¸ì´
  *
- *  aTargetItem - [IN] ±æÀÌ¸¦ ±¸ÇÒ target item
+ *  aTargetItem - [IN] ê¸¸ì´ë¥¼ êµ¬í•  target item
  *
  ************************************************************************/
 UInt dkaLinkerProcessMgr::getTargetItemLength( dkcDblinkConfTarget *aTargetItem )
@@ -1194,9 +1194,9 @@ UInt dkaLinkerProcessMgr::getTargetItemLength( dkcDblinkConfTarget *aTargetItem 
 }
 
 /************************************************************************
- * Description : Target list ¿¡ °®°í ÀÖ´Â target ÀÇ °¹¼ö¸¦ ¹İÈ¯ÇÑ´Ù.
+ * Description : Target list ì— ê°–ê³  ìˆëŠ” target ì˜ ê°¯ìˆ˜ë¥¼ ë°˜í™˜í•œë‹¤.
  *
- * Return      : Target ÀÇ °¹¼ö
+ * Return      : Target ì˜ ê°¯ìˆ˜
  *
  ************************************************************************/
 UInt dkaLinkerProcessMgr::getTargetItemCount( dkcDblinkConfTarget *aTargetItem )

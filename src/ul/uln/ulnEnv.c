@@ -21,19 +21,19 @@
 /**
  * ulnCreateEnv.
  *
- * ÇÔ¼ö°¡ ÇÏ´Â ÀÏ
- *  - ENV ¸¦ À§ÇÑ uluChunkPool ÀÎ½ºÅÏ½º »ý¼º
- *  - ENV ¸¦ À§ÇÑ uluMemory ÀÎ½ºÅÏ½º »ý¼º
- *  - ENV ¸¦ À§ÇÑ Diagnostic Header ÀÎ½ºÅÏ½º »ý¼º
- *  - ENV ÀÇ Diagnostic Header ÃÊ±âÈ­
- *  - ENV ÀÇ mObj ÃÊ±âÈ­
+ * í•¨ìˆ˜ê°€ í•˜ëŠ” ì¼
+ *  - ENV ë¥¼ ìœ„í•œ uluChunkPool ì¸ìŠ¤í„´ìŠ¤ ìƒì„±
+ *  - ENV ë¥¼ ìœ„í•œ uluMemory ì¸ìŠ¤í„´ìŠ¤ ìƒì„±
+ *  - ENV ë¥¼ ìœ„í•œ Diagnostic Header ì¸ìŠ¤í„´ìŠ¤ ìƒì„±
+ *  - ENV ì˜ Diagnostic Header ì´ˆê¸°í™”
+ *  - ENV ì˜ mObj ì´ˆê¸°í™”
  *
  * @return
  *  - ACI_SUCCESS
  *  - ACI_FAILURE
- *    ¸Þ¸ð¸® ¹®Á¦·Î ½ÇÆÐÇÑ °ÍÀÓ.
- *    ÇÒ´çÇÏ·Á°í ½ÃµµÇß´ø ¸ðµç ¸Þ¸ð¸®¸¦ clear ÇÑ ÈÄ¿¡ ¸®ÅÏÇÏ¹Ç·Î ¿¡·¯¸¸ Ã³Å©ÇØ¼­
- *    »ç¿ëÀÚ¿¡°Ô ¹Ù·Î ¸®ÅÏÇØµµ µÊ.
+ *    ë©”ëª¨ë¦¬ ë¬¸ì œë¡œ ì‹¤íŒ¨í•œ ê²ƒìž„.
+ *    í• ë‹¹í•˜ë ¤ê³  ì‹œë„í–ˆë˜ ëª¨ë“  ë©”ëª¨ë¦¬ë¥¼ clear í•œ í›„ì— ë¦¬í„´í•˜ë¯€ë¡œ ì—ëŸ¬ë§Œ ì²˜í¬í•´ì„œ
+ *    ì‚¬ìš©ìžì—ê²Œ ë°”ë¡œ ë¦¬í„´í•´ë„ ë¨.
  */
 ACI_RC ulnEnvCreate(ulnEnv **aOutputEnv)
 {
@@ -56,9 +56,9 @@ ACI_RC ulnEnvCreate(ulnEnv **aOutputEnv)
     ULN_FLAG_UP(sNeedFinalize);
 
     /*
-     * ¸Þ¸ð¸® ÇÒ´çÀ» ¹Ì¸® ÇØ µÐ´Ù.
-     * ÀÌ¸¦ À§ÇØ¼­ Chunk Pool À» »ý¼ºÇÏ°í, Memory µµ »ý¼ºÇÑ ÈÄ
-     * Env ÇÚµéÀ» »ý¼ºµÈ ¸Þ¸ð¸®¿¡´Ù°¡ µÐ´Ù.
+     * ë©”ëª¨ë¦¬ í• ë‹¹ì„ ë¯¸ë¦¬ í•´ ë‘”ë‹¤.
+     * ì´ë¥¼ ìœ„í•´ì„œ Chunk Pool ì„ ìƒì„±í•˜ê³ , Memory ë„ ìƒì„±í•œ í›„
+     * Env í•¸ë“¤ì„ ìƒì„±ëœ ë©”ëª¨ë¦¬ì—ë‹¤ê°€ ë‘”ë‹¤.
      */
     sPool = uluChunkPoolCreate(ULN_SIZE_OF_CHUNK_IN_ENV, ULN_NUMBER_OF_SP_IN_ENV, 2);
     ACI_TEST(sPool == NULL);
@@ -71,10 +71,10 @@ ACI_RC ulnEnvCreate(ulnEnv **aOutputEnv)
     ACI_TEST(sMemory->mOp->mMarkSP(sMemory) != ACI_SUCCESS);
 
     /*
-     * ulnEnv ÀÇ Object ºÎºÐÀ» ÃÊ±âÈ­ ÇÑ´Ù.
+     * ulnEnv ì˜ Object ë¶€ë¶„ì„ ì´ˆê¸°í™” í•œë‹¤.
      *
-     * ÃÖÃÊ ÇÒ´çµÇ¸é »óÅÂ¸¦ Allocated·Î µÐ´Ù.
-     * µû¶ó¼­ »óÅÂ ÀüÀÌ°¡ ºÒÇÊ¿äÇÏ´Ù.
+     * ìµœì´ˆ í• ë‹¹ë˜ë©´ ìƒíƒœë¥¼ Allocatedë¡œ ë‘”ë‹¤.
+     * ë”°ë¼ì„œ ìƒíƒœ ì „ì´ê°€ ë¶ˆí•„ìš”í•˜ë‹¤.
      */
     ulnObjectInitialize((ulnObject *)sEnv,
                         ULN_OBJ_TYPE_ENV,
@@ -84,7 +84,7 @@ ACI_RC ulnEnvCreate(ulnEnv **aOutputEnv)
                         sMemory);
 
     /*
-     * Lock ±¸Á¶Ã¼ »ý¼º ¹× ÃÊ±âÈ­
+     * Lock êµ¬ì¡°ì²´ ìƒì„± ë° ì´ˆê¸°í™”
      */
     ACI_TEST(uluLockCreate(&sLock) != ACI_SUCCESS);
     ULN_FLAG_UP(sNeedDestroyLock);
@@ -92,8 +92,8 @@ ACI_RC ulnEnvCreate(ulnEnv **aOutputEnv)
     ACI_TEST(acpThrMutexCreate(sLock, ACP_THR_MUTEX_DEFAULT) != ACP_RC_SUCCESS);
 
     /*
-     * CreateDiagHeader¿¡ ½ÇÆÐÇßÀ» °æ¿ì,
-     * LABEL_MALLOC_FAIL_ENV ·¹ÀÌºí·Î Á¡ÇÁÇØ¼­ ¸Þ¸ð¸® Á¤¸®ÇÏ´Â °ÍÀ¸·Î ÃæºÐÇÑ´Ù
+     * CreateDiagHeaderì— ì‹¤íŒ¨í–ˆì„ ê²½ìš°,
+     * LABEL_MALLOC_FAIL_ENV ë ˆì´ë¸”ë¡œ ì í”„í•´ì„œ ë©”ëª¨ë¦¬ ì •ë¦¬í•˜ëŠ” ê²ƒìœ¼ë¡œ ì¶©ë¶„í•œë‹¤
      */
     ACI_TEST(ulnCreateDiagHeader((ulnObject *)sEnv, NULL) != ACI_SUCCESS);
 
@@ -132,13 +132,13 @@ ACI_RC ulnEnvCreate(ulnEnv **aOutputEnv)
  * ulnEnvDestroy.
  *
  * @param[in] aEnv
- *  ÆÄ±«ÇÒ ENV ¸¦ °¡¸®Å°´Â Æ÷ÀÎÅÍ
+ *  íŒŒê´´í•  ENV ë¥¼ ê°€ë¦¬í‚¤ëŠ” í¬ì¸í„°
  * @return
  *  - ACI_SUCCESS
- *    ¼º°ø
+ *    ì„±ê³µ
  *  - ACI_FAILURE
- *    ½ÇÆÐ.
- *    È£ÃâÀÚ´Â HY013 À» »ç¿ëÀÚ¿¡°Ô Áà¾ß ÇÑ´Ù.
+ *    ì‹¤íŒ¨.
+ *    í˜¸ì¶œìžëŠ” HY013 ì„ ì‚¬ìš©ìžì—ê²Œ ì¤˜ì•¼ í•œë‹¤.
  */
 ACI_RC ulnEnvDestroy(ulnEnv *aEnv)
 {
@@ -148,8 +148,8 @@ ACI_RC ulnEnvDestroy(ulnEnv *aEnv)
 
     /*
      * BUGBUG
-     * ulnDestroyDbc() ÇÔ¼ö¿Í ENV ÀÎ°Í¸¸ »©°í ¿ÏÀüÈ÷ identical ÇÑ ÄÚµåÀÌ´Ù.
-     * ¹ö±×ÀÇ È®·üÀ» ÁÙÀÌ±â À§ÇØ¼­ µÎ°³ÀÇ ÄÚµå¸¦ ÇÕÃÄ¾ß ÇÒ ÇÊ¿ä°¡ ÀÖ°Ú´Ù.
+     * ulnDestroyDbc() í•¨ìˆ˜ì™€ ENV ì¸ê²ƒë§Œ ë¹¼ê³  ì™„ì „ížˆ identical í•œ ì½”ë“œì´ë‹¤.
+     * ë²„ê·¸ì˜ í™•ë¥ ì„ ì¤„ì´ê¸° ìœ„í•´ì„œ ë‘ê°œì˜ ì½”ë“œë¥¼ í•©ì³ì•¼ í•  í•„ìš”ê°€ ìžˆê² ë‹¤.
      */
 
     ACE_ASSERT(ULN_OBJ_GET_TYPE(aEnv) == ULN_OBJ_TYPE_ENV);
@@ -162,28 +162,28 @@ ACI_RC ulnEnvDestroy(ulnEnv *aEnv)
     ulnPropertiesDestroy(&aEnv->mProperties);
 
     /*
-     * DiagHeader ¿¡ µþ¸° ¸Þ¸ð¸® °´Ã¼¸¦ ÆÄ±«ÇÑ´Ù.
+     * DiagHeader ì— ë”¸ë¦° ë©”ëª¨ë¦¬ ê°ì²´ë¥¼ íŒŒê´´í•œë‹¤.
      */
 
     ACI_TEST(ulnDestroyDiagHeader(&sObject->mDiagHeader, ULN_DIAG_HDR_DESTROY_CHUNKPOOL)
              != ACI_SUCCESS);
 
     /*
-     * DESC ¸¦ ¾ø¾Ö±â Á÷Àü¿¡ ½Ç¼ö¿¡ ÀÇÇÑ Àç»ç¿ëÀ» ¹æÁöÇÏ±â À§ÇØ¼­ ulnObject ¿¡ Ç¥½Ã¸¦ ÇØ µÐ´Ù.
-     * BUG-15894 ¿Í °°Àº »ç¿ëÀÚ ÀÀ¿ë ÇÁ·Î±×·¥¿¡ ÀÇÇÑ ¹ö±×¸¦ ¹æÁöÇÏ±â À§ÇØ¼­ÀÌ´Ù.
+     * DESC ë¥¼ ì—†ì• ê¸° ì§ì „ì— ì‹¤ìˆ˜ì— ì˜í•œ ìž¬ì‚¬ìš©ì„ ë°©ì§€í•˜ê¸° ìœ„í•´ì„œ ulnObject ì— í‘œì‹œë¥¼ í•´ ë‘”ë‹¤.
+     * BUG-15894 ì™€ ê°™ì€ ì‚¬ìš©ìž ì‘ìš© í”„ë¡œê·¸ëž¨ì— ì˜í•œ ë²„ê·¸ë¥¼ ë°©ì§€í•˜ê¸° ìœ„í•´ì„œì´ë‹¤.
      */
 
     sObject->mType = ULN_OBJ_TYPE_MAX;
 
     /*
-     * Ã»Å©Ç®°ú ¸Þ¸ð¸® ÆÄ±«
+     * ì²­í¬í’€ê³¼ ë©”ëª¨ë¦¬ íŒŒê´´
      */
 
     sMemory->mOp->mDestroyMyself(sMemory);
     sPool->mOp->mDestroyMyself(sPool);
 
     /*
-     * Note : Lock ÇØÁ¦´Â ulnFreeHandleEnv() ¿¡¼­ ÇÑ´Ù.
+     * Note : Lock í•´ì œëŠ” ulnFreeHandleEnv() ì—ì„œ í•œë‹¤.
      */
 
     /*
@@ -201,8 +201,8 @@ ACI_RC ulnEnvDestroy(ulnEnv *aEnv)
 /**
  * ulnInitializeEnv.
  *
- * ÇÔ¼ö°¡ ÇÏ´Â ÀÏ
- * - ENV ±¸Á¶Ã¼ÀÇ ÇÊµåµéÀÇ ÃÊ±âÈ­
+ * í•¨ìˆ˜ê°€ í•˜ëŠ” ì¼
+ * - ENV êµ¬ì¡°ì²´ì˜ í•„ë“œë“¤ì˜ ì´ˆê¸°í™”
  */
 ACI_RC ulnEnvInitialize(ulnEnv *aEnv)
 {
@@ -216,7 +216,7 @@ ACI_RC ulnEnvInitialize(ulnEnv *aEnv)
      * environment attribute when it is called to allocate an
      * environment handle;
      * the environment attribute must be set by the application
-     * BUGBUG: 2.0ÀÌ ¸Â´ÂÁö, 0 ÀÌ ¸Â´ÂÁö..
+     * BUGBUG: 2.0ì´ ë§žëŠ”ì§€, 0 ì´ ë§žëŠ”ì§€..
      */
     aEnv->mOdbcVersion   = SQL_OV_ODBC2;
 
@@ -230,8 +230,8 @@ ACI_RC ulnEnvInitialize(ulnEnv *aEnv)
     ulnPropertiesCreate(&aEnv->mProperties);
 
     /*
-     * »óÅÂ¸¦ E1 - Allocated »óÅÂ·Î º¯°æÇÑ´Ù.
-     * BUGBUG:Áö±Ý ÇØ¾ß ÇÒÁö ¾Õ¿¡¼­ Çß¾î¾ß ÇÒÁö ÆÇ´Ü ÇÊ¿ä.
+     * ìƒíƒœë¥¼ E1 - Allocated ìƒíƒœë¡œ ë³€ê²½í•œë‹¤.
+     * BUGBUG:ì§€ê¸ˆ í•´ì•¼ í• ì§€ ì•žì—ì„œ í–ˆì–´ì•¼ í• ì§€ íŒë‹¨ í•„ìš”.
      */
     ULN_OBJ_SET_STATE(aEnv, ULN_S_E1);
 
@@ -241,7 +241,7 @@ ACI_RC ulnEnvInitialize(ulnEnv *aEnv)
 /**
  * ulnAddDbcToEnv.
  *
- * DBC ±¸Á¶Ã¼¸¦ ENV ÀÇ mDbcList ¿¡ Ãß°¡ÇÑ´Ù.
+ * DBC êµ¬ì¡°ì²´ë¥¼ ENV ì˜ mDbcList ì— ì¶”ê°€í•œë‹¤.
  */
 ACI_RC ulnEnvAddDbc(ulnEnv *aEnv, ulnDbc *aDbc)
 {
@@ -259,7 +259,7 @@ ACI_RC ulnEnvAddDbc(ulnEnv *aEnv, ulnDbc *aDbc)
 /**
  * ulnRemoveDbcFromEnv.
  *
- * DBC ±¸Á¶Ã¼¸¦ ENV ÀÇ mDbcList ¿¡¼­ »èÁ¦ÇÑ´Ù.
+ * DBC êµ¬ì¡°ì²´ë¥¼ ENV ì˜ mDbcList ì—ì„œ ì‚­ì œí•œë‹¤.
  */
 ACI_RC ulnEnvRemoveDbc(ulnEnv *aEnv, ulnDbc *aDbc)
 {
@@ -282,7 +282,7 @@ ACI_RC ulnEnvRemoveDbc(ulnEnv *aEnv, ulnDbc *aDbc)
 /**
  * ulnGetDbcCountFromEnv.
  *
- * ENV ±¸Á¶Ã¼¿¡ ´Þ·Á ÀÖ´Â DBC ±¸Á¶Ã¼ÀÇ °¹¼ö¸¦ ÀÐ´Â´Ù.
+ * ENV êµ¬ì¡°ì²´ì— ë‹¬ë ¤ ìžˆëŠ” DBC êµ¬ì¡°ì²´ì˜ ê°¯ìˆ˜ë¥¼ ì½ëŠ”ë‹¤.
  */
 acp_uint32_t ulnEnvGetDbcCount(ulnEnv *aEnv)
 {

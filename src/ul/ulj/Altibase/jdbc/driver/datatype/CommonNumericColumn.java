@@ -67,7 +67,7 @@ abstract class CommonNumericColumn extends AbstractColumn
 
     public int getMaxDisplaySize()
     {
-        return getColumnInfo().getPrecision() + 2; // ºÎÈ£ 1¹ÙÀÌÆ®, ¼Ò¼öÁ¡ 1¹ÙÀÌÆ® Ãß°¡
+        return getColumnInfo().getPrecision() + 2; // ë¶€í˜¸ 1ë°”ì´íŠ¸, ì†Œìˆ˜ì  1ë°”ì´íŠ¸ ì¶”ê°€
     }
 
     public int getOctetLength()
@@ -105,8 +105,8 @@ abstract class CommonNumericColumn extends AbstractColumn
     }
 
     /**
-     * BUG-41061 BigDecimal °ªÀ» signExponent¿Í mantissa·Î º¯È¯ÇÑ´Ù. </br>
-     * ÀÌ¶§ numeric dataÀÇ overflow¿©ºÎµµ Ã¼Å©ÇÑ´Ù. 
+     * BUG-41061 BigDecimal ê°’ì„ signExponentì™€ mantissaë¡œ ë³€í™˜í•œë‹¤. </br>
+     * ì´ë•Œ numeric dataì˜ overflowì—¬ë¶€ë„ ì²´í¬í•œë‹¤. 
      */
     private void makeSignExponentAndMantissa()
     {
@@ -117,7 +117,7 @@ abstract class CommonNumericColumn extends AbstractColumn
         }
         else
         {
-            // BUG-41592 unscaleÇÑ °ªÀ¸·Î Zero°ªÀÎÁö ¿©ºÎ¸¦ ÆÇ´ÜÇÑ´Ù.
+            // BUG-41592 unscaleí•œ ê°’ìœ¼ë¡œ Zeroê°’ì¸ì§€ ì—¬ë¶€ë¥¼ íŒë‹¨í•œë‹¤.
             if (mBigDecimalValue.unscaledValue().equals((ZERO_VALUE)))
             {
                 mSignExponent = SIGN_PLUS_FLAG;
@@ -140,7 +140,7 @@ abstract class CommonNumericColumn extends AbstractColumn
                 byte[] sDstNumByteArry = sDstNum.toByteArray();
                 int sDstNumSize = sDstNum.size();
                 
-                // BUG-41399 ÀÚ¸®³¡¿¡ 0ÀÌ ÀÖÀ»°æ¿ì scale°ªÀ» »©ÁØ´Ù. 
+                // BUG-41399 ìë¦¬ëì— 0ì´ ìˆì„ê²½ìš° scaleê°’ì„ ë¹¼ì¤€ë‹¤. 
                 for (int i = sDstNumSize - 1; (i >= 0) && (sDstNumByteArry[i] == 0); i--)
                 {
                     sDstNumSize -= 1;
@@ -157,8 +157,8 @@ abstract class CommonNumericColumn extends AbstractColumn
                 checkPrecisionOverflow(sPrecision);
                 checkScaleOverflow(sScale);
                 
-                // BUG-39326 SignExponent·Î ÀÚ¸´¼ö¸¦ Ç¥ÇöÇÏ¹Ç·Î µŞÀÚ¸® 0(À½¼öÀÏ¶© 99)Àº »¬ ¼ö ÀÖ´Ù.
-                // ±×·±µ¥, ¼­¹ö¿¡¼­´Â ÀúÀå°ø°£À» ÁÙÀÌ±âÀ§ÇØ Ç×»ó trim ÇÏ¹Ç·Î ¿Ã¹Ù¸¥ ºñ±³¸¦À§ÇØ trimÇÑ´Ù.
+                // BUG-39326 SignExponentë¡œ ìë¦¿ìˆ˜ë¥¼ í‘œí˜„í•˜ë¯€ë¡œ ë’·ìë¦¬ 0(ìŒìˆ˜ì¼ë• 99)ì€ ëº„ ìˆ˜ ìˆë‹¤.
+                // ê·¸ëŸ°ë°, ì„œë²„ì—ì„œëŠ” ì €ì¥ê³µê°„ì„ ì¤„ì´ê¸°ìœ„í•´ í•­ìƒ trim í•˜ë¯€ë¡œ ì˜¬ë°”ë¥¸ ë¹„êµë¥¼ìœ„í•´ trimí•œë‹¤.
                 mMantissa = sDstNum.toTrimmedByteArray(sDstNumSize);
                 int sSignExponent = 64 + (sSign * (sDstNumSize - (sScale / 2)));
                 checkSignExponentOverflow(sSignExponent);
@@ -175,12 +175,12 @@ abstract class CommonNumericColumn extends AbstractColumn
     }
 
     /**
-     * 100Áø¼ö ¹è¿­°ªÀ» ÂüÁ¶ÇØ precision°ªÀ» µ¹·ÁÁØ´Ù.</br>
-     * ÀÌ¶§ Ã¹¹øÂ° 100Áø¼ö ¹è¿­°ªÀÌ 10º¸´Ù ÀÛÀ»¶§ precision°ªÀ» 1 Â÷°¨ÇÏ°í </br>
-     * ¶ÇÇÑ aDstNumSize - 1ÀÇ ¹è¿­°ªÀÌ 10ÀÇ ¹è¼öÀÏ ¶§µµ precision°ªÀ» 1 Â÷°¨ÇÑ´Ù.
-     * @param aDstNumByteArry 100Áø¼ö ¹ÙÀÌÆ® ¹è¿­
-     * @param aDstNumSize 100Áø¼ö ¹è¿­ÀÇ mantissa ±æÀÌ
-     * @return precision °ª
+     * 100ì§„ìˆ˜ ë°°ì—´ê°’ì„ ì°¸ì¡°í•´ precisionê°’ì„ ëŒë ¤ì¤€ë‹¤.</br>
+     * ì´ë•Œ ì²«ë²ˆì§¸ 100ì§„ìˆ˜ ë°°ì—´ê°’ì´ 10ë³´ë‹¤ ì‘ì„ë•Œ precisionê°’ì„ 1 ì°¨ê°í•˜ê³  </br>
+     * ë˜í•œ aDstNumSize - 1ì˜ ë°°ì—´ê°’ì´ 10ì˜ ë°°ìˆ˜ì¼ ë•Œë„ precisionê°’ì„ 1 ì°¨ê°í•œë‹¤.
+     * @param aDstNumByteArry 100ì§„ìˆ˜ ë°”ì´íŠ¸ ë°°ì—´
+     * @param aDstNumSize 100ì§„ìˆ˜ ë°°ì—´ì˜ mantissa ê¸¸ì´
+     * @return precision ê°’
      */
     private int getPrecision(byte[] aDstNumByteArry, int aDstNumSize)
     {
@@ -199,10 +199,10 @@ abstract class CommonNumericColumn extends AbstractColumn
     }
 
     /**
-     * scale°ªÀ» µ¹·ÁÁØ´Ù. ÀÌ¶§ scaleÀÌ ¾ç¼ö°í 2ÀÇ¹è¼ö°¡ ¾Æ´Ï¶ó¸é scale¿¡ 1À» ´õÇÑ´Ù.
+     * scaleê°’ì„ ëŒë ¤ì¤€ë‹¤. ì´ë•Œ scaleì´ ì–‘ìˆ˜ê³  2ì˜ë°°ìˆ˜ê°€ ì•„ë‹ˆë¼ë©´ scaleì— 1ì„ ë”í•œë‹¤.
      * 
-     * @param aDstNum 100Áø¼ö·Î º¯È¯ÇÑ AltibaseNumeric°ª
-     * @return scale °ª
+     * @param aDstNum 100ì§„ìˆ˜ë¡œ ë³€í™˜í•œ AltibaseNumericê°’
+     * @return scale ê°’
      */
     private int getEvenScale(AltibaseNumeric aDstNum)
     {
@@ -232,7 +232,7 @@ abstract class CommonNumericColumn extends AbstractColumn
         }
     }
     
-    // BUG-41061 floatÅ¸ÀÔÀÌ ¾Æ´Ñ°æ¿ì¿¡´Â scaleÀÇ ÃÖ¼Ò°ª°ú ÃÖ´ë°ªÀ» ÀÌ¿ëÇÏ¿© ºñ±³ÇÑ´Ù.
+    // BUG-41061 floatíƒ€ì…ì´ ì•„ë‹Œê²½ìš°ì—ëŠ” scaleì˜ ìµœì†Œê°’ê³¼ ìµœëŒ€ê°’ì„ ì´ìš©í•˜ì—¬ ë¹„êµí•œë‹¤.
     protected void checkScaleOverflow(int aScale)
     {
         if (aScale < NUMERIC_SCALE_MINIMUM || aScale > NUMERIC_SCALE_MAXIMUM)
@@ -246,7 +246,7 @@ abstract class CommonNumericColumn extends AbstractColumn
 
     private void checkSignExponentOverflow(int aSignExponent)
     {
-        // BUG-41061 signExponentÀÇ °ªÀÌ 127º¸´Ù Å¬ °æ¿ì ¿À¹öÇÃ·Î¿ì Ã³¸®ÇÑ´Ù.
+        // BUG-41061 signExponentì˜ ê°’ì´ 127ë³´ë‹¤ í´ ê²½ìš° ì˜¤ë²„í”Œë¡œìš° ì²˜ë¦¬í•œë‹¤.
         if (aSignExponent < NUMERIC_SIGN_EXPONENT_MINIMUM || aSignExponent > NUMERIC_SIGN_EXPONENT_MAXIMUM)
         {
             Error.throwIllegalArgumentException(ErrorDef.INVALID_ARGUMENT,
@@ -302,7 +302,7 @@ abstract class CommonNumericColumn extends AbstractColumn
             int sSign = (sSignExponent & SIGN_PLUS_FLAG) == 0 ? SIGN_MINUS : SIGN_PLUS;
             short sExponent = (short)(sSignExponent & ~SIGN_PLUS_FLAG);
 
-            // 0ÀÎ °æ¿ì
+            // 0ì¸ ê²½ìš°
             if (sMantissaLen == 0 || sExponent == 0)
             {
                 aChannel.skip(sMantissaLen);
@@ -387,9 +387,9 @@ abstract class CommonNumericColumn extends AbstractColumn
     }
 
     /*
-     * ÀÌ ¸Ş¼ÒµåÀÇ ½ºÆåÀº ´ÙÀ½°ú °°´Ù.
+     * ì´ ë©”ì†Œë“œì˜ ìŠ¤í™ì€ ë‹¤ìŒê³¼ ê°™ë‹¤.
      * 
-     * ÃÑ byte[]ÀÇ ±æÀÌ: 3+n (n = mantissa.length)
+     * ì´ byte[]ì˜ ê¸¸ì´: 3+n (n = mantissa.length)
      * [0]: sign
      * [1]~[2]: scale
      * [3]~[n+2]: mantissa
@@ -504,7 +504,7 @@ abstract class CommonNumericColumn extends AbstractColumn
                                     aValue.getClass().getName(), getDBColumnTypeName());
         }
         
-        // BUG-41061 overflow¸¦ Ã¼Å©ÇÏ±â À§ÇØ setValueÇßÀ» ¶§ signExponent¿Í mantissa°ªÀ» »ı¼ºÇÑ´Ù.
+        // BUG-41061 overflowë¥¼ ì²´í¬í•˜ê¸° ìœ„í•´ setValueí–ˆì„ ë•Œ signExponentì™€ mantissaê°’ì„ ìƒì„±í•œë‹¤.
         makeSignExponentAndMantissa();
     }
 }

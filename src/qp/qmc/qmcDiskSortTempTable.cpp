@@ -21,9 +21,9 @@
  * Description :
  *     Disk Sort Temp Table
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  **********************************************************************/
 
@@ -53,13 +53,13 @@ qmcDiskSort::init( qmcdDiskSortTemp * aTempTable,
 /***********************************************************************
  *
  * Description :
- *    Disk Temp TableÀ» ÃÊ±âÈ­ÇÑ´Ù.
+ *    Disk Temp Tableì„ ì´ˆê¸°í™”í•œë‹¤.
  *
  * Implementation :
- *    - Disk Temp TableÀÇ Member¸¦ ÃÊ±âÈ­ÇÑ´Ù.
- *    - Record ±¸¼º Á¤º¸·ÎºÎÅÍ Disk Temp TableÀ» »ı¼ºÇÑ´Ù.
- *    - Sort ±¸¼º Á¤º¸·ÎºÎÅÍ Index¸¦ »ı¼ºÇÑ´Ù.
- *    - Insert¸¦ À§ÇÑ Cursor¸¦ ¿¬´Ù.
+ *    - Disk Temp Tableì˜ Memberë¥¼ ì´ˆê¸°í™”í•œë‹¤.
+ *    - Record êµ¬ì„± ì •ë³´ë¡œë¶€í„° Disk Temp Tableì„ ìƒì„±í•œë‹¤.
+ *    - Sort êµ¬ì„± ì •ë³´ë¡œë¶€í„° Indexë¥¼ ìƒì„±í•œë‹¤.
+ *    - Insertë¥¼ ìœ„í•œ Cursorë¥¼ ì—°ë‹¤.
  *
  ***********************************************************************/
 
@@ -73,7 +73,7 @@ qmcDiskSort::init( qmcdDiskSortTemp * aTempTable,
     IDE_DASSERT( aRecordNode != NULL );
 
     //----------------------------------------------------------------
-    // Disk Temp Table ¸â¹öÀÇ ÃÊ±âÈ­
+    // Disk Temp Table ë©¤ë²„ì˜ ì´ˆê¸°í™”
     //----------------------------------------------------------------
     aTempTable->flag      = aFlag;
     aTempTable->mTemplate = aTemplate;
@@ -84,14 +84,14 @@ qmcDiskSort::init( qmcdDiskSortTemp * aTempTable,
     tempSizeEstimate( aTempTable, aStoreRowCount, aMtrRowSize );
 
     //---------------------------------------
-    // Record ±¸¼ºÀ» À§ÇÑ ÀÚ·á ±¸Á¶ÀÇ ÃÊ±âÈ­
+    // Record êµ¬ì„±ì„ ìœ„í•œ ìë£Œ êµ¬ì¡°ì˜ ì´ˆê¸°í™”
     //---------------------------------------
     aTempTable->recordNode = aRecordNode;
 
-    // [Record Column °³¼öÀÇ °áÁ¤]
-    // Record NodeÀÇ °³¼ö·Î ÆÇ´ÜÇÏÁö ¾Ê°í,
-    // Tuple SetÀÇ Á¤º¸·ÎºÎÅÍ Column °³¼ö¸¦ ÆÇ´ÜÇÑ´Ù.
-    // ÀÌ´Â ÇÏ³ªÀÇ Record Node°¡ ¿©·¯ °³ÀÇ ColumnÀ¸·Î ±¸¼ºµÉ ¼ö ÀÖ±â ¶§¹®ÀÌ´Ù.
+    // [Record Column ê°œìˆ˜ì˜ ê²°ì •]
+    // Record Nodeì˜ ê°œìˆ˜ë¡œ íŒë‹¨í•˜ì§€ ì•Šê³ ,
+    // Tuple Setì˜ ì •ë³´ë¡œë¶€í„° Column ê°œìˆ˜ë¥¼ íŒë‹¨í•œë‹¤.
+    // ì´ëŠ” í•˜ë‚˜ì˜ Record Nodeê°€ ì—¬ëŸ¬ ê°œì˜ Columnìœ¼ë¡œ êµ¬ì„±ë  ìˆ˜ ìˆê¸° ë•Œë¬¸ì´ë‹¤.
 
     IDE_DASSERT( aRecordNode->dstTuple->columnCount > 0 );
     aTempTable->recordColumnCnt = aRecordNode->dstTuple->columnCount;
@@ -101,15 +101,15 @@ qmcDiskSort::init( qmcdDiskSortTemp * aTempTable,
     aTempTable->nullRow = NULL;
 
     //---------------------------------------
-    // SortingÀ» À§ÇÑ ÀÚ·á ±¸Á¶ÀÇ ÃÊ±âÈ­
+    // Sortingì„ ìœ„í•œ ìë£Œ êµ¬ì¡°ì˜ ì´ˆê¸°í™”
     //---------------------------------------
 
     aTempTable->sortNode = aSortNode;
 
-    // [Sort Column °³¼öÀÇ °áÁ¤]
-    // Record Column°ú ´Ş¸® Sort Node Á¤º¸·ÎºÎÅÍ Column °³¼ö¸¦ ÆÇ´ÜÇÑ´Ù.
-    // ÇÏ³ªÀÇ Node°¡ ¿©·¯ °³ÀÇ ColumnÀ¸·Î ±¸¼ºµÈ´Ù ÇÏ´õ¶óµµ
-    // Sorting ´ë»óÀÌ µÇ´Â ColumnÀº ÇÏ³ªÀÌ±â ¶§¹®ÀÌ´Ù.
+    // [Sort Column ê°œìˆ˜ì˜ ê²°ì •]
+    // Record Columnê³¼ ë‹¬ë¦¬ Sort Node ì •ë³´ë¡œë¶€í„° Column ê°œìˆ˜ë¥¼ íŒë‹¨í•œë‹¤.
+    // í•˜ë‚˜ì˜ Nodeê°€ ì—¬ëŸ¬ ê°œì˜ Columnìœ¼ë¡œ êµ¬ì„±ëœë‹¤ í•˜ë”ë¼ë„
+    // Sorting ëŒ€ìƒì´ ë˜ëŠ” Columnì€ í•˜ë‚˜ì´ê¸° ë•Œë¬¸ì´ë‹¤.
 
     for ( i = 0, sNode = aTempTable->sortNode;
           sNode != NULL;
@@ -122,19 +122,19 @@ qmcDiskSort::init( qmcdDiskSortTemp * aTempTable,
 
     aTempTable->rangePredicate = NULL;
 
-    // PROJ-1431 : sparse B-Tree temp index·Î ±¸Á¶º¯°æ
-    // leaf page(data page)¿¡¼­ row¸¦ ºñ±³ÇÏ±â À§ÇØ rowRange°¡ Ãß°¡µÊ
-    /* PROJ-2201 : Dense±¸Á¶·Î ´Ù½Ã º¯°æ
-     * Sparse±¸Á¶´Â BufferMiss»óÈ²¿¡¼­ I/O¸¦ ¸¹ÀÌ À¯¹ß½ÃÅ´ */
+    // PROJ-1431 : sparse B-Tree temp indexë¡œ êµ¬ì¡°ë³€ê²½
+    // leaf page(data page)ì—ì„œ rowë¥¼ ë¹„êµí•˜ê¸° ìœ„í•´ rowRangeê°€ ì¶”ê°€ë¨
+    /* PROJ-2201 : Denseêµ¬ì¡°ë¡œ ë‹¤ì‹œ ë³€ê²½
+     * Sparseêµ¬ì¡°ëŠ” BufferMissìƒí™©ì—ì„œ I/Oë¥¼ ë§ì´ ìœ ë°œì‹œí‚´ */
     aTempTable->keyRange       = NULL;
     aTempTable->keyRangeArea   = NULL;
 
-    // °»½Å(update)¸¦ À§ÇÑ ÀÚ·á ±¸Á¶ÀÇ ÃÊ±âÈ­
+    // ê°±ì‹ (update)ë¥¼ ìœ„í•œ ìë£Œ êµ¬ì¡°ì˜ ì´ˆê¸°í™”
     aTempTable->updateColumnList = NULL;
     aTempTable->updateValues     = NULL;
 
     //----------------------------------------------------------------
-    // Disk Temp Table ÀÇ »ı¼º
+    // Disk Temp Table ì˜ ìƒì„±
     //----------------------------------------------------------------
 
     IDE_TEST( createTempTable( aTempTable ) != IDE_SUCCESS );
@@ -162,16 +162,16 @@ void  qmcDiskSort::tempSizeEstimate( qmcdDiskSortTemp * aTempTable,
     ULong        sWAMapSize;
 
     // BUG-37862 disk sort temp table size estimate
-    // aStoreRowCount ´Â disk temp tableÀ» À§ÇÑ stored row countÀÌ´Ù.
-    // BUG-43443 temp table¿¡ ´ëÇØ¼­ work area size¸¦ estimateÇÏ´Â ±â´ÉÀ» off
+    // aStoreRowCount ëŠ” disk temp tableì„ ìœ„í•œ stored row countì´ë‹¤.
+    // BUG-43443 temp tableì— ëŒ€í•´ì„œ work area sizeë¥¼ estimateí•˜ëŠ” ê¸°ëŠ¥ì„ off
     if ( (QCU_DISK_TEMP_SIZE_ESTIMATE == 1) &&
          (aStoreRowCount != 0) )
     {
-        // WAMap size = ½½·Ô °¹¼ö * ½½·Ô »çÀÌÁî
+        // WAMap size = ìŠ¬ë¡¯ ê°¯ìˆ˜ * ìŠ¬ë¡¯ ì‚¬ì´ì¦ˆ
         sWAMapSize = ( smuProperty::getTempMaxPageCount() / SMI_WAEXTENT_PAGECOUNT )
                         * SMI_WAMAP_SLOT_MAX_SIZE;
 
-        // sdtSortModule::calcEstimatedStats( smiTempTableHeader * aHeader ) ¸¦ ÂüÁ¶ÇÔ
+        // sdtSortModule::calcEstimatedStats( smiTempTableHeader * aHeader ) ë¥¼ ì°¸ì¡°í•¨
         sTempSize = (ULong)(SMI_TR_HEADER_SIZE_FULL + aMtrRowSize) * DOUBLE_TO_UINT64(aStoreRowCount);
         sTempSize = (ULong)(sTempSize * 100.0 / smuProperty::getTempSortGroupRatio() * 1.3);
 
@@ -183,7 +183,7 @@ void  qmcDiskSort::tempSizeEstimate( qmcdDiskSortTemp * aTempTable,
     }
     else
     {
-        // 0À» ÁöÁ¤ÇÏ¸é SM¿¡¼­ smuProperty::getSortAreaSize() ·Î ¼³Á¤ÇÑ´Ù.
+        // 0ì„ ì§€ì •í•˜ë©´ SMì—ì„œ smuProperty::getSortAreaSize() ë¡œ ì„¤ì •í•œë‹¤.
         aTempTable->mTempTableSize = 0;
     }
 }
@@ -194,17 +194,17 @@ qmcDiskSort::clear( qmcdDiskSortTemp * aTempTable )
 /***********************************************************************
  *
  * Description :
- *    ÇØ´ç Temp TableÀ» TruncateÇÑ´Ù.
+ *    í•´ë‹¹ Temp Tableì„ Truncateí•œë‹¤.
  *
  * Implementation :
- *    ¿­·Á ÀÖ´Â Ä¿¼­¸¦ ¸ğµÎ ´İ°í, TableÀ» TruncateÇÑ´Ù.
+ *    ì—´ë ¤ ìˆëŠ” ì»¤ì„œë¥¼ ëª¨ë‘ ë‹«ê³ , Tableì„ Truncateí•œë‹¤.
  *
  ***********************************************************************/
 
 #define IDE_FN "qmcDiskSort::clear"
     IDE_MSGLOG_FUNC(IDE_MSGLOG_BODY("qmcDiskSort::clear"));
 
-    /* ¿­·ÁÀÖ´Â Ä¿¼­´Â ´İÀ½ */
+    /* ì—´ë ¤ìˆëŠ” ì»¤ì„œëŠ” ë‹«ìŒ */
     IDE_TEST( smiTempTable::closeAllCursor( aTempTable->tableHandle )
               != IDE_SUCCESS );
     aTempTable->searchCursor = NULL;
@@ -226,19 +226,19 @@ qmcDiskSort::clearHitFlag( qmcdDiskSortTemp * aTempTable )
 /***********************************************************************
  *
  * Description :
- *    Temp Table³»¿¡ Á¸ÀçÇÏ´Â ¸ğµç RecordÀÇ Hit FlagÀ» ÃÊ±âÈ­ÇÑ´Ù.
+ *    Temp Tableë‚´ì— ì¡´ì¬í•˜ëŠ” ëª¨ë“  Recordì˜ Hit Flagì„ ì´ˆê¸°í™”í•œë‹¤.
  *
  * Implementation :
- *    Memory Temp Table°ú ´Ş¸® ¸ğµç Record¿¡ ´ëÇÏ¿© ÃÊ±âÈ­ÇÏÁö ¾Ê°í,
- *    Hit FlagÀÌ SettingµÈ °Í¸¸À» ÃÊ±âÈ­ÇÑ´Ù.
- *    ÀÌ´Â Hit FlagÀÇ ÃÊ±âÈ­°¡ Update¿¬»êÀ» ¹ß»ı½ÃÄÑ, Disk I/O ºÎÇÏ°¡
- *    ÁõÆøµÉ ¼ö ÀÖ±â ¶§¹®ÀÌ´Ù.
+ *    Memory Temp Tableê³¼ ë‹¬ë¦¬ ëª¨ë“  Recordì— ëŒ€í•˜ì—¬ ì´ˆê¸°í™”í•˜ì§€ ì•Šê³ ,
+ *    Hit Flagì´ Settingëœ ê²ƒë§Œì„ ì´ˆê¸°í™”í•œë‹¤.
+ *    ì´ëŠ” Hit Flagì˜ ì´ˆê¸°í™”ê°€ Updateì—°ì‚°ì„ ë°œìƒì‹œì¼œ, Disk I/O ë¶€í•˜ê°€
+ *    ì¦í­ë  ìˆ˜ ìˆê¸° ë•Œë¬¸ì´ë‹¤.
  *
- *    - Hit Flag ÀÌ ¼³Á¤µÈ °ÍÀ» °Ë»çÇÏ´Â Filter CallBackÀ» »ı¼ºÇÑ´Ù.
- *    - Hit Flag Search Cursor¸¦ OpenÇÑ´Ù.
- *    - ´ÙÀ½À» ¹İº¹ÇÑ´Ù.
- *        - ºÎÇÕÇÏ´Â Record °¡ ÀÖÀ» °æ¿ì, Hit FlagÀ» ClearÇÑ´Ù.
- *        - ÇØ´ç Record¸¦ UpdateÇÑ´Ù.
+ *    - Hit Flag ì´ ì„¤ì •ëœ ê²ƒì„ ê²€ì‚¬í•˜ëŠ” Filter CallBackì„ ìƒì„±í•œë‹¤.
+ *    - Hit Flag Search Cursorë¥¼ Opení•œë‹¤.
+ *    - ë‹¤ìŒì„ ë°˜ë³µí•œë‹¤.
+ *        - ë¶€í•©í•˜ëŠ” Record ê°€ ìˆì„ ê²½ìš°, Hit Flagì„ Clearí•œë‹¤.
+ *        - í•´ë‹¹ Recordë¥¼ Updateí•œë‹¤.
  *
  ***********************************************************************/
 
@@ -257,13 +257,13 @@ qmcDiskSort::insert( qmcdDiskSortTemp * aTempTable, void * aRow )
 /***********************************************************************
  *
  * Description :
- *    Record¸¦ Temp Table¿¡ »ğÀÔÇÑ´Ù.
+ *    Recordë¥¼ Temp Tableì— ì‚½ì…í•œë‹¤.
  *
  * Implementation :
- *    - Cursor¸¦ º°µµ·Î ¿­Áö ¾Ê´Â´Ù.  ÃÊ±âÈ­ ¶Ç´Â Clear½Ã Insert Cursor´Â
- *      ÀÌ¹Ì ¿­¾î ³õ´Â´Ù.
- *    - RowÀÇ Hit FlagÀ» ClearÇÑ´Ù.
- *    - smiValue¸¦ »ğÀÔÇÑ´Ù
+ *    - Cursorë¥¼ ë³„ë„ë¡œ ì—´ì§€ ì•ŠëŠ”ë‹¤.  ì´ˆê¸°í™” ë˜ëŠ” Clearì‹œ Insert CursorëŠ”
+ *      ì´ë¯¸ ì—´ì–´ ë†“ëŠ”ë‹¤.
+ *    - Rowì˜ Hit Flagì„ Clearí•œë‹¤.
+ *    - smiValueë¥¼ ì‚½ì…í•œë‹¤
  ***********************************************************************/
 
 #define IDE_FN "qmcDiskSort::insert"
@@ -272,16 +272,16 @@ qmcDiskSort::insert( qmcdDiskSortTemp * aTempTable, void * aRow )
     scGRID       sDummyGRID;
     idBool       sDummyResult;
 
-    // ÀûÇÕ¼º °Ë»ç
-    // insert value Á¤º¸´Â dstTuple->row¸¦ Áß½ÉÀ¸·Î ±¸¼ºµÈ´Ù.
-    // µû¶ó¼­, aRowÀÇ °ªÀº Ç×»ó ÀÏÁ¤ÇÏ¿©¾ß ÇÑ´Ù.
+    // ì í•©ì„± ê²€ì‚¬
+    // insert value ì •ë³´ëŠ” dstTuple->rowë¥¼ ì¤‘ì‹¬ìœ¼ë¡œ êµ¬ì„±ëœë‹¤.
+    // ë”°ë¼ì„œ, aRowì˜ ê°’ì€ í•­ìƒ ì¼ì •í•˜ì—¬ì•¼ í•œë‹¤.
     IDE_DASSERT( aRow == aTempTable->recordNode->dstTuple->row );
 
-    // PROJ-1597 Temp record size Á¦¾à Á¦°Å
-    // ¸Å row¸¶´Ù smiValue¸¦ Àç±¸¼ºÇÑ´Ù.
+    // PROJ-1597 Temp record size ì œì•½ ì œê±°
+    // ë§¤ rowë§ˆë‹¤ smiValueë¥¼ ì¬êµ¬ì„±í•œë‹¤.
     IDE_TEST( makeInsertSmiValue(aTempTable) != IDE_SUCCESS );
 
-    // Temp Table¿¡ Record¸¦ »ğÀÔÇÑ´Ù.
+    // Temp Tableì— Recordë¥¼ ì‚½ì…í•œë‹¤.
     IDE_TEST( smiTempTable::insert( aTempTable->tableHandle,
                                     aTempTable->insertValue,
                                     0, /*HashValue */
@@ -305,11 +305,11 @@ qmcDiskSort::setHitFlag( qmcdDiskSortTemp * aTempTable )
 /***********************************************************************
  *
  * Description :
- *    ÇöÀç Cursor À§Ä¡ÀÇ RecordÀÇ Hit FlagÀ» SettingÇÑ´Ù.
+ *    í˜„ì¬ Cursor ìœ„ì¹˜ì˜ Recordì˜ Hit Flagì„ Settingí•œë‹¤.
  *
  * Implementation :
- *    °Ë»ö ÈÄ¿¡¸¸ È£ÃâµÈ´Ù.
- *    ÀÌ¹Ì °Ë»öµÈ Record¿¡ ´ëÇÑ Hit FlagÀ» SettingÇÏ¸é µÈ´Ù.
+ *    ê²€ìƒ‰ í›„ì—ë§Œ í˜¸ì¶œëœë‹¤.
+ *    ì´ë¯¸ ê²€ìƒ‰ëœ Recordì— ëŒ€í•œ Hit Flagì„ Settingí•˜ë©´ ëœë‹¤.
  *
  ***********************************************************************/
 
@@ -325,7 +325,7 @@ idBool qmcDiskSort::isHitFlagged( qmcdDiskSortTemp * aTempTable )
 /***********************************************************************
  *
  * Description : PROJ-2385
- *    ÇöÀç Cursor À§Ä¡ÀÇ Record¿¡ Hit Flag°¡ ÀÖ´ÂÁö ÆÇ´Ü.
+ *    í˜„ì¬ Cursor ìœ„ì¹˜ì˜ Recordì— Hit Flagê°€ ìˆëŠ”ì§€ íŒë‹¨.
  *
  * Implementation :
  *
@@ -342,23 +342,23 @@ qmcDiskSort::getFirstSequence( qmcdDiskSortTemp * aTempTable,
 /***********************************************************************
  *
  * Description :
- *    ¼øÂ÷ °Ë»öÀ» ÇÑ´Ù.
+ *    ìˆœì°¨ ê²€ìƒ‰ì„ í•œë‹¤.
  *
  * Implementation :
- *    Search Cursor¸¦ ¼øÂ÷ °Ë»öÀ» À§ÇØ ¿­°í, ÇØ´ç Row¸¦ ¾ò¾î¿Â´Ù.
- *    Record¸¦ À§ÇÑ °ø°£ °ü¸®(°ø°£ Á¤º¸ÀÇ »ó½Ç)¸¦
- *    Plan Node¿¡¼­ ÁÖÀÇ ±í°Ô Ã³¸®ÇÏ¿©¾ß ÇÑ´Ù.
+ *    Search Cursorë¥¼ ìˆœì°¨ ê²€ìƒ‰ì„ ìœ„í•´ ì—´ê³ , í•´ë‹¹ Rowë¥¼ ì–»ì–´ì˜¨ë‹¤.
+ *    Recordë¥¼ ìœ„í•œ ê³µê°„ ê´€ë¦¬(ê³µê°„ ì •ë³´ì˜ ìƒì‹¤)ë¥¼
+ *    Plan Nodeì—ì„œ ì£¼ì˜ ê¹Šê²Œ ì²˜ë¦¬í•˜ì—¬ì•¼ í•œë‹¤.
  *
  ***********************************************************************/
 
 #define IDE_FN "qmcDiskSort::getFirstSequence"
     IDE_MSGLOG_FUNC(IDE_MSGLOG_BODY("qmcDiskSort::getFirstSequence"));
 
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     // To Fix PR-7995
     IDE_DASSERT( *aRow == aTempTable->recordNode->dstTuple->row );
 
-    // ¼øÂ÷ °Ë»ö Cursor¸¦ ¿¬´Ù.
+    // ìˆœì°¨ ê²€ìƒ‰ Cursorë¥¼ ì—°ë‹¤.
     IDE_TEST( openCursor(aTempTable, 
                          SMI_TCFLAG_FORWARD | 
                          SMI_TCFLAG_ORDEREDSCAN |
@@ -369,7 +369,7 @@ qmcDiskSort::getFirstSequence( qmcdDiskSortTemp * aTempTable,
                          &aTempTable->searchCursor )
               != IDE_SUCCESS );
 
-    // Record¸¦ ¾ò¾î ¿Â´Ù.
+    // Recordë¥¼ ì–»ì–´ ì˜¨ë‹¤.
     IDE_TEST( smiTempTable::fetch( aTempTable->searchCursor,
                                    (UChar**) aRow,
                                    & aTempTable->recordNode->dstTuple->rid )
@@ -391,8 +391,8 @@ qmcDiskSort::getNextSequence( qmcdDiskSortTemp  * aTempTable,
 /***********************************************************************
  *
  * Description :
- *    ´ÙÀ½ ¼øÂ÷ °Ë»öÀ» ÇÑ´Ù.
- *    ¹İµå½Ã getFirstSequence() ÀÌÈÄ¿¡ È£ÃâµÇ¾î¾ß ÇÑ´Ù.
+ *    ë‹¤ìŒ ìˆœì°¨ ê²€ìƒ‰ì„ í•œë‹¤.
+ *    ë°˜ë“œì‹œ getFirstSequence() ì´í›„ì— í˜¸ì¶œë˜ì–´ì•¼ í•œë‹¤.
  *
  * Implementation :
  *
@@ -401,11 +401,11 @@ qmcDiskSort::getNextSequence( qmcdDiskSortTemp  * aTempTable,
 #define IDE_FN "qmcDiskSort::getNextSequence"
     IDE_MSGLOG_FUNC(IDE_MSGLOG_BODY("qmcDiskSort::getNextSequence"));
 
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     // To Fix PR-7995
     IDE_DASSERT( *aRow == aTempTable->recordNode->dstTuple->row );
 
-    // Record¸¦ ¾ò¾î ¿Â´Ù.
+    // Recordë¥¼ ì–»ì–´ ì˜¨ë‹¤.
     IDE_TEST( smiTempTable::fetch( aTempTable->searchCursor,
                                    (UChar**) aRow,
                                    & aTempTable->recordNode->dstTuple->rid )
@@ -428,30 +428,30 @@ qmcDiskSort::getFirstRange( qmcdDiskSortTemp  * aTempTable,
 /***********************************************************************
  *
  * Description :
- *    Ã¹¹øÂ° Range °Ë»öÀ» ÇÑ´Ù.
+ *    ì²«ë²ˆì§¸ Range ê²€ìƒ‰ì„ í•œë‹¤.
  *
  * Implementation :
- *    ´ÙÀ½°ú °°Àº ÀıÂ÷¿¡ ÀÇÇÏ¿© Range°Ë»öÀ» ¼öÇàÇÑ´Ù.
+ *    ë‹¤ìŒê³¼ ê°™ì€ ì ˆì°¨ì— ì˜í•˜ì—¬ Rangeê²€ìƒ‰ì„ ìˆ˜í–‰í•œë‹¤.
  *
- *        - ÁÖ¾îÁø PredicateÀ» À§ÇÑ Key Range¸¦ »ı¼ºÇÑ´Ù.
- *        - Range Cursor¸¦ Open ÇÑ´Ù.
- *        - Cursor¸¦ ÀÌ¿ëÇÏ¿© Á¶°Ç¿¡ ¸Â´Â Row¸¦ °¡Á®¿Â´Ù.
+ *        - ì£¼ì–´ì§„ Predicateì„ ìœ„í•œ Key Rangeë¥¼ ìƒì„±í•œë‹¤.
+ *        - Range Cursorë¥¼ Open í•œë‹¤.
+ *        - Cursorë¥¼ ì´ìš©í•˜ì—¬ ì¡°ê±´ì— ë§ëŠ” Rowë¥¼ ê°€ì ¸ì˜¨ë‹¤.
  *
  ***********************************************************************/
 
 #define IDE_FN "qmcDiskSort::getFirstRange"
     IDE_MSGLOG_FUNC(IDE_MSGLOG_BODY("qmcDiskSort::getFirstRange"));
 
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     IDE_DASSERT( aRangePredicate != NULL );
     IDE_DASSERT( *aRow == aTempTable->recordNode->dstTuple->row );
 
-    // Key Range »ı¼º
+    // Key Range ìƒì„±
     aTempTable->rangePredicate = aRangePredicate;
-    // PROJ-1431 : key range¿Í row range¸¦ »ı¼º
+    // PROJ-1431 : key rangeì™€ row rangeë¥¼ ìƒì„±
     IDE_TEST( makeRange( aTempTable ) != IDE_SUCCESS );
 
-    // Range Cursor¸¦ OpenÇÑ´Ù.
+    // Range Cursorë¥¼ Opení•œë‹¤.
     IDE_TEST( openCursor(aTempTable, 
                          SMI_TCFLAG_FORWARD | 
                          SMI_TCFLAG_RANGESCAN |
@@ -462,7 +462,7 @@ qmcDiskSort::getFirstRange( qmcdDiskSortTemp  * aTempTable,
                          &aTempTable->searchCursor )
               != IDE_SUCCESS );
 
-    // Record¸¦ ¾ò¾î ¿Â´Ù.
+    // Recordë¥¼ ì–»ì–´ ì˜¨ë‹¤.
     IDE_TEST( smiTempTable::fetch( aTempTable->searchCursor,
                                    (UChar**) aRow,
                                    & aTempTable->recordNode->dstTuple->rid )
@@ -485,8 +485,8 @@ qmcDiskSort::getNextRange( qmcdDiskSortTemp * aTempTable,
 /***********************************************************************
  *
  * Description :
- *    ´ÙÀ½ Range °Ë»öÀ» ÇÑ´Ù.
- *    ¹İµå½Ã getFirstRange() ÀÌÈÄ¿¡ È£ÃâµÇ¾î¾ß ÇÑ´Ù.
+ *    ë‹¤ìŒ Range ê²€ìƒ‰ì„ í•œë‹¤.
+ *    ë°˜ë“œì‹œ getFirstRange() ì´í›„ì— í˜¸ì¶œë˜ì–´ì•¼ í•œë‹¤.
  *
  * Implementation :
  *
@@ -495,10 +495,10 @@ qmcDiskSort::getNextRange( qmcdDiskSortTemp * aTempTable,
 #define IDE_FN "qmcDiskSort::getNextRange"
     IDE_MSGLOG_FUNC(IDE_MSGLOG_BODY("qmcDiskSort::getNextRange"));
 
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     IDE_DASSERT( *aRow == aTempTable->recordNode->dstTuple->row );
 
-    // Cursor¸¦ ÀÌ¿ëÇÏ¿© Á¶°Ç¿¡ ¸Â´Â Row¸¦ °¡Á®¿Â´Ù.
+    // Cursorë¥¼ ì´ìš©í•˜ì—¬ ì¡°ê±´ì— ë§ëŠ” Rowë¥¼ ê°€ì ¸ì˜¨ë‹¤.
     IDE_TEST( smiTempTable::fetch( aTempTable->searchCursor,
                                    (UChar**) aRow,
                                    & aTempTable->recordNode->dstTuple->rid )
@@ -520,17 +520,17 @@ IDE_RC qmcDiskSort::getFirstHit( qmcdDiskSortTemp * aTempTable,
 /***********************************************************************
  *
  * Description : PROJ-2385
- *    ÃÖÃÊ HitµÈ Record¸¦ °Ë»öÇÑ´Ù.
+ *    ìµœì´ˆ Hitëœ Recordë¥¼ ê²€ìƒ‰í•œë‹¤.
  *
  * Implementation :
- *    ´ÙÀ½°ú °°Àº ÀıÂ÷¿¡ ÀÇÇÏ¿© Hit °Ë»öÀ» ¼öÇàÇÑ´Ù.
- *        - Hit Filter¸¦ »ı¼ºÇÑ´Ù.
- *        - HitÀ» À§ÇÑ Cursor¸¦ ¿¬´Ù.
- *        - Á¶°ÇÀ» ¸¸Á·ÇÏ´Â Record¸¦ ÀĞ¾î¿Â´Ù.
+ *    ë‹¤ìŒê³¼ ê°™ì€ ì ˆì°¨ì— ì˜í•˜ì—¬ Hit ê²€ìƒ‰ì„ ìˆ˜í–‰í•œë‹¤.
+ *        - Hit Filterë¥¼ ìƒì„±í•œë‹¤.
+ *        - Hitì„ ìœ„í•œ Cursorë¥¼ ì—°ë‹¤.
+ *        - ì¡°ê±´ì„ ë§Œì¡±í•˜ëŠ” Recordë¥¼ ì½ì–´ì˜¨ë‹¤.
  *
  ***********************************************************************/
 
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     IDE_DASSERT( *aRow == aTempTable->recordNode->dstTuple->row );
 
     IDE_TEST( openCursor(aTempTable, 
@@ -543,7 +543,7 @@ IDE_RC qmcDiskSort::getFirstHit( qmcdDiskSortTemp * aTempTable,
                          &aTempTable->searchCursor )
               != IDE_SUCCESS );
 
-    // Record¸¦ ¾ò¾î ¿Â´Ù.
+    // Recordë¥¼ ì–»ì–´ ì˜¨ë‹¤.
     IDE_TEST( smiTempTable::fetch( aTempTable->searchCursor,
                                    (UChar**) aRow,
                                    & aTempTable->recordNode->dstTuple->rid )
@@ -563,16 +563,16 @@ IDE_RC qmcDiskSort::getNextHit( qmcdDiskSortTemp * aTempTable,
 /***********************************************************************
  *
  * Description : PROJ-2385
- *    ´ÙÀ½ HitµÈ Record¸¦ °Ë»öÇÑ´Ù.
+ *    ë‹¤ìŒ Hitëœ Recordë¥¼ ê²€ìƒ‰í•œë‹¤.
  *
  * Implementation :
  *
  ***********************************************************************/
 
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     IDE_DASSERT( *aRow == aTempTable->recordNode->dstTuple->row );
 
-    // Cursor¸¦ ÀÌ¿ëÇÏ¿© Á¶°Ç¿¡ ¸Â´Â Row¸¦ °¡Á®¿Â´Ù.
+    // Cursorë¥¼ ì´ìš©í•˜ì—¬ ì¡°ê±´ì— ë§ëŠ” Rowë¥¼ ê°€ì ¸ì˜¨ë‹¤.
     IDE_TEST( smiTempTable::fetch( aTempTable->searchCursor,
                                    (UChar**) aRow,
                                    & aTempTable->recordNode->dstTuple->rid )
@@ -593,20 +593,20 @@ qmcDiskSort::getFirstNonHit( qmcdDiskSortTemp * aTempTable,
 /***********************************************************************
  *
  * Description :
- *    ÃÖÃÊ HitµÇÁö ¾ÊÀº Record¸¦ °Ë»öÇÑ´Ù.
+ *    ìµœì´ˆ Hitë˜ì§€ ì•Šì€ Recordë¥¼ ê²€ìƒ‰í•œë‹¤.
  *
  * Implementation :
- *    ´ÙÀ½°ú °°Àº ÀıÂ÷¿¡ ÀÇÇÏ¿© NonHiit °Ë»öÀ» ¼öÇàÇÑ´Ù.
- *        - NonHit Filter¸¦ »ı¼ºÇÑ´Ù.
- *        - NonHitÀ» À§ÇÑ Cursor¸¦ ¿¬´Ù.
- *        - Á¶°ÇÀ» ¸¸Á·ÇÏ´Â Record¸¦ ÀĞ¾î¿Â´Ù.
+ *    ë‹¤ìŒê³¼ ê°™ì€ ì ˆì°¨ì— ì˜í•˜ì—¬ NonHiit ê²€ìƒ‰ì„ ìˆ˜í–‰í•œë‹¤.
+ *        - NonHit Filterë¥¼ ìƒì„±í•œë‹¤.
+ *        - NonHitì„ ìœ„í•œ Cursorë¥¼ ì—°ë‹¤.
+ *        - ì¡°ê±´ì„ ë§Œì¡±í•˜ëŠ” Recordë¥¼ ì½ì–´ì˜¨ë‹¤.
  *
  ***********************************************************************/
 
 #define IDE_FN "qmcDiskSort::getFirstNonHit"
     IDE_MSGLOG_FUNC(IDE_MSGLOG_BODY("qmcDiskSort::getFirstNonHit"));
 
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     IDE_DASSERT( *aRow == aTempTable->recordNode->dstTuple->row );
 
     IDE_TEST( openCursor(aTempTable, 
@@ -619,7 +619,7 @@ qmcDiskSort::getFirstNonHit( qmcdDiskSortTemp * aTempTable,
                          &aTempTable->searchCursor )
               != IDE_SUCCESS );
 
-    // Record¸¦ ¾ò¾î ¿Â´Ù.
+    // Recordë¥¼ ì–»ì–´ ì˜¨ë‹¤.
     IDE_TEST( smiTempTable::fetch( aTempTable->searchCursor,
                                    (UChar**) aRow,
                                    & aTempTable->recordNode->dstTuple->rid )
@@ -642,7 +642,7 @@ qmcDiskSort::getNextNonHit( qmcdDiskSortTemp * aTempTable,
 /***********************************************************************
  *
  * Description :
- *    ´ÙÀ½ HitµÇÁö ¾ÊÀº Record¸¦ °Ë»öÇÑ´Ù.
+ *    ë‹¤ìŒ Hitë˜ì§€ ì•Šì€ Recordë¥¼ ê²€ìƒ‰í•œë‹¤.
  *
  * Implementation :
  *
@@ -651,10 +651,10 @@ qmcDiskSort::getNextNonHit( qmcdDiskSortTemp * aTempTable,
 #define IDE_FN "qmcDiskSort::getNextNonHit"
     IDE_MSGLOG_FUNC(IDE_MSGLOG_BODY("qmcDiskSort::getNextNonHit"));
 
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     IDE_DASSERT( *aRow == aTempTable->recordNode->dstTuple->row );
 
-    // Cursor¸¦ ÀÌ¿ëÇÏ¿© Á¶°Ç¿¡ ¸Â´Â Row¸¦ °¡Á®¿Â´Ù.
+    // Cursorë¥¼ ì´ìš©í•˜ì—¬ ì¡°ê±´ì— ë§ëŠ” Rowë¥¼ ê°€ì ¸ì˜¨ë‹¤.
     IDE_TEST( smiTempTable::fetch( aTempTable->searchCursor,
                                    (UChar**) aRow,
                                    & aTempTable->recordNode->dstTuple->rid )
@@ -676,23 +676,23 @@ qmcDiskSort::getNullRow( qmcdDiskSortTemp * aTempTable,
 /***********************************************************************
  *
  * Description :
- *    NULL ROW¸¦ È¹µæÇÑ´Ù.
+ *    NULL ROWë¥¼ íšë“í•œë‹¤.
  *
  * Implementation :
- *    Null Row¸¦ È¹µæÇÑ ÀûÀÌ ¾ø´Ù¸é, Null Row¸¦ È¹µæ
- *    ÀúÀåµÈ ÇØ´ç ¿µ¿ª¿¡ Null Row¸¦ º¹»çÇÑ´Ù.
- *    SMÀÇ Null Row¸¦ ÀúÀåÇÏ´Â ÀÌÀ¯´Â ºó¹øÇÑ È£Ãâ·Î ÀÎÇÑ Disk I/O¸¦
- *    ¹æÁöÇÏ±â À§ÇÔÀÌ´Ù.
+ *    Null Rowë¥¼ íšë“í•œ ì ì´ ì—†ë‹¤ë©´, Null Rowë¥¼ íšë“
+ *    ì €ì¥ëœ í•´ë‹¹ ì˜ì—­ì— Null Rowë¥¼ ë³µì‚¬í•œë‹¤.
+ *    SMì˜ Null Rowë¥¼ ì €ì¥í•˜ëŠ” ì´ìœ ëŠ” ë¹ˆë²ˆí•œ í˜¸ì¶œë¡œ ì¸í•œ Disk I/Oë¥¼
+ *    ë°©ì§€í•˜ê¸° ìœ„í•¨ì´ë‹¤.
  *
  ***********************************************************************/
 
 #define IDE_FN "qmcDiskSort::getNullRow"
     IDE_MSGLOG_FUNC(IDE_MSGLOG_BODY("qmcDiskSort::getNullRow"));
 
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     IDE_DASSERT( *aRow == aTempTable->recordNode->dstTuple->row );
 
-    // ÀúÀåµÈ Null Row¸¦ ÇØ´ç ¿µ¿ª¿¡ º¹»çÇØ ÁØ´Ù.
+    // ì €ì¥ëœ Null Rowë¥¼ í•´ë‹¹ ì˜ì—­ì— ë³µì‚¬í•´ ì¤€ë‹¤.
     IDE_TEST( smiTempTable::getNullRow( aTempTable->tableHandle,
                                         (UChar**)aRow )
               != IDE_SUCCESS );
@@ -716,10 +716,10 @@ qmcDiskSort::getCurrPosition( qmcdDiskSortTemp * aTempTable,
 /***********************************************************************
  *
  * Description :
- *    ÇöÀç À§Ä¡ÀÇ Cursor¸¦ ÀúÀåÇÑ´Ù.
+ *    í˜„ì¬ ìœ„ì¹˜ì˜ Cursorë¥¼ ì €ì¥í•œë‹¤.
  *
  * Implementation :
- *    Cursor Á¤º¸¿Í RIDÁ¤º¸¸¦ ÀúÀåÇÑ´Ù.
+ *    Cursor ì •ë³´ì™€ RIDì •ë³´ë¥¼ ì €ì¥í•œë‹¤.
  *
  *
  ***********************************************************************/
@@ -727,12 +727,12 @@ qmcDiskSort::getCurrPosition( qmcdDiskSortTemp * aTempTable,
 #define IDE_FN "qmcDiskSort::getCurrPosition"
     IDE_MSGLOG_FUNC(IDE_MSGLOG_BODY("qmcDiskSort::getCurrPosition"));
 
-    // ÀûÇÕ¼º °Ë»ç
-    // Search Cursor°¡ ¿­·Á ÀÖ¾î¾ß ÇÔ.
+    // ì í•©ì„± ê²€ì‚¬
+    // Search Cursorê°€ ì—´ë ¤ ìˆì–´ì•¼ í•¨.
     IDE_DASSERT( aTempTable->searchCursor != NULL );
     IDE_DASSERT( aCursorInfo != NULL );
 
-    // Cursor Á¤º¸¸¦ ÀúÀåÇÔ.
+    // Cursor ì •ë³´ë¥¼ ì €ì¥í•¨.
     IDE_TEST( smiTempTable::storeCursor( aTempTable->searchCursor,
                                          (smiTempPosition**)
                                          &aCursorInfo->mCursor.mDTPos.mPos )
@@ -755,18 +755,18 @@ qmcDiskSort::setCurrPosition( qmcdDiskSortTemp * aTempTable,
 /***********************************************************************
  *
  * Description :
- *    ÁöÁ¤µÈ Cursor À§Ä¡·Î º¹¿ø½ÃÅ²´Ù.
+ *    ì§€ì •ëœ Cursor ìœ„ì¹˜ë¡œ ë³µì›ì‹œí‚¨ë‹¤.
  *
  * Implementation :
- *    Cursor¸¦ º¹¿øÇÏ°í RID·ÎºÎÅÍ Data¸¦ º¹¿øÇÑ´Ù.
+ *    Cursorë¥¼ ë³µì›í•˜ê³  RIDë¡œë¶€í„° Dataë¥¼ ë³µì›í•œë‹¤.
  *
  ***********************************************************************/
 
 #define IDE_FN "qmcDiskSort::setCurrPosition"
     IDE_MSGLOG_FUNC(IDE_MSGLOG_BODY("qmcDiskSort::setCurrPosition"));
 
-    // ÀûÇÕ¼º °Ë»ç
-    // Search Cursor°¡ ¿­·Á ÀÖ¾î¾ß ÇÔ.
+    // ì í•©ì„± ê²€ì‚¬
+    // Search Cursorê°€ ì—´ë ¤ ìˆì–´ì•¼ í•¨.
     IDE_DASSERT( aTempTable->searchCursor != NULL );
     IDE_DASSERT( aCursorInfo != NULL );
 
@@ -795,11 +795,11 @@ qmcDiskSort::getCursorInfo( qmcdDiskSortTemp * aTempTable,
  *
  * Description :
  *
- *    View SCANµî¿¡¼­ Á÷Á¢ Á¢±ÙÇÏ±â À§ÇÑ Á¤º¸ ÃßÃâ
+ *    View SCANë“±ì—ì„œ ì§ì ‘ ì ‘ê·¼í•˜ê¸° ìœ„í•œ ì •ë³´ ì¶”ì¶œ
  *
  * Implementation :
  *
- *    Table Handle°ú Index HandleÀ» ³Ñ°ÜÁØ´Ù.
+ *    Table Handleê³¼ Index Handleì„ ë„˜ê²¨ì¤€ë‹¤.
  *
  ***********************************************************************/
 
@@ -823,7 +823,7 @@ qmcDiskSort::getDisplayInfo( qmcdDiskSortTemp * aTempTable,
 /***********************************************************************
  *
  * Description :
- *    Temp TableÀÌ °ü¸®ÇÏ°í ÀÖ´Â Data¿¡ ´ëÇÑ Åë°è Á¤º¸ ÃßÃâ
+ *    Temp Tableì´ ê´€ë¦¬í•˜ê³  ìˆëŠ” Dataì— ëŒ€í•œ í†µê³„ ì •ë³´ ì¶”ì¶œ
  *
  * Implementation :
  *
@@ -845,8 +845,8 @@ qmcDiskSort::setSortNode( qmcdDiskSortTemp * aTempTable,
 /***********************************************************************
  *
  * Description 
- *    ÇöÀç Á¤·ÄÅ°(sortNode)¸¦ º¯°æ
- *    Window Sort(WNST)¿¡¼­´ÂÁ¤·ÄÀ» ¹İº¹ÇÏ±â À§ÇØ »ç¿ëµÈ´Ù.
+ *    í˜„ì¬ ì •ë ¬í‚¤(sortNode)ë¥¼ ë³€ê²½
+ *    Window Sort(WNST)ì—ì„œëŠ”ì •ë ¬ì„ ë°˜ë³µí•˜ê¸° ìœ„í•´ ì‚¬ìš©ëœë‹¤.
  *
  * Implementation :
  *
@@ -857,15 +857,15 @@ qmcDiskSort::setSortNode( qmcdDiskSortTemp * aTempTable,
     qmdMtrNode * sNode;
     UInt         i;
 
-    // Search Cursor°¡ ¿­·Á ÀÖ´Ù¸é ´İ¾Æ¾ß ÇÔ
+    // Search Cursorê°€ ì—´ë ¤ ìˆë‹¤ë©´ ë‹«ì•„ì•¼ í•¨
     IDE_TEST( smiTempTable::closeAllCursor( aTempTable->tableHandle )
               != IDE_SUCCESS );
     aTempTable->searchCursor = NULL;
 
-    /* SortNode ¼³Á¤ÇÔ */
+    /* SortNode ì„¤ì •í•¨ */
     aTempTable->sortNode = (qmdMtrNode*) aSortNode;
 
-    /* ´Ù½Ã SortNodeÀÇ °³¼ö¸¦ ¼¼¾î, IndexColumnÀÇ °³¼ö¸¦ ¾Ë¾Æ³¿ */
+    /* ë‹¤ì‹œ SortNodeì˜ ê°œìˆ˜ë¥¼ ì„¸ì–´, IndexColumnì˜ ê°œìˆ˜ë¥¼ ì•Œì•„ëƒ„ */
     for ( i = 0, sNode = aTempTable->sortNode;
           sNode != NULL;
           sNode = sNode->next, i++ );
@@ -893,8 +893,8 @@ qmcDiskSort::setUpdateColumnList( qmcdDiskSortTemp * aTempTable,
 /***********************************************************************
  *
  * Description :
- *    update¸¦ ¼öÇàÇÒ column list¸¦ ¼³Á¤
- *    ÁÖÀÇ: hitFlag¿Í ÇÔ²² »ç¿ë ºÒ°¡
+ *    updateë¥¼ ìˆ˜í–‰í•  column listë¥¼ ì„¤ì •
+ *    ì£¼ì˜: hitFlagì™€ í•¨ê»˜ ì‚¬ìš© ë¶ˆê°€
  *
  * Implementation :
  *
@@ -906,22 +906,22 @@ qmcDiskSort::setUpdateColumnList( qmcdDiskSortTemp * aTempTable,
     const qmdMtrNode * sNode;
     smiColumnList    * sColumn;
 
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     IDE_DASSERT( aUpdateColumns != NULL );
 
-    // Search Cursor°¡ ¿­·Á ÀÖ´Ù¸é ´İ¾Æ¾ß ÇÔ
+    // Search Cursorê°€ ì—´ë ¤ ìˆë‹¤ë©´ ë‹«ì•„ì•¼ í•¨
     IDE_TEST( smiTempTable::closeAllCursor( aTempTable->tableHandle )
               != IDE_SUCCESS );
     aTempTable->searchCursor = NULL;
 
-    // updateColumnList¸¦ À§ÇÑ °ø°£ ÇÒ´ç
-    // ÀÌ¹Ì setUpdateColumnListForHitFlag¿¡¼­ ¹Ì¸® ÇÒ´çµÇ¾î ÀÖÀ» °Í
+    // updateColumnListë¥¼ ìœ„í•œ ê³µê°„ í• ë‹¹
+    // ì´ë¯¸ setUpdateColumnListForHitFlagì—ì„œ ë¯¸ë¦¬ í• ë‹¹ë˜ì–´ ìˆì„ ê²ƒ
     if( aTempTable->updateColumnList == NULL )
     {
-        // WNSTÀÇ °æ¿ì update columnÀÌ »ç¿ëµÇ´Âµ¥,
-        // update columnÀÇ °³¼ö¸¦ ¹Ì¸® ¸ğµÎ È®ÀÎÇÒ ¼ö ¾ø±â ¶§¹®¿¡
-        // Áßº¹À¸·Î ¸Ş¸ğ¸® °ø°£À» ÇÒ´ç ¹Ş±â ¾Ê±â À§ÇØ ¹Ì¸® ¸ğµç Ä®·³¿¡ ´ëÇØ ÇÒ´çÇÔ
-        // insertColumnÀ» À§ÇÑ °ø°£°ú °°Àº Å©±â
+        // WNSTì˜ ê²½ìš° update columnì´ ì‚¬ìš©ë˜ëŠ”ë°,
+        // update columnì˜ ê°œìˆ˜ë¥¼ ë¯¸ë¦¬ ëª¨ë‘ í™•ì¸í•  ìˆ˜ ì—†ê¸° ë•Œë¬¸ì—
+        // ì¤‘ë³µìœ¼ë¡œ ë©”ëª¨ë¦¬ ê³µê°„ì„ í• ë‹¹ ë°›ê¸° ì•Šê¸° ìœ„í•´ ë¯¸ë¦¬ ëª¨ë“  ì¹¼ëŸ¼ì— ëŒ€í•´ í• ë‹¹í•¨
+        // insertColumnì„ ìœ„í•œ ê³µê°„ê³¼ ê°™ì€ í¬ê¸°
         IDU_LIMITPOINT("qmcDiskSort::setUpdateColumnList::malloc");
         IDE_TEST( aTempTable->mTemplate->stmt->qmxMem->alloc(
                 ID_SIZEOF(smiColumnList) * aTempTable->recordColumnCnt,
@@ -930,32 +930,32 @@ qmcDiskSort::setUpdateColumnList( qmcdDiskSortTemp * aTempTable,
     }
     else
     {
-        // ÀÌ¹Ì ÇÒ´ç µÈ °æ¿ì
+        // ì´ë¯¸ í• ë‹¹ ëœ ê²½ìš°
         // do nothing
     }
 
-    // mtrNode Á¤º¸·ÎºÎÅÍ update¸¦ À§ÇÑ smiColumnList¸¦ »ı¼ºÇÑ´Ù.
+    // mtrNode ì •ë³´ë¡œë¶€í„° updateë¥¼ ìœ„í•œ smiColumnListë¥¼ ìƒì„±í•œë‹¤.
     for( sNode = aUpdateColumns,
          sColumn = aTempTable->updateColumnList;
          sNode != NULL;
          sNode = sNode->next,
          sColumn++)
     {
-        // smiColumnList¸¦ À§ÇÑ °ø°£ÀÌ ¿¬¼ÓÀûÀ¸·Î ÇÒ´çµÇ¾î ÀÖÀ¸¹Ç·Î
-        // ´ÙÀ½ ÁÖ¼Ò À§Ä¡°¡ next
+        // smiColumnListë¥¼ ìœ„í•œ ê³µê°„ì´ ì—°ì†ì ìœ¼ë¡œ í• ë‹¹ë˜ì–´ ìˆìœ¼ë¯€ë¡œ
+        // ë‹¤ìŒ ì£¼ì†Œ ìœ„ì¹˜ê°€ next
         sColumn->next = sColumn+1;
 
-        // column Á¤º¸¸¦ ¿¬°á
+        // column ì •ë³´ë¥¼ ì—°ê²°
         sColumn->column = & sNode->dstColumn->column;
         
         if( sNode->next == NULL )
         {
-            // ¸¶Áö¸· Ä®·³Àº next¸¦ °¡ÁöÁö ¾ÊÀ½
+            // ë§ˆì§€ë§‰ ì¹¼ëŸ¼ì€ nextë¥¼ ê°€ì§€ì§€ ì•ŠìŒ
             sColumn->next = NULL;
         }
     }
 
-    // update¸¦ À§ÇÑ smiValue »ı¼º
+    // updateë¥¼ ìœ„í•œ smiValue ìƒì„±
     IDE_TEST( makeUpdateSmiValue( aTempTable ) != IDE_SUCCESS );
 
     return IDE_SUCCESS;
@@ -972,7 +972,7 @@ qmcDiskSort::updateRow( qmcdDiskSortTemp * aTempTable )
 /***********************************************************************
  *
  * Description :
- *    ÇöÀç °Ë»ö ÁßÀÎ À§Ä¡ÀÇ row¸¦ update
+ *    í˜„ì¬ ê²€ìƒ‰ ì¤‘ì¸ ìœ„ì¹˜ì˜ rowë¥¼ update
  *
  * Implementation :
  *
@@ -981,15 +981,15 @@ qmcDiskSort::updateRow( qmcdDiskSortTemp * aTempTable )
 #define IDE_FN "qmcDiskSort::updateRow"
     IDE_MSGLOG_FUNC(IDE_MSGLOG_BODY("qmcDiskSort::updateRow"));
 
-    // ÀûÇÕ¼º °Ë»ç
-    // Search Cursor°¡ ¿­·Á ÀÖ¾î¾ß ÇÔ.
+    // ì í•©ì„± ê²€ì‚¬
+    // Search Cursorê°€ ì—´ë ¤ ìˆì–´ì•¼ í•¨.
     IDE_DASSERT( aTempTable->searchCursor != NULL );
 
-    // PROJ-1597 Temp record size Á¦¾à Á¦°Å
-    // updateÇÒ valueµéÀ» ¼¼ÆÃÇÑ´Ù.
+    // PROJ-1597 Temp record size ì œì•½ ì œê±°
+    // updateí•  valueë“¤ì„ ì„¸íŒ…í•œë‹¤.
     makeUpdateSmiValue( aTempTable );
 
-    // Disk Temp TableÀÇ ½ÇÁ¦ Record¸¦ UpdateÇÑ´Ù.
+    // Disk Temp Tableì˜ ì‹¤ì œ Recordë¥¼ Updateí•œë‹¤.
     IDE_TEST( smiTempTable::update( aTempTable->searchCursor, 
                                     aTempTable->updateValues )
          != IDE_SUCCESS )
@@ -1009,16 +1009,16 @@ qmcDiskSort::createTempTable( qmcdDiskSortTemp * aTempTable )
 /***********************************************************************
  *
  * Description :
- *    Disk Temp TableÀ» »ı¼ºÇÑ´Ù.
+ *    Disk Temp Tableì„ ìƒì„±í•œë‹¤.
  *
  * Implementation :
  *
- *    1.  Disk Temp Table »ı¼ºÀ» À§ÇÑ Á¤º¸ ±¸¼º
- *        - Hit FlagÀ» À§ÇÑ ÀÚ·á ±¸Á¶ ÃÊ±âÈ­
- *        - Column List Á¤º¸ÀÇ ±¸¼º
- *        - NULL ROWÀÇ »ı¼º
- *    2.  Disk Temp Table »ı¼º
- *    3.  Temp Table Manager ¿¡ Table Handle µî·Ï
+ *    1.  Disk Temp Table ìƒì„±ì„ ìœ„í•œ ì •ë³´ êµ¬ì„±
+ *        - Hit Flagì„ ìœ„í•œ ìë£Œ êµ¬ì¡° ì´ˆê¸°í™”
+ *        - Column List ì •ë³´ì˜ êµ¬ì„±
+ *        - NULL ROWì˜ ìƒì„±
+ *    2.  Disk Temp Table ìƒì„±
+ *    3.  Temp Table Manager ì— Table Handle ë“±ë¡
  *
  ***********************************************************************/
 
@@ -1028,7 +1028,7 @@ qmcDiskSort::createTempTable( qmcdDiskSortTemp * aTempTable )
     UInt                   sFlag = SMI_TTFLAG_TYPE_SORT ;
 
     //-------------------------------------------------
-    // 1.  Disk Temp Table »ı¼ºÀ» À§ÇÑ Á¤º¸ ±¸¼º
+    // 1.  Disk Temp Table ìƒì„±ì„ ìœ„í•œ ì •ë³´ êµ¬ì„±
     //-------------------------------------------------
     if( ( aTempTable->flag & QMCD_SORT_TMP_SEARCH_MASK )
         == QMCD_SORT_TMP_SEARCH_RANGE )
@@ -1036,17 +1036,17 @@ qmcDiskSort::createTempTable( qmcdDiskSortTemp * aTempTable )
         sFlag |= SMI_TTFLAG_RANGESCAN;
     }
 
-    // Insert Column List Á¤º¸ÀÇ ±¸¼º
+    // Insert Column List ì •ë³´ì˜ êµ¬ì„±
     IDE_TEST( setInsertColumnList( aTempTable ) != IDE_SUCCESS );
 
     //-----------------------------------------
-    // Key ³»¿¡¼­ÀÇ Index Column Á¤º¸ÀÇ ±¸¼º
-    // createTempTableÀ» ÇÏ±â À§ÇØ¼­´Â key column Á¤º¸°¡ ¸ÕÀú ±¸ÃàµÇ¾î ÀÖ¾î¾ß ÇÑ´Ù.
+    // Key ë‚´ì—ì„œì˜ Index Column ì •ë³´ì˜ êµ¬ì„±
+    // createTempTableì„ í•˜ê¸° ìœ„í•´ì„œëŠ” key column ì •ë³´ê°€ ë¨¼ì € êµ¬ì¶•ë˜ì–´ ìˆì–´ì•¼ í•œë‹¤.
     //-----------------------------------------
     IDE_TEST( makeIndexColumnInfoInKEY( aTempTable ) != IDE_SUCCESS );
 
     //-------------------------------------------------
-    // 2.  Disk Temp TableÀÇ »ı¼º
+    // 2.  Disk Temp Tableì˜ ìƒì„±
     //-------------------------------------------------
     IDE_TEST( smiTempTable::create( 
                 aTempTable->mTemplate->stmt->mStatistics,
@@ -1054,19 +1054,19 @@ qmcDiskSort::createTempTable( qmcdDiskSortTemp * aTempTable )
                 aTempTable->mTempTableSize, /* aWorkAreaSize */
                 QC_SMI_STMT( aTempTable->mTemplate->stmt ), // smi statement
                 sFlag,
-                aTempTable->insertColumn,        // TableÀÇ Column ±¸¼º
+                aTempTable->insertColumn,        // Tableì˜ Column êµ¬ì„±
                 aTempTable->indexKeyColumnList,  // key column list
                 0,                               // WorkGroupRatio
-                (const void**) & aTempTable->tableHandle ) // Table ÇÚµé
+                (const void**) & aTempTable->tableHandle ) // Table í•¸ë“¤
         != IDE_SUCCESS );
     aTempTable->recordNode->dstTuple->tableHandle = aTempTable->tableHandle;
 
     //-------------------------------------------------
-    // 3.  Table HandleÀ» Temp Table Manager¿¡ µî·Ï
+    // 3.  Table Handleì„ Temp Table Managerì— ë“±ë¡
     //-------------------------------------------------
     /* BUG-38290 
-     * Temp table manager ÀÇ addTempTable ÇÔ¼ö´Â µ¿½Ã¿¡ È£ÃâµÉ ¼ö ¾øÀ¸¹Ç·Î
-     * mutex ¸¦ ÅëÇÑ µ¿½Ã¼º Á¦¾î¸¦ ÇÏÁö ¾Ê´Â´Ù.
+     * Temp table manager ì˜ addTempTable í•¨ìˆ˜ëŠ” ë™ì‹œì— í˜¸ì¶œë  ìˆ˜ ì—†ìœ¼ë¯€ë¡œ
+     * mutex ë¥¼ í†µí•œ ë™ì‹œì„± ì œì–´ë¥¼ í•˜ì§€ ì•ŠëŠ”ë‹¤.
      */
     IDE_TEST(
         qmcTempTableMgr::addTempTable( aTempTable->mTemplate->stmt->qmxMem,
@@ -1090,13 +1090,13 @@ qmcDiskSort::setInsertColumnList( qmcdDiskSortTemp * aTempTable )
  *
  * Description :
  *
- *    TableÀÇ Column ListÁ¤º¸¸¦ ±¸¼ºÇÑ´Ù.
+ *    Tableì˜ Column Listì •ë³´ë¥¼ êµ¬ì„±í•œë‹¤.
  *
  * Implementation :
- *    - Column List¸¦ À§ÇÑ °ø°£ ÇÒ´ç
- *    - Column List¿¡ Column Á¤º¸ÀÇ ¿¬°á
- *        - Hit FlagÀ» À§ÇÑ Á¤º¸ ¿¬°á
- *        - °¢ Column Á¤º¸ÀÇ ¿¬°á
+ *    - Column Listë¥¼ ìœ„í•œ ê³µê°„ í• ë‹¹
+ *    - Column Listì— Column ì •ë³´ì˜ ì—°ê²°
+ *        - Hit Flagì„ ìœ„í•œ ì •ë³´ ì—°ê²°
+ *        - ê° Column ì •ë³´ì˜ ì—°ê²°
  *
  ***********************************************************************/
 
@@ -1106,7 +1106,7 @@ qmcDiskSort::setInsertColumnList( qmcdDiskSortTemp * aTempTable )
     UInt i;
     mtcColumn * sColumn;
 
-    // Column °³¼ö¸¸Å­ Memory ÇÒ´ç
+    // Column ê°œìˆ˜ë§Œí¼ Memory í• ë‹¹
     IDU_FIT_POINT( "qmcDiskSort::setInsertColumnList::alloc::insertColumn",
                     idERR_ABORT_InsufficientMemory );
 
@@ -1115,31 +1115,31 @@ qmcDiskSort::setInsertColumnList( qmcdDiskSortTemp * aTempTable )
             (void**) & aTempTable->insertColumn ) != IDE_SUCCESS);
 
     //-------------------------------------------
-    // ÃÖÃÊ ColumnÀº Hit FlagÀ» ¿¬°áÇÏ°í,
-    // ÀÌÈÄÀÇ ColumnÀº Tuple Set Á¤º¸¸¦ ÀÌ¿ëÇÑ´Ù.
+    // ìµœì´ˆ Columnì€ Hit Flagì„ ì—°ê²°í•˜ê³ ,
+    // ì´í›„ì˜ Columnì€ Tuple Set ì •ë³´ë¥¼ ì´ìš©í•œë‹¤.
     //-------------------------------------------
 
     // To Fix PR-7995
-    // Column ID¸¦ ÃÊ±âÈ­ÇØÁÖ¾î¾ß ÇÔ
-    // Hit FlagÀÇ Column Á¤º¸ ¿¬°á
-    // °¢ ColumnµéÀÇ Column Á¤º¸ ¿¬°á
+    // Column IDë¥¼ ì´ˆê¸°í™”í•´ì£¼ì–´ì•¼ í•¨
+    // Hit Flagì˜ Column ì •ë³´ ì—°ê²°
+    // ê° Columnë“¤ì˜ Column ì •ë³´ ì—°ê²°
     for ( i = 0, sColumn = aTempTable->recordNode->dstTuple->columns;
           i < aTempTable->recordColumnCnt;
           i++ )
     {
-        // ÀÌÀü Column ListÀÇ ¿¬°á Á¤º¸ ±¸¼º
+        // ì´ì „ Column Listì˜ ì—°ê²° ì •ë³´ êµ¬ì„±
         if( i < aTempTable->recordColumnCnt - 1 )
         {
             aTempTable->insertColumn[i].next = & aTempTable->insertColumn[i+1];
         }
         else
         {
-            /* ¸¶Áö¸· Ä®·³ÀÌ¸é, NullÀ» ¿¬°á */
+            /* ë§ˆì§€ë§‰ ì¹¼ëŸ¼ì´ë©´, Nullì„ ì—°ê²° */
             aTempTable->insertColumn[i].next = NULL;
         }
         // To Fix PR-7995
-        // Column ID¸¦ ÃÊ±âÈ­ÇØÁÖ¾î¾ß ÇÔ
-        // ÇöÀç Column ListÀÇ Column Á¤º¸ ¿¬°á
+        // Column IDë¥¼ ì´ˆê¸°í™”í•´ì£¼ì–´ì•¼ í•¨
+        // í˜„ì¬ Column Listì˜ Column ì •ë³´ ì—°ê²°
         sColumn[i].column.id = i;
         aTempTable->insertColumn[i].column = & sColumn[i].column;
     }
@@ -1167,7 +1167,7 @@ qmcDiskSort::sort( qmcdDiskSortTemp * aTempTable )
 /***********************************************************************
  *
  * Description :
- *    Temp Table³»ÀÇ RowµéÀ» Á¤·ÄÇÑ´Ù.
+ *    Temp Tableë‚´ì˜ Rowë“¤ì„ ì •ë ¬í•œë‹¤.
  *
  * Implementation :
  *
@@ -1186,18 +1186,18 @@ qmcDiskSort::makeIndexColumnInfoInKEY( qmcdDiskSortTemp * aTempTable )
 /***********************************************************************
  *
  * Description :
- *    Index»ı¼º ½Ã Record³»¿¡¼­ Index Key·Î Æ÷ÇÔµÉ ÄÃ·³ÀÇ Á¤º¸¸¦
- *    ±¸¼ºÇÑ´Ù.  Disk IndexÀÇ °æ¿ì Key °ªÀ» º°µµ·Î ÀúÀåÇÏ±â ¶§¹®¿¡,
- *    Index »ı¼º ½Ã, Record³»¿¡¼­ÀÇ Index Key ColumnÀÇ Á¤º¸¿Í
- *    Key³»¿¡¼­ÀÇ Index Key ColumnÁ¤º¸¸¦ ±¸ºĞÇÏ¿© Ã³¸®ÇÏ¿©¾ß ÇÑ´Ù.
+ *    Indexìƒì„± ì‹œ Recordë‚´ì—ì„œ Index Keyë¡œ í¬í•¨ë  ì»¬ëŸ¼ì˜ ì •ë³´ë¥¼
+ *    êµ¬ì„±í•œë‹¤.  Disk Indexì˜ ê²½ìš° Key ê°’ì„ ë³„ë„ë¡œ ì €ì¥í•˜ê¸° ë•Œë¬¸ì—,
+ *    Index ìƒì„± ì‹œ, Recordë‚´ì—ì„œì˜ Index Key Columnì˜ ì •ë³´ì™€
+ *    Keyë‚´ì—ì„œì˜ Index Key Columnì •ë³´ë¥¼ êµ¬ë¶„í•˜ì—¬ ì²˜ë¦¬í•˜ì—¬ì•¼ í•œë‹¤.
  *
- *    Áï, Index ColumnÀÇ °æ¿ì Record³»¿¡¼­ÀÇ offset°ú Key³»¿¡¼­ÀÇ
- *    offsetÀÌ ´Ù¸£°Ô µÈ´Ù.
+ *    ì¦‰, Index Columnì˜ ê²½ìš° Recordë‚´ì—ì„œì˜ offsetê³¼ Keyë‚´ì—ì„œì˜
+ *    offsetì´ ë‹¤ë¥´ê²Œ ëœë‹¤.
  *
  * Implementation :
  *
- *    - Key ColumnÀ» À§ÇÑ mtcColumn Á¤º¸ ±¸Ãà
- *    - Key ColumnÀ» À§ÇÑ smiColumnList ±¸Ãà
+ *    - Key Columnì„ ìœ„í•œ mtcColumn ì •ë³´ êµ¬ì¶•
+ *    - Key Columnì„ ìœ„í•œ smiColumnList êµ¬ì¶•
  *
  ***********************************************************************/
 
@@ -1209,16 +1209,16 @@ qmcDiskSort::makeIndexColumnInfoInKEY( qmcdDiskSortTemp * aTempTable )
     qmdMtrNode    * sNode;
 
     //------------------------------------------------------------
-    // Key ³»¿¡¼­ÀÇ Index ´ë»ó ColumnÀÇ Á¤º¸ ±¸¼º
-    // ÇØ´ç ColumnÀÌ Key°ªÀ¸·Î ÀúÀåµÇ¾úÀ» ¶§,
-    // Record³»¿¡¼­ÀÇ offset Á¤º¸¿Í ´Ş¸® Key ³»¿¡¼­ÀÇ offsetÁ¤º¸·Î
-    // º¯°æµÇ¾î¾ß ÇÑ´Ù.
+    // Key ë‚´ì—ì„œì˜ Index ëŒ€ìƒ Columnì˜ ì •ë³´ êµ¬ì„±
+    // í•´ë‹¹ Columnì´ Keyê°’ìœ¼ë¡œ ì €ì¥ë˜ì—ˆì„ ë•Œ,
+    // Recordë‚´ì—ì„œì˜ offset ì •ë³´ì™€ ë‹¬ë¦¬ Key ë‚´ì—ì„œì˜ offsetì •ë³´ë¡œ
+    // ë³€ê²½ë˜ì–´ì•¼ í•œë‹¤.
     //------------------------------------------------------------
 
-    // WNSTÀÇ °æ¿ì update columnÀÌ »ç¿ëµÇ´Âµ¥,
-    // ÀÌÈÄ ÀçÁ¤·ÄµÇ¸é¼­ º¯°æµÉ KeyColumnÀÇ °³¼ö¸¦ ¹Ì¸® ¸ğµÎ È®ÀÎÇÒ ¼ö ¾ø±â
-    // ¶§¹®¿¡ Áßº¹À¸·Î ¸Ş¸ğ¸® °ø°£À» ÇÒ´ç ¹Ş±â ¾Ê±â À§ÇØ ¹Ì¸® ¸ğµç Ä®·³¿¡
-    // ´ëÇØ ÇÒ´çÇÔ
+    // WNSTì˜ ê²½ìš° update columnì´ ì‚¬ìš©ë˜ëŠ”ë°,
+    // ì´í›„ ì¬ì •ë ¬ë˜ë©´ì„œ ë³€ê²½ë  KeyColumnì˜ ê°œìˆ˜ë¥¼ ë¯¸ë¦¬ ëª¨ë‘ í™•ì¸í•  ìˆ˜ ì—†ê¸°
+    // ë•Œë¬¸ì— ì¤‘ë³µìœ¼ë¡œ ë©”ëª¨ë¦¬ ê³µê°„ì„ í• ë‹¹ ë°›ê¸° ì•Šê¸° ìœ„í•´ ë¯¸ë¦¬ ëª¨ë“  ì¹¼ëŸ¼ì—
+    // ëŒ€í•´ í• ë‹¹í•¨
     if( ( aTempTable->indexKeyColumn == NULL ) &&
         ( aTempTable->indexColumnCnt > 0 ) )
     {
@@ -1229,7 +1229,7 @@ qmcDiskSort::makeIndexColumnInfoInKEY( qmcdDiskSortTemp * aTempTable )
                 ID_SIZEOF(mtcColumn) * aTempTable->recordColumnCnt,
                 (void**) & aTempTable->indexKeyColumn ) != IDE_SUCCESS);
 
-        // Key Column List¸¦ À§ÇÑ °ø°£ ÇÒ´ç
+        // Key Column Listë¥¼ ìœ„í•œ ê³µê°„ í• ë‹¹
         IDU_FIT_POINT( "qmcDiskSort::makeIndexColumnInfoInKEY::alloc::indexKeyColumnList",
                         idERR_ABORT_InsufficientMemory );
 
@@ -1239,12 +1239,12 @@ qmcDiskSort::makeIndexColumnInfoInKEY( qmcdDiskSortTemp * aTempTable )
     }
     else
     {
-        // ÀÌ¹Ì ÇÒ´ç µÈ °æ¿ì
+        // ì´ë¯¸ í• ë‹¹ ëœ ê²½ìš°
         // do nothing
     }
 
     //---------------------------------------
-    // Key ColumnÀÇ mtcColumn Á¤º¸ »ı¼º
+    // Key Columnì˜ mtcColumn ì •ë³´ ìƒì„±
     //---------------------------------------
 
     sOffset = 0;
@@ -1252,22 +1252,22 @@ qmcDiskSort::makeIndexColumnInfoInKEY( qmcdDiskSortTemp * aTempTable )
           i < aTempTable->indexColumnCnt;
           i++, sNode = sNode->next )
     {
-        // Record³»ÀÇ Column Á¤º¸¸¦ º¹»ç
+        // Recordë‚´ì˜ Column ì •ë³´ë¥¼ ë³µì‚¬
         idlOS::memcpy( & aTempTable->indexKeyColumn[i],
                        sNode->dstColumn,
                        ID_SIZEOF(mtcColumn) );
 
         // fix BUG-8763
-        // Index ColumnÀÇ °æ¿ì ´ÙÀ½ FlagÀ» Ç¥½ÃÇÏ¿©¾ß ÇÔ.
+        // Index Columnì˜ ê²½ìš° ë‹¤ìŒ Flagì„ í‘œì‹œí•˜ì—¬ì•¼ í•¨.
         aTempTable->indexKeyColumn[i].column.flag &= ~SMI_COLUMN_USAGE_MASK;
         aTempTable->indexKeyColumn[i].column.flag |= SMI_COLUMN_USAGE_INDEX;
 
-        // Offset ÀçÁ¶Á¤
+        // Offset ì¬ì¡°ì •
         if ( (aTempTable->indexKeyColumn[i].column.flag
               & SMI_COLUMN_TYPE_MASK ) == SMI_COLUMN_TYPE_FIXED )
         {
-            // Fixed Column ÀÏ °æ¿ì
-            // Data Type¿¡ ¸Â´Â align Á¶Á¤
+            // Fixed Column ì¼ ê²½ìš°
+            // Data Typeì— ë§ëŠ” align ì¡°ì •
             sOffset =
                 idlOS::align( sOffset,
                               aTempTable->indexKeyColumn[i].module->align );
@@ -1278,23 +1278,23 @@ qmcDiskSort::makeIndexColumnInfoInKEY( qmcdDiskSortTemp * aTempTable )
         else
         {
             //------------------------------------------
-            // Variable ColumnÀÏ °æ¿ì
-            // Variable Column Header Å©±â°¡ ÀúÀåµÊ
-            // ÀÌ¿¡ ¸Â´Â alignÀ» ¼öÇàÇØ¾ß ÇÔ.
+            // Variable Columnì¼ ê²½ìš°
+            // Variable Column Header í¬ê¸°ê°€ ì €ì¥ë¨
+            // ì´ì— ë§ëŠ” alignì„ ìˆ˜í–‰í•´ì•¼ í•¨.
             //------------------------------------------
             sOffset = idlOS::align( sOffset, 8 );
             aTempTable->indexKeyColumn[i].column.offset = sOffset;
             aTempTable->indexKeyColumn[i].column.value = NULL;
 
 // PROJ_1705_PEH_TODO            
-            // Fixed ¿µ¿ª ³»¿¡´Â Header¸¸ ÀúÀåµÈ´Ù.
+            // Fixed ì˜ì—­ ë‚´ì—ëŠ” Headerë§Œ ì €ì¥ëœë‹¤.
             sOffset += smiGetVariableColumnSize( SMI_TABLE_DISK );
         }
 
         if ( (sNode->myNode->flag & QMC_MTR_SORT_ORDER_MASK )
              == QMC_MTR_SORT_ASCENDING )
         {
-            // Ascending Order ÁöÁ¤
+            // Ascending Order ì§€ì •
             aTempTable->indexKeyColumn[i].column.flag &=
                 ~SMI_COLUMN_ORDER_MASK;
             aTempTable->indexKeyColumn[i].column.flag |=
@@ -1302,7 +1302,7 @@ qmcDiskSort::makeIndexColumnInfoInKEY( qmcdDiskSortTemp * aTempTable )
         }
         else
         {
-            // Descending Order ÁöÁ¤
+            // Descending Order ì§€ì •
             aTempTable->indexKeyColumn[i].column.flag &=
                 ~SMI_COLUMN_ORDER_MASK;
             aTempTable->indexKeyColumn[i].column.flag |=
@@ -1339,18 +1339,18 @@ qmcDiskSort::makeIndexColumnInfoInKEY( qmcdDiskSortTemp * aTempTable )
     }
 
     //---------------------------------------
-    // Key ColumnÀ» À§ÇÑ smiColumnList ±¸Ãà
-    // »óÀ§¿¡¼­ ±¸ÃàÇÑ indexKeyColumnÁ¤º¸¸¦ ÀÌ¿ëÇÏ¿© ±¸ÃàÇÑ´Ù.
+    // Key Columnì„ ìœ„í•œ smiColumnList êµ¬ì¶•
+    // ìƒìœ„ì—ì„œ êµ¬ì¶•í•œ indexKeyColumnì •ë³´ë¥¼ ì´ìš©í•˜ì—¬ êµ¬ì¶•í•œë‹¤.
     //---------------------------------------
 
-    // Key Column ListÀÇ Á¤º¸ ±¸¼º
+    // Key Column Listì˜ ì •ë³´ êµ¬ì„±
     for ( i = 0; i < aTempTable->indexColumnCnt; i++ )
     {
-        // »óÀ§¿¡¼­ ±¸¼ºÇÑ Column Á¤º¸¸¦ ÀÌ¿ë
+        // ìƒìœ„ì—ì„œ êµ¬ì„±í•œ Column ì •ë³´ë¥¼ ì´ìš©
         aTempTable->indexKeyColumnList[i].column =
             & aTempTable->indexKeyColumn[i].column;
 
-        // Array Bound Read¸¦ ¹æÁöÇÏ±â À§ÇÑ °Ë»ç.
+        // Array Bound Readë¥¼ ë°©ì§€í•˜ê¸° ìœ„í•œ ê²€ì‚¬.
         if ( (i + 1) < aTempTable->indexColumnCnt )
         {
             aTempTable->indexKeyColumnList[i].next =
@@ -1382,13 +1382,13 @@ IDE_RC qmcDiskSort::openCursor( qmcdDiskSortTemp  * aTempTable,
 /***********************************************************************
  *
  * Description :
- *    GroupFini/Group/Search/HitFlag¸¦ À§ÇÑ Cursor¸¦ ¿¬´Ù.
+ *    GroupFini/Group/Search/HitFlagë¥¼ ìœ„í•œ Cursorë¥¼ ì—°ë‹¤.
  *
  * Implementation :
- *    1. Cursor°¡ ÇÑ ¹øµµ OpenµÇÁö ¾ÊÀº °æ¿ì,
- *        - CursorÀÇ Open
- *    2. Cursor°¡ ¿­·Á ÀÖ´Â °æ¿ì,
- *        - Cursor¸¦ Restart
+ *    1. Cursorê°€ í•œ ë²ˆë„ Openë˜ì§€ ì•Šì€ ê²½ìš°,
+ *        - Cursorì˜ Open
+ *    2. Cursorê°€ ì—´ë ¤ ìˆëŠ” ê²½ìš°,
+ *        - Cursorë¥¼ Restart
  *
  ***********************************************************************/
 #define IDE_FN "qmcDiskSort::openCursor"
@@ -1397,12 +1397,12 @@ IDE_RC qmcDiskSort::openCursor( qmcdDiskSortTemp  * aTempTable,
     if( *aTargetCursor == NULL )
     {
         //-----------------------------------------
-        // 1. Cursor°¡ ¿­·Á ÀÖÁö ¾ÊÀº °æ¿ì
+        // 1. Cursorê°€ ì—´ë ¤ ìˆì§€ ì•Šì€ ê²½ìš°
         //-----------------------------------------
         IDE_TEST( smiTempTable::openCursor( 
                 aTempTable->tableHandle,
                 aFlag,
-                aTempTable->updateColumnList,  // Update ColumnÁ¤º¸
+                aTempTable->updateColumnList,  // Update Columnì •ë³´
                 aKeyRange,
                 aKeyFilter,
                 aRowFilter,     
@@ -1413,7 +1413,7 @@ IDE_RC qmcDiskSort::openCursor( qmcdDiskSortTemp  * aTempTable,
     else
     {
         //-----------------------------------------
-        // 2. Cursor°¡ ¿­·Á ÀÖ´Â °æ¿ì
+        // 2. Cursorê°€ ì—´ë ¤ ìˆëŠ” ê²½ìš°
         //-----------------------------------------
         IDE_TEST( smiTempTable::restartCursor( 
                 *aTargetCursor,
@@ -1441,13 +1441,13 @@ qmcDiskSort::makeInsertSmiValue( qmcdDiskSortTemp * aTempTable )
 /***********************************************************************
  *
  * Description :
- *    Insert¸¦ À§ÇÑ Smi Value ±¸¼º Á¤º¸¸¦ »ı¼ºÇÑ´Ù.
+ *    Insertë¥¼ ìœ„í•œ Smi Value êµ¬ì„± ì •ë³´ë¥¼ ìƒì„±í•œë‹¤.
  *
  * Implementation :
- *    Disk Temp TableÀÇ Record¸¦ À§ÇÏ¿© »ı¼ºµÈ °ø°£¿¡¼­
- *    °¢ ColumnÀÇ Value Á¤º¸¸¦ ±¸¼ºÇÑ´Ù.
- *    ÃÖÃÊ ÇÑ ¹ø¸¸ ±¸¼ºÇÏ¸ç, ÀÌ´Â Temp TableÀÌ »ç¶óÁú ¶§±îÁö
- *    ÀÌ¹Ì ÇÒ´çµÈ Record °ø°£Àº Àı´ë º¯ÇÏÁö ¾Ê±â ¶§¹®ÀÌ´Ù.
+ *    Disk Temp Tableì˜ Recordë¥¼ ìœ„í•˜ì—¬ ìƒì„±ëœ ê³µê°„ì—ì„œ
+ *    ê° Columnì˜ Value ì •ë³´ë¥¼ êµ¬ì„±í•œë‹¤.
+ *    ìµœì´ˆ í•œ ë²ˆë§Œ êµ¬ì„±í•˜ë©°, ì´ëŠ” Temp Tableì´ ì‚¬ë¼ì§ˆ ë•Œê¹Œì§€
+ *    ì´ë¯¸ í• ë‹¹ëœ Record ê³µê°„ì€ ì ˆëŒ€ ë³€í•˜ì§€ ì•Šê¸° ë•Œë¬¸ì´ë‹¤.
  *
  ***********************************************************************/
 
@@ -1459,8 +1459,8 @@ qmcDiskSort::makeInsertSmiValue( qmcdDiskSortTemp * aTempTable )
 
     for ( i = 0; i < aTempTable->recordColumnCnt; i++ )
     {
-        // PROJ-1597 Temp record size Á¦¾à Á¦°Å
-        // smiValueÀÇ length, value¸¦ storing formatÀ¸·Î ¹Ù²Û´Ù.
+        // PROJ-1597 Temp record size ì œì•½ ì œê±°
+        // smiValueì˜ length, valueë¥¼ storing formatìœ¼ë¡œ ë°”ê¾¼ë‹¤.
 
         sColumn = &aTempTable->recordNode->dstTuple->columns[i];
 
@@ -1485,18 +1485,18 @@ qmcDiskSort::makeRange( qmcdDiskSortTemp * aTempTable )
 /***********************************************************************
  *
  * Description :
- *    Range °Ë»öÀ» À§ÇÑ Key/Row Range¸¦ »ı¼ºÇÑ´Ù.
+ *    Range ê²€ìƒ‰ì„ ìœ„í•œ Key/Row Rangeë¥¼ ìƒì„±í•œë‹¤.
  *
  * Implementation :
- *    Range °ø°£ÀÌ ¾ø´Â °æ¿ì,
- *        - Range °ø°£ÀÇ Å©±â¸¦ °è»êÇÏ°í, ¸Ş¸ğ¸®¸¦ ÇÒ´ç¹Ş´Â´Ù.
- *    Range »ı¼º
- *        - ÁÖ¾îÁø Key Range PredicateÀ» ÀÌ¿ëÇÏ¿© Key Range¸¦ »ı¼ºÇÑ´Ù.
+ *    Range ê³µê°„ì´ ì—†ëŠ” ê²½ìš°,
+ *        - Range ê³µê°„ì˜ í¬ê¸°ë¥¼ ê³„ì‚°í•˜ê³ , ë©”ëª¨ë¦¬ë¥¼ í• ë‹¹ë°›ëŠ”ë‹¤.
+ *    Range ìƒì„±
+ *        - ì£¼ì–´ì§„ Key Range Predicateì„ ì´ìš©í•˜ì—¬ Key Rangeë¥¼ ìƒì„±í•œë‹¤.
  *
  * Modified :
- *    Key Range¸¦ »ı¼ºÇÒ ¶§ Row Rangeµµ ÇÔ²² »ı¼ºÇÑ´Ù.
- *    PROJ-1431¿¡¼­ Temp B-Tree°¡ sparse index·Î ±¸Á¶º¯°æµÊ¿¡ µû¶ó
- *    data page¿¡¼­ range°¡ ÇÊ¿äÇÔ
+ *    Key Rangeë¥¼ ìƒì„±í•  ë•Œ Row Rangeë„ í•¨ê»˜ ìƒì„±í•œë‹¤.
+ *    PROJ-1431ì—ì„œ Temp B-Treeê°€ sparse indexë¡œ êµ¬ì¡°ë³€ê²½ë¨ì— ë”°ë¼
+ *    data pageì—ì„œ rangeê°€ í•„ìš”í•¨
  ***********************************************************************/
 
 #define IDE_FN "qmcDiskSort::makeRange"
@@ -1507,21 +1507,21 @@ qmcDiskSort::makeRange( qmcdDiskSortTemp * aTempTable )
     qtcNode * sKeyFilter;
     UInt      sCompareType;
 
-    // ÀûÇÕ¼º °Ë»ç
-    // Range °Ë»öÀº ÇÑ Column¿¡ ´ëÇØ¼­¸¸ °¡´ÉÇÏ´Ù.
+    // ì í•©ì„± ê²€ì‚¬
+    // Range ê²€ìƒ‰ì€ í•œ Columnì— ëŒ€í•´ì„œë§Œ ê°€ëŠ¥í•˜ë‹¤.
     IDE_DASSERT( aTempTable->indexColumnCnt == 1 );
 
     //-----------------------------------
-    // Key Range °ø°£À» ÇÒ´ç¹ŞÀ½.
+    // Key Range ê³µê°„ì„ í• ë‹¹ë°›ìŒ.
     //-----------------------------------
     if ( aTempTable->keyRangeArea == NULL )
     {
-        // Range¸¦ À§ÇÑ °ø°£À» ÇÒ´ç¹Ş´Â´Ù.
-        // PredicateÀÇ Value´Â ¹Ù²î¾îµµ PredicateÀÇ Á¾·ù´Â ¹Ù²îÁö ¾Ê´Â´Ù.
-        // µû¶ó¼­, ÇÑ ¹ø¸¸ ÇÒ´çÇÏ°í °è¼Ó »ç¿ëÇÒ ¼ö ÀÖµµ·Ï ÇÑ´Ù.
+        // Rangeë¥¼ ìœ„í•œ ê³µê°„ì„ í• ë‹¹ë°›ëŠ”ë‹¤.
+        // Predicateì˜ ValueëŠ” ë°”ë€Œì–´ë„ Predicateì˜ ì¢…ë¥˜ëŠ” ë°”ë€Œì§€ ì•ŠëŠ”ë‹¤.
+        // ë”°ë¼ì„œ, í•œ ë²ˆë§Œ í• ë‹¹í•˜ê³  ê³„ì† ì‚¬ìš©í•  ìˆ˜ ìˆë„ë¡ í•œë‹¤.
 
         //---------------------------
-        // RangeÀÇ Å©±â °è»ê
+        // Rangeì˜ í¬ê¸° ê³„ì‚°
         //---------------------------
 
         IDE_TEST(
@@ -1531,7 +1531,7 @@ qmcDiskSort::makeRange( qmcdDiskSortTemp * aTempTable )
             != IDE_SUCCESS );
 
         //---------------------------
-        // Key Range¸¦ À§ÇÑ °ø°£À» ÇÒ´çÇÑ´Ù.
+        // Key Rangeë¥¼ ìœ„í•œ ê³µê°„ì„ í• ë‹¹í•œë‹¤.
         //---------------------------
         IDU_FIT_POINT( "qmcDiskSort::makeRange::alloc::keyRangeArea",
                         idERR_ABORT_InsufficientMemory );
@@ -1555,14 +1555,14 @@ qmcDiskSort::makeRange( qmcdDiskSortTemp * aTempTable )
         sKeyColsFlag = SMI_COLUMN_ORDER_DESCENDING;
     }
 
-    // ÀûÇÕ¼º °Ë»ç
-    // ¹İµå½Ã Key Range»ı¼ºÀÌ ¼º°øÇØ¾ß ÇÔ
+    // ì í•©ì„± ê²€ì‚¬
+    // ë°˜ë“œì‹œ Key Rangeìƒì„±ì´ ì„±ê³µí•´ì•¼ í•¨
 
     //-----------------------------------
-    // Key Range¸¦ »ı¼ºÇÔ.
+    // Key Rangeë¥¼ ìƒì„±í•¨.
     //-----------------------------------
 
-    // disk temp tableÀÇ key range´Â MT Å¸ÀÔ°£ÀÇ compare
+    // disk temp tableì˜ key rangeëŠ” MT íƒ€ì…ê°„ì˜ compare
     sCompareType = MTD_COMPARE_MTDVAL_MTDVAL;
 
     IDE_TEST( qmoKeyRange::makeKeyRange(
@@ -1577,8 +1577,8 @@ qmcDiskSort::makeRange( qmcdDiskSortTemp * aTempTable )
                   & sKeyFilter )
               != IDE_SUCCESS );
 
-    // ÀûÇÕ¼º °Ë»ç
-    // ¹İµå½Ã Key Range»ı¼ºÀÌ ¼º°øÇØ¾ß ÇÔ
+    // ì í•©ì„± ê²€ì‚¬
+    // ë°˜ë“œì‹œ Key Rangeìƒì„±ì´ ì„±ê³µí•´ì•¼ í•¨
     IDE_DASSERT( sKeyFilter == NULL );
 
     return IDE_SUCCESS;
@@ -1596,12 +1596,12 @@ qmcDiskSort::makeUpdateSmiValue( qmcdDiskSortTemp * aTempTable )
 /***********************************************************************
  *
  * Description :
- *    Update ColumnÀ» À§ÇÑ Smi Value ±¸¼º Á¤º¸¸¦ »ı¼ºÇÑ´Ù.
+ *    Update Columnì„ ìœ„í•œ Smi Value êµ¬ì„± ì •ë³´ë¥¼ ìƒì„±í•œë‹¤.
  *
  * Implementation :
- *    PROJ-1597 Temp record size Á¦¾à Á¦°Å¸¦ À§ÇØ
- *    ¸Å¹ø update¸¦ È£ÃâÇÏ±â Àü¿¡ ÀÌ ÇÔ¼ö¸¦ ºÒ·¯Áà¾ß ÇÑ´Ù.
- *    update valueµéÀº storing ÇüÅÂÀÌ±â ¶§¹®¿¡ ¸Å¹ø Á¶Á¤ÇØÁà¾ß ÇÑ´Ù.:
+ *    PROJ-1597 Temp record size ì œì•½ ì œê±°ë¥¼ ìœ„í•´
+ *    ë§¤ë²ˆ updateë¥¼ í˜¸ì¶œí•˜ê¸° ì „ì— ì´ í•¨ìˆ˜ë¥¼ ë¶ˆëŸ¬ì¤˜ì•¼ í•œë‹¤.
+ *    update valueë“¤ì€ storing í˜•íƒœì´ê¸° ë•Œë¬¸ì— ë§¤ë²ˆ ì¡°ì •í•´ì¤˜ì•¼ í•œë‹¤.:
  *
  ***********************************************************************/
 
@@ -1614,7 +1614,7 @@ qmcDiskSort::makeUpdateSmiValue( qmcdDiskSortTemp * aTempTable )
 
     if( aTempTable->updateValues == NULL )
     {
-        // Update Value Á¤º¸¸¦ À§ÇÑ °ø°£À» ÇÒ´çÇÑ´Ù.
+        // Update Value ì •ë³´ë¥¼ ìœ„í•œ ê³µê°„ì„ í• ë‹¹í•œë‹¤.
         IDU_FIT_POINT( "qmcDiskSort::makeUpdateSmiValue::alloc::updateValues",
                         idERR_ABORT_InsufficientMemory );
 
@@ -1632,8 +1632,8 @@ qmcDiskSort::makeUpdateSmiValue( qmcdDiskSortTemp * aTempTable )
          sColumn != NULL;
          sColumn = sColumn->next, sValue++ )
     {
-        // smiColumnÀº mtcColumn³»ºÎ¿¡ °´Ã¼°¡ Á¸ÀçÇÏ±â ¶§¹®¿¡
-        // °°Àº ÁÖ¼Ò¸¦ °¡Áø´Ù°í º¼ ¼ö ÀÖ´Ù.
+        // smiColumnì€ mtcColumnë‚´ë¶€ì— ê°ì²´ê°€ ì¡´ì¬í•˜ê¸° ë•Œë¬¸ì—
+        // ê°™ì€ ì£¼ì†Œë¥¼ ê°€ì§„ë‹¤ê³  ë³¼ ìˆ˜ ìˆë‹¤.
         sMtcColumn = (mtcColumn*)sColumn->column;
 
         sValue->value = 
@@ -1646,8 +1646,8 @@ qmcDiskSort::makeUpdateSmiValue( qmcdDiskSortTemp * aTempTable )
                         + sColumn->column->offset );
     }
 
-    // updateColumnListÀÇ °³¼ö°¡ ÇÒ´ç ¹ŞÀº updateValuesº¸´Ù ¸¹Àº °æ¿ì
-    // ¹ß»ıÇÏÁö ¾Ê´Â °æ¿ì
+    // updateColumnListì˜ ê°œìˆ˜ê°€ í• ë‹¹ ë°›ì€ updateValuesë³´ë‹¤ ë§ì€ ê²½ìš°
+    // ë°œìƒí•˜ì§€ ì•ŠëŠ” ê²½ìš°
     IDE_DASSERT( (UInt)(sValue-aTempTable->updateValues) <= aTempTable->recordColumnCnt );
 
     return IDE_SUCCESS;

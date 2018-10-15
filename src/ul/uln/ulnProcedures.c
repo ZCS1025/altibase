@@ -82,7 +82,7 @@ static ACI_RC ulnProcCreateQueryString(ulnFnContext *aFnContext,
     sSize = acpCStrLen(aQueryBuffer, aQueryBufferSize);
 
     // bug-25905: conn nls not applied to client lang module
-    // aFnContext ÀÎÀÚ Ãß°¡
+    // aFnContext ì¸ìž ì¶”ê°€
     sSize = ulnAppendFormatParameter(aFnContext,
                                      aQueryBuffer,
                                      aQueryBufferSize,
@@ -93,7 +93,7 @@ static ACI_RC ulnProcCreateQueryString(ulnFnContext *aFnContext,
     ACI_TEST_RAISE(sSize >= (acp_sint32_t)aQueryBufferSize, ERR_HY001);
 
     // bug-25905: conn nls not applied to client lang module
-    // aFnContext ÀÎÀÚ Ãß°¡
+    // aFnContext ì¸ìž ì¶”ê°€
     sSize = ulnAppendFormatParameter(aFnContext,
                                      aQueryBuffer,
                                      aQueryBufferSize,
@@ -158,7 +158,7 @@ SQLRETURN ulnProcedures(ulnStmt      *aStmt,
     ULN_FLAG_UP(sNeedExit);
 
     /*
-     * BUGBUG : Argument validity checking À» ¼öÇàÇØ¾ß ÇÑ´Ù.
+     * BUGBUG : Argument validity checking ì„ ìˆ˜í–‰í•´ì•¼ í•œë‹¤.
      */
 
     ACI_TEST(ulnProcCreateQueryString(&sFnContext,
@@ -170,7 +170,7 @@ SQLRETURN ulnProcedures(ulnStmt      *aStmt,
                                       ACI_SIZEOF(sQueryStringBuffer)) != ACI_SUCCESS);
 
     /*
-     * Protocol Context ÃÊ±âÈ­
+     * Protocol Context ì´ˆê¸°í™”
      */
     //fix BUG-17722
     ACI_TEST(ulnInitializeProtocolContext(&sFnContext,
@@ -198,14 +198,14 @@ SQLRETURN ulnProcedures(ulnStmt      *aStmt,
                                      aStmt->mParentDbc->mConnTimeoutValue) != ACI_SUCCESS);
 
     /*
-     * Protocol Context Á¤¸®
+     * Protocol Context ì •ë¦¬
      */
     ULN_FLAG_DOWN(sNeedFinPtContext);
     //fix BUG-17722
     ACI_TEST(ulnFinalizeProtocolContext(&sFnContext,&(aStmt->mParentDbc->mPtContext)) != ACI_SUCCESS);
 
     /*
-     * BUGBUG : ÄÃ·³ÀÇ Å¸ÀÔÀ» °­Á¦·Î ÁöÁ¤ÇØ ÁÖ´Â ÄÚµå°¡ cli2 ¿¡´Â ÀÖ¾ú´Ù.
+     * BUGBUG : ì»¬ëŸ¼ì˜ íƒ€ìž…ì„ ê°•ì œë¡œ ì§€ì •í•´ ì£¼ëŠ” ì½”ë“œê°€ cli2 ì—ëŠ” ìžˆì—ˆë‹¤.
      *          stmt->bindings[8-1].forced_type = SQL_C_SSHORT;
      */
 

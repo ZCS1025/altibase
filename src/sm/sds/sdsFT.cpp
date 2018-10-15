@@ -29,7 +29,7 @@
 
 
 /***********************************************************************
- * secondary buffer statÀÇ fixed tableÀ» ¸¸µå´Â ÇÔ¼ö
+ * secondary buffer statì˜ fixed tableì„ ë§Œë“œëŠ” í•¨ìˆ˜
  ***********************************************************************/
 static iduFixedTableColDesc gSecondatyBufferStatTableColDesc[] =
 {
@@ -227,7 +227,7 @@ iduFixedTableDesc gSBufferStatTableDesc =
 };
 
 /***********************************************
- *  BCB¸¦ À§ÇÑ fixed table Á¤ÀÇ
+ *  BCBë¥¼ ìœ„í•œ fixed table ì •ì˜
  ***********************************************/
 static iduFixedTableColDesc gBufferSBCBColDesc[] =
 {
@@ -399,7 +399,7 @@ iduFixedTableDesc gSBufferBCBStatTableDesc =
 };
 
 /***********************************************************************
- *  Flush Mgr ¸¦ ¸¸µé±â À§ÇÑ ÇÔ¼ö
+ *  Flush Mgr ë¥¼ ë§Œë“¤ê¸° ìœ„í•œ í•¨ìˆ˜
  ***********************************************************************/
 static iduFixedTableColDesc gSBufferFlushMgrStatTableColDesc[] =
 {
@@ -549,7 +549,7 @@ iduFixedTableDesc gSBufferFlushMgrStatTableDesc =
 };
 
 /***********************************************
- *  Fluser stat ¸¦ À§ÇÑ fixed table Á¤ÀÇ
+ *  Fluser stat ë¥¼ ìœ„í•œ fixed table ì •ì˜
  ***********************************************/
 static iduFixedTableColDesc gSBufferFlusherStatColDesc[] =
 {
@@ -797,7 +797,7 @@ iduFixedTableDesc gSBufferFlusherStatTableDesc =
 };
 
 /***********************************************************************
- *  Secondary File node ¸¦ À§ÇÑ fixed table Á¤ÀÇ
+ *  Secondary File node ë¥¼ ìœ„í•œ fixed table ì •ì˜
  ***********************************************************************/
 static iduFixedTableColDesc gSBufferFileTableColDesc[] =
 {
@@ -863,16 +863,16 @@ static iduFixedTableColDesc gSBufferFileTableColDesc[] =
     },
     {
         (SChar*)"OPENED",
-        offsetof(sdsFileNodeStat, mIsOpened), // BUGBUG : 4byteÀÎÁö È®ÀÎ
-        IDU_FT_SIZEOF(sdsFileNodeStat, mIsOpened), // BUGBUG : 4byteÀÎÁö È®,
+        offsetof(sdsFileNodeStat, mIsOpened), // BUGBUG : 4byteì¸ì§€ í™•ì¸
+        IDU_FT_SIZEOF(sdsFileNodeStat, mIsOpened), // BUGBUG : 4byteì¸ì§€ í™•,
         IDU_FT_TYPE_UINTEGER,
         NULL,
         0, 0,NULL // for internal use
     },
     {
         (SChar*)"STATE",
-        offsetof(sdsFileNodeStat, mState), // BUGBUG : 4byteÀÎÁö È®ÀÎ
-        IDU_FT_SIZEOF(sdsFileNodeStat, mState), // BUGBUG : 4byteÀÎÁö È®,
+        offsetof(sdsFileNodeStat, mState), // BUGBUG : 4byteì¸ì§€ í™•ì¸
+        IDU_FT_SIZEOF(sdsFileNodeStat, mState), // BUGBUG : 4byteì¸ì§€ í™•,
         IDU_FT_TYPE_UINTEGER,
         NULL,
         0, 0,NULL // for internal use

@@ -19,11 +19,11 @@
  * $Id: qmnDef.h 82124 2018-01-25 06:03:51Z jake.jang $
  *
  * Description :
- *     ¸ğµç Execution Plan Node °¡ °¡Áö´Â °øÅë Á¤º¸¸¦ Á¤ÀÇÇÔ.
+ *     ëª¨ë“  Execution Plan Node ê°€ ê°€ì§€ëŠ” ê³µí†µ ì •ë³´ë¥¼ ì •ì˜í•¨.
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  **********************************************************************/
 
@@ -38,45 +38,45 @@
 #include <smiDef.h>
 
 /***********************************************************************
- * [Data PlanÀÇ ÃÊ±âÈ­¸¦ À§ÇÑ Á¤ÀÇ]
+ * [Data Planì˜ ì´ˆê¸°í™”ë¥¼ ìœ„í•œ ì •ì˜]
  *
- * Execution NodeÀÇ Data PlanÀÇ ¿µ¿ª¿¡
- * PREPARE°¡ ¿Ï·áµÇ¾ú´ÂÁö, EXECUTIONÀÌ ¿Ï·áµÇ¾ú´ÂÁö¸¦ Ç¥ÇöÇÏ±â À§ÇÑ
- * mask °ªµé¿¡ ´ëÇÑ Á¤ÀÇÀÌ´Ù.
- * ÀÌ¿Í °°ÀÌ flagÀÇ mask¸¦ »ç¿ëÇÏ´Â ÀÌÀ¯´Â Data PlanÀ» À§ÇÑ Memory ¿µ¿ªÀ»
- * ¸ğµÎ ÃÊ±âÈ­ÇÏ´Â ºÎÇÏ¸¦ ¾ø¾Ö°í, ÇÊ¿äÇÑ ÃÊ±âÈ­¸¸À» ¼öÇàÇÏ±â À§ÇÔÀÌ´Ù.
- * µû¶ó¼­, ¸ğµç Data PlanÀÇ flagÀÇ ÀÏÁ¤ ºÎºĞÀ» ¿¹¾àµÇ¾î ÀÖ´Âµ¥,
- * ±× ÀÇ¹Ì´Â ´ÙÀ½°ú °°´Ù.
- * ¸¶Áö¸· Bit : [0001] - first init()À» ¼öÇàÇÒ Áö¿¡ ´ëÇÑ ¿©ºÎ
- *                     - 0ÀÎ °æ¿ì ¼öÇàÇØ¾ß ÇÔ.
+ * Execution Nodeì˜ Data Planì˜ ì˜ì—­ì—
+ * PREPAREê°€ ì™„ë£Œë˜ì—ˆëŠ”ì§€, EXECUTIONì´ ì™„ë£Œë˜ì—ˆëŠ”ì§€ë¥¼ í‘œí˜„í•˜ê¸° ìœ„í•œ
+ * mask ê°’ë“¤ì— ëŒ€í•œ ì •ì˜ì´ë‹¤.
+ * ì´ì™€ ê°™ì´ flagì˜ maskë¥¼ ì‚¬ìš©í•˜ëŠ” ì´ìœ ëŠ” Data Planì„ ìœ„í•œ Memory ì˜ì—­ì„
+ * ëª¨ë‘ ì´ˆê¸°í™”í•˜ëŠ” ë¶€í•˜ë¥¼ ì—†ì• ê³ , í•„ìš”í•œ ì´ˆê¸°í™”ë§Œì„ ìˆ˜í–‰í•˜ê¸° ìœ„í•¨ì´ë‹¤.
+ * ë”°ë¼ì„œ, ëª¨ë“  Data Planì˜ flagì˜ ì¼ì • ë¶€ë¶„ì„ ì˜ˆì•½ë˜ì–´ ìˆëŠ”ë°,
+ * ê·¸ ì˜ë¯¸ëŠ” ë‹¤ìŒê³¼ ê°™ë‹¤.
+ * ë§ˆì§€ë§‰ Bit : [0001] - first init()ì„ ìˆ˜í–‰í•  ì§€ì— ëŒ€í•œ ì—¬ë¶€
+ *                     - 0ì¸ ê²½ìš° ìˆ˜í–‰í•´ì•¼ í•¨.
  **********************************************************************/
 
 //------------------------------------------
 // qcTemplate.planFlag
 //------------------------------------------
 // after PVO, set this flag
-// ¸ğµç Plan Node°¡ firstInit()À» ¼öÇàÇÒ ¼ö ÀÖµµ·Ï ÇÑ´Ù.
+// ëª¨ë“  Plan Nodeê°€ firstInit()ì„ ìˆ˜í–‰í•  ìˆ˜ ìˆë„ë¡ í•œë‹¤.
 #define QMN_PLAN_PREPARE_DONE_MASK           (0x00000000)
 
 /***********************************************************************
- * [DML Cursor¸¦ À§ÇÑ Á¤ÀÇ]
+ * [DML Cursorë¥¼ ìœ„í•œ ì •ì˜]
  **********************************************************************/
 
 // PROJ-2205 rownum in DML
-// DMLÀ» À§ÇÑ Ä¿¼­ÀÇ Ãß°¡Á¤º¸
-// UPDATE, DELETE, MOVE¿Í PCRD, SCAN »çÀÌ¿¡ FILT°°Àº ´Ù¸¥ ³ëµåµéÀÌ
-// Á¸ÀçÇÒ ¼ö ÀÖÀ¸¹Ç·Î cursorInfo¸¦ ÀÌ¿ëÇÏ¿© Á¤º¸¸¦ Àü´ŞÇÑ´Ù.
+// DMLì„ ìœ„í•œ ì»¤ì„œì˜ ì¶”ê°€ì •ë³´
+// UPDATE, DELETE, MOVEì™€ PCRD, SCAN ì‚¬ì´ì— FILTê°™ì€ ë‹¤ë¥¸ ë…¸ë“œë“¤ì´
+// ì¡´ì¬í•  ìˆ˜ ìˆìœ¼ë¯€ë¡œ cursorInfoë¥¼ ì´ìš©í•˜ì—¬ ì •ë³´ë¥¼ ì „ë‹¬í•œë‹¤.
 typedef struct qmnCursorInfo
 {
     //-----------------------------------------
-    // PCRD, SCANÀÌ »óÀ§ÀÇ UPDATE, DELETE, MOVE¿¡°Ô Àü´ŞÇÏ´Â Á¤º¸
+    // PCRD, SCANì´ ìƒìœ„ì˜ UPDATE, DELETE, MOVEì—ê²Œ ì „ë‹¬í•˜ëŠ” ì •ë³´
     //-----------------------------------------
 
-    // SCANÀÎ °æ¿ì table cursor È¤Àº partition cursor
-    // PCRDÀÎ °æ¿ì index table cursor
+    // SCANì¸ ê²½ìš° table cursor í˜¹ì€ partition cursor
+    // PCRDì¸ ê²½ìš° index table cursor
     smiTableCursor  * cursor;
 
-    // SCAN È¤Àº PCRD¿¡¼­ ¼±ÅÃµÈ index (null/local/global)
+    // SCAN í˜¹ì€ PCRDì—ì„œ ì„ íƒëœ index (null/local/global)
     qcmIndex        * selectedIndex;
     mtcTuple        * selectedIndexTuple;
     
@@ -84,41 +84,41 @@ typedef struct qmnCursorInfo
     qcmAccessOption   accessOption;
 
     //-----------------------------------------
-    // UPDATE, DELETE, MOVE°¡ ÇÏÀ§ÀÇ PCRD, SCAN¿¡°Ô Àü´ŞÇÏ´Â Á¤º¸
+    // UPDATE, DELETE, MOVEê°€ í•˜ìœ„ì˜ PCRD, SCANì—ê²Œ ì „ë‹¬í•˜ëŠ” ì •ë³´
     //-----------------------------------------
     
     smiColumnList   * updateColumnList;     // update column list
     smiCursorType     cursorType;           // DML cursor type
-    idBool            isRowMovementUpdate;  // row movement updateÀÎ °æ¿ì (insert-delete)
+    idBool            isRowMovementUpdate;  // row movement updateì¸ ê²½ìš° (insert-delete)
     idBool            inplaceUpdate;        // inplace update
     UInt              lockMode;             // Lock Mode
 
-    /* PROJ-2464 hybrid partitioned table Áö¿ø */
+    /* PROJ-2464 hybrid partitioned table ì§€ì› */
     smiColumnList   * stmtRetryColLst;
     smiColumnList   * rowRetryColLst;
 } qmnCursorInfo;
 
 /***********************************************************************
- * [Plan Display¸¦ À§ÇÑ Á¤ÀÇ]
+ * [Plan Displayë¥¼ ìœ„í•œ ì •ì˜]
  **********************************************************************/
 
-// Plan Tree¸¦ DisplayÇÏ±â À§ÇÑ StringÀÇ ÇÑ°è°ªÀ» Á¤ÀÇÇÑ »ó¼ö
-// ¾Æ·¡¿Í °°ÀÌ ÃÖ´ë ±æÀÌ¸¦ 32K·Î Á¦ÇÑÇÑ´Ù.
+// Plan Treeë¥¼ Displayí•˜ê¸° ìœ„í•œ Stringì˜ í•œê³„ê°’ì„ ì •ì˜í•œ ìƒìˆ˜
+// ì•„ë˜ì™€ ê°™ì´ ìµœëŒ€ ê¸¸ì´ë¥¼ 32Kë¡œ ì œí•œí•œë‹¤.
 #define QMN_MAX_PLAN_LENGTH                   (32 * 1024)
 #define QMN_PLAN_PRINT_LENGTH                       (256)
 
 #define QMN_PLAN_PRINT_NON_MTR_ID                    (-1)
 
-// Plan Display Option¿¡ ´ëÇÑ Á¤ÀÇ·Î
-// ALTER SESSION SET EXPLAIN PLAN = ON °ú
-// ALTER SESSION SET EXPLAIN PLAN = ONLY¸¦ ±¸º°ÇÏ±â À§ÇÑ »ó¼öÀÌ´Ù.
+// Plan Display Optionì— ëŒ€í•œ ì •ì˜ë¡œ
+// ALTER SESSION SET EXPLAIN PLAN = ON ê³¼
+// ALTER SESSION SET EXPLAIN PLAN = ONLYë¥¼ êµ¬ë³„í•˜ê¸° ìœ„í•œ ìƒìˆ˜ì´ë‹¤.
 typedef enum
 {
-    QMN_DISPLAY_ALL = 0, // ¼öÇà °á°ú¸¦ ¸ğµÎ Display ÇÔ
-    QMN_DISPLAY_CODE     // Code ¿µ¿ªÀÇ Á¤º¸¸¸À» Display ÇÔ
+    QMN_DISPLAY_ALL = 0, // ìˆ˜í–‰ ê²°ê³¼ë¥¼ ëª¨ë‘ Display í•¨
+    QMN_DISPLAY_CODE     // Code ì˜ì—­ì˜ ì •ë³´ë§Œì„ Display í•¨
 } qmnDisplay;
 
-// PROJ-2551 simple query ÃÖÀûÈ­
+// PROJ-2551 simple query ìµœì í™”
 typedef enum
 {
     QMN_VALUE_TYPE_INIT = 0,
@@ -175,11 +175,11 @@ typedef struct qmnValueInfo
 }
 
 /***********************************************************************
- * [Code PlanÀ» À§ÇÑ Á¤ÀÇ]
+ * [Code Planì„ ìœ„í•œ ì •ì˜]
  *
  **********************************************************************/
 
-// Execution Plan ÀÇ Á¾·ù
+// Execution Plan ì˜ ì¢…ë¥˜
 typedef enum
 {
     QMN_NONE = 0,
@@ -188,13 +188,13 @@ typedef enum
     QMN_PROJ,      // PROJect plan
     QMN_FILT,      // FILTer plan
     QMN_SORT,      // SORT plan
-    QMN_LMST,      // LiMit SorT plan  (A4¿¡¼­ »õ·Î Ãß°¡)
+    QMN_LMST,      // LiMit SorT plan  (A4ì—ì„œ ìƒˆë¡œ ì¶”ê°€)
     QMN_HASH,      // HASH plan
     QMN_HSDS,      // HaSh DiStinct plan
     QMN_GRAG,      // GRoup AGgregation plan
     QMN_AGGR,      // AGGRegation plan
     QMN_GRBY,      // GRoup BY plan
-    QMN_CUNT,      // CoUNT(*) plan    (A4¿¡¼­ »õ·Î Ãß°¡)
+    QMN_CUNT,      // CoUNT(*) plan    (A4ì—ì„œ ìƒˆë¡œ ì¶”ê°€)
     QMN_CONC,      // CONCatenation plan
     QMN_JOIN,      // JOIN plan
     QMN_MGJN,      // MerGe JoiN plan
@@ -233,26 +233,26 @@ typedef enum
 } qmnType;
 
 //------------------------------------------------
-// Code PlanÀÇ Flag Á¤ÀÇ
+// Code Planì˜ Flag ì •ì˜
 //------------------------------------------------
 
 // qmnPlan.flag
 #define QMN_PLAN_FLAG_CLEAR                  (0x00000000)
 
 // qmnPlan.flag
-// Plan Node °¡ »ç¿ëÇÏ´Â ÀúÀå ¸ÅÃ¼ÀÇ Á¾·ù
+// Plan Node ê°€ ì‚¬ìš©í•˜ëŠ” ì €ì¥ ë§¤ì²´ì˜ ì¢…ë¥˜
 #define QMN_PLAN_STORAGE_MASK                (0x00000001)
 #define QMN_PLAN_STORAGE_MEMORY              (0x00000000)
 #define QMN_PLAN_STORAGE_DISK                (0x00000001)
 
 // qmnPlan.flag
-// Plan Node °¡ outer column reference¸¦ °®´Â ÁöÀÇ ¿©ºÎ
+// Plan Node ê°€ outer column referenceë¥¼ ê°–ëŠ” ì§€ì˜ ì—¬ë¶€
 #define QMN_PLAN_OUTER_REF_MASK              (0x00000002)
 #define QMN_PLAN_OUTER_REF_FALSE             (0x00000000)
 #define QMN_PLAN_OUTER_REF_TRUE              (0x00000002)
 
 // qmnPlan.flag
-// Plan Node °¡ temp tableÀ» »ı¼º½Ã fixed rid¸¦ °¡Á®¾ß ÇÏ´ÂÁö ¿©ºÎ
+// Plan Node ê°€ temp tableì„ ìƒì„±ì‹œ fixed ridë¥¼ ê°€ì ¸ì•¼ í•˜ëŠ”ì§€ ì—¬ë¶€
 #define QMN_PLAN_TEMP_FIXED_RID_MASK         (0x00000004)
 #define QMN_PLAN_TEMP_FIXED_RID_FALSE        (0x00000000)
 #define QMN_PLAN_TEMP_FIXED_RID_TRUE         (0x00000004)
@@ -276,8 +276,8 @@ typedef enum
 /* qmnPlan.flag
  * PROJ-1071 Parallel Query
  *
- * parallel execute ÇÒÁö ¸»Áö´Â
- * ÇÏÀ§¿¡ PRLQ °¡ ÀÖ´ÂÁö ¾ø´ÂÁö¿¡ µû¶ó °áÁ¤µÊ
+ * parallel execute í• ì§€ ë§ì§€ëŠ”
+ * í•˜ìœ„ì— PRLQ ê°€ ìˆëŠ”ì§€ ì—†ëŠ”ì§€ì— ë”°ë¼ ê²°ì •ë¨
  */
 
 #define QMN_PLAN_NODE_EXIST_MASK         (0x00003000)
@@ -303,29 +303,29 @@ typedef enum
 #define QMN_PLAN_DEFAULT_DEPENDENCY_VALUE (0xFFFFFFFF)
 
 //------------------------------------------------
-// Code Plan Node°¡ °øÅëÀûÀ¸·Î °¡Áö´Â ÇÔ¼ö Æ÷ÀÎÅÍ
+// Code Plan Nodeê°€ ê³µí†µì ìœ¼ë¡œ ê°€ì§€ëŠ” í•¨ìˆ˜ í¬ì¸í„°
 //------------------------------------------------
 
-// °¢ Plan NodeÀÇ ÃÊ±âÈ­¸¦ ¼öÇàÇÏ´Â ÇÔ¼ö
+// ê° Plan Nodeì˜ ì´ˆê¸°í™”ë¥¼ ìˆ˜í–‰í•˜ëŠ” í•¨ìˆ˜
 typedef IDE_RC (* initFunc ) ( qcTemplate * aTemplate,
                                qmnPlan    * aNode );
 
-// °¢ Plan NodeÀÇ °íÀ¯ÀÇ ±â´ÉÀ» ¼öÇàÇÏ´Â ÇÔ¼ö
+// ê° Plan Nodeì˜ ê³ ìœ ì˜ ê¸°ëŠ¥ì„ ìˆ˜í–‰í•˜ëŠ” í•¨ìˆ˜
 typedef IDE_RC (* doItFunc ) ( qcTemplate * aTemplate,
                                qmnPlan    * aNode,
                                qmcRowFlag * aFlag );
 
 // PROJ-2444
-// parallel plan À» ¼öÇàÇÏ±â Àü¿¡ ¹İµå½Ã ÇØ¾ßÇÏ´Â °úÁ¤À» ¼öÇàÇÏ´Â ÇÔ¼ö
+// parallel plan ì„ ìˆ˜í–‰í•˜ê¸° ì „ì— ë°˜ë“œì‹œ í•´ì•¼í•˜ëŠ” ê³¼ì •ì„ ìˆ˜í–‰í•˜ëŠ” í•¨ìˆ˜
 typedef IDE_RC (* readyItFunc ) ( qcTemplate * aTemplate,
                                   qmnPlan    * aNode,
                                   UInt         aTID );
 
-// °¢ Plan NodeÀÇ Null PaddingÀ» ¼öÇàÇÏ´Â ÇÔ¼ö
+// ê° Plan Nodeì˜ Null Paddingì„ ìˆ˜í–‰í•˜ëŠ” í•¨ìˆ˜
 typedef IDE_RC (* padNullFunc) ( qcTemplate * aTemplate,
                                  qmnPlan    * aNode );
 
-// °¢ Plan NodeÀÇ Plan Á¤º¸¸¦ DisplayÇÏ´Â ÇÔ¼ö
+// ê° Plan Nodeì˜ Plan ì •ë³´ë¥¼ Displayí•˜ëŠ” í•¨ìˆ˜
 typedef IDE_RC (* printPlanFunc) ( qcTemplate   * aTemplate,
                                    qmnPlan      * aNode,
                                    ULong          aDepth,
@@ -333,7 +333,7 @@ typedef IDE_RC (* printPlanFunc) ( qcTemplate   * aTemplate,
                                    qmnDisplay     aMode );
 
 /***********************************************************************
- *  [ Plan ÀÇ ±¸ºĞ ]
+ *  [ Plan ì˜ êµ¬ë¶„ ]
  *
  *  ---------------------------------------------
  *    Plan      |  left   |  right  | children
@@ -348,7 +348,7 @@ typedef IDE_RC (* printPlanFunc) ( qcTemplate   * aTemplate,
  **********************************************************************/
 
 /***********************************************************************
- * Multiple ChildrenÀ» ±¸¼ºÇÏ±â À§ÇÑ ÀÚ·á ±¸Á¶
+ * Multiple Childrenì„ êµ¬ì„±í•˜ê¸° ìœ„í•œ ìë£Œ êµ¬ì¡°
  *      ( PROJ-1486 Multiple Bag Union )
  **********************************************************************/
 
@@ -373,13 +373,13 @@ typedef struct qmnRangeSortedChildren
 }qmnRangeSortedChildren;
 
 //----------------------------------------------
-// ¸ğµç Code NodeµéÀÌ °øÅëÀ¸·Î °¡Áö´Â Plan ±¸Á¶
+// ëª¨ë“  Code Nodeë“¤ì´ ê³µí†µìœ¼ë¡œ ê°€ì§€ëŠ” Plan êµ¬ì¡°
 //----------------------------------------------
 
 typedef struct qmnPlan
 {
     qmnType       type;            // plan type
-    UInt          flag;            // ±âÅ¸ Mask Á¤º¸
+    UInt          flag;            // ê¸°íƒ€ Mask ì •ë³´
     UInt          offset;          // Data Node offset in templete
 
     SDouble       qmgOuput;        // PROJ-2242
@@ -391,11 +391,11 @@ typedef struct qmnPlan
     padNullFunc   padNull;         // null padding function
     printPlanFunc printPlan;       // print plan function
 
-    // Invariant ¿µ¿ª Ã³¸®¸¦ À§ÇÑ dependency
-    // Plan Node °¡ °¡Áö´Â dependencies ¿Í ´ëÇ¥ dependency
+    // Invariant ì˜ì—­ ì²˜ë¦¬ë¥¼ ìœ„í•œ dependency
+    // Plan Node ê°€ ê°€ì§€ëŠ” dependencies ì™€ ëŒ€í‘œ dependency
     qcDepInfo     depInfo;
     ULong         dependency;
-    ULong         outerDependency; // ´ëÇ¥ outer dependency
+    ULong         outerDependency; // ëŒ€í‘œ outer dependency
 
     qmnPlan     * left;            // left child node
     qmnPlan     * right;           // right child node
@@ -408,23 +408,23 @@ typedef struct qmnPlan
 } qmnPlan;
 
 //----------------------------------------------
-// ¸ğµç Data Plan µéÀÌ °øÅëÀ¸·Î °¡Áö´Â Plan ±¸Á¶
+// ëª¨ë“  Data Plan ë“¤ì´ ê³µí†µìœ¼ë¡œ ê°€ì§€ëŠ” Plan êµ¬ì¡°
 //----------------------------------------------
 typedef struct qmndPlan
 {
-    mtcTuple      * myTuple;        // Tuple À§Ä¡
-    UInt            mTID;           // Node °¡ »ç¿ëÇÑ thread id
+    mtcTuple      * myTuple;        // Tuple ìœ„ì¹˜
+    UInt            mTID;           // Node ê°€ ì‚¬ìš©í•œ thread id
 } qmndPlan;
 
 //----------------------------------------------
-// Key Range, Key Filter, Filter»ı¼ºÀ» À§ÇÑ ÀÚ·á ±¸Á¶
+// Key Range, Key Filter, Filterìƒì„±ì„ ìœ„í•œ ìë£Œ êµ¬ì¡°
 //----------------------------------------------
 
 typedef struct qmnCursorPredicate
 {
     // Input Information
-    qcmIndex              * index;               // Input: Index Á¤º¸
-    UShort                  tupleRowID;          // Input: Tuple Á¤º¸
+    qcmIndex              * index;               // Input: Index ì •ë³´
+    UShort                  tupleRowID;          // Input: Tuple ì •ë³´
 
     smiRange              * fixKeyRangeArea;     // Input: Fixed Key Range Area
     smiRange              * fixKeyRange;         // Input: Fixed Key Range
@@ -457,18 +457,18 @@ typedef struct qmnCursorPredicate
     smiRange              * keyFilter;           // Output: Key Filter
 } qmnCursorPredicate;
 
-/* PROJ-1353 GROUPING, GROUPING_ID FuncitonÀÇ °øÅë»ç¿ë ±¸Á¶Ã¼ */
+/* PROJ-1353 GROUPING, GROUPING_ID Funcitonì˜ ê³µí†µì‚¬ìš© êµ¬ì¡°ì²´ */
 typedef struct qmnGrouping
 {
     SInt   type;
     SInt * index;
 } qmnGrouping;
 
-/* PROJ-2339 Inverse Hash Join, Full Ouhter Join¿¡¼­ °øÅë»ç¿ë */
+/* PROJ-2339 Inverse Hash Join, Full Ouhter Joinì—ì„œ ê³µí†µì‚¬ìš© */
 typedef IDE_RC (* setHitFlagFunc) ( qcTemplate * aTemplate,
                                      qmnPlan    * aPlan );
 
-/* PROJ-2339 Inverse Hash Join ¿¡¼­ »ç¿ë */
+/* PROJ-2339 Inverse Hash Join ì—ì„œ ì‚¬ìš© */
 typedef idBool (* isHitFlaggedFunc) ( qcTemplate * aTemplate,
                                       qmnPlan    * aPlan );
 
@@ -493,13 +493,13 @@ typedef struct qmndResultCache
 } qmndResultCache;
 
 //----------------------------------------------
-// ¸ğµç PlanÀÌ °øÅëÀûÀ¸·Î »ç¿ëÇÏ´Â ±â´É
+// ëª¨ë“  Planì´ ê³µí†µì ìœ¼ë¡œ ì‚¬ìš©í•˜ëŠ” ê¸°ëŠ¥
 //----------------------------------------------
 
 class qmn
 {
 public:
-    // SubqueryÀÇ PlanÀ» DisplayÇÔ
+    // Subqueryì˜ Planì„ Displayí•¨
     static IDE_RC printSubqueryPlan( qcTemplate   * aTemplate,
                                      qtcNode      * aSubQuery,
                                      ULong          aDepth,
@@ -523,25 +523,25 @@ public:
     static void printCost( iduVarString * aString,
                            SDouble        aCost );
 
-    // SCAN, HIER, CUNT µî Cursor¸¦ »ç¿ëÇÏ´Â ³ëµå¿¡¼­ »ç¿ë
-    // Key Range, Key Filter, Filter¸¦ »ı¼ºÇÔ.
+    // SCAN, HIER, CUNT ë“± Cursorë¥¼ ì‚¬ìš©í•˜ëŠ” ë…¸ë“œì—ì„œ ì‚¬ìš©
+    // Key Range, Key Filter, Filterë¥¼ ìƒì„±í•¨.
     static IDE_RC makeKeyRangeAndFilter( qcTemplate         * aTemplate,
                                          qmnCursorPredicate * aPredicate );
 
-    // PROJ-1446 Host variableÀ» Æ÷ÇÔÇÑ ÁúÀÇ ÃÖÀûÈ­
-    // scan ¶Ç´Â cunt plan¿¡ ´ëÇØ table handle¿Í table scnÀ» ¾ò´Â´Ù.
+    // PROJ-1446 Host variableì„ í¬í•¨í•œ ì§ˆì˜ ìµœì í™”
+    // scan ë˜ëŠ” cunt planì— ëŒ€í•´ table handleì™€ table scnì„ ì–»ëŠ”ë‹¤.
     static IDE_RC getReferencedTableInfo( qmnPlan     * aPlan,
                                           const void ** aTableHandle,
                                           smSCN       * aTableSCN,
                                           idBool      * aIsFixedTable );
 
-    // qmo::optimizeForHost¿¡¼­ selected method¸¦ ¼¼ÆÃÇÑ ÈÄ
-    // plan¿¡°Ô ¾Ë·ÁÁØ´Ù.
+    // qmo::optimizeForHostì—ì„œ selected methodë¥¼ ì„¸íŒ…í•œ í›„
+    // planì—ê²Œ ì•Œë ¤ì¤€ë‹¤.
     static IDE_RC notifyOfSelectedMethodSet( qcTemplate * aTemplate,
                                              qmnPlan    * aPlan );
 
     // PROJ-1705
-    // µğ½ºÅ©Å×ÀÌºí¿¡ ´ëÇÑ null row »ı¼º
+    // ë””ìŠ¤í¬í…Œì´ë¸”ì— ëŒ€í•œ null row ìƒì„±
     static IDE_RC makeNullRow( mtcTuple   * aTuple,
                                void       * aNullRow );
     
@@ -565,17 +565,17 @@ public:
                                      qcComponentInfo * aComInfo );
 private:
 
-    // Key RangeÀÇ »ı¼º
+    // Key Rangeì˜ ìƒì„±
     static IDE_RC makeKeyRange ( qcTemplate         * aTemplate,
                                  qmnCursorPredicate * aPredicate,
                                  qtcNode           ** aFilter );
 
-    // Key FilterÀÇ »ı¼º
+    // Key Filterì˜ ìƒì„±
     static IDE_RC makeKeyFilter( qcTemplate         * aTemplate,
                                  qmnCursorPredicate * aPredicate,
                                  qtcNode           ** aFilter );
 
-    // Filter CallBack »ı¼º
+    // Filter CallBack ìƒì„±
     static IDE_RC makeFilter( qcTemplate         * aTemplate,
                               qmnCursorPredicate * aPredicate,
                               qtcNode            * aFirstFilter,

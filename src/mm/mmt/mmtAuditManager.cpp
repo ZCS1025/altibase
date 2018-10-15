@@ -166,7 +166,7 @@ IDE_RC mmtAuditManager::initialize()
     /* set callback functions */
     IDE_TEST(qci::setAuditManagerCallback( &sCallback ) != IDE_SUCCESS );
 
-    /* iduMemMgr·Î allocÇß´Ù. */
+    /* iduMemMgrë¡œ allocí–ˆë‹¤. */
     IDE_TEST( qciMisc::getAuditMetaInfo( &sIsStarted,
                                          &mMetaInfo.mObjectOperations, 
                                          &mMetaInfo.mObjectOperationCount,
@@ -660,7 +660,7 @@ void mmtAuditManager::auditBySession( mmcStatement *aStatement )
                                      sQueryLen );
     }
 
-    /* session Á¤º¸¸¦ resetÇÑ´Ù. */
+    /* session ì •ë³´ë¥¼ resetí•œë‹¤. */
     aStatement->resetStatistics();
 
     IDE_EXCEPTION_CONT( AUDIT_NOT_STARTED );

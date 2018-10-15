@@ -194,8 +194,8 @@ ACI_RC ulsdCallbackUpdateNodeListResult(cmiProtocolContext *aProtocolContext,
     }
     ACI_EXCEPTION_END;
 
-    /* CM Äİ¹é ÇÔ¼ö´Â communication error°¡ ¾Æ´Ñ ÇÑ ACI_SUCCESS¸¦ ¹İÈ¯ÇØ¾ß ÇÑ´Ù.
-     * Äİ¹é ¿¡·¯´Â function context¿¡ ¼³Á¤µÈ °ªÀ¸·Î ÆÇ´ÜÇÑ´Ù. */
+    /* CM ì½œë°± í•¨ìˆ˜ëŠ” communication errorê°€ ì•„ë‹Œ í•œ ACI_SUCCESSë¥¼ ë°˜í™˜í•´ì•¼ í•œë‹¤.
+     * ì½œë°± ì—ëŸ¬ëŠ” function contextì— ì„¤ì •ëœ ê°’ìœ¼ë¡œ íŒë‹¨í•œë‹¤. */
     return ACI_SUCCESS;
 }
 
@@ -291,8 +291,8 @@ ACI_RC ulsdCallbackGetNodeListResult(cmiProtocolContext *aProtocolContext,
     }
     ACI_EXCEPTION_END;
 
-    /* CM Äİ¹é ÇÔ¼ö´Â communication error°¡ ¾Æ´Ñ ÇÑ ACI_SUCCESS¸¦ ¹İÈ¯ÇØ¾ß ÇÑ´Ù.
-     * Äİ¹é ¿¡·¯´Â function context¿¡ ¼³Á¤µÈ °ªÀ¸·Î ÆÇ´ÜÇÑ´Ù. */
+    /* CM ì½œë°± í•¨ìˆ˜ëŠ” communication errorê°€ ì•„ë‹Œ í•œ ACI_SUCCESSë¥¼ ë°˜í™˜í•´ì•¼ í•œë‹¤.
+     * ì½œë°± ì—ëŸ¬ëŠ” function contextì— ì„¤ì •ëœ ê°’ìœ¼ë¡œ íŒë‹¨í•œë‹¤. */
     return ACI_SUCCESS;
 }
 
@@ -322,7 +322,7 @@ ACI_RC ulsdGetNodeList(ulnDbc *aDbc,
                        ulnPtContext *aPtContext)
 {
     /*
-     * Shard Node List Request Àü¼Û
+     * Shard Node List Request ì „ì†¡
      */
     ACI_TEST(ulsdGetNodeListRequest(aFnContext, aPtContext) != ACI_SUCCESS);
 
@@ -551,7 +551,7 @@ SQLRETURN ulsdAllocHandleNodeDbc(ulnFnContext  *aFnContext,
                             aEnv,
                             (void **)aDbc) != ACI_SUCCESS);
 
-    /* Node Dbc ´Â Env ¿¡ ¸Å´Ş¸®¸é ¾ÈµÇ¹Ç·Î ¿©±â¼­ Á¦°ÅÇÔ */
+    /* Node Dbc ëŠ” Env ì— ë§¤ë‹¬ë¦¬ë©´ ì•ˆë˜ë¯€ë¡œ ì—¬ê¸°ì„œ ì œê±°í•¨ */
     ACI_TEST_RAISE(ulnEnvRemoveDbc(aEnv,
                                    (*aDbc)) != ACI_SUCCESS,
                    LABEL_MEM_MAN_ERR);
@@ -641,9 +641,9 @@ SQLRETURN ulsdDriverConnect(ulnDbc       *aDbc,
                            ACP_FALSE) != SQL_NO_DATA )
         {
             /*
-             * ulsdSilentDisconnect() ³» ulnEnter() È£Ãâ ÈÄ MetaDbc ÀÇ Diagnostic Record °¡ ÃÊ±âÈ­ µÇ±â ¶§¹®¿¡
-             * ¸ÕÀú ¿¡·¯ ¸Ş¼¼Áö¸¦ sBackupErrorMessage ¿¡ ¹é¾÷ÇÑ ´ÙÀ½ ³ªÁß¿¡ ulnError() ·Î MetaDbc ¿¡ Ãß°¡ÇÑ´Ù.
-             * ¹İµå½Ã ¾Æ·¡ ¼ø¼­´ë·Î È£Ãâ ÇØ¾ßÇÑ´Ù.
+             * ulsdSilentDisconnect() ë‚´ ulnEnter() í˜¸ì¶œ í›„ MetaDbc ì˜ Diagnostic Record ê°€ ì´ˆê¸°í™” ë˜ê¸° ë•Œë¬¸ì—
+             * ë¨¼ì € ì—ëŸ¬ ë©”ì„¸ì§€ë¥¼ sBackupErrorMessage ì— ë°±ì—…í•œ ë‹¤ìŒ ë‚˜ì¤‘ì— ulnError() ë¡œ MetaDbc ì— ì¶”ê°€í•œë‹¤.
+             * ë°˜ë“œì‹œ ì•„ë˜ ìˆœì„œëŒ€ë¡œ í˜¸ì¶œ í•´ì•¼í•œë‹¤.
              *
              * 1. ulsdSilentDisconnect()
              * 2. ulnError()

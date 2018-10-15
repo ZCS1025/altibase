@@ -35,8 +35,8 @@
 #include <smrLogHeadI.h>
 #include <smrLogFileDump.h>
 
-// BUG-28581 dumplf¿¡¼­ Log °³¼ö °è»êÀ» À§ÇÑ sizeof ´ÜÀ§°¡ Àß¸øµÇ¾î ÀÖ½À´Ï´Ù.
-// smrLogType´Â UCharÀÌ±â ¶§¹®¿¡ UChar MAX¸¸Å­ Array¸¦ »ı¼ºÇØ¾ß ÇÕ´Ï´Ù.
+// BUG-28581 dumplfì—ì„œ Log ê°œìˆ˜ ê³„ì‚°ì„ ìœ„í•œ sizeof ë‹¨ìœ„ê°€ ì˜ëª»ë˜ì–´ ìˆìŠµë‹ˆë‹¤.
+// smrLogTypeëŠ” UCharì´ê¸° ë•Œë¬¸ì— UChar MAXë§Œí¼ Arrayë¥¼ ìƒì„±í•´ì•¼ í•©ë‹ˆë‹¤.
 SChar smrLogFileDump::mStrLogType[ ID_UCHAR_MAX ][100];
 
 SChar smrLogFileDump::mStrOPType[SMR_OP_MAX+1][100]  = {
@@ -126,7 +126,7 @@ SChar smrLogFileDump::mStrTBSUptType[SCT_UPDATE_MAXMAX_TYPE+1][64] = {
 };
 
 /*
-    Static¸â¹ö ÃÊ±âÈ­
+    Staticë©¤ë²„ ì´ˆê¸°í™”
  */
 IDE_RC smrLogFileDump::initializeStatic()
 {
@@ -180,11 +180,11 @@ IDE_RC smrLogFileDump::initializeStatic()
     idlOS::strcpy( mStrLogType[SMR_LT_FILE_END],
                    "SMR_LT_FILE_END" );
 
-    // DDL TransactionÀÓÀ» Ç¥½ÃÇÏ´Â Log Record
+    // DDL Transactionì„ì„ í‘œì‹œí•˜ëŠ” Log Record
     idlOS::strcpy( mStrLogType[SMR_LT_DDL],
                    "SMR_LT_DDL" );
 
-    /* DRDB ·Î±× Å¸ÀÔ */
+    /* DRDB ë¡œê·¸ íƒ€ì… */
     idlOS::strcpy( mStrLogType[SMR_DLT_REDOONLY],
                    "SMR_DLT_REDOONLY" );
     idlOS::strcpy( mStrLogType[SMR_DLT_UNDOABLE],
@@ -532,9 +532,9 @@ IDE_RC smrLogFileDump::initializeStatic()
 }
 
 /*
-    Static¸â¹ö ÆÄ±«
-    - initializeStatic°ú Â¦À» ¸ÂÃß±â À§ÇØ ¸¸µé¾îµÒ.
-    - ÇöÀç ¾Æ¹«·±ÀÏµµ ÇÏÁö ¾Ê´Â´Ù.
+    Staticë©¤ë²„ íŒŒê´´
+    - initializeStaticê³¼ ì§ì„ ë§ì¶”ê¸° ìœ„í•´ ë§Œë“¤ì–´ë‘ .
+    - í˜„ì¬ ì•„ë¬´ëŸ°ì¼ë„ í•˜ì§€ ì•ŠëŠ”ë‹¤.
  */
 IDE_RC smrLogFileDump::destroyStatic()
 {
@@ -707,10 +707,10 @@ IDE_RC smrLogFileDump::dumpLog( idBool      * aEOF )
     return IDE_FAILURE;
 }
 
-/* Log File Header·ÎºÎÅÍ File Begin·Î±×¸¦ ¾ò¾î³½´Ù
+/* Log File Headerë¡œë¶€í„° File Beginë¡œê·¸ë¥¼ ì–»ì–´ë‚¸ë‹¤
 
-   [IN] aFileBeginLog - File Begin Log ( ÆÄÀÏÀÇ Çì´õ¿Í °°À½ )
-   [IN] aFileNo       - ÆÄÀÏÀÇ ¹øÈ£
+   [IN] aFileBeginLog - File Begin Log ( íŒŒì¼ì˜ í—¤ë”ì™€ ê°™ìŒ )
+   [IN] aFileNo       - íŒŒì¼ì˜ ë²ˆí˜¸
  */
 IDE_RC smrLogFileDump::getFileNo( SChar * aFileBeginLog,
                                   UInt  * aFileNo )
@@ -718,7 +718,7 @@ IDE_RC smrLogFileDump::getFileNo( SChar * aFileBeginLog,
     IDE_DASSERT( aFileBeginLog != NULL );
     IDE_DASSERT( aFileNo != NULL );
 
-    // Ã¹¹øÂ° ·Î±×´Â File Begin LogÀÌ¸ç, ¾ĞÃàÇÏÁö ¾ÊÀºÃ¤·Î ÀúÀåµÊ
+    // ì²«ë²ˆì§¸ ë¡œê·¸ëŠ” File Begin Logì´ë©°, ì••ì¶•í•˜ì§€ ì•Šì€ì±„ë¡œ ì €ì¥ë¨
     IDE_ASSERT( smrLogComp::isCompressedLog( aFileBeginLog )
                 == ID_FALSE );
 
@@ -727,16 +727,16 @@ IDE_RC smrLogFileDump::getFileNo( SChar * aFileBeginLog,
     return IDE_SUCCESS;
 }
 
-/* ·Î±×¸Ş¸ğ¸®ÀÇ Æ¯Á¤ Offset¿¡¼­ ·Î±× ·¹ÄÚµå¸¦ ÀĞ¾î¿Â´Ù.
-   ¾ĞÃàµÈ ·Î±×ÀÇ °æ¿ì, ·Î±× ¾ĞÃàÇØÁ¦¸¦ ¼öÇàÇÑ´Ù.
+/* ë¡œê·¸ë©”ëª¨ë¦¬ì˜ íŠ¹ì • Offsetì—ì„œ ë¡œê·¸ ë ˆì½”ë“œë¥¼ ì½ì–´ì˜¨ë‹¤.
+   ì••ì¶•ëœ ë¡œê·¸ì˜ ê²½ìš°, ë¡œê·¸ ì••ì¶•í•´ì œë¥¼ ìˆ˜í–‰í•œë‹¤.
 
-   [IN] aDecompBufferHandle - ¾ĞÃà ÇØÁ¦ ¹öÆÛÀÇ ÇÚµé
-   [IN] aFileBuffer         - ·Î±× ÆÄÀÏÀ» ÀĞÀ»¶§ ÀÓ½ÃÀûÀ¸·Î ¾²ÀÌ´Â ¹öÆÛ
-   [IN] aFileNo             - ·Î±× ÆÄÀÏÀÇ ¹øÈ£
-   [IN] aLogOffset          - ·Î±×¸¦ ÀĞ¾î¿Ã ¿ÀÇÁ¼Â
-   [OUT] aRawLogHead        - ·Î±×ÀÇ Head
-   [OUT] aRawLogPtr         - ÀĞ¾î³½ ·Î±× (¾ĞÃàÇØÁ¦µÈ ·Î±×)
-   [OUT] aLogSizeAtDisk     - ÆÄÀÏ¿¡¼­ ÀĞ¾î³½ ·Î±× µ¥ÀÌÅÍÀÇ ¾ç
+   [IN] aDecompBufferHandle - ì••ì¶• í•´ì œ ë²„í¼ì˜ í•¸ë“¤
+   [IN] aFileBuffer         - ë¡œê·¸ íŒŒì¼ì„ ì½ì„ë•Œ ì„ì‹œì ìœ¼ë¡œ ì“°ì´ëŠ” ë²„í¼
+   [IN] aFileNo             - ë¡œê·¸ íŒŒì¼ì˜ ë²ˆí˜¸
+   [IN] aLogOffset          - ë¡œê·¸ë¥¼ ì½ì–´ì˜¬ ì˜¤í”„ì…‹
+   [OUT] aRawLogHead        - ë¡œê·¸ì˜ Head
+   [OUT] aRawLogPtr         - ì½ì–´ë‚¸ ë¡œê·¸ (ì••ì¶•í•´ì œëœ ë¡œê·¸)
+   [OUT] aLogSizeAtDisk     - íŒŒì¼ì—ì„œ ì½ì–´ë‚¸ ë¡œê·¸ ë°ì´í„°ì˜ ì–‘
 */
 
 IDE_RC smrLogFileDump::readLog( iduMemoryHandle    * aDecompBufferHandle,
@@ -761,7 +761,7 @@ IDE_RC smrLogFileDump::readLog( iduMemoryHandle    * aDecompBufferHandle,
 
     *aIsCompressed = smrLogComp::isCompressedLog( sRawOrCompLog );
 
-    // File No¿Í OffsetÀ¸·ÎºÎÅÍ Magic°ª °è»ê
+    // File Noì™€ Offsetìœ¼ë¡œë¶€í„° Magicê°’ ê³„ì‚°
     sValidLogMagic = smrLogFile::makeMagicNumber( aFileNo,
                                                   aLogOffset );
 

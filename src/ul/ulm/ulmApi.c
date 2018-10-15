@@ -311,14 +311,14 @@ int ABIGetVSysstat( ABIVSysstat **aHandle )
     return gErrCode;
 }
 
-// BUG-34728: cpu is too high: 2¹øÂ° ÀÎÀÚ Ãß°¡
+// BUG-34728: cpu is too high: 2ë²ˆì§¸ ì¸ìž ì¶”ê°€
 int ABIGetVSesstat( ABIVSesstat **aHandle, unsigned int aExecutingOnly)
 {
     acp_uint32_t sRowCount = 0;
 
     // BUG-34728: cpu is too high
-    // ÀÎÀÚ°ªÀÌ 1ÀÎ°æ¿ì active ¼¼¼ÇÀÇ stat¸¸ Á¶È¸ (join)
-    // ÀÎÀÚ°ªÀÌ 0ÀÎ °æ¿ì ÀüÃ¼ ¼¼¼Ç Á¶È¸
+    // ì¸ìžê°’ì´ 1ì¸ê²½ìš° active ì„¸ì…˜ì˜ statë§Œ ì¡°íšŒ (join)
+    // ì¸ìžê°’ì´ 0ì¸ ê²½ìš° ì „ì²´ ì„¸ì…˜ ì¡°íšŒ
     /*
        IF the aExecutingOnly value is
        ULM_FLAG_SET  - Return executing sessions' stat only.
@@ -621,8 +621,8 @@ int ABIGetSqlText( ABISqlText **aHandle, int aStmtID )
     ABISqlText   *sSqlText;
 
     // BUG-34728: cpu is too high
-    // stmtID ÀÎÀÚ·Î 0ÀÌ µé¾î¿À¸é, active ¼¼¼ÇµéÀÇ sql text¸¦ Á¶È¸ (»õ·ÎÃß°¡µÊ)
-    // stmtID ÀÎÀÚ·Î 0ÀÌ ¾Æ´Ï¸é  , ÇØ´ç stmtIDÀÇ sql text¸¦ Á¶È¸
+    // stmtID ì¸ìžë¡œ 0ì´ ë“¤ì–´ì˜¤ë©´, active ì„¸ì…˜ë“¤ì˜ sql textë¥¼ ì¡°íšŒ (ìƒˆë¡œì¶”ê°€ë¨)
+    // stmtID ì¸ìžë¡œ 0ì´ ì•„ë‹ˆë©´  , í•´ë‹¹ stmtIDì˜ sql textë¥¼ ì¡°íšŒ
     if (aStmtID == 0)
     {
         ULM_INIT( ULM_SQL_TEXT );
@@ -638,7 +638,7 @@ int ABIGetSqlText( ABISqlText **aHandle, int aStmtID )
     }
 
     // BUG-34728: cpu is too high
-    // Æ¯Á¤ sql text¸¦ Á¶È¸ÇÏ´Â °æ¿ì¸¸ bindingÇÏ¸é µÊ
+    // íŠ¹ì • sql textë¥¼ ì¡°íšŒí•˜ëŠ” ê²½ìš°ë§Œ bindingí•˜ë©´ ë¨
     if (aStmtID != 0)
     {
         ACI_TEST_RAISE( ( SQLBindParameter( gResourceManagerPtr->mHStmt,
@@ -653,7 +653,7 @@ int ABIGetSqlText( ABISqlText **aHandle, int aStmtID )
                         NULL ) != SQL_SUCCESS ), ERR_BIND_PARAMETER );
     }
 
-    // BUGBUG: »óÀ§ ·¹ÀÌ¾î¿¡¼­ return °ª °Ë»ç¸¸ ÀßÇØÁàµµ µÇ´Âµ¥, ±×·¸Áö ¾ÊÀº °æ¿ì¸¦ À§ÇÑ ¹æ¾î ÄÚµå.
+    // BUGBUG: ìƒìœ„ ë ˆì´ì–´ì—ì„œ return ê°’ ê²€ì‚¬ë§Œ ìž˜í•´ì¤˜ë„ ë˜ëŠ”ë°, ê·¸ë ‡ì§€ ì•Šì€ ê²½ìš°ë¥¼ ìœ„í•œ ë°©ì–´ ì½”ë“œ.
     sSqlText = (ABISqlText *)gResourceManagerPtr->mResultArray;
     sSqlText->mSqlText[0] = 0x00;
     sSqlText->mTextLength = 0;

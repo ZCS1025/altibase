@@ -29,10 +29,10 @@
 class sdf
 {
 public:
-    /* shard meta enable½Ã¿¡¸¸ µ¿ÀÛÇÏ´Â ÇÔ¼öµé */
+    /* shard meta enableì‹œì—ë§Œ ë™ì‘í•˜ëŠ” í•¨ìˆ˜ë“¤ */
     static const mtfModule * extendedFunctionModules[];
 
-    /* data node¿¡¼­ Ç×»ó µ¿ÀÛÇÏ´Â ÇÔ¼öµé */
+    /* data nodeì—ì„œ í•­ìƒ ë™ì‘í•˜ëŠ” í•¨ìˆ˜ë“¤ */
     static const mtfModule * extendedFunctionModules2[];
 };
 

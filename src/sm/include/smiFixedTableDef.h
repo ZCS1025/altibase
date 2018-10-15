@@ -28,18 +28,18 @@
 #include <smpDef.h>
 #include <iduFixedTable.h>
 
-// ¿Ã ∞¥√º∞° «ÿΩ¨ø° ¿˙¿Âµ«æÓ, ¿Ã∏ß¿ª ≈Î«ÿ ¡¢±Ÿ«‘.
+// Ïù¥ Í∞ùÏ≤¥Í∞Ä Ìï¥Ïâ¨Ïóê Ï†ÄÏû•ÎêòÏñ¥, Ïù¥Î¶ÑÏùÑ ÌÜµÌï¥ Ï†ëÍ∑ºÌï®.
 struct smcTableHeader;
 
 /*
- * æ∆∑°¿« smiFixedTableHeader type¿Ã « ø‰«— ¿Ã¿Ø¥¬
- * Fixed Tableø°º≠ ªÁøÎµ… ≈◊¿Ã∫Ì «Ï¥ı¥¬
- * º¯ºˆ«œ∞‘ ∏ﬁ∏∏Æ ∞¯∞£ø°º≠ «“¥Áµ» ¿Ã»ƒø°
- * ∫Œ∞°¿« ¡§∫∏∏¶ ¥ı ¿˙¿Â«ÿæﬂ «œ±‚ ∂ßπÆø° æ∆∑°øÕ ∞∞¿Ã
- * ¥ŸΩ√ º±æ«œø¥¥Ÿ.
- * ¿Ã∑∏∞‘ º±æµ» ≈◊¿Ã∫Ì «Ï¥ı¥¬ QPø° ¿««ÿ ¿œπ›¿˚¿Œ
- * ≈◊¿Ã∫Ì «Ï¥ı √≥∑≥ ªÁøÎµ«¡ˆ∏∏, SMø°º≠¥¬
- * µ⁄¿« ∫Œ∞°¿Œ¿⁄∏¶ √ﬂ∞°¿˚¿∏∑Œ ªÁøÎ«œ∞‘ µ»¥Ÿ.
+ * ÏïÑÎûòÏùò smiFixedTableHeader typeÏù¥ ÌïÑÏöîÌïú Ïù¥Ïú†Îäî
+ * Fixed TableÏóêÏÑú ÏÇ¨Ïö©Îê† ÌÖåÏù¥Î∏î Ìó§ÎçîÎäî
+ * ÏàúÏàòÌïòÍ≤å Î©îÎ™®Î¶¨ Í≥µÍ∞ÑÏóêÏÑú Ìï†ÎãπÎêú Ïù¥ÌõÑÏóê
+ * Î∂ÄÍ∞ÄÏùò Ï†ïÎ≥¥Î•º Îçî Ï†ÄÏû•Ìï¥Ïïº ÌïòÍ∏∞ ÎïåÎ¨∏Ïóê ÏïÑÎûòÏôÄ Í∞ôÏù¥
+ * Îã§Ïãú ÏÑ†Ïñ∏ÌïòÏòÄÎã§.
+ * Ïù¥Î†áÍ≤å ÏÑ†Ïñ∏Îêú ÌÖåÏù¥Î∏î Ìó§ÎçîÎäî QPÏóê ÏùòÌï¥ ÏùºÎ∞òÏ†ÅÏù∏
+ * ÌÖåÏù¥Î∏î Ìó§Îçî Ï≤òÎüº ÏÇ¨Ïö©ÎêòÏßÄÎßå, SMÏóêÏÑúÎäî
+ * Îí§Ïùò Î∂ÄÍ∞ÄÏù∏ÏûêÎ•º Ï∂îÍ∞ÄÏ†ÅÏúºÎ°ú ÏÇ¨Ïö©ÌïòÍ≤å ÎêúÎã§.
  */
 typedef struct smiFixedTableHeader
 {
@@ -52,7 +52,7 @@ typedef struct smiFixedTableHeader
 typedef struct smiFixedTableNode
 {
     SChar               *mName;   //  same with  mDesc->mName
-    smiFixedTableHeader *mHeader; //  Table «Ï¥ı
+    smiFixedTableHeader *mHeader; //  Table Ìó§Îçî
 } smiFixedTableNode;
 
 typedef struct smiFixedTableRecord

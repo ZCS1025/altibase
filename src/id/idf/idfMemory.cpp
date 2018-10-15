@@ -160,8 +160,8 @@ idfMemory::free( void *aBuffer )
 
     if( sLock == ID_TRUE )
     {
-        // BUG-25420 [CodeSonar] Lock, Unlock ¿¡·¯ ÇÚµé¸µ ¿À·ù¿¡ ÀÇÇÑ Double Unlock
-        // unlock ¸¦ ÇÏ±âÀü¿¡ ¼¼ÆÃÀ»ÇØ¾ß Double Unlock À» ¸·À»¼ö ÀÖ´Ù.
+        // BUG-25420 [CodeSonar] Lock, Unlock ì—ëŸ¬ í•¸ë“¤ë§ ì˜¤ë¥˜ì— ì˜í•œ Double Unlock
+        // unlock ë¥¼ í•˜ê¸°ì „ì— ì„¸íŒ…ì„í•´ì•¼ Double Unlock ì„ ë§‰ì„ìˆ˜ ìˆë‹¤.
         sLock = ID_FALSE;
         IDE_TEST( unlock() != 0 );
     }

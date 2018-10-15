@@ -34,7 +34,7 @@ extern mtdModule mtcdDouble;
 
 
 //------------------------------------------------------
-// mtdSelectivityChar()¸¦ À§ÇÑ ¸ÅÅ©·Î ½ÃÀÛ
+// mtdSelectivityChar()ë¥¼ ìœ„í•œ ë§¤í¬ë¡œ ì‹œì‘
 //------------------------------------------------------
 
 // numeric type of string
@@ -198,19 +198,19 @@ mtdModule mtcdChar = {
     {
         // Key Comparison
         {
-            // mt valueµé °£ÀÇ compare
+            // mt valueë“¤ ê°„ì˜ compare
             mtdCharMtdMtdKeyAscComp, // Ascending Key Comparison
             mtdCharMtdMtdKeyDescComp // Descending Key Comparison
         }
         ,
         {
-            // mt value¿Í stored value°£ÀÇ compare 
+            // mt valueì™€ stored valueê°„ì˜ compare 
             mtdCharStoredMtdKeyAscComp, // Ascending Key Comparison
             mtdCharStoredMtdKeyDescComp // Descending Key Comparison
         }
         ,
         {
-            // stored valueµé °£ÀÇ compare 
+            // stored valueë“¤ ê°„ì˜ compare 
             mtdCharStoredStoredKeyAscComp, // Ascending Key Comparison
             mtdCharStoredStoredKeyDescComp // Descending Key Comparison
         }
@@ -235,7 +235,7 @@ ACI_RC mtdInitializeChar( acp_uint32_t aNo )
 {
     ACI_TEST( mtdInitializeModule( &mtcdChar, aNo ) != ACI_SUCCESS );
 
-    // mtdColumnÀÇ ÃÊ±âÈ­
+    // mtdColumnì˜ ì´ˆê¸°í™”
     ACI_TEST( mtcInitializeColumn( & mtdColumn,
                                    & mtcdChar,
                                    0,   // arguments
@@ -309,8 +309,8 @@ ACI_RC mtdValue( mtcTemplate*  aTemplate,
     *aResult = ACI_SUCCESS;
 
     // To fix BUG-13444
-    // tokenFence¿Í RowFence´Â º°°³ÀÇ °Ë»ç°úÁ¤ÀÌ¹Ç·Î,
-    // ¸ÕÀú RowFence°Ë»ç ÈÄ TokenFence°Ë»ç¸¦ ÇØ¾ß ÇÑ´Ù.
+    // tokenFenceì™€ RowFenceëŠ” ë³„ê°œì˜ ê²€ì‚¬ê³¼ì •ì´ë¯€ë¡œ,
+    // ë¨¼ì € RowFenceê²€ì‚¬ í›„ TokenFenceê²€ì‚¬ë¥¼ í•´ì•¼ í•œë‹¤.
     sIterator = sValue->value;
     sFence    = (acp_uint8_t*)aValue + aValueSize;
     if( sIterator >= sFence )
@@ -343,7 +343,7 @@ ACI_RC mtdValue( mtcTemplate*  aTemplate,
     {
         sValue->length           = sIterator - sValue->value;
 
-        // precision, scale Àç ¼³Á¤ ÈÄ, estimate·Î semantic °Ë»ç
+        // precision, scale ì¬ ì„¤ì • í›„, estimateë¡œ semantic ê²€ì‚¬
         aColumn->flag            = 1;
         aColumn->precision       = sValue->length != 0 ? sValue->length : 1;
         aColumn->scale           = 0;
@@ -477,7 +477,7 @@ mtdCharMtdMtdKeyAscComp( mtdValueInfo* aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd Å¸ÀÔÀÇ Keyµé °£ÀÇ ascending compare
+ * Description : Mtd íƒ€ì…ì˜ Keyë“¤ ê°„ì˜ ascending compare
  *
  * Implementation :
  *
@@ -575,7 +575,7 @@ mtdCharMtdMtdKeyDescComp( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd Å¸ÀÔÀÇ Keyµé °£ÀÇ descending compare
+ * Description : Mtd íƒ€ì…ì˜ Keyë“¤ ê°„ì˜ descending compare
  *
  * Implementation :
  *
@@ -673,7 +673,7 @@ mtdCharStoredMtdKeyAscComp( mtdValueInfo* aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd Å¸ÀÔÀÇ Key¿Í Stored Key °£ÀÇ ascending compare
+ * Description : Mtd íƒ€ì…ì˜ Keyì™€ Stored Key ê°„ì˜ ascending compare
  *
  * Implementation :
  *
@@ -764,7 +764,7 @@ mtdCharStoredMtdKeyDescComp( mtdValueInfo* aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd Å¸ÀÔÀÇ Key¿Í Stored Key °£ÀÇ descending compare
+ * Description : Mtd íƒ€ì…ì˜ Keyì™€ Stored Key ê°„ì˜ descending compare
  *
  * Implementation :
  *
@@ -855,7 +855,7 @@ mtdCharStoredStoredKeyAscComp( mtdValueInfo* aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Stored Keyµé °£ÀÇ ascending compare
+ * Description : Stored Keyë“¤ ê°„ì˜ ascending compare
  *
  * Implementation :
  *
@@ -941,7 +941,7 @@ mtdCharStoredStoredKeyDescComp( mtdValueInfo* aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Stored Keyµé °£ÀÇ descending compare
+ * Description : Stored Keyë“¤ ê°„ì˜ descending compare
  *
  * Implementation :
  *
@@ -1087,7 +1087,7 @@ ACI_RC mtdValidate( mtcColumn*   aColumn,
 {
 /***********************************************************************
  *
- * Description : valueÀÇ semantic °Ë»ç ¹× mtcColum ÃÊ±âÈ­
+ * Description : valueì˜ semantic ê²€ì‚¬ ë° mtcColum ì´ˆê¸°í™”
  *
  * Implementation :
  *
@@ -1100,9 +1100,9 @@ ACI_RC mtdValidate( mtcColumn*   aColumn,
     ACI_TEST_RAISE( sCharVal->length + sizeof(acp_uint16_t) != aValueSize,
                     ERR_INVALID_LENGTH );
 
-    // ÃÊ±âÈ­µÈ aColumnÀº cannonize() ½Ã¿¡ »ç¿ë
-    // ÀÌ¶§, data type moduleÀÇ precision Á¤º¸¸¸À» »ç¿ëÇÏ¹Ç·Î,
-    // language Á¤º¸ ¼³Á¤ÇÒ ÇÊ¿ä¾øÀ½
+    // ì´ˆê¸°í™”ëœ aColumnì€ cannonize() ì‹œì— ì‚¬ìš©
+    // ì´ë•Œ, data type moduleì˜ precision ì •ë³´ë§Œì„ ì‚¬ìš©í•˜ë¯€ë¡œ,
+    // language ì •ë³´ ì„¤ì •í•  í•„ìš”ì—†ìŒ
     ACI_TEST( mtcInitializeColumn( aColumn,
                                    & mtcdChar,
                                    1,                // arguments
@@ -1134,36 +1134,36 @@ acp_double_t mtdSelectivityChar( void* aColumnMax,
 /*----------------------------------------------------------------------
   Name:
   mtdSelectivityChar()
-  -- ÃÖ´ë, ÃÖ¼Ò °ªÀ» ÀÌ¿ëÇÏ¿© ¹üÀ§ °ª¿¡ ´ëÇÑ ¼±ÅÃµµ¸¦ ÃßÁ¤,
+  -- ìµœëŒ€, ìµœì†Œ ê°’ì„ ì´ìš©í•˜ì—¬ ë²”ìœ„ ê°’ì— ëŒ€í•œ ì„ íƒë„ë¥¼ ì¶”ì •,
   -- CHAR(n),VARCHAR(n)
 
   Arguments:
-  aColumnMax  -- Ä®·³ÀÇ ÃÖ´ë °ª (MAX)
-  aColumnMin  -- Ä®·³ÀÇ ÃÖ¼Ò °ª (MIN)
-  aValueMax   -- ¹üÀ§ ÃÖ¼Ò °ª   (Y)
-  aValueMin   -- ¹üÀ§ ÃÖ´ë °ª   (X)
+  aColumnMax  -- ì¹¼ëŸ¼ì˜ ìµœëŒ€ ê°’ (MAX)
+  aColumnMin  -- ì¹¼ëŸ¼ì˜ ìµœì†Œ ê°’ (MIN)
+  aValueMax   -- ë²”ìœ„ ìµœì†Œ ê°’   (Y)
+  aValueMin   -- ë²”ìœ„ ìµœëŒ€ ê°’   (X)
 
-  Description: ÃÖ´ë, ÃÖ¼Ò°ªÀ» ÀÌ¿ëÇÏ¿© ¹üÀ§ °ª¿¡ ´ëÇÑ ¼±ÅÃµµ¸¦ ÃßÁ¤ÇÑ´Ù.
-  <, >, <=, >=, BETWEEN, NOT BETWEEN Predicate°¡ ÇØ´çµÇ¸ç,
-  LIKE, NOT LIKEÀÇ °æ¿ì¿¡µµ prefix matchÀÎ °æ¿ì ÀÌ¿¡ ÇØ´çÇÑ´Ù.
+  Description: ìµœëŒ€, ìµœì†Œê°’ì„ ì´ìš©í•˜ì—¬ ë²”ìœ„ ê°’ì— ëŒ€í•œ ì„ íƒë„ë¥¼ ì¶”ì •í•œë‹¤.
+  <, >, <=, >=, BETWEEN, NOT BETWEEN Predicateê°€ í•´ë‹¹ë˜ë©°,
+  LIKE, NOT LIKEì˜ ê²½ìš°ì—ë„ prefix matchì¸ ê²½ìš° ì´ì— í•´ë‹¹í•œë‹¤.
 
-  ¿¹: i1 between X and Y
+  ì˜ˆ: i1 between X and Y
   ==> selectivity = ( Y - X ) / ( MAX - MIN )
 
-  ¼±ÅÃµµ¸¦ °è»êÇÏ´Â °úÁ¤¿¡¼­ ¹®ÀÚ¿­À» DOUBLEÇüÀ¸·Î º¯È¯ÇØ¾ß ÇÑ´Ù.
-  ÀÌ ¶§, 4°³ÀÇ ÀÎÀÚ°¡ ¸ğµÎ 10Áø¼ö·Î ÆÇ´ÜµÇ¸é 10Áø¼ö·Î
-  16Áø¼ö·Î ÆÇ´ÜµÇ¸é 16Áø¼ö·Î º¯È¯ÇÑ´Ù.
-  ±×·¸Áö ¾ÊÀº °æ¿ì ¹®ÀÚ¿­ 52ºñÆ®°¡ Æ÷ÇÔÇÏ´Â °ªÀ» º¯È¯ÇÑ´Ù.
+  ì„ íƒë„ë¥¼ ê³„ì‚°í•˜ëŠ” ê³¼ì •ì—ì„œ ë¬¸ìì—´ì„ DOUBLEí˜•ìœ¼ë¡œ ë³€í™˜í•´ì•¼ í•œë‹¤.
+  ì´ ë•Œ, 4ê°œì˜ ì¸ìê°€ ëª¨ë‘ 10ì§„ìˆ˜ë¡œ íŒë‹¨ë˜ë©´ 10ì§„ìˆ˜ë¡œ
+  16ì§„ìˆ˜ë¡œ íŒë‹¨ë˜ë©´ 16ì§„ìˆ˜ë¡œ ë³€í™˜í•œë‹¤.
+  ê·¸ë ‡ì§€ ì•Šì€ ê²½ìš° ë¬¸ìì—´ 52ë¹„íŠ¸ê°€ í¬í•¨í•˜ëŠ” ê°’ì„ ë³€í™˜í•œë‹¤.
 
   *----------------------------------------------------------------------*/
 
-    // °¢°¢ÀÇ °ª¿¡ ´ëÇÑ mtdCharType
+    // ê°ê°ì˜ ê°’ì— ëŒ€í•œ mtdCharType
     const mtdCharType* sColumnMax;
     const mtdCharType* sColumnMin;
     const mtdCharType* sValueMax;
     const mtdCharType* sValueMin;
 
-    // °¢°¢ÀÇ °ª¿¡ ´ëÇÑ acp_double_t º¯¼ö
+    // ê°ê°ì˜ ê°’ì— ëŒ€í•œ acp_double_t ë³€ìˆ˜
     acp_double_t       sColMaxDouble;
     acp_double_t       sColMinDouble;
     acp_double_t       sValMaxDouble;
@@ -1171,10 +1171,10 @@ acp_double_t mtdSelectivityChar( void* aColumnMax,
     // Selectivity
     acp_double_t       sSelectivity;
 
-    // 10Áø¼ö, 16Áø¼ö, ÀÏ¹İ¹®ÀÚ¿­ ¿©ºÎ¸¦ Ç¥½ÃÇÏ´Â º¯¼ö
+    // 10ì§„ìˆ˜, 16ì§„ìˆ˜, ì¼ë°˜ë¬¸ìì—´ ì—¬ë¶€ë¥¼ í‘œì‹œí•˜ëŠ” ë³€ìˆ˜
     acp_slong_t           sStringType;
 
-    // º¯¼ö ÃÊ±âÈ­
+    // ë³€ìˆ˜ ì´ˆê¸°í™”
     sStringType = 0;
     sColumnMax = (mtdCharType*) aColumnMax;
     sColumnMin = (mtdCharType*) aColumnMin;
@@ -1182,8 +1182,8 @@ acp_double_t mtdSelectivityChar( void* aColumnMax,
     sValueMin  = (mtdCharType*) aValueMin;
 
     //------------------------------------------------------
-    // DataÀÇ À¯È¿¼º °Ë»ç
-    //     NULL °Ë»ç : °è»êÇÒ ¼ö ¾øÀ½
+    // Dataì˜ ìœ íš¨ì„± ê²€ì‚¬
+    //     NULL ê²€ì‚¬ : ê³„ì‚°í•  ìˆ˜ ì—†ìŒ
     //------------------------------------------------------
 
     // BUG-22064
@@ -1197,15 +1197,15 @@ acp_double_t mtdSelectivityChar( void* aColumnMax,
          ( mtdIsNull( NULL, aValueMax,  MTD_OFFSET_USELESS ) == ACP_TRUE ) ||
          ( mtdIsNull( NULL, aValueMin,  MTD_OFFSET_USELESS ) == ACP_TRUE ) )
     {
-        // DataÁß NULL ÀÌ ÀÖÀ» °æ¿ì
-        // ºÎµîÈ£ÀÇ Default SelectivityÀÎ 1/3À» SettingÇÔ
+        // Dataì¤‘ NULL ì´ ìˆì„ ê²½ìš°
+        // ë¶€ë“±í˜¸ì˜ Default Selectivityì¸ 1/3ì„ Settingí•¨
         sSelectivity = MTD_DEFAULT_SELECTIVITY;
     }
     else
     {
         //------------------------------------------------------------
-        // ¼ıÀÚ¸¦ ÀÇ¹ÌÇÏ´Â ¹®ÀÚ¿­ÀÎÁö ÆÇ´Ü
-        //  sStringType¿¡ ÀûÀıÇÑ ÇÃ·¡±× ¼³Á¤
+        // ìˆ«ìë¥¼ ì˜ë¯¸í•˜ëŠ” ë¬¸ìì—´ì¸ì§€ íŒë‹¨
+        //  sStringTypeì— ì ì ˆí•œ í”Œë˜ê·¸ ì„¤ì •
         //------------------------------------------------------------
         sStringType |= mtdStringType(sColumnMax);
         sStringType |= mtdStringType(sColumnMin);
@@ -1213,10 +1213,10 @@ acp_double_t mtdSelectivityChar( void* aColumnMax,
         sStringType |= mtdStringType(sValueMin);
 
         //---------------------------------------------------
-        // 10Áø¼öÀÇ ÆÇ´Ü
-        //   ¾î¶°ÇÑ ÇÃ·¡±×·Î ¼³Á¤µÇ¾î ÀÖÁö ¾Ê¾Æ¾ß ÇÑ´Ù.
-        // 10Áø¼öÀÇ º¯È¯
-        //   mtdDigitsToDoubleÇÔ¼ö¸¦ ÀÌ¿ëÇÏ¿© 10Áø¼ö·Î º¯È¯ÇÑ´Ù.
+        // 10ì§„ìˆ˜ì˜ íŒë‹¨
+        //   ì–´ë– í•œ í”Œë˜ê·¸ë¡œ ì„¤ì •ë˜ì–´ ìˆì§€ ì•Šì•„ì•¼ í•œë‹¤.
+        // 10ì§„ìˆ˜ì˜ ë³€í™˜
+        //   mtdDigitsToDoubleí•¨ìˆ˜ë¥¼ ì´ìš©í•˜ì—¬ 10ì§„ìˆ˜ë¡œ ë³€í™˜í•œë‹¤.
         //---------------------------------------------------
         if( sStringType == MTD_DECIMAL )
         {
@@ -1226,12 +1226,12 @@ acp_double_t mtdSelectivityChar( void* aColumnMax,
             sValMinDouble = mtdDigitsToDouble( sValueMin, 10 );
         }
         //---------------------------------------------------
-        // 16Áø¼öÀÇ ÆÇ´Ü
-        //   MTD_HEXA_LOWER ÀÌ°Å³ª MTD_HEXA_UPPER ÀÎ °æ¿ì
-        //   µÑ ÁßÀÇ ÇÑ ÇÃ·¡±× °ª°ú ÀÏÄ¡ÇØ¾ßÇÏ¸ç,
-        //   µÎ ÇÃ·¡±×°¡ ÇÔ²² ¼³Á¤µÈ °æ¿ì´Â ÀÏ¹İ ¹®ÀÚ¿­·Î ÆÇ´Ü
-        // 16Áø¼öÀÇ º¯È¯
-        //   mtdDigitsToDoubleÇÔ¼ö¸¦ ÀÌ¿ëÇÏ¿© 16Áø¼ö·Î º¯È¯ÇÑ´Ù.
+        // 16ì§„ìˆ˜ì˜ íŒë‹¨
+        //   MTD_HEXA_LOWER ì´ê±°ë‚˜ MTD_HEXA_UPPER ì¸ ê²½ìš°
+        //   ë‘˜ ì¤‘ì˜ í•œ í”Œë˜ê·¸ ê°’ê³¼ ì¼ì¹˜í•´ì•¼í•˜ë©°,
+        //   ë‘ í”Œë˜ê·¸ê°€ í•¨ê»˜ ì„¤ì •ëœ ê²½ìš°ëŠ” ì¼ë°˜ ë¬¸ìì—´ë¡œ íŒë‹¨
+        // 16ì§„ìˆ˜ì˜ ë³€í™˜
+        //   mtdDigitsToDoubleí•¨ìˆ˜ë¥¼ ì´ìš©í•˜ì—¬ 16ì§„ìˆ˜ë¡œ ë³€í™˜í•œë‹¤.
         //---------------------------------------------------
         else if( ( sStringType == MTD_HEXA_LOWER ) ||
                  ( sStringType == MTD_HEXA_UPPER ) )
@@ -1242,7 +1242,7 @@ acp_double_t mtdSelectivityChar( void* aColumnMax,
             sValMinDouble = mtdDigitsToDouble( sValueMin, 16 );
         }
         //------------------------------------------------------------
-        // ÀÏ¹İ ¹®ÀÚ¿­ÀÎ °æ¿ì º¯È¯
+        // ì¼ë°˜ ë¬¸ìì—´ì¸ ê²½ìš° ë³€í™˜
         //------------------------------------------------------------
         else
         {
@@ -1253,7 +1253,7 @@ acp_double_t mtdSelectivityChar( void* aColumnMax,
         }
 
         //---------------------------------------------------------
-        // selectivity °è»ê
+        // selectivity ê³„ì‚°
         //--------------------------------------------------------
         sSelectivity = mtcdDouble.selectivity((void *)&sColMaxDouble,
                                               (void *)&sColMinDouble,
@@ -1271,13 +1271,13 @@ acp_slong_t mtdStringType( const mtdCharType * aValue )
 /*----------------------------------------------------------------------
   Name:
   mtdStringType()
-  -- ÇØ´ç ¹®ÀÚ¿­ÀÇ Å¸ÀÔÀ» ÆÇ´ÜÇÑ´Ù.
-  10Áø¼ö     : MTD_DECIMAL
-  16Áø¼ö     : MTD_HEXA_LOWER, MTD_HEXA_UPPER
-  ÀÏ¹İ ¹®ÀÚ¿­ : MTD_ORDINARY
+  -- í•´ë‹¹ ë¬¸ìì—´ì˜ íƒ€ì…ì„ íŒë‹¨í•œë‹¤.
+  10ì§„ìˆ˜     : MTD_DECIMAL
+  16ì§„ìˆ˜     : MTD_HEXA_LOWER, MTD_HEXA_UPPER
+  ì¼ë°˜ ë¬¸ìì—´ : MTD_ORDINARY
 
   Arguments:
-  aValue  -- Å¸ÀÔÀ» ÆÇ´ÜÇÒ ¹®ÀÚ¿­
+  aValue  -- íƒ€ì…ì„ íŒë‹¨í•  ë¬¸ìì—´
 
   *----------------------------------------------------------------------*/
     acp_slong_t sLength;
@@ -1320,12 +1320,12 @@ acp_double_t mtdDigitsToDouble( const mtdCharType* aValue,
   Name:
   BUG-16401
   mtdDigitsToDouble()
-  -- ÇØ´ç ¹®ÀÚ¿­À» 15ÀÚ¸® ¹®ÀÚ¿­·Î °íÁ¤ÈÄ
-  -- SDboubleÅ¸ÀÔÀ¸·Î º¯È¯ÇÑ´Ù.
+  -- í•´ë‹¹ ë¬¸ìì—´ì„ 15ìë¦¬ ë¬¸ìì—´ë¡œ ê³ ì •í›„
+  -- SDboubleíƒ€ì…ìœ¼ë¡œ ë³€í™˜í•œë‹¤.
 
   Arguments:
-  aValue  -- º¯È¯ÇÒ ¹®ÀÚ¿­
-  aBase   -- Áø¹ı
+  aValue  -- ë³€í™˜í•  ë¬¸ìì—´
+  aBase   -- ì§„ë²•
 
   *----------------------------------------------------------------------*/
 
@@ -1419,28 +1419,28 @@ acp_double_t mtdConvertToDouble( const mtdCharType* aValue )
 /*----------------------------------------------------------------------
   Name:
   mtdConvertToDouble()
-  -- ÇØ´ç ¹®ÀÚ¿­À» SDboubleÅ¸ÀÔÀ¸·Î º¯È¯ÇÑ´Ù.
+  -- í•´ë‹¹ ë¬¸ìì—´ì„ SDboubleíƒ€ì…ìœ¼ë¡œ ë³€í™˜í•œë‹¤.
 
   Arguments:
-  aValue  -- º¯È¯ÇÒ ¹®ÀÚ¿­
+  aValue  -- ë³€í™˜í•  ë¬¸ìì—´
 
   *----------------------------------------------------------------------*/
 
 #if defined(ENDIAN_IS_BIG_ENDIAN)
     //----------------------------------------------------
-    // Big endian ÀÎ °æ¿ì
+    // Big endian ì¸ ê²½ìš°
     //----------------------------------------------------
-    acp_double_t sDoubleVal;       // º¯È¯µÉ Double °ª
-    acp_uint64_t sLongVal;         // acp_uint64_tÀ¸·Î º¯È¯ ½Ã »ç¿ëÇÒ º¯¼ö
+    acp_double_t sDoubleVal;       // ë³€í™˜ë  Double ê°’
+    acp_uint64_t sLongVal;         // acp_uint64_tìœ¼ë¡œ ë³€í™˜ ì‹œ ì‚¬ìš©í•  ë³€ìˆ˜
 
-    sLongVal = 0;                // ÃÊ±âÈ­
+    sLongVal = 0;                // ì´ˆê¸°í™”
 
-    // mtdCharTypeÀ» acp_uint64_tÀ¸·Î º¯È¯
+    // mtdCharTypeì„ acp_uint64_tìœ¼ë¡œ ë³€í™˜
     acpMemCpy( (acp_uint8_t*)&sLongVal,
                aValue->value,
                MTD_MIN( aValue->length, sizeof(sLongVal) ) );
 
-    // ¾ÕºÎºĞ 52ºñÆ®¸¸ ´õºí·Î º¯È¯
+    // ì•ë¶€ë¶„ 52ë¹„íŠ¸ë§Œ ë”ë¸”ë¡œ ë³€í™˜
     sLongVal   = sLongVal >> 12;
     sDoubleVal = MTC_ULTODB( sLongVal );
 
@@ -1448,22 +1448,22 @@ acp_double_t mtdConvertToDouble( const mtdCharType* aValue )
 
 #else
     //----------------------------------------------------
-    // Little endian ÀÎ °æ¿ì
+    // Little endian ì¸ ê²½ìš°
     //----------------------------------------------------
-    acp_double_t sDoubleVal;       // º¯È¯µÉ Double °ª
-    acp_uint64_t sLongVal;         // acp_uint64_tÀ¸·Î º¯È¯ ½Ã »ç¿ëÇÒ º¯¼ö
-    acp_uint64_t sEndian;          // byte ordering º¯È¯½Ã »ç¿ëÇÒ ÀÓ½Ã º¯¼ö
-    acp_uint8_t* sSrc;             // byte ordering º¯È¯À» À§ÇÑ Æ÷ÀÎÅÍ
-    acp_uint8_t* sDest;            // byte ordering º¯È¯À» À§ÇÑ Æ÷ÀÎÅÍ
+    acp_double_t sDoubleVal;       // ë³€í™˜ë  Double ê°’
+    acp_uint64_t sLongVal;         // acp_uint64_tìœ¼ë¡œ ë³€í™˜ ì‹œ ì‚¬ìš©í•  ë³€ìˆ˜
+    acp_uint64_t sEndian;          // byte ordering ë³€í™˜ì‹œ ì‚¬ìš©í•  ì„ì‹œ ë³€ìˆ˜
+    acp_uint8_t* sSrc;             // byte ordering ë³€í™˜ì„ ìœ„í•œ í¬ì¸í„°
+    acp_uint8_t* sDest;            // byte ordering ë³€í™˜ì„ ìœ„í•œ í¬ì¸í„°
 
-    sLongVal = 0;                // ÃÊ±âÈ­
+    sLongVal = 0;                // ì´ˆê¸°í™”
 
-    // mtdCharTypeÀ» acp_uint64_tÀ¸·Î º¯È¯
+    // mtdCharTypeì„ acp_uint64_tìœ¼ë¡œ ë³€í™˜
     acpMemCpy( (acp_uint8_t*)&sLongVal,
                aValue->value,
                MTD_MIN( aValue->length, sizeof(sLongVal) ) );
 
-    // byte ordering Á¶Á¤
+    // byte ordering ì¡°ì •
     sSrc     = (acp_uint8_t*)&sLongVal;
     sDest    = (acp_uint8_t*)&sEndian;
     sDest[0] = sSrc[7];
@@ -1475,7 +1475,7 @@ acp_double_t mtdConvertToDouble( const mtdCharType* aValue )
     sDest[6] = sSrc[1];
     sDest[7] = sSrc[0];
 
-    // ¾ÕºÎºĞ 52ºñÆ®¸¸ ´õºí·Î º¯È¯
+    // ì•ë¶€ë¶„ 52ë¹„íŠ¸ë§Œ ë”ë¸”ë¡œ ë³€í™˜
     sEndian    = sEndian >> 12;
     sDoubleVal = MTC_ULTODB( sEndian );
 
@@ -1504,7 +1504,7 @@ ACI_RC mtdValueFromOracle( mtcColumn*    aColumn,
         aOracleLength = 0;
     }
 
-    // aColumnÀÇ ÃÊ±âÈ­
+    // aColumnì˜ ì´ˆê¸°í™”
     ACI_TEST( mtcInitializeColumn( aColumn,
                                    & mtcdChar,
                                    1,
@@ -1547,8 +1547,8 @@ static ACI_RC mtdStoredValue2MtdValue( acp_uint32_t aColumnSize,
 {
 /*******************************************************************
  * PROJ-1705
- * µğ½ºÅ©Å×ÀÌºíÄÃ·³ÀÇ µ¥ÀÌÅ¸¸¦
- * qp ·¹ÄÚµåÃ³¸®¿µ¿ªÀÇ ÇØ´ç ÄÃ·³À§Ä¡¿¡ º¹»ç
+ * ë””ìŠ¤í¬í…Œì´ë¸”ì»¬ëŸ¼ì˜ ë°ì´íƒ€ë¥¼
+ * qp ë ˆì½”ë“œì²˜ë¦¬ì˜ì—­ì˜ í•´ë‹¹ ì»¬ëŸ¼ìœ„ì¹˜ì— ë³µì‚¬
  *******************************************************************/
 
     mtdCharType* sCharValue;
@@ -1557,7 +1557,7 @@ static ACI_RC mtdStoredValue2MtdValue( acp_uint32_t aColumnSize,
     
     if( ( aDestValueOffset == 0 ) && ( aLength == 0 ) )
     {
-        // NULL µ¥ÀÌÅ¸
+        // NULL ë°ì´íƒ€
         sCharValue->length = 0;
     }
     else
@@ -1585,9 +1585,9 @@ acp_uint32_t mtdNullValueSize()
 {
 /*******************************************************************
  * PROJ-1705
- * °¢ µ¥ÀÌÅ¸Å¸ÀÔÀÇ null ValueÀÇ Å©±â ¹İÈ¯    
- * ¿¹ ) mtdCharType( acp_uint16_t length; acp_uint8_t value[1] ) ¿¡¼­
- *      lengthÅ¸ÀÔÀÎ acp_uint16_tÀÇ Å©±â¸¦ ¹İÈ¯
+ * ê° ë°ì´íƒ€íƒ€ì…ì˜ null Valueì˜ í¬ê¸° ë°˜í™˜    
+ * ì˜ˆ ) mtdCharType( acp_uint16_t length; acp_uint8_t value[1] ) ì—ì„œ
+ *      lengthíƒ€ì…ì¸ acp_uint16_tì˜ í¬ê¸°ë¥¼ ë°˜í™˜
  *******************************************************************/
     
     return mtdActualSize( NULL,
@@ -1599,10 +1599,10 @@ static acp_uint32_t mtdHeaderSize()
 {
 /***********************************************************************
  * PROJ-1705
- * length¸¦ °¡Áö´Â µ¥ÀÌÅ¸Å¸ÀÔÀÇ length Á¤º¸¸¦ ÀúÀåÇÏ´Â º¯¼öÀÇ Å©±â ¹İÈ¯
- * ¿¹ ) mtdCharType( acp_uint16_t length; acp_uint8_t value[1] ) ¿¡¼­
- *      lengthÅ¸ÀÔÀÎ acp_uint16_tÀÇ Å©±â¸¦ ¹İÈ¯
- *  integer¿Í °°Àº °íÁ¤±æÀÌ µ¥ÀÌÅ¸Å¸ÀÔÀº 0 ¹İÈ¯
+ * lengthë¥¼ ê°€ì§€ëŠ” ë°ì´íƒ€íƒ€ì…ì˜ length ì •ë³´ë¥¼ ì €ì¥í•˜ëŠ” ë³€ìˆ˜ì˜ í¬ê¸° ë°˜í™˜
+ * ì˜ˆ ) mtdCharType( acp_uint16_t length; acp_uint8_t value[1] ) ì—ì„œ
+ *      lengthíƒ€ì…ì¸ acp_uint16_tì˜ í¬ê¸°ë¥¼ ë°˜í™˜
+ *  integerì™€ ê°™ì€ ê³ ì •ê¸¸ì´ ë°ì´íƒ€íƒ€ì…ì€ 0 ë°˜í™˜
  **********************************************************************/
 
     return sizeof(acp_uint16_t);

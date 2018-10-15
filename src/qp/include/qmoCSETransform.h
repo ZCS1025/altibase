@@ -19,11 +19,11 @@
  *
  * Description : PROJ-2242 Common Subexpression Elimination Transformation
  *
- *       - QTC_NODE_JOIN_OPERATOR_EXIST ÀÏ °æ¿ì ¼öÇà ¾ÈÇÔ
- *       - subquery, host variable, GEOMETRY type arguments Á¦¿Ü
- *       - __OPTIMIZER_ELIMINATE_COMMON_SUBEXPRESSION property ·Î µ¿ÀÛ
+ *       - QTC_NODE_JOIN_OPERATOR_EXIST ì¼ ê²½ìš° ìˆ˜í–‰ ì•ˆí•¨
+ *       - subquery, host variable, GEOMETRY type arguments ì œì™¸
+ *       - __OPTIMIZER_ELIMINATE_COMMON_SUBEXPRESSION property ë¡œ ë™ì‘
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
  *            1. Idempotent law
  *             - A and A = A
@@ -32,9 +32,9 @@
  *             - A and (A or B) = A
  *             - A or (A and B) = A
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î : CSE (Common Subexpression Elimination)
+ * ì•½ì–´ : CSE (Common Subexpression Elimination)
  *        NNF (Not Normal Form)
  *
  *****************************************************************************/
@@ -54,14 +54,14 @@ typedef enum qmoCSECompareResult
 } qmoCSECompareResult;
 
 //-----------------------------------------------------------
-// CSE Transform °ü¸® ÇÔ¼ö
+// CSE Transform ê´€ë¦¬ í•¨ìˆ˜
 //-----------------------------------------------------------
 
 class qmoCSETransform
 {
 public:
 
-    // ÃÖÃÊ NNF ÇüÅÂÀÇ ¸ğµç Á¶°ÇÀı¿¡ ´ëÇÑ CSE transformation
+    // ìµœì´ˆ NNF í˜•íƒœì˜ ëª¨ë“  ì¡°ê±´ì ˆì— ëŒ€í•œ CSE transformation
     // - Where clause
     // - On condition
     // - Having clause
@@ -74,32 +74,32 @@ public:
                                qtcNode    ** aNode,
                                idBool        aIsNNF );
 
-    // Á¶°ÇÀı¿¡ oracle style outer mask Á¸Àç¿©ºÎ °Ë»ç
+    // ì¡°ê±´ì ˆì— oracle style outer mask ì¡´ì¬ì—¬ë¶€ ê²€ì‚¬
     static IDE_RC doCheckOuter( qtcNode  * aNode,
                                 idBool   * aExistOuter );
 
 private:
 
-    // From ÀıÀÇ onCondition ¿¡ ´ëÇÑ CSE transformation (Àç±Í)
+    // From ì ˆì˜ onCondition ì— ëŒ€í•œ CSE transformation (ì¬ê·€)
     static IDE_RC doTransform4From( qcStatement * aStatement,
                                     qmsFrom     * aFrom,
                                     idBool        aIsNNF );
 
-    // NNF ÀÇ ÁßÃ¸µÈ logical operator Á¦°Å
+    // NNF ì˜ ì¤‘ì²©ëœ logical operator ì œê±°
     static IDE_RC unnestingAndOr4NNF( qcStatement * aStatement,
                                       qtcNode     * aNode );
 
-    // Idempotent law ¹× Absorption law Àû¿ë (NNF, CNF, DNF)
+    // Idempotent law ë° Absorption law ì ìš© (NNF, CNF, DNF)
     static IDE_RC idempotentAndAbsorption( qcStatement * aStatement,
                                            qtcNode     * aNode );
 
-    // doIdempotentAndAbsorption ¼öÇàÀ» À§ÇÑ ÁßÃ¸³ëµå ºñ±³
+    // doIdempotentAndAbsorption ìˆ˜í–‰ì„ ìœ„í•œ ì¤‘ì²©ë…¸ë“œ ë¹„êµ
     static IDE_RC compareNode( qcStatement         * aStatement,
                                qtcNode             * aTarget,
                                qtcNode             * aCompare,
                                qmoCSECompareResult * aResult );
 
-    // NNF ¿¡ ´ëÇØ ÇÏ³ªÀÇ ÀÎÀÚ¸¦ °®´Â logical operator Á¦°Å
+    // NNF ì— ëŒ€í•´ í•˜ë‚˜ì˜ ì¸ìë¥¼ ê°–ëŠ” logical operator ì œê±°
     static IDE_RC removeLogicalNode4NNF( qcStatement * aStatement,
                                          qtcNode    ** aNode );
 

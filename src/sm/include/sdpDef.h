@@ -19,7 +19,7 @@
  * $Id: sdpDef.h 82075 2018-01-17 06:39:52Z jina.kim $
  *
  * Description :
- *      º» ÆÄÀÏÀº page layerÀÇ ÀÚ·á±¸Á¶¸¦ Á¤ÀÇÇÑ Çì´õÆÄÀÏÀÌ´Ù.
+ *      ë³¸ íŒŒì¼ì€ page layerì˜ ìë£Œêµ¬ì¡°ë¥¼ ì •ì˜í•œ í—¤ë”íŒŒì¼ì´ë‹¤.
  ******************************************************************************/
 
 #ifndef _O_SDP_DEF_H_
@@ -39,13 +39,13 @@
 # define SDP_MAX_UDSEG_PID_CNT     (512)
 #endif
 
-///* XXX: ÀÌ°É ¾ø¾Ù ¼ö ÀÖ´Â ÁÁÀº ¹æ¹ıÀ» Ã£¾Æº¸ÀÚ.
-// *      sizeof(sdpstRangeSlot) * 16°³,
-// *      PBS table 1024°³ */
+///* XXX: ì´ê±¸ ì—†ì•¨ ìˆ˜ ìˆëŠ” ì¢‹ì€ ë°©ë²•ì„ ì°¾ì•„ë³´ì.
+// *      sizeof(sdpstRangeSlot) * 16ê°œ,
+// *      PBS table 1024ê°œ */
 //#define SDP_SDPST_RANGE_MAP_SIZE   ((16 * 16) + 1024)
 
 /*
- * UDS/TSS¸¦ À§ÇÑ Free Extent Dir. List Å¸ÀÔ Á¤ÀÇ
+ * UDS/TSSë¥¼ ìœ„í•œ Free Extent Dir. List íƒ€ì… ì •ì˜
  */
 typedef enum sdpFreeExtDirType
 {
@@ -54,7 +54,7 @@ typedef enum sdpFreeExtDirType
     SDP_MAX_FREE_EXTDIR_LIST
 } sdpFreeExtDirType;
 
-/* PhyPage°¡ Æ¯Á¤ ÆäÀÌÁö ¸®½ºÆ®¿¡ Æ÷ÇÔµÇ¾î ÀÖ´ÂÁö¸¦ °¡¸®Å²´Ù. */
+/* PhyPageê°€ íŠ¹ì • í˜ì´ì§€ ë¦¬ìŠ¤íŠ¸ì— í¬í•¨ë˜ì–´ ìˆëŠ”ì§€ë¥¼ ê°€ë¦¬í‚¨ë‹¤. */
 typedef enum sdpPageListState
 {
     SDP_PAGE_LIST_UNLINK = 0,
@@ -66,25 +66,25 @@ typedef struct sdpSegInfo sdpSegInfo;
 typedef struct sdpSegCacheInfo sdpSegCacheInfo;
 
 ///* --------------------------------------------------------------------
-// * system segment°¡ extent¸¦ ÇÒ´çÇÒ¶§
-// * deadlockÀ» ¸·±âÀ§ÇØ ext dir ÆäÀÌÁö ¾È¿¡¼­
-// * ¿¹¾àÇÏ´Â  NULLÀÎ extentÀÇ ¹è¼ö
-// * tbs¸¦ À§ÇÑ extentÀÇ °³¼ö * ÀÌ °ª ¸¸Å­ reserveÇÑ´Ù.
+// * system segmentê°€ extentë¥¼ í• ë‹¹í• ë•Œ
+// * deadlockì„ ë§‰ê¸°ìœ„í•´ ext dir í˜ì´ì§€ ì•ˆì—ì„œ
+// * ì˜ˆì•½í•˜ëŠ”  NULLì¸ extentì˜ ë°°ìˆ˜
+// * tbsë¥¼ ìœ„í•œ extentì˜ ê°œìˆ˜ * ì´ ê°’ ë§Œí¼ reserveí•œë‹¤.
 // * ----------------------------------------------------------------- */
 //#define SDP_RESERVE_NULL_EXT_RATE (2)
 //
 ///* --------------------------------------------------------------------
-// * ÇÏ³ªÀÇ ÆäÀÌÁö¸¦ ³ªÅ¸³»±â À§ÇÑ bitÀÇ °³¼ö
-// * 0 bit : free, used ¸¦ ³ªÅ¸³¿
-// * 1 bit : insertable, non insertableÀ» ³ªÅ¸³¿
+// * í•˜ë‚˜ì˜ í˜ì´ì§€ë¥¼ ë‚˜íƒ€ë‚´ê¸° ìœ„í•œ bitì˜ ê°œìˆ˜
+// * 0 bit : free, used ë¥¼ ë‚˜íƒ€ëƒ„
+// * 1 bit : insertable, non insertableì„ ë‚˜íƒ€ëƒ„
 // * ----------------------------------------------------------------- */
 //#define SDP_EXT_BITS_PER_PAGE        (2)
 //#define SDP_EXT_BITS_PER_BYTE        (8)
 
 
 /* --------------------------------------------------------------------
- * pageÀÇ Å¸ÀÔ
- * ÀÌ Å¸ÀÔÀ¸·Î keymapÀ» °¡Á³´ÂÁö ¾Æ´ÑÁö¸¦ ±¸ºĞÇÒ ¼ö ÀÖ´Ù.
+ * pageì˜ íƒ€ì…
+ * ì´ íƒ€ì…ìœ¼ë¡œ keymapì„ ê°€ì¡ŒëŠ”ì§€ ì•„ë‹Œì§€ë¥¼ êµ¬ë¶„í•  ìˆ˜ ìˆë‹¤.
  * ----------------------------------------------------------------- */
 typedef enum
 {
@@ -103,18 +103,18 @@ typedef enum
     SDP_PAGE_LOB_DATA,
     SDP_PAGE_LOB_INDEX,
 
-    /* Freelist Managed SegmentÀÇ ÆäÀÌÁö Å¸ÀÔ Á¤ÀÇ */
+    /* Freelist Managed Segmentì˜ í˜ì´ì§€ íƒ€ì… ì •ì˜ */
     SDP_PAGE_FMS_SEGHDR,
     SDP_PAGE_FMS_EXTDIR,
 
-    /* Treelist Managed SegmentÀÇ ÆäÀÌÁö Å¸ÀÔ Á¤ÀÇ */
+    /* Treelist Managed Segmentì˜ í˜ì´ì§€ íƒ€ì… ì •ì˜ */
     SDP_PAGE_TMS_SEGHDR,
     SDP_PAGE_TMS_LFBMP,
     SDP_PAGE_TMS_ITBMP,
     SDP_PAGE_TMS_RTBMP,
     SDP_PAGE_TMS_EXTDIR,
 
-    /* Recycled-list Managed SegmentÀÇ ÆäÀÌÁö Å¸ÀÔ Á¤ÀÇ */
+    /* Recycled-list Managed Segmentì˜ í˜ì´ì§€ íƒ€ì… ì •ì˜ */
     SDP_PAGE_CMS_SEGHDR,
     SDP_PAGE_CMS_EXTDIR,
 
@@ -126,12 +126,12 @@ typedef enum
 
     SDP_PAGE_HV_NODE,
 
-    SDP_PAGE_TYPE_MAX           // idvTypes.hÀÇ IDV_SM_PAGE_TYPE_MAXµµ °»½ÅÇØ¾ß ÇÑ´Ù.
+    SDP_PAGE_TYPE_MAX           // idvTypes.hì˜ IDV_SM_PAGE_TYPE_MAXë„ ê°±ì‹ í•´ì•¼ í•œë‹¤.
 
 } sdpPageType;
 
 /* --------------------------------------------------------------------
- * slot¿¡ ´ëÇÑ free »óÅÂ mask¿Í ±æÀÌ mask
+ * slotì— ëŒ€í•œ free ìƒíƒœ maskì™€ ê¸¸ì´ mask
  * ----------------------------------------------------------------- */
 #define SDP_SLOT_LEN_MASK        ((UShort)(0x7FFF))
 #define SDP_SLOT_STATE_MASK      ((UShort)(0x8000))
@@ -148,7 +148,7 @@ typedef enum
 //} sdpPageBitType;
 //
 ///* --------------------------------------------------------------------
-// * extent page bitmapÀÇ  0¹ø bitÀÇ »óÅÂ
+// * extent page bitmapì˜  0ë²ˆ bitì˜ ìƒíƒœ
 // * ----------------------------------------------------------------- */
 //typedef enum
 //{
@@ -157,7 +157,7 @@ typedef enum
 //} sdpPageFreeBit;
 
 /* --------------------------------------------------------------------
- * extent page bitmapÀÇ 1¹ø bitÀÇ »óÅÂ
+ * extent page bitmapì˜ 1ë²ˆ bitì˜ ìƒíƒœ
  * ----------------------------------------------------------------- */
 typedef enum
 {
@@ -166,8 +166,8 @@ typedef enum
 } sdpPageInsertBit;
 
 ///* --------------------------------------------------------------------
-// * extentÀÇ free bit, insertable ¸¦ »ç¿ëÇÏ´Â°¡ ¿©ºÎ¸¦ ³ªÅ¸³»±â À§ÇØ¼­µµ
-// * »ç¿ëµÈ´Ù.
+// * extentì˜ free bit, insertable ë¥¼ ì‚¬ìš©í•˜ëŠ”ê°€ ì—¬ë¶€ë¥¼ ë‚˜íƒ€ë‚´ê¸° ìœ„í•´ì„œë„
+// * ì‚¬ìš©ëœë‹¤.
 // * ----------------------------------------------------------------- */
 //typedef enum
 //{
@@ -176,7 +176,7 @@ typedef enum
 //} sdpPageUseType;
 
 ///* --------------------------------------------------------------------
-// * dir page¿¡¼­ segment desc¿¡ ´ëÇÑ bitÀÇ °³¼ö
+// * dir pageì—ì„œ segment descì— ëŒ€í•œ bitì˜ ê°œìˆ˜
 // * ----------------------------------------------------------------- */
 //#define SDP_SEG_BITS_PER_SEG_DESC (1)
 //
@@ -188,51 +188,51 @@ typedef enum
 
 
 /* --------------------------------------------------------------------
- * extentÀÇ »óÅÂ¸¦ ³ªÅ¸³½´Ù.
+ * extentì˜ ìƒíƒœë¥¼ ë‚˜íƒ€ë‚¸ë‹¤.
  * ----------------------------------------------------------------- */
 typedef enum
 {
-    // ¾ÆÁ÷ tbsÀÇ free list¿¡ ´Ş¸®Áö ¾ÊÀº »óÅÂ
+    // ì•„ì§ tbsì˜ free listì— ë‹¬ë¦¬ì§€ ì•Šì€ ìƒíƒœ
     SDP_EXT_NULL = 0,
 
-    // tbsÀÇ Free list¿¡ ´Ş¸° »óÅÂ
-    // segment°¡ ÃÖÃÊ¿¡ extent¸¦ ¾ò´Â »óÅÂ
-    // ¸ğµç page°¡ freeÀÎ »óÅÂ
+    // tbsì˜ Free listì— ë‹¬ë¦° ìƒíƒœ
+    // segmentê°€ ìµœì´ˆì— extentë¥¼ ì–»ëŠ” ìƒíƒœ
+    // ëª¨ë“  pageê°€ freeì¸ ìƒíƒœ
     SDP_EXT_FREE,
 
-    // ÀüºÎ used, ¸ğµÎ insert ºÒ°¡
+    // ì „ë¶€ used, ëª¨ë‘ insert ë¶ˆê°€
     SDP_EXT_FULL,
 
-    // extÀÇ ÀÏºÎ ÆäÀÌÁö°¡ freeÀÎ »óÅÂ
+    // extì˜ ì¼ë¶€ í˜ì´ì§€ê°€ freeì¸ ìƒíƒœ
     SDP_EXT_INSERTABLE_FREE,
 
-    // ÆäÀÌÁö°¡ freeÀÎ °ÍÀÌ ¾øÁö¸¸ insert°¡ °¡´ÉÇÑ °ÍÀº ÀÖ´Ù.
-    // free space¸¦ ÀÌ »óÅÂÀÎ extent¿¡¼­ Ã£´Â´Ù.
+    // í˜ì´ì§€ê°€ freeì¸ ê²ƒì´ ì—†ì§€ë§Œ insertê°€ ê°€ëŠ¥í•œ ê²ƒì€ ìˆë‹¤.
+    // free spaceë¥¼ ì´ ìƒíƒœì¸ extentì—ì„œ ì°¾ëŠ”ë‹¤.
     SDP_EXT_INSERTABLE_NO_FREE,
 
-    // insert°¡´ÉÇÑ°ÍÀÌ ¾øÀ¸³ª free´Â ÀÖ´Ù.
+    // insertê°€ëŠ¥í•œê²ƒì´ ì—†ìœ¼ë‚˜ freeëŠ” ìˆë‹¤.
     SDP_EXT_NO_INSERTABLE_FREE
 
 } sdpExtState;
 
 /* --------------------------------------------------------------------
- * checksum ¹æ¹ıÀ» Ç¥½ÃÇÑ´Ù.
- * ¸¸¾à LSN°ª¸¸ »ç¿ëÇÑ´Ù¸é checksum°ªÀº page¿¡¼­ ¾Æ¹« ÀÇ¹Ì°¡ ¾ø´Ù.
+ * checksum ë°©ë²•ì„ í‘œì‹œí•œë‹¤.
+ * ë§Œì•½ LSNê°’ë§Œ ì‚¬ìš©í•œë‹¤ë©´ checksumê°’ì€ pageì—ì„œ ì•„ë¬´ ì˜ë¯¸ê°€ ì—†ë‹¤.
  * ----------------------------------------------------------------- */
 typedef enum
 {
-    //  ÆäÀÌÁö ¾ç³¡ÀÇ LSN °ªÀ» »ç¿ëÇÑ´Ù.
+    //  í˜ì´ì§€ ì–‘ëì˜ LSN ê°’ì„ ì‚¬ìš©í•œë‹¤.
     SDP_CHECK_LSN = 0,
 
-    // ÆäÀÌÁö °¡Àå Ã³À½ÀÇ checksum °ªÀ» °è»êÇÏ¿© »ç¿ëÇÑ´Ù.
+    // í˜ì´ì§€ ê°€ì¥ ì²˜ìŒì˜ checksum ê°’ì„ ê³„ì‚°í•˜ì—¬ ì‚¬ìš©í•œë‹¤.
     SDP_CHECK_CHECKSUM
 
 } sdpCheckSumType;
 
 /* --------------------------------------------------------------------
- * Segement DescriptorÀÇ type
+ * Segement Descriptorì˜ type
  *
- * system ¿ë È¤Àº user ¿ë
+ * system ìš© í˜¹ì€ user ìš©
  * ----------------------------------------------------------------- */
 typedef enum
 {
@@ -247,17 +247,17 @@ typedef enum
     SDP_SEG_TYPE_MAX
 } sdpSegType;
 
-/* sdpsf, sdpst ´Â CacheÀÇ Ã³À½¿¡ °ø¿ë CacheÁ¤º¸¸¦ °¡Áø´Ù. */
+/* sdpsf, sdpst ëŠ” Cacheì˜ ì²˜ìŒì— ê³µìš© Cacheì •ë³´ë¥¼ ê°€ì§„ë‹¤. */
 typedef struct sdpSegCCache
 {
-    /* Temp TableÀÇ Head, Tail */
+    /* Temp Tableì˜ Head, Tail */
     scPageID    mTmpSegHead;
     scPageID    mTmpSegTail;
 
     /* PROJ-1704 MVCC renewal */
     sdpSegType  mSegType;        // Segment Type
     ULong       mSegSizeByBytes; // Segment Size
-    UInt        mPageCntInExt;   // ExtDesc ´ç Page °³¼ö
+    UInt        mPageCntInExt;   // ExtDesc ë‹¹ Page ê°œìˆ˜
 
     scPageID    mMetaPID;        // Segment Meta PID
 
@@ -272,9 +272,9 @@ typedef struct sdpSegCCache
 } sdpSegCCache;
 
 /* --------------------------------------------------------------------
- * Segement DescriptorÀÇ type
+ * Segement Descriptorì˜ type
  *
- * system ¿ë È¤Àº user ¿ë
+ * system ìš© í˜¹ì€ user ìš©
  * ----------------------------------------------------------------- */
 typedef enum
 {
@@ -285,89 +285,89 @@ typedef enum
 #define SDP_PAGE_CONSISTENT     (1)
 #define SDP_PAGE_INCONSISTENT   (0)
 /* --------------------------------------------------------------------
- * sdRID listÀÇ ³ëµå
+ * sdRID listì˜ ë…¸ë“œ
  * ----------------------------------------------------------------- */
 typedef struct sdpSglRIDListNode
 {
-    sdRID     mNext; /* ´ÙÀ½ rid */
+    sdRID     mNext; /* ë‹¤ìŒ rid */
 } sdpSglRIDListNode;
 
 /* --------------------------------------------------------------------
- * sdRID listÀÇ º£ÀÌ½º
+ * sdRID listì˜ ë² ì´ìŠ¤
  * ----------------------------------------------------------------- */
 typedef struct sdpSglRIDListBase
 {
-    ULong     mNodeCnt;  /* RID ListÀÇ ³ëµå °³¼ö */
+    ULong     mNodeCnt;  /* RID Listì˜ ë…¸ë“œ ê°œìˆ˜ */
 
     sdRID     mHead;     /* Head RID */
     sdRID     mTail;     /* Tail RID */
 } sdpSglRIDListBase;
 
 /* --------------------------------------------------------------------
- * sdRID listÀÇ ³ëµå
+ * sdRID listì˜ ë…¸ë“œ
  * ----------------------------------------------------------------- */
 typedef struct sdpDblRIDListNode
 {
-    sdRID     mNext; /* ´ÙÀ½ rid */
-    sdRID     mPrev; /* ÀÌÀü rid */
+    sdRID     mNext; /* ë‹¤ìŒ rid */
+    sdRID     mPrev; /* ì´ì „ rid */
 } sdpDblRIDListNode;
 
 /* --------------------------------------------------------------------
- * sdRID listÀÇ º£ÀÌ½º
+ * sdRID listì˜ ë² ì´ìŠ¤
  * ----------------------------------------------------------------- */
 typedef struct sdpDblRIDListBase
 {
-    ULong             mNodeCnt;  /* rid listÀÇ ³ëµå °³¼ö */
+    ULong             mNodeCnt;  /* rid listì˜ ë…¸ë“œ ê°œìˆ˜ */
 
-    sdpDblRIDListNode mBase;     /* prev ´Â tailÀ» ÀÇ¹ÌÇÏ°í,
-                                 next ´Â head¸¦ ÀÇ¹ÌÇÑ´Ù. */
+    sdpDblRIDListNode mBase;     /* prev ëŠ” tailì„ ì˜ë¯¸í•˜ê³ ,
+                                 next ëŠ” headë¥¼ ì˜ë¯¸í•œë‹¤. */
 } sdpRIDListBase;
 
 /* --------------------------------------------------------------------
- * page listÀÇ ³ëµå
+ * page listì˜ ë…¸ë“œ
  * ----------------------------------------------------------------- */
 typedef struct sdpSglPIDListNode
 {
-    scPageID     mNext; /* ´ÙÀ½ page ID */
+    scPageID     mNext; /* ë‹¤ìŒ page ID */
 } sdpSglPIDListNode;
 
 /* --------------------------------------------------------------------
- * page listÀÇ º£ÀÌ½º
+ * page listì˜ ë² ì´ìŠ¤
  * ----------------------------------------------------------------- */
 typedef struct sdpSglPIDListBase
 {
-    ULong         mNodeCnt;    /* page listÀÇ ³ëµå °³¼ö */
-    scPageID      mHead;       /* page listÀÇ Ã¹¹øÂ° */
-    scPageID      mTail;       /* page listÀÇ ¸¶Áö¸· */
+    ULong         mNodeCnt;    /* page listì˜ ë…¸ë“œ ê°œìˆ˜ */
+    scPageID      mHead;       /* page listì˜ ì²«ë²ˆì§¸ */
+    scPageID      mTail;       /* page listì˜ ë§ˆì§€ë§‰ */
 } sdpSglPIDListBase;
 
 /* --------------------------------------------------------------------
- * page listÀÇ ³ëµå: mNext°¡ mPrev ¾Õ¿¡ ¿Í¾ß ÇÑ´Ù. ¿Ö³ÄÇÏ¸é Sigle PID
- * List¿Í Double PID List°¡ ÀÌ ¸µÅ© Á¤º¸¸¦ °øÀ¯ÇÑ´Ù. SingleÀº ¹«Á¶°Ç
- * ÀÌ ¸µÅ©Á¤º¸ÀÇ Ã¹¹øÂ° member¸¦ Next ¸µÅ©Á¤º¸·Î »ç¿ëÇÏ±â¶§¹®¿¡ mNext
- * °¡ Ç×»ó ¸ÕÀú ¿Í¾ß ÇÑ´Ù.
+ * page listì˜ ë…¸ë“œ: mNextê°€ mPrev ì•ì— ì™€ì•¼ í•œë‹¤. ì™œëƒí•˜ë©´ Sigle PID
+ * Listì™€ Double PID Listê°€ ì´ ë§í¬ ì •ë³´ë¥¼ ê³µìœ í•œë‹¤. Singleì€ ë¬´ì¡°ê±´
+ * ì´ ë§í¬ì •ë³´ì˜ ì²«ë²ˆì§¸ memberë¥¼ Next ë§í¬ì •ë³´ë¡œ ì‚¬ìš©í•˜ê¸°ë•Œë¬¸ì— mNext
+ * ê°€ í•­ìƒ ë¨¼ì € ì™€ì•¼ í•œë‹¤.
  *
- * ÁÖÀÇ: mNext¿Í mPrev¼ø¼­ ¹Ù²ÙÁöµµ ¶Ç´Â ¾Õ¿¡ ¸â¹ö Ãß°¡µµ ¸»ÀÚ.
+ * ì£¼ì˜: mNextì™€ mPrevìˆœì„œ ë°”ê¾¸ì§€ë„ ë˜ëŠ” ì•ì— ë©¤ë²„ ì¶”ê°€ë„ ë§ì.
  * ----------------------------------------------------------------- */
 typedef struct sdpDblPIDListNode
 {
-    scPageID     mNext; /* ´ÙÀ½ page ID */
-    scPageID     mPrev; /* ÀÌÀü page ID */
+    scPageID     mNext; /* ë‹¤ìŒ page ID */
+    scPageID     mPrev; /* ì´ì „ page ID */
 } sdpDblPIDListNode;
 
 /* --------------------------------------------------------------------
- * page listÀÇ º£ÀÌ½º
+ * page listì˜ ë² ì´ìŠ¤
  * ----------------------------------------------------------------- */
 typedef struct sdpDblPIDListBase
 {
-    ULong             mNodeCnt;    /* page listÀÇ ³ëµå °³¼ö */
-    sdpDblPIDListNode mBase;       /* prev ´Â tailÀ» ÀÇ¹ÌÇÏ°í,
-                                      next ´Â head¸¦ ÀÇ¹ÌÇÑ´Ù. */
+    ULong             mNodeCnt;    /* page listì˜ ë…¸ë“œ ê°œìˆ˜ */
+    sdpDblPIDListNode mBase;       /* prev ëŠ” tailì„ ì˜ë¯¸í•˜ê³ ,
+                                      next ëŠ” headë¥¼ ì˜ë¯¸í•œë‹¤. */
 } sdpDblPIDListBase;
 
 
-/* Treelist managed Segment¿¡¼­ ÆäÀÌÁöÀÇ »óÀ§ ³ëµå¿¡
- * ´ëÇÑ Á¤º¸¸¦ Á¤ÀÇ */
+/* Treelist managed Segmentì—ì„œ í˜ì´ì§€ì˜ ìƒìœ„ ë…¸ë“œì—
+ * ëŒ€í•œ ì •ë³´ë¥¼ ì •ì˜ */
 typedef struct sdpParentInfo
 {
     scPageID     mParentPID;
@@ -376,7 +376,7 @@ typedef struct sdpParentInfo
 
 
 /* --------------------------------------------------------------------
- * PageÀÇ Physical Header Á¤ÀÇ
+ * Pageì˜ Physical Header ì •ì˜
  * ----------------------------------------------------------------- */
 typedef struct sdpPhyPageHdr
 {
@@ -386,35 +386,35 @@ typedef struct sdpPhyPageHdr
     UShort              mAvailableFreeSize;
 
     UShort              mLogicalHdrSize;
-    UShort              mSizeOfCTL;  /* Change Trans Layer Å©±â */
+    UShort              mSizeOfCTL;  /* Change Trans Layer í¬ê¸° */
 
     UShort              mFreeSpaceBeginOffset;
     UShort              mFreeSpaceEndOffset;
 
-    // ÀÌ ÆäÀÌÁöÀÇ ¿ëµµ¸¦ ³ªÅ¸³½´Ù.
+    // ì´ í˜ì´ì§€ì˜ ìš©ë„ë¥¼ ë‚˜íƒ€ë‚¸ë‹¤.
     UShort              mPageType;
 
-    // ÆäÀÌÁöÀÇ »óÅÂ( free, insert °¡´É, insert ºÒ°¡ )
+    // í˜ì´ì§€ì˜ ìƒíƒœ( free, insert ê°€ëŠ¥, insert ë¶ˆê°€ )
     UShort              mPageState;
 
-    // Å×ÀÌºí ½ºÆäÀÌ½º¿¡¼­ ÆäÀÌÁöÀÇ ¾ÆÀÌµğ
+    // í…Œì´ë¸” ìŠ¤í˜ì´ìŠ¤ì—ì„œ í˜ì´ì§€ì˜ ì•„ì´ë””
     scPageID            mPageID;
 
-    // BUG-17930 : log¾øÀÌ page¸¦ »ı¼ºÇÒ ¶§(nologging index build, DPath insert),
-    // operationÀÌ ½ÃÀÛ ÈÄ ¿Ï·áµÇ±â Àü±îÁö´Â pageÀÇ physical header¿¡ ÀÖ´Â
-    // mIsConsistent¸¦ F·Î Ç¥½ÃÇÏ°í, operationÀÌ ¿Ï·áµÈ ÈÄ mIsConsistent¸¦
-    // T·Î Ç¥½ÃÇÏ¿© server failure ÈÄ recoveryµÉ ¶§ redo¸¦ ¼öÇàÇÏµµ·Ï ÇØ¾ß ÇÔ
+    // BUG-17930 : logì—†ì´ pageë¥¼ ìƒì„±í•  ë•Œ(nologging index build, DPath insert),
+    // operationì´ ì‹œì‘ í›„ ì™„ë£Œë˜ê¸° ì „ê¹Œì§€ëŠ” pageì˜ physical headerì— ìˆëŠ”
+    // mIsConsistentë¥¼ Fë¡œ í‘œì‹œí•˜ê³ , operationì´ ì™„ë£Œëœ í›„ mIsConsistentë¥¼
+    // Të¡œ í‘œì‹œí•˜ì—¬ server failure í›„ recoveryë  ë•Œ redoë¥¼ ìˆ˜í–‰í•˜ë„ë¡ í•´ì•¼ í•¨
     UChar               mIsConsistent;
 
-    // ÆäÀÌÁö°¡ Æ¯Á¤ ¸®½ºÆ®¿¡ Æ÷ÇÔµÇ¾î ÀÖ´Â »óÅÂ
+    // í˜ì´ì§€ê°€ íŠ¹ì • ë¦¬ìŠ¤íŠ¸ì— í¬í•¨ë˜ì–´ ìˆëŠ” ìƒíƒœ
     UShort              mLinkState;
 
-    // ÆäÀÌÁö°¡ ¼ÓÇÑ »óÀ§ ³ëµåÀÇ RID
-    // ÀÌ °ªÀ¸·Î ÆäÀÌÁö°¡ ¼ÓÇÑ »óÀ§³ëµå¸¦ ¾Ë ¼ö ÀÖ´Ù.
-    // page¸¦ freeÇÒ ¶§´Â ÀÌ °ªÀ¸·Î »óÀ§³ëµå¸¦ Ã£¾Æ¼­ free½ÃÅ³ ¼ö ÀÖ´Ù.
+    // í˜ì´ì§€ê°€ ì†í•œ ìƒìœ„ ë…¸ë“œì˜ RID
+    // ì´ ê°’ìœ¼ë¡œ í˜ì´ì§€ê°€ ì†í•œ ìƒìœ„ë…¸ë“œë¥¼ ì•Œ ìˆ˜ ìˆë‹¤.
+    // pageë¥¼ freeí•  ë•ŒëŠ” ì´ ê°’ìœ¼ë¡œ ìƒìœ„ë…¸ë“œë¥¼ ì°¾ì•„ì„œ freeì‹œí‚¬ ìˆ˜ ìˆë‹¤.
     sdpParentInfo       mParentInfo;  // tms
 
-    // page listÀÇ ³ëµå
+    // page listì˜ ë…¸ë“œ
     sdpDblPIDListNode   mListNode;
 
     /* BUG-32091 [sm_collection] add TableOID in PageHeader */
@@ -423,70 +423,70 @@ typedef struct sdpPhyPageHdr
     /* PROJ-2281 add Index ID in PageHeader */
     UInt                mIndexID;   
 
-    // Page¸¦ °ü¸®ÇÏ´Â ¼¼±×¸ÕÆ®¿¡¼­ÀÇ ¼ø¼­ ¹øÈ£
+    // Pageë¥¼ ê´€ë¦¬í•˜ëŠ” ì„¸ê·¸ë¨¼íŠ¸ì—ì„œì˜ ìˆœì„œ ë²ˆí˜¸
     ULong               mSeqNo;
 } sdpPhyPageHdr;
 
-/* slot directoryÀÇ ½ÃÀÛ À§Ä¡¿¡
- * slot directory header°¡ Á¸ÀçÇÏ°í
- * ±× ´ÙÀ½¿¡ slot entryµéÀÌ Á¸ÀçÇÑ´Ù. */
+/* slot directoryì˜ ì‹œì‘ ìœ„ì¹˜ì—
+ * slot directory headerê°€ ì¡´ì¬í•˜ê³ 
+ * ê·¸ ë‹¤ìŒì— slot entryë“¤ì´ ì¡´ì¬í•œë‹¤. */
 typedef struct sdpSlotDirHdr
 {
-    /* slot entry °¹¼ö */
+    /* slot entry ê°¯ìˆ˜ */
     UShort              mSlotEntryCount;
-    /* unused slot entry listÀÇ head */
+    /* unused slot entry listì˜ head */
     scSlotNum           mHead;
 } sdpSlotDirHdr;
 
 ///* --------------------------------------------------------------------
-// * segment directory pageÀÇ »óÅÂ
+// * segment directory pageì˜ ìƒíƒœ
 // * ----------------------------------------------------------------- */
 //typedef enum
 //{
-//    // dir page°¡ free list¿¡ ´Ş·Á ÀÖ´Â »óÅÂ
+//    // dir pageê°€ free listì— ë‹¬ë ¤ ìˆëŠ” ìƒíƒœ
 //    SDP_SEG_DIR_FREE = 0,
-//    // full list¿¡ ´Ş·Á ÀÖ´Â »óÅÂ
+//    // full listì— ë‹¬ë ¤ ìˆëŠ” ìƒíƒœ
 //    SDP_SEG_DIR_FULL
 //
 //} sdpSegDirState;
 
 /* --------------------------------------------------------------------
- * pageÀÇ free slot size ÃÖ¼Ò°ª
- * ÀÌ °ª ÀÌ»óºÎÅÍ page list¸¦ °ü¸®ÇÑ´Ù.
- * ÀÌ °ª ÀÌÇÏ´Â free slotÀ» page ³»ºÎ¿¡¼­´Â °ü¸®ÇÏÁö¸¸
- * ÀÌ °ª ÀÌÇÏÀÇ ÆäÀÌÁö¸¦ °ü¸®ÇÒ ÇÊ¿ä´Â ¾ø´Ù.
+ * pageì˜ free slot size ìµœì†Œê°’
+ * ì´ ê°’ ì´ìƒë¶€í„° page listë¥¼ ê´€ë¦¬í•œë‹¤.
+ * ì´ ê°’ ì´í•˜ëŠ” free slotì„ page ë‚´ë¶€ì—ì„œëŠ” ê´€ë¦¬í•˜ì§€ë§Œ
+ * ì´ ê°’ ì´í•˜ì˜ í˜ì´ì§€ë¥¼ ê´€ë¦¬í•  í•„ìš”ëŠ” ì—†ë‹¤.
  * ----------------------------------------------------------------- */
 #define SDP_PAGE_MIN_FREE_SIZE       (ID_ULONG(32))
 
 ///* ------------------------------------------------
-// * insertable page list °³¼ö
+// * insertable page list ê°œìˆ˜
 // *
-// * - data pageÀÇ free slot Å©±â´Â free slot header¸¦ Á¦¿ÜÇÑ
-// *   slot bodyÀÇ Å©±â·Î 2^5ºÎÅÍ .. 2^15
-// *   32KB±îÁö 10°³·Î ±¸ºĞÇÒ ¼ö ÀÖ´Ù.
+// * - data pageì˜ free slot í¬ê¸°ëŠ” free slot headerë¥¼ ì œì™¸í•œ
+// *   slot bodyì˜ í¬ê¸°ë¡œ 2^5ë¶€í„° .. 2^15
+// *   32KBê¹Œì§€ 10ê°œë¡œ êµ¬ë¶„í•  ìˆ˜ ìˆë‹¤.
 // *
-// * - 32BYTESºÎÅÍ ½ÃÀÛÇÏ´Â ÀÌÀ¯´Â record headerÀÇ Å©±â°¡
-// *   32BYTESÀÌ±â¶§¹®ÀÌ´Ù. Áï, °¡Àå ÀÛÀº free slotÀº 32Bytes
-// *   º¸´Ù´Â Å©´Ù.
+// * - 32BYTESë¶€í„° ì‹œì‘í•˜ëŠ” ì´ìœ ëŠ” record headerì˜ í¬ê¸°ê°€
+// *   32BYTESì´ê¸°ë•Œë¬¸ì´ë‹¤. ì¦‰, ê°€ì¥ ì‘ì€ free slotì€ 32Bytes
+// *   ë³´ë‹¤ëŠ” í¬ë‹¤.
 // *
-// * - free slotÀÇ Å©±â¿¡ µû¶ó ÆäÀÌÁöÀÇ list¸¦ À¯ÁöÇÑ´Ù.
+// * - free slotì˜ í¬ê¸°ì— ë”°ë¼ í˜ì´ì§€ì˜ listë¥¼ ìœ ì§€í•œë‹¤.
 // * ----------------------------------------------*/
 //#define SDP_INSERTABLE_PAGE_LIST_NUM  ( SD_OFFSET_BIT_SIZE         
 //                                     - SDP_PAGE_MIN_FREE_SIZE + 1)
 
 /* ------------------------------------------------
- * ------------ ÀÌ ¼³°è´Â ´Ù¸¥ ¹æ¹ıÀ¸·Î ´ëÄ¡µÊ --------------
- * insertable page list °ü¸®
+ * ------------ ì´ ì„¤ê³„ëŠ” ë‹¤ë¥¸ ë°©ë²•ìœ¼ë¡œ ëŒ€ì¹˜ë¨ --------------
+ * insertable page list ê´€ë¦¬
  *
- * tableÀ» À§ÇÑ segmentÀÇ 0¹ø ÆäÀÌÁö¿¡´Â
- * ¸ğµç insert °¡´ÉÇÑ ¸ğµç ÆäÀÌÁöÀÇ listµéÀ» ÀúÀåÇÑ´Ù.
- * ÀÌ´Â insert slotÀ» Ã£±â À§ÇÑ entry·Î »ç¿ëµÈ´Ù.
+ * tableì„ ìœ„í•œ segmentì˜ 0ë²ˆ í˜ì´ì§€ì—ëŠ”
+ * ëª¨ë“  insert ê°€ëŠ¥í•œ ëª¨ë“  í˜ì´ì§€ì˜ listë“¤ì„ ì €ì¥í•œë‹¤.
+ * ì´ëŠ” insert slotì„ ì°¾ê¸° ìœ„í•œ entryë¡œ ì‚¬ìš©ëœë‹¤.
  *
- * page listÀÇ  °³¼ö´Â 10°³·Î fixµÇ¾î ÀÖ´Ù.
- * °¢ page list´Â °¢ ÆäÀÌÁöÀÇ big size¸¦ ±â¹İÀ¸·Î
- * ºĞ·ùµÈ´Ù.
+ * page listì˜  ê°œìˆ˜ëŠ” 10ê°œë¡œ fixë˜ì–´ ìˆë‹¤.
+ * ê° page listëŠ” ê° í˜ì´ì§€ì˜ big sizeë¥¼ ê¸°ë°˜ìœ¼ë¡œ
+ * ë¶„ë¥˜ëœë‹¤.
  *
- * ¸®½ºÆ®´Â ´ÜÀÏ ¸µÅ©µå ¸®½ºÆ®·Î ±¸¼ºµÈ´Ù.
+ * ë¦¬ìŠ¤íŠ¸ëŠ” ë‹¨ì¼ ë§í¬ë“œ ë¦¬ìŠ¤íŠ¸ë¡œ êµ¬ì„±ëœë‹¤.
  *
  *
  * mPageList[0] = 2^5 (base)
@@ -494,30 +494,30 @@ typedef struct sdpSlotDirHdr
  * mPageList[2] = 2^7 (base)
  * ...
  * mPageList[10] = 2^15 (base)
- * ------------------¿©±â±îÁö ´Ù¸¥ ¹æ¹ıÀ¸·Î ´ëÄ¡µÊ --------------
- * -----------------´õÀÌ»ó page list·Î À¯ÁöµÇÁö ¾Ê´Â´Ù. --------
+ * ------------------ì—¬ê¸°ê¹Œì§€ ë‹¤ë¥¸ ë°©ë²•ìœ¼ë¡œ ëŒ€ì¹˜ë¨ --------------
+ * -----------------ë”ì´ìƒ page listë¡œ ìœ ì§€ë˜ì§€ ì•ŠëŠ”ë‹¤. --------
  *
- * segment dir¿¡ X latch¸¦ ÀâÀ¸¸é ±× ÆäÀÌÁöÀÇ ¸ğµç segment desc¿¡
- * X latch¸¦ ÀâÀº °Í°ú ¸¶Âù°¡ÁöÀÌ´Ù.
- * ÀÌ´Â contentionÀ» À¯¹ßÇÒ ¼ö ÀÖÀ¸¹Ç·Î segment descÀÇ ¸ğµç ³»¿ëÀº
- * segmentÀÇ 0¹øÂ° ÆäÀÌÁö·Î ¿Å±ä´Ù.
- * ±×¸®°í segment desc´Â ¿ÀÁ÷ segment 0¹ø ÆäÀÌÁöÀÇ pid¸¦ °®´Â´Ù.
- * segmentÀÇ 0¹øÂ° ÆäÀÌÁö¸¦ segment header¶ó°í ÇÑ´Ù.
+ * segment dirì— X latchë¥¼ ì¡ìœ¼ë©´ ê·¸ í˜ì´ì§€ì˜ ëª¨ë“  segment descì—
+ * X latchë¥¼ ì¡ì€ ê²ƒê³¼ ë§ˆì°¬ê°€ì§€ì´ë‹¤.
+ * ì´ëŠ” contentionì„ ìœ ë°œí•  ìˆ˜ ìˆìœ¼ë¯€ë¡œ segment descì˜ ëª¨ë“  ë‚´ìš©ì€
+ * segmentì˜ 0ë²ˆì§¸ í˜ì´ì§€ë¡œ ì˜®ê¸´ë‹¤.
+ * ê·¸ë¦¬ê³  segment descëŠ” ì˜¤ì§ segment 0ë²ˆ í˜ì´ì§€ì˜ pidë¥¼ ê°–ëŠ”ë‹¤.
+ * segmentì˜ 0ë²ˆì§¸ í˜ì´ì§€ë¥¼ segment headerë¼ê³  í•œë‹¤.
  *
  * ----------------------------------------------*/
 
 typedef struct sdpPageFooter
 {
-    // ¸¶Áö¸·À¸·Î ÆäÀÌÁö°¡ ¼öÁ¤µÈ ½ÃÁ¡ÀÇ lsn
-    // flush ½ÃÁ¡¿¡ write µÈ´Ù.
+    // ë§ˆì§€ë§‰ìœ¼ë¡œ í˜ì´ì§€ê°€ ìˆ˜ì •ëœ ì‹œì ì˜ lsn
+    // flush ì‹œì ì— write ëœë‹¤.
     smLSN        mPageLSN;
 } sdpPageFooter;
 
 typedef UShort    sdpSlotEntry;
 
-/* unused slot entry list¿¡¼­
- * next ptrÀÌ NULLÀÌ¶ó´Â °ÍÀ» Ç¥½ÃÇÒ¶§
- * SDP_INVALID_SLOT_ENTRY_NUMÀ» »ç¿ëÇÑ´Ù. */
+/* unused slot entry listì—ì„œ
+ * next ptrì´ NULLì´ë¼ëŠ” ê²ƒì„ í‘œì‹œí• ë•Œ
+ * SDP_INVALID_SLOT_ENTRY_NUMì„ ì‚¬ìš©í•œë‹¤. */
 #define SDP_INVALID_SLOT_ENTRY_NUM (0x7FFF)
 
 #define SDP_SLOT_ENTRY_MIN_NUM     ((SShort)-1)
@@ -526,50 +526,50 @@ typedef UShort    sdpSlotEntry;
     ( (SShort) (SD_PAGE_SIZE / ID_SIZEOF(sdpSlotEntry) ) )
 
 /* --------------------------------------------------------------------
- * page ÃÊ±âÈ­ value
+ * page ì´ˆê¸°í™” value
  * ----------------------------------------------------------------- */
 #define SDP_INIT_PAGE_VALUE     (0x00)
 
 /* --------------------------------------------------------------------
- * page¸¦ freeÇÒ ¼ö ÀÖ´Â°¡ °Ë»çÇÑ´Ù.
- * free page¿¡¼­ »ç¿ëµÇ¸ç, ÁøÇà°úÁ¤Áß rollbackÀÌ ÀÖ±â ¶§¹®¿¡
- * ÀÌ ÇÔ¼ö¸¦ ÅëÇØ °Ë»çÇØ¾ß ÇÑ´Ù.
+ * pageë¥¼ freeí•  ìˆ˜ ìˆëŠ”ê°€ ê²€ì‚¬í•œë‹¤.
+ * free pageì—ì„œ ì‚¬ìš©ë˜ë©°, ì§„í–‰ê³¼ì •ì¤‘ rollbackì´ ìˆê¸° ë•Œë¬¸ì—
+ * ì´ í•¨ìˆ˜ë¥¼ í†µí•´ ê²€ì‚¬í•´ì•¼ í•œë‹¤.
  * ----------------------------------------------------------------- */
 typedef idBool (*sdpCanPageFree)( sdpPhyPageHdr *aPageHdr );
 
 
 /* --------------------------------------------------------------------
- * extentÀÇ »óÅÂ°¡ page¸¦ °¡Á®¿Ã ¼ö ÀÖ´Â »óÅÂÀÎÁö °Ë»çÇÏ´Â ÇÔ¼ö
- * free, insertableÀÎ page¸¦ °¡Á®¿Ã ¼ö ÀÖ´Â Áö °Ë»çÇÑ´Ù.
+ * extentì˜ ìƒíƒœê°€ pageë¥¼ ê°€ì ¸ì˜¬ ìˆ˜ ìˆëŠ” ìƒíƒœì¸ì§€ ê²€ì‚¬í•˜ëŠ” í•¨ìˆ˜
+ * free, insertableì¸ pageë¥¼ ê°€ì ¸ì˜¬ ìˆ˜ ìˆëŠ” ì§€ ê²€ì‚¬í•œë‹¤.
  * sdpExtent::canGetFreePage, sdpExtent::canGetInsPage
- * sdpSegment::findPage¿¡¼­ ÀÌ¸¦ »ç¿ëÇÔ
+ * sdpSegment::findPageì—ì„œ ì´ë¥¼ ì‚¬ìš©í•¨
  * ----------------------------------------------------------------- */
 //typedef idBool (*sdpFindPageFunc)( sdpExtDesc       *aExt );
 
 
 /* --------------------------------------------------------------------
- * page¸¦ »ç¿ë½Ã
- * ´ÜÁö alloc, free¸¸ ÇÏ´Â °æ¿ì¿Í
- * insertable, update only¸¦ ±¸ºĞÇØ¾ß ÇÏ´Â °æ¿ì¸¦ À§ÇÑ ÇÔ¼öµéÀÇ
- * ¸ğÀÓ.
- * table page´Â insertable ¿©ºÎ¸¦ »ç¿ëÇÑ´Ù.
- * sdpPageBitType À¸·Î ±¸ºĞÇÑ´Ù.
+ * pageë¥¼ ì‚¬ìš©ì‹œ
+ * ë‹¨ì§€ alloc, freeë§Œ í•˜ëŠ” ê²½ìš°ì™€
+ * insertable, update onlyë¥¼ êµ¬ë¶„í•´ì•¼ í•˜ëŠ” ê²½ìš°ë¥¼ ìœ„í•œ í•¨ìˆ˜ë“¤ì˜
+ * ëª¨ì„.
+ * table pageëŠ” insertable ì—¬ë¶€ë¥¼ ì‚¬ìš©í•œë‹¤.
+ * sdpPageBitType ìœ¼ë¡œ êµ¬ë¶„í•œë‹¤.
  * ----------------------------------------------------------------- */
 /*
 typedef struct sdpPageUseTypeFunc
 {
 
-    // ÇÏ³ªÀÇ extent¾È¿¡¼­ page¸¦ Ã£´Â´Ù.
+    // í•˜ë‚˜ì˜ extentì•ˆì—ì„œ pageë¥¼ ì°¾ëŠ”ë‹¤.
     idBool (*findPageInExt)( sdpExtDesc *aExtDesc,
                              UInt        aStartPosHint,
                              scPageID   *aAllocPageID,
                              sdRID      *aAllocExtRID,
                              idBool     *aIsThereFreePage);
 
-    // ext¿¡¼­ free, insertable page¸¦ ¾òÀ» ¼ö ÀÖ´Â »óÅÂÀÎÁö È®ÀÎÇÑ´Ù.
+    // extì—ì„œ free, insertable pageë¥¼ ì–»ì„ ìˆ˜ ìˆëŠ” ìƒíƒœì¸ì§€ í™•ì¸í•œë‹¤.
     idBool (*canGetPage)( sdpExtDesc  *aExtDesc );
 
-    // segmentÀÇ extent list¸¦ searchÇÏ¸é¼­ page¸¦ Ã£´Â´Ù.
+    // segmentì˜ extent listë¥¼ searchí•˜ë©´ì„œ pageë¥¼ ì°¾ëŠ”ë‹¤.
     idBool (*findPage)( sdpExtDesc  *aExtDesc,
                         UInt         aHint,
                         UInt        *aFindPBSNo,
@@ -582,7 +582,7 @@ typedef struct sdpPageUseTypeFunc
 
 
 /* --------------------------------------------------------------------
- * dump¸¦ À§ÇÑ flag
+ * dumpë¥¼ ìœ„í•œ flag
  * ----------------------------------------------------------------- */
 # define SDP_DUMP_MASK         (0x00000007)
 # define SDP_DUMP_DIR_PAGE     (0x00000001)
@@ -590,12 +590,12 @@ typedef struct sdpPageUseTypeFunc
 # define SDP_DUMP_SEG          (0x00000004)
 
 /*
- * Å×ÀÌºí½ºÆäÀÌ½º Online ¼öÇà½Ã °ü·Ã Table¿¡ ´ëÇÑ
- * Online Action½Ã ³Ñ°ÜÁÖ´Â ÀÎÀÚ
+ * í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ Online ìˆ˜í–‰ì‹œ ê´€ë ¨ Tableì— ëŒ€í•œ
+ * Online Actionì‹œ ë„˜ê²¨ì£¼ëŠ” ì¸ì
  */
 typedef struct sdpActOnlineArgs
 {
-    void  * mTrans; // Æ®·£Àè¼Ç
+    void  * mTrans; // íŠ¸ëœì­ì…˜
     ULong   mSmoNo; // DRDB Index Smo No
 } sdpActOnlineArgs;
 
@@ -604,67 +604,67 @@ struct sdpExtMgmtOp;
 /*
  * PROJ-1671 Bitmap-base Tablespace And Segment Space Management
  *
- * Space Cache Á¤ÀÇ
- * ¼­¹ö ±¸µ¿½Ã¿Í µğ½ºÅ© Å×ÀÌºí½ºÆäÀÌ½º »ı¼º½Ã¿¡ ÇÒ´çµÇ´Â
- * Runtime ÀÚ·á±¸Á¶·Î Å×ÀÌºí½ºÆäÀÌ½ºÀÇ Extent ÇÒ´ç ¹× ÇØÁ¦
- * ¿¬»ê¿¡ ÇÊ¿äÇÑ Á¤º¸¸¦ ÀúÀåÇÑ´Ù.
+ * Space Cache ì •ì˜
+ * ì„œë²„ êµ¬ë™ì‹œì™€ ë””ìŠ¤í¬ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ìƒì„±ì‹œì— í• ë‹¹ë˜ëŠ”
+ * Runtime ìë£Œêµ¬ì¡°ë¡œ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì˜ Extent í• ë‹¹ ë° í•´ì œ
+ * ì—°ì‚°ì— í•„ìš”í•œ ì •ë³´ë¥¼ ì €ì¥í•œë‹¤.
  *
  */
 typedef struct sdpSpaceCacheCommon
 {
-    /* TablespaceÀÇ ID */
+    /* Tablespaceì˜ ID */
     scSpaceID          mSpaceID;
 
-    /* Extent °ü¸®¹æ½Ä */
+    /* Extent ê´€ë¦¬ë°©ì‹ */
     smiExtMgmtType     mExtMgmtType;
 
-    /* Segment °ü¸®¹æ½Ä */
+    /* Segment ê´€ë¦¬ë°©ì‹ */
     smiSegMgmtType     mSegMgmtType;
 
-    /* ExtentÀÇ ÆäÀÌÁö °³¼ö */
+    /* Extentì˜ í˜ì´ì§€ ê°œìˆ˜ */
     UInt               mPagesPerExt;
 
-    /* Tablespace ¿¬»êÀÇ ÀÎÅÍÆäÀÌ½º ¸ğµâ */
+    /* Tablespace ì—°ì‚°ì˜ ì¸í„°í˜ì´ìŠ¤ ëª¨ë“ˆ */
     sdpExtMgmtOp     * mExtMgmtOp;
 } sdpSpaceCacheCommon;
 
 /*
  * PROJ-1671 Bitmap-based TableSpace And Segment Space Management
  *
- * Segment °ø°£°ü¸®¿¡ ÇÊ¿äÇÑ Á¤º¸¿Í Runtime Á¤º¸¸¦
- * °ü¸®ÇÏ´Â ÀÚ·á±¸Á¶
+ * Segment ê³µê°„ê´€ë¦¬ì— í•„ìš”í•œ ì •ë³´ì™€ Runtime ì •ë³´ë¥¼
+ * ê´€ë¦¬í•˜ëŠ” ìë£Œêµ¬ì¡°
  *
- * Segment °ø°£°ü¸® ¹æ½Ä¿¡ µû¶ó Segment HandleÀÇ
- * Runtime Cache¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+ * Segment ê³µê°„ê´€ë¦¬ ë°©ì‹ì— ë”°ë¼ Segment Handleì˜
+ * Runtime Cacheë¥¼ ì´ˆê¸°í™”í•œë‹¤.
  */
 typedef struct sdpSegHandle
 {
     scSpaceID            mSpaceID;
-    /* Å×ÀÌºí »ı¼º½Ã ÇÒ´çµÇ´Â segment desc. ÇØ´ç Å×ÀÌºí¿¡¼­ record¸¦
-       ÀúÀåÇÏ±â À§ÇÑ ¸ğµç page¸¦ °ü¸®ÇÑ´Ù. */
+    /* í…Œì´ë¸” ìƒì„±ì‹œ í• ë‹¹ë˜ëŠ” segment desc. í•´ë‹¹ í…Œì´ë¸”ì—ì„œ recordë¥¼
+       ì €ì¥í•˜ê¸° ìœ„í•œ ëª¨ë“  pageë¥¼ ê´€ë¦¬í•œë‹¤. */
     scPageID             mSegPID;
 
-    // XXX Meta OffsetÀ» SegDesc·Î ºÎÅÍ OffsetÀÎÁö. ¾Æ´Ô ÆäÀÌÁö ½ÃÀÛÀ§Ä¡
-    // ºÎÅÍ OffsetÀÎÁö °áÁ¤ÇØ¾ßÇÔ. ÇöÀç SegDescÀÇ ½ÃÀÛ À§Ä¡·Î ºÎÅÍ OffsetÀÓ.
+    // XXX Meta Offsetì„ SegDescë¡œ ë¶€í„° Offsetì¸ì§€. ì•„ë‹˜ í˜ì´ì§€ ì‹œì‘ìœ„ì¹˜
+    // ë¶€í„° Offsetì¸ì§€ ê²°ì •í•´ì•¼í•¨. í˜„ì¬ SegDescì˜ ì‹œì‘ ìœ„ì¹˜ë¡œ ë¶€í„° Offsetì„.
 
-    /* SegmentÀÇ Storage ¼Ó¼º */
+    /* Segmentì˜ Storage ì†ì„± */
     smiSegStorageAttr    mSegStoAttr;
-    /* Segment ¼Ó¼º */
+    /* Segment ì†ì„± */
     smiSegAttr           mSegAttr;
 
     /*
-     * runtime½Ã ±¸¼ºÇÏ´Â temporary Á¤º¸
-     * ¾Æ·¡ÀÇ ³»¿ëµéÀº ¸ğµÎ disk¿¡ Á¸ÀçÇÏ¸ç, runtime½Ã¿¡
-     * µğ½ºÅ© ÆäÀÌÁö·ÎºÎÅÍ ÀĞ¾î¼­ ¼³Á¤ÇÑ´Ù.
+     * runtimeì‹œ êµ¬ì„±í•˜ëŠ” temporary ì •ë³´
+     * ì•„ë˜ì˜ ë‚´ìš©ë“¤ì€ ëª¨ë‘ diskì— ì¡´ì¬í•˜ë©°, runtimeì‹œì—
+     * ë””ìŠ¤í¬ í˜ì´ì§€ë¡œë¶€í„° ì½ì–´ì„œ ì„¤ì •í•œë‹¤.
      */
 
-    /* Segment °ø°£ °ü¸®¿¡ ÇÊ¿äÇÑ Runtime Á¤º¸ */
+    /* Segment ê³µê°„ ê´€ë¦¬ì— í•„ìš”í•œ Runtime ì •ë³´ */
     void                * mCache;
 } sdpSegHandle;
 
 
 /*
- * Segment Cache³»ÀÇ Hint Position Á¤º¸
+ * Segment Cacheë‚´ì˜ Hint Position ì •ë³´
  */
 typedef struct sdpHintPosInfo
 {
@@ -694,16 +694,16 @@ typedef UShort (*sdpGetSlotSizeFunc)( const UChar    *aSlotPtr );
 /*
  * PROJ-1671 Bitmap-based Tablespace And Segment Space Management
  *
- * Å×ÀÌºí½ºÀÌ½ºÀÇ °ø°£°ü¸® ÀÎÅÍÆäÀÌ½ºµéÀÇ ÇÁ·ÎÅäÅ¸ÀÔ Á¤ÀÇ
+ * í…Œì´ë¸”ìŠ¤ì´ìŠ¤ì˜ ê³µê°„ê´€ë¦¬ ì¸í„°í˜ì´ìŠ¤ë“¤ì˜ í”„ë¡œí† íƒ€ì… ì •ì˜
  */
 
-/* Å×ÀÌºí½ºÆäÀÌ½º ¸ğµâ ÃÊ±âÈ­ */
+/* í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ëª¨ë“ˆ ì´ˆê¸°í™” */
 typedef IDE_RC (*sdptInitializeFunc)( scSpaceID          aSpaceID,
                                       smiExtMgmtType     aExtMgmtType,
                                       smiSegMgmtType     aSegMgmtType,
                                       UInt               aExtPageCount );
 
-/* Å×ÀÌºí½ºÆäÀÌ½º ¸ğµâ ÇØÁ¦ */
+/* í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ëª¨ë“ˆ í•´ì œ */
 typedef IDE_RC (*sdptDestroyFunc)( scSpaceID    aSpaceID );
 
 
@@ -715,38 +715,38 @@ typedef IDE_RC (*sdptFreeExtentFunc) ( idvSQL        * aStatistics,
                                        scPageID        aExtFstPID,
                                        UInt        *   aNrDone );
 
-/* Å×ÀÌºí½ºÆäÀÌ½º¿¡¼­ ExtDir ÇÒ´ç */
+/* í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì—ì„œ ExtDir í• ë‹¹ */
 typedef IDE_RC (*sdptTryAllocExtDirFunc)( idvSQL           * aStatistics,
                                           sdrMtxStartInfo  * aStartInfo,
                                           scSpaceID          aSpaceID,
                                           sdpFreeExtDirType  aFreeListIdx,
                                           scPageID         * aExtDirPID );
-/* Å×ÀÌºí½ºÆäÀÌ½º¿¡¼­ ExtDir ÇØÁ¦ */
+/* í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì—ì„œ ExtDir í•´ì œ */
 typedef IDE_RC (*sdptFreeExtDirFunc)( idvSQL           * aStatistics,
                                       scSpaceID          aSpaceID,
                                       sdpFreeExtDirType  aFreeListIdx,
                                       scPageID         * aExtDirPID,
                                       sdrMtx           * aMtx );
 
-/* »ç¿ëÀÚ Tablespace »ı¼º */
+/* ì‚¬ìš©ì Tablespace ìƒì„± */
 typedef IDE_RC (*sdptCreateFunc)( idvSQL             *aStatistics,
                                   void*               aTransForMtx,
                                   smiTableSpaceAttr*  aTableSpaceAttr,
                                   smiDataFileAttr**   aDataFileAttr,
                                   UInt                aDataFileAttrCount );
 
-/* Tablespace ¸®¼Â */
+/* Tablespace ë¦¬ì…‹ */
 typedef IDE_RC (*sdptResetFunc)( idvSQL           *aStatistics,
                                  void             *aTrans,
                                  scSpaceID         aSpaceID );
 
-/* Tablespace »èÁ¦ */
+/* Tablespace ì‚­ì œ */
 typedef IDE_RC (*sdptDropFunc)( idvSQL       *aStatistics,
                                 void*         aTrans,
                                 scSpaceID     aSpaceID,
                                 smiTouchMode  aTouchMode );
 
-/* µ¥ÀÌÅ¸ÆÄÀÏ Ãß°¡ */
+/* ë°ì´íƒ€íŒŒì¼ ì¶”ê°€ */
 typedef IDE_RC (*sdptCreateFilesFunc)(
                            idvSQL            *aStatistics,
                            void*              aTrans,
@@ -754,7 +754,7 @@ typedef IDE_RC (*sdptCreateFilesFunc)(
                            smiDataFileAttr  **aDataFileAttr,
                            UInt               aDataFileAttrCount );
 
-/* µ¥ÀÌÅ¸ÆÄÀÏ »èÁ¦ */
+/* ë°ì´íƒ€íŒŒì¼ ì‚­ì œ */
 typedef IDE_RC (*sdptDropFileFunc)(
                            idvSQL         *aStatistics,
                            void*           aTrans,
@@ -762,7 +762,7 @@ typedef IDE_RC (*sdptDropFileFunc)(
                            SChar          *aFileName,
                            SChar          *aValidDataFileName );
 
-/* µ¥ÀÌÅ¸ÆÄÀÏ Autoextend ¸ğµå º¯°æ */
+/* ë°ì´íƒ€íŒŒì¼ Autoextend ëª¨ë“œ ë³€ê²½ */
 typedef IDE_RC (*sdptAlterFileAutoExtendFunc)(
                            idvSQL     *aStatistics,
                            void*       aTrans,
@@ -773,25 +773,25 @@ typedef IDE_RC (*sdptAlterFileAutoExtendFunc)(
                            ULong       aMaxSize,
                            SChar      *aValidDataFileName );
 
-/* Å×ÀÌºí½ºÆäÀÌ½º Online/Offline º¯°æ */
+/* í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ Online/Offline ë³€ê²½ */
 typedef IDE_RC (*sdptAlterStatusFunc)(
                           idvSQL*              aStatistics,
                           void               * aTrans,
                           sddTableSpaceNode  * aSpaceNode,
                           UInt                 aStatus );
 
-/*  Å×ÀÌºí½ºÆäÀÌ½º Discard  */
+/*  í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ Discard  */
 typedef IDE_RC (*sdptAlterDiscardFunc)(
                           sddTableSpaceNode * aTBSNode );
 
-/* µ¥ÀÌÅ¸ÆÄÀÏ Rename  */
+/* ë°ì´íƒ€íŒŒì¼ Rename  */
 typedef IDE_RC (*sdptAlterFileNameFunc)(
                            idvSQL*      aStatistics,
                            scSpaceID    aSpaceID,
                            SChar       *aOldName,
                            SChar       *aNewName );
 
-/* µ¥ÀÌÅ¸ÆÄÀÏ Resize ¸ğµå º¯°æ */
+/* ë°ì´íƒ€íŒŒì¼ Resize ëª¨ë“œ ë³€ê²½ */
 typedef  IDE_RC (*sdptAlterFileResizeFunc)(
                           idvSQL       *aStatistics,
                           void         *aTrans,
@@ -801,11 +801,11 @@ typedef  IDE_RC (*sdptAlterFileResizeFunc)(
                           ULong        *aSizeChanged,
                           SChar        *aValidDataFileName );
 
-/* Å×ÀÌºí½ºÆäÀÌ½º ÀÚ·á±¸Á¶ Dump */
+/* í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ìë£Œêµ¬ì¡° Dump */
 typedef IDE_RC (*sdptDumpFunc)( scSpaceID   aSpaceID,
                                 UInt        aDumpFlag );
 
-/* Å×ÀÌºí½ºÆäÀÌ½º ÀÚ·á±¸Á¶ È®ÀÎ */
+/* í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ìë£Œêµ¬ì¡° í™•ì¸ */
 typedef IDE_RC (*sdptVerifyFunc)( idvSQL*   aStatistics,
                                   scSpaceID aSpaceID,
                                   UInt      aFlag );
@@ -839,20 +839,20 @@ typedef IDE_RC (*sdptBuildRecord4FreeExtOfTBS)( void                * aHeader,
 /*
  * PROJ-1671 Bitmap-based Tablespace And Segment Space Management
  *
- * Segment °ø°£°ü¸® ÀÎÅÍÆäÀÌ½ºµéÀÇ ÇÁ·ÎÅäÅ¸ÀÔ Á¤ÀÇ
+ * Segment ê³µê°„ê´€ë¦¬ ì¸í„°í˜ì´ìŠ¤ë“¤ì˜ í”„ë¡œí† íƒ€ì… ì •ì˜
  */
 
-/* Segment °ø°£°ü¸® ¸ğµâ ÃÊ±âÈ­ */
+/* Segment ê³µê°„ê´€ë¦¬ ëª¨ë“ˆ ì´ˆê¸°í™” */
 typedef IDE_RC (*sdpsInitializeFunc)( sdpSegHandle * aSegHandle,
                                       scSpaceID      aSpaceID,
                                       sdpSegType     aSegType,
                                       smOID          aObjectID,
                                       UInt           aIndexID );
 
-/* Segment °ø°£°ü¸® ¸ğµâ ÇØÁ¦ */
+/* Segment ê³µê°„ê´€ë¦¬ ëª¨ë“ˆ í•´ì œ */
 typedef IDE_RC (*sdpsDestroyFunc)( sdpSegHandle * aSegHandle );
 
-/* Table Segment ÇÒ´ç ¹× Segment Meta Header ÃÊ±âÈ­ */
+/* Table Segment í• ë‹¹ ë° Segment Meta Header ì´ˆê¸°í™” */
 typedef IDE_RC (*sdpsCreateSegmentFunc)(
                        idvSQL                * aStatistics,
                        sdrMtx                * aMtx,
@@ -860,13 +860,13 @@ typedef IDE_RC (*sdpsCreateSegmentFunc)(
                        sdpSegType              aSegType,
                        sdpSegHandle          * aSegHandle );
 
-/* Segment ÇØÁ¦ */
+/* Segment í•´ì œ */
 typedef IDE_RC (*sdpsDropSegmentFunc)( idvSQL             * aStatistics,
                                        sdrMtx             * aMtx,
                                        scSpaceID            aSpaceID,
                                        scPageID             aSegPID );
 
-/* Segment ¸®¼Â */
+/* Segment ë¦¬ì…‹ */
 typedef IDE_RC (*sdpsResetSegmentFunc)( idvSQL           * aStatistics,
                                         sdrMtx           * aMtx,
                                         scSpaceID          aSpaceID,
@@ -893,7 +893,7 @@ typedef IDE_RC (*sdpsGetMetaPIDFunc)( idvSQL           * aStatistics,
                                       UInt               aIndex,
                                       scPageID         * aMetaPID );
 
-/* »õ·Î¿î ÆäÀÌÁö ÇÒ´ç */
+/* ìƒˆë¡œìš´ í˜ì´ì§€ í• ë‹¹ */
 typedef IDE_RC (*sdpsAllocNewPageFunc)( idvSQL           * aStatistics,
                                         sdrMtx           * aMtx,
                                         scSpaceID          aSpaceID,
@@ -901,7 +901,7 @@ typedef IDE_RC (*sdpsAllocNewPageFunc)( idvSQL           * aStatistics,
                                         sdpPageType        aPageType,
                                         UChar           ** aAllocPagePtr );
 
-/* °¡¿ë°ø°£ ÇÒ´çÀÌÈÄ ÆäÀÌÁö °¡¿ëµµ ¹× Segment °¡¿ëµµ º¯°æ */
+/* ê°€ìš©ê³µê°„ í• ë‹¹ì´í›„ í˜ì´ì§€ ê°€ìš©ë„ ë° Segment ê°€ìš©ë„ ë³€ê²½ */
 typedef IDE_RC (*sdpsUpdatePageState)( idvSQL           * aStatistics,
                                        sdrMtx           * aMtx,
                                        scSpaceID          aSpaceID,
@@ -909,7 +909,7 @@ typedef IDE_RC (*sdpsUpdatePageState)( idvSQL           * aStatistics,
                                        UChar            * aDataPagePtr );
 
 
-/* ¿äÃ»µÈ °³¼ö¸¸Å­ Free ÆäÀÌÁö¸¦ Segment¿¡ È®º¸ */
+/* ìš”ì²­ëœ ê°œìˆ˜ë§Œí¼ Free í˜ì´ì§€ë¥¼ Segmentì— í™•ë³´ */
 typedef IDE_RC (*sdpsPrepareNewPagesFunc)( idvSQL            * aStatistics,
                                            sdrMtx            * aMtxForSMO,
                                            scSpaceID           aSpaceID,
@@ -917,7 +917,7 @@ typedef IDE_RC (*sdpsPrepareNewPagesFunc)( idvSQL            * aStatistics,
                                            UInt                aCountWanted );
 
 
-/* DPath-Insert¿Í TSS/UDS ÆäÀÌÁö ÇÒ´ç ¿¬»êÀ» À§ÇÑ ÆäÀÌÁö ÇÒ´ç */
+/* DPath-Insertì™€ TSS/UDS í˜ì´ì§€ í• ë‹¹ ì—°ì‚°ì„ ìœ„í•œ í˜ì´ì§€ í• ë‹¹ */
 typedef IDE_RC (*sdpsAllocNewPage4AppendFunc) ( idvSQL               *aStatistics,
                                                 sdrMtx               *aMtx,
                                                 scSpaceID             aSpaceID,
@@ -933,7 +933,7 @@ typedef IDE_RC (*sdpsAllocNewPage4AppendFunc) ( idvSQL               *aStatistic
                                                 UChar               **aAllocPagePtr );
 
 
-/* DPath-Insert¿Í TSS/UDS¸¦ À§ÇÑ ÆäÀÌÁö È®º¸ */
+/* DPath-Insertì™€ TSS/UDSë¥¼ ìœ„í•œ í˜ì´ì§€ í™•ë³´ */
 typedef IDE_RC (*sdpsPrepareNewPage4AppendFunc)( idvSQL               *aStatistics,
                                                  sdrMtx               *aMtx,
                                                  scSpaceID             aSpaceID,
@@ -942,7 +942,7 @@ typedef IDE_RC (*sdpsPrepareNewPage4AppendFunc)( idvSQL               *aStatisti
                                                  scPageID              aFstPIDOfPrvAllocExt,
                                                  scPageID              aPrvAllocPageID );
 
-/* ÆäÀÌÁö Free*/
+/* í˜ì´ì§€ Free*/
 typedef IDE_RC (*sdpsFreePageFunc)( idvSQL            * aStatistics,
                                     sdrMtx            * aMtx,
                                     scSpaceID           aSpaceID,
@@ -951,7 +951,7 @@ typedef IDE_RC (*sdpsFreePageFunc)( idvSQL            * aStatistics,
 
 typedef idBool (*sdpsIsFreePageFunc)( UChar * aPagePtr );
 
-/* °¡¿ë°ø°£ ÇÒ´çÀ» À§ÇÑ Å½»ö */
+/* ê°€ìš©ê³µê°„ í• ë‹¹ì„ ìœ„í•œ íƒìƒ‰ */
 typedef IDE_RC (*sdpsFindInsertablePageFunc)( idvSQL           * aStatistics,
                                               sdrMtx           * aMtx,
                                               scSpaceID          aSpaceID,
@@ -963,38 +963,38 @@ typedef IDE_RC (*sdpsFindInsertablePageFunc)( idvSQL           * aStatistics,
                                               UChar           ** aPagePtr,
                                               UChar            * aCTSlotIdx );
 
-/* Sequential ScanÇÒ Segment Á¤º¸¸¦ ¹İÈ¯ÇÑ´Ù */
+/* Sequential Scaní•  Segment ì •ë³´ë¥¼ ë°˜í™˜í•œë‹¤ */
 typedef IDE_RC (*sdpsGetFmtPageCntFunc)( idvSQL       *aStatistics,
                                          scSpaceID     aSpaceID,
                                          sdpSegHandle *aSegHandle,
                                          ULong        *aFmtPageCnt );
 
-/* Sequential ScanÇÒ Segment Á¤º¸¸¦ ¹İÈ¯ÇÑ´Ù */
+/* Sequential Scaní•  Segment ì •ë³´ë¥¼ ë°˜í™˜í•œë‹¤ */
 typedef IDE_RC (*sdpsGetSegInfoFunc)( idvSQL       *aStatistics,
                                       scSpaceID     aSpaceID,
                                       scPageID      aSegPID,
                                       void         *aTableHeader,
                                       sdpSegInfo   *aSegInfo );
 
-/* Sequential ScanÇÒ Segment Á¤º¸¸¦ ¹İÈ¯ÇÑ´Ù */
+/* Sequential Scaní•  Segment ì •ë³´ë¥¼ ë°˜í™˜í•œë‹¤ */
 typedef IDE_RC (*sdpsGetSegCacheInfoFunc)( idvSQL            *aStatistics,
                                            sdpSegHandle      *aSegHandle,
                                            sdpSegCacheInfo   *aSegCacheInfo );
 
-/* Sequential ScanÇÒ Extent Á¤º¸¸¦ ¹İÈ¯ÇÑ´Ù */
+/* Sequential Scaní•  Extent ì •ë³´ë¥¼ ë°˜í™˜í•œë‹¤ */
 typedef IDE_RC (*sdpsGetExtInfoFunc)( idvSQL       *aStatistics,
                                       scSpaceID     aSpaceID,
                                       sdRID         aExtRID,
                                       sdpExtInfo   *aExtInfo );
 
-/* ´ÙÀ½ ExtentÀÇ Á¤º¸¸¦ ¹İÈ¯ÇÑ´Ù */
+/* ë‹¤ìŒ Extentì˜ ì •ë³´ë¥¼ ë°˜í™˜í•œë‹¤ */
 typedef IDE_RC (*sdpsGetNxtExtInfoFunc)( idvSQL       *aStatistics,
                                          scSpaceID     aSpaceID,
                                          scPageID      aSegHdrPID,
                                          sdRID         aCurExtRID,
                                          sdRID        *aNxtExtRID );
 
-/* Sequential ScanÇÒ ´ÙÀ½ ÆäÀÌÁö¸¦ ¹İÈ¯ÇÑ´Ù */
+/* Sequential Scaní•  ë‹¤ìŒ í˜ì´ì§€ë¥¼ ë°˜í™˜í•œë‹¤ */
 typedef IDE_RC (*sdpsGetNxtAllocPageFunc)( idvSQL           * aStatistics,
                                            scSpaceID          aSpaceID,
                                            sdpSegInfo       * aSegInfo,
@@ -1003,13 +1003,13 @@ typedef IDE_RC (*sdpsGetNxtAllocPageFunc)( idvSQL           * aStatistics,
                                            sdpExtInfo       * aExtInfo,
                                            scPageID         * aPageID );
 
-/* Full Scan ¿Ï·áÈÄ Last Alloc Page¸¦ °»½ÅÇÑ´Ù. */
+/* Full Scan ì™„ë£Œí›„ Last Alloc Pageë¥¼ ê°±ì‹ í•œë‹¤. */
 typedef IDE_RC (*sdpsSetLstAllocPageFunc)( idvSQL       *aStatistics,
                                            sdpSegHandle *aSegHandle,
                                            scPageID      aLstAllocPID,
                                            ULong         aLstAllocSeqNo );
 
-/* segment merge¿Ï·á°úÁ¤¿¡¼­ HWM °»½ÅÇÑ´Ù. */
+/* segment mergeì™„ë£Œê³¼ì •ì—ì„œ HWM ê°±ì‹ í•œë‹¤. */
 typedef IDE_RC (*sdpsUpdateHWMInfo4DPath)( idvSQL           *aStatistics,
                                            sdrMtxStartInfo  *aStartInfo,
                                            scSpaceID         aSpaceID,
@@ -1021,7 +1021,7 @@ typedef IDE_RC (*sdpsUpdateHWMInfo4DPath)( idvSQL           *aStatistics,
                                            ULong             aAllocPageCnt,
                                            idBool            aMegeMultiSeg );
 
-/* segment merge¿Ï·á°úÁ¤¿¡¼­ Dpath½Ã formatµÈ ÆäÀÌÁö¸¦ ´Ù½Ã Æ÷¸ËÇÑ´Ù. */
+/* segment mergeì™„ë£Œê³¼ì •ì—ì„œ Dpathì‹œ formatëœ í˜ì´ì§€ë¥¼ ë‹¤ì‹œ í¬ë§·í•œë‹¤. */
 typedef IDE_RC (*sdpsReformatPage4DPath)( idvSQL           *aStatistics,
                                           sdrMtxStartInfo  *aStartInfo,
                                           scSpaceID         aSpaceID,
@@ -1029,18 +1029,18 @@ typedef IDE_RC (*sdpsReformatPage4DPath)( idvSQL           *aStatistics,
                                           sdRID             aLstAllocExtRID,
                                           scPageID          aLstPID );
 
-/* SegmentÀÇ »óÅÂ¸¦ ¸®ÅÏÇÑ´Ù. */
+/* Segmentì˜ ìƒíƒœë¥¼ ë¦¬í„´í•œë‹¤. */
 typedef IDE_RC (*sdpsGetSegStateFunc) ( idvSQL        *aStatistics,
                                         scSpaceID      aSpaceID,
                                         scPageID       aSegPID,
                                         sdpSegState   *aSegState );
 
-/* Segment Cache¿¡ ÀúÀåµÈ Å½»öHintÁ¤º¸¸¦ ¹İÈ¯ÇÑ´Ù. */
+/* Segment Cacheì— ì €ì¥ëœ íƒìƒ‰Hintì •ë³´ë¥¼ ë°˜í™˜í•œë‹¤. */
 typedef void (*sdpsGetHintPosInfoFunc) ( idvSQL          * aStatistics,
                                          void            * aSegCache,
                                          sdpHintPosInfo  * aHintPosInfo );
 
-/* Segment ÀÚ·á±¸Á¶¿¡ ´ëÇÑ Verify */
+/* Segment ìë£Œêµ¬ì¡°ì— ëŒ€í•œ Verify */
 typedef IDE_RC (*sdpsVerifyFunc)( idvSQL     * aStatistics,
                                   scSpaceID    aSpaceID,
                                   void       * aSegDesc,
@@ -1048,7 +1048,7 @@ typedef IDE_RC (*sdpsVerifyFunc)( idvSQL     * aStatistics,
                                   idBool       aAllUsed,
                                   scPageID     aUsedLimit );
 
-/* Segment ÀÚ·á±¸Á¶¸¦ Ãâ·Â */
+/* Segment ìë£Œêµ¬ì¡°ë¥¼ ì¶œë ¥ */
 typedef IDE_RC (*sdpsDumpFunc) ( scSpaceID    aSpaceID,
                                  void        *aSegDesc,
                                  idBool       aDisplayAll );
@@ -1090,7 +1090,7 @@ typedef IDE_RC (*sdpsShrinkExtsFunc) ( idvSQL            * aStatistics,
                                        sdRID               aFstExtRID,
                                        sdRID               aLstExtRID);
 
-/* TSS( Transaction State Segment ) SID °ü¸® */
+/* TSS( Transaction State Segment ) SID ê´€ë¦¬ */
 typedef IDE_RC (*sdptSetTSSPIDFunc) ( idvSQL        * aStatistics,
                                       sdrMtx        * aMtx,
                                       scSpaceID       aSpaceID,
@@ -1102,7 +1102,7 @@ typedef IDE_RC (*sdptGetTSSPIDFunc) ( idvSQL        * aStatistics,
                                       UInt            aIndex,
                                       scPageID      * aTSSPID );
 
-/* UDS( Undo Segment RID ) °ü¸® */
+/* UDS( Undo Segment RID ) ê´€ë¦¬ */
 typedef IDE_RC (*sdptSetUDSPIDFunc) ( idvSQL        * aStatistics,
                                       sdrMtx        * aMtx,
                                       scSpaceID       aSpaceID,
@@ -1114,16 +1114,16 @@ typedef IDE_RC (*sdptGetUDSPIDFunc) ( idvSQL        * aStatistics,
                                       UInt            aIndex,
                                       scPageID      * aUDSPID );
 
-// free extent¿¡ ¼ÓÇÑ pageÀÎÁö È®ÀÎ
+// free extentì— ì†í•œ pageì¸ì§€ í™•ì¸
 typedef IDE_RC (*sdptIsFreeExtPageFunc)( idvSQL     * aStatistics,
                                          scSpaceID    aSpaceID,
                                          scPageID     aPageID,
                                          idBool     * aIsFreeExt );
 
-/* Table SpaceÀÇ Á¤º¸¸¦ °ü¸® */
+/* Table Spaceì˜ ì •ë³´ë¥¼ ê´€ë¦¬ */
 
 /*
- * Å×ÀÌºí½ºÆäÀÌ½º °ø°£°ü¸® ¹æ½Ä¿¡ µû¸¥ ¸ğµâµéÀÇ ÀÎÅÍÆäÀÌ½º ÁıÇÕÀ» Á¤ÀÇÇÑ´Ù.
+ * í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ê³µê°„ê´€ë¦¬ ë°©ì‹ì— ë”°ë¥¸ ëª¨ë“ˆë“¤ì˜ ì¸í„°í˜ì´ìŠ¤ ì§‘í•©ì„ ì •ì˜í•œë‹¤.
  */
 typedef struct sdpExtMgmtOp
 {
@@ -1165,22 +1165,22 @@ typedef struct sdpExtMgmtOp
 } sdpExtMgmtOp;
 
 /*
- * Segment °ø°£°ü¸® ¹æ½Ä¿¡ µû¸¥ ¸ğµâµéÀÇ ÀÎÅÍÆäÀÌ½º
- * ÁıÇÕÀ» Á¤ÀÇÇÑ´Ù.
+ * Segment ê³µê°„ê´€ë¦¬ ë°©ì‹ì— ë”°ë¥¸ ëª¨ë“ˆë“¤ì˜ ì¸í„°í˜ì´ìŠ¤
+ * ì§‘í•©ì„ ì •ì˜í•œë‹¤.
  */
 typedef struct sdpSegMgmtOp
 {
-    /* ¸ğµâ ÃÊ±âÈ­ ¹× ÇØÁ¦ */
+    /* ëª¨ë“ˆ ì´ˆê¸°í™” ë° í•´ì œ */
     sdpsInitializeFunc                mInitialize;
     sdpsDestroyFunc                   mDestroy;
 
-    /* Segment »ı¼º ¹× ÇØÁ¦ */
+    /* Segment ìƒì„± ë° í•´ì œ */
     sdpsCreateSegmentFunc             mCreateSegment;
     sdpsDropSegmentFunc               mDropSegment;
     sdpsResetSegmentFunc              mResetSegment;
     sdpsExtendSegmentFunc             mExtendSegment;
 
-    /* ÆäÀÌÁö ÇÒ´ç ¹× ÇØÁ¦ */
+    /* í˜ì´ì§€ í• ë‹¹ ë° í•´ì œ */
     sdpsAllocNewPageFunc              mAllocNewPage;
     sdpsPrepareNewPagesFunc           mPrepareNewPages;
     sdpsAllocNewPage4AppendFunc       mAllocNewPage4Append;
@@ -1191,12 +1191,12 @@ typedef struct sdpSegMgmtOp
     /* Page State */
     sdpsIsFreePageFunc                mIsFreePage;
 
-    /* DPath°¡ Commit½Ã Temp SegÀÇ ÆäÀÌÁö¸¦ Target Seg¿¡
-     * AddÇÑ´Ù. */
+    /* DPathê°€ Commitì‹œ Temp Segì˜ í˜ì´ì§€ë¥¼ Target Segì—
+     * Addí•œë‹¤. */
     sdpsUpdateHWMInfo4DPath           mUpdateHWMInfo4DPath;
     sdpsReformatPage4DPath            mReformatPage4DPath;
 
-    /* °¡¿ë°ø°£ ÆäÀÌÁö Å½»ö */
+    /* ê°€ìš©ê³µê°„ í˜ì´ì§€ íƒìƒ‰ */
     sdpsFindInsertablePageFunc        mFindInsertablePage;
 
     /* Format Page Count */
@@ -1209,11 +1209,11 @@ typedef struct sdpSegMgmtOp
     sdpsGetSegCacheInfoFunc           mGetSegCacheInfo;
     sdpsSetLstAllocPageFunc           mSetLstAllocPage;
 
-    /* SegmentÀÇ »óÅÂ */
+    /* Segmentì˜ ìƒíƒœ */
     sdpsGetSegStateFunc               mGetSegState;
     sdpsGetHintPosInfoFunc            mGetHintPosInfo;
 
-    /* Segment Meta PID°ü¸® */
+    /* Segment Meta PIDê´€ë¦¬ */
     sdpsSetMetaPIDFunc                mSetMetaPID;
     sdpsGetMetaPIDFunc                mGetMetaPID;
 
@@ -1222,44 +1222,44 @@ typedef struct sdpSegMgmtOp
     sdpsTryStealExtsFunc              mTryStealExts;
     sdpsShrinkExtsFunc                mShrinkExts;
 
-    /* Segment ÀÚ·á±¸Á¶ÀÇ Verify ¹× Dump */
+    /* Segment ìë£Œêµ¬ì¡°ì˜ Verify ë° Dump */
     sdpsDumpFunc                      mDump;
     sdpsVerifyFunc                    mVerify;
 
 } sdpSegMgmtOp;
 
-/* PROJ-1671 SegmentÀÇ °ø°£°ü¸® ¹æ½Ä
- * Segment °ø°£°ü¸®¿¡ ÇÊ¿äÇÑ Á¤º¸¸¦ ÀúÀåÇÑ´Ù. */
+/* PROJ-1671 Segmentì˜ ê³µê°„ê´€ë¦¬ ë°©ì‹
+ * Segment ê³µê°„ê´€ë¦¬ì— í•„ìš”í•œ ì •ë³´ë¥¼ ì €ì¥í•œë‹¤. */
 typedef struct sdpSegmentDesc
 {
     /* PROJ-1671 Bitmap-based Tablespace And Segment Space Management */
     sdpSegHandle     mSegHandle;
     /* Segment Space Management Type */
     smiSegMgmtType   mSegMgmtType;
-    /* Segment ¿¬»êÀÇ ÀÎÅÍÆäÀÌ½º ¸ğµâ */
+    /* Segment ì—°ì‚°ì˜ ì¸í„°í˜ì´ìŠ¤ ëª¨ë“ˆ */
     sdpSegMgmtOp   * mSegMgmtOp;
 
 } sdpSegmentDesc;
 
 /* ------------------------------------------------
- * disk tableÀ» À§ÇÑ page list entry
- * - memory tableÀÇ page list entry¿Í´Â º°µµ·Î
- *   Á¤ÀÇµÇ¾î ÀÖÀ½.
+ * disk tableì„ ìœ„í•œ page list entry
+ * - memory tableì˜ page list entryì™€ëŠ” ë³„ë„ë¡œ
+ *   ì •ì˜ë˜ì–´ ìˆìŒ.
  * ----------------------------------------------*/
 typedef struct sdpPageListEntry
 {
-    /* mItemSizeÀÇ alignµÈ ±æÀÌ fixed ¿µ¿ªÀÇ Å©±â°¡ pageÀÇ
-     * µ¥ÀÌÅ¸ °¡¿ë°ø°£Å©±âº¸´Ù Å« Å×ÀÌºíÀº »ı¼ºÇÒ ¼ö ¾ø´Ù */
+    /* mItemSizeì˜ alignëœ ê¸¸ì´ fixed ì˜ì—­ì˜ í¬ê¸°ê°€ pageì˜
+     * ë°ì´íƒ€ ê°€ìš©ê³µê°„í¬ê¸°ë³´ë‹¤ í° í…Œì´ë¸”ì€ ìƒì„±í•  ìˆ˜ ì—†ë‹¤ */
     UInt                  mSlotSize;
 
-    /* Segment ±â¼úÀÚ */
+    /* Segment ê¸°ìˆ ì */
     sdpSegmentDesc        mSegDesc;
 
-    /* insertµÈ recordÀÇ °³¼ö */
+    /* insertëœ recordì˜ ê°œìˆ˜ */
     ULong                 mRecCnt;
 
-    /* ´Ù¼öÀÇ transactionÀÌ µ¿½Ã¿¡ page list entry¿¡
-     * Á¢±ÙÇÒ ¼ö ÀÖ´Â µ¿½Ã¼º Á¦°ø */
+    /* ë‹¤ìˆ˜ì˜ transactionì´ ë™ì‹œì— page list entryì—
+     * ì ‘ê·¼í•  ìˆ˜ ìˆëŠ” ë™ì‹œì„± ì œê³µ */
     iduMutex              *mMutex;
 
     ULong                  mReserveArea[SDP_PAGELIST_ENTRY_RESEV_SIZE];
@@ -1274,22 +1274,22 @@ typedef struct sdpSegInfo
     sdpSegType        mType;
     sdpSegState       mState;
 
-    /* ExtentÀÇ ÆäÀÌÁö °¹¼ö */
+    /* Extentì˜ í˜ì´ì§€ ê°¯ìˆ˜ */
     UInt              mPageCntInExt;
 
-    /* FormatµÈ ÆäÀÌÁö °¹¼ö */
+    /* Formatëœ í˜ì´ì§€ ê°¯ìˆ˜ */
     ULong             mFmtPageCnt;
 
-    /* Extent°¹¼ö */
+    /* Extentê°¯ìˆ˜ */
     ULong             mExtCnt;
 
-    /* Extent Dir Page °³¼ö */
+    /* Extent Dir Page ê°œìˆ˜ */
     ULong              mExtDirCnt;
 
-    /* Ã¹¹øÂ° Extent RID */
+    /* ì²«ë²ˆì§¸ Extent RID */
     sdRID             mFstExtRID;
 
-    /* ¸¶Áö¸· Extent RID */
+    /* ë§ˆì§€ë§‰ Extent RID */
     sdRID             mLstExtRID;
 
     /* High Water Mark */
@@ -1299,7 +1299,7 @@ typedef struct sdpSegInfo
     sdRID             mLstAllocExtRID;
     scPageID          mFstPIDOfLstAllocExt;
 
-    /* HWMÀÇ Extent RID */
+    /* HWMì˜ Extent RID */
     sdRID             mExtRIDHWM;
 
     /* For TempSegInfo */
@@ -1308,27 +1308,27 @@ typedef struct sdpSegInfo
 
 typedef struct sdpSegCacheInfo
 {
-    /* ÇÊ¿äÇÑ Á¤º¸¸¦ Ãß°¡ÇÏ¸é µÈ´Ù.
-     * ÇöÀç´Â TMS¿¡¼­ ¸¶Áö¸· ÇÒ´çµÈ ÆäÀÌÁö¸¦ °¡Á®¿À±â À§ÇØ¼­¸¸ »ç¿ëÇÑ´Ù. */
+    /* í•„ìš”í•œ ì •ë³´ë¥¼ ì¶”ê°€í•˜ë©´ ëœë‹¤.
+     * í˜„ì¬ëŠ” TMSì—ì„œ ë§ˆì§€ë§‰ í• ë‹¹ëœ í˜ì´ì§€ë¥¼ ê°€ì ¸ì˜¤ê¸° ìœ„í•´ì„œë§Œ ì‚¬ìš©í•œë‹¤. */
 
     /* for TMS */
-    idBool        mUseLstAllocPageHint; // ¸¶Áö¸· ÇÒ´çµÈ Page Hint »ç¿ë ¿©ºÎ
-    scPageID      mLstAllocPID;         // ¸¶Áö¸· ÇÒ´çµÈ Page ID
-    ULong         mLstAllocSeqNo;       // ¸¶Áö¸· ÇÒ´çµÈ PageÀÇ SeqNo
+    idBool        mUseLstAllocPageHint; // ë§ˆì§€ë§‰ í• ë‹¹ëœ Page Hint ì‚¬ìš© ì—¬ë¶€
+    scPageID      mLstAllocPID;         // ë§ˆì§€ë§‰ í• ë‹¹ëœ Page ID
+    ULong         mLstAllocSeqNo;       // ë§ˆì§€ë§‰ í• ë‹¹ëœ Pageì˜ SeqNo
 } sdpSegCacheInfo;
 
 typedef struct sdpExtInfo
 {
-    /* ExtentÀÇ Ã¹¹øÂ° Extent PID */
+    /* Extentì˜ ì²«ë²ˆì§¸ Extent PID */
     scPageID     mFstPID;
 
-    /* Extent³»ÀÇ Ã¹¹øÂ° Data PID */
+    /* Extentë‚´ì˜ ì²«ë²ˆì§¸ Data PID */
     scPageID     mFstDataPID;
 
-    /* Extent¸¦ °ü¸®ÇÏ´Â LF BMP PID */
+    /* Extentë¥¼ ê´€ë¦¬í•˜ëŠ” LF BMP PID */
     scPageID     mExtMgmtLfBMP;
 
-    /* ExtentÀÇ ¸¶Áö¸· PID */
+    /* Extentì˜ ë§ˆì§€ë§‰ PID */
     scPageID     mLstPID;
 
 } sdpExtInfo;
@@ -1349,7 +1349,7 @@ typedef struct sdpTBSInfo
     /* Page Count In Ext */
     UInt               mPageCntInExt;
 
-    /* È®Àå½Ã »ı¼ºµÇ´Â ExtentÀÇ °¹¼ö */
+    /* í™•ì¥ì‹œ ìƒì„±ë˜ëŠ” Extentì˜ ê°¯ìˆ˜ */
     UInt               mExtCntOfExpand;
 
     /* Free Extent RID List */
@@ -1358,29 +1358,29 @@ typedef struct sdpTBSInfo
 
 typedef struct sdpDumpTBSInfo
 {
-    /* TBSÀÇ ¼ÓÇÑ Extent RID */
+    /* TBSì˜ ì†í•œ Extent RID */
     sdRID              mExtRID;
 
-    /* Extent RID°ªÀÇ PageID, mOffset */
+    /* Extent RIDê°’ì˜ PageID, mOffset */
     scPageID           mPID;
     scOffset           mOffset;
 
-    /* ExtentÀÇ Ã¹¹øÂ° PID */
+    /* Extentì˜ ì²«ë²ˆì§¸ PID */
     scPageID           mFstPID;
-    /* ExtentÀÇ Ã¹¹øÂ° Data PID */
+    /* Extentì˜ ì²«ë²ˆì§¸ Data PID */
     scPageID           mFstDataPID;
-    /* ExtentÀÇ ÆäÀÌÁö °¹¼ö */
+    /* Extentì˜ í˜ì´ì§€ ê°¯ìˆ˜ */
     UInt               mPageCntInExt;
 } sdpDumpTBSInfo;
 
 
 /*
- * Extent Desc Á¤ÀÇ
+ * Extent Desc ì •ì˜
  */
 typedef struct sdpExtDesc
 {
-    scPageID   mExtFstPID;  // ExtentÀÇ Ã¹¹øÂ° PageID
-    UInt       mLength;     // ExtentÀÇ ÆäÀÌÁö °³¼ö
+    scPageID   mExtFstPID;  // Extentì˜ ì²«ë²ˆì§¸ PageID
+    UInt       mLength;     // Extentì˜ í˜ì´ì§€ ê°œìˆ˜
 } sdpExtDesc;
 
 # define SDP_1BYTE_ALIGN_SIZE   (1)
@@ -1388,21 +1388,21 @@ typedef struct sdpExtDesc
 
 /**********************************************************************
  * SelfAging Check Flag
- * µ¥ÀÌÅ¸ ÆäÀÌÁö¿¡ ´ëÇØ¼­ SelfAgingÀÇ ¼öÇàÇÏ±â ÀÌÀü¿¡ ¾Õ¼­ È®ÀÎ´Ü°è°¡ ÀÖ´Âµ¥,
- * È®ÀÎ°úÁ¤¿¡¼­ ¹İÈ¯ÇÏ´Â flag °ªÀÌ´Ù.
+ * ë°ì´íƒ€ í˜ì´ì§€ì— ëŒ€í•´ì„œ SelfAgingì˜ ìˆ˜í–‰í•˜ê¸° ì´ì „ì— ì•ì„œ í™•ì¸ë‹¨ê³„ê°€ ìˆëŠ”ë°,
+ * í™•ì¸ê³¼ì •ì—ì„œ ë°˜í™˜í•˜ëŠ” flag ê°’ì´ë‹¤.
  *
  * (1) CANNOT_AGING
- *     AGING ´ë»ó Row Piece°¡ Á¸ÀçÇÏÁö¸¸, ¾ÆÁ÷ º¼¼ö ÀÖ´Â Æ®·£Àè¼ÇÀÌ ActiveÇÏ±â
- *     ¶§¹®¿¡ AgingÀ» ÇÒ ¼ö ¾ø´Â °æ¿ìÀÌ´Ù. AGING°¡´ÉÇÑ SCNÀÌ ±â·ÏµÇ¾î ÀÖ±â ¶§¹®¿¡
- *     ¹Ù·Î ÆÇ´ÜÇÒ ¼ö ÀÖ´Ù.
+ *     AGING ëŒ€ìƒ Row Pieceê°€ ì¡´ì¬í•˜ì§€ë§Œ, ì•„ì§ ë³¼ìˆ˜ ìˆëŠ” íŠ¸ëœì­ì…˜ì´ Activeí•˜ê¸°
+ *     ë•Œë¬¸ì— Agingì„ í•  ìˆ˜ ì—†ëŠ” ê²½ìš°ì´ë‹¤. AGINGê°€ëŠ¥í•œ SCNì´ ê¸°ë¡ë˜ì–´ ìˆê¸° ë•Œë¬¸ì—
+ *     ë°”ë¡œ íŒë‹¨í•  ìˆ˜ ìˆë‹¤.
  * (2) NOTHING_TO_AGING
- *     AGING ´ë»ó Row Piece°¡ Á¸ÀçÇÏÁö ¾Ê´Â´Ù.
+ *     AGING ëŒ€ìƒ Row Pieceê°€ ì¡´ì¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
  * (3) CHECK_AND_AGING
- *     AGING ´ë»óÀÌ Á¸ÀçÇÏÁö¸¸, AGING °¡´ÉÇÑ SCNÀ» FullScan ÇØº¸°í ±¸ÇØ¾ßÇÏ¹Ç·Î
- *     ¹Ù·Î ÆÇ´ÜÇÒ ¼ö ¾ø´Ù. ÃÖÃÊ ÇÑ¹øÀº FullScan ÇÑ´Ù.
+ *     AGING ëŒ€ìƒì´ ì¡´ì¬í•˜ì§€ë§Œ, AGING ê°€ëŠ¥í•œ SCNì„ FullScan í•´ë³´ê³  êµ¬í•´ì•¼í•˜ë¯€ë¡œ
+ *     ë°”ë¡œ íŒë‹¨í•  ìˆ˜ ì—†ë‹¤. ìµœì´ˆ í•œë²ˆì€ FullScan í•œë‹¤.
  * (4) AGING_DEAD_ROWS
- *     Row Piece¸¦ º¼¼ö ÀÖ´Â ´Ù¸¥ Æ®·£Àè¼ÇÀÌ ¾ø±â ¶§¹®¿¡ AGING ÇÒ ¼ö ÀÖ´Â
- *     Row Piece°¡ Á¸ÀçÇÑ´Ù. ¹Ù·Î ÆÇ´ÜÇÑ´Ù.
+ *     Row Pieceë¥¼ ë³¼ìˆ˜ ìˆëŠ” ë‹¤ë¥¸ íŠ¸ëœì­ì…˜ì´ ì—†ê¸° ë•Œë¬¸ì— AGING í•  ìˆ˜ ìˆëŠ”
+ *     Row Pieceê°€ ì¡´ì¬í•œë‹¤. ë°”ë¡œ íŒë‹¨í•œë‹¤.
  **********************************************************************/
 typedef enum sdpSelfAgingFlag
 {
@@ -1415,19 +1415,19 @@ typedef enum sdpSelfAgingFlag
 
 /**********************************************************************
  *
- * PROJ-1705 Disk MVCC ¸®´º¾ó
+ * PROJ-1705 Disk MVCC ë¦¬ë‰´ì–¼
  *
- * µğ½ºÅ© Å×ÀÌºíÀÇ µ¥ÀÌÅ¸ ÆäÀÌÁöÀÇ Touched Transaction Layer Çì´õ Á¤ÀÇ
+ * ë””ìŠ¤í¬ í…Œì´ë¸”ì˜ ë°ì´íƒ€ í˜ì´ì§€ì˜ Touched Transaction Layer í—¤ë” ì •ì˜
  *
  **********************************************************************/
 typedef struct sdpCTL
 {
-    smSCN     mSCN4Aging;    // Self-AgingÇÒ ¼ö ÀÖ´Â ±âÁØ SCN
-    UShort    mCandAgingCnt; // Self-AgingÇÒ ¼ö ÀÖ´Â Dead Deleted Row
-    UShort    mDelRowCnt;    // ÃÑ Deleted Or Deleting ÀÎ RowPiece °³¼ö
-    UShort    mTotCTSCnt;    // ÃÑ CTS °³¼ö
-    UShort    mBindCTSCnt;   // ÃÑ BindµÈ CTS °³¼ö
-    UShort    mMaxCTSCnt;    // ÃÖ´ë CTS °³¼ö
+    smSCN     mSCN4Aging;    // Self-Agingí•  ìˆ˜ ìˆëŠ” ê¸°ì¤€ SCN
+    UShort    mCandAgingCnt; // Self-Agingí•  ìˆ˜ ìˆëŠ” Dead Deleted Row
+    UShort    mDelRowCnt;    // ì´ Deleted Or Deleting ì¸ RowPiece ê°œìˆ˜
+    UShort    mTotCTSCnt;    // ì´ CTS ê°œìˆ˜
+    UShort    mBindCTSCnt;   // ì´ Bindëœ CTS ê°œìˆ˜
+    UShort    mMaxCTSCnt;    // ìµœëŒ€ CTS ê°œìˆ˜
     UShort    mRowBindCTSCnt;
     UChar     mAlign[4];     // Dummy Align
 } sdpCTL;
@@ -1437,11 +1437,11 @@ typedef struct sdpCTL
 
 
 /**********************************************************************
- * µ¥ÀÌÅ¸ ÆäÀÌÁöÀÇ Touched Transaction Slot Á¤ÀÇ
+ * ë°ì´íƒ€ í˜ì´ì§€ì˜ Touched Transaction Slot ì •ì˜
  *
- * µ¿ÀÏÇÑ Æ®·£Àè¼ÇÀÌ °»½ÅÇÑ RowµéÀº ÇÒ´ç¹ŞÀº CTS¸¦ ÅëÇØ¼­ ¿¬°á°ü°è¸¦ ¸Î°ÔµÇ¸ç,
- * Commit ÀÌÈÄ ´Ù¸¥ Æ®·£Àè¼ÇÀÌ ¼öÇàÇÑ Row Time-Stamping¿¡ ÀÇÇØ¼­ ¿¬°á°ü°è´Â
- * Á¤¸®µÈ´Ù.
+ * ë™ì¼í•œ íŠ¸ëœì­ì…˜ì´ ê°±ì‹ í•œ Rowë“¤ì€ í• ë‹¹ë°›ì€ CTSë¥¼ í†µí•´ì„œ ì—°ê²°ê´€ê³„ë¥¼ ë§ºê²Œë˜ë©°,
+ * Commit ì´í›„ ë‹¤ë¥¸ íŠ¸ëœì­ì…˜ì´ ìˆ˜í–‰í•œ Row Time-Stampingì— ì˜í•´ì„œ ì—°ê²°ê´€ê³„ëŠ”
+ * ì •ë¦¬ëœë‹¤.
  *
  *   __________________________________________________________________
  *   |TSSlotSID.mPageID |TSSlotSID.mSlotNum| FSCredit | Stat |Align 1B |
@@ -1451,136 +1451,136 @@ typedef struct sdpCTL
  *      |Trans Begin SCN or CommitSCN |
  *      |_____________________________|
  *
- *      Touched Transaction SlotÀÇ Size´Â 24¹ÙÀÌÆ®ÀÌ¸ç,
- *      8Byte¿¡ alignµÇ¾î ÀÖ´Ù.
+ *      Touched Transaction Slotì˜ SizeëŠ” 24ë°”ì´íŠ¸ì´ë©°,
+ *      8Byteì— alignë˜ì–´ ìˆë‹¤.
  *
  * (1) TSSlotSID
- *     °»½Å Æ®·£Àè¼Ç¸¶´Ù ÇÒ´çµÇ´Â TSSÀÇ SIDÀÌ´Ù. TSS ÆäÀÌÁöµµ Àç»ç¿ëµÉ ¼ö ÀÖÀ¸¸ç,
- *     Àç»ç¿ëÀÌÈÄ¿¡µµ Æ®·£Àè¼ÇµéÀÌ TSSlotSID¸¦ µû¶ó¼­ TSS¿¡ ¹æ¹®ÇÒ ¼ö ÀÖ´Ù.
+ *     ê°±ì‹  íŠ¸ëœì­ì…˜ë§ˆë‹¤ í• ë‹¹ë˜ëŠ” TSSì˜ SIDì´ë‹¤. TSS í˜ì´ì§€ë„ ì¬ì‚¬ìš©ë  ìˆ˜ ìˆìœ¼ë©°,
+ *     ì¬ì‚¬ìš©ì´í›„ì—ë„ íŠ¸ëœì­ì…˜ë“¤ì´ TSSlotSIDë¥¼ ë”°ë¼ì„œ TSSì— ë°©ë¬¸í•  ìˆ˜ ìˆë‹¤.
  *
- *     ¸¸¾à Fast CTS StampingÀÌ ½ÇÆĞÇßÀ»¶§ ÀÌÈÄ Æ®·£Àè¼Ç¿¡ ÀÇÇØ¼­ Delayed CTS
- *     Stamping È¤Àº Hard Row Time-Stamping½Ã¿¡ TSSlotSID¸¦ µû¶ó¼­ Àç¹æ¹®ÇÏ°Ô
- *     µÇ´Âµ¥ ÀÌ¶§ Àç»ç¿ëµÇ¾ú´Ù°í ÆÇ´ÜµÇ¸é Á¤È®ÇÑ CommitSCNÀ» ±¸ÇÒ ¼ö°¡ ¾øÁö¸¸,
- *     ´ë½Å¿¡ INITSCN(0x0000000000000000)À» ¼³Á¤ÇÏ¹Ç·Î ÇØ¼­ ÀÌÈÄ Æ®·£Àè¼ÇÀÌ
- *     ¸ğµÎ °»½ÅÇÏ°Å³ª º¼¼ö ÀÖ°Ô ÇÑ´Ù. ÀÌ°ÍÀÌ °¡´ÉÇÑ ÀÌÀ¯´Â TSS ÆäÀÌÁö°¡ Àç»ç¿ë
- *     µÇ´Â ±âÁØÀÌ µÇ´Â ½ÃÁ¡¿¡ ÀÖ´Ù. Áï, ±× TSS¿Í °ü·ÃÇÑ ¸ğµç Old Row VersionÀ»
- *     ÆÇµ¶ÇÒ Æ®·£Àè¼ÇÀÌ Á¸ÀçÇÏÁö ¾Ê´Â °æ¿ì TSS¸¦ Àç»ç¿ëÇÒ ¼ö ÀÖ±â ¶§¹®ÀÌ´Ù.
+ *     ë§Œì•½ Fast CTS Stampingì´ ì‹¤íŒ¨í–ˆì„ë•Œ ì´í›„ íŠ¸ëœì­ì…˜ì— ì˜í•´ì„œ Delayed CTS
+ *     Stamping í˜¹ì€ Hard Row Time-Stampingì‹œì— TSSlotSIDë¥¼ ë”°ë¼ì„œ ì¬ë°©ë¬¸í•˜ê²Œ
+ *     ë˜ëŠ”ë° ì´ë•Œ ì¬ì‚¬ìš©ë˜ì—ˆë‹¤ê³  íŒë‹¨ë˜ë©´ ì •í™•í•œ CommitSCNì„ êµ¬í•  ìˆ˜ê°€ ì—†ì§€ë§Œ,
+ *     ëŒ€ì‹ ì— INITSCN(0x0000000000000000)ì„ ì„¤ì •í•˜ë¯€ë¡œ í•´ì„œ ì´í›„ íŠ¸ëœì­ì…˜ì´
+ *     ëª¨ë‘ ê°±ì‹ í•˜ê±°ë‚˜ ë³¼ìˆ˜ ìˆê²Œ í•œë‹¤. ì´ê²ƒì´ ê°€ëŠ¥í•œ ì´ìœ ëŠ” TSS í˜ì´ì§€ê°€ ì¬ì‚¬ìš©
+ *     ë˜ëŠ” ê¸°ì¤€ì´ ë˜ëŠ” ì‹œì ì— ìˆë‹¤. ì¦‰, ê·¸ TSSì™€ ê´€ë ¨í•œ ëª¨ë“  Old Row Versionì„
+ *     íŒë…í•  íŠ¸ëœì­ì…˜ì´ ì¡´ì¬í•˜ì§€ ì•ŠëŠ” ê²½ìš° TSSë¥¼ ì¬ì‚¬ìš©í•  ìˆ˜ ìˆê¸° ë•Œë¬¸ì´ë‹¤.
  *
  * (2) FSC ( Free Space Credit )
- *     Æ®·£Àè¼ÇÀÌ Row¸¦ UpdateÇÏ°Å³ª Delete¿¬»ê½Ã Rollback ÇÒ ¼ö ÀÖ´Â °¡¿ë°ø°£À»
- *     CommitÇÒ¶§±îÁö ´Ù¸¥ Æ®·£Àè¼ÇÀÌ ÇÒ´çÇÏÁö ¸øÇÏ°Ô ÇØ¾ßÇÑ´Ù. ÀÌÃ³·³ Commit ÀÌÈÄ
- *     ¿¡ ÇØÁ¦µÇ´Â °ø°£ÀÇ Å©±â¸¦ FSC¶ó°í ÇÏ°í ÀÌ°ÍÀ» CTS¿¡ ±â·ÏÇØµĞ´Ù.
+ *     íŠ¸ëœì­ì…˜ì´ Rowë¥¼ Updateí•˜ê±°ë‚˜ Deleteì—°ì‚°ì‹œ Rollback í•  ìˆ˜ ìˆëŠ” ê°€ìš©ê³µê°„ì„
+ *     Commití• ë•Œê¹Œì§€ ë‹¤ë¥¸ íŠ¸ëœì­ì…˜ì´ í• ë‹¹í•˜ì§€ ëª»í•˜ê²Œ í•´ì•¼í•œë‹¤. ì´ì²˜ëŸ¼ Commit ì´í›„
+ *     ì— í•´ì œë˜ëŠ” ê³µê°„ì˜ í¬ê¸°ë¥¼ FSCë¼ê³  í•˜ê³  ì´ê²ƒì„ CTSì— ê¸°ë¡í•´ë‘”ë‹¤.
  *
  * (3) FLAG
- *     CTS¸¦ ÇÒ´ç¹ŞÀº Æ®·£Àè¼ÇÀÇ Active/Rollback/Time-Stamping ¿©ºÎ¸¦
- *     ÆÇ´ÜÇÒ ¼ö ÀÖ´Â »óÅÂ°ªÀÌ´Ù.
+ *     CTSë¥¼ í• ë‹¹ë°›ì€ íŠ¸ëœì­ì…˜ì˜ Active/Rollback/Time-Stamping ì—¬ë¶€ë¥¼
+ *     íŒë‹¨í•  ìˆ˜ ìˆëŠ” ìƒíƒœê°’ì´ë‹¤.
  *
- *     ´ÙÀ½°ú °°Àº 4°¡Áö »óÅÂ°ªÀ» °¡Áø´Ù.
+ *     ë‹¤ìŒê³¼ ê°™ì€ 4ê°€ì§€ ìƒíƒœê°’ì„ ê°€ì§„ë‹¤.
  *
  *     - 'N' (0x01)
  *     - 'A' (0x02)
- *       CTS¸¦ ÇÒ´çÇÑ Æ®·£Àè¼ÇÀÌ ¾ÆÁ÷ ActiveÀÎ °æ¿ì È¤Àº ÀÌ¹Ì Commit µÇ¾úÁö¸¸,
- *       Time-StampingÀÌ ÇÊ¿äÇÑ °æ¿ìÀÌ´Ù.
+ *       CTSë¥¼ í• ë‹¹í•œ íŠ¸ëœì­ì…˜ì´ ì•„ì§ Activeì¸ ê²½ìš° í˜¹ì€ ì´ë¯¸ Commit ë˜ì—ˆì§€ë§Œ,
+ *       Time-Stampingì´ í•„ìš”í•œ ê²½ìš°ì´ë‹¤.
  *     - 'T' (0x04)
- *       ÇÒ´çÇÑ Æ®·£Àè¼ÇÀÌ Commit¿¬»êÀÌ³ª SCAN ¿¬»ê½Ã CTS Time-StampingµÈ CTS
- *       ÀÌ¸ç, Á¤È®ÇÑ  CommitSCNÀÌ ¼³Á¤µÈ´Ù. ÀÌÈÄ Row Time-StampingÀÌ ÇÊ¿äÇÏ´Ù.
+ *       í• ë‹¹í•œ íŠ¸ëœì­ì…˜ì´ Commitì—°ì‚°ì´ë‚˜ SCAN ì—°ì‚°ì‹œ CTS Time-Stampingëœ CTS
+ *       ì´ë©°, ì •í™•í•œ  CommitSCNì´ ì„¤ì •ëœë‹¤. ì´í›„ Row Time-Stampingì´ í•„ìš”í•˜ë‹¤.
  *     - 'R' (0x08)
- *       Row Time-StampingÀÌ ¿Ï·áµÇ¾úÀ½À» ÀÇ¹ÌÇÑ´Ù. CommitSCNÀ» Á¤È®ÇÑ SCN °ª
- *       ÀÌ°Å³ª INITSCN(0x0000000000000000)ÀÌ ¼³Á¤µÈ´Ù.
+ *       Row Time-Stampingì´ ì™„ë£Œë˜ì—ˆìŒì„ ì˜ë¯¸í•œë‹¤. CommitSCNì„ ì •í™•í•œ SCN ê°’
+ *       ì´ê±°ë‚˜ INITSCN(0x0000000000000000)ì´ ì„¤ì •ëœë‹¤.
  *     - 'O' (0x10)
- *       °ü·Ã Row°¡ ¸ğµÎ RollbackµÈ »óÅÂÀÌ´Ù.
+ *       ê´€ë ¨ Rowê°€ ëª¨ë‘ Rollbackëœ ìƒíƒœì´ë‹¤.
  *
  * (4) RefCount
- *     CTS¿Í °ü·ÃµÈ RowÀÇ °³¼öÀÌ´Ù. ÁÖÀÇÁ¡Àº Áßº¹ °»½ÅµÈ Row¿¡ ´ëÇØ¼­´Â 1¸¸ Áõ°¡
- *     ÇÑ´Ù.
+ *     CTSì™€ ê´€ë ¨ëœ Rowì˜ ê°œìˆ˜ì´ë‹¤. ì£¼ì˜ì ì€ ì¤‘ë³µ ê°±ì‹ ëœ Rowì— ëŒ€í•´ì„œëŠ” 1ë§Œ ì¦ê°€
+ *     í•œë‹¤.
  *
  * (5) RefRowSlotNum
- *     CTS¿Í °ü·ÃµÈ Row Piece HeaderÀÇ Cache Á¤º¸¸¦ ÃÖ´ë 2°³±îÁö CacheÇÑ´Ù.
- *     ¿Ö³ÄÇÏ¸é, ÇÑÆäÀÌÁö ³»¿¡¼­ 2°³ÀÌÇÏ·Î °»½ÅµÉ °æ¿ì¿¡´Â Slot Dir. ¸¦ FullScanÇÏÁö
- *     ¾Êµµ·Ï ÇÏ±â À§ÇÑ °ÍÀÌ´Ù.
+ *     CTSì™€ ê´€ë ¨ëœ Row Piece Headerì˜ Cache ì •ë³´ë¥¼ ìµœëŒ€ 2ê°œê¹Œì§€ Cacheí•œë‹¤.
+ *     ì™œëƒí•˜ë©´, í•œí˜ì´ì§€ ë‚´ì—ì„œ 2ê°œì´í•˜ë¡œ ê°±ì‹ ë  ê²½ìš°ì—ëŠ” Slot Dir. ë¥¼ FullScaní•˜ì§€
+ *     ì•Šë„ë¡ í•˜ê¸° ìœ„í•œ ê²ƒì´ë‹¤.
  *
- * (6) Æ®·£Àè¼Ç FstDskViewSCN È¤Àº Commit SCN
- *     °»½Å Æ®·£Àè¼ÇÀÇ FstDskViewSCNÀ» ¼³Á¤ÇØ ³õ°í, Commit½Ã¿¡´Â CTS
- *     Time-StampingÀ» CommitSCNÀ¸·Î ¼³Á¤ÇÏ°Ô µÈ´Ù.
- *     FstDskViewSCNÀº ¸¸¾à CTS Page°¡ Àç»ç¿ëµÈ °æ¿ì¸¦ Ã¼Å©ÇÏ±â À§ÇØ¼­ÀÌ´Ù.
+ * (6) íŠ¸ëœì­ì…˜ FstDskViewSCN í˜¹ì€ Commit SCN
+ *     ê°±ì‹  íŠ¸ëœì­ì…˜ì˜ FstDskViewSCNì„ ì„¤ì •í•´ ë†“ê³ , Commitì‹œì—ëŠ” CTS
+ *     Time-Stampingì„ CommitSCNìœ¼ë¡œ ì„¤ì •í•˜ê²Œ ëœë‹¤.
+ *     FstDskViewSCNì€ ë§Œì•½ CTS Pageê°€ ì¬ì‚¬ìš©ëœ ê²½ìš°ë¥¼ ì²´í¬í•˜ê¸° ìœ„í•´ì„œì´ë‹¤.
  *
  **********************************************************************/
 typedef struct sdpCTS
 {
-    scPageID    mTSSPageID;          // TSS ÀÇ PID
-    scSlotNum   mTSSlotNum;          // TSS ÀÇ SlotNum
-    UShort      mFSCredit;           // ÆäÀÌÁö¿¡ ¹İÈ¯ÇÏÁö ¾ÊÀº °¡¿ë°ø°£Å©±â
-    UChar       mStat;               // CTSÀÇ »óÅÂ
-    UChar       mAlign;              // Align Dummy ¹ÙÀÌÆ®
-    UShort      mRefCnt;             // CacheµÈ Row PieceÀÇ °³¼ö
+    scPageID    mTSSPageID;          // TSS ì˜ PID
+    scSlotNum   mTSSlotNum;          // TSS ì˜ SlotNum
+    UShort      mFSCredit;           // í˜ì´ì§€ì— ë°˜í™˜í•˜ì§€ ì•Šì€ ê°€ìš©ê³µê°„í¬ê¸°
+    UChar       mStat;               // CTSì˜ ìƒíƒœ
+    UChar       mAlign;              // Align Dummy ë°”ì´íŠ¸
+    UShort      mRefCnt;             // Cacheëœ Row Pieceì˜ ê°œìˆ˜
     scSlotNum   mRefRowSlotNum[ SDP_CACHE_SLOT_CNT ];
-                                     // CacheµÈ Row PieceÀÇ Offset
-    smSCN       mFSCNOrCSCN;         // CTS¸¦ ÇÒ´çÇÑ Æ®·£Àè¼Ç BSCN È¤Àº CSCN
+                                     // Cacheëœ Row Pieceì˜ Offset
+    smSCN       mFSCNOrCSCN;         // CTSë¥¼ í• ë‹¹í•œ íŠ¸ëœì­ì…˜ BSCN í˜¹ì€ CSCN
 } sdpCTS;
 
-# define SDP_CTS_STAT_NUL    (0x01)  // 'N' CTS°¡ ÇÑ¹øµµ ¹ÙÀÎµùµÈÀû ¾ø´Â »óÅÂ
-# define SDP_CTS_STAT_ACT    (0x02)  // 'A' CTS°¡ Æ®·£Àè¼Ç¿¡ ¹ÙÀÎµùµÈ »óÅÂ
-# define SDP_CTS_STAT_CTS    (0x08)  // 'T' CTS TimeStampingÀÌ µÈ »óÅÂ
-# define SDP_CTS_STAT_RTS    (0x10)  // 'R' Row TimeStampingÀÌ µÈ »óÅÂ
-# define SDP_CTS_STAT_ROL    (0x20)  // 'O' RollbackµÈ »óÅÂ
+# define SDP_CTS_STAT_NUL    (0x01)  // 'N' CTSê°€ í•œë²ˆë„ ë°”ì¸ë”©ëœì  ì—†ëŠ” ìƒíƒœ
+# define SDP_CTS_STAT_ACT    (0x02)  // 'A' CTSê°€ íŠ¸ëœì­ì…˜ì— ë°”ì¸ë”©ëœ ìƒíƒœ
+# define SDP_CTS_STAT_CTS    (0x08)  // 'T' CTS TimeStampingì´ ëœ ìƒíƒœ
+# define SDP_CTS_STAT_RTS    (0x10)  // 'R' Row TimeStampingì´ ëœ ìƒíƒœ
+# define SDP_CTS_STAT_ROL    (0x20)  // 'O' Rollbackëœ ìƒíƒœ
 
 # define SDP_CTS_SS_FREE     ( SDP_CTS_STAT_NUL | \
                                SDP_CTS_STAT_RTS | \
                                SDP_CTS_STAT_ROL )
 
 /**********************************************************************
- * Table Change Transaction Slot Idx Á¤ÀÇ
- * Page Layer¿¡¼­ ´ÙÀ½ °ªµéÀ» ÂüÁ¶ÇÔ.
+ * Table Change Transaction Slot Idx ì •ì˜
+ * Page Layerì—ì„œ ë‹¤ìŒ ê°’ë“¤ì„ ì°¸ì¡°í•¨.
  **********************************************************************/
 
 # define SDP_CTS_MAX_IDX     (0x78)  // 0 ~ 120 01111000
 # define SDP_CTS_MAX_CNT     (SDP_CTS_MAX_IDX + 1)
 
-/* CTS¸¦ ÇÒ´ç¹ŞÁö ¸øÇÏ°í BoundRowÇÑ °æ¿ì */
+/* CTSë¥¼ í• ë‹¹ë°›ì§€ ëª»í•˜ê³  BoundRowí•œ ê²½ìš° */
 # define SDP_CTS_IDX_NULL    (0x7C)  // 124     01111100
 
-/* Stamping ÀÌÈÄ¿¡ ¾Æ¹«°Íµµ °¡¸®Å°Áö ¾ÊÀº °æ¿ì */
+/* Stamping ì´í›„ì— ì•„ë¬´ê²ƒë„ ê°€ë¦¬í‚¤ì§€ ì•Šì€ ê²½ìš° */
 # define SDP_CTS_IDX_UNLK    (0x7E)  // 126     01111110
 # define SDP_CTS_IDX_MASK    (0x7F)  // 127     01111111
 # define SDP_CTS_LOCK_BIT    (0x80)  // 128     10000000
 
-// PROJ-2068 Direct-Path INSERT ¼º´É °³¼±
+// PROJ-2068 Direct-Path INSERT ì„±ëŠ¥ ê°œì„ 
 typedef struct sdpDPathSegInfo
 {
-    // Linked ListÀÇ Next Pointer
+    // Linked Listì˜ Next Pointer
     smuList     mNode;
 
-    // Undo½Ã DPathSegInfo¸¦ ½Äº°ÇÏ±â À§ÇÑ ¹øÈ£
+    // Undoì‹œ DPathSegInfoë¥¼ ì‹ë³„í•˜ê¸° ìœ„í•œ ë²ˆí˜¸
     UInt        mSeqNo;
 
-    // Insert ´ë»ó TableÀÇ SpaceID
+    // Insert ëŒ€ìƒ Tableì˜ SpaceID
     scSpaceID   mSpaceID;
-    // insert ´ë»ó table ¶Ç´Â partitionÀÇ TableOID
+    // insert ëŒ€ìƒ table ë˜ëŠ” partitionì˜ TableOID
     smOID       mTableOID;
 
-    // BUG-29032 - DPath Insert merge ½Ã TMS¿¡¼­ assert
-    // Ã³À½ ÇÒ´çÇß´ø PageID
+    // BUG-29032 - DPath Insert merge ì‹œ TMSì—ì„œ assert
+    // ì²˜ìŒ í• ë‹¹í–ˆë˜ PageID
     scPageID    mFstAllocPID;
 
-    // ¸¶Áö¸· ÇÒ´çÇß´ø ExtRID, PageID
+    // ë§ˆì§€ë§‰ í• ë‹¹í–ˆë˜ ExtRID, PageID
     scPageID    mLstAllocPID;
     sdRID       mLstAllocExtRID;
     scPageID    mFstPIDOfLstAllocExt;
 
-    // ¸¶Áö¸· page¸¦ °¡¸®Å°´Â Æ÷ÀÎÅÍ
+    // ë§ˆì§€ë§‰ pageë¥¼ ê°€ë¦¬í‚¤ëŠ” í¬ì¸í„°
     UChar     * mLstAllocPagePtr;
-    // Table, External, Multiple page±îÁö ÇÕÇÑ Page °³¼ö
+    // Table, External, Multiple pageê¹Œì§€ í•©í•œ Page ê°œìˆ˜
     UInt        mTotalPageCount;
 
     // Record Count
     UInt        mRecCount;
 
     // PROJ-1671 Bitmap-based Tablespace And Segment Space Management
-    // Segment °ø°£°ü¸®¿¡ ÇÊ¿äÇÑ Á¤º¸ ¹× ¿¬»ê Á¤ÀÇ
-    // Segment Handle : Segment RID ¹× Semgnet Cache
+    // Segment ê³µê°„ê´€ë¦¬ì— í•„ìš”í•œ ì •ë³´ ë° ì—°ì‚° ì •ì˜
+    // Segment Handle : Segment RID ë° Semgnet Cache
     sdpSegmentDesc    * mSegDesc;
 
-    // ¸¶Áö¸·À¸·Î InsertµÈ SegInfo ÀÏ¶§ TRUE
+    // ë§ˆì§€ë§‰ìœ¼ë¡œ Insertëœ SegInfo ì¼ë•Œ TRUE
     idBool          mIsLastSeg;
 } sdpDPathSegInfo;
 
@@ -1589,15 +1589,15 @@ typedef struct sdpDPathInfo
     // List Of Segment Info for DPath Insert
     smuList mSegInfoList;
 
-    //  sdpDPathSegInfoÀÇ mSeqNo¿¡ ÇÒ´çÇÏ±â À§ÇÑ ´ÙÀ½ SeqNo
+    //  sdpDPathSegInfoì˜ mSeqNoì— í• ë‹¹í•˜ê¸° ìœ„í•œ ë‹¤ìŒ SeqNo
     //
-    //  SeqNo´Â Direct-Path INSERTÀÇ rollback¿¡ »ç¿ëµÇ´Â °ªÀÌ´Ù.
-    // Direct-Path INSERTÀÇ undo ½Ã¿¡ sdpDPathSegInfo¿¡ ´Ş¸° mSeqNo¸¦ º¸°í
-    // NTA ·Î±×¿¡ ±â·ÏµÈ SeqNo¿Í µ¿ÀÏÇÑ sdpDPathSegInfo¸¦ ÆÄ±«ÇÏ´Â ¹æ½ÄÀ¸·Î
-    // undo¸¦ ¼öÇàÇÑ´Ù.
+    //  SeqNoëŠ” Direct-Path INSERTì˜ rollbackì— ì‚¬ìš©ë˜ëŠ” ê°’ì´ë‹¤.
+    // Direct-Path INSERTì˜ undo ì‹œì— sdpDPathSegInfoì— ë‹¬ë¦° mSeqNoë¥¼ ë³´ê³ 
+    // NTA ë¡œê·¸ì— ê¸°ë¡ëœ SeqNoì™€ ë™ì¼í•œ sdpDPathSegInfoë¥¼ íŒŒê´´í•˜ëŠ” ë°©ì‹ìœ¼ë¡œ
+    // undoë¥¼ ìˆ˜í–‰í•œë‹¤.
     UInt    mNxtSeqNo;
 
-    // X$DIRECT_PATH_INSERT Åë°è¸¦ À§ÇÑ °ª
+    // X$DIRECT_PATH_INSERT í†µê³„ë¥¼ ìœ„í•œ ê°’
     ULong   mInsRowCnt;
 } sdpDPathInfo;
 

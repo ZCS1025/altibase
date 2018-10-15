@@ -56,7 +56,7 @@ scSpaceID smcTable::getSpaceID(const void *aTableHeader)
 }
 
 /***********************************************************************
- * Description : smcTable Àü¿ª ÃÊ±âÈ­
+ * Description : smcTable ì „ì—­ ì´ˆê¸°í™”
  ***********************************************************************/
 IDE_RC smcTable::initialize()
 {
@@ -69,7 +69,7 @@ IDE_RC smcTable::initialize()
 
     IDE_TEST(smcCatalogTable::initialize() != IDE_SUCCESS);
 
-    // Drop Index Pool ÃÊ±âÈ­
+    // Drop Index Pool ì´ˆê¸°í™”
     IDE_TEST(mDropIdxPagePool.initialize(IDU_MEM_SM_SMC,
                                          (SChar*)"DROP_INDEX_MEMORY_POOL",
                                          1,
@@ -91,7 +91,7 @@ IDE_RC smcTable::initialize()
 }
 
 /***********************************************************************
- * Description : smcTable Àü¿ª ÇØÁ¦
+ * Description : smcTable ì „ì—­ í•´ì œ
  ***********************************************************************/
 IDE_RC smcTable::destroy()
 {
@@ -106,27 +106,27 @@ IDE_RC smcTable::destroy()
 }
 
 /*
-    TableÀÇ Lock ItemÀ» ÃÊ±âÈ­ÇÏ°í Runtime ItemµéÀ» NULL·Î ¼¼ÆÃÇÑ´Ù.
+    Tableì˜ Lock Itemì„ ì´ˆê¸°í™”í•˜ê³  Runtime Itemë“¤ì„ NULLë¡œ ì„¸íŒ…í•œë‹¤.
 
-    Server Startup½Ã DISCARD/OFFLINE Tablespace¿¡ ¼ÓÇÑ
-    Tableµé¿¡ ´ëÇØ ¼öÇàµÈ´Ù.
+    Server Startupì‹œ DISCARD/OFFLINE Tablespaceì— ì†í•œ
+    Tableë“¤ì— ëŒ€í•´ ìˆ˜í–‰ëœë‹¤.
 
-    [IN] aHeader - ÃÊ±âÈ­ÇÒ TableÀÇ Header
+    [IN] aHeader - ì´ˆê¸°í™”í•  Tableì˜ Header
 
-    [ Lock Item ÃÊ±âÈ­ ]
-      DISCARDµÈ Tablespace¿¡ ¼ÓÇÑ ÇÏ³ªÀÇ Table¿¡
-      µÎ °³ ÀÌ»óÀÇ TransactionÀÌ µ¿½Ã¿¡ DROPÀ» ¼öÇàÇÒ °æ¿ì
-      µ¿½Ã¼º Á¦¾î¸¦ À§ÇØ LockÀÌ ÇÊ¿äÇÏ´Ù.
+    [ Lock Item ì´ˆê¸°í™” ]
+      DISCARDëœ Tablespaceì— ì†í•œ í•˜ë‚˜ì˜ Tableì—
+      ë‘ ê°œ ì´ìƒì˜ Transactionì´ ë™ì‹œì— DROPì„ ìˆ˜í–‰í•  ê²½ìš°
+      ë™ì‹œì„± ì œì–´ë¥¼ ìœ„í•´ Lockì´ í•„ìš”í•˜ë‹¤.
  */
 IDE_RC smcTable::initLockAndSetRuntimeNull( smcTableHeader* aHeader )
 {
-    // lock item, mSync ÃÊ±âÈ­
+    // lock item, mSync ì´ˆê¸°í™”
     IDE_TEST( initLockItem( aHeader ) != IDE_SUCCESS );
 
-    // Runtime ItemµéÀÇ PointerµéÀ» NULL·Î ÃÊ±âÈ­
+    // Runtime Itemë“¤ì˜ Pointerë“¤ì„ NULLë¡œ ì´ˆê¸°í™”
     IDE_TEST( setRuntimeNull( aHeader ) != IDE_SUCCESS );
 
-    // dropµÈ index headerÀÇ list ÃÊ±âÈ­
+    // dropëœ index headerì˜ list ì´ˆê¸°í™”
     aHeader->mDropIndexLst = NULL;
     aHeader->mDropIndex    = 0;
 
@@ -145,12 +145,12 @@ IDE_RC smcTable::initLockAndSetRuntimeNull( smcTableHeader* aHeader )
 }
 
 /*
-    Table HeaderÀÇ Runtime ItemµéÀ» NULL·Î ÃÊ±âÈ­ÇÑ´Ù.
+    Table Headerì˜ Runtime Itemë“¤ì„ NULLë¡œ ì´ˆê¸°í™”í•œë‹¤.
 
-    Server Startup½Ã DISCARD/OFFLINE Tablespace¿¡ ¼ÓÇÑ
-    Tableµé¿¡ ´ëÇØ ¼öÇàµÈ´Ù.
+    Server Startupì‹œ DISCARD/OFFLINE Tablespaceì— ì†í•œ
+    Tableë“¤ì— ëŒ€í•´ ìˆ˜í–‰ëœë‹¤.
 
-    [IN] aHeader - TableÀÇ Header
+    [IN] aHeader - Tableì˜ Header
 */
 IDE_RC smcTable::setRuntimeNull( smcTableHeader* aHeader )
 {
@@ -168,7 +168,7 @@ IDE_RC smcTable::setRuntimeNull( smcTableHeader* aHeader )
 
     if (sTableType == SMI_TABLE_MEMORY || sTableType == SMI_TABLE_META)
     {
-        // Memory TableÀÇ ÃÊ±âÈ­
+        // Memory Tableì˜ ì´ˆê¸°í™”
         IDE_TEST( smpAllocPageList::setRuntimeNull(
                       SM_MAX_PAGELIST_COUNT,
                       aHeader->mFixedAllocList.mMRDB )
@@ -195,7 +195,7 @@ IDE_RC smcTable::setRuntimeNull( smcTableHeader* aHeader )
     }
     else if (sTableType == SMI_TABLE_VOLATILE)
     {
-        // Volatile TableÀÇ ÃÊ±âÈ­
+        // Volatile Tableì˜ ì´ˆê¸°í™”
         IDE_TEST( svpAllocPageList::setRuntimeNull(
                       SM_MAX_PAGELIST_COUNT,
                       aHeader->mFixedAllocList.mVRDB )
@@ -229,28 +229,28 @@ IDE_RC smcTable::setRuntimeNull( smcTableHeader* aHeader )
 
 
 /***********************************************************************
- * Description : table headerÀÇ lock item ¹× runtime item ÃÊ±âÈ­
- * table headerÀÇ lock itemÀÇ ÇÒ´ç ¹× ÃÊ±âÈ­¸¦ Ã³¸®ÇÏ¸ç,
- * page entryÀÇ runtime itemµéÀ» ÃÊ±âÈ­ÇÑ´Ù.
+ * Description : table headerì˜ lock item ë° runtime item ì´ˆê¸°í™”
+ * table headerì˜ lock itemì˜ í• ë‹¹ ë° ì´ˆê¸°í™”ë¥¼ ì²˜ë¦¬í•˜ë©°,
+ * page entryì˜ runtime itemë“¤ì„ ì´ˆê¸°í™”í•œë‹¤.
  * - 2nd. code design
- *   + smlLockItem Å¸ÀÔÀÇ lockitemÀÇ ¸Ş¸ğ¸® ÇÒ´ç (layer callback)
- *   + lockitemÀÇ ÃÊ±âÈ­(layer callback)
- *   + table headerÀÇ sync ÃÊ±âÈ­
- *   + dropµÈ index headerÀÇ list ÃÊ±âÈ­
- *   + QPÀÇ table meta Á¤º¸(qcmTableInfo)¸¦ À§ÇÑ Æ÷ÀÎÅÍ ÃÊ±âÈ­
- *   + Å×ÀÌºí Å¸ÀÔ¿¡ µû¸¥ page list entry ÃÊ±âÈ­
+ *   + smlLockItem íƒ€ì…ì˜ lockitemì˜ ë©”ëª¨ë¦¬ í• ë‹¹ (layer callback)
+ *   + lockitemì˜ ì´ˆê¸°í™”(layer callback)
+ *   + table headerì˜ sync ì´ˆê¸°í™”
+ *   + dropëœ index headerì˜ list ì´ˆê¸°í™”
+ *   + QPì˜ table meta ì •ë³´(qcmTableInfo)ë¥¼ ìœ„í•œ í¬ì¸í„° ì´ˆê¸°í™”
+ *   + í…Œì´ë¸” íƒ€ì…ì— ë”°ë¥¸ page list entry ì´ˆê¸°í™”
  *
  * aStatistics - [IN]
- * aHeader     - [IN] TableÀÇ Header
+ * aHeader     - [IN] Tableì˜ Header
  ***********************************************************************/
 IDE_RC smcTable::initLockAndRuntimeItem( smcTableHeader * aHeader )
 {
-    // lock item, mSync ÃÊ±âÈ­
+    // lock item, mSync ì´ˆê¸°í™”
     IDE_TEST( initLockItem( aHeader ) != IDE_SUCCESS );
-    // runtime item ÃÊ±âÈ­
+    // runtime item ì´ˆê¸°í™”
     IDE_TEST( initRuntimeItem( aHeader ) != IDE_SUCCESS );
 
-    // dropµÈ index headerÀÇ list ÃÊ±âÈ­
+    // dropëœ index headerì˜ list ì´ˆê¸°í™”
     aHeader->mDropIndexLst = NULL;
     aHeader->mDropIndex    = 0;
 
@@ -271,15 +271,15 @@ IDE_RC smcTable::initLockAndRuntimeItem( smcTableHeader * aHeader )
 }
 
 /***********************************************************************
- * Description : table headerÀÇ lock item¹× mSyncÃÊ±âÈ­
- * table headerÀÇ lock itemÀÇ ÇÒ´ç ¹× ÃÊ±âÈ­¸¦ Ã³¸®
+ * Description : table headerì˜ lock itemë° mSyncì´ˆê¸°í™”
+ * table headerì˜ lock itemì˜ í• ë‹¹ ë° ì´ˆê¸°í™”ë¥¼ ì²˜ë¦¬
  * - 2nd. code design
- *   + smlLockItem Å¸ÀÔÀÇ lockitemÀÇ ¸Ş¸ğ¸® ÇÒ´ç (layer callback)
- *   + lockitemÀÇ ÃÊ±âÈ­(layer callback)
- *   + table headerÀÇ sync ÃÊ±âÈ­
+ *   + smlLockItem íƒ€ì…ì˜ lockitemì˜ ë©”ëª¨ë¦¬ í• ë‹¹ (layer callback)
+ *   + lockitemì˜ ì´ˆê¸°í™”(layer callback)
+ *   + table headerì˜ sync ì´ˆê¸°í™”
  *
  * aStatistics - [IN]
- * aHeader     - [IN] TableÀÇ Header
+ * aHeader     - [IN] Tableì˜ Header
  ***********************************************************************/
 IDE_RC smcTable::initLockItem( smcTableHeader * aHeader )
 {
@@ -294,7 +294,7 @@ IDE_RC smcTable::initLockItem( smcTableHeader * aHeader )
                 (sTableType == SMI_TABLE_REMOTE) );
 
 
-    // tableÀÇ lockitem ÃÊ±âÈ­
+    // tableì˜ lockitem ì´ˆê¸°í™”
     IDE_TEST( smLayerCallback::allocLockItem( &aHeader->mLock ) != IDE_SUCCESS );
     IDE_TEST( smLayerCallback::initLockItem( aHeader->mSpaceID,         // TBS ID
                                              (ULong)aHeader->mSelfOID,  // TABLE OID
@@ -314,21 +314,21 @@ IDE_RC smcTable::initLockItem( smcTableHeader * aHeader )
 
 
 /***********************************************************************
- * Description : table headerÀÇ runtime item ÃÊ±âÈ­
- * table headerÀÇ page entryÀÇ runtime itemµéÀ» ÃÊ±âÈ­ÇÑ´Ù.
+ * Description : table headerì˜ runtime item ì´ˆê¸°í™”
+ * table headerì˜ page entryì˜ runtime itemë“¤ì„ ì´ˆê¸°í™”í•œë‹¤.
  * - 2nd. code design
- *   + dropµÈ index headerÀÇ list ÃÊ±âÈ­
- *   + QPÀÇ table meta Á¤º¸(qcmTableInfo)¸¦ À§ÇÑ Æ÷ÀÎÅÍ ÃÊ±âÈ­
- *   + Å×ÀÌºí Å¸ÀÔ¿¡ µû¸¥ page list entry ÃÊ±âÈ­
+ *   + dropëœ index headerì˜ list ì´ˆê¸°í™”
+ *   + QPì˜ table meta ì •ë³´(qcmTableInfo)ë¥¼ ìœ„í•œ í¬ì¸í„° ì´ˆê¸°í™”
+ *   + í…Œì´ë¸” íƒ€ì…ì— ë”°ë¥¸ page list entry ì´ˆê¸°í™”
  *     if (memory table)
- *        - smpFixedPageListEntryÀÇ runtime item ÃÊ±âÈ­
- *        - smpVarPageListEntryÀÇ runtime item ÃÊ±âÈ­
+ *        - smpFixedPageListEntryì˜ runtime item ì´ˆê¸°í™”
+ *        - smpVarPageListEntryì˜ runtime item ì´ˆê¸°í™”
  *     else if (disk table )
- *        - sdpPageListÀÇ runtime item ÃÊ±âÈ­
+ *        - sdpPageListì˜ runtime item ì´ˆê¸°í™”
  *     endif
  *
  * aStatistics - [IN]
- * aHeader     - [IN] TableÀÇ Header
+ * aHeader     - [IN] Tableì˜ Header
  ***********************************************************************/
 IDE_RC smcTable::initRuntimeItem( smcTableHeader * aHeader )
 {
@@ -342,33 +342,33 @@ IDE_RC smcTable::initRuntimeItem( smcTableHeader * aHeader )
                (sTableType == SMI_TABLE_VOLATILE) ||
                (sTableType == SMI_TABLE_REMOTE) );
 
-    // runtime item ÃÊ±âÈ­
+    // runtime item ì´ˆê¸°í™”
     switch (sTableType)
     {
         case SMI_TABLE_MEMORY :
         case SMI_TABLE_META :
         case SMI_TABLE_REMOTE:
-            // FixedAllocPageListÀÇ Mutex ÃÊ±âÈ­
+            // FixedAllocPageListì˜ Mutex ì´ˆê¸°í™”
             IDE_TEST( smpAllocPageList::initEntryAtRuntime(
                           aHeader->mFixedAllocList.mMRDB,
                           aHeader->mSelfOID,
                           SMP_PAGETYPE_FIX )
                       != IDE_SUCCESS );
 
-            /* fixed smpPageListEntry runtime Á¤º¸ ÃÊ±âÈ­ ¹× mutex ÃÊ±âÈ­ */
+            /* fixed smpPageListEntry runtime ì •ë³´ ì´ˆê¸°í™” ë° mutex ì´ˆê¸°í™” */
             IDE_TEST( smpFixedPageList::initEntryAtRuntime(aHeader->mSelfOID,
                                                            &(aHeader->mFixed.mMRDB),
                                                            aHeader->mFixedAllocList.mMRDB)
                   != IDE_SUCCESS);
 
-            // VarAllocPageListÀÇ Mutex ÃÊ±âÈ­
+            // VarAllocPageListì˜ Mutex ì´ˆê¸°í™”
             IDE_TEST( smpAllocPageList::initEntryAtRuntime(
                           aHeader->mVarAllocList.mMRDB,
                           aHeader->mSelfOID,
                           SMP_PAGETYPE_VAR )
                       != IDE_SUCCESS );
 
-            /* variable smpPageListEntry runtime Á¤º¸ ÃÊ±âÈ­ ¹× mutex ÃÊ±âÈ­ */
+            /* variable smpPageListEntry runtime ì •ë³´ ì´ˆê¸°í™” ë° mutex ì´ˆê¸°í™” */
             IDE_TEST( smpVarPageList::initEntryAtRuntime(aHeader->mSelfOID,
                                                          aHeader->mVar.mMRDB,
                                                          aHeader->mVarAllocList.mMRDB)
@@ -376,27 +376,27 @@ IDE_RC smcTable::initRuntimeItem( smcTableHeader * aHeader )
 
             break;
         case SMI_TABLE_VOLATILE :
-            // FixedAllocPageListÀÇ Mutex ÃÊ±âÈ­
+            // FixedAllocPageListì˜ Mutex ì´ˆê¸°í™”
             IDE_TEST( svpAllocPageList::initEntryAtRuntime(
                           aHeader->mFixedAllocList.mVRDB,
                           aHeader->mSelfOID,
                           SMP_PAGETYPE_FIX )
                       != IDE_SUCCESS );
 
-            /* fixed svpPageListEntry runtime Á¤º¸ ÃÊ±âÈ­ ¹× mutex ÃÊ±âÈ­ */
+            /* fixed svpPageListEntry runtime ì •ë³´ ì´ˆê¸°í™” ë° mutex ì´ˆê¸°í™” */
             IDE_TEST( svpFixedPageList::initEntryAtRuntime(aHeader->mSelfOID,
                                                            &(aHeader->mFixed.mVRDB),
                                                            aHeader->mFixedAllocList.mVRDB)
                   != IDE_SUCCESS);
 
-            // VarAllocPageListÀÇ Mutex ÃÊ±âÈ­
+            // VarAllocPageListì˜ Mutex ì´ˆê¸°í™”
             IDE_TEST( svpAllocPageList::initEntryAtRuntime(
                           aHeader->mVarAllocList.mVRDB,
                           aHeader->mSelfOID,
                           SMP_PAGETYPE_VAR )
                       != IDE_SUCCESS );
 
-            /* variable smpPageListEntry runtime Á¤º¸ ÃÊ±âÈ­ ¹× mutex ÃÊ±âÈ­ */
+            /* variable smpPageListEntry runtime ì •ë³´ ì´ˆê¸°í™” ë° mutex ì´ˆê¸°í™” */
             IDE_TEST( svpVarPageList::initEntryAtRuntime(aHeader->mSelfOID,
                                                          aHeader->mVar.mVRDB,
                                                          aHeader->mVarAllocList.mVRDB)
@@ -405,7 +405,7 @@ IDE_RC smcTable::initRuntimeItem( smcTableHeader * aHeader )
             break;
 
         case SMI_TABLE_DISK :
-            /* sdpPageListEntry runtime Á¤º¸ ÃÊ±âÈ­ ¹× mutex ÃÊ±âÈ­ */
+            /* sdpPageListEntry runtime ì •ë³´ ì´ˆê¸°í™” ë° mutex ì´ˆê¸°í™” */
             IDE_TEST( sdpPageList::initEntryAtRuntime( aHeader->mSpaceID,
                                                        aHeader->mSelfOID,
                                                        SM_NULL_INDEX_ID,
@@ -416,7 +416,7 @@ IDE_RC smcTable::initRuntimeItem( smcTableHeader * aHeader )
             break;
         case SMI_TABLE_TEMP_LEGACY :
         default :
-            /* Table TypeÀÌ Àß¸øµÈ °ªÀÌ µé¾î¿Ô´Ù. */
+            /* Table Typeì´ ì˜ëª»ëœ ê°’ì´ ë“¤ì–´ì™”ë‹¤. */
             IDE_ASSERT(0);
             break;
     }
@@ -430,22 +430,22 @@ IDE_RC smcTable::initRuntimeItem( smcTableHeader * aHeader )
 
 
 /***********************************************************************
- * Description : table headerÀÇ lock item ¹× runtime item ÃÊ±âÈ­
- * table headerÀÇ lock itemÀÇ ÇØÁ¦ ¹× page entryÀÇ runtime itemÀ» ÇØÁ¦ÇÑ´Ù.
+ * Description : table headerì˜ lock item ë° runtime item ì´ˆê¸°í™”
+ * table headerì˜ lock itemì˜ í•´ì œ ë° page entryì˜ runtime itemì„ í•´ì œí•œë‹¤.
  * - 2nd. code design
- *   + lockitemÀÇ ÇØÁ¦(layer callback)
- *   + smlLockItem Å¸ÀÔÀÇ lockitemÀÇ ¸Ş¸ğ¸® ÇØÁ¦ (layer callback)
- *   + Å×ÀÌºí Å¸ÀÔ¿¡ µû¸¥ page list entry ÇØÁ¦
+ *   + lockitemì˜ í•´ì œ(layer callback)
+ *   + smlLockItem íƒ€ì…ì˜ lockitemì˜ ë©”ëª¨ë¦¬ í•´ì œ (layer callback)
+ *   + í…Œì´ë¸” íƒ€ì…ì— ë”°ë¥¸ page list entry í•´ì œ
  *
- * aHeader - [IN] Å×ÀÌºí Çì´õ
+ * aHeader - [IN] í…Œì´ë¸” í—¤ë”
  ***********************************************************************/
 IDE_RC smcTable::finLockAndRuntimeItem( smcTableHeader * aHeader )
 {
-    /* BUG-18133 : TC/Server/qp2/StandardBMT/DiskTPC-H/1.sql¿¡¼­ ¼­¹ö ºñÁ¤»ó Á¾·áÇÔ
+    /* BUG-18133 : TC/Server/qp2/StandardBMT/DiskTPC-H/1.sqlì—ì„œ ì„œë²„ ë¹„ì •ìƒ ì¢…ë£Œí•¨
      *
-     * Temp TableÀÏ°æ¿ì ¿©±â¼­ IDE_DASSERT·Î Á×°Ô²û µÇ¾î ÀÖ¾úÀ¸³ª Temp TableÀÏ °æ¿ì¿¡µµ
-     * ÀÌ ÇÔ¼ö°¡ È£ÃâµÇµµ·Ï ÇÏ¿©¾ß ÇÑ´Ù. ¿Ö³ÄÇÏ¸é RuntimeÁ¤º¸¿Í TableHeader¿¡ ÇÒ´çµÈ
-     * Index Latch¸¦ FreeÇØ¾ß µÇ±â ¶§¹®ÀÌ´Ù. */
+     * Temp Tableì¼ê²½ìš° ì—¬ê¸°ì„œ IDE_DASSERTë¡œ ì£½ê²Œë” ë˜ì–´ ìˆì—ˆìœ¼ë‚˜ Temp Tableì¼ ê²½ìš°ì—ë„
+     * ì´ í•¨ìˆ˜ê°€ í˜¸ì¶œë˜ë„ë¡ í•˜ì—¬ì•¼ í•œë‹¤. ì™œëƒí•˜ë©´ Runtimeì •ë³´ì™€ TableHeaderì— í• ë‹¹ëœ
+     * Index Latchë¥¼ Freeí•´ì•¼ ë˜ê¸° ë•Œë¬¸ì´ë‹¤. */
     IDE_TEST( finLockItem( aHeader ) != IDE_SUCCESS );
 
     IDE_TEST( finRuntimeItem( aHeader ) != IDE_SUCCESS );
@@ -458,17 +458,17 @@ IDE_RC smcTable::finLockAndRuntimeItem( smcTableHeader * aHeader )
 }
 
 /***********************************************************************
- * Description : table headerÀÇ lock item ÇØÁ¦
- * table headerÀÇ lock itemÀÇ ÇØÁ¦.
+ * Description : table headerì˜ lock item í•´ì œ
+ * table headerì˜ lock itemì˜ í•´ì œ.
  * - 2nd. code design
- *   + lockitemÀÇ ÇØÁ¦(layer callback)
- *   + smlLockItem Å¸ÀÔÀÇ lockitemÀÇ ¸Ş¸ğ¸® ÇØÁ¦ (layer callback)
+ *   + lockitemì˜ í•´ì œ(layer callback)
+ *   + smlLockItem íƒ€ì…ì˜ lockitemì˜ ë©”ëª¨ë¦¬ í•´ì œ (layer callback)
  *
- * aHeader - [IN] Å×ÀÌºí Çì´õ
+ * aHeader - [IN] í…Œì´ë¸” í—¤ë”
  ***********************************************************************/
 IDE_RC smcTable::finLockItem( smcTableHeader * aHeader )
 {
-    // OFFLINE/DISCARD TablespaceÀÇ °æ¿ì¶óµµ mLockÀÌ ÃÊ±âÈ­µÇ¾î ÀÖ´Ù.
+    // OFFLINE/DISCARD Tablespaceì˜ ê²½ìš°ë¼ë„ mLockì´ ì´ˆê¸°í™”ë˜ì–´ ìˆë‹¤.
     IDE_ASSERT( aHeader->mLock != NULL );
 
     IDE_TEST( smLayerCallback::destroyLockItem( aHeader->mLock )
@@ -481,8 +481,8 @@ IDE_RC smcTable::finLockItem( smcTableHeader * aHeader )
     /* BUG-42928 No Partition Lock */
     aHeader->mReplacementLock = NULL;
 
-    // DropµÈ TableÀÇ °æ¿ì mIndexLatch°¡ ÀÌ¹Ì ÇØÁ¦µÇ¾î¼­
-    // NULLÀÏ ¼ö ÀÖ´Ù.
+    // Dropëœ Tableì˜ ê²½ìš° mIndexLatchê°€ ì´ë¯¸ í•´ì œë˜ì–´ì„œ
+    // NULLì¼ ìˆ˜ ìˆë‹¤.
     if ( aHeader->mIndexLatch != NULL )
     {
         IDE_TEST( finiAndFreeIndexLatch( aHeader ) != IDE_SUCCESS );
@@ -497,18 +497,18 @@ IDE_RC smcTable::finLockItem( smcTableHeader * aHeader )
 
 
 /***********************************************************************
- * Description : table headerÀÇ runtime item ÇØÁ¦
- * table headerÀÇ page entryÀÇ runtime itemÀ» ÇØÁ¦ÇÑ´Ù.
+ * Description : table headerì˜ runtime item í•´ì œ
+ * table headerì˜ page entryì˜ runtime itemì„ í•´ì œí•œë‹¤.
  * - 2nd. code design
- *   + Å×ÀÌºí Å¸ÀÔ¿¡ µû¸¥ page list entry ÇØÁ¦
+ *   + í…Œì´ë¸” íƒ€ì…ì— ë”°ë¥¸ page list entry í•´ì œ
  *     if (memory table)
- *        - smpFixedPageListEntryÀÇ runtime item ÇØÁ¦
- *        - smpVarPageListEntryÀÇ runtime item ÇØÁ¦
+ *        - smpFixedPageListEntryì˜ runtime item í•´ì œ
+ *        - smpVarPageListEntryì˜ runtime item í•´ì œ
  *     else if (disk table)
- *        - sdpPageListÀÇ runtime item ÇØÁ¦
+ *        - sdpPageListì˜ runtime item í•´ì œ
  *     endif
  *
- * aHeader - [IN] TableÀÇ Header
+ * aHeader - [IN] Tableì˜ Header
  ***********************************************************************/
 IDE_RC smcTable::finRuntimeItem( smcTableHeader * aHeader )
 {
@@ -517,14 +517,14 @@ IDE_RC smcTable::finRuntimeItem( smcTableHeader * aHeader )
         case SMI_TABLE_MEMORY :
         case SMI_TABLE_META :
         case SMI_TABLE_REMOTE:            
-            // To Fix BUG-16752 Memory Table Drop½Ã Runtime Entry°¡ ÇØÁ¦µÇÁö ¾ÊÀ½
+            // To Fix BUG-16752 Memory Table Dropì‹œ Runtime Entryê°€ í•´ì œë˜ì§€ ì•ŠìŒ
 
-            // DropµÈ Table¿¡ ´ëÇØ¼­´Â Runtime ItemÀÌ ¸ğµÎ ÇØÁ¦µÇ¾î ÀÖ´Ù.
-            // Runtime ItemÀÌ Á¸ÀçÇÏ´Â( DropµÇÁö ¾ÊÀº ) Table¿¡ ´ëÇØ¼­¸¸
-            // Ã³¸®
+            // Dropëœ Tableì— ëŒ€í•´ì„œëŠ” Runtime Itemì´ ëª¨ë‘ í•´ì œë˜ì–´ ìˆë‹¤.
+            // Runtime Itemì´ ì¡´ì¬í•˜ëŠ”( Dropë˜ì§€ ì•Šì€ ) Tableì— ëŒ€í•´ì„œë§Œ
+            // ì²˜ë¦¬
             if ( aHeader->mFixed.mMRDB.mRuntimeEntry != NULL )
             {
-                /* fixed smpPageListEntry runtime Á¤º¸¹× mutex ÇØÁ¦ */
+                /* fixed smpPageListEntry runtime ì •ë³´ë° mutex í•´ì œ */
                 IDE_TEST(smpFixedPageList::finEntryAtRuntime(
                              &(aHeader->mFixed.mMRDB))
                          != IDE_SUCCESS);
@@ -532,17 +532,17 @@ IDE_RC smcTable::finRuntimeItem( smcTableHeader * aHeader )
 
             if ( aHeader->mVar.mMRDB[0].mRuntimeEntry != NULL )
             {
-                /* variable smpPageListEntry runtime Á¤º¸¹× mutex ÇØÁ¦ */
+                /* variable smpPageListEntry runtime ì •ë³´ë° mutex í•´ì œ */
                 IDE_TEST(smpVarPageList::finEntryAtRuntime(aHeader->mVar.mMRDB)
                          != IDE_SUCCESS);
             }
             break;
 
         case SMI_TABLE_VOLATILE :
-            // To Fix BUG-16752 Memory Table Drop½Ã Runtime Entry°¡ ÇØÁ¦µÇÁö ¾ÊÀ½
+            // To Fix BUG-16752 Memory Table Dropì‹œ Runtime Entryê°€ í•´ì œë˜ì§€ ì•ŠìŒ
             if ( aHeader->mFixed.mVRDB.mRuntimeEntry != NULL )
             {
-                /* fixed svpPageListEntry runtime Á¤º¸¹× mutex ÇØÁ¦ */
+                /* fixed svpPageListEntry runtime ì •ë³´ë° mutex í•´ì œ */
                 IDE_TEST(svpFixedPageList::finEntryAtRuntime(
                              &(aHeader->mFixed.mVRDB))
                          != IDE_SUCCESS);
@@ -551,14 +551,14 @@ IDE_RC smcTable::finRuntimeItem( smcTableHeader * aHeader )
 
             if ( aHeader->mVar.mVRDB[0].mRuntimeEntry != NULL )
             {
-                /* variable svpPageListEntry runtime Á¤º¸¹× mutex ÇØÁ¦ */
+                /* variable svpPageListEntry runtime ì •ë³´ë° mutex í•´ì œ */
                 IDE_TEST(svpVarPageList::finEntryAtRuntime(aHeader->mVar.mVRDB)
                          != IDE_SUCCESS);
             }
             break;
 
         case SMI_TABLE_DISK :
-            /* sdpPageListEntry runtime Á¤º¸ ÃÊ±âÈ­ ¹× mutex ÃÊ±âÈ­ */
+            /* sdpPageListEntry runtime ì •ë³´ ì´ˆê¸°í™” ë° mutex ì´ˆê¸°í™” */
             IDE_TEST( sdpPageList::finEntryAtRuntime(&(aHeader->mFixed.mDRDB))
                       != IDE_SUCCESS);
 
@@ -577,9 +577,9 @@ IDE_RC smcTable::finRuntimeItem( smcTableHeader * aHeader )
 }
 
 /***********************************************************************
- * Description : TableHeaderÀÇ ÁöÁ¤µÈ TypeÀÇ StatÁ¤º¸¸¦ Áõ°¡½ÃÅ²´Ù.
+ * Description : TableHeaderì˜ ì§€ì •ëœ Typeì˜ Statì •ë³´ë¥¼ ì¦ê°€ì‹œí‚¨ë‹¤.
  *
- * aHeader       - [IN] TableÀÇ Header
+ * aHeader       - [IN] Tableì˜ Header
  * aTblStatType  - [IN] Table Stat Type
  ***********************************************************************/
 void smcTable::incStatAtABort( smcTableHeader * aHeader,
@@ -599,8 +599,8 @@ void smcTable::incStatAtABort( smcTableHeader * aHeader,
         IDE_ASSERT(sTableRuntimeEntry->mMutex.lock(NULL /* idvSQL* */)
                    == IDE_SUCCESS );
 
-        // BUG-17371  [MMDB] AgingÀÌ ¹Ğ¸±°æ¿ì System¿¡ °úºÎÇÏ
-        //           ¹× AgingÀÌ ¹Ğ¸®´Â Çö»óÀÌ ´õ ½ÉÈ­µÊ.
+        // BUG-17371  [MMDB] Agingì´ ë°€ë¦´ê²½ìš° Systemì— ê³¼ë¶€í•˜
+        //           ë° Agingì´ ë°€ë¦¬ëŠ” í˜„ìƒì´ ë” ì‹¬í™”ë¨.
         switch( aTblStatType )
         {
             case SMC_INC_UNIQUE_VIOLATION_CNT:
@@ -630,24 +630,24 @@ void smcTable::incStatAtABort( smcTableHeader * aHeader,
 }
 
 /***********************************************************************
- * Description : memory table »ı¼º½Ã page list entry¸¦ ÃÊ±âÈ­
+ * Description : memory table ìƒì„±ì‹œ page list entryë¥¼ ì´ˆê¸°í™”
  * - 2nd. code design
- *   + fixed page list entry ÃÊ±âÈ­
- *   + variable page list entry ÃÊ±âÈ­
- *   + table headerÀÇ variable page list entry °³¼ö(11°³) ¼³Á¤
+ *   + fixed page list entry ì´ˆê¸°í™”
+ *   + variable page list entry ì´ˆê¸°í™”
+ *   + table headerì˜ variable page list entry ê°œìˆ˜(11ê°œ) ì„¤ì •
  ***********************************************************************/
 void smcTable::initMRDBTablePageList( vULong            aMax,
                                       smcTableHeader*   aHeader )
 {
     IDE_DASSERT( aHeader != NULL );
 
-    // memory tableÀÇ fixed pagelist entry ÃÊ±âÈ­
+    // memory tableì˜ fixed pagelist entry ì´ˆê¸°í™”
     smpFixedPageList::initializePageListEntry(
                       &(aHeader->mFixed.mMRDB),
                       aHeader->mSelfOID,
                       idlOS::align((UInt)(aMax), ID_SIZEOF(SDouble)));
 
-    // memory tableÀÇ variable pagelist entry ÃÊ±âÈ­
+    // memory tableì˜ variable pagelist entry ì´ˆê¸°í™”
     smpVarPageList::initializePageListEntry(aHeader->mVar.mMRDB,
                                             aHeader->mSelfOID);
 
@@ -657,24 +657,24 @@ void smcTable::initMRDBTablePageList( vULong            aMax,
 }
 
 /***********************************************************************
- * Description : volatile table »ı¼º½Ã page list entry¸¦ ÃÊ±âÈ­
+ * Description : volatile table ìƒì„±ì‹œ page list entryë¥¼ ì´ˆê¸°í™”
  * - 2nd. code design
- *   + fixed page list entry ÃÊ±âÈ­
- *   + variable page list entry ÃÊ±âÈ­
- *   + table headerÀÇ variable page list entry °³¼ö(11°³) ¼³Á¤
+ *   + fixed page list entry ì´ˆê¸°í™”
+ *   + variable page list entry ì´ˆê¸°í™”
+ *   + table headerì˜ variable page list entry ê°œìˆ˜(11ê°œ) ì„¤ì •
  ***********************************************************************/
 void smcTable::initVRDBTablePageList( vULong            aMax,
                                       smcTableHeader*   aHeader )
 {
     IDE_DASSERT( aHeader != NULL );
 
-    // volatile tableÀÇ fixed pagelist entry ÃÊ±âÈ­
+    // volatile tableì˜ fixed pagelist entry ì´ˆê¸°í™”
     svpFixedPageList::initializePageListEntry(
                       &(aHeader->mFixed.mVRDB),
                       aHeader->mSelfOID,
                       idlOS::align((UInt)(aMax), ID_SIZEOF(SDouble)));
 
-    // volatile tableÀÇ variable pagelist entry ÃÊ±âÈ­
+    // volatile tableì˜ variable pagelist entry ì´ˆê¸°í™”
     svpVarPageList::initializePageListEntry(aHeader->mVar.mVRDB,
                                             aHeader->mSelfOID);
 
@@ -684,11 +684,11 @@ void smcTable::initVRDBTablePageList( vULong            aMax,
 }
 
 /***********************************************************************
- * Description : disk table »ı¼º½Ã page list entry¸¦ ÃÊ±âÈ­
+ * Description : disk table ìƒì„±ì‹œ page list entryë¥¼ ì´ˆê¸°í™”
  * - 2nd. code design
- *   + sdpPageListEntry ÃÊ±âÈ­
- *   + tableÀÇ data page¸¦ À§ÇÑ segment »ı¼º ¹×
- *     segment header ÆäÀÌÁö ÃÊ±âÈ­
+ *   + sdpPageListEntry ì´ˆê¸°í™”
+ *   + tableì˜ data pageë¥¼ ìœ„í•œ segment ìƒì„± ë°
+ *     segment header í˜ì´ì§€ ì´ˆê¸°í™”
  ***********************************************************************/
 void smcTable::initDRDBTablePageList( vULong             aMax,
                                       smcTableHeader*    aHeader,
@@ -697,7 +697,7 @@ void smcTable::initDRDBTablePageList( vULong             aMax,
 {
     IDE_DASSERT( aHeader != NULL );
 
-    // disk tableÀÇ pagelist entry ÃÊ±âÈ­
+    // disk tableì˜ pagelist entry ì´ˆê¸°í™”
     sdpPageList::initializePageListEntry(
                  &(aHeader->mFixed.mDRDB),
                  idlOS::align((UInt)(aMax), ID_SIZEOF(SDouble)),
@@ -708,21 +708,21 @@ void smcTable::initDRDBTablePageList( vULong             aMax,
 }
 
 /***********************************************************************
- * Description : table header ÃÊ±âÈ­(memory-disk °øÅë)
- * Å×ÀÌºí »ı¼º½Ã catalog table¿¡¼­ ÇÒ´ç¹ŞÀº slot¿¡ table header¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+ * Description : table header ì´ˆê¸°í™”(memory-disk ê³µí†µ)
+ * í…Œì´ë¸” ìƒì„±ì‹œ catalog tableì—ì„œ í• ë‹¹ë°›ì€ slotì— table headerë¥¼ ì´ˆê¸°í™”í•œë‹¤.
  *
  * - 2nd. code design
- *   + »õ·Î¿î table headerÀÇ index Á¤º¸ ÃÊ±âÈ­
- *   + Å×ÀÌºí Å¸ÀÔ¿¡ µû¸¥ table headerÀÇ page list entry ÃÊ±âÈ­
+ *   + ìƒˆë¡œìš´ table headerì˜ index ì •ë³´ ì´ˆê¸°í™”
+ *   + í…Œì´ë¸” íƒ€ì…ì— ë”°ë¥¸ table headerì˜ page list entry ì´ˆê¸°í™”
  *     if (memory table)
- *       - smpFixedPageListEntryÀÇ runtime item ÇØÁ¦
- *       - smpVarPageListEntryÀÇ runtime item ÇØÁ¦
+ *       - smpFixedPageListEntryì˜ runtime item í•´ì œ
+ *       - smpVarPageListEntryì˜ runtime item í•´ì œ
  *     else if (disk table)
- *       - sdpPageListÀÇ runtime item ÇØÁ¦(logging)
+ *       - sdpPageListì˜ runtime item í•´ì œ(logging)
  *     endif
- *   + table headerÀÇ ÃÊ±âÈ­
- *   + table header ÃÊ±âÈ­¿¡ ´ëÇÑ ·Î±ëÃ³¸®
- *     : SMR_SMC_TABLEHEADER_INIT (REDO°¡´É)
+ *   + table headerì˜ ì´ˆê¸°í™”
+ *   + table header ì´ˆê¸°í™”ì— ëŒ€í•œ ë¡œê¹…ì²˜ë¦¬
+ *     : SMR_SMC_TABLEHEADER_INIT (REDOê°€ëŠ¥)
  ***********************************************************************/
 IDE_RC smcTable::initTableHeader( void*                 aTrans,
                                   scSpaceID             aSpaceID,
@@ -796,16 +796,16 @@ IDE_RC smcTable::initTableHeader( void*                 aTrans,
         (sTableType == SMI_TABLE_REMOTE)) 
     {
         /* ------------------------------------------------
-         * memory tableÀÇ variable page list entry¿Í fixed
-         * page list entry¸¦ ¸ğµÎ ÃÊ±âÈ­
+         * memory tableì˜ variable page list entryì™€ fixed
+         * page list entryë¥¼ ëª¨ë‘ ì´ˆê¸°í™”
          * ----------------------------------------------*/
         initMRDBTablePageList(aMax, aHeader);
     }
     else if ( sTableType == SMI_TABLE_DISK )
     {
         /* ------------------------------------------------
-         * disk tableÀÇ page list entry¸¦ ÃÊ±âÈ­ÇÏ¸ç,
-         * table µ¥ÀÌÅ¸ ÀúÀåÀ» À§ÇÑ segment »ı¼º (mtx logging ¸ğµå)
+         * disk tableì˜ page list entryë¥¼ ì´ˆê¸°í™”í•˜ë©°,
+         * table ë°ì´íƒ€ ì €ì¥ì„ ìœ„í•œ segment ìƒì„± (mtx logging ëª¨ë“œ)
          * ----------------------------------------------*/
         initDRDBTablePageList(aMax,
                               aHeader,
@@ -857,46 +857,46 @@ IDE_RC smcTable::initTableHeader( void*                 aTrans,
 }
 
 /***********************************************************************
- * Description :  memory/disk Å¸ÀÔÀÇ normal table »ı¼º (°øÅë)
+ * Description :  memory/disk íƒ€ì…ì˜ normal table ìƒì„± (ê³µí†µ)
  * =====================================================================
  * - 2nd. code design
- *   + catalog table¿¡ ´ëÇÏ¿© IX_LOCK ¿äÃ»
- *   + »õ·Î¿î tableÀÇ header¸¦ ÀúÀåÇÏ±â À§ÇØ catalog table¿¡¼­
- *     fixed slotÀ» ÇÒ´ç
- *   + recordÀÇ fixed ¿µ¿ªÀÇ ±æÀÌ¸¦ °è»ê
- *   + table Å¸ÀÔ¿¡ µû¸¥ table header ÃÊ±âÈ­
- *   + table Å¸ÀÔ¿¡ µû¶ó ÇØ´ç pagelist entryÀÇ mutex ¹×
- *     runtime Á¤º¸¸¦ ÃÊ±âÈ­
- *   + table »ı¼º ¿¬»ê¿¡ ´ëÇÑ NTA ·Î±ë
+ *   + catalog tableì— ëŒ€í•˜ì—¬ IX_LOCK ìš”ì²­
+ *   + ìƒˆë¡œìš´ tableì˜ headerë¥¼ ì €ì¥í•˜ê¸° ìœ„í•´ catalog tableì—ì„œ
+ *     fixed slotì„ í• ë‹¹
+ *   + recordì˜ fixed ì˜ì—­ì˜ ê¸¸ì´ë¥¼ ê³„ì‚°
+ *   + table íƒ€ì…ì— ë”°ë¥¸ table header ì´ˆê¸°í™”
+ *   + table íƒ€ì…ì— ë”°ë¼ í•´ë‹¹ pagelist entryì˜ mutex ë°
+ *     runtime ì •ë³´ë¥¼ ì´ˆê¸°í™”
+ *   + table ìƒì„± ì—°ì‚°ì— ëŒ€í•œ NTA ë¡œê¹…
  *     :SMR_OP_CREATE_TABLE
- *   + DDLÀÇ ¿À·ù¹ß»ı½Ã rollback°úÁ¤¿¡¼­ ÇÒ´çµÈ fixed slot¿¡
- *     Æ®·£Àè¼Ç commit½Ã commit scnÀ» ¼³Á¤ÇÒ ¼ö ÀÖµµ·Ï
- *     SM_OID_DROP_TABLE_BY_ABORTÇ¥½Ã
- *   + tableÀÇ columnÀÇ Á¤º¸¸¦ Variable¿µ¿ª¿¡ ¼³Á¤
+ *   + DDLì˜ ì˜¤ë¥˜ë°œìƒì‹œ rollbackê³¼ì •ì—ì„œ í• ë‹¹ëœ fixed slotì—
+ *     íŠ¸ëœì­ì…˜ commitì‹œ commit scnì„ ì„¤ì •í•  ìˆ˜ ìˆë„ë¡
+ *     SM_OID_DROP_TABLE_BY_ABORTí‘œì‹œ
+ *   + tableì˜ columnì˜ ì •ë³´ë¥¼ Variableì˜ì—­ì— ì„¤ì •
  *     : alloc variable slot
- *     : column Á¤º¸ ·Î±ë - SMR_LT_UPDATEÀÇ SMR_PHYSICAL
- *     : Æ®·£Àè¼Ç rollback½Ã¿¡ ÇÒ´çµÈ new variable slotÀ»
- *       ager°¡ remove ÇÒ ¼ö ÀÖµµ·Ï SM_OID_NEW_VARIABLE_SLOTÀ» Ç¥½Ã
- *     : table header¿¡ ÄÃ·³ Á¤º¸ º¯°æ ¹× ·Î±ë
+ *     : column ì •ë³´ ë¡œê¹… - SMR_LT_UPDATEì˜ SMR_PHYSICAL
+ *     : íŠ¸ëœì­ì…˜ rollbackì‹œì— í• ë‹¹ëœ new variable slotì„
+ *       agerê°€ remove í•  ìˆ˜ ìˆë„ë¡ SM_OID_NEW_VARIABLE_SLOTì„ í‘œì‹œ
+ *     : table headerì— ì»¬ëŸ¼ ì •ë³´ ë³€ê²½ ë° ë¡œê¹…
  *       - SMR_SMC_TABLEHEADER_UPDATE_COLUMNS
- *   + »õ·Î¿î tableÀÇ info Á¤º¸¸¦ À§ÇÏ¿© °ªÀ» ¼³Á¤
+ *   + ìƒˆë¡œìš´ tableì˜ info ì •ë³´ë¥¼ ìœ„í•˜ì—¬ ê°’ì„ ì„¤ì •
  *     : alloc variable slot
- *     : ÇÒ´ç¹ŞÀº variable slot¿¡ valÀ» °»½Å ¹× ·Î±ë
- *        - SMR_LT_UPDATEÀÇ SMR_SMC_PERS_UPDATE_VAR_ROW
- *     : Æ®·£Àè¼Ç rollback½Ã¿¡ ÇÒ´çµÈ new variable slotÀ»
- *       ager°¡ remove ÇÒ ¼ö ÀÖµµ·Ï SM_OID_NEW_VARIABLE_SLOTÀ» Ç¥½Ã
- *   + table Å¸ÀÔ¿¡ µû¶ó NullRow¸¦ data page¿¡ insert ¹× ·Î±ë
- *     : s?cRecord¸¦ ÅëÇÏ¿© nullrow¿¡ ´ëÇÑ insert Ã³¸®
- *     : insertµÈ nullrow¿¡ ´ëÇÏ¿© NULL_ROW_SCN ¼³Á¤ ¹× ·Î±ë
- *       - SMR_LT_UPDATEÀÇ SMR_SMC_PERS_UPDATE_FIXED_ROW
- *     : table header¿¡ nullrow¿¡ ´ëÇÑ ¼³Á¤ ¹× ·Î±ë
- *       - SMR_LT_UPDATEÀÇ SMR_SMC_TABLEHEADER_SET_NULLROW
- *   + »õ·Î¿î table¿¡ ´ëÇÏ¿© X_LOCK ¿äÃ»
+ *     : í• ë‹¹ë°›ì€ variable slotì— valì„ ê°±ì‹  ë° ë¡œê¹…
+ *        - SMR_LT_UPDATEì˜ SMR_SMC_PERS_UPDATE_VAR_ROW
+ *     : íŠ¸ëœì­ì…˜ rollbackì‹œì— í• ë‹¹ëœ new variable slotì„
+ *       agerê°€ remove í•  ìˆ˜ ìˆë„ë¡ SM_OID_NEW_VARIABLE_SLOTì„ í‘œì‹œ
+ *   + table íƒ€ì…ì— ë”°ë¼ NullRowë¥¼ data pageì— insert ë° ë¡œê¹…
+ *     : s?cRecordë¥¼ í†µí•˜ì—¬ nullrowì— ëŒ€í•œ insert ì²˜ë¦¬
+ *     : insertëœ nullrowì— ëŒ€í•˜ì—¬ NULL_ROW_SCN ì„¤ì • ë° ë¡œê¹…
+ *       - SMR_LT_UPDATEì˜ SMR_SMC_PERS_UPDATE_FIXED_ROW
+ *     : table headerì— nullrowì— ëŒ€í•œ ì„¤ì • ë° ë¡œê¹…
+ *       - SMR_LT_UPDATEì˜ SMR_SMC_TABLEHEADER_SET_NULLROW
+ *   + ìƒˆë¡œìš´ tableì— ëŒ€í•˜ì—¬ X_LOCK ìš”ì²­
  * =====================================================================
  *
  * - RECOVERY
  *
- *  # table »ı¼º½Ã (* disk-table»ı¼º)
+ *  # table ìƒì„±ì‹œ (* disk-tableìƒì„±)
  *
  *  (0) (1)    (2)          (3)         (4)      (5)
  *   |---|------|------------|-----------|--------|-----------> time
@@ -924,25 +924,25 @@ IDE_RC smcTable::initTableHeader( void*                 aTrans,
  *
  *  # Disk-Table Recovery Issue
  *
- *  - (2)±îÁö ·Î±ëÇÏ¿´´Ù¸é
+ *  - (2)ê¹Œì§€ ë¡œê¹…í•˜ì˜€ë‹¤ë©´
  *    + (2) -> undo
- *      : tbl-hdr¿¡ segment rID, table meta PID¸¦ ÀÌÀü image·Î º¹±¸ÇÑ´Ù.
+ *      : tbl-hdrì— segment rID, table meta PIDë¥¼ ì´ì „ imageë¡œ ë³µêµ¬í•œë‹¤.
  *    + (1) -> logical undo
- *      : tbl-hdr slotÀ» freeslotÇÑ´Ù.
+ *      : tbl-hdr slotì„ freeslotí•œë‹¤.
  *
- *  - (3)±îÁö mtx commitÇÏ¿´´Ù¸é
+ *  - (3)ê¹Œì§€ mtx commití•˜ì˜€ë‹¤ë©´
  *    + (3)-> logical undo
- *      : segment¸¦ freeÇÑ´Ù. ((3)':SDR_OP_NULL) [NTA->(1)]
- *        ¸¸¾à freeÇÏÁö ¸øÇÏ¿´´Ù¸é, ´Ù½Ã logical undo¸¦ ¼öÇàÇÏ¸é µÈ´Ù.
- *        free segment¸¦ mtx commit ÇÏ¿´´Ù¸é, [NTA->(1)]µû¶ó ´ÙÀ½ undo°úÁ¤
- *        À¸·Î skipÇÏ°í ³Ñ¾î°£´Ù.
+ *      : segmentë¥¼ freeí•œë‹¤. ((3)':SDR_OP_NULL) [NTA->(1)]
+ *        ë§Œì•½ freeí•˜ì§€ ëª»í•˜ì˜€ë‹¤ë©´, ë‹¤ì‹œ logical undoë¥¼ ìˆ˜í–‰í•˜ë©´ ëœë‹¤.
+ *        free segmentë¥¼ mtx commit í•˜ì˜€ë‹¤ë©´, [NTA->(1)]ë”°ë¼ ë‹¤ìŒ undoê³¼ì •
+ *        ìœ¼ë¡œ skipí•˜ê³  ë„˜ì–´ê°„ë‹¤.
  *    + (1) -> logical undo
- *      : tbl-hdr slotÀ» freeslotÇÑ´Ù.
+ *      : tbl-hdr slotì„ freeslotí•œë‹¤.
  *
- *  - (5)±îÁö ·Î±ë ÇÏ¿´´Ù¸é
+ *  - (5)ê¹Œì§€ ë¡œê¹… í•˜ì˜€ë‹¤ë©´
  *    + (5) -> logical undo
- *      : setDropTableÀ» Ã³¸®ÇÑ´Ù. (U/R) (a)
- *      : doNTADropTableÀ» ¼öÇàÇÏ¿© dropTablePendingÀ» È£ÃâÇÑ´Ù. (b)(c)
+ *      : setDropTableì„ ì²˜ë¦¬í•œë‹¤. (U/R) (a)
+ *      : doNTADropTableì„ ìˆ˜í–‰í•˜ì—¬ dropTablePendingì„ í˜¸ì¶œí•œë‹¤. (b)(c)
  *      =>
  *
  *      (5)(a)    (b)                 (c)
@@ -953,17 +953,17 @@ IDE_RC smcTable::initTableHeader( void*                 aTrans,
  *                 meta pageID        [NTA->(a)]
  *                 in tbl-hdr         (NTA OP NULL)
  *                 (R/U)
- *      ¤¡. (b)±îÁö¸¸ ·Î±ëÇß´Ù¸é (b)·Î±×¿¡ ´ëÇÏ¿© undo°¡ ¼öÇàµÇ¸ç ´ÙÀ½°ú
- *          °°ÀÌ Ã³¸®µÈ´Ù.
+ *      ã„±. (b)ê¹Œì§€ë§Œ ë¡œê¹…í–ˆë‹¤ë©´ (b)ë¡œê·¸ì— ëŒ€í•˜ì—¬ undoê°€ ìˆ˜í–‰ë˜ë©° ë‹¤ìŒê³¼
+ *          ê°™ì´ ì²˜ë¦¬ëœë‹¤.
  *          => (5)->(a)->(b)->(b)'->(a)'->(a)->(b)->(c)->(5)'->...
  *             NTA            CLR   CLR                  DUMMY_CLR
  *
- *      ¤¤. (c)±îÁö mtx commitÀÌ µÇ¾ú´Ù¸é
+ *      ã„´. (c)ê¹Œì§€ mtx commitì´ ë˜ì—ˆë‹¤ë©´
  *          => (5)->(a)->(b)->(c)->(d)->..->(5)'->...
  *             NTA                          DUMMY_CLR
  *
  *    + (1) -> logical undo
- *      : tbl-hdr slotÀ» freeslotÇÑ´Ù.
+ *      : tbl-hdr slotì„ freeslotí•œë‹¤.
  ***********************************************************************/
 IDE_RC smcTable::createTable( idvSQL              * aStatistics,
                               void*                 aTrans,
@@ -1013,8 +1013,8 @@ IDE_RC smcTable::createTable( idvSQL              * aStatistics,
     sLsnNTA = smLayerCallback::getLstUndoNxtLSN( aTrans );
 
     /* ------------------------------------------------
-     * [1] »õ·Î¿î TableÀ» À§ÇÑ Table Header¿µ¿ªÀ»
-     * Catalog Table¿¡¼­ ÇÒ´ç¹Ş´Â´Ù.
+     * [1] ìƒˆë¡œìš´ Tableì„ ìœ„í•œ Table Headerì˜ì—­ì„
+     * Catalog Tableì—ì„œ í• ë‹¹ë°›ëŠ”ë‹¤.
      * ----------------------------------------------*/
     if(( aFlag & SMI_TABLE_PRIVATE_VOLATILE_MASK ) == SMI_TABLE_PRIVATE_VOLATILE_FALSE )
     {
@@ -1034,8 +1034,8 @@ IDE_RC smcTable::createTable( idvSQL              * aStatistics,
     else
     {
         /* PROJ-1407 Temporary Table
-         * User session temporary tableÀÇ °æ¿ì restart½Ã freeµÇ¾î¾ß ÇÏ¹Ç·Î
-         * temp catalog¿¡¼­ slotÀ» ÇÒ´ç¹Ş´Â´Ù.*/
+         * User session temporary tableì˜ ê²½ìš° restartì‹œ freeë˜ì–´ì•¼ í•˜ë¯€ë¡œ
+         * temp catalogì—ì„œ slotì„ í• ë‹¹ë°›ëŠ”ë‹¤.*/
         IDE_TEST( smpFixedPageList::allocSlotForTempTableHdr(
                       SMI_ID_TABLESPACE_SYSTEM_MEMORY_DIC,
                       SMC_CAT_TEMPTABLE->mSelfOID,
@@ -1051,10 +1051,10 @@ IDE_RC smcTable::createTable( idvSQL              * aStatistics,
 
 
     /* ------------------------------------------------
-     * [2] »õ·Î¿î TableÀ» À§ÇÑ Table Header¿µ¿ªÀ»
-     * Catalog Table¿¡¼­ ÇÒ´ç¹Ş¾ÒÀ¸¹Ç·Î,
-     * New Version List¿¡ Ãß°¡ÇÑ´Ù.
-     * ÀÌ ÇÔ¼öÀÇ [2] ÂüÁ¶.
+     * [2] ìƒˆë¡œìš´ Tableì„ ìœ„í•œ Table Headerì˜ì—­ì„
+     * Catalog Tableì—ì„œ í• ë‹¹ë°›ì•˜ìœ¼ë¯€ë¡œ,
+     * New Version Listì— ì¶”ê°€í•œë‹¤.
+     * ì´ í•¨ìˆ˜ì˜ [2] ì°¸ì¡°.
      * ----------------------------------------------*/
     sHeaderPageID = SMP_SLOT_GET_PID((SChar *)sSlotHeader);
     sFixOID       = SM_MAKE_OID( sHeaderPageID,
@@ -1065,23 +1065,23 @@ IDE_RC smcTable::createTable( idvSQL              * aStatistics,
     IDU_FIT_POINT_RAISE( "1.PROJ-1407@smcTable::createTable", err_ART );
 
     /* ------------------------------------------------
-     * [3] ÀÌ TableÀÇ Fixed ¿µ¿ªÀÇ Row ±æÀÌ¸¦
-     * °è»êÇÑ´Ù.
-     * °¢ Column Á¤º¸ÀÇ <Offset + Size>°ªÀÇ ÃÖ´ë°ªÀ»
-     * Fixed ¿µ¿ªÀÇ Row ±æÀÌ·Î ¼³Á¤.
+     * [3] ì´ Tableì˜ Fixed ì˜ì—­ì˜ Row ê¸¸ì´ë¥¼
+     * ê³„ì‚°í•œë‹¤.
+     * ê° Column ì •ë³´ì˜ <Offset + Size>ê°’ì˜ ìµœëŒ€ê°’ì„
+     * Fixed ì˜ì—­ì˜ Row ê¸¸ì´ë¡œ ì„¤ì •.
      *
-     * bugbug : ÀÌ ÄÚµå´Â Áßº¹À¸·Î »ç¿ëµÇ±â¶§¹®¿¡,
-     * º°µµÀÇ ÇÔ¼ö·Î ºĞ¸®½ÃÄÑ È£ÃâÇÏµµ·Ï Ã³¸®ÇØ¾ßÇÔ
+     * bugbug : ì´ ì½”ë“œëŠ” ì¤‘ë³µìœ¼ë¡œ ì‚¬ìš©ë˜ê¸°ë•Œë¬¸ì—,
+     * ë³„ë„ì˜ í•¨ìˆ˜ë¡œ ë¶„ë¦¬ì‹œì¼œ í˜¸ì¶œí•˜ë„ë¡ ì²˜ë¦¬í•´ì•¼í•¨
      * ----------------------------------------------*/
     sTableType = aFlag & SMI_TABLE_TYPE_MASK;
 
-    // Create TableÀ» À§ÇÑ ¿¡·¯Ã³¸®
+    // Create Tableì„ ìœ„í•œ ì—ëŸ¬ì²˜ë¦¬
     IDE_TEST( checkError4CreateTable( aSpaceID,
                                       aFlag )
               != IDE_SUCCESS );
 
-    /* Column List°¡ ValidÇÑÁö °Ë»çÇÏ°í ColumnÀÇ °¹¼ö¿Í Fixed rowÀÇ Å©±â
-       ¸¦ ±¸ÇÑ´Ù.*/
+    /* Column Listê°€ Validí•œì§€ ê²€ì‚¬í•˜ê³  Columnì˜ ê°¯ìˆ˜ì™€ Fixed rowì˜ í¬ê¸°
+       ë¥¼ êµ¬í•œë‹¤.*/
     IDE_TEST( validateAndGetColCntAndFixedRowSize(
                   sTableType,
                   aColumns,
@@ -1090,11 +1090,11 @@ IDE_RC smcTable::createTable( idvSQL              * aStatistics,
               != IDE_SUCCESS );
 
     /* ------------------------------------------------
-     * °øÅë table headerÀÇ ´ëºÎºĞÀÇ ¸â¹ö´Â µ¿ÀÏÇÏ°Ô
-     * ÃÊ±âÈ­µÇ´õ¶óµµ, page list entry¿¡ ´ëÇØ¼­´Â
-     * Å×ÀÌºíÅ¸ÀÔ¿¡ µû¶ó ÃÊ±âÈ­°¡ ´Ù¸£´Ù.
+     * ê³µí†µ table headerì˜ ëŒ€ë¶€ë¶„ì˜ ë©¤ë²„ëŠ” ë™ì¼í•˜ê²Œ
+     * ì´ˆê¸°í™”ë˜ë”ë¼ë„, page list entryì— ëŒ€í•´ì„œëŠ”
+     * í…Œì´ë¸”íƒ€ì…ì— ë”°ë¼ ì´ˆê¸°í™”ê°€ ë‹¤ë¥´ë‹¤.
      * ----------------------------------------------*/
-    /* stack º¯¼ö¿¡ table header °ª ÃÊ±âÈ­ */
+    /* stack ë³€ìˆ˜ì— table header ê°’ ì´ˆê¸°í™” */
     IDE_TEST( initTableHeader( aTrans,
                                aSpaceID,
                                sMax,
@@ -1112,21 +1112,21 @@ IDE_RC smcTable::createTable( idvSQL              * aStatistics,
                                &sHeaderArg )
               != IDE_SUCCESS );
 
-    /* ½ÇÁ¦ table header °ªÀ» ¼³Á¤ */
+    /* ì‹¤ì œ table header ê°’ì„ ì„¤ì • */
     idlOS::memcpy(sHeader, &sHeaderArg, ID_SIZEOF(smcTableHeader));
 
     IDU_FIT_POINT( "1.BUG-31673@smcTable::createTable" );
 
-    // table Å¸ÀÔ¿¡ µû¶ó ÇØ´ç pagelist entryÀÇ mutex ¹× runtime Á¤º¸¸¦ ÃÊ±âÈ­
+    // table íƒ€ì…ì— ë”°ë¼ í•´ë‹¹ pagelist entryì˜ mutex ë° runtime ì •ë³´ë¥¼ ì´ˆê¸°í™”
     IDE_TEST( initLockAndRuntimeItem( sHeader) != IDE_SUCCESS );
 
     if ( sTableType == SMI_TABLE_DISK )
     {
         /* ------------------------------------------------
-         * disk tableÀÇ page list entry¸¦ ÃÊ±âÈ­ÇÏ¸ç,
-         * table µ¥ÀÌÅ¸ ÀúÀåÀ» À§ÇÑ segment »ı¼º (mtx logging ¸ğµå)
+         * disk tableì˜ page list entryë¥¼ ì´ˆê¸°í™”í•˜ë©°,
+         * table ë°ì´íƒ€ ì €ì¥ì„ ìœ„í•œ segment ìƒì„± (mtx logging ëª¨ë“œ)
          * ----------------------------------------------*/
-         // disk tableÀÇ table segment ÇÒ´ç ¹× table segment header page ÃÊ±âÈ­
+         // disk tableì˜ table segment í• ë‹¹ ë° table segment header page ì´ˆê¸°í™”
          IDE_TEST( sdpSegment::allocTableSeg4Entry(
                        aStatistics,
                        aTrans,
@@ -1138,8 +1138,8 @@ IDE_RC smcTable::createTable( idvSQL              * aStatistics,
     }
 
     /* ------------------------------------------------
-     * [4] ÀÌ TableÀÇ Fixed ¿µ¿ªÀÇ Row ±æÀÌ°¡ Persistent Page Size¸¦ ÃÊ°úÇÑ´Ù¸é
-     * ¿¡·¯ Ã³¸® ÇÑ´Ù.
+     * [4] ì´ Tableì˜ Fixed ì˜ì—­ì˜ Row ê¸¸ì´ê°€ Persistent Page Sizeë¥¼ ì´ˆê³¼í•œë‹¤ë©´
+     * ì—ëŸ¬ ì²˜ë¦¬ í•œë‹¤.
      * ----------------------------------------------*/
     sTableType = SMI_GET_TABLE_TYPE( sHeader );
 
@@ -1148,7 +1148,7 @@ IDE_RC smcTable::createTable( idvSQL              * aStatistics,
                  sTableType == SMI_TABLE_DISK   ||
                  sTableType == SMI_TABLE_VOLATILE );
 
-    // !!] OP_NTA : table »ı¼º ¿¬»ê¿¡ ´ëÇÑ ·Î±ë
+    // !!] OP_NTA : table ìƒì„± ì—°ì‚°ì— ëŒ€í•œ ë¡œê¹…
     IDE_TEST( smrLogMgr::writeNTALogRec(NULL, /* idvSQL* */
                                         aTrans,
                                         &sLsnNTA,
@@ -1159,16 +1159,16 @@ IDE_RC smcTable::createTable( idvSQL              * aStatistics,
 
     /* ------------------------------------------------
      * !! CHECK RECOVERY POINT
-     * case) SMR_OP_CREATE_TABLEÀ» ·Î±ëÇÏ°í crash ¹ß»ı
-     * undoAll°úÁ¤¿¡¼­ NTA logical undo¸¦ ¼öÇàÇÏ¿© tableÀ» Á¦°ÅÇÑ´Ù.
-     * disk tableÀº Ãß°¡ÀûÀ¸·Î table segment±îÁö freeÇÑ´Ù.
+     * case) SMR_OP_CREATE_TABLEì„ ë¡œê¹…í•˜ê³  crash ë°œìƒ
+     * undoAllê³¼ì •ì—ì„œ NTA logical undoë¥¼ ìˆ˜í–‰í•˜ì—¬ tableì„ ì œê±°í•œë‹¤.
+     * disk tableì€ ì¶”ê°€ì ìœ¼ë¡œ table segmentê¹Œì§€ freeí•œë‹¤.
      * ----------------------------------------------*/
     IDU_FIT_POINT( "1.PROJ-1552@smcTable::createTable" );
     sState = 1;
 
     /* ------------------------------------------------
-     * DDLÀÇ ¿À·ù¹ß»ı½Ã rollback°úÁ¤¿¡¼­ ÇÒ´çµÈ fixed slot¿¡
-     * ´ëÇÏ¿© commit scnÀ» ¼³Á¤ÇÒ¼ö ÀÖµµ·Ï Ç¥½Ã
+     * DDLì˜ ì˜¤ë¥˜ë°œìƒì‹œ rollbackê³¼ì •ì—ì„œ í• ë‹¹ëœ fixed slotì—
+     * ëŒ€í•˜ì—¬ commit scnì„ ì„¤ì •í• ìˆ˜ ìˆë„ë¡ í‘œì‹œ
      * ----------------------------------------------*/
     IDE_TEST( smLayerCallback::addOID( aTrans,
                                        sFixOID,
@@ -1177,7 +1177,7 @@ IDE_RC smcTable::createTable( idvSQL              * aStatistics,
                                        SM_OID_DROP_TABLE_BY_ABORT )
               != IDE_SUCCESS );
 
-    /* Table Space¿¡ ´ëÇØ¼­ DDLÀÌ ¹ß»ıÇß´Ù´Â°ÍÀ» Ç¥½Ã*/
+    /* Table Spaceì— ëŒ€í•´ì„œ DDLì´ ë°œìƒí–ˆë‹¤ëŠ”ê²ƒì„ í‘œì‹œ*/
     IDE_TEST( smLayerCallback::addOID( aTrans,
                                        sFixOID,
                                        sFixOID,
@@ -1185,7 +1185,7 @@ IDE_RC smcTable::createTable( idvSQL              * aStatistics,
                                        SM_OID_DDL_TABLE )
               != IDE_SUCCESS );
 
-    /* [5] ÀÌ TableÀÇ ColumnÀÇ Á¤º¸¸¦ Variable¿µ¿ª¿¡ ¼³Á¤ÇÑ´Ù. */
+    /* [5] ì´ Tableì˜ Columnì˜ ì •ë³´ë¥¼ Variableì˜ì—­ì— ì„¤ì •í•œë‹¤. */
     IDE_TEST( setColumnAtTableHeader( aTrans,
                                       sHeader,
                                       aColumns,
@@ -1193,9 +1193,9 @@ IDE_RC smcTable::createTable( idvSQL              * aStatistics,
                                       aColumnSize )
               != IDE_SUCCESS );
 
-    // BUG-28356 [QP]½Ç½Ã°£ add column Á¦¾à Á¶°Ç¿¡¼­
-    //           lob column¿¡ ´ëÇÑ Á¦¾à Á¶°Ç »èÁ¦ÇØ¾ß ÇÔ
-    // Table³»ÀÇ ¸ğµç ColumnÀ» ¼øÈ¸ÇÏ¸é¼­ LOB ColumnÀÌ¸é LOB Segment¸¦ »ı¼ºÇÑ´Ù.
+    // BUG-28356 [QP]ì‹¤ì‹œê°„ add column ì œì•½ ì¡°ê±´ì—ì„œ
+    //           lob columnì— ëŒ€í•œ ì œì•½ ì¡°ê±´ ì‚­ì œí•´ì•¼ í•¨
+    // Tableë‚´ì˜ ëª¨ë“  Columnì„ ìˆœíšŒí•˜ë©´ì„œ LOB Columnì´ë©´ LOB Segmentë¥¼ ìƒì„±í•œë‹¤.
     if( ( sTableType == SMI_TABLE_DISK ) &&
         ( sHeader->mLobColumnCount != 0 ) )
     {
@@ -1221,17 +1221,17 @@ IDE_RC smcTable::createTable( idvSQL              * aStatistics,
     }
 
     /* ------------------------------------------------
-     * [6] »õ·Î¿î TableÀÇ Info Á¤º¸¸¦ À§ÇÏ¿© °ªÀ» ¼³Á¤ÇÑ´Ù.
+     * [6] ìƒˆë¡œìš´ Tableì˜ Info ì •ë³´ë¥¼ ìœ„í•˜ì—¬ ê°’ì„ ì„¤ì •í•œë‹¤.
      * ----------------------------------------------*/
     IDE_TEST(setInfoAtTableHeader(aTrans, sHeader, aInfo, aInfoSize)
              != IDE_SUCCESS);
 
     /* ------------------------------------------------
-     * [7] »õ·Î¿î Table¿¡ NullRow¸¦ »ğÀÔÇÑ´Ù.
+     * [7] ìƒˆë¡œìš´ Tableì— NullRowë¥¼ ì‚½ì…í•œë‹¤.
      *
-     * FOR A4 : nullrow Ã³¸®
+     * FOR A4 : nullrow ì²˜ë¦¬
      *
-     * nullrow¸¦ table¿¡ insertÇÏ´Â ¹æ½ÄÀ¸·Î Ã³¸®ÇÑ´Ù.
+     * nullrowë¥¼ tableì— insertí•˜ëŠ” ë°©ì‹ìœ¼ë¡œ ì²˜ë¦¬í•œë‹¤.
      *
      * + memory table nullrow (smcRecord::makeNullRow)
      *  _______________________________________________________
@@ -1241,26 +1241,26 @@ IDE_RC smcTable::createTable( idvSQL              * aStatistics,
      *                                  ___|/______
      *                                  |0|var    |
      *                                  |_|selfOID|
-     *                                    catalog tableÀÇ
+     *                                    catalog tableì˜
      *                                    nullOID
      *
-     *  nullrowÀÇ varcolumnÀ» ¸Å¹ø ÇÒ´çÇÏÁö ¾Ê±âÀ§ÇØ¼­´Â
-     *  ÀÏ¹İ Å×ÀÌºíÀÇ nullrowÀÇ columnÁß varcolumnÀº ÇÒ´çµÇÁö ¾ÊÀ¸¸ç
-     *  ´ÜÁö catalog tableÀÇ nullOID¿¡ ÀúÀåµÈ varcolumnÀ»
-     *  assignÇÏµµ·Ï Ã³¸®
+     *  nullrowì˜ varcolumnì„ ë§¤ë²ˆ í• ë‹¹í•˜ì§€ ì•Šê¸°ìœ„í•´ì„œëŠ”
+     *  ì¼ë°˜ í…Œì´ë¸”ì˜ nullrowì˜ columnì¤‘ varcolumnì€ í• ë‹¹ë˜ì§€ ì•Šìœ¼ë©°
+     *  ë‹¨ì§€ catalog tableì˜ nullOIDì— ì €ì¥ëœ varcolumnì„
+     *  assigní•˜ë„ë¡ ì²˜ë¦¬
      *
      * ----------------------------------------------*/
 
     /* BUG-32544 [sm-mem-collection] The MMDB alter table operation can
      * generate invalid null row.
-     * CreateTable½Ã¿¡ »ı¼ºµÈ NullRow´Â UndoÇÒ ÇÊ¿ä°¡ ¾ø½À´Ï´Ù.
-     * ¾îÂ÷ÇÇ RollbackµÇ¸é TableÀÌ DropµÇ¸é¼­ ¹İÈ¯µÉ °ÍÀÌ±â ¶§¹®ÀÔ´Ï´Ù.*/
+     * CreateTableì‹œì— ìƒì„±ëœ NullRowëŠ” Undoí•  í•„ìš”ê°€ ì—†ìŠµë‹ˆë‹¤.
+     * ì–´ì°¨í”¼ Rollbackë˜ë©´ Tableì´ Dropë˜ë©´ì„œ ë°˜í™˜ë  ê²ƒì´ê¸° ë•Œë¬¸ì…ë‹ˆë‹¤.*/
     sLsnNTA = smLayerCallback::getLstUndoNxtLSN( aTrans );
     if (sTableType == SMI_TABLE_DISK)
     {
         // PROJ-1705
-        // Disk Table°ú Disk Temp TableÀº
-        // Null Row¸¦ insertÇÏÁö ¾Êµµ·Ï º¯°æÇÑ´Ù.
+        // Disk Tableê³¼ Disk Temp Tableì€
+        // Null Rowë¥¼ insertí•˜ì§€ ì•Šë„ë¡ ë³€ê²½í•œë‹¤.
 
         IDE_TEST( initRowTemplate( NULL, sHeader, NULL ) != IDE_SUCCESS );
     }
@@ -1280,8 +1280,8 @@ IDE_RC smcTable::createTable( idvSQL              * aStatistics,
                                                        (smOID*)&sNullRowID )
                       != IDE_SUCCESS );
 
-            /* vol tbsÀÇ °æ¿ì ¾Æ·¡¿Í °°ÀÌ UndoLog¸¦ Áö¿öÁÖ´Â °ÍÀÌ
-             * NTA LogÀÌ´Ù. */
+            /* vol tbsì˜ ê²½ìš° ì•„ë˜ì™€ ê°™ì´ UndoLogë¥¼ ì§€ì›Œì£¼ëŠ” ê²ƒì´
+             * NTA Logì´ë‹¤. */
             IDE_TEST( svrLogMgr::removeLogHereafter( 
                     ((smxTrans*)aTrans)->getVolatileLogEnv(),
                     sLsn4Vol )
@@ -1297,8 +1297,8 @@ IDE_RC smcTable::createTable( idvSQL              * aStatistics,
                                             (smOID*)&sNullRowID)
                      != IDE_SUCCESS);
 
-            /* smcRecord::makeNullRow¾È¿¡¼­ Null Row OID Setting°ü·ÃÇØ¼­
-               LoggingÇÕ´Ï´Ù.*/
+            /* smcRecord::makeNullRowì•ˆì—ì„œ Null Row OID Settingê´€ë ¨í•´ì„œ
+               Loggingí•©ë‹ˆë‹¤.*/
         }
 
         IDE_TEST( setNullRow( aTrans,
@@ -1310,7 +1310,7 @@ IDE_RC smcTable::createTable( idvSQL              * aStatistics,
 
     /* BUG-32544 [sm-mem-collection] The MMDB alter table operation can
      * generate invalid null row.
-     * NTA Log¸¦ ÅëÇØ NullRow¿¡ ´ëÇÑ Undo¸¦ ¸·½À´Ï´Ù*/
+     * NTA Logë¥¼ í†µí•´ NullRowì— ëŒ€í•œ Undoë¥¼ ë§‰ìŠµë‹ˆë‹¤*/
     IDE_TEST(smrLogMgr::writeNullNTALogRec( NULL, /* idvSQL* */
                                             aTrans,
                                             & sLsnNTA)
@@ -1324,7 +1324,7 @@ IDE_RC smcTable::createTable( idvSQL              * aStatistics,
                   SM_MAKE_PID(sHeader->mSelfOID))
               != IDE_SUCCESS );
 
-    // [8] »õ·Î »ı¼ºÇÑ Table¿¡ ´ëÇÏ¿© X Lock ¿äÃ»
+    // [8] ìƒˆë¡œ ìƒì„±í•œ Tableì— ëŒ€í•˜ì—¬ X Lock ìš”ì²­
     IDE_TEST( smLayerCallback::lockTableModeX( aTrans, SMC_TABLE_LOCK( sHeader ) )
               != IDE_SUCCESS );
 
@@ -1379,15 +1379,15 @@ IDE_RC smcTable::createTable( idvSQL              * aStatistics,
 }
 
 /***********************************************************************
- * Description : Table Header¿¡ »õ·Î¿î Info Á¤º¸¸¦ SettingÇÑ´Ù. ¸¸¾à
- *               ±âÁ¸ Info Á¤º¸°¡ ÀÖ´Ù¸é »èÁ¦ÇÏ°í »õ·Î¿î Info ·Î ´ëÃ¼ÇÑ´Ù.
- *               ¸¸¾à »õ·Î¿î INfo ¶ÇÇÑ ÁöÁ¤µÈ°ÍÀÌ ¾ø´Ù¸é TableÀÇ Info
- *               ´Â NULL·Î SettingµÈ´Ù.
+ * Description : Table Headerì— ìƒˆë¡œìš´ Info ì •ë³´ë¥¼ Settingí•œë‹¤. ë§Œì•½
+ *               ê¸°ì¡´ Info ì •ë³´ê°€ ìˆë‹¤ë©´ ì‚­ì œí•˜ê³  ìƒˆë¡œìš´ Info ë¡œ ëŒ€ì²´í•œë‹¤.
+ *               ë§Œì•½ ìƒˆë¡œìš´ INfo ë˜í•œ ì§€ì •ëœê²ƒì´ ì—†ë‹¤ë©´ Tableì˜ Info
+ *               ëŠ” NULLë¡œ Settingëœë‹¤.
  *
  * aTrans     - [IN] : Transaction Pointer
  * aTable     - [IN] : Table Header
- * aInfo      - [IN] : Info Pointer : ÁöÁ¤ÇÒ Info°¡ ¾ø´Ù¸é NULL
- * aInfoSize  - [IN] : Info Size    : ÁöÁ¤ÇÒ Info°¡ ¾ø´Ù¸é 0
+ * aInfo      - [IN] : Info Pointer : ì§€ì •í•  Infoê°€ ì—†ë‹¤ë©´ NULL
+ * aInfoSize  - [IN] : Info Size    : ì§€ì •í•  Infoê°€ ì—†ë‹¤ë©´ 0
  ***********************************************************************/
 IDE_RC smcTable::setInfoAtTableHeader( void*            aTrans,
                                        smcTableHeader*  aTable,
@@ -1408,12 +1408,12 @@ IDE_RC smcTable::setInfoAtTableHeader( void*            aTrans,
     IDE_DASSERT( aTrans != NULL );
     IDE_DASSERT( aTable != NULL );
 
-    /* [1] ±âÁ¸ info Á¤º¸°¡ ÀÖ´Â °æ¿ì ±× old versionÀ» versioning list¿¡ Ãß°¡ */
+    /* [1] ê¸°ì¡´ info ì •ë³´ê°€ ìˆëŠ” ê²½ìš° ê·¸ old versionì„ versioning listì— ì¶”ê°€ */
     if(aTable->mInfo.fstPieceOID != SM_NULL_OID)
     {
         sVCPieceOID = aTable->mInfo.fstPieceOID;
 
-        /* VC¸¦ ±¸¼ºÇÏ´Â VC PieceÀÇ Flag¿¡ Delete BitÃß°¡.*/
+        /* VCë¥¼ êµ¬ì„±í•˜ëŠ” VC Pieceì˜ Flagì— Delete Bitì¶”ê°€.*/
         if ( ( aTable->mInfo.flag & SM_VCDESC_MODE_MASK ) == SM_VCDESC_MODE_OUT )
         {
             IDE_TEST( smcRecord::deleteVC( aTrans,
@@ -1423,7 +1423,7 @@ IDE_RC smcTable::setInfoAtTableHeader( void*            aTrans,
         }
         else
         {
-            /* Nothing to do. inmode ´Â fixed record¿¡¼­ ÇÔ²² Ã³¸®µÈ´Ù. */
+            /* Nothing to do. inmode ëŠ” fixed recordì—ì„œ í•¨ê»˜ ì²˜ë¦¬ëœë‹¤. */
         }
     }
 
@@ -1432,14 +1432,14 @@ IDE_RC smcTable::setInfoAtTableHeader( void*            aTrans,
         sInfoPartialLen = aInfoSize;
 
         /* =================================================================
-         * [2] info Á¤º¸¸¦ variable page¿¡ ÀúÀå
-         *     info Á¤º¸°¡ SM_PAGE_SIZE¸¦ ³Ñ´Â °æ¿ì ¿©·¯ ÆäÀÌÁö¿¡ °ÉÃÄ ÀúÀå
+         * [2] info ì •ë³´ë¥¼ variable pageì— ì €ì¥
+         *     info ì •ë³´ê°€ SM_PAGE_SIZEë¥¼ ë„˜ëŠ” ê²½ìš° ì—¬ëŸ¬ í˜ì´ì§€ì— ê±¸ì³ ì €ì¥
          * ================================================================ */
         sMaxVarLen = SMP_VC_PIECE_MAX_SIZE;
 
         while ( sInfoPartialLen > 0 )
         {
-            /* [1-1] info Á¤º¸¸¦ À§ÇØ variable column Á¤º¸ ±¸¼º */
+            /* [1-1] info ì •ë³´ë¥¼ ìœ„í•´ variable column ì •ë³´ êµ¬ì„± */
             if ( sInfoPartialLen == aInfoSize )
             {
                 sVal.length      = sInfoPartialLen  % sMaxVarLen;
@@ -1454,7 +1454,7 @@ IDE_RC smcTable::setInfoAtTableHeader( void*            aTrans,
             }
             sVal.value  = (void *)((char *)aInfo + sOffset);
 
-            /* [1-2] info Á¤º¸¸¦ ÀúÀåÇÏ±â À§ÇÑ variable slot ÇÒ´ç */
+            /* [1-2] info ì •ë³´ë¥¼ ì €ì¥í•˜ê¸° ìœ„í•œ variable slot í• ë‹¹ */
             IDE_TEST( smpVarPageList::allocSlot(
                           aTrans,
                           SMI_ID_TABLESPACE_SYSTEM_MEMORY_DIC,
@@ -1465,8 +1465,8 @@ IDE_RC smcTable::setInfoAtTableHeader( void*            aTrans,
                           &sVCPieceOID,
                           (SChar**)& sVCPieceHeader) != IDE_SUCCESS );
 
-            /* [1-3] ÇÒ´ç¹ŞÀº ½½·Ô¿¡ info Á¤º¸ ÀúÀå ¹× ·Î±ë *
-             *       dirty page µî·ÏÀº ÇÔ¼ö ³»ºÎ¿¡¼­ ¼öÇàµÊ */
+            /* [1-3] í• ë‹¹ë°›ì€ ìŠ¬ë¡¯ì— info ì •ë³´ ì €ì¥ ë° ë¡œê¹… *
+             *       dirty page ë“±ë¡ì€ í•¨ìˆ˜ ë‚´ë¶€ì—ì„œ ìˆ˜í–‰ë¨ */
             IDE_TEST(smrUpdate::updateVarRow(
                          NULL, /* idvSQL* */
                          aTrans,
@@ -1482,7 +1482,7 @@ IDE_RC smcTable::setInfoAtTableHeader( void*            aTrans,
                           sVal.value,
                           sVal.length) != IDE_SUCCESS );
 
-            /* [1-4] »õ·Î ÇÒ´ç¹ŞÀº ½½·ÔÀ» versioning list¿¡ Ãß°¡ */
+            /* [1-4] ìƒˆë¡œ í• ë‹¹ë°›ì€ ìŠ¬ë¡¯ì„ versioning listì— ì¶”ê°€ */
             IDE_TEST( smLayerCallback::addOID( aTrans,
                                                SMC_CAT_TABLE->mSelfOID,
                                                sVCPieceOID,
@@ -1490,8 +1490,8 @@ IDE_RC smcTable::setInfoAtTableHeader( void*            aTrans,
                                                SM_OID_NEW_VARIABLE_SLOT )
                       != IDE_SUCCESS );
 
-            /* [1-5] info Á¤º¸°¡ multiple page¿¡ °ÉÃÄ¼­ ÀúÀåµÇ´Â °æ¿ì
-             *       ±× ÆäÀÌÁöµé³¢¸®ÀÇ ¸®½ºÆ®¸¦ À¯Áö                  */
+            /* [1-5] info ì •ë³´ê°€ multiple pageì— ê±¸ì³ì„œ ì €ì¥ë˜ëŠ” ê²½ìš°
+             *       ê·¸ í˜ì´ì§€ë“¤ë¼ë¦¬ì˜ ë¦¬ìŠ¤íŠ¸ë¥¼ ìœ ì§€                  */
             sNextOid = sVCPieceOID;
         }
 
@@ -1506,7 +1506,7 @@ IDE_RC smcTable::setInfoAtTableHeader( void*            aTrans,
     sHeaderPageID = SM_MAKE_PID(aTable->mSelfOID);
     sState = 1;
 
-    /* [3] info º¯°æ ¹× ·Î±ë */
+    /* [3] info ë³€ê²½ ë° ë¡œê¹… */
     IDE_TEST(smrUpdate::updateInfoAtTableHead(
                  NULL, /* idvSQL* */
                  aTrans,
@@ -1523,7 +1523,7 @@ IDE_RC smcTable::setInfoAtTableHeader( void*            aTrans,
     aTable->mInfo.fstPieceOID = sFstVCPieceOID;
     aTable->mInfo.flag        = SM_VCDESC_MODE_OUT;
 
-    /* [4] ÇØ´ç Å×ÀÌºíÀÌ ¼ÓÇÑ ÆäÀÌÁö¸¦ º¯°æ ÆäÀÌÁö·Î µî·Ï */
+    /* [4] í•´ë‹¹ í…Œì´ë¸”ì´ ì†í•œ í˜ì´ì§€ë¥¼ ë³€ê²½ í˜ì´ì§€ë¡œ ë“±ë¡ */
     IDE_TEST(smmDirtyPageMgr::insDirtyPage(SMI_ID_TABLESPACE_SYSTEM_MEMORY_DIC,
                                            sHeaderPageID)
              != IDE_SUCCESS );
@@ -1545,16 +1545,16 @@ IDE_RC smcTable::setInfoAtTableHeader( void*            aTrans,
 }
 
 /***********************************************************************
- * Description : Table Header¿¡ »õ·Î¿î Column ListÁ¤º¸¸¦ SettingÇÑ´Ù. ¸¸¾à
- *               ±âÁ¸ Column Á¤º¸°¡ ÀÖ´Ù¸é »èÁ¦ÇÏ°í »õ·Î¿î Column List·Î ´ëÃ¼ÇÑ´Ù.
- *               ¸¸¾à »õ·Î¿î Column List¶ÇÇÑ ÁöÁ¤µÈ°ÍÀÌ ¾ø´Ù¸é TableÀÇ Column
- *               List´Â NULL·Î SettingµÈ´Ù.
+ * Description : Table Headerì— ìƒˆë¡œìš´ Column Listì •ë³´ë¥¼ Settingí•œë‹¤. ë§Œì•½
+ *               ê¸°ì¡´ Column ì •ë³´ê°€ ìˆë‹¤ë©´ ì‚­ì œí•˜ê³  ìƒˆë¡œìš´ Column Listë¡œ ëŒ€ì²´í•œë‹¤.
+ *               ë§Œì•½ ìƒˆë¡œìš´ Column Listë˜í•œ ì§€ì •ëœê²ƒì´ ì—†ë‹¤ë©´ Tableì˜ Column
+ *               ListëŠ” NULLë¡œ Settingëœë‹¤.
  *
  * aTrans       - [IN] Transaction Pointer
  * aTableHeader - [IN] Table Header Pointer
- * aColumnsList - [IN] Column List   : ÁöÁ¤ÇÒ ColumnÀÌ ¾ø´Ù¸é NULL·Î
- * aColumnCnt   - [IN] Column Count  : ÁöÁ¤ÇÒ ColumnÀÌ ¾ø´Ù¸é 0
- * aColumnSize  - [IN] Column Size   : ÁöÁ¤ÇÒ ColumnÀÌ ¾ø´Ù¸é 0
+ * aColumnsList - [IN] Column List   : ì§€ì •í•  Columnì´ ì—†ë‹¤ë©´ NULLë¡œ
+ * aColumnCnt   - [IN] Column Count  : ì§€ì •í•  Columnì´ ì—†ë‹¤ë©´ 0
+ * aColumnSize  - [IN] Column Size   : ì§€ì •í•  Columnì´ ì—†ë‹¤ë©´ 0
  ***********************************************************************/
 IDE_RC smcTable::setColumnAtTableHeader( void*                aTrans,
                                          smcTableHeader*      aTableHeader,
@@ -1577,7 +1577,7 @@ IDE_RC smcTable::setColumnAtTableHeader( void*                aTrans,
 
     IDE_ASSERT( aColumnsList != NULL && aColumnSize != 0 );
 
-    /* ±âÁ¸ÀÇ Column List À» »èÁ¦ÇÑ´Ù. */
+    /* ê¸°ì¡´ì˜ Column List ì„ ì‚­ì œí•œë‹¤. */
     if(aTableHeader->mColumns.fstPieceOID != SM_NULL_OID)
     {
         sColumnList = (smiColumnList *)aColumnsList;
@@ -1599,8 +1599,8 @@ IDE_RC smcTable::setColumnAtTableHeader( void*                aTrans,
             }
             else
             {
-                // BUG-44814 DDL ¼öÇà½Ã Å×ÀÌºíÀÌ Àç»ı¼ºµÇ´Â °æ¿ì ¼öÁıµÈ Åë°è Á¤º¸¸¦ DDL ¼öÇàÀüÀ¸·Î º¹±¸ÇØ¾ß ÇÕ´Ï´Ù.
-                // »õ·Î¿î smiColumn À» set ÇÒ¶§ ±âÁ¸ÀÇ Åë°èÁ¤º¸¸¦ À¯ÁöÇÑ´Ù.
+                // BUG-44814 DDL ìˆ˜í–‰ì‹œ í…Œì´ë¸”ì´ ì¬ìƒì„±ë˜ëŠ” ê²½ìš° ìˆ˜ì§‘ëœ í†µê³„ ì •ë³´ë¥¼ DDL ìˆ˜í–‰ì „ìœ¼ë¡œ ë³µêµ¬í•´ì•¼ í•©ë‹ˆë‹¤.
+                // ìƒˆë¡œìš´ smiColumn ì„ set í• ë•Œ ê¸°ì¡´ì˜ í†µê³„ì •ë³´ë¥¼ ìœ ì§€í•œë‹¤.
                 idlOS::memcpy( (void*)&sNewColumn->mStat, &sOrgColumn->mStat, ID_SIZEOF(smiColumnStat) );
             }
         }//for
@@ -1617,7 +1617,7 @@ IDE_RC smcTable::setColumnAtTableHeader( void*                aTrans,
         }
         else
         {
-            /* Nothing to do. inmode ´Â fixed record¿¡¼­ ÇÔ²² Ã³¸®µÈ´Ù. */
+            /* Nothing to do. inmode ëŠ” fixed recordì—ì„œ í•¨ê»˜ ì²˜ë¦¬ëœë‹¤. */
         }
     }
 
@@ -1628,9 +1628,9 @@ IDE_RC smcTable::setColumnAtTableHeader( void*                aTrans,
                                  &sVCPieceOID )
               != IDE_SUCCESS );
 
-    // BUG-28356 [QP]½Ç½Ã°£ add column Á¦¾à Á¶°Ç¿¡¼­
-    //           lob column¿¡ ´ëÇÑ Á¦¾à Á¶°Ç »èÁ¦ÇØ¾ß ÇÔ
-    // TableÀÇ Lob ColumnÀÇ ¼ö¸¦ °è»êÇÑ´Ù.
+    // BUG-28356 [QP]ì‹¤ì‹œê°„ add column ì œì•½ ì¡°ê±´ì—ì„œ
+    //           lob columnì— ëŒ€í•œ ì œì•½ ì¡°ê±´ ì‚­ì œí•´ì•¼ í•¨
+    // Tableì˜ Lob Columnì˜ ìˆ˜ë¥¼ ê³„ì‚°í•œë‹¤.
     sLobColCnt          = 0;
     sUnitedVarColCnt    = 0;
     for( sColumnList = (smiColumnList *)aColumnsList;
@@ -1654,8 +1654,8 @@ IDE_RC smcTable::setColumnAtTableHeader( void*                aTrans,
 
     sLength = aColumnCnt * aColumnSize;
     /* ------------------------------------------------
-     * table header¿¡ ÄÃ·³ Á¤º¸ º¯°æ ¹× ·Î±ë
-     * - SMR_LT_UPDATEÀÇ SMR_SMC_TABLEHEADER_UPDATE_COLUMNS
+     * table headerì— ì»¬ëŸ¼ ì •ë³´ ë³€ê²½ ë° ë¡œê¹…
+     * - SMR_LT_UPDATEì˜ SMR_SMC_TABLEHEADER_UPDATE_COLUMNS
      * ----------------------------------------------*/
     IDE_TEST(smrUpdate::updateColumnsAtTableHead(NULL, /* idvSQL* */
                                                  aTrans,
@@ -1675,8 +1675,8 @@ IDE_RC smcTable::setColumnAtTableHeader( void*                aTrans,
     aTableHeader->mUnitedVarColumnCount = sUnitedVarColCnt;
 
     // PROJ-1911
-    // ALTER TABLE ... ADD COLUMN ... ¼öÇà ½Ã,
-    // default value°¡ 'NULL'ÀÎ Ä®·³Àº column count¸¸ º¯°æÇÒ ¼ö ÀÖÀ½
+    // ALTER TABLE ... ADD COLUMN ... ìˆ˜í–‰ ì‹œ,
+    // default valueê°€ 'NULL'ì¸ ì¹¼ëŸ¼ì€ column countë§Œ ë³€ê²½í•  ìˆ˜ ìˆìŒ
     aTableHeader->mColumnCount = aColumnCnt;
 
 
@@ -1684,7 +1684,7 @@ IDE_RC smcTable::setColumnAtTableHeader( void*                aTrans,
     aTableHeader->mColumns.fstPieceOID = sVCPieceOID;
     aTableHeader->mColumns.flag = SM_VCDESC_MODE_OUT;
 
-    /* [4] ÇØ´ç Å×ÀÌºíÀÌ ¼ÓÇÑ ÆäÀÌÁö¸¦ º¯°æ ÆäÀÌÁö·Î µî·Ï */
+    /* [4] í•´ë‹¹ í…Œì´ë¸”ì´ ì†í•œ í˜ì´ì§€ë¥¼ ë³€ê²½ í˜ì´ì§€ë¡œ ë“±ë¡ */
     IDE_TEST(smmDirtyPageMgr::insDirtyPage(
                  SMI_ID_TABLESPACE_SYSTEM_MEMORY_DIC, SM_MAKE_PID(sTableOID))
              != IDE_SUCCESS );
@@ -1707,12 +1707,12 @@ IDE_RC smcTable::setColumnAtTableHeader( void*                aTrans,
 }
 
 /***********************************************************************
- * Description : Column List·Î ºÎÅÍ ColumnÀÇ °¹¼ö¿Í Fixed RowÀÇ Å©±â¸¦ ±¸ÇÑ´Ù.
+ * Description : Column Listë¡œ ë¶€í„° Columnì˜ ê°¯ìˆ˜ì™€ Fixed Rowì˜ í¬ê¸°ë¥¼ êµ¬í•œë‹¤.
  *
  * aTableType    - [IN] Table Type
  * aColList      - [IN] Column List
- * aColCnt       - [OUT] Column °¹¼ö
- * aFixedRowSize - [OUT] Fixed RowÀÇ Å©±â
+ * aColCnt       - [OUT] Column ê°¯ìˆ˜
+ * aFixedRowSize - [OUT] Fixed Rowì˜ í¬ê¸°
  ***********************************************************************/
 IDE_RC smcTable::validateAndGetColCntAndFixedRowSize(const UInt           aTableType,
                                                      const smiColumnList *aColumnList,
@@ -1851,48 +1851,48 @@ IDE_RC smcTable::validateAndGetColCntAndFixedRowSize(const UInt           aTable
 
 
 /***********************************************************************
- * Description :  PROJ-1362 QP - Large Record & Internal LOB Áö¿ø.
- *                tableÀÇ ÄÃ·³°³¼ö¿Í ÀÎµ¦½º °³¼ö Á¦¾à Ç®±â.
- *  TableÀÇ Column Á¤º¸¸¦ Variable slot(µé)À» ÇÒ´çÇÏ¿© ÀúÀåÇÑ´Ù.
+ * Description :  PROJ-1362 QP - Large Record & Internal LOB ì§€ì›.
+ *                tableì˜ ì»¬ëŸ¼ê°œìˆ˜ì™€ ì¸ë±ìŠ¤ ê°œìˆ˜ ì œì•½ í’€ê¸°.
+ *  Tableì˜ Column ì •ë³´ë¥¼ Variable slot(ë“¤)ì„ í• ë‹¹í•˜ì—¬ ì €ì¥í•œë‹¤.
  *  - code design
- * ÇöÀç ÄÃ·³ piece±æÀÌ :=0;
- * ÀÌÀü variable slot OID := SM_NULL_OID;
- * SMP_MAX_VAR_SIZEÅ©±â ¸¸Å­ ÄÃ·³ piece¹öÆÛ ÇÒ´ç.
- * ÇöÀç column :=  aColumns;
+ * í˜„ì¬ ì»¬ëŸ¼ pieceê¸¸ì´ :=0;
+ * ì´ì „ variable slot OID := SM_NULL_OID;
+ * SMP_MAX_VAR_SIZEí¬ê¸° ë§Œí¼ ì»¬ëŸ¼ pieceë²„í¼ í• ë‹¹.
+ * í˜„ì¬ column :=  aColumns;
  * while(true)
  * do
- *   if((ÇöÀç Column Piece+ mtcColumn) > ÄÃ·³ piece ¹öÆÛ ±æÀÌ ¶Ç´Â ÇöÀç ÄÃ·³ == NULL)
+ *   if((í˜„ì¬ Column Piece+ mtcColumn) > ì»¬ëŸ¼ piece ë²„í¼ ê¸¸ì´ ë˜ëŠ” í˜„ì¬ ì»¬ëŸ¼ == NULL)
  *   then
- *      ÇöÀç column piece±æÀÌ¿¡ ÇØ´çÇÏ´Â variable slot ÇÒ´ç;
- *      variable slot body¿¡ ´ëÇÑ physical logging;
- *      ÇöÀç ÄÃ·³ piece±æÀÌ ¸¸Å­  variable slotÀ¸·Î memory copy;
- *      ÇÒ´çÇÑ variable slotÀÇ ±æÀÌ¸¦ ÇöÀçÄÃ·³ piece±æÀÌ·Î ¼³Á¤;
- *      //ÀÌÀü¿¡ ÇÒ´çÇÑ variable slotÀÇ next(mOID)¼³Á¤ÀÛ¾÷.
- *      if (ÀÌÀü variable slot OID != SM_NULL_OID)
+ *      í˜„ì¬ column pieceê¸¸ì´ì— í•´ë‹¹í•˜ëŠ” variable slot í• ë‹¹;
+ *      variable slot bodyì— ëŒ€í•œ physical logging;
+ *      í˜„ì¬ ì»¬ëŸ¼ pieceê¸¸ì´ ë§Œí¼  variable slotìœ¼ë¡œ memory copy;
+ *      í• ë‹¹í•œ variable slotì˜ ê¸¸ì´ë¥¼ í˜„ì¬ì»¬ëŸ¼ pieceê¸¸ì´ë¡œ ì„¤ì •;
+ *      //ì´ì „ì— í• ë‹¹í•œ variable slotì˜ next(mOID)ì„¤ì •ì‘ì—….
+ *      if (ì´ì „ variable slot OID != SM_NULL_OID)
  *      then
- *        ÀÌÀü variable slotÀÇ next(mOID)¸¦ ÇÒ´çµÈ variable slotÀ¸·Î º¯°æ¿¡
- *                ´ëÇÑ physical logging;
- *        ÀÌÀü variable slotÀÇ next(mOID)¸¦ ÇÒ´çµÈ variable slotÀ¸·Î ¸Ş¸ğ¸® º¯°æ;
- *         Dirty Page List¿¡ ÀÌÀü variable slotÆäÀÌÁö Ãß°¡;
+ *        ì´ì „ variable slotì˜ next(mOID)ë¥¼ í• ë‹¹ëœ variable slotìœ¼ë¡œ ë³€ê²½ì—
+ *                ëŒ€í•œ physical logging;
+ *        ì´ì „ variable slotì˜ next(mOID)ë¥¼ í• ë‹¹ëœ variable slotìœ¼ë¡œ ë©”ëª¨ë¦¬ ë³€ê²½;
+ *         Dirty Page Listì— ì´ì „ variable slotí˜ì´ì§€ ì¶”ê°€;
  *      else
- *          table headerÀÇ mColumns OID¿¡ µî·ÏÇÏ±â À§ÇÏ¿©,
- *             Ã¹¹øÂ° variable slotÀ» ±â¾ïÇÑ´Ù;
+ *          table headerì˜ mColumns OIDì— ë“±ë¡í•˜ê¸° ìœ„í•˜ì—¬,
+ *             ì²«ë²ˆì§¸ variable slotì„ ê¸°ì–µí•œë‹¤;
  *      fi
- *      Æ®·£Àè¼Ç rollback½Ã¿¡ ÇÒ´çµÈ new variable slotÀ»
- *      memory ager°¡ removeÇÒ¼ö ÀÖµµ·Ï SM_OID_NEW_VARIABLE_SLOTÀ» Ç¥½Ã;
- *      Dirty Page List¿¡ ÇöÀç ÇÒ´çÇÑ variable slotÀÌ ¼ÓÇÑ ÆäÀÌÁöµî·Ï;
- *      if(ÇöÀç ÄÃ·³ == NULL)
+ *      íŠ¸ëœì­ì…˜ rollbackì‹œì— í• ë‹¹ëœ new variable slotì„
+ *      memory agerê°€ removeí• ìˆ˜ ìˆë„ë¡ SM_OID_NEW_VARIABLE_SLOTì„ í‘œì‹œ;
+ *      Dirty Page Listì— í˜„ì¬ í• ë‹¹í•œ variable slotì´ ì†í•œ í˜ì´ì§€ë“±ë¡;
+ *      if(í˜„ì¬ ì»¬ëŸ¼ == NULL)
  *      then
  *        break;
  *      fi
  *
- *      ÀÌÀü variable slot OID °»½Å;
- *      ÄÃ·³ piece buffer ÃÊ±âÈ­;
- *      ÇöÀç column piece ±æÀÌ :=0;
+ *      ì´ì „ variable slot OID ê°±ì‹ ;
+ *      ì»¬ëŸ¼ piece buffer ì´ˆê¸°í™”;
+ *      í˜„ì¬ column piece ê¸¸ì´ :=0;
  *   fi
- *   mtcColumnÅ©±âÀÎ aColumnSize¸¸Å­ ÄÃ·³ piece buffer¿¡ º¹»ç¸¦ ÇÑ´Ù;
- *   ÇöÀç ÄÃ·³ piece ¹öÆÛ ±æÀÌ °»½Å;
- *  ´ÙÀ½ ÄÃ·³À¸·Î ÀÌµ¿;
+ *   mtcColumní¬ê¸°ì¸ aColumnSizeë§Œí¼ ì»¬ëŸ¼ piece bufferì— ë³µì‚¬ë¥¼ í•œë‹¤;
+ *   í˜„ì¬ ì»¬ëŸ¼ piece ë²„í¼ ê¸¸ì´ ê°±ì‹ ;
+ *  ë‹¤ìŒ ì»¬ëŸ¼ìœ¼ë¡œ ì´ë™;
  *done  //end while
  ***********************************************************************/
 IDE_RC smcTable::storeTableColumns( void*                  aTrans,
@@ -1921,15 +1921,15 @@ IDE_RC smcTable::storeTableColumns( void*                  aTrans,
     sColumns = (smiColumnList*) aColumns;
     *aHeadVarOID = SM_NULL_OID;
 
-    //ÄÃ·³ piece buffer ÃÊ±âÈ­ .
+    //ì»¬ëŸ¼ piece buffer ì´ˆê¸°í™” .
     idlOS::memset((SChar*)sColumnsPiece,0x00,SMP_VC_PIECE_MAX_SIZE);
     for(i=0;  ;i++ )
     {
-        // Å×ÀÌºí ÄÃ·³°¹¼ö°¡ SMI_COLUMN_ID_MAXIMUMÀ» ÃÊ°úÇÏ¸é ¿¡·¯.
+        // í…Œì´ë¸” ì»¬ëŸ¼ê°¯ìˆ˜ê°€ SMI_COLUMN_ID_MAXIMUMì„ ì´ˆê³¼í•˜ë©´ ì—ëŸ¬.
         IDE_TEST_RAISE( i > SMI_COLUMN_ID_MAXIMUM,
                         maximum_column_count_error );
-        // (ÇöÀç Column Piece+ mtcColumn) > ÄÃ·³ piece ¹öÆÛ±æÀÌ ¶Ç´Â ÇöÀç ÄÃ·³ == NULL ÀÌ¸é
-        // variable slotÇÒ´ç ¹× ºÎºĞ ÄÃ·³ Á¤º¸ ÀúÀå.
+        // (í˜„ì¬ Column Piece+ mtcColumn) > ì»¬ëŸ¼ piece ë²„í¼ê¸¸ì´ ë˜ëŠ” í˜„ì¬ ì»¬ëŸ¼ == NULL ì´ë©´
+        // variable slotí• ë‹¹ ë° ë¶€ë¶„ ì»¬ëŸ¼ ì •ë³´ ì €ì¥.
         if( (( sCurColumnsPieceLen + aColumnSize ) > SMP_VC_PIECE_MAX_SIZE )
             || ( sColumns == NULL ) )
         {
@@ -1942,7 +1942,7 @@ IDE_RC smcTable::storeTableColumns( void*                  aTrans,
                 sPieceType = SM_VCPIECE_TYPE_MEMORY_COLUMN;
             }
 
-            //ÇöÀç column piece±æÀÌ¿¡ ÇØ´çÇÏ´Â variable slot ÇÒ´ç.
+            //í˜„ì¬ column pieceê¸¸ì´ì— í•´ë‹¹í•˜ëŠ” variable slot í• ë‹¹.
             IDE_TEST( smpVarPageList::allocSlot(
                           aTrans,
                           SMI_ID_TABLESPACE_SYSTEM_MEMORY_DIC,
@@ -1954,7 +1954,7 @@ IDE_RC smcTable::storeTableColumns( void*                  aTrans,
                           (SChar**)&sVCPieceHeader,
                           sPieceType ) != IDE_SUCCESS);
 
-            //variable slot body¿¡ ´ëÇÑ physical logging.
+            //variable slot bodyì— ëŒ€í•œ physical logging.
             IDE_TEST(smrUpdate::updateVarRow(
                          NULL, /* idvSQL* */
                          aTrans,
@@ -1964,15 +1964,15 @@ IDE_RC smcTable::storeTableColumns( void*                  aTrans,
                          sCurColumnsPieceLen) != IDE_SUCCESS);
 
 
-            //ÇöÀç ÄÃ·³ piece±æÀÌ ¸¸Å­  variable slotÀ¸·Î memory copy.
+            //í˜„ì¬ ì»¬ëŸ¼ pieceê¸¸ì´ ë§Œí¼  variable slotìœ¼ë¡œ memory copy.
             sVarData = (SChar*)(sVCPieceHeader+1);
 
             idlOS::memcpy(sVarData,(SChar*)sColumnsPiece, sCurColumnsPieceLen);
 
-            //ÇÒ´çÇÑ variable slotÀÇ ±æÀÌ¸¦ ÇöÀçÄÃ·³ piece±æÀÌ·Î ¼³Á¤.
+            //í• ë‹¹í•œ variable slotì˜ ê¸¸ì´ë¥¼ í˜„ì¬ì»¬ëŸ¼ pieceê¸¸ì´ë¡œ ì„¤ì •.
             sVCPieceHeader->length = sCurColumnsPieceLen;
 
-            //ÀÌÀü¿¡ ÇÒ´çÇÑ variable slotÀÇ next(mOID)¼³Á¤ÀÛ¾÷.
+            //ì´ì „ì— í• ë‹¹í•œ variable slotì˜ next(mOID)ì„¤ì •ì‘ì—….
             if(sPreVCPieceOID != SM_NULL_OID)
             {
                 IDE_ASSERT( smmManager::getOIDPtr( 
@@ -1985,8 +1985,8 @@ IDE_RC smcTable::storeTableColumns( void*                  aTrans,
 
                 sAftVCPieceHeader.nxtPieceOID = sVCPieceOID;
 
-                //ÀÌÀü variable slotÀÇ next(mOID)¸¦ ÇÒ´çµÈ variable slotÀ¸·Î º¯°æ¿¡
-                //´ëÇÑ physical logging.
+                //ì´ì „ variable slotì˜ next(mOID)ë¥¼ í• ë‹¹ëœ variable slotìœ¼ë¡œ ë³€ê²½ì—
+                //ëŒ€í•œ physical logging.
                 IDE_TEST( smrUpdate::updateVarRowHead(NULL, /* idvSQL* */
                                                       aTrans,
                                                       SMI_ID_TABLESPACE_SYSTEM_MEMORY_DIC,
@@ -1996,9 +1996,9 @@ IDE_RC smcTable::storeTableColumns( void*                  aTrans,
                           != IDE_SUCCESS);
 
 
-                //ÀÌÀü variable slotÀÇ next(mOID)¸¦ ÇÒ´çµÈ variable slotÀ¸·Î ¸Ş¸ğ¸® º¯°æ.
+                //ì´ì „ variable slotì˜ next(mOID)ë¥¼ í• ë‹¹ëœ variable slotìœ¼ë¡œ ë©”ëª¨ë¦¬ ë³€ê²½.
                 sPreVCPieceHeader->nxtPieceOID = sVCPieceOID;
-                //Dirty Page List¿¡ ÀÌÀü variable slotÆäÀÌÁö Ãß°¡.
+                //Dirty Page Listì— ì´ì „ variable slotí˜ì´ì§€ ì¶”ê°€.
                 IDE_TEST( smmDirtyPageMgr::insDirtyPage(
                               SMI_ID_TABLESPACE_SYSTEM_MEMORY_DIC,
                               SM_MAKE_PID(sPreVCPieceOID))
@@ -2006,12 +2006,12 @@ IDE_RC smcTable::storeTableColumns( void*                  aTrans,
             }//if sPreVCPieceOID  != SM_NULL_OID
             else
             {
-                //table headerÀÇ mColumns OID¿¡ µî·ÏÇÏ±â À§ÇÏ¿©,
-                //Ã¹¹øÂ° variable slotÀ» ±â¾ïÇÑ´Ù.
+                //table headerì˜ mColumns OIDì— ë“±ë¡í•˜ê¸° ìœ„í•˜ì—¬,
+                //ì²«ë²ˆì§¸ variable slotì„ ê¸°ì–µí•œë‹¤.
                 *aHeadVarOID = sVCPieceOID;
             }//else
-            //Æ®·£Àè¼Ç rollback½Ã¿¡ ÇÒ´çµÈ new variable slotÀ»
-            //memory ager°¡ removeÇÒ¼ö ÀÖµµ·Ï SM_OID_NEW_VARIABLE_SLOTÀ» Ç¥½Ã.
+            //íŠ¸ëœì­ì…˜ rollbackì‹œì— í• ë‹¹ëœ new variable slotì„
+            //memory agerê°€ removeí• ìˆ˜ ìˆë„ë¡ SM_OID_NEW_VARIABLE_SLOTì„ í‘œì‹œ.
             IDE_TEST( smLayerCallback::addOID(
                           aTrans,
                           SMC_CAT_TABLE->mSelfOID,
@@ -2020,26 +2020,26 @@ IDE_RC smcTable::storeTableColumns( void*                  aTrans,
                           SM_OID_NEW_VARIABLE_SLOT)
                       != IDE_SUCCESS);
 
-            //Dirty Page List¿¡ ÇöÀç ÇÒ´çÇÑ variable slotÀÌ ¼ÓÇÑ ÆäÀÌÁöµî·Ï.
+            //Dirty Page Listì— í˜„ì¬ í• ë‹¹í•œ variable slotì´ ì†í•œ í˜ì´ì§€ë“±ë¡.
             IDE_TEST( smmDirtyPageMgr::insDirtyPage( SMI_ID_TABLESPACE_SYSTEM_MEMORY_DIC,
                                                      SM_MAKE_PID(sVCPieceOID) )
                       != IDE_SUCCESS );
-            // ÄÃ·³ list¸¦ ³¡±îÁö °¬´Ù.
+            // ì»¬ëŸ¼ listë¥¼ ëê¹Œì§€ ê°”ë‹¤.
             if(sColumns == NULL)
             {
                 break;
             }//if sColumns == NULL
 
-            //ÀÌÀü variable slot OID °»½Å.
+            //ì´ì „ variable slot OID ê°±ì‹ .
             sPreVCPieceOID = sVCPieceOID;
-            //ÄÃ·³ piece buffer ÃÊ±âÈ­ .
+            //ì»¬ëŸ¼ piece buffer ì´ˆê¸°í™” .
             idlOS::memset((SChar*)sColumnsPiece, 0x00, SMP_VC_PIECE_MAX_SIZE);
             sCurColumnsPieceLen = 0;
         }//if
 
         sColumn = sColumns->column;
 
-        //mtcColumnÅ©±âÀÎ aColumnSize¸¸Å­ column piece buffer¿¡ º¹»ç¸¦ ÇÑ´Ù.
+        //mtcColumní¬ê¸°ì¸ aColumnSizeë§Œí¼ column piece bufferì— ë³µì‚¬ë¥¼ í•œë‹¤.
         idlOS::memcpy((SChar*)sColumnsPiece+sCurColumnsPieceLen,sColumn,aColumnSize);
 
         if( (sColumn->id & SMI_COLUMN_ID_MASK) == 0)
@@ -2052,9 +2052,9 @@ IDE_RC smcTable::storeTableColumns( void*                  aTrans,
                             id_value_error );
 
         }//else
-        //ÇöÀç ÄÃ·³ piece ¹öÆÛ ±æÀÌ °»½Å.
+        //í˜„ì¬ ì»¬ëŸ¼ piece ë²„í¼ ê¸¸ì´ ê°±ì‹ .
         sCurColumnsPieceLen += aColumnSize;
-        //´ÙÀ½ ÄÃ·³À¸·Î ÀÌµ¿.
+        //ë‹¤ìŒ ì»¬ëŸ¼ìœ¼ë¡œ ì´ë™.
         sColumns = sColumns->next;
     }//for
 
@@ -2077,30 +2077,30 @@ IDE_RC smcTable::storeTableColumns( void*                  aTrans,
 }
 
 /***********************************************************************
- * Description :  PROJ-1362 QP - Large Record & Internal LOB Áö¿ø.
- *                tableÀÇ ÄÃ·³°³¼ö¿Í ÀÎµ¦½º °³¼ö Á¦¾à Ç®±â.
- *  Å×ÀÌºíÀÇ ÄÃ·³Á¤º¸¸¦ ´ã´Â variable slotµéÀ» ÇØÁ¦ÇÏ°í,
- *  Å×ÀÌºí Çì´õÀÇ mColumns.mOID¸¦ null oid·Î ¼³Á¤ÇÑ´Ù.
+ * Description :  PROJ-1362 QP - Large Record & Internal LOB ì§€ì›.
+ *                tableì˜ ì»¬ëŸ¼ê°œìˆ˜ì™€ ì¸ë±ìŠ¤ ê°œìˆ˜ ì œì•½ í’€ê¸°.
+ *  í…Œì´ë¸”ì˜ ì»¬ëŸ¼ì •ë³´ë¥¼ ë‹´ëŠ” variable slotë“¤ì„ í•´ì œí•˜ê³ ,
+ *  í…Œì´ë¸” í—¤ë”ì˜ mColumns.mOIDë¥¼ null oidë¡œ ì„¤ì •í•œë‹¤.
  *  - code design
- *  ¸¶Áö¸· variable slotºÎÅÍ Ã³À½ variable ±îÁö ¿ª¼øÀ¸·Î slotÀ» ÇØÁ¦ÇÏ±â
- *  À§ÇÏ¿© OID stackÀ» ±¸¼º;
- *  while( stackÀÌ empty°¡ ¾Æ´Ò¶§ ±îÁö)
+ *  ë§ˆì§€ë§‰ variable slotë¶€í„° ì²˜ìŒ variable ê¹Œì§€ ì—­ìˆœìœ¼ë¡œ slotì„ í•´ì œí•˜ê¸°
+ *  ìœ„í•˜ì—¬ OID stackì„ êµ¬ì„±;
+ *  while( stackì´ emptyê°€ ì•„ë‹ë•Œ ê¹Œì§€)
  *  do
- *    transactionÀÇ  last undo next LSNÀ» ±â¾ï;
- *    if(stackÀÇ ÇöÀç itemÀÇ ÀÌÀü itemÀÌ Á¸Àç ÇÏ´Â°¡ ?)
+ *    transactionì˜  last undo next LSNì„ ê¸°ì–µ;
+ *    if(stackì˜ í˜„ì¬ itemì˜ ì´ì „ itemì´ ì¡´ì¬ í•˜ëŠ”ê°€ ?)
  *    then
- *       ÇöÀç variable slotÀÇ ÀÌÀü slot next(mOID)¸¦ null·Î º¯°æÇÏ´Â
+ *       í˜„ì¬ variable slotì˜ ì´ì „ slot next(mOID)ë¥¼ nullë¡œ ë³€ê²½í•˜ëŠ”
  *       physical logging;
- *       ÇöÀç variable slotÀÇ ÀÌÀü slot next(mOID)¸¦ null·Î º¯°æ;
- *       Dirty Page List¿¡ ÀÌÀü variable slotÆäÀÌÁö Ãß°¡;
+ *       í˜„ì¬ variable slotì˜ ì´ì „ slot next(mOID)ë¥¼ nullë¡œ ë³€ê²½;
+ *       Dirty Page Listì— ì´ì „ variable slotí˜ì´ì§€ ì¶”ê°€;
  *    else
- *         table headerÀÇ  mColumns OID¸¦  SM_NULL_OIDÀ¸·Î º¯°æÇÏ´Â
+ *         table headerì˜  mColumns OIDë¥¼  SM_NULL_OIDìœ¼ë¡œ ë³€ê²½í•˜ëŠ”
  *         physical logging;
- *         table headerÀÇ  mColumns OID¸¦  SM_NULL_OIDÀ¸·Î º¯°æ;
+ *         table headerì˜  mColumns OIDë¥¼  SM_NULL_OIDìœ¼ë¡œ ë³€ê²½;
  *    fi
- *    catalog table¿¡ ÇöÀç variable slotÀ» ÇØÁ¦ÇÏ¿© ¹İÈ¯ÇÔ;
+ *    catalog tableì— í˜„ì¬ variable slotì„ í•´ì œí•˜ì—¬ ë°˜í™˜í•¨;
  *  done
- *  stack memory  ÇØÁ¦;
+ *  stack memory  í•´ì œ;
  ***********************************************************************/
 IDE_RC smcTable::freeColumns(idvSQL          *aStatistics,
                              void*           aTrans,
@@ -2145,8 +2145,8 @@ IDE_RC smcTable::freeColumns(idvSQL          *aStatistics,
         sLsnNTA2 = smLayerCallback::getLstUndoNxtLSN( aTrans );
         if( (i -1)  >= 0)
         {
-            /* ÇöÀç variable slotÀÇ ÀÌÀü slot next(mOID)¸¦ null·Î
-               º¯°æÇÏ´Â physical logging. */
+            /* í˜„ì¬ variable slotì˜ ì´ì „ slot next(mOID)ë¥¼ nullë¡œ
+               ë³€ê²½í•˜ëŠ” physical logging. */
             IDE_ASSERT( smmManager::getOIDPtr( 
                             SMI_ID_TABLESPACE_SYSTEM_MEMORY_DIC, 
                             sOIDStack.mArr[i-1],
@@ -2165,10 +2165,10 @@ IDE_RC smcTable::freeColumns(idvSQL          *aStatistics,
                                                   &sAftVCPieceHeader)
                       != IDE_SUCCESS);
 
-            //ÇöÀç variable slotÀÇ ÀÌÀü slot next(mOID)¸¦ null·Î º¯°æ.
+            //í˜„ì¬ variable slotì˜ ì´ì „ slot next(mOID)ë¥¼ nullë¡œ ë³€ê²½.
             sPreVCPieceHeader->nxtPieceOID = SM_NULL_OID;
 
-            //Dirty Page List¿¡ ÀÌÀü variable slotÆäÀÌÁö Ãß°¡.
+            //Dirty Page Listì— ì´ì „ variable slotí˜ì´ì§€ ì¶”ê°€.
             IDE_TEST( smmDirtyPageMgr::insDirtyPage(
                           SMI_ID_TABLESPACE_SYSTEM_MEMORY_DIC,
                           SM_MAKE_PID(sOIDStack.mArr[i-1]))
@@ -2176,10 +2176,10 @@ IDE_RC smcTable::freeColumns(idvSQL          *aStatistics,
         }
         else
         {
-            // table headerÀÇ mColumns ÀÇ ½ÃÀÛ variable slot.
+            // table headerì˜ mColumns ì˜ ì‹œì‘ variable slot.
             /* ------------------------------------------------
-             *  table headerÀÇ  column Á¤º¸¿¡ SM_NULL_OID¸¦ ¼³Á¤
-             * - SMR_LT_UPDATEÀÇ SMR_SMC_TABLEHEADER_UPDATE_COLUMNS ·Î±ë
+             *  table headerì˜  column ì •ë³´ì— SM_NULL_OIDë¥¼ ì„¤ì •
+             * - SMR_LT_UPDATEì˜ SMR_SMC_TABLEHEADER_UPDATE_COLUMNS ë¡œê¹…
              * ----------------------------------------------*/
             IDE_TEST( smrUpdate::updateColumnsAtTableHead(NULL, /* idvSQL* */
                                                           aTrans,
@@ -2209,7 +2209,7 @@ IDE_RC smcTable::freeColumns(idvSQL          *aStatistics,
                     == IDE_SUCCESS );
 
         /* ------------------------------------------------
-         * catalog table¿¡ variable slotÀ» ÇØÁ¦ÇÏ¿© ¹İÈ¯ÇÔ.
+         * catalog tableì— variable slotì„ í•´ì œí•˜ì—¬ ë°˜í™˜í•¨.
          * ----------------------------------------------*/
         IDE_TEST( smpVarPageList::freeSlot(aTrans,
                                            SMI_ID_TABLESPACE_SYSTEM_MEMORY_DIC,
@@ -2242,10 +2242,10 @@ IDE_RC smcTable::freeColumns(idvSQL          *aStatistics,
 }
 
 /***********************************************************************
- * Description :  PROJ-1362 QP - Large Record & Internal LOB Áö¿ø.
- *                tableÀÇ ÄÃ·³°³¼ö¿Í ÀÎµ¦½º °³¼ö Á¦¾à Ç®±â.
- *  ¸¶Áö¸· variable slotºÎÅÍ Ã³À½ variable ±îÁö ¿ª¼øÀ¸·Î slotÀ» ÇØÁ¦ÇÏ±â
- *  À§ÇÏ¿© OID stackÀ» ±¸¼ºÇÑ´Ù.
+ * Description :  PROJ-1362 QP - Large Record & Internal LOB ì§€ì›.
+ *                tableì˜ ì»¬ëŸ¼ê°œìˆ˜ì™€ ì¸ë±ìŠ¤ ê°œìˆ˜ ì œì•½ í’€ê¸°.
+ *  ë§ˆì§€ë§‰ variable slotë¶€í„° ì²˜ìŒ variable ê¹Œì§€ ì—­ìˆœìœ¼ë¡œ slotì„ í•´ì œí•˜ê¸°
+ *  ìœ„í•˜ì—¬ OID stackì„ êµ¬ì„±í•œë‹¤.
  ***********************************************************************/
 void smcTable::buildOIDStack(smcTableHeader* aTableHeader,
                              smcOIDStack*    aOIDStack)
@@ -2315,7 +2315,7 @@ IDE_RC smcTable::freeLobSegFunc(idvSQL*           aStatistics,
     {
         sLobCol = (smiColumn*)sLobColumn;
 
-        //´Ù¸¥ TBS¿¡ lob columnÀÌ ÀÖÀ»°æ¿ì ±× tbs°¡ validÇÑÁö °Ë»çÇØ¾ß¸¸ÇÔ.
+        //ë‹¤ë¥¸ TBSì— lob columnì´ ìˆì„ê²½ìš° ê·¸ tbsê°€ validí•œì§€ ê²€ì‚¬í•´ì•¼ë§Œí•¨.
         sInvalidTBS = sctTableSpaceMgr::hasState( sLobCol->colSpace,
                                                   SCT_SS_INVALID_DISK_TBS );
         if( sInvalidTBS == ID_TRUE )
@@ -2323,8 +2323,8 @@ IDE_RC smcTable::freeLobSegFunc(idvSQL*           aStatistics,
             continue;
         }
 
-        // XXX ¾ğÁ¦ colSeg°¡ NULLÀÌ µÇ´Â°¡? refine ½Ã colSeg°¡ NULLÀÌ¾úÁö¸¸
-        // undo½Ã ÀÌ °ªÀÌ ¿øº¹µÈ´Ù.
+        // XXX ì–¸ì œ colSegê°€ NULLì´ ë˜ëŠ”ê°€? refine ì‹œ colSegê°€ NULLì´ì—ˆì§€ë§Œ
+        // undoì‹œ ì´ ê°’ì´ ì›ë³µëœë‹¤.
         if( ( SMI_IS_LOB_COLUMN( sLobCol->flag ) == ID_TRUE )  &&
             ( SC_GRID_IS_NULL( sLobCol->colSeg ) == ID_FALSE ) )
         {
@@ -2350,7 +2350,7 @@ IDE_RC smcTable::freeLobSegFunc(idvSQL*           aStatistics,
 
 
 /***********************************************************************
- * Description : table¿¡ LockÈ¹µæ
+ * Description : tableì— Lockíšë“
  ***********************************************************************/
 IDE_RC smcTable::lockTable( void                * aTrans,
                             smcTableHeader      * aHeader,
@@ -2362,7 +2362,7 @@ IDE_RC smcTable::lockTable( void                * aTrans,
     iduMutex       * sMutex;
 
     /* ------------------------------------------------
-     * [1] DropÇÏ°íÀÚ ÇÏ´Â Table¿¡ ´ëÇÏ¿© X lock ¿äÃ»
+     * [1] Dropí•˜ê³ ì í•˜ëŠ” Tableì— ëŒ€í•˜ì—¬ X lock ìš”ì²­
      * ----------------------------------------------*/
     sLockFlag = aFlag & SMC_LOCK_MASK;
 
@@ -2370,13 +2370,13 @@ IDE_RC smcTable::lockTable( void                * aTrans,
     {
 
         // PRJ-1548 User Memory Tablespace
-        // Å×ÀÌºíÀÇ Å×ÀÌºí½ºÆäÀÌ½ºµé¿¡ ´ëÇÏ¿© INTENTION Àá±İÀ» È¹µæÇÑ´Ù.
+        // í…Œì´ë¸”ì˜ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ë“¤ì— ëŒ€í•˜ì—¬ INTENTION ì ê¸ˆì„ íšë“í•œë‹¤.
         IDE_TEST( sctTableSpaceMgr::lockAndValidateTBS(
                       (void*)aTrans,                  /* smxTrans * */
                       getTableSpaceID((void*)aHeader),/* smcTableHeader* */
-                      aTBSLvOpt,          /* Å×ÀÌºí½ºÆäÀÌ½º Validation ¿É¼Ç */
-                      ID_TRUE,            /* intent lock  ¿©ºÎ */
-                      ID_TRUE,            /* exclusive lock ¿©ºÎ */
+                      aTBSLvOpt,          /* í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ Validation ì˜µì…˜ */
+                      ID_TRUE,            /* intent lock  ì—¬ë¶€ */
+                      ID_TRUE,            /* exclusive lock ì—¬ë¶€ */
                       sctTableSpaceMgr::getDDLLockTimeOut())
                   != IDE_SUCCESS );
 
@@ -2419,15 +2419,15 @@ IDE_RC smcTable::lockTable( void                * aTrans,
 }
 
 /***********************************************************************
- * Description : tableÀÇ À¯È¿¼º °Ë»ç
+ * Description : tableì˜ ìœ íš¨ì„± ê²€ì‚¬
 
-   PRJ-1548 User Memory TableSpace °³³äµµÀÔ
-   Validate Table ¿¡¼­ ´ÙÀ½°ú °°ÀÌ LockÀ» È¹µæÇÑ´Ù.
-   [1] TableÀÇ TableSpace¿¡ ´ëÇØ IX
-   [2] Table¿¡ ´ëÇØ X
-   [3] TableÀÇ Index, Lob Column TableSpace¿¡ ´ëÇØ IX
-   TableÀÇ »óÀ§´Â TableÀÇ TableSpaceÀÌ¸ç ±×¿¡ ´ëÇØ IX¸¦
-   È¹µæÇÑ´Ù.
+   PRJ-1548 User Memory TableSpace ê°œë…ë„ì…
+   Validate Table ì—ì„œ ë‹¤ìŒê³¼ ê°™ì´ Lockì„ íšë“í•œë‹¤.
+   [1] Tableì˜ TableSpaceì— ëŒ€í•´ IX
+   [2] Tableì— ëŒ€í•´ X
+   [3] Tableì˜ Index, Lob Column TableSpaceì— ëŒ€í•´ IX
+   Tableì˜ ìƒìœ„ëŠ” Tableì˜ TableSpaceì´ë©° ê·¸ì— ëŒ€í•´ IXë¥¼
+   íšë“í•œë‹¤.
 
  ***********************************************************************/
 IDE_RC smcTable::validateTable( void                * aTrans,
@@ -2436,15 +2436,15 @@ IDE_RC smcTable::validateTable( void                * aTrans,
                                 UInt                  aFlag )
 {
     /* ------------------------------------------------
-     * [1] TableSpace¿¡ ´ëÇÏ¿© IX lock ¿äÃ»
-     * [2] Table¿¡ ´ëÇÏ¿© X lock ¿äÃ»
+     * [1] TableSpaceì— ëŒ€í•˜ì—¬ IX lock ìš”ì²­
+     * [2] Tableì— ëŒ€í•˜ì—¬ X lock ìš”ì²­
      * ----------------------------------------------*/
     IDE_TEST( lockTable( aTrans,
                          aHeader,
                          aTBSLvOpt,
                          aFlag ) != IDE_SUCCESS );
 
-    /* Table Space¿¡ ´ëÇØ¼­ DDLÀÌ ¹ß»ıÇß´Ù´Â°ÍÀ» Ç¥½Ã*/
+    /* Table Spaceì— ëŒ€í•´ì„œ DDLì´ ë°œìƒí–ˆë‹¤ëŠ”ê²ƒì„ í‘œì‹œ*/
     IDE_TEST( smLayerCallback::addOID( aTrans,
                                        aHeader->mSelfOID,
                                        aHeader->mSelfOID,
@@ -2454,7 +2454,7 @@ IDE_RC smcTable::validateTable( void                * aTrans,
 
     /* ------------------------------------------------
      * [3] validation
-     * Á¦°ÅµÈ tableÀÎÁö È®ÀÎÇÑ´Ù.
+     * ì œê±°ëœ tableì¸ì§€ í™•ì¸í•œë‹¤.
      * ----------------------------------------------*/
     IDE_TEST_RAISE( SMP_SLOT_IS_DROP( ((smpSlotHeader *)aHeader-1) ),
                     table_not_found_error );
@@ -2462,17 +2462,17 @@ IDE_RC smcTable::validateTable( void                * aTrans,
     if ( aFlag == SMC_LOCK_TABLE )
     {
         // fix BUG-17212
-        // Å×ÀÌºíÀÇ Index, Lob ÄÃ·³ °ü·Ã Å×ÀÌºí½ºÆäÀÌ½ºµé¿¡ ´ëÇÏ¿©
-        // INTENTION Àá±İÀ» È¹µæÇÑ´Ù.
+        // í…Œì´ë¸”ì˜ Index, Lob ì»¬ëŸ¼ ê´€ë ¨ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ë“¤ì— ëŒ€í•˜ì—¬
+        // INTENTION ì ê¸ˆì„ íšë“í•œë‹¤.
         /* ------------------------------------------------
-         * [1] TableSpace¿¡ ´ëÇÏ¿© IX lock ¿äÃ»
+         * [1] TableSpaceì— ëŒ€í•˜ì—¬ IX lock ìš”ì²­
          * ----------------------------------------------*/
         IDE_TEST( sctTableSpaceMgr::lockAndValidateRelTBSs(
                   (void*)aTrans,    /* smxTrans* */
                   (void*)aHeader,   /* smcTableHeader */
                   aTBSLvOpt,        /* TBS Lock Validation Option */
-                  ID_TRUE,          /* intent lock  ¿©ºÎ */
-                  ID_TRUE,          /* exclusive lock ¿©ºÎ */
+                  ID_TRUE,          /* intent lock  ì—¬ë¶€ */
+                  ID_TRUE,          /* exclusive lock ì—¬ë¶€ */
                   sctTableSpaceMgr::getDDLLockTimeOut()) /* wait lock timeout */
                 != IDE_SUCCESS );
     }
@@ -2489,39 +2489,39 @@ IDE_RC smcTable::validateTable( void                * aTrans,
 }
 
 /***********************************************************************
- * Description : table Á¦°Å (°øÅë)
- * Å×ÀÌºí Å¸ÀÔ¿¡ µû¶ó¼­ pending operationÀ» µî·ÏÇÏ¿©¾ß ÇÑ´Ù.
- * memory tableÀÇ °æ¿ì¿¡´Â ager¿¡ ÀÇÇØ aging ¼öÇà½Ã smcTable::dropTablePendingÀÌ
- * È£Ãâ µÇ¸ç, disk tableÀÇ °æ¿ì¿¡´Â TSS¿¡ pending operation¿¡ ´ëÇÑ table OID
- * ¼³Á¤ÇÏ¿© disk G.C¿¡ ÀÇÇØ Ã³¸®ÇÏµµ·Ï ÇÑ´Ù.
+ * Description : table ì œê±° (ê³µí†µ)
+ * í…Œì´ë¸” íƒ€ì…ì— ë”°ë¼ì„œ pending operationì„ ë“±ë¡í•˜ì—¬ì•¼ í•œë‹¤.
+ * memory tableì˜ ê²½ìš°ì—ëŠ” agerì— ì˜í•´ aging ìˆ˜í–‰ì‹œ smcTable::dropTablePendingì´
+ * í˜¸ì¶œ ë˜ë©°, disk tableì˜ ê²½ìš°ì—ëŠ” TSSì— pending operationì— ëŒ€í•œ table OID
+ * ì„¤ì •í•˜ì—¬ disk G.Cì— ì˜í•´ ì²˜ë¦¬í•˜ë„ë¡ í•œë‹¤.
  *
  * - 2nd. code design
- *   + table validation Ã³¸®
- *   + table headerÀÇ drop flag¸¦ ¼³Á¤ ¹× ·Î±ë
- *     : SMR_LT_UPDATEÀÇ SMR_SMC_PERS_SET_FIX_ROW_DROP_FLAG
- *     : drop flag¿¡ SMP_SLOT_DROP_TRUE ¼³Á¤
- *     : dirtypage µî·Ï
- *   + table Å¸ÀÔ¿¡ µû¶ó drop pending ¿¬»ê µî·Ï(temporary tableÀº Á¦¿Ü)
+ *   + table validation ì²˜ë¦¬
+ *   + table headerì˜ drop flagë¥¼ ì„¤ì • ë° ë¡œê¹…
+ *     : SMR_LT_UPDATEì˜ SMR_SMC_PERS_SET_FIX_ROW_DROP_FLAG
+ *     : drop flagì— SMP_SLOT_DROP_TRUE ì„¤ì •
+ *     : dirtypage ë“±ë¡
+ *   + table íƒ€ì…ì— ë”°ë¼ drop pending ì—°ì‚° ë“±ë¡(temporary tableì€ ì œì™¸)
  *     if (memory table)
- *       : ager¿¡ ÀÇÇØ Ã³¸®
- *       - SM_OID_DROP_TABLE Ç¥½ÃÇÏ¿© Æ®·£Àè¼Ç commit½Ã¿¡
- *         slot header¿¡ delete bit¸¦ ¼³Á¤ÇÏ°í, ager¿¡ ÀÇÇØ
- *         ½ÇÁ¦ drop ÇÏ°Ô ÇÑ´Ù.
- *       - ¸¸¾à tableÀÌ unpin »óÅÂ¶ó¸é, ager¿¡ ÀÇÇØ¼­ table
- *          backup fileÀ» Á¦°ÅÇÏµµ·Ï ÇÑ´Ù.
+ *       : agerì— ì˜í•´ ì²˜ë¦¬
+ *       - SM_OID_DROP_TABLE í‘œì‹œí•˜ì—¬ íŠ¸ëœì­ì…˜ commitì‹œì—
+ *         slot headerì— delete bitë¥¼ ì„¤ì •í•˜ê³ , agerì— ì˜í•´
+ *         ì‹¤ì œ drop í•˜ê²Œ í•œë‹¤.
+ *       - ë§Œì•½ tableì´ unpin ìƒíƒœë¼ë©´, agerì— ì˜í•´ì„œ table
+ *          backup fileì„ ì œê±°í•˜ë„ë¡ í•œë‹¤.
  *     else if (disk table)
- *       : disk G.C¿¡ ÀÇÇØ Ã³¸®
- *       - mtx ½ÃÀÛ (SMR_LT_DRDB, SMR_OP_NULL)
- *       - Æ®·£Àè¼ÇÀ¸·ÎºÎÅÍ tss RID¸¦ ¾ò´Â´Ù.
- *       - ÇØ´ç tss RID°¡ Æ÷ÇÔµÈ page¸¦ X_LATCH ¸ğµå·Î fix ½ÃÅ²´Ù.
- *       - tss¿¡ pending flag(SDR_4BYTES)¸¦ ¼³Á¤ ¹× ·Î±ë
- *       - Á¦°ÅÇÒ table OID¸¦ ¼³Á¤ ¹× ·Î±ë (SDR_8BYTES)
+ *       : disk G.Cì— ì˜í•´ ì²˜ë¦¬
+ *       - mtx ì‹œì‘ (SMR_LT_DRDB, SMR_OP_NULL)
+ *       - íŠ¸ëœì­ì…˜ìœ¼ë¡œë¶€í„° tss RIDë¥¼ ì–»ëŠ”ë‹¤.
+ *       - í•´ë‹¹ tss RIDê°€ í¬í•¨ëœ pageë¥¼ X_LATCH ëª¨ë“œë¡œ fix ì‹œí‚¨ë‹¤.
+ *       - tssì— pending flag(SDR_4BYTES)ë¥¼ ì„¤ì • ë° ë¡œê¹…
+ *       - ì œê±°í•  table OIDë¥¼ ì„¤ì • ë° ë¡œê¹… (SDR_8BYTES)
  *       - mtx commit
  *     endif
  *
  * - RECOVERY
  *
- *  # table Á¦°Å (* disk-table Á¦°Å)
+ *  # table ì œê±° (* disk-table ì œê±°)
  *
  *  (0) (1)            (2)            (3)      (4)
  *   |---|--------------|--------------|--------|--------> time
@@ -2534,23 +2534,23 @@ IDE_RC smcTable::validateTable( void                * aTrans,
  *
  *  # Disk-Table Recovery Issue
  *
- *  - (1)±îÁö ·Î±ëÇÏ¿´´Ù¸é
- *    + smxTrans::abort ¼öÇàÇÑ´Ù.
- *      : ÀÌ¶§ ÇÒ´çµÇ¾ú´ø tss¿¡ ´ëÇÑ free¸¦ ¼öÇàÇÑ´Ù.
+ *  - (1)ê¹Œì§€ ë¡œê¹…í•˜ì˜€ë‹¤ë©´
+ *    + smxTrans::abort ìˆ˜í–‰í•œë‹¤.
+ *      : ì´ë•Œ í• ë‹¹ë˜ì—ˆë˜ tssì— ëŒ€í•œ freeë¥¼ ìˆ˜í–‰í•œë‹¤.
  *
- *  - (2)±îÁö ·Î±ëÇÏ¿´´Ù¸é
- *    + (2)¿¡ ´ëÇÑ undo¸¦ Ã³¸®ÇÑ´Ù.
- *    + smxTrans::abort ¼öÇàÇÑ´Ù.
+ *  - (2)ê¹Œì§€ ë¡œê¹…í•˜ì˜€ë‹¤ë©´
+ *    + (2)ì— ëŒ€í•œ undoë¥¼ ì²˜ë¦¬í•œë‹¤.
+ *    + smxTrans::abort ìˆ˜í–‰í•œë‹¤.
  *
- *  - (3)±îÁö ·Î±ëÇÏ¿´´Ù¸é
- *    + (2)¿¡ ´ëÇÑ undo¸¦ Ã³¸®ÇÑ´Ù.
- *    + smxTrans::abort ¼öÇàÇÑ´Ù.
+ *  - (3)ê¹Œì§€ ë¡œê¹…í•˜ì˜€ë‹¤ë©´
+ *    + (2)ì— ëŒ€í•œ undoë¥¼ ì²˜ë¦¬í•œë‹¤.
+ *    + smxTrans::abort ìˆ˜í–‰í•œë‹¤.
  *
- *  - commitµÇ¾ú´Ù¸é tx commit °úÁ¤¿¡¼­
- *    tbl-hdrÀÇ slotÀÇ SCN¿¡ delete bit¸¦ ¼³Á¤ÇÑ´Ù.
- *    ±× ÈÄ, disk GC¿¡ ÀÇÇØ¼­ drop table pending ¿¬»êÀ»
- *    ¼öÇàÇÑ´Ù. dropTablePendingÀº ´ÙÀ½°ú °°´Ù. (b)(c)
- *    : ´õ ÀÚ¼¼ÇÑ »çÇ×Àº dropTablePendingÀ» Âü°í
+ *  - commitë˜ì—ˆë‹¤ë©´ tx commit ê³¼ì •ì—ì„œ
+ *    tbl-hdrì˜ slotì˜ SCNì— delete bitë¥¼ ì„¤ì •í•œë‹¤.
+ *    ê·¸ í›„, disk GCì— ì˜í•´ì„œ drop table pending ì—°ì‚°ì„
+ *    ìˆ˜í–‰í•œë‹¤. dropTablePendingì€ ë‹¤ìŒê³¼ ê°™ë‹¤. (b)(c)
+ *    : ë” ìì„¸í•œ ì‚¬í•­ì€ dropTablePendingì„ ì°¸ê³ 
  *
  *      (a)    (b)                 (c)
  *       |------|-------------------|-----------> time
@@ -2561,11 +2561,11 @@ IDE_RC smcTable::validateTable( void                * aTrans,
  *              in tbl-hdr         (NTA OP NULL)
  *              (R/U)
  *
- *      ¤¡. (b)±îÁö¸¸ ·Î±ëÇß´Ù¸é (b)·Î±×¿¡ ´ëÇÏ¿© undo°¡ ¼öÇàµÇ¸ç ´ÙÀ½°ú
- *          °°ÀÌ Ã³¸®µÈ´Ù.
+ *      ã„±. (b)ê¹Œì§€ë§Œ ë¡œê¹…í–ˆë‹¤ë©´ (b)ë¡œê·¸ì— ëŒ€í•˜ì—¬ undoê°€ ìˆ˜í–‰ë˜ë©° ë‹¤ìŒê³¼
+ *          ê°™ì´ ì²˜ë¦¬ëœë‹¤.
  *          => (a)->(b)->(b)'->(a)'->(a)->(b)->(c)->...
  *             NTA            CLR   CLR
- *      ¤¤. (c)±îÁö mtx commitÀÌ µÇ¾ú´Ù¸é
+ *      ã„´. (c)ê¹Œì§€ mtx commitì´ ë˜ì—ˆë‹¤ë©´
  *          => (5)->(a)->(b)->(c)->(d)->..->(5)'->...
  *             NTA                          DUMMY_CLR
  *
@@ -2593,16 +2593,16 @@ IDE_RC smcTable::dropTable( void               * aTrans,
                  sTableType == SMI_TABLE_VOLATILE ||
                  sTableType == SMI_TABLE_REMOTE );
 
-    // [1] À¯È¿ÇÑ tableÀÎÁö È®ÀÎÇÏ°í dropÇÒ ¼ö ÀÖ´Â ÁØºñ¸¦ ÇÑ´Ù.
+    // [1] ìœ íš¨í•œ tableì¸ì§€ í™•ì¸í•˜ê³  dropí•  ìˆ˜ ìˆëŠ” ì¤€ë¹„ë¥¼ í•œë‹¤.
     IDE_TEST( validateTable(aTrans,
                             sHeader,
                             aTBSLvOpt,
                             aFlag) != IDE_SUCCESS );
 
     /* ------------------------------------------------
-     * [2] table Header¿¡¼­ m_drop_flag¸¦ ¼³Á¤ÇÑ´Ù.
+     * [2] table Headerì—ì„œ m_drop_flagë¥¼ ì„¤ì •í•œë‹¤.
      * - Update Type: SMR_SMP_PERS_PRE_DELETE_ROW
-     * - table header°¡ ÀúÀåµÈ fixed slot¿¡ delete flag ¼³Á¤
+     * - table headerê°€ ì €ì¥ëœ fixed slotì— delete flag ì„¤ì •
      * ----------------------------------------------*/
     sPageID = SM_MAKE_PID(sHeader->mSelfOID);
     sState  = 1;
@@ -2621,8 +2621,8 @@ IDE_RC smcTable::dropTable( void               * aTrans,
     SMP_SLOT_SET_DROP( (smpSlotHeader *)sHeader-1 );
 
     /* ------------------------------------------------
-     * [3] DropÇÏ°íÀÚ ÇÏ´Â TableÀ» Pending Operation List¿¡ Ãß°¡ÇÑ´Ù.
-     * memory tableÀº ager¿¡ µî·ÏÇÏ°í, disk tableÀº tss¿¡ µî·ÏÇÑ´Ù.
+     * [3] Dropí•˜ê³ ì í•˜ëŠ” Tableì„ Pending Operation Listì— ì¶”ê°€í•œë‹¤.
+     * memory tableì€ agerì— ë“±ë¡í•˜ê³ , disk tableì€ tssì— ë“±ë¡í•œë‹¤.
      * ----------------------------------------------*/
     IDE_TEST( smLayerCallback::addOID( aTrans,
                                        sHeader->mSelfOID,
@@ -2650,9 +2650,9 @@ IDE_RC smcTable::dropTable( void               * aTrans,
 }
 
 /***********************************************************************
- * Description : alter table °úÁ¤¿¡¼­ exception¹ß»ıÀ¸·Î ÀÎÇÑ undo
- * ÇÏ´Â ·çÆ¾ÀÌ´Ù. disk table¿¡¼­´Â °í·ÁÇÒ ÇÊ¿ä¾ø´Ù. ÀÌ ·çÆ¾Àº ¿ÀÁ÷ Á¤»ó¼öÇà Áß¿¡
- * ¹ß»ıÇÑ abort¿¡ ´ëÇÑ Logical undo¸¦ ¼öÇàÇÑ´Ù.
+ * Description : alter table ê³¼ì •ì—ì„œ exceptionë°œìƒìœ¼ë¡œ ì¸í•œ undo
+ * í•˜ëŠ” ë£¨í‹´ì´ë‹¤. disk tableì—ì„œëŠ” ê³ ë ¤í•  í•„ìš”ì—†ë‹¤. ì´ ë£¨í‹´ì€ ì˜¤ì§ ì •ìƒìˆ˜í–‰ ì¤‘ì—
+ * ë°œìƒí•œ abortì— ëŒ€í•œ Logical undoë¥¼ ìˆ˜í–‰í•œë‹¤.
  ***********************************************************************/
 void  smcTable::changeTableScnForRebuild( smOID aTableOID )
 {
@@ -2671,9 +2671,9 @@ void  smcTable::changeTableScnForRebuild( smOID aTableOID )
 }
 
 /***********************************************************************
- * Description : BUG-33982 session temporary tableÀ» ¼ÒÀ¯ÇÑ SessionÀº
- *               Temporary TableÀ» Ç× »ó º¼ ¼ö ÀÖ¾î¾ß ÇÕ´Ï´Ù.
- *               Table SCNÀ» InitÇÏ¿© Ç×»ó º¼ ¼ö ÀÖ°Ô ÇÑ´Ù.
+ * Description : BUG-33982 session temporary tableì„ ì†Œìœ í•œ Sessionì€
+ *               Temporary Tableì„ í•­ ìƒ ë³¼ ìˆ˜ ìˆì–´ì•¼ í•©ë‹ˆë‹¤.
+ *               Table SCNì„ Inití•˜ì—¬ í•­ìƒ ë³¼ ìˆ˜ ìˆê²Œ í•œë‹¤.
  ***********************************************************************/
 void  smcTable::initTableSCN4TempTable( const void * aSlotHeader )
 {
@@ -2690,20 +2690,20 @@ void  smcTable::initTableSCN4TempTable( const void * aSlotHeader )
 /***********************************************************************
  * Description : for PR-4360 ALTER TABLE
  *
- * - tableÀÇ ÇÒ´çµÈ fixed/var pagelist¸¦ ¸ğµÎ freeÇÏ¿©
- *   system¿¡ ¸Ş¸ğ¸® ¹İÈ¯ÇÑ´Ù.
- * - memory tableÀÇ alter table ±â´ÉÃ³¸®¿¡¸¸ »ç¿ëµÇ´Â ÇÔ¼ö·Î½á
- *   disk table¿¡ ´ëÇÏ¿© Áö¿øÇÏÁö ¾Ê¾Æµµ µÇ´Â ÇÔ¼ö
+ * - tableì˜ í• ë‹¹ëœ fixed/var pagelistë¥¼ ëª¨ë‘ freeí•˜ì—¬
+ *   systemì— ë©”ëª¨ë¦¬ ë°˜í™˜í•œë‹¤.
+ * - memory tableì˜ alter table ê¸°ëŠ¥ì²˜ë¦¬ì—ë§Œ ì‚¬ìš©ë˜ëŠ” í•¨ìˆ˜ë¡œì¨
+ *   disk tableì— ëŒ€í•˜ì—¬ ì§€ì›í•˜ì§€ ì•Šì•„ë„ ë˜ëŠ” í•¨ìˆ˜
  *
- * BUG-30457  memory volatile Å×ÀÌºí¿¡ ´ëÇÑ alter½Ã
- * °ø°£ ºÎÁ·À¸·Î rollbackÀÌ ºÎÁ·ÇÑ »óÈ²ÀÌ¸é ºñÁ¤»ó
- * Á¾·áÇÕ´Ï´Ù.
+ * BUG-30457  memory volatile í…Œì´ë¸”ì— ëŒ€í•œ alterì‹œ
+ * ê³µê°„ ë¶€ì¡±ìœ¼ë¡œ rollbackì´ ë¶€ì¡±í•œ ìƒí™©ì´ë©´ ë¹„ì •ìƒ
+ * ì¢…ë£Œí•©ë‹ˆë‹¤.
  *
- * º» ¿¬»êÀº AlterTable Áß ¿øº» Table Backup ÈÄ È£ÃâµÈ´Ù.
- * µû¶ó¼­ ÀÌ ¿¬»êÀÇ Undo½Ã¿¡´Â, »õ Table Restore½Ã »ç¿ëÇÑ
- * PageµéÀ» DB·Î µ¹·ÁÁÙ ¼ö ÀÖµµ·Ï, »õ Table(aDstHeader)¸¦
- * LoggingÇÑ´Ù. ==> BUG-34438¿¡ÀÇÇØ smiTable::backupTableForAlterTable()·Î
- * ÀÌµ¿ÇÔ
+ * ë³¸ ì—°ì‚°ì€ AlterTable ì¤‘ ì›ë³¸ Table Backup í›„ í˜¸ì¶œëœë‹¤.
+ * ë”°ë¼ì„œ ì´ ì—°ì‚°ì˜ Undoì‹œì—ëŠ”, ìƒˆ Table Restoreì‹œ ì‚¬ìš©í•œ
+ * Pageë“¤ì„ DBë¡œ ëŒë ¤ì¤„ ìˆ˜ ìˆë„ë¡, ìƒˆ Table(aDstHeader)ë¥¼
+ * Loggingí•œë‹¤. ==> BUG-34438ì—ì˜í•´ smiTable::backupTableForAlterTable()ë¡œ
+ * ì´ë™í•¨
  ***********************************************************************/
 
 IDE_RC smcTable::dropTablePageListPending( void           * aTrans,
@@ -2720,7 +2720,7 @@ IDE_RC smcTable::dropTablePageListPending( void           * aTrans,
     sState = 1;
 
     /* PROJ-1594 Volatile TBS */
-    /* volatile tableÀÎÁö memory tableÀÎÁö ÆÇ´ÜÇÏ¿© ·ÎÁ÷À» ºĞ±âÇÑ´Ù. */
+    /* volatile tableì¸ì§€ memory tableì¸ì§€ íŒë‹¨í•˜ì—¬ ë¡œì§ì„ ë¶„ê¸°í•œë‹¤. */
     if( SMI_TABLE_TYPE_IS_VOLATILE( aHeader ) == ID_TRUE )
     {
         IDE_TEST( svpFixedPageList::freePageListToDB( aTrans,
@@ -2768,8 +2768,8 @@ IDE_RC smcTable::dropTablePageListPending( void           * aTrans,
     sState = 0;
     /* BUG-30871 When excuting ALTER TABLE in MRDB, the Private Page Lists of
        new and old table are registered twice. */
-    /* AllocPageList ¹× FreePageList¸¦ ¶§¾î³¾¶§, TransactinoÀÇ
-     * PrivatePageListµµ ¶§¾î³»¾ß ÇÕ´Ï´Ù. */
+    /* AllocPageList ë° FreePageListë¥¼ ë•Œì–´ë‚¼ë•Œ, Transactinoì˜
+     * PrivatePageListë„ ë•Œì–´ë‚´ì•¼ í•©ë‹ˆë‹¤. */
     IDE_TEST( smLayerCallback::dropMemAndVolPrivatePageList( aTrans, aHeader )
               != IDE_SUCCESS );
 
@@ -2798,7 +2798,7 @@ IDE_RC smcTable::dropTablePageListPending( void           * aTrans,
 }
 
 /***********************************************************************
- * Description : max rows¸¦ º¯°æÇÏ°Å³ª, columnÀÇ default value¸¦ º¯°æ
+ * Description : max rowsë¥¼ ë³€ê²½í•˜ê±°ë‚˜, columnì˜ default valueë¥¼ ë³€ê²½
  ***********************************************************************/
 IDE_RC smcTable::modifyTableInfo( void                 * aTrans,
                                   smcTableHeader       * aHeader,
@@ -2833,7 +2833,7 @@ IDE_RC smcTable::modifyTableInfo( void                 * aTrans,
         IDE_TEST_RAISE(sRecordCount > aMaxRow, err_invalid_maxrow);
     }
 
-    // DDLÀÌ ÀÌ¹Ç·Î Table ValidationÀ» ¼öÇàÇÑ´Ù.
+    // DDLì´ ì´ë¯€ë¡œ Table Validationì„ ìˆ˜í–‰í•œë‹¤.
     IDE_TEST( validateTable( aTrans,
                              aHeader,
                              aTBSLvOpt,
@@ -2842,8 +2842,8 @@ IDE_RC smcTable::modifyTableInfo( void                 * aTrans,
 
     if( aColumns != NULL )
     {
-        /* Column List°¡ ValidÇÑÁö °Ë»çÇÏ°í ColumnÀÇ °¹¼ö¿Í Fixed rowÀÇ Å©±â
-           ¸¦ ±¸ÇÑ´Ù.*/
+        /* Column Listê°€ Validí•œì§€ ê²€ì‚¬í•˜ê³  Columnì˜ ê°¯ìˆ˜ì™€ Fixed rowì˜ í¬ê¸°
+           ë¥¼ êµ¬í•œë‹¤.*/
         IDE_TEST( validateAndGetColCntAndFixedRowSize(
                       SMI_GET_TABLE_TYPE( aHeader ),
                       aColumns,
@@ -2853,7 +2853,7 @@ IDE_RC smcTable::modifyTableInfo( void                 * aTrans,
 
         sBfrColCnt = aHeader->mColumnCount;
 
-        /* ÀÌ TableÀÇ ColumnÀÇ Á¤º¸¸¦ Variable¿µ¿ª¿¡ ¼³Á¤ÇÑ´Ù. */
+        /* ì´ Tableì˜ Columnì˜ ì •ë³´ë¥¼ Variableì˜ì—­ì— ì„¤ì •í•œë‹¤. */
         IDE_TEST( setColumnAtTableHeader( aTrans,
                                           aHeader,
                                           aColumns,
@@ -2863,11 +2863,11 @@ IDE_RC smcTable::modifyTableInfo( void                 * aTrans,
 
         if ( SMI_TABLE_TYPE_IS_DISK( aHeader ) == ID_TRUE )
         {
-            /* BUG-28356 [QP]½Ç½Ã°£ add column Á¦¾à Á¶°Ç¿¡¼­
-             *           lob column¿¡ ´ëÇÑ Á¦¾à Á¶°Ç »èÁ¦ÇØ¾ß ÇÔ
-             * ½Ç½Ã°£ Add Disk LOB Column ½Ã Lob Segmentµµ »ı¼ºÇØ ÁÖ¾î¾ß ÇÕ´Ï´Ù.
-             * ±âÁ¸ Columnµé ÀÌÈÄ¿¡ »õ·Î Ãß°¡µÈ ColumnµéÀ» ¼øÈ¸ÇÏ¸é¼­
-             * LOB ColumnÀÌ Á¸ÀçÇÏ¸é LOB Segment¸¦ »ı¼ºÇÕ´Ï´Ù. */
+            /* BUG-28356 [QP]ì‹¤ì‹œê°„ add column ì œì•½ ì¡°ê±´ì—ì„œ
+             *           lob columnì— ëŒ€í•œ ì œì•½ ì¡°ê±´ ì‚­ì œí•´ì•¼ í•¨
+             * ì‹¤ì‹œê°„ Add Disk LOB Column ì‹œ Lob Segmentë„ ìƒì„±í•´ ì£¼ì–´ì•¼ í•©ë‹ˆë‹¤.
+             * ê¸°ì¡´ Columnë“¤ ì´í›„ì— ìƒˆë¡œ ì¶”ê°€ëœ Columnë“¤ì„ ìˆœíšŒí•˜ë©´ì„œ
+             * LOB Columnì´ ì¡´ì¬í•˜ë©´ LOB Segmentë¥¼ ìƒì„±í•©ë‹ˆë‹¤. */
             if ( aHeader->mLobColumnCount != 0  )
             {
                 for ( i = sBfrColCnt ; i < aHeader->mColumnCount ; i++ )
@@ -2908,7 +2908,7 @@ IDE_RC smcTable::modifyTableInfo( void                 * aTrans,
             if ( aIsInitRowTemplate == ID_TRUE )
             {
                 /* PROJ-2399 Row Template
-                 * ¾÷µ¥ÀÌÆ®µÈ columnÁ¤º¸¸¦ ¹ÙÅÁÀ¸·Î RowTemplate¸¦ Àç±¸¼º ÇÑ´Ù. */
+                 * ì—…ë°ì´íŠ¸ëœ columnì •ë³´ë¥¼ ë°”íƒ•ìœ¼ë¡œ RowTemplateë¥¼ ì¬êµ¬ì„± í•œë‹¤. */
                 IDE_TEST( destroyRowTemplate( aHeader )!= IDE_SUCCESS );
                 IDE_TEST( initRowTemplate( NULL,  /* aStatistics */
                                            aHeader,
@@ -2926,7 +2926,7 @@ IDE_RC smcTable::modifyTableInfo( void                 * aTrans,
 
     if( aInfo != NULL )
     {
-        /* »õ·Î¿î TableÀÇ Info Á¤º¸¸¦ À§ÇÏ¿© °ªÀ» ¼³Á¤ÇÑ´Ù */
+        /* ìƒˆë¡œìš´ Tableì˜ Info ì •ë³´ë¥¼ ìœ„í•˜ì—¬ ê°’ì„ ì„¤ì •í•œë‹¤ */
         IDE_TEST(setInfoAtTableHeader(aTrans, aHeader, aInfo, aInfoSize)
                  != IDE_SUCCESS);
     }
@@ -2950,8 +2950,8 @@ IDE_RC smcTable::modifyTableInfo( void                 * aTrans,
 
     if ( aParallelDegree == 0 )
     {
-        // Parallel Degree ¼³Á¤ÀÌ ¾ÈµÊ
-        // ±âÁ¸ÀÇ Parallel Degree¸¦ µû¸£¸é µÊ
+        // Parallel Degree ì„¤ì •ì´ ì•ˆë¨
+        // ê¸°ì¡´ì˜ Parallel Degreeë¥¼ ë”°ë¥´ë©´ ë¨
         aParallelDegree = aHeader->mParallelDegree;
     }
 
@@ -3005,43 +3005,43 @@ IDE_RC smcTable::modifyTableInfo( void                 * aTrans,
 }
 
 /***********************************************************************
- * Description : index »ı¼º(°øÅë)
+ * Description : index ìƒì„±(ê³µí†µ)
  *
- * index »ı¼º°úÁ¤Àº disk/memory table¿¡ °ü°è¾øÀÌ °øÅë
- * index °ü¸®ÀÚ¿¡ ÀÇÇØ Ã³¸®µÇ±â ¶§¹®¿¡ collection layer
- * ¿¡¼­´Â °í·ÁÇÒ °ÍÀÌ ¾ø´Ù.
+ * index ìƒì„±ê³¼ì •ì€ disk/memory tableì— ê´€ê³„ì—†ì´ ê³µí†µ
+ * index ê´€ë¦¬ìì— ì˜í•´ ì²˜ë¦¬ë˜ê¸° ë•Œë¬¸ì— collection layer
+ * ì—ì„œëŠ” ê³ ë ¤í•  ê²ƒì´ ì—†ë‹¤.
  * - 2nd. code design
- *   + table validation Ã³¸®
- *   + index Å¸ÀÔ¿¡ µû¶ó indexheader ÃÊ±âÈ­
- *     : °øÅëÀÎµ¦½º°ü¸®ÀÚÀÇ initIndexHeader¿¡¼­ segment¸¦ ÇÒ´ç
- *     : index segment°¡ »ı¼ºµÇ´Â tablespace id ¸í½Ã °¡´É
- *   + table header¿¡ index Á¤º¸¸¦ ÀúÀåÇÏ±â À§ÇÑ variable
- *     slot ÇÒ´ç
- *     : table¿¡ ±âÁ¸ Index°¡ 1°³ ÀÌ»ó Á¸ÀçÇÏ´Â °æ¿ì
- *       ±âÁ¸ °ªÀ» ÇÒ´ç¹ŞÀº variable slot¿¡ º¹»çÇÏ°í
- *       »õ·Î Ãß°¡ÇÏ´Â index Á¤º¸¸¦ Ãß°¡
- *     : Ãß°¡ÇÏ·Á´Â index°¡ primary key¶ó¸é, slotÀÇ
- *       ¸Ç Ã³À½¿¡ ÀúÀåÇÏ°í, ±âÁ¸ index´Â ±× µÚ·Î ÀúÀå
- *       ±×·¸Áö ¾Ê´Ù¸é ±âÁ¸ index¸¦ ¸Ç Ã³À½¿¡ »õ·Î¿î index¸¦
- *       ¸Ç µÚ·Î ÀúÀåÇÑ´Ù.
- *   + dirty page µî·Ï
- *   + ±âÁ¸ index Á¤º¸¸¦ ÀúÀåÇÑ old variable slotÀÌ Á¸ÀçÇÑ´Ù¸é,
- *     SMP_DELETE_SLOTÀ» ¼³Á¤ÇÑ ÈÄ, Æ®·£Àè¼Ç commit ÈÄ¿¡
- *     ager°¡ Á¦°ÅÇÒ ¼ö ÀÖµµ·Ï SM_OID_OLD_VARIABLE_SLOT Ç¥½Ã
- *   + »õ·Î¿î index Á¤º¸¸¦ ÀúÀåÇÑ new variable slot¿¡ ´ëÇÏ¿©
- *     Æ®·£Àè¼Ç rollback ÈÄ¿¡ ager°¡ Á¦°ÅÇÒ ¼ö ÀÖµµ·Ï
- *     SM_OID_OLD_VARIABLE_SLOT Ç¥½Ã
- *   + »õ·Î¿î index Á¤º¸¸¦ ÀúÀåÇÑ variable slotÀ»
- *     table header¿¡ ¼³Á¤ ¹× ·Î±ë
- *     : table header¿¡ ´ëÇÏ¿© acquire sync
- *     : »õ·Î¿î index »ı¼º
- *     : table header¿¡ ´ëÇÏ¿© release sync
- *   + index »ı¼º¿¡ ´ëÇÑ NTA ·Î±ë - SMR_OP_CREATE_INDEX
- *   + table header º¯°æ¿¡ ´ëÇÑ SM_OID_CHANGED_FIXED_SLOT Ç¥½Ã
+ *   + table validation ì²˜ë¦¬
+ *   + index íƒ€ì…ì— ë”°ë¼ indexheader ì´ˆê¸°í™”
+ *     : ê³µí†µì¸ë±ìŠ¤ê´€ë¦¬ìì˜ initIndexHeaderì—ì„œ segmentë¥¼ í• ë‹¹
+ *     : index segmentê°€ ìƒì„±ë˜ëŠ” tablespace id ëª…ì‹œ ê°€ëŠ¥
+ *   + table headerì— index ì •ë³´ë¥¼ ì €ì¥í•˜ê¸° ìœ„í•œ variable
+ *     slot í• ë‹¹
+ *     : tableì— ê¸°ì¡´ Indexê°€ 1ê°œ ì´ìƒ ì¡´ì¬í•˜ëŠ” ê²½ìš°
+ *       ê¸°ì¡´ ê°’ì„ í• ë‹¹ë°›ì€ variable slotì— ë³µì‚¬í•˜ê³ 
+ *       ìƒˆë¡œ ì¶”ê°€í•˜ëŠ” index ì •ë³´ë¥¼ ì¶”ê°€
+ *     : ì¶”ê°€í•˜ë ¤ëŠ” indexê°€ primary keyë¼ë©´, slotì˜
+ *       ë§¨ ì²˜ìŒì— ì €ì¥í•˜ê³ , ê¸°ì¡´ indexëŠ” ê·¸ ë’¤ë¡œ ì €ì¥
+ *       ê·¸ë ‡ì§€ ì•Šë‹¤ë©´ ê¸°ì¡´ indexë¥¼ ë§¨ ì²˜ìŒì— ìƒˆë¡œìš´ indexë¥¼
+ *       ë§¨ ë’¤ë¡œ ì €ì¥í•œë‹¤.
+ *   + dirty page ë“±ë¡
+ *   + ê¸°ì¡´ index ì •ë³´ë¥¼ ì €ì¥í•œ old variable slotì´ ì¡´ì¬í•œë‹¤ë©´,
+ *     SMP_DELETE_SLOTì„ ì„¤ì •í•œ í›„, íŠ¸ëœì­ì…˜ commit í›„ì—
+ *     agerê°€ ì œê±°í•  ìˆ˜ ìˆë„ë¡ SM_OID_OLD_VARIABLE_SLOT í‘œì‹œ
+ *   + ìƒˆë¡œìš´ index ì •ë³´ë¥¼ ì €ì¥í•œ new variable slotì— ëŒ€í•˜ì—¬
+ *     íŠ¸ëœì­ì…˜ rollback í›„ì— agerê°€ ì œê±°í•  ìˆ˜ ìˆë„ë¡
+ *     SM_OID_OLD_VARIABLE_SLOT í‘œì‹œ
+ *   + ìƒˆë¡œìš´ index ì •ë³´ë¥¼ ì €ì¥í•œ variable slotì„
+ *     table headerì— ì„¤ì • ë° ë¡œê¹…
+ *     : table headerì— ëŒ€í•˜ì—¬ acquire sync
+ *     : ìƒˆë¡œìš´ index ìƒì„±
+ *     : table headerì— ëŒ€í•˜ì—¬ release sync
+ *   + index ìƒì„±ì— ëŒ€í•œ NTA ë¡œê¹… - SMR_OP_CREATE_INDEX
+ *   + table header ë³€ê²½ì— ëŒ€í•œ SM_OID_CHANGED_FIXED_SLOT í‘œì‹œ
  *
  * - RECOVERY
  *
- *  # index »ı¼º½Ã (* disk-index»ı¼º)
+ *  # index ìƒì„±ì‹œ (* disk-indexìƒì„±)
  *
  *  (0) (1)        (2)         {(3)       (4)}       (5)      (6)      (7)
  *   |---|----------|-----------|---------|-----------|--------|--------|--> time
@@ -3049,7 +3049,7 @@ IDE_RC smcTable::modifyTableInfo( void                 * aTrans,
  *     alloc        update      update    *alloc      set     update    NTA
  *     v-slot       new index,  seg rID    segment    delete  index     OP_CREATE
  *     from         header +    on        [NTA->(2)]  flag    oID       INDEX
- *     cat-tbl      ±âÁ¸ index  tbl-hdr               old     on        [NTA->(0)]
+ *     cat-tbl      ê¸°ì¡´ index  tbl-hdr               old     on        [NTA->(0)]
  *    [NTA->(0)]    header      (R/U)                 index   tbl-hdr
  *                  on v-slot                         v-slot  (R/U)
  *                  oID                               (R/U)
@@ -3057,37 +3057,37 @@ IDE_RC smcTable::modifyTableInfo( void                 * aTrans,
  *
  *  # Disk-index Recovery Issue
  *
- *  - (1)±îÁö ·Î±ëÇÏ¿´´Ù¸é
+ *  - (1)ê¹Œì§€ ë¡œê¹…í•˜ì˜€ë‹¤ë©´
  *    + (1) -> logical undo
- *      : v-slotÀ» delete flag¸¦ ¼³Á¤ÇÑ´Ù.
- *    + smxTrans::abort ¼öÇàÇÑ´Ù.
+ *      : v-slotì„ delete flagë¥¼ ì„¤ì •í•œë‹¤.
+ *    + smxTrans::abort ìˆ˜í–‰í•œë‹¤.
  *
- *  - (2)±îÁö ·Î±ëÇÏ¿´´Ù¸é
+ *  - (2)ê¹Œì§€ ë¡œê¹…í•˜ì˜€ë‹¤ë©´
  *    + (2) -> undo
- *      : ÀÌÀü index OID·Î º¹±¸ÇÑ´Ù.
+ *      : ì´ì „ index OIDë¡œ ë³µêµ¬í•œë‹¤.
  *    + (1) -> logical undo
  *    + smxTrans::abort
  *
- *  - (4)±îÁö mtx commit ÇÏ¿´´Ù¸é (!!!!!!!!!!)
+ *  - (4)ê¹Œì§€ mtx commit í•˜ì˜€ë‹¤ë©´ (!!!!!!!!!!)
  *    + (4) -> logical undo
- *      : segment¸¦ freeÇÑ´Ù. ((3)':SDR_OP_NULL) [NTA->(2)]
- *        ¸¸¾à freeÇÏÁö ¸øÇÏ¿´´Ù¸é, ´Ù½Ã logical undo¸¦ ¼öÇàÇÏ¸é µÈ´Ù.
- *        free segment¸¦ mtx commit ÇÏ¿´´Ù¸é, [NTA->(2)]µû¶ó ´ÙÀ½ undo°úÁ¤
- *        À¸·Î skipÇÏ°í ³Ñ¾î°£´Ù.
+ *      : segmentë¥¼ freeí•œë‹¤. ((3)':SDR_OP_NULL) [NTA->(2)]
+ *        ë§Œì•½ freeí•˜ì§€ ëª»í•˜ì˜€ë‹¤ë©´, ë‹¤ì‹œ logical undoë¥¼ ìˆ˜í–‰í•˜ë©´ ëœë‹¤.
+ *        free segmentë¥¼ mtx commit í•˜ì˜€ë‹¤ë©´, [NTA->(2)]ë”°ë¼ ë‹¤ìŒ undoê³¼ì •
+ *        ìœ¼ë¡œ skipí•˜ê³  ë„˜ì–´ê°„ë‹¤.
  *    + (2) -> undo
  *    + ...
- *    + smxTrans::abortÀ» ¼öÇàÇÑ´Ù.
+ *    + smxTrans::abortì„ ìˆ˜í–‰í•œë‹¤.
  *
- *  - (6)±îÁö ·Î±ëÇÏ¿´´Ù¸é
+ *  - (6)ê¹Œì§€ ë¡œê¹…í•˜ì˜€ë‹¤ë©´
  *    + (6) -> undo
  *    + (5) -> undo
  *    + (4) -> logical undo
  *    + ...
- *    + smxTrans::abortÀ» ¼öÇàÇÑ´Ù.
+ *    + smxTrans::abortì„ ìˆ˜í–‰í•œë‹¤.
  *
- *  - (7)±îÁö ·Î±ëÇÏ¿´´Ù¸é
+ *  - (7)ê¹Œì§€ ë¡œê¹…í•˜ì˜€ë‹¤ë©´
  *    + (7) -> logical undo
- *      : dropIndexByAbortOID¸¦ ¼öÇàÇÏ¸ç ´ÙÀ½°ú °°´Ù.
+ *      : dropIndexByAbortOIDë¥¼ ìˆ˜í–‰í•˜ë©° ë‹¤ìŒê³¼ ê°™ë‹¤.
  *
  *      (7)       {(a)         (b)}        (c)         (d)      (e)       (7)'
  *       |----------|-----------|-----------|-----------|--------|--------|--> time
@@ -3099,7 +3099,7 @@ IDE_RC smcTable::modifyTableInfo( void                 * aTrans,
  *                 (R/U)                    (R/U)       tbl-hdr v-slot
  *                                                      (R/U)   [used]
  *                                                              (R/U)
- *    + smxTrans::abortÀ» ¼öÇàÇÑ´Ù.
+ *    + smxTrans::abortì„ ìˆ˜í–‰í•œë‹¤.
  *
  ***********************************************************************/
 IDE_RC smcTable::createIndex( idvSQL               *aStatistics,
@@ -3145,7 +3145,7 @@ IDE_RC smcTable::createIndex( idvSQL               *aStatistics,
      * ----------------------------------------------*/
     IDE_TEST( validateTable( aTrans,
                              aHeader,
-                             SCT_VAL_DDL_DML ) // Å×ÀÌºí½ºÆäÀÌ½º Validation ¿É¼Ç
+                             SCT_VAL_DDL_DML ) // í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ Validation ì˜µì…˜
               != IDE_SUCCESS );
 
     sMaxIndexCount = smLayerCallback::getMaxIndexCnt();
@@ -3160,15 +3160,15 @@ IDE_RC smcTable::createIndex( idvSQL               *aStatistics,
     // for NTA
     sLsnNTA = smLayerCallback::getLstUndoNxtLSN( aTrans );
 
-    // °øÅë index °ü¸®ÀÚ¸¦ ÅëÇØ indexheaderÀÇ Å©±â¸¦ ¾òÀ½
+    // ê³µí†µ index ê´€ë¦¬ìë¥¼ í†µí•´ indexheaderì˜ í¬ê¸°ë¥¼ ì–»ìŒ
     sIndexHeaderSize = smLayerCallback::getSizeOfIndexHeader();
 
     /* ------------------------------------------------
-     * [3] »õ·Î »ı¼º½ÃÅ°´Â IndexÀÇ Á¤º¸¸¦ ¼³Á¤
-     * indexheader ÃÊ±âÈ­
-     * disk index³ª memory index´Â ¸ğµÎ µ¿ÀÏÇÑ
-     * index °ü¸®ÀÚ¸¦ »ç¿ëÇÏ¹Ç·Î ¾Æ·¡¿Í °°ÀÌ Ã³¸®ÇÏ¿©µµ
-     * Å¸ÀÔ¿¡ µû¸¥ indexheader¸¦ ÃÊ±âÈ­ÇÒ ¼ö ÀÖ´Ù.
+     * [3] ìƒˆë¡œ ìƒì„±ì‹œí‚¤ëŠ” Indexì˜ ì •ë³´ë¥¼ ì„¤ì •
+     * indexheader ì´ˆê¸°í™”
+     * disk indexë‚˜ memory indexëŠ” ëª¨ë‘ ë™ì¼í•œ
+     * index ê´€ë¦¬ìë¥¼ ì‚¬ìš©í•˜ë¯€ë¡œ ì•„ë˜ì™€ ê°™ì´ ì²˜ë¦¬í•˜ì—¬ë„
+     * íƒ€ì…ì— ë”°ë¥¸ indexheaderë¥¼ ì´ˆê¸°í™”í•  ìˆ˜ ìˆë‹¤.
      * ----------------------------------------------*/
     /* smcTable_createIndex_malloc_IndexHeader.tc */
     IDU_FIT_POINT("smcTable::createIndex::malloc::IndexHeader");
@@ -3180,10 +3180,10 @@ IDE_RC smcTable::createIndex( idvSQL               *aStatistics,
     sAllocState = 1;
 
     /* ------------------------------------------------
-     * FOR A4 : disk index´Â °øÅëÀÎµ¦½º°ü¸®ÀÚÀÇ initIndexHeader¿¡¼­
-     * segment¸¦ ÇÒ´ç¹Ş´Â´Ù.
-     * index segment´Â table°ú ´Ù¸¥ tablespace¿¡ »ı¼ºµÉ ¼ö ÀÖÀ¸¹Ç·Î
-     * tablespace id¸¦ ¸í½ÃÇÒ¼ö ÀÖ´Ù.
+     * FOR A4 : disk indexëŠ” ê³µí†µì¸ë±ìŠ¤ê´€ë¦¬ìì˜ initIndexHeaderì—ì„œ
+     * segmentë¥¼ í• ë‹¹ë°›ëŠ”ë‹¤.
+     * index segmentëŠ” tableê³¼ ë‹¤ë¥¸ tablespaceì— ìƒì„±ë  ìˆ˜ ìˆìœ¼ë¯€ë¡œ
+     * tablespace idë¥¼ ëª…ì‹œí• ìˆ˜ ìˆë‹¤.
      * ----------------------------------------------*/
     smLayerCallback::initIndexHeader( sIndexHeader,
                                       aHeader->mSelfOID,
@@ -3196,9 +3196,9 @@ IDE_RC smcTable::createIndex( idvSQL               *aStatistics,
                                       aSegAttr,
                                       aSegStorageAttr,
                                       aDirectKeyMaxSize );
-    // PROJ-1362 QP-Large Record & Internal LOBÁö¿ø.
-    // index °¹¼ö Á¦¾à Ç®±â part.
-    // »õ·Î¿î ÀÎµ¦½º Á¤º¸¸¦ ÀúÀåÇÒ ´ë»ó variable slot¸¦ Ã£´Â´Ù.
+    // PROJ-1362 QP-Large Record & Internal LOBì§€ì›.
+    // index ê°¯ìˆ˜ ì œì•½ í’€ê¸° part.
+    // ìƒˆë¡œìš´ ì¸ë±ìŠ¤ ì •ë³´ë¥¼ ì €ì¥í•  ëŒ€ìƒ variable slotë¥¼ ì°¾ëŠ”ë‹¤.
     IDE_TEST( findIndexVarSlot2Insert(aHeader,
                                       aFlag,
                                       sIndexHeaderSize,
@@ -3206,13 +3206,13 @@ IDE_RC smcTable::createIndex( idvSQL               *aStatistics,
               != IDE_SUCCESS);
 
     /* ------------------------------------------------
-     * [4] Table¿¡ ±âÁ¸ Index°¡ 0°³ Á¸ÀçÇÏ´Â °æ¿ì
+     * [4] Tableì— ê¸°ì¡´ Indexê°€ 0ê°œ ì¡´ì¬í•˜ëŠ” ê²½ìš°
      * ----------------------------------------------*/
     sVal.length = aHeader->mIndexes[sIdx].length + sIndexHeaderSize;
 
     /* ------------------------------------------------
-     * [5] Table¿¡ ±âÁ¸ Index°¡ 1°³ ÀÌ»ó Á¸ÀçÇÏ´Â °æ¿ì
-     * ±âÁ¸ °ªÀ» »õ·Î¿î Version¿¡ copyÇÏ°í »õ·Î Ãß°¡ÇÏ´Â Index Á¤º¸¸¦ append!
+     * [5] Tableì— ê¸°ì¡´ Indexê°€ 1ê°œ ì´ìƒ ì¡´ì¬í•˜ëŠ” ê²½ìš°
+     * ê¸°ì¡´ ê°’ì„ ìƒˆë¡œìš´ Versionì— copyí•˜ê³  ìƒˆë¡œ ì¶”ê°€í•˜ëŠ” Index ì •ë³´ë¥¼ append!
      * ----------------------------------------------*/
     if(aHeader->mIndexes[sIdx].fstPieceOID != SM_NULL_OID)
     {
@@ -3260,13 +3260,13 @@ IDE_RC smcTable::createIndex( idvSQL               *aStatistics,
 
         IDE_ASSERT( sIdx == 0);
 
-        // primary key´Â table¿¡¼­ ÇÑ°³¸¸ Á¸ÀçÇÏ¸ç,
-        // qp¿¡ primary key°¡ variable slotÀÇ ¸Ç¾Õ¿¡ ÀÖ´Ù°í °¡Á¤ÇÏ°í ÀÖÀ½.
+        // primary keyëŠ” tableì—ì„œ í•œê°œë§Œ ì¡´ì¬í•˜ë©°,
+        // qpì— primary keyê°€ variable slotì˜ ë§¨ì•ì— ìˆë‹¤ê³  ê°€ì •í•˜ê³  ìˆìŒ.
 
         /* ------------------------------------------------
-         * »õ·Î¿î index°¡ primary¶ó¸é variable slotÀÇ
-         * ¸Ç Ã³À½ºÎºĞ¿¡ index header¸¦ ÀúÀåÇÑ´Ù.
-         * - SMR_LT_UPDATEÀÇ SMR_PHYSICAL ·Î±ë
+         * ìƒˆë¡œìš´ indexê°€ primaryë¼ë©´ variable slotì˜
+         * ë§¨ ì²˜ìŒë¶€ë¶„ì— index headerë¥¼ ì €ì¥í•œë‹¤.
+         * - SMR_LT_UPDATEì˜ SMR_PHYSICAL ë¡œê¹…
          * ----------------------------------------------*/
         sOffset   = SM_MAKE_OFFSET(sNewIndexOID) + ID_SIZEOF(smVCPieceHeader);
         sIndexOID = SM_MAKE_OID(sPageID, sOffset);
@@ -3287,10 +3287,10 @@ IDE_RC smcTable::createIndex( idvSQL               *aStatistics,
     else
     {
         /* ------------------------------------------------
-         * »õ·Î¿î index°¡ primary°¡ ¾Æ´Ï¶ó¸é variable slotÀÇ
-         * ±âÁ¸ indexÁ¤º¸¸¦ ¸ÕÀú ÀúÀåÇÏ°í ¸Ç µÚºÎºĞ¿¡  »õ·Î¿î
-         * indexÀÇ header¸¦ ÀúÀåÇÑ´Ù.
-         * - SMR_LT_UPDATEÀÇ SMR_PHYSICAL ·Î±ë
+         * ìƒˆë¡œìš´ indexê°€ primaryê°€ ì•„ë‹ˆë¼ë©´ variable slotì˜
+         * ê¸°ì¡´ indexì •ë³´ë¥¼ ë¨¼ì € ì €ì¥í•˜ê³  ë§¨ ë’¤ë¶€ë¶„ì—  ìƒˆë¡œìš´
+         * indexì˜ headerë¥¼ ì €ì¥í•œë‹¤.
+         * - SMR_LT_UPDATEì˜ SMR_PHYSICAL ë¡œê¹…
          * ----------------------------------------------*/
         sOffset   = SM_MAKE_OFFSET(sNewIndexOID) +
                     ID_SIZEOF(smVCPieceHeader);
@@ -3311,12 +3311,12 @@ IDE_RC smcTable::createIndex( idvSQL               *aStatistics,
         *aIndex = sDest;
     }
 
-    // BUG-25313 : adjustIndexSelfOID() À§Ä¡ º¯°æ.
+    // BUG-25313 : adjustIndexSelfOID() ìœ„ì¹˜ ë³€ê²½.
     adjustIndexSelfOID( (UChar*)sNewIndexPtr,
                         sNewIndexOID + ID_SIZEOF(smVCPieceHeader),
                         sVal.length );
 
-    // BUG-25313 : smrUpdate::physicalUpdate() À§Ä¡ º¯°æ.
+    // BUG-25313 : smrUpdate::physicalUpdate() ìœ„ì¹˜ ë³€ê²½.
     IDE_TEST(smrUpdate::physicalUpdate(NULL, /* idvSQL* */
                                        aTrans,
                                        SMI_ID_TABLESPACE_SYSTEM_MEMORY_DIC,
@@ -3331,7 +3331,7 @@ IDE_RC smcTable::createIndex( idvSQL               *aStatistics,
              != IDE_SUCCESS);
 
 
-    // »õ·Î¿î variable slotÀÌ Æ÷ÇÔµÈ page¸¦ dirty page·Î µî·Ï
+    // ìƒˆë¡œìš´ variable slotì´ í¬í•¨ëœ pageë¥¼ dirty pageë¡œ ë“±ë¡
     IDE_TEST( smmDirtyPageMgr::insDirtyPage(
                   SMI_ID_TABLESPACE_SYSTEM_MEMORY_DIC,
                   sPageID) != IDE_SUCCESS );
@@ -3341,9 +3341,9 @@ IDE_RC smcTable::createIndex( idvSQL               *aStatistics,
                  sTableType == SMI_TABLE_DISK   ||
                  sTableType == SMI_TABLE_VOLATILE );
 
-    /* BUG-33803 Disk index¸¦ disable »óÅÂ·Î create ÇÒ °æ¿ì index segment¸¦
-     * »ı¼ºÇÏÁö ¾Ê´Â´Ù. ÀÌ ÈÄ index¸¦ enable »óÅÂ·Î º¯°æÇÒ ¶§ index segmentµµ
-     * ÇÔ²² »ı¼ºÇÑ´Ù. */
+    /* BUG-33803 Disk indexë¥¼ disable ìƒíƒœë¡œ create í•  ê²½ìš° index segmentë¥¼
+     * ìƒì„±í•˜ì§€ ì•ŠëŠ”ë‹¤. ì´ í›„ indexë¥¼ enable ìƒíƒœë¡œ ë³€ê²½í•  ë•Œ index segmentë„
+     * í•¨ê»˜ ìƒì„±í•œë‹¤. */
     if( (sTableType == SMI_TABLE_DISK) &&
         ((aFlag & SMI_INDEX_USE_MASK) == SMI_INDEX_USE_ENABLE) )
     {
@@ -3367,9 +3367,9 @@ IDE_RC smcTable::createIndex( idvSQL               *aStatistics,
     if( aHeader->mIndexes[sIdx].fstPieceOID != SM_NULL_OID )
     {
         /* ------------------------------------------------
-         * ±âÁ¸ index Á¤º¸¸¦ ÀúÀåÇÑ old variable slotÀÌ Á¸ÀçÇÑ´Ù¸é,
-         * SMP_DELETE_SLOTÀ» ¼³Á¤ÇÑ ÈÄ, Æ®·£Àè¼Ç commit ÈÄ¿¡
-         * ager°¡ Á¦°ÅÇÒ ¼ö ÀÖµµ·Ï SM_OID_OLD_VARIABLE_SLOT Ç¥½Ã
+         * ê¸°ì¡´ index ì •ë³´ë¥¼ ì €ì¥í•œ old variable slotì´ ì¡´ì¬í•œë‹¤ë©´,
+         * SMP_DELETE_SLOTì„ ì„¤ì •í•œ í›„, íŠ¸ëœì­ì…˜ commit í›„ì—
+         * agerê°€ ì œê±°í•  ìˆ˜ ìˆë„ë¡ SM_OID_OLD_VARIABLE_SLOT í‘œì‹œ
          * ----------------------------------------------*/
         IDE_TEST(smcRecord::setFreeFlagAtVCPieceHdr(aTrans,
                                                     aHeader->mSelfOID,
@@ -3390,9 +3390,9 @@ IDE_RC smcTable::createIndex( idvSQL               *aStatistics,
     }
 
     /* ------------------------------------------------
-     * »õ·Î¿î index Á¤º¸¸¦ ÀúÀåÇÑ new variable slot¿¡ ´ëÇÏ¿©
-     * Æ®·£Àè¼Ç rollback ÈÄ¿¡ ager°¡ Á¦°ÅÇÒ ¼ö ÀÖµµ·Ï
-     * SM_OID_NEW_VARIABLE_SLOT Ç¥½Ã
+     * ìƒˆë¡œìš´ index ì •ë³´ë¥¼ ì €ì¥í•œ new variable slotì— ëŒ€í•˜ì—¬
+     * íŠ¸ëœì­ì…˜ rollback í›„ì— agerê°€ ì œê±°í•  ìˆ˜ ìˆë„ë¡
+     * SM_OID_NEW_VARIABLE_SLOT í‘œì‹œ
      * ----------------------------------------------*/
     IDE_TEST( smLayerCallback::addOID( aTrans,
                                        SMC_CAT_TABLE->mSelfOID,
@@ -3402,9 +3402,9 @@ IDE_RC smcTable::createIndex( idvSQL               *aStatistics,
               != IDE_SUCCESS );
 
     /* ------------------------------------------------
-     * [6] »õ·Î¿î index Á¤º¸¸¦ ÀúÀåÇÑ variable slotÀ»
-     * table header¿¡ ¼³Á¤ ¹× ·Î±ë
-     * - SMR_LT_UPDATEÀÇ SMR_SMC_TABLEHEADER_UPDATE_INDEX
+     * [6] ìƒˆë¡œìš´ index ì •ë³´ë¥¼ ì €ì¥í•œ variable slotì„
+     * table headerì— ì„¤ì • ë° ë¡œê¹…
+     * - SMR_LT_UPDATEì˜ SMR_SMC_TABLEHEADER_UPDATE_INDEX
      * ----------------------------------------------*/
     IDE_TEST( smrUpdate::updateIndexAtTableHead(NULL, /* idvSQL* */
                                                 aTrans,
@@ -3427,7 +3427,7 @@ IDE_RC smcTable::createIndex( idvSQL               *aStatistics,
     aHeader->mIndexes[sIdx].fstPieceOID = sNewIndexOID;
     aHeader->mIndexes[sIdx].flag = SM_VCDESC_MODE_OUT;
 
-    // smnIndex ÃÊ±âÈ­ : index »ı¼º(moduleÀÇ createÈ£Ãâ)
+    // smnIndex ì´ˆê¸°í™” : index ìƒì„±(moduleì˜ createí˜¸ì¶œ)
     if ( ( smLayerCallback::getFlagOfIndexHeader( *aIndex ) & SMI_INDEX_USE_MASK )
          == SMI_INDEX_USE_ENABLE )
     {
@@ -3508,7 +3508,7 @@ IDE_RC smcTable::createIndex( idvSQL               *aStatistics,
 
 /*
  * PROJ-1917 MVCC Renewal
- * Out-Place Update¸¦ À§ÇÑ Index Self OID ÀçÁ¶Á¤
+ * Out-Place Updateë¥¼ ìœ„í•œ Index Self OID ì¬ì¡°ì •
  */
 void smcTable::adjustIndexSelfOID( UChar * aIndexHeaders,
                                    smOID   aStartIndexOID,
@@ -3527,19 +3527,19 @@ void smcTable::adjustIndexSelfOID( UChar * aIndexHeaders,
 }
 
 /***********************************************************************
- * Description :  PROJ-1362 QP - Large Record & Internal LOB Áö¿ø.
- *                tableÀÇ ÄÃ·³°³¼ö¿Í ÀÎµ¦½º °³¼ö Á¦¾à Ç®±â.
- * »õ·Î¿î ÀÎµ¦½º Á¤º¸¸¦ ÀúÀåÇÒ ´ë»ó variable slot¸¦ Ã£´Â´Ù.
+ * Description :  PROJ-1362 QP - Large Record & Internal LOB ì§€ì›.
+ *                tableì˜ ì»¬ëŸ¼ê°œìˆ˜ì™€ ì¸ë±ìŠ¤ ê°œìˆ˜ ì œì•½ í’€ê¸°.
+ * ìƒˆë¡œìš´ ì¸ë±ìŠ¤ ì •ë³´ë¥¼ ì €ì¥í•  ëŒ€ìƒ variable slotë¥¼ ì°¾ëŠ”ë‹¤.
  *  - code design
- *  if (»õ·Î Ãß°¡ÇÒ ÀÎµ¦½º°¡  primary key )
+ *  if (ìƒˆë¡œ ì¶”ê°€í•  ì¸ë±ìŠ¤ê°€  primary key )
  *  then
- *      //replication¶§¹®¿¡ primay key¸¦ ¸Ç¾Õ¿¡ ÀúÀåÇØ¾ß ÇÑ´Ù.
+ *      //replicationë•Œë¬¸ì— primay keyë¥¼ ë§¨ì•ì— ì €ì¥í•´ì•¼ í•œë‹¤.
  *      i = 0;
  *  else
  *      for( i = 0 ; i < SMC_MAX_INDEX_OID_CNT; i++)
  *      do
- *          if ( tableÇì´õÀÇ mIndexes[i] °¡ null OID ÀÌ°Å³ª
- *           table Çì´õÀÇ mIndexes[i]ÀÇ ÇöÀç variable slot±æÀÌ  + ÇÏ³ªÀÇ ÀÎµ¦½º Çì´õ Å©±â
+ *          if ( tableí—¤ë”ì˜ mIndexes[i] ê°€ null OID ì´ê±°ë‚˜
+ *           table í—¤ë”ì˜ mIndexes[i]ì˜ í˜„ì¬ variable slotê¸¸ì´  + í•˜ë‚˜ì˜ ì¸ë±ìŠ¤ í—¤ë” í¬ê¸°
  *             <= SMP_VC_PIECE_MAX_SIZE)
  *          then
  *            break;
@@ -3548,7 +3548,7 @@ void smcTable::adjustIndexSelfOID( UChar * aIndexHeaders,
  *  fi
  * if( i == SMC_MAX_INDEX_OID_CNT)
  * then
- *    retrun ÃÖ´ë ÀÎµ¦½º °³¼ö error;
+ *    retrun ìµœëŒ€ ì¸ë±ìŠ¤ ê°œìˆ˜ error;
  * fi
  * IDE_EXCEPTION_CONT(success);
  *
@@ -3575,7 +3575,7 @@ IDE_RC smcTable::findIndexVarSlot2Insert(smcTableHeader      *aHeader,
             if( (aHeader->mIndexes[i].fstPieceOID == SM_NULL_OID) ||
                 (((aHeader->mIndexes[i].length + aIndexHeaderSize)
                   <= SMP_VC_PIECE_MAX_SIZE) && (i != 0)) ||
-                // primary key¸¦ À§ÇÏ¿© 0¹øÂ° variable slotÀº
+                // primary keyë¥¼ ìœ„í•˜ì—¬ 0ë²ˆì§¸ variable slotì€
                 (((aHeader->mIndexes[i].length + 2 * aIndexHeaderSize)
                   <= SMP_VC_PIECE_MAX_SIZE) && ( i == 0)) )
 
@@ -3602,17 +3602,17 @@ IDE_RC smcTable::findIndexVarSlot2Insert(smcTableHeader      *aHeader,
 
 
 /***********************************************************************
- * Description : ÀÎµ¦½º Á¦°Å(°øÅë)
+ * Description : ì¸ë±ìŠ¤ ì œê±°(ê³µí†µ)
  *
- * disk/memory Å¸ÀÔÀÇ index¿¡ ´ëÇÑ dropindex¸¦ ¼öÇàÇÑ´Ù.
- * - ÀÌ ÇÔ¼ö¿¡¼­´Â transaction commit½Ã±îÁö ÀÎµ¦½º Á¦°Å¸¦
- *   pending ¿¬»êÀ¸·Î Ã³¸®ÇÏµµ·Ï ÇÑ´Ù.
- * - ¶ÇÇÑ drop index ÀÛ¾÷Àº IX lockÀ» È¹µæÇÏ±â¶§¹®¿¡, µ¿½Ã¿¡
- *   ¿©·¯ transaction¿¡ ÀÇÇØ ¼öÇàµÉ ¼ö ÀÖ´Ù.
+ * disk/memory íƒ€ì…ì˜ indexì— ëŒ€í•œ dropindexë¥¼ ìˆ˜í–‰í•œë‹¤.
+ * - ì´ í•¨ìˆ˜ì—ì„œëŠ” transaction commitì‹œê¹Œì§€ ì¸ë±ìŠ¤ ì œê±°ë¥¼
+ *   pending ì—°ì‚°ìœ¼ë¡œ ì²˜ë¦¬í•˜ë„ë¡ í•œë‹¤.
+ * - ë˜í•œ drop index ì‘ì—…ì€ IX lockì„ íšë“í•˜ê¸°ë•Œë¬¸ì—, ë™ì‹œì—
+ *   ì—¬ëŸ¬ transactionì— ì˜í•´ ìˆ˜í–‰ë  ìˆ˜ ìˆë‹¤.
  *
  * - RECOVERY
  *
- *  # index Á¦°Å (* disk-index Á¦°Å)
+ *  # index ì œê±° (* disk-index ì œê±°)
  *
  ***********************************************************************/
 IDE_RC smcTable::dropIndex( void               * aTrans,
@@ -3657,8 +3657,8 @@ IDE_RC smcTable::dropIndex( void               * aTrans,
               != IDE_SUCCESS );
 
     /* ----------------------------
-     * [2] dropÇÏ°íÀÚ ÇÏ´Â Index¸¦ Ã£°í,
-     * TableÀÇ Index Á¤º¸¸¦ °»½ÅÇÑ´Ù.
+     * [2] dropí•˜ê³ ì í•˜ëŠ” Indexë¥¼ ì°¾ê³ ,
+     * Tableì˜ Index ì •ë³´ë¥¼ ê°±ì‹ í•œë‹¤.
      * ---------------------------*/
     IDE_ASSERT( findIndexVarSlot2AlterAndDrop(aHeader, //BUG-23218
                                               aIndex,
@@ -3667,7 +3667,7 @@ IDE_RC smcTable::dropIndex( void               * aTrans,
                                               &sOffset)
                  == IDE_SUCCESS );
 
-    //sValue´Â ÇÏ³ªÀÇ ÀÎµ¦½º°¡ »èÁ¦µÇ°í ³²Àº ÀÎµ¦½ºÇì´õ Å©±â.
+    //sValueëŠ” í•˜ë‚˜ì˜ ì¸ë±ìŠ¤ê°€ ì‚­ì œë˜ê³  ë‚¨ì€ ì¸ë±ìŠ¤í—¤ë” í¬ê¸°.
 
     sVal.length = aHeader->mIndexes[sSlotIdx].length - sIndexHeaderSize;
     sVal.value  = NULL;
@@ -3689,23 +3689,23 @@ IDE_RC smcTable::dropIndex( void               * aTrans,
         sPieceType = SM_VCPIECE_TYPE_MEMORY_INDEX;
     }
 
-    /* BUG-30612 index header self oid°¡ Àß¸ø ±â·ÏµÇ´Â °æ¿ì°¡ ÀÖ½À´Ï´Ù.
-     * ¹ö±×´Â ¼öÁ¤ µÇ¾úÁö¸¸ ÀÌÀü¿¡ ÀÌ¹Ì Àß¸ø ±â·ÏµÇ¾î ÀÖ´Â °æ¿ì¸¦ ´ëºñÇÏ¿©
-     * dropÇÏ´Â slotÀÇ Index HeaderÀÇ SelfOID¸¦ º¸Á¤ÇÏµµ·Ï ÇÕ´Ï´Ù.
-     * index headerÀÇ SelfOID´Â ¿©±â¿Í index°ËÁõ ¿¡¼­¸¸ »ç¿ëµË´Ï´Ù. */
+    /* BUG-30612 index header self oidê°€ ì˜ëª» ê¸°ë¡ë˜ëŠ” ê²½ìš°ê°€ ìˆìŠµë‹ˆë‹¤.
+     * ë²„ê·¸ëŠ” ìˆ˜ì • ë˜ì—ˆì§€ë§Œ ì´ì „ì— ì´ë¯¸ ì˜ëª» ê¸°ë¡ë˜ì–´ ìˆëŠ” ê²½ìš°ë¥¼ ëŒ€ë¹„í•˜ì—¬
+     * dropí•˜ëŠ” slotì˜ Index Headerì˜ SelfOIDë¥¼ ë³´ì •í•˜ë„ë¡ í•©ë‹ˆë‹¤.
+     * index headerì˜ SelfOIDëŠ” ì—¬ê¸°ì™€ indexê²€ì¦ ì—ì„œë§Œ ì‚¬ìš©ë©ë‹ˆë‹¤. */
     adjustIndexSelfOID( (UChar*)sBase,
                         aHeader->mIndexes[sSlotIdx].fstPieceOID
                             + ID_SIZEOF(smVCPieceHeader),
                         aHeader->mIndexes[sSlotIdx].length );
 
     /* ------------------------------------------------
-     * dropÇÒ index¿¡ ´ëÇÏ¿© pending ¿¬»êÀ¸·Î µî·Ï½ÃÅ´
-     * - memory indexÀÇ °æ¿ì¿¡´Â ÇØ´ç transactionÀÇ commit°úÁ¤Áß¿¡
-     *   smcTable::dropIndexPendingÀÌ È£ÃâÇÏ¿© ¹Ù·Î Ã³¸®ÇÏ¸ç,
-     *   disk indexÀÇ °æ¿ì¿¡´Â ÇØ´ç tss¿¡ pending operationÀ¸·Î
-     *   µî·ÏÇÏ¿© disk G.C¿¡ ÀÇÇØ Á¦°ÅÇÏµµ·Ï Ã³¸®ÇÑ´Ù.
+     * dropí•  indexì— ëŒ€í•˜ì—¬ pending ì—°ì‚°ìœ¼ë¡œ ë“±ë¡ì‹œí‚´
+     * - memory indexì˜ ê²½ìš°ì—ëŠ” í•´ë‹¹ transactionì˜ commitê³¼ì •ì¤‘ì—
+     *   smcTable::dropIndexPendingì´ í˜¸ì¶œí•˜ì—¬ ë°”ë¡œ ì²˜ë¦¬í•˜ë©°,
+     *   disk indexì˜ ê²½ìš°ì—ëŠ” í•´ë‹¹ tssì— pending operationìœ¼ë¡œ
+     *   ë“±ë¡í•˜ì—¬ disk G.Cì— ì˜í•´ ì œê±°í•˜ë„ë¡ ì²˜ë¦¬í•œë‹¤.
      * ----------------------------------------------*/
-    // ÀÎµ¦½º°¡ ÇÑ°³¸¸ ÀÖ´Â Å×ÀÌºí¿¡¼­ drop index°¡ µÈ°æ¿ì.
+    // ì¸ë±ìŠ¤ê°€ í•œê°œë§Œ ìˆëŠ” í…Œì´ë¸”ì—ì„œ drop indexê°€ ëœê²½ìš°.
     if( sVal.length == 0 )
     {
         sOffset = 0;
@@ -3721,8 +3721,8 @@ IDE_RC smcTable::dropIndex( void               * aTrans,
     {
         if( sVal.length > 0 )
         {
-            // ÀÎµ¦½º°¡ 2°³ ÀÌ»óÀÎ °æ¿ì, ÀÎµ¦½ºÇì´õ°¡ ÇÏ³ªºüÁø
-            // »õ·Î¿î ÀÎµ¦½º Á¤º¸ variable slotÀ» ÇÒ´ç¹Ş´Â´Ù.
+            // ì¸ë±ìŠ¤ê°€ 2ê°œ ì´ìƒì¸ ê²½ìš°, ì¸ë±ìŠ¤í—¤ë”ê°€ í•˜ë‚˜ë¹ ì§„
+            // ìƒˆë¡œìš´ ì¸ë±ìŠ¤ ì •ë³´ variable slotì„ í• ë‹¹ë°›ëŠ”ë‹¤.
             IDE_TEST( smpVarPageList::allocSlot(aTrans,
                                             SMI_ID_TABLESPACE_SYSTEM_MEMORY_DIC,
                                             SMC_CAT_TABLE->mSelfOID,
@@ -3741,7 +3741,7 @@ IDE_RC smcTable::dropIndex( void               * aTrans,
                          sTableType == SMI_TABLE_DISK   ||
                          sTableType == SMI_TABLE_VOLATILE );
 
-            // index Á¦°Å¿¡ ´ëÇÑ pending operation ¼öÇà
+            // index ì œê±°ì— ëŒ€í•œ pending operation ìˆ˜í–‰
             IDE_TEST( smLayerCallback::addOID( aTrans,
                                                aHeader->mSelfOID,
                                                aHeader->mIndexes[sSlotIdx].fstPieceOID
@@ -3753,7 +3753,7 @@ IDE_RC smcTable::dropIndex( void               * aTrans,
             sPageID = SM_MAKE_PID(sNewIndexOID);
             sState  = 1;
 
-            //»èÁ¦µÈ ÀÎµ¦½º Çì´õ¸¦ »©°í, ³ª¸ÓÁö¿¡ ´ëÇÑ copyÀÛ¾÷.
+            //ì‚­ì œëœ ì¸ë±ìŠ¤ í—¤ë”ë¥¼ ë¹¼ê³ , ë‚˜ë¨¸ì§€ì— ëŒ€í•œ copyì‘ì—….
             idlOS::memcpy( sDest, sBase, sOffset);
 
             idlOS::memcpy( sDest + sOffset,
@@ -3769,7 +3769,7 @@ IDE_RC smcTable::dropIndex( void               * aTrans,
                                       sPageID)
                       != IDE_SUCCESS );
 
-            // BUG-25313 : smrUpdate::physicalUpdate() À§Ä¡ º¯°æ.
+            // BUG-25313 : smrUpdate::physicalUpdate() ìœ„ì¹˜ ë³€ê²½.
             IDE_TEST( smrUpdate::physicalUpdate(
                                     NULL, /* idvSQL* */
                                     aTrans,
@@ -3789,7 +3789,7 @@ IDE_RC smcTable::dropIndex( void               * aTrans,
     }
 
     /* ------------------------------------------------
-     * [3] °¢ °æ¿ì¿¡ ¸Â°Ô version list¿¡ Ãß°¡
+     * [3] ê° ê²½ìš°ì— ë§ê²Œ version listì— ì¶”ê°€
      * ----------------------------------------------*/
     IDE_TEST(smcRecord::setIndexDropFlag(
                                 aTrans,
@@ -3835,7 +3835,7 @@ IDE_RC smcTable::dropIndex( void               * aTrans,
     sPageID = SM_MAKE_PID(aHeader->mSelfOID);
 
     /* ------------------------------------------------
-     * SMR_LT_UPDATEÀÇ SMR_SMC_TABLEHEADER_UPDATE_INDEX ·Î±ë
+     * SMR_LT_UPDATEì˜ SMR_SMC_TABLEHEADER_UPDATE_INDEX ë¡œê¹…
      * ----------------------------------------------*/
     IDE_TEST( smrUpdate::updateIndexAtTableHead( NULL, /* idvSQL* */
                                                  aTrans,
@@ -3915,21 +3915,21 @@ IDE_RC smcTable::dropIndex( void               * aTrans,
 }
 
 /***********************************************************************
- * Description :  PROJ-1362 QP - Large Record & Internal LOB Áö¿ø.
- *                tableÀÇ ÄÃ·³°³¼ö¿Í ÀÎµ¦½º °³¼ö Á¦¾à Ç®±â.
- *  drop ÀÎµ¦½º  ´ë»ó variable slot¸¦ Ã£°í, ÇØ´ç variable slot¿¡¼­
- *  ÀÎµ¦½º Çì´õ offsetÀ» ±¸ÇÑ´Ù.
+ * Description :  PROJ-1362 QP - Large Record & Internal LOB ì§€ì›.
+ *                tableì˜ ì»¬ëŸ¼ê°œìˆ˜ì™€ ì¸ë±ìŠ¤ ê°œìˆ˜ ì œì•½ í’€ê¸°.
+ *  drop ì¸ë±ìŠ¤  ëŒ€ìƒ variable slotë¥¼ ì°¾ê³ , í•´ë‹¹ variable slotì—ì„œ
+ *  ì¸ë±ìŠ¤ í—¤ë” offsetì„ êµ¬í•œë‹¤.
  *  - code design
  * for( i = 0 ; i < SMC_MAX_INDEX_OID_CNT; i++)
  * do
- *  if( tableÇì´õÀÇ mIndexes[i] == SM_NULL_OID)
+ *  if( tableí—¤ë”ì˜ mIndexes[i] == SM_NULL_OID)
  *  then
  *    continue;
  *  else
- *    if( tableÇì´õÀÇ mIndexes[i]ÀÇ variable slot¾È¿¡
- *       dropµÉ indexÇì´õ°¡ ÀÖ´Â°¡?)
+ *    if( tableí—¤ë”ì˜ mIndexes[i]ì˜ variable slotì•ˆì—
+ *       dropë  indexí—¤ë”ê°€ ìˆëŠ”ê°€?)
  *    then
- *        ÇØ´ç variable slot¿¡¼­ dropµÉ indexÀÇ offsetÀ» ±¸ÇÑ´Ù;
+ *        í•´ë‹¹ variable slotì—ì„œ dropë  indexì˜ offsetì„ êµ¬í•œë‹¤;
  *         break;
  *    fi
  *  fi
@@ -3937,9 +3937,9 @@ IDE_RC smcTable::dropIndex( void               * aTrans,
  * done
  * if( i == SMC_MAX_INDEX_OID_CNT)
  * then
- *     ÀÎµ¦½º¸¦ Ã£À»¼ö ¾ø´Ù´Â ¿¡·¯;
+ *     ì¸ë±ìŠ¤ë¥¼ ì°¾ì„ìˆ˜ ì—†ë‹¤ëŠ” ì—ëŸ¬;
  * fi
- * BUG-23218 : DROP INDEX ¿Ü¿¡ ALTER INDEX ±¸¹®¿¡¼­µµ »ç¿ëÇÒ ¼ö ÀÖµµ·Ï ¼öÁ¤ÇÔ
+ * BUG-23218 : DROP INDEX ì™¸ì— ALTER INDEX êµ¬ë¬¸ì—ì„œë„ ì‚¬ìš©í•  ìˆ˜ ìˆë„ë¡ ìˆ˜ì •í•¨
  **************************************************************************/
 IDE_RC smcTable::findIndexVarSlot2AlterAndDrop(smcTableHeader      *aHeader,
                                                void*                aIndex, // BUBUB CHAR pointer
@@ -3967,7 +3967,7 @@ IDE_RC smcTable::findIndexVarSlot2AlterAndDrop(smcTableHeader      *aHeader,
              j < aHeader->mIndexes[i].length;
              j += aIndexHeaderSize,sSrc += aIndexHeaderSize )
         {
-            if( sSrc == aIndex ) /* Ã£°íÀÖ´Â smnIndexHeader ÀÎ °æ¿ì */
+            if( sSrc == aIndex ) /* ì°¾ê³ ìˆëŠ” smnIndexHeader ì¸ ê²½ìš° */
             {
                 *aTargetIndexVarSlotIdx = i;
                 *aOffset =  j;
@@ -3993,10 +3993,10 @@ IDE_RC smcTable::findIndexVarSlot2AlterAndDrop(smcTableHeader      *aHeader,
 }
 
 /***********************************************************************
- * Description : persistent index »óÅÂ ¼³Á¤
- * º» ÇÔ¼ö´Â tableÀÇ Æ¯Á¤ index¿¡ ´ëÇÏ¿© persistent index ¿©ºÎ¸¦
- * º¯°æÇÏ´Â ÇÔ¼ö·Î½á memory index¿¡ ÇÑÇØ¼­ Á¦°øµÇ´Â
- * ±â´ÉÀÌ¹Ç·Î, disk index¿¡¼­´Â °í·ÁÇÒ ÇÊ¿ä ¾ø´Ù.
+ * Description : persistent index ìƒíƒœ ì„¤ì •
+ * ë³¸ í•¨ìˆ˜ëŠ” tableì˜ íŠ¹ì • indexì— ëŒ€í•˜ì—¬ persistent index ì—¬ë¶€ë¥¼
+ * ë³€ê²½í•˜ëŠ” í•¨ìˆ˜ë¡œì¨ memory indexì— í•œí•´ì„œ ì œê³µë˜ëŠ”
+ * ê¸°ëŠ¥ì´ë¯€ë¡œ, disk indexì—ì„œëŠ” ê³ ë ¤í•  í•„ìš” ì—†ë‹¤.
  ***********************************************************************/
 IDE_RC smcTable::alterIndexInfo(void           * aTrans,
                                 smcTableHeader * aHeader,
@@ -4021,9 +4021,9 @@ IDE_RC smcTable::alterIndexInfo(void           * aTrans,
               != IDE_SUCCESS );
 
 
-    /* fix BUG-23218 : ÀÎµ¦½º Å½»ö °úÁ¤ ¸ğµâÈ­*/
+    /* fix BUG-23218 : ì¸ë±ìŠ¤ íƒìƒ‰ ê³¼ì • ëª¨ë“ˆí™”*/
     /* ----------------------------
-     * [2] ¼öÁ¤ÇÏ°íÀÚ ÇÏ´Â Index¸¦ Ã£´Â´Ù.
+     * [2] ìˆ˜ì •í•˜ê³ ì í•˜ëŠ” Indexë¥¼ ì°¾ëŠ”ë‹¤.
      * ---------------------------*/
     IDE_ASSERT( findIndexVarSlot2AlterAndDrop(aHeader,
                                               sIndexHeader,
@@ -4033,21 +4033,21 @@ IDE_RC smcTable::alterIndexInfo(void           * aTrans,
                  == IDE_SUCCESS );
 
     /* ------------------------------------------------
-     * [3] Ã£Àº ÀÎµ¦½ºÀÇ sIndexSlotÀ» ¹ÙÅÁÀ¸·Î,
-     *     ÀÎµ¦½ºÀÇ À§Ä¡¸¦ °è»êÇÑ´Ù.
+     * [3] ì°¾ì€ ì¸ë±ìŠ¤ì˜ sIndexSlotì„ ë°”íƒ•ìœ¼ë¡œ,
+     *     ì¸ë±ìŠ¤ì˜ ìœ„ì¹˜ë¥¼ ê³„ì‚°í•œë‹¤.
      * ------------------------------------------------*/
     sPageID = SM_MAKE_PID( aHeader->mIndexes[sIndexSlot].fstPieceOID );
 
 
 
     /* ---------------------------------------------
-     * [4] ·Î±ë ÈÄ Àû¿ëÇÑ´Ù.
+     * [4] ë¡œê¹… í›„ ì ìš©í•œë‹¤.
      * ---------------------------------------------*/
 
     IDE_TEST( smrUpdate::setIndexHeaderFlag( NULL, /* idvSQL* */
                                              aTrans,
                                              aHeader->mIndexes[sIndexSlot].fstPieceOID,
-                                             ID_SIZEOF(smVCPieceHeader) + sOffset , // BUG-23218 : ·Î±ë À§Ä¡ ¿À·ù ¼öÁ¤
+                                             ID_SIZEOF(smVCPieceHeader) + sOffset , // BUG-23218 : ë¡œê¹… ìœ„ì¹˜ ì˜¤ë¥˜ ìˆ˜ì •
                                              smLayerCallback::getFlagOfIndexHeader( aIndex ),
                                              aFlag)
               != IDE_SUCCESS);
@@ -4067,7 +4067,7 @@ IDE_RC smcTable::alterIndexInfo(void           * aTrans,
 }
 
 /***********************************************************************
- * Description : persistent index¿¡ InconsistentÇÔÀ» ¼³Á¤
+ * Description : persistent indexì— Inconsistentí•¨ì„ ì„¤ì •
  *
  ***********************************************************************/
 IDE_RC smcTable::setIndexInconsistency(smOID            aTableOID,
@@ -4091,8 +4091,8 @@ IDE_RC smcTable::setIndexInconsistency(smOID            aTableOID,
     
     sIndexHeaderSize = smLayerCallback::getSizeOfIndexHeader();
 
-    /* fix BUG-23218 : ÀÎµ¦½º Å½»ö °úÁ¤ ¸ğµâÈ­
-     *  ¼öÁ¤ÇÏ°íÀÚ ÇÏ´Â IndexÀÇ OffsetµîÀ» Ã£´Â´Ù. */
+    /* fix BUG-23218 : ì¸ë±ìŠ¤ íƒìƒ‰ ê³¼ì • ëª¨ë“ˆí™”
+     *  ìˆ˜ì •í•˜ê³ ì í•˜ëŠ” Indexì˜ Offsetë“±ì„ ì°¾ëŠ”ë‹¤. */
     IDE_ASSERT( findIndexVarSlot2AlterAndDrop(sTableHeader,
                                               sIndexHeader,
                                               sIndexHeaderSize,
@@ -4101,12 +4101,12 @@ IDE_RC smcTable::setIndexInconsistency(smOID            aTableOID,
                  == IDE_SUCCESS );
 
     /* ------------------------------------------------
-     *  Ã£Àº ÀÎµ¦½ºÀÇ sIndexSlotÀ» ¹ÙÅÁÀ¸·Î,
-     *  ÀÎµ¦½ºÀÇ À§Ä¡¸¦ °è»êÇÑ´Ù.
+     *  ì°¾ì€ ì¸ë±ìŠ¤ì˜ sIndexSlotì„ ë°”íƒ•ìœ¼ë¡œ,
+     *  ì¸ë±ìŠ¤ì˜ ìœ„ì¹˜ë¥¼ ê³„ì‚°í•œë‹¤.
      * ------------------------------------------------*/
     sPageID = SM_MAKE_PID( sTableHeader->mIndexes[sIndexSlot].fstPieceOID );
 
-    // Inconsistent -> Consistent°æ¿ì´Â ¾ø´Ù.
+    // Inconsistent -> Consistentê²½ìš°ëŠ” ì—†ë‹¤.
     smLayerCallback::setIsConsistentOfIndexHeader( sIndexHeader, ID_FALSE );
 
     (void)smmDirtyPageMgr::insDirtyPage(
@@ -4122,12 +4122,12 @@ IDE_RC smcTable::setIndexInconsistency(smOID            aTableOID,
 
 
 /***********************************************************************
- * Description : ´ë»ó tableÀÇ ¸ğµç persistent index¿¡ InconsistentÇÔÀ» ¼³Á¤
+ * Description : ëŒ€ìƒ tableì˜ ëª¨ë“  persistent indexì— Inconsistentí•¨ì„ ì„¤ì •
  *
  * Related Issues:
- *      PROJ-2184 RP Sync ¼º´É Çâ»ó
+ *      PROJ-2184 RP Sync ì„±ëŠ¥ í–¥ìƒ
  *
- *  aTableHeader   - [IN] ´ë»ó tableÀÇ smcTableHeader
+ *  aTableHeader   - [IN] ëŒ€ìƒ tableì˜ smcTableHeader
  ***********************************************************************/
 IDE_RC smcTable::setAllIndexInconsistency( smcTableHeader   * aTableHeader )
                                          
@@ -4143,7 +4143,7 @@ IDE_RC smcTable::setAllIndexInconsistency( smcTableHeader   * aTableHeader )
 
     sIndexCnt = smcTable::getIndexCount( aTableHeader );
 
-    /* Index°¡ ÇÏ³ªµµ ¾øÀ¸¸é ¹Ù·Î success return */
+    /* Indexê°€ í•˜ë‚˜ë„ ì—†ìœ¼ë©´ ë°”ë¡œ success return */
     IDE_TEST_CONT( sIndexCnt == 0, no_indexes );
 
     sIndexHeaderSize = smLayerCallback::getSizeOfIndexHeader();
@@ -4172,13 +4172,13 @@ IDE_RC smcTable::setAllIndexInconsistency( smcTableHeader   * aTableHeader )
             if ( smLayerCallback::getIsConsistentOfIndexHeader( sIndexHeader )
                  == ID_TRUE )
             {
-                // Inconsistent -> Consistent°æ¿ì´Â ¾ø´Ù.
+                // Inconsistent -> Consistentê²½ìš°ëŠ” ì—†ë‹¤.
                 smLayerCallback::setIsConsistentOfIndexHeader( sIndexHeader,
                                                                ID_FALSE );
             }
             else
             {
-                /* ÀÌ¹Ì inconsistent »óÅÂÀÌ´Ù. */
+                /* ì´ë¯¸ inconsistent ìƒíƒœì´ë‹¤. */
             }
 
             sOffset += sIndexHeaderSize;
@@ -4191,7 +4191,7 @@ IDE_RC smcTable::setAllIndexInconsistency( smcTableHeader   * aTableHeader )
 
         if( sIndexIdx == sIndexCnt )
         {
-            /* ¸ğµç index¿¡ ´ëÇØ¼­ consistent flag¸¦ ¼³Á¤ÇßÀ¸¹Ç·Î loop Å»Ãâ */
+            /* ëª¨ë“  indexì— ëŒ€í•´ì„œ consistent flagë¥¼ ì„¤ì •í–ˆìœ¼ë¯€ë¡œ loop íƒˆì¶œ */
             break;
         }
         else
@@ -4207,7 +4207,7 @@ IDE_RC smcTable::setAllIndexInconsistency( smcTableHeader   * aTableHeader )
 
 
 /***********************************************************************
- * Description : undo½Ã¿¡ create index¿¡ ´ëÇÑ nta operation ¼öÇà
+ * Description : undoì‹œì— create indexì— ëŒ€í•œ nta operation ìˆ˜í–‰
  ***********************************************************************/
 IDE_RC smcTable::dropIndexByAbortHeader( idvSQL*            aStatistics,
                                          void             * aTrans,
@@ -4223,21 +4223,21 @@ IDE_RC smcTable::dropIndexByAbortHeader( idvSQL*            aStatistics,
     SChar           *sIndexRowPtr;
     smOID            sSrcIndexOID;
 
-    /* dropÇÏ°íÀÚ ÇÏ´Â Index¸¦ Ã£°í TableÀÇ Index Á¤º¸¸¦ °»½ÅÇÑ´Ù.*/
+    /* dropí•˜ê³ ì í•˜ëŠ” Indexë¥¼ ì°¾ê³  Tableì˜ Index ì •ë³´ë¥¼ ê°±ì‹ í•œë‹¤.*/
     IDE_TEST_RAISE( aHeader->mIndexes[aIdx].fstPieceOID == SM_NULL_OID,
                     not_found_error );
 
     sSrcLength = aHeader->mIndexes[aIdx].length;
     sDstLength = sSrcLength - smLayerCallback::getSizeOfIndexHeader();
 
-    /* °¢ °æ¿ì¿¡ ¸Â°Ô version list¿¡ Ãß°¡ */
+    /* ê° ê²½ìš°ì— ë§ê²Œ version listì— ì¶”ê°€ */
     sSrcIndexOID = aHeader->mIndexes[aIdx].fstPieceOID;
     IDE_ASSERT( smmManager::getOIDPtr( SMI_ID_TABLESPACE_SYSTEM_MEMORY_DIC, 
                                        sSrcIndexOID,
                                        (void**)&sIndexRowPtr )
                 == IDE_SUCCESS );
 
-    /* header¿¡ assign µÇ¾ú´ø new index OID ¿¡ delete flag ¼³Á¤ */
+    /* headerì— assign ë˜ì—ˆë˜ new index OID ì— delete flag ì„¤ì • */
     IDE_TEST(smcRecord::setFreeFlagAtVCPieceHdr(aTrans,
                                                 aHeader->mSelfOID,
                                                 SMI_ID_TABLESPACE_SYSTEM_MEMORY_DIC,
@@ -4251,8 +4251,8 @@ IDE_RC smcTable::dropIndexByAbortHeader( idvSQL*            aStatistics,
 
     if( aOIDIndex != SM_NULL_OID )
     {
-        /* BUG-17955: Add/Drop Column ¼öÇàÈÄ smiStatement End½Ã, Unable to invoke
-         * mutex_lock()·Î ¼­¹ö ºñÁ¤»ó Á¾·á */
+        /* BUG-17955: Add/Drop Column ìˆ˜í–‰í›„ smiStatement Endì‹œ, Unable to invoke
+         * mutex_lock()ë¡œ ì„œë²„ ë¹„ì •ìƒ ì¢…ë£Œ */
         IDE_TEST( removeIdxHdrAndCopyIndexHdrArr(
                                           aTrans,
                                           aIndexHeader,
@@ -4261,7 +4261,7 @@ IDE_RC smcTable::dropIndexByAbortHeader( idvSQL*            aStatistics,
                                           aOIDIndex )
                   != IDE_SUCCESS );
 
-        /* ÀÌÀü index oID¿¡ delete flag¸¦ used·Î ¼³Á¤ÇÑ´Ù. */
+        /* ì´ì „ index oIDì— delete flagë¥¼ usedë¡œ ì„¤ì •í•œë‹¤. */
         IDE_ASSERT( smmManager::getOIDPtr(
                                     SMI_ID_TABLESPACE_SYSTEM_MEMORY_DIC, 
                                     aOIDIndex,
@@ -4277,11 +4277,11 @@ IDE_RC smcTable::dropIndexByAbortHeader( idvSQL*            aStatistics,
     }
     else
     {
-        /* aOIDIndex °¡ NULLÀÎ °æ¿ì length´Â 0ÀÌ¾î¾ß ÇÔ */
+        /* aOIDIndex ê°€ NULLì¸ ê²½ìš° lengthëŠ” 0ì´ì–´ì•¼ í•¨ */
         IDE_ASSERT( sDstLength == 0 );
     }
 
-    /* ÀÌÀü index oID(aOIDIndex)¸¦ table header¿¡ assignÇÑ´Ù. */
+    /* ì´ì „ index oID(aOIDIndex)ë¥¼ table headerì— assigní•œë‹¤. */
     IDE_TEST( smrUpdate::updateIndexAtTableHead(NULL, /* idvSQL* */
                                                 aTrans,
                                                 aHeader->mSelfOID,
@@ -4293,7 +4293,7 @@ IDE_RC smcTable::dropIndexByAbortHeader( idvSQL*            aStatistics,
               != IDE_SUCCESS );
 
 
-    /* ÀÌÀü index oID·Î º¹±¸ÇÑ´Ù. */
+    /* ì´ì „ index oIDë¡œ ë³µêµ¬í•œë‹¤. */
     aHeader->mIndexes[aIdx].fstPieceOID = aOIDIndex;
     aHeader->mIndexes[aIdx].length = sDstLength;
     aHeader->mIndexes[aIdx].flag   = SM_VCDESC_MODE_OUT;
@@ -4306,8 +4306,8 @@ IDE_RC smcTable::dropIndexByAbortHeader( idvSQL*            aStatistics,
         // but, do not redo CLR
         if ( smrRecoveryMgr::isRefineDRDBIdx() == ID_TRUE )
         {
-            /* BUG-16555: Restart½Ã UndoÇÏ´Ù°¡ smcTable::dropIndexByAbortHeader
-             * ¿¡¼­ ¼­¹ö »ç¸Á: Disk Table¿¡ ´ëÇØ¼­¸¸ À§ ÇÔ¼ö°¡ È£ÃâµÇ¾î¾ß ÇÔ. */
+            /* BUG-16555: Restartì‹œ Undoí•˜ë‹¤ê°€ smcTable::dropIndexByAbortHeader
+             * ì—ì„œ ì„œë²„ ì‚¬ë§: Disk Tableì— ëŒ€í•´ì„œë§Œ ìœ„ í•¨ìˆ˜ê°€ í˜¸ì¶œë˜ì–´ì•¼ í•¨. */
             if( SMI_TABLE_TYPE_IS_DISK( aHeader ) == ID_TRUE )
             {
                 IDE_TEST( rebuildRuntimeIndexHeaders(
@@ -4356,14 +4356,14 @@ IDE_RC smcTable::dropIndexByAbortHeader( idvSQL*            aStatistics,
 }
 
 /***********************************************************************
- * Description : drop index¿¡ ´ëÇÑ pending ¿¬»ê Ã³¸® (°øÅë)
+ * Description : drop indexì— ëŒ€í•œ pending ì—°ì‚° ì²˜ë¦¬ (ê³µí†µ)
  ***********************************************************************/
 IDE_RC smcTable::dropIndexPending( void*  aIndexHeader )
 {
 
     smcTableHeader *sPtr;
 
-    // [1] ½ÇÁ¦ Index ·¹ÄÚµå »èÁ¦
+    // [1] ì‹¤ì œ Index ë ˆì½”ë“œ ì‚­ì œ
     IDE_ASSERT( smcTable::getTableHeaderFromOID( smLayerCallback::getTableOIDOfIndexHeader( aIndexHeader ),
                                                  (void**)&sPtr )
                 == IDE_SUCCESS );
@@ -4384,46 +4384,46 @@ IDE_RC smcTable::dropIndexPending( void*  aIndexHeader )
 }
 
 /***********************************************************************
- * Description : drop tableÀÇ pending ¿¬»ê ¼öÇà (°øÅë)
- * pending ¿¬»êÀ¸·Î µî·ÏµÈ droptable¿¡ ´ëÇÑ ½ÇÁ¦ Á¦°Å °úÁ¤À» ¼öÇàÇÑ´Ù.
- * memory tableÀÇ °æ¿ì ager°¡ Ã³¸®ÇÏ¸ç, disk tableÀÎ °æ¿ì disk G.C¿¡
- * ÀÇÇØ È£ÃâµÇ¾î Ã³¸®µÈ´Ù.
+ * Description : drop tableì˜ pending ì—°ì‚° ìˆ˜í–‰ (ê³µí†µ)
+ * pending ì—°ì‚°ìœ¼ë¡œ ë“±ë¡ëœ droptableì— ëŒ€í•œ ì‹¤ì œ ì œê±° ê³¼ì •ì„ ìˆ˜í–‰í•œë‹¤.
+ * memory tableì˜ ê²½ìš° agerê°€ ì²˜ë¦¬í•˜ë©°, disk tableì¸ ê²½ìš° disk G.Cì—
+ * ì˜í•´ í˜¸ì¶œë˜ì–´ ì²˜ë¦¬ëœë‹¤.
  *
  *  [!!!!!!!]
- * ÀÌ memory ager/disk GC/refine catalog table ¼öÇà½Ã È£ÃâµÇ´Âµ¥, ´Ü,
- * refine catalog table½Ã¿¡´Â disk table¿¡ ÇÑÇÏ¿© È£ÃâµÇÁö ¾Ê´Â´Ù.
- * È£ÃâµÇ´Â °æ¿ì´Â ´ÙÀ½°ú °°´Ù .
+ * ì´ memory ager/disk GC/refine catalog table ìˆ˜í–‰ì‹œ í˜¸ì¶œë˜ëŠ”ë°, ë‹¨,
+ * refine catalog tableì‹œì—ëŠ” disk tableì— í•œí•˜ì—¬ í˜¸ì¶œë˜ì§€ ì•ŠëŠ”ë‹¤.
+ * í˜¸ì¶œë˜ëŠ” ê²½ìš°ëŠ” ë‹¤ìŒê³¼ ê°™ë‹¤ .
  *
- * - create memory tableÀ» ¼öÇàÇÑ tx°¡ commit/abortÇÑ °æ¿ì (by ager or G.C)
- * - drop disk/memory tableÀ» ¼öÇàÇÑ tx°¡ commitÇÑ °æ¿ì  tss°¡ Á¸ÀçÇÔ
+ * - create memory tableì„ ìˆ˜í–‰í•œ txê°€ commit/abortí•œ ê²½ìš° (by ager or G.C)
+ * - drop disk/memory tableì„ ìˆ˜í–‰í•œ txê°€ commití•œ ê²½ìš°  tssê°€ ì¡´ì¬í•¨
  *   (by ager or G.C)
- * - refine catalog table ¼öÇà½Ã memory table¿¡ ÇÑÇÏ¿© È£ÃâµÊ
+ * - refine catalog table ìˆ˜í–‰ì‹œ memory tableì— í•œí•˜ì—¬ í˜¸ì¶œë¨
  *
- * : ÀÌ¹Û¿¡ create disk tableÇÏ´Ù°¡ abortÇÏ´Â °æ¿ì ÇØ´ç undo¸¦ ÅëÇÏ¿©
- *   ¿ÏÀü Ã³¸®ÇÔ.
- * : ÀÌ¹Û¿¡ drop disk tableÇÏ´Ù°¡ commitÇÏ´Â °æ¿ì ÇØ´ç tss¸¦ G.C¿¡ ÀÇÇØ
- *   Ã³¸®ÇÔ
+ * : ì´ë°–ì— create disk tableí•˜ë‹¤ê°€ abortí•˜ëŠ” ê²½ìš° í•´ë‹¹ undoë¥¼ í†µí•˜ì—¬
+ *   ì™„ì „ ì²˜ë¦¬í•¨.
+ * : ì´ë°–ì— drop disk tableí•˜ë‹¤ê°€ commití•˜ëŠ” ê²½ìš° í•´ë‹¹ tssë¥¼ G.Cì— ì˜í•´
+ *   ì²˜ë¦¬í•¨
  *
  * - 2nd code design
- *   + table page list¸¦ ½Ã½ºÅÛ¿¡ ¹İÈ¯ÇÔ
+ *   + table page listë¥¼ ì‹œìŠ¤í…œì— ë°˜í™˜í•¨
  *     if (memory table)
- *        - fixed page list entry ÇØÁ¦
- *        - variable page list entry ÇØÁ¦
+ *        - fixed page list entry í•´ì œ
+ *        - variable page list entry í•´ì œ
  *     else if (disk table)
- *        - data page segment ÇØÁ¦
+ *        - data page segment í•´ì œ
  *     endif
- *   + table headerÀÇ index Á¤º¸¸¦ ÀúÀåÇÑ variable
- *     slotÀ» free½ÃÅ´
- *   + table headerÀÇ column Á¤º¸¸¦ ÀúÀåÇÑ variable
- *     slotÀ» free½ÃÅ´
- *   + table headerÀÇ info Á¤º¸¸¦ ÀúÀåÇÑ variable
- *     slotÀ» free½ÃÅ´
- *   + table Á¦°Å¿¡ ´ëÇÑ nta ·Î±ë (SMR_OP_NULL)
- *   + table slot pageÀÇ dirty page µî·Ï
+ *   + table headerì˜ index ì •ë³´ë¥¼ ì €ì¥í•œ variable
+ *     slotì„ freeì‹œí‚´
+ *   + table headerì˜ column ì •ë³´ë¥¼ ì €ì¥í•œ variable
+ *     slotì„ freeì‹œí‚´
+ *   + table headerì˜ info ì •ë³´ë¥¼ ì €ì¥í•œ variable
+ *     slotì„ freeì‹œí‚´
+ *   + table ì œê±°ì— ëŒ€í•œ nta ë¡œê¹… (SMR_OP_NULL)
+ *   + table slot pageì˜ dirty page ë“±ë¡
  *
  * - RECOVERY
  *
- *  # drop table pending (* disk-table»ı¼º)
+ *  # drop table pending (* disk-tableìƒì„±)
  *
  *  (0){(1)         (2)}          {(3)          (4)}
  *   |---|-----------|--------------|------------|--------> time
@@ -4444,39 +4444,39 @@ IDE_RC smcTable::dropIndexPending( void*  aIndexHeader )
  *
  *  # Disk-Table Recovery Issue
  *
- *  : ÇÒ´çµÈ TSSÀÇ pending table oID°¡ ±â·ÏµÇ¾î ÀÖ´Â °ÍÀº  pending °úÁ¤ÀÌ
- *    ¿Ï·áµÇÁö ¾Ê¾Ò°Å³ª ¼öÇàµÇÁö ¾ÊÀº °æ¿ìÀÌ´Ù. ±×·¯¹Ç·Î ÀÌ ÇÔ¼ö¸¦
- *    ¹İº¹ÇÏ¿© ¼öÇàÇÏ¿©¾ß ÇÑ´Ù.
+ *  : í• ë‹¹ëœ TSSì˜ pending table oIDê°€ ê¸°ë¡ë˜ì–´ ìˆëŠ” ê²ƒì€  pending ê³¼ì •ì´
+ *    ì™„ë£Œë˜ì§€ ì•Šì•˜ê±°ë‚˜ ìˆ˜í–‰ë˜ì§€ ì•Šì€ ê²½ìš°ì´ë‹¤. ê·¸ëŸ¬ë¯€ë¡œ ì´ í•¨ìˆ˜ë¥¼
+ *    ë°˜ë³µí•˜ì—¬ ìˆ˜í–‰í•˜ì—¬ì•¼ í•œë‹¤.
  *
- *  - (1)±îÁö ·Î±ëÇÏ¿´´Ù¸é
+ *  - (1)ê¹Œì§€ ë¡œê¹…í•˜ì˜€ë‹¤ë©´
  *    + (1) -> undo
- *      : tbl-hdr¿¡ segment rID, table meta PID¸¦ ÀÌÀü image·Î º¹±¸ÇÑ´Ù.
- *    + smxTrans::abortÀ» ¼öÇàÇÑ´Ù.
+ *      : tbl-hdrì— segment rID, table meta PIDë¥¼ ì´ì „ imageë¡œ ë³µêµ¬í•œë‹¤.
+ *    + smxTrans::abortì„ ìˆ˜í–‰í•œë‹¤.
  *
- *  - (2)±îÁö mtx commitÀÌ µÇ¾ú´Ù¸é
+ *  - (2)ê¹Œì§€ mtx commitì´ ë˜ì—ˆë‹¤ë©´
  *    + (2) -> logical undo
- *      : doNTADropTableÀ» ¼öÇàÇÏ¿© free segment¸¦ ÇÑ´Ù.
- *    + smxTrans::abortÇÑ´Ù.
+ *      : doNTADropTableì„ ìˆ˜í–‰í•˜ì—¬ free segmentë¥¼ í•œë‹¤.
+ *    + smxTrans::abortí•œë‹¤.
  *    + ...
- *    + smxTrans::abortÇÑ´Ù.
+ *    + smxTrans::abortí•œë‹¤.
  *
- *  - (7)±îÁö ·Î±ëµÇ¾ú´Ù¸é
+ *  - (7)ê¹Œì§€ ë¡œê¹…ë˜ì—ˆë‹¤ë©´
  *    + (7) -> undo
- *      : table header¿¡ info oIDÀÇ ÀÌÀü image¸¦ º¹±¸ÇÑ´Ù.
- *    + (6)¿¡ ´ëÇÑ Ã³¸®¸¦ ÇÑ´Ù.
+ *      : table headerì— info oIDì˜ ì´ì „ imageë¥¼ ë³µêµ¬í•œë‹¤.
+ *    + (6)ì— ëŒ€í•œ ì²˜ë¦¬ë¥¼ í•œë‹¤.
  *    + ...
- *    + smxTrans::abortÇÑ´Ù.
+ *    + smxTrans::abortí•œë‹¤.
  *
- *  - (8)±îÁö ·Î±ëµÇ¾ú´Ù¸é
+ *  - (8)ê¹Œì§€ ë¡œê¹…ë˜ì—ˆë‹¤ë©´
  *    + (8) -> logical redo
- *      : var slotÀ» ´Ù½Ã free ¼³Á¤ÇÑ´Ù
- *    + (6)¿¡ ´ëÇÑ Ã³¸®¸¦ ÇÑ´Ù.
+ *      : var slotì„ ë‹¤ì‹œ free ì„¤ì •í•œë‹¤
+ *    + (6)ì— ëŒ€í•œ ì²˜ë¦¬ë¥¼ í•œë‹¤.
  *    + ...
- *    + smxTrans::abortÇÑ´Ù.
+ *    + smxTrans::abortí•œë‹¤.
  *
- *  - (9)±îÁö ·Î±ëµÇ¾ú´Ù¸é
- *    + (9) -> (0)¹ø±îÁö skip undo
- *    + smxTrans::abortÇÑ´Ù.
+ *  - (9)ê¹Œì§€ ë¡œê¹…ë˜ì—ˆë‹¤ë©´
+ *    + (9) -> (0)ë²ˆê¹Œì§€ skip undo
+ *    + smxTrans::abortí•œë‹¤.
  *
  ***********************************************************************/
 IDE_RC smcTable::dropTablePending( idvSQL          *aStatistics,
@@ -4499,11 +4499,11 @@ IDE_RC smcTable::dropTablePending( idvSQL          *aStatistics,
     sLsnNTA1 = smLayerCallback::getLstUndoNxtLSN( aTrans );
 
     /* ------------------------------------------------
-     * [1] table page list ÇØÁ¦
-     * - memory tableÀÇ °æ¿ì, page list entry¿¡ ÇÒ´çµÈ
-     *   ÆäÀÌÁö¸¦ freeÇÏ¿© ½Ã½ºÅÛ¿¡ ¹İÈ¯ÇÑ´Ù.
-     * - disk tableÀÇ °æ¿ì, segment¸¦ ÇØÁ¦ÇÔÀ¸·Î½á
-     *   Å×ÀÌºí¿¡ ÇÒ´çµÈ ÆäÀÌÁöµéÀ» ¸ğµÎ ½Ã½ºÅÛ¿¡ ¹İÈ¯ÇÑ´Ù.
+     * [1] table page list í•´ì œ
+     * - memory tableì˜ ê²½ìš°, page list entryì— í• ë‹¹ëœ
+     *   í˜ì´ì§€ë¥¼ freeí•˜ì—¬ ì‹œìŠ¤í…œì— ë°˜í™˜í•œë‹¤.
+     * - disk tableì˜ ê²½ìš°, segmentë¥¼ í•´ì œí•¨ìœ¼ë¡œì¨
+     *   í…Œì´ë¸”ì— í• ë‹¹ëœ í˜ì´ì§€ë“¤ì„ ëª¨ë‘ ì‹œìŠ¤í…œì— ë°˜í™˜í•œë‹¤.
      * ----------------------------------------------*/
     sSlotHeader = (smpSlotHeader*)aHeader - 1;
 
@@ -4518,17 +4518,17 @@ IDE_RC smcTable::dropTablePending( idvSQL          *aStatistics,
                  sTableType == SMI_TABLE_DISK     ||
                  sTableType == SMI_TABLE_REMOTE );
 
-    // Tablespace·ÎÀÇ Á¢±Ù °¡´É¼º ¿©ºÎ ( °¡´ÉÇÏ¸é ID_TRUE )
-    //   - DROP/DISCARDµÈ TablespaceÀÇ °æ¿ì Á¢±ÙÀÌ ºÒ°¡´ÉÇÔ.
-    //   - DROP Table¼öÇà½Ã Tablespace¿¡ IX¶ôÀÌ ÀâÈù »óÅÂÀÌ´Ù.
+    // Tablespaceë¡œì˜ ì ‘ê·¼ ê°€ëŠ¥ì„± ì—¬ë¶€ ( ê°€ëŠ¥í•˜ë©´ ID_TRUE )
+    //   - DROP/DISCARDëœ Tablespaceì˜ ê²½ìš° ì ‘ê·¼ì´ ë¶ˆê°€ëŠ¥í•¨.
+    //   - DROP Tableìˆ˜í–‰ì‹œ Tablespaceì— IXë½ì´ ì¡íŒ ìƒíƒœì´ë‹¤.
     sSkipTbsAcc =  sctTableSpaceMgr::hasState( aHeader->mSpaceID,
                                                SCT_SS_SKIP_DROP_TABLE_CONTENT );
 
     if (sSkipTbsAcc == ID_TRUE )
     {
-        // Tablespace¿¡ Á¢±ÙÇÏÁö ¾Ê´Â´Ù.
-        // ´Ü disk tableÀÎ °æ¿ì tablespaceÀÇ »óÅÂ¿¡ °ü°è¾øÀÌ
-        // index¸¦ ÇØÁ¦ÇÑ´Ù.
+        // Tablespaceì— ì ‘ê·¼í•˜ì§€ ì•ŠëŠ”ë‹¤.
+        // ë‹¨ disk tableì¸ ê²½ìš° tablespaceì˜ ìƒíƒœì— ê´€ê³„ì—†ì´
+        // indexë¥¼ í•´ì œí•œë‹¤.
         if ((sTableType == SMI_TABLE_DISK) && (aFlag == ID_TRUE))
         {
             IDE_TEST( smLayerCallback::dropIndexes( aHeader )
@@ -4552,16 +4552,16 @@ IDE_RC smcTable::dropTablePending( idvSQL          *aStatistics,
                           != IDE_SUCCESS );
 
                 /* BUG-18101
-                   ¿ø·¡ drop µÈ table¿¡ ´ëÇØ runtime Á¤º¸¸¦ ÇØÁ¦ÇÏ´Â °÷Àº
-                   smcCatalogTable::finAllocedTableSlots()¿¡¼­ ¿´´Ù.
-                   ÇÏÁö¸¸ dropPending½Ã È£ÃâµÇ´Â º» ÇÔ¼ö¿¡¼­
-                   table header Á¤º¸¸¦ ´ã°í ÀÖ´Â slotÀÌ freeµÇ¾î ¹ö·Á¼­
-                   finAllocedTableSlots()¿¡¼­ slotÀ» Å½»öÇÒ ¶§ °Ë»öÀÌ ¾ÈµÇ¾î
-                   drop µÈ disk table¿¡ ´ëÇØ¼­´Â runtime Á¤º¸¸¦ ÇØÁ¦ÇÏÁö ¸øÇÏ°í ÀÖ´Â
-                   ¹®Á¦°¡ ¹ß°ßµÇ¾ú´Ù.
-                   Á¦´ë·Î Ã³¸®ÇÏ±â À§ÇØ¼­´Â Ã¶ÀúÇÑ ¼³°è¿¡ ¹ÙÅÁÇÑ ¼Ò½º ¸®ÆÑÅä¸µÀÌ
-                   ÇÊ¿äÇÏ±â ¶§¹®¿¡ ÀÏ´Ü ¸Ş¸ğ¸® Å×ÀÌºí°ú ¸¶Âù°¡Áö·Î
-                   ¿©±â¼­ ·±Å¸ÀÓ Á¤º¸¸¦ ÇØÁ¦ÇÏµµ·Ï ÇÑ´Ù. */
+                   ì›ë˜ drop ëœ tableì— ëŒ€í•´ runtime ì •ë³´ë¥¼ í•´ì œí•˜ëŠ” ê³³ì€
+                   smcCatalogTable::finAllocedTableSlots()ì—ì„œ ì˜€ë‹¤.
+                   í•˜ì§€ë§Œ dropPendingì‹œ í˜¸ì¶œë˜ëŠ” ë³¸ í•¨ìˆ˜ì—ì„œ
+                   table header ì •ë³´ë¥¼ ë‹´ê³  ìˆëŠ” slotì´ freeë˜ì–´ ë²„ë ¤ì„œ
+                   finAllocedTableSlots()ì—ì„œ slotì„ íƒìƒ‰í•  ë•Œ ê²€ìƒ‰ì´ ì•ˆë˜ì–´
+                   drop ëœ disk tableì— ëŒ€í•´ì„œëŠ” runtime ì •ë³´ë¥¼ í•´ì œí•˜ì§€ ëª»í•˜ê³  ìˆëŠ”
+                   ë¬¸ì œê°€ ë°œê²¬ë˜ì—ˆë‹¤.
+                   ì œëŒ€ë¡œ ì²˜ë¦¬í•˜ê¸° ìœ„í•´ì„œëŠ” ì² ì €í•œ ì„¤ê³„ì— ë°”íƒ•í•œ ì†ŒìŠ¤ ë¦¬íŒ©í† ë§ì´
+                   í•„ìš”í•˜ê¸° ë•Œë¬¸ì— ì¼ë‹¨ ë©”ëª¨ë¦¬ í…Œì´ë¸”ê³¼ ë§ˆì°¬ê°€ì§€ë¡œ
+                   ì—¬ê¸°ì„œ ëŸ°íƒ€ì„ ì •ë³´ë¥¼ í•´ì œí•˜ë„ë¡ í•œë‹¤. */
                 IDE_TEST(finRuntimeItem(aHeader) != IDE_SUCCESS);
 
                 IDE_TEST( destroyRowTemplate( aHeader )!= IDE_SUCCESS );
@@ -4609,10 +4609,10 @@ IDE_RC smcTable::dropTablePending( idvSQL          *aStatistics,
         }
 
         /* ------------------------------------------------
-         * tableÀÇ indexµéÀ» ¸ğµÎ drop ½ÃÅ´
-         * - ÀÏ¹İÀûÀ¸·Î a_flag ´Â ID_TRUE °ªÀ» °¡Áö¸ç,
-         *   refineCatalogTable¿¡¼­ skip ÇÏ±â À§ÇØ
-         *   ID_FALSE °ªÀ» °¡Áø´Ù.
+         * tableì˜ indexë“¤ì„ ëª¨ë‘ drop ì‹œí‚´
+         * - ì¼ë°˜ì ìœ¼ë¡œ a_flag ëŠ” ID_TRUE ê°’ì„ ê°€ì§€ë©°,
+         *   refineCatalogTableì—ì„œ skip í•˜ê¸° ìœ„í•´
+         *   ID_FALSE ê°’ì„ ê°€ì§„ë‹¤.
          * ----------------------------------------------*/
         if( aFlag == ID_TRUE )
         {
@@ -4622,8 +4622,8 @@ IDE_RC smcTable::dropTablePending( idvSQL          *aStatistics,
     }
 
     /* ------------------------------------------------
-     * [2] table headerÀÇ index Á¤º¸¸¦ ÀúÀåÇÑ variable
-     *  slotÀ» free½ÃÅ´
+     * [2] table headerì˜ index ì •ë³´ë¥¼ ì €ì¥í•œ variable
+     *  slotì„ freeì‹œí‚´
      * ----------------------------------------------*/
     if( smcTable::getIndexCount(aHeader) != 0)
     {
@@ -4636,15 +4636,15 @@ IDE_RC smcTable::dropTablePending( idvSQL          *aStatistics,
     // END NTA[ -2-]
     }
 
-    // Table HeaderÀÇ Index Latch¸¦ ÆÄ±«ÇÏ°í ÇØÁ¦
+    // Table Headerì˜ Index Latchë¥¼ íŒŒê´´í•˜ê³  í•´ì œ
     IDE_TEST( finiAndFreeIndexLatch( aHeader )
               != IDE_SUCCESS );
 
     IDU_FIT_POINT( "1.BUG-21545@smcTable::dropTablePending" );
 
     /* ------------------------------------------------
-     * [3] table headerÀÇ column Á¤º¸¸¦ ÀúÀåÇÑ variable
-     *  slotÀ» free½ÃÅ´
+     * [3] table headerì˜ column ì •ë³´ë¥¼ ì €ì¥í•œ variable
+     *  slotì„ freeì‹œí‚´
      * ----------------------------------------------*/
     if(aHeader->mColumns.fstPieceOID != SM_NULL_OID)
     {
@@ -4658,8 +4658,8 @@ IDE_RC smcTable::dropTablePending( idvSQL          *aStatistics,
     }
 
     /* ------------------------------------------------
-     * [5] table headerÀÇ info Á¤º¸¸¦ ÀúÀåÇÑ variable
-     *  slotÀ» free½ÃÅ´
+     * [5] table headerì˜ info ì •ë³´ë¥¼ ì €ì¥í•œ variable
+     *  slotì„ freeì‹œí‚´
      * ----------------------------------------------*/
     if(aHeader->mInfo.fstPieceOID != SM_NULL_OID)
     {
@@ -4667,9 +4667,9 @@ IDE_RC smcTable::dropTablePending( idvSQL          *aStatistics,
         sLsnNTA2 = smLayerCallback::getLstUndoNxtLSN( aTrans );
 
         /* ------------------------------------------------
-         * info Á¤º¸¸¦ ÀúÀåÇÑ variable slotÀÇ ÇØÁ¦ ¹× table headerÀÇ
-         * info Á¤º¸¿¡ SM_NULL_OID¸¦ ¼³Á¤
-         * - SMR_LT_UPDATEÀÇ SMR_SMC_TABLEHEADER_UPDATE_INFO ·Î±ë
+         * info ì •ë³´ë¥¼ ì €ì¥í•œ variable slotì˜ í•´ì œ ë° table headerì˜
+         * info ì •ë³´ì— SM_NULL_OIDë¥¼ ì„¤ì •
+         * - SMR_LT_UPDATEì˜ SMR_SMC_TABLEHEADER_UPDATE_INFO ë¡œê¹…
          * ----------------------------------------------*/
         IDE_TEST( smrUpdate::updateInfoAtTableHead(
                       NULL, /* idvSQL* */
@@ -4689,7 +4689,7 @@ IDE_RC smcTable::dropTablePending( idvSQL          *aStatistics,
         aHeader->mInfo.flag = SM_VCDESC_MODE_OUT;
 
         /* ------------------------------------------------
-         * catalog table¿¡ variable slotÀ» ÇØÁ¦ÇÏ¿© ¹İÈ¯ÇÔ.
+         * catalog tableì— variable slotì„ í•´ì œí•˜ì—¬ ë°˜í™˜í•¨.
          * ----------------------------------------------*/
         IDE_ASSERT( smmManager::getOIDPtr( 
                         SMI_ID_TABLESPACE_SYSTEM_MEMORY_DIC, 
@@ -4709,15 +4709,15 @@ IDE_RC smcTable::dropTablePending( idvSQL          *aStatistics,
 
     }
 
-    // To Fix BUG-16752 Memory Table Drop½Ã Runtime Entry°¡ ÇØÁ¦µÇÁö ¾ÊÀ½
+    // To Fix BUG-16752 Memory Table Dropì‹œ Runtime Entryê°€ í•´ì œë˜ì§€ ì•ŠìŒ
     //
-    // Refine½Ã ÀÌ¹Ì DropµÈ Table¿¡ ´ëÇØ Lock & Runtime ItemÀ» ÇÒ´çÇÏÁö
-    // ¾Êµµ·Ï ÇÏ±â À§ÇÔ.
-    //  => smpSlotHeader.mUsedFlag ¸¦ ID_FALSE·Î ¹Ù²Û´Ù.
-    //     -> refine½Ã nextOIDall¾ÈÂÊ¿¡¼­ skip
+    // Refineì‹œ ì´ë¯¸ Dropëœ Tableì— ëŒ€í•´ Lock & Runtime Itemì„ í• ë‹¹í•˜ì§€
+    // ì•Šë„ë¡ í•˜ê¸° ìœ„í•¨.
+    //  => smpSlotHeader.mUsedFlag ë¥¼ ID_FALSEë¡œ ë°”ê¾¼ë‹¤.
+    //     -> refineì‹œ nextOIDallì•ˆìª½ì—ì„œ skip
 
-    //  (ÁÖÀÇ) »õ·Î »ı¼ºµÇ´Â Table¿¡ ÀÇÇØ »ç¿ëµÇÁö ¾Êµµ·Ï
-    //          catalog tableÀÇ free slot list¿¡´Â ´ŞÁö ¾Ê´Â´Ù.
+    //  (ì£¼ì˜) ìƒˆë¡œ ìƒì„±ë˜ëŠ” Tableì— ì˜í•´ ì‚¬ìš©ë˜ì§€ ì•Šë„ë¡
+    //          catalog tableì˜ free slot listì—ëŠ” ë‹¬ì§€ ì•ŠëŠ”ë‹¤.
     IDE_TEST( smpFixedPageList::setFreeSlot(
                   aTrans,
                   SMI_ID_TABLESPACE_SYSTEM_MEMORY_DIC,
@@ -4727,7 +4727,7 @@ IDE_RC smcTable::dropTablePending( idvSQL          *aStatistics,
               != IDE_SUCCESS );
 
     /* ------------------------------------------------
-     * [6] table Á¦°Å¿¡ ´ëÇÑ NTA ·Î±ë
+     * [6] table ì œê±°ì— ëŒ€í•œ NTA ë¡œê¹…
      * END NTA[-1-]
      * ----------------------------------------------*/
     IDE_TEST( smrLogMgr::writeNTALogRec(NULL, /* idvSQL* */
@@ -4759,23 +4759,23 @@ IDE_RC smcTable::dropTablePending( idvSQL          *aStatistics,
 }
 
 /***********************************************************************
- * Description :  PROJ-1362 QP - Large Record & Internal LOB Áö¿ø.
- *                tableÀÇ ÄÃ·³°³¼ö¿Í ÀÎµ¦½º °³¼ö Á¦¾à Ç®±â.
- *  table drop pending½Ã¿¡ ºÒ¸®´Â ÇÔ¼ö·Î, tableÀÇ ÀÎµ¦½º Á¤º¸¸¦ ´ãÀº
- *  variable slotÀ» ÇØÁ¦ÇÑ´Ù.
+ * Description :  PROJ-1362 QP - Large Record & Internal LOB ì§€ì›.
+ *                tableì˜ ì»¬ëŸ¼ê°œìˆ˜ì™€ ì¸ë±ìŠ¤ ê°œìˆ˜ ì œì•½ í’€ê¸°.
+ *  table drop pendingì‹œì— ë¶ˆë¦¬ëŠ” í•¨ìˆ˜ë¡œ, tableì˜ ì¸ë±ìŠ¤ ì •ë³´ë¥¼ ë‹´ì€
+ *  variable slotì„ í•´ì œí•œë‹¤.
  *  - code design
  *  for( i =0 ; i  < i < SMC_MAX_INDEX_OID_CNT; i++)
  *  do
- *    if( tableÇì´õÀÇ mIndex[i]  == SM_NULL_OID)
+ *    if( tableí—¤ë”ì˜ mIndex[i]  == SM_NULL_OID)
  *    then
  *         continue;
  *    fi
- *    Æ®·£Àè¼ÇÀÇ last undo LSNÀ» ¾ò´Â´Ù;
- *    table Çì´õÀÇ mIndexes[i]Á¤º¸¿¡ SM_NULL_OID¸¦ ¼³Á¤ÇÏ´Â
+ *    íŠ¸ëœì­ì…˜ì˜ last undo LSNì„ ì–»ëŠ”ë‹¤;
+ *    table í—¤ë”ì˜ mIndexes[i]ì •ë³´ì— SM_NULL_OIDë¥¼ ì„¤ì •í•˜ëŠ”
  *    physical logging;
- *    table Çì´õÀÇ mIndexes[i]¸¦ ±â¾ï;
- *    table Çì´õÀÇ mIndexes[i]¸¦ SM_NULL_OIDÀ¸·Î ¼³Á¤;
- *    table Çì´õÀÇ mIndexes[i]°¡ °¡¸£Å°°í ÀÖ¾ú´ø variable slotÇØÁ¦
+ *    table í—¤ë”ì˜ mIndexes[i]ë¥¼ ê¸°ì–µ;
+ *    table í—¤ë”ì˜ mIndexes[i]ë¥¼ SM_NULL_OIDìœ¼ë¡œ ì„¤ì •;
+ *    table í—¤ë”ì˜ mIndexes[i]ê°€ ê°€ë¥´í‚¤ê³  ìˆì—ˆë˜ variable slotí•´ì œ
  *    (smpVarPageList::freeSlot);
  * done
  ***********************************************************************/
@@ -4806,7 +4806,7 @@ IDE_RC smcTable::freeIndexes(idvSQL          * aStatistics,
         // Begin NTA[-2-]
         sLsnNTA2 = smLayerCallback::getLstUndoNxtLSN( aTrans );
 
-        // disk indexÀÇ free segment
+        // disk indexì˜ free segment
         if (aTableType == SMI_TABLE_DISK)
         {
             IDE_ASSERT( smmManager::getOIDPtr( 
@@ -4837,9 +4837,9 @@ IDE_RC smcTable::freeIndexes(idvSQL          * aStatistics,
             }//for j
         }//if
         /* ------------------------------------------------
-         * index Á¤º¸¸¦ ÀúÀåÇÑ variable slotÀÇ ÇØÁ¦ ¹× table headerÀÇ
-         * index Á¤º¸¿¡ SM_NULL_OID¸¦ ¼³Á¤
-         * - SMR_LT_UPDATEÀÇ SMR_SMC_TABLEHEADER_UPDATE_INDEX ·Î±ë
+         * index ì •ë³´ë¥¼ ì €ì¥í•œ variable slotì˜ í•´ì œ ë° table headerì˜
+         * index ì •ë³´ì— SM_NULL_OIDë¥¼ ì„¤ì •
+         * - SMR_LT_UPDATEì˜ SMR_SMC_TABLEHEADER_UPDATE_INDEX ë¡œê¹…
          * ----------------------------------------------*/
         IDE_TEST( smrUpdate::updateIndexAtTableHead( NULL, /* idvSQL* */
                                                      aTrans,
@@ -4859,7 +4859,7 @@ IDE_RC smcTable::freeIndexes(idvSQL          * aStatistics,
         aHeader->mIndexes[i].flag        = SM_VCDESC_MODE_OUT;
 
         /* ------------------------------------------------
-         * catalog table¿¡ variable slotÀ» ÇØÁ¦ÇÏ¿© ¹İÈ¯ÇÔ.
+         * catalog tableì— variable slotì„ í•´ì œí•˜ì—¬ ë°˜í™˜í•¨.
          * ----------------------------------------------*/
         IDE_ASSERT( smmManager::getOIDPtr( 
                                     SMI_ID_TABLESPACE_SYSTEM_MEMORY_DIC, 
@@ -4889,8 +4889,8 @@ IDE_RC smcTable::freeIndexes(idvSQL          * aStatistics,
 
 /***********************************************************************
  * Description :
- * disk index¿¡ ´ëÇÑ Á¦°ÅÀÛ¾÷Àº disk G.C¿¡ ÀÇÇØ
- * Ã³¸®µÇ¹Ç·Î, º» ÇÔ¼ö¿¡¼­´Â skip ÇÏµµ·Ï Ã³¸®ÇÑ´Ù.
+ * disk indexì— ëŒ€í•œ ì œê±°ì‘ì—…ì€ disk G.Cì— ì˜í•´
+ * ì²˜ë¦¬ë˜ë¯€ë¡œ, ë³¸ í•¨ìˆ˜ì—ì„œëŠ” skip í•˜ë„ë¡ ì²˜ë¦¬í•œë‹¤.
  ***********************************************************************/
 IDE_RC smcTable::dropIndexList( smcTableHeader * aHeader )
 {
@@ -4994,7 +4994,7 @@ smiColumn* smcTable::getColumnAndOID(const void* aTableHeader,
 
     sTableHeader = (const smcTableHeader*) aTableHeader;
 
-    //Å×ÀÌºíÀÇ ÄÃ·³Á¤º¸¸¦ ´ãÀº ½ÃÀÛ  variable slot.
+    //í…Œì´ë¸”ì˜ ì»¬ëŸ¼ì •ë³´ë¥¼ ë‹´ì€ ì‹œì‘  variable slot.
     IDE_ASSERT( smmManager::getOIDPtr( 
                                 SMI_ID_TABLESPACE_SYSTEM_MEMORY_DIC, 
                                 sTableHeader->mColumns.fstPieceOID,
@@ -5003,15 +5003,15 @@ smiColumn* smcTable::getColumnAndOID(const void* aTableHeader,
     sOffset = sTableHeader->mColumnSize * aIndex;
     *aOID = sTableHeader->mColumns.fstPieceOID;
 
-    /* BUG-22367: ¸¹Àº ÄÃ·³ °¹¼ö¸¦ °¡Áø Å×ÀÌºí »ı¼º½Ã ºñÁ¤»ó Á¾·á
+    /* BUG-22367: ë§ì€ ì»¬ëŸ¼ ê°¯ìˆ˜ë¥¼ ê°€ì§„ í…Œì´ë¸” ìƒì„±ì‹œ ë¹„ì •ìƒ ì¢…ë£Œ
      *
-     * sCurSize < sOffset => sCurSize <= sOffset , = Á¶°ÇÀÌ ºüÁ³À½
+     * sCurSize < sOffset => sCurSize <= sOffset , = ì¡°ê±´ì´ ë¹ ì¡ŒìŒ
      * */
     for( sCurSize = sVCPieceHeader->length; sCurSize <= sOffset; )
     {
         sOffset -= sCurSize;
 
-        // next variable slotÀ¸·Î ÀÌµ¿.
+        // next variable slotìœ¼ë¡œ ì´ë™.
         if( sVCPieceHeader->nxtPieceOID == SM_NULL_OID )
         {
             ideLog::log( IDE_SM_0,
@@ -5097,9 +5097,9 @@ UInt smcTable::getColumnCount(const void *aTableHeader)
 /***********************************************************************
  *
  * Description :
- *  lob columnÀÇ °¹¼ö¸¦ ¹İÈ¯ÇÑ´Ù.
+ *  lob columnì˜ ê°¯ìˆ˜ë¥¼ ë°˜í™˜í•œë‹¤.
  *
- *  aTableHeader - [IN] Å×ÀÌºí Çì´õ
+ *  aTableHeader - [IN] í…Œì´ë¸” í—¤ë”
  *
  **********************************************************************/
 UInt smcTable::getLobColumnCount(const void *aTableHeader)
@@ -5134,9 +5134,9 @@ UInt smcTable::getLobColumnCount(const void *aTableHeader)
 /***********************************************************************
  *
  * Description :
- *  lob columnÀ» ¹İÈ¯ÇÑ´Ù.
+ *  lob columnì„ ë°˜í™˜í•œë‹¤.
  *
- *  aTableHeader - [IN] Å×ÀÌºí Çì´õ
+ *  aTableHeader - [IN] í…Œì´ë¸” í—¤ë”
  *  aSpaceID     - [IN] Lob Segment Space ID
  *  aSegPID      - [IN] Lob segment PID
  *
@@ -5177,7 +5177,7 @@ const smiColumn* smcTable::getLobColumn( const void *aTableHeader,
     return sLobColumn;
 }
 
-/* µğ½ºÅ© Page List Entry¸¦ ¹İÈ¯ÇÑ´Ù. */
+/* ë””ìŠ¤í¬ Page List Entryë¥¼ ë°˜í™˜í•œë‹¤. */
 void* smcTable::getDiskPageListEntry(void *aTableHeader)
 {
     IDE_ASSERT(aTableHeader!=NULL);
@@ -5185,7 +5185,7 @@ void* smcTable::getDiskPageListEntry(void *aTableHeader)
     return (void*)&(((smcTableHeader *)aTableHeader)->mFixed.mDRDB);
 }
 
-/* µğ½ºÅ© Page List Entry¸¦ ¹İÈ¯ÇÑ´Ù. */
+/* ë””ìŠ¤í¬ Page List Entryë¥¼ ë°˜í™˜í•œë‹¤. */
 void* smcTable::getDiskPageListEntry( smOID  aTableOID )
 {
     smcTableHeader *sTableHeader;
@@ -5218,8 +5218,8 @@ smOID smcTable::getTableOID(const void *aTableHeader)
 
 /***********************************************************************
  * Description :
- * db refine°úÁ¤¿¡¼­ table backup fileµé¿¡ ´ëÇÑ Á¦°Å¸¦ Ã³¸®ÇÏ´Â ÇÔ¼ö·Î
- * disk table¿¡¼­´Â Áö¿øÇÒ ÇÊ¿ä¾ø´Ù.
+ * db refineê³¼ì •ì—ì„œ table backup fileë“¤ì— ëŒ€í•œ ì œê±°ë¥¼ ì²˜ë¦¬í•˜ëŠ” í•¨ìˆ˜ë¡œ
+ * disk tableì—ì„œëŠ” ì§€ì›í•  í•„ìš”ì—†ë‹¤.
  ***********************************************************************/
 IDE_RC smcTable::deleteAllTableBackup()
 {
@@ -5233,12 +5233,12 @@ IDE_RC smcTable::deleteAllTableBackup()
     idBool                sCheck1;
     idBool                sCheck2;
 
-    /* BUG-16161: Add ColumnÀÌ ½ÇÇàÈÄ ´Ù½Ã ´Ù½Ã Add ColumnÀ» ¼öÇàÇÏ¸é
-     * SessionÀÌ Hang»óÅÂ·Î ºüÁı´Ï´Ù.: Restart Recovery½Ã BackupÆÄÀÏÀ»
-     * ÀÌ¿ëÇÑ TransactionÀÇ ·Î±×°¡ Disk¿¡ SyncµÇÁö¾ÊÀº »óÅÂ¿¡¼­ ¿©±â¼­
-     * BackupÆÄÀÏÀ» Áö¿î´Ù¸é, Failure¹ß»ı½Ã ÇØ´ç AbortµÉ TransactionÀ»
-     * ´Ù½Ã AbortÇÒ¼ö°¡ ¾ø´Ù. ¶§¹®¿¡ ¿©±â¼­ log Flush¸¦ ¼öÇàÇÏ¿© Abort°¡
-     * ¿ÏÀüÈ÷ Disk¿¡ ¹İ¿µµÇ´Â °ÍÀ» º¸ÀåÇÏ¿©¾ß ÇÑ´Ù.
+    /* BUG-16161: Add Columnì´ ì‹¤í–‰í›„ ë‹¤ì‹œ ë‹¤ì‹œ Add Columnì„ ìˆ˜í–‰í•˜ë©´
+     * Sessionì´ Hangìƒíƒœë¡œ ë¹ ì§‘ë‹ˆë‹¤.: Restart Recoveryì‹œ BackupíŒŒì¼ì„
+     * ì´ìš©í•œ Transactionì˜ ë¡œê·¸ê°€ Diskì— Syncë˜ì§€ì•Šì€ ìƒíƒœì—ì„œ ì—¬ê¸°ì„œ
+     * BackupíŒŒì¼ì„ ì§€ìš´ë‹¤ë©´, Failureë°œìƒì‹œ í•´ë‹¹ Abortë  Transactionì„
+     * ë‹¤ì‹œ Abortí• ìˆ˜ê°€ ì—†ë‹¤. ë•Œë¬¸ì— ì—¬ê¸°ì„œ log Flushë¥¼ ìˆ˜í–‰í•˜ì—¬ Abortê°€
+     * ì™„ì „íˆ Diskì— ë°˜ì˜ë˜ëŠ” ê²ƒì„ ë³´ì¥í•˜ì—¬ì•¼ í•œë‹¤.
      * */
     IDE_TEST( smrLogMgr::syncToLstLSN( SMR_LOG_SYNC_BY_REF )
               != IDE_SUCCESS );
@@ -5290,13 +5290,13 @@ IDE_RC smcTable::deleteAllTableBackup()
                                 getBackupDir(), IDL_FILE_SEPARATOR,sFileName);
 
                 // BUG-20048
-                // ÆÄÀÏÀÇ Çì´õ¸¦ ÀĞ°í, ¾ËÆ¼º£ÀÌ½º ¹é¾÷ÆÄÀÏÀÌ ¸Â´ÂÁö¸¦ °Ë»çÇÑ´Ù.
+                // íŒŒì¼ì˜ í—¤ë”ë¥¼ ì½ê³ , ì•Œí‹°ë² ì´ìŠ¤ ë°±ì—…íŒŒì¼ì´ ë§ëŠ”ì§€ë¥¼ ê²€ì‚¬í•œë‹¤.
                 IDE_TEST( IDE_SUCCESS !=
                           smiTableBackup::isBackupFile(sFullFileName, &sCheck1) );
                 IDE_TEST( IDE_SUCCESS !=
                           smiVolTableBackup::isBackupFile(sFullFileName, &sCheck2) );
 
-                // ¾ËÆ¼º£ÀÌ½º ¹é¾÷ÆÄÀÏÀÌ ¸ÂÀ¸¸é »èÁ¦ÇÑ´Ù.
+                // ì•Œí‹°ë² ì´ìŠ¤ ë°±ì—…íŒŒì¼ì´ ë§ìœ¼ë©´ ì‚­ì œí•œë‹¤.
                 if( (ID_TRUE == sCheck1) || (ID_TRUE == sCheck2) )
                 {
                     while(1)
@@ -5371,8 +5371,8 @@ IDE_RC smcTable::deleteAllTableBackup()
 }
 
 /***********************************************************************
- * Description :  memory tableÀÇ onlinebackup½Ã table backup file¿¡ ´ëÇÑ
- * backupº» »ı¼ºÀ» Ã³¸®ÇÏ´Â ÇÔ¼ö·Î disk table¿¡ ´ëÇÏ¿© Áö¿øÇÒ ÇÊ¿ä¾øÀ½
+ * Description :  memory tableì˜ onlinebackupì‹œ table backup fileì— ëŒ€í•œ
+ * backupë³¸ ìƒì„±ì„ ì²˜ë¦¬í•˜ëŠ” í•¨ìˆ˜ë¡œ disk tableì— ëŒ€í•˜ì—¬ ì§€ì›í•  í•„ìš”ì—†ìŒ
  **********************************************************************/
 IDE_RC smcTable::copyAllTableBackup(SChar      * aSrcDir, 
                                     SChar      * aTargetDir)
@@ -5476,7 +5476,7 @@ IDE_RC smcTable::copyAllTableBackup(SChar      * aSrcDir,
         sDirEnt = NULL;
     }
 
-    // fix BUG-25556 : [codeSonar] closedir Ãß°¡.
+    // fix BUG-25556 : [codeSonar] closedir ì¶”ê°€.
     if(sDIR != NULL)
     {
         idf::closedir(sDIR);
@@ -5489,10 +5489,10 @@ IDE_RC smcTable::copyAllTableBackup(SChar      * aSrcDir,
 /***********************************************************************
  * Description : FOR A5
  * fix - BUG-25611
- * memory table¿¡ ´ëÇÑ LogicalUndo½Ã, ¾ÆÁ÷ RefineµÅÁö ¾ÊÀº »óÅÂÀÌ±â ¶§¹®¿¡
- * ÀÓ½Ã·Î Å×ÀÌºíÀ» RefineÇØÁØ´Ù.
+ * memory tableì— ëŒ€í•œ LogicalUndoì‹œ, ì•„ì§ Refineë¼ì§€ ì•Šì€ ìƒíƒœì´ê¸° ë•Œë¬¸ì—
+ * ì„ì‹œë¡œ í…Œì´ë¸”ì„ Refineí•´ì¤€ë‹¤.
  *
- * ¹İµå½Ã finalizeTable4LogicalUndo¿Í ½ÖÀ¸·Î È£ÃâµÇ¾î¾ß ÇÑ´Ù.
+ * ë°˜ë“œì‹œ finalizeTable4LogicalUndoì™€ ìŒìœ¼ë¡œ í˜¸ì¶œë˜ì–´ì•¼ í•œë‹¤.
  ***********************************************************************/
 IDE_RC smcTable::prepare4LogicalUndo( smcTableHeader * aTable )
 {
@@ -5508,16 +5508,16 @@ IDE_RC smcTable::prepare4LogicalUndo( smcTableHeader * aTable )
 /***********************************************************************
  * Description : FOR A5
  * fix - BUG-25611
- * memory table¿¡ ´ëÇÑ LogicalUndo½Ã, ÀÓ½Ã·Î RefineµÈ Å×ÀÌºíÀÇ ÆäÀÌÁö¸¦
- * Á¤¸®ÇÑ´Ù.
+ * memory tableì— ëŒ€í•œ LogicalUndoì‹œ, ì„ì‹œë¡œ Refineëœ í…Œì´ë¸”ì˜ í˜ì´ì§€ë¥¼
+ * ì •ë¦¬í•œë‹¤.
  *
- * Á¤¸® ´ë»ó
- * 1) FreePage(Fixed & Variable) - ÃÊ±âÈ­µÊ
- * 2) AllocatePageµéÀÇ Scanlist - ÃÊ±âÈ­µÊ
- * 3) Private Page - Table¿¡°Ô ¹İÈ¯µÊ
- * 4) RuntimeEntry - ÃÊ±âÈ­µÊ
+ * ì •ë¦¬ ëŒ€ìƒ
+ * 1) FreePage(Fixed & Variable) - ì´ˆê¸°í™”ë¨
+ * 2) AllocatePageë“¤ì˜ Scanlist - ì´ˆê¸°í™”ë¨
+ * 3) Private Page - Tableì—ê²Œ ë°˜í™˜ë¨
+ * 4) RuntimeEntry - ì´ˆê¸°í™”ë¨
  *
- * ¹İµå½Ã prepare4LogicalUndo¿Í ½ÖÀ¸·Î È£ÃâµÇ¾î¾ß ÇÑ´Ù.
+ * ë°˜ë“œì‹œ prepare4LogicalUndoì™€ ìŒìœ¼ë¡œ í˜¸ì¶œë˜ì–´ì•¼ í•œë‹¤.
  ***********************************************************************/
 IDE_RC smcTable::finalizeTable4LogicalUndo(smcTableHeader * aTable,
                                            void           * aTrans )
@@ -5526,15 +5526,15 @@ IDE_RC smcTable::finalizeTable4LogicalUndo(smcTableHeader * aTable,
 
     sTrans = (smxTrans*)aTrans;
 
-    // 1) FreePage(Fixed & Variable) - ÃÊ±âÈ­µÊ
+    // 1) FreePage(Fixed & Variable) - ì´ˆê¸°í™”ë¨
     initAllFreePageHeader(aTable);
-    // 2) AllocatePageµéÀÇ Scanlist - ÃÊ±âÈ­µÊ
+    // 2) AllocatePageë“¤ì˜ Scanlist - ì´ˆê¸°í™”ë¨
     IDE_TEST( smpFixedPageList::resetScanList( aTable->mSpaceID,
                                              &(aTable->mFixed.mMRDB))
                      != IDE_SUCCESS);
-    // 3) Private Page - Table¿¡°Ô ¹İÈ¯µÊ
+    // 3) Private Page - Tableì—ê²Œ ë°˜í™˜ë¨
     IDE_TEST( sTrans->finAndInitPrivatePageList() != IDE_SUCCESS );
-    // 4) RuntimeEntry - ÃÊ±âÈ­µÊ
+    // 4) RuntimeEntry - ì´ˆê¸°í™”ë¨
     IDE_TEST (finLockAndRuntimeItem(aTable) != IDE_SUCCESS );
 
     return IDE_SUCCESS;
@@ -5548,9 +5548,9 @@ IDE_RC smcTable::finalizeTable4LogicalUndo(smcTableHeader * aTable,
 
 
 /***********************************************************************
- * Table¿¡ ÇÒ´çµÈ ¸ğµç FreePageHeader¸¦ ÃÊ±âÈ­
+ * Tableì— í• ë‹¹ëœ ëª¨ë“  FreePageHeaderë¥¼ ì´ˆê¸°í™”
  *
- * aTableHeader - [IN] TableÀÇ Header
+ * aTableHeader - [IN] Tableì˜ Header
  ***********************************************************************/
 void smcTable::initAllFreePageHeader( smcTableHeader* aTableHeader )
 {
@@ -5592,15 +5592,15 @@ void smcTable::initAllFreePageHeader( smcTableHeader* aTableHeader )
 }
 
 /***********************************************************************
- * Description : tableÀÇ record °³¼ö¸¦ ¹İÈ¯ÇÑ´Ù.
- * table Å¸ÀÔ¿¡ µû¸¥ page list entryÀÇ record °³¼ö
- * °è»êÇÏ´Â ÇÔ¼ö¸¦ °¢°¢ È£Ãâ
+ * Description : tableì˜ record ê°œìˆ˜ë¥¼ ë°˜í™˜í•œë‹¤.
+ * table íƒ€ì…ì— ë”°ë¥¸ page list entryì˜ record ê°œìˆ˜
+ * ê³„ì‚°í•˜ëŠ” í•¨ìˆ˜ë¥¼ ê°ê° í˜¸ì¶œ
  * - 2nd code design
- *   + table Å¸ÀÔ¿¡ µû¶ó Æ÷ÇÔÇÏ´Â recordÀÇ °³¼ö¸¦ ±¸ÇÑ´Ù.
+ *   + table íƒ€ì…ì— ë”°ë¼ í¬í•¨í•˜ëŠ” recordì˜ ê°œìˆ˜ë¥¼ êµ¬í•œë‹¤.
  *     if (memory table)
- *        - fixed page list entryÀÇ record °³¼ö ¾òÀ½
+ *        - fixed page list entryì˜ record ê°œìˆ˜ ì–»ìŒ
  *     else if (disk table or temporary table)
- *        - disk page list entryÀÇ record °³¼ö ¾òÀ½
+ *        - disk page list entryì˜ record ê°œìˆ˜ ì–»ìŒ
  *     endif
  ***********************************************************************/
 IDE_RC smcTable::getRecordCount( smcTableHeader* aHeader,
@@ -5618,12 +5618,12 @@ IDE_RC smcTable::getRecordCount( smcTableHeader* aHeader,
         case SMI_TABLE_MEMORY :
         case SMI_TABLE_META :
         case SMI_TABLE_REMOTE:
-            /* memory tableÀÇ fixed page list entryÀÇ record °³¼ö °è»ê */
+            /* memory tableì˜ fixed page list entryì˜ record ê°œìˆ˜ ê³„ì‚° */
             smpFixedPageList::getRecordCount(&(aHeader->mFixed.mMRDB),
                                              aRecordCount);
             break;
         case SMI_TABLE_DISK :
-            /* disk tableÀÇ page list entryÀÇ record °³¼ö °è»ê */
+            /* disk tableì˜ page list entryì˜ record ê°œìˆ˜ ê³„ì‚° */
             IDE_TEST( sdpPageList::getRecordCount(
                           NULL, /* idvSQL* */
                           &(aHeader->mFixed.mDRDB),
@@ -5632,7 +5632,7 @@ IDE_RC smcTable::getRecordCount( smcTableHeader* aHeader,
                       != IDE_SUCCESS);
             break;
         case SMI_TABLE_VOLATILE :
-            /* volatile tableÀÇ fixed page list entryÀÇ record °³¼ö °è»ê */
+            /* volatile tableì˜ fixed page list entryì˜ record ê°œìˆ˜ ê³„ì‚° */
             svpFixedPageList::getRecordCount(&(aHeader->mFixed.mVRDB),
                                              aRecordCount);
             break;
@@ -5650,7 +5650,7 @@ IDE_RC smcTable::getRecordCount( smcTableHeader* aHeader,
 }
 
 /***********************************************************************
- * Description : tableÀÇ record °³¼ö¸¦ º¯°æÇÑ´Ù.
+ * Description : tableì˜ record ê°œìˆ˜ë¥¼ ë³€ê²½í•œë‹¤.
  *
  * aHeader        - [IN] Table Header
  * aRecordCount   - [IN] Record Count
@@ -5673,8 +5673,8 @@ IDE_RC smcTable::setRecordCount(smcTableHeader * aHeader,
             break;
 
         case SMI_TABLE_DISK :
-            /* ÀÌ ÇÔ¼ö´Â Memory TableÀÇ Record °¹¼öÀÇ
-             * º¯°æ¿¡¸¸ ¾²ÀÎ´Ù. */
+            /* ì´ í•¨ìˆ˜ëŠ” Memory Tableì˜ Record ê°¯ìˆ˜ì˜
+             * ë³€ê²½ì—ë§Œ ì“°ì¸ë‹¤. */
             IDE_ASSERT(0 );
 
         case SMI_TABLE_TEMP_LEGACY :
@@ -5724,8 +5724,8 @@ const void * smcTable::getTableIndexByID( void       * aHeader,
             sCurSize += smLayerCallback::getSizeOfIndexHeader();
         }
 
-        /* BUG-34018 ¸¸¾à ÇÑ Å×ÀÌºíÀÇ Index Header °³¼ö°¡ 47°³¸¦ ³Ñ¾î°¡¸é,
-         * ¼­¹ö´Â Index Id¸¦ ¹ÙÅÁÀ¸·Î Index Header¸¦ Ã£À» ¼ö ¾øÀ½. */
+        /* BUG-34018 ë§Œì•½ í•œ í…Œì´ë¸”ì˜ Index Header ê°œìˆ˜ê°€ 47ê°œë¥¼ ë„˜ì–´ê°€ë©´,
+         * ì„œë²„ëŠ” Index Idë¥¼ ë°”íƒ•ìœ¼ë¡œ Index Headerë¥¼ ì°¾ì„ ìˆ˜ ì—†ìŒ. */
         if( sIndexHeader->mId == aId )
         {
             break;
@@ -5792,7 +5792,7 @@ const void * smcTable::getTableIndexByID( void       * aHeader,
 }
 
 /***********************************************************************
- * Description : ÇØ´ç ÆÄÀÏÀÌ Á¦°Å µÉ¶§±îÁö ´ë±â
+ * Description : í•´ë‹¹ íŒŒì¼ì´ ì œê±° ë ë•Œê¹Œì§€ ëŒ€ê¸°
  ***********************************************************************/
 IDE_RC smcTable::waitForFileDelete( idvSQL *aStatistics, SChar* aStrFileName )
 {
@@ -5833,7 +5833,7 @@ IDE_RC smcTable::waitForFileDelete( idvSQL *aStatistics, SChar* aStrFileName )
 }
 
 /***********************************************************************
- * Description : tableÀÇ ¸ğµç index¸¦ enable ¶Ç´Â disable »óÅÂ·Î º¯°æ
+ * Description : tableì˜ ëª¨ë“  indexë¥¼ enable ë˜ëŠ” disable ìƒíƒœë¡œ ë³€ê²½
  ***********************************************************************/
 IDE_RC smcTable::setUseFlagOfAllIndex(void            * aTrans,
                                       smcTableHeader  * aHeader,
@@ -5936,14 +5936,14 @@ IDE_RC smcTable::setUseFlagOfAllIndex(void            * aTrans,
 }
 
 /***********************************************************************
- * Description : table Å¸ÀÔ¿¡ µû¶ó tableÀÌ ÇÒ´çÇÑ page °³¼ö¸¦ ±¸ÇÑ´Ù.
+ * Description : table íƒ€ì…ì— ë”°ë¼ tableì´ í• ë‹¹í•œ page ê°œìˆ˜ë¥¼ êµ¬í•œë‹¤.
  * - 2nd code design
- *   + table Å¸ÀÔ¿¡ µû¸¥ table ¸¶´Ù ÇÒ´çµÈ pageÀÇ ÃÑ°³¼ö ¹İÈ¯
+ *   + table íƒ€ì…ì— ë”°ë¥¸ table ë§ˆë‹¤ í• ë‹¹ëœ pageì˜ ì´ê°œìˆ˜ ë°˜í™˜
  *     if (memory table)
- *        - fixed page list entryÀÇ ÇÒ´çµÈ page °³¼ö¸¦ ´õÇÔ
- *        - variable page list entryµéÀÇ ÇÒ´çµÈ page °³¼ö ´õÇÔ
+ *        - fixed page list entryì˜ í• ë‹¹ëœ page ê°œìˆ˜ë¥¼ ë”í•¨
+ *        - variable page list entryë“¤ì˜ í• ë‹¹ëœ page ê°œìˆ˜ ë”í•¨
  *     else if (disk table or temporary table)
- *        - disk page list entryÀÇ ÇÒ´çµÈ page °³¼ö ´õÇÔ
+ *        - disk page list entryì˜ í• ë‹¹ëœ page ê°œìˆ˜ ë”í•¨
  *     endif
  ***********************************************************************/
 IDE_RC smcTable::getTablePageCount( void * aHeader, ULong* aPageCnt )
@@ -5955,13 +5955,13 @@ IDE_RC smcTable::getTablePageCount( void * aHeader, ULong* aPageCnt )
     {
         case SMI_TABLE_MEMORY :
         case SMI_TABLE_META :
-            /* memory tableÀÇ ÇÒ´çµÈ page °³¼ö ±¸ÇÏ±â */
+            /* memory tableì˜ í• ë‹¹ëœ page ê°œìˆ˜ êµ¬í•˜ê¸° */
             sNeedPage = smpManager::getAllocPageCount(&(sHeader->mFixed.mMRDB))
                 + smpManager::getAllocPageCount(sHeader->mVar.mMRDB);
             break;
         case SMI_TABLE_DISK :
-            /* disk tableÀÇ ÇÒ´çµÈ page °³¼ö ±¸ÇÏ±â */
-            /* BUGBUG ÆäÀÌÁö °¹¼ö¸¦ ReturnÇÏ´Â ÇÔ¼ö ±¸Çö. */
+            /* disk tableì˜ í• ë‹¹ëœ page ê°œìˆ˜ êµ¬í•˜ê¸° */
+            /* BUGBUG í˜ì´ì§€ ê°¯ìˆ˜ë¥¼ Returní•˜ëŠ” í•¨ìˆ˜ êµ¬í˜„. */
             IDE_TEST( sdpPageList::getAllocPageCnt(
                           NULL, /* idvSQL* */
                           sHeader->mSpaceID,
@@ -5970,7 +5970,7 @@ IDE_RC smcTable::getTablePageCount( void * aHeader, ULong* aPageCnt )
                       != IDE_SUCCESS );
             break;
         case SMI_TABLE_VOLATILE :
-            /* memory tableÀÇ ÇÒ´çµÈ page °³¼ö ±¸ÇÏ±â */
+            /* memory tableì˜ í• ë‹¹ëœ page ê°œìˆ˜ êµ¬í•˜ê¸° */
             sNeedPage = svpManager::getAllocPageCount(&(sHeader->mFixed.mVRDB))
                 + svpManager::getAllocPageCount(sHeader->mVar.mVRDB);
             break;
@@ -5990,7 +5990,7 @@ IDE_RC smcTable::getTablePageCount( void * aHeader, ULong* aPageCnt )
 }
 
 /***********************************************************************
- * Description : ÃÑ index °³¼ö Áõ°¡
+ * Description : ì´ index ê°œìˆ˜ ì¦ê°€
  ***********************************************************************/
 void smcTable::addToTotalIndexCount( UInt aCount )
 {
@@ -6000,7 +6000,7 @@ void smcTable::addToTotalIndexCount( UInt aCount )
 }
 
 /***********************************************************************
- * Description : table header Á¤º¸ ¹İÈ¯ (logging½Ã ÇÊ¿äÇÑ Á¤º¸)
+ * Description : table header ì •ë³´ ë°˜í™˜ (loggingì‹œ í•„ìš”í•œ ì •ë³´)
  ***********************************************************************/
 void smcTable::getTableHeaderInfo(void         * aHeader,
                                   scPageID     * aPageID,
@@ -6030,7 +6030,7 @@ void smcTable::getTableHeaderInfo(void         * aHeader,
 }
 
 /***********************************************************************
- * Description : table headerÀÇ flag ¹İÈ¯ (logging½Ã ÇÊ¿äÇÑ Á¤º¸)
+ * Description : table headerì˜ flag ë°˜í™˜ (loggingì‹œ í•„ìš”í•œ ì •ë³´)
  ***********************************************************************/
 void smcTable::getTableHeaderFlag(void         * aHeader,
                                   scPageID     * aPageID,
@@ -6052,7 +6052,7 @@ void smcTable::getTableHeaderFlag(void         * aHeader,
 }
 
 /***********************************************************************
- * Description : table headerÀÇ flag ¹İÈ¯
+ * Description : table headerì˜ flag ë°˜í™˜
  ***********************************************************************/
 UInt smcTable::getTableHeaderFlagOnly(void         * aHeader)
 {
@@ -6065,7 +6065,7 @@ UInt smcTable::getTableHeaderFlagOnly(void         * aHeader)
 }
 
 /***********************************************************************
- * Description : table headerÀÇ flag ¹İÈ¯ (logging½Ã ÇÊ¿äÇÑ Á¤º¸)
+ * Description : table headerì˜ flag ë°˜í™˜ (loggingì‹œ í•„ìš”í•œ ì •ë³´)
  ***********************************************************************/
 void smcTable::getTableIsConsistent( void         * aHeader,
                                      scPageID     * aPageID,
@@ -6087,12 +6087,12 @@ void smcTable::getTableIsConsistent( void         * aHeader,
 
 
 /***********************************************************************
- * Description : create index ±¸¹®Ã³¸®°úÁ¤Áß ¿¹¿Ü»óÈ²À¸·Î ÀÎÇÑ
- * DDL rollbackÀ» ¼öÇàÇÑ´Ù.
+ * Description : create index êµ¬ë¬¸ì²˜ë¦¬ê³¼ì •ì¤‘ ì˜ˆì™¸ìƒí™©ìœ¼ë¡œ ì¸í•œ
+ * DDL rollbackì„ ìˆ˜í–‰í•œë‹¤.
  *
- * - ´Ü, temporary disk indexÀÇ °æ¿ì´Â Á¦¿ÜµÈ´Ù.
- *   ¿Ö³ÄÇÏ¸é QP´Ü¿¡¼­ create index ¼öÇàÁß abort¹ß»ıÇÏ¸é
- *   ¸í½ÃÀûÀ¸·Î drop temporary tableÀ» ¼öÇàÇÏ±â ¶§¹®ÀÌ´Ù.
+ * - ë‹¨, temporary disk indexì˜ ê²½ìš°ëŠ” ì œì™¸ëœë‹¤.
+ *   ì™œëƒí•˜ë©´ QPë‹¨ì—ì„œ create index ìˆ˜í–‰ì¤‘ abortë°œìƒí•˜ë©´
+ *   ëª…ì‹œì ìœ¼ë¡œ drop temporary tableì„ ìˆ˜í–‰í•˜ê¸° ë•Œë¬¸ì´ë‹¤.
  ***********************************************************************/
 IDE_RC  smcTable::dropIndexByAbortOID( idvSQL *aStatistics,
                                        void*   aTrans,
@@ -6125,7 +6125,7 @@ IDE_RC  smcTable::dropIndexByAbortOID( idvSQL *aStatistics,
         sState = 1;
     }
 
-    // index headerÀÇ seg rID À§Ä¡ °è»ê
+    // index headerì˜ seg rID ìœ„ì¹˜ ê³„ì‚°
     if( SMI_TABLE_TYPE_IS_DISK( sHeader ) == ID_TRUE )
     {
         sIndexSegGRID  =  smLayerCallback::getIndexSegGRIDPtr( sIndexHeader );
@@ -6141,7 +6141,7 @@ IDE_RC  smcTable::dropIndexByAbortOID( idvSQL *aStatistics,
         }
     }
 
-    // BUG-23218 : ÀÎµ¦½º Å½»ö ÇÔ¼ö ÀÌ¸§ ¼öÁ¤
+    // BUG-23218 : ì¸ë±ìŠ¤ íƒìƒ‰ í•¨ìˆ˜ ì´ë¦„ ìˆ˜ì •
     IDE_ASSERT( findIndexVarSlot2AlterAndDrop(sHeader,
                                               sIndexHeader,
                                               sIndexHeaderSize,
@@ -6157,9 +6157,9 @@ IDE_RC  smcTable::dropIndexByAbortOID( idvSQL *aStatistics,
                                                aNewIndexOID)
               != IDE_SUCCESS );
 
-    /* Restart½Ã¿¡´Â IndexÀÇ TemporalºÎºĞÀÌ »ı¼ºµÇ¾î ÀÖÁö ¾Ê´Ù.
-     * ÇÏÁö¸¸ Disk TableÀÇ °æ¿ì RedoÈÄ¿¡ IndexÀÇ Temporal ºÎºĞÀ»
-     * »ı¼ºÇÑ´Ù. */
+    /* Restartì‹œì—ëŠ” Indexì˜ Temporalë¶€ë¶„ì´ ìƒì„±ë˜ì–´ ìˆì§€ ì•Šë‹¤.
+     * í•˜ì§€ë§Œ Disk Tableì˜ ê²½ìš° Redoí›„ì— Indexì˜ Temporal ë¶€ë¶„ì„
+     * ìƒì„±í•œë‹¤. */
 
     if( ( smrRecoveryMgr::isRestart()       == ID_FALSE ) ||
         ( SMI_TABLE_TYPE_IS_DISK( sHeader ) == ID_TRUE  ) )
@@ -6200,7 +6200,7 @@ IDE_RC  smcTable::dropIndexByAbortOID( idvSQL *aStatistics,
 }
 
 /***********************************************************************
- * Description : table headerÀÇ drop index list¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+ * Description : table headerì˜ drop index listë¥¼ ì´ˆê¸°í™”í•œë‹¤.
  ***********************************************************************/
 IDE_RC  smcTable::clearIndexList( smOID aTableOID )
 {
@@ -6250,9 +6250,9 @@ IDE_RC  smcTable::clearIndexList( smOID aTableOID )
 }
 
 /***********************************************************************
- * Description : create table¿¡ ´ëÇÑ operation NTAÀÇ logical undo½Ã ¼öÇà½Ã
- * disk table ÀÎ°æ¿ì¿¡ ager¿¡ tableÀ» Á¦°Å¸¦ ºÎÅ¹ÇÏÁö ¾Ê°í ¹Ù·Î ÇØ´ç tx°¡
- * Á¦°ÅÇÏµµ·Ï ÇÑ´Ù.
+ * Description : create tableì— ëŒ€í•œ operation NTAì˜ logical undoì‹œ ìˆ˜í–‰ì‹œ
+ * disk table ì¸ê²½ìš°ì— agerì— tableì„ ì œê±°ë¥¼ ë¶€íƒí•˜ì§€ ì•Šê³  ë°”ë¡œ í•´ë‹¹ txê°€
+ * ì œê±°í•˜ë„ë¡ í•œë‹¤.
  ***********************************************************************/
 IDE_RC smcTable::doNTADropDiskTable( idvSQL *aStatistics,
                                      void*   aTrans,
@@ -6276,7 +6276,7 @@ IDE_RC smcTable::doNTADropDiskTable( idvSQL *aStatistics,
 
 }
 
-/* SegmentGRID¸¦ °¡Áö´Â Lob ÄÃ·³À» ¹İÈ¯ÇÑ´Ù. */
+/* SegmentGRIDë¥¼ ê°€ì§€ëŠ” Lob ì»¬ëŸ¼ì„ ë°˜í™˜í•œë‹¤. */
 const smiColumn* smcTable::findLOBColumn( void  * aHeader,
                                           scGRID  aSegGRID )
 {
@@ -6302,7 +6302,7 @@ const smiColumn* smcTable::findLOBColumn( void  * aHeader,
     return sLobColumn;
 }
 
-/* PROJ-1671 LOB Segment¿¡ ´ëÇÑ Segment HandleÀ» »ı¼ºÇÏ°í, ÃÊ±âÈ­ÇÑ´Ù.*/
+/* PROJ-1671 LOB Segmentì— ëŒ€í•œ Segment Handleì„ ìƒì„±í•˜ê³ , ì´ˆê¸°í™”í•œë‹¤.*/
 IDE_RC smcTable::createLOBSegmentDesc( smcTableHeader * aHeader )
 {
     UInt        i;
@@ -6314,7 +6314,7 @@ IDE_RC smcTable::createLOBSegmentDesc( smcTableHeader * aHeader )
     sColumnCnt = getColumnCount( aHeader );
 
     /*
-     * BUG-22677 DRDB¿¡¼­create tableÁß Á×À»¶§ recovery°¡ ¾ÈµÇ´Â °æ¿ì°¡ ÀÖÀ½.
+     * BUG-22677 DRDBì—ì„œcreate tableì¤‘ ì£½ì„ë•Œ recoveryê°€ ì•ˆë˜ëŠ” ê²½ìš°ê°€ ìˆìŒ.
      */
     if( SMC_IS_VALID_COLUMNINFO(aHeader->mColumns.fstPieceOID) )
     {
@@ -6323,8 +6323,8 @@ IDE_RC smcTable::createLOBSegmentDesc( smcTableHeader * aHeader )
             sColumn = (smiColumn*)smcTable::getColumn( aHeader, i );
 
             /*
-             * BUG-26848 [SD] Lob columnÀÌ ÀÖ´Â tbs°¡ discardµÇ¾úÀ»¶§
-             *           refine´Ü°è¿¡¼­ Á×´Â °æ¿ì°¡ ÀÖÀ½.
+             * BUG-26848 [SD] Lob columnì´ ìˆëŠ” tbsê°€ discardë˜ì—ˆì„ë•Œ
+             *           refineë‹¨ê³„ì—ì„œ ì£½ëŠ” ê²½ìš°ê°€ ìˆìŒ.
              */
             sInvalidTBS = sctTableSpaceMgr::hasState( sColumn->colSpace,
                                                       SCT_SS_INVALID_DISK_TBS );
@@ -6352,7 +6352,7 @@ IDE_RC smcTable::createLOBSegmentDesc( smcTableHeader * aHeader )
     return IDE_FAILURE;
 }
 
-/* PROJ-1671 LOB Segment¿¡ ´ëÇÑ Segment Handle ÇØÁ¦ÇÑ´Ù. */
+/* PROJ-1671 LOB Segmentì— ëŒ€í•œ Segment Handle í•´ì œí•œë‹¤. */
 IDE_RC smcTable::destroyLOBSegmentDesc( smcTableHeader * aHeader )
 {
     UInt        i;
@@ -6389,11 +6389,11 @@ IDE_RC smcTable::destroyLOBSegmentDesc( smcTableHeader * aHeader )
 
 /***********************************************************************
  *
- * Description : µğ½ºÅ© ÀÎµ¦½ºÀÇ Runtime Header ±¸¼ºÇÑ´Ù.
+ * Description : ë””ìŠ¤í¬ ì¸ë±ìŠ¤ì˜ Runtime Header êµ¬ì„±í•œë‹¤.
  *
- *   aStatistics - [IN] Åë°èÁ¤º¸
- *   aHeader     - [IN] µğ½ºÅ© Å×ÀÌºí Çì´õ
- *   aMaxSmoNo   - [IN] µğ½ºÅ© ÀÎµ¦½º ·±Å¸ÀÓ Çì´õ ±¸Ãà½Ã ¼³Á¤ÇÒ SmoNo
+ *   aStatistics - [IN] í†µê³„ì •ë³´
+ *   aHeader     - [IN] ë””ìŠ¤í¬ í…Œì´ë¸” í—¤ë”
+ *   aMaxSmoNo   - [IN] ë””ìŠ¤í¬ ì¸ë±ìŠ¤ ëŸ°íƒ€ì„ í—¤ë” êµ¬ì¶•ì‹œ ì„¤ì •í•  SmoNo
  *
  **********************************************************************/
 IDE_RC smcTable::rebuildRuntimeIndexHeaders( idvSQL         * aStatistics,
@@ -6423,11 +6423,11 @@ IDE_RC smcTable::rebuildRuntimeIndexHeaders( idvSQL         * aStatistics,
              continue;
         }
 
-        // fix BUG-17157 [PROJ-1548] Disk Tablespace Online/Offline ¼öÇà½Ã
-        // ¿Ã¹Ù¸£°Ô Index Runtime Header ÇØÁ¦ÇÏÁö ¾ÊÀ½
-        // Refine DRDB °úÁ¤°ú Online °úÁ¤¿¡¼­ È£ÃâµÉ ¼ö ÀÖ´Âµ¥,
-        // INVALID_DISK_TBS( DROPPED/DISCARDED ) ÀÎ°æ¿ì¿¡´Â
-        // Skip ÇÏµµ·Ï ÇÑ´Ù.
+        // fix BUG-17157 [PROJ-1548] Disk Tablespace Online/Offline ìˆ˜í–‰ì‹œ
+        // ì˜¬ë°”ë¥´ê²Œ Index Runtime Header í•´ì œí•˜ì§€ ì•ŠìŒ
+        // Refine DRDB ê³¼ì •ê³¼ Online ê³¼ì •ì—ì„œ í˜¸ì¶œë  ìˆ˜ ìˆëŠ”ë°,
+        // INVALID_DISK_TBS( DROPPED/DISCARDED ) ì¸ê²½ìš°ì—ëŠ”
+        // Skip í•˜ë„ë¡ í•œë‹¤.
         IDE_TEST( sddDiskMgr::isValidPageID( aStatistics, /* idvSQL* */
                                              SC_MAKE_SPACE(*sIndexGRID),
                                              SC_MAKE_PID(*sIndexGRID),
@@ -6436,8 +6436,8 @@ IDE_RC smcTable::rebuildRuntimeIndexHeaders( idvSQL         * aStatistics,
 
         if ( sIsExist == ID_FALSE )
         {
-            /* À¯È¿ÇÏÁö ¾Ê´Â ¼¼±×¸ÕÆ® ÆäÀÌÁö¸¦ °¡Áø ÀÎµ¦½ºÀÇ ·±Å¸ÀÓ Çì´õ´Â
-             * NULL ÃÊ±âÈ­ÇÑ´Ù */
+            /* ìœ íš¨í•˜ì§€ ì•ŠëŠ” ì„¸ê·¸ë¨¼íŠ¸ í˜ì´ì§€ë¥¼ ê°€ì§„ ì¸ë±ìŠ¤ì˜ ëŸ°íƒ€ì„ í—¤ë”ëŠ”
+             * NULL ì´ˆê¸°í™”í•œë‹¤ */
             smLayerCallback::setInitIndexPtr( sIndexHeader );
             continue;
         }
@@ -6449,7 +6449,7 @@ IDE_RC smcTable::rebuildRuntimeIndexHeaders( idvSQL         * aStatistics,
             sSegAttrPtr    = smLayerCallback::getIndexSegAttrPtr( sIndexHeader );
 
             /* PROJ-2162 RestartRiskReduction
-             * Property¿¡ ÀÇÇØ °­Á¦·Î ¿¹¿ÜÇÔ */
+             * Propertyì— ì˜í•´ ê°•ì œë¡œ ì˜ˆì™¸í•¨ */
             smrRecoveryMgr::initRTOI( &sRTOI );
             sRTOI.mCause    = SMR_RTOI_CAUSE_PROPERTY;
             sRTOI.mType     = SMR_RTOI_TYPE_INDEX;
@@ -6473,7 +6473,7 @@ IDE_RC smcTable::rebuildRuntimeIndexHeaders( idvSQL         * aStatistics,
                                                  aMaxSmoNo )
                      != IDE_SUCCESS )
                 {
-                    /* ±ä±Şº¹±¸¸ğµå°¡ ¾Æ´Ï¸é ¼­¹ö Á¾·á½ÃÅ´. */
+                    /* ê¸´ê¸‰ë³µêµ¬ëª¨ë“œê°€ ì•„ë‹ˆë©´ ì„œë²„ ì¢…ë£Œì‹œí‚´. */
                     IDE_TEST( smuProperty::getEmergencyStartupPolicy()
                                 == SMR_RECOVERY_NORMAL );
                     IDE_TEST( smrRecoveryMgr::refineFailureWithIndex(
@@ -6498,18 +6498,18 @@ IDE_RC smcTable::rebuildRuntimeIndexHeaders( idvSQL         * aStatistics,
 
 /***********************************************************************
  *
- * Description : µğ½ºÅ© Å×ÀÌºíÀÇ ¸ğµç RUNTIME Á¤º¸¸¦ ±¸ÃàÇÑ´Ù.
+ * Description : ë””ìŠ¤í¬ í…Œì´ë¸”ì˜ ëª¨ë“  RUNTIME ì •ë³´ë¥¼ êµ¬ì¶•í•œë‹¤.
  *
- *   RUNTIME Á¤º¸¿¡´Â ´ÙÀ½°ú °°Àº Á¾·ù°¡ ÀÖ´Ù.
- *   - Å×ÀÌºíÀÇ Lock Node¿Í Mutex
- *   - Å×ÀÌºíÀÇ ÀÎµ¦½º RUNTIME Çì´õ
- *   - LOB ÄÃ·³ÀÇ ¼¼±×¸ÕÆ® ÇÚµé
+ *   RUNTIME ì •ë³´ì—ëŠ” ë‹¤ìŒê³¼ ê°™ì€ ì¢…ë¥˜ê°€ ìˆë‹¤.
+ *   - í…Œì´ë¸”ì˜ Lock Nodeì™€ Mutex
+ *   - í…Œì´ë¸”ì˜ ì¸ë±ìŠ¤ RUNTIME í—¤ë”
+ *   - LOB ì»¬ëŸ¼ì˜ ì„¸ê·¸ë¨¼íŠ¸ í•¸ë“¤
  *
- *   aActionArg ¿¡ µû¶ó ¼±º°ÀûÀ¸·Î ÃÊ±âÈ­µÇ±âµµ ÇÑ´Ù.
+ *   aActionArg ì— ë”°ë¼ ì„ ë³„ì ìœ¼ë¡œ ì´ˆê¸°í™”ë˜ê¸°ë„ í•œë‹¤.
  *
- *   aStatistics - [IN] Åë°èÁ¤º¸
- *   aHeader     - [IN] µğ½ºÅ© Å×ÀÌºí Çì´õ
- *   aActionArg  - [IN] ActionÇÔ¼ö¿¡ º¸³¾ Argument
+ *   aStatistics - [IN] í†µê³„ì •ë³´
+ *   aHeader     - [IN] ë””ìŠ¤í¬ í…Œì´ë¸” í—¤ë”
+ *   aActionArg  - [IN] Actioní•¨ìˆ˜ì— ë³´ë‚¼ Argument
  *
  **********************************************************************/
 IDE_RC smcTable::initRuntimeInfos( idvSQL         * aStatistics,
@@ -6524,9 +6524,9 @@ IDE_RC smcTable::initRuntimeInfos( idvSQL         * aStatistics,
 
     if ( SMI_TABLE_TYPE_IS_DISK( aHeader ) == ID_TRUE )
     {
-        /* Disk tableÀÇ °æ¿ì undoAll¿¡¼­ tableheader¸¦
-         * Á¢±ÙÇÏ±â ¶§¹®¿¡ ÃÊ±âÈ­¸¦ ¿©±â¼­ ÇØÁÖ¾î¾ß ÇÑ´Ù.
-         * MemoryDBÀÇ refine½Ã¿¡´Â memory table¿¡ ´ëÇØ¼­¸¸ Ã³¸®ÇÏµµ·Ï ÇÑ´Ù. */
+        /* Disk tableì˜ ê²½ìš° undoAllì—ì„œ tableheaderë¥¼
+         * ì ‘ê·¼í•˜ê¸° ë•Œë¬¸ì— ì´ˆê¸°í™”ë¥¼ ì—¬ê¸°ì„œ í•´ì£¼ì–´ì•¼ í•œë‹¤.
+         * MemoryDBì˜ refineì‹œì—ëŠ” memory tableì— ëŒ€í•´ì„œë§Œ ì²˜ë¦¬í•˜ë„ë¡ í•œë‹¤. */
 
         if ( sInitLockAndRuntimeItem == ID_TRUE )
         {
@@ -6539,7 +6539,7 @@ IDE_RC smcTable::initRuntimeInfos( idvSQL         * aStatistics,
                                               0 )
                   != IDE_SUCCESS );
 
-        /* PROJ-1671 LOB Segment¿¡ ´ëÇÑ Segment HandleÀ» »ı¼ºÇÏ°í, ÃÊ±âÈ­ÇÑ´Ù.*/
+        /* PROJ-1671 LOB Segmentì— ëŒ€í•œ Segment Handleì„ ìƒì„±í•˜ê³ , ì´ˆê¸°í™”í•œë‹¤.*/
         IDE_TEST( createLOBSegmentDesc( aHeader ) != IDE_SUCCESS );
     }
 
@@ -6611,8 +6611,8 @@ IDE_RC smcTable::initRowTemplate( idvSQL         * /*aStatistics*/,
         sColumnTemplate = &sRowTemplate->mColTemplate[sColumnSeq];
         sColumn         = smcTable::getColumn( aHeader, sColumnSeq );
 
-        /* BUG-39679 Row Template Á¤º¸¸¦ »ç¿ëÇÒ°ÍÀÎÁö ¾Æ´ÑÁö ÆÇ´Ü ÇÑ´Ù.
-           »ç¿ëÇÏÁö ¾ÊÀ»°æ¿ì sColumnLengthÀ» ¹«Á¶°Ç ID_UINT_MAX°ªÀ¸·ÎÇÑ´Ù. */
+        /* BUG-39679 Row Template ì •ë³´ë¥¼ ì‚¬ìš©í• ê²ƒì¸ì§€ ì•„ë‹Œì§€ íŒë‹¨ í•œë‹¤.
+           ì‚¬ìš©í•˜ì§€ ì•Šì„ê²½ìš° sColumnLengthì„ ë¬´ì¡°ê±´ ID_UINT_MAXê°’ìœ¼ë¡œí•œë‹¤. */
         if( sIsEnableRowTemplate == ID_TRUE )
         {
             IDE_ASSERT( gSmiGlobalCallBackList.getColumnStoreLen( sColumn,
@@ -6624,25 +6624,25 @@ IDE_RC smcTable::initRowTemplate( idvSQL         * /*aStatistics*/,
             sColumnLength = ID_UINT_MAX;
         }
 
-        /* sColumnLength°¡ ID_UINT_MAXÀÎ °æ¿ì´Â variable column ÀÌ°Å³ª 
-         * not null columnÀÌ ¾Æ´Ñ °æ¿ìÀÌ´Ù. */
+        /* sColumnLengthê°€ ID_UINT_MAXì¸ ê²½ìš°ëŠ” variable column ì´ê±°ë‚˜ 
+         * not null columnì´ ì•„ë‹Œ ê²½ìš°ì´ë‹¤. */
         if ( sColumnLength == ID_UINT_MAX )
         {
             sColumnTemplate->mColStartOffset  = sColStartOffset;
             sColumnTemplate->mStoredSize      = SMC_UNDEFINED_COLUMN_LEN;
             sColumnTemplate->mColLenStoreSize = 0;
             sColumnTemplate->mVariableColIdx  = sVariableColumnCount;
-            /* sColStartOffsetÀº non variable columnÀÏ¶§¸¸ Áõ°¡ ½ÃÅ²´Ù.
-             * (sColumnLength == ID_UINT_MAX°¡ ¾Æ´Ò¶§ )
-             * Áï, °¢ columnÀÇ mColStartOffsetÀº ÇØ´ç columnÀÇ ¾Õ¿¡ Á¸ÀçÇÏ´Â
-             * non variable columnµé ±æÀÌÀÇ ÇÕÀÌ¶ó°í º¼ ¼ö ÀÖ´Ù.
-             * variable columnÀÇ ±æÀÌ´Â fetch¸¦ ¼öÇàÇÏ´Â ÇÔ¼öÀÎ
-             * sdc::doFetchÇÔ¼ö¿¡¼­ ±æÀÌ¸¦ ±¸ÇØ »ç¿ëµÈ´Ù.*/
+            /* sColStartOffsetì€ non variable columnì¼ë•Œë§Œ ì¦ê°€ ì‹œí‚¨ë‹¤.
+             * (sColumnLength == ID_UINT_MAXê°€ ì•„ë‹ë•Œ )
+             * ì¦‰, ê° columnì˜ mColStartOffsetì€ í•´ë‹¹ columnì˜ ì•ì— ì¡´ì¬í•˜ëŠ”
+             * non variable columnë“¤ ê¸¸ì´ì˜ í•©ì´ë¼ê³  ë³¼ ìˆ˜ ìˆë‹¤.
+             * variable columnì˜ ê¸¸ì´ëŠ” fetchë¥¼ ìˆ˜í–‰í•˜ëŠ” í•¨ìˆ˜ì¸
+             * sdc::doFetchí•¨ìˆ˜ì—ì„œ ê¸¸ì´ë¥¼ êµ¬í•´ ì‚¬ìš©ëœë‹¤.*/
             sColStartOffset                  += 0;
 
-            /* variable column¾Õ¿¡ Á¸ÀçÇÏ´Â non variable columnµéÀÇ ±æÀÌ¸¦
-             * ¹Ù·Î ¾Ë±â À§ÇØ ÇöÀç variable columnÀÇ sColStartOffsetÀ»
-             * ÀúÀåÇÑ´Ù. (mVariableColOffset Á¤º¸) */
+            /* variable columnì•ì— ì¡´ì¬í•˜ëŠ” non variable columnë“¤ì˜ ê¸¸ì´ë¥¼
+             * ë°”ë¡œ ì•Œê¸° ìœ„í•´ í˜„ì¬ variable columnì˜ sColStartOffsetì„
+             * ì €ì¥í•œë‹¤. (mVariableColOffset ì •ë³´) */
             sVariableColumnOffsetArr[sVariableColumnCount] = sColStartOffset;
             sVariableColumnCount++;
         }
@@ -6756,11 +6756,11 @@ void smcTable::dumpRowTemplate( smcRowTemplate * aRowTemplate )
 
 /***********************************************************************
  *
- * Description : µğ½ºÅ© Å×ÀÌºíÀÇ ¸ğµç µğ½ºÅ© ÀÎµ¦½ºÀÇ Integrity Ã¼Å©¸¦ ¼öÇàÇÑ´Ù.
+ * Description : ë””ìŠ¤í¬ í…Œì´ë¸”ì˜ ëª¨ë“  ë””ìŠ¤í¬ ì¸ë±ìŠ¤ì˜ Integrity ì²´í¬ë¥¼ ìˆ˜í–‰í•œë‹¤.
  *
- *   aStatistics - [IN] Åë°èÁ¤º¸
- *   aHeader     - [IN] µğ½ºÅ© Å×ÀÌºí Çì´õ
- *   aActionArg  - [IN] ActionÇÔ¼ö¿¡ º¸³¾ Argument
+ *   aStatistics - [IN] í†µê³„ì •ë³´
+ *   aHeader     - [IN] ë””ìŠ¤í¬ í…Œì´ë¸” í—¤ë”
+ *   aActionArg  - [IN] Actioní•¨ìˆ˜ì— ë³´ë‚¼ Argument
  *
  **********************************************************************/
 IDE_RC smcTable::verifyIndexIntegrity( idvSQL         * aStatistics,
@@ -6791,8 +6791,8 @@ IDE_RC smcTable::verifyIndexIntegrity( idvSQL         * aStatistics,
         }
         else
         {
-            /* µğ½ºÅ© ÀÎµ¦½º Çì´õ ÃÊ±âÈ­½Ã¿¡ ÀÌ¹Ì ÀÎµ¦½º ¼¼±×¸ÕÆ® ÆäÀÌÁö¿¡ ´ëÇÑ
-             * µğ½ºÅ©»ó¿¡¼­ÀÇ Verify°¡ ¿Ï·áµÇ¾ú±â ¶§¹®¿¡ ¹Ï°í ÁøÇàÇÑ´Ù. */
+            /* ë””ìŠ¤í¬ ì¸ë±ìŠ¤ í—¤ë” ì´ˆê¸°í™”ì‹œì— ì´ë¯¸ ì¸ë±ìŠ¤ ì„¸ê·¸ë¨¼íŠ¸ í˜ì´ì§€ì— ëŒ€í•œ
+             * ë””ìŠ¤í¬ìƒì—ì„œì˜ Verifyê°€ ì™„ë£Œë˜ì—ˆê¸° ë•Œë¬¸ì— ë¯¿ê³  ì§„í–‰í•œë‹¤. */
         }
 
         if ( smLayerCallback::isIndexToVerifyIntegrity( (const smnIndexHeader*)sIndexHeader )
@@ -6887,9 +6887,9 @@ IDE_RC smcTable::setNullRow(void*             aTrans,
 }
 
 /***********************************************************************
- * Description : TableÀÇ Lob Column¸®½ºÆ®¸¦ ±¸¼ºÇÑ´Ù.
+ * Description : Tableì˜ Lob Columnë¦¬ìŠ¤íŠ¸ë¥¼ êµ¬ì„±í•œë‹¤.
  *
- * aArrLobColumn - [OUT] Lob Column Pointer Array¸¦ ³Ñ°ÜÁØ´Ù.
+ * aArrLobColumn - [OUT] Lob Column Pointer Arrayë¥¼ ë„˜ê²¨ì¤€ë‹¤.
  ***********************************************************************/
 IDE_RC smcTable::makeLobColumnList(
     void                     * aTableHeader,
@@ -6950,7 +6950,7 @@ IDE_RC smcTable::makeLobColumnList(
 }
 
 /***********************************************************************
- * Description : Column List¿¡ ÇÒ´çµÈ ¸Ş¸ğ¸®¸¦ ¹İ³³ÇÑ´Ù.
+ * Description : Column Listì— í• ë‹¹ëœ ë©”ëª¨ë¦¬ë¥¼ ë°˜ë‚©í•œë‹¤.
  *
  * aColumnList - [IN] Column List
  ***********************************************************************/
@@ -6968,20 +6968,20 @@ IDE_RC smcTable::destLobColumnList(void *aColumnList)
 }
 
 /***********************************************************************
- * Description : QP·ÎºÎÅÍ null row¸¦ ¾ò¾î¿Â´Ù.
+ * Description : QPë¡œë¶€í„° null rowë¥¼ ì–»ì–´ì˜¨ë‹¤.
  *
  * Implementation :
- *    ¸ÕÀú smiColumnList¸¦ ±¸¼ºÇÑ´Ù. aColListBuffer´Â smiColumnList
- *    arrayÀÌ´Ù. ÀÌ °ø°£¿¡ next¿Í columnÀ» ¼¼ÆÃÇÑ´Ù.
- *    ¸¶Áö¸· column listÀÇ next´Â NULL·Î ¼¼ÆÃÇØ¾ß ÇÑ´Ù.
- *    ±¸¼ºµÈ smiColumnList¿Í null row°¡ ¸¸µé¾îÁú ¹öÆÛ¸¦ ÀÎÀÚ·Î
- *    callback ÇÔ¼ö¸¦ È£ÃâÇÑ´Ù.
+ *    ë¨¼ì € smiColumnListë¥¼ êµ¬ì„±í•œë‹¤. aColListBufferëŠ” smiColumnList
+ *    arrayì´ë‹¤. ì´ ê³µê°„ì— nextì™€ columnì„ ì„¸íŒ…í•œë‹¤.
+ *    ë§ˆì§€ë§‰ column listì˜ nextëŠ” NULLë¡œ ì„¸íŒ…í•´ì•¼ í•œë‹¤.
+ *    êµ¬ì„±ëœ smiColumnListì™€ null rowê°€ ë§Œë“¤ì–´ì§ˆ ë²„í¼ë¥¼ ì¸ìë¡œ
+ *    callback í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•œë‹¤.
  *
- *    - aTableHeader: ´ë»ó Å×ÀÌºíÀÇ Å×ÀÌºí ÇØ´õ
- *    - aColListBuffer: ´ë»ó Å×ÀÌºíÀÇ ÄÃ·³ ¸®½ºÆ®°¡ ±¸¼ºµÉ ¹öÆÛ °ø°£
- *    - aNullRow: smiValueµéÀÌ ÀúÀåµÉ °ø°£
- *    - aValueBuffer: fixed null valueµéÀÌ ÀúÀåµÉ °ø°£
- *                    aNullRow[i].value°¡ °¡¸®Å°´Â °ø°£ÀÌµÈ´Ù.
+ *    - aTableHeader: ëŒ€ìƒ í…Œì´ë¸”ì˜ í…Œì´ë¸” í•´ë”
+ *    - aColListBuffer: ëŒ€ìƒ í…Œì´ë¸”ì˜ ì»¬ëŸ¼ ë¦¬ìŠ¤íŠ¸ê°€ êµ¬ì„±ë  ë²„í¼ ê³µê°„
+ *    - aNullRow: smiValueë“¤ì´ ì €ì¥ë  ê³µê°„
+ *    - aValueBuffer: fixed null valueë“¤ì´ ì €ì¥ë  ê³µê°„
+ *                    aNullRow[i].valueê°€ ê°€ë¦¬í‚¤ëŠ” ê³µê°„ì´ëœë‹¤.
  ***********************************************************************/
 IDE_RC smcTable::makeNullRowByCallback(smcTableHeader *aTableHeader,
                                        smiColumnList  *aColListBuffer,
@@ -6991,10 +6991,10 @@ IDE_RC smcTable::makeNullRowByCallback(smcTableHeader *aTableHeader,
     smiColumnList *sCurList;
     UInt           i;
 
-    /* ÄÃ·³ÀÇ °³¼ö°¡ ÃÖ¼ÒÇÑ 1°³ÀÌ»óÀÌ¾î¾ß ÇÑ´Ù. */
+    /* ì»¬ëŸ¼ì˜ ê°œìˆ˜ê°€ ìµœì†Œí•œ 1ê°œì´ìƒì´ì–´ì•¼ í•œë‹¤. */
     IDE_ASSERT(aTableHeader->mColumnCount > 0);
 
-    /* STEP-1 : smiColumnList¸¦ ±¸¼ºÇÑ´Ù. */
+    /* STEP-1 : smiColumnListë¥¼ êµ¬ì„±í•œë‹¤. */
     sCurList = aColListBuffer;
 
     for (i = 0; i < aTableHeader->mColumnCount; i++)
@@ -7003,12 +7003,12 @@ IDE_RC smcTable::makeNullRowByCallback(smcTableHeader *aTableHeader,
         sCurList->column = smcTable::getColumn( aTableHeader, i );
         sCurList++;
     }
-    /* ÄÃ·³ÀÇ °³¼ö°¡ ÃÖ¼ÒÇÑ 1°³ ÀÌ»óÀÌ¹Ç·Î for loop¸¦ ÇÑ¹øµµ ¾Èµµ´Â ÀÏÀº ¾ø´Ù. */
-    /* ¸¶Áö¸· smiColumnListÀÇ next¸¦ NULL·Î ¼¼ÆÃÇØ¾ß ÇÑ´Ù. */
+    /* ì»¬ëŸ¼ì˜ ê°œìˆ˜ê°€ ìµœì†Œí•œ 1ê°œ ì´ìƒì´ë¯€ë¡œ for loopë¥¼ í•œë²ˆë„ ì•ˆë„ëŠ” ì¼ì€ ì—†ë‹¤. */
+    /* ë§ˆì§€ë§‰ smiColumnListì˜ nextë¥¼ NULLë¡œ ì„¸íŒ…í•´ì•¼ í•œë‹¤. */
     sCurList--;
     sCurList->next = NULL;
 
-    /* STEP-2 : QP·ÎºÎÅÍ null row¸¦ ¾ò¾î¿Â´Ù. */
+    /* STEP-2 : QPë¡œë¶€í„° null rowë¥¼ ì–»ì–´ì˜¨ë‹¤. */
     IDE_TEST(gSmiGlobalCallBackList.makeNullRow(NULL,
                                                 aColListBuffer,
                                                 aNullRow,
@@ -7023,20 +7023,20 @@ IDE_RC smcTable::makeNullRowByCallback(smcTableHeader *aTableHeader,
 }
 
 /**********************************************************************
- * BUG-30378 ºñÁ¤»óÀûÀ¸·Î DropµÇ¾úÁö¸¸ refineµÅÁö ¾Ê´Â
- * Å×ÀÌºíÀÌ Á¸ÀçÇÕ´Ï´Ù.
- * ¹ü¿ëÀûÀ¸·Î »ç¿ëÇÒ ¼ö ÀÖ´Â DumpÇÔ¼ö·Î º¯°æ
+ * BUG-30378 ë¹„ì •ìƒì ìœ¼ë¡œ Dropë˜ì—ˆì§€ë§Œ refineë¼ì§€ ì•ŠëŠ”
+ * í…Œì´ë¸”ì´ ì¡´ì¬í•©ë‹ˆë‹¤.
+ * ë²”ìš©ì ìœ¼ë¡œ ì‚¬ìš©í•  ìˆ˜ ìˆëŠ” Dumpí•¨ìˆ˜ë¡œ ë³€ê²½
  *
  * BUG-31206    improve usability of DUMPCI and DUMPDDF
- * Util¿¡¼­µµ ¾µ ¼ö ÀÖ´Â ¹öÆÛ¿ë ÇÔ¼ö
+ * Utilì—ì„œë„ ì“¸ ìˆ˜ ìˆëŠ” ë²„í¼ìš© í•¨ìˆ˜
  *
- * Boot log¿¡ Internal Server Error¸Ş¼¼Áö¸¦ Âï´Â´Ù.
+ * Boot logì— Internal Server Errorë©”ì„¸ì§€ë¥¼ ì°ëŠ”ë‹¤.
  *
- * [IN]     aTableHeader     - ¿¡·¯°¡ ¹ß»ıÇÑ TableÀÇ Header
- * [IN]     aDumpBinary      - aTableHeaderÀÇ °ªÀ» ÀüºÎ a·Î ÂïÀ»Áö ¿©ºÎ
- * [IN]     aDisplayTable    - °ªÀ» Ç¥ Çü½ÄÀ¸·Î Ãâ·ÂÇÒÁö ¿©ºÎ
- * [OUT]    aOutBuf          - ´ë»ó ¹öÆÛ
- * [OUT]    aOutSize         - ´ë»ó ¹öÆÛÀÇ Å©±â
+ * [IN]     aTableHeader     - ì—ëŸ¬ê°€ ë°œìƒí•œ Tableì˜ Header
+ * [IN]     aDumpBinary      - aTableHeaderì˜ ê°’ì„ ì „ë¶€ aë¡œ ì°ì„ì§€ ì—¬ë¶€
+ * [IN]     aDisplayTable    - ê°’ì„ í‘œ í˜•ì‹ìœ¼ë¡œ ì¶œë ¥í• ì§€ ì—¬ë¶€
+ * [OUT]    aOutBuf          - ëŒ€ìƒ ë²„í¼
+ * [OUT]    aOutSize         - ëŒ€ìƒ ë²„í¼ì˜ í¬ê¸°
  *
  **********************************************************************/
 
@@ -7232,9 +7232,9 @@ void  smcTable::dumpTableHeader( smcTableHeader * aTable )
 
 
 /*
-    Table HeaderÀÇ Index Latch¸¦ ÇÒ´çÇÏ°í ÃÊ±âÈ­
+    Table Headerì˜ Index Latchë¥¼ í• ë‹¹í•˜ê³  ì´ˆê¸°í™”
 
-    [IN] aTableHeader - IndexLatch°¡ ÃÊ±âÈ­µÉ TableÀÇ Header
+    [IN] aTableHeader - IndexLatchê°€ ì´ˆê¸°í™”ë  Tableì˜ Header
  */
 IDE_RC smcTable::allocAndInitIndexLatch(smcTableHeader * aTableHeader )
 {
@@ -7246,8 +7246,8 @@ IDE_RC smcTable::allocAndInitIndexLatch(smcTableHeader * aTableHeader )
 
     if ( aTableHeader->mIndexLatch != NULL )
     {
-        // ASSERT¸¦ °Å´Â °ÍÀÌ ¸ÂÁö¸¸,
-        // µ¿ÀÛ¿¡´Â ¹®Á¦°¡ ¾øÀ¸¹Ç·Î ASSERT´ë½Å ºÎÆ®·Î±×¿¡ Âïµµ·Ï Ã³¸®
+        // ASSERTë¥¼ ê±°ëŠ” ê²ƒì´ ë§ì§€ë§Œ,
+        // ë™ì‘ì—ëŠ” ë¬¸ì œê°€ ì—†ìœ¼ë¯€ë¡œ ASSERTëŒ€ì‹  ë¶€íŠ¸ë¡œê·¸ì— ì°ë„ë¡ ì²˜ë¦¬
         ideLog::log( IDE_SERVER_0,
                      "InternalError [%s:%u]\n"
                      "IndexLatch Of TableHeader is initialized twice.\n",
@@ -7257,7 +7257,7 @@ IDE_RC smcTable::allocAndInitIndexLatch(smcTableHeader * aTableHeader )
 
         dumpTableHeader( aTableHeader );
 
-        // µğ¹ö±× ¸ğµåÀÏ¶§¸¸ ¼­¹ö¸¦ Á×ÀÎ´Ù.
+        // ë””ë²„ê·¸ ëª¨ë“œì¼ë•Œë§Œ ì„œë²„ë¥¼ ì£½ì¸ë‹¤.
         IDE_DASSERT(0);
     }
 
@@ -7307,9 +7307,9 @@ IDE_RC smcTable::allocAndInitIndexLatch(smcTableHeader * aTableHeader )
 
 
 /*
-    Table HeaderÀÇ Index Latch¸¦ ÆÄ±«ÇÏ°í ÇØÁ¦
+    Table Headerì˜ Index Latchë¥¼ íŒŒê´´í•˜ê³  í•´ì œ
 
-    [IN] aTableHeader - IndexLatch°¡ ÆÄ±«µÉ TableÀÇ Header
+    [IN] aTableHeader - IndexLatchê°€ íŒŒê´´ë  Tableì˜ Header
  */
 IDE_RC smcTable::finiAndFreeIndexLatch(smcTableHeader * aTableHeader )
 {
@@ -7320,8 +7320,8 @@ IDE_RC smcTable::finiAndFreeIndexLatch(smcTableHeader * aTableHeader )
         /*
          * nothing to do
          *
-         * 1. Create TableÀÇ smrRecoveryMgr::undoTrans°úÁ¤¿¡¼­ È£ÃâµÉ¼ö ÀÖ°í,
-         * 2. ´Ù½Ã ÇÑ¹ø smxOIDList::processDropTblPending¿¡¼­ È£ÃâµÉ¼ö ÀÖ´Ù.
+         * 1. Create Tableì˜ smrRecoveryMgr::undoTransê³¼ì •ì—ì„œ í˜¸ì¶œë ìˆ˜ ìˆê³ ,
+         * 2. ë‹¤ì‹œ í•œë²ˆ smxOIDList::processDropTblPendingì—ì„œ í˜¸ì¶œë ìˆ˜ ìˆë‹¤.
          *
          */
     }
@@ -7344,9 +7344,9 @@ IDE_RC smcTable::finiAndFreeIndexLatch(smcTableHeader * aTableHeader )
 }
 
 /*
-    Table HeaderÀÇ Index Latch¿¡ Exclusive Latch¸¦ Àâ´Â´Ù.
+    Table Headerì˜ Index Latchì— Exclusive Latchë¥¼ ì¡ëŠ”ë‹¤.
 
-    [IN] aTableHeader - Exclusive Latch¸¦ ÀâÀ» TableÀÇ Header
+    [IN] aTableHeader - Exclusive Latchë¥¼ ì¡ì„ Tableì˜ Header
 */
 IDE_RC smcTable::latchExclusive(smcTableHeader * aTableHeader )
 {
@@ -7354,10 +7354,10 @@ IDE_RC smcTable::latchExclusive(smcTableHeader * aTableHeader )
 
     if ( aTableHeader->mIndexLatch == NULL )
     {
-        // ASSERT¸¦ °Å´Â °ÍÀÌ ¸ÂÁö¸¸,
-        // µ¿ÀÛ¿¡´Â ¹®Á¦°¡ ¾øÀ¸¹Ç·Î ASSERT´ë½Å ºÎÆ®·Î±×¿¡ Âïµµ·Ï Ã³¸®
+        // ASSERTë¥¼ ê±°ëŠ” ê²ƒì´ ë§ì§€ë§Œ,
+        // ë™ì‘ì—ëŠ” ë¬¸ì œê°€ ì—†ìœ¼ë¯€ë¡œ ASSERTëŒ€ì‹  ë¶€íŠ¸ë¡œê·¸ì— ì°ë„ë¡ ì²˜ë¦¬
         //
-        // (Index DDL°ú µ¿½Ã ¼öÇà½Ã¿¡¸¸ ¹®Á¦°¡ µÈ´Ù.)
+        // (Index DDLê³¼ ë™ì‹œ ìˆ˜í–‰ì‹œì—ë§Œ ë¬¸ì œê°€ ëœë‹¤.)
         ideLog::log( IDE_SERVER_0,
                      "InternalError [%s:%u]\n"
                      "IndexLatch is not initialized yet.(trial to execute latchExclusive).\n",
@@ -7368,7 +7368,7 @@ IDE_RC smcTable::latchExclusive(smcTableHeader * aTableHeader )
 
         dumpTableHeader( aTableHeader );
 
-        // DEBUG ModeÀÏ¶§´Â ASSERT·Î Á×ÀÎ´Ù.
+        // DEBUG Modeì¼ë•ŒëŠ” ASSERTë¡œ ì£½ì¸ë‹¤.
         IDE_DASSERT(0);
     }
     else
@@ -7387,9 +7387,9 @@ IDE_RC smcTable::latchExclusive(smcTableHeader * aTableHeader )
 
 
 /*
-    Table HeaderÀÇ Index Latch¿¡ Shared Latch¸¦ Àâ´Â´Ù.
+    Table Headerì˜ Index Latchì— Shared Latchë¥¼ ì¡ëŠ”ë‹¤.
 
-    [IN] aTableHeader - Shared Latch¸¦ ÀâÀ» TableÀÇ Header
+    [IN] aTableHeader - Shared Latchë¥¼ ì¡ì„ Tableì˜ Header
  */
 IDE_RC smcTable::latchShared(smcTableHeader * aTableHeader )
 {
@@ -7397,10 +7397,10 @@ IDE_RC smcTable::latchShared(smcTableHeader * aTableHeader )
 
     if ( aTableHeader->mIndexLatch == NULL )
     {
-        // ASSERT¸¦ °Å´Â °ÍÀÌ ¸ÂÁö¸¸,
-        // µ¿ÀÛ¿¡´Â ¹®Á¦°¡ ¾øÀ¸¹Ç·Î ASSERT´ë½Å ºÎÆ®·Î±×¿¡ Âïµµ·Ï Ã³¸®
+        // ASSERTë¥¼ ê±°ëŠ” ê²ƒì´ ë§ì§€ë§Œ,
+        // ë™ì‘ì—ëŠ” ë¬¸ì œê°€ ì—†ìœ¼ë¯€ë¡œ ASSERTëŒ€ì‹  ë¶€íŠ¸ë¡œê·¸ì— ì°ë„ë¡ ì²˜ë¦¬
         //
-        // (Index DDL°ú µ¿½Ã ¼öÇà½Ã¿¡¸¸ ¹®Á¦°¡ µÈ´Ù.)
+        // (Index DDLê³¼ ë™ì‹œ ìˆ˜í–‰ì‹œì—ë§Œ ë¬¸ì œê°€ ëœë‹¤.)
         ideLog::log( IDE_SERVER_0,
                      "InternalError [%s:%u]\n"
                      "IndexLatch is not initialized yet.(trial to execute latchShared).\n",
@@ -7411,7 +7411,7 @@ IDE_RC smcTable::latchShared(smcTableHeader * aTableHeader )
 
         dumpTableHeader( aTableHeader );
 
-        // DEBUG ModeÀÏ¶§´Â ASSERT·Î Á×ÀÎ´Ù.
+        // DEBUG Modeì¼ë•ŒëŠ” ASSERTë¡œ ì£½ì¸ë‹¤.
         IDE_DASSERT(0);
     }
     else
@@ -7429,9 +7429,9 @@ IDE_RC smcTable::latchShared(smcTableHeader * aTableHeader )
 }
 
 /*
-    Table HeaderÀÇ Index Latch¸¦ Ç®¾îÁØ´Ù.
+    Table Headerì˜ Index Latchë¥¼ í’€ì–´ì¤€ë‹¤.
 
-    [IN] aTableHeader - Index Latch¸¦ Ç®¾îÁÙ TableÀÇ Header
+    [IN] aTableHeader - Index Latchë¥¼ í’€ì–´ì¤„ Tableì˜ Header
  */
 IDE_RC smcTable::unlatch(smcTableHeader * aTableHeader )
 {
@@ -7439,10 +7439,10 @@ IDE_RC smcTable::unlatch(smcTableHeader * aTableHeader )
 
     if ( aTableHeader->mIndexLatch == NULL )
     {
-        // ASSERT¸¦ °Å´Â °ÍÀÌ ¸ÂÁö¸¸,
-        // µ¿ÀÛ¿¡´Â ¹®Á¦°¡ ¾øÀ¸¹Ç·Î ASSERT´ë½Å ºÎÆ®·Î±×¿¡ Âïµµ·Ï Ã³¸®
+        // ASSERTë¥¼ ê±°ëŠ” ê²ƒì´ ë§ì§€ë§Œ,
+        // ë™ì‘ì—ëŠ” ë¬¸ì œê°€ ì—†ìœ¼ë¯€ë¡œ ASSERTëŒ€ì‹  ë¶€íŠ¸ë¡œê·¸ì— ì°ë„ë¡ ì²˜ë¦¬
         //
-        // (Index DDL°ú µ¿½Ã ¼öÇà½Ã¿¡¸¸ ¹®Á¦°¡ µÈ´Ù.)
+        // (Index DDLê³¼ ë™ì‹œ ìˆ˜í–‰ì‹œì—ë§Œ ë¬¸ì œê°€ ëœë‹¤.)
         ideLog::log( IDE_SERVER_0,
                      "InternalError [%s:%u]\n"
                      "IndexLatch is not initialized yet.(trial to execute unlatch).\n",
@@ -7453,7 +7453,7 @@ IDE_RC smcTable::unlatch(smcTableHeader * aTableHeader )
 
         dumpTableHeader( aTableHeader );
 
-        // DEBUG ModeÀÏ¶§´Â ASSERT·Î Á×ÀÎ´Ù.
+        // DEBUG Modeì¼ë•ŒëŠ” ASSERTë¡œ ì£½ì¸ë‹¤.
         IDE_DASSERT(0);
     }
     else
@@ -7470,21 +7470,21 @@ IDE_RC smcTable::unlatch(smcTableHeader * aTableHeader )
 }
 
 /***********************************************************************
- * Description : DropIndexByAbortÇÔ¼ö¿¡ ÀÇÇØ¼­ È£ÃâµÇ´Âµ¥ »õ·Î¿î Index Header
- *               Array¿¡ ±âÁ¸ÀÇ Index Header Array¿¡ Create °¡ Ãë¼ÒµÈ Index¸¦
- *               Á¦¿ÜÇÑ Index HeaderµéÀ» º¹»çÇØ¼­ ¿Å°ÜÁÖ´Â ÇÔ¼öÀÌ´Ù.
+ * Description : DropIndexByAbortí•¨ìˆ˜ì— ì˜í•´ì„œ í˜¸ì¶œë˜ëŠ”ë° ìƒˆë¡œìš´ Index Header
+ *               Arrayì— ê¸°ì¡´ì˜ Index Header Arrayì— Create ê°€ ì·¨ì†Œëœ Indexë¥¼
+ *               ì œì™¸í•œ Index Headerë“¤ì„ ë³µì‚¬í•´ì„œ ì˜®ê²¨ì£¼ëŠ” í•¨ìˆ˜ì´ë‹¤.
  *
  * aTrans             - [IN] Transaction Pointer
- * aDropIndexHeader   - [IN] DropµÉ Index Header
- * aIndexHeaderArr    - [IN] ±âÁ¸ÀÇ Index Header Array
- * aIndexHeaderArrLen - [IN] Index Header ArrayÀÇ ±æÀÌ
- * aOIDIndexHeaderArr - [IN] »õ·Î¿î Index Header Array¸¦ °¡Áö°Ô µÉ Var RowÀÇ
+ * aDropIndexHeader   - [IN] Dropë  Index Header
+ * aIndexHeaderArr    - [IN] ê¸°ì¡´ì˜ Index Header Array
+ * aIndexHeaderArrLen - [IN] Index Header Arrayì˜ ê¸¸ì´
+ * aOIDIndexHeaderArr - [IN] ìƒˆë¡œìš´ Index Header Arrayë¥¼ ê°€ì§€ê²Œ ë  Var Rowì˜
  *                           OID
  *
  * Related Issue :
- *   - BUG-17955: Add/Drop Column ¼öÇàÈÄ smiStatement End½Ã,
- *                Unable to invoke mutex_lock()·Î ¼­¹ö ºñÁ¤»ó Á¾·á
- *   - BUG-30612: index header self oid°¡ Àß¸ø ±â·ÏµÉ ¼ö°¡ ÀÖ½À´Ï´Ù.
+ *   - BUG-17955: Add/Drop Column ìˆ˜í–‰í›„ smiStatement Endì‹œ,
+ *                Unable to invoke mutex_lock()ë¡œ ì„œë²„ ë¹„ì •ìƒ ì¢…ë£Œ
+ *   - BUG-30612: index header self oidê°€ ì˜ëª» ê¸°ë¡ë  ìˆ˜ê°€ ìˆìŠµë‹ˆë‹¤.
  ***********************************************************************/
 IDE_RC smcTable::removeIdxHdrAndCopyIndexHdrArr(
                                             void*     aTrans,
@@ -7503,9 +7503,9 @@ IDE_RC smcTable::removeIdxHdrAndCopyIndexHdrArr(
 
     IDE_ASSERT( sIdxCntInIdxArr - 1 != 0 );
 
-    /* BUG-17955: Add/Drop Column ¼öÇàÈÄ smiStatement End½Ã, Unable to invoke
-     * mutex_lock()·Î ¼­¹ö ºñÁ¤»ó Á¾·á */
-    /* After Image¸¦ »õ·Î ¼³Á¤µÉ Index Header List¿¡ º¹»çÇØ ÁØ´Ù. */
+    /* BUG-17955: Add/Drop Column ìˆ˜í–‰í›„ smiStatement Endì‹œ, Unable to invoke
+     * mutex_lock()ë¡œ ì„œë²„ ë¹„ì •ìƒ ì¢…ë£Œ */
+    /* After Imageë¥¼ ìƒˆë¡œ ì„¤ì •ë  Index Header Listì— ë³µì‚¬í•´ ì¤€ë‹¤. */
     sFstIndexHeader  = (SChar*)aIndexHeaderArr + ID_SIZEOF( smVCPieceHeader );
     IDE_ASSERT( smmManager::getOIDPtr( 
                                     SMI_ID_TABLESPACE_SYSTEM_MEMORY_DIC, 
@@ -7516,17 +7516,17 @@ IDE_RC smcTable::removeIdxHdrAndCopyIndexHdrArr(
 
     sCopySize = aIndexHeaderArrLen - sIndexHeaderSize;
 
-    /* create µÇ´Â Index´Â Ã³À½, È¤Àº ¸¶Áö¸·¿¡ Ãß°¡µÈ´Ù.*/
+    /* create ë˜ëŠ” IndexëŠ” ì²˜ìŒ, í˜¹ì€ ë§ˆì§€ë§‰ì— ì¶”ê°€ëœë‹¤.*/
     if( sFstIndexHeader == aDropIndexHeader )
     {
-         // Ã¹¹øÂ° IndexHeader¸¦ Á¦°ÅÇÏ´Â °æ¿ì
+         // ì²«ë²ˆì§¸ IndexHeaderë¥¼ ì œê±°í•˜ëŠ” ê²½ìš°
         idlOS::memcpy( sDestIndexRowPtr,
                        sFstIndexHeader + sIndexHeaderSize,
                        sCopySize );
     }
     else
     {
-        // ¸¶Áö¸· IndexHeader¸¦ Á¦°ÅÇÏ´Â °æ¿ì
+        // ë§ˆì§€ë§‰ IndexHeaderë¥¼ ì œê±°í•˜ëŠ” ê²½ìš°
         IDE_ASSERT( (UInt)((SChar*)aDropIndexHeader - sFstIndexHeader) == sCopySize );
 
         idlOS::memcpy( sDestIndexRowPtr,
@@ -7534,9 +7534,9 @@ IDE_RC smcTable::removeIdxHdrAndCopyIndexHdrArr(
                        sCopySize );
     }
 
-    /* BUG-30612 index header self oid°¡ Àß¸ø ±â·ÏµÉ ¼ö ÀÖ½À´Ï´Ù.
-     * ´Ù¸¥ slot¿¡¼­ º¹»çÇØ ¿Â °ÍÀÌ¹Ç·Î self oid°¡ Àß¸øµÇ¾î ÀÖ´Ù.
-     * self oid¸¦ º¸Á¤ÇÑ´Ù. */
+    /* BUG-30612 index header self oidê°€ ì˜ëª» ê¸°ë¡ë  ìˆ˜ ìˆìŠµë‹ˆë‹¤.
+     * ë‹¤ë¥¸ slotì—ì„œ ë³µì‚¬í•´ ì˜¨ ê²ƒì´ë¯€ë¡œ self oidê°€ ì˜ëª»ë˜ì–´ ìˆë‹¤.
+     * self oidë¥¼ ë³´ì •í•œë‹¤. */
     adjustIndexSelfOID( (UChar*)sDestIndexRowPtr,
                         aOIDIndexHeaderArr + ID_SIZEOF(smVCPieceHeader),
                         sCopySize );
@@ -7550,7 +7550,7 @@ IDE_RC smcTable::removeIdxHdrAndCopyIndexHdrArr(
         SM_MAKE_PID( aOIDIndexHeaderArr ),
         SM_MAKE_OFFSET( aOIDIndexHeaderArr ) + ID_SIZEOF( smVCPieceHeader ));
 
-    /* redo only logÀÌ¹Ç·Î walÀ» ÁöÅ°Áö ¾Ê¾Æµµ µÈ´Ù. */
+    /* redo only logì´ë¯€ë¡œ walì„ ì§€í‚¤ì§€ ì•Šì•„ë„ ëœë‹¤. */
     IDE_TEST( smrUpdate::writeUpdateLog( NULL, /* idvSQL* */
                                          aTrans,
                                          SMR_PHYSICAL,
@@ -7576,12 +7576,12 @@ IDE_RC smcTable::removeIdxHdrAndCopyIndexHdrArr(
 
 
 /***********************************************************************
- * Description : TableÀÇ Flag¸¦ º¯°æÇÑ´Ù.
+ * Description : Tableì˜ Flagë¥¼ ë³€ê²½í•œë‹¤.
  *
- * aTrans       [IN] Flag¸¦ º¯°æÇÒ Æ®·£Àè¼Ç
- * aTableHeader [IN] Flag¸¦ º¯°æÇÒ TableÀÇ Header
- * aFlagMask    [IN] º¯°æÇÒ Table FlagÀÇ Mask
- * aFlagValue   [IN] º¯°æÇÒ Table FlagÀÇ Value
+ * aTrans       [IN] Flagë¥¼ ë³€ê²½í•  íŠ¸ëœì­ì…˜
+ * aTableHeader [IN] Flagë¥¼ ë³€ê²½í•  Tableì˜ Header
+ * aFlagMask    [IN] ë³€ê²½í•  Table Flagì˜ Mask
+ * aFlagValue   [IN] ë³€ê²½í•  Table Flagì˜ Value
  **********************************************************************/
 IDE_RC smcTable::alterTableFlag( void           * aTrans,
                                  smcTableHeader * aTableHeader,
@@ -7591,12 +7591,12 @@ IDE_RC smcTable::alterTableFlag( void           * aTrans,
     IDE_DASSERT( aTrans != NULL);
     IDE_DASSERT( aTableHeader != NULL );
     IDE_DASSERT( aFlagMask != 0);
-    // Mask¿ÜÀÇ Bit¸¦ Value°¡ »ç¿ëÇØ¼­´Â ¾ÈµÈ´Ù.
+    // Maskì™¸ì˜ Bitë¥¼ Valueê°€ ì‚¬ìš©í•´ì„œëŠ” ì•ˆëœë‹¤.
     IDE_DASSERT( (~aFlagMask & aFlagValue) == 0 );
 
     UInt sNewFlag;
 
-    // Table Flagº¯°æ °ü·Ã ¿¡·¯ Ã¼Å© ½Ç½Ã
+    // Table Flagë³€ê²½ ê´€ë ¨ ì—ëŸ¬ ì²´í¬ ì‹¤ì‹œ
     IDE_TEST( checkError4AlterTableFlag( aTableHeader,
                                          aFlagMask,
                                          aFlagValue )
@@ -7604,9 +7604,9 @@ IDE_RC smcTable::alterTableFlag( void           * aTrans,
 
     sNewFlag = aTableHeader->mFlag;
 
-    // Mask Bit¸¦ ¸ğµÎ Clear
+    // Mask Bitë¥¼ ëª¨ë‘ Clear
     sNewFlag = sNewFlag & ~aFlagMask;
-    // Value Bit¸¦ Set
+    // Value Bitë¥¼ Set
     sNewFlag = sNewFlag | aFlagValue;
 
     IDE_TEST(
@@ -7632,9 +7632,9 @@ IDE_RC smcTable::alterTableFlag( void           * aTrans,
 }
 
 /***********************************************************************
- * Description : Table¿¡ InconsistentÇÏ´Ù°í ¼³Á¤ÇÑ´Ù.
+ * Description : Tableì— Inconsistentí•˜ë‹¤ê³  ì„¤ì •í•œë‹¤.
  *
- * aTableHeader [IN/OUT] Flag¸¦ º¯°æÇÒ TableÀÇ Header
+ * aTableHeader [IN/OUT] Flagë¥¼ ë³€ê²½í•  Tableì˜ Header
  **********************************************************************/
 IDE_RC smcTable::setTableHeaderInconsistency( smOID            aTableOID )
 {
@@ -7650,17 +7650,17 @@ IDE_RC smcTable::setTableHeaderInconsistency( smOID            aTableOID )
                    aTableOID,
                    sTableHeader->mSelfOID );
 
-    /* InconsistentÇØÁö´Â table Á¤º¸ dump */
+    /* Inconsistentí•´ì§€ëŠ” table ì •ë³´ dump */
     dumpTableHeader( sTableHeader );
 
-    /* ½ÇÁ¦ ÀÌ¹ÌÁö»ó¿¡µµ º¯°æÇÏ´Â °æ¿ì´Â, RestartRecovery½Ã¿¡µµ
-     * ¼³Á¤ÇØ¾ßÇÑ´Ù. */
+    /* ì‹¤ì œ ì´ë¯¸ì§€ìƒì—ë„ ë³€ê²½í•˜ëŠ” ê²½ìš°ëŠ”, RestartRecoveryì‹œì—ë„
+     * ì„¤ì •í•´ì•¼í•œë‹¤. */
     IDE_TEST( smrUpdate::setInconsistencyAtTableHead(
             sTableHeader,
             ID_FALSE ) // aForMediaRecovery
         != IDE_SUCCESS );
 
-    /* Inconsistent -> Consistent´Â ¾øÀ½ */
+    /* Inconsistent -> ConsistentëŠ” ì—†ìŒ */
     sTableHeader->mIsConsistent = ID_FALSE;
 
     IDE_TEST( smmDirtyPageMgr::insDirtyPage(
@@ -7708,14 +7708,14 @@ IDE_RC smcTable::setTableHeaderDropFlag( scSpaceID    aSpaceID,
 }
 
 /*
-    Create TableÀ» À§ÇÑ ¿¡·¯Ã³¸®
-    [IN] aSpaceID   - Å×ÀÌºí½ºÆäÀÌ½ºÀÇ ID
-    [IN] aTableFlag - »ı¼ºÇÒ Å×ÀÌºíÀÇ Flag
+    Create Tableì„ ìœ„í•œ ì—ëŸ¬ì²˜ë¦¬
+    [IN] aSpaceID   - í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì˜ ID
+    [IN] aTableFlag - ìƒì„±í•  í…Œì´ë¸”ì˜ Flag
 */
 IDE_RC smcTable::checkError4CreateTable( scSpaceID aSpaceID,
                                          UInt      aTableFlag )
 {
-    // 1. Volatile Table¿¡ ´ëÇØ ·Î±× ¾ĞÃàÇÏµµ·Ï ¼³Á¤µÈ °æ¿ì ¿¡·¯
+    // 1. Volatile Tableì— ëŒ€í•´ ë¡œê·¸ ì••ì¶•í•˜ë„ë¡ ì„¤ì •ëœ ê²½ìš° ì—ëŸ¬
     if ( sctTableSpaceMgr::isVolatileTableSpace( aSpaceID ) == ID_TRUE )
     {
         if ( (aTableFlag & SMI_TABLE_LOG_COMPRESS_MASK) ==
@@ -7738,11 +7738,11 @@ IDE_RC smcTable::checkError4CreateTable( scSpaceID aSpaceID,
 
 
 /*
-    TableÀÇ Flagº¯°æ¿¡ ´ëÇÑ ¿¡·¯Ã³¸®
+    Tableì˜ Flagë³€ê²½ì— ëŒ€í•œ ì—ëŸ¬ì²˜ë¦¬
 
-    [IN] aTableHeader - º¯°æÇÒ Å×ÀÌºíÀÇ Çì´õ
-    [IN] aFlagMask    - º¯°æÇÒ Table FlagÀÇ Mask
-    [IN] aFlagValue   - º¯°æÇÒ Table FlagÀÇ Value
+    [IN] aTableHeader - ë³€ê²½í•  í…Œì´ë¸”ì˜ í—¤ë”
+    [IN] aFlagMask    - ë³€ê²½í•  Table Flagì˜ Mask
+    [IN] aFlagValue   - ë³€ê²½í•  Table Flagì˜ Value
  */
 IDE_RC smcTable::checkError4AlterTableFlag( smcTableHeader * aTableHeader,
                                             UInt             aFlagMask,
@@ -7750,7 +7750,7 @@ IDE_RC smcTable::checkError4AlterTableFlag( smcTableHeader * aTableHeader,
 {
     IDE_DASSERT( aTableHeader != NULL );
 
-    // 1. Volatile Table¿¡ ´ëÇØ ·Î±× ¾ĞÃàÇÏµµ·Ï ¼³Á¤½Ã ¿¡·¯
+    // 1. Volatile Tableì— ëŒ€í•´ ë¡œê·¸ ì••ì¶•í•˜ë„ë¡ ì„¤ì •ì‹œ ì—ëŸ¬
     if ( sctTableSpaceMgr::isVolatileTableSpace(
                                aTableHeader->mSpaceID ) == ID_TRUE )
     {
@@ -7766,7 +7766,7 @@ IDE_RC smcTable::checkError4AlterTableFlag( smcTableHeader * aTableHeader,
     }
 
 
-    // 2. ÀÌ¹Ì Table Header¿¡ ÇØ´ç Flag·Î ¼³Á¤µÇ¾î ÀÖ´Â °æ¿ì ¿¡·¯
+    // 2. ì´ë¯¸ Table Headerì— í•´ë‹¹ Flagë¡œ ì„¤ì •ë˜ì–´ ìˆëŠ” ê²½ìš° ì—ëŸ¬
     IDE_TEST_RAISE( (aTableHeader->mFlag & aFlagMask) == aFlagValue,
                     err_table_flag_already_set );
 
@@ -7786,12 +7786,12 @@ IDE_RC smcTable::checkError4AlterTableFlag( smcTableHeader * aTableHeader,
 }
 
 /*******************************************************************************
- * Description : ReplicationÀ» À§ÇØ¼­ Table Meta¸¦ ±â·ÏÇÑ´Ù.
+ * Description : Replicationì„ ìœ„í•´ì„œ Table Metaë¥¼ ê¸°ë¡í•œë‹¤.
  *
- * [IN] aTrans      - Log Buffer¸¦ Æ÷ÇÔÇÑ Transaction
- * [IN] aTableMeta  - ±â·ÏÇÒ Table MetaÀÇ Çì´õ
- * [IN] aLogBody    - ±â·ÏÇÒ Log Body
- * [IN] aLogBodyLen - ±â·ÏÇÒ Log BodyÀÇ ±æÀÌ
+ * [IN] aTrans      - Log Bufferë¥¼ í¬í•¨í•œ Transaction
+ * [IN] aTableMeta  - ê¸°ë¡í•  Table Metaì˜ í—¤ë”
+ * [IN] aLogBody    - ê¸°ë¡í•  Log Body
+ * [IN] aLogBodyLen - ê¸°ë¡í•  Log Bodyì˜ ê¸¸ì´
  ******************************************************************************/
 IDE_RC smcTable::writeTableMetaLog(void         * aTrans,
                                    smrTableMeta * aTableMeta,
@@ -7809,7 +7809,7 @@ IDE_RC smcTable::writeTableMetaLog(void         * aTrans,
     smLayerCallback::initLogBuffer( aTrans );
     sOffset = 0;
 
-    /* Log header¸¦ ±¸¼ºÇÑ´Ù. */
+    /* Log headerë¥¼ êµ¬ì„±í•œë‹¤. */
     idlOS::memset(&sLogHeader, 0, ID_SIZEOF(smrTableMetaLog));
 
     sTransID = smLayerCallback::getTransID( aTrans );
@@ -7879,11 +7879,11 @@ IDE_RC smcTable::writeTableMetaLog(void         * aTrans,
 }
 
 /***********************************************************************
- * Description : Disk TableÀÇ Insert LimitÀ» º¯°æÇÑ´Ù.
+ * Description : Disk Tableì˜ Insert Limitì„ ë³€ê²½í•œë‹¤.
  *
- * aTrans       [IN] Flag¸¦ º¯°æÇÒ Æ®·£Àè¼Ç
- * aTableHeader [IN] Flag¸¦ º¯°æÇÒ TableÀÇ Header
- * aSegAttr     [IN] º¯°æÇÒ Table Insert Limit
+ * aTrans       [IN] Flagë¥¼ ë³€ê²½í•  íŠ¸ëœì­ì…˜
+ * aTableHeader [IN] Flagë¥¼ ë³€ê²½í•  Tableì˜ Header
+ * aSegAttr     [IN] ë³€ê²½í•  Table Insert Limit
  **********************************************************************/
 IDE_RC smcTable::alterTableSegAttr( void                  * aTrans,
                                     smcTableHeader        * aHeader,
@@ -7893,11 +7893,11 @@ IDE_RC smcTable::alterTableSegAttr( void                  * aTrans,
     IDE_DASSERT( aTrans != NULL);
     IDE_DASSERT( aHeader != NULL );
 
-    // Disk TableÀÌ ¾Æ´Ï¸é ¹«ÀÇ¹ÌÇÏ¹Ç·Î ¹«½ÃÇÑ´Ù.
+    // Disk Tableì´ ì•„ë‹ˆë©´ ë¬´ì˜ë¯¸í•˜ë¯€ë¡œ ë¬´ì‹œí•œë‹¤.
     IDE_TEST_RAISE( SMI_TABLE_TYPE_IS_DISK( aHeader ) == ID_FALSE,
                     not_support_error );
 
-    // DDLÀÌ ÀÌ¹Ç·Î Table ValidationÀ» ¼öÇàÇÑ´Ù.
+    // DDLì´ ì´ë¯€ë¡œ Table Validationì„ ìˆ˜í–‰í•œë‹¤.
     IDE_TEST( validateTable( aTrans,
                              aHeader,
                              aTBSLvOpt,
@@ -7931,11 +7931,11 @@ IDE_RC smcTable::alterTableSegAttr( void                  * aTrans,
 }
 
 /***********************************************************************
- * Description : Disk TableÀÇ Storage Attribute¸¦ º¯°æÇÑ´Ù.
+ * Description : Disk Tableì˜ Storage Attributeë¥¼ ë³€ê²½í•œë‹¤.
  *
- * aTrans       [IN] Flag¸¦ º¯°æÇÒ Æ®·£Àè¼Ç
- * aTableHeader [IN] Flag¸¦ º¯°æÇÒ TableÀÇ Header
- * aSegStoAttr  [IN] º¯°æÇÒ Table Storage Attribute
+ * aTrans       [IN] Flagë¥¼ ë³€ê²½í•  íŠ¸ëœì­ì…˜
+ * aTableHeader [IN] Flagë¥¼ ë³€ê²½í•  Tableì˜ Header
+ * aSegStoAttr  [IN] ë³€ê²½í•  Table Storage Attribute
  **********************************************************************/
 IDE_RC smcTable::alterTableSegStoAttr( void               * aTrans,
                                        smcTableHeader     * aHeader,
@@ -7945,11 +7945,11 @@ IDE_RC smcTable::alterTableSegStoAttr( void               * aTrans,
     IDE_DASSERT( aTrans != NULL);
     IDE_DASSERT( aHeader != NULL );
 
-    // Disk TableÀÌ ¾Æ´Ï¸é ¹«ÀÇ¹ÌÇÏ¹Ç·Î ¹«½ÃÇÑ´Ù.
+    // Disk Tableì´ ì•„ë‹ˆë©´ ë¬´ì˜ë¯¸í•˜ë¯€ë¡œ ë¬´ì‹œí•œë‹¤.
     IDE_TEST_RAISE( SMI_TABLE_TYPE_IS_DISK( aHeader ) == ID_FALSE,
                     not_support_error );
 
-    // DDLÀÌ ÀÌ¹Ç·Î Table ValidationÀ» ¼öÇàÇÑ´Ù.
+    // DDLì´ ì´ë¯€ë¡œ Table Validationì„ ìˆ˜í–‰í•œë‹¤.
     IDE_TEST( validateTable( aTrans,
                              aHeader,
                              aTBSLvOpt,
@@ -7984,11 +7984,11 @@ IDE_RC smcTable::alterTableSegStoAttr( void               * aTrans,
 }
 
 /***********************************************************************
- * Description : Disk IndexÀÇ INIT/MAX TRANS¸¦ º¯°æÇÑ´Ù.
+ * Description : Disk Indexì˜ INIT/MAX TRANSë¥¼ ë³€ê²½í•œë‹¤.
  *
- * aTrans       [IN] Flag¸¦ º¯°æÇÒ Æ®·£Àè¼Ç
- * aTableHeader [IN] Flag¸¦ º¯°æÇÒ TableÀÇ Header
- * aSegAttr     [IN] º¯°æÇÒ INDEX INIT/MAX TRANS
+ * aTrans       [IN] Flagë¥¼ ë³€ê²½í•  íŠ¸ëœì­ì…˜
+ * aTableHeader [IN] Flagë¥¼ ë³€ê²½í•  Tableì˜ Header
+ * aSegAttr     [IN] ë³€ê²½í•  INDEX INIT/MAX TRANS
  **********************************************************************/
 IDE_RC smcTable::alterIndexSegAttr( void                  * aTrans,
                                     smcTableHeader        * aHeader,
@@ -8004,20 +8004,20 @@ IDE_RC smcTable::alterIndexSegAttr( void                  * aTrans,
     IDE_DASSERT( aTrans != NULL);
     IDE_DASSERT( aHeader != NULL );
 
-    // Disk TableÀÌ ¾Æ´Ï¸é ¹«ÀÇ¹ÌÇÏ¹Ç·Î ¹«½ÃÇÑ´Ù.
+    // Disk Tableì´ ì•„ë‹ˆë©´ ë¬´ì˜ë¯¸í•˜ë¯€ë¡œ ë¬´ì‹œí•œë‹¤.
     IDE_TEST_RAISE( SMI_TABLE_TYPE_IS_DISK( aHeader ) == ID_FALSE,
                     not_support_error );
 
     sIndexHeaderSize = smLayerCallback::getSizeOfIndexHeader();
 
-    // DDLÀÌ ÀÌ¹Ç·Î Table ValidationÀ» ¼öÇàÇÑ´Ù.
+    // DDLì´ ì´ë¯€ë¡œ Table Validationì„ ìˆ˜í–‰í•œë‹¤.
     IDE_TEST( validateTable( aTrans,
                              aHeader,
                              aTBSLvOpt,
                              SMC_LOCK_TABLE )
               != IDE_SUCCESS );
 
-    // BUG-23218 : ÀÎµ¦½º Å½»ö ¸ğµâÈ­
+    // BUG-23218 : ì¸ë±ìŠ¤ íƒìƒ‰ ëª¨ë“ˆí™”
     IDE_ASSERT( findIndexVarSlot2AlterAndDrop(aHeader,
                                               aIndex,
                                               sIndexHeaderSize,
@@ -8031,7 +8031,7 @@ IDE_RC smcTable::alterIndexSegAttr( void                  * aTrans,
                  NULL, /* idvSQL* */
                  aTrans,
                  aHeader->mIndexes[sIndexSlot].fstPieceOID,
-                 ID_SIZEOF(smVCPieceHeader) + sOffset , //BUG-23218 : ·Î±ë À§Ä¡ ¹ö±× ¼öÁ¤
+                 ID_SIZEOF(smVCPieceHeader) + sOffset , //BUG-23218 : ë¡œê¹… ìœ„ì¹˜ ë²„ê·¸ ìˆ˜ì •
                  *sBfrSegAttr,
                  aSegAttr ) != IDE_SUCCESS);
 
@@ -8054,12 +8054,12 @@ IDE_RC smcTable::alterIndexSegAttr( void                  * aTrans,
 }
 
 /***********************************************************************
- * Description : Disk IndexÀÇ Storage Attribute¸¦ º¯°æÇÑ´Ù.
+ * Description : Disk Indexì˜ Storage Attributeë¥¼ ë³€ê²½í•œë‹¤.
  *
- * aTrans       [IN] Flag¸¦ º¯°æÇÒ Æ®·£Àè¼Ç
- * aHeader      [IN] Flag¸¦ º¯°æÇÒ TableÀÇ Header
- * aIndex       [IN] Flag¸¦ º¯°æÇÒ IndexÀÇ Header
- * aSegStoAttr  [IN] º¯°æÇÒ Storage Attribute
+ * aTrans       [IN] Flagë¥¼ ë³€ê²½í•  íŠ¸ëœì­ì…˜
+ * aHeader      [IN] Flagë¥¼ ë³€ê²½í•  Tableì˜ Header
+ * aIndex       [IN] Flagë¥¼ ë³€ê²½í•  Indexì˜ Header
+ * aSegStoAttr  [IN] ë³€ê²½í•  Storage Attribute
  **********************************************************************/
 IDE_RC smcTable::alterIndexSegStoAttr( void                * aTrans,
                                        smcTableHeader      * aHeader,
@@ -8078,7 +8078,7 @@ IDE_RC smcTable::alterIndexSegStoAttr( void                * aTrans,
     IDE_DASSERT( aTrans != NULL);
     IDE_DASSERT( aHeader != NULL );
 
-    // Disk TableÀÌ ¾Æ´Ï¸é ¹«ÀÇ¹ÌÇÏ¹Ç·Î ¹«½ÃÇÑ´Ù.
+    // Disk Tableì´ ì•„ë‹ˆë©´ ë¬´ì˜ë¯¸í•˜ë¯€ë¡œ ë¬´ì‹œí•œë‹¤.
     IDE_TEST_RAISE( SMI_TABLE_TYPE_IS_DISK( aHeader ) == ID_FALSE,
                     not_support_error );
 
@@ -8093,9 +8093,9 @@ IDE_RC smcTable::alterIndexSegStoAttr( void                * aTrans,
                              aTBSLvOpt )
               != IDE_SUCCESS );
 
-    // BUG-23218 : ÀÎµ¦½º Å½»ö  ¸ğµâÈ­
+    // BUG-23218 : ì¸ë±ìŠ¤ íƒìƒ‰  ëª¨ë“ˆí™”
     /* ----------------------------
-     * [2] ¼öÁ¤ÇÏ°íÀÚ ÇÏ´Â Index¸¦ Ã£´Â´Ù.
+     * [2] ìˆ˜ì •í•˜ê³ ì í•˜ëŠ” Indexë¥¼ ì°¾ëŠ”ë‹¤.
      * ---------------------------*/
     IDE_ASSERT( findIndexVarSlot2AlterAndDrop(aHeader,
                                               sIndexHeader,
@@ -8105,14 +8105,14 @@ IDE_RC smcTable::alterIndexSegStoAttr( void                * aTrans,
                  == IDE_SUCCESS );
 
     /* ------------------------------------------------
-     * [3] Ã£Àº ÀÎµ¦½ºÀÇ sIndexSlotÀ» ¹ÙÅÁÀ¸·Î,
-     *     ÀÎµ¦½ºÀÇ À§Ä¡¸¦ °è»êÇÑ´Ù.
+     * [3] ì°¾ì€ ì¸ë±ìŠ¤ì˜ sIndexSlotì„ ë°”íƒ•ìœ¼ë¡œ,
+     *     ì¸ë±ìŠ¤ì˜ ìœ„ì¹˜ë¥¼ ê³„ì‚°í•œë‹¤.
      * ------------------------------------------------*/
     sPageID = SM_MAKE_PID( aHeader->mIndexes[sIndexSlot].fstPieceOID );
 
     /* ---------------------------------------------
-     * [4] ±âÁ¸ÀÇ Segment Storage Attribute¸¦ °¡Á®¿Í
-     * before/after ÀÌ¹ÌÁö¸¦ ¸¸µç´Ù.
+     * [4] ê¸°ì¡´ì˜ Segment Storage Attributeë¥¼ ê°€ì ¸ì™€
+     * before/after ì´ë¯¸ì§€ë¥¼ ë§Œë“ ë‹¤.
      * ---------------------------------------------*/
 
     sBfrSegStoAttr = smLayerCallback::getIndexSegStoAttrPtr( aIndex );
@@ -8136,13 +8136,13 @@ IDE_RC smcTable::alterIndexSegStoAttr( void                * aTrans,
     }
 
     /* ---------------------------------------------
-     * [5] ·Î±ë ÈÄ Àû¿ëÇÑ´Ù.
+     * [5] ë¡œê¹… í›„ ì ìš©í•œë‹¤.
      * ---------------------------------------------*/
     IDE_TEST(smrUpdate::setIdxHdrSegStoAttr(
                  NULL, /* idvSQL* */
                  aTrans,
                  aHeader->mIndexes[sIndexSlot].fstPieceOID,
-                 ID_SIZEOF(smVCPieceHeader) + sOffset, // BUG-23218 : ·Î±ë À§Ä¡ ¹ö±× ¼öÁ¤
+                 ID_SIZEOF(smVCPieceHeader) + sOffset, // BUG-23218 : ë¡œê¹… ìœ„ì¹˜ ë²„ê·¸ ìˆ˜ì •
                  *sBfrSegStoAttr,
                  sAftSegStoAttr ) != IDE_SUCCESS);
 
@@ -8172,11 +8172,11 @@ IDE_RC smcTable::alterTableAllocExts( idvSQL              * aStatistics,
     IDE_DASSERT( aTrans != NULL);
     IDE_DASSERT( aHeader != NULL );
 
-    // Disk TableÀÌ ¾Æ´Ï¸é ¹«ÀÇ¹ÌÇÏ¹Ç·Î ¹«½ÃÇÑ´Ù.
+    // Disk Tableì´ ì•„ë‹ˆë©´ ë¬´ì˜ë¯¸í•˜ë¯€ë¡œ ë¬´ì‹œí•œë‹¤.
     IDE_TEST_RAISE( SMI_TABLE_TYPE_IS_DISK( aHeader ) == ID_FALSE,
                     not_support_error );
 
-    // DDLÀÌ ÀÌ¹Ç·Î Table ValidationÀ» ¼öÇàÇÑ´Ù.
+    // DDLì´ ì´ë¯€ë¡œ Table Validationì„ ìˆ˜í–‰í•œë‹¤.
     IDE_TEST( validateTable( aTrans,
                              aHeader,
                              aTBSLvOpt,
@@ -8211,11 +8211,11 @@ IDE_RC smcTable::alterIndexAllocExts( idvSQL              * aStatistics,
     IDE_DASSERT( aTrans != NULL);
     IDE_DASSERT( aHeader != NULL );
 
-    // Disk TableÀÌ ¾Æ´Ï¸é ¹«ÀÇ¹ÌÇÏ¹Ç·Î ¹«½ÃÇÑ´Ù.
+    // Disk Tableì´ ì•„ë‹ˆë©´ ë¬´ì˜ë¯¸í•˜ë¯€ë¡œ ë¬´ì‹œí•œë‹¤.
     IDE_TEST_RAISE( SMI_TABLE_TYPE_IS_DISK( aHeader ) == ID_FALSE,
                     not_support_error );
 
-    // DDLÀÌ ÀÌ¹Ç·Î Table ValidationÀ» ¼öÇàÇÑ´Ù.
+    // DDLì´ ì´ë¯€ë¡œ Table Validationì„ ìˆ˜í–‰í•œë‹¤.
     IDE_TEST( validateTable( aTrans,
                              aHeader,
                              aTBSLvOpt,
@@ -8278,7 +8278,7 @@ IDE_RC smcTable::alterIndexName( idvSQL              * aStatistics,
               != IDE_SUCCESS );
 
     /* ----------------------------
-     * [2] ¼öÁ¤ÇÏ°íÀÚ ÇÏ´Â Index¸¦ Ã£´Â´Ù.
+     * [2] ìˆ˜ì •í•˜ê³ ì í•˜ëŠ” Indexë¥¼ ì°¾ëŠ”ë‹¤.
      * ---------------------------*/
     IDE_ASSERT( findIndexVarSlot2AlterAndDrop(aHeader,
                                               sIndexHeader,
@@ -8288,7 +8288,7 @@ IDE_RC smcTable::alterIndexName( idvSQL              * aStatistics,
                  == IDE_SUCCESS );
 
     /* ------------------------------------------------
-     * [3] Ã£Àº ÀÎµ¦½ºÀÇ sIndexSlot¿Í offsetÀ» ¹ÙÅÁÀ¸·Î,
+     * [3] ì°¾ì€ ì¸ë±ìŠ¤ì˜ sIndexSlotì™€ offsetì„ ë°”íƒ•ìœ¼ë¡œ,
      * ------------------------------------------------*/
     sPageID     = SM_MAKE_PID( aHeader->mIndexes[sIndexSlot].fstPieceOID );
     sNameOffset = SM_MAKE_OFFSET( aHeader->mIndexes[sIndexSlot].fstPieceOID )
@@ -8296,7 +8296,7 @@ IDE_RC smcTable::alterIndexName( idvSQL              * aStatistics,
                   + sIndexOffset + smLayerCallback::getIndexNameOffset() ;
 
     /* ----------------------------
-     * [4] ·Î±ë ÈÄ ÀÌ¸§À» ¼³Á¤ÇÑ´Ù.
+     * [4] ë¡œê¹… í›„ ì´ë¦„ì„ ì„¤ì •í•œë‹¤.
      * ----------------------------*/
     IDE_TEST( smrUpdate::physicalUpdate( aStatistics,
                                          aTrans,
@@ -8328,9 +8328,9 @@ IDE_RC smcTable::alterIndexName( idvSQL              * aStatistics,
 }
 
 /***********************************************************************
- * Description : MEMORY TABLE¿¡ FREE PAGEµéÀ» DB¿¡ ¹İ³³ÇÑ´Ù.
+ * Description : MEMORY TABLEì— FREE PAGEë“¤ì„ DBì— ë°˜ë‚©í•œë‹¤.
  *
- * aTable     [IN] COMPACTÇÒ TABLEÀÇ Çì´õ
+ * aTable     [IN] COMPACTí•  TABLEì˜ í—¤ë”
  * aTrans     [IN] Transaction Pointer
  * aPages	  [IN] Numer of Pages for compaction (0, UINT_MAX : all)
  **********************************************************************/
@@ -8345,21 +8345,21 @@ IDE_RC smcTable::compact( void           * aTrans,
     IDE_DASSERT(aTrans != NULL);
     IDE_DASSERT(aTable != NULL);
 
-    // PRJ-1548 User Memory TableSpace °³³äµµÀÔ
-    // Validate Table ¿¡¼­ ´ÙÀ½°ú °°ÀÌ LockÀ» È¹µæÇÑ´Ù.
-    // [1] TableÀÇ TableSpace¿¡ ´ëÇØ IX
-    // [2] Table¿¡ ´ëÇØ X
-    // [3] TableÀÇ Index, Lob Column TableSpace¿¡ ´ëÇØ IX
-    // TableÀÇ »óÀ§´Â TableÀÇ TableSpaceÀÌ¸ç ±×¿¡ ´ëÇØ IX¸¦ È¹µæÇÑ´Ù.
-    // ´Ü, ¸Ş¸ğ¸® TableÀº [3] »çÇ×¿¡ ´ëÇØ¼­ ¼öÇàÇÏÁö ¾Ê´Â´Ù.
-    // BUGBUG-³»ºÎ¿¡¼­ ValidateTable À» ¼öÇàÇÏÁö ¾ÊÀ½.
+    // PRJ-1548 User Memory TableSpace ê°œë…ë„ì…
+    // Validate Table ì—ì„œ ë‹¤ìŒê³¼ ê°™ì´ Lockì„ íšë“í•œë‹¤.
+    // [1] Tableì˜ TableSpaceì— ëŒ€í•´ IX
+    // [2] Tableì— ëŒ€í•´ X
+    // [3] Tableì˜ Index, Lob Column TableSpaceì— ëŒ€í•´ IX
+    // Tableì˜ ìƒìœ„ëŠ” Tableì˜ TableSpaceì´ë©° ê·¸ì— ëŒ€í•´ IXë¥¼ íšë“í•œë‹¤.
+    // ë‹¨, ë©”ëª¨ë¦¬ Tableì€ [3] ì‚¬í•­ì— ëŒ€í•´ì„œ ìˆ˜í–‰í•˜ì§€ ì•ŠëŠ”ë‹¤.
+    // BUGBUG-ë‚´ë¶€ì—ì„œ ValidateTable ì„ ìˆ˜í–‰í•˜ì§€ ì•ŠìŒ.
 
     /* PROJ-1594 Volatile TBS */
-    /* compactµÉ Å×ÀÌºíÀÌ memory Å×ÀÌºí ¶Ç´Â volatile Å×ÀÌºíÀÌ´Ù. */
+    /* compactë  í…Œì´ë¸”ì´ memory í…Œì´ë¸” ë˜ëŠ” volatile í…Œì´ë¸”ì´ë‹¤. */
     if ( (SMI_TABLE_TYPE_IS_MEMORY( aTable ) == ID_TRUE) ||
          (SMI_TABLE_TYPE_IS_META( aTable ) == ID_TRUE) )
     {
-        // Pool¿¡ µî·ÏµÈ FreePage(EmptyPage)°¡ ³Ê¹« ¸¹À¸¸é DB·Î ¹İ³³ÇÑ´Ù.
+        // Poolì— ë“±ë¡ëœ FreePage(EmptyPage)ê°€ ë„ˆë¬´ ë§ìœ¼ë©´ DBë¡œ ë°˜ë‚©í•œë‹¤.
         // for Fixed
         sPageListEntry = &(aTable->mFixed.mMRDB);
 
@@ -8396,7 +8396,7 @@ IDE_RC smcTable::compact( void           * aTrans,
     {
         IDE_ASSERT( SMI_TABLE_TYPE_IS_VOLATILE( aTable ) == ID_TRUE );
 
-        // Pool¿¡ µî·ÏµÈ FreePage(EmptyPage)°¡ ³Ê¹« ¸¹À¸¸é DB·Î ¹İ³³ÇÑ´Ù.
+        // Poolì— ë“±ë¡ëœ FreePage(EmptyPage)ê°€ ë„ˆë¬´ ë§ìœ¼ë©´ DBë¡œ ë°˜ë‚©í•œë‹¤.
         // for Fixed
         sVolPageListEntry = &(aTable->mFixed.mVRDB);
 
@@ -8523,11 +8523,11 @@ idBool smcTable::isLOBSegPIDOfTbl( void* aTable, scSpaceID aSpaceID, scPageID aS
 }
 
 /***********************************************************************
- * Description : Replicate Log¸¦ ±â·ÏÇØ¾ß ÇÏ´Â TableÀÎÁö ÆÇ´ÜÇÑ´Ù.
+ * Description : Replicate Logë¥¼ ê¸°ë¡í•´ì•¼ í•˜ëŠ” Tableì¸ì§€ íŒë‹¨í•œë‹¤.
  *
  * Implementation :
  *
- *  aTableHeader - [IN] Replicatiohn À¯¹«¸¦ È®ÀÎÇÒ Table ÀÇ Header
+ *  aTableHeader - [IN] Replicatiohn ìœ ë¬´ë¥¼ í™•ì¸í•  Table ì˜ Header
  *  aTrans       - [IN] Transactioin
  **********************************************************************/
 
@@ -8543,13 +8543,13 @@ idBool smcTable::needReplicate(const smcTableHeader* aTableHeader,
     sReplicate    = smcTable::isReplicationTable(aTableHeader);
     sLogTypeFlag  = smLayerCallback::getLogTypeFlagOfTrans( aTrans );
 
-    /* ÇØ´ç TableÀÌ ReplicationÀÌ °É·Á ÀÖ°í ÇöÀç TransactionÀÌ Normal
-     * TransactionÀÌ¶ó¸é Replication Sender°¡ º¼¼ö ÀÖ´Â ÇüÅÂ·Î ·Î±×¸¦ ³²°Ü¾ßÇÔ
+    /* í•´ë‹¹ Tableì´ Replicationì´ ê±¸ë ¤ ìˆê³  í˜„ì¬ Transactionì´ Normal
+     * Transactionì´ë¼ë©´ Replication Senderê°€ ë³¼ìˆ˜ ìˆëŠ” í˜•íƒœë¡œ ë¡œê·¸ë¥¼ ë‚¨ê²¨ì•¼í•¨
      * PROJ-1608 recovery from replication
-     * ReplicationÀ» ÀÌ¿ëÇÑ º¹±¸¸¦ À§ÇØ¼­ Normal(SMR_LOG_TYPE_NORMAL)ÀÌ ¾Æ´Ñ
-     * recovery¸¦ Áö¿øÇÏ´Â receiver°¡ ¼öÇàÇÑ Æ®·£Àè¼Ç(SMR_LOG_TYPE_REPL_RECOVERY)µµ
-     * Recovery Sender°¡ ÀĞÀ» ¼ö ÀÖµµ·Ï ±â·ÏÇØ¾ß ÇÏ¹Ç·Î ReplicateÇÒ ¼ö ÀÖ´Â ÇüÅÂ·Î
-     * ±â·ÏµÇ¾î¾ß ÇÑ´Ù.
+     * Replicationì„ ì´ìš©í•œ ë³µêµ¬ë¥¼ ìœ„í•´ì„œ Normal(SMR_LOG_TYPE_NORMAL)ì´ ì•„ë‹Œ
+     * recoveryë¥¼ ì§€ì›í•˜ëŠ” receiverê°€ ìˆ˜í–‰í•œ íŠ¸ëœì­ì…˜(SMR_LOG_TYPE_REPL_RECOVERY)ë„
+     * Recovery Senderê°€ ì½ì„ ìˆ˜ ìˆë„ë¡ ê¸°ë¡í•´ì•¼ í•˜ë¯€ë¡œ Replicateí•  ìˆ˜ ìˆëŠ” í˜•íƒœë¡œ
+     * ê¸°ë¡ë˜ì–´ì•¼ í•œë‹¤.
      */
     if(sReplicate == ID_TRUE)
     {
@@ -8568,10 +8568,10 @@ idBool smcTable::needReplicate(const smcTableHeader* aTableHeader,
         sReplicate = ID_FALSE;
     }
 
-    /* PROJ-1723 [MDW/INTEGRATOR] Altibase Plugin °³¹ß
+    /* PROJ-1723 [MDW/INTEGRATOR] Altibase Plugin ê°œë°œ
 
-       Supplemental Logging ÇÏ´Â °æ¿ì Replication TransactionÀÎÁö
-       °ü°è¾øÀÌ ¹«Á¶°Ç Replication ·Î±×¸¦ ±â·ÏÇÑ´Ù
+       Supplemental Logging í•˜ëŠ” ê²½ìš° Replication Transactionì¸ì§€
+       ê´€ê³„ì—†ì´ ë¬´ì¡°ê±´ Replication ë¡œê·¸ë¥¼ ê¸°ë¡í•œë‹¤
     */
     if ( smcTable::isSupplementalTable(aTableHeader) == ID_TRUE )
     {
@@ -8582,8 +8582,8 @@ idBool smcTable::needReplicate(const smcTableHeader* aTableHeader,
 }
 
 /***********************************************************************
- * Description : index oid·ÎºÎÅÍ index header¸¦ ¾ò´Â´Ù.
- * indexÀÇ OID´Â index header¸¦ ¹Ù·Î °¡¸®Å²´Ù.
+ * Description : index oidë¡œë¶€í„° index headerë¥¼ ì–»ëŠ”ë‹¤.
+ * indexì˜ OIDëŠ” index headerë¥¼ ë°”ë¡œ ê°€ë¦¬í‚¨ë‹¤.
  ***********************************************************************/
 IDE_RC smcTable::getIndexHeaderFromOID( smOID     aOID, 
                                         void   ** aHeader )

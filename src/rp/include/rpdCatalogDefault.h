@@ -140,8 +140,8 @@ public:
     static IDE_RC getReplOfflineDirCount(smiStatement * aSmiStmt,
                                          SChar        * aReplName,
                                          UInt         * aReplOfflineDirCount);
-    /* PROJ-1442 Replication Online ¡ﬂ DDL «„øÎ
-     * SYS_REPL_OLD_ITEMS_ ∞¸∑√
+    /* PROJ-1442 Replication Online Ï§ë DDL ÌóàÏö©
+     * SYS_REPL_OLD_ITEMS_ Í¥ÄÎ†®
      */
     static IDE_RC insertReplOldItem(smiStatement * aSmiStmt,
                                     SChar        * aRepName,
@@ -159,8 +159,8 @@ public:
                                      smiTableMeta * aItemArr,
                                      vSLong         aItemCount);
 
-    /* PROJ-1442 Replication Online ¡ﬂ DDL «„øÎ
-     * SYS_REPL_OLD_COLUMNS_ ∞¸∑√
+    /* PROJ-1442 Replication Online Ï§ë DDL ÌóàÏö©
+     * SYS_REPL_OLD_COLUMNS_ Í¥ÄÎ†®
      */
     static IDE_RC insertReplOldColumn(smiStatement  * aSmiStmt,
                                       SChar         * aRepName,
@@ -181,8 +181,8 @@ public:
                                        smiColumnMeta * aColumnArr,
                                        vSLong          aColumnCount);
 
-    /* PROJ-1442 Replication Online ¡ﬂ DDL «„øÎ
-     * SYS_REPL_OLD_INDICES_ ∞¸∑√
+    /* PROJ-1442 Replication Online Ï§ë DDL ÌóàÏö©
+     * SYS_REPL_OLD_INDICES_ Í¥ÄÎ†®
      */
     static IDE_RC insertReplOldIndex(smiStatement * aSmiStmt,
                                      SChar        * aRepName,
@@ -203,8 +203,8 @@ public:
                                        smiIndexMeta * aIndexArr,
                                        vSLong         aIndexCount);
 
-    /* PROJ-1442 Replication Online ¡ﬂ DDL «„øÎ
-     * SYS_REPL_OLD_INDEX_COLUMNS_ ∞¸∑√
+    /* PROJ-1442 Replication Online Ï§ë DDL ÌóàÏö©
+     * SYS_REPL_OLD_INDEX_COLUMNS_ Í¥ÄÎ†®
      */
     static IDE_RC insertReplOldIndexCol(smiStatement       * aSmiStmt,
                                         SChar              * aRepName,
@@ -290,8 +290,8 @@ public:
                                               const void           * aRow );
 
 
-    /* PROJ-1442 Replication Online ¡ﬂ DDL «„øÎ
-     * SYS_REPL_ITEMS_¿« TABLE_OID ∞ªΩ≈
+    /* PROJ-1442 Replication Online Ï§ë DDL ÌóàÏö©
+     * SYS_REPL_ITEMS_Ïùò TABLE_OID Í∞±Ïã†
      */
     static IDE_RC updateReplItemsTableOID(smiStatement * aSmiStmt,
                                           smOID          aBeforeTableOID,
@@ -470,7 +470,7 @@ private:
     static void   setReplOfflineDirMember(rpdReplOfflineDirs * aReplOfflineDirs,
                                           const void         * aRow);
 
-    // PROJ-1442 Replication Online ¡ﬂ DDL «„øÎ
+    // PROJ-1442 Replication Online Ï§ë DDL ÌóàÏö©
     static void   setReplOldItemMember(smiTableMeta * aReplOldItem,
                                        const void   * aRow);
     static IDE_RC setReplOldColumnMember( smiColumnMeta * aReplOldColumn,

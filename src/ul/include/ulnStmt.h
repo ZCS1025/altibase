@@ -30,14 +30,14 @@
 
 #define ULN_STMT_MAX_MEMORY_CHUNK_SIZE      (30*1024)
 
-// qpÀÇ QC_MAX_NAME_LEN(40) ´ë½Å »ç¿ë
+// qpì˜ QC_MAX_NAME_LEN(40) ëŒ€ì‹  ì‚¬ìš©
 #define ULN_MAX_NAME_LEN          (40 + 1)
 
 #define ULN_GD_COLUMN_NUMBER_INIT_VALUE     -1
 #define ULN_GD_TARGET_POSITION_INIT_VALUE   -1
 
-/* PROJ-2160 CM Å¸ÀÔÁ¦°Å
-   ÆÄ¶ó¹ÌÅÍ ¹ÙÀÎµå½Ã¿¡ ÀÓ½Ã ¹öÆÛ¿¡ µ¥ÀÌÅ¸¸¦ º¹»çÇÏ´Â ¸ŞÅ©·Î */
+/* PROJ-2160 CM íƒ€ì…ì œê±°
+   íŒŒë¼ë¯¸í„° ë°”ì¸ë“œì‹œì— ì„ì‹œ ë²„í¼ì— ë°ì´íƒ€ë¥¼ ë³µì‚¬í•˜ëŠ” ë©”í¬ë¡œ */
 #define ULN_CHUNK_WR1(aStmt, aSrc)                                                     \
     do                                                                                 \
     {                                                                                  \
@@ -140,10 +140,10 @@ struct ulnStmt
     ulnDesc      *mAttrIrd;       /* SQL_ATTR_IMP_ROW_DESC */
 
     /*
-     * »ç¿ëÀÚ°¡ explicit ÇÏ°Ô ÇÒ´çÇÑ µğ½ºÅ©¸³ÅÍ¸¦
-     * STMT ¿¡´Ù°¡ ¹ÙÀÎµù ½ÃÄ×´Ù°¡ ±×°ÍÀ» ÇØÁ¦ÇÏ¸é
-     * ¿ø·¡ implicit ÇÏ°Ô ÇÒ´çµÈ µğ½ºÅ©¸³ÅÍ·Î µ¹¾Æ¿Í¾ß ÇÑ´Ù°í
-     * ODBC 3.0¿¡ Á¤ÀÇµÇ¾î ÀÖÀ½.
+     * ì‚¬ìš©ìê°€ explicit í•˜ê²Œ í• ë‹¹í•œ ë””ìŠ¤í¬ë¦½í„°ë¥¼
+     * STMT ì—ë‹¤ê°€ ë°”ì¸ë”© ì‹œì¼°ë‹¤ê°€ ê·¸ê²ƒì„ í•´ì œí•˜ë©´
+     * ì›ë˜ implicit í•˜ê²Œ í• ë‹¹ëœ ë””ìŠ¤í¬ë¦½í„°ë¡œ ëŒì•„ì™€ì•¼ í•œë‹¤ê³ 
+     * ODBC 3.0ì— ì •ì˜ë˜ì–´ ìˆìŒ.
      */
     ulnDesc      *mOrigApd;
     ulnDesc      *mOrigArd;
@@ -151,7 +151,7 @@ struct ulnStmt
     ulnCursor     mCursor;
     ulnCache     *mCache;
 
-    /* PROJ-1697 2°¡Áö Åë½Å ÇÁ·ÎÅäÄİ °³¼± */
+    /* PROJ-1697 2ê°€ì§€ í†µì‹  í”„ë¡œí† ì½œ ê°œì„  */
     ulnStmtChunk  mChunk;
     acp_uint32_t  mMaxBindDataSize;
     acp_uint32_t  mInOutType;
@@ -167,24 +167,24 @@ struct ulnStmt
     acp_uint32_t  mAtomicArray;   // PROJ-1518
 
     acp_uint32_t  mStatementID;   /* ID (Server Side. Server allocates this id)     */
-    acp_bool_t    mIsPrepared;    /* Prepare ¿©ºÎ */
+    acp_bool_t    mIsPrepared;    /* Prepare ì—¬ë¶€ */
 
-    acp_uint32_t  mStatementType; /* Type (DML, DDL, QUERY µî. prepare result ¿¡ ¼­¹ö°¡ ¾Ë·ÁÁÜ */
+    acp_uint32_t  mStatementType; /* Type (DML, DDL, QUERY ë“±. prepare result ì— ì„œë²„ê°€ ì•Œë ¤ì¤Œ */
 
     // BUG-17592
-    ulnResultType mResultType;    /* SQL ¼öÇà ÈÄ °á°ú°¡ ResultSetÀÎÁö AffectedRowÀÎÁö ±¸ºĞ */
+    ulnResultType mResultType;    /* SQL ìˆ˜í–‰ í›„ ê²°ê³¼ê°€ ResultSetì¸ì§€ AffectedRowì¸ì§€ êµ¬ë¶„ */
 
-    acp_uint16_t  mParamCount;            /* PREPARE RES ¿¡ ÀÇÇØ ¼³Á¤µÇ´Â ÆÄ¶ó¹ÌÅÍ °¹¼ö */
-    acp_uint16_t  mResultSetCount;        /* PREPARE RES ¹× EXECUTE RES ¿¡ ÀÇÇØ ¼³Á¤µÇ´Â ResultSet °¹¼ö */
-    acp_uint16_t  mCurrentResultSetID;    /* ÇöÀç »ç¿ëÇÏ°í ÀÖ´Â ResultSetÀÇ ID. 1 BASE */
+    acp_uint16_t  mParamCount;            /* PREPARE RES ì— ì˜í•´ ì„¤ì •ë˜ëŠ” íŒŒë¼ë¯¸í„° ê°¯ìˆ˜ */
+    acp_uint16_t  mResultSetCount;        /* PREPARE RES ë° EXECUTE RES ì— ì˜í•´ ì„¤ì •ë˜ëŠ” ResultSet ê°¯ìˆ˜ */
+    acp_uint16_t  mCurrentResultSetID;    /* í˜„ì¬ ì‚¬ìš©í•˜ê³  ìˆëŠ” ResultSetì˜ ID. 1 BASE */
 
     /*
-     * SQLGetData() ¸¦ À§ÇØ¼­ ÇÊ¿äÇÑ ¸â¹ö
+     * SQLGetData() ë¥¼ ìœ„í•´ì„œ í•„ìš”í•œ ë©¤ë²„
      */
     acp_sint32_t  mGDColumnNumber;
 
     /*
-     * SQLPutData() ¿Í SQLParamData() ÇÔ¼ö¸¦ À§ÇØ ÇÊ¿äÇÑ ¸â¹öµé.
+     * SQLPutData() ì™€ SQLParamData() í•¨ìˆ˜ë¥¼ ìœ„í•´ í•„ìš”í•œ ë©¤ë²„ë“¤.
      */
     acp_uint16_t  mProcessingParamNumber;
     acp_uint32_t  mProcessingRowNumber;
@@ -195,11 +195,11 @@ struct ulnStmt
     acp_bool_t    mHasMemBoundLobParam;
     acp_bool_t    mHasMemBoundLobColumn;
 
-    acp_uint32_t  mFetchedRowCountFromServer; /* ÇÑ¹øÀÇ FETCH REQ ¿¡ ÀÇÇØ ¼ö½ÅµÈ row ÀÇ °¹¼ö */
-    acp_uint64_t  mFetchedBytesFromServer;    /* ÇÑ¹øÀÇ FETCH REQ ¿¡ ÀÇÇØ ¼ö½ÅµÈ bytes (PROJ-2625) */
+    acp_uint32_t  mFetchedRowCountFromServer; /* í•œë²ˆì˜ FETCH REQ ì— ì˜í•´ ìˆ˜ì‹ ëœ row ì˜ ê°¯ìˆ˜ */
+    acp_uint64_t  mFetchedBytesFromServer;    /* í•œë²ˆì˜ FETCH REQ ì— ì˜í•´ ìˆ˜ì‹ ëœ bytes (PROJ-2625) */
     //fix BUG-17820
-    acp_uint16_t  mFetchedColCnt;             /* FetchResultÀÇ ÄÃ·³¸¶´Ù ºÙ´Â  row number¸¦ Á¦°ÅÇÏ±â À§ÇÏ¿©,
-                                                 ÇÏ³ªÀÇ row°¡ fetch°¡ ¿Ï·áµÇ¾ú´ÂÁö ¿©ºÎ¸¦ À§ÇÏ¿© »ç¿ëµÈ´Ù.  */
+    acp_uint16_t  mFetchedColCnt;             /* FetchResultì˜ ì»¬ëŸ¼ë§ˆë‹¤ ë¶™ëŠ”  row numberë¥¼ ì œê±°í•˜ê¸° ìœ„í•˜ì—¬,
+                                                 í•˜ë‚˜ì˜ rowê°€ fetchê°€ ì™„ë£Œë˜ì—ˆëŠ”ì§€ ì—¬ë¶€ë¥¼ ìœ„í•˜ì—¬ ì‚¬ìš©ëœë‹¤.  */
 
     acp_uint8_t  *mAttrFetchBookmarkPtr;  /* SQL_ATTR_FETCH_BOOKMARK_PTR */
     acp_uint32_t  mAttrUseBookMarks;      /* SQL_ATTR_USE_BOOKMARKS */
@@ -213,38 +213,38 @@ struct ulnStmt
 
     acp_uint8_t   mAttrAsyncEnable;       /* SQL_ATTR_ASYNC_ENABLE */
 
-    acp_uint32_t  mAttrRowsetSize;        /* SQL_ROWSET_SIZE. ExtendedFetch ¿¡¼­¸¸ »ç¿ëÇÏ´Â ¼Ó¼º */
+    acp_uint32_t  mAttrRowsetSize;        /* SQL_ROWSET_SIZE. ExtendedFetch ì—ì„œë§Œ ì‚¬ìš©í•˜ëŠ” ì†ì„± */
 
-    acp_bool_t    mAttrInputNTS;          /* SQL_ATTR_INPUT_NTS : SES -n ¿É¼Ç. BUG-13704 */
+    acp_bool_t    mAttrInputNTS;          /* SQL_ATTR_INPUT_NTS : SES -n ì˜µì…˜. BUG-13704 */
 
-    acp_uint32_t  mAttrPrefetchRows;      /* SQL_ATTR_PREFETCH_ROWS ºñÇ¥ÁØ ¼Ó¼º. ¾ËÆ¼º£ÀÌ½º Àü¿ë */
-    acp_uint32_t  mAttrPrefetchBlocks;    /* SQL_ATTR_PREFETCH_BLOCKS ºñÇ¥ÁØ ¼Ó¼º. ¾ËÆ¼º£ÀÌ½º Àü¿ë */
-    acp_uint32_t  mAttrPrefetchMemory;    /* SQL_ATTR_PREFETCH_MEMORY ºñÇ¥ÁØ ¼Ó¼º. ¾ËÆ¼º£ÀÌ½º Àü¿ë */
+    acp_uint32_t  mAttrPrefetchRows;      /* SQL_ATTR_PREFETCH_ROWS ë¹„í‘œì¤€ ì†ì„±. ì•Œí‹°ë² ì´ìŠ¤ ì „ìš© */
+    acp_uint32_t  mAttrPrefetchBlocks;    /* SQL_ATTR_PREFETCH_BLOCKS ë¹„í‘œì¤€ ì†ì„±. ì•Œí‹°ë² ì´ìŠ¤ ì „ìš© */
+    acp_uint32_t  mAttrPrefetchMemory;    /* SQL_ATTR_PREFETCH_MEMORY ë¹„í‘œì¤€ ì†ì„±. ì•Œí‹°ë² ì´ìŠ¤ ì „ìš© */
     acp_uint32_t  mAttrCacheBlockSizeThreshold;
-    /* SQL_ATTR_CACHE_BLOCK_THRESHOLD ºñÇ¥ÁØ¼Ó¼º */
+    /* SQL_ATTR_CACHE_BLOCK_THRESHOLD ë¹„í‘œì¤€ì†ì„± */
 
-    acp_char_t   *mPlanTree;              /* ÇÃ·£Æ®¸® ½ºÆ®¸µ */
+    acp_char_t   *mPlanTree;              /* í”ŒëœíŠ¸ë¦¬ ìŠ¤íŠ¸ë§ */
 
 #if 0
     /*
-     * Áö¿øÇÏÁö ¾Ê´Â ¼Ó¼ºµé
+     * ì§€ì›í•˜ì§€ ì•ŠëŠ” ì†ì„±ë“¤
      */
-    acp_uint32_t  mAttrMaxRows;           /* SQL_ATTR_MAX_ROWS : ¾ËÆ¼º£ÀÌ½º ¹ÌÁö¿ø */
+    acp_uint32_t  mAttrMaxRows;           /* SQL_ATTR_MAX_ROWS : ì•Œí‹°ë² ì´ìŠ¤ ë¯¸ì§€ì› */
     acp_uint32_t  mAttrRowNumber;         /* SQL_ATTR_ROW_NUMBER
-                                             ÀüÃ¼ result set ¿¡¼­ ÇöÀç row ÀÇ ¹øÈ£.
-                                             ÇöÀçÀÇ ul ¿¡¼­´Â ¾È¾²ÀÓ */
+                                             ì „ì²´ result set ì—ì„œ í˜„ì¬ row ì˜ ë²ˆí˜¸.
+                                             í˜„ì¬ì˜ ul ì—ì„œëŠ” ì•ˆì“°ì„ */
 
     acp_uint32_t  mAttrKeysetSize;        /* SQL_ATTR_KEYSET_SIZE */
     acp_uint32_t  mAttrMaxLength;         /* SQL_ATTR_MAX_LENGTH */
 
-    acp_uint32_t  mAttrMetadataID;        /* SQL_ATTR_METADATA_ID : BUG-17016 ÂüÁ¶ */
+    acp_uint32_t  mAttrMetadataID;        /* SQL_ATTR_METADATA_ID : BUG-17016 ì°¸ì¡° */
 #endif
 
     /* PROJ-2177 User Interface - Cancel */
 
-    acp_uint32_t  mStmtCID;               /**< StmtID¸¦ ¾ÆÁ÷ ¸ğ¸¦ ¶§¸¦ À§ÇÑ Client side Statement ID */
-    ulnFunctionId mLastFetchFuncID;       /**< ¸¶Áö¸· Fetch¿¡ »ç¿ëÇÑ ÇÔ¼ö ID. Cancle ÈÄ »óÅÂÀüÀÌ¸¦ À§ÇØ ÇÊ¿ä. */
-    ulnFunctionId mNeedDataFuncID;        /**< NEED DATA°¡ ¹ß»ıÇÑ ÇÔ¼ö ID. Cancle ÈÄ »óÅÂÀüÀÌ¸¦ À§ÇØ ÇÊ¿ä. */
+    acp_uint32_t  mStmtCID;               /**< StmtIDë¥¼ ì•„ì§ ëª¨ë¥¼ ë•Œë¥¼ ìœ„í•œ Client side Statement ID */
+    ulnFunctionId mLastFetchFuncID;       /**< ë§ˆì§€ë§‰ Fetchì— ì‚¬ìš©í•œ í•¨ìˆ˜ ID. Cancle í›„ ìƒíƒœì „ì´ë¥¼ ìœ„í•´ í•„ìš”. */
+    ulnFunctionId mNeedDataFuncID;        /**< NEED DATAê°€ ë°œìƒí•œ í•¨ìˆ˜ ID. Cancle í›„ ìƒíƒœì „ì´ë¥¼ ìœ„í•´ í•„ìš”. */
 
     /* PROJ-1789 Updatable Scrollable Cursor */
 
@@ -298,7 +298,7 @@ struct ulnStmt
     ulnLobCache         *mLobCache;
     acp_uint32_t         mPrevRowSetSize; // bug-35198
 
-    /* BUG-42096 Stmt¿¡¼­ ¼öÇàµÈ ParamSetSizeÀÇ MAX Size */
+    /* BUG-42096 Stmtì—ì„œ ìˆ˜í–‰ëœ ParamSetSizeì˜ MAX Size */
     acp_uint32_t         mExecutedParamSetMaxSize;  
     
     /* PROJ-2616 */
@@ -315,7 +315,7 @@ struct ulnStmt
 
     ulnSemiAsyncPrefetch *mSemiAsyncPrefetch;
 
-    /* BUG-44858 Åë½Åºñ¿ëÀ» ÁÙÀÌ±â À§ÇØ Prepare½Ã ParamInfoGet Àü¼ÛÀ» °áÁ¤ */
+    /* BUG-44858 í†µì‹ ë¹„ìš©ì„ ì¤„ì´ê¸° ìœ„í•´ Prepareì‹œ ParamInfoGet ì „ì†¡ì„ ê²°ì • */
     acp_bool_t           mAttrPrepareWithDescribeParam;
 
     /* BUG-44957 */
@@ -372,7 +372,7 @@ ACI_RC ulnRecoverOriginalApd(ulnStmt *aStmt);
 ACI_RC ulnRecoverOriginalArd(ulnStmt *aStmt);
 
 /*
- * Stmt ÀÇ ÇÊµåµéÀ» Set/Get ÇÏ´Â ÇÔ¼öµé
+ * Stmt ì˜ í•„ë“œë“¤ì„ Set/Get í•˜ëŠ” í•¨ìˆ˜ë“¤
  */
 
 ACP_INLINE void ulnStmtSetStatementID(ulnStmt *aStmt, acp_uint32_t aStatementID)
@@ -432,7 +432,7 @@ ACP_INLINE acp_bool_t ulnStmtHasRowCount(ulnStmt *aStmt)
 ACP_INLINE ACI_RC ulnStmtSetParamCount(ulnStmt *aStmt, acp_uint16_t aNewParamCount)
 {
     /*
-     * PREPARE RESULT ¿¡ ÀÖ´Â param count ÀÌ´Ù.
+     * PREPARE RESULT ì— ìˆëŠ” param count ì´ë‹¤.
      */
     aStmt->mParamCount = aNewParamCount;
     return ACI_SUCCESS;
@@ -441,7 +441,7 @@ ACP_INLINE ACI_RC ulnStmtSetParamCount(ulnStmt *aStmt, acp_uint16_t aNewParamCou
 ACP_INLINE acp_uint16_t ulnStmtGetParamCount(ulnStmt *aStmt)
 {
     /*
-     * PREPARE RESULT ¿¡ ÀÖ´Â param count ÀÌ´Ù.
+     * PREPARE RESULT ì— ìˆëŠ” param count ì´ë‹¤.
      */
     return aStmt->mParamCount;
 }
@@ -515,7 +515,7 @@ ACP_INLINE acp_uint32_t ulnStmtGetAtomicArray(ulnStmt *aStmt)
 
 /*
  * ============================================
- * Prefetch ¼Ó¼º
+ * Prefetch ì†ì„±
  * ============================================
  */
 
@@ -608,7 +608,7 @@ ACP_INLINE acp_uint32_t ulnStmtGetAttrPrefetchAutoTuningMax(ulnStmt *aStmt)
 #define ulnStmtGetExecutedParamSetMaxSize(aStmt)        (aStmt)->mExecutedParamSetMaxSize
 
 /*
- * Parameter ¼Ó¼ºµé Áß Descriptor ¼Ó¼ºÀ¸·Î ¸ÅÇÎµÇ´Â ÇÔ¼öµé
+ * Parameter ì†ì„±ë“¤ ì¤‘ Descriptor ì†ì„±ìœ¼ë¡œ ë§¤í•‘ë˜ëŠ” í•¨ìˆ˜ë“¤
  */
 acp_uint32_t ulnStmtGetAttrParamBindType(ulnStmt *aStmt);
 void         ulnStmtSetAttrParamBindType(ulnStmt *aStmt, acp_uint32_t aType);
@@ -616,7 +616,7 @@ void         ulnStmtSetAttrParamBindType(ulnStmt *aStmt, acp_uint32_t aType);
 acp_uint32_t ulnStmtGetAttrParamsetSize(ulnStmt *aStmt);
 void         ulnStmtSetAttrParamsetSize(ulnStmt *aStmt, acp_uint32_t aSize);
 
-// fix BUG-20745 BIND_OFFSET_PTR Áö¿ø
+// fix BUG-20745 BIND_OFFSET_PTR ì§€ì›
 void     ulnStmtSetAttrParamBindOffsetPtr(ulnStmt *aStmt, ulvULen *aOffsetPtr);
 ulvULen *ulnStmtGetAttrParamBindOffsetPtr(ulnStmt *aStmt);
 ulvULen  ulnStmtGetParamBindOffsetValue(ulnStmt *aStmt);
@@ -635,7 +635,7 @@ void          ulnStmtSetAttrParamStatusPtr(ulnStmt *aStmt, acp_uint16_t *aStatus
 void          ulnStmtSetAttrParamStatusValue(ulnStmt *aStmt, acp_uint32_t aRow, acp_uint16_t aValue);
 
 /*
- * Row ¼Ó¼ºµé Áß Descriptor ¼Ó¼ºÀ¸·Î ¸ÅÇÎµÇ´Â ÇÔ¼öµé
+ * Row ì†ì„±ë“¤ ì¤‘ Descriptor ì†ì„±ìœ¼ë¡œ ë§¤í•‘ë˜ëŠ” í•¨ìˆ˜ë“¤
  */
 
 acp_uint32_t ulnStmtGetAttrRowBindType(ulnStmt *aStmt);
@@ -660,14 +660,14 @@ ACP_INLINE acp_uint32_t ulnStmtGetRowSetSize(ulnStmt *aStmt)
 ACP_INLINE ACI_RC ulnStmtSetAttrRowArraySize(ulnStmt *aStmt, acp_uint32_t aSize)
 {
     /*
-     * ±âº»ÀûÀ¸·Î, SQLFetch() ³ª SQLFetchScroll() ÇÔ¼ö¿¡ ÀÇÇØ¼­ ¸®ÅÏµÉ
-     * row ÀÇ °¹¼ö¸¦ °¡Áö°í ÀÖ´Â stmt attribute ÀÌ´Ù.
+     * ê¸°ë³¸ì ìœ¼ë¡œ, SQLFetch() ë‚˜ SQLFetchScroll() í•¨ìˆ˜ì— ì˜í•´ì„œ ë¦¬í„´ë 
+     * row ì˜ ê°¯ìˆ˜ë¥¼ ê°€ì§€ê³  ìˆëŠ” stmt attribute ì´ë‹¤.
      *
-     * µğÆúÆ® °ªÀº 1.
+     * ë””í´íŠ¸ ê°’ì€ 1.
      *
      * SQL_ATTR_ROW_ARRAY_SIZE.
      *
-     * ARD ÀÇ SQL_DESC_ARRAY_SIZE ·Î ¸ÅÇÎ
+     * ARD ì˜ SQL_DESC_ARRAY_SIZE ë¡œ ë§¤í•‘
      */
 
     ACI_TEST(aSize == 0);
@@ -684,10 +684,10 @@ ACP_INLINE ACI_RC ulnStmtSetAttrRowArraySize(ulnStmt *aStmt, acp_uint32_t aSize)
 ACP_INLINE acp_uint32_t ulnStmtGetAttrRowArraySize(ulnStmt *aStmt)
 {
     /*
-     * Note : 64ºñÆ® odbc ¿¡ µû¸£¸é ÇÊµå°¡ 64ºñÆ®¸¦ Áö¿øÇØ¾ß ÇÏ´Âµ¥,
-     *        ¾î¶² -_-;; »ç¶÷ÀÌ 20¾ï°³ ÀÌ»óÀÇ array ¸¦ ½á¼­ ¹ÙÀÎµù ÇÏ°Ú´© -_-;;
+     * Note : 64ë¹„íŠ¸ odbc ì— ë”°ë¥´ë©´ í•„ë“œê°€ 64ë¹„íŠ¸ë¥¼ ì§€ì›í•´ì•¼ í•˜ëŠ”ë°,
+     *        ì–´ë–¤ -_-;; ì‚¬ëŒì´ 20ì–µê°œ ì´ìƒì˜ array ë¥¼ ì¨ì„œ ë°”ì¸ë”© í•˜ê² ëˆ„ -_-;;
      *
-     *        ±×³É ³»ºÎ¿¡¼­´Â acp_uint32_t ·Î ÇÏ°í, SQLSet/GetStmtAttr ÇÔ¼öµé¿¡¼­ Ä³½ºÆÃ¸¸ ÇÏÀÚ.
+     *        ê·¸ëƒ¥ ë‚´ë¶€ì—ì„œëŠ” acp_uint32_t ë¡œ í•˜ê³ , SQLSet/GetStmtAttr í•¨ìˆ˜ë“¤ì—ì„œ ìºìŠ¤íŒ…ë§Œ í•˜ì.
      */
     if (aStmt->mObj.mExecFuncID == ULN_FID_EXTENDEDFETCH)
     {
@@ -699,7 +699,7 @@ ACP_INLINE acp_uint32_t ulnStmtGetAttrRowArraySize(ulnStmt *aStmt)
     }
 }
 
-// fix BUG-20745 BIND_OFFSET_PTR Áö¿ø
+// fix BUG-20745 BIND_OFFSET_PTR ì§€ì›
 void     ulnStmtSetAttrRowBindOffsetPtr(ulnStmt *aStmt, ulvULen *aOffsetPtr);
 ulvULen *ulnStmtGetAttrRowBindOffsetPtr(ulnStmt *aStmt);
 ulvULen  ulnStmtGetRowBindOffsetValue(ulnStmt *aStmt);
@@ -717,7 +717,7 @@ acp_uint16_t  ulnStmtGetAttrRowStatusValue(ulnStmt *aStmt, acp_uint32_t aRow);
 void          ulnStmtSetAttrRowStatusValue(ulnStmt *aStmt, acp_uint32_t aRow, acp_uint16_t aValue);
 
 /*
- * Fetched Row Count ¸¦ ÀĞ°í ¾²´Â ÇÔ¼öµé
+ * Fetched Row Count ë¥¼ ì½ê³  ì“°ëŠ” í•¨ìˆ˜ë“¤
  */
 ACP_INLINE void ulnStmtSetFetchedRowCountFromServer(ulnStmt *aStmt, acp_uint32_t aNewCount)
 {
@@ -746,7 +746,7 @@ void ulnStmtInitRowStatusArrayValue(ulnStmt      *aStmt,
                                     acp_uint16_t  aValue);
 
 /*
- * ±× ¿Ü ÇÔ¼öµé
+ * ê·¸ ì™¸ í•¨ìˆ˜ë“¤
  */
 
 ACI_RC ulnStmtSetAttrQueryTimeout(ulnStmt *aStmt, acp_uint32_t aTimeout);
@@ -777,7 +777,7 @@ ACI_RC ulnStmtAllocPlanTree(ulnStmt *aStmt, acp_uint32_t aSize);
 acp_uint32_t ulnStmtGetAttrRowBlockSizeThreshold(ulnStmt *aStmt);
 
 /*
- * result °ü·Ã ÇÔ¼öµé
+ * result ê´€ë ¨ í•¨ìˆ˜ë“¤
  */
 
 ulnResult *ulnResultCreate(ulnStmt *aParentStmt);
@@ -992,11 +992,11 @@ void             ulnStmtSetAttrFetchBookmarkPtr(ulnStmt     *aStmt,
                                                 acp_uint8_t *aFetchBookmarkPtr);
 
 /**
- * Keyset °´Ã¼¸¦ ¾ò´Â´Ù.
+ * Keyset ê°ì²´ë¥¼ ì–»ëŠ”ë‹¤.
  *
  * @param[in] aStmt statement handle
  *
- * @return Keyset °´Ã¼
+ * @return Keyset ê°ì²´
  */
 ACP_INLINE ulnKeyset* ulnStmtGetKeyset(ulnStmt *aStmt)
 {

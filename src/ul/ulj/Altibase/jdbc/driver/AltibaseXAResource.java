@@ -296,9 +296,9 @@ public class AltibaseXAResource implements XAResource
     }
 
     /**
-     * openÇÑ »óÅÂÀÎÁö È®ÀÎÇÑ´Ù.
+     * opení•œ ìƒíƒœì¸ì§€ í™•ì¸í•œë‹¤.
      *
-     * @return openÇßÀ¸¸é <tt>true</tt>, ¾Æ´Ï¸é <tt>false</tt>
+     * @return opení–ˆìœ¼ë©´ <tt>true</tt>, ì•„ë‹ˆë©´ <tt>false</tt>
      */
     boolean isOpen()
     {

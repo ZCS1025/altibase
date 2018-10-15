@@ -44,7 +44,7 @@ static IDE_RC mtfSubrawEstimate( mtcNode*     aNode,
 mtfModule mtfSubraw = {
     1|MTC_NODE_OPERATOR_FUNCTION,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
+    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìžê°€ ì•„ë‹˜)
     mtfSubrawFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -162,9 +162,9 @@ IDE_RC mtfSubrawCalculateFor2Args( mtcNode*     aNode,
  * Implementation :
  *    SUBRAW( byte, m )
  *
- *    aStack[0] : ÀÔ·ÂµÈ byteÀÇ m¹øÂ° byteºÎÅÍ ³¡±îÁö ¸ðµç byte ¹ÝÈ¯
- *    aStack[1] : byte ( ÀÔ·ÂµÈ byte )
- *    aStack[2] : n ( ½ÃÀÛÁ¡ )
+ *    aStack[0] : ìž…ë ¥ëœ byteì˜ më²ˆì§¸ byteë¶€í„° ëê¹Œì§€ ëª¨ë“  byte ë°˜í™˜
+ *    aStack[1] : byte ( ìž…ë ¥ëœ byte )
+ *    aStack[2] : n ( ì‹œìž‘ì  )
  *
  *    ex ) SUBRAW( 'AABBCC', 2 ) ==> 'BBCC'
  *
@@ -198,25 +198,25 @@ IDE_RC mtfSubrawCalculateFor2Args( mtcNode*     aNode,
         sStart    = *(mtdIntegerType*)aStack[2].value;
 
         //-----------------------------------------
-        // ÀüÃ¼ byte °³¼ö ±¸ÇÔ
+        // ì „ì²´ byte ê°œìˆ˜ êµ¬í•¨
         //-----------------------------------------        
         sSourceLength = sSource->length;
         
 
         //-----------------------------------------
-        // byte¿­¿¡¼­ ½ÃÀÛ byte°¡ ¸î¹øÂ° byteÀÎÁö ¾Ë¾Æ³¿
+        // byteì—´ì—ì„œ ì‹œìž‘ byteê°€ ëª‡ë²ˆì§¸ byteì¸ì§€ ì•Œì•„ëƒ„
         //-----------------------------------------
         
         if ( sStart > 0 )
         {
-            // subraw('AABBCC', 0)ÀÌ³ª subraw('AABBCC', 1)ÀÌ³ª °°´Ù.
-            // ±×Áö °°Àº ¿À¶óÅ¬ ½ºÆÑÀÌ ±×·¯ÇØ¼­ µû¶óÇÑ´Ù.
-            // ³»ºÎ ±¸ÇöÀº 0ºÎÅÍÀÌ´Ù.
+            // subraw('AABBCC', 0)ì´ë‚˜ subraw('AABBCC', 1)ì´ë‚˜ ê°™ë‹¤.
+            // ê·¸ì§€ ê°™ì€ ì˜¤ë¼í´ ìŠ¤íŒ©ì´ ê·¸ëŸ¬í•´ì„œ ë”°ë¼í•œë‹¤.
+            // ë‚´ë¶€ êµ¬í˜„ì€ 0ë¶€í„°ì´ë‹¤.
             sStart--;
         }
         else if ( sStart < 0 )
         {
-            // À½¼öÀÎ °æ¿ì
+            // ìŒìˆ˜ì¸ ê²½ìš°
             sStart = sStart + sSourceLength;
         }
         else
@@ -225,26 +225,26 @@ IDE_RC mtfSubrawCalculateFor2Args( mtcNode*     aNode,
         }
 
         //-----------------------------------------
-        // °á°ú ÀúÀå
+        // ê²°ê³¼ ì €ìž¥
         //-----------------------------------------
         
         if ( ( sSourceLength <= sStart ) || ( sStart < 0 ) )
         {
-            // ½ÃÀÛ byte À§Ä¡°¡ byte¿­ÀÇ ¹üÀ§¸¦ ³Ñ¾î¼± °æ¿ì,
-            // - Ã¹¹øÂ° byteº¸´Ùµµ ½ÃÀÛ byte À§Ä¡°¡ ÀÛÀº °æ¿ì
-            // - ¸¶Áö¸· byteº¸´Ù ½ÃÀÛ byte À§Ä¡°¡ Å« °æ¿ì
+            // ì‹œìž‘ byte ìœ„ì¹˜ê°€ byteì—´ì˜ ë²”ìœ„ë¥¼ ë„˜ì–´ì„  ê²½ìš°,
+            // - ì²«ë²ˆì§¸ byteë³´ë‹¤ë„ ì‹œìž‘ byte ìœ„ì¹˜ê°€ ìž‘ì€ ê²½ìš°
+            // - ë§ˆì§€ë§‰ byteë³´ë‹¤ ì‹œìž‘ byte ìœ„ì¹˜ê°€ í° ê²½ìš°
             aStack[0].column->module->null( aStack[0].column,
                                             aStack[0].value );
         }
         else
         {
-            // ½ÃÀÛ byte À§Ä¡°¡ byte ÀüÃ¼ °³¼öº¸´Ù ÀÛ°Å³ª °°Àº  °æ¿ì
+            // ì‹œìž‘ byte ìœ„ì¹˜ê°€ byte ì „ì²´ ê°œìˆ˜ë³´ë‹¤ ìž‘ê±°ë‚˜ ê°™ì€  ê²½ìš°
             
-            // ½ÃÀÛ index¸¦ Ã£À½
+            // ì‹œìž‘ indexë¥¼ ì°¾ìŒ
             sStartIndex = sSource->value + sStart;
 
             //-----------------------------------------
-            // ½ÃÀÛ indexºÎÅÍ ³¡±îÁöÀÇ byteÀ» copyÇÏ¿© °á°ú¿¡ ÀúÀå
+            // ì‹œìž‘ indexë¶€í„° ëê¹Œì§€ì˜ byteì„ copyí•˜ì—¬ ê²°ê³¼ì— ì €ìž¥
             //-----------------------------------------
             
             sResult->length = sSource->length - ( sStartIndex - sSource->value );
@@ -274,10 +274,10 @@ IDE_RC mtfSubrawCalculateFor3Args( mtcNode*     aNode,
  * Implementation :
  *    SUBRAW( raw, m, n )
  *
- *    aStack[0] : ÀÔ·ÂµÈ byte¿­ÀÇ m¹øÂ° byteºÎÅÍ n°³ÀÇ byte ¹ÝÈ¯
- *    aStack[1] : ÀÔ·ÂµÈ byte¿­
- *    aStack[2] : ½ÃÀÛ ( eg. m )
- *    aStack[3] : ¹ÝÈ¯ byte °³¼ö   ( eg. n )
+ *    aStack[0] : ìž…ë ¥ëœ byteì—´ì˜ më²ˆì§¸ byteë¶€í„° nê°œì˜ byte ë°˜í™˜
+ *    aStack[1] : ìž…ë ¥ëœ byteì—´
+ *    aStack[2] : ì‹œìž‘ ( eg. m )
+ *    aStack[3] : ë°˜í™˜ byte ê°œìˆ˜   ( eg. n )
  *
  *    ex) SUBRAW('AABBCC', 1, 2 ) ==> 'AABB'
  *
@@ -329,24 +329,24 @@ IDE_RC mtfSubrawCalculateFor3Args( mtcNode*     aNode,
         }
         
         //-----------------------------------------
-        // ÀüÃ¼ byte °³¼ö ±¸ÇÔ
+        // ì „ì²´ byte ê°œìˆ˜ êµ¬í•¨
         //-----------------------------------------
         sSourceLength = sSource->length;
         
         //-----------------------------------------
-        // byte¿­¿¡¼­ ½ÃÀÛ ¹®ÀÚ°¡ ¸î¹øÂ° byteÀÎÁö ¾Ë¾Æ³¿
+        // byteì—´ì—ì„œ ì‹œìž‘ ë¬¸ìžê°€ ëª‡ë²ˆì§¸ byteì¸ì§€ ì•Œì•„ëƒ„
         //-----------------------------------------
         
         if ( sStart > 0 )
         {
-            // subraw('AABBCC', 0)ÀÌ³ª substring('AABBCC', 1)ÀÌ³ª °°´Ù.
-            // ±×Áö °°Àº ¿À¶óÅ¬ ½ºÆÑÀÌ ±×·¯ÇØ¼­ µû¶óÇÑ´Ù.
-            // ³»ºÎ ±¸ÇöÀº 0ºÎÅÍÀÌ´Ù.
+            // subraw('AABBCC', 0)ì´ë‚˜ substring('AABBCC', 1)ì´ë‚˜ ê°™ë‹¤.
+            // ê·¸ì§€ ê°™ì€ ì˜¤ë¼í´ ìŠ¤íŒ©ì´ ê·¸ëŸ¬í•´ì„œ ë”°ë¼í•œë‹¤.
+            // ë‚´ë¶€ êµ¬í˜„ì€ 0ë¶€í„°ì´ë‹¤.
             sStart--;
         }
         else if ( sStart < 0 )
         {
-            // À½¼öÀÎ °æ¿ì
+            // ìŒìˆ˜ì¸ ê²½ìš°
             sStart = sStart + sSourceLength;
         }
         else
@@ -355,23 +355,23 @@ IDE_RC mtfSubrawCalculateFor3Args( mtcNode*     aNode,
         }
         
         //-----------------------------------------
-        // °á°ú ÀúÀå
+        // ê²°ê³¼ ì €ìž¥
         //-----------------------------------------
         
         if ( ( sSourceLength <= sStart ) || ( sStart < 0 ) )
         {
-            // ½ÃÀÛ byte À§Ä¡°¡ byte¿­ÀÇ ¹üÀ§¸¦ ³Ñ¾î¼± °æ¿ì,
-            // - Ã¹¹øÂ° byteº¸´Ùµµ ½ÃÀÛ byte À§Ä¡°¡ ÀÛÀº °æ¿ì
-            // - ¸¶Áö¸· byteº¸´Ù ½ÃÀÛ byte À§Ä¡°¡ Å« °æ¿ì
+            // ì‹œìž‘ byte ìœ„ì¹˜ê°€ byteì—´ì˜ ë²”ìœ„ë¥¼ ë„˜ì–´ì„  ê²½ìš°,
+            // - ì²«ë²ˆì§¸ byteë³´ë‹¤ë„ ì‹œìž‘ byte ìœ„ì¹˜ê°€ ìž‘ì€ ê²½ìš°
+            // - ë§ˆì§€ë§‰ byteë³´ë‹¤ ì‹œìž‘ byte ìœ„ì¹˜ê°€ í° ê²½ìš°
             aStack[0].column->module->null( aStack[0].column,
                                            aStack[0].value );
         }
         else
         {
-            // ½ÃÀÛ index¸¦ Ã£À½
+            // ì‹œìž‘ indexë¥¼ ì°¾ìŒ
             sStartIndex = sSource->value + sStart;
             
-            // ³¡ index¸¦ Ã£À½
+            // ë indexë¥¼ ì°¾ìŒ
             sSourceFence = sSource->value + sSource->length;
             sEndIndex = sStartIndex + sLength;
             
@@ -385,7 +385,7 @@ IDE_RC mtfSubrawCalculateFor3Args( mtcNode*     aNode,
             }
             
             //-----------------------------------------
-            // start positionºÎÅÍ n°³ÀÇ ±æÀÌ byteÀ» copyÇÏ¿© °á°ú¿¡ ÀúÀå
+            // start positionë¶€í„° nê°œì˜ ê¸¸ì´ byteì„ copyí•˜ì—¬ ê²°ê³¼ì— ì €ìž¥
             //-----------------------------------------
             
             sResult->length = sEndIndex - sStartIndex;

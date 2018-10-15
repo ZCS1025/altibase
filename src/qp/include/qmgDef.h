@@ -19,11 +19,11 @@
  * $Id: qmgDef.h 82075 2018-01-17 06:39:52Z jina.kim $
  *
  * Description :
- *     Graph °øÅë Á¤º¸¿¡ ´ëÇÑ ÀÚ·á ±¸Á¶ Á¤ÀÇ
+ *     Graph ê³µí†µ ì •ë³´ì— ëŒ€í•œ ìë£Œ êµ¬ì¡° ì •ì˜
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  **********************************************************************/
 
@@ -36,37 +36,37 @@
 #include <smiDef.h>
 
 /***********************************************************************
- * [GraphÀÇ flagÀ» À§ÇÑ »ó¼ö]
+ * [Graphì˜ flagì„ ìœ„í•œ ìƒìˆ˜]
  ***********************************************************************/
 
 // qmgGraph.flag
 #define QMG_FLAG_CLEAR                     (0x00000000)
 
-// Graph TypeÀÌ DISKÀÎÁö MEMORY ÀÎÁö¿¡ ´ëÇÑ Á¤º¸
+// Graph Typeì´ DISKì¸ì§€ MEMORY ì¸ì§€ì— ëŒ€í•œ ì •ë³´
 // qmgGraph.flag
 #define QMG_GRAPH_TYPE_MASK                (0x00000001)
 #define QMG_GRAPH_TYPE_MEMORY              (0x00000000)
 #define QMG_GRAPH_TYPE_DISK                (0x00000001)
 
-// Grouping, Distinction ¼öÇà Method ¹æ¹ı :  Sort Based or Hash Based
+// Grouping, Distinction ìˆ˜í–‰ Method ë°©ë²• :  Sort Based or Hash Based
 // qmgGraph.flag
 #define QMG_SORT_HASH_METHOD_MASK          (0x00000002)
 #define QMG_SORT_HASH_METHOD_SORT          (0x00000000)
 #define QMG_SORT_HASH_METHOD_HASH          (0x00000002)
 
-// Indexable Min Max Àû¿ë ¿©ºÎ
+// Indexable Min Max ì ìš© ì—¬ë¶€
 // qmgGraph.flag
 #define QMG_INDEXABLE_MIN_MAX_MASK         (0x00000004)
 #define QMG_INDEXABLE_MIN_MAX_FALSE        (0x00000000)
 #define QMG_INDEXABLE_MIN_MAX_TRUE         (0x00000004)
 
-// Join Group Æ÷ÇÔ ¿©ºÎ
+// Join Group í¬í•¨ ì—¬ë¶€
 // qmgGraph.flag
 #define QMG_INCLUDE_JOIN_GROUP_MASK        (0x00000008)
 #define QMG_INCLUDE_JOIN_GROUP_FALSE       (0x00000000)
 #define QMG_INCLUDE_JOIN_GROUP_TRUE        (0x00000008)
 
-// Preserved Order Á¤º¸
+// Preserved Order ì •ë³´
 // qmgGraph.flag
 #define QMG_PRESERVED_ORDER_MASK               (0x00000030)
 #define QMG_PRESERVED_ORDER_NOT_DEFINED        (0x00000000)
@@ -74,24 +74,24 @@
 #define QMG_PRESERVED_ORDER_DEFINED_NOT_FIXED  (0x00000020)
 #define QMG_PRESERVED_ORDER_NEVER              (0x00000030)
 
-// Join Order °áÁ¤µÈ GraphÀÎÁö ¾Æ´ÑÁö¿¡ ´ëÇÑ Á¤º¸
+// Join Order ê²°ì •ëœ Graphì¸ì§€ ì•„ë‹Œì§€ì— ëŒ€í•œ ì •ë³´
 // qmgGraph.flag
 #define QMG_JOIN_ORDER_DECIDED_MASK        (0x00000100)
 #define QMG_JOIN_ORDER_DECIDED_FALSE       (0x00000000)
 #define QMG_JOIN_ORDER_DECIDED_TRUE        (0x00000100)
 
 // qmgGraph.flag
-// ÇÏÀ§ preserved order »ç¿ë °¡´É ¿©ºÎ 
+// í•˜ìœ„ preserved order ì‚¬ìš© ê°€ëŠ¥ ì—¬ë¶€ 
 #define QMG_CHILD_PRESERVED_ORDER_USE_MASK   (0x00000200)
 #define QMG_CHILD_PRESERVED_ORDER_CAN_USE    (0x00000000)
 #define QMG_CHILD_PRESERVED_ORDER_CANNOT_USE (0x00000200)
 
-// PROJ-1353 GROUPBY_EXTENSION»ç¿ë¿©
+// PROJ-1353 GROUPBY_EXTENSIONì‚¬ìš©ì—¬
 #define QMG_GROUPBY_EXTENSION_MASK           (0x00000400)
 #define QMG_GROUPBY_EXTENSION_FALSE          (0x00000000)
 #define QMG_GROUPBY_EXTENSION_TRUE           (0x00000400)
 
-// PROJ-1353 VALUE¿ë  TEMP¸¦ »ç¿ëÇØ¾ßÇÏ´Â Áö ¿©ºÎ
+// PROJ-1353 VALUEìš©  TEMPë¥¼ ì‚¬ìš©í•´ì•¼í•˜ëŠ” ì§€ ì—¬ë¶€
 #define QMG_VALUE_TEMP_MASK                  (0x00000800)
 #define QMG_VALUE_TEMP_FALSE                 (0x00000000)
 #define QMG_VALUE_TEMP_TRUE                  (0x00000800)
@@ -102,12 +102,12 @@
 #define QMG_GROUPBY_NONE_FALSE               (0x00000000)
 
 /* BUG-40354 pushed rank */
-/* pushed rankÇÔ¼ö°¡ °¡´ÉÇÔÀ» Ç¥½Ã */
+/* pushed rankí•¨ìˆ˜ê°€ ê°€ëŠ¥í•¨ì„ í‘œì‹œ */
 #define QMG_WINDOWING_PUSHED_RANK_MASK       (0x00002000)
 #define QMG_WINDOWING_PUSHED_RANK_TRUE       (0x00002000)
 #define QMG_WINDOWING_PUSHED_RANK_FALSE      (0x00000000)
 
-// BUG-45296 rownum Pred À» left outer ÀÇ ¿À¸¥ÂÊÀ¸·Î ³»¸®¸é ¾ÈµË´Ï´Ù.
+// BUG-45296 rownum Pred ì„ left outer ì˜ ì˜¤ë¥¸ìª½ìœ¼ë¡œ ë‚´ë¦¬ë©´ ì•ˆë©ë‹ˆë‹¤.
 #define QMG_ROWNUM_PUSHED_MASK               (0x00004000)
 #define QMG_ROWNUM_PUSHED_TRUE               (0x00004000)
 #define QMG_ROWNUM_PUSHED_FALSE              (0x00000000)
@@ -124,7 +124,7 @@
 
 /*
  * top-down setting
- * PARALLEL_EXEC_MASK º¸´Ù ¿ì¼±ÇÔ
+ * PARALLEL_EXEC_MASK ë³´ë‹¤ ìš°ì„ í•¨
  */
 #define QMG_PARALLEL_IMPOSSIBLE_MASK         (0x00004000)
 #define QMG_PARALLEL_IMPOSSIBLE_TRUE         (0x00004000)
@@ -133,11 +133,11 @@
 /*
  * BUG-38410
  * top-down setting
- * make plan °úÁ¤¿¡¼­ ÇÏÀ§ graph ¿¡ ´ëÇÑ parallel Çã¿ë ¿©ºÎ
- * qmgPartition::makePlan, qmgSelection::makePlan ¿¡¼­
- * flag ¸¦ º¸°í parallel plan / non parallel plan À» ¸¸µç´Ù.
- * NL join ÀÇ right ¿Í °°ÀÌ ¹İº¹¼öÇàµÇ´Â plan ¿¡ ´ëÇØ
- * parallel ¼öÇàÀ» ±İÁöÇÏ±âÀ§ÇØ ¸¸µé¾îÁü
+ * make plan ê³¼ì •ì—ì„œ í•˜ìœ„ graph ì— ëŒ€í•œ parallel í—ˆìš© ì—¬ë¶€
+ * qmgPartition::makePlan, qmgSelection::makePlan ì—ì„œ
+ * flag ë¥¼ ë³´ê³  parallel plan / non parallel plan ì„ ë§Œë“ ë‹¤.
+ * NL join ì˜ right ì™€ ê°™ì´ ë°˜ë³µìˆ˜í–‰ë˜ëŠ” plan ì— ëŒ€í•´
+ * parallel ìˆ˜í–‰ì„ ê¸ˆì§€í•˜ê¸°ìœ„í•´ ë§Œë“¤ì–´ì§
  */
 #define QMG_PLAN_EXEC_REPEATED_MASK          (0x00008000)
 #define QMG_PLAN_EXEC_REPEATED_TRUE          (0x00008000)
@@ -151,47 +151,47 @@
 
 
 //------------------------------
-//makeColumnMtrNode()ÇÔ¼ö¿¡ ÇÊ¿äÇÑ flag
+//makeColumnMtrNode()í•¨ìˆ˜ì— í•„ìš”í•œ flag
 //------------------------------
 #define QMG_MAKECOLUMN_MTR_NODE_NOT_CHANGE_COLUMN_MASK  (0x00000001)
 #define QMG_MAKECOLUMN_MTR_NODE_NOT_CHANGE_COLUMN_FALSE (0x00000000)
 #define QMG_MAKECOLUMN_MTR_NODE_NOT_CHANGE_COLUMN_TRUE  (0x00000001)
 
 /***********************************************************************
- * [GraphÀÇ Á¾·ù]
+ * [Graphì˜ ì¢…ë¥˜]
  **********************************************************************/
 
 typedef enum
 {
     QMG_NONE = 0,
 
-    // One Tuple °ü·Ã Graph
+    // One Tuple ê´€ë ¨ Graph
     QMG_SELECTION,       // Selection Graph
     QMG_PROJECTION,      // Projection Graph
 
-    // Multi Tuple °ü·Ã Graph
+    // Multi Tuple ê´€ë ¨ Graph
     QMG_DISTINCTION,     // Duplicate Elimination Graph
     QMG_GROUPING,        // Grouping Graph
     QMG_SORTING,         // Sorting Graph
     QMG_WINDOWING,       // Windowing Graph
 
-    // Product °ü·Ã Graph
+    // Product ê´€ë ¨ Graph
     QMG_INNER_JOIN,      // Inner Join Graph
     QMG_SEMI_JOIN,       // Semi Join Graph
     QMG_ANTI_JOIN,       // Anti Join Graph
     QMG_LEFT_OUTER_JOIN, // Left Outer Join Graph
     QMG_FULL_OUTER_JOIN, // Full Outer Join Graph
 
-    // SET °ü·Ã Graph
+    // SET ê´€ë ¨ Graph
     QMG_SET,             // SET Graph
 
-    // Æ¯¼ö ¿¬»ê °ü·Ã Graph
+    // íŠ¹ìˆ˜ ì—°ì‚° ê´€ë ¨ Graph
     QMG_HIERARCHY,       // Hierarchy Graph
     QMG_DNF,             // DNF Graph
     QMG_PARTITION,       // PROJ-1502 Partition Graph
     QMG_COUNTING,        // PROJ-1405 Counting Graph
 
-    // PROJ-2205 DML °ü·Ã Graph
+    // PROJ-2205 DML ê´€ë ¨ Graph
     QMG_INSERT,          // insert graph
     QMG_MULTI_INSERT,    // BUG-36596 multi-table insert
     QMG_UPDATE,          // update graph
@@ -209,7 +209,7 @@ typedef enum
 } qmgType;
 
 /***********************************************************************
- * [°øÅë ºñ¿ë Á¤º¸ ÀÚ·á ±¸Á¶]
+ * [ê³µí†µ ë¹„ìš© ì •ë³´ ìë£Œ êµ¬ì¡°]
  *
  **********************************************************************/
 typedef struct qmgCostInfo
@@ -227,65 +227,65 @@ typedef struct qmgCostInfo
 }qmgCostInfo;
 
 /***********************************************************************
- * [Preserved Order ÀÚ·á ±¸Á¶]
+ * [Preserved Order ìë£Œ êµ¬ì¡°]
  *
  **********************************************************************/
 
 //--------------------------------------------------------
-// Preserved OrderÀÇ Direction  Á¤º¸
+// Preserved Orderì˜ Direction  ì •ë³´
 //--------------------------------------------------------
 typedef enum
 {
-    QMG_DIRECTION_NOT_DEFINED = 0, // direction Á¤ÇØÁöÁö ¾ÊÀ½
-    QMG_DIRECTION_SAME_WITH_PREV,  // direction Á¤ÇØÁöÁö ¾Ê¾ÒÀ¸³ª ÀÌÀü Ä®·³°ú
-                                   // µ¿ÀÏÇÑ ¹æÇâÀ» °®°ÔµÊ
-    QMG_DIRECTION_DIFF_WITH_PREV,  // direction Á¤ÇØÁöÁö ¾Ê¾ÒÀ¸³ª ÀÌÀü Ä®·³°ú
-                                   // ´Ù¸¥ ¹æÇâÀ» °®°ÔµÊ
-    QMG_DIRECTION_ASC,             // Ascending Order¸¦ °¡Áü
-    QMG_DIRECTION_DESC,            // Descending Order¸¦ °¡Áü
+    QMG_DIRECTION_NOT_DEFINED = 0, // direction ì •í•´ì§€ì§€ ì•ŠìŒ
+    QMG_DIRECTION_SAME_WITH_PREV,  // direction ì •í•´ì§€ì§€ ì•Šì•˜ìœ¼ë‚˜ ì´ì „ ì¹¼ëŸ¼ê³¼
+                                   // ë™ì¼í•œ ë°©í–¥ì„ ê°–ê²Œë¨
+    QMG_DIRECTION_DIFF_WITH_PREV,  // direction ì •í•´ì§€ì§€ ì•Šì•˜ìœ¼ë‚˜ ì´ì „ ì¹¼ëŸ¼ê³¼
+                                   // ë‹¤ë¥¸ ë°©í–¥ì„ ê°–ê²Œë¨
+    QMG_DIRECTION_ASC,             // Ascending Orderë¥¼ ê°€ì§
+    QMG_DIRECTION_DESC,            // Descending Orderë¥¼ ê°€ì§
     // BUG-40361 supporting to indexable analytic function
-    QMG_DIRECTION_ASC_NULLS_FIRST, // Ascending Order¸¦ Nulls First  °¡Áü
-    QMG_DIRECTION_ASC_NULLS_LAST,  // Ascending Order¸¦ Nulls Last  °¡Áü
-    QMG_DIRECTION_DESC_NULLS_FIRST,// Descending Order¸¦ Nulls First °¡Áü
-    QMG_DIRECTION_DESC_NULLS_LAST  // Descending Order¸¦ Nulls Last °¡Áü
+    QMG_DIRECTION_ASC_NULLS_FIRST, // Ascending Orderë¥¼ Nulls First  ê°€ì§
+    QMG_DIRECTION_ASC_NULLS_LAST,  // Ascending Orderë¥¼ Nulls Last  ê°€ì§
+    QMG_DIRECTION_DESC_NULLS_FIRST,// Descending Orderë¥¼ Nulls First ê°€ì§
+    QMG_DIRECTION_DESC_NULLS_LAST  // Descending Orderë¥¼ Nulls Last ê°€ì§
 } qmgDirectionType;
 
 //--------------------------------------------------------
-// Preserved OrderÀÇ ÀÚ·á ±¸Á¶
-//    - mtcColumnÀ¸·ÎºÎÅÍ È¹µæ
+// Preserved Orderì˜ ìë£Œ êµ¬ì¡°
+//    - mtcColumnìœ¼ë¡œë¶€í„° íšë“
 //      column = (mtcColumn.column.id % SMI_COLUMN_ID_MAXIMUM)
-//    - qtcNode·ÎºÎÅÍ È¹µæ
+//    - qtcNodeë¡œë¶€í„° íšë“
 //      column = qtcNode.node.column
 //--------------------------------------------------------
 typedef struct qmgPreservedOrder
 {
-    UShort              table;        // tuple set¿¡¼­ ÇØ´ç tableÀÇ position
-    UShort              column;       // tuple set¿¡¼­ ÇØ´ç columnÀÇ position
-    qmgDirectionType    direction;    // preserved order direction Á¤º¸
+    UShort              table;        // tuple setì—ì„œ í•´ë‹¹ tableì˜ position
+    UShort              column;       // tuple setì—ì„œ í•´ë‹¹ columnì˜ position
+    qmgDirectionType    direction;    // preserved order direction ì •ë³´
     qmgPreservedOrder * next;
 } qmgPreservedOrder;
 
 /***********************************************************************
- * [¸ğµç Graph¸¦ À§ÇÑ ÇÔ¼ö Æ÷ÀÎÅÍ]
- * °¢ GraphÀÇ ÃÖÀûÈ­ ¶Ç´Â Plan Tree»ı¼ºÀ» À§ÇÑ ÇÔ¼ö Æ÷ÀÎÅÍ
- * initialize °úÁ¤¿¡¼­ Graph³»ÀÇ ÇÔ¼ö·Î SettingÇÏ°Ô µÈ´Ù.
- * ÀÌ·Î¼­, »óÀ§ Graph¿¡¼­´Â ÇÏÀ§ GraphÀÇ Á¾·ù¿¡ °ü°è ¾øÀÌ
- * µ¿ÀÏÇÑ ÇÔ¼ö Æ÷ÀÎÅÍ¸¦ È£ÃâÇÔÀ¸·Î¼­ Ã³¸®ÇÒ ¼ö ÀÖ°Ô µÈ´Ù.
+ * [ëª¨ë“  Graphë¥¼ ìœ„í•œ í•¨ìˆ˜ í¬ì¸í„°]
+ * ê° Graphì˜ ìµœì í™” ë˜ëŠ” Plan Treeìƒì„±ì„ ìœ„í•œ í•¨ìˆ˜ í¬ì¸í„°
+ * initialize ê³¼ì •ì—ì„œ Graphë‚´ì˜ í•¨ìˆ˜ë¡œ Settingí•˜ê²Œ ëœë‹¤.
+ * ì´ë¡œì„œ, ìƒìœ„ Graphì—ì„œëŠ” í•˜ìœ„ Graphì˜ ì¢…ë¥˜ì— ê´€ê³„ ì—†ì´
+ * ë™ì¼í•œ í•¨ìˆ˜ í¬ì¸í„°ë¥¼ í˜¸ì¶œí•¨ìœ¼ë¡œì„œ ì²˜ë¦¬í•  ìˆ˜ ìˆê²Œ ëœë‹¤.
  ***********************************************************************/
 
 struct qmgGraph;
 struct qmgJOIN;
 
-// °¢ GraphÀÇ ÃÖÀûÈ­¸¦ ¼öÇàÇÏ´Â ÇÔ¼ö Æ÷ÀÎÅÍ
+// ê° Graphì˜ ìµœì í™”ë¥¼ ìˆ˜í–‰í•˜ëŠ” í•¨ìˆ˜ í¬ì¸í„°
 typedef IDE_RC (* optimizeFunc ) ( qcStatement * aStatement,
                                    qmgGraph    * aGraph );
 
-// °¢ GraphÀÇ Execution PlanÀ» »ı¼ºÇÏ´Â ÇÔ¼ö Æ÷ÀÎÅÍ
+// ê° Graphì˜ Execution Planì„ ìƒì„±í•˜ëŠ” í•¨ìˆ˜ í¬ì¸í„°
 typedef IDE_RC (* makePlanFunc ) ( qcStatement    * aStatement,
                                    const qmgGraph * aParent,
                                    qmgGraph       * aGraph );
 
-// °¢ GraphÀÇ Graph Ãâ·Â Á¤º¸¸¦ »ı¼ºÇÏ´Â ÇÔ¼ö Æ÷ÀÎÅÍ
+// ê° Graphì˜ Graph ì¶œë ¥ ì •ë³´ë¥¼ ìƒì„±í•˜ëŠ” í•¨ìˆ˜ í¬ì¸í„°
 typedef IDE_RC (* printGraphFunc) ( qcStatement  * aTemplate,
                                     qmgGraph     * aGraph,
                                     ULong          aDepth,
@@ -303,7 +303,7 @@ typedef IDE_RC (* printGraphFunc) ( qcStatement  * aTemplate,
     }
 
 /***********************************************************************
- *  [ Graph ÀÇ ±¸ºĞ ]
+ *  [ Graph ì˜ êµ¬ë¶„ ]
  *
  *  ---------------------------------------------
  *    Graph     |  left   |  right  | children
@@ -315,13 +315,13 @@ typedef IDE_RC (* printGraphFunc) ( qcStatement  * aTemplate,
  *  multi  graph |   null  |  null   |    O
  *  ----------------------------------------------
  *
- *  Multi Graph : Parsing, Validation ´Ü°è¿¡¼­´Â »ı¼ºµÇÁö ¾ÊÀ¸¸ç,
- *                Optimization ´Ü°è¿¡¼­ ÃÖÀûÈ­¿¡ ÀÇÇØ »ı¼ºµÈ´Ù.
+ *  Multi Graph : Parsing, Validation ë‹¨ê³„ì—ì„œëŠ” ìƒì„±ë˜ì§€ ì•Šìœ¼ë©°,
+ *                Optimization ë‹¨ê³„ì—ì„œ ìµœì í™”ì— ì˜í•´ ìƒì„±ëœë‹¤.
  *
  **********************************************************************/
 
 /***********************************************************************
- * Multiple Children À» ±¸¼ºÇÏ±â À§ÇÑ ÀÚ·á ±¸Á¶
+ * Multiple Children ì„ êµ¬ì„±í•˜ê¸° ìœ„í•œ ìë£Œ êµ¬ì¡°
  *      ( PROJ-1486 Multiple Bag Union )
  **********************************************************************/
 
@@ -332,25 +332,25 @@ typedef struct qmgChildren
 } qmgChildren;
 
 /***********************************************************************
- * [¸ğµç Graph¸¦ À§ÇÑ °øÅë ÀÚ·á ±¸Á¶]
+ * [ëª¨ë“  Graphë¥¼ ìœ„í•œ ê³µí†µ ìë£Œ êµ¬ì¡°]
  *
  **********************************************************************/
 typedef struct qmgGraph
 {
-    qmgType           type;          // Graph ÀÇ Á¾·ù
-    UInt              flag;          // Masking Á¤º¸, joinGroup Æ÷ÇÔ ¿©ºÎ
+    qmgType           type;          // Graph ì˜ ì¢…ë¥˜
+    UInt              flag;          // Masking ì •ë³´, joinGroup í¬í•¨ ì—¬ë¶€
 
-    // GraphÀÇ dependencies
+    // Graphì˜ dependencies
     qcDepInfo         depInfo;
 
-    // ÇØ´ç Graph¸¦ À§ÇÑ ÇÔ¼ö Æ÷ÀÎÅÍ
-    optimizeFunc      optimize;      // ÇØ´ç GraphÀÇ ÃÖÀûÈ­¸¦ ¼öÇàÇÏ´Â ÇÔ¼ö
-    makePlanFunc      makePlan;      // ÇØ´ç GraphÀÇ PlanÀ» »ı¼ºÇÏ´Â ÇÔ¼ö
-    printGraphFunc    printGraph;    // ÇØ´ç GraphÀÇ Á¤º¸¸¦ Ãâ·ÂÇÏ´Â ÇÔ¼ö
+    // í•´ë‹¹ Graphë¥¼ ìœ„í•œ í•¨ìˆ˜ í¬ì¸í„°
+    optimizeFunc      optimize;      // í•´ë‹¹ Graphì˜ ìµœì í™”ë¥¼ ìˆ˜í–‰í•˜ëŠ” í•¨ìˆ˜
+    makePlanFunc      makePlan;      // í•´ë‹¹ Graphì˜ Planì„ ìƒì„±í•˜ëŠ” í•¨ìˆ˜
+    printGraphFunc    printGraph;    // í•´ë‹¹ Graphì˜ ì •ë³´ë¥¼ ì¶œë ¥í•˜ëŠ” í•¨ìˆ˜
 
     //-------------------------------------------------------
     // [Child Graph]
-    // Graph°£ÀÇ ¿¬°á °ü°è´Â left¿Í right·Î Ç¥ÇöµÈ´Ù.
+    // Graphê°„ì˜ ì—°ê²° ê´€ê³„ëŠ” leftì™€ rightë¡œ í‘œí˜„ëœë‹¤.
     //-------------------------------------------------------
 
     qmgGraph        * left;          // left child graph
@@ -359,61 +359,61 @@ typedef struct qmgGraph
 
     //-------------------------------------------------------
     // [myPlan]
-    // ÇØ´ç Graph·ÎºÎÅÍ »ı¼ºµÈ Plan
-    // Graph ¿¡ ´ëÇÑ ÃÖÀûÈ­ ¼öÇà±îÁö´Â NULL°ªÀ» °¡Áö¸ç,
-    // makePlan() ÇÔ¼ö Æ÷ÀÎÅÍ¸¦ ÅëÇÏ¿© »ı¼ºµÈ´Ù.
+    // í•´ë‹¹ Graphë¡œë¶€í„° ìƒì„±ëœ Plan
+    // Graph ì— ëŒ€í•œ ìµœì í™” ìˆ˜í–‰ê¹Œì§€ëŠ” NULLê°’ì„ ê°€ì§€ë©°,
+    // makePlan() í•¨ìˆ˜ í¬ì¸í„°ë¥¼ í†µí•˜ì—¬ ìƒì„±ëœë‹¤.
     //-------------------------------------------------------
-    qmnPlan         * myPlan;        // Graph°¡ »ı¼ºÇÑ Plan Tree
+    qmnPlan         * myPlan;        // Graphê°€ ìƒì„±í•œ Plan Tree
 
-    qmoPredicate    * myPredicate;   // ÇØ´ç graph¿¡¼­ Ã³¸®µÇ¾î¾ß ÇÒ predicate
-    qmoPredicate    * constantPredicate; // CNF·ÎºÎÅÍ ÃßÃâµÈ Constant Predicate
+    qmoPredicate    * myPredicate;   // í•´ë‹¹ graphì—ì„œ ì²˜ë¦¬ë˜ì–´ì•¼ í•  predicate
+    qmoPredicate    * constantPredicate; // CNFë¡œë¶€í„° ì¶”ì¶œëœ Constant Predicate
     qmoPredicate    * ridPredicate;      // PROJ-1789 PROWID
 
-    qtcNode         * nnfFilter;     // To Fix PR-12743, NNF filter Áö¿ø
+    qtcNode         * nnfFilter;     // To Fix PR-12743, NNF filter ì§€ì›
 
-    qmsFrom         * myFrom;        // ÇØ´ç base graph¿¡ ´ëÀÀµÇ´Â qmsFrom
-    qmsQuerySet     * myQuerySet;    // ÇØ´ç base graph°¡ ¼ÓÇÑ querySet
+    qmsFrom         * myFrom;        // í•´ë‹¹ base graphì— ëŒ€ì‘ë˜ëŠ” qmsFrom
+    qmsQuerySet     * myQuerySet;    // í•´ë‹¹ base graphê°€ ì†í•œ querySet
 
-    qmgCostInfo       costInfo;      // °øÅë ºñ¿ë Á¤º¸
-    struct qmoCNF   * myCNF;         // top graphÀÎ °æ¿ì,
-                                     // ÇØ´ç graph°¡ ¼ÓÇÑ CNF¸¦ °¡¸®Å´
-    qmgPreservedOrder * preservedOrder; // ÇØ´ç graphÀÇ preserved order Á¤º¸
+    qmgCostInfo       costInfo;      // ê³µí†µ ë¹„ìš© ì •ë³´
+    struct qmoCNF   * myCNF;         // top graphì¸ ê²½ìš°,
+                                     // í•´ë‹¹ graphê°€ ì†í•œ CNFë¥¼ ê°€ë¦¬í‚´
+    qmgPreservedOrder * preservedOrder; // í•´ë‹¹ graphì˜ preserved order ì •ë³´
 
 } qmgGraph;
 
 /* TASK-6744 */
 typedef struct qmgRandomPlanInfo
 {
-    UInt mWeightedValue;      /* °¡ÁßÄ¡ */
-    UInt mTotalNumOfCases;    /* ¸ğµç °æ¿ìÀÇ ¼ö¸¦ ÇÕÄ£ ¼ö */
+    UInt mWeightedValue;      /* ê°€ì¤‘ì¹˜ */
+    UInt mTotalNumOfCases;    /* ëª¨ë“  ê²½ìš°ì˜ ìˆ˜ë¥¼ í•©ì¹œ ìˆ˜ */
 } qmgRandomPlanInfo;
 
-// ¸ğµç Graph°¡ °øÅëÀûÀ¸·Î »ç¿ëÇÏ´Â ±â´É
+// ëª¨ë“  Graphê°€ ê³µí†µì ìœ¼ë¡œ ì‚¬ìš©í•˜ëŠ” ê¸°ëŠ¥
 
 class qmg
 {
 public:
     //-----------------------------------------
-    // Graph »ı¼º½Ã °øÅëÀûÀ¸·Î ÇÊ¿äÇÑ ÇÔ¼ö¸¦ Ãß°¡
+    // Graph ìƒì„±ì‹œ ê³µí†µì ìœ¼ë¡œ í•„ìš”í•œ í•¨ìˆ˜ë¥¼ ì¶”ê°€
     //-----------------------------------------
 
-    // GraphÀÇ °øÅë Á¤º¸¸¦ ÃÊ±âÈ­ÇÔ.
+    // Graphì˜ ê³µí†µ ì •ë³´ë¥¼ ì´ˆê¸°í™”í•¨.
     static IDE_RC initGraph( qmgGraph * aGraph );
 
-    // GraphÀÇ °øÅë Á¤º¸¸¦ Ãâ·ÂÇÔ.
+    // Graphì˜ ê³µí†µ ì •ë³´ë¥¼ ì¶œë ¥í•¨.
     static IDE_RC printGraph( qcStatement  * aStatement,
                               qmgGraph     * aGraph,
                               ULong          aDepth,
                               iduVarString * aString );
 
 
-    // Subquery³»ÀÇ Graph Á¤º¸¸¦ Ãâ·ÂÇÔ.
+    // Subqueryë‚´ì˜ Graph ì •ë³´ë¥¼ ì¶œë ¥í•¨.
     static IDE_RC printSubquery( qcStatement  * aStatement,
                                  qtcNode      * aSubQuery,
                                  ULong          aDepth,
                                  iduVarString * aString );
 
-    // ¿øÇÏ´Â Preserved Order°¡ Á¸ÀçÇÏ´Â Áö¸¦ °Ë»ç
+    // ì›í•˜ëŠ” Preserved Orderê°€ ì¡´ì¬í•˜ëŠ” ì§€ë¥¼ ê²€ì‚¬
     static IDE_RC checkUsableOrder( qcStatement       * aStatement,
                                     qmgPreservedOrder * aWantOrder,
                                     qmgGraph          * aLeftGraph,
@@ -421,12 +421,12 @@ public:
                                     qmoAccessMethod  ** aSelectMethod,
                                     idBool            * aUsable );
 
-    // Child Graph¿¡ ´ëÇÏ¿© Preserved Order¸¦ ¼³Á¤ÇÔ.
+    // Child Graphì— ëŒ€í•˜ì—¬ Preserved Orderë¥¼ ì„¤ì •í•¨.
     static IDE_RC setOrder4Child( qcStatement       * aStatement,
                                   qmgPreservedOrder * aWantOrder,
                                   qmgGraph          * aLeftGraph );
 
-    // Preserved order ¼³Á¤ °¡´ÉÇÑ °æ¿ì, Preserved Order ¼³Á¤
+    // Preserved order ì„¤ì • ê°€ëŠ¥í•œ ê²½ìš°, Preserved Order ì„¤ì •
     static IDE_RC tryPreservedOrder( qcStatement       * aStatement,
                                      qmgGraph          * aGraph,
                                      qmgPreservedOrder * aWantOrder,
@@ -438,14 +438,14 @@ public:
                                       qmgPreservedOrder * aWantOrder,
                                       idBool            * aUsable);
 
-    // targetÀÇ Ä®·³µéÀÇ cardinality¸¦ ÀÌ¿ëÇÏ¿© bucket count ±¸ÇÏ´Â ÇÔ¼ö
+    // targetì˜ ì¹¼ëŸ¼ë“¤ì˜ cardinalityë¥¼ ì´ìš©í•˜ì—¬ bucket count êµ¬í•˜ëŠ” í•¨ìˆ˜
     static IDE_RC getBucketCntWithTarget( qcStatement * aStatement,
                                           qmgGraph    * aGraph,
                                           qmsTarget   * aTarget,
                                           UInt          aHintBucketCnt,
                                           UInt        * aBucketCnt );
 
-    // distinct aggregation columnÀÇ bucket count¸¦ ±¸ÇÔ
+    // distinct aggregation columnì˜ bucket countë¥¼ êµ¬í•¨
     static IDE_RC getBucketCnt4DistAggr( qcStatement * aStatement,
                                          SDouble       aChildOutputRecordCnt,
                                          UInt          aGroupBucketCnt,
@@ -453,19 +453,19 @@ public:
                                          UInt          aHintBucketCnt,
                                          UInt        * aBucketCnt );
 
-    // Graph°¡ »ç¿ëÇÒ ÀúÀå ¸ÅÃ¼¸¦ ÆÇ´ÜÇÔ
+    // Graphê°€ ì‚¬ìš©í•  ì €ì¥ ë§¤ì²´ë¥¼ íŒë‹¨í•¨
     static IDE_RC isDiskTempTable( qmgGraph    * aGraph,
                                    idBool      * aIsDisk );
 
     //-----------------------------------------
-    // Plan Tree »ı¼º½Ã °øÅëÀûÀ¸·Î ÇÊ¿äÇÑ ÇÔ¼ö¸¦ Ãß°¡
+    // Plan Tree ìƒì„±ì‹œ ê³µí†µì ìœ¼ë¡œ í•„ìš”í•œ í•¨ìˆ˜ë¥¼ ì¶”ê°€
     //-----------------------------------------
 
     //-----------------------------------------
-    // ÀúÀå Column °ü¸®¸¦ À§ÇÑ ÇÔ¼ö
+    // ì €ì¥ Column ê´€ë¦¬ë¥¼ ìœ„í•œ í•¨ìˆ˜
     //-----------------------------------------
 
-    // ÀúÀå ColumnÀ» À§ÇÑ qmcMtrNode¸¦ »ı¼º
+    // ì €ì¥ Columnì„ ìœ„í•œ qmcMtrNodeë¥¼ ìƒì„±
     static IDE_RC makeColumnMtrNode( qcStatement  * aStatement ,
                                      qmsQuerySet  * aQuerySet ,
                                      qtcNode      * aSrcNode,
@@ -482,21 +482,21 @@ public:
                                         qmcMtrNode  ** aMtrNode );
 
     // To Fix PR-11562
-    // Indexable MIN-MAX ÃÖÀûÈ­°¡ Àû¿ëµÈ °æ¿ì
-    // Preserved Order´Â ¹æÇâ¼ºÀ» °¡Áü, µû¶ó¼­ ÇØ´ç Á¤º¸¸¦
-    // ¼³Á¤ÇØÁÙ ÇÊ¿ä°¡ ¾øÀ½.
-    // indexable min-max¿¡¼­ °Ë»ö ¹æÇâÀ» ÁöÁ¤
+    // Indexable MIN-MAX ìµœì í™”ê°€ ì ìš©ëœ ê²½ìš°
+    // Preserved OrderëŠ” ë°©í–¥ì„±ì„ ê°€ì§, ë”°ë¼ì„œ í•´ë‹¹ ì •ë³´ë¥¼
+    // ì„¤ì •í•´ì¤„ í•„ìš”ê°€ ì—†ìŒ.
+    // indexable min-maxì—ì„œ ê²€ìƒ‰ ë°©í–¥ì„ ì§€ì •
     // static IDE_RC    setDirection4IndexableMinMax( UInt   * aFlag ,
     //                                                UInt     aMinMaxFlag ,
     //                                                UInt     aOrderFlag );
 
-    //display Á¤º¸¸¦ ¼¼ÆÃ
+    //display ì •ë³´ë¥¼ ì„¸íŒ…
     static IDE_RC setDisplayInfo( qmsFrom          * aFrom ,
                                   qmsNamePosition  * aTableOwnerName ,
                                   qmsNamePosition  * aTableName ,
                                   qmsNamePosition  * aAliasName );
 
-    //remote objectÀÇ display Á¤º¸¸¦ ¼¼ÆÃ
+    //remote objectì˜ display ì •ë³´ë¥¼ ì„¸íŒ…
     static IDE_RC setDisplayRemoteInfo( qcStatement      * aStatement ,
                                         qmsFrom          * aFrom ,
                                         qmsNamePosition  * aRemoteUserName ,
@@ -505,7 +505,7 @@ public:
                                         qmsNamePosition  * aTableName ,
                                         qmsNamePosition  * aAliasName );
 
-    //mtcColumn Á¤º¸¿Í mtcExecuteÁ¤º¸¸¦ º¹»çÇÑ´Ù.
+    //mtcColumn ì •ë³´ì™€ mtcExecuteì •ë³´ë¥¼ ë³µì‚¬í•œë‹¤.
     static IDE_RC copyMtcColumnExecute( qcStatement      * aStatement ,
                                         qmcMtrNode       * aMtrNode );
 
@@ -514,7 +514,7 @@ public:
                                  qmcMtrNode  * aMtrNode );
 
     // PROJ-1762
-    // Analytic Function °á°ú°¡ ÀúÀåµÉ qmcMtrNode¸¦ ±¸¼ºÇÑ´Ù.
+    // Analytic Function ê²°ê³¼ê°€ ì €ì¥ë  qmcMtrNodeë¥¼ êµ¬ì„±í•œë‹¤.
     static IDE_RC
     makeAnalFuncResultMtrNode( qcStatement      * aStatement,
                                qmsAnalyticFunc  * aAnalFunc,
@@ -565,19 +565,19 @@ public:
                                 qmcMtrNode    ** aPlanDistNode,
                                 UShort         * aDistNodeCount );
 
-    // LOJN , FOJNÀÇ Filter¸¦ ¸¸µé¾îÁØ´Ù.
+    // LOJN , FOJNì˜ Filterë¥¼ ë§Œë“¤ì–´ì¤€ë‹¤.
     static IDE_RC makeOuterJoinFilter(qcStatement   * aStatement ,
                                       qmsQuerySet   * aQuerySet ,
                                       qmoPredicate ** aPredicate ,
                                       qtcNode       * aNnfFilter,
                                       qtcNode      ** aFilter);
 
-    // CNF, DNF cost ÆÇ´Ü½Ã, Ãë¼ÒµÈ method¿¡ ´ëÇØ¼­
-    // optimize¶§ ¸¸µé¾ú´ø sdf¸¦ ¸ğµÎ Á¦°ÅÇÑ´Ù.
+    // CNF, DNF cost íŒë‹¨ì‹œ, ì·¨ì†Œëœ methodì— ëŒ€í•´ì„œ
+    // optimizeë•Œ ë§Œë“¤ì—ˆë˜ sdfë¥¼ ëª¨ë‘ ì œê±°í•œë‹¤.
     static IDE_RC removeSDF( qcStatement * aStatement, qmgGraph * aGraph );
 
-    // GraphÀÇ Plan Tree »ı¼º½Ã¿¡ È£ÃâÇÏ´Â ³»ºÎ ÇÔ¼ö
-    //   HASH »ı¼º
+    // Graphì˜ Plan Tree ìƒì„±ì‹œì— í˜¸ì¶œí•˜ëŠ” ë‚´ë¶€ í•¨ìˆ˜
+    //   HASH ìƒì„±
     static IDE_RC makeLeftHASH4Join( qcStatement  * aStatement,
                                      qmgGraph     * aGraph,
                                      UInt           aMtrFlag,
@@ -594,8 +594,8 @@ public:
                                       qmnPlan      * aChild,
                                       qmnPlan      * aPlan );
 
-    // GraphÀÇ Plan Tree »ı¼º½Ã¿¡ È£ÃâÇÏ´Â ³»ºÎ ÇÔ¼ö
-    //   SORT »ı¼º
+    // Graphì˜ Plan Tree ìƒì„±ì‹œì— í˜¸ì¶œí•˜ëŠ” ë‚´ë¶€ í•¨ìˆ˜
+    //   SORT ìƒì„±
 
     static IDE_RC initLeftSORT4Join( qcStatement  * aStatement,
                                      qmgGraph     * aGraph,
@@ -650,8 +650,8 @@ public:
                                             qmsTarget    * aTarget );
 
     // PROJ-1473
-    // validation½Ã ¼³Á¤µÈ ³ëµåÀÇ ±âº» À§Ä¡Á¤º¸¸¦
-    // ½ÇÁ¦·Î ÂüÁ¶ÇØ¾ß ÇÒ º¯°æµÈ À§Ä¡Á¤º¸·Î º¯°æÇÑ´Ù.
+    // validationì‹œ ì„¤ì •ëœ ë…¸ë“œì˜ ê¸°ë³¸ ìœ„ì¹˜ì •ë³´ë¥¼
+    // ì‹¤ì œë¡œ ì°¸ì¡°í•´ì•¼ í•  ë³€ê²½ëœ ìœ„ì¹˜ì •ë³´ë¡œ ë³€ê²½í•œë‹¤.
     static IDE_RC changeColumnLocate( qcStatement  * aStatement,
                                       qmsQuerySet  * aQuerySet,
                                       qtcNode      * aNode,
@@ -678,21 +678,21 @@ public:
                                     UShort       * aChangeTable,
                                     UShort       * aChangeColumn );
     
-    // µ¿ÀÏÇÑ ¹æÇâ¼ºÀ» °®´Â ColumnÀÎÁö¸¦ ºñ±³
+    // ë™ì¼í•œ ë°©í–¥ì„±ì„ ê°–ëŠ” Columnì¸ì§€ë¥¼ ë¹„êµ
     static IDE_RC checkSameDirection( qmgPreservedOrder * aWantOrder,
                                       qmgPreservedOrder * aPresOrder,
                                       qmgDirectionType    aPrevDirection,
                                       qmgDirectionType  * aNowDirection,
                                       idBool            * aUsable );
 
-    // BUG-42145 Index¿¡¼­ÀÇ Nulls Option Ã³¸®¸¦ Æ÷ÇÔÇØ¼­
-    // µ¿ÀÏÇÑ ¹æÇâ¼ºÀ» °®´Â ColumnÀÎÁö¸¦ ºñ±³
+    // BUG-42145 Indexì—ì„œì˜ Nulls Option ì²˜ë¦¬ë¥¼ í¬í•¨í•´ì„œ
+    // ë™ì¼í•œ ë°©í–¥ì„±ì„ ê°–ëŠ” Columnì¸ì§€ë¥¼ ë¹„êµ
     static IDE_RC checkSameDirection4Index( qmgPreservedOrder * aWantOrder,
                                             qmgPreservedOrder * aPresOrder,
                                             qmgDirectionType    aPrevDirection,
                                             qmgDirectionType  * aNowDirection,
                                             idBool            * aUsable );
-    //Sort ÀúÀå ÄÃ·³ÀÇ Á¤·Ä ¹æÇâÀ» °áÁ¤ÇÑ´Ù.
+    //Sort ì €ì¥ ì»¬ëŸ¼ì˜ ì •ë ¬ ë°©í–¥ì„ ê²°ì •í•œë‹¤.
     static IDE_RC setDirection4SortColumn(
         qmgPreservedOrder  * aPreservedOrder,
         UShort               aColumnID,
@@ -701,7 +701,7 @@ public:
     // BUG-32303
     static IDE_RC finalizePreservedOrder( qmgGraph * aGraph );
 
-    // Preserved orderÀÇ directionÀ» º¹»çÇÑ´Ù.
+    // Preserved orderì˜ directionì„ ë³µì‚¬í•œë‹¤.
     static IDE_RC copyPreservedOrderDirection(
         qmgPreservedOrder * aDstOrder,
         qmgPreservedOrder * aSrcOrder );
@@ -753,10 +753,10 @@ public:
 private:
 
     //-----------------------------------------
-    // Preserved Order °ü·Ã ÇÔ¼ö
+    // Preserved Order ê´€ë ¨ í•¨ìˆ˜
     //-----------------------------------------
 
-    // Graph³»¿¡¼­ ÇØ´ç Order¸¦ »ç¿ëÇÒ ¼ö ÀÖ´Â Áö °Ë»ç.
+    // Graphë‚´ì—ì„œ í•´ë‹¹ Orderë¥¼ ì‚¬ìš©í•  ìˆ˜ ìˆëŠ” ì§€ ê²€ì‚¬.
     static IDE_RC checkOrderInGraph ( qcStatement       * aStatement,
                                       qmgGraph          * aGraph,
                                       qmgPreservedOrder * aWantOrder,
@@ -764,7 +764,7 @@ private:
                                       qmoAccessMethod  ** aSelectMethod,
                                       idBool            * aUsable );
 
-    // ¿øÇÏ´Â Order¿¡ ºÎÇÕÇÏ´Â Index°¡ Á¸ÀçÇÏ´Â Áö °Ë»ç
+    // ì›í•˜ëŠ” Orderì— ë¶€í•©í•˜ëŠ” Indexê°€ ì¡´ì¬í•˜ëŠ” ì§€ ê²€ì‚¬
     static IDE_RC    checkUsableIndex4Selection( qmgGraph          * aGraph,
                                                  qmgPreservedOrder * aWantOrder,
                                                  idBool              aOrderNeed,
@@ -772,7 +772,7 @@ private:
                                                  qmoAccessMethod  ** aSelectMethod,
                                                  idBool            * aUsable );
 
-    // PROJ-2242 qmoJoinMethodMgr ÀÇ °ÍÀ» ¿È°Ü¿È
+    // PROJ-2242 qmoJoinMethodMgr ì˜ ê²ƒì„ ì˜´ê²¨ì˜´
     static IDE_RC checkUsableIndex( qcStatement       * aStatement,
                                     qmgGraph          * aGraph,
                                     qmgPreservedOrder * aWantOrder,
@@ -781,7 +781,7 @@ private:
                                     qmoAccessMethod  ** aSelectMethod,
                                     idBool            * aUsable );
 
-    // ¿øÇÏ´Â Order¿¡ ºÎÇÕÇÏ´Â Index°¡ Á¸ÀçÇÏ´Â Áö °Ë»ç
+    // ì›í•˜ëŠ” Orderì— ë¶€í•©í•˜ëŠ” Indexê°€ ì¡´ì¬í•˜ëŠ” ì§€ ê²€ì‚¬
     static IDE_RC    checkUsableIndex4Partition( qmgGraph          * aGraph,
                                                  qmgPreservedOrder * aWantOrder,
                                                  idBool              aOrderNeed,
@@ -789,43 +789,43 @@ private:
                                                  qmoAccessMethod  ** aSelectMethod,
                                                  idBool            * aUsable );
 
-    // ¿øÇÏ´Â Order¿Í ÇØ´ç IndexÀÇ Order°¡ µ¿ÀÏÇÑ Áö °Ë»ç
+    // ì›í•˜ëŠ” Orderì™€ í•´ë‹¹ Indexì˜ Orderê°€ ë™ì¼í•œ ì§€ ê²€ì‚¬
     static IDE_RC checkIndexOrder( qmoAccessMethod   * aMethod,
                                    UShort              aTableID,
                                    qmgPreservedOrder * aWantOrder,
                                    idBool            * aUsable );
 
-    // ¿øÇÏ´Â Order°¡ ÇØ´ç IndexÀÇ ¸ğµç Key Column¿¡ Æ÷ÇÔµÇ´Â Áö °Ë»ç
+    // ì›í•˜ëŠ” Orderê°€ í•´ë‹¹ Indexì˜ ëª¨ë“  Key Columnì— í¬í•¨ë˜ëŠ” ì§€ ê²€ì‚¬
     static IDE_RC checkIndexColumn( qcmIndex          * aIndex,
                                     UShort              aTableID,
                                     qmgPreservedOrder * aWantOrder,
                                     idBool            * aUsable );
 
-    // ¿øÇÏ´Â OrderÀÇ ID¸¦ TargetÀÇ ID·Î º¯°æ
+    // ì›í•˜ëŠ” Orderì˜ IDë¥¼ Targetì˜ IDë¡œ ë³€ê²½
     static IDE_RC refineID4Target( qmgPreservedOrder * aWantOrder,
                                    qmsTarget         * aTarget );
 
-    // ÇØ´ç Graph¿¡ ´ëÇÏ¿© Preserved Order¸¦ »ı¼ºÇÔ
+    // í•´ë‹¹ Graphì— ëŒ€í•˜ì—¬ Preserved Orderë¥¼ ìƒì„±í•¨
     static IDE_RC makeOrder4Graph( qcStatement       * aStatement,
                                    qmgGraph          * aGraph,
                                    qmgPreservedOrder * aWantOrder );
 
-    // Selection Graph¿¡ ´ëÇÏ¿© Index¸¦ ÀÌ¿ëÇÑ Preserved Order¸¦ »ı¼ºÇÔ
+    // Selection Graphì— ëŒ€í•˜ì—¬ Indexë¥¼ ì´ìš©í•œ Preserved Orderë¥¼ ìƒì„±í•¨
     static IDE_RC makeOrder4Index( qcStatement       * aStatement,
                                    qmgGraph          * aGraph,
                                    qmoAccessMethod   * aMethod,
                                    qmgPreservedOrder * aWantOrder );
 
-    // Non Leaf Graph¿¡ ´ëÇÏ¿© Preserved Order¸¦ »ı¼ºÇÔ
+    // Non Leaf Graphì— ëŒ€í•˜ì—¬ Preserved Orderë¥¼ ìƒì„±í•¨
     static IDE_RC makeOrder4NonLeafGraph( qcStatement       * aStatement,
                                           qmgGraph          * aGraph,
                                           qmgPreservedOrder * aWantOrder );
 
-    // SYSDATE µîÀÇ ÇöÀç ³¯Â¥ °ü·Ã  pseudo columnÀÎÁö È®ÀÎ
+    // SYSDATE ë“±ì˜ í˜„ì¬ ë‚ ì§œ ê´€ë ¨  pseudo columnì¸ì§€ í™•ì¸
     static idBool isDatePseudoColumn( qcStatement * aStatement,
                                       qtcNode     * aNode );
     
-    // BUG-37355 node tree¿¡¼­ pass node¸¦ µ¶¸³½ÃÅ²´Ù.
+    // BUG-37355 node treeì—ì„œ pass nodeë¥¼ ë…ë¦½ì‹œí‚¨ë‹¤.
     static IDE_RC isolatePassNode( qcStatement * aStatement,
                                    qtcNode     * aSource );
 };

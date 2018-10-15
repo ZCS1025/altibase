@@ -47,11 +47,11 @@ IDE_RC qcmView::getStatusOfViews(
 /***********************************************************************
  *
  * Description :
- *    ¸í½ÃÇÑ ºäÀÇ »óÅÂ¸¦ ±¸ÇÑ´Ù
+ *    ëª…ì‹œí•œ ë·°ì˜ ìƒíƒœë¥¼ êµ¬í•œë‹¤
  *
  * Implementation :
- *    1. ¸í½ÃÇÑ viewID ·Î keyRange ¸¦ ¸¸µç´Ù
- *    2. viewID ¿¡ ÇØ´çÇÏ´Â ºäÀÇ »óÅÂ¸¦ ±¸ÇÑ´Ù.
+ *    1. ëª…ì‹œí•œ viewID ë¡œ keyRange ë¥¼ ë§Œë“ ë‹¤
+ *    2. viewID ì— í•´ë‹¹í•˜ëŠ” ë·°ì˜ ìƒíƒœë¥¼ êµ¬í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -64,7 +64,7 @@ IDE_RC qcmView::getStatusOfViews(
     const void            * sRow = NULL;
     SInt                    sStage = 0;
 
-    scGRID                  sRid; // Disk TableÀ» À§ÇÑ Record IDentifier
+    scGRID                  sRid; // Disk Tableì„ ìœ„í•œ Record IDentifier
     smiCursorProperties     sCursorProperty;
     mtcColumn             * sStatusMtcColumn;
 
@@ -84,12 +84,12 @@ IDE_RC qcmView::getStatusOfViews(
                                       QCM_VIEWS_VIEWID_COL_ORDER,
                                       (const smiColumn**)&sViewIDCol )
                   != IDE_SUCCESS );
-        // mtdModule ¼³Á¤
+        // mtdModule ì„¤ì •
         IDE_TEST(mtd::moduleById( &sViewIDCol->module,
                                   sViewIDCol->type.dataTypeId )
                  != IDE_SUCCESS);
 
-        // mtlModule ¼³Á¤
+        // mtlModule ì„¤ì •
         IDE_TEST(mtl::moduleById( &sViewIDCol->language,
                                   sViewIDCol->type.languageId )
                  != IDE_SUCCESS);
@@ -172,11 +172,11 @@ IDE_RC qcmView::getReadOnlyOfViews(
 /***********************************************************************
  *
  * Description :  BUG-36350 Updatable Join DML WITH READ ONLY
- *    ¸í½ÃÇÑ ºäÀÇ READ ONLY ¿©ºÎ¸¦ ±¸ÇÑ´Ù
+ *    ëª…ì‹œí•œ ë·°ì˜ READ ONLY ì—¬ë¶€ë¥¼ êµ¬í•œë‹¤
  *
  * Implementation :
- *    1. ¸í½ÃÇÑ viewID ·Î keyRange ¸¦ ¸¸µç´Ù
- *    2. viewID ¿¡ ÇØ´çÇÏ´Â ºäÀÇ »óÅÂ¸¦ ±¸ÇÑ´Ù.
+ *    1. ëª…ì‹œí•œ viewID ë¡œ keyRange ë¥¼ ë§Œë“ ë‹¤
+ *    2. viewID ì— í•´ë‹¹í•˜ëŠ” ë·°ì˜ ìƒíƒœë¥¼ êµ¬í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -188,7 +188,7 @@ IDE_RC qcmView::getReadOnlyOfViews(
     const void            * sRow = NULL;
     SInt                    sStage = 0;
 
-    scGRID                  sRid; // Disk TableÀ» À§ÇÑ Record IDentifier
+    scGRID                  sRid; // Disk Tableì„ ìœ„í•œ Record IDentifier
     smiCursorProperties     sCursorProperty;
 
     mtcColumn             * sReadOnlyColumn   = NULL;
@@ -204,12 +204,12 @@ IDE_RC qcmView::getReadOnlyOfViews(
                                   QCM_VIEWS_VIEWID_COL_ORDER,
                                   (const smiColumn**)&sViewIDCol )
               != IDE_SUCCESS );
-    // mtdModule ¼³Á¤
+    // mtdModule ì„¤ì •
     IDE_TEST(mtd::moduleById( &sViewIDCol->module,
                               sViewIDCol->type.dataTypeId )
              != IDE_SUCCESS);
 
-    // mtlModule ¼³Á¤
+    // mtlModule ì„¤ì •
     IDE_TEST(mtl::moduleById( &sViewIDCol->language,
                               sViewIDCol->type.languageId )
              != IDE_SUCCESS);
@@ -293,12 +293,12 @@ IDE_RC qcmView::setInvalidViewOfRelated(
 /***********************************************************************
  *
  * Description :
- *    ¸í½ÃÇÑ ¿ÀºêÁ§Æ®¿¡ ¿¬°áµÈ ºä¸¦ Ã£¾Æ¼­ invalid »óÅÂ·Î º¯°æ
+ *    ëª…ì‹œí•œ ì˜¤ë¸Œì íŠ¸ì— ì—°ê²°ëœ ë·°ë¥¼ ì°¾ì•„ì„œ invalid ìƒíƒœë¡œ ë³€ê²½
  *
  * Implementation :
- *    1. ¸í½ÃÇÑ ¿ÀºêÁ§Æ®·Î ¿¬°áµÈ ºä¸¦ Ã£±â À§ÇÑ keyRange ¸¦ ¸¸µç´Ù
- *    2. ÇÑ °Ç½Ä ÀĞÀ¸¸é¼­ viewID ¸¦ ±¸ÇØ¼­ invalid »óÅÂ·Î ¸¸µç´Ù
- *    3. ¸ŞÅ¸ Ä³½¬¸¦ »õ·Î ¸¸µç´Ù
+ *    1. ëª…ì‹œí•œ ì˜¤ë¸Œì íŠ¸ë¡œ ì—°ê²°ëœ ë·°ë¥¼ ì°¾ê¸° ìœ„í•œ keyRange ë¥¼ ë§Œë“ ë‹¤
+ *    2. í•œ ê±´ì‹ ì½ìœ¼ë©´ì„œ viewID ë¥¼ êµ¬í•´ì„œ invalid ìƒíƒœë¡œ ë§Œë“ ë‹¤
+ *    3. ë©”íƒ€ ìºì‰¬ë¥¼ ìƒˆë¡œ ë§Œë“ ë‹¤
  *
  ***********************************************************************/
 
@@ -319,7 +319,7 @@ IDE_RC qcmView::setInvalidViewOfRelated(
     SInt                  sStage = 0;
     qcmTableInfo        * sTableInfo;
     smSCN                 sSCN;
-    scGRID                sRid; // Disk TableÀ» À§ÇÑ Record IDentifier
+    scGRID                sRid; // Disk Tableì„ ìœ„í•œ Record IDentifier
     void                * sTableHandle;
     smiCursorProperties   sCursorProperty;
     mtcColumn           * sFirstMtcColumn;
@@ -417,7 +417,7 @@ IDE_RC qcmView::setInvalidViewOfRelated(
                       != IDE_SUCCESS);
 
             // BUG-20387
-            // view¸¦ invalid ÇÒ¶§´Â ¸í½ÃÀûÀ¸·Î X lockÀ» Àâ¾Æ¾ß ÇÑ´Ù.
+            // viewë¥¼ invalid í• ë•ŒëŠ” ëª…ì‹œì ìœ¼ë¡œ X lockì„ ì¡ì•„ì•¼ í•œë‹¤.
             IDE_TEST( qcm::validateAndLockTable( aStatement,
                                                  sTableHandle,
                                                  sSCN,
@@ -462,8 +462,8 @@ IDE_RC qcmView::recompileAndSetValidViewOfRelated(
  *
  * Description :
  *    BUG-11266
- *    ¸í½ÃÇÑ ¿ÀºêÁ§Æ®¿¡ ¿¬°áµÈ ºä¸¦ Ã£¾Æ¼­
- *    recompileÀ» ½ÃµµÇÏ°í ¼º°øÇÏ¸é invalid -> valid·Î update
+ *    ëª…ì‹œí•œ ì˜¤ë¸Œì íŠ¸ì— ì—°ê²°ëœ ë·°ë¥¼ ì°¾ì•„ì„œ
+ *    recompileì„ ì‹œë„í•˜ê³  ì„±ê³µí•˜ë©´ invalid -> validë¡œ update
  *
  * Implementation :
  *
@@ -475,7 +475,7 @@ IDE_RC qcmView::recompileAndSetValidViewOfRelated(
     smSCN                 sSCN;
     void                * sTableHandle;
 
-    // °ü·ÃµÈ ºä¸¦ Ã£´Â´Ù.
+    // ê´€ë ¨ëœ ë·°ë¥¼ ì°¾ëŠ”ë‹¤.
     IDE_TEST( findTableInfoListViewOfRelated(
                   aStatement,
                   aRelatedUserID,
@@ -502,7 +502,7 @@ IDE_RC qcmView::recompileAndSetValidViewOfRelated(
                       != IDE_SUCCESS);
 
             // BUG-17119
-            // recompileView¿¡¼­ ÀÌ¹Ì lockÀ» È¹µæÇßÀ½.
+            // recompileViewì—ì„œ ì´ë¯¸ lockì„ íšë“í–ˆìŒ.
             // get qcmTableInfo
             IDE_TEST( qcm::getTableInfoByID( aStatement,
                                              sTableID,
@@ -543,10 +543,10 @@ IDE_RC qcmView::updateStatusOfView(
 /***********************************************************************
  *
  * Description :
- *    view ¿Í °ü·ÃµÈ Å×ÀÌºí º¯°æ½Ã ¸ŞÅ¸ Å×ÀÌºí status º¯°æ
+ *    view ì™€ ê´€ë ¨ëœ í…Œì´ë¸” ë³€ê²½ì‹œ ë©”íƒ€ í…Œì´ë¸” status ë³€ê²½
  *
  * Implementation :
- *    ¸í½ÃÇÑ status °ªÀ¸·Î SYS_VIEWS_ ¸ŞÅ¸ Å×ÀÌºíÀÇ STATUS °ªÀ» º¯°æÇÑ´Ù.
+ *    ëª…ì‹œí•œ status ê°’ìœ¼ë¡œ SYS_VIEWS_ ë©”íƒ€ í…Œì´ë¸”ì˜ STATUS ê°’ì„ ë³€ê²½í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -613,7 +613,7 @@ IDE_RC qcmView::checkCircularView(
     mtdCharType         * sObjName;
     SChar                 sObjNameStr[QC_MAX_OBJECT_NAME_LEN + 1];
 
-    scGRID                sRid; // Disk TableÀ» À§ÇÑ Record IDentifier
+    scGRID                sRid; // Disk Tableì„ ìœ„í•œ Record IDentifier
     smiCursorProperties   sCursorProperty;
     mtcColumn           * sFirstMtcColumn;
     mtcColumn           * sSceondMtcColumn;
@@ -631,12 +631,12 @@ IDE_RC qcmView::checkCircularView(
                                       (const smiColumn**)&sRelatedUserIDColInfo )
                   != IDE_SUCCESS );
 
-        // mtdModule ¼³Á¤
+        // mtdModule ì„¤ì •
         IDE_TEST(mtd::moduleById( &sRelatedUserIDColInfo->module,
                                   sRelatedUserIDColInfo->type.dataTypeId )
                  != IDE_SUCCESS);
 
-        // mtlModule ¼³Á¤
+        // mtlModule ì„¤ì •
         IDE_TEST(mtl::moduleById( &sRelatedUserIDColInfo->language,
                                   sRelatedUserIDColInfo->type.languageId )
                  != IDE_SUCCESS);
@@ -647,12 +647,12 @@ IDE_RC qcmView::checkCircularView(
                                       (const smiColumn**)&sRelatedObjNameColInfo )
                   != IDE_SUCCESS );
 
-        // mtdModule ¼³Á¤
+        // mtdModule ì„¤ì •
         IDE_TEST(mtd::moduleById( &sRelatedObjNameColInfo->module,
                                   sRelatedObjNameColInfo->type.dataTypeId )
                  != IDE_SUCCESS);
 
-        // mtlModule ¼³Á¤
+        // mtlModule ì„¤ì •
         IDE_TEST(mtl::moduleById( &sRelatedObjNameColInfo->language,
                                   sRelatedObjNameColInfo->type.languageId )
                  != IDE_SUCCESS);
@@ -713,7 +713,7 @@ IDE_RC qcmView::checkCircularView(
             sObjName = (mtdCharType*)
                 ((UChar*)sRow + sRelatedObjNameColInfo->column.offset);
 
-            // sObjNameStr ¹®ÀÚ¿­ »ı¼º
+            // sObjNameStr ë¬¸ìì—´ ìƒì„±
             // IDE_ASSERT( sObjName->length <= QC_MAX_OBJECT_NAME_LEN )
             idlOS::memcpy( sObjNameStr,
                            sObjName->value,
@@ -785,7 +785,7 @@ IDE_RC qcmView::checkCircularViewByName(
     SChar                 sObjNameStr[QC_MAX_OBJECT_NAME_LEN + 1];
     smSCN                 sSCN;
 
-    scGRID                sRid; // Disk TableÀ» À§ÇÑ Record IDentifier
+    scGRID                sRid; // Disk Tableì„ ìœ„í•œ Record IDentifier
     smiCursorProperties   sCursorProperty;
     qcmTableInfo        * sRelatedViewTableInfo;
     mtcColumn           * sFirstMtcColumn;
@@ -816,12 +816,12 @@ IDE_RC qcmView::checkCircularViewByName(
                                       (const smiColumn**)&sRelatedUserIDColInfo )
                   != IDE_SUCCESS );
 
-        // mtdModule ¼³Á¤
+        // mtdModule ì„¤ì •
         IDE_TEST(mtd::moduleById( &sRelatedUserIDColInfo->module,
                                   sRelatedUserIDColInfo->type.dataTypeId )
                  != IDE_SUCCESS);
 
-        // mtlModule ¼³Á¤
+        // mtlModule ì„¤ì •
         IDE_TEST(mtl::moduleById( &sRelatedUserIDColInfo->language,
                                   sRelatedUserIDColInfo->type.languageId )
                  != IDE_SUCCESS);
@@ -832,12 +832,12 @@ IDE_RC qcmView::checkCircularViewByName(
                                       (const smiColumn**)&sRelatedObjNameColInfo )
                   != IDE_SUCCESS );
 
-        // mtdModule ¼³Á¤
+        // mtdModule ì„¤ì •
         IDE_TEST(mtd::moduleById( &sRelatedObjNameColInfo->module,
                                   sRelatedObjNameColInfo->type.dataTypeId )
                  != IDE_SUCCESS);
 
-        // mtlModule ¼³Á¤
+        // mtlModule ì„¤ì •
         IDE_TEST(mtl::moduleById( &sRelatedObjNameColInfo->language,
                                   sRelatedObjNameColInfo->type.languageId )
                  != IDE_SUCCESS);
@@ -897,7 +897,7 @@ IDE_RC qcmView::checkCircularViewByName(
             sObjName = (mtdCharType*)
                 ((UChar*)sRow + sRelatedObjNameColInfo->column.offset);
 
-            // sObjNameStr ¹®ÀÚ¿­ »ı¼º
+            // sObjNameStr ë¬¸ìì—´ ìƒì„±
             // IDE_ASSERT( sObjName->length <= QC_MAX_OBJECT_NAME_LEN )
             idlOS::memcpy( sObjNameStr,
                            sObjName->value,
@@ -971,7 +971,7 @@ IDE_RC qcmView::findTableInfoListViewOfRelated(
     qcmTableInfoList    * sTableInfoList = NULL;
     qcmTableInfoList    * sTempTableInfoList = NULL;
     smSCN                 sSCN;
-    scGRID                sRid; // Disk TableÀ» À§ÇÑ Record IDentifier
+    scGRID                sRid; // Disk Tableì„ ìœ„í•œ Record IDentifier
     void                * sTableHandle;
     smiCursorProperties   sCursorProperty;
     mtcColumn           * sFirstMtcColumn;
@@ -1061,7 +1061,7 @@ IDE_RC qcmView::findTableInfoListViewOfRelated(
                                              &sTableHandle)
                       != IDE_SUCCESS);
 
-            // DDLÀÇ Execute ´Ü°è¿¡¼­ È£ÃâÇÏ¹Ç·Î, X LockÀ» Àâ´Â´Ù.
+            // DDLì˜ Execute ë‹¨ê³„ì—ì„œ í˜¸ì¶œí•˜ë¯€ë¡œ, X Lockì„ ì¡ëŠ”ë‹¤.
             IDE_TEST( qcm::validateAndLockTable(aStatement,
                                                 sTableHandle,
                                                 sSCN,
@@ -1147,10 +1147,10 @@ IDE_RC qcmView::recompileView(
                                         SMI_TABLE_LOCK_X)
               != IDE_SUCCESS );
 
-    // userID ¹é¾÷
+    // userID ë°±ì—…
     sUserID = QCG_GET_SESSION_USER_ID(aStatement);
 
-    // userID¸¦ viewÀÇ ¼ÒÀ¯ÀÚ·Î ¹Ù²Ù±â
+    // userIDë¥¼ viewì˜ ì†Œìœ ìë¡œ ë°”ê¾¸ê¸°
     QCG_SET_SESSION_USER_ID( aStatement, sOldTableInfo->tableOwnerID );
 
     //---------------------------------------------------------------
@@ -1180,7 +1180,7 @@ IDE_RC qcmView::recompileView(
     // set meber of qcStatement
     idlOS::memcpy( sCreateStatement, aStatement, ID_SIZEOF(qcStatement) );
 
-    // myPlanÀ» Àç¼³Á¤ÇÑ´Ù.
+    // myPlanì„ ì¬ì„¤ì •í•œë‹¤.
     sCreateStatement->myPlan = & sCreateStatement->privatePlan;
     sCreateStatement->myPlan->planEnv     = NULL;
 
@@ -1300,7 +1300,7 @@ IDE_RC qcmView::recompileView(
         sNewTableInfo->status = QCM_VIEW_VALID;
 
         // BUG-19209
-        // Á¦°ÅÇÒ ÀÌÀüÀÇ TableInfo¸¦ Á¦°Å ¸ñ·Ï¿¡ µî·ÏÇÔ
+        // ì œê±°í•  ì´ì „ì˜ TableInfoë¥¼ ì œê±° ëª©ë¡ì— ë“±ë¡í•¨
         IDE_TEST( qcmTableInfoMgr::destroyTableInfo( aStatement,
                                                      sOldTableInfo )
                   != IDE_SUCCESS );
@@ -1310,7 +1310,7 @@ IDE_RC qcmView::recompileView(
         // Nothing to do.
     }
 
-    // userID ¿øº¹
+    // userID ì›ë³µ
     QCG_SET_SESSION_USER_ID( aStatement, sUserID );
 
     return IDE_SUCCESS;

@@ -20,35 +20,35 @@
  *
  * Description:
  *
- * TABLE LayerÀÇ PageList°ü¸®´Â ´ÙÀ½°ú °°´Ù.
+ * TABLE Layerì˜ PageListê´€ë¦¬ëŠ” ë‹¤ìŒê³¼ ê°™ë‹¤.
  *
  * TableHeader
- *     ¤¤ AllocPageList[] (For Fixed)
- *     ¤¤ PageListEntry (For Fixed)
+ *     ã„´ AllocPageList[] (For Fixed)
+ *     ã„´ PageListEntry (For Fixed)
  *                     :
- *             ¤¤ FreePagePool
- *             ¤¤ FreePageList[] - SizeClassList[]
+ *             ã„´ FreePagePool
+ *             ã„´ FreePageList[] - SizeClassList[]
  *                                        :
  *                     :
- *     ¤¤ AllocPageList[] (For Var)
- *     ¤¤ PageListEntry[] (For Var)
+ *     ã„´ AllocPageList[] (For Var)
+ *     ã„´ PageListEntry[] (For Var)
  *             :
- * Å×ÀÌºíÇì´õ¿¡ Fixed¿Í Var¿ëÀÇ PageListEntry°¡ °¢°¢ Á¸ÀçÇÏ¸ç
- * °¢°¢ÀÇ PageListEntry¿¡´Â PageÀÇ AllocÁ¤º¸¸¦ °®´Â AllocPageList¿Í
- * PageÀÇ FreeÁ¤º¸¸¦ °®´Â FreePageList¸¦ À¯ÁöÇÑ´Ù.
- * °¢°¢ÀÇ AllocPageList¿Í FreePageList´Â ÇÁ·ÎÆÛÆ¼ÀÇ PageListGroupCount°ªÀ¸·Î
- * ´ÙÁßÈ­µÇ¾î Æ®·£Àè¼ÇÀÌ µ¿½Ã Á¢±Ù°¡´ÉÇÏ°Ô ÇÏ¿´À¸¸ç(PROJ-1490),
- * FreePageList¿¡´Â SlotÀÇ »ç¿ë·®¿¡ µû¶ó SizeClassº°·Î ±×·ìÇÎÇÏ¿´´Ù.
- * ¶ÇÇÑ FreePageList°£ÀÇ ¹ë·±½ÌÀ» À§ÇØ FreePagePoolÀ» À¯ÁöÇÏ¿´´Ù.
+ * í…Œì´ë¸”í—¤ë”ì— Fixedì™€ Varìš©ì˜ PageListEntryê°€ ê°ê° ì¡´ì¬í•˜ë©°
+ * ê°ê°ì˜ PageListEntryì—ëŠ” Pageì˜ Allocì •ë³´ë¥¼ ê°–ëŠ” AllocPageListì™€
+ * Pageì˜ Freeì •ë³´ë¥¼ ê°–ëŠ” FreePageListë¥¼ ìœ ì§€í•œë‹¤.
+ * ê°ê°ì˜ AllocPageListì™€ FreePageListëŠ” í”„ë¡œí¼í‹°ì˜ PageListGroupCountê°’ìœ¼ë¡œ
+ * ë‹¤ì¤‘í™”ë˜ì–´ íŠ¸ëœì­ì…˜ì´ ë™ì‹œ ì ‘ê·¼ê°€ëŠ¥í•˜ê²Œ í•˜ì˜€ìœ¼ë©°(PROJ-1490),
+ * FreePageListì—ëŠ” Slotì˜ ì‚¬ìš©ëŸ‰ì— ë”°ë¼ SizeClassë³„ë¡œ ê·¸ë£¹í•‘í•˜ì˜€ë‹¤.
+ * ë˜í•œ FreePageListê°„ì˜ ë°¸ëŸ°ì‹±ì„ ìœ„í•´ FreePagePoolì„ ìœ ì§€í•˜ì˜€ë‹¤.
  *
  * Transaction
- *     ¤¤ PrivatePageListCachePtr
- *     ¤¤ PrivatePageListHashTable
+ *     ã„´ PrivatePageListCachePtr
+ *     ã„´ PrivatePageListHashTable
  *
- * Æ®·£Àè¼ÇÀÌ DB¿¡¼­ ÇÒ´çÇÑ PageµéÀº ´Ù¸¥ Æ®·£Àè¼ÇÀÌ »ç¿ëÇÏÁö ¾Êµµ·Ï
- * PrivatePageList¿¡¼­ °ü¸®ÇÏµµ·Ï ÇÏ¿´À¸¸ç(PROJ-1464),
- * ÃÖ±Ù¿¡ Á¢±ÙÇß´ø PrivatePageList¿¡ ´ëÇÑ CacheÆ÷ÀÎÅÍ¸¦ µÎ¾î
- * ¼º´ÉÀ» ³ôÀÏ ¼ö ÀÖµµ·Ï ÇÏ¿´´Ù.
+ * íŠ¸ëœì­ì…˜ì´ DBì—ì„œ í• ë‹¹í•œ Pageë“¤ì€ ë‹¤ë¥¸ íŠ¸ëœì­ì…˜ì´ ì‚¬ìš©í•˜ì§€ ì•Šë„ë¡
+ * PrivatePageListì—ì„œ ê´€ë¦¬í•˜ë„ë¡ í•˜ì˜€ìœ¼ë©°(PROJ-1464),
+ * ìµœê·¼ì— ì ‘ê·¼í–ˆë˜ PrivatePageListì— ëŒ€í•œ Cacheí¬ì¸í„°ë¥¼ ë‘ì–´
+ * ì„±ëŠ¥ì„ ë†’ì¼ ìˆ˜ ìˆë„ë¡ í•˜ì˜€ë‹¤.
  *
  **********************************************************************/
 
@@ -59,7 +59,7 @@
 #include <idu.h>
 
 /* PROJ-2162 RestartRiskReduction */
-// PageTypeÀ» Á¤ÀÇÇÔ
+// PageTypeì„ ì •ì˜í•¨
 typedef UInt smpPageType;
 
 #define  SMP_PAGETYPE_MASK                  (0x00000003)
@@ -71,11 +71,11 @@ typedef UInt smpPageType;
 #define  SMP_PAGEINCONSISTENCY_FALSE        (0x00000000)
 #define  SMP_PAGEINCONSISTENCY_TRUE         (0x80000000)
 
-// alloc/free slotÇÏ´Â ´ë»ó Å×ÀÌºí Å¸ÀÔ
+// alloc/free slotí•˜ëŠ” ëŒ€ìƒ í…Œì´ë¸” íƒ€ì…
 typedef enum
 {
-    SMP_TABLE_NORMAL = 0,  // ÀÏ¹İ Å×ÀÌºí
-    SMP_TABLE_TEMP         // TEMP Å×ÀÌºí
+    SMP_TABLE_NORMAL = 0,  // ì¼ë°˜ í…Œì´ë¸”
+    SMP_TABLE_TEMP         // TEMP í…Œì´ë¸”
 } smpTableType;
 
 /* ----------------------------------------------------------------------------
@@ -83,20 +83,20 @@ typedef enum
  * --------------------------------------------------------------------------*/
 // BUGBUG : If smpPersPageHeader is changed,
 //          SMM_MEMBASE_OFFSET should be check also
-// Critical : smpPersPageHeaderÀÇ mPrev/mNext´Â PageList¸¦ À§ÇÑ °ÍÀÌ´Ù.
-//            ÀÌ°ÍÀÌ DB¿Í TABLEÀÌ ÁÖ°í ¹ŞÀ»¶§ ÀÓ½Ã·Î »ç¿ëÇÒ¶§´Â ´ÜÀÏÇÑ ¸®½ºÆ®ÀÌÁö¸¸,
-//            Å×ÀÌºí¿¡ µî·ÏµÉ ¶§´Â AllocPageList°¡ ´ÙÁßÈ­ µÇ¾î ÀÖÀ¸¹Ç·Î
-//            mPrev/mNext¸¦ ¹Ù·Î Á¢±ÙÇÏ´Â °Í º¸´Ù smpManager::getPrevAllocPageID()
-//            getNextAllocPageID()¸¦ »ç¿ëÇØ¾ß Å×ÀÌºí¿¡ ´ÙÁßÈ­µÈ PageList¸¦ ¿Ã¹Ù·Î
-//            Á¢±ÙÇÒ ¼ö ÀÖ°Ô µÈ´Ù.
+// Critical : smpPersPageHeaderì˜ mPrev/mNextëŠ” PageListë¥¼ ìœ„í•œ ê²ƒì´ë‹¤.
+//            ì´ê²ƒì´ DBì™€ TABLEì´ ì£¼ê³  ë°›ì„ë•Œ ì„ì‹œë¡œ ì‚¬ìš©í• ë•ŒëŠ” ë‹¨ì¼í•œ ë¦¬ìŠ¤íŠ¸ì´ì§€ë§Œ,
+//            í…Œì´ë¸”ì— ë“±ë¡ë  ë•ŒëŠ” AllocPageListê°€ ë‹¤ì¤‘í™” ë˜ì–´ ìˆìœ¼ë¯€ë¡œ
+//            mPrev/mNextë¥¼ ë°”ë¡œ ì ‘ê·¼í•˜ëŠ” ê²ƒ ë³´ë‹¤ smpManager::getPrevAllocPageID()
+//            getNextAllocPageID()ë¥¼ ì‚¬ìš©í•´ì•¼ í…Œì´ë¸”ì— ë‹¤ì¤‘í™”ëœ PageListë¥¼ ì˜¬ë°”ë¡œ
+//            ì ‘ê·¼í•  ìˆ˜ ìˆê²Œ ëœë‹¤.
 typedef struct smpPersPageHeader
 {
-    scPageID           mSelfPageID;   // ÇØ´ç PageÀÇ PID
-    scPageID           mPrevPageID;   // ÀÌÀü PageÀÇ PID
-    scPageID           mNextPageID;   // ´ÙÀ½ PageÀÇ PID
-    smpPageType        mType;         // ÇØ´ç PageÀÇ Page Type
+    scPageID           mSelfPageID;   // í•´ë‹¹ Pageì˜ PID
+    scPageID           mPrevPageID;   // ì´ì „ Pageì˜ PID
+    scPageID           mNextPageID;   // ë‹¤ìŒ Pageì˜ PID
+    smpPageType        mType;         // í•´ë‹¹ Pageì˜ Page Type
     smOID              mTableOID;
-    UInt               mAllocListID;  // ÇØ´ç PageÀÇ AllocPageListÀÇ ListID
+    UInt               mAllocListID;  // í•´ë‹¹ Pageì˜ AllocPageListì˜ ListID
 #if defined(COMPILE_64BIT)
     SChar              mDummy[4];
 #endif
@@ -148,7 +148,7 @@ struct smpPersPage
 #define SMP_VC_PIECE_MAX_SIZE ( SMP_PERS_PAGE_BODY_SIZE - \
                            ID_SIZEOF(smpVarPageHeader) - ID_SIZEOF(smVCPieceHeader) )
 
-/* BUGBUG: By Newdaily QP¿¡¼­ 32KÈ®Àå ÀÛ¾÷ÀÌ ³¡³ª¸é 32K·Î ¹Ù²Ù¾î¾ßÇÑ´Ù.  */
+/* BUGBUG: By Newdaily QPì—ì„œ 32Kí™•ì¥ ì‘ì—…ì´ ëë‚˜ë©´ 32Kë¡œ ë°”ê¾¸ì–´ì•¼í•œë‹¤.  */
 //#define SMP_MAX_VAR_COLUMN_SIZE   SMP_VC_PIECE_MAX_SIZE
 // PROJ-1583 large geometry
 #define SMP_MAX_VAR_COLUMN_SIZE  ID_UINT_MAX // 4G
@@ -162,15 +162,15 @@ struct smpPersPage
 
 typedef struct smpFreePageHeader
 {
-    UInt               mFreeListID;     // ÇØ´ç FreePageÀÇ FreePageList ID
-    UInt               mSizeClassID;    // ÇØ´ç FreePageÀÇ SizeClass ID
-    SChar*             mFreeSlotHead;   // ÇØ´ç FreePage¿¡¼­ÀÇ FreeSlot Head
-    SChar*             mFreeSlotTail;   // ÇØ´ç FreePage¿¡¼­ÀÇ FreeSlot Tail
-    UInt               mFreeSlotCount;  // ÇØ´ç FreePage¿¡¼­ÀÇ FreeSlot °¹¼ö
-    smpFreePageHeader* mFreePrev;       // ÀÌÀü FreePageÀÇ FreePageHeader
-    smpFreePageHeader* mFreeNext;       // ´ÙÀ½ FreePageÀÇ FreePageHeader
-    scPageID           mSelfPageID;     // ÇØ´ç FreePageÀÇ PID
-    iduMutex           mMutex;          // ÇØ´ç FreePageÀÇ Mutex
+    UInt               mFreeListID;     // í•´ë‹¹ FreePageì˜ FreePageList ID
+    UInt               mSizeClassID;    // í•´ë‹¹ FreePageì˜ SizeClass ID
+    SChar*             mFreeSlotHead;   // í•´ë‹¹ FreePageì—ì„œì˜ FreeSlot Head
+    SChar*             mFreeSlotTail;   // í•´ë‹¹ FreePageì—ì„œì˜ FreeSlot Tail
+    UInt               mFreeSlotCount;  // í•´ë‹¹ FreePageì—ì„œì˜ FreeSlot ê°¯ìˆ˜
+    smpFreePageHeader* mFreePrev;       // ì´ì „ FreePageì˜ FreePageHeader
+    smpFreePageHeader* mFreeNext;       // ë‹¤ìŒ FreePageì˜ FreePageHeader
+    scPageID           mSelfPageID;     // í•´ë‹¹ FreePageì˜ PID
+    iduMutex           mMutex;          // í•´ë‹¹ FreePageì˜ Mutex
 } smpFreePageHeader;
 
 
@@ -178,8 +178,8 @@ typedef struct smpFreePageHeader
 /* ----------------------------------------------------------------------------
  *                            For Slot Header
  * --------------------------------------------------------------------------*/
-//ÀÌºÎºĞÀº smpFreeSlotHeader°ú °°Àº ¸Ş¸ğ¸® °ø°£À» »ç¿ëÇÏ±â ¶§¹®¿¡ ¼öÁ¤ÇÒ¶§, º¯¼öÀÇ ¼ø¼­µîÀ»
-//°í·ÁÇØ¾ß ÇÑ´Ù.
+//ì´ë¶€ë¶„ì€ smpFreeSlotHeaderê³¼ ê°™ì€ ë©”ëª¨ë¦¬ ê³µê°„ì„ ì‚¬ìš©í•˜ê¸° ë•Œë¬¸ì— ìˆ˜ì •í• ë•Œ, ë³€ìˆ˜ì˜ ìˆœì„œë“±ì„
+//ê³ ë ¤í•´ì•¼ í•œë‹¤.
 
 typedef struct smpSlotHeader
 {
@@ -329,43 +329,43 @@ typedef struct smpFreeSlotHeader
 
 
 /*
- * BUG-25179 [SMM] Full ScanÀ» À§ÇÑ ÆäÀÌÁö°£ Scan List°¡ ÇÊ¿äÇÕ´Ï´Ù.
+ * BUG-25179 [SMM] Full Scanì„ ìœ„í•œ í˜ì´ì§€ê°„ Scan Listê°€ í•„ìš”í•©ë‹ˆë‹¤.
  */
 typedef struct smpScanPageListEntry
 {
     scPageID              mHeadPageID; // Next Scan Page ID
     scPageID              mTailPageID; // Prev Scan Page ID
-    iduMutex             *mMutex;      // ListÀÇ Mutex
+    iduMutex             *mMutex;      // Listì˜ Mutex
 } smpScanPageListEntry;
 
 typedef struct smpAllocPageListEntry
 {
-    vULong                mPageCount;  // AllocPage °¹¼ö
-    scPageID              mHeadPageID; // ListÀÇ Head
-    scPageID              mTailPageID; // ListÀÇ Tail
-    iduMutex             *mMutex;      // ListÀÇ Mutex
-                                       // (AllocList°¡ DurableÇÑ Á¤º¸ÀÌ°í,
-                                       //  Mutex´Â RuntimeÁ¤º¸ÀÌ±â ¶§¹®¿¡
-                                       //  Æ÷ÀÎÅÍ·Î °®´Â´Ù.)
+    vULong                mPageCount;  // AllocPage ê°¯ìˆ˜
+    scPageID              mHeadPageID; // Listì˜ Head
+    scPageID              mTailPageID; // Listì˜ Tail
+    iduMutex             *mMutex;      // Listì˜ Mutex
+                                       // (AllocListê°€ Durableí•œ ì •ë³´ì´ê³ ,
+                                       //  MutexëŠ” Runtimeì •ë³´ì´ê¸° ë•Œë¬¸ì—
+                                       //  í¬ì¸í„°ë¡œ ê°–ëŠ”ë‹¤.)
 } smpAllocPageListEntry;
 
 // TX's Private Free Page List
 typedef struct smpPrivatePageListEntry
 {
-    smOID              mTableOID;           // PageListÀÇ Å×ÀÌºíOID
-    smpFreePageHeader* mFixedFreePageHead;  // Fixed¿µ¿ªÀ» À§ÇÑ FreePageList
-    smpFreePageHeader* mFixedFreePageTail;  // Fixed¿µ¿ªÀ» À§ÇÑ FreePageList
+    smOID              mTableOID;           // PageListì˜ í…Œì´ë¸”OID
+    smpFreePageHeader* mFixedFreePageHead;  // Fixedì˜ì—­ì„ ìœ„í•œ FreePageList
+    smpFreePageHeader* mFixedFreePageTail;  // Fixedì˜ì—­ì„ ìœ„í•œ FreePageList
     smpFreePageHeader* mVarFreePageHead[SM_VAR_PAGE_LIST_COUNT];
-                                            // Var¿µ¿ªÀ» À§ÇÑ FreePageList
-    // Fixed¿µ¿ªÀº MVCC¶§¹®¿¡ ¿¹ºñ SlotÀ» ³²°Ü¾ß ÇÏ±â ¶§¹®¿¡ Áß°£ FreePage°¡
-    // ¸ÕÀú Á¦°ÅµÉ ¼ö ÀÖ¾î¼­ ¾ç¹æÇâ ¸®½ºÆ®ÀÌ³ª,
-    // Var¿µ¿ªÀº ¹«Á¶°Ç »ç¿ëÇÑ ¼ø¼­·Î Á¦°ÅµÇ¹Ç·Î ´Ü¹æÇâ ¸®½ºÆ®·Î ±¸¼ºÇÑ´Ù.
+                                            // Varì˜ì—­ì„ ìœ„í•œ FreePageList
+    // Fixedì˜ì—­ì€ MVCCë•Œë¬¸ì— ì˜ˆë¹„ Slotì„ ë‚¨ê²¨ì•¼ í•˜ê¸° ë•Œë¬¸ì— ì¤‘ê°„ FreePageê°€
+    // ë¨¼ì € ì œê±°ë  ìˆ˜ ìˆì–´ì„œ ì–‘ë°©í–¥ ë¦¬ìŠ¤íŠ¸ì´ë‚˜,
+    // Varì˜ì—­ì€ ë¬´ì¡°ê±´ ì‚¬ìš©í•œ ìˆœì„œë¡œ ì œê±°ë˜ë¯€ë¡œ ë‹¨ë°©í–¥ ë¦¬ìŠ¤íŠ¸ë¡œ êµ¬ì„±í•œë‹¤.
 } smpPrivatePageListEntry;
 
 /*
- * BUG-25327 : [MDB] Free Page Size Class °³¼ö¸¦ PropertyÈ­ ÇØ¾ß ÇÕ´Ï´Ù.
- * FreePageListÀÇ SizeClass´Â 4°³°¡ ÃÖ´ëÀÌ°í,
- * Property MEM_SIZE_CLASS_COUNT¿¡ ÀÇÇØ¼­ Á¦¾îµÈ´Ù.
+ * BUG-25327 : [MDB] Free Page Size Class ê°œìˆ˜ë¥¼ Propertyí™” í•´ì•¼ í•©ë‹ˆë‹¤.
+ * FreePageListì˜ SizeClassëŠ” 4ê°œê°€ ìµœëŒ€ì´ê³ ,
+ * Property MEM_SIZE_CLASS_COUNTì— ì˜í•´ì„œ ì œì–´ëœë‹¤.
  */
 #define SMP_MAX_SIZE_CLASS_COUNT (4)
 #define SMP_SIZE_CLASS_COUNT(x)  (((smpRuntimeEntry*)(x))->mSizeClassCount)
@@ -373,67 +373,67 @@ typedef struct smpPrivatePageListEntry
 typedef struct smpFreePageListEntry
 {
     /* ---------------------------------------------------------------------
-     * Free Page List´Â Size Classº°·Î °ü¸®µÈ´Ù.
-     * Size Class´Â Pagge³»ÀÇ Free SlotºñÀ²¿¡ µû¶ó °áÁ¤µÈ´Ù.
-     * Simple LogicÀ» À§ÇØ Free Page List´Â Size Class ÃÖ´ë °¹¼ö·Î ÃÊ±âÈ­µÈ´Ù.
+     * Free Page ListëŠ” Size Classë³„ë¡œ ê´€ë¦¬ëœë‹¤.
+     * Size ClassëŠ” Paggeë‚´ì˜ Free Slotë¹„ìœ¨ì— ë”°ë¼ ê²°ì •ëœë‹¤.
+     * Simple Logicì„ ìœ„í•´ Free Page ListëŠ” Size Class ìµœëŒ€ ê°¯ìˆ˜ë¡œ ì´ˆê¸°í™”ëœë‹¤.
      * --------------------------------------------------------------------- */
-    vULong                mPageCount[SMP_MAX_SIZE_CLASS_COUNT];  // FreePage°¹¼ö
-    smpFreePageHeader*    mHead[SMP_MAX_SIZE_CLASS_COUNT];       // ListÀÇ Head
-    smpFreePageHeader*    mTail[SMP_MAX_SIZE_CLASS_COUNT];       // ListÀÇ Tail
+    vULong                mPageCount[SMP_MAX_SIZE_CLASS_COUNT];  // FreePageê°¯ìˆ˜
+    smpFreePageHeader*    mHead[SMP_MAX_SIZE_CLASS_COUNT];       // Listì˜ Head
+    smpFreePageHeader*    mTail[SMP_MAX_SIZE_CLASS_COUNT];       // Listì˜ Tail
     iduMutex              mMutex;  // for Alloc/Free Page
 } smpFreePageListEntry;
 
-// FreePagePoolÀº EmptyPage¸¸À» °¡Áø´Ù.
-// FreePagePool¿¡¼­´Â ´Ü¹æÇâ¸®½ºÆ®·Î ±¸¼ºÇÒ ¼ö ÀÖÁö¸¸
-// FreePageList¿Í smpFreePageHeader¸¦ °øÀ¯ÇÏ°í
-// FreePageList·Î º¸³»ÁÙ¶§ ´Ù½Ã ¾ç¹æÇâ¸®½ºÆ®¸¦ ±¸ÃàÇØ¾ß ÇÏ¹Ç·Î
-// FreePageList¿¡¼­ ¹ŞÀ»¶§µµ ±»ÀÌ ¾ç¹æÇâ¸®½ºÆ®¸¦ Á¦°ÅÇÒ ÇÊ¿ä°¡ ¾ø´Ù.
+// FreePagePoolì€ EmptyPageë§Œì„ ê°€ì§„ë‹¤.
+// FreePagePoolì—ì„œëŠ” ë‹¨ë°©í–¥ë¦¬ìŠ¤íŠ¸ë¡œ êµ¬ì„±í•  ìˆ˜ ìˆì§€ë§Œ
+// FreePageListì™€ smpFreePageHeaderë¥¼ ê³µìœ í•˜ê³ 
+// FreePageListë¡œ ë³´ë‚´ì¤„ë•Œ ë‹¤ì‹œ ì–‘ë°©í–¥ë¦¬ìŠ¤íŠ¸ë¥¼ êµ¬ì¶•í•´ì•¼ í•˜ë¯€ë¡œ
+// FreePageListì—ì„œ ë°›ì„ë•Œë„ êµ³ì´ ì–‘ë°©í–¥ë¦¬ìŠ¤íŠ¸ë¥¼ ì œê±°í•  í•„ìš”ê°€ ì—†ë‹¤.
 typedef struct smpFreePagePoolEntry
 {
-    vULong                mPageCount;   // EmptyPage°¹¼ö
-    smpFreePageHeader*    mHead;        // ListÀÇ Head
-    smpFreePageHeader*    mTail;        // ListÀÇ Tail
-    iduMutex              mMutex;       // FreePagePoolÀÇ Mutex
+    vULong                mPageCount;   // EmptyPageê°¯ìˆ˜
+    smpFreePageHeader*    mHead;        // Listì˜ Head
+    smpFreePageHeader*    mTail;        // Listì˜ Tail
+    iduMutex              mMutex;       // FreePagePoolì˜ Mutex
 } smpFreePagePoolEntry;
 
-// FreePagePool°ú FreePageList´Â restart½Ã¿¡ Àç±¸ÃàÇÏ´Â ¿µ¿ªÀ¸·Î
-// DurableÇÏÁö ¾Ê´Ù.
+// FreePagePoolê³¼ FreePageListëŠ” restartì‹œì— ì¬êµ¬ì¶•í•˜ëŠ” ì˜ì—­ìœ¼ë¡œ
+// Durableí•˜ì§€ ì•Šë‹¤.
 typedef struct smpRuntimeEntry
 {
-    // TableHeader¿¡ ÀÖ´Â AllocPageList¿¡ ´ëÇÑ Æ÷ÀÎÅÍ¸¦ °®´Â´Ù.
+    // TableHeaderì— ìˆëŠ” AllocPageListì— ëŒ€í•œ í¬ì¸í„°ë¥¼ ê°–ëŠ”ë‹¤.
     smpAllocPageListEntry* mAllocPageList;
 
-    // Full Scan Àü¿ë Page List
+    // Full Scan ì „ìš© Page List
     smpScanPageListEntry   mScanPageList;
 
-    // FreePagePoolÀº EmptyPage¸¸ ÀÖÀ¸¹Ç·Î ÇÏ³ªÀÇ ¸®½ºÆ®´Ù
+    // FreePagePoolì€ EmptyPageë§Œ ìˆìœ¼ë¯€ë¡œ í•˜ë‚˜ì˜ ë¦¬ìŠ¤íŠ¸ë‹¤
     smpFreePagePoolEntry  mFreePagePool;                        // FreePagePool
     smpFreePageListEntry  mFreePageList[SM_MAX_PAGELIST_COUNT]; // FreePageList
 
     /*
-     * BUG-25327 : [MDB] Free Page Size Class °³¼ö¸¦ PropertyÈ­ ÇØ¾ß ÇÕ´Ï´Ù.
+     * BUG-25327 : [MDB] Free Page Size Class ê°œìˆ˜ë¥¼ Propertyí™” í•´ì•¼ í•©ë‹ˆë‹¤.
      */
     UInt                  mSizeClassCount;
 
-    // Record Count °ü·Ã ¸â¹ö
+    // Record Count ê´€ë ¨ ë©¤ë²„
     ULong                 mInsRecCnt;  // Inserted Record Count
     ULong                 mDelRecCnt;  // Deleted Record Count
 
-    //BUG-17371 [MMDB] AgingÀÌ ¹Ğ¸±°æ¿ì System¿¡ °úºÎÇÏ ¹×
-    //AgingÀÌ ¹Ğ¸®´Â Çö»óÀÌ ´õ ½ÉÈ­µÊ.
-    //Å×ÀÌºíÀÌ °¡Áö´Â old version ÀÇ °³¼ö
+    //BUG-17371 [MMDB] Agingì´ ë°€ë¦´ê²½ìš° Systemì— ê³¼ë¶€í•˜ ë°
+    //Agingì´ ë°€ë¦¬ëŠ” í˜„ìƒì´ ë” ì‹¬í™”ë¨.
+    //í…Œì´ë¸”ì´ ê°€ì§€ëŠ” old version ì˜ ê°œìˆ˜
     ULong                 mOldVersionCount;
-    //Áßº¹Å°¸¦ ÀÔ·ÂÇÏ·Á ÇÏ·ÁÇÏ´Ù abortµÈ È½¼ö
+    //ì¤‘ë³µí‚¤ë¥¼ ì…ë ¥í•˜ë ¤ í•˜ë ¤í•˜ë‹¤ abortëœ íšŸìˆ˜
     ULong                 mUniqueViolationCount;
-    //updateÇÒ¶§ ÀÌ¹Ì ´Ù¸¥ Æ®·£Àè¼ÇÀÌ »õ·Î¿î versionÀ» »ı¼ºÇÏ¿´´Ù¸é,
-    //±× Tx´Â retryÇÏ¿© »õ·Î¿î scnÀ» µû¾ß ÇÏ´Âµ¥...  ÀÌ·¯ÇÑ »ç°ÇÀÇ ¹ß»ı È½¼ö.
+    //updateí• ë•Œ ì´ë¯¸ ë‹¤ë¥¸ íŠ¸ëœì­ì…˜ì´ ìƒˆë¡œìš´ versionì„ ìƒì„±í•˜ì˜€ë‹¤ë©´,
+    //ê·¸ TxëŠ” retryí•˜ì—¬ ìƒˆë¡œìš´ scnì„ ë”°ì•¼ í•˜ëŠ”ë°...  ì´ëŸ¬í•œ ì‚¬ê±´ì˜ ë°œìƒ íšŸìˆ˜.
     ULong                 mUpdateRetryCount;
-    //removeÇÒ¶§ ÀÌ¹Ì ´Ù¸¥ Æ®·£Àè¼ÇÀÌ »õ·Î¿î versionÀ» »ı¼ºÇÏ¿´´Ù¸é,
-    //±× Tx´Â retryÇÏ¿© »õ·Î¿î scnÀ» µû¾ß ÇÏ´Âµ¥...  ÀÌ·¯ÇÑ »ç°ÇÀÇ ¹ß»ı È½¼ö.
+    //removeí• ë•Œ ì´ë¯¸ ë‹¤ë¥¸ íŠ¸ëœì­ì…˜ì´ ìƒˆë¡œìš´ versionì„ ìƒì„±í•˜ì˜€ë‹¤ë©´,
+    //ê·¸ TxëŠ” retryí•˜ì—¬ ìƒˆë¡œìš´ scnì„ ë”°ì•¼ í•˜ëŠ”ë°...  ì´ëŸ¬í•œ ì‚¬ê±´ì˜ ë°œìƒ íšŸìˆ˜.
     ULong                 mDeleteRetryCount;
 
-    //LockRow½Ã ÀÌ¹Ì ´Ù¸¥ Æ®·£Àè¼ÇÀÌ Row¸¦ °»½Å, »èÁ¦ÈÄ CommitÇß´Ù¸é
-    //±× Tx´Â retryÇÏ¿© »õ·Î¿î scnÀ» µû¾ß ÇÏ´Âµ¥...  ÀÌ·¯ÇÑ »ç°ÇÀÇ ¹ß»ı È½¼ö.
+    //LockRowì‹œ ì´ë¯¸ ë‹¤ë¥¸ íŠ¸ëœì­ì…˜ì´ Rowë¥¼ ê°±ì‹ , ì‚­ì œí›„ Commití–ˆë‹¤ë©´
+    //ê·¸ TxëŠ” retryí•˜ì—¬ ìƒˆë¡œìš´ scnì„ ë”°ì•¼ í•˜ëŠ”ë°...  ì´ëŸ¬í•œ ì‚¬ê±´ì˜ ë°œìƒ íšŸìˆ˜.
     ULong                 mLockRowRetryCount;
 
     iduMutex              mMutex;      // Count Mutex
@@ -442,46 +442,46 @@ typedef struct smpRuntimeEntry
 
 typedef struct smpPageListEntry
 {
-    vULong                mSlotSize;   // SlotÀÇ Size(SlotHeader Æ÷ÇÔ)
-    UInt                  mSlotCount;  // ÀÌ ÆäÀÌÁö¿¡ ÇÒ´ç°¡´ÉÇÑ slot °¹¼ö
-    smOID                 mTableOID;   // PageList°¡ ¼ÓÇÑ Å×ÀÌºí OID
+    vULong                mSlotSize;   // Slotì˜ Size(SlotHeader í¬í•¨)
+    UInt                  mSlotCount;  // ì´ í˜ì´ì§€ì— í• ë‹¹ê°€ëŠ¥í•œ slot ê°¯ìˆ˜
+    smOID                 mTableOID;   // PageListê°€ ì†í•œ í…Œì´ë¸” OID
 
-    // Runtime½Ã¿¡ Àç±¸¼ºÇØ¾ßÇÏ´Â Á¤º¸¸¦ PTR·Î °ü¸®ÇÑ´Ù.
+    // Runtimeì‹œì— ì¬êµ¬ì„±í•´ì•¼í•˜ëŠ” ì •ë³´ë¥¼ PTRë¡œ ê´€ë¦¬í•œë‹¤.
     smpRuntimeEntry       *mRuntimeEntry;
 } smpPageListEntry;
 
-// PageList¸¦ ´ÙÁßÈ­ÇÑ´Ù.
+// PageListë¥¼ ë‹¤ì¤‘í™”í•œë‹¤.
 #define SMP_PAGE_LIST_COUNT     (smuProperty::getPageListGroupCount())
-// PageListID°¡ NULLÀÌ¶ó´Â °ÍÀº ¾î¶² PageList¿¡µµ ´Ş¸®Áö ¾ÊÀº »óÈ²ÀÌ´Ù.
+// PageListIDê°€ NULLì´ë¼ëŠ” ê²ƒì€ ì–´ë–¤ PageListì—ë„ ë‹¬ë¦¬ì§€ ì•Šì€ ìƒí™©ì´ë‹¤.
 #define SMP_PAGELISTID_NULL     ID_UINT_MAX
-// ´ÙÁßÈ­µÈ PageListÀÇ ¸¶Áö¸· PageListID
+// ë‹¤ì¤‘í™”ëœ PageListì˜ ë§ˆì§€ë§‰ PageListID
 #define SMP_LAST_PAGELISTID     (SMP_PAGE_LIST_COUNT - 1)
-// FreePagePool¿¡ ÇØ´çÇÏ´Â PageListID
+// FreePagePoolì— í•´ë‹¹í•˜ëŠ” PageListID
 #define SMP_POOL_PAGELISTID     (ID_UINT_MAX - 2)
-// Tx's Private Free Page List¿¡ ÇØ´çÇÏ´Â PageListID
+// Tx's Private Free Page Listì— í•´ë‹¹í•˜ëŠ” PageListID
 #define SMP_PRIVATE_PAGELISTID  (ID_UINT_MAX - 1)
 
-// SizeClassID°¡ NULLÀÌ¶ó´Â °ÍÀº ¾î¶² SizeClassÀÇ FreePageList¿¡µµ ´Ş¸®Áö ¾Ê¾Ò´Ù.
+// SizeClassIDê°€ NULLì´ë¼ëŠ” ê²ƒì€ ì–´ë–¤ SizeClassì˜ FreePageListì—ë„ ë‹¬ë¦¬ì§€ ì•Šì•˜ë‹¤.
 #define SMP_SIZECLASSID_NULL     ID_UINT_MAX
-// ´ÙÁßÈ­µÈ SizeClass FreePageListÀÇ ¸¶Áö¸· SizeClassID
+// ë‹¤ì¤‘í™”ëœ SizeClass FreePageListì˜ ë§ˆì§€ë§‰ SizeClassID
 #define SMP_LAST_SIZECLASSID(x)  (SMP_SIZE_CLASS_COUNT(x) - 1)
-// ¸¶Áö¸· SizeClass´Â EmptyPage¿¡ ´ëÇÑ SizeClassÀÌ´Ù.
+// ë§ˆì§€ë§‰ SizeClassëŠ” EmptyPageì— ëŒ€í•œ SizeClassì´ë‹¤.
 #define SMP_EMPTYPAGE_CLASSID(x) SMP_LAST_SIZECLASSID(x)
-// Tx's Private Free Page List¿¡ ÇØ´çÇÏ´Â PageListID
+// Tx's Private Free Page Listì— í•´ë‹¹í•˜ëŠ” PageListID
 #define SMP_PRIVATE_SIZECLASSID (ID_UINT_MAX - 1)
 
-// ÇÁ·ÎÆÛÆ¼¿¡ Á¤ÀÇÇÑ MIN_PAGES_ON_TABLE_FREE_LIST¸¸Å­ Ç×»ó PageList¿¡ ³²±â°Ô µÈ´Ù.
+// í”„ë¡œí¼í‹°ì— ì •ì˜í•œ MIN_PAGES_ON_TABLE_FREE_LISTë§Œí¼ í•­ìƒ PageListì— ë‚¨ê¸°ê²Œ ëœë‹¤.
 #define SMP_FREEPAGELIST_MINPAGECOUNT (smuProperty::getMinPagesOnTableFreeList())
-// PageList¿¡ ³²±â°í ½ÍÀº¸¸Å­¾¿ FreePagePool¿¡¼­ FreePageList·Î °¡Á®¿Â´Ù.
+// PageListì— ë‚¨ê¸°ê³  ì‹¶ì€ë§Œí¼ì”© FreePagePoolì—ì„œ FreePageListë¡œ ê°€ì ¸ì˜¨ë‹¤.
 #define SMP_MOVEPAGECOUNT_POOL2LIST   (smuProperty::getMinPagesOnTableFreeList())
-// DB¿¡¼­ Page¸¦ ÇÒ´ç¹ŞÀ»¶§ FreePageList¿¡ ÇÊ¿äÇÑ ¸¸Å­¾¿ °¡Á®¿Â´Ù.
+// DBì—ì„œ Pageë¥¼ í• ë‹¹ë°›ì„ë•Œ FreePageListì— í•„ìš”í•œ ë§Œí¼ì”© ê°€ì ¸ì˜¨ë‹¤.
 #define SMP_ALLOCPAGECOUNT_FROMDB     (smuProperty::getAllocPageCount())
 
-/* smpFixedPageList::allocSlotÀÇ Argument */
+/* smpFixedPageList::allocSlotì˜ Argument */
 #define  SMP_ALLOC_FIXEDSLOT_NONE           (0x00000000)
-// Allocate¸¦ ¿äÃ»ÇÏ´Â Table ÀÇ Record Count¸¦ Áõ°¡½ÃÅ²´Ù.
+// Allocateë¥¼ ìš”ì²­í•˜ëŠ” Table ì˜ Record Countë¥¼ ì¦ê°€ì‹œí‚¨ë‹¤.
 #define  SMP_ALLOC_FIXEDSLOT_ADD_INSERTCNT  (0x00000001)
-// ÇÒ´ç¹ŞÀº SlotÀÇ Header¸¦ UpdateÇÏ°í LoggingÇÏ¶ó.
+// í• ë‹¹ë°›ì€ Slotì˜ Headerë¥¼ Updateí•˜ê³  Loggingí•˜ë¼.
 #define  SMP_ALLOC_FIXEDSLOT_SET_SLOTHEADER (0x00000002)
 
 #endif /* _O_SMP_DEF_H_ */

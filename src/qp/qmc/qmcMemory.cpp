@@ -26,7 +26,7 @@
 
 #define QMC_DEFAULT_BUFFER_SIZE (65536 - (UInt) idlOS::align(ID_SIZEOF(qmcMemoryHeader)))
 
-/* BUG-38290 qmcMemory ¿¡¼­ iduMemory ¸â¹ö Á¦°Å */
+/* BUG-38290 qmcMemory ì—ì„œ iduMemory ë©¤ë²„ ì œê±° */
 void qmcMemory::init( UInt aRowSize )
 {
 #define IDE_FN ""
@@ -40,8 +40,8 @@ void qmcMemory::init( UInt aRowSize )
 #undef IDE_FN
 }
 
-/* BUG-38290 qmcMemory °¡ iduMemory ¸¦ ÀúÀåÇÏÁö ¾Ê°í,
- * ¸Þ¸ð¸® ÇÒ´ç ½Ã ÇÒ´çÇÒ iduMemory ¸¦ ¹Þ¾Æ ¿Àµµ·Ï ÇÔ */
+/* BUG-38290 qmcMemory ê°€ iduMemory ë¥¼ ì €ìž¥í•˜ì§€ ì•Šê³ ,
+ * ë©”ëª¨ë¦¬ í• ë‹¹ ì‹œ í• ë‹¹í•  iduMemory ë¥¼ ë°›ì•„ ì˜¤ë„ë¡ í•¨ */
 IDE_RC qmcMemory::alloc( iduMemory * aMemory, size_t aSize, void **aMemPtr )
 {
 #define IDE_FN "qmcMemory::alloc"
@@ -80,8 +80,8 @@ IDE_RC qmcMemory::alloc( iduMemory * aMemory, size_t aSize, void **aMemPtr )
 #undef IDE_FN
 }
 
-/* BUG-38290 qmcMemory °¡ iduMemory ¸¦ ÀúÀåÇÏÁö ¾Ê°í,
- * ¸Þ¸ð¸® ÇÒ´ç ½Ã ÇÒ´çÇÒ iduMemory ¸¦ ¹Þ¾Æ ¿Àµµ·Ï ÇÔ */
+/* BUG-38290 qmcMemory ê°€ iduMemory ë¥¼ ì €ìž¥í•˜ì§€ ì•Šê³ ,
+ * ë©”ëª¨ë¦¬ í• ë‹¹ ì‹œ í• ë‹¹í•  iduMemory ë¥¼ ë°›ì•„ ì˜¤ë„ë¡ í•¨ */
 IDE_RC qmcMemory::cralloc( iduMemory * aMemory, size_t aSize, void** aMemPtr )
 {
 #define IDE_FN "qmcMemory::cralloc"
@@ -105,8 +105,8 @@ void qmcMemory::clear( UInt aRowSize )
 /***********************************************************************
  *
  *  Description : To fix BUG-17591
- *                qmcMemory¿¡¼­ »ç¿ëÇÑ ¸Þ¸ð¸® ºí·° ³»¿ëÀ» ÀüºÎ ÃÊ±âÈ­ ÇÑ´Ù.
- *                ÀÌÀü¿¡ allocÇß´ø ¸Þ¸ð¸®¸¦ Àç»ç¿ëÇÏÁö ¾Ê´Â´Ù.
+ *                qmcMemoryì—ì„œ ì‚¬ìš©í•œ ë©”ëª¨ë¦¬ ë¸”ëŸ­ ë‚´ìš©ì„ ì „ë¶€ ì´ˆê¸°í™” í•œë‹¤.
+ *                ì´ì „ì— allocí–ˆë˜ ë©”ëª¨ë¦¬ë¥¼ ìž¬ì‚¬ìš©í•˜ì§€ ì•ŠëŠ”ë‹¤.
  *
  *  Implementation :
  *
@@ -130,8 +130,8 @@ qmcMemory::clearForReuse()
 /***********************************************************************
  *
  *  Description : To fix BUG-17591
- *                qmcMemory¿¡¼­ »ç¿ëÇÒ ¸Þ¸ð¸®ÀÇ À§Ä¡¸¦ Ã¹ À§Ä¡·Î µ¹¸°´Ù.
- *                ÀÌÀü¿¡ allocÇß´ø ¸Þ¸ð¸®¸¦ Àç»ç¿ëÇÑ´Ù.
+ *                qmcMemoryì—ì„œ ì‚¬ìš©í•  ë©”ëª¨ë¦¬ì˜ ìœ„ì¹˜ë¥¼ ì²« ìœ„ì¹˜ë¡œ ëŒë¦°ë‹¤.
+ *                ì´ì „ì— allocí–ˆë˜ ë©”ëª¨ë¦¬ë¥¼ ìž¬ì‚¬ìš©í•œë‹¤.
  *
  *  Implementation :
  *

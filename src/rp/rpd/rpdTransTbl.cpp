@@ -43,11 +43,11 @@ rpdTransTbl::~rpdTransTbl()
 }
 
 /***********************************************************************
- * Description : Replication Transaction TableÃÊ±âÈ­
+ * Description : Replication Transaction Tableì´ˆê¸°í™”
  *
- * aFlag - [IN] ÀÌ TableÀ» Replication Receiver°¡ »ç¿ëÇÏ¸é
+ * aFlag - [IN] ì´ Tableì„ Replication Receiverê°€ ì‚¬ìš©í•˜ë©´
  *              RPD_TRANSTBL_USE_RECEIVER,
- *              ¾Æ´Ï¸é
+ *              ì•„ë‹ˆë©´
  *              RPD_TRANSTBL_USE_SENDER
  *
  **********************************************************************/
@@ -62,7 +62,7 @@ IDE_RC rpdTransTbl::initialize(SInt aFlag, UInt aTransactionPoolSize)
     mTblSize     = smiGetTransTblSize();
     mFlag        = aFlag;
     (void)idCore::acpAtomicSet32( &mATransCnt, 0);
-    mLFGCount    = 1; //[TASK-6757]LFG,SN Á¦°Å
+    mLFGCount    = 1; //[TASK-6757]LFG,SN ì œê±°
     mEndSN       = SM_SN_NULL;
     mOverAllocTransCount = 0;
 
@@ -74,7 +74,7 @@ IDE_RC rpdTransTbl::initialize(SInt aFlag, UInt aTransactionPoolSize)
     {
         sTransactionPoolSize = aTransactionPoolSize;
     }
-    // BUG-28206 ºÒÇÊ¿äÇÑ Transaction BeginÀ» ¹æÁö
+    // BUG-28206 ë¶ˆí•„ìš”í•œ Transaction Beginì„ ë°©ì§€
     IDE_TEST(mSvpPool.initialize(IDU_MEM_RP_RPD,
                                  (SChar *)"RP_SAVEPOINT_POOL",
                                  1,
@@ -97,7 +97,7 @@ IDE_RC rpdTransTbl::initialize(SInt aFlag, UInt aTransactionPoolSize)
                                      IDU_MEM_IMMEDIATE)
                    != IDE_SUCCESS, ERR_MEMORY_ALLOC_TRANS_TABLE);
 
-    /* BUG-18045 [Eager Mode] °°Àº Tx SlotÀ» »ç¿ëÇÏ´Â ÀÌÀü TxÀÇ ¿µÇâÀ» ¹èÁ¦ÇÑ´Ù. */
+    /* BUG-18045 [Eager Mode] ê°™ì€ Tx Slotì„ ì‚¬ìš©í•˜ëŠ” ì´ì „ Txì˜ ì˜í–¥ì„ ë°°ì œí•œë‹¤. */
     IDE_TEST_RAISE(mAbortTxMutex.initialize((SChar *)"Repl_Tx_Table_Mtx",
                                             IDU_MUTEX_KIND_NATIVE,
                                             IDV_WAIT_INDEX_NULL)
@@ -171,14 +171,14 @@ IDE_RC rpdTransTbl::initialize(SInt aFlag, UInt aTransactionPoolSize)
 }
 
 /***********************************************************************
- * Description : Replication Transaction Table¼Ò¸êÀÚ
+ * Description : Replication Transaction Tableì†Œë©¸ì
  *
  **********************************************************************/
 void rpdTransTbl::destroy()
 {
     UInt i;
 
-    // BUG-28206 ºÒÇÊ¿äÇÑ Transaction BeginÀ» ¹æÁö
+    // BUG-28206 ë¶ˆí•„ìš”í•œ Transaction Beginì„ ë°©ì§€
     if(mSvpPool.destroy(ID_FALSE) != IDE_SUCCESS)
     {
         IDE_ERRLOG(IDE_RP_0);
@@ -202,7 +202,7 @@ void rpdTransTbl::destroy()
         }
     }
 
-    /* Transaction Table¿¡ ÇÒ´çµÈ ¸ğµç Memory¸¦ ÇØÁ¦ÇÑ´Ù.*/
+    /* Transaction Tableì— í• ë‹¹ëœ ëª¨ë“  Memoryë¥¼ í•´ì œí•œë‹¤.*/
     (void)iduMemMgr::free(mTransTbl);
     mTransTbl = NULL;
 
@@ -217,9 +217,9 @@ void rpdTransTbl::destroy()
 }
 
 /***********************************************************************
- * Description : rpdTransTblNode ÃÊ±âÈ­
+ * Description : rpdTransTblNode ì´ˆê¸°í™”
  *
- * aTransNode  - [IN] ÃÊ±âÈ­¸¦ ¼öÇàÇÒ rpdTransTblNode
+ * aTransNode  - [IN] ì´ˆê¸°í™”ë¥¼ ìˆ˜í–‰í•  rpdTransTblNode
  *
  **********************************************************************/
 void rpdTransTbl::initTransNode(rpdTransTblNode *aTransNode)
@@ -232,13 +232,13 @@ void rpdTransTbl::initTransNode(rpdTransTblNode *aTransNode)
     aTransNode->mTxListIdx = ID_UINT_MAX;
     aTransNode->mIsConflict = ID_FALSE;
 
-    /* BUG-21858 DML + LOB Ã³¸® */
+    /* BUG-21858 DML + LOB ì²˜ë¦¬ */
     aTransNode->mSkipLobLogFlag = ID_FALSE;
 
     //BUG-24398
     aTransNode->mSendLobLogFlag = ID_FALSE;
 
-    /* BUG-18045 [Eager Mode] °°Àº Tx SlotÀ» »ç¿ëÇÏ´Â ÀÌÀü TxÀÇ ¿µÇâÀ» ¹èÁ¦ÇÑ´Ù. */
+    /* BUG-18045 [Eager Mode] ê°™ì€ Tx Slotì„ ì‚¬ìš©í•˜ëŠ” ì´ì „ Txì˜ ì˜í–¥ì„ ë°°ì œí•œë‹¤. */
     IDE_ASSERT(mAbortTxMutex.lock( NULL /* idvSQL* */) == IDE_SUCCESS);
     aTransNode->mBeginSN = SM_SN_NULL;
     aTransNode->mAbortFlag = ID_FALSE;
@@ -247,13 +247,13 @@ void rpdTransTbl::initTransNode(rpdTransTblNode *aTransNode)
     aTransNode->mLocHead.mNext = NULL;
     aTransNode->mSNMapEntry    = NULL;
 
-    /* PROJ-1442 Replication Online Áß DDL Çã¿ë
-     * DDL Transaction Á¤º¸ ÃÊ±âÈ­
+    /* PROJ-1442 Replication Online ì¤‘ DDL í—ˆìš©
+     * DDL Transaction ì •ë³´ ì´ˆê¸°í™”
      */
     aTransNode->mIsDDLTrans = ID_FALSE;
     IDU_LIST_INIT(&aTransNode->mItemMetaList);
 
-    // BUG-28206 ºÒÇÊ¿äÇÑ Transaction BeginÀ» ¹æÁö
+    // BUG-28206 ë¶ˆí•„ìš”í•œ Transaction Beginì„ ë°©ì§€
     IDU_LIST_INIT(&aTransNode->mSvpList);
     aTransNode->mPSMSvp        = NULL;
     aTransNode->mIsSvpListSent = ID_FALSE;
@@ -262,10 +262,10 @@ void rpdTransTbl::initTransNode(rpdTransTblNode *aTransNode)
 }
 
 /***********************************************************************
- * Description : aRemoteTID¿¡ ÇØ´çÇÏ´Â Transaction SlotÀ» ÇÒ´çÇÏ°í ÃÊ±âÈ­ÇÑ´Ù.
+ * Description : aRemoteTIDì— í•´ë‹¹í•˜ëŠ” Transaction Slotì„ í• ë‹¹í•˜ê³  ì´ˆê¸°í™”í•œë‹¤.
  *
  * aRemoteTID - [IN]  Transaction ID
- * aBeginSN   - [IN]  Transaction ÀÇ Begin SN
+ * aBeginSN   - [IN]  Transaction ì˜ Begin SN
  *
  **********************************************************************/
 IDE_RC rpdTransTbl::insertTrans(iduMemAllocator * aAllocator,
@@ -279,17 +279,17 @@ IDE_RC rpdTransTbl::insertTrans(iduMemAllocator * aAllocator,
     // BUG-17548
     IDE_ASSERT(aBeginSN != SM_SN_NULL);
 
-    /* aRemoteTID°¡ »ç¿ëÇÒ Transaction SlotÀ» Ã£´Â´Ù.*/
+    /* aRemoteTIDê°€ ì‚¬ìš©í•  Transaction Slotì„ ì°¾ëŠ”ë‹¤.*/
     sIndex = aRemoteTID % mTblSize;
 
-    /* µ¿½Ã¿¡ °°Àº Transaction Table SlotÀ» »ç¿ëÇÏ´ÂÁö °Ë»çÇÑ´Ù. */
+    /* ë™ì‹œì— ê°™ì€ Transaction Table Slotì„ ì‚¬ìš©í•˜ëŠ”ì§€ ê²€ì‚¬í•œë‹¤. */
     IDE_TEST_RAISE(isATransNode(&(mTransTbl[sIndex])) == ID_TRUE,
                    ERR_ALREADY_BEGIN);
 
-    /* TID¸¦ SettingÇÑ´Ù */
+    /* TIDë¥¼ Settingí•œë‹¤ */
     mTransTbl[sIndex].mRemoteTID = aRemoteTID;
 
-    /* BUG-18045 [Eager Mode] °°Àº Tx SlotÀ» »ç¿ëÇÏ´Â ÀÌÀü TxÀÇ ¿µÇâÀ» ¹èÁ¦ÇÑ´Ù. */
+    /* BUG-18045 [Eager Mode] ê°™ì€ Tx Slotì„ ì‚¬ìš©í•˜ëŠ” ì´ì „ Txì˜ ì˜í–¥ì„ ë°°ì œí•œë‹¤. */
     IDE_ASSERT(mAbortTxMutex.lock( NULL /* idvSQL* */) == IDE_SUCCESS);
     mTransTbl[sIndex].mBeginSN = aBeginSN;
     IDE_ASSERT(mAbortTxMutex.unlock() == IDE_SUCCESS);
@@ -324,8 +324,8 @@ IDE_RC rpdTransTbl::insertTrans(iduMemAllocator * aAllocator,
         }
     }
 
-    /* »õ·Î¿î TransactionÀÌ BeginµÇ¾úÀ¸¹Ç·Î Active Trans Count¸¦
-       ´Ã·ÁÁØ´Ù.*/
+    /* ìƒˆë¡œìš´ Transactionì´ Beginë˜ì—ˆìœ¼ë¯€ë¡œ Active Trans Countë¥¼
+       ëŠ˜ë ¤ì¤€ë‹¤.*/
     (void)idCore::acpAtomicInc32( &mATransCnt );
 
     return IDE_SUCCESS;
@@ -362,10 +362,10 @@ IDE_RC rpdTransTbl::insertTrans(iduMemAllocator * aAllocator,
 }
 
 /***********************************************************************
- * Description : aRemoteTID¿¡ ÇØ´çÇÏ´Â Transaction SlotÀ» ¹İÈ¯ÇÏ°í °¢°¢ÀÇ
- *               member¿¡ ´ëÇØ¼­ ¼Ò¸êÀÚ¸¦ È£ÃâÇÑ´Ù.
+ * Description : aRemoteTIDì— í•´ë‹¹í•˜ëŠ” Transaction Slotì„ ë°˜í™˜í•˜ê³  ê°ê°ì˜
+ *               memberì— ëŒ€í•´ì„œ ì†Œë©¸ìë¥¼ í˜¸ì¶œí•œë‹¤.
  *
- * aRemoteTID - [IN]  end½ÃÅ³ Transaction ID
+ * aRemoteTID - [IN]  endì‹œí‚¬ Transaction ID
  *
  **********************************************************************/
 void rpdTransTbl::removeTrans(smTID  aRemoteTID)
@@ -407,8 +407,8 @@ void rpdTransTbl::removeTrans(smTID  aRemoteTID)
                 /* Nothing to do */
             }
 
-            /* PROJ-1442 Replication Online Áß DDL Çã¿ë
-             * DDL Transaction Á¤º¸ Á¦°Å
+            /* PROJ-1442 Replication Online ì¤‘ DDL í—ˆìš©
+             * DDL Transaction ì •ë³´ ì œê±°
              */
             IDU_LIST_ITERATE_SAFE( &sTransTblNode->mItemMetaList, sNode, sDummy )
             {
@@ -420,8 +420,8 @@ void rpdTransTbl::removeTrans(smTID  aRemoteTID)
             }
         }
 
-        /* BUG-28206 ºÒÇÊ¿äÇÑ Transaction BeginÀ» ¹æÁö (Sender) */
-        /* BUG-18028 Eager Mode¿¡¼­ Partial Rollback Áö¿ø (Receiver) */
+        /* BUG-28206 ë¶ˆí•„ìš”í•œ Transaction Beginì„ ë°©ì§€ (Sender) */
+        /* BUG-18028 Eager Modeì—ì„œ Partial Rollback ì§€ì› (Receiver) */
         IDU_LIST_ITERATE_SAFE( &sTransTblNode->mSvpList, sNode, sDummy )
         {
             sSavepointEntry = (rpdSavepointEntry *)sNode->mObj;
@@ -432,7 +432,7 @@ void rpdTransTbl::removeTrans(smTID  aRemoteTID)
 
         initTransNode( sTransTblNode );
 
-        /* TransactionÀÌ endµÇ¾úÀ¸¹Ç·Î Active Trans Count¸¦ ÁÙ¿©ÁØ´Ù. */
+        /* Transactionì´ endë˜ì—ˆìœ¼ë¯€ë¡œ Active Trans Countë¥¼ ì¤„ì—¬ì¤€ë‹¤. */
         (void)idCore::acpAtomicDec32( &mATransCnt );
     }
 
@@ -440,10 +440,10 @@ void rpdTransTbl::removeTrans(smTID  aRemoteTID)
 }
 
 /***********************************************************************
- * Description : Active TransactionÁß¿¡¼­ First Write LogÀÇ SNÁß¿¡¼­ °¡Àå
- *               ÀÛÀº SN°ªÀ» °¡Á®¿Â´Ù.
+ * Description : Active Transactionì¤‘ì—ì„œ First Write Logì˜ SNì¤‘ì—ì„œ ê°€ì¥
+ *               ì‘ì€ SNê°’ì„ ê°€ì ¸ì˜¨ë‹¤.
  *
- * aSN - [OUT]  °¡Àå ÀÛÀº SN°ªÀ» ReturnÇÒ º¯¼ö
+ * aSN - [OUT]  ê°€ì¥ ì‘ì€ SNê°’ì„ Returní•  ë³€ìˆ˜
  *
  **********************************************************************/
 void rpdTransTbl::getMinTransFirstSN( smSN * aSN )
@@ -463,9 +463,9 @@ void rpdTransTbl::getMinTransFirstSN( smSN * aSN )
             }
             else
             {
-                /* Active TransactionÀº mBeginSNÀÌ SM_SN_NULLÀÌ ¾Æ´Ï´Ù.
-                 * sender°¡ mBeginSNÀ» setÇÏ°í sender°¡ ÀĞÀ¸¹Ç·Î
-                 * mBeginSNÀ» ÀĞÀ» ¶§ lockÀ» ¾È Àâ¾Æµµ µÊ
+                /* Active Transactionì€ mBeginSNì´ SM_SN_NULLì´ ì•„ë‹ˆë‹¤.
+                 * senderê°€ mBeginSNì„ setí•˜ê³  senderê°€ ì½ìœ¼ë¯€ë¡œ
+                 * mBeginSNì„ ì½ì„ ë•Œ lockì„ ì•ˆ ì¡ì•„ë„ ë¨
                  */
                 if(sMinFirstSN > mTransTbl[i].mBeginSN)
                 {
@@ -483,8 +483,8 @@ void rpdTransTbl::getMinTransFirstSN( smSN * aSN )
 }
 
 /***********************************************************************
- * Description : ¸ğµç Active TransactionÀ» Rollback½ÃÅ°°í ÇÒ´çµÈ SlotÀ» ¹İÈ¯
- *               ÇÑ´Ù.
+ * Description : ëª¨ë“  Active Transactionì„ Rollbackì‹œí‚¤ê³  í• ë‹¹ëœ Slotì„ ë°˜í™˜
+ *               í•œë‹¤.
  *
  *
  **********************************************************************/
@@ -501,9 +501,9 @@ void rpdTransTbl::rollbackAllATrans()
         {
             if(isATransNode(mTransTbl + i) == ID_TRUE)
             {
-                /* getFirstLocator,removeLocator´Â TIDÀÇ Æ®·£Àè¼ÇÀÌ
-                 * Active°¡ ¾Æ´Ò ¶§¸¸ ¿¡·¯¸¦ ¹İÈ¯ÇÏ±â ¶§¹®¿¡ ¾Æ·¡ÀÇ
-                 *  if ºí·°¾È¿¡¼­´Â ¿¡·¯°¡ ¹İÈ¯µÇÁö ¾Ê´Â´Ù.
+                /* getFirstLocator,removeLocatorëŠ” TIDì˜ íŠ¸ëœì­ì…˜ì´
+                 * Activeê°€ ì•„ë‹ ë•Œë§Œ ì—ëŸ¬ë¥¼ ë°˜í™˜í•˜ê¸° ë•Œë¬¸ì— ì•„ë˜ì˜
+                 *  if ë¸”ëŸ­ì•ˆì—ì„œëŠ” ì—ëŸ¬ê°€ ë°˜í™˜ë˜ì§€ ì•ŠëŠ”ë‹¤.
                  */
                 IDE_ASSERT(getFirstLocator(mTransTbl[i].mRemoteTID,
                                            &sRemoteLL,
@@ -542,9 +542,9 @@ void rpdTransTbl::rollbackAllATrans()
     }
     else
     {
-        /* SenderÀÏ °æ¿ì´Â TransactionÀ» beginÇÏÁö ¾Ê°í
-           Á¤º¸¸¸ À¯ÁöÇÏ°í ÀÖ±â ¶§¹®¿¡ RollbackÇÒ ÇÊ¿ä°¡
-           ¾ø´Ù.*/
+        /* Senderì¼ ê²½ìš°ëŠ” Transactionì„ beginí•˜ì§€ ì•Šê³ 
+           ì •ë³´ë§Œ ìœ ì§€í•˜ê³  ìˆê¸° ë•Œë¬¸ì— Rollbackí•  í•„ìš”ê°€
+           ì—†ë‹¤.*/
         for( i = 0; i < mTblSize; i++ )
         {
             if( isATransNode( mTransTbl + i ) == ID_TRUE )
@@ -568,17 +568,17 @@ void rpdTransTbl::rollbackAllATrans()
 }
 
 /***********************************************************************
- * Description : aTID Æ®·£Àè¼Ç Entry¿¡ Remote LOB Locator¿Í Local LOB Locator
- *               ¸¦ pair·Î »ğÀÔÇÑ´Ù.
+ * Description : aTID íŠ¸ëœì­ì…˜ Entryì— Remote LOB Locatorì™€ Local LOB Locator
+ *               ë¥¼ pairë¡œ ì‚½ì…í•œë‹¤.
  *
- * aTID      - [IN]  Æ®·£Àè¼Ç ID
- * aRemoteLL - [IN]  »ğÀÔÇÒ Remote LOB Locator(SenderÂÊÀÇ Locator)
- * aLocalLL  - [IN]  »ğÀÔÇÒ Local LOB Locator(Reciever¿¡¼­ openÇÑ Locator)
+ * aTID      - [IN]  íŠ¸ëœì­ì…˜ ID
+ * aRemoteLL - [IN]  ì‚½ì…í•  Remote LOB Locator(Senderìª½ì˜ Locator)
+ * aLocalLL  - [IN]  ì‚½ì…í•  Local LOB Locator(Recieverì—ì„œ opení•œ Locator)
  *
  * Return
- *   IDE_SUCCESS - ¼º°ø
+ *   IDE_SUCCESS - ì„±ê³µ
  *   IDE_FAILURE
- *        - NOT Active : ÇöÀç Æ®·£Àè¼ÇÀÌ ºñÈ°¼º »óÅÂÀÓ
+ *        - NOT Active : í˜„ì¬ íŠ¸ëœì­ì…˜ì´ ë¹„í™œì„± ìƒíƒœì„
  *
  **********************************************************************/
 IDE_RC rpdTransTbl::insertLocator(smTID aTID, smLobLocator aRemoteLL, smLobLocator aLocalLL)
@@ -604,7 +604,7 @@ IDE_RC rpdTransTbl::insertLocator(smTID aTID, smLobLocator aRemoteLL, smLobLocat
 
     IDE_EXCEPTION(ERR_NOT_ACTIVE);
     {
-        // Æ®·£Àè¼ÇÀÌ ÇöÀç ºñÈ°¼º »óÅÂÀÓ
+        // íŠ¸ëœì­ì…˜ì´ í˜„ì¬ ë¹„í™œì„± ìƒíƒœì„
         IDE_ERRLOG( IDE_RP_0 );
         IDE_SET( ideSetErrorCode( rpERR_ABORT_TRANSACTION_NOT_ACTIVE ) );
     }
@@ -628,11 +628,11 @@ IDE_RC rpdTransTbl::insertLocator(smTID aTID, smLobLocator aRemoteLL, smLobLocat
 }
 
 /***********************************************************************
- * Description : Remote LOB Locator¸¦ Key·Î Æ®·£Àè¼Ç Entry¿¡¼­
- *               Locator entry¸¦ »èÁ¦ÇÑ´Ù.
+ * Description : Remote LOB Locatorë¥¼ Keyë¡œ íŠ¸ëœì­ì…˜ Entryì—ì„œ
+ *               Locator entryë¥¼ ì‚­ì œí•œë‹¤.
  *
- * aTID      - [IN]  Æ®·£Àè¼Ç ID
- * aRemoteLL - [IN]  »èÁ¦ÇÒ Remote LOB Locator(SenderÂÊÀÇ Locator)
+ * aTID      - [IN]  íŠ¸ëœì­ì…˜ ID
+ * aRemoteLL - [IN]  ì‚­ì œí•  Remote LOB Locator(Senderìª½ì˜ Locator)
  *
  **********************************************************************/
 void rpdTransTbl::removeLocator(smTID aTID, smLobLocator aRemoteLL)
@@ -665,17 +665,17 @@ void rpdTransTbl::removeLocator(smTID aTID, smLobLocator aRemoteLL)
 }
 
 /***********************************************************************
- * Description : aTID Æ®·£Àè¼Ç Entry¿¡¼­ Remote LOB Locator¸¦ Key·Î
- *               Local LOB Locator¸¦ ¹İÈ¯ÇÑ´Ù.
+ * Description : aTID íŠ¸ëœì­ì…˜ Entryì—ì„œ Remote LOB Locatorë¥¼ Keyë¡œ
+ *               Local LOB Locatorë¥¼ ë°˜í™˜í•œë‹¤.
  *
- * aTID      - [IN]  Æ®·£Àè¼Ç ID
- * aRemoteLL - [IN]  Ã£À» Remote LOB Locator(SenderÂÊÀÇ Locator)
- * aLocalLL  - [OUT] ¹İÈ¯ÇÒ Local LOB Locator ÀúÀå º¯¼ö(Reciever¿¡¼­ openÇÑ Locator)
+ * aTID      - [IN]  íŠ¸ëœì­ì…˜ ID
+ * aRemoteLL - [IN]  ì°¾ì„ Remote LOB Locator(Senderìª½ì˜ Locator)
+ * aLocalLL  - [OUT] ë°˜í™˜í•  Local LOB Locator ì €ì¥ ë³€ìˆ˜(Recieverì—ì„œ opení•œ Locator)
  *
  * Return
- *   IDE_SUCCESS - ¼º°ø
+ *   IDE_SUCCESS - ì„±ê³µ
  *   IDE_FAILURE
- *        - NOT Active : ÇöÀç Æ®·£Àè¼ÇÀÌ ºñÈ°¼º »óÅÂÀÓ
+ *        - NOT Active : í˜„ì¬ íŠ¸ëœì­ì…˜ì´ ë¹„í™œì„± ìƒíƒœì„
  *
  **********************************************************************/
 IDE_RC rpdTransTbl::searchLocator( smTID          aTID,
@@ -708,7 +708,7 @@ IDE_RC rpdTransTbl::searchLocator( smTID          aTID,
 
     IDE_EXCEPTION(ERR_NOT_ACTIVE);
     {
-        // Æ®·£Àè¼ÇÀÌ ÇöÀç ºñÈ°¼º »óÅÂÀÓ
+        // íŠ¸ëœì­ì…˜ì´ í˜„ì¬ ë¹„í™œì„± ìƒíƒœì„
         IDE_ERRLOG( IDE_RP_0 );
         IDE_SET( ideSetErrorCode( rpERR_ABORT_TRANSACTION_NOT_ACTIVE ) );
     }
@@ -718,17 +718,17 @@ IDE_RC rpdTransTbl::searchLocator( smTID          aTID,
 }
 
 /***********************************************************************
- * Description : aTID Æ®·£Àè¼Ç EntryÀÇ Locator List¿¡¼­ Ã¹¹øÂ° entryÀÇ
- *               Local LOB Locator¸¦ ¹İÈ¯ÇÑ´Ù.
+ * Description : aTID íŠ¸ëœì­ì…˜ Entryì˜ Locator Listì—ì„œ ì²«ë²ˆì§¸ entryì˜
+ *               Local LOB Locatorë¥¼ ë°˜í™˜í•œë‹¤.
  *
- * aTID      - [IN]  Æ®·£Àè¼Ç ID
- * aRemoteLL - [OUT] ¹İÈ¯ÇÒ Remote LOB Locator ÀúÀå º¯¼ö(SenderÂÊ Locator)
- * aLocalLL  - [OUT] ¹İÈ¯ÇÒ Local LOB Locator ÀúÀå º¯¼ö(Reciever¿¡¼­ openÇÑ Locator)
+ * aTID      - [IN]  íŠ¸ëœì­ì…˜ ID
+ * aRemoteLL - [OUT] ë°˜í™˜í•  Remote LOB Locator ì €ì¥ ë³€ìˆ˜(Senderìª½ Locator)
+ * aLocalLL  - [OUT] ë°˜í™˜í•  Local LOB Locator ì €ì¥ ë³€ìˆ˜(Recieverì—ì„œ opení•œ Locator)
  *
  * Return
- *   IDE_SUCCESS - ¼º°ø
+ *   IDE_SUCCESS - ì„±ê³µ
  *   IDE_FAILURE
- *        - NOT Active : ÇöÀç Æ®·£Àè¼ÇÀÌ ºñÈ°¼º »óÅÂÀÓ
+ *        - NOT Active : í˜„ì¬ íŠ¸ëœì­ì…˜ì´ ë¹„í™œì„± ìƒíƒœì„
  *
  **********************************************************************/
 IDE_RC rpdTransTbl::getFirstLocator( smTID          aTID,
@@ -756,7 +756,7 @@ IDE_RC rpdTransTbl::getFirstLocator( smTID          aTID,
 
     IDE_EXCEPTION(ERR_NOT_ACTIVE);
     {
-        // Æ®·£Àè¼ÇÀÌ ÇöÀç ºñÈ°¼º »óÅÂÀÓ
+        // íŠ¸ëœì­ì…˜ì´ í˜„ì¬ ë¹„í™œì„± ìƒíƒœì„
         IDE_ERRLOG( IDE_RP_0 );
         IDE_SET( ideSetErrorCode( rpERR_ABORT_TRANSACTION_NOT_ACTIVE ) );
     }
@@ -766,12 +766,12 @@ IDE_RC rpdTransTbl::getFirstLocator( smTID          aTID,
 }
 
 /*******************************************************************************
- * Description : aTID Æ®·£Àè¼Ç EntryÀÇ Item Meta List¿¡ Entry¸¦ Ãß°¡ÇÑ´Ù.
+ * Description : aTID íŠ¸ëœì­ì…˜ Entryì˜ Item Meta Listì— Entryë¥¼ ì¶”ê°€í•œë‹¤.
  *
- * aTID                 - [IN]  Æ®·£Àè¼Ç ID
- * aItemMeta            - [IN]  Ãß°¡ÇÒ Item Meta
- * aItemMetaLogBody     - [IN]  Ãß°¡ÇÒ Item Meta Body
- * aItemMetaLogBodySize - [IN]  Ãß°¡ÇÒ Item Meta BodyÀÇ Å©±â
+ * aTID                 - [IN]  íŠ¸ëœì­ì…˜ ID
+ * aItemMeta            - [IN]  ì¶”ê°€í•  Item Meta
+ * aItemMetaLogBody     - [IN]  ì¶”ê°€í•  Item Meta Body
+ * aItemMetaLogBodySize - [IN]  ì¶”ê°€í•  Item Meta Bodyì˜ í¬ê¸°
  ******************************************************************************/
 IDE_RC rpdTransTbl::addItemMetaEntry(smTID          aTID,
                                      smiTableMeta * aItemMeta,
@@ -805,7 +805,7 @@ IDE_RC rpdTransTbl::addItemMetaEntry(smTID          aTID,
                    aItemMetaLogBody,
                    aItemMetaLogBodySize);
 
-    // ÀÌÈÄ¿¡´Â ½ÇÆĞÇÏÁö ¾Ê´Â´Ù
+    // ì´í›„ì—ëŠ” ì‹¤íŒ¨í•˜ì§€ ì•ŠëŠ”ë‹¤
     IDU_LIST_INIT_OBJ(&(sItemMetaEntry->mNode), sItemMetaEntry);
     IDU_LIST_ADD_LAST(&mTransTbl[sIndex].mItemMetaList,
                       &(sItemMetaEntry->mNode));
@@ -844,10 +844,10 @@ IDE_RC rpdTransTbl::addItemMetaEntry(smTID          aTID,
 }
 
 /*******************************************************************************
- * Description : aTID Æ®·£Àè¼Ç EntryÀÇ Item Meta List¿¡¼­ Ã¹ ¹øÂ° Entry¸¦ ¹İÈ¯ÇÑ´Ù.
+ * Description : aTID íŠ¸ëœì­ì…˜ Entryì˜ Item Meta Listì—ì„œ ì²« ë²ˆì§¸ Entryë¥¼ ë°˜í™˜í•œë‹¤.
  *
- * aTID           - [IN]  Æ®·£Àè¼Ç ID
- * aItemMetaEntry - [OUT] ¹İÈ¯µÉ Ã¹ ¹øÂ° Item Meta Entry
+ * aTID           - [IN]  íŠ¸ëœì­ì…˜ ID
+ * aItemMetaEntry - [OUT] ë°˜í™˜ë  ì²« ë²ˆì§¸ Item Meta Entry
  ******************************************************************************/
 void rpdTransTbl::getFirstItemMetaEntry(smTID               aTID,
                                         rpdItemMetaEntry ** aItemMetaEntry)
@@ -873,9 +873,9 @@ void rpdTransTbl::getFirstItemMetaEntry(smTID               aTID,
 }
 
 /*******************************************************************************
- * Description : aTID Æ®·£Àè¼Ç EntryÀÇ Item Meta List¿¡¼­ Ã¹ ¹øÂ° Entry¸¦ Á¦°ÅÇÑ´Ù.
+ * Description : aTID íŠ¸ëœì­ì…˜ Entryì˜ Item Meta Listì—ì„œ ì²« ë²ˆì§¸ Entryë¥¼ ì œê±°í•œë‹¤.
  *
- * aTID           - [IN]  Æ®·£Àè¼Ç ID
+ * aTID           - [IN]  íŠ¸ëœì­ì…˜ ID
  ******************************************************************************/
 void rpdTransTbl::removeFirstItemMetaEntry(smTID aTID)
 {
@@ -901,9 +901,9 @@ void rpdTransTbl::removeFirstItemMetaEntry(smTID aTID)
 }
 
 /*******************************************************************************
- * Description : aTID Æ®·£Àè¼Ç EntryÀÇ Item Meta List¿¡ Entry°¡ ÀÖ´ÂÁö È®ÀÎÇÑ´Ù.
+ * Description : aTID íŠ¸ëœì­ì…˜ Entryì˜ Item Meta Listì— Entryê°€ ìˆëŠ”ì§€ í™•ì¸í•œë‹¤.
  *
- * aTID         - [IN]  Æ®·£Àè¼Ç ID
+ * aTID         - [IN]  íŠ¸ëœì­ì…˜ ID
  ******************************************************************************/
 idBool rpdTransTbl::existItemMeta(smTID aTID)
 {
@@ -914,13 +914,13 @@ idBool rpdTransTbl::existItemMeta(smTID aTID)
 }
 
 /*******************************************************************************
- * Description : Savepoint Entry ListÀÇ ¸¶Áö¸·¿¡ Entry¸¦ Ãß°¡ÇÑ´Ù.
+ * Description : Savepoint Entry Listì˜ ë§ˆì§€ë§‰ì— Entryë¥¼ ì¶”ê°€í•œë‹¤.
  *
- * aTID              - [IN]  Æ®·£Àè¼Ç ID
- * aSN               - [IN]  Ãß°¡ÇÒ Savepoint SN
- * aType             - [IN]  Ãß°¡ÇÒ Savepoint Type
- * aSvpName          - [IN]  Ãß°¡ÇÒ Savepoint Name
- * aImplicitSvpDepth - [IN]  Implicit SavepointÀÏ °æ¿ìÀÇ Depth
+ * aTID              - [IN]  íŠ¸ëœì­ì…˜ ID
+ * aSN               - [IN]  ì¶”ê°€í•  Savepoint SN
+ * aType             - [IN]  ì¶”ê°€í•  Savepoint Type
+ * aSvpName          - [IN]  ì¶”ê°€í•  Savepoint Name
+ * aImplicitSvpDepth - [IN]  Implicit Savepointì¼ ê²½ìš°ì˜ Depth
  ******************************************************************************/
 IDE_RC rpdTransTbl::addLastSvpEntry(smTID            aTID,
                                     smSN             aSN,
@@ -950,13 +950,13 @@ IDE_RC rpdTransTbl::addLastSvpEntry(smTID            aTID,
                    (const void  *)aSvpName,
                    sSvpNameLen + 1);
 
-    // ÃÖÀûÈ­...
+    // ìµœì í™”...
     switch(aType)
     {
         case RP_SAVEPOINT_IMPLICIT :
             IDE_ASSERT(aImplicitSvpDepth != SMI_STATEMENT_DEPTH_NULL);
 
-            // Depth 1ÀÎ °æ¿ì, ÀÌÀü Implicit Savepoint¸¦ ¸ğµÎ Á¦°Å
+            // Depth 1ì¸ ê²½ìš°, ì´ì „ Implicit Savepointë¥¼ ëª¨ë‘ ì œê±°
             if(aImplicitSvpDepth == 1)
             {
                 removeLastImplicitSvpEntries(&sTransNode->mSvpList);
@@ -964,15 +964,15 @@ IDE_RC rpdTransTbl::addLastSvpEntry(smTID            aTID,
             break;
 
         case RP_SAVEPOINT_EXPLICIT :
-            // ÀÌÀü Implicit Savepoint¸¦ ¸ğµÎ Á¦°Å
+            // ì´ì „ Implicit Savepointë¥¼ ëª¨ë‘ ì œê±°
             removeLastImplicitSvpEntries(&sTransNode->mSvpList);
             break;
 
         case RP_SAVEPOINT_PSM :
-            // ÀÌÀü Implicit Savepoint¸¦ ¸ğµÎ Á¦°Å
+            // ì´ì „ Implicit Savepointë¥¼ ëª¨ë‘ ì œê±°
             removeLastImplicitSvpEntries(&sTransNode->mSvpList);
 
-            // PSM Savepoint´Â ¸¶Áö¸· 1°³¸¸ À¯È¿ÇÏ¹Ç·Î, ÀÌÀüÀÇ PSM Savepoint¸¦ Á¦°Å
+            // PSM SavepointëŠ” ë§ˆì§€ë§‰ 1ê°œë§Œ ìœ íš¨í•˜ë¯€ë¡œ, ì´ì „ì˜ PSM Savepointë¥¼ ì œê±°
             if(sTransNode->mPSMSvp != NULL)
             {
                 IDU_LIST_REMOVE(&sTransNode->mPSMSvp->mNode);
@@ -1004,10 +1004,10 @@ IDE_RC rpdTransTbl::addLastSvpEntry(smTID            aTID,
 }
 
 /*******************************************************************************
- * Description : Savepoint Entry List¿¡¼­ Ã¹ ¹øÂ° Entry¸¦ ¹İÈ¯ÇÑ´Ù.
+ * Description : Savepoint Entry Listì—ì„œ ì²« ë²ˆì§¸ Entryë¥¼ ë°˜í™˜í•œë‹¤.
  *
- * aTID            - [IN]  Æ®·£Àè¼Ç ID
- * aSavepointEntry - [OUT] ¹İÈ¯µÉ Ã¹ ¹øÂ° Savepoint Entry
+ * aTID            - [IN]  íŠ¸ëœì­ì…˜ ID
+ * aSavepointEntry - [OUT] ë°˜í™˜ë  ì²« ë²ˆì§¸ Savepoint Entry
  ******************************************************************************/
 void rpdTransTbl::getFirstSvpEntry(smTID                aTID,
                                    rpdSavepointEntry ** aSavepointEntry)
@@ -1027,9 +1027,9 @@ void rpdTransTbl::getFirstSvpEntry(smTID                aTID,
 }
 
 /*******************************************************************************
- * Description : Savepoint Entry List¿¡¼­ Savepoint Entry¸¦ Á¦°ÅÇÑ´Ù.
+ * Description : Savepoint Entry Listì—ì„œ Savepoint Entryë¥¼ ì œê±°í•œë‹¤.
  *
- * aSavepointEntry - [IN]  Á¦°ÅÇÒ Savepoint Entry
+ * aSavepointEntry - [IN]  ì œê±°í•  Savepoint Entry
  ******************************************************************************/
 void rpdTransTbl::removeSvpEntry(rpdSavepointEntry * aSavepointEntry)
 {
@@ -1040,7 +1040,7 @@ void rpdTransTbl::removeSvpEntry(rpdSavepointEntry * aSavepointEntry)
 }
 
 /*******************************************************************************
- * Description : Savepoint Entry ListÀÇ ¸¶Áö¸· Implicit SavepointµéÀ» Á¦°ÅÇÑ´Ù.
+ * Description : Savepoint Entry Listì˜ ë§ˆì§€ë§‰ Implicit Savepointë“¤ì„ ì œê±°í•œë‹¤.
  *
  * aSvpList   - [IN]  Savepoint Entry List
  ******************************************************************************/
@@ -1067,12 +1067,12 @@ void rpdTransTbl::removeLastImplicitSvpEntries(iduList *aSvpList)
 }
 
 /*******************************************************************************
- * Description : Savepoint Entry List¿¡ Savepoint Abort¸¦ Àû¿ëÇÑ´Ù.
- *               Ãß°¡ÀûÀ¸·Î, Partial RollbackµÈ À§Ä¡¸¦ ¹İÈ¯ÇÑ´Ù.
+ * Description : Savepoint Entry Listì— Savepoint Abortë¥¼ ì ìš©í•œë‹¤.
+ *               ì¶”ê°€ì ìœ¼ë¡œ, Partial Rollbackëœ ìœ„ì¹˜ë¥¼ ë°˜í™˜í•œë‹¤.
  *
- * aTID       - [IN]  Æ®·£Àè¼Ç ID
+ * aTID       - [IN]  íŠ¸ëœì­ì…˜ ID
  * aSvpName   - [IN]  Savepoint Abort Name
- * aSN        - [OUT] Partial RollbackµÈ À§Ä¡
+ * aSN        - [OUT] Partial Rollbackëœ ìœ„ì¹˜
  ******************************************************************************/
 void rpdTransTbl::applySvpAbort(smTID  aTID,
                                 SChar *aSvpName,
@@ -1090,7 +1090,7 @@ void rpdTransTbl::applySvpAbort(smTID  aTID,
     /* process PSM Savepoint Abort */
     if(idlOS::strcmp(aSvpName, sPsmSvpName) == 0)
     {
-        /* PSM Savepoint´Â 0~1°³¸¸ ÀÖÀ¸¹Ç·Î, List¸¦ ¼öÁ¤ÇÏÁö ¾Ê´Â´Ù. */
+        /* PSM SavepointëŠ” 0~1ê°œë§Œ ìˆìœ¼ë¯€ë¡œ, Listë¥¼ ìˆ˜ì •í•˜ì§€ ì•ŠëŠ”ë‹¤. */
         *aSN = sTransNode->mPSMSvp->mSN;
         IDE_CONT(SKIP_APPLY);
     }
@@ -1118,7 +1118,7 @@ void rpdTransTbl::applySvpAbort(smTID  aTID,
              *      ROLLBACK TO SAVEPOINT SP1;
              *      INSERT 1;
              *  }
-             *  À» ¼öÇàÇÏ¸é,
+             *  ì„ ìˆ˜í–‰í•˜ë©´,
              *      SAVEPOINT SP1;
              *      PSM SAVEPOINT;
              *      INSERT 1; (with Implicit Savepoint depth 1)
@@ -1126,9 +1126,9 @@ void rpdTransTbl::applySvpAbort(smTID  aTID,
              *      INSERT 1; (with Implicit Savepoint depth 1)
              *      ROLLBACK TO IMPLICIT SAVEPOINT DEPTH 1;
              *      ROLLBACK TO PSM SAVEPOINT;  <- POINT 2
-             *  ¿Í °°ÀÌ ·Î±× ·¹ÄÚµå°¡ ±â·ÏµÈ´Ù.
-             *  ±×·±µ¥, POINT 1¿¡¼­ PSM Savepoint¸¦ Á¦°ÅÇß´Ù¸é, POINT 2¿¡¼­ ½ÇÆĞÇÑ´Ù.
-             *  µû¶ó¼­, PSM Savepoint´Â Á¦°ÅÇÏÁö ¾Ê´Â´Ù.
+             *  ì™€ ê°™ì´ ë¡œê·¸ ë ˆì½”ë“œê°€ ê¸°ë¡ëœë‹¤.
+             *  ê·¸ëŸ°ë°, POINT 1ì—ì„œ PSM Savepointë¥¼ ì œê±°í–ˆë‹¤ë©´, POINT 2ì—ì„œ ì‹¤íŒ¨í•œë‹¤.
+             *  ë”°ë¼ì„œ, PSM SavepointëŠ” ì œê±°í•˜ì§€ ì•ŠëŠ”ë‹¤.
              */
         }
         else
@@ -1330,7 +1330,7 @@ IDE_RC rpdTransTbl::buildRecordForReplReceiverTransTbl( void                    
         {
             sTransTblNodeArray[i].mMyTID = sTransTblNodeArray[i].mTrans.getTransID();
 
-            //sTransTblNodeInfo ¼¼ÆÃ
+            //sTransTblNodeInfo ì„¸íŒ…
             sTransTblNodeInfo.mRepName    = aRepName;
             sTransTblNodeInfo.mParallelID = aParallelID;
             sTransTblNodeInfo.mParallelApplyIndex = aParallelApplyIndex;

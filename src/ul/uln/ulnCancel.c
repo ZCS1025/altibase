@@ -127,14 +127,14 @@ ACI_RC ulnSFID_03(ulnFnContext *aFnContext)
 }
 
 /**
- * CancelResult ÇÁ·ÎÅäÄİ Ã³¸®¸¦ À§ÇÑ Äİ¹é ÇÔ¼ö
+ * CancelResult í”„ë¡œí† ì½œ ì²˜ë¦¬ë¥¼ ìœ„í•œ ì½œë°± í•¨ìˆ˜
  *
  * @param[in] aProtocolContext unsued
  * @param[in] aProtocol        unsued
  * @param[in] aServiceSession  unsued
  * @param[in] aUserContext     unsued
  *
- * @return Ç×»ó ACI_SUCCESS
+ * @return í•­ìƒ ACI_SUCCESS
  */
 ACI_RC ulnCallbackCancelResult(cmiProtocolContext *aProtocolContext,
                                cmiProtocol        *aProtocol,
@@ -150,13 +150,13 @@ ACI_RC ulnCallbackCancelResult(cmiProtocolContext *aProtocolContext,
 }
 
 /**
- * Cancel ÇÁ·ÎÅäÄİÀ» Àü¼ÛÇÒ CM ÃÊ±âÈ­
+ * Cancel í”„ë¡œí† ì½œì„ ì „ì†¡í•  CM ì´ˆê¸°í™”
  *
  * @param[in] aFnContext  function context
  * @param[in] aPtContext  protocol context
  * @param[in] aCmiSession cmiSession struct
  *
- * @return ¼º°øÇÏ¸é ACI_SUCCESS, ¾Æ´Ï¸é ACI_FAILURE
+ * @return ì„±ê³µí•˜ë©´ ACI_SUCCESS, ì•„ë‹ˆë©´ ACI_FAILURE
  */
 ACI_RC ulnInitializeCancelContext(ulnFnContext *aFnContext,
                                   ulnPtContext *aPtContext,
@@ -230,13 +230,13 @@ ACI_RC ulnInitializeCancelContext(ulnFnContext *aFnContext,
 }
 
 /**
- * Cancel ÇÁ·ÎÅäÄİÀ» À§ÇÑ CM Á¤¸®
+ * Cancel í”„ë¡œí† ì½œì„ ìœ„í•œ CM ì •ë¦¬
  *
  * @param[in] aFnContext  function context
  * @param[in] aPtContext  protocol context
  * @param[in] aCmiSession cmiSession struct
  *
- * @return ¼º°øÇÏ¸é ACI_SUCCESS, ¾Æ´Ï¸é ACI_FAILURE
+ * @return ì„±ê³µí•˜ë©´ ACI_SUCCESS, ì•„ë‹ˆë©´ ACI_FAILURE
  */
 ACI_RC ulnFinalizeCancelContext(ulnFnContext *aFnContext,
                                 ulnPtContext *aPtContext,
@@ -277,13 +277,13 @@ ACI_RC ulnFinalizeCancelContext(ulnFnContext *aFnContext,
 }
 
 /**
- * Execute¸¦ Ãë¼ÒÇÏ±â À§ÇÑ Cancel ¸í·ÉÀ» ¼­¹ö·Î ³¯¸°´Ù.
+ * Executeë¥¼ ì·¨ì†Œí•˜ê¸° ìœ„í•œ Cancel ëª…ë ¹ì„ ì„œë²„ë¡œ ë‚ ë¦°ë‹¤.
  *
  * @param[in] aFnContext   function context
  * @param[in] aPtContext   protocol context
  * @param[in] aStmt        statement handle
  *
- * @return ¼º°øÇÏ¸é ACI_SUCCESS, ¾Æ´Ï¸é ACI_FAILURE
+ * @return ì„±ê³µí•˜ë©´ ACI_SUCCESS, ì•„ë‹ˆë©´ ACI_FAILURE
  */
 ACI_RC ulnCancelExecute(ulnFnContext *aFnContext,
                         ulnPtContext *aPtContext,
@@ -296,7 +296,7 @@ ACI_RC ulnCancelExecute(ulnFnContext *aFnContext,
     ULN_FNCONTEXT_GET_DBC(aFnContext, sDbc);
     ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
 
-    /* StatementID°¡ ¾øÀ¸¸é CID·Î ½ÃµµÇÑ´Ù. */
+    /* StatementIDê°€ ì—†ìœ¼ë©´ CIDë¡œ ì‹œë„í•œë‹¤. */
     if (sStmtID == ULN_STMT_ID_NONE)
     {
         sStmtCID = ulnStmtGetCID(aStmt);
@@ -326,7 +326,7 @@ ACI_RC ulnCancelExecute(ulnFnContext *aFnContext,
 }
 
 /**
- * NeedData »óÅÂ¿¡¼­ Ã³¸®µÈ Param Á¤º¸¸¦ Ã³¸®ÇÑ´Ù.
+ * NeedData ìƒíƒœì—ì„œ ì²˜ë¦¬ëœ Param ì •ë³´ë¥¼ ì²˜ë¦¬í•œë‹¤.
  *
  * @param[in] aStmt   statement handle
  */
@@ -351,25 +351,25 @@ void ulnCancelNeedDataParam(ulnStmt *aStmt)
         }
         else
         {
-            /* BUG-32616: ¾øÀ»°Å °°Áö¸¸, PDContext->mOp°¡ NULLÀÏ ¶§µµ ÀÖ´Ù.
-             * ÀÌ ¶§µµ PDContextÀÇ »óÅÂ´Â ¹Ù²ãÁà¾ßÇÑ´Ù. */
+            /* BUG-32616: ì—†ì„ê±° ê°™ì§€ë§Œ, PDContext->mOpê°€ NULLì¼ ë•Œë„ ìˆë‹¤.
+             * ì´ ë•Œë„ PDContextì˜ ìƒíƒœëŠ” ë°”ê¿”ì¤˜ì•¼í•œë‹¤. */
             ulnPDContextSetState(sPDContext, ULN_PD_ST_CREATED);
         }
         ulnDescRemovePDContext(sDescRecApd->mParentDesc, sPDContext);
     }
 
-    /* Execute¿Í °ü·ÃµÈ º¯¼ö ÃÊ±âÈ­ */
+    /* Executeì™€ ê´€ë ¨ëœ ë³€ìˆ˜ ì´ˆê¸°í™” */
     ulnStmtResetPD(aStmt);
     ulnDescSetRowsProcessedPtrValue(aStmt->mAttrIpd, 0);
 }
 
 /**
- * Cancel ¼öÇà
+ * Cancel ìˆ˜í–‰
  *
  * @param[in] aFnContext   function context
  * @param[in] aStmt        statement handle
  *
- * @return ¼º°øÇÏ¸é ACI_SUCCESS, ¾Æ´Ï¸é ACI_FAILURE
+ * @return ì„±ê³µí•˜ë©´ ACI_SUCCESS, ì•„ë‹ˆë©´ ACI_FAILURE
  */
 ACI_RC ulnCancelCore(ulnFnContext *aFnContext,
                      ulnStmt      *aStmt)
@@ -409,13 +409,13 @@ ACI_RC ulnCancelCore(ulnFnContext *aFnContext,
 }
 
 /**
- * EXECUTE ¸í·ÉÀ» Ãë¼ÒÇÑ´Ù.
+ * EXECUTE ëª…ë ¹ì„ ì·¨ì†Œí•œë‹¤.
  *
- * EXECUTE ¼öÇàÁßÀÌ ¾Æ´Ò¶§´Â Á¶¿ëÈ÷ ³Ñ¾î°£´Ù.
+ * EXECUTE ìˆ˜í–‰ì¤‘ì´ ì•„ë‹ë•ŒëŠ” ì¡°ìš©íˆ ë„˜ì–´ê°„ë‹¤.
  *
  * @param[in] aStmt statement handle
  *
- * @return CancelÀß ¼öÇàÇßÀ¸¸é SQL_SUCCESS, ¾Æ´Ï¸é ¿¡·¯ ÄÚµå
+ * @return Cancelì˜ ìˆ˜í–‰í–ˆìœ¼ë©´ SQL_SUCCESS, ì•„ë‹ˆë©´ ì—ëŸ¬ ì½”ë“œ
  */
 SQLRETURN ulnCancel(ulnStmt *aStmt)
 {

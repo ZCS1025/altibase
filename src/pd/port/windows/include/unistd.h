@@ -17,5 +17,5 @@
 #ifndef __UNISTD_H__
 #define __UNISTD_H__
 // do nothing.
-// bison, flex°¡ ÀÌ ÆÄÀÏÀ» includeÇÏ±â ¶§¹®¿¡ ÇÊ¿äÇÏ´Ù.
+// bison, flexê°€ ì´ íŒŒì¼ì„ includeí•˜ê¸° ë•Œë¬¸ì— í•„ìš”í•˜ë‹¤.
 #endif

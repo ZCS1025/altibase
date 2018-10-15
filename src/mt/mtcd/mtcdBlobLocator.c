@@ -152,7 +152,7 @@ ACI_RC mtdInitializeBlobLocator( acp_uint32_t aNo )
 {
     ACI_TEST( mtdInitializeModule( &mtcdBlobLocator, aNo ) != ACI_SUCCESS );
 
-    // mtdColumnÀÇ ÃÊ±âÈ­
+    // mtdColumnì˜ ì´ˆê¸°í™”
     ACI_TEST( mtcInitializeColumn( & mtdColumn,
                                    & mtcdBlobLocator,
                                    0,   // arguments
@@ -298,7 +298,7 @@ ACI_RC mtdValidate( mtcColumn    * aColumn,
 {
 /***********************************************************************
  *
- * Description : valueÀÇ semantic °Ë»ç ¹× mtcColum ÃÊ±âÈ­
+ * Description : valueì˜ semantic ê²€ì‚¬ ë° mtcColum ì´ˆê¸°í™”
  *
  * Implementation :
  *
@@ -309,9 +309,9 @@ ACI_RC mtdValidate( mtcColumn    * aColumn,
     ACI_TEST_RAISE( aValueSize != sizeof(mtdBlobLocatorType),
                     ERR_INVALID_LENGTH );
 
-    // ÃÊ±âÈ­µÈ aColumnÀº cannonize() ½Ã¿¡ »ç¿ë
-    // ÀÌ¶§, data type moduleÀÇ precision Á¤º¸¸¸À» »ç¿ëÇÏ¹Ç·Î,
-    // language Á¤º¸ ¼³Á¤ÇÒ ÇÊ¿ä¾øÀ½
+    // ì´ˆê¸°í™”ëœ aColumnì€ cannonize() ì‹œì— ì‚¬ìš©
+    // ì´ë•Œ, data type moduleì˜ precision ì •ë³´ë§Œì„ ì‚¬ìš©í•˜ë¯€ë¡œ,
+    // language ì •ë³´ ì„¤ì •í•  í•„ìš”ì—†ìŒ
     ACI_TEST( mtcInitializeColumn( aColumn,
                                    & mtcdBlobLocator,
                                    0,     // arguments
@@ -342,22 +342,22 @@ static ACI_RC mtdStoredValue2MtdValue( acp_uint32_t      aColumnSize,
 {
 /*******************************************************************
  * PROJ-1705
- * µğ½ºÅ©Å×ÀÌºíÄÃ·³ÀÇ µ¥ÀÌÅ¸¸¦
- * qp ·¹ÄÚµåÃ³¸®¿µ¿ªÀÇ ÇØ´ç ÄÃ·³À§Ä¡¿¡ º¹»ç
+ * ë””ìŠ¤í¬í…Œì´ë¸”ì»¬ëŸ¼ì˜ ë°ì´íƒ€ë¥¼
+ * qp ë ˆì½”ë“œì²˜ë¦¬ì˜ì—­ì˜ í•´ë‹¹ ì»¬ëŸ¼ìœ„ì¹˜ì— ë³µì‚¬
  *******************************************************************/
 
     mtdBlobLocatorType* sValue;
 
     ACP_UNUSED(aDestValueOffset);
     
-    // °íÁ¤±æÀÌ µ¥ÀÌÅ¸ Å¸ÀÔÀÇ °æ¿ì
-    // ÇÏ³ªÀÇ ÄÃ·³ µ¥ÀÌÅ¸°¡ ¿©·¯ÆäÀÌÁö¿¡ ³ª´©¾î ÀúÀåµÇ´Â °æ¿ì´Â ¾ø´Ù.
+    // ê³ ì •ê¸¸ì´ ë°ì´íƒ€ íƒ€ì…ì˜ ê²½ìš°
+    // í•˜ë‚˜ì˜ ì»¬ëŸ¼ ë°ì´íƒ€ê°€ ì—¬ëŸ¬í˜ì´ì§€ì— ë‚˜ëˆ„ì–´ ì €ì¥ë˜ëŠ” ê²½ìš°ëŠ” ì—†ë‹¤.
 
     sValue = (mtdBlobLocatorType*)aDestValue;
 
     if( aLength == 0 )
     {
-        // NULL µ¥ÀÌÅ¸
+        // NULL ë°ì´íƒ€
         *sValue = MTD_LOCATOR_NULL;
     }
     else

@@ -30,7 +30,7 @@
 #include <sdpDef.h>
 #include <sdcDef.h>
 
-/* Memory TableÀÇ StateÁ¤º¸ Áõ°¡½Ã »ç¿ëÇÏ´Â Index */
+/* Memory Tableì˜ Stateì •ë³´ ì¦ê°€ì‹œ ì‚¬ìš©í•˜ëŠ” Index */
 typedef enum
 {
     SMC_INC_UNIQUE_VIOLATION_CNT, /* Unique Index Violation */
@@ -45,9 +45,9 @@ struct smcTableHeader;
 #define SMC_DROP_INDEX_LIST_POOL_SIZE  (128)
 #define SMC_RESERV_SIZE (2)
 
-// PROJ-1362 QP - Large Record & Internal LOB Áö¿ø.
-// ¿¡¼­ ÀÎµ¦½º Á¦¾àÀ»  17°³¿¡¼­ 64°³·Î È®ÀåÇÏ±â À§ÇÏ¿©
-// smcTableHeaderÀÇ mIndex¸¦ array·Î Ã³¸®ÇÑ´Ù.
+// PROJ-1362 QP - Large Record & Internal LOB ì§€ì›.
+// ì—ì„œ ì¸ë±ìŠ¤ ì œì•½ì„  17ê°œì—ì„œ 64ê°œë¡œ í™•ì¥í•˜ê¸° ìœ„í•˜ì—¬
+// smcTableHeaderì˜ mIndexë¥¼ arrayë¡œ ì²˜ë¦¬í•œë‹¤.
 #define SMC_MAX_INDEX_OID_CNT          (4)
 
 #define SMC_CAT_TABLE ((smcTableHeader *)(smmManager::m_catTableHeader))
@@ -74,8 +74,8 @@ typedef vULong smcPageCount;
 #define SMC_SYNC_AGER    (1)
 
 /* PROJ-2399 row template
- * columnÀÇ ±æÀÌ¸¦ ¹Ì¸® ¾Ë ¼ö ¾ø´Â µ¥ÀÌÅÍÅ¸ÀÔÀÎ°æ¿ì(ex varchar,nibbleµî)
- * ÇØ´ç columnÀÇ ±æÀÌ¸¦ ID_USHORT_MAX·Î ¼³Á¤ÇÏ±â À§ÇÑ ¸ÅÅ©·ÎÀÌ´Ù. */
+ * columnì˜ ê¸¸ì´ë¥¼ ë¯¸ë¦¬ ì•Œ ìˆ˜ ì—†ëŠ” ë°ì´í„°íƒ€ì…ì¸ê²½ìš°(ex varchar,nibbleë“±)
+ * í•´ë‹¹ columnì˜ ê¸¸ì´ë¥¼ ID_USHORT_MAXë¡œ ì„¤ì •í•˜ê¸° ìœ„í•œ ë§¤í¬ë¡œì´ë‹¤. */
 #define SMC_UNDEFINED_COLUMN_LEN (ID_USHORT_MAX)
 
 /* ----------------------------------------------------------------------------
@@ -84,16 +84,16 @@ typedef vULong smcPageCount;
 #define SMC_INIT_SEQUENCE (ID_LONG(0x8000000000000000))
 
 /***********************************************************************
- * Description : PROJ-2419. MVCC·Î DML(Insert, Delete, Update) ·Î±×¿¡¼­ United Variable Column¿¡´ëÇÑ
- *               LogÀÇ Log Size¸¦ ±¸ÇÑ´Ù. United Variable Log´Â ´ÙÀ½°ú °°ÀÌ ±¸¼ºµÈ´Ù.
+ * Description : PROJ-2419. MVCCë¡œ DML(Insert, Delete, Update) ë¡œê·¸ì—ì„œ United Variable Columnì—ëŒ€í•œ
+ *               Logì˜ Log Sizeë¥¼ êµ¬í•œë‹¤. United Variable LogëŠ” ë‹¤ìŒê³¼ ê°™ì´ êµ¬ì„±ëœë‹¤.
  *
- *  ÇÏ³ª·Î ÇÕÃÄÁø united variable Column¿¡ ´ëÇØ¼­ 
+ *  í•˜ë‚˜ë¡œ í•©ì³ì§„ united variable Columnì— ëŒ€í•´ì„œ 
  *  Var Log : Column Count(UInt), Column ID(1 ... n ) | LENGTH(UInt) | Fst Piece OID, Value 
  *
- *  aLength - [IN] Variable Column ±æÀÌ
- *  aCount  - [IN] united variable column ¿¡ µé¾î°£ columnÀÇ ¼ıÀÚ
+ *  aLength - [IN] Variable Column ê¸¸ì´
+ *  aCount  - [IN] united variable column ì— ë“¤ì–´ê°„ columnì˜ ìˆ«ì
  *  
- * < ·Î±× ±¸¼º >
+ * < ë¡œê·¸ êµ¬ì„± >
  *  First Piece OID ( smOID )
  * + Column Count   ( UShort )
  * + Column ID List ( SizeOF(Uint)*aColCount )
@@ -107,9 +107,9 @@ typedef vULong smcPageCount;
                                                                   + aPieceCount * ( ID_SIZEOF(smOID) + ID_SIZEOF(UShort)) \
                                                                   + aLength )
 
-/* BUG-43604 ¿©·¯ Variable ColumnµéÀ» UnitedVar ÇüÅÂ·Î  ÇÕÄ¥¶§
- * °¢ Column »çÀÌÀÇ Padding °ªÀ» ÃßÁ¤ÇÑ´Ù.
- * NULL µ¥ÀÌÅÍÀÇ °æ¿ì ColumnÀÇ AlignÀÌ ¾Æ´Ñ MaxAlign °ªÀ» °¡Áö°í ÃßÁ¤ÇÏ¿©¾ß ÇÑ´Ù. */
+/* BUG-43604 ì—¬ëŸ¬ Variable Columnë“¤ì„ UnitedVar í˜•íƒœë¡œ  í•©ì¹ ë•Œ
+ * ê° Column ì‚¬ì´ì˜ Padding ê°’ì„ ì¶”ì •í•œë‹¤.
+ * NULL ë°ì´í„°ì˜ ê²½ìš° Columnì˜ Alignì´ ì•„ë‹Œ MaxAlign ê°’ì„ ê°€ì§€ê³  ì¶”ì •í•˜ì—¬ì•¼ í•œë‹¤. */
 #define SMC_GET_COLUMN_PAD_LENGTH(aValue, aColumn) ( ( aValue.length  > 0 ) ? \
                                                      ( aColumn->align - 1 ) : \
                                                      ( aColumn->maxAlign - 1 ) ) 
@@ -117,36 +117,36 @@ typedef vULong smcPageCount;
 /*PROJ-2399 row template */
 typedef struct smcColTemplate                                                                             
 {        
-    /* ÀúÀåµÇ´Â columnÀÇ ±æÀÌ, variable columnÀÎ °æ¿ì
-     * SMC_UNDEFINED_COLUMN_LENÀÌ ÀúÀåµÈ´Ù. */ 
+    /* ì €ì¥ë˜ëŠ” columnì˜ ê¸¸ì´, variable columnì¸ ê²½ìš°
+     * SMC_UNDEFINED_COLUMN_LENì´ ì €ì¥ëœë‹¤. */ 
     UShort   mStoredSize;
-    /* columnÀÇ ±æÀÌ Á¤º¸¸¦ ÀúÀåÇÏ´Â °ø°£ */
+    /* columnì˜ ê¸¸ì´ ì •ë³´ë¥¼ ì €ì¥í•˜ëŠ” ê³µê°„ */
     UShort   mColLenStoreSize;
-    /* ÇØ´ç column ¾Õ¿¡ Á¸ÀçÇÏ´Â °¡Àå°¡±î¿î variable columnÀÇ
-     * mColStartOffset °ªÀ» ÀúÀåÇÏ°íÀÖ´Â À§Ä¡¸¦ °¡¸®Å²´Ù.*/
+    /* í•´ë‹¹ column ì•ì— ì¡´ì¬í•˜ëŠ” ê°€ì¥ê°€ê¹Œìš´ variable columnì˜
+     * mColStartOffset ê°’ì„ ì €ì¥í•˜ê³ ìˆëŠ” ìœ„ì¹˜ë¥¼ ê°€ë¦¬í‚¨ë‹¤.*/
     UShort   mVariableColIdx; 
-    /* ÇÑ row¿¡¼­ columnÀÌ À§Ä¡ÇÏ´Â offset 
-     * row°¡ ÇÑ rowpiece¿¡ ÀúÀåµÇ¾úÀ» °æ¿ìÀÇ offsetÀÌ´Ù.
-     * row°¡ ¿©·¯ row piece·Î ³ª´©¾îÁ³À»°æ¿ì º¸Á¤ µÈ´Ù. */
+    /* í•œ rowì—ì„œ columnì´ ìœ„ì¹˜í•˜ëŠ” offset 
+     * rowê°€ í•œ rowpieceì— ì €ì¥ë˜ì—ˆì„ ê²½ìš°ì˜ offsetì´ë‹¤.
+     * rowê°€ ì—¬ëŸ¬ row pieceë¡œ ë‚˜ëˆ„ì–´ì¡Œì„ê²½ìš° ë³´ì • ëœë‹¤. */
     SShort   mColStartOffset;
 }smcColTemplate;
 
 typedef struct smcRowTemplate
 {            
-    /* row¸¦ ±¸¼ºÇÏ´Â columnµéÀÇ Á¤º¸ */
+    /* rowë¥¼ êµ¬ì„±í•˜ëŠ” columnë“¤ì˜ ì •ë³´ */
     smcColTemplate * mColTemplate;
-    /* row¸¦ ±¸¼ºÇÏ´Â variable columnµéÀÇ mColStartOffset
-     * Á¤º¸ÀÌ´Ù. fetchÇÏ·Á´Â columnÀÇ ¾Õ¿¡ Á¸ÀçÇÏ´Â non variable columnµé
-     * ±æÀÌÀÇ ÇÕ Á¤º¸·Î º¸¸é µÈ´Ù. */
+    /* rowë¥¼ êµ¬ì„±í•˜ëŠ” variable columnë“¤ì˜ mColStartOffset
+     * ì •ë³´ì´ë‹¤. fetchí•˜ë ¤ëŠ” columnì˜ ì•ì— ì¡´ì¬í•˜ëŠ” non variable columnë“¤
+     * ê¸¸ì´ì˜ í•© ì •ë³´ë¡œ ë³´ë©´ ëœë‹¤. */
     UShort         * mVariableColOffset; 
-    /* tableÀÇ ÃÑ column ¼ö */
+    /* tableì˜ ì´ column ìˆ˜ */
     UShort           mTotalColCount;
-    /* row¸¦ ±¸¼ºÇÏ´Â variable columnÀÇ ¼ö */
+    /* rowë¥¼ êµ¬ì„±í•˜ëŠ” variable columnì˜ ìˆ˜ */
     UShort           mVariableColCount; 
 }smcRowTemplate; 
 
 /* BUG-31206 improve usability of DUMPCI and DUMPDDF
- * smcTable::dumpTableHeaderByBuffer¿Í °°ÀÌ °íÃÄ¾ß ÇÔ */
+ * smcTable::dumpTableHeaderByBufferì™€ ê°™ì´ ê³ ì³ì•¼ í•¨ */
 typedef enum
 {
     SMC_TABLE_NORMAL = 0,
@@ -175,23 +175,23 @@ typedef struct smcSequenceInfo
 
 /* ------------------------------------------------
  * For A4 :
- * disk/memory Å×ÀÌºíÀÇ °øÅë header
+ * disk/memory í…Œì´ë¸”ì˜ ê³µí†µ header
  *
- * disk tableÀÇ °æ¿ì fixed/variable columnÀ» ±¸ºĞÇÏÁö ¾Ê°í
- * ÀúÀåÇÏÁö ¾Ê°í, memory table°ú´Â ´Ş¸® disk tableÀº page list
- * entry¸¦ fixed¿Í variable·Î ±¸ºĞÇÒ ÇÊ¿ä°¡ ¾ø´Ù.
+ * disk tableì˜ ê²½ìš° fixed/variable columnì„ êµ¬ë¶„í•˜ì§€ ì•Šê³ 
+ * ì €ì¥í•˜ì§€ ì•Šê³ , memory tableê³¼ëŠ” ë‹¬ë¦¬ disk tableì€ page list
+ * entryë¥¼ fixedì™€ variableë¡œ êµ¬ë¶„í•  í•„ìš”ê°€ ì—†ë‹¤.
  * ----------------------------------------------*/
 typedef struct smcTableHeader
 {
     void              *mLock;    /* for normal table lock,
                                     smlLockItem */
     /* ------------------------------------------------
-     * FOR A4 : table type¿¡ µû¸¥ main entry
-     * sdpPageListEntry¸¦ º°µµ·Î Á¤ÀÇ
+     * FOR A4 : table typeì— ë”°ë¥¸ main entry
+     * sdpPageListEntryë¥¼ ë³„ë„ë¡œ ì •ì˜
      *
-     * °øÅë table header¿¡¼­´Â page list entry¸¦ Å×ÀÌºí type¿¡
-     * µû¶ó unionÀ¸·Î Ã³¸®ÇÏ°í, disk typeÀÇ table entryÀÎ
-     * sdpPageListEntry Á¤ÀÇ
+     * ê³µí†µ table headerì—ì„œëŠ” page list entryë¥¼ í…Œì´ë¸” typeì—
+     * ë”°ë¼ unionìœ¼ë¡œ ì²˜ë¦¬í•˜ê³ , disk typeì˜ table entryì¸
+     * sdpPageListEntry ì •ì˜
      * ----------------------------------------------*/
     scSpaceID         mSpaceID;
 
@@ -202,7 +202,7 @@ typedef struct smcTableHeader
         smpPageListEntry  mVRDB;   /* volatile page list entry */
     } mFixed;
 
-    // fixed memory page list¿¡ ÇØ´çÇÏ´Â AllocPageList
+    // fixed memory page listì— í•´ë‹¹í•˜ëŠ” AllocPageList
     union
     {
         smpAllocPageListEntry mMRDB[SM_MAX_PAGELIST_COUNT];
@@ -210,41 +210,41 @@ typedef struct smcTableHeader
     } mFixedAllocList;
 
     /* ------------------------------------------------
-     * FOR A4 : disk table¿¡¼­´Â »ç¿ëÇÏÁö ¾ÊÀ½
-     * ¿Ö³ÄÇÏ¸é variable columnµµ fixed page list¿¡¼­
-     * ¸ğµÎ ÀúÀåÇÏ±â ¶§¹®¿¡ memory table¿¡¼­ »ç¿ëÇÏ´Â
-     * variable columnÀ» À§ÇÑ page list´Â ÇÊ¿ä¾ø´Ù.
+     * FOR A4 : disk tableì—ì„œëŠ” ì‚¬ìš©í•˜ì§€ ì•ŠìŒ
+     * ì™œëƒí•˜ë©´ variable columnë„ fixed page listì—ì„œ
+     * ëª¨ë‘ ì €ì¥í•˜ê¸° ë•Œë¬¸ì— memory tableì—ì„œ ì‚¬ìš©í•˜ëŠ”
+     * variable columnì„ ìœ„í•œ page listëŠ” í•„ìš”ì—†ë‹¤.
      * ----------------------------------------------*/
-    UInt              mVarCount;              /* variable page sizeº° °³¼ö */
+    UInt              mVarCount;              /* variable page sizeë³„ ê°œìˆ˜ */
     union
     {
         smpPageListEntry  mMRDB[SM_VAR_PAGE_LIST_COUNT];
         smpPageListEntry  mVRDB[SM_VAR_PAGE_LIST_COUNT];
     } mVar;
 
-    /* BUG-13850 : var page list¿¡¼­ AllocPageList°¡ ´ÙÁßÈ­µÇ¾î
-                   table header Å©±â°¡ Ä¿Á®¼­ ÇÑ page¸¦ ³Ñ°Ô µÇ¾î
-                   AllocPageList¸¦ page size¿¡ »ó°ü¾øÀÌ °øÀ¯ÇÏ¿© »ç¿ëÇÑ´Ù.*/
+    /* BUG-13850 : var page listì—ì„œ AllocPageListê°€ ë‹¤ì¤‘í™”ë˜ì–´
+                   table header í¬ê¸°ê°€ ì»¤ì ¸ì„œ í•œ pageë¥¼ ë„˜ê²Œ ë˜ì–´
+                   AllocPageListë¥¼ page sizeì— ìƒê´€ì—†ì´ ê³µìœ í•˜ì—¬ ì‚¬ìš©í•œë‹¤.*/
     union
     {
         smpAllocPageListEntry mMRDB[SM_MAX_PAGELIST_COUNT];
         smpAllocPageListEntry mVRDB[SM_MAX_PAGELIST_COUNT];
     } mVarAllocList;
 
-    smcTableType       mType;    /* table Å¸ÀÔ  */
-    smcObjectType      mObjType; /* object Å¸ÀÔ */
-    smOID              mSelfOID; /* table header°¡ ±â·ÏµÈ slot header¸¦ °¡¸®Å´ */
+    smcTableType       mType;    /* table íƒ€ì…  */
+    smcObjectType      mObjType; /* object íƒ€ì… */
+    smOID              mSelfOID; /* table headerê°€ ê¸°ë¡ëœ slot headerë¥¼ ê°€ë¦¬í‚´ */
 
     smOID              mNullOID;
 
-    /* Table ColumnÁ¤º¸ */
-    UInt               mColumnSize;     /* column Å©±â */
-    UInt               mColumnCount;    /* column °³¼ö */
-    UInt               mLobColumnCount; /* lob column °¹¼ö */
-    UInt               mUnitedVarColumnCount; /* United Variable column °¹¼ö */
-    smVCDesc           mColumns;        /* columnÀÌ ÀúÀåµÈ Variable Column */
+    /* Table Columnì •ë³´ */
+    UInt               mColumnSize;     /* column í¬ê¸° */
+    UInt               mColumnCount;    /* column ê°œìˆ˜ */
+    UInt               mLobColumnCount; /* lob column ê°¯ìˆ˜ */
+    UInt               mUnitedVarColumnCount; /* United Variable column ê°¯ìˆ˜ */
+    smVCDesc           mColumns;        /* columnì´ ì €ì¥ëœ Variable Column */
 
-    smVCDesc           mInfo;           /* info°¡ ÀúÀåµÈ Varaiable Column */
+    smVCDesc           mInfo;           /* infoê°€ ì €ì¥ëœ Varaiable Column */
 
     /* for sequence */
     smcSequenceInfo    mSequence;
@@ -252,43 +252,43 @@ typedef struct smcTableHeader
     /* index management */
     smVCDesc           mIndexes[SMC_MAX_INDEX_OID_CNT];          /* list of created index */
     void              *mDropIndexLst; /* smnIndexHeader */
-    UInt               mDropIndex;     /* dropindex list¿¡ Ãß°¡µÈ
-                                         index °³¼ö */
-    /* To Fix BUG-17371  AgingÀÌ ¹Ğ¸±°æ¿ì System¿¡ °úºÎÇÏ ¹× AgingÀÌ
-                         ¹Ğ¸®´Â Çö»óÀÌ ´õ ½ÉÈ­µÊ.
+    UInt               mDropIndex;     /* dropindex listì— ì¶”ê°€ëœ
+                                         index ê°œìˆ˜ */
+    /* To Fix BUG-17371  Agingì´ ë°€ë¦´ê²½ìš° Systemì— ê³¼ë¶€í•˜ ë° Agingì´
+                         ë°€ë¦¬ëŠ” í˜„ìƒì´ ë” ì‹¬í™”ë¨.
 
-       Ager¿Í DDL TransactionÀÌ °¢°¢ 1°³¾¿¸¸ Á¸ÀçÇß´ø »óÈ²¿¡¼­´Â
-       iduSyncWord ¸¸À¸·Îµµ µ¿½Ã¼º Á¦¾î°¡ °¡´ÉÇß¾ú´Ù.
+       Agerì™€ DDL Transactionì´ ê°ê° 1ê°œì”©ë§Œ ì¡´ì¬í–ˆë˜ ìƒí™©ì—ì„œëŠ”
+       iduSyncWord ë§Œìœ¼ë¡œë„ ë™ì‹œì„± ì œì–´ê°€ ê°€ëŠ¥í–ˆì—ˆë‹¤.
 
-       ÀÌÁ¦´Â ¿©·¯ °³ÀÇ Ager°¡ µ¿½Ã¿¡ ¼öÇàµÉ ¼ö ÀÖ´Â »óÈ²ÀÌ´Ù.
-       iduSyncWord´ë½Å iduLatch¸¦ »ç¿ëÇÑ´Ù.
+       ì´ì œëŠ” ì—¬ëŸ¬ ê°œì˜ Agerê°€ ë™ì‹œì— ìˆ˜í–‰ë  ìˆ˜ ìˆëŠ” ìƒí™©ì´ë‹¤.
+       iduSyncWordëŒ€ì‹  iduLatchë¥¼ ì‚¬ìš©í•œë‹¤.
     */
-    /* N°³ÀÇ Ager¿Í 1°³ÀÇ DDLÀÌ °æÇÕÀ» ¹úÀÌ´Â RW Latch */
+    /* Nê°œì˜ Agerì™€ 1ê°œì˜ DDLì´ ê²½í•©ì„ ë²Œì´ëŠ” RW Latch */
     iduLatch      * mIndexLatch ;
-    /* ¿¹Àü iduSyncWord°¡ ÀÖÀ»¶§ÀÇ  Table HeaderÀÇ Å©±â¸¦ À¯ÁöÇÏ±âÀ§ÇÔ */
+    /* ì˜ˆì „ iduSyncWordê°€ ìˆì„ë•Œì˜  Table Headerì˜ í¬ê¸°ë¥¼ ìœ ì§€í•˜ê¸°ìœ„í•¨ */
     vULong             mDummy;
 
     /* PROJ-1665
-       - mFlag : table type Á¤º¸¿Í logging ¿©ºÎ Á¤º¸
-                 table type Á¤º¸ ( SMI_TABLE_TYPE_MASK )
-                 logging/nologging Á¤º¸ ( SMI_INSERT_APPEND_LOGGING_MASK )
+       - mFlag : table type ì •ë³´ì™€ logging ì—¬ë¶€ ì •ë³´
+                 table type ì •ë³´ ( SMI_TABLE_TYPE_MASK )
+                 logging/nologging ì •ë³´ ( SMI_INSERT_APPEND_LOGGING_MASK )
        - mParallelDegree  : parallel degree */
     UInt               mFlag;
     idBool             mIsConsistent; /* PROJ-2162 */
     UInt               mParallelDegree;
 
     ULong              mMaxRow;           /* max row */
-    void              *mRuntimeInfo;      /* PROJ-1597 Temp record size Á¦¾à Á¦°Å;
-                                            ¿¹Àü mTempInfoµµ ÀÌ ¸â¹ö¸¦ »ç¿ëÇÑ´Ù.
-                                            °¢Á¾ runtime Á¤º¸¸¦ À§ÇØ ÀÌ ¸É¹ö¸¦ »ç¿ëÇÑ´Ù. */
+    void              *mRuntimeInfo;      /* PROJ-1597 Temp record size ì œì•½ ì œê±°;
+                                            ì˜ˆì „ mTempInfoë„ ì´ ë©¤ë²„ë¥¼ ì‚¬ìš©í•œë‹¤.
+                                            ê°ì¢… runtime ì •ë³´ë¥¼ ìœ„í•´ ì´ ë§´ë²„ë¥¼ ì‚¬ìš©í•œë‹¤. */
 
     /* TASK-4990 changing the method of collecting index statistics 
-     * ¿©±â¼­ ÀúÀåµÇ´Â RowCount µîÀº Åë°èÁ¤º¸ ¼öÁı½Ã ±â·ÏµÈ °ÍÀ¸·Î ½ÇÁ¦ °ª°ú´Â
-     * Â÷ÀÌ°¡ ÀÖ´Ù. */
+     * ì—¬ê¸°ì„œ ì €ì¥ë˜ëŠ” RowCount ë“±ì€ í†µê³„ì •ë³´ ìˆ˜ì§‘ì‹œ ê¸°ë¡ëœ ê²ƒìœ¼ë¡œ ì‹¤ì œ ê°’ê³¼ëŠ”
+     * ì°¨ì´ê°€ ìˆë‹¤. */
     smiTableStat       mStat;
-    /* BUG-42095 : »ç¿ë ¾È ÇÔ. Å×ÀÌºíÇì´õ¿¡¼­ Â÷ÁöÇÏ´Â Å©±â°¡ ÀÛ±â ¶§¹®¿¡ 
-     * »èÁ¦ÇÏ´Â °Íº¸´Ù ³²°ÜµÎ´Â °ÍÀÌ »èÁ¦ÇÏ¿´À» ¶§ ¹ß»ıÇÒ ¼ö ÀÖ´Â ¹®Á¦Á¡À» 
-     * °¨¾ÈÇÏ¸é ´õ À¯¸®ÇÏ´Ù.  */
+    /* BUG-42095 : ì‚¬ìš© ì•ˆ í•¨. í…Œì´ë¸”í—¤ë”ì—ì„œ ì°¨ì§€í•˜ëŠ” í¬ê¸°ê°€ ì‘ê¸° ë•Œë¬¸ì— 
+     * ì‚­ì œí•˜ëŠ” ê²ƒë³´ë‹¤ ë‚¨ê²¨ë‘ëŠ” ê²ƒì´ ì‚­ì œí•˜ì˜€ì„ ë•Œ ë°œìƒí•  ìˆ˜ ìˆëŠ” ë¬¸ì œì ì„ 
+     * ê°ì•ˆí•˜ë©´ ë” ìœ ë¦¬í•˜ë‹¤.  */
     smiCachedPageStat *mLatestStat;
 
     smcRowTemplate    *mRowTemplate;
@@ -305,8 +305,8 @@ typedef struct smcTableHeader
                                           (tableHeader)->mLock )
 
 /* ------------------------------------------------
- * temp tableÀ» À§ÇÑ catalog tableÀÇ offsetÀ» ³ªÅ¸³½´Ù.
- * system 0¹ø pageÀÇ ±¸¼ºÀº ´ÙÀ½°ú °°´Ù.
+ * temp tableì„ ìœ„í•œ catalog tableì˜ offsetì„ ë‚˜íƒ€ë‚¸ë‹¤.
+ * system 0ë²ˆ pageì˜ êµ¬ì„±ì€ ë‹¤ìŒê³¼ ê°™ë‹¤.
  *   ____________
  *   | membase  |
  *   |__________|
@@ -358,17 +358,17 @@ typedef struct  smcTableInfoPerfV
     UInt         mDiskMinExtents;        // Storage MinExtents 
     UInt         mDiskMaxExtents;        // Storage MaxExtents 
 
-    //BUG-17371 [MMDB] AgingÀÌ ¹Ğ¸±°æ¿ì System¿¡ °úºÎÇÏ ¹× AgingÀÌ
-    //¹Ğ¸®´Â Çö»óÀÌ ´õ ½ÉÈ­µÊ.
-    ULong       mOldVersionCount;       // Old Version°³¼ö
+    //BUG-17371 [MMDB] Agingì´ ë°€ë¦´ê²½ìš° Systemì— ê³¼ë¶€í•˜ ë° Agingì´
+    //ë°€ë¦¬ëŠ” í˜„ìƒì´ ë” ì‹¬í™”ë¨.
+    ULong       mOldVersionCount;       // Old Versionê°œìˆ˜
     ULong       mStatementRebuildCount; // Statement Rebuild Count
     ULong       mUniqueViolationCount;  // Unique Violation Count
-    ULong       mUpdateRetryCount;      // UpdateRow½Ã AlreadyModifiedError·Î ÀÎÇÑ RetryÈ½¼ö
-    ULong       mDeleteRetryCount;      // DeleteRow½Ã AlreadyModifiedError·Î ÀÎÇÑ RetryÈ½¼ö
-    ULong       mLockRowRetryCount;     // LockRow½Ã AlreadyModifiedError·Î ÀÎÇÑ RetryÈ½¼ö
+    ULong       mUpdateRetryCount;      // UpdateRowì‹œ AlreadyModifiedErrorë¡œ ì¸í•œ RetryíšŸìˆ˜
+    ULong       mDeleteRetryCount;      // DeleteRowì‹œ AlreadyModifiedErrorë¡œ ì¸í•œ RetryíšŸìˆ˜
+    ULong       mLockRowRetryCount;     // LockRowì‹œ AlreadyModifiedErrorë¡œ ì¸í•œ RetryíšŸìˆ˜
 
     // TASK-2398 Log Compress
-    //   ·Î±× ¾ĞÃà ¿©ºÎ ( 1: ¾ĞÃà, 0: ¾ĞÃà¾ÈÇÔ )
+    //   ë¡œê·¸ ì••ì¶• ì—¬ë¶€ ( 1: ì••ì¶•, 0: ì••ì¶•ì•ˆí•¨ )
     UInt        mCompressedLogging;
 
     idBool      mIsConsistent; /* PROJ-2162 */
@@ -380,15 +380,15 @@ typedef struct  smcSequence4PerfV
     smcSequenceInfo   mSequence;
 }smcSequence4PerfV;
 
-// PROJ-1362 QP - Large Record & Internal LOB Áö¿ø.
-// drop table pending½Ã »ç¿ëÇÏ°Ô µÉ mColumns OID stack.
+// PROJ-1362 QP - Large Record & Internal LOB ì§€ì›.
+// drop table pendingì‹œ ì‚¬ìš©í•˜ê²Œ ë  mColumns OID stack.
 typedef struct smcOIDStack
 {
     UInt   mLength;
     smOID* mArr;
 }smcOIDStack;
 
-/* Variable Column Log±â·Ï½Ã AfterÀÎÁö Before ÀÎÁö?*/
+/* Variable Column Logê¸°ë¡ì‹œ Afterì¸ì§€ Before ì¸ì§€?*/
 typedef enum
 {
     SMC_VC_LOG_WRITE_TYPE_NONE = 0,
@@ -396,7 +396,7 @@ typedef enum
     SMC_VC_LOG_WRITE_TYPE_BEFORIMG
 } smcVCLogWrtOpt;
 
-/* Update InplaceÀÌ Log±â·Ï½Ã AfterÀÎÁö Before ÀÎÁö?*/
+/* Update Inplaceì´ Logê¸°ë¡ì‹œ Afterì¸ì§€ Before ì¸ì§€?*/
 typedef enum
 {
     SMC_UI_LOG_WRITE_TYPE_NONE = 0,
@@ -404,20 +404,20 @@ typedef enum
     SMC_UI_LOG_WRITE_TYPE_BEFORIMG
 } smcUILogWrtOpt;
 
-/* smcRecordUpdate::makeLogFlagÀÇ ÀÎÀÚ flag */
+/* smcRecordUpdate::makeLogFlagì˜ ì¸ì flag */
 /* BUG-14513 */
 typedef enum
 {
     SMC_MKLOGFLAG_NONE = 0,
-    // Log Flag¿¡ SMR_LOG_ALLOC_FIXEDSLOT_OKÀ» ¿øÇÏ¸é.
+    // Log Flagì— SMR_LOG_ALLOC_FIXEDSLOT_OKì„ ì›í•˜ë©´.
     SMC_MKLOGFLAG_SET_ALLOC_FIXED_OK   = 0x00000001,
-    // Log Flag¿¡ SMR_LOG_ALLOC_FIXEDSLOT_NOÀ» ¿øÇÏ¸é.
+    // Log Flagì— SMR_LOG_ALLOC_FIXEDSLOT_NOì„ ì›í•˜ë©´.
     SMC_MKLOGFLAG_SET_ALLOC_FIXED_NO   = 0x00000002,
-    // Replication Sender°¡ LOG¸¦ SkipÇÏµµ·ÏÇÑ´Ù.
+    // Replication Senderê°€ LOGë¥¼ Skipí•˜ë„ë¡í•œë‹¤.
     SMC_MKLOGFLAG_REPL_SKIP_LOG        = 0x00000004
 } smcMakeLogFlagOpt;
 
-/* ÇöÀç Log¸¦ Replication Sender°¡ ÀĞÀ»°ÍÀÎÁö? */
+/* í˜„ì¬ Logë¥¼ Replication Senderê°€ ì½ì„ê²ƒì¸ì§€? */
 typedef enum
 {
     SMC_LOG_REPL_SENDER_SEND = 0,
@@ -425,7 +425,7 @@ typedef enum
     SMC_LOG_REPL_SENDER_SEND_NO = 2
 } smcLogReplOpt;
 
-/* smc °ü·Ã Function Argument */
+/* smc ê´€ë ¨ Function Argument */
 #define SMC_WRITE_LOG_OK  (0x00000001)
 #define SMC_WRITE_LOG_NO  (0x00000000)
 
@@ -444,9 +444,9 @@ typedef struct smcCatalogInfoPerfV
  *               ------------------------------
  * FixedRow         ... | smcLobDesc | ...
  *               ------------------------------
- * LobPieceControlHeader   | ¤¤[smcLPCH|smcLPCH|smcLPCH|smcLPCH]
+ * LobPieceControlHeader   | ã„´[smcLPCH|smcLPCH|smcLPCH|smcLPCH]
  *                         |       |       |       |       |
- * LobPiece                ¤¤ [varslot][varslot][varslot][varslot]
+ * LobPiece                ã„´ [varslot][varslot][varslot][varslot]
  *
  ******************************************************************/
 
@@ -457,25 +457,25 @@ typedef struct smcCatalogInfoPerfV
 typedef struct smcLPCH
 {
     ULong        mLobVersion;
-    smOID        mOID;         // Lob µ¥ÀÌÅ¸ pieceÀÇ OID
-    void        *mPtr;         // Lob µ¥ÀÌÅ¸ pieceÀÇ ½ÇÁ¦ pointer (varslot)
+    smOID        mOID;         // Lob ë°ì´íƒ€ pieceì˜ OID
+    void        *mPtr;         // Lob ë°ì´íƒ€ pieceì˜ ì‹¤ì œ pointer (varslot)
 }smcLPCH;
 
 /* MEMORY LOB COLUMN DESCRIPTOR */
 typedef struct smcLobDesc
 {
-    /* smVCDesc ±¸Á¶Ã¼¿Í °øÀ¯ÇÑ´Ù. --------------------------------- */
-    UInt           flag;        // variable columnÀÇ ¼Ó¼º (In, Out)
-    UInt           length;      // variable columnÀÇ µ¥ÀÌÅ¸ ±æÀÌ
-    smOID          fstPieceOID; // variable columnÀÇ Ã¹¹øÂ° piece oid
+    /* smVCDesc êµ¬ì¡°ì²´ì™€ ê³µìœ í•œë‹¤. --------------------------------- */
+    UInt           flag;        // variable columnì˜ ì†ì„± (In, Out)
+    UInt           length;      // variable columnì˜ ë°ì´íƒ€ ê¸¸ì´
+    smOID          fstPieceOID; // variable columnì˜ ì²«ë²ˆì§¸ piece oid
 
     /* ------------------------------------------------------------- */
-    UInt           mLPCHCount;  // Lob µ¥ÀÌÅ¸ piece °³¼ö
+    UInt           mLPCHCount;  // Lob ë°ì´íƒ€ piece ê°œìˆ˜
     ULong          mLobVersion; // Lob Version
-    smcLPCH       *mFirstLPCH;  // Ã¹¹øÂ° LPCH(Lob Piece Control Header)
+    smcLPCH       *mFirstLPCH;  // ì²«ë²ˆì§¸ LPCH(Lob Piece Control Header)
 }smcLobDesc;
 
-// lob columnÀÌ table¿¡¼­ ¸î¹øÂ° columnÀÎÁö¸¦ ³ªÅ¸³¿.
+// lob columnì´ tableì—ì„œ ëª‡ë²ˆì§¸ columnì¸ì§€ë¥¼ ë‚˜íƒ€ëƒ„.
 typedef struct smcLobColIdxNode
 {
     UInt       mColIdx;
@@ -533,7 +533,7 @@ typedef struct smcTmsCacheInfoPerfV
 } smcTmsCacheInfoPerfV;
 
 /* 
- * BUG-22677 DRDB¿¡¼­create tableÁß Á×À»¶§ recovery°¡ ¾ÈµÇ´Â °æ¿ì°¡ ÀÖÀ½. 
+ * BUG-22677 DRDBì—ì„œcreate tableì¤‘ ì£½ì„ë•Œ recoveryê°€ ì•ˆë˜ëŠ” ê²½ìš°ê°€ ìˆìŒ. 
  */
 #define SMC_IS_VALID_COLUMNINFO(fstPieceOID)  ( fstPieceOID  != SM_NULL_OID )
 

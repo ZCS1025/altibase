@@ -48,7 +48,7 @@ static IDE_RC qsfEstimate( mtcNode     * aNode,
 mtfModule qsfWriteRawValueModule = {
     1 | MTC_NODE_OPERATOR_MISC | MTC_NODE_VARIABLE_TRUE,
     ~0,
-    1.0, /* default selectivity (ºñ±³ ¿¬»êÀÚ ¾Æ´Ô) */
+    1.0, /* default selectivity (ë¹„êµ ì—°ì‚°ì ì•„ë‹˜) */
     qsfFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -110,7 +110,7 @@ IDE_RC qsfEstimate( mtcNode     * aNode,
 
     aStack[0].column = aTemplate->rows[aNode->table].columns + aNode->column;
 
-    /* return°ªÀº Integer */
+    /* returnê°’ì€ Integer */
     IDU_FIT_POINT( "qsfWriteRawValue::qsfEstimate::coverage::4" );
     IDE_TEST( mtc::initializeColumn( aStack[0].column,
                                      sModule,
@@ -136,7 +136,7 @@ IDE_RC qsfEstimate( mtcNode     * aNode,
     return IDE_FAILURE;
 }
 
-/* Varbyte Å¸ÀÔÀÇ Value¿¡ ±â·ÏµÇ´Â Length µ¥ÀÌÅÍ Å©±â */
+/* Varbyte íƒ€ì…ì˜ Valueì— ê¸°ë¡ë˜ëŠ” Length ë°ì´í„° í¬ê¸° */
 #define MTD_VARBAYE_LENGTH_SIZE 2
 
 IDE_RC qsfCalculate_WriteRawValue( mtcNode     * aNode,

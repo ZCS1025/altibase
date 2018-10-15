@@ -20,7 +20,7 @@
 
 #include <sdptb.h>
 
-//255´Â ¾Èµé¾î¿È.
+//255ëŠ” ì•ˆë“¤ì–´ì˜´.
 static UChar gZeroBitIdx[256] =
 {
     0 ,1 ,0 ,2 ,0 ,1 ,0 ,3 ,0 ,1 ,0 ,2 ,0 ,1 ,0 ,4 ,
@@ -41,7 +41,7 @@ static UChar gZeroBitIdx[256] =
     0 ,1 ,0 ,2 ,0 ,1 ,0 ,3 ,0 ,1 ,0 ,2 ,0 ,1 ,0 ,8
 };
 
-//0Àº ¾Èµé¾î¿È.
+//0ì€ ì•ˆë“¤ì–´ì˜´.
 static UChar gBitIdx[256] =
 {
     8 ,0 ,1 ,0 ,2 ,0 ,1 ,0 ,3 ,0 ,1 ,0 ,2 ,0 ,1 ,0 ,
@@ -83,21 +83,21 @@ static UChar zeroBitCntInOneByte[256] =
 };
 
 /*
- * 0ÀÎ bitÀ» Ã£À»¶§´Â count°ªÀ» °Ë»çÇÏÁö ¾Ê´Â´Ù.
+ * 0ì¸ bitì„ ì°¾ì„ë•ŒëŠ” countê°’ì„ ê²€ì‚¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
  */
 #define SDPTB_RESULT_BIT_VAL_gZeroBitIdx( result, count )            (result)
 
 /*
- * 1ÀÎ bitÀ» Ã£À»¶§´Â count°ªÀ» °Ë»çÇÑ´Ù.
- * ¾îÂ÷ÇÇ 1À» Ã£´Â ·çÆ¾Àº ±×¸® ±æÁö ¾Ê±â ¶§¹®¿¡ count¸¦ °Ë»çÇØµµ ¹®Á¦°¡ ¾ø´Ù.
+ * 1ì¸ bitì„ ì°¾ì„ë•ŒëŠ” countê°’ì„ ê²€ì‚¬í•œë‹¤.
+ * ì–´ì°¨í”¼ 1ì„ ì°¾ëŠ” ë£¨í‹´ì€ ê·¸ë¦¬ ê¸¸ì§€ ì•Šê¸° ë•Œë¬¸ì— countë¥¼ ê²€ì‚¬í•´ë„ ë¬¸ì œê°€ ì—†ë‹¤.
  */
 #define SDPTB_RESULT_BIT_VAL_gBitIdx( result, count )                         \
                ( (result >= count) ?  SDPTB_BIT_NOT_FOUND : result )
 
 /*
- * aAddrÁÖ¼Ò°ªÀ¸·ÎºÎÅÍ ¹ÙÀÌÆ® ´ÜÀ§·Î °Ë»öÀ» ½ÃÀÛÇÏ¿© compare_val°ú Æ²¸° °ªÀ»
- * ¸¸³ª¸é array¸¦ »ç¿ëÇØ¼­ ±× ºñÆ®ÀÇ ÀÎµ¦½º°ªÀ» ¾ò¾î³½´Ù.
- * ÁÖÀÇ: ÇÑ¹ÙÀÌÆ®¿¡¼­¸¸ °Ë»öÀ» ÇÏ´Â°ÍÀÌ ¾Æ´Ï¶ó ´ÙÀ½¹ÙÀÌÆ®±îÁö °è¼Ó°Ë»öÇÑ´Ù.
+ * aAddrì£¼ì†Œê°’ìœ¼ë¡œë¶€í„° ë°”ì´íŠ¸ ë‹¨ìœ„ë¡œ ê²€ìƒ‰ì„ ì‹œìž‘í•˜ì—¬ compare_valê³¼ í‹€ë¦° ê°’ì„
+ * ë§Œë‚˜ë©´ arrayë¥¼ ì‚¬ìš©í•´ì„œ ê·¸ ë¹„íŠ¸ì˜ ì¸ë±ìŠ¤ê°’ì„ ì–»ì–´ë‚¸ë‹¤.
+ * ì£¼ì˜: í•œë°”ì´íŠ¸ì—ì„œë§Œ ê²€ìƒ‰ì„ í•˜ëŠ”ê²ƒì´ ì•„ë‹ˆë¼ ë‹¤ìŒë°”ì´íŠ¸ê¹Œì§€ ê³„ì†ê²€ìƒ‰í•œë‹¤.
  */
 #define SDPTB_BIT_FIND_PER_BYTES( aAddr,compare_val ,aBitIdx,                  \
                                   sIdx ,array ,aCount, aMask)                  \
@@ -123,14 +123,14 @@ static UChar zeroBitCntInOneByte[256] =
 
 /***********************************************************************
  * Description :
- *  aAddrÁÖ¼Ò°ªÀ¸·ÎºÎÅÍ aCount°³ÀÇ ºñÆ®¸¦ ´ë»óÀ¸·Î 1ÀÎ ºñÆ®¸¦ Ã£¾Æ¼­
- *  aBitIdx¿¡ ±× ÀÎµ¦½º¹øÈ£¸¦ ³Ñ°ÜÁØ´Ù.  aHint¿¡ ÁÖ¾îÁø ºñÆ® ÀÎµ¦½º¹øÈ£¸¦
- *  ½ÃÀÛÁöÁ¡À¸·Î aAddr·ÎºÎÅÍ ÇØ´çºñÆ®¸¦ °Ë»öÇÑ´Ù.
+ *  aAddrì£¼ì†Œê°’ìœ¼ë¡œë¶€í„° aCountê°œì˜ ë¹„íŠ¸ë¥¼ ëŒ€ìƒìœ¼ë¡œ 1ì¸ ë¹„íŠ¸ë¥¼ ì°¾ì•„ì„œ
+ *  aBitIdxì— ê·¸ ì¸ë±ìŠ¤ë²ˆí˜¸ë¥¼ ë„˜ê²¨ì¤€ë‹¤.  aHintì— ì£¼ì–´ì§„ ë¹„íŠ¸ ì¸ë±ìŠ¤ë²ˆí˜¸ë¥¼
+ *  ì‹œìž‘ì§€ì ìœ¼ë¡œ aAddrë¡œë¶€í„° í•´ë‹¹ë¹„íŠ¸ë¥¼ ê²€ìƒ‰í•œë‹¤.
  *
- * aAddr            - [IN] °Ë»öÀ» ½ÃÀÛÇÒ ÁÖ¼Ò°ª
- * aCount           - [IN] °Ë»öÇÒ ºñÆ®°¹¼ö
- * aHint            - [IN] °Ë»ö¿¡´ëÇÑ ÈùÆ®(°Ë»öÀ» ½ÃÀÛÇÒ "ºñÆ®ÀÇ index¹øÈ£")
- * aBitIdx          - [OUT] °Ë»öµÈ ºñÆ®ÀÇ index¹øÈ£
+ * aAddr            - [IN] ê²€ìƒ‰ì„ ì‹œìž‘í•  ì£¼ì†Œê°’
+ * aCount           - [IN] ê²€ìƒ‰í•  ë¹„íŠ¸ê°¯ìˆ˜
+ * aHint            - [IN] ê²€ìƒ‰ì—ëŒ€í•œ ížŒíŠ¸(ê²€ìƒ‰ì„ ì‹œìž‘í•  "ë¹„íŠ¸ì˜ indexë²ˆí˜¸")
+ * aBitIdx          - [OUT] ê²€ìƒ‰ëœ ë¹„íŠ¸ì˜ indexë²ˆí˜¸
  *
  ***********************************************************************/
 void sdptbBit::findBitFromHint( void *  aAddr,
@@ -141,8 +141,8 @@ void sdptbBit::findBitFromHint( void *  aAddr,
     UInt    sIdx=0;
     UInt    sLoop;
     UInt    sTemp;
-    UChar   sMask = 0; //ÈùÆ®ÀÌÈÄÀÇ °ªÀ» ¾ò±âÀ§ÇÑ ¿ëµµ·Î »ç¿ëµÈ´Ù.
-    UInt    sHintInBytes; //¹ÙÀÌÆ®´ÜÀ§ÀÇ ÈùÆ®°ªÀ» À¯ÁöÇÑ´Ù.
+    UChar   sMask = 0; //ížŒíŠ¸ì´í›„ì˜ ê°’ì„ ì–»ê¸°ìœ„í•œ ìš©ë„ë¡œ ì‚¬ìš©ëœë‹¤.
+    UInt    sHintInBytes; //ë°”ì´íŠ¸ë‹¨ìœ„ì˜ ížŒíŠ¸ê°’ì„ ìœ ì§€í•œë‹¤.
 
     IDE_ASSERT( aHint < aCount );
     
@@ -157,15 +157,15 @@ void sdptbBit::findBitFromHint( void *  aAddr,
     sMask = 0xFF << (aHint % SDPTB_BITS_PER_BYTE);
 
     /* 
-     * BUG-22182  bitmap tbs¿¡¼­ ÆÄÀÏ¿¡ free°ø°£ÀÌ ÀÖ´Âµ¥
-     *            Ã£Áö ¸øÇÏ´Â °æ¿ì°¡ ÀÖ½À´Ï´Ù.
+     * BUG-22182  bitmap tbsì—ì„œ íŒŒì¼ì— freeê³µê°„ì´ ìžˆëŠ”ë°
+     *            ì°¾ì§€ ëª»í•˜ëŠ” ê²½ìš°ê°€ ìžˆìŠµë‹ˆë‹¤.
      */
     // best case
     if( ((*(UChar*)aAddr & sMask) != 0x00)   ||
         (((aHint % SDPTB_BITS_PER_BYTE) + (aCount - aHint)) 
                                   <= SDPTB_BITS_PER_BYTE) )
     {
-        if( (sIdx >> 3) == sHintInBytes) //ÈùÆ®°¡ Æ÷ÇÔµÈ ¹ÙÀÌÆ®¶ó¸é
+        if( (sIdx >> 3) == sHintInBytes) //ížŒíŠ¸ê°€ í¬í•¨ëœ ë°”ì´íŠ¸ë¼ë©´
         {
             *aBitIdx = SDPTB_RESULT_BIT_VAL_gBitIdx( 
                                     sIdx + gBitIdx[(*(UChar*)aAddr) & sMask],
@@ -180,12 +180,12 @@ void sdptbBit::findBitFromHint( void *  aAddr,
         IDE_CONT( return_anyway );
     }
 
-    //best case°¡ ¾Æ´Ï¶ó¸é Áö±Ý º¸°íÀÖ´Â ¹ÙÀÌÆ®´Â °Ç³Ê¶Ù¾î¾ß¸¸ ÇÑ´Ù.
+    //best caseê°€ ì•„ë‹ˆë¼ë©´ ì§€ê¸ˆ ë³´ê³ ìžˆëŠ” ë°”ì´íŠ¸ëŠ” ê±´ë„ˆë›°ì–´ì•¼ë§Œ í•œë‹¤.
     (*(UChar**)&aAddr)++;
     sIdx += SDPTB_BITS_PER_BYTE;
 
     /*
-     * 8¹ÙÀÌÆ®·Î Á¤·ÄµÇÁö ¾Ê¾Ò´Ù¸é Á¤·ÄµÉ¶§±îÁö ¹ÙÀÌÆ® ´ÜÀ§·Î ÀÐ´Â´Ù.
+     * 8ë°”ì´íŠ¸ë¡œ ì •ë ¬ë˜ì§€ ì•Šì•˜ë‹¤ë©´ ì •ë ¬ë ë•Œê¹Œì§€ ë°”ì´íŠ¸ ë‹¨ìœ„ë¡œ ì½ëŠ”ë‹¤.
      */
     sTemp = (UInt)((vULong)aAddr % SDPTB_BITS_PER_BYTE);
     if( sTemp != 0 )
@@ -195,10 +195,10 @@ void sdptbBit::findBitFromHint( void *  aAddr,
         while( sLoop-- ) 
         {
            /* 
-            * BUG-22182 bitmap tbs¿¡¼­ ÆÄÀÏ¿¡ free°ø°£ÀÌ ÀÖ´Âµ¥ Ã£Áö ¸øÇÏ´Â
-            *           °æ¿ì°¡ ÀÖ½À´Ï´Ù.
+            * BUG-22182 bitmap tbsì—ì„œ íŒŒì¼ì— freeê³µê°„ì´ ìžˆëŠ”ë° ì°¾ì§€ ëª»í•˜ëŠ”
+            *           ê²½ìš°ê°€ ìžˆìŠµë‹ˆë‹¤.
             */
-            if( (sIdx >> 3) == sHintInBytes ) //ÈùÆ®°¡ Æ÷ÇÔµÈ ¹ÙÀÌÆ®¶ó¸é
+            if( (sIdx >> 3) == sHintInBytes ) //ížŒíŠ¸ê°€ í¬í•¨ëœ ë°”ì´íŠ¸ë¼ë©´
             {                                 
                 SDPTB_BIT_FIND_PER_BYTES( aAddr,
                                           0x00,
@@ -231,10 +231,10 @@ void sdptbBit::findBitFromHint( void *  aAddr,
     while( 1 ) 
     {
            /* 
-            * BUG-22182 bitmap tbs¿¡¼­ ÆÄÀÏ¿¡ free°ø°£ÀÌ ÀÖ´Âµ¥ Ã£Áö ¸øÇÏ´Â
-            *           °æ¿ì°¡ ÀÖ½À´Ï´Ù.
+            * BUG-22182 bitmap tbsì—ì„œ íŒŒì¼ì— freeê³µê°„ì´ ìžˆëŠ”ë° ì°¾ì§€ ëª»í•˜ëŠ”
+            *           ê²½ìš°ê°€ ìžˆìŠµë‹ˆë‹¤.
             */
-            if( (sIdx >> 3) == sHintInBytes ) //ÈùÆ®°¡ Æ÷ÇÔµÈ ¹ÙÀÌÆ®¶ó¸é
+            if( (sIdx >> 3) == sHintInBytes ) //ížŒíŠ¸ê°€ í¬í•¨ëœ ë°”ì´íŠ¸ë¼ë©´
             {
                 SDPTB_BIT_FIND_PER_BYTES( aAddr,
                                           0x00,
@@ -260,9 +260,9 @@ void sdptbBit::findBitFromHint( void *  aAddr,
 
     /*
      * BUG-22363   IDE_ASSERT(sIdx <= aCache->mMaxGGID)[sdptbExtent.cpp:432], 
-     *             errno=[16] ·Î ¼­¹ö ºñÁ¤»óÁ¾·á
+     *             errno=[16] ë¡œ ì„œë²„ ë¹„ì •ìƒì¢…ë£Œ
      *
-     * À§¿¡¼­ Ã¼Å©¸¦ ÇØ¼­ ±³Á¤ÇÏÁö¸¸ ´Ù½ÃÇÑ¹ø È®½ÇÇÏ°Ô ´õºíÃ¼Å©ÇÑ´Ù.
+     * ìœ„ì—ì„œ ì²´í¬ë¥¼ í•´ì„œ êµì •í•˜ì§€ë§Œ ë‹¤ì‹œí•œë²ˆ í™•ì‹¤í•˜ê²Œ ë”ë¸”ì²´í¬í•œë‹¤.
      */
     if( (*aBitIdx != SDPTB_BIT_NOT_FOUND) &&
 		(*aBitIdx >= aCount) )
@@ -276,12 +276,12 @@ void sdptbBit::findBitFromHint( void *  aAddr,
 
 /***********************************************************************
  * Description :
- *  aAddrÁÖ¼Ò°ªÀ¸·ÎºÎÅÍ aCount°³ÀÇ ºñÆ®¸¦ ´ë»óÀ¸·Î 1ÀÎ ºñÆ®¸¦ Ã£¾Æ¼­
- *  aBitIdx¿¡ ±× ÀÎµ¦½º¹øÈ£¸¦ ³Ñ°ÜÁØ´Ù.
+ *  aAddrì£¼ì†Œê°’ìœ¼ë¡œë¶€í„° aCountê°œì˜ ë¹„íŠ¸ë¥¼ ëŒ€ìƒìœ¼ë¡œ 1ì¸ ë¹„íŠ¸ë¥¼ ì°¾ì•„ì„œ
+ *  aBitIdxì— ê·¸ ì¸ë±ìŠ¤ë²ˆí˜¸ë¥¼ ë„˜ê²¨ì¤€ë‹¤.
  *
- * aAddr            - [IN] °Ë»öÀ» ½ÃÀÛÇÒ ÁÖ¼Ò°ª
- * aCount           - [IN] °Ë»öÇÒ ºñÆ®°¹¼ö
- * aBitIdx          - [OUT] °Ë»öµÈ ºñÆ®ÀÇ index¹øÈ£
+ * aAddr            - [IN] ê²€ìƒ‰ì„ ì‹œìž‘í•  ì£¼ì†Œê°’
+ * aCount           - [IN] ê²€ìƒ‰í•  ë¹„íŠ¸ê°¯ìˆ˜
+ * aBitIdx          - [OUT] ê²€ìƒ‰ëœ ë¹„íŠ¸ì˜ indexë²ˆí˜¸
  *
  ***********************************************************************/
 void sdptbBit::findBit( void * aAddr,
@@ -290,21 +290,21 @@ void sdptbBit::findBit( void * aAddr,
 {
     findBitFromHint( aAddr,
                      aCount,
-                     0,   // ½ÃÀÛÁöÁ¡ÀÇ hint,Áï Ã¹ºñÆ®ºÎÅÍ°Ë»öÇÑ´Ù.
+                     0,   // ì‹œìž‘ì§€ì ì˜ hint,ì¦‰ ì²«ë¹„íŠ¸ë¶€í„°ê²€ìƒ‰í•œë‹¤.
                      aBitIdx);
 }
 
 
 /***********************************************************************
  * Description :
- *  aAddrÁÖ¼Ò°ªÀ¸·ÎºÎÅÍ aCount°³ÀÇ ºñÆ®¸¦ ´ë»óÀ¸·Î 0ÀÎ ºñÆ®¸¦ Ã£¾Æ¼­
- *  aBitIdx¿¡ ±× ÀÎµ¦½º¹øÈ£¸¦ ³Ñ°ÜÁØ´Ù.  aHint¿¡ ÁÖ¾îÁø ºñÆ® ÀÎµ¦½º¹øÈ£¸¦
- *  ½ÃÀÛÁöÁ¡À¸·Î aAddr·ÎºÎÅÍ ÇØ´çºñÆ®¸¦ °Ë»öÇÑ´Ù.
+ *  aAddrì£¼ì†Œê°’ìœ¼ë¡œë¶€í„° aCountê°œì˜ ë¹„íŠ¸ë¥¼ ëŒ€ìƒìœ¼ë¡œ 0ì¸ ë¹„íŠ¸ë¥¼ ì°¾ì•„ì„œ
+ *  aBitIdxì— ê·¸ ì¸ë±ìŠ¤ë²ˆí˜¸ë¥¼ ë„˜ê²¨ì¤€ë‹¤.  aHintì— ì£¼ì–´ì§„ ë¹„íŠ¸ ì¸ë±ìŠ¤ë²ˆí˜¸ë¥¼
+ *  ì‹œìž‘ì§€ì ìœ¼ë¡œ aAddrë¡œë¶€í„° í•´ë‹¹ë¹„íŠ¸ë¥¼ ê²€ìƒ‰í•œë‹¤.
  *
- * aAddr            - [IN] °Ë»öÀ» ½ÃÀÛÇÒ ÁÖ¼Ò°ª
- * aCount           - [IN] °Ë»öÇÒ ºñÆ®°¹¼ö
- * aHint            - [IN] °Ë»ö¿¡´ëÇÑ ÈùÆ®(°Ë»öÀ» ½ÃÀÛÇÒ "ºñÆ®ÀÇ index¹øÈ£")
- * aBitIdx          - [OUT] °Ë»öµÈ ºñÆ®ÀÇ index¹øÈ£
+ * aAddr            - [IN] ê²€ìƒ‰ì„ ì‹œìž‘í•  ì£¼ì†Œê°’
+ * aCount           - [IN] ê²€ìƒ‰í•  ë¹„íŠ¸ê°¯ìˆ˜
+ * aHint            - [IN] ê²€ìƒ‰ì—ëŒ€í•œ ížŒíŠ¸(ê²€ìƒ‰ì„ ì‹œìž‘í•  "ë¹„íŠ¸ì˜ indexë²ˆí˜¸")
+ * aBitIdx          - [OUT] ê²€ìƒ‰ëœ ë¹„íŠ¸ì˜ indexë²ˆí˜¸
  ***********************************************************************/
 void sdptbBit::findZeroBitFromHint( void *  aAddr,
                                     UInt    aCount,
@@ -338,7 +338,7 @@ void sdptbBit::findZeroBitFromHint( void *  aAddr,
     }
 
     /*
-     * 8¹ÙÀÌÆ®·Î Á¤·ÄµÇÁö ¾Ê¾Ò´Ù¸é Á¤·ÄµÉ¶§±îÁö ¹ÙÀÌÆ® ´ÜÀ§·Î ÀÐ´Â´Ù.
+     * 8ë°”ì´íŠ¸ë¡œ ì •ë ¬ë˜ì§€ ì•Šì•˜ë‹¤ë©´ ì •ë ¬ë ë•Œê¹Œì§€ ë°”ì´íŠ¸ ë‹¨ìœ„ë¡œ ì½ëŠ”ë‹¤.
      */
     sTemp = (UInt)((vULong)aAddr % SDPTB_BITS_PER_BYTE);
     if( sTemp != 0 )
@@ -384,12 +384,12 @@ void sdptbBit::findZeroBitFromHint( void *  aAddr,
 #if 0 //not used
 /***********************************************************************
  * Description :
- *  aAddrÁÖ¼Ò°ªÀ¸·ÎºÎÅÍ aCount°³ÀÇ ºñÆ®¸¦ ´ë»óÀ¸·Î 0ÀÎ ºñÆ®¸¦ Ã£¾Æ¼­
- *  aBitIdx¿¡ ±× ÀÎµ¦½º¹øÈ£¸¦ ³Ñ°ÜÁØ´Ù.
+ *  aAddrì£¼ì†Œê°’ìœ¼ë¡œë¶€í„° aCountê°œì˜ ë¹„íŠ¸ë¥¼ ëŒ€ìƒìœ¼ë¡œ 0ì¸ ë¹„íŠ¸ë¥¼ ì°¾ì•„ì„œ
+ *  aBitIdxì— ê·¸ ì¸ë±ìŠ¤ë²ˆí˜¸ë¥¼ ë„˜ê²¨ì¤€ë‹¤.
  *
- * aAddr            - [IN] °Ë»öÀ» ½ÃÀÛÇÒ ÁÖ¼Ò°ª
- * aCount           - [IN] °Ë»öÇÒ ºñÆ®°¹¼ö
- * aBitIdx          - [OUT] °Ë»öµÈ ºñÆ®ÀÇ index¹øÈ£
+ * aAddr            - [IN] ê²€ìƒ‰ì„ ì‹œìž‘í•  ì£¼ì†Œê°’
+ * aCount           - [IN] ê²€ìƒ‰í•  ë¹„íŠ¸ê°¯ìˆ˜
+ * aBitIdx          - [OUT] ê²€ìƒ‰ëœ ë¹„íŠ¸ì˜ indexë²ˆí˜¸
  *
  ***********************************************************************/
 void sdptbBit::findZeroBit( void * aAddr,
@@ -398,22 +398,22 @@ void sdptbBit::findZeroBit( void * aAddr,
 {
     findZeroBitFromHint( aAddr,
                          aCount,
-                         0,   // ½ÃÀÛÁöÁ¡ÀÇ hint,Áï Ã¹ºñÆ®ºÎÅÍ°Ë»öÇÑ´Ù.
+                         0,   // ì‹œìž‘ì§€ì ì˜ hint,ì¦‰ ì²«ë¹„íŠ¸ë¶€í„°ê²€ìƒ‰í•œë‹¤.
                          aBitIdx );
 }
 #endif
 
 /***********************************************************************
  * Description :
- *  aAddrÁÖ¼Ò°ªÀ¸·ÎºÎÅÍ aCount°³ÀÇ ºñÆ®¸¦ ´ë»óÀ¸·Î 1ÀÎ ºñÆ®¸¦ Ã£¾Æ¼­
- *  aBitIdx¿¡ ±× ÀÎµ¦½º¹øÈ£¸¦ ³Ñ°ÜÁØ´Ù.  aHint¿¡ ÁÖ¾îÁø ºñÆ® ÀÎµ¦½º¹øÈ£¸¦
- *  ½ÃÀÛÁöÁ¡À¸·Î aAddr·ÎºÎÅÍ ÇØ´çºñÆ®¸¦ °Ë»öÇÑ´Ù.
- *  aCountÀÇ ºñÆ®±îÁö °Ë»öÇß´Âµ¥ Ã£Áö ¸øÇÞ´Ù¸é ´Ù½Ã Ã³À½ºÎÅÍ °Ë»öÇÑ´Ù.(rotate)
+ *  aAddrì£¼ì†Œê°’ìœ¼ë¡œë¶€í„° aCountê°œì˜ ë¹„íŠ¸ë¥¼ ëŒ€ìƒìœ¼ë¡œ 1ì¸ ë¹„íŠ¸ë¥¼ ì°¾ì•„ì„œ
+ *  aBitIdxì— ê·¸ ì¸ë±ìŠ¤ë²ˆí˜¸ë¥¼ ë„˜ê²¨ì¤€ë‹¤.  aHintì— ì£¼ì–´ì§„ ë¹„íŠ¸ ì¸ë±ìŠ¤ë²ˆí˜¸ë¥¼
+ *  ì‹œìž‘ì§€ì ìœ¼ë¡œ aAddrë¡œë¶€í„° í•´ë‹¹ë¹„íŠ¸ë¥¼ ê²€ìƒ‰í•œë‹¤.
+ *  aCountì˜ ë¹„íŠ¸ê¹Œì§€ ê²€ìƒ‰í–ˆëŠ”ë° ì°¾ì§€ ëª»í–‡ë‹¤ë©´ ë‹¤ì‹œ ì²˜ìŒë¶€í„° ê²€ìƒ‰í•œë‹¤.(rotate)
  *
- * aAddr            - [IN] °Ë»öÀ» ½ÃÀÛÇÒ ÁÖ¼Ò°ª
- * aCount           - [IN] °Ë»öÇÒ ºñÆ®°¹¼ö
- * aHint            - [IN] °Ë»ö¿¡´ëÇÑ ÈùÆ®(°Ë»öÀ» ½ÃÀÛÇÒ "ºñÆ®ÀÇ index¹øÈ£")
- * aBitIdx          - [OUT] °Ë»öµÈ ºñÆ®ÀÇ index¹øÈ£
+ * aAddr            - [IN] ê²€ìƒ‰ì„ ì‹œìž‘í•  ì£¼ì†Œê°’
+ * aCount           - [IN] ê²€ìƒ‰í•  ë¹„íŠ¸ê°¯ìˆ˜
+ * aHint            - [IN] ê²€ìƒ‰ì—ëŒ€í•œ ížŒíŠ¸(ê²€ìƒ‰ì„ ì‹œìž‘í•  "ë¹„íŠ¸ì˜ indexë²ˆí˜¸")
+ * aBitIdx          - [OUT] ê²€ìƒ‰ëœ ë¹„íŠ¸ì˜ indexë²ˆí˜¸
  *
  ***********************************************************************/
 void sdptbBit::findBitFromHintRotate( void *  aAddr,
@@ -432,7 +432,7 @@ void sdptbBit::findBitFromHintRotate( void *  aAddr,
         aAddr = sAddr;
         findBitFromHint( aAddr,
                          aHint,
-                         0,           //Ã¹ºñÆ®ºÎÅÍ °Ë»ö
+                         0,           //ì²«ë¹„íŠ¸ë¶€í„° ê²€ìƒ‰
                          aBitIdx );
     }
     else
@@ -443,11 +443,11 @@ void sdptbBit::findBitFromHintRotate( void *  aAddr,
 
 /***********************************************************************
  * Description :
- *  aAddrÁÖ¼Ò°ªÀ¸·ÎºÎÅÍ aCount°³ÀÇ ºñÆ®¸¦ ´ë»óÀ¸·Î 1ÀÎ ºñÆ®°¹¼öÀÇ ÇÕÀ» ±¸ÇÑ´Ù.
+ *  aAddrì£¼ì†Œê°’ìœ¼ë¡œë¶€í„° aCountê°œì˜ ë¹„íŠ¸ë¥¼ ëŒ€ìƒìœ¼ë¡œ 1ì¸ ë¹„íŠ¸ê°¯ìˆ˜ì˜ í•©ì„ êµ¬í•œë‹¤.
  *
- * aAddr            - [IN] ½ÃÀÛ ÁÖ¼Ò°ª
- * aCount           - [IN] ´ë»óÀÌµÇ´Â ºñÆ®°¹¼ö
- * aRet             - [OUT] 1ÀÎ ºñÆ®ÀÇ °¹¼öÀÇ ÇÕ
+ * aAddr            - [IN] ì‹œìž‘ ì£¼ì†Œê°’
+ * aCount           - [IN] ëŒ€ìƒì´ë˜ëŠ” ë¹„íŠ¸ê°¯ìˆ˜
+ * aRet             - [OUT] 1ì¸ ë¹„íŠ¸ì˜ ê°¯ìˆ˜ì˜ í•©
  *
  ***********************************************************************/
 void sdptbBit::sumOfZeroBit( void * aAddr,
@@ -467,7 +467,7 @@ void sdptbBit::sumOfZeroBit( void * aAddr,
 
     while( sRest-- )
     {
-        if( ( *sP & sTemp ) == 0 ) // 0ÀÌ ¼¼Æ®µÈ ºñÆ® ¹ß°ß!
+        if( ( *sP & sTemp ) == 0 ) // 0ì´ ì„¸íŠ¸ëœ ë¹„íŠ¸ ë°œê²¬!
         {
             sSum++;
         }

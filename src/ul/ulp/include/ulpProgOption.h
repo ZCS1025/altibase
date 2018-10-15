@@ -35,15 +35,15 @@ typedef struct ulpHeaderInfo
 /**********************************************************
  * DESCRIPTION :
  *
- * Precompiler ÀÇ command-line option Á¤º¸¸¦ °®°í ÀÖ´Â class
- * & include header file¿¡ ´ëÇÑ Á¤º¸µµ °ü¸®ÇÔ.
+ * Precompiler ì˜ command-line option ì •ë³´ë¥¼ ê°–ê³  ìˆëŠ” class
+ * & include header fileì— ëŒ€í•œ ì •ë³´ë„ ê´€ë¦¬í•¨.
  **********************************************************/
 class ulpProgOption
 {
     private:
-        /* file extension string Á¤º¸ */
+        /* file extension string ì •ë³´ */
         SChar mFileExtName[MAX_FILE_EXT_LEN];
-        /* Error Ã³¸®¸¦ À§ÇÑ ÀÚ·á±¸Á¶ */
+        /* Error ì²˜ë¦¬ë¥¼ ìœ„í•œ ìë£Œêµ¬ì¡° */
         ulpErrorMgr mErrorMgr;
 
     public:
@@ -52,16 +52,16 @@ class ulpProgOption
 
         void ulpInit();
 
-        /* command-line optionµé¿¡ ´ëÇÑ ÆÄ½Ì */
+        /* command-line optionë“¤ì— ëŒ€í•œ íŒŒì‹± */
         IDE_RC ulpParsingProgOption( SInt aArgc, SChar **aArgv );
-        /* Preprocessing ÈÄÀÇ ÀÓ½Ã file¿¡ ´ëÇÑ ÀÌ¸§À» ¼³Á¤ÇÔ */
+        /* Preprocessing í›„ì˜ ì„ì‹œ fileì— ëŒ€í•œ ì´ë¦„ì„ ì„¤ì •í•¨ */
         void ulpSetTmpFile();
-        /* ¸¶Áö¸· »ı¼º file¿¡ ´ëÇÑ ÀÌ¸§À» ¼³Á¤ÇÔ */
+        /* ë§ˆì§€ë§‰ ìƒì„± fileì— ëŒ€í•œ ì´ë¦„ì„ ì„¤ì •í•¨ */
         void ulpSetOutFile();
-        /* input/tmp/output file¿¡ ´ëÇÑ ÀÌ¸§À» ¼³Á¤ÇÔ */
+        /* input/tmp/output fileì— ëŒ€í•œ ì´ë¦„ì„ ì„¤ì •í•¨ */
         void ulpSetInOutFiles( SChar *aInFile );
 
-        /* mIncludePathListÀÇ path¿¡ ÇØ´ç header ÆÄÀÏÀÌ Á¸ÀçÇÏ´ÂÁö È®ÀÎÇÔ.*/
+        /* mIncludePathListì˜ pathì— í•´ë‹¹ header íŒŒì¼ì´ ì¡´ì¬í•˜ëŠ”ì§€ í™•ì¸í•¨.*/
         IDE_RC ulpLookupHeader( SChar *aFileName, idBool aIsCInc );
 
         IDE_RC ulpPushIncList( SChar *aFileName, idBool aIsCInc );
@@ -79,10 +79,10 @@ class ulpProgOption
         void ulpPrintKeyword();
 
         void ulpPrintHelpMsg();
-        /* mSysIncludePathList¿¡ standard header file path¸¦ ¼³Á¤ÇÔ. */
+        /* mSysIncludePathListì— standard header file pathë¥¼ ì„¤ì •í•¨. */
         void ulpSetSysIncludePath();
 
-        /* NCHAR °ü·Ã ÇÔ¼ö */
+        /* NCHAR ê´€ë ¨ í•¨ìˆ˜ */
         void ulpFreeNCharVarNameList();
 
         void ulpAddPreDefinedMacro();
@@ -93,13 +93,13 @@ class ulpProgOption
 
         /*** Member variables ***/
 
-        /* ÀÔ·Â¹ŞÀº ³»ÀåSQL±¸¹® ÆÄÀÏÀÇ ¸®½ºÆ® */
+        /* ì…ë ¥ë°›ì€ ë‚´ì¥SQLêµ¬ë¬¸ íŒŒì¼ì˜ ë¦¬ìŠ¤íŠ¸ */
         SChar mInFileList[MAX_INPUT_FILE_NUM][MAX_FILE_PATH_LEN + MAX_FILE_NAME_LEN];
-        /* ÇöÀçÃ³¸® ÁßÀÎ ³»ÀåSQL±¸¹® ÇÁ·Î±×·¥ ÆÄÀÏ */
+        /* í˜„ì¬ì²˜ë¦¬ ì¤‘ì¸ ë‚´ì¥SQLêµ¬ë¬¸ í”„ë¡œê·¸ë¨ íŒŒì¼ */
         SChar mInFile[MAX_FILE_PATH_LEN + MAX_FILE_NAME_LEN];
-        /* Áß°£ ÀúÀå ÆÄÀÏÀÌ¸§ */
+        /* ì¤‘ê°„ ì €ì¥ íŒŒì¼ì´ë¦„ */
         SChar mTmpFile[MAX_FILE_PATH_LEN + MAX_FILE_NAME_LEN];
-        /* ÃÖÁ¾ »ı¼º ÆÄÀÏÀÌ¸§ */
+        /* ìµœì¢… ìƒì„± íŒŒì¼ì´ë¦„ */
         SChar mOutFile[MAX_FILE_PATH_LEN + MAX_FILE_NAME_LEN];
         SChar mOutPath[MAX_FILE_PATH_LEN];
         /* name list of predefined names */
@@ -110,25 +110,25 @@ class ulpProgOption
         SChar mStartPath[MAX_FILE_PATH_LEN];
 
         /** Variables for Header file **/
-        /* include option path ¸®½ºÆ® */
+        /* include option path ë¦¬ìŠ¤íŠ¸ */
         SChar mIncludePathList[MAX_HEADER_FILE_NUM][MAX_INCLUDE_PATH_LEN];
-        /* preprocessor¿¡¼­ Ã³¸® µÇ´Â include file ¸®½ºÆ® */
+        /* preprocessorì—ì„œ ì²˜ë¦¬ ë˜ëŠ” include file ë¦¬ìŠ¤íŠ¸ */
         ulpHeaderInfo mIncludeFileList[MAX_HEADER_FILE_NUM];
-        /* include option pathÀÇ °³¼ö */
+        /* include option pathì˜ ê°œìˆ˜ */
         SInt  mIncludePathCnt;
-        /* Ã³¸®ÁßÀÎ include file index */
+        /* ì²˜ë¦¬ì¤‘ì¸ include file index */
         SInt  mIncludeFileIndex;
 
         /* the include path list for standard header files */
         SChar mSysIncludePathList[MAX_HEADER_FILE_NUM][MAX_INCLUDE_PATH_LEN];
-        /* include pathÀÇ °³¼ö for standard header files */
+        /* include pathì˜ ê°œìˆ˜ for standard header files */
         SInt  mSysIncludePathCnt;
         /******************************/
 
         SChar mSpillValue[MAX_FILE_NAME_LEN];
-        /* ÀÔ·Â¹ŞÀº ³»ÀåSQL±¸¹® ÇÁ·Î±×·¥ ÆÄÀÏÀÇ °³¼ö */
+        /* ì…ë ¥ë°›ì€ ë‚´ì¥SQLêµ¬ë¬¸ í”„ë¡œê·¸ë¨ íŒŒì¼ì˜ ê°œìˆ˜ */
         SInt  mInFileCnt;
-        /* ¸í½ÃµÈ define °³¼ö */
+        /* ëª…ì‹œëœ define ê°œìˆ˜ */
         SInt  mDefineCnt;
 
         /* -mt option for multi-threaded app. */
@@ -163,9 +163,9 @@ class ulpProgOption
         /* -pp */
         idBool mDebugPP;
 
-        /* Version Á¤º¸ */
+        /* Version ì •ë³´ */
         const SChar *mVersion;
-        /* ÆÄÀÏ È®ÀåÀÚ Á¤º¸ */
+        /* íŒŒì¼ í™•ì¥ì ì •ë³´ */
         const SChar *mExtEmSQLFile;
 
         /* NCHAR */

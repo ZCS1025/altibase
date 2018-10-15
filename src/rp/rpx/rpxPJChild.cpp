@@ -68,12 +68,12 @@ void rpxPJChild::destroy()
 
 IDE_RC rpxPJChild::initializeThread()
 {
-    /* ThreadÀÇ run()¿¡¼­¸¸ »ç¿ëÇÏ´Â ¸Ş¸ğ¸®¸¦ ÇÒ´çÇÑ´Ù. */
+    /* Threadì˜ run()ì—ì„œë§Œ ì‚¬ìš©í•˜ëŠ” ë©”ëª¨ë¦¬ë¥¼ í• ë‹¹í•œë‹¤. */
 
-    /* mMessenger´Â rpxPJChild::run()¿¡¼­¸¸ »ç¿ëÇÏ¹Ç·Î, ¿©±â·Î ¿Å±ä´Ù. */
+    /* mMessengerëŠ” rpxPJChild::run()ì—ì„œë§Œ ì‚¬ìš©í•˜ë¯€ë¡œ, ì—¬ê¸°ë¡œ ì˜®ê¸´ë‹¤. */
     /* 
-     * PJ Child ´Â Sync ¸ğµå¿¡¼­¸¸ µ¿ÀÛÇÏ±â ¶§¹®¿¡ Messager ¾È SOCKET ¿¡¼­ 
-     * Lock À» ÀâÀ» ÇÊ¿ä°¡ ¾ø´Ù
+     * PJ Child ëŠ” Sync ëª¨ë“œì—ì„œë§Œ ë™ì‘í•˜ê¸° ë•Œë¬¸ì— Messager ì•ˆ SOCKET ì—ì„œ 
+     * Lock ì„ ì¡ì„ í•„ìš”ê°€ ì—†ë‹¤
      */
     IDE_TEST( mMessenger.initialize( RPN_MESSENGER_SOCKET_TYPE_TCP,
                                      mExitFlag,
@@ -164,7 +164,7 @@ void rpxPJChild::run()
 
     mStatus = RPX_PJ_SIGNAL_RUNNING;
 
-    /* mSyncList ´Â rpxPJMgr ÀÇ mSyncList ÀÇ Æ÷ÀÎÅÍ·Î rpxPJMgr ¿¡¼­ °ü¸®ÇÑ´Ù.*/
+    /* mSyncList ëŠ” rpxPJMgr ì˜ mSyncList ì˜ í¬ì¸í„°ë¡œ rpxPJMgr ì—ì„œ ê´€ë¦¬í•œë‹¤.*/
     if ( IDU_LIST_IS_EMPTY( mSyncList ) != ID_TRUE )
     {
         sFirstNode = getFirstNode();
@@ -215,7 +215,7 @@ void rpxPJChild::run()
 
     IDE_ERRLOG( IDE_RP_0 );
 
-    /* Link°¡ InvalidÀÌ¸é Ã³¸®ÇØÁÖ´Â ÄÚµå ÇÊ¿äÇÔ */
+    /* Linkê°€ Invalidì´ë©´ ì²˜ë¦¬í•´ì£¼ëŠ” ì½”ë“œ í•„ìš”í•¨ */
     if( sIsConnect == ID_TRUE )
     {
         mMessenger.disconnect();

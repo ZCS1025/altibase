@@ -20,17 +20,17 @@
  *
  * Description :
  *
- *  º» ÆÄÀÏÀº disk table list entry¿¡ ´ëÇÑ Çì´õ ÆÄÀÏÀÌ´Ù.
+ *  ë³¸ íŒŒì¼ì€ disk table list entryì— ëŒ€í•œ í—¤ë” íŒŒì¼ì´ë‹¤.
  *
- * # °³³ä
+ * # ê°œë…
  *
- *   disk Å¸ÀÔ tableÀÇ page list entry(segment)¸¦ °ü¸®ÇÑ´Ù.
+ *   disk íƒ€ì… tableì˜ page list entry(segment)ë¥¼ ê´€ë¦¬í•œë‹¤.
  *
- * # ±¸Á¶
+ * # êµ¬ì¡°
  *
- * # °ü·ÃÀÚ·á±¸Á¶
+ * # ê´€ë ¨ìë£Œêµ¬ì¡°
  *
- * # Âü°í
+ * # ì°¸ê³ 
  *
  **********************************************************************/
 
@@ -47,23 +47,23 @@ class sdpPageList
 {
 public:
 
-    /* page list entry ÃÊ±âÈ­ */
+    /* page list entry ì´ˆê¸°í™” */
     static void initializePageListEntry( sdpPageListEntry*  aPageEntry,
                                          vULong             aSlotSize,
                                          smiSegAttr         aSegAttr,
                                          smiSegStorageAttr  aSegStoAttr);
 
-    // Page List EntryÀÇ Runtime ItemÀ» NULL·Î ¼¼ÆÃÇÑ´Ù.
+    // Page List Entryì˜ Runtime Itemì„ NULLë¡œ ì„¸íŒ…í•œë‹¤.
     static IDE_RC setRuntimeNull( sdpPageListEntry* aPageEntry );
 
-    /* runtime Á¤º¸ ¹× mutex ÃÊ±âÈ­ */
+    /* runtime ì •ë³´ ë° mutex ì´ˆê¸°í™” */
     static IDE_RC initEntryAtRuntime( scSpaceID          aSpaceID,
                                       smOID              aTableOID,
                                       UInt               aIndexID,
                                       sdpPageListEntry * aPageEntry,
                                       idBool             aDoInitMutex = ID_TRUE );
 
-    /* runtime Á¤º¸ ¹× mutex ÇØÁ¦ */
+    /* runtime ì •ë³´ ë° mutex í•´ì œ */
     static IDE_RC finEntryAtRuntime( sdpPageListEntry* aPageEntry );
 
     static IDE_RC findPage( idvSQL            *aStatistics,
@@ -78,7 +78,7 @@ public:
                             UChar            **aPagePtr,
                             UChar             *aCTSlotIdx );
 
-    // PROJ-1566 : insert append ¼öÇà ½Ã, free page¸¦ Ã£´Â ÇÔ¼ö
+    // PROJ-1566 : insert append ìˆ˜í–‰ ì‹œ, free pageë¥¼ ì°¾ëŠ” í•¨ìˆ˜
     static IDE_RC allocPage4AppendRec( idvSQL           * aStatistics,
                                        scSpaceID          aSpaceID,
                                        sdpPageListEntry * aPageEntry,
@@ -88,8 +88,8 @@ public:
                                        idBool             aIsLogging,
                                        UChar           ** aAllocPagePtr );
 
-    // PROJ-1566 : insert append ¼öÇà ½Ã, insert¸¦ À§ÇÑ slotÀ» ÇÒ´çÇØÁÖ´Â
-    //             ÇÔ¼ö
+    // PROJ-1566 : insert append ìˆ˜í–‰ ì‹œ, insertë¥¼ ìœ„í•œ slotì„ í• ë‹¹í•´ì£¼ëŠ”
+    //             í•¨ìˆ˜
     static IDE_RC findSlot4AppendRec( idvSQL           * aStatistics,
                                       scSpaceID          aSpaceID,
                                       sdpPageListEntry * aPageEntry,
@@ -111,7 +111,7 @@ public:
                                    UChar             * aPagePtr,
                                    sdrMtx            * aMtx );
 
-    /* slot ÇØÁ¦ */
+    /* slot í•´ì œ */
     static IDE_RC freeSlot( idvSQL            *aStatistics,
                             scSpaceID          aTableSpaceID,
                             sdpPageListEntry  *aPageEntry,
@@ -119,22 +119,22 @@ public:
                             scGRID             aSlotGRID,
                             sdrMtx            *aMtx );
 
-    /* record °³¼ö¸¦ ¹İÈ¯ */
+    /* record ê°œìˆ˜ë¥¼ ë°˜í™˜ */
     static IDE_RC getRecordCount( idvSQL           * aStatistics,
                                   sdpPageListEntry * aPageEntry,
                                   ULong            * aRecordCount,
                                   idBool             aLockMutex = ID_TRUE);
 
-    /* page list entryÀÇ item size¸¦ align½ÃÅ² slot size ¹İÈ¯ */
+    /* page list entryì˜ item sizeë¥¼ alignì‹œí‚¨ slot size ë°˜í™˜ */
     static UInt getSlotSize( sdpPageListEntry* aPageEntry );
 
-    /* page list entryÀÇ seg desc PID ¹İÈ¯ */
+    /* page list entryì˜ seg desc PID ë°˜í™˜ */
     static scPageID getTableSegDescPID( sdpPageListEntry* aPageEntry );
 
-    /* page list entryÀÇ insert rec count ¹İÈ¯ */
+    /* page list entryì˜ insert rec count ë°˜í™˜ */
     static ULong getRecCnt( sdpPageListEntry*  aPageEntry );
 
-    /* ·Î±ë¿¡ ÇÊ¿äÇÑ page list entry Á¤º¸ ¹İÈ¯ */
+    /* ë¡œê¹…ì— í•„ìš”í•œ page list entry ì •ë³´ ë°˜í™˜ */
     static void getPageListEntryInfo( void*     aPageEntry,
                                       scPageID* aSegPID );
 
@@ -148,7 +148,7 @@ public:
                                          UInt              aDataSize );
 
 
-    /* ¹Ì¸® page »óÅÂ º¯°æ °Ë»ç */
+    /* ë¯¸ë¦¬ page ìƒíƒœ ë³€ê²½ ê²€ì‚¬ */
     static void check4FreeSlot( sdRID      aRowRID,
                                 sdrMtx*    aMtx );
 

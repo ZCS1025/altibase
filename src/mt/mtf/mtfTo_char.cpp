@@ -85,7 +85,7 @@ static IDE_RC applyFormat( SChar       * aString,
                            mtlCurrency * aCurrency,
                            idBool        aIsMinus );
 
-// EEEE formatÀÌ ¾øÀ» °æ¿ì, format Àû¿ë
+// EEEE formatì´ ì—†ì„ ê²½ìš°, format ì ìš©
 static IDE_RC applyNonEEEEFormat( SChar       * aString,
                                   SInt          aStringLen,
                                   UChar       * aResult,
@@ -94,7 +94,7 @@ static IDE_RC applyNonEEEEFormat( SChar       * aString,
                                   mtlCurrency * aCurrency,
                                   idBool        aIsMinus );
 
-// EEEE formatÀÌ ÀÖÀ» °æ¿ì, format Àû¿ë
+// EEEE formatì´ ìˆì„ ê²½ìš°, format ì ìš©
 static IDE_RC applyEEEEFormat( SChar       * aString,
                                SInt          aStringLen,
                                UChar       * aResult,
@@ -245,7 +245,7 @@ typedef struct mtfNumberInfo
 mtfModule mtfTo_char = {
     1|MTC_NODE_OPERATOR_FUNCTION,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
+    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìê°€ ì•„ë‹˜)
     mtfTo_charFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -498,7 +498,7 @@ static IDE_RC applyAM_LFormat( mtdDateType* aDate,
     return IDE_FAILURE;
 }
 
-/* BUG-36296 SCC Format Áö¿ø */
+/* BUG-36296 SCC Format ì§€ì› */
 static IDE_RC applySCCFormat( mtdDateType * aDate,
                               SChar       * aBuffer,
                               SInt        * aBufferCur,
@@ -582,8 +582,8 @@ static IDE_RC applyCCFormat( mtdDateType* aDate,
 
     if ( sYear <= 0 )
     {
-        /* Year 0Àº BC -1³âÀÌ´Ù. Àı´ë°ªÀ» ±¸ÇÏ±â Àü¿¡ º¸Á¤ÇÑ´Ù.
-         * À½¼öÀÏ ¶§, ºÎÈ£¸¦ Á¦°ÅÇÑ´Ù. (Oracle)
+        /* Year 0ì€ BC -1ë…„ì´ë‹¤. ì ˆëŒ€ê°’ì„ êµ¬í•˜ê¸° ì „ì— ë³´ì •í•œë‹¤.
+         * ìŒìˆ˜ì¼ ë•Œ, ë¶€í˜¸ë¥¼ ì œê±°í•œë‹¤. (Oracle)
          */
         sValue = ( ( abs( sYear - 1 ) + 99 ) / 100 ) % 100; // ceil
     }
@@ -1500,7 +1500,7 @@ static IDE_RC applyRM_LFormat( mtdDateType* aDate,
     return IDE_SUCCESS;
 }
 
-/* BUG-36296 SYYYY Format Áö¿ø */
+/* BUG-36296 SYYYY Format ì§€ì› */
 static IDE_RC applySYYYYFormat( mtdDateType * aDate,
                                 SChar       * aBuffer,
                                 SInt        * aBufferCur,
@@ -1584,7 +1584,7 @@ static IDE_RC applyYYYYFormat( mtdDateType* aDate,
 
     if ( sYear < 0 )
     {
-        /* À½¼öÀÏ ¶§, ºÎÈ£¸¦ Á¦°ÅÇÑ´Ù. (Oracle) */
+        /* ìŒìˆ˜ì¼ ë•Œ, ë¶€í˜¸ë¥¼ ì œê±°í•œë‹¤. (Oracle) */
         sValue = abs( sYear ) % 10000;
     }
     else
@@ -1629,7 +1629,7 @@ static IDE_RC applyYYYFormat( mtdDateType* aDate,
 
     if ( sYear < 0 )
     {
-        /* À½¼öÀÏ ¶§, ºÎÈ£¸¦ Á¦°ÅÇÑ´Ù. (Oracle) */
+        /* ìŒìˆ˜ì¼ ë•Œ, ë¶€í˜¸ë¥¼ ì œê±°í•œë‹¤. (Oracle) */
         sValue = abs( sYear ) % 1000;
     }
     else
@@ -1674,7 +1674,7 @@ static IDE_RC applyYYFormat( mtdDateType* aDate,
 
     if ( sYear < 0 )
     {
-        /* À½¼öÀÏ ¶§, ºÎÈ£¸¦ Á¦°ÅÇÑ´Ù. (Oracle) */
+        /* ìŒìˆ˜ì¼ ë•Œ, ë¶€í˜¸ë¥¼ ì œê±°í•œë‹¤. (Oracle) */
         sValue = abs( sYear ) % 100;
     }
     else
@@ -1719,7 +1719,7 @@ static IDE_RC applyYFormat( mtdDateType* aDate,
 
     if ( sYear < 0 )
     {
-        /* À½¼öÀÏ ¶§, ºÎÈ£¸¦ Á¦°ÅÇÑ´Ù. (Oracle) */
+        /* ìŒìˆ˜ì¼ ë•Œ, ë¶€í˜¸ë¥¼ ì œê±°í•œë‹¤. (Oracle) */
         sValue = abs( sYear ) % 10;
     }
     else
@@ -1986,7 +1986,7 @@ static IDE_RC applyWWFormat( mtdDateType* aDate,
     return IDE_FAILURE;
 }
 
-/* BUG-42926 TO_CHAR()¿¡ IW Ãß°¡ */
+/* BUG-42926 TO_CHAR()ì— IW ì¶”ê°€ */
 static IDE_RC applyIWFormat( mtdDateType * aDate,
                              SChar       * aBuffer,
                              SInt        * aBufferCur,
@@ -2025,7 +2025,7 @@ static IDE_RC applyIWFormat( mtdDateType * aDate,
     return IDE_FAILURE;
 }
 
-/* BUG-42941 TO_CHAR()¿¡ WW2(Oracle Version WW) Ãß°¡ */
+/* BUG-42941 TO_CHAR()ì— WW2(Oracle Version WW) ì¶”ê°€ */
 static IDE_RC applyWW2Format( mtdDateType * aDate,
                               SChar       * aBuffer,
                               SInt        * aBufferCur,
@@ -2105,7 +2105,7 @@ static IDE_RC applyYCYYYFormat( mtdDateType* aDate,
 
     if ( sYear < 0 )
     {
-        /* À½¼öÀÏ ¶§, ºÎÈ£¸¦ Á¦°ÅÇÑ´Ù. (Oracle) */
+        /* ìŒìˆ˜ì¼ ë•Œ, ë¶€í˜¸ë¥¼ ì œê±°í•œë‹¤. (Oracle) */
         sValue1 = ( abs( sYear ) / 1000 ) % 10;
         sValue2 = abs( sYear ) % 1000;
     }
@@ -2418,7 +2418,7 @@ IDE_RC mtfTo_charEstimate( mtcNode     * aNode,
                 else if ( ( aStack[1].column->module == &mtdClob ) ||
                           ( aStack[1].column->module == &mtdClobLocator ) )
                 {
-                    /* BUG-36219 TO_CHAR, TO_NCHAR¿¡¼­ LOB Áö¿ø */
+                    /* BUG-36219 TO_CHAR, TO_NCHARì—ì„œ LOB ì§€ì› */
                     if ( aStack[1].column->precision != 0 )
                     {
                         sPrecision = IDL_MIN( aStack[1].column->precision,
@@ -2431,7 +2431,7 @@ IDE_RC mtfTo_charEstimate( mtcNode     * aNode,
                 }
                 else
                 {
-                    // mtdNullÀÎ °æ¿ìµµ Æ÷ÇÔ
+                    // mtdNullì¸ ê²½ìš°ë„ í¬í•¨
                     sPrecision = 1;
                 }
                 break;
@@ -2458,8 +2458,8 @@ IDE_RC mtfTo_charEstimate( mtcNode     * aNode,
             aTemplate->rows[aNode->table].execute[aNode->column] = 
                                                         mtfExecuteNcharFor1Arg;
 
-            // NCHARÀÇ precisoinÀº ¹®ÀÚÀÇ °³¼öÀÌ¹Ç·Î 
-            // ÃÖ´ë·Î ´Ã¾î³¯ ¼ö ÀÖ´Â CHARÀÇ precisionÀ» ±¸ÇÑ´Ù.
+            // NCHARì˜ precisoinì€ ë¬¸ìì˜ ê°œìˆ˜ì´ë¯€ë¡œ 
+            // ìµœëŒ€ë¡œ ëŠ˜ì–´ë‚  ìˆ˜ ìˆëŠ” CHARì˜ precisionì„ êµ¬í•œë‹¤.
             sPrecision = aStack[1].column->language->maxPrecision(sPrecision);
         }
         else
@@ -2485,13 +2485,13 @@ IDE_RC mtfTo_charEstimate( mtcNode     * aNode,
             sModules[0] = &mtdNumeric;
             sModules[1] = &mtdChar;
 
-            // number formatÀÇ ÃÖ´ë ±æÀÌ¸¦ 64·Î Á¦ÇÑÇÑ´Ù.
+            // number formatì˜ ìµœëŒ€ ê¸¸ì´ë¥¼ 64ë¡œ ì œí•œí•œë‹¤.
             IDE_TEST_RAISE( aStack[2].column->precision >
                             MTC_TO_CHAR_MAX_PRECISION,
                             ERR_TO_CHAR_MAX_PRECISION );
 
-            // 'fmt'°¡ 'rn'ÀÏ °æ¿ì 15À¸·Î ¼³Á¤ÇØ¾ß ÇÔ.
-            // 'fmt'°¡ 'xxxx'ÀÏ °æ¿ì ÃÖ´ë 8ÀÓ.
+            // 'fmt'ê°€ 'rn'ì¼ ê²½ìš° 15ìœ¼ë¡œ ì„¤ì •í•´ì•¼ í•¨.
+            // 'fmt'ê°€ 'xxxx'ì¼ ê²½ìš° ìµœëŒ€ 8ì„.
             sPrecision = IDL_MAX( 15, aStack[2].column->precision + 3 );
         
             IDE_TEST( mtf::makeConversionNodes( aNode,
@@ -2531,14 +2531,14 @@ IDE_RC mtfTo_charEstimate( mtcNode     * aNode,
                         MTD_OFFSET_USE,
                         mtdChar.staticNull );
 
-                // formatÀÌ ³ÎÀÏ °æ¿ì makeFormatInfo¸¦ È£ÃâÇÏÁö ¾Ê´Â´Ù.
+                // formatì´ ë„ì¼ ê²½ìš° makeFormatInfoë¥¼ í˜¸ì¶œí•˜ì§€ ì•ŠëŠ”ë‹¤.
                 if ( sFormat->length != 0 )
                 {
-                    // 'fmt'°¡ 'rn'ÀÏ °æ¿ì 15À¸·Î ¼³Á¤ÇØ¾ß ÇÔ.
-                    // 'fmt'°¡ 'xxxx'ÀÏ °æ¿ì ÃÖ´ë 8ÀÓ.
+                    // 'fmt'ê°€ 'rn'ì¼ ê²½ìš° 15ìœ¼ë¡œ ì„¤ì •í•´ì•¼ í•¨.
+                    // 'fmt'ê°€ 'xxxx'ì¼ ê²½ìš° ìµœëŒ€ 8ì„.
                     sPrecision = IDL_MAX( 15, sFormat->length + 3 );
                     
-                    // calculateInfo¿¡ formatÁ¤º¸¸¦ (sFormatInfo) ÀúÀåÇÒ °ø°£À» ÇÒ´ç
+                    // calculateInfoì— formatì •ë³´ë¥¼ (sFormatInfo) ì €ì¥í•  ê³µê°„ì„ í• ë‹¹
                     IDE_TEST( aCallBack->alloc( aCallBack->info,
                                                 ID_SIZEOF(mtfNumberInfo),
                                                 (void**) &sNumberInfo )
@@ -2641,11 +2641,11 @@ IDE_RC mtfTo_charEstimate( mtcNode     * aNode,
             aTemplate->rows[aNode->table].execute[aNode->column] = 
                                                         mtfExecuteDateFor2Args;
 
-            // date fmt°¡ 'day'ÀÏ °æ¿ì ÃÖ´ë 9ÀÚ¸®(wednesday)±îÁö ¿Ã ¼ö ÀÖ´Ù.
-            // µû¶ó¼­ precisionÀ» (aStack[2].column->precision) * 3·Î ¼³Á¤ÇÑ´Ù.
-            // toChar ÇÔ¼ö¿¡¼­ sBuffer¿¡ ¾²Áö ¾Ê°í ¹Ù·Î aStack[0]¿¡ ¾²±â À§ÇØ¼­
-            // precisionÀ» ÃÖ´ë°ª + 1·Î Àâ´Â´Ù. ¸¶Áö¸·¿¡ NULLÀÌ µé¾î°¥ ¼ö 
-            // ÀÖ±â ¶§¹®ÀÌ´Ù.
+            // date fmtê°€ 'day'ì¼ ê²½ìš° ìµœëŒ€ 9ìë¦¬(wednesday)ê¹Œì§€ ì˜¬ ìˆ˜ ìˆë‹¤.
+            // ë”°ë¼ì„œ precisionì„ (aStack[2].column->precision) * 3ë¡œ ì„¤ì •í•œë‹¤.
+            // toChar í•¨ìˆ˜ì—ì„œ sBufferì— ì“°ì§€ ì•Šê³  ë°”ë¡œ aStack[0]ì— ì“°ê¸° ìœ„í•´ì„œ
+            // precisionì„ ìµœëŒ€ê°’ + 1ë¡œ ì¡ëŠ”ë‹¤. ë§ˆì§€ë§‰ì— NULLì´ ë“¤ì–´ê°ˆ ìˆ˜ 
+            // ìˆê¸° ë•Œë¬¸ì´ë‹¤.
             IDE_TEST( mtc::initializeColumn( aStack[0].column,
                                          &mtdVarchar,  // BUG-16501
                                          1,
@@ -2653,7 +2653,7 @@ IDE_RC mtfTo_charEstimate( mtcNode     * aNode,
                                          0 )
                       != IDE_SUCCESS );
         }
-        // REESTIMATE°¡ TRUEÀÏ ¶§¿¡¸¸ format Á¤º¸¸¦ ±¸¼ºÇÑ´Ù.
+        // REESTIMATEê°€ TRUEì¼ ë•Œì—ë§Œ format ì •ë³´ë¥¼ êµ¬ì„±í•œë‹¤.
         else
         {
             sCharNode = mtf::convertedNode( aNode->arguments->next,
@@ -2673,7 +2673,7 @@ IDE_RC mtfTo_charEstimate( mtcNode     * aNode,
                         MTD_OFFSET_USE,
                         mtdChar.staticNull );
 
-                // formatÀÌ ³ÎÀÏ °æ¿ì makeFormatInfo¸¦ È£ÃâÇÏÁö ¾Ê´Â´Ù.
+                // formatì´ ë„ì¼ ê²½ìš° makeFormatInfoë¥¼ í˜¸ì¶œí•˜ì§€ ì•ŠëŠ”ë‹¤.
                 if ( sFormat->length != 0 )
                 {
                     IDE_TEST( mtfToCharInterface::makeFormatInfo( aNode,
@@ -2712,7 +2712,7 @@ IDE_RC mtfTo_charEstimate( mtcNode     * aNode,
             aNode->lflag &= ~MTC_NODE_REESTIMATE_MASK;
             aNode->lflag |= MTC_NODE_REESTIMATE_TRUE;
 
-            // BUG-38070 undef typeÀ¸·Î re-estimateÇÏÁö ¾Ê´Â´Ù.
+            // BUG-38070 undef typeìœ¼ë¡œ re-estimateí•˜ì§€ ì•ŠëŠ”ë‹¤.
             if ( ( aTemplate->variableRow != ID_USHORT_MAX ) &&
                  ( ( aNode->lflag & MTC_NODE_BIND_MASK ) == MTC_NODE_BIND_EXIST ) )
             {
@@ -2773,7 +2773,7 @@ IDE_RC mtfTo_charCalculateFor1Arg( mtcNode*     aNode,
  * Implementation :
  *    TO_CHAR( date )
  *
- *    aStack[0] : ÀÔ·ÂµÈ ³¯Â¥ Çü½ÄÀ» ¹®ÀÚÇüÀ¸·Î º¯È¯ÇÏ¿© Ãâ·Â
+ *    aStack[0] : ì…ë ¥ëœ ë‚ ì§œ í˜•ì‹ì„ ë¬¸ìí˜•ìœ¼ë¡œ ë³€í™˜í•˜ì—¬ ì¶œë ¥
  *    aStack[1] : date
  *
  *    ex) TO_CHAR( join_date ) ==> '09-JUN-2005'
@@ -2802,7 +2802,7 @@ IDE_RC mtfTo_charCalculateFor1Arg( mtcNode*     aNode,
         IDE_TEST_RAISE( aStack[0].column->column.size < sStackSize,
                         ERR_BUFFER_OVERFLOW );
 
-        // CHAR => CHARÀÌ¹Ç·Î ±×³É º¹»çÇÑ´Ù.
+        // CHAR => CHARì´ë¯€ë¡œ ê·¸ëƒ¥ ë³µì‚¬í•œë‹¤.
         idlOS::memcpy( aStack[0].value, aStack[1].value, sStackSize );
     }
 
@@ -2832,7 +2832,7 @@ IDE_RC mtfTo_charCalculateNcharFor1Arg( mtcNode*     aNode,
  * Implementation :
  *    TO_CHAR( date )
  *
- *    aStack[0] : ÀÔ·ÂµÈ ³¯Â¥ Çü½ÄÀ» ¹®ÀÚÇüÀ¸·Î º¯È¯ÇÏ¿© Ãâ·Â
+ *    aStack[0] : ì…ë ¥ëœ ë‚ ì§œ í˜•ì‹ì„ ë¬¸ìí˜•ìœ¼ë¡œ ë³€í™˜í•˜ì—¬ ì¶œë ¥
  *    aStack[1] : date
  *
  *    ex) TO_CHAR( join_date ) ==> '09-JUN-2005'
@@ -2857,7 +2857,7 @@ IDE_RC mtfTo_charCalculateNcharFor1Arg( mtcNode*     aNode,
     }
     else
     {
-        // NCHAR => CHARÀÎ °æ¿ì
+        // NCHAR => CHARì¸ ê²½ìš°
         sSource = (mtdNcharType*)aStack[1].value;
         sResult = (mtdCharType*)aStack[0].value;
 
@@ -2889,7 +2889,7 @@ IDE_RC mtfToCharInterface::mtfTo_charCalculateNumberFor2Args( mtcNode     * aNod
  * Implementation :
  *    TO_CHAR( number, 'fmt' )
  *
- *    aStack[0] : ÀÔ·ÂµÈ ¼ıÀÚ¸¦ number format¿¡ µû¶ó º¯È¯ÇÏ¿© ¹®ÀÚ·Î Ãâ·Â
+ *    aStack[0] : ì…ë ¥ëœ ìˆ«ìë¥¼ number formatì— ë”°ë¼ ë³€í™˜í•˜ì—¬ ë¬¸ìë¡œ ì¶œë ¥
  *    aStack[1] : number
  *    aStack[2] : number format
 
@@ -2912,15 +2912,15 @@ IDE_RC mtfToCharInterface::mtfTo_charCalculateNumberFor2Args( mtcNode     * aNod
     UChar*          sNumFmt;
     UInt            sNumFmtLen  = 0;
 
-    // NumericÀ» ¹®ÀÚ¿­·Î º¯È¯ÇÒ ¶§ ÇÊ¿äÇÑ ÃÖ´ë ¹öÆÛ Å©±â
-    // Scale'ÀÇ ¹üÀ§°¡ -84 ~ 128 ÀÌ¹Ç·Î, '+.' ¶Ç´Â '-.'¿Í Scale 128 À¸·Î °è»ê
+    // Numericì„ ë¬¸ìì—´ë¡œ ë³€í™˜í•  ë•Œ í•„ìš”í•œ ìµœëŒ€ ë²„í¼ í¬ê¸°
+    // Scale'ì˜ ë²”ìœ„ê°€ -84 ~ 128 ì´ë¯€ë¡œ, '+.' ë˜ëŠ” '-.'ì™€ Scale 128 ìœ¼ë¡œ ê³„ì‚°
     SChar           sTemp[2 + MTD_NUMERIC_SCALE_MAXIMUM + 1];
     SInt            sTempLen = 0;
 
     UInt            sIterator = 0;
     idBool          sIsMinus = ID_FALSE;
     UInt            sResultLen = 0;
-    UChar           sString[MTD_NUMBER_FORMAT_BUFFER_LEN] = {0,};     // applyFormat()¸¦ È£ÃâÇÏ±â Àü¿¡ ÃÊ±âÈ­
+    UChar           sString[MTD_NUMBER_FORMAT_BUFFER_LEN] = {0,};     // applyFormat()ë¥¼ í˜¸ì¶œí•˜ê¸° ì „ì— ì´ˆê¸°í™”
     idBool          sIsV = ID_FALSE;
     SInt            sNumCnt = 0;
     SInt            sIntNumCnt = 0;
@@ -3026,15 +3026,15 @@ IDE_RC mtfToCharInterface::mtfTo_charCalculateNumberFor2Args( mtcNode     * aNod
         if ( ( idlOS::strCaselessMatch( sNumFmt, 2, "RN", 2 ) == 0 ) ||
              ( idlOS::strCaselessMatch( sNumFmt, 4, "XXXX", 4 ) == 0 ) )
         {
-            // ¼Ò¼ö°¡ ÀÔ·ÂµÉ °æ¿ì Á¤¼ö·Î ¹İ¿Ã¸²ÇÑ´Ù.
+            // ì†Œìˆ˜ê°€ ì…ë ¥ë  ê²½ìš° ì •ìˆ˜ë¡œ ë°˜ì˜¬ë¦¼í•œë‹¤.
             sMtdZeroValue = (mtdNumericType*)sMtdZeroBuff;
             IDE_TEST( mtc::roundFloat( sNumberTemp,
                                        sNumber,
                                        sMtdZeroValue )
                       != IDE_SUCCESS );
 
-            // numeric Å¸ÀÔÀ» Á¤¼ö·Î º¯È¯ÇÏ´Â °úÁ¤. integer ¹üÀ§ ³»¿¡¼­ º¯È¯ÇÑ´Ù.
-            // *(sNumberTemp)´Â numericÀÇ lengthÀÌ´Ù.
+            // numeric íƒ€ì…ì„ ì •ìˆ˜ë¡œ ë³€í™˜í•˜ëŠ” ê³¼ì •. integer ë²”ìœ„ ë‚´ì—ì„œ ë³€í™˜í•œë‹¤.
+            // *(sNumberTemp)ëŠ” numericì˜ lengthì´ë‹¤.
             if ( sNumberTemp->length > 0 )
             {
                 for ( sIterator = 0; sIterator < ((UInt)sNumberTemp->length) - 1; sIterator++ )
@@ -3052,7 +3052,7 @@ IDE_RC mtfToCharInterface::mtfTo_charCalculateNumberFor2Args( mtcNode     * aNod
                                                                     sIterator ) ) );
                     }
                     
-                    // °á°ú°ªÀº IntegerÀÌ¹Ç·Î, numericÀ» Integer Å©±â ÀÌÇÏ·Î Á¦ÇÑÇØ¾ß ÇÑ´Ù.
+                    // ê²°ê³¼ê°’ì€ Integerì´ë¯€ë¡œ, numericì„ Integer í¬ê¸° ì´í•˜ë¡œ ì œí•œí•´ì•¼ í•œë‹¤.
                     if ( sRnNumCheck > ID_SINT_MAX || sRnNumCheck < ID_SINT_MIN )
                     {
                         IDE_RAISE( ERR_INVALID_LENGTH );
@@ -3068,7 +3068,7 @@ IDE_RC mtfToCharInterface::mtfTo_charCalculateNumberFor2Args( mtcNode     * aNod
                 // Nothing to do.
             }
 
-            // XXXX ¶Ç´Â RN formatÀ» °è»êÇÑ´Ù.
+            // XXXX ë˜ëŠ” RN formatì„ ê³„ì‚°í•œë‹¤.
             IDE_TEST( compXXXXandRN( sNumFmt,
                                      sNumFmtLen,
                                      sResult->value,
@@ -3076,7 +3076,7 @@ IDE_RC mtfToCharInterface::mtfTo_charCalculateNumberFor2Args( mtcNode     * aNod
                                      sIntNum )
                       != IDE_SUCCESS );
         }
-        // RN, XXXX°¡ ¾Æ´Ñ  fmtÀÏ °æ¿ì sNumber¸¦ ±×´ë·Î stringÀ¸·Î º¯È¯ÇÑ´Ù.
+        // RN, XXXXê°€ ì•„ë‹Œ  fmtì¼ ê²½ìš° sNumberë¥¼ ê·¸ëŒ€ë¡œ stringìœ¼ë¡œ ë³€í™˜í•œë‹¤.
         else
         {
             sNineCnt = sToken[MTD_NUMBER_FORMAT_ZERO] +
@@ -3085,7 +3085,7 @@ IDE_RC mtfToCharInterface::mtfTo_charCalculateNumberFor2Args( mtcNode     * aNod
                                   sToken[MTD_COUNT_FLOAT_NINE];
             if ( sToken[MTD_NUMBER_FORMAT_EEEE] <= 0 )
             {
-                // formatÀÇ . µÚ¿¡ ³ª¿Â 9 ¶Ç´Â 0ÀÇ °³¼ö¿¡ ¸ÂÃç¼­ ¹İ¿Ã¸²
+                // formatì˜ . ë’¤ì— ë‚˜ì˜¨ 9 ë˜ëŠ” 0ì˜ ê°œìˆ˜ì— ë§ì¶°ì„œ ë°˜ì˜¬ë¦¼
                 sRoundNum = sAfterPeriodNineCnt;
 
                 if ( sRoundNum >= 100 )
@@ -3190,9 +3190,9 @@ IDE_RC mtfToCharInterface::mtfTo_charCalculateNumberFor2Args( mtcNode     * aNod
                     }
                 }
 
-                // sStringÀÇ 0~9ÀÇ °³¼öº¸´Ù formatÀÇ 9ÀÇ °³¼ö°¡ ¸¹À» °æ¿ì
-                // ¹İ¿Ã¸²ÇÑ´Ù.
-                // ¸î ¹øÂ° ÀÚ¸®¿¡¼­ ¹İ¿Ã¸²ÇÒ °ÍÀÎÁö °áÁ¤
+                // sStringì˜ 0~9ì˜ ê°œìˆ˜ë³´ë‹¤ formatì˜ 9ì˜ ê°œìˆ˜ê°€ ë§ì„ ê²½ìš°
+                // ë°˜ì˜¬ë¦¼í•œë‹¤.
+                // ëª‡ ë²ˆì§¸ ìë¦¬ì—ì„œ ë°˜ì˜¬ë¦¼í•  ê²ƒì¸ì§€ ê²°ì •
                 if ( sIntNumCnt > 0 &&
                      ( sNumCnt > sNineCnt ||
                      ( sAfterPeriodNineCnt + 1 ) != sNumCnt ) )
@@ -3345,7 +3345,7 @@ IDE_RC convertToRoman( SInt aIntNum, UShort* aRNCharCnt, SChar* aTemp )
 {
 /***********************************************************************
  *
- * Description : ·Î¸¶ ¼ıÀÚ·Î º¯È¯ÇÑ´Ù.
+ * Description : ë¡œë§ˆ ìˆ«ìë¡œ ë³€í™˜í•œë‹¤.
  *
  * Implementation :
  *
@@ -3449,8 +3449,8 @@ IDE_RC convertToString( SInt   aLength,
 {
 /***********************************************************************
  *
- * Description : numeric typeÀÇ ¼ıÀÚ¸¦ to_char(number, number_format)
- *               ¿¡¼­ º¯È¯ÀÌ ½±µµ·Ï stringÀ¸·Î º¯È¯ÇÑ´Ù.
+ * Description : numeric typeì˜ ìˆ«ìë¥¼ to_char(number, number_format)
+ *               ì—ì„œ ë³€í™˜ì´ ì‰½ë„ë¡ stringìœ¼ë¡œ ë³€í™˜í•œë‹¤.
  *
  * Implementation :
  *
@@ -3458,8 +3458,8 @@ IDE_RC convertToString( SInt   aLength,
 
     SChar*   sTemp = aTemp;
     SInt     sBufferCur = 0;
-    // NumericÀ» ¹®ÀÚ¿­·Î º¯È¯ÇÒ ¶§ ÇÊ¿äÇÑ ÃÖ´ë ¹öÆÛ Å©±â
-    // Scale'ÀÇ ¹üÀ§°¡ -84 ~ 128 ÀÌ¹Ç·Î, '+.' ¶Ç´Â '-.'¿Í Scale 128 À¸·Î °è»ê
+    // Numericì„ ë¬¸ìì—´ë¡œ ë³€í™˜í•  ë•Œ í•„ìš”í•œ ìµœëŒ€ ë²„í¼ í¬ê¸°
+    // Scale'ì˜ ë²”ìœ„ê°€ -84 ~ 128 ì´ë¯€ë¡œ, '+.' ë˜ëŠ” '-.'ì™€ Scale 128 ìœ¼ë¡œ ê³„ì‚°
     SInt     sBufferFence = 2 + MTD_NUMERIC_SCALE_MAXIMUM + 1;
 
     idBool   sIsMinus = ID_FALSE;
@@ -3478,7 +3478,7 @@ IDE_RC convertToString( SInt   aLength,
     {
         sBufferCur = idlVA::appendFormat( sTemp, sBufferFence, "%s", "+" );
     }
-    // 0ÀÏ °æ¿ì¿¡´Â +. À¸·Î ¹İÈ¯ÇÑ´Ù.
+    // 0ì¼ ê²½ìš°ì—ëŠ” +. ìœ¼ë¡œ ë°˜í™˜í•œë‹¤.
     else if ( aSignExp == 128 )
     {
         sBufferCur = idlVA::appendFormat( sTemp, sBufferFence, "%s", "+" );
@@ -3492,7 +3492,7 @@ IDE_RC convertToString( SInt   aLength,
         sBufferCur = idlVA::appendFormat( sTemp, sBufferFence, "%s", "-" );
     }
 
-    // À½¼öÀÏ °æ¿ì ¾ç¼ö·Î º¯È¯
+    // ìŒìˆ˜ì¼ ê²½ìš° ì–‘ìˆ˜ë¡œ ë³€í™˜
     if ( aSignExp < 128 )
     {
         aSignExp = 128 - aSignExp;
@@ -3500,7 +3500,7 @@ IDE_RC convertToString( SInt   aLength,
         sIsMinus = ID_TRUE;
     }
 
-    // ¼Ò¼öÁ¡ ¾Æ·¡ ºÎºĞÀ» °¡Áú ¶§´Â 0 ºÙ´Â À§Ä¡°¡ ´Ù¸§
+    // ì†Œìˆ˜ì  ì•„ë˜ ë¶€ë¶„ì„ ê°€ì§ˆ ë•ŒëŠ” 0 ë¶™ëŠ” ìœ„ì¹˜ê°€ ë‹¤ë¦„
     if ( aSignExp - 193 < aLength - 2 )
     {
         sIsFloat = ID_TRUE;
@@ -3510,20 +3510,20 @@ IDE_RC convertToString( SInt   aLength,
     {
         sNumber = *( aMantissa + sIterator );
 
-        // À½¼öÀÌ¸é
+        // ìŒìˆ˜ì´ë©´
         if ( sIsMinus == ID_TRUE )
         {
             sNumber = 99 - sNumber;
         }
 
-        // ¼Ò¼ö ºÎºĞÀ» °¡Áú °æ¿ì, ÀÏÀÇ ÀÚ¸®ÀÇ À§Ä¡¸¦ ÀúÀå
+        // ì†Œìˆ˜ ë¶€ë¶„ì„ ê°€ì§ˆ ê²½ìš°, ì¼ì˜ ìë¦¬ì˜ ìœ„ì¹˜ë¥¼ ì €ì¥
         if ( sIsPoint == ID_FALSE && sIsFloat == ID_TRUE &&
              sIterator > ( aSignExp - 193 ) )
         {
             sBufferCur = idlVA::appendFormat( sTemp, sBufferFence, "%s", "." );
             sIsPoint = ID_TRUE;
 
-            // ¼Ò¼öÀÎ °æ¿ì .´ÙÀ½¿¡ ºÙ´Â 0ÀÇ °³¼ö °è»ê
+            // ì†Œìˆ˜ì¸ ê²½ìš° .ë‹¤ìŒì— ë¶™ëŠ” 0ì˜ ê°œìˆ˜ ê³„ì‚°
             if ( ( sIsMinus == ID_TRUE &&
                  ( 99 - *aMantissa ) >= 10 ) ||
                  ( sIsMinus == ID_FALSE &&
@@ -3560,8 +3560,8 @@ IDE_RC convertToString( SInt   aLength,
             }
             else
             {
-                // ¼Ò¼ö ºÎºĞÀÌ ÀÖÀ» °æ¿ì,
-                // ¸Ç ¸¶Áö¸· mantissa°¡ 10ÀÇ ¹è¼öÀÏ ¶§ ¸Ç³¡ÀÇ 0À» ¹ö¸°´Ù.
+                // ì†Œìˆ˜ ë¶€ë¶„ì´ ìˆì„ ê²½ìš°,
+                // ë§¨ ë§ˆì§€ë§‰ mantissaê°€ 10ì˜ ë°°ìˆ˜ì¼ ë•Œ ë§¨ëì˜ 0ì„ ë²„ë¦°ë‹¤.
                 if  ( sIterator == aLength - 2 && sIsFloat == ID_TRUE )
                 {
                     // nothing to do
@@ -3578,7 +3578,7 @@ IDE_RC convertToString( SInt   aLength,
         }
         else if ( sNumber >= 0 && sNumber < 10 )
         {
-            // Ã¹¹øÂ° mantissa °ªÀÌ ÇÑÀÚ¸®¼öÀÌ¸é
+            // ì²«ë²ˆì§¸ mantissa ê°’ì´ í•œìë¦¬ìˆ˜ì´ë©´
             if ( sIterator == 0 )
             {
                 sBufferCur = idlVA::appendFormat( sTemp,
@@ -3587,7 +3587,7 @@ IDE_RC convertToString( SInt   aLength,
                                      sNumber );
                 sCharCnt++;
             }
-            // Áß°£ÀÌ³ª ¸Ç ³¡ÀÇ mantissa °ªÀÌ ÇÑÀÚ¸®¼öÀÌ¸é
+            // ì¤‘ê°„ì´ë‚˜ ë§¨ ëì˜ mantissa ê°’ì´ í•œìë¦¬ìˆ˜ì´ë©´
             else
             {
                  sBufferCur = idlVA::appendFormat( sTemp,
@@ -3607,7 +3607,7 @@ IDE_RC convertToString( SInt   aLength,
         }
     }
 
-    // Á¤¼öÀÎ °æ¿ì ÀÔ·ÂµÈ ¼ö ÀÌ¿Ü¿¡ 0ÀÌ Ãß°¡·Î ºÙ´Â °æ¿ì 0ÀÇ °³¼ö °è»ê
+    // ì •ìˆ˜ì¸ ê²½ìš° ì…ë ¥ëœ ìˆ˜ ì´ì™¸ì— 0ì´ ì¶”ê°€ë¡œ ë¶™ëŠ” ê²½ìš° 0ì˜ ê°œìˆ˜ ê³„ì‚°
     if ( sIsFloat == ID_TRUE )
     {
         sZeroCount = 0;
@@ -3646,8 +3646,8 @@ IDE_RC checkFormat( UChar* aFmt, UInt aLength, UChar* aToken )
 {
 /***********************************************************************
  *
- * Description : number formatÀ» Ã¼Å©ÇÑ´Ù.
- *              ´Ù¸¥ ÇÔ¼ö¿¡¼­ »ç¿ëµÉ number format tokenÀ» aToken¿¡ ÀúÀåÇÑ´Ù.
+ * Description : number formatì„ ì²´í¬í•œë‹¤.
+ *              ë‹¤ë¥¸ í•¨ìˆ˜ì—ì„œ ì‚¬ìš©ë  number format tokenì„ aTokenì— ì €ì¥í•œë‹¤.
  *
  * Implementation :
  *
@@ -3682,17 +3682,17 @@ IDE_RC checkFormat( UChar* aFmt, UInt aLength, UChar* aToken )
 
     UShort sFormatIndex   = 0;
     UChar* sFormat        = aFmt;
-    UInt   sFormatLeftLen = aLength;  // Ã³¸®ÇÏ°í ³²Àº format stringÀÇ length
-    UInt   sFormatLen     = aLength;   // format stringÀÇ length
+    UInt   sFormatLeftLen = aLength;  // ì²˜ë¦¬í•˜ê³  ë‚¨ì€ format stringì˜ length
+    UInt   sFormatLen     = aLength;   // format stringì˜ length
 
     // To fix BUG-17693,28199
-    // 'FM' formatÀ» format string¿¡¼­ Ã£´Â´Ù.
-    // (°á°ú ¹®ÀÚ¿­ÀÇ ¾ÕÂÊ °ø¹éÁ¦°ÅÀÇ ÀÇ¹ÌÀÌ°í ¸Ç ¾Õ¿¡ ÇÑ¹ø¹Û¿¡ ³ª¿Ã ¼ö ¾ø´Ù.)
+    // 'FM' formatì„ format stringì—ì„œ ì°¾ëŠ”ë‹¤.
+    // (ê²°ê³¼ ë¬¸ìì—´ì˜ ì•ìª½ ê³µë°±ì œê±°ì˜ ì˜ë¯¸ì´ê³  ë§¨ ì•ì— í•œë²ˆë°–ì— ë‚˜ì˜¬ ìˆ˜ ì—†ë‹¤.)
     if ( idlOS::strCaselessMatch( sFormat, 2, "FM", 2 ) == 0 )
     {
         sFMCnt++;
 
-        // 'FM' formatÀ» »©°í sFormatÀ» ¼³Á¤ÇÑ´Ù.
+        // 'FM' formatì„ ë¹¼ê³  sFormatì„ ì„¤ì •í•œë‹¤.
         sFormat += 2;
         sFormatLeftLen -= 2;
         sFormatLen -= 2;
@@ -3709,7 +3709,7 @@ IDE_RC checkFormat( UChar* aFmt, UInt aLength, UChar* aToken )
         {
             if ( idlOS::strCaselessMatch( sFormat, 4, "EEEE", 4 ) == 0 )
             {
-                // eeee formatÀÌ ÀÖÀ» °æ¿ì 9³ª 0ÀÌ ³ª¿À±â Àü¿¡ .ÀÌ ³ª¿À¸é ¾ÈµÊ.
+                // eeee formatì´ ìˆì„ ê²½ìš° 9ë‚˜ 0ì´ ë‚˜ì˜¤ê¸° ì „ì— .ì´ ë‚˜ì˜¤ë©´ ì•ˆë¨.
                 IDE_TEST_RAISE( ( sEEEECnt != 0 ) || ( sCommaCnt != 0) ||
                                 ( sGCnt != 0 )    ||
                                 ( sIsFirstPeriod == ID_TRUE ),
@@ -3802,7 +3802,7 @@ IDE_RC checkFormat( UChar* aFmt, UInt aLength, UChar* aToken )
             }
             if ( idlOS::strCaselessMatch( sFormat, 2, "FM", 2 ) == 0 )
             {
-                // 'FM' formatÀº format string Áß°£¿¡ ³ª¿Ã ¼ö ¾ø´Ù.
+                // 'FM' formatì€ format string ì¤‘ê°„ì— ë‚˜ì˜¬ ìˆ˜ ì—†ë‹¤.
                 IDE_RAISE( ERR_INVALID_LITERAL );
             }
         }
@@ -4091,7 +4091,7 @@ break_out:
         sFormatIndex++;
     }
 
-    // Áö¿øÈ÷Áö ¾Ê´Â formatÀÌ ÀÖ´Â °æ¿ì, ERROR
+    // ì§€ì›íˆì§€ ì•ŠëŠ” formatì´ ìˆëŠ” ê²½ìš°, ERROR
     IDE_TEST_RAISE( sFormatLeftLen != 0, ERR_INVALID_LITERAL )
 
     aToken[MTD_NUMBER_FORMAT_FM]     = sFMCnt;
@@ -4144,7 +4144,7 @@ IDE_RC applyFormat( SChar       * aString,
 {
 /***********************************************************************
  *
- * Description : number formatÀÇ ÇüÅÂ·Î stringÀ» º¯È¯ÇÑ´Ù.
+ * Description : number formatì˜ í˜•íƒœë¡œ stringì„ ë³€í™˜í•œë‹¤.
  *
  * Implementation :
  *
@@ -4189,7 +4189,7 @@ IDE_RC applyFormat( SChar       * aString,
     sFormatLen                = aFormatLen;
     sResultLen                = sFormatLen;
 
-    // string¿¡¼­ Á¤¼ö ºÎºĞÀÇ ¼ıÀÚ °³¼ö¸¦ ¼¾´Ù.
+    // stringì—ì„œ ì •ìˆ˜ ë¶€ë¶„ì˜ ìˆ«ì ê°œìˆ˜ë¥¼ ì„¼ë‹¤.
     for ( sIterator = 0; sIterator < aStringLen; sIterator++ )
     {
         if ( *( sString + sIterator ) >= '0' &&
@@ -4210,8 +4210,8 @@ IDE_RC applyFormat( SChar       * aString,
                 {
                     if ( sIsFloatZero == ID_TRUE )
                     {
-                        // Á¤¼öºÎºĞÀÌ ¾øÀ» °æ¿ì À¯È¿¼ıÀÚ°¡ ³ª¿À±â ÀüÀÇ 0ÀÇ °³¼ö
-                        // 0.00234°°Àº °æ¿ì, 2°³
+                        // ì •ìˆ˜ë¶€ë¶„ì´ ì—†ì„ ê²½ìš° ìœ íš¨ìˆ«ìê°€ ë‚˜ì˜¤ê¸° ì „ì˜ 0ì˜ ê°œìˆ˜
+                        // 0.00234ê°™ì€ ê²½ìš°, 2ê°œ
                         sFloatInvalidNumCnt++;
                     }
                     else
@@ -4229,10 +4229,10 @@ IDE_RC applyFormat( SChar       * aString,
         }
     }
 
-    // format stringÀ» result string¿¡ ¸Â°Ô º¯Çü½ÃÅ²´Ù.
+    // format stringì„ result stringì— ë§ê²Œ ë³€í˜•ì‹œí‚¨ë‹¤.
     if ( sEEEECnt == 0 )
     {
-        // fmtÀÇ À¯È¿¼ıÀÚ(¼Ò¼öÁ¡ À§)°¡ ´õ ÀûÀ¸¸é #À¸·Î Ã¤¿ö¼­ return
+        // fmtì˜ ìœ íš¨ìˆ«ì(ì†Œìˆ˜ì  ìœ„)ê°€ ë” ì ìœ¼ë©´ #ìœ¼ë¡œ ì±„ì›Œì„œ return
         if ( sIntNumCnt > ( sIntNineCnt + sIntZeroCnt ) )
         {
             idlOS::memset( sResult,
@@ -4256,9 +4256,9 @@ IDE_RC applyFormat( SChar       * aString,
     aToken[MTD_COUNT_FLOAT]         = sFloatNumCnt;
     aToken[MTD_COUNT_INVALID_FLOAT] = sFloatInvalidNumCnt;
 
-    // format stringÀ» result string¿¡ ¸Â°Ô º¯Çü½ÃÅ²´Ù.
-    // ºÎÈ£ ±âÈ£°¡ ÇÏ³ªµµ ¾øÀ» °æ¿ì ¸Ç ¾Õ¿¡ ÀÓ½Ã·Î ¹®ÀÚ¸¦ ÇÏ³ª
-    // ³Ö¾î³õÀ½.
+    // format stringì„ result stringì— ë§ê²Œ ë³€í˜•ì‹œí‚¨ë‹¤.
+    // ë¶€í˜¸ ê¸°í˜¸ê°€ í•˜ë‚˜ë„ ì—†ì„ ê²½ìš° ë§¨ ì•ì— ì„ì‹œë¡œ ë¬¸ìë¥¼ í•˜ë‚˜
+    // ë„£ì–´ë†“ìŒ.
     if ( ( sSCnt + sMICnt + sPRCnt) == 0 )
     {
         idlOS::memset( sResult + sResultIndex,
@@ -4307,8 +4307,8 @@ IDE_RC applyFormat( SChar       * aString,
         }
     }
 
-    // '$'¸¦ ºÎÈ£ ´ÙÀ½¿¡ Ãß°¡
-    // S°¡ ¸Ç¾Õ¿¡ ³ª¿À´Â format ÇüÅÂ´Â ³ªÁß¿¡ $±âÈ£¸¦ Ã³¸®ÇÑ´Ù.
+    // '$'ë¥¼ ë¶€í˜¸ ë‹¤ìŒì— ì¶”ê°€
+    // Sê°€ ë§¨ì•ì— ë‚˜ì˜¤ëŠ” format í˜•íƒœëŠ” ë‚˜ì¤‘ì— $ê¸°í˜¸ë¥¼ ì²˜ë¦¬í•œë‹¤.
     if ( sDollarCnt == 1 )
     {
         if ( sIsFirstS == ID_FALSE )
@@ -4336,9 +4336,9 @@ IDE_RC applyFormat( SChar       * aString,
             {
                 if ( sFormatIndex == 1 )
                 {
-                    // S´Â ¼ıÀÚ Ç¥Çö Çü½ÄÀÇ ¸Ç ¾ÕÀÌ³ª ¸Ç µÚ¿¡¸¸ ¿Ã ¼ö ÀÖ´Ù.
-                    // $´Â ¼ıÀÚ ¾Õ¿¡¸¸ ¿Ã ¼ö ÀÖ´Ù.
-                    // µû¶ó¼­, S$·Î ½ÃÀÛÇÏ´Â °æ¿ì´Â Á¤»óÀÌ´Ù.
+                    // SëŠ” ìˆ«ì í‘œí˜„ í˜•ì‹ì˜ ë§¨ ì•ì´ë‚˜ ë§¨ ë’¤ì—ë§Œ ì˜¬ ìˆ˜ ìˆë‹¤.
+                    // $ëŠ” ìˆ«ì ì•ì—ë§Œ ì˜¬ ìˆ˜ ìˆë‹¤.
+                    // ë”°ë¼ì„œ, S$ë¡œ ì‹œì‘í•˜ëŠ” ê²½ìš°ëŠ” ì •ìƒì´ë‹¤.
                     idlOS::memcpy( sResult + sResultIndex,
                                    sFormat + sFormatIndex,
                                    1 );
@@ -4346,7 +4346,7 @@ IDE_RC applyFormat( SChar       * aString,
                 }
                 else
                 {
-                    // S¿Í $ »çÀÌÀÇ formatÀ» $ µÚ·Î º¸³»¾î, S$·Î ½ÃÀÛÇÏ°Ô ¸¸µç´Ù.
+                    // Sì™€ $ ì‚¬ì´ì˜ formatì„ $ ë’¤ë¡œ ë³´ë‚´ì–´, S$ë¡œ ì‹œì‘í•˜ê²Œ ë§Œë“ ë‹¤.
 
                     if ( sEEEECnt == 0 )
                     {
@@ -4354,7 +4354,7 @@ IDE_RC applyFormat( SChar       * aString,
                                         "sFormatIndex : %"ID_UINT32_FMT"\n",
                                         sFormatIndex );
 
-                        // ¿¹¸¦ µé¸é, 'S999$'¸¦ 'S$999'·Î º¯È¯ÇÑ´Ù.
+                        // ì˜ˆë¥¼ ë“¤ë©´, 'S999$'ë¥¼ 'S$999'ë¡œ ë³€í™˜í•œë‹¤.
                         idlOS::memcpy( sTemp, sResult, sFormatIndex );
                         idlOS::memcpy( sResult, sTemp, 1 );
                         idlOS::memset( sResult + 1, '$', 1 );
@@ -4366,8 +4366,8 @@ IDE_RC applyFormat( SChar       * aString,
                                         "sResultIndex : %"ID_UINT32_FMT"\n",
                                         sResultIndex );
 
-                        // EEEE formatÀÌ ÀÖÀ» °æ¿ì, ¸Ç ¾ÕÀÌ °ø¹éÀÓ.
-                        // ¿¹¸¦ µé¸é, ' S999$'¸¦ ' S$999'·Î º¯È¯ÇÑ´Ù.
+                        // EEEE formatì´ ìˆì„ ê²½ìš°, ë§¨ ì•ì´ ê³µë°±ì„.
+                        // ì˜ˆë¥¼ ë“¤ë©´, ' S999$'ë¥¼ ' S$999'ë¡œ ë³€í™˜í•œë‹¤.
                         idlOS::memcpy( sTemp, sResult, sResultIndex );
                         idlOS::memcpy( sResult, sTemp, 2 );
                         idlOS::memset( sResult + 2, '$', 1 );
@@ -4418,7 +4418,7 @@ IDE_RC applyFormat( SChar       * aString,
 
     if ( sEEEECnt == 0 )
     {
-        // EEEE formatÀÌ ¾øÀ» °æ¿ì, format Àû¿ë
+        // EEEE formatì´ ì—†ì„ ê²½ìš°, format ì ìš©
         IDE_TEST( applyNonEEEEFormat( aString,
                                       aStringLen,
                                       aResult,
@@ -4430,7 +4430,7 @@ IDE_RC applyFormat( SChar       * aString,
     }
     else
     {
-        // EEEE formatÀÌ ÀÖÀ» °æ¿ì, format Àû¿ë
+        // EEEE formatì´ ìˆì„ ê²½ìš°, format ì ìš©
         IDE_TEST( applyEEEEFormat( aString,
                                    aStringLen,
                                    aResult,
@@ -4458,8 +4458,8 @@ IDE_RC applyNonEEEEFormat( SChar       * aString,
 {
 /***********************************************************************
  *
- * Description : EEEE formatÀÌ ¾ø´Â °æ¿ì aStringÀ» aFormat¿¡ ¸Â°Ô
-                 º¯È¯ÇÑ´Ù.
+ * Description : EEEE formatì´ ì—†ëŠ” ê²½ìš° aStringì„ aFormatì— ë§ê²Œ
+                 ë³€í™˜í•œë‹¤.
  *
  * Implementation :
  *
@@ -4500,14 +4500,14 @@ IDE_RC applyNonEEEEFormat( SChar       * aString,
 
     sFloatCnt     = aToken[MTD_COUNT_FLOAT_NINE] + aToken[MTD_COUNT_FLOAT_ZERO];
 
-    // str1ÀÌ 0ÀÏ °æ¿ì, 0À» ³ªÅ¸³»±â À§ÇØ¼­ sIntNumCntÀ» 1·Î ÇÑ´Ù.
+    // str1ì´ 0ì¼ ê²½ìš°, 0ì„ ë‚˜íƒ€ë‚´ê¸° ìœ„í•´ì„œ sIntNumCntì„ 1ë¡œ í•œë‹¤.
     if ( sBCnt == 0 && sStringLen == 2 && sFloatCnt == 0 )
     {
         sIntNumCnt = 1;
     }
 
-    // Á¤¼ö ºÎºĞÀ» ¾²±â ÀÌÀüÀÇ ¼ıÀÚ Áß, 0ÀÌ ³ª¿À±â
-    // Àü±îÁöÀÇ 9¿Í ,¸¦ ¸Ç ¾ÕÀ¸·Î º¸³½´Ù.
+    // ì •ìˆ˜ ë¶€ë¶„ì„ ì“°ê¸° ì´ì „ì˜ ìˆ«ì ì¤‘, 0ì´ ë‚˜ì˜¤ê¸°
+    // ì „ê¹Œì§€ì˜ 9ì™€ ,ë¥¼ ë§¨ ì•ìœ¼ë¡œ ë³´ë‚¸ë‹¤.
     sCount = sIntNineCntTemp + sIntZeroCnt;
     sChar = sResult + sResultIndex;
 
@@ -4883,7 +4883,7 @@ IDE_RC applyNonEEEEFormat( SChar       * aString,
                        ( idlOS::strCaselessMatch( sResult + sResultIndex, 1,
                                                   "D", 1 ) == 0 ) )
             {
-                // B formatÀÌ ÀÖ°í, ¼ıÀÚ°¡ 0ÀÏ °æ¿ì
+                // B formatì´ ìˆê³ , ìˆ«ìê°€ 0ì¼ ê²½ìš°
                 if ( sBCnt == 1 && sStringLen == 2 )
                 {
                     if (((*( sString + sStringIndex ) == '.' &&
@@ -4985,8 +4985,8 @@ IDE_RC applyEEEEFormat( SChar       * aString,
 {
 /***********************************************************************
  *
- * Description : EEEE formatÀÌ ÀÖ´Â °æ¿ì aStringÀ» aFormat¿¡ ¸Â°Ô
-                 º¯È¯ÇÑ´Ù.
+ * Description : EEEE formatì´ ìˆëŠ” ê²½ìš° aStringì„ aFormatì— ë§ê²Œ
+                 ë³€í™˜í•œë‹¤.
  *
  * Implementation :
  *
@@ -5027,14 +5027,14 @@ IDE_RC applyEEEEFormat( SChar       * aString,
 
     sZeroIterator = sAfterVNineZeroCnt;
 
-    // str1ÀÌ 0ÀÏ °æ¿ì, 0À» ³ªÅ¸³»±â À§ÇØ¼­ sIntNumCntÀ» 1·Î ÇÑ´Ù.
+    // str1ì´ 0ì¼ ê²½ìš°, 0ì„ ë‚˜íƒ€ë‚´ê¸° ìœ„í•´ì„œ sIntNumCntì„ 1ë¡œ í•œë‹¤.
     if ( sStringLen == 2 )
     {
         sIntNumCnt = 1;
     }
 
-    // Áö¼ö Ç¥±â·Î ³ªÅ¸³¾ ¶§, Áö¼ö¸¦ °è»êÇÑ´Ù.
-    // 0ÀÌ ¾Æ´Ï°í, 0~1 »çÀÌÀÇ ¼Ò¼öÀÏ ¶§
+    // ì§€ìˆ˜ í‘œê¸°ë¡œ ë‚˜íƒ€ë‚¼ ë•Œ, ì§€ìˆ˜ë¥¼ ê³„ì‚°í•œë‹¤.
+    // 0ì´ ì•„ë‹ˆê³ , 0~1 ì‚¬ì´ì˜ ì†Œìˆ˜ì¼ ë•Œ
     if ( sStringLen != 2 && *( sString + 1 ) == '.' )
     {
         sExp = sFloatInvalidNumCnt * (-1) - 1;
@@ -5044,8 +5044,8 @@ IDE_RC applyEEEEFormat( SChar       * aString,
         sExp = sIntNumCnt - 1;
     }
 
-    // EEEE formatÀÌ ÀÖÀ» °æ¿ì, V¾ÕÀÇ 9 ¶Ç´Â 0ÀÌ ¿©·¯°³ÀÏ °æ¿ì
-    // ÇÏ³ª¸¸ ³²°ÜµÎ°í »èÁ¦ÇÑ´Ù.
+    // EEEE formatì´ ìˆì„ ê²½ìš°, Vì•ì˜ 9 ë˜ëŠ” 0ì´ ì—¬ëŸ¬ê°œì¼ ê²½ìš°
+    // í•˜ë‚˜ë§Œ ë‚¨ê²¨ë‘ê³  ì‚­ì œí•œë‹¤.
     idlOS::memcpy( sTemp,
                    sResult,
                    sResultLen );
@@ -5070,8 +5070,8 @@ IDE_RC applyEEEEFormat( SChar       * aString,
         sStringIndex++;
     }
 
-    // B°¡ ÀÖ°í, str1ÀÌ 0ÀÏ ¶§´Â sResultLen ¸¸Å­ÀÇ °ø¹éÀ» Ãâ·ÂÇÑ´Ù.
-    // loopµ¹Áö ¾ÊÀ½.
+    // Bê°€ ìˆê³ , str1ì´ 0ì¼ ë•ŒëŠ” sResultLen ë§Œí¼ì˜ ê³µë°±ì„ ì¶œë ¥í•œë‹¤.
+    // loopëŒì§€ ì•ŠìŒ.
     while ( sResultIndex < sResultLen &&
             ( sBCnt == 0 || sStringLen != 2 ) )
     {
@@ -5207,7 +5207,7 @@ IDE_RC applyEEEEFormat( SChar       * aString,
                       ( idlOS::strCaselessMatch( sResult + sResultIndex, 1,
                                                "M", 1 ) == 0 ) )
             {
-                // L, M Á¦°Å
+                // L, M ì œê±°
                 for ( sIterator = 0;
                       sIterator < ( sResultLen - sResultIndex - 1 );
                       sIterator++ )
@@ -5224,7 +5224,7 @@ IDE_RC applyEEEEFormat( SChar       * aString,
             {
                 sIsStartV = ID_TRUE;
 
-                // VÁ¦°Å
+                // Vì œê±°
                 for ( sIterator = 0;
                       sIterator < ( sResultLen - sResultIndex - 1 );
                       sIterator++ )
@@ -5302,9 +5302,9 @@ IDE_RC applyEEEEFormat( SChar       * aString,
                     }
                 }
 
-                // ³ªÅ¸³¾ ¼ö ÀÖ´Â À¯È¿¼ıÀÚÀÇ °³¼ö¸¦ ÃÊ°úÇÑ °æ¿ì
-                // ÃÊ°úÇÑ VÀÇ °³¼ö¸¸Å­ 0À» Ãß°¡ÇÑ´Ù.
-                // ÃÊ°úÇÏÁö ¾ÊÀ» ¶§±îÁö´Â stringÀÇ ¼ıÀÚ¸¦ ±×´ë·Î °¡Á®¿Â´Ù.
+                // ë‚˜íƒ€ë‚¼ ìˆ˜ ìˆëŠ” ìœ íš¨ìˆ«ìì˜ ê°œìˆ˜ë¥¼ ì´ˆê³¼í•œ ê²½ìš°
+                // ì´ˆê³¼í•œ Vì˜ ê°œìˆ˜ë§Œí¼ 0ì„ ì¶”ê°€í•œë‹¤.
+                // ì´ˆê³¼í•˜ì§€ ì•Šì„ ë•Œê¹Œì§€ëŠ” stringì˜ ìˆ«ìë¥¼ ê·¸ëŒ€ë¡œ ê°€ì ¸ì˜¨ë‹¤.
                 if ( sIntNumCnt != 0 &&
                      sZeroIterator <= sAfterVNineZeroCnt - ( aStringLen - 2 ) + 1 )
                 {
@@ -5365,8 +5365,8 @@ IDE_RC applyEEEEFormat( SChar       * aString,
                     sExp = sExp * (-1);
                 }
 
-                // exponent°¡ ¼¼ ÀÚ¸®ÀÏ °æ¿ì
-                // result stringÀÇ Å©±â¸¦ ÇÏ³ª ´Ã·Á¾ß ÇÑ´Ù.
+                // exponentê°€ ì„¸ ìë¦¬ì¼ ê²½ìš°
+                // result stringì˜ í¬ê¸°ë¥¼ í•˜ë‚˜ ëŠ˜ë ¤ì•¼ í•œë‹¤.
                 if ( sExp > 99 )
                 {
                     sResultIndex += 2;
@@ -5579,7 +5579,7 @@ IDE_RC compXXXXandRN( UChar* aNumFmt,
                 if( *( sRnTemp + sIterator ) >= 'A' &&
                     *( sRnTemp + sIterator ) <= 'Z' )
                 {
-                    // ´ë¹®ÀÚÀÎ °æ¿ì, ¼Ò¹®ÀÚ·Î º¯È¯ÇÏ¿© °á°ú¿¡ ÀúÀå
+                    // ëŒ€ë¬¸ìì¸ ê²½ìš°, ì†Œë¬¸ìë¡œ ë³€í™˜í•˜ì—¬ ê²°ê³¼ì— ì €ì¥
                     *( sRnTemp + sIterator ) = *( sRnTemp + sIterator ) + 0x20;
                 }
                 else
@@ -5620,9 +5620,9 @@ IDE_RC mtfToCharInterface::mtfTo_charCalculateDateFor2Args(
  * Implementation :
  *    TO_CHAR( date, 'fmt' )
  *
- *    aStack[0] : ÀÔ·ÂµÈ ³¯Â¥ Çü½ÄÀ» ¹®ÀÚÇüÀ¸·Î º¯È¯ÇÏ¿© Ãâ·Â
+ *    aStack[0] : ì…ë ¥ëœ ë‚ ì§œ í˜•ì‹ì„ ë¬¸ìí˜•ìœ¼ë¡œ ë³€í™˜í•˜ì—¬ ì¶œë ¥
  *    aStack[1] : date
- *    aStack[2] : fmt ( charÀÇ ³¯Â¥ Çü½Ä )
+ *    aStack[2] : fmt ( charì˜ ë‚ ì§œ í˜•ì‹ )
  *
  *    ex) TO_CHAR( join_date, 'YYYY-MM-DD HH:MI::SS' )
  *       ==> '2005-JUN-09'
@@ -5664,8 +5664,8 @@ IDE_RC mtfToCharInterface::mtfTo_charCalculateDateFor2Args(
         sDate    = (mtdDateType*)aStack[1].value;
         sVarchar = (mtdCharType*)aStack[2].value;
 
-        // Estimate ´Ü°è¿¡¼­ format Á¤º¸¸¦ ¾Ë°í ÀÖÀ» °æ¿ì
-        // format Á¤º¸ ´ë½Å aInfo Á¤º¸¸¦ ÀÌ¿ëÇÑ´Ù.
+        // Estimate ë‹¨ê³„ì—ì„œ format ì •ë³´ë¥¼ ì•Œê³  ìˆì„ ê²½ìš°
+        // format ì •ë³´ ëŒ€ì‹  aInfo ì •ë³´ë¥¼ ì´ìš©í•œë‹¤.
         if ( aInfo != NULL )
         {
             sStringMaxLen = aStack[0].column->precision;
@@ -5691,8 +5691,8 @@ IDE_RC mtfToCharInterface::mtfTo_charCalculateDateFor2Args(
 
             sValue->length = IDL_MIN( sBufferCur, sStringMaxLen - 1 );
 
-            // °£È¤ snprintf¿¡¼­ null terminationÀ» ÇÏÁö ¾ÊÀ»
-            // °æ¿ì°¡ ÀÖÀ» ¼ö ÀÖ´ÙÇÏ¿©
+            // ê°„í˜¹ snprintfì—ì„œ null terminationì„ í•˜ì§€ ì•Šì„
+            // ê²½ìš°ê°€ ìˆì„ ìˆ˜ ìˆë‹¤í•˜ì—¬
             sResult[sValue->length] = '\0';
         }
         else
@@ -5730,13 +5730,13 @@ IDE_RC mtfToCharInterface::makeFormatInfo( mtcNode*     aNode,
     yyscan_t            sScanner;
     idBool              sInitScanner = ID_FALSE;
     idBool              sIsFillMode = ID_FALSE;
-    UChar              *sFormat;  //  ¿¡·¯ Ãâ·ÂÀ» À§ÇØ ÇöÀç Æ÷¸ËÀÇ À§Ä¡¸¦ ÃßÀûÇÔ
+    UChar              *sFormat;  //  ì—ëŸ¬ ì¶œë ¥ì„ ìœ„í•´ í˜„ì¬ í¬ë§·ì˜ ìœ„ì¹˜ë¥¼ ì¶”ì í•¨
     UInt                sFormatLen;
     UChar              *sErrorFormat;
 
     sExecute = &(aTemplate->rows[aNode->table].execute[aNode->column]);
 
-    // calculateInfo¿¡ formatÁ¤º¸¸¦ (sFormatInfo) ÀúÀåÇÒ °ø°£À» ÇÒ´ç
+    // calculateInfoì— formatì •ë³´ë¥¼ (sFormatInfo) ì €ì¥í•  ê³µê°„ì„ í• ë‹¹
     IDE_TEST(aCallBack->alloc( aCallBack->info,
                                ID_SIZEOF(mtdFormatInfo),
                                (void**)&( sExecute->calculateInfo ) )
@@ -5745,8 +5745,8 @@ IDE_RC mtfToCharInterface::makeFormatInfo( mtcNode*     aNode,
     sFormatInfo = (mtdFormatInfo*)(sExecute->calculateInfo);
     sFormatInfo->count = 0;
 
-    // calculateInfo¿¡ ÇÊ¿äÇÑ formatÀÇ °³¼ö¸¸Å­ °ø°£À» ÇÒ´ç
-    // formatÀÇ °³¼ö´Â ÃÖ´ë aFormatLenÀÌ´Ù.
+    // calculateInfoì— í•„ìš”í•œ formatì˜ ê°œìˆ˜ë§Œí¼ ê³µê°„ì„ í• ë‹¹
+    // formatì˜ ê°œìˆ˜ëŠ” ìµœëŒ€ aFormatLenì´ë‹¤.
     IDE_TEST(aCallBack->alloc( aCallBack->info,
                                ID_SIZEOF(mtfTo_charCalcInfo) * aFormatLen,
                                (void**)&( sExecute->calculateInfo ) )
@@ -5775,8 +5775,8 @@ IDE_RC mtfToCharInterface::makeFormatInfo( mtcNode*     aNode,
             // Get string length
             sStringLen = mtddlget_leng( sScanner );
             
-            // calculateInfo¿¡ formatÁ¤º¸¸¦ (sFormatInfo) ÀúÀåÇÒ °ø°£À» ÇÒ´ç
-            // SEPARATOR È¤Àº °ø¹éÀÇ Å©±â ¸¸Å­ ÇÒ´ç
+            // calculateInfoì— formatì •ë³´ë¥¼ (sFormatInfo) ì €ì¥í•  ê³µê°„ì„ í• ë‹¹
+            // SEPARATOR í˜¹ì€ ê³µë°±ì˜ í¬ê¸° ë§Œí¼ í• ë‹¹
             IDE_TEST(aCallBack->alloc( aCallBack->info,
                                        sStringLen + 1,
                                        (void**)&( sExecute->calculateInfo ) )
@@ -5786,7 +5786,7 @@ IDE_RC mtfToCharInterface::makeFormatInfo( mtcNode*     aNode,
                 (SChar*) sExecute->calculateInfo;
             sString = sFormatInfo->format[sFormatInfo->count].string;
 
-            // MAX_PRECISIONÀ» ÃÊ°úÇÏÁö ¾Ê´Â ¹üÀ§¿¡¼­ ¹®ÀÚ¿­ º¹»ç
+            // MAX_PRECISIONì„ ì´ˆê³¼í•˜ì§€ ì•ŠëŠ” ë²”ìœ„ì—ì„œ ë¬¸ìì—´ ë³µì‚¬
             sStringLen = IDL_MIN(MTC_TO_CHAR_MAX_PRECISION-1, sStringLen);
             idlOS::memcpy(sString,
                           mtddlget_text(sScanner),
@@ -5796,10 +5796,10 @@ IDE_RC mtfToCharInterface::makeFormatInfo( mtcNode*     aNode,
         else if ( sToken == MTD_DATE_FORMAT_DOUBLE_QUOTE_STRING )
         {
             // Get string length
-            // "***"ÀÇ °æ¿ì ¾çÂÊ¿¡ double quote¸¦ »èÁ¦ÇÒ °ÍÀ» °¡Á¤ÇÑ ±æÀÌ
+            // "***"ì˜ ê²½ìš° ì–‘ìª½ì— double quoteë¥¼ ì‚­ì œí•  ê²ƒì„ ê°€ì •í•œ ê¸¸ì´
             sStringLen = mtddlget_leng( sScanner ) - 2;
             
-            // calculateInfo¿¡ formatÁ¤º¸¸¦ (sFormatInfo) ÀúÀåÇÒ °ø°£À» ÇÒ´ç
+            // calculateInfoì— formatì •ë³´ë¥¼ (sFormatInfo) ì €ì¥í•  ê³µê°„ì„ í• ë‹¹
             IDE_TEST(aCallBack->alloc( aCallBack->info,
                                        sStringLen + 1,
                                        (void**)&( sExecute->calculateInfo ) )
@@ -5809,8 +5809,8 @@ IDE_RC mtfToCharInterface::makeFormatInfo( mtcNode*     aNode,
                 (SChar*) sExecute->calculateInfo;
             sString = sFormatInfo->format[sFormatInfo->count].string;
 
-            // "***"ÀÇ °æ¿ì ¾çÂÊ¿¡ double quote¸¦ »èÁ¦ÇÑ´Ù.
-            // MAX_PRECISIONÀ» ÃÊ°úÇÏÁö ¾Ê´Â ¹üÀ§¿¡¼­ ¹®ÀÚ¿­ º¹»ç
+            // "***"ì˜ ê²½ìš° ì–‘ìª½ì— double quoteë¥¼ ì‚­ì œí•œë‹¤.
+            // MAX_PRECISIONì„ ì´ˆê³¼í•˜ì§€ ì•ŠëŠ” ë²”ìœ„ì—ì„œ ë¬¸ìì—´ ë³µì‚¬
             sStringLen = IDL_MIN(MTC_TO_CHAR_MAX_PRECISION-1, sStringLen);
             idlOS::memcpy(sString,
                           mtddlget_text(sScanner)+1,
@@ -5820,7 +5820,7 @@ IDE_RC mtfToCharInterface::makeFormatInfo( mtcNode*     aNode,
         else if ( sToken == MTD_DATE_FORMAT_NONE )
         {
             // BUG-19753
-            // separator È¤Àº quoted stringÀÌ ¾Æ´Ñ ÀÎ½ÄµÇÁö ¾ÊÀº Æ÷¸ËÀº ¿¡·¯
+            // separator í˜¹ì€ quoted stringì´ ì•„ë‹Œ ì¸ì‹ë˜ì§€ ì•Šì€ í¬ë§·ì€ ì—ëŸ¬
 
             sFormatLen = aFormatLen - ( sFormat - aFormat );
             IDE_TEST(aCallBack->alloc( aCallBack->info,
@@ -5837,8 +5837,8 @@ IDE_RC mtfToCharInterface::makeFormatInfo( mtcNode*     aNode,
         }
         else
         {
-            // NONE, DOUBLE_QUOTE Æ÷¸ËÀÌ ¾Æ´Ò¶§´Â stringÀÌ ÇÊ¿ä¾øÁö¸¸
-            // ¸Ş¸ğ¸® ÇÒ´çÀ» ÇØÁÖÁö ¾ÊÀ¸¸é ÇÔ¼ö¸¦ È£ÃâÇÒ ¶§, UMR ¹ß»ı
+            // NONE, DOUBLE_QUOTE í¬ë§·ì´ ì•„ë‹ë•ŒëŠ” stringì´ í•„ìš”ì—†ì§€ë§Œ
+            // ë©”ëª¨ë¦¬ í• ë‹¹ì„ í•´ì£¼ì§€ ì•Šìœ¼ë©´ í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•  ë•Œ, UMR ë°œìƒ
             IDE_TEST(aCallBack->alloc( aCallBack->info,
                                        1,
                                        (void**)&( sExecute->calculateInfo ) )
@@ -5863,7 +5863,7 @@ IDE_RC mtfToCharInterface::makeFormatInfo( mtcNode*     aNode,
         
         sFormatInfo->count++;
 
-        // ´ÙÀ½ Æ÷¸ËÀÇ ½ÃÀÛÁ¡À» °¡¸®Å°µµ·Ï Æ÷ÀÎÅÍ ÀÌµ¿
+        // ë‹¤ìŒ í¬ë§·ì˜ ì‹œì‘ì ì„ ê°€ë¦¬í‚¤ë„ë¡ í¬ì¸í„° ì´ë™
         sFormat += mtddlget_leng( sScanner );
         
         // get next token
@@ -5873,7 +5873,7 @@ IDE_RC mtfToCharInterface::makeFormatInfo( mtcNode*     aNode,
     mtddllex_destroy ( sScanner );
     sInitScanner = ID_FALSE;
 
-    // calculateInfo¿¡´Â mtdFormatInfoÀÇ Ã³À½ ÁÖ¼Ò¸¦ ´Ù½Ã ¼¼ÆÃÇØÁà¾ß ÇÑ´Ù.
+    // calculateInfoì—ëŠ” mtdFormatInfoì˜ ì²˜ìŒ ì£¼ì†Œë¥¼ ë‹¤ì‹œ ì„¸íŒ…í•´ì¤˜ì•¼ í•œë‹¤.
     (sExecute->calculateInfo) = sFormatInfo;
 
     if ( sToken == -1 )
@@ -5922,7 +5922,7 @@ IDE_RC removeLeadingBlank( SChar  * aResult,
  *
  *    TO_CHAR( number_type, 'number_format_model' )
  *
- *    'FM' formatÀÌ ¿ÔÀ» °æ¿ì ¿ŞÂÊ¿¡ ¿À´Â °ø¹éÀ» ¸ğµÎ Á¦°ÅÇÑ´Ù.
+ *    'FM' formatì´ ì™”ì„ ê²½ìš° ì™¼ìª½ì— ì˜¤ëŠ” ê³µë°±ì„ ëª¨ë‘ ì œê±°í•œë‹¤.
  *
  *
  ***********************************************************************/

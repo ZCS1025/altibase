@@ -25,7 +25,7 @@ public abstract class CmStatementIdResult extends CmResult
         return mStatementId;
     }
     
-    // BUG-42424 AltibasePreparedStatement¿¡¼­ ÇØ´ç¸Ş¼Òµå¸¦ ÀÌ¿ëÇÏ±â ¶§¹®¿¡ publicÀ¸·Î º¯°æ
+    // BUG-42424 AltibasePreparedStatementì—ì„œ í•´ë‹¹ë©”ì†Œë“œë¥¼ ì´ìš©í•˜ê¸° ë•Œë¬¸ì— publicìœ¼ë¡œ ë³€ê²½
     public void setStatementId(int aStatementId)
     {
         mStatementId = aStatementId;

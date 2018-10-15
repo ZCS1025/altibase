@@ -21,11 +21,11 @@
  * Description :
  *
  *     Host Constant Wrapper Node
- *        - Ç×»ó µ¿ÀÏÇÑ °á°ú¸¦ »ý¼ºÇÏ´Â ¿¬»êÀ» ÇÑ ¹ø¸¸ ¼öÇàÇÏ°í
- *        - ±× °á°ú¸¦ ¹Ýº¹ÀûÀ¸·Î »ç¿ëÇÒ ¶§ »ç¿ëÇÑ´Ù.
- *        - Host º¯¼ö°¡ ÀÖ´Â ºÎºÐ¿¡ ´ëÇØ¼­¸¸ Ã³¸®ÇÏ°í,
- *        - Host º¯¼ö°¡ ¾ø´Â ¿µ¿ªÀº Validation °úÁ¤ Áß¿¡
- *          Pre-Processing Constant Expression¿¡ ÀÇÇÏ¿© Ã³¸®µÈ´Ù.
+ *        - í•­ìƒ ë™ì¼í•œ ê²°ê³¼ë¥¼ ìƒì„±í•˜ëŠ” ì—°ì‚°ì„ í•œ ë²ˆë§Œ ìˆ˜í–‰í•˜ê³ 
+ *        - ê·¸ ê²°ê³¼ë¥¼ ë°˜ë³µì ìœ¼ë¡œ ì‚¬ìš©í•  ë•Œ ì‚¬ìš©í•œë‹¤.
+ *        - Host ë³€ìˆ˜ê°€ ìžˆëŠ” ë¶€ë¶„ì— ëŒ€í•´ì„œë§Œ ì²˜ë¦¬í•˜ê³ ,
+ *        - Host ë³€ìˆ˜ê°€ ì—†ëŠ” ì˜ì—­ì€ Validation ê³¼ì • ì¤‘ì—
+ *          Pre-Processing Constant Expressionì— ì˜í•˜ì—¬ ì²˜ë¦¬ëœë‹¤.
  * 
  *        - Ex) 4 + ?
  *
@@ -37,11 +37,11 @@
  *                     V
  *                    [4]------>[?]
  *
- *     À§ÀÇ ±×¸²¿¡¼­¿Í °°ÀÌ [4+?]À» ÇÑ ¹ø¸¸ ¼öÇàÇÑ´Ù.
+ *     ìœ„ì˜ ê·¸ë¦¼ì—ì„œì™€ ê°™ì´ [4+?]ì„ í•œ ë²ˆë§Œ ìˆ˜í–‰í•œë‹¤.
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  **********************************************************************/
 
@@ -51,7 +51,7 @@
 #include <qci.h>
 
 //-----------------------------------------
-// Host Constant Wrapper ¿¬»êÀÚÀÇ ÀÌ¸§¿¡ ´ëÇÑ Á¤º¸
+// Host Constant Wrapper ì—°ì‚°ìžì˜ ì´ë¦„ì— ëŒ€í•œ ì •ë³´
 //-----------------------------------------
 
 static mtcName qtcNames[1] = {
@@ -59,7 +59,7 @@ static mtcName qtcNames[1] = {
 };
 
 //-----------------------------------------
-// Constant Wrapper ¿¬»êÀÚÀÇ Module ¿¡ ´ëÇÑ Á¤º¸
+// Constant Wrapper ì—°ì‚°ìžì˜ Module ì— ëŒ€í•œ ì •ë³´
 //-----------------------------------------
 
 static IDE_RC qtcEstimate_HostConstantWrapper( mtcNode*     aNode,
@@ -69,20 +69,20 @@ static IDE_RC qtcEstimate_HostConstantWrapper( mtcNode*     aNode,
                                                mtcCallBack* aCallBack );
 
 mtfModule qtc::hostConstantWrapperModule = {
-    1|                      // ÇÏ³ªÀÇ Column °ø°£
-    MTC_NODE_OPERATOR_MISC| // ±âÅ¸ ¿¬»êÀÚ
-    MTC_NODE_INDIRECT_TRUE, // IndirectionµÊ
-    ~0,                     // Indexable Mask : ÀÇ¹Ì ¾øÀ½
-    0.0,                    // BUG-39036 ( 1 -> 0 º¯°æ )
-    qtcNames,               // ÀÌ¸§ Á¤º¸
-    NULL,                   // Counter ¿¬»êÀÚ ¾øÀ½
-    mtf::initializeDefault, // ¼­¹ö ±¸µ¿½Ã ÃÊ±âÈ­ ÇÔ¼ö, ¾øÀ½
-    mtf::finalizeDefault,   // ¼­¹ö Á¾·á½Ã Á¾·á ÇÔ¼ö, ¾øÀ½
-    qtcEstimate_HostConstantWrapper     // Estimate ÇÒ ÇÔ¼ö
+    1|                      // í•˜ë‚˜ì˜ Column ê³µê°„
+    MTC_NODE_OPERATOR_MISC| // ê¸°íƒ€ ì—°ì‚°ìž
+    MTC_NODE_INDIRECT_TRUE, // Indirectionë¨
+    ~0,                     // Indexable Mask : ì˜ë¯¸ ì—†ìŒ
+    0.0,                    // BUG-39036 ( 1 -> 0 ë³€ê²½ )
+    qtcNames,               // ì´ë¦„ ì •ë³´
+    NULL,                   // Counter ì—°ì‚°ìž ì—†ìŒ
+    mtf::initializeDefault, // ì„œë²„ êµ¬ë™ì‹œ ì´ˆê¸°í™” í•¨ìˆ˜, ì—†ìŒ
+    mtf::finalizeDefault,   // ì„œë²„ ì¢…ë£Œì‹œ ì¢…ë£Œ í•¨ìˆ˜, ì—†ìŒ
+    qtcEstimate_HostConstantWrapper     // Estimate í•  í•¨ìˆ˜
 };
 
 //-----------------------------------------
-// Constant Wrapper ¿¬»êÀÚÀÇ ¼öÇà ÇÔ¼öÀÇ Á¤ÀÇ
+// Constant Wrapper ì—°ì‚°ìžì˜ ìˆ˜í–‰ í•¨ìˆ˜ì˜ ì •ì˜
 //-----------------------------------------
 
 IDE_RC qtcCalculate_HostConstantWrapper( 
@@ -93,14 +93,14 @@ IDE_RC qtcCalculate_HostConstantWrapper(
                             mtcTemplate* aTemplate );
 
 static const mtcExecute qtcExecute = {
-    mtf::calculateNA,             // Aggregation ÃÊ±âÈ­ ÇÔ¼ö, ¾øÀ½
-    mtf::calculateNA,             // Aggregation ¼öÇà ÇÔ¼ö, ¾øÀ½
+    mtf::calculateNA,             // Aggregation ì´ˆê¸°í™” í•¨ìˆ˜, ì—†ìŒ
+    mtf::calculateNA,             // Aggregation ìˆ˜í–‰ í•¨ìˆ˜, ì—†ìŒ
     mtf::calculateNA,
-    mtf::calculateNA,             // Aggregation Á¾·á ÇÔ¼ö, ¾øÀ½
-    qtcCalculate_HostConstantWrapper, // CONSTANT WRAPPER ¿¬»ê ÇÔ¼ö
-    NULL,                         // ¿¬»êÀ» À§ÇÑ ºÎ°¡ Á¤º¸, ¾øÀ½
-    mtk::estimateRangeNA,         // Key Range Å©±â ÃßÃâ ÇÔ¼ö, ¾øÀ½
-    mtk::extractRangeNA           // Key Range »ý¼º ÇÔ¼ö, ¾øÀ½
+    mtf::calculateNA,             // Aggregation ì¢…ë£Œ í•¨ìˆ˜, ì—†ìŒ
+    qtcCalculate_HostConstantWrapper, // CONSTANT WRAPPER ì—°ì‚° í•¨ìˆ˜
+    NULL,                         // ì—°ì‚°ì„ ìœ„í•œ ë¶€ê°€ ì •ë³´, ì—†ìŒ
+    mtk::estimateRangeNA,         // Key Range í¬ê¸° ì¶”ì¶œ í•¨ìˆ˜, ì—†ìŒ
+    mtk::extractRangeNA           // Key Range ìƒì„± í•¨ìˆ˜, ì—†ìŒ
 };
 
 IDE_RC qtcEstimate_HostConstantWrapper( mtcNode*     aNode,
@@ -112,21 +112,21 @@ IDE_RC qtcEstimate_HostConstantWrapper( mtcNode*     aNode,
 /***********************************************************************
  *
  * Description :
- *    Constant Wrapper ¿¬»êÀÚ¿¡ ´ëÇÏ¿© Estimate ¸¦ ¼öÇàÇÔ.
- *    Node¿¡ ´ëÇÑ Column Á¤º¸ ¹× Execute Á¤º¸¸¦ SettingÇÑ´Ù.
+ *    Constant Wrapper ì—°ì‚°ìžì— ëŒ€í•˜ì—¬ Estimate ë¥¼ ìˆ˜í–‰í•¨.
+ *    Nodeì— ëŒ€í•œ Column ì •ë³´ ë° Execute ì •ë³´ë¥¼ Settingí•œë‹¤.
  *
  * Implementation :
  *
- *    Constant Wrapper Node´Â
- *    Plan Node »ý¼º ÈÄ ÃÖÁ¾ÀûÀ¸·Î Ã³¸®µÇ´Â ³ëµåÀÌ´Ù.
- *    µû¶ó¼­, »óÀ§ Node¿¡¼­ Estimate ¸¦ À§ÇØ È£ÃâÇÏ´Â °æ¿ì°¡ ¾ø´Ù.
+ *    Constant Wrapper NodeëŠ”
+ *    Plan Node ìƒì„± í›„ ìµœì¢…ì ìœ¼ë¡œ ì²˜ë¦¬ë˜ëŠ” ë…¸ë“œì´ë‹¤.
+ *    ë”°ë¼ì„œ, ìƒìœ„ Nodeì—ì„œ Estimate ë¥¼ ìœ„í•´ í˜¸ì¶œí•˜ëŠ” ê²½ìš°ê°€ ì—†ë‹¤.
  *
- *    Constant Wrapper ³ëµå´Â º°µµÀÇ Column Á¤º¸°¡ ÇÊ¿ä¾øÀ¸¹Ç·Î,
- *    Skip Module·Î estimationÀ» ÇÏ¸ç, »óÀ§ Node¿¡¼­ÀÇ estimate ¸¦
- *    À§ÇÏ¿© ÇÏÀ§ NodeÀÇ Á¤º¸¸¦ Stack¿¡ ¼³Á¤ÇÏ¿© ÁØ´Ù.
+ *    Constant Wrapper ë…¸ë“œëŠ” ë³„ë„ì˜ Column ì •ë³´ê°€ í•„ìš”ì—†ìœ¼ë¯€ë¡œ,
+ *    Skip Moduleë¡œ estimationì„ í•˜ë©°, ìƒìœ„ Nodeì—ì„œì˜ estimate ë¥¼
+ *    ìœ„í•˜ì—¬ í•˜ìœ„ Nodeì˜ ì •ë³´ë¥¼ Stackì— ì„¤ì •í•˜ì—¬ ì¤€ë‹¤.
  *
- *    PROJ-1492·Î CAST¿¬»êÀÚ°¡ Ãß°¡µÇ¾î È£½ºÆ® º¯¼ö¸¦ »ç¿ëÇÏ´õ¶óµµ
- *    ±× Å¸ÀÔÀÌ Á¤ÀÇµÇ¾î Validation½Ã Estimate ¸¦ È£ÃâÇÒ ¼ö ÀÖ´Ù.
+ *    PROJ-1492ë¡œ CASTì—°ì‚°ìžê°€ ì¶”ê°€ë˜ì–´ í˜¸ìŠ¤íŠ¸ ë³€ìˆ˜ë¥¼ ì‚¬ìš©í•˜ë”ë¼ë„
+ *    ê·¸ íƒ€ìž…ì´ ì •ì˜ë˜ì–´ Validationì‹œ Estimate ë¥¼ í˜¸ì¶œí•  ìˆ˜ ìžˆë‹¤.
  *
  ***********************************************************************/
 
@@ -136,7 +136,7 @@ IDE_RC qtcEstimate_HostConstantWrapper( mtcNode*     aNode,
     mtcNode   * sNode;
     mtcColumn * sColumn;
 
-    // Column Á¤º¸¸¦ skipModule·Î ¼³Á¤ÇÏ°í, Execute ÇÔ¼ö¸¦ ÁöÁ¤ÇÑ´Ù.
+    // Column ì •ë³´ë¥¼ skipModuleë¡œ ì„¤ì •í•˜ê³ , Execute í•¨ìˆ˜ë¥¼ ì§€ì •í•œë‹¤.
     sColumn = aTemplate->rows[aNode->table].columns + aNode->column;
     aTemplate->rows[aNode->table].execute[aNode->column] = qtcExecute;
 
@@ -147,8 +147,8 @@ IDE_RC qtcEstimate_HostConstantWrapper( mtcNode*     aNode,
                                      0 )
               != IDE_SUCCESS );
 
-    // Argument¸¦ ¾ò¾î ÀÌ Á¤º¸¸¦ »óÀ§ Node¿¡¼­ »ç¿ëÇÒ ¼ö ÀÖµµ·Ï
-    // Stack¿¡ ¼³Á¤ÇÑ´Ù.
+    // Argumentë¥¼ ì–»ì–´ ì´ ì •ë³´ë¥¼ ìƒìœ„ Nodeì—ì„œ ì‚¬ìš©í•  ìˆ˜ ìžˆë„ë¡
+    // Stackì— ì„¤ì •í•œë‹¤.
     sNode = aNode->arguments;
 
     aStack[0].column = aTemplate->rows[sNode->table].columns + sNode->column;
@@ -171,19 +171,19 @@ IDE_RC qtcCalculate_HostConstantWrapper( mtcNode*     aNode,
 /***********************************************************************
  *
  * Description :
- *    Constant WrapperÀÇ ¿¬»êÀ» ¼öÇàÇÔ.
- *    ÃÖÃÊ ÇÑ ¹ø¸¸ Argument¸¦ ¼öÇàÇÏ°í, ÀÌ ÈÄ´Â Argument¸¦ ¼öÇàÇÏÁö
- *    ¾Ê´Â´Ù.
+ *    Constant Wrapperì˜ ì—°ì‚°ì„ ìˆ˜í–‰í•¨.
+ *    ìµœì´ˆ í•œ ë²ˆë§Œ Argumentë¥¼ ìˆ˜í–‰í•˜ê³ , ì´ í›„ëŠ” Argumentë¥¼ ìˆ˜í–‰í•˜ì§€
+ *    ì•ŠëŠ”ë‹¤.
  *
  * Implementation :
  *
- *    Template³» Execution Á¤º¸¸¦ ÀÌ¿ëÇÏ¿©, ÀÌ¹Ì ¼öÇàµÇ¾ú´ÂÁöÀÇ
- *    ¿©ºÎ¸¦ ÆÇ´ÜÇÑ´Ù.
+ *    Templateë‚´ Execution ì •ë³´ë¥¼ ì´ìš©í•˜ì—¬, ì´ë¯¸ ìˆ˜í–‰ë˜ì—ˆëŠ”ì§€ì˜
+ *    ì—¬ë¶€ë¥¼ íŒë‹¨í•œë‹¤.
  *
- *    ¼öÇàµÇÁö ¾ÊÀº °æ¿ì,
- *        - Argument¸¦ ¼öÇàÇÏ°í, ±× °á°ú StackÀ» º¹»çÇÑ´Ù.
- *    ¼öÇàµÈ °æ¿ì,
- *        - Argument Á¤º¸¸¦ ÀÌ¿ëÇÏ¿© Stack¿¡ ¼³Á¤ÇÑ´Ù.
+ *    ìˆ˜í–‰ë˜ì§€ ì•Šì€ ê²½ìš°,
+ *        - Argumentë¥¼ ìˆ˜í–‰í•˜ê³ , ê·¸ ê²°ê³¼ Stackì„ ë³µì‚¬í•œë‹¤.
+ *    ìˆ˜í–‰ëœ ê²½ìš°,
+ *        - Argument ì •ë³´ë¥¼ ì´ìš©í•˜ì—¬ Stackì— ì„¤ì •í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -198,16 +198,16 @@ IDE_RC qtcCalculate_HostConstantWrapper( mtcNode*     aNode,
     if ( aTemplate->execInfo[aNode->info] == QTC_WRAPPER_NODE_EXECUTE_FALSE )
     {
         //---------------------------------
-        // ÇÑ ¹øµµ ¼öÇàµÇÁö ¾ÊÀº °æ¿ì
+        // í•œ ë²ˆë„ ìˆ˜í–‰ë˜ì§€ ì•Šì€ ê²½ìš°
         //---------------------------------
 
-        // Arguemnt¸¦ È¹µæÇÑ´Ù.
+        // Arguemntë¥¼ íšë“í•œë‹¤.
         sNode  = aNode->arguments;
         sStack = aStack;
         sStack++;
         aRemain--;
 
-        // Argument¸¦ ¼öÇàÇÑ´Ù.
+        // Argumentë¥¼ ìˆ˜í–‰í•œë‹¤.
         IDE_TEST( aTemplate->rows[sNode->table].
                   execute[sNode->column].calculate(                     sNode,
                                                                        sStack,
@@ -226,25 +226,25 @@ IDE_RC qtcCalculate_HostConstantWrapper( mtcNode*     aNode,
                       != IDE_SUCCESS );
         }
 
-        // ArgumentÀÇ ¼öÇà °á°ú¸¦ Stack¿¡ º¹»ç.
+        // Argumentì˜ ìˆ˜í–‰ ê²°ê³¼ë¥¼ Stackì— ë³µì‚¬.
         aStack[0] = aStack[1];
         aTemplate->execInfo[aNode->info] = QTC_WRAPPER_NODE_EXECUTE_TRUE;
     }
     else
     {
         //---------------------------------
-        // ÀÌ¹Ì ¼öÇàµÈ °æ¿ì
+        // ì´ë¯¸ ìˆ˜í–‰ëœ ê²½ìš°
         //---------------------------------
 
-        // °á°ú°ªÀÌ ÀÖ´Â Argument¸¦ È¹µæÇÔ.
+        // ê²°ê³¼ê°’ì´ ìžˆëŠ” Argumentë¥¼ íšë“í•¨.
         sNode = aNode->arguments;
         sNode = mtf::convertedNode( sNode, aTemplate );
 
-        // Column Á¤º¸¸¦ Stack¿¡ ¼³Á¤ÇÔ.
+        // Column ì •ë³´ë¥¼ Stackì— ì„¤ì •í•¨.
         aStack[0].column = aTemplate->rows[sNode->table].columns
             + sNode->column;
 
-        // Value Á¤º¸¸¦ È¹µæÇÏ¿© Stack¿¡ ¼³Á¤ÇÔ.
+        // Value ì •ë³´ë¥¼ íšë“í•˜ì—¬ Stackì— ì„¤ì •í•¨.
         aStack[0].value = (void *) mtc::value( aStack[0].column, 
                                                aTemplate->rows[sNode->table].row, 
                                                MTD_OFFSET_USE );

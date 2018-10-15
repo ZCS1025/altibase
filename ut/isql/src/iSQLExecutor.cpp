@@ -25,16 +25,16 @@
    DESCRIPTION
     BUG-42811 code refactoring using fuction pointer.
 
-    main ÇÔ¼ö ³»¿¡¼­ Ä¿¸Çµå Á¾·ù¿¡ µû¶ó switch case ¹®À¸·Î
-    ºÐ±âÇÏ´Â ºÎºÐÀ» ÇÔ¼ö Æ÷ÀÎÅÍ¸¦ ÅëÇØ¼­ È£ÃâÇÏ´Â ¹æ½ÄÀ¸·Î º¯°æ.
+    main í•¨ìˆ˜ ë‚´ì—ì„œ ì»¤ë§¨ë“œ ì¢…ë¥˜ì— ë”°ë¼ switch case ë¬¸ìœ¼ë¡œ
+    ë¶„ê¸°í•˜ëŠ” ë¶€ë¶„ì„ í•¨ìˆ˜ í¬ì¸í„°ë¥¼ í†µí•´ì„œ í˜¸ì¶œí•˜ëŠ” ë°©ì‹ìœ¼ë¡œ ë³€ê²½.
 
-    ÇâÈÄ, Ä¿¸Çµå Ãß°¡½Ã iSQLCommand Å¬·¡½º¿¡ static ÇÔ¼ö¸¦ Ãß°¡ÇÏ°í
-    parser¿¡¼­ ÇÔ¼ö Æ÷ÀÎÅÍ¿¡ ÇØ´ç ÇÔ¼öÀÇ address¸¦ ÇÒ´çÇØ¾ß ÇÔ.
+    í–¥í›„, ì»¤ë§¨ë“œ ì¶”ê°€ì‹œ iSQLCommand í´ëž˜ìŠ¤ì— static í•¨ìˆ˜ë¥¼ ì¶”ê°€í•˜ê³ 
+    parserì—ì„œ í•¨ìˆ˜ í¬ì¸í„°ì— í•´ë‹¹ í•¨ìˆ˜ì˜ addressë¥¼ í• ë‹¹í•´ì•¼ í•¨.
     ex) gCommand->mExecutor = iSQLCommand::executeDDL
 
-    cf) BUG-42811¿¡¼­ ÀÏ°ý ¼öÁ¤ÀÇ ÆíÀÌ¸¦ À§ÇØ iSQLCommand Å¬·¡½º¿¡ Ä¿¸Çµå
-        ¼öÇàÀ» À§ÇÑ static ÇÔ¼ö¸¦ ÀÏ°ý Ãß°¡ÇÏ¿´À¸³ª, ÇâÈÄ Ãß°¡½Ã¿¡´Â 
-        ´Ù¸¥ ÀûÀýÇÑ Å¬·¡½º¿¡ static ÇÔ¼ö¸¦ Ãß°¡ÇÏ¿©µµ ¹«¹æÇÔ.
+    cf) BUG-42811ì—ì„œ ì¼ê´„ ìˆ˜ì •ì˜ íŽ¸ì´ë¥¼ ìœ„í•´ iSQLCommand í´ëž˜ìŠ¤ì— ì»¤ë§¨ë“œ
+        ìˆ˜í–‰ì„ ìœ„í•œ static í•¨ìˆ˜ë¥¼ ì¼ê´„ ì¶”ê°€í•˜ì˜€ìœ¼ë‚˜, í–¥í›„ ì¶”ê°€ì‹œì—ëŠ” 
+        ë‹¤ë¥¸ ì ì ˆí•œ í´ëž˜ìŠ¤ì— static í•¨ìˆ˜ë¥¼ ì¶”ê°€í•˜ì—¬ë„ ë¬´ë°©í•¨.
 
  ==================================================================== */
 
@@ -84,8 +84,8 @@ IDE_RC iSQLCommand::executeAlter()
     if ( gCommand->GetiSQLOptionKind() == iSQL_CURRENCY )
     {
         /* BUG-34447 SET NUMF[ORMAT]
-         * alter session set NLS_TERRITORY µîÀ» ÅëÇØ¼­ ¼¼¼ÇÀÇ currency¸¦ 
-         * º¯°æÇÏ´Â °æ¿ì V$SESSION¿¡¼­ currency¸¦ ´Ù½Ã °¡Á®¿Í¾ß ÇÔ
+         * alter session set NLS_TERRITORY ë“±ì„ í†µí•´ì„œ ì„¸ì…˜ì˜ currencyë¥¼ 
+         * ë³€ê²½í•˜ëŠ” ê²½ìš° V$SESSIONì—ì„œ currencyë¥¼ ë‹¤ì‹œ ê°€ì ¸ì™€ì•¼ í•¨
          */ 
         gExecuteCommand->SetNlsCurrency();
     }
@@ -124,7 +124,7 @@ IDE_RC iSQLCommand::executeConnect()
     { // bypass user check if atc mode is true
 
         // bug-26749 windows isql filename parse error
-        // sysdba·Î Á¢¼ÓÇÑ °æ¿ì¸¸ exefile userid °Ë»ç
+        // sysdbaë¡œ ì ‘ì†í•œ ê²½ìš°ë§Œ exefile userid ê²€ì‚¬
         if (gCommand->IsSysdba() == ID_TRUE)
         {
             IDE_TEST(checkUser() != IDE_SUCCESS);
@@ -548,7 +548,7 @@ IDE_RC iSQLCommand::executeSet()
         gProperty.SetHeading(gCommand->GetCommandStr(),
                 gCommand->GetOnOff());
         break;
-    case iSQL_CHECKCONSTRAINTS : /* PROJ-1107 Check Constraint Áö¿ø */
+    case iSQL_CHECKCONSTRAINTS : /* PROJ-1107 Check Constraint ì§€ì› */
         gProperty.SetCheckConstraints( gCommand->GetCommandStr(),
                 gCommand->GetOnOff() );
         break;

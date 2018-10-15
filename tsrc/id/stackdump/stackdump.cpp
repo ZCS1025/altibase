@@ -53,7 +53,7 @@ void outputStack(frameDesc *baseFrame)
 #else
             seed = (vULong)(*(curFrame->m_frameAddr + i));
 #endif            
-            if (j == 0) // address Ãâ·Â 
+            if (j == 0) // address ì¶œë ¥ 
             {
                 printf("%0"PRINT_LENGTH ID_vXULONG_FMT" : ",
                        (vULong)(curFrame->m_frameAddr + i));

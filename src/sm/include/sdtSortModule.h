@@ -199,7 +199,7 @@ private:
 
 /**************************************************************************
  * Description :
- * Çö »óÈ²À» ºÐ¼®ÇÏ¿© MergeRun ÃÖ´ë °³¼ö¸¦ ±¸ÇÑ´Ù.
+ * í˜„ ìƒí™©ì„ ë¶„ì„í•˜ì—¬ MergeRun ìµœëŒ€ ê°œìˆ˜ë¥¼ êµ¬í•œë‹¤.
  ***************************************************************************/
 UInt sdtSortModule::calcMaxMergeRunCount(
     smiTempTableHeader * aHeader,
@@ -209,37 +209,37 @@ UInt sdtSortModule::calcMaxMergeRunCount(
     sdtWASegment         * sWASeg = (sdtWASegment*)aHeader->mWASegment;
     UInt                   sMergeRunCount;
 
-    /* ¸¶Áö¸·¿¡ Slot µÑ »©´Â ÀÌÀ¯´Â,
-     * ÇÏ³ª¸¦ »©¼­ ZeroBase¸¦ OneBase·Î º¯°æÇÏ°í
-     * ÇÏ³ª¸¦ ´õ »©¼­ (¿¹¾àÇØµÎ¾î¼­) RunÀÌ ÇÏ³ªµµ ¾ø¾îµµ Á¤»óµ¿ÀÛÇÏ±â À§ÇÔ */
+    /* ë§ˆì§€ë§‰ì— Slot ë‘˜ ë¹¼ëŠ” ì´ìœ ëŠ”,
+     * í•˜ë‚˜ë¥¼ ë¹¼ì„œ ZeroBaseë¥¼ OneBaseë¡œ ë³€ê²½í•˜ê³ 
+     * í•˜ë‚˜ë¥¼ ë” ë¹¼ì„œ (ì˜ˆì•½í•´ë‘ì–´ì„œ) Runì´ í•˜ë‚˜ë„ ì—†ì–´ë„ ì •ìƒë™ìž‘í•˜ê¸° ìœ„í•¨ */
     sSortGroupSize =
         sdtWASegment::getAllocableWAGroupPageCount( sWASeg, SDT_WAGROUPID_SORT )
         * SD_PAGE_SIZE
         - ID_SIZEOF( sdtTempMergeRunInfo ) * 2;
 
-    /* ÇÑ¹ø¿¡ MergeÇÒ ¼ö ÀÖ´Â RunÀÇ °³¼ö¸¦ °è»êÇÑ´Ù.
+    /* í•œë²ˆì— Mergeí•  ìˆ˜ ìžˆëŠ” Runì˜ ê°œìˆ˜ë¥¼ ê³„ì‚°í•œë‹¤.
      *
-     * °ø½ÄÀº ´ÙÀ½°°´Ù.
+     * ê³µì‹ì€ ë‹¤ìŒê°™ë‹¤.
      * MaxMergeRunCount = SortGroupSize / ( SlotSize * 3 + RunSize );
-     * (¿©±â¼­ RunÀº ½ÇÁ¦·Î RunÀÇ ³»¿ëÀ» °®°í ÀÖ´Â Page, 8192ÀÌ´Ù.)
-     * ÀÌ´Â Run ÇÏ³ª´ç SlotSize*3 + RunSize ¸¸Å­ÀÌ ÇÊ¿äÇÏ´Ù´Â °ÍÀÌ´Ù.
-     * RunSize´Â ´ç¿¬È÷ ±×·¸´ÙÁö¸¸ SlotÀÌ * 3¸¸Å­ ÃßÁ¤µÇ´Â ÀÌÀ¯´Â ´ÙÀ½°ú °°´Ù.
+     * (ì—¬ê¸°ì„œ Runì€ ì‹¤ì œë¡œ Runì˜ ë‚´ìš©ì„ ê°–ê³  ìžˆëŠ” Page, 8192ì´ë‹¤.)
+     * ì´ëŠ” Run í•˜ë‚˜ë‹¹ SlotSize*3 + RunSize ë§Œí¼ì´ í•„ìš”í•˜ë‹¤ëŠ” ê²ƒì´ë‹¤.
+     * RunSizeëŠ” ë‹¹ì—°ížˆ ê·¸ë ‡ë‹¤ì§€ë§Œ Slotì´ * 3ë§Œí¼ ì¶”ì •ë˜ëŠ” ì´ìœ ëŠ” ë‹¤ìŒê³¼ ê°™ë‹¤.
      *
-     * SlotÀº 2ÀÇ Á¦°ö ¸¸Å­ Ä¿Á®°¡¸ç È®ÀåÇÑ´Ù.
-     * 1°³ÀÇ RunÀº 1°³ÀÇ SlotÀ»,
-     * 2°³ÀÇ RunÀº 3°³ÀÇ SlotÀ»,
-     * 4°³ÀÇ RunÀº 7°³ÀÇ SlotÀ» ÇÊ¿ä·ÎÇÑ´Ù.
-     * 1,2,4,8, ÀÌ·±½ÄÀ¸·Î Ä¿Á®°¡±â ¶§¹®¿¡, ÀÌ»óÀûÀ¸·Î´Â SlotCount*2-1 ÀÌ´Ù.
+     * Slotì€ 2ì˜ ì œê³± ë§Œí¼ ì»¤ì ¸ê°€ë©° í™•ìž¥í•œë‹¤.
+     * 1ê°œì˜ Runì€ 1ê°œì˜ Slotì„,
+     * 2ê°œì˜ Runì€ 3ê°œì˜ Slotì„,
+     * 4ê°œì˜ Runì€ 7ê°œì˜ Slotì„ í•„ìš”ë¡œí•œë‹¤.
+     * 1,2,4,8, ì´ëŸ°ì‹ìœ¼ë¡œ ì»¤ì ¸ê°€ê¸° ë•Œë¬¸ì—, ì´ìƒì ìœ¼ë¡œëŠ” SlotCount*2-1 ì´ë‹¤.
      *
-     * °¡·É 64°³ÀÏ °æ¿ì, 127°³°¡ ÇÊ¿äÇÏ´Ù. 1+2+4+8+16+32+64 = 127ÀÌ±â ¶§¹®ÀÌ´Ù.
-     * ÇÏÁö¸¸ ÃÖ¾ÇÀÇ °æ¿ì, Áï SlotÀÌ 65°³ÀÏ °æ¿ì,
-     * 1+2+4+8+16+32+64+65 = 192°³°¡ ÇÊ¿äÇÏ´Ù.
-     * µû¶ó¼­ 3À» °öÇÏ¸é ÃÖ¾ÇÀÇ °æ¿ì¸¦ °í·ÁÇÒ ¼ö ÀÖ±â¿¡, *3 ÇÑ´Ù. */
+     * ê°€ë ¹ 64ê°œì¼ ê²½ìš°, 127ê°œê°€ í•„ìš”í•˜ë‹¤. 1+2+4+8+16+32+64 = 127ì´ê¸° ë•Œë¬¸ì´ë‹¤.
+     * í•˜ì§€ë§Œ ìµœì•…ì˜ ê²½ìš°, ì¦‰ Slotì´ 65ê°œì¼ ê²½ìš°,
+     * 1+2+4+8+16+32+64+65 = 192ê°œê°€ í•„ìš”í•˜ë‹¤.
+     * ë”°ë¼ì„œ 3ì„ ê³±í•˜ë©´ ìµœì•…ì˜ ê²½ìš°ë¥¼ ê³ ë ¤í•  ìˆ˜ ìžˆê¸°ì—, *3 í•œë‹¤. */
 
-    /* Ãß°¡·Î MaxRowPageCount Áï ÇÏ³ªÀÇ Row°¡ »ç¿ëÇÏ´Â ÃÖ´ë Page°³¼ö¿¡ °öÇÏ±â2
-     * ¸¦ ÇÏ¿© »ç¿ëÇÏ´Âµ¥, ÀÌ´Â Row¸¦ µÎ°³ ¿Ã¸®±â À§ÇÔÀÌ´Ù.
-     * ±×·¡¾ß ÇÏ³ªÀÇ Row¸¦ Fetch´ë»óÀ¸·Î Á¤ÇÏ°í ´ÙÀ½ Row¸¦ ¹Ì¸®
-     * HeapPopÇØ³öµµ, Fetch´ë»óÀÎ Row°¡ ³»·Á°¡Áö ¾Ê´Â´Ù. */
+    /* ì¶”ê°€ë¡œ MaxRowPageCount ì¦‰ í•˜ë‚˜ì˜ Rowê°€ ì‚¬ìš©í•˜ëŠ” ìµœëŒ€ Pageê°œìˆ˜ì— ê³±í•˜ê¸°2
+     * ë¥¼ í•˜ì—¬ ì‚¬ìš©í•˜ëŠ”ë°, ì´ëŠ” Rowë¥¼ ë‘ê°œ ì˜¬ë¦¬ê¸° ìœ„í•¨ì´ë‹¤.
+     * ê·¸ëž˜ì•¼ í•˜ë‚˜ì˜ Rowë¥¼ FetchëŒ€ìƒìœ¼ë¡œ ì •í•˜ê³  ë‹¤ìŒ Rowë¥¼ ë¯¸ë¦¬
+     * HeapPopí•´ë†”ë„, FetchëŒ€ìƒì¸ Rowê°€ ë‚´ë ¤ê°€ì§€ ì•ŠëŠ”ë‹¤. */
     sMergeRunCount = sSortGroupSize /
         ( ID_SIZEOF( sdtTempMergeRunInfo ) * 3 +
           aRowPageCount * 2 * SD_PAGE_SIZE );
@@ -249,12 +249,12 @@ UInt sdtSortModule::calcMaxMergeRunCount(
 
 /**************************************************************************
  * Description :
- *      RunInfo¸¦ ¹ÙÅÁÀ¸·Î, ±× RunInfo°¡ °¡¸®Å°´Â GRID¸¦ ¾ò¾î³½´Ù.
+ *      RunInfoë¥¼ ë°”íƒ•ìœ¼ë¡œ, ê·¸ RunInfoê°€ ê°€ë¦¬í‚¤ëŠ” GRIDë¥¼ ì–»ì–´ë‚¸ë‹¤.
  * <IN>
- * aHeader        - ´ë»ó Table
- * aRunInfo       - ¿øº»ÀÌ µÇ´Â RunInfo
+ * aHeader        - ëŒ€ìƒ Table
+ * aRunInfo       - ì›ë³¸ì´ ë˜ëŠ” RunInfo
  * <OUT>
- * aGRID          - ÇØ´ç RunÀÌ °¡¸®Å°´Â À§Ä¡
+ * aGRID          - í•´ë‹¹ Runì´ ê°€ë¦¬í‚¤ëŠ” ìœ„ì¹˜
  ***************************************************************************/
 void sdtSortModule::getGRIDFromRunInfo( smiTempTableHeader   * aHeader,
                                         sdtTempMergeRunInfo * aRunInfo,
@@ -270,7 +270,7 @@ void sdtSortModule::getGRIDFromRunInfo( smiTempTableHeader   * aHeader,
 
 /**************************************************************************
  * Description :
- *      RunInfo¸¦ ¹ÙÅÁÀ¸·Î, ±× ´ë»óÀÇ WPID¸¦ ¾ò¾î³¿
+ *      RunInfoë¥¼ ë°”íƒ•ìœ¼ë¡œ, ê·¸ ëŒ€ìƒì˜ WPIDë¥¼ ì–»ì–´ëƒ„
  *
  *
  * +-------------+---------------+---------------+---------------+
@@ -284,10 +284,10 @@ void sdtSortModule::getGRIDFromRunInfo( smiTempTableHeader   * aHeader,
  *
  *
  * <IN>
- * aHeader        - ´ë»ó Table
- * aRunInfo       - ¿øº»ÀÌ µÇ´Â RunInfo
+ * aHeader        - ëŒ€ìƒ Table
+ * aRunInfo       - ì›ë³¸ì´ ë˜ëŠ” RunInfo
  * <OUT>
- * aGRID          - ÇØ´ç RunÀÌ °¡¸®Å°´Â À§Ä¡
+ * aGRID          - í•´ë‹¹ Runì´ ê°€ë¦¬í‚¤ëŠ” ìœ„ì¹˜
  ***************************************************************************/
 scPageID sdtSortModule::getWPIDFromRunInfo( smiTempTableHeader * aHeader,
                                             UInt                 aRunNo,

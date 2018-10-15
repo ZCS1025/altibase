@@ -380,7 +380,7 @@ idrLSN idrLogMgr::writeNTALog( iduShmTxInfo   * aShmTxInfo,
                 sCurUImgInfo++;
             }
 
-            /* NTA LogÀÇ ±¸Á¶°¡ º¯°æµÇ´Â °ÍÀ» DetectÇÏ±â À§ÇØ¼­ */
+            /* NTA Logì˜ êµ¬ì¡°ê°€ ë³€ê²½ë˜ëŠ” ê²ƒì„ Detectí•˜ê¸° ìœ„í•´ì„œ */
             IDE_DASSERT( ID_SIZEOF(idrNTALogHead) ==
                          ID_SIZEOF(idrLogHead) + ID_SIZEOF(idrLSN) );
 
@@ -458,7 +458,7 @@ IDE_RC idrLogMgr::undoProcOrThr( idvSQL        * aStatistics,
         {
             IDE_DASSERT( ( aShmTxInfo->mLogBuffer + sCurLogOffset ) == sCurLogPtr );
 
-            /* Log type¿¡ µû¶ó¼­ Undo¸¦ ¼öÇàÇÑ´Ù. */
+            /* Log typeì— ë”°ë¼ì„œ Undoë¥¼ ìˆ˜í–‰í•œë‹¤. */
             idlOS::memcpy( &sLogHead, sCurLogPtr, ID_SIZEOF(idrLogHead) );
 
             sModuleType    = IDR_GET_MODULE_TYPE( sLogHead.mType );
@@ -541,8 +541,8 @@ IDE_RC idrLogMgr::undoProcOrThr( idvSQL        * aStatistics,
 
                 IDU_FIT_POINT( "idrLogMgr::undoProcOrThr::memcpy::sPrvLogSize" ); 
 
-                /* ¸ğµç Logical UndoÇÔ¼ö´Â Undo¿Ï·áÈÄ¿¡ ³»ºÎ¿¡¼­ ThreadÀÇ Log OffsetÀ»
-                 * ¹Ù²Ù¾î¾ß ÇÑ´Ù. */
+                /* ëª¨ë“  Logical Undoí•¨ìˆ˜ëŠ” Undoì™„ë£Œí›„ì— ë‚´ë¶€ì—ì„œ Threadì˜ Log Offsetì„
+                 * ë°”ê¾¸ì–´ì•¼ í•œë‹¤. */
                 idlOS::memcpy( &sPrvLogSize,
                                sCurLogPtr - ID_SIZEOF(idrLogTail),
                                ID_SIZEOF(UShort) );
@@ -552,8 +552,8 @@ IDE_RC idrLogMgr::undoProcOrThr( idvSQL        * aStatistics,
 
             IDE_ASSERT( sCurLogOffset >= sPrvLogSize );
 
-            /* Log Undo°¡ ¿Ï·áµÇ¾úÀ¸¹Ç·Î mLogOffsetÀ» ¿Å°Ü¼­ UndoµÈ ·Î±×°¡
-             * ¶Ç ¾ğµÎµÇ´Â °ÍÀ» ¹æÁöÇÑ´Ù. */
+            /* Log Undoê°€ ì™„ë£Œë˜ì—ˆìœ¼ë¯€ë¡œ mLogOffsetì„ ì˜®ê²¨ì„œ Undoëœ ë¡œê·¸ê°€
+             * ë˜ ì–¸ë‘ë˜ëŠ” ê²ƒì„ ë°©ì§€í•œë‹¤. */
             sCurLogOffset -= sPrvLogSize;
 
             sCurLogPtr -= sPrvLogSize;
@@ -868,10 +868,10 @@ IDE_RC idrLogMgr::releaseLatch2Svp( idvSQL         * aStatistics,
 
         if( sState4Proc == IDU_SHM_PROC_STATE_RECOVERY )
         {
-            // Watch DogÀÇ ÀÇÇÑ Undo½Ã ºñÁ¤»ó Á¾·áÇÑ ProcessÀÇ ProcInfoÀÇ StackÀÇ
-            // LatchInfoÀÇ Latch Pointer´Â Á×Àº Process¿¡¼­¸¸ À¯È¿ÇÏ°í, Watch Dog
-            // ÀÌ ¼ÓÇÑ Daemon Process¿¡¼­´Â ValidÇÏÁö ¾Ê±â¶§¹®¿¡, ´Ù½Ã º¸Á¤ÇØ ÁÖ¾î
-            // ÇÑ´Ù.
+            // Watch Dogì˜ ì˜í•œ Undoì‹œ ë¹„ì •ìƒ ì¢…ë£Œí•œ Processì˜ ProcInfoì˜ Stackì˜
+            // LatchInfoì˜ Latch PointerëŠ” ì£½ì€ Processì—ì„œë§Œ ìœ íš¨í•˜ê³ , Watch Dog
+            // ì´ ì†í•œ Daemon Processì—ì„œëŠ” Validí•˜ì§€ ì•Šê¸°ë•Œë¬¸ì—, ë‹¤ì‹œ ë³´ì •í•´ ì£¼ì–´
+            // í•œë‹¤.
             sLatchInfo->mObject =
                 IDU_SHM_GET_ADDR_PTR_CHECK( sLatchInfo->mAddr4Latch );
         }
@@ -886,7 +886,7 @@ IDE_RC idrLogMgr::releaseLatch2Svp( idvSQL         * aStatistics,
 
         case IDU_SX_LATCH_MODE_SHARED:
         case IDU_SX_LATCH_MODE_EXCLUSIVE:
-            /* iduShmSXLatchReleaseÇÔ¼ö³»¿¡¼­ StackÀÇ mCurSizeÀÇ °ªÀ» ¹Ù²Ù¾î ÁØ´Ù. */
+            /* iduShmSXLatchReleaseí•¨ìˆ˜ë‚´ì—ì„œ Stackì˜ mCurSizeì˜ ê°’ì„ ë°”ê¾¸ì–´ ì¤€ë‹¤. */
             IDE_ASSERT( iduShmSXLatchRelease( aStatistics,
                                               aShmTxInfo,
                                               sLatchInfo,
@@ -974,10 +974,10 @@ IDE_RC idrLogMgr::releaseSetLatch( idvSQL         * aStatistics,
 
         if( sState4Proc == IDU_SHM_PROC_STATE_RECOVERY )
         {
-            // Watch DogÀÇ ÀÇÇÑ Undo½Ã ºñÁ¤»ó Á¾·áÇÑ ProcessÀÇ ProcInfoÀÇ StackÀÇ
-            // LatchInfoÀÇ Latch Pointer´Â Á×Àº Process¿¡¼­¸¸ À¯È¿ÇÏ°í, Watch Dog
-            // ÀÌ ¼ÓÇÑ Daemon Process¿¡¼­´Â ValidÇÏÁö ¾Ê±â¶§¹®¿¡, ´Ù½Ã º¸Á¤ÇØ ÁÖ¾î
-            // ÇÑ´Ù.
+            // Watch Dogì˜ ì˜í•œ Undoì‹œ ë¹„ì •ìƒ ì¢…ë£Œí•œ Processì˜ ProcInfoì˜ Stackì˜
+            // LatchInfoì˜ Latch PointerëŠ” ì£½ì€ Processì—ì„œë§Œ ìœ íš¨í•˜ê³ , Watch Dog
+            // ì´ ì†í•œ Daemon Processì—ì„œëŠ” Validí•˜ì§€ ì•Šê¸°ë•Œë¬¸ì—, ë‹¤ì‹œ ë³´ì •í•´ ì£¼ì–´
+            // í•œë‹¤.
             sLatchInfo->mObject =
                 IDU_SHM_GET_ADDR_PTR_CHECK( sLatchInfo->mAddr4Latch );
         }
@@ -1142,8 +1142,8 @@ idBool idrLogMgr::isSetLatchAcquired( iduShmTxInfo      * aShmTxInfo,
 }
 
 /*****************************************************************************
- * Description : LPID¿¡ ÇØ´çÇÏ´Â ProcessÀÇ aShmTxID¸¦ °¡Áö´Â TransactionÀÇ Shared
- *               Memory Log¸¦ È­¸é¿¡ Ãâ·ÂÇÑ´Ù.
+ * Description : LPIDì— í•´ë‹¹í•˜ëŠ” Processì˜ aShmTxIDë¥¼ ê°€ì§€ëŠ” Transactionì˜ Shared
+ *               Memory Logë¥¼ í™”ë©´ì— ì¶œë ¥í•œë‹¤.
  *
  * [IN] aLPID    - Logical Process ID
  * [IN] aShmTxID - Global Shared Memory Transaction ID
@@ -1181,8 +1181,8 @@ IDE_RC idrLogMgr::dump( UInt aLPID, UInt aGblShmTxID )
 }
 
 /*****************************************************************************
- * Description : LPID¿¡ ÇØ´çÇÏ´Â ProcessÀÇ ¸ğµç Shared Memory TransactionÀÇ Shared
- *               Memory Log¸¦ È­¸é¿¡ Ãâ·ÂÇÑ´Ù.
+ * Description : LPIDì— í•´ë‹¹í•˜ëŠ” Processì˜ ëª¨ë“  Shared Memory Transactionì˜ Shared
+ *               Memory Logë¥¼ í™”ë©´ì— ì¶œë ¥í•œë‹¤.
  *
  * [IN] aLPID - Logical Process ID
  *
@@ -1234,7 +1234,7 @@ IDE_RC idrLogMgr::dumpAllTx4Process( UInt aLPID )
 }
 
 /*****************************************************************************
- * Description : aShmTxInfoÀÇ Shared Memory Transaction Log¸¦ È­¸é¿¡ Âï´Â´Ù.
+ * Description : aShmTxInfoì˜ Shared Memory Transaction Logë¥¼ í™”ë©´ì— ì°ëŠ”ë‹¤.
  *
  * [IN] aLPID    - Logical Process ID
  *
@@ -1266,7 +1266,7 @@ void idrLogMgr::dump( iduShmTxInfo * aShmTxInfo )
             sCurLogPtr     -= sPrvLogSize;
             sCurLogOffset  -= sPrvLogSize;
 
-            /* Log type¿¡ µû¶ó¼­ Undo¸¦ ¼öÇàÇÑ´Ù. */
+            /* Log typeì— ë”°ë¼ì„œ Undoë¥¼ ìˆ˜í–‰í•œë‹¤. */
             idlOS::memcpy( &sLogHead, sCurLogPtr, ID_SIZEOF(idrLogHead) );
 
             sModuleType    = IDR_GET_MODULE_TYPE( sLogHead.mType );
@@ -1300,8 +1300,8 @@ void idrLogMgr::dump( iduShmTxInfo * aShmTxInfo )
                                (UInt)sLogHead.mSize );
                 idlOS::fflush( NULL );
 
-                /* ¸ğµç Logical UndoÇÔ¼ö´Â Undo¿Ï·áÈÄ¿¡ ³»ºÎ¿¡¼­ ThreadÀÇ Log OffsetÀ»
-                 * ¹Ù²Ù¾î¾ß ÇÑ´Ù. */
+                /* ëª¨ë“  Logical Undoí•¨ìˆ˜ëŠ” Undoì™„ë£Œí›„ì— ë‚´ë¶€ì—ì„œ Threadì˜ Log Offsetì„
+                 * ë°”ê¾¸ì–´ì•¼ í•œë‹¤. */
                 idlOS::memcpy( &sPrvLogSize,
                                sCurLogPtr - ID_SIZEOF(idrLogTail),
                                ID_SIZEOF(UShort) );

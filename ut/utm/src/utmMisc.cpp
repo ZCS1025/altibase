@@ -26,8 +26,8 @@
 /**
  * utmSetErrorMsgAfterAllocEnv.
  *
- * SQLAllocEnv() È£Ãâ¿¡¼­ ¿À·ù ¹ß»ı ½Ã
- * Àü¿ª º¯¼ö gErrorMgr¿¡ ¿À·ù Á¤º¸¸¦ ¼³Á¤ÇÑ´Ù.
+ * SQLAllocEnv() í˜¸ì¶œì—ì„œ ì˜¤ë¥˜ ë°œìƒ ì‹œ
+ * ì „ì—­ ë³€ìˆ˜ gErrorMgrì— ì˜¤ë¥˜ ì •ë³´ë¥¼ ì„¤ì •í•œë‹¤.
  */
 IDE_RC utmSetErrorMsgAfterAllocEnv()
 {
@@ -38,7 +38,7 @@ IDE_RC utmSetErrorMsgAfterAllocEnv()
 /**
  * utmSetErrorMsgWithHandle.
  *
- * ÇÚµé°ú ¿¬°üµÈ ¿À·ù Á¤º¸¸¦ ¾ò¾î¿Í Àü¿ª º¯¼ö gErrorMgr¿¡ ¼³Á¤ÇÑ´Ù.
+ * í•¸ë“¤ê³¼ ì—°ê´€ëœ ì˜¤ë¥˜ ì •ë³´ë¥¼ ì–»ì–´ì™€ ì „ì—­ ë³€ìˆ˜ gErrorMgrì— ì„¤ì •í•œë‹¤.
  */
 IDE_RC utmSetErrorMsgWithHandle(SQLSMALLINT aHandleType,
                                        SQLHANDLE   aHandle)
@@ -121,7 +121,7 @@ void eraseWhiteSpace( SChar * buf )
     SInt i, j;
     SInt len;
 
-    // 1. ¨úO¢¯¢®¨ù¡© ¨¬IAI ¡ÆE¡íc ¨öAAU..
+    // 1. Â¾OÂ¿Â¡Â¼Â­ ÂºIAI Â°Eâ‰«c Â½AAU..
 
     len = idlOS::strlen(buf);
     if( len <= 0 )
@@ -131,7 +131,7 @@ void eraseWhiteSpace( SChar * buf )
 
     for (i=0; i<len && buf[i]; i++)
     {
-        if (buf[i]==' ') // ¨ö¨¬¨¡aAI¨ö¨¬ AO
+        if (buf[i]==' ') // Â½ÂºÃ†aAIÂ½Âº AO
         {
             for (j=i; buf[j]; j++)
             {
@@ -145,7 +145,7 @@ void eraseWhiteSpace( SChar * buf )
         }
     }
 
-    // 2. ©ø¢®¢¯¢®¨ù¡© ¨¬IAI ¡ÆE¡íc ¨öAAU.. : ¨ö¨¬¨¡aAI¨ö¨¬ ¨ú©ª¨úO¡¾a
+    // 2. Â³Â¡Â¿Â¡Â¼Â­ ÂºIAI Â°Eâ‰«c Â½AAU.. : Â½ÂºÃ†aAIÂ½Âº Â¾Ã¸Â¾OÂ±a
 
     len = idlOS::strlen(buf);
     if( len <= 0 )
@@ -155,7 +155,7 @@ void eraseWhiteSpace( SChar * buf )
 
     for (i=len-1; buf[i] && len>=0; i--)
     {
-        if (buf[i]==' ') // ¨ö¨¬¨¡aAI¨ö¨¬ ¨ú©ª¨úO¡¾a
+        if (buf[i]==' ') // Â½ÂºÃ†aAIÂ½Âº Â¾Ã¸Â¾OÂ±a
         {
             buf[i] = 0;
         }

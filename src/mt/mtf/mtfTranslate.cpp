@@ -43,7 +43,7 @@ static IDE_RC mtfTranslateEstimate( mtcNode*     aNode,
 mtfModule mtfTranslate = {
     1|MTC_NODE_OPERATOR_FUNCTION,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
+    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìê°€ ì•„ë‹˜)
     mtfTranslateFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -90,13 +90,13 @@ const mtcExecute mtfExecuteNchar = {
  *    IDE_RC mtfTranslateEstimate()
  *
  * Argument :
- *    aNode - ÀÔ·ÂÁ¤º¸
- *    aStack - ÀÔ·Â°ª
+ *    aNode - ì…ë ¥ì •ë³´
+ *    aStack - ì…ë ¥ê°’
  *
  * Description :
- *    1. ¾Æ±Ô¸ÕÆ® ÀÔ·Â°³¼ö°¡ 3°³ÀÎÁö , ¾Æ´Ï¸é ¿¡·¯!
- *    2. *sModules[0]->language->translate ¸¦ ½ÇÇà
- *    3. precision °è»ê
+ *    1. ì•„ê·œë¨¼íŠ¸ ì…ë ¥ê°œìˆ˜ê°€ 3ê°œì¸ì§€ , ì•„ë‹ˆë©´ ì—ëŸ¬!
+ *    2. *sModules[0]->language->translate ë¥¼ ì‹¤í–‰
+ *    3. precision ê³„ì‚°
  * ---------------------------------------------------------------------------*/
 IDE_RC mtfTranslateEstimate( mtcNode*     aNode,
                              mtcTemplate* aTemplate,
@@ -195,8 +195,8 @@ IDE_RC mtfTranslateCommon( const mtlModule * aLanguage,
  * Implementation :
  *    TRANSLATE( char, string1, string2 )
  *   
- *    aStack[0] : string1ÀÇ °¢ ¹®ÀÚ¿¡ ´ëÀÀÇÏ´Â string2ÀÇ °¢ ¹®ÀÚ·Î ±³Ã¼
- *                µÈ char
+ *    aStack[0] : string1ì˜ ê° ë¬¸ìì— ëŒ€ì‘í•˜ëŠ” string2ì˜ ê° ë¬¸ìë¡œ êµì²´
+ *                ëœ char
  *    aStack[1] : string1
  *    aStack[2] : string2
  *
@@ -228,7 +228,7 @@ IDE_RC mtfTranslateCommon( const mtlModule * aLanguage,
     while ( sSourceIndex < sSourceFence )
     {
         //---------------------------------
-        // Source¿¡¼­ from string°ú µ¿ÀÏÇÑ ¹®ÀÚ Ã£±â
+        // Sourceì—ì„œ from stringê³¼ ë™ì¼í•œ ë¬¸ì ì°¾ê¸°
         //---------------------------------
         
         sSourceSize =  mtl::getOneCharSize( sSourceIndex,
@@ -256,7 +256,7 @@ IDE_RC mtfTranslateCommon( const mtlModule * aLanguage,
             }
             else
             {
-                // ´ÙÀ½ From ¹®ÀÚ·Î ÁøÇà
+                // ë‹¤ìŒ From ë¬¸ìë¡œ ì§„í–‰
                 (void)aLanguage->nextCharPtr( &sFromIndex, sFromFence );
         
                 sFromStart++;
@@ -264,13 +264,13 @@ IDE_RC mtfTranslateCommon( const mtlModule * aLanguage,
         }
 
         //---------------------------------
-        // - µ¿ÀÏ ¹®ÀÚ ¾ø´Â °æ¿ì: ±âÁ¸ ¹®ÀÚ¸¦ °á°ú¿¡ copy
-        // - µ¿ÀÏ ¹®ÀÚ ÀÖ´Â °æ¿ì: From ¹®ÀÚ ´ë½Å To ¹®ÀÚ¸¦ °á°ú¿¡ copy 
+        // - ë™ì¼ ë¬¸ì ì—†ëŠ” ê²½ìš°: ê¸°ì¡´ ë¬¸ìë¥¼ ê²°ê³¼ì— copy
+        // - ë™ì¼ ë¬¸ì ìˆëŠ” ê²½ìš°: From ë¬¸ì ëŒ€ì‹  To ë¬¸ìë¥¼ ê²°ê³¼ì— copy 
         //---------------------------------
 
         sSourceIndexPrev = sSourceIndex;
         
-        // ´ÙÀ½ source ¹®ÀÚ·Î ÁøÇà
+        // ë‹¤ìŒ source ë¬¸ìë¡œ ì§„í–‰
         (void)aLanguage->nextCharPtr( & sSourceIndex, sSourceFence );
         
         if ( sIsSame == ID_FALSE )
@@ -289,7 +289,7 @@ IDE_RC mtfTranslateCommon( const mtlModule * aLanguage,
         else
         {
             //---------------------------------
-            // ´ëÀÀµÇ´Â To ¹®ÀÚ ¹®ÀÚ Ã£±â
+            // ëŒ€ì‘ë˜ëŠ” To ë¬¸ì ë¬¸ì ì°¾ê¸°
             //---------------------------------
             
             sToIndex = aTo;
@@ -328,7 +328,7 @@ IDE_RC mtfTranslateCommon( const mtlModule * aLanguage,
             }
             else
             {
-                // µ¿ÀÏ ¹®ÀÚ Ã£¾ÒÁö¸¸, ´ëÀÀµÇ´Â To ¹®ÀÚ°¡ ¾ø´Â °æ¿ì
+                // ë™ì¼ ë¬¸ì ì°¾ì•˜ì§€ë§Œ, ëŒ€ì‘ë˜ëŠ” To ë¬¸ìê°€ ì—†ëŠ” ê²½ìš°
             }
         }
     }
@@ -360,8 +360,8 @@ IDE_RC mtfTranslateCalculate( mtcNode*     aNode,
  * Implementation :
  *    TRANSLATE( char, string1, string2 )
  *   
- *    aStack[0] : string1ÀÇ °¢ ¹®ÀÚ¿¡ ´ëÀÀÇÏ´Â string2ÀÇ °¢ ¹®ÀÚ·Î ±³Ã¼
- *                µÈ char
+ *    aStack[0] : string1ì˜ ê° ë¬¸ìì— ëŒ€ì‘í•˜ëŠ” string2ì˜ ê° ë¬¸ìë¡œ êµì²´
+ *                ëœ char
  *    aStack[1] : string1
  *    aStack[2] : string2
  *
@@ -435,8 +435,8 @@ IDE_RC mtfTranslateCalculateNchar( mtcNode*     aNode,
  * Implementation :
  *    TRANSLATE( char, string1, string2 )
  *   
- *    aStack[0] : string1ÀÇ °¢ ¹®ÀÚ¿¡ ´ëÀÀÇÏ´Â string2ÀÇ °¢ ¹®ÀÚ·Î ±³Ã¼
- *                µÈ char
+ *    aStack[0] : string1ì˜ ê° ë¬¸ìì— ëŒ€ì‘í•˜ëŠ” string2ì˜ ê° ë¬¸ìë¡œ êµì²´
+ *                ëœ char
  *    aStack[1] : string1
  *    aStack[2] : string2
  *

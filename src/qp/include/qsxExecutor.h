@@ -95,9 +95,9 @@ private:
         qsxExecutorInfo * aExecInfo,
         UInt              aIdeErrorCode);
 
-    // PROJ-1335, To fix BUG-12475 GOTO Áö¿ø
-    // ÇØ´ç statement¿¡ labelID¿Í °°Àº °ÍÀÌ Á¸ÀçÇÏ´ÂÁö
-    // °Ë»çÇÏ°í, Á¸ÀçÇÏ¸é aLabel¿¡ labelÀÇ Æ÷ÀÎÅÍ¸¦ ³Ñ°ÜÁÜ
+    // PROJ-1335, To fix BUG-12475 GOTO ì§€ì›
+    // í•´ë‹¹ statementì— labelIDì™€ ê°™ì€ ê²ƒì´ ì¡´ì¬í•˜ëŠ”ì§€
+    // ê²€ì‚¬í•˜ê³ , ì¡´ì¬í•˜ë©´ aLabelì— labelì˜ í¬ì¸í„°ë¥¼ ë„˜ê²¨ì¤Œ
     static idBool findLabel( qsProcStmts *  aProcStmt,
                              SInt           aLabelID,
                              qsLabels    ** aLabel );
@@ -246,14 +246,14 @@ public:
         qsProcStmts     * aProcIf);
 
     // PROJ-1335, To Fix BUG-12475
-    // GOTO ¹®À» À§ÇØ Ãß°¡ÇÔ
+    // GOTO ë¬¸ì„ ìœ„í•´ ì¶”ê°€í•¨
     static IDE_RC execThen (
         qsxExecutorInfo * aExecInfo,
         qcStatement     * aQcStmt,
         qsProcStmts     * aProcThen);
 
     // PROJ-1335, To Fix BUG-12475
-    // GOTO ¹®À» À§ÇØ Ãß°¡ÇÔ
+    // GOTO ë¬¸ì„ ìœ„í•´ ì¶”ê°€í•¨
     static IDE_RC execElse (
         qsxExecutorInfo * aExecInfo,
         qcStatement     * aQcStmt,

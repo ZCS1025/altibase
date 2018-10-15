@@ -47,7 +47,7 @@ iSQLExecuteCommand::Startup(SChar * aCmdStr, SInt aMode, iSQLForkRunType aRunWSe
 {
     SChar sQueryStr[31];
 
-    /* BUG-27966: ÇÁ·ÎÆÛÆ¼ ÆÄÀÏ¿¡ ¹®Á¦°¡ ÀÖÀ¸¸é ¿¡·¯¸¦ Ãâ·ÂÇÏ°í ¹Ù·Î Á¾·á */
+    /* BUG-27966: í”„ë¡œí¼í‹° íŒŒì¼ì— ë¬¸ì œê°€ ìžˆìœ¼ë©´ ì—ëŸ¬ë¥¼ ì¶œë ¥í•˜ê³  ë°”ë¡œ ì¢…ë£Œ */
     IDE_TEST_RAISE(gProgOption.IsServPropsLoaded() == ID_FALSE, InitError);
 
     if (aMode == STARTUP_COM)

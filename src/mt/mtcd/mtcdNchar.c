@@ -171,19 +171,19 @@ mtdModule mtcdNchar = {
     {
         // Key Comparison
         {
-            // mt valueµé °£ÀÇ compare 
+            // mt valueë“¤ ê°„ì˜ compare 
             mtdNcharMtdMtdKeyAscComp, // Ascending Key Comparison
             mtdNcharMtdMtdKeyDescComp // Descending Key Comparison
         }
         ,
         {
-            // mt value¿Í stored value°£ÀÇ compare 
+            // mt valueì™€ stored valueê°„ì˜ compare 
             mtdNcharStoredMtdKeyAscComp, // Ascending Key Comparison
             mtdNcharStoredMtdKeyDescComp // Descending Key Comparison
         }
         ,
         {
-            // stored valueµé °£ÀÇ compare 
+            // stored valueë“¤ ê°„ì˜ compare 
             mtdNcharStoredStoredKeyAscComp, // Ascending Key Comparison
             mtdNcharStoredStoredKeyDescComp // Descending Key Comparison
         }
@@ -209,7 +209,7 @@ ACI_RC mtdInitializeNchar( acp_uint32_t aNo )
     ACI_TEST( mtdInitializeModule( &mtcdNchar, aNo )
               != ACI_SUCCESS );
     
-    // mtdColumnÀÇ ÃÊ±âÈ­
+    // mtdColumnì˜ ì´ˆê¸°í™”
     ACI_TEST( mtcInitializeColumn( & mtdColumn,
                                    & mtcdNchar,
                                    0,   // arguments
@@ -287,8 +287,8 @@ ACI_RC mtdValue( mtcTemplate*  aTemplate,
  * Description : PROJ-1579 NCHAR
  *
  * Implementation :
- *      NCHAR ¸®ÅÍ·², À¯´ÏÄÚµå ¸®ÅÍ·², ÀÏ¹İ ¸®ÅÍ·²ÀÎÁö¿¡ µû¶ó
- *      ´Ù¸£°Ô value¸¦ ±¸ÇÑ´Ù.
+ *      NCHAR ë¦¬í„°ëŸ´, ìœ ë‹ˆì½”ë“œ ë¦¬í„°ëŸ´, ì¼ë°˜ ë¦¬í„°ëŸ´ì¸ì§€ì— ë”°ë¼
+ *      ë‹¤ë¥´ê²Œ valueë¥¼ êµ¬í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -316,18 +316,18 @@ ACI_RC mtdValue( mtcTemplate*  aTemplate,
     *aResult = ACI_SUCCESS;
 
     // -------------------------------------------------------------------
-    // N'¾È'°ú °°ÀÌ NCHAR ¸®ÅÍ·²À» »ç¿ëÇÑ °æ¿ì,
-    // NLS_NCHAR_LITERAL_REPLACE°¡ TRUEÀÏ °æ¿ì¿¡´Â ¼­¹ö·Î
-    // Å¬¶óÀÌ¾ğÆ® Ä³¸¯ÅÍ ¼ÂÀÌ ±×´ë·Î Àü¼ÛµÈ´Ù.
+    // N'ì•ˆ'ê³¼ ê°™ì´ NCHAR ë¦¬í„°ëŸ´ì„ ì‚¬ìš©í•œ ê²½ìš°,
+    // NLS_NCHAR_LITERAL_REPLACEê°€ TRUEì¼ ê²½ìš°ì—ëŠ” ì„œë²„ë¡œ
+    // í´ë¼ì´ì–¸íŠ¸ ìºë¦­í„° ì…‹ì´ ê·¸ëŒ€ë¡œ ì „ì†¡ëœë‹¤.
     //
-    // µû¶ó¼­ Å¬¶óÀÌ¾ğÆ®°¡ Àü¼ÛÇØÁØ È¯°æ º¯¼ö¸¦ º¸°í SrcCharSetÀ» °áÁ¤ÇÑ´Ù.
-    // 1. TRUE:  Å¬¶óÀÌ¾ğÆ® Ä³¸¯ÅÍ ¼Â   =>  ³»¼Å³Î Ä³¸¯ÅÍ ¼Â
-    // 2. FALSE: µ¥ÀÌÅÍº£ÀÌ½º Ä³¸¯ÅÍ ¼Â =>  ³»¼Å³Î Ä³¸¯ÅÍ ¼Â
+    // ë”°ë¼ì„œ í´ë¼ì´ì–¸íŠ¸ê°€ ì „ì†¡í•´ì¤€ í™˜ê²½ ë³€ìˆ˜ë¥¼ ë³´ê³  SrcCharSetì„ ê²°ì •í•œë‹¤.
+    // 1. TRUE:  í´ë¼ì´ì–¸íŠ¸ ìºë¦­í„° ì…‹   =>  ë‚´ì…”ë„ ìºë¦­í„° ì…‹
+    // 2. FALSE: ë°ì´í„°ë² ì´ìŠ¤ ìºë¦­í„° ì…‹ =>  ë‚´ì…”ë„ ìºë¦­í„° ì…‹
     //
-    // ÆÄ½Ì ´Ü°è¿¡¼­ ÀÌ È¯°æ º¯¼ö°¡ TRUEÀÏ °æ¿ì¿¡¸¸ NCHAR ¸®ÅÍ·²·Î Ã³¸®µÇ¹Ç·Î 
-    // ¿©±â¼­ È¯°æ º¯¼ö¸¦ ´Ù½Ã Ã¼Å©ÇÒ ÇÊ¿ä´Â ¾ø´Ù.
+    // íŒŒì‹± ë‹¨ê³„ì—ì„œ ì´ í™˜ê²½ ë³€ìˆ˜ê°€ TRUEì¼ ê²½ìš°ì—ë§Œ NCHAR ë¦¬í„°ëŸ´ë¡œ ì²˜ë¦¬ë˜ë¯€ë¡œ 
+    // ì—¬ê¸°ì„œ í™˜ê²½ ë³€ìˆ˜ë¥¼ ë‹¤ì‹œ ì²´í¬í•  í•„ìš”ëŠ” ì—†ë‹¤.
     // 
-    // aTemplate->nlsUse´Â Å¬¶óÀÌ¾ğÆ® Ä³¸¯ÅÍ ¼ÂÀÌ´Ù.(ALTIBASE_NLS_USE)
+    // aTemplate->nlsUseëŠ” í´ë¼ì´ì–¸íŠ¸ ìºë¦­í„° ì…‹ì´ë‹¤.(ALTIBASE_NLS_USE)
     // -------------------------------------------------------------------
 
     sColLanguage = aColumn->language;
@@ -348,8 +348,8 @@ ACI_RC mtdValue( mtcTemplate*  aTemplate,
     }
 
     // To fix BUG-13444
-    // tokenFence¿Í RowFence´Â º°°³ÀÇ °Ë»ç°úÁ¤ÀÌ¹Ç·Î,
-    // ¸ÕÀú RowFence°Ë»ç ÈÄ TokenFence°Ë»ç¸¦ ÇØ¾ß ÇÑ´Ù.
+    // tokenFenceì™€ RowFenceëŠ” ë³„ê°œì˜ ê²€ì‚¬ê³¼ì •ì´ë¯€ë¡œ,
+    // ë¨¼ì € RowFenceê²€ì‚¬ í›„ TokenFenceê²€ì‚¬ë¥¼ í•´ì•¼ í•œë‹¤.
     sIterator = sValue->value;
     sFence    = (acp_uint8_t*)aValue + aValueSize;
 
@@ -463,7 +463,7 @@ ACI_RC mtdValue( mtcTemplate*  aTemplate,
     {
         sValue->length     = sIterator - sValue->value;
 
-        // precision, scale Àç ¼³Á¤ ÈÄ, estimate·Î semantic °Ë»ç
+        // precision, scale ì¬ ì„¤ì • í›„, estimateë¡œ semantic ê²€ì‚¬
         aColumn->flag      = 1;
 
         aColumn->precision = sValue->length != 0 ? sNcharCnt : 1;
@@ -532,7 +532,7 @@ static ACI_RC mtdGetPrecision( const mtcColumn* aColumn,
     sLanguage = aColumn->language;
 
     // --------------------------
-    // ValueÀÇ ¹®ÀÚ °³¼ö
+    // Valueì˜ ë¬¸ì ê°œìˆ˜
     // --------------------------
     
     sValueIndex = (acp_uint8_t*) sValue->value;
@@ -630,7 +630,7 @@ mtdNcharMtdMtdKeyAscComp( mtdValueInfo* aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd Å¸ÀÔÀÇ Keyµé °£ÀÇ ascending compare
+ * Description : Mtd íƒ€ì…ì˜ Keyë“¤ ê°„ì˜ ascending compare
  *
  * Implementation :
  *
@@ -777,7 +777,7 @@ mtdNcharMtdMtdKeyDescComp( mtdValueInfo* aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd Å¸ÀÔÀÇ Keyµé °£ÀÇ descending compare
+ * Description : Mtd íƒ€ì…ì˜ Keyë“¤ ê°„ì˜ descending compare
  *
  * Implementation :
  *
@@ -922,7 +922,7 @@ mtdNcharStoredMtdKeyAscComp( mtdValueInfo* aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd Å¸ÀÔÀÇ Key¿Í Stored Key °£ÀÇ ascending compare
+ * Description : Mtd íƒ€ì…ì˜ Keyì™€ Stored Key ê°„ì˜ ascending compare
  *
  * Implementation :
  *
@@ -1062,7 +1062,7 @@ mtdNcharStoredMtdKeyDescComp( mtdValueInfo* aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd Å¸ÀÔÀÇ Key¿Í Stored Key °£ÀÇ descending compare
+ * Description : Mtd íƒ€ì…ì˜ Keyì™€ Stored Key ê°„ì˜ descending compare
  *
  * Implementation :
  *
@@ -1201,7 +1201,7 @@ mtdNcharStoredStoredKeyAscComp( mtdValueInfo* aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Stored Keyµé °£ÀÇ ascending compare
+ * Description : Stored Keyë“¤ ê°„ì˜ ascending compare
  *
  * Implementation :
  *
@@ -1333,7 +1333,7 @@ mtdNcharStoredStoredKeyDescComp( mtdValueInfo* aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Stored Keyµé °£ÀÇ descending compare
+ * Description : Stored Keyë“¤ ê°„ì˜ descending compare
  *
  * Implementation :
  *
@@ -1487,7 +1487,7 @@ static ACI_RC mtdCanonize( const mtcColumn* aCanon,
     //sCanonBytePrecision = sLanguage->maxPrecision(aCanon->precision);
 
     // --------------------------
-    // ValueÀÇ ¹®ÀÚ °³¼ö
+    // Valueì˜ ë¬¸ì ê°œìˆ˜
     // --------------------------
     sValueIndex = sValue->value;
     sValueFence = sValueIndex + sValue->length;
@@ -1576,7 +1576,7 @@ ACI_RC mtdValidate( mtcColumn*    aColumn,
 {
 /***********************************************************************
  *
- * Description : valueÀÇ semantic °Ë»ç ¹× mtcColum ÃÊ±âÈ­
+ * Description : valueì˜ semantic ê²€ì‚¬ ë° mtcColum ì´ˆê¸°í™”
  *
  * Implementation :
  *
@@ -1589,9 +1589,9 @@ ACI_RC mtdValidate( mtcColumn*    aColumn,
     ACI_TEST_RAISE( sCharVal->length + sizeof(acp_uint16_t) != aValueSize,
                     ERR_INVALID_LENGTH );
 
-    // ÃÊ±âÈ­µÈ aColumnÀº cannonize() ½Ã¿¡ »ç¿ë
-    // ÀÌ¶§, data type moduleÀÇ precision Á¤º¸¸¸À» »ç¿ëÇÏ¹Ç·Î,
-    // language Á¤º¸ ¼³Á¤ÇÒ ÇÊ¿ä¾øÀ½
+    // ì´ˆê¸°í™”ëœ aColumnì€ cannonize() ì‹œì— ì‚¬ìš©
+    // ì´ë•Œ, data type moduleì˜ precision ì •ë³´ë§Œì„ ì‚¬ìš©í•˜ë¯€ë¡œ,
+    // language ì •ë³´ ì„¤ì •í•  í•„ìš”ì—†ìŒ
     ACI_TEST( mtcInitializeColumn( aColumn,
                                    & mtcdNchar,
                                    1,                // arguments
@@ -1632,7 +1632,7 @@ ACI_RC mtdValueFromOracle( mtcColumn*    aColumn,
         aOracleLength = 0;
     }
 
-    // aColumnÀÇ ÃÊ±âÈ­
+    // aColumnì˜ ì´ˆê¸°í™”
     ACI_TEST( mtcInitializeColumn( aColumn,
                                    & mtcdNchar,
                                    1,
@@ -1674,8 +1674,8 @@ static ACI_RC mtdStoredValue2MtdValue( acp_uint32_t      aColumnSize,
 {
 /*******************************************************************
  * PROJ-1705
- * µğ½ºÅ©Å×ÀÌºíÄÃ·³ÀÇ µ¥ÀÌÅ¸¸¦
- * qp ·¹ÄÚµåÃ³¸®¿µ¿ªÀÇ ÇØ´ç ÄÃ·³À§Ä¡¿¡ º¹»ç
+ * ë””ìŠ¤í¬í…Œì´ë¸”ì»¬ëŸ¼ì˜ ë°ì´íƒ€ë¥¼
+ * qp ë ˆì½”ë“œì²˜ë¦¬ì˜ì—­ì˜ í•´ë‹¹ ì»¬ëŸ¼ìœ„ì¹˜ì— ë³µì‚¬
  *******************************************************************/
 
     mtdNcharType* sNcharValue;
@@ -1684,7 +1684,7 @@ static ACI_RC mtdStoredValue2MtdValue( acp_uint32_t      aColumnSize,
     
     if( ( aDestValueOffset == 0 ) && ( aLength == 0 ) )
     {
-        // NULL µ¥ÀÌÅ¸
+        // NULL ë°ì´íƒ€
         sNcharValue->length = 0;
     }
     else
@@ -1711,9 +1711,9 @@ acp_uint32_t mtdNullValueSize()
 {
 /*******************************************************************
  * PROJ-1705
- * °¢ µ¥ÀÌÅ¸Å¸ÀÔÀÇ null ValueÀÇ Å©±â ¹İÈ¯
- * ¿¹ ) mtdNcharType ( acp_uint16_t length; acp_uint8_t value[1] ) ¿¡¼­
- *      lengthÅ¸ÀÔÀÎ acp_uint16_tÀÇ Å©±â¸¦ ¹İÈ¯
+ * ê° ë°ì´íƒ€íƒ€ì…ì˜ null Valueì˜ í¬ê¸° ë°˜í™˜
+ * ì˜ˆ ) mtdNcharType ( acp_uint16_t length; acp_uint8_t value[1] ) ì—ì„œ
+ *      lengthíƒ€ì…ì¸ acp_uint16_tì˜ í¬ê¸°ë¥¼ ë°˜í™˜
  *******************************************************************/
 
     return mtdActualSize( NULL,
@@ -1725,10 +1725,10 @@ static acp_uint32_t mtdHeaderSize()
 {
 /***********************************************************************
  * PROJ-1705
- * length¸¦ °¡Áö´Â µ¥ÀÌÅ¸Å¸ÀÔÀÇ length Á¤º¸¸¦ ÀúÀåÇÏ´Â º¯¼öÀÇ Å©±â ¹İÈ¯
- * ¿¹ ) mtdNcharType ( acp_uint16_t length; acp_uint8_t value[1] ) ¿¡¼­
- *      lengthÅ¸ÀÔÀÎ acp_uint16_tÀÇ Å©±â¸¦ ¹İÈ¯
- *  integer¿Í °°Àº °íÁ¤±æÀÌ µ¥ÀÌÅ¸Å¸ÀÔÀº 0 ¹İÈ¯
+ * lengthë¥¼ ê°€ì§€ëŠ” ë°ì´íƒ€íƒ€ì…ì˜ length ì •ë³´ë¥¼ ì €ì¥í•˜ëŠ” ë³€ìˆ˜ì˜ í¬ê¸° ë°˜í™˜
+ * ì˜ˆ ) mtdNcharType ( acp_uint16_t length; acp_uint8_t value[1] ) ì—ì„œ
+ *      lengthíƒ€ì…ì¸ acp_uint16_tì˜ í¬ê¸°ë¥¼ ë°˜í™˜
+ *  integerì™€ ê°™ì€ ê³ ì •ê¸¸ì´ ë°ì´íƒ€íƒ€ì…ì€ 0 ë°˜í™˜
  **********************************************************************/
 
     return sizeof(acp_uint16_t);
@@ -1743,7 +1743,7 @@ ACI_RC mtdNcharInterfaceToNchar( mtcStack*        aStack,
 /***********************************************************************
  *
  * Description : 
- *      CHAR Å¸ÀÔÀ» NCHAR Å¸ÀÔÀ¸·Î º¯È¯ÇÏ´Â ÇÔ¼ö
+ *      CHAR íƒ€ì…ì„ NCHAR íƒ€ì…ìœ¼ë¡œ ë³€í™˜í•˜ëŠ” í•¨ìˆ˜
 
  * Implementation :
  *
@@ -1761,7 +1761,7 @@ ACI_RC mtdNcharInterfaceToNchar( mtcStack*        aStack,
     acp_sint32_t         sDestRemain = 0;
     acp_sint32_t         sTempRemain = 0;
 
-    // º¯È¯ °á°úÀÇ Å©±â¸¦ Ã¼Å©ÇÏ±â À§ÇÔ
+    // ë³€í™˜ ê²°ê³¼ì˜ í¬ê¸°ë¥¼ ì²´í¬í•˜ê¸° ìœ„í•¨
     sDestRemain = aDestCharSet->maxPrecision(aStack[0].column->precision);
 
     sSourceIndex = aSource->value;
@@ -1777,7 +1777,7 @@ ACI_RC mtdNcharInterfaceToNchar( mtcStack*        aStack,
         sIdnDestCharSet = mtlGetIdnCharSet( aDestCharSet );
 
         //-----------------------------------------
-        // Ä³¸¯ÅÍ ¼Â º¯È¯
+        // ìºë¦­í„° ì…‹ ë³€í™˜
         //-----------------------------------------
         while( sSourceIndex < sSourceFence )
         {
@@ -1846,7 +1846,7 @@ ACI_RC mtdNcharInterfaceToNchar2( mtcStack*        aStack,
 /***********************************************************************
  *
  * Description : 
- *      CHAR Å¸ÀÔÀ» NCHAR Å¸ÀÔÀ¸·Î º¯È¯ÇÏ´Â ÇÔ¼ö
+ *      CHAR íƒ€ì…ì„ NCHAR íƒ€ì…ìœ¼ë¡œ ë³€í™˜í•˜ëŠ” í•¨ìˆ˜
 
  * Implementation :
  *
@@ -1864,7 +1864,7 @@ ACI_RC mtdNcharInterfaceToNchar2( mtcStack*        aStack,
     acp_sint32_t           sDestRemain = 0;
     acp_sint32_t           sTempRemain = 0;
 
-    // º¯È¯ °á°úÀÇ Å©±â¸¦ Ã¼Å©ÇÏ±â À§ÇÔ
+    // ë³€í™˜ ê²°ê³¼ì˜ í¬ê¸°ë¥¼ ì²´í¬í•˜ê¸° ìœ„í•¨
     sDestRemain = aDestCharSet->maxPrecision(aStack[0].column->precision);
 
     sSourceIndex = aSource;
@@ -1880,7 +1880,7 @@ ACI_RC mtdNcharInterfaceToNchar2( mtcStack*        aStack,
         sIdnDestCharSet = mtlGetIdnCharSet( aDestCharSet );
 
         //-----------------------------------------
-        // Ä³¸¯ÅÍ ¼Â º¯È¯
+        // ìºë¦­í„° ì…‹ ë³€í™˜
         //-----------------------------------------
         while( sSourceIndex < sSourceFence )
         {
@@ -1947,7 +1947,7 @@ ACI_RC mtdNcharInterfaceToChar( mtcStack*        aStack,
 /***********************************************************************
  *
  * Description :
- *      NCHAR Å¸ÀÔÀ» CHAR Å¸ÀÔÀ¸·Î º¯È¯ÇÏ´Â ÇÔ¼ö
+ *      NCHAR íƒ€ì…ì„ CHAR íƒ€ì…ìœ¼ë¡œ ë³€í™˜í•˜ëŠ” í•¨ìˆ˜
 
  * Implementation :
  *
@@ -1965,7 +1965,7 @@ ACI_RC mtdNcharInterfaceToChar( mtcStack*        aStack,
     acp_sint32_t         sTempRemain = 0;
     acp_uint16_t         sSourceLen;
 
-    // º¯È¯ °á°úÀÇ Å©±â¸¦ Ã¼Å©ÇÏ±â À§ÇÔ
+    // ë³€í™˜ ê²°ê³¼ì˜ í¬ê¸°ë¥¼ ì²´í¬í•˜ê¸° ìœ„í•¨
     sDestRemain = aStack[0].column->precision;
 
     sSourceIndex = aSource->value;
@@ -1982,7 +1982,7 @@ ACI_RC mtdNcharInterfaceToChar( mtcStack*        aStack,
         sIdnDestCharSet = mtlGetIdnCharSet( aDestCharSet );
 
         //-----------------------------------------
-        // Ä³¸¯ÅÍ ¼Â º¯È¯
+        // ìºë¦­í„° ì…‹ ë³€í™˜
         //-----------------------------------------
         while( sSourceIndex < sSourceFence )
         {
@@ -2042,7 +2042,7 @@ ACI_RC mtdNcharInterfaceToChar2( mtcStack*        aStack,
 /***********************************************************************
  *
  * Description :
- *      NCHAR Å¸ÀÔÀ» CHAR Å¸ÀÔÀ¸·Î º¯È¯ÇÏ´Â ÇÔ¼ö
+ *      NCHAR íƒ€ì…ì„ CHAR íƒ€ì…ìœ¼ë¡œ ë³€í™˜í•˜ëŠ” í•¨ìˆ˜
 
  * Implementation :
  *
@@ -2060,7 +2060,7 @@ ACI_RC mtdNcharInterfaceToChar2( mtcStack*        aStack,
     acp_sint32_t         sTempRemain = 0;
     acp_uint16_t         sSourceLen;
 
-    // º¯È¯ °á°úÀÇ Å©±â¸¦ Ã¼Å©ÇÏ±â À§ÇÔ
+    // ë³€í™˜ ê²°ê³¼ì˜ í¬ê¸°ë¥¼ ì²´í¬í•˜ê¸° ìœ„í•¨
     sDestRemain = aStack[0].column->precision;
 
     sSourceIndex = aSource->value;
@@ -2077,7 +2077,7 @@ ACI_RC mtdNcharInterfaceToChar2( mtcStack*        aStack,
         sIdnDestCharSet = mtlGetIdnCharSet( aDestCharSet );
 
         //-----------------------------------------
-        // Ä³¸¯ÅÍ ¼Â º¯È¯
+        // ìºë¦­í„° ì…‹ ë³€í™˜
         //-----------------------------------------
         while( sSourceLen-- > 0 )
         {
@@ -2141,9 +2141,9 @@ ACI_RC mtdNcharInterfaceToNchar4UnicodeLiteral(
  * Description :
  *
  *      PROJ-1579 NCHAR
- *      U Å¸ÀÔ ¹®ÀÚ¿­À» NCHAR Å¸ÀÔÀ¸·Î º¯°æÇÑ´Ù.
- *      U Å¸ÀÔ ¹®ÀÚ¿­¿¡´Â µ¥ÀÌÅÍº£ÀÌ½º Ä³¸¯ÅÍ ¼Â°ú '\'·Î ½ÃÀÛÇÏ´Â
- *      À¯´ÏÄÚµå Æ÷ÀÎÆ®°¡ ¿Ã ¼ö ÀÖ´Ù.
+ *      U íƒ€ì… ë¬¸ìì—´ì„ NCHAR íƒ€ì…ìœ¼ë¡œ ë³€ê²½í•œë‹¤.
+ *      U íƒ€ì… ë¬¸ìì—´ì—ëŠ” ë°ì´í„°ë² ì´ìŠ¤ ìºë¦­í„° ì…‹ê³¼ '\'ë¡œ ì‹œì‘í•˜ëŠ”
+ *      ìœ ë‹ˆì½”ë“œ í¬ì¸íŠ¸ê°€ ì˜¬ ìˆ˜ ìˆë‹¤.
  *
  *
  * Implementation :
@@ -2170,10 +2170,10 @@ ACI_RC mtdNcharInterfaceToNchar4UnicodeLiteral(
     sIdnResultCharSet = mtlGetIdnCharSet( aResultCharSet );
     sIdnU16CharSet    = mtlGetIdnCharSet( sU16CharSet );
 
-    // Ä³¸¯ÅÍ ¼Â º¯È¯ ½Ã »ç¿ëÇÏ´Â ¹öÆÛÀÇ ±æÀÌ
+    // ìºë¦­í„° ì…‹ ë³€í™˜ ì‹œ ì‚¬ìš©í•˜ëŠ” ë²„í¼ì˜ ê¸¸ì´
     sDestRemain = aResultFence - *aResultValue;
 
-    // ¼Ò½ºÀÇ ±æÀÌ
+    // ì†ŒìŠ¤ì˜ ê¸¸ì´
     sSrcRemain = aSourceFence - aSourceIndex;
 
     sTempSourceIndex = aSourceIndex;
@@ -2223,7 +2223,7 @@ ACI_RC mtdNcharInterfaceToNchar4UnicodeLiteral(
         {
             sTempSourceIndex = aSourceIndex;
 
-            // 16Áø¼ö ¹®ÀÚ 4°³¸¦ ÀĞ´Â´Ù.
+            // 16ì§„ìˆ˜ ë¬¸ì 4ê°œë¥¼ ì½ëŠ”ë‹¤.
             for( i = 0; i < 4; i++ )
             {
                 ACI_TEST_RAISE( aSourceCharSet->nextCharPtr( & aSourceIndex, aSourceFence )
@@ -2232,7 +2232,7 @@ ACI_RC mtdNcharInterfaceToNchar4UnicodeLiteral(
 
             (void)aSourceCharSet->nextCharPtr( & sTempSourceIndex, aSourceFence );
             
-            // UTF16 °ªÀ» sNibbleValue¿¡ ¹Ş¾Æ¿Â´Ù.
+            // UTF16 ê°’ì„ sNibbleValueì— ë°›ì•„ì˜¨ë‹¤.
             ACI_TEST_RAISE( mtcMakeNibble2( sNibbleValue,
                                             0,
                                             sTempSourceIndex,
@@ -2244,7 +2244,7 @@ ACI_RC mtdNcharInterfaceToNchar4UnicodeLiteral(
 
             if( aResultCharSet->id != MTL_UTF16_ID )
             {
-                // UTF16 Ä³¸¯ÅÍ ¼Â => ³»¼Å³Î Ä³¸¯ÅÍ ¼ÂÀ¸·Î º¯È¯ÇÑ´Ù.
+                // UTF16 ìºë¦­í„° ì…‹ => ë‚´ì…”ë„ ìºë¦­í„° ì…‹ìœ¼ë¡œ ë³€í™˜í•œë‹¤.
                 ACI_TEST( aciConvConvertCharSet ( sIdnU16CharSet,
                                                   sIdnResultCharSet,
                                                   sNibbleValue,
@@ -2268,7 +2268,7 @@ ACI_RC mtdNcharInterfaceToNchar4UnicodeLiteral(
 
             if( sIdnSourceCharSet != sIdnResultCharSet )
             {
-                // DB Ä³¸¯ÅÍ ¼Â => ³»¼Å³Î Ä³¸¯ÅÍ ¼ÂÀ¸·Î º¯È¯ÇÑ´Ù.
+                // DB ìºë¦­í„° ì…‹ => ë‚´ì…”ë„ ìºë¦­í„° ì…‹ìœ¼ë¡œ ë³€í™˜í•œë‹¤.
                 ACI_TEST( aciConvConvertCharSet( sIdnSourceCharSet,
                                                  sIdnResultCharSet,
                                                  aSourceIndex,
@@ -2278,7 +2278,7 @@ ACI_RC mtdNcharInterfaceToNchar4UnicodeLiteral(
                                                  0 )
                           != ACI_SUCCESS );
             }
-            // µ¥ÀÌÅÍ º£ÀÌ½º Ä³¸¯ÅÍ ¼Â = ³»¼Å³Î Ä³¸¯ÅÍ ¼Â = UTF8
+            // ë°ì´í„° ë² ì´ìŠ¤ ìºë¦­í„° ì…‹ = ë‚´ì…”ë„ ìºë¦­í„° ì…‹ = UTF8
             else
             {
                 sTempSourceIndex = aSourceIndex;

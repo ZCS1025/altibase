@@ -97,8 +97,8 @@ class svcReqFunc
         };
 
         /* smc */
-        /* �Ʒ� �� �Լ��� ��Ÿ�� �����ϴ� �Լ��̹Ƿ� ��¿�� ���� smc�� callback����
-           ȣ���Ѵ�. ���߿� �����丵�� �ʿ��ϴ�.  */
+        /* 아래 두 함수는 메타에 접근하는 함수이므로 어쩔수 없이 smc를 callback으로
+           호출한다. 나중에 리팩토링이 필요하다.  */
         static IDE_RC insertRow2TBIdx( void       * aTrans,
                                        scSpaceID    aSpaceID,
                                        smOID        aTableOID,

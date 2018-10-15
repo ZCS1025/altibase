@@ -53,8 +53,8 @@ ACI_RC ulnSFID_78(ulnFnContext *aFnContext)
     return ACI_FAILURE;
 }
 
-// BUG-23976 SQLGetInfo ¿¡¼­ ÀÎÀÚ°ªÀÌ NULL ÀÌ ¿Ã°æ¿ì °á°úÀÇ ±æÀÌ¸¦ ¸®ÅÏÇØ¾ß ÇÕ´Ï´Ù.
-// NULL Ã³¸®¿Í ±æÀÌ °è»êÀ» À§ÇØ¼­ Info Å¸ÀÔÀÇ Çü½Ä¿¡ ¸ÂÃß¾î 3°¡Áö ÇÔ¼ö·Î ³ª´©¾î¼­ Ã³¸®ÇÕ´Ï´Ù.
+// BUG-23976 SQLGetInfo ì—ì„œ ì¸ìžê°’ì´ NULL ì´ ì˜¬ê²½ìš° ê²°ê³¼ì˜ ê¸¸ì´ë¥¼ ë¦¬í„´í•´ì•¼ í•©ë‹ˆë‹¤.
+// NULL ì²˜ë¦¬ì™€ ê¸¸ì´ ê³„ì‚°ì„ ìœ„í•´ì„œ Info íƒ€ìž…ì˜ í˜•ì‹ì— ë§žì¶”ì–´ 3ê°€ì§€ í•¨ìˆ˜ë¡œ ë‚˜ëˆ„ì–´ì„œ ì²˜ë¦¬í•©ë‹ˆë‹¤.
 // String : ulnGetInfoText
 // acp_uint32_t   : ulnGetInfoacp_uint32_t
 // acp_uint16_t : ulnGetInfoUShort
@@ -138,12 +138,12 @@ static ACI_RC ulnGetInfoCheckArgs(ulnFnContext *aFnContext,
 }
 
 /*
- * BUGBUG: ¿¡·¯ Ã¼Å©µµ ¾ÈÇÏ°í Cli2 ¸¦ ±×´ë·Î °¡Á®´Ù ³Ö¾ú´Ù.
- *         ³ªÁß¿¡ ½ÇÇàÇØ º¸¸é¼­ Ã¼Å©ÇÑ´Ù.
+ * BUGBUG: ì—ëŸ¬ ì²´í¬ë„ ì•ˆí•˜ê³  Cli2 ë¥¼ ê·¸ëŒ€ë¡œ ê°€ì ¸ë‹¤ ë„£ì—ˆë‹¤.
+ *         ë‚˜ì¤‘ì— ì‹¤í–‰í•´ ë³´ë©´ì„œ ì²´í¬í•œë‹¤.
  *
- * Note : 64bit odbc °ü·ÃÇÑ ÁÖÀÇ »çÇ× :
+ * Note : 64bit odbc ê´€ë ¨í•œ ì£¼ì˜ ì‚¬í•­ :
  *        When the InfoType parameter has one of the following values,
- *        a 64-bit value is returned in *InfoValuePtr: (¾îÂ÷ÇÇ Æ÷ÀÎÅÍÀÌ¹Ç·Î ½Å°æ¾²Áö ¾Ê¾Æµµ µÊ)
+ *        a 64-bit value is returned in *InfoValuePtr: (ì–´ì°¨í”¼ í¬ì¸í„°ì´ë¯€ë¡œ ì‹ ê²½ì“°ì§€ ì•Šì•„ë„ ë¨)
  *              SQL_DRIVER_HENV
  *              SQL_DRIVER_HDBC
  *              SQL_DRIVER_HLIB
@@ -253,8 +253,8 @@ SQLRETURN ulnGetInfo(ulnDbc       *aDbc,
             break;
 
         case SQL_CATALOG_NAME_SEPARATOR: /* ODBC 3.0 */
-            // BUG-24974 SQLGetInfo ¿¡¼­ SQL_CATALOG_NAME_SEPARATOR ÀÇ °ªÀ» ¼¼ÆÃÇÏÁö ¸»¾Æ¾ß ÇÕ´Ï´Ù.
-            // ¾îÂ÷ÇÇ CATALOG ±â´ÉÀ» Áö¿øÇÏÁö ¾Ê´Â´Ù µû¶ó¼­ Àý´ë Á¦´ë·Î µÈ °ªÀ» ³Ñ°Ü¼­´Â ¾ÈµÈ´Ù.
+            // BUG-24974 SQLGetInfo ì—ì„œ SQL_CATALOG_NAME_SEPARATOR ì˜ ê°’ì„ ì„¸íŒ…í•˜ì§€ ë§ì•„ì•¼ í•©ë‹ˆë‹¤.
+            // ì–´ì°¨í”¼ CATALOG ê¸°ëŠ¥ì„ ì§€ì›í•˜ì§€ ì•ŠëŠ”ë‹¤ ë”°ë¼ì„œ ì ˆëŒ€ ì œëŒ€ë¡œ ëœ ê°’ì„ ë„˜ê²¨ì„œëŠ” ì•ˆëœë‹¤.
             sSize = ulnGetInfoText(&sFnContext, (acp_char_t *)aInfoValuePtr, aBufferLength, "");
             break;
 
@@ -399,7 +399,7 @@ SQLRETURN ulnGetInfo(ulnDbc       *aDbc,
                                    0);
             break;
 
-        /* BUG-28758: SQLGetInfo(SQL_CURSOR_COMMIT_BEHAVIOR)ÀÌ Àß¸øµÈ °ª ¹ÝÈ¯ */
+        /* BUG-28758: SQLGetInfo(SQL_CURSOR_COMMIT_BEHAVIOR)ì´ ìž˜ëª»ëœ ê°’ ë°˜í™˜ */
         case SQL_CURSOR_COMMIT_BEHAVIOR: /* ODBC 1.0 */
         case SQL_CURSOR_ROLLBACK_BEHAVIOR: /* ODBC 1.0 */
             sSize = ulnGetInfoUShort((acp_uint16_t *)aInfoValuePtr, aBufferLength, SQL_CB_CLOSE);
@@ -445,7 +445,7 @@ SQLRETURN ulnGetInfo(ulnDbc       *aDbc,
             break;
 
         /* BUG-30232 */
-        /* PROJ-2063: ÇÁ·ÎÅäÄÝ ¹öÀüÀ» ¾òÀ» ¼ö ÀÖµµ·Ï Ãß°¡ */
+        /* PROJ-2063: í”„ë¡œí† ì½œ ë²„ì „ì„ ì–»ì„ ìˆ˜ ìžˆë„ë¡ ì¶”ê°€ */
         case ALTIBASE_PROTO_VER:
             (void) acpSnprintf(sProtoVerStr, ACI_SIZEOF(sProtoVerStr), "%d.%d.%d",
                                CM_MAJOR_VERSION, CM_MINOR_VERSION, CM_PATCH_VERSION);
@@ -478,8 +478,8 @@ SQLRETURN ulnGetInfo(ulnDbc       *aDbc,
             break;
 
         case SQL_DM_VER: /* ODBC 3.0 */
-            // BUGBUG SQL_SPEC_MAJOR SQL_SPEC_MINOR ¸ÅÅ©·Î¸¦ ÀÌ¿ëÇØ¾ß ÇÑ´Ù.
-            // º¯°æµÉÀÏÀÌ ¾ø±â ¶§¹®¿¡ ÀÏ´Ü °£´ÜÇÏ°Ô Ã³¸®ÇÑ´Ù.
+            // BUGBUG SQL_SPEC_MAJOR SQL_SPEC_MINOR ë§¤í¬ë¡œë¥¼ ì´ìš©í•´ì•¼ í•œë‹¤.
+            // ë³€ê²½ë ì¼ì´ ì—†ê¸° ë•Œë¬¸ì— ì¼ë‹¨ ê°„ë‹¨í•˜ê²Œ ì²˜ë¦¬í•œë‹¤.
             sSize = ulnGetInfoText(&sFnContext,
                                    (acp_char_t *)aInfoValuePtr,
                                    aBufferLength,

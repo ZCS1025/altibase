@@ -54,7 +54,7 @@ static IDE_RC mtfDecodeAvgListEstimate( mtcNode*     aNode,
 mtfModule mtfDecodeAvgList = {
     2|MTC_NODE_OPERATOR_AGGREGATION,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
+    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìê°€ ì•„ë‹˜)
     mtfDecodeAvgListFunctionName,
     NULL,
     mtfDecodeAvgListInitialize,
@@ -208,22 +208,22 @@ typedef struct mtfDecodeAvgInfo
 
 typedef struct mtfDecodeAvgListInfo
 {
-    // Ã¹¹øÂ° ÀÎÀÚ
+    // ì²«ë²ˆì§¸ ì¸ì
     mtcExecute     * sAvgColumnExecute;
     mtcNode        * sAvgColumnNode;
 
-    // µÎ¹øÂ° ÀÎÀÚ
+    // ë‘ë²ˆì§¸ ì¸ì
     mtcExecute     * sExprExecute;
     mtcNode        * sExprNode;
 
-    // return ÀÎÀÚ
+    // return ì¸ì
     mtcColumn      * sReturnColumn;
     void           * sReturnValue;
     mtcStack       * sReturnStack;
     SInt             sReturnCount;
 
-    // ÀÓ½Ãº¯¼ö
-    mtfDecodeAvgInfo sAvgInfo[1];  // MTC_NODE_ARGUMENT_COUNT_MAXIMUM±îÁö È®ÀåÇÒ ¼ö ÀÖÀ½
+    // ì„ì‹œë³€ìˆ˜
+    mtfDecodeAvgInfo sAvgInfo[1];  // MTC_NODE_ARGUMENT_COUNT_MAXIMUMê¹Œì§€ í™•ì¥í•  ìˆ˜ ìˆìŒ
 
 } mtfDecodeAvgListInfo;
 
@@ -296,7 +296,7 @@ IDE_RC mtfDecodeAvgListEstimate( mtcNode*     aNode,
 
     sFence = aNode->lflag & MTC_NODE_ARGUMENT_COUNT_MASK;
     
-    // 1 È¤Àº 3°³ÀÇ ÀÎÀÚ
+    // 1 í˜¹ì€ 3ê°œì˜ ì¸ì
     IDE_TEST_RAISE( (sFence != 1) && (sFence != 3),
                     ERR_INVALID_FUNCTION_ARGUMENT );
 
@@ -415,11 +415,11 @@ IDE_RC mtfDecodeAvgListEstimateFloat( mtcNode*     aNode,
                 sListStack = (mtcStack*)aStack[3].value;
                 sListCount = aStack[3].column->precision;
 
-                /* BUG-40349 sListCount´Â 2ÀÌ»óÀÌ¾î¾ß ÇÑ´Ù. */
+                /* BUG-40349 sListCountëŠ” 2ì´ìƒì´ì–´ì•¼ í•œë‹¤. */
                 IDE_TEST_RAISE( sListCount < 2, ERR_LIST_COUNT );
 
-                // listÀÇ ¸ğµç element°¡ µ¿ÀÏÇÑ typeÀ¸·Î convertµÇ¾î¾ß ÇÏ¹Ç·Î
-                // listÀÇ Ã¹¹øÂ° element¿¡ ¸ÂÃá´Ù.
+                // listì˜ ëª¨ë“  elementê°€ ë™ì¼í•œ typeìœ¼ë¡œ convertë˜ì–´ì•¼ í•˜ë¯€ë¡œ
+                // listì˜ ì²«ë²ˆì§¸ elementì— ë§ì¶˜ë‹¤.
                 IDE_TEST_RAISE( sListStack[0].column->module == &mtdList,
                                 ERR_CONVERSION_NOT_APPLICABLE );
         
@@ -469,7 +469,7 @@ IDE_RC mtfDecodeAvgListEstimateFloat( mtcNode*     aNode,
             {
                 aTemplate->rows[aNode->table].execute[aNode->column] = mtfDecodeAvgListExecuteFloat;
 
-                // Avg °á°ú¸¦ ÀúÀåÇÔ
+                // Avg ê²°ê³¼ë¥¼ ì €ì¥í•¨
                 IDE_TEST( mtc::initializeColumn( aStack[0].column,
                                                  & mtdFloat,
                                                  0,
@@ -477,7 +477,7 @@ IDE_RC mtfDecodeAvgListEstimateFloat( mtcNode*     aNode,
                                                  0 )
                           != IDE_SUCCESS );
         
-                // Avg info Á¤º¸¸¦ mtdBinary¿¡ ÀúÀå
+                // Avg info ì •ë³´ë¥¼ mtdBinaryì— ì €ì¥
                 sBinaryPrecision = ID_SIZEOF(mtfDecodeAvgListInfo);
                 IDE_TEST( mtc::initializeColumn( aStack[0].column + 1,
                                                  & mtdBinary,
@@ -490,13 +490,13 @@ IDE_RC mtfDecodeAvgListEstimateFloat( mtcNode*     aNode,
             {
                 aTemplate->rows[aNode->table].execute[aNode->column] = mtfDecodeAvgListExecuteFloat;
 
-                // Avg °á°ú¸¦ ÀúÀåÇÒ ÄÃ·³Á¤º¸
+                // Avg ê²°ê³¼ë¥¼ ì €ì¥í•  ì»¬ëŸ¼ì •ë³´
                 IDE_TEST( aCallBack->alloc( aCallBack->info,
                                             ID_SIZEOF(mtcColumn),
                                             (void**)&sMtcColumn )
                           != IDE_SUCCESS );
                 
-                // Avg °á°ú¸¦ ÀúÀåÇÔ
+                // Avg ê²°ê³¼ë¥¼ ì €ì¥í•¨
                 IDE_TEST( mtc::initializeColumn( sMtcColumn,
                                                  & mtdFloat,
                                                  0,
@@ -504,7 +504,7 @@ IDE_RC mtfDecodeAvgListEstimateFloat( mtcNode*     aNode,
                                                  0 )
                           != IDE_SUCCESS );
                 
-                // execution¿ë sListCount°³ÀÇ stack°ú float value¸¦ ÀúÀåÇÒ °ø°£À» ¼³Á¤ÇÑ´Ù.
+                // executionìš© sListCountê°œì˜ stackê³¼ float valueë¥¼ ì €ì¥í•  ê³µê°„ì„ ì„¤ì •í•œë‹¤.
                 IDE_TEST( mtc::initializeColumn( aStack[0].column,
                                                  & mtdList,
                                                  2,
@@ -512,13 +512,13 @@ IDE_RC mtfDecodeAvgListEstimateFloat( mtcNode*     aNode,
                                                  sMtcColumn->column.size * sListCount )
                           != IDE_SUCCESS );
                 
-                // estimate¿ë sListCount°³ÀÇ stackÀ» »ı¼ºÇÑ´Ù.
+                // estimateìš© sListCountê°œì˜ stackì„ ìƒì„±í•œë‹¤.
                 IDE_TEST( aCallBack->alloc( aCallBack->info,
                                             ID_SIZEOF(mtcStack) * sListCount,
                                             (void**)&(aStack[0].value) )
                           != IDE_SUCCESS);
                 
-                // list stackÀ» smiColumn.value¿¡ ±â·ÏÇØµĞ´Ù.
+                // list stackì„ smiColumn.valueì— ê¸°ë¡í•´ë‘”ë‹¤.
                 aStack[0].column->column.value = aStack[0].value;
 
                 sListStack = (mtcStack*)aStack[0].value;
@@ -528,7 +528,7 @@ IDE_RC mtfDecodeAvgListEstimateFloat( mtcNode*     aNode,
                     sListStack[sCount].value  = sMtcColumn->module->staticNull;
                 }
                 
-                // Avg info Á¤º¸¸¦ mtdBinary¿¡ ÀúÀå
+                // Avg info ì •ë³´ë¥¼ mtdBinaryì— ì €ì¥
                 sBinaryPrecision = ID_SIZEOF(mtfDecodeAvgListInfo) +
                     ID_SIZEOF(mtfDecodeAvgInfo) * ( sListCount - 1 );
                 IDE_TEST( mtc::initializeColumn( aStack[0].column + 1,
@@ -585,7 +585,7 @@ IDE_RC mtfDecodeAvgListEstimateFloat( mtcNode*     aNode,
 
             if ( sIsConstValue == ID_TRUE )
             {
-                // mtfDecodeAvgListCalculateInfo ÀúÀåÇÒ °ø°£À» ÇÒ´ç
+                // mtfDecodeAvgListCalculateInfo ì €ì¥í•  ê³µê°„ì„ í• ë‹¹
                 IDE_TEST( aCallBack->alloc( aCallBack->info,
                                             ID_SIZEOF(mtfDecodeAvgListCalculateInfo),
                                             (void**) & sCalculateInfo )
@@ -610,7 +610,7 @@ IDE_RC mtfDecodeAvgListEstimateFloat( mtcNode*     aNode,
 
                     sCalculateInfo->sSearchCount = 1;
                     
-                    // »ó¼ö tupleÀº ÀçÇÒ´çµÇ¹Ç·Î º¹»çÇØ¼­ ÀúÀåÇÑ´Ù.
+                    // ìƒìˆ˜ tupleì€ ì¬í• ë‹¹ë˜ë¯€ë¡œ ë³µì‚¬í•´ì„œ ì €ì¥í•œë‹¤.
                     mtc::copyColumn( sMtcColumn,
                                      &(aTemplate->rows[sNode->table].columns[sNode->column]) );
                     
@@ -643,11 +643,11 @@ IDE_RC mtfDecodeAvgListEstimateFloat( mtcNode*     aNode,
                           ( sCount < sCalculateInfo->sSearchCount ) && ( sNode != NULL );
                           sCount++, sNode = sNode->next, sMtcColumn++ )
                     {
-                        // ¸ğµÎ µ¿ÀÏ typeÀÌ¾î¾ß ÇÑ´Ù.
+                        // ëª¨ë‘ ë™ì¼ typeì´ì–´ì•¼ í•œë‹¤.
                         IDE_DASSERT( sListStack[0].column->module->no ==
                                      sListStack[sCount].column->module->no );
                         
-                        // »ó¼ö tupleÀº ÀçÇÒ´çµÇ¹Ç·Î º¹»çÇØ¼­ ÀúÀåÇÑ´Ù.
+                        // ìƒìˆ˜ tupleì€ ì¬í• ë‹¹ë˜ë¯€ë¡œ ë³µì‚¬í•´ì„œ ì €ì¥í•œë‹¤.
                         mtc::copyColumn( sMtcColumn,
                                          &(aTemplate->rows[sNode->table].columns[sNode->column]) );
                         
@@ -667,7 +667,7 @@ IDE_RC mtfDecodeAvgListEstimateFloat( mtcNode*     aNode,
                                   ID_SIZEOF(mtfDecodeAvgSortedValue),
                                   compareDecodeAvgSortedValue );
                 
-                    // Áßº¹ÀÌ ÀÖ¾î¼­´Â ¾ÈµÈ´Ù. (bsearch´Â ÇÑ°³¸¸ Ã£¾ÆÁØ´Ù.)
+                    // ì¤‘ë³µì´ ìˆì–´ì„œëŠ” ì•ˆëœë‹¤. (bsearchëŠ” í•œê°œë§Œ ì°¾ì•„ì¤€ë‹¤.)
                     for ( sCount = 1; sCount < sCalculateInfo->sSearchCount; sCount++ )
                     {
                         sValueInfo1.column = (const mtcColumn *)
@@ -711,7 +711,7 @@ IDE_RC mtfDecodeAvgListEstimateFloat( mtcNode*     aNode,
         
         aTemplate->rows[aNode->table].execute[aNode->column] = mtfDecodeAvgListExecuteFloat;
 
-        // Avg °á°ú¸¦ ÀúÀåÇÔ
+        // Avg ê²°ê³¼ë¥¼ ì €ì¥í•¨
         IDE_TEST( mtc::initializeColumn( aStack[0].column,
                                          & mtdFloat,
                                          0,
@@ -719,7 +719,7 @@ IDE_RC mtfDecodeAvgListEstimateFloat( mtcNode*     aNode,
                                          0 )
                   != IDE_SUCCESS );
         
-        // Avg info´Â ÇÊ¿ä¾ø´Ù.
+        // Avg infoëŠ” í•„ìš”ì—†ë‹¤.
         IDE_TEST( mtc::initializeColumn( aStack[0].column + 1,
                                          & mtdBinary,
                                          1,
@@ -730,7 +730,7 @@ IDE_RC mtfDecodeAvgListEstimateFloat( mtcNode*     aNode,
 
     if ( sFence == 3 )
     {
-        // decode_Avg_list(i1, i2, (1,2,3))°ú °°ÀÌ ¼¼¹øÂ° ÀÎÀÚ°¡ »ó¼öÀÎ °æ¿ì
+        // decode_Avg_list(i1, i2, (1,2,3))ê³¼ ê°™ì´ ì„¸ë²ˆì§¸ ì¸ìê°€ ìƒìˆ˜ì¸ ê²½ìš°
         if ( sListCount > 1 )
         {
             sIsConstValue = ID_TRUE;
@@ -787,7 +787,7 @@ IDE_RC mtfDecodeAvgListEstimateFloat( mtcNode*     aNode,
             }
         }
             
-        // BUG-38070 undef typeÀ¸·Î re-estimateÇÏÁö ¾Ê´Â´Ù.
+        // BUG-38070 undef typeìœ¼ë¡œ re-estimateí•˜ì§€ ì•ŠëŠ”ë‹¤.
         if ( ( aTemplate->variableRow != ID_USHORT_MAX ) &&
              ( ( aNode->lflag & MTC_NODE_BIND_MASK ) == MTC_NODE_BIND_EXIST ) )
         {
@@ -866,12 +866,12 @@ IDE_RC mtfDecodeAvgListInitializeFloat( mtcNode*     aNode,
     IDE_TEST_RAISE( sInfo == NULL, ERR_LIST_INFO );
 
     //-----------------------------
-    // Avg info ÃÊ±âÈ­
+    // Avg info ì´ˆê¸°í™”
     //-----------------------------
 
     sArgNode[0] = aNode->arguments;
 
-    // Avg column ¼³Á¤
+    // Avg column ì„¤ì •
     sInfo->sAvgColumnExecute = aTemplate->rows[sArgNode[0]->table].execute + sArgNode[0]->column;
     sInfo->sAvgColumnNode    = sArgNode[0];
 
@@ -879,7 +879,7 @@ IDE_RC mtfDecodeAvgListInitializeFloat( mtcNode*     aNode,
     {
         sArgNode[1] = sArgNode[0]->next;
 
-        // expression column ¼³Á¤
+        // expression column ì„¤ì •
         sInfo->sExprExecute = aTemplate->rows[sArgNode[1]->table].execute + sArgNode[1]->column;
         sInfo->sExprNode    = sArgNode[1];
     }
@@ -888,7 +888,7 @@ IDE_RC mtfDecodeAvgListInitializeFloat( mtcNode*     aNode,
         // Nothing to do.
     }
     
-    // return column ¼³Á¤
+    // return column ì„¤ì •
     sInfo->sReturnColumn = aTemplate->rows[aNode->table].columns + aNode->column;
     sInfo->sReturnValue  = (void *)
         ((UChar*) aTemplate->rows[aNode->table].row + sInfo->sReturnColumn->column.offset);
@@ -903,9 +903,9 @@ IDE_RC mtfDecodeAvgListInitializeFloat( mtcNode*     aNode,
         sInfo->sReturnStack = (mtcStack*)sInfo->sReturnValue;
         sInfo->sReturnCount = sInfo->sReturnColumn->precision;
         
-        // stack ÃÊ±âÈ­
-        // (1) estimate¶§ »ı¼ºÇÑ column Á¤º¸·Î ÃÊ±âÈ­
-        // (2) value¸¦ ½ÇÁ¦ °ªÀ¸·Î ¼³Á¤
+        // stack ì´ˆê¸°í™”
+        // (1) estimateë•Œ ìƒì„±í•œ column ì •ë³´ë¡œ ì´ˆê¸°í™”
+        // (2) valueë¥¼ ì‹¤ì œ ê°’ìœ¼ë¡œ ì„¤ì •
         sTempStack = (mtcStack*) sInfo->sReturnColumn->column.value;
         sTempValue = 
             ( (UChar*)sInfo->sReturnStack + ID_SIZEOF(mtcStack) * sInfo->sReturnCount );
@@ -917,7 +917,7 @@ IDE_RC mtfDecodeAvgListInitializeFloat( mtcNode*     aNode,
             sInfo->sReturnStack[sCount].column = sTempStack->column;
             sInfo->sReturnStack[sCount].value  = sTempValue;
             
-            // BUG-42973 floatÀº 1byte alignÀÌ¾î¼­ °í·ÁÇÒ ÇÊ¿ä°¡ ¾ø´Ù.
+            // BUG-42973 floatì€ 1byte alignì´ì–´ì„œ ê³ ë ¤í•  í•„ìš”ê°€ ì—†ë‹¤.
             sTempValue += sInfo->sReturnStack[sCount].column->column.size;
         }
 
@@ -926,7 +926,7 @@ IDE_RC mtfDecodeAvgListInitializeFloat( mtcNode*     aNode,
     }
     
     //-----------------------------
-    // Avg °á°ú¸¦ ÃÊ±âÈ­
+    // Avg ê²°ê³¼ë¥¼ ì´ˆê¸°í™”
     //-----------------------------
     
     if ( sInfo->sReturnStack == NULL )
@@ -1008,10 +1008,10 @@ IDE_RC mtfDecodeAvgListAggregateFloat( mtcNode*     aNode,
     {
         IDE_TEST_RAISE( aRemain < 1, ERR_STACK_OVERFLOW );
 
-        // ¼¼¹øÂ° ÀÎÀÚ´Â ¹İµå½Ã »ó¼ö¿©¾ß ÇÑ´Ù.
+        // ì„¸ë²ˆì§¸ ì¸ìëŠ” ë°˜ë“œì‹œ ìƒìˆ˜ì—¬ì•¼ í•œë‹¤.
         IDE_TEST_RAISE( sCalculateInfo == NULL, ERR_INVALID_FUNCTION_ARGUMENT );
         
-        // µÎ¹øÂ° ÀÎÀÚ
+        // ë‘ë²ˆì§¸ ì¸ì
         IDE_TEST( sInfo->sExprExecute->calculate( sInfo->sExprNode,
                                                   aStack,
                                                   aRemain,
@@ -1029,7 +1029,7 @@ IDE_RC mtfDecodeAvgListAggregateFloat( mtcNode*     aNode,
                       != IDE_SUCCESS );
         }
 
-        // decode ¿¬»ê¼öÇà
+        // decode ì—°ì‚°ìˆ˜í–‰
         sExprValue.column = aStack[0].column;
         sExprValue.value  = aStack[0].value;
         sExprValue.idx    = 0;
@@ -1043,13 +1043,13 @@ IDE_RC mtfDecodeAvgListAggregateFloat( mtcNode*     aNode,
     }
     else
     {
-        // null¸¸ ¾Æ´Ï¸é µÊ
+        // nullë§Œ ì•„ë‹ˆë©´ ë¨
         sFound = & sExprValue;
     }
 
     if ( sFound != NULL )
     {
-        // Ã¹¹øÂ° ÀÎÀÚ
+        // ì²«ë²ˆì§¸ ì¸ì
         IDE_TEST( sInfo->sAvgColumnExecute->calculate( sInfo->sAvgColumnNode,
                                                        aStack,
                                                        aRemain,
@@ -1320,11 +1320,11 @@ IDE_RC mtfDecodeAvgListEstimateDouble( mtcNode*     aNode,
                 sListStack = (mtcStack*)aStack[3].value;
                 sListCount = aStack[3].column->precision;
 
-                /* BUG-40349 sListCount´Â 2ÀÌ»óÀÌ¾î¾ß ÇÑ´Ù. */
+                /* BUG-40349 sListCountëŠ” 2ì´ìƒì´ì–´ì•¼ í•œë‹¤. */
                 IDE_TEST_RAISE( sListCount < 2, ERR_LIST_COUNT );
 
-                // listÀÇ ¸ğµç element°¡ µ¿ÀÏÇÑ typeÀ¸·Î convertµÇ¾î¾ß ÇÏ¹Ç·Î
-                // listÀÇ Ã¹¹øÂ° element¿¡ ¸ÂÃá´Ù.
+                // listì˜ ëª¨ë“  elementê°€ ë™ì¼í•œ typeìœ¼ë¡œ convertë˜ì–´ì•¼ í•˜ë¯€ë¡œ
+                // listì˜ ì²«ë²ˆì§¸ elementì— ë§ì¶˜ë‹¤.
                 IDE_TEST_RAISE( sListStack[0].column->module == &mtdList,
                                 ERR_CONVERSION_NOT_APPLICABLE );
         
@@ -1374,7 +1374,7 @@ IDE_RC mtfDecodeAvgListEstimateDouble( mtcNode*     aNode,
             {
                 aTemplate->rows[aNode->table].execute[aNode->column] = mtfDecodeAvgListExecuteDouble;
 
-                // Avg °á°ú¸¦ ÀúÀåÇÔ
+                // Avg ê²°ê³¼ë¥¼ ì €ì¥í•¨
                 IDE_TEST( mtc::initializeColumn( aStack[0].column,
                                                  & mtdDouble,
                                                  0,
@@ -1382,7 +1382,7 @@ IDE_RC mtfDecodeAvgListEstimateDouble( mtcNode*     aNode,
                                                  0 )
                           != IDE_SUCCESS );
         
-                // Avg info Á¤º¸¸¦ mtdBinary¿¡ ÀúÀå
+                // Avg info ì •ë³´ë¥¼ mtdBinaryì— ì €ì¥
                 sBinaryPrecision = ID_SIZEOF(mtfDecodeAvgListInfo);
                 IDE_TEST( mtc::initializeColumn( aStack[0].column + 1,
                                                  & mtdBinary,
@@ -1395,13 +1395,13 @@ IDE_RC mtfDecodeAvgListEstimateDouble( mtcNode*     aNode,
             {
                 aTemplate->rows[aNode->table].execute[aNode->column] = mtfDecodeAvgListExecuteDouble;
 
-                // Avg °á°ú¸¦ ÀúÀåÇÒ ÄÃ·³Á¤º¸
+                // Avg ê²°ê³¼ë¥¼ ì €ì¥í•  ì»¬ëŸ¼ì •ë³´
                 IDE_TEST( aCallBack->alloc( aCallBack->info,
                                             ID_SIZEOF(mtcColumn),
                                             (void**)&sMtcColumn )
                           != IDE_SUCCESS );
         
-                // Avg °á°ú¸¦ ÀúÀåÇÔ
+                // Avg ê²°ê³¼ë¥¼ ì €ì¥í•¨
                 IDE_TEST( mtc::initializeColumn( sMtcColumn,
                                                  & mtdDouble,
                                                  0,
@@ -1409,7 +1409,7 @@ IDE_RC mtfDecodeAvgListEstimateDouble( mtcNode*     aNode,
                                                  0 )
                           != IDE_SUCCESS );
         
-                // execution¿ë sListCount°³ÀÇ stack°ú double value¸¦ ÀúÀåÇÒ °ø°£À» ¼³Á¤ÇÑ´Ù.
+                // executionìš© sListCountê°œì˜ stackê³¼ double valueë¥¼ ì €ì¥í•  ê³µê°„ì„ ì„¤ì •í•œë‹¤.
                 IDE_TEST( mtc::initializeColumn( aStack[0].column,
                                                  & mtdList,
                                                  2,
@@ -1417,13 +1417,13 @@ IDE_RC mtfDecodeAvgListEstimateDouble( mtcNode*     aNode,
                                                  sMtcColumn->column.size * sListCount )
                           != IDE_SUCCESS );
 
-                // estimate¿ë sListCount°³ÀÇ stackÀ» »ı¼ºÇÑ´Ù.
+                // estimateìš© sListCountê°œì˜ stackì„ ìƒì„±í•œë‹¤.
                 IDE_TEST( aCallBack->alloc( aCallBack->info,
                                             ID_SIZEOF(mtcStack) * sListCount,
                                             (void**)&(aStack[0].value) )
                           != IDE_SUCCESS);
 
-                // list stackÀ» smiColumn.value¿¡ ±â·ÏÇØµĞ´Ù.
+                // list stackì„ smiColumn.valueì— ê¸°ë¡í•´ë‘”ë‹¤.
                 aStack[0].column->column.value = aStack[0].value;
 
                 sListStack = (mtcStack*)aStack[0].value;
@@ -1433,7 +1433,7 @@ IDE_RC mtfDecodeAvgListEstimateDouble( mtcNode*     aNode,
                     sListStack[sCount].value  = sMtcColumn->module->staticNull;
                 }
         
-                // Avg info Á¤º¸¸¦ mtdBinary¿¡ ÀúÀå
+                // Avg info ì •ë³´ë¥¼ mtdBinaryì— ì €ì¥
                 sBinaryPrecision = ID_SIZEOF(mtfDecodeAvgListInfo) +
                     ID_SIZEOF(mtfDecodeAvgInfo) * ( sListCount - 1 );
                 IDE_TEST( mtc::initializeColumn( aStack[0].column + 1,
@@ -1490,7 +1490,7 @@ IDE_RC mtfDecodeAvgListEstimateDouble( mtcNode*     aNode,
 
             if ( sIsConstValue == ID_TRUE )
             {
-                // mtfDecodeAvgListCalculateInfo ÀúÀåÇÒ °ø°£À» ÇÒ´ç
+                // mtfDecodeAvgListCalculateInfo ì €ì¥í•  ê³µê°„ì„ í• ë‹¹
                 IDE_TEST( aCallBack->alloc( aCallBack->info,
                                             ID_SIZEOF(mtfDecodeAvgListCalculateInfo),
                                             (void**) & sCalculateInfo )
@@ -1515,7 +1515,7 @@ IDE_RC mtfDecodeAvgListEstimateDouble( mtcNode*     aNode,
 
                     sCalculateInfo->sSearchCount = 1;
                     
-                    // »ó¼ö tupleÀº ÀçÇÒ´çµÇ¹Ç·Î º¹»çÇØ¼­ ÀúÀåÇÑ´Ù.
+                    // ìƒìˆ˜ tupleì€ ì¬í• ë‹¹ë˜ë¯€ë¡œ ë³µì‚¬í•´ì„œ ì €ì¥í•œë‹¤.
                     mtc::copyColumn( sMtcColumn,
                                      &(aTemplate->rows[sNode->table].columns[sNode->column]) );
                     
@@ -1548,11 +1548,11 @@ IDE_RC mtfDecodeAvgListEstimateDouble( mtcNode*     aNode,
                           ( sCount < sCalculateInfo->sSearchCount ) && ( sNode != NULL );
                           sCount++, sNode = sNode->next, sMtcColumn++ )
                     {
-                        // ¸ğµÎ µ¿ÀÏ typeÀÌ¾î¾ß ÇÑ´Ù.
+                        // ëª¨ë‘ ë™ì¼ typeì´ì–´ì•¼ í•œë‹¤.
                         IDE_DASSERT( sListStack[0].column->module->no ==
                                      sListStack[sCount].column->module->no );
                         
-                        // »ó¼ö tupleÀº ÀçÇÒ´çµÇ¹Ç·Î º¹»çÇØ¼­ ÀúÀåÇÑ´Ù.
+                        // ìƒìˆ˜ tupleì€ ì¬í• ë‹¹ë˜ë¯€ë¡œ ë³µì‚¬í•´ì„œ ì €ì¥í•œë‹¤.
                         mtc::copyColumn( sMtcColumn,
                                          &(aTemplate->rows[sNode->table].columns[sNode->column]) );
                         
@@ -1572,7 +1572,7 @@ IDE_RC mtfDecodeAvgListEstimateDouble( mtcNode*     aNode,
                                   ID_SIZEOF(mtfDecodeAvgSortedValue),
                                   compareDecodeAvgSortedValue );
                 
-                    // Áßº¹ÀÌ ÀÖ¾î¼­´Â ¾ÈµÈ´Ù. (bsearch´Â ÇÑ°³¸¸ Ã£¾ÆÁØ´Ù.)
+                    // ì¤‘ë³µì´ ìˆì–´ì„œëŠ” ì•ˆëœë‹¤. (bsearchëŠ” í•œê°œë§Œ ì°¾ì•„ì¤€ë‹¤.)
                     for ( sCount = 1; sCount < sCalculateInfo->sSearchCount; sCount++ )
                     {
                         sValueInfo1.column = (const mtcColumn *)
@@ -1616,7 +1616,7 @@ IDE_RC mtfDecodeAvgListEstimateDouble( mtcNode*     aNode,
         
         aTemplate->rows[aNode->table].execute[aNode->column] = mtfDecodeAvgListExecuteDouble;
 
-        // Avg °á°ú¸¦ ÀúÀåÇÔ
+        // Avg ê²°ê³¼ë¥¼ ì €ì¥í•¨
         IDE_TEST( mtc::initializeColumn( aStack[0].column,
                                          & mtdDouble,
                                          0,
@@ -1624,7 +1624,7 @@ IDE_RC mtfDecodeAvgListEstimateDouble( mtcNode*     aNode,
                                          0 )
                   != IDE_SUCCESS );
         
-        // Avg info´Â ÇÊ¿ä¾ø´Ù.
+        // Avg infoëŠ” í•„ìš”ì—†ë‹¤.
         IDE_TEST( mtc::initializeColumn( aStack[0].column + 1,
                                          & mtdBinary,
                                          1,
@@ -1635,7 +1635,7 @@ IDE_RC mtfDecodeAvgListEstimateDouble( mtcNode*     aNode,
 
     if ( sFence == 3 )
     {
-        // decode_Avg_list(i1, i2, (1,2,3))°ú °°ÀÌ ¼¼¹øÂ° ÀÎÀÚ°¡ »ó¼öÀÎ °æ¿ì
+        // decode_Avg_list(i1, i2, (1,2,3))ê³¼ ê°™ì´ ì„¸ë²ˆì§¸ ì¸ìê°€ ìƒìˆ˜ì¸ ê²½ìš°
         if ( sListCount > 1 )
         {
             sIsConstValue = ID_TRUE;
@@ -1692,7 +1692,7 @@ IDE_RC mtfDecodeAvgListEstimateDouble( mtcNode*     aNode,
             }
         }
             
-        // BUG-38070 undef typeÀ¸·Î re-estimateÇÏÁö ¾Ê´Â´Ù.
+        // BUG-38070 undef typeìœ¼ë¡œ re-estimateí•˜ì§€ ì•ŠëŠ”ë‹¤.
         if ( ( aTemplate->variableRow != ID_USHORT_MAX ) &&
              ( ( aNode->lflag & MTC_NODE_BIND_MASK ) == MTC_NODE_BIND_EXIST ) )
         {
@@ -1770,12 +1770,12 @@ IDE_RC mtfDecodeAvgListInitializeDouble( mtcNode*     aNode,
     IDE_TEST_RAISE( sInfo == NULL, ERR_LIST_INFO );
 
     //-----------------------------
-    // Avg info ÃÊ±âÈ­
+    // Avg info ì´ˆê¸°í™”
     //-----------------------------
 
     sArgNode[0] = aNode->arguments;
 
-    // Avg column ¼³Á¤
+    // Avg column ì„¤ì •
     sInfo->sAvgColumnExecute = aTemplate->rows[sArgNode[0]->table].execute + sArgNode[0]->column;
     sInfo->sAvgColumnNode    = sArgNode[0];
 
@@ -1783,7 +1783,7 @@ IDE_RC mtfDecodeAvgListInitializeDouble( mtcNode*     aNode,
     {
         sArgNode[1] = sArgNode[0]->next;
 
-        // expression column ¼³Á¤
+        // expression column ì„¤ì •
         sInfo->sExprExecute = aTemplate->rows[sArgNode[1]->table].execute + sArgNode[1]->column;
         sInfo->sExprNode    = sArgNode[1];
     }
@@ -1792,7 +1792,7 @@ IDE_RC mtfDecodeAvgListInitializeDouble( mtcNode*     aNode,
         // Nothing to do.
     }
     
-    // return column ¼³Á¤
+    // return column ì„¤ì •
     sInfo->sReturnColumn = aTemplate->rows[aNode->table].columns + aNode->column;
     sInfo->sReturnValue  = (void *)
         ((UChar*) aTemplate->rows[aNode->table].row + sInfo->sReturnColumn->column.offset);
@@ -1807,9 +1807,9 @@ IDE_RC mtfDecodeAvgListInitializeDouble( mtcNode*     aNode,
         sInfo->sReturnStack = (mtcStack*)sInfo->sReturnValue;
         sInfo->sReturnCount = sInfo->sReturnColumn->precision;
         
-        // stack ÃÊ±âÈ­
-        // (1) estimate¶§ »ı¼ºÇÑ column Á¤º¸·Î ÃÊ±âÈ­
-        // (2) value¸¦ ½ÇÁ¦ °ªÀ¸·Î ¼³Á¤
+        // stack ì´ˆê¸°í™”
+        // (1) estimateë•Œ ìƒì„±í•œ column ì •ë³´ë¡œ ì´ˆê¸°í™”
+        // (2) valueë¥¼ ì‹¤ì œ ê°’ìœ¼ë¡œ ì„¤ì •
         sTempStack = (mtcStack*) sInfo->sReturnColumn->column.value;
         sTempValue = (mtdDoubleType*)
             ( (UChar*)sInfo->sReturnStack + ID_SIZEOF(mtcStack) * sInfo->sReturnCount );
@@ -1827,7 +1827,7 @@ IDE_RC mtfDecodeAvgListInitializeDouble( mtcNode*     aNode,
     }
     
     //-----------------------------
-    // Avg °á°ú¸¦ ÃÊ±âÈ­
+    // Avg ê²°ê³¼ë¥¼ ì´ˆê¸°í™”
     //-----------------------------
     
     if ( sInfo->sReturnStack == NULL )
@@ -1901,10 +1901,10 @@ IDE_RC mtfDecodeAvgListAggregateDouble( mtcNode*     aNode,
     {
         IDE_TEST_RAISE( aRemain < 1, ERR_STACK_OVERFLOW );
 
-        // ¼¼¹øÂ° ÀÎÀÚ´Â ¹İµå½Ã »ó¼ö¿©¾ß ÇÑ´Ù.
+        // ì„¸ë²ˆì§¸ ì¸ìëŠ” ë°˜ë“œì‹œ ìƒìˆ˜ì—¬ì•¼ í•œë‹¤.
         IDE_TEST_RAISE( sCalculateInfo == NULL, ERR_INVALID_FUNCTION_ARGUMENT );
         
-        // µÎ¹øÂ° ÀÎÀÚ
+        // ë‘ë²ˆì§¸ ì¸ì
         IDE_TEST( sInfo->sExprExecute->calculate( sInfo->sExprNode,
                                                   aStack,
                                                   aRemain,
@@ -1922,7 +1922,7 @@ IDE_RC mtfDecodeAvgListAggregateDouble( mtcNode*     aNode,
                       != IDE_SUCCESS );
         }
 
-        // decode ¿¬»ê¼öÇà
+        // decode ì—°ì‚°ìˆ˜í–‰
         sExprValue.column = aStack[0].column;
         sExprValue.value  = aStack[0].value;
         sExprValue.idx    = 0;
@@ -1936,13 +1936,13 @@ IDE_RC mtfDecodeAvgListAggregateDouble( mtcNode*     aNode,
     }
     else
     {
-        // null¸¸ ¾Æ´Ï¸é µÊ
+        // nullë§Œ ì•„ë‹ˆë©´ ë¨
         sFound = & sExprValue;
     }
 
     if ( sFound != NULL )
     {
-        // Ã¹¹øÂ° ÀÎÀÚ
+        // ì²«ë²ˆì§¸ ì¸ì
         IDE_TEST( sInfo->sAvgColumnExecute->calculate( sInfo->sAvgColumnNode,
                                                        aStack,
                                                        aRemain,
@@ -2160,11 +2160,11 @@ IDE_RC mtfDecodeAvgListEstimateBigint( mtcNode*     aNode,
                 sListStack = (mtcStack*)aStack[3].value;
                 sListCount = aStack[3].column->precision;
 
-                /* BUG-40349 sListCount´Â 2ÀÌ»óÀÌ¾î¾ß ÇÑ´Ù. */
+                /* BUG-40349 sListCountëŠ” 2ì´ìƒì´ì–´ì•¼ í•œë‹¤. */
                 IDE_TEST_RAISE( sListCount < 2, ERR_LIST_COUNT );
 
-                // listÀÇ ¸ğµç element°¡ µ¿ÀÏÇÑ typeÀ¸·Î convertµÇ¾î¾ß ÇÏ¹Ç·Î
-                // listÀÇ Ã¹¹øÂ° element¿¡ ¸ÂÃá´Ù.
+                // listì˜ ëª¨ë“  elementê°€ ë™ì¼í•œ typeìœ¼ë¡œ convertë˜ì–´ì•¼ í•˜ë¯€ë¡œ
+                // listì˜ ì²«ë²ˆì§¸ elementì— ë§ì¶˜ë‹¤.
                 IDE_TEST_RAISE( sListStack[0].column->module == &mtdList,
                                 ERR_CONVERSION_NOT_APPLICABLE );
         
@@ -2214,8 +2214,8 @@ IDE_RC mtfDecodeAvgListEstimateBigint( mtcNode*     aNode,
             {
                 aTemplate->rows[aNode->table].execute[aNode->column] = mtfDecodeAvgListExecuteBigint;
 
-                // Avg °á°ú¸¦ ÀúÀåÇÔ
-                // bigint avgÀÇ °á°ú´Â doubleÀÌ ¾Æ´Ï¶ó float typeÀÓ
+                // Avg ê²°ê³¼ë¥¼ ì €ì¥í•¨
+                // bigint avgì˜ ê²°ê³¼ëŠ” doubleì´ ì•„ë‹ˆë¼ float typeì„
                 IDE_TEST( mtc::initializeColumn( aStack[0].column,
                                                  & mtdFloat,
                                                  0,
@@ -2223,7 +2223,7 @@ IDE_RC mtfDecodeAvgListEstimateBigint( mtcNode*     aNode,
                                                  0 )
                           != IDE_SUCCESS );
         
-                // Avg info Á¤º¸¸¦ mtdBinary¿¡ ÀúÀå
+                // Avg info ì •ë³´ë¥¼ mtdBinaryì— ì €ì¥
                 sBinaryPrecision = ID_SIZEOF(mtfDecodeAvgListInfo);
                 IDE_TEST( mtc::initializeColumn( aStack[0].column + 1,
                                                  & mtdBinary,
@@ -2236,14 +2236,14 @@ IDE_RC mtfDecodeAvgListEstimateBigint( mtcNode*     aNode,
             {
                 aTemplate->rows[aNode->table].execute[aNode->column] = mtfDecodeAvgListExecuteBigint;
 
-                // Avg °á°ú¸¦ ÀúÀåÇÒ ÄÃ·³Á¤º¸
+                // Avg ê²°ê³¼ë¥¼ ì €ì¥í•  ì»¬ëŸ¼ì •ë³´
                 IDE_TEST( aCallBack->alloc( aCallBack->info,
                                             ID_SIZEOF(mtcColumn),
                                             (void**)&sMtcColumn )
                           != IDE_SUCCESS );
         
-                // Avg °á°ú¸¦ ÀúÀåÇÔ
-                // bigint avgÀÇ °á°ú´Â doubleÀÌ ¾Æ´Ï¶ó float typeÀÓ
+                // Avg ê²°ê³¼ë¥¼ ì €ì¥í•¨
+                // bigint avgì˜ ê²°ê³¼ëŠ” doubleì´ ì•„ë‹ˆë¼ float typeì„
                 IDE_TEST( mtc::initializeColumn( sMtcColumn,
                                                  & mtdFloat,
                                                  0,
@@ -2251,7 +2251,7 @@ IDE_RC mtfDecodeAvgListEstimateBigint( mtcNode*     aNode,
                                                  0 )
                           != IDE_SUCCESS );
         
-                // execution¿ë sListCount°³ÀÇ stack°ú bigint value¸¦ ÀúÀåÇÒ °ø°£À» ¼³Á¤ÇÑ´Ù.
+                // executionìš© sListCountê°œì˜ stackê³¼ bigint valueë¥¼ ì €ì¥í•  ê³µê°„ì„ ì„¤ì •í•œë‹¤.
                 IDE_TEST( mtc::initializeColumn( aStack[0].column,
                                                  & mtdList,
                                                  2,
@@ -2259,13 +2259,13 @@ IDE_RC mtfDecodeAvgListEstimateBigint( mtcNode*     aNode,
                                                  sMtcColumn->column.size * sListCount )
                           != IDE_SUCCESS );
 
-                // estimate¿ë sListCount°³ÀÇ stackÀ» »ı¼ºÇÑ´Ù.
+                // estimateìš© sListCountê°œì˜ stackì„ ìƒì„±í•œë‹¤.
                 IDE_TEST( aCallBack->alloc( aCallBack->info,
                                             ID_SIZEOF(mtcStack) * sListCount,
                                             (void**)&(aStack[0].value) )
                           != IDE_SUCCESS);
 
-                // list stackÀ» smiColumn.value¿¡ ±â·ÏÇØµĞ´Ù.
+                // list stackì„ smiColumn.valueì— ê¸°ë¡í•´ë‘”ë‹¤.
                 aStack[0].column->column.value = aStack[0].value;
 
                 sListStack = (mtcStack*)aStack[0].value;
@@ -2275,7 +2275,7 @@ IDE_RC mtfDecodeAvgListEstimateBigint( mtcNode*     aNode,
                     sListStack[sCount].value  = sMtcColumn->module->staticNull;
                 }
         
-                // Avg info Á¤º¸¸¦ mtdBinary¿¡ ÀúÀå
+                // Avg info ì •ë³´ë¥¼ mtdBinaryì— ì €ì¥
                 sBinaryPrecision = ID_SIZEOF(mtfDecodeAvgListInfo) +
                     ID_SIZEOF(mtfDecodeAvgInfo) * ( sListCount - 1 );
                 IDE_TEST( mtc::initializeColumn( aStack[0].column + 1,
@@ -2332,7 +2332,7 @@ IDE_RC mtfDecodeAvgListEstimateBigint( mtcNode*     aNode,
 
             if ( sIsConstValue == ID_TRUE )
             {
-                // mtfDecodeAvgListCalculateInfo ÀúÀåÇÒ °ø°£À» ÇÒ´ç
+                // mtfDecodeAvgListCalculateInfo ì €ì¥í•  ê³µê°„ì„ í• ë‹¹
                 IDE_TEST( aCallBack->alloc( aCallBack->info,
                                             ID_SIZEOF(mtfDecodeAvgListCalculateInfo),
                                             (void**) & sCalculateInfo )
@@ -2357,7 +2357,7 @@ IDE_RC mtfDecodeAvgListEstimateBigint( mtcNode*     aNode,
 
                     sCalculateInfo->sSearchCount = 1;
                     
-                    // »ó¼ö tupleÀº ÀçÇÒ´çµÇ¹Ç·Î º¹»çÇØ¼­ ÀúÀåÇÑ´Ù.
+                    // ìƒìˆ˜ tupleì€ ì¬í• ë‹¹ë˜ë¯€ë¡œ ë³µì‚¬í•´ì„œ ì €ì¥í•œë‹¤.
                     mtc::copyColumn( sMtcColumn,
                                      &(aTemplate->rows[sNode->table].columns[sNode->column]) );
                     
@@ -2390,11 +2390,11 @@ IDE_RC mtfDecodeAvgListEstimateBigint( mtcNode*     aNode,
                           ( sCount < sCalculateInfo->sSearchCount ) && ( sNode != NULL );
                           sCount++, sNode = sNode->next, sMtcColumn++ )
                     {
-                        // ¸ğµÎ µ¿ÀÏ typeÀÌ¾î¾ß ÇÑ´Ù.
+                        // ëª¨ë‘ ë™ì¼ typeì´ì–´ì•¼ í•œë‹¤.
                         IDE_DASSERT( sListStack[0].column->module->no ==
                                      sListStack[sCount].column->module->no );
                         
-                        // »ó¼ö tupleÀº ÀçÇÒ´çµÇ¹Ç·Î º¹»çÇØ¼­ ÀúÀåÇÑ´Ù.
+                        // ìƒìˆ˜ tupleì€ ì¬í• ë‹¹ë˜ë¯€ë¡œ ë³µì‚¬í•´ì„œ ì €ì¥í•œë‹¤.
                         mtc::copyColumn( sMtcColumn,
                                          &(aTemplate->rows[sNode->table].columns[sNode->column]) );
                         
@@ -2414,7 +2414,7 @@ IDE_RC mtfDecodeAvgListEstimateBigint( mtcNode*     aNode,
                                   ID_SIZEOF(mtfDecodeAvgSortedValue),
                                   compareDecodeAvgSortedValue );
                 
-                    // Áßº¹ÀÌ ÀÖ¾î¼­´Â ¾ÈµÈ´Ù. (bsearch´Â ÇÑ°³¸¸ Ã£¾ÆÁØ´Ù.)
+                    // ì¤‘ë³µì´ ìˆì–´ì„œëŠ” ì•ˆëœë‹¤. (bsearchëŠ” í•œê°œë§Œ ì°¾ì•„ì¤€ë‹¤.)
                     for ( sCount = 1; sCount < sCalculateInfo->sSearchCount; sCount++ )
                     {
                         sValueInfo1.column = (const mtcColumn *)
@@ -2458,8 +2458,8 @@ IDE_RC mtfDecodeAvgListEstimateBigint( mtcNode*     aNode,
         
         aTemplate->rows[aNode->table].execute[aNode->column] = mtfDecodeAvgListExecuteBigint;
 
-        // Avg °á°ú¸¦ ÀúÀåÇÔ
-        // bigint avgÀÇ °á°ú´Â doubleÀÌ ¾Æ´Ï¶ó float typeÀÓ
+        // Avg ê²°ê³¼ë¥¼ ì €ì¥í•¨
+        // bigint avgì˜ ê²°ê³¼ëŠ” doubleì´ ì•„ë‹ˆë¼ float typeì„
         IDE_TEST( mtc::initializeColumn( aStack[0].column,
                                          & mtdFloat,
                                          0,
@@ -2467,7 +2467,7 @@ IDE_RC mtfDecodeAvgListEstimateBigint( mtcNode*     aNode,
                                          0 )
                   != IDE_SUCCESS );
         
-        // Avg info´Â ÇÊ¿ä¾ø´Ù.
+        // Avg infoëŠ” í•„ìš”ì—†ë‹¤.
         IDE_TEST( mtc::initializeColumn( aStack[0].column + 1,
                                          & mtdBinary,
                                          1,
@@ -2478,7 +2478,7 @@ IDE_RC mtfDecodeAvgListEstimateBigint( mtcNode*     aNode,
 
     if ( sFence == 3 )
     {
-        // decode_Avg_list(i1, i2, (1,2,3))°ú °°ÀÌ ¼¼¹øÂ° ÀÎÀÚ°¡ »ó¼öÀÎ °æ¿ì
+        // decode_Avg_list(i1, i2, (1,2,3))ê³¼ ê°™ì´ ì„¸ë²ˆì§¸ ì¸ìê°€ ìƒìˆ˜ì¸ ê²½ìš°
         if ( sListCount > 1 )
         {
             sIsConstValue = ID_TRUE;
@@ -2535,7 +2535,7 @@ IDE_RC mtfDecodeAvgListEstimateBigint( mtcNode*     aNode,
             }
         }
             
-        // BUG-38070 undef typeÀ¸·Î re-estimateÇÏÁö ¾Ê´Â´Ù.
+        // BUG-38070 undef typeìœ¼ë¡œ re-estimateí•˜ì§€ ì•ŠëŠ”ë‹¤.
         if ( ( aTemplate->variableRow != ID_USHORT_MAX ) &&
              ( ( aNode->lflag & MTC_NODE_BIND_MASK ) == MTC_NODE_BIND_EXIST ) )
         {
@@ -2614,12 +2614,12 @@ IDE_RC mtfDecodeAvgListInitializeBigint( mtcNode*     aNode,
     IDE_TEST_RAISE( sInfo == NULL, ERR_LIST_INFO );
 
     //-----------------------------
-    // Avg info ÃÊ±âÈ­
+    // Avg info ì´ˆê¸°í™”
     //-----------------------------
 
     sArgNode[0] = aNode->arguments;
 
-    // Avg column ¼³Á¤
+    // Avg column ì„¤ì •
     sInfo->sAvgColumnExecute = aTemplate->rows[sArgNode[0]->table].execute + sArgNode[0]->column;
     sInfo->sAvgColumnNode    = sArgNode[0];
 
@@ -2627,7 +2627,7 @@ IDE_RC mtfDecodeAvgListInitializeBigint( mtcNode*     aNode,
     {
         sArgNode[1] = sArgNode[0]->next;
 
-        // expression column ¼³Á¤
+        // expression column ì„¤ì •
         sInfo->sExprExecute = aTemplate->rows[sArgNode[1]->table].execute + sArgNode[1]->column;
         sInfo->sExprNode    = sArgNode[1];
     }
@@ -2636,7 +2636,7 @@ IDE_RC mtfDecodeAvgListInitializeBigint( mtcNode*     aNode,
         // Nothing to do.
     }
     
-    // return column ¼³Á¤
+    // return column ì„¤ì •
     sInfo->sReturnColumn = aTemplate->rows[aNode->table].columns + aNode->column;
     sInfo->sReturnValue  = (void *)
         ((UChar*) aTemplate->rows[aNode->table].row + sInfo->sReturnColumn->column.offset);
@@ -2651,9 +2651,9 @@ IDE_RC mtfDecodeAvgListInitializeBigint( mtcNode*     aNode,
         sInfo->sReturnStack = (mtcStack*)sInfo->sReturnValue;
         sInfo->sReturnCount = sInfo->sReturnColumn->precision;
         
-        // stack ÃÊ±âÈ­
-        // (1) estimate¶§ »ı¼ºÇÑ column Á¤º¸·Î ÃÊ±âÈ­
-        // (2) value¸¦ ½ÇÁ¦ °ªÀ¸·Î ¼³Á¤
+        // stack ì´ˆê¸°í™”
+        // (1) estimateë•Œ ìƒì„±í•œ column ì •ë³´ë¡œ ì´ˆê¸°í™”
+        // (2) valueë¥¼ ì‹¤ì œ ê°’ìœ¼ë¡œ ì„¤ì •
         sTempStack = (mtcStack*) sInfo->sReturnColumn->column.value;
         sTempValue = 
             ( (UChar*)sInfo->sReturnStack + ID_SIZEOF(mtcStack) * sInfo->sReturnCount );
@@ -2665,7 +2665,7 @@ IDE_RC mtfDecodeAvgListInitializeBigint( mtcNode*     aNode,
             sInfo->sReturnStack[sCount].column = sTempStack->column;
             sInfo->sReturnStack[sCount].value  = sTempValue;
 
-            // BUG-42973 floatÀº 1byte alignÀÌ¾î¼­ °í·ÁÇÒ ÇÊ¿ä°¡ ¾ø´Ù.
+            // BUG-42973 floatì€ 1byte alignì´ì–´ì„œ ê³ ë ¤í•  í•„ìš”ê°€ ì—†ë‹¤.
             sTempValue += sInfo->sReturnStack[sCount].column->column.size;
         }
         
@@ -2674,7 +2674,7 @@ IDE_RC mtfDecodeAvgListInitializeBigint( mtcNode*     aNode,
     }
     
     //-----------------------------
-    // Avg °á°ú¸¦ ÃÊ±âÈ­
+    // Avg ê²°ê³¼ë¥¼ ì´ˆê¸°í™”
     //-----------------------------
     
     if ( sInfo->sReturnStack == NULL )
@@ -2752,10 +2752,10 @@ IDE_RC mtfDecodeAvgListAggregateBigint( mtcNode*     aNode,
     {
         IDE_TEST_RAISE( aRemain < 1, ERR_STACK_OVERFLOW );
 
-        // ¼¼¹øÂ° ÀÎÀÚ´Â ¹İµå½Ã »ó¼ö¿©¾ß ÇÑ´Ù.
+        // ì„¸ë²ˆì§¸ ì¸ìëŠ” ë°˜ë“œì‹œ ìƒìˆ˜ì—¬ì•¼ í•œë‹¤.
         IDE_TEST_RAISE( sCalculateInfo == NULL, ERR_INVALID_FUNCTION_ARGUMENT );
         
-        // µÎ¹øÂ° ÀÎÀÚ
+        // ë‘ë²ˆì§¸ ì¸ì
         IDE_TEST( sInfo->sExprExecute->calculate( sInfo->sExprNode,
                                                   aStack,
                                                   aRemain,
@@ -2773,7 +2773,7 @@ IDE_RC mtfDecodeAvgListAggregateBigint( mtcNode*     aNode,
                       != IDE_SUCCESS );
         }
 
-        // decode ¿¬»ê¼öÇà
+        // decode ì—°ì‚°ìˆ˜í–‰
         sExprValue.column = aStack[0].column;
         sExprValue.value  = aStack[0].value;
         sExprValue.idx    = 0;
@@ -2787,13 +2787,13 @@ IDE_RC mtfDecodeAvgListAggregateBigint( mtcNode*     aNode,
     }
     else
     {
-        // null¸¸ ¾Æ´Ï¸é µÊ
+        // nullë§Œ ì•„ë‹ˆë©´ ë¨
         sFound = & sExprValue;
     }
 
     if ( sFound != NULL )
     {
-        // Ã¹¹øÂ° ÀÎÀÚ
+        // ì²«ë²ˆì§¸ ì¸ì
         IDE_TEST( sInfo->sAvgColumnExecute->calculate( sInfo->sAvgColumnNode,
                                                        aStack,
                                                        aRemain,

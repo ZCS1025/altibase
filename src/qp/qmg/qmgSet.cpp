@@ -19,11 +19,11 @@
  * $Id: qmgSet.cpp 82075 2018-01-17 06:39:52Z jina.kim $
  *
  * Description :
- *     SET Graph¸¦ À§ÇÑ ¼öÇà ÇÔ¼ö
+ *     SET Graphë¥¼ ìœ„í•œ ìˆ˜í–‰ í•¨ìˆ˜
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  **********************************************************************/
 
@@ -45,12 +45,12 @@ qmgSet::init( qcStatement * aStatement,
 {
 /***********************************************************************
  *
- * Description : qmgSetÀÇ ÃÊ±âÈ­
+ * Description : qmgSetì˜ ì´ˆê¸°í™”
  *
  * Implementation :
- *    (1) qmgSetÀ» À§ÇÑ °ø°£ ÇÒ´ç
- *    (2) graph( ¸ðµç Graph¸¦ À§ÇÑ °øÅë ÀÚ·á ±¸Á¶ ) ÃÊ±âÈ­
- *    (3) out ¼³Á¤
+ *    (1) qmgSetì„ ìœ„í•œ ê³µê°„ í• ë‹¹
+ *    (2) graph( ëª¨ë“  Graphë¥¼ ìœ„í•œ ê³µí†µ ìžë£Œ êµ¬ì¡° ) ì´ˆê¸°í™”
+ *    (3) out ì„¤ì •
  *
  ***********************************************************************/
 
@@ -60,7 +60,7 @@ qmgSet::init( qcStatement * aStatement,
     IDU_FIT_POINT_FATAL( "qmgSet::init::__FT__" );
 
     //---------------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //---------------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -69,15 +69,15 @@ qmgSet::init( qcStatement * aStatement,
     IDE_DASSERT( aRightGraph != NULL );
 
     //---------------------------------------------------
-    // Set Graph¸¦ À§ÇÑ ±âº» ÃÊ±âÈ­
+    // Set Graphë¥¼ ìœ„í•œ ê¸°ë³¸ ì´ˆê¸°í™”
     //---------------------------------------------------
 
-    // qmgSetÀ» À§ÇÑ °ø°£ ÇÒ´ç
+    // qmgSetì„ ìœ„í•œ ê³µê°„ í• ë‹¹
     IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF( qmgSET ),
                                              (void**) & sMyGraph )
               != IDE_SUCCESS );
 
-    // Graph °øÅë Á¤º¸ÀÇ ÃÊ±âÈ­
+    // Graph ê³µí†µ ì •ë³´ì˜ ì´ˆê¸°í™”
     IDE_TEST( qmg::initGraph( & sMyGraph->graph ) != IDE_SUCCESS );
 
     sMyGraph->graph.type = QMG_SET;
@@ -107,8 +107,8 @@ qmgSet::init( qcStatement * aStatement,
     }
 
     // PROJ-1358
-    // SETÀÇ °æ¿ì ChildÀÇ Dependency¸¦ ´©ÀûÇÏÁö ¾Ê°í,
-    // ÀÚ½ÅÀÇ VIEW¿¡ ´ëÇÑ dependency¸¸ ¼³Á¤ÇÑ´Ù.
+    // SETì˜ ê²½ìš° Childì˜ Dependencyë¥¼ ëˆ„ì í•˜ì§€ ì•Šê³ ,
+    // ìžì‹ ì˜ VIEWì— ëŒ€í•œ dependencyë§Œ ì„¤ì •í•œë‹¤.
 
     qtc::dependencySetWithDep( & sMyGraph->graph.depInfo,
                                & aQuerySet->depInfo );
@@ -117,7 +117,7 @@ qmgSet::init( qcStatement * aStatement,
     sMyGraph->graph.makePlan = qmgSet::makePlan;
     sMyGraph->graph.printGraph = qmgSet::printGraph;
 
-    // DISK/MEMORY Á¤º¸ ¼³Á¤
+    // DISK/MEMORY ì •ë³´ ì„¤ì •
     for ( sQuerySet = aQuerySet;
           sQuerySet->left != NULL;
           sQuerySet = sQuerySet->left ) ;
@@ -128,15 +128,15 @@ qmgSet::init( qcStatement * aStatement,
             if ( sMyGraph->graph.myQuerySet->setOp == QMS_MINUS ||
                  sMyGraph->graph.myQuerySet->setOp == QMS_INTERSECT )
             {
-                // left ¸¦ µû¸¥´Ù.
+                // left ë¥¼ ë”°ë¥¸ë‹¤.
                 sMyGraph->graph.flag &= ~QMG_GRAPH_TYPE_MASK;
                 sMyGraph->graph.flag |=
                     (aLeftGraph->flag & QMG_GRAPH_TYPE_MASK );
             }
             else
             {
-                // left ¶Ç´Â right°¡ diskÀÌ¸é disk,
-                // ±×·¸Áö ¾ÊÀ» °æ¿ì memory
+                // left ë˜ëŠ” rightê°€ diskì´ë©´ disk,
+                // ê·¸ë ‡ì§€ ì•Šì„ ê²½ìš° memory
                 if ( ( ( aLeftGraph->flag & QMG_GRAPH_TYPE_MASK )
                        == QMG_GRAPH_TYPE_DISK ) ||
                      ( ( aRightGraph->flag & QMG_GRAPH_TYPE_MASK )
@@ -166,7 +166,7 @@ qmgSet::init( qcStatement * aStatement,
             break;
     }
 
-    // out ¼³Á¤
+    // out ì„¤ì •
     *aGraph = (qmgGraph*)sMyGraph;
 
     return IDE_SUCCESS;
@@ -181,16 +181,16 @@ qmgSet::optimize( qcStatement * aStatement, qmgGraph * aGraph )
 {
 /***********************************************************************
  *
- * Description : qmgSetÀÇ ÃÖÀûÈ­
+ * Description : qmgSetì˜ ìµœì í™”
  *
  * Implementation :
- *    (1) setOp°¡ UNION ALLÀÌ ¾Æ´Ñ °æ¿ì, ´ÙÀ½À» ¼öÇà
- *        A. bucketCnt ¼³Á¤
- *        B. setOp°¡ intersect ÀÎ °æ¿ì, ÀúÀå query ÃÖÀûÈ­
- *        C. interResultType ¼³Á¤
- *    (2) °øÅë ºñ¿ë Á¤º¸ ¼³Á¤
- *    (3) Preserved Order, DISK/MEMORY ¼³Á¤
- *    (4) Multple Bag Union ÃÖÀûÈ­ Àû¿ë
+ *    (1) setOpê°€ UNION ALLì´ ì•„ë‹Œ ê²½ìš°, ë‹¤ìŒì„ ìˆ˜í–‰
+ *        A. bucketCnt ì„¤ì •
+ *        B. setOpê°€ intersect ì¸ ê²½ìš°, ì €ìž¥ query ìµœì í™”
+ *        C. interResultType ì„¤ì •
+ *    (2) ê³µí†µ ë¹„ìš© ì •ë³´ ì„¤ì •
+ *    (3) Preserved Order, DISK/MEMORY ì„¤ì •
+ *    (4) Multple Bag Union ìµœì í™” ì ìš©
  *
  ***********************************************************************/
 
@@ -201,23 +201,23 @@ qmgSet::optimize( qcStatement * aStatement, qmgGraph * aGraph )
     IDU_FIT_POINT_FATAL( "qmgSet::optimize::__FT__" );
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aGraph != NULL );
 
     //------------------------------------------
-    // ±âº» ÃÊ±âÈ­
+    // ê¸°ë³¸ ì´ˆê¸°í™”
     //------------------------------------------
 
     sMyGraph = (qmgSET*) aGraph;
 
     // To Fix BUG-8355
-    // bucket count ¼³Á¤
+    // bucket count ì„¤ì •
     if ( sMyGraph->graph.myQuerySet->setOp == QMS_UNION_ALL )
     {
-        // bucket count ÇÊ¿ä¾øÀ½
+        // bucket count í•„ìš”ì—†ìŒ
     }
     else
     {
@@ -236,7 +236,7 @@ qmgSet::optimize( qcStatement * aStatement, qmgGraph * aGraph )
     }
 
     //------------------------------------------
-    // cost °è»ê
+    // cost ê³„ì‚°
     //------------------------------------------
     if ( sMyGraph->graph.myQuerySet->setOp != QMS_UNION_ALL )
     {
@@ -268,7 +268,7 @@ qmgSet::optimize( qcStatement * aStatement, qmgGraph * aGraph )
     }
 
     //------------------------------------------
-    // °øÅë ºñ¿ë Á¤º¸ÀÇ ¼³Á¤
+    // ê³µí†µ ë¹„ìš© ì •ë³´ì˜ ì„¤ì •
     //------------------------------------------
 
     // record size
@@ -292,7 +292,7 @@ qmgSet::optimize( qcStatement * aStatement, qmgGraph * aGraph )
               != IDE_SUCCESS );
 
     // myCost
-    // My Access Cost¿Í My Disk Cost´Â ÀÌ¹Ì °è»êµÊ.
+    // My Access Costì™€ My Disk CostëŠ” ì´ë¯¸ ê³„ì‚°ë¨.
     sMyGraph->graph.costInfo.myAllCost =
         sMyGraph->graph.costInfo.myAccessCost +
         sMyGraph->graph.costInfo.myDiskCost;
@@ -308,16 +308,16 @@ qmgSet::optimize( qcStatement * aStatement, qmgGraph * aGraph )
         sMyGraph->graph.left->costInfo.totalAllCost +
         sMyGraph->graph.right->costInfo.totalAllCost;
 
-    // preserved order ¼³Á¤
+    // preserved order ì„¤ì •
     // To fix BUG-15296
-    // Set¿¬»êÀº hashtemptableÀ» »ç¿ëÇÏ±â ¶§¹®¿¡
-    // Intersect, Minus¿¡ ´ëÇØ order¸¦ º¸ÀåÇÒ ¼ö ¾øÀ½.
-    // union allÀº ¿ø·¡ºÎÅÍ orderº¸Àå ¾ÈµÊ.
+    // Setì—°ì‚°ì€ hashtemptableì„ ì‚¬ìš©í•˜ê¸° ë•Œë¬¸ì—
+    // Intersect, Minusì— ëŒ€í•´ orderë¥¼ ë³´ìž¥í•  ìˆ˜ ì—†ìŒ.
+    // union allì€ ì›ëž˜ë¶€í„° orderë³´ìž¥ ì•ˆë¨.
     sMyGraph->graph.flag &= ~QMG_PRESERVED_ORDER_MASK;
     sMyGraph->graph.flag |= QMG_PRESERVED_ORDER_NEVER;
 
     //-----------------------------------------
-    // PROJ-1486 Multiple Bag Union ÃÖÀûÈ­
+    // PROJ-1486 Multiple Bag Union ìµœì í™”
     //-----------------------------------------
 
     // BUG-42333
@@ -344,23 +344,23 @@ qmgSet::makePlan( qcStatement * aStatement, const qmgGraph * aParent, qmgGraph *
 {
 /***********************************************************************
  *
- * Description : qmgSetÀ¸·Î ºÎÅÍ PlanÀ» »ý¼ºÇÑ´Ù.
+ * Description : qmgSetìœ¼ë¡œ ë¶€í„° Planì„ ìƒì„±í•œë‹¤.
  *
  * Implementation :
- *     - qmgSetÀ¸·Î ºÎÅÍ »ý¼º°¡´ÉÇÑ Plan
+ *     - qmgSetìœ¼ë¡œ ë¶€í„° ìƒì„±ê°€ëŠ¥í•œ Plan
  *
- *         - UNION ALL ÀÎ °æ¿ì
+ *         - UNION ALL ì¸ ê²½ìš°
  *
- *               ( [PROJ] ) : parent°¡ SETÀÎ °æ¿ì »ý¼ºµÊ
+ *               ( [PROJ] ) : parentê°€ SETì¸ ê²½ìš° ìƒì„±ë¨
  *                   |
  *                 [VIEW]
  *                   |
  *                 [BUNI]
  *                 |    |
  *
- *         - UNIONÀÎ °æ¿ì
+ *         - UNIONì¸ ê²½ìš°
  *
- *               ( [PROJ] ) : parent°¡ SETÀÎ °æ¿ì »ý¼ºµÊ
+ *               ( [PROJ] ) : parentê°€ SETì¸ ê²½ìš° ìƒì„±ë¨
  *                   |
  *                 [HSDS]
  *                   |
@@ -369,18 +369,18 @@ qmgSet::makePlan( qcStatement * aStatement, const qmgGraph * aParent, qmgGraph *
  *                 [BUNI]
  *                 |    |
  *
- *         - INTERSECTÀÎ °æ¿ì
+ *         - INTERSECTì¸ ê²½ìš°
  *
- *               ( [PROJ] ) : parent°¡ SETÀÎ °æ¿ì »ý¼ºµÊ
+ *               ( [PROJ] ) : parentê°€ SETì¸ ê²½ìš° ìƒì„±ë¨
  *                   |
  *                 [VIEW]
  *                   |
  *                 [SITS]
  *                 |    |
  *
- *         - MINUSÀÎ °æ¿ì
+ *         - MINUSì¸ ê²½ìš°
  *
- *               ( [PROJ] ) : parent°¡ SETÀÎ °æ¿ì »ý¼ºµÊ
+ *               ( [PROJ] ) : parentê°€ SETì¸ ê²½ìš° ìƒì„±ë¨
  *                   |
  *                 [VIEW]
  *                   |
@@ -394,7 +394,7 @@ qmgSet::makePlan( qcStatement * aStatement, const qmgGraph * aParent, qmgGraph *
     IDU_FIT_POINT_FATAL( "qmgSet::makePlan::__FT__" );
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -411,7 +411,7 @@ qmgSet::makePlan( qcStatement * aStatement, const qmgGraph * aParent, qmgGraph *
     switch( sMyGraph->setOp )
     {
         //---------------------------------------------------
-        // UNION¿¬»êÀ» À§ÇÑ BUNI³ëµåÀÇ »ý¼º
+        // UNIONì—°ì‚°ì„ ìœ„í•œ BUNIë…¸ë“œì˜ ìƒì„±
         //---------------------------------------------------
         case QMS_UNION:
             IDE_TEST( makeUnion( aStatement,
@@ -458,7 +458,7 @@ qmgSet::makeChild( qcStatement * aStatement,
     if ( aMyGraph->graph.children == NULL )
     {
         // BUG-38410
-        // SCAN parallel flag ¸¦ ÀÚ½Ä ³ëµå·Î ¹°·ÁÁØ´Ù.
+        // SCAN parallel flag ë¥¼ ìžì‹ ë…¸ë“œë¡œ ë¬¼ë ¤ì¤€ë‹¤.
         aMyGraph->graph.left->flag  |= (aMyGraph->graph.flag &
                                         QMG_PLAN_EXEC_REPEATED_MASK);
         aMyGraph->graph.right->flag |= (aMyGraph->graph.flag &
@@ -476,13 +476,13 @@ qmgSet::makeChild( qcStatement * aStatement,
     else
     {
         // PROJ-1486
-        // Multi GraphÀÇ childrenµéÀÇ plan tree¸¦ »ý¼ºÇÑ´Ù.
+        // Multi Graphì˜ childrenë“¤ì˜ plan treeë¥¼ ìƒì„±í•œë‹¤.
         for( sChildren = aMyGraph->graph.children;
              sChildren != NULL;
              sChildren = sChildren->next )
         {
             // BUG-38410
-            // SCAN parallel flag ¸¦ ÀÚ½Ä ³ëµå·Î ¹°·ÁÁØ´Ù.
+            // SCAN parallel flag ë¥¼ ìžì‹ ë…¸ë“œë¡œ ë¬¼ë ¤ì¤€ë‹¤.
             sChildren->childGraph->flag |= (aMyGraph->graph.flag &
                                             QMG_PLAN_EXEC_REPEATED_MASK);
 
@@ -531,11 +531,11 @@ qmgSet::makeUnion( qcStatement * aStatement,
     //-----------------------------------------------------
 
     //----------------------------
-    // Top-down ÃÊ±âÈ­
+    // Top-down ì´ˆê¸°í™”
     //----------------------------
 
     //---------------------------------------------------
-    // Parent°¡ SETÀÎ °æ¿ì PROJ¸¦ »ý¼ºÇÑ´Ù.
+    // Parentê°€ SETì¸ ê²½ìš° PROJë¥¼ ìƒì„±í•œë‹¤.
     //---------------------------------------------------
     if ( (aMyGraph->graph.flag & QMG_SET_PARENT_TYPE_SET_MASK) ==
          QMG_SET_PARENT_TYPE_SET_TRUE )
@@ -598,7 +598,7 @@ qmgSet::makeUnion( qcStatement * aStatement,
     aMyGraph->graph.myPlan = sBUNI;
 
     //-----------------------
-    // ÇÏÀ§ plan »ý¼º
+    // í•˜ìœ„ plan ìƒì„±
     //-----------------------
 
     IDE_TEST( makeChild( aStatement,
@@ -606,7 +606,7 @@ qmgSet::makeUnion( qcStatement * aStatement,
               != IDE_SUCCESS );
 
     //----------------------------
-    // Bottom-up »ý¼º
+    // Bottom-up ìƒì„±
     //----------------------------
 
     //-----------------------
@@ -652,7 +652,7 @@ qmgSet::makeUnion( qcStatement * aStatement,
         sFlag &= ~QMO_MAKEHSDS_METHOD_MASK;
         sFlag |= QMO_MAKEHSDS_SET_UNION;
 
-        //Temp TableÀúÀå ¸ÅÃ¼ ¼±ÅÃ
+        //Temp Tableì €ìž¥ ë§¤ì²´ ì„ íƒ
         if( (aMyGraph->graph.flag & QMG_GRAPH_TYPE_MASK) ==
             QMG_GRAPH_TYPE_MEMORY )
         {
@@ -742,11 +742,11 @@ qmgSet::makeIntersect( qcStatement * aStatement,
     //-----------------------------------------------------
 
     //----------------------------
-    // Top-down ÃÊ±âÈ­
+    // Top-down ì´ˆê¸°í™”
     //----------------------------
 
     //---------------------------------------------------
-    // Parent°¡ SETÀÎ °æ¿ì PROJ¸¦ »ý¼ºÇÑ´Ù.
+    // Parentê°€ SETì¸ ê²½ìš° PROJë¥¼ ìƒì„±í•œë‹¤.
     //---------------------------------------------------
     if ( (aMyGraph->graph.flag & QMG_SET_PARENT_TYPE_SET_MASK) ==
          QMG_SET_PARENT_TYPE_SET_TRUE )
@@ -787,7 +787,7 @@ qmgSet::makeIntersect( qcStatement * aStatement,
     aMyGraph->graph.myPlan = sSITS;
 
     //-----------------------
-    // ÇÏÀ§ plan »ý¼º
+    // í•˜ìœ„ plan ìƒì„±
     //-----------------------
 
     IDE_TEST( makeChild( aStatement,
@@ -795,7 +795,7 @@ qmgSet::makeIntersect( qcStatement * aStatement,
               != IDE_SUCCESS );
 
     //----------------------------
-    // Bottom-up »ý¼º
+    // Bottom-up ìƒì„±
     //----------------------------
 
     //-----------------------
@@ -905,11 +905,11 @@ qmgSet::makeMinus( qcStatement * aStatement,
     //-----------------------------------------------------
 
     //----------------------------
-    // Top-down ÃÊ±âÈ­
+    // Top-down ì´ˆê¸°í™”
     //----------------------------
 
     //---------------------------------------------------
-    // Parent°¡ SETÀÎ °æ¿ì PROJ¸¦ »ý¼ºÇÑ´Ù.
+    // Parentê°€ SETì¸ ê²½ìš° PROJë¥¼ ìƒì„±í•œë‹¤.
     //---------------------------------------------------
     if ( (aMyGraph->graph.flag & QMG_SET_PARENT_TYPE_SET_MASK) ==
          QMG_SET_PARENT_TYPE_SET_TRUE )
@@ -951,7 +951,7 @@ qmgSet::makeMinus( qcStatement * aStatement,
     aMyGraph->graph.myPlan = sSDIF;
 
     //-----------------------
-    // ÇÏÀ§ plan »ý¼º
+    // í•˜ìœ„ plan ìƒì„±
     //-----------------------
 
     IDE_TEST( makeChild( aStatement,
@@ -959,7 +959,7 @@ qmgSet::makeMinus( qcStatement * aStatement,
               != IDE_SUCCESS );
 
     //----------------------------
-    // Bottom-up »ý¼º
+    // Bottom-up ìƒì„±
     //----------------------------
 
     //-----------------------
@@ -1055,7 +1055,7 @@ qmgSet::printGraph( qcStatement  * aStatement,
 /***********************************************************************
  *
  * Description :
- *    Graph¸¦ ±¸¼ºÇÏ´Â °øÅë Á¤º¸¸¦ Ãâ·ÂÇÑ´Ù.
+ *    Graphë¥¼ êµ¬ì„±í•˜ëŠ” ê³µí†µ ì •ë³´ë¥¼ ì¶œë ¥í•œë‹¤.
  *
  *
  * Implementation :
@@ -1067,7 +1067,7 @@ qmgSet::printGraph( qcStatement  * aStatement,
     IDU_FIT_POINT_FATAL( "qmgSet::printGraph::__FT__" );
 
     //-----------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //-----------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -1075,7 +1075,7 @@ qmgSet::printGraph( qcStatement  * aStatement,
     IDE_DASSERT( aString != NULL );
 
     //-----------------------------------
-    // Graph °øÅë Á¤º¸ÀÇ Ãâ·Â
+    // Graph ê³µí†µ ì •ë³´ì˜ ì¶œë ¥
     //-----------------------------------
 
     IDE_TEST( qmg::printGraph( aStatement,
@@ -1085,12 +1085,12 @@ qmgSet::printGraph( qcStatement  * aStatement,
               != IDE_SUCCESS );
 
     //-----------------------------------
-    // Graph °íÀ¯ Á¤º¸ÀÇ Ãâ·Â
+    // Graph ê³ ìœ  ì •ë³´ì˜ ì¶œë ¥
     //-----------------------------------
 
 
     //-----------------------------------
-    // Child Graph °íÀ¯ Á¤º¸ÀÇ Ãâ·Â
+    // Child Graph ê³ ìœ  ì •ë³´ì˜ ì¶œë ¥
     //-----------------------------------
 
     if ( aGraph->children == NULL )
@@ -1109,7 +1109,7 @@ qmgSet::printGraph( qcStatement  * aStatement,
     }
     else
     {
-        // Multiple Children¿¡ ´ëÇÑ Graph Á¤º¸ Ãâ·Â
+        // Multiple Childrenì— ëŒ€í•œ Graph ì •ë³´ ì¶œë ¥
         for( sChildren = aGraph->children;
              sChildren != NULL;
              sChildren = sChildren->next )
@@ -1137,15 +1137,15 @@ qmgSet::optMultiBagUnion( qcStatement * aStatement,
 /***********************************************************************
  *
  * Description : PROJ-1486
- *    Multiple Bag Union ÃÖÀûÈ­¸¦ Àû¿ëÇÔ.
+ *    Multiple Bag Union ìµœì í™”ë¥¼ ì ìš©í•¨.
  *
  * Implementation :
  *
- *    Left¿Í Right Graph¿¡ ´ëÇÏ¿© °¢°¢ ´ÙÀ½À» ¼öÇàÇÑ´Ù.
+ *    Leftì™€ Right Graphì— ëŒ€í•˜ì—¬ ê°ê° ë‹¤ìŒì„ ìˆ˜í–‰í•œë‹¤.
  *
- *    - 1. ÇöÀçÀÇ ¿¬°á °ü°è¸¦ ²÷´Â´Ù.
- *    - 2. °¢ ChildÀÇ GraphÁ¤º¸¸¦ ¿¬°áÇÑ´Ù.
- *    - 3. °¢ ChildÀÇ Data TypeÀ» ÀÏÄ¡½ÃÅ²´Ù.
+ *    - 1. í˜„ìž¬ì˜ ì—°ê²° ê´€ê³„ë¥¼ ëŠëŠ”ë‹¤.
+ *    - 2. ê° Childì˜ Graphì •ë³´ë¥¼ ì—°ê²°í•œë‹¤.
+ *    - 3. ê° Childì˜ Data Typeì„ ì¼ì¹˜ì‹œí‚¨ë‹¤.
  *
  ***********************************************************************/
 
@@ -1161,41 +1161,41 @@ qmgSet::optMultiBagUnion( qcStatement * aStatement,
                  ( aSETGraph->graph.myQuerySet->setOp == QMS_UNION ) );
 
     //-------------------------------------------
-    // Left Child¿¡ ´ëÇÑ Ã³¸®
+    // Left Childì— ëŒ€í•œ ì²˜ë¦¬
     //-------------------------------------------
 
-    // 1. ÇöÀçÀÇ ¿¬°á °ü°è Á¦°Å
+    // 1. í˜„ìž¬ì˜ ì—°ê²° ê´€ê³„ ì œê±°
     sChildGraph = aSETGraph->graph.left;
     aSETGraph->graph.left = NULL;
 
-    // 2. °¢ ChildÀÇ GraphÁ¤º¸¸¦ ¿¬°áÇÑ´Ù.
+    // 2. ê° Childì˜ Graphì •ë³´ë¥¼ ì—°ê²°í•œë‹¤.
     IDE_TEST( linkChildGraph( aStatement,
                               sChildGraph,
                               & aSETGraph->graph.children )
               != IDE_SUCCESS );
 
     //-------------------------------------------
-    // Right Child¿¡ ´ëÇÑ Ã³¸®
+    // Right Childì— ëŒ€í•œ ì²˜ë¦¬
     //-------------------------------------------
 
-    // 0. ´ÙÀ½ ¿¬°áÀ» À§ÇÑ À§Ä¡·Î ÀÌµ¿
+    // 0. ë‹¤ìŒ ì—°ê²°ì„ ìœ„í•œ ìœ„ì¹˜ë¡œ ì´ë™
     for ( sChildren = aSETGraph->graph.children;
           sChildren->next != NULL;
           sChildren = sChildren->next );
 
-    // 1. ÇöÀçÀÇ ¿¬°á °ü°è Á¦°Å
+    // 1. í˜„ìž¬ì˜ ì—°ê²° ê´€ê³„ ì œê±°
     sChildGraph = aSETGraph->graph.right;
     aSETGraph->graph.right = NULL;
 
-    // 2. °¢ ChildÀÇ GraphÁ¤º¸¸¦ ¿¬°áÇÑ´Ù.
+    // 2. ê° Childì˜ Graphì •ë³´ë¥¼ ì—°ê²°í•œë‹¤.
     IDE_TEST( linkChildGraph( aStatement,
                               sChildGraph,
                               & sChildren->next )
               != IDE_SUCCESS );
 
     //-------------------------------------------
-    // 3. °¢ ChildÀÇ TargetÀÇ °á°ú¸¦
-    //    ÃÖÁ¾ Target°ú µ¿ÀÏÇÑ Data TypeÀ¸·Î ÀÏÄ¡½ÃÅ´.
+    // 3. ê° Childì˜ Targetì˜ ê²°ê³¼ë¥¼
+    //    ìµœì¢… Targetê³¼ ë™ì¼í•œ Data Typeìœ¼ë¡œ ì¼ì¹˜ì‹œí‚´.
     //-------------------------------------------
 
     for ( sChildren = aSETGraph->graph.children;
@@ -1208,12 +1208,12 @@ qmgSet::optMultiBagUnion( qcStatement * aStatement,
               sCurTarget = sCurTarget->next,
                   sChildTarget = sChildTarget->next )
         {
-            // ±âÁ¸ÀÇ Child TargetÀÇ conversionÀ» Á¦°Å
+            // ê¸°ì¡´ì˜ Child Targetì˜ conversionì„ ì œê±°
             sChildTarget->targetColumn->node.conversion = NULL;
 
-            // ÇöÀç Target°ú µ¿ÀÏÇÑ Data TypeÀ¸·Î ÀÏÄ¡½ÃÅ´
-            // ÇöÀç TargetÀº °¡Àå »óÀ§ÀÇ Data TypeÀ¸·Î º¯°æµÇÁö ¾Ê´Â´Ù.
-            // Áï, child target¿¡ ÀÇÇÏ¿© ¿µÇâÀ» ¹ÞÁö ¾Ê´Â´Ù.
+            // í˜„ìž¬ Targetê³¼ ë™ì¼í•œ Data Typeìœ¼ë¡œ ì¼ì¹˜ì‹œí‚´
+            // í˜„ìž¬ Targetì€ ê°€ìž¥ ìƒìœ„ì˜ Data Typeìœ¼ë¡œ ë³€ê²½ë˜ì§€ ì•ŠëŠ”ë‹¤.
+            // ì¦‰, child targetì— ì˜í•˜ì—¬ ì˜í–¥ì„ ë°›ì§€ ì•ŠëŠ”ë‹¤.
             IDE_TEST(
                 qtc::makeSameDataType4TwoNode( aStatement,
                                                sCurTarget->targetColumn,
@@ -1238,15 +1238,15 @@ qmgSet::linkChildGraph( qcStatement  * aStatement,
 /***********************************************************************
  *
  * Description : PROJ-1486
- *     ÇÏ³ªÀÇ Child Graph¿¡ ´ëÇÏ¿© ¿¬°áÀ» ¸Î´Â´Ù.
+ *     í•˜ë‚˜ì˜ Child Graphì— ëŒ€í•˜ì—¬ ì—°ê²°ì„ ë§ºëŠ”ë‹¤.
  *
  * Implementation :
  *
- *    - 2-1. Child°¡ PROJECTION or UNION_ALL ÀÌ ¾Æ´Ñ SETÀÏ °æ¿ì
- *           ÇØ´ç Graph¸¦ children¿¡ ¿¬°á
- *    - 2-2. Child°¡ UNOIN_ALL ÀÏ °æ¿ì
- *    - 2-2-1. childrenÀÌ ÀÖÀ» °æ¿ì ÀÌ¸¦ ¿¬°áÇÑ´Ù.
- *    - 2-2-2. childrenÀÌ ¾øÀ» °æ¿ì ÇØ´ç Graph¸¦ children¿¡ ¿¬°á
+ *    - 2-1. Childê°€ PROJECTION or UNION_ALL ì´ ì•„ë‹Œ SETì¼ ê²½ìš°
+ *           í•´ë‹¹ Graphë¥¼ childrenì— ì—°ê²°
+ *    - 2-2. Childê°€ UNOIN_ALL ì¼ ê²½ìš°
+ *    - 2-2-1. childrenì´ ìžˆì„ ê²½ìš° ì´ë¥¼ ì—°ê²°í•œë‹¤.
+ *    - 2-2-2. childrenì´ ì—†ì„ ê²½ìš° í•´ë‹¹ Graphë¥¼ childrenì— ì—°ê²°
  *
  ***********************************************************************/
 
@@ -1261,7 +1261,7 @@ qmgSet::linkChildGraph( qcStatement  * aStatement,
     {
         // BUG-42333
         //---------------------------------------
-        // 2-1. Projection or UNION_ALL ÀÌ ¾Æ´Ñ SET ÀÏ °æ¿ìÀÇ ¿¬°á
+        // 2-1. Projection or UNION_ALL ì´ ì•„ë‹Œ SET ì¼ ê²½ìš°ì˜ ì—°ê²°
         //---------------------------------------
 
         IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF(qmgChildren) ,
@@ -1276,7 +1276,7 @@ qmgSet::linkChildGraph( qcStatement  * aStatement,
     else
     {
         //---------------------------------------
-        // 2-2. UNION_ALL ÀÎ °æ¿ìÀÇ ¿¬°á
+        // 2-2. UNION_ALL ì¸ ê²½ìš°ì˜ ì—°ê²°
         //---------------------------------------
 
         IDE_DASSERT( aChildGraph->type == QMG_SET );
@@ -1285,7 +1285,7 @@ qmgSet::linkChildGraph( qcStatement  * aStatement,
         if ( aChildGraph->children != NULL )
         {
             //---------------------------------------
-            // 2-2-1. childrenÀÌ ÀÖÀ» °æ¿ì ÀÌ¸¦ ¿¬°áÇÑ´Ù.
+            // 2-2-1. childrenì´ ìžˆì„ ê²½ìš° ì´ë¥¼ ì—°ê²°í•œë‹¤.
             //---------------------------------------
 
             *aChildren = aChildGraph->children;
@@ -1293,7 +1293,7 @@ qmgSet::linkChildGraph( qcStatement  * aStatement,
         else
         {
             //---------------------------------------
-            // 2-2-2. childrenÀÌ ¾øÀ» °æ¿ì ÇØ´ç Graph¸¦ children¿¡ ¿¬°á
+            // 2-2-2. childrenì´ ì—†ì„ ê²½ìš° í•´ë‹¹ Graphë¥¼ childrenì— ì—°ê²°
             //---------------------------------------
 
             IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF(qmgChildren) ,

@@ -18,7 +18,7 @@
 #include <ulnPrivate.h>
 
 /*
- * SQLNumResultCols °¡ ¹ß»ı½ÃÅ°´Â ¿¡·¯µéÀÇ Á¤º¸
+ * SQLNumResultCols ê°€ ë°œìƒì‹œí‚¤ëŠ” ì—ëŸ¬ë“¤ì˜ ì •ë³´
  *
  * SQLSTATE  Error
  *           Description
@@ -107,8 +107,8 @@ static ACI_RC ulnNumResultColsEnter(ulnFnContext *aContext, acp_sint16_t *aColum
  * The number of columns returned by SQLNumResultCols is the same value as
  * the SQL_DESC_COUNT field of the IRD.
  *
- * IPD ÀÇ SQL_DESC_COUNT ¸¦ ¸®ÅÏÇÏ´Â °Í°ú
- * IRD ÀÇ °ÍÀ» ¸®ÅÏÇÏ´Â °Í »©°í´Â ulnNumResultCols ¿Í ¿ÏÀüÈ÷ identical ÇÑ ÇÔ¼öÀÌ´Ù.
+ * IPD ì˜ SQL_DESC_COUNT ë¥¼ ë¦¬í„´í•˜ëŠ” ê²ƒê³¼
+ * IRD ì˜ ê²ƒì„ ë¦¬í„´í•˜ëŠ” ê²ƒ ë¹¼ê³ ëŠ” ulnNumResultCols ì™€ ì™„ì „íˆ identical í•œ í•¨ìˆ˜ì´ë‹¤.
  */
 SQLRETURN ulnNumResultCols(ulnStmt *aStmt, acp_sint16_t *aColumnCountPtr)
 {
@@ -135,7 +135,7 @@ SQLRETURN ulnNumResultCols(ulnStmt *aStmt, acp_sint16_t *aColumnCountPtr)
     }   
 
     /*
-     * ³Ñ°ÜÁø ÀÎÀÚµéÀÇ À¯È¿¼º Ã¼Å©
+     * ë„˜ê²¨ì§„ ì¸ìë“¤ì˜ ìœ íš¨ì„± ì²´í¬
      */
     ACI_TEST(ulnNumResultColsEnter(&sFnContext, aColumnCountPtr) != ACI_SUCCESS);
 

@@ -30,7 +30,7 @@ public class BatchLobSetNullTest extends AltibaseTestCase
     }
     
     /**
-     * clob,blob ÄÃ·³¿¡ °¢°¢ 1¹øÂ° not null, 2¹øÂ° null, 3¹øÂ° not nullÀ» ³ÖÀº ÈÄ µÎ¹øÂ° ·Î¿ìÀÇ °ªÀÌ nullÀÎÁö Ã¼Å©
+     * clob,blob ì»¬ëŸ¼ì— ê°ê° 1ë²ˆì§¸ not null, 2ë²ˆì§¸ null, 3ë²ˆì§¸ not nullì„ ë„£ì€ í›„ ë‘ë²ˆì§¸ ë¡œìš°ì˜ ê°’ì´ nullì¸ì§€ ì²´í¬
      * @throws SQLException
      */
     public void testBatchSetNullAndWasNull() throws SQLException
@@ -51,13 +51,13 @@ public class BatchLobSetNullTest extends AltibaseTestCase
             {
                 if (i == 0)
                 {
-                    // Ã¹¹øÂ° Çà¿¡´Â ±âÁ¸¿¡ ÀÖ´Â °ªÀ» null·Î ¾÷µ¥ÀÌÆ®ÇÑ´Ù.
+                    // ì²«ë²ˆì§¸ í–‰ì—ëŠ” ê¸°ì¡´ì— ìˆëŠ” ê°’ì„ nullë¡œ ì—…ë°ì´íŠ¸í•œë‹¤.
                     sStmt.setNull(1, Types.VARCHAR);
                     sStmt.setNull(2, Types.VARCHAR);
                 }
                 else
                 {
-                    // µÎ¹øÂ°¿Í ¼¼¹øÂ° Çà¿¡´Â °¢°¢ µ¥ÀÌÅÍ¸¦ ¾÷µ¥ÀÌÆ®ÇÑ´Ù.
+                    // ë‘ë²ˆì§¸ì™€ ì„¸ë²ˆì§¸ í–‰ì—ëŠ” ê°ê° ë°ì´í„°ë¥¼ ì—…ë°ì´íŠ¸í•œë‹¤.
                     sStmt.setCharacterStream(1, new StringReader(sClobText), sClobText.length());
                     sStmt.setBytes(2, new byte[] {0x1f, 0x1d});
                 }
@@ -69,7 +69,7 @@ public class BatchLobSetNullTest extends AltibaseTestCase
         }
         finally
         {
-            // clientside_auto_commitÀÌ onÀÌ±â¶§¹®¿¡ finallyÀı¿¡¼­ Statement¸¦ closeÇØÁØ´Ù.
+            // clientside_auto_commitì´ onì´ê¸°ë•Œë¬¸ì— finallyì ˆì—ì„œ Statementë¥¼ closeí•´ì¤€ë‹¤.
             sStmt.close();
         }
     }
@@ -110,7 +110,7 @@ public class BatchLobSetNullTest extends AltibaseTestCase
         }
         finally
         {
-            // clientside_auto_commitÀÌ onÀÌ±â¶§¹®¿¡ ResultSet ¹× Statement¸¦ closeÇØÁØ´Ù.
+            // clientside_auto_commitì´ onì´ê¸°ë•Œë¬¸ì— ResultSet ë° Statementë¥¼ closeí•´ì¤€ë‹¤.
             sRs.close();
             sSelStmt.close();
         }
@@ -156,13 +156,13 @@ public class BatchLobSetNullTest extends AltibaseTestCase
                 sStmt.setInt(1, i+1);
                 if (i == 1)
                 {
-                    // 2¹øÂ° Çà¿¡´Â null°ªÀ» insertÇÑ´Ù.
+                    // 2ë²ˆì§¸ í–‰ì—ëŠ” nullê°’ì„ insertí•œë‹¤.
                     sStmt.setNull(2, Types.VARCHAR);
                     sStmt.setNull(3, Types.VARCHAR);
                 }
                 else
                 {  
-                    // Ã¹¹øÂ°¿Í ¼¼¹øÂ° Çà¿¡´Â °¢°¢ µ¥ÀÌÅÍ¸¦ insertÇÑ´Ù.
+                    // ì²«ë²ˆì§¸ì™€ ì„¸ë²ˆì§¸ í–‰ì—ëŠ” ê°ê° ë°ì´í„°ë¥¼ insertí•œë‹¤.
                     sStmt.setCharacterStream(2, new StringReader(sClobText), sClobText.length());
                     sStmt.setBytes(3, new byte[] {0x1f, 0x1d});
                 }
@@ -173,7 +173,7 @@ public class BatchLobSetNullTest extends AltibaseTestCase
         }
         finally
         {
-            // clientside_auto_commitÀÌ onÀÌ±â¶§¹®¿¡ finallyÀı¿¡¼­ Statement¸¦ closeÇØÁØ´Ù.
+            // clientside_auto_commitì´ onì´ê¸°ë•Œë¬¸ì— finallyì ˆì—ì„œ Statementë¥¼ closeí•´ì¤€ë‹¤.
             sStmt.close();
         }
     }

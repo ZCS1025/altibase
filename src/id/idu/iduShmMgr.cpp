@@ -118,11 +118,11 @@ SChar* iduShmMgr::getPtrOfAddr( idShmAddr aAddr )
 }
 
 /***********************************************************************
- * Description : Shared Memory Manager¸¦ ÃÊ±âÈ­ ÇÑ´Ù. DAEMON ProcessÀÇ
- *               °æ¿ì¿¡´Â System Segment¸¦ »ı¼ºÇÏ°í SHM_STARTUP_SIZE ¸¸Å­
- *               Shared Memory¸¦ »ı¼ºÇÑ´Ù. ´Ù¸¥ Type ProcessÀÇ °æ¿ì System
- *               Segment°¡ Á¸ÀçÇÏ´Â °æ¿ì Attach¸¦ ¼öÇàÇÏ°í System Segment¿¡
- *               Á¸ÀçÇÏ´Â Data SegmentÁ¤º¸¸¦ ÀÌ¿ëÇÏ¿© Attach¸¦ ½ÃµµÇÑ´Ù.
+ * Description : Shared Memory Managerë¥¼ ì´ˆê¸°í™” í•œë‹¤. DAEMON Processì˜
+ *               ê²½ìš°ì—ëŠ” System Segmentë¥¼ ìƒì„±í•˜ê³  SHM_STARTUP_SIZE ë§Œí¼
+ *               Shared Memoryë¥¼ ìƒì„±í•œë‹¤. ë‹¤ë¥¸ Type Processì˜ ê²½ìš° System
+ *               Segmentê°€ ì¡´ì¬í•˜ëŠ” ê²½ìš° Attachë¥¼ ìˆ˜í–‰í•˜ê³  System Segmentì—
+ *               ì¡´ì¬í•˜ëŠ” Data Segmentì •ë³´ë¥¼ ì´ìš©í•˜ì—¬ Attachë¥¼ ì‹œë„í•œë‹¤.
  *
  * aProcType - [IN] Process Type
  *               + IDU_PROC_TYPE_DAEMON
@@ -164,7 +164,7 @@ IDE_RC iduShmMgr::initialize( iduShmProcType aProcType )
     /* BUG-40895 Cannot destroy the shared memory segments which is created as other user */
     mUID = idlOS::getuid();
 
-    // Shared Memory¿µ¿ªÀ» °Ë»çÇÏ¿© ValidÇÏÁö ¾ÊÀ¸¸é Á¦°Å
+    // Shared Memoryì˜ì—­ì„ ê²€ì‚¬í•˜ì—¬ Validí•˜ì§€ ì•Šìœ¼ë©´ ì œê±°
     IDE_TEST( checkShmAndClean( aProcType, &sIsValid ) != IDE_SUCCESS );
 
     if ( sIsValid == ID_TRUE )
@@ -196,7 +196,7 @@ IDE_RC iduShmMgr::initialize( iduShmProcType aProcType )
 
         sInitChunkCnt = sStartUpShmSize / iduProperty::getShmChunkSize();
 
-        /* Alloc Thread InfoÇÏ¸é¼­ Data Chunk 1°³°¡ ÀÌ¹Ì ÇÒ´çµÇ¾ú´Ù. */
+        /* Alloc Thread Infoí•˜ë©´ì„œ Data Chunk 1ê°œê°€ ì´ë¯¸ í• ë‹¹ë˜ì—ˆë‹¤. */
         for( i = 0; i < sInitChunkCnt; i++ )
         {
             sAllocChunkSize = iduProperty::getShmChunkSize();
@@ -221,10 +221,10 @@ IDE_RC iduShmMgr::initialize( iduShmProcType aProcType )
         }
     }
 
-    //Daemon ¸¸ shared Memory »óÅÂ¸¦ º¯°æÇÑ´Ù. 
+    //Daemon ë§Œ shared Memory ìƒíƒœë¥¼ ë³€ê²½í•œë‹¤. 
     if ( idwPMMgr::getProcType() == IDU_PROC_TYPE_DAEMON )
     {
-        // ºñÁ¤»ó Á¾·á¸¦ ´ëºñÇØ SSegment¿¡ Á¤»ó Á¾·á »óÅÂ¸¦ FALSE·Î ¼¼ÆÃ
+        // ë¹„ì •ìƒ ì¢…ë£Œë¥¼ ëŒ€ë¹„í•´ SSegmentì— ì •ìƒ ì¢…ë£Œ ìƒíƒœë¥¼ FALSEë¡œ ì„¸íŒ…
         (void)setNormalShutdown( ID_FALSE );
     }
     return IDE_SUCCESS;
@@ -244,29 +244,29 @@ IDE_RC iduShmMgr::initialize( iduShmProcType aProcType )
 }
 
 /***********************************************************************
- * Description : Shared Memory Manager¸¦ destroyÇÑ´Ù.
- *               DaemonÇÁ·Î¼¼½ºÀÇ °æ¿ì SHM_POLICY¿¡ µû¶ó SegmentµéÀ»
- *               destroy or detachÇÑ´Ù.
+ * Description : Shared Memory Managerë¥¼ destroyí•œë‹¤.
+ *               Daemoní”„ë¡œì„¸ìŠ¤ì˜ ê²½ìš° SHM_POLICYì— ë”°ë¼ Segmentë“¤ì„
+ *               destroy or detachí•œë‹¤.
  *               
  * aIsNormalShutdown - [IN] Normal or Abnormal Shutdown
- *                          ¸ğµç ¸ğµâÀÌ Á¤»óÀûÀÎ »óÅÂ·Î Á¾·áµÇ¾î
- *                          Shared Memory »óÅÂ°¡ VaildÇÑÁö ¿©ºÎ¸¦ ³ªÅ¸³½´Ù.
- *                          ÀÌÈÄ startup½Ã SHM_POLICY=1ÀÏ ¶§ ¹Ù·Î AttachÇÏ¿©
- *                          »ç¿ëÇÒ ¼ö ÀÖ´ÂÁö È®ÀÎ¿¡ ¾²ÀÎ´Ù.
+ *                          ëª¨ë“  ëª¨ë“ˆì´ ì •ìƒì ì¸ ìƒíƒœë¡œ ì¢…ë£Œë˜ì–´
+ *                          Shared Memory ìƒíƒœê°€ Vaildí•œì§€ ì—¬ë¶€ë¥¼ ë‚˜íƒ€ë‚¸ë‹¤.
+ *                          ì´í›„ startupì‹œ SHM_POLICY=1ì¼ ë•Œ ë°”ë¡œ Attachí•˜ì—¬
+ *                          ì‚¬ìš©í•  ìˆ˜ ìˆëŠ”ì§€ í™•ì¸ì— ì“°ì¸ë‹¤.
  **********************************************************************/
 IDE_RC iduShmMgr::destroy( idBool aIsNormalShutdown )
 {
     iduShmProcInfo  * sDaemonProcInfo;
     sDaemonProcInfo = idwPMMgr::getProcInfo( IDU_PROC_TYPE_DAEMON );
 
-    //Daemon ¸¸ shared Memory »óÅÂ¸¦ º¯°æÇÑ´Ù. 
+    //Daemon ë§Œ shared Memory ìƒíƒœë¥¼ ë³€ê²½í•œë‹¤. 
     if ( idwPMMgr::getProcType() == IDU_PROC_TYPE_DAEMON ) 
     {
         (void)setNormalShutdown( aIsNormalShutdown );
     }
 
     // BUG-36132
-    // DaemonÀÌ°Å³ª, DaemonÀÌ ¾øÀÌ ½ÃÀÛµÈ(TSM, util) ProcessÀÏ °æ¿ì DestroyÇÑ´Ù.
+    // Daemonì´ê±°ë‚˜, Daemonì´ ì—†ì´ ì‹œì‘ëœ(TSM, util) Processì¼ ê²½ìš° Destroyí•œë‹¤.
     if ( ( idwPMMgr::getProcType() == IDU_PROC_TYPE_DAEMON ) ||
          ( sDaemonProcInfo->mType  == IDU_SHM_PROC_TYPE_NULL ) )
     {
@@ -277,8 +277,8 @@ IDE_RC iduShmMgr::destroy( idBool aIsNormalShutdown )
         IDE_ASSERT( idwPMMgr::detach() == IDE_SUCCESS );
     }
 
-    // SHM_POLICY=1ÀÌ¶ó¸é SegmentµéÀ» dropÇÏÁö ¾Ê´Â´Ù.
-    // DaemonÀÌ Á×Àº °æ¿ì or Daemon¾øÀÌ initializeµÈ °æ¿ìµµ FreeµÇ¾ßÇÔ.
+    // SHM_POLICY=1ì´ë¼ë©´ Segmentë“¤ì„ dropí•˜ì§€ ì•ŠëŠ”ë‹¤.
+    // Daemonì´ ì£½ì€ ê²½ìš° or Daemonì—†ì´ initializeëœ ê²½ìš°ë„ Freeë˜ì•¼í•¨.
     if ( ( isShmAreaFreeAtShutdown() == ID_TRUE ) &&
          ( (sDaemonProcInfo->mType == IDU_SHM_PROC_TYPE_NULL) ||
            (sDaemonProcInfo->mType == IDU_PROC_TYPE_DAEMON) ) )
@@ -302,11 +302,11 @@ IDE_RC iduShmMgr::destroy( idBool aIsNormalShutdown )
 }
 
 /***********************************************************************
- * Description : Shared Memory Chunk°¡ À¯È¿ÇÑÁö Ã¼Å©ÇÏ°í
- *               À¯È¿ÇÏÁö ¾Ê´Ù¸é Clean
+ * Description : Shared Memory Chunkê°€ ìœ íš¨í•œì§€ ì²´í¬í•˜ê³ 
+ *               ìœ íš¨í•˜ì§€ ì•Šë‹¤ë©´ Clean
  *
  * aProcType - [IN] Process Type(Daemon Working User)
- * aIsValid - [OUT] Shared Memory °ø°£ÀÌ À¯È¿ÇÔ(AttachÇÏ¿© »ç¿ë°¡´É)
+ * aIsValid - [OUT] Shared Memory ê³µê°„ì´ ìœ íš¨í•¨(Attachí•˜ì—¬ ì‚¬ìš©ê°€ëŠ¥)
  **********************************************************************/
 IDE_RC iduShmMgr::checkShmAndClean( iduShmProcType aProcType,
                                     idBool       * aIsValid )
@@ -326,14 +326,14 @@ IDE_RC iduShmMgr::checkShmAndClean( iduShmProcType aProcType,
               != IDE_SUCCESS );
     sState = 1;
 
-    // °øÀ¯ ¸Ş¸ğ¸®°¡ Á¸ÀçÇÏ¸é ValidationÃ¼Å©ÇÔ
+    // ê³µìœ  ë©”ëª¨ë¦¬ê°€ ì¡´ì¬í•˜ë©´ Validationì²´í¬í•¨
     if ( iduShmChunkMgr::attachAndGetSSegHdr( sSSegHdr ) == IDE_SUCCESS )
     {
         IDE_TEST( validateShmChunk( &sSSegHdr->mHeader ) != IDE_SUCCESS );
     }
 
-    // Á¤»óÁ¾·áµÇÁö ¸øÇÑ ShmChunk´Â Àç»ç¿ëÀÌ ºÒ°¡´ÉÇÏ´Ù.
-    // ShmPolicy°¡ 1ÀÌ ¾Æ´Ñ °æ¿ì ±âÁ¸ °øÀ¯¸Ş¸ğ¸®´Â Á¦°ÅÇÑ´Ù.
+    // ì •ìƒì¢…ë£Œë˜ì§€ ëª»í•œ ShmChunkëŠ” ì¬ì‚¬ìš©ì´ ë¶ˆê°€ëŠ¥í•˜ë‹¤.
+    // ShmPolicyê°€ 1ì´ ì•„ë‹Œ ê²½ìš° ê¸°ì¡´ ê³µìœ ë©”ëª¨ë¦¬ëŠ” ì œê±°í•œë‹¤.
     if ( ( aProcType == IDU_PROC_TYPE_DAEMON ) &&
          ( ( iduProperty::getShmMemoryPolicy() == 0) ||
            ( sSSegHdr->mIsNormalShutdown != ID_TRUE ) ) )
@@ -364,8 +364,8 @@ IDE_RC iduShmMgr::checkShmAndClean( iduShmProcType aProcType,
 }
 
 /***********************************************************************
- * Description : ±â »ı¼ºµÈ Shared Memory¿¡ AttachÇÑ´Ù.
- *               [!] CleanÀ» À§ÇØ attachÇÏ´Â °æ¿ì attach4Clean »ç¿ëÇØ¾ßÇÔ.
+ * Description : ê¸° ìƒì„±ëœ Shared Memoryì— Attachí•œë‹¤.
+ *               [!] Cleanì„ ìœ„í•´ attachí•˜ëŠ” ê²½ìš° attach4Clean ì‚¬ìš©í•´ì•¼í•¨.
  *
  * aProcType - [IN] Process Type(Daemon, Working, User)
  **********************************************************************/
@@ -400,7 +400,7 @@ IDE_RC iduShmMgr::attach( iduShmProcType aProcType )
     IDE_TEST( iduShmKeyMgr::initializeStatic( mSSegment )
               != IDE_SUCCESS );
 
-    // DaemonÀÇ °æ¿ì attachÀÎ °æ¿ì¿¡µµ PM Manager¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+    // Daemonì˜ ê²½ìš° attachì¸ ê²½ìš°ì—ë„ PM Managerë¥¼ ì´ˆê¸°í™”í•œë‹¤.
     if ( aProcType == IDU_PROC_TYPE_DAEMON )
     {
         IDE_TEST( idwPMMgr::initialize( aProcType ) != IDE_SUCCESS );
@@ -417,8 +417,8 @@ IDE_RC iduShmMgr::attach( iduShmProcType aProcType )
                                       &sTxInfo )
               != IDE_SUCCESS );
 
-    /* »õ·Î¿î Segment¸¦ ÇÒ´çÇÏ°í µî·ÏÇÏ´Ù°¡ Á×Àº Process°¡ Á¸ÀçÇÒ ¼ö ÀÖ´Ù.
-     * ¶§¹®¿¡ ÇÒ´çµÈ SegÀÇ °¹¼ö´Â AllocSeg Latch¸¦ ÀâÀº ÈÄ¿¡ °¡Á®¿Â´Ù. */
+    /* ìƒˆë¡œìš´ Segmentë¥¼ í• ë‹¹í•˜ê³  ë“±ë¡í•˜ë‹¤ê°€ ì£½ì€ Processê°€ ì¡´ì¬í•  ìˆ˜ ìˆë‹¤.
+     * ë•Œë¬¸ì— í• ë‹¹ëœ Segì˜ ê°¯ìˆ˜ëŠ” AllocSeg Latchë¥¼ ì¡ì€ í›„ì— ê°€ì ¸ì˜¨ë‹¤. */
     idrLogMgr::setSavepoint( sTxInfo, &sVSavepoint );
 
     IDE_TEST( iduShmLatchAcquire( &sStatistics,
@@ -448,7 +448,7 @@ IDE_RC iduShmMgr::attach( iduShmProcType aProcType )
 
     IDE_EXCEPTION_END;
 
-    /* BUGBUG ¿Ö ÇÊ¿äÇÑÁö ¸ğ¸£°Ú´Ù.
+    /* BUGBUG ì™œ í•„ìš”í•œì§€ ëª¨ë¥´ê² ë‹¤.
     if( aIsCleanPurpose == ID_FALSE )
     {
         IDE_SET( ideSetErrorCode( idERR_FATAL_ATTACH_SHARED_MEMORY_MGR ) );
@@ -459,10 +459,10 @@ IDE_RC iduShmMgr::attach( iduShmProcType aProcType )
 }
 
 /***********************************************************************
- * Description : CleanÀ» À§ÇØ Shared Memory¿¡ AttachÇÑ´Ù.
+ * Description : Cleanì„ ìœ„í•´ Shared Memoryì— Attachí•œë‹¤.
  *
  * aProcType - [IN] Process Type(Daemon, Working, User)
- * aShmDBKey - [IN] CleanÇÏ·Á´Â SSysChunkÀÇ DBKEY
+ * aShmDBKey - [IN] Cleaní•˜ë ¤ëŠ” SSysChunkì˜ DBKEY
  **********************************************************************/
 IDE_RC iduShmMgr::attach4Clean( iduShmProcType aProcType, UInt aShmDBKey )
 {
@@ -537,7 +537,7 @@ IDE_RC iduShmMgr::attach4Clean( iduShmProcType aProcType, UInt aShmDBKey )
 }
 
 /***********************************************************************
- * Description : Shared Memory¿¡ AttachÇÏ°í ÀÖ´ø ÀÚ¿øµéÀ» ÇØÁ¦ÇÑ´Ù.
+ * Description : Shared Memoryì— Attachí•˜ê³  ìˆë˜ ìì›ë“¤ì„ í•´ì œí•œë‹¤.
  *
  **********************************************************************/
 IDE_RC iduShmMgr::detach()
@@ -786,7 +786,7 @@ IDE_RC iduShmMgr::createDSegment( idvSQL       * aStatistics,
     iduShmBlockHeader  * sFstFreeBlock;
     UInt                 sState = 0;
     idrSVP               sSavepoint;
-    // SHM_MAXSIZE¿¡¼­ SYS SEGMENTÀÇ Å©±â´Â Á¦¿ÜÇÑ´Ù.
+    // SHM_MAXSIZEì—ì„œ SYS SEGMENTì˜ í¬ê¸°ëŠ” ì œì™¸í•œë‹¤.
     ULong                sMaxShmSize = iduProperty::getShmMaxSize();
 
     // BUG-36530
@@ -844,8 +844,8 @@ IDE_RC iduShmMgr::createDSegment( idvSQL       * aStatistics,
     IDE_TEST( insertBlock( aShmTxInfo, mSSegment, sFstFreeBlock )
               != IDE_SUCCESS );
 
-    /* »õ·Î¿î SegmentÀÇ »ı¼º ¹× µî·ÏÀÌ ¿Ï·áµÇ¾ú±â ¶§¹®¿¡, ÃßÈÄ UndoµÇ´Â°ÍÀ»
-     * ¹æÁöÇØ¾ß ÇÑ´Ù. */
+    /* ìƒˆë¡œìš´ Segmentì˜ ìƒì„± ë° ë“±ë¡ì´ ì™„ë£Œë˜ì—ˆê¸° ë•Œë¬¸ì—, ì¶”í›„ Undoë˜ëŠ”ê²ƒì„
+     * ë°©ì§€í•´ì•¼ í•œë‹¤. */
     IDE_TEST( idrLogMgr::commit2Svp( aStatistics,
                                      aShmTxInfo,
                                      &sSavepoint )
@@ -1102,14 +1102,14 @@ IDE_RC iduShmMgr::allocMem( idvSQL               * aStatistics,
 }
 
 /***********************************************************************
- * Description : AllocMem°ú µ¿ÀÏÇÏÁö¸¸ Undo¸¦ ÇÏÁö ¾Ê´Â´Ù.
- *               µû¶ó¼­ º» ÇÔ¼ö¸¦ »ç¿ëÇÏ´Ù°¡ Á×Àº °æ¿ì Memory LeakÀÌ ¹ß»ıÇÒ ¼ö ÀÖ´Ù.
+ * Description : AllocMemê³¼ ë™ì¼í•˜ì§€ë§Œ Undoë¥¼ í•˜ì§€ ì•ŠëŠ”ë‹¤.
+ *               ë”°ë¼ì„œ ë³¸ í•¨ìˆ˜ë¥¼ ì‚¬ìš©í•˜ë‹¤ê°€ ì£½ì€ ê²½ìš° Memory Leakì´ ë°œìƒí•  ìˆ˜ ìˆë‹¤.
  *
  * aStatistics   - [IN] Statistics
  * aShmTxInfo    - [IN] Shared Memory Tx
  * aIndex        - [IN] Client Index.
- * aSize         - [IN] AllocµÉ Size
- * aAllocPtr     - [OUT] AllocµÈ Memory¸¦ ¹İÈ¯ÇÔ.
+ * aSize         - [IN] Allocë  Size
+ * aAllocPtr     - [OUT] Allocëœ Memoryë¥¼ ë°˜í™˜í•¨.
  ***********************************************************************/
 IDE_RC iduShmMgr::allocMemWithoutUndo( idvSQL               * aStatistics,
                                        iduShmTxInfo         * aShmTxInfo,
@@ -1260,7 +1260,7 @@ IDE_RC iduShmMgr::allocAlignMem( idvSQL               * aStatistics,
     IDE_TEST( findFree( aShmTxInfo, mSSegment, sAlignedSize, &sBlock )
               != IDE_SUCCESS );
 
-    /* ÇöÀç sAlignedSize¸¸Å­ÀÇ °ø°£ÀÌ ¾ø´Ù¸é */
+    /* í˜„ì¬ sAlignedSizeë§Œí¼ì˜ ê³µê°„ì´ ì—†ë‹¤ë©´ */
     if( sBlock == NULL )
     {
         sChunkSize = getChunkSize( sAlignedSize );
@@ -1699,7 +1699,7 @@ IDE_RC iduShmMgr::validateShmChunk( iduShmHeader * aShmHeader )
     IDE_TEST( iduShmKeyFile::getStartupInfo( &mStartUpTime, &sPrevShmKey )
               != IDE_SUCCESS );
 
-    // °øÀ¯ ¸Ş¸ğ¸®°¡ »ı¼ºµÈ ½Ã°£°ú ShmKey°¡ °°¾Æ¾ß ÇÔ
+    // ê³µìœ  ë©”ëª¨ë¦¬ê°€ ìƒì„±ëœ ì‹œê°„ê³¼ ShmKeyê°€ ê°™ì•„ì•¼ í•¨
     if ( ( sPrevShmKey != iduProperty::getShmDBKey() ) ||
          ( idlOS::memcmp( &aShmHeader->mStartUpTime,
                           &mStartUpTime,
@@ -1791,9 +1791,9 @@ IDE_RC iduShmMgr::validateShmMgr( idvSQL       * aStatistics,
 
 
 /*****************************************************************************
- * Description : ¸ğµç Data Segment¸¦ Á¦°ÅÇÑ´Ù.
- *               attach¿¡ ½ÇÆĞÇÒ °æ¿ì ÇØ´ç shmKey´Â NULL·Î ¼¼ÆÃµÇ°í skipÇÑ´Ù.
- * [IN] aSSegment   - AttachµÈ System Segment
+ * Description : ëª¨ë“  Data Segmentë¥¼ ì œê±°í•œë‹¤.
+ *               attachì— ì‹¤íŒ¨í•  ê²½ìš° í•´ë‹¹ shmKeyëŠ” NULLë¡œ ì„¸íŒ…ë˜ê³  skipí•œë‹¤.
+ * [IN] aSSegment   - Attachëœ System Segment
  *****************************************************************************/
 IDE_RC iduShmMgr::dropAllDSegmentAndPrint( iduShmSSegment  * aSSegment )
 {
@@ -1843,10 +1843,10 @@ IDE_RC iduShmMgr::dropAllDSegmentAndPrint( iduShmSSegment  * aSSegment )
 }
 
 /*****************************************************************************
- * Description : copyµÈ SSegmentÁ¤º¸¸¦ ÀÌ¿ëÇÏ¿© SSegment¿¡ AttachÇÏ°í
- *               Data & System Segment¸¦ Á¦°ÅÇÑ´Ù.
+ * Description : copyëœ SSegmentì •ë³´ë¥¼ ì´ìš©í•˜ì—¬ SSegmentì— Attachí•˜ê³ 
+ *               Data & System Segmentë¥¼ ì œê±°í•œë‹¤.
  *
- * [IN] aSSegment  - System SegmentÀÇ Copyº»ÀÌ Àü´ŞµÈ´Ù.(AttachµÈ SSegment°¡ ¾Æ´Ô)
+ * [IN] aSSegment  - System Segmentì˜ Copyë³¸ì´ ì „ë‹¬ëœë‹¤.(Attachëœ SSegmentê°€ ì•„ë‹˜)
  *
  **************************************************************************/
 IDE_RC iduShmMgr::dropAllSegmentAndPrint( iduShmSSegment * aSSegment )
@@ -1892,8 +1892,8 @@ IDE_RC iduShmMgr::dropAllSegmentAndPrint( iduShmSSegment * aSSegment )
 }
 
 /*************************************************************************
- * Description : ShmUtil¿¡¼­ Shared Memory¸¦ Á¦°ÅÇÏ¸é SSegment¿¡ ÀÖ´ø PMMgrÀÌ
- *               freeµÇ¹Ç·Î DestroyµÇ¾î¾ß ÇÑ´Ù. (Detach ºÒ°¡´É)
+ * Description : ShmUtilì—ì„œ Shared Memoryë¥¼ ì œê±°í•˜ë©´ SSegmentì— ìˆë˜ PMMgrì´
+ *               freeë˜ë¯€ë¡œ Destroyë˜ì–´ì•¼ í•œë‹¤. (Detach ë¶ˆê°€ëŠ¥)
  ************************************************************************/
 IDE_RC iduShmMgr::eraseShmAreaAndPrint()
 {

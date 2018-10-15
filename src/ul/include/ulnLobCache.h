@@ -27,43 +27,43 @@ typedef enum ulnLobCacheErr {
 /**
  *  ulnLobCacheCreate
  *
- *  @aLobCache          : ulnLobCacheÀÇ °´Ã¼
+ *  @aLobCache          : ulnLobCacheì˜ ê°ì²´
  *
- *  = LOBÀ» Ä³½¬ÇÒ ¼ö ÀÖµµ·Ï ±¸Á¶¸¦ »ı¼ºÇÑ´Ù.
- *  = ¼º°øÇÏ¸é ACI_SUCCESS, ½ÇÆĞÇÏ¸é ACI_FAILURE
+ *  = LOBì„ ìºì‰¬í•  ìˆ˜ ìˆë„ë¡ êµ¬ì¡°ë¥¼ ìƒì„±í•œë‹¤.
+ *  = ì„±ê³µí•˜ë©´ ACI_SUCCESS, ì‹¤íŒ¨í•˜ë©´ ACI_FAILURE
  */
 ACI_RC ulnLobCacheCreate(ulnLobCache **aLobCache);
 
 /**
  *  ulnLobCacheReInitialize
  *
- *  = ±âÁ¸¿¡ ÇÒ´çµÈ ¸Ş¸ğ¸®¸¦ Àç»ç¿ëÇÑ´Ù.
+ *  = ê¸°ì¡´ì— í• ë‹¹ëœ ë©”ëª¨ë¦¬ë¥¼ ì¬ì‚¬ìš©í•œë‹¤.
  */
 ACI_RC ulnLobCacheReInitialize(ulnLobCache *aLobCache);
 
 /**
  *  ulnLobCacheDestroy
  *
- *  = ulnLobCache °´Ã¼¸¦ ¼Ò¸êÇÑ´Ù.
+ *  = ulnLobCache ê°ì²´ë¥¼ ì†Œë©¸í•œë‹¤.
  */
 void   ulnLobCacheDestroy(ulnLobCache **aLobCache);
 
 /**
  *  ulnLobCacheGetErr
  *
- *  ³»ºÎ¿¡¼­ ¹ß»ıÇÑ ¿¡·¯¸¦ °¡Á®¿Â´Ù.
+ *  ë‚´ë¶€ì—ì„œ ë°œìƒí•œ ì—ëŸ¬ë¥¼ ê°€ì ¸ì˜¨ë‹¤.
  */
 ulnLobCacheErr ulnLobCacheGetErr(ulnLobCache  *aLobCache);
 
 /**
  *  ulnLobCacheAdd
  *
- *  @aValue     : CachingÇÒ LOB Data
- *  @aLength    : LOB Data ±æÀÌ
+ *  @aValue     : Cachingí•  LOB Data
+ *  @aLength    : LOB Data ê¸¸ì´
  *
- *  aValue°¡ NULLÀÎ °æ¿ì¿¡´Â LOB Data±æÀÌ¸¸ ÀúÀåÇÑ´Ù.
- *  Áï ÀÓ°èÄ¡º¸´Ù LOB Data°¡ Å©´õ¶óµµ LOB Data ±æÀÌ´Â ÀúÀåÇØ
- *  SQLGetLobLength()¿¡¼­ È°¿ëÇÑ´Ù.
+ *  aValueê°€ NULLì¸ ê²½ìš°ì—ëŠ” LOB Dataê¸¸ì´ë§Œ ì €ì¥í•œë‹¤.
+ *  ì¦‰ ì„ê³„ì¹˜ë³´ë‹¤ LOB Dataê°€ í¬ë”ë¼ë„ LOB Data ê¸¸ì´ëŠ” ì €ì¥í•´
+ *  SQLGetLobLength()ì—ì„œ í™œìš©í•œë‹¤.
  */
 ACI_RC ulnLobCacheAdd(ulnLobCache  *aLobCache,
                       acp_uint64_t  aLocatorID,
@@ -73,7 +73,7 @@ ACI_RC ulnLobCacheAdd(ulnLobCache  *aLobCache,
 /**
  *  ulnLobCacheRemove
  *
- *  aLocatorID¿¡ ÇØ´çÇÏ´Â µ¥ÀÌÅÍ¸¦ Á¦°ÅÇÑ´Ù.
+ *  aLocatorIDì— í•´ë‹¹í•˜ëŠ” ë°ì´í„°ë¥¼ ì œê±°í•œë‹¤.
  */
 ACI_RC ulnLobCacheRemove(ulnLobCache  *aLobCache,
                          acp_uint64_t  aLocatorID);
@@ -81,11 +81,11 @@ ACI_RC ulnLobCacheRemove(ulnLobCache  *aLobCache,
 /**
  *  ulnLobCacheGetLob
  *
- *  @aFromPos   : LOBÀÇ ½ÃÀÛ Offset
- *  @aForLength : LOBÀÇ ±æÀÌ
- *  @aContext   : LOB InterfaceÀÇ Æ÷ÀÎÅÍ°¡ ÀúÀåµÇ¾î ÀÖ´Ù.
+ *  @aFromPos   : LOBì˜ ì‹œì‘ Offset
+ *  @aForLength : LOBì˜ ê¸¸ì´
+ *  @aContext   : LOB Interfaceì˜ í¬ì¸í„°ê°€ ì €ì¥ë˜ì–´ ìˆë‹¤.
  *
- *  CacheµÇ¾î ÀÖ´Â LOB µ¥ÀÌÅÍ¸¦ LOB Buffer(User Buffer)¿¡ ¹İÈ¯ÇÑ´Ù.
+ *  Cacheë˜ì–´ ìˆëŠ” LOB ë°ì´í„°ë¥¼ LOB Buffer(User Buffer)ì— ë°˜í™˜í•œë‹¤.
  */
 ACI_RC ulnLobCacheGetLob(ulnLobCache  *aLobCache,
                          acp_uint64_t  aLocatorID,
@@ -96,7 +96,7 @@ ACI_RC ulnLobCacheGetLob(ulnLobCache  *aLobCache,
 /**
  *  ulnLobCacheGetLobLength
  *
- *  aLocatorID¿¡ ÇØ´çÇÏ´Â LOB DataÀÇ ±æÀÌÁ¤º¸¸¦ aLength¿¡ ¹İÈ¯ÇÑ´Ù.
+ *  aLocatorIDì— í•´ë‹¹í•˜ëŠ” LOB Dataì˜ ê¸¸ì´ì •ë³´ë¥¼ aLengthì— ë°˜í™˜í•œë‹¤.
  */
 ACI_RC ulnLobCacheGetLobLength(ulnLobCache  *aLobCache,
                                acp_uint64_t  aLocatorID,

@@ -59,9 +59,9 @@ static IDE_RC xaOpTransaction(cmiProtocolContext   *aCtx,
     SLong       sGTRIDLength;
     SLong       sBQUALLength;
 
-    /* PROJ-2160 CM Å¸ÀÔÁ¦°Å
-       ¸ðµÎ ÀÐÀº ´ÙÀ½¿¡ ÇÁ·ÎÅäÄÝÀ» Ã³¸®ÇØ¾ß ÇÑ´Ù. */
-    // XID ±¸Á¶¸â¹ö°¡  °¡º¯±æÀÌ longÇüÀÌ¾î¼­ °íÁ¤±æÀÌ ¹öÆÛ°¡ ÇÊ¿ä
+    /* PROJ-2160 CM íƒ€ìž…ì œê±°
+       ëª¨ë‘ ì½ì€ ë‹¤ìŒì— í”„ë¡œí† ì½œì„ ì²˜ë¦¬í•´ì•¼ í•œë‹¤. */
+    // XID êµ¬ì¡°ë©¤ë²„ê°€  ê°€ë³€ê¸¸ì´ longí˜•ì´ì–´ì„œ ê³ ì •ê¸¸ì´ ë²„í¼ê°€ í•„ìš”
     CMI_RD8(aCtx, (ULong*)&(sFormatID));
     CMI_RD8(aCtx, (ULong*)&(sGTRIDLength));
     CMI_RD8(aCtx, (ULong*)&(sBQUALLength));
@@ -73,7 +73,7 @@ static IDE_RC xaOpTransaction(cmiProtocolContext   *aCtx,
     CMI_RCP(aCtx, sXid.data, ID_XIDDATASIZE);
 
     /* bug-36037: invalid xid
-       invalid xid °ü·Ã ¼­¹öÂÊ °Ë»çÄÚµå Ãß°¡ */
+       invalid xid ê´€ë ¨ ì„œë²„ìª½ ê²€ì‚¬ì½”ë“œ ì¶”ê°€ */
     if ((sXid.gtrid_length <= (vSLong) 0)               ||
         (sXid.gtrid_length >  (vSLong) ID_MAXGTRIDSIZE) ||
         (sXid.bqual_length <= (vSLong) 0)               ||
@@ -124,7 +124,7 @@ static IDE_RC xaOpRecover(cmiProtocolContext *aCtx,
 
     for (i = 0; i < sPreparedXidsCnt; i++)
     {
-        // XID ±¸Á¶¸â¹ö°¡  °¡º¯±æÀÌ longÇüÀÌ¾î¼­ °íÁ¤±æÀÌ ¹öÆÛ°¡ ÇÊ¿ä
+        // XID êµ¬ì¡°ë©¤ë²„ê°€  ê°€ë³€ê¸¸ì´ longí˜•ì´ì–´ì„œ ê³ ì •ê¸¸ì´ ë²„í¼ê°€ í•„ìš”
         sFormatID    = sPreparedXids[i].formatID;
         sGTRIDLength = sPreparedXids[i].gtrid_length;
         sBQUALLength = sPreparedXids[i].bqual_length;
@@ -200,8 +200,8 @@ IDE_RC mmtServiceThread::xaOperationProtocol(cmiProtocolContext *aCtx,
     SLong       sFlag;
     SLong       sArgument;
 
-    /* PROJ-2160 CM Å¸ÀÔÁ¦°Å
-       ¸ðµÎ ÀÐÀº ´ÙÀ½¿¡ ÇÁ·ÎÅäÄÝÀ» Ã³¸®ÇØ¾ß ÇÑ´Ù. */
+    /* PROJ-2160 CM íƒ€ìž…ì œê±°
+       ëª¨ë‘ ì½ì€ ë‹¤ìŒì— í”„ë¡œí† ì½œì„ ì²˜ë¦¬í•´ì•¼ í•œë‹¤. */
     CMI_RD1(aCtx, sOperation);
     CMI_RD4(aCtx, (UInt*)&sRmID);
     CMI_RD8(aCtx, (ULong*)&sFlag);
@@ -288,8 +288,8 @@ IDE_RC mmtServiceThread::xaTransactionProtocol(cmiProtocolContext *aCtx,
     SLong       sFlag;
     SLong       sArgument;
 
-    /* PROJ-2160 CM Å¸ÀÔÁ¦°Å
-       ¸ðµÎ ÀÐÀº ´ÙÀ½¿¡ ÇÁ·ÎÅäÄÝÀ» Ã³¸®ÇØ¾ß ÇÑ´Ù. */
+    /* PROJ-2160 CM íƒ€ìž…ì œê±°
+       ëª¨ë‘ ì½ì€ ë‹¤ìŒì— í”„ë¡œí† ì½œì„ ì²˜ë¦¬í•´ì•¼ í•œë‹¤. */
     CMI_RD1(aCtx, sOperation);
     CMI_RD4(aCtx, (UInt*)&sRmID);
     CMI_RD8(aCtx, (ULong*)&sFlag);
@@ -426,7 +426,7 @@ IDE_RC mmtServiceThread::xaTransactionProtocol(cmiProtocolContext *aCtx,
     IDE_EXCEPTION_END;
 
     /* bug-36037: invalid xid
-       invalid xidÀÇ °æ¿ì client·Î ¿¡·¯ÀÀ´äÀ» ¸ÕÀúÁÖ°í ²÷´Â´Ù */
+       invalid xidì˜ ê²½ìš° clientë¡œ ì—ëŸ¬ì‘ë‹µì„ ë¨¼ì €ì£¼ê³  ëŠëŠ”ë‹¤ */
     if (sXaContext.mReturnValue != XA_OK )
     {
         sThread->answerErrorResult(aCtx,

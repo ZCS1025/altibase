@@ -101,8 +101,8 @@ IDE_RC smpUpdate::redo_SMC_PERS_INIT_FIXED_PAGE(smTID        /*a_tid*/,
                                             (void**)&s_pPersPage )
                 == IDE_SUCCESS );
 
-    /* BUG-15710: Redo½Ã¿¡ Æ¯Á¤¿µ¿ªÀÇ µ¥ÀÌÅ¸°¡ ¿Ã¹Ù¸¥Áö ASSERT¸¦ °É°í ÀÖ½À´Ï´Ù.
-       Redo½Ã¿¡ ÇØ´çµ¥ÀÌÅ¸¿¡ redoÇÏ±âÀü±îÁö´Â  ValidÇÏ´Ù´Â °ÍÀ» º¸ÀåÇÏÁö ¸øÇÕ´Ï´Ù.
+    /* BUG-15710: Redoì‹œì— íŠ¹ì •ì˜ì—­ì˜ ë°ì´íƒ€ê°€ ì˜¬ë°”ë¥¸ì§€ ASSERTë¥¼ ê±¸ê³  ìˆìŠµë‹ˆë‹¤.
+       Redoì‹œì— í•´ë‹¹ë°ì´íƒ€ì— redoí•˜ê¸°ì „ê¹Œì§€ëŠ”  Validí•˜ë‹¤ëŠ” ê²ƒì„ ë³´ì¥í•˜ì§€ ëª»í•©ë‹ˆë‹¤.
        IDE_ASSERT( s_pPersPage->mHeader.mSelfPageID == a_pid );
     */
 
@@ -155,8 +155,8 @@ IDE_RC smpUpdate::redo_SMC_PERS_INIT_VAR_PAGE(smTID       /*a_tid*/,
                                             (void**)&s_pPersPage )
                 == IDE_SUCCESS );
 
-    /* BUG-15710: Redo½Ã¿¡ Æ¯Á¤¿µ¿ªÀÇ µ¥ÀÌÅ¸°¡ ¿Ã¹Ù¸¥Áö ASSERT¸¦ °É°í ÀÖ½À´Ï´Ù.
-       Redo½Ã¿¡ ÇØ´çµ¥ÀÌÅ¸¿¡ redoÇÏ±âÀü±îÁö´Â  ValidÇÏ´Ù´Â °ÍÀ» º¸ÀåÇÏÁö ¸øÇÕ´Ï´Ù.
+    /* BUG-15710: Redoì‹œì— íŠ¹ì •ì˜ì—­ì˜ ë°ì´íƒ€ê°€ ì˜¬ë°”ë¥¸ì§€ ASSERTë¥¼ ê±¸ê³  ìˆìŠµë‹ˆë‹¤.
+       Redoì‹œì— í•´ë‹¹ë°ì´íƒ€ì— redoí•˜ê¸°ì „ê¹Œì§€ëŠ”  Validí•˜ë‹¤ëŠ” ê²ƒì„ ë³´ì¥í•˜ì§€ ëª»í•©ë‹ˆë‹¤.
        IDE_ASSERT( s_pPersPage->mHeader.mSelfPageID == a_pid );
     */
 
@@ -227,11 +227,11 @@ IDE_RC smpUpdate::redo_SMP_NTA_ALLOC_FIXED_ROW( scSpaceID    aSpaceID,
 }
 
 /*
-    ALTER TABLESPACE TBS1 ONLINE/OFFLINE .... ¿¡ ´ëÇÑ Log Image¸¦ ºĞ¼®ÇÑ´Ù.
+    ALTER TABLESPACE TBS1 ONLINE/OFFLINE .... ì— ëŒ€í•œ Log Imageë¥¼ ë¶„ì„í•œë‹¤.
 
-    [IN]  aValueSize     - Log Image ÀÇ Å©±â
+    [IN]  aValueSize     - Log Image ì˜ í¬ê¸°
     [IN]  aValuePtr      - Log Image
-    [OUT] aState         - TablespaceÀÇ »óÅÂ
+    [OUT] aState         - Tablespaceì˜ ìƒíƒœ
  */
 IDE_RC smpUpdate::getAlterTBSOnOffImage( UInt       aValueSize,
                                          SChar    * aValuePtr,
@@ -252,18 +252,18 @@ IDE_RC smpUpdate::getAlterTBSOnOffImage( UInt       aValueSize,
 
 
 /*
-    ALTER TABLESPACE TBS1 OFFLINE .... ¿¡ ´ëÇÑ REDO ¼öÇà
+    ALTER TABLESPACE TBS1 OFFLINE .... ì— ëŒ€í•œ REDO ìˆ˜í–‰
 
-    [ ·Î±× ±¸Á¶ ]
+    [ ë¡œê·¸ êµ¬ì¡° ]
     After Image  --------------------------------------------
       UInt                aAState
 
-    [ ALTER TABLESPACE OFFLINE ÀÇ REDO Ã³¸® ]
-      (u-010) (020)¿¡ ´ëÇÑ REDO·Î TBSNode.Status := After Image(OFFLINE)
-      (note-1) TBSNode¸¦ loganchor¿¡ flushÇÏÁö ¾ÊÀ½
-               -> Restart Recovery¿Ï·áÈÄ ¸ğµç TBS¸¦ loganchor¿¡ flushÇÏ±â ¶§¹®
-      (note-2) Commit PendingÀ» ¼öÇàÇÏÁö ¾ÊÀ½
-               -> Restart Recovery¿Ï·áÈÄ OFFLINE TBS¿¡ ´ëÇÑ ResourceÇØÁ¦¸¦ ÇÑ´Ù
+    [ ALTER TABLESPACE OFFLINE ì˜ REDO ì²˜ë¦¬ ]
+      (u-010) (020)ì— ëŒ€í•œ REDOë¡œ TBSNode.Status := After Image(OFFLINE)
+      (note-1) TBSNodeë¥¼ loganchorì— flushí•˜ì§€ ì•ŠìŒ
+               -> Restart Recoveryì™„ë£Œí›„ ëª¨ë“  TBSë¥¼ loganchorì— flushí•˜ê¸° ë•Œë¬¸
+      (note-2) Commit Pendingì„ ìˆ˜í–‰í•˜ì§€ ì•ŠìŒ
+               -> Restart Recoveryì™„ë£Œí›„ OFFLINE TBSì— ëŒ€í•œ Resourceí•´ì œë¥¼ í•œë‹¤
 */
 IDE_RC smpUpdate::redo_SCT_UPDATE_MRDB_ALTER_TBS_OFFLINE(
                     idvSQL        * /* aStatistics */,
@@ -288,32 +288,32 @@ IDE_RC smpUpdate::redo_SCT_UPDATE_MRDB_ALTER_TBS_OFFLINE(
                                          aValuePtr,
                                          & sTBSState ) != IDE_SUCCESS );
 
-        // TablespaceÀÇ »óÅÂ¸¦ Áï½Ã º¯°æÇÒ °æ¿ì,
-        // Tablespace¸¦ OFFLINEÀ¸·Î ¸¸µå´Â µµÁß¿¡
-        // ¹ß»ıÇÑ LogµéÀ» RedoÇÏÁö ¸øÇÏ°Ô µÈ´Ù.
-        // ( Offline Tablespace¿¡ ´ëÇØ¼­´Â Redo¸¦ ÇÏÁö ¾ÊÀ½ )
+        // Tablespaceì˜ ìƒíƒœë¥¼ ì¦‰ì‹œ ë³€ê²½í•  ê²½ìš°,
+        // Tablespaceë¥¼ OFFLINEìœ¼ë¡œ ë§Œë“œëŠ” ë„ì¤‘ì—
+        // ë°œìƒí•œ Logë“¤ì„ Redoí•˜ì§€ ëª»í•˜ê²Œ ëœë‹¤.
+        // ( Offline Tablespaceì— ëŒ€í•´ì„œëŠ” Redoë¥¼ í•˜ì§€ ì•ŠìŒ )
         //
-        // => Transaction Commit½Ã¿¡ ¼öÇàÇÒ Pending Operationµî·Ï
+        // => Transaction Commitì‹œì— ìˆ˜í–‰í•  Pending Operationë“±ë¡
         IDE_TEST( sctTableSpaceMgr::addPendingOperation(
                       aTrans,
                       aSpaceID,
-                      ID_TRUE, /* Pending ¿¬»ê ¼öÇà ½ÃÁ¡ : Commit ½Ã */
+                      ID_TRUE, /* Pending ì—°ì‚° ìˆ˜í–‰ ì‹œì  : Commit ì‹œ */
                       SCT_POP_ALTER_TBS_OFFLINE,
                       & sPendingOp )
                   != IDE_SUCCESS );
 
-        // Commit½Ã sctTableSpaceMgr::executePendingOperation¿¡¼­
-        // ¼öÇàÇÒ PendingÇÔ¼ö ¼³Á¤
+        // Commitì‹œ sctTableSpaceMgr::executePendingOperationì—ì„œ
+        // ìˆ˜í–‰í•  Pendingí•¨ìˆ˜ ì„¤ì •
         sPendingOp->mPendingOpFunc = smpTBSAlterOnOff::alterOfflineCommitPending;
         sPendingOp->mNewTBSState   = sTBSState;
 
-        // PendingÇÔ¼ö¿¡¼­ »óÅÂÃ¼Å©½Ã ASSERTÁ×Áö¾Ê°Ô ÇÏ±â À§ÇÔ
+        // Pendingí•¨ìˆ˜ì—ì„œ ìƒíƒœì²´í¬ì‹œ ASSERTì£½ì§€ì•Šê²Œ í•˜ê¸° ìœ„í•¨
         sTBSNode->mHeader.mState |= SMI_TBS_SWITCHING_TO_OFFLINE ;
 
     }
     else
     {
-        // ÀÌ¹Ì DropµÈ TablespaceÀÎ °æ¿ì
+        // ì´ë¯¸ Dropëœ Tablespaceì¸ ê²½ìš°
         // nothing to do ...
     }
 
@@ -326,17 +326,17 @@ IDE_RC smpUpdate::redo_SCT_UPDATE_MRDB_ALTER_TBS_OFFLINE(
 
 
 /*
-    ALTER TABLESPACE TBS1 OFFLINE .... ¿¡ ´ëÇÑ UNDO ¼öÇà
+    ALTER TABLESPACE TBS1 OFFLINE .... ì— ëŒ€í•œ UNDO ìˆ˜í–‰
 
-    [ ·Î±× ±¸Á¶ ]
+    [ ë¡œê·¸ êµ¬ì¡° ]
     Before Image  --------------------------------------------
       UInt                aBState
 
-    [ ALTER TABLESPACE OFFLINE ÀÇ UNDO Ã³¸® ]
-      (u-010) (020)¿¡ ´ëÇÑ UNDO·Î TBSNode.Status := Before Image(ONLINE)
-      (note-1) TBSNode¸¦ loganchor¿¡ flushÇÏÁö ¾ÊÀ½
-               -> ALTER TBS OFFLINEÀÇ Commit PendingÀ» ÅëÇØ
-                  COMMITÀÌÈÄ¿¡¾ß º¯°æµÈ TBS»óÅÂ°¡ log anchor¿¡ flushµÇ±â ¶§¹®
+    [ ALTER TABLESPACE OFFLINE ì˜ UNDO ì²˜ë¦¬ ]
+      (u-010) (020)ì— ëŒ€í•œ UNDOë¡œ TBSNode.Status := Before Image(ONLINE)
+      (note-1) TBSNodeë¥¼ loganchorì— flushí•˜ì§€ ì•ŠìŒ
+               -> ALTER TBS OFFLINEì˜ Commit Pendingì„ í†µí•´
+                  COMMITì´í›„ì—ì•¼ ë³€ê²½ëœ TBSìƒíƒœê°€ log anchorì— flushë˜ê¸° ë•Œë¬¸
 */
 IDE_RC smpUpdate::undo_SCT_UPDATE_MRDB_ALTER_TBS_OFFLINE(
                     idvSQL        * /*aStatistics*/,
@@ -364,7 +364,7 @@ IDE_RC smpUpdate::undo_SCT_UPDATE_MRDB_ALTER_TBS_OFFLINE(
     }
     else
     {
-        // ÀÌ¹Ì DropµÈ TablespaceÀÎ °æ¿ì
+        // ì´ë¯¸ Dropëœ Tablespaceì¸ ê²½ìš°
         // nothing to do ...
     }
 
@@ -377,16 +377,16 @@ IDE_RC smpUpdate::undo_SCT_UPDATE_MRDB_ALTER_TBS_OFFLINE(
 
 
 /*
-    ALTER TABLESPACE TBS1 ONLINE .... ¿¡ ´ëÇÑ REDO ¼öÇà
+    ALTER TABLESPACE TBS1 ONLINE .... ì— ëŒ€í•œ REDO ìˆ˜í–‰
 
-    [ ·Î±× ±¸Á¶ ]
+    [ ë¡œê·¸ êµ¬ì¡° ]
     After Image  --------------------------------------------
       UInt                aAState
 
-    [ ALTER TABLESPACE ONLINE ÀÇ REDO Ã³¸® ]
+    [ ALTER TABLESPACE ONLINE ì˜ REDO ì²˜ë¦¬ ]
       (r-010) TBSNode.Status := After Image(ONLINE)
-      (note-1) TBSNode¸¦ loganchor¿¡ flushÇÏÁö ¾ÊÀ½
-               -> Restart Recovery¿Ï·áÈÄ ¸ğµç TBS¸¦ loganchor¿¡ flushÇÏ±â ¶§¹®
+      (note-1) TBSNodeë¥¼ loganchorì— flushí•˜ì§€ ì•ŠìŒ
+               -> Restart Recoveryì™„ë£Œí›„ ëª¨ë“  TBSë¥¼ loganchorì— flushí•˜ê¸° ë•Œë¬¸
 
 */
 IDE_RC smpUpdate::redo_SCT_UPDATE_MRDB_ALTER_TBS_ONLINE(
@@ -409,18 +409,18 @@ IDE_RC smpUpdate::redo_SCT_UPDATE_MRDB_ALTER_TBS_ONLINE(
     {
         if ( SMI_TBS_IS_ONLINE(sTBSNode->mHeader.mState) )
         {
-            // ÀÌ¹Ì Online»óÅÂ¶ó¸é, Page´Ü°è±îÁö ÃÊ±âÈ­µÇ°í
-            // Restore°¡ ¿Ï·áµÈ »óÅÂÀÌ´Ù.
+            // ì´ë¯¸ Onlineìƒíƒœë¼ë©´, Pageë‹¨ê³„ê¹Œì§€ ì´ˆê¸°í™”ë˜ê³ 
+            // Restoreê°€ ì™„ë£Œëœ ìƒíƒœì´ë‹¤.
             //
-            // ¾Æ¹«·± Ã³¸®µµ ÇÊ¿äÇÏÁö ¾Ê´Ù.
+            // ì•„ë¬´ëŸ° ì²˜ë¦¬ë„ í•„ìš”í•˜ì§€ ì•Šë‹¤.
         }
-        else // Online»óÅÂ°¡ ¾Æ´Ï¶ó¸é
+        else // Onlineìƒíƒœê°€ ì•„ë‹ˆë¼ë©´
         {
             if ( sTBSNode->mRestoreType ==
                  SMM_DB_RESTORE_TYPE_NOT_RESTORED_YET )
             {
-                // PAGE ´Ü°è±îÁö ÃÊ±âÈ­¸¦ ½ÃÅ°°í
-                // Restore¸¦ ½Ç½ÃÇÑ´Ù.
+                // PAGE ë‹¨ê³„ê¹Œì§€ ì´ˆê¸°í™”ë¥¼ ì‹œí‚¤ê³ 
+                // Restoreë¥¼ ì‹¤ì‹œí•œë‹¤.
                 IDE_TEST( smmTBSMultiPhase::initPagePhase( sTBSNode )
                           != IDE_SUCCESS );
                 IDE_TEST( smmManager::prepareAndRestore( sTBSNode )
@@ -428,14 +428,14 @@ IDE_RC smpUpdate::redo_SCT_UPDATE_MRDB_ALTER_TBS_ONLINE(
             }
             else
             {
-                // 1. ONLINEÀÎ Ã¤·Î ¼­¹ö ±âµ¿
-                //      => Page´Ü°è±îÁö ÃÊ±âÈ­, Restore½Ç½Ã
-                // 2. REDOµµÁß ALTER OFFLINE·Î±×¸¦ ¸¸³ª¼­ OFFLINEÀ¸·Î ÀüÀÌ
-                //      => »óÅÂ¸¸ OFFLINEÀ¸·Î ¹Ù²Ù°í,
-                //         Tablespace´Â ±×´ë·Î µÒ
-                // 3. REDOµµÁß ALTER ONLINE·Î±× ¸¸³²
-                //      => 1¿¡¼­ Restore±îÁö ¸ğµÎ ¸¶Ä£ »óÅÂ
-                //         ¿©±â¿¡¼­´Â ¾Æ¹«·± Ã³¸®µµ ¼öÇàÇÏÁö ¾ÊÀ½
+                // 1. ONLINEì¸ ì±„ë¡œ ì„œë²„ ê¸°ë™
+                //      => Pageë‹¨ê³„ê¹Œì§€ ì´ˆê¸°í™”, Restoreì‹¤ì‹œ
+                // 2. REDOë„ì¤‘ ALTER OFFLINEë¡œê·¸ë¥¼ ë§Œë‚˜ì„œ OFFLINEìœ¼ë¡œ ì „ì´
+                //      => ìƒíƒœë§Œ OFFLINEìœ¼ë¡œ ë°”ê¾¸ê³ ,
+                //         TablespaceëŠ” ê·¸ëŒ€ë¡œ ë‘ 
+                // 3. REDOë„ì¤‘ ALTER ONLINEë¡œê·¸ ë§Œë‚¨
+                //      => 1ì—ì„œ Restoreê¹Œì§€ ëª¨ë‘ ë§ˆì¹œ ìƒíƒœ
+                //         ì—¬ê¸°ì—ì„œëŠ” ì•„ë¬´ëŸ° ì²˜ë¦¬ë„ ìˆ˜í–‰í•˜ì§€ ì•ŠìŒ
             }
 
         }
@@ -444,14 +444,14 @@ IDE_RC smpUpdate::redo_SCT_UPDATE_MRDB_ALTER_TBS_ONLINE(
                                          aValuePtr,
                                          & sTBSState ) != IDE_SUCCESS );
 
-        // Online»óÅÂ·Î ÀüÀÌ
+        // Onlineìƒíƒœë¡œ ì „ì´
         sTBSNode->mHeader.mState = sTBSState;
 
         IDE_ERROR( SMI_TBS_IS_ONLINE(sTBSState) );
     }
     else
     {
-        // ÀÌ¹Ì DropµÈ TablespaceÀÎ °æ¿ì
+        // ì´ë¯¸ Dropëœ Tablespaceì¸ ê²½ìš°
         // nothing to do ...
     }
 
@@ -464,18 +464,18 @@ IDE_RC smpUpdate::redo_SCT_UPDATE_MRDB_ALTER_TBS_ONLINE(
 
 
 /*
-    ALTER TABLESPACE TBS1 ONLINE .... ¿¡ ´ëÇÑ UNDO ¼öÇà
+    ALTER TABLESPACE TBS1 ONLINE .... ì— ëŒ€í•œ UNDO ìˆ˜í–‰
 
-    [ ·Î±× ±¸Á¶ ]
+    [ ë¡œê·¸ êµ¬ì¡° ]
     Before Image  --------------------------------------------
       UInt                aBState
 
-    [ ALTER TABLESPACE ONLINE ÀÇ UNDO Ã³¸® ]
+    [ ALTER TABLESPACE ONLINE ì˜ UNDO ì²˜ë¦¬ ]
 
       (u-050)  TBSNode.Status := Before Image(OFFLINE)
-      (note-1) TBSNode¸¦ loganchor¿¡ flushÇÏÁö ¾ÊÀ½
-               -> ALTER TBS ONLINEÀÇ Commit PendingÀ» ÅëÇØ
-                  COMMITÀÌÈÄ¿¡¾ß º¯°æµÈ TBS»óÅÂ°¡ log anchor¿¡ flushµÇ±â ¶§¹®
+      (note-1) TBSNodeë¥¼ loganchorì— flushí•˜ì§€ ì•ŠìŒ
+               -> ALTER TBS ONLINEì˜ Commit Pendingì„ í†µí•´
+                  COMMITì´í›„ì—ì•¼ ë³€ê²½ëœ TBSìƒíƒœê°€ log anchorì— flushë˜ê¸° ë•Œë¬¸
 
 
 */
@@ -499,20 +499,20 @@ IDE_RC smpUpdate::undo_SCT_UPDATE_MRDB_ALTER_TBS_ONLINE(
     {
         if ( aIsRestart == ID_TRUE )
         {
-            // Restart RecoveryÁß¿¡´Â
-            // TablespaceÀÇ »óÅÂ¸¸ º¯°æÇÏ°í
-            // Resource´Â ±×´ë·Î µĞ´Ù.
+            // Restart Recoveryì¤‘ì—ëŠ”
+            // Tablespaceì˜ ìƒíƒœë§Œ ë³€ê²½í•˜ê³ 
+            // ResourceëŠ” ê·¸ëŒ€ë¡œ ë‘”ë‹¤.
             //
-            // Restart Recovery¿Ï·áÈÄ¿¡ ÀÏ°ıÃ³¸®ÇÑ´Ù.
+            // Restart Recoveryì™„ë£Œí›„ì— ì¼ê´„ì²˜ë¦¬í•œë‹¤.
         }
         else
         {
-            // Alter Tablespace Online ¼öÇàµµÁß ¿¡·¯¹ß»ı ¿©ºÎ Ã¼Å©
+            // Alter Tablespace Online ìˆ˜í–‰ë„ì¤‘ ì—ëŸ¬ë°œìƒ ì—¬ë¶€ ì²´í¬
             if ( ( sTBSNode->mHeader.mState & SMI_TBS_SWITCHING_TO_ONLINE )
                  == SMI_TBS_SWITCHING_TO_ONLINE )
             {
-                // Alter Tablespace Online ¼öÇàÀº ¿Ï·áÇÏ¿´À¸³ª,
-                // ÀÌÈÄ¿¡ TransactionÀÌ ABORTµÈ °æ¿ì
+                // Alter Tablespace Online ìˆ˜í–‰ì€ ì™„ë£Œí•˜ì˜€ìœ¼ë‚˜,
+                // ì´í›„ì— Transactionì´ ABORTëœ ê²½ìš°
 
                 //////////////////////////////////////////////////////////
                 //  Free All Index Memory of TBS
@@ -524,19 +524,19 @@ IDE_RC smpUpdate::undo_SCT_UPDATE_MRDB_ALTER_TBS_ONLINE(
 
 
                 //////////////////////////////////////////////////////////
-                // Page´Ü°è¸¦ ÇØÁ¦ÇÑ´Ù.
+                // Pageë‹¨ê³„ë¥¼ í•´ì œí•œë‹¤.
                 IDE_TEST( smmTBSMultiPhase::finiPagePhase( sTBSNode )
                           != IDE_SUCCESS );
 
             }
             else
             {
-                // Alter Tablespace Online ¼öÇàÁß ¿¡·¯ ¹ß»ıÇÏ¿©
-                // ABORTµÈ °æ¿ì
+                // Alter Tablespace Online ìˆ˜í–‰ì¤‘ ì—ëŸ¬ ë°œìƒí•˜ì—¬
+                // ABORTëœ ê²½ìš°
 
                 // Do Nothing
-                // => Alter Tablespace Online ¼öÇà½Ã ¿¡·¯Ã³¸® ·çÆ¾¿¡¼­
-                //    À§ÀÇ ÀÛ¾÷À» ÀÌ¹Ì ´Ù Ã³¸®ÇÑ »óÅÂÀÌ´Ù.
+                // => Alter Tablespace Online ìˆ˜í–‰ì‹œ ì—ëŸ¬ì²˜ë¦¬ ë£¨í‹´ì—ì„œ
+                //    ìœ„ì˜ ì‘ì—…ì„ ì´ë¯¸ ë‹¤ ì²˜ë¦¬í•œ ìƒíƒœì´ë‹¤.
             }
         }
 
@@ -549,7 +549,7 @@ IDE_RC smpUpdate::undo_SCT_UPDATE_MRDB_ALTER_TBS_ONLINE(
     }
     else
     {
-        // ÀÌ¹Ì DropµÈ TablespaceÀÎ °æ¿ì
+        // ì´ë¯¸ Dropëœ Tablespaceì¸ ê²½ìš°
         // nothing to do ...
     }
 

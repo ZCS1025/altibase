@@ -28,57 +28,57 @@
 class smpManager
 {
 public:
-    // aPageÀÇ TableOID ¹İÈ¯
+    // aPageì˜ TableOID ë°˜í™˜
     static smOID    getTableOID       (void* aPage);
 
-    // aPageÀÇ PageID ¹İÈ¯
+    // aPageì˜ PageID ë°˜í™˜
     static scPageID getPersPageID     (void* aPage);
 
-    // aPageÀÇ PrevPageID ¹İÈ¯
+    // aPageì˜ PrevPageID ë°˜í™˜
     static scPageID getPrevPersPageID (void* aPage);
 
-    // aPageÀÇ NextPageID ¹İÈ¯
+    // aPageì˜ NextPageID ë°˜í™˜
     static scPageID getNextPersPageID (void* aPage);
 
-    // aPageÀÇ PrevPageID ¼³Á¤
+    // aPageì˜ PrevPageID ì„¤ì •
     static void     setPrevPersPageID (void*    aPage,
                                        scPageID aPageID);
 
-    // aPageÀÇ NextPageID ¼³Á¤
+    // aPageì˜ NextPageID ì„¤ì •
     static void     setNextPersPageID (void*     aPage,
                                        scPageID  aPageID);
 
-    // aPageÀÇ SelfID, PrevID, NextID ¼³Á¤
+    // aPageì˜ SelfID, PrevID, NextID ì„¤ì •
     static void     linkPersPage(void*     aPage,
                                  scPageID  aSelf,
                                  scPageID  aPrev,
                                  scPageID  aNext);
 
-    // aPageÀÇ PageType ¼³Á¤
+    // aPageì˜ PageType ì„¤ì •
     static void     initPersPageType(void* aPage);
 
-    // PROJ-1490 : PageList º´·ÄÈ­
-    //             º´·ÄÈ­µÈ PageList¿¡¼­ Head,Tail,Prev,Next¸¦ ¹İÈ¯
-    // aPageListEntryÀÇ Ã¹ PageID ¹İÈ¯
+    // PROJ-1490 : PageList ë³‘ë ¬í™”
+    //             ë³‘ë ¬í™”ëœ PageListì—ì„œ Head,Tail,Prev,Nextë¥¼ ë°˜í™˜
+    // aPageListEntryì˜ ì²« PageID ë°˜í™˜
     static scPageID getFirstAllocPageID(
         smpPageListEntry* aPageListEntry);
 
-    // aPageListEntryÀÇ ¸¶Áö¸· PageID ¹İÈ¯
+    // aPageListEntryì˜ ë§ˆì§€ë§‰ PageID ë°˜í™˜
     static scPageID getLastAllocPageID(
         smpPageListEntry* aPageListEntry);
 
-    // ´ÙÁßÈ­µÈ aPageListEntry¿¡¼­ aPageIDÀÇ ÀÌÀü PageID ¹İÈ¯
+    // ë‹¤ì¤‘í™”ëœ aPageListEntryì—ì„œ aPageIDì˜ ì´ì „ PageID ë°˜í™˜
     static scPageID getPrevAllocPageID(scSpaceID         aSpaceID,
                                        smpPageListEntry* aPageListEntry,
                                        scPageID          aPageID);
 
-    // ´ÙÁßÈ­µÈ aPageListEntry¿¡¼­ aPageIDÀÇ ´ÙÀ½ PageID ¹İÈ¯
+    // ë‹¤ì¤‘í™”ëœ aPageListEntryì—ì„œ aPageIDì˜ ë‹¤ìŒ PageID ë°˜í™˜
     static scPageID getNextAllocPageID(scSpaceID         aSpaceID,
                                        smpPageListEntry* aPageListEntry,
                                        scPageID          aPageID);
 
     /*
-     * BUG-25179 [SMM] Full ScanÀ» À§ÇÑ ÆäÀÌÁö°£ Scan List°¡ ÇÊ¿äÇÕ´Ï´Ù.
+     * BUG-25179 [SMM] Full Scanì„ ìœ„í•œ í˜ì´ì§€ê°„ Scan Listê°€ í•„ìš”í•©ë‹ˆë‹¤.
      */
     static scPageID getFirstScanPageID( smpPageListEntry* aPageListEntry );
     static scPageID getLastScanPageID( smpPageListEntry* aPageListEntry );
@@ -93,17 +93,17 @@ public:
                                     scPageID   aPrevPID,
                                     scPageID   aNextPID );
     
-    // aAllocPageListÀÇ PageCount, Head, Tail Á¤º¸ ¹İÈ¯
-    // smrUpdate¿¡¼­ Äİ¹éÀ¸·Î »ç¿ëÇÏ±â ¶§¹®¿¡ aAllocPageList¸¦ void*·Î »ç¿ë
+    // aAllocPageListì˜ PageCount, Head, Tail ì •ë³´ ë°˜í™˜
+    // smrUpdateì—ì„œ ì½œë°±ìœ¼ë¡œ ì‚¬ìš©í•˜ê¸° ë•Œë¬¸ì— aAllocPageListë¥¼ void*ë¡œ ì‚¬ìš©
     static void     getAllocPageListInfo(void*     aAllocPageList,
                                          vULong*   aPageCount,
                                          scPageID* aHeadPID,
                                          scPageID* aTailPID);
 
-    // SMP_SLOT_HEADER_SIZE¸¦ ¸®ÅÏ
+    // SMP_SLOT_HEADER_SIZEë¥¼ ë¦¬í„´
     static UInt     getSlotSize();
 
-    // PageList¿¡ ´Ş¸° ¸ğµç Page °¹¼ö
+    // PageListì— ë‹¬ë¦° ëª¨ë“  Page ê°¯ìˆ˜
     static vULong   getAllocPageCount(smpPageListEntry* aPageListEntry);
 
     static UInt     getPersPageBodyOffset();

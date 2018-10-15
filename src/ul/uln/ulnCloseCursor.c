@@ -44,8 +44,8 @@ ACI_RC ulnSFID_05(ulnFnContext *aFnContext)
     }
 
     /*
-     * BUGBUG : DBC »óÅÂÀüÀÌÇÔ¼öµµ È£ÃâÇØ¾ß ÇÏ´Âµ¥, »óÀ§ ÇÚµéÀÇ »óÅÂ ÀüÀÌ¸¦
-     *          ¾î¶»°Ô ÇÏ´ÂÁö Áö±ÝÀº ±â¾ïÀÌ ¾È³­´Ù.
+     * BUGBUG : DBC ìƒíƒœì „ì´í•¨ìˆ˜ë„ í˜¸ì¶œí•´ì•¼ í•˜ëŠ”ë°, ìƒìœ„ í•¸ë“¤ì˜ ìƒíƒœ ì „ì´ë¥¼
+     *          ì–´ë–»ê²Œ í•˜ëŠ”ì§€ ì§€ê¸ˆì€ ê¸°ì–µì´ ì•ˆë‚œë‹¤.
      */
 
     return ACI_SUCCESS;

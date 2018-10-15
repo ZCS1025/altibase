@@ -216,7 +216,7 @@ SJIS_ALL         ({SJIS_HWKATA})|({SJIS_JIS97})
                                    return T_NOEXP;
                                }
 [Oo][Uu][Tt][Ff][Ii][Ll][Ee]   {
-//PROJ-2030, CT_CASE-3020 CHAR outfile Áö¿ø 
+//PROJ-2030, CT_CASE-3020 CHAR outfile ì§€ì› 
 #ifdef _ILOADER_DEBUG
                                    idlOS::printf("Token 'outfile'\n");
 #endif
@@ -462,8 +462,8 @@ SJIS_ALL         ({SJIS_HWKATA})|({SJIS_JIS97})
 /* BUG-40363 To handle where condition strings having double quotation marks */
 /* BUG-40310 [ux-iloader] Fail to handle where condition when 'WHERE' keyword has mixed case. */
 
-    /* eraseDQuotesÇÔ¼ö·Î double quotes¸¦ ³ªÁß¿¡ ÀÚ¸¥´Ù.
-     * table/column/sequence ÀÌ¸§ÀÇ °æ¿ì "..." ¹®ÀÚ¿­À» ¸ğµÎ ÇÊ¿ä·ÎÇÏ±â ¶§¹®.
+    /* eraseDQuotesí•¨ìˆ˜ë¡œ double quotesë¥¼ ë‚˜ì¤‘ì— ìë¥¸ë‹¤.
+     * table/column/sequence ì´ë¦„ì˜ ê²½ìš° "..." ë¬¸ìì—´ì„ ëª¨ë‘ í•„ìš”ë¡œí•˜ê¸° ë•Œë¬¸.
      */
     int t_len = idlOS::strlen(yytext);
     yyget_lval(yyscanner)->str=(SChar*)(param->m_memmgr->alloc(t_len+1));
@@ -481,9 +481,9 @@ SJIS_ALL         ({SJIS_HWKATA})|({SJIS_JIS97})
 "\""([^"]|\"\")*"\"" {
 /* BUG-40363 To handle strings having double quotation marks */
 
-    /* BUG-17563 : iloader ¿¡¼­ Å«µû¿ÈÇ¥ ÀÌ¿ëÇÑ Naming Rule Á¦¾à Á¦°Å  */
-    /* eraseDQuotesÇÔ¼ö·Î double quotes¸¦ ³ªÁß¿¡ ÀÚ¸¥´Ù.
-     * table/column/sequence ÀÌ¸§ÀÇ °æ¿ì "..." ¹®ÀÚ¿­À» ¸ğµÎ ÇÊ¿ä·ÎÇÏ±â ¶§¹®.
+    /* BUG-17563 : iloader ì—ì„œ í°ë”°ì˜´í‘œ ì´ìš©í•œ Naming Rule ì œì•½ ì œê±°  */
+    /* eraseDQuotesí•¨ìˆ˜ë¡œ double quotesë¥¼ ë‚˜ì¤‘ì— ìë¥¸ë‹¤.
+     * table/column/sequence ì´ë¦„ì˜ ê²½ìš° "..." ë¬¸ìì—´ì„ ëª¨ë‘ í•„ìš”ë¡œí•˜ê¸° ë•Œë¬¸.
      */
     int t_len = idlOS::strlen(yytext);
     yyget_lval(yyscanner)->str=(SChar*)(param->m_memmgr->alloc(t_len+1));
@@ -510,7 +510,7 @@ SJIS_ALL         ({SJIS_HWKATA})|({SJIS_JIS97})
 
 %%
 
-/* double quotation ³»¿¡ ÀÖ´Â "" ¿¡¼­ " Á¦°Å */
+/* double quotation ë‚´ì— ìˆëŠ” "" ì—ì„œ " ì œê±° */
 void removeEscapeChars(SChar *aStr)
 {
     static SChar sEsc = '"';
@@ -572,7 +572,7 @@ int yylex(YYSTYPE* lvalp, yyscan_t yyscanner, void* aParam )
         if( ( idlOS::strncmp( sNlsUse, (SChar*)"SHIFT-JIS", 9 ) == 0 ) ||
             ( idlOS::strncmp( sNlsUse, (SChar*)"SHIFTJIS", 8 ) == 0 ) ||
             ( idlOS::strncmp( sNlsUse, (SChar*)"JAPANESE", 8 ) == 0 ) ||
-            /* PROJ-2590 [±â´É¼º] CP932 database character set Áö¿ø */
+            /* PROJ-2590 [ê¸°ëŠ¥ì„±] CP932 database character set ì§€ì› */
             ( idlOS::strncmp( sNlsUse, (SChar*)"MS932", 5 ) == 0 ) ||
             ( idlOS::strncmp( sNlsUse, (SChar*)"CP932", 5 ) == 0 ) ||
             ( idlOS::strncmp( sNlsUse, (SChar*)"WINDOWS932", 10 ) == 0 ) )
@@ -582,7 +582,7 @@ int yylex(YYSTYPE* lvalp, yyscan_t yyscanner, void* aParam )
         else if( ( idlOS::strncmp( sNlsUse, (SChar*)"GB231280", 8 ) == 0 )   ||
                  (idlOS::strncmp( sNlsUse, (SChar*)"ZHS16CGB231280", 14)==0) ||
                  ( idlOS::strncmp( sNlsUse, (SChar*)"CHINESE", 7 )==0 ) ||
-                 /* PROJ-2414 [±â´É¼º] GBK, CP936 character set Ãß°¡ */
+                 /* PROJ-2414 [ê¸°ëŠ¥ì„±] GBK, CP936 character set ì¶”ê°€ */
                  ( idlOS::strncmp( sNlsUse, (SChar*)"MS936", 5 )==0 ) ||
                  ( idlOS::strncmp( sNlsUse, (SChar*)"CP936", 5 )==0 ) ||
                  ( idlOS::strncmp( sNlsUse, (SChar*)"GBK", 3 )==0 ) ||
@@ -635,7 +635,7 @@ ltrim(char *s)
    while (*p == ' ' && idlOS::strlen(p) > 0)
       p++;
 
-   // BUG-25208[CodeSonar] ¸Ş¸ğ¸® µ¤¾î¾²±â ¹ß»ı 
+   // BUG-25208[CodeSonar] ë©”ëª¨ë¦¬ ë®ì–´ì“°ê¸° ë°œìƒ 
    idlOS::memmove(s, p, (idlOS::strlen(p)+1));
 
    return s;
@@ -658,12 +658,12 @@ rtrim(char *s)
    return s;
 }
 
-/* BUG-17563 : iloader ¿¡¼­ Å«µû¿ÈÇ¥ ÀÌ¿ëÇÑ Naming Rule Á¦¾à Á¦°Å  */
-/* double quotes¹®ÀÚ¸¦ Àß¶ó³»´Â ÇÔ¼ö. */
+/* BUG-17563 : iloader ì—ì„œ í°ë”°ì˜´í‘œ ì´ìš©í•œ Naming Rule ì œì•½ ì œê±°  */
+/* double quotesë¬¸ìë¥¼ ì˜ë¼ë‚´ëŠ” í•¨ìˆ˜. */
 SChar *eraseDQuotes(SChar *aSrc)
 {
     UInt  sLen;
-    // sLenÀº Ç×»ó 2º¸´Ù Å©´Ù "..."
+    // sLenì€ í•­ìƒ 2ë³´ë‹¤ í¬ë‹¤ "..."
     sLen = idlOS::strlen(aSrc);
     aSrc[sLen-1] = '\0';
     return aSrc+1;

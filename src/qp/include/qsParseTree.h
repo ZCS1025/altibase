@@ -30,7 +30,7 @@
 // PROJ-1359 Trigger
 //----------------------------------------
 
-// PSM StatementÀÇ Á¾·ù
+// PSM Statementì˜ ì¢…ë¥˜
 typedef enum
 {
     QS_PROC_STMT_NONE = 0,
@@ -145,7 +145,7 @@ struct qsProcException;         // BUG-37501
 enum qsBlockItemType
 {
     QS_VARIABLE,
-    QS_TRIGGER_VARIABLE,         // PROJ-1359 Trigger¸¦ À§ÇÑ Variable
+    QS_TRIGGER_VARIABLE,         // PROJ-1359 Triggerë¥¼ ìœ„í•œ Variable
     QS_CURSOR,
     QS_EXCEPTION,
     QS_TYPE,                     // PROJ-1075 UDT
@@ -153,7 +153,7 @@ enum qsBlockItemType
     QS_PRAGMA_EXCEPTION_INIT     // BUG-41240 EXCEPTION_INIT Pragma
 };
 
-/* Â÷ÈÄ Ãß°¡µÇ´Â object typeÀº QS_OBJECT_MAX À§¿¡ Ãß°¡ÇÒ °Í */
+/* ì°¨í›„ ì¶”ê°€ë˜ëŠ” object typeì€ QS_OBJECT_MAX ìœ„ì— ì¶”ê°€í•  ê²ƒ */
 enum qsObjectType
 {
     QS_PROC = 0,
@@ -179,7 +179,7 @@ enum qsPkgOption
 /* BUG-37820 */
 enum qsPkgSubprogramType
 {
-    QS_NONE_TYPE,         // ÃÊ±â°ª
+    QS_NONE_TYPE,         // ì´ˆê¸°ê°’
     QS_PUBLIC_SUBPROGRAM,
     QS_PRIVATE_SUBPROGRAM
 };
@@ -188,7 +188,7 @@ enum qsPkgSubprogramType
     { aCurrStmt->parent = aParentStmt; }
 
 // BUG-37655
-// PRAGMA RESTRICT_REFERENCES Option ¿©ºÎ
+// PRAGMA RESTRICT_REFERENCES Option ì—¬ë¶€
 // .flag
 #define QS_PRAGMA_RESTRICT_REFERENCES_UNDEFINED    (0x00000000)
 #define QS_PRAGMA_RESTRICT_REFERENCES_RNDS         (0x00000001)
@@ -202,7 +202,7 @@ enum qsPkgSubprogramType
 #define QS_CHECK_PRAGMA_RESTRICT_REFERENCES_CONDITION( a , b ) \
     ( (a & b) == b ? ID_TRUE : ID_FALSE )
 
-/* BUG-41847 packageÀÇ subprogramÀ» default value·Î »ç¿ë°¡´ÉÇÏ°Ô Áö¿ø */
+/* BUG-41847 packageì˜ subprogramì„ default valueë¡œ ì‚¬ìš©ê°€ëŠ¥í•˜ê²Œ ì§€ì› */
 enum qsPkgStmtsValidationState
 {
     QS_PKG_STMTS_INIT_STATE = 0,
@@ -234,7 +234,7 @@ typedef struct qsRelatedObjects
     qsRelatedObjects    * next;
 } qsRelatedObjects;
 
-/* BUG-35445 Check Constraint, Function-Based Index¿¡¼­ »ç¿ë ÁßÀÎ FunctionÀ» º¯°æ/Á¦°Å ¹æÁö */
+/* BUG-35445 Check Constraint, Function-Based Indexì—ì„œ ì‚¬ìš© ì¤‘ì¸ Functionì„ ë³€ê²½/ì œê±° ë°©ì§€ */
 typedef struct qsConstraintRelatedProc
 {
     UInt                          userID;
@@ -256,11 +256,11 @@ typedef struct qsIndexRelatedProc
 } qsIndexRelatedProc;
 
 // PROJ-1359 Trigger
-// Cycle DetectionÀ» À§ÇØ °»½ÅÀÌ ¹ß»ıÇÏ´Â TableÀ» °ü¸®ÇÔ.
+// Cycle Detectionì„ ìœ„í•´ ê°±ì‹ ì´ ë°œìƒí•˜ëŠ” Tableì„ ê´€ë¦¬í•¨.
 typedef struct qsModifiedTable
 {
-    UInt                 tableID;    // Modify ´ë»óÀÌ µÇ´Â Table
-    qsProcStmtType       stmtType;   // Modify ¿¬»êÀÇ Á¾·ù
+    UInt                 tableID;    // Modify ëŒ€ìƒì´ ë˜ëŠ” Table
+    qsProcStmtType       stmtType;   // Modify ì—°ì‚°ì˜ ì¢…ë¥˜
     qsModifiedTable *    next;
 } qsModifiedTable;
 
@@ -291,7 +291,7 @@ typedef struct qsLabels
 } qsLabels;
 
 // PROJ-1436
-// synonymÀ¸·Î ÂüÁ¶µÇ´Â PSMÀÇ Á¤º¸
+// synonymìœ¼ë¡œ ì°¸ì¡°ë˜ëŠ” PSMì˜ ì •ë³´
 typedef struct qsSynonymList
 {
     SChar                userName[QC_MAX_OBJECT_NAME_LEN + 1];
@@ -323,9 +323,9 @@ typedef struct qsCallSpec
 } qsCallSpec;
 
 // PROJ-1359 Trigger
-// PSMÀÇ Body´Â Validation½Ã
-// PSMÀÇ BlockÀ¸·Î »ç¿ëµÉ ¶§¿Í TriggerÀÇ Action Body·Î »ç¿ëµÉ ¶§
-// ¼­·Î »óÀÌÇÑ Á¤º¸¸¦ ÇÊ¿ä·Î ÇÏ¸ç, ValidationÇÏ´Â ³»¿ëµµ ´Ù¸£´Ù.
+// PSMì˜ BodyëŠ” Validationì‹œ
+// PSMì˜ Blockìœ¼ë¡œ ì‚¬ìš©ë  ë•Œì™€ Triggerì˜ Action Bodyë¡œ ì‚¬ìš©ë  ë•Œ
+// ì„œë¡œ ìƒì´í•œ ì •ë³´ë¥¼ í•„ìš”ë¡œ í•˜ë©°, Validationí•˜ëŠ” ë‚´ìš©ë„ ë‹¤ë¥´ë‹¤.
 
 typedef enum {
     QS_PURPOSE_NONE = 0,
@@ -352,8 +352,8 @@ typedef IDE_RC (*qsExecuteFunc)   ( qsxExecutorInfo *,
                                     qsProcStmts * );
 
 // PROJ-1335, To fix PR-12475
-// GOTO ¿¡¼­ ÂüÁ¶ÇÒ labelÀ» childLabels¿¡ ÀúÀå,
-// º¯¼ö scopeÁ¦¾î ¹× exit¸¦ À§ÇÑ labelÀ» parentLabels¿¡ ÀúÀå
+// GOTO ì—ì„œ ì°¸ì¡°í•  labelì„ childLabelsì— ì €ì¥,
+// ë³€ìˆ˜ scopeì œì–´ ë° exitë¥¼ ìœ„í•œ labelì„ parentLabelsì— ì €ì¥
 typedef struct qsProcStmts
 {
     qsProcStmts          * next;
@@ -383,7 +383,7 @@ typedef struct qsProcStmtBlock
     qsProcStmts                 * exception;
 
     /* BUG-38509 autonomous transaction
-       autonomousTrsnsÀÇ default´Â ID_FALSE */
+       autonomousTrsnsì˜ defaultëŠ” ID_FALSE */
     idBool                        isAutonomousTransBlock; 
 } qsProcStmtBlock;
 
@@ -411,14 +411,14 @@ typedef struct qsVariableItems
 } qsVariableItems;
 
 // PROJ-1075 RECORD
-// common : °øÅëitem
-// columns : recordÅ¸ÀÔÀÌ³ª arrayÅ¸ÀÔÀÇ ¹è¿­¿ä¼Ò
-// idxcolumn : indexed by ... ÀÇ type
-// name : Å¸ÀÔ°Ë»ö½Ã »ç¿ë. package¿Í ¿¬°üÀÌ ÀÖÀ¸¹Ç·Î ÀÌ¸§À» Á÷Á¢ º¹»çÇØ¼­ º¸À¯
-// tableInfo : a.b ¶Ç´Â a(4).b µî ÄÃ·³°Ë»ö½Ã ÇÊ¿äÇÑ Á¤º¸
-// nestedType : array typeÀÌ record¸¦ Æ÷ÇÔÇÏ´Â °æ¿ì ÇÊ¿äÇÑ Á¤º¸.
-// array typeÀÎ °æ¿ì Ã¹¹øÂ° ÄÃ·³Àº index columnÀÌ µÈ´Ù.
-// array typeÀÎ °æ¿ì columnCount´Â Ç×»ó 2ÀÌ´Ù.
+// common : ê³µí†µitem
+// columns : recordíƒ€ì…ì´ë‚˜ arrayíƒ€ì…ì˜ ë°°ì—´ìš”ì†Œ
+// idxcolumn : indexed by ... ì˜ type
+// name : íƒ€ì…ê²€ìƒ‰ì‹œ ì‚¬ìš©. packageì™€ ì—°ê´€ì´ ìˆìœ¼ë¯€ë¡œ ì´ë¦„ì„ ì§ì ‘ ë³µì‚¬í•´ì„œ ë³´ìœ 
+// tableInfo : a.b ë˜ëŠ” a(4).b ë“± ì»¬ëŸ¼ê²€ìƒ‰ì‹œ í•„ìš”í•œ ì •ë³´
+// nestedType : array typeì´ recordë¥¼ í¬í•¨í•˜ëŠ” ê²½ìš° í•„ìš”í•œ ì •ë³´.
+// array typeì¸ ê²½ìš° ì²«ë²ˆì§¸ ì»¬ëŸ¼ì€ index columnì´ ëœë‹¤.
+// array typeì¸ ê²½ìš° columnCountëŠ” í•­ìƒ 2ì´ë‹¤.
 typedef struct qsTypes
 {
     qsVariableItems      common;
@@ -538,7 +538,7 @@ typedef struct qsProcStmtSql
     qcParseTree           * parseTree;
     qcStatement           * statement;
     // BUG-34288
-    // if exists subqueryÀÎ °æ¿ì
+    // if exists subqueryì¸ ê²½ìš°
     idBool                  isExistsSql;
 
     // for select only
@@ -574,14 +574,14 @@ typedef struct qsProcStmtIf
     qsProcStmts          * elseStmt;
 } qsProcStmtIf;
 
-// PROJ-1335, PR-12475 GOTO ¹®À» Áö¿øÇÏ±â À§ÇØ Ãß°¡ÇÔ.
+// PROJ-1335, PR-12475 GOTO ë¬¸ì„ ì§€ì›í•˜ê¸° ìœ„í•´ ì¶”ê°€í•¨.
 typedef struct qsProcStmtThen
 {
     qsProcStmts            common;
     qsProcStmts          * thenStmts;
 } qsProcStmtThen;
 
-// PROJ-1335, PR-12475 GOTO ¹®À» Áö¿øÇÏ±â À§ÇØ Ãß°¡ÇÔ.
+// PROJ-1335, PR-12475 GOTO ë¬¸ì„ ì§€ì›í•˜ê¸° ìœ„í•´ ì¶”ê°€í•¨.
 typedef struct qsProcStmtElse
 {
     qsProcStmts            common;
@@ -956,21 +956,21 @@ typedef struct qsProcParseTree
 
     qtcNode                   * sqlCursorTypeNode;
 
-    // PROJ-1075 typesetÃß°¡·Î parsing°úÁ¤¿¡¼­
-    // object typeÀ» ¼³Á¤ÇÔ.
+    // PROJ-1075 typesetì¶”ê°€ë¡œ parsingê³¼ì •ì—ì„œ
+    // object typeì„ ì„¤ì •í•¨.
     qsObjectType                objType;
 
     UInt                        userID;
     qsOID                       procOID;
     /* BUG-38720
-       packageÀÇ subprogram ÀÏ ¶§, package bodyÀÇ OID */
+       packageì˜ subprogram ì¼ ë•Œ, package bodyì˜ OID */
     qsOID                       pkgBodyOID;
 
     //fix PROJ-1596
     qsxProcInfo               * procInfo;
     
     // BUG-21761
-    // NÅ¸ÀÔÀ» UÅ¸ÀÔÀ¸·Î º¯Çü½ÃÅ³ ¶§ »ç¿ë
+    // Níƒ€ì…ì„ Uíƒ€ì…ìœ¼ë¡œ ë³€í˜•ì‹œí‚¬ ë•Œ ì‚¬ìš©
     qcNamePosList             * ncharList;
    
     // PROJ-1685
@@ -979,8 +979,8 @@ typedef struct qsProcParseTree
     qsProcType                  procType;
 
     /* BUG-39770
-       package¸¦ ÂüÁ¶ÇÏ°Å³ª package¸¦ ÂüÁ¶ÇÏ´Â °´Ã¼¸¦ ÂüÁ¶ÇÏ´Â °æ¿ì,
-       parallel·Î ¼öÇàµÇ¸é ¾È µÈ´Ù. */
+       packageë¥¼ ì°¸ì¡°í•˜ê±°ë‚˜ packageë¥¼ ì°¸ì¡°í•˜ëŠ” ê°ì²´ë¥¼ ì°¸ì¡°í•˜ëŠ” ê²½ìš°,
+       parallelë¡œ ìˆ˜í–‰ë˜ë©´ ì•ˆ ëœë‹¤. */
     idBool                      referToPkg;
 
     idBool                      isCachable;     // PROJ-2452
@@ -1154,8 +1154,8 @@ typedef struct qsPkgStmtBlock
 
     qsVariableItems     * variableItems;      // variable declaration
     qsPkgStmts          * subprograms;        // subprogram declaration & defination
-    qsProcStmts         * bodyStmts;          // bodyÀÇ initialize section
-    qsProcStmts         * exception;          // bodyÀÇ initialize section
+    qsProcStmts         * bodyStmts;          // bodyì˜ initialize section
+    qsProcStmts         * exception;          // bodyì˜ initialize section
 } qsPkgStmtBlock;
 
 typedef struct  qsPkgParseTree

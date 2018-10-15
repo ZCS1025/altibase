@@ -47,23 +47,23 @@
 /* ----------------------------------------------------------------------------
  *   For Parallel Logging
  * --------------------------------------------------------------------------*/
-/* SNÀÇ ÃÖ´ë°ª */
+/* SNì˜ ìµœëŒ€ê°’ */
 #define SM_SN_MAX  (ID_ULONG_MAX-1)
-/* SNÀÇ NULL°ª */
+/* SNì˜ NULLê°’ */
 #define SM_SN_NULL (ID_ULONG_MAX)
 
-/* Task-6549 LFGÁ¦°Å
- * SM ³»ºÎÀûÀ¸·Î LFG´Â Á¦°Å µÇ¾úÀ¸³ª
- * È£È¯¼º ¹®Á¦·Î LogAnchor¿Í LogFile ³»ºÎÀÇ LFGCount¿Í LFGID´Â ³²°ÜµÎ¾ú´Ù.
- * ÀÌ¿¡ µû¶ó LFGCount ¶Ç´Â LFGID°¡ ÇÊ¿äÇÒ°æ¿ì
- * ´ÙÀ½ °ªÀ» »ç¿ëÇÏµµ·Ï ÇÑ´Ù. */
+/* Task-6549 LFGì œê±°
+ * SM ë‚´ë¶€ì ìœ¼ë¡œ LFGëŠ” ì œê±° ë˜ì—ˆìœ¼ë‚˜
+ * í˜¸í™˜ì„± ë¬¸ì œë¡œ LogAnchorì™€ LogFile ë‚´ë¶€ì˜ LFGCountì™€ LFGIDëŠ” ë‚¨ê²¨ë‘ì—ˆë‹¤.
+ * ì´ì— ë”°ë¼ LFGCount ë˜ëŠ” LFGIDê°€ í•„ìš”í• ê²½ìš°
+ * ë‹¤ìŒ ê°’ì„ ì‚¬ìš©í•˜ë„ë¡ í•œë‹¤. */
 #define SM_LFG_COUNT               (1)
 #define SM_LFG_IDX                 (0)
 
 typedef ULong   smSN;
 
-//[TASK-6757]LFG,SN Á¦°Å smSN <-> smLSN
-#define SM_LSN_OFFSET_BIT_SIZE      (SM_DVAR(32))   // 32 ºñÆ®
+//[TASK-6757]LFG,SN ì œê±° smSN <-> smLSN
+#define SM_LSN_OFFSET_BIT_SIZE      (SM_DVAR(32))   // 32 ë¹„íŠ¸
 #define SM_LSN_OFFSET_MASK          (ID_UINT_MAX)
 
 #define SM_MAKE_SN(LSN)                                 \
@@ -94,7 +94,7 @@ typedef IDE_RC (*smGetMinSN)( const UInt * aRestartRedoFileNo, // BUG-14898
                               smSN       * aSN );
 
 
-/* BUG-26482 ´ë±â ÇÔ¼ö¸¦ CommitLog ±â·Ï ÀüÈÄ·Î ºĞ¸®ÇÏ¿© È£ÃâÇÕ´Ï´Ù. */
+/* BUG-26482 ëŒ€ê¸° í•¨ìˆ˜ë¥¼ CommitLog ê¸°ë¡ ì „í›„ë¡œ ë¶„ë¦¬í•˜ì—¬ í˜¸ì¶œí•©ë‹ˆë‹¤. */
 typedef IDE_RC (*smIsReplCompleteBeforeCommit)( idvSQL      * aStatistics,
                                                 const smTID   aTID,
                                                 const smSN    aSN, 
@@ -113,7 +113,7 @@ typedef void   (*smCopyToRPLogBuf)( idvSQL * aStatistics,
 /* PROJ-2453 Eager Replication performance enhancement */
 typedef void   ( *smSendXLog )( const SChar  * aLogPtr );
 
-/* PROJ-1442 Replication Online Áß DDL Çã¿ë */
+/* PROJ-1442 Replication Online ì¤‘ DDL í—ˆìš© */
 /* QC_MAX_OBJECT_NAME_LEN --> 128 BUG-39579 */
 #define SM_MAX_NAME_LEN ( 128 )
 typedef IDE_RC (*smGetTbl4ReplFunc)( const void   * aMeta,
@@ -128,7 +128,7 @@ typedef const smiColumn * (*smGetColumn4ReplFunc)( const void * aTable,
 
 
 /* ----------------------------------------------------------------------------
- *  log anchorÀÇ °³¼ö
+ *  log anchorì˜ ê°œìˆ˜
  * --------------------------------------------------------------------------*/
 #define SM_LOGANCHOR_FILE_COUNT       (3)
 
@@ -141,7 +141,7 @@ typedef const smiColumn * (*smGetColumn4ReplFunc)( const void * aTable,
 /* ----------------------------------------------------------------------------
  *   For Parallel Page List(Database, Table)
  * --------------------------------------------------------------------------*/
-/* Page List ÃÖ´ë°¹¼ö */
+/* Page List ìµœëŒ€ê°¯ìˆ˜ */
 #if defined(SMALL_FOOTPRINT)
 #define SM_MAX_PAGELIST_COUNT      (1)
 #else
@@ -156,7 +156,7 @@ typedef const smiColumn * (*smGetColumn4ReplFunc)( const void * aTable,
 /* ----------------------------------------------------------------------------
  *   (P)HYSICAL (T)IME(S)TAMP
  * --------------------------------------------------------------------------*/
-/* DWFileÀÇ ÃÖ´ë °³¼ö */
+/* DWFileì˜ ìµœëŒ€ ê°œìˆ˜ */
 #define SM_MAX_DWDIR_COUNT            (32)
 
 
@@ -184,9 +184,9 @@ typedef const smiColumn * (*smGetColumn4ReplFunc)( const void * aTable,
     ( (aLSN).mFileNo == ID_UINT_MAX &&        \
       (aLSN).mOffset == ID_UINT_MAX )
 
-/* TASK-6549 LFGÁ¦°Å¿¡¼­ È£È¯¼ºÀ» À§ÇØ 
- * LSN ³»ºÎÀÇ LFGID´Â ³²±â±â·Î °áÁ¤µÇ¾î
- * LSN ¼³Á¤½Ã LFGID´Â Ç×»ó ±âº» °ªÀÌ µÇµµ·Ï º¯°æÇÏ¿´´Ù.*/
+/* TASK-6549 LFGì œê±°ì—ì„œ í˜¸í™˜ì„±ì„ ìœ„í•´ 
+ * LSN ë‚´ë¶€ì˜ LFGIDëŠ” ë‚¨ê¸°ê¸°ë¡œ ê²°ì •ë˜ì–´
+ * LSN ì„¤ì •ì‹œ LFGIDëŠ” í•­ìƒ ê¸°ë³¸ ê°’ì´ ë˜ë„ë¡ ë³€ê²½í•˜ì˜€ë‹¤.*/
 #define SM_SET_LSN(aLSN, aFileNo, aOffset)  \
 {                               \
     (aLSN).mFileNo = (aFileNo); \
@@ -207,15 +207,15 @@ typedef const smiColumn * (*smGetColumn4ReplFunc)( const void * aTable,
  *   PAGE STRUCT DEFINE
  * --------------------------------------------------------------------------*/
 #ifdef COMPILE_64BIT
-#define SM_OID_BIT_SIZE    (SM_DVAR(64))   // 64 ºñÆ® : °¢ ºñÆ® Á¶ÇÕ
+#define SM_OID_BIT_SIZE    (SM_DVAR(64))   // 64 ë¹„íŠ¸ : ê° ë¹„íŠ¸ ì¡°í•©
 #define SM_DVAR(a)         (ID_ULONG(a))
 #else
-#define SM_OID_BIT_SIZE    (SM_DVAR(32))   // 32 ºñÆ® : °¢ ºñÆ® Á¶ÇÕ
+#define SM_OID_BIT_SIZE    (SM_DVAR(32))   // 32 ë¹„íŠ¸ : ê° ë¹„íŠ¸ ì¡°í•©
 #define SM_DVAR(a)         ((UInt)(a))
 #endif
 
-// ÇÑ ÆäÀÌÁöÀÇ Å©±â¸¦ ºñÆ® ¸í½Ã : Internal Tunable Parameter
-// BIT Áö¿øÀ§ÇØ work-around Ã³¸®
+// í•œ í˜ì´ì§€ì˜ í¬ê¸°ë¥¼ ë¹„íŠ¸ ëª…ì‹œ : Internal Tunable Parameter
+// BIT ì§€ì›ìœ„í•´ work-around ì²˜ë¦¬
 
 #if defined(COMPILE_FOR_PAGE64)
 #define SM_OFFSET_BIT_SIZE     (SM_DVAR(16))   // 2^(16-1) = 32K Byte : 15 = 32K
@@ -233,14 +233,14 @@ typedef const smiColumn * (*smGetColumn4ReplFunc)( const void * aTable,
 #define SM_VAR_COLUMN_BIT_SIZE SM_OFFSET_BIT_SIZE
 #define SM_PAGE_BIT_SIZE       (SM_OID_BIT_SIZE - SM_OFFSET_BIT_SIZE)
 
-#define SM_PAGE_SIZE           (SM_DVAR(1) << SM_OFFSET_BIT_SIZE) // ÇÑ ÆäÀÌÁö Å©±â
-#define SM_MAX_PAGE_COUNT      (SM_DVAR(1) << SM_PAGE_BIT_SIZE)   // ÃÑ ÆäÀÌÁö °¹¼ö
+#define SM_PAGE_SIZE           (SM_DVAR(1) << SM_OFFSET_BIT_SIZE) // í•œ í˜ì´ì§€ í¬ê¸°
+#define SM_MAX_PAGE_COUNT      (SM_DVAR(1) << SM_PAGE_BIT_SIZE)   // ì´ í˜ì´ì§€ ê°¯ìˆ˜
 
 #define SM_PAGE_MASK           ((SM_MAX_PAGE_COUNT - SM_DVAR(1)) << SM_OFFSET_BIT_SIZE)
 #define SM_OFFSET_MASK         (SM_PAGE_SIZE - SM_DVAR(1))
 
 // OID<->PID
-// ToFix BUG-17191 : 4GÀÌ»óÀÇ ¸Ş¸ğ¸®¿¡ ÇØ´çµÇ´Â Page¿¡ ´ëÇØ OID<->PIDº¯È¯ÀÌ Á¦´ë·Î ¾ÈµÊ
+// ToFix BUG-17191 : 4Gì´ìƒì˜ ë©”ëª¨ë¦¬ì— í•´ë‹¹ë˜ëŠ” Pageì— ëŒ€í•´ OID<->PIDë³€í™˜ì´ ì œëŒ€ë¡œ ì•ˆë¨
 #define SM_MAKE_OID(pid, offset) ( (((vULong)(pid)) << SM_OFFSET_BIT_SIZE) | (offset) )
 #define SM_MAKE_PID(a)           ( ((smOID)a)   >> SM_OFFSET_BIT_SIZE )
 #define SM_MAKE_OFFSET(a)        ( ((smOID)a)   &  SM_OFFSET_MASK )
@@ -251,7 +251,7 @@ typedef const smiColumn * (*smGetColumn4ReplFunc)( const void * aTable,
 
 /* ----------------------------------------------------------------------------
  *                            LOCK ROW DEFINE
- * LOCK ROW´Â smpSlotHeaderÀÇ mNextºÎºĞ¿¡¸¸ µé¾î°¡´Â °ªÀÌ´Ù.
+ * LOCK ROWëŠ” smpSlotHeaderì˜ mNextë¶€ë¶„ì—ë§Œ ë“¤ì–´ê°€ëŠ” ê°’ì´ë‹¤.
  * --------------------------------------------------------------------------*/
 #ifdef COMPILE_64BIT
 #define SM_LOCK_MARK    (0x0000000000000002)
@@ -286,27 +286,27 @@ typedef  ULong sdSID;
 
 
 /* ----------------------------------------------------------------------------
- *   sdRID : Disk±â¹İ DB³» ÀÓÀÇÀÇ DB °ø°£À» ³ªÅ¸³»´Â µ¥ÀÌÅ¸ Å¸ÀÔ.
- *           RID´Â PageID, OffsetÀ¸·Î ±¸¼ºµÈ´Ù.
- *           64ºñÆ® Å©±â¸¦ °¡
+ *   sdRID : Diskê¸°ë°˜ DBë‚´ ì„ì˜ì˜ DB ê³µê°„ì„ ë‚˜íƒ€ë‚´ëŠ” ë°ì´íƒ€ íƒ€ì….
+ *           RIDëŠ” PageID, Offsetìœ¼ë¡œ êµ¬ì„±ëœë‹¤.
+ *           64ë¹„íŠ¸ í¬ê¸°ë¥¼ ê°€
  *
  *           [ scPageID | scOffset ] = sdRID
  *               32bit      16bit    = 64bit
- *           PageID´Â 32ºñÆ® (4G)À¸·Î °íÁ¤µÇ°í,
- *           OffsetÀÌ °áÁ¤µÇ¸é(ÀÏ¹İÀûÀ¸·Î 15ºñÆ®),
- *           32ºñÆ®¿¡¼­ ÀÌ OffsetÀ» »« ³ª¸ÓÁö´Â .
+ *           PageIDëŠ” 32ë¹„íŠ¸ (4G)ìœ¼ë¡œ ê³ ì •ë˜ê³ ,
+ *           Offsetì´ ê²°ì •ë˜ë©´(ì¼ë°˜ì ìœ¼ë¡œ 15ë¹„íŠ¸),
+ *           32ë¹„íŠ¸ì—ì„œ ì´ Offsetì„ ëº€ ë‚˜ë¨¸ì§€ëŠ” .
  *
- *           PageID¸¦ 32ºñÆ®·Î °íÁ¤ÇÑ ÀÌÀ¯´Â ¸¸ÀÏ ÀÌ Å©±â°¡ 32ºñÆ® ÀÌ»óÀÏ °æ¿ì¿¡´Â
- *           scPageID¸¦ ÀúÀåÇÏ±â À§ÇÑ °ø°£ÀÌ ULongÀÌ µÇ¾î¾ß ÇÏ´Âµ¥,
- *           ÀÌ·¸°Ô µÇ¸é, ÀúÀå°ø°£ÀÌ UIntÀÏ ¶§º¸´Ù 2¹è°¡ Ä¿¾ß ÇÑ´Ù.
- *           µû¶ó¼­, ÀúÀå°ø°£À» Àı¾àÇÏ±â À§ÇØ ÃÖ´ë 32ºñÆ®·Î °íÁ¤ÇÏ¿´´Ù.
+ *           PageIDë¥¼ 32ë¹„íŠ¸ë¡œ ê³ ì •í•œ ì´ìœ ëŠ” ë§Œì¼ ì´ í¬ê¸°ê°€ 32ë¹„íŠ¸ ì´ìƒì¼ ê²½ìš°ì—ëŠ”
+ *           scPageIDë¥¼ ì €ì¥í•˜ê¸° ìœ„í•œ ê³µê°„ì´ ULongì´ ë˜ì–´ì•¼ í•˜ëŠ”ë°,
+ *           ì´ë ‡ê²Œ ë˜ë©´, ì €ì¥ê³µê°„ì´ UIntì¼ ë•Œë³´ë‹¤ 2ë°°ê°€ ì»¤ì•¼ í•œë‹¤.
+ *           ë”°ë¼ì„œ, ì €ì¥ê³µê°„ì„ ì ˆì•½í•˜ê¸° ìœ„í•´ ìµœëŒ€ 32ë¹„íŠ¸ë¡œ ê³ ì •í•˜ì˜€ë‹¤.
  * --------------------------------------------------------------------------*/
 typedef  ULong sdRID;
 
 typedef  UShort  sdFileID;
 typedef  UInt    sdFilePID;
 
-#define SD_RID_BIT_SIZE        (ID_ULONG(64))   // 64 ºñÆ® : °¢ ºñÆ® Á¶ÇÕ
+#define SD_RID_BIT_SIZE        (ID_ULONG(64))   // 64 ë¹„íŠ¸ : ê° ë¹„íŠ¸ ì¡°í•©
 
 #if defined(SMALL_FOOTPRINT)
 #define SD_OFFSET_BIT_SIZE     (ID_ULONG(12))   // 2^12 = 4K Byte : 12 = 4K
@@ -316,8 +316,8 @@ typedef  UInt    sdFilePID;
 
 #define SD_PAGE_BIT_SIZE       (ID_ULONG(32))   // 2^15 = 32K Byte : 15 = 32K
 
-#define SD_PAGE_SIZE           (ID_ULONG(1) << SD_OFFSET_BIT_SIZE)//ÆäÀÌÁö Å©±â
-#define SD_MAX_PAGE_COUNT      (ID_ULONG(1) << SD_PAGE_BIT_SIZE)  //ÃÑÆäÀÌÁö°¹¼ö
+#define SD_PAGE_SIZE           (ID_ULONG(1) << SD_OFFSET_BIT_SIZE)//í˜ì´ì§€ í¬ê¸°
+#define SD_MAX_PAGE_COUNT      (ID_ULONG(1) << SD_PAGE_BIT_SIZE)  //ì´í˜ì´ì§€ê°¯ìˆ˜
 
 #define SD_OFFSET_MASK       ( SD_PAGE_SIZE - ID_ULONG(1))
 #define SD_PAGE_MASK         ((SD_MAX_PAGE_COUNT - ID_ULONG(1)) << SD_OFFSET_BIT_SIZE)
@@ -390,8 +390,8 @@ typedef  UInt    sdFilePID;
 
 
 #if 0 // not used
-/* mtdTypes.h MTD_CHAR_STORE_PRECISION_MAXIMUM(32000) ÀÇ °ªÀ» ÂüÁ¶ 
- * mt Size Ç¥Çö¶§¹®¿¡ value ¾Õ¿¡ 2 byte Ãß°¡µÇ´Â °ÍÀ» °í·ÁÇÏ¿© +2°¡ µé¾î°£´Ù. */
+/* mtdTypes.h MTD_CHAR_STORE_PRECISION_MAXIMUM(32000) ì˜ ê°’ì„ ì°¸ì¡° 
+ * mt Size í‘œí˜„ë•Œë¬¸ì— value ì•ì— 2 byte ì¶”ê°€ë˜ëŠ” ê²ƒì„ ê³ ë ¤í•˜ì—¬ +2ê°€ ë“¤ì–´ê°„ë‹¤. */
 #define SM_CHAR_MAX_SIZE    ((UInt)32000)
 #define SM_IS_LARGER_THAN_CHAR_MAX(COLSIZE)    ((COLSIZE) > (SM_CHAR_MAX_SIZE + 2))
 #endif
@@ -409,12 +409,12 @@ typedef  UInt    sdFilePID;
 #define SM_NULL_OID           ((smOID)0)
 #define SM_NULL_PID           ((scPageID)0)
 
-// SM Page ID°¡ °¡Áú ¼ö ÀÖ´Â ÃÖ´ë °ª
+// SM Page IDê°€ ê°€ì§ˆ ìˆ˜ ìˆëŠ” ìµœëŒ€ ê°’
 #define SM_MAX_PID            ((scPageID) ( ID_UINT_MAX - 1 ))
 #define SM_SPECIAL_PID        ((scPageID) ( ID_UINT_MAX ))
 
-//OID´Â 8byte aligneµÇ¾îÀÖ±â ¶§¹®¿¡ Ç×»ó ¸¶Áö¸· 3bit°¡ 0ÀÌ´Ù.
-//ÀÌ ¸ÅÅ©·Î ÇÔ¼ö´Â ¸¶Áö¸· 3bit°¡ ¸ğµÎ 0ÀÏ¶§ true ±×·¸Áö ¾ÊÀ»¶§ false¸¦ ¸®ÅÏÇÑ´Ù.
+//OIDëŠ” 8byte aligneë˜ì–´ìˆê¸° ë•Œë¬¸ì— í•­ìƒ ë§ˆì§€ë§‰ 3bitê°€ 0ì´ë‹¤.
+//ì´ ë§¤í¬ë¡œ í•¨ìˆ˜ëŠ” ë§ˆì§€ë§‰ 3bitê°€ ëª¨ë‘ 0ì¼ë•Œ true ê·¸ë ‡ì§€ ì•Šì„ë•Œ falseë¥¼ ë¦¬í„´í•œë‹¤.
 #define SM_IS_OID(ID)         (!((ID) & 0x07))
 #define SM_IS_NULL_OID(ID)    ((ID) == SM_NULL_OID)
 #define SM_IS_VALID_OID(ID)   ( SM_IS_OID(ID) && ((ID) != SM_NULL_OID) )
@@ -427,8 +427,8 @@ typedef  UInt    sdFilePID;
  *    for Variable Column
  * --------------------------------------------------------------------------*/
 /* smVCDesc::flag, smVCDescInMode::flag
-   Fixed Row¿Í °°Àº Row¿¡ Variable ColumnÀÌ ÀúÀåµÇ¸é In-Mode,
-   º°µµÀÇ Variable Row ¿µ¿ª¿¡ ÀúÀåµÇ¸é Out-Mode */
+   Fixed Rowì™€ ê°™ì€ Rowì— Variable Columnì´ ì €ì¥ë˜ë©´ In-Mode,
+   ë³„ë„ì˜ Variable Row ì˜ì—­ì— ì €ì¥ë˜ë©´ Out-Mode */
 #define   SM_VCDESC_MODE_MASK  SMI_COLUMN_MODE_MASK
 #define   SM_VCDESC_MODE_IN    SMI_COLUMN_MODE_IN
 #define   SM_VCDESC_MODE_OUT   SMI_COLUMN_MODE_OUT
@@ -441,7 +441,7 @@ typedef  UInt    sdFilePID;
 #define   SM_VCDESC_NULL_LOB_FALSE (0x00000000)
 #define   SM_VCDESC_NULL_LOB_TRUE  (0x00010000)
 
-/* Variable Column Piece°¡ FreeÀÎÁö? */
+/* Variable Column Pieceê°€ Freeì¸ì§€? */
 #define   SM_VCPIECE_FREE_MASK  (0x0000001)
 #define   SM_VCPIECE_FREE_OK    (0x0000000)
 #define   SM_VCPIECE_FREE_NO    (0x0000001)
@@ -463,42 +463,42 @@ typedef  UInt    sdFilePID;
                                              SM_VCPIECE_TYPE_MEMORY_INDEX ) 
 
 
-/* Fixed Row¿¡¼­ Variable ColumnÀ» °¡¸®Å°´Â Column Descriptor*/
-/* In Mode·Î ÀúÀåµÉ °æ¿ì Column Desc */
+/* Fixed Rowì—ì„œ Variable Columnì„ ê°€ë¦¬í‚¤ëŠ” Column Descriptor*/
+/* In Modeë¡œ ì €ì¥ë  ê²½ìš° Column Desc */
 typedef struct smVCDescInMode
 {
-    UInt          flag;   // variable columnÀÇ ¼Ó¼º (In, Out)
-    UInt          length; // variable columnÀÇ µ¥ÀÌÅ¸ ±æÀÌ
+    UInt          flag;   // variable columnì˜ ì†ì„± (In, Out)
+    UInt          length; // variable columnì˜ ë°ì´íƒ€ ê¸¸ì´
 } smVCDescInMode;
 
-/* Out Mode·Î ÀúÀåµÉ °æ¿ì Column Desc */
-/* smcLobDesc¿Íµµ ±¸Á¶¸¦ °øÀ¯ÇÑ´Ù.    */
+/* Out Modeë¡œ ì €ì¥ë  ê²½ìš° Column Desc */
+/* smcLobDescì™€ë„ êµ¬ì¡°ë¥¼ ê³µìœ í•œë‹¤.    */
 typedef struct smVCDesc
 {
-    UInt           flag;   // variable columnÀÇ ¼Ó¼º (In, Out)
-    UInt           length; // variable columnÀÇ µ¥ÀÌÅ¸ ±æÀÌ
+    UInt           flag;   // variable columnì˜ ì†ì„± (In, Out)
+    UInt           length; // variable columnì˜ ë°ì´íƒ€ ê¸¸ì´
 
-    smOID          fstPieceOID; // variable columnÀÇ Ã¹¹øÂ° piece oid
+    smOID          fstPieceOID; // variable columnì˜ ì²«ë²ˆì§¸ piece oid
 } smVCDesc;
 
 /* smVCPieceHeader::flag
-   Variable ColumnÀ» ±¸¼ºÇÏ´Â °¢ PieceÀÇ Header
+   Variable Columnì„ êµ¬ì„±í•˜ëŠ” ê° Pieceì˜ Header
  */
 typedef struct smVCPieceHeader
 {
-    /* Alloced : Variable PieceÀÇ ´ÙÀ½ vc piece oid
+    /* Alloced : Variable Pieceì˜ ë‹¤ìŒ vc piece oid
        Freed : next free slot oid */
     smOID          nxtPieceOID;
     UShort         flag;   // variable piece info(Used, Free)
     union
     {
-        UShort     length; // pieceÀÇ µ¥ÀÌÅ¸ ±æÀÌ
-        UShort     colCount;// united var piece ¿¡¼­´Â ÀÌ ½½·Ô¿¡ ÀúÀåµÈ ÄÃ·³ ¼ö¸¦ ÀÇ¹ÌÇÑ´Ù
+        UShort     length; // pieceì˜ ë°ì´íƒ€ ê¸¸ì´
+        UShort     colCount;// united var piece ì—ì„œëŠ” ì´ ìŠ¬ë¡¯ì— ì €ì¥ëœ ì»¬ëŸ¼ ìˆ˜ë¥¼ ì˜ë¯¸í•œë‹¤
     };
 } smVCPieceHeader;
 
 // LOB In Mode Max Size (BUG-30101)
-// idpDescResource ÀÇ IDP_MAX_LOB_IN_ROW_SIZE¿Í µ¿ÀÏÇÑ °ªÀÌ¾î¾ß ÇÑ´Ù.
+// idpDescResource ì˜ IDP_MAX_LOB_IN_ROW_SIZEì™€ ë™ì¼í•œ ê°’ì´ì–´ì•¼ í•œë‹¤.
 #define  SM_LOB_MAX_IN_ROW_SIZE   ( 4000 )
 
 //PROJ-1362 PROJ-1362 Large Record & Internal LOB support
@@ -541,18 +541,18 @@ typedef struct smLobViewEnv
      * For Disk LOB
      */
     
-    idBool              mIsWritten; // RP¿¡¼­ in-mode ¾÷µ¥ÀÌÆ®ÀÇ
-                                    // °æ¿ì StandbyÀÇ finishWrite¿¡¼­
-                                    // ºó°ªÀ¸·Î ¾÷µ¥ÀÌÆ®¸¦ ¹æÁöÇÏ±â
-                                    // À§ÇÔ
+    idBool              mIsWritten; // RPì—ì„œ in-mode ì—…ë°ì´íŠ¸ì˜
+                                    // ê²½ìš° Standbyì˜ finishWriteì—ì„œ
+                                    // ë¹ˆê°’ìœ¼ë¡œ ì—…ë°ì´íŠ¸ë¥¼ ë°©ì§€í•˜ê¸°
+                                    // ìœ„í•¨
                                     //
-                                    // in-mode ¾÷µ¥ÀÌÆ®ÀÎ °æ¿ì Standby¿¡¼­ write°¡ »ı·«µÉ ¼ö ÀÖÀ½
-                                    // µû¶ó¼­ open lob cursor¿¡¼­ read ÇÑ ÄÃ·³À¸·Î
-                                    // finish write½Ã¿¡ µ¤¾î ¾µ ¼ö ÀÖÀ½.
+                                    // in-mode ì—…ë°ì´íŠ¸ì¸ ê²½ìš° Standbyì—ì„œ writeê°€ ìƒëµë  ìˆ˜ ìˆìŒ
+                                    // ë”°ë¼ì„œ open lob cursorì—ì„œ read í•œ ì»¬ëŸ¼ìœ¼ë¡œ
+                                    // finish writeì‹œì— ë®ì–´ ì“¸ ìˆ˜ ìˆìŒ.
                                     // 
                                     // 1. open lob cursor
                                     // 2. prepare for write
-                                    // 3. write (»ı·«µÊ) -> ´ë½Å update ·Î±×°¡ ³²À½
+                                    // 3. write (ìƒëµë¨) -> ëŒ€ì‹  update ë¡œê·¸ê°€ ë‚¨ìŒ
                                     // 4. finish write
                                     // 5. close lob cursor
     
@@ -626,7 +626,7 @@ typedef IDE_RC (*smLobGetLobInfoFunc)(
                         UInt*          aStoredMode,
                         idBool*        aIsNullLob);
 
-// replicationÀ» À§ÇÑ Lob Cursor open/close log.
+// replicationì„ ìœ„í•œ Lob Cursor open/close log.
 typedef  IDE_RC (*smLobWriteLog4LobCursorOpen)(
                        idvSQL*        aStatistics,
                        void*          aTrans,
@@ -652,7 +652,7 @@ typedef struct smLobCursor
 {
     smLobCursorID      mLobCursorID;  // LOB CursorID
     smLobViewEnv       mLobViewEnv;
-    UInt               mInfo;         // not null Á¦¾àµî QP¿¡¼­ »ç¿ëÇÔ.
+    UInt               mInfo;         // not null ì œì•½ë“± QPì—ì„œ ì‚¬ìš©í•¨.
     smLobCursor*       mPrev;
     smLobCursor*       mNext;
     smLobModule*       mModule;       // disk or  memory Lob Module.
@@ -673,24 +673,24 @@ typedef struct smLobCursor
                                       SM_DLOG_ATTR_REDOONLY )
 
 # define SM_DLOG_ATTR_TRANS_MASK     (0x00000001)
-# define SM_DLOG_ATTR_NORMAL         (0x00000000) // NORMAL ·Î±× ¼Ó¼º
-# define SM_DLOG_ATTR_REPLICATE      (0x00000001) // replication ·Î±× ¼Ó¼º
+# define SM_DLOG_ATTR_NORMAL         (0x00000000) // NORMAL ë¡œê·¸ ì†ì„±
+# define SM_DLOG_ATTR_REPLICATE      (0x00000001) // replication ë¡œê·¸ ì†ì„±
 
 # define SM_DLOG_ATTR_DML_MASK       (0x00000002)
 # define SM_DLOG_ATTR_NONDML         (0x00000000)
-# define SM_DLOG_ATTR_DML            (0x00000002) // DML °ü·Ã update ·Î±× ¼Ó¼º
+# define SM_DLOG_ATTR_DML            (0x00000002) // DML ê´€ë ¨ update ë¡œê·¸ ì†ì„±
 
 # define SM_DLOG_ATTR_WRITELOG_MASK  (0x00002000)
-# define SM_DLOG_ATTR_MTX_LOGBUFF    (0x00000000) // MtxÀÇ Dynamic Array¸¦ ·Î±×¹öÆÛ·Î »ç¿ë
-# define SM_DLOG_ATTR_TRANS_LOGBUFF  (0x00002000) // Æ®·£Àè¼Ç ·Î±×¹öÆÛ¸¦ Á÷Á¢ ·Î±×·Î WriteÇÑ´Ù.
+# define SM_DLOG_ATTR_MTX_LOGBUFF    (0x00000000) // Mtxì˜ Dynamic Arrayë¥¼ ë¡œê·¸ë²„í¼ë¡œ ì‚¬ìš©
+# define SM_DLOG_ATTR_TRANS_LOGBUFF  (0x00002000) // íŠ¸ëœì­ì…˜ ë¡œê·¸ë²„í¼ë¥¼ ì§ì ‘ ë¡œê·¸ë¡œ Writeí•œë‹¤.
 
 # define SM_DLOG_ATTR_LOGTYPE_MASK   (0x00000F00)
-# define SM_DLOG_ATTR_REDOONLY       (0x00000000) // redo Å¸ÀÔ
-# define SM_DLOG_ATTR_UNDOABLE       (0x00000100) // insert/update/delete/lock undo Å¸ÀÔ
+# define SM_DLOG_ATTR_REDOONLY       (0x00000000) // redo íƒ€ì…
+# define SM_DLOG_ATTR_UNDOABLE       (0x00000100) // insert/update/delete/lock undo íƒ€ì…
 # define SM_DLOG_ATTR_NTA            (0x00000200) // NTA
 # define SM_DLOG_ATTR_CLR            (0x00000300) // CLR
 # define SM_DLOG_ATTR_REF_NTA        (0x00000400) // Referenced NTA
-# define SM_DLOG_ATTR_DUMMY          (0x00000500) // insert/update/delete/lock undo Å¸ÀÔ
+# define SM_DLOG_ATTR_DUMMY          (0x00000500) // insert/update/delete/lock undo íƒ€ì…
 
 # define SM_DLOG_ATTR_EXCEPT_MASK               (0x00001000)
 # define SM_DLOG_ATTR_EXCEPT_NONE               (0x00000000)
@@ -698,7 +698,7 @@ typedef struct smLobCursor
 
 
 
-/* smcRecord::insertVersion Flag·Î »ç¿ëµÊ */
+/* smcRecord::insertVersion Flagë¡œ ì‚¬ìš©ë¨ */
 #define SM_INSERT_ADD_OID_MASK        (0x00000002)
 #define SM_INSERT_ADD_OID_OK          (0x00000002)
 #define SM_INSERT_ADD_OID_NO          (0x00000000)
@@ -707,8 +707,8 @@ typedef struct smLobCursor
 #define SM_INSERT_ADD_LPCH_OID_OK      (0x00000001)
 #define SM_INSERT_ADD_LPCH_OID_NO      (0x00000000)
 
-/* smcRecord::insertVersion FlagÀÎÀÚ ¹×
-   sdcRecord::insert¿¡¼­ÀÇ Insert Undo Record Flag·Î¼­ »ç¿ëµÊ */
+/* smcRecord::insertVersion Flagì¸ì ë°
+   sdcRecord::insertì—ì„œì˜ Insert Undo Record Flagë¡œì„œ ì‚¬ìš©ë¨ */
 #define SM_INSERT_NEED_INSERT_UNDOREC_MASK (0x00000008)
 #define SM_INSERT_NEED_INSERT_UNDOREC_OK   (0x00000008)
 #define SM_INSERT_NEED_INSERT_UNDOREC_NO   (0x00000000)
@@ -730,16 +730,16 @@ typedef struct smLobCursor
                                                     == SM_INSERT_NEED_INSERT_UNDOREC_OK )
 
 /*
- * [BUG-24353] volatile tableÀÇ modify column ½ÇÆĞÈÄ ·¹ÄÚµå°¡ »ç¶óÁı´Ï´Ù.
- * - Volatile TableÀº Compensation Log¸¦ ±â·ÏÇÏÁö ¾Ê´Â´Ù.
+ * [BUG-24353] volatile tableì˜ modify column ì‹¤íŒ¨í›„ ë ˆì½”ë“œê°€ ì‚¬ë¼ì§‘ë‹ˆë‹¤.
+ * - Volatile Tableì€ Compensation Logë¥¼ ê¸°ë¡í•˜ì§€ ì•ŠëŠ”ë‹¤.
  */
 
-/* BUG-42411 undo°úÁ¤Áß È£ÃâµÇ´Â restore´Â LPCH OID¸¦ ±â·ÏÇÏÁö ¾Ê½À´Ï´Ù 
- * resore ´Ü°è¿¡¼­´Â OID¸¦ ±â·ÏÇÏÁö ¾Ê½À´Ï´Ù.
- * volatile+undo´Â insert log¸¦ ±â·ÏÇÏÁö ¾ÊÀ¸¸ç 
- * ´Ù¸¥ °æ¿ì(ÀÏ¹İ table, update, trim... ) flag¸¦ º¸Áö¾Ê°í log¸¦ ±â·ÏÇÕ´Ï´Ù.
- * undo ´Ü°è¿¡¼­ È£ÃâµÇ´Â ÇÔ¼ö¿¡´Â xxxx_UNDO¶ó´Â suffix°¡ ºÙÀº flag°¡ Àü´ŞµË´Ï´Ù. */
-/* alter table xxx ·Î ÀÎÇÑ backup & create ¼öÇà½Ã ÀÌ¿ë */
+/* BUG-42411 undoê³¼ì •ì¤‘ í˜¸ì¶œë˜ëŠ” restoreëŠ” LPCH OIDë¥¼ ê¸°ë¡í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤ 
+ * resore ë‹¨ê³„ì—ì„œëŠ” OIDë¥¼ ê¸°ë¡í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
+ * volatile+undoëŠ” insert logë¥¼ ê¸°ë¡í•˜ì§€ ì•Šìœ¼ë©° 
+ * ë‹¤ë¥¸ ê²½ìš°(ì¼ë°˜ table, update, trim... ) flagë¥¼ ë³´ì§€ì•Šê³  logë¥¼ ê¸°ë¡í•©ë‹ˆë‹¤.
+ * undo ë‹¨ê³„ì—ì„œ í˜¸ì¶œë˜ëŠ” í•¨ìˆ˜ì—ëŠ” xxxx_UNDOë¼ëŠ” suffixê°€ ë¶™ì€ flagê°€ ì „ë‹¬ë©ë‹ˆë‹¤. */
+/* alter table xxx ë¡œ ì¸í•œ backup & create ìˆ˜í–‰ì‹œ ì´ìš© */
 #define SM_FLAG_TABLE_RESTORE_UNDO (SM_INSERT_ADD_OID_NO | SM_INSERT_ADD_LPCH_OID_NO | SM_UNDO_LOGGING_NO)
 #define SM_FLAG_TABLE_RESTORE      (SM_INSERT_ADD_OID_NO | SM_INSERT_ADD_LPCH_OID_OK | SM_UNDO_LOGGING_OK)
 
@@ -752,7 +752,7 @@ typedef struct smLobCursor
 /* ============================================================================
  *                      Definition of SCN
  * ==========================================================================*/
-/* SCNÀº 8BytesÀÌ¹Ç·Î Hex·Î String Ãâ·ÂÇÏ¸é 16 ¹ÙÀÌÆ®°¡ ÇÊ¿ä */
+/* SCNì€ 8Bytesì´ë¯€ë¡œ Hexë¡œ String ì¶œë ¥í•˜ë©´ 16 ë°”ì´íŠ¸ê°€ í•„ìš” */
 #define SM_SCN_STRING_LENGTH         (16)
 
 
@@ -764,7 +764,7 @@ typedef struct smLobCursor
 #ifdef COMPILE_64BIT
 
 /* PROJ-2162 Restart Recovery Reduction
- * 64/32 »ó°ü¾øÀÌ ULong °ªÀ¸·Î º¯È¯ÇÏ¿© ÀĞ´Â ¸ÅÅ©·Î */
+ * 64/32 ìƒê´€ì—†ì´ ULong ê°’ìœ¼ë¡œ ë³€í™˜í•˜ì—¬ ì½ëŠ” ë§¤í¬ë¡œ */
 # define SM_SCN_TO_LONG( src )             ((ULong)src)
 
 # define SM_GET_SCN( dest, src )           *((smSCN *)(dest)) = *((smSCN *)(src));
@@ -912,7 +912,7 @@ typedef struct smLobCursor
 #else
 
 /* PROJ-2162 Restart Risk Reduction
- * 64/32 »ó°ü¾øÀÌ ULong °ªÀ¸·Î º¯È¯ÇÏ¿© ÀĞ´Â ¸ÅÅ©·Î */
+ * 64/32 ìƒê´€ì—†ì´ ULong ê°’ìœ¼ë¡œ ë³€í™˜í•˜ì—¬ ì½ëŠ” ë§¤í¬ë¡œ */
 # define SM_SCN_TO_LONG( src )             (( ((ULong)((smSCN)src).mHigh) << 32 ) + \
                                            ( ((smSCN)src).mLow ))
 
@@ -927,15 +927,15 @@ typedef struct smLobCursor
 }
 
 /* BUG-17603
-   SM_INCREASE_SCN¿¡¼­...
-   mLow´Â UIntÀÌ°í 8µµ UIntÀÌ±â ¶§¹®¿¡ mLow + 8´Â UIntÀÌ´Ù.
-   µû¶ó¼­ mLowÀÇ overflow À¯¹«¸¦ mLow + 8 > mLow·Î °Ë»çÇÒ ¼ö ÀÖ´Ù.
+   SM_INCREASE_SCNì—ì„œ...
+   mLowëŠ” UIntì´ê³  8ë„ UIntì´ê¸° ë•Œë¬¸ì— mLow + 8ëŠ” UIntì´ë‹¤.
+   ë”°ë¼ì„œ mLowì˜ overflow ìœ ë¬´ë¥¼ mLow + 8 > mLowë¡œ ê²€ì‚¬í•  ìˆ˜ ìˆë‹¤.
 
-   ÇÏÁö¸¸ SM_ADD_SCN¿¡¼­´Â
-   increment°¡ ¹«½¼ Å¸ÀÔÀÌ ¿ÃÁö ¸ğ¸£´Â »óÈ²¿¡¼­
-   mLow + increment > mLow·Î overflow °Ë»çÇÏ´Â °ÍÀº Àß¸øµÈ ¹æ½ÄÀÌ´Ù.
-   ÀÌ¶© increment¸¦ ULongÀ¸·Î Ä³½ºÆÃÇÑ ÈÄ, ID_UINT_MAX¸¦ ³Ñ¾î¼­´ÂÁö
-   °Ë»çÇØ¾ß ÇÑ´Ù.
+   í•˜ì§€ë§Œ SM_ADD_SCNì—ì„œëŠ”
+   incrementê°€ ë¬´ìŠ¨ íƒ€ì…ì´ ì˜¬ì§€ ëª¨ë¥´ëŠ” ìƒí™©ì—ì„œ
+   mLow + increment > mLowë¡œ overflow ê²€ì‚¬í•˜ëŠ” ê²ƒì€ ì˜ëª»ëœ ë°©ì‹ì´ë‹¤.
+   ì´ë• incrementë¥¼ ULongìœ¼ë¡œ ìºìŠ¤íŒ…í•œ í›„, ID_UINT_MAXë¥¼ ë„˜ì–´ì„œëŠ”ì§€
+   ê²€ì‚¬í•´ì•¼ í•œë‹¤.
 */
 
 # define SM_INCREASE_SCN( scn )                                    \
@@ -1085,9 +1085,9 @@ typedef struct smLobCursor
 #define SM_SCN_IS_MAX(SCN)       (((SCN).mHigh) == SM_SCN_HIGH_MAX && \
                                   ((SCN).mLow)  == SM_SCN_LOW_MAX)
 
-/* Infinite SCNÀÌ¸é mHigh¿¡ delete bit¸¦ ¼³Á¤ÇÏ°í,
- * Infinite SCNÀÌ ¾Æ´Ï¸é mLow¿¡ delete bit¸¦ ¼³Á¤ÇÑ´Ù.
- * ¿Ö³ÄÇÏ¸é Inifinte SCNÀÌ¸é mLow¿¡ TID¸¦ ¼³Á¤ÇÏ±â ¶§¹®ÀÌ´Ù. */
+/* Infinite SCNì´ë©´ mHighì— delete bitë¥¼ ì„¤ì •í•˜ê³ ,
+ * Infinite SCNì´ ì•„ë‹ˆë©´ mLowì— delete bitë¥¼ ì„¤ì •í•œë‹¤.
+ * ì™œëƒí•˜ë©´ Inifinte SCNì´ë©´ mLowì— TIDë¥¼ ì„¤ì •í•˜ê¸° ë•Œë¬¸ì´ë‹¤. */
 #define SM_SCN_IS_DELETED( SCN )                                              \
         ( SM_SCN_IS_INFINITE( SCN ) ?                                         \
           ( ((SCN).mHigh & SM_SCN_LOW_DELETE_BIT) == SM_SCN_LOW_DELETE_BIT )  \
@@ -1210,15 +1210,15 @@ typedef struct smLobCursor
 # define SM_OID_ACT_COMPRESSION                (0x00100000)
 
 # define SM_OID_ACT_SAVEPOINT                  (0x00080000)
-/*commitµÇ´Â ½ÃÁ¡¿¡ row¿¡ ´ëÇØ ¾î¶°ÇÑ Ã³¸®¸¦ ÇÔ. ½ÇÁ¦ »èÁ¦¸¦ ¼öÇàÇÏÁö´Â ¾ÊÀ½.
- *¿¹¸¦ µé¸é, insert ¿¬»êÀÇ °æ¿ì¿¡,
- *Æ®·£Àè¼ÇÀÌ ÀÛ¾÷À» ¼öÇàÇÏ´Â µ¿¾È¿¡ ¼³Á¤µÈ infiniteSCNÀ»
- *Æ®·£Àè¼ÇÀÌ commitÇÒ¶§, commitSCNÀ¸·Î º¯°æÇÏ´Âµî ÀÏÀ» ÇÑ´Ù.
+/*commitë˜ëŠ” ì‹œì ì— rowì— ëŒ€í•´ ì–´ë– í•œ ì²˜ë¦¬ë¥¼ í•¨. ì‹¤ì œ ì‚­ì œë¥¼ ìˆ˜í–‰í•˜ì§€ëŠ” ì•ŠìŒ.
+ *ì˜ˆë¥¼ ë“¤ë©´, insert ì—°ì‚°ì˜ ê²½ìš°ì—,
+ *íŠ¸ëœì­ì…˜ì´ ì‘ì—…ì„ ìˆ˜í–‰í•˜ëŠ” ë™ì•ˆì— ì„¤ì •ëœ infiniteSCNì„
+ *íŠ¸ëœì­ì…˜ì´ commití• ë•Œ, commitSCNìœ¼ë¡œ ë³€ê²½í•˜ëŠ”ë“± ì¼ì„ í•œë‹¤.
  */
 # define SM_OID_ACT_COMMIT                     (0x00040000)
-/* COMMITÀÌÈÄ ½ÇÁ¦ delete thread¿¡ ÀÇÇØ¼­ »èÁ¦(AGING)°¡ µÈ´Ù. */
+/* COMMITì´í›„ ì‹¤ì œ delete threadì— ì˜í•´ì„œ ì‚­ì œ(AGING)ê°€ ëœë‹¤. */
 # define SM_OID_ACT_AGING_COMMIT               (0x00020000)
-/* RollbackÀÌÈÄ ½ÇÁ¦ delete thread¿¡ ÀÇÇØ¼­ »èÁ¦(AGING)°¡ µÈ´Ù. */
+/* Rollbackì´í›„ ì‹¤ì œ delete threadì— ì˜í•´ì„œ ì‚­ì œ(AGING)ê°€ ëœë‹¤. */
 # define SM_OID_ACT_AGING_ROLLBACK             (0x00010000)
 # define SM_OID_ACT_AGING_INDEX                (0x00008000)
 # define SM_OID_ACT_CURSOR_INDEX               (0x00004000)
@@ -1236,7 +1236,7 @@ typedef struct smLobCursor
 # define SM_OID_TYPE_DELETE_TABLE_BACKUP       (0x00000700)
 # define SM_OID_TYPE_FREE_FIXED_SLOT           (0x00000800)
 # define SM_OID_TYPE_FREE_VAR_SLOT             (0x00000900)
-/* LPCH(LOB page control header)¸¦ FreeÇÒ¶§ »ç¿ë*/
+/* LPCH(LOB page control header)ë¥¼ Freeí• ë•Œ ì‚¬ìš©*/
 # define SM_OID_TYPE_FREE_LPCH                 (0x00000A00)
 # define SM_OID_TYPE_NONE                      (0x00000B00)
 
@@ -1258,7 +1258,7 @@ typedef struct smLobCursor
 # define SM_OID_OP_DROP_INDEX                  (0x0000000B)
 # define SM_OID_OP_UPATE_FIXED_SLOT            (0x0000000C)
 # define SM_OID_OP_DDL_TABLE                   (0x0000000D)
-/* BUG-27742 Partial Rollback½Ã LPCH°¡ µÎ¹ø FreeµÇ´Â ¹®Á¦ */
+/* BUG-27742 Partial Rollbackì‹œ LPCHê°€ ë‘ë²ˆ Freeë˜ëŠ” ë¬¸ì œ */
 # define SM_OID_OP_FREE_OLD_LPCH               (0x0000000E)
 # define SM_OID_OP_FREE_NEW_LPCH               (0x0000000F)
 # define SM_OID_OP_ALL_INDEX_DISABLE           (0x00000010)
@@ -1377,7 +1377,7 @@ typedef struct smLobCursor
                                     SM_OID_OP_NEW_FIXED_SLOT      )
 
 /* ----------------------------------------------------------------------------
- *   BUGBUG: VC In-Out Mode Test¸¦ À§ÇØ Á¤ÀÇ By Newdaily
+ *   BUGBUG: VC In-Out Mode Testë¥¼ ìœ„í•´ ì •ì˜ By Newdaily
  *
  * --------------------------------------------------------------------------*/
 #define SM_COLUMN_INOUT_BASESIZE (4) // Byte
@@ -1399,7 +1399,7 @@ typedef struct smLobCursor
 
 
 /* ----------------------------------------------------------------------------
- * ideLog::log()¿¡ »ç¿ëµÇ´Â »ó¼ö
+ * ideLog::log()ì— ì‚¬ìš©ë˜ëŠ” ìƒìˆ˜
  * --------------------------------------------------------------------------*/
 #define SM_TRC_LOG_LEVEL_FORCE     IDE_SM_0
 #define SM_TRC_LOG_LEVEL_STARTUP   IDE_SM_1
@@ -1436,7 +1436,7 @@ typedef struct smLobCursor
 typedef IDE_RC (*smSeekFunc)( void         * aIterator,
                               const void  ** aRow );
 
-/* FOR A4 : smiCursorProperties µµÀÔÀ¸·Î ÀÎÀÚ º¯°æ */
+/* FOR A4 : smiCursorProperties ë„ì…ìœ¼ë¡œ ì¸ì ë³€ê²½ */
 typedef IDE_RC (*smInitFunc)( idvSQL *              /* aStatistics */,
                               void *                aIterator,
                               void *                aTrans,
@@ -1456,7 +1456,7 @@ typedef IDE_RC (*smInitFunc)( idvSQL *              /* aStatistics */,
 typedef IDE_RC (*smDestFunc)( void * aIterator );
 
 /***************************************************
- * smcTableÀÇ insert, update, remove¿¡ ´ëÇÑ ÇÔ¼öÇü *
+ * smcTableì˜ insert, update, removeì— ëŒ€í•œ í•¨ìˆ˜í˜• *
  ***************************************************/
 typedef IDE_RC (*smTableCursorInsertFunc)( idvSQL         *aStatistics,
                                            void           *aTrans,
@@ -1485,7 +1485,7 @@ typedef IDE_RC (*smTableCursorUpdateFunc)( idvSQL                * aStatistics,
                                            ULong                 * aModifyIdxBit );
 
 
-// modified for A4, cluster index¶§¹®¿¡ prototypeº¯°æ.
+// modified for A4, cluster indexë•Œë¬¸ì— prototypeë³€ê²½.
 typedef IDE_RC (*smTableCursorRemoveFunc)( idvSQL                *aStatistics,
                                            void                  *aTrans,
                                            smSCN                  aViewSCN,
@@ -1500,13 +1500,13 @@ typedef IDE_RC (*smTableCursorRemoveFunc)( idvSQL                *aStatistics,
 
 typedef IDE_RC (*smTableCursorLockRowFunc)( smiIterator *aIterator );
 
-/* TASK-4007 [SM] PBT¸¦ À§ÇÑ ±â´É Ãß°¡
- * dumpciµîÀÇ util¿¡¼­µµ »ç¿ëÇÒ ¼ö ÀÖ°í Assert½Ã Ãâ·ÂÇÒ ¼öµµ ÀÖ´Â
- * PageDump ÇÔ¼ö Å¸ÀÔ Ãß°¡. *
+/* TASK-4007 [SM] PBTë¥¼ ìœ„í•œ ê¸°ëŠ¥ ì¶”ê°€
+ * dumpcië“±ì˜ utilì—ì„œë„ ì‚¬ìš©í•  ìˆ˜ ìˆê³  Assertì‹œ ì¶œë ¥í•  ìˆ˜ë„ ìˆëŠ”
+ * PageDump í•¨ìˆ˜ íƒ€ì… ì¶”ê°€. *
  *
- * BUG-28379 [SD] sdnbBTree::dumpNodeHdr( UChar *aPage ) ³»¿¡¼­
- * local ArrayÀÇ ptr¸¦ ¹İÈ¯ÇÏ°í ÀÖ½À´Ï´Ù. 
- * PageDump¸¦ OutBuf¸¦ ÀÌ¿ëÇÏ¿© ¹İÈ¯ÇÏ´Â ÇüÅÂ·Î ¹Ù²ß´Ï´Ù.*/
+ * BUG-28379 [SD] sdnbBTree::dumpNodeHdr( UChar *aPage ) ë‚´ì—ì„œ
+ * local Arrayì˜ ptrë¥¼ ë°˜í™˜í•˜ê³  ìˆìŠµë‹ˆë‹¤. 
+ * PageDumpë¥¼ OutBufë¥¼ ì´ìš©í•˜ì—¬ ë°˜í™˜í•˜ëŠ” í˜•íƒœë¡œ ë°”ê¿‰ë‹ˆë‹¤.*/
 
 typedef IDE_RC (*smPageDump)( UChar  * aPage, 
                               SChar  * aOutBuf, 

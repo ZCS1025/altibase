@@ -25,10 +25,10 @@
 #include <idtContainer.h>
 
 /***********************************************************************
- * iduMemMgr_tlsf.cpp : IDU_SERVER_TYPE¿¡¼­ »ç¿ë
- * iduMemMgrÀ» ¼­¹ö ¸ðµå·Î ÃÊ±âÈ­ÇÑ ÀÌÈÄ
- * ¸Þ¸ð¸® °ü¸®ÀÚ Å¸ÀÔÀÌ TLSF(=1)ÀÏ ¶§ »ç¿ëÇÑ´Ù.
- * ¸Þ¸ð¸® Åë°èÁ¤º¸¸¦ ±â·ÏÇÑ´Ù.
+ * iduMemMgr_tlsf.cpp : IDU_SERVER_TYPEì—ì„œ ì‚¬ìš©
+ * iduMemMgrì„ ì„œë²„ ëª¨ë“œë¡œ ì´ˆê¸°í™”í•œ ì´í›„
+ * ë©”ëª¨ë¦¬ ê´€ë¦¬ìž íƒ€ìž…ì´ TLSF(=1)ì¼ ë•Œ ì‚¬ìš©í•œë‹¤.
+ * ë©”ëª¨ë¦¬ í†µê³„ì •ë³´ë¥¼ ê¸°ë¡í•œë‹¤.
  **********************************************************************/
 
 #define IDU_PAGESIZE (4096)

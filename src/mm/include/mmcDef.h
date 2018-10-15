@@ -31,8 +31,8 @@ typedef UInt mmcStmtCID;
 #define MMC_STMT_ID_MAP_SIZE            10
 #define MMC_STMT_ID_POOL_ELEM_COUNT     8
 
-//fix BUG-23656 session,xid ,transactionÀ» ¿¬°èÇÑ performance view¸¦ Á¦°øÇÏ°í,
-//±×µé°£ÀÇ °ü°è¸¦ Á¤È®È÷ À¯ÁöÇØ¾ß ÇÔ.
+//fix BUG-23656 session,xid ,transactionì„ ì—°ê³„í•œ performance viewë¥¼ ì œê³µí•˜ê³ ,
+//ê·¸ë“¤ê°„ì˜ ê´€ê³„ë¥¼ ì •í™•ížˆ ìœ ì§€í•´ì•¼ í•¨.
 typedef UInt mmcTransID;
 
 #define MMC_QUERY_IP_LEN         512
@@ -46,8 +46,8 @@ typedef UInt mmcTransID;
 #define MMC_RESULTSET_FIRST      0
 #define MMC_RESULTSET_ALL        ID_USHORT_MAX
 
-// BUG-24075 [MM] BIND COL Á¤º¸¸¦ Á¶È¸ÇÒ ¶§,
-//                DISPLAY_NAME_SIZE¸¦ ÃÖ´ë 50À¸·Î Àâ¾Æ¾ß ÇÕ´Ï´Ù
+// BUG-24075 [MM] BIND COL ì •ë³´ë¥¼ ì¡°íšŒí•  ë•Œ,
+//                DISPLAY_NAME_SIZEë¥¼ ìµœëŒ€ 50ìœ¼ë¡œ ìž¡ì•„ì•¼ í•©ë‹ˆë‹¤
 #define MMC_MAX_DISPLAY_NAME_SIZE    (42)
 
 //fix BUG-22365 Query Len 1k->16K
@@ -83,12 +83,12 @@ typedef enum
 
 typedef enum
 {
-    MMC_SESSION_STATE_INIT = 0, // ÃÊ±â »óÅÂ
-    MMC_SESSION_STATE_AUTH,     // ÀÎÁõ »óÅÂ
-    MMC_SESSION_STATE_READY,    // ¼­ºñ½º ÁØºñ »óÅÂ (SQL ¼öÇà ¾ÈµÊ. ¿¹: xa_startµÇÁö ¾ÊÀº XA ¼¼¼Ç)
-    MMC_SESSION_STATE_SERVICE,  // ÀÏ¹Ý ¼­ºñ½º Ã³¸® »óÅÂ
-    MMC_SESSION_STATE_END,      // disconnect¿¡ ÀÇÇØ Á¤»ó Á¾·á
-    MMC_SESSION_STATE_ROLLBACK, // ºñÁ¤»ó Á¾·á(Network error..)
+    MMC_SESSION_STATE_INIT = 0, // ì´ˆê¸° ìƒíƒœ
+    MMC_SESSION_STATE_AUTH,     // ì¸ì¦ ìƒíƒœ
+    MMC_SESSION_STATE_READY,    // ì„œë¹„ìŠ¤ ì¤€ë¹„ ìƒíƒœ (SQL ìˆ˜í–‰ ì•ˆë¨. ì˜ˆ: xa_startë˜ì§€ ì•Šì€ XA ì„¸ì…˜)
+    MMC_SESSION_STATE_SERVICE,  // ì¼ë°˜ ì„œë¹„ìŠ¤ ì²˜ë¦¬ ìƒíƒœ
+    MMC_SESSION_STATE_END,      // disconnectì— ì˜í•´ ì •ìƒ ì¢…ë£Œ
+    MMC_SESSION_STATE_ROLLBACK, // ë¹„ì •ìƒ ì¢…ë£Œ(Network error..)
 
     MMC_SESSION_STATE_MAX
 } mmcSessionState;
@@ -105,22 +105,22 @@ typedef enum
 
 typedef enum
 {
-    MMC_STMT_STATE_ALLOC = 0,     // statement ÃÊ±â½ÃÀÛ
-    MMC_STMT_STATE_PREPARED,      // prepare°¡ ³¡³µÀ» ¶§
-    MMC_STMT_STATE_EXECUTED,      // execute°¡ ³¡³µÀ» ¶§
+    MMC_STMT_STATE_ALLOC = 0,     // statement ì´ˆê¸°ì‹œìž‘
+    MMC_STMT_STATE_PREPARED,      // prepareê°€ ëë‚¬ì„ ë•Œ
+    MMC_STMT_STATE_EXECUTED,      // executeê°€ ëë‚¬ì„ ë•Œ
 
     MMC_STMT_STATE_MAX
 } mmcStmtState;
 
-/* PROJ-1381, BUG-33121 FAC : MMC_RESULTSET_STATE_FETCH_END Ãß°¡ */
+/* PROJ-1381, BUG-33121 FAC : MMC_RESULTSET_STATE_FETCH_END ì¶”ê°€ */
 typedef enum
 {
     MMC_RESULTSET_STATE_ERROR = 0,
-    MMC_RESULTSET_STATE_INITIALIZE,    /**< Result Set ÃÊ±âÈ­ */
-    MMC_RESULTSET_STATE_FETCH_READY,   /**< Result Set Fetch ½ÃÀÛ */
-    MMC_RESULTSET_STATE_FETCH_PROCEED, /**< Result Set Fetch ÁøÇà */
+    MMC_RESULTSET_STATE_INITIALIZE,    /**< Result Set ì´ˆê¸°í™” */
+    MMC_RESULTSET_STATE_FETCH_READY,   /**< Result Set Fetch ì‹œìž‘ */
+    MMC_RESULTSET_STATE_FETCH_PROCEED, /**< Result Set Fetch ì§„í–‰ */
     MMC_RESULTSET_STATE_FETCH_END,     /**< Result Set Fetch End */
-    MMC_RESULTSET_STATE_FETCH_CLOSE,   /**< Result Set Fetch Á¾·á */
+    MMC_RESULTSET_STATE_FETCH_CLOSE,   /**< Result Set Fetch ì¢…ë£Œ */
 
     MMC_RESULTSET_STATE_MAX
 } mmcResultSetState;
@@ -149,9 +149,9 @@ typedef struct mmcResultSet
 
 typedef enum
 {
-    MMC_STMT_BIND_NONE = 0, // Bind ParamÀÌ ¾ÈµÈ »óÅÂ
-    MMC_STMT_BIND_INFO,     // Bind Param Info°¡ ¼öÇàµÈ »óÅÂ
-    MMC_STMT_BIND_DATA      // Bind Param Data°¡ ¼öÇàµÈ »óÅÂ
+    MMC_STMT_BIND_NONE = 0, // Bind Paramì´ ì•ˆëœ ìƒíƒœ
+    MMC_STMT_BIND_INFO,     // Bind Param Infoê°€ ìˆ˜í–‰ëœ ìƒíƒœ
+    MMC_STMT_BIND_DATA      // Bind Param Dataê°€ ìˆ˜í–‰ëœ ìƒíƒœ
 } mmcStmtBindState;
 
 
@@ -213,7 +213,7 @@ typedef enum
     MMC_CHILD_PCO_ENV_IS_READY
 }mmcChildPCOEnvState;
 
-// child PCO¸¦ »ý¼ºÇÑ ÀÌÀ¯.
+// child PCOë¥¼ ìƒì„±í•œ ì´ìœ .
 typedef enum
 {
     MMC_CHILD_PCO_IS_CACHE_MISS =0,
@@ -249,7 +249,7 @@ typedef enum
 } mmcFetchFlag;
 
 //-----------------------------------
-// X$SQL_PLAN_CACHE_SQLTEXT ÀÇ ±¸Á¶
+// X$SQL_PLAN_CACHE_SQLTEXT ì˜ êµ¬ì¡°
 //-----------------------------------
 typedef struct mmcParentPCOInfo4PerfV
 {
@@ -260,7 +260,7 @@ typedef struct mmcParentPCOInfo4PerfV
 } mmcParentPCOInfo4PerfV;
 
 //-------------------------------
-// X$SQL_PLAN_CACHE_PCO ÀÇ ±¸Á¶
+// X$SQL_PLAN_CACHE_PCO ì˜ êµ¬ì¡°
 //-------------------------------
 typedef struct mmcChildPCOInfo4PerfV
 {
@@ -294,8 +294,8 @@ typedef enum
 /* Cursor Close Mode */
 typedef enum
 {
-    MMC_CLOSEMODE_NON_COMMITED,     /**< Commit µÈ Àû ¾ø´Â ¸ðµç FetchÀÇ Ä¿¼­¸¦ ´Ý´Â´Ù. */
-    MMC_CLOSEMODE_REMAIN_HOLD,      /**< Holdable Fetch´Â ³²±â°í, Non-Holdable FetchÀÇ Ä¿¼­¸¸ ´Ý´Â´Ù. */
+    MMC_CLOSEMODE_NON_COMMITED,     /**< Commit ëœ ì  ì—†ëŠ” ëª¨ë“  Fetchì˜ ì»¤ì„œë¥¼ ë‹«ëŠ”ë‹¤. */
+    MMC_CLOSEMODE_REMAIN_HOLD,      /**< Holdable FetchëŠ” ë‚¨ê¸°ê³ , Non-Holdable Fetchì˜ ì»¤ì„œë§Œ ë‹«ëŠ”ë‹¤. */
 
     MMC_CLOSEMODE_MAX
 } mmcCloseMode;
@@ -304,8 +304,8 @@ typedef enum
 
 typedef enum
 {
-    MMC_STMT_KEYSETMODE_OFF = 0,    /**< Keyset ¸ðµå·Î Ä¿¼­¸¦ ¿¬´Ù. */
-    MMC_STMT_KEYSETMODE_ON,         /**< Non-Keyset ¸ðµå·Î Ä¿¼­¸¦ ¿¬´Ù. */
+    MMC_STMT_KEYSETMODE_OFF = 0,    /**< Keyset ëª¨ë“œë¡œ ì»¤ì„œë¥¼ ì—°ë‹¤. */
+    MMC_STMT_KEYSETMODE_ON,         /**< Non-Keyset ëª¨ë“œë¡œ ì»¤ì„œë¥¼ ì—°ë‹¤. */
 
     MMC_STMT_KEYSETMODE_MAX
 } mmcStmtKeysetMode;

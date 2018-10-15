@@ -746,7 +746,7 @@ static IDE_RC convertCmNumeric(qciBindParam *aTargetType,
         // BUG-32571 /TC/Interface/jdbc/common/unitest.sql Diff
         if( aTargetType->type == MTD_FLOAT_ID )
         {
-            // TargetTypeÀÌ FLOATÀÎ °æ¿ì scaleÀÌ 0ÀÌ±â ¶§¹®¿¡ ºñ±³ÇÒ ÇÊ¿ä ¾øÀ½.
+            // TargetTypeì´ FLOATì¸ ê²½ìš° scaleì´ 0ì´ê¸° ë•Œë¬¸ì— ë¹„êµí•  í•„ìš” ì—†ìŒ.
         }
         else
         {
@@ -758,7 +758,7 @@ static IDE_RC convertCmNumeric(qciBindParam *aTargetType,
         sStructSize = MTD_NUMERIC_SIZE(sPrecision, 0);
         IDE_TEST_RAISE( sStructSize > aTargetSize, InvalidSize );
 
-        // BUG-39971 signexponent overflow Ã³¸®
+        // BUG-39971 signexponent overflow ì²˜ë¦¬
         sSignExponent = (sSize - sScale / 2) * (( sSign == 1) ? 1 : -1) + 64;
         IDE_TEST_RAISE( sSignExponent > MTD_NUMERIC_SIGN_EXPONENT_MAXIMUM, ScaleOverflow );
 
@@ -894,8 +894,8 @@ static IDE_RC convertCmVariable(qciBindParam *aTargetType,
     UChar           sSource[MTC_MAXIMUM_CHAR_SIZE_FOR_NUMBER_GROUP + 1] = { 0, };
     idBool          sCanonized;
     mmcConvContext  sContext;
-    // BUG-22609 AIX ÃÖÀûÈ­ ¿À·ù ¼öÁ¤
-    // switch ¿¡ UInt ÇüÀ¸·Î À½¼ö°ªÀÌ 2¹øÀÌ»ó¿Ã¶§ ¼­¹ö Á×À½
+    // BUG-22609 AIX ìµœì í™” ì˜¤ë¥˜ ìˆ˜ì •
+    // switch ì— UInt í˜•ìœ¼ë¡œ ìŒìˆ˜ê°’ì´ 2ë²ˆì´ìƒì˜¬ë•Œ ì„œë²„ ì£½ìŒ
     SInt    sType   = (SInt)aTargetType->type;
 
     IDE_TEST(cmtAnyReadVariable(aSource, &sVariable) != IDE_SUCCESS);
@@ -1722,7 +1722,7 @@ static IDE_RC convertCmNibble(qciBindParam *aTargetType,
     sSize = cmtVariableGetSize(&sCmNibble->mData);
 
     IDE_TEST_RAISE(sSize > (UInt)aTargetType->precision, InvalidPrecision);
-    // BUG-23061 nibble ÀÇ ÃÖ´ë±æÀÌ°¡ 254ÀÔ´Ï´Ù.
+    // BUG-23061 nibble ì˜ ìµœëŒ€ê¸¸ì´ê°€ 254ì…ë‹ˆë‹¤.
     IDE_TEST_RAISE(sCmNibble->mPrecision > MTD_NIBBLE_PRECISION_MAXIMUM, InvalidPrecision);
     IDE_TEST_RAISE(((sCmNibble->mPrecision + 1) / 2) != sSize, PrecisionMismatch);
 
@@ -1830,7 +1830,7 @@ static IDE_RC convertCmInNibble(qciBindParam *aTargetType,
 
     IDE_TEST_RAISE(sSize > (UInt)aTargetType->precision, InvalidPrecision);
 
-    // BUG-23061 nibble ÀÇ ÃÖ´ë±æÀÌ°¡ 254ÀÔ´Ï´Ù.
+    // BUG-23061 nibble ì˜ ìµœëŒ€ê¸¸ì´ê°€ 254ì…ë‹ˆë‹¤.
     IDE_TEST_RAISE(sCmInNibble->mPrecision > MTD_NIBBLE_PRECISION_MAXIMUM, InvalidPrecision);
     IDE_TEST_RAISE(((sCmInNibble->mPrecision + 1) / 2) != sSize, PrecisionMismatch);
 
@@ -1882,14 +1882,14 @@ IDE_RC mmcConv::convertFromMT(cmiProtocolContext *aProtocolContext,
         case MTD_BLOB_LOCATOR_ID:
         case MTD_CLOB_LOCATOR_ID:
             // bug-26327: null lob locator err when no rows updated.
-            // lob data·Î parameter bind½Ã update row°¡ ¾ø´Â °æ¿ì
-            // null lob locator°¡ ³Ñ¾î¿Â´Ù.
-            // ÀÌ ¶§´Â getLength È£ÃâÇÏ¸é err ¹ß»ıÇÏ¹Ç·Î È£Ãâ ¾ÈÇÔ.
-            // ±×·¯¸é client·Î º¸³»´Â cmtAny.mType À¸·Î 
-            // CMT_ID_LOBLOCATOR°¡ ¾Æ´Ï¶ó CMT_ID_NULLÀÌ ¼Û½ÅµÊ.
-            // µ¿½Ã¿¡ clientÀÇ ulnBindStoreLobLocator ¿¡¼­
-            // CMT_ID_NULL¿¡ ´ëÇÑ Ã³¸®¸¦ ÇØÁÖµµ·Ï º¯°æÇÔ.
-            // LOB LOCATORÀÇ CURSOR°¡ OPEN µÈ »óÈ²¿¡¼­¸¸ LENGTH¸¦ °®°í ¿Â´Ù.
+            // lob dataë¡œ parameter bindì‹œ update rowê°€ ì—†ëŠ” ê²½ìš°
+            // null lob locatorê°€ ë„˜ì–´ì˜¨ë‹¤.
+            // ì´ ë•ŒëŠ” getLength í˜¸ì¶œí•˜ë©´ err ë°œìƒí•˜ë¯€ë¡œ í˜¸ì¶œ ì•ˆí•¨.
+            // ê·¸ëŸ¬ë©´ clientë¡œ ë³´ë‚´ëŠ” cmtAny.mType ìœ¼ë¡œ 
+            // CMT_ID_LOBLOCATORê°€ ì•„ë‹ˆë¼ CMT_ID_NULLì´ ì†¡ì‹ ë¨.
+            // ë™ì‹œì— clientì˜ ulnBindStoreLobLocator ì—ì„œ
+            // CMT_ID_NULLì— ëŒ€í•œ ì²˜ë¦¬ë¥¼ í•´ì£¼ë„ë¡ ë³€ê²½í•¨.
+            // LOB LOCATORì˜ CURSORê°€ OPEN ëœ ìƒí™©ì—ì„œë§Œ LENGTHë¥¼ ê°–ê³  ì˜¨ë‹¤.
             if ((*(smLobLocator *)aSource != MTD_LOCATOR_NULL) &&
                 (smiLob::isOpen(*(smLobLocator *)aSource) == ID_TRUE))
             {
@@ -1913,7 +1913,7 @@ IDE_RC mmcConv::convertFromMT(cmiProtocolContext *aProtocolContext,
 }
 
 /*
- * PROJ-1752 LIST ÇÁ·ÎÅäÄİ È®´ë Àû¿ë
+ * PROJ-1752 LIST í”„ë¡œí† ì½œ í™•ëŒ€ ì ìš©
  */
 IDE_RC mmcConv::buildAnyFromMT(cmtAny             *aTarget,
                                void               *aSource,
@@ -1930,14 +1930,14 @@ IDE_RC mmcConv::buildAnyFromMT(cmtAny             *aTarget,
         case MTD_BLOB_LOCATOR_ID:
         case MTD_CLOB_LOCATOR_ID:
             // bug-26327: null lob locator err when no rows updated.
-            // lob data·Î parameter bind½Ã update row°¡ ¾ø´Â °æ¿ì
-            // null lob locator°¡ ³Ñ¾î¿Â´Ù.
-            // ÀÌ ¶§´Â getLength È£ÃâÇÏ¸é err ¹ß»ıÇÏ¹Ç·Î È£Ãâ ¾ÈÇÔ.
-            // ±×·¯¸é client·Î º¸³»´Â cmtAny.mType À¸·Î 
-            // CMT_ID_LOBLOCATOR°¡ ¾Æ´Ï¶ó CMT_ID_NULLÀÌ ¼Û½ÅµÊ.
-            // µ¿½Ã¿¡ clientÀÇ ulnBindStoreLobLocator ¿¡¼­
-            // CMT_ID_NULL¿¡ ´ëÇÑ Ã³¸®¸¦ ÇØÁÖµµ·Ï º¯°æÇÔ.
-            // LOB LOCATORÀÇ CURSOR°¡ OPEN µÈ »óÈ²¿¡¼­¸¸ LENGTH¸¦ °®°í ¿Â´Ù.
+            // lob dataë¡œ parameter bindì‹œ update rowê°€ ì—†ëŠ” ê²½ìš°
+            // null lob locatorê°€ ë„˜ì–´ì˜¨ë‹¤.
+            // ì´ ë•ŒëŠ” getLength í˜¸ì¶œí•˜ë©´ err ë°œìƒí•˜ë¯€ë¡œ í˜¸ì¶œ ì•ˆí•¨.
+            // ê·¸ëŸ¬ë©´ clientë¡œ ë³´ë‚´ëŠ” cmtAny.mType ìœ¼ë¡œ 
+            // CMT_ID_LOBLOCATORê°€ ì•„ë‹ˆë¼ CMT_ID_NULLì´ ì†¡ì‹ ë¨.
+            // ë™ì‹œì— clientì˜ ulnBindStoreLobLocator ì—ì„œ
+            // CMT_ID_NULLì— ëŒ€í•œ ì²˜ë¦¬ë¥¼ í•´ì£¼ë„ë¡ ë³€ê²½í•¨.
+            // LOB LOCATORì˜ CURSORê°€ OPEN ëœ ìƒí™©ì—ì„œë§Œ LENGTHë¥¼ ê°–ê³  ì˜¨ë‹¤.
             if ((*(smLobLocator *)aSource != MTD_LOCATOR_NULL) &&
                 (smiLob::isOpen(*(smLobLocator *)aSource) == ID_TRUE))
             {

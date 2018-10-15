@@ -325,7 +325,7 @@ iSQLCommand::SetQuotedFileName( SChar        * a_FileName,
     {
         idlOS::strcpy(m_FileName, a_FileName + 1);
 
-        // quotation marks ¡¶∞≈«— ±Ê¿Ã∏∏≈≠ ..
+        // quotation marks Ï†úÍ±∞Ìïú Í∏∏Ïù¥ÎßåÌÅº ..
         sFileLen = idlOS::strlen(a_FileName) - 2;
         m_FileName[sFileLen] = '\0';
     }

@@ -19,8 +19,8 @@
  *
  * $Id: sdpstCache.h 27220 2008-07-23 14:56:22Z newdaily $
  *
- * º» ÆÄÀÏÀº Treelist Managed SegmentÀÇ Segment Runtime Cache¿¡ ´ëÇÑ
- * Çì´õÆÄÀÏÀÌ´Ù.
+ * ë³¸ íŒŒì¼ì€ Treelist Managed Segmentì˜ Segment Runtime Cacheì— ëŒ€í•œ
+ * í—¤ë”íŒŒì¼ì´ë‹¤.
  *
  ***********************************************************************/
 
@@ -175,7 +175,7 @@ private:
 };
 
 
-// SearchType¿¡ µû¶ó¼­ Hint flag¸¦ ¹İÈ¯ÇÑ´Ù.
+// SearchTypeì— ë”°ë¼ì„œ Hint flagë¥¼ ë°˜í™˜í•œë‹¤.
 inline idBool sdpstCache::needToUpdateItHint( sdpstSegCache * aSegCache,
                                           sdpstSearchType aSearchType )
 {
@@ -195,27 +195,27 @@ inline idBool sdpstCache::isOnExtend( sdpstSegCache * aSegCache )
     return aSegCache->mOnExtend;
 }
 
-// Extend Extent Mutex È¹µæ
+// Extend Extent Mutex íšë“
 inline void  sdpstCache::lockExtendExt( idvSQL         * aStatistics,
                                      sdpstSegCache  * aSegCache )
 {
     IDE_ASSERT( aSegCache->mExtendExt.lock( aStatistics ) == IDE_SUCCESS );
 }
 
-// Extend Extent Mutex ÇØÁ¦
+// Extend Extent Mutex í•´ì œ
 inline void  sdpstCache::unlockExtendExt( sdpstSegCache  * aSegCache )
 {
     IDE_ASSERT( aSegCache->mExtendExt.unlock() == IDE_SUCCESS );
 }
 
-// Table OID¸¦ ¹İÈ¯ÇÑ´Ù.
+// Table OIDë¥¼ ë°˜í™˜í•œë‹¤.
 inline smOID sdpstCache::getTableOID( sdpstSegCache   * aSegCache )
 {
     IDE_ASSERT( aSegCache != NULL );
     return aSegCache->mCommon.mTableOID;
 }
 
-// free page°¡ ¹ß»ıÇÏ¿´±â ¶§¹®¿¡ update hint flag¸¦ ¼³Á¤ÇÑ´Ù.
+// free pageê°€ ë°œìƒí•˜ì˜€ê¸° ë•Œë¬¸ì— update hint flagë¥¼ ì„¤ì •í•œë‹¤.
 inline void sdpstCache::setUpdateHint4Page( sdpstSegCache * aSegCache,
                                             idBool          aItHintFlag )
 {
@@ -223,7 +223,7 @@ inline void sdpstCache::setUpdateHint4Page( sdpstSegCache * aSegCache,
     aSegCache->mHint4Page.mUpdateHintItBMP = aItHintFlag;
 }
 
-// free page°¡ ¹ß»ıÇÏ¿´±â ¶§¹®¿¡ Update Hint Flag¸¦ ¼³Á¤ÇÑ´Ù.
+// free pageê°€ ë°œìƒí•˜ì˜€ê¸° ë•Œë¬¸ì— Update Hint Flagë¥¼ ì„¤ì •í•œë‹¤.
 inline void sdpstCache::setUpdateHint4Slot( sdpstSegCache * aSegCache,
                                             idBool          aItHintFlag )
 {

@@ -128,9 +128,9 @@ iSQLExecuteCommand::BindParam()
     {
         /**
          * PROJ-1584 DML Return Clause 
-         * iSQL ¿¡¼­´Â input typeÀÌ Ç×»ó INPUT
-         * ÀÌ¿´À¸³ª Return Clause Ãß°¡·Î ÀÎÇØ
-         * OUTPUT °¡´É.
+         * iSQL ì—ì„œëŠ” input typeì´ í•­ìƒ INPUT
+         * ì´ì˜€ìœ¼ë‚˜ Return Clause ì¶”ê°€ë¡œ ì¸í•´
+         * OUTPUT ê°€ëŠ¥.
          **/
         /* BUG-42521 Support the function for getting In,Out Type */
         if (t_node->element.inOutType == SQL_PARAM_TYPE_UNKNOWN)
@@ -282,7 +282,7 @@ iSQLExecuteCommand::PrepareSelectOrDMLStmt(SChar           * aCmdStr,
 
 /**
  * PROJ-1584 DML Return Clause 
- * Execute µÈ °á°ú¸¦ HostVarNode¿¡ set.
+ * Execute ëœ ê²°ê³¼ë¥¼ HostVarNodeì— set.
  **/
 void iSQLExecuteCommand::returnBindParam()
 {
@@ -303,14 +303,14 @@ void iSQLExecuteCommand::returnBindParam()
 }
 
 /*
- * [select * from tab Äõ¸®ÀÇ ½ÇÇà]
- * Å×ÀÌºí ¸®½ºÆ®¸¦ º¸¿©ÁÖ°Å³ª TABÅ×ÀÌºíÀÇ ROW¸¦ º¸¿©ÁØ´Ù.
+ * [select * from tab ì¿¼ë¦¬ì˜ ì‹¤í–‰]
+ * í…Œì´ë¸” ë¦¬ìŠ¤íŠ¸ë¥¼ ë³´ì—¬ì£¼ê±°ë‚˜ TABí…Œì´ë¸”ì˜ ROWë¥¼ ë³´ì—¬ì¤€ë‹¤.
  *
- * To Fix BUG-14965 Tab Å×ÀÌºí Á¸ÀçÇÒ¶§ SELECT * FROM TABÀ¸·Î ³»¿ëÁ¶È¸ ºÒ°¡
+ * To Fix BUG-14965 Tab í…Œì´ë¸” ì¡´ìž¬í• ë•Œ SELECT * FROM TABìœ¼ë¡œ ë‚´ìš©ì¡°íšŒ ë¶ˆê°€
  *
- * aCmdStr      [IN] "prepare select * from tab;\n" Ä¿¸Çµå
- * aQueryStr    [IN] "select * from tab" Äõ¸®
- * aQueryBufLen [IN] aQueryStrÀÌ °¡¸®Å°´Â ¹öÆÛÀÇ Å©±â
+ * aCmdStr      [IN] "prepare select * from tab;\n" ì»¤ë§¨ë“œ
+ * aQueryStr    [IN] "select * from tab" ì¿¼ë¦¬
+ * aQueryBufLen [IN] aQueryStrì´ ê°€ë¦¬í‚¤ëŠ” ë²„í¼ì˜ í¬ê¸°
  *
  */
 IDE_RC iSQLExecuteCommand::DisplayTableListOrPrepare(SChar *aCmdStr,
@@ -319,22 +319,22 @@ IDE_RC iSQLExecuteCommand::DisplayTableListOrPrepare(SChar *aCmdStr,
 {
     idBool sIsTabExist;
 
-    /* TAB Å×ÀÌºíÀÌ Á¸ÀçÇÏ´ÂÁö Ã¼Å©(Å×ÀÌºí ¼ö Á¶È¸) */
+    /* TAB í…Œì´ë¸”ì´ ì¡´ìž¬í•˜ëŠ”ì§€ ì²´í¬(í…Œì´ë¸” ìˆ˜ ì¡°íšŒ) */
     IDE_TEST_RAISE(m_ISPApi->CheckTableExist(gProperty.GetUserName(),
                                              (SChar *)"TAB", &sIsTabExist)
                    != IDE_SUCCESS, TableExistCheckError);
 
-    if (sIsTabExist == ID_TRUE) /* TAB Å×ÀÌºí Á¸Àç */
+    if (sIsTabExist == ID_TRUE) /* TAB í…Œì´ë¸” ì¡´ìž¬ */
     {
-        /* TAB Å×ÀÌºíÀÇ ¸ðµç row¸¦ fetch */
+        /* TAB í…Œì´ë¸”ì˜ ëª¨ë“  rowë¥¼ fetch */
         IDE_TEST(gSQLCompiler->ParsingPrepareSQL(aQueryStr, aQueryBufLen)
                  != IDE_SUCCESS);
         IDE_TEST(PrepareSelectOrDMLStmt(aCmdStr, aQueryStr, PREP_SELECT_COM)
                  != IDE_SUCCESS);
     }
-    else /* TAB ÀÌ¶ó´Â Å×ÀÌºíÀÌ ¾øÀ½ */
+    else /* TAB ì´ë¼ëŠ” í…Œì´ë¸”ì´ ì—†ìŒ */
     {
-        /* ½Ã½ºÅÛ¿¡ Á¸ÀçÇÏ´Â ¸ðµç Å×ÀÌºí ¸®½ºÆ®¸¦ fetch */
+        /* ì‹œìŠ¤í…œì— ì¡´ìž¬í•˜ëŠ” ëª¨ë“  í…Œì´ë¸” ë¦¬ìŠ¤íŠ¸ë¥¼ fetch */
         IDE_TEST(DisplayTableList(aCmdStr) != IDE_SUCCESS);
     }
 

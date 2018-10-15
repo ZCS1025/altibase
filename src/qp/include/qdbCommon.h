@@ -38,8 +38,8 @@
         _dest_->flag      = _src_->flag;        \
     }
 
-/* createTableOnSM ÀÎÅÍÆäÀÌ½º¿¡ aInitFlagMask¿¡
-   ¸ğµç Bit°¡ 1·Î ¼¼ÆÃµÈ MASK¸¦ ³Ñ±æ °æ¿ì »ç¿ë
+/* createTableOnSM ì¸í„°í˜ì´ìŠ¤ì— aInitFlagMaskì—
+   ëª¨ë“  Bitê°€ 1ë¡œ ì„¸íŒ…ëœ MASKë¥¼ ë„˜ê¸¸ ê²½ìš° ì‚¬ìš©
 */
 #define QDB_TABLE_ATTR_MASK_ALL (0xFFFFFFFF)
 
@@ -259,7 +259,7 @@ public:
         qmsSFWGH        * aSFWGH,
         qmsFrom         * aFrom );
     
-    /* PROJ-1107 Check Constraint Áö¿ø */
+    /* PROJ-1107 Check Constraint ì§€ì› */
     static IDE_RC validateCheckConstrDefinition(
         qcStatement      * aStatement,
         qdConstraintSpec * aCheckConstr,
@@ -354,7 +354,7 @@ public:
         UInt               aUserID,
         UInt               aTableID);
 
-    /* PROJ-1107 Check Constraint Áö¿ø */
+    /* PROJ-1107 Check Constraint ì§€ì› */
     static IDE_RC createConstrCheck(
         qcStatement        * aStatement,
         qdConstraintSpec   * aConstr,
@@ -618,22 +618,22 @@ public:
         UInt                   aPartCount,
         UInt                 * aDstPartNum );
 
-    // ¿©·¯ °³ÀÇ Attribute Flag ListÀÇ Flag°ªÀ»
-    // Bitwise Or¿¬»ê ÇÏ¿© ÇÏ³ªÀÇ UInt ÇüÀÇ Flag °ªÀ» ¸¸µç´Ù
+    // ì—¬ëŸ¬ ê°œì˜ Attribute Flag Listì˜ Flagê°’ì„
+    // Bitwise Orì—°ì‚° í•˜ì—¬ í•˜ë‚˜ì˜ UInt í˜•ì˜ Flag ê°’ì„ ë§Œë“ ë‹¤
     static IDE_RC getTableAttrFlagFromList(qdTableAttrFlagList * aAttrFlagList,
                                            UInt              * aAttrFlagMask,
                                            UInt              * aAttrFlagValue );
 
 
-    // TableÀÇ Attribute Flag List¿¡ ´ëÇÑ Validation¼öÇà
+    // Tableì˜ Attribute Flag Listì— ëŒ€í•œ Validationìˆ˜í–‰
     static IDE_RC validateTableAttrFlagList(
                       qcStatement         * aStatement,
                       qdTableAttrFlagList * aAttrFlagList);
 
-    // disk index key column¿¡ variable ÄÃ·³¼Ó¼º ÁöÁ¤
+    // disk index key columnì— variable ì»¬ëŸ¼ì†ì„± ì§€ì •
     static IDE_RC setIndexKeyColumnTypeFlag( mtcColumn * aKeyColumn );
 
-    // smÀ¸·ÎºÎÅÍ ·¹ÄÚµåÆĞÄ¡½Ã º¹»ç°¡ ÇÊ¿äÇÑ ÄÃ·³Á¤º¸»ı¼º
+    // smìœ¼ë¡œë¶€í„° ë ˆì½”ë“œíŒ¨ì¹˜ì‹œ ë³µì‚¬ê°€ í•„ìš”í•œ ì»¬ëŸ¼ì •ë³´ìƒì„±
     static IDE_RC makeFetchColumnList4TupleID(
                       qcTemplate             * aTemplate,
                       UShort                   aTupleRowID,
@@ -642,7 +642,7 @@ public:
                       idBool                   aIsAllocSmiColumnList,
                       smiFetchColumnList    ** aFetchColumnList );
 
-    // smÀ¸·ÎºÎÅÍ ·¹ÄÚµåÆĞÄ¡½Ã º¹»ç°¡ ÇÊ¿äÇÑ ÄÃ·³Á¤º¸»ı¼º
+    // smìœ¼ë¡œë¶€í„° ë ˆì½”ë“œíŒ¨ì¹˜ì‹œ ë³µì‚¬ê°€ í•„ìš”í•œ ì»¬ëŸ¼ì •ë³´ìƒì„±
     static IDE_RC makeFetchColumnList4Index(
                       qcTemplate             * aTemplate,
                       qcmTableInfo           * aTableInfo,
@@ -650,7 +650,7 @@ public:
                       idBool                   aIsAllocSmiColumnList,
                       smiFetchColumnList    ** aFetchColumnList );
 
-    // smÀ¸·ÎºÎÅÍ ·¹ÄÚµåÆĞÄ¡½Ã º¹»ç°¡ ÇÊ¿äÇÑ ÄÃ·³Á¤º¸»ı¼º
+    // smìœ¼ë¡œë¶€í„° ë ˆì½”ë“œíŒ¨ì¹˜ì‹œ ë³µì‚¬ê°€ í•„ìš”í•œ ì»¬ëŸ¼ì •ë³´ìƒì„±
     static IDE_RC makeFetchColumnList4ChildTable(
                       qcTemplate             * aTemplate,
                       qcmTableInfo           * aTableInfo,
@@ -659,7 +659,7 @@ public:
                       idBool                   aIsAllocFetchColumnList,
                       smiFetchColumnList    ** aFetchColumnList );
 
-    // smÀ¸·ÎºÎÅÍ ·¹ÄÚµåÆĞÄ¡½Ã º¹»ç°¡ ÇÊ¿äÇÑ ÄÃ·³Á¤º¸»ı¼º
+    // smìœ¼ë¡œë¶€í„° ë ˆì½”ë“œíŒ¨ì¹˜ì‹œ ë³µì‚¬ê°€ í•„ìš”í•œ ì»¬ëŸ¼ì •ë³´ìƒì„±
     static IDE_RC makeFetchColumnList(
                       qcTemplate             * aTemplate,
                       UInt                     aColumnCount,
@@ -667,19 +667,19 @@ public:
                       idBool                   aIsAllocSmiColumnList,
                       smiFetchColumnList    ** aFetchColumnList );
 
-    // fetch column list ÃÊ±âÈ­
+    // fetch column list ì´ˆê¸°í™”
     static void initFetchColumnList( smiFetchColumnList  ** aFetchColumnList );
 
-    // fetch column list¿¡ fetch column Ãß°¡
+    // fetch column listì— fetch column ì¶”ê°€
     static IDE_RC addFetchColumnList( iduMemory            * aMemory,
                                       mtcColumn            * aColumn,
                                       smiFetchColumnList  ** aFetchColumnList );
 
-    /* PROJ-1107 Check Constraint Áö¿ø */
+    /* PROJ-1107 Check Constraint ì§€ì› */
     static IDE_RC addCheckConstrListToFetchColumnList(
                       iduMemory           * aMemory,
                       qdConstraintSpec    * aCheckConstrList,
-                      qcmColumn           * aColumnArray,    /* PROJ-2464 hybrid partitioned table Áö¿ø */
+                      qcmColumn           * aColumnArray,    /* PROJ-2464 hybrid partitioned table ì§€ì› */
                       smiFetchColumnList ** aFetchColumnList );
 
     // PROJ-1579 NCHAR
@@ -709,44 +709,44 @@ public:
                 qcNamePosList   * aNcharList,
                 qcmColumn       * aColumn );
 
-    /* PROJ-1107 Check Constraint Áö¿ø */
+    /* PROJ-1107 Check Constraint ì§€ì› */
     static IDE_RC makeNcharLiteralStrForConstraint(
                 qcStatement      * aStatement,
                 qcNamePosList    * aNcharList,
                 qdConstraintSpec * aConstr );
 
-    /* PROJ-1107 Check Constraint Áö¿ø */
+    /* PROJ-1107 Check Constraint ì§€ì› */
     static void removeNcharLiteralStr(
                 qcNamePosList ** aFromList,
                 qcNamePosList  * aTargetList );
 
     // PROJ-1705
-    // mtdDataTypeÀÇ Value·ÎºÎÅÍ smiValue.length ÀÇ Á¤º¸¸¦ ±¸ÇÑ´Ù.
+    // mtdDataTypeì˜ Valueë¡œë¶€í„° smiValue.length ì˜ ì •ë³´ë¥¼ êµ¬í•œë‹¤.
     static IDE_RC storingSize( mtcColumn  * aStoringColumn,
                                mtcColumn  * aValueColumn,
                                void       * aValue,
                                UInt       * aOutStoringSize );
 
     // PROJ-1705
-    // mtdDataTypeÀÇ Value·ÎºÎÅÍ smiValue.value ÀÇ Á¤º¸¸¦ ±¸ÇÑ´Ù.
+    // mtdDataTypeì˜ Valueë¡œë¶€í„° smiValue.value ì˜ ì •ë³´ë¥¼ êµ¬í•œë‹¤.
     static IDE_RC mtdValue2StoringValue( mtcColumn  * aStoringColumn,
                                          mtcColumn  * aValueColumn,
                                          void       * aValue,
                                          void      ** aOutStoringValue );
 
     // PROJ-1705
-    // smiValue.value·ÎºÎÅÍ mtdDataTypeÀÇ Value Á¤º¸¸¦ ±¸ÇÑ´Ù.
+    // smiValue.valueë¡œë¶€í„° mtdDataTypeì˜ Value ì •ë³´ë¥¼ êµ¬í•œë‹¤.
     static IDE_RC storingValue2MtdValue( mtcColumn  * aColumn,
                                          void       * aValue,
                                          void      ** aOutMtdValue );
 
-    /* PROJ-2464 hybrid partitioned table Áö¿ø */
+    /* PROJ-2464 hybrid partitioned table ì§€ì› */
     static IDE_RC adjustSmiValueToDisk( mtcColumn * aFromColumn,
                                         smiValue  * aFromValue,
                                         mtcColumn * aToColumn,
                                         smiValue  * aToValue );
 
-    /* PROJ-2464 hybrid partitioned table Áö¿ø */
+    /* PROJ-2464 hybrid partitioned table ì§€ì› */
     static IDE_RC adjustSmiValueToMemory( mtcColumn * aFromColumn,
                                           smiValue  * aFromValue,
                                           mtcColumn * aToColumn,
@@ -770,9 +770,9 @@ public:
                                            smiColumnList  ** aFetchColumnList );
 
     // PROJ-2429 Dictionary based data compress for on-disk DB
-    // Dictionary compression columnÀÎÁö È®ÀÎÇÏ°í dictionary column copyÇÔ¼ö¸¦
-    // Àü´ŞÇÑ´Ù. Dictionary compression columnÀÌ ¾Æ´Ñ°æ¿ì data type¿¡ ¸Â´Â ÇÔ¼ö¸¦
-    // Àü´Ş ÇÑ´Ù.
+    // Dictionary compression columnì¸ì§€ í™•ì¸í•˜ê³  dictionary column copyí•¨ìˆ˜ë¥¼
+    // ì „ë‹¬í•œë‹¤. Dictionary compression columnì´ ì•„ë‹Œê²½ìš° data typeì— ë§ëŠ” í•¨ìˆ˜ë¥¼
+    // ì „ë‹¬ í•œë‹¤.
     static void * getCopyDiskColumnFunc( mtcColumn * aColumn )
     {
         UInt sFunctionIdx;
@@ -792,31 +792,31 @@ public:
         return (void *) aColumn->module->storedValue2MtdValue[sFunctionIdx];
     }
 
-    /* PROJ-2464 hybrid partitioned table Áö¿ø */
+    /* PROJ-2464 hybrid partitioned table ì§€ì› */
     static UInt getTableTypeFromTBSID( scSpaceID           aTBSID );
 
     /* PROJ-2465 Tablespace Alteration for Table */
     static UInt getTableTypeFromTBSType( smiTableSpaceType aTBSType );
 
-    /* PROJ-2464 hybrid partitioned table Áö¿ø */
+    /* PROJ-2464 hybrid partitioned table ì§€ì› */
     static void getTableTypeCountInPartInfoList( UInt                 * aTableType,
                                                  qcmPartitionInfoList * aPartInfoList,
                                                  SInt                 * aCountDiskType,
                                                  SInt                 * aCountMemType,
                                                  SInt                 * aCountVolType );
 
-    /* PROJ-2464 hybrid partitioned table Áö¿ø */
+    /* PROJ-2464 hybrid partitioned table ì§€ì› */
     static void getTableTypeCountInPartAttrList( UInt                 * aTableType,
                                                  qdPartitionAttribute * aPartAttrList,
                                                  SInt                 * aCountDiskType,
                                                  SInt                 * aCountMemType,
                                                  SInt                 * aCountVolType );
 
-    /* PROJ-2464 hybrid partitioned table Áö¿ø */
+    /* PROJ-2464 hybrid partitioned table ì§€ì› */
     static IDE_RC validateConstraintRestriction( qcStatement        * aStatement,
                                                  qdTableParseTree   * aParseTree );
 
-    /* PROJ-2464 hybrid partitioned table Áö¿ø */
+    /* PROJ-2464 hybrid partitioned table ì§€ì› */
     static IDE_RC validateIndexKeySize( qcStatement          * aStatement,
                                         UInt                   aTableType,
                                         qcmColumn            * aKeyColumns,
@@ -827,7 +827,7 @@ public:
                                         idBool                 aIsPartitioned,
                                         idBool                 aIsIndex );
 
-    /* PROJ-2464 hybrid partitioned table Áö¿ø */
+    /* PROJ-2464 hybrid partitioned table ì§€ì› */
     static IDE_RC validateAndSetDirectKey( mtcColumn * aBasicInfo,
                                            idBool      aIsUserTable,
                                            SInt        aCountDiskType,
@@ -836,29 +836,29 @@ public:
                                            ULong     * aDirectKeyMaxSize,
                                            UInt      * aSetFlag );
 
-    /* PROJ-2464 hybrid partitioned table Áö¿ø */
+    /* PROJ-2464 hybrid partitioned table ì§€ì› */
     static IDE_RC validateAndSetPersistent( SInt     aCountDiskType,
                                             SInt     aCountVolType,
                                             idBool * aIsPers,
                                             UInt   * aSetFlag );
 
-    /* PROJ-2464 hybrid partitioned table Áö¿ø */
+    /* PROJ-2464 hybrid partitioned table ì§€ì› */
     static IDE_RC validatePhysicalAttr( qdTableParseTree * aParseTree );
 
-    /* PROJ-2464 hybrid partitioned table Áö¿ø */
+    /* PROJ-2464 hybrid partitioned table ì§€ì› */
     static IDE_RC validateAndSetSegAttr( UInt         aTableType,
                                          smiSegAttr * aSrcSegAttr,
                                          smiSegAttr * aDstSegAttr,
                                          idBool       aIsTable );
 
-    /* PROJ-2464 hybrid partitioned table Áö¿ø */
+    /* PROJ-2464 hybrid partitioned table ì§€ì› */
     static IDE_RC validateAndSetSegStoAttr( UInt                aTableType,
                                             smiSegStorageAttr * aSrcStoAttr,
                                             smiSegStorageAttr * aDstStoAttr,
                                             qdSegStoAttrExist * aExist,
                                             idBool              aIsTable );
 
-    /* PROJ-2464 hybrid partitioned table Áö¿ø */
+    /* PROJ-2464 hybrid partitioned table ì§€ì› */
     static void adjustIndexAttr( scSpaceID           aTableTBSID,
                                  smiSegAttr          aSrcSegAttr,
                                  smiSegStorageAttr   aSrcSegStoAttr,
@@ -869,7 +869,7 @@ public:
                                  UInt              * aDstIndexFlag,
                                  ULong             * aDstDirectKeyMaxSize );
 
-    /* PROJ-2464 hybrid partitioned table Áö¿ø */
+    /* PROJ-2464 hybrid partitioned table ì§€ì› */
     static void adjustPhysicalAttr( UInt                aTableType,
                                     smiSegAttr          aSrcSegAttr,
                                     smiSegStorageAttr   aSrcSegStoAttr,
@@ -877,24 +877,24 @@ public:
                                     smiSegStorageAttr * aDstSegStoAttr,
                                     idBool              aIsTable );
 
-    /* PROJ-2464 hybrid partitioned table Áö¿ø */
+    /* PROJ-2464 hybrid partitioned table ì§€ì› */
     static void adjustSegAttr( UInt         aTableType,
                                smiSegAttr   aSrcSegAttr,
                                smiSegAttr * aDstSegAttr,
                                idBool       aIsTable );
 
-    /* PROJ-2464 hybrid partitioned table Áö¿ø */
+    /* PROJ-2464 hybrid partitioned table ì§€ì› */
     static void adjustSegStoAttr( UInt                aTableType,
                                   smiSegStorageAttr   aSrcSegStoAttr,
                                   smiSegStorageAttr * aDstSegStoAttr );
 
-    /* PROJ-2464 hybrid partitioned table Áö¿ø */
+    /* PROJ-2464 hybrid partitioned table ì§€ì› */
     static void adjustDirectKeyMaxSize( UInt    aSrcIndexFlag,
                                         ULong   aSrcDirectKeyMaxSize,
                                         UInt  * aDstIndexFlag,
                                         ULong * aDstDirectKeyMaxSize );
 
-    /* PROJ-2464 hybrid partitioned table Áö¿ø */
+    /* PROJ-2464 hybrid partitioned table ì§€ì› */
     static IDE_RC copyAndAdjustColumnList( qcStatement        * aStatement,
                                            smiTableSpaceType    aOldTBSType,
                                            smiTableSpaceType    aNewTBSType,
@@ -903,28 +903,28 @@ public:
                                            UInt                 aColumnCount,
                                            idBool               aEnableVariableColumn );
 
-    /* PROJ-2464 hybrid partitioned table Áö¿ø */
+    /* PROJ-2464 hybrid partitioned table ì§€ì› */
     static IDE_RC adjustIndexColumn( qcmColumn     * aColumn,
                                      qcmIndex      * aIndex,
                                      qcmColumn     * aDelColList,
                                      smiColumnList * aIndexColumnList );
 
-    /* PROJ-2464 hybrid partitioned table Áö¿ø */
+    /* PROJ-2464 hybrid partitioned table ì§€ì› */
     static IDE_RC adjustKeyColumn( qcmColumn * aTableColumn,
                                    qcmColumn * aKeyColumn );
 
-    /* PROJ-2464 hybrid partitioned table Áö¿ø */
+    /* PROJ-2464 hybrid partitioned table ì§€ì› */
     static void makeTempQcmColumnListFromIndex( qcmIndex  * aIndex,
                                                 mtcColumn * aMtcColumnArr,
                                                 qcmColumn * aQcmColumnList );
 
-    /* PROJ-2464 hybrid partitioned table Áö¿ø */
+    /* PROJ-2464 hybrid partitioned table ì§€ì› */
     static IDE_RC updatePartTableTBSFromMeta( qcStatement * aStatement,
                                               UInt          aPartTableID,
                                               UInt          aPartitionID,
                                               scSpaceID     aTBSID );
 
-    /* PROJ-2464 hybrid partitioned table Áö¿ø */
+    /* PROJ-2464 hybrid partitioned table ì§€ì› */
     static IDE_RC updatePartLobsTBSFromMeta( qcStatement * aStatement,
                                              UInt          aUserID,
                                              UInt          aPartTableID,
@@ -981,8 +981,8 @@ public:
 
 private :
 
-    // TableÀÇ Attribute Flag List¿¡¼­ µ¿ÀÏÇÑ
-    // Attribute List°¡ Á¸ÀçÇÒ °æ¿ì ¿¡·¯Ã³¸®
+    // Tableì˜ Attribute Flag Listì—ì„œ ë™ì¼í•œ
+    // Attribute Listê°€ ì¡´ì¬í•  ê²½ìš° ì—ëŸ¬ì²˜ë¦¬
     static IDE_RC checkTableAttrIsUnique(qcStatement         * aStatement,
                                          qdTableAttrFlagList * aAttrFlagList);
 
@@ -1002,18 +1002,18 @@ private :
     static IDE_RC validateColumnLength( qcStatement * aStatement,
                                         qcmColumn   * aColumn );
 
-    /* PROJ-2464 hybrid partitioned table Áö¿ø */
+    /* PROJ-2464 hybrid partitioned table ì§€ì› */
     static IDE_RC adjustColumnFlagForTable( qcStatement       * aStatement,
                                             smiTableSpaceType   aTBSType,
                                             qcmColumn         * aColumn,
                                             idBool              aEnableVariableColumn );
 
-    /* PROJ-2464 hybrid partitioned table Áö¿ø */
+    /* PROJ-2464 hybrid partitioned table ì§€ì› */
     static IDE_RC adjustColumnFlagForIndex( mtcColumn * aSrcMtcColumn,
                                             UInt      * aOffset,
                                             smiColumn * aDstSmiColumn );
 
-    /* PROJ-2464 hybrid partitioned table Áö¿ø */
+    /* PROJ-2464 hybrid partitioned table ì§€ì› */
     static IDE_RC validateForeignKey( qcStatement      * aStatement,
                                       qdReferenceSpec  * aRefSpec,
                                       SInt               aCountDiskType,

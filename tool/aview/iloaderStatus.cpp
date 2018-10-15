@@ -31,7 +31,7 @@ __fastcall TForm8::TForm8(TComponent* Owner)
 {
 }
 //---------------------------------------------------------------------------
-// È­¸é¿¡¼­ »ç¿ëÀÚ°¡ Áö¿öÁà¾ß ±¸Á¶Ã¼µµ free½ÃÅ²´Ù.
+// í™”ë©´ì—ì„œ ì‚¬ìš©ìê°€ ì§€ì›Œì¤˜ì•¼ êµ¬ì¡°ì²´ë„ freeì‹œí‚¨ë‹¤.
 void __fastcall TForm8::Button1Click(TObject *Sender)
 {
 	if (MessageBox(NULL, "This Command, Try to Stop running process and erase logs you selected.", "Confirm", MB_OKCANCEL) == ID_CANCEL)

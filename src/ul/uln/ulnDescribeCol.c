@@ -46,8 +46,8 @@ static ACI_RC ulnDescribeColCheckArgs(ulnFnContext *aFnContext,
     ACI_EXCEPTION(LABEL_INVALID_DESC_INDEX)
     {
         /*
-         * 07009 : BOOKMARK Áö¿ø¾ÈÇÏ´Âµ¥ column number ¿¡ 0 À» ÁØ´Ù°Å³ª
-         *         result column º¸´Ù Å« index ¸¦ ÁáÀ» ¶§ ¹ß»ý
+         * 07009 : BOOKMARK ì§€ì›ì•ˆí•˜ëŠ”ë° column number ì— 0 ì„ ì¤€ë‹¤ê±°ë‚˜
+         *         result column ë³´ë‹¤ í° index ë¥¼ ì¤¬ì„ ë•Œ ë°œìƒ
          */
         ulnError(aFnContext, ulERR_ABORT_INVALID_DESCRIPTOR_INDEX, aColumnNumber);
     }
@@ -55,8 +55,8 @@ static ACI_RC ulnDescribeColCheckArgs(ulnFnContext *aFnContext,
     ACI_EXCEPTION(LABEL_NO_RESULT_SET)
     {
         /*
-         * 07005 : result set À» »ý¼º ¾ÈÇÏ´Â statement °¡ ½ÇÇàµÇ¾î¼­
-         *         result set ÀÌ ¾ø´Âµ¥ SQLDescribeCol() À» È£ÃâÇÏ¿´´Ù.
+         * 07005 : result set ì„ ìƒì„± ì•ˆí•˜ëŠ” statement ê°€ ì‹¤í–‰ë˜ì–´ì„œ
+         *         result set ì´ ì—†ëŠ”ë° SQLDescribeCol() ì„ í˜¸ì¶œí•˜ì˜€ë‹¤.
          */
         ulnError(aFnContext, ulERR_ABORT_STMT_HAVE_NO_RESULT_SET);
     }
@@ -83,7 +83,7 @@ static void ulnDescribeColDoColumnName(ulnFnContext *aFnContext,
     if (aColumnName != NULL)
     {
         /*
-         * Name°ú length¸¦ ±¸ÇÑ´Ù.
+         * Nameê³¼ lengthë¥¼ êµ¬í•œë‹¤.
          */
         /* BUGBUG (BUG-33625) */
         sName = ulnDescRecGetDisplayName(aIrdRecord);
@@ -116,16 +116,16 @@ static void ulnDescribeColDoDataTypePtr(ulnDescRec   *aDescRecIrd,
     if (aDataTypePtr != NULL)
     {
         /*
-         * BUGBUG: ODBC 2.0 ¾ÖÇÃ¸®ÄÉÀÌ¼ÇÀÌ¸é ¸ÅÇÎÀ» ÇØ Áà¾ß ÇÑ´Ù.
+         * BUGBUG: ODBC 2.0 ì• í”Œë¦¬ì¼€ì´ì…˜ì´ë©´ ë§¤í•‘ì„ í•´ ì¤˜ì•¼ í•œë‹¤.
          */
         sDataType     = ulnTypeMap_MTYPE_SQL(ulnMetaGetMTYPE(&aDescRecIrd->mMeta));
 
         /*
-         * Note : ÀÌÃ³·³ ulnTypes.cpp ¿¡¼­ ±Ùº»ÀûÀ¸·Î ¼öÁ¤ÇÏÁö ¾Ê°í,
-         *        »ç¿ëÀÚ¿¡°Ô Å¸ÀÔÀ» µ¹·ÁÁÖ´Â ÇÔ¼ö¸¶´Ù ±×¶§±×¶§ LOB type À» ¸ÅÇÎÇÏ´Â ÇÔ¼ö¸¦
-         *        È£ÃâÇÏ´Â °ÍÀº ¹ö±×ÀÇ ¼ÒÁöµµ ÀÖ°í À§ÇèÇÑ ÁþÀÌÁö¸¸,
-         *        ulnTypes.cpp ¿¡ function context, dbc, stmt µîÀÇ ÁöÀúºÐÇÑ ´Ù¸¥ °ÍµéÀ»
-         *        ¹Þ´Â ÇÔ¼ö¸¦ ¸¸µé°í ½ÍÁö ¾Ê¾Æ¼­ ±»ÀÌ ÀÌ¿Í°°ÀÌ Çß´Ù.
+         * Note : ì´ì²˜ëŸ¼ ulnTypes.cpp ì—ì„œ ê·¼ë³¸ì ìœ¼ë¡œ ìˆ˜ì •í•˜ì§€ ì•Šê³ ,
+         *        ì‚¬ìš©ìžì—ê²Œ íƒ€ìž…ì„ ëŒë ¤ì£¼ëŠ” í•¨ìˆ˜ë§ˆë‹¤ ê·¸ë•Œê·¸ë•Œ LOB type ì„ ë§¤í•‘í•˜ëŠ” í•¨ìˆ˜ë¥¼
+         *        í˜¸ì¶œí•˜ëŠ” ê²ƒì€ ë²„ê·¸ì˜ ì†Œì§€ë„ ìžˆê³  ìœ„í—˜í•œ ì§“ì´ì§€ë§Œ,
+         *        ulnTypes.cpp ì— function context, dbc, stmt ë“±ì˜ ì§€ì €ë¶„í•œ ë‹¤ë¥¸ ê²ƒë“¤ì„
+         *        ë°›ëŠ” í•¨ìˆ˜ë¥¼ ë§Œë“¤ê³  ì‹¶ì§€ ì•Šì•„ì„œ êµ³ì´ ì´ì™€ê°™ì´ í–ˆë‹¤.
          */
         sDataType     = ulnTypeMap_LOB_SQLTYPE(sDataType, aLongDataCompat);
 
@@ -206,8 +206,8 @@ SQLRETURN ulnDescribeCol(ulnStmt      *aStmt,
     /* PROJ-1789 Updatable Scrollable Cursor */
     if(aColumnNumber == 0)
     {
-        /* Ird¿¡´Â BOOKMARK¿¡ ´ëÇÑ Á¤º¸°¡ ¾ø´Ù.
-         * °ªÀÌ °íÁ¤µÇ¾îÀÖÀ¸¹Ç·Î hard coding ÇÑ´Ù. */
+        /* Irdì—ëŠ” BOOKMARKì— ëŒ€í•œ ì •ë³´ê°€ ì—†ë‹¤.
+         * ê°’ì´ ê³ ì •ë˜ì–´ìžˆìœ¼ë¯€ë¡œ hard coding í•œë‹¤. */
 
         if (aColumnName != NULL)
         {
@@ -249,7 +249,7 @@ SQLRETURN ulnDescribeCol(ulnStmt      *aStmt,
         ACI_TEST_RAISE(sIrdRecord == NULL, LABEL_MEM_MAN_ERR);
 
         /*
-        * Note : aBufferLength ´Â ÀÎÀÚ Ã¼Å© ÇÏ¸é¼­ 0 ÀÌ»óÀÓÀ» È®ÀÎÇß´Ù.
+        * Note : aBufferLength ëŠ” ì¸ìž ì²´í¬ í•˜ë©´ì„œ 0 ì´ìƒìž„ì„ í™•ì¸í–ˆë‹¤.
         */
         ulnDescribeColDoColumnName(&sFnContext,
                                    sIrdRecord,

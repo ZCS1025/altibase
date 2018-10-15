@@ -28,7 +28,7 @@ SQLRETURN getIndexQuery( SChar *a_user,
                          FILE  *a_DbStatsFp
                          );
 
-/* PROJ-1107 Check Constraint Áö¿ø */
+/* PROJ-1107 Check Constraint ì§€ì› */
 SQLRETURN getCheckConstraintQuery( SChar * aUserName,
                                    SChar * aPrevUserName,
                                    SChar * aTableName,

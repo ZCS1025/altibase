@@ -20,7 +20,7 @@ public abstract class AltibaseTestCase extends SqlTestCase
         }
         catch (SecurityException sEx)
         {
-            // ÇÑ¹ø¸¸ ¼öÇàµÇ±â ¶§¹®¿¡ ÀÌ·±ÀÏÀÌ ÀÏ¾î³ªÁö´Â ¾Ê¾Æ¾ß ÇÒ °ÍÀÌ´Ù¸¸, ÀÏ´Ü ³Ö¾îµĞ´Ù.
+            // í•œë²ˆë§Œ ìˆ˜í–‰ë˜ê¸° ë•Œë¬¸ì— ì´ëŸ°ì¼ì´ ì¼ì–´ë‚˜ì§€ëŠ” ì•Šì•„ì•¼ í•  ê²ƒì´ë‹¤ë§Œ, ì¼ë‹¨ ë„£ì–´ë‘”ë‹¤.
             assertTrue(sEx.getMessage().endsWith(": already loaded"));
         }
     }

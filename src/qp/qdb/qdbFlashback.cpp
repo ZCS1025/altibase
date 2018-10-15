@@ -185,14 +185,14 @@ IDE_RC qdbFlashback::validatePurgeTable( qcStatement * aStatement )
 /***********************************************************************
  *
  * Description :
- *    PURGE TABLE ... ¿« validation ºˆ«‡
+ *    PURGE TABLE ... Ïùò validation ÏàòÌñâ
  *
  * Implementation :
- *    1. ≈◊¿Ã∫Ì ¡∏¿Á ø©∫Œ √º≈©
- *    2. ∏ﬁ≈∏ ≈◊¿Ã∫Ì¿Ã∏È ø°∑Ø
- *    3. PURGE OPERATABLE √º≈© (TABLE_TYPE 'R')
- *    4. DROP ±««— √º≈©
- *    5. ∆ƒ∆ºº«µÂ ≈◊¿Ã∫Ì¿Œ ∞ÊøÏ «œ¿ß ∆ƒ∆ºº« ≈◊¿Ã∫Ì √º≈©
+ *    1. ÌÖåÏù¥Î∏î Ï°¥Ïû¨ Ïó¨Î∂Ä Ï≤¥ÌÅ¨
+ *    2. Î©îÌÉÄ ÌÖåÏù¥Î∏îÏù¥Î©¥ ÏóêÎü¨
+ *    3. PURGE OPERATABLE Ï≤¥ÌÅ¨ (TABLE_TYPE 'R')
+ *    4. DROP Í∂åÌïú Ï≤¥ÌÅ¨
+ *    5. ÌååÌã∞ÏÖòÎìú ÌÖåÏù¥Î∏îÏù∏ Í≤ΩÏö∞ ÌïòÏúÑ ÌååÌã∞ÏÖò ÌÖåÏù¥Î∏î Ï≤¥ÌÅ¨
  *
  ***********************************************************************/
 
@@ -207,7 +207,7 @@ IDE_RC qdbFlashback::validatePurgeTable( qcStatement * aStatement )
     IDE_TEST( getTableIdByOriginalName( aStatement,
                                         sParseTree->objectName,
                                         QCG_GET_SESSION_USER_ID(aStatement),
-                                        ID_TRUE, /* ø¿∑°µ» ≈◊¿Ã∫Ì */
+                                        ID_TRUE, /* Ïò§ÎûòÎêú ÌÖåÏù¥Î∏î */
                                         &sTableID )
               != IDE_SUCCESS );
 
@@ -261,8 +261,8 @@ IDE_RC qdbFlashback::validatePurgeTable( qcStatement * aStatement )
     // PROJ-1502 PARTITIONED DISK TABLE
     if ( sInfo->tablePartitionType == QCM_PARTITIONED_TABLE )
     {
-        // ∏µÁ ∆ƒ∆ºº«ø° LOCK(IS)
-        // ∆ƒ∆ºº« ∏ÆΩ∫∆Æ∏¶ ∆ƒΩ∫∆Æ∏Æø° ¥ﬁæ∆≥ı¥¬¥Ÿ.
+        // Î™®Îì† ÌååÌã∞ÏÖòÏóê LOCK(IS)
+        // ÌååÌã∞ÏÖò Î¶¨Ïä§Ìä∏Î•º ÌååÏä§Ìä∏Î¶¨Ïóê Îã¨ÏïÑÎÜìÎäîÎã§.
         IDE_TEST( qdbCommon::checkAndSetAllPartitionInfo(
                       aStatement,
                       sInfo->tableID,
@@ -302,21 +302,21 @@ IDE_RC qdbFlashback::executePurgeTable( qcStatement * aStatement )
 /***********************************************************************
  *
  * Description :
- *    DROP TABLE ... ¿« execution ºˆ«‡
+ *    DROP TABLE ... Ïùò execution ÏàòÌñâ
  *
  * Implementation :
  *    1. get table info
- *    2. ∏ﬁ≈∏ ≈◊¿Ã∫Ìø°º≠ constraint ªË¡¶
- *    3. ∏ﬁ≈∏ ≈◊¿Ã∫Ìø°º≠ index ªË¡¶
- *    4. ∏ﬁ≈∏ ≈◊¿Ã∫Ìø°º≠ table,column ªË¡¶
- *    5. ∏ﬁ≈∏ ≈◊¿Ã∫Ìø°º≠ privilege ªË¡¶
- *    -. ∏ﬁ≈∏ ≈◊¿Ã∫Ìø°º≠ trigger ªË¡¶
- *    6. related PSM ¿ª invalid ªÛ≈¬∑Œ ∫Ø∞Ê
- *    7. related VIEW ¿ª invalid ªÛ≈¬∑Œ ∫Ø∞Ê
- *    8. ConstraintøÕ ∞¸∑√µ» Procedureø° ¥Î«— ¡§∫∏∏¶ ªË¡¶
- *    9. IndexøÕ ∞¸∑√µ» Procedureø° ¥Î«— ¡§∫∏∏¶ ªË¡¶
+ *    2. Î©îÌÉÄ ÌÖåÏù¥Î∏îÏóêÏÑú constraint ÏÇ≠Ï†ú
+ *    3. Î©îÌÉÄ ÌÖåÏù¥Î∏îÏóêÏÑú index ÏÇ≠Ï†ú
+ *    4. Î©îÌÉÄ ÌÖåÏù¥Î∏îÏóêÏÑú table,column ÏÇ≠Ï†ú
+ *    5. Î©îÌÉÄ ÌÖåÏù¥Î∏îÏóêÏÑú privilege ÏÇ≠Ï†ú
+ *    -. Î©îÌÉÄ ÌÖåÏù¥Î∏îÏóêÏÑú trigger ÏÇ≠Ï†ú
+ *    6. related PSM ÏùÑ invalid ÏÉÅÌÉúÎ°ú Î≥ÄÍ≤Ω
+ *    7. related VIEW ÏùÑ invalid ÏÉÅÌÉúÎ°ú Î≥ÄÍ≤Ω
+ *    8. ConstraintÏôÄ Í¥ÄÎ†®Îêú ProcedureÏóê ÎåÄÌïú Ï†ïÎ≥¥Î•º ÏÇ≠Ï†ú
+ *    9. IndexÏôÄ Í¥ÄÎ†®Îêú ProcedureÏóê ÎåÄÌïú Ï†ïÎ≥¥Î•º ÏÇ≠Ï†ú
  *   10. smiTable::dropTable
- *   11. ∏ﬁ≈∏ ƒ≥Ω¨ø°º≠ ªË¡¶
+ *   11. Î©îÌÉÄ Ï∫êÏâ¨ÏóêÏÑú ÏÇ≠Ï†ú
  *
  ***********************************************************************/
 
@@ -333,7 +333,7 @@ IDE_RC qdbFlashback::executePurgeTable( qcStatement * aStatement )
     sParseTree = (qdDropParseTree *)aStatement->myPlan->parseTree;
 
     // TASK-2176
-    // Tableø° ¥Î«— Lock¿ª »πµÊ«—¥Ÿ.
+    // TableÏóê ÎåÄÌïú LockÏùÑ ÌöçÎìùÌïúÎã§.
     IDE_TEST( qcm::validateAndLockTable( aStatement,
                                          sParseTree->tableHandle,
                                          sParseTree->tableSCN,
@@ -347,13 +347,13 @@ IDE_RC qdbFlashback::executePurgeTable( qcStatement * aStatement )
     {
         sIsPartitioned = ID_TRUE;
 
-        // ∆ƒΩ∫∆Æ∏Æø°º≠ ∆ƒ∆ºº« ¡§∫∏ ∏ÆΩ∫∆Æ∏¶ ∞°¡Æø¬¥Ÿ.
+        // ÌååÏä§Ìä∏Î¶¨ÏóêÏÑú ÌååÌã∞ÏÖò Ï†ïÎ≥¥ Î¶¨Ïä§Ìä∏Î•º Í∞ÄÏ†∏Ïò®Îã§.
         sOldPartInfoList = sParseTree->partInfoList;
 
-        // ∏µÁ ∆ƒ∆ºº«ø° LOCK(X)
+        // Î™®Îì† ÌååÌã∞ÏÖòÏóê LOCK(X)
         IDE_TEST( qcmPartition::validateAndLockPartitionInfoList( aStatement,
                                                                   sOldPartInfoList,
-                                                                  SMI_TBSLV_DDL_DML, // TBS Validation ø…º«
+                                                                  SMI_TBSLV_DDL_DML, // TBS Validation ÏòµÏÖò
                                                                   SMI_TABLE_LOCK_X,
                                                                   ( ( smiGetDDLLockTimeOut() == -1 ) ?
                                                                     ID_ULONG_MAX :
@@ -363,7 +363,7 @@ IDE_RC qdbFlashback::executePurgeTable( qcStatement * aStatement )
         // PROJ-1624 non-partitioned index
         IDE_TEST( qdx::validateAndLockIndexTableList( aStatement,
                                                       sParseTree->oldIndexTables,
-                                                      SMI_TBSLV_DDL_DML, // TBS Validation ø…º«
+                                                      SMI_TBSLV_DDL_DML, // TBS Validation ÏòµÏÖò
                                                       SMI_TABLE_LOCK_X,
                                                       ( ( smiGetDDLLockTimeOut() == -1 ) ?
                                                         ID_ULONG_MAX :
@@ -376,12 +376,12 @@ IDE_RC qdbFlashback::executePurgeTable( qcStatement * aStatement )
     }
 
     // PROJ-1407 Temporary table
-    // session temporary table¿Ã ¡∏¿Á«œ¥¬ ∞ÊøÏ DDL¿ª «“ ºˆ æ¯¥Ÿ.
+    // session temporary tableÏù¥ Ï°¥Ïû¨ÌïòÎäî Í≤ΩÏö∞ DDLÏùÑ Ìï† Ïàò ÏóÜÎã§.
     IDE_TEST_RAISE( qcuTemporaryObj::existSessionTable( sInfo ) == ID_TRUE,
                     ERR_SESSION_TEMPORARY_TABLE_EXIST );
 
-    /* PROJ-1723 [MDW/INTEGRATOR] Altibase Plugin ∞≥πﬂ
-     DDL Statement Text¿« ∑Œ±Î
+    /* PROJ-1723 [MDW/INTEGRATOR] Altibase Plugin Í∞úÎ∞ú
+     DDL Statement TextÏùò Î°úÍπÖ
      */
     if ( QCU_DDL_SUPPLEMENTAL_LOG == 1 )
     {
@@ -405,7 +405,7 @@ IDE_RC qdbFlashback::executePurgeTable( qcStatement * aStatement )
     if ( sIsPartitioned == ID_TRUE )
     {
         // -----------------------------------------------------
-        // ≈◊¿Ã∫Ì ∆ƒ∆ºº« ∞≥ºˆ∏∏≈≠ π›∫π
+        // ÌÖåÏù¥Î∏î ÌååÌã∞ÏÖò Í∞úÏàòÎßåÌÅº Î∞òÎ≥µ
         // -----------------------------------------------------
         for ( sPartInfoList = sOldPartInfoList;
               sPartInfoList != NULL;
@@ -477,7 +477,7 @@ IDE_RC qdbFlashback::executePurgeTable( qcStatement * aStatement )
               != IDE_SUCCESS );
 
     // PROJ-2264 Dictionary table
-    // SYS_COMPRESSION_TABLES_ ø°º≠ ∞¸∑√ ∑πƒ⁄µÂ∏¶ ªË¡¶«—¥Ÿ.
+    // SYS_COMPRESSION_TABLES_ ÏóêÏÑú Í¥ÄÎ†® Î†àÏΩîÎìúÎ•º ÏÇ≠Ï†úÌïúÎã§.
     IDE_TEST( qdd::deleteCompressionTableSpecFromMeta( aStatement,
                                                        sInfo->tableID )
               != IDE_SUCCESS );
@@ -508,7 +508,7 @@ IDE_RC qdbFlashback::executePurgeTable( qcStatement * aStatement )
     }
 
     // BUG-36719
-    // Table info ∏¶ ªË¡¶«—¥Ÿ.
+    // Table info Î•º ÏÇ≠Ï†úÌïúÎã§.
     for ( sColumn  = sInfo->columns;
           sColumn != NULL;
           sColumn  = sColumn->next )
@@ -565,12 +565,12 @@ IDE_RC qdbFlashback::validateFlashbackTable( qcStatement * aStatement )
  *    FLASHBACK TABLE ... TO BEFORE DROP ( RENAME TO ... )
  *
  * Implementation :
- *    1. ≈◊¿Ã∫Ì ¡∏¿Á ø©∫Œ √º≈©
- *    2. ≈◊¿Ã∫Ì¿« º“¿Ø¿⁄∞° SYSTEM_ ¿Ã∏È ∫“∞°¥…
- *    3. CREATE table ±««—¿Ã ¿÷¥¬¡ˆ √º≈©
- *    4. ≈◊¿Ã∫Ìø° ¿Ã¡ﬂ»≠∞° ∞…∑¡¿÷¿∏∏È ø°∑Ø
- *       ªı¿Ã∏ß ª˝º∫ (RENMAE OR ORIGINAL NAME )
- *    5. ∫Ø∞Ê»ƒ¿« ≈◊¿Ã∫Ì ¿Ã∏ß¿Ã ¿ÃπÃ ¡∏¿Á«œ¥¬¡ˆ √º≈©
+ *    1. ÌÖåÏù¥Î∏î Ï°¥Ïû¨ Ïó¨Î∂Ä Ï≤¥ÌÅ¨
+ *    2. ÌÖåÏù¥Î∏îÏùò ÏÜåÏú†ÏûêÍ∞Ä SYSTEM_ Ïù¥Î©¥ Î∂àÍ∞ÄÎä•
+ *    3. CREATE table Í∂åÌïúÏù¥ ÏûàÎäîÏßÄ Ï≤¥ÌÅ¨
+ *    4. ÌÖåÏù¥Î∏îÏóê Ïù¥Ï§ëÌôîÍ∞Ä Í±∏Î†§ÏûàÏúºÎ©¥ ÏóêÎü¨
+ *       ÏÉàÏù¥Î¶Ñ ÏÉùÏÑ± (RENMAE OR ORIGINAL NAME )
+ *    5. Î≥ÄÍ≤ΩÌõÑÏùò ÌÖåÏù¥Î∏î Ïù¥Î¶ÑÏù¥ Ïù¥ÎØ∏ Ï°¥Ïû¨ÌïòÎäîÏßÄ Ï≤¥ÌÅ¨
  *
  ***********************************************************************/
 
@@ -590,7 +590,7 @@ IDE_RC qdbFlashback::validateFlashbackTable( qcStatement * aStatement )
     IDE_TEST( getTableIdByOriginalName( aStatement,
                                         sParseTree->tableName,
                                         QCG_GET_SESSION_USER_ID(aStatement),
-                                        ID_FALSE, /*√÷±Ÿ µÂ∂¯µ» ≈◊¿Ã∫Ì*/
+                                        ID_FALSE, /*ÏµúÍ∑º ÎìúÎûçÎêú ÌÖåÏù¥Î∏î*/
                                         &sTableID )
               != IDE_SUCCESS );
 
@@ -742,9 +742,9 @@ IDE_RC qdbFlashback::executeFlashbackTable( qcStatement * aStatement )
  *    FLASHBACK TABLE ... TO BEFORE DROP (RENAME TO ...)
  *
  * Implementation :
- *    1. SYS_TABLES_ ø°º≠ ≈◊¿Ã∫Ì ¿Ã∏ß ∫Ø∞Ê
+ *    1. SYS_TABLES_ ÏóêÏÑú ÌÖåÏù¥Î∏î Ïù¥Î¶Ñ Î≥ÄÍ≤Ω
  *    2. qcm::touchTable
- *    3. ∏ﬁ≈∏ ƒ≥Ω¨ ¿Á±∏º∫
+ *    3. Î©îÌÉÄ Ï∫êÏâ¨ Ïû¨Íµ¨ÏÑ±
  *
  ***********************************************************************/
 
@@ -763,7 +763,7 @@ IDE_RC qdbFlashback::executeFlashbackTable( qcStatement * aStatement )
     sParseTree = (qdTableParseTree *)aStatement->myPlan->parseTree;
 
     // TASK-2176
-    // Tableø° ¥Î«— Lock¿ª »πµÊ«—¥Ÿ.
+    // TableÏóê ÎåÄÌïú LockÏùÑ ÌöçÎìùÌïúÎã§.
     IDE_TEST( qcm::validateAndLockTable( aStatement,
                                          sParseTree->tableHandle,
                                          sParseTree->tableSCN,
@@ -824,7 +824,7 @@ IDE_RC qdbFlashback::executeFlashbackTable( qcStatement * aStatement )
                                      &sTableHandle )
               != IDE_SUCCESS);
 
-    // PROJ-1442 Table Meta Log Record ±‚∑œ
+    // PROJ-1442 Table Meta Log Record Í∏∞Î°ù
     if ( QCU_DDL_SUPPLEMENTAL_LOG == 1 )
     {
         IDE_TEST( qci::mManageReplicationCallback.mWriteTableMetaLog(

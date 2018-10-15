@@ -29,8 +29,8 @@ ACI_RC ulnDataSourceAddConnAttr(ulnDataSource *aDataSource,
     acp_size_t             sValueLen;
     ulnDataSourceConnAttr *sConnAttr = NULL;
 
-    // fix BUG-25971 UL-FailOverÃß°¡ÇÑ ÇÔ¼ö¿¡¼­ ¸Ş¸ğ¸® ÇÑ°è»óÈ²À»
-    // °í·ÁÇÏÁö ¾ÊÀ½.
+    // fix BUG-25971 UL-FailOverì¶”ê°€í•œ í•¨ìˆ˜ì—ì„œ ë©”ëª¨ë¦¬ í•œê³„ìƒí™©ì„
+    // ê³ ë ¤í•˜ì§€ ì•ŠìŒ.
     ACI_TEST(acpMemAlloc((void**)&sConnAttr, ACI_SIZEOF(ulnDataSourceConnAttr))
              != ACP_RC_SUCCESS);
     sStage = 1;

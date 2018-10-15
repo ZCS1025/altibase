@@ -29,7 +29,7 @@ void ulnMetaInitialize(ulnMeta *aMeta)
     aMeta->mLanguage             = 0;
 
     /*
-     * ODBC ¼Ó¼ºµé
+     * ODBC ì†ì„±ë“¤
      */
 
     aMeta->mOdbcType             = 0;
@@ -50,8 +50,8 @@ void ulnMetaInitialize(ulnMeta *aMeta)
 }
 
 /*
- * Note : IRD ·¹ÄÚµåÀÇ Å¸ÀÔ Á¤º¸´Â ¾îÂ÷ÇÇ »ç¿ëÀÚ¿¡°Ô Á¤º¸¸¸ Á¦°øÇÏ´Â ¿ëµµÀÌ¹Ç·Î
- *        ´ëÃæ ³Ö¾îµµ ¹®Á¦ ¾øÀ» µí ÇÏ´Ù. ½ÇÇà½ÃÄÑ °¡¸é¼­ ¹ö±×´Â ¼öÁ¤ÇÏµµ·Ï ÇÑ´Ù.
+ * Note : IRD ë ˆì½”ë“œì˜ íƒ€ì… ì •ë³´ëŠ” ì–´ì°¨í”¼ ì‚¬ìš©ìì—ê²Œ ì •ë³´ë§Œ ì œê³µí•˜ëŠ” ìš©ë„ì´ë¯€ë¡œ
+ *        ëŒ€ì¶© ë„£ì–´ë„ ë¬¸ì œ ì—†ì„ ë“¯ í•˜ë‹¤. ì‹¤í–‰ì‹œì¼œ ê°€ë©´ì„œ ë²„ê·¸ëŠ” ìˆ˜ì •í•˜ë„ë¡ í•œë‹¤.
  */
 void ulnMetaBuild4Ird(ulnDbc       *aDbc,
                       ulnMeta      *aMeta,
@@ -110,7 +110,7 @@ void ulnMetaBuild4Ird(ulnDbc       *aDbc,
         case ULN_MTYPE_NIBBLE:
             ulnMetaSetOdbcLength(aMeta, aPrecision);
             /*
-             * ¸¶Áö¸·ÀÇ + 1 Àº ±æÀÌ Á¤º¸°¡ µé¾î°¡´Â NIBBLE Çì´õÀÌ´Ù.
+             * ë§ˆì§€ë§‰ì˜ + 1 ì€ ê¸¸ì´ ì •ë³´ê°€ ë“¤ì–´ê°€ëŠ” NIBBLE í—¤ë”ì´ë‹¤.
              */
             ulnMetaSetOctetLength(aMeta, (aPrecision + 1) / 2 + ACI_SIZEOF(acp_uint8_t));
             break;
@@ -119,7 +119,7 @@ void ulnMetaBuild4Ird(ulnDbc       *aDbc,
         case ULN_MTYPE_VARBIT:
             ulnMetaSetOdbcLength(aMeta, aPrecision);
             /*
-             * ¸¶Áö¸·ÀÇ + ACI_SIZEOF(acp_uint32_t) ´Â ±æÀÌ Á¤º¸°¡ µé¾î°¡´Â VARBIT Çì´õÀÌ´Ù.
+             * ë§ˆì§€ë§‰ì˜ + ACI_SIZEOF(acp_uint32_t) ëŠ” ê¸¸ì´ ì •ë³´ê°€ ë“¤ì–´ê°€ëŠ” VARBIT í—¤ë”ì´ë‹¤.
              */
             ulnMetaSetOctetLength(aMeta, (aPrecision + 7) / 8 + ACI_SIZEOF(acp_uint32_t));
             ulnMetaSetPrecision(aMeta, aPrecision);
@@ -161,14 +161,14 @@ void ulnMetaBuild4Ird(ulnDbc       *aDbc,
             ulnMetaSetOctetLength(aMeta, ACI_SIZEOF(acp_float_t));   // BUGBUG
             break;
 
-        case ULN_MTYPE_DATE:        // ¼­¹ö¿¡¼­ ¿Ã¶ó¿ÀÁö ¾Ê´Â Å¸ÀÔ.
-        case ULN_MTYPE_TIME:        // ¼­¹ö¿¡¼­ ¿Ã¶ó¿ÀÁö ¾Ê´Â Å¸ÀÔ.
+        case ULN_MTYPE_DATE:        // ì„œë²„ì—ì„œ ì˜¬ë¼ì˜¤ì§€ ì•ŠëŠ” íƒ€ì….
+        case ULN_MTYPE_TIME:        // ì„œë²„ì—ì„œ ì˜¬ë¼ì˜¤ì§€ ì•ŠëŠ” íƒ€ì….
         case ULN_MTYPE_TIMESTAMP:
             // proj_2160 cm_type removal
-            // mtdDateType(8bytes)  Å©±â¸¦ »ç¿ëÇÏÁö ¾Ê°í
-            // cmtDateTime(16bytes) Å©±â¸¦ ±×´ë·Î »ç¿ëÇÏ±â·Î ÇÔ
-            // ÀÌÀ¯: Å©±â°¡ Àû¾îÁö¸é È£È¯¼º¿¡ ¹®Á¦°¡ »ı±æ±îºÁ
-            // cf) OLEDB¿¡¼­ ÀÌ Å©±â¸¦ ÄÃ·³¹öÆÛÅ©±â·Î »ç¿ëÇÔ
+            // mtdDateType(8bytes)  í¬ê¸°ë¥¼ ì‚¬ìš©í•˜ì§€ ì•Šê³ 
+            // cmtDateTime(16bytes) í¬ê¸°ë¥¼ ê·¸ëŒ€ë¡œ ì‚¬ìš©í•˜ê¸°ë¡œ í•¨
+            // ì´ìœ : í¬ê¸°ê°€ ì ì–´ì§€ë©´ í˜¸í™˜ì„±ì— ë¬¸ì œê°€ ìƒê¸¸ê¹Œë´
+            // cf) OLEDBì—ì„œ ì´ í¬ê¸°ë¥¼ ì»¬ëŸ¼ë²„í¼í¬ê¸°ë¡œ ì‚¬ìš©í•¨
             ulnMetaSetOdbcLength(aMeta, ACI_SIZEOF(cmtDateTime));
             ulnMetaSetOctetLength(aMeta, ACI_SIZEOF(cmtDateTime));
             break;
@@ -197,7 +197,7 @@ void ulnMetaBuild4Ird(ulnDbc       *aDbc,
         case ULN_MTYPE_BLOB:
 
             // To Fix BUG-21276
-            // MSDN ¿¡ ÀÇÇÏ¸é ´ÙÀ½°ú °°ÀÌ Á¤ÀÇÇÏ°í ÀÖ´Ù.
+            // MSDN ì— ì˜í•˜ë©´ ë‹¤ìŒê³¼ ê°™ì´ ì •ì˜í•˜ê³  ìˆë‹¤.
             //   All binary types[a] :
             //      The number of bytes required to hold the defined
             //      (for fixed types)
@@ -205,9 +205,9 @@ void ulnMetaBuild4Ird(ulnDbc       *aDbc,
             //   If the driver cannot determine the column
             //      or parameter length for variable types,
             //      it returns SQL_NO_TOTAL(-4).
-            // ±×·¯³ª, ALTIBASE´Â SQL_LONGVARBINARY ¿Í °°Àº ÇüÅÂ¸¦
-            //   ¼­¹ö ³»ºÎÀûÀ¸·Î Áö¿øÇÏÁö ¾Ê°í ÀÖ´Ù.
-            //   ´ë¾ÈÀ¸·Î BLOB ¶Ç´Â SQL_BINARY °¡ °¡Áú¼ö ÀÖ´Â ÃÖ´ë°ªÀ» ¼³Á¤ÇÑ´Ù.
+            // ê·¸ëŸ¬ë‚˜, ALTIBASEëŠ” SQL_LONGVARBINARY ì™€ ê°™ì€ í˜•íƒœë¥¼
+            //   ì„œë²„ ë‚´ë¶€ì ìœ¼ë¡œ ì§€ì›í•˜ì§€ ì•Šê³  ìˆë‹¤.
+            //   ëŒ€ì•ˆìœ¼ë¡œ BLOB ë˜ëŠ” SQL_BINARY ê°€ ê°€ì§ˆìˆ˜ ìˆëŠ” ìµœëŒ€ê°’ì„ ì„¤ì •í•œë‹¤.
 
             ulnMetaSetOdbcLength(aMeta, ACP_SINT32_MAX);
             ulnMetaSetOctetLength(aMeta, ACP_SINT32_MAX);
@@ -225,8 +225,8 @@ void ulnMetaBuild4Ird(ulnDbc       *aDbc,
             break;
 
             /*
-             * ¾Æ·¡ÀÇ µÎ Å¸ÀÔÀº ¿À·ÎÁö »ç¿ëÀÚ°¡ lob locator ·Î ¹ÙÀÎµå ÇßÀ» °æ¿ìÀÇ
-             * out binding À» À§ÇØ¼­¸¸ Á¸ÀçÇÑ´Ù.
+             * ì•„ë˜ì˜ ë‘ íƒ€ì…ì€ ì˜¤ë¡œì§€ ì‚¬ìš©ìê°€ lob locator ë¡œ ë°”ì¸ë“œ í–ˆì„ ê²½ìš°ì˜
+             * out binding ì„ ìœ„í•´ì„œë§Œ ì¡´ì¬í•œë‹¤.
              */
         case ULN_MTYPE_CLOB_LOCATOR:
         case ULN_MTYPE_BLOB_LOCATOR:
@@ -269,7 +269,7 @@ void ulnMetaBuild4IpdByMeta(ulnMeta      *aMeta,
     ulnMetaSetNullable(aMeta, SQL_NULLABLE_UNKNOWN);
 
     /*
-     * Note : ColumnSize ÀÇ ÀÇ¹Ì
+     * Note : ColumnSize ì˜ ì˜ë¯¸
      * If ParamType is
      *      SQL_CHAR
      *      SQL_VARCHAR
@@ -289,7 +289,7 @@ void ulnMetaBuild4IpdByMeta(ulnMeta      *aMeta,
      *
      * For all other data types, the ColumnSize argument is ignored.
      *
-     * Note : DecimalDigits ÀÇ ÀÇ¹Ì
+     * Note : DecimalDigits ì˜ ì˜ë¯¸
      * If ParamType is
      *      SQL_TYPE_TIME,
      *      SQL_TYPE_TIMESTAMP,
@@ -307,15 +307,15 @@ void ulnMetaBuild4IpdByMeta(ulnMeta      *aMeta,
      * For all other data types, the DecimalDigits argument is ignored.
      *
      * Note : Summary
-     *  1. SQL_NUMERIC, SQL_DECIMAL ÀÇ ¼­¹öÃø Å¸ÀÔ
-     *      ColumnSize ´Â precision,
-     *      DecimalDigits ´Â scale ÀÌ´Ù.
-     *  2. SQL_FLOAT, SQL_REAL, SQL_DOUBLE ÀÇ ¼­¹öÃø Å¸ÀÔ
-     *      ColumnSize °¡ precision.
-     *  4. SQL_TYPE_TIME, SQL_TYPE_TIMESTAMP, SQL_INTERVAL_XXX µîÀÇ ¼­¹öÃø Å¸ÀÔ
-     *      DecimalDigits °¡ precision
-     *  5. SQL_CHAR, SQL_VARCHAR, SQL_BINARY, SQL_VARBINARY µîÀÇ ¼­¹öÃø Å¸ÀÔ
-     *      ColumnSize ´Â ±æÀÌ.
+     *  1. SQL_NUMERIC, SQL_DECIMAL ì˜ ì„œë²„ì¸¡ íƒ€ì…
+     *      ColumnSize ëŠ” precision,
+     *      DecimalDigits ëŠ” scale ì´ë‹¤.
+     *  2. SQL_FLOAT, SQL_REAL, SQL_DOUBLE ì˜ ì„œë²„ì¸¡ íƒ€ì…
+     *      ColumnSize ê°€ precision.
+     *  4. SQL_TYPE_TIME, SQL_TYPE_TIMESTAMP, SQL_INTERVAL_XXX ë“±ì˜ ì„œë²„ì¸¡ íƒ€ì…
+     *      DecimalDigits ê°€ precision
+     *  5. SQL_CHAR, SQL_VARCHAR, SQL_BINARY, SQL_VARBINARY ë“±ì˜ ì„œë²„ì¸¡ íƒ€ì…
+     *      ColumnSize ëŠ” ê¸¸ì´.
      */
     // BUG-18607
     ulnMetaSetFixedPrecScale(aMeta, SQL_FALSE);
@@ -392,10 +392,10 @@ void ulnMetaBuild4IpdByMeta(ulnMeta      *aMeta,
             break;
 
             /*
-             * ¾Æ·¡ÀÇ µÎ Å¸ÀÔÀº ¿À·ÎÁö »ç¿ëÀÚ°¡ lob locator ·Î ¹ÙÀÎµå ÇßÀ» °æ¿ìÀÇ
-             * out binding À» À§ÇØ¼­¸¸ Á¸ÀçÇÑ´Ù.
-             * ¾Æ·¡ÀÇ µÎ Å¸ÀÔÀÌ ¾²ÀÌ´Â °æ¿ì´Â ulnBindInfoBuild4Param() ¿¡¼­ º¼ ¼ö ÀÖ´Ù.
-             * Àı´ë·Î »ç¿ëÀÚ°¡ ÁöÁ¤ÇÑ Å¸ÀÔÀÌ ÀÌ¸®·Î ¸ÅÇÎµÇ´Â °æ¿ì´Â ¾ø¾î¾ß ÇÑ´Ù.
+             * ì•„ë˜ì˜ ë‘ íƒ€ì…ì€ ì˜¤ë¡œì§€ ì‚¬ìš©ìê°€ lob locator ë¡œ ë°”ì¸ë“œ í–ˆì„ ê²½ìš°ì˜
+             * out binding ì„ ìœ„í•´ì„œë§Œ ì¡´ì¬í•œë‹¤.
+             * ì•„ë˜ì˜ ë‘ íƒ€ì…ì´ ì“°ì´ëŠ” ê²½ìš°ëŠ” ulnBindInfoBuild4Param() ì—ì„œ ë³¼ ìˆ˜ ìˆë‹¤.
+             * ì ˆëŒ€ë¡œ ì‚¬ìš©ìê°€ ì§€ì •í•œ íƒ€ì…ì´ ì´ë¦¬ë¡œ ë§¤í•‘ë˜ëŠ” ê²½ìš°ëŠ” ì—†ì–´ì•¼ í•œë‹¤.
              */
         case ULN_MTYPE_CLOB_LOCATOR:
         case ULN_MTYPE_BLOB_LOCATOR:
@@ -418,8 +418,8 @@ void ulnMetaBuild4IpdByStmt(ulnStmt      *aStmt,
 
     /*
      * BUG-28623 [CodeSonar]Null Pointer Dereference
-     * ACE_DASSERT·Î °Ë»çÇÒ °æ¿ì release mode¿¡¼­ NULLÀÌ µÉ ¼ö ÀÖÀ½
-     * µû¶ó¼­ ACE_ASSERT·Î °Ë»ç
+     * ACE_DASSERTë¡œ ê²€ì‚¬í•  ê²½ìš° release modeì—ì„œ NULLì´ ë  ìˆ˜ ìˆìŒ
+     * ë”°ë¼ì„œ ACE_ASSERTë¡œ ê²€ì‚¬
      */
     ACE_ASSERT( aStmt != NULL );
 
@@ -532,8 +532,8 @@ void ulnMetaAdjustIpdByStmt(ulnDbc       *aDbc,
 
      /*
      * BUG-28623 [CodeSonar]Null Pointer Dereference
-     * ACE_DASSERT·Î °Ë»çÇÒ °æ¿ì release mode¿¡¼­ NULLÀÌ µÉ ¼ö ÀÖÀ½
-     * µû¶ó¼­ ACE_ASSERT·Î °Ë»ç
+     * ACE_DASSERTë¡œ ê²€ì‚¬í•  ê²½ìš° release modeì—ì„œ NULLì´ ë  ìˆ˜ ìˆìŒ
+     * ë”°ë¼ì„œ ACE_ASSERTë¡œ ê²€ì‚¬
      */
     ACE_ASSERT( aStmt != NULL );
     sDescRecIpd = ulnStmtGetIpdRec(aStmt, aRecNumber);
@@ -615,7 +615,7 @@ void ulnMetaBuild4ArdApd(ulnMeta      *aAppMeta,
         case ULN_CTYPE_BLOB_LOCATOR:
         case ULN_CTYPE_CLOB_LOCATOR:
             /*
-             * BUGBUG : BIGINT ±¸Á¶Ã¼¿¡ ´ëÇÑ °í·Á¸¦ ÇØ Áà¾ß ÇÑ´Ù.
+             * BUGBUG : BIGINT êµ¬ì¡°ì²´ì— ëŒ€í•œ ê³ ë ¤ë¥¼ í•´ ì¤˜ì•¼ í•œë‹¤.
              */
             ulnMetaSetOctetLength(aAppMeta, ACI_SIZEOF(acp_uint64_t));
             break;
@@ -641,9 +641,9 @@ void ulnMetaBuild4ArdApd(ulnMeta      *aAppMeta,
             break;
 
             /*
-             * Note : CTYPE_DEFAULT ÀÇ °æ¿ì´Â ¾ÆÁ÷Àº ¸ŞÅ¸ Á¤º¸¸¦ °áÁ¤ÇÒ ´Ü°è°¡ ¾Æ´Ï´Ù.
-             *        ´ÜÁö, »ç¿ëÀÚ°¡ Á¤È®ÇÑ ±æÀÌ¸¦ Áà¾ß¸¸ ÇÏ¹Ç·Î »ç¿ëÀÚ°¡ Á¦°øÇÑ
-             *        ±æ¿¡¿¡¸¸ ÀÇÁ¸ÇÑ´Ù.
+             * Note : CTYPE_DEFAULT ì˜ ê²½ìš°ëŠ” ì•„ì§ì€ ë©”íƒ€ ì •ë³´ë¥¼ ê²°ì •í•  ë‹¨ê³„ê°€ ì•„ë‹ˆë‹¤.
+             *        ë‹¨ì§€, ì‚¬ìš©ìê°€ ì •í™•í•œ ê¸¸ì´ë¥¼ ì¤˜ì•¼ë§Œ í•˜ë¯€ë¡œ ì‚¬ìš©ìê°€ ì œê³µí•œ
+             *        ê¸¸ì—ì—ë§Œ ì˜ì¡´í•œë‹¤.
              */
         case ULN_CTYPE_DEFAULT:
         case ULN_CTYPE_BINARY:
@@ -651,7 +651,7 @@ void ulnMetaBuild4ArdApd(ulnMeta      *aAppMeta,
         case ULN_CTYPE_WCHAR:
         case ULN_CTYPE_FILE:
             /*
-             * FILE ÀÇ °æ¿ì¿¡´Â mSize, mPrecision ÀÌ »ç¿ëÀÚ ¹öÆÛ, Áï, ÆÄÀÏ³×ÀÓ¿¡ °üÇÑ Á¤º¸ÀÓ.
+             * FILE ì˜ ê²½ìš°ì—ëŠ” mSize, mPrecision ì´ ì‚¬ìš©ì ë²„í¼, ì¦‰, íŒŒì¼ë„¤ì„ì— ê´€í•œ ì •ë³´ì„.
              */
             ulnMetaSetOctetLength(aAppMeta, aBufferLength);
             break;

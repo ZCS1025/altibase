@@ -19,7 +19,7 @@
  * $Id: mtsFileType.cpp 82075 2018-01-17 06:39:52Z jina.kim $
  *
  *  Description :
- *      PROJ-1371 PSM File handlingÀ» À§ÇÑ FILE_TYPE
+ *      PROJ-1371 PSM File handlingì„ ìœ„í•œ FILE_TYPE
  **********************************************************************/
 
 #include <mte.h>

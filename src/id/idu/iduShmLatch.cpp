@@ -116,14 +116,14 @@ IDE_RC iduShmLatchAcquire( idvSQL       * aStatistics,
 
     sSleepDuration.set( 0, iduProperty::getShmLatchSleepDuration() );
 
-    /* MainThrInfo´Â µ¿½Ã¿¡ ¿©·¯°³ÀÇ Thread°¡ Á¢±ÙÇÒ ¼ö ÀÖ±â ¶§¹®¿¡
-     * MainThrInfoÀÇ Latch StackÀº »ç¿ëÇÏÁö ¾Ê´Â´Ù. ÀÌ¶§¹®¿¡ Latch¸¦
-     * Àâ°í Á×À» °æ¿ì Ç®¾îÁÙ ¹æ¹ýÀÌ ¾ø´Ù. ´ÙÇàÈ÷ MainThrInfo°¡ Àâ´Â
-     * Latch´Â ThreadInfo AllocÇÒ¶§ Àâ´Â Latch * °¡ ÀüºÎÀÌ´Ù.
-     * ¶§¹®¿¡ Process Undo½Ã ¸ÕÀú MainThrInfoÀÇ LogBufferÀÖ´Â Log¸¦ UndoÇÏ°í
-     * Thread Info Alloc Latch¸¦ Çª´Â ¿¬»êÀ» ¹«Á¶°Ç ½ÃµµÇÑ´Ù.
-     * ¸¸¾à Àâ°í Á×¾úÀ¸¸é Latch´Â Ç®¸®°í, ÀâÁö¾Ê¾ÒÀ» °æ¿ì¿¡´Â LatchRelease
-     * ¿¡¼­ ¾Æ¹«°Íµµ ÇÏÁö ¾Êµµ·Ï ±¸ÇöµÇ¾î ÀÖ´Ù.
+    /* MainThrInfoëŠ” ë™ì‹œì— ì—¬ëŸ¬ê°œì˜ Threadê°€ ì ‘ê·¼í•  ìˆ˜ ìžˆê¸° ë•Œë¬¸ì—
+     * MainThrInfoì˜ Latch Stackì€ ì‚¬ìš©í•˜ì§€ ì•ŠëŠ”ë‹¤. ì´ë•Œë¬¸ì— Latchë¥¼
+     * ìž¡ê³  ì£½ì„ ê²½ìš° í’€ì–´ì¤„ ë°©ë²•ì´ ì—†ë‹¤. ë‹¤í–‰ížˆ MainThrInfoê°€ ìž¡ëŠ”
+     * LatchëŠ” ThreadInfo Allocí• ë•Œ ìž¡ëŠ” Latch * ê°€ ì „ë¶€ì´ë‹¤.
+     * ë•Œë¬¸ì— Process Undoì‹œ ë¨¼ì € MainThrInfoì˜ LogBufferìžˆëŠ” Logë¥¼ Undoí•˜ê³ 
+     * Thread Info Alloc Latchë¥¼ í‘¸ëŠ” ì—°ì‚°ì„ ë¬´ì¡°ê±´ ì‹œë„í•œë‹¤.
+     * ë§Œì•½ ìž¡ê³  ì£½ì—ˆìœ¼ë©´ LatchëŠ” í’€ë¦¬ê³ , ìž¡ì§€ì•Šì•˜ì„ ê²½ìš°ì—ëŠ” LatchRelease
+     * ì—ì„œ ì•„ë¬´ê²ƒë„ í•˜ì§€ ì•Šë„ë¡ êµ¬í˜„ë˜ì–´ ìžˆë‹¤.
      * */
     if( ( aLock              != &sProcInfo->mLatch ) &&
         ( aPushLatchOP2Stack == ID_TRUE ) )
@@ -166,16 +166,16 @@ IDE_RC iduShmLatchAcquire( idvSQL       * aStatistics,
             }
             else
             {
-                // ¿©·¯ Thread°¡ AllocShmTx¸¦ µ¿½Ã¿¡ ¿äÃ»ÇÏ°Ô µÇ¸é
-                // µ¿½Ã¼º Á¦¾î°¡ ±úÁú ¼ö ÀÖÀ¸¹Ç·Î MainShmTx´Â Latch¸¦
-                // Áßº¹ÇØ¼­ ÀâÀ» ¼ö ¾ø´Ù.
+                // ì—¬ëŸ¬ Threadê°€ AllocShmTxë¥¼ ë™ì‹œì— ìš”ì²­í•˜ê²Œ ë˜ë©´
+                // ë™ì‹œì„± ì œì–´ê°€ ê¹¨ì§ˆ ìˆ˜ ìžˆìœ¼ë¯€ë¡œ MainShmTxëŠ” Latchë¥¼
+                // ì¤‘ë³µí•´ì„œ ìž¡ì„ ìˆ˜ ì—†ë‹¤.
                 if( sMainThrInfo != aShmTxInfo )
                 {
                     if( aLock->mLock == sLatchValue )
                     {
-                        /* try acquire¿¡´Â ½ÇÆÐÇßÁö¸¸, ÀÚ½ÅÀÌ ÀÌ¹Ì
-                         * Àâ°í ÀÖ´Â lockÀÌ¹Ç·Î recursive lockÀ»
-                         * È¹µæ */
+                        /* try acquireì—ëŠ” ì‹¤íŒ¨í–ˆì§€ë§Œ, ìžì‹ ì´ ì´ë¯¸
+                         * ìž¡ê³  ìžˆëŠ” lockì´ë¯€ë¡œ recursive lockì„
+                         * íšë“ */
                         sIsMyLock = ID_TRUE;
                         aLock->mRecursive++;
                         break;
@@ -245,8 +245,8 @@ IDE_RC iduShmLatchAcquire( idvSQL            * aStatistics,
 
     if( aLockWaitMicroSec == IDU_SHM_SX_LATCH_INFINITE_WAIT )
     {
-        /* lock wait timeÀÌ infiniteÀÎ °æ¿ì¿¡´Â
-         * ±âÁ¸ÀÇ blocking acquireÇÔ¼ö¸¦ È£ÃâÇÏµµ·Ï ÇÑ´Ù. */
+        /* lock wait timeì´ infiniteì¸ ê²½ìš°ì—ëŠ”
+         * ê¸°ì¡´ì˜ blocking acquireí•¨ìˆ˜ë¥¼ í˜¸ì¶œí•˜ë„ë¡ í•œë‹¤. */
         IDE_TEST( iduShmLatchAcquire( aStatistics,
                                       aShmTxInfo,
                                       aLatch,
@@ -291,9 +291,9 @@ IDE_RC iduShmLatchAcquire( idvSQL            * aStatistics,
                 {
                     if( aLatch->mLock == sLatchValue )
                     {
-                        /* try acquire¿¡´Â ½ÇÆÐÇßÁö¸¸, ÀÚ½ÅÀÌ ÀÌ¹Ì
-                         * Àâ°í ÀÖ´Â lockÀÌ¹Ç·Î recursive lockÀ»
-                         * È¹µæ */
+                        /* try acquireì—ëŠ” ì‹¤íŒ¨í–ˆì§€ë§Œ, ìžì‹ ì´ ì´ë¯¸
+                         * ìž¡ê³  ìžˆëŠ” lockì´ë¯€ë¡œ recursive lockì„
+                         * íšë“ */
                         sLatchAcquired = ID_TRUE;
                         aLatch->mRecursive++;
                         break;
@@ -364,10 +364,10 @@ IDE_RC iduShmLatchReleaseByUndo( UInt          aThrID,
 }
 
 /*******************************************************************************
- * [!] ÀÌ ÇÔ¼ö¸¦ ¹Ù·Î È£ÃâÇØ¼± ¾ÈµÈ´Ù.
- *     ¹Ýµå½Ã idrLogMgr::xxx2SvpÇÔ¼ö¸¦ ÅëÇØ È£ÃâÇØ¾ß ÇÑ´Ù.
- *     ÇöÀç(2014.02.28) ±¸Á¶»ó ºñÁ¤»ó Á¾·á½Ã
- *     Latch¸¦ release ¸øÇØ ShmRecovery½Ã Hang¿¡ °É¸± ¼ö ÀÖ´Ù.
+ * [!] ì´ í•¨ìˆ˜ë¥¼ ë°”ë¡œ í˜¸ì¶œí•´ì„  ì•ˆëœë‹¤.
+ *     ë°˜ë“œì‹œ idrLogMgr::xxx2Svpí•¨ìˆ˜ë¥¼ í†µí•´ í˜¸ì¶œí•´ì•¼ í•œë‹¤.
+ *     í˜„ìž¬(2014.02.28) êµ¬ì¡°ìƒ ë¹„ì •ìƒ ì¢…ë£Œì‹œ
+ *     Latchë¥¼ release ëª»í•´ ShmRecoveryì‹œ Hangì— ê±¸ë¦´ ìˆ˜ ìžˆë‹¤.
  *******************************************************************************/
 IDE_RC iduShmLatchRelease( iduShmTxInfo * aShmTxInfo,
                            iduShmLatch  * aLatch )

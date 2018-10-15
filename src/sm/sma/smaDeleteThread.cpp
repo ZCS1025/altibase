@@ -176,18 +176,18 @@ IDE_RC smaDeleteThread::destroy()
 }
 
 /***********************************************************************
- * Description : Table DropÀ» CommitÈÄ¿¡ TransactionÀÌ Á÷Á¢ ¼öÇàÇÏ±â¶§¹®¿¡
- *               Ager°¡ Drop Table¿¡ ´ëÇØ¼­ AgingÀÛ¾÷À» ÇÏ¸é ¾ÈµÈ´Ù. ÀÌ¸¦ À§ÇØ
- *               Ager´Â ÇØ´ç Table¿¡ ´ëÇØ AgingÀÛ¾÷À» ÇÏ±âÀü¿¡ TableÀÌ DropµÇ
- *               ¾ú´ÂÁö Á¶»çÇÑ´Ù. ±×·±µ¥ ÀÌ TableÀÌ DropµÇ¾ú´ÂÁö CheckÇÏ°í °£»çÀÌ
- *               ¿¡ TableÀÌ Transaction¿¡ ÀÇÇØ¼­ DropµÉ ¼ö ÀÖ±â ¶§¹®¿¡ ¹®Á¦°¡µÈ´Ù.
- *               ÀÌ¶§¹®¿¡ Ager´Â ¿¬»ê ¼öÇà½Ã mCheckMutex¸¦ °É°í ÀÛ¾÷À» ¼öÇàÇÑ´Ù.
- *               µû¶ó¼­ Table DropÀ» ¼öÇàÇÑ TransactionÀÌ mCheckMutex¸¦ Àâ¾Ò´Ù´Â
- *               ÀÌ¾ß±â´Â ¾Æ¹«µµ Ager°¡ Table¿¡ Á¢±ÙÇÏÁö ¾Ê°í ÀÖ´Ù´Â °ÍÀ» º¸ÀåÇÏ°í
- *               ¶ÇÇÑ ±× ÀÌÈÄ¿¡ Ager°¡ Á¢±ÙÇÒ¶§´Â Å×ÀÌºí¿¡ SetµÈ Drop Flag¸¦
- *               º¸°Ô µÇ¾î Table¿¡ ´ëÇØ AgingÀÛ¾÷À» ¼öÇàÇÏÁö ¾Ê´Â´Ù.
+ * Description : Table Dropì„ Commití›„ì— Transactionì´ ì§ì ‘ ìˆ˜í–‰í•˜ê¸°ë•Œë¬¸ì—
+ *               Agerê°€ Drop Tableì— ëŒ€í•´ì„œ Agingì‘ì—…ì„ í•˜ë©´ ì•ˆëœë‹¤. ì´ë¥¼ ìœ„í•´
+ *               AgerëŠ” í•´ë‹¹ Tableì— ëŒ€í•´ Agingì‘ì—…ì„ í•˜ê¸°ì „ì— Tableì´ Dropë˜
+ *               ì—ˆëŠ”ì§€ ì¡°ì‚¬í•œë‹¤. ê·¸ëŸ°ë° ì´ Tableì´ Dropë˜ì—ˆëŠ”ì§€ Checkí•˜ê³  ê°„ì‚¬ì´
+ *               ì— Tableì´ Transactionì— ì˜í•´ì„œ Dropë  ìˆ˜ ìˆê¸° ë•Œë¬¸ì— ë¬¸ì œê°€ëœë‹¤.
+ *               ì´ë•Œë¬¸ì— AgerëŠ” ì—°ì‚° ìˆ˜í–‰ì‹œ mCheckMutexë¥¼ ê±¸ê³  ì‘ì—…ì„ ìˆ˜í–‰í•œë‹¤.
+ *               ë”°ë¼ì„œ Table Dropì„ ìˆ˜í–‰í•œ Transactionì´ mCheckMutexë¥¼ ì¡ì•˜ë‹¤ëŠ”
+ *               ì´ì•¼ê¸°ëŠ” ì•„ë¬´ë„ Agerê°€ Tableì— ì ‘ê·¼í•˜ì§€ ì•Šê³  ìˆë‹¤ëŠ” ê²ƒì„ ë³´ì¥í•˜ê³ 
+ *               ë˜í•œ ê·¸ ì´í›„ì— Agerê°€ ì ‘ê·¼í• ë•ŒëŠ” í…Œì´ë¸”ì— Setëœ Drop Flagë¥¼
+ *               ë³´ê²Œ ë˜ì–´ Tableì— ëŒ€í•´ Agingì‘ì—…ì„ ìˆ˜í–‰í•˜ì§€ ì•ŠëŠ”ë‹¤.
  *
- * °ü·Ã BUG: 15047
+ * ê´€ë ¨ BUG: 15047
  **********************************************************************/
 void smaDeleteThread::waitForNoAccessAftDropTbl()
 {
@@ -221,7 +221,7 @@ void smaDeleteThread::run()
         if ( smuProperty::isRunMemDeleteThread() == SMU_THREAD_OFF )
         {
             // To Fix PR-14783
-            // System ThreadÀÇ ÀÛ¾÷À» ¼öÇàÇÏÁö ¾Êµµ·Ï ÇÑ´Ù.
+            // System Threadì˜ ì‘ì—…ì„ ìˆ˜í–‰í•˜ì§€ ì•Šë„ë¡ í•œë‹¤.
             mTimeOut = sAgerWaitMax;
             continue;
         }
@@ -280,31 +280,31 @@ void smaDeleteThread::run()
 }
 
 /*
- * Aging OID List¿¡ ´ëÇØ¼­ AgingÀ» ¼öÇàÇÑ´Ù. ÀÌ ÇÔ¼ö´Â Å©°Ô
- * µÎ°¡Áö »óÈ²¿¡¼­ Aging ´ë»ó¿¡ ´ëÇØ¼­ AgingÀ» ¼öÇàÇÑ´Ù.
+ * Aging OID Listì— ëŒ€í•´ì„œ Agingì„ ìˆ˜í–‰í•œë‹¤. ì´ í•¨ìˆ˜ëŠ” í¬ê²Œ
+ * ë‘ê°€ì§€ ìƒí™©ì—ì„œ Aging ëŒ€ìƒì— ëŒ€í•´ì„œ Agingì„ ìˆ˜í–‰í•œë‹¤.
  *
- * 1. Server°¡ Á¾·á½Ã¿¡ aDeleteAllÀÌ ID_TRUE·Î ³Ñ¾î¿Í¼­
- *    Aging OID List¿¡ ´ëÇØ¼­ ¸ğµÎ Aging¿¬»êÀ» ¼öÇàÇÑ´Ù.
+ * 1. Serverê°€ ì¢…ë£Œì‹œì— aDeleteAllì´ ID_TRUEë¡œ ë„˜ì–´ì™€ì„œ
+ *    Aging OID Listì— ëŒ€í•´ì„œ ëª¨ë‘ Agingì—°ì‚°ì„ ìˆ˜í–‰í•œë‹¤.
  *
- * 2. OID List HeaderÀÇ mKeyFreeSCNÀÌ
+ * 2. OID List Headerì˜ mKeyFreeSCNì´
  *
- *    MinViewSCN = MIN( system scn + 1, MIN( TransactionµéÀÇ View SCN )
+ *    MinViewSCN = MIN( system scn + 1, MIN( Transactionë“¤ì˜ View SCN )
  *
- *   2.1 MinViewSCNº¸´Ù ÀÛÀ»¶§
+ *   2.1 MinViewSCNë³´ë‹¤ ì‘ì„ë•Œ
  *
- *   2.2 MinViewSCN°ú °°°í, TransactionÀÇ View SCNÀÌ ¾øÀ» °æ¿ì
- *     - system scn + 1°ú °°°í , TransactionµéÀÌ ¸ğµÎ View¸¦ º¸°í ÀÖÁö
- *       ¾ÊÀ» °æ¿ì ÀÌ List´Â ¾î¶² Transactionµµ º¸Áö ¾Ê´Â´Ù´Â °ÍÀ» º¸ÀåÇÏ±â
- *       ¶§¹®¿¡ AgingÇÒ ¼ö ÀÖ´Ù.
+ *   2.2 MinViewSCNê³¼ ê°™ê³ , Transactionì˜ View SCNì´ ì—†ì„ ê²½ìš°
+ *     - system scn + 1ê³¼ ê°™ê³  , Transactionë“¤ì´ ëª¨ë‘ Viewë¥¼ ë³´ê³  ìˆì§€
+ *       ì•Šì„ ê²½ìš° ì´ ListëŠ” ì–´ë–¤ Transactionë„ ë³´ì§€ ì•ŠëŠ”ë‹¤ëŠ” ê²ƒì„ ë³´ì¥í•˜ê¸°
+ *       ë•Œë¬¸ì— Agingí•  ìˆ˜ ìˆë‹¤.
  *
  *  Data Structure
  *   - <smaOidList ( mNext ) >  -> < smaOidList ( mNext ) >  ->  ...
  *      -  smxOIDNode* mHead         - smxOIDNode* mHead
  *      -  smxOIDNode* mTail         - smxOIDNode* mTail
  *
- *   - smaOIDList°¡ HeaderÀÌ°í HeaderµéÀº mNext¸¦ ÀÌ¿ëÇØ¼­ Linked List¸¦ À¯Áö
- *     ÇÑ´Ù.
- *   - smaOIDListÀÇ mHead, mTailÀÌ Node¸®½ºÆ®ÀÇ Head¿Í TailÀ» °¡¸®Å²´Ù.
+ *   - smaOIDListê°€ Headerì´ê³  Headerë“¤ì€ mNextë¥¼ ì´ìš©í•´ì„œ Linked Listë¥¼ ìœ ì§€
+ *     í•œë‹¤.
+ *   - smaOIDListì˜ mHead, mTailì´ Nodeë¦¬ìŠ¤íŠ¸ì˜ Headì™€ Tailì„ ê°€ë¦¬í‚¨ë‹¤.
  */
 IDE_RC smaDeleteThread::realDelete( idBool aDeleteAll )
 {
@@ -317,15 +317,15 @@ IDE_RC smaDeleteThread::realDelete( idBool aDeleteAll )
 
     if( smaLogicalAger::mTailDeleteThread != NULL )
     {
-        /* BUG-19308: Server Stop½Ã Delete Thread°¡ AgingÀÛ¾÷À» ¿Ï·áÇÏÁö ¾Ê°í
-         *             Á¾·áÇÕ´Ï´Ù.
+        /* BUG-19308: Server Stopì‹œ Delete Threadê°€ Agingì‘ì—…ì„ ì™„ë£Œí•˜ì§€ ì•Šê³ 
+         *             ì¢…ë£Œí•©ë‹ˆë‹¤.
          *
-         * aDeleteAll = ID_TRUEÀÌ¸é ¹«Á¶°Ç AgingÀ» ÇÏµµ·Ï ÇÕ´Ï´Ù. */
+         * aDeleteAll = ID_TRUEì´ë©´ ë¬´ì¡°ê±´ Agingì„ í•˜ë„ë¡ í•©ë‹ˆë‹¤. */
 
         if( ( smaLogicalAger::mTailDeleteThread->mErasable == ID_TRUE ) ||
             ( aDeleteAll == ID_TRUE ) )
         {
-            /* TransactionÀÇ Minimum View SCNÀ» ±¸ÇÑ´Ù. */
+            /* Transactionì˜ Minimum View SCNì„ êµ¬í•œë‹¤. */
             ID_SERIAL_BEGIN(
                     sLogicalAgerHead = smaLogicalAger::mTailLogicalAger );
             ID_SERIAL_END(
@@ -337,7 +337,7 @@ IDE_RC smaDeleteThread::realDelete( idBool aDeleteAll )
             {
                 sCurOIDHead = smaLogicalAger::mTailDeleteThread;
 
-                /* ÇØ´ç Node¸¦ AgingÀ» ¼öÇàÇØµµ µÇ´ÂÁö Á¶»çÇÑ´Ù. */
+                /* í•´ë‹¹ Nodeë¥¼ Agingì„ ìˆ˜í–‰í•´ë„ ë˜ëŠ”ì§€ ì¡°ì‚¬í•œë‹¤. */
                 if( isAgingTarget( sCurOIDHead,
                                    aDeleteAll,
                                    &sMinSCN )
@@ -348,8 +348,8 @@ IDE_RC smaDeleteThread::realDelete( idBool aDeleteAll )
 
                 smaLogicalAger::mTailDeleteThread = sCurOIDHead->mNext;
 
-                /* sCurOIDHead¿¡ ¸Ş´Ş·Á ÀÖ´Â OID Node List¿¡ ´ëÇØ¼­
-                   AgingÀ» ¼öÇàÇÑ´Ù. */
+                /* sCurOIDHeadì— ë©”ë‹¬ë ¤ ìˆëŠ” OID Node Listì— ëŒ€í•´ì„œ
+                   Agingì„ ìˆ˜í–‰í•œë‹¤. */
                 IDE_ASSERT( processAgingOIDNodeList( sCurOIDHead, aDeleteAll )
                             == IDE_SUCCESS );
 
@@ -361,13 +361,13 @@ IDE_RC smaDeleteThread::realDelete( idBool aDeleteAll )
 
             commitATrans();
 
-            /* OIDHeadÀÇ mKeyFreeSCNÀÌ Min SCNº¸´Ù ÀÛÀ»¶§ AgingÇÏ´Âµ¥ Key Free SCNÀº
-             * System SCNÀ¸·Î ¼³Á¤µÇ±â ¶§¹®¿¡ mKeyFreeSCNÀÌ ¼³Á¤µÈ ÀÌÈÄ¿¡ CommitÇÑ
-             * TransactionÀÌ ¾øÀ» °æ¿ì System SCNÀº Áõ°¡ÇÏÁö ¾Ê±â¶§¹®¿¡ Delete Thread°¡
-             * °è¼Ó ´ë±âÇÏ´Â ¹®Á¦°¡ ¹ß»ıÇÑ´Ù. ÇÏ¿© Aging List¿¡ Aging´ë»óÀº ÀÖÁö¸¸
-             * System SCNÀÌ KeyFreeSCN°ú µ¿ÀÏÇÏ°í ViewSCNÀ» ¼³Á¤ÇÑ TransactionÀÌ ¾ø´Ù¸é
-             * System SCNÀ» Áõ°¡½ÃÅ²´Ù. ÀÌ¶§ ÀÚÁÖ Áõ°¡ µÇÁö ¾Êµµ·Ï mTimeOutÀÌ ÃÖ´ëÄ¡ ÀÏ¶§
-             * ¸¸ Áõ°¡½ÃÅ²´Ù. */
+            /* OIDHeadì˜ mKeyFreeSCNì´ Min SCNë³´ë‹¤ ì‘ì„ë•Œ Agingí•˜ëŠ”ë° Key Free SCNì€
+             * System SCNìœ¼ë¡œ ì„¤ì •ë˜ê¸° ë•Œë¬¸ì— mKeyFreeSCNì´ ì„¤ì •ëœ ì´í›„ì— Commití•œ
+             * Transactionì´ ì—†ì„ ê²½ìš° System SCNì€ ì¦ê°€í•˜ì§€ ì•Šê¸°ë•Œë¬¸ì— Delete Threadê°€
+             * ê³„ì† ëŒ€ê¸°í•˜ëŠ” ë¬¸ì œê°€ ë°œìƒí•œë‹¤. í•˜ì—¬ Aging Listì— AgingëŒ€ìƒì€ ìˆì§€ë§Œ
+             * System SCNì´ KeyFreeSCNê³¼ ë™ì¼í•˜ê³  ViewSCNì„ ì„¤ì •í•œ Transactionì´ ì—†ë‹¤ë©´
+             * System SCNì„ ì¦ê°€ì‹œí‚¨ë‹¤. ì´ë•Œ ìì£¼ ì¦ê°€ ë˜ì§€ ì•Šë„ë¡ mTimeOutì´ ìµœëŒ€ì¹˜ ì¼ë•Œ
+             * ë§Œ ì¦ê°€ì‹œí‚¨ë‹¤. */
             if( ( mHandled == ID_FALSE ) &&
                 ( mTimeOut == smuProperty::getAgerWaitMax() ) &&
                 ( sTID     == SM_NULL_TID ) )
@@ -414,8 +414,8 @@ IDE_RC smaDeleteThread::processAgingOIDNodeList( smaOidList *aOIDHead,
                 /* BUG-15047 */
                 IDE_ASSERT( lockCheckMtx() == IDE_SUCCESS );
 
-                /* Ager Thread¿¡¼­ ¿¬»ê½ÇÆĞ´Â FatalÀÌ¹Ç·Î ¿¡·¯Ã³¸®ÇÏÁö
-                 * ¾Ê´Â´Ù.*/
+                /* Ager Threadì—ì„œ ì—°ì‚°ì‹¤íŒ¨ëŠ” Fatalì´ë¯€ë¡œ ì—ëŸ¬ì²˜ë¦¬í•˜ì§€
+                 * ì•ŠëŠ”ë‹¤.*/
                 IDE_ASSERT( processJob( mTrans,
                                         sOIDInfo,
                                         aDeleteAll,
@@ -430,11 +430,11 @@ IDE_RC smaDeleteThread::processAgingOIDNodeList( smaOidList *aOIDHead,
                 }//if sIsProcessd
             }//if
 
-            /* BUG-17417 V$AgerÁ¤º¸ÀÇ Add OID°¹¼ö´Â ½ÇÁ¦ Ager°¡
-             *           ÇØ¾ßÇÒ ÀÛ¾÷ÀÇ °¹¼ö°¡ ¾Æ´Ï´Ù.
+            /* BUG-17417 V$Agerì •ë³´ì˜ Add OIDê°¯ìˆ˜ëŠ” ì‹¤ì œ Agerê°€
+             *           í•´ì•¼í•  ì‘ì—…ì˜ ê°¯ìˆ˜ê°€ ì•„ë‹ˆë‹¤.
              *
-             * ÇÏ³ªÀÇ OID¿¡ ´ëÇØ¼­ AgingÀ» ¼öÇàÇÏ¸é
-             * mAgingProcessedOIDCnt¸¦ 1Áõ°¡ ½ÃÅ²´Ù. */
+             * í•˜ë‚˜ì˜ OIDì— ëŒ€í•´ì„œ Agingì„ ìˆ˜í–‰í•˜ë©´
+             * mAgingProcessedOIDCntë¥¼ 1ì¦ê°€ ì‹œí‚¨ë‹¤. */
             if( smxOIDList::checkIsAgingTarget( aOIDHead->mCondition,
                                                 sOIDInfo ) == ID_TRUE )
             {
@@ -456,7 +456,7 @@ IDE_RC smaDeleteThread::processAgingOIDNodeList( smaOidList *aOIDHead,
     }//while
 
     // BUG-15306
-    // DummyOIDÀÎ °æ¿ì¿£ Ã³¸®ÇÑ count¿¡ Æ÷ÇÔÇÏÁö ¾Ê´Â´Ù.
+    // DummyOIDì¸ ê²½ìš°ì—” ì²˜ë¦¬í•œ countì— í¬í•¨í•˜ì§€ ì•ŠëŠ”ë‹¤.
     if( smaLogicalAger::isDummyOID( aOIDHead ) != ID_TRUE )
     {
         mHandledCnt++;
@@ -469,31 +469,31 @@ IDE_RC smaDeleteThread::processAgingOIDNodeList( smaOidList *aOIDHead,
 
 /***********************************************************
 
-  Æ¯Á¤ Table¾ÈÀÇ OID³ª Æ¯Á¤ Tablespace¾ÈÀÇ OID¿¡ ´ëÇØ¼­¸¸
-  Áï½Ã AgingÀ» ½Ç½ÃÇÑ´Ù.
+  íŠ¹ì • Tableì•ˆì˜ OIDë‚˜ íŠ¹ì • Tablespaceì•ˆì˜ OIDì— ëŒ€í•´ì„œë§Œ
+  ì¦‰ì‹œ Agingì„ ì‹¤ì‹œí•œë‹¤.
 
   Argument:
-      1. smOID aTableOID: AgingÀ» Áï°¢ÀûÀ¸·Î ¼öÇàÇÒ TableÀÇ OID
-      2. smaOidList *aEndPtr: aEndPtr±îÁö AgingÀ» ¼öÇà.
+      1. smOID aTableOID: Agingì„ ì¦‰ê°ì ìœ¼ë¡œ ìˆ˜í–‰í•  Tableì˜ OID
+      2. smaOidList *aEndPtr: aEndPtrê¹Œì§€ Agingì„ ìˆ˜í–‰.
 
   Return Value:
       1. SUCCESS : IDE_SUCCESS
       2. FAIL    : IDE_FAILURE
 
   Description:
-    Aging OID List¿¡ ¸Å´Ş·Á ÀÖ´Â °ÍÁß¿¡¼­
-    Æ¯Á¤ Table¾ÈÀÇ OID³ª Æ¯Á¤ Tablespace¾ÈÀÇ OID¿¡
-    ´ëÇØ¼­¸¸ AgingÀ» ¼öÇàÇÑ´Ù.
+    Aging OID Listì— ë§¤ë‹¬ë ¤ ìˆëŠ” ê²ƒì¤‘ì—ì„œ
+    íŠ¹ì • Tableì•ˆì˜ OIDë‚˜ íŠ¹ì • Tablespaceì•ˆì˜ OIDì—
+    ëŒ€í•´ì„œë§Œ Agingì„ ìˆ˜í–‰í•œë‹¤.
 
-    AgingÇÏ·Á´Â OIDÀÇ SCNÀÌ Active TransactionµéÀÇ Minimum ViewSCN º¸´Ù
-    Å©´õ¶óµµ AgingÀ» ½Ç½ÃÇÑ´Ù.
+    Agingí•˜ë ¤ëŠ” OIDì˜ SCNì´ Active Transactionë“¤ì˜ Minimum ViewSCN ë³´ë‹¤
+    í¬ë”ë¼ë„ Agingì„ ì‹¤ì‹œí•œë‹¤.
 
   Caution :
-    ÀÌ FunctionÀ» »ç¿ë½Ã ´Ù¸¥ ÂÊ¿¡¼­ Aging Filter¿¡ ÁöÁ¤ÇÑ TableÀÌ³ª
-    Tablespace¿¡ ´ëÇØ¼­ ´Ù¸¥ TransactionÀÌ Á¢±ÙÇÏÁö ¾Ê´Â´Ù´Â °ÍÀ» º¸Àå
-    ÇØ¾ß ÇÑ´Ù.
+    ì´ Functionì„ ì‚¬ìš©ì‹œ ë‹¤ë¥¸ ìª½ì—ì„œ Aging Filterì— ì§€ì •í•œ Tableì´ë‚˜
+    Tablespaceì— ëŒ€í•´ì„œ ë‹¤ë¥¸ Transactionì´ ì ‘ê·¼í•˜ì§€ ì•ŠëŠ”ë‹¤ëŠ” ê²ƒì„ ë³´ì¥
+    í•´ì•¼ í•œë‹¤.
 
-    TableÀÌ³ª Tablespace¿¡  X-LockÀ» Àâ´Â °ÍÀ¸·Î ÀÌ¸¦ º¸ÀåÇÒ ¼ö ÀÖ´Ù.
+    Tableì´ë‚˜ Tablespaceì—  X-Lockì„ ì¡ëŠ” ê²ƒìœ¼ë¡œ ì´ë¥¼ ë³´ì¥í•  ìˆ˜ ìˆë‹¤.
 
 **********************************************************/
 IDE_RC smaDeleteThread::deleteInstantly( smaInstantAgingFilter * aAgingFilter )
@@ -524,13 +524,13 @@ IDE_RC smaDeleteThread::deleteInstantly( smaInstantAgingFilter * aAgingFilter )
 
     /* BUG-32780  [sm-mem-index] The delete thread can access removed page
      * because the range of instant aging is abnormal.
-     * LockÀ» Àâ°í mTailDeleteThread °ªÀ» °¡Á®¿Í¾ß ÇÑ´Ù. */
+     * Lockì„ ì¡ê³  mTailDeleteThread ê°’ì„ ê°€ì ¸ì™€ì•¼ í•œë‹¤. */
     sCurOIDHeadPtr = smaLogicalAger::mTailDeleteThread;
 
     /*
-      º°µµÀÇ TransactionÀ¸·Î Ã³¸®ÇÑ´Ù. ¿Ö³ÄÇÏ¸é AgingÀ» ¼öÇàÇÑ
-      TransactionÀº Ç×»ó CommitÇØ¾ßÇÏ´Âµ¥ RollbackÀÌ ¹ß»ıÇÒ
-      ¼ö ÀÖ±â ¶§¹®¿¡ º°µµÀÇ TransactionÀ¸·Î Ã³¸®ÇÑ´Ù.
+      ë³„ë„ì˜ Transactionìœ¼ë¡œ ì²˜ë¦¬í•œë‹¤. ì™œëƒí•˜ë©´ Agingì„ ìˆ˜í–‰í•œ
+      Transactionì€ í•­ìƒ Commití•´ì•¼í•˜ëŠ”ë° Rollbackì´ ë°œìƒí• 
+      ìˆ˜ ìˆê¸° ë•Œë¬¸ì— ë³„ë„ì˜ Transactionìœ¼ë¡œ ì²˜ë¦¬í•œë‹¤.
     */
 
     IDE_TEST(mTrans->begin( NULL,
@@ -539,8 +539,8 @@ IDE_RC smaDeleteThread::deleteInstantly( smaInstantAgingFilter * aAgingFilter )
                             SMX_NOT_REPL_TX_ID )
              != IDE_SUCCESS);
 
-    /* TransactionÀÇ RSGroupID¸¦ 0À¸·Î ¼³Á¤ÇÑ´Ù.
-     * 0¹ø PageList¿¡ ÆäÀÌÁö¸¦ ¹İ³³ÇÏ°Ô µÈ´Ù. */
+    /* Transactionì˜ RSGroupIDë¥¼ 0ìœ¼ë¡œ ì„¤ì •í•œë‹¤.
+     * 0ë²ˆ PageListì— í˜ì´ì§€ë¥¼ ë°˜ë‚©í•˜ê²Œ ëœë‹¤. */
     smxTrans::setRSGroupID((void*)mTrans, 0);
 
     sState = 2;
@@ -560,14 +560,14 @@ IDE_RC smaDeleteThread::deleteInstantly( smaInstantAgingFilter * aAgingFilter )
                 if ( ((sOIDInfoPtr->mFlag & sCondition) == sCondition) &&
                      ((sOIDInfoPtr->mFlag & SM_OID_ACT_COMPRESSION) == 0) )
                 {
-                    // FilterÁ¶°ÇÀ» ¸¸Á·?
+                    // Filterì¡°ê±´ì„ ë§Œì¡±?
                     if ( smaLogicalAger::isAgingFilterTrue(
                                              aAgingFilter,
                                              sOIDInfoPtr->mSpaceID,
                                              sOIDInfoPtr->mTableOID ) == ID_TRUE )
                     {
-                        /* BUG-41026 : parallel·Î ÁøÇàÁßÀÎ normal agingÀÌ ÁøÇàÁß
-                         * ÀÌ¸é ³¡³¯ ¶§ ±îÁö ´ë±âÇÑ´Ù. */
+                        /* BUG-41026 : parallelë¡œ ì§„í–‰ì¤‘ì¸ normal agingì´ ì§„í–‰ì¤‘
+                         * ì´ë©´ ëë‚  ë•Œ ê¹Œì§€ ëŒ€ê¸°í•œë‹¤. */
                         while ( 1 )
                         {
                             /* BUG-41026 */
@@ -595,7 +595,7 @@ IDE_RC smaDeleteThread::deleteInstantly( smaInstantAgingFilter * aAgingFilter )
                         mAgingProcessedOIDCnt++;
 
                         /*
-                          ´Ù½Ã ÀÛ¾÷À» ¹İº¹ÇÏÁö ¾Ê±â À§ÇØ¼­ flagÀ» clear½ÃÅ²´Ù.
+                          ë‹¤ì‹œ ì‘ì—…ì„ ë°˜ë³µí•˜ì§€ ì•Šê¸° ìœ„í•´ì„œ flagì„ clearì‹œí‚¨ë‹¤.
                         */
                         sOIDInfoPtr->mFlag &= ~sCondition;
                     }
@@ -640,24 +640,24 @@ IDE_RC smaDeleteThread::deleteInstantly( smaInstantAgingFilter * aAgingFilter )
                             smxOIDInfo  *aOIDInfoPtr,
                             idBool      *aIsProcessed)
   Argument:
-      1. smxTrans    *aTransPtr : BeginµÈ Transaction Pointer.
-      2. smxOIDNode  *aCurOIDNodePtr: AgingÀ» ¼öÇàÇÒ OID Header
+      1. smxTrans    *aTransPtr : Beginëœ Transaction Pointer.
+      2. smxOIDNode  *aCurOIDNodePtr: Agingì„ ìˆ˜í–‰í•  OID Header
                                       Pointer
-      3. smxOIDInfo  *aOIDInfoPtr: AgingÀ» ¼öÇàÇÒ OID Info Pointer
-      4. idBool      *aIsProcessed : Out argument·Î¼­ deleteÀÛ¾÷ÀÌ
-                                     ÀÖ¾úÀ¸¸é ID_TRUE, ¾Æ´Ï¸é ID_FALSE
+      3. smxOIDInfo  *aOIDInfoPtr: Agingì„ ìˆ˜í–‰í•  OID Info Pointer
+      4. idBool      *aIsProcessed : Out argumentë¡œì„œ deleteì‘ì—…ì´
+                                     ìˆì—ˆìœ¼ë©´ ID_TRUE, ì•„ë‹ˆë©´ ID_FALSE
 
   Return Value:
       1. SUCCESS : IDE_SUCCESS
       2. FAIL    : IDE_FAILURE
 
   Description:
-      aTransPtrÀÌ °¡¸®Å°´Â TransactionÀ¸·Î aOIDInfoPtrÀ» ÂüÁ¶ÇÏ¿© AgingÀ»
-      ¼öÇàÇÔ.
+      aTransPtrì´ ê°€ë¦¬í‚¤ëŠ” Transactionìœ¼ë¡œ aOIDInfoPtrì„ ì°¸ì¡°í•˜ì—¬ Agingì„
+      ìˆ˜í–‰í•¨.
 
   Caution:
-      ÀÌ FunctionÀº ¹«Á¶°Ç Áö¿ì´Â ÀÛ¾÷À» ÇÏ±â¶§¹®¿¡ Aging´ë»óÀÌ ´õ ÀÌ»ó ÂüÁ¶µÇÁö
-      ¾ÊÀ» °æ¿ì¿¡¸¸ È£ÃâµÇ¾î¾ß¸¸ ÇÑ´Ù.
+      ì´ Functionì€ ë¬´ì¡°ê±´ ì§€ìš°ëŠ” ì‘ì—…ì„ í•˜ê¸°ë•Œë¬¸ì— AgingëŒ€ìƒì´ ë” ì´ìƒ ì°¸ì¡°ë˜ì§€
+      ì•Šì„ ê²½ìš°ì—ë§Œ í˜¸ì¶œë˜ì–´ì•¼ë§Œ í•œë‹¤.
 
 *********************************************************/
 IDE_RC smaDeleteThread::processJob( smxTrans    * aTransPtr,
@@ -700,10 +700,10 @@ IDE_RC smaDeleteThread::processJob( smxTrans    * aTransPtr,
 #if defined(DEBUG)
                 /* BUG-32655 [sm-mem-index] The MMDB Ager must not ignore the 
                  * failure of index aging. 
-                 * Index Key°¡ ¸ÕÀú Áö¿öÁ³´ÂÁö È®ÀÎÇÑ´Ù.
-                 * DeleteAllÀÌ ¼³Á¤µÇ¸é logical ager´Â ¹«½ÃÇÏ°í ¸ğµç
-                 * OIDList¸¦ aging ÇÏ±â ¶§¹®¿¡ index key°¡ Áö¿öÁöÁö ¾Ê°í
-                 * Á¸ÀçÇÒ ¼ö ÀÖ´Ù. */
+                 * Index Keyê°€ ë¨¼ì € ì§€ì›Œì¡ŒëŠ”ì§€ í™•ì¸í•œë‹¤.
+                 * DeleteAllì´ ì„¤ì •ë˜ë©´ logical agerëŠ” ë¬´ì‹œí•˜ê³  ëª¨ë“ 
+                 * OIDListë¥¼ aging í•˜ê¸° ë•Œë¬¸ì— index keyê°€ ì§€ì›Œì§€ì§€ ì•Šê³ 
+                 * ì¡´ì¬í•  ìˆ˜ ìˆë‹¤. */
                 if( aDeleteAll == ID_FALSE )
                 {
                     IDE_TEST( smaLogicalAger::checkOldKeyFromIndexes(
@@ -719,7 +719,7 @@ IDE_RC smaDeleteThread::processJob( smxTrans    * aTransPtr,
                 }
 # endif
                 /* PROJ-1594 Volatile TBS */
-                /* volatile tableÀÏ °æ¿ì svcRecord¸¦ È£ÃâÇØ¾ß ÇÑ´Ù. */
+                /* volatile tableì¼ ê²½ìš° svcRecordë¥¼ í˜¸ì¶œí•´ì•¼ í•œë‹¤. */
                 if( SMI_TABLE_TYPE_IS_VOLATILE( sTableHeader ) == ID_TRUE )
                 {
                     IDE_ASSERT( svmManager::getOIDPtr( aOIDInfoPtr->mSpaceID,
@@ -756,7 +756,7 @@ IDE_RC smaDeleteThread::processJob( smxTrans    * aTransPtr,
             if(smcTable::isDropedTable(sTableHeader) == ID_FALSE)
             {
                 /* PROJ-1594 Volatile TBS */
-                /* volatile tableÀÏ °æ¿ì svcRecord¸¦ È£ÃâÇØ¾ß ÇÑ´Ù. */
+                /* volatile tableì¼ ê²½ìš° svcRecordë¥¼ í˜¸ì¶œí•´ì•¼ í•œë‹¤. */
                 if( SMI_TABLE_TYPE_IS_VOLATILE( sTableHeader ) == ID_TRUE )
                 {
                     IDE_ASSERT( svmManager::getOIDPtr( aOIDInfoPtr->mSpaceID,
@@ -789,7 +789,7 @@ IDE_RC smaDeleteThread::processJob( smxTrans    * aTransPtr,
 
         case SM_OID_TYPE_DROP_TABLE:
             /* BUG-32237 [sm_transaction] Free lock node when dropping table.
-             * DropTablePending ¿¡¼­ ¿¬±âÇØµĞ freeLockNode¸¦ ¼öÇàÇÕ´Ï´Ù. */
+             * DropTablePending ì—ì„œ ì—°ê¸°í•´ë‘” freeLockNodeë¥¼ ìˆ˜í–‰í•©ë‹ˆë‹¤. */
             if( ( SMI_TABLE_TYPE_IS_DISK( sTableHeader )     == ID_TRUE ) ||
                 ( SMI_TABLE_TYPE_IS_MEMORY( sTableHeader )   == ID_TRUE ) ||
                 ( SMI_TABLE_TYPE_IS_VOLATILE( sTableHeader ) == ID_TRUE ) )
@@ -797,21 +797,21 @@ IDE_RC smaDeleteThread::processJob( smxTrans    * aTransPtr,
                 IDE_ASSERT( smcTable::isDropedTable(sTableHeader)
                             == ID_TRUE );
 
-                /* TransactionÀÌ ´Ü ÇÏ³ª Á¸ÀçÇÏ°í, ÇØ´ç TransactionÀÌ DropÀ»
-                 * ¼öÇàÇßÀ»¶§, Aging List¸¦ Àü´ŞÇÏ°í TransactionÀÇ LockÀ» Ç®±â
-                 * ¶§¹®¿¡, Ager°¡ LockItemÀ» ¸ÕÀú Á¦°ÅÇÑ ÈÄ LockÀÌ Ç®¸®´Â
-                 * °æ¿ì°¡ ÀÖÀ» ¼ö ÀÖÀ½. µû¶ó¼­ Table¿¡ XLockÀ» Àâ¾Æ µ¿½Ã¼º
-                 * ¹®Á¦¸¦ Á¦°ÅÇÑ ÈÄ (¾îÂ÷ÇÇ DropµÈ TableÀÌ¶ó ¼º´ÉÀúÇÏ ¾øÀ½)
-                 * LockÀ» ÇØÁ¦ÇØ¾ß ÇÔ. */
-                /* ´Ù¸¸ TABLE_LOCK_ENABLEÀÌ ²¨Á®ÀÖÀ» °æ¿ì¿¡´Â CreateTableÀÌ
-                 * ½ÇÆĞÇÑ °æ¿ì, Property ²ô±â Àü¿¡ ¸Å´Ş¸° JobµéÀÌ ¿À´Â °ÍÀÌÁö
-                 * ÀÌÈÄ¿¡´Â DDLÀÌ ¾ø±â ¶§¹®¿¡ LockÃ¼Å©ÇÒ ÇÊ¿ä°¡ ¾øÀ½ */
+                /* Transactionì´ ë‹¨ í•˜ë‚˜ ì¡´ì¬í•˜ê³ , í•´ë‹¹ Transactionì´ Dropì„
+                 * ìˆ˜í–‰í–ˆì„ë•Œ, Aging Listë¥¼ ì „ë‹¬í•˜ê³  Transactionì˜ Lockì„ í’€ê¸°
+                 * ë•Œë¬¸ì—, Agerê°€ LockItemì„ ë¨¼ì € ì œê±°í•œ í›„ Lockì´ í’€ë¦¬ëŠ”
+                 * ê²½ìš°ê°€ ìˆì„ ìˆ˜ ìˆìŒ. ë”°ë¼ì„œ Tableì— XLockì„ ì¡ì•„ ë™ì‹œì„±
+                 * ë¬¸ì œë¥¼ ì œê±°í•œ í›„ (ì–´ì°¨í”¼ Dropëœ Tableì´ë¼ ì„±ëŠ¥ì €í•˜ ì—†ìŒ)
+                 * Lockì„ í•´ì œí•´ì•¼ í•¨. */
+                /* ë‹¤ë§Œ TABLE_LOCK_ENABLEì´ êº¼ì ¸ìˆì„ ê²½ìš°ì—ëŠ” CreateTableì´
+                 * ì‹¤íŒ¨í•œ ê²½ìš°, Property ë„ê¸° ì „ì— ë§¤ë‹¬ë¦° Jobë“¤ì´ ì˜¤ëŠ” ê²ƒì´ì§€
+                 * ì´í›„ì—ëŠ” DDLì´ ì—†ê¸° ë•Œë¬¸ì— Lockì²´í¬í•  í•„ìš”ê°€ ì—†ìŒ */
                 if( smuProperty::getTableLockEnable() == 1 )
                 {
                     IDE_TEST( aTransPtr->setImpSavepoint( &sISavepoint, sDummy )
                               != IDE_SUCCESS );
                     /* BUG-42928 No Partition Lock
-                     *  ÀÌ¹Ì DROPÇÑ Table/PartitionÀÌ¹Ç·Î, mLockÀ» »ç¿ëÇÑ´Ù.
+                     *  ì´ë¯¸ DROPí•œ Table/Partitionì´ë¯€ë¡œ, mLockì„ ì‚¬ìš©í•œë‹¤.
                      */
                     IDE_TEST( smlLockMgr::lockTableModeX( aTransPtr,
                                                           sTableHeader->mLock )
@@ -830,16 +830,16 @@ IDE_RC smaDeleteThread::processJob( smxTrans    * aTransPtr,
                 IDE_TEST( smcTable::finLockItem( sTableHeader )
                           != IDE_SUCCESS );
 
-                /* ¾îÂ÷ÇÇ free µÉ slotÀÌ¹Ç·Î °ªÀÌ Àß¸øµÇ¾îµµ »ó°ü¾ø´Ù.
-                    * DASSERT·Î¸¸ È®ÀÎÇÑ´Ù. */
+                /* ì–´ì°¨í”¼ free ë  slotì´ë¯€ë¡œ ê°’ì´ ì˜ëª»ë˜ì–´ë„ ìƒê´€ì—†ë‹¤.
+                    * DASSERTë¡œë§Œ í™•ì¸í•œë‹¤. */
                 IDE_DASSERT( sTableHeader->mSelfOID == aOIDInfoPtr->mTableOID );
 
                 if(( sTableHeader->mFlag & SMI_TABLE_PRIVATE_VOLATILE_MASK )
                    == SMI_TABLE_PRIVATE_VOLATILE_TRUE )
                 {
                     /* PROJ-1407 Temporary table
-                     * User temp tableÀº ÇÑ ¼¼¼Ç¸¸ ÂüÁ¶ÇÏ°í create/dropÀÌ
-                     * ºó¹øÇÏ¹Ç·Î, table header¸¦ ¹Ù·Î FreeÇÑ´Ù.*/
+                     * User temp tableì€ í•œ ì„¸ì…˜ë§Œ ì°¸ì¡°í•˜ê³  create/dropì´
+                     * ë¹ˆë²ˆí•˜ë¯€ë¡œ, table headerë¥¼ ë°”ë¡œ Freeí•œë‹¤.*/
 
                     IDE_DASSERT(( sTableHeader->mFlag & SMI_TABLE_TYPE_MASK )
                                 == SMI_TABLE_VOLATILE );
@@ -861,7 +861,7 @@ IDE_RC smaDeleteThread::processJob( smxTrans    * aTransPtr,
                 else
                 {
                     /* PROJ-2268 Reuse Catalog Table Slot
-                     * Property¸¦ ÅëÇØ ÀçÈ°¿ë ¿©ºÎ¸¦ ¼±ÅÃÇÒ ¼ö ÀÖ¾î¾ß ÇÑ´Ù. */
+                     * Propertyë¥¼ í†µí•´ ì¬í™œìš© ì—¬ë¶€ë¥¼ ì„ íƒí•  ìˆ˜ ìˆì–´ì•¼ í•œë‹¤. */
                     if ( smuProperty::getCatalogSlotReusable() == 1 )
                     {
                         IDE_TEST( smmManager::getOIDPtr(
@@ -877,36 +877,36 @@ IDE_RC smaDeleteThread::processJob( smxTrans    * aTransPtr,
                     }
                     else
                     {
-                        /* Dictionary Table SlotÀ» ÀçÈ°¿ëÇÏÁö ¾Ê´Â´Ù. */
+                        /* Dictionary Table Slotì„ ì¬í™œìš©í•˜ì§€ ì•ŠëŠ”ë‹¤. */
                     }
                 }
             }
             else
             {
                 /* PROJ-2268 Reuse Catalog Table Slot
-                 * Sequence, Procedure, Pakage µî¿¡¼­ »ç¿ëÇÑ Catalog SlotÀÇ °æ¿ì
-                 * Table TypeÀÌ Meta·Î Àû¿ëµÇ±â ¶§¹®¿¡ µû·Î Ã³¸®ÇØ ÁÖ¾î¾ß ÇÑ´Ù. */
+                 * Sequence, Procedure, Pakage ë“±ì—ì„œ ì‚¬ìš©í•œ Catalog Slotì˜ ê²½ìš°
+                 * Table Typeì´ Metaë¡œ ì ìš©ë˜ê¸° ë•Œë¬¸ì— ë”°ë¡œ ì²˜ë¦¬í•´ ì£¼ì–´ì•¼ í•œë‹¤. */
                 if ( smuProperty::getCatalogSlotReusable()  == 1 )
                 {
                     if ( SMI_TABLE_TYPE_IS_META( sTableHeader ) == ID_TRUE )
                     {
                         IDE_ASSERT( smcTable::isDropedTable(sTableHeader) == ID_TRUE );
 
-                        /* TransactionÀÌ ´Ü ÇÏ³ª Á¸ÀçÇÏ°í, ÇØ´ç TransactionÀÌ DropÀ»
-                         * ¼öÇàÇßÀ»¶§, Aging List¸¦ Àü´ŞÇÏ°í TransactionÀÇ LockÀ» Ç®±â
-                         * ¶§¹®¿¡, Ager°¡ LockItemÀ» ¸ÕÀú Á¦°ÅÇÑ ÈÄ LockÀÌ Ç®¸®´Â
-                         * °æ¿ì°¡ ÀÖÀ» ¼ö ÀÖÀ½. µû¶ó¼­ Table¿¡ XLockÀ» Àâ¾Æ µ¿½Ã¼º
-                         * ¹®Á¦¸¦ Á¦°ÅÇÑ ÈÄ (¾îÂ÷ÇÇ DropµÈ TableÀÌ¶ó ¼º´ÉÀúÇÏ ¾øÀ½)
-                         * LockÀ» ÇØÁ¦ÇØ¾ß ÇÔ. */
-                        /* ´Ù¸¸ TABLE_LOCK_ENABLEÀÌ ²¨Á®ÀÖÀ» °æ¿ì¿¡´Â CreateTableÀÌ
-                         * ½ÇÆĞÇÑ °æ¿ì, Property ²ô±â Àü¿¡ ¸Å´Ş¸° JobµéÀÌ ¿À´Â °ÍÀÌÁö
-                         * ÀÌÈÄ¿¡´Â DDLÀÌ ¾ø±â ¶§¹®¿¡ LockÃ¼Å©ÇÒ ÇÊ¿ä°¡ ¾øÀ½ */
+                        /* Transactionì´ ë‹¨ í•˜ë‚˜ ì¡´ì¬í•˜ê³ , í•´ë‹¹ Transactionì´ Dropì„
+                         * ìˆ˜í–‰í–ˆì„ë•Œ, Aging Listë¥¼ ì „ë‹¬í•˜ê³  Transactionì˜ Lockì„ í’€ê¸°
+                         * ë•Œë¬¸ì—, Agerê°€ LockItemì„ ë¨¼ì € ì œê±°í•œ í›„ Lockì´ í’€ë¦¬ëŠ”
+                         * ê²½ìš°ê°€ ìˆì„ ìˆ˜ ìˆìŒ. ë”°ë¼ì„œ Tableì— XLockì„ ì¡ì•„ ë™ì‹œì„±
+                         * ë¬¸ì œë¥¼ ì œê±°í•œ í›„ (ì–´ì°¨í”¼ Dropëœ Tableì´ë¼ ì„±ëŠ¥ì €í•˜ ì—†ìŒ)
+                         * Lockì„ í•´ì œí•´ì•¼ í•¨. */
+                        /* ë‹¤ë§Œ TABLE_LOCK_ENABLEì´ êº¼ì ¸ìˆì„ ê²½ìš°ì—ëŠ” CreateTableì´
+                         * ì‹¤íŒ¨í•œ ê²½ìš°, Property ë„ê¸° ì „ì— ë§¤ë‹¬ë¦° Jobë“¤ì´ ì˜¤ëŠ” ê²ƒì´ì§€
+                         * ì´í›„ì—ëŠ” DDLì´ ì—†ê¸° ë•Œë¬¸ì— Lockì²´í¬í•  í•„ìš”ê°€ ì—†ìŒ */
                         if ( smuProperty::getTableLockEnable() == 1 )
                         {
                             IDE_TEST( aTransPtr->setImpSavepoint( &sISavepoint, sDummy )
                                       != IDE_SUCCESS );
                             /* BUG-42928 No Partition Lock
-                             *  ÀÌ¹Ì DROPÇÑ Table/PartitionÀÌ¹Ç·Î, mLockÀ» »ç¿ëÇÑ´Ù.
+                             *  ì´ë¯¸ DROPí•œ Table/Partitionì´ë¯€ë¡œ, mLockì„ ì‚¬ìš©í•œë‹¤.
                              */
                             IDE_TEST( smlLockMgr::lockTableModeX( aTransPtr,
                                                                   sTableHeader->mLock )
@@ -924,12 +924,12 @@ IDE_RC smaDeleteThread::processJob( smxTrans    * aTransPtr,
                         IDE_TEST( smcTable::finLockItem( sTableHeader )
                                   != IDE_SUCCESS );
 
-                        /* ¾îÂ÷ÇÇ free µÉ slotÀÌ¹Ç·Î °ªÀÌ Àß¸øµÇ¾îµµ »ó°ü¾ø´Ù.
-                         * DASSERT·Î¸¸ È®ÀÎÇÑ´Ù. */
+                        /* ì–´ì°¨í”¼ free ë  slotì´ë¯€ë¡œ ê°’ì´ ì˜ëª»ë˜ì–´ë„ ìƒê´€ì—†ë‹¤.
+                         * DASSERTë¡œë§Œ í™•ì¸í•œë‹¤. */
                         IDE_DASSERT( sTableHeader->mSelfOID == aOIDInfoPtr->mTableOID );
 
                         /* PROJ-2268 Reuse Catalog Table Slot
-                         * Property¸¦ ÅëÇØ ÀçÈ°¿ë ¿©ºÎ¸¦ ¼±ÅÃÇÒ ¼ö ÀÖ¾î¾ß ÇÑ´Ù. */
+                         * Propertyë¥¼ í†µí•´ ì¬í™œìš© ì—¬ë¶€ë¥¼ ì„ íƒí•  ìˆ˜ ìˆì–´ì•¼ í•œë‹¤. */
                         if ( smuProperty::getCatalogSlotReusable() == 1 )
                         {
                             IDE_TEST( smmManager::getOIDPtr( SMI_ID_TABLESPACE_SYSTEM_MEMORY_DIC,
@@ -944,25 +944,25 @@ IDE_RC smaDeleteThread::processJob( smxTrans    * aTransPtr,
                         }
                         else
                         {
-                            /* Dictionary Table SlotÀ» ÀçÈ°¿ëÇÏÁö ¾Ê´Â´Ù. */
+                            /* Dictionary Table Slotì„ ì¬í™œìš©í•˜ì§€ ì•ŠëŠ”ë‹¤. */
                         }
                     }
                     else
                     {
-                        /* Meta ¿ÜÀÇ ³ª¸ÓÁö´Â ´ë»óÀ¸·Î ÇÏÁö ¾Ê´Â´Ù. */
+                        /* Meta ì™¸ì˜ ë‚˜ë¨¸ì§€ëŠ” ëŒ€ìƒìœ¼ë¡œ í•˜ì§€ ì•ŠëŠ”ë‹¤. */
                     }
                 }
                 else
                 {
-                    /* ÀçÈ°¿ëÇÏÁö ¾Ê´Â´Ù¸é ±âÁ¸°ú µ¿ÀÏÇÏ°Ô µ¿ÀÛÇÏ¿©¾ß ÇÑ´Ù. */
+                    /* ì¬í™œìš©í•˜ì§€ ì•ŠëŠ”ë‹¤ë©´ ê¸°ì¡´ê³¼ ë™ì¼í•˜ê²Œ ë™ì‘í•˜ì—¬ì•¼ í•œë‹¤. */
                 }
             }
             break;
 
         case SM_OID_TYPE_DELETE_TABLE_BACKUP:
-            /* BUG-16161: Add ColumnÀÌ ½ÇÆĞÇÑÈÄ ´Ù½Ã Add ColumnÀ» ¼öÇàÇÏ¸é
-               SessionÀÌ Hang»óÅÂ·Î ºüÁı´Ï´Ù.: TransactionÀÌ CommitÀÌ³ª Abort½Ã¿¡
-               Backup File»èÁ¦¸¦ ¼öÇàÇÔ.*/
+            /* BUG-16161: Add Columnì´ ì‹¤íŒ¨í•œí›„ ë‹¤ì‹œ Add Columnì„ ìˆ˜í–‰í•˜ë©´
+               Sessionì´ Hangìƒíƒœë¡œ ë¹ ì§‘ë‹ˆë‹¤.: Transactionì´ Commitì´ë‚˜ Abortì‹œì—
+               Backup Fileì‚­ì œë¥¼ ìˆ˜í–‰í•¨.*/
             break;
 
         default:
@@ -999,11 +999,11 @@ IDE_RC smaDeleteThread::shutdown()
 }
 
 /*
- * CommitÀÌ³ª AbortÈÄ¿¡ FreeSlotÀ» ½ÇÁ¦ FreeSlotList¿¡ ¸Å´Ü´Ù.
+ * Commitì´ë‚˜ Abortí›„ì— FreeSlotì„ ì‹¤ì œ FreeSlotListì— ë§¤ë‹¨ë‹¤.
  *
  * BUG-14093
- * freeSlot()¿¡¼­ slot¿¡ ´ëÇÑ FreeÀÛ¾÷¸¸ ¼öÇàÇÏ°í
- * ager Tx°¡ commitÇÑ ÀÌÈÄ¿¡ FreeSlotList¿¡ µî·ÏÇÏ´Â ÀÛ¾÷À» ¼öÇàÇÑ´Ù.
+ * freeSlot()ì—ì„œ slotì— ëŒ€í•œ Freeì‘ì—…ë§Œ ìˆ˜í–‰í•˜ê³ 
+ * ager Txê°€ commití•œ ì´í›„ì— FreeSlotListì— ë“±ë¡í•˜ëŠ” ì‘ì—…ì„ ìˆ˜í–‰í•œë‹¤.
  */
 IDE_RC smaDeleteThread::processFreeSlotPending(smxTrans   *aTrans,
                                                smxOIDList *aOIDList)
@@ -1022,10 +1022,10 @@ IDE_RC smaDeleteThread::processFreeSlotPending(smxTrans   *aTrans,
         IDE_ASSERT(lockCheckMtx() == IDE_SUCCESS);
         sState = 1;
 
-        // OIDListÀÇ Head´Â NULL NodeºÎÅÍ ½ÃÀÛÇÏ¹Ç·Î HeadÀÇ Next NodeºÎÅÍ ½ÃÀÛ
+        // OIDListì˜ HeadëŠ” NULL Nodeë¶€í„° ì‹œì‘í•˜ë¯€ë¡œ Headì˜ Next Nodeë¶€í„° ì‹œì‘
         sCurOIDNode = aOIDList->mOIDNodeListHead.mNxtNode;
 
-        // CurOIDNode°¡ ¼øÈ¸ÇØ¼­ ´Ù½Ã OIDListÀÇ Head·Î µ¹¾Æ¿À¸é ³¡³½´Ù.
+        // CurOIDNodeê°€ ìˆœíšŒí•´ì„œ ë‹¤ì‹œ OIDListì˜ Headë¡œ ëŒì•„ì˜¤ë©´ ëë‚¸ë‹¤.
         while(sCurOIDNode != &(aOIDList->mOIDNodeListHead))
         {
             for(i = 0; i < sCurOIDNode->mOIDCnt; i++)
@@ -1034,7 +1034,7 @@ IDE_RC smaDeleteThread::processFreeSlotPending(smxTrans   *aTrans,
                 IDE_ASSERT( smcTable::getTableHeaderFromOID( sOIDInfo->mTableOID,
                                                              (void**)&sTableHeader )
                             == IDE_SUCCESS );
-                /* BUG-15969: ¸Ş¸ğ¸® Delete Thread¿¡¼­ ºñÁ¤»ó Á¾·á */
+                /* BUG-15969: ë©”ëª¨ë¦¬ Delete Threadì—ì„œ ë¹„ì •ìƒ ì¢…ë£Œ */
                 if(smcTable::isDropedTable(sTableHeader) == ID_FALSE)
                 {
                     /* PROJ-1594 Volatile TBS */
@@ -1088,7 +1088,7 @@ IDE_RC smaDeleteThread::processFreeSlotPending(smxTrans   *aTrans,
                             break;
 
                         default:
-                            // OIDFreeSlotList¿¡´Â ´Ù¸¥ ÀÛ¾÷ÀÌ ¾ø´Ù.
+                            // OIDFreeSlotListì—ëŠ” ë‹¤ë¥¸ ì‘ì—…ì´ ì—†ë‹¤.
                             IDE_ASSERT(0);
                             break;
                     }

@@ -31,10 +31,10 @@ IDE_RC cmbPoolInitializeIPC(cmbPool *aPool)
     cmbPoolIPC *sPool      = (cmbPoolIPC *)aPool;
 
     /*
-     * Block Pool ÃÊ±âÈ­
+     * Block Pool ì´ˆê¸°í™”
      */
     // bug-27250 free Buf list can be crushed when client killed
-    // block ¹Ì¸® ÇÒ´ç: cmbBlock -> cmbBlock + mBlockSize
+    // block ë¯¸ë¦¬ í• ë‹¹: cmbBlock -> cmbBlock + mBlockSize
     IDE_TEST(sPool->mBlockPool.initialize(IDU_MEM_CMB,
                                           (SChar *)"CMB_IPC_POOL",
                                           ID_SCALABILITY_SYS,
@@ -57,7 +57,7 @@ IDE_RC cmbPoolFinalizeIPC(cmbPool * aPool)
     cmbPoolIPC *sPool = (cmbPoolIPC *)aPool;
 
     /*
-     * Block Pool »èÁ¦
+     * Block Pool ì‚­ì œ
      */
     IDE_TEST(sPool->mBlockPool.destroy() != IDE_SUCCESS);
 
@@ -73,19 +73,19 @@ IDE_RC cmbPoolAllocBlockIPC(cmbPool * aPool, cmbBlock ** aBlock)
     IDU_FIT_POINT( "cmbPoolIPC::cmbPoolAllocBlockIPC::alloc::Block" );
 
     /*
-     * Block ÇÒ´ç
+     * Block í• ë‹¹
      */
     IDE_TEST(sPool->mBlockPool.alloc((void **)aBlock) != IDE_SUCCESS);
 
     /*
-     * Block ÃÊ±âÈ­
+     * Block ì´ˆê¸°í™”
      */
     (*aBlock)->mBlockSize   = aPool->mBlockSize;
     (*aBlock)->mDataSize    = 0;
     (*aBlock)->mCursor      = 0;
     (*aBlock)->mIsEncrypted = ID_FALSE;
     // bug-27250 free Buf list can be crushed when client killed
-    // tcp Ã³·³ blockÀ» ¹Ì¸® »ý¼ºÇÏµµ·Ï ÇÑ´Ù.
+    // tcp ì²˜ëŸ¼ blockì„ ë¯¸ë¦¬ ìƒì„±í•˜ë„ë¡ í•œë‹¤.
     (*aBlock)->mData        = (UChar *)((*aBlock) + 1);
 
     IDU_LIST_INIT_OBJ(&(*aBlock)->mListNode, *aBlock);
@@ -100,12 +100,12 @@ IDE_RC cmbPoolFreeBlockIPC(cmbPool *aPool, cmbBlock * aBlock)
     cmbPoolIPC *sPool  = (cmbPoolIPC *)aPool;
 
     /*
-     * List¿¡¼­ Block »èÁ¦
+     * Listì—ì„œ Block ì‚­ì œ
      */
     IDU_LIST_REMOVE(&aBlock->mListNode);
 
     /*
-     * Block ÇØÁ¦
+     * Block í•´ì œ
      */
     IDE_TEST(sPool->mBlockPool.memfree(aBlock) != IDE_SUCCESS);
 
@@ -130,7 +130,7 @@ struct cmbPoolOP gCmbPoolOpIPC =
 IDE_RC cmbPoolMapIPC(cmbPool *aPool)
 {
     /*
-     * ÇÔ¼ö Æ÷ÀÎÅÍ ¼¼ÆÃ
+     * í•¨ìˆ˜ í¬ì¸í„° ì„¸íŒ…
      */
     aPool->mOp = &gCmbPoolOpIPC;
 

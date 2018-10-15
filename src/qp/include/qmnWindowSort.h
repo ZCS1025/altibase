@@ -21,12 +21,12 @@
  * Description :
  *    WNST(WiNdow SorT) Node
  *
- * ¿ë¾î ¼³¸í :
- *    °°Àº ÀÇ¹Ì¸¦ °¡Áö´Â ¼­·Î ´Ù¸¥ ´Ü¾î¸¦ Á¤¸®ÇÏ¸é ¾Æ·¡¿Í °°´Ù.
+ * ìš©ì–´ ì„¤ëª… :
+ *    ê°™ì€ ì˜ë¯¸ë¥¼ ê°€ì§€ëŠ” ì„œë¡œ ë‹¤ë¥¸ ë‹¨ì–´ë¥¼ ì •ë¦¬í•˜ë©´ ì•„ë˜ì™€ ê°™ë‹¤.
  *    - Analytic Funtion = Window Function
  *    - Analytic Clause = Window Clause = Over Clause
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *    WNST(Window Sort)
  *
  **********************************************************************/
@@ -46,7 +46,7 @@
 //-----------------
 
 /* qmncWNST.flag                                    */
-/* WNSTÀÇ ÀúÀå ¹æ½ÄÀ» ÁöÁ¤  */
+/* WNSTì˜ ì €ì¥ ë°©ì‹ì„ ì§€ì •  */
 #define QMNC_WNST_STORE_MASK                   (0x00000007)
 #define QMNC_WNST_STORE_NONE                   (0x00000000)
 #define QMNC_WNST_STORE_ONLY                   (0x00000001)
@@ -66,7 +66,7 @@
 #define QMND_WNST_INIT_DONE_TRUE           (0x00000001)
 
 // BUG-33663 Ranking Function
-// window nodeÀÇ ¼öÇà¹æ½Ä(aggregate¿Í update) Á¾·ù
+// window nodeì˜ ìˆ˜í–‰ë°©ì‹(aggregateì™€ update) ì¢…ë¥˜
 typedef enum qmcWndExecMethod
 {
     QMC_WND_EXEC_NONE = 0,
@@ -116,29 +116,29 @@ typedef struct qmcWndWindow
 
 typedef struct qmcWndNode
 {
-    qmcMtrNode       * overColumnNode;   /* 'PARTITION BY','ORDER BY' Á¤º¸ */
-    qmcMtrNode       * aggrNode;         /* ºĞ¼® ÇÔ¼ö Á¤º¸ */
-    qmcMtrNode       * aggrResultNode;   /* À§ ºĞ¼® ÇÔ¼ö °á°ú°¡ ÀúÀåµÉ Sort TempÀÇ Ä®·³ Á¤º¸ */
+    qmcMtrNode       * overColumnNode;   /* 'PARTITION BY','ORDER BY' ì •ë³´ */
+    qmcMtrNode       * aggrNode;         /* ë¶„ì„ í•¨ìˆ˜ ì •ë³´ */
+    qmcMtrNode       * aggrResultNode;   /* ìœ„ ë¶„ì„ í•¨ìˆ˜ ê²°ê³¼ê°€ ì €ì¥ë  Sort Tempì˜ ì¹¼ëŸ¼ ì •ë³´ */
     qmcWndWindow       window;           /* PROJ-1805 window clause */
-    qmcWndExecMethod   execMethod;       /* ºĞ¼® ÇÔ¼öÀÇ ¼öÇà¹æ½Ä */
+    qmcWndExecMethod   execMethod;       /* ë¶„ì„ í•¨ìˆ˜ì˜ ìˆ˜í–‰ë°©ì‹ */
     qmcWndNode       * next;
 } qmcWndNode;
 
 typedef struct qmdWndNode
 {
-    qmdMtrNode       * overColumnNode;    /* 'PARTITION BY','ORDER BY' Á¤º¸ */
-    qmdMtrNode       * orderByColumnNode; /* 'ORDER BY' Á¤º¸ Æ÷ÀÎÅÍ */
-    qmdAggrNode      * aggrNode;          /* ºĞ¼® ÇÔ¼ö Á¤º¸ */
-    qmdMtrNode       * aggrResultNode;    /* À§ ºĞ¼® ÇÔ¼ö °á°ú°¡ ÀúÀåµÉ Sort TempÀÇ Ä®·³ Á¤º¸ */
+    qmdMtrNode       * overColumnNode;    /* 'PARTITION BY','ORDER BY' ì •ë³´ */
+    qmdMtrNode       * orderByColumnNode; /* 'ORDER BY' ì •ë³´ í¬ì¸í„° */
+    qmdAggrNode      * aggrNode;          /* ë¶„ì„ í•¨ìˆ˜ ì •ë³´ */
+    qmdMtrNode       * aggrResultNode;    /* ìœ„ ë¶„ì„ í•¨ìˆ˜ ê²°ê³¼ê°€ ì €ì¥ë  Sort Tempì˜ ì¹¼ëŸ¼ ì •ë³´ */
     qmcWndWindow     * window;
-    qmcWndExecMethod   execMethod;        /* ºĞ¼® ÇÔ¼öÀÇ ¼öÇà¹æ½Ä */
+    qmcWndExecMethod   execMethod;        /* ë¶„ì„ í•¨ìˆ˜ì˜ ìˆ˜í–‰ë°©ì‹ */
     qmdWndNode       * next;
 } qmdWndNode;
 
 
 
 /*---------------------------------------------------------------------
- * Code PlanÀÇ ±¸¼º
+ * Code Planì˜ êµ¬ì„±
  *
  * SELECT sum(i1) OVER ( PARTITION BY i1 ) AS F1,
  *        sum(i2) OVER ( PARTITION BY i1 ) AS F2,
@@ -147,10 +147,10 @@ typedef struct qmdWndNode
  *        sum(DISTINCT i2) OVER ( PARTITION BY i1 ) AS F5,
  *   FROM T1;
  *
- * À§ÀÇ Äõ¸®´Â ¾Æ·¡¿Í °°Àº Code PlanÀ» °¡Áø´Ù.
- * Data Planµµ À¯»çÇÑ ±¸Á¶¸¦ °¡Áö¹Ç·Î ÀÌ¸¦ Âü°íÇÏ¸é ÀÌÇØÇÏ´Âµ¥ µµ¿òÀÌ µÊ
- * - F1,F2,F3,F4,F5: aggregation ÇÔ¼ö °á°ú¸¸À» ÀúÀåÇÏ´Â Ä®·³
- * - @F1,@F2,@F3,@F4,@F5: aggregation ÇÔ¼öÀÇ Áß°£ °á°ú¸¦ ÀúÀåÇÏ´Â Ä®·³
+ * ìœ„ì˜ ì¿¼ë¦¬ëŠ” ì•„ë˜ì™€ ê°™ì€ Code Planì„ ê°€ì§„ë‹¤.
+ * Data Planë„ ìœ ì‚¬í•œ êµ¬ì¡°ë¥¼ ê°€ì§€ë¯€ë¡œ ì´ë¥¼ ì°¸ê³ í•˜ë©´ ì´í•´í•˜ëŠ”ë° ë„ì›€ì´ ë¨
+ * - F1,F2,F3,F4,F5: aggregation í•¨ìˆ˜ ê²°ê³¼ë§Œì„ ì €ì¥í•˜ëŠ” ì¹¼ëŸ¼
+ * - @F1,@F2,@F3,@F4,@F5: aggregation í•¨ìˆ˜ì˜ ì¤‘ê°„ ê²°ê³¼ë¥¼ ì €ì¥í•˜ëŠ” ì¹¼ëŸ¼
  *
  *    qmncWNST
  *   +--------+
@@ -182,7 +182,7 @@ typedef struct qmdWndNode
 typedef struct qmncWNST
 {
     //---------------------------------
-    // Code ¿µ¿ª °øÅë Á¤º¸
+    // Code ì˜ì—­ ê³µí†µ ì •ë³´
     //---------------------------------
 
     qmnPlan        plan;
@@ -190,44 +190,44 @@ typedef struct qmncWNST
     UInt           planID;
 
     //---------------------------------
-    // WNST °íÀ¯ Á¤º¸
+    // WNST ê³ ìœ  ì •ë³´
     //---------------------------------
 
-    // ÇÊ¿äÇÑ mtrNode
-    qmcMtrNode    * myNode;       // Sort Temp Table¿¡ ÀúÀå Ä®·³ÀÇ Á¤º¸
-    qmcMtrNode    * distNode;     // AggregationÇÔ¼öÀÇ ÀÎÀÚÀÇ distinct Á¤º¸
+    // í•„ìš”í•œ mtrNode
+    qmcMtrNode    * myNode;       // Sort Temp Tableì— ì €ì¥ ì¹¼ëŸ¼ì˜ ì •ë³´
+    qmcMtrNode    * distNode;     // Aggregationí•¨ìˆ˜ì˜ ì¸ìì˜ distinct ì •ë³´
                                   // ex) SUM( DISTINCT i1 )
-    qmcMtrNode    * aggrNode;     // Aggregation Áß°£ °á°ú ÀúÀåÀ» À§ÇÑ ³ëµå
-    qmcMtrNode   ** sortNode;     // Á¤·ÄÅ°ÀÇ ÁıÇÕ (ÇÏ³ªÀÇ Á¤·ÄÅ°´Â ´Ù¼öÀÇ Ä®·³À¸·Î ±¸¼º)
-    qmcWndNode   ** wndNode;      // À§ Á¤·ÄÅ°¿¡ ÇØ´çÇÏ´Â Window Clause Á¤º¸
-                                  // ( =Analytic Clause Á¤º¸ )
-    // mtrNode¿Í °ü·ÃµÈ count Á¤º¸
-    SDouble         storeRowCount;    // Sort Node¿¡ ÀúÀåµÉ ·¹ÄÚµå °¹¼ö ( ¿¹Ãø°ªÀÓ )
-    UInt            sortKeyCnt; // Á¤·ÄÅ°ÀÇ °³¼ö
+    qmcMtrNode    * aggrNode;     // Aggregation ì¤‘ê°„ ê²°ê³¼ ì €ì¥ì„ ìœ„í•œ ë…¸ë“œ
+    qmcMtrNode   ** sortNode;     // ì •ë ¬í‚¤ì˜ ì§‘í•© (í•˜ë‚˜ì˜ ì •ë ¬í‚¤ëŠ” ë‹¤ìˆ˜ì˜ ì¹¼ëŸ¼ìœ¼ë¡œ êµ¬ì„±)
+    qmcWndNode   ** wndNode;      // ìœ„ ì •ë ¬í‚¤ì— í•´ë‹¹í•˜ëŠ” Window Clause ì •ë³´
+                                  // ( =Analytic Clause ì •ë³´ )
+    // mtrNodeì™€ ê´€ë ¨ëœ count ì •ë³´
+    SDouble         storeRowCount;    // Sort Nodeì— ì €ì¥ë  ë ˆì½”ë“œ ê°¯ìˆ˜ ( ì˜ˆì¸¡ê°’ì„ )
+    UInt            sortKeyCnt; // ì •ë ¬í‚¤ì˜ ê°œìˆ˜
     UShort          baseTableCount;
 
     // dependency
     UShort          depTupleRowID; // Dependent Tuple ID
     qcComponentInfo * componentInfo; // PROJ-2462 Result Cache
     //---------------------------------
-    // Data ¿µ¿ª Á¤º¸
+    // Data ì˜ì—­ ì •ë³´
     //---------------------------------
 
-    UInt           mtrNodeOffset;  // ÀúÀå ColumnÀÇ Data ¿µ¿ª À§Ä¡
-    UInt           distNodeOffset; // distinctionÀÇ Data ¿µ¿ª À§Ä¡
-    UInt           aggrNodeOffset; // AggregationÀ» À§ÇÑ Data ¿µ¿ª À§Ä¡
-    UInt           sortNodeOffset; // Á¤·ÄÅ°¸¦ À§ÇÑ ColumnÀÇ Data ¿µ¿ª À§Ä¡
-    UInt           wndNodeOffset;  // qmdWndNode¸¦ À§ÇÑ Data ¿µ¿ª À§Ä¡
-    UInt           sortMgrOffset;  // ÀÓ½Ã: PROJ-1431 ¿Ï·á ÈÄ ¹İº¹ Á¤·Ä
-                                   // ±â´É Àû¿ë½Ã »èÁ¦!
-                                   // Sort Manager¸¦ À§ÇÑ Data ¿µ¿ªÀÇ À§Ä¡
+    UInt           mtrNodeOffset;  // ì €ì¥ Columnì˜ Data ì˜ì—­ ìœ„ì¹˜
+    UInt           distNodeOffset; // distinctionì˜ Data ì˜ì—­ ìœ„ì¹˜
+    UInt           aggrNodeOffset; // Aggregationì„ ìœ„í•œ Data ì˜ì—­ ìœ„ì¹˜
+    UInt           sortNodeOffset; // ì •ë ¬í‚¤ë¥¼ ìœ„í•œ Columnì˜ Data ì˜ì—­ ìœ„ì¹˜
+    UInt           wndNodeOffset;  // qmdWndNodeë¥¼ ìœ„í•œ Data ì˜ì—­ ìœ„ì¹˜
+    UInt           sortMgrOffset;  // ì„ì‹œ: PROJ-1431 ì™„ë£Œ í›„ ë°˜ë³µ ì •ë ¬
+                                   // ê¸°ëŠ¥ ì ìš©ì‹œ ì‚­ì œ!
+                                   // Sort Managerë¥¼ ìœ„í•œ Data ì˜ì—­ì˜ ìœ„ì¹˜
 } qmncWNST;
 
 
 typedef struct qmndWNST
 {
     //---------------------------------
-    // Data ¿µ¿ª °øÅë Á¤º¸
+    // Data ì˜ì—­ ê³µí†µ ì •ë³´
     //---------------------------------
 
     qmndPlan            plan;
@@ -235,35 +235,35 @@ typedef struct qmndWNST
     UInt              * flag;
 
     //---------------------------------
-    // WNST °íÀ¯ Á¤º¸
+    // WNST ê³ ìœ  ì •ë³´
     //---------------------------------
 
-    qmcdSortTemp      * sortMgr;        // ÇöÀç Sort Temp Table Manager
-    qmcdSortTemp      * sortMgrForDisk; // Disk SortÀÇ °æ¿ì, ¹Ì¸®
-                                        // ÇÒ´çÇØ ³õÀº Sort Temp Table
-                                        // ManagerÀÇ ½ÃÀÛ À§Ä¡ (ÃÑ
-                                        // qmncWNST.sortKeyCnt ¸¸Å­
-                                        // ÇÒ´ç )
-    qmdMtrNode        * mtrNode; // Sort Temp Table¿¡ ÀúÀå Ä®·³ÀÇ Á¤º¸
-    UInt                distNodeCnt; // Distinct ArgumentÀÇ °³¼ö
-    qmdDistNode       * distNode;    // Distinct ÀúÀå Column Á¤º¸
-    qmdAggrNode       * aggrNode;    // ºĞ¼® ÇÔ¼ö Á¤º¸    
-    qmdMtrNode       ** sortNode; // Á¤·ÄÅ°ÀÇ ÁıÇÕ (ÇÏ³ªÀÇ Á¤·ÄÅ°´Â ´Ù¼öÀÇ Ä®·³À¸·Î ±¸¼º)
+    qmcdSortTemp      * sortMgr;        // í˜„ì¬ Sort Temp Table Manager
+    qmcdSortTemp      * sortMgrForDisk; // Disk Sortì˜ ê²½ìš°, ë¯¸ë¦¬
+                                        // í• ë‹¹í•´ ë†“ì€ Sort Temp Table
+                                        // Managerì˜ ì‹œì‘ ìœ„ì¹˜ (ì´
+                                        // qmncWNST.sortKeyCnt ë§Œí¼
+                                        // í• ë‹¹ )
+    qmdMtrNode        * mtrNode; // Sort Temp Tableì— ì €ì¥ ì¹¼ëŸ¼ì˜ ì •ë³´
+    UInt                distNodeCnt; // Distinct Argumentì˜ ê°œìˆ˜
+    qmdDistNode       * distNode;    // Distinct ì €ì¥ Column ì •ë³´
+    qmdAggrNode       * aggrNode;    // ë¶„ì„ í•¨ìˆ˜ ì •ë³´    
+    qmdMtrNode       ** sortNode; // ì •ë ¬í‚¤ì˜ ì§‘í•© (í•˜ë‚˜ì˜ ì •ë ¬í‚¤ëŠ” ë‹¤ìˆ˜ì˜ ì¹¼ëŸ¼ìœ¼ë¡œ êµ¬ì„±)
     qmdWndNode       ** wndNode;
 
-    smiCursorPosInfo    cursorInfo; // Store,Restore½Ã ÀúÀåÇÒ À§Ä¡ Á¤º¸
+    smiCursorPosInfo    cursorInfo; // Store,Restoreì‹œ ì €ì¥í•  ìœ„ì¹˜ ì •ë³´
     smiCursorPosInfo    partitionCursorInfo;
 
-    mtcTuple          * depTuple; // Dependent Tuple À§Ä¡
+    mtcTuple          * depTuple; // Dependent Tuple ìœ„ì¹˜
     UInt                depValue; // Dependent Value
 
     //---------------------------------
-    // ¼­·Î ´Ù¸¥ PARTITIONÀ» À§ÇÑ ÀÚ·á ±¸Á¶
+    // ì„œë¡œ ë‹¤ë¥¸ PARTITIONì„ ìœ„í•œ ìë£Œ êµ¬ì¡°
     //---------------------------------
 
-    UInt                mtrRowSize;  // ÀúÀåÇÒ RowÀÇ Size
-    void              * mtrRow[2];   // °á°ú °ü¸®¸¦ À§ÇÑ µÎ °³ÀÇ °ø°£
-    UInt                mtrRowIdx;   // µÎ ÀúÀå °ø°£ Áß, ÇöÀç rowÀÇ offset
+    UInt                mtrRowSize;  // ì €ì¥í•  Rowì˜ Size
+    void              * mtrRow[2];   // ê²°ê³¼ ê´€ë¦¬ë¥¼ ìœ„í•œ ë‘ ê°œì˜ ê³µê°„
+    UInt                mtrRowIdx;   // ë‘ ì €ì¥ ê³µê°„ ì¤‘, í˜„ì¬ rowì˜ offset
 
     /* PROJ-2462 Result Cache */
     qmndResultCache     resultData;
@@ -277,11 +277,11 @@ public:
     // Base Function Pointer
     //------------------------
 
-    // ÃÊ±âÈ­
+    // ì´ˆê¸°í™”
     static IDE_RC init( qcTemplate * aTemplate,
                         qmnPlan    * aPlan );
 
-    // ¼öÇà ÇÔ¼ö
+    // ìˆ˜í–‰ í•¨ìˆ˜
     static IDE_RC doIt( qcTemplate * aTemplate,
                         qmnPlan    * aPlan,
                         qmcRowFlag * aFlag );
@@ -290,7 +290,7 @@ public:
     static IDE_RC padNull( qcTemplate * aTemplate,
                            qmnPlan    * aPlan );
 
-    // Plan Á¤º¸ Ãâ·Â
+    // Plan ì •ë³´ ì¶œë ¥
     static IDE_RC printPlan( qcTemplate   * aTemplate,
                              qmnPlan      * aPlan,
                              ULong          aDepth,
@@ -302,17 +302,17 @@ public:
     // mapping by doIt() function pointer
     //------------------------
 
-    // È£ÃâµÇ¾î¼­´Â ¾ÈµÊ.
+    // í˜¸ì¶œë˜ì–´ì„œëŠ” ì•ˆë¨.
     static IDE_RC doItDefault( qcTemplate * aTemplate,
                                qmnPlan    * aPlan,
                                qmcRowFlag * aFlag );
 
-    // ÃÖÃÊ ¼öÇà ÇÔ¼ö
+    // ìµœì´ˆ ìˆ˜í–‰ í•¨ìˆ˜
     static IDE_RC doItFirst( qcTemplate * aTemplate,
                              qmnPlan    * aPlan,
                              qmcRowFlag * aFlag );
 
-    // ´ÙÀ½ ¼öÇà ÇÔ¼ö
+    // ë‹¤ìŒ ìˆ˜í–‰ í•¨ìˆ˜
     static IDE_RC doItNext( qcTemplate * aTemplate,
                             qmnPlan    * aPlan,
                             qmcRowFlag * aFlag );
@@ -320,63 +320,63 @@ public:
 private:
 
     //----------------------------------------------------
-    // ÃÊ±âÈ­ °ü·Ã ÇÔ¼ö
+    // ì´ˆê¸°í™” ê´€ë ¨ í•¨ìˆ˜
     //----------------------------------------------------
 
     //------------------------
-    // ÃÖÃÊ ÃÊ±âÈ­ °ü·Ã ÇÔ¼ö
+    // ìµœì´ˆ ì´ˆê¸°í™” ê´€ë ¨ í•¨ìˆ˜
     // firstInit()
     //------------------------
 
-    // ÃÖÃÊ ÃÊ±âÈ­
+    // ìµœì´ˆ ì´ˆê¸°í™”
     static IDE_RC firstInit( qcTemplate     * aTemplate,
                              const qmncWNST * aCodePlan,
                              qmndWNST       * aDataPlan );
 
-    // ÀúÀå Ä®·³ Á¤º¸¸¦ (Materialize ³ëµå) ¼³Á¤
+    // ì €ì¥ ì¹¼ëŸ¼ ì •ë³´ë¥¼ (Materialize ë…¸ë“œ) ì„¤ì •
     static IDE_RC initMtrNode( qcTemplate     * aTemplate,
                                const qmncWNST * aCodePlan,
                                qmndWNST       * aDataPlan );
 
-    // Analytic Function ÀÎÀÚ¾Ö DISTINCT°¡ ÀÖ´Â °æ¿ì Á¤º¸ ¼³Á¤
+    // Analytic Function ì¸ìì•  DISTINCTê°€ ìˆëŠ” ê²½ìš° ì •ë³´ ì„¤ì •
     static IDE_RC initDistNode( qcTemplate     * aTemplate,
                                 const qmncWNST * aCodePlan,
                                 qmdDistNode    * aDistNode,
                                 UInt           * aDistNodeCnt );
 
-    // Reporting AggregationÀ» Ã³¸®ÇÏ´Â Ä®·³(Áß°£°ª) Á¤º¸ÀÇ ¼³Á¤
+    // Reporting Aggregationì„ ì²˜ë¦¬í•˜ëŠ” ì¹¼ëŸ¼(ì¤‘ê°„ê°’) ì •ë³´ì˜ ì„¤ì •
     static IDE_RC initAggrNode( qcTemplate         * aTemplate,
                                 const qmcMtrNode   * aCodeNode,
                                 const qmdDistNode  * aDistNode,
                                 const UInt           aDistNodeCnt,
                                 qmdAggrNode        * aAggrNode );
     
-    // ¸ğµç Á¤·ÄÅ°ÀÇ Á¤º¸¸¦ ¼³Á¤
+    // ëª¨ë“  ì •ë ¬í‚¤ì˜ ì •ë³´ë¥¼ ì„¤ì •
     static IDE_RC initSortNode( const qmncWNST * aCodePlan,
                                 const qmndWNST * aDataPlan,
                                 qmdMtrNode    ** aSortNode );
     
-    // º¹»çÇØ¼­ »ç¿ëÇÏ´Â mtrNodeÀÇ Á¤º¸ ¼³Á¤
+    // ë³µì‚¬í•´ì„œ ì‚¬ìš©í•˜ëŠ” mtrNodeì˜ ì •ë³´ ì„¤ì •
     static IDE_RC initCopiedMtrNode( const qmndWNST   * aDataPlan,
                                      const qmcMtrNode * aCodeNode,
                                      qmdMtrNode       * aDataNode );
 
-    // º¹»çÇØ¼­ »ç¿ëÇÏ´Â aggrNodeÀÇ Á¤º¸ ¼³Á¤
+    // ë³µì‚¬í•´ì„œ ì‚¬ìš©í•˜ëŠ” aggrNodeì˜ ì •ë³´ ì„¤ì •
     static IDE_RC initCopiedAggrNode( const qmndWNST   * aDataPlan,
                                       const qmcMtrNode * aCodeNode,
                                       qmdAggrNode      * aAggrNode );
 
-    // aggrResultNodeÀÇ Á¤º¸ ¼³Á¤ 
+    // aggrResultNodeì˜ ì •ë³´ ì„¤ì • 
     static IDE_RC initAggrResultMtrNode( const qmndWNST   * aDataPlan,
                                          const qmcMtrNode * aCodeNode,
                                          qmdMtrNode       * aDataNode );
     
-    // Window Clause (Analytic Clause) Á¤º¸¸¦ ´ã´Â qmdWndNode¸¦ ¼³Á¤
+    // Window Clause (Analytic Clause) ì •ë³´ë¥¼ ë‹´ëŠ” qmdWndNodeë¥¼ ì„¤ì •
     static IDE_RC initWndNode( const qmncWNST    * aCodePlan,
                                const qmndWNST    * aDataPlan,
                                qmdWndNode       ** aWndNode );
 
-    // Sort Temp TableÀ» ÃÊ±âÈ­ÇÔ
+    // Sort Temp Tableì„ ì´ˆê¸°í™”í•¨
     static IDE_RC initTempTable( qcTemplate      * aTemplate,
                                  const qmncWNST  * aCodePlan,
                                  qmndWNST        * aDataPlan,
@@ -384,42 +384,42 @@ private:
 
     
     //------------------------
-    // Analytic Function ¼öÇà °ü·Ã ÇÔ¼ö
+    // Analytic Function ìˆ˜í–‰ ê´€ë ¨ í•¨ìˆ˜
     // performAnalyticFunctions()
     //------------------------
 
-    // ¸ğµç Analytic FunctionÀ» ¼öÇàÇÏ¿© Temp Table¿¡ ÀúÀå
+    // ëª¨ë“  Analytic Functionì„ ìˆ˜í–‰í•˜ì—¬ Temp Tableì— ì €ì¥
     static IDE_RC performAnalyticFunctions( qcTemplate     * aTemplate,
                                             const qmncWNST * aCodePlan,
                                             qmndWNST       * aDataPlan );
 
-    // Child¸¦ ¹İº¹ ¼öÇàÇÏ¿© Temp TableÀ» ±¸Ãà
+    // Childë¥¼ ë°˜ë³µ ìˆ˜í–‰í•˜ì—¬ Temp Tableì„ êµ¬ì¶•
     static IDE_RC insertRowsFromChild( qcTemplate     * aTemplate,
                                        const qmncWNST * aCodePlan,
                                        qmndWNST       * aDataPlan );
 
     /* BUG-40354 pushed rank */
-    /* Child¸¦ ¹İº¹ ¼öÇàÇÏ¿© »óÀ§ n°³ÀÇ rocord¸¸ °®´Â memory temp¸¦ ±¸Ãà */
+    /* Childë¥¼ ë°˜ë³µ ìˆ˜í–‰í•˜ì—¬ ìƒìœ„ nê°œì˜ rocordë§Œ ê°–ëŠ” memory tempë¥¼ êµ¬ì¶• */
     static IDE_RC insertLimitedRowsFromChild( qcTemplate     * aTemplate,
                                               const qmncWNST * aCodePlan,
                                               qmndWNST       * aDataPlan );
 
-    // Reporting AggregationÀ» ¼öÇàÇÏ°í °á°ú¸¦ Temp Table¿¡ Update
+    // Reporting Aggregationì„ ìˆ˜í–‰í•˜ê³  ê²°ê³¼ë¥¼ Temp Tableì— Update
     static IDE_RC aggregateAndUpdate( qcTemplate       * aTemplate,
                                       qmndWNST         * aDataPlan,
                                       const qmdWndNode * aWndNode );
     
     //------------------------
-    // Reporting Aggregation °ü·Ã ÇÔ¼ö
+    // Reporting Aggregation ê´€ë ¨ í•¨ìˆ˜
     //------------------------
 
-    // ÆÄÆ¼¼Ç Á¶°ÇÀÌ ÁöÁ¤µÇÁö ¾ÊÀº °æ¿ì, ÀüÃ¼¿¡ ´ëÇØ aggregation ¼öÇà
+    // íŒŒí‹°ì…˜ ì¡°ê±´ì´ ì§€ì •ë˜ì§€ ì•Šì€ ê²½ìš°, ì „ì²´ì— ëŒ€í•´ aggregation ìˆ˜í–‰
     static IDE_RC aggregationOnly( qcTemplate        * aTemplate,
                                    qmndWNST          * aDataPlan,
                                    const qmdAggrNode * aAggrNode,
                                    const qmdMtrNode  * aAggrResultNode );
     
-    // ÆÄÆ¼¼Ç º°·Î aggregation ¼öÇà
+    // íŒŒí‹°ì…˜ ë³„ë¡œ aggregation ìˆ˜í–‰
     static IDE_RC partitionAggregation( qcTemplate        * aTemplate,
                                         qmndWNST          * aDataPlan,
                                         const qmdMtrNode  * aOverColumnNode,
@@ -427,7 +427,7 @@ private:
                                         const qmdMtrNode  * aAggrResultNode );
 
 
-    // ÆÄÆ¼¼Ç º°·Î order¿¡ µû¶ó aggregation ¼öÇà
+    // íŒŒí‹°ì…˜ ë³„ë¡œ orderì— ë”°ë¼ aggregation ìˆ˜í–‰
     static IDE_RC partitionOrderByAggregation( qcTemplate  * aTemplate,
                                                qmndWNST    * aDataPlan,
                                                qmdMtrNode  * aOverColumnNode,
@@ -446,68 +446,68 @@ private:
                                   qmcRowFlag * aFlag,
                                   SLong        aExecAggrCount );
 
-    // Distinct ColumnÀ» À§ÇÑ Temp TableÀ» ClearÇÔ
+    // Distinct Columnì„ ìœ„í•œ Temp Tableì„ Clearí•¨
     static IDE_RC clearDistNode( qmdDistNode * aDistNode,
                                  const UInt    aDistNodeCnt );
 
-    // AggregationÀÇ ÃÊ±âÈ­¿Í Group °ªÀ» ¼³Á¤
+    // Aggregationì˜ ì´ˆê¸°í™”ì™€ Group ê°’ì„ ì„¤ì •
     static IDE_RC initAggregation( qcTemplate        * aTemplate,
                                    const qmdAggrNode * aAggrNode );
     
-    // AggregationÀ» ¼öÇà
+    // Aggregationì„ ìˆ˜í–‰
     static IDE_RC execAggregation( qcTemplate         * aTemplate,
                                    const qmdAggrNode  * aAggrNode,
                                    void               * aAggrInfo,
                                    qmdDistNode        * aDistNode,
                                    const UInt           aDistNodeCnt );
 
-    // Distinct ColumnÀ» ±¸¼º
+    // Distinct Columnì„ êµ¬ì„±
     static IDE_RC setDistMtrColumns( qcTemplate        * aTemplate,
                                      qmdDistNode       * aDistNode,
                                      const UInt          aDistNodeCnt );
     
-    // AggregationÀ» ¸¶¹«¸®
+    // Aggregationì„ ë§ˆë¬´ë¦¬
     static IDE_RC finiAggregation( qcTemplate        * aTemplate,
                                    const qmdAggrNode * aAggrNode );
 
-    // ÀúÀåÇÑ µÎ Row°£ÀÇ µ¿ÀÏ ¿©ºÎ¸¦ ÆÇ´Ü
+    // ì €ì¥í•œ ë‘ Rowê°„ì˜ ë™ì¼ ì—¬ë¶€ë¥¼ íŒë‹¨
     static IDE_RC compareRows( const qmndWNST   * aDataPlan,
                                const qmdMtrNode * aMtrNode,
                                qmcRowFlag       * aFlag );
 
-    // ºñ±³¸¦ À§ÇÑ °ø°£À» ÇÒ´ç
+    // ë¹„êµë¥¼ ìœ„í•œ ê³µê°„ì„ í• ë‹¹
     static IDE_RC allocMtrRow( qcTemplate     * aTemplate,
                                const qmncWNST * aCodePlan,
                                const qmndWNST * aDataPlan,                               
                                void           * aMtrRow[2] );
 
-    // Ã¹ ¹øÂ° ·¹ÄÚµå¸¦ °¡Á®¿È
+    // ì²« ë²ˆì§¸ ë ˆì½”ë“œë¥¼ ê°€ì ¸ì˜´
     static IDE_RC getFirstRecord( qcTemplate  * aTemplate,
                                   qmndWNST    * aDataPlan,
                                   qmcRowFlag  * aFlag );
     
-    // ´ÙÀ½ ·¹ÄÚµå¸¦ °¡Á®¿È
+    // ë‹¤ìŒ ë ˆì½”ë“œë¥¼ ê°€ì ¸ì˜´
     static IDE_RC getNextRecord( qcTemplate  * aTemplate,
                                  qmndWNST    * aDataPlan,
                                  qmcRowFlag  * aFlag );
 
 
     //----------------------------------------------------
-    // WNSTÀÇ doIt() °ü·Ã ÇÔ¼ö
+    // WNSTì˜ doIt() ê´€ë ¨ í•¨ìˆ˜
     //----------------------------------------------------
 
-    // ÀúÀå Row¸¦ ±¸¼ºÇÑ´Ù.
+    // ì €ì¥ Rowë¥¼ êµ¬ì„±í•œë‹¤.
     static IDE_RC setMtrRow( qcTemplate     * aTemplate,
                              qmndWNST       * aDataPlan );
     
-    // °Ë»öµÈ ÀúÀå Row¸¦ ±âÁØÀ¸·Î Tuple SetÀ» º¹¿øÇÑ´Ù.
+    // ê²€ìƒ‰ëœ ì €ì¥ Rowë¥¼ ê¸°ì¤€ìœ¼ë¡œ Tuple Setì„ ë³µì›í•œë‹¤.
     static IDE_RC setTupleSet( qcTemplate   * aTemplate,
                                qmdMtrNode   * aMtrNode,
                                void         * aRow );
 
     
     //----------------------------------------------------
-    // ÇÃ·£ Ãâ·Â printPlan() °ü·Ã ÇÔ¼ö
+    // í”Œëœ ì¶œë ¥ printPlan() ê´€ë ¨ í•¨ìˆ˜
     //----------------------------------------------------
 
     static IDE_RC printAnalyticFunctionInfo( qcTemplate     * aTemplate,

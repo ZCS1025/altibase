@@ -21,18 +21,18 @@
  * Description :
  *     LOJN(Left Outer JoiN) Node
  *
- *     °ü°èÇü ¸ðµ¨¿¡¼­ Left Outer Join¸¦ ¼öÇàÇÏ´Â Plan Node ÀÌ´Ù.
- *     ´Ù¾çÇÑ Join MethodµéÀº ÇÏÀ§ ³ëµåÀÇ ÇüÅÂ¿¡ µû¶ó °áÁ¤µÈ´Ù.
+ *     ê´€ê³„í˜• ëª¨ë¸ì—ì„œ Left Outer Joinë¥¼ ìˆ˜í–‰í•˜ëŠ” Plan Node ì´ë‹¤.
+ *     ë‹¤ì–‘í•œ Join Methodë“¤ì€ í•˜ìœ„ ë…¸ë“œì˜ í˜•íƒœì— ë”°ë¼ ê²°ì •ëœë‹¤.
  *  
- *     ´ÙÀ½°ú °°Àº ±â´ÉÀ» À§ÇØ »ç¿ëµÈ´Ù.
- *         - Nested Loop Join °è¿­
- *         - Sort-based Join °è¿­
- *         - Hash-based Join °è¿­
- *         - Full Outer JoinÀÇ Anti-Outer ÃÖÀûÈ­ Àû¿ë½Ã
+ *     ë‹¤ìŒê³¼ ê°™ì€ ê¸°ëŠ¥ì„ ìœ„í•´ ì‚¬ìš©ëœë‹¤.
+ *         - Nested Loop Join ê³„ì—´
+ *         - Sort-based Join ê³„ì—´
+ *         - Hash-based Join ê³„ì—´
+ *         - Full Outer Joinì˜ Anti-Outer ìµœì í™” ì ìš©ì‹œ
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  **********************************************************************/
 
@@ -52,7 +52,7 @@ qmnLOJN::init( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    LOJN ³ëµåÀÇ ÃÊ±âÈ­
+ *    LOJN ë…¸ë“œì˜ ì´ˆê¸°í™”
  *
  * Implementation :
  *
@@ -80,7 +80,7 @@ qmnLOJN::init( qcTemplate * aTemplate,
     }
 
     //------------------------------------------------
-    // Child PlanÀÇ ÃÊ±âÈ­
+    // Child Planì˜ ì´ˆê¸°í™”
     //------------------------------------------------
 
     IDE_TEST( aPlan->left->init( aTemplate, 
@@ -88,10 +88,10 @@ qmnLOJN::init( qcTemplate * aTemplate,
 
     /*
      * PROJ-2402 Parallel Table Scan
-     * parallel scan ÀÇ °æ¿ì
-     * ÇÊ¿äÇÑÂÊ¿¡ ¸ÕÀú thread ¸¦ ºÐ¹èÇÏ±â À§ÇØ
-     * ¿À¸¥ÂÊ¿¡ PRLQ, HASH(¶Ç´Â SORT) °¡ ÀÖÀ»¶§
-     * ¿À¸¥ÂÊÀ» ¸ÕÀú init ÇÑ´Ù.
+     * parallel scan ì˜ ê²½ìš°
+     * í•„ìš”í•œìª½ì— ë¨¼ì € thread ë¥¼ ë¶„ë°°í•˜ê¸° ìœ„í•´
+     * ì˜¤ë¥¸ìª½ì— PRLQ, HASH(ë˜ëŠ” SORT) ê°€ ìžˆì„ë•Œ
+     * ì˜¤ë¥¸ìª½ì„ ë¨¼ì € init í•œë‹¤.
      */
     if (((aPlan->right->flag & QMN_PLAN_PRLQ_EXIST_MASK) ==
          QMN_PLAN_PRLQ_EXIST_TRUE) &&
@@ -108,7 +108,7 @@ qmnLOJN::init( qcTemplate * aTemplate,
     }
 
     //------------------------------------------------
-    // ¼öÇà ÇÔ¼ö °áÁ¤
+    // ìˆ˜í–‰ í•¨ìˆ˜ ê²°ì •
     //------------------------------------------------
     if ( ( sCodePlan->plan.flag & QMN_PLAN_JOIN_METHOD_TYPE_MASK )
         == QMN_PLAN_JOIN_METHOD_INVERSE_HASH )
@@ -137,10 +137,10 @@ qmnLOJN::doIt( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    LOJNÀÇ °íÀ¯ ±â´ÉÀ» ¼öÇàÇÑ´Ù.
+ *    LOJNì˜ ê³ ìœ  ê¸°ëŠ¥ì„ ìˆ˜í–‰í•œë‹¤.
  *
  * Implementation :
- *    ÁöÁ¤µÈ ÇÔ¼ö Æ÷ÀÎÅÍ¸¦ ¼öÇàÇÑ´Ù.
+ *    ì§€ì •ëœ í•¨ìˆ˜ í¬ì¸í„°ë¥¼ ìˆ˜í–‰í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -170,11 +170,11 @@ qmnLOJN::padNull( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    Null PaddingÀ» ¼öÇàÇÑ´Ù.
+ *    Null Paddingì„ ìˆ˜í–‰í•œë‹¤.
  *
  * Implementation :
- *    º°µµÀÇ Null Row¸¦ °¡ÁöÁö ¾ÊÀ¸¸ç,
- *    Child¿¡ ´ëÇÑ Null PaddingÀ» ¼öÇàÇÑ´Ù.
+ *    ë³„ë„ì˜ Null Rowë¥¼ ê°€ì§€ì§€ ì•Šìœ¼ë©°,
+ *    Childì— ëŒ€í•œ Null Paddingì„ ìˆ˜í–‰í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -197,7 +197,7 @@ qmnLOJN::padNull( qcTemplate * aTemplate,
     }
 
     //------------------------------------------------
-    // Child ¿¡ ´ëÇÑ Null Padding
+    // Child ì— ëŒ€í•œ Null Padding
     //------------------------------------------------
     
     IDE_TEST( aPlan->left->padNull( aTemplate, aPlan->left )
@@ -225,7 +225,7 @@ qmnLOJN::printPlan( qcTemplate   * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    ¼öÇà Á¤º¸¸¦ Ãâ·ÂÇÑ´Ù.
+ *    ìˆ˜í–‰ ì •ë³´ë¥¼ ì¶œë ¥í•œë‹¤.
  *
  * Implementation :
  *
@@ -242,7 +242,7 @@ qmnLOJN::printPlan( qcTemplate   * aTemplate,
     ULong i;
 
     //----------------------------
-    // Display À§Ä¡ °áÁ¤
+    // Display ìœ„ì¹˜ ê²°ì •
     //----------------------------
     for ( i = 0; i < aDepth; i++ )
     {
@@ -251,7 +251,7 @@ qmnLOJN::printPlan( qcTemplate   * aTemplate,
     }
 
     //----------------------------
-    // LOJN ³ëµå Ç¥½Ã
+    // LOJN ë…¸ë“œ í‘œì‹œ
     //----------------------------
     iduVarStringAppend( aString,
                         "LEFT-OUTER-JOIN" );
@@ -268,18 +268,18 @@ qmnLOJN::printPlan( qcTemplate   * aTemplate,
     }
 
     //----------------------------
-    // Join Method Ãâ·Â
+    // Join Method ì¶œë ¥
     //----------------------------
     qmn::printJoinMethod( aString, sCodePlan->plan.flag );
 
     //----------------------------
-    // Cost Ãâ·Â
+    // Cost ì¶œë ¥
     //----------------------------
     qmn::printCost( aString,
                     sCodePlan->plan.qmgAllCost );
 
     //----------------------------
-    // Predicate Á¤º¸ Ç¥½Ã
+    // Predicate ì •ë³´ í‘œì‹œ
     //----------------------------
     
     if ( sCodePlan->filter != NULL )
@@ -312,7 +312,7 @@ qmnLOJN::printPlan( qcTemplate   * aTemplate,
     }
 
     //----------------------------
-    // Operatorº° °á°ú Á¤º¸ Ãâ·Â
+    // Operatorë³„ ê²°ê³¼ ì •ë³´ ì¶œë ¥
     //----------------------------
     if ( QCU_TRCLOG_RESULT_DESC == 1 )
     {
@@ -328,7 +328,7 @@ qmnLOJN::printPlan( qcTemplate   * aTemplate,
     }
 
     //----------------------------
-    // Child PlanÀÇ Á¤º¸ Ãâ·Â
+    // Child Planì˜ ì •ë³´ ì¶œë ¥
     //----------------------------
     
     IDE_TEST( aPlan->left->printPlan( aTemplate,
@@ -360,7 +360,7 @@ qmnLOJN::doItDefault( qcTemplate * /* aTemplate */,
 /***********************************************************************
  *
  * Description :
- *    ÀÌ ÇÔ¼ö°¡ ¼öÇàµÇ¸é ¾ÈµÊ.
+ *    ì´ í•¨ìˆ˜ê°€ ìˆ˜í–‰ë˜ë©´ ì•ˆë¨.
  *
  * Implementation :
  *
@@ -384,11 +384,11 @@ qmnLOJN::doItLeft( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *     »õ·Î¿î Left Row¿¡ ´ëÇÑ Ã³¸®
+ *     ìƒˆë¡œìš´ Left Rowì— ëŒ€í•œ ì²˜ë¦¬
  *
  * Implementation :
- *     JOIN°ú ´Þ¸® Left¿¡ ´ëÀÀÇÏ´Â Right Row°¡ Á¸ÀçÇÏÁö ¾ÊÀ» °æ¿ì
- *     Null PaddingÇÏ¿© °á°ú¸¦ ±¸¼ºÇÑ´Ù.
+ *     JOINê³¼ ë‹¬ë¦¬ Leftì— ëŒ€ì‘í•˜ëŠ” Right Rowê°€ ì¡´ìž¬í•˜ì§€ ì•Šì„ ê²½ìš°
+ *     Null Paddingí•˜ì—¬ ê²°ê³¼ë¥¼ êµ¬ì„±í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -416,7 +416,7 @@ qmnLOJN::doItLeft( qcTemplate * aTemplate,
         //------------------------------------
 
         // To Fix PR-9822
-        // Right´Â Left°¡ º¯ÇÒ ¶§¸¶´Ù ÃÊ±âÈ­ÇØ ÁÖ¾î¾ß ÇÑ´Ù.
+        // RightëŠ” Leftê°€ ë³€í•  ë•Œë§ˆë‹¤ ì´ˆê¸°í™”í•´ ì£¼ì–´ì•¼ í•œë‹¤.
         IDE_TEST( aPlan->right->init( aTemplate, 
                                       aPlan->right ) != IDE_SUCCESS);
         
@@ -424,7 +424,7 @@ qmnLOJN::doItLeft( qcTemplate * aTemplate,
                   != IDE_SUCCESS );
 
         //------------------------------------
-        // Filter Á¶°ÇÀ» ¸¸Á·ÇÒ ¶§±îÁö ¹Ýº¹
+        // Filter ì¡°ê±´ì„ ë§Œì¡±í•  ë•Œê¹Œì§€ ë°˜ë³µ
         //------------------------------------
         
         while ( (sFlag & QMC_ROW_DATA_MASK) == QMC_ROW_DATA_EXIST )
@@ -452,7 +452,7 @@ qmnLOJN::doItLeft( qcTemplate * aTemplate,
         }
 
         //------------------------------------
-        // Right Row°¡ ¾øÀ» °æ¿ì Null Padding
+        // Right Rowê°€ ì—†ì„ ê²½ìš° Null Padding
         //------------------------------------
         
         if ( (sFlag & QMC_ROW_DATA_MASK) == QMC_ROW_DATA_EXIST )
@@ -468,7 +468,7 @@ qmnLOJN::doItLeft( qcTemplate * aTemplate,
     }
     else
     {
-        // ´õ ÀÌ»ó °á°ú°¡ ¾øÀ½
+        // ë” ì´ìƒ ê²°ê³¼ê°€ ì—†ìŒ
         // Nothing To Do
     }
 
@@ -489,10 +489,10 @@ qmnLOJN::doItRight( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *     »õ·Î¿î Right Row¿¡ ´ëÇÑ Ã³¸®
+ *     ìƒˆë¡œìš´ Right Rowì— ëŒ€í•œ ì²˜ë¦¬
  *
  * Implementation :
- *     Filter Á¶°ÇÀ» ¸¸Á·ÇÒ ¶§±îÁö ¹Ýº¹ ¼öÇà
+ *     Filter ì¡°ê±´ì„ ë§Œì¡±í•  ë•Œê¹Œì§€ ë°˜ë³µ ìˆ˜í–‰
  *
  ***********************************************************************/
 
@@ -514,7 +514,7 @@ qmnLOJN::doItRight( qcTemplate * aTemplate,
               != IDE_SUCCESS );
 
     //------------------------------------
-    // Filter Á¶°ÇÀ» ¸¸Á·ÇÒ ¶§±îÁö ¹Ýº¹
+    // Filter ì¡°ê±´ì„ ë§Œì¡±í•  ë•Œê¹Œì§€ ë°˜ë³µ
     //------------------------------------
     
     while ( (sFlag & QMC_ROW_DATA_MASK) == QMC_ROW_DATA_EXIST )
@@ -547,7 +547,7 @@ qmnLOJN::doItRight( qcTemplate * aTemplate,
     }
     else
     {
-        // ÁúÀÇ °á°ú°¡ ¾øÀ» °æ¿ì »õ·Î¿î Left Row¸¦ ÀÌ¿ëÇÑ Ã³¸®
+        // ì§ˆì˜ ê²°ê³¼ê°€ ì—†ì„ ê²½ìš° ìƒˆë¡œìš´ Left Rowë¥¼ ì´ìš©í•œ ì²˜ë¦¬
         IDE_TEST( qmnLOJN::doItLeft( aTemplate, aPlan, aFlag ) 
                   != IDE_SUCCESS );
         if ( (*aFlag & QMC_ROW_DATA_MASK ) != QMC_ROW_DATA_EXIST )
@@ -576,11 +576,11 @@ IDE_RC qmnLOJN::doItInverseLeft( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *     »õ·Î¿î Left Row¿¡ ´ëÇÑ Ã³¸®
+ *     ìƒˆë¡œìš´ Left Rowì— ëŒ€í•œ ì²˜ë¦¬
  *
  * Implementation :
- *     JOIN°ú ´Þ¸® Left¿¡ ´ëÀÀÇÏ´Â Right Row°¡ Á¸ÀçÇÏÁö ¾ÊÀ» °æ¿ì
- *     Null PaddingÇÏ¿© °á°ú¸¦ ±¸¼ºÇÑ´Ù.
+ *     JOINê³¼ ë‹¬ë¦¬ Leftì— ëŒ€ì‘í•˜ëŠ” Right Rowê°€ ì¡´ìž¬í•˜ì§€ ì•Šì„ ê²½ìš°
+ *     Null Paddingí•˜ì—¬ ê²°ê³¼ë¥¼ êµ¬ì„±í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -593,7 +593,7 @@ IDE_RC qmnLOJN::doItInverseLeft( qcTemplate * aTemplate,
     idBool sJudge;
 
     //------------------------------------
-    // Left Row¸¦ ¸ðµÎ Å½»ö
+    // Left Rowë¥¼ ëª¨ë‘ íƒìƒ‰
     //------------------------------------
     
     IDE_TEST( aPlan->left->doIt( aTemplate, aPlan->left, & sLeftFlag )
@@ -606,7 +606,7 @@ IDE_RC qmnLOJN::doItInverseLeft( qcTemplate * aTemplate,
         //------------------------------------
 
         // To Fix PR-9822
-        // Right´Â Left°¡ º¯ÇÒ ¶§¸¶´Ù ÃÊ±âÈ­ÇØ ÁÖ¾î¾ß ÇÑ´Ù.
+        // RightëŠ” Leftê°€ ë³€í•  ë•Œë§ˆë‹¤ ì´ˆê¸°í™”í•´ ì£¼ì–´ì•¼ í•œë‹¤.
         IDE_TEST( aPlan->right->init( aTemplate, 
                                       aPlan->right ) != IDE_SUCCESS);
         
@@ -614,7 +614,7 @@ IDE_RC qmnLOJN::doItInverseLeft( qcTemplate * aTemplate,
                   != IDE_SUCCESS );
 
         //------------------------------------
-        // Filter Á¶°ÇÀ» ¸¸Á·ÇÒ ¶§±îÁö ¹Ýº¹
+        // Filter ì¡°ê±´ì„ ë§Œì¡±í•  ë•Œê¹Œì§€ ë°˜ë³µ
         //------------------------------------
         
         while ( (sRightFlag & QMC_ROW_DATA_MASK) == QMC_ROW_DATA_EXIST )
@@ -692,10 +692,10 @@ IDE_RC qmnLOJN::doItInverseRight( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *     Right Row¸¦ °è¼Ó Ã³¸®
+ *     Right Rowë¥¼ ê³„ì† ì²˜ë¦¬
  *
  * Implementation :
- *     Right Row°¡ ´õ Á¸ÀçÇÏ¸é Join °á°ú·Î ±¸¼ºÇÑ´Ù.
+ *     Right Rowê°€ ë” ì¡´ìž¬í•˜ë©´ Join ê²°ê³¼ë¡œ êµ¬ì„±í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -714,7 +714,7 @@ IDE_RC qmnLOJN::doItInverseRight( qcTemplate * aTemplate,
               != IDE_SUCCESS );
 
     //------------------------------------
-    // Filter Á¶°ÇÀ» ¸¸Á·ÇÒ ¶§±îÁö ¹Ýº¹
+    // Filter ì¡°ê±´ì„ ë§Œì¡±í•  ë•Œê¹Œì§€ ë°˜ë³µ
     //------------------------------------
     
     while ( (sFlag & QMC_ROW_DATA_MASK) == QMC_ROW_DATA_EXIST )
@@ -750,7 +750,7 @@ IDE_RC qmnLOJN::doItInverseRight( qcTemplate * aTemplate,
     }
     else
     {
-        // ÁúÀÇ °á°ú°¡ ¾øÀ» °æ¿ì »õ·Î¿î Left Row¸¦ ÀÌ¿ëÇÑ Ã³¸®
+        // ì§ˆì˜ ê²°ê³¼ê°€ ì—†ì„ ê²½ìš° ìƒˆë¡œìš´ Left Rowë¥¼ ì´ìš©í•œ ì²˜ë¦¬
         IDE_TEST( qmnLOJN::doItInverseLeft( aTemplate, aPlan, aFlag ) 
                   != IDE_SUCCESS );
 
@@ -779,11 +779,11 @@ IDE_RC qmnLOJN::doItInverseNonHitFirst( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    Left Outer Inverse Join ÈÄÃ³¸® °úÁ¤À¸·Î ÃÖÃÊ ¼öÇà ÇÔ¼ö
+ *    Left Outer Inverse Join í›„ì²˜ë¦¬ ê³¼ì •ìœ¼ë¡œ ìµœì´ˆ ìˆ˜í–‰ í•¨ìˆ˜
  *
  * Implementation :
- *    Child PlanÀÇ °Ë»ö ¸ðµå¸¦ º¯°æÇÑ´Ù.
- *    Hit FlagÀÌ ¾ø´Â Child Row¸¦ È¹µæÇÏ°Ô µÈ´Ù.
+ *    Child Planì˜ ê²€ìƒ‰ ëª¨ë“œë¥¼ ë³€ê²½í•œë‹¤.
+ *    Hit Flagì´ ì—†ëŠ” Child Rowë¥¼ íšë“í•˜ê²Œ ëœë‹¤.
  *
  ***********************************************************************/
 
@@ -791,12 +791,12 @@ IDE_RC qmnLOJN::doItInverseNonHitFirst( qcTemplate * aTemplate,
         (qmndLOJN *) (aTemplate->tmplate.data + aPlan->offset);
 
     // To Fix PR-9822
-    // Right´Â Left°¡ ¾øÀ» °æ¿ìµµ ÃÊ±âÈ­ÇØ ÁÖ¾î¾ß ÇÑ´Ù.
+    // RightëŠ” Leftê°€ ì—†ì„ ê²½ìš°ë„ ì´ˆê¸°í™”í•´ ì£¼ì–´ì•¼ í•œë‹¤.
     IDE_TEST( aPlan->right->init( aTemplate, 
                                   aPlan->right ) != IDE_SUCCESS);
     
     //------------------------------------
-    // Right¿¡ ´ëÇÏ¿© Non-Hit °Ë»ö ¸ðµå·Î º¯°æ
+    // Rightì— ëŒ€í•˜ì—¬ Non-Hit ê²€ìƒ‰ ëª¨ë“œë¡œ ë³€ê²½
     //------------------------------------
     qmnHASH::setNonHitSearch( aTemplate, aPlan->right );
 
@@ -808,14 +808,14 @@ IDE_RC qmnLOJN::doItInverseNonHitFirst( qcTemplate * aTemplate,
     
     if ( ( *aFlag & QMC_ROW_DATA_MASK ) == QMC_ROW_DATA_EXIST )
     {
-        // Left Row¿¡ ´ëÇÑ Null Padding
+        // Left Rowì— ëŒ€í•œ Null Padding
         IDE_TEST( aPlan->left->padNull( aTemplate, aPlan->left )
                   != IDE_SUCCESS );
         sDataPlan->doIt = qmnLOJN::doItInverseNonHitNext;
     }
     else
     {
-        // °á°ú ¾øÀ½
+        // ê²°ê³¼ ì—†ìŒ
         sDataPlan->doIt = qmnLOJN::doItInverseLeft;
     }
 
@@ -833,11 +833,11 @@ IDE_RC qmnLOJN::doItInverseNonHitNext( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    Left Outer Inverse Join ÈÄÃ³¸® °úÁ¤À¸·Î ´ÙÀ½ ¼öÇà ÇÔ¼ö
+ *    Left Outer Inverse Join í›„ì²˜ë¦¬ ê³¼ì •ìœ¼ë¡œ ë‹¤ìŒ ìˆ˜í–‰ í•¨ìˆ˜
  *
  * Implementation :
- *    Child PlanÀÇ °Ë»ö ¸ðµå¸¦ º¯°æÇÑ´Ù.
- *    Hit FlagÀÌ ¾ø´Â Child Row¸¦ È¹µæÇÏ°Ô µÈ´Ù.
+ *    Child Planì˜ ê²€ìƒ‰ ëª¨ë“œë¥¼ ë³€ê²½í•œë‹¤.
+ *    Hit Flagì´ ì—†ëŠ” Child Rowë¥¼ íšë“í•˜ê²Œ ëœë‹¤.
  *
  ***********************************************************************/
 
@@ -852,13 +852,13 @@ IDE_RC qmnLOJN::doItInverseNonHitNext( qcTemplate * aTemplate,
     
     if ( ( *aFlag & QMC_ROW_DATA_MASK ) == QMC_ROW_DATA_EXIST )
     {
-        // Left Row¿¡ ´ëÇÑ Null Padding
+        // Left Rowì— ëŒ€í•œ Null Padding
         IDE_TEST( aPlan->left->padNull( aTemplate, aPlan->left )
                   != IDE_SUCCESS );
     }
     else
     {
-        // °á°ú ¾øÀ½
+        // ê²°ê³¼ ì—†ìŒ
         sDataPlan->doIt = qmnLOJN::doItInverseLeft;
     }
 
@@ -876,7 +876,7 @@ qmnLOJN::firstInit( qmncLOJN   * aCodePlan,
 /***********************************************************************
  *
  * Description :
- *    Data ¿µ¿ª¿¡ ´ëÇÑ ÃÊ±âÈ­
+ *    Data ì˜ì—­ì— ëŒ€í•œ ì´ˆê¸°í™”
  * Implementation :
  *
  ***********************************************************************/
@@ -893,7 +893,7 @@ qmnLOJN::firstInit( qmncLOJN   * aCodePlan,
     } 
 
     //---------------------------------
-    // ÃÊ±âÈ­ ¿Ï·á¸¦ Ç¥±â
+    // ì´ˆê¸°í™” ì™„ë£Œë¥¼ í‘œê¸°
     //---------------------------------
 
     *aDataPlan->flag &= ~QMND_LOJN_INIT_DONE_MASK;

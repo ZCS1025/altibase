@@ -109,7 +109,7 @@ extern mtfModule stfIsMBRIntersects;
 extern mtfModule stfIsMBRContains;
 extern mtfModule stfIsMBRWithin;
 
-/* BUG-45645 ST_Reverse, ST_MakeEnvelope ÇÔ¼ö Áö¿ø */
+/* BUG-45645 ST_Reverse, ST_MakeEnvelope í•¨ìˆ˜ ì§€ì› */
 extern mtfModule stfReverse;
 extern mtfModule stfMakeEnvelope;
 
@@ -196,7 +196,7 @@ mtfModule* stfModules[] = {
     &stfIsMBRIntersects,
     &stfIsMBRContains,
     &stfIsMBRWithin,
-    /* BUG-45645 ST_Reverse, ST_MakeEnvelope ÇÔ¼ö Áö¿ø */
+    /* BUG-45645 ST_Reverse, ST_MakeEnvelope í•¨ìˆ˜ ì§€ì› */
     &stfReverse,
     &stfMakeEnvelope,
     NULL

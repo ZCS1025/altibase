@@ -21,8 +21,8 @@
 
 /***********************************************************************
  * QUOTED_PRINTABLE_ENCODE() : 
- * ÀÔ·Â¹ŞÀº VARBYTEÀ» QOUTED_PRINTABLE ÀÎÄÚµùÇÏ¿©
- * VARBYTEÅ¸ÀÔÀÇ ¹®Â¥¿­·Î ¹İÈ¯ÇÑ´Ù.
+ * ì…ë ¥ë°›ì€ VARBYTEì„ QOUTED_PRINTABLE ì¸ì½”ë”©í•˜ì—¬
+ * VARBYTEíƒ€ì…ì˜ ë¬¸ì§œì—´ë¡œ ë°˜í™˜í•œë‹¤.
  *
  * ex) SELECT QUOTED_PRINTABLE_ENCODE('65203D206D633220697320636F6F6C21')
  * FROM DUAL; -- e = mc2 is cool!'
@@ -61,7 +61,7 @@ static IDE_RC mtfQuoted_printable_encodeEstimate( mtcNode     * aNode,
 mtfModule mtfQuoted_printable_encode = {
     1|MTC_NODE_OPERATOR_FUNCTION,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
+    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìê°€ ì•„ë‹˜)
     mtfQuoted_printable_encodeFunctionName,
     NULL,
     mtf::initializeDefault,

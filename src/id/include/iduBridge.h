@@ -12,8 +12,8 @@
 
 /* ------------------------------------------------
  *
- *  ¾Æ·¡ÀÇ ÇÔ¼öµéÀº C¿¡¼­ C++ ÇÔ¼ö¸¦ È£ÃâÇÏ±â À§ÇÑ
- *  Bridge·Î¼­ Á¤ÀÇµÈ´Ù. (iduBridgeForC.cpp)
+ *  ì•„ë˜ì˜ í•¨ìˆ˜ë“¤ì€ Cì—ì„œ C++ í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•˜ê¸° ìœ„í•œ
+ *  Bridgeë¡œì„œ ì •ì˜ëœë‹¤. (iduBridgeForC.cpp)
  *
  * ----------------------------------------------*/
 
@@ -50,7 +50,7 @@ extern "C"
 
     /*
      * TASK-2356
-     * Altibase Wait Interface ½Ã°£Åë°èÁ¤º¸ ¼öÁı
+     * Altibase Wait Interface ì‹œê°„í†µê³„ì •ë³´ ìˆ˜ì§‘
      */
     UInt iduBridge_getTimedStatistics();
     void idv_BEGIN_WAIT_EVENT( void * aStatSQL,

@@ -63,7 +63,7 @@ IDE_RC mtfReverseFindPosition( UShort*          aPosition,
 mtfModule mtfInstrb = {
     1|MTC_NODE_OPERATOR_FUNCTION,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
+    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìê°€ ì•„ë‹˜)
     mtfInstrbFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -206,7 +206,7 @@ IDE_RC mtfReverseFindPosition( UShort*          aPosition,
 {
 /***********************************************************************
  *
- * Description : source¿¡ Á¸ÀçÇÏ´Â target À§Ä¡ °Å²Ù·Î Ã£±â
+ * Description : sourceì— ì¡´ì¬í•˜ëŠ” target ìœ„ì¹˜ ê±°ê¾¸ë¡œ ì°¾ê¸°
  *
  * Implementation :
  *
@@ -219,12 +219,12 @@ IDE_RC mtfReverseFindPosition( UShort*          aPosition,
     UShort sCnt = 0;
     UShort sFindCnt = 0;
 
-    // target À§Ä¡ ÃÊ±âÈ­
+    // target ìœ„ì¹˜ ì´ˆê¸°í™”
     *aPosition = 0;
 
     if ( aTargetLen == 0 )
     {
-        // target ¹®ÀÚ¿­ÀÌ 0 ÀÎ °æ¿ì
+        // target ë¬¸ìì—´ì´ 0 ì¸ ê²½ìš°
         return IDE_SUCCESS;
     }
     else
@@ -232,30 +232,30 @@ IDE_RC mtfReverseFindPosition( UShort*          aPosition,
         // nothing to do
     }
 
-    // Å½»öµÇ´Â substringÀÌ ¸î°³ÀÎÁö Ã£À½.
+    // íƒìƒ‰ë˜ëŠ” substringì´ ëª‡ê°œì¸ì§€ ì°¾ìŒ.
     while ( sSourceIndex < aSourceLen )
     {
         //----------------------------------------
-        // Source¿¡ target ¹®ÀÚ¿­ÀÌ Á¸ÀçÇÏ´ÂÁö °Ë»ç
+        // Sourceì— target ë¬¸ìì—´ì´ ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬
         //----------------------------------------
 
         sCurSourceIndex = sSourceIndex;
         sTargetIndex = 0;
         while ( sTargetIndex < aTargetLen )
         {
-            // Source ¹®ÀÚ¿Í Target ¹®ÀÚ°¡ µ¿ÀÏÇÑÁö ºñ±³
-            // ÀĞÀº ÇÑ¹®ÀÚ¸¸Å­ ÀÎµ¦½º ÁøÇà
+            // Source ë¬¸ìì™€ Target ë¬¸ìê°€ ë™ì¼í•œì§€ ë¹„êµ
+            // ì½ì€ í•œë¬¸ìë§Œí¼ ì¸ë±ìŠ¤ ì§„í–‰
             if ( aSource[sCurSourceIndex] == aTarget[sTargetIndex] )
             {
-                // µ¿ÀÏÇÒ °æ¿ì, ´ÙÀ½ targetÀ¸·Î ÁøÇà
+                // ë™ì¼í•  ê²½ìš°, ë‹¤ìŒ targetìœ¼ë¡œ ì§„í–‰
                 sIsSame = ID_TRUE;
                 sTargetIndex++;
                 sCurSourceIndex++;
 
                 if ( sCurSourceIndex == aSourceLen )
                 {
-                    // Source´Â ¸¶Áö¸· ¹®ÀÚÀÎµ¥,
-                    // TargetÀº ¸¶Áö¸· ¹®ÀÚ°¡ ¾Æ´Ñ °æ¿ì
+                    // SourceëŠ” ë§ˆì§€ë§‰ ë¬¸ìì¸ë°,
+                    // Targetì€ ë§ˆì§€ë§‰ ë¬¸ìê°€ ì•„ë‹Œ ê²½ìš°
                     if ( sTargetIndex < aTargetLen )
                     {
                         sIsSame = ID_FALSE;
@@ -285,20 +285,20 @@ IDE_RC mtfReverseFindPosition( UShort*          aPosition,
                 *aPosition = sSourceIndex + 1;
                 sCnt++;
             }
-            // ´ÙÀ½À¸·Î ÁøÇà
+            // ë‹¤ìŒìœ¼ë¡œ ì§„í–‰
             sSourceIndex++;
         }
         else
         {
-            // ´ÙÀ½À¸·Î ÁøÇà
+            // ë‹¤ìŒìœ¼ë¡œ ì§„í–‰
             sSourceIndex++;
         }
     }
 
-    /* Ã£Àº Count°¡ ¾ø´Ù¸é °á°ú´Â 0ÀÓ */
+    /* ì°¾ì€ Countê°€ ì—†ë‹¤ë©´ ê²°ê³¼ëŠ” 0ì„ */
     if ( sCnt != 0 )
     {
-        // Ã£´Â substringÀÌ ¾Õ¿¡¼­ ¸î ¹øÂ°ÀÎÁö ±¸ÇÔ.
+        // ì°¾ëŠ” substringì´ ì•ì—ì„œ ëª‡ ë²ˆì§¸ì¸ì§€ êµ¬í•¨.
         if ( ( aSourceLen - MTF_ABS(aStart) + 1 ) >= *aPosition )
         {
             sFindCnt = sCnt - aOccurrence + 1;
@@ -339,7 +339,7 @@ IDE_RC mtfFindPosition( UShort*          aPosition,
 {
 /***********************************************************************
  *
- * Description : source¿¡ Á¸ÀçÇÏ´Â target À§Ä¡ Ã£±â
+ * Description : sourceì— ì¡´ì¬í•˜ëŠ” target ìœ„ì¹˜ ì°¾ê¸°
  *
  * Implementation :
  *
@@ -350,12 +350,12 @@ IDE_RC mtfFindPosition( UShort*          aPosition,
     idBool sIsSame = ID_FALSE;
     UShort sCnt = 1;
 
-    // target À§Ä¡ ÃÊ±âÈ­
+    // target ìœ„ì¹˜ ì´ˆê¸°í™”
     *aPosition = 0;
     
     if ( aTargetLen == 0 )
     {
-        // target ¹®ÀÚ¿­ÀÌ 0 ÀÎ °æ¿ì
+        // target ë¬¸ìì—´ì´ 0 ì¸ ê²½ìš°
         return IDE_SUCCESS;
     }
     else
@@ -368,26 +368,26 @@ IDE_RC mtfFindPosition( UShort*          aPosition,
     while ( sSourceIndex < aSourceLen )
     {
         //----------------------------------------
-        // Source¿¡ target ¹®ÀÚ¿­ÀÌ Á¸ÀçÇÏ´ÂÁö °Ë»ç
+        // Sourceì— target ë¬¸ìì—´ì´ ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬
         //----------------------------------------
         
         sCurSourceIndex = sSourceIndex;
         sTargetIndex = 0;
         while ( sTargetIndex < aTargetLen )
         {
-            // Source ¹®ÀÚ¿Í Target ¹®ÀÚ°¡ µ¿ÀÏÇÑÁö ºñ±³ 
-            // ÀĞÀº ÇÑ¹®ÀÚ¸¸Å­ ÀÎµ¦½º ÁøÇà
+            // Source ë¬¸ìì™€ Target ë¬¸ìê°€ ë™ì¼í•œì§€ ë¹„êµ 
+            // ì½ì€ í•œë¬¸ìë§Œí¼ ì¸ë±ìŠ¤ ì§„í–‰
             if ( aSource[sCurSourceIndex] == aTarget[sTargetIndex] )
             {
-                // µ¿ÀÏÇÒ °æ¿ì, ´ÙÀ½ targetÀ¸·Î ÁøÇà
+                // ë™ì¼í•  ê²½ìš°, ë‹¤ìŒ targetìœ¼ë¡œ ì§„í–‰
                 sIsSame = ID_TRUE;
                 sTargetIndex++;
                 sCurSourceIndex++;
                 
                 if ( sCurSourceIndex == aSourceLen )
                 {
-                    // Source´Â ¸¶Áö¸· ¹®ÀÚÀÎµ¥,
-                    // TargetÀº ¸¶Áö¸· ¹®ÀÚ°¡ ¾Æ´Ñ °æ¿ì
+                    // SourceëŠ” ë§ˆì§€ë§‰ ë¬¸ìì¸ë°,
+                    // Targetì€ ë§ˆì§€ë§‰ ë¬¸ìê°€ ì•„ë‹Œ ê²½ìš°
                     if ( sTargetIndex < aTargetLen )
                     {
                         sIsSame = ID_FALSE;
@@ -412,11 +412,11 @@ IDE_RC mtfFindPosition( UShort*          aPosition,
 
         if ( sIsSame == ID_TRUE )
         {
-            // aOccurence¿Í sCnt°¡ °°¾Æ¾ß Å½»ö ³¡³¿.
+            // aOccurenceì™€ sCntê°€ ê°™ì•„ì•¼ íƒìƒ‰ ëëƒ„.
             if ( aOccurrence == sCnt )
             {
                 //----------------------------------------
-                // Source¿¡ target ¹®ÀÚ¿­ÀÌ Á¸ÀçÇÏ´Â °æ¿ì, Position ÀúÀå
+                // Sourceì— target ë¬¸ìì—´ì´ ì¡´ì¬í•˜ëŠ” ê²½ìš°, Position ì €ì¥
                 //----------------------------------------
 
                 *aPosition = sSourceIndex + 1;
@@ -424,16 +424,16 @@ IDE_RC mtfFindPosition( UShort*          aPosition,
             }
             else
             {
-                // Å½»öÇÑ substring °³¼ö Áõ°¡
+                // íƒìƒ‰í•œ substring ê°œìˆ˜ ì¦ê°€
                 sCnt++;
 
-                // ´ÙÀ½À¸·Î ÁøÇà
+                // ë‹¤ìŒìœ¼ë¡œ ì§„í–‰
                 sSourceIndex++;
             }
         }
         else
         {
-            // ´ÙÀ½À¸·Î ÁøÇà
+            // ë‹¤ìŒìœ¼ë¡œ ì§„í–‰
             sSourceIndex++;
         }
     }
@@ -528,8 +528,8 @@ IDE_RC mtfInstrbCalculateFor3Args( mtcNode*     aNode,
         sStart = *(mtdIntegerType*)aStack[3].value;
 
         /* BUG-34232 
-         * sStart( Å½»öÀ» ½ÃÀÛÇÒ À§Ä¡ )°¡ ÀÔ·Â¹ŞÀº ¹®ÀÚ¿­ ±æÀÌº¸´Ù Å« °æ¿ì, 
-         * ¿¡·¯¸¦ ¹ß»ı½ÃÅ°´Â ´ë½Å 0À» ¸®ÅÏÇÏµµ·Ï ¼öÁ¤ */
+         * sStart( íƒìƒ‰ì„ ì‹œì‘í•  ìœ„ì¹˜ )ê°€ ì…ë ¥ë°›ì€ ë¬¸ìì—´ ê¸¸ì´ë³´ë‹¤ í° ê²½ìš°, 
+         * ì—ëŸ¬ë¥¼ ë°œìƒì‹œí‚¤ëŠ” ëŒ€ì‹  0ì„ ë¦¬í„´í•˜ë„ë¡ ìˆ˜ì • */
         if ( MTF_ABS(sStart) > sVarchar1->length )
         {
             sPosition = 0;
@@ -612,8 +612,8 @@ IDE_RC mtfInstrbCalculateFor4Args( mtcNode*     aNode,
                          ERR_ARGUMENT4_VALUE_OUT_OF_RANGE );
 
         /* BUG-34232 
-         * sStart( Å½»öÀ» ½ÃÀÛÇÒ À§Ä¡ )°¡ ÀÔ·Â¹ŞÀº ¹®ÀÚ¿­ ±æÀÌº¸´Ù Å« °æ¿ì, 
-         * ¿¡·¯¸¦ ¹ß»ı½ÃÅ°´Â ´ë½Å 0À» ¸®ÅÏÇÏµµ·Ï ¼öÁ¤ */
+         * sStart( íƒìƒ‰ì„ ì‹œì‘í•  ìœ„ì¹˜ )ê°€ ì…ë ¥ë°›ì€ ë¬¸ìì—´ ê¸¸ì´ë³´ë‹¤ í° ê²½ìš°, 
+         * ì—ëŸ¬ë¥¼ ë°œìƒì‹œí‚¤ëŠ” ëŒ€ì‹  0ì„ ë¦¬í„´í•˜ë„ë¡ ìˆ˜ì • */
         if ( MTF_ABS(sStart) > sVarchar1->length )
         {
             sPosition = 0;

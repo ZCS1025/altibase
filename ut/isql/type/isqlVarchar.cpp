@@ -31,8 +31,8 @@ isqlVarchar::isqlVarchar()
 
 IDE_RC isqlVarchar::initBuffer()
 {
-    // BUG-24085 �������� �Ͼ�� ����Ÿ�� �þ ��� ������ �߻��մϴ�.
-    // ��Ȯ�� ����� �˱Ⱑ ����� ���� NCHAR �� ���� ó���Ѵ�.
+    // BUG-24085 컨버젼이 일어나서 데이타가 늘어난 경우 에러가 발생합니다.
+    // 정확한 사이즈를 알기가 힘들다 따라서 NCHAR 과 같이 처리한다.
     SInt sSize = (SInt)((mPrecision + 1) * 3);
 
     mValue = (SChar *) idlOS::malloc(sSize);
@@ -89,8 +89,8 @@ SInt isqlVarchar::AppendToBuffer( SChar *aBuf, SInt *aBufLen )
     SInt  i;
 
     /* BUG-43911
-     * char, varchar, bit, bytes Ÿ���� �ٸ� Ÿ�԰� �޸� �� ĭ �� ������,
-     * ���� ȣȯ���� �����ϱ� ���� �״�� �д�. */
+     * char, varchar, bit, bytes 타입은 다른 타입과 달리 한 칸 더 많지만,
+     * 하위 호환성을 유지하기 위해 그대로 둔다. */
     for ( i = 0 ; i <= mDisplaySize ; i++ )
     {
         if ( mCurrLen > 0 )

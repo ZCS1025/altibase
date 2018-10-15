@@ -18,11 +18,11 @@
 /***********************************************************************
  * $Id: qmgShardSelect.h 76914 2016-08-30 04:16:27Z hykim $
  *
- * Description : Shard select graph¸¦ À§ÇÑ Á¤ÀÇ
+ * Description : Shard select graphë¥¼ ìœ„í•œ ì •ì˜
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  **********************************************************************/
 
@@ -34,55 +34,55 @@
 #include <qmoOneNonPlan.h>
 
 //---------------------------------------------------
-// Shard graphÀÇ Define »ó¼ö
+// Shard graphì˜ Define ìƒìˆ˜
 //---------------------------------------------------
 
 #define QMG_SHARD_FLAG_CLEAR                     (0x00000000)
 
 //---------------------------------------------------
-// Shard graph ¸¦ °ü¸®ÇÏ±â À§ÇÑ ÀÚ·á ±¸Á¶
+// Shard graph ë¥¼ ê´€ë¦¬í•˜ê¸° ìœ„í•œ ìë£Œ êµ¬ì¡°
 //---------------------------------------------------
 
 typedef struct qmgShardSELT
 {
-    // °øÅë Á¤º¸
+    // ê³µí†µ ì •ë³´
     qmgGraph          graph;
 
-    // °íÀ¯ Á¤º¸
+    // ê³ ìœ  ì •ë³´
     qcNamePosition    shardQuery;
     sdiAnalyzeInfo  * shardAnalysis;
     UShort            shardParamOffset;
     UShort            shardParamCount;
 
-    qmsLimit        * limit;            // »óÀ§ PROJ ³ëµå »ı¼º½Ã, limit start value Á¶Á¤ÀÇ Á¤º¸°¡ µÊ.
+    qmsLimit        * limit;            // ìƒìœ„ PROJ ë…¸ë“œ ìƒì„±ì‹œ, limit start value ì¡°ì •ì˜ ì •ë³´ê°€ ë¨.
     qmoAccessMethod * accessMethod;     // full scan
     UInt              accessMethodCnt;
     UInt              flag;
 } qmgShardSELT;
 
 //---------------------------------------------------
-// Shard graph ¸¦ °ü¸®ÇÏ±â À§ÇÑ ÇÔ¼ö
+// Shard graph ë¥¼ ê´€ë¦¬í•˜ê¸° ìœ„í•œ í•¨ìˆ˜
 //---------------------------------------------------
 
 class qmgShardSelect
 {
 public:
-    // Graph ÀÇ ÃÊ±âÈ­
+    // Graph ì˜ ì´ˆê¸°í™”
     static IDE_RC  init( qcStatement * aStatement,
                          qmsQuerySet * aQuerySet,
                          qmsFrom     * aFrom,
                          qmgGraph   ** aGraph );
 
-    // GraphÀÇ ÃÖÀûÈ­ ¼öÇà
+    // Graphì˜ ìµœì í™” ìˆ˜í–‰
     static IDE_RC optimize( qcStatement * aStatement,
                             qmgGraph * aGraph );
 
-    // GraphÀÇ Plan Tree »ı¼º
+    // Graphì˜ Plan Tree ìƒì„±
     static IDE_RC makePlan( qcStatement * aStatement,
                             const qmgGraph * aParent, 
                             qmgGraph * aGraph );
 
-    // GraphÀÇ °øÅë Á¤º¸¸¦ Ãâ·ÂÇÔ.
+    // Graphì˜ ê³µí†µ ì •ë³´ë¥¼ ì¶œë ¥í•¨.
     static IDE_RC printGraph( qcStatement  * aStatement,
                               qmgGraph     * aGraph,
                               ULong          aDepth,

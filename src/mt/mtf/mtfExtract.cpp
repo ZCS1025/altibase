@@ -48,7 +48,7 @@ static IDE_RC mtfExtractEstimate( mtcNode*     aNode,
 mtfModule mtfExtract = {
     1|MTC_NODE_OPERATOR_FUNCTION,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
+    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìê°€ ì•„ë‹˜)
     mtfExtractFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -148,9 +148,9 @@ IDE_RC mtfExtractCalculate( mtcNode*     aNode,
  * Implementation :
  *    EXTRACT( date, char )
  *
- *    aStack[0] : Date ³»¿ë Áß ÀÔ·Â°ª¿¡ ÇØ´çµÇ´Â ÀÚ·á¸¸ ÃßÃâÇÑ °ª
- *    aStack[1] : Date ³»¿ë
- *    aStack[2] : ÀÔ·Â°ª
+ *    aStack[0] : Date ë‚´ìš© ì¤‘ ì…ë ¥ê°’ì— í•´ë‹¹ë˜ëŠ” ìë£Œë§Œ ì¶”ì¶œí•œ ê°’
+ *    aStack[1] : Date ë‚´ìš©
+ *    aStack[2] : ì…ë ¥ê°’
  *
  *    ex) extract( join_date, 'MONTH' )
  *        -----------------------------
@@ -205,7 +205,7 @@ IDE_RC mtfExtractCalculate( mtcNode*     aNode,
                 //nothing to do
             }
 
-            /* BUG-43938 INTERVAL Type°ú DATE TypeÀÇ Day °³³äÀÌ ´Ù¸¨´Ï´Ù. */
+            /* BUG-43938 INTERVAL Typeê³¼ DATE Typeì˜ Day ê°œë…ì´ ë‹¤ë¦…ë‹ˆë‹¤. */
             sDay         = (SInt)( sInterval->second / ID_LONG(86400) );
 
             sHour        = (SInt)( ( sInterval->second % ID_LONG(86400) ) / 3600 );
@@ -233,12 +233,12 @@ IDE_RC mtfExtractCalculate( mtcNode*     aNode,
         if( sLanguage->extractSet->matchCentury( sInput->value,
                                                  sInput->length ) == 0 )
         {
-            /* BUG-43938 INTERVAL Type¿¡´Â Week, Month, Year °³³äÀÌ ¾ø½À´Ï´Ù. */
+            /* BUG-43938 INTERVAL Typeì—ëŠ” Week, Month, Year ê°œë…ì´ ì—†ìŠµë‹ˆë‹¤. */
             IDE_TEST_RAISE( aStack[1].column->module->id == MTD_INTERVAL_ID,
                             ERR_INVALID_LITERAL );
 
-            // ÀÔ·Â°ªÀÌ centuryÀÎ °æ¿ì,
-            // ÀĞ¾î¿Â year °ªÀ» ÀÌ¿ëÇÏ¿© °è»ê
+            // ì…ë ¥ê°’ì´ centuryì¸ ê²½ìš°,
+            // ì½ì–´ì˜¨ year ê°’ì„ ì´ìš©í•˜ì—¬ ê³„ì‚°
             if ( sYear <= 0 )
             {
                 *(mtdIntegerType *)aStack[0].value = ( sYear / 100 ) - 1;
@@ -251,59 +251,59 @@ IDE_RC mtfExtractCalculate( mtcNode*     aNode,
         else if( sLanguage->extractSet->matchYear( sInput->value,
                                                    sInput->length ) == 0 )
         {
-            /* BUG-43938 INTERVAL Type¿¡´Â Week, Month, Year °³³äÀÌ ¾ø½À´Ï´Ù. */
+            /* BUG-43938 INTERVAL Typeì—ëŠ” Week, Month, Year ê°œë…ì´ ì—†ìŠµë‹ˆë‹¤. */
             IDE_TEST_RAISE( aStack[1].column->module->id == MTD_INTERVAL_ID,
                             ERR_INVALID_LITERAL );
 
-            // ÀÔ·Â°ªÀÌ yearÀÎ °æ¿ì,
-            // ÀĞ¾î¿Â date ³»¿ë¿¡¼­ year°ªÀ» °á°ú¿¡ ÀúÀå
+            // ì…ë ¥ê°’ì´ yearì¸ ê²½ìš°,
+            // ì½ì–´ì˜¨ date ë‚´ìš©ì—ì„œ yearê°’ì„ ê²°ê³¼ì— ì €ì¥
             *(mtdIntegerType*)aStack[0].value = sYear;
         }
         else if( sLanguage->extractSet->matchQuarter( sInput->value,
                                                       sInput->length ) == 0 )
         {
-            /* BUG-43938 INTERVAL Type¿¡´Â Week, Month, Year °³³äÀÌ ¾ø½À´Ï´Ù. */
+            /* BUG-43938 INTERVAL Typeì—ëŠ” Week, Month, Year ê°œë…ì´ ì—†ìŠµë‹ˆë‹¤. */
             IDE_TEST_RAISE( aStack[1].column->module->id == MTD_INTERVAL_ID,
                             ERR_INVALID_LITERAL );
 
-            // ÀÔ·Â°ªÀÌ quarterÀÎ °æ¿ì,
-            // ÀĞ¾î¿Â month °ªÀ» ÀÌ¿ëÇÏ¿© °è»ê
+            // ì…ë ¥ê°’ì´ quarterì¸ ê²½ìš°,
+            // ì½ì–´ì˜¨ month ê°’ì„ ì´ìš©í•˜ì—¬ ê³„ì‚°
             *(mtdIntegerType*)aStack[0].value = (SInt) idlOS::ceil( ( (SDouble) sMonth / 3 ) ); 
         }
         else if( sLanguage->extractSet->matchMonth( sInput->value,
                                                     sInput->length ) == 0 )
         {
-            /* BUG-43938 INTERVAL Type¿¡´Â Week, Month, Year °³³äÀÌ ¾ø½À´Ï´Ù. */
+            /* BUG-43938 INTERVAL Typeì—ëŠ” Week, Month, Year ê°œë…ì´ ì—†ìŠµë‹ˆë‹¤. */
             IDE_TEST_RAISE( aStack[1].column->module->id == MTD_INTERVAL_ID,
                             ERR_INVALID_LITERAL );
 
-            // ÀÔ·Â°ªÀÌ monthÀÎ °æ¿ì,
-            // ÀĞ¾î¿Â date ³»¿ë¿¡¼­ month°ªÀ» °á°ú¿¡ ÀúÀå
+            // ì…ë ¥ê°’ì´ monthì¸ ê²½ìš°,
+            // ì½ì–´ì˜¨ date ë‚´ìš©ì—ì„œ monthê°’ì„ ê²°ê³¼ì— ì €ì¥
             *(mtdIntegerType*)aStack[0].value = sMonth;
         }
         else if( sLanguage->extractSet->matchWeek( sInput->value,
                                                    sInput->length ) == 0 )
         {
-            /* BUG-43938 INTERVAL Type¿¡´Â Week, Month, Year °³³äÀÌ ¾ø½À´Ï´Ù. */
+            /* BUG-43938 INTERVAL Typeì—ëŠ” Week, Month, Year ê°œë…ì´ ì—†ìŠµë‹ˆë‹¤. */
             IDE_TEST_RAISE( aStack[1].column->module->id == MTD_INTERVAL_ID,
                             ERR_INVALID_LITERAL );
 
-            // ÀÔ·Â°ªÀÌ weekÀÎ °æ¿ì,
-            // ³âÁß ¸î¹øÂ° ÁÖÀÎÁö °è»êÇÑ´Ù.
-            // 1¿ù 1ÀÏºÎÅÍ ±× ÁÖ Åä¿äÀÏ±îÁö 1ÁÖ·Î °è»êÇÑ´Ù.
+            // ì…ë ¥ê°’ì´ weekì¸ ê²½ìš°,
+            // ë…„ì¤‘ ëª‡ë²ˆì§¸ ì£¼ì¸ì§€ ê³„ì‚°í•œë‹¤.
+            // 1ì›” 1ì¼ë¶€í„° ê·¸ ì£¼ í† ìš”ì¼ê¹Œì§€ 1ì£¼ë¡œ ê³„ì‚°í•œë‹¤.
 
             *(mtdIntegerType*)aStack[0].value = mtc::weekOfYear( sYear, sMonth, sDay );
         }
         else if( sLanguage->extractSet->matchWeekOfMonth( sInput->value,
                                                           sInput->length ) == 0 )
         {
-            /* BUG-43938 INTERVAL Type¿¡´Â Week, Month, Year °³³äÀÌ ¾ø½À´Ï´Ù. */
+            /* BUG-43938 INTERVAL Typeì—ëŠ” Week, Month, Year ê°œë…ì´ ì—†ìŠµë‹ˆë‹¤. */
             IDE_TEST_RAISE( aStack[1].column->module->id == MTD_INTERVAL_ID,
                             ERR_INVALID_LITERAL );
 
-            // ÀÔ·Â°ªÀÌ weekofmonthÀÎ °æ¿ì,
-            // ¿ùÁß ¸î¹øÂ° ÁÖÀÎÁö °è»êÇÑ´Ù.
-            // 1ÀÏºÎÅÍ ±× ÁÖ Åä¿äÀÏ±îÁö 1ÁÖ·Î °è»êÇÑ´Ù.
+            // ì…ë ¥ê°’ì´ weekofmonthì¸ ê²½ìš°,
+            // ì›”ì¤‘ ëª‡ë²ˆì§¸ ì£¼ì¸ì§€ ê³„ì‚°í•œë‹¤.
+            // 1ì¼ë¶€í„° ê·¸ ì£¼ í† ìš”ì¼ê¹Œì§€ 1ì£¼ë¡œ ê³„ì‚°í•œë‹¤.
 
             sWeekOfMonth = (SInt) idlOS::ceil( (SDouble) ( sDay + 
                                                     mtc::dayOfWeek( sYear, sMonth, 1 ) ) / 7 );
@@ -313,57 +313,57 @@ IDE_RC mtfExtractCalculate( mtcNode*     aNode,
         else if( sLanguage->extractSet->matchDay( sInput->value,
                                                   sInput->length ) == 0 )
         {
-            // ÀÔ·Â°ªÀÌ dayÀÎ °æ¿ì,
-            // ÀĞ¾î¿Â date ³»¿ë¿¡¼­ day°ªÀ» °á°ú¿¡ ÀúÀå
+            // ì…ë ¥ê°’ì´ dayì¸ ê²½ìš°,
+            // ì½ì–´ì˜¨ date ë‚´ìš©ì—ì„œ dayê°’ì„ ê²°ê³¼ì— ì €ì¥
             *(mtdIntegerType*)aStack[0].value = sDay;
         }
         else if( sLanguage->extractSet->matchDayOfYear( sInput->value,
                                                         sInput->length ) == 0 )
         {
-            /* BUG-43938 INTERVAL Type¿¡´Â Week, Month, Year °³³äÀÌ ¾ø½À´Ï´Ù. */
+            /* BUG-43938 INTERVAL Typeì—ëŠ” Week, Month, Year ê°œë…ì´ ì—†ìŠµë‹ˆë‹¤. */
             IDE_TEST_RAISE( aStack[1].column->module->id == MTD_INTERVAL_ID,
                             ERR_INVALID_LITERAL );
 
-            // ³âÁß ¸î¹øÂ° ³¯ÀÎÁö °è»ê.
+            // ë…„ì¤‘ ëª‡ë²ˆì§¸ ë‚ ì¸ì§€ ê³„ì‚°.
             *(mtdIntegerType*)aStack[0].value = mtc::dayOfYear( sYear, sMonth, sDay );
         }
         else if( sLanguage->extractSet->matchDayOfWeek( sInput->value,
                                                       sInput->length ) == 0 )
         {
-            /* BUG-43938 INTERVAL Type¿¡´Â Week, Month, Year °³³äÀÌ ¾ø½À´Ï´Ù. */
+            /* BUG-43938 INTERVAL Typeì—ëŠ” Week, Month, Year ê°œë…ì´ ì—†ìŠµë‹ˆë‹¤. */
             IDE_TEST_RAISE( aStack[1].column->module->id == MTD_INTERVAL_ID,
                             ERR_INVALID_LITERAL );
 
-            // ÁÖÁß ¸î¹øÂ° ³¯ÀÎÁö °è»ê.
-            // ÀÏ¿äÀÏ:1, Åä¿äÀÏ:7
+            // ì£¼ì¤‘ ëª‡ë²ˆì§¸ ë‚ ì¸ì§€ ê³„ì‚°.
+            // ì¼ìš”ì¼:1, í† ìš”ì¼:7
             *(mtdIntegerType*)aStack[0].value = mtc::dayOfWeek( sYear, sMonth, sDay ) + 1;
         }
         else if( sLanguage->extractSet->matchHour( sInput->value,
                                                    sInput->length ) == 0 )
         {
-            // ÀÔ·Â°ªÀÌ hourÀÎ °æ¿ì,
-            // ÀĞ¾î¿Â date ³»¿ë¿¡¼­ hour°ªÀ» °á°ú¿¡ ÀúÀå
+            // ì…ë ¥ê°’ì´ hourì¸ ê²½ìš°,
+            // ì½ì–´ì˜¨ date ë‚´ìš©ì—ì„œ hourê°’ì„ ê²°ê³¼ì— ì €ì¥
             *(mtdIntegerType*)aStack[0].value = sHour;
         }
         else if( sLanguage->extractSet->matchMinute( sInput->value,
                                                      sInput->length ) == 0 )
         {
-            // ÀÔ·Â°ªÀÌ minuteÀÎ °æ¿ì,
-            // ÀĞ¾î¿Â date ³»¿ë¿¡¼­ minute°ªÀ» °á°ú¿¡ ÀúÀå
+            // ì…ë ¥ê°’ì´ minuteì¸ ê²½ìš°,
+            // ì½ì–´ì˜¨ date ë‚´ìš©ì—ì„œ minuteê°’ì„ ê²°ê³¼ì— ì €ì¥
             *(mtdIntegerType*)aStack[0].value = sMinute;
         }
         else if( sLanguage->extractSet->matchSecond( sInput->value,
                                                      sInput->length ) == 0 )
         {
-            // ÀÔ·Â°ªÀÌ secondÀÎ °æ¿ì,
-            // ÀĞ¾î¿Â date ³»¿ë¿¡¼­ second°ªÀ» °á°ú¿¡ ÀúÀå
+            // ì…ë ¥ê°’ì´ secondì¸ ê²½ìš°,
+            // ì½ì–´ì˜¨ date ë‚´ìš©ì—ì„œ secondê°’ì„ ê²°ê³¼ì— ì €ì¥
             *(mtdIntegerType*)aStack[0].value = sSecond;
         }
         else if( sLanguage->extractSet->matchMicroSec(sInput->value,
                                                       sInput->length) == 0 )
         {
-            // ÀÔ·Â°ªÀÌ microsecondÀÎ °æ¿ì,
-            // ÀĞ¾î¿Â date ³»¿ë¿¡¼­ microsecond°ªÀ» °á°ú¿¡ ÀúÀå
+            // ì…ë ¥ê°’ì´ microsecondì¸ ê²½ìš°,
+            // ì½ì–´ì˜¨ date ë‚´ìš©ì—ì„œ microsecondê°’ì„ ê²°ê³¼ì— ì €ì¥
             *(mtdIntegerType*)aStack[0].value = sMicroSecond;
         }
         else

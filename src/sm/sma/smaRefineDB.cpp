@@ -36,13 +36,13 @@ IDE_RC smaRefineDB::refineTempCatalogTable(smxTrans       * aTrans,
 
     IDE_TEST( smcTable::initLockAndRuntimeItem( aHeader ) != IDE_SUCCESS );
 
-    // temp catalog table¿¡ ÇÒ´çµÈ ¸ğµç page¸¦ ½Ã½ºÅÛ¿¡ ¹İÈ¯ÇÑ´Ù.
+    // temp catalog tableì— í• ë‹¹ëœ ëª¨ë“  pageë¥¼ ì‹œìŠ¤í…œì— ë°˜í™˜í•œë‹¤.
     IDE_TEST(smcTable::dropTablePageListPending(aTrans,
                                                 aHeader,
                                                 ID_TRUE)
              != IDE_SUCCESS);
 
-    // ¸ğµç temp tablespace¸¦ ÃÊ±âÈ­½ÃÅ²´Ù.
+    // ëª¨ë“  temp tablespaceë¥¼ ì´ˆê¸°í™”ì‹œí‚¨ë‹¤.
     IDE_TEST( sctTableSpaceMgr::resetAllTempTBS((void*)aTrans)
               != IDE_SUCCESS );
 
@@ -54,10 +54,10 @@ IDE_RC smaRefineDB::refineTempCatalogTable(smxTrans       * aTrans,
 
 }
 /*
-    Catalog TableÀÇ  SlotÀ» FreeÇÏ°í Free Slot List¿¡ ¸Å´Ü´Ù.
+    Catalog Tableì˜  Slotì„ Freeí•˜ê³  Free Slot Listì— ë§¤ë‹¨ë‹¤.
 
-    [IN] aTrans   - slotÀ» freeÇÏ·Á´Â transaction
-    [IN] aSlotPtr - slotÀÇ Æ÷ÀÎÅÍ
+    [IN] aTrans   - slotì„ freeí•˜ë ¤ëŠ” transaction
+    [IN] aSlotPtr - slotì˜ í¬ì¸í„°
  */
 IDE_RC smaRefineDB::freeCatalogSlot( smxTrans  * aTrans,
                                      SChar     * aSlotPtr )
@@ -102,15 +102,15 @@ IDE_RC smaRefineDB::refineCatalogTableVarPage(smxTrans       * aTrans,
 
 
     /* ----------------------------
-     * [1] TableÀÇ LockItem°ú °¢ Mutex¸¦
-     * ÃÊ±âÈ­ÇÑ´Ù.
+     * [1] Tableì˜ LockItemê³¼ ê° Mutexë¥¼
+     * ì´ˆê¸°í™”í•œë‹¤.
      * ---------------------------*/
     IDE_TEST( smcTable::initLockAndRuntimeItem( aHeader )
               != IDE_SUCCESS );
 
     /* ----------------------------
-     * [2] TableÀÇ Variable ¿µ¿ªÀÇ °ªÀ» ÀĞ¾î
-     * ¹«¿ëÈ­(Obsolete)µÈ °ªÀ» Á¤¸®ÇÑ´Ù.
+     * [2] Tableì˜ Variable ì˜ì—­ì˜ ê°’ì„ ì½ì–´
+     * ë¬´ìš©í™”(Obsolete)ëœ ê°’ì„ ì •ë¦¬í•œë‹¤.
      * ---------------------------*/
 
     sCurPtr = NULL;
@@ -143,7 +143,7 @@ IDE_RC smaRefineDB::refineCatalogTableVarPage(smxTrans       * aTrans,
                      sSrc += sIndexHeaderSize )
             {
                 /* PROJ-2433
-                 * smnIndexHeader ±¸Á¶Ã¼ÀÇ mDropFlag¸¦ UInt->UShort·Î º¯°æ */
+                 * smnIndexHeader êµ¬ì¡°ì²´ì˜ mDropFlagë¥¼ UInt->UShortë¡œ ë³€ê²½ */
                 if ( (smnManager::getIndexDropFlag( sSrc ) == (UShort)SMN_INDEX_DROP_FALSE ) &&
                      (smnManager::isIndexEnabled( sSrc ) == ID_TRUE ) )
                 {
@@ -154,17 +154,17 @@ IDE_RC smaRefineDB::refineCatalogTableVarPage(smxTrans       * aTrans,
                     /* nothing to do */
                 }
 
-                /* BUG-33803 ALL INDEX DISABLE pending ¿¬»ê µµÁß ¼­¹ö ºñÁ¤»ó
-                 * Á¾·á½Ã, ¼­¹ö Àç±¸µ¿ ÈÄ ¹Ù·Î ´ë»ó tableÀ» DROP ÇÏ¸é,
-                 * mHeader¿¡ ¾²·¹±â°ªÀÌ µé¾îÀÖ´Â »óÅÂ¿¡¼­ index dropÀ» ½ÃµµÇÏ¿©
-                 * segmentation fault°¡ ¹ß»ıÇÑ´Ù. µû¶ó¼­ disable »óÅÂÀÇ index´Â
-                 * refine °úÁ¤¿¡¼­ mHeader¸¦ NULL·Î ¼³Á¤ÇØ ÁØ´Ù. */
+                /* BUG-33803 ALL INDEX DISABLE pending ì—°ì‚° ë„ì¤‘ ì„œë²„ ë¹„ì •ìƒ
+                 * ì¢…ë£Œì‹œ, ì„œë²„ ì¬êµ¬ë™ í›„ ë°”ë¡œ ëŒ€ìƒ tableì„ DROP í•˜ë©´,
+                 * mHeaderì— ì“°ë ˆê¸°ê°’ì´ ë“¤ì–´ìˆëŠ” ìƒíƒœì—ì„œ index dropì„ ì‹œë„í•˜ì—¬
+                 * segmentation faultê°€ ë°œìƒí•œë‹¤. ë”°ë¼ì„œ disable ìƒíƒœì˜ indexëŠ”
+                 * refine ê³¼ì •ì—ì„œ mHeaderë¥¼ NULLë¡œ ì„¤ì •í•´ ì¤€ë‹¤. */
                 ((smnIndexHeader*)sSrc)->mHeader = NULL;
                 sIndexSegGRID = smnManager::getIndexSegGRIDPtr(sSrc);
 
                 if(SC_GRID_IS_NULL(*sIndexSegGRID) == ID_FALSE)
                 {
-                    // xxxx ÁÖ¼®
+                    // xxxx ì£¼ì„
                     IDE_TEST( sdpSegment::freeIndexSeg4Entry(
                                   NULL,
                                   SC_MAKE_SPACE( *sIndexSegGRID ),
@@ -179,8 +179,8 @@ IDE_RC smaRefineDB::refineCatalogTableVarPage(smxTrans       * aTrans,
         sPageID = SM_MAKE_PID(sNxtPieceOID);
 
         /* ----------------------------
-         * Variable SlotÀÇ Delete Flag°¡
-         * ¼³Á¤µÈ °æ¿ì ¹«¿ëÈ­µÈ RowÀÌ´Ù.
+         * Variable Slotì˜ Delete Flagê°€
+         * ì„¤ì •ëœ ê²½ìš° ë¬´ìš©í™”ëœ Rowì´ë‹¤.
          * ---------------------------*/
         IDE_ASSERT( ( sVCPieceHeaderPtr->flag & SM_VCPIECE_FREE_MASK )
                     == SM_VCPIECE_FREE_NO );
@@ -198,12 +198,12 @@ IDE_RC smaRefineDB::refineCatalogTableVarPage(smxTrans       * aTrans,
 
     for( i = 0; i < SM_VAR_PAGE_LIST_COUNT ; i++ )
     {
-        // FreePageList[0]¿¡¼­ N°³ÀÇ FreePageList¿¡ FreePageµéÀ» ³ª´²ÁÖ°í
+        // FreePageList[0]ì—ì„œ Nê°œì˜ FreePageListì— FreePageë“¤ì„ ë‚˜ëˆ ì£¼ê³ 
         smpFreePageList::distributePagesFromFreePageList0ToTheOthers( (&(aHeader->mVar.mMRDB[i])) );
 
-        // EmptyPage(ÀüÇô»ç¿ëÇÏÁö¾Ê´Â FreePage)°¡ ÇÊ¿äÀÌ»óÀÌ¸é
-        // FreePagePool¿¡ ¹İ³³ÇÏ°í FreePagePool¿¡µµ ÇÊ¿äÀÌ»óÀÌ¸é
-        // DB¿¡ ¹İ³³ÇÑ´Ù.
+        // EmptyPage(ì „í˜€ì‚¬ìš©í•˜ì§€ì•ŠëŠ” FreePage)ê°€ í•„ìš”ì´ìƒì´ë©´
+        // FreePagePoolì— ë°˜ë‚©í•˜ê³  FreePagePoolì—ë„ í•„ìš”ì´ìƒì´ë©´
+        // DBì— ë°˜ë‚©í•œë‹¤.
         IDE_TEST(smpFreePageList::distributePagesFromFreePageList0ToFreePagePool(
                      aTrans,
                      SMI_ID_TABLESPACE_SYSTEM_MEMORY_DIC,
@@ -234,8 +234,8 @@ IDE_RC smaRefineDB::refineCatalogTableFixedPage(smxTrans       * aTrans,
     scPageID         sPrvPageID = SM_NULL_PID;
 
     /* ----------------------------
-     * [1] TableÀÇ Fixed ¿µ¿ªÀÇ °ªÀ» ÀĞ¾î
-     * ¹«¿ëÈ­(Obsolete)µÈ °ªÀ» Á¤¸®ÇÑ´Ù.
+     * [1] Tableì˜ Fixed ì˜ì—­ì˜ ê°’ì„ ì½ì–´
+     * ë¬´ìš©í™”(Obsolete)ëœ ê°’ì„ ì •ë¦¬í•œë‹¤.
      * ---------------------------*/
 
     sCurPtr = NULL;
@@ -260,21 +260,21 @@ IDE_RC smaRefineDB::refineCatalogTableFixedPage(smxTrans       * aTrans,
         sScn = sSlotHeaderPtr->mCreateSCN;
 
         /* ----------------------------
-         * TableÀÇ RowÀÇ »óÅÂ°¡ ÃÖ¼ÒÇÑ
-         * 1) ¹«ÇÑ´ë°¡ ¾Æ´Ïµç°¡
-         * 2) Drop flag°¡ ¼³Á¤µÇ¾î ÀÖ¾î¾ß ÇÑ´Ù.
+         * Tableì˜ Rowì˜ ìƒíƒœê°€ ìµœì†Œí•œ
+         * 1) ë¬´í•œëŒ€ê°€ ì•„ë‹ˆë“ ê°€
+         * 2) Drop flagê°€ ì„¤ì •ë˜ì–´ ìˆì–´ì•¼ í•œë‹¤.
          * ---------------------------*/
-        /* BUG-14975: Delete Row AllocÈÄ °ğ¹Ù·Î Undo½Ã ASSERT¹ß»ı.
+        /* BUG-14975: Delete Row Allocí›„ ê³§ë°”ë¡œ Undoì‹œ ASSERTë°œìƒ.
         IDE_ASSERT( SM_SCN_IS_NOT_INFINITE( sScn ) ||
                     (sSlotHeaderPtr->mDropFlag == SMP_SLOT_DROP_TRUE) );
         */
 
         /*
          * ----------------------------
-         * ´ÙÀ½ÀÇ °æ¿ì¿¡ free Slot
-         * 3) delete bitÀÌ ¼³Á¤µÇ¾î ÀÖ°í ÇØÁ¦µÇÁö ¾ÊÀº °æ¿ì
-         * (Å×ÀÌºí »ı¼ºÇÏ´Ù°¡ ½ÇÆĞÇÑ °æ¿ì¿¡´Â DropFlag°¡ FALSEÀÌ°í,
-         *  DELETE BIT´Â ¼³Á¤µÇ¾î ÀÖÀ»¼ö ÀÖ´Ù.)
+         * ë‹¤ìŒì˜ ê²½ìš°ì— free Slot
+         * 3) delete bitì´ ì„¤ì •ë˜ì–´ ìˆê³  í•´ì œë˜ì§€ ì•Šì€ ê²½ìš°
+         * (í…Œì´ë¸” ìƒì„±í•˜ë‹¤ê°€ ì‹¤íŒ¨í•œ ê²½ìš°ì—ëŠ” DropFlagê°€ FALSEì´ê³ ,
+         *  DELETE BITëŠ” ì„¤ì •ë˜ì–´ ìˆì„ìˆ˜ ìˆë‹¤.)
          * ---------------------------
          */
         if( SMP_SLOT_IS_NOT_DROP( sSlotHeaderPtr ) &&
@@ -292,15 +292,15 @@ IDE_RC smaRefineDB::refineCatalogTableFixedPage(smxTrans       * aTrans,
         if( SMP_SLOT_IS_DROP( sSlotHeaderPtr ) ||
             SM_SCN_IS_DELETED( sScn ) )
         {
-            /* BUG-30378 ºñÁ¤»óÀûÀ¸·Î DropµÇ¾úÁö¸¸ refineµÅÁö ¾Ê´Â
-             * Å×ÀÌºíÀÌ Á¸ÀçÇÕ´Ï´Ù.
+            /* BUG-30378 ë¹„ì •ìƒì ìœ¼ë¡œ Dropë˜ì—ˆì§€ë§Œ refineë¼ì§€ ì•ŠëŠ”
+             * í…Œì´ë¸”ì´ ì¡´ì¬í•©ë‹ˆë‹¤.
              * (CASE-26385)
              *
-             * Ab-normal ¼­¹ö Á¾·á°¡ ¾Æ´Ñ Á¤»ó Á¾·á¿´´Ù¸é
-             * Used : true, drop : trueÀÎ »óÅÂÀÌ¸ç Index°¡ ÀÖ´Â
-             * Å×ÀÌºíÀº Á¸ÀçÇØ¼­´Â ¾ÈµÈ´Ù.
-             * (Âü°í·Î SequenceµîÀº used:true, drop:trueÀÎ »óÅÂ·Î
-             *  Á¸ÀçÇÒ ¼ö ÀÖ´Ù. ) */
+             * Ab-normal ì„œë²„ ì¢…ë£Œê°€ ì•„ë‹Œ ì •ìƒ ì¢…ë£Œì˜€ë‹¤ë©´
+             * Used : true, drop : trueì¸ ìƒíƒœì´ë©° Indexê°€ ìˆëŠ”
+             * í…Œì´ë¸”ì€ ì¡´ì¬í•´ì„œëŠ” ì•ˆëœë‹¤.
+             * (ì°¸ê³ ë¡œ Sequenceë“±ì€ used:true, drop:trueì¸ ìƒíƒœë¡œ
+             *  ì¡´ì¬í•  ìˆ˜ ìˆë‹¤. ) */
             sIndexCount = smcTable::getIndexCount( sHeader );
 
             if( ( smrRecoveryMgr::isABShutDown() == ID_FALSE ) &&
@@ -317,13 +317,13 @@ IDE_RC smaRefineDB::refineCatalogTableFixedPage(smxTrans       * aTrans,
                 smpFixedPageList::dumpSlotHeader( sSlotHeaderPtr );
                 smcTable::dumpTableHeader( sHeader );
 
-                // µğ¹ö±× ¸ğµåÀÏ¶§¸¸ ¼­¹ö¸¦ Á×ÀÎ´Ù.
+                // ë””ë²„ê·¸ ëª¨ë“œì¼ë•Œë§Œ ì„œë²„ë¥¼ ì£½ì¸ë‹¤.
                 IDE_DASSERT( 0 );
             }
 
 
-            // memory ,¶Ç´Â  disk table drop pending operationÀ»
-            // ÇÏ°í, table header slotÀ» freeÇÑ´Ù.
+            // memory ,ë˜ëŠ”  disk table drop pending operationì„
+            // í•˜ê³ , table header slotì„ freeí•œë‹¤.
 
             IDE_ERROR( (sHeader->mFlag & SMI_TABLE_TYPE_MASK) !=
                        SMI_TABLE_TEMP_LEGACY );
@@ -345,8 +345,8 @@ IDE_RC smaRefineDB::refineCatalogTableFixedPage(smxTrans       * aTrans,
             smcTable::addToTotalIndexCount( smcTable::getIndexCount(sHeader) );
 
             /*
-            * BUG-25179 [SMM] Full ScanÀ» À§ÇÑ ÆäÀÌÁö°£ Scan List°¡ ÇÊ¿äÇÕ´Ï´Ù.
-            * À¯È¿ÇÑ ·¹ÄÚµå°¡ ÀÖ´Ù¸é Scan List¿¡ Ãß°¡ÇÑ´Ù.
+            * BUG-25179 [SMM] Full Scanì„ ìœ„í•œ í˜ì´ì§€ê°„ Scan Listê°€ í•„ìš”í•©ë‹ˆë‹¤.
+            * ìœ íš¨í•œ ë ˆì½”ë“œê°€ ìˆë‹¤ë©´ Scan Listì— ì¶”ê°€í•œë‹¤.
             */
             if( sCurPageID != sPrvPageID )
             {
@@ -393,15 +393,15 @@ IDE_RC smaRefineDB::freeTableHdr( smxTrans       *aTrans,
 
     IDE_DASSERT( aTableHdr != NULL );
 
-    // Refine SKIPÇÒ TablespaceÀÎÁö Ã¼Å©
+    // Refine SKIPí•  Tablespaceì¸ì§€ ì²´í¬
     if ( sctTableSpaceMgr::hasState( aTableHdr->mSpaceID,
                                      SCT_SS_SKIP_REFINE ) == ID_TRUE )
     {
-        // fix BUG-17784  ¾ÆÁ÷ ¿ÏÀüÈ÷ drop µÇÁö¾ÊÀº disk table header°¡
-        // refine Áß freeµÇ¾î Àç»ç¿ëµÇ´Â °æ¿ì ¹ß»ı
+        // fix BUG-17784  ì•„ì§ ì™„ì „íˆ drop ë˜ì§€ì•Šì€ disk table headerê°€
+        // refine ì¤‘ freeë˜ì–´ ì¬ì‚¬ìš©ë˜ëŠ” ê²½ìš° ë°œìƒ
 
-        // DROP/OFFLINE/DISCARDµÈ TablespaceÀÇ °æ¿ì
-        // Catalog Table Slot¸¸ ¹İ³³ÇÑ´Ù.
+        // DROP/OFFLINE/DISCARDëœ Tablespaceì˜ ê²½ìš°
+        // Catalog Table Slotë§Œ ë°˜ë‚©í•œë‹¤.
         IDE_TEST( freeCatalogSlot( aTrans,
                                    aNxtPtr ) != IDE_SUCCESS );
     }
@@ -461,7 +461,7 @@ IDE_RC smaRefineDB::refineTable(smxTrans            * aTrans,
     if( smrRecoveryMgr::isIgnoreObjectByProperty( &sRTOI ) == ID_TRUE )
     {
         /* PROJ-2162 RestartRiskReduction 
-         * TableÀÌ ConsistentÇÒ¶§¿¡¸¸ RefineÀ» ¼öÇàÇÔ */
+         * Tableì´ Consistentí• ë•Œì—ë§Œ Refineì„ ìˆ˜í–‰í•¨ */
         IDE_CALLBACK_SEND_SYM("S");
         IDE_TEST( smrRecoveryMgr::startupFailure( &sRTOI, 
                                                   ID_FALSE )  // is redo
@@ -476,7 +476,7 @@ IDE_RC smaRefineDB::refineTable(smxTrans            * aTrans,
     if( smcTable::isTableConsistent( (void*)aJobItem->mTable ) == ID_FALSE )
     {
         /* PROJ-2162 RestartRiskReduction 
-         * TableÀÌ ConsistentÇÒ¶§¿¡¸¸ RefineÀ» ¼öÇàÇÔ */
+         * Tableì´ Consistentí• ë•Œì—ë§Œ Refineì„ ìˆ˜í–‰í•¨ */
         smrRecoveryMgr::initRTOI( &sRTOI );
         sRTOI.mCause    = SMR_RTOI_CAUSE_OBJECT;
         sRTOI.mType     = SMR_RTOI_TYPE_TABLE;
@@ -494,7 +494,7 @@ IDE_RC smaRefineDB::refineTable(smxTrans            * aTrans,
     }
 
     /* PROJ-2162 RestartRiskReduction
-     * Refine ½ÇÆĞ¸¦ ´ëºñÇØ, RefineÇÏ´Â TableÀÇ OID¸¦ Ãâ·ÂÇÔ */
+     * Refine ì‹¤íŒ¨ë¥¼ ëŒ€ë¹„í•´, Refineí•˜ëŠ” Tableì˜ OIDë¥¼ ì¶œë ¥í•¨ */
     ideLog::log( IDE_SM_0,
                  "====================================================\n"
                  " [MRDB_TBL_REFINE_BEGIN] TABLEOID : %llu\n"
@@ -555,10 +555,10 @@ IDE_RC smaRefineDB::refineTable(smxTrans            * aTrans,
 
 /************************************************************************
  * Description
- *    ¸ğµç volatile tableµéÀ» ÃÊ±âÈ­ÇÑ´Ù.
- *    ÀÌ ÇÔ¼ö´Â Server startup service ´Ü°è¿¡¼­ È£ÃâµÇ¾î¾ß ÇÑ´Ù.
- *    ¿Ö³ÄÇÏ¸é makeNullRow callback È£Ãâ½Ã mt ¸ğµâÀÌ ÃÊ±âÈ­µÇ¾î ÀÖ¾î¾ß
- *    ÇÏ±â ¶§¹®ÀÌ´Ù.
+ *    ëª¨ë“  volatile tableë“¤ì„ ì´ˆê¸°í™”í•œë‹¤.
+ *    ì´ í•¨ìˆ˜ëŠ” Server startup service ë‹¨ê³„ì—ì„œ í˜¸ì¶œë˜ì–´ì•¼ í•œë‹¤.
+ *    ì™œëƒí•˜ë©´ makeNullRow callback í˜¸ì¶œì‹œ mt ëª¨ë“ˆì´ ì´ˆê¸°í™”ë˜ì–´ ìˆì–´ì•¼
+ *    í•˜ê¸° ë•Œë¬¸ì´ë‹¤.
  ************************************************************************/
 IDE_RC smaRefineDB::initAllVolatileTables()
 {
@@ -608,10 +608,10 @@ IDE_RC smaRefineDB::initAllVolatileTables()
                 continue;
             }
 
-            /* BUGBUG ¾Æ·¡ ¼¼ if ¹®µéÀº ¾ø¾îÁ®¾ß ÇÑ´Ù.
-               ¿Ö³ÄÇÏ¸é ÀÌ ÇÔ¼ö°¡ È£ÃâµÇ¾úÀ» ½Ã¿¡´Â
-               Ä«Å»·Î±× Å×ÀÌºíÀÌ refine °úÁ¤À» ¸¶ÃÆ±â¶§¹®¿¡
-               dropµÈ TBS³ª TableµéÀº ¸ğµÎ Ã³¸®°¡ µÇ¾ú´Ù. */
+            /* BUGBUG ì•„ë˜ ì„¸ if ë¬¸ë“¤ì€ ì—†ì–´ì ¸ì•¼ í•œë‹¤.
+               ì™œëƒí•˜ë©´ ì´ í•¨ìˆ˜ê°€ í˜¸ì¶œë˜ì—ˆì„ ì‹œì—ëŠ”
+               ì¹´íƒˆë¡œê·¸ í…Œì´ë¸”ì´ refine ê³¼ì •ì„ ë§ˆì³¤ê¸°ë•Œë¬¸ì—
+               dropëœ TBSë‚˜ Tableë“¤ì€ ëª¨ë‘ ì²˜ë¦¬ê°€ ë˜ì—ˆë‹¤. */
             if ( sctTableSpaceMgr::hasState( sCurTable->mSpaceID,
                                              SCT_SS_SKIP_REFINE ) == ID_TRUE )
             {
@@ -626,18 +626,18 @@ IDE_RC smaRefineDB::initAllVolatileTables()
                 continue;
             }
 
-            /* Table headerÀÇ page list entry ÃÊ±âÈ­ */
+            /* Table headerì˜ page list entry ì´ˆê¸°í™” */
             IDE_TEST( smcTable::initLockAndRuntimeItem( sCurTable )
                       != IDE_SUCCESS );
 
-            /* NULL ROW ¾ò¾î¿À±â */
+            /* NULL ROW ì–»ì–´ì˜¤ê¸° */
             IDE_TEST(smcTable::makeNullRowByCallback(sCurTable,
                                                      sColList,
                                                      sNullRow,
                                                      (SChar*)sValueBuffer)
                      != IDE_SUCCESS);
 
-            /* ºó Å×ÀÌºí¿¡ NULL ROW »ğÀÔÇÏ±â */
+            /* ë¹ˆ í…Œì´ë¸”ì— NULL ROW ì‚½ì…í•˜ê¸° */
             IDE_TEST(svcRecord::makeNullRow(sTrans,
                                             sCurTable,
                                             sSCN,
@@ -652,7 +652,7 @@ IDE_RC smaRefineDB::initAllVolatileTables()
                                             &sNullRowOID )
                       != IDE_SUCCESS );
 
-            /* Index ÃÊ±âÈ­ ¼öÇàÇÏ±â */
+            /* Index ì´ˆê¸°í™” ìˆ˜í–‰í•˜ê¸° */
             IDE_TEST(smnManager::prepareRebuildIndexs(sCurTable,
                                                       sRebuildIndexList)
                      != IDE_SUCCESS);
@@ -674,11 +674,11 @@ IDE_RC smaRefineDB::initAllVolatileTables()
 }
 
 /************************************************************************
- * Description : BUG-24518 [MDB] Shutdown Phase¿¡¼­ ¸Ş¸ğ¸® Å×ÀÌºí
- *               CompactionÀÌ ÇÊ¿äÇÕ´Ï´Ù.
+ * Description : BUG-24518 [MDB] Shutdown Phaseì—ì„œ ë©”ëª¨ë¦¬ í…Œì´ë¸”
+ *               Compactionì´ í•„ìš”í•©ë‹ˆë‹¤.
  *
- * µ¥ÀÌÅÍº£ÀÌ½º»óÀÇ ¸ğµç ¸Ş¸ğ¸®/¸ŞÅ¸ Å×ÀÌºí¿¡ ´ëÇØ¼­ CompactionÀ» ¼öÇàÇÏ¿©
- * ÀÌÈÄ server start½Ã VSZ°¡ Áõ°¡ÇÏÁö ¾Êµµ·Ï ¸·´Â´Ù.
+ * ë°ì´í„°ë² ì´ìŠ¤ìƒì˜ ëª¨ë“  ë©”ëª¨ë¦¬/ë©”íƒ€ í…Œì´ë¸”ì— ëŒ€í•´ì„œ Compactionì„ ìˆ˜í–‰í•˜ì—¬
+ * ì´í›„ server startì‹œ VSZê°€ ì¦ê°€í•˜ì§€ ì•Šë„ë¡ ë§‰ëŠ”ë‹¤.
  ************************************************************************/
 IDE_RC smaRefineDB::compactTables( void )
 {
@@ -705,7 +705,7 @@ IDE_RC smaRefineDB::compactTables( void )
     sCurPtr = NULL;
 
     /*
-     * ¸ğµç Å×ÀÌºí¿¡ ´ëÇØ¼­
+     * ëª¨ë“  í…Œì´ë¸”ì— ëŒ€í•´ì„œ
      */
     while(1)
     {
@@ -725,7 +725,7 @@ IDE_RC smaRefineDB::compactTables( void )
         sCurPtr = sNxtPtr;
 
         /*
-         * INCONSISTENT Å×ÀÌºí½ºÆäÀÌ½º´Â Skip
+         * INCONSISTENT í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ëŠ” Skip
          */
         if ( sctTableSpaceMgr::hasState( sTableHeader->mSpaceID,
                                          SCT_SS_SKIP_REFINE ) == ID_TRUE )
@@ -734,7 +734,7 @@ IDE_RC smaRefineDB::compactTables( void )
         }
 
         /*
-         * »ç¿ëÀÚ¿¡ ÀÇÇØ¼­ »èÁ¦µÈ Å×ÀÌºíÀº Skip
+         * ì‚¬ìš©ìì— ì˜í•´ì„œ ì‚­ì œëœ í…Œì´ë¸”ì€ Skip
          */
         if( SMP_SLOT_IS_DROP( sSlotHeaderPtr ) )
         {
@@ -742,7 +742,7 @@ IDE_RC smaRefineDB::compactTables( void )
         }
 
         /*
-         * Å×ÀÌºí »ı¼ºÇÏ´Ù°¡ ·Ñ¹éµÈ °æ¿ì´Â Skip
+         * í…Œì´ë¸” ìƒì„±í•˜ë‹¤ê°€ ë¡¤ë°±ëœ ê²½ìš°ëŠ” Skip
          */
         if( SM_SCN_IS_DELETED( sScn ) )
         {
@@ -750,7 +750,7 @@ IDE_RC smaRefineDB::compactTables( void )
         }
 
         /*
-         * ¸Ş¸ğ¸®ÀÌ°Å³ª ¸ŞÅ¸ Å×ÀÌºí¿¡ ´ëÇØ¼­¸¸ CompactionÀ» ¼öÇàÇÑ´Ù.
+         * ë©”ëª¨ë¦¬ì´ê±°ë‚˜ ë©”íƒ€ í…Œì´ë¸”ì— ëŒ€í•´ì„œë§Œ Compactionì„ ìˆ˜í–‰í•œë‹¤.
          */
         if( (SMI_TABLE_TYPE_IS_MEMORY( sTableHeader ) == ID_TRUE) ||
             (SMI_TABLE_TYPE_IS_META( sTableHeader )   == ID_TRUE) )

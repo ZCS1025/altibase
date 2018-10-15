@@ -30,9 +30,9 @@
 
 
 /***********************************************************************
- * Description : »ı¼ºÀÚ
+ * Description : ìƒì„±ì
  *
- *  aBufferPool     - [IN]  ¹öÆÛÇ®
+ *  aBufferPool     - [IN]  ë²„í¼í’€
  ***********************************************************************/
 IDE_RC sdbBufferPoolStat::initialize(sdbBufferPool *aBufferPool)
 {
@@ -67,7 +67,7 @@ IDE_RC sdbBufferPoolStat::initialize(sdbBufferPool *aBufferPool)
 
 /***********************************************************************
  * Description :
- *  buffer pool ¿¡ Åë°èÁ¤º¸ Àû¿ë
+ *  buffer pool ì— í†µê³„ì •ë³´ ì ìš©
  ***********************************************************************/
 void sdbBufferPoolStat::updateBufferPoolStat()
 {
@@ -85,7 +85,7 @@ void sdbBufferPoolStat::updateBufferPoolStat()
 
 /***********************************************************************
  * Description :
- *  ¼Ò¸êÀÚ
+ *  ì†Œë©¸ì
  ***********************************************************************/
 IDE_RC sdbBufferPoolStat::destroy()
 {
@@ -103,9 +103,9 @@ IDE_RC sdbBufferPoolStat::destroy()
 }
 
 /***********************************************************************
- * Description : Fix Page Åë°èÁ¤º¸¸¦ °»½ÅÇÑ´Ù.
+ * Description : Fix Page í†µê³„ì •ë³´ë¥¼ ê°±ì‹ í•œë‹¤.
  *
- * aStatistics - [IN] Åë°èÁ¤º¸
+ * aStatistics - [IN] í†µê³„ì •ë³´
  * aSpaceID    - [IN] SpaceID
  * aPageID     - [IN] PageID
  * aPageType   - [IN] Page Type
@@ -145,9 +145,9 @@ void sdbBufferPoolStat::applyFixPages( idvSQL    * aStatistics,
 }
 
 /***********************************************************************
- * Description : Get Page Åë°èÁ¤º¸¸¦ °»½ÅÇÑ´Ù.
+ * Description : Get Page í†µê³„ì •ë³´ë¥¼ ê°±ì‹ í•œë‹¤.
  *
- * aStatistics - [IN] Åë°èÁ¤º¸
+ * aStatistics - [IN] í†µê³„ì •ë³´
  * aSpaceID    - [IN] SpaceID
  * aPageID     - [IN] PageID
  * aPageType   - [IN] Page Type
@@ -187,9 +187,9 @@ void sdbBufferPoolStat::applyGetPages( idvSQL    *aStatistics,
 }
 
 /***********************************************************************
- * Description : Physical Read Page Åë°èÁ¤º¸¸¦ °»½ÅÇÑ´Ù.
+ * Description : Physical Read Page í†µê³„ì •ë³´ë¥¼ ê°±ì‹ í•œë‹¤.
  *
- * aStatistics - [IN] Åë°èÁ¤º¸
+ * aStatistics - [IN] í†µê³„ì •ë³´
  * aSpaceID    - [IN] SpaceID
  * aPageID     - [IN] PageID
  * aPageType   - [IN] Page Type
@@ -229,9 +229,9 @@ void sdbBufferPoolStat::applyReadPages( idvSQL    *aStatistics,
 }
 
 /***********************************************************************
- * Description : Create Page Åë°èÁ¤º¸¸¦ °»½ÅÇÑ´Ù.
+ * Description : Create Page í†µê³„ì •ë³´ë¥¼ ê°±ì‹ í•œë‹¤.
  *
- * aStatistics - [IN] Åë°èÁ¤º¸
+ * aStatistics - [IN] í†µê³„ì •ë³´
  * aSpaceID    - [IN] SpaceID
  * aPageID     - [IN] PageID
  * aPageType   - [IN] Page Type
@@ -271,9 +271,9 @@ void sdbBufferPoolStat::applyCreatePages( idvSQL    *aStatistics,
 }
 
 /***********************************************************************
- * Description : Multi Read Page Åë°èÁ¤º¸¸¦ °»½ÅÇÑ´Ù.
+ * Description : Multi Read Page í†µê³„ì •ë³´ë¥¼ ê°±ì‹ í•œë‹¤.
  *
- * aStatistics - [IN] Åë°èÁ¤º¸
+ * aStatistics - [IN] í†µê³„ì •ë³´
  * aSpaceID    - [IN] SpaceID
  * aPageID     - [IN] PageID
  * aPageType   - [IN] Page Type
@@ -313,9 +313,9 @@ void sdbBufferPoolStat::applyMultiReadPages( idvSQL    *aStatistics,
 }
 
 /***********************************************************************
- * Description : LRU ¸®½ºÆ®·ÎºÎÅÍ VitimÃ£´Â È½¼ö Åë°èÁ¤º¸¸¦ Áõ°¡½ÃÅ²´Ù.
+ * Description : LRU ë¦¬ìŠ¤íŠ¸ë¡œë¶€í„° Vitimì°¾ëŠ” íšŸìˆ˜ í†µê³„ì •ë³´ë¥¼ ì¦ê°€ì‹œí‚¨ë‹¤.
  *
- * aStatistics - [IN] Åë°èÁ¤º¸
+ * aStatistics - [IN] í†µê³„ì •ë³´
  * aSpaceID    - [IN] SpaceID
  * aPageID     - [IN] PageID
  * aPageType   - [IN] Page Type
@@ -342,9 +342,9 @@ void sdbBufferPoolStat::applyVictimPagesFromLRU( idvSQL    * aStatistics,
 }
 
 /***********************************************************************
- * Description : Prepare ¸®½ºÆ®·ÎºÎÅÍ VitimÃ£´Â È½¼ö Åë°èÁ¤º¸¸¦ Áõ°¡½ÃÅ²´Ù.
+ * Description : Prepare ë¦¬ìŠ¤íŠ¸ë¡œë¶€í„° Vitimì°¾ëŠ” íšŸìˆ˜ í†µê³„ì •ë³´ë¥¼ ì¦ê°€ì‹œí‚¨ë‹¤.
  *
- * aStatistics - [IN] Åë°èÁ¤º¸
+ * aStatistics - [IN] í†µê³„ì •ë³´
  * aSpaceID    - [IN] SpaceID
  * aPageID     - [IN] PageID
  * aPageType   - [IN] Page Type
@@ -371,10 +371,10 @@ void sdbBufferPoolStat::applyVictimPagesFromPrepare( idvSQL    * aStatistics,
 }
 
 /***********************************************************************
- * Description : LRU List¿¡¼­ VictimÀ» Ã£À»¶§ ¼±ÅÃÇÑ BCB°¡ PinnedÀÌ°Å³ª
- *               HotÀÌ¾î¼­ SkipÇÑ ÆäÀÌÁö °¹¼ö Åë°èÁ¤º¸¸¦ Áõ°¡½ÃÅ²´Ù.
+ * Description : LRU Listì—ì„œ Victimì„ ì°¾ì„ë•Œ ì„ íƒí•œ BCBê°€ Pinnedì´ê±°ë‚˜
+ *               Hotì´ì–´ì„œ Skipí•œ í˜ì´ì§€ ê°¯ìˆ˜ í†µê³„ì •ë³´ë¥¼ ì¦ê°€ì‹œí‚¨ë‹¤.
  *
- * aStatistics - [IN] Åë°èÁ¤º¸
+ * aStatistics - [IN] í†µê³„ì •ë³´
  * aSpaceID    - [IN] SpaceID
  * aPageID     - [IN] PageID
  * aPageType   - [IN] Page Type
@@ -401,10 +401,10 @@ void sdbBufferPoolStat::applySkipPagesFromLRU( idvSQL    * aStatistics,
 }
 
 /***********************************************************************
- * Description : Prepare List¿¡¼­ VictimÀ» Ã£À»¶§ ¼±ÅÃÇÑ BCB°¡ PinnedÀÌ°Å³ª
- *               HotÀÌ¾î¼­ SkipÇÑ ÆäÀÌÁö °¹¼ö Åë°èÁ¤º¸¸¦ Áõ°¡½ÃÅ²´Ù.
+ * Description : Prepare Listì—ì„œ Victimì„ ì°¾ì„ë•Œ ì„ íƒí•œ BCBê°€ Pinnedì´ê±°ë‚˜
+ *               Hotì´ì–´ì„œ Skipí•œ í˜ì´ì§€ ê°¯ìˆ˜ í†µê³„ì •ë³´ë¥¼ ì¦ê°€ì‹œí‚¨ë‹¤.
  *
- * aStatistics - [IN] Åë°èÁ¤º¸
+ * aStatistics - [IN] í†µê³„ì •ë³´
  * aSpaceID    - [IN] SpaceID
  * aPageID     - [IN] PageID
  * aPageType   - [IN] Page Type
@@ -432,7 +432,7 @@ void sdbBufferPoolStat::applySkipPagesFromPrepare( idvSQL    * aStatistics,
 
 /***********************************************************************
  * Description :
- *  ¸â¹ö º¯¼ö ÃÊ±âÈ­
+ *  ë©¤ë²„ ë³€ìˆ˜ ì´ˆê¸°í™”
  ***********************************************************************/
 void sdbBufferPoolStat::clearAll()
 {
@@ -504,8 +504,8 @@ void sdbBufferPoolStat::clearAll()
 /***********************************************************************
  * Description :
  *
- *  sdbBufferPool¿¡¼­ Á÷Á¢ v$sysstatÀ¸·Î ¹İ¿µµÇ¾î¾ß ÇÏ´Â ¸â¹ö¿¡ ´ëÇØ
- *  ¹Ù·Î ¹İ¿µÇÑ´Ù.
+ *  sdbBufferPoolì—ì„œ ì§ì ‘ v$sysstatìœ¼ë¡œ ë°˜ì˜ë˜ì–´ì•¼ í•˜ëŠ” ë©¤ë²„ì— ëŒ€í•´
+ *  ë°”ë¡œ ë°˜ì˜í•œë‹¤.
  **********************************************************************/
 void sdbBufferPoolStat::applyStatisticsForSystem()
 {
@@ -554,7 +554,7 @@ void sdbBufferPoolStat::applyStatisticsForSystem()
 
 /***********************************************************************
  * Description :
- *  fixed tableÀ» ¸¸µå´Â ÇÔ¼ö
+ *  fixed tableì„ ë§Œë“œëŠ” í•¨ìˆ˜
  ***********************************************************************/
 IDE_RC sdbBufferPoolStat::buildRecord(
             void                *aHeader,
@@ -599,7 +599,7 @@ IDE_RC sdbBufferPoolStat::buildRecord(
             mPoolStat.mDelayedFlushHits += mPageTypeStat[i][j].mDelayedFlushHits;
             mPoolStat.mOtherHits   += mPageTypeStat[i][j].mOtherHits;
 
-            /* BUG-23962: sdbBufferPoolStat::buildRecord¿¡¼­ valgrind¿À·ù°¡ ¹ß»ıÇÕ´Ï´Ù. */
+            /* BUG-23962: sdbBufferPoolStat::buildRecordì—ì„œ valgrindì˜¤ë¥˜ê°€ ë°œìƒí•©ë‹ˆë‹¤. */
             sGetFixPages = mPageTypeStat[i][j].mFixPages + mPageTypeStat[i][j].mGetPages;
             if (sGetFixPages == 0)
             {
@@ -647,7 +647,7 @@ IDE_RC sdbBufferPoolStat::buildRecord(
 
 /***********************************************************************
  * Description :
- *  fixed tableÀ» ¸¸µå´Â ÇÔ¼ö
+ *  fixed tableì„ ë§Œë“œëŠ” í•¨ìˆ˜
  ***********************************************************************/
 IDE_RC sdbBufferPoolStat::buildPageInfoRecord(
             void                *aHeader,

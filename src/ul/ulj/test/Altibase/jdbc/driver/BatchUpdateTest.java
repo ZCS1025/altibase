@@ -84,8 +84,8 @@ public class BatchUpdateTest extends AltibaseTestCase
         ResultSet sRS = sSelStmt.executeQuery("SELECT * FROM test ORDER BY c1");
         assertEquals(true, sRS.next());
         assertEquals("a", sRS.getString(1));
-        // BUGBUG (2013-01-03) 2¹øÂ° ±¸¹®¿¡¼­ ½ÇÆĞÇÏ¹Ç·Î ±× ´ÙÀ½ ¸í·ÉÀ¸·Î »ğÀÔµÇ´Â b, c´Â ¾ø¾î¾ß ÇÑ´Ù. (oracle-like)
-        // ÇÏÁö¸¸, Altibase´Â ¸ğµÎ ¼öÇà½ÃÄÑÁÖ°í SELECT ¿¡·¯°¡ ÀÖÀ½À» Ç¥½ÃÇÑ´Ù.
+        // BUGBUG (2013-01-03) 2ë²ˆì§¸ êµ¬ë¬¸ì—ì„œ ì‹¤íŒ¨í•˜ë¯€ë¡œ ê·¸ ë‹¤ìŒ ëª…ë ¹ìœ¼ë¡œ ì‚½ì…ë˜ëŠ” b, cëŠ” ì—†ì–´ì•¼ í•œë‹¤. (oracle-like)
+        // í•˜ì§€ë§Œ, AltibaseëŠ” ëª¨ë‘ ìˆ˜í–‰ì‹œì¼œì£¼ê³  SELECT ì—ëŸ¬ê°€ ìˆìŒì„ í‘œì‹œí•œë‹¤.
         assertEquals(true, sRS.next());
         assertEquals("b", sRS.getString(1));
         assertEquals(true, sRS.next());
@@ -116,15 +116,15 @@ public class BatchUpdateTest extends AltibaseTestCase
         PreparedStatement sInsStmt = connection().prepareStatement("INSERT INTO test VALUES (?)");
         sInsStmt.setString(1, "a");
         sInsStmt.addBatch();
-        sBatchResult = sInsStmt.executeBatch(); // executeBatch ÈÄ¿£ clearBatch
+        sBatchResult = sInsStmt.executeBatch(); // executeBatch í›„ì—” clearBatch
         assertEquals(1, sInsStmt.getUpdateCount());
         assertArrayEquals(new int[] { 1 }, sBatchResult);
 
-        sInsStmt.setString(1, "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"); // DB typeº¸´Ù Å« °ª
+        sInsStmt.setString(1, "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"); // DB typeë³´ë‹¤ í° ê°’
         sInsStmt.addBatch();
         try
         {
-            sInsStmt.executeBatch(); // executeBatch ¶§ ¿¹¿Ü°¡ ÅÍÁö´õ¶óµµ clearBatch
+            sInsStmt.executeBatch(); // executeBatch ë•Œ ì˜ˆì™¸ê°€ í„°ì§€ë”ë¼ë„ clearBatch
             fail();
         }
         catch (SQLException sEx)

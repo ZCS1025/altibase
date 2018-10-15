@@ -45,8 +45,8 @@ class smmPLoadChild : public smtPJChild
 public:
     smmPLoadChild() {}
     
-    // ÆÄÀÏÀÇ ³»¿ëÀ» ·ÎµåÇÏ±â À§ÇØ ÇÊ¿äÇÑ Á¤º¸¸¦ ¼³Á¤ÇÑ´Ù.
-    // ÀÎÀÚ¿¡ ´ëÇÑ ÀÚ¼¼ÇÑ ¼³¸íÀº loadDbFileÀ» Âü°íÇÑ´Ù.
+    // íŒŒì¼ì˜ ë‚´ìš©ì„ ë¡œë“œí•˜ê¸° ìœ„í•´ í•„ìš”í•œ ì •ë³´ë¥¼ ì„¤ì •í•œë‹¤.
+    // ì¸ìì— ëŒ€í•œ ìì„¸í•œ ì„¤ëª…ì€ loadDbFileì„ ì°¸ê³ í•œë‹¤.
     void setFileToBeLoad(smmTBSNode *     aTBSNode,
                          UInt             aFileNumber,
                          scPageID         aFirstPID,

@@ -19,7 +19,7 @@
  *
  * Description : ORDER BY Elimination Transformation
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
  *****************************************************************************/
 
@@ -35,15 +35,15 @@ IDE_RC qmoOBYETransform::doTransform( qcStatement * aStatement,
 {
 /***********************************************************************
  *
- * Description : BUG-41183 Inline view ÀÇ ºÒÇÊ¿äÇÑ ORDER BY Á¦°Å
+ * Description : BUG-41183 Inline view ì˜ ë¶ˆí•„ìš”í•œ ORDER BY ì œê±°
  *
  * Implementation :
  *
- *       ´ÙÀ½ Á¶°ÇÀ» ¸¸Á·ÇÒ °æ¿ì inline view ÀÇ order by ÀıÀ» Á¦°ÅÇÑ´Ù.
+ *       ë‹¤ìŒ ì¡°ê±´ì„ ë§Œì¡±í•  ê²½ìš° inline view ì˜ order by ì ˆì„ ì œê±°í•œë‹¤.
  *
- *       - SELECT count(*) ±¸¹®¿¡ ÇÑÇØ
- *       - FROM ÀıÀÇ ¸ğµç inline view ¿¡ ´ëÇØ
- *       - LIMIT ÀıÀÌ ¾øÀ» °æ¿ì
+ *       - SELECT count(*) êµ¬ë¬¸ì— í•œí•´
+ *       - FROM ì ˆì˜ ëª¨ë“  inline view ì— ëŒ€í•´
+ *       - LIMIT ì ˆì´ ì—†ì„ ê²½ìš°
  *
  ***********************************************************************/
 
@@ -54,13 +54,13 @@ IDE_RC qmoOBYETransform::doTransform( qcStatement * aStatement,
     IDU_FIT_POINT_FATAL( "qmoOBYETransform::doTransform::__FT__" );
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_DASSERT( aQuerySet != NULL );
 
     //------------------------------------------
-    // Á¶°Ç °Ë»ç
+    // ì¡°ê±´ ê²€ì‚¬
     //------------------------------------------
 
     if ( QCU_OPTIMIZER_ORDER_BY_ELIMINATION_ENABLE == 1 )
@@ -117,7 +117,7 @@ IDE_RC qmoOBYETransform::doTransform( qcStatement * aStatement,
         // Nothing to do.
     }
 
-    // environmentÀÇ ±â·Ï
+    // environmentì˜ ê¸°ë¡
     qcgPlan::registerPlanProperty(
             aStatement,
             PLAN_PROPERTY_OPTIMIZER_ORDER_BY_ELIMINATION_ENABLE );

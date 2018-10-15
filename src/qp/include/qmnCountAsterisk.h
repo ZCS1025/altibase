@@ -21,11 +21,11 @@
  * Description :
  *     CoUNT (*) Plan Node
  *
- *     °ü°èÇü ¸ğµ¨¿¡¼­ COUNT(*)¸¸À» Ã³¸®ÇÏ±â À§ÇÑ Æ¯¼öÇÑ Plan Node ÀÌ´Ù.
+ *     ê´€ê³„í˜• ëª¨ë¸ì—ì„œ COUNT(*)ë§Œì„ ì²˜ë¦¬í•˜ê¸° ìœ„í•œ íŠ¹ìˆ˜í•œ Plan Node ì´ë‹¤.
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  **********************************************************************/
 
@@ -42,24 +42,24 @@
 //-----------------
 
 /* qmncCUNT.flag                                     */
-// Count(*) Ã³¸® ¹æ¹ı
-// Table HandleÀ» ÀÌ¿ëÇÑ ¹æ¹ı°ú Cursor¸¦ ÀÌ¿ëÇÑ ¹æ¹ı
+// Count(*) ì²˜ë¦¬ ë°©ë²•
+// Table Handleì„ ì´ìš©í•œ ë°©ë²•ê³¼ Cursorë¥¼ ì´ìš©í•œ ë°©ë²•
 
 #define QMNC_CUNT_METHOD_MASK              (0x00000001)
 #define QMNC_CUNT_METHOD_HANDLE            (0x00000000)
 #define QMNC_CUNT_METHOD_CURSOR            (0x00000001)
 
 /* qmncCUNT.flag                                     */
-// ÂüÁ¶µÇ´Â tableÀÌ fixed table ¶Ç´Â performance viewÀÎÁöÀÇ Á¤º¸¸¦ ³ªÅ¸³¿.
-// fixed table ¶Ç´Â performance view¿¡ ´ëÇØ¼­´Â
-// table¿¡ ´ëÇÑ IS LOCKÀ» ÀâÁö ¾Êµµ·Ï ÇÏ±â À§ÇÔ.
+// ì°¸ì¡°ë˜ëŠ” tableì´ fixed table ë˜ëŠ” performance viewì¸ì§€ì˜ ì •ë³´ë¥¼ ë‚˜íƒ€ëƒ„.
+// fixed table ë˜ëŠ” performance viewì— ëŒ€í•´ì„œëŠ”
+// tableì— ëŒ€í•œ IS LOCKì„ ì¡ì§€ ì•Šë„ë¡ í•˜ê¸° ìœ„í•¨.
 #define QMNC_CUNT_TABLE_FV_MASK            (0x00000002)
 #define QMNC_CUNT_TABLE_FV_FALSE           (0x00000000)
 #define QMNC_CUNT_TABLE_FV_TRUE            (0x00000002)
 
 /* qmncCUNT.flag                                     */
 // To fix BUG-12742
-// index¸¦ ¹İµå½Ã »ç¿ëÇØ¾ß ÇÏ´ÂÁö ¿©ºÎ¸¦ ³ªÅ¸³½´Ù.
+// indexë¥¼ ë°˜ë“œì‹œ ì‚¬ìš©í•´ì•¼ í•˜ëŠ”ì§€ ì—¬ë¶€ë¥¼ ë‚˜íƒ€ë‚¸ë‹¤.
 #define QMNC_CUNT_FORCE_INDEX_SCAN_MASK    (0x00000004)
 #define QMNC_CUNT_FORCE_INDEX_SCAN_FALSE   (0x00000000)
 #define QMNC_CUNT_FORCE_INDEX_SCAN_TRUE    (0x00000004)
@@ -81,14 +81,14 @@
 #define QMND_CUNT_CURSOR_OPENED            (0x00000002)
 
 /* qmndCUNT.flag                                     */
-// Isolation Level¿¡ ÀÇÇÏ¿© Á¢±Ù ¹æ¹ıÀÌ ¹Ù²ğ ¼ö ÀÖ´Ù.
-// Table HandleÀ» ÀÌ¿ëÇÑ ¹æ¹ı°ú Cursor¸¦ ÀÌ¿ëÇÑ ¹æ¹ı
+// Isolation Levelì— ì˜í•˜ì—¬ ì ‘ê·¼ ë°©ë²•ì´ ë°”ë€” ìˆ˜ ìˆë‹¤.
+// Table Handleì„ ì´ìš©í•œ ë°©ë²•ê³¼ Cursorë¥¼ ì´ìš©í•œ ë°©ë²•
 #define QMND_CUNT_METHOD_MASK              (0x00000004)
 #define QMND_CUNT_METHOD_HANDLE            (0x00000000)
 #define QMND_CUNT_METHOD_CURSOR            (0x00000004)
 
 /* qmndCUNT.flag                                     */
-// planÀÇ selected method°¡ ¼¼ÆÃµÇ¾ú´ÂÁö ¿©ºÎ¸¦ ±¸ÇÑ´Ù.
+// planì˜ selected methodê°€ ì„¸íŒ…ë˜ì—ˆëŠ”ì§€ ì—¬ë¶€ë¥¼ êµ¬í•œë‹¤.
 #define QMND_CUNT_SELECTED_METHOD_SET_MASK   (0x00000008)
 #define QMND_CUNT_SELECTED_METHOD_SET_TRUE   (0x00000008)
 #define QMND_CUNT_SELECTED_METHOD_SET_FALSE  (0x00000000)
@@ -96,7 +96,7 @@
 typedef struct qmncCUNT
 {
     //---------------------------------
-    // Code ¿µ¿ª °øÅë Á¤º¸
+    // Code ì˜ì—­ ê³µí†µ ì •ë³´
     //---------------------------------
 
     qmnPlan        plan;
@@ -104,7 +104,7 @@ typedef struct qmncCUNT
     UInt           planID;
 
     //---------------------------------
-    // CUNT °íÀ¯ Á¤º¸
+    // CUNT ê³ ìœ  ì •ë³´
     //---------------------------------
 
     qtcNode      * countNode;           // Count Asterisk Node
@@ -121,12 +121,12 @@ typedef struct qmncCUNT
     smiCursorProperties cursorProperty; // Cursor Property
 
     //---------------------------------
-    // Predicate Á¾·ù
+    // Predicate ì¢…ë¥˜
     //---------------------------------
 
     qmncScanMethod       method;
     //---------------------------------
-    // Display °ü·Ã Á¤º¸
+    // Display ê´€ë ¨ ì •ë³´
     //---------------------------------
 
     qmsNamePosition      tableOwnerName;     // Table Owner Name
@@ -139,51 +139,51 @@ typedef struct qmncCUNT
 typedef struct qmndCUNT
 {
     //---------------------------------
-    // Data ¿µ¿ª °øÅë Á¤º¸
+    // Data ì˜ì—­ ê³µí†µ ì •ë³´
     //---------------------------------
     qmndPlan            plan;
     doItFunc            doIt;
     UInt              * flag;
 
     //---------------------------------
-    // CUNT °íÀ¯ Á¤º¸
+    // CUNT ê³ ìœ  ì •ë³´
     //---------------------------------
 
-    SLong                       countValue;      // COUNT(*)ÀÇ °ª
+    SLong                       countValue;      // COUNT(*)ì˜ ê°’
     mtcTuple                  * depTuple;        // dependent tuple
     UInt                        depValue;        // dependency value
 
     smiTableCursor              cursor;          // Cursor
-    smiCursorProperties         cursorProperty;  // Cursor °ü·Ã Á¤º¸
+    smiCursorProperties         cursorProperty;  // Cursor ê´€ë ¨ ì •ë³´
 
     //---------------------------------
-    // Predicate Á¾·ù
+    // Predicate ì¢…ë¥˜
     //---------------------------------
 
-    smiRange                  * fixKeyRangeArea; // Fixed Key Range ¿µ¿ª
+    smiRange                  * fixKeyRangeArea; // Fixed Key Range ì˜ì—­
     smiRange                  * fixKeyRange;     // Fixed Key Range
-    UInt                        fixKeyRangeSize; // Fixed Key Range Å©±â
+    UInt                        fixKeyRangeSize; // Fixed Key Range í¬ê¸°
 
-    smiRange                  * fixKeyFilterArea; //Fixed Key Filter ¿µ¿ª
+    smiRange                  * fixKeyFilterArea; //Fixed Key Filter ì˜ì—­
     smiRange                  * fixKeyFilter;    // Fixed Key Filter
-    UInt                        fixKeyFilterSize;// Fixed Key Filter Å©±â
+    UInt                        fixKeyFilterSize;// Fixed Key Filter í¬ê¸°
     
-    smiRange                  * varKeyRangeArea; // Variable Key Range ¿µ¿ª
+    smiRange                  * varKeyRangeArea; // Variable Key Range ì˜ì—­
     smiRange                  * varKeyRange;     // Variable Key Range
-    UInt                        varKeyRangeSize; // Variable Key Range Å©±â
+    UInt                        varKeyRangeSize; // Variable Key Range í¬ê¸°
 
-    smiRange                  * varKeyFilterArea; // Variable Key Filter ¿µ¿ª
+    smiRange                  * varKeyFilterArea; // Variable Key Filter ì˜ì—­
     smiRange                  * varKeyFilter;    // Variable Key Filter
-    UInt                        varKeyFilterSize;// Variable Key Filter Å©±â
+    UInt                        varKeyFilterSize;// Variable Key Filter í¬ê¸°
 
-    smiRange                  * keyRange;       // ÃÖÁ¾ Key Range
-    smiRange                  * keyFilter;      // ÃÖÁ¾ Key Filter
+    smiRange                  * keyRange;       // ìµœì¢… Key Range
+    smiRange                  * keyFilter;      // ìµœì¢… Key Filter
     smiRange                  * ridRange;
 
-    // Filter °ü·Ã CallBack Á¤º¸
+    // Filter ê´€ë ¨ CallBack ì •ë³´
     smiCallBack                 callBack;        // Filter CallBack
     qtcSmiCallBackDataAnd       callBackDataAnd; //
-    qtcSmiCallBackData          callBackData[3]; // ¼¼ Á¾·ùÀÇ Filter°¡ °¡´ÉÇÔ.
+    qtcSmiCallBackData          callBackData[3]; // ì„¸ ì¢…ë¥˜ì˜ Filterê°€ ê°€ëŠ¥í•¨.
 
     qmndScanFixedTable          fixedTable;         // BUG-42639 Monitoring Query
     smiFixedTableProperties     fixedTableProperty; // BUG-42639 Mornitoring Query
@@ -196,15 +196,15 @@ public:
     // Base Function Pointer
     //------------------------
 
-    // ÃÊ±âÈ­
+    // ì´ˆê¸°í™”
     static IDE_RC init( qcTemplate * aTemplate,
                         qmnPlan    * aPlan );
 
-    // Á¾·á
+    // ì¢…ë£Œ
     static IDE_RC fini( qcTemplate * aTemplate,
                         qmnPlan    * aPlan );
 
-    // ¼öÇà ÇÔ¼ö
+    // ìˆ˜í–‰ í•¨ìˆ˜
     static IDE_RC doIt( qcTemplate * aTemplate,
                         qmnPlan    * aPlan,
                         qmcRowFlag * aFlag );
@@ -213,7 +213,7 @@ public:
     static IDE_RC padNull( qcTemplate * aTemplate,
                            qmnPlan    * aPlan );
 
-    // Plan Á¤º¸ Ãâ·Â
+    // Plan ì •ë³´ ì¶œë ¥
     static IDE_RC printPlan( qcTemplate   * aTemplate,
                              qmnPlan      * aPlan,
                              ULong          aDepth,
@@ -224,77 +224,77 @@ public:
     // mapping by doIt() function pointer
     //------------------------
 
-    // È£ÃâµÇ¾î¼­´Â ¾ÈµÊ.
+    // í˜¸ì¶œë˜ì–´ì„œëŠ” ì•ˆë¨.
     static IDE_RC doItDefault( qcTemplate * aTemplate,
                                qmnPlan    * aPlan,
                                qmcRowFlag * aFlag );
 
-    // COUNT(*)À» ¸®ÅÏ
+    // COUNT(*)ì„ ë¦¬í„´
     static IDE_RC doItFirst( qcTemplate * aTemplate,
                              qmnPlan    * aPlan,
                              qmcRowFlag * aFlag );
 
-    // °á°ú ¾øÀ½À» ¸®ÅÏ
+    // ê²°ê³¼ ì—†ìŒì„ ë¦¬í„´
     static IDE_RC doItLast( qcTemplate * aTemplate,
                             qmnPlan    * aPlan,
                             qmcRowFlag * aFlag );
 
 
-    // PROJ-1446 Host variableÀ» Æ÷ÇÔÇÑ ÁúÀÇ ÃÖÀûÈ­
-    // plan¿¡°Ô data ¿µ¿ª¿¡ selected method°¡ ¼¼ÆÃµÇ¾úÀ½À» ¾Ë·ÁÁØ´Ù.
+    // PROJ-1446 Host variableì„ í¬í•¨í•œ ì§ˆì˜ ìµœì í™”
+    // planì—ê²Œ data ì˜ì—­ì— selected methodê°€ ì„¸íŒ…ë˜ì—ˆìŒì„ ì•Œë ¤ì¤€ë‹¤.
     static IDE_RC notifyOfSelectedMethodSet( qcTemplate * aTemplate,
                                              qmncCUNT   * aCodePlan );
 private:
 
     //------------------------
-    // ÃÊ±âÈ­ °ü·Ã ÇÔ¼ö
+    // ì´ˆê¸°í™” ê´€ë ¨ í•¨ìˆ˜
     //------------------------
 
-    // ÃÖÃÊ ÃÊ±âÈ­
+    // ìµœì´ˆ ì´ˆê¸°í™”
     static IDE_RC firstInit( qcTemplate * aTemplate,
                              qmncCUNT   * aCodePlan,
                              qmndCUNT   * aDataPlan );
 
-    // Fixed Key Range¸¦ À§ÇÑ Range °ø°£ ÇÒ´ç
+    // Fixed Key Rangeë¥¼ ìœ„í•œ Range ê³µê°„ í• ë‹¹
     static IDE_RC allocFixKeyRange( qcTemplate * aTemplate,
                                     qmncCUNT   * aCodePlan,
                                     qmndCUNT   * aDataPlan );
 
-    // Variable Key Filter¸¦ À§ÇÑ Range °ø°£ ÇÒ´ç
+    // Variable Key Filterë¥¼ ìœ„í•œ Range ê³µê°„ í• ë‹¹
     static IDE_RC allocFixKeyFilter( qcTemplate * aTemplate,
                                      qmncCUNT   * aCodePlan,
                                      qmndCUNT   * aDataPlan );
 
-    // Variable Key Range¸¦ À§ÇÑ Range °ø°£ ÇÒ´ç
+    // Variable Key Rangeë¥¼ ìœ„í•œ Range ê³µê°„ í• ë‹¹
     static IDE_RC allocVarKeyRange( qcTemplate * aTemplate,
                                     qmncCUNT   * aCodePlan,
                                     qmndCUNT   * aDataPlan );
 
-    // Variable Key Filter¸¦ À§ÇÑ Range °ø°£ ÇÒ´ç
+    // Variable Key Filterë¥¼ ìœ„í•œ Range ê³µê°„ í• ë‹¹
     static IDE_RC allocVarKeyFilter( qcTemplate * aTemplate,
                                      qmncCUNT   * aCodePlan,
                                      qmndCUNT   * aDataPlan );
 
-    // Rid Filter ¸¦ À§ÇÑ Range °ø°£ ÇÒ´ç
+    // Rid Filter ë¥¼ ìœ„í•œ Range ê³µê°„ í• ë‹¹
     static IDE_RC allocRidRange( qcTemplate * aTemplate,
                                  qmncCUNT   * aCodePlan,
                                  qmndCUNT   * aDataPlan );
 
-    // Dependent TupleÀÇ º¯°æ ¿©ºÎ °Ë»ç
+    // Dependent Tupleì˜ ë³€ê²½ ì—¬ë¶€ ê²€ì‚¬
     static IDE_RC checkDependency( qmndCUNT   * aDataPlan,
                                    idBool     * aDependent );
 
-    // COUNT(*) °ª È¹µæ
+    // COUNT(*) ê°’ íšë“
     static IDE_RC getCountValue( qcTemplate * aTemplate,
                                  qmncCUNT   * aCodePlan,
                                  qmndCUNT   * aDataPlan );
 
-    // HandleÀ» ÀÌ¿ëÇÑ COUNT(*)°ª È¹µæ
+    // Handleì„ ì´ìš©í•œ COUNT(*)ê°’ íšë“
     static IDE_RC getCountByHandle( qcTemplate * aTemplate,
                                     qmncCUNT   * aCodePlan,
                                     qmndCUNT   * aDataPlan );
 
-    // Cursor¸¦ ÀÌ¿ëÇÑ COUNT(*)°ª È¹µæ
+    // Cursorë¥¼ ì´ìš©í•œ COUNT(*)ê°’ íšë“
     static IDE_RC getCountByCursor( qcTemplate * aTemplate,
                                     qmncCUNT   * aCodePlan,
                                     qmndCUNT   * aDataPlan );
@@ -304,7 +304,7 @@ private:
                                         qmncCUNT   * aCodePlan,
                                         qmndCUNT   * aDataPlan );
     //------------------------
-    // Cursor °ü·Ã ÇÔ¼ö
+    // Cursor ê´€ë ¨ í•¨ìˆ˜
     //------------------------
 
     static IDE_RC makeKeyRangeAndFilter( qcTemplate * aTemplate,
@@ -315,48 +315,48 @@ private:
                                 qmncCUNT   * aCodePlan,
                                 qmndCUNT   * aDataPlan );
 
-    // CursorÀÇ Open
+    // Cursorì˜ Open
     static IDE_RC openCursor( qcTemplate * aTemplate,
                               qmncCUNT   * aCodePlan,
                               qmndCUNT   * aDataPlan );
 
     //------------------------
-    // Plan Display °ü·Ã ÇÔ¼ö
+    // Plan Display ê´€ë ¨ í•¨ìˆ˜
     //------------------------
 
-    // AccessÁ¤º¸¸¦ Ãâ·ÂÇÑ´Ù.
+    // Accessì •ë³´ë¥¼ ì¶œë ¥í•œë‹¤.
     static IDE_RC printAccessInfo( qmncCUNT     * aCodePlan,
                                    qmndCUNT     * aDataPlan,
                                    iduVarString * aString,
                                    qmnDisplay     aMode );
 
-    // PredicateÀÇ »ó¼¼ Á¤º¸¸¦ Ãâ·ÂÇÑ´Ù.
+    // Predicateì˜ ìƒì„¸ ì •ë³´ë¥¼ ì¶œë ¥í•œë‹¤.
     static IDE_RC printPredicateInfo( qcTemplate   * aTemplate,
                                       qmncCUNT     * aCodePlan,
                                       ULong          aDepth,
                                       iduVarString * aString );
 
-    // Key RangeÀÇ »ó¼¼ Á¤º¸¸¦ Ãâ·Â
+    // Key Rangeì˜ ìƒì„¸ ì •ë³´ë¥¼ ì¶œë ¥
     static IDE_RC printKeyRangeInfo( qcTemplate   * aTemplate,
                                      qmncCUNT     * aCodePlan,
                                      ULong          aDepth,
                                      iduVarString * aString );
 
-    // Key FilterÀÇ »ó¼¼ Á¤º¸¸¦ Ãâ·Â
+    // Key Filterì˜ ìƒì„¸ ì •ë³´ë¥¼ ì¶œë ¥
     static IDE_RC printKeyFilterInfo( qcTemplate   * aTemplate,
                                       qmncCUNT     * aCodePlan,
                                       ULong          aDepth,
                                       iduVarString * aString );
 
-    // FilterÀÇ »ó¼¼ Á¤º¸¸¦ Ãâ·Â
+    // Filterì˜ ìƒì„¸ ì •ë³´ë¥¼ ì¶œë ¥
     static IDE_RC printFilterInfo( qcTemplate   * aTemplate,
                                    qmncCUNT     * aCodePlan,
                                    ULong          aDepth,
                                    iduVarString * aString );
 
 
-    // code planÀÇ qmncScanMethod¸¦ »ç¿ëÇÒ Áö,
-    // sdfÀÇ candidateµé ÁßÀÇ qmncScanMethod¸¦ »ç¿ëÇÒ Áö ÆÇ´ÜÇÑ´Ù.
+    // code planì˜ qmncScanMethodë¥¼ ì‚¬ìš©í•  ì§€,
+    // sdfì˜ candidateë“¤ ì¤‘ì˜ qmncScanMethodë¥¼ ì‚¬ìš©í•  ì§€ íŒë‹¨í•œë‹¤.
     static qmncScanMethod * getScanMethod( qcTemplate * aTemplate,
                                            qmncCUNT   * aCodePlan );
 };

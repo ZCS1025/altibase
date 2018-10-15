@@ -319,7 +319,7 @@ static smnIndexModule gRemoteTableIndexModule = {
     (smnInsertFunc) NULL,
     (smnDeleteFunc) NULL,
     (smnFreeFunc)   NULL,
-    (smnExistKeyFunc) NULL,          // slotÀÌ Á¸ÀçÇÏ´ÂÁö È®ÀÎ.    
+    (smnExistKeyFunc) NULL,          // slotì´ ì¡´ì¬í•˜ëŠ”ì§€ í™•ì¸.    
     (smnInsertRollbackFunc)    NULL,
     (smnDeleteRollbackFunc)    NULL,
     (smnAgingFunc)             NULL,
@@ -364,7 +364,7 @@ static smnIndexModule gRemoteTableIndexModule = {
     (smTableCursorLockRowFunc) NULL,
     (smnDeleteFunc) NULL,
     (smnFreeFunc)   NULL,
-    (smnExistKeyFunc) NULL,          // slotÀÌ Á¸ÀçÇÏ´ÂÁö È®ÀÎ.    
+    (smnExistKeyFunc) NULL,          // slotì´ ì¡´ì¬í•˜ëŠ”ì§€ í™•ì¸.    
     (smnInsertRollbackFunc)    NULL,
     (smnDeleteRollbackFunc)    NULL,
     (smnAgingFunc)             NULL,

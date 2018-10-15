@@ -46,8 +46,8 @@ void mmcPCB::finalize()
 }
 
 
-// PCB¸¦ HOT-region¿¡¼­ COLD-regionÀ¸·Î ¿Å±â±âÀü¿¡
-// frequnecy¸¦ 0À¸·Î ¼³Á¤ÇÑ´Ù.
+// PCBë¥¼ HOT-regionì—ì„œ COLD-regionìœ¼ë¡œ ì˜®ê¸°ê¸°ì „ì—
+// frequnecyë¥¼ 0ìœ¼ë¡œ ì„¤ì •í•œë‹¤.
 void mmcPCB::resetFrequency(idvSQL* aStatistics)
 {
     IDE_ASSERT(mMutex.lock(aStatistics) == IDE_SUCCESS);
@@ -55,8 +55,8 @@ void mmcPCB::resetFrequency(idvSQL* aStatistics)
     IDE_ASSERT(mMutex.unlock() == IDE_SUCCESS);
 }
 
-// PCB¸¦ HOT-region¿¡¼­ COLD-regionÀ¸·Î ¿Å±â±âÀü¿¡
-// frequnecy¸¦ °¨¼Ò½ÃÅ²´Ù.
+// PCBë¥¼ HOT-regionì—ì„œ COLD-regionìœ¼ë¡œ ì˜®ê¸°ê¸°ì „ì—
+// frequnecyë¥¼ ê°ì†Œì‹œí‚¨ë‹¤.
 /* fix BUG-31212
    When a PCO move from cold to hot lru region, it would be better to update the frequency of a pco as
    (the frequency - SQL_PLAN_CACHE_HOT_REGION_FREQUENCY) instead of 0.*/
@@ -125,8 +125,8 @@ void mmcPCB::getFixCount(idvSQL* aStatistics,
     
 }
 
-// BUG-23144 ÀÎ¶óÀÎ ÇÔ¼ö¿¡¼­ µ¿½Ã¼º Á¦¾î¸¦ ÇÏ¸é °£È¤ Á×½À´Ï´Ù.
-// ÀÎ¶óÀÎÀ» Ã³¸®ÇÏÁö ¾Ê½À´Ï´Ù.
+// BUG-23144 ì¸ë¼ì¸ í•¨ìˆ˜ì—ì„œ ë™ì‹œì„± ì œì–´ë¥¼ í•˜ë©´ ê°„í˜¹ ì£½ìŠµë‹ˆë‹¤.
+// ì¸ë¼ì¸ì„ ì²˜ë¦¬í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
 void mmcPCB::planFix(idvSQL* aStatistics)
 {
     IDE_ASSERT(mMutex.lock(aStatistics) == IDE_SUCCESS);

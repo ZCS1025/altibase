@@ -46,7 +46,7 @@ processProtocolOperationType gProcessProtocolOperationType[RP_META_MAX] =
     { RP_META_DICTTABLECOUNT, 7, 4, 2, 0 }
 };
 
-/* BUG-37770 ÀÎµ¦½º ¹è¿­À» ÀÎµ¦½º ÄÃ·³ ÀÌ¸§À» ±âÁØÀ¸·Î Á¤·ÄÇÑ´Ù. */
+/* BUG-37770 ì¸ë±ìŠ¤ ë°°ì—´ì„ ì¸ë±ìŠ¤ ì»¬ëŸ¼ ì´ë¦„ì„ ê¸°ì¤€ìœ¼ë¡œ ì •ë ¬í•œë‹¤. */
 typedef struct rpdIndexSortInfo
 {
     rpdMetaItem * mItem;
@@ -206,7 +206,7 @@ rpdMetaCompareIndexColumnName( const void * aElem1, const void * aElem2 )
             }
         }
         else
-        {   /* (Index1ÀÇ Key Column Count) > (Index2ÀÇ Key Column Count) */
+        {   /* (Index1ì˜ Key Column Count) > (Index2ì˜ Key Column Count) */
             return 1;
         }
     }
@@ -216,7 +216,7 @@ rpdMetaCompareIndexColumnName( const void * aElem1, const void * aElem2 )
         return 0;
     }
     else
-    {   /* (Index1ÀÇ Key Column Count) < (Index2ÀÇ Key Column Count) */
+    {   /* (Index1ì˜ Key Column Count) < (Index2ì˜ Key Column Count) */
         return -1;
     }
 }
@@ -815,12 +815,12 @@ IDE_RC rpdMetaItem::compareReplCheckColList( const SChar      *aTableName,
  *  compare default expression string
  *
  * Argument :
- *  aItem1           [IN]   : Replication Item Á¤º¸ (Sender)
+ *  aItem1           [IN]   : Replication Item ì •ë³´ (Sender)
  *  aFuncBasedIndex1 [IN]   : Function-based Index (Sender)
- *  aColumns1        [IN]   : Column Á¤º¸ (Sender)
- *  aItem2           [IN]   : Replication Item Á¤º¸ (Receiver)
+ *  aColumns1        [IN]   : Column ì •ë³´ (Sender)
+ *  aItem2           [IN]   : Replication Item ì •ë³´ (Receiver)
  *  aFuncBasedIndex2 [IN]   : Function-based Index (Receiver)
- *  aColumns2        [IN]   : Column Á¤º¸ (Receiver)
+ *  aColumns2        [IN]   : Column ì •ë³´ (Receiver)
  *
  * ********************************************************************/
 IDE_RC rpdMeta::equalFuncBasedIndex( const rpdReplItems * aItem1,
@@ -843,8 +843,8 @@ IDE_RC rpdMeta::equalFuncBasedIndex( const rpdReplItems * aItem1,
         if ( ( aColumns1[sColumnPos1].mQPFlag & QCM_COLUMN_HIDDEN_COLUMN_MASK )
              == QCM_COLUMN_HIDDEN_COLUMN_TRUE )
         {
-            /* equalIndex() ¿¡¼­ ¸ÕÀú Column Á¤º¸µé ºñ±³,
-             * ÀÌ°÷¿¡¼­´Â °°Àº Hidden ¿¡ ´ëÇØ¼­ °°Àº flag °ªÀ» °®´Â Column µé¸¸ ºñ±³ */
+            /* equalIndex() ì—ì„œ ë¨¼ì € Column ì •ë³´ë“¤ ë¹„êµ,
+             * ì´ê³³ì—ì„œëŠ” ê°™ì€ Hidden ì— ëŒ€í•´ì„œ ê°™ì€ flag ê°’ì„ ê°–ëŠ” Column ë“¤ë§Œ ë¹„êµ */
             IDE_DASSERT( ( aColumns2[sColumnPos2].mQPFlag & QCM_COLUMN_HIDDEN_COLUMN_MASK )
                          == QCM_COLUMN_HIDDEN_COLUMN_TRUE );
 
@@ -859,8 +859,8 @@ IDE_RC rpdMeta::equalFuncBasedIndex( const rpdReplItems * aItem1,
         }
         else
         {
-            /* equalIndex() ¿¡¼­ ¸ÕÀú Column Á¤º¸µé ºñ±³,
-             * ÀÌ°÷¿¡¼­´Â °°Àº Hidden ¿¡ ´ëÇØ¼­ °°Àº flag °ªÀ» °®´Â Column µé¸¸ ºñ±³ */
+            /* equalIndex() ì—ì„œ ë¨¼ì € Column ì •ë³´ë“¤ ë¹„êµ,
+             * ì´ê³³ì—ì„œëŠ” ê°™ì€ Hidden ì— ëŒ€í•´ì„œ ê°™ì€ flag ê°’ì„ ê°–ëŠ” Column ë“¤ë§Œ ë¹„êµ */
             IDE_DASSERT( ( aColumns2[sColumnPos2].mQPFlag & QCM_COLUMN_HIDDEN_COLUMN_MASK )
                          != QCM_COLUMN_HIDDEN_COLUMN_TRUE );
         }
@@ -893,11 +893,11 @@ IDE_RC rpdMeta::equalFuncBasedIndex( const rpdReplItems * aItem1,
 
 /********************************************************************
  * Description  : 
- *  aIndex À§Ä¡¿¡ ÀÖ´Â Index °¡ function-based Index ÀÎÁö ±¸ºĞ
+ *  aIndex ìœ„ì¹˜ì— ìˆëŠ” Index ê°€ function-based Index ì¸ì§€ êµ¬ë¶„
  *
  * Argument :
- *  aIndex      [IN]  : °Ë»çÇÒ Index
- *  aColumns    [IN]  : Column Á¤º¸
+ *  aIndex      [IN]  : ê²€ì‚¬í•  Index
+ *  aColumns    [IN]  : Column ì •ë³´
  *
  * ********************************************************************/
 idBool rpdMeta::isFuncBasedIndex( const qcmIndex  * aIndex,
@@ -928,14 +928,14 @@ idBool rpdMeta::isFuncBasedIndex( const qcmIndex  * aIndex,
 
 /********************************************************************
  * Description  :
- *  handshake ½Ã ºñ±³ÇØ¾ßÇÒ  index ÀÎÁö ÆÇº°
+ *  handshake ì‹œ ë¹„êµí•´ì•¼í•   index ì¸ì§€ íŒë³„
  *
  * Argument :
- *  aTableName    [IN]  : Index¸¦ Æ÷ÇÔÇÏ´Â TableÀÇ Name
- *  aIndex        [IN]  : °Ë»çÇÒ Index
- *  aColumns      [IN]  : Column Á¤º¸
- *  aIsReplColArr [IN]  : Replication ÄÃ·³ ¿©ºÎ¸¦ ³ªÅ¸³»´Â ¹è¿­
- *  sIsValid      [OUT] : handshake ½Ã ºñ±³ ¿©ºÎ
+ *  aTableName    [IN]  : Indexë¥¼ í¬í•¨í•˜ëŠ” Tableì˜ Name
+ *  aIndex        [IN]  : ê²€ì‚¬í•  Index
+ *  aColumns      [IN]  : Column ì •ë³´
+ *  aIsReplColArr [IN]  : Replication ì»¬ëŸ¼ ì—¬ë¶€ë¥¼ ë‚˜íƒ€ë‚´ëŠ” ë°°ì—´
+ *  sIsValid      [OUT] : handshake ì‹œ ë¹„êµ ì—¬ë¶€
  *
  * ********************************************************************/
 IDE_RC rpdMeta::validateIndex( const SChar     * aTableName,
@@ -957,7 +957,7 @@ IDE_RC rpdMeta::validateIndex( const SChar     * aTableName,
         ( aIndex->isLocalUnique == ID_TRUE ) ||
         ( sIsFuncBasedIndex == ID_TRUE ) )
     {
-        /* Index ³»ÀÇ Replication ´ë»ó Column ¼ö¸¦ ¾ò´Â´Ù. */
+        /* Index ë‚´ì˜ Replication ëŒ€ìƒ Column ìˆ˜ë¥¼ ì–»ëŠ”ë‹¤. */
         rpdMetaItem::getReplColumnIDList( aIndex->keyColumns,
                                           aIndex->keyColCount,
                                           sReplColumnIDList );
@@ -966,21 +966,21 @@ IDE_RC rpdMeta::validateIndex( const SChar     * aTableName,
                                                          aIndex->keyColCount,
                                                          aIsReplColArr );
 
-        /* Replication ´ë»óÀÌ ¾Æ´Ñ ColumnÀ¸·Î ±¸¼ºµÈ
-         * function-based Index ³ª Unique Index´Â °Ë»çÇÏÁö ¾Ê´Â´Ù. */
+        /* Replication ëŒ€ìƒì´ ì•„ë‹Œ Columnìœ¼ë¡œ êµ¬ì„±ëœ
+         * function-based Index ë‚˜ Unique IndexëŠ” ê²€ì‚¬í•˜ì§€ ì•ŠëŠ”ë‹¤. */
         if(sReplColCount != 0)
         {
             if ( sIsFuncBasedIndex != ID_TRUE )
             {
-                /* Replication ´ë»ó Column°ú ±×·¸Áö ¾ÊÀº ColumnÀ» È¥ÇÕÇÏ¿©,
-                 * Unique Index¸¦ ±¸¼ºÇÒ ¼ö ¾ø´Ù. */
+                /* Replication ëŒ€ìƒ Columnê³¼ ê·¸ë ‡ì§€ ì•Šì€ Columnì„ í˜¼í•©í•˜ì—¬,
+                 * Unique Indexë¥¼ êµ¬ì„±í•  ìˆ˜ ì—†ë‹¤. */
                 IDE_TEST_RAISE( sReplColCount != aIndex->keyColCount,
                                 ERR_UNIQUE_INDEX_REPL_AND_NOT_REPL );
             }
             else
             {
-                /* Replication ´ë»ó Column°ú ±×·¸Áö ¾ÊÀº ColumnÀ» È¥ÇÕÇÏ¿©,
-                 * Function-based Index¸¦ ±¸¼ºÇÒ ¼ö ¾ø´Ù. */
+                /* Replication ëŒ€ìƒ Columnê³¼ ê·¸ë ‡ì§€ ì•Šì€ Columnì„ í˜¼í•©í•˜ì—¬,
+                 * Function-based Indexë¥¼ êµ¬ì„±í•  ìˆ˜ ì—†ë‹¤. */
                 IDE_TEST_RAISE( sReplColCount != aIndex->keyColCount,
                                 ERR_FUNC_BASED_INDEX_REPL_AND_NOT_REPL );
             }
@@ -1017,12 +1017,12 @@ IDE_RC rpdMeta::validateIndex( const SChar     * aTableName,
 
 /********************************************************************
  * Description  :
- *  mtcColumn List À» Column ID(UInt) List ·Î º¯È¯
+ *  mtcColumn List ì„ Column ID(UInt) List ë¡œ ë³€í™˜
  *
  * Argument :
- *  aColumnList     [IN]  : mtcColumn ±¸Á¶Ã¼ ¹è¿­
- *  aColumnCount    [IN]  : º¯È¯ÇÒ column °³¼ö
- *  aReplColumnList [OUT] : º¯È¯ÇÏ¿© ÀúÀåµÉ ¹è¿­
+ *  aColumnList     [IN]  : mtcColumn êµ¬ì¡°ì²´ ë°°ì—´
+ *  aColumnCount    [IN]  : ë³€í™˜í•  column ê°œìˆ˜
+ *  aReplColumnList [OUT] : ë³€í™˜í•˜ì—¬ ì €ì¥ë  ë°°ì—´
  *
  * ********************************************************************/
 void rpdMetaItem::getReplColumnIDList( const mtcColumn  *aColumnList,
@@ -1051,7 +1051,7 @@ idBool rpdMeta::isLocalReplication( rpdMeta * aPeerMeta )
          ( ( aPeerMeta->mReplication.mOptions & RP_OPTION_LOCAL_MASK )
                                              == RP_OPTION_LOCAL_SET ) )
     {
-        /* Meta¸¦ ºñ±³ÇÒ ¶§, ¾çÂÊÀÇ LOCAL ¿É¼ÇÀÌ °°ÀºÁö °Ë»çÇÑ´Ù. */
+        /* Metaë¥¼ ë¹„êµí•  ë•Œ, ì–‘ìª½ì˜ LOCAL ì˜µì…˜ì´ ê°™ì€ì§€ ê²€ì‚¬í•œë‹¤. */
         sIsLocalReplication = ID_TRUE;
     }
     else
@@ -1068,9 +1068,9 @@ IDE_RC rpdMeta::equals( idBool    aIsLocalReplication,
 {
     SInt    sItemCount = 0;
 
-    /* Argument ÁÖ¼®
-     * aMeta1 : Sender·ÎºÎÅÍ ¹ŞÀº Meta
-     * aMeta2 : Receiver°¡ ÀÚÃ¼ buildÇÑ Meta
+    /* Argument ì£¼ì„
+     * aMeta1 : Senderë¡œë¶€í„° ë°›ì€ Meta
+     * aMeta2 : Receiverê°€ ìì²´ buildí•œ Meta
      */
 
     IDU_FIT_POINT_RAISE( "rpdMeta::equals::Erratic::rpERR_ABORT_NOT_EXIST_REPL_ITEM",
@@ -1135,8 +1135,8 @@ IDE_RC rpdMeta::equalRepl( idBool            aIsLocalReplication,
     /* Compare Replication Name */
     if ( aIsLocalReplication == ID_TRUE )
     {
-        /* BUG-45236 Local Replication Áö¿ø
-         *  Local ReplicationÀº Replication NameÀÌ ´Ù¸£´Ù.
+        /* BUG-45236 Local Replication ì§€ì›
+         *  Local Replicationì€ Replication Nameì´ ë‹¤ë¥´ë‹¤.
          */
         IDE_TEST_RAISE( idlOS::strcmp( aRepl1->mRepName,
                                        aRepl2->mRepName ) == 0,
@@ -1182,8 +1182,8 @@ IDE_RC rpdMeta::equalRepl( idBool            aIsLocalReplication,
                     ( aRepl2->mOptions & RP_OPTION_RECOVERY_MASK ),
                     ERR_OPTIONS );
 
-    /* BUG-45236 Local Replication Áö¿ø
-     *  ¾çÂÊÀÇ LOCAL ¿É¼ÇÀÌ °°¾Æ¾ß ÇÑ´Ù.
+    /* BUG-45236 Local Replication ì§€ì›
+     *  ì–‘ìª½ì˜ LOCAL ì˜µì…˜ì´ ê°™ì•„ì•¼ í•œë‹¤.
      */
     IDE_TEST_RAISE( ( aRepl1->mOptions & RP_OPTION_LOCAL_MASK ) !=
                     ( aRepl2->mOptions & RP_OPTION_LOCAL_MASK ),
@@ -1277,13 +1277,13 @@ IDE_RC rpdMeta::equalItem( UInt             aReplMode,
 {
     idBool             sNeedConvertSQL = ID_FALSE;
 
-    /* Argument ÁÖ¼®
-     * aItem1 : Sender·ÎºÎÅÍ ¹ŞÀº Meta Item
-     * aItem2 : Receiver°¡ ÀÚÃ¼ buildÇÑ Meta Item
+    /* Argument ì£¼ì„
+     * aItem1 : Senderë¡œë¶€í„° ë°›ì€ Meta Item
+     * aItem2 : Receiverê°€ ìì²´ buildí•œ Meta Item
      */
 
-    /* BUG-45236 Local Replication Áö¿ø
-     *  Local ReplicationÀÌ¸é, Source ItemÀÇ Table OID¿Í Target ItemÀÇ Table OID°¡ ´Ş¶ó¾ß ÇÑ´Ù.
+    /* BUG-45236 Local Replication ì§€ì›
+     *  Local Replicationì´ë©´, Source Itemì˜ Table OIDì™€ Target Itemì˜ Table OIDê°€ ë‹¬ë¼ì•¼ í•œë‹¤.
      */
     IDE_TEST_RAISE( ( aIsLocalReplication == ID_TRUE ) &&
                     ( aItem1->mItem.mTableOID == aItem2->mItem.mTableOID ),
@@ -1587,11 +1587,11 @@ IDE_RC rpdMeta::equalColumn( SChar      *aTableName1,
                     ERR_MISMATCH_COLUMN_HIDDEN );
 
     /* PROJ-1917  BUGBUG PROJ-1917
-     *     ¾ê¸¦ Ã¼Å©ÇÏ´Â °Ô ÀÇ¹Ì°¡ ÀÖ³ª?
-     *     ¿ì¼±Àº ¸·°í Â÷ÈÄ Å×½ºÆ® ÄÉÀÌ½º Ãß°¡ÇÑ´Ù. ÇÁ·ÎÁ§Æ®·Î ÀÎÇØ
+     *     ì–˜ë¥¼ ì²´í¬í•˜ëŠ” ê²Œ ì˜ë¯¸ê°€ ìˆë‚˜?
+     *     ìš°ì„ ì€ ë§‰ê³  ì°¨í›„ í…ŒìŠ¤íŠ¸ ì¼€ì´ìŠ¤ ì¶”ê°€í•œë‹¤. í”„ë¡œì íŠ¸ë¡œ ì¸í•´
      * MEM : variable (varchar variable) <--> DISK : variable (varchar variable)
-     *       ÀúÀå (flag 0) variable       ÀúÀå (flag 1) fixed -> variable°³³äÀÌ ¾ø¾îÁü.
-     * flag°ªÀÌ ´Ş¶ó¼­ ÇÚ¤§½¦ÀÌÅ© ½ÇÆĞÇÑ´Ù.
+     *       ì €ì¥ (flag 0) variable       ì €ì¥ (flag 1) fixed -> variableê°œë…ì´ ì—†ì–´ì§.
+     * flagê°’ì´ ë‹¬ë¼ì„œ í•¸ã„·ì‰ì´í¬ ì‹¤íŒ¨í•œë‹¤.
      */
     /* Check Fixed & Variable Type
     IDE_TEST_RAISE( ( aCol1->mColumn.column.flag & SMI_COLUMN_TYPE_MASK ) !=
@@ -1722,8 +1722,8 @@ IDE_RC rpdMeta::equalColumnSecurity( SChar      * aTableName1,
                         ERR_MISMATCH_ECC_POLICY );
 
         // policy code
-        // aCol2->mPolicyCode¸¦ ÀÌ¿ëÇÏÁö ¾Ê°í, aCol2->mColumn.policy¸¦
-        // ÀÌ¿ëÇÏ¿© aCol1->mPolicyCode¸¦ º¸¾È¸ğµâ¿¡¼­ Á÷Á¢ °ËÁõÇÑ´Ù.
+        // aCol2->mPolicyCodeë¥¼ ì´ìš©í•˜ì§€ ì•Šê³ , aCol2->mColumn.policyë¥¼
+        // ì´ìš©í•˜ì—¬ aCol1->mPolicyCodeë¥¼ ë³´ì•ˆëª¨ë“ˆì—ì„œ ì§ì ‘ ê²€ì¦í•œë‹¤.
         sCodeLen = idlOS::strlen( (SChar*)aCol1->mPolicyCode );
         IDE_TEST( qciMisc::verifyPolicyCode( aCol2->mColumn.policy,
                                              aCol1->mPolicyCode,
@@ -1735,7 +1735,7 @@ IDE_RC rpdMeta::equalColumnSecurity( SChar      * aTableName1,
                         ERR_MISMATCH_POLICY_CODE );
 
         // ecc policy code
-        // aCol1->mECCPolicyCode¸¦ º¸¾È¸ğµâ¿¡¼­ Á÷Á¢ °ËÁõÇÑ´Ù.
+        // aCol1->mECCPolicyCodeë¥¼ ë³´ì•ˆëª¨ë“ˆì—ì„œ ì§ì ‘ ê²€ì¦í•œë‹¤.
         sCodeLen = idlOS::strlen( (SChar*)aCol1->mECCPolicyCode );
         IDE_TEST( qciMisc::verifyECCPolicyCode( aCol1->mECCPolicyCode,
                                                 (UShort)sCodeLen,
@@ -1945,7 +1945,7 @@ IDE_RC rpdMeta::build(smiStatement       * aSmiStmt,
     mReplication.mCompileBit = 32;
 #endif
     mReplication.mLogFileSize = smiGetLogFileSize();
-    mReplication.mLFGCount = 1; //[TASK-6757]LFG,SN Á¦°Å
+    mReplication.mLFGCount = 1; //[TASK-6757]LFG,SN ì œê±°
     mReplication.mSmVersionID = smiGetSmVersionID();
     idlOS::snprintf(mReplication.mOSInfo,
                     ID_SIZEOF(mReplication.mOSInfo),
@@ -1955,7 +1955,7 @@ IDE_RC rpdMeta::build(smiStatement       * aSmiStmt,
                     OS_MINORVER);
 
     //---------------------------------------------------------
-    // DB Ä³¸¯ÅÍ ¼Â°ú ³»¼Å³Î Ä³¸¯ÅÍ ¼Â ¼¼ÆÃ
+    // DB ìºë¦­í„° ì…‹ê³¼ ë‚´ì…”ë„ ìºë¦­í„° ì…‹ ì„¸íŒ…
     //---------------------------------------------------------
     sDBCharSetStr = mtc::getDBCharSet();
     sNationalCharSetStr = mtc::getNationalCharSet();
@@ -1967,7 +1967,7 @@ IDE_RC rpdMeta::build(smiStatement       * aSmiStmt,
                         sNationalCharSetStr,
                         idlOS::strlen(sNationalCharSetStr) + 1);
 
-    // BUG-6093 Server ID Ãß°¡
+    // BUG-6093 Server ID ì¶”ê°€
     sServerID = rpcManager::getServerID();
     (void)idlOS::memcpy(mReplication.mServerID,
                         sServerID,
@@ -2020,8 +2020,8 @@ IDE_RC rpdMeta::build(smiStatement       * aSmiStmt,
                                         mReplication.mItemCount )
               != IDE_SUCCESS );
 
-    /* PROJ-1442 Replication Online Áß DDL Çã¿ë
-     * Restart SNÀÌ ÀÖ´Â Replication Sender´Â º¸°üµÈ Meta¸¦ »ç¿ëÇØ¾ß ÇÑ´Ù.
+    /* PROJ-1442 Replication Online ì¤‘ DDL í—ˆìš©
+     * Restart SNì´ ìˆëŠ” Replication SenderëŠ” ë³´ê´€ëœ Metaë¥¼ ì‚¬ìš©í•´ì•¼ í•œë‹¤.
      */
     switch(aMetaBuildType)
     {
@@ -2507,7 +2507,7 @@ IDE_RC rpdMeta::buildTableInfo(smiStatement * aSmiStmt,
 
     IDE_TEST( aMetaItem->lockReplItem( aSmiStmt->getTrans(),
                                        aSmiStmt,
-                                       aTBSLvType, // TBS Validation ¿É¼Ç
+                                       aTBSLvType, // TBS Validation ì˜µì…˜
                                        SMI_TABLE_LOCK_IS,
                                        ( ( smiGetDDLLockTimeOut() == -1 ) ?
                                          ID_ULONG_MAX :
@@ -2705,7 +2705,7 @@ IDE_RC rpdMeta::buildPartitonInfo(smiStatement * aSmiStmt,
         }
         
         // PROJ-1624 non-partitioned index
-        // partitioned tableÀÇ tableInfo¸¦ ¾ò´Â´Ù.
+        // partitioned tableì˜ tableInfoë¥¼ ì–»ëŠ”ë‹¤.
         IDE_TEST( qciMisc::getTableInfoByID( aSmiStmt,
                                              aItemInfo->tableID,
                                              & sTableInfo,
@@ -2713,9 +2713,9 @@ IDE_RC rpdMeta::buildPartitonInfo(smiStatement * aSmiStmt,
                                              & sTableHandle )
                   != IDE_SUCCESS );
 
-        // Caller¿¡¼­ ÀÌ¹Ì LockÀ» Àâ¾Ò´Ù. (Partitioned Table)
+        // Callerì—ì„œ ì´ë¯¸ Lockì„ ì¡ì•˜ë‹¤. (Partitioned Table)
 
-        // global index table ref¸¦ ±¸¼ºÇÑ´Ù.
+        // global index table refë¥¼ êµ¬ì„±í•œë‹¤.
         for ( i = 0; i < sTableInfo->indexCount; i++ )
         {
             sIndex = & (sTableInfo->indices[i]);
@@ -2751,7 +2751,7 @@ IDE_RC rpdMeta::buildPartitonInfo(smiStatement * aSmiStmt,
                 {
                     sIndexTable = & (sIndexTableRef[j]);
 
-                    // index Á¤º¸¸¦ º¹»çÇÑ´Ù.
+                    // index ì •ë³´ë¥¼ ë³µì‚¬í•œë‹¤.
                     IDE_TEST( copyIndex( sIndex, &(sIndexTable->index) )
                               != IDE_SUCCESS );
                     
@@ -2783,7 +2783,7 @@ IDE_RC rpdMeta::buildPartitonInfo(smiStatement * aSmiStmt,
                 }
             }
         
-            // list¸¦ ±¸¼ºÇÑ´Ù.
+            // listë¥¼ êµ¬ì„±í•œë‹¤.
             for ( i = 0; i < sIndexTableCount - 1; i++ )
             {
                 sIndexTableRef[i].next = & (sIndexTableRef[i + 1]);
@@ -2935,9 +2935,9 @@ IDE_RC rpdMeta::buildIndexInfo(RP_IN     qcmTableInfo *aTableInfo,
         (*aIndices)[sIC].indexTypeId = aTableInfo->indices[sIC].indexTypeId;
         (*aIndices)[sIC].keyColCount = aTableInfo->indices[sIC].keyColCount;
 
-        /* ÇöÀç Partitioned TableÀº Global Unique Index¸¦ Á¦°øÇÏÁö ¾Ê´Â´Ù.
-         * ÃßÈÄ Global Unique Index¸¦ Á¦°øÇÏ¸é,
-         * RP Protocol¿¡ Local Unique Index ¿©ºÎ¸¦ Ãß°¡ÇØ¾ß ÇÑ´Ù.
+        /* í˜„ì¬ Partitioned Tableì€ Global Unique Indexë¥¼ ì œê³µí•˜ì§€ ì•ŠëŠ”ë‹¤.
+         * ì¶”í›„ Global Unique Indexë¥¼ ì œê³µí•˜ë©´,
+         * RP Protocolì— Local Unique Index ì—¬ë¶€ë¥¼ ì¶”ê°€í•´ì•¼ í•œë‹¤.
          */
         (*aIndices)[sIC].isUnique = ((aTableInfo->indices[sIC].isUnique == ID_TRUE) ||
                                      (aTableInfo->indices[sIC].isLocalUnique == ID_TRUE))
@@ -3044,7 +3044,7 @@ IDE_RC rpdMeta::buildOldItemsInfo(smiStatement * aSmiStmt)
     SInt           sOldTableIndex;
     SInt           sIdxIndex;
 
-    // ItemÀÇ ¼ö¿¡ ÀÌ»óÀÌ ¾ø´ÂÁö È®ÀÎÇÑ´Ù.
+    // Itemì˜ ìˆ˜ì— ì´ìƒì´ ì—†ëŠ”ì§€ í™•ì¸í•œë‹¤.
     IDE_TEST(rpdCatalog::getReplOldItemsCount(aSmiStmt,
                                            mReplication.mRepName,
                                            &sItemRowCount)
@@ -3053,7 +3053,7 @@ IDE_RC rpdMeta::buildOldItemsInfo(smiStatement * aSmiStmt)
     IDE_TEST_RAISE(mReplication.mItemCount != (SInt)sItemRowCount,
                    ERR_MISMATCH_OLD_ITEMS_COUNT);
 
-    // SYS_REPL_ITEMS_¿¡¼­ ¾òÀ» ¼ö ¾ø´Â °ú°ÅÀÇ Á¤º¸¸¦ ¾ò´Â´Ù.
+    // SYS_REPL_ITEMS_ì—ì„œ ì–»ì„ ìˆ˜ ì—†ëŠ” ê³¼ê±°ì˜ ì •ë³´ë¥¼ ì–»ëŠ”ë‹¤.
     IDU_FIT_POINT_RAISE( "rpdMeta::buildOldItemsInfo::calloc::ItemArray",
                           ERR_MEMORY_ALLOC_ITEM_ARRAY );
     IDE_TEST_RAISE(iduMemMgr::calloc(IDU_MEM_RP_RPD_META,
@@ -3073,10 +3073,10 @@ IDE_RC rpdMeta::buildOldItemsInfo(smiStatement * aSmiStmt)
     {
         sMetaItem = &mItems[sTableIndex];
 
-        // Partition Á¤º¸´Â ¹Ù²îÁö ¾ÊÀ¸¹Ç·Î, Meta¸¦ ±¸¼º ½Ã ÇöÀçÀÇ °ÍÀ» ¾ò´Â´Ù.
+        // Partition ì •ë³´ëŠ” ë°”ë€Œì§€ ì•Šìœ¼ë¯€ë¡œ, Metaë¥¼ êµ¬ì„± ì‹œ í˜„ì¬ì˜ ê²ƒì„ ì–»ëŠ”ë‹¤.
         IDE_TEST( sMetaItem->lockReplItem( aSmiStmt->getTrans(),
                                            aSmiStmt,
-                                           SMI_TBSLV_DDL_DML, // TBS Validation ¿É¼Ç
+                                           SMI_TBSLV_DDL_DML, // TBS Validation ì˜µì…˜
                                            SMI_TABLE_LOCK_IS,
                                            ( ( smiGetDDLLockTimeOut() == -1 ) ?
                                              ID_ULONG_MAX :
@@ -3089,7 +3089,7 @@ IDE_RC rpdMeta::buildOldItemsInfo(smiStatement * aSmiStmt)
         IDE_TEST(buildPartitonInfo(aSmiStmt, sItemInfo, sMetaItem, SMI_TBSLV_DDL_DML)
                  != IDE_SUCCESS);
 
-        // SYS_REPL_OLD_ITEMS_¿¡¼­ ÇÊ¿äÇÑ Á¤º¸¸¦ ¾ò´Â´Ù.
+        // SYS_REPL_OLD_ITEMS_ì—ì„œ í•„ìš”í•œ ì •ë³´ë¥¼ ì–»ëŠ”ë‹¤.
         for(sOldTableIndex = 0;
             sOldTableIndex < mReplication.mItemCount;
             sOldTableIndex++)
@@ -3101,21 +3101,21 @@ IDE_RC rpdMeta::buildOldItemsInfo(smiStatement * aSmiStmt)
                (idlOS::strcmp(sItemArr[sOldTableIndex].mPartName,
                               sMetaItem->mItem.mLocalPartname) == 0))
             {
-                // DDL ½ÇÇà ½Ã Table OID°¡ º¯°æµÉ ¼ö ÀÖÀ¸¹Ç·Î,
-                // Meta¸¦ ±¸¼º ½Ã Table OID´Â °ú°ÅÀÇ °ÍÀ» »ç¿ëÇÑ´Ù.
+                // DDL ì‹¤í–‰ ì‹œ Table OIDê°€ ë³€ê²½ë  ìˆ˜ ìˆìœ¼ë¯€ë¡œ,
+                // Metaë¥¼ êµ¬ì„± ì‹œ Table OIDëŠ” ê³¼ê±°ì˜ ê²ƒì„ ì‚¬ìš©í•œë‹¤.
                 sMetaItem->mItem.mTableOID  = (ULong)sItemArr[sOldTableIndex].mTableOID;
                 sMetaItem->mPKIndex.indexId = sItemArr[sOldTableIndex].mPKIndexID;
                 break;
             }
         }
 
-        // Column Á¤º¸¸¦ ¾ò´Â´Ù.
+        // Column ì •ë³´ë¥¼ ì–»ëŠ”ë‹¤.
         IDE_TEST(buildOldColumnsInfo(aSmiStmt, sMetaItem) != IDE_SUCCESS);
 
-        // Index Á¤º¸¸¦ ¾ò´Â´Ù.
+        // Index ì •ë³´ë¥¼ ì–»ëŠ”ë‹¤.
         IDE_TEST(buildOldIndicesInfo(aSmiStmt, sMetaItem) != IDE_SUCCESS);
 
-        // Primary Key Column Count¸¦ ¾ò´Â´Ù.
+        // Primary Key Column Countë¥¼ ì–»ëŠ”ë‹¤.
         for(sIdxIndex = 0; sIdxIndex < sMetaItem->mIndexCount; sIdxIndex++)
         {
             if(sMetaItem->mPKIndex.indexId == sMetaItem->mIndices[sIdxIndex].indexId)
@@ -3175,7 +3175,7 @@ IDE_RC rpdMeta::buildOldColumnsInfo(smiStatement * aSmiStmt,
 
     aMetaItem->mColumns = NULL;
 
-    // Column Á¤º¸¸¦ À§ÇÑ ¸Ş¸ğ¸®¸¦ ÇÒ´çÇÑ´Ù.
+    // Column ì •ë³´ë¥¼ ìœ„í•œ ë©”ëª¨ë¦¬ë¥¼ í• ë‹¹í•œë‹¤.
     IDE_TEST(rpdCatalog::getReplOldColumnsCount(aSmiStmt,
                                              aMetaItem->mItem.mRepName,
                                              aMetaItem->mItem.mTableOID,
@@ -3201,7 +3201,7 @@ IDE_RC rpdMeta::buildOldColumnsInfo(smiStatement * aSmiStmt,
                                      IDU_MEM_IMMEDIATE)
                    != IDE_SUCCESS, ERR_MEMORY_ALLOC_COLUMN_ARRAY);
 
-    // Column Á¤º¸¸¦ ¾ò´Â´Ù.
+    // Column ì •ë³´ë¥¼ ì–»ëŠ”ë‹¤.
     IDE_TEST(rpdCatalog::selectReplOldColumns(aSmiStmt,
                                            aMetaItem->mItem.mRepName,
                                            aMetaItem->mItem.mTableOID,
@@ -3240,7 +3240,7 @@ IDE_RC rpdMeta::buildOldColumnsInfo(smiStatement * aSmiStmt,
                 sColumn->mColumn.column.colSpace = sOldColumn->mSMColSpace;
 
 
-                //BUG-26891 : encPecision , ¹× º¸¾È ÄÃ·³ Á¤º¸ ±¸ÇÏ±â
+                //BUG-26891 : encPecision , ë° ë³´ì•ˆ ì»¬ëŸ¼ ì •ë³´ êµ¬í•˜ê¸°
                 if( (sColumn->mColumn.type.dataTypeId == MTD_ECHAR_ID) ||
                     (sColumn->mColumn.type.dataTypeId == MTD_EVARCHAR_ID) )
                 {
@@ -3267,7 +3267,7 @@ IDE_RC rpdMeta::buildOldColumnsInfo(smiStatement * aSmiStmt,
                 }
 
                 // PROJ-1705
-                // mtdValue¸¦ ¸¸µé±â À§ÇØ mtdModuleÁ¤º¸°¡ ÇÊ¿äÇÏ´Ù.
+                // mtdValueë¥¼ ë§Œë“¤ê¸° ìœ„í•´ mtdModuleì •ë³´ê°€ í•„ìš”í•˜ë‹¤.
                 IDU_FIT_POINT_RAISE( "rpdMeta::buildOldColumnsInfo::Erratic::rpERR_ABORT_GET_MODULE",
                                      ERR_GET_MODULE );
                 IDE_TEST_RAISE(mtd::moduleById(&sColumn->mColumn.module,
@@ -3284,7 +3284,7 @@ IDE_RC rpdMeta::buildOldColumnsInfo(smiStatement * aSmiStmt,
 
                 /* BUG-35210 Function-based Index */
                 sColumn->mQPFlag                 = sOldColumn->mQPFlag;
-                /* ¸Ş¸ğ¸®¸¦ Àç ÇÒ´çÇÏÁö ¾Ê°í Æ÷ÀÎÅÍ¸¸ ¿¬°á ½ÃÄÑÁØ´Ù. */
+                /* ë©”ëª¨ë¦¬ë¥¼ ì¬ í• ë‹¹í•˜ì§€ ì•Šê³  í¬ì¸í„°ë§Œ ì—°ê²° ì‹œì¼œì¤€ë‹¤. */
                 sColumn->mFuncBasedIdxStr        = sOldColumn->mDefaultValStr;
 
                 if ( ( sColumn->mColumn.column.flag & SMI_COLUMN_COMPRESSION_MASK ) == SMI_COLUMN_COMPRESSION_TRUE )
@@ -3373,7 +3373,7 @@ IDE_RC rpdMeta::buildOldIndicesInfo(smiStatement * aSmiStmt,
 
     aMetaItem->mIndices = NULL;
 
-    // Index Á¤º¸¸¦ À§ÇÑ ¸Ş¸ğ¸®¸¦ ÇÒ´çÇÑ´Ù.
+    // Index ì •ë³´ë¥¼ ìœ„í•œ ë©”ëª¨ë¦¬ë¥¼ í• ë‹¹í•œë‹¤.
     IDE_TEST(rpdCatalog::getReplOldIndexCount(aSmiStmt,
                                            aMetaItem->mItem.mRepName,
                                            aMetaItem->mItem.mTableOID,
@@ -3399,7 +3399,7 @@ IDE_RC rpdMeta::buildOldIndicesInfo(smiStatement * aSmiStmt,
                                      IDU_MEM_IMMEDIATE)
                    != IDE_SUCCESS, ERR_MEMORY_ALLOC_INDEX_ARRAY);
     
-    // Index Á¤º¸¸¦ ¾ò´Â´Ù.
+    // Index ì •ë³´ë¥¼ ì–»ëŠ”ë‹¤.
     IDE_TEST(rpdCatalog::selectReplOldIndices(aSmiStmt,
                                            aMetaItem->mItem.mRepName,
                                            aMetaItem->mItem.mTableOID,
@@ -3422,7 +3422,7 @@ IDE_RC rpdMeta::buildOldIndicesInfo(smiStatement * aSmiStmt,
         sIndex->isLocalUnique = sOldIndex->mIsLocalUnique;
         sIndex->isRange       = sOldIndex->mIsRange;
 
-        // Index Column Á¤º¸¸¦ À§ÇÑ ¸Ş¸ğ¸®¸¦ ÇÒ´çÇÑ´Ù.
+        // Index Column ì •ë³´ë¥¼ ìœ„í•œ ë©”ëª¨ë¦¬ë¥¼ í• ë‹¹í•œë‹¤.
         IDE_TEST(rpdCatalog::getReplOldIndexColCount(aSmiStmt,
                                                   aMetaItem->mItem.mRepName,
                                                   aMetaItem->mItem.mTableOID,
@@ -3458,7 +3458,7 @@ IDE_RC rpdMeta::buildOldIndicesInfo(smiStatement * aSmiStmt,
                                          IDU_MEM_IMMEDIATE)
                        != IDE_SUCCESS, ERR_MEMORY_ALLOC_INDEX_COL_ARRAY);
 
-        // Index Column Á¤º¸¸¦ ¾ò´Â´Ù.
+        // Index Column ì •ë³´ë¥¼ ì–»ëŠ”ë‹¤.
         IDE_TEST(rpdCatalog::selectReplOldIndexCols(aSmiStmt,
                                                  aMetaItem->mItem.mRepName,
                                                  aMetaItem->mItem.mTableOID,
@@ -3640,7 +3640,7 @@ IDE_RC rpdMeta::buildOldCheckInfo( smiStatement * aSmiStmt,
             sChecks[i].constraintColumn[j] = sCheckColumnMeta[j].mColumnID;
         }
 
-        /* Memory °ø°£¸¸ ÀÌ¾î¿Â´Ù. */
+        /* Memory ê³µê°„ë§Œ ì´ì–´ì˜¨ë‹¤. */
         sChecks[i].checkCondition = sCheckMeta[i].mCondition;
         sCheckMeta[i].mCondition = NULL;
     }
@@ -3742,26 +3742,26 @@ IDE_RC rpdMeta::recvMeta( cmiProtocolContext * aProtocolContext,
     SInt        sIC;             // Index Count 
     UInt        sCheckIndex;     // Check Index
 
-    /* MetaÀÇ Replication Á¤º¸ ÃÊ±âÈ­ */
+    /* Metaì˜ Replication ì •ë³´ ì´ˆê¸°í™” */
     idlOS::memset(&mReplication, 0, ID_SIZEOF(rpdReplications));
 
-    /* Åë½ÅÀ» ÅëÇØ¼­ Replication Á¤º¸(rpdReplications)¸¦ ¹Ş´Â´Ù. */
+    /* í†µì‹ ì„ í†µí•´ì„œ Replication ì •ë³´(rpdReplications)ë¥¼ ë°›ëŠ”ë‹¤. */
     IDE_TEST(rpnComm::recvMetaRepl(aProtocolContext,
                                    &mReplication,
                                    RPU_REPLICATION_RECEIVE_TIMEOUT)
              != IDE_SUCCESS);
 
-    /* recvMetaRepl¿¡¼­ mXSN¼ö½ÅÇÏÁö ¾ÊÀ¸¹Ç·Î SM_SN_NULL·Î ¼³Á¤ÇÑ´Ù.*/
+    /* recvMetaReplì—ì„œ mXSNìˆ˜ì‹ í•˜ì§€ ì•Šìœ¼ë¯€ë¡œ SM_SN_NULLë¡œ ì„¤ì •í•œë‹¤.*/
     mReplication.mXSN = SM_SN_NULL;
 
-    /* ÇöÀç »ó´ë¹æÀÇ ¿äÃ»ÀÌ Wakeup Peer SenderÀÎÁö¸¦ È®ÀÎ */
+    /* í˜„ì¬ ìƒëŒ€ë°©ì˜ ìš”ì²­ì´ Wakeup Peer Senderì¸ì§€ë¥¼ í™•ì¸ */
     if((rpdMeta::isRpWakeupPeerSender(&mReplication) == ID_TRUE) ||
        (rpdMeta::isRpRecoveryRequest(&mReplication) == ID_TRUE))
     {
         goto exit_success;
     }
 
-    /* ReplicationÀÇ Item °³¼ö¿¡ µû¶ó¼­, Item ¸Ş¸ğ¸®¸¦ ÇÒ´ç */
+    /* Replicationì˜ Item ê°œìˆ˜ì— ë”°ë¼ì„œ, Item ë©”ëª¨ë¦¬ë¥¼ í• ë‹¹ */
     if(mReplication.mItemCount != 0)
     {
         IDU_FIT_POINT_RAISE( "rpdMeta::recvMeta::calloc::Items",
@@ -3775,23 +3775,23 @@ IDE_RC rpdMeta::recvMeta( cmiProtocolContext * aProtocolContext,
     }
     else
     {
-        // Item count°¡ 0ÀÎ °æ¿ì´Â ½ÇÁ¦·Î ¹ß»ıÇÒ ¼ö ¾øÀ½.
-        // ±×·¯³ª, ½ÇÁ¦·Î ÀÌ °æ¿ì°¡ µé¾î¿À¸é È£ÃâÇÏ´Â ´Ü°è¿¡¼­ FAILURE Ã³¸®µÊ
+        // Item countê°€ 0ì¸ ê²½ìš°ëŠ” ì‹¤ì œë¡œ ë°œìƒí•  ìˆ˜ ì—†ìŒ.
+        // ê·¸ëŸ¬ë‚˜, ì‹¤ì œë¡œ ì´ ê²½ìš°ê°€ ë“¤ì–´ì˜¤ë©´ í˜¸ì¶œí•˜ëŠ” ë‹¨ê³„ì—ì„œ FAILURE ì²˜ë¦¬ë¨
         mItems = (rpdMetaItem*)NULL;
     }
 
-    /* ReplicationÀÌ °á·Á ÀÖ´Â Å×ÀÌºí(Item)ÀÇ ¼ıÀÚ¸¸Å­ ¹İº¹ÇÏ¸ç Meta¸¦ ¹Ş´Â´Ù. */
+    /* Replicationì´ ê²°ë ¤ ìˆëŠ” í…Œì´ë¸”(Item)ì˜ ìˆ«ìë§Œí¼ ë°˜ë³µí•˜ë©° Metaë¥¼ ë°›ëŠ”ë‹¤. */
     for(sTC = 0; sTC < mReplication.mItemCount; sTC++)
     {
         mItems[sTC].mTsFlag      = NULL;
 
-        /* Å×ÀÌºí Á¤º¸¸¦ ¹ŞÀ½ */
+        /* í…Œì´ë¸” ì •ë³´ë¥¼ ë°›ìŒ */
         IDE_TEST(rpnComm::recvMetaReplTbl(aProtocolContext,
                                           &mItems[sTC],
                                           RPU_REPLICATION_RECEIVE_TIMEOUT)
                  != IDE_SUCCESS);
 
-        /* Column °³¼ö¸¸Å­, Item ³»¿¡¼­ Column ¸Ş¸ğ¸® ÇÒ´ç */
+        /* Column ê°œìˆ˜ë§Œí¼, Item ë‚´ì—ì„œ Column ë©”ëª¨ë¦¬ í• ë‹¹ */
         IDU_FIT_POINT_RAISE( "rpdMeta::recvMeta::calloc::Columns",
                               ERR_MEMORY_ALLOC_COLUMNS );
         IDE_TEST_RAISE(iduMemMgr::calloc(IDU_MEM_RP_RPD_META,
@@ -3801,17 +3801,17 @@ IDE_RC rpdMeta::recvMeta( cmiProtocolContext * aProtocolContext,
                                          IDU_MEM_IMMEDIATE)
                        != IDE_SUCCESS, ERR_MEMORY_ALLOC_COLUMNS);
 
-        /* Column °³¼ö¸¸Å­ ¹İº¹ÇÏ¸ç, °¢ ColumnÀÇ Á¤º¸¸¦ ¹Ş´Â´Ù. */
+        /* Column ê°œìˆ˜ë§Œí¼ ë°˜ë³µí•˜ë©°, ê° Columnì˜ ì •ë³´ë¥¼ ë°›ëŠ”ë‹¤. */
         for(sCC = 0; sCC < mItems[sTC].mColCount; sCC++)
         {
-            /* Meta¿¡¼­ ±¸¼ºÇÑ Column Á¤º¸¸¦ ¹Ş´Â´Ù. */
+            /* Metaì—ì„œ êµ¬ì„±í•œ Column ì •ë³´ë¥¼ ë°›ëŠ”ë‹¤. */
             IDE_TEST(rpnComm::recvMetaReplCol(aProtocolContext,
                                               &mItems[sTC].mColumns[sCC],
                                               RPU_REPLICATION_RECEIVE_TIMEOUT)
                      != IDE_SUCCESS);
         }
 
-        /* Index °³¼ö¸¸Å­, Item ³»¿¡¼­ memory ÇÒ´ç */
+        /* Index ê°œìˆ˜ë§Œí¼, Item ë‚´ì—ì„œ memory í• ë‹¹ */
         IDU_FIT_POINT_RAISE( "rpdMeta::recvMeta::calloc::Indices",
                               ERR_MEMORY_ALLOC_INDICES );
         IDE_TEST_RAISE(iduMemMgr::calloc(IDU_MEM_RP_RPD_META,
@@ -3821,10 +3821,10 @@ IDE_RC rpdMeta::recvMeta( cmiProtocolContext * aProtocolContext,
                                          IDU_MEM_IMMEDIATE)
                        != IDE_SUCCESS, ERR_MEMORY_ALLOC_INDICES);
 
-        /* Index °³¼ö¸¸Å­ ¹İº¹ÇÏ¸ç, °¢ IndexÀÇ Á¤º¸¸¦ ¹Ş´Â´Ù. */
+        /* Index ê°œìˆ˜ë§Œí¼ ë°˜ë³µí•˜ë©°, ê° Indexì˜ ì •ë³´ë¥¼ ë°›ëŠ”ë‹¤. */
         for(sIC = 0; sIC < mItems[sTC].mIndexCount; sIC++)
         {
-            /* Meta¿¡¼­ ±¸¼ºÇÑ Index Á¤º¸¸¦ ¹Ş´Â´Ù. */
+            /* Metaì—ì„œ êµ¬ì„±í•œ Index ì •ë³´ë¥¼ ë°›ëŠ”ë‹¤. */
             IDE_TEST(rpnComm::recvMetaReplIdx(aProtocolContext,
                                               &mItems[sTC].mIndices[sIC],
                                               RPU_REPLICATION_RECEIVE_TIMEOUT)
@@ -4053,22 +4053,22 @@ IDE_RC rpdMeta::sendMeta( void                  * aHBTResource,
     SInt  sIC;                   // Index Count
     UInt  sCheckIndex = 0;
 
-    /* Åë½Å ProtocolContextÀ» ÅëÇØ¼­ Replication Á¤º¸(rpdReplications)¸¦ Àü¼ÛÇÑ´Ù. */
+    /* í†µì‹  ProtocolContextì„ í†µí•´ì„œ Replication ì •ë³´(rpdReplications)ë¥¼ ì „ì†¡í•œë‹¤. */
     IDE_TEST( rpnComm::sendMetaRepl( aHBTResource,
                                      aProtocolContext, 
                                      &mReplication )
              != IDE_SUCCESS );
 
-    /* ReplicationÀÌ °á·Á ÀÖ´Â Å×ÀÌºí(Item)ÀÇ ¼ıÀÚ¸¸Å­ ¹İº¹ÇÏ¸ç Meta¸¦ Àü¼Û */
+    /* Replicationì´ ê²°ë ¤ ìˆëŠ” í…Œì´ë¸”(Item)ì˜ ìˆ«ìë§Œí¼ ë°˜ë³µí•˜ë©° Metaë¥¼ ì „ì†¡ */
     for(sTC = 0; sTC < mReplication.mItemCount; sTC ++)
     {
-        /* Å×ÀÌºí Á¤º¸¸¦ Àü¼Û */
+        /* í…Œì´ë¸” ì •ë³´ë¥¼ ì „ì†¡ */
         IDE_TEST( rpnComm::sendMetaReplTbl( aHBTResource,
                                             aProtocolContext, 
                                             &mItems[sTC] )
                   != IDE_SUCCESS );
 
-        /* Column °³¼ö¸¸Å­ ¹İº¹ÇÏ¸ç, °¢ ColumnÀÇ Á¤º¸¸¦ Àü¼ÛÇÑ´Ù. */
+        /* Column ê°œìˆ˜ë§Œí¼ ë°˜ë³µí•˜ë©°, ê° Columnì˜ ì •ë³´ë¥¼ ì „ì†¡í•œë‹¤. */
         for(sCC = 0; sCC < mItems[sTC].mColCount; sCC ++)
         {
             IDE_TEST( rpnComm::sendMetaReplCol( aHBTResource,
@@ -4077,7 +4077,7 @@ IDE_RC rpdMeta::sendMeta( void                  * aHBTResource,
                       != IDE_SUCCESS );
         }
 
-        /* Index °³¼ö¸¸Å­ ¹İº¹ÇÏ¸ç, °¢ IndexÀÇ Á¤º¸¸¦ Àü¼ÛÇÑ´Ù. */
+        /* Index ê°œìˆ˜ë§Œí¼ ë°˜ë³µí•˜ë©°, ê° Indexì˜ ì •ë³´ë¥¼ ì „ì†¡í•œë‹¤. */
         for(sIC = 0; sIC < mItems[sTC].mIndexCount; sIC ++)
         {
             IDE_TEST( rpnComm::sendMetaReplIdx( aHBTResource,
@@ -4085,7 +4085,7 @@ IDE_RC rpdMeta::sendMeta( void                  * aHBTResource,
                                                 &mItems[sTC].mIndices[sIC] )
                       != IDE_SUCCESS );
 
-            /* IndexÀÇ ¼Ó¼º Á¤º¸¸¦ Àü¼ÛÇÑ´Ù. (CID, Flag) */
+            /* Indexì˜ ì†ì„± ì •ë³´ë¥¼ ì „ì†¡í•œë‹¤. (CID, Flag) */
             for(sCC = 0; sCC < (SInt)mItems[sTC].mIndices[sIC].keyColCount; sCC ++)
             {
                 IDE_TEST( rpnComm::sendMetaReplIdxCol(
@@ -4309,7 +4309,7 @@ IDE_RC rpdMeta::insertOldMetaItem(smiStatement * aSmiStmt,
     sRepName  = aItem->mItem.mRepName;
     sTableOID = aItem->mItem.mTableOID;
 
-    // Item Á¤º¸¸¦ ¸ŞÅ¸ Å×ÀÌºí¿¡ º¸°üÇÑ´Ù.
+    // Item ì •ë³´ë¥¼ ë©”íƒ€ í…Œì´ë¸”ì— ë³´ê´€í•œë‹¤.
     sItemMeta.mTableOID = (vULong)sTableOID;
 
     idlOS::memcpy((void *)sItemMeta.mUserName,
@@ -4329,7 +4329,7 @@ IDE_RC rpdMeta::insertOldMetaItem(smiStatement * aSmiStmt,
                                         &sItemMeta)
              != IDE_SUCCESS);
 
-    // Column Á¤º¸¸¦ ¸ŞÅ¸ Å×ÀÌºí¿¡ º¸°üÇÑ´Ù.
+    // Column ì •ë³´ë¥¼ ë©”íƒ€ í…Œì´ë¸”ì— ë³´ê´€í•œë‹¤.
     for(sColumnIndex = 0; sColumnIndex < aItem->mColCount; sColumnIndex++)
     {
         sColumn = &aItem->mColumns[sColumnIndex];
@@ -4344,7 +4344,7 @@ IDE_RC rpdMeta::insertOldMetaItem(smiStatement * aSmiStmt,
         sColumnMeta.mMTPrecision  = sColumn->mColumn.precision;
         sColumnMeta.mMTScale      = sColumn->mColumn.scale;
 
-        //BUG-26891 : encPrecision , Policy ÀúÀå
+        //BUG-26891 : encPrecision , Policy ì €ì¥
         sColumnMeta.mMTEncPrecision = sColumn->mColumn.encPrecision;
         idlOS::memcpy((void *)sColumnMeta.mMTPolicy, 
                       (const void *)sColumn->mColumn.policy, 
@@ -4367,7 +4367,7 @@ IDE_RC rpdMeta::insertOldMetaItem(smiStatement * aSmiStmt,
                  != IDE_SUCCESS);
     }
 
-    // Check Constrain Á¤º¸¸¦ ÀúÀåÇÑ´Ù.
+    // Check Constrain ì •ë³´ë¥¼ ì €ì¥í•œë‹¤.
     for ( i = 0; i < aItem->mCheckCount; i++ )
     {
         sCheck = &(aItem->mChecks[i]);
@@ -4391,7 +4391,7 @@ IDE_RC rpdMeta::insertOldMetaItem(smiStatement * aSmiStmt,
         }
     }
 
-    // Index Á¤º¸¸¦ ¸ŞÅ¸ Å×ÀÌºí¿¡ º¸°üÇÑ´Ù.
+    // Index ì •ë³´ë¥¼ ë©”íƒ€ í…Œì´ë¸”ì— ë³´ê´€í•œë‹¤.
     for(sIdxIndex = 0; sIdxIndex < aItem->mIndexCount; sIdxIndex++)
     {
         sIndex = &aItem->mIndices[sIdxIndex];
@@ -4413,7 +4413,7 @@ IDE_RC rpdMeta::insertOldMetaItem(smiStatement * aSmiStmt,
                                              &sIndexMeta)
                  != IDE_SUCCESS);
 
-        // IndexÀÇ Key Column Á¤º¸¸¦ ¸ŞÅ¸ Å×ÀÌºí¿¡ º¸°üÇÑ´Ù.
+        // Indexì˜ Key Column ì •ë³´ë¥¼ ë©”íƒ€ í…Œì´ë¸”ì— ë³´ê´€í•œë‹¤.
         for(sIdxColIndex = 0;
             sIdxColIndex < sIndex->keyColCount;
             sIdxColIndex++)
@@ -4616,13 +4616,13 @@ IDE_RC rpdMeta::removeOldMetaRepl(smiStatement * aSmiStmt,
 }
 
 /*******************************************************************************
- * Table Meta Log Record´Â
+ * Table Meta Log RecordëŠ”
  *  smiTableMetaLog | Log Body | Log Tail
- *·Î ±¸¼ºµÈ´Ù.
+ *ë¡œ êµ¬ì„±ëœë‹¤.
  *
- * Log Body´Â
+ * Log BodyëŠ”
  *  Column Count | Column                                     | Column defaultValueStr length | 
- *  (UInt)       | (smiColumnMeta ¿¡¼­*mDefaultValStr¸¦ Á¦¿Ü) | (UInt)                        |
+ *  (UInt)       | (smiColumnMeta ì—ì„œ*mDefaultValStrë¥¼ ì œì™¸) | (UInt)                        |
  *
  *  | Column defaultValueStr length | Column defaultValueStr | ..
  *  | (UInt)                        |                        | .. 
@@ -4636,17 +4636,17 @@ IDE_RC rpdMeta::removeOldMetaRepl(smiStatement * aSmiStmt,
  *  | Index Count | Index |...
  *  | (UInt)      |       |
  *
- * ·Î ±¸¼ºµÈ´Ù.
+ * ë¡œ êµ¬ì„±ëœë‹¤.
  *
- * Index´Â
+ * IndexëŠ”
  * Index Header   | Key Column Count | Key Column           | ...
  * (smiIndexMeta) | (UInt)           | (smiIndexColumnMeta) |
- * ·Î ±¸¼ºµÈ´Ù.
+ * ë¡œ êµ¬ì„±ëœë‹¤.
  * 
- * ÁÖÀÇ ) Column Á¤º¸ÀÇ °æ¿ì LOG Record ÀÇ BODY ¿¡ ÀúÀåÇÒ¶§
- *        ¸Ç ¸¶Áö¸· ¹®ÀÚ¿­ Æ÷ÀÎÅÍ´Â Á¦¿Ü ÇÏ°í º¹ÇÏ°í
- *        ¸Ç ¸¶Áö¸· ¹®ÀÚ¿­ Æ÷ÀÎÅÍÀÇ °æ¿ì LOG RecordÀÇ BODY ¿¡ ¹®ÀÚ¿­À»
- *        Á÷Á¢ º¹»çÇØ ÁØ´Ù.
+ * ì£¼ì˜ ) Column ì •ë³´ì˜ ê²½ìš° LOG Record ì˜ BODY ì— ì €ì¥í• ë•Œ
+ *        ë§¨ ë§ˆì§€ë§‰ ë¬¸ìì—´ í¬ì¸í„°ëŠ” ì œì™¸ í•˜ê³  ë³µí•˜ê³ 
+ *        ë§¨ ë§ˆì§€ë§‰ ë¬¸ìì—´ í¬ì¸í„°ì˜ ê²½ìš° LOG Recordì˜ BODY ì— ë¬¸ìì—´ì„
+ *        ì§ì ‘ ë³µì‚¬í•´ ì¤€ë‹¤.
  ******************************************************************************/
 IDE_RC rpdMeta::writeTableMetaLog(void        * aQcStatement,
                                   smOID         aOldTableOID,
@@ -4691,7 +4691,7 @@ IDE_RC rpdMeta::writeTableMetaLog(void        * aQcStatement,
                                       sItemMeta.mUserName)
              != IDE_SUCCESS);
 
-        // Table Meta Log Record¸¦ ±â·ÏÇÑ´Ù.
+        // Table Meta Log Recordë¥¼ ê¸°ë¡í•œë‹¤.
         IDE_TEST(smiTable::writeTableMetaLog(sSmiStmt->getTrans(),
                                              &sItemMeta,
                                              NULL,
@@ -4701,13 +4701,13 @@ IDE_RC rpdMeta::writeTableMetaLog(void        * aQcStatement,
         return IDE_SUCCESS;
     }
 
-    /* BUG-42817 Partitioned Table LockÀ» Àâ°í Partition LockÀ» Àâ¾Æ¾ß ÇÑ´Ù.
-     *  DDL¿¡¼­ LockÀ» ÀÌ¹Ì È¹µæÇÑ »óÅÂ¿¡¼­ È£ÃâÇÑ´Ù. µû¶ó¼­, ¿©±â¿¡¼­´Â LockÀ» ÀâÁö ¾Ê´Â´Ù.
+    /* BUG-42817 Partitioned Table Lockì„ ì¡ê³  Partition Lockì„ ì¡ì•„ì•¼ í•œë‹¤.
+     *  DDLì—ì„œ Lockì„ ì´ë¯¸ íšë“í•œ ìƒíƒœì—ì„œ í˜¸ì¶œí•œë‹¤. ë”°ë¼ì„œ, ì—¬ê¸°ì—ì„œëŠ” Lockì„ ì¡ì§€ ì•ŠëŠ”ë‹¤.
      */
 
     sItemInfo = (qcmTableInfo *)rpdCatalog::rpdGetTableTempInfo(smiGetTable( aNewTableOID ));
 
-    // Item Meta¸¦ ±¸¼ºÇÑ´Ù.
+    // Item Metaë¥¼ êµ¬ì„±í•œë‹¤.
     idlOS::memset(&sItemMeta, 0, ID_SIZEOF(smiTableMeta));
     sItemMeta.mTableOID = (vULong)aNewTableOID;
     IDE_TEST(qciMisc::getUserName(aQcStatement,
@@ -4723,8 +4723,8 @@ IDE_RC rpdMeta::writeTableMetaLog(void        * aQcStatement,
                                              & sTableHandle )
                   != IDE_SUCCESS );
 
-        /* BUG-42817 Partitioned Table LockÀ» Àâ°í Partition LockÀ» Àâ¾Æ¾ß ÇÑ´Ù.
-         *  DDL¿¡¼­ LockÀ» ÀÌ¹Ì È¹µæÇÑ »óÅÂ¿¡¼­ È£ÃâÇÑ´Ù. µû¶ó¼­, ¿©±â¿¡¼­´Â LockÀ» ÀâÁö ¾Ê´Â´Ù.
+        /* BUG-42817 Partitioned Table Lockì„ ì¡ê³  Partition Lockì„ ì¡ì•„ì•¼ í•œë‹¤.
+         *  DDLì—ì„œ Lockì„ ì´ë¯¸ íšë“í•œ ìƒíƒœì—ì„œ í˜¸ì¶œí•œë‹¤. ë”°ë¼ì„œ, ì—¬ê¸°ì—ì„œëŠ” Lockì„ ì¡ì§€ ì•ŠëŠ”ë‹¤.
          */
 
         idlOS::memcpy((void *)sItemMeta.mTableName,
@@ -4751,7 +4751,7 @@ IDE_RC rpdMeta::writeTableMetaLog(void        * aQcStatement,
 
     sItemMeta.mOldTableOID = (vULong)aOldTableOID;
 
-    // Log BodyÀÇ ±æÀÌ¸¦ ±¸ÇÏ°í ¸Ş¸ğ¸®¸¦ ÇÒ´çÇÑ´Ù.
+    // Log Bodyì˜ ê¸¸ì´ë¥¼ êµ¬í•˜ê³  ë©”ëª¨ë¦¬ë¥¼ í• ë‹¹í•œë‹¤.
     sLogBodyLen = ID_SIZEOF(UInt)                                       // Column Count 
                 + ( RP_OLD_COLUMN_META_SIZE * sItemInfo->columnCount )  // Columns
                 + ( ID_SIZEOF(UInt) * sItemInfo->columnCount )          // defaultValueStr Length 
@@ -4761,7 +4761,7 @@ IDE_RC rpdMeta::writeTableMetaLog(void        * aQcStatement,
                 + (ID_SIZEOF(UInt) * sItemInfo->indexCount) ;           // Key Column Count
 
     /*
-     * Function-based Index¿¡¼­ »ç¿ëÇÏ´Â defaultValueStr ±æÀÌ °è»ê
+     * Function-based Indexì—ì„œ ì‚¬ìš©í•˜ëŠ” defaultValueStr ê¸¸ì´ ê³„ì‚°
      */
     for ( sColCount = 0; sColCount < sItemInfo->columnCount; sColCount++ )
     {
@@ -4778,7 +4778,7 @@ IDE_RC rpdMeta::writeTableMetaLog(void        * aQcStatement,
         }
     }
 
-    // Check Constraint Á¶°Ç Å©±â °è»ê 
+    // Check Constraint ì¡°ê±´ í¬ê¸° ê³„ì‚° 
     for ( i = 0; i < sItemInfo->checkCount; i++ )
     {
         // Name
@@ -4814,13 +4814,13 @@ IDE_RC rpdMeta::writeTableMetaLog(void        * aQcStatement,
                    != IDE_SUCCESS, ERR_MEMORY_ALLOC_LOG_BODY);
     idlOS::memset((void *)sLogBody, 0x00, (ULong)sLogBodyLen);
 
-    // Log Body ±¸¼º : Column Count
+    // Log Body êµ¬ì„± : Column Count
     idlOS::memcpy((void *)&sLogBody[sOffset],
                   (const void *)&sItemInfo->columnCount,
                   ID_SIZEOF(UInt));
     sOffset += ID_SIZEOF(UInt);
 
-    // Log Body ±¸¼º : Columns
+    // Log Body êµ¬ì„± : Columns
     for(sColCount = 0; sColCount < sItemInfo->columnCount; sColCount++)
     {
         sQPColumn = &sItemInfo->columns[sColCount];
@@ -4829,7 +4829,7 @@ IDE_RC rpdMeta::writeTableMetaLog(void        * aQcStatement,
 
         idlOS::memset(&sColumnMeta, 0, ID_SIZEOF(smiColumnMeta));
 
-        // Log Body ±¸¼º : Column
+        // Log Body êµ¬ì„± : Column
         idlOS::memcpy((void *)sColumnMeta.mName,
                       (const void *)sQPColumn->name,
                       SM_MAX_NAME_LEN + 1);
@@ -4840,7 +4840,7 @@ IDE_RC rpdMeta::writeTableMetaLog(void        * aQcStatement,
         sColumnMeta.mMTPrecision  = sMTColumn->precision;
         sColumnMeta.mMTScale      = sMTColumn->scale;
 
-        //BUG-26891 : Å×ÀÌºí ¸ŞÅ¸ ·Î±×¿¡ encPrecision, Policy ÀúÀå
+        //BUG-26891 : í…Œì´ë¸” ë©”íƒ€ ë¡œê·¸ì— encPrecision, Policy ì €ì¥
         sColumnMeta.mMTEncPrecision = sMTColumn->encPrecision;
         idlOS::memcpy((void *)sColumnMeta.mMTPolicy, 
                       (const void *)sMTColumn->policy, 
@@ -4937,19 +4937,19 @@ IDE_RC rpdMeta::writeTableMetaLog(void        * aQcStatement,
         sOffset += sCheckConditionLength;
     }
 
-    // Log Body ±¸¼º : Index Count
+    // Log Body êµ¬ì„± : Index Count
     idlOS::memcpy((void *)&sLogBody[sOffset],
                   (const void *)&sItemInfo->indexCount,
                   ID_SIZEOF(UInt));
     sOffset += ID_SIZEOF(UInt);
 
-    // Log Body ±¸¼º : Indices
+    // Log Body êµ¬ì„± : Indices
     for(sIndexCount = 0; sIndexCount < sItemInfo->indexCount; sIndexCount++)
     {
         sIndex = &sItemInfo->indices[sIndexCount];
         idlOS::memset(&sIndexMeta, 0, ID_SIZEOF(smiIndexMeta));
 
-        // Log Body ±¸¼º : Index
+        // Log Body êµ¬ì„± : Index
         sIndexMeta.mIndexID = sIndex->indexId;
         idlOS::memcpy((void *)sIndexMeta.mName,
                       (const void *)sIndex->name,
@@ -4965,20 +4965,20 @@ IDE_RC rpdMeta::writeTableMetaLog(void        * aQcStatement,
                       ID_SIZEOF(smiIndexMeta));
         sOffset += ID_SIZEOF(smiIndexMeta);
 
-        // Log Body ±¸¼º : Key Column Count
+        // Log Body êµ¬ì„± : Key Column Count
         idlOS::memcpy((void *)&sLogBody[sOffset],
                       (const void *)&sIndex->keyColCount,
                       ID_SIZEOF(UInt));
         sOffset += ID_SIZEOF(UInt);
 
-        // Log Body ±¸¼º : Key Columns
+        // Log Body êµ¬ì„± : Key Columns
         for(sIndexColCount = 0;
             sIndexColCount < sIndex->keyColCount;
             sIndexColCount++)
         {
             idlOS::memset(&sIndexColMeta, 0, ID_SIZEOF(smiIndexColumnMeta));
 
-            // Log Body ±¸¼º : Key Column
+            // Log Body êµ¬ì„± : Key Column
             sIndexColMeta.mID   = sIndex->keyColumns[sIndexColCount].column.id
                                 & SMI_COLUMN_ID_MASK;
             sIndexColMeta.mFlag = sIndex->keyColsFlag[sIndexColCount];
@@ -4993,14 +4993,14 @@ IDE_RC rpdMeta::writeTableMetaLog(void        * aQcStatement,
 
     IDE_DASSERT(sLogBodyLen == sOffset);
 
-    // Table Meta Log Record¸¦ ±â·ÏÇÑ´Ù.
+    // Table Meta Log Recordë¥¼ ê¸°ë¡í•œë‹¤.
     IDE_TEST(smiTable::writeTableMetaLog(sSmiStmt->getTrans(),
                                          &sItemMeta,
                                          (const void *)sLogBody,
                                          sLogBodyLen)
              != IDE_SUCCESS);
 
-    // Log Body¿¡ ÇÒ´çÇÑ ¸Ş¸ğ¸®¸¦ ÇØÁ¦ÇÑ´Ù.
+    // Log Bodyì— í• ë‹¹í•œ ë©”ëª¨ë¦¬ë¥¼ í•´ì œí•œë‹¤.
     (void)iduMemMgr::free((void *)sLogBody);
     sLogBody = NULL;
 
@@ -5050,18 +5050,18 @@ IDE_RC rpdMeta::updateOldTableInfo( smiStatement  * aSmiStmt,
     UInt                 j = 0;
 
 
-    /* Table Meta Cache¸¦ °»½ÅÇÑ´Ù. */
-    // ±âÁ¸¿¡ ÇÒ´çµÇ¾ú´ø ¸Ş¸ğ¸®¸¦ ÇØÁ¦ÇÑ´Ù. (SYS_REPL_ITEMS_ °ü·Ã Á¤º¸´Â Á¦¿Ü)
+    /* Table Meta Cacheë¥¼ ê°±ì‹ í•œë‹¤. */
+    // ê¸°ì¡´ì— í• ë‹¹ë˜ì—ˆë˜ ë©”ëª¨ë¦¬ë¥¼ í•´ì œí•œë‹¤. (SYS_REPL_ITEMS_ ê´€ë ¨ ì •ë³´ëŠ” ì œì™¸)
     aItemCache->freeMemory();
 
-    // Partition Á¤º¸¸¦ º¯°æÇÏ´Â DDLÀº ¾ÆÁ÷ Áö¿øÇÏÁö ¾Ê´Â´Ù.
+    // Partition ì •ë³´ë¥¼ ë³€ê²½í•˜ëŠ” DDLì€ ì•„ì§ ì§€ì›í•˜ì§€ ì•ŠëŠ”ë‹¤.
     //      - Name, Method, Order, Condition Min/Max Values
 
-    // Header¿¡¼­ Á¤º¸¸¦ ¾ò´Â´Ù. (User/Table/Partition NameÀº Á¦¿Ü)
+    // Headerì—ì„œ ì •ë³´ë¥¼ ì–»ëŠ”ë‹¤. (User/Table/Partition Nameì€ ì œì™¸)
     aItemCache->mItem.mTableOID  = (ULong)aItemMeta->mTableOID;
     aItemCache->mPKIndex.indexId = aItemMeta->mPKIndexID;
 
-    // Log Body¿¡¼­ Meta ±¸¼º : Column Count
+    // Log Bodyì—ì„œ Meta êµ¬ì„± : Column Count
     idlOS::memcpy((void *)&aItemCache->mColCount,
                   (const void *)&sLogBody[sOffset],
                   ID_SIZEOF(UInt));
@@ -5079,7 +5079,7 @@ IDE_RC rpdMeta::updateOldTableInfo( smiStatement  * aSmiStmt,
                                      IDU_MEM_IMMEDIATE)
                    != IDE_SUCCESS, ERR_MEMORY_ALLOC_COLUMNS);
 
-    // Log Body¿¡¼­ Meta ±¸¼º : Columns
+    // Log Bodyì—ì„œ Meta êµ¬ì„± : Columns
     for(sColCount = 0; sColCount < aItemCache->mColCount; sColCount++)
     {
         sRPColumn = &aItemCache->mColumns[sColCount];
@@ -5092,7 +5092,7 @@ IDE_RC rpdMeta::updateOldTableInfo( smiStatement  * aSmiStmt,
                        RP_OLD_COLUMN_META_SIZE );
         sOffset = sOffset + RP_OLD_COLUMN_META_SIZE;
 
-        // Log Body¿¡¼­ Meta ±¸¼º : Column
+        // Log Bodyì—ì„œ Meta êµ¬ì„± : Column
         idlOS::memcpy((void *)sRPColumn->mColumnName,
                       (const void *)sColumnMeta.mName,
                       SM_MAX_NAME_LEN + 1);
@@ -5103,7 +5103,7 @@ IDE_RC rpdMeta::updateOldTableInfo( smiStatement  * aSmiStmt,
         sMTColumn->precision       = sColumnMeta.mMTPrecision;
         sMTColumn->scale           = sColumnMeta.mMTScale;
 
-        //BUG-26891 : encPrecison , Policy ¾÷µ¥ÀÌÆ®
+        //BUG-26891 : encPrecison , Policy ì—…ë°ì´íŠ¸
         sMTColumn->encPrecision    = sColumnMeta.mMTEncPrecision;
         idlOS::memcpy((void *)sMTColumn->policy, 
                       (const void *)sColumnMeta.mMTPolicy, 
@@ -5117,7 +5117,7 @@ IDE_RC rpdMeta::updateOldTableInfo( smiStatement  * aSmiStmt,
         sSMColumn->mDictionaryTableOID  = sColumnMeta.mSMDictTblOID;
 
         // PROJ-1705
-        // mtdValue¸¦ ¸¸µé±â À§ÇØ mtdModuleÁ¤º¸°¡ ÇÊ¿äÇÏ´Ù.
+        // mtdValueë¥¼ ë§Œë“¤ê¸° ìœ„í•´ mtdModuleì •ë³´ê°€ í•„ìš”í•˜ë‹¤.
         IDU_FIT_POINT_RAISE( "rpdMeta::updateOldTableInfo::Erratic::rpERR_ABORT_GET_MODULE",
                              ERR_GET_MODULE );
         IDE_TEST_RAISE(mtd::moduleById(&(sMTColumn->module),
@@ -5162,9 +5162,9 @@ IDE_RC rpdMeta::updateOldTableInfo( smiStatement  * aSmiStmt,
             }
             /*
              * BUG-39393
-             *  FunctionBasedIdxStrLength°¡ 0ÀÌ ¾Æ´Ï°í, ½ÇÁ¦·Î Function-based index°¡ ¾Æ´Ñ °æ¿ì´Â
-             *  ÀÌÀü old meta¿¡¼­ default calumnÀ» »ç¿ë ÁßÀ¸·Î º¼ ¼ö ÀÖ´Ù.
-             *  ÀÌ °ªÀº update ÇÒ ÇÊ¿ä ¾øÀ¸¹Ç·Î offset¸¸ °è»êÇÏ¿© °Ç³Ê¶Ùµµ·Ï ÇÑ´Ù.
+             *  FunctionBasedIdxStrLengthê°€ 0ì´ ì•„ë‹ˆê³ , ì‹¤ì œë¡œ Function-based indexê°€ ì•„ë‹Œ ê²½ìš°ëŠ”
+             *  ì´ì „ old metaì—ì„œ default calumnì„ ì‚¬ìš© ì¤‘ìœ¼ë¡œ ë³¼ ìˆ˜ ìˆë‹¤.
+             *  ì´ ê°’ì€ update í•  í•„ìš” ì—†ìœ¼ë¯€ë¡œ offsetë§Œ ê³„ì‚°í•˜ì—¬ ê±´ë„ˆë›°ë„ë¡ í•œë‹¤.
              */
             sOffset += sFuncBasedIdxStrLength;
         }
@@ -5240,7 +5240,7 @@ IDE_RC rpdMeta::updateOldTableInfo( smiStatement  * aSmiStmt,
         sOffset += sCheckConditionLength;
     }
 
-    // Log Body¿¡¼­ Meta ±¸¼º : Index Count
+    // Log Bodyì—ì„œ Meta êµ¬ì„± : Index Count
     idlOS::memcpy((void *)&aItemCache->mIndexCount,
                   (const void *)&sLogBody[sOffset],
                   ID_SIZEOF(UInt));
@@ -5255,7 +5255,7 @@ IDE_RC rpdMeta::updateOldTableInfo( smiStatement  * aSmiStmt,
                                      IDU_MEM_IMMEDIATE)
                    != IDE_SUCCESS, ERR_MEMORY_ALLOC_INDICES);
 
-    // Log Body¿¡¼­ Meta ±¸¼º : Indices
+    // Log Bodyì—ì„œ Meta êµ¬ì„± : Indices
     for(sIndexCount = 0; sIndexCount < aItemCache->mIndexCount; sIndexCount++)
     {
         sIndex = &aItemCache->mIndices[sIndexCount];
@@ -5266,7 +5266,7 @@ IDE_RC rpdMeta::updateOldTableInfo( smiStatement  * aSmiStmt,
                       ID_SIZEOF(smiIndexMeta));
         sOffset += ID_SIZEOF(smiIndexMeta);
 
-        // Log Body¿¡¼­ Meta ±¸¼º : Index
+        // Log Bodyì—ì„œ Meta êµ¬ì„± : Index
         sIndex->indexId = sIndexMeta.mIndexID;
         idlOS::memcpy((void *)sIndex->name,
                       (const void *)sIndexMeta.mName,
@@ -5275,9 +5275,9 @@ IDE_RC rpdMeta::updateOldTableInfo( smiStatement  * aSmiStmt,
         sIndex->indexTypeId   = sIndexMeta.mTypeID;
         sIndex->isRange       = sIndexMeta.mIsRange;
 
-        /* ÇöÀç Partitioned TableÀº Global Unique Index¸¦ Á¦°øÇÏÁö ¾Ê´Â´Ù.
-         * ÃßÈÄ Global Unique Index¸¦ Á¦°øÇÏ¸é,
-         * RP Protocol¿¡ Local Unique Index ¿©ºÎ¸¦ Ãß°¡ÇØ¾ß ÇÑ´Ù.
+        /* í˜„ì¬ Partitioned Tableì€ Global Unique Indexë¥¼ ì œê³µí•˜ì§€ ì•ŠëŠ”ë‹¤.
+         * ì¶”í›„ Global Unique Indexë¥¼ ì œê³µí•˜ë©´,
+         * RP Protocolì— Local Unique Index ì—¬ë¶€ë¥¼ ì¶”ê°€í•´ì•¼ í•œë‹¤.
          */
         sIndex->isUnique = ( ( sIndexMeta.mIsUnique == ID_TRUE ) ||
                              ( sIndexMeta.mIsLocalUnique == ID_TRUE ) ) 
@@ -5285,7 +5285,7 @@ IDE_RC rpdMeta::updateOldTableInfo( smiStatement  * aSmiStmt,
                            : ID_FALSE;
         sIndex->isLocalUnique = ID_FALSE;
 
-        // Log Body¿¡¼­ Meta ±¸¼º : Key Column Count
+        // Log Bodyì—ì„œ Meta êµ¬ì„± : Key Column Count
         idlOS::memcpy((void *)&sIndex->keyColCount,
                       (const void *)&sLogBody[sOffset],
                       ID_SIZEOF(UInt));
@@ -5309,7 +5309,7 @@ IDE_RC rpdMeta::updateOldTableInfo( smiStatement  * aSmiStmt,
                                          IDU_MEM_IMMEDIATE)
                        != IDE_SUCCESS, ERR_MEMORY_ALLOC_INDEX_COLUMNS_FLAG);
 
-        // Log Body¿¡¼­ Meta ±¸¼º : Key Columns
+        // Log Bodyì—ì„œ Meta êµ¬ì„± : Key Columns
         for(sIndexColCount = 0;
             sIndexColCount < sIndex->keyColCount;
             sIndexColCount++)
@@ -5320,7 +5320,7 @@ IDE_RC rpdMeta::updateOldTableInfo( smiStatement  * aSmiStmt,
                           ID_SIZEOF(smiIndexColumnMeta));
             sOffset += ID_SIZEOF(smiIndexColumnMeta);
 
-            // Log Body¿¡¼­ Meta ±¸¼º : Key Column
+            // Log Bodyì—ì„œ Meta êµ¬ì„± : Key Column
             sIndex->keyColumns[sIndexColCount].column.id = sIndexColMeta.mID
                                                          & SMI_COLUMN_ID_MASK;
             sIndex->keyColsFlag[sIndexColCount] = sIndexColMeta.mFlag;
@@ -5329,7 +5329,7 @@ IDE_RC rpdMeta::updateOldTableInfo( smiStatement  * aSmiStmt,
         }
     }
 
-    // Primary Key Column Count¸¦ ¾ò´Â´Ù.
+    // Primary Key Column Countë¥¼ ì–»ëŠ”ë‹¤.
     for(sIndexCount = 0; sIndexCount < aItemCache->mIndexCount; sIndexCount++)
     {
         if(aItemCache->mPKIndex.indexId == aItemCache->mIndices[sIndexCount].indexId)
@@ -5340,15 +5340,15 @@ IDE_RC rpdMeta::updateOldTableInfo( smiStatement  * aSmiStmt,
     }
     IDE_DASSERT(aItemCache->mPKColCount > 0);
 
-    // BUG-24391 [RP] DDL·Î Table OID°¡ º¯°æµÉ ¶§¸¶´Ù Á¤·Ä ¹è¿­À» ´Ù½Ã ±¸¼ºÇØ¾ß ÇÕ´Ï´Ù
+    // BUG-24391 [RP] DDLë¡œ Table OIDê°€ ë³€ê²½ë  ë•Œë§ˆë‹¤ ì •ë ¬ ë°°ì—´ì„ ë‹¤ì‹œ êµ¬ì„±í•´ì•¼ í•©ë‹ˆë‹¤
     idlOS::qsort( mItemsOrderByTableOID,
                   mReplication.mItemCount,
                   ID_SIZEOF(rpdMetaItem*),
                   rpdMetaCompareTableOID );
 
-    /* Table Meta¸¦ °»½ÅÇÑ´Ù. */
-    // º¸°üµÈ Table Meta¸¦ Á¦°ÅÇÑ´Ù.
-    /* PROJ-1915 off-line senderÀÇ °æ¿ì meta¸¦ °»½Å ÇÏÁö ¾Ê´Â´Ù. */
+    /* Table Metaë¥¼ ê°±ì‹ í•œë‹¤. */
+    // ë³´ê´€ëœ Table Metaë¥¼ ì œê±°í•œë‹¤.
+    /* PROJ-1915 off-line senderì˜ ê²½ìš° metaë¥¼ ê°±ì‹  í•˜ì§€ ì•ŠëŠ”ë‹¤. */
     if ( aIsUpdateOldItem == ID_TRUE )
     {
         IDE_TEST(deleteOldMetaItem(aSmiStmt,
@@ -5356,7 +5356,7 @@ IDE_RC rpdMeta::updateOldTableInfo( smiStatement  * aSmiStmt,
                                    (ULong)aItemMeta->mOldTableOID)
                  != IDE_SUCCESS);
 
-        // °»½ÅµÈ Table Meta Cache¸¦ Table Meta·Î º¸°üÇÑ´Ù.
+        // ê°±ì‹ ëœ Table Meta Cacheë¥¼ Table Metaë¡œ ë³´ê´€í•œë‹¤.
         IDE_TEST(insertOldMetaItem(aSmiStmt, aItemCache) != IDE_SUCCESS);
     }
     else
@@ -5425,9 +5425,9 @@ void rpdMeta::sortItemsAfterBuild()
             = mItems + sTC;
     }
 
-    /* ÇöÀç Build ´Ü°è¿¡¼­´Â Remote Table OID¸¦ ¾Ë¾Æ³¾ ¼ö ÀÖ´Â ¹æ¹ıÀÌ ¾ø´Ù.
-     * µû¶ó¼­, ³ª¸ÓÁö¿¡ ´ëÇÑ SortÇÏµµ·Ï ÇÏ°í, ÃßÈÄ¿¡ Handshake °úÁ¤¿¡¼­
-     * ¸ŞÅ¸¸¦ ºñ±³ÇÏ¸é¼­ Remote Table OID¸¦ setting ÇÏµµ·Ï ÇÑ´Ù.
+    /* í˜„ì¬ Build ë‹¨ê³„ì—ì„œëŠ” Remote Table OIDë¥¼ ì•Œì•„ë‚¼ ìˆ˜ ìˆëŠ” ë°©ë²•ì´ ì—†ë‹¤.
+     * ë”°ë¼ì„œ, ë‚˜ë¨¸ì§€ì— ëŒ€í•œ Sortí•˜ë„ë¡ í•˜ê³ , ì¶”í›„ì— Handshake ê³¼ì •ì—ì„œ
+     * ë©”íƒ€ë¥¼ ë¹„êµí•˜ë©´ì„œ Remote Table OIDë¥¼ setting í•˜ë„ë¡ í•œë‹¤.
      */
     idlOS::qsort( mItemsOrderByTableOID,
                   mReplication.mItemCount,
@@ -5447,7 +5447,7 @@ void rpdMeta::sortItemsAfterBuild()
     return;
 }
 
-/* PROJ-1915 Meta¸¦ º¹Á¦ÇÑ´Ù. */
+/* PROJ-1915 Metaë¥¼ ë³µì œí•œë‹¤. */
 IDE_RC rpdMeta::copyMeta(rpdMeta * aDestMeta)
 {
     SInt               sTC;             // Table Count
@@ -5462,11 +5462,11 @@ IDE_RC rpdMeta::copyMeta(rpdMeta * aDestMeta)
 
     aDestMeta->freeMemory();
     aDestMeta->initialize();
-    /* MetaÀÇ Replication ±âº» Á¤º¸ º¹»ç */
+    /* Metaì˜ Replication ê¸°ë³¸ ì •ë³´ ë³µì‚¬ */
     idlOS::memcpy(&aDestMeta->mReplication, &mReplication, ID_SIZEOF(rpdReplications));
     aDestMeta->mDictTableCount = mDictTableCount;
 
-    /* ¸Ş¸ğ¸®¸¦ ÇÒ´çÇÒ º¯¼ö ÃÊ±âÈ­ */
+    /* ë©”ëª¨ë¦¬ë¥¼ í• ë‹¹í•  ë³€ìˆ˜ ì´ˆê¸°í™” */
     aDestMeta->mReplication.mReplHosts     = NULL;
 
     if(mReplication.mHostCount != 0)
@@ -5484,7 +5484,7 @@ IDE_RC rpdMeta::copyMeta(rpdMeta * aDestMeta)
                       mReplication.mReplHosts,
                       ID_SIZEOF(rpdReplHosts) * mReplication.mHostCount);
     }
-    /* ReplicationÀÇ Item °³¼ö¿¡ µû¶ó¼­, Item ¸Ş¸ğ¸®¸¦ ÇÒ´ç */
+    /* Replicationì˜ Item ê°œìˆ˜ì— ë”°ë¼ì„œ, Item ë©”ëª¨ë¦¬ë¥¼ í• ë‹¹ */
     if(mReplication.mItemCount != 0)
     {
         IDU_FIT_POINT_RAISE( "rpdMeta::copyMeta::calloc::Items",
@@ -5497,24 +5497,24 @@ IDE_RC rpdMeta::copyMeta(rpdMeta * aDestMeta)
                        != IDE_SUCCESS, ERR_MEMORY_ALLOC_ITEMS);
     }
 
-    /* ReplicationÀÌ °á·Á ÀÖ´Â Å×ÀÌºí(Item)ÀÇ ¼ıÀÚ¸¸Å­ ¹İº¹ÇÏ¸ç Meta¸¦ ¹Ş´Â´Ù. */
+    /* Replicationì´ ê²°ë ¤ ìˆëŠ” í…Œì´ë¸”(Item)ì˜ ìˆ«ìë§Œí¼ ë°˜ë³µí•˜ë©° Metaë¥¼ ë°›ëŠ”ë‹¤. */
     for(sTC = 0; sTC < mReplication.mItemCount; sTC++)
     {
-        /* Å×ÀÌºí Á¤º¸¸¦ ¹ŞÀ½ */
+        /* í…Œì´ë¸” ì •ë³´ë¥¼ ë°›ìŒ */
         idlOS::memcpy(&aDestMeta->mItems[sTC], &mItems[sTC], ID_SIZEOF(rpdMetaItem));
         /* aDestMeta->mItems[sTC].mQueueMsgIDSeq     = mItems[sTC].mQueueMsgIDSeq; */
         aDestMeta->mItems[sTC].mTsFlag               = NULL;
-        /* ¸Ş¸ğ¸®¸¦ ÇÒ´çÇÒ º¯¼ö¹× Æ÷ÀÎÅÍµé ÃÊ±âÈ­ */
+        /* ë©”ëª¨ë¦¬ë¥¼ í• ë‹¹í•  ë³€ìˆ˜ë° í¬ì¸í„°ë“¤ ì´ˆê¸°í™” */
         aDestMeta->mItems[sTC].mColumns              = NULL;
         aDestMeta->mItems[sTC].mIndices              = NULL;
         aDestMeta->mItems[sTC].mIndexTableRef        = NULL;
-        // ¾Æ·¡ Æ÷ÀÎÅÍ´Â receiver¸¸ »ç¿ëÇÏ´Â ±¸Á¶ÀÌ¸ç,
-        // receiver´Â copyMeta¸¦ È£ÃâÇÏÁö ¾Ê´Â´Ù.
+        // ì•„ë˜ í¬ì¸í„°ëŠ” receiverë§Œ ì‚¬ìš©í•˜ëŠ” êµ¬ì¡°ì´ë©°,
+        // receiverëŠ” copyMetaë¥¼ í˜¸ì¶œí•˜ì§€ ì•ŠëŠ”ë‹¤.
         aDestMeta->mItems[sTC].mPKIndex.keyColumns   = NULL;
         aDestMeta->mItems[sTC].mPKIndex.keyColsFlag  = NULL;
         aDestMeta->mItems[sTC].mChecks               = NULL;
 
-        /* Column °³¼ö¸¸Å­, Item ³»¿¡¼­ Column ¸Ş¸ğ¸® ÇÒ´ç */
+        /* Column ê°œìˆ˜ë§Œí¼, Item ë‚´ì—ì„œ Column ë©”ëª¨ë¦¬ í• ë‹¹ */
         IDU_FIT_POINT_RAISE( "rpdMeta::copyMeta::calloc::Columns",
                               ERR_MEMORY_ALLOC_COLMUNS );
         IDE_TEST_RAISE(iduMemMgr::calloc(IDU_MEM_RP_RPD_META,
@@ -5525,7 +5525,7 @@ IDE_RC rpdMeta::copyMeta(rpdMeta * aDestMeta)
                        != IDE_SUCCESS, ERR_MEMORY_ALLOC_COLMUNS);
 
         
-        /* Column °³¼ö¸¸Å­ ¹İº¹ÇÏ¸ç, °¢ ColumnÀÇ Á¤º¸¸¦ ¹Ş´Â´Ù. */
+        /* Column ê°œìˆ˜ë§Œí¼ ë°˜ë³µí•˜ë©°, ê° Columnì˜ ì •ë³´ë¥¼ ë°›ëŠ”ë‹¤. */
         for(sCC = 0; sCC < mItems[sTC].mColCount; sCC++)
         {
             idlOS::memcpy(&aDestMeta->mItems[sTC].mColumns[sCC],
@@ -5576,7 +5576,7 @@ IDE_RC rpdMeta::copyMeta(rpdMeta * aDestMeta)
             }
         }
 
-        /* Index °³¼ö¸¸Å­, Item ³»¿¡¼­ memory ÇÒ´ç */
+        /* Index ê°œìˆ˜ë§Œí¼, Item ë‚´ì—ì„œ memory í• ë‹¹ */
         IDU_FIT_POINT_RAISE( "rpdMeta::copyMeta::calloc::Indices",
                               ERR_MEMORY_ALLOC_INDICES );
         IDE_TEST_RAISE(iduMemMgr::calloc(IDU_MEM_RP_RPD_META,
@@ -5586,15 +5586,15 @@ IDE_RC rpdMeta::copyMeta(rpdMeta * aDestMeta)
                                          IDU_MEM_IMMEDIATE)
                        != IDE_SUCCESS, ERR_MEMORY_ALLOC_INDICES);
 
-        /* Index °³¼ö¸¸Å­ ¹İº¹ÇÏ¸ç, °¢ IndexÀÇ Á¤º¸¸¦ ¹Ş´Â´Ù. */
+        /* Index ê°œìˆ˜ë§Œí¼ ë°˜ë³µí•˜ë©°, ê° Indexì˜ ì •ë³´ë¥¼ ë°›ëŠ”ë‹¤. */
         for(sIC = 0; sIC < mItems[sTC].mIndexCount; sIC++)
         {
-            /* Meta¿¡¼­ ±¸¼ºÇÑ Index Á¤º¸¸¦ ¹Ş´Â´Ù. */
+            /* Metaì—ì„œ êµ¬ì„±í•œ Index ì •ë³´ë¥¼ ë°›ëŠ”ë‹¤. */
             idlOS::memcpy(&aDestMeta->mItems[sTC].mIndices[sIC],
                           &mItems[sTC].mIndices[sIC],
                           ID_SIZEOF(qcmIndex));
 
-            /* ¸Ş¸ğ¸®¸¦ ÇÒ´çÇÒ º¯¼ö ÃÊ±âÈ­ */
+            /* ë©”ëª¨ë¦¬ë¥¼ í• ë‹¹í•  ë³€ìˆ˜ ì´ˆê¸°í™” */
             aDestMeta->mItems[sTC].mIndices[sIC].keyColumns  = NULL;
             aDestMeta->mItems[sTC].mIndices[sIC].keyColsFlag = NULL;
 
@@ -5623,7 +5623,7 @@ IDE_RC rpdMeta::copyMeta(rpdMeta * aDestMeta)
             }
         }
 
-        /* index table ref º¹»ç */
+        /* index table ref ë³µì‚¬ */
         sIndexTableCount = 0;
         for ( sIndexTable = mItems[sTC].mIndexTableRef;
               sIndexTable != NULL;
@@ -5645,7 +5645,7 @@ IDE_RC rpdMeta::copyMeta(rpdMeta * aDestMeta)
                                  mItems[sTC].mIndexTableRef,
                                  ID_SIZEOF(qciIndexTableRef) * sIndexTableCount );
             
-            // index Á¤º¸¸¦ º¹»çÇÑ´Ù.
+            // index ì •ë³´ë¥¼ ë³µì‚¬í•œë‹¤.
             for ( i = 0, sIndexTable = mItems[sTC].mIndexTableRef;
                   sIndexTable != NULL;
                   i++, sIndexTable = sIndexTable->next )
@@ -5655,7 +5655,7 @@ IDE_RC rpdMeta::copyMeta(rpdMeta * aDestMeta)
                           != IDE_SUCCESS );
             }
 
-            // list¸¦ ±¸¼ºÇÑ´Ù.
+            // listë¥¼ êµ¬ì„±í•œë‹¤.
             for ( i = 0; i < sIndexTableCount - 1; i++ )
             {
                 aDestMeta->mItems[sTC].mIndexTableRef[i].next =
@@ -5848,14 +5848,14 @@ IDE_RC rpdMeta::copyMeta(rpdMeta * aDestMeta)
 }
 
 /**
- * @breif ¸ğµç ÄÃ·³ÀÇ ÃÖ´ë MT Type Å©±â¸¦ ÇÕÇÑ °ªÀ» ±¸ÇÑ´Ù.
+ * @breif ëª¨ë“  ì»¬ëŸ¼ì˜ ìµœëŒ€ MT Type í¬ê¸°ë¥¼ í•©í•œ ê°’ì„ êµ¬í•œë‹¤.
  *
- * ÀÌ ÇÔ¼ö´Â ¸Ş¸ğ¸® Àç»ç¿ëÀ» À§ÇØ ÇÊ¿äÇÑ Å©±â¸¦ °è»êÇÏ±â À§ÇØ »ç¿ëµÇ´Âµ¥,
- * Geometry¿Í LobÀº ÃÖ´ë Å©±â°¡ ³Ê¹« Ä¿¼­ Á¦¿ÜÇÑ´Ù.
+ * ì´ í•¨ìˆ˜ëŠ” ë©”ëª¨ë¦¬ ì¬ì‚¬ìš©ì„ ìœ„í•´ í•„ìš”í•œ í¬ê¸°ë¥¼ ê³„ì‚°í•˜ê¸° ìœ„í•´ ì‚¬ìš©ë˜ëŠ”ë°,
+ * Geometryì™€ Lobì€ ìµœëŒ€ í¬ê¸°ê°€ ë„ˆë¬´ ì»¤ì„œ ì œì™¸í•œë‹¤.
  *
- * BUG-44863  recv ÇÒ¶§ CID, ACols, BCols Ä®·³À» ÇÒ´ç¹Ş±â ¶§¹®¿¡ 
- * mPKCols ¿Í ( mCIDs + ACols + BCols ) ¸¦ ÄÃ·³ °¹¼ö¸¸Å­ Å©±â¸¦ ÇÒ´çÇÑ´Ù
- * @return ¸ğµç ÄÃ·³ÀÇ ÃÖ´ë MT Type Å©±â¸¦ ÇÕÇÑ °ª
+ * BUG-44863  recv í• ë•Œ CID, ACols, BCols ì¹¼ëŸ¼ì„ í• ë‹¹ë°›ê¸° ë•Œë¬¸ì— 
+ * mPKCols ì™€ ( mCIDs + ACols + BCols ) ë¥¼ ì»¬ëŸ¼ ê°¯ìˆ˜ë§Œí¼ í¬ê¸°ë¥¼ í• ë‹¹í•œë‹¤
+ * @return ëª¨ë“  ì»¬ëŸ¼ì˜ ìµœëŒ€ MT Type í¬ê¸°ë¥¼ í•©í•œ ê°’
  */
 ULong rpdMetaItem::getTotalColumnSizeExceptGeometryAndLob()
 {
@@ -5875,7 +5875,7 @@ ULong rpdMetaItem::getTotalColumnSizeExceptGeometryAndLob()
         }
         else
         {
-            /* Replication ´ë»ó ÄÃ·³ÀÌ ¾Æ´Ï¸é, NULL °ªÀÇ Å©±â¸¦ »ç¿ëÇÑ´Ù. */
+            /* Replication ëŒ€ìƒ ì»¬ëŸ¼ì´ ì•„ë‹ˆë©´, NULL ê°’ì˜ í¬ê¸°ë¥¼ ì‚¬ìš©í•œë‹¤. */
             if ( mIsReplCol[sIndex] != ID_TRUE )
             {
                 sSum += (ULong)idlOS::align8( sColumn->module->nullValueSize() );
@@ -6144,7 +6144,7 @@ IDE_RC rpdMetaItem::lockReplItem( smiTrans            * aTransForLock,
     smSCN       sSCN = SM_SCN_INIT;
     UInt        sUserID      = 0;
 
-    /* BUG-42817 Partitioned Table LockÀ» Àâ°í Partition LockÀ» Àâ¾Æ¾ß ÇÑ´Ù. */
+    /* BUG-42817 Partitioned Table Lockì„ ì¡ê³  Partition Lockì„ ì¡ì•„ì•¼ í•œë‹¤. */
     if ( mItem.mLocalPartname[0] != '\0' )
     {
         IDE_TEST( qciMisc::getUserID( aTransForLock->getStatistics(),
@@ -6168,7 +6168,7 @@ IDE_RC rpdMetaItem::lockReplItem( smiTrans            * aTransForLock,
                                              aTBSLvType,
                                              aLockMode,
                                              aLockWaitMicroSec,
-                                             ID_FALSE ) // BUG-28752 ¸í½ÃÀû Lock°ú ³»ÀçÀû LockÀ» ±¸ºĞÇÕ´Ï´Ù.
+                                             ID_FALSE ) // BUG-28752 ëª…ì‹œì  Lockê³¼ ë‚´ì¬ì  Lockì„ êµ¬ë¶„í•©ë‹ˆë‹¤.
                   != IDE_SUCCESS );
 
         sPartHandle = (void *)smiGetTable( (smOID)mItem.mTableOID );
@@ -6180,7 +6180,7 @@ IDE_RC rpdMetaItem::lockReplItem( smiTrans            * aTransForLock,
                                              aTBSLvType,
                                              aLockMode,
                                              aLockWaitMicroSec,
-                                             ID_FALSE ) // BUG-28752 ¸í½ÃÀû Lock°ú ³»ÀçÀû LockÀ» ±¸ºĞÇÕ´Ï´Ù.
+                                             ID_FALSE ) // BUG-28752 ëª…ì‹œì  Lockê³¼ ë‚´ì¬ì  Lockì„ êµ¬ë¶„í•©ë‹ˆë‹¤.
                   != IDE_SUCCESS );
     }
     else
@@ -6194,7 +6194,7 @@ IDE_RC rpdMetaItem::lockReplItem( smiTrans            * aTransForLock,
                                              aTBSLvType,
                                              aLockMode,
                                              aLockWaitMicroSec,
-                                             ID_FALSE ) // BUG-28752 ¸í½ÃÀû Lock°ú ³»ÀçÀû LockÀ» ±¸ºĞÇÕ´Ï´Ù.
+                                             ID_FALSE ) // BUG-28752 ëª…ì‹œì  Lockê³¼ ë‚´ì¬ì  Lockì„ êµ¬ë¶„í•©ë‹ˆë‹¤.
                   != IDE_SUCCESS );
     }
 
@@ -6571,7 +6571,7 @@ IDE_RC rpdMeta::equalPrimaryKey( rpdMetaItem   * aItem1,
     SInt    sIndexPos1 = 0;
     SInt    sIndexPos2 = 0;
 
-    /* BUG-37770 Primary Key´Â Á÷Á¢ ºñ±³ÇÑ´Ù. */
+    /* BUG-37770 Primary KeyëŠ” ì§ì ‘ ë¹„êµí•œë‹¤. */
     for ( sIndexPos1 = 0; sIndexPos1 < aItem1->mIndexCount; sIndexPos1++ )
     {
         if ( aItem1->mPKIndex.indexId == aItem1->mIndices[sIndexPos1].indexId )
@@ -6621,7 +6621,7 @@ IDE_RC rpdMeta::equalIndices( rpdMetaItem   * aItem1,
     idBool                    sIsFuncBasedIndex1 = ID_FALSE;
     idBool                    sIsFuncBasedIndex2 = ID_FALSE;
 
-    /* BUG-37770 ÀÎµ¦½º ¹è¿­À» ÀÎµ¦½º ÄÃ·³ ÀÌ¸§À» ±âÁØÀ¸·Î Á¤·ÄÇÑ´Ù. */
+    /* BUG-37770 ì¸ë±ìŠ¤ ë°°ì—´ì„ ì¸ë±ìŠ¤ ì»¬ëŸ¼ ì´ë¦„ì„ ê¸°ì¤€ìœ¼ë¡œ ì •ë ¬í•œë‹¤. */
     IDU_FIT_POINT_RAISE( "rpdMeta::equalIndices::calloc::sIndexSortInfo1", 
                          ERR_MEMORY_ALLOC_INDEX_SORT_INFO );
     IDE_TEST_RAISE( iduMemMgr::calloc( IDU_MEM_RP_RPD_META,
@@ -6661,17 +6661,17 @@ IDE_RC rpdMeta::equalIndices( rpdMetaItem   * aItem1,
                   ID_SIZEOF( rpdIndexSortInfo ),
                   rpdMetaCompareIndexColumnName );
 
-    /* PROJ-1442 Replication Online Áß DDL Çã¿ë
-     * 1. Replication Self-Deadlock Ã³¸®¿Í °ü·ÃÇÑ Unique Index Á¦¾àÀ» °Ë»çÇÑ´Ù.
-     *   (1) Replication ´ë»óÀÌ ¾Æ´Ñ ColumnÀ¸·Î ±¸¼ºµÈ Unique Index´Â °Ë»çÇÏÁö ¾Ê´Â´Ù.
-     *   (2) Replication ´ë»ó Column°ú ±×·¸Áö ¾ÊÀº ColumnÀ» È¥ÇÕÇÏ¿©,
-     *     Unique Index¸¦ ±¸¼ºÇÒ ¼ö ¾ø´Ù.
-     *   (3) Replication ´ë»ó ColumnÀº ¾çÂÊ Server¿¡¼­ °°Àº Unique IndexÀ» °¡Á®¾ß ÇÑ´Ù.
-     *       - Unique Index¸¦ ±¸¼ºÇÏ´Â ColumnÀº ¼ö¿Í Å©±â°¡ °°¾Æ¾ß ÇÑ´Ù.
-     * 2. Index¸¦ ±¸¼ºÇÏ´Â ColumnÀ» ºñ±³ÇÒ ¶§, Column ID ´ë½Å Column ÀÌ¸§À» »ç¿ëÇÑ´Ù.
+    /* PROJ-1442 Replication Online ì¤‘ DDL í—ˆìš©
+     * 1. Replication Self-Deadlock ì²˜ë¦¬ì™€ ê´€ë ¨í•œ Unique Index ì œì•½ì„ ê²€ì‚¬í•œë‹¤.
+     *   (1) Replication ëŒ€ìƒì´ ì•„ë‹Œ Columnìœ¼ë¡œ êµ¬ì„±ëœ Unique IndexëŠ” ê²€ì‚¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
+     *   (2) Replication ëŒ€ìƒ Columnê³¼ ê·¸ë ‡ì§€ ì•Šì€ Columnì„ í˜¼í•©í•˜ì—¬,
+     *     Unique Indexë¥¼ êµ¬ì„±í•  ìˆ˜ ì—†ë‹¤.
+     *   (3) Replication ëŒ€ìƒ Columnì€ ì–‘ìª½ Serverì—ì„œ ê°™ì€ Unique Indexì„ ê°€ì ¸ì•¼ í•œë‹¤.
+     *       - Unique Indexë¥¼ êµ¬ì„±í•˜ëŠ” Columnì€ ìˆ˜ì™€ í¬ê¸°ê°€ ê°™ì•„ì•¼ í•œë‹¤.
+     * 2. Indexë¥¼ êµ¬ì„±í•˜ëŠ” Columnì„ ë¹„êµí•  ë•Œ, Column ID ëŒ€ì‹  Column ì´ë¦„ì„ ì‚¬ìš©í•œë‹¤.
      *
      * BUG-17923
-     * Non-Unique Index´Â °Ë»çÇÏÁö ¾Ê´Â´Ù.
+     * Non-Unique IndexëŠ” ê²€ì‚¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
      */
     sIndexPos1 = 0;
     sIndexPos2 = 0;

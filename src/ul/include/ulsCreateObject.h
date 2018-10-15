@@ -16,7 +16,7 @@
 
 /***********************************************************************
  *
- * Spatio-Temporal Object »ı¼º ÇÔ¼ö 
+ * Spatio-Temporal Object ìƒì„± í•¨ìˆ˜ 
  *
  ***********************************************************************/
 
@@ -113,15 +113,15 @@ ulsCreateGeomCollection2D( ulsHandle               * aHandle,
                            ulvSLen                 * aObjLength );
 
 
-/* TODO - ´Ù¾çÇÑ °´Ã¼ »ı¼ºÀ» À§ÇÑ ÇÔ¼ö¸¦ »ı¼ºÇÏ¿©¾ß ÇÔ.*/
+/* TODO - ë‹¤ì–‘í•œ ê°ì²´ ìƒì„±ì„ ìœ„í•œ í•¨ìˆ˜ë¥¼ ìƒì„±í•˜ì—¬ì•¼ í•¨.*/
 /**/
 
 /**/
-/* Temporal 2D Geometry°´Ã¼ÀÇ »ı¼º*/
+/* Temporal 2D Geometryê°ì²´ì˜ ìƒì„±*/
 /**/
 
 /**/
-/* Temporal 3D Geometry°´Ã¼ÀÇ »ı¼º*/
+/* Temporal 3D Geometryê°ì²´ì˜ ìƒì„±*/
 /**/
 
 
@@ -129,24 +129,24 @@ ulsCreateGeomCollection2D( ulsHandle               * aHandle,
  *  Internal Interfaces
  *----------------------------------------------------------------*/
 
-/* Geometry HeaderÀÇ ÃÊ±âÈ­ */
+/* Geometry Headerì˜ ì´ˆê¸°í™” */
 ACI_RC
 ulsInitHeader( ulsHandle          * aHandle,
                stdGeometryHeader  * aObjectHeader );
 
-/* Geometry TypeÀÇ ¼³Á¤*/
+/* Geometry Typeì˜ ì„¤ì •*/
 ACI_RC
 ulsSetGeoType( ulsHandle          * aHandle,
                stdGeometryHeader  * aObjHeader,
                stdGeoTypes          aType );
 
-/* Geometry TypeÀÇ È¹µæ*/
+/* Geometry Typeì˜ íšë“*/
 ACI_RC
 ulsGetGeoType( ulsHandle          * aHandle,
                stdGeometryHeader  * aObjHeader,
                stdGeoTypes        * aType );
 
-/* ´Ù¸ñÀû ¸ÖÆ¼°´Ã¼ »ı¼ºÇÔ¼ö*/
+/* ë‹¤ëª©ì  ë©€í‹°ê°ì²´ ìƒì„±í•¨ìˆ˜*/
 ACSRETURN
 ulsCreateMultiGeometry( ulsHandle               * aHandle,
                         stdGeometryType         * aBuffer,

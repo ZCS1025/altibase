@@ -21,9 +21,9 @@
  * Description :
  *     DLAY(DeLAY) Node
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  **********************************************************************/
 
@@ -39,13 +39,13 @@ qmnDLAY::init( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    DLAY ³ëµåÀÇ ÃÊ±âÈ­
+ *    DLAY ë…¸ë“œì˜ ì´ˆê¸°í™”
  *
  * Implementation :
- *    - ÃÖÃÊ ÃÊ±âÈ­°¡ µÇÁö ¾ÊÀº °æ¿ì ÃÖÃÊ ÃÊ±âÈ­ ¼öÇà
- *    - Child Plan¿¡ ´ëÇÑ ÃÊ±âÈ­
- *    - Constant DelayÀÇ ¼öÇà °á°ú °Ë»ç
- *    - Constant DelayÀÇ °á°ú¿¡ µû¸¥ ¼öÇà ÇÔ¼ö °áÁ¤
+ *    - ìµœì´ˆ ì´ˆê¸°í™”ê°€ ë˜ì§€ ì•Šì€ ê²½ìš° ìµœì´ˆ ì´ˆê¸°í™” ìˆ˜í–‰
+ *    - Child Planì— ëŒ€í•œ ì´ˆê¸°í™”
+ *    - Constant Delayì˜ ìˆ˜í–‰ ê²°ê³¼ ê²€ì‚¬
+ *    - Constant Delayì˜ ê²°ê³¼ì— ë”°ë¥¸ ìˆ˜í–‰ í•¨ìˆ˜ ê²°ì •
  *
  ***********************************************************************/
 
@@ -67,9 +67,9 @@ qmnDLAY::doIt( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    DLAYÀÇ ¼öÇà ÇÔ¼ö
- *    Child¸¦ ¼öÇàÇÏ°í Record°¡ ÀÖÀ» °æ¿ì Á¶°ÇÀ» °Ë»çÇÑ´Ù.
- *    Á¶°ÇÀ» ¸¸Á·ÇÒ ¶§³¢Áö ÀÌ¸¦ ¹İº¹ÇÑ´Ù.
+ *    DLAYì˜ ìˆ˜í–‰ í•¨ìˆ˜
+ *    Childë¥¼ ìˆ˜í–‰í•˜ê³  Recordê°€ ìˆì„ ê²½ìš° ì¡°ê±´ì„ ê²€ì‚¬í•œë‹¤.
+ *    ì¡°ê±´ì„ ë§Œì¡±í•  ë•Œë¼ì§€ ì´ë¥¼ ë°˜ë³µí•œë‹¤.
  *
  * Implementation :
  *
@@ -85,7 +85,7 @@ qmnDLAY::doIt( qcTemplate * aTemplate,
     if ( (*sDataPlan->flag & QMND_DLAY_INIT_DONE_MASK)
          == QMND_DLAY_INIT_DONE_FALSE )
     {
-        /* Child PlanÀÇ ÃÊ±âÈ­ */
+        /* Child Planì˜ ì´ˆê¸°í™” */
         IDE_TEST( aPlan->left->init( aTemplate, aPlan->left ) != IDE_SUCCESS );
         
         *sDataPlan->flag &= ~QMND_DLAY_INIT_DONE_MASK;
@@ -96,7 +96,7 @@ qmnDLAY::doIt( qcTemplate * aTemplate,
         // Nothing To Do
     }
     
-    // Child¸¦ ¼öÇà
+    // Childë¥¼ ìˆ˜í–‰
     IDE_TEST( aPlan->left->doIt( aTemplate, aPlan->left, aFlag )
               != IDE_SUCCESS );
 
@@ -116,8 +116,8 @@ qmnDLAY::padNull( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    DLAY ³ëµå´Â º°µµÀÇ null row¸¦ °¡ÁöÁö ¾ÊÀ¸¸ç,
- *    Child¿¡ ´ëÇÏ¿© padNull()À» È£ÃâÇÑ´Ù.
+ *    DLAY ë…¸ë“œëŠ” ë³„ë„ì˜ null rowë¥¼ ê°€ì§€ì§€ ì•Šìœ¼ë©°,
+ *    Childì— ëŒ€í•˜ì—¬ padNull()ì„ í˜¸ì¶œí•œë‹¤.
  *
  * Implementation :
  *
@@ -131,7 +131,7 @@ qmnDLAY::padNull( qcTemplate * aTemplate,
     if ( (aTemplate->planFlag[sCodePlan->planID] & QMND_DLAY_INIT_DONE_MASK)
          == QMND_DLAY_INIT_DONE_FALSE )
     {
-        // ÃÊ±âÈ­µÇÁö ¾ÊÀº °æ¿ì ÃÊ±âÈ­ ¼öÇà
+        // ì´ˆê¸°í™”ë˜ì§€ ì•Šì€ ê²½ìš° ì´ˆê¸°í™” ìˆ˜í–‰
         IDE_TEST( aPlan->init( aTemplate, aPlan ) != IDE_SUCCESS );
     }
     else
@@ -139,7 +139,7 @@ qmnDLAY::padNull( qcTemplate * aTemplate,
         // Nothing To Do
     }
 
-    // Child Plan¿¡ ´ëÇÏ¿© Null Padding¼öÇà
+    // Child Planì— ëŒ€í•˜ì—¬ Null Paddingìˆ˜í–‰
     IDE_TEST( aPlan->left->padNull( aTemplate, aPlan->left )
               != IDE_SUCCESS );
 
@@ -162,7 +162,7 @@ qmnDLAY::printPlan( qcTemplate   * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    DLAY ³ëµåÀÇ ¼öÇà Á¤º¸¸¦ Ãâ·ÂÇÑ´Ù.
+ *    DLAY ë…¸ë“œì˜ ìˆ˜í–‰ ì •ë³´ë¥¼ ì¶œë ¥í•œë‹¤.
  *
  * Implementation :
  *
@@ -179,7 +179,7 @@ qmnDLAY::printPlan( qcTemplate   * aTemplate,
     UInt  i;
 
     //----------------------------
-    // Display À§Ä¡ °áÁ¤
+    // Display ìœ„ì¹˜ ê²°ì •
     //----------------------------
 
     for ( i = 0; i < aDepth; i++ )
@@ -189,14 +189,14 @@ qmnDLAY::printPlan( qcTemplate   * aTemplate,
     }
 
     //----------------------------
-    // DLAY ³ëµå Ç¥½Ã
+    // DLAY ë…¸ë“œ í‘œì‹œ
     //----------------------------
 
     iduVarStringAppend( aString,
                         "DELAY\n" );
 
     //----------------------------
-    // Operatorº° °á°ú Á¤º¸ Ãâ·Â
+    // Operatorë³„ ê²°ê³¼ ì •ë³´ ì¶œë ¥
     //----------------------------
     
     if ( QCU_TRCLOG_RESULT_DESC == 1 )
@@ -213,7 +213,7 @@ qmnDLAY::printPlan( qcTemplate   * aTemplate,
     }
 
     //----------------------------
-    // Child PlanÀÇ Á¤º¸ Ãâ·Â
+    // Child Planì˜ ì •ë³´ ì¶œë ¥
     //----------------------------
 
     IDE_TEST( aPlan->left->printPlan( aTemplate,

@@ -54,17 +54,17 @@ typedef UInt CHKSVR_STATE;
 
 typedef struct CheckServerHandle
 {
-    idBool              mOptUseLog;                 /* LOG¸¦ ³²±æÁö ¿©ºÎ */
-    SInt                mOptSleep;                  /* Àç½Ãµµ Àü¿¡ sleepÇÒ ½Ã°£(1/1000 ÃÊ ´ÜÀ§) */
-    idBool              mOptUseCancel;              /* cancelÀ» »ç¿ëÇÒÁö ¿©ºÎ */
+    idBool              mOptUseLog;                 /* LOGë¥¼ ë‚¨ê¸¸ì§€ ì—¬ë¶€ */
+    SInt                mOptSleep;                  /* ì¬ì‹œë„ ì „ì— sleepí•  ì‹œê°„(1/1000 ì´ˆ ë‹¨ìœ„) */
+    idBool              mOptUseCancel;              /* cancelì„ ì‚¬ìš©í• ì§€ ì—¬ë¶€ */
 
-    CHKSVR_STATE        mState;                     /* ÇÚµé »óÅÂ */
+    CHKSVR_STATE        mState;                     /* í•¸ë“¤ ìƒíƒœ */
 
-    SChar               mPidFilePath[MAX_PATH_LEN]; /* pid ÆÄÀÏ °æ·Î */
-    UInt                mPortNo;                    /* ¼­¹ö port ¹øÈ£ */
-    CheckServerStat    *mServerStat;                /* ¼­¹ö »óÅÂ È®ÀÎÀ» À§ÇÑ Å¬·¡½º */
-    ideMsgLog          *mMsgLog;                    /* LOG Å¬·¡½º */
-    PDL_thread_mutex_t  mMutex;                     /* ÇÚµé ¶ô */
+    SChar               mPidFilePath[MAX_PATH_LEN]; /* pid íŒŒì¼ ê²½ë¡œ */
+    UInt                mPortNo;                    /* ì„œë²„ port ë²ˆí˜¸ */
+    CheckServerStat    *mServerStat;                /* ì„œë²„ ìƒíƒœ í™•ì¸ì„ ìœ„í•œ í´ë˜ìŠ¤ */
+    ideMsgLog          *mMsgLog;                    /* LOG í´ë˜ìŠ¤ */
+    PDL_thread_mutex_t  mMutex;                     /* í•¸ë“¤ ë½ */
 } CheckServerHandle;
 
 

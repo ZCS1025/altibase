@@ -60,7 +60,7 @@ static ACI_RC applyFormat( acp_char_t       * aString,
                            mtlCurrency * aCurrency,
                            acp_bool_t        aIsMinus );
 
-// EEEE formatÀÌ ¾øÀ» °æ¿ì, format Àû¿ë
+// EEEE formatì´ ì—†ì„ ê²½ìš°, format ì ìš©
 static ACI_RC applyNonEEEEFormat( acp_char_t       * aString,
                                   acp_sint32_t          aStringLen,
                                   acp_uint8_t       * aResult,
@@ -69,7 +69,7 @@ static ACI_RC applyNonEEEEFormat( acp_char_t       * aString,
                                   mtlCurrency * aCurrency,
                                   acp_bool_t        aIsMinus );
 
-// EEEE formatÀÌ ÀÖÀ» °æ¿ì, format Àû¿ë
+// EEEE formatì´ ìˆì„ ê²½ìš°, format ì ìš©
 static ACI_RC applyEEEEFormat( acp_char_t       * aString,
                                acp_sint32_t          aStringLen,
                                acp_uint8_t       * aResult,
@@ -419,7 +419,7 @@ static ACI_RC applyAM_LFormat( mtdDateType* aDate,
     return ACI_FAILURE;
 }
 
-/* BUG-36296 SCC Format Áö¿ø */
+/* BUG-36296 SCC Format ì§€ì› */
 static ACI_RC applySCCFormat( mtdDateType  * aDate,
                               acp_char_t   * aBuffer,
                               acp_sint32_t * aBufferCur,
@@ -507,8 +507,8 @@ static ACI_RC applyCCFormat( mtdDateType* aDate,
 
     if ( sYear <= 0 )
     {
-        /* Year 0Àº BC -1³âÀÌ´Ù. Àı´ë°ªÀ» ±¸ÇÏ±â Àü¿¡ º¸Á¤ÇÑ´Ù.
-         * À½¼öÀÏ ¶§, ºÎÈ£¸¦ Á¦°ÅÇÑ´Ù. (Oracle)
+        /* Year 0ì€ BC -1ë…„ì´ë‹¤. ì ˆëŒ€ê°’ì„ êµ¬í•˜ê¸° ì „ì— ë³´ì •í•œë‹¤.
+         * ìŒìˆ˜ì¼ ë•Œ, ë¶€í˜¸ë¥¼ ì œê±°í•œë‹¤. (Oracle)
          */
         sValue = ( ( abs( sYear - 1 ) + 99 ) / 100 ) % 100; // ceil
     }
@@ -1615,7 +1615,7 @@ static ACI_RC applyRM_LFormat( mtdDateType* aDate,
     return ACI_SUCCESS;
 }
 
-/* BUG-36296 SYYYY Format Áö¿ø */
+/* BUG-36296 SYYYY Format ì§€ì› */
 static ACI_RC applySYYYYFormat( mtdDateType  * aDate,
                                 acp_char_t   * aBuffer,
                                 acp_sint32_t * aBufferCur,
@@ -1703,7 +1703,7 @@ static ACI_RC applyYYYYFormat( mtdDateType* aDate,
 
     if ( sYear < 0 )
     {
-        /* À½¼öÀÏ ¶§, ºÎÈ£¸¦ Á¦°ÅÇÑ´Ù. (Oracle) */
+        /* ìŒìˆ˜ì¼ ë•Œ, ë¶€í˜¸ë¥¼ ì œê±°í•œë‹¤. (Oracle) */
         sValue = abs( sYear ) % 10000;
     }
     else
@@ -1750,7 +1750,7 @@ static ACI_RC applyYYYFormat( mtdDateType* aDate,
 
     if ( sYear < 0 )
     {
-        /* À½¼öÀÏ ¶§, ºÎÈ£¸¦ Á¦°ÅÇÑ´Ù. (Oracle) */
+        /* ìŒìˆ˜ì¼ ë•Œ, ë¶€í˜¸ë¥¼ ì œê±°í•œë‹¤. (Oracle) */
         sValue = abs( sYear ) % 1000;
     }
     else
@@ -1797,7 +1797,7 @@ static ACI_RC applyYYFormat( mtdDateType* aDate,
 
     if ( sYear < 0 )
     {
-        /* À½¼öÀÏ ¶§, ºÎÈ£¸¦ Á¦°ÅÇÑ´Ù. (Oracle) */
+        /* ìŒìˆ˜ì¼ ë•Œ, ë¶€í˜¸ë¥¼ ì œê±°í•œë‹¤. (Oracle) */
         sValue = abs( sYear ) % 100;
     }
     else
@@ -1844,7 +1844,7 @@ static ACI_RC applyYFormat( mtdDateType* aDate,
 
     if ( sYear < 0 )
     {
-        /* À½¼öÀÏ ¶§, ºÎÈ£¸¦ Á¦°ÅÇÑ´Ù. (Oracle) */
+        /* ìŒìˆ˜ì¼ ë•Œ, ë¶€í˜¸ë¥¼ ì œê±°í•œë‹¤. (Oracle) */
         sValue = abs( sYear ) % 10;
     }
     else
@@ -2125,7 +2125,7 @@ static ACI_RC applyWWFormat( mtdDateType* aDate,
     return ACI_FAILURE;
 }
 
-/* BUG-42926 TO_CHAR()¿¡ IW Ãß°¡ */
+/* BUG-42926 TO_CHAR()ì— IW ì¶”ê°€ */
 static ACI_RC applyIWFormat( mtdDateType  * aDate,
                              acp_char_t   * aBuffer,
                              acp_sint32_t * aBufferCur,
@@ -2166,7 +2166,7 @@ static ACI_RC applyIWFormat( mtdDateType  * aDate,
     return ACI_FAILURE;
 }
 
-/* BUG-42941 TO_CHAR()¿¡ WW2(Oracle Version WW) Ãß°¡ */
+/* BUG-42941 TO_CHAR()ì— WW2(Oracle Version WW) ì¶”ê°€ */
 static ACI_RC applyWW2Format( mtdDateType  * aDate,
                               acp_char_t   * aBuffer,
                               acp_sint32_t * aBufferCur,
@@ -2259,7 +2259,7 @@ static ACI_RC applyYCYYYFormat( mtdDateType* aDate,
 
     if ( sYear < 0 )
     {
-        /* À½¼öÀÏ ¶§, ºÎÈ£¸¦ Á¦°ÅÇÑ´Ù. (Oracle) */
+        /* ìŒìˆ˜ì¼ ë•Œ, ë¶€í˜¸ë¥¼ ì œê±°í•œë‹¤. (Oracle) */
         sValue1 = ( abs( sYear ) / 1000 ) % 10;
         sValue2 = abs( sYear ) % 1000;
     }
@@ -2539,7 +2539,7 @@ ACI_RC convertToRoman( acp_sint32_t   aIntNum,
 {
 /***********************************************************************
  *
- * Description : ·Î¸¶ ¼ıÀÚ·Î º¯È¯ÇÑ´Ù.
+ * Description : ë¡œë§ˆ ìˆ«ìë¡œ ë³€í™˜í•œë‹¤.
  *
  * Implementation :
  *
@@ -2643,8 +2643,8 @@ ACI_RC convertToString( acp_sint32_t  aLength,
 {
 /***********************************************************************
  *
- * Description : numeric typeÀÇ ¼ıÀÚ¸¦ to_char(number, number_format)
- *               ¿¡¼­ º¯È¯ÀÌ ½±µµ·Ï stringÀ¸·Î º¯È¯ÇÑ´Ù.
+ * Description : numeric typeì˜ ìˆ«ìë¥¼ to_char(number, number_format)
+ *               ì—ì„œ ë³€í™˜ì´ ì‰½ë„ë¡ stringìœ¼ë¡œ ë³€í™˜í•œë‹¤.
  *
  * Implementation :
  *
@@ -2652,8 +2652,8 @@ ACI_RC convertToString( acp_sint32_t  aLength,
 
     acp_char_t*  sTemp = aTemp;
     acp_sint32_t sBufferCur = 0;
-    // NumericÀ» ¹®ÀÚ¿­·Î º¯È¯ÇÒ ¶§ ÇÊ¿äÇÑ ÃÖ´ë ¹öÆÛ Å©±â
-    // Scale'ÀÇ ¹üÀ§°¡ -84 ~ 128 ÀÌ¹Ç·Î, '+.' ¶Ç´Â '-.'¿Í Scale 128 À¸·Î °è»ê
+    // Numericì„ ë¬¸ìì—´ë¡œ ë³€í™˜í•  ë•Œ í•„ìš”í•œ ìµœëŒ€ ë²„í¼ í¬ê¸°
+    // Scale'ì˜ ë²”ìœ„ê°€ -84 ~ 128 ì´ë¯€ë¡œ, '+.' ë˜ëŠ” '-.'ì™€ Scale 128 ìœ¼ë¡œ ê³„ì‚°
     acp_sint32_t sBufferFence = 2 + MTD_NUMERIC_SCALE_MAXIMUM + 1;
 
     acp_bool_t   sIsMinus = ACP_FALSE;
@@ -2672,7 +2672,7 @@ ACI_RC convertToString( acp_sint32_t  aLength,
     {
         sBufferCur = aciVaAppendFormat( sTemp, sBufferFence, "%s", "+" );
     }
-    // 0ÀÏ °æ¿ì¿¡´Â +. À¸·Î ¹İÈ¯ÇÑ´Ù.
+    // 0ì¼ ê²½ìš°ì—ëŠ” +. ìœ¼ë¡œ ë°˜í™˜í•œë‹¤.
     else if ( aSignExp == 128 )
     {
         sBufferCur = aciVaAppendFormat( sTemp, sBufferFence, "%s", "+" );
@@ -2686,7 +2686,7 @@ ACI_RC convertToString( acp_sint32_t  aLength,
         sBufferCur = aciVaAppendFormat( sTemp, sBufferFence, "%s", "-" );
     }
 
-    // À½¼öÀÏ °æ¿ì ¾ç¼ö·Î º¯È¯
+    // ìŒìˆ˜ì¼ ê²½ìš° ì–‘ìˆ˜ë¡œ ë³€í™˜
     if ( aSignExp < 128 )
     {
         aSignExp = 128 - aSignExp;
@@ -2694,7 +2694,7 @@ ACI_RC convertToString( acp_sint32_t  aLength,
         sIsMinus = ACP_TRUE;
     }
 
-    // ¼Ò¼öÁ¡ ¾Æ·¡ ºÎºĞÀ» °¡Áú ¶§´Â 0 ºÙ´Â À§Ä¡°¡ ´Ù¸§
+    // ì†Œìˆ˜ì  ì•„ë˜ ë¶€ë¶„ì„ ê°€ì§ˆ ë•ŒëŠ” 0 ë¶™ëŠ” ìœ„ì¹˜ê°€ ë‹¤ë¦„
     if ( aSignExp - 193 < aLength - 2 )
     {
         sIsFloat = ACP_TRUE;
@@ -2704,20 +2704,20 @@ ACI_RC convertToString( acp_sint32_t  aLength,
     {
         sNumber = *( aMantissa + sIterator );
 
-        // À½¼öÀÌ¸é
+        // ìŒìˆ˜ì´ë©´
         if ( sIsMinus == ACP_TRUE )
         {
             sNumber = 99 - sNumber;
         }
 
-        // ¼Ò¼ö ºÎºĞÀ» °¡Áú °æ¿ì, ÀÏÀÇ ÀÚ¸®ÀÇ À§Ä¡¸¦ ÀúÀå
+        // ì†Œìˆ˜ ë¶€ë¶„ì„ ê°€ì§ˆ ê²½ìš°, ì¼ì˜ ìë¦¬ì˜ ìœ„ì¹˜ë¥¼ ì €ì¥
         if ( ( sIsPoint == ACP_FALSE ) && ( sIsFloat == ACP_TRUE ) &&
              ( sIterator > ( aSignExp - 193 ) ) )
         {
             sBufferCur = aciVaAppendFormat( sTemp, sBufferFence, "%s", "." );
             sIsPoint = ACP_TRUE;
 
-            // ¼Ò¼öÀÎ °æ¿ì .´ÙÀ½¿¡ ºÙ´Â 0ÀÇ °³¼ö °è»ê
+            // ì†Œìˆ˜ì¸ ê²½ìš° .ë‹¤ìŒì— ë¶™ëŠ” 0ì˜ ê°œìˆ˜ ê³„ì‚°
             if ( ( ( sIsMinus == ACP_TRUE ) &&
                  ( ( 99 - *aMantissa ) >= 10 ) ) ||
                  ( ( sIsMinus == ACP_FALSE ) &&
@@ -2754,8 +2754,8 @@ ACI_RC convertToString( acp_sint32_t  aLength,
             }
             else
             {
-                // ¼Ò¼ö ºÎºĞÀÌ ÀÖÀ» °æ¿ì,
-                // ¸Ç ¸¶Áö¸· mantissa°¡ 10ÀÇ ¹è¼öÀÏ ¶§ ¸Ç³¡ÀÇ 0À» ¹ö¸°´Ù.
+                // ì†Œìˆ˜ ë¶€ë¶„ì´ ìˆì„ ê²½ìš°,
+                // ë§¨ ë§ˆì§€ë§‰ mantissaê°€ 10ì˜ ë°°ìˆ˜ì¼ ë•Œ ë§¨ëì˜ 0ì„ ë²„ë¦°ë‹¤.
                 if ( ( sIterator == ( aLength - 2 ) ) && ( sIsFloat == ACP_TRUE ) )
                 {
                     // nothing to do
@@ -2772,7 +2772,7 @@ ACI_RC convertToString( acp_sint32_t  aLength,
         }
         else if ( ( sNumber >= 0 ) && ( sNumber < 10 ) )
         {
-            // Ã¹¹øÂ° mantissa °ªÀÌ ÇÑÀÚ¸®¼öÀÌ¸é
+            // ì²«ë²ˆì§¸ mantissa ê°’ì´ í•œìë¦¬ìˆ˜ì´ë©´
             if ( sIterator == 0 )
             {
                 sBufferCur = aciVaAppendFormat( sTemp,
@@ -2781,7 +2781,7 @@ ACI_RC convertToString( acp_sint32_t  aLength,
                                      sNumber );
                 sCharCnt++;
             }
-            // Áß°£ÀÌ³ª ¸Ç ³¡ÀÇ mantissa °ªÀÌ ÇÑÀÚ¸®¼öÀÌ¸é
+            // ì¤‘ê°„ì´ë‚˜ ë§¨ ëì˜ mantissa ê°’ì´ í•œìë¦¬ìˆ˜ì´ë©´
             else
             {
                  sBufferCur = aciVaAppendFormat( sTemp,
@@ -2801,7 +2801,7 @@ ACI_RC convertToString( acp_sint32_t  aLength,
         }
     }
 
-    // Á¤¼öÀÎ °æ¿ì ÀÔ·ÂµÈ ¼ö ÀÌ¿Ü¿¡ 0ÀÌ Ãß°¡·Î ºÙ´Â °æ¿ì 0ÀÇ °³¼ö °è»ê
+    // ì •ìˆ˜ì¸ ê²½ìš° ì…ë ¥ëœ ìˆ˜ ì´ì™¸ì— 0ì´ ì¶”ê°€ë¡œ ë¶™ëŠ” ê²½ìš° 0ì˜ ê°œìˆ˜ ê³„ì‚°
     if ( sIsFloat == ACP_TRUE )
     {
         sZeroCount = 0;
@@ -2842,8 +2842,8 @@ ACI_RC mtfToCharInterface_checkFormat( acp_uint8_t* aFmt,
 {
 /***********************************************************************
  *
- * Description : number formatÀ» Ã¼Å©ÇÑ´Ù.
- *              ´Ù¸¥ ÇÔ¼ö¿¡¼­ »ç¿ëµÉ number format tokenÀ» aToken¿¡ ÀúÀåÇÑ´Ù.
+ * Description : number formatì„ ì²´í¬í•œë‹¤.
+ *              ë‹¤ë¥¸ í•¨ìˆ˜ì—ì„œ ì‚¬ìš©ë  number format tokenì„ aTokenì— ì €ì¥í•œë‹¤.
  *
  * Implementation :
  *
@@ -2878,17 +2878,17 @@ ACI_RC mtfToCharInterface_checkFormat( acp_uint8_t* aFmt,
 
     acp_uint16_t   sFormatIndex   = 0;
     acp_uint8_t*   sFormat        = aFmt;
-    acp_uint32_t   sFormatLeftLen = aLength;  // Ã³¸®ÇÏ°í ³²Àº format stringÀÇ length
-    acp_uint32_t   sFormatLen     = aLength;   // format stringÀÇ length
+    acp_uint32_t   sFormatLeftLen = aLength;  // ì²˜ë¦¬í•˜ê³  ë‚¨ì€ format stringì˜ length
+    acp_uint32_t   sFormatLen     = aLength;   // format stringì˜ length
 
     // To fix BUG-17693,28199
-    // 'FM' formatÀ» format string¿¡¼­ Ã£´Â´Ù.
-    // (°á°ú ¹®ÀÚ¿­ÀÇ ¾ÕÂÊ °ø¹éÁ¦°ÅÀÇ ÀÇ¹ÌÀÌ°í ¸Ç ¾Õ¿¡ ÇÑ¹ø¹Û¿¡ ³ª¿Ã ¼ö ¾ø´Ù.)
+    // 'FM' formatì„ format stringì—ì„œ ì°¾ëŠ”ë‹¤.
+    // (ê²°ê³¼ ë¬¸ìì—´ì˜ ì•ìª½ ê³µë°±ì œê±°ì˜ ì˜ë¯¸ì´ê³  ë§¨ ì•ì— í•œë²ˆë°–ì— ë‚˜ì˜¬ ìˆ˜ ì—†ë‹¤.)
     if ( mtcStrCaselessMatch( sFormat, 2, "FM", 2 ) == 0 )
     {
         sFMCnt++;
 
-        // 'FM' formatÀ» »©°í sFormatÀ» ¼³Á¤ÇÑ´Ù.
+        // 'FM' formatì„ ë¹¼ê³  sFormatì„ ì„¤ì •í•œë‹¤.
         sFormat += 2;
         sFormatLeftLen -= 2;
         sFormatLen -= 2;
@@ -2905,7 +2905,7 @@ ACI_RC mtfToCharInterface_checkFormat( acp_uint8_t* aFmt,
         {
             if ( mtcStrCaselessMatch( sFormat, 4, "EEEE", 4 ) == 0 )
             {
-                // eeee formatÀÌ ÀÖÀ» °æ¿ì 9³ª 0ÀÌ ³ª¿À±â Àü¿¡ .ÀÌ ³ª¿À¸é ¾ÈµÊ.
+                // eeee formatì´ ìˆì„ ê²½ìš° 9ë‚˜ 0ì´ ë‚˜ì˜¤ê¸° ì „ì— .ì´ ë‚˜ì˜¤ë©´ ì•ˆë¨.
                 ACI_TEST_RAISE( ( sEEEECnt != 0 ) || ( sCommaCnt != 0) ||
                                 ( sGCnt != 0 )    ||
                                 ( sIsFirstPeriod == ACP_TRUE ),
@@ -2998,7 +2998,7 @@ ACI_RC mtfToCharInterface_checkFormat( acp_uint8_t* aFmt,
             }
             if ( mtcStrCaselessMatch( sFormat, 2, "FM", 2 ) == 0 )
             {
-                // 'FM' formatÀº format string Áß°£¿¡ ³ª¿Ã ¼ö ¾ø´Ù.
+                // 'FM' formatì€ format string ì¤‘ê°„ì— ë‚˜ì˜¬ ìˆ˜ ì—†ë‹¤.
                 ACI_RAISE( ERR_INVALID_LITERAL );
             }
         }
@@ -3287,7 +3287,7 @@ break_out:
         sFormatIndex++;
     }
 
-    // Áö¿øÈ÷Áö ¾Ê´Â formatÀÌ ÀÖ´Â °æ¿ì, ERROR
+    // ì§€ì›íˆì§€ ì•ŠëŠ” formatì´ ìˆëŠ” ê²½ìš°, ERROR
     ACI_TEST_RAISE( sFormatLeftLen != 0, ERR_INVALID_LITERAL )
 
     aToken[MTD_NUMBER_FORMAT_FM]     = sFMCnt;
@@ -3340,7 +3340,7 @@ ACI_RC applyFormat( acp_char_t        * aString,
 {
 /***********************************************************************
  *
- * Description : number formatÀÇ ÇüÅÂ·Î stringÀ» º¯È¯ÇÑ´Ù.
+ * Description : number formatì˜ í˜•íƒœë¡œ stringì„ ë³€í™˜í•œë‹¤.
  *
  * Implementation :
  *
@@ -3385,7 +3385,7 @@ ACI_RC applyFormat( acp_char_t        * aString,
     sFormatLen                = aFormatLen;
     sResultLen                = sFormatLen;
 
-    // string¿¡¼­ Á¤¼ö ºÎºĞÀÇ ¼ıÀÚ °³¼ö¸¦ ¼¾´Ù.
+    // stringì—ì„œ ì •ìˆ˜ ë¶€ë¶„ì˜ ìˆ«ì ê°œìˆ˜ë¥¼ ì„¼ë‹¤.
     for ( sIterator = 0; sIterator < aStringLen; sIterator++ )
     {
         if ( ( *( sString + sIterator ) >= '0' ) &&
@@ -3406,8 +3406,8 @@ ACI_RC applyFormat( acp_char_t        * aString,
                 {
                     if ( sIsFloatZero == ACP_TRUE )
                     {
-                        // Á¤¼öºÎºĞÀÌ ¾øÀ» °æ¿ì À¯È¿¼ıÀÚ°¡ ³ª¿À±â ÀüÀÇ 0ÀÇ °³¼ö
-                        // 0.00234°°Àº °æ¿ì, 2°³
+                        // ì •ìˆ˜ë¶€ë¶„ì´ ì—†ì„ ê²½ìš° ìœ íš¨ìˆ«ìê°€ ë‚˜ì˜¤ê¸° ì „ì˜ 0ì˜ ê°œìˆ˜
+                        // 0.00234ê°™ì€ ê²½ìš°, 2ê°œ
                         sFloatInvalidNumCnt++;
                     }
                     else
@@ -3425,10 +3425,10 @@ ACI_RC applyFormat( acp_char_t        * aString,
         }
     }
 
-    // format stringÀ» result string¿¡ ¸Â°Ô º¯Çü½ÃÅ²´Ù.
+    // format stringì„ result stringì— ë§ê²Œ ë³€í˜•ì‹œí‚¨ë‹¤.
     if ( sEEEECnt == 0 )
     {
-        // fmtÀÇ À¯È¿¼ıÀÚ(¼Ò¼öÁ¡ À§)°¡ ´õ ÀûÀ¸¸é #À¸·Î Ã¤¿ö¼­ return
+        // fmtì˜ ìœ íš¨ìˆ«ì(ì†Œìˆ˜ì  ìœ„)ê°€ ë” ì ìœ¼ë©´ #ìœ¼ë¡œ ì±„ì›Œì„œ return
         if ( sIntNumCnt > ( sIntNineCnt + sIntZeroCnt ) )
         {
             acpMemSet( sResult,
@@ -3452,9 +3452,9 @@ ACI_RC applyFormat( acp_char_t        * aString,
     aToken[MTD_COUNT_FLOAT]         = sFloatNumCnt;
     aToken[MTD_COUNT_INVALID_FLOAT] = sFloatInvalidNumCnt;
 
-    // format stringÀ» result string¿¡ ¸Â°Ô º¯Çü½ÃÅ²´Ù.
-    // ºÎÈ£ ±âÈ£°¡ ÇÏ³ªµµ ¾øÀ» °æ¿ì ¸Ç ¾Õ¿¡ ÀÓ½Ã·Î ¹®ÀÚ¸¦ ÇÏ³ª
-    // ³Ö¾î³õÀ½.
+    // format stringì„ result stringì— ë§ê²Œ ë³€í˜•ì‹œí‚¨ë‹¤.
+    // ë¶€í˜¸ ê¸°í˜¸ê°€ í•˜ë‚˜ë„ ì—†ì„ ê²½ìš° ë§¨ ì•ì— ì„ì‹œë¡œ ë¬¸ìë¥¼ í•˜ë‚˜
+    // ë„£ì–´ë†“ìŒ.
     if ( ( sSCnt + sMICnt + sPRCnt) == 0 )
     {
         acpMemSet( sResult + sResultIndex,
@@ -3503,8 +3503,8 @@ ACI_RC applyFormat( acp_char_t        * aString,
         }
     }
 
-    // '$'¸¦ ºÎÈ£ ´ÙÀ½¿¡ Ãß°¡
-    // S°¡ ¸Ç¾Õ¿¡ ³ª¿À´Â format ÇüÅÂ´Â ³ªÁß¿¡ $±âÈ£¸¦ Ã³¸®ÇÑ´Ù.
+    // '$'ë¥¼ ë¶€í˜¸ ë‹¤ìŒì— ì¶”ê°€
+    // Sê°€ ë§¨ì•ì— ë‚˜ì˜¤ëŠ” format í˜•íƒœëŠ” ë‚˜ì¤‘ì— $ê¸°í˜¸ë¥¼ ì²˜ë¦¬í•œë‹¤.
     if ( sDollarCnt == 1 )
     {
         if ( sIsFirstS == ACP_FALSE )
@@ -3532,9 +3532,9 @@ ACI_RC applyFormat( acp_char_t        * aString,
             {
                 if ( sFormatIndex == 1 )
                 {
-                    // S´Â ¼ıÀÚ Ç¥Çö Çü½ÄÀÇ ¸Ç ¾ÕÀÌ³ª ¸Ç µÚ¿¡¸¸ ¿Ã ¼ö ÀÖ´Ù.
-                    // $´Â ¼ıÀÚ ¾Õ¿¡¸¸ ¿Ã ¼ö ÀÖ´Ù.
-                    // µû¶ó¼­, S$·Î ½ÃÀÛÇÏ´Â °æ¿ì´Â Á¤»óÀÌ´Ù.
+                    // SëŠ” ìˆ«ì í‘œí˜„ í˜•ì‹ì˜ ë§¨ ì•ì´ë‚˜ ë§¨ ë’¤ì—ë§Œ ì˜¬ ìˆ˜ ìˆë‹¤.
+                    // $ëŠ” ìˆ«ì ì•ì—ë§Œ ì˜¬ ìˆ˜ ìˆë‹¤.
+                    // ë”°ë¼ì„œ, S$ë¡œ ì‹œì‘í•˜ëŠ” ê²½ìš°ëŠ” ì •ìƒì´ë‹¤.
                     acpMemCpy( sResult + sResultIndex,
                                    sFormat + sFormatIndex,
                                    1 );
@@ -3542,7 +3542,7 @@ ACI_RC applyFormat( acp_char_t        * aString,
                 }
                 else
                 {
-                    // S¿Í $ »çÀÌÀÇ formatÀ» $ µÚ·Î º¸³»¾î, S$·Î ½ÃÀÛÇÏ°Ô ¸¸µç´Ù.
+                    // Sì™€ $ ì‚¬ì´ì˜ formatì„ $ ë’¤ë¡œ ë³´ë‚´ì–´, S$ë¡œ ì‹œì‘í•˜ê²Œ ë§Œë“ ë‹¤.
 
                     if ( sEEEECnt == 0 )
                     {
@@ -3553,7 +3553,7 @@ ACI_RC applyFormat( acp_char_t        * aString,
                                         sFormatIndex );
                                         */
 
-                        // ¿¹¸¦ µé¸é, 'S999$'¸¦ 'S$999'·Î º¯È¯ÇÑ´Ù.
+                        // ì˜ˆë¥¼ ë“¤ë©´, 'S999$'ë¥¼ 'S$999'ë¡œ ë³€í™˜í•œë‹¤.
                         acpMemCpy( sTemp, sResult, sFormatIndex );
                         acpMemCpy( sResult, sTemp, 1 );
                         acpMemSet( sResult + 1, '$', 1 );
@@ -3568,8 +3568,8 @@ ACI_RC applyFormat( acp_char_t        * aString,
                                         sResultIndex );
                                         */
 
-                        // EEEE formatÀÌ ÀÖÀ» °æ¿ì, ¸Ç ¾ÕÀÌ °ø¹éÀÓ.
-                        // ¿¹¸¦ µé¸é, ' S999$'¸¦ ' S$999'·Î º¯È¯ÇÑ´Ù.
+                        // EEEE formatì´ ìˆì„ ê²½ìš°, ë§¨ ì•ì´ ê³µë°±ì„.
+                        // ì˜ˆë¥¼ ë“¤ë©´, ' S999$'ë¥¼ ' S$999'ë¡œ ë³€í™˜í•œë‹¤.
                         acpMemCpy( sTemp, sResult, sResultIndex );
                         acpMemCpy( sResult, sTemp, 2 );
                         acpMemSet( sResult + 2, '$', 1 );
@@ -3620,7 +3620,7 @@ ACI_RC applyFormat( acp_char_t        * aString,
 
     if ( sEEEECnt == 0 )
     {
-        // EEEE formatÀÌ ¾øÀ» °æ¿ì, format Àû¿ë
+        // EEEE formatì´ ì—†ì„ ê²½ìš°, format ì ìš©
         ACI_TEST( applyNonEEEEFormat( aString,
                                       aStringLen,
                                       aResult,
@@ -3632,7 +3632,7 @@ ACI_RC applyFormat( acp_char_t        * aString,
     }
     else
     {
-        // EEEE formatÀÌ ÀÖÀ» °æ¿ì, format Àû¿ë
+        // EEEE formatì´ ìˆì„ ê²½ìš°, format ì ìš©
         ACI_TEST( applyEEEEFormat( aString,
                                    aStringLen,
                                    aResult,
@@ -3660,8 +3660,8 @@ ACI_RC applyNonEEEEFormat( acp_char_t       * aString,
 {
 /***********************************************************************
  *
- * Description : EEEE formatÀÌ ¾ø´Â °æ¿ì aStringÀ» aFormat¿¡ ¸Â°Ô
-                 º¯È¯ÇÑ´Ù.
+ * Description : EEEE formatì´ ì—†ëŠ” ê²½ìš° aStringì„ aFormatì— ë§ê²Œ
+                 ë³€í™˜í•œë‹¤.
  *
  * Implementation :
  *
@@ -3702,14 +3702,14 @@ ACI_RC applyNonEEEEFormat( acp_char_t       * aString,
     
     sFloatCnt     = aToken[MTD_COUNT_FLOAT_NINE] + aToken[MTD_COUNT_FLOAT_ZERO];
 
-    // str1ÀÌ 0ÀÏ °æ¿ì, 0À» ³ªÅ¸³»±â À§ÇØ¼­ sIntNumCntÀ» 1·Î ÇÑ´Ù.
+    // str1ì´ 0ì¼ ê²½ìš°, 0ì„ ë‚˜íƒ€ë‚´ê¸° ìœ„í•´ì„œ sIntNumCntì„ 1ë¡œ í•œë‹¤.
     if ( ( sBCnt == 0 ) && ( sStringLen == 2 ) && ( sFloatCnt == 0 ) )
     {
         sIntNumCnt = 1;
     }
 
-    // Á¤¼ö ºÎºĞÀ» ¾²±â ÀÌÀüÀÇ ¼ıÀÚ Áß, 0ÀÌ ³ª¿À±â
-    // Àü±îÁöÀÇ 9¿Í ,¸¦ ¸Ç ¾ÕÀ¸·Î º¸³½´Ù.
+    // ì •ìˆ˜ ë¶€ë¶„ì„ ì“°ê¸° ì´ì „ì˜ ìˆ«ì ì¤‘, 0ì´ ë‚˜ì˜¤ê¸°
+    // ì „ê¹Œì§€ì˜ 9ì™€ ,ë¥¼ ë§¨ ì•ìœ¼ë¡œ ë³´ë‚¸ë‹¤.
     sCount = sIntNineCntTemp + sIntZeroCnt;
     sChar = sResult + sResultIndex;
 
@@ -4085,7 +4085,7 @@ ACI_RC applyNonEEEEFormat( acp_char_t       * aString,
                        ( mtcStrCaselessMatch( sResult + sResultIndex, 1,
                                                   "D", 1 ) == 0 ) )
             {
-                // B formatÀÌ ÀÖ°í, ¼ıÀÚ°¡ 0ÀÏ °æ¿ì
+                // B formatì´ ìˆê³ , ìˆ«ìê°€ 0ì¼ ê²½ìš°
                 if ( ( sBCnt == 1 ) && ( sStringLen == 2 ) )
                 {
                     if ((((*( sString + sStringIndex ) == '.' ) &&
@@ -4187,8 +4187,8 @@ ACI_RC applyEEEEFormat( acp_char_t       * aString,
 {
 /***********************************************************************
  *
- * Description : EEEE formatÀÌ ÀÖ´Â °æ¿ì aStringÀ» aFormat¿¡ ¸Â°Ô
-                 º¯È¯ÇÑ´Ù.
+ * Description : EEEE formatì´ ìˆëŠ” ê²½ìš° aStringì„ aFormatì— ë§ê²Œ
+                 ë³€í™˜í•œë‹¤.
  *
  * Implementation :
  *
@@ -4229,14 +4229,14 @@ ACI_RC applyEEEEFormat( acp_char_t       * aString,
 
     sZeroIterator = sAfterVNineZeroCnt;
 
-    // str1ÀÌ 0ÀÏ °æ¿ì, 0À» ³ªÅ¸³»±â À§ÇØ¼­ sIntNumCntÀ» 1·Î ÇÑ´Ù.
+    // str1ì´ 0ì¼ ê²½ìš°, 0ì„ ë‚˜íƒ€ë‚´ê¸° ìœ„í•´ì„œ sIntNumCntì„ 1ë¡œ í•œë‹¤.
     if ( sStringLen == 2 )
     {
         sIntNumCnt = 1;
     }
 
-    // Áö¼ö Ç¥±â·Î ³ªÅ¸³¾ ¶§, Áö¼ö¸¦ °è»êÇÑ´Ù.
-    // 0ÀÌ ¾Æ´Ï°í, 0~1 »çÀÌÀÇ ¼Ò¼öÀÏ ¶§
+    // ì§€ìˆ˜ í‘œê¸°ë¡œ ë‚˜íƒ€ë‚¼ ë•Œ, ì§€ìˆ˜ë¥¼ ê³„ì‚°í•œë‹¤.
+    // 0ì´ ì•„ë‹ˆê³ , 0~1 ì‚¬ì´ì˜ ì†Œìˆ˜ì¼ ë•Œ
     if ( ( sStringLen != 2 ) && ( *( sString + 1 ) == '.' ) )
     {
         sExp = sFloatInvalidNumCnt * (-1) - 1;
@@ -4246,8 +4246,8 @@ ACI_RC applyEEEEFormat( acp_char_t       * aString,
         sExp = sIntNumCnt - 1;
     }
 
-    // EEEE formatÀÌ ÀÖÀ» °æ¿ì, V¾ÕÀÇ 9 ¶Ç´Â 0ÀÌ ¿©·¯°³ÀÏ °æ¿ì
-    // ÇÏ³ª¸¸ ³²°ÜµÎ°í »èÁ¦ÇÑ´Ù.
+    // EEEE formatì´ ìˆì„ ê²½ìš°, Vì•ì˜ 9 ë˜ëŠ” 0ì´ ì—¬ëŸ¬ê°œì¼ ê²½ìš°
+    // í•˜ë‚˜ë§Œ ë‚¨ê²¨ë‘ê³  ì‚­ì œí•œë‹¤.
     acpMemCpy( sTemp,
                    sResult,
                    sResultLen );
@@ -4272,8 +4272,8 @@ ACI_RC applyEEEEFormat( acp_char_t       * aString,
         sStringIndex++;
     }
 
-    // B°¡ ÀÖ°í, str1ÀÌ 0ÀÏ ¶§´Â sResultLen ¸¸Å­ÀÇ °ø¹éÀ» Ãâ·ÂÇÑ´Ù.
-    // loopµ¹Áö ¾ÊÀ½.
+    // Bê°€ ìˆê³ , str1ì´ 0ì¼ ë•ŒëŠ” sResultLen ë§Œí¼ì˜ ê³µë°±ì„ ì¶œë ¥í•œë‹¤.
+    // loopëŒì§€ ì•ŠìŒ.
     while ( ( sResultIndex < sResultLen ) &&
             ( ( sBCnt == 0 ) || ( sStringLen != 2 ) ) )
     {
@@ -4409,7 +4409,7 @@ ACI_RC applyEEEEFormat( acp_char_t       * aString,
                       ( mtcStrCaselessMatch( sResult + sResultIndex, 1,
                                                "M", 1 ) == 0 ) )
             {
-                // L, M Á¦°Å
+                // L, M ì œê±°
                 for ( sIterator = 0;
                       sIterator < ( sResultLen - sResultIndex - 1 );
                       sIterator++ )
@@ -4426,7 +4426,7 @@ ACI_RC applyEEEEFormat( acp_char_t       * aString,
             {
                 sIsStartV = ACP_TRUE;
 
-                // VÁ¦°Å
+                // Vì œê±°
                 for ( sIterator = 0;
                       sIterator < ( sResultLen - sResultIndex - 1 );
                       sIterator++ )
@@ -4504,9 +4504,9 @@ ACI_RC applyEEEEFormat( acp_char_t       * aString,
                     }
                 }
 
-                // ³ªÅ¸³¾ ¼ö ÀÖ´Â À¯È¿¼ıÀÚÀÇ °³¼ö¸¦ ÃÊ°úÇÑ °æ¿ì
-                // ÃÊ°úÇÑ VÀÇ °³¼ö¸¸Å­ 0À» Ãß°¡ÇÑ´Ù.
-                // ÃÊ°úÇÏÁö ¾ÊÀ» ¶§±îÁö´Â stringÀÇ ¼ıÀÚ¸¦ ±×´ë·Î °¡Á®¿Â´Ù.
+                // ë‚˜íƒ€ë‚¼ ìˆ˜ ìˆëŠ” ìœ íš¨ìˆ«ìì˜ ê°œìˆ˜ë¥¼ ì´ˆê³¼í•œ ê²½ìš°
+                // ì´ˆê³¼í•œ Vì˜ ê°œìˆ˜ë§Œí¼ 0ì„ ì¶”ê°€í•œë‹¤.
+                // ì´ˆê³¼í•˜ì§€ ì•Šì„ ë•Œê¹Œì§€ëŠ” stringì˜ ìˆ«ìë¥¼ ê·¸ëŒ€ë¡œ ê°€ì ¸ì˜¨ë‹¤.
                 if ( ( sIntNumCnt != 0 ) &&
                      ( sZeroIterator <= ( sAfterVNineZeroCnt - ( aStringLen - 2 ) + 1 ) ) )
                 {
@@ -4567,8 +4567,8 @@ ACI_RC applyEEEEFormat( acp_char_t       * aString,
                     sExp = sExp * (-1);
                 }
 
-                // exponent°¡ ¼¼ ÀÚ¸®ÀÏ °æ¿ì
-                // result stringÀÇ Å©±â¸¦ ÇÏ³ª ´Ã·Á¾ß ÇÑ´Ù.
+                // exponentê°€ ì„¸ ìë¦¬ì¼ ê²½ìš°
+                // result stringì˜ í¬ê¸°ë¥¼ í•˜ë‚˜ ëŠ˜ë ¤ì•¼ í•œë‹¤.
                 if ( sExp > 99 )
                 {
                     sResultIndex += 2;
@@ -4781,7 +4781,7 @@ ACI_RC compXXXXandRN( acp_uint8_t*   aNumFmt,
                 if ( ( *( sRnTemp + sIterator ) >= 'A' ) &&
                      ( *( sRnTemp + sIterator ) <= 'Z' ) )
                 {
-                    // ´ë¹®ÀÚÀÎ °æ¿ì, ¼Ò¹®ÀÚ·Î º¯È¯ÇÏ¿© °á°ú¿¡ ÀúÀå
+                    // ëŒ€ë¬¸ìì¸ ê²½ìš°, ì†Œë¬¸ìë¡œ ë³€í™˜í•˜ì—¬ ê²°ê³¼ì— ì €ì¥
                     *( sRnTemp + sIterator ) = *( sRnTemp + sIterator ) + 0x20;
                 }
                 else
@@ -4822,13 +4822,13 @@ ACI_RC mtfToCharInterfaceMakeFormatInfo( mtcNode*     aNode,
     yyscan_t            sScanner;
     acp_bool_t          sInitScanner = ACP_FALSE;
     acp_bool_t          sIsFillMode = ACP_FALSE;
-    acp_uint8_t        *sFormat = NULL;  //  ¿¡·¯ Ãâ·ÂÀ» À§ÇØ ÇöÀç Æ÷¸ËÀÇ À§Ä¡¸¦ ÃßÀûÇÔ
+    acp_uint8_t        *sFormat = NULL;  //  ì—ëŸ¬ ì¶œë ¥ì„ ìœ„í•´ í˜„ì¬ í¬ë§·ì˜ ìœ„ì¹˜ë¥¼ ì¶”ì í•¨
     acp_uint32_t        sFormatLen;
     acp_uint8_t        *sErrorFormat = NULL;
 
     sExecute = &(aTemplate->rows[aNode->table].execute[aNode->column]);
 
-    // calculateInfo¿¡ formatÁ¤º¸¸¦ (sFormatInfo) ÀúÀåÇÒ °ø°£À» ÇÒ´ç
+    // calculateInfoì— formatì •ë³´ë¥¼ (sFormatInfo) ì €ì¥í•  ê³µê°„ì„ í• ë‹¹
     ACI_TEST(aCallBack->alloc( aCallBack->info,
                                sizeof(mtdFormatInfo),
                                (void**)&( sExecute->calculateInfo ) )
@@ -4837,8 +4837,8 @@ ACI_RC mtfToCharInterfaceMakeFormatInfo( mtcNode*     aNode,
     sFormatInfo = (mtdFormatInfo*)(sExecute->calculateInfo);
     sFormatInfo->count = 0;
 
-    // calculateInfo¿¡ ÇÊ¿äÇÑ formatÀÇ °³¼ö¸¸Å­ °ø°£À» ÇÒ´ç
-    // formatÀÇ °³¼ö´Â ÃÖ´ë aFormatLenÀÌ´Ù.
+    // calculateInfoì— í•„ìš”í•œ formatì˜ ê°œìˆ˜ë§Œí¼ ê³µê°„ì„ í• ë‹¹
+    // formatì˜ ê°œìˆ˜ëŠ” ìµœëŒ€ aFormatLenì´ë‹¤.
     ACI_TEST(aCallBack->alloc( aCallBack->info,
                                sizeof(mtfTo_charCalcInfo) * aFormatLen,
                                (void**)&( sExecute->calculateInfo ) )
@@ -4867,8 +4867,8 @@ ACI_RC mtfToCharInterfaceMakeFormatInfo( mtcNode*     aNode,
             // Get string length
             sStringLen = mtddlget_leng( sScanner );
             
-            // calculateInfo¿¡ formatÁ¤º¸¸¦ (sFormatInfo) ÀúÀåÇÒ °ø°£À» ÇÒ´ç
-            // SEPARATOR È¤Àº °ø¹éÀÇ Å©±â ¸¸Å­ ÇÒ´ç
+            // calculateInfoì— formatì •ë³´ë¥¼ (sFormatInfo) ì €ì¥í•  ê³µê°„ì„ í• ë‹¹
+            // SEPARATOR í˜¹ì€ ê³µë°±ì˜ í¬ê¸° ë§Œí¼ í• ë‹¹
             ACI_TEST(aCallBack->alloc( aCallBack->info,
                                        sStringLen + 1,
                                        (void**)&( sExecute->calculateInfo ) )
@@ -4878,7 +4878,7 @@ ACI_RC mtfToCharInterfaceMakeFormatInfo( mtcNode*     aNode,
                 (acp_char_t*) sExecute->calculateInfo;
             sString = sFormatInfo->format[sFormatInfo->count].string;
 
-            // MAX_PRECISIONÀ» ÃÊ°úÇÏÁö ¾Ê´Â ¹üÀ§¿¡¼­ ¹®ÀÚ¿­ º¹»ç
+            // MAX_PRECISIONì„ ì´ˆê³¼í•˜ì§€ ì•ŠëŠ” ë²”ìœ„ì—ì„œ ë¬¸ìì—´ ë³µì‚¬
             sStringLen = IDL_MIN(MTC_TO_CHAR_MAX_PRECISION-1, sStringLen);
             acpMemCpy(sString,
                           mtddlget_text(sScanner),
@@ -4888,10 +4888,10 @@ ACI_RC mtfToCharInterfaceMakeFormatInfo( mtcNode*     aNode,
         else if ( sToken == MTD_DATE_FORMAT_DOUBLE_QUOTE_STRING )
         {
             // Get string length
-            // "***"ÀÇ °æ¿ì ¾çÂÊ¿¡ double quote¸¦ »èÁ¦ÇÒ °ÍÀ» °¡Á¤ÇÑ ±æÀÌ
+            // "***"ì˜ ê²½ìš° ì–‘ìª½ì— double quoteë¥¼ ì‚­ì œí•  ê²ƒì„ ê°€ì •í•œ ê¸¸ì´
             sStringLen = mtddlget_leng( sScanner ) - 2;
             
-            // calculateInfo¿¡ formatÁ¤º¸¸¦ (sFormatInfo) ÀúÀåÇÒ °ø°£À» ÇÒ´ç
+            // calculateInfoì— formatì •ë³´ë¥¼ (sFormatInfo) ì €ì¥í•  ê³µê°„ì„ í• ë‹¹
             ACI_TEST(aCallBack->alloc( aCallBack->info,
                                        sStringLen + 1,
                                        (void**)&( sExecute->calculateInfo ) )
@@ -4901,8 +4901,8 @@ ACI_RC mtfToCharInterfaceMakeFormatInfo( mtcNode*     aNode,
                 (acp_char_t*) sExecute->calculateInfo;
             sString = sFormatInfo->format[sFormatInfo->count].string;
 
-            // "***"ÀÇ °æ¿ì ¾çÂÊ¿¡ double quote¸¦ »èÁ¦ÇÑ´Ù.
-            // MAX_PRECISIONÀ» ÃÊ°úÇÏÁö ¾Ê´Â ¹üÀ§¿¡¼­ ¹®ÀÚ¿­ º¹»ç
+            // "***"ì˜ ê²½ìš° ì–‘ìª½ì— double quoteë¥¼ ì‚­ì œí•œë‹¤.
+            // MAX_PRECISIONì„ ì´ˆê³¼í•˜ì§€ ì•ŠëŠ” ë²”ìœ„ì—ì„œ ë¬¸ìì—´ ë³µì‚¬
             sStringLen = IDL_MIN(MTC_TO_CHAR_MAX_PRECISION-1, sStringLen);
             acpMemCpy(sString,
                           mtddlget_text(sScanner)+1,
@@ -4912,7 +4912,7 @@ ACI_RC mtfToCharInterfaceMakeFormatInfo( mtcNode*     aNode,
         else if ( sToken == MTD_DATE_FORMAT_NONE )
         {
             // BUG-19753
-            // separator È¤Àº quoted stringÀÌ ¾Æ´Ñ ÀÎ½ÄµÇÁö ¾ÊÀº Æ÷¸ËÀº ¿¡·¯
+            // separator í˜¹ì€ quoted stringì´ ì•„ë‹Œ ì¸ì‹ë˜ì§€ ì•Šì€ í¬ë§·ì€ ì—ëŸ¬
 
             sFormatLen = aFormatLen - ( sFormat - aFormat );
             ACI_TEST(aCallBack->alloc( aCallBack->info,
@@ -4929,8 +4929,8 @@ ACI_RC mtfToCharInterfaceMakeFormatInfo( mtcNode*     aNode,
         }
         else
         {
-            // NONE, DOUBLE_QUOTE Æ÷¸ËÀÌ ¾Æ´Ò¶§´Â stringÀÌ ÇÊ¿ä¾øÁö¸¸
-            // ¸Ş¸ğ¸® ÇÒ´çÀ» ÇØÁÖÁö ¾ÊÀ¸¸é ÇÔ¼ö¸¦ È£ÃâÇÒ ¶§, UMR ¹ß»ı
+            // NONE, DOUBLE_QUOTE í¬ë§·ì´ ì•„ë‹ë•ŒëŠ” stringì´ í•„ìš”ì—†ì§€ë§Œ
+            // ë©”ëª¨ë¦¬ í• ë‹¹ì„ í•´ì£¼ì§€ ì•Šìœ¼ë©´ í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•  ë•Œ, UMR ë°œìƒ
             ACI_TEST(aCallBack->alloc( aCallBack->info,
                                        1,
                                        (void**)&( sExecute->calculateInfo ) )
@@ -4955,7 +4955,7 @@ ACI_RC mtfToCharInterfaceMakeFormatInfo( mtcNode*     aNode,
         
         sFormatInfo->count++;
 
-        // ´ÙÀ½ Æ÷¸ËÀÇ ½ÃÀÛÁ¡À» °¡¸®Å°µµ·Ï Æ÷ÀÎÅÍ ÀÌµ¿
+        // ë‹¤ìŒ í¬ë§·ì˜ ì‹œì‘ì ì„ ê°€ë¦¬í‚¤ë„ë¡ í¬ì¸í„° ì´ë™
         sFormat += mtddlget_leng( sScanner );
         
         // get next token
@@ -4965,7 +4965,7 @@ ACI_RC mtfToCharInterfaceMakeFormatInfo( mtcNode*     aNode,
     mtddllex_destroy ( sScanner );
     sInitScanner = ACP_FALSE;
 
-    // calculateInfo¿¡´Â mtdFormatInfoÀÇ Ã³À½ ÁÖ¼Ò¸¦ ´Ù½Ã ¼¼ÆÃÇØÁà¾ß ÇÑ´Ù.
+    // calculateInfoì—ëŠ” mtdFormatInfoì˜ ì²˜ìŒ ì£¼ì†Œë¥¼ ë‹¤ì‹œ ì„¸íŒ…í•´ì¤˜ì•¼ í•œë‹¤.
     (sExecute->calculateInfo) = sFormatInfo;
 
     if ( sToken == -1 )
@@ -5014,7 +5014,7 @@ ACI_RC removeLeadingBlank( acp_char_t     * aResult,
  *
  *    TO_CHAR( number_type, 'number_format_model' )
  *
- *    'FM' formatÀÌ ¿ÔÀ» °æ¿ì ¿ŞÂÊ¿¡ ¿À´Â °ø¹éÀ» ¸ğµÎ Á¦°ÅÇÑ´Ù.
+ *    'FM' formatì´ ì™”ì„ ê²½ìš° ì™¼ìª½ì— ì˜¤ëŠ” ê³µë°±ì„ ëª¨ë‘ ì œê±°í•œë‹¤.
  *
  *
  ***********************************************************************/
@@ -5057,18 +5057,18 @@ ACI_RC mtfToCharInterface_mtfTo_char( mtcStack    * aStack,
 {
 /***********************************************************************
  *
- * Description : isql¿¡¼­ NUMBER µ¥ÀÌÅÍÀÇ Çü½Ä º¯È¯À» À§ÇÑ ÇÔ¼ö.
- *               ÀÔ·ÂµÈ ¼ıÀÚ¸¦ number format¿¡ µû¶ó º¯È¯ÇÏ¿© ¹®ÀÚ·Î Ãâ·Â.
+ * Description : isqlì—ì„œ NUMBER ë°ì´í„°ì˜ í˜•ì‹ ë³€í™˜ì„ ìœ„í•œ í•¨ìˆ˜.
+ *               ì…ë ¥ëœ ìˆ«ìë¥¼ number formatì— ë”°ë¼ ë³€í™˜í•˜ì—¬ ë¬¸ìë¡œ ì¶œë ¥.
  *
  * Implementation :
  *    SET NUMFORMAT fmt
  *    COLUMN col FORMAT fmt
  *
- * @param[out] aStack[0] : format¿¡ ¸Â°Ô º¯È¯µÈ ¹®ÀÚ¿­
- * @param[in]  aStack[1] : ÀÔ·Â number µ¥ÀÌÅÍ
+ * @param[out] aStack[0] : formatì— ë§ê²Œ ë³€í™˜ëœ ë¬¸ìì—´
+ * @param[in]  aStack[1] : ì…ë ¥ number ë°ì´í„°
  * @param[in]  aStack[2] : number format
- * @param[in]  aToken    : mtfToCharInterface_checkFormat ÇÔ¼ö¿¡¼­ ¹İÈ¯µÈ Token ¹®ÀÚ¿­
- * @param[in]  aCurrency : ÇØ´ç ¼¼¼ÇÀÇ NLS_ISO_CURRENCY, NLS_CURRENCY,
+ * @param[in]  aToken    : mtfToCharInterface_checkFormat í•¨ìˆ˜ì—ì„œ ë°˜í™˜ëœ Token ë¬¸ìì—´
+ * @param[in]  aCurrency : í•´ë‹¹ ì„¸ì…˜ì˜ NLS_ISO_CURRENCY, NLS_CURRENCY,
  *                         NLS_NUMERIC_CHARACTERS
 
  *    ex) SET NUMFORMAT 9.99EEEE
@@ -5089,15 +5089,15 @@ ACI_RC mtfToCharInterface_mtfTo_char( mtcStack    * aStack,
     acp_uint8_t*        sNumFmt = NULL;
     acp_uint32_t        sNumFmtLen  = 0;
 
-    // NumericÀ» ¹®ÀÚ¿­·Î º¯È¯ÇÒ ¶§ ÇÊ¿äÇÑ ÃÖ´ë ¹öÆÛ Å©±â
-    // Scale'ÀÇ ¹üÀ§°¡ -84 ~ 128 ÀÌ¹Ç·Î, '+.' ¶Ç´Â '-.'¿Í Scale 128 À¸·Î °è»ê
+    // Numericì„ ë¬¸ìì—´ë¡œ ë³€í™˜í•  ë•Œ í•„ìš”í•œ ìµœëŒ€ ë²„í¼ í¬ê¸°
+    // Scale'ì˜ ë²”ìœ„ê°€ -84 ~ 128 ì´ë¯€ë¡œ, '+.' ë˜ëŠ” '-.'ì™€ Scale 128 ìœ¼ë¡œ ê³„ì‚°
     acp_char_t          sTemp[2 + MTD_NUMERIC_SCALE_MAXIMUM + 1];
     acp_sint32_t        sTempLen = 0;
 
     acp_uint32_t        sIterator = 0;
     acp_bool_t          sIsMinus = ACP_FALSE;
     acp_uint32_t        sResultLen = 0;
-    acp_uint8_t         sString[MTD_NUMBER_FORMAT_BUFFER_LEN] = {0,};     // applyFormat()¸¦ È£ÃâÇÏ±â Àü¿¡ ÃÊ±âÈ­
+    acp_uint8_t         sString[MTD_NUMBER_FORMAT_BUFFER_LEN] = {0,};     // applyFormat()ë¥¼ í˜¸ì¶œí•˜ê¸° ì „ì— ì´ˆê¸°í™”
     acp_bool_t          sIsV = ACP_FALSE;
     acp_sint32_t        sNumCnt = 0;
     acp_sint32_t        sIntNumCnt = 0;
@@ -5118,10 +5118,10 @@ ACI_RC mtfToCharInterface_mtfTo_char( mtcStack    * aStack,
     acp_double_t        sPowResult;
 
     /* BUG-34447 for isql
-     * isqlÀÇ utISPApi::ReformatRow()¿¡¼­ NULL°ªÀÌ ¾Æ´Ñ °æ¿ì¿¡¸¸ È£ÃâµÇ¹Ç·Î
-     * Null °Ë»ç´Â ÇÊ¿ä ¾øÀ½.
-     * ´õ¿íÀÌ Å¬¶óÀÌ¾ğÆ®¿ë mtcInitializeColumn¿¡¼­ module ¼ÂÆÃÀ» ÇÏÁö
-     * ¾ÊÀ¸¹Ç·Î  isNull È£Ãâµµ ºÒ°¡.
+     * isqlì˜ utISPApi::ReformatRow()ì—ì„œ NULLê°’ì´ ì•„ë‹Œ ê²½ìš°ì—ë§Œ í˜¸ì¶œë˜ë¯€ë¡œ
+     * Null ê²€ì‚¬ëŠ” í•„ìš” ì—†ìŒ.
+     * ë”ìš±ì´ í´ë¼ì´ì–¸íŠ¸ìš© mtcInitializeColumnì—ì„œ module ì…‹íŒ…ì„ í•˜ì§€
+     * ì•Šìœ¼ë¯€ë¡œ  isNull í˜¸ì¶œë„ ë¶ˆê°€.
     if( (aStack[1].column->module->isNull( aStack[1].column,
                                            aStack[1].value,
                                            MTD_OFFSET_USELESS) == ACP_TRUE) ||
@@ -5147,7 +5147,7 @@ ACI_RC mtfToCharInterface_mtfTo_char( mtcStack    * aStack,
         sNumFmtLen = sVarchar->length;
 
         /* BUG-34447 for isql
-         * isql·ÎºÎÅÍ Token°ú currency¸¦ Àü´Ş¹ŞÀ¸¹Ç·Î 4916~4917 ¶óÀÎÀ¸·Î ±³Ã¼
+         * isqlë¡œë¶€í„° Tokenê³¼ currencyë¥¼ ì „ë‹¬ë°›ìœ¼ë¯€ë¡œ 4916~4917 ë¼ì¸ìœ¼ë¡œ êµì²´
         if ( aInfo != NULL )
         {
             sNumberInfo = (mtfNumberInfo*) aInfo;
@@ -5208,15 +5208,15 @@ ACI_RC mtfToCharInterface_mtfTo_char( mtcStack    * aStack,
         if ( ( mtcStrCaselessMatch( sNumFmt, 2, "RN", 2 ) == 0 ) ||
              ( mtcStrCaselessMatch( sNumFmt, 4, "XXXX", 4 ) == 0 ) )
         {
-            // ¼Ò¼ö°¡ ÀÔ·ÂµÉ °æ¿ì Á¤¼ö·Î ¹İ¿Ã¸²ÇÑ´Ù.
+            // ì†Œìˆ˜ê°€ ì…ë ¥ë  ê²½ìš° ì •ìˆ˜ë¡œ ë°˜ì˜¬ë¦¼í•œë‹¤.
             sMtdZeroValue = (mtdNumericType*)sMtdZeroBuff;
             ACI_TEST( mtcRoundFloat( sNumberTemp,
                                        sNumber,
                                        sMtdZeroValue )
                       != ACI_SUCCESS );
 
-            // numeric Å¸ÀÔÀ» Á¤¼ö·Î º¯È¯ÇÏ´Â °úÁ¤. integer ¹üÀ§ ³»¿¡¼­ º¯È¯ÇÑ´Ù.
-            // *(sNumberTemp)´Â numericÀÇ lengthÀÌ´Ù.
+            // numeric íƒ€ì…ì„ ì •ìˆ˜ë¡œ ë³€í™˜í•˜ëŠ” ê³¼ì •. integer ë²”ìœ„ ë‚´ì—ì„œ ë³€í™˜í•œë‹¤.
+            // *(sNumberTemp)ëŠ” numericì˜ lengthì´ë‹¤.
             if ( sNumberTemp->length > 0 )
             {
                 for ( sIterator = 0; sIterator < ((acp_uint32_t)sNumberTemp->length) - 1; sIterator++ )
@@ -5248,7 +5248,7 @@ ACI_RC mtfToCharInterface_mtfTo_char( mtcStack    * aStack,
                         */
                     }
                     
-                    // °á°ú°ªÀº IntegerÀÌ¹Ç·Î, numericÀ» Integer Å©±â ÀÌÇÏ·Î Á¦ÇÑÇØ¾ß ÇÑ´Ù.
+                    // ê²°ê³¼ê°’ì€ Integerì´ë¯€ë¡œ, numericì„ Integer í¬ê¸° ì´í•˜ë¡œ ì œí•œí•´ì•¼ í•œë‹¤.
                     if ( ( sRnNumCheck > ACP_SINT32_MAX ) || ( sRnNumCheck < ACP_SINT32_MIN ) )
                     {
                         ACI_RAISE( ERR_INVALID_LENGTH );
@@ -5264,7 +5264,7 @@ ACI_RC mtfToCharInterface_mtfTo_char( mtcStack    * aStack,
                 // Nothing to do.
             }
 
-            // XXXX ¶Ç´Â RN formatÀ» °è»êÇÑ´Ù.
+            // XXXX ë˜ëŠ” RN formatì„ ê³„ì‚°í•œë‹¤.
             ACI_TEST( compXXXXandRN( sNumFmt,
                                      sNumFmtLen,
                                      sResult->value,
@@ -5272,7 +5272,7 @@ ACI_RC mtfToCharInterface_mtfTo_char( mtcStack    * aStack,
                                      sIntNum )
                       != ACI_SUCCESS );
         }
-        // RN, XXXX°¡ ¾Æ´Ñ  fmtÀÏ °æ¿ì sNumber¸¦ ±×´ë·Î stringÀ¸·Î º¯È¯ÇÑ´Ù.
+        // RN, XXXXê°€ ì•„ë‹Œ  fmtì¼ ê²½ìš° sNumberë¥¼ ê·¸ëŒ€ë¡œ stringìœ¼ë¡œ ë³€í™˜í•œë‹¤.
         else
         {
             sNineCnt = sToken[MTD_NUMBER_FORMAT_ZERO] +
@@ -5281,7 +5281,7 @@ ACI_RC mtfToCharInterface_mtfTo_char( mtcStack    * aStack,
                                   sToken[MTD_COUNT_FLOAT_NINE];
             if ( sToken[MTD_NUMBER_FORMAT_EEEE] <= 0 )
             {
-                // formatÀÇ . µÚ¿¡ ³ª¿Â 9 ¶Ç´Â 0ÀÇ °³¼ö¿¡ ¸ÂÃç¼­ ¹İ¿Ã¸²
+                // formatì˜ . ë’¤ì— ë‚˜ì˜¨ 9 ë˜ëŠ” 0ì˜ ê°œìˆ˜ì— ë§ì¶°ì„œ ë°˜ì˜¬ë¦¼
                 sRoundNum = sAfterPeriodNineCnt;
 
                 if ( sRoundNum >= 100 )
@@ -5386,9 +5386,9 @@ ACI_RC mtfToCharInterface_mtfTo_char( mtcStack    * aStack,
                     }
                 }
 
-                // sStringÀÇ 0~9ÀÇ °³¼öº¸´Ù formatÀÇ 9ÀÇ °³¼ö°¡ ¸¹À» °æ¿ì
-                // ¹İ¿Ã¸²ÇÑ´Ù.
-                // ¸î ¹øÂ° ÀÚ¸®¿¡¼­ ¹İ¿Ã¸²ÇÒ °ÍÀÎÁö °áÁ¤
+                // sStringì˜ 0~9ì˜ ê°œìˆ˜ë³´ë‹¤ formatì˜ 9ì˜ ê°œìˆ˜ê°€ ë§ì„ ê²½ìš°
+                // ë°˜ì˜¬ë¦¼í•œë‹¤.
+                // ëª‡ ë²ˆì§¸ ìë¦¬ì—ì„œ ë°˜ì˜¬ë¦¼í•  ê²ƒì¸ì§€ ê²°ì •
                 if ( ( sIntNumCnt > 0 ) &&
                      ( ( sNumCnt > sNineCnt ) ||
                        ( ( sAfterPeriodNineCnt + 1 ) != sNumCnt ) ) )

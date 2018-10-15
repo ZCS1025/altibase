@@ -47,17 +47,17 @@ public class RowHandle implements BatchDataHandle
             mArrays = new ArrayList<DynamicArray>(aColumns.size());
             for (int i = 0; i < aColumns.size(); i++)
             {
-                // BUG-43807 Column listÀÇ ÀÎµ¦½º¸¦ ÀÌ¿ëÇØ Á¢±ÙÇÏ±â ¶§¹®¿¡ size¸¸Å­ null·Î ¹Ì¸® ¸®½ºÆ®¸¦ Ã¤¿î´Ù.
+                // BUG-43807 Column listì˜ ì¸ë±ìŠ¤ë¥¼ ì´ìš©í•´ ì ‘ê·¼í•˜ê¸° ë•Œë¬¸ì— sizeë§Œí¼ nullë¡œ ë¯¸ë¦¬ ë¦¬ìŠ¤íŠ¸ë¥¼ ì±„ìš´ë‹¤.
                 mArrays.add(null);
             }
         }
     }
     
     /*
-     * store °ü·Ã ¸Þ¼Òµå
-     *  - initToStore(): Ä³½Ã¸¦ ÃÊ±âÈ­ÇÏ°í Ã³À½ºÎÅÍ storeÇÏ±â À§ÇØ È£ÃâÇÑ´Ù.
-     *  - cacheSize(): ÇöÀç Ä³½ÃµÇ¾î ÀÖ´Â rowÀÇ °³¼ö¸¦ ±¸ÇÑ´Ù.
-     *  - store(): row¸¦ ÇÏ³ª Ä³½ÃÇÑ´Ù.
+     * store ê´€ë ¨ ë©”ì†Œë“œ
+     *  - initToStore(): ìºì‹œë¥¼ ì´ˆê¸°í™”í•˜ê³  ì²˜ìŒë¶€í„° storeí•˜ê¸° ìœ„í•´ í˜¸ì¶œí•œë‹¤.
+     *  - cacheSize(): í˜„ìž¬ ìºì‹œë˜ì–´ ìžˆëŠ” rowì˜ ê°œìˆ˜ë¥¼ êµ¬í•œë‹¤.
+     *  - store(): rowë¥¼ í•˜ë‚˜ ìºì‹œí•œë‹¤.
      */
     public void initToStore()
     {
@@ -67,8 +67,8 @@ public class RowHandle implements BatchDataHandle
             DynamicArray sArray = mArrays.get(i);
             if (sArray == null || !sBindColumn.isArrayCompatible(sArray))
             {
-                // ÃÖÃÊ columnÀÌ ¼¼ÆÃµÈ ÈÄ array°¡ ¸¸µé¾îÁöÁö ¾Ê¾ÒÀ» °æ¿ì³ª
-                // array¸¦ ¸¸µé¾ú´Âµ¥ ±× ÀÌÈÄ ÄÃ·³ Å¸ÀÔÀÌ ¹Ù²ï °æ¿ì
+                // ìµœì´ˆ columnì´ ì„¸íŒ…ëœ í›„ arrayê°€ ë§Œë“¤ì–´ì§€ì§€ ì•Šì•˜ì„ ê²½ìš°ë‚˜
+                // arrayë¥¼ ë§Œë“¤ì—ˆëŠ”ë° ê·¸ ì´í›„ ì»¬ëŸ¼ íƒ€ìž…ì´ ë°”ë€ ê²½ìš°
                 sArray = sBindColumn.createTypedDynamicArray();
                 sArray.setCursor(mStoreCursor, mLoadCursor);
                 mArrays.set(i, sArray);
@@ -88,8 +88,8 @@ public class RowHandle implements BatchDataHandle
 
     public void store()
     {
-        // Ã¹¹øÂ° index´Â ¹ö¸°´Ù.
-        // 0´Â beforeFirst¸¦ À§ÇÑ index·Î »ç¿ëÇÏ±â À§ÇÔÀÌ´Ù.
+        // ì²«ë²ˆì§¸ indexëŠ” ë²„ë¦°ë‹¤.
+        // 0ëŠ” beforeFirstë¥¼ ìœ„í•œ indexë¡œ ì‚¬ìš©í•˜ê¸° ìœ„í•¨ì´ë‹¤.
         mStoreCursor.next();
         for (int i = 0; i < mColumns.size(); i++)
         {
@@ -134,7 +134,7 @@ public class RowHandle implements BatchDataHandle
     
     /*
      * row cursor position getter
-     *  - getPosition(): ÇöÀç row À§Ä¡¸¦ ±¸ÇÑ´Ù.
+     *  - getPosition(): í˜„ìž¬ row ìœ„ì¹˜ë¥¼ êµ¬í•œë‹¤.
      *  - isBeforeFirst()
      *  - isAfterLast()
      *  - isFirst()
@@ -166,7 +166,7 @@ public class RowHandle implements BatchDataHandle
     }
     
     /*
-     * row cursor positioning ¸Þ¼Òµå
+     * row cursor positioning ë©”ì†Œë“œ
      *  - setPosition()
      *  - beforeFirst()
      *  - afterLast()
@@ -257,7 +257,7 @@ public class RowHandle implements BatchDataHandle
     }
 
     /**
-     * ÇöÀç Ä¿¼­ À§Ä¡ÀÇ Row¸¦ Áö¿î´Ù.
+     * í˜„ìž¬ ì»¤ì„œ ìœ„ì¹˜ì˜ Rowë¥¼ ì§€ìš´ë‹¤.
      */
     public void delete()
     {
@@ -282,9 +282,9 @@ public class RowHandle implements BatchDataHandle
     }
 
     /**
-     * ÄÃ·³ÀÎµ¦½º¿¡ ÇØ´çÇÏ´Â DynamicArray¸¦ ¸®ÅÏÇÑ´Ù.
-     * @param aIndex ÄÃ·³ÀÎµ¦½º
-     * @return ÄÃ·³ÀÎµ¦½º¿¡ ÇØ´çÇÏ´Â DynamicArray
+     * ì»¬ëŸ¼ì¸ë±ìŠ¤ì— í•´ë‹¹í•˜ëŠ” DynamicArrayë¥¼ ë¦¬í„´í•œë‹¤.
+     * @param aIndex ì»¬ëŸ¼ì¸ë±ìŠ¤
+     * @return ì»¬ëŸ¼ì¸ë±ìŠ¤ì— í•´ë‹¹í•˜ëŠ” DynamicArray
      */
     public DynamicArray getDynamicArray(int aIndex)
     {

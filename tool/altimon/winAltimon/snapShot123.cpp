@@ -75,7 +75,7 @@ void __fastcall TSnapShotForm::Button1Click(TObject *Sender)
 	}
 
 
-    //// ÁÖ¼® ±ÍÂú´Ù.
+    //// ì£¼ì„ ê·€ì°®ë‹¤.
 	ADOQuery1->SQL->Text = "select count(*) from v$session";
 
 	try

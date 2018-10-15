@@ -36,7 +36,7 @@ enum iSQLForeignKeyKind
 
 typedef enum iSQLForkRunType
 {
-    FORKONLYDAEMON = 0, // PROJ-2446: hdb server¿ëÀ¸·Îµµ »ç¿ë
+    FORKONLYDAEMON = 0, // PROJ-2446: hdb serverìš©ìœ¼ë¡œë„ ì‚¬ìš©
     FORKONLYWSERVER,
     FORKONLYDAEMONANDWSERVER
 }iSQLForkRunType;
@@ -180,7 +180,7 @@ public:
     IDE_RC Close();
     IDE_RC StmtClose(idBool aPrepare);
 
-    /* Æ¯Á¤ Å×ÀÌºíÀÌ Á¸ÀçÇÏ´ÂÁö Ã¼Å©ÇÑ´Ù. */
+    /* íŠ¹ì • í…Œì´ë¸”ì´ ì¡´ì¬í•˜ëŠ”ì§€ ì²´í¬í•œë‹¤. */
     IDE_RC CheckTableExist(SChar *aUserName, SChar *aTableName, idBool *aIsExist);
 
     IDE_RC Tables(SChar *a_UserName, idBool a_IsSysUser, TableInfo *aObjInfo);
@@ -215,7 +215,7 @@ public:
                         SChar              *aFKName,
                         SShort             *aKeySeq );
 
-    /* PROJ-1107 Check Constraint Áö¿ø */
+    /* PROJ-1107 Check Constraint ì§€ì› */
     IDE_RC CheckConstraints( SChar * aUserName,
                              SChar * aTableName,
                              SChar * aConstrName,
@@ -252,7 +252,7 @@ public:
     SQLRETURN MoreResults(idBool aPrepare);
     IDE_RC    BuildBindInfo(idBool aPrepare, idBool aExecute);
 
-/* BUGBUG-procedure, function directExecute ¼öÇàÇÏ¸é ¿¡·¯ */
+/* BUGBUG-procedure, function directExecute ìˆ˜í–‰í•˜ë©´ ì—ëŸ¬ */
     IDE_RC    Prepare();
     IDE_RC    Execute(idBool aAllowCancel=ID_FALSE);
     IDE_RC    GetConnectAttr(SInt aAttr, SInt *aValue);
@@ -360,7 +360,7 @@ private:
     SQLHSTMT  m_IStmt;
     SQLHSTMT  m_TmpStmt;    // use Tables, Columns, GetProcInfo, FetchProcInfo
     SQLHSTMT  m_TmpStmt2;   // use GetReturnType
-    SQLHSTMT  m_TmpStmt3;   // use Prepare, ProcBindPara, Execute, BUGBUG-stmt prepare »ç¿ë ÈÄ directExecute »ç¿ëÇÏ¸é ¿¡·¯
+    SQLHSTMT  m_TmpStmt3;   // use Prepare, ProcBindPara, Execute, BUGBUG-stmt prepare ì‚¬ìš© í›„ directExecute ì‚¬ìš©í•˜ë©´ ì—ëŸ¬
     SQLHSTMT  m_ObjectStmt;
     SQLHSTMT  m_SynonymStmt;
     SQLHDESC  mIRD; // BUG-42521
@@ -375,10 +375,10 @@ private:
     uteErrorMgr *mErrorMgr;
 
     /* for admin */
-    /* ÃÊ±â°ªÀº ID_FALSEÀÌ´Ù.
-     * °ü¸®ÀÚ ¸ğµå¿¡¼­ Open()ÀÌ È£ÃâµÆÀ» ¶§,
-     * ¼­¹ö ÇÁ·Î¼¼½º°¡ ¾ÆÁ÷ ½ÃÀÛµÇÁö ¾ÊÀº »óÅÂ¿©¼­ Open()ÀÌ ½ÇÆĞÇÑ °æ¿ì ID_TRUE·Î ¼³Á¤µÈ´Ù.
-     * ¼­¹ö ÇÁ·Î¼¼½º°¡ ½ÃÀÛµÈ »óÅÂ¿¡¼­ ¼­¹ö¿ÍÀÇ ¿¬°á¿¡ ¼º°øÇÏ¸é ID_FALSE·Î ¼³Á¤µÈ´Ù. */
+    /* ì´ˆê¸°ê°’ì€ ID_FALSEì´ë‹¤.
+     * ê´€ë¦¬ì ëª¨ë“œì—ì„œ Open()ì´ í˜¸ì¶œëì„ ë•Œ,
+     * ì„œë²„ í”„ë¡œì„¸ìŠ¤ê°€ ì•„ì§ ì‹œì‘ë˜ì§€ ì•Šì€ ìƒíƒœì—¬ì„œ Open()ì´ ì‹¤íŒ¨í•œ ê²½ìš° ID_TRUEë¡œ ì„¤ì •ëœë‹¤.
+     * ì„œë²„ í”„ë¡œì„¸ìŠ¤ê°€ ì‹œì‘ëœ ìƒíƒœì—ì„œ ì„œë²„ì™€ì˜ ì—°ê²°ì— ì„±ê³µí•˜ë©´ ID_FALSEë¡œ ì„¤ì •ëœë‹¤. */
     idBool       mIsConnToIdleInstance;
 
     /* for SQLCancel */
@@ -417,8 +417,8 @@ public:
 /**
  * DeclareSQLExecuteBegin.
  *
- * SQL statement ½ÇÇà Á÷Àü È£ÃâµÇ¸ç,
- * SQL statement ½ÇÇà Ãë¼Ò¸¦ Çã¿ëÇÏ±â À§ÇÑ ¼³Á¤À» ÇÑ´Ù.
+ * SQL statement ì‹¤í–‰ ì§ì „ í˜¸ì¶œë˜ë©°,
+ * SQL statement ì‹¤í–‰ ì·¨ì†Œë¥¼ í—ˆìš©í•˜ê¸° ìœ„í•œ ì„¤ì •ì„ í•œë‹¤.
  */
 inline void utISPApi::DeclareSQLExecuteBegin(SQLHSTMT aExecutingStmt)
 {
@@ -430,8 +430,8 @@ inline void utISPApi::DeclareSQLExecuteBegin(SQLHSTMT aExecutingStmt)
 /**
  * DeclareSQLExecuteEnd.
  *
- * SQL statement ½ÇÇà Á÷ÈÄ È£ÃâµÇ¸ç,
- * SQL statement ½ÇÇà Ãë¼Ò¸¦ Çã¿ëÇÏ±â À§ÇÑ ¼³Á¤À» ÇØÁ¦ÇÑ´Ù.
+ * SQL statement ì‹¤í–‰ ì§í›„ í˜¸ì¶œë˜ë©°,
+ * SQL statement ì‹¤í–‰ ì·¨ì†Œë¥¼ í—ˆìš©í•˜ê¸° ìœ„í•œ ì„¤ì •ì„ í•´ì œí•œë‹¤.
  */
 inline void utISPApi::DeclareSQLExecuteEnd()
 {

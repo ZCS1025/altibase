@@ -15,12 +15,12 @@
  */
 
 /**
- * ÀÌ ÆÄÀÏÀº ulnDbc ±¸Á¶Ã¼ ¸¦ ´Ù·ç´Â °øÅëµÇ´Â ·çÆ¾µéÀ» ´ã°í ÀÖ´Ù.
+ * ì´ íŒŒì¼ì€ ulnDbc êµ¬ì¡°ì²´ ë¥¼ ë‹¤ë£¨ëŠ” ê³µí†µë˜ëŠ” ë£¨í‹´ë“¤ì„ ë‹´ê³  ìžˆë‹¤.
  *
- *  - ulnDbc ÀÇ »ý¼º
- *  - ulnDbc ÀÇ ÆÄ±«
- *  - ulnDbc ÀÇ ÃÊ±âÈ­
- *  - ulnDbc °¡ °¡Áö´Â STMT, DESC µéÀÇ Ãß°¡ / »èÁ¦
+ *  - ulnDbc ì˜ ìƒì„±
+ *  - ulnDbc ì˜ íŒŒê´´
+ *  - ulnDbc ì˜ ì´ˆê¸°í™”
+ *  - ulnDbc ê°€ ê°€ì§€ëŠ” STMT, DESC ë“¤ì˜ ì¶”ê°€ / ì‚­ì œ
  */
 
 #include <uln.h>
@@ -54,13 +54,13 @@ ACI_RC ulnDbcAllocNewLink(ulnDbc *aDbc)
     ACE_ASSERT(aDbc->mCmiLinkImpl != CMI_LINK_IMPL_INVALID);
 
     /*
-     * cmiLink ´Â ¿ëµµ¿¡ µû¸¥ Type °ú ±¸Çö¿¡ µû¸¥ Impl ·Î ³ª´¶´Ù.
+     * cmiLink ëŠ” ìš©ë„ì— ë”°ë¥¸ Type ê³¼ êµ¬í˜„ì— ë”°ë¥¸ Impl ë¡œ ë‚˜ë‰œë‹¤.
      *
      *  1. Link Type
      *      - Listen Link (CMI_LINK_TYPE_LISTEN)
-     *        Á¢¼ÓÀ» ¹Þ¾ÆµéÀÌ±â À§ÇÑ ¼­¹ö¿ë ¸µÅ©
+     *        ì ‘ì†ì„ ë°›ì•„ë“¤ì´ê¸° ìœ„í•œ ì„œë²„ìš© ë§í¬
      *      - Peer Link (CMI_LINK_TYPE_PEER)
-     *        µ¥ÀÌÅÍ Åë½ÅÀ» À§ÇØ Á¢¼ÓµÈ °¢ Peer ÀÇ ¸µÅ©.
+     *        ë°ì´í„° í†µì‹ ì„ ìœ„í•´ ì ‘ì†ëœ ê° Peer ì˜ ë§í¬.
      *
      *  2. Link Impl
      *      - TCP (CMI_LINK_IMPL_TCP)
@@ -116,21 +116,21 @@ ACI_RC ulnDbcFreeLink(ulnDbc *aDbc)
 /**
  * ulnDbcCreate.
  *
- * ÇÔ¼ö°¡ ÇÏ´Â ÀÏ :
- *  - DBC¿¡¼­ »ç¿ëÇÒ Ã»Å© Ç® ÇÒ´ç
- *  - DBC¿¡¼­ »ç¿ëÇÒ ¸Þ¸ð¸® ÀÎ½ºÅÏ½º ÇÒ´ç
- *  - DBCÀÎ½ºÅÏ½º »ý¼º
- *  - DBCÀÇ mObjÃÊ±âÈ­
- *  - DBCÀÇ mDiagHeader»ý¼º ¹× ÃÊ±âÈ­
+ * í•¨ìˆ˜ê°€ í•˜ëŠ” ì¼ :
+ *  - DBCì—ì„œ ì‚¬ìš©í•  ì²­í¬ í’€ í• ë‹¹
+ *  - DBCì—ì„œ ì‚¬ìš©í•  ë©”ëª¨ë¦¬ ì¸ìŠ¤í„´ìŠ¤ í• ë‹¹
+ *  - DBCì¸ìŠ¤í„´ìŠ¤ ìƒì„±
+ *  - DBCì˜ mObjì´ˆê¸°í™”
+ *  - DBCì˜ mDiagHeaderìƒì„± ë° ì´ˆê¸°í™”
  *
  * @return
  *  - ACI_SUCCESS
- *    DBC ÀÎ½ºÅÏ½º »ý¼º ¼º°ø
+ *    DBC ì¸ìŠ¤í„´ìŠ¤ ìƒì„± ì„±ê³µ
  *  - ACI_FAILURE
- *    ¸Þ¸ð¸® ºÎÁ·
+ *    ë©”ëª¨ë¦¬ ë¶€ì¡±
  *
- * ¸¸¾à ¿¡·¯°¡ ¹ß»ýÇØ¼­ ÇÔ¼ö¿¡¼­ ºüÁ®³ª°¥ ¶§¿¡´Â,
- * ÇÒ´çÇÑ ¸ðµç ¸Þ¸ð¸®¸¦ Ã»¼ÒÇÏ°í ºüÁ®³ª°£´Ù.
+ * ë§Œì•½ ì—ëŸ¬ê°€ ë°œìƒí•´ì„œ í•¨ìˆ˜ì—ì„œ ë¹ ì ¸ë‚˜ê°ˆ ë•Œì—ëŠ”,
+ * í• ë‹¹í•œ ëª¨ë“  ë©”ëª¨ë¦¬ë¥¼ ì²­ì†Œí•˜ê³  ë¹ ì ¸ë‚˜ê°„ë‹¤.
  */
 ACI_RC ulnDbcCreate(ulnDbc **aOutputDbc)
 {
@@ -145,7 +145,7 @@ ACI_RC ulnDbcCreate(ulnDbc **aOutputDbc)
     acp_thr_mutex_t *sLock = NULL;
 
     /*
-     * Ã»Å© Ç® »ý¼º
+     * ì²­í¬ í’€ ìƒì„±
      */
 
     sPool = uluChunkPoolCreate(ULN_SIZE_OF_CHUNK_IN_DBC, ULN_NUMBER_OF_SP_IN_DBC, 1);
@@ -153,21 +153,21 @@ ACI_RC ulnDbcCreate(ulnDbc **aOutputDbc)
     ULN_FLAG_UP(sNeedDestroyPool);
 
     /*
-     * ¸Þ¸ð¸® ÀÎ½ºÅÏ½º »ý¼º
+     * ë©”ëª¨ë¦¬ ì¸ìŠ¤í„´ìŠ¤ ìƒì„±
      */
 
     ACI_TEST(uluMemoryCreate(sPool, &sMemory) != ACI_SUCCESS);
     ULN_FLAG_UP(sNeedDestroyMemory);
 
     /*
-     * ulnDbc ÀÎ½ºÅÏ½º »ý¼º
+     * ulnDbc ì¸ìŠ¤í„´ìŠ¤ ìƒì„±
      */
 
     ACI_TEST(sMemory->mOp->mMalloc(sMemory, (void **)(&sDbc), ACI_SIZEOF(ulnDbc)) != ACI_SUCCESS);
     ACI_TEST(sMemory->mOp->mMarkSP(sMemory) != ACI_SUCCESS);
 
     /*
-     * Object ÃÊ±âÈ­ : ÇÒ´çµÇ¾úÀ¸¹Ç·Î ¹Ù·Î C2»óÅÂ.
+     * Object ì´ˆê¸°í™” : í• ë‹¹ë˜ì—ˆìœ¼ë¯€ë¡œ ë°”ë¡œ C2ìƒíƒœ.
      */
 
     ulnObjectInitialize((ulnObject *)sDbc,
@@ -178,7 +178,7 @@ ACI_RC ulnDbcCreate(ulnDbc **aOutputDbc)
                         sMemory);
 
     /*
-     * Lock ±¸Á¶Ã¼ »ý¼º ¹× ÃÊ±âÈ­
+     * Lock êµ¬ì¡°ì²´ ìƒì„± ë° ì´ˆê¸°í™”
      */
 
     ACI_TEST(uluLockCreate(&sLock) != ACI_SUCCESS);
@@ -187,7 +187,7 @@ ACI_RC ulnDbcCreate(ulnDbc **aOutputDbc)
     ACI_TEST(acpThrMutexCreate(sLock, ACP_THR_MUTEX_DEFAULT) != ACP_RC_SUCCESS);
 
     /*
-     * Diagnostic Header »ý¼º,
+     * Diagnostic Header ìƒì„±,
      */
 
     ACI_TEST(ulnCreateDiagHeader((ulnObject *)sDbc, NULL) != ACI_SUCCESS);
@@ -196,7 +196,7 @@ ACI_RC ulnDbcCreate(ulnDbc **aOutputDbc)
     cmiMakeCmBlockNull(&(sDbc->mPtContext.mCmiPtContext));
 
     /*
-     * »ý¼ºµÈ ulnDbc ¸®ÅÏ
+     * ìƒì„±ëœ ulnDbc ë¦¬í„´
      */
 
     sDbc->mObj.mLock     = sLock;
@@ -235,13 +235,13 @@ ACI_RC ulnDbcCreate(ulnDbc **aOutputDbc)
  * ulnDbcDestroy.
  *
  * @param[in] aDbc
- *  ÆÄ±«ÇÒ DBC ¸¦ °¡¸®Å°´Â Æ÷ÀÎÅÍ.
+ *  íŒŒê´´í•  DBC ë¥¼ ê°€ë¦¬í‚¤ëŠ” í¬ì¸í„°.
  * @return
  *  - ACI_SUCCESS
- *    ¼º°ø
+ *    ì„±ê³µ
  *  - ACI_FAILURE
- *    ½ÇÆÐ.
- *    È£ÃâÀÚ´Â HY013 À» »ç¿ëÀÚ¿¡°Ô Áà¾ß ÇÑ´Ù.
+ *    ì‹¤íŒ¨.
+ *    í˜¸ì¶œìžëŠ” HY013 ì„ ì‚¬ìš©ìžì—ê²Œ ì¤˜ì•¼ í•œë‹¤.
  */
 ACI_RC ulnDbcDestroy(ulnDbc *aDbc)
 {
@@ -255,12 +255,12 @@ ACI_RC ulnDbcDestroy(ulnDbc *aDbc)
 
     /*
      * --------------------------------------------------------------------
-     * ¸Þ¸ð¸® ÇÒ´ç(idlOS::malloc)À» ÇØ¼­ °ªÀ» ¼¼ÆÃÇÏ´Â
-     * ULN_CONN_ATTR_TYPE_STRING Å¸ÀÔÀÇ ¸â¹öµé
+     * ë©”ëª¨ë¦¬ í• ë‹¹(idlOS::malloc)ì„ í•´ì„œ ê°’ì„ ì„¸íŒ…í•˜ëŠ”
+     * ULN_CONN_ATTR_TYPE_STRING íƒ€ìž…ì˜ ë©¤ë²„ë“¤
      *
-     * ÁÖÀÇ : ulnDbcDestroy() ½Ã¿¡ ¹Ýµå½Ã ÇØÁ¦ÇØ Áà¾ß ÇÑ´Ù.
+     * ì£¼ì˜ : ulnDbcDestroy() ì‹œì— ë°˜ë“œì‹œ í•´ì œí•´ ì¤˜ì•¼ í•œë‹¤.
      *
-     * ¾Æ·¡ÀÇ ÇÔ¼öµéÀº NULL À» ¼¼ÆÃÇÏ¸é free ÇÏ°í alloc ¾ÈÇÏ°Ô²û µÇ¾î ÀÖ´Ù.
+     * ì•„ëž˜ì˜ í•¨ìˆ˜ë“¤ì€ NULL ì„ ì„¸íŒ…í•˜ë©´ free í•˜ê³  alloc ì•ˆí•˜ê²Œë” ë˜ì–´ ìžˆë‹¤.
      * --------------------------------------------------------------------
      */
 
@@ -277,8 +277,8 @@ ACI_RC ulnDbcDestroy(ulnDbc *aDbc)
     ulnDbcSetTimezoneSring( aDbc, NULL, 0 );// mTimezoneString
     //fix BUG-18071
     ulnDbcSetServerPackageVer(aDbc, NULL, 0);  // mServerPackageVer
-    /* »ç¿ë¾ÈÇÏÁö¸¸, ½ºÆ®¸µ °ªÀ» °¡Áö´Â Ç¥ÁØ ¼Ó¼ºµé. ¸¸¾à »ç¿ëÇÏ°Ô µÇ¸é ÀÌ°Íµéµµ ÇÔ¼ö·Î
-     * free ÇÏµµ·Ï ÇØ ÁÖ¾î¾ß ÇÔ.
+    /* ì‚¬ìš©ì•ˆí•˜ì§€ë§Œ, ìŠ¤íŠ¸ë§ ê°’ì„ ê°€ì§€ëŠ” í‘œì¤€ ì†ì„±ë“¤. ë§Œì•½ ì‚¬ìš©í•˜ê²Œ ë˜ë©´ ì´ê²ƒë“¤ë„ í•¨ìˆ˜ë¡œ
+     * free í•˜ë„ë¡ í•´ ì£¼ì–´ì•¼ í•¨.
      */
     aDbc->mAttrTracefile        = NULL;
     aDbc->mAttrTranslateLib     = NULL;
@@ -301,7 +301,7 @@ ACI_RC ulnDbcDestroy(ulnDbc *aDbc)
     ulnDbcSetSslKey(aDbc, NULL, 0);
 
     /*
-     * ¸¸¾à mLink °¡ »ì¾Æ ÀÖ´Ù¸é free ÇÑ´Ù. Â¦Àº ¾È¸ÂÁö¸¸, ¾ÈÀüÀåÄ¡ÀÓ.
+     * ë§Œì•½ mLink ê°€ ì‚´ì•„ ìžˆë‹¤ë©´ free í•œë‹¤. ì§ì€ ì•ˆë§žì§€ë§Œ, ì•ˆì „ìž¥ì¹˜ìž„.
      */
     if (aDbc->mLink != NULL)
     {
@@ -309,22 +309,22 @@ ACI_RC ulnDbcDestroy(ulnDbc *aDbc)
     }
 
     /*
-     * DiagHeader ÆÄ±«
+     * DiagHeader íŒŒê´´
      */
 
     ACI_TEST(ulnDestroyDiagHeader(&aDbc->mObj.mDiagHeader, ULN_DIAG_HDR_DESTROY_CHUNKPOOL)
              != ACI_SUCCESS);
 
     /*
-     * BUG-15894 ½Ç¼ö¿¡ ÀÇÇÑ Àç»ç¿ë ¹æÁö
+     * BUG-15894 ì‹¤ìˆ˜ì— ì˜í•œ ìž¬ì‚¬ìš© ë°©ì§€
      */
 
     aDbc->mObj.mType = ULN_OBJ_TYPE_MAX;
 
     /*
-     * ¸Þ¸ð¸®, Ã»Å©Ç® ÆÄ±«
-     * ¿ä±â¼­ aDbcµµ ÇØÁ¦ÇÏ¹Ç·Î aDbc¾ÈÀÇ ¸â¹öº¯¼ö °ü·Ã ÇØÁ¦µµ
-     * ¿ä±â À§¿¡¼­ ¼öÇàÇØ¾ß ÇÑ´Ù
+     * ë©”ëª¨ë¦¬, ì²­í¬í’€ íŒŒê´´
+     * ìš”ê¸°ì„œ aDbcë„ í•´ì œí•˜ë¯€ë¡œ aDbcì•ˆì˜ ë©¤ë²„ë³€ìˆ˜ ê´€ë ¨ í•´ì œë„
+     * ìš”ê¸° ìœ„ì—ì„œ ìˆ˜í–‰í•´ì•¼ í•œë‹¤
      */
 
     sMemory->mOp->mDestroyMyself(sMemory);
@@ -343,7 +343,7 @@ ACI_RC ulnDbcDestroy(ulnDbc *aDbc)
 /**
  * ulnDbcInitialize.
  *
- * DBC ÀÇ °¢ ÇÊµåµéÀ» ÃÊ±âÈ­ÇÑ´Ù.
+ * DBC ì˜ ê° í•„ë“œë“¤ì„ ì´ˆê¸°í™”í•œë‹¤.
  */
 ACI_RC ulnDbcInitialize(ulnDbc *aDbc)
 {
@@ -356,7 +356,7 @@ ACI_RC ulnDbcInitialize(ulnDbc *aDbc)
     acp_uint32_t sNlsUseLen   = 0;
 
     /*
-     * Database ¿ÍÀÇ ½ÇÁ¦ ¿¬°á¿¡ °ü·ÃµÈ ¼Ó¼ºµéÀÇ ÃÊ±âÈ­
+     * Database ì™€ì˜ ì‹¤ì œ ì—°ê²°ì— ê´€ë ¨ëœ ì†ì„±ë“¤ì˜ ì´ˆê¸°í™”
      */
     aDbc->mLink                 = NULL;
 
@@ -370,10 +370,10 @@ ACI_RC ulnDbcInitialize(ulnDbc *aDbc)
 
     /*
      * ----------------------------------------------------
-     * ¸Þ¸ð¸® ÇÒ´ç(idlOS::malloc)À» ÇØ¼­ °ªÀ» ¼¼ÆÃÇÏ´Â
-     * ULN_CONN_ATTR_TYPE_STRING Å¸ÀÔÀÇ ¸â¹öµé
+     * ë©”ëª¨ë¦¬ í• ë‹¹(idlOS::malloc)ì„ í•´ì„œ ê°’ì„ ì„¸íŒ…í•˜ëŠ”
+     * ULN_CONN_ATTR_TYPE_STRING íƒ€ìž…ì˜ ë©¤ë²„ë“¤
      *
-     * ÁÖÀÇ : ulnDbcDestroy() ½Ã¿¡ ¹Ýµå½Ã ÇØÁ¦ÇØ Áà¾ß ÇÑ´Ù.
+     * ì£¼ì˜ : ulnDbcDestroy() ì‹œì— ë°˜ë“œì‹œ í•´ì œí•´ ì¤˜ì•¼ í•œë‹¤.
      * ----------------------------------------------------
      */
 
@@ -386,8 +386,8 @@ ACI_RC ulnDbcInitialize(ulnDbc *aDbc)
     aDbc->mTimezoneString       = NULL;
 
     /*
-     * ÃÖÃÊÀÇ Æ÷ÀÎÅÍ¸¦ NULL ·Î ÇÏÁö ¾ÊÀ¸¸é
-     * ulnDbcSetStringAttr() ¿¡¼­ ¾²·¹±â°ªÀ» free ÇÏ·Á°í ½ÃµµÇÏ´Ù°¡ Á×À» ¼öµµ ÀÖ´Ù.
+     * ìµœì´ˆì˜ í¬ì¸í„°ë¥¼ NULL ë¡œ í•˜ì§€ ì•Šìœ¼ë©´
+     * ulnDbcSetStringAttr() ì—ì„œ ì“°ë ˆê¸°ê°’ì„ free í•˜ë ¤ê³  ì‹œë„í•˜ë‹¤ê°€ ì£½ì„ ìˆ˜ë„ ìžˆë‹¤.
      */
     aDbc->mNlsLangString        = NULL;
     aDbc->mAttrCurrentCatalog   = NULL;
@@ -399,10 +399,10 @@ ACI_RC ulnDbcInitialize(ulnDbc *aDbc)
     ulnConnAttrArrInit(&aDbc->mUnsupportedProperties);
 
     // bug-25905: conn nls not applied to client lang module
-    // failover °ü·Ã ÃÊ±âÈ­ ÄÚµå¸¦ altibase_nls_use ¼³Á¤ ÀÌÀü¿¡
-    // ÇÏµµ·Ï ÀÌ°÷À¸·Î ¿Å°å´Ù.
-    // why? nls_use ¼³Á¤ ½ÇÆÐ½Ã ulnDbcDestroy °úÁ¤¿¡¼­ failover
-    // unavailable server list°¡ null·Î µÇ¾î segv ¹ß»ý °¡´É.
+    // failover ê´€ë ¨ ì´ˆê¸°í™” ì½”ë“œë¥¼ altibase_nls_use ì„¤ì • ì´ì „ì—
+    // í•˜ë„ë¡ ì´ê³³ìœ¼ë¡œ ì˜®ê²¼ë‹¤.
+    // why? nls_use ì„¤ì • ì‹¤íŒ¨ì‹œ ulnDbcDestroy ê³¼ì •ì—ì„œ failover
+    // unavailable server listê°€ nullë¡œ ë˜ì–´ segv ë°œìƒ ê°€ëŠ¥.
 
     //PROJ-1645 UL Failover.
     aDbc->mAlternateServers     = NULL;
@@ -455,14 +455,14 @@ ACI_RC ulnDbcInitialize(ulnDbc *aDbc)
     aDbc->mIsSameEndian           = SQL_FALSE;
 
     /*
-     * ÇöÀç´Â »ç¿ë¾ÈÇÏÁö¸¸, ½ºÆ®¸µ °ªÀ» °¡Áö´Â Ç¥ÁØ ¼Ó¼ºµé.
-     * ¸¸¾à »ç¿ëÇÏ°Ô µÇ¸é ÀÌ°Íµéµµ ulnDbcDestroy() ÇÔ¼ö¿¡¼­ free ÇÏµµ·Ï ÇØ ÁÖ¾î¾ß ÇÔ.
+     * í˜„ìž¬ëŠ” ì‚¬ìš©ì•ˆí•˜ì§€ë§Œ, ìŠ¤íŠ¸ë§ ê°’ì„ ê°€ì§€ëŠ” í‘œì¤€ ì†ì„±ë“¤.
+     * ë§Œì•½ ì‚¬ìš©í•˜ê²Œ ë˜ë©´ ì´ê²ƒë“¤ë„ ulnDbcDestroy() í•¨ìˆ˜ì—ì„œ free í•˜ë„ë¡ í•´ ì£¼ì–´ì•¼ í•¨.
      */
     aDbc->mAttrTracefile        = NULL;
     aDbc->mAttrTranslateLib     = NULL;
 
     /*
-     * °ü¸®¸¦ À§ÇÑ ÇÊµå ÃÊ±âÈ­
+     * ê´€ë¦¬ë¥¼ ìœ„í•œ í•„ë“œ ì´ˆê¸°í™”
      */
     acpListInit(&aDbc->mStmtList);
     acpListInit(&aDbc->mDescList);
@@ -483,17 +483,17 @@ ACI_RC ulnDbcInitialize(ulnDbc *aDbc)
     aDbc->mAttrHeaderDisplayMode = ACP_UINT32_MAX;    /* ALTIBASE_HEADER_DISPLAY_MODE  */
 
     /*
-     * Attribute ÃÊ±âÈ­
-     * BUGBUG : ¾Æ·¡ °ªµéÀ» ÇÏ³ªÀÇ Çì´õ ÆÄÀÏ¿¡ DEFAULT »ó¼ö¸¦ Á¤ÀÇÇØ¼­ ÇÑ²¨¹ø¿¡ ³Öµµ·Ï ÇÏÀÚ.
+     * Attribute ì´ˆê¸°í™”
+     * BUGBUG : ì•„ëž˜ ê°’ë“¤ì„ í•˜ë‚˜ì˜ í—¤ë” íŒŒì¼ì— DEFAULT ìƒìˆ˜ë¥¼ ì •ì˜í•´ì„œ í•œêº¼ë²ˆì— ë„£ë„ë¡ í•˜ìž.
      */
-    aDbc->mAttrExplainPlan       = SQL_UNDEF;        // ¹ºÁö Àß ¸ð¸£°ÚÁö¸¸, SQL_TRUE/FALSE ÀÎ°Í°°´Ù
+    aDbc->mAttrExplainPlan       = SQL_UNDEF;        // ë­”ì§€ ìž˜ ëª¨ë¥´ê² ì§€ë§Œ, SQL_TRUE/FALSE ì¸ê²ƒê°™ë‹¤
 
     /*
-     * Altibase (Cli2) ¼Ó¼º
+     * Altibase (Cli2) ì†ì„±
      */
 
     /*
-     * ODBC ¼Ó¼º
+     * ODBC ì†ì„±
      */
     aDbc->mAttrConnPooling      = SQL_UNDEF;
     aDbc->mAttrDisconnect       = SQL_DB_DISCONNECT;
@@ -528,17 +528,17 @@ ACI_RC ulnDbcInitialize(ulnDbc *aDbc)
     aDbc->mAttrFetchAheadRows   = 0;
 
     /*
-     * SQL_ATTR_LONGDATA_COMPAT ºñÇ¥ÁØ ¼Ó¼º,
-     * ACP_TRUE ·Î ¼¼ÆÃÀÌ µÇ¾î ÀÖÀ» °æ¿ì¿¡´Â
-     * SQL_BLOB, SQL_CLOB µîÀÇ Å¸ÀÔÀ» »ç¿ëÀÚ¿¡°Ô µ¹·Á ÁÙ ¶§
-     * SQL_BINARY Å¸ÀÔÀ¸·Î ¿Ã·Á ÁØ´Ù.
-     * µðÆúÆ®°ªÀº ACP_FALSE. Áï, ¸ÅÇÎ ¾ÈÇÏ´Â °ÍÀÌ µðÆúÆ®
+     * SQL_ATTR_LONGDATA_COMPAT ë¹„í‘œì¤€ ì†ì„±,
+     * ACP_TRUE ë¡œ ì„¸íŒ…ì´ ë˜ì–´ ìžˆì„ ê²½ìš°ì—ëŠ”
+     * SQL_BLOB, SQL_CLOB ë“±ì˜ íƒ€ìž…ì„ ì‚¬ìš©ìžì—ê²Œ ëŒë ¤ ì¤„ ë•Œ
+     * SQL_BINARY íƒ€ìž…ìœ¼ë¡œ ì˜¬ë ¤ ì¤€ë‹¤.
+     * ë””í´íŠ¸ê°’ì€ ACP_FALSE. ì¦‰, ë§¤í•‘ ì•ˆí•˜ëŠ” ê²ƒì´ ë””í´íŠ¸
      */
     aDbc->mAttrLongDataCompat   = ACP_FALSE;
 
     aDbc->mAttrAnsiApp          = ACP_TRUE;
 
-    aDbc->mIsURL                 = ACP_FALSE;     /* ¾È¾´´Ù */
+    aDbc->mIsURL                 = ACP_FALSE;     /* ì•ˆì“´ë‹¤ */
     aDbc->mMessageCallbackStruct = NULL;
 
     // bug-19279 remote sysdba enable
@@ -554,10 +554,10 @@ ACI_RC ulnDbcInitialize(ulnDbc *aDbc)
     /* PROJ-2177 User Interface - Cancel */
 
     /** SessionID (Server side).
-     *  StmtCID°¡ ¼­¹ö¿¡¼­µµ À¯È¿ÇÑ(Áßº¹µÇÁö ¾Ê´Â) °ªÀÏ ¼ö ÀÖµµ·Ï ÂüÁ¶. */
+     *  StmtCIDê°€ ì„œë²„ì—ì„œë„ ìœ íš¨í•œ(ì¤‘ë³µë˜ì§€ ì•ŠëŠ”) ê°’ì¼ ìˆ˜ ìžˆë„ë¡ ì°¸ì¡°. */
     aDbc->mSessionID            = ULN_SESS_ID_NONE;
 
-    /** À¯ÀÏÇÑ StmtCID¸¦ »ý¼ºÇÏ±â À§ÇÑ seq */
+    /** ìœ ì¼í•œ StmtCIDë¥¼ ìƒì„±í•˜ê¸° ìœ„í•œ seq */
     aDbc->mNextCIDSeq           = 0;
 
     /* PROJ-1891 Deferred Prepare */
@@ -597,18 +597,18 @@ ACI_RC ulnDbcInitialize(ulnDbc *aDbc)
     ulnShardDbcContextInitialize(aDbc);
 
     /* ***********************************************************
-     * Exception Ã³¸®°¡ ÇÊ¿äÇÑ attributes.  (see BUG-44588 )
+     * Exception ì²˜ë¦¬ê°€ í•„ìš”í•œ attributes.  (see BUG-44588 )
      * *********************************************************** */
 
-    /* fix BUG-22353 CLIÀÇ conn str¿¡¼­ NLS°¡ ¾øÀ¸¸é È¯°æº¯¼ö¿¡¼­ ÀÐ¾î¿Í¾ß ÇÕ´Ï´Ù. */
+    /* fix BUG-22353 CLIì˜ conn strì—ì„œ NLSê°€ ì—†ìœ¼ë©´ í™˜ê²½ë³€ìˆ˜ì—ì„œ ì½ì–´ì™€ì•¼ í•©ë‹ˆë‹¤. */
 
     /* fix BUG-25172
-     * È¯°æº¯¼öÀÇ ALTIBASE_NLS_USE°¡ ¾ø°Å³ª Àß¸øµÇ¾î ÀÖÀ» °æ¿ì
-     * ±âº»°ªÀÎ ASCII·Î ¼³Á¤ÇÏµµ·Ï ÇÑ´Ù.
-     * ÀÌ´Â ¿¬°á Àü±îÁö ÀÓ½Ã·Î ¼³Á¤µÇ¸ç, ¿¬°á¹®ÀÚ¿­¿¡¼­ NLSÀ» ÀÐ¾î¿Í ´Ù½Ã ¼³Á¤ÇÑ´Ù.
+     * í™˜ê²½ë³€ìˆ˜ì˜ ALTIBASE_NLS_USEê°€ ì—†ê±°ë‚˜ ìž˜ëª»ë˜ì–´ ìžˆì„ ê²½ìš°
+     * ê¸°ë³¸ê°’ì¸ ASCIIë¡œ ì„¤ì •í•˜ë„ë¡ í•œë‹¤.
+     * ì´ëŠ” ì—°ê²° ì „ê¹Œì§€ ìž„ì‹œë¡œ ì„¤ì •ë˜ë©°, ì—°ê²°ë¬¸ìžì—´ì—ì„œ NLSì„ ì½ì–´ì™€ ë‹¤ì‹œ ì„¤ì •í•œë‹¤.
 
      *bug-25905: conn nls not applied to client lang module
-     * nls_use¿¡ ´ëÇØ ´ë¹®ÀÚ º¯È¯ ¹× error Ã³¸® Ãß°¡ */
+     * nls_useì— ëŒ€í•´ ëŒ€ë¬¸ìž ë³€í™˜ ë° error ì²˜ë¦¬ ì¶”ê°€ */
 
     /* BUG-36059 [ux-isql] Need to handle empty envirionment variables gracefully at iSQL */
     if ((acpEnvGet("ALTIBASE_NLS_USE", &sNlsUseTemp) == ACP_RC_SUCCESS) &&
@@ -632,7 +632,7 @@ ACI_RC ulnDbcInitialize(ulnDbc *aDbc)
                    != ACI_SUCCESS, NLS_NOT_FOUND);
 
     /* bug-26661: nls_use not applied to nls module for ut
-     * nls_use °ªÀ» UT¿¡¼­ »ç¿ëÇÒ gNlsModuleForUT¿¡µµ Àû¿ë½ÃÅ´. */
+     * nls_use ê°’ì„ UTì—ì„œ ì‚¬ìš©í•  gNlsModuleForUTì—ë„ ì ìš©ì‹œí‚´. */
     ACI_TEST_RAISE(mtlModuleByName((const mtlModule **)&gNlsModuleForUT,
                                    sNlsUse,
                                    sNlsUseLen)
@@ -641,7 +641,7 @@ ACI_RC ulnDbcInitialize(ulnDbc *aDbc)
     return ACI_SUCCESS;
 
     /* bug-25905: conn nls not applied to client lang module
-     * nls_use È¯°æº¯¼ö¸¦ Àß¸ø ¼³Á¤ÇÏ¸é mtl ModuleÀ» ¸ø Ã£¾Æ ½ÇÆÐ. */
+     * nls_use í™˜ê²½ë³€ìˆ˜ë¥¼ ìž˜ëª» ì„¤ì •í•˜ë©´ mtl Moduleì„ ëª» ì°¾ì•„ ì‹¤íŒ¨. */
     ACI_EXCEPTION(NLS_NOT_FOUND);
     ACI_EXCEPTION_END;
 
@@ -652,7 +652,7 @@ ACI_RC ulnDbcInitialize(ulnDbc *aDbc)
 /**
  * ulnDbcAddDesc.
  *
- * Explicit ÇÏ°Ô ÇÒ´çµÈ µð½ºÅ©¸³ÅÍ¸¦ DBC ÀÇ mDescList ¿¡ Ãß°¡ÇÑ´Ù.
+ * Explicit í•˜ê²Œ í• ë‹¹ëœ ë””ìŠ¤í¬ë¦½í„°ë¥¼ DBC ì˜ mDescList ì— ì¶”ê°€í•œë‹¤.
  */
 ACI_RC ulnDbcAddDesc(ulnDbc *aDbc, ulnDesc *aDesc)
 {
@@ -670,7 +670,7 @@ ACI_RC ulnDbcAddDesc(ulnDbc *aDbc, ulnDesc *aDesc)
 /**
  * ulnDbcRemoveDesc.
  *
- * Explicit ÇÏ°Ô ÇÒ´çµÇ¾ú´ø µð½ºÅ©¸³ÅÍ¸¦ DBC ÀÇ mDescList ¿¡¼­ Á¦°ÅÇÑ´Ù.
+ * Explicit í•˜ê²Œ í• ë‹¹ë˜ì—ˆë˜ ë””ìŠ¤í¬ë¦½í„°ë¥¼ DBC ì˜ mDescList ì—ì„œ ì œê±°í•œë‹¤.
  */
 ACI_RC ulnDbcRemoveDesc(ulnDbc *aDbc, ulnDesc *aDesc)
 {
@@ -681,7 +681,7 @@ ACI_RC ulnDbcRemoveDesc(ulnDbc *aDbc, ulnDesc *aDesc)
     ACI_TEST(aDbc->mDescCount > 0);
 
     /*
-     * aDesc ¿¡ ½ÇÁ¦ DESC °¡ ¾Æ´Ñ, acp_list_t ¸¸ °Ç³×Áàµµ ¹®Á¦°¡ ¾ø°Ú±¸³ª !
+     * aDesc ì— ì‹¤ì œ DESC ê°€ ì•„ë‹Œ, acp_list_t ë§Œ ê±´ë„¤ì¤˜ë„ ë¬¸ì œê°€ ì—†ê² êµ¬ë‚˜ !
      */
     acpListDeleteNode(&(aDesc->mObj.mList));
     aDbc->mDescCount--;
@@ -696,7 +696,7 @@ ACI_RC ulnDbcRemoveDesc(ulnDbc *aDbc, ulnDesc *aDesc)
 /**
  * ulnDbcGetDescCount.
  *
- * DBC ¿¡ ¼ÓÇÑ Explicit ÇÏ°Ô ÇÒ´çµÈ µð½ºÅ©¸³ÅÍÀÇ °¹¼ö¸¦ ÀÐ´Â´Ù.
+ * DBC ì— ì†í•œ Explicit í•˜ê²Œ í• ë‹¹ëœ ë””ìŠ¤í¬ë¦½í„°ì˜ ê°¯ìˆ˜ë¥¼ ì½ëŠ”ë‹¤.
  */
 acp_uint32_t ulnDbcGetDescCount(ulnDbc *aDbc)
 {
@@ -706,7 +706,7 @@ acp_uint32_t ulnDbcGetDescCount(ulnDbc *aDbc)
 /**
  * ulnDbcAddStmt.
  *
- * STMT ¸¦ DBC ÀÇ mStmtList ¿¡ Ãß°¡ÇÑ´Ù.
+ * STMT ë¥¼ DBC ì˜ mStmtList ì— ì¶”ê°€í•œë‹¤.
  */
 ACI_RC ulnDbcAddStmt(ulnDbc *aDbc, ulnStmt *aStmt)
 {
@@ -718,7 +718,7 @@ ACI_RC ulnDbcAddStmt(ulnDbc *aDbc, ulnStmt *aStmt)
 
     aStmt->mParentDbc = aDbc;
 
-    /* PROJ-2177: StmtID¸¦ ¸ð¸¦¶§ ¾²±â À§ÇÑ CID »ý¼º */
+    /* PROJ-2177: StmtIDë¥¼ ëª¨ë¥¼ë•Œ ì“°ê¸° ìœ„í•œ CID ìƒì„± */
     aStmt->mStmtCID = ulnDbcGetNextStmtCID(aDbc);
     ulnDbcSetUsingCIDSeq(aDbc, ULN_STMT_CID_SEQ(aStmt->mStmtCID));
 
@@ -728,7 +728,7 @@ ACI_RC ulnDbcAddStmt(ulnDbc *aDbc, ulnStmt *aStmt)
 /**
  * ulnDbcRemoveStmt.
  *
- * STMT ¸¦ DBC ÀÇ mStmtList ·ÎºÎÅÍ »èÁ¦ÇÑ´Ù.
+ * STMT ë¥¼ DBC ì˜ mStmtList ë¡œë¶€í„° ì‚­ì œí•œë‹¤.
  */
 ACI_RC ulnDbcRemoveStmt(ulnDbc *aDbc, ulnStmt *aStmt)
 {
@@ -739,12 +739,12 @@ ACI_RC ulnDbcRemoveStmt(ulnDbc *aDbc, ulnStmt *aStmt)
     ACI_TEST(aDbc->mStmtCount == 0);
 
     /*
-     * aStmt ¿¡ ½ÇÁ¦ STMT °¡ ¾Æ´Ñ, acp_list_t ¸¸ °Ç³×Áàµµ ¹®Á¦°¡ ¾ø°Ú±¸³ª !
+     * aStmt ì— ì‹¤ì œ STMT ê°€ ì•„ë‹Œ, acp_list_t ë§Œ ê±´ë„¤ì¤˜ë„ ë¬¸ì œê°€ ì—†ê² êµ¬ë‚˜ !
      */
     acpListDeleteNode(&(aStmt->mObj.mList));
     (aDbc->mStmtCount)--;
 
-    /* PROJ-2177: CIDSeq ÀçÈ°¿ëÀ» À§ÇØ flag Á¤¸® */
+    /* PROJ-2177: CIDSeq ìž¬í™œìš©ì„ ìœ„í•´ flag ì •ë¦¬ */
     ulnDbcClearUsingCIDSeq(aDbc, ULN_STMT_CID_SEQ(aStmt->mStmtCID));
 
     return ACI_SUCCESS;
@@ -757,7 +757,7 @@ ACI_RC ulnDbcRemoveStmt(ulnDbc *aDbc, ulnStmt *aStmt)
 /**
  * ulnDbcGetStmtCount.
  *
- * DBC ¿¡ ¼ÓÇØ ÀÖ´Â STMT µéÀÇ °¹¼ö¸¦ ÀÐ¾î¿Â´Ù.
+ * DBC ì— ì†í•´ ìžˆëŠ” STMT ë“¤ì˜ ê°¯ìˆ˜ë¥¼ ì½ì–´ì˜¨ë‹¤.
  */
 acp_uint32_t ulnDbcGetStmtCount(ulnDbc *aDbc)
 {
@@ -765,9 +765,9 @@ acp_uint32_t ulnDbcGetStmtCount(ulnDbc *aDbc)
 }
 
 /*
- * mCmiLinkImpl ´Â ÇÑ¹ø ¼¼ÆÃµÇ¸é ¸ø¹Ù²Û´Ù.
+ * mCmiLinkImpl ëŠ” í•œë²ˆ ì„¸íŒ…ë˜ë©´ ëª»ë°”ê¾¼ë‹¤.
  *
- * ulnDbcInitLinkImpl() ÇÔ¼ö¸¦ È£ÃâÇØ¼­ ÃÊ±âÈ­½ÃÄÑ Áà¾ß Àç¼³Á¤ÀÌ °¡´ÉÇÏ°Ô ÇÑ´Ù.
+ * ulnDbcInitLinkImpl() í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•´ì„œ ì´ˆê¸°í™”ì‹œì¼œ ì¤˜ì•¼ ìž¬ì„¤ì •ì´ ê°€ëŠ¥í•˜ê²Œ í•œë‹¤.
  */
 ACI_RC ulnDbcInitCmiLinkImpl(ulnDbc *aDbc)
 {
@@ -897,7 +897,7 @@ cmiConnectArg *ulnDbcGetConnectArg(ulnDbc *aDbc)
 ACI_RC ulnDbcSetLoginTimeout(ulnDbc *aDbc, acp_uint32_t aLoginTimeout)
 {
     /*
-     * Note : SQL_ATTR_LOGIN_TIMEOUT Àº ÃÊ´ÜÀ§ÀÌ´Ù.
+     * Note : SQL_ATTR_LOGIN_TIMEOUT ì€ ì´ˆë‹¨ìœ„ì´ë‹¤.
      */
     aDbc->mAttrLoginTimeout = aLoginTimeout;
 
@@ -907,7 +907,7 @@ ACI_RC ulnDbcSetLoginTimeout(ulnDbc *aDbc, acp_uint32_t aLoginTimeout)
 acp_uint32_t ulnDbcGetLoginTimeout(ulnDbc *aDbc)
 {
     /*
-     * Note : SQL_ATTR_LOGIN_TIMEOUT Àº ÃÊ´ÜÀ§ÀÌ´Ù.
+     * Note : SQL_ATTR_LOGIN_TIMEOUT ì€ ì´ˆë‹¨ìœ„ì´ë‹¤.
      */
     return aDbc->mAttrLoginTimeout;
 }
@@ -1108,14 +1108,14 @@ void ulnDbcCloseAllStatement(ulnDbc *aDbc)
 /* PROJ-2177 User Interface - Cancel */
 
 /**
- * »õ StmtCID(Client side StatementID)¸¦ ¾ò´Â´Ù.
+ * ìƒˆ StmtCID(Client side StatementID)ë¥¼ ì–»ëŠ”ë‹¤.
  *
- * StmtCID´Â SessionID°¡ ÀÖ¾î¾ß¸¸ À¯È¿ÇÑ(Áßº¹µÇÁö ¾Ê´Â) °ªÀ» ¸¸µé ¼ö ÀÖÀ¸¹Ç·Î,
- * SessionID°¡ ¾øÀ¸¸é StmtCID »ý¼º¿¡µµ ½ÇÆÐÇÑ´Ù.
+ * StmtCIDëŠ” SessionIDê°€ ìžˆì–´ì•¼ë§Œ ìœ íš¨í•œ(ì¤‘ë³µë˜ì§€ ì•ŠëŠ”) ê°’ì„ ë§Œë“¤ ìˆ˜ ìžˆìœ¼ë¯€ë¡œ,
+ * SessionIDê°€ ì—†ìœ¼ë©´ StmtCID ìƒì„±ì—ë„ ì‹¤íŒ¨í•œë‹¤.
  *
  * @param[in] aDbc   connection handle
  *
- * @return »õ StmtCID. À¯È¿ÇÑ StmtCID¸¦ ¸¸µé ¼ö ¾øÀ¸¸é 0
+ * @return ìƒˆ StmtCID. ìœ íš¨í•œ StmtCIDë¥¼ ë§Œë“¤ ìˆ˜ ì—†ìœ¼ë©´ 0
  */
 acp_uint32_t ulnDbcGetNextStmtCID(ulnDbc *aDbc)
 {
@@ -1124,12 +1124,12 @@ acp_uint32_t ulnDbcGetNextStmtCID(ulnDbc *aDbc)
 
     if (aDbc->mSessionID != 0)
     {
-        /* Alloc, Free¸¦ ¹Ýº¹ÇÏ¸é Áßº¹µÈ CIDSeq¸¦ ¾µ ¼ö ÀÖ´Ù.
-         * Áßº¹µÈ °ªÀ» ¾²Áö ¾Êµµ·Ï »ç¿ëÁßÀÎÁö¸¦ ÆÇ´ÜÇØ¾ßÇÑ´Ù.
+        /* Alloc, Freeë¥¼ ë°˜ë³µí•˜ë©´ ì¤‘ë³µëœ CIDSeqë¥¼ ì“¸ ìˆ˜ ìžˆë‹¤.
+         * ì¤‘ë³µëœ ê°’ì„ ì“°ì§€ ì•Šë„ë¡ ì‚¬ìš©ì¤‘ì¸ì§€ë¥¼ íŒë‹¨í•´ì•¼í•œë‹¤.
          *
-         * BUGBUG: °¡´ÉÇÑ CIDSeq¸¦ ¸ðµÎ ¾²°íÀÖÀ¸¸é ¹«ÇÑ¹Ýº¹¿¡ ºüÁø´Ù.
-         *         ÇÏÁö¸¸, ÀÌ ÇÔ¼ö È£ÃâÀü¿¡ °³¼ö Á¦ÇÑÀ» È®ÀÎÇÏ¹Ç·Î
-         *         ±»ÀÌ ¿©±â¼­ ¶Ç È®ÀÎÇÏÁö´Â ¾Ê´Â´Ù. */
+         * BUGBUG: ê°€ëŠ¥í•œ CIDSeqë¥¼ ëª¨ë‘ ì“°ê³ ìžˆìœ¼ë©´ ë¬´í•œë°˜ë³µì— ë¹ ì§„ë‹¤.
+         *         í•˜ì§€ë§Œ, ì´ í•¨ìˆ˜ í˜¸ì¶œì „ì— ê°œìˆ˜ ì œí•œì„ í™•ì¸í•˜ë¯€ë¡œ
+         *         êµ³ì´ ì—¬ê¸°ì„œ ë˜ í™•ì¸í•˜ì§€ëŠ” ì•ŠëŠ”ë‹¤. */
         sCurrCIDSeq = aDbc->mNextCIDSeq;
         while (ulnDbcCheckUsingCIDSeq(aDbc, sCurrCIDSeq) == ACP_TRUE)
         {
@@ -1137,8 +1137,8 @@ acp_uint32_t ulnDbcGetNextStmtCID(ulnDbc *aDbc)
         }
         ACE_ASSERT(sCurrCIDSeq < ULN_DBC_MAX_STMT);
 
-        /* StmtCID´Â SessionID¿Í ClientSeq·Î ÀÌ·ïÁø´Ù.
-         * ÀÌ´Â °°Àº µ¿½Ã¿¡ °°Àº StmtCID¸¦ ¾²´ÂÀÏÀÌ ¾ø°ÔÇÏ±â À§ÇÔÀÌ´Ù. */
+        /* StmtCIDëŠ” SessionIDì™€ ClientSeqë¡œ ì´ë¤„ì§„ë‹¤.
+         * ì´ëŠ” ê°™ì€ ë™ì‹œì— ê°™ì€ StmtCIDë¥¼ ì“°ëŠ”ì¼ì´ ì—†ê²Œí•˜ê¸° ìœ„í•¨ì´ë‹¤. */
         sStmtCID = ULN_STMT_CID(aDbc->mSessionID, sCurrCIDSeq);
         aDbc->mNextCIDSeq = (sCurrCIDSeq + 1) % ULN_DBC_MAX_STMT;
     }
@@ -1147,7 +1147,7 @@ acp_uint32_t ulnDbcGetNextStmtCID(ulnDbc *aDbc)
 }
 
 /**
- * »ç¿ëÁßÀÎ CIDSeq¸¦ È®ÀÎÇÏ±â À§ÇÑ ºñÆ®¸ÊÀ» ÃÊ±âÈ­ÇÑ´Ù.
+ * ì‚¬ìš©ì¤‘ì¸ CIDSeqë¥¼ í™•ì¸í•˜ê¸° ìœ„í•œ ë¹„íŠ¸ë§µì„ ì´ˆê¸°í™”í•œë‹¤.
  *
  * @param[in] aDbc   dbc handle
  */
@@ -1157,12 +1157,12 @@ void ulnDbcInitUsingCIDSeq(ulnDbc *aDbc)
 }
 
 /**
- * CIDSeq°¡ »ç¿ëÁßÀÎÁö È®ÀÎÇÑ´Ù.
+ * CIDSeqê°€ ì‚¬ìš©ì¤‘ì¸ì§€ í™•ì¸í•œë‹¤.
  *
  * @param[in] aDbc      dbc handle
  * @param[in] aCIDSeq   CID seq
  *
- * @return »ç¿ëÁßÀÌ¸é ACP_TRUE, ¾Æ´Ï¸é ACP_FALSE
+ * @return ì‚¬ìš©ì¤‘ì´ë©´ ACP_TRUE, ì•„ë‹ˆë©´ ACP_FALSE
  */
 acp_bool_t ulnDbcCheckUsingCIDSeq(ulnDbc *aDbc, acp_uint32_t aCIDSeq)
 {
@@ -1178,7 +1178,7 @@ acp_bool_t ulnDbcCheckUsingCIDSeq(ulnDbc *aDbc, acp_uint32_t aCIDSeq)
 }
 
 /**
- * CIDSeq¸¦ »ç¿ëÁßÀ¸·Î ¼³Á¤ÇÑ´Ù.
+ * CIDSeqë¥¼ ì‚¬ìš©ì¤‘ìœ¼ë¡œ ì„¤ì •í•œë‹¤.
  *
  * @param[in] aDbc      dbc handle
  * @param[in] aCIDSeq   CID seq
@@ -1191,7 +1191,7 @@ void ulnDbcSetUsingCIDSeq(ulnDbc *aDbc, acp_uint32_t aCIDSeq)
 }
 
 /**
- * CIDSeq¸¦ »ç¿ëÁßÀÌ ¾Æ´Ñ°ÍÀ¸·Î ¼³Á¤ÇÑ´Ù.
+ * CIDSeqë¥¼ ì‚¬ìš©ì¤‘ì´ ì•„ë‹Œê²ƒìœ¼ë¡œ ì„¤ì •í•œë‹¤.
  *
  * @param[in] aDbc      dbc handle
  * @param[in] aCIDSeq   CID seq

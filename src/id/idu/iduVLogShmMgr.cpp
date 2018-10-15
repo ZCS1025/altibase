@@ -202,10 +202,10 @@ IDE_RC iduVLogShmMgr::undo_SHM_MGR_REGISTER_ALLOC_SEG( idvSQL       * aStatistic
 
     sProcState = idwPMMgr::getProcState( aStatistics );
 
-    /* Shared Memory Chunk¸¦ ÇÒ´çÇÏ´Ù°¡ ½ÇÆĞÇÒ °æ¿ì, WatchDog¿¡ ÀÇÇØ¼­
-     * Undo°¡ µÇ´Â °æ¿ì¿¡´Â ÇØ´ç Shared Memory¿µ¿ªÀº ¾ÆÁ÷ Daemon Process
-     * ¿µ¿ª¿¡ AttachµÇ¾î ÀÖÁö ¾Ê±â¶§¹®¿¡ Attach¸¦ ÇÏ°í »èÁ¦¿¬»êÀ»
-     * ¼öÇàÇÑ´Ù. */
+    /* Shared Memory Chunkë¥¼ í• ë‹¹í•˜ë‹¤ê°€ ì‹¤íŒ¨í•  ê²½ìš°, WatchDogì— ì˜í•´ì„œ
+     * Undoê°€ ë˜ëŠ” ê²½ìš°ì—ëŠ” í•´ë‹¹ Shared Memoryì˜ì—­ì€ ì•„ì§ Daemon Process
+     * ì˜ì—­ì— Attachë˜ì–´ ìˆì§€ ì•Šê¸°ë•Œë¬¸ì— Attachë¥¼ í•˜ê³  ì‚­ì œì—°ì‚°ì„
+     * ìˆ˜í–‰í•œë‹¤. */
     if( sProcState == IDU_SHM_PROC_STATE_RECOVERY )
     {
         sRC = iduShmChunkMgr::attachChunk( sSCH.mShmKey,

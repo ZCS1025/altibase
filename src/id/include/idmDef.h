@@ -48,10 +48,10 @@ typedef IDE_RC (*idmSetFunc)( idmModule*   aModule,
                               UInt         aLength );
 
 /* 
- * PROJ-2473 SNMP Áö¿ø
+ * PROJ-2473 SNMP ì§€ì›
  *
- * net-snmpÀÇ id´Â u_long Å¸ÀÔÀÌ´Ù. 
- * net-snmp¿¡¼­ »ç¿ëÇÏ´Â oid Å¸ÀÔÀ» ¼±¾ğÇÏÀÚ.
+ * net-snmpì˜ idëŠ” u_long íƒ€ì…ì´ë‹¤. 
+ * net-snmpì—ì„œ ì‚¬ìš©í•˜ëŠ” oid íƒ€ì…ì„ ì„ ì–¸í•˜ì.
  */
 typedef vULong oid;
 

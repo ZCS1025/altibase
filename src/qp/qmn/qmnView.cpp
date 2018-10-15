@@ -21,11 +21,11 @@
  * Description :
  *     VIEW(VIEW) Node
  *
- *     °ü°èÇü ¸ğµ¨¿¡¼­ °¡»ó TableÀ» Ç¥ÇöÇÏ±â À§ÇÑ NodeÀÌ´Ù..
+ *     ê´€ê³„í˜• ëª¨ë¸ì—ì„œ ê°€ìƒ Tableì„ í‘œí˜„í•˜ê¸° ìœ„í•œ Nodeì´ë‹¤..
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  **********************************************************************/
 
@@ -41,7 +41,7 @@ qmnVIEW::init( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    VIEW ³ëµåÀÇ ÃÊ±âÈ­
+ *    VIEW ë…¸ë“œì˜ ì´ˆê¸°í™”
  *
  * Implementation :
  *
@@ -90,7 +90,7 @@ qmnVIEW::doIt( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    VIEWÀÇ °íÀ¯ ±â´ÉÀ» ¼öÇàÇÑ´Ù.
+ *    VIEWì˜ ê³ ìœ  ê¸°ëŠ¥ì„ ìˆ˜í–‰í•œë‹¤.
  *
  * Implementation :
  *
@@ -135,7 +135,7 @@ qmnVIEW::padNull( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *     VIEWÀÇ Tuple Set¿¡ Null PaddingÀ» ¼öÇà
+ *     VIEWì˜ Tuple Setì— Null Paddingì„ ìˆ˜í–‰
  *
  * Implementation :
  *
@@ -164,7 +164,7 @@ qmnVIEW::padNull( qcTemplate * aTemplate,
           sNode != NULL; 
           sNode = sNode->next, sColumn++ )
     {
-        // PROJ-2362 memory temp ÀúÀå È¿À²¼º °³¼±
+        // PROJ-2362 memory temp ì €ì¥ íš¨ìœ¨ì„± ê°œì„ 
         sValueTemp = (void *) mtc::value( sColumn,
                                           sDataPlan->plan.myTuple->row,
                                           MTD_OFFSET_USE );
@@ -174,7 +174,7 @@ qmnVIEW::padNull( qcTemplate * aTemplate,
                                sValueTemp );
     }
 
-    // Null Paddingµµ record°¡ º¯ÇÑ °ÍÀÓ
+    // Null Paddingë„ recordê°€ ë³€í•œ ê²ƒì„
     sDataPlan->plan.myTuple->modify++;
     
     return IDE_SUCCESS;
@@ -197,7 +197,7 @@ qmnVIEW::printPlan( qcTemplate   * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    VIEW ³ëµåÀÇ ¼öÇà Á¤º¸¸¦ Ãâ·ÂÇÑ´Ù.
+ *    VIEW ë…¸ë“œì˜ ìˆ˜í–‰ ì •ë³´ë¥¼ ì¶œë ¥í•œë‹¤.
  *
  * Implementation :
  *
@@ -224,7 +224,7 @@ qmnVIEW::printPlan( qcTemplate   * aTemplate,
     }
 
     //----------------------------
-    // View ÀÌ¸§ Á¤º¸ Ãâ·Â
+    // View ì´ë¦„ ì •ë³´ ì¶œë ¥
     //----------------------------
 
     iduVarStringAppend( aString,
@@ -261,12 +261,12 @@ qmnVIEW::printPlan( qcTemplate   * aTemplate,
             // Nothing to do.
         }
 
-        // ViewÀÇ Alias ÀÌ¸§ Ãâ·Â
+        // Viewì˜ Alias ì´ë¦„ ì¶œë ¥
         if ( sCodePlan->aliasName.name != NULL &&
              sCodePlan->aliasName.size != QC_POS_EMPTY_SIZE &&
              sCodePlan->aliasName.name != sCodePlan->viewName.name )
         {
-            // View ÀÌ¸§ Á¤º¸¿Í Alias ÀÌ¸§ Á¤º¸°¡ ´Ù¸¦ °æ¿ì
+            // View ì´ë¦„ ì •ë³´ì™€ Alias ì´ë¦„ ì •ë³´ê°€ ë‹¤ë¥¼ ê²½ìš°
             // (alias name)
             iduVarStringAppend( aString,
                                 " " );
@@ -288,7 +288,7 @@ qmnVIEW::printPlan( qcTemplate   * aTemplate,
         }
         else
         {
-            // Alias ÀÌ¸§ Á¤º¸°¡ ¾ø°Å³ª Table ÀÌ¸§ Á¤º¸°¡ µ¿ÀÏÇÑ °æ¿ì
+            // Alias ì´ë¦„ ì •ë³´ê°€ ì—†ê±°ë‚˜ Table ì´ë¦„ ì •ë³´ê°€ ë™ì¼í•œ ê²½ìš°
             // Nothing To Do 
         }
 
@@ -302,7 +302,7 @@ qmnVIEW::printPlan( qcTemplate   * aTemplate,
 
     
     //----------------------------
-    // Access Á¤º¸ Ãâ·Â
+    // Access ì •ë³´ ì¶œë ¥
     //----------------------------
     
     if ( aMode == QMN_DISPLAY_ALL )
@@ -327,7 +327,7 @@ qmnVIEW::printPlan( qcTemplate   * aTemplate,
     }
 
     //----------------------------
-    // Cost Ãâ·Â
+    // Cost ì¶œë ¥
     //----------------------------
     qmn::printCost( aString,
                     sCodePlan->plan.qmgAllCost );
@@ -385,7 +385,7 @@ qmnVIEW::printPlan( qcTemplate   * aTemplate,
     }
 
     //----------------------------
-    // Operatorº° °á°ú Á¤º¸ Ãâ·Â
+    // Operatorë³„ ê²°ê³¼ ì •ë³´ ì¶œë ¥
     //----------------------------
     if ( QCU_TRCLOG_RESULT_DESC == 1 )
     {
@@ -424,7 +424,7 @@ qmnVIEW::doItDefault( qcTemplate * /* aTemplate */,
 /***********************************************************************
  *
  * Description :
- *    ÀÌ ÇÔ¼ö°¡ ¼öÇàµÇ¸é ¾ÈµÊ.
+ *    ì´ í•¨ìˆ˜ê°€ ìˆ˜í–‰ë˜ë©´ ì•ˆë¨.
  *
  * Implementation :
  *
@@ -448,7 +448,7 @@ qmnVIEW::doItProject(  qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    ÇÏÀ§ PROJ ³ëµåÀÇ °á°ú¸¦ Tuple Set¿¡ ±¸¼ºÇÑ´Ù.
+ *    í•˜ìœ„ PROJ ë…¸ë“œì˜ ê²°ê³¼ë¥¼ Tuple Setì— êµ¬ì„±í•œë‹¤.
  *
  * Implementation :
  *
@@ -481,7 +481,7 @@ qmnVIEW::firstInit( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    VIEW nodeÀÇ Data ¿µ¿ªÀÇ ¸â¹ö¿¡ ´ëÇÑ ÃÊ±âÈ­¸¦ ¼öÇà
+ *    VIEW nodeì˜ Data ì˜ì—­ì˜ ë©¤ë²„ì— ëŒ€í•œ ì´ˆê¸°í™”ë¥¼ ìˆ˜í–‰
  *
  * Implementation :
  *
@@ -495,13 +495,13 @@ qmnVIEW::firstInit( qcTemplate * aTemplate,
     sMemory = aTemplate->stmt->qmxMem;
 
     //---------------------------------
-    // VIEW °íÀ¯ Á¤º¸ÀÇ ¼³Á¤
+    // VIEW ê³ ìœ  ì •ë³´ì˜ ì„¤ì •
     //---------------------------------
     
     aDataPlan->plan.myTuple = 
         & aTemplate->tmplate.rows[aCodePlan->myNode->node.table];
 
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     IDE_DASSERT( (aDataPlan->plan.myTuple->lflag & MTC_TUPLE_VIEW_MASK)
                  == MTC_TUPLE_VIEW_TRUE );
     IDE_DASSERT( (aDataPlan->plan.myTuple->lflag & MTC_TUPLE_STORAGE_MASK)
@@ -509,7 +509,7 @@ qmnVIEW::firstInit( qcTemplate * aTemplate,
     IDE_DASSERT( aDataPlan->plan.myTuple->rowOffset > 0 );
 
     //---------------------------------
-    // TupleÀ» À§ÇÑ °ø°£ ÇÒ´ç
+    // Tupleì„ ìœ„í•œ ê³µê°„ í• ë‹¹
     //---------------------------------
 
     aDataPlan->plan.myTuple->row = NULL;
@@ -521,7 +521,7 @@ qmnVIEW::firstInit( qcTemplate * aTemplate,
                               (void**)&(aDataPlan->plan.myTuple->row) )
               != IDE_SUCCESS);
     //---------------------------------
-    // ÃÊ±âÈ­ ¿Ï·á¸¦ Ç¥±â
+    // ì´ˆê¸°í™” ì™„ë£Œë¥¼ í‘œê¸°
     //---------------------------------
 
     *aDataPlan->flag &= ~QMND_VIEW_INIT_DONE_MASK;
@@ -544,7 +544,7 @@ qmnVIEW::setTupleRow( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    Stack¿¡ ½×ÀÎ Á¤º¸¸¦ ÀÌ¿ëÇÏ¿© View Record¸¦ ±¸¼ºÇÔ.
+ *    Stackì— ìŒ“ì¸ ì •ë³´ë¥¼ ì´ìš©í•˜ì—¬ View Recordë¥¼ êµ¬ì„±í•¨.
  *
  * Implementation :
  *

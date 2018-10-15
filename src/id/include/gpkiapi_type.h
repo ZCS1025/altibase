@@ -18,20 +18,20 @@
 #define AFX_GPKIAPI_TYPE_H__E76E913A_2FF5_4CE9_8B2A_7E7EFBBEB24D__INCLUDED_
 
 typedef struct {
-	unsigned char *pData;					/* µ¥ΐΜΕΝΐΗ ΖχΐΞΕΝ */
-	int nLen;								/* µ¥ΐΜΕΝΐΗ ±ζΐΜ */
+	unsigned char *pData;					/* λ°μ΄ν„°μ ν¬μΈν„° */
+	int nLen;								/* λ°μ΄ν„°μ κΈΈμ΄ */
 } BINSTR;
 
-#define IN									/* ΐΤ·Β ΐΞΐΪ */
-#define OUT									/* Γβ·Β ΐΞΐΪ */
+#define IN									/* μ…λ ¥ μΈμ */
+#define OUT									/* μ¶λ ¥ μΈμ */
 
-#define API_OPT_RSA_ENC_V15			0x01	/* RSA V1.5ΐΗ ΎΟ.ΊΉΘ£Θ­ ΌφΗΰ */
-#define API_OPT_RSA_ENC_V20			0x02	/* RSA V2.0ΐΗ ΎΟ.ΊΉΘ£Θ­ ΌφΗΰ */
-#define API_OPT_PADDING_TYPE_NONE	0x10	/* ΄λΔªΕ° ΎΟ.ΊΉΘ£Θ­ ΌφΗΰ½Γ ΖΠµωΗΟΑφ ΎΚΐ½ */
-#define API_OPT_PADDING_TYPE_PKCS5	0x20	/* ΄λΔªΕ° ΎΟ.ΊΉΘ£Θ­ ΌφΗΰ½Γ PKCS5 ΖΠµω ΌφΗΰ */
+#define API_OPT_RSA_ENC_V15			0x01	/* RSA V1.5μ μ•”.λ³µνΈν™” μν–‰ */
+#define API_OPT_RSA_ENC_V20			0x02	/* RSA V2.0μ μ•”.λ³µνΈν™” μν–‰ */
+#define API_OPT_PADDING_TYPE_NONE	0x10	/* λ€μΉ­ν‚¤ μ•”.λ³µνΈν™” μν–‰μ‹ ν¨λ”©ν•μ§€ μ•μ */
+#define API_OPT_PADDING_TYPE_PKCS5	0x20	/* λ€μΉ­ν‚¤ μ•”.λ³µνΈν™” μν–‰μ‹ PKCS5 ν¨λ”© μν–‰ */
 
-#define KEY_TYPE_PRIVATE			0x01	/* °³ΐΞΕ° */
-#define KEY_TYPE_PUBLIC				0x02	/* °ψ°³Ε° */
+#define KEY_TYPE_PRIVATE			0x01	/* κ°μΈν‚¤ */
+#define KEY_TYPE_PUBLIC				0x02	/* κ³µκ°ν‚¤ */
 	
 #define SYM_ALG_DES_CBC				0x10	/* DES CBC */
 #define SYM_ALG_3DES_CBC			0x20 	/* 3DES CBC */
@@ -48,37 +48,37 @@ typedef struct {
 #define MAC_ALG_SHA1_HMAC			0x01	/* SAH1 HMAC */
 #define MAC_ALG_MD5_HMAC			0x02	/* MD5 HMAC */
 
-#define LDAP_DATA_CA_CERT			0x01	/* CA ΐΞΑυΌ­ */
-#define LDAP_DATA_SIGN_CERT			0x02	/* »ηΏλΐΪ Ό­ΈνΏλ ΐΞΑυΌ­ */
-#define LDAP_DATA_KM_CERT			0x03	/* »ηΏλΐΪ ΎΟΘ£Θ­Ώλ ΐΞΑυΌ­ */
-#define LDAP_DATA_ARL				0x05	/* CA ΐΞΑυΌ­ ΖσΑφ Έρ·Ο */
-#define LDAP_DATA_CRL				0x06	/* »ηΏλΐΪ ΐΞΑυΌ­ ΖσΑφ Έρ·Ο */
-#define LDAP_DATA_DELTA_CRL			0x07	/* Delta ΐΞΑυΌ­ ΖσΑφ Έρ·Ο */
-#define LDAP_DATA_CTL				0x08	/* ΐΞΑυΌ­ ½Ε·Ϊ Έρ·Ο */
-#define LDAP_DATA_GPKI_WCERT		0x09	/* ΗΰΑ¤ Ή«Ό± ΐΞΑυΓΌ°θΐΗ ΐΞΑυΌ­ */
+#define LDAP_DATA_CA_CERT			0x01	/* CA μΈμ¦μ„ */
+#define LDAP_DATA_SIGN_CERT			0x02	/* μ‚¬μ©μ μ„λª…μ© μΈμ¦μ„ */
+#define LDAP_DATA_KM_CERT			0x03	/* μ‚¬μ©μ μ•”νΈν™”μ© μΈμ¦μ„ */
+#define LDAP_DATA_ARL				0x05	/* CA μΈμ¦μ„ νμ§€ λª©λ΅ */
+#define LDAP_DATA_CRL				0x06	/* μ‚¬μ©μ μΈμ¦μ„ νμ§€ λª©λ΅ */
+#define LDAP_DATA_DELTA_CRL			0x07	/* Delta μΈμ¦μ„ νμ§€ λª©λ΅ */
+#define LDAP_DATA_CTL				0x08	/* μΈμ¦μ„ μ‹ λΆ° λª©λ΅ */
+#define LDAP_DATA_GPKI_WCERT		0x09	/* ν–‰μ • λ¬΄μ„  μΈμ¦μ²΄κ³„μ μΈμ¦μ„ */
 
 #define MEDIA_TYPE_FILE_PATH		0x01	/* HardDisk, FloppyDisk, USBDriver, CD-KEY */
-#define MEDIA_TYPE_DYNAMIC			0x02	/* µΏΐϋ ΐϊΐεΈΕΓΌ(½ΊΈ¶Ζ®Δ«µε µξ) */
+#define MEDIA_TYPE_DYNAMIC			0x02	/* λ™μ  μ €μ¥λ§¤μ²΄(μ¤λ§νΈμΉ΄λ“ λ“±) */
 
-#define DATA_TYPE_OTHER				0x00	/* ΐΣΐΗ ΐ§Δ΅ΐΗ µ¥ΐΜΕΝ */
-#define DATA_TYPE_GPKI_SIGN			0x01	/* ΗΰΑ¤ Ό­ΈνΏλ ΐΞΑυΌ­.°³ΐΞΕ° */
-#define DATA_TYPE_GPKI_KM			0x02	/* ΗΰΑ¤ ΎΟΘ£Θ­Ώλ ΐΞΑυΌ­.°³ΐΞΕ° */
-#define DATA_TYPE_NPKI_SIGN			0x10	/* °ψΐΞ Ό­ΈνΏλ ΐΞΑυΌ­.°³ΐΞΕ° */
-#define DATA_TYPE_NPKI_KM			0x20	/* °ψΐΞ ΎΟΘ£Θ­Ώλ ΐΞΑυΌ­.°³ΐΞΕ° */
+#define DATA_TYPE_OTHER				0x00	/* μ„μ μ„μΉμ λ°μ΄ν„° */
+#define DATA_TYPE_GPKI_SIGN			0x01	/* ν–‰μ • μ„λª…μ© μΈμ¦μ„.κ°μΈν‚¤ */
+#define DATA_TYPE_GPKI_KM			0x02	/* ν–‰μ • μ•”νΈν™”μ© μΈμ¦μ„.κ°μΈν‚¤ */
+#define DATA_TYPE_NPKI_SIGN			0x10	/* κ³µμΈ μ„λª…μ© μΈμ¦μ„.κ°μΈν‚¤ */
+#define DATA_TYPE_NPKI_KM			0x20	/* κ³µμΈ μ•”νΈν™”μ© μΈμ¦μ„.κ°μΈν‚¤ */
 
-#define CERT_TYPE_SIGN				0x01	/* Ό­ΈνΏλ */
-#define CERT_TYPE_KM				0x02	/* ΎΟΘ£Θ­Ώλ */
-#define CERT_TYPE_OCSP				0x03	/* OCSP Ό­ΉφΏλ */
-#define CERT_TYPE_TSA				0x04	/* TSA Ό­ΉφΏλ */
+#define CERT_TYPE_SIGN				0x01	/* μ„λª…μ© */
+#define CERT_TYPE_KM				0x02	/* μ•”νΈν™”μ© */
+#define CERT_TYPE_OCSP				0x03	/* OCSP μ„λ²„μ© */
+#define CERT_TYPE_TSA				0x04	/* TSA μ„λ²„μ© */
 
-#define CERT_VERIFY_FULL_PATH		0x01	/* ΐόΓΌ °ζ·Ξ °ΛΑυ */
-#define CERT_VERIFY_CA_CERT			0x02	/* CA ΐΞΑυΌ­ΈΈ °ΛΑυ */
-#define CERT_VERIFY_USER_CERT		0x03	/* »ηΏλΐΪ ΐΞΑυΌ­ΈΈ °ΛΑυ */
+#define CERT_VERIFY_FULL_PATH		0x01	/* μ „μ²΄ κ²½λ΅ κ²€μ¦ */
+#define CERT_VERIFY_CA_CERT			0x02	/* CA μΈμ¦μ„λ§ κ²€μ¦ */
+#define CERT_VERIFY_USER_CERT		0x03	/* μ‚¬μ©μ μΈμ¦μ„λ§ κ²€μ¦ */
 
-#define CERT_REV_CHECK_ALL			0x01	/* ARL, CRL, OCSP ΈπµΞ Θ®ΐΞ */
-#define CERT_REV_CHECK_ARL			0x02	/* ARL Θ®ΐΞ */
-#define CERT_REV_CHECK_CRL			0x04	/* CRL Θ®ΐΝ */
-#define CERT_REV_CHECK_OCSP			0x08	/* OCSP Θ®ΐΞ */
-#define CERT_REV_CHECK_NONE			0x10	/* ΖσΑφΏ©ΊΞ Θ®ΐΞΗΟΑφ ΎΚΐ½ */
+#define CERT_REV_CHECK_ALL			0x01	/* ARL, CRL, OCSP λª¨λ‘ ν™•μΈ */
+#define CERT_REV_CHECK_ARL			0x02	/* ARL ν™•μΈ */
+#define CERT_REV_CHECK_CRL			0x04	/* CRL ν™•μµ */
+#define CERT_REV_CHECK_OCSP			0x08	/* OCSP ν™•μΈ */
+#define CERT_REV_CHECK_NONE			0x10	/* νμ§€μ—¬λ¶€ ν™•μΈν•μ§€ μ•μ */
 
 #endif /* !defined(AFX_GPKIAPI_TYPE_H__E76E913A_2FF5_4CE9_8B2A_7E7EFBBEB24D__INCLUDED_)  */

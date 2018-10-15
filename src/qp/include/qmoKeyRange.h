@@ -19,11 +19,11 @@
  * $Id: qmoKeyRange.h 82075 2018-01-17 06:39:52Z jina.kim $
  *
  * Description :
- *    Key Range »ı¼º±â
+ *    Key Range ìƒì„±ê¸°
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  **********************************************************************/
 
@@ -37,12 +37,12 @@ class qmoKeyRange
 {
 public:
 
-    // Key RangeÀÇ Å©±â¸¦ ÃøÁ¤ÇÑ´Ù.
+    // Key Rangeì˜ í¬ê¸°ë¥¼ ì¸¡ì •í•œë‹¤.
     static IDE_RC     estimateKeyRange( qcTemplate  * aTemplate,
                                         qtcNode     * aNode,
                                         UInt        * aRangeSize );
     
-    // Key Range¸¦ »ı¼ºÇÑ´Ù.
+    // Key Rangeë¥¼ ìƒì„±í•œë‹¤.
     static IDE_RC     makeKeyRange( qcTemplate  * aTemplate,
                                     qtcNode     * aNode,
                                     UInt          aKeyCount,
@@ -53,7 +53,7 @@ public:
                                     smiRange   ** aRange,
                                     qtcNode    ** aFilter );
 
-    // Key Filter¸¦ »ı¼ºÇÑ´Ù.
+    // Key Filterë¥¼ ìƒì„±í•œë‹¤.
     static IDE_RC     makeKeyFilter( qcTemplate  * aTemplate,
                                      qtcNode     * aNode,
                                      UInt          aKeyCount,
@@ -64,7 +64,7 @@ public:
                                      smiRange   ** aRange,
                                      qtcNode    ** aFilter );
 
-    // Indexable MIN, MIX Àû¿ëÀ» À§ÇÑ Not Null Range »ı¼º
+    // Indexable MIN, MIX ì ìš©ì„ ìœ„í•œ Not Null Range ìƒì„±
     static IDE_RC     makeNotNullRange( void               * aPredicate,
                                         mtcColumn          * aKeyColumn,
                                         smiRange           * aRange );
@@ -82,13 +82,13 @@ public:
     
 private:
 
-    // Key RangeÀÇ Å©±â¸¦ ÃøÁ¤ÇÑ´Ù.
+    // Key Rangeì˜ í¬ê¸°ë¥¼ ì¸¡ì •í•œë‹¤.
     static IDE_RC     estimateRange( qcTemplate  * aTemplate,
                                      qtcNode     * aNode,
                                      UInt        * aRangeCount,
                                      UInt        * aRangeSize );    
 
-    // Key Range¸¦  »ı¼ºÇÑ´Ù.
+    // Key Rangeë¥¼  ìƒì„±í•œë‹¤.
     static IDE_RC     makeRange( qcTemplate  * aTemplate,
                                  qtcNode     * aNode,
                                  UInt          aKeyCount,
@@ -100,14 +100,14 @@ private:
                                  smiRange   ** aRange,
                                  qtcNode    ** aFilter );
 
-    // in subquer or subquery keyRange ÀÎ °æ¿ì
-    // subquery¸¦ ¼öÇàÇÑ´Ù.
+    // in subquer or subquery keyRange ì¸ ê²½ìš°
+    // subqueryë¥¼ ìˆ˜í–‰í•œë‹¤.
     static IDE_RC     calculateSubqueryInRangeNode(
         qcTemplate   * aTemplate,
         qtcNode      * aNode,
         idBool       * aIsExistsValue );
 
-    // ÇÏ³ªÀÇ index columnÀ¸·Î ÃßÃâµÈ ³ëµåµéÀÇ range »ı¼º
+    // í•˜ë‚˜ì˜ index columnìœ¼ë¡œ ì¶”ì¶œëœ ë…¸ë“œë“¤ì˜ range ìƒì„±
     static IDE_RC     makeRange4AColumn( qcTemplate    * aTemplate,
                                          qtcNode       * aNode,
                                          mtcColumn     * aKeyColumn,
@@ -118,10 +118,10 @@ private:
                                          UInt            aCompareType,
                                          smiRange     ** aRange );
 
-    // range count¸¦ ¾ò´Â´Ù.
+    // range countë¥¼ ì–»ëŠ”ë‹¤.
     static UInt       getRangeCount( smiRange * aRange );   
 
-    // AND merge¸¦ À§ÇÑ range count¸¦ ¾ò´Â´Ù.
+    // AND mergeë¥¼ ìœ„í•œ range countë¥¼ ì–»ëŠ”ë‹¤.
     static UInt       getAndRangeCount( smiRange * aRange1,
                                         smiRange * aRange2 );
 

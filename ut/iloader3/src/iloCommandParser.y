@@ -207,7 +207,7 @@ TABLENAME_OPTION : T_TABLENAME_OPT TABLE_NAME_LIST
                     }
                  ;
 
-/* BUG-17563 : iloader ¿¡¼­ Å«µû¿ÈÇ¥ ÀÌ¿ëÇÑ Naming Rule Á¦¾à Á¦°Å  */
+/* BUG-17563 : iloader ì—ì„œ í°ë”°ì˜´í‘œ ì´ìš©í•œ Naming Rule ì œì•½ ì œê±°  */
 TABLE_NAME_LIST : TABLE_NAME
                     {
                         PARAM->mProgOption->m_TableOwner[0][0] = '\0';
@@ -237,7 +237,7 @@ TABLE_NAME_LIST : TABLE_NAME
                     }
                 ;
 
-/* BUG-17563 : iloader ¿¡¼­ Å«µû¿ÈÇ¥ ÀÌ¿ëÇÑ Naming Rule Á¦¾à Á¦°Å  */
+/* BUG-17563 : iloader ì—ì„œ í°ë”°ì˜´í‘œ ì´ìš©í•œ Naming Rule ì œì•½ ì œê±°  */
 TABLE_NAME : T_IDENTIFIER
            | T_QUOTED_IDENTIFIER
            ;
@@ -312,7 +312,7 @@ DATA_FILENAME   : T_FILENAME
 /* TASK-2657 */
 DATAFORMAT_OPTION : T_DATAFORMAT_OPT DATAFORMAT_LIST
                   {
-                     /* BUG-29779: csvÀÇ rowtermÀ» \r\nÀ¸·Î ÁöÁ¤ÇÏ´Â ±â´É */
+                     /* BUG-29779: csvì˜ rowtermì„ \r\nìœ¼ë¡œ ì§€ì •í•˜ëŠ” ê¸°ëŠ¥ */
                      if ( PARAM->mProgOption->mExistRule )
                      {
                         PARAM->mProgOption->m_bErrorExist = SQL_TRUE;
@@ -329,7 +329,7 @@ DATAFORMAT_LIST : T_IDENTIFIER
                 {
                         if ( idlOS::strcmp($<str>1, "csv") == 0)
                         {
-                            /* BUG-29779: csvÀÇ rowtermÀ» \r\nÀ¸·Î ÁöÁ¤ÇÏ´Â ±â´É */
+                            /* BUG-29779: csvì˜ rowtermì„ \r\nìœ¼ë¡œ ì§€ì •í•˜ëŠ” ê¸°ëŠ¥ */
                             if( PARAM->mProgOption->m_bExist_t || PARAM->mProgOption->m_bExist_e )
                             {
                                 PARAM->mProgOption->m_bErrorExist = SQL_TRUE;
@@ -622,10 +622,10 @@ IOPARALLEL_OPTION : T_IOPARALLELCOUNT_OPT T_NUMBER
                         }
                         else
                         {
-                            // PROJ-2068 Direct-Path INSERT ¼º´É °³¼±
-                            //  Parallel DIrect-Path INSERT°¡ Á¦°ÅµÊ¿¡ µû¶ó
-                            // ioparallel ¿É¼ÇÀÌ ¹«ÀÇ¹ÌÇØÁ³´Ù.
-                            // È£È¯¼ºÀ» À§ÇØ ¿É¼Ç ÀÚÃ¼´Â ³²°ÜµÎµÇ, ¹«½ÃÇÑ´Ù.
+                            // PROJ-2068 Direct-Path INSERT ì„±ëŠ¥ ê°œì„ 
+                            //  Parallel DIrect-Path INSERTê°€ ì œê±°ë¨ì— ë”°ë¼
+                            // ioparallel ì˜µì…˜ì´ ë¬´ì˜ë¯¸í•´ì¡Œë‹¤.
+                            // í˜¸í™˜ì„±ì„ ìœ„í•´ ì˜µì…˜ ìžì²´ëŠ” ë‚¨ê²¨ë‘ë˜, ë¬´ì‹œí•œë‹¤.
                             (void)idlOS::printf("NOTICE: -ioparallel option is deprecated. " \
                                                 "Thus, the option will be ignored.\n");
 
@@ -1011,12 +1011,12 @@ LOB_FILE_SIZE_VALUE : T_SIZE_NUMBER
                         sNumber = idlOS::strtod($<str>1, (SChar **)NULL);
                         PARAM->mProgOption->mLOBFileSize = (ULong)
                                (sNumber * (double)0x40000000 + .5);
-                        /* longÀÌ 4¹ÙÀÌÆ®ÀÎ ÇÃ·§Æû¿¡¼­ ÆÄÀÏ Å©±â°¡ 2GB ÀÌ»óÀÌ¸é
-                         * ¹®Á¦ ¹ß»ýÀÇ ¼ÒÁö°¡ ÀÖ±â ¶§¹®¿¡,
-                         * »ç¿ëÀÚ°¡ ÆÄÀÏ Å©±â Á¦ÇÑÀ¸·Î 2GB ÀÌ»óÀ» ÁöÁ¤ÇÑ °æ¿ì
-                         * 2GB-1À» ÆÄÀÏ Å©±â Á¦ÇÑÀ¸·Î »ç¿ëÅä·Ï ÇÑ´Ù.
-                         * ´Ü, Windows´Â longÀÌ 4¹ÙÀÌÆ®¿©µµ º°µµÀÇ API¸¦ ÅëÇØ
-                         * 2GB ÀÌ»óÀÎ ÆÄÀÏÀ» »ç¿ëÇÒ ¼ö ÀÖÀ¸¹Ç·Î ¿¹¿Ü·Î ÇÑ´Ù. */
+                        /* longì´ 4ë°”ì´íŠ¸ì¸ í”Œëž«í¼ì—ì„œ íŒŒì¼ í¬ê¸°ê°€ 2GB ì´ìƒì´ë©´
+                         * ë¬¸ì œ ë°œìƒì˜ ì†Œì§€ê°€ ìžˆê¸° ë•Œë¬¸ì—,
+                         * ì‚¬ìš©ìžê°€ íŒŒì¼ í¬ê¸° ì œí•œìœ¼ë¡œ 2GB ì´ìƒì„ ì§€ì •í•œ ê²½ìš°
+                         * 2GB-1ì„ íŒŒì¼ í¬ê¸° ì œí•œìœ¼ë¡œ ì‚¬ìš©í† ë¡ í•œë‹¤.
+                         * ë‹¨, WindowsëŠ” longì´ 4ë°”ì´íŠ¸ì—¬ë„ ë³„ë„ì˜ APIë¥¼ í†µí•´
+                         * 2GB ì´ìƒì¸ íŒŒì¼ì„ ì‚¬ìš©í•  ìˆ˜ ìžˆìœ¼ë¯€ë¡œ ì˜ˆì™¸ë¡œ í•œë‹¤. */
 #if !defined(VC_WIN32) && !defined(VC_WIN64)
                         if (ID_SIZEOF(long) < 8 &&
                             PARAM->mProgOption->mLOBFileSize >= ID_ULONG(0x80000000))
@@ -1031,12 +1031,12 @@ LOB_FILE_SIZE_VALUE : T_SIZE_NUMBER
                         sNumber = idlOS::strtod($<str>1, (SChar **)NULL);
                         PARAM->mProgOption->mLOBFileSize = (ULong)
                                (sNumber * (double)0x40000000 + .5);
-                        /* longÀÌ 4¹ÙÀÌÆ®ÀÎ ÇÃ·§Æû¿¡¼­ ÆÄÀÏ Å©±â°¡ 2GB ÀÌ»óÀÌ¸é
-                         * ¹®Á¦ ¹ß»ýÀÇ ¼ÒÁö°¡ ÀÖ±â ¶§¹®¿¡,
-                         * »ç¿ëÀÚ°¡ ÆÄÀÏ Å©±â Á¦ÇÑÀ¸·Î 2GB ÀÌ»óÀ» ÁöÁ¤ÇÑ °æ¿ì
-                         * 2GB-1À» ÆÄÀÏ Å©±â Á¦ÇÑÀ¸·Î »ç¿ëÅä·Ï ÇÑ´Ù.
-                         * ´Ü, Windows´Â longÀÌ 4¹ÙÀÌÆ®¿©µµ º°µµÀÇ API¸¦ ÅëÇØ
-                         * 2GB ÀÌ»óÀÎ ÆÄÀÏÀ» »ç¿ëÇÒ ¼ö ÀÖÀ¸¹Ç·Î ¿¹¿Ü·Î ÇÑ´Ù. */
+                        /* longì´ 4ë°”ì´íŠ¸ì¸ í”Œëž«í¼ì—ì„œ íŒŒì¼ í¬ê¸°ê°€ 2GB ì´ìƒì´ë©´
+                         * ë¬¸ì œ ë°œìƒì˜ ì†Œì§€ê°€ ìžˆê¸° ë•Œë¬¸ì—,
+                         * ì‚¬ìš©ìžê°€ íŒŒì¼ í¬ê¸° ì œí•œìœ¼ë¡œ 2GB ì´ìƒì„ ì§€ì •í•œ ê²½ìš°
+                         * 2GB-1ì„ íŒŒì¼ í¬ê¸° ì œí•œìœ¼ë¡œ ì‚¬ìš©í† ë¡ í•œë‹¤.
+                         * ë‹¨, WindowsëŠ” longì´ 4ë°”ì´íŠ¸ì—¬ë„ ë³„ë„ì˜ APIë¥¼ í†µí•´
+                         * 2GB ì´ìƒì¸ íŒŒì¼ì„ ì‚¬ìš©í•  ìˆ˜ ìžˆìœ¼ë¯€ë¡œ ì˜ˆì™¸ë¡œ í•œë‹¤. */
 #if !defined(VC_WIN32) && !defined(VC_WIN64)
                         if (ID_SIZEOF(long) < 8 &&
                             PARAM->mProgOption->mLOBFileSize >= ID_ULONG(0x80000000))
@@ -1051,12 +1051,12 @@ LOB_FILE_SIZE_VALUE : T_SIZE_NUMBER
                         sNumber = idlOS::strtod($<str>1, (SChar **)NULL);
                         PARAM->mProgOption->mLOBFileSize = (ULong)
                                (sNumber * (double)ID_LONG(0x10000000000) + .5);
-                        /* longÀÌ 4¹ÙÀÌÆ®ÀÎ ÇÃ·§Æû¿¡¼­ ÆÄÀÏ Å©±â°¡ 2GB ÀÌ»óÀÌ¸é
-                         * ¹®Á¦ ¹ß»ýÀÇ ¼ÒÁö°¡ ÀÖ±â ¶§¹®¿¡,
-                         * »ç¿ëÀÚ°¡ ÆÄÀÏ Å©±â Á¦ÇÑÀ¸·Î 2GB ÀÌ»óÀ» ÁöÁ¤ÇÑ °æ¿ì
-                         * 2GB-1À» ÆÄÀÏ Å©±â Á¦ÇÑÀ¸·Î »ç¿ëÅä·Ï ÇÑ´Ù.
-                         * ´Ü, Windows´Â longÀÌ 4¹ÙÀÌÆ®¿©µµ º°µµÀÇ API¸¦ ÅëÇØ
-                         * 2GB ÀÌ»óÀÎ ÆÄÀÏÀ» »ç¿ëÇÒ ¼ö ÀÖÀ¸¹Ç·Î ¿¹¿Ü·Î ÇÑ´Ù. */
+                        /* longì´ 4ë°”ì´íŠ¸ì¸ í”Œëž«í¼ì—ì„œ íŒŒì¼ í¬ê¸°ê°€ 2GB ì´ìƒì´ë©´
+                         * ë¬¸ì œ ë°œìƒì˜ ì†Œì§€ê°€ ìžˆê¸° ë•Œë¬¸ì—,
+                         * ì‚¬ìš©ìžê°€ íŒŒì¼ í¬ê¸° ì œí•œìœ¼ë¡œ 2GB ì´ìƒì„ ì§€ì •í•œ ê²½ìš°
+                         * 2GB-1ì„ íŒŒì¼ í¬ê¸° ì œí•œìœ¼ë¡œ ì‚¬ìš©í† ë¡ í•œë‹¤.
+                         * ë‹¨, WindowsëŠ” longì´ 4ë°”ì´íŠ¸ì—¬ë„ ë³„ë„ì˜ APIë¥¼ í†µí•´
+                         * 2GB ì´ìƒì¸ íŒŒì¼ì„ ì‚¬ìš©í•  ìˆ˜ ìžˆìœ¼ë¯€ë¡œ ì˜ˆì™¸ë¡œ í•œë‹¤. */
 #if !defined(VC_WIN32) && !defined(VC_WIN64)
                         if (ID_SIZEOF(long) < 8 &&
                             PARAM->mProgOption->mLOBFileSize >= ID_ULONG(0x80000000))

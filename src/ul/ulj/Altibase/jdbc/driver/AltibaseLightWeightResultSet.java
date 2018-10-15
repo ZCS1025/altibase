@@ -24,8 +24,8 @@ import Altibase.jdbc.driver.ex.Error;
 import Altibase.jdbc.driver.ex.ErrorDef;
 
 /** 
- * ping Äõ¸®¿¡ ÀÇÇØ¼­ »ı¼ºµÇ´Â ResultSet</br>
- * SELECT 1 ÀÇ °á°ú¿Í µ¿ÀÏÇÑ row¸¦ °¡Áø´Ù. 
+ * ping ì¿¼ë¦¬ì— ì˜í•´ì„œ ìƒì„±ë˜ëŠ” ResultSet</br>
+ * SELECT 1 ì˜ ê²°ê³¼ì™€ ë™ì¼í•œ rowë¥¼ ê°€ì§„ë‹¤. 
  * @author yjpark
  *
  */

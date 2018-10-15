@@ -22,8 +22,8 @@
  * FILE DESCRIPTION : scpManager.cpp                            *
  * -----------------------------------------------------------*
  *
- * Proj-2059 DB Upgrade ±â´É
- * Server Áß½ÉÀûÀ¸·Î µ¥ÀÌÅÍ¸¦ °¡Á®¿À°í ³Ö´Â ±â´É
+ * Proj-2059 DB Upgrade ê¸°ëŠ¥
+ * Server ì¤‘ì‹¬ì ìœ¼ë¡œ ë°ì´í„°ë¥¼ ê°€ì ¸ì˜¤ê³  ë„£ëŠ” ê¸°ëŠ¥
   **************************************************************/
 
 #include <idl.h>
@@ -273,9 +273,9 @@ IDE_RC scpManager::destroyList()
 
     IDE_EXCEPTION_END;
 
-    // list ÁøÇà µµÁß ±úÁø °æ¿ì´Â ¸Þ¸ð¸®°¡ ±ÜÈù °æ¿ìÀÌ±â ¶§¹®¿¡
-    // µüÈ÷ µµ¸®°¡ ¾ø´Ù. ÁøÇàÇÒ ¼öµµ ¾ø´Ù.
-    // ±ÜÇû´Ù°í ÃßÁ¤µÇ´Â ºÎºÐÀ» Ãâ·ÂÇÏ°í Á¾·áÇÑ´Ù.
+    // list ì§„í–‰ ë„ì¤‘ ê¹¨ì§„ ê²½ìš°ëŠ” ë©”ëª¨ë¦¬ê°€ ê¸ížŒ ê²½ìš°ì´ê¸° ë•Œë¬¸ì—
+    // ë”±ížˆ ë„ë¦¬ê°€ ì—†ë‹¤. ì§„í–‰í•  ìˆ˜ë„ ì—†ë‹¤.
+    // ê¸í˜”ë‹¤ê³  ì¶”ì •ë˜ëŠ” ë¶€ë¶„ì„ ì¶œë ¥í•˜ê³  ì¢…ë£Œí•œë‹¤.
     if( sState == 1 )
     {
         ideLog::logMem( IDE_SERVER_0, 

@@ -68,7 +68,7 @@ static IDE_RC answerExecuteResult(mmtCmsExecuteContext *aExecuteContext)
         case CMP_OP_DB_Execute:
         case CMP_OP_DB_ParamDataInList:
             sWriteCheckState = CMI_WRITE_CHECK_ACTIVATED;
-            /* BUG-44125 [mm-cli] IPCDA ¸ğµå Å×½ºÆ® Áß hang - iloader CLOB */
+            /* BUG-44125 [mm-cli] IPCDA ëª¨ë“œ í…ŒìŠ¤íŠ¸ ì¤‘ hang - iloader CLOB */
             CMI_WRITE_CHECK_WITH_IPCDA(sCtx, 19, 19 + 1);
             sWriteCheckState = CMI_WRITE_CHECK_DEACTIVATED;
 
@@ -97,7 +97,7 @@ static IDE_RC answerExecuteResult(mmtCmsExecuteContext *aExecuteContext)
 
     IDE_EXCEPTION_END;
 
-    /* BUG-44124 ipcda ¸ğµå »ç¿ë Áß hang - iloader ÄÃ·³ÀÌ ¸¹Àº Å×ÀÌºí */
+    /* BUG-44124 ipcda ëª¨ë“œ ì‚¬ìš© ì¤‘ hang - iloader ì»¬ëŸ¼ì´ ë§ì€ í…Œì´ë¸” */
     if( (sWriteCheckState == CMI_WRITE_CHECK_ACTIVATED) && (cmiGetLinkImpl(sCtx) == CMI_LINK_IMPL_IPCDA) )
     {
         IDE_SET(ideSetErrorCode(mmERR_ABORT_IPCDA_MESSAGE_TOO_LONG, CMB_BLOCK_DEFAULT_SIZE));
@@ -139,7 +139,7 @@ static IDE_RC answerParamDataOutList(mmtCmsExecuteContext *aExecuteContext,
     CMI_WOP(sCtx, CMP_OP_DB_ParamDataOutList);
     CMI_WR4(sCtx, &sStatementID);
     CMI_WR4(sCtx, &sRowNumber);
-    // ÆÄ¶ó¹ÌÅÍµ¥ÀÌÅÍÀÇ Á¤È®ÇÑ ÃÑ Å©±â°¡ mCursor¿¡ ÀúÀåµÇ¾î ÀÖ´Ù
+    // íŒŒë¼ë¯¸í„°ë°ì´í„°ì˜ ì •í™•í•œ ì´ í¬ê¸°ê°€ mCursorì— ì €ì¥ë˜ì–´ ìˆë‹¤
     // cf) qci::getBindParamData()
     CMI_WR4(sCtx, &(aExecuteContext->mCursor));
 
@@ -149,8 +149,8 @@ static IDE_RC answerParamDataOutList(mmtCmsExecuteContext *aExecuteContext,
         sTransID = (sTrans != NULL) ? sTrans->getTransID() : 0;
     }
 
-    /* PROJ-2160 CM Å¸ÀÔÁ¦°Å
-       sData´Â Align ÀÌ ¾ÈµÈ µ¥ÀÌÅ¸ ÀÌ´Ù. */
+    /* PROJ-2160 CM íƒ€ì…ì œê±°
+       sDataëŠ” Align ì´ ì•ˆëœ ë°ì´íƒ€ ì´ë‹¤. */
     for( sParamIndex = 0; sParamIndex < aParamCount; sParamIndex++ )
     {
         sInOutType = qci::getBindParamInOutType(sStatement->getQciStmt(), sParamIndex);
@@ -158,7 +158,7 @@ static IDE_RC answerParamDataOutList(mmtCmsExecuteContext *aExecuteContext,
 
         if( sInOutType != CMP_DB_PARAM_INPUT )
         {
-            /* sColumnSize °ªÀ» Á¦´ë·Î À¯ÁöÇØ¾ß ÇÑ´Ù. */
+            /* sColumnSize ê°’ì„ ì œëŒ€ë¡œ ìœ ì§€í•´ì•¼ í•œë‹¤. */
             switch(sType)
             {
                 case MTD_NULL_ID :
@@ -176,7 +176,7 @@ static IDE_RC answerParamDataOutList(mmtCmsExecuteContext *aExecuteContext,
                     sColumnSize = sLen32 + ID_SIZEOF(SDouble);
 
                     sWriteCheckState = CMI_WRITE_CHECK_ACTIVATED;
-                    /* BUG-44125 [mm-cli] IPCDA ¸ğµå Å×½ºÆ® Áß hang - iloader CLOB */
+                    /* BUG-44125 [mm-cli] IPCDA ëª¨ë“œ í…ŒìŠ¤íŠ¸ ì¤‘ hang - iloader CLOB */
                     CMI_WRITE_CHECK_WITH_IPCDA( sCtx, ID_SIZEOF(SDouble), ID_SIZEOF(SDouble) + sLen32);
                     sWriteCheckState = CMI_WRITE_CHECK_DEACTIVATED;
 
@@ -187,7 +187,7 @@ static IDE_RC answerParamDataOutList(mmtCmsExecuteContext *aExecuteContext,
                               != IDE_SUCCESS );
                     break;
 
-                // mtdCharType, mtdNcharType, mtdByteTypeÀº ±¸Á¶°¡ ¸ğµÎ µ¿ÀÏÇÏ´Ù
+                // mtdCharType, mtdNcharType, mtdByteTypeì€ êµ¬ì¡°ê°€ ëª¨ë‘ ë™ì¼í•˜ë‹¤
                 case MTD_CHAR_ID    :
                 case MTD_VARCHAR_ID :
                 case MTD_NCHAR_ID   :
@@ -199,7 +199,7 @@ static IDE_RC answerParamDataOutList(mmtCmsExecuteContext *aExecuteContext,
                     sColumnSize = sLen16 + ID_SIZEOF(UShort);
 
                     sWriteCheckState = CMI_WRITE_CHECK_ACTIVATED;
-                    /* BUG-44125 [mm-cli] IPCDA ¸ğµå Å×½ºÆ® Áß hang - iloader CLOB */
+                    /* BUG-44125 [mm-cli] IPCDA ëª¨ë“œ í…ŒìŠ¤íŠ¸ ì¤‘ hang - iloader CLOB */
                     CMI_WRITE_CHECK_WITH_IPCDA( sCtx, ID_SIZEOF(UShort), ID_SIZEOF(UShort) + sLen16);
                     sWriteCheckState = CMI_WRITE_CHECK_DEACTIVATED;
 
@@ -314,7 +314,7 @@ static IDE_RC answerParamDataOutList(mmtCmsExecuteContext *aExecuteContext,
                     sColumnSize = BIT_TO_BYTE(sLen32) + ID_SIZEOF(UInt);
 
                     sWriteCheckState = CMI_WRITE_CHECK_ACTIVATED;
-                    /* BUG-44125 [mm-cli] IPCDA ¸ğµå Å×½ºÆ® Áß hang - iloader CLOB */
+                    /* BUG-44125 [mm-cli] IPCDA ëª¨ë“œ í…ŒìŠ¤íŠ¸ ì¤‘ hang - iloader CLOB */
                     CMI_WRITE_CHECK_WITH_IPCDA( sCtx, ID_SIZEOF(UInt), sColumnSize);
                     sWriteCheckState = CMI_WRITE_CHECK_DEACTIVATED;
 
@@ -352,7 +352,7 @@ static IDE_RC answerParamDataOutList(mmtCmsExecuteContext *aExecuteContext,
                     break;
             } // end switch
 
-            // fix BUG-24881 Output Parameterµµ Profiling ÇØ¾ß
+            // fix BUG-24881 Output Parameterë„ Profiling í•´ì•¼
             if ((idvProfile::getProfFlag() & IDV_PROF_TYPE_BIND_FLAG) ==
                 IDV_PROF_TYPE_BIND_FLAG)
             {
@@ -385,7 +385,7 @@ static IDE_RC answerParamDataOutList(mmtCmsExecuteContext *aExecuteContext,
 
     if(cmiGetLinkImpl(sCtx) == CMI_LINK_IMPL_IPCDA)
     {
-        /* BUG-44124 ipcda ¸ğµå »ç¿ë Áß hang - iloader ÄÃ·³ÀÌ ¸¹Àº Å×ÀÌºí */
+        /* BUG-44124 ipcda ëª¨ë“œ ì‚¬ìš© ì¤‘ hang - iloader ì»¬ëŸ¼ì´ ë§ì€ í…Œì´ë¸” */
         if( sWriteCheckState == CMI_WRITE_CHECK_ACTIVATED)
         {
             IDE_SET(ideSetErrorCode(mmERR_ABORT_IPCDA_MESSAGE_TOO_LONG, CMB_BLOCK_DEFAULT_SIZE));
@@ -393,10 +393,10 @@ static IDE_RC answerParamDataOutList(mmtCmsExecuteContext *aExecuteContext,
     }
     else
     {
-        // ¸¶¼£¸µ ¿¡·¯°¡ ¹ß»ıÇÑ °æ¿ì ¼¼¼ÇÀ» ²÷´Â ¹æ¹ı¹Û¿¡ ¾ø´Ù.
-        // cf) Ã¹¹øÂ° ÆĞÅ¶ÀÌ ÀÌ¹Ì Àü¼ÛµÈ ÈÄ¿¡ µÎ¹øÂ° ÆĞÅ¶¿¡¼­
-        // ¸¶¼£¸µ ¿¡·¯°¡ ¹ß»ıÇÏ¸é ErrorResult Á¶Â÷µµ º¸³»¸é ¾ÈµÈ´Ù.
-        // client¿¡¼­´Â Æ¯Á¤ ÇÁ·ÎÅäÄİÀÌ ¿¬ÀÌ¾î ¿Ã°ÍÀÌ¶ó ¹Ï±â ¶§¹®¿¡.
+        // ë§ˆìƒ¬ë§ ì—ëŸ¬ê°€ ë°œìƒí•œ ê²½ìš° ì„¸ì…˜ì„ ëŠëŠ” ë°©ë²•ë°–ì— ì—†ë‹¤.
+        // cf) ì²«ë²ˆì§¸ íŒ¨í‚·ì´ ì´ë¯¸ ì „ì†¡ëœ í›„ì— ë‘ë²ˆì§¸ íŒ¨í‚·ì—ì„œ
+        // ë§ˆìƒ¬ë§ ì—ëŸ¬ê°€ ë°œìƒí•˜ë©´ ErrorResult ì¡°ì°¨ë„ ë³´ë‚´ë©´ ì•ˆëœë‹¤.
+        // clientì—ì„œëŠ” íŠ¹ì • í”„ë¡œí† ì½œì´ ì—°ì´ì–´ ì˜¬ê²ƒì´ë¼ ë¯¿ê¸° ë•Œë¬¸ì—.
         sCtx->mSessionCloseNeeded = ID_TRUE;
     }
     
@@ -406,9 +406,9 @@ static IDE_RC answerParamDataOutList(mmtCmsExecuteContext *aExecuteContext,
 }
 
 /*******************************************************************
- PROJ-2160 CM Å¸ÀÔÁ¦°Å
- Description : ¿£µğ¾È º¯È¯¾øÀÌ µ¥ÀÌÅ¸¸¦ ÀÓ½Ã¹öÆÛ·Î º¹»çÇÑ´Ù.
-               ½ÇÁ¦ Àü¼ÛÀº answerParamDataOutList ÇÔ¼ö¿¡¼­ ÇÑ´Ù.
+ PROJ-2160 CM íƒ€ì…ì œê±°
+ Description : ì—”ë””ì•ˆ ë³€í™˜ì—†ì´ ë°ì´íƒ€ë¥¼ ì„ì‹œë²„í¼ë¡œ ë³µì‚¬í•œë‹¤.
+               ì‹¤ì œ ì „ì†¡ì€ answerParamDataOutList í•¨ìˆ˜ì—ì„œ í•œë‹¤.
 ********************************************************************/
 static IDE_RC getBindParamListCallback(idvSQL       * /* aStatistics */,
                                        qciBindParam *aBindParam,
@@ -574,8 +574,8 @@ static IDE_RC sendBindOut(mmcSession           *aSession,
 
     IDE_TEST_CONT( sOutParamCount == 0, SKIP_SEND_BIND_OUT );
 
-    // lob insertÀÎ °æ¿ì precisionÀÌ -4·Î ¼³Á¤µÇ¾î ÀÖ¾î
-    // size°¡ 0À¸·Î °è»êµÈ´Ù.
+    // lob insertì¸ ê²½ìš° precisionì´ -4ë¡œ ì„¤ì •ë˜ì–´ ìˆì–´
+    // sizeê°€ 0ìœ¼ë¡œ ê³„ì‚°ëœë‹¤.
     sAllocSize = IDL_MAX(sOutParamSize, MMC_DEFAULT_COLLECTION_BUFFER_SIZE);
     IDE_TEST( aSession->allocOutChunk(sAllocSize) != IDE_SUCCESS );
 
@@ -651,7 +651,7 @@ static IDE_RC doEnd(mmtCmsExecuteContext *aExecuteContext, mmcExecutionFlag aExe
     mmtAuditManager::auditByAccess( sStmt, aExecutionFlag );
     
     // fix BUG-30990
-    // QUEUE°¡ EMPTYÀÏ °æ¿ì¿¡¸¸ BIND_DATA »óÅÂ·Î ¼³Á¤ÇÑ´Ù.
+    // QUEUEê°€ EMPTYì¼ ê²½ìš°ì—ë§Œ BIND_DATA ìƒíƒœë¡œ ì„¤ì •í•œë‹¤.
     switch(aExecutionFlag)
     {
         case MMC_EXECUTION_FLAG_SUCCESS :
@@ -756,7 +756,7 @@ static IDE_RC doExecute(mmtCmsExecuteContext *aExecuteContext)
                   != IDE_SUCCESS );
 
         // fix BUG-30913
-        // executeÀÇ ¼º°ø ½ÃÁ¡Àº execute ¹× sendBindOut ÀÌÈÄÀÌ´Ù.
+        // executeì˜ ì„±ê³µ ì‹œì ì€ execute ë° sendBindOut ì´í›„ì´ë‹¤.
         sExecutionFlag = MMC_EXECUTION_FLAG_SUCCESS;
 
         /* 
@@ -766,8 +766,8 @@ static IDE_RC doExecute(mmtCmsExecuteContext *aExecuteContext)
         sResultSetCount = qci::getResultSetCount(sStatement->getQciStmt());
         sStatement->setResultSetCount(sResultSetCount);
         sStatement->setEnableResultSetCount(sResultSetCount);
-        //fix BUG-27198 Code-Sonar  return value ignoreÇÏ¿©, °á±¹ mResultSet°¡
-        // null pointerÀÏ¶§ ÀÌ¸¦ de-reference¸¦ ÇÒ¼ö ÀÖ½À´Ï´Ù.
+        //fix BUG-27198 Code-Sonar  return value ignoreí•˜ì—¬, ê²°êµ­ mResultSetê°€
+        // null pointerì¼ë•Œ ì´ë¥¼ de-referenceë¥¼ í• ìˆ˜ ìˆìŠµë‹ˆë‹¤.
         IDE_TEST_RAISE(sStatement->initializeResultSet(sResultSetCount) != IDE_SUCCESS,
                        RestoreResultSetValues);
 
@@ -778,7 +778,7 @@ static IDE_RC doExecute(mmtCmsExecuteContext *aExecuteContext)
 
             sResultSet = sStatement->getResultSet( MMC_RESULTSET_FIRST );
             // bug-26977: codesonar: resultset null ref
-            // nullÀÌ °¡´ÉÇÑÁö´Â ¸ğ¸£°ÚÁö¸¸, ¹æ¾îÄÚµåÀÓ.
+            // nullì´ ê°€ëŠ¥í•œì§€ëŠ” ëª¨ë¥´ê² ì§€ë§Œ, ë°©ì–´ì½”ë“œì„.
             IDE_TEST(sResultSet == NULL);
 
             if( sResultSet->mInterResultSet == ID_TRUE )
@@ -807,7 +807,7 @@ static IDE_RC doExecute(mmtCmsExecuteContext *aExecuteContext)
             else
             {
                 // fix BUG-31195
-                // qci::moveNextRecord() ½Ã°£À» Fetch Time¿¡ Ãß°¡
+                // qci::moveNextRecord() ì‹œê°„ì„ Fetch Timeì— ì¶”ê°€
                 sStatement->setFetchStartTime(mmtSessionManager::getBaseTime());
                 /* BUG-19456 */
                 sStatement->setFetchEndTime(0);
@@ -893,7 +893,7 @@ static IDE_RC doExecute(mmtCmsExecuteContext *aExecuteContext)
                             if (sSession->isQueueTimedOut() != ID_TRUE)
                             {
                                 sExecutionFlag = MMC_EXECUTION_FLAG_QUEUE_EMPTY;
-                                //fix BUG-21361 queue dropÀÇ µ¿½Ã¼º ¹®Á¦·Î ¼­¹ö ºñÁ¤»ó Á¾·áÇÒ¼ö ÀÖÀ½.
+                                //fix BUG-21361 queue dropì˜ ë™ì‹œì„± ë¬¸ì œë¡œ ì„œë²„ ë¹„ì •ìƒ ì¢…ë£Œí• ìˆ˜ ìˆìŒ.
                                 sSession->beginQueueWait();
                                 //fix BUG-19321
                                 IDE_TEST(doEnd(aExecuteContext, sExecutionFlag) != IDE_SUCCESS);
@@ -1031,8 +1031,8 @@ static IDE_RC doExecute(mmtCmsExecuteContext *aExecuteContext)
         if (sStatement->isStmtBegin() == ID_TRUE)
         {
             /* PROJ-2337 Homogeneous database link
-             *  Dequeue ÈÄ¿¡ ¿¹¿Ü Ã³¸®¸¦ ¼öÇàÇÏ´Â °æ¿ì, Queue¿¡¼­ ¾ò¾ú´ø µ¥ÀÌÅÍ¸¦ ¹İ³³ÇØ¾ß ÇÑ´Ù.
-             *  TODO Dequeue ¿Ü¿¡ ´Ù¸¥ ¹®Á¦´Â ¾ø´ÂÁö È®ÀÎÇØ¾ß ÇÑ´Ù.
+             *  Dequeue í›„ì— ì˜ˆì™¸ ì²˜ë¦¬ë¥¼ ìˆ˜í–‰í•˜ëŠ” ê²½ìš°, Queueì—ì„œ ì–»ì—ˆë˜ ë°ì´í„°ë¥¼ ë°˜ë‚©í•´ì•¼ í•œë‹¤.
+             *  TODO Dequeue ì™¸ì— ë‹¤ë¥¸ ë¬¸ì œëŠ” ì—†ëŠ”ì§€ í™•ì¸í•´ì•¼ í•œë‹¤.
              */
             if ( ( sStatement->getStmtType() == QCI_STMT_DEQUEUE ) &&
                  ( sExecutionFlag == MMC_EXECUTION_FLAG_SUCCESS ) )
@@ -1048,8 +1048,8 @@ static IDE_RC doExecute(mmtCmsExecuteContext *aExecuteContext)
             mmtAuditManager::auditByAccess( sStatement, sExecutionFlag );
             
             /*
-             * [BUG-24187] RollbackµÉ statement´Â Internal CloseCurosr¸¦
-             * ¼öÇàÇÒ ÇÊ¿ä°¡ ¾ø½À´Ï´Ù.
+             * [BUG-24187] Rollbackë  statementëŠ” Internal CloseCurosrë¥¼
+             * ìˆ˜í–‰í•  í•„ìš”ê°€ ì—†ìŠµë‹ˆë‹¤.
              */
             sStatement->setSkipCursorClose();
             sStatement->clearStmt(MMC_STMT_BIND_NONE);
@@ -1061,7 +1061,7 @@ static IDE_RC doExecute(mmtCmsExecuteContext *aExecuteContext)
         sStatement->setExecuteFlag(ID_FALSE);
         
         /* BUG-29078
-         * XA_END ¼ö½ÅÀü¿¡ XA_ROLLBACKÀ» ¸ÕÀú ¼ö½ÅÇÑ °æ¿ì¿¡ XA_END¸¦ HeuristicÇÏ°Ô Ã³¸®ÇÑ´Ù.
+         * XA_END ìˆ˜ì‹ ì „ì— XA_ROLLBACKì„ ë¨¼ì € ìˆ˜ì‹ í•œ ê²½ìš°ì— XA_ENDë¥¼ Heuristicí•˜ê²Œ ì²˜ë¦¬í•œë‹¤.
          */
         if ( (sSession->isXaSession() == ID_TRUE) && 
              (sSession->getXaAssocState() == MMD_XA_ASSOC_STATE_ASSOCIATED) &&
@@ -1308,11 +1308,11 @@ IDE_RC mmtServiceThread::executeProtocol(cmiProtocolContext *aProtocolContext,
 
     if (cmiGetLinkImpl(aProtocolContext) == CMI_LINK_IMPL_IPCDA)
     {
-        /* ÀÌ Á¤º¸´Â SimpleQuery¿¡¼­ »ç¿ëµÇ±â ¶§¹®¿¡, CMP_OP_DB_Execute³ª
-         * CMP_OP_DB_ParamDataInListÀÇ ÆĞÅ¶¿¡ °°ÀÌ ¼­¹ö·Î º¸³»°Ô µÈ´Ù.
-         * ±×·±µ¥, Prepare¸¦ ÀÀ´äÀ» ¹ŞÁö ¾Ê°í ¹Ù·Î Execute³ª ParamDataInList¸¦
-         * º¸³»´Â °æ¿ì¿¡´Â SimpleQueryÀÎÁö¸¦ ¾Ë ¼ö ¾ø´Ù.
-         * ±×·¡¼­, IPCDAÀÎ °æ¿ì¿¡´Â ¹«Á¶°Ç ÀÌ Á¤º¸¸¦ Àü¼ÛÇÏµµ·Ï ÇÏ¿´´Ù.
+        /* ì´ ì •ë³´ëŠ” SimpleQueryì—ì„œ ì‚¬ìš©ë˜ê¸° ë•Œë¬¸ì—, CMP_OP_DB_Executeë‚˜
+         * CMP_OP_DB_ParamDataInListì˜ íŒ¨í‚·ì— ê°™ì´ ì„œë²„ë¡œ ë³´ë‚´ê²Œ ëœë‹¤.
+         * ê·¸ëŸ°ë°, Prepareë¥¼ ì‘ë‹µì„ ë°›ì§€ ì•Šê³  ë°”ë¡œ Executeë‚˜ ParamDataInListë¥¼
+         * ë³´ë‚´ëŠ” ê²½ìš°ì—ëŠ” SimpleQueryì¸ì§€ë¥¼ ì•Œ ìˆ˜ ì—†ë‹¤.
+         * ê·¸ë˜ì„œ, IPCDAì¸ ê²½ìš°ì—ëŠ” ë¬´ì¡°ê±´ ì´ ì •ë³´ë¥¼ ì „ì†¡í•˜ë„ë¡ í•˜ì˜€ë‹¤.
          */
         sBindColInfo = (UShort *)(aProtocolContext->mReadBlock->mData +
                                   aProtocolContext->mReadBlock->mCursor);
@@ -1417,8 +1417,8 @@ IDE_RC mmtServiceThread::executeProtocol(cmiProtocolContext *aProtocolContext,
         // PROJ-1518
         case CMP_DB_EXECUTE_ATOMIC_EXECUTE:
             sStatement->setRowNumber(sRowNumber);
-            // Rebuild Error ¸¦ Ã³¸®ÇÏ±â À§ÇØ¼­´Â Bind°¡ ³¡³­ ½ÃÁ¡¿¡¼­
-            // atomicBegin À» È£ÃâÇØ¾ß ÇÑ´Ù.
+            // Rebuild Error ë¥¼ ì²˜ë¦¬í•˜ê¸° ìœ„í•´ì„œëŠ” Bindê°€ ëë‚œ ì‹œì ì—ì„œ
+            // atomicBegin ì„ í˜¸ì¶œí•´ì•¼ í•œë‹¤.
             if( sRowNumber == 1)
             {
                 IDE_TEST_RAISE((sThread->atomicBegin(sStatement) != IDE_SUCCESS), SkipExecute)
@@ -1431,7 +1431,7 @@ IDE_RC mmtServiceThread::executeProtocol(cmiProtocolContext *aProtocolContext,
             sThread->atomicInit(sStatement);
             break;
         case CMP_DB_EXECUTE_ATOMIC_END:
-            // ÀÌ ½ÃÁ¡¿¡¼­ sRowNumber ´Â 1ÀÌ´Ù.
+            // ì´ ì‹œì ì—ì„œ sRowNumber ëŠ” 1ì´ë‹¤.
             sStatement->setRowNumber(sRowNumber);
             IDE_TEST(sThread->atomicEnd(sStatement, aProtocolContext) != IDE_SUCCESS );
             break;
@@ -1518,7 +1518,7 @@ IDE_RC mmtServiceThread::closeOutBindLobCallback(void         *aMmSession,
 // PROJ-1518
 IDE_RC mmtServiceThread::atomicCheck(mmcStatement * aStatement, UChar *aOption)
 {
-    // INSERT ±¸¹®ÀÌ ¾Æ´Ò¶§´Â ÀÏ¹İ ARRAY·Î º¯°æÇÑ´Ù.
+    // INSERT êµ¬ë¬¸ì´ ì•„ë‹ë•ŒëŠ” ì¼ë°˜ ARRAYë¡œ ë³€ê²½í•œë‹¤.
     if(aStatement->getStmtType() != QCI_STMT_INSERT)
     {
         switch((*aOption))
@@ -1557,7 +1557,7 @@ void mmtServiceThread::atomicInit(mmcStatement * aStatement)
     aStatement->clearAtomicLastErrorCode();
 }
 
-// A7 °ú A5 client °ø¿ëÀÓ
+// A7 ê³¼ A5 client ê³µìš©ì„
 IDE_RC mmtServiceThread::atomicBegin(mmcStatement * aStatement)
 {
     idBool            sRetry;
@@ -1578,7 +1578,7 @@ IDE_RC mmtServiceThread::atomicBegin(mmcStatement * aStatement)
     do
     {
         sRetry = ID_FALSE;
-        // Rebuild ¿¡·¯¸¦ Ã³¸®ÇÑ´Ù.
+        // Rebuild ì—ëŸ¬ë¥¼ ì²˜ë¦¬í•œë‹¤.
         if ( qci::atomicBegin(sQciStmt,
                               aStatement->getSmiStmt()) != IDE_SUCCESS)
         {
@@ -1635,7 +1635,7 @@ IDE_RC mmtServiceThread::atomicBegin(mmcStatement * aStatement)
     return IDE_FAILURE;
 }
 
-// A5¿ëÀÌ º°µµ·Î ÀÖÀ½
+// A5ìš©ì´ ë³„ë„ë¡œ ìˆìŒ
 IDE_RC mmtServiceThread::atomicExecute(mmcStatement * aStatement, cmiProtocolContext *aProtocolContext)
 {
     qciStatement          *sQciStmt    = aStatement->getQciStmt();
@@ -1654,7 +1654,7 @@ IDE_RC mmtServiceThread::atomicExecute(mmcStatement * aStatement, cmiProtocolCon
     IDE_TEST( sendBindOut( aStatement->getSession(), &sExecuteContext ) != IDE_SUCCESS );
 
     // PROJ-2163
-    // insert ÈÄ¿¡ ¹Ù·Î µ¥ÀÌÅ¸¸¦ bind ÇØ¾ßÇÏ¹Ç·Î EXEC_PREPARED »óÅÂ·Î º¯°æÇØ¾ß ÇÑ´Ù.
+    // insert í›„ì— ë°”ë¡œ ë°ì´íƒ€ë¥¼ bind í•´ì•¼í•˜ë¯€ë¡œ EXEC_PREPARED ìƒíƒœë¡œ ë³€ê²½í•´ì•¼ í•œë‹¤.
     IDE_TEST( qci::atomicSetPrepareState( sQciStmt ) != IDE_SUCCESS );
 
     return IDE_SUCCESS;
@@ -1669,7 +1669,7 @@ IDE_RC mmtServiceThread::atomicExecute(mmcStatement * aStatement, cmiProtocolCon
     return IDE_FAILURE;
 }
 
-// A5¿ëÀÌ º°µµ·Î ÀÖÀ½
+// A5ìš©ì´ ë³„ë„ë¡œ ìˆìŒ
 IDE_RC mmtServiceThread::atomicEnd(mmcStatement * aStatement, cmiProtocolContext *aProtocolContext)
 {
     mmcSession            *sSession    = aStatement->getSession();
@@ -1686,7 +1686,7 @@ IDE_RC mmtServiceThread::atomicEnd(mmcStatement * aStatement, cmiProtocolContext
     sExecuteContext.mCollectionData   = NULL;
     sExecuteContext.mCursor           = 0;
 
-    // List ÇüÅÂÀÇ ÇÁ·ÎÅäÄİÀÌ ¿Ã¶§ 1¹øÂ° rowÀÇ ¹ÙÀÎµå°¡ ½ÇÆĞ½Ã BeginÀÌ ¾ÈÇÒ¼ö ÀÖ´Ù.
+    // List í˜•íƒœì˜ í”„ë¡œí† ì½œì´ ì˜¬ë•Œ 1ë²ˆì§¸ rowì˜ ë°”ì¸ë“œê°€ ì‹¤íŒ¨ì‹œ Beginì´ ì•ˆí• ìˆ˜ ìˆë‹¤.
     IDE_TEST_RAISE( aStatement->isStmtBegin() != ID_TRUE, AtomicExecuteFail);
 
     IDE_TEST_RAISE( aStatement->getAtomicExecSuccess() != ID_TRUE, AtomicExecuteFail);
@@ -1702,8 +1702,8 @@ IDE_RC mmtServiceThread::atomicEnd(mmcStatement * aStatement, cmiProtocolContext
                 break;
 
             // fix BUG-30449
-            // RETRY ¿¡·¯¸¦ Å¬¶óÀÌ¾ğÆ®¿¡°Ô ABORT·Î Àü´ŞÇØ
-            // ATOMIC ARRAY INSERT ½ÇÆĞ¸¦ ¾Ë·ÁÁØ´Ù.
+            // RETRY ì—ëŸ¬ë¥¼ í´ë¼ì´ì–¸íŠ¸ì—ê²Œ ABORTë¡œ ì „ë‹¬í•´
+            // ATOMIC ARRAY INSERT ì‹¤íŒ¨ë¥¼ ì•Œë ¤ì¤€ë‹¤.
             case E_ACTION_RETRY:
             case E_ACTION_REBUILD:
                 IDE_RAISE(ExecuteRetry);
@@ -1778,8 +1778,8 @@ IDE_RC mmtServiceThread::atomicEnd(mmcStatement * aStatement, cmiProtocolContext
             mmtAuditManager::auditByAccess( aStatement, MMC_EXECUTION_FLAG_FAILURE );
             
             /*
-             * [BUG-24187] RollbackµÉ statement´Â Internal CloseCurosr¸¦
-             * ¼öÇàÇÒ ÇÊ¿ä°¡ ¾ø½À´Ï´Ù.
+             * [BUG-24187] Rollbackë  statementëŠ” Internal CloseCurosrë¥¼
+             * ìˆ˜í–‰í•  í•„ìš”ê°€ ì—†ìŠµë‹ˆë‹¤.
              */
             aStatement->setSkipCursorClose();
             aStatement->clearStmt(MMC_STMT_BIND_NONE);

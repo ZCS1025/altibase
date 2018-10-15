@@ -87,10 +87,10 @@ ACI_RC ulpSetDateFmtCore( ulpLibConnNode *aConnNode );
 
 void ulpSetColRowSizeCore( ulpSqlstmt *aSqlstmt );
 
-/* BUG-31405 : Failover¼º°øÈÄ Failure of finding statement ¿¡·¯ ¹ß»ı. */
+/* BUG-31405 : Failoverì„±ê³µí›„ Failure of finding statement ì—ëŸ¬ ë°œìƒ. */
 void ulpSetFailoverFlag( ulpLibConnNode *aConnNode );
 
-/* BUG-25643 : apre ¿¡¼­ ONERR ±¸¹®ÀÌ Àß¸ø µ¿ÀÛÇÕ´Ï´Ù. */
+/* BUG-25643 : apre ì—ì„œ ONERR êµ¬ë¬¸ì´ ì˜ëª» ë™ì‘í•©ë‹ˆë‹¤. */
 ACI_RC ulpGetOnerrErrCodeCore( ulpLibConnNode *aConnNode,
                                ulpSqlstmt     *aSqlstmt,
                                SQLHSTMT       *aHstmt,

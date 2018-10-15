@@ -32,75 +32,75 @@ class smmDatabaseFile
 {
 public:
     // To Fix BUG-18434
-    //        alter tablespace online/offline µ¿½Ã¼öÇàÁß ¼­¹ö»ç¸Á
+    //        alter tablespace online/offline ë™ì‹œìˆ˜í–‰ì¤‘ ì„œë²„ì‚¬ë§
     //
-    // Page Buffer¿¡ Á¢±Ù¿¡ ´ëÇÑ µ¿½Ã¼º Á¦¾î¸¦ À§ÇÑ Mutex
+    // Page Bufferì— ì ‘ê·¼ì— ëŒ€í•œ ë™ì‹œì„± ì œì–´ë¥¼ ìœ„í•œ Mutex
     iduMutex mPageBufferMutex;
     
     UChar *mAlignedPageBuffer;
     UChar *mPageBufferMemPtr;
 
-    // È­ÀÏÀÌ ÀúÀåµÈ °æ·Î
+    // í™”ì¼ì´ ì €ì¥ëœ ê²½ë¡œ
     SChar *mDir;
 
-    // µ¥ÀÌÅ¸ÆÄÀÏ ¼Ó¼º
-    scSpaceID           mSpaceID;       // Å×ÀÌºí½ºÆäÀÌ½º ID
-    UInt                mPingPongNum;   // ÇÎÆş ¹øÈ£
-    UInt                mFileNum;       // ÆÄÀÏ ¹øÈ£
+    // ë°ì´íƒ€íŒŒì¼ ì†ì„±
+    scSpaceID           mSpaceID;       // í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ID
+    UInt                mPingPongNum;   // í•‘í ë²ˆí˜¸
+    UInt                mFileNum;       // íŒŒì¼ ë²ˆí˜¸
 
-    // Media Recovery ÀÚ·á±¸Á¶
-    smmChkptImageHdr    mChkptImageHdr;  // µ¥ÀÌÅ¸ÆÄÀÏ ¸ŞÅ¸Çì´õ
-    idBool              mIsMediaFailure; // ¹Ìµğ¾î¿À·ù¿©ºÎ 
-    scPageID            mFstPageID;      // µ¥ÀÌÅ¸ÆÄÀÏÀÇ Ã¹¹øÂ° PID
-    scPageID            mLstPageID;      // µ¥ÀÌÅ¸ÆÄÀÏÀÇ ¸¶Áö¸· PID
+    // Media Recovery ìë£Œêµ¬ì¡°
+    smmChkptImageHdr    mChkptImageHdr;  // ë°ì´íƒ€íŒŒì¼ ë©”íƒ€í—¤ë”
+    idBool              mIsMediaFailure; // ë¯¸ë””ì–´ì˜¤ë¥˜ì—¬ë¶€ 
+    scPageID            mFstPageID;      // ë°ì´íƒ€íŒŒì¼ì˜ ì²«ë²ˆì§¸ PID
+    scPageID            mLstPageID;      // ë°ì´íƒ€íŒŒì¼ì˜ ë§ˆì§€ë§‰ PID
 
-    // ¹Ìµğ¾îº¹±¸½ÃÀÛ Redo LSN
+    // ë¯¸ë””ì–´ë³µêµ¬ì‹œì‘ Redo LSN
     smLSN               mFromRedoLSN;
 public:
     //PROJ-2133 incremental backup
     iduFile     mFile;
 
 private:
-    // Disk¿¡ DBFileÀ» »ı¼ºÇÏ°í FileÀ» openÇÑ´Ù.
+    // Diskì— DBFileì„ ìƒì„±í•˜ê³  Fileì„ opení•œë‹¤.
     IDE_RC createDBFileOnDiskAndOpen( idBool aUseDirectIO );
-    // DBFile Header¿¡ Checkpoint Image Header¸¦ ±â·ÏÇÑ´Ù.
+    // DBFile Headerì— Checkpoint Image Headerë¥¼ ê¸°ë¡í•œë‹¤.
     IDE_RC setDBFileHeader( smmChkptImageHdr * aChkptImageHdr );
 
-    // Ã¼Å©Æ÷ÀÎÆ® ÀÌ¹ÌÁö ÆÄÀÏ¿¡ Checkpoint Image Header°¡ ±â·ÏµÈ °æ¿ì 
-    // ÀÌ¸¦ ÀĞ¾î¼­ Tablespace ID°¡ ÀÏÄ¡ÇÏ´ÂÁö ºñ±³ÇÏ°í FileÀ» CloseÇÑ´Ù.
+    // ì²´í¬í¬ì¸íŠ¸ ì´ë¯¸ì§€ íŒŒì¼ì— Checkpoint Image Headerê°€ ê¸°ë¡ëœ ê²½ìš° 
+    // ì´ë¥¼ ì½ì–´ì„œ Tablespace IDê°€ ì¼ì¹˜í•˜ëŠ”ì§€ ë¹„êµí•˜ê³  Fileì„ Closeí•œë‹¤.
     IDE_RC readSpaceIdAndClose( scSpaceID   aSpaceID,
                                 idBool    * aIsHeaderWritten,
                                 idBool    * aSpaceIdMatches);
     
-    // ÆÄÀÏÀÌ Á¸ÀçÇÒ °æ¿ì »èÁ¦ÇÑ´Ù.
-    // Á¸ÀçÇÏÁö ¾ÊÀ» °æ¿ì ¾Æ¹«ÀÏµµ ÇÏÁö ¾Ê´Â´Ù.
+    // íŒŒì¼ì´ ì¡´ì¬í•  ê²½ìš° ì‚­ì œí•œë‹¤.
+    // ì¡´ì¬í•˜ì§€ ì•Šì„ ê²½ìš° ì•„ë¬´ì¼ë„ í•˜ì§€ ì•ŠëŠ”ë‹¤.
     static IDE_RC removeFileIfExist( scSpaceID aSpaceID,
                                      const SChar * aFileName );
 
 
-    // Direct I/O¸¦ À§ÇØ Disk Sector Size·Î AlignµÈ Buffer¸¦ ÅëÇØ
-    // File Read¼öÇà
+    // Direct I/Oë¥¼ ìœ„í•´ Disk Sector Sizeë¡œ Alignëœ Bufferë¥¼ í†µí•´
+    // File Readìˆ˜í–‰
     IDE_RC readDIO(
                PDL_OFF_T  aWhere,
                void*      aBuffer,
                size_t     aSize);
         
-    // Direct I/O¸¦ À§ÇØ Disk Sector Size·Î AlignµÈ Buffer¸¦ ÅëÇØ
-    // File Write¼öÇà
+    // Direct I/Oë¥¼ ìœ„í•´ Disk Sector Sizeë¡œ Alignëœ Bufferë¥¼ í†µí•´
+    // File Writeìˆ˜í–‰
     IDE_RC writeDIO(
                PDL_OFF_T aWhere,
                void*     aBuffer,
                size_t    aSize);
 
-    // Direct I/O¸¦ ÀÌ¿ëÇÏ¿© writeÇÏ±â À§ÇØ AlignµÈ Buffer¿¡ µ¥ÀÌÅÍ º¹»ç
+    // Direct I/Oë¥¼ ì´ìš©í•˜ì—¬ writeí•˜ê¸° ìœ„í•´ Alignëœ Bufferì— ë°ì´í„° ë³µì‚¬
     IDE_RC copyDataForDirectWrite(
                void * aAlignedDst,
                void * aSrc,
                UInt   aSrcSize,
                UInt * aSizeToWrite );
 
-    // Direct I/O¸¦ À§ÇØ Disk Sector Size·Î AlignµÈ Buffer¸¦ ÅëÇØ
-    // File Write¼öÇà  ( writeUntilSuccess¹öÁ¯ )
+    // Direct I/Oë¥¼ ìœ„í•´ Disk Sector Sizeë¡œ Alignëœ Bufferë¥¼ í†µí•´
+    // File Writeìˆ˜í–‰  ( writeUntilSuccessë²„ì ¼ )
     IDE_RC writeUntilSuccessDIO(
                 PDL_OFF_T aWhere,
                 void*     aBuffer,
@@ -131,14 +131,14 @@ public:
     ~smmDatabaseFile();
     IDE_RC destroy();
 
-    /* DatabaseÆÄÀÏÀ» »ı¼ºÇÑ´Ù.*/
+    /* DatabaseíŒŒì¼ì„ ìƒì„±í•œë‹¤.*/
     IDE_RC createDbFile (smmTBSNode       * aTBSNode,
                          SInt               aCurrentDB,
                          SInt               aDBFileNo,
                          UInt               aSize,
                          smmChkptImageHdr * aChkptImageHdr = NULL );
 
-    // Checkpoint Image FileÀ» CloseÇÏ°í Disk¿¡¼­ Áö¿öÁØ´Ù.
+    // Checkpoint Image Fileì„ Closeí•˜ê³  Diskì—ì„œ ì§€ì›Œì¤€ë‹¤.
     IDE_RC closeAndRemoveDbFile(scSpaceID       aSpaceID, 
                                 idBool          aRemoveImageFiles, 
                                 smmTBSNode    * aTBSNode );
@@ -192,7 +192,7 @@ public:
     void setDir(SChar *aDir);
     const SChar* getDir();
 
-    // »õ·Î¿î Checkpoint ImageÆÄÀÏÀ» »ı¼ºÇÒ Checkpoint Path¸¦ ¸®ÅÏÇÑ´Ù.
+    // ìƒˆë¡œìš´ Checkpoint ImageíŒŒì¼ì„ ìƒì„±í•  Checkpoint Pathë¥¼ ë¦¬í„´í•œë‹¤.
     static IDE_RC makeDBDirForCreate(smmTBSNode * aTBSNode,
                                      UInt   aDBFileNo,
                                      SChar *aDBDir );
@@ -205,83 +205,83 @@ public:
                              SChar **     aFileDir);
 
 
-    // Æ¯Á¤ DBÆÄÀÏÀÌ Disk¿¡ ÀÖ´ÂÁö È®ÀÎÇÑ´Ù.
+    // íŠ¹ì • DBíŒŒì¼ì´ Diskì— ìˆëŠ”ì§€ í™•ì¸í•œë‹¤.
     static idBool isDBFileOnDisk( smmTBSNode * aTBSNode,
                                   UInt aPingPongNum,
                                   UInt aDBFileNo );
 
-    // BUG-29607 Create DB, TBS ½Ã µ¿ÀÏÀÌ¸§ ÆÄÀÏÀÌ Á¸ÀçÇÏ´ÂÁö¸¦
-    //           ¾ÕÀ¸·Î »ı¼ºµÉ °Í ±îÁö °¨¾ÈÇØ¼­ È®ÀÎÇÕ´Ï´Ù.
+    // BUG-29607 Create DB, TBS ì‹œ ë™ì¼ì´ë¦„ íŒŒì¼ì´ ì¡´ì¬í•˜ëŠ”ì§€ë¥¼
+    //           ì•ìœ¼ë¡œ ìƒì„±ë  ê²ƒ ê¹Œì§€ ê°ì•ˆí•´ì„œ í™•ì¸í•©ë‹ˆë‹¤.
     static IDE_RC chkExistDBFileByNode( smmTBSNode * aTBSNode );
     static IDE_RC chkExistDBFileByProp( const SChar * aTBSName );
     static IDE_RC chkExistDBFile( const SChar * aTBSName,
                                   const SChar * aChkptPath );
 
     ///////////////////////////////////////////////////////////////
-    // PRJ-1548 User Memory TableSpace °³³ä µµÀÔ
-    // ¹é¾÷ & ¹Ìµğ¾îº¹±¸
+    // PRJ-1548 User Memory TableSpace ê°œë… ë„ì…
+    // ë°±ì—… & ë¯¸ë””ì–´ë³µêµ¬
 
-    // µ¥ÀÌÅ¸ÆÄÀÏ ¸ŞÅÍÇì´õ ¼³Á¤ 
+    // ë°ì´íƒ€íŒŒì¼ ë©”í„°í—¤ë” ì„¤ì • 
     void   setChkptImageHdr( smLSN                    * aMemRedoLSN, 
                              smLSN                    * aMemCreateLSN,
                              scSpaceID                * aSpaceID,
                              UInt                     * aSmVersion,
                              smiDataFileDescSlotID    * aDataFileDescSlotID );
 
-    // µ¥ÀÌÅ¸ÆÄÀÏ ¸ŞÅÍÇì´õ ¹İÈ¯
+    // ë°ì´íƒ€íŒŒì¼ ë©”í„°í—¤ë” ë°˜í™˜
     void   getChkptImageHdr( smmChkptImageHdr * aChkptImageHdr );
 
-    // µ¥ÀÌÅ¸ÆÄÀÏ ¼Ó¼º ¹İÈ¯ 
+    // ë°ì´íƒ€íŒŒì¼ ì†ì„± ë°˜í™˜ 
     void   getChkptImageAttr( smmTBSNode        * aTBSNode, 
                               smmChkptImageAttr * aChkptImageAttr );
 
-    // µ¥ÀÌÅ¸ÆÄÀÏ ¸ŞÅ¸Çì´õ¸¦ ±â·ÏÇÑ´Ù. 
+    // ë°ì´íƒ€íŒŒì¼ ë©”íƒ€í—¤ë”ë¥¼ ê¸°ë¡í•œë‹¤. 
     IDE_RC flushDBFileHdr();
 
-    // µ¥ÀÌÅ¸ÆÄÀÏ·ÎºÎÅÍ ¸ŞÅ¸Çì´õ¸¦ ÆÇµ¶ÇÑ´Ù.
+    // ë°ì´íƒ€íŒŒì¼ë¡œë¶€í„° ë©”íƒ€í—¤ë”ë¥¼ íŒë…í•œë‹¤.
     IDE_RC readChkptImageHdr( smmChkptImageHdr * aChkptImgageHdr );
 
-    // µ¥ÀÌÅ¸ÆÄÀÏÀÇ ¸ŞÅ¸Çì´õ¸¦ ÆÇµ¶ÇÏ¿© ¹Ìµğ¾îº¹±¸°¡ 
-    // ÇÊ¿äÇÑÁö ÆÇ´ÜÇÑ´Ù.
+    // ë°ì´íƒ€íŒŒì¼ì˜ ë©”íƒ€í—¤ë”ë¥¼ íŒë…í•˜ì—¬ ë¯¸ë””ì–´ë³µêµ¬ê°€ 
+    // í•„ìš”í•œì§€ íŒë‹¨í•œë‹¤.
     IDE_RC checkValidationDBFHdr( smmChkptImageHdr  * aChkptImageHdr,
                                   idBool            * aIsMediaFailure );
 
-    // Drop ÇÏ·Á´Â Checkpoint Path¿¡¼­ Checkpoint Image°¡
-    // À¯È¿ÇÑ °æ·Î·Î ¿Å°ÜÁ³´ÂÁö¸¦ È®ÀÎÇÑ´Ù.
+    // Drop í•˜ë ¤ëŠ” Checkpoint Pathì—ì„œ Checkpoint Imageê°€
+    // ìœ íš¨í•œ ê²½ë¡œë¡œ ì˜®ê²¨ì¡ŒëŠ”ì§€ë¥¼ í™•ì¸í•œë‹¤.
     static IDE_RC checkChkptImgInDropCPath( smmTBSNode       * aTBSNode,
                                             smmChkptPathNode * aDropPathNode );
 
-    // µ¥ÀÌÅ¸ÆÄÀÏ HEADERÀÇ À¯È¿¼ºÀ» °Ë»çÇÑ´Ù. 
+    // ë°ì´íƒ€íŒŒì¼ HEADERì˜ ìœ íš¨ì„±ì„ ê²€ì‚¬í•œë‹¤. 
     IDE_RC checkValuesOfDBFHdr( smmChkptImageHdr  * aChkptImageHdr );
 
 
-    // µ¥ÀÌÅ¸ÆÄÀÏ HEADERÀÇ À¯È¿¼ºÀ» °Ë»çÇÑ´Ù. (ASSERT¹öÁ¯)
+    // ë°ì´íƒ€íŒŒì¼ HEADERì˜ ìœ íš¨ì„±ì„ ê²€ì‚¬í•œë‹¤. (ASSERTë²„ì ¼)
     IDE_RC assertValuesOfDBFHdr( smmChkptImageHdr*  aChkptImageHdr );
     
-    //  ¹Ìµğ¾î¿À·ù ÇÃ·¡±×¸¦ ¼³Á¤ÇÑ´Ù. 
+    //  ë¯¸ë””ì–´ì˜¤ë¥˜ í”Œë˜ê·¸ë¥¼ ì„¤ì •í•œë‹¤. 
     void   setIsMediaFailure( idBool   aFlag ) { mIsMediaFailure = aFlag; }
-    //  ¹Ìµğ¾î¿À·ù ÇÃ·¡±×¸¦ ¹İÈ¯ÇÑ´Ù. 
+    //  ë¯¸ë””ì–´ì˜¤ë¥˜ í”Œë˜ê·¸ë¥¼ ë°˜í™˜í•œë‹¤. 
     idBool getIsMediaFailure() { return mIsMediaFailure; }
 
-    // »ı¼ºµÈ µ¥ÀÌÅ¸ÆÄÀÏ¿¡ ´ëÇÑ ¼Ó¼ºÀ» ·Î±×¾ŞÄ¿¿¡ Ãß°¡ÇÑ´Ù. 
+    // ìƒì„±ëœ ë°ì´íƒ€íŒŒì¼ì— ëŒ€í•œ ì†ì„±ì„ ë¡œê·¸ì•µì»¤ì— ì¶”ê°€í•œë‹¤. 
     IDE_RC addAttrToLogAnchorIfCrtFlagIsFalse( smmTBSNode * aTBSNode );
 
-    // ¹Ìµğ¾îº¹±¸ ÇÃ·¡±× ¼³Á¤ ¹× Àç¼öÇà ±¸°£ °è»êÇÏ±â
+    // ë¯¸ë””ì–´ë³µêµ¬ í”Œë˜ê·¸ ì„¤ì • ë° ì¬ìˆ˜í–‰ êµ¬ê°„ ê³„ì‚°í•˜ê¸°
     IDE_RC prepareMediaRecovery( smiRecoverType        aRecoveryType, 
                                  smmChkptImageHdr    * aChkptImageHdr,
                                  smLSN               * aFromRedoLSN,
                                  smLSN               * aToRedoLSN );
 
-    // µ¥ÀÌÅ¸ÆÄÀÏ ¹øÈ£ ¹İÈ¯
+    // ë°ì´íƒ€íŒŒì¼ ë²ˆí˜¸ ë°˜í™˜
     UInt  getFileNum() { return mFileNum; }
 
-    // µ¥ÀÌÅ¸ÆÄÀÏ ÀúÀå°æ·Î ¹İÈ¯
+    // ë°ì´íƒ€íŒŒì¼ ì €ì¥ê²½ë¡œ ë°˜í™˜
     SChar * getFileDir() { return mDir; }
 
-    //Å×ÀÌºí½ºÆäÀÌ½º ¹øÈ£ ¹İÈ¯ 
+    //í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ë²ˆí˜¸ ë°˜í™˜ 
     scSpaceID getSpaceID() { return mSpaceID; }
 
-    // µ¥ÀÌÅ¸ÆÄÀÏÀÇ ÆäÀÌÁö±¸°£À» ¹İÈ¯
+    // ë°ì´íƒ€íŒŒì¼ì˜ í˜ì´ì§€êµ¬ê°„ì„ ë°˜í™˜
     void  getPageRangeInFile( scPageID  * aFstPageID,
                               scPageID  * aLstPageID ) 
     { 
@@ -289,7 +289,7 @@ public:
         *aLstPageID = mLstPageID;
     }
 
-    // µ¥ÀÌÅ¸ÆÄÆÄÀÏ¿¡ Æ÷ÇÔµÈ  ÆäÀÌÁö ÀÎÁö Ã¼Å©ÇÑ´Ù. 
+    // ë°ì´íƒ€íŒŒíŒŒì¼ì— í¬í•¨ëœ  í˜ì´ì§€ ì¸ì§€ ì²´í¬í•œë‹¤. 
     idBool IsIncludePageInFile( scPageID  aPageID )
     {
         if ( (mFstPageID <= aPageID) && 

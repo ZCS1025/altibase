@@ -582,7 +582,7 @@
 #define IDE_ERR_0    IDE_TRC_ERR_0,  IDE_ERR, 0
 
 
-/* PROJ-2473 SNMP Áö¿ø */
+/* PROJ-2473 SNMP ì§€ì› */
 /* ------------------------------------------------
  *  SNMP
  * ----------------------------------------------*/
@@ -689,7 +689,7 @@ public:
         return acpAtomicInc64(&mLogSerial);
     }
 
-    /* write()¸¦ È£ÃâÇÏÁö ¾ÊÀ» °æ¿ì ÆÄÀÏ¿¡ ±â·ÏµÇÁö ¾Ê´Â´Ù. */
+    /* write()ë¥¼ í˜¸ì¶œí•˜ì§€ ì•Šì„ ê²½ìš° íŒŒì¼ì— ê¸°ë¡ë˜ì§€ ì•ŠëŠ”ë‹¤. */
     IDE_RC write()
     {
         return logClose();

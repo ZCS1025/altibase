@@ -339,11 +339,11 @@ ACI_RC ulaCommRecvMetaReplTbl( cmiProtocolContext * aProtocolContext,
     CMI_RD8( aProtocolContext, &(aOutTable->mTableOID) );
     CMI_RD4( aProtocolContext, &(aOutTable->mPKIndexID) );
     CMI_RD4( aProtocolContext, &(aOutTable->mPKColumnCount) );
-    aOutTable->mPKColumnCount = 0; /* À§¿¡¼­ ¹Ş¾ÒÀ¸³ª mPKIndexID¸¦ Á¶»çÇØ¼­ ¼³Á¤ */
+    aOutTable->mPKColumnCount = 0; /* ìœ„ì—ì„œ ë°›ì•˜ìœ¼ë‚˜ mPKIndexIDë¥¼ ì¡°ì‚¬í•´ì„œ ì„¤ì • */
     CMI_RD4( aProtocolContext, &(aOutTable->mColumnCount) );
     CMI_RD4( aProtocolContext, &(aOutTable->mIndexCount) );
     
-    /* PROJ-1915 Invalid Max SNÀ» Àü¼Û ÇÑ´Ù. */
+    /* PROJ-1915 Invalid Max SNì„ ì „ì†¡ í•œë‹¤. */
     CMI_SKIP_READ_BLOCK( aProtocolContext, 8 );
     /* CMI_RD8( aProtocolContext, &(aItem->mItem.mInvalidMaxSN) ); */
 
@@ -729,7 +729,7 @@ ACI_RC ulaCommRecvXLog( cmiProtocolContext * aProtocolContext,
     {
         case CMI_PROTOCOL_OPERATION( RP, TrBegin ):
         {
-            // PROJ-1663 : BEGIN ÆĞÅ¶ ¹Ì»ç¿ë
+            // PROJ-1663 : BEGIN íŒ¨í‚· ë¯¸ì‚¬ìš©
             ACI_TEST( ulaCommRecvTrBegin( aExitFlag,
                                           aProtocolContext,
                                           aOutXLog,
@@ -1182,7 +1182,7 @@ ACI_RC ulaCommRecvInsert( acp_bool_t         * aExitFlag,
     }
 
     ACI_EXCEPTION_END;
-    // ÀÌ¹Ì ulaSetErrorCode() ¼öÇà
+    // ì´ë¯¸ ulaSetErrorCode() ìˆ˜í–‰
 
     if ( aOutXLog->mColumn.mCIDArray != NULL )
     {
@@ -1330,7 +1330,7 @@ ACI_RC ulaCommRecvUpdate( acp_bool_t         * aExitFlag,
         ulaSetErrorCode(aOutErrorMgr, ulaERR_ABORT_MEMORY_ALLOC);
     }
     ACI_EXCEPTION_END;
-    // ÀÌ¹Ì ulaSetErrorCode() ¼öÇà
+    // ì´ë¯¸ ulaSetErrorCode() ìˆ˜í–‰
 
     if ( aOutXLog->mPrimaryKey.mPKColArray != NULL )
     {
@@ -1473,7 +1473,7 @@ ACI_RC ulaCommRecvDelete( acp_bool_t         * aExitFlag,
         ulaSetErrorCode( aOutErrorMgr, ulaERR_ABORT_MEMORY_ALLOC );
     }
     ACI_EXCEPTION_END;
-    // ÀÌ¹Ì ulaSetErrorCode() ¼öÇà
+    // ì´ë¯¸ ulaSetErrorCode() ìˆ˜í–‰
 
     if (aOutXLog->mPrimaryKey.mPKColArray != NULL)
     {
@@ -1562,9 +1562,9 @@ ACI_RC ulaCommRecvValue( acp_bool_t         * aExitFlag,
     CMI_RD4( aProtocolContext, &(aOutValue->length) );
 
     /* NOTICE!!!!!
-     * ½ÇÁ¦ Value¿¡ ´ëÇÑ °ªÀ» ÀúÀåÇÏ´Â ¸Ş¸ğ¸® °ø°£À» ¿©±â¼­ ÇÒ´ç¹Ş´Â´Ù.
-     * µû¶ó¼­, ÀÌ XLog¸¦ »ç¿ëÇÑ ÂÊ¿¡¼­ ¿©±â¼­ ÇÒ´çÇØÁØ ¸Ş¸ğ¸® °ø°£À»
-     * ÇØÁ¦ÇØ ÁÖ¾î¾ß ÇÑ´Ù.
+     * ì‹¤ì œ Valueì— ëŒ€í•œ ê°’ì„ ì €ì¥í•˜ëŠ” ë©”ëª¨ë¦¬ ê³µê°„ì„ ì—¬ê¸°ì„œ í• ë‹¹ë°›ëŠ”ë‹¤.
+     * ë”°ë¼ì„œ, ì´ XLogë¥¼ ì‚¬ìš©í•œ ìª½ì—ì„œ ì—¬ê¸°ì„œ í• ë‹¹í•´ì¤€ ë©”ëª¨ë¦¬ ê³µê°„ì„
+     * í•´ì œí•´ ì£¼ì–´ì•¼ í•œë‹¤.
      */
     if ( aOutValue->length > 0 )
     {
@@ -1609,8 +1609,8 @@ ACI_RC ulaCommRecvValue( acp_bool_t         * aExitFlag,
     }
     else
     {
-        /* NULL value°¡ Àü¼ÛµÇ´Â °æ¿ì¿¡´Â length°¡ 0À¸·Î ³Ñ¾î¿À°Ô
-         * µÇ¹Ç·Î, ÀÌ °æ¿ì¿¡´Â ¸Ş¸ğ¸® ÇÒ´çÀ» ÇÏÁö ¾Êµµ·Ï ÇÑ´Ù. */
+        /* NULL valueê°€ ì „ì†¡ë˜ëŠ” ê²½ìš°ì—ëŠ” lengthê°€ 0ìœ¼ë¡œ ë„˜ì–´ì˜¤ê²Œ
+         * ë˜ë¯€ë¡œ, ì´ ê²½ìš°ì—ëŠ” ë©”ëª¨ë¦¬ í• ë‹¹ì„ í•˜ì§€ ì•Šë„ë¡ í•œë‹¤. */
     }
 
     return ACI_SUCCESS;
@@ -1728,7 +1728,7 @@ ACI_RC ulaCommRecvLobCursorOpen( acp_bool_t         * aExitFlag,
         ulaSetErrorCode( aOutErrorMgr, ulaERR_ABORT_MEMORY_ALLOC );
     }
     ACI_EXCEPTION_END;
-    // ÀÌ¹Ì ulaSetErrorCode() ¼öÇà
+    // ì´ë¯¸ ulaSetErrorCode() ìˆ˜í–‰
 
     if (aOutXLog->mPrimaryKey.mPKColArray != NULL)
     {
@@ -1886,7 +1886,7 @@ ACI_RC ulaCommSendAck( cmiProtocolContext * aProtocolContext,
                        ulaErrorMgr        * aOutErrorMgr )
 {
     acp_uint8_t  sOpID;
-    acp_uint64_t sFlushSN = ULA_SN_NULL;  //proj-1608 ala¿¡¼­´Â »ç¿ëÇÏÁö ¾ÊÀ½
+    acp_uint64_t sFlushSN = ULA_SN_NULL;  //proj-1608 alaì—ì„œëŠ” ì‚¬ìš©í•˜ì§€ ì•ŠìŒ
 
     ACI_TEST( cmiCheckAndFlush( aProtocolContext, 1 + 52,
                                 ACP_TRUE )

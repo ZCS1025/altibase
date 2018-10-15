@@ -148,7 +148,7 @@ IDE_RC iduLatchPosix::lockRead(void*  aStatSQL, void* aWeArgs)
             idlOS::thr_yield();
             IDE_TEST(tryLockRead(&sSuccess, NULL) != IDE_SUCCESS);
         } while(sSuccess == ID_FALSE);
-        /* ´ë±âÀÌº¥Æ® Wait Time ÃøÁ¤À» ¿Ï·áÇÑ´Ù. */
+        /* ëŒ€ê¸°ì´ë²¤íŠ¸ Wait Time ì¸¡ì •ì„ ì™„ë£Œí•œë‹¤. */
         IDV_END_WAIT_EVENT( aStatSQL, aWeArgs );
     
         IDE_ASSERT(mMode > 0);
@@ -176,7 +176,7 @@ IDE_RC iduLatchPosix::lockWrite(void* aStatSQL, void* aWeArgs)
             idlOS::thr_yield();
             IDE_TEST(tryLockWrite(&sSuccess, NULL) != IDE_SUCCESS);
         } while(sSuccess == ID_FALSE);
-        /* ´ë±âÀÌº¥Æ® Wait Time ÃøÁ¤À» ¿Ï·áÇÑ´Ù. */
+        /* ëŒ€ê¸°ì´ë²¤íŠ¸ Wait Time ì¸¡ì •ì„ ì™„ë£Œí•œë‹¤. */
         IDV_END_WAIT_EVENT( aStatSQL, aWeArgs );
 
         IDE_ASSERT(mMode < 0);

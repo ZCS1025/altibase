@@ -199,7 +199,7 @@ main(int argc, char *argv[])
 
 
 /*
-     Membase¸¦ ¼³Á¤ÇÑ´Ù.
+     Membaseë¥¼ ì„¤ì •í•œë‹¤.
  */
 IDE_RC setupMemBase(smmTBSNode * aTBSNode)
 {
@@ -242,13 +242,13 @@ IDE_RC setupMemBase(smmTBSNode * aTBSNode)
 
 /*
     Parse DB File Name String
-    DB File ÀÌ¸§ÀÇ  Format : "TableSpaceName-PingPong-FileNo"
+    DB File ì´ë¦„ì˜  Format : "TableSpaceName-PingPong-FileNo"
 
-    [IN] aDBFileName - ParsingÇÒ DB FileÀÇ ÀÌ¸§
+    [IN] aDBFileName - Parsingí•  DB Fileì˜ ì´ë¦„
 
-    [OUT] aTBSName - DB FileÀÇ ÀÌ¸§
-    [OUT] aPingPongNo - PingPong ¹øÈ£ 0 or 1
-    [OUT] aFileNo     - DB FileÀÇ ¹øÈ£
+    [OUT] aTBSName - DB Fileì˜ ì´ë¦„
+    [OUT] aPingPongNo - PingPong ë²ˆí˜¸ 0 or 1
+    [OUT] aFileNo     - DB Fileì˜ ë²ˆí˜¸
  */
 IDE_RC parseDBFileName(SChar * aDBFileName,
                        SChar * aTBSName,
@@ -282,9 +282,9 @@ IDE_RC parseDBFileName(SChar * aDBFileName,
 }
 
 /*
-    »ç¿ëÀÚ°¡ ÁöÁ¤ÇÑ DB File ÀÌ¸§À¸·ÎºÎÅÍ TablespaceÀÌ¸§À» ¾ò¾î³½´Ù.
+    ì‚¬ìš©ìê°€ ì§€ì •í•œ DB File ì´ë¦„ìœ¼ë¡œë¶€í„° Tablespaceì´ë¦„ì„ ì–»ì–´ë‚¸ë‹¤.
 
-    [OUT] aTBSName - Tablespace ÀÌ¸§
+    [OUT] aTBSName - Tablespace ì´ë¦„
  */
 IDE_RC getTBSNameFromDBF(SChar * aTBSName )
 {
@@ -351,7 +351,7 @@ IDE_RC findTBSNode( smmTBSNode ** aTBSNode )
 }
 
 /*
-    Dictionary Tablespace°¡ ¾Æ´Ï¸é ¿¡·¯¸¦ ¹ß»ı½ÃÅ²´Ù.
+    Dictionary Tablespaceê°€ ì•„ë‹ˆë©´ ì—ëŸ¬ë¥¼ ë°œìƒì‹œí‚¨ë‹¤.
  */
 IDE_RC checkDicTBS()
 {
@@ -451,7 +451,7 @@ IDE_RC doJOB()
 
 }
 
-/* Membase¸¦ Dump */
+/* Membaseë¥¼ Dump */
 IDE_RC dumpMemBase(smmMemBase * aMemBase)
 {
     UInt i;
@@ -502,7 +502,7 @@ IDE_RC dumpMemBase(smmMemBase * aMemBase)
                    "CURRENT_EXPAND_CHUNK_PAGE_COUNT",
                    aMemBase->mCurrentExpandChunkCnt );
 
-    // °¢°¢ÀÇ Free Page ListÀÇ Á¤º¸¸¦ Ãâ·ÂÇÑ´Ù.
+    // ê°ê°ì˜ Free Page Listì˜ ì •ë³´ë¥¼ ì¶œë ¥í•œë‹¤.
     for ( i=0; i< aMemBase->mFreePageListCount; i++ )
     {
         idlOS::printf( "LIST#%02"ID_UINT32_FMT".%-23s: %"ID_vULONG_FMT"\n",
@@ -536,7 +536,7 @@ IDE_RC dumpMemBase(smmMemBase * aMemBase)
 
 }
 
-/* Catalog TableÀÇ slotµé (³»ºÎ ÆäÀÌÁö) Dump */
+/* Catalog Tableì˜ slotë“¤ (ë‚´ë¶€ í˜ì´ì§€) Dump */
 IDE_RC dumpCatalog()
 {
     smpSlotHeader  * sSlotHeaderPtr;
@@ -556,10 +556,10 @@ IDE_RC dumpCatalog()
     sState = 1;
 
 
-    /* Dictionary Tablespace¿¡¼­¸¸ Dump °¡´É */
+    /* Dictionary Tablespaceì—ì„œë§Œ Dump ê°€ëŠ¥ */
     IDE_TEST( checkDicTBS() != IDE_SUCCESS );
 
-    /* CatalogTableÀº ¹İµå½Ã 0¹ø ÆäÀÌÁö¿¡ À§Ä¡ÇÔ */
+    /* CatalogTableì€ ë°˜ë“œì‹œ 0ë²ˆ í˜ì´ì§€ì— ìœ„ì¹˜í•¨ */
     IDE_TEST( readPage( sPid ) != IDE_SUCCESS );
 
     idlOS::printf( "%s %s %s\n\n",
@@ -571,7 +571,7 @@ IDE_RC dumpCatalog()
                                        SMM_CAT_TABLE_OFFSET +
                                        SMP_SLOT_HEADER_SIZE );
 
-    /* Catalog Table¿¡ ´ëÇÑ Loop ½ÃÀÛ */
+    /* Catalog Tableì— ëŒ€í•œ Loop ì‹œì‘ */
     sRowPtr  = NULL;
     sPagePtr = NULL;
 
@@ -635,7 +635,7 @@ IDE_RC dumpCatalog()
 }
 
 
-/* TableÀÇ PageList¸¦ Loopµ¹¸ç PageHeader¸¦ Ãâ·ÂÇÑ´Ù. */
+/* Tableì˜ PageListë¥¼ LoopëŒë©° PageHeaderë¥¼ ì¶œë ¥í•œë‹¤. */
 IDE_RC dumpPH( scPageID aPid )
 {
     scPageID sPid = aPid;
@@ -672,10 +672,10 @@ IDE_RC dumpPage( scPageID aPid )
 
     IDE_TEST( readPage( sPid ) != IDE_SUCCESS );
 
-    /* ÇØ´ç ¸Ş¸ğ¸® ¿µ¿ªÀ» DumpÇÑ °á°ú°ªÀ» ÀúÀåÇÒ ¹öÆÛ¸¦ È®º¸ÇÕ´Ï´Ù.
-     * Stack¿¡ ¼±¾ğÇÒ °æ¿ì, ÀÌ ÇÔ¼ö¸¦ ÅëÇØ ¼­¹ö°¡ Á¾·áµÉ ¼ö ÀÖÀ¸¹Ç·Î
-     * Heap¿¡ ÇÒ´çÀ» ½ÃµµÇÑ ÈÄ, ¼º°øÇÏ¸é ±â·Ï, ¼º°øÇÏÁö ¾ÊÀ¸¸é ±×³É
-     * returnÇÕ´Ï´Ù. */
+    /* í•´ë‹¹ ë©”ëª¨ë¦¬ ì˜ì—­ì„ Dumpí•œ ê²°ê³¼ê°’ì„ ì €ì¥í•  ë²„í¼ë¥¼ í™•ë³´í•©ë‹ˆë‹¤.
+     * Stackì— ì„ ì–¸í•  ê²½ìš°, ì´ í•¨ìˆ˜ë¥¼ í†µí•´ ì„œë²„ê°€ ì¢…ë£Œë  ìˆ˜ ìˆìœ¼ë¯€ë¡œ
+     * Heapì— í• ë‹¹ì„ ì‹œë„í•œ í›„, ì„±ê³µí•˜ë©´ ê¸°ë¡, ì„±ê³µí•˜ì§€ ì•Šìœ¼ë©´ ê·¸ëƒ¥
+     * returní•©ë‹ˆë‹¤. */
     IDE_TEST( iduMemMgr::calloc( IDU_MEM_ID, 1,
                                  ID_SIZEOF( SChar ) * IDE_DUMP_DEST_LIMIT,
                                  (void**)&sTempBuf )
@@ -683,7 +683,7 @@ IDE_RC dumpPage( scPageID aPid )
     sState = 1;
 
 
-    /* Page Type (Fixed / Variable) ¿¡ µû¶ó ´Ş¸® DumpÇÕ´Ï´Ù. */
+    /* Page Type (Fixed / Variable) ì— ë”°ë¼ ë‹¬ë¦¬ Dumpí•©ë‹ˆë‹¤. */
     sTempBuf[0] = '\0';
     if( ((smpPersPageHeader *)gPages[sPid])->mType == SMP_PAGETYPE_FIX )
     {
@@ -705,7 +705,7 @@ IDE_RC dumpPage( scPageID aPid )
         }
         else
         {
-            /* ¾î´À Typeµµ ¾Æ´Ï¶ó¸é, ÃÊ±âÈ­ ¾ÈµÈ ÆäÀÌÁö ÀÔ´Ï´Ù. */
+            /* ì–´ëŠ Typeë„ ì•„ë‹ˆë¼ë©´, ì´ˆê¸°í™” ì•ˆëœ í˜ì´ì§€ ì…ë‹ˆë‹¤. */
             ideLog::ideMemToHexStr( gPages[sPid],
                                     SM_PAGE_SIZE,
                                     IDE_DUMP_FORMAT_NORMAL,
@@ -731,7 +731,7 @@ IDE_RC dumpPage( scPageID aPid )
     return IDE_FAILURE;
 }
 
-/* »ç¿ëÀÚ°¡ ÁöÁ¤ÇÑ OID·Î Table Header¸¦ Ãâ·ÂÇÑ´Ù */
+/* ì‚¬ìš©ìê°€ ì§€ì •í•œ OIDë¡œ Table Headerë¥¼ ì¶œë ¥í•œë‹¤ */
 IDE_RC dumpTHWithOID()
 {
     SChar          * sTempBuffer;
@@ -777,7 +777,7 @@ IDE_RC dumpTHWithOID()
 }
 
 /*
- * BUG-30713: Table Column Á¤º¸¸¦ Ãâ·ÂÇÏ´Â ±â´ÉÀ» Ãß°¡ÇÑ´Ù.
+ * BUG-30713: Table Column ì •ë³´ë¥¼ ì¶œë ¥í•˜ëŠ” ê¸°ëŠ¥ì„ ì¶”ê°€í•œë‹¤.
  */
 IDE_RC dumpTCWithOID()
 {
@@ -877,8 +877,8 @@ IDE_RC allocDbf( smmDatabaseFile *aDb, scPageID aPid )
 
     sFno = smmManager::getDbFileNo( gTBSNode, aPid );
 
-    /* BUG-15648: ÆÄÀÏÀÌ ¿©·¯°³ ÀÖÀ»¶§ dumpciÀÇ Page-Header-Dump°¡
-     * ¿Àµ¿ÀÛÇÕ´Ï´Ù.*/
+    /* BUG-15648: íŒŒì¼ì´ ì—¬ëŸ¬ê°œ ìˆì„ë•Œ dumpciì˜ Page-Header-Dumpê°€
+     * ì˜¤ë™ì‘í•©ë‹ˆë‹¤.*/
     idlVA::appendFormat( sDbf, 1024 * 2, "-%d-%d",
                          *sNoS - '0',
                          sFno);
@@ -1025,7 +1025,7 @@ IDE_RC nextOIDall( smcTableHeader    * aCatTblHdr,
         sFence = (SChar *)(sPagePtr + 1);
         if( ( sRowPtr + sSlotSize ) > sFence )
         {
-            /* ÆäÀÌÁö³» ¸ğµç ½½·ÔÀ» ÀĞÀ½ */
+            /* í˜ì´ì§€ë‚´ ëª¨ë“  ìŠ¬ë¡¯ì„ ì½ìŒ */
             sRowPtr = NULL;
         }
         else
@@ -1143,7 +1143,7 @@ IDE_RC loadErrorMessage()
 {
 
     /* --------------------
-     *  ¿¡·¯ Message ·Îµù
+     *  ì—ëŸ¬ Message ë¡œë”©
      * -------------------*/
     IDE_TEST_RAISE(smuUtility::loadErrorMsb(idp::getHomeDir(),
                                             (SChar*)"KO16KSC5601")
@@ -1306,7 +1306,7 @@ verifyDbf(smmMemBase *aMembase)
 
 }
 
-/* DataFileÀÇ MetaÁ¤º¸(Checkpoint imgage hdr)¸¦ dump */
+/* DataFileì˜ Metaì •ë³´(Checkpoint imgage hdr)ë¥¼ dump */
 IDE_RC dumpMeta()
 {
     UInt                sState = 0;
@@ -1375,7 +1375,7 @@ IDE_RC dumpMeta()
     return IDE_FAILURE;
 }
 
-/* TableÀÇ Page List¸¦ Ãâ·ÂÇÑ´Ù */
+/* Tableì˜ Page Listë¥¼ ì¶œë ¥í•œë‹¤ */
 IDE_RC dumpTPL()
 {
     UInt y;
@@ -1449,8 +1449,8 @@ IDE_RC dumpTPL()
     return IDE_FAILURE;
 }
 
-// BUG-28510 dumpÀ¯Æ¿µéÀÇ Banner¾ç½ÄÀ» ÅëÀÏÇØ¾ß ÇÕ´Ï´Ù.
-// DUMPCI.banÀ» ÅëÇØ dumpciÀÇ Å¸ÀÌÆ²À» Ãâ·ÂÇØÁİ´Ï´Ù.
+// BUG-28510 dumpìœ í‹¸ë“¤ì˜ Bannerì–‘ì‹ì„ í†µì¼í•´ì•¼ í•©ë‹ˆë‹¤.
+// DUMPCI.banì„ í†µí•´ dumpciì˜ íƒ€ì´í‹€ì„ ì¶œë ¥í•´ì¤ë‹ˆë‹¤.
 void showCopyRight( void )
 {
     SChar         sBuf[1024 + 1];
@@ -1517,7 +1517,7 @@ const smiColumn* getColumn( smcTableHeader  * aTableHeader,
 
     IDE_DASSERT( aIndex < smcTable::getColumnCount(aTableHeader) );
 
-    /* Å×ÀÌºíÀÇ ÄÃ·³Á¤º¸¸¦ ´ãÀº ½ÃÀÛ variable slot */
+    /* í…Œì´ë¸”ì˜ ì»¬ëŸ¼ì •ë³´ë¥¼ ë‹´ì€ ì‹œì‘ variable slot */
     sPID = SM_MAKE_PID( aTableHeader->mColumns.fstPieceOID );
     sPos = SM_MAKE_OFFSET( aTableHeader->mColumns.fstPieceOID );
     IDE_ASSERT( readPage( sPID ) == IDE_SUCCESS );
@@ -1529,7 +1529,7 @@ const smiColumn* getColumn( smcTableHeader  * aTableHeader,
     for( sCurSize = sVCPieceHeader->length; sCurSize <= sOffset; )
     {
         sOffset -= sCurSize;
-        // next variable slotÀ¸·Î ÀÌµ¿
+        // next variable slotìœ¼ë¡œ ì´ë™
         IDE_ASSERT(sVCPieceHeader->nxtPieceOID != SM_NULL_OID);
 
         sPID = SM_MAKE_PID( sVCPieceHeader->nxtPieceOID );
@@ -1552,7 +1552,7 @@ const smiColumn* getColumn( smcTableHeader  * aTableHeader,
 /* BUG-31863 [sm-util] The dump utility is necessary to verify
  * FreePageList of memory tablespace. */
 
-/* Memory TablespaceÀÇ Free Page List¸¦ ´ıÇÁÇÑ´Ù. */
+/* Memory Tablespaceì˜ Free Page Listë¥¼ ë¤í”„í•œë‹¤. */
 IDE_RC dumpFreePageLists( smmTBSNode * aTBSNode )
 {
     UInt i;
@@ -1672,17 +1672,17 @@ IDE_RC getNextFreePage( smmTBSNode * aTBSNode,
 
     IDE_DASSERT( aNextFreePageID != NULL );
     
-    // µ¥ÀÌÅÍ ÆäÀÌÁöÀÇ SlotÀ» ÀúÀåÇÏ´Â FLI PageÀÇ ID¸¦ ¾Ë¾Æ³½´Ù.
+    // ë°ì´í„° í˜ì´ì§€ì˜ Slotì„ ì €ì¥í•˜ëŠ” FLI Pageì˜ IDë¥¼ ì•Œì•„ë‚¸ë‹¤.
     sFLIPageID = smmExpandChunk::getFLIPageID( aTBSNode, aFreePageID );
 
-    // FLI Page¾È¿¡¼­ µ¥ÀÌÅÍÆäÀÌÁöÀÇ Slot OffsetÀ» ±¸ÇÑ´Ù.
+    // FLI Pageì•ˆì—ì„œ ë°ì´í„°í˜ì´ì§€ì˜ Slot Offsetì„ êµ¬í•œë‹¤.
     sSlotOffset = smmExpandChunk::getSlotOffsetInFLIPage( aTBSNode, aFreePageID );
 
-    // Free List Info Page ÀÇ ÁÖ¼Ò¸¦ ¾Ë¾Æ³½´Ù.
+    // Free List Info Page ì˜ ì£¼ì†Œë¥¼ ì•Œì•„ë‚¸ë‹¤.
     IDE_TEST( readPage(sFLIPageID) != IDE_SUCCESS );
     sFLIPageAddr = (smpPersPage *)gPages[ sFLIPageID ];
 
-    // Slot ÀÇ ÁÖ¼Ò¸¦ °è»êÇÑ´Ù.
+    // Slot ì˜ ì£¼ì†Œë¥¼ ê³„ì‚°í•œë‹¤.
     sSlotAddr = (smmFLISlot *)
         ( ((SChar*)sFLIPageAddr) + aTBSNode->mFLISlotBase + sSlotOffset );
 
@@ -1695,7 +1695,7 @@ IDE_RC getNextFreePage( smmTBSNode * aTBSNode,
     return IDE_FAILURE;
 }
 
-/* FLI Page¸¦ ´ıÇÁÇÑ´Ù. */
+/* FLI Pageë¥¼ ë¤í”„í•œë‹¤. */
 IDE_RC dumpFLIPages( smmTBSNode * aTBSNode )
 {
     vULong  i;

@@ -1,6 +1,6 @@
 include ../cmEnv.mk
 
-# NLS Áß ¿µ¾î ¿¡·¯ ¸Þ½ÃÁö È­ÀÏ Á¤ÀÇ 
+# NLS ì¤‘ ì˜ì–´ ì—ëŸ¬ ë©”ì‹œì§€ í™”ì¼ ì •ì˜ 
 E_CM_US_MSG    = E_CM_US7ASCII.msg
 ALLMSG         = $(E_CM_US_MSG)
 

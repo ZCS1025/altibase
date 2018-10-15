@@ -172,7 +172,7 @@ IDE_RC utISPApi::Open(SChar                       *aHost,
     IDE_TEST( utString::AppendConnStrAttr(mErrorMgr, sConnStr, ID_SIZEOF(sConnStr), (SChar *)"NLS_USE", aNLS_USE) );
     idlVA::appendFormat(sConnStr, ID_SIZEOF(sConnStr), "CONNTYPE=%"ID_INT32_FMT";", aConnType);
 
-    // fix BUG-17969 Áö¿øÆíÀÇ¼ºÀ» À§ÇØ APP_INFO ¼³Á¤
+    // fix BUG-17969 ì§€ì›í¸ì˜ì„±ì„ ìœ„í•´ APP_INFO ì„¤ì •
     IDE_TEST( utString::AppendConnStrAttr(mErrorMgr, sConnStr, ID_SIZEOF(sConnStr), (SChar *)"APP_INFO", aAppInfo) );
 
     /* BUG-29915 */
@@ -195,7 +195,7 @@ IDE_RC utISPApi::Open(SChar                       *aHost,
     }
 
     // bug-19279 remote sysdba enable
-    // sysdba Á¢¼Ó ¹æ¹ıÀÌ Ãß°¡µÇ¾ú´Ù.
+    // sysdba ì ‘ì† ë°©ë²•ì´ ì¶”ê°€ë˜ì—ˆë‹¤.
     // old: conntype=5       (unix-domain)  (windows:tcp)
     // new: privilege=sysdba (tcp/unix)     (windows:tcp)
     if (aIsSysDBA == ID_TRUE)
@@ -298,8 +298,8 @@ IDE_RC utISPApi::Open(SChar                       *aHost,
                 /*
                  * TASK-5894 Permit sysdba via IPC
                  *
-                 * IPCÀÇ °æ¿ì SYSDBA°¡ Á¢¼ÓÁßÀÌ°í ³²Àº Ã¤³ÎÀÌ ¾øÀ» ¶§
-                 * SYSDBA·Î Á¢¼ÓÇÏ¸é Á¢¼ÓÀ» ²÷¾îÁÖ¾î¾ß ÇÑ´Ù.
+                 * IPCì˜ ê²½ìš° SYSDBAê°€ ì ‘ì†ì¤‘ì´ê³  ë‚¨ì€ ì±„ë„ì´ ì—†ì„ ë•Œ
+                 * SYSDBAë¡œ ì ‘ì†í•˜ë©´ ì ‘ì†ì„ ëŠì–´ì£¼ì–´ì•¼ í•œë‹¤.
                  *
                  * 0x5108A : ulERR_ABORT_ADMIN_ALREADY_RUNNING
                  */
@@ -311,8 +311,8 @@ IDE_RC utISPApi::Open(SChar                       *aHost,
                 {
 #ifndef ALTI_CFG_OS_WINDOWS
                     /*
-                     * BUG-44144 -sysdba·Î ¿ø°İÁö altibase¿¡ Á¢¼ÓÇÒ °æ¿ì
-                     * ÇØ´ç ¼­¹ö°¡ ±¸µ¿µÇ¾î ÀÖÀ» °æ¿ì¿¡¸¸ Á¢¼Ó °¡´É
+                     * BUG-44144 -sysdbaë¡œ ì›ê²©ì§€ altibaseì— ì ‘ì†í•  ê²½ìš°
+                     * í•´ë‹¹ ì„œë²„ê°€ êµ¬ë™ë˜ì–´ ìˆì„ ê²½ìš°ì—ë§Œ ì ‘ì† ê°€ëŠ¥
                      */
                     if (aConnType == ISQL_CONNTYPE_TCP)
                     {
@@ -364,7 +364,7 @@ IDE_RC utISPApi::CheckPassword(SChar *aUser, SChar * aPasswd)
     UInt       sUserPassLen;
     SChar      sEncryptedStr[IDS_MAX_PASSWORD_BUFFER_LEN + 1];
 
-    /* ¾ÏÈ£ ÆÄÀÏ ¿­±â */
+    /* ì•”í˜¸ íŒŒì¼ ì—´ê¸° */
     sHomeDir = idlOS::getenv(IDP_HOME_ENV);
     IDE_TEST(sHomeDir == NULL);
     idlOS::snprintf(sPassFileName, ID_SIZEOF(sPassFileName),
@@ -373,23 +373,23 @@ IDE_RC utISPApi::CheckPassword(SChar *aUser, SChar * aPasswd)
     sFP = idlOS::fopen(sPassFileName, "r");
     if (sFP == NULL)
     {
-        /* ¾ÏÈ£ ÆÄÀÏ »ı¼º ÈÄ ´Ù½Ã ¿­±â ½Ãµµ */
+        /* ì•”í˜¸ íŒŒì¼ ìƒì„± í›„ ë‹¤ì‹œ ì—´ê¸° ì‹œë„ */
         IDE_TEST(GenPasswordFile(sPassFileName) != IDE_SUCCESS);
         sFP = idlOS::fopen(sPassFileName, "r");
         IDE_TEST_RAISE(sFP == NULL, SyspwdOpenError);
     }
 
-    /* »ç¿ëÀÚ ÀÌ¸§ °Ë»ç */
+    /* ì‚¬ìš©ì ì´ë¦„ ê²€ì‚¬ */
     IDE_TEST_RAISE(idlOS::strcasecmp(aUser, IDP_SYSUSER_NAME) != 0, IncorrectUser);
 
-    /* ¾ÏÈ£ ÆÄÀÏ¿¡ ÀúÀåµÈ ¾ÏÈ£ ÀĞ±â */
+    /* ì•”í˜¸ íŒŒì¼ì— ì €ì¥ëœ ì•”í˜¸ ì½ê¸° */
     sPassFilePasswdLen = idlOS::fread(sPassFilePasswd, 1,
                                       ID_SIZEOF(sPassFilePasswd) - 1, sFP);
     idlOS::fclose(sFP);
     sFP = NULL;
     sPassFilePasswd[sPassFilePasswdLen] = '\0';
 
-    /* ÀÎÀÚ·Î ¹ŞÀº ¾ÏÈ£¿Í ¾ÏÈ£ ÆÄÀÏÀÇ ¾ÏÈ£ ºñ±³ */
+    /* ì¸ìë¡œ ë°›ì€ ì•”í˜¸ì™€ ì•”í˜¸ íŒŒì¼ì˜ ì•”í˜¸ ë¹„êµ */
     if (aPasswd != NULL)
     {
         sUserPassLen = idlOS::strlen(aPasswd);
@@ -399,10 +399,10 @@ IDE_RC utISPApi::CheckPassword(SChar *aUser, SChar * aPasswd)
             idlOS::memset(sUserPassword, 0, ID_SIZEOF(sUserPassword));
             idlOS::snprintf(sUserPassword, ID_SIZEOF(sUserPassword), "%s", aPasswd);
             
-            /* BUG-38101 syspassword·Î °Ë»çÇÏ´Â °æ¿ì ´ë¼Ò¹®ÀÚ¸¦ ±¸ºĞÇÏÁö ¾Ê´Â´Ù. */
+            /* BUG-38101 syspasswordë¡œ ê²€ì‚¬í•˜ëŠ” ê²½ìš° ëŒ€ì†Œë¬¸ìë¥¼ êµ¬ë¶„í•˜ì§€ ì•ŠëŠ”ë‹¤. */
             utString::toUpper(sUserPassword);
 
-            // BUG-38565 password ¾ÏÈ£È­ ¾Ë°í¸®µë º¯°æ
+            // BUG-38565 password ì•”í˜¸í™” ì•Œê³ ë¦¬ë“¬ ë³€ê²½
             idsPassword::crypt( sEncryptedStr, sUserPassword, sUserPassLen, sPassFilePasswd );
             
             IDE_TEST_RAISE(idlOS::strcmp(sEncryptedStr, sPassFilePasswd) != 0, IncorrectPassword);
@@ -434,7 +434,7 @@ IDE_RC utISPApi::CheckPassword(SChar *aUser, SChar * aPasswd)
     }
     IDE_EXCEPTION_END;
 
-    // fix BUG-25556 : [codeSonar] fclose Ãß°¡.
+    // fix BUG-25556 : [codeSonar] fclose ì¶”ê°€.
     if (sFP != NULL)
     {
         idlOS::fclose(sFP);
@@ -450,15 +450,15 @@ IDE_RC utISPApi::GenPasswordFile(SChar * aPassFileName)
     SChar      sCryptStr[IDS_MAX_PASSWORD_BUFFER_LEN + 1];
     size_t     sCryptStrLen;
 
-    /* ¾ÏÈ£ ÆÄÀÏ ¿­±â(ÆÄÀÏ ¾øÀ» °æ¿ì »ı¼º) */
+    /* ì•”í˜¸ íŒŒì¼ ì—´ê¸°(íŒŒì¼ ì—†ì„ ê²½ìš° ìƒì„±) */
     sFP = idlOS::fopen(aPassFileName, "w");
     IDE_TEST(sFP == NULL);
 
-    /* ±âº»°ª ¾ÏÈ£¸¦ ¾ÏÈ£ ÆÄÀÏ¿¡ ÀúÀå */
+    /* ê¸°ë³¸ê°’ ì•”í˜¸ë¥¼ ì•”í˜¸ íŒŒì¼ì— ì €ì¥ */
     idlOS::memset(sUserPassword, 0, ID_SIZEOF(sUserPassword));
     idlOS::snprintf(sUserPassword, ID_SIZEOF(sUserPassword), "MANAGER");
 
-    // BUG-38565 password ¾ÏÈ£È­ ¾Ë°í¸®µë º¯°æ
+    // BUG-38565 password ì•”í˜¸í™” ì•Œê³ ë¦¬ë“¬ ë³€ê²½
     idsPassword::crypt( sCryptStr, sUserPassword, 7, NULL );
 
     sCryptStrLen = idlOS::strlen(sCryptStr);

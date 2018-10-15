@@ -4,7 +4,7 @@
 
 include ../rpEnv.mk
 
-# NLS Áß ¿µ¾î ¿¡·¯ ¸Þ½ÃÁö È­ÀÏ Á¤ÀÇ 
+# NLS ì¤‘ ì˜ì–´ ì—ëŸ¬ ë©”ì‹œì§€ í™”ì¼ ì •ì˜ 
 E_RP_US_MSG    = E_RP_US7ASCII.msg
 ALLMSG         = $(E_RP_US_MSG)
 

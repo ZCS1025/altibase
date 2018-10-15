@@ -26,14 +26,14 @@
 #include <dktDef.h>
 
 /***********************************************************************
- * Description: Remote table manager ¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+ * Description: Remote table manager ë¥¼ ì´ˆê¸°í™”í•œë‹¤.
  *
- *  aBufBlockCnt    - [IN] ÀÌ record buffer manager °¡ ÇÒ´ç¹ŞÀ» buffer
- *                         ¸¦ ±¸¼ºÇÏ´Â buffer block ÀÇ °³¼ö
- *  aAllocator      - [IN] record buffer ¸¦ ÇÒ´ç¹ŞÀ» ¶§ »ç¿ëÇÏ±â À§ÇÑ 
- *                         TLSF memory allocator ¸¦ °¡¸®Å°´Â Æ÷ÀÎÅÍ
+ *  aBufBlockCnt    - [IN] ì´ record buffer manager ê°€ í• ë‹¹ë°›ì„ buffer
+ *                         ë¥¼ êµ¬ì„±í•˜ëŠ” buffer block ì˜ ê°œìˆ˜
+ *  aAllocator      - [IN] record buffer ë¥¼ í• ë‹¹ë°›ì„ ë•Œ ì‚¬ìš©í•˜ê¸° ìœ„í•œ 
+ *                         TLSF memory allocator ë¥¼ ê°€ë¦¬í‚¤ëŠ” í¬ì¸í„°
  *
- *  aBuffSize  - [OUT] REMOTE_TABLE ÀÇ record buffer size
+ *  aBuffSize  - [OUT] REMOTE_TABLE ì˜ record buffer size
  *
  **********************************************************************/
 IDE_RC  dkdRemoteTableMgr::initialize( UInt * aBuffSize )
@@ -58,8 +58,8 @@ IDE_RC  dkdRemoteTableMgr::initialize( UInt * aBuffSize )
 }
 
 /************************************************************************
- * Description : ¿ø°İ¼­¹ö·ÎºÎÅÍ °¡Á®¿Â ·¹ÄÚµå¸¦ ÀÏ½ÃÀûÀ¸·Î ÀúÀåÇÒ ¹öÆÛ 
- *               µî ÇÊ¿äÇÑ ÀÚ¿øÀ» ÇÒ´çÇÑ´Ù.
+ * Description : ì›ê²©ì„œë²„ë¡œë¶€í„° ê°€ì ¸ì˜¨ ë ˆì½”ë“œë¥¼ ì¼ì‹œì ìœ¼ë¡œ ì €ì¥í•  ë²„í¼ 
+ *               ë“± í•„ìš”í•œ ìì›ì„ í• ë‹¹í•œë‹¤.
  *
  ************************************************************************/
 IDE_RC  dkdRemoteTableMgr::activate()
@@ -114,8 +114,8 @@ IDE_RC  dkdRemoteTableMgr::activate()
 }
 
 /************************************************************************
- * Description : ¿ø°İ¼­¹ö·ÎºÎÅÍ fetch ÇØ¿Â ·¹ÄÚµå¸¦ insert ÇÏ±â À§ÇØ 
- *               ÀÏ½ÃÀûÀ¸·Î º¸°üÇÒ ¹öÆÛ¸¦ ÇÒ´çÇÑ´Ù.
+ * Description : ì›ê²©ì„œë²„ë¡œë¶€í„° fetch í•´ì˜¨ ë ˆì½”ë“œë¥¼ insert í•˜ê¸° ìœ„í•´ 
+ *               ì¼ì‹œì ìœ¼ë¡œ ë³´ê´€í•  ë²„í¼ë¥¼ í• ë‹¹í•œë‹¤.
  *
  ************************************************************************/
 IDE_RC  dkdRemoteTableMgr::makeFetchRowBuffer()
@@ -180,7 +180,7 @@ IDE_RC  dkdRemoteTableMgr::makeFetchRowBuffer()
 }
 
 /************************************************************************
- * Description : fetch row buffer ¸¦ ¸Ş¸ğ¸®¿¡¼­ ÇØÁ¦ÇÑ´Ù. 
+ * Description : fetch row buffer ë¥¼ ë©”ëª¨ë¦¬ì—ì„œ í•´ì œí•œë‹¤. 
  *
  ************************************************************************/
 void    dkdRemoteTableMgr::freeFetchRowBuffer()
@@ -200,7 +200,7 @@ void    dkdRemoteTableMgr::freeFetchRowBuffer()
 }
 
 /************************************************************************
- * Description : converted row buffer ¸¦ ¸Ş¸ğ¸®¿¡¼­ ÇØÁ¦ÇÑ´Ù. 
+ * Description : converted row buffer ë¥¼ ë©”ëª¨ë¦¬ì—ì„œ í•´ì œí•œë‹¤. 
  *
  ************************************************************************/
 void    dkdRemoteTableMgr::freeConvertedRowBuffer()
@@ -218,8 +218,8 @@ void    dkdRemoteTableMgr::freeConvertedRowBuffer()
     }
 }
 /************************************************************************
- * Description : ¿ø°İ¼­¹ö·ÎºÎÅÍ fetch ÇØ¿Â ·¹ÄÚµå¸¦ insert ÇÏ±â À§ÇØ 
- *               ÀÏ½ÃÀûÀ¸·Î º¸°üÇÒ ¹öÆÛ¸¦ ÇÒ´çÇÑ´Ù.
+ * Description : ì›ê²©ì„œë²„ë¡œë¶€í„° fetch í•´ì˜¨ ë ˆì½”ë“œë¥¼ insert í•˜ê¸° ìœ„í•´ 
+ *               ì¼ì‹œì ìœ¼ë¡œ ë³´ê´€í•  ë²„í¼ë¥¼ í• ë‹¹í•œë‹¤.
  *
  ************************************************************************/
 void    dkdRemoteTableMgr::cleanFetchRowBuffer()
@@ -240,7 +240,7 @@ void    dkdRemoteTableMgr::cleanFetchRowBuffer()
 }
 
 /************************************************************************
- * Description : Remote table manager ¸¦ Á¤¸®ÇÑ´Ù.
+ * Description : Remote table manager ë¥¼ ì •ë¦¬í•œë‹¤.
  *
  ************************************************************************/
 void dkdRemoteTableMgr::finalize()
@@ -259,8 +259,8 @@ void dkdRemoteTableMgr::finalize()
 }
 
 /************************************************************************
- * Description : Type converter ¸¦ »ı¼ºÇÑ´Ù. Type converter ´Â result
- *               set meta Á¤º¸¸¦ °®°í ÀÖ´Ù. 
+ * Description : Type converter ë¥¼ ìƒì„±í•œë‹¤. Type converter ëŠ” result
+ *               set meta ì •ë³´ë¥¼ ê°–ê³  ìˆë‹¤. 
  *
  ************************************************************************/
 IDE_RC  dkdRemoteTableMgr::createTypeConverter( dkpColumn   *aColMetaArr, 
@@ -279,7 +279,7 @@ IDE_RC  dkdRemoteTableMgr::createTypeConverter( dkpColumn   *aColMetaArr,
 }
 
 /************************************************************************
- * Description : Type converter ¸¦ Á¦°ÅÇÑ´Ù.
+ * Description : Type converter ë¥¼ ì œê±°í•œë‹¤.
  *
  ************************************************************************/
 IDE_RC  dkdRemoteTableMgr::destroyTypeConverter()
@@ -288,10 +288,10 @@ IDE_RC  dkdRemoteTableMgr::destroyTypeConverter()
 }
 
 /************************************************************************
- * Description : Type converter °¡ altibase type À¸·Î º¯È¯ÇØ °®°í ÀÖ´Â 
- *               meta Á¤º¸¸¦ ¿äÃ»ÇÑ´Ù.
+ * Description : Type converter ê°€ altibase type ìœ¼ë¡œ ë³€í™˜í•´ ê°–ê³  ìˆëŠ” 
+ *               meta ì •ë³´ë¥¼ ìš”ì²­í•œë‹¤.
  *
- *  aMeta       - [IN] ¿äÃ»ÇÑ meta Á¤º¸°¡ ´ã±æ ±¸Á¶Ã¼ Æ÷ÀÎÅÍ
+ *  aMeta       - [IN] ìš”ì²­í•œ meta ì •ë³´ê°€ ë‹´ê¸¸ êµ¬ì¡°ì²´ í¬ì¸í„°
  *
  ************************************************************************/
 IDE_RC  dkdRemoteTableMgr::getConvertedMeta( mtcColumn **aMeta )
@@ -307,9 +307,9 @@ IDE_RC  dkdRemoteTableMgr::getConvertedMeta( mtcColumn **aMeta )
 }
 
 /************************************************************************
- * Description : Fetch row buffer ·ÎºÎÅÍ record ÇÏ³ª¸¦ fetch ÇØ¿Â´Ù. 
+ * Description : Fetch row buffer ë¡œë¶€í„° record í•˜ë‚˜ë¥¼ fetch í•´ì˜¨ë‹¤. 
  *
- *  aRow        - [OUT] fetch ÇØ¿Ã row ¸¦ °¡¸®Å°´Â Æ÷ÀÎÅÍ
+ *  aRow        - [OUT] fetch í•´ì˜¬ row ë¥¼ ê°€ë¦¬í‚¤ëŠ” í¬ì¸í„°
  *
  ************************************************************************/
 void    dkdRemoteTableMgr::fetchRow( void  **aRow )
@@ -349,11 +349,11 @@ void    dkdRemoteTableMgr::fetchRow( void  **aRow )
 }
 
 /************************************************************************
- * Description : REMOTE_TABLE ¿ë fetch row buffer ·Î record ÇÏ³ª¸¦ 
- *               insert ÇÑ´Ù. ÀÌ ¶§, ÀÔ·Â¹Ş´Â row ´Â cm block À¸·ÎºÎÅÍ 
- *               ¾ò¾î¿Â raw data ·Î mt type À¸·Î º¯È¯ÇÑ ÈÄ insert ÇÑ´Ù.
+ * Description : REMOTE_TABLE ìš© fetch row buffer ë¡œ record í•˜ë‚˜ë¥¼ 
+ *               insert í•œë‹¤. ì´ ë•Œ, ì…ë ¥ë°›ëŠ” row ëŠ” cm block ìœ¼ë¡œë¶€í„° 
+ *               ì–»ì–´ì˜¨ raw data ë¡œ mt type ìœ¼ë¡œ ë³€í™˜í•œ í›„ insert í•œë‹¤.
  *
- *  aRow        - [IN] insert ÇÒ record ¸¦ °¡¸®Å°´Â Æ÷ÀÎÅÍ
+ *  aRow        - [IN] insert í•  record ë¥¼ ê°€ë¦¬í‚¤ëŠ” í¬ì¸í„°
  *
  ************************************************************************/
 IDE_RC  dkdRemoteTableMgr::insertRow( void *aRow )
@@ -395,7 +395,7 @@ IDE_RC  dkdRemoteTableMgr::insertRow( void *aRow )
 }
 
 /************************************************************************
- * Description : Record buffer ÀÇ iteration À» restart ½ÃÅ²´Ù.
+ * Description : Record buffer ì˜ iteration ì„ restart ì‹œí‚¨ë‹¤.
  *
  ************************************************************************/
 IDE_RC  dkdRemoteTableMgr::restart()

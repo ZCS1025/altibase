@@ -15,7 +15,7 @@
 #include <idvTime.h>
 
 /* ------------------------------------------------
- *  ÇÏ³ªÀÇ Stmt¿¡ ´ëÇÑ Åë°è Á¤º¸
+ *  í•˜ë‚˜ì˜ Stmtì— ëŒ€í•œ í†µê³„ ì •ë³´
  * ----------------------------------------------*/
 
 class  iduFixedTableMemory;
@@ -111,7 +111,7 @@ class  iduFixedTableMemory;
 #define IDV_TIMEBOX_GET_ACCUM_TIME( __idvBasePtr__ ) \
         (( __idvBasePtr__ )->mATD.mAccumTime)
 
-// BUG-21204 : V$SESSTATÀÇ ´©ÀûµÉ ½Ã°£ ÃÊ±âÈ­
+// BUG-21204 : V$SESSTATì˜ ëˆ„ì ë  ì‹œê°„ ì´ˆê¸°í™”
 #define IDV_TIMEBOX_INIT_ACCUM_TIME( __idvBasePtr__ ) \
         (( __idvBasePtr__ )->mATD.mAccumTime = 0)
 
@@ -190,7 +190,7 @@ class  iduFixedTableMemory;
     { IDV_TIME_GET(&(( __idvBasePtr__ )->mBegin));                \
     ( __idvBasePtr__ )->mATD.mTimeSwitch = IDV_TIME_SWITCH_ON; }
 
-/* BUG-44419  °æ°ú½Ã°£ Åë°è°ª ¿¡¼­ Àß¸øµÈ °ªÀÌ »ç¿ëµÇ¾îÁö´Â °æ¿ì°¡ ÀÖÀ½. */
+/* BUG-44419  ê²½ê³¼ì‹œê°„ í†µê³„ê°’ ì—ì„œ ì˜ëª»ëœ ê°’ì´ ì‚¬ìš©ë˜ì–´ì§€ëŠ” ê²½ìš°ê°€ ìˆìŒ. */
 #define IDV_TIMEBOX_END_DIRECT( __idvBasePtr__ )                          \
     { if ( ( __idvBasePtr__ )->mATD.mTimeSwitch == IDV_TIME_SWITCH_ON )   \
       { IDV_TIME_GET(&(( __idvBasePtr__ )->mEnd));                        \
@@ -308,28 +308,28 @@ public:
      * ----------------------------------------------*/
     static IDE_RC initializeStatic();
     static IDE_RC startupService();
-    /* time ¼­ºñ½º »ç¿ëÀÌ °¡´ÉÇÑÁö? */
+    /* time ì„œë¹„ìŠ¤ ì‚¬ìš©ì´ ê°€ëŠ¥í•œì§€? */
     inline static idBool isServiceAvail();
     static IDE_RC shutdownService();
     static IDE_RC destroyStatic();
     static UInt   getTimeType() { return mType; }
 
-    /* Session end½Ã¿Í ÁÖ±âÀûÀ¸·Î ¿¡ Åë°èÁ¤º¸¸¦ ÀÚ½ÅÀÇ
-       System Åë°èÁ¤º¸¿¡ ´©Àû½ÃÅ²´Ù. */
+    /* Session endì‹œì™€ ì£¼ê¸°ì ìœ¼ë¡œ ì— í†µê³„ì •ë³´ë¥¼ ìì‹ ì˜
+       System í†µê³„ì •ë³´ì— ëˆ„ì ì‹œí‚¨ë‹¤. */
     static void   applyStatisticsToSystem(idvSession  *aCurr,
                                           idvSession  *aOld);
 
     static void   applyOpTimeToSession( idvSession  *aCurrSess,
                                         idvSQL      *aCurrSQL );
 
-    /* ´ë±âÀÌº¥Æ®¿¡ ´ëÇÑ Åë°èÁ¤º¸¸¦ ÃøÁ¤ÇÑ´Ù. */
+    /* ëŒ€ê¸°ì´ë²¤íŠ¸ì— ëŒ€í•œ í†µê³„ì •ë³´ë¥¼ ì¸¡ì •í•œë‹¤. */
     static void   beginWaitEvent( void   * aStatSQL,
                                   void   * aWeArgs );
 
     static void   endWaitEvent( void  * aStatSQL,
                                 void   * aWeArgs );
 
-    /* ¿¬»ê¿¡ ´ëÇÑ °æ°ú½Ã°£ Åë°èÁ¤º¸¸¦ ÃøÁ¤ÇÑ´Ù. */
+    /* ì—°ì‚°ì— ëŒ€í•œ ê²½ê³¼ì‹œê°„ í†µê³„ì •ë³´ë¥¼ ì¸¡ì •í•œë‹¤. */
     static void   beginOpTime( idvSQL               * aStatSQL,
                                idvOperTimeIndex    aOpIdx );
 
@@ -349,9 +349,9 @@ public:
         mBaseTimeCallback = aCallback;
     }
 
-    /* BUG-29005 - Fullscan ¼º´É ¹®Á¦
-     * idvSQL¿¡¼­ Session ID¸¦ °¡Á®¿À´Â ÇÔ¼ö Ãß°¡ÇÔ.
-     * SM¿¡¼­ callbackÀ¸·Î »ç¿ë */
+    /* BUG-29005 - Fullscan ì„±ëŠ¥ ë¬¸ì œ
+     * idvSQLì—ì„œ Session IDë¥¼ ê°€ì ¸ì˜¤ëŠ” í•¨ìˆ˜ ì¶”ê°€í•¨.
+     * SMì—ì„œ callbackìœ¼ë¡œ ì‚¬ìš© */
     static UInt   getSessionID( idvSQL  *aStatSQL );
 
     static ULong  getClock()  { return mClock; }
@@ -407,7 +407,7 @@ private:
 extern idvSystem gSystemInfo;
 
 /* ------------------------------------------------
- *  Time ServiceÀÇ »ç¿ë°¡´É ¿©ºÎ Ã¼Å©
+ *  Time Serviceì˜ ì‚¬ìš©ê°€ëŠ¥ ì—¬ë¶€ ì²´í¬
  * ----------------------------------------------*/
 idBool idvManager::isServiceAvail()
 {

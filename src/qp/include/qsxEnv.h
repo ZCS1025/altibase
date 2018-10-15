@@ -45,7 +45,7 @@
 #define QSX_ENV_DURING_SELECT_FOR_UPDATE           0x00000003  // 0x00000001 & 0x00000002
 /* BUG-43197 autonomous transaction */
 #define QSX_ENV_DURING_AT                          0x00000004
-// BUG-44294 PSM³»¿¡¼­ ½ÇÇàÇÑ DMLÀÌ º¯°æÇÑ row ¼ö¸¦ ¹İÈ¯ÇÏµµ·Ï ÇÕ´Ï´Ù.
+// BUG-44294 PSMë‚´ì—ì„œ ì‹¤í–‰í•œ DMLì´ ë³€ê²½í•œ row ìˆ˜ë¥¼ ë°˜í™˜í•˜ë„ë¡ í•©ë‹ˆë‹¤.
 #define QSX_ENV_DURING_DML                         0x00000008
 #define QSX_ENV_DURING_DDL                         0x00000010
 
@@ -76,8 +76,8 @@ typedef struct qsxRaisedExcpInfo
     UInt                   mRaisedExcpErrorMsgLen;
     /* user_maxsize_name.package_maxsize_name.exception_maxsize_name = (128 * 3) + (1 * 2) = 386
        MAX_ERROR_MSG_LEN + 1 = 2048 + 1 = 2049
-       °´Ã¼ Á¤º¸ + ¿¡·¯ ¸Ş½ÃÁö¸¦ ¸ğµÎ Æ÷ÇÔÇÏ°Ô À§ÇØ¼­´Â MAX_ERROR_MSG_LEN + 1À» »ç¿ëÇÑ´Ù.
-       ¿¡·¯ ¸Ş½ÃÁö°¡ MAX_ERROR_MSG_LENÀ» ³ÑÀ¸¸é, MAX SIZE¸¸Å­¸¸ ¿¡·¯¸Ş½ÃÁö¸¦ Âï¾îÁØ´Ù. */
+       ê°ì²´ ì •ë³´ + ì—ëŸ¬ ë©”ì‹œì§€ë¥¼ ëª¨ë‘ í¬í•¨í•˜ê²Œ ìœ„í•´ì„œëŠ” MAX_ERROR_MSG_LEN + 1ì„ ì‚¬ìš©í•œë‹¤.
+       ì—ëŸ¬ ë©”ì‹œì§€ê°€ MAX_ERROR_MSG_LENì„ ë„˜ìœ¼ë©´, MAX SIZEë§Œí¼ë§Œ ì—ëŸ¬ë©”ì‹œì§€ë¥¼ ì°ì–´ì¤€ë‹¤. */
     SChar                  mRaisedExcpErrorMsg[MAX_ERROR_MSG_LEN + 1]; 
 } qsxRaisedExcpInfo;
 
@@ -115,9 +115,9 @@ typedef struct qsxEnvInfo
    
     //--------------------------------
     // session attributes
-    // commit, rollbackµî sessionÁ¤º¸¸¦ ¾ò±â À§ÇØ¼­´Â
-    // qciSessionCallback ÇÔ¼ö¸¦ È£ÃâÇØ¾ßÇÏ´Âµ¥,
-    // ÀÌ¶§, mmSession Á¤º¸°¡ ÇÊ¿äÇÔ.
+    // commit, rollbackë“± sessionì •ë³´ë¥¼ ì–»ê¸° ìœ„í•´ì„œëŠ”
+    // qciSessionCallback í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•´ì•¼í•˜ëŠ”ë°,
+    // ì´ë•Œ, mmSession ì •ë³´ê°€ í•„ìš”í•¨.
     //--------------------------------
     qcSession            * mSession;
 
@@ -137,7 +137,7 @@ typedef struct qsxEnvInfo
     qsxStackFrame          mPrevStackInfo;
 
     /* BUG-43154
-       password_verify_functionÀÌ autonomous_transaction(AT) pragma°¡ ¼±¾ğµÈ functionÀÏ °æ¿ì ºñÁ¤»ó Á¾·á */
+       password_verify_functionì´ autonomous_transaction(AT) pragmaê°€ ì„ ì–¸ëœ functionì¼ ê²½ìš° ë¹„ì •ìƒ ì¢…ë£Œ */
     idBool                 mExecPWVerifyFunc;
 
     /* BUG-43160 */
@@ -148,9 +148,9 @@ typedef struct qsxEnvInfo
 } qsxEnvInfo;
 
 /* PROJ-2197 PSM Renewal
- * PSMÀÇ SQL±¸¹®¿¡¼­ return bulk into¸¦ »ç¿ëÇÏ¸é array¸¦ binding ÇÒ ¼ö ¾ø¾î¼­
- * return node(array)¿Í PSMÀÇ tmplate¸¦ DMLÀ» ½ÇÇàÇÏ´Â qcStatement¿¡
- * ³Ñ°ÜÁÖ±â À§ÇÑ ±¸Á¶Ã¼ */
+ * PSMì˜ SQLêµ¬ë¬¸ì—ì„œ return bulk intoë¥¼ ì‚¬ìš©í•˜ë©´ arrayë¥¼ binding í•  ìˆ˜ ì—†ì–´ì„œ
+ * return node(array)ì™€ PSMì˜ tmplateë¥¼ DMLì„ ì‹¤í–‰í•˜ëŠ” qcStatementì—
+ * ë„˜ê²¨ì£¼ê¸° ìœ„í•œ êµ¬ì¡°ì²´ */
 typedef struct qsxEnvParentInfo
 {
     qcTemplate              * parentTmplate;
@@ -218,16 +218,16 @@ class qsxEnv
     static IDE_RC invoke (
         qsxEnvInfo         * aEnv,
         qcStatement        * aQcStmt,
-        qsOID                aProcOID,     /* procedure, function, package specÀÇ OID */
-        qsOID                aPkgBodyOID,  /* package bodyÀÇ OID */
+        qsOID                aProcOID,     /* procedure, function, package specì˜ OID */
+        qsOID                aPkgBodyOID,  /* package bodyì˜ OID */
         UInt                 aSubprogramID,
         qtcNode            * aCallSpecNode );
 
     static IDE_RC invokeWithStack (
         qsxEnvInfo        * aEnv,
         qcStatement       * aQcStmt,
-        qsOID               aProcOID,     /* procedure, function, package specÀÇ OID */
-        qsOID               aPkgBodyOID,  /* package bodyÀÇ OID */
+        qsOID               aProcOID,     /* procedure, function, package specì˜ OID */
+        qsOID               aPkgBodyOID,  /* package bodyì˜ OID */
         UInt                aSubprogramID,
         qtcNode           * aCallSpecNode,
         mtcStack          * aStack,
@@ -285,7 +285,7 @@ class qsxEnv
         qsxEnvInfo    * aEnv,
         qsxArrayInfo  * aArrayInfo );
     
-    // PROJ-1075 function¿¡¼­ returnµÈ arrayº¯¼öÀÇ ÇÒ´ç ÇØÁ¦
+    // PROJ-1075 functionì—ì„œ returnëœ arrayë³€ìˆ˜ì˜ í• ë‹¹ í•´ì œ
     static void freeReturnArray( qsxEnvInfo * aEnv );
     
     // print statement.

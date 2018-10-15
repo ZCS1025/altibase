@@ -23,7 +23,7 @@
 #include <mtl.h>
 #include <mtdTypes.h>
 
-/* MS936 Àº 0x80 ¿¡ EURO SIGN ÀÌ ÇÒ´çµÇ¾î ÀÖ´Ù. */
+/* MS936 ì€ 0x80 ì— EURO SIGN ì´ í• ë‹¹ë˜ì–´ ìˆë‹¤. */
 #define mtlMS936_1BYTE_TYPE(c)        ( (c) <= 0x80 )
 
 #define mtlMS936_2BYTE_TYPE(c)        ( ( (c) >= 0x81 ) && ( (c)<=0xFE ) )
@@ -67,10 +67,10 @@ mtlNCRet mtlMS936NextChar( UChar ** aSource, UChar * aFence )
 {
 /***********************************************************************
  *
- * Description : PROJ-1755 Next Char ÃÖÀûÈ­
+ * Description : PROJ-1755 Next Char ìµœì í™”
  *
  * Implementation :
- *    ´ÙÀ½ ¹®ÀÚ À§Ä¡·Î pointer ÀÌµ¿
+ *    ë‹¤ìŒ ë¬¸ì ìœ„ì¹˜ë¡œ pointer ì´ë™
  *
  ***********************************************************************/
     mtlNCRet sRet;
@@ -117,14 +117,14 @@ static SInt mtlMS936MaxPrecision( SInt aLength )
 {
 /***********************************************************************
  *
- * Description : ¹®ÀÚ°¹¼ö(aLength)ÀÇ MS936ÀÇ ÃÖ´ë precision °è»ê
+ * Description : ë¬¸ìê°¯ìˆ˜(aLength)ì˜ MS936ì˜ ìµœëŒ€ precision ê³„ì‚°
  *
  * Implementation :
  *
- *    ÀÎÀÚ·Î ¹ŞÀº aLength¿¡
- *    MS936 ÇÑ¹®ÀÚÀÇ ÃÖ´ë Å©±â¸¦ °öÇÑ °ªÀ» ¸®ÅÏÇÔ.
+ *    ì¸ìë¡œ ë°›ì€ aLengthì—
+ *    MS936 í•œë¬¸ìì˜ ìµœëŒ€ í¬ê¸°ë¥¼ ê³±í•œ ê°’ì„ ë¦¬í„´í•¨.
  *
- *    aLength´Â ¹®ÀÚ°¹¼öÀÇ ÀÇ¹Ì°¡ ÀÖÀ½.
+ *    aLengthëŠ” ë¬¸ìê°¯ìˆ˜ì˜ ì˜ë¯¸ê°€ ìˆìŒ.
  *
  ***********************************************************************/
     return aLength * MTL_MS936_PRECISION;

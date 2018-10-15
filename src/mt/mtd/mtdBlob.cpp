@@ -33,7 +33,7 @@ extern mtdModule mtdBlob;
 
 #define MTD_BLOB_PRECISION_MINIMUM (0) // To Fix BUG-12597
 
-/* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø */
+/* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ìž… ì§€ì› */
 #define MTD_BLOB_PRECISION_MAXIMUM (104857600)
 #define MTD_BLOB_PRECISION_DEFAULT (MTU_LOB_OBJECT_BUFFER_SIZE)
 
@@ -68,7 +68,7 @@ static UInt mtdHash( UInt             aHash,
 static idBool mtdIsNull( const mtcColumn* aColumn,
                          const void*      aRow );
 
-/* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø */
+/* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ìž… ì§€ì› */
 static IDE_RC mtdCanonize( const mtcColumn  * aCanon,
                            void            ** aCanonizedValue,
                            mtcEncryptInfo   * aCanonInfo,
@@ -118,8 +118,8 @@ mtdModule mtdBlob = {
       MTD_DATA_STORE_DIVISIBLE_TRUE|  // PROJ-1705
       MTD_DATA_STORE_MTDVALUE_FALSE|  // PROJ-1705
       MTD_PSM_TYPE_ENABLE, // PROJ-1904
-    ID_SINT_MAX,  // BUG-16493 ½ÇÁ¦·Î´Â 4G¸¦ Áö¿øÇÏÁö¸¸
-                  // odbc¸¸À» À§ÇÑ Á¶È¸¸ñÀû(V$DATATYPE)À¸·Î¸¸ »ç¿ëµÊ
+    ID_SINT_MAX,  // BUG-16493 ì‹¤ì œë¡œëŠ” 4Gë¥¼ ì§€ì›í•˜ì§€ë§Œ
+                  // odbcë§Œì„ ìœ„í•œ ì¡°íšŒëª©ì (V$DATATYPE)ìœ¼ë¡œë§Œ ì‚¬ìš©ë¨
     0,
     0,
     &mtdBlobNull,
@@ -201,7 +201,7 @@ IDE_RC mtdInitialize( UInt aNo )
 {
     IDE_TEST( mtd::initializeModule( &mtdBlob, aNo ) != IDE_SUCCESS );
 
-    // mtdColumnÀÇ ÃÊ±âÈ­
+    // mtdColumnì˜ ì´ˆê¸°í™”
     IDE_TEST( mtc::initializeColumn( & mtdColumn,
                                      & mtdBlob,
                                      0,   // arguments
@@ -320,7 +320,7 @@ IDE_RC mtdValue( mtcTemplate* /* aTemplate */,
             sValue->length = sValueSize;
         }
 
-        // precision, scale Àç ¼³Á¤ ÈÄ, estimate·Î semantic °Ë»ç
+        // precision, scale ìž¬ ì„¤ì • í›„, estimateë¡œ semantic ê²€ì‚¬
         aColumn->flag            = 1;
         aColumn->precision       = sValueSize;
         aColumn->scale           = 0;
@@ -355,7 +355,7 @@ UInt mtdActualSize( const mtcColumn* ,
 {
     if ( ((mtdBlobType *)aRow)->length == MTD_LOB_NULL_LENGTH )
     {
-        /* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø */
+        /* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ìž… ì§€ì› */
         return ID_SIZEOF(SLong);
     }
     else
@@ -413,7 +413,7 @@ IDE_RC mtdValidate( mtcColumn * aColumn,
 {
 /***********************************************************************
  *
- * Description : valueÀÇ semantic °Ë»ç ¹× mtcColum ÃÊ±âÈ­
+ * Description : valueì˜ semantic ê²€ì‚¬ ë° mtcColum ì´ˆê¸°í™”
  *
  * Implementation :
  *
@@ -429,9 +429,9 @@ IDE_RC mtdValidate( mtcColumn * aColumn,
 
     IDE_TEST_RAISE( sVal->length > aColumn->column.size, ERR_INVALID_VALUE );
 
-    // ÃÊ±âÈ­µÈ aColumnÀº cannonize() ½Ã¿¡ »ç¿ë
-    // ÀÌ¶§, data type moduleÀÇ precision Á¤º¸¸¸À» »ç¿ëÇÏ¹Ç·Î,
-    // language Á¤º¸ ¼³Á¤ÇÒ ÇÊ¿ä¾øÀ½
+    // ì´ˆê¸°í™”ëœ aColumnì€ cannonize() ì‹œì— ì‚¬ìš©
+    // ì´ë•Œ, data type moduleì˜ precision ì •ë³´ë§Œì„ ì‚¬ìš©í•˜ë¯€ë¡œ,
+    // language ì •ë³´ ì„¤ì •í•  í•„ìš”ì—†ìŒ
     IDE_TEST( mtc::initializeColumn( aColumn,
                                      & mtdBlob,
                                      1,            // arguments
@@ -466,13 +466,13 @@ IDE_RC  mtdStoredValue2MtdValue( UInt           /* aColumnSize */,
 {
 /***********************************************************************
  * PROJ-1705
- * µð½ºÅ©Å×ÀÌºíÄÃ·³ÀÇ µ¥ÀÌÅ¸¸¦
- * qp ·¹ÄÚµåÃ³¸®¿µ¿ªÀÇ ÇØ´ç ÄÃ·³À§Ä¡¿¡ º¹»ç
+ * ë””ìŠ¤í¬í…Œì´ë¸”ì»¬ëŸ¼ì˜ ë°ì´íƒ€ë¥¼
+ * qp ë ˆì½”ë“œì²˜ë¦¬ì˜ì—­ì˜ í•´ë‹¹ ì»¬ëŸ¼ìœ„ì¹˜ì— ë³µì‚¬
  **********************************************************************/
 
-    // LOB ÄÃ·³Àº ·¹ÄÚµå¿¡ LOBÄÃ·³Çì´õ°¡ ÀúÀåµÊ. 
-    // ÄÃ·³ ÆÐÄ¡½Ã¿¡´Â ·¹ÄÚµå¿¡ ÀúÀåµÈ LOBÄÃ·³Çì´õ¸¸ ÀÐ°í
-    // ½ÇÁ¦µ¥ÀÌÅ¸´Â ÂüÁ¶ÇÏ´Â ºÎºÐ¿¡¼­ ÀÐ¾î¿Â´Ù.
+    // LOB ì»¬ëŸ¼ì€ ë ˆì½”ë“œì— LOBì»¬ëŸ¼í—¤ë”ê°€ ì €ìž¥ë¨. 
+    // ì»¬ëŸ¼ íŒ¨ì¹˜ì‹œì—ëŠ” ë ˆì½”ë“œì— ì €ìž¥ëœ LOBì»¬ëŸ¼í—¤ë”ë§Œ ì½ê³ 
+    // ì‹¤ì œë°ì´íƒ€ëŠ” ì°¸ì¡°í•˜ëŠ” ë¶€ë¶„ì—ì„œ ì½ì–´ì˜¨ë‹¤.
 
     IDE_TEST_RAISE( !(( aDestValueOffset == 0 ) && ( aLength > 0 )),
                     ERR_INVALID_STORED_VALUE );
@@ -496,9 +496,9 @@ UInt mtdNullValueSize()
 {
 /***********************************************************************
  * PROJ-1705
- * °¢ µ¥ÀÌÅ¸Å¸ÀÔÀÇ null ValueÀÇ Å©±â ¹ÝÈ¯    
- * ¿¹ ) mtdLobType( UInt length; UChar value[1] ) ¿¡¼­
- *      length Å¸ÀÔÀÎ UIntÀÇ Å©±â¸¦ ¹ÝÈ¯
+ * ê° ë°ì´íƒ€íƒ€ìž…ì˜ null Valueì˜ í¬ê¸° ë°˜í™˜    
+ * ì˜ˆ ) mtdLobType( UInt length; UChar value[1] ) ì—ì„œ
+ *      length íƒ€ìž…ì¸ UIntì˜ í¬ê¸°ë¥¼ ë°˜í™˜
  **********************************************************************/
 
     return mtdActualSize( NULL,&mtdBlobNull );
@@ -508,10 +508,10 @@ static UInt mtdHeaderSize()
 {
 /***********************************************************************
  * PROJ-1705
- * length¸¦ °¡Áö´Â µ¥ÀÌÅ¸Å¸ÀÔÀÇ length Á¤º¸¸¦ ÀúÀåÇÏ´Â º¯¼öÀÇ Å©±â ¹ÝÈ¯
- * ¿¹ ) mtdLobType( UInt length; UChar value[1] ) ¿¡¼­
- *      length Å¸ÀÔÀÎ UIntÀÇ Å©±â¸¦ ¹ÝÈ¯
- *  integer¿Í °°Àº °íÁ¤±æÀÌ µ¥ÀÌÅ¸Å¸ÀÔÀº 0 ¹ÝÈ¯
+ * lengthë¥¼ ê°€ì§€ëŠ” ë°ì´íƒ€íƒ€ìž…ì˜ length ì •ë³´ë¥¼ ì €ìž¥í•˜ëŠ” ë³€ìˆ˜ì˜ í¬ê¸° ë°˜í™˜
+ * ì˜ˆ ) mtdLobType( UInt length; UChar value[1] ) ì—ì„œ
+ *      length íƒ€ìž…ì¸ UIntì˜ í¬ê¸°ë¥¼ ë°˜í™˜
+ *  integerì™€ ê°™ì€ ê³ ì •ê¸¸ì´ ë°ì´íƒ€íƒ€ìž…ì€ 0 ë°˜í™˜
  **********************************************************************/
 
     return ID_SIZEOF(SLong);
@@ -521,9 +521,9 @@ static UInt mtdStoreSize( const smiColumn * /*aColumn*/ )
 {
 /***********************************************************************
 * PROJ-2399 row tmaplate
-* sm¿¡ ÀúÀåµÇ´Â µ¥ÀÌÅÍÀÇ Å©±â¸¦ ¹ÝÈ¯ÇÑ´Ù.
-* variable Å¸ÀÔÀÇ µ¥ÀÌÅÍ Å¸ÀÔÀº ID_UINT_MAX¸¦ ¹ÝÈ¯
-* mtheader°¡ sm¿¡ ÀúÀåµÈ°æ¿ì°¡ ¾Æ´Ï¸é mtheaderÅ©±â¸¦ »©¼­ ¹ÝÈ¯
+* smì— ì €ìž¥ë˜ëŠ” ë°ì´í„°ì˜ í¬ê¸°ë¥¼ ë°˜í™˜í•œë‹¤.
+* variable íƒ€ìž…ì˜ ë°ì´í„° íƒ€ìž…ì€ ID_UINT_MAXë¥¼ ë°˜í™˜
+* mtheaderê°€ smì— ì €ìž¥ëœê²½ìš°ê°€ ì•„ë‹ˆë©´ mtheaderí¬ê¸°ë¥¼ ë¹¼ì„œ ë°˜í™˜
  **********************************************************************/
 
     return ID_UINT_MAX;
@@ -537,7 +537,7 @@ static IDE_RC mtdCanonize( const mtcColumn  * aCanon,
                            mtcEncryptInfo   * /* aColumnInfo */,
                            mtcTemplate      * /* aTemplate */ )
 {
-    /* BUG-36429 LOB Column¿¡ ´ëÇØ¼­´Â precisionÀ» °Ë»çÇÏÁö ¾Ê´Â´Ù. */
+    /* BUG-36429 LOB Columnì— ëŒ€í•´ì„œëŠ” precisionì„ ê²€ì‚¬í•˜ì§€ ì•ŠëŠ”ë‹¤. */
     if ( aCanon->precision != 0 )
     {
         IDE_TEST_RAISE( ((mtdBlobType *)aValue)->length > (SLong)aCanon->precision,

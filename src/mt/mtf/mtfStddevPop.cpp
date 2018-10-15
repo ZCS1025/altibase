@@ -50,7 +50,7 @@ mtfModule mtfStddevPop =
 {
     4 | MTC_NODE_OPERATOR_AGGREGATION | MTC_NODE_FUNCTION_WINDOWING_TRUE,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  /* default selectivity (∫Ò±≥ ø¨ªÍ¿⁄∞° æ∆¥‘) */
+    1.0,  /* default selectivity (ÎπÑÍµê Ïó∞ÏÇ∞ÏûêÍ∞Ä ÏïÑÎãò) */
     mtfStddevPopFunctionName,
     NULL,
     mtf::initializeDefault,

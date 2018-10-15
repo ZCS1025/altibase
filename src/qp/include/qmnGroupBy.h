@@ -21,14 +21,14 @@
  * Description :
  *     GRBY(GRoup BY) Node
  *
- *     °ü°èÇü ¸ğµ¨¿¡¼­ ´ÙÀ½°ú °°Àº ±â´ÉÀ» ¼öÇàÇÏ´Â Plan Node ÀÌ´Ù.
+ *     ê´€ê³„í˜• ëª¨ë¸ì—ì„œ ë‹¤ìŒê³¼ ê°™ì€ ê¸°ëŠ¥ì„ ìˆ˜í–‰í•˜ëŠ” Plan Node ì´ë‹¤.
  *
  *         - Sort-based Distinction
  *         - Sort-based Grouping
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  **********************************************************************/
 
@@ -44,7 +44,7 @@
 //-----------------
 
 // qmncGRBY.flag
-// GRBY ³ëµåÀÇ »ç¿ë¿ëµµ
+// GRBY ë…¸ë“œì˜ ì‚¬ìš©ìš©ë„
 //    - Sort-based Distinction
 //    - Sort-based Grouping
 #define QMNC_GRBY_METHOD_MASK              (0x00000003)
@@ -75,7 +75,7 @@
 typedef struct qmncGRBY
 {
     //---------------------------------
-    // Code ¿µ¿ª °øÅë Á¤º¸
+    // Code ì˜ì—­ ê³µí†µ ì •ë³´
     //---------------------------------
 
     qmnPlan        plan;
@@ -83,16 +83,16 @@ typedef struct qmncGRBY
     UInt           planID;
 
     //---------------------------------
-    // GRBY °ü·Ã Á¤º¸
+    // GRBY ê´€ë ¨ ì •ë³´
     //---------------------------------
 
-    // Base Table Count´Â À¯ÁöÇÏÁö ¾Ê´Â´Ù.
-    // ÀÌ´Â ÇöÀç »óÅÂ ÀÚÃ¼°¡ »óÀ§ Node¿¡¼­ ÇÊ¿äÇÑ Á¤º¸ÀÌ±â ¶§¹®ÀÌ´Ù.
+    // Base Table CountëŠ” ìœ ì§€í•˜ì§€ ì•ŠëŠ”ë‹¤.
+    // ì´ëŠ” í˜„ì¬ ìƒíƒœ ìì²´ê°€ ìƒìœ„ Nodeì—ì„œ í•„ìš”í•œ ì •ë³´ì´ê¸° ë•Œë¬¸ì´ë‹¤.
     UShort         baseTableCount;
     qmcMtrNode   * myNode;
 
     //---------------------------------
-    // Data ¿µ¿ª °ü·Ã Á¤º¸
+    // Data ì˜ì—­ ê´€ë ¨ ì •ë³´
     //---------------------------------
 
     UInt           mtrNodeOffset;
@@ -102,7 +102,7 @@ typedef struct qmncGRBY
 typedef struct qmndGRBY
 {
     //---------------------------------
-    // Data ¿µ¿ª °øÅë Á¤º¸
+    // Data ì˜ì—­ ê³µí†µ ì •ë³´
     //---------------------------------
 
     qmndPlan            plan;
@@ -110,18 +110,18 @@ typedef struct qmndGRBY
     UInt              * flag;
 
     //---------------------------------
-    // GRBY °íÀ¯ Á¤º¸
+    // GRBY ê³ ìœ  ì •ë³´
     //---------------------------------
 
-    qmdMtrNode        * mtrNode;    // ÀúÀå ´ë»ó Column
-    qmdMtrNode        * groupNode;  // Group NodeÀÇ À§Ä¡
+    qmdMtrNode        * mtrNode;    // ì €ì¥ ëŒ€ìƒ Column
+    qmdMtrNode        * groupNode;  // Group Nodeì˜ ìœ„ì¹˜
 
     //---------------------------------
-    // µ¿ÀÏ Group ÆÇ´ÜÀ» À§ÇÑ ÀÚ·á ±¸Á¶
+    // ë™ì¼ Group íŒë‹¨ì„ ìœ„í•œ ìë£Œ êµ¬ì¡°
     //---------------------------------
 
-    UInt                mtrRowSize; // ÀúÀåÇÒ RowÀÇ Size
-    void              * mtrRow[2];  // ºñ±³¸¦ À§ÇÑ µÎ °³ÀÇ °ø°£
+    UInt                mtrRowSize; // ì €ì¥í•  Rowì˜ Size
+    void              * mtrRow[2];  // ë¹„êµë¥¼ ìœ„í•œ ë‘ ê°œì˜ ê³µê°„
     UInt                mtrRowIdx;  // swap within mtrRow[0] and mtr2Row[1]
 
     void              * nullRow;    // Null Row
@@ -136,11 +136,11 @@ public:
     // Base Function Pointer
     //------------------------
 
-    // ÃÊ±âÈ­
+    // ì´ˆê¸°í™”
     static IDE_RC init( qcTemplate * aTemplate,
                         qmnPlan    * aPlan );
 
-    // ¼öÇà ÇÔ¼ö
+    // ìˆ˜í–‰ í•¨ìˆ˜
     static IDE_RC doIt( qcTemplate * aTemplate,
                         qmnPlan    * aPlan,
                         qmcRowFlag * aFlag );
@@ -149,7 +149,7 @@ public:
     static IDE_RC padNull( qcTemplate * aTemplate,
                            qmnPlan    * aPlan );
 
-    // Plan Á¤º¸ Ãâ·Â
+    // Plan ì •ë³´ ì¶œë ¥
     static IDE_RC printPlan( qcTemplate   * aTemplate,
                              qmnPlan      * aPlan,
                              ULong          aDepth,
@@ -160,22 +160,22 @@ public:
     // mapping by doIt() function pointer
     //------------------------
 
-    // È£ÃâµÇ¾î¼­´Â ¾ÈµÊ.
+    // í˜¸ì¶œë˜ì–´ì„œëŠ” ì•ˆë¨.
     static IDE_RC doItDefault( qcTemplate * aTemplate,
                                qmnPlan    * aPlan,
                                qmcRowFlag * aFlag );
 
-    // ÃÖÃÊ GRBY¸¦ ¼öÇà
+    // ìµœì´ˆ GRBYë¥¼ ìˆ˜í–‰
     static IDE_RC doItFirst( qcTemplate * aTemplate,
                              qmnPlan    * aPlan,
                              qmcRowFlag * aFlag );
 
-    // µ¿ÀÏ RecordÀÎÁöÀÇ ¿©ºÎ¸¸ ÆÇ´Ü
+    // ë™ì¼ Recordì¸ì§€ì˜ ì—¬ë¶€ë§Œ íŒë‹¨
     static IDE_RC doItGroup( qcTemplate * aTemplate,
                              qmnPlan    * aPlan,
                              qmcRowFlag * aFlag );
 
-    // ´Ù¸¥ Record¸¸ ÃßÃâ
+    // ë‹¤ë¥¸ Recordë§Œ ì¶”ì¶œ
     static IDE_RC doItDistinct( qcTemplate * aTemplate,
                                 qmnPlan    * aPlan,
                                 qmcRowFlag * aFlag );
@@ -188,43 +188,43 @@ public:
 private:
 
     //------------------------
-    // ÃÊ±âÈ­ °ü·Ã ÇÔ¼ö
+    // ì´ˆê¸°í™” ê´€ë ¨ í•¨ìˆ˜
     //------------------------
 
-    // ÃÖÃÊ ÃÊ±âÈ­
+    // ìµœì´ˆ ì´ˆê¸°í™”
     static IDE_RC firstInit( qcTemplate * aTemplate,
                              qmncGRBY   * aCodePlan,
                              qmndGRBY   * aDataPlan );
 
-    // ÀúÀå ColumnÀÇ ÃÊ±âÈ­
+    // ì €ì¥ Columnì˜ ì´ˆê¸°í™”
     static IDE_RC initMtrNode( qcTemplate * aTemplate,
                                qmncGRBY   * aCodePlan,
                                qmndGRBY   * aDataPlan );
 
-    // Grouping ´ë»ó ColumnÀÇ À§Ä¡ ÁöÁ¤
+    // Grouping ëŒ€ìƒ Columnì˜ ìœ„ì¹˜ ì§€ì •
     static IDE_RC initGroupNode( qmndGRBY   * aDataPlan );
 
-    // ÀúÀåÇÒ RowÀÇ °ø°£ ÇÒ´ç ¹× Null Row »ı¼º
+    // ì €ì¥í•  Rowì˜ ê³µê°„ í• ë‹¹ ë° Null Row ìƒì„±
     static IDE_RC allocMtrRow( qcTemplate * aTemplate,
                                qmndGRBY   * aDataPlan );
 
     //------------------------
-    // GRBY ÀÇ doIt() °ü·Ã ÇÔ¼ö
+    // GRBY ì˜ doIt() ê´€ë ¨ í•¨ìˆ˜
     //------------------------
 
-    // ÀúÀå Row¸¦ ±¸¼º.
+    // ì €ì¥ Rowë¥¼ êµ¬ì„±.
     static IDE_RC setMtrRow( qcTemplate * aTemplate,
                              qmndGRBY   * aDataPlan );
 
-    // Tuple Set¿¡ ¼³Á¤
+    // Tuple Setì— ì„¤ì •
     static IDE_RC setTupleSet( qcTemplate * aTemplate,
                                qmndGRBY   * aDataPlan );
 
-    // µÎ Row°£ÀÇ µ¿ÀÏ ¿©ºÎ ÆÇ´Ü
+    // ë‘ Rowê°„ì˜ ë™ì¼ ì—¬ë¶€ íŒë‹¨
     static SInt   compareRows( qmndGRBY   * aDataPlan );
 
     //------------------------
-    // Grouping Set °ü·Ã ÇÔ¼ö
+    // Grouping Set ê´€ë ¨ í•¨ìˆ˜
     //------------------------
 
     // TODO - A4 : Grouping Set Integration

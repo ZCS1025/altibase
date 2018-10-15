@@ -61,7 +61,7 @@ static IDE_RC mtfTo_ncharEstimate( mtcNode*     aNode,
 mtfModule mtfTo_nchar = {
     1|MTC_NODE_OPERATOR_FUNCTION,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
+    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìê°€ ì•„ë‹˜)
     mtfTo_ncharFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -192,7 +192,7 @@ IDE_RC mtfTo_ncharEstimate( mtcNode*     aNode,
                 else if ( ( aStack[1].column->module == &mtdClob ) ||
                           ( aStack[1].column->module == &mtdClobLocator ) )
                 {
-                    /* BUG-36219 TO_CHAR, TO_NCHAR¿¡¼­ LOB Áö¿ø */
+                    /* BUG-36219 TO_CHAR, TO_NCHARì—ì„œ LOB ì§€ì› */
                     if ( mtl::mNationalCharSet->id == MTL_UTF8_ID )
                     {
                         if ( aStack[1].column->precision != 0 )
@@ -228,7 +228,7 @@ IDE_RC mtfTo_ncharEstimate( mtcNode*     aNode,
                 }
                 else
                 {
-                    // mtdNullÀÎ °æ¿ìµµ Æ÷ÇÔ
+                    // mtdNullì¸ ê²½ìš°ë„ í¬í•¨
                     sPrecision = 1;
                 }
                 break;
@@ -273,13 +273,13 @@ IDE_RC mtfTo_ncharEstimate( mtcNode*     aNode,
         sModules[0] = &mtdNumeric;
         sModules[1] = &mtdChar;
 
-        // number formatÀÇ ÃÖ´ë ±æÀÌ¸¦ 64·Î Á¦ÇÑÇÑ´Ù.
+        // number formatì˜ ìµœëŒ€ ê¸¸ì´ë¥¼ 64ë¡œ ì œí•œí•œë‹¤.
         IDE_TEST_RAISE( aStack[2].column->precision >
                         MTC_TO_CHAR_MAX_PRECISION,
                         ERR_TO_CHAR_MAX_PRECISION );
 
-        // 'fmt'°¡ 'rn'ÀÏ °æ¿ì 15À¸·Î ¼³Á¤ÇØ¾ß ÇÔ.
-        // 'fmt'°¡ 'xxxx'ÀÏ °æ¿ì ÃÖ´ë 8ÀÓ.
+        // 'fmt'ê°€ 'rn'ì¼ ê²½ìš° 15ìœ¼ë¡œ ì„¤ì •í•´ì•¼ í•¨.
+        // 'fmt'ê°€ 'xxxx'ì¼ ê²½ìš° ìµœëŒ€ 8ì„.
         sPrecision = IDL_MAX( 15, aStack[2].column->precision + 3 );
 
         IDE_TEST( mtf::makeConversionNodes( aNode,
@@ -337,11 +337,11 @@ IDE_RC mtfTo_ncharEstimate( mtcNode*     aNode,
             aTemplate->rows[aNode->table].execute[aNode->column] = 
                                                     mtfExecuteDateFor2Args;
 
-            // date fmt°¡ 'day'ÀÏ °æ¿ì ÃÖ´ë 9ÀÚ¸®(wednesday)±îÁö ¿Ã ¼ö ÀÖ´Ù.
-            // µû¶ó¼­ precisionÀ» (aStack[2].column->precision) * 3·Î ¼³Á¤ÇÑ´Ù.
-            // toChar ÇÔ¼ö¿¡¼­ sBuffer¿¡ ¾²Áö ¾Ê°í ¹Ù·Î aStack[0]¿¡ ¾²±â À§ÇØ¼­
-            // precisionÀ» ÃÖ´ë°ª + 1·Î Àâ´Â´Ù.  ¸¶Áö¸·¿¡ NULLÀÌ µé¾î°¥ ¼ö 
-            // ÀÖ±â ¶§¹®ÀÌ´Ù.
+            // date fmtê°€ 'day'ì¼ ê²½ìš° ìµœëŒ€ 9ìë¦¬(wednesday)ê¹Œì§€ ì˜¬ ìˆ˜ ìˆë‹¤.
+            // ë”°ë¼ì„œ precisionì„ (aStack[2].column->precision) * 3ë¡œ ì„¤ì •í•œë‹¤.
+            // toChar í•¨ìˆ˜ì—ì„œ sBufferì— ì“°ì§€ ì•Šê³  ë°”ë¡œ aStack[0]ì— ì“°ê¸° ìœ„í•´ì„œ
+            // precisionì„ ìµœëŒ€ê°’ + 1ë¡œ ì¡ëŠ”ë‹¤.  ë§ˆì§€ë§‰ì— NULLì´ ë“¤ì–´ê°ˆ ìˆ˜ 
+            // ìˆê¸° ë•Œë¬¸ì´ë‹¤.
 
             IDE_TEST( mtc::initializeColumn( aStack[0].column,
                                  &mtdNvarchar,  // BUG-16501
@@ -350,7 +350,7 @@ IDE_RC mtfTo_ncharEstimate( mtcNode*     aNode,
                                  0 )
                       != IDE_SUCCESS );
         }
-        // REESTIMATE°¡ TRUEÀÏ ¶§¿¡¸¸ format Á¤º¸¸¦ ±¸¼ºÇÑ´Ù.
+        // REESTIMATEê°€ TRUEì¼ ë•Œì—ë§Œ format ì •ë³´ë¥¼ êµ¬ì„±í•œë‹¤.
         else
         {
             sCharNode = mtf::convertedNode( aNode->arguments->next,
@@ -369,7 +369,7 @@ IDE_RC mtfTo_ncharEstimate( mtcNode*     aNode,
                     MTD_OFFSET_USE,
                     mtdChar.staticNull );
 
-                // formatÀÌ ³ÎÀÏ °æ¿ì makeFormatInfo¸¦ È£ÃâÇÏÁö ¾Ê´Â´Ù.
+                // formatì´ ë„ì¼ ê²½ìš° makeFormatInfoë¥¼ í˜¸ì¶œí•˜ì§€ ì•ŠëŠ”ë‹¤.
                 if ( sFormat->length != 0 )
                 {
                     IDE_TEST( mtfToCharInterface::makeFormatInfo(
@@ -407,7 +407,7 @@ IDE_RC mtfTo_ncharEstimate( mtcNode*     aNode,
             aNode->lflag &= ~MTC_NODE_REESTIMATE_MASK;
             aNode->lflag |= MTC_NODE_REESTIMATE_TRUE;
             
-            // BUG-38070 undef typeÀ¸·Î re-estimateÇÏÁö ¾Ê´Â´Ù.
+            // BUG-38070 undef typeìœ¼ë¡œ re-estimateí•˜ì§€ ì•ŠëŠ”ë‹¤.
             if ( ( aTemplate->variableRow != ID_USHORT_MAX ) &&
                  ( ( aNode->lflag & MTC_NODE_BIND_MASK ) == MTC_NODE_BIND_EXIST ) )
             {
@@ -464,12 +464,12 @@ IDE_RC mtfTo_ncharCalculateFor1Arg( mtcNode*     aNode,
 /***********************************************************************
  *
  * Description : To_Nchar Calculate for CHAR
-        NCHAR ÀÌ¿ÜÀÇ Å¸ÀÔÀ» NCHAR Å¸ÀÔÀ¸·Î º¯È¯ÇÏ´Â ÇÔ¼ö
+        NCHAR ì´ì™¸ì˜ íƒ€ì…ì„ NCHAR íƒ€ì…ìœ¼ë¡œ ë³€í™˜í•˜ëŠ” í•¨ìˆ˜
  *
  * Implementation :
  *    TO_NCHAR( date )
  *
- *    aStack[0] : ÀÔ·ÂµÈ ³¯Â¥ Çü½ÄÀ» ¹®ÀÚÇüÀ¸·Î º¯È¯ÇÏ¿© Ãâ·Â
+ *    aStack[0] : ì…ë ¥ëœ ë‚ ì§œ í˜•ì‹ì„ ë¬¸ìí˜•ìœ¼ë¡œ ë³€í™˜í•˜ì—¬ ì¶œë ¥
  *    aStack[1] : date
  *
  *    ex) TO_NCHAR( join_date ) ==> '09-JUN-2005'
@@ -494,7 +494,7 @@ IDE_RC mtfTo_ncharCalculateFor1Arg( mtcNode*     aNode,
     }
     else
     {
-        // CHAR => NCHARÀÎ °æ¿ì
+        // CHAR => NCHARì¸ ê²½ìš°
         sSource = (mtdCharType*)aStack[1].value;
         sResult = (mtdNcharType*)aStack[0].value;
 
@@ -526,7 +526,7 @@ IDE_RC mtfTo_ncharCalculateNcharFor1Arg( mtcNode*     aNode,
  * Implementation :
  *    TO_NCHAR( date )
  *
- *    aStack[0] : ÀÔ·ÂµÈ ³¯Â¥ Çü½ÄÀ» ¹®ÀÚÇüÀ¸·Î º¯È¯ÇÏ¿© Ãâ·Â
+ *    aStack[0] : ì…ë ¥ëœ ë‚ ì§œ í˜•ì‹ì„ ë¬¸ìí˜•ìœ¼ë¡œ ë³€í™˜í•˜ì—¬ ì¶œë ¥
  *    aStack[1] : date
  *
  *    ex) TO_NCHAR( join_date ) ==> '09-JUN-2005'
@@ -554,7 +554,7 @@ IDE_RC mtfTo_ncharCalculateNcharFor1Arg( mtcNode*     aNode,
         IDE_TEST_RAISE( aStack[0].column->column.size < sStackSize,
                         ERR_BUFFER_OVERFLOW );
 
-        // NCHAR => NCHARÀÌ¹Ç·Î ±×³É º¹»çÇÑ´Ù.
+        // NCHAR => NCHARì´ë¯€ë¡œ ê·¸ëƒ¥ ë³µì‚¬í•œë‹¤.
         idlOS::memcpy( aStack[0].value, aStack[1].value, sStackSize );
     }
 
@@ -581,12 +581,12 @@ IDE_RC mtfTo_ncharCalculateDateFor2Args( mtcNode*     aNode,
 /***********************************************************************
  *
  * Description : To_Nchar Calculate for CHAR
-        NCHAR ÀÌ¿ÜÀÇ Å¸ÀÔÀ» NCHAR Å¸ÀÔÀ¸·Î º¯È¯ÇÏ´Â ÇÔ¼ö
+        NCHAR ì´ì™¸ì˜ íƒ€ì…ì„ NCHAR íƒ€ì…ìœ¼ë¡œ ë³€í™˜í•˜ëŠ” í•¨ìˆ˜
  *
  * Implementation :
  *    TO_NCHAR( date, fmt )
  *
- *    aStack[0] : ÀÔ·ÂµÈ ³¯Â¥ Çü½ÄÀ» ¹®ÀÚÇüÀ¸·Î º¯È¯ÇÏ¿© Ãâ·Â
+ *    aStack[0] : ì…ë ¥ëœ ë‚ ì§œ í˜•ì‹ì„ ë¬¸ìí˜•ìœ¼ë¡œ ë³€í™˜í•˜ì—¬ ì¶œë ¥
  *    aStack[1] : date
  *    aStack[2] : date_fmt
  *
@@ -597,10 +597,10 @@ IDE_RC mtfTo_ncharCalculateDateFor2Args( mtcNode*     aNode,
 
     mtdNcharType*   sResult;
 
-    // fmtÀÇ ÃÖ´ë ±æÀÌ´Â MTC_TO_CHAR_MAX_PRECISIONÁö¸¸,
-    // °á°úÀÇ ±æÀÌ´Â ±×°ÍÀÇ * 3 + 1ÀÌ µÉ ¼ö ÀÖ´Ù.
-    // °á°ú Å¸ÀÔÀÌ UTF8 ¶Ç´Â UTF16ÀÌ¹Ç·Î * 2¸¦ ÇÑ´Ù.
-    // UTF8:  ÇÑ±Û(2 byte => 3byte)
+    // fmtì˜ ìµœëŒ€ ê¸¸ì´ëŠ” MTC_TO_CHAR_MAX_PRECISIONì§€ë§Œ,
+    // ê²°ê³¼ì˜ ê¸¸ì´ëŠ” ê·¸ê²ƒì˜ * 3 + 1ì´ ë  ìˆ˜ ìˆë‹¤.
+    // ê²°ê³¼ íƒ€ì…ì´ UTF8 ë˜ëŠ” UTF16ì´ë¯€ë¡œ * 2ë¥¼ í•œë‹¤.
+    // UTF8:  í•œê¸€(2 byte => 3byte)
     // UTF16: ASCII(1 byte => 2byte)
     UChar   sToCharResult[( (MTC_TO_CHAR_MAX_PRECISION * 3) + 1 ) * 2] = {0,};
 
@@ -614,8 +614,8 @@ IDE_RC mtfTo_ncharCalculateDateFor2Args( mtcNode*     aNode,
 
     if( mtl::mDBCharSet->id != mtl::mNationalCharSet->id )
     {
-        // mtdNcharType°ú mtdCharTypeÀÇ Â÷ÀÌ°¡ ¾øÀ¸¹Ç·Î mtdNcharTypeÀ¸·Î 
-        // Ä³½ºÆÃÇØµµ µÈ´Ù.
+        // mtdNcharTypeê³¼ mtdCharTypeì˜ ì°¨ì´ê°€ ì—†ìœ¼ë¯€ë¡œ mtdNcharTypeìœ¼ë¡œ 
+        // ìºìŠ¤íŒ…í•´ë„ ëœë‹¤.
         sResult = (mtdNcharType*)aStack[0].value;
 
         idlOS::memcpy( sToCharResult,
@@ -635,8 +635,8 @@ IDE_RC mtfTo_ncharCalculateDateFor2Args( mtcNode*     aNode,
     {
         // nothing to do
 
-        // CHARÀÇ Ä³¸¯ÅÍ ¼Â°ú NCHARÀÇ Ä³¸¯ÅÍ ¼ÂÀÌ °°À¸¸é
-        // º¯È¯ÇÒ ÇÊ¿ä°¡ ¾ø´Ù.
+        // CHARì˜ ìºë¦­í„° ì…‹ê³¼ NCHARì˜ ìºë¦­í„° ì…‹ì´ ê°™ìœ¼ë©´
+        // ë³€í™˜í•  í•„ìš”ê°€ ì—†ë‹¤.
     }
 
     return IDE_SUCCESS;
@@ -655,12 +655,12 @@ IDE_RC mtfTo_ncharCalculateNumberFor2Args( mtcNode*     aNode,
 /***********************************************************************
  *
  * Description : To_Nchar Calculate for CHAR
-        NCHAR ÀÌ¿ÜÀÇ Å¸ÀÔÀ» NCHAR Å¸ÀÔÀ¸·Î º¯È¯ÇÏ´Â ÇÔ¼ö
+        NCHAR ì´ì™¸ì˜ íƒ€ì…ì„ NCHAR íƒ€ì…ìœ¼ë¡œ ë³€í™˜í•˜ëŠ” í•¨ìˆ˜
  *
  * Implementation :
  *    TO_NCHAR( number, fmt )
  *
- *    aStack[0] : ÀÔ·ÂµÈ ³¯Â¥ Çü½ÄÀ» ¹®ÀÚÇüÀ¸·Î º¯È¯ÇÏ¿© Ãâ·Â
+ *    aStack[0] : ì…ë ¥ëœ ë‚ ì§œ í˜•ì‹ì„ ë¬¸ìí˜•ìœ¼ë¡œ ë³€í™˜í•˜ì—¬ ì¶œë ¥
  *    aStack[1] : number
  *    aStack[2] : number_fmt
  *
@@ -680,12 +680,12 @@ IDE_RC mtfTo_ncharCalculateNumberFor2Args( mtcNode*     aNode,
                     aTemplate )
               != IDE_SUCCESS );
 
-    // TO_NCHAR( number, fmt )¿¡¼­ ASCII ÀÌ¿ÜÀÇ °ªÀÌ ³ª¿ÃÀÏÀº ¾øÀ¸¹Ç·Î
-    // NCHAR Ä³¸¯ÅÍ ¼ÂÀÌ UTF16ÀÏ ¶§¸¸ º¯È¯ÇÑ´Ù.
+    // TO_NCHAR( number, fmt )ì—ì„œ ASCII ì´ì™¸ì˜ ê°’ì´ ë‚˜ì˜¬ì¼ì€ ì—†ìœ¼ë¯€ë¡œ
+    // NCHAR ìºë¦­í„° ì…‹ì´ UTF16ì¼ ë•Œë§Œ ë³€í™˜í•œë‹¤.
     if( mtl::mNationalCharSet->id == MTL_UTF16_ID )
     {
-        // mtdNcharType°ú mtdCharTypeÀÇ Â÷ÀÌ°¡ ¾øÀ¸¹Ç·Î mtdNcharTypeÀ¸·Î 
-        // Ä³½ºÆÃÇØµµ µÈ´Ù.
+        // mtdNcharTypeê³¼ mtdCharTypeì˜ ì°¨ì´ê°€ ì—†ìœ¼ë¯€ë¡œ mtdNcharTypeìœ¼ë¡œ 
+        // ìºìŠ¤íŒ…í•´ë„ ëœë‹¤.
         sResult = (mtdNcharType*)aStack[0].value;
 
         idlOS::memcpy( sToCharResult,

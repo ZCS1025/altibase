@@ -33,21 +33,21 @@
 /*
    Compression Resource List
 
-   ¾ÐÃà ¸®¼Ò½º Ç®¿¡¼­ »ç¿ëÇÒ ¸ñÀûÀ¸·Î ±¸ÇöµÈ
-   µ¿½Ã¼º Á¦¾îµÈ ¸µÅ©µå ¸®½ºÆ®
+   ì••ì¶• ë¦¬ì†ŒìŠ¤ í’€ì—ì„œ ì‚¬ìš©í•  ëª©ì ìœ¼ë¡œ êµ¬í˜„ëœ
+   ë™ì‹œì„± ì œì–´ëœ ë§í¬ë“œ ë¦¬ìŠ¤íŠ¸
 
-   smuSynchroList´Â ¹ü¿ë Å¬·¡½ºÀÌ±â ¶§¹®¿¡,
-   ¾ÐÃà ¸®¼Ò½º °ü·Ã ÄÚµå¸¦ ³ÖÀ» ¼ö ¾ø´Ù.
+   smuSynchroListëŠ” ë²”ìš© í´ëž˜ìŠ¤ì´ê¸° ë•Œë¬¸ì—,
+   ì••ì¶• ë¦¬ì†ŒìŠ¤ ê´€ë ¨ ì½”ë“œë¥¼ ë„£ì„ ìˆ˜ ì—†ë‹¤.
 
-   º°µµÀÇ Å¬·¡½º·Î ¼­ºê Å¬·¡½Ì ÇÏ¿©
-   ¾ÐÃà ¸®¼Ò½º ¸®½ºÆ®·Î »ç¿ëÇÑ´Ù.
+   ë³„ë„ì˜ í´ëž˜ìŠ¤ë¡œ ì„œë¸Œ í´ëž˜ì‹± í•˜ì—¬
+   ì••ì¶• ë¦¬ì†ŒìŠ¤ ë¦¬ìŠ¤íŠ¸ë¡œ ì‚¬ìš©í•œë‹¤.
 */
 
 class smrCompResList : public smuSynchroList
 {
 public :
-    /*  Æ¯Á¤ ½Ã°£µ¿¾È »ç¿ëµÇÁö ¾ÊÀº ¾ÐÃà ¸®¼Ò½º¸¦
-        Linked ListÀÇ Tail·ÎºÎÅÍ Á¦°Å */
+    /*  íŠ¹ì • ì‹œê°„ë™ì•ˆ ì‚¬ìš©ë˜ì§€ ì•Šì€ ì••ì¶• ë¦¬ì†ŒìŠ¤ë¥¼
+        Linked Listì˜ Tailë¡œë¶€í„° ì œê±° */
     IDE_RC removeGarbageFromTail(
                UInt          aMinimumResourceCount,
                ULong         aGarbageCollectionMicro,

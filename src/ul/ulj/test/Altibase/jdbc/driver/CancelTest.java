@@ -84,7 +84,7 @@ public class CancelTest extends AltibaseTestCase
         });
         sUpdThread.start();
 
-        Thread.sleep(3000); // Lock ¶§¹®¿¡ ¸ØÃá »óÅÂ°¡ µÇ´Â°É È®½ÇÈ÷ÇÏ±â À§ÇØ 3ÃÊµ¿¾È ±â´Ù¸²
+        Thread.sleep(3000); // Lock ë•Œë¬¸ì— ë©ˆì¶˜ ìƒíƒœê°€ ë˜ëŠ”ê±¸ í™•ì‹¤íˆí•˜ê¸° ìœ„í•´ 3ì´ˆë™ì•ˆ ê¸°ë‹¤ë¦¼
 
         sUpdStmt.cancel();
         sUpdStmt.close();

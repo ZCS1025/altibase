@@ -52,13 +52,13 @@ IDE_RC mmcStatement::executeDDL(mmcStatement *aStmt, SLong * /*aAffectedRowCount
     IDE_TEST_RAISE( aStmt->beginSmiStmt(sTrans, SMI_STATEMENT_NORMAL) != IDE_SUCCESS,
                     BeginError );
 
-    // TASK-2401 Disk/Memory LogºĞ¸®
-    //           LFG=2ÀÏ¶§ Trans Commit½Ã ·Î±× ÇÃ·¯½¬ ÇÏµµ·Ï ¼³Á¤
+    // TASK-2401 Disk/Memory Logë¶„ë¦¬
+    //           LFG=2ì¼ë•Œ Trans Commitì‹œ ë¡œê·¸ í”ŒëŸ¬ì‰¬ í•˜ë„ë¡ ì„¤ì •
     IDE_TEST( aStmt->getSmiStmt()->getTrans()->setMetaTableModified()
               != IDE_SUCCESS )
 
-    /* PROJ-1442 Replication Online Áß DDL Çã¿ë
-     * DDL Transaction ÀÓÀ» ±â·ÏÇÏ¿©, Replication Sender°¡ DMLÀ» ¹«½ÃÇÏµµ·Ï ÇÔ
+    /* PROJ-1442 Replication Online ì¤‘ DDL í—ˆìš©
+     * DDL Transaction ì„ì„ ê¸°ë¡í•˜ì—¬, Replication Senderê°€ DMLì„ ë¬´ì‹œí•˜ë„ë¡ í•¨
      */
     IDE_TEST(aStmt->getSmiStmt()->getTrans()->writeDDLLog() != IDE_SUCCESS);
 
@@ -134,7 +134,7 @@ IDE_RC mmcStatement::executeDCL(mmcStatement *aStmt, SLong * /*aAffectedRowCount
     idBool       sIsDDLLogging = ID_FALSE;
     smiTrans   * sSmiTrans     = NULL;
 
-    /* BUG-42915 STOP°ú FLUSHÀÇ ·Î±×¸¦ DDL Logging Level·Î ±â·ÏÇÕ´Ï´Ù. */
+    /* BUG-42915 STOPê³¼ FLUSHì˜ ë¡œê·¸ë¥¼ DDL Logging Levelë¡œ ê¸°ë¡í•©ë‹ˆë‹¤. */
     if ( ( sStmtType == QCI_STMT_ALT_REPLICATION_STOP ) ||
          ( sStmtType == QCI_STMT_ALT_REPLICATION_FLUSH ) )
     {
@@ -196,8 +196,8 @@ IDE_RC mmcStatement::executeDCL(mmcStatement *aStmt, SLong * /*aAffectedRowCount
         case QCI_STMT_ALT_SYS_VERIFY:
         case QCI_STMT_ALT_SYS_MEMORY_COMPACT:
         case QCI_STMT_ALT_SYS_ARCHIVELOG:
-        case QCI_STMT_ALT_REPLICATION_STOP :  /* BUG-42852 STOP°ú FLUSH¸¦ DCL·Î º¯È¯ÇÕ´Ï´Ù. */
-        case QCI_STMT_ALT_REPLICATION_FLUSH : /* BUG-42852 STOP°ú FLUSH¸¦ DCL·Î º¯È¯ÇÕ´Ï´Ù. */
+        case QCI_STMT_ALT_REPLICATION_STOP :  /* BUG-42852 STOPê³¼ FLUSHë¥¼ DCLë¡œ ë³€í™˜í•©ë‹ˆë‹¤. */
+        case QCI_STMT_ALT_REPLICATION_FLUSH : /* BUG-42852 STOPê³¼ FLUSHë¥¼ DCLë¡œ ë³€í™˜í•©ë‹ˆë‹¤. */
             IDE_TEST_RAISE(sStartupPhase < MMM_STARTUP_META, InvalidServerPhaseError);
             sSmiTrans = sSession->getTrans(ID_TRUE);
             break;
@@ -221,8 +221,8 @@ IDE_RC mmcStatement::executeDCL(mmcStatement *aStmt, SLong * /*aAffectedRowCount
         /* BUG-42639 Monitoring query */
         case QCI_STMT_SELECT_FOR_FIXED_TABLE:
             /* BUG-42639 Monitoring query
-             * X$, V$ ¸¸À» ½ÇÇàÇÏ´Â Select Query´Â
-             * Trans ¸¦ ÇÒ´çÇÒ ÇÊ¿ä°¡ ¾ø´Ù
+             * X$, V$ ë§Œì„ ì‹¤í–‰í•˜ëŠ” Select QueryëŠ”
+             * Trans ë¥¼ í• ë‹¹í•  í•„ìš”ê°€ ì—†ë‹¤
              */
             break;
         default:

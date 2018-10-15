@@ -10,8 +10,8 @@
 /* ------------------------------------------------
  *      !!!!!!!!!!!!!WARNING!!!!!!!!!!!!!!
  *
- *  ÀÌ Çì´õÈ­ÀÏÀº C ¼Ò½ºÄÚµå¿Í È£È¯ÀÌ µÇµµ·Ï
- *  ±¸ÇöµÇ¾î¾ß ÇÕ´Ï´Ù.
+ *  ì´ í—¤ë”í™”ì¼ì€ C ì†ŒìŠ¤ì½”ë“œì™€ í˜¸í™˜ì´ ë˜ë„ë¡
+ *  êµ¬í˜„ë˜ì–´ì•¼ í•©ë‹ˆë‹¤.
  * ----------------------------------------------*/
 
 #ifndef _O_IDU_MUTEX_OBJ_H_
@@ -20,9 +20,9 @@
 #include <idTypes.h>
 
 /* BUG-31200 - negative values can be printed at v$mutex
- * TRY_COUNT, MISS_COUNT, LOCK_COUNT¸¦ Áõ°¡½ÃÅ°´Â °úÁ¤¿¡¼­
- * ¿À¹öÇÃ·Î¿ì°¡ ¹ß»ýÇÏ¸é ¸ðµÎ 0À¸·Î ¸®¼ÂÇÑ´Ù.
- * ¼­¹öÀÇ °æ¿ì¿¡´Â trc log¿¡ ±âÁ¸ °ªÀ» ±â·ÏÇÏ°í ¸®¼ÂÇÑ´Ù. */
+ * TRY_COUNT, MISS_COUNT, LOCK_COUNTë¥¼ ì¦ê°€ì‹œí‚¤ëŠ” ê³¼ì •ì—ì„œ
+ * ì˜¤ë²„í”Œë¡œìš°ê°€ ë°œìƒí•˜ë©´ ëª¨ë‘ 0ìœ¼ë¡œ ë¦¬ì…‹í•œë‹¤.
+ * ì„œë²„ì˜ ê²½ìš°ì—ëŠ” trc logì— ê¸°ì¡´ ê°’ì„ ê¸°ë¡í•˜ê³  ë¦¬ì…‹í•œë‹¤. */
 #define IDU_MUTEX_STAT_INCREASE_COUNT(aMutexStat, aMember)              \
 {                                                                       \
     if ( (aMutexStat)->aMember >= (UInt)ID_SLONG_MAX)                   \
@@ -81,7 +81,7 @@ typedef enum
     IDU_MUTEX_KIND_NATIVE,
     IDU_MUTEX_KIND_NATIVE2,
     /*
-     * BUG-28856 logging º´¸ñÁ¦°Å
+     * BUG-28856 logging ë³‘ëª©ì œê±°
      */
     IDU_MUTEX_KIND_NATIVE_FOR_LOGGING,
     

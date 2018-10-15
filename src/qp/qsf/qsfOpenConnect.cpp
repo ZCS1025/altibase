@@ -20,7 +20,7 @@
  *
  * Description :
  *
- *     TCP socket OPEN_CONNECT «‘ºˆ
+ *     TCP socket OPEN_CONNECT Ìï®Ïàò
  *
  * Syntax :
  *    OPEN_CONNECT( remote_host VARCHAR, remote_port integer,
@@ -51,7 +51,7 @@ static IDE_RC qsfEstimate( mtcNode*     aNode,
 mtfModule qsfOpenConnectModule = {
     1|MTC_NODE_OPERATOR_MISC|MTC_NODE_VARIABLE_TRUE,
     ~0,
-    1.0,                    // default selectivity (∫Ò±≥ ø¨ªÍ¿⁄ æ∆¥‘)
+    1.0,                    // default selectivity (ÎπÑÍµê Ïó∞ÏÇ∞Ïûê ÏïÑÎãò)
     qsfFunctionName,
     NULL,
     mtf::initializeDefault,

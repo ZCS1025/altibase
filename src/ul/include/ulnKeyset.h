@@ -38,21 +38,21 @@ typedef struct ulnKey
 
 typedef struct ulnKSAB
 {
-    acp_uint32_t    mCount;       /**< mBlock ¿¡ ÇöÀç ÇÒ´çµÇ¾î ÀÖ´Â element ÀÇ °¹¼ö */
-    acp_uint32_t    mUsedCount;   /**< »ç¿ëÇÏ°í ÀÖ´Â element ÀÇ °¹¼ö */
-    ulnKey        **mBlock;       /**< KSA ¹è¿­ */
+    acp_uint32_t    mCount;       /**< mBlock ì— í˜„ìž¬ í• ë‹¹ë˜ì–´ ìžˆëŠ” element ì˜ ê°¯ìˆ˜ */
+    acp_uint32_t    mUsedCount;   /**< ì‚¬ìš©í•˜ê³  ìžˆëŠ” element ì˜ ê°¯ìˆ˜ */
+    ulnKey        **mBlock;       /**< KSA ë°°ì—´ */
 } ulnKSAB;
 
 struct ulnKeyset
 {
     ulnStmt                 *mParentStmt;   /**< parent statement */
-    acp_sint64_t             mKeyCount;     /**< ¼­¹ö·ÎºÎÅÍ ¼ö½ÅÇØ¼­ °®°íÀÖ´Â _PROWID ÀÇ °¹¼ö */
+    acp_sint64_t             mKeyCount;     /**< ì„œë²„ë¡œë¶€í„° ìˆ˜ì‹ í•´ì„œ ê°–ê³ ìžˆëŠ” _PROWID ì˜ ê°¯ìˆ˜ */
     acp_bool_t               mIsFullFilled;
 
     ulnKSAB                  mSeqKeyset;    /**< Seq-Keyset */
     acl_hash_table_t         mHashKeyset;   /**< Hash-Keyset */
 
-    acl_mem_area_t          *mChunk;        /**< DATA°¡ CACHINGµÉ ¸Þ¸ð¸® °ø°£ */
+    acl_mem_area_t          *mChunk;        /**< DATAê°€ CACHINGë  ë©”ëª¨ë¦¬ ê³µê°„ */
     acl_mem_area_snapshot_t  mChunkStatus;  /**<  */
 };
 

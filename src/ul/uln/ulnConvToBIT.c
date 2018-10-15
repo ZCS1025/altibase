@@ -320,8 +320,8 @@ ACI_RC ulncINTERVAL_BIT(ulnFnContext  *aFnContext,
     ACP_UNUSED(aLength);
 
     /*
-     * BUGBUG : ©Ь╥║╢б inteval е╦ют©║ single field ╦╦ южю╦╦И ╟║╢иго╣╣╥о гь╬ъ го╢б╣╔,
-     *          юо╢э юл╥╦╟т ╣нюз.
+     * BUGBUG : Л⌡░К·≤К┼■ inteval М┐─Л·┘Л≈░ single field К╖▄ Л·┬Л°╪К╘╢ Й╟─К┼╔М∙≤К▐└К║² М∙╢Л∙╪ М∙≤К┼■К█╟,
+     *          Л²╪К▀╗ Л²╢К═┤Й╡▄ К▒░Л·░.
      */
 
     /*

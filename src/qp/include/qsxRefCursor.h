@@ -28,13 +28,13 @@
 
 typedef struct qsxRefCursorInfo
 {
-    UInt       id;              // ref cursorÀÇ id. ÇöÀç´Â »ç¿ëÇÏÁö ¾ÊÀ½
+    UInt       id;              // ref cursorì˜ id. í˜„ì¬ëŠ” ì‚¬ìš©í•˜ì§€ ì•ŠìŒ
     vSLong     rowCount;        // rowcount
-    idBool     rowCountIsNull;  // notfoundÃ¼Å©¿ë
-    idBool     isOpen;          // open¿©ºÎ
-    idBool     isEndOfCursor;   // fetch³¡ÀÎÁö ¿©ºÎ
-    idBool     nextRecordExist; // next row°¡ Á¸ÀçÇÏ´ÂÁö ¿©ºÎ
-    idBool     isNeedStmtFree;  // BUG-38767 statement free°¡ ÇÊ¿äÇÑÁö ¿©ºÎ
+    idBool     rowCountIsNull;  // notfoundì²´í¬ìš©
+    idBool     isOpen;          // openì—¬ë¶€
+    idBool     isEndOfCursor;   // fetchëì¸ì§€ ì—¬ë¶€
+    idBool     nextRecordExist; // next rowê°€ ì¡´ì¬í•˜ëŠ”ì§€ ì—¬ë¶€
+    idBool     isNeedStmtFree;  // BUG-38767 statement freeê°€ í•„ìš”í•œì§€ ì—¬ë¶€
     QCD_HSTMT  hStmt;           // statement handle
 } qsxRefCursorInfo;
 

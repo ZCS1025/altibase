@@ -44,7 +44,7 @@ IDE_RC smuWorkerThread::initialize( smuWorkerThreadFunc    aThreadFunc,
 
     if( aThreadCnt == 1 )
     {
-        /* Thread°¡ ÇÏ³ª¸é, Queue¸¦ ÀÌ¿ëÄ¡ ¾Ê°í Á÷Á¢ ¼öÇàÇÑ´Ù. */
+        /* Threadê°€ í•˜ë‚˜ë©´, Queueë¥¼ ì´ìš©ì¹˜ ì•Šê³  ì§ì ‘ ìˆ˜í–‰í•œë‹¤. */
     }
     else
     {
@@ -92,8 +92,8 @@ IDE_RC smuWorkerThread::initialize( smuWorkerThreadFunc    aThreadFunc,
     switch( sState )
     {
     case 3:
-    case 2: /* State=2 ÀÌÈÄ for loop ¼öÇà µµÁß Thread start() ½ÇÆÐ ÇÒ °æ¿ì
-             * State=2 ÀÌ¸é¼­ ÀÏºÎ Thread °¡ start »óÅÂ ÀÏ ¼ö ÀÖ´Ù
+    case 2: /* State=2 ì´í›„ for loop ìˆ˜í–‰ ë„ì¤‘ Thread start() ì‹¤íŒ¨ í•  ê²½ìš°
+             * State=2 ì´ë©´ì„œ ì¼ë¶€ Thread ê°€ start ìƒíƒœ ì¼ ìˆ˜ ìžˆë‹¤
              */
         aThreadMgr->mDone = ID_TRUE;
 
@@ -120,7 +120,7 @@ IDE_RC smuWorkerThread::finalize( smuWorkerThreadMgr * aThreadMgr )
 
     if( aThreadMgr->mThreadCnt == 1 )
     {
-        /* Thread°¡ ÇÏ³ª¸é, º°´Ù¸¥ °´Ã¼¸¦ »ý¼ºÇÏÁö ¾Ê´Â´Ù. */
+        /* Threadê°€ í•˜ë‚˜ë©´, ë³„ë‹¤ë¥¸ ê°ì²´ë¥¼ ìƒì„±í•˜ì§€ ì•ŠëŠ”ë‹¤. */
     }
     else
     {
@@ -153,9 +153,9 @@ IDE_RC smuWorkerThread::finalize( smuWorkerThreadMgr * aThreadMgr )
     switch( sState )
     {
     case 3:
-    case 2: /* State=2 ÀÌÈÄ for loop ¼öÇà µµÁß Thread join() ½ÇÆÐ ÇÒ °æ¿ì
-             * State=2 ÀÌ¸é¼­ ÀÏºÎ Thread °¡ run »óÅÂ ÀÏ ¼ö ÀÖ´Ù
-             * i ¹øÂ° Thread join ÀÌ ½ÇÆÐÇßÀ¸¹Ç·Î i ´ÙÀ½ºÎÅÍ ´Ù½Ã join ÇÑ´Ù
+    case 2: /* State=2 ì´í›„ for loop ìˆ˜í–‰ ë„ì¤‘ Thread join() ì‹¤íŒ¨ í•  ê²½ìš°
+             * State=2 ì´ë©´ì„œ ì¼ë¶€ Thread ê°€ run ìƒíƒœ ì¼ ìˆ˜ ìžˆë‹¤
+             * i ë²ˆì§¸ Thread join ì´ ì‹¤íŒ¨í–ˆìœ¼ë¯€ë¡œ i ë‹¤ìŒë¶€í„° ë‹¤ì‹œ join í•œë‹¤
              */
         aThreadMgr->mDone = ID_TRUE;
         for ( ++i ; i < aThreadMgr->mThreadCnt ; i ++ )
@@ -181,7 +181,7 @@ IDE_RC smuWorkerThread::addJob( smuWorkerThreadMgr * aThreadMgr, void * aParam )
 
     if( aThreadMgr->mThreadCnt == 1 )
     {
-        /* Thread°¡ 1°³ÀÌ¸é Á÷Á¢ ¼öÇàÇÑ´Ù. */
+        /* Threadê°€ 1ê°œì´ë©´ ì§ì ‘ ìˆ˜í–‰í•œë‹¤. */
         aThreadMgr->mThreadFunc( (void*)aParam );
     }
     else
@@ -212,12 +212,12 @@ void   smuWorkerThread::wait( smuWorkerThreadMgr * aThreadMgr )
 
     if( aThreadMgr->mThreadCnt == 1 )
     {
-        /* Thread°¡ 1°³¸é, ¹«Á¶°Ç ÀÏ ´ÙÇß´Ù. ÀÚ½ÅÀÌ Á÷Á¢ÇÏ±â ¶§¹®¿¡.  */
+        /* Threadê°€ 1ê°œë©´, ë¬´ì¡°ê±´ ì¼ ë‹¤í–ˆë‹¤. ìžì‹ ì´ ì§ì ‘í•˜ê¸° ë•Œë¬¸ì—.  */
     }
     else
     {
-        /* Queue°¡ ¸ðµÎ ºñ¿üÀ¸¸é, ÇØ¾ßÇÒ ÀÏÀÌ ¾ø´Â °Í.
-         * ¿Ö³ÄÇÏ¸é addJobÀ» ÇÏ´Â MainThread°¡ ÀÌ ÇÔ¼ö¸¦ È£ÃâÇÏ´Ï±î */
+        /* Queueê°€ ëª¨ë‘ ë¹„ì› ìœ¼ë©´, í•´ì•¼í•  ì¼ì´ ì—†ëŠ” ê²ƒ.
+         * ì™œëƒí•˜ë©´ addJobì„ í•˜ëŠ” MainThreadê°€ ì´ í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•˜ë‹ˆê¹Œ */
         sTV.set(0, 100 );
 
         sRemainJob = ID_TRUE;

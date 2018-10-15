@@ -21,11 +21,11 @@ import java.sql.SQLException;
 public abstract class AltibaseScrollableResultSet extends AltibaseReadableResultSet
 {
     /**
-     * ÇöÀç Ä¿¼­ À§Ä¡ÀÇ Row¸¦ Cache¿¡¼­ Áö¿ì°í, Ä¿¼­¸¦ ÇÏ³ª ¾ÕÀ¸·Î ÀÌµ¿ÇÑ´Ù.
+     * í˜„ì¬ ì»¤ì„œ ìœ„ì¹˜ì˜ Rowë¥¼ Cacheì—ì„œ ì§€ìš°ê³ , ì»¤ì„œë¥¼ í•˜ë‚˜ ì•ìœ¼ë¡œ ì´ë™í•œë‹¤.
      * <p>
-     * Áö¿î Row´Â refresh¸¦ ÇÏ´õ¶óµµ ´Ù½Ã °¡Á®¿ÀÁö ¾Ê´Â´Ù.
+     * ì§€ìš´ RowëŠ” refreshë¥¼ í•˜ë”ë¼ë„ ë‹¤ì‹œ ê°€ì ¸ì˜¤ì§€ ì•ŠëŠ”ë‹¤.
      *
-     * @throws SQLException ResultSetÀÌ ÀÌ¹Ì ´İÇû°Å³ª Ä¿¼­ À§Ä¡°¡ ¿Ã¹Ù¸£Áö ¾ÊÀ» °æ¿ì
+     * @throws SQLException ResultSetì´ ì´ë¯¸ ë‹«í˜”ê±°ë‚˜ ì»¤ì„œ ìœ„ì¹˜ê°€ ì˜¬ë°”ë¥´ì§€ ì•Šì„ ê²½ìš°
      */
     abstract void deleteRowInCache() throws SQLException;
 }

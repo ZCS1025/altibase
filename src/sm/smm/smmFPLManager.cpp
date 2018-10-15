@@ -78,7 +78,7 @@ IDE_RC smmFPLManager::destroyStatic()
 
 
 /*
- * Free Page List °ü¸®ÀÚ¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+ * Free Page List ê´€ë¦¬ìë¥¼ ì´ˆê¸°í™”í•œë‹¤.
  */
 IDE_RC smmFPLManager::initialize( smmTBSNode * aTBSNode )
 {
@@ -87,7 +87,7 @@ IDE_RC smmFPLManager::initialize( smmTBSNode * aTBSNode )
 
     aTBSNode->mMemBase = NULL;
 
-    // °¢ Free Page ListÀÇ Mutex¸¦ ÃÊ±âÈ­
+    // ê° Free Page Listì˜ Mutexë¥¼ ì´ˆê¸°í™”
     /* smmFPLManager_initialize_malloc_ArrFPLMutex.tc */
     IDU_FIT_POINT("smmFPLManager::initialize::malloc::ArrFPLMutex");
     IDE_TEST( iduMemMgr::malloc( IDU_MEM_SM_SMM,
@@ -97,7 +97,7 @@ IDE_RC smmFPLManager::initialize( smmTBSNode * aTBSNode )
                                  IDU_MEM_FORCE )
               != IDE_SUCCESS );
 
-    /* BUG-31881 °¢ Free Page List¿¡ ´ëÇÑ PageReservation ±¸Á¶Ã¼ ¸Ş¸ğ¸® ÇÒ´ç */
+    /* BUG-31881 ê° Free Page Listì— ëŒ€í•œ PageReservation êµ¬ì¡°ì²´ ë©”ëª¨ë¦¬ í• ë‹¹ */
     aTBSNode->mArrPageReservation = NULL;
 
     /* smmFPLManager_initialize_malloc_ArrPageReservation.tc */
@@ -147,7 +147,7 @@ IDE_RC smmFPLManager::initialize( smmTBSNode * aTBSNode )
 
 
 /*
- * Free Page List °ü¸®ÀÚ¸¦ ÆÄ±«ÇÑ´Ù.
+ * Free Page List ê´€ë¦¬ìë¥¼ íŒŒê´´í•œë‹¤.
  *
  */
 IDE_RC smmFPLManager::destroy(smmTBSNode * aTBSNode)
@@ -156,10 +156,10 @@ IDE_RC smmFPLManager::destroy(smmTBSNode * aTBSNode)
 
     IDE_DASSERT( aTBSNode->mArrFPLMutex != NULL );
 
-    // Chunk ÇÒ´ç Mutex¸¦ ÆÄ±«.
+    // Chunk í• ë‹¹ Mutexë¥¼ íŒŒê´´.
     IDE_TEST( aTBSNode->mAllocChunkMutex.destroy() != IDE_SUCCESS );
 
-    // °¢ Free Page ListÀÇ Mutex¸¦ ÆÄ±«
+    // ê° Free Page Listì˜ Mutexë¥¼ íŒŒê´´
     for ( i =0; i < SMM_FREE_PAGE_LIST_COUNT; i++ )
     {
         IDE_TEST( aTBSNode->mArrFPLMutex[ i ].destroy() != IDE_SUCCESS );
@@ -203,12 +203,12 @@ IDE_RC smmFPLManager::unlockGlobalPageCountCheckMutex()
 }
 
 
-/* Free Page¸¦ °¡Àå ¸¹ÀÌ °¡Áø µ¥ÀÌÅÍº£ÀÌ½º Free Page List¸¦ Ã£¾Æ³½´Ù.
+/* Free Pageë¥¼ ê°€ì¥ ë§ì´ ê°€ì§„ ë°ì´í„°ë² ì´ìŠ¤ Free Page Listë¥¼ ì°¾ì•„ë‚¸ë‹¤.
  *
- * ÁÖÀÇ! µ¿½Ã¼º Á¦¾î¸¦ ÇÏÁö ¾Ê±â ¶§¹®¿¡, ÀÌ ÇÔ¼ö°¡ ¸®ÅÏÇÑ Free Page List°¡
- *       °¡Àå ¸¹Àº Free Page List¸¦ °¡Áö°í ÀÖÁö ¾ÊÀ» ¼öµµ ÀÖ´Ù.
+ * ì£¼ì˜! ë™ì‹œì„± ì œì–´ë¥¼ í•˜ì§€ ì•Šê¸° ë•Œë¬¸ì—, ì´ í•¨ìˆ˜ê°€ ë¦¬í„´í•œ Free Page Listê°€
+ *       ê°€ì¥ ë§ì€ Free Page Listë¥¼ ê°€ì§€ê³  ìˆì§€ ì•Šì„ ìˆ˜ë„ ìˆë‹¤.
  *
- * aFPLNo [OUT] Ã£¾Æ³½ Free Page List
+ * aFPLNo [OUT] ì°¾ì•„ë‚¸ Free Page List
  */
 IDE_RC smmFPLManager::getLargestFreePageList( smmTBSNode * aTBSNode,
                                               smmFPLNo *   aFPLNo )
@@ -247,34 +247,34 @@ IDE_RC smmFPLManager::getLargestFreePageList( smmTBSNode * aTBSNode,
 
 
 
-/* ÇÏ³ªÀÇ Free PageµéÀ» µ¥ÀÌÅÍº£ÀÌ½º Free Page List¿¡ °ñ°í·ç ºĞ¹èÇÑ´Ù.
+/* í•˜ë‚˜ì˜ Free Pageë“¤ì„ ë°ì´í„°ë² ì´ìŠ¤ Free Page Listì— ê³¨ê³ ë£¨ ë¶„ë°°í•œë‹¤.
  *
- * Chunk¿¡ ¼ÓÇÑ Page¸¦ ÀÏÁ¤°³¼ö¾¿ °¢°¢ÀÇ Free Page List¿¡ ¿©·¯¹ø¿¡ °ÉÃÄ¼­
- * ºĞ¹èÇÑ´Ù.
+ * Chunkì— ì†í•œ Pageë¥¼ ì¼ì •ê°œìˆ˜ì”© ê°ê°ì˜ Free Page Listì— ì—¬ëŸ¬ë²ˆì— ê±¸ì³ì„œ
+ * ë¶„ë°°í•œë‹¤.
  *
- * ÀÌ¸¦ ÇÑ¹ø¿¡ ºĞ¹èÇÏÁö ¾Ê´Â ÀÌÀ¯´Â, ÇÑ¹ø¿¡ ºĞ¹èÇÒ °æ¿ì
- * ¸ğµç Free Page List·ÎºÎÅÍ Page¸¦ ÇÒ´ç¹Ş´Â °æ¿ì µ¥ÀÌÅÍÆÄÀÏ¿¡ Ä¿´Ù¶õ
- * HoleÀÌ »ı±â´Âµ¥, ÀÌ´Â DB ÆÄÀÏÀ» ¸Ş¸ğ¸®·Î ÀûÀçÇÏ´Âµ¥ ÀÖ¾î¼­
- * ´õ ³ôÀº ºñ¿ëÀ» ÇÊ¿ä·ÎÇÑ´Ù.
+ * ì´ë¥¼ í•œë²ˆì— ë¶„ë°°í•˜ì§€ ì•ŠëŠ” ì´ìœ ëŠ”, í•œë²ˆì— ë¶„ë°°í•  ê²½ìš°
+ * ëª¨ë“  Free Page Listë¡œë¶€í„° Pageë¥¼ í• ë‹¹ë°›ëŠ” ê²½ìš° ë°ì´í„°íŒŒì¼ì— ì»¤ë‹¤ë€
+ * Holeì´ ìƒê¸°ëŠ”ë°, ì´ëŠ” DB íŒŒì¼ì„ ë©”ëª¨ë¦¬ë¡œ ì ì¬í•˜ëŠ”ë° ìˆì–´ì„œ
+ * ë” ë†’ì€ ë¹„ìš©ì„ í•„ìš”ë¡œí•œë‹¤.
  *
- * Free Page List¿¡ ÇÑ¹ø¿¡ ºĞ¹èÇÒ PageÀÇ ¼ö°¡ ³Ê¹« ÀÛÀ¸¸é PageÀÇ Locality
- * °¡ ±×´ÙÁö ³ôÁö ¾Ê¾Æ¼­ ¿î¿µÁß¿¡ ¼º´ÉÀÌ ÀúÇÏµÉ ¼ö ÀÖ´Ù.
+ * Free Page Listì— í•œë²ˆì— ë¶„ë°°í•  Pageì˜ ìˆ˜ê°€ ë„ˆë¬´ ì‘ìœ¼ë©´ Pageì˜ Locality
+ * ê°€ ê·¸ë‹¤ì§€ ë†’ì§€ ì•Šì•„ì„œ ìš´ì˜ì¤‘ì— ì„±ëŠ¥ì´ ì €í•˜ë  ìˆ˜ ìˆë‹¤.
  *
- * Free Page List¿¡ ÇÑ¹ø¿¡ ºĞ¹èÇÒ PageÀÇ ¼ö°¡ ³Ê¹« ¸¹À¸¸é, µ¥ÀÌÅÍº£ÀÌ½º
- * ÆÄÀÏ¿¡ HoleÀ» ¸¸µé¾î¼­ µ¥ÀÌÅÍº£ÀÌ½º ±âµ¿½Ã¿¡
- * µ¥ÀÌÅÍº£ÀÌ½º ÆÄÀÏÀ» ¸Ş¸ğ¸®·Î ÀĞ¾î¿À±â À§ÇÑ I/Oºñ¿ëÀÌ Áõ°¡ÇÑ´Ù.
+ * Free Page Listì— í•œë²ˆì— ë¶„ë°°í•  Pageì˜ ìˆ˜ê°€ ë„ˆë¬´ ë§ìœ¼ë©´, ë°ì´í„°ë² ì´ìŠ¤
+ * íŒŒì¼ì— Holeì„ ë§Œë“¤ì–´ì„œ ë°ì´í„°ë² ì´ìŠ¤ ê¸°ë™ì‹œì—
+ * ë°ì´í„°ë² ì´ìŠ¤ íŒŒì¼ì„ ë©”ëª¨ë¦¬ë¡œ ì½ì–´ì˜¤ê¸° ìœ„í•œ I/Oë¹„ìš©ì´ ì¦ê°€í•œë‹¤.
  *
- * ÀÌ ÇÔ¼ö´Â smmManager::allocNewExpandChunk¸¦ ÅëÇØ
- * Expand ChunkÇÒ´ç½Ã¿¡ È£ÃâµÇ´Â ·çÆ¾ÀÌ¸ç,
- * Expand ChunkÇÒ´çÀº Logical RedoµÇ¹Ç·Î,
- * Expand ChunkÇÒ´ç °úÁ¤¿¡ ´ëÇØ¼­ ·Î±ëÀ» ¼öÇàÇÏÁö ¾Ê´Â´Ù.
+ * ì´ í•¨ìˆ˜ëŠ” smmManager::allocNewExpandChunkë¥¼ í†µí•´
+ * Expand Chunkí• ë‹¹ì‹œì— í˜¸ì¶œë˜ëŠ” ë£¨í‹´ì´ë©°,
+ * Expand Chunkí• ë‹¹ì€ Logical Redoë˜ë¯€ë¡œ,
+ * Expand Chunkí• ë‹¹ ê³¼ì •ì— ëŒ€í•´ì„œ ë¡œê¹…ì„ ìˆ˜í–‰í•˜ì§€ ì•ŠëŠ”ë‹¤.
  *
- * ÀÌ ÇÔ¼ö´Â membase¿¡ Á¢±ÙÇÏÁö ¾Ê±â ¶§¹®¿¡ µ¿½Ã¼º Á¦¾î°¡ ºÒÇÊ¿äÇÏ´Ù.
+ * ì´ í•¨ìˆ˜ëŠ” membaseì— ì ‘ê·¼í•˜ì§€ ì•Šê¸° ë•Œë¬¸ì— ë™ì‹œì„± ì œì–´ê°€ ë¶ˆí•„ìš”í•˜ë‹¤.
  *
- * aChunkFirstFreePID [IN] »õ·Î Ãß°¡µÈ ChunkÀÇ Ã¹¹øÂ° Free Page ID
- * aChunkLastFreePID  [IN] »õ·Î Ãß°¡µÈ ChunkÀÇ ¸¶Áö¸· Free Page ID
- * aArrFreePageListCount [IN]  ºĞ¹èµÈ Free PageÀÇ ListµéÀ» ¹ŞÀ» ¹è¿­ °¹¼ö
- * aArrFreePageList   [OUT] ºĞ¹èµÈ Free PageÀÇ ListµéÀ» ¹ŞÀ» ¹è¿­
+ * aChunkFirstFreePID [IN] ìƒˆë¡œ ì¶”ê°€ëœ Chunkì˜ ì²«ë²ˆì§¸ Free Page ID
+ * aChunkLastFreePID  [IN] ìƒˆë¡œ ì¶”ê°€ëœ Chunkì˜ ë§ˆì§€ë§‰ Free Page ID
+ * aArrFreePageListCount [IN]  ë¶„ë°°ëœ Free Pageì˜ Listë“¤ì„ ë°›ì„ ë°°ì—´ ê°¯ìˆ˜
+ * aArrFreePageList   [OUT] ë¶„ë°°ëœ Free Pageì˜ Listë“¤ì„ ë°›ì„ ë°°ì—´
  */
 IDE_RC smmFPLManager::distributeFreePages( smmTBSNode *  aTBSNode,
                                            scPageID      aChunkFirstFreePID,
@@ -284,12 +284,12 @@ IDE_RC smmFPLManager::distributeFreePages( smmTBSNode *  aTBSNode,
                                            smmPageList * aArrFreePageList)
 {
     scPageID      sPID ;
-    // ÇÏ³ªÀÇ Free Page List¿¡ ºĞ¹èÇÒ Ã¹¹øÂ° Free Page
+    // í•˜ë‚˜ì˜ Free Page Listì— ë¶„ë°°í•  ì²«ë²ˆì§¸ Free Page
     scPageID      sDistHeadPID;
     vULong        sLinkedPageCnt = 0;
     smmFPLNo      sFPLNo;
     UInt          i;
-    // Expand ChunkÇÒ´ç½Ã °¢ Free Page¿¡ ÇÑ¹ø¿¡ ¸î°³ÀÇ Page¾¿À» ºĞ¹èÇÒ °ÍÀÎÁö.
+    // Expand Chunkí• ë‹¹ì‹œ ê° Free Pageì— í•œë²ˆì— ëª‡ê°œì˜ Pageì”©ì„ ë¶„ë°°í•  ê²ƒì¸ì§€.
     vULong        sDistPageCnt = SMM_PER_LIST_DIST_PAGE_COUNT ;
 #if defined(DEBUG)
     vULong        sChunkDataPageCount =
@@ -311,24 +311,24 @@ IDE_RC smmFPLManager::distributeFreePages( smmTBSNode *  aTBSNode,
     IDE_ASSERT( aChunkFirstFreePID <= aChunkLastFreePID );
     IDE_ASSERT( aArrFreePageListCount > 0 );
 
-    // Expand Chunk¾ÈÀÇ ÆäÀÌÁöµéÀÌ ¸ğµç Free Page List ¾È¿¡
-    // ÃÖ¼ÒÇÑ ÇÑ¹ø¾¿ µé¾î°¥ ¼ö ÀÖÀ»¸¸ÇÑ ÃæºĞÇÑ ¾çÀÎÁö ´Ù½ÃÇÑ¹ø °Ë»ç
-    // ( smmManager ¿¡¼­ ÃÊ±âÈ­ µµÁß¿¡ ÀÌ¹Ì °Ë»çÇßÀ½ )
+    // Expand Chunkì•ˆì˜ í˜ì´ì§€ë“¤ì´ ëª¨ë“  Free Page List ì•ˆì—
+    // ìµœì†Œí•œ í•œë²ˆì”© ë“¤ì–´ê°ˆ ìˆ˜ ìˆì„ë§Œí•œ ì¶©ë¶„í•œ ì–‘ì¸ì§€ ë‹¤ì‹œí•œë²ˆ ê²€ì‚¬
+    // ( smmManager ì—ì„œ ì´ˆê¸°í™” ë„ì¤‘ì— ì´ë¯¸ ê²€ì‚¬í–ˆìŒ )
     //
-    // Free List Info Page¸¦ Æ÷ÇÔÇÑ Chunk¾ÈÀÇ ¸ğµç Page¼ö°¡
+    // Free List Info Pageë¥¼ í¬í•¨í•œ Chunkì•ˆì˜ ëª¨ë“  Pageìˆ˜ê°€
     // 2 * PER_LIST_DIST_PAGE_COUNT * aArrFreePageListCount
-    // º¸´Ù Å©°Å³ª °°À½À» Ã¼Å©ÇÏ¿´´Ù.
+    // ë³´ë‹¤ í¬ê±°ë‚˜ ê°™ìŒì„ ì²´í¬í•˜ì˜€ë‹¤.
     //
-    // Chunk¾ÈÀÇ Free List Info Page°¡ ÀüÃ¼ÀÇ 50%¸¦ Â÷ÁöÇÒ ¼ö´Â ¾øÀ¸¹Ç·Î,
-    // Chunk¾ÈÀÇ µ¥ÀÌÅÍÆäÀÌÁö¼ö ( Free List Info Page¸¦ Á¦¿Ü)´Â
-    // PER_LIST_DIST_PAGE_COUNT * aArrFreePageListCount º¸´Ù Ç×»ó
-    // Å©°Å³ª °°À½À» º¸ÀåÇÒ ¼ö ÀÖ´Ù.
+    // Chunkì•ˆì˜ Free List Info Pageê°€ ì „ì²´ì˜ 50%ë¥¼ ì°¨ì§€í•  ìˆ˜ëŠ” ì—†ìœ¼ë¯€ë¡œ,
+    // Chunkì•ˆì˜ ë°ì´í„°í˜ì´ì§€ìˆ˜ ( Free List Info Pageë¥¼ ì œì™¸)ëŠ”
+    // PER_LIST_DIST_PAGE_COUNT * aArrFreePageListCount ë³´ë‹¤ í•­ìƒ
+    // í¬ê±°ë‚˜ ê°™ìŒì„ ë³´ì¥í•  ìˆ˜ ìˆë‹¤.
 
     IDE_DASSERT( sChunkDataPageCount >=
                  sDistPageCnt * aArrFreePageListCount );
 
     sFPLNo = 0;
-    // Free Page List ¹è¿­À» ÃÊ±âÈ­
+    // Free Page List ë°°ì—´ì„ ì´ˆê¸°í™”
     for ( i = 0 ;
           i < aArrFreePageListCount ;
           i ++ )
@@ -336,39 +336,39 @@ IDE_RC smmFPLManager::distributeFreePages( smmTBSNode *  aTBSNode,
         SMM_PAGELIST_INIT( & aArrFreePageList[ i ] );
     }
 
-    // »õ Expand Chunk³»ÀÇ ¸ğµç Data Page¿¡ ´ëÇØ¼­
-    for ( // Free Page List¿¡ ºĞ¹èÇÒ Ã¹¹øÂ° Pageµµ ÇÔ²² ÃÊ±âÈ­ÇÑ´Ù.
+    // ìƒˆ Expand Chunkë‚´ì˜ ëª¨ë“  Data Pageì— ëŒ€í•´ì„œ
+    for ( // Free Page Listì— ë¶„ë°°í•  ì²«ë²ˆì§¸ Pageë„ í•¨ê»˜ ì´ˆê¸°í™”í•œë‹¤.
           sPID = sDistHeadPID = aChunkFirstFreePID;
           sPID <= aChunkLastFreePID ;
           sPID ++ )
     {
-             // Free Page List¿¡ ºĞ¹èÇÒ ¸¶Áö¸· ÆäÀÌÁöÀÏ °æ¿ì
+             // Free Page Listì— ë¶„ë°°í•  ë§ˆì§€ë§‰ í˜ì´ì§€ì¼ ê²½ìš°
         if ( sLinkedPageCnt == sDistPageCnt - 1 ||
              sPID == aChunkLastFreePID )
         {
             if ( aSetNextFreePage == ID_TRUE )
             {
                 /*
-                   ºĞ¹èÇÒ ¸¶Áö¸· ÆäÀÌÁöÀÌ¹Ç·Î Next Free Page´Â NULLÀÌ´Ù.
+                   ë¶„ë°°í•  ë§ˆì§€ë§‰ í˜ì´ì§€ì´ë¯€ë¡œ Next Free PageëŠ” NULLì´ë‹¤.
 
-                   PRJ-1548 User Memory Tablespace °³³äµµÀÔ
-                   [1] ¿î¿µÁß¿¡ chunk È®Àå½Ã
-                   [2] restart recoveryÀÇ Logical Redo
-                   [3] media recoveryÀÇ Logical Redo
-                       Chunk¸¦ º¹±¸ÇØ¾ßÇÏ´Â °æ¿ì
+                   PRJ-1548 User Memory Tablespace ê°œë…ë„ì…
+                   [1] ìš´ì˜ì¤‘ì— chunk í™•ì¥ì‹œ
+                   [2] restart recoveryì˜ Logical Redo
+                   [3] media recoveryì˜ Logical Redo
+                       Chunkë¥¼ ë³µêµ¬í•´ì•¼í•˜ëŠ” ê²½ìš°
                 */
 
                 IDE_TEST( smmExpandChunk::logAndSetNextFreePage(
                           aTBSNode,
-                          NULL, // ·Î±ë¾ÈÇÔ
+                          NULL, // ë¡œê¹…ì•ˆí•¨
                           sPID,
                           SM_NULL_PID ) != IDE_SUCCESS );
             }
             else
             {
                 /*
-                   media recoveryÀÇ Logical Redo Áß¿¡¼­
-                   chunk º¹±¸°¡ ÇÊ¿ä¾ø´Â °æ¿ì
+                   media recoveryì˜ Logical Redo ì¤‘ì—ì„œ
+                   chunk ë³µêµ¬ê°€ í•„ìš”ì—†ëŠ” ê²½ìš°
                 */
             }
 
@@ -379,7 +379,7 @@ IDE_RC smmFPLManager::distributeFreePages( smmTBSNode *  aTBSNode,
                         sFreeList->mHeadPID,
                         sFreeList->mPageCount ) == ID_TRUE );
 
-            // sDistHeadPID ~ sPID ±îÁö¸¦ Free List¿¡ ¸Å´Ş¾ÆÁØ´Ù.
+            // sDistHeadPID ~ sPID ê¹Œì§€ë¥¼ Free Listì— ë§¤ë‹¬ì•„ì¤€ë‹¤.
             if ( sFreeList->mHeadPID == (scPageID)0 )
             {
                 IDE_DASSERT( sFreeList->mTailPID == (scPageID)0 );
@@ -391,13 +391,13 @@ IDE_RC smmFPLManager::distributeFreePages( smmTBSNode *  aTBSNode,
             {
                 IDE_DASSERT( sFreeList->mTailPID != (scPageID)0 );
 
-                // Free List ÀÇ ¸Ç ³¡ (Tail) ¿¡ ¸Å´Ü´Ù.
+                // Free List ì˜ ë§¨ ë (Tail) ì— ë§¤ë‹¨ë‹¤.
 
                 if ( aSetNextFreePage == ID_TRUE )
                 {
                     IDE_TEST( smmExpandChunk::logAndSetNextFreePage(
                                 aTBSNode,
-                                NULL,  // ·Î±ë¾ÈÇÔ
+                                NULL,  // ë¡œê¹…ì•ˆí•¨
                                 sFreeList->mTailPID,
                                 sDistHeadPID )
                             != IDE_SUCCESS );
@@ -416,10 +416,10 @@ IDE_RC smmFPLManager::distributeFreePages( smmTBSNode *  aTBSNode,
                              sFreeList->mHeadPID,
                              sFreeList->mPageCount ) == ID_TRUE );
 
-            // ´ÙÀ½¹ø¿¡ Free Page¸¦ ¹ŞÀ» Free Page List °áÁ¤
+            // ë‹¤ìŒë²ˆì— Free Pageë¥¼ ë°›ì„ Free Page List ê²°ì •
             sFPLNo = (sFPLNo + 1) % aArrFreePageListCount ;
 
-            // ´ÙÀ½ PageºÎÅÍ ¶Ç ´Ù¸¥ Free Page List¿¡ ºĞ¹èÇÒ Ã¹¹øÂ° Free Page°¡ µÈ´Ù
+            // ë‹¤ìŒ Pageë¶€í„° ë˜ ë‹¤ë¥¸ Free Page Listì— ë¶„ë°°í•  ì²«ë²ˆì§¸ Free Pageê°€ ëœë‹¤
             sDistHeadPID = sPID + 1;
             sLinkedPageCnt = 0;
         }
@@ -428,10 +428,10 @@ IDE_RC smmFPLManager::distributeFreePages( smmTBSNode *  aTBSNode,
 
             if ( aSetNextFreePage == ID_TRUE )
             {
-                // Chunk¾ÈÀÇ ´ÙÀ½ Page¸¦ Next Free Page·Î ¼³Á¤ÇÑ´Ù.
+                // Chunkì•ˆì˜ ë‹¤ìŒ Pageë¥¼ Next Free Pageë¡œ ì„¤ì •í•œë‹¤.
                 IDE_TEST( smmExpandChunk::logAndSetNextFreePage(
                             aTBSNode,
-                            NULL,  // ·Î±ë¾ÈÇÔ
+                            NULL,  // ë¡œê¹…ì•ˆí•¨
                             sPID,
                             sPID + 1 )
                         != IDE_SUCCESS );
@@ -454,22 +454,22 @@ IDE_RC smmFPLManager::distributeFreePages( smmTBSNode *  aTBSNode,
 }
 
 /*
- * Free Page µéÀ» °¢°¢ÀÇ Free Page ListÀÇ ¸Ç ¾Õ¿¡ appendÇÑ´Ù.
+ * Free Page ë“¤ì„ ê°ê°ì˜ Free Page Listì˜ ë§¨ ì•ì— appendí•œë‹¤.
  *
- * ¿©·¯°³ÀÇ Free PageµéÀ» distributeFreePages°¡ Free Page List¼ö¸¸Å­ÀÇ
- * Page List·Î ÂÉ°³¾î ¸¸µé°í ³ª¸é, ÀÌ ÇÔ¼ö°¡ ÀÌ¸¦ ¹Ş¾Æ¼­
- * membaseÀÇ °¢°¢ÀÇ Free Page List¿¡ appendÇÑ´Ù.
+ * ì—¬ëŸ¬ê°œì˜ Free Pageë“¤ì„ distributeFreePagesê°€ Free Page Listìˆ˜ë§Œí¼ì˜
+ * Page Listë¡œ ìª¼ê°œì–´ ë§Œë“¤ê³  ë‚˜ë©´, ì´ í•¨ìˆ˜ê°€ ì´ë¥¼ ë°›ì•„ì„œ
+ * membaseì˜ ê°ê°ì˜ Free Page Listì— appendí•œë‹¤.
  *
- * Expand ChunkÇÒ´ç½Ã¿¡ È£ÃâµÇ¸ç, ·Î±ëÇÏÁö ¾ÊÀ½.
- * ( Expand ChunkÇÒ´çÀÌ Logical RedoµÇ±â ¶§¹® )
+ * Expand Chunkí• ë‹¹ì‹œì— í˜¸ì¶œë˜ë©°, ë¡œê¹…í•˜ì§€ ì•ŠìŒ.
+ * ( Expand Chunkí• ë‹¹ì´ Logical Redoë˜ê¸° ë•Œë¬¸ )
  *
- * ÁÖÀÇ! µ¿½Ã¼º Á¦¾îÀÇ Ã¥ÀÓÀÌ ÀÌ ÇÔ¼öÀÇ È£ÃâÀÚ¿¡°Ô ÀÖ´Ù.
- *       ÀÌ ÇÔ¼ö¿¡¼­´Â µ¿½Ã¼º Á¦¾î¸¦ ÇÏÁö ¾Ê´Â´Ù.
+ * ì£¼ì˜! ë™ì‹œì„± ì œì–´ì˜ ì±…ì„ì´ ì´ í•¨ìˆ˜ì˜ í˜¸ì¶œìì—ê²Œ ìˆë‹¤.
+ *       ì´ í•¨ìˆ˜ì—ì„œëŠ” ë™ì‹œì„± ì œì–´ë¥¼ í•˜ì§€ ì•ŠëŠ”ë‹¤.
  *
- * aTrans           [IN] Free Page List ¸µÅ© º¯°æÀ» ·Î±ëÇÒ Æ®·£Àè¼Ç
- * aArrFreePageList [IN] membaseÀÇ °¢ Free Page List µé¿¡ ºÙÀÏ Page List
- *                       µéÀÌ ÀúÀåµÈ ¹è¿­
- *                       Free Page List Info Page ¿¡ Next¸µÅ©·Î ¿¬°áµÇ¾îÀÖ´Ù.
+ * aTrans           [IN] Free Page List ë§í¬ ë³€ê²½ì„ ë¡œê¹…í•  íŠ¸ëœì­ì…˜
+ * aArrFreePageList [IN] membaseì˜ ê° Free Page List ë“¤ì— ë¶™ì¼ Page List
+ *                       ë“¤ì´ ì €ì¥ëœ ë°°ì—´
+ *                       Free Page List Info Page ì— Nextë§í¬ë¡œ ì—°ê²°ë˜ì–´ìˆë‹¤.
  *
  */
 IDE_RC smmFPLManager::appendPageLists2FPLs(
@@ -487,10 +487,10 @@ IDE_RC smmFPLManager::appendPageLists2FPLs(
           sFPLNo < aTBSNode->mMemBase->mFreePageListCount  ;
           sFPLNo ++ )
     {
-        // Redo Áß¿¡ ºÒ¸®´Â ÇÔ¼öÀÌ¹Ç·Î, FPLÀÇ ValidityÃ¼Å©¸¦ ÇØ¼­´Â ¾ÈµÈ´Ù.
+        // Redo ì¤‘ì— ë¶ˆë¦¬ëŠ” í•¨ìˆ˜ì´ë¯€ë¡œ, FPLì˜ Validityì²´í¬ë¥¼ í•´ì„œëŠ” ì•ˆëœë‹¤.
         IDE_TEST( appendFreePagesToList(
                       aTBSNode,
-                      NULL, // ·Î±ë ¾ÈÇÔ
+                      NULL, // ë¡œê¹… ì•ˆí•¨
                       sFPLNo,
                       aArrFreePageList[ sFPLNo ].mPageCount,
                       aArrFreePageList[ sFPLNo ].mHeadPID,
@@ -520,9 +520,9 @@ IDE_RC smmFPLManager::appendPageLists2FPLs(
 
 
 /*
- * Free Page List ¿¡ ·¡Ä¡¸¦ °Ç´Ù.
+ * Free Page List ì— ë˜ì¹˜ë¥¼ ê±´ë‹¤.
  *
- * aFPLNo [IN] Latch¸¦ °É·Á°í ÇÏ´Â Free Page List
+ * aFPLNo [IN] Latchë¥¼ ê±¸ë ¤ê³  í•˜ëŠ” Free Page List
  */
 IDE_RC smmFPLManager::lockFreePageList( smmTBSNode * aTBSNode,
                                         smmFPLNo     aFPLNo )
@@ -535,9 +535,9 @@ IDE_RC smmFPLManager::lockFreePageList( smmTBSNode * aTBSNode,
 
 
 /*
- * Free Page List ÀÇ ·¡Ä¡¸¦ Ç¬´Ù.
+ * Free Page List ì˜ ë˜ì¹˜ë¥¼ í‘¼ë‹¤.
  *
- * aFPLNo [IN] Latch¸¦ Ç®·Á°í ÇÏ´Â Free Page List
+ * aFPLNo [IN] Latchë¥¼ í’€ë ¤ê³  í•˜ëŠ” Free Page List
  */
 IDE_RC smmFPLManager::unlockFreePageList( smmTBSNode * aTBSNode,
                                           smmFPLNo     aFPLNo )
@@ -552,7 +552,7 @@ IDE_RC smmFPLManager::unlockFreePageList( smmTBSNode * aTBSNode,
 
 
 /*
- * ¸ğµç Free Page List¿¡ latch¸¦ Àâ´Â´Ù.
+ * ëª¨ë“  Free Page Listì— latchë¥¼ ì¡ëŠ”ë‹¤.
  */
 IDE_RC smmFPLManager::lockAllFPLs( smmTBSNode * aTBSNode )
 {
@@ -568,8 +568,8 @@ IDE_RC smmFPLManager::lockAllFPLs( smmTBSNode * aTBSNode )
           sFPLNo ++ )
     {
 
-        // ¹Ù±ù¿¡¼­ Æ¯Á¤ List´Â ÀÌ¹Ì latch°¡ ÀâÈùÃ¤·Î ÀÌ ÇÔ¼ö¸¦ ºÎ¸¦ ¼ö ÀÖ´Ù.
-        // ÀÌ¹Ì latch°¡ ÀâÈù Free Page List¶ó¸é Latch¸¦ ÀâÁö ¾Ê´Â´Ù.
+        // ë°”ê¹¥ì—ì„œ íŠ¹ì • ListëŠ” ì´ë¯¸ latchê°€ ì¡íŒì±„ë¡œ ì´ í•¨ìˆ˜ë¥¼ ë¶€ë¥¼ ìˆ˜ ìˆë‹¤.
+        // ì´ë¯¸ latchê°€ ì¡íŒ Free Page Listë¼ë©´ Latchë¥¼ ì¡ì§€ ì•ŠëŠ”ë‹¤.
         IDE_TEST( lockFreePageList( aTBSNode, sFPLNo ) != IDE_SUCCESS );
     }
 
@@ -585,7 +585,7 @@ IDE_RC smmFPLManager::lockAllFPLs( smmTBSNode * aTBSNode )
 
 
 /*
- * ¸ğµç Free Page List¿¡¼­ latch¸¦ Ç¬´Ù.
+ * ëª¨ë“  Free Page Listì—ì„œ latchë¥¼ í‘¼ë‹¤.
  */
 IDE_RC smmFPLManager::unlockAllFPLs( smmTBSNode * aTBSNode )
 {
@@ -601,8 +601,8 @@ IDE_RC smmFPLManager::unlockAllFPLs( smmTBSNode * aTBSNode )
           sFPLNo ++ )
     {
 
-        // ¹Ù±ù¿¡¼­ Æ¯Á¤ List´Â ÀÌ¹Ì latch°¡ ÀâÈùÃ¤·Î ÀÌ ÇÔ¼ö¸¦ ºÎ¸¦ ¼ö ÀÖ´Ù.
-        // ÀÌ¹Ì latch°¡ ÀâÈù Free Page List¶ó¸é Latch¸¦ ÀâÁö ¾Ê´Â´Ù.
+        // ë°”ê¹¥ì—ì„œ íŠ¹ì • ListëŠ” ì´ë¯¸ latchê°€ ì¡íŒì±„ë¡œ ì´ í•¨ìˆ˜ë¥¼ ë¶€ë¥¼ ìˆ˜ ìˆë‹¤.
+        // ì´ë¯¸ latchê°€ ì¡íŒ Free Page Listë¼ë©´ Latchë¥¼ ì¡ì§€ ì•ŠëŠ”ë‹¤.
         IDE_TEST( unlockFreePageList( aTBSNode, sFPLNo ) != IDE_SUCCESS );
     }
 
@@ -619,21 +619,21 @@ IDE_RC smmFPLManager::unlockAllFPLs( smmTBSNode * aTBSNode )
 
 
 /*
- * Free Page List¸¦ º¯°æÇÑ´Ù.
+ * Free Page Listë¥¼ ë³€ê²½í•œë‹¤.
  *
- * Free Page List º¯°æ Àü¿¡ ·Î±ëµµ ÇÔ²² ½Ç½ÃÇÑ´Ù.
+ * Free Page List ë³€ê²½ ì „ì— ë¡œê¹…ë„ í•¨ê»˜ ì‹¤ì‹œí•œë‹¤.
  *
- * ÁÖÀÇ! µ¿½Ã¼º Á¦¾îÀÇ Ã¥ÀÓÀÌ ÀÌ ÇÔ¼öÀÇ È£ÃâÀÚ¿¡°Ô ÀÖ´Ù.
- *       ÀÌ ÇÔ¼ö¿¡¼­´Â µ¿½Ã¼º Á¦¾î¸¦ ÇÏÁö ¾Ê´Â´Ù.
+ * ì£¼ì˜! ë™ì‹œì„± ì œì–´ì˜ ì±…ì„ì´ ì´ í•¨ìˆ˜ì˜ í˜¸ì¶œìì—ê²Œ ìˆë‹¤.
+ *       ì´ í•¨ìˆ˜ì—ì„œëŠ” ë™ì‹œì„± ì œì–´ë¥¼ í•˜ì§€ ì•ŠëŠ”ë‹¤.
  *
- * ÁÖÀÇ ! aTrans°¡ NULLÀÌ¸é ·Î±ëÇÏÁö ¾Ê´Â´Ù.
- *        Expand ChunkÇÒ´çÀº Logical Redo´ë»óÀÌ¾î¼­ Normal Processing½Ã
- *        Physical update¿¡ ´ëÇØ ·Î±ëÇÏÁö ¾Ê´Â´Ù..
+ * ì£¼ì˜ ! aTransê°€ NULLì´ë©´ ë¡œê¹…í•˜ì§€ ì•ŠëŠ”ë‹¤.
+ *        Expand Chunkí• ë‹¹ì€ Logical RedoëŒ€ìƒì´ì–´ì„œ Normal Processingì‹œ
+ *        Physical updateì— ëŒ€í•´ ë¡œê¹…í•˜ì§€ ì•ŠëŠ”ë‹¤..
 
- * aTrans           [IN] Free Page List¸¦ º¯°æÇÏ·Á´Â Æ®·£Àè¼Ç
- * aFPLNo           [IN] º¯°æÇÒ Free Page List
- * aFirstFreePageID [IN] »õ·Î ¼³Á¤ÇÒ Ã¹¹øÂ° Free Page
- * aFreePageCount   [IN] »õ·Î ¼³Á¤ÇÒ Free PageÀÇ ¼ö
+ * aTrans           [IN] Free Page Listë¥¼ ë³€ê²½í•˜ë ¤ëŠ” íŠ¸ëœì­ì…˜
+ * aFPLNo           [IN] ë³€ê²½í•  Free Page List
+ * aFirstFreePageID [IN] ìƒˆë¡œ ì„¤ì •í•  ì²«ë²ˆì§¸ Free Page
+ * aFreePageCount   [IN] ìƒˆë¡œ ì„¤ì •í•  Free Pageì˜ ìˆ˜
  *
  */
 IDE_RC smmFPLManager::logAndSetFreePageList( smmTBSNode * aTBSNode,
@@ -644,7 +644,7 @@ IDE_RC smmFPLManager::logAndSetFreePageList( smmTBSNode * aTBSNode,
 {
     smmDBFreePageList * sFPL ;
 
-    // ·Î±ëÀ» ÇÏÁö ¾Ê´Â °æ¿ì aTrans´Â NULLÀÌ µÉ ¼ö ÀÖ´Ù.
+    // ë¡œê¹…ì„ í•˜ì§€ ì•ŠëŠ” ê²½ìš° aTransëŠ” NULLì´ ë  ìˆ˜ ìˆë‹¤.
 
     IDE_DASSERT( aFPLNo < aTBSNode->mMemBase->mFreePageListCount );
 
@@ -694,25 +694,25 @@ IDE_RC smmFPLManager::logAndSetFreePageList( smmTBSNode * aTBSNode,
 
 
 /*
- * Free Page List ¿¡¼­ ÇÏ³ªÀÇ Free Page¸¦ ¶¼¾î³½´Ù.
+ * Free Page List ì—ì„œ í•˜ë‚˜ì˜ Free Pageë¥¼ ë–¼ì–´ë‚¸ë‹¤.
  *
- * aHeadPAgeºÎÅÍ aTailPage±îÁö
- * Free List Info PageÀÇ Next Free Page ID·Î ¿¬°áµÈ Ã¤·Î ¸®ÅÏÇÑ´Ù.
+ * aHeadPAgeë¶€í„° aTailPageê¹Œì§€
+ * Free List Info Pageì˜ Next Free Page IDë¡œ ì—°ê²°ëœ ì±„ë¡œ ë¦¬í„´í•œë‹¤.
  *
- * ÁÖÀÇ ! aTrans°¡ NULLÀÌ¸é ·Î±ëÇÏÁö ¾Ê´Â´Ù.
- *        Expand ChunkÇÒ´çÀº Logical Redo´ë»óÀÌ¾î¼­ Normal Processing½Ã
- *        Physical update¿¡ ´ëÇØ ·Î±ëÇÏÁö ¾Ê´Â´Ù..
+ * ì£¼ì˜ ! aTransê°€ NULLì´ë©´ ë¡œê¹…í•˜ì§€ ì•ŠëŠ”ë‹¤.
+ *        Expand Chunkí• ë‹¹ì€ Logical RedoëŒ€ìƒì´ì–´ì„œ Normal Processingì‹œ
+ *        Physical updateì— ëŒ€í•´ ë¡œê¹…í•˜ì§€ ì•ŠëŠ”ë‹¤..
  *
- * ÁÖÀÇ! µ¿½Ã¼º Á¦¾îÀÇ Ã¥ÀÓÀÌ ÀÌ ÇÔ¼öÀÇ È£ÃâÀÚ¿¡°Ô ÀÖ´Ù.
- *       ÀÌ ÇÔ¼ö¿¡¼­´Â µ¿½Ã¼º Á¦¾î¸¦ ÇÏÁö ¾Ê´Â´Ù.
- *       ¶ÇÇÑ, ÃÖ¼ÒÇÑ aPageCount¸¸Å­ÀÇ Free Page°¡
- *       aFPLNo Free Page List¿¡ Á¸ÀçÇÔÀ» È®ÀÎÇÑ ÈÄ ÀÌ ÇÔ¼ö¸¦ È£ÃâÇØ¾ß ÇÑ´Ù.
+ * ì£¼ì˜! ë™ì‹œì„± ì œì–´ì˜ ì±…ì„ì´ ì´ í•¨ìˆ˜ì˜ í˜¸ì¶œìì—ê²Œ ìˆë‹¤.
+ *       ì´ í•¨ìˆ˜ì—ì„œëŠ” ë™ì‹œì„± ì œì–´ë¥¼ í•˜ì§€ ì•ŠëŠ”ë‹¤.
+ *       ë˜í•œ, ìµœì†Œí•œ aPageCountë§Œí¼ì˜ Free Pageê°€
+ *       aFPLNo Free Page Listì— ì¡´ì¬í•¨ì„ í™•ì¸í•œ í›„ ì´ í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•´ì•¼ í•œë‹¤.
  *
- * aTrans     [IN] Free Page¸¦ ÇÒ´çÇÏ·Á´Â Æ®·£Àè¼Ç
- * aFPLNo     [IN] Free Page¸¦ ÇÒ´ç¹ŞÀ» Free Page List
- * aPageCount [IN] ÇÒ´ç¹Ş°íÀÚ ÇÏ´Â PageÀÇ ¼ö
- * aHeadPage  [OUT] ÇÒ´ç¹ŞÀº Ã¹¹øÂ° Page
- * aTailPage  [OUT] ÇÒ´ç¹ŞÀº ¸¶Áö¸· Page
+ * aTrans     [IN] Free Pageë¥¼ í• ë‹¹í•˜ë ¤ëŠ” íŠ¸ëœì­ì…˜
+ * aFPLNo     [IN] Free Pageë¥¼ í• ë‹¹ë°›ì„ Free Page List
+ * aPageCount [IN] í• ë‹¹ë°›ê³ ì í•˜ëŠ” Pageì˜ ìˆ˜
+ * aHeadPage  [OUT] í• ë‹¹ë°›ì€ ì²«ë²ˆì§¸ Page
+ * aTailPage  [OUT] í• ë‹¹ë°›ì€ ë§ˆì§€ë§‰ Page
  */
 IDE_RC smmFPLManager::removeFreePagesFromList( smmTBSNode * aTBSNode,
                                                void *       aTrans,
@@ -742,8 +742,8 @@ IDE_RC smmFPLManager::removeFreePagesFromList( smmTBSNode * aTBSNode,
                  == ID_TRUE );
 
 
-    /* BUG-31881 ¸¸¾à ÀÚ½ÅÀÌ Page¸¦ ¿¹¾àÇØµ×´Ù¸é, TBS¿¡¼­ FreePage¸¦
-     * °¡Á®°¡¸é¼­ °¡Á®°£ ¸¸Å­ ¿¹¾àÀ» Ãë¼ÒÇÔ */
+    /* BUG-31881 ë§Œì•½ ìì‹ ì´ Pageë¥¼ ì˜ˆì•½í•´ë’€ë‹¤ë©´, TBSì—ì„œ FreePageë¥¼
+     * ê°€ì ¸ê°€ë©´ì„œ ê°€ì ¸ê°„ ë§Œí¼ ì˜ˆì•½ì„ ì·¨ì†Œí•¨ */
     sPageReservation = &( aTBSNode->mArrPageReservation[ aFPLNo ] );
     IDE_TEST( findPageReservationSlot( sPageReservation,
                                        aTrans,
@@ -752,7 +752,7 @@ IDE_RC smmFPLManager::removeFreePagesFromList( smmTBSNode * aTBSNode,
 
     if( sSlotNo != SMM_PAGE_RESERVATION_NULL )
     {
-        /* ¿¹¾àÇÑ ÆäÀÌÁö¸¦ ÀüºÎ »ç¿ëÇß´Ù¸é 0À¸·Î ¸¸µë. */
+        /* ì˜ˆì•½í•œ í˜ì´ì§€ë¥¼ ì „ë¶€ ì‚¬ìš©í–ˆë‹¤ë©´ 0ìœ¼ë¡œ ë§Œë“¬. */
         if( sPageReservation->mPageCount[sSlotNo] < (SInt)aPageCount )
         {
             sPageReservation->mPageCount[sSlotNo] = 0;
@@ -764,7 +764,7 @@ IDE_RC smmFPLManager::removeFreePagesFromList( smmTBSNode * aTBSNode,
         sState = 1;
     }
 
-    // aPageCount¹øÂ° Page¸¦ Ã£¾Æ¼­ ±× ID¸¦ sSplitPID¿¡ ¼³Á¤ÇÑ´Ù.
+    // aPageCountë²ˆì§¸ Pageë¥¼ ì°¾ì•„ì„œ ê·¸ IDë¥¼ sSplitPIDì— ì„¤ì •í•œë‹¤.
     for ( i = 1, sSplitPID = sFPL->mFirstFreePageID;
           i < aPageCount;
           i++ )
@@ -780,7 +780,7 @@ IDE_RC smmFPLManager::removeFreePagesFromList( smmTBSNode * aTBSNode,
                   != IDE_SUCCESS );
     }
 
-    // sSplitPID±îÁö ¶¼¾î³»°í, ±× ÀÌÈÄÀÇ PageµéÀ» Free Page List¿¡ ³²°Ü ³õ´Â´Ù.
+    // sSplitPIDê¹Œì§€ ë–¼ì–´ë‚´ê³ , ê·¸ ì´í›„ì˜ Pageë“¤ì„ Free Page Listì— ë‚¨ê²¨ ë†“ëŠ”ë‹¤.
     IDE_TEST( smmExpandChunk::getNextFreePage( aTBSNode,
                                                sSplitPID,
                                                & sNewFirstFreePageID )
@@ -821,23 +821,23 @@ IDE_RC smmFPLManager::removeFreePagesFromList( smmTBSNode * aTBSNode,
 
 
 /*
- * Free Page List ¿¡ ÇÏ³ªÀÇ Free Page List¸¦ ºÙÀÎ´Ù.( Tx°¡ Free Page ¹İ³³ )
+ * Free Page List ì— í•˜ë‚˜ì˜ Free Page Listë¥¼ ë¶™ì¸ë‹¤.( Txê°€ Free Page ë°˜ë‚© )
  *
- * aHeadPAgeºÎÅÍ aTailPage±îÁö
- * Free List Info PageÀÇ Next Free Page ID·Î ¿¬°áµÇ¾î ÀÖ¾î¾ß ÇÑ´Ù..
+ * aHeadPAgeë¶€í„° aTailPageê¹Œì§€
+ * Free List Info Pageì˜ Next Free Page IDë¡œ ì—°ê²°ë˜ì–´ ìˆì–´ì•¼ í•œë‹¤..
  *
- * ÁÖÀÇ ! aTrans°¡ NULLÀÌ¸é ·Î±ëÇÏÁö ¾Ê´Â´Ù.
- *        Expand ChunkÇÒ´çÀº Logical Redo´ë»óÀÌ¾î¼­ Normal Processing½Ã
- *        Physical update¿¡ ´ëÇØ ·Î±ëÇÏÁö ¾Ê´Â´Ù..
+ * ì£¼ì˜ ! aTransê°€ NULLì´ë©´ ë¡œê¹…í•˜ì§€ ì•ŠëŠ”ë‹¤.
+ *        Expand Chunkí• ë‹¹ì€ Logical RedoëŒ€ìƒì´ì–´ì„œ Normal Processingì‹œ
+ *        Physical updateì— ëŒ€í•´ ë¡œê¹…í•˜ì§€ ì•ŠëŠ”ë‹¤..
  *
- * ÁÖÀÇ! µ¿½Ã¼º Á¦¾îÀÇ Ã¥ÀÓÀÌ ÀÌ ÇÔ¼öÀÇ È£ÃâÀÚ¿¡°Ô ÀÖ´Ù.
- *       ÀÌ ÇÔ¼ö¿¡¼­´Â µ¿½Ã¼º Á¦¾î¸¦ ÇÏÁö ¾Ê´Â´Ù.
+ * ì£¼ì˜! ë™ì‹œì„± ì œì–´ì˜ ì±…ì„ì´ ì´ í•¨ìˆ˜ì˜ í˜¸ì¶œìì—ê²Œ ìˆë‹¤.
+ *       ì´ í•¨ìˆ˜ì—ì„œëŠ” ë™ì‹œì„± ì œì–´ë¥¼ í•˜ì§€ ì•ŠëŠ”ë‹¤.
  *
- * aTrans     [IN] Free Page¸¦ ¹İ³³ÇÏ·Á´Â Æ®·£Àè¼Ç
- * aFPLNo     [IN] Free Page°¡ ¹İ³³µÉ Free Page List
- * aPageCount [IN] ¹İ³³ÇÏ°íÀÚ ÇÏ´Â PageÀÇ ¼ö
- * aHeadPage  [OUT] ¹İ³³ÇÒ Ã¹¹øÂ° Page
- * aTailPage  [OUT] ¹İ³³ÇÒ ¸¶Áö¸· Page
+ * aTrans     [IN] Free Pageë¥¼ ë°˜ë‚©í•˜ë ¤ëŠ” íŠ¸ëœì­ì…˜
+ * aFPLNo     [IN] Free Pageê°€ ë°˜ë‚©ë  Free Page List
+ * aPageCount [IN] ë°˜ë‚©í•˜ê³ ì í•˜ëŠ” Pageì˜ ìˆ˜
+ * aHeadPage  [OUT] ë°˜ë‚©í•  ì²«ë²ˆì§¸ Page
+ * aTailPage  [OUT] ë°˜ë‚©í•  ë§ˆì§€ë§‰ Page
  */
 IDE_RC smmFPLManager::appendFreePagesToList  (
                             smmTBSNode * aTBSNode,
@@ -871,8 +871,8 @@ IDE_RC smmFPLManager::appendFreePagesToList  (
     IDE_DASSERT( smmFPLManager::isValidFPL( aTBSNode->mHeader.mID, sFPL )
                  == ID_TRUE );
 
-    /* BUG-31881 ¸¸¾à ÀÚ½ÅÀÌ Page¸¦ ¿¹¾àÇÏ·ÁÇß´Ù¸é,
-     * TBS·Î Page ¹İ³³ÇÏ¸é¼­ µ¿½Ã¿¡ ¿¹¾àÇÔ */
+    /* BUG-31881 ë§Œì•½ ìì‹ ì´ Pageë¥¼ ì˜ˆì•½í•˜ë ¤í–ˆë‹¤ë©´,
+     * TBSë¡œ Page ë°˜ë‚©í•˜ë©´ì„œ ë™ì‹œì— ì˜ˆì•½í•¨ */
     sPageReservation = &( aTBSNode->mArrPageReservation[ aFPLNo ] );
     IDE_TEST( findPageReservationSlot( sPageReservation,
                                        aTrans,
@@ -887,8 +887,8 @@ IDE_RC smmFPLManager::appendFreePagesToList  (
 
     if ( aSetNextFreePageOfFPL == ID_TRUE )
     {
-        // ÇöÀç Free Page List ÀÇ Ã¹¹øÂ° Free Page¸¦
-        // ÀÎÀÚ·Î ¹ŞÀº Tail PageÀÇ ´ÙÀ½À¸·Î ¸Å´Ü´Ù.
+        // í˜„ì¬ Free Page List ì˜ ì²«ë²ˆì§¸ Free Pageë¥¼
+        // ì¸ìë¡œ ë°›ì€ Tail Pageì˜ ë‹¤ìŒìœ¼ë¡œ ë§¤ë‹¨ë‹¤.
         IDE_TEST( smmExpandChunk::logAndSetNextFreePage( aTBSNode,
                     aTrans,
                     aTailPID,
@@ -930,12 +930,12 @@ IDE_RC smmFPLManager::appendFreePagesToList  (
  * using space by other transaction,
  * The server can not do restart recovery.
  *
- * Áö±İºÎÅÍ ÀÌ TransactionÀÌ ¹İÈ¯ÇÏ´Â Page°³¼ö ÀÌ»óÀº ¹İµå½Ã FreePage·Î
- * °¡Áö°í ÀÖµµ·Ï ÇÏ¿©, ÀÌ TransactionÀÌ ´Ù½Ã Page¸¦ ¿ä±¸ÇßÀ»¶§ ¹İµå½Ã
- * ÇØ´ç ÆäÀÌÁöµéÀ» »ç¿ëÇÒ ¼ö ÀÖµµ·Ï º¸ÀåÇÑ´Ù.
+ * ì§€ê¸ˆë¶€í„° ì´ Transactionì´ ë°˜í™˜í•˜ëŠ” Pageê°œìˆ˜ ì´ìƒì€ ë°˜ë“œì‹œ FreePageë¡œ
+ * ê°€ì§€ê³  ìˆë„ë¡ í•˜ì—¬, ì´ Transactionì´ ë‹¤ì‹œ Pageë¥¼ ìš”êµ¬í–ˆì„ë•Œ ë°˜ë“œì‹œ
+ * í•´ë‹¹ í˜ì´ì§€ë“¤ì„ ì‚¬ìš©í•  ìˆ˜ ìˆë„ë¡ ë³´ì¥í•œë‹¤.
  *
- * [IN] aTBSNode - ¿¹¾àµÉ Tablespace Node
- * [IN] aTrans   - ¿¹¾àÇÏ´Â Transaction
+ * [IN] aTBSNode - ì˜ˆì•½ë  Tablespace Node
+ * [IN] aTrans   - ì˜ˆì•½í•˜ëŠ” Transaction
  ************************************************************************/
 IDE_RC smmFPLManager::beginPageReservation( smmTBSNode * aTBSNode,
                                             void       * aTrans )
@@ -957,7 +957,7 @@ IDE_RC smmFPLManager::beginPageReservation( smmTBSNode * aTBSNode,
 
         sPageReservation = &( aTBSNode->mArrPageReservation[ sFPLNo ] );
 
-        /* È¤½Ã ÀÌ¹Ì µî·ÏµÇ¾îÀÖ´ÂÁö È®ÀÎÇÑ´Ù. */
+        /* í˜¹ì‹œ ì´ë¯¸ ë“±ë¡ë˜ì–´ìˆëŠ”ì§€ í™•ì¸í•œë‹¤. */
         IDE_TEST( findPageReservationSlot( sPageReservation,
                                            aTrans,
                                            &sSlotNo )
@@ -980,8 +980,8 @@ IDE_RC smmFPLManager::beginPageReservation( smmTBSNode * aTBSNode,
         }
         else
         {
-            /* ÀÌ¹Ì µî·ÏµÇ¾îÀÖ´Ù¸é ±× °´Ã¼¸¦ ¾´´Ù. ÇÏÁö¸¸ ¿¹»ó¿ÜÀÇ »óÈ²
-             * ÀÌ±â¿¡, Debug¸ğµå¸é ºñÁ¤»óÁ¾·á ½ÃÅ²´Ù. */
+            /* ì´ë¯¸ ë“±ë¡ë˜ì–´ìˆë‹¤ë©´ ê·¸ ê°ì²´ë¥¼ ì“´ë‹¤. í•˜ì§€ë§Œ ì˜ˆìƒì™¸ì˜ ìƒí™©
+             * ì´ê¸°ì—, Debugëª¨ë“œë©´ ë¹„ì •ìƒì¢…ë£Œ ì‹œí‚¨ë‹¤. */
 #if defined(DEBUG)
             IDE_RAISE( error_internal );
 #endif
@@ -992,13 +992,13 @@ IDE_RC smmFPLManager::beginPageReservation( smmTBSNode * aTBSNode,
 
         if( sSuccess == ID_FALSE )
         {
-            /* 3600ÃÊ (1½Ã°£) ÀÌ»ó Àç½Ãµµ Çß´Âµ¥µµ ¾ÈµÇ´Â °æ¿ì´Â ¹®Á¦
-             * ÀÖ´Â °æ¿ìÀÌ´Ù. µû¶ó¼­ ºüÁ®³ª°£´Ù. */
+            /* 3600ì´ˆ (1ì‹œê°„) ì´ìƒ ì¬ì‹œë„ í–ˆëŠ”ë°ë„ ì•ˆë˜ëŠ” ê²½ìš°ëŠ” ë¬¸ì œ
+             * ìˆëŠ” ê²½ìš°ì´ë‹¤. ë”°ë¼ì„œ ë¹ ì ¸ë‚˜ê°„ë‹¤. */
             IDE_TEST_RAISE( sSleepTime > 3600000, error_internal );
 
-            /* µ¿½Ã¿¡ ÇÑ TBS¿¡ SMM_PAGE_RESERVATION_MAX °³¼ö(64)ÀÌ»óÀÇ
-             * AlterTableÀÌ ÀÏ¾î³¯ °¡´É¼ºÀº °ÅÀÇ ¾ø´Ù.
-             * µû¶ó¼­ ±â´Ù·Áº¸°í Àç½Ãµµ ÇÑ´Ù. */
+            /* ë™ì‹œì— í•œ TBSì— SMM_PAGE_RESERVATION_MAX ê°œìˆ˜(64)ì´ìƒì˜
+             * AlterTableì´ ì¼ì–´ë‚  ê°€ëŠ¥ì„±ì€ ê±°ì˜ ì—†ë‹¤.
+             * ë”°ë¼ì„œ ê¸°ë‹¤ë ¤ë³´ê³  ì¬ì‹œë„ í•œë‹¤. */
             sTV.set(0, sSleepTime );
             idlOS::sleep(sTV);
 
@@ -1036,10 +1036,10 @@ IDE_RC smmFPLManager::beginPageReservation( smmTBSNode * aTBSNode,
 }
 
 /***************************************************************************
- * ÆäÀÌÁö ¿¹¾àÀ» Á¾·áÇÑ´Ù.
+ * í˜ì´ì§€ ì˜ˆì•½ì„ ì¢…ë£Œí•œë‹¤.
  *
- * [IN] aTBSNode - ¿¹¾àÇß´ø Tablespace Node
- * [IN] aTrans   - ¿¹¾àÇß´ø Transaction
+ * [IN] aTBSNode - ì˜ˆì•½í–ˆë˜ Tablespace Node
+ * [IN] aTrans   - ì˜ˆì•½í–ˆë˜ Transaction
  ************************************************************************/
 IDE_RC smmFPLManager::endPageReservation( smmTBSNode * aTBSNode,
                                           void       * aTrans )
@@ -1064,10 +1064,10 @@ IDE_RC smmFPLManager::endPageReservation( smmTBSNode * aTBSNode,
 
     if( sSlotNo != SMM_PAGE_RESERVATION_NULL )
     {
-        /* ¿¹¾àÇÑ ÆäÀÌÁöµéÀÌ ºÎÁ·ÇßÀ» ¼öµµ ÀÖ°í ³²¾ÒÀ» ¼öµµ ÀÖ´Ù.
-         * NewTableÀÌ OldTableº¸´Ù Page¸¦ ´õ »ç¿ëÇßÀ»¼öµµ, ´ú »ç¿ëÇßÀ» ¼öµµ
-         * ÀÖ±â ¶§¹®ÀÌ´Ù. */
-        /* ¸¶Áö¸· SlotÀ» Áö¿ì·Á´Â SlotÀ¸·Î ÀÌµ¿½ÃÄÑ Áö¿ï ´ë»óÀ» Á¤¸®ÇÔ*/
+        /* ì˜ˆì•½í•œ í˜ì´ì§€ë“¤ì´ ë¶€ì¡±í–ˆì„ ìˆ˜ë„ ìˆê³  ë‚¨ì•˜ì„ ìˆ˜ë„ ìˆë‹¤.
+         * NewTableì´ OldTableë³´ë‹¤ Pageë¥¼ ë” ì‚¬ìš©í–ˆì„ìˆ˜ë„, ëœ ì‚¬ìš©í–ˆì„ ìˆ˜ë„
+         * ìˆê¸° ë•Œë¬¸ì´ë‹¤. */
+        /* ë§ˆì§€ë§‰ Slotì„ ì§€ìš°ë ¤ëŠ” Slotìœ¼ë¡œ ì´ë™ì‹œì¼œ ì§€ìš¸ ëŒ€ìƒì„ ì •ë¦¬í•¨*/
         IDE_TEST_RAISE( sPageReservation->mSize == 0, error_internal );
 
         sLastSlotNo = sPageReservation->mSize - 1;
@@ -1080,11 +1080,11 @@ IDE_RC smmFPLManager::endPageReservation( smmTBSNode * aTBSNode,
     }
     else
     {
-        /* ¸¸¾à RestartRecoveryµîÀÇ °æ¿ì, BackupÀº ¾ÈÇÏ°í restore¸¸ ÇÏ°Ô µÈ´Ù.
-         * ±×·¯¸é Runtime»óÀ¸·Î¸¸ Á¸ÀçÇÏ´Â PageReservationÀº ¾øÀ» ¼ö ÀÖ´Ù.
-         * µû¶ó¼­ Á¤»ó »óÈ²ÀÌ´Ù. */
-        /* BUG-39689  alter tableÀº ¼º°øÇÏ¿© PageReservation Á¤¸®°¡ ³¡³­´ÙÀ½¿¡
-         * tran abort°¡ µÇ¸é PageReservationÀº ¾øÀ» ¼ö ÀÖ´Ù. Á¤»ó »óÈ²   
+        /* ë§Œì•½ RestartRecoveryë“±ì˜ ê²½ìš°, Backupì€ ì•ˆí•˜ê³  restoreë§Œ í•˜ê²Œ ëœë‹¤.
+         * ê·¸ëŸ¬ë©´ Runtimeìƒìœ¼ë¡œë§Œ ì¡´ì¬í•˜ëŠ” PageReservationì€ ì—†ì„ ìˆ˜ ìˆë‹¤.
+         * ë”°ë¼ì„œ ì •ìƒ ìƒí™©ì´ë‹¤. */
+        /* BUG-39689  alter tableì€ ì„±ê³µí•˜ì—¬ PageReservation ì •ë¦¬ê°€ ëë‚œë‹¤ìŒì—
+         * tran abortê°€ ë˜ë©´ PageReservationì€ ì—†ì„ ìˆ˜ ìˆë‹¤. ì •ìƒ ìƒí™©   
          */
     }
 
@@ -1121,13 +1121,13 @@ IDE_RC smmFPLManager::endPageReservation( smmTBSNode * aTBSNode,
 }
 
 /***************************************************************************
- * ÇØ´ç TransactionÀÌ ¿¹¾àÇÑ SlotÀ» Ã£´Â´Ù.
+ * í•´ë‹¹ Transactionì´ ì˜ˆì•½í•œ Slotì„ ì°¾ëŠ”ë‹¤.
  *
- *  << mArrFPLMutex°¡ ÀâÈù »óÅÂ·Î È£ÃâµÇ¾î¾ß ÇÔ!! >>
+ *  << mArrFPLMutexê°€ ì¡íŒ ìƒíƒœë¡œ í˜¸ì¶œë˜ì–´ì•¼ í•¨!! >>
  *
- * [IN]  aPageReservation - ÇØ´ç PageListÀÇ PageReservation °³Ã¼
- * [IN]  aTrans           - ¿¹¾àÇß´ø Transaction
- * [OUT] aSlotNo          - ÇØ´ç TransactionÀÌ »ç¿ëÇÑ SlotÀÇ ¹øÈ£
+ * [IN]  aPageReservation - í•´ë‹¹ PageListì˜ PageReservation ê°œì²´
+ * [IN]  aTrans           - ì˜ˆì•½í–ˆë˜ Transaction
+ * [OUT] aSlotNo          - í•´ë‹¹ Transactionì´ ì‚¬ìš©í•œ Slotì˜ ë²ˆí˜¸
  ************************************************************************/
 IDE_RC smmFPLManager::findPageReservationSlot(
     smmPageReservation  * aPageReservation,
@@ -1137,7 +1137,7 @@ IDE_RC smmFPLManager::findPageReservationSlot(
     UInt   sSlotNo;
     UInt   i;
 
-    /* TSB È®ÀåµîÀÇ ÀÌÀ¯·Î, aTrans´Â NullÀÏ ¼ö ÀÖÀ½. */
+    /* TSB í™•ì¥ë“±ì˜ ì´ìœ ë¡œ, aTransëŠ” Nullì¼ ìˆ˜ ìˆìŒ. */
     IDE_TEST_RAISE( aPageReservation == NULL, error_argument );
     IDE_TEST_RAISE( aSlotNo          == NULL, error_argument );
 
@@ -1178,14 +1178,14 @@ IDE_RC smmFPLManager::findPageReservationSlot(
 }
 
 /***************************************************************************
- * ÀÚ½Å ¿Ü ´Ù¸¥ TransactionµéÀÌ ¿¹¾àÇØµÖ¼­ ³²°ÜµÖ¾ßÇÏ´Â »ç¿ë ¸øÇÏ´Â Page
- * ÀÇ °³¼ö¸¦ °¡Á®¿Â´Ù.
+ * ìì‹  ì™¸ ë‹¤ë¥¸ Transactionë“¤ì´ ì˜ˆì•½í•´ë‘¬ì„œ ë‚¨ê²¨ë‘¬ì•¼í•˜ëŠ” ì‚¬ìš© ëª»í•˜ëŠ” Page
+ * ì˜ ê°œìˆ˜ë¥¼ ê°€ì ¸ì˜¨ë‹¤.
  *
- *  << mArrFPLMutex°¡ ÀâÈù »óÅÂ·Î È£ÃâµÇ¾î¾ß ÇÔ!! >>
+ *  << mArrFPLMutexê°€ ì¡íŒ ìƒíƒœë¡œ í˜¸ì¶œë˜ì–´ì•¼ í•¨!! >>
  *
- * [IN]  aPageReservation   - ÇØ´ç PageListÀÇ PageReservation °³Ã¼
- * [IN]  aTrans             - ¿¹¾àÇß´ø Transaction
- * [OUT] aUnusablePageCount - ÀÚ½ÅÀÌ »ç¿ë ¸øÇÏ´Â ÆäÀÌÁöÀÇ °³¼ö
+ * [IN]  aPageReservation   - í•´ë‹¹ PageListì˜ PageReservation ê°œì²´
+ * [IN]  aTrans             - ì˜ˆì•½í–ˆë˜ Transaction
+ * [OUT] aUnusablePageCount - ìì‹ ì´ ì‚¬ìš© ëª»í•˜ëŠ” í˜ì´ì§€ì˜ ê°œìˆ˜
  ************************************************************************/
 IDE_RC smmFPLManager::getUnusablePageCount(
     smmPageReservation  * aPageReservation,
@@ -1195,7 +1195,7 @@ IDE_RC smmFPLManager::getUnusablePageCount(
     UInt   sUnusablePageCount;
     UInt   i;
 
-    /* Trans´Â NullÀÌ¾îµµ µÊ. */
+    /* TransëŠ” Nullì´ì–´ë„ ë¨. */
     IDE_TEST_RAISE( aPageReservation   == NULL, error_argument );
     IDE_TEST_RAISE( aUnusablePageCount == NULL, error_argument );
 
@@ -1233,9 +1233,9 @@ IDE_RC smmFPLManager::getUnusablePageCount(
 }
 
 /***************************************************************************
- * È¤½Ã ÀÌ Transaction°ú °ü·ÃµÈ ¿¹¾à ÆäÀÌÁö°¡ ÀÖÀ¸¸é, ¸ğµÎ Á¤¸®ÇÑ´Ù.
+ * í˜¹ì‹œ ì´ Transactionê³¼ ê´€ë ¨ëœ ì˜ˆì•½ í˜ì´ì§€ê°€ ìˆìœ¼ë©´, ëª¨ë‘ ì •ë¦¬í•œë‹¤.
  *
- * [IN]  aTrans             - Å½»öÇÒ Transaction
+ * [IN]  aTrans             - íƒìƒ‰í•  Transaction
  ************************************************************************/
 IDE_RC smmFPLManager::finalizePageReservation( void      * aTrans,
                                                scSpaceID   aSpaceID )
@@ -1277,8 +1277,8 @@ IDE_RC smmFPLManager::finalizePageReservation( void      * aTrans,
             IDE_TEST( unlockFreePageList( sMemTBS, sFPLNo ) !=
                       IDE_SUCCESS );
 
-            /* ¸¸¾à Á¸ÀçÇÒ °æ¿ì, Release¸ğµå¿¡¼­´Â Á¤¸®ÇØÁÖ°í Debug¸ğµå
-             * ¿¡¼­´Â ºñÁ¤»ó Á¾·á½ÃÄÑ »óÈ²À» º¸°íÇÑ´Ù. */
+            /* ë§Œì•½ ì¡´ì¬í•  ê²½ìš°, Releaseëª¨ë“œì—ì„œëŠ” ì •ë¦¬í•´ì£¼ê³  Debugëª¨ë“œ
+             * ì—ì„œëŠ” ë¹„ì •ìƒ ì¢…ë£Œì‹œì¼œ ìƒí™©ì„ ë³´ê³ í•œë‹¤. */
             if( sSlotNo != SMM_PAGE_RESERVATION_NULL )
             {
                 IDE_DASSERT( 0 );
@@ -1301,11 +1301,11 @@ IDE_RC smmFPLManager::finalizePageReservation( void      * aTrans,
 }
 
 /***************************************************************************
- * PageReservation °´Ã¼¸¦ DumpÇÑ´Ù.
+ * PageReservation ê°ì²´ë¥¼ Dumpí•œë‹¤.
  *
- * [IN]  aPageReservation   - DumpÇÒ ´ë»ó
- * [OUT] aOutBuf            - Dump ³»¿ëÀ» ÀúÀåÇÒ ¹öÆÛ
- * [OUT] aOutSize           - Dump¹öÆÛÀÇ Å©±â
+ * [IN]  aPageReservation   - Dumpí•  ëŒ€ìƒ
+ * [OUT] aOutBuf            - Dump ë‚´ìš©ì„ ì €ì¥í•  ë²„í¼
+ * [OUT] aOutSize           - Dumpë²„í¼ì˜ í¬ê¸°
  ************************************************************************/
 IDE_RC smmFPLManager::dumpPageReservationByBuffer(
     smmPageReservation * aPageReservation,
@@ -1359,9 +1359,9 @@ IDE_RC smmFPLManager::dumpPageReservationByBuffer(
 }
 
 /***************************************************************************
- * PageReservation °´Ã¼¸¦ boot trc¿¡ DumpÇÑ´Ù.
+ * PageReservation ê°ì²´ë¥¼ boot trcì— Dumpí•œë‹¤.
  *
- * [IN]  aPageReservation   - DumpÇÒ ´ë»ó
+ * [IN]  aPageReservation   - Dumpí•  ëŒ€ìƒ
  **************************************************************************/
 void smmFPLManager::dumpPageReservation(
     smmPageReservation * aPageReservation )
@@ -1389,8 +1389,8 @@ void smmFPLManager::dumpPageReservation(
 
 
 /*
- * Æ¯Á¤ Free Page List¿¡ Latch¸¦ È¹µæÇÑ ÈÄ Æ¯Á¤ °¹¼ö ÀÌ»óÀÇ
- * Free Page°¡ ÀÖÀ½À» º¸ÀåÇÑ´Ù.
+ * íŠ¹ì • Free Page Listì— Latchë¥¼ íšë“í•œ í›„ íŠ¹ì • ê°¯ìˆ˜ ì´ìƒì˜
+ * Free Pageê°€ ìˆìŒì„ ë³´ì¥í•œë‹¤.
  */
 IDE_RC smmFPLManager::lockListAndPreparePages( smmTBSNode * aTBSNode,
                                                void *       aTrans,
@@ -1408,16 +1408,16 @@ IDE_RC smmFPLManager::lockListAndPreparePages( smmTBSNode * aTBSNode,
     IDE_TEST( lockFreePageList( aTBSNode, aFPLNo ) != IDE_SUCCESS );
     sStage = 1;
 
-    /* ´Ù¸¥ TransactionµéÀÌ ¿¹¾àÇØµĞ Page´Â »ç¿ëÇÒ ¼ö ¾øÀ½. */
+    /* ë‹¤ë¥¸ Transactionë“¤ì´ ì˜ˆì•½í•´ë‘” PageëŠ” ì‚¬ìš©í•  ìˆ˜ ì—†ìŒ. */
     sPageReservation = &( aTBSNode->mArrPageReservation[ aFPLNo ] );
     IDE_TEST( getUnusablePageCount( sPageReservation,
                                     aTrans,
                                     &sUnusablePageSize )
               != IDE_SUCCESS );
 
-    // ¸¸¾à Free Page¼ö°¡ ¸ğÀÚ¶ó´Ù¸é,
-    // Free Page List¿¡ Free Page¸¦ »õ·Î ´Ş¾ÆÁØ´Ù.
-    // ÀÌ¶§ »ç¿ë ºÒ°¡´ÉÇÑ ÆäÀÌÁö ÀÌ»óÀ¸·Î FreePage°¡ ÀÖ¾î¾ß ÇÑ´Ù.
+    // ë§Œì•½ Free Pageìˆ˜ê°€ ëª¨ìë¼ë‹¤ë©´,
+    // Free Page Listì— Free Pageë¥¼ ìƒˆë¡œ ë‹¬ì•„ì¤€ë‹¤.
+    // ì´ë•Œ ì‚¬ìš© ë¶ˆê°€ëŠ¥í•œ í˜ì´ì§€ ì´ìƒìœ¼ë¡œ FreePageê°€ ìˆì–´ì•¼ í•œë‹¤.
     while ( aTBSNode->mMemBase->mFreePageLists[ aFPLNo ].mFreePageCount
              < aPageCount + sUnusablePageSize )
     {
@@ -1464,21 +1464,21 @@ IDE_RC smmFPLManager::lockListAndPreparePages( smmTBSNode * aTBSNode,
 
 
 /*
- * Free Page List¿¡ Free PageµéÀ» appendÇÑ´Ù.
+ * Free Page Listì— Free Pageë“¤ì„ appendí•œë‹¤.
  *
- * ¿ì¼±, ´Ù¸¥ Free Page List ¿¡ Free Page°¡ ÃæºĞÈ÷ ¸¹´Ù¸é,
- * ÇØ´ç Free Page List¿¡¼­ Free Page Àı¹İÀ» ¶Ò ¶¼¾î´Ù°¡ ºÙÀÎ´Ù.
+ * ìš°ì„ , ë‹¤ë¥¸ Free Page List ì— Free Pageê°€ ì¶©ë¶„íˆ ë§ë‹¤ë©´,
+ * í•´ë‹¹ Free Page Listì—ì„œ Free Page ì ˆë°˜ì„ ëš ë–¼ì–´ë‹¤ê°€ ë¶™ì¸ë‹¤.
  *
- * ±×·¸Áö ¾Ê´Ù¸é, µ¥ÀÌÅÍº£ÀÌ½º¸¦ È®ÀåÇÑ´Ù.
+ * ê·¸ë ‡ì§€ ì•Šë‹¤ë©´, ë°ì´í„°ë² ì´ìŠ¤ë¥¼ í™•ì¥í•œë‹¤.
  *
- * ÁÖÀÇ! ÀÌ ÇÔ¼ö°¡ ÇÊ¿äÇÑ Page¸¸Å­ Free Page¸¦ È®º¸ÇÔÀ» º¸ÀåÇÏÁö ¸øÇÑ´Ù.
- * ¿Ö³ÄÇÏ¸é aShortFPLNo¿¡ ´ëÇØ Latch¸¦ Ç®°í ¸®ÅÏÇÏ±â ¶§¹®ÀÓ.
+ * ì£¼ì˜! ì´ í•¨ìˆ˜ê°€ í•„ìš”í•œ Pageë§Œí¼ Free Pageë¥¼ í™•ë³´í•¨ì„ ë³´ì¥í•˜ì§€ ëª»í•œë‹¤.
+ * ì™œëƒí•˜ë©´ aShortFPLNoì— ëŒ€í•´ Latchë¥¼ í’€ê³  ë¦¬í„´í•˜ê¸° ë•Œë¬¸ì„.
  *
- * ¸ğµç Free Page List¿¡ ´ëÇØ Latch°¡ Ç®¸°Ã¤·Î ºÒ¸®¿î´Ù.
+ * ëª¨ë“  Free Page Listì— ëŒ€í•´ Latchê°€ í’€ë¦°ì±„ë¡œ ë¶ˆë¦¬ìš´ë‹¤.
  *
- * aTrans             [IN] Free Page ListµéÀ» º¯°æÇÏ·Á´Â Æ®·£Àè¼Ç
- * aShortFPLNo        [IN] Free Page¸¦ ÇÊ¿ä·Î ÇÏ´Â Free Page List
- * aRequiredFreePageCnt [IN] ÇÊ¿äÇÑ Free Page ListÀÇ ¼ö
+ * aTrans             [IN] Free Page Listë“¤ì„ ë³€ê²½í•˜ë ¤ëŠ” íŠ¸ëœì­ì…˜
+ * aShortFPLNo        [IN] Free Pageë¥¼ í•„ìš”ë¡œ í•˜ëŠ” Free Page List
+ * aRequiredFreePageCnt [IN] í•„ìš”í•œ Free Page Listì˜ ìˆ˜
  */
 IDE_RC smmFPLManager::expandFreePageList(  smmTBSNode * aTBSNode,
                                            void *       aTrans,
@@ -1501,32 +1501,32 @@ IDE_RC smmFPLManager::expandFreePageList(  smmTBSNode * aTBSNode,
 
     sExpandingFPL = & aTBSNode->mMemBase->mFreePageLists[ aExpandingFPLNo ];
 
-    // Latch ÀâÁö ¾ÊÀº »óÅÂ·Î Free Page°¡Àå ¸¹ÀÌ Áö´Ñ Free Page List¸¦ °¡Á®¿Â´Ù
+    // Latch ì¡ì§€ ì•Šì€ ìƒíƒœë¡œ Free Pageê°€ì¥ ë§ì´ ì§€ë‹Œ Free Page Listë¥¼ ê°€ì ¸ì˜¨ë‹¤
     IDE_TEST( getLargestFreePageList( aTBSNode, & sLargestFPLNo )
               != IDE_SUCCESS );
 
     sLargestFPL = & aTBSNode->mMemBase->mFreePageLists[ sLargestFPLNo ] ;
 
-    // ¿ì¼± Latch ¾È ÀâÀº Ã¤·Î Free Page List SplitÀÌ °¡´ÉÇÑÁö °Ë»çÇØº»´Ù.
+    // ìš°ì„  Latch ì•ˆ ì¡ì€ ì±„ë¡œ Free Page List Splitì´ ê°€ëŠ¥í•œì§€ ê²€ì‚¬í•´ë³¸ë‹¤.
     if (
-          /* PageList°¡ ´ÙÁßÈ­ µÇ¾î ÀÖÀ»¶§¸¸ È®ÀÎÇÑ´Ù. */
+          /* PageListê°€ ë‹¤ì¤‘í™” ë˜ì–´ ìˆì„ë•Œë§Œ í™•ì¸í•œë‹¤. */
           ( smuProperty::getPageListGroupCount() > 1 )
           &&
-          // Free Page¸¦ ÇÊ¿ä·Î ÇÏ´Â FPL ( aExpandingFPLNo )¿¡
-          // Free Page°¡ °¡Àå ¸¹Àº °æ¿ì
-          // sLargestFPLNo °è»êÇÑ °ÍÀÌ aExpandingFPLNo °ú µ¿ÀÏÇÒ ¼ö ÀÖÀ½..
-          // ÀÌ ¶§¿¡´Â Free Page¸¦ »©¾Ñ¾Æ ¿Ã ¼ö°¡ ¾ø´Ù.
+          // Free Pageë¥¼ í•„ìš”ë¡œ í•˜ëŠ” FPL ( aExpandingFPLNo )ì—
+          // Free Pageê°€ ê°€ì¥ ë§ì€ ê²½ìš°
+          // sLargestFPLNo ê³„ì‚°í•œ ê²ƒì´ aExpandingFPLNo ê³¼ ë™ì¼í•  ìˆ˜ ìˆìŒ..
+          // ì´ ë•Œì—ëŠ” Free Pageë¥¼ ë¹¼ì•—ì•„ ì˜¬ ìˆ˜ê°€ ì—†ë‹¤.
           aExpandingFPLNo != sLargestFPLNo
           &&
-          // Free Page List°¡ Split°¡´ÉÇÑ ÃÖ¼ÒÇÑÀÇ Page¸¦ °¡ÁöÀÖ´ÂÁö °Ë»ç
-          // (ÀÌ °Ë»ç¸¦ ÇÏÁö ¾ÊÀ¸¸é Free Page°¡ ¸î°³ ¾ø´Â Free Page List±îÁö
-          //  SplitÀ» ºó¹øÇÏ°Ô ÇÏ°Ô µÇ¾î ½Ã½ºÅÛ ¼º´ÉÀÌ ¶³¾îÁú ¼ö ÀÖ´Ù )
+          // Free Page Listê°€ Splitê°€ëŠ¥í•œ ìµœì†Œí•œì˜ Pageë¥¼ ê°€ì§€ìˆëŠ”ì§€ ê²€ì‚¬
+          // (ì´ ê²€ì‚¬ë¥¼ í•˜ì§€ ì•Šìœ¼ë©´ Free Pageê°€ ëª‡ê°œ ì—†ëŠ” Free Page Listê¹Œì§€
+          //  Splitì„ ë¹ˆë²ˆí•˜ê²Œ í•˜ê²Œ ë˜ì–´ ì‹œìŠ¤í…œ ì„±ëŠ¥ì´ ë–¨ì–´ì§ˆ ìˆ˜ ìˆë‹¤ )
           ( sLargestFPL->mFreePageCount > SMM_FREE_PAGE_SPLIT_THRESHOLD )
           &&
-          // Àı¹İÀ» ¶¼¾úÀ» ¶§ ÇÊ¿äÇÑ Free Page¼ö¸¦ ¾òÀ» ¼ö ÀÖ´ÂÁö °Ë»ç
+          // ì ˆë°˜ì„ ë–¼ì—ˆì„ ë•Œ í•„ìš”í•œ Free Pageìˆ˜ë¥¼ ì–»ì„ ìˆ˜ ìˆëŠ”ì§€ ê²€ì‚¬
           ( sLargestFPL->mFreePageCount > aRequiredFreePageCnt * 2 ) )
     {
-        // µ¥µå¶ô ¹æÁö¸¦ À§ÇØ Mutex¸¦ No°¡ ÀÛÀº ListºÎÅÍ Àâ´Â´Ù.
+        // ë°ë“œë½ ë°©ì§€ë¥¼ ìœ„í•´ Mutexë¥¼ Noê°€ ì‘ì€ Listë¶€í„° ì¡ëŠ”ë‹¤.
         if ( aExpandingFPLNo < sLargestFPLNo )
         {
             sListNo1 = aExpandingFPLNo ;
@@ -1550,19 +1550,19 @@ IDE_RC smmFPLManager::expandFreePageList(  smmTBSNode * aTBSNode,
         IDE_DASSERT( smmFPLManager::isValidFPL( aTBSNode->mHeader.mID,
                                                 sExpandingFPL ) == ID_TRUE );
 
-        // List SplitÀÌ °¡´ÉÇÑÁö Á¶°ÇÀ» ´Ù½Ã °Ë»çÇÑ´Ù.
-        // (À§¿¡¼­ Á¶°Ç °Ë»çÇÑ °ÍÀº Latch¸¦ ¾ÈÀâ°í °Ë»çÇÑ °ªÀÌ¶ó
-        //  SplitÀÌ °¡´ÉÇÑÁö¸¦ È®½ÅÇÒ ¼ö ¾øÀ½. )
+        // List Splitì´ ê°€ëŠ¥í•œì§€ ì¡°ê±´ì„ ë‹¤ì‹œ ê²€ì‚¬í•œë‹¤.
+        // (ìœ„ì—ì„œ ì¡°ê±´ ê²€ì‚¬í•œ ê²ƒì€ Latchë¥¼ ì•ˆì¡ê³  ê²€ì‚¬í•œ ê°’ì´ë¼
+        //  Splitì´ ê°€ëŠ¥í•œì§€ë¥¼ í™•ì‹ í•  ìˆ˜ ì—†ìŒ. )
         if ( ( sLargestFPL->mFreePageCount > SMM_FREE_PAGE_SPLIT_THRESHOLD )
              &&
              ( sLargestFPL->mFreePageCount > aRequiredFreePageCnt * 2 ) )
         {
-            // Free Page ListÀÇ Page Àı¹İÀ» ¶¼¾î³½´Ù.
+            // Free Page Listì˜ Page ì ˆë°˜ì„ ë–¼ì–´ë‚¸ë‹¤.
             sSplitPageCnt = sLargestFPL->mFreePageCount / 2 ;
 
-            // NTA ÀÇ ½ÃÀÛ +++++++++++++++++++
-            // Page³²´Â List¿¡¼­ ¶¼¾î³»±â & Page ºÎÁ· List¿¡ ¸Å´Ş±â
-            // ¸¦ NTA·Î Ã³¸®.
+            // NTA ì˜ ì‹œì‘ +++++++++++++++++++
+            // Pageë‚¨ëŠ” Listì—ì„œ ë–¼ì–´ë‚´ê¸° & Page ë¶€ì¡± Listì— ë§¤ë‹¬ê¸°
+            // ë¥¼ NTAë¡œ ì²˜ë¦¬.
             sNTALSN =  smLayerCallback::getLstUndoNxtLSN( aTrans );
             sStage = 3;
 
@@ -1575,7 +1575,7 @@ IDE_RC smmFPLManager::expandFreePageList(  smmTBSNode * aTBSNode,
                                                & sSplitTailPID )
                       != IDE_SUCCESS );
 
-            // Free Page ¸¦ ÇÊ¿ä·Î ÇÏ´Â Free Page List¿¡ ºÙ¿©ÁØ´Ù.
+            // Free Page ë¥¼ í•„ìš”ë¡œ í•˜ëŠ” Free Page Listì— ë¶™ì—¬ì¤€ë‹¤.
             IDE_TEST( appendFreePagesToList ( aTBSNode,
                                               aTrans,
                                               aExpandingFPLNo,
@@ -1594,10 +1594,10 @@ IDE_RC smmFPLManager::expandFreePageList(  smmTBSNode * aTBSNode,
 
             sStage = 2;
 
-            /* TASK-6549 ¿¡¼­ LFG°¡ Á¦°ÅµÇ¾î
-             * LFG¼ö´Â Ç×»ó 1ÀÌ´Ù.
-             * BUG-14352ÀÇ ³»¿ëÀ» Âü°íÇÏ¿© LFG°¡ 1ÀÏ¶§´Â Log Flush°¡ ÇÊ¿ä¾ø±â¿¡
-             * ·Î±× Flush¸¦ Á¦°ÅÇÑ´Ù. */
+            /* TASK-6549 ì—ì„œ LFGê°€ ì œê±°ë˜ì–´
+             * LFGìˆ˜ëŠ” í•­ìƒ 1ì´ë‹¤.
+             * BUG-14352ì˜ ë‚´ìš©ì„ ì°¸ê³ í•˜ì—¬ LFGê°€ 1ì¼ë•ŒëŠ” Log Flushê°€ í•„ìš”ì—†ê¸°ì—
+             * ë¡œê·¸ Flushë¥¼ ì œê±°í•œë‹¤. */
         }
 
         IDE_DASSERT( smmFPLManager::isValidFPL( aTBSNode->mHeader.mID,
@@ -1613,12 +1613,12 @@ IDE_RC smmFPLManager::expandFreePageList(  smmTBSNode * aTBSNode,
     }
 
 
-    // ÇÊ¿äÇÑ Page ¼ö¸¸Å­ È®º¸°¡ µÉ ¶§±îÁö
-    // Expand Chunk¸¦ Ãß°¡ÇØ°¡¸ç µ¥ÀÌÅÍº£ÀÌ½º¸¦ È®ÀåÇÑ´Ù.
+    // í•„ìš”í•œ Page ìˆ˜ë§Œí¼ í™•ë³´ê°€ ë  ë•Œê¹Œì§€
+    // Expand Chunkë¥¼ ì¶”ê°€í•´ê°€ë©° ë°ì´í„°ë² ì´ìŠ¤ë¥¼ í™•ì¥í•œë‹¤.
     if( sExpandingFPL->mFreePageCount < aRequiredFreePageCnt )
     {
-        // TablespaceÀÇ NEXTÅ©±â¸¸Å­ ChunkÈ®ÀåÀ» ½ÃµµÇÑ´Ù.
-        // MEM_MAX_DB_SIZE³ª TablespaceÀÇ MAXSIZEÁ¦ÇÑ¿¡ °É¸± °æ¿ì ¿¡·¯¹ß»ı
+        // Tablespaceì˜ NEXTí¬ê¸°ë§Œí¼ Chunkí™•ì¥ì„ ì‹œë„í•œë‹¤.
+        // MEM_MAX_DB_SIZEë‚˜ Tablespaceì˜ MAXSIZEì œí•œì— ê±¸ë¦´ ê²½ìš° ì—ëŸ¬ë°œìƒ
         IDE_TEST( expandOrWait( aTBSNode,
                                 aTrans ) != IDE_SUCCESS );
     }
@@ -1655,17 +1655,17 @@ IDE_RC smmFPLManager::expandFreePageList(  smmTBSNode * aTBSNode,
 
 
 /*
-   smmFPLManager::getTotalPageCount4AllTBS¸¦ À§ÇÑ ActionÇÔ¼ö
+   smmFPLManager::getTotalPageCount4AllTBSë¥¼ ìœ„í•œ Actioní•¨ìˆ˜
 
-   [µ¿½Ã¼º Á¦¾î ]
-      GlobalPageCountCheckMutex ¸¦ ÀâÀºÃ¤·Î µé¾î¿Â´Ù.
-      - GlobalPageCountCheckMutex¸¦ Àâ´Â °æ¿ì
-        1. Expand ChunkÇÒ´ç½Ã
-        2. ALTER TBS ONLINE½Ã ( Page´Ü°è¸¦ ¿Ã¸®´Â Alter TBS Online¼öÇàÁß )
-        3. ALTER TBS OFFLINE½Ã ( Page´Ü°è¸¦ ³»¸®´Â Pending ¿¬»ê¾È¿¡¼­ )
+   [ë™ì‹œì„± ì œì–´ ]
+      GlobalPageCountCheckMutex ë¥¼ ì¡ì€ì±„ë¡œ ë“¤ì–´ì˜¨ë‹¤.
+      - GlobalPageCountCheckMutexë¥¼ ì¡ëŠ” ê²½ìš°
+        1. Expand Chunkí• ë‹¹ì‹œ
+        2. ALTER TBS ONLINEì‹œ ( Pageë‹¨ê³„ë¥¼ ì˜¬ë¦¬ëŠ” Alter TBS Onlineìˆ˜í–‰ì¤‘ )
+        3. ALTER TBS OFFLINEì‹œ ( Pageë‹¨ê³„ë¥¼ ë‚´ë¦¬ëŠ” Pending ì—°ì‚°ì•ˆì—ì„œ )
 
    [IN]  aTBSNode   - Tablespace Node
-   [OUT] aActionArg - Total Page ¼ö¸¦ ¼¼¾î³ª°¥ º¯¼öÀÇ Æ÷ÀÎÅÍ
+   [OUT] aActionArg - Total Page ìˆ˜ë¥¼ ì„¸ì–´ë‚˜ê°ˆ ë³€ìˆ˜ì˜ í¬ì¸í„°
  */
 IDE_RC smmFPLManager::aggregateTotalPageCountAction(
                           idvSQL            * /*aStatistics */,
@@ -1686,22 +1686,22 @@ IDE_RC smmFPLManager::aggregateTotalPageCountAction(
              == ID_TRUE )
         {
             // do nothing
-            // DROP, DISCARDED Tablespace´Â
-            // »ç¿ëÁßÀÎ Page Memory°¡ ¾øÀ¸¹Ç·Î,
-            // TOTAL PAGE¼ö¸¦ ¼¼Áö ¾Ê´Â´Ù.
+            // DROP, DISCARDED TablespaceëŠ”
+            // ì‚¬ìš©ì¤‘ì¸ Page Memoryê°€ ì—†ìœ¼ë¯€ë¡œ,
+            // TOTAL PAGEìˆ˜ë¥¼ ì„¸ì§€ ì•ŠëŠ”ë‹¤.
         }
         else
         {
-            // To Fix BUG-17145 alloc slotÇÏ´Ù°¡ tablespaceµéÀÇ
-            //                  Total Page Count¸¦ ¼¼´Ù°¡
-            //                  Offline Tablespace¿¡ ´ëÇØ
-            //                  ¿¹¿ÜÃ³¸®¸¦ ÇÏÁö ¾Ê¾Æ ¼­¹ö»ç¸Á
+            // To Fix BUG-17145 alloc slotí•˜ë‹¤ê°€ tablespaceë“¤ì˜
+            //                  Total Page Countë¥¼ ì„¸ë‹¤ê°€
+            //                  Offline Tablespaceì— ëŒ€í•´
+            //                  ì˜ˆì™¸ì²˜ë¦¬ë¥¼ í•˜ì§€ ì•Šì•„ ì„œë²„ì‚¬ë§
             //
-            // OFFLINE»óÅÂÀÎ °æ¿ì
-            //    ONLINE»óÅÂ·Î ÀüÀÌÁßÀÎ °æ¿ì => Total Page Count¿¡ Æ÷ÇÔ
-            //    ±× ¿ÜÀÇ °æ¿ì => Total Page Count¿¡ Æ÷ÇÔ¾ÈÇÔ
+            // OFFLINEìƒíƒœì¸ ê²½ìš°
+            //    ONLINEìƒíƒœë¡œ ì „ì´ì¤‘ì¸ ê²½ìš° => Total Page Countì— í¬í•¨
+            //    ê·¸ ì™¸ì˜ ê²½ìš° => Total Page Countì— í¬í•¨ì•ˆí•¨
 
-            // Page CountingÀ» ÇÒÁö ¿©ºÎ
+            // Page Countingì„ í• ì§€ ì—¬ë¶€
             sCountPage = ID_TRUE;
 
             if ( SMI_TBS_IS_OFFLINE(aTBSNode->mState) )
@@ -1709,14 +1709,14 @@ IDE_RC smmFPLManager::aggregateTotalPageCountAction(
                 if ( (aTBSNode->mState & SMI_TBS_SWITCHING_TO_ONLINE )
                      == SMI_TBS_SWITCHING_TO_ONLINE )
                 {
-                    // ONLINE»óÅÂ·Î ÀüÀÌÁßÀÎ °æ¿ì =>
-                    //     Total Page Count¿¡ Æ÷ÇÔ½ÃÅ´
+                    // ONLINEìƒíƒœë¡œ ì „ì´ì¤‘ì¸ ê²½ìš° =>
+                    //     Total Page Countì— í¬í•¨ì‹œí‚´
                     sCountPage = ID_TRUE;
                 }
                 else
                 {
-                    // ÀÏ¹İ OFFLINE»óÅÂÀÎ °æ¿ì
-                    //     Total Page Count¿¡ Æ÷ÇÔ¾ÈÇÔ
+                    // ì¼ë°˜ OFFLINEìƒíƒœì¸ ê²½ìš°
+                    //     Total Page Countì— í¬í•¨ì•ˆí•¨
                     sCountPage = ID_FALSE;
                 }
             }
@@ -1757,14 +1757,14 @@ IDE_RC smmFPLManager::getTotalPageCount4AllTBS( scPageID  * aTotalPageCount )
 }
 
 /*
-    TablespaceÀÇ NEXT Å©±â¸¸Å­ ChunkÈ®ÀåÀ» ½ÃµµÇÑ´Ù.
+    Tablespaceì˜ NEXT í¬ê¸°ë§Œí¼ Chunkí™•ì¥ì„ ì‹œë„í•œë‹¤.
 
-    MEM_MAX_DB_SIZEÀÇ ÇÑ°è³ª TablespaceÀÇ MAXSIZEÇÑ°è¸¦ ³Ñ¾î¼­¸é ¿¡·¯
+    MEM_MAX_DB_SIZEì˜ í•œê³„ë‚˜ Tablespaceì˜ MAXSIZEí•œê³„ë¥¼ ë„˜ì–´ì„œë©´ ì—ëŸ¬
 
-    [IN] aTBSNode - ChunkÈ®ÀåÇÏ·Á´Â Tablespace Node
-    [IN] aTrans   - Chunk¸¦ È®ÀåÇÏ·Á´Â Transaction
+    [IN] aTBSNode - Chunkí™•ì¥í•˜ë ¤ëŠ” Tablespace Node
+    [IN] aTrans   - Chunkë¥¼ í™•ì¥í•˜ë ¤ëŠ” Transaction
 
-    [µ¿½Ã¼º] MutexÀâ´Â ¼ø¼­ : TBSNode.mAllocChunkMutex => mTBSAllocChunkMutex
+    [ë™ì‹œì„±] Mutexì¡ëŠ” ìˆœì„œ : TBSNode.mAllocChunkMutex => mTBSAllocChunkMutex
  */
 IDE_RC smmFPLManager::tryToExpandNextSize(smmTBSNode * aTBSNode,
                                           void *       aTrans)
@@ -1783,27 +1783,27 @@ IDE_RC smmFPLManager::tryToExpandNextSize(smmTBSNode * aTBSNode,
 
     scPageID sExpandChunkPageCount = smuProperty::getExpandChunkPageCount();
 
-    // BUGBUG-1548 aTBSNode->mTBSAttr.mNameÀ» 0À¸·Î ³¡³ª´Â ¹®ÀÚ¿­·Î ¸¸µé°Í
+    // BUGBUG-1548 aTBSNode->mTBSAttr.mNameì„ 0ìœ¼ë¡œ ëë‚˜ëŠ” ë¬¸ìì—´ë¡œ ë§Œë“¤ê²ƒ
     sTBSName          = aTBSNode->mHeader.mName;
     sTBSNextPageCount = aTBSNode->mTBSAttr.mMemAttr.mNextPageCount;
     sTBSMaxPageCount  = aTBSNode->mTBSAttr.mMemAttr.mMaxPageCount;
 
     if( aTBSNode->mTBSAttr.mMemAttr.mIsAutoExtend == ID_FALSE )
     {
-        /* BUG-32632 User Memory Tablesapce¿¡¼­ Max size¸¦ ¹«½ÃÇÏ´Â
-         * ºñ»ó¿ë PropertyÃß°¡ */
+        /* BUG-32632 User Memory Tablesapceì—ì„œ Max sizeë¥¼ ë¬´ì‹œí•˜ëŠ”
+         * ë¹„ìƒìš© Propertyì¶”ê°€ */
         IDE_TEST_RAISE( smuProperty::getIgnoreMemTbsMaxSize() == ID_FALSE ,
                         error_unable_to_expand_cuz_auto_extend_mode );
 
-        /* °­Á¦·Î NextPageCount¸¦ ÁöÁ¤ÇÔ */
+        /* ê°•ì œë¡œ NextPageCountë¥¼ ì§€ì •í•¨ */
         sTBSNextPageCount = sExpandChunkPageCount;
     }
 
-    // ½Ã½ºÅÛ¿¡¼­ ¿ÀÁ÷ ÇÏ³ªÀÇ Tablespace¸¸ÀÌ
-    // ChunkÈ®ÀåÀ» ÇÏµµ·Ï ÇÏ´Â Mutex
-    // => µÎ °³ÀÇ Tablespace°¡ µ¿½Ã¿¡ ChunkÈ®ÀåÇÏ´Â »óÈ²¿¡¼­´Â
-    //    ¸ğµç TablespaceÀÇ ÇÒ´çÇÑ Page Å©±â°¡ MEM_MAX_DB_SIZEº¸´Ù
-    //    ÀÛÀº Áö °Ë»çÇÒ ¼ö ¾ø±â ¶§¹®
+    // ì‹œìŠ¤í…œì—ì„œ ì˜¤ì§ í•˜ë‚˜ì˜ Tablespaceë§Œì´
+    // Chunkí™•ì¥ì„ í•˜ë„ë¡ í•˜ëŠ” Mutex
+    // => ë‘ ê°œì˜ Tablespaceê°€ ë™ì‹œì— Chunkí™•ì¥í•˜ëŠ” ìƒí™©ì—ì„œëŠ”
+    //    ëª¨ë“  Tablespaceì˜ í• ë‹¹í•œ Page í¬ê¸°ê°€ MEM_MAX_DB_SIZEë³´ë‹¤
+    //    ì‘ì€ ì§€ ê²€ì‚¬í•  ìˆ˜ ì—†ê¸° ë•Œë¬¸
     IDE_TEST( lockGlobalPageCountCheckMutex() != IDE_SUCCESS );
     sState = 1;
 
@@ -1824,12 +1824,12 @@ IDE_RC smmFPLManager::tryToExpandNextSize(smmTBSNode * aTBSNode,
         }
 
         /* 
-         * SYS_TBS_MEM_DIC or SYS_TBS_MEM_DATA Å×ÀÌºí½ºÆäÀÌ½º°¡ 
-         * MEM_MAX_DB_SIZE¸¸Å­ Áõ°¡ÇÒ¼ö ÀÖ´Ù.
-         * ¸¸¾à MEM_MAX_DB_SIZE°¡ memory chunk count·Î ³ª´©¾î ¶³¾îÁöÁö ¾ÊÀ¸¸é 
-         * smmManager::allocNewExpandChunk()¿¡¼­ ºñÁ¤»ó Á¾·á ÇÒ¼öÀÖ´Ù. 
-         * ÀÌ¸¦ ¹æÁö ÇÏ±âÀ§ÇØ È®ÀåÇÑ SYS_TBS_MEM_DICÀÇ ÆäÀÌÁö¼ö°¡
-         * mDBMaxPageCountº¸´Ù Å«Áö °Ë»çÇÑ´Ù.
+         * SYS_TBS_MEM_DIC or SYS_TBS_MEM_DATA í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ê°€ 
+         * MEM_MAX_DB_SIZEë§Œí¼ ì¦ê°€í• ìˆ˜ ìˆë‹¤.
+         * ë§Œì•½ MEM_MAX_DB_SIZEê°€ memory chunk countë¡œ ë‚˜ëˆ„ì–´ ë–¨ì–´ì§€ì§€ ì•Šìœ¼ë©´ 
+         * smmManager::allocNewExpandChunk()ì—ì„œ ë¹„ì •ìƒ ì¢…ë£Œ í• ìˆ˜ìˆë‹¤. 
+         * ì´ë¥¼ ë°©ì§€ í•˜ê¸°ìœ„í•´ í™•ì¥í•œ SYS_TBS_MEM_DICì˜ í˜ì´ì§€ìˆ˜ê°€
+         * mDBMaxPageCountë³´ë‹¤ í°ì§€ ê²€ì‚¬í•œë‹¤.
          */
         IDE_TEST_RAISE( ( sTotalPageCount + sTBSNextPageCount ) >
                         ( aTBSNode->mDBMaxPageCount ),
@@ -1837,9 +1837,9 @@ IDE_RC smmFPLManager::tryToExpandNextSize(smmTBSNode * aTBSNode,
     }
     else
     {
-        // Tablespace¸¦ È®ÀåÈÄ DatabaseÀÇ ¸ğµç Tablespace¿¡ ´ëÇØ
-        // ÇÒ´çµÈ Page¼öÀÇ ÃÑÇÕÀÌ MEM_MAX_DB_SIZE ÇÁ·ÎÆÛÆ¼¿¡ Çã¿ëµÈ
-        // Å©±âº¸´Ù ´õ Å©¸é ¿¡·¯
+        // Tablespaceë¥¼ í™•ì¥í›„ Databaseì˜ ëª¨ë“  Tablespaceì— ëŒ€í•´
+        // í• ë‹¹ëœ Pageìˆ˜ì˜ ì´í•©ì´ MEM_MAX_DB_SIZE í”„ë¡œí¼í‹°ì— í—ˆìš©ëœ
+        // í¬ê¸°ë³´ë‹¤ ë” í¬ë©´ ì—ëŸ¬
         
         IDE_TEST( getTotalPageCount4AllTBS( & sTotalPageCount ) != IDE_SUCCESS );
 
@@ -1848,7 +1848,7 @@ IDE_RC smmFPLManager::tryToExpandNextSize(smmTBSNode * aTBSNode,
                         error_unable_to_expand_cuz_mem_max_db_size );
     }
 
-    // ChunKÈ®ÀåÈÄ Å©±â°¡ TablespaceÀÇ MAXSIZEÇÑ°è¸¦ ³Ñ¾î¼­¸é ¿¡·¯
+    // ChunKí™•ì¥í›„ í¬ê¸°ê°€ Tablespaceì˜ MAXSIZEí•œê³„ë¥¼ ë„˜ì–´ì„œë©´ ì—ëŸ¬
     sTBSCurrentSize =
         smmDatabase::getAllocPersPageCount( aTBSNode->mMemBase ) *
         SM_PAGE_SIZE;
@@ -1856,32 +1856,32 @@ IDE_RC smmFPLManager::tryToExpandNextSize(smmTBSNode * aTBSNode,
     sTBSNextSize = sTBSNextPageCount * SM_PAGE_SIZE;
     sTBSMaxSize  = sTBSMaxPageCount * SM_PAGE_SIZE;
 
-    // sTBSMaxSize´Â MAXSIZE¿¡ ÇØ´çÇÏ´Â Å©±â¸¦ Áö´Ñ´Ù.
-    // ±×·±µ¥, ´ÙÀ½°ú °°ÀÌ »ç¿ëÀÚ°¡ ÁöÁ¤ÇÑ MAXSIZE°¡
-    // Expand ChunkÅ©±â·Î ³ª´©¾î ¶³¾îÁö´Â °æ¿ì, META PAGE¶§¹®¿¡
-    // MAXSIZEÁ¦ÇÑ¿¡ °É·Á¼­ È®ÀåÀ» ÇÏÁö ¸øÇÏ´Â ¹®Á¦°¡ ¹ß»ıÇÑ´Ù.
+    // sTBSMaxSizeëŠ” MAXSIZEì— í•´ë‹¹í•˜ëŠ” í¬ê¸°ë¥¼ ì§€ë‹Œë‹¤.
+    // ê·¸ëŸ°ë°, ë‹¤ìŒê³¼ ê°™ì´ ì‚¬ìš©ìê°€ ì§€ì •í•œ MAXSIZEê°€
+    // Expand Chunkí¬ê¸°ë¡œ ë‚˜ëˆ„ì–´ ë–¨ì–´ì§€ëŠ” ê²½ìš°, META PAGEë•Œë¬¸ì—
+    // MAXSIZEì œí•œì— ê±¸ë ¤ì„œ í™•ì¥ì„ í•˜ì§€ ëª»í•˜ëŠ” ë¬¸ì œê°€ ë°œìƒí•œë‹¤.
     //
     // CREATE MEMORY TABLESPACE MEM_TBS SIZE 8M
     // AUTOEXTEND ON NEXT 8M MAXSIZE 16M;
     //
-    // À§ÀÇ °æ¿ì ÃÊ±âÅ©±â 8M, È®ÀåÅ©±â 8MÀÌÁö¸¸,
-    // 32K(META PAGEÅ©±â) + 8M + 8M > 16M ¿©¼­ È®ÀåÀÌ µÇÁö ¾Ê°Ô µÈ´Ù.
-    // ÇÒ´çµÈ Page¼ö¿¡¼­ METAPAGE¼ö¸¦ »©°í MAXSIZEÃ¼Å©¸¦ ÇØ¾ß
-    // À§ÀÇ ¿¹¿¡¼­ 8M ÀÌÈÄ 8M°¡ ´õ È®Àå °¡´ÉÇÏ´Ù.
+    // ìœ„ì˜ ê²½ìš° ì´ˆê¸°í¬ê¸° 8M, í™•ì¥í¬ê¸° 8Mì´ì§€ë§Œ,
+    // 32K(META PAGEí¬ê¸°) + 8M + 8M > 16M ì—¬ì„œ í™•ì¥ì´ ë˜ì§€ ì•Šê²Œ ëœë‹¤.
+    // í• ë‹¹ëœ Pageìˆ˜ì—ì„œ METAPAGEìˆ˜ë¥¼ ë¹¼ê³  MAXSIZEì²´í¬ë¥¼ í•´ì•¼
+    // ìœ„ì˜ ì˜ˆì—ì„œ 8M ì´í›„ 8Mê°€ ë” í™•ì¥ ê°€ëŠ¥í•˜ë‹¤.
     sTBSCurrentSize -= SMM_DATABASE_META_PAGE_CNT * SM_PAGE_SIZE ;
 
-    /* BUG-32632 User Memory Tablesapce¿¡¼­ Max size¸¦ ¹«½ÃÇÏ´Â
-     * ºñ»ó¿ë PropertyÃß°¡ */
+    /* BUG-32632 User Memory Tablesapceì—ì„œ Max sizeë¥¼ ë¬´ì‹œí•˜ëŠ”
+     * ë¹„ìƒìš© Propertyì¶”ê°€ */
     IDE_TEST_RAISE( ( ( sTBSCurrentSize  + sTBSNextSize ) > sTBSMaxSize ) &&
                     ( smuProperty::getIgnoreMemTbsMaxSize() == ID_FALSE ),
                     error_unable_to_expand_cuz_tbs_max_size );
 
-    // Next Page Count´Â Expand Chunk Page¼ö·Î ³ª´©¾î ¶³¾îÁ®¾ß ÇÑ´Ù.
+    // Next Page CountëŠ” Expand Chunk Pageìˆ˜ë¡œ ë‚˜ëˆ„ì–´ ë–¨ì–´ì ¸ì•¼ í•œë‹¤.
     IDE_ASSERT( (sTBSNextPageCount % sExpandChunkPageCount) == 0 );
     sNewChunkCount = sTBSNextPageCount / sExpandChunkPageCount ;
 
-    // µ¥ÀÌÅÍº£ÀÌ½º°¡ È®ÀåµÇ¸é¼­ ¸ğµç Free Page List¿¡
-    // °ñ°í·ç Free PageµéÀÌ ºĞ¹èµÇ¾î ¸Å´Ş¸°´Ù.
+    // ë°ì´í„°ë² ì´ìŠ¤ê°€ í™•ì¥ë˜ë©´ì„œ ëª¨ë“  Free Page Listì—
+    // ê³¨ê³ ë£¨ Free Pageë“¤ì´ ë¶„ë°°ë˜ì–´ ë§¤ë‹¬ë¦°ë‹¤.
     IDE_TEST( smmManager::allocNewExpandChunks( aTBSNode,
                                                 aTrans,
                                                 sNewChunkCount )
@@ -1898,8 +1898,8 @@ IDE_RC smmFPLManager::tryToExpandNextSize(smmTBSNode * aTBSNode,
     {
         IDE_SET(ideSetErrorCode( smERR_ABORT_UNABLE_TO_EXTEND_CHUNK_WHEN_AUTO_EXTEND_OFF, sTBSName ));
 
-        /* BUG-40980 : AUTOEXTEND OFF»óÅÂ¿¡¼­ TBS max size¿¡ µµ´ŞÇÏ¿© extend ºÒ°¡´É
-         *             error ¸Ş½ÃÁö¸¦ altibase_sm.log¿¡µµ Ãâ·ÂÇÑ´Ù. */
+        /* BUG-40980 : AUTOEXTEND OFFìƒíƒœì—ì„œ TBS max sizeì— ë„ë‹¬í•˜ì—¬ extend ë¶ˆê°€ëŠ¥
+         *             error ë©”ì‹œì§€ë¥¼ altibase_sm.logì—ë„ ì¶œë ¥í•œë‹¤. */
         ideLog::log( IDE_SM_0, 
                      "Unable to extend the tablespace(%s) when AUTOEXTEND mode is OFF", 
                      sTBSName);
@@ -1907,15 +1907,15 @@ IDE_RC smmFPLManager::tryToExpandNextSize(smmTBSNode * aTBSNode,
     }
     IDE_EXCEPTION( error_unable_to_expand_cuz_mem_max_db_size );
     {
-        // KB ´ÜÀ§ÀÇ MEM_MAX_DB_SIZE ÇÁ·ÎÆÛÆ¼°ª
+        // KB ë‹¨ìœ„ì˜ MEM_MAX_DB_SIZE í”„ë¡œí¼í‹°ê°’
         IDE_SET(ideSetErrorCode( smERR_ABORT_UNABLE_TO_EXTEND_CHUNK_MORE_THAN_MEM_MAX_DB_SIZE, sTBSName, (ULong) (smuProperty::getMaxDBSize()/1024)  ));
     }
     IDE_EXCEPTION( error_unable_to_expand_cuz_tbs_max_size );
     {
-        // BUG-28521 [SM] ·¹ÄÚµå »ğÀÔÀÌ °ø°£ ºÎÁ·À¸·Î ¿¡·¯°¡ ¹ß»ıÇÒ¶§
-        //                ¿¡·¯ ¸Ş¼¼Áö°¡ ÀÌ»óÇÕ´Ï´Ù.
+        // BUG-28521 [SM] ë ˆì½”ë“œ ì‚½ì…ì´ ê³µê°„ ë¶€ì¡±ìœ¼ë¡œ ì—ëŸ¬ê°€ ë°œìƒí• ë•Œ
+        //                ì—ëŸ¬ ë©”ì„¸ì§€ê°€ ì´ìƒí•©ë‹ˆë‹¤.
         //
-        // Size ´ÜÀ§¸¦ kilobyte´ÜÀ§·Î ÅëÀÏÇÏ±â À§ÇØ¼­ 1024·Î ³ª´¯´Ï´Ù.
+        // Size ë‹¨ìœ„ë¥¼ kilobyteë‹¨ìœ„ë¡œ í†µì¼í•˜ê¸° ìœ„í•´ì„œ 1024ë¡œ ë‚˜ëˆ•ë‹ˆë‹¤.
         IDE_SET(ideSetErrorCode( smERR_ABORT_UNABLE_TO_EXTEND_CHUNK_MORE_THAN_TBS_MAXSIZE, sTBSName, (sTBSCurrentSize/1024), (sTBSMaxSize/1024) ));
     }
     IDE_EXCEPTION_END;
@@ -1944,9 +1944,9 @@ IDE_RC smmFPLManager::tryToExpandNextSize(smmTBSNode * aTBSNode,
     BUG-35443 Add Property for Excepting SYS_TBS_MEM_DIC size from
     MEM_MAX_DB_SIZE
 
-    __SEPARATE_DIC_TBS_SIZE_ENABLE ÇÁ·ÎÆÛÆ¼°¡ ÄÑÁ®ÀÖ°í 
-    SYS_TBS_MEM_DICÀ» È®ÀåÇÏ·Á°í ÇÒ°æ¿ì SYS_TBS_MEM_DICÀÇ 
-    ÆäÀÌÁö ¼ö¸¸ ±¸ÇÑ´Ù.
+    __SEPARATE_DIC_TBS_SIZE_ENABLE í”„ë¡œí¼í‹°ê°€ ì¼œì ¸ìˆê³  
+    SYS_TBS_MEM_DICì„ í™•ì¥í•˜ë ¤ê³  í• ê²½ìš° SYS_TBS_MEM_DICì˜ 
+    í˜ì´ì§€ ìˆ˜ë§Œ êµ¬í•œë‹¤.
  */
 IDE_RC smmFPLManager::getDicTBSPageCount( scPageID   * aTotalPageCount )
 {
@@ -1955,7 +1955,7 @@ IDE_RC smmFPLManager::getDicTBSPageCount( scPageID   * aTotalPageCount )
 
     IDE_ASSERT( aTotalPageCount != NULL );
 
-    /* MEM_DIC Å×ÀÌºí½ºÆäÀÌ½º¿¡ ÇÒ´çµÈ ÆäÀÌÁö¼ö¸¦ ±¸ÇÑ´Ù. */
+    /* MEM_DIC í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì— í• ë‹¹ëœ í˜ì´ì§€ìˆ˜ë¥¼ êµ¬í•œë‹¤. */
     IDE_TEST( sctTableSpaceMgr::findSpaceNodeBySpaceID( 
                                     SMI_ID_TABLESPACE_SYSTEM_MEMORY_DIC,
                                     (void**)&sDictionaryTBSNode )
@@ -1981,10 +1981,10 @@ IDE_RC smmFPLManager::getDicTBSPageCount( scPageID   * aTotalPageCount )
     BUG-35443 Add Property for Excepting SYS_TBS_MEM_DIC size from
     MEM_MAX_DB_SIZE
 
-    __SEPARATE_DIC_TBS_SIZE_ENABLE ÇÁ·ÎÆÛÆ¼°¡ ÄÑÁ®ÀÖ°í 
-    SYS_TBS_MEM_DICÀÌ ¾Æ´Ñ Å×ÀÌºí½ºÆäÀÌ½º¸¦ È®ÀåÇÏ·Á°íÇÒ°æ¿ì
-    ¸ğµç Å×ÀÌºí ½ºÆäÀÌ½º¿¡ ÇÒ´çµÈ ÆäÀÌÁö¼ö¿¡¼­ SYS_TBS_MEM_DICÀÇ ÆäÀÌÁö ¼ö¸¦
-    »« ÆäÀÌÁö¼ö¸¦ ±¸ÇÑ´Ù.
+    __SEPARATE_DIC_TBS_SIZE_ENABLE í”„ë¡œí¼í‹°ê°€ ì¼œì ¸ìˆê³  
+    SYS_TBS_MEM_DICì´ ì•„ë‹Œ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ë¥¼ í™•ì¥í•˜ë ¤ê³ í• ê²½ìš°
+    ëª¨ë“  í…Œì´ë¸” ìŠ¤í˜ì´ìŠ¤ì— í• ë‹¹ëœ í˜ì´ì§€ìˆ˜ì—ì„œ SYS_TBS_MEM_DICì˜ í˜ì´ì§€ ìˆ˜ë¥¼
+    ëº€ í˜ì´ì§€ìˆ˜ë¥¼ êµ¬í•œë‹¤.
  */
 IDE_RC smmFPLManager::getTotalPageCountExceptDicTBS( 
                                     scPageID   * aTotalPageCount )
@@ -1999,7 +1999,7 @@ IDE_RC smmFPLManager::getTotalPageCountExceptDicTBS(
     
     IDE_TEST( getTotalPageCount4AllTBS( & sTotalPageCount ) != IDE_SUCCESS );
 
-    /* ¸ğµç Å×ÀÌºí½ºÆäÀÌ½ºÀÇ ÆäÀÌÁö ¼ö¿¡¼­ SYS_TBS_MEM_DIC ÆäÀÌÁö¼ö¸¦ »«´Ù. */
+    /* ëª¨ë“  í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì˜ í˜ì´ì§€ ìˆ˜ì—ì„œ SYS_TBS_MEM_DIC í˜ì´ì§€ìˆ˜ë¥¼ ëº€ë‹¤. */
     *aTotalPageCount = sTotalPageCount - sDictionaryTBSPageCount;
 
     return IDE_SUCCESS;
@@ -2010,19 +2010,19 @@ IDE_RC smmFPLManager::getTotalPageCountExceptDicTBS(
 }
 
 /*
- * ´Ù¸¥ Æ®·£Àè¼Ç¿¡ ÀÇÇØ¼­ÀÌ´ø,
- * aTransÀÇÇØ¼­ ÀÌ´ø »ó°ü¾øÀÌ TablespaceÀÇ NEXT Å©±â¸¸Å­ÀÇ
- * Chunk°¡ »ı¼ºµÊÀ» º¸ÀåÇÑ´Ù.
+ * ë‹¤ë¥¸ íŠ¸ëœì­ì…˜ì— ì˜í•´ì„œì´ë˜,
+ * aTransì˜í•´ì„œ ì´ë˜ ìƒê´€ì—†ì´ Tablespaceì˜ NEXT í¬ê¸°ë§Œí¼ì˜
+ * Chunkê°€ ìƒì„±ë¨ì„ ë³´ì¥í•œë‹¤.
  *
- * µ¿½Ã¿¡ µÎ°³ÀÇ Æ®·£Àè¼ÇÀÌ Chunk¸¦ ÇÒ´ç¹Ş´Â ÀÏÀ» ¹æÁöÇÑ´Ù.
+ * ë™ì‹œì— ë‘ê°œì˜ íŠ¸ëœì­ì…˜ì´ Chunkë¥¼ í• ë‹¹ë°›ëŠ” ì¼ì„ ë°©ì§€í•œë‹¤.
  *
- * ¸ğµç Free Page List¿¡ ´ëÇØ latch°¡ Ç®¸°Ã¤·Î ÀÌ ÇÔ¼ö°¡ ºÒ¸°´Ù.
+ * ëª¨ë“  Free Page Listì— ëŒ€í•´ latchê°€ í’€ë¦°ì±„ë¡œ ì´ í•¨ìˆ˜ê°€ ë¶ˆë¦°ë‹¤.
  *
- * [IN] aTBSNode       - Chunk¸¦ È®ÀåÇÒ TablespaceÀÇ Node
- * [IN] aTrans         - Chunk¸¦ ÇÒ´ç¹ŞÀ¸·Á´Â Æ®·£Àè¼Ç
- * [IN] aNewChunkCount - »õ·Î È®ÀåÇÒ ChunkÀÇ ¼ö
+ * [IN] aTBSNode       - Chunkë¥¼ í™•ì¥í•  Tablespaceì˜ Node
+ * [IN] aTrans         - Chunkë¥¼ í• ë‹¹ë°›ìœ¼ë ¤ëŠ” íŠ¸ëœì­ì…˜
+ * [IN] aNewChunkCount - ìƒˆë¡œ í™•ì¥í•  Chunkì˜ ìˆ˜
  *
- * [µ¿½Ã¼º] MutexÀâ´Â ¼ø¼­ : TBSNode.mAllocChunkMutex => mTBSAllocChunkMutex
+ * [ë™ì‹œì„±] Mutexì¡ëŠ” ìˆœì„œ : TBSNode.mAllocChunkMutex => mTBSAllocChunkMutex
  */
 
 IDE_RC smmFPLManager::expandOrWait(smmTBSNode * aTBSNode,
@@ -2035,25 +2035,25 @@ IDE_RC smmFPLManager::expandOrWait(smmTBSNode * aTBSNode,
 
     IDE_TEST( aTBSNode->mAllocChunkMutex.trylock( sIsLocked ) != IDE_SUCCESS );
 
-    if ( sIsLocked == ID_TRUE ) // ¾ÆÁ÷ Expand ChunkÇÒ´çÁßÀÎ Æ®·£Àè¼Ç ¾øÀ» ¶§
+    if ( sIsLocked == ID_TRUE ) // ì•„ì§ Expand Chunkí• ë‹¹ì¤‘ì¸ íŠ¸ëœì­ì…˜ ì—†ì„ ë•Œ
     {
-        // TablespaceÀÇ NEXT Å©±â¸¸Å­ ChunkÈ®Àå ½Ç½Ã
-        // MEM_MAX_DB_SIZEÀÇ ÇÑ°è³ª
-        // TablespaceÀÇ MAXSIZEÇÑ°è¸¦ ³Ñ¾î¼­¸é ¿¡·¯ ¹ß»ı
+        // Tablespaceì˜ NEXT í¬ê¸°ë§Œí¼ Chunkí™•ì¥ ì‹¤ì‹œ
+        // MEM_MAX_DB_SIZEì˜ í•œê³„ë‚˜
+        // Tablespaceì˜ MAXSIZEí•œê³„ë¥¼ ë„˜ì–´ì„œë©´ ì—ëŸ¬ ë°œìƒ
         IDE_TEST( tryToExpandNextSize( aTBSNode, aTrans )
                   != IDE_SUCCESS );
 
         sIsLocked = ID_FALSE;
         IDE_TEST( aTBSNode->mAllocChunkMutex.unlock() != IDE_SUCCESS );
     }
-    else // ÇöÀç Expand Chunk¸¦ ÇÒ´çÁßÀÎ Æ®·£Àè¼ÇÀÌ ÀÖÀ» ¶§
+    else // í˜„ì¬ Expand Chunkë¥¼ í• ë‹¹ì¤‘ì¸ íŠ¸ëœì­ì…˜ì´ ìˆì„ ë•Œ
     {
-        // Expand ChunkÇÒ´çÀÌ ³¡³ª±â¸¦ ±â´Ù¸°´Ù.
+        // Expand Chunkí• ë‹¹ì´ ëë‚˜ê¸°ë¥¼ ê¸°ë‹¤ë¦°ë‹¤.
         IDE_TEST( aTBSNode->mAllocChunkMutex.lock( NULL /* idvSQL* */ )
                   != IDE_SUCCESS );
 
-        // ´Ù¸¥ Æ®·£Àè¼ÇÀÌ Expand ChunkÇÒ´çÀ» ÇÏ¿´À¸¹Ç·Î, º°µµ·Î
-        // Expand ChunkÇÒ´çÀ» ÇÏÁö ¾Ê´Â´Ù.
+        // ë‹¤ë¥¸ íŠ¸ëœì­ì…˜ì´ Expand Chunkí• ë‹¹ì„ í•˜ì˜€ìœ¼ë¯€ë¡œ, ë³„ë„ë¡œ
+        // Expand Chunkí• ë‹¹ì„ í•˜ì§€ ì•ŠëŠ”ë‹¤.
         IDE_TEST( aTBSNode->mAllocChunkMutex.unlock() != IDE_SUCCESS );
     }
 
@@ -2076,10 +2076,10 @@ IDE_RC smmFPLManager::expandOrWait(smmTBSNode * aTBSNode,
 
 
 /*
- * Free Page ListÀÇ Ã¹¹øÂ° Page ID¿Í Page¼öÀÇ validity¸¦ Ã¼Å©ÇÑ´Ù.
+ * Free Page Listì˜ ì²«ë²ˆì§¸ Page IDì™€ Pageìˆ˜ì˜ validityë¥¼ ì²´í¬í•œë‹¤.
  *
- * aFirstPID  - [IN] Free Page ListÀÇ Ã¹¹øÂ° Page ID
- * aPageCount - [IN] Free Page List¿¡ ¼ÓÇÑ PageÀÇ ¼ö
+ * aFirstPID  - [IN] Free Page Listì˜ ì²«ë²ˆì§¸ Page ID
+ * aPageCount - [IN] Free Page Listì— ì†í•œ Pageì˜ ìˆ˜
  */
 idBool smmFPLManager::isValidFPL(scSpaceID    aSpaceID,
                                  scPageID     aFirstPID,
@@ -2094,7 +2094,7 @@ idBool smmFPLManager::isValidFPL(scSpaceID    aSpaceID,
 
     if ( aFirstPID == SM_NULL_PID )
     {
-        // PID´Â NULLÀÌ¸é¼­ Page¼ö°¡ 0ÀÌ ¾Æ´Ï¸é ¿¡·¯
+        // PIDëŠ” NULLì´ë©´ì„œ Pageìˆ˜ê°€ 0ì´ ì•„ë‹ˆë©´ ì—ëŸ¬
         if ( aPageCount != 0 )
         {
             sIsValid = ID_FALSE;
@@ -2107,13 +2107,13 @@ idBool smmFPLManager::isValidFPL(scSpaceID    aSpaceID,
     }
 
 #if defined( DEBUG_SMM_PAGE_LIST_CHECK )
-    // DEBUG_SMM_PAGE_LIST_CHECK ¸¦ ¼³Á¤ÇÏ°í Media Recovery¸¦ ¼öÇàÇÏ¸é
-    // ASSERT ¹ß»ıÇÒ ¼ö ÀÖ´Ù. ¿Ö³ÄÇÏ¸é Free Page List°¡ Consistent ÇÏÁö
-    // ¸øÇÏ±â ¶§¹®ÀÌ´Ù.
+    // DEBUG_SMM_PAGE_LIST_CHECK ë¥¼ ì„¤ì •í•˜ê³  Media Recoveryë¥¼ ìˆ˜í–‰í•˜ë©´
+    // ASSERT ë°œìƒí•  ìˆ˜ ìˆë‹¤. ì™œëƒí•˜ë©´ Free Page Listê°€ Consistent í•˜ì§€
+    // ëª»í•˜ê¸° ë•Œë¬¸ì´ë‹¤.
     // FATAL !!
 
-    // RecoveryÁß¿¡´Â Free Page ListÀÇ ½ÇÁ¦ ¿¬°áµÈ Free Page¼ö¿Í
-    // Free Page List¿¡ ±â·ÏµÈ Free Page ¼ö°¡ °°À½À» º¸ÀåÇÒ ¼ö ¾ø´Ù.
+    // Recoveryì¤‘ì—ëŠ” Free Page Listì˜ ì‹¤ì œ ì—°ê²°ëœ Free Pageìˆ˜ì™€
+    // Free Page Listì— ê¸°ë¡ëœ Free Page ìˆ˜ê°€ ê°™ìŒì„ ë³´ì¥í•  ìˆ˜ ì—†ë‹¤.
     if ( aFirstPID != SM_NULL_PID &&
          smLayerCallback::isRestartRecoveryPhase() == ID_FALSE )
     {
@@ -2147,8 +2147,8 @@ idBool smmFPLManager::isValidFPL(scSpaceID    aSpaceID,
             idlOS::fflush( stdout );
         }
 #endif
-        // ListÀÇ ¸µÅ©¸¦ µû¶ó°¡¼­ ¼¾ ÆäÀÌÁö ¼ö¿Í
-        // ÀÎÀÚ·Î ¹ŞÀº ÆäÀÌÁö ¼ö°¡ ´Ù¸£¸é ¿¡·¯
+        // Listì˜ ë§í¬ë¥¼ ë”°ë¼ê°€ì„œ ì„¼ í˜ì´ì§€ ìˆ˜ì™€
+        // ì¸ìë¡œ ë°›ì€ í˜ì´ì§€ ìˆ˜ê°€ ë‹¤ë¥´ë©´ ì—ëŸ¬
         if ( sPageCount != aPageCount )
         {
             sIsValid = ID_FALSE;
@@ -2161,9 +2161,9 @@ idBool smmFPLManager::isValidFPL(scSpaceID    aSpaceID,
 
 
 /*
- * Free Page ListÀÇ Ã¹¹øÂ° Page ID¿Í Page¼öÀÇ validity¸¦ Ã¼Å©ÇÑ´Ù.
+ * Free Page Listì˜ ì²«ë²ˆì§¸ Page IDì™€ Pageìˆ˜ì˜ validityë¥¼ ì²´í¬í•œë‹¤.
  *
- * aFPL - [IN] °Ë»çÇÏ°íÀÚ ÇÏ´Â Free Page List
+ * aFPL - [IN] ê²€ì‚¬í•˜ê³ ì í•˜ëŠ” Free Page List
  */
 idBool smmFPLManager::isValidFPL( scSpaceID           aSpaceID,
                                   smmDBFreePageList * aFPL )
@@ -2174,7 +2174,7 @@ idBool smmFPLManager::isValidFPL( scSpaceID           aSpaceID,
 }
 
 /*
- * ¸ğµç Free Page List°¡ ValidÇÑÁö Ã¼Å©ÇÑ´Ù
+ * ëª¨ë“  Free Page Listê°€ Validí•œì§€ ì²´í¬í•œë‹¤
  *
  */
 idBool smmFPLManager::isAllFPLsValid( smmTBSNode * aTBSNode )
@@ -2198,7 +2198,7 @@ idBool smmFPLManager::isAllFPLsValid( smmTBSNode * aTBSNode )
 }
 
 /*
- * ¸ğµç Free Page ListÀÇ ³»¿ëÀ» Âï´Â´Ù.
+ * ëª¨ë“  Free Page Listì˜ ë‚´ìš©ì„ ì°ëŠ”ë‹¤.
  *
  */
 void smmFPLManager::dumpAllFPLs(smmTBSNode * aTBSNode)

@@ -49,7 +49,7 @@ typedef struct dkiSession
 {
     UInt          mSessionId;
     dkmSession  * mSession;
-    dkmSession    mSessionObj;    /* ÇÒ´çÇÏÁö ¾Ê°í mSession = &mSession_À¸·Î »ç¿ëÇÑ´Ù. */
+    dkmSession    mSessionObj;    /* í• ë‹¹í•˜ì§€ ì•Šê³  mSession = &mSession_ìœ¼ë¡œ ì‚¬ìš©í•œë‹¤. */
 } dkiSession;
 
 extern void dkiSessionInit( dkiSession * aSession );

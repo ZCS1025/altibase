@@ -56,29 +56,29 @@ public:
         return mCheckKeyRangeCallback( aMemory, aColDesc, aObj );
     }
 
-    // ÀÌ ÇÔ¼ö´Â X$TAB¸¦ »ı¼ºÇÏ±â À§ÇØ ½º½º·Î ¸¸µç build ÇÔ¼ö
+    // ì´ í•¨ìˆ˜ëŠ” X$TABë¥¼ ìƒì„±í•˜ê¸° ìœ„í•´ ìŠ¤ìŠ¤ë¡œ ë§Œë“  build í•¨ìˆ˜
     static IDE_RC buildRecordForSelfTable( idvSQL      *aStatistics,
                                            void        *aHeader,
                                            void        *aDumpObj,
                                            iduFixedTableMemory *aMemory );
 
-    // ÀÌ ÇÔ¼ö´Â X$COL¸¦ »ı¼ºÇÏ±â À§ÇØ ½º½º·Î ¸¸µç build ÇÔ¼ö
+    // ì´ í•¨ìˆ˜ëŠ” X$COLë¥¼ ìƒì„±í•˜ê¸° ìœ„í•´ ìŠ¤ìŠ¤ë¡œ ë§Œë“  build í•¨ìˆ˜
     static IDE_RC buildRecordForSelfColumn( idvSQL      *aStatistics,
                                             void        *aHeader,
                                             void        *aDumpObj,
                                             iduFixedTableMemory *aMemory );
 };
 
-// ÀÚµ¿À¸·Î Fixed TableÀ» »ı¼ºÇÏ°í, µî·ÏÇÏµµ·Ï ÇÏ´Â Å¬·¡½º
+// ìë™ìœ¼ë¡œ Fixed Tableì„ ìƒì„±í•˜ê³ , ë“±ë¡í•˜ë„ë¡ í•˜ëŠ” í´ë˜ìŠ¤
 
 /*
  * ===================== WARNING!!!!!!!!!!!!! ====================
- * ObjName¿¡ iduFixedTableDescÀÇ Æ÷ÀÎÅÍ´ë½Å¿¡ °´Ã¼¸¦ ³Ñ°Ü¾ß ÇÑ´Ù.
- * ¿Ö³ÄÇÏ¸é, µ¿ÀÏÈ­ÀÏ ³»¿¡¼­ ´Ù¼ö·Î Á¤ÀÇµÈ iduFixedTableDescÀÇ
- * Àü¿ª °´Ã¼ÀÇ ÀÌ¸§À» ¼­·Î ´Ù¸¥ ÇüÅÂ·Î »ı¼ºÇÏ±â À§ÇØ
- * ÇÁ¸®ÇÁ·Î¼¼¼­ÀÇ ## ±â´ÉÀ» ÀÌ¿ëÇÏµµ·Ï ÇÏ¿´±â ¶§¹®ÀÌ´Ù.
- * ÀÚµ¿À¸·Î Æ÷ÀÎÅÍ Å¸ÀÔÀ¸·Î ³Ñ¾î°¡µµ·Ï ÇÏ¿´±â ¶§¹®¿¡
- * °´Ã¼ÀÇ ÀÌ¸§À» ³Ñ°Ü¾ß ÇÑ´Ù.
+ * ObjNameì— iduFixedTableDescì˜ í¬ì¸í„°ëŒ€ì‹ ì— ê°ì²´ë¥¼ ë„˜ê²¨ì•¼ í•œë‹¤.
+ * ì™œëƒí•˜ë©´, ë™ì¼í™”ì¼ ë‚´ì—ì„œ ë‹¤ìˆ˜ë¡œ ì •ì˜ëœ iduFixedTableDescì˜
+ * ì „ì—­ ê°ì²´ì˜ ì´ë¦„ì„ ì„œë¡œ ë‹¤ë¥¸ í˜•íƒœë¡œ ìƒì„±í•˜ê¸° ìœ„í•´
+ * í”„ë¦¬í”„ë¡œì„¸ì„œì˜ ## ê¸°ëŠ¥ì„ ì´ìš©í•˜ë„ë¡ í•˜ì˜€ê¸° ë•Œë¬¸ì´ë‹¤.
+ * ìë™ìœ¼ë¡œ í¬ì¸í„° íƒ€ì…ìœ¼ë¡œ ë„˜ì–´ê°€ë„ë¡ í•˜ì˜€ê¸° ë•Œë¬¸ì—
+ * ê°ì²´ì˜ ì´ë¦„ì„ ë„˜ê²¨ì•¼ í•œë‹¤.
  * ===================== WARNING!!!!!!!!!!!!! ====================
 
  EXAMPLE)
@@ -166,8 +166,8 @@ public:
     static iduFixedTableRegistBroker ObjName##ObjName(&ObjName)
 
 // PROJ-1726
-// µ¿Àû ¸ğµâ¿¡¼­ <¸ğµâ>im::initSystemTable ¿¡¼­
-// µ¿ÀûÀ¸·Î fixed table À» µî·ÏÇÏ±â À§ÇØ »ç¿ë.
+// ë™ì  ëª¨ë“ˆì—ì„œ <ëª¨ë“ˆ>im::initSystemTable ì—ì„œ
+// ë™ì ìœ¼ë¡œ fixed table ì„ ë“±ë¡í•˜ê¸° ìœ„í•´ ì‚¬ìš©.
 
 #define IDU_FIXED_TABLE_DEFINE_RUNTIME(ObjName)                 \
     iduFixedTable::registFixedTable(&ObjName);

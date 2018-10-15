@@ -27,8 +27,8 @@
  *     Red-Black Tree
  *
  *   Classes
- *     iddTRBTree : Key/Data pair¸¦ ÀúÀåÇÒ ¼ö ÀÖ´Â Threaded Red-Black Æ®¸®
- *     iddTRBLatchTree : iddTRBTree¿¡ latch¸¦ È°¿ëÇÑ µ¿½Ã¼º Á¦¾î Ãß°¡
+ *     iddTRBTree : Key/Data pairë¥¼ ì €ì¥í•  ìˆ˜ ìˆëŠ” Threaded Red-Black íŠ¸ë¦¬
+ *     iddTRBLatchTree : iddTRBTreeì— latchë¥¼ í™œìš©í•œ ë™ì‹œì„± ì œì–´ ì¶”ê°€
  *
  *   MODIFIED   (04/07/2017)
  ********************************************************************** */
@@ -205,9 +205,9 @@ private:
 
 public:
     /**
-     * iddTRBTree¸¦ ¼øÈ¸ÇÒ ¼ö ÀÖ´Â iterator Å¬·¡½º
-     * ºñ±³ÇÔ¼ö·Î ºñ±³½Ã °¡Àå ÀÛÀº ³ëµåºÎÅÍ
-     * Â÷·Ê·Î ¼øÈ¸ÇÒ ¼ö ÀÖ´Ù
+     * iddTRBTreeë¥¼ ìˆœíšŒí•  ìˆ˜ ìˆëŠ” iterator í´ë˜ìŠ¤
+     * ë¹„êµí•¨ìˆ˜ë¡œ ë¹„êµì‹œ ê°€ì¥ ì‘ì€ ë…¸ë“œë¶€í„°
+     * ì°¨ë¡€ë¡œ ìˆœíšŒí•  ìˆ˜ ìˆë‹¤
      */
     class iterator
     {

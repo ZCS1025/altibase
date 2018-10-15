@@ -23,7 +23,7 @@ public final class ColumnTypes
     public static final int SMALLINT     = 5;
     public static final int INTEGER      = 4;
     public static final int BIGINT       = -5;
-    public static final int BINARY       = -2; // »ç½Ç»ó BINARY°¡ GEOMETRY¸¦ À§ÇÑ Å¸ÀÔ
+    public static final int BINARY       = -2; // ì‚¬ì‹¤ìƒ BINARYê°€ GEOMETRYë¥¼ ìœ„í•œ íƒ€ì…
     public static final int BLOB         = 30;
     public static final int BLOB_LOCATOR = 31;
     public static final int CLOB         = 40;
@@ -40,13 +40,13 @@ public final class ColumnTypes
     public static final int BYTE         = 20001;
     public static final int VARBYTE      = 20003;
     public static final int NIBBLE       = 20002;
-    public static final int DATE         = 9; // BUGBUG (2012-11-15) Áö¿øÇÏÁö ¾Ê´Â Å¸ÀÔÀÌ¹Ç·Î DATE Å¸ÀÔÀ¸·Î Ã³¸®. Áö¿øÇÏ°Ô µÇ¸é ÇØ´ç °ªÀ¸·Î ¹Ù²ã¾ß ÇÑ´Ù.
-    public static final int TIME         = 9; // BUGBUG (2012-11-15) Áö¿øÇÏÁö ¾Ê´Â Å¸ÀÔÀÌ¹Ç·Î DATE Å¸ÀÔÀ¸·Î Ã³¸®. Áö¿øÇÏ°Ô µÇ¸é ÇØ´ç °ªÀ¸·Î ¹Ù²ã¾ß ÇÑ´Ù.
+    public static final int DATE         = 9; // BUGBUG (2012-11-15) ì§€ì›í•˜ì§€ ì•ŠëŠ” íƒ€ì…ì´ë¯€ë¡œ DATE íƒ€ì…ìœ¼ë¡œ ì²˜ë¦¬. ì§€ì›í•˜ê²Œ ë˜ë©´ í•´ë‹¹ ê°’ìœ¼ë¡œ ë°”ê¿”ì•¼ í•œë‹¤.
+    public static final int TIME         = 9; // BUGBUG (2012-11-15) ì§€ì›í•˜ì§€ ì•ŠëŠ” íƒ€ì…ì´ë¯€ë¡œ DATE íƒ€ì…ìœ¼ë¡œ ì²˜ë¦¬. ì§€ì›í•˜ê²Œ ë˜ë©´ í•´ë‹¹ ê°’ìœ¼ë¡œ ë°”ê¿”ì•¼ í•œë‹¤.
     public static final int TIMESTAMP    = 9;
     public static final int FLOAT        = 6;
     public static final int NUMBER       = 10002;
     public static final int NUMERIC      = 2;
-    public static final int GEOMETRY     = 10003; // ColumnInfo·Î´Â ÀÌ °ªÀ» ¹ŞÁö¸¸, µ¥ÀÌÅ¸¸¦ ÁÖ°í ¹ŞÀ»¶§´Â ¾²Áö ¾Ê´Â´Ù.
+    public static final int GEOMETRY     = 10003; // ColumnInfoë¡œëŠ” ì´ ê°’ì„ ë°›ì§€ë§Œ, ë°ì´íƒ€ë¥¼ ì£¼ê³  ë°›ì„ë•ŒëŠ” ì“°ì§€ ì•ŠëŠ”ë‹¤.
     public static final int LIST         = 10001;
     public static final int FILETYPE     = 30001;
     public static final int BIT          = -7;

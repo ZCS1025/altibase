@@ -61,7 +61,7 @@ ACI_RC ulnSFID_49(ulnFnContext *aFnContext)
             /* [s] */
             case SQL_SUCCESS:
             case SQL_SUCCESS_WITH_INFO:
-                /* ±‚¡∏ state ¿Ø¡ˆ */
+                /* Í∏∞Ï°¥ state Ïú†ÏßÄ */
                 break;
 
             /* [d] */
@@ -84,17 +84,17 @@ ACI_RC ulnSFID_49(ulnFnContext *aFnContext)
 }
 
 /**
- * ¡ˆ¡§«— «‡¿ª REFRESH «—¥Ÿ.
+ * ÏßÄÏ†ïÌïú ÌñâÏùÑ REFRESH ÌïúÎã§.
  *
- * ∏∏æ‡, RowNumber∞° 0¿Ã∏È ∏µÁ «‡¿ª REFRESH «—¥Ÿ.
+ * ÎßåÏïΩ, RowNumberÍ∞Ä 0Ïù¥Î©¥ Î™®Îì† ÌñâÏùÑ REFRESH ÌïúÎã§.
  *
  * @param[in] aFnContext  function context
  * @param[in] aPtContext  protocol context
  * @param[in] aKeysetStmt statement handle
- * @param[in] aRowNumber  ¿€æ˜¿ª ºˆ«‡«“ Rowset Position
+ * @param[in] aRowNumber  ÏûëÏóÖÏùÑ ÏàòÌñâÌï† Rowset Position
  * @param[in] aLockType   Not Used and Ignored
  *
- * @return º∫∞¯«œ∏È ACI_SUCCESS, æ∆¥œ∏È ACI_FAILURE
+ * @return ÏÑ±Í≥µÌïòÎ©¥ ACI_SUCCESS, ÏïÑÎãàÎ©¥ ACI_FAILURE
  */
 ACI_RC ulnSetPosRefresh(ulnFnContext *aFnContext,
                         ulnPtContext *aPtContext,
@@ -130,7 +130,7 @@ ACI_RC ulnSetPosRefresh(ulnFnContext *aFnContext,
         sUserRowNumberStart = aRowNumber;
     }
 
-    /* Sensitive¿Ã∏È ªı µ•¿Ã≈∏∏¶ Fetch, æ∆¥œ∏È Cacheø° ¿÷¥¬∞… π›»Ø */
+    /* SensitiveÏù¥Î©¥ ÏÉà Îç∞Ïù¥ÌÉÄÎ•º Fetch, ÏïÑÎãàÎ©¥ CacheÏóê ÏûàÎäîÍ±∏ Î∞òÌôò */
     if (ulnStmtGetAttrCursorSensitivity(aKeysetStmt) == SQL_SENSITIVE)
     {
         sRowsetStmt = aKeysetStmt->mRowsetStmt;
@@ -158,9 +158,9 @@ ACI_RC ulnSetPosRefresh(ulnFnContext *aFnContext,
                                          sUserRowNumberStart + i - 1,
                                          SQL_ROW_DELETED);
 
-            /* row-status indicators∞° º≥¡§µ«¡ˆ æ æ“æÓµµ,
-             * ¿Ø»ø«— row µ•¿Ã≈∏¥¬ ªÁøÎ¿⁄ πˆ∆€ø° ∫πªÁ«ÿ¡Ÿ∞≈¥Ÿ.
-             * ±◊∏¶ ¿ß«ÿ, ø©±‚º≠¥¬ Hole πﬂª˝ ø©∫Œ∏∏ ±‚æÔ«ÿµ–¥Ÿ. */
+            /* row-status indicatorsÍ∞Ä ÏÑ§Ï†ïÎêòÏßÄ ÏïäÏïòÏñ¥ÎèÑ,
+             * Ïú†Ìö®Ìïú row Îç∞Ïù¥ÌÉÄÎäî ÏÇ¨Ïö©Ïûê Î≤ÑÌçºÏóê Î≥µÏÇ¨Ìï¥Ï§ÑÍ±∞Îã§.
+             * Í∑∏Î•º ÏúÑÌï¥, Ïó¨Í∏∞ÏÑúÎäî Hole Î∞úÏÉù Ïó¨Î∂ÄÎßå Í∏∞ÏñµÌï¥ÎëîÎã§. */
             ULN_FLAG_UP(sHoleExistFlag);
         }
         else
@@ -218,23 +218,23 @@ ACI_RC ulnSetPosRefresh(ulnFnContext *aFnContext,
     return ACI_FAILURE;
 }
 
-/* BUGBUG: KEYSET_DRIVEN¿œ ∂ß∏∏ ¡§ªÛ µø¿€«—¥Ÿ.
- *         FORWARD_ONLY/STATIC¿∏∑Œ¥¬ UPDATABLE¿ª ¡ˆø¯«œ¡ˆ æ ±‚ ∂ßπÆ. */
+/* BUGBUG: KEYSET_DRIVENÏùº ÎïåÎßå Ï†ïÏÉÅ ÎèôÏûëÌïúÎã§.
+ *         FORWARD_ONLY/STATICÏúºÎ°úÎäî UPDATABLEÏùÑ ÏßÄÏõêÌïòÏßÄ ÏïäÍ∏∞ ÎïåÎ¨∏. */
 /**
- * ¡ˆ¡§«— «‡¿ª UPDATE «—¥Ÿ.
+ * ÏßÄÏ†ïÌïú ÌñâÏùÑ UPDATE ÌïúÎã§.
  *
- * ∏∏æ‡, RowNumber∞° 0¿Ã∏È ∏µÁ «‡¿ª UPDATE «—¥Ÿ.
- * ¥‹, ¥Ÿ¿Ωø° «ÿ¥Á«œ¥¬ «‡ ∂«¥¬ ø≠¿∫ π´Ω√«—¥Ÿ.
- * - SQL_ATTR_ROW_OPERATION_PTRø° SQL_ROW_IGNORE∑Œ ¡ˆ¡§«— «‡
- * - IndPtrø° SQL_COLUMN_IGNORE∑Œ ¡ˆ¡§«— ø≠
+ * ÎßåÏïΩ, RowNumberÍ∞Ä 0Ïù¥Î©¥ Î™®Îì† ÌñâÏùÑ UPDATE ÌïúÎã§.
+ * Îã®, Îã§ÏùåÏóê Ìï¥ÎãπÌïòÎäî Ìñâ ÎòêÎäî Ïó¥ÏùÄ Î¨¥ÏãúÌïúÎã§.
+ * - SQL_ATTR_ROW_OPERATION_PTRÏóê SQL_ROW_IGNOREÎ°ú ÏßÄÏ†ïÌïú Ìñâ
+ * - IndPtrÏóê SQL_COLUMN_IGNOREÎ°ú ÏßÄÏ†ïÌïú Ïó¥
  *
  * @param[in] aFnContext  function context
  * @param[in] aPtContext  protocol context
  * @param[in] aKeysetStmt statement handle
- * @param[in] aRowNumber  ¿€æ˜¿ª ºˆ«‡«“ Rowset Position
+ * @param[in] aRowNumber  ÏûëÏóÖÏùÑ ÏàòÌñâÌï† Rowset Position
  * @param[in] aLockType   Not Used and Ignored
  *
- * @return º∫∞¯«œ∏È ACI_SUCCESS, æ∆¥œ∏È ACI_FAILURE
+ * @return ÏÑ±Í≥µÌïòÎ©¥ ACI_SUCCESS, ÏïÑÎãàÎ©¥ ACI_FAILURE
  */
 ACI_RC ulnSetPosUpdate(ulnFnContext *aFnContext,
                        ulnPtContext *aPtContext,
@@ -294,7 +294,7 @@ ACI_RC ulnSetPosUpdate(ulnFnContext *aFnContext,
      * ===========================================
      */
 
-    /* aRowNumber∞° 0¿Œ¡ˆ ∫∏∞Ì UPDATE «“ ∞≥ºˆ ∞·¡§. */
+    /* aRowNumberÍ∞Ä 0Ïù∏ÏßÄ Î≥¥Í≥† UPDATE Ìï† Í∞úÏàò Í≤∞Ï†ï. */
     if (aRowNumber == 0)
     {
         sRowTotCount = ulnStmtGetAttrRowArraySize(aKeysetStmt);
@@ -314,7 +314,7 @@ ACI_RC ulnSetPosUpdate(ulnFnContext *aFnContext,
     {
         sRowNum = sUserRowNumberStart + i - 1;
 
-        /* SQL_ATTR_ROW_OPERATION_PTR∏¶ ¿ÃøÎ«ÿ ∞«≥ ∂‹ */
+        /* SQL_ATTR_ROW_OPERATION_PTRÎ•º Ïù¥Ïö©Ìï¥ Í±¥ÎÑàÎúÄ */
         if ((sRowOperationPtr != NULL)
          && (sRowOperationPtr[sRowNum] == SQL_ROW_IGNORE))
         {
@@ -323,8 +323,8 @@ ACI_RC ulnSetPosUpdate(ulnFnContext *aFnContext,
 
         if (sRowStatusPtr != NULL)
         {
-            /* ¿ÃπÃ ¿€æ˜µ» ∞Õ¿∏∑Œ √ﬂ¡§µ«¥¬ Row¥¬ UPDATE «“ ºˆ æ¯¥Ÿ.
-             * ¥ŸΩ√ Fetch or Refresh «— »ƒ Ω√µµ«ÿæﬂ «—¥Ÿ. */
+            /* Ïù¥ÎØ∏ ÏûëÏóÖÎêú Í≤ÉÏúºÎ°ú Ï∂îÏ†ïÎêòÎäî RowÎäî UPDATE Ìï† Ïàò ÏóÜÎã§.
+             * Îã§Ïãú Fetch or Refresh Ìïú ÌõÑ ÏãúÎèÑÌï¥Ïïº ÌïúÎã§. */
             ACI_TEST_RAISE( sRowStatusPtr[sRowNum] == SQL_ROW_DELETED,
                             INVALID_CURSOR_POSITION_EXCEPTION );
             ACI_TEST_RAISE( sRowStatusPtr[sRowNum] == SQL_ROW_UPDATED,
@@ -412,7 +412,7 @@ ACI_RC ulnSetPosUpdate(ulnFnContext *aFnContext,
                             aKeysetStmt->mQstrForInsUpdLen,
                             CMP_DB_PREPARE_MODE_EXEC_PREPARE) != ACI_SUCCESS);
 
-    /* Param πˆ∆€ ª˝º∫ */
+    /* Param Î≤ÑÌçº ÏÉùÏÑ± */
     ACI_TEST_RAISE(ulnStmtEnsureAllocRowsetParamBuf(sRowsetStmt,
                                                     sMaxRowSize * sRowActCount)
                    != ACI_SUCCESS, NOT_ENOUGH_MEM_EXCEPTION);
@@ -421,7 +421,7 @@ ACI_RC ulnSetPosUpdate(ulnFnContext *aFnContext,
                    != ACI_SUCCESS, NOT_ENOUGH_MEM_EXCEPTION);
     sParamStatusBuf = ulnStmtGetRowsetParamStatusBuf(sRowsetStmt);
 
-    /* Param ¡§∫∏ ª˝º∫ */
+    /* Param Ï†ïÎ≥¥ ÏÉùÏÑ± */
     sCurrRowPtr = ulnStmtGetRowsetParamBuf(sRowsetStmt);
     sColIdx = 1;
     for (i = 1; i <= sColTotCount; i++)
@@ -443,7 +443,7 @@ ACI_RC ulnSetPosUpdate(ulnFnContext *aFnContext,
         sCurrRowPtr = ACP_ALIGN8_PTR(sCurrRowPtr);
         sCurrIndPtr = ACP_ALIGN8_PTR(sCurrRowPtr + (sBufLen * sRowActCount));
 
-        /* sCurrBufPtr, sBufLenæø ¿Ãµø«ÿ∞°∏Á µ•¿Ã≈∏ ∫πªÁ */
+        /* sCurrBufPtr, sBufLenÏî© Ïù¥ÎèôÌï¥Í∞ÄÎ©∞ Îç∞Ïù¥ÌÉÄ Î≥µÏÇ¨ */
         sBindColIndPtr = ulnDescRecGetIndicatorPtr(sDescRecArd);
         sCurrColPtr = sCurrRowPtr;
         sRowIdx = 0;
@@ -488,7 +488,7 @@ ACI_RC ulnSetPosUpdate(ulnFnContext *aFnContext,
             sIndPtr = sCurrIndPtr;
         }
 
-        /* BUGBUG: Precision, Scale¿ª ¡¶¥Î∑Œ º≥¡§«ÿ¡‡æﬂ µ…±Ó? */
+        /* BUGBUG: Precision, ScaleÏùÑ Ï†úÎåÄÎ°ú ÏÑ§Ï†ïÌï¥Ï§òÏïº Îê†Íπå? */
         ACI_TEST(ulnBindParamBody(&sTmpFnContext,
                                   sColIdx,
                                   NULL,
@@ -601,7 +601,7 @@ ACI_RC ulnSetPosUpdate(ulnFnContext *aFnContext,
     {
         sRowNum = sUserRowNumberStart + i - 1;
 
-        /* SQL_ATTR_ROW_OPERATION_PTR∏¶ ¿ÃøÎ«ÿ ∞«≥ ∂‹ */
+        /* SQL_ATTR_ROW_OPERATION_PTRÎ•º Ïù¥Ïö©Ìï¥ Í±¥ÎÑàÎúÄ */
         if ((sRowOperationPtr != NULL)
          && (sRowOperationPtr[sRowNum] == SQL_ROW_IGNORE))
         {
@@ -614,7 +614,7 @@ ACI_RC ulnSetPosUpdate(ulnFnContext *aFnContext,
         }
         else
         {
-            /* BUGBUG: ¿Ã∑± ¿œ¿Ã ª˝±Ê ºˆ ¿÷¥¬ ªÛ»≤¿∫ πª±Ó? */
+            /* BUGBUG: Ïù¥Îü∞ ÏùºÏù¥ ÏÉùÍ∏∏ Ïàò ÏûàÎäî ÏÉÅÌô©ÏùÄ Î≠òÍπå? */
             ulnStmtSetAttrRowStatusValue(aKeysetStmt, sRowNum, SQL_ROW_ERROR);
             sRowErrCount++;
         }
@@ -696,21 +696,21 @@ ACI_RC ulnSetPosUpdate(ulnFnContext *aFnContext,
     return ACI_FAILURE;
 }
 
-/* BUGBUG: KEYSET_DRIVEN¿œ ∂ß∏∏ ¡§ªÛ µø¿€«—¥Ÿ.
- *         FORWARD_ONLY/STATIC¿∏∑Œ¥¬ UPDATABLE¿ª ¡ˆø¯«œ¡ˆ æ ±‚ ∂ßπÆ. */
+/* BUGBUG: KEYSET_DRIVENÏùº ÎïåÎßå Ï†ïÏÉÅ ÎèôÏûëÌïúÎã§.
+ *         FORWARD_ONLY/STATICÏúºÎ°úÎäî UPDATABLEÏùÑ ÏßÄÏõêÌïòÏßÄ ÏïäÍ∏∞ ÎïåÎ¨∏. */
 /**
- * ¡ˆ¡§«— «‡¿ª DELETE «—¥Ÿ.
+ * ÏßÄÏ†ïÌïú ÌñâÏùÑ DELETE ÌïúÎã§.
  *
- * ∏∏æ‡, RowNumber∞° 0¿Ã∏È ∏µÁ «‡¿ª DELETE «—¥Ÿ.
- * ¥‹, SQL_ATTR_ROW_OPERATION_PTRø° SQL_ROW_IGNORE∑Œ ¡ˆ¡§«— «‡¿ª π´Ω√«—¥Ÿ.
+ * ÎßåÏïΩ, RowNumberÍ∞Ä 0Ïù¥Î©¥ Î™®Îì† ÌñâÏùÑ DELETE ÌïúÎã§.
+ * Îã®, SQL_ATTR_ROW_OPERATION_PTRÏóê SQL_ROW_IGNOREÎ°ú ÏßÄÏ†ïÌïú ÌñâÏùÑ Î¨¥ÏãúÌïúÎã§.
  *
  * @param[in] aFnContext  function context
  * @param[in] aPtContext  protocol context
  * @param[in] aKeysetStmt statement handle
- * @param[in] aRowNumber  ¿€æ˜¿ª ºˆ«‡«“ Rowset Position
+ * @param[in] aRowNumber  ÏûëÏóÖÏùÑ ÏàòÌñâÌï† Rowset Position
  * @param[in] aLockType   Not Used and Ignored
  *
- * @return º∫∞¯«œ∏È ACI_SUCCESS, æ∆¥œ∏È ACI_FAILURE
+ * @return ÏÑ±Í≥µÌïòÎ©¥ ACI_SUCCESS, ÏïÑÎãàÎ©¥ ACI_FAILURE
  */
 ACI_RC ulnSetPosDelete(ulnFnContext *aFnContext,
                        ulnPtContext *aPtContext,
@@ -754,7 +754,7 @@ ACI_RC ulnSetPosDelete(ulnFnContext *aFnContext,
      * ===========================================
      */
 
-    /* aRowNumber∞° 0¿Œ¡ˆ ∫∏∞Ì DELETE «“ ∞≥ºˆ ∞·¡§. */
+    /* aRowNumberÍ∞Ä 0Ïù∏ÏßÄ Î≥¥Í≥† DELETE Ìï† Í∞úÏàò Í≤∞Ï†ï. */
     if (aRowNumber == 0)
     {
         sRowTotCount = ulnStmtGetAttrRowArraySize(aKeysetStmt);
@@ -774,7 +774,7 @@ ACI_RC ulnSetPosDelete(ulnFnContext *aFnContext,
     {
         sRowNum = sUserRowNumberStart + i - 1;
 
-        /* SQL_ATTR_ROW_OPERATION_PTR∏¶ ¿ÃøÎ«ÿ ∞«≥ ∂‹ */
+        /* SQL_ATTR_ROW_OPERATION_PTRÎ•º Ïù¥Ïö©Ìï¥ Í±¥ÎÑàÎúÄ */
         if ((sRowOperationPtr != NULL)
          && (sRowOperationPtr[sRowNum] == SQL_ROW_IGNORE))
         {
@@ -783,8 +783,8 @@ ACI_RC ulnSetPosDelete(ulnFnContext *aFnContext,
 
         if (sRowStatusPtr != NULL)
         {
-            /* ¿ÃπÃ ¿€æ˜µ» ∞Õ¿∏∑Œ √ﬂ¡§µ«¥¬ Row¥¬ DELETE «“ ºˆ æ¯¥Ÿ.
-             * ¥ŸΩ√ Fetch or Refresh «— »ƒ Ω√µµ«ÿæﬂ «—¥Ÿ. */
+            /* Ïù¥ÎØ∏ ÏûëÏóÖÎêú Í≤ÉÏúºÎ°ú Ï∂îÏ†ïÎêòÎäî RowÎäî DELETE Ìï† Ïàò ÏóÜÎã§.
+             * Îã§Ïãú Fetch or Refresh Ìïú ÌõÑ ÏãúÎèÑÌï¥Ïïº ÌïúÎã§. */
             ACI_TEST_RAISE( sRowStatusPtr[sRowNum] == SQL_ROW_DELETED,
                             INVALID_CURSOR_POSITION_EXCEPTION );
             ACI_TEST_RAISE( sRowStatusPtr[sRowNum] == SQL_ROW_UPDATED,
@@ -810,7 +810,7 @@ ACI_RC ulnSetPosDelete(ulnFnContext *aFnContext,
     ACI_TEST(ulnFreeStmtUnbind(&sTmpFnContext, sRowsetStmt) != ACI_SUCCESS);
     ACI_TEST(ulnFreeStmtResetParams(&sTmpFnContext, sRowsetStmt) != ACI_SUCCESS);
 
-    /* Param πˆ∆€ ª˝º∫ */
+    /* Param Î≤ÑÌçº ÏÉùÏÑ± */
     ACI_TEST_RAISE(ulnStmtEnsureAllocRowsetParamBuf(sRowsetStmt,
                                                     ULN_KEYSET_MAX_KEY_SIZE * sRowActCount)
                    != ACI_SUCCESS, NOT_ENOUGH_MEM_EXCEPTION);
@@ -819,7 +819,7 @@ ACI_RC ulnSetPosDelete(ulnFnContext *aFnContext,
                    != ACI_SUCCESS, NOT_ENOUGH_MEM_EXCEPTION);
     sParamStatusBuf = ulnStmtGetRowsetParamStatusBuf(sRowsetStmt);
 
-    /* Param ¡§∫∏ ª˝º∫ (_PROWID) */
+    /* Param Ï†ïÎ≥¥ ÏÉùÏÑ± (_PROWID) */
     sCurrColPtr = ulnStmtGetRowsetParamBuf(sRowsetStmt);
     sRowIdx = 0;
     for (i = 0; i < sRowTotCount; i++)
@@ -916,7 +916,7 @@ ACI_RC ulnSetPosDelete(ulnFnContext *aFnContext,
     {
         sRowNum = sUserRowNumberStart + i - 1;
 
-        /* SQL_ATTR_ROW_OPERATION_PTR∏¶ ¿ÃøÎ«ÿ ∞«≥ ∂‹ */
+        /* SQL_ATTR_ROW_OPERATION_PTRÎ•º Ïù¥Ïö©Ìï¥ Í±¥ÎÑàÎúÄ */
         if ((sRowOperationPtr != NULL)
          && (sRowOperationPtr[sRowNum] == SQL_ROW_IGNORE))
         {
@@ -929,7 +929,7 @@ ACI_RC ulnSetPosDelete(ulnFnContext *aFnContext,
         }
         else
         {
-            /* BUGBUG: ¿Ã∑± ¿œ¿Ã ª˝±Ê ºˆ ¿÷¥¬ ªÛ»≤¿∫ πª±Ó? */
+            /* BUGBUG: Ïù¥Îü∞ ÏùºÏù¥ ÏÉùÍ∏∏ Ïàò ÏûàÎäî ÏÉÅÌô©ÏùÄ Î≠òÍπå? */
             ulnStmtSetAttrRowStatusValue(aKeysetStmt, sRowNum, SQL_ROW_ERROR);
             sRowErrCount++;
         }
@@ -1008,21 +1008,21 @@ ACI_RC ulnSetPosDelete(ulnFnContext *aFnContext,
 }
 
 
-/* BUGBUG: KEYSET_DRIVEN¿œ ∂ß∏∏ ¡§ªÛ µø¿€«—¥Ÿ.
- *         FORWARD_ONLY/STATIC¿∏∑Œ¥¬ UPDATABLE¿ª ¡ˆø¯«œ¡ˆ æ ±‚ ∂ßπÆ. */
+/* BUGBUG: KEYSET_DRIVENÏùº ÎïåÎßå Ï†ïÏÉÅ ÎèôÏûëÌïúÎã§.
+ *         FORWARD_ONLY/STATICÏúºÎ°úÎäî UPDATABLEÏùÑ ÏßÄÏõêÌïòÏßÄ ÏïäÍ∏∞ ÎïåÎ¨∏. */
 /**
- * ¡ˆ¡§«— «‡¿ª INSERT «—¥Ÿ.
+ * ÏßÄÏ†ïÌïú ÌñâÏùÑ INSERT ÌïúÎã§.
  *
- * ∏∏æ‡, RowNumber∞° 0¿Ã∏È ∏µÁ «‡¿ª INSERT «—¥Ÿ.
- * ¥‹, SQL_ATTR_ROW_OPERATION_PTRø° SQL_ROW_IGNORE∑Œ ¡ˆ¡§«— «‡¿ª π´Ω√«—¥Ÿ.
+ * ÎßåÏïΩ, RowNumberÍ∞Ä 0Ïù¥Î©¥ Î™®Îì† ÌñâÏùÑ INSERT ÌïúÎã§.
+ * Îã®, SQL_ATTR_ROW_OPERATION_PTRÏóê SQL_ROW_IGNOREÎ°ú ÏßÄÏ†ïÌïú ÌñâÏùÑ Î¨¥ÏãúÌïúÎã§.
  *
  * @param[in] aFnContext  function context
  * @param[in] aPtContext  protocol context
  * @param[in] aKeysetStmt statement handle
- * @param[in] aRowNumber  ¿€æ˜¿ª ºˆ«‡«“ Rowset Position
+ * @param[in] aRowNumber  ÏûëÏóÖÏùÑ ÏàòÌñâÌï† Rowset Position
  * @param[in] aLockType   Not Used and Ignored
  *
- * @return º∫∞¯«œ∏È ACI_SUCCESS, æ∆¥œ∏È ACI_FAILURE
+ * @return ÏÑ±Í≥µÌïòÎ©¥ ACI_SUCCESS, ÏïÑÎãàÎ©¥ ACI_FAILURE
  */
 ACI_RC ulnSetPosInsert(ulnFnContext *aFnContext,
                        ulnPtContext *aPtContext,
@@ -1078,7 +1078,7 @@ ACI_RC ulnSetPosInsert(ulnFnContext *aFnContext,
      * ===========================================
      */
 
-    /* aRowNumber∞° 0¿Œ¡ˆ ∫∏∞Ì INSERT «“ ∞≥ºˆ ∞·¡§. */
+    /* aRowNumberÍ∞Ä 0Ïù∏ÏßÄ Î≥¥Í≥† INSERT Ìï† Í∞úÏàò Í≤∞Ï†ï. */
     if (aRowNumber == 0)
     {
         sRowTotCount = ulnStmtGetAttrRowArraySize(aKeysetStmt);
@@ -1097,7 +1097,7 @@ ACI_RC ulnSetPosInsert(ulnFnContext *aFnContext,
     {
         sRowNum = sUserRowNumberStart + i - 1;
 
-        /* SQL_ATTR_ROW_OPERATION_PTR∏¶ ¿ÃøÎ«ÿ ∞«≥ ∂‹ */
+        /* SQL_ATTR_ROW_OPERATION_PTRÎ•º Ïù¥Ïö©Ìï¥ Í±¥ÎÑàÎúÄ */
         if ((sRowOperationPtr != NULL)
          && (sRowOperationPtr[sRowNum] == SQL_ROW_IGNORE))
         {
@@ -1185,7 +1185,7 @@ ACI_RC ulnSetPosInsert(ulnFnContext *aFnContext,
                             aKeysetStmt->mQstrForInsUpdLen,
                             CMP_DB_PREPARE_MODE_EXEC_PREPARE) != ACI_SUCCESS);
 
-    /* Param πˆ∆€ ª˝º∫ */
+    /* Param Î≤ÑÌçº ÏÉùÏÑ± */
     ACI_TEST_RAISE(ulnStmtEnsureAllocRowsetParamBuf(sRowsetStmt,
                                                     sMaxRowSize * sRowActCount)
                    != ACI_SUCCESS, NOT_ENOUGH_MEM_EXCEPTION);
@@ -1194,7 +1194,7 @@ ACI_RC ulnSetPosInsert(ulnFnContext *aFnContext,
                    != ACI_SUCCESS, NOT_ENOUGH_MEM_EXCEPTION);
     sParamStatusBuf = ulnStmtGetRowsetParamStatusBuf(sRowsetStmt);
 
-    /* Param ¡§∫∏ ª˝º∫ */
+    /* Param Ï†ïÎ≥¥ ÏÉùÏÑ± */
     sCurrRowPtr = ulnStmtGetRowsetParamBuf(sRowsetStmt);
     sColIdx = 1;
     for (i = 1; i <= sColTotCount; i++)
@@ -1216,7 +1216,7 @@ ACI_RC ulnSetPosInsert(ulnFnContext *aFnContext,
         sCurrRowPtr = ACP_ALIGN8_PTR(sCurrRowPtr);
         sCurrIndPtr = ACP_ALIGN8_PTR(sCurrRowPtr + (sBufLen * sRowActCount));
 
-        /* sCurrBufPtr, sBufLenæø ¿Ãµø«ÿ∞°∏Á µ•¿Ã≈∏ ∫πªÁ */
+        /* sCurrBufPtr, sBufLenÏî© Ïù¥ÎèôÌï¥Í∞ÄÎ©∞ Îç∞Ïù¥ÌÉÄ Î≥µÏÇ¨ */
         sBindColIndPtr = ulnDescRecGetIndicatorPtr(sDescRecArd);
         sCurrColPtr = sCurrRowPtr;
         sRowIdx = 0;
@@ -1261,7 +1261,7 @@ ACI_RC ulnSetPosInsert(ulnFnContext *aFnContext,
             sIndPtr = sCurrIndPtr;
         }
 
-        /* BUGBUG: Precision, Scale¿ª ¡¶¥Î∑Œ º≥¡§«ÿ¡‡æﬂ µ…±Ó? */
+        /* BUGBUG: Precision, ScaleÏùÑ Ï†úÎåÄÎ°ú ÏÑ§Ï†ïÌï¥Ï§òÏïº Îê†Íπå? */
         ACI_TEST(ulnBindParamBody(&sTmpFnContext,
                                   sColIdx,
                                   NULL,
@@ -1336,7 +1336,7 @@ ACI_RC ulnSetPosInsert(ulnFnContext *aFnContext,
     {
         sRowNum = sUserRowNumberStart + i - 1;
 
-        /* SQL_ATTR_ROW_OPERATION_PTR∏¶ ¿ÃøÎ«ÿ ∞«≥ ∂‹ */
+        /* SQL_ATTR_ROW_OPERATION_PTRÎ•º Ïù¥Ïö©Ìï¥ Í±¥ÎÑàÎúÄ */
         if ((sRowOperationPtr != NULL)
          && (sRowOperationPtr[sRowNum] == SQL_ROW_IGNORE))
         {
@@ -1349,7 +1349,7 @@ ACI_RC ulnSetPosInsert(ulnFnContext *aFnContext,
         }
         else
         {
-            /* BUGBUG: ¿Ã∑± ¿œ¿Ã ª˝±Ê ºˆ ¿÷¥¬ ªÛ»≤¿∫ πª±Ó? */
+            /* BUGBUG: Ïù¥Îü∞ ÏùºÏù¥ ÏÉùÍ∏∏ Ïàò ÏûàÎäî ÏÉÅÌô©ÏùÄ Î≠òÍπå? */
             ulnStmtSetAttrRowStatusValue(aKeysetStmt, sRowNum, SQL_ROW_ERROR);
             sRowErrCount++;
         }
@@ -1424,18 +1424,18 @@ ACI_RC ulnSetPosInsert(ulnFnContext *aFnContext,
 }
 
 /**
- * SetPos ∞¸∑√ º”º∫∞˙ ¿Œ¿⁄∞° ¿Ø»ø«—¡ˆ »Æ¿Œ«—¥Ÿ.
+ * SetPos Í¥ÄÎ†® ÏÜçÏÑ±Í≥º Ïù∏ÏûêÍ∞Ä Ïú†Ìö®ÌïúÏßÄ ÌôïÏù∏ÌïúÎã§.
  *
  * @param[in] aFnContext function context
- * @param[in] aRowNumber ¿€æ˜¿ª ºˆ«‡«“ Rowset Position
- * @param[in] aOperation ºˆ«‡«“ ¿€æ˜:
+ * @param[in] aRowNumber ÏûëÏóÖÏùÑ ÏàòÌñâÌï† Rowset Position
+ * @param[in] aOperation ÏàòÌñâÌï† ÏûëÏóÖ:
  *                       SQL_POSITION
  *                       SQL_REFRESH
  *                       SQL_UPDATE
  *                       SQL_DELETE
  *                       SQL_ADD
  *
- * @return ¿Ø»ø«œ∏È ACI_SUCCESS, æ∆¥œ∏È ACI_FAILURE
+ * @return Ïú†Ìö®ÌïòÎ©¥ ACI_SUCCESS, ÏïÑÎãàÎ©¥ ACI_FAILURE
  */
 ACI_RC ulnSetPosCheckArgs(ulnFnContext *aFnContext,
                           acp_uint16_t  aRowNumber,
@@ -1452,7 +1452,7 @@ ACI_RC ulnSetPosCheckArgs(ulnFnContext *aFnContext,
             break;
 
         case SQL_REFRESH:
-            /* ≤¿ Sensitive¿œ « ø‰¥¬ æ¯¥Ÿ. ±‚¡∏ µ•¿Ã≈∏∏¶ ¡÷∏È µ«±‚ ∂ßπÆ.
+            /* Íº≠ SensitiveÏùº ÌïÑÏöîÎäî ÏóÜÎã§. Í∏∞Ï°¥ Îç∞Ïù¥ÌÉÄÎ•º Ï£ºÎ©¥ ÎêòÍ∏∞ ÎïåÎ¨∏.
             ACI_TEST_RAISE(ulnStmtGetAttrCursorSensitivity(sStmt)
                            != SQL_SENSITIVE, FUNC_SEQ_EXCEPTION); */
             break;
@@ -1473,7 +1473,7 @@ ACI_RC ulnSetPosCheckArgs(ulnFnContext *aFnContext,
                 case SQL_CONCUR_LOCK:
                 case SQL_CONCUR_VALUES:
                 default:
-                    /* ¡ˆø¯«œ¡ˆ æ ¥¬ º”º∫∞™¿Ãπ«∑Œ π∫∞° ¥Î¥‹»˜ ¿ﬂ∏¯µ»∞≈¥Ÿ. */
+                    /* ÏßÄÏõêÌïòÏßÄ ÏïäÎäî ÏÜçÏÑ±Í∞íÏù¥ÎØÄÎ°ú Î≠îÍ∞Ä ÎåÄÎã®Ìûà ÏûòÎ™ªÎêúÍ±∞Îã§. */
                     ACE_ASSERT(ACP_FALSE);
                     break;
             }
@@ -1488,7 +1488,7 @@ ACI_RC ulnSetPosCheckArgs(ulnFnContext *aFnContext,
     ACI_TEST_RAISE(ulnCursorGetPosition(ulnStmtGetCursor(sStmt)) < 0,
                    INVALID_CURSOR_STATE_EXCEPTION);
 
-    /* BUGBUG: SQL_ROWSET_SIZE º≥¡§∞™¿∫ ¬¸∞Ì«œ¡ˆ æ æ∆µµ µ…±Ó? */
+    /* BUGBUG: SQL_ROWSET_SIZE ÏÑ§Ï†ïÍ∞íÏùÄ Ï∞∏Í≥†ÌïòÏßÄ ÏïäÏïÑÎèÑ Îê†Íπå? */
     sRowsetSize = ulnStmtGetAttrRowArraySize(sStmt);
     ACI_TEST_RAISE(aRowNumber > sRowsetSize, ROW_VALUE_OUT_OF_RANGE_EXCEPTION);
 
@@ -1517,11 +1517,11 @@ ACI_RC ulnSetPosCheckArgs(ulnFnContext *aFnContext,
 }
 
 /**
- * Rowset Position¿ª πŸ≤Ÿ∞Ì, RefreshøÕ ∞∞¿∫ ¿€æ˜¿ª ºˆ«‡«—¥Ÿ.
+ * Rowset PositionÏùÑ Î∞îÍæ∏Í≥†, RefreshÏôÄ Í∞ôÏùÄ ÏûëÏóÖÏùÑ ÏàòÌñâÌïúÎã§.
  *
  * @param[in] aStmt      statement handle
- * @param[in] aRowNumber ¿€æ˜¿ª ºˆ«‡«“ Rowset Position
- * @param[in] aOperation ºˆ«‡«“ ¿€æ˜:
+ * @param[in] aRowNumber ÏûëÏóÖÏùÑ ÏàòÌñâÌï† Rowset Position
+ * @param[in] aOperation ÏàòÌñâÌï† ÏûëÏóÖ:
  *                       SQL_POSITION
  *                       SQL_REFRESH
  *                       SQL_UPDATE
@@ -1560,10 +1560,10 @@ SQLRETURN ulnSetPos(ulnStmt      *aStmt,
      * ===========================================
      */
 
-    /* Notes. Project ¡¶æ‡ ªÁ«◊ (Ω∫∆Â¿Ã ø¯∑° ¿Ã∑±∞« æ∆¥— µÌ. æ∆∏∂;)
-     * - SQL_POSITION¿∫ Scrollable∏∏ æµ ºˆ ¿÷¥Ÿ.
-     * - SQL_REFRESH¥¬ Sensitive∏∏ æµ ºˆ ¿÷¥Ÿ.
-     * - SQL_UPDATE, SQL_DELETE, SQL_ADD¥¬ Updatable∏∏ æµ ºˆ ¿÷¥Ÿ. */
+    /* Notes. Project Ï†úÏïΩ ÏÇ¨Ìï≠ (Ïä§ÌéôÏù¥ ÏõêÎûò Ïù¥Îü∞Í±¥ ÏïÑÎãå ÎìØ. ÏïÑÎßà;)
+     * - SQL_POSITIONÏùÄ ScrollableÎßå Ïì∏ Ïàò ÏûàÎã§.
+     * - SQL_REFRESHÎäî SensitiveÎßå Ïì∏ Ïàò ÏûàÎã§.
+     * - SQL_UPDATE, SQL_DELETE, SQL_ADDÎäî UpdatableÎßå Ïì∏ Ïàò ÏûàÎã§. */
     ACI_TEST(ulnSetPosCheckArgs(&sFnContext, aRowNumber, aOperation)
              != ACI_SUCCESS);
 
@@ -1621,7 +1621,7 @@ SQLRETURN ulnSetPos(ulnStmt      *aStmt,
             break;
 
         default:
-            /* æ’ø°º≠ »Æ¿Œ«œ∞Ì µÈæÓø‘¿∏π«∑Œ ¿Ã∑±¿œ¿Ã ª˝∞‹º≠¥¬ æ»µ»¥Ÿ. */
+            /* ÏïûÏóêÏÑú ÌôïÏù∏ÌïòÍ≥† Îì§Ïñ¥ÏôîÏúºÎØÄÎ°ú Ïù¥Îü∞ÏùºÏù¥ ÏÉùÍ≤®ÏÑúÎäî ÏïàÎêúÎã§. */
              ACE_ASSERT(ACP_FALSE);
             break;
     }
@@ -1630,8 +1630,8 @@ SQLRETURN ulnSetPos(ulnStmt      *aStmt,
     {
         ulnCursorSetRowsetPosition(ulnStmtGetCursor(aStmt), aRowNumber);
 
-        /* NO_DATA∞° ∂≥æÓ¡¯ »ƒø°µµ ¥ŸΩ√ GetData() «“ ºˆ ¿÷µµ∑œ
-         * GetData ∞¸∑√ ∫Øºˆ∏¶ √ ±‚»≠ */
+        /* NO_DATAÍ∞Ä Îñ®Ïñ¥ÏßÑ ÌõÑÏóêÎèÑ Îã§Ïãú GetData() Ìï† Ïàò ÏûàÎèÑÎ°ù
+         * GetData Í¥ÄÎ†® Î≥ÄÏàòÎ•º Ï¥àÍ∏∞Ìôî */
         if (aStmt->mGDColumnNumber != ULN_GD_COLUMN_NUMBER_INIT_VALUE)
         {
             ACI_TEST(ulnGDInitColumn(&sFnContext, aStmt->mGDColumnNumber)

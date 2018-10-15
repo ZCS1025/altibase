@@ -20,9 +20,9 @@
 #include <ulnPrivate.h>
 
 /*
- * Note : Cursor ´Â "cursor" ÀÏ »Ó ¾Æ¹«°Íµµ ¾Æ´Ï´Ù.
- *        ´Ù½Ã ¸»ÇØ¼­, ±Ùº»ÀûÀ¸·Î, Ä¿¼­´Â "Æ÷ÀÎÅÍ" ÀÌ´Ù.
- *        °Å±â ´õÇØ¼­ stmt ÀÇ cursor ¿Í °ü·ÃµÈ ¼Ó¼ºÀ» °¡Áú µû¸§ÀÌ´Ù.
+ * Note : Cursor ëŠ” "cursor" ì¼ ë¿ ì•„ë¬´ê²ƒë„ ì•„ë‹ˆë‹¤.
+ *        ë‹¤ì‹œ ë§í•´ì„œ, ê·¼ë³¸ì ìœ¼ë¡œ, ì»¤ì„œëŠ” "í¬ì¸í„°" ì´ë‹¤.
+ *        ê±°ê¸° ë”í•´ì„œ stmt ì˜ cursor ì™€ ê´€ë ¨ëœ ì†ì„±ì„ ê°€ì§ˆ ë”°ë¦„ì´ë‹¤.
  */
 
 typedef enum
@@ -45,16 +45,16 @@ struct ulnCursor
     acp_sint64_t    mPosition;   // To Fix BUG-20482
     ulnCursorDir    mDirection;  /* PROJ-1789 Updatable Scrollable Cursor */
     ulnCursorState  mState;
-    ulnCursorState  mServerCursorState; /* Note : ¼­¹ö Ä¿¼­ÀÇ »óÅÂ
-                                           ColumnCount > 0 ÀÎ statement ¸¦ Execute ÇÑ Á÷ÈÄ -> ¿­¸².
-                                           Fetch ÇØ¼­ ¼­¹ö result set ÀÇ ³¡±îÁö ÀĞ¾úÀ½ -> ´İÈû.
-                                           ¼­¹ö Ä¿¼­ »óÅÂ¿Í °ü°è¾øÀÌ CLOSE CURSOR REQ ¸¦ ¼­¹ö·Î
-                                           º¸³»µµ µÈ´Ù. ´İÈù »óÅÂ¿¡¼­ Àü¼ÛÇØµµ ±×³É ¼­¹ö¿¡¼­
-                                           ¹«½ÃÇÑ´Ù. ÀÌ º¯¼öÀÇ ¿ªÇÒÀº ´ÜÁö ÇÑ¹øÀÌ¶óµµ
-                                           I/O transaction À» ÁÙÀÌ±â À§ÇÑ°ÍÀÓ */
+    ulnCursorState  mServerCursorState; /* Note : ì„œë²„ ì»¤ì„œì˜ ìƒíƒœ
+                                           ColumnCount > 0 ì¸ statement ë¥¼ Execute í•œ ì§í›„ -> ì—´ë¦¼.
+                                           Fetch í•´ì„œ ì„œë²„ result set ì˜ ëê¹Œì§€ ì½ì—ˆìŒ -> ë‹«í˜.
+                                           ì„œë²„ ì»¤ì„œ ìƒíƒœì™€ ê´€ê³„ì—†ì´ CLOSE CURSOR REQ ë¥¼ ì„œë²„ë¡œ
+                                           ë³´ë‚´ë„ ëœë‹¤. ë‹«íŒ ìƒíƒœì—ì„œ ì „ì†¡í•´ë„ ê·¸ëƒ¥ ì„œë²„ì—ì„œ
+                                           ë¬´ì‹œí•œë‹¤. ì´ ë³€ìˆ˜ì˜ ì—­í• ì€ ë‹¨ì§€ í•œë²ˆì´ë¼ë„
+                                           I/O transaction ì„ ì¤„ì´ê¸° ìœ„í•œê²ƒì„ */
 
     /*
-     * STMT ÀÇ cursor ¿Í °ü·ÃµÈ attribute µé
+     * STMT ì˜ cursor ì™€ ê´€ë ¨ëœ attribute ë“¤
      */
     acp_uint32_t    mAttrCursorSensitivity; /* SQL_ATTR_CURSOR_SENSITIVITY */
     acp_uint32_t    mAttrCursorType;        /* SQL_ATTR_CURSOR_TYPE */
@@ -64,7 +64,7 @@ struct ulnCursor
     acp_uint32_t    mAttrHoldability;       /* SQL_ATTR_CURSOR_HOLD */
 
     /* PROJ-1789 Updatable Scrollable Cursor */
-    acp_uint16_t    mRowsetPos;             /**< rowset³»¿¡¼­ÀÇ position. SetPos¸¦ ÅëÇØ ¼³Á¤. */
+    acp_uint16_t    mRowsetPos;             /**< rowsetë‚´ì—ì„œì˜ position. SetPosë¥¼ í†µí•´ ì„¤ì •. */
 };
 
 void   ulnCursorInitialize(ulnCursor *aCursor, ulnStmt *aParentStmt);
@@ -128,12 +128,12 @@ void         ulnCursorSetSensitivity(ulnCursor *aCursor, acp_uint32_t aSensitivi
 acp_uint32_t ulnCursorGetSensitivity(ulnCursor *aCursor);
 
 /*
- * ¸î°³ÀÇ row ¸¦ »ç¿ëÀÚ ¹öÆÛ·Î º¹»çÇØ¾ß ÇÏ´ÂÁö °è»êÇÏ´Â ÇÔ¼ö
+ * ëª‡ê°œì˜ row ë¥¼ ì‚¬ìš©ì ë²„í¼ë¡œ ë³µì‚¬í•´ì•¼ í•˜ëŠ”ì§€ ê³„ì‚°í•˜ëŠ” í•¨ìˆ˜
  */
 acp_uint32_t ulnCursorCalcRowCountToCopyToUser(ulnCursor *aCursor);
 
 /*
- * Ä¿¼­ÀÇ À§Ä¡ ¼±Á¤°ú °ü·ÃµÈ ÇÔ¼öµé
+ * ì»¤ì„œì˜ ìœ„ì¹˜ ì„ ì •ê³¼ ê´€ë ¨ëœ í•¨ìˆ˜ë“¤
  */
 void ulnCursorMovePrior(ulnFnContext *aFnContext, ulnCursor *aCursor);
 void ulnCursorMoveNext(ulnFnContext *aFnContext, ulnCursor *aCursor);
@@ -148,11 +148,11 @@ void ulnCursorMoveLast(ulnCursor *aCursor);
 /* PROJ-1381 Fetch Across Commit */
 
 /**
- * Cursor Hold ¼Ó¼ºÀ» ¾ò´Â´Ù.
+ * Cursor Hold ì†ì„±ì„ ì–»ëŠ”ë‹¤.
  *
  * @param[in] aCursor cursor object
  *
- * @return HoldableÀÌ¸é SQL_CURSOR_HOLD_ON, ¾Æ´Ï¸é SQL_CURSOR_HOLD_OFF
+ * @return Holdableì´ë©´ SQL_CURSOR_HOLD_ON, ì•„ë‹ˆë©´ SQL_CURSOR_HOLD_OFF
  */
 ACP_INLINE acp_uint32_t ulnCursorGetHoldability(ulnCursor *aCursor)
 {
@@ -160,7 +160,7 @@ ACP_INLINE acp_uint32_t ulnCursorGetHoldability(ulnCursor *aCursor)
 }
 
 /**
- * Cursor Hold ¼Ó¼ºÀ» ¼³Á¤ÇÑ´Ù.
+ * Cursor Hold ì†ì„±ì„ ì„¤ì •í•œë‹¤.
  *
  * @param[in] aCursor      cursor object
  * @param[in] aHoldability holdablility. SQL_CURSOR_HOLD_ON or SQL_CURSOR_HOLD_OFF.
@@ -178,7 +178,7 @@ ulnCursorDir ulnCursorGetDirection(ulnCursor *aCursor);
 void         ulnCursorSetDirection(ulnCursor *aCursor, ulnCursorDir aDirection);
 
 /**
- * rowset positionÀ» ¾ò´Â´Ù.
+ * rowset positionì„ ì–»ëŠ”ë‹¤.
  *
  * @param[in] aCursor cursor object
  *
@@ -191,7 +191,7 @@ ACP_INLINE acp_uint16_t ulnCursorGetRowsetPosition(ulnCursor *aCursor)
 
 
 /**
- * rowset positionÀ» ¼³Á¤ÇÑ´Ù.
+ * rowset positionì„ ì„¤ì •í•œë‹¤.
  *
  * @param[in] aCursor    cursor object
  * @param[in] aRowsetPos rowset position

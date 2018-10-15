@@ -30,7 +30,7 @@
 ACP_EXTERN_C_BEGIN
 
 /* ------------------------------------------------------------
- *                  ø°∑Ø ƒ⁄µÂ¿« ±∏º∫
+ *                  ÏóêÎü¨ ÏΩîÎìúÏùò Íµ¨ÏÑ±
  *
  *      [MODULE]ERR_[ACTION]_[NamingSpace]_[Description]
  *          1           2          3            4
@@ -65,7 +65,7 @@ ACP_EXTERN_C_BEGIN
 
 #define ACI_E_MESSAGE_MASK   0x00FFFFFF   /* real Error message  useless... */
 
-#define ACI_E_MODULE_COUNT   16           /* ∏µ‚ ∞πºˆ */
+#define ACI_E_MODULE_COUNT   16           /* Î™®Îìà Í∞ØÏàò */
 #define ACI_E_MODULE_ID      0x00000000
 #define ACI_E_MODULE_SM      0x10000000
 #define ACI_E_MODULE_MT      0x20000000
@@ -87,11 +87,11 @@ ACP_EXTERN_C_BEGIN
 
 /* ----------------------------------------------------------------------
  *
- *  ø°∑Ø ∞°∫Ø¿Œ¿⁄ √≥∏Æ∏¶ ¿ß«— µ•¿Ã≈∏ ±∏¡∂
+ *  ÏóêÎü¨ Í∞ÄÎ≥ÄÏù∏Ïûê Ï≤òÎ¶¨Î•º ÏúÑÌïú Îç∞Ïù¥ÌÉÄ Íµ¨Ï°∞
  *
  * ----------------------------------------------------------------------*/
 
-#define ACI_MAX_ARGUMENT  32  /* ø°∑Ø ∏ﬁΩ√¡ˆ ª˝º∫Ω√ √÷¥Î ∞°∫Ø¿Œ¿⁄ ∞πºˆ */
+#define ACI_MAX_ARGUMENT  32  /* ÏóêÎü¨ Î©îÏãúÏßÄ ÏÉùÏÑ±Ïãú ÏµúÎåÄ Í∞ÄÎ≥ÄÏù∏Ïûê Í∞ØÏàò */
 
 typedef enum
 {
@@ -113,15 +113,15 @@ typedef enum
 typedef struct aci_err_type_info_t
 {
     ACI_ERR_DATATYPE    type;
-    const acp_char_t       * tmpSpecStr; /* ø°∑Ø ∏ﬁΩ√¡ˆø°º≠ æ≤¿” */
-    const acp_char_t       * realSpecStr; /* Ω«¡¶ printfø°º≠ æ≤¿” */
+    const acp_char_t       * tmpSpecStr; /* ÏóêÎü¨ Î©îÏãúÏßÄÏóêÏÑú Ïì∞ÏûÑ */
+    const acp_char_t       * realSpecStr; /* Ïã§Ï†ú printfÏóêÏÑú Ïì∞ÏûÑ */
     acp_char_t               len;
 } aci_err_type_info_t;
 
 typedef struct aci_arg_info_t
 {
     aci_err_type_info_t *type_info;
-    struct aci_arg_info_t         *outputOrder; /* √‚∑¬«“ ∂ß¿« ¿Œ¿⁄ ∞°∏Æ≈¥ */
+    struct aci_arg_info_t         *outputOrder; /* Ï∂úÎ†•Ìï† ÎïåÏùò Ïù∏Ïûê Í∞ÄÎ¶¨ÌÇ¥ */
     union
     {
         acp_char_t *string;
@@ -143,7 +143,7 @@ typedef struct aci_arg_info_t
 
 /* ----------------------------------------------------------------------
  *
- *  SM ø°∑Ø ƒ⁄µÂ µ•¿Ã≈∏ ±∏¡∂ π◊ ¿¸ø™∫Øºˆ
+ *  SM ÏóêÎü¨ ÏΩîÎìú Îç∞Ïù¥ÌÉÄ Íµ¨Ï°∞ Î∞è Ï†ÑÏó≠Î≥ÄÏàò
  *
  * ----------------------------------------------------------------------*/
 
@@ -177,12 +177,12 @@ typedef struct aci_error_mgr_t
 
 typedef struct aci_msb_header_t
 {
-    acp_uint32_t  AltiVersionId; /* MSB∆ƒ¿œø° æÀ∆º∫£¿ÃΩ∫ πˆ¿¸ ±‚∑œ (2003/10/31, by kumdory) */
-    acp_uint32_t  Section;    /* ø°∑Ø ±∏∫– π¯»£ */
-    acp_uint64_t ErrorCount; /* ø°∑Ø ∏ﬁΩ√¡ˆ ∞πºˆ, «√∑ß∆˚∞£ ªÛ¿Ã«— alignπÆ¡¶∂ßπÆø° ErrorCount∏¶ Sectionµ⁄∑Œ ø≈±Ë */
+    acp_uint32_t  AltiVersionId; /* MSBÌååÏùºÏóê ÏïåÌã∞Î≤†Ïù¥Ïä§ Î≤ÑÏ†Ñ Í∏∞Î°ù (2003/10/31, by kumdory) */
+    acp_uint32_t  Section;    /* ÏóêÎü¨ Íµ¨Î∂Ñ Î≤àÌò∏ */
+    acp_uint64_t ErrorCount; /* ÏóêÎü¨ Î©îÏãúÏßÄ Í∞ØÏàò, ÌîåÎû´ÌèºÍ∞Ñ ÏÉÅÏù¥Ìïú alignÎ¨∏Ï†úÎïåÎ¨∏Ïóê ErrorCountÎ•º SectionÎí§Î°ú ÏòÆÍπÄ */
 } aci_msb_header_t;
 
-/* º≥∏Ì : genErrMsgø° ¿««ÿ ª˝º∫µ» *.msb »≠¿œ¿« «Ï¥ı ±∏¡∂ */
+/* ÏÑ§Î™Ö : genErrMsgÏóê ÏùòÌï¥ ÏÉùÏÑ±Îêú *.msb ÌôîÏùºÏùò Ìó§Îçî Íµ¨Ï°∞ */
 typedef struct aci_error_msb_type_t
 {
     union
@@ -193,7 +193,7 @@ typedef struct aci_error_msb_type_t
 
 } aci_error_msb_type_t;
 
-/* formatted string ¿˙¿Â */
+/* formatted string Ï†ÄÏû• */
 typedef struct aci_error_factory_t
 {
     aci_error_msb_type_t MsbHeader;
@@ -202,10 +202,10 @@ typedef struct aci_error_factory_t
 
 
 /* ----------------------------------------------------------------------
- *  ID ø°∑Ø ƒ⁄µÂ Get, Set
+ *  ID ÏóêÎü¨ ÏΩîÎìú Get, Set
  * ----------------------------------------------------------------------*/
-/* ø°∑Ø ¡§∫∏ ∞Àªˆ */
-ACP_EXPORT struct  aci_error_mgr_t* aciGetErrorMgr(); /* ø°∑Ø ±∏¡∂√º æÚ±‚ */
+/* ÏóêÎü¨ Ï†ïÎ≥¥ Í≤ÄÏÉâ */
+ACP_EXPORT struct  aci_error_mgr_t* aciGetErrorMgr(); /* ÏóêÎü¨ Íµ¨Ï°∞Ï≤¥ ÏñªÍ∏∞ */
 
 ACP_EXPORT acp_uint32_t   aciGetErrorCode();
 ACP_EXPORT acp_uint32_t   aciGetErrorLine();
@@ -221,19 +221,19 @@ ACP_EXPORT acp_sint32_t   aciIsIgnore();
 ACP_EXPORT acp_sint32_t   aciIsRetry();
 ACP_EXPORT acp_sint32_t   aciIsRebuild();
 
-/* ø°∑Ø ƒ⁄µÂ º≥¡§ */
+/* ÏóêÎü¨ ÏΩîÎìú ÏÑ§Ï†ï */
 ACP_EXPORT aci_error_mgr_t* aciSetErrorCode(acp_uint32_t ErrorCode, ...);
 
-/* PROJ-1335 errorcode, errmsg ¡˜¡¢ º≥¡§ */
+/* PROJ-1335 errorcode, errmsg ÏßÅÏ†ë ÏÑ§Ï†ï */
 ACP_EXPORT aci_error_mgr_t* aciSetErrorCodeAndMsg( acp_uint32_t   ErrorCode,
                                     acp_char_t* ErrorMsg );
 
-ACP_EXPORT void aciClearError(); /* ¿Œµ¶Ω∫ √ ±‚»≠ */
+ACP_EXPORT void aciClearError(); /* Ïù∏Îç±Ïä§ Ï¥àÍ∏∞Ìôî */
 ACP_EXPORT acp_sint32_t aciPopErrorCode();
 ACP_EXPORT void aciDump();
 
 /* ------------------------------------------------------------------
- * ø°∑Ø ∏ﬁΩ√¡ˆ √≥∏Æ (MSB)
+ * ÏóêÎü¨ Î©îÏãúÏßÄ Ï≤òÎ¶¨ (MSB)
  * ----------------------------------------------------------------*/
 
 ACP_EXPORT acp_sint32_t aciRegistErrorMsb(acp_char_t *fn);
@@ -248,7 +248,7 @@ ACP_EXPORT acp_uint32_t   aciGetErrorArgCount(acp_uint32_t ErrorCode);
 
 /* ----------------------------------------------------------------------
  *
- *  ACI ø°∑Ø Handling ∏≈≈©∑Œ
+ *  ACI ÏóêÎü¨ Handling Îß§ÌÅ¨Î°ú
  *
  * ----------------------------------------------------------------------*/
 
@@ -359,9 +359,9 @@ ACP_EXPORT acp_uint32_t   aciGetErrorArgCount(acp_uint32_t ErrorCode);
 
 
 /* ------------------------------------------------------------------
- *          ø°∑Ø ƒ⁄µÂ Conversion Matrix
- *       (ø°∑Øƒ⁄µÂ∞° ∫Ø∞Êµ«æ˙¿ª ∞ÊøÏ µø¿€)
- *       (X => ∫Ø∞Ê« ø‰ æ¯¿Ω O=> ∫Ø∞Êø‰∏¡)
+ *          ÏóêÎü¨ ÏΩîÎìú Conversion Matrix
+ *       (ÏóêÎü¨ÏΩîÎìúÍ∞Ä Î≥ÄÍ≤ΩÎêòÏóàÏùÑ Í≤ΩÏö∞ ÎèôÏûë)
+ *       (X => Î≥ÄÍ≤ΩÌïÑÏöî ÏóÜÏùå O=> Î≥ÄÍ≤ΩÏöîÎßù)
  *   --------------+-------------------------------------------------------------
  *                 |                         NEW CODE
  *     OLD CODE    +-------------------------------------------------------------
@@ -378,7 +378,7 @@ ACP_EXPORT acp_uint32_t   aciGetErrorArgCount(acp_uint32_t ErrorCode);
  *     FATAL       |     X     |     X     |     X     |     X     |      X
  *   --------------+-----------+-----------+-----------+-----------+-------------
  *
- *   ACI_PUSH() øÕ ACI_POP()¿∫ pair∑Œ ªÁøÎ«ÿæﬂ «‘.
+ *   ACI_PUSH() ÏôÄ ACI_POP()ÏùÄ pairÎ°ú ÏÇ¨Ïö©Ìï¥Ïïº Ìï®.
  * ----------------------------------------------*/
 
 extern const acp_bool_t aciErrorConversionMatrix[ACI_MAX_ERROR_ACTION][ACI_MAX_ERROR_ACTION];

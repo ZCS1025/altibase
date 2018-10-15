@@ -408,7 +408,7 @@ SQLRETURN getViewProcQuery( SChar *aUserName,
 
     IDE_TEST_RAISE( SQLAllocStmt( m_hdbc, &sConvStmt ) != SQL_SUCCESS, alloc_error );
 
-    /* USER ¸ðµå °æ¿ì USER NAMEÀ» INT ÇüÀ¸·Î º¯È¯ */
+    /* USER ëª¨ë“œ ê²½ìš° USER NAMEì„ INT í˜•ìœ¼ë¡œ ë³€í™˜ */
     idlOS::sprintf( sConvQuery, GET_USER_ID_QUERY );
 
     IDE_TEST( Prepare( sConvQuery, sConvStmt ) != SQL_SUCCESS );
@@ -550,8 +550,8 @@ SQLRETURN getViewProcQuery( SChar *aUserName,
 }
 
 /*
- * VIEW, PROCEDURE, MATERIALIZED VIEW ÀÇÁ¸ °ü°è ¾øÀÌ Á¸Àç ÇÏ´Â °æ¿ì
- * ÀÇÁ¸ °ü°è¿¡¼­ LEVEL 0 °æ¿ì
+ * VIEW, PROCEDURE, MATERIALIZED VIEW ì˜ì¡´ ê´€ê³„ ì—†ì´ ì¡´ìž¬ í•˜ëŠ” ê²½ìš°
+ * ì˜ì¡´ ê´€ê³„ì—ì„œ LEVEL 0 ê²½ìš°
  */
 SQLRETURN resultTopViewProcQuery( SChar *aUserName,
                                   FILE  *aViewProcFp,
@@ -668,7 +668,7 @@ SQLRETURN resultTopViewProcQuery( SChar *aUserName,
     {
         IDE_TEST_RAISE( sRet != SQL_SUCCESS, stmtError );
 
-        /* VIEW, PROCEDURE INVALIDÀÎ °æ¿ì °¢°¢ÀÇ ´Ù¸¥ ÆÄÀÏ¿¡ WRITE ÇÔ */
+        /* VIEW, PROCEDURE INVALIDì¸ ê²½ìš° ê°ê°ì˜ ë‹¤ë¥¸ íŒŒì¼ì— WRITE í•¨ */
         if ( gProgOption.mbExistInvalidScript == ID_TRUE )
         {
             if ( sStatus == 0 )
@@ -763,7 +763,7 @@ SQLRETURN resultTopViewProcQuery( SChar *aUserName,
             {
                 idlOS::fprintf( aRefreshMViewFp, "connect \"%s\"/\"%s\";\n", sUserName, sPasswd );
 
-                /* View Name¿¡¼­ $VIEW Á¦°Å */
+                /* View Nameì—ì„œ $VIEW ì œê±° */
                 idlOS::memset( sMViewName, 0x00, ID_SIZEOF( sMViewName ) );
                 idlOS::memcpy( sMViewName, sObjName, idlOS::strlen( sObjName ) - UTM_MVIEW_VIEW_SUFFIX_SIZE );
 
@@ -808,10 +808,10 @@ SQLRETURN resultTopViewProcQuery( SChar *aUserName,
                 }
             }
 
-            /* VIEW, PROCEDURE ¿¡ ¸¶Áö¸· Á¾·á ¹®ÀÚ "/",";" Ãß°¡¸¦ À§ÇÏ¿© 
-             * ¾ÕÀÇ °´Ã¼ÀÇ Å¸ÀÔÀ» ±¸ÇØ¿À°í ÇØ´ç °´Ã¼ÀÇ Object Privilege
-             * ¸¦ ±¸ÇÏ±â À§ÇØ ¾ÕÀÇ °´Ã¼ Áï ±¸ÇÏ°íÀÚ ÇÏ´Â °´Ã¼ÀÇ ObjId,
-             * UserId,ObjType°¡  ÇÊ¿ä ÇÏ´Ù */
+            /* VIEW, PROCEDURE ì— ë§ˆì§€ë§‰ ì¢…ë£Œ ë¬¸ìž "/",";" ì¶”ê°€ë¥¼ ìœ„í•˜ì—¬ 
+             * ì•žì˜ ê°ì²´ì˜ íƒ€ìž…ì„ êµ¬í•´ì˜¤ê³  í•´ë‹¹ ê°ì²´ì˜ Object Privilege
+             * ë¥¼ êµ¬í•˜ê¸° ìœ„í•´ ì•žì˜ ê°ì²´ ì¦‰ êµ¬í•˜ê³ ìž í•˜ëŠ” ê°ì²´ì˜ ObjId,
+             * UserId,ObjTypeê°€  í•„ìš” í•˜ë‹¤ */
             sPrevUserId      = sUserId; 
             sPrevObjId       = sObjId;
             sPrevObjType     = sObjType;
@@ -858,8 +858,8 @@ SQLRETURN resultTopViewProcQuery( SChar *aUserName,
         sFirstFlag = ID_FALSE;
     }
 
-    /* Fetch ÈÄ ¸¶Áö¸· ³²Àº VIEW, PROCEDURE ¿¡ ´ëÇÏ¿© OBJECT ±ÇÇÑ ¹× 
-     * Á¾·á ¹®ÀÚ Ã³¸®
+    /* Fetch í›„ ë§ˆì§€ë§‰ ë‚¨ì€ VIEW, PROCEDURE ì— ëŒ€í•˜ì—¬ OBJECT ê¶Œí•œ ë° 
+     * ì¢…ë£Œ ë¬¸ìž ì²˜ë¦¬
      * */
     if ( sFirstFlag == ID_FALSE )
     {
@@ -910,7 +910,7 @@ SQLRETURN resultTopViewProcQuery( SChar *aUserName,
 #undef IDE_FN
 }
 
-/* view, procedure, MATERIALIZED VIEWÀÇ °èÃþ Äõ¸®ÀÇ °á°ú¸¦ Ãâ·Â ÇÑ´Ù.*/
+/* view, procedure, MATERIALIZED VIEWì˜ ê³„ì¸µ ì¿¼ë¦¬ì˜ ê²°ê³¼ë¥¼ ì¶œë ¥ í•œë‹¤.*/
 SQLRETURN resultViewProcQuery( FILE  *aViewProcFp,
                                FILE  *aRefreshMViewFp,
                                SInt   aObjId )
@@ -1040,7 +1040,7 @@ SQLRETURN resultViewProcQuery( FILE  *aViewProcFp,
     {
         IDE_TEST_RAISE( sRet != SQL_SUCCESS, stmtError );
 
-        /* VIEW, PROCEDURE INVALIDÀÎ °æ¿ì °¢°¢ÀÇ ´Ù¸¥ ÆÄÀÏ¿¡ WRITE ÇÔ */
+        /* VIEW, PROCEDURE INVALIDì¸ ê²½ìš° ê°ê°ì˜ ë‹¤ë¥¸ íŒŒì¼ì— WRITE í•¨ */
         if ( gProgOption.mbExistInvalidScript == ID_TRUE )
         {
             if ( sStatus == 0 )
@@ -1061,13 +1061,13 @@ SQLRETURN resultViewProcQuery( FILE  *aViewProcFp,
         {
             // bug-34053: connection passwords in a psm file might be wrong
             // if aexport is used in user mode
-            // º¯°æÀü: »ç¿ëÀÚ ¸ðµåÀÎ °æ¿ì, password¸¦ usernameÀ¸·Î ¼¼ÆÃ
-            // º¯°æÈÄ: »ç¿ëÀÚ ¸ðµåÀÎ °æ¿ì, ¶Ç´Ù¸¥ »ç¿ëÀÚIDÀÎ °æ¿ì¿¡¸¸
-            // password¸¦ usernameÀ¸·Î ¼¼ÆÃ (cf)´Ù¸¥ »ç¿ëÀÚ °´Ã¼°¡ ÂüÁ¶)
+            // ë³€ê²½ì „: ì‚¬ìš©ìž ëª¨ë“œì¸ ê²½ìš°, passwordë¥¼ usernameìœ¼ë¡œ ì„¸íŒ…
+            // ë³€ê²½í›„: ì‚¬ìš©ìž ëª¨ë“œì¸ ê²½ìš°, ë˜ë‹¤ë¥¸ ì‚¬ìš©ìžIDì¸ ê²½ìš°ì—ë§Œ
+            // passwordë¥¼ usernameìœ¼ë¡œ ì„¸íŒ… (cf)ë‹¤ë¥¸ ì‚¬ìš©ìž ê°ì²´ê°€ ì°¸ì¡°)
             // ex) aexport -u aaa -p pwd -> connect bbb/bbb in AAA_CRT_VIEW_PROC
             /*
-             * BUG-45383 aexport°¡ »ç¿ëÀÚ ¸ðµå·Î ºä ¹× PSM °´Ã¼¸¦ °Ë»öÇÒ ¶§,
-             * Å¸ »ç¿ëÀÚÀÇ ºñ¹Ð¹øÈ£¸¦ Ã£Áö ¸øÇØ ¿¡·¯¸¦ Ãâ·ÂÇÕ´Ï´Ù.
+             * BUG-45383 aexportê°€ ì‚¬ìš©ìž ëª¨ë“œë¡œ ë·° ë° PSM ê°ì²´ë¥¼ ê²€ìƒ‰í•  ë•Œ,
+             * íƒ€ ì‚¬ìš©ìžì˜ ë¹„ë°€ë²ˆí˜¸ë¥¼ ì°¾ì§€ ëª»í•´ ì—ëŸ¬ë¥¼ ì¶œë ¥í•©ë‹ˆë‹¤.
              */
             if ( ( idlOS::strcasecmp( sUserNameInSQL, (SChar *) UTM_STR_SYS ) == 0 )
                    || ( idlOS::strcmp( sUserNameInSQL, sUserName ) == 0 ) )
@@ -1092,7 +1092,7 @@ SQLRETURN resultViewProcQuery( FILE  *aViewProcFp,
             if ( sObjType == UTM_MVIEW )
             {
 
-                /* View Name¿¡¼­ $VIEW Á¦°Å */
+                /* View Nameì—ì„œ $VIEW ì œê±° */
                 idlOS::memset( sMViewName, 0x00, ID_SIZEOF( sMViewName ) );
                 idlOS::memcpy( sMViewName, sObjName, idlOS::strlen( sObjName ) - UTM_MVIEW_VIEW_SUFFIX_SIZE );
 

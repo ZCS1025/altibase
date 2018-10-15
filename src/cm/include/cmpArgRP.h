@@ -46,7 +46,7 @@ typedef struct cmpArgRPMetaRepl
 
     cmtVariable mDBCharSet;         // BUG-23718
     cmtVariable mNationalCharSet;
-    cmtVariable mServerID;          // BUG-6093 Server ID Ãß°¡
+    cmtVariable mServerID;          // BUG-6093 Server ID ì¶”ê°€
     cmtVariable mRemoteFaultDetectTime;
 } cmpArgRPMetaRepl;
 
@@ -74,7 +74,7 @@ typedef struct cmpArgRPMetaReplTbl
     UInt        mPKColCnt;          // Primary Key Column Count
     SInt        mColumnCnt;         // Columnt count
     SInt        mIndexCnt;          // Index count
-    /* PROJ-1915 Invalid Max SN Àü¼Û */
+    /* PROJ-1915 Invalid Max SN ì „ì†¡ */
     ULong       mInvalidMaxSN;
     cmtVariable mConditionStr;
 } cmpArgRPMetaReplTbl;
@@ -84,22 +84,22 @@ typedef struct cmpArgRPMetaReplCol
     cmtVariable mColumnName;        // Column Name(40byte)
     UInt        mColumnID;          // Column ID
     UInt        mColumnFlag;        // Column Flag
-    UInt        mColumnOffset;      // Fixed record¿¡¼­ÀÇ column offset
+    UInt        mColumnOffset;      // Fixed recordì—ì„œì˜ column offset
     UInt        mColumnSize;        // Column Size
-    UInt        mDataTypeID;        // ColumnÀÇ Data type ID
-    UInt        mLangID;            // ColumnÀÇ Language ID
-    UInt        mFlags;             // mtcColumnÀÇ flag
-    SInt        mPrecision;         // ColumnÀÇ precision
-    SInt        mScale;             // ColumnÀÇ scale
+    UInt        mDataTypeID;        // Columnì˜ Data type ID
+    UInt        mLangID;            // Columnì˜ Language ID
+    UInt        mFlags;             // mtcColumnì˜ flag
+    SInt        mPrecision;         // Columnì˜ precision
+    SInt        mScale;             // Columnì˜ scale
 
     // PROJ-2002 Column Security
-    // echar, evarchar °°Àº º¸¾È Å¸ÀÔÀ» »ç¿ëÇÏ´Â °æ¿ì
-    // ¾Æ·¡ ÄÃ·³Á¤º¸°¡ Ãß°¡µÈ´Ù.
-    SInt        mEncPrecision;      // º¸¾È Å¸ÀÔÀÇ precision
-    cmtVariable mPolicyName;        // º¸¾È Å¸ÀÔ¿¡ »ç¿ëµÈ policy name
-    cmtVariable mPolicyCode;        // º¸¾È Å¸ÀÔ¿¡ »ç¿ëµÈ policy code
-    cmtVariable mECCPolicyName;     // º¸¾È Å¸ÀÔ¿¡ »ç¿ëµÈ ecc policy name
-    cmtVariable mECCPolicyCode;     // º¸¾È Å¸ÀÔ¿¡ »ç¿ëµÈ ecc policy code
+    // echar, evarchar ê°™ì€ ë³´ì•ˆ íƒ€ì…ì„ ì‚¬ìš©í•˜ëŠ” ê²½ìš°
+    // ì•„ë˜ ì»¬ëŸ¼ì •ë³´ê°€ ì¶”ê°€ëœë‹¤.
+    SInt        mEncPrecision;      // ë³´ì•ˆ íƒ€ì…ì˜ precision
+    cmtVariable mPolicyName;        // ë³´ì•ˆ íƒ€ì…ì— ì‚¬ìš©ëœ policy name
+    cmtVariable mPolicyCode;        // ë³´ì•ˆ íƒ€ì…ì— ì‚¬ìš©ëœ policy code
+    cmtVariable mECCPolicyName;     // ë³´ì•ˆ íƒ€ì…ì— ì‚¬ìš©ëœ ecc policy name
+    cmtVariable mECCPolicyCode;     // ë³´ì•ˆ íƒ€ì…ì— ì‚¬ìš©ëœ ecc policy code
 } cmpArgRPMetaReplCol;
 
 typedef struct cmpArgRPMetaReplIdx
@@ -107,31 +107,31 @@ typedef struct cmpArgRPMetaReplIdx
     cmtVariable mIndexName;         // Index Name(40byte)
     UInt        mIndexID;           // Index ID
     UInt        mIndexTypeID;       // Index Type ID
-    UInt        mKeyColumnCnt;      // Index¸¦ ±¸¼ºÇÏ´Â column °³¼ö
-    UInt        mIsUnique;          // Unique index ¿©ºÎ
-    UInt        mIsRange;           // Range ¿©ºÎ
+    UInt        mKeyColumnCnt;      // Indexë¥¼ êµ¬ì„±í•˜ëŠ” column ê°œìˆ˜
+    UInt        mIsUnique;          // Unique index ì—¬ë¶€
+    UInt        mIsRange;           // Range ì—¬ë¶€
 } cmpArgRPMetaReplIdx;
 
 typedef struct cmpArgRPMetaReplIdxCol
 {
-    UInt        mColumnID;          // Index¸¦ ±¸¼ºÇÏ´Â column ID
-    UInt        mKeyColumnFlag;     // IndexÀÇ sort ¼ø¼­(ASC/DESC)
+    UInt        mColumnID;          // Indexë¥¼ êµ¬ì„±í•˜ëŠ” column ID
+    UInt        mKeyColumnFlag;     // Indexì˜ sort ìˆœì„œ(ASC/DESC)
 } cmpArgRPMetaReplIdxCol;
 
 typedef struct cmpArgRPHandshakeAck
 {
-    UInt        mResult;            // ¼º°ø/½ÇÆĞ °á°ú
+    UInt        mResult;            // ì„±ê³µ/ì‹¤íŒ¨ ê²°ê³¼
     SInt        mFailbackStatus;
     ULong       mXSN;               // restart SN
-    cmtVariable mMsg;               // ½ÇÆĞ ¸Ş¼¼Áö(1024 byte)
+    cmtVariable mMsg;               // ì‹¤íŒ¨ ë©”ì„¸ì§€(1024 byte)
 } cmpArgRPHandshakeAck;
 
-/* PROJ-1663¿¡ ÀÇÇØ »ç¿ëµÇÁö ¾ÊÀ½ */
+/* PROJ-1663ì— ì˜í•´ ì‚¬ìš©ë˜ì§€ ì•ŠìŒ */
 typedef struct cmpArgRPTrBegin
 {
     UInt        mXLogType;          // RP_X_BEGIN
     UInt        mTransID;           // Transaction ID
-    ULong       mSN;                // ·Î±×ÀÇ SN
+    ULong       mSN;                // ë¡œê·¸ì˜ SN
     ULong       mSyncSN;
 } cmpArgRPTrBegin;
 
@@ -139,7 +139,7 @@ typedef struct cmpArgRPTrCommit
 {
     UInt        mXLogType;          // RP_X_COMMIT
     UInt        mTransID;           // Transaction ID
-    ULong       mSN;                // ·Î±×ÀÇ SN
+    ULong       mSN;                // ë¡œê·¸ì˜ SN
     ULong       mSyncSN;
 } cmpArgRPTrCommit;
 
@@ -147,7 +147,7 @@ typedef struct cmpArgRPTrAbort
 {
     UInt        mXLogType;          // RP_X_ABORT
     UInt        mTransID;           // Transaction ID
-    ULong       mSN;                // ·Î±×ÀÇ SN
+    ULong       mSN;                // ë¡œê·¸ì˜ SN
     ULong       mSyncSN;
 } cmpArgRPTrAbort;
 
@@ -155,7 +155,7 @@ typedef struct cmpArgRPSPSet
 {
     UInt        mXLogType;          // RP_X_SP_SET
     UInt        mTransID;           // Transaction ID
-    ULong       mSN;                // ·Î±×ÀÇ SN
+    ULong       mSN;                // ë¡œê·¸ì˜ SN
     ULong       mSyncSN;
     UInt        mSPNameLen;         // Savepoint Name Length
     cmtVariable mSPName;            // Savepoint Name
@@ -165,7 +165,7 @@ typedef struct cmpArgRPSPAbort
 {
     UInt        mXLogType;          // RP_X_SP_ABORT
     UInt        mTransID;           // Transaction ID
-    ULong       mSN;                // ·Î±×ÀÇ SN
+    ULong       mSN;                // ë¡œê·¸ì˜ SN
     ULong       mSyncSN;
     UInt        mSPNameLen;         // Savepoint Name Length
     cmtVariable mSPName;            // Savepoint Name
@@ -175,7 +175,7 @@ typedef struct cmpArgRPStmtBegin
 {
     UInt        mXLogType;          // RP_X_STMT_BEGIN
     UInt        mTransID;           // Transaction ID
-    ULong       mSN;                // ·Î±×ÀÇ SN
+    ULong       mSN;                // ë¡œê·¸ì˜ SN
     ULong       mSyncSN;
     UInt        mStmtID;            // Statement ID
 } cmpArgRPStmtBegin;
@@ -184,7 +184,7 @@ typedef struct cmpArgRPStmtEnd
 {
     UInt        mXLogType;          // RP_X_STMT_END
     UInt        mTransID;           // Transaction ID
-    ULong       mSN;                // ·Î±×ÀÇ SN
+    ULong       mSN;                // ë¡œê·¸ì˜ SN
     ULong       mSyncSN;
     UInt        mStmtID;            // Statement ID
 } cmpArgRPStmtEnd;
@@ -193,7 +193,7 @@ typedef struct cmpArgRPCursorOpen
 {
     UInt        mXLogType;          // RP_X_CURSOR_OPEN
     UInt        mTransID;           // Transaction ID
-    ULong       mSN;                // ·Î±×ÀÇ SN
+    ULong       mSN;                // ë¡œê·¸ì˜ SN
     ULong       mSyncSN;
     UInt        mCursorID;          // Cursor ID
 } cmpArgRPCursorOpen;
@@ -202,7 +202,7 @@ typedef struct cmpArgRPCursorClose
 {
     UInt        mXLogType;          // RP_X_CURSOR_CLOSE
     UInt        mTransID;           // Transaction ID
-    ULong       mSN;                // ·Î±×ÀÇ SN
+    ULong       mSN;                // ë¡œê·¸ì˜ SN
     ULong       mSyncSN;
     UInt        mCursorID;          // Cursor ID
 } cmpArgRPCursorClose;
@@ -211,10 +211,10 @@ typedef struct cmpArgRPInsert
 {
     UInt        mXLogType;          // RP_X_INSERT
     UInt        mTransID;           // Transaction ID
-    ULong       mSN;                // ·Î±×ÀÇ SN
+    ULong       mSN;                // ë¡œê·¸ì˜ SN
     ULong       mSyncSN;
     UInt        mImplSPDepth;
-    ULong       mTableOID;          // Insert ´ë»ó Table OID
+    ULong       mTableOID;          // Insert ëŒ€ìƒ Table OID
     UInt        mColCnt;            // Insert Column Count
 } cmpArgRPInsert;
 
@@ -222,40 +222,40 @@ typedef struct cmpArgRPUpdate
 {
     UInt        mXLogType;          // RP_X_UPDATE
     UInt        mTransID;           // Transaction ID
-    ULong       mSN;                // ·Î±×ÀÇ SN
+    ULong       mSN;                // ë¡œê·¸ì˜ SN
     ULong       mSyncSN;
     UInt        mImplSPDepth;
-    ULong       mTableOID;          // Update ´ë»ó Table OID
+    ULong       mTableOID;          // Update ëŒ€ìƒ Table OID
     UInt        mPKColCnt;          // Primary Key Column Count
-    UInt        mUpdateColCnt;      // Update°¡ ¹ß»ıÇÑ Column °³¼ö
+    UInt        mUpdateColCnt;      // Updateê°€ ë°œìƒí•œ Column ê°œìˆ˜
 } cmpArgRPUpdate;
 
 typedef struct cmpArgRPDelete
 {
     UInt        mXLogType;          // RP_X_DELETE
     UInt        mTransID;           // Transaction ID
-    ULong       mSN;                // ·Î±×ÀÇ SN
+    ULong       mSN;                // ë¡œê·¸ì˜ SN
     ULong       mSyncSN;
     UInt        mImplSPDepth;
-    ULong       mTableOID;          // Delete ´ë»ó Table OID
+    ULong       mTableOID;          // Delete ëŒ€ìƒ Table OID
     UInt        mPKColCnt;          // Primary Key Column Count
 } cmpArgRPDelete;
 
 typedef struct cmpArgRPUIntID
 {
-    UInt        mUIntID;            // Column ID : array·Î »ç¿ëÀ§ÇÔ
+    UInt        mUIntID;            // Column ID : arrayë¡œ ì‚¬ìš©ìœ„í•¨
 } cmpArgRPUIntID;
 
 typedef struct cmpArgRPValue
 {
-    cmtVariable mValue;             // ½ÇÁ¦ Value
+    cmtVariable mValue;             // ì‹¤ì œ Value
 } cmpArgRPValue;
 
 typedef struct cmpArgRPStop
 {
     UInt        mXLogType;          // RP_X_REPL_STOP
     UInt        mTransID;           // Transaction ID
-    ULong       mSN;                // ·Î±×ÀÇ SN
+    ULong       mSN;                // ë¡œê·¸ì˜ SN
     ULong       mSyncSN;
     ULong       mRestartSN;         // BUG-17748 : Restart SN
 } cmpArgRPStop;
@@ -264,7 +264,7 @@ typedef struct cmpArgRPKeepAlive
 {
     UInt        mXLogType;          // RP_X_KEEP_ALIVE
     UInt        mTransID;           // Transaction ID
-    ULong       mSN;                // ·Î±×ÀÇ SN
+    ULong       mSN;                // ë¡œê·¸ì˜ SN
     ULong       mSyncSN;
     ULong       mRestartSN;         // BUG-17748 : Restart SN
 } cmpArgRPKeepAlive;
@@ -273,7 +273,7 @@ typedef struct cmpArgRPFlush
 {
     UInt        mXLogType;          // RP_X_FLUSH
     UInt        mTransID;           // Transaction ID
-    ULong       mSN;                // ·Î±×ÀÇ SN
+    ULong       mSN;                // ë¡œê·¸ì˜ SN
     ULong       mSyncSN;
     UInt        mOption;            // Flush Option
 } cmpArgRPFlush;
@@ -282,7 +282,7 @@ typedef struct cmpArgRPFlushAck
 {
     UInt        mXLogType;          // RP_X_FLUSH_ACK
     UInt        mTransID;           // Transaction ID
-    ULong       mSN;                // ·Î±×ÀÇ SN
+    ULong       mSN;                // ë¡œê·¸ì˜ SN
     ULong       mSyncSN;
 } cmpArgRPFlushAck;
 
@@ -292,28 +292,28 @@ typedef struct cmpArgRPAck
     UInt        mAbortTxCount;      // Abort Transaction Count
     UInt        mClearTxCount;      // Clear Transaction Count
     ULong       mRestartSN;         // Transaction Table's Minimum SN
-    ULong       mLastCommitSN;      // ¸¶Áö¸·À¸·Î CommitÇÑ ·Î±×ÀÇ SN
-    ULong       mLastArrivedSN;     // Receiver°¡ ¼ö½ÅÇÑ ·Î±×ÀÇ ¸¶Áö¸· SN (Acked Mode)
-    ULong       mLastProcessedSN;   // ¹İ¿µÀ» ¿Ï·áÇÑ ¸¶Áö¸· ·Î±×ÀÇ SN     (Eager Mode)
-    ULong       mFlushSN;           // µğ½ºÅ©¿¡ FlushµÈ SN
-    //cmpArgRPTxAck¸¦ ÀÌ¿ëÇØ Abort Transaction List¸¦ ¼ö½Å
-    //cmpArgRPTxAck¸¦ ÀÌ¿ëÇØ Clear Transaction List¸¦ ¼ö½Å
+    ULong       mLastCommitSN;      // ë§ˆì§€ë§‰ìœ¼ë¡œ Commití•œ ë¡œê·¸ì˜ SN
+    ULong       mLastArrivedSN;     // Receiverê°€ ìˆ˜ì‹ í•œ ë¡œê·¸ì˜ ë§ˆì§€ë§‰ SN (Acked Mode)
+    ULong       mLastProcessedSN;   // ë°˜ì˜ì„ ì™„ë£Œí•œ ë§ˆì§€ë§‰ ë¡œê·¸ì˜ SN     (Eager Mode)
+    ULong       mFlushSN;           // ë””ìŠ¤í¬ì— Flushëœ SN
+    //cmpArgRPTxAckë¥¼ ì´ìš©í•´ Abort Transaction Listë¥¼ ìˆ˜ì‹ 
+    //cmpArgRPTxAckë¥¼ ì´ìš©í•´ Clear Transaction Listë¥¼ ìˆ˜ì‹ 
 } cmpArgRPAck;
 
 typedef struct cmpArgRPTxAck
 {
     UInt        mTID;               // Transaction ID
-    ULong       mSN;                // XLogÀÇ SN
+    ULong       mSN;                // XLogì˜ SN
 } cmpArgRPTxAck;
 
 typedef struct cmpArgRPLobCursorOpen
 {
     UInt        mXLogType;          // RP_X_LOB_CURSOR_OPEN
     UInt        mTransID;           // Transaction ID
-    ULong       mSN;                // ·Î±×ÀÇ SN
+    ULong       mSN;                // ë¡œê·¸ì˜ SN
     ULong       mSyncSN;
-    ULong       mTableOID;          // LOB cursor open ´ë»ó Table OID
-    ULong       mLobLocator;        // LOB locator : ½Äº°ÀÚ·Î »ç¿ë
+    ULong       mTableOID;          // LOB cursor open ëŒ€ìƒ Table OID
+    ULong       mLobLocator;        // LOB locator : ì‹ë³„ìë¡œ ì‚¬ìš©
     UInt        mColumnID;          // LOB column ID
     UInt        mPKColCnt;
 } cmpArgRPLobCursorOpen;
@@ -322,51 +322,51 @@ typedef struct cmpArgRPLobCursorClose
 {
     UInt        mXLogType;          // RP_X_LOB_CURSOR_CLOSE
     UInt        mTransID;           // Transaction ID
-    ULong       mSN;                // ·Î±×ÀÇ SN
+    ULong       mSN;                // ë¡œê·¸ì˜ SN
     ULong       mSyncSN;
-    ULong       mLobLocator;        // CloseÇÒ LOB locator
+    ULong       mLobLocator;        // Closeí•  LOB locator
 } cmpArgRPLobCursorClose;
 
 typedef struct cmpArgRPLobPrepare4Write
 {
     UInt        mXLogType;          // RP_X_PREPARE4WRITE
     UInt        mTransID;           // Transaction ID
-    ULong       mSN;                // ·Î±×ÀÇ SN
+    ULong       mSN;                // ë¡œê·¸ì˜ SN
     ULong       mSyncSN;
-    ULong       mLobLocator;        // WriteÇÒ LOB locator
-    UInt        mOffset;            // º¯°æ ½ÃÀÛ offset
-    UInt        mOldSize;           // º¯°æ Àü size
-    UInt        mNewSize;           // º¯°æ ÈÄ size
+    ULong       mLobLocator;        // Writeí•  LOB locator
+    UInt        mOffset;            // ë³€ê²½ ì‹œì‘ offset
+    UInt        mOldSize;           // ë³€ê²½ ì „ size
+    UInt        mNewSize;           // ë³€ê²½ í›„ size
 } cmpArgRPLobPrepare4Write;
 
 typedef struct cmpArgRPLobPartialWrite
 {
     UInt        mXLogType;          // RP_X_LOB_PARTIAL_WRITE
     UInt        mTransID;           // Transaction ID
-    ULong       mSN;                // ·Î±×ÀÇ SN
+    ULong       mSN;                // ë¡œê·¸ì˜ SN
     ULong       mSyncSN;
-    ULong       mLobLocator;        // WriteÇÒ LOB locator
-    UInt        mOffset;            // Piece¸¦ WriteÇÒ LOB ³»ÀÇ À§Ä¡
-    UInt        mPieceLen;          // PieceÀÇ ±æÀÌ
-    cmtVariable mPieceValue;        // PieceÀÇ value
+    ULong       mLobLocator;        // Writeí•  LOB locator
+    UInt        mOffset;            // Pieceë¥¼ Writeí•  LOB ë‚´ì˜ ìœ„ì¹˜
+    UInt        mPieceLen;          // Pieceì˜ ê¸¸ì´
+    cmtVariable mPieceValue;        // Pieceì˜ value
 } cmpArgRPLobPartialWrite;
 
 typedef struct cmpArgRPLobFinish2Write
 {
     UInt        mXLogType;          // RP_X_LOB_FINISH2WRITE
     UInt        mTransID;           // Transaction ID
-    ULong       mSN;                // ·Î±×ÀÇ SN
+    ULong       mSN;                // ë¡œê·¸ì˜ SN
     ULong       mSyncSN;
-    ULong       mLobLocator;        // Write¸¦ ³¡³¾ LOB locator
+    ULong       mLobLocator;        // Writeë¥¼ ëë‚¼ LOB locator
 } cmpArgRPLobFinish2Write;
 
 typedef struct cmpArgRPLobTrim
 {
     UInt        mXLogType;          // RP_X_LOB_TRIM
     UInt        mTransID;           // Transaction ID
-    ULong       mSN;                // ·Î±×ÀÇ SN
+    ULong       mSN;                // ë¡œê·¸ì˜ SN
     ULong       mSyncSN;
-    ULong       mLobLocator;        // TrimÇÒ LOB locator
+    ULong       mLobLocator;        // Trimí•  LOB locator
     UInt        mOffset;            // Trim offset
 } cmpArgRPLobTrim;
 
@@ -374,7 +374,7 @@ typedef struct cmpArgRPHandshake
 {
     UInt        mXLogType;          // RP_X_HANDSHAKE
     UInt        mTransID;           // Transaction ID
-    ULong       mSN;                // ·Î±×ÀÇ SN
+    ULong       mSN;                // ë¡œê·¸ì˜ SN
     ULong       mSyncSN;
 } cmpArgRPHandshake;
 
@@ -382,7 +382,7 @@ typedef struct cmpArgRPSyncPKBegin
 {
     UInt        mXLogType;          // RP_X_SYNC_PK_BEGIN
     UInt        mTransID;           // Transaction ID
-    ULong       mSN;                // ·Î±×ÀÇ SN
+    ULong       mSN;                // ë¡œê·¸ì˜ SN
     ULong       mSyncSN;
 } cmpArgRPSyncPKBegin;
 
@@ -390,9 +390,9 @@ typedef struct cmpArgRPSyncPK
 {
     UInt        mXLogType;          // RP_X_SYNC_PK
     UInt        mTransID;           // Transaction ID
-    ULong       mSN;                // ·Î±×ÀÇ SN
+    ULong       mSN;                // ë¡œê·¸ì˜ SN
     ULong       mSyncSN;
-    ULong       mTableOID;          // Delete ´ë»ó Table OID
+    ULong       mTableOID;          // Delete ëŒ€ìƒ Table OID
     UInt        mPKColCnt;          // Primary Key Column Count
 } cmpArgRPSyncPK;
 
@@ -400,7 +400,7 @@ typedef struct cmpArgRPSyncPKEnd
 {
     UInt        mXLogType;          // RP_X_SYNC_PK_END
     UInt        mTransID;           // Transaction ID
-    ULong       mSN;                // ·Î±×ÀÇ SN
+    ULong       mSN;                // ë¡œê·¸ì˜ SN
     ULong       mSyncSN;
 } cmpArgRPSyncPKEnd;
 
@@ -408,7 +408,7 @@ typedef struct cmpArgRPFailbackEnd
 {
     UInt        mXLogType;          // RP_X_FAILBACK_END
     UInt        mTransID;           // Transaction ID
-    ULong       mSN;                // ·Î±×ÀÇ SN
+    ULong       mSN;                // ë¡œê·¸ì˜ SN
     ULong       mSyncSN;
 } cmpArgRPFailbackEnd;
 
@@ -421,14 +421,14 @@ typedef struct cmpArgRPSyncStart
 {
     UInt        mXLogType;          /* RP_X_SYNC_START */
     UInt        mTransID;           /* Transaction ID  */
-    ULong       mSN;                /* ·Î±×ÀÇ SN      */
+    ULong       mSN;                /* ë¡œê·¸ì˜ SN      */
 } cmpArgRPSyncStart;
 
 typedef struct cmpArgRPSyncRebuildIndex
 {
     UInt        mXLogType;          /* RP_X_DROP_INDEX */
     UInt        mTransID;           /* Transaction ID  */
-    ULong       mSN;                /* ·Î±×ÀÇ SN      */
+    ULong       mSN;                /* ë¡œê·¸ì˜ SN      */
 } cmpArgRPSyncRebuildIndex;
 
 typedef union cmpArgRP

@@ -82,8 +82,8 @@
 #define RP_DBG_PRINTLINE()
 #endif
 
-/* BUG-31545 RP ¼º´É Åë°è Á¤º¸¸¦ ¼öÁı*/
-/* RP_CREATE_FLAG_VARIABLE ¸ÅÅ©·Î´Â º¯¼ö ¼±¾ğºÎ¿¡ µĞ´Ù. */
+/* BUG-31545 RP ì„±ëŠ¥ í†µê³„ ì •ë³´ë¥¼ ìˆ˜ì§‘*/
+/* RP_CREATE_FLAG_VARIABLE ë§¤í¬ë¡œëŠ” ë³€ìˆ˜ ì„ ì–¸ë¶€ì— ë‘”ë‹¤. */
 #define RP_CREATE_FLAG_VARIABLE( __Idx__ ) idBool sFlag_ ## __Idx__  = ID_FALSE;
 #define RP_OPTIMIZE_TIME_BEGIN( __idvBasePtr__, __Idx__ )  \
 {                                                          \
@@ -131,7 +131,7 @@
 #define RP_SOCKET_UNIX_DOMAIN_LEN       (11)
 #define RP_SOCKET_FILE_LEN              (250 + 1)
 
-// PROJ-1442 Replication Online Áß DDL Çã¿ë
+// PROJ-1442 Replication Online ì¤‘ DDL í—ˆìš©
 #define RP_INVALID_COLUMN_ID            (ID_UINT_MAX)
 
 /* PROJ-1969 Various Options */
@@ -167,7 +167,7 @@
 #define RP_OPTION_GROUPING_SET          (0x00000010)
 #define RP_OPTION_GROUPING_UNSET        (0x00000000)
 
-/* BUG-45236 Local Replication Áö¿ø */
+/* BUG-45236 Local Replication ì§€ì› */
 #define RP_OPTION_LOCAL_MASK            (0x00000020)
 #define RP_OPTION_LOCAL_SET             (0x00000020)
 #define RP_OPTION_LOCAL_UNSET           (0x00000000)
@@ -234,7 +234,7 @@ typedef enum
     RP_CONFLICT_RESOLUTION_NONE      = 0,
     RP_CONFLICT_RESOLUTION_MASTER    = 1,
     RP_CONFLICT_RESOLUTION_SLAVE     = 2
-    /* Timestamp Conflict ResolutionÀº Table ´ÜÀ§·Î Àû¿ëµÇ¹Ç·Î, Á¦¿ÜÇÑ´Ù. */
+    /* Timestamp Conflict Resolutionì€ Table ë‹¨ìœ„ë¡œ ì ìš©ë˜ë¯€ë¡œ, ì œì™¸í•œë‹¤. */
 } RP_CONFLICT_RESOLUTION;
 
 typedef enum
@@ -279,8 +279,8 @@ typedef enum
     RP_START_OPTION_SN
 } RP_START_OPTION;
 
-/* Eager Replication¿¡¼­ SenderÀÇ »óÅÂ´Â ¾Æ·¡¿Í °°Àº ´Ù¾çÇÑ ÀüÀÌ °úÁ¤¿¡ ÀÇÇØ¼­ º¯°æµÉ ¼ö ÀÖ´Ù.
- * O¶ó°í Ç¥½ÃÇÑ ´Ü°è´Â °Ç³Ê¶Û ¼ö ÀÖ´Ù.
+/* Eager Replicationì—ì„œ Senderì˜ ìƒíƒœëŠ” ì•„ë˜ì™€ ê°™ì€ ë‹¤ì–‘í•œ ì „ì´ ê³¼ì •ì— ì˜í•´ì„œ ë³€ê²½ë  ìˆ˜ ìˆë‹¤.
+ * Oë¼ê³  í‘œì‹œí•œ ë‹¨ê³„ëŠ” ê±´ë„ˆë›¸ ìˆ˜ ìˆë‹¤.
  * stop->sync(O)->failback->run->retry(O)->stop
  *                   |--<-------------| 
  */
@@ -292,7 +292,7 @@ typedef enum
     RP_SENDER_FAILBACK_MASTER,
     RP_SENDER_FAILBACK_SLAVE,
     RP_SENDER_RUN,
-    RP_SENDER_FAILBACK_EAGER, /* ¿©±âºÎÅÍ´Â Eager replicationÀÌ µ¿ÀÛÇÏ´Â status¸¦ ±â¼ú*/
+    RP_SENDER_FAILBACK_EAGER, /* ì—¬ê¸°ë¶€í„°ëŠ” Eager replicationì´ ë™ì‘í•˜ëŠ” statusë¥¼ ê¸°ìˆ */
     RP_SENDER_FLUSH_FAILBACK,
     RP_SENDER_IDLE,
     RP_SENDER_RETRY
@@ -309,14 +309,14 @@ typedef enum
 // message return from receiver to sender
 typedef enum
 {
-    RP_MSG_OK                   = 0, /* Replication Protocol Version, Meta Á¤º¸°¡ °°À½ */
-    RP_MSG_DISCONNECT           = 1, /* Network ´ÜÀı µîÀ¸·Î ÀÎÇØ, °á°ú¸¦ ¾Ë ¼ö ¾øÀ½ */
-    RP_MSG_DENY                 = 2, /* ÇØ´ç Recovery/Service Phase¿¡¼­ Á¢±Ù °ÅºÎ */
-    RP_MSG_NOK                  = 3, /* Receiver ÇÒ´ç ½ÇÆĞ (Receiver Threads, Recovery Items) */
-    RP_MSG_PROTOCOL_DIFF        = 4, /* Replication Protocol VersionÀÌ ´Ù¸§ */
-    RP_MSG_META_DIFF            = 5, /* Meta Á¤º¸°¡ ´Ù¸§ */
-    RP_MSG_RECOVERY_OK          = 6, /* Recovery °¡´É */
-    RP_MSG_RECOVERY_NOK         = 7  /* Recovery ÇÊ¿ä¾ø°Å³ª, ºÒ°¡´É */
+    RP_MSG_OK                   = 0, /* Replication Protocol Version, Meta ì •ë³´ê°€ ê°™ìŒ */
+    RP_MSG_DISCONNECT           = 1, /* Network ë‹¨ì ˆ ë“±ìœ¼ë¡œ ì¸í•´, ê²°ê³¼ë¥¼ ì•Œ ìˆ˜ ì—†ìŒ */
+    RP_MSG_DENY                 = 2, /* í•´ë‹¹ Recovery/Service Phaseì—ì„œ ì ‘ê·¼ ê±°ë¶€ */
+    RP_MSG_NOK                  = 3, /* Receiver í• ë‹¹ ì‹¤íŒ¨ (Receiver Threads, Recovery Items) */
+    RP_MSG_PROTOCOL_DIFF        = 4, /* Replication Protocol Versionì´ ë‹¤ë¦„ */
+    RP_MSG_META_DIFF            = 5, /* Meta ì •ë³´ê°€ ë‹¤ë¦„ */
+    RP_MSG_RECOVERY_OK          = 6, /* Recovery ê°€ëŠ¥ */
+    RP_MSG_RECOVERY_NOK         = 7  /* Recovery í•„ìš”ì—†ê±°ë‚˜, ë¶ˆê°€ëŠ¥ */
 } rpMsgReturn;
 
 // XLog Message Type
@@ -425,10 +425,10 @@ typedef enum
     RP_RECEIVER_SYNC,
     RP_RECEIVER_RECOVERY, //recovery sender counterpart
     RP_RECEIVER_OFFLINE,  //PROJ-1915 off-line replicator receiver
-    RP_RECEIVER_PARALLEL  //°°Àº replÀÌ¸§À» Çã¿ëÇÏ´Â receiver (for child sender)
+    RP_RECEIVER_PARALLEL  //ê°™ì€ replì´ë¦„ì„ í—ˆìš©í•˜ëŠ” receiver (for child sender)
 } rpReceiverStartMode;
 
-// PROJ-1442 Replication Online Áß DDL Çã¿ë
+// PROJ-1442 Replication Online ì¤‘ DDL í—ˆìš©
 typedef enum
 {
     RP_META_BUILD_LAST = 0,
@@ -438,10 +438,10 @@ typedef enum
 } RP_META_BUILD_TYPE;
 
 /* proj-1608 recovery status transition
- * recovery giveupÀÌ ¹ß»ıÇÏ´Â °æ¿ì 1,2
+ * recovery giveupì´ ë°œìƒí•˜ëŠ” ê²½ìš° 1,2
  * 1. recovery_null --> recovery_support_receiver_run --> recovery_null
  * 2. recovery_null --> recovery_support_receiver_run --> recovery_wait --> recovery_null
- * recovery°¡ Á¤»óÀûÀ¸·Î ÁøÇàµÇ´Â °æ¿ì 3
+ * recoveryê°€ ì •ìƒì ìœ¼ë¡œ ì§„í–‰ë˜ëŠ” ê²½ìš° 3
  * 3. recovery_null --> recovery_support_receiver_run --> recovery_wait --> recovery_sender_run --> recovery_null
  */
 typedef enum
@@ -459,14 +459,14 @@ typedef enum
     RP_SAVEPOINT_PSM
 } rpSavepointType;
 
-//gapÀÌ ¾øÀ» ¶§ ÃëÇØ¾ßÇÏ´Â µ¿ÀÛ
+//gapì´ ì—†ì„ ë•Œ ì·¨í•´ì•¼í•˜ëŠ” ë™ì‘
 typedef enum
 {
     RP_WAIT_ON_NOGAP  = 0,
     RP_RETURN_ON_NOGAP
 } RP_ACTION_ON_NOGAP;
 
-// XLog¸¦ Ãß°¡ÇÒ ¶§ÀÇ µ¿ÀÛ
+// XLogë¥¼ ì¶”ê°€í•  ë•Œì˜ ë™ì‘
 typedef enum
 {
     RP_SEND_XLOG_ON_ADD_XLOG  = 0,

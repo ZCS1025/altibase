@@ -58,11 +58,11 @@ SInt convertMbToWc4Cp936ext( void    * aSrc,
 /***********************************************************************
  *
  * Description :
- *     PROJ-2414 [±‚¥…º∫] GBK, CP936ext character set √ﬂ∞°
+ *     PROJ-2414 [Í∏∞Îä•ÏÑ±] GBK, CP936ext character set Ï∂îÍ∞Ä
  *     CP936EXT ==> UTF16BE
  *
  * Implementation :
- *     1) CP936EXT ø° ¿¸¥ﬁ
+ *     1) CP936EXT Ïóê Ï†ÑÎã¨
  *
  ***********************************************************************/
 
@@ -73,7 +73,7 @@ SInt convertMbToWc4Cp936ext( void    * aSrc,
 
     sSrcCharPtr = (UChar *)aSrc;
 
-    /* 1) CP936EXT ø° ¿¸¥ﬁ */
+    /* 1) CP936EXT Ïóê Ï†ÑÎã¨ */
     if ( ( sSrcCharPtr[0] == 0xa6 ) || ( sSrcCharPtr[0] == 0xa8 ) )
     {
         if ( aSrcRemain < 2 )
@@ -134,7 +134,7 @@ SInt convertMbToWc4Cp936ext( void    * aSrc,
     }
     else
     {
-        /* GBK ø°º≠ ¿ÃπÃ √º≈©«œ±‚ ∂ßπÆø°, ªÁΩ«ªÛ ¡¢±Ÿ«“ ºˆ æ¯¥¬ ∫–±‚¿Ã¥Ÿ. */
+        /* GBK ÏóêÏÑú Ïù¥ÎØ∏ Ï≤¥ÌÅ¨ÌïòÍ∏∞ ÎïåÎ¨∏Ïóê, ÏÇ¨Ïã§ÏÉÅ Ï†ëÍ∑ºÌï† Ïàò ÏóÜÎäî Î∂ÑÍ∏∞Ïù¥Îã§. */
         sRet = RET_ILSEQ;
     }
 
@@ -149,11 +149,11 @@ SInt convertWcToMb4Cp936ext( void    * aSrc,
 /***********************************************************************
  *
  * Description :
- *     PROJ-2414 [±‚¥…º∫] GBK, CP936ext character set √ﬂ∞°
+ *     PROJ-2414 [Í∏∞Îä•ÏÑ±] GBK, CP936ext character set Ï∂îÍ∞Ä
  *     UTF16BE ==> CP936ext
  *
  * Implementation :
- *     1) CP936EXT ¿« ∫Ø»ØπÊæ»¿ª ¿˚øÎ
+ *     1) CP936EXT Ïùò Î≥ÄÌôòÎ∞©ÏïàÏùÑ Ï†ÅÏö©
  *
  ***********************************************************************/
 
@@ -172,7 +172,7 @@ SInt convertWcToMb4Cp936ext( void    * aSrc,
     }
     else
     {
-        /* 1) CP936EXT ¿« ∫Ø»ØπÊæ»¿ª ¿˚øÎ */
+        /* 1) CP936EXT Ïùò Î≥ÄÌôòÎ∞©ÏïàÏùÑ Ï†ÅÏö© */
         if ( ( sWc >= 0x0140 ) && ( sWc < 0x0150 ) )
         {
             sVal = gCp936ExtPage01[sWc-0x0140] ^ IDN_CP936EXT_XOR_VALUE;

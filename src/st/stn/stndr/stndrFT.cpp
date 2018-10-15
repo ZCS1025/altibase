@@ -21,7 +21,7 @@
  * Description
  *
  *   PROJ-1618
- *   Disk RTree Index ÀÇ FT¸¦ À§ÇÑ ÇÔ¼ö
+ *   Disk RTree Index ì˜ FTë¥¼ ìœ„í•œ í•¨ìˆ˜
  *
  **********************************************************************/
 
@@ -46,13 +46,13 @@
  * Description
  *
  *   D$DISK_INDEX_RTREE_CTS
- *   : Disk RTREE INDEXÀÇ CTSÀ» Ãâ·Â
+ *   : Disk RTREE INDEXì˜ CTSì„ ì¶œë ¥
  *
  *
  **********************************************************************/
 
 //------------------------------------------------------
-// D$DISK_INDEX_RTREE_CTS Dump TableÀÇ Column Description
+// D$DISK_INDEX_RTREE_CTS Dump Tableì˜ Column Description
 //------------------------------------------------------
 
 static iduFixedTableColDesc gDumpDiskIndexRTreeCTSlotColDesc[]=
@@ -196,7 +196,7 @@ static iduFixedTableColDesc gDumpDiskIndexRTreeCTSlotColDesc[]=
 };
 
 //------------------------------------------------------
-// D$DISK_INDEX_RTREE_CTS Dump TableÀÇ Table Description
+// D$DISK_INDEX_RTREE_CTS Dump Tableì˜ Table Description
 //------------------------------------------------------
 
 iduFixedTableDesc  gDumpDiskIndexRTreeCTSlotTableDesc =
@@ -212,7 +212,7 @@ iduFixedTableDesc  gDumpDiskIndexRTreeCTSlotTableDesc =
 };
 
 //------------------------------------------------------
-// D$DISK_INDEX_RTREE_CTS Dump TableÀÇ ·¹ÄÚµå Build
+// D$DISK_INDEX_RTREE_CTS Dump Tableì˜ ë ˆì½”ë“œ Build
 //------------------------------------------------------
 IDE_RC stndrFT::buildRecordCTS( idvSQL              * /*aStatistics*/,
                                 void                * aHeader,
@@ -419,7 +419,7 @@ IDE_RC stndrFT::traverseBuildCTS( idvSQL              * aStatistics,
 
         if( sdpPhyPage::getIndexSMONo(sPageHdr) > sStackSlot.mSmoNo )
         {
-            // Root°¡ º¯°æµÇ¾úÀ» °æ¿ì Àç½Ãµµ
+            // Rootê°€ ë³€ê²½ë˜ì—ˆì„ ê²½ìš° ì¬ì‹œë„
             if( sStackSlot.mNodePID == sRootPID )
             {
                 sIsFixed = ID_FALSE;
@@ -522,7 +522,7 @@ IDE_RC stndrFT::traverseBuildCTS( idvSQL              * aStatistics,
                 sDumpCTS.mRefKey3     = sCTS->mRefKey[2];
                 sDumpCTS.mRefKey4     = sCTS->mRefKey[3];
 
-                // KEY CACHEÀÇ Å©±â°¡ Ä¿Áö¸é À§ÀÇ ÄÚµåµµ ¼öÁ¤µÇ¾î¾ß ÇÔ.
+                // KEY CACHEì˜ í¬ê¸°ê°€ ì»¤ì§€ë©´ ìœ„ì˜ ì½”ë“œë„ ìˆ˜ì •ë˜ì–´ì•¼ í•¨.
                 IDE_ASSERT( SDN_CTS_MAX_KEY_CACHE == 4 );
             
                 IDE_TEST( iduFixedTable::buildRecord( aHeader,
@@ -585,13 +585,13 @@ IDE_RC stndrFT::traverseBuildCTS( idvSQL              * aStatistics,
  * Description
  *
  *   D$DISK_INDEX_RTREE_STRUCTURE
- *   : Disk RTREE INDEXÀÇ Page Tree ±¸Á¶ Ãâ·Â
+ *   : Disk RTREE INDEXì˜ Page Tree êµ¬ì¡° ì¶œë ¥
  *
  *
  **********************************************************************/
 
 //------------------------------------------------------
-// D$DISK_INDEX_RTREE_STRUCTURE Dump TableÀÇ Column Description
+// D$DISK_INDEX_RTREE_STRUCTURE Dump Tableì˜ Column Description
 //------------------------------------------------------
 
 static iduFixedTableColDesc gDumpDiskRTreeStructureColDesc[]=
@@ -767,7 +767,7 @@ static iduFixedTableColDesc gDumpDiskRTreeStructureColDesc[]=
 };
 
 //------------------------------------------------------
-// D$DISK_INDEX_RTREE_KEY Dump TableÀÇ Table Description
+// D$DISK_INDEX_RTREE_KEY Dump Tableì˜ Table Description
 //------------------------------------------------------
 
 iduFixedTableDesc  gDumpDiskRTreeStructureTableDesc =
@@ -783,7 +783,7 @@ iduFixedTableDesc  gDumpDiskRTreeStructureTableDesc =
 };
 
 //------------------------------------------------------
-// D$DISK_INDEX_RTREE_HEADER Dump TableÀÇ ·¹ÄÚµå Build
+// D$DISK_INDEX_RTREE_HEADER Dump Tableì˜ ë ˆì½”ë“œ Build
 //------------------------------------------------------
 
 IDE_RC stndrFT::buildRecordTreeStructure( idvSQL              * /*aStatistics*/,
@@ -976,7 +976,7 @@ IDE_RC stndrFT::traverseBuildTreePage( idvSQL              * aStatistics,
 
         if( sdpPhyPage::getIndexSMONo(sPageHdr) > sStackSlot.mSmoNo )
         {
-            // Root°¡ º¯°æµÇ¾úÀ» °æ¿ì Àç½Ãµµ
+            // Rootê°€ ë³€ê²½ë˜ì—ˆì„ ê²½ìš° ì¬ì‹œë„
             if( sStackSlot.mNodePID == sRootPID )
             {
                 sIsFixed = ID_FALSE;
@@ -1115,13 +1115,13 @@ IDE_RC stndrFT::traverseBuildTreePage( idvSQL              * aStatistics,
  * Description
  *
  *   D$DISK_INDEX_RTREE_KEY
- *   : Disk RTREE INDEXÀÇ KEY Ãâ·Â
+ *   : Disk RTREE INDEXì˜ KEY ì¶œë ¥
  *
  *
  **********************************************************************/
 
 //------------------------------------------------------
-// D$DISK_INDEX_RTREE_KEY Dump TableÀÇ Column Description
+// D$DISK_INDEX_RTREE_KEY Dump Tableì˜ Column Description
 //------------------------------------------------------
 
 static iduFixedTableColDesc gDumpDiskRTreeKeyColDesc[]=
@@ -1345,7 +1345,7 @@ static iduFixedTableColDesc gDumpDiskRTreeKeyColDesc[]=
 };
 
 //------------------------------------------------------
-// D$DISK_INDEX_RTREE_KEY Dump TableÀÇ Table Description
+// D$DISK_INDEX_RTREE_KEY Dump Tableì˜ Table Description
 //------------------------------------------------------
 
 iduFixedTableDesc  gDumpDiskRTreeKeyTableDesc =
@@ -1361,7 +1361,7 @@ iduFixedTableDesc  gDumpDiskRTreeKeyTableDesc =
 };
 
 //------------------------------------------------------
-// D$DISK_INDEX_RTREE_HEADER Dump TableÀÇ ·¹ÄÚµå Build
+// D$DISK_INDEX_RTREE_HEADER Dump Tableì˜ ë ˆì½”ë“œ Build
 //------------------------------------------------------
 
 IDE_RC stndrFT::buildRecordKey( idvSQL              * /*aStatistics*/,
@@ -1578,7 +1578,7 @@ IDE_RC stndrFT::traverseBuildKey( idvSQL              * aStatistics,
 
         if( sdpPhyPage::getIndexSMONo(sPageHdr) > sStackSlot.mSmoNo )
         {
-            // Root°¡ º¯°æµÇ¾úÀ» °æ¿ì Àç½Ãµµ
+            // Rootê°€ ë³€ê²½ë˜ì—ˆì„ ê²½ìš° ì¬ì‹œë„
             if( sStackSlot.mNodePID == sRootPID )
             {
                 sIsFixed = ID_FALSE;
@@ -1771,7 +1771,7 @@ IDE_RC stndrFT::traverseBuildKey( idvSQL              * aStatistics,
         
 
             //------------------------------
-            // BUG-16805 Columnº° Value String »ı¼º
+            // BUG-16805 Columnë³„ Value String ìƒì„±
             //------------------------------
 
             idlOS::memcpy( (UChar*)&sDumpKey.mMBR, (UChar*)sKeyPtr, ID_SIZEOF(stdMBR) );
@@ -1868,7 +1868,7 @@ IDE_RC stndrFT::convertMBR2String( UChar * sSrcKeyPtr,
                                    
 //======================================================================
 //  X$DISK_RTREE_HEADER
-//  disk indexÀÇ run-time header¸¦ º¸¿©ÁÖ´Â peformance view
+//  disk indexì˜ run-time headerë¥¼ ë³´ì—¬ì£¼ëŠ” peformance view
 //======================================================================
 
 IDE_RC stndrFT::buildRecordForDiskRTreeHeader(idvSQL              * /*aStatistics*/,
@@ -1907,8 +1907,8 @@ IDE_RC stndrFT::buildRecordForDiskRTreeHeader(idvSQL              * /*aStatistic
     {
         /* BUG-32292 [sm-util] Self deadlock occur since fixed-table building
          * operation uses another transaction. 
-         * NestedTransactionÀ» »ç¿ëÇÏ¸é Self-deadlock ¿ì·Á°¡ ÀÖ´Ù.
-         * µû¶ó¼­ id Memory ¿µ¿ªÀ¸·ÎºÎÅÍ Iterator¸¦ ¾ò¾î TransactionÀ» ¾ò¾î³½´Ù. */
+         * NestedTransactionì„ ì‚¬ìš©í•˜ë©´ Self-deadlock ìš°ë ¤ê°€ ìˆë‹¤.
+         * ë”°ë¼ì„œ id Memory ì˜ì—­ìœ¼ë¡œë¶€í„° Iteratorë¥¼ ì–»ì–´ Transactionì„ ì–»ì–´ë‚¸ë‹¤. */
         sTrans = ((smiIterator*)aMemory->getContext())->trans;
     }
 
@@ -1924,7 +1924,7 @@ IDE_RC stndrFT::buildRecordForDiskRTreeHeader(idvSQL              * /*aStatistic
         // To fix BUG-14681
         if( SM_SCN_IS_INFINITE(sPtr->mCreateSCN) == ID_TRUE )
         {
-            /* BUG-14974: ¹«ÇÑ Loop¹ß»ı.*/
+            /* BUG-14974: ë¬´í•œ Loopë°œìƒ.*/
             sCurPtr = sNxtPtr;
             continue;
         }
@@ -1949,22 +1949,22 @@ IDE_RC stndrFT::buildRecordForDiskRTreeHeader(idvSQL              * /*aStatistic
 
         if( sIndexCnt != 0  )
         {
-            //DDL À» ¹æÁö.
+            //DDL ì„ ë°©ì§€.
             IDE_TEST(smLayerCallback::lockTableModeIS(sTrans,
                                                       SMC_TABLE_LOCK( sTableHeader ))
                      != IDE_SUCCESS);
 
-            //lockÀ» Àâ¾ÒÁö¸¸ tableÀÌ dropµÈ °æ¿ì¿¡´Â skip;
+            //lockì„ ì¡ì•˜ì§€ë§Œ tableì´ dropëœ ê²½ìš°ì—ëŠ” skip;
             if( smcTable::isDropedTable(sTableHeader) == ID_TRUE )
             {
                 sCurPtr = sNxtPtr;
                 continue;
             }//if
 
-            // lockÀ» ´ë±âÇÏ´Â µ¿¾È index°¡ dropµÇ¾ú°Å³ª, »õ·Î¿î index°¡
-            // »ı¼ºµÇ¾úÀ» ¼ö ÀÖÀ¸¹Ç·Î Á¤È®ÇÑ index ¼ö¸¦ ´Ù½Ã ±¸ÇÑ´Ù.
-            // »Ó¸¸ ¾Æ´Ï¶ó, index cnt¸¦ Áõ°¡½ÃÅ² ÈÄ index¸¦ »ı¼ºÇÏ¹Ç·Î
-            // index°¡ ¿Ï·áµÇÁö ¸øÇÏ¸é index cnt°¡ °¨¼ÒÇÏ¹Ç·Î ´Ù½Ã ±¸ÇØ¾ß ÇÔ.
+            // lockì„ ëŒ€ê¸°í•˜ëŠ” ë™ì•ˆ indexê°€ dropë˜ì—ˆê±°ë‚˜, ìƒˆë¡œìš´ indexê°€
+            // ìƒì„±ë˜ì—ˆì„ ìˆ˜ ìˆìœ¼ë¯€ë¡œ ì •í™•í•œ index ìˆ˜ë¥¼ ë‹¤ì‹œ êµ¬í•œë‹¤.
+            // ë¿ë§Œ ì•„ë‹ˆë¼, index cntë¥¼ ì¦ê°€ì‹œí‚¨ í›„ indexë¥¼ ìƒì„±í•˜ë¯€ë¡œ
+            // indexê°€ ì™„ë£Œë˜ì§€ ëª»í•˜ë©´ index cntê°€ ê°ì†Œí•˜ë¯€ë¡œ ë‹¤ì‹œ êµ¬í•´ì•¼ í•¨.
             sIndexCnt = smcTable::getIndexCount(sTableHeader);
 
             for( i = 0; i < sIndexCnt; i++ )
@@ -1977,7 +1977,7 @@ IDE_RC stndrFT::buildRecordForDiskRTreeHeader(idvSQL              * /*aStatistic
                     continue;
                 }
 
-                // BUG-30867 Discard µÈ Tablespace¿¡ ¼ÓÇÑ Index´Â SkipµÇ¾î¾ß ÇÔ
+                // BUG-30867 Discard ëœ Tablespaceì— ì†í•œ IndexëŠ” Skipë˜ì–´ì•¼ í•¨
                 if( sctTableSpaceMgr::hasState( sIndexCursor->mIndexSegDesc.mSpaceID,
                                                 SCT_SS_INVALID_DISK_TBS ) == ID_TRUE )
                 {
@@ -2057,7 +2057,7 @@ IDE_RC stndrFT::buildRecordForDiskRTreeHeader(idvSQL              * /*aStatistic
                           == ID_TRUE ) ? 'T' : 'F';
 
                     // BUG-17957
-                    // X$DISK_RTREE_HEADER¿¡ creation option(logging, force) Ãß°¡
+                    // X$DISK_RTREE_HEADERì— creation option(logging, force) ì¶”ê°€
                     sIndexHeader4PerfV.mIsCreatedWithLogging =
                         ( sIndexHeader->mSdnHeader.mIsCreatedWithLogging
                           == ID_TRUE ) ? 'T' : 'F';
@@ -2080,7 +2080,7 @@ IDE_RC stndrFT::buildRecordForDiskRTreeHeader(idvSQL              * /*aStatistic
                                                       (void *)&sIndexHeader4PerfV )
                      != IDE_SUCCESS);
             }//for
-        }// if ÀÎµ¦½º°¡ ÀÖÀ¸¸é
+        }// if ì¸ë±ìŠ¤ê°€ ìˆìœ¼ë©´
         sCurPtr = sNxtPtr;
     }// while
 
@@ -2181,7 +2181,7 @@ static iduFixedTableColDesc  gDiskRTreeHeaderColDesc[]=
         NULL,
         0, 0,NULL
     },
-    // TEST CASE: FreeNodeSCN È®ÀÎÇÏ±â
+    // TEST CASE: FreeNodeSCN í™•ì¸í•˜ê¸°
     {
         (SChar*)"FREE_NODE_SCN",
         offsetof(stndrHeader4PerfV, mFreeNodeSCN ),
@@ -2340,7 +2340,7 @@ iduFixedTableDesc  gDiskRTreeHeaderDesc=
 
 //======================================================================
 //  X$DISK_RTREE_STAT
-//  disk indexÀÇ run-time statistic informationÀ» À§ÇÑ peformance view
+//  disk indexì˜ run-time statistic informationì„ ìœ„í•œ peformance view
 //======================================================================
 
 IDE_RC stndrFT::buildRecordForDiskRTreeStat(idvSQL              * /*aStatistics*/,
@@ -2373,8 +2373,8 @@ IDE_RC stndrFT::buildRecordForDiskRTreeStat(idvSQL              * /*aStatistics*
     {
         /* BUG-32292 [sm-util] Self deadlock occur since fixed-table building
          * operation uses another transaction. 
-         * NestedTransactionÀ» »ç¿ëÇÏ¸é Self-deadlock ¿ì·Á°¡ ÀÖ´Ù.
-         * µû¶ó¼­ id Memory ¿µ¿ªÀ¸·ÎºÎÅÍ Iterator¸¦ ¾ò¾î TransactionÀ» ¾ò¾î³½´Ù. */
+         * NestedTransactionì„ ì‚¬ìš©í•˜ë©´ Self-deadlock ìš°ë ¤ê°€ ìˆë‹¤.
+         * ë”°ë¼ì„œ id Memory ì˜ì—­ìœ¼ë¡œë¶€í„° Iteratorë¥¼ ì–»ì–´ Transactionì„ ì–»ì–´ë‚¸ë‹¤. */
         sTrans = ((smiIterator*)aMemory->getContext())->trans;
     }
 
@@ -2390,7 +2390,7 @@ IDE_RC stndrFT::buildRecordForDiskRTreeStat(idvSQL              * /*aStatistics*
         // To fix BUG-14681
         if( SM_SCN_IS_INFINITE(sPtr->mCreateSCN) == ID_TRUE )
         {
-            /* BUG-14974: ¹«ÇÑ Loop¹ß»ı.*/
+            /* BUG-14974: ë¬´í•œ Loopë°œìƒ.*/
             sCurPtr = sNxtPtr;
             continue;
         }
@@ -2415,22 +2415,22 @@ IDE_RC stndrFT::buildRecordForDiskRTreeStat(idvSQL              * /*aStatistics*
 
         if( sIndexCnt != 0  )
         {
-            //DDL À» ¹æÁö.
+            //DDL ì„ ë°©ì§€.
             IDE_TEST(smLayerCallback::lockTableModeIS(sTrans,
                                                       SMC_TABLE_LOCK( sTableHeader ))
                      != IDE_SUCCESS);
 
-            //lockÀ» Àâ¾ÒÁö¸¸ tableÀÌ dropµÈ °æ¿ì¿¡´Â skip;
+            //lockì„ ì¡ì•˜ì§€ë§Œ tableì´ dropëœ ê²½ìš°ì—ëŠ” skip;
             if( smcTable::isDropedTable(sTableHeader) == ID_TRUE )
             {
                 sCurPtr = sNxtPtr;
                 continue;
             }//if
 
-            // lockÀ» ´ë±âÇÏ´Â µ¿¾È index°¡ dropµÇ¾ú°Å³ª, »õ·Î¿î index°¡
-            // »ı¼ºµÇ¾úÀ» ¼ö ÀÖÀ¸¹Ç·Î Á¤È®ÇÑ index ¼ö¸¦ ´Ù½Ã ±¸ÇÑ´Ù.
-            // »Ó¸¸ ¾Æ´Ï¶ó, index cnt¸¦ Áõ°¡½ÃÅ² ÈÄ index¸¦ »ı¼ºÇÏ¹Ç·Î
-            // index°¡ ¿Ï·áµÇÁö ¸øÇÏ¸é index cnt°¡ °¨¼ÒÇÏ¹Ç·Î ´Ù½Ã ±¸ÇØ¾ß ÇÔ.
+            // lockì„ ëŒ€ê¸°í•˜ëŠ” ë™ì•ˆ indexê°€ dropë˜ì—ˆê±°ë‚˜, ìƒˆë¡œìš´ indexê°€
+            // ìƒì„±ë˜ì—ˆì„ ìˆ˜ ìˆìœ¼ë¯€ë¡œ ì •í™•í•œ index ìˆ˜ë¥¼ ë‹¤ì‹œ êµ¬í•œë‹¤.
+            // ë¿ë§Œ ì•„ë‹ˆë¼, index cntë¥¼ ì¦ê°€ì‹œí‚¨ í›„ indexë¥¼ ìƒì„±í•˜ë¯€ë¡œ
+            // indexê°€ ì™„ë£Œë˜ì§€ ëª»í•˜ë©´ index cntê°€ ê°ì†Œí•˜ë¯€ë¡œ ë‹¤ì‹œ êµ¬í•´ì•¼ í•¨.
             sIndexCnt = smcTable::getIndexCount(sTableHeader);
 
             for( i = 0; i < sIndexCnt; i++ )
@@ -2443,7 +2443,7 @@ IDE_RC stndrFT::buildRecordForDiskRTreeStat(idvSQL              * /*aStatistics*
                     continue;
                 }
 
-                // BUG-30867 Discard µÈ Tablespace¿¡ ¼ÓÇÑ Index´Â SkipµÇ¾î¾ß ÇÔ
+                // BUG-30867 Discard ëœ Tablespaceì— ì†í•œ IndexëŠ” Skipë˜ì–´ì•¼ í•¨
                 if( sctTableSpaceMgr::hasState( sIndexCursor->mIndexSegDesc.mSpaceID,
                                                 SCT_SS_INVALID_DISK_TBS ) == ID_TRUE )
                 {
@@ -2482,7 +2482,7 @@ IDE_RC stndrFT::buildRecordForDiskRTreeStat(idvSQL              * /*aStatistics*
                                                       (void *)&sIndexStat4PerfV )
                           != IDE_SUCCESS);
             }//for
-        }// if ÀÎµ¦½º°¡ ÀÖÀ¸¸é
+        }// if ì¸ë±ìŠ¤ê°€ ìˆìœ¼ë©´
         sCurPtr = sNxtPtr;
     }// while
 

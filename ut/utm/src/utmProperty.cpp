@@ -38,8 +38,8 @@
 #include <ide.h>
 
 /* ---------------------------------------
- * % utmProperty loadingÀ» À§ÇÑ ¸ÅÅ©·Î
- * % µ¿ÀÏÇÑ ÀÛ¾÷À» ÁÙÀÌ±â À§ÇØ ¸ÅÅ©·Î »ç¿ë
+ * % utmProperty loadingì„ ìœ„í•œ ë§¤í¬ë¡œ
+ * % ë™ì¼í•œ ì‘ì—…ì„ ì¤„ì´ê¸° ìœ„í•´ ë§¤í¬ë¡œ ì‚¬ìš©
  * ---------------------------------------*/
 
 #define  IDU_PROP_SET_VALUE(macro, value)                \
@@ -85,7 +85,7 @@
 
 
 /* -------------------------------
- * utmProperty static ¸â¹ö Á¤ÀÇ
+ * utmProperty static ë©¤ë²„ ì •ì˜
  * ------------------------------*/
 
 utmPropertyMgr * utmProperty::iduPM_ = NULL;

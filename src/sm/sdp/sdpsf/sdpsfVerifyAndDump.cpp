@@ -19,8 +19,8 @@
  *
  * $Id: sdpsfVerifyAndDump.cpp 27226 2008-07-23 17:36:35Z newdaily $
  *
- * º» ÆÄÀÏÀº SegmentÀÇ ÀÚ·á±¸Á¶ È®ÀÎ ¹× Ãâ·Â°ú °ü·ÃµÈ STATIC
- * ÀÎÅÍÆäÀÌ½º¸¦ °ü¸®ÇÑ´Ù.
+ * ë³¸ íŒŒì¼ì€ Segmentì˜ ìë£Œêµ¬ì¡° í™•ì¸ ë° ì¶œë ¥ê³¼ ê´€ë ¨ëœ STATIC
+ * ì¸í„°í˜ì´ìŠ¤ë¥¼ ê´€ë¦¬í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -31,7 +31,7 @@
 # include <sdpsfSH.h>
 
 /*
- * [ INTERFACE ] Segment DescriptorÀÇ ÀÚ·á±¸Á¶¸¦ Ç¥ÁØÃâ·ÂÀ¸·Î Ãâ·ÂÇÑ´Ù
+ * [ INTERFACE ] Segment Descriptorì˜ ìë£Œêµ¬ì¡°ë¥¼ í‘œì¤€ì¶œë ¥ìœ¼ë¡œ ì¶œë ¥í•œë‹¤
  */
 void sdpsfVerifyAndDump::dump( scSpaceID      aSpaceID,
                                sdpsfSegHdr   *aSegHdr,
@@ -81,7 +81,7 @@ void sdpsfVerifyAndDump::dump( scSpaceID      aSpaceID,
 }
 
 /*
- * [ INTERFACE ] Segment ÀÇ ¸ğµç ÀÚ·á±¸Á¶¸¦ È®ÀÎÇÑ´Ù.
+ * [ INTERFACE ] Segment ì˜ ëª¨ë“  ìë£Œêµ¬ì¡°ë¥¼ í™•ì¸í•œë‹¤.
  */
 IDE_RC sdpsfVerifyAndDump::verify( idvSQL       */*aStatistics*/,
                                    scSpaceID     /*aSpaceID*/,
@@ -94,8 +94,8 @@ IDE_RC sdpsfVerifyAndDump::verify( idvSQL       */*aStatistics*/,
 }
 
 /*
- * SegmentÀÇ ÀÚ·á±¸Á¶¸¦ È®ÀÎÇÏ´Â °úÁ¤¿¡¼­ Extent Full List¿Í
- * Extent Used List¸¦ È®ÀÎÇÑ´Ù.
+ * Segmentì˜ ìë£Œêµ¬ì¡°ë¥¼ í™•ì¸í•˜ëŠ” ê³¼ì •ì—ì„œ Extent Full Listì™€
+ * Extent Used Listë¥¼ í™•ì¸í•œë‹¤.
  */
 IDE_RC sdpsfVerifyAndDump::verifyStateSeg( idvSQL    */*aStatistics*/,
                                            sdrMtx    */*aMtx*/,
@@ -106,7 +106,7 @@ IDE_RC sdpsfVerifyAndDump::verifyStateSeg( idvSQL    */*aStatistics*/,
 }
 
 /*
- * SegmentÀÇ ÀÚ·á±¸Á¶¸¦ È®ÀÎÇÏ´Â °úÁ¤¿¡¼­ ExtentÀÇ »óÅÂ¸¦ È®ÀÎÇÑ´Ù.
+ * Segmentì˜ ìë£Œêµ¬ì¡°ë¥¼ í™•ì¸í•˜ëŠ” ê³¼ì •ì—ì„œ Extentì˜ ìƒíƒœë¥¼ í™•ì¸í•œë‹¤.
  */
 IDE_RC sdpsfVerifyAndDump::verifyStateExt( idvSQL   */*aStatistics*/,
                                            sdrMtx   */*aMtx*/,
@@ -119,8 +119,8 @@ IDE_RC sdpsfVerifyAndDump::verifyStateExt( idvSQL   */*aStatistics*/,
 }
 
 /*
- * SegmentÀÇ ÀÚ·á±¸Á¶¸¦ È®ÀÎÇÏ´Â °úÁ¤¿¡¼­ ExtentÀÇ Page Bitset Vector¿Í
- * ½ÇÁ¦ Data ÆäÀÌÁöÀÇ »óÅÂ°¡ ÀÏÄ¡ÇÏ´ÂÁö È®ÀÎÇÑ´Ù.
+ * Segmentì˜ ìë£Œêµ¬ì¡°ë¥¼ í™•ì¸í•˜ëŠ” ê³¼ì •ì—ì„œ Extentì˜ Page Bitset Vectorì™€
+ * ì‹¤ì œ Data í˜ì´ì§€ì˜ ìƒíƒœê°€ ì¼ì¹˜í•˜ëŠ”ì§€ í™•ì¸í•œë‹¤.
  */
 IDE_RC sdpsfVerifyAndDump::verifyStatePage( sdpsfExtDesc  */*aExtDesc*/,
                                             UInt           /*aPageIndex*/,

@@ -20,7 +20,7 @@
  *
  * Description :
  *
- * File-Based RID Linked-List ±¸Çö
+ * File-Based RID Linked-List êµ¬í˜„
  *
  **********************************************************************/
 
@@ -29,13 +29,13 @@
 #include <sdpPhyPage.h>
 
 /***********************************************************************
- * Description : RID listÀÇ Base ³ëµå¸¦ ÃÊ±âÈ­
+ * Description : RID listì˜ Base ë…¸ë“œë¥¼ ì´ˆê¸°í™”
  *
  * + 2nd.code desgin
- *   - base ³ëµåÀÇ rid¸¦ ¾ò´Â´Ù.
- *   - base ³ëµåÀÇ mNodeCnt¸¦ 0·Î ¼³Á¤    (SDR_4BYTES)
- *   - base ³ëµåÀÇ mHead¸¦ self RID¸¦ ¼³Á¤(SDR_8BYTES)
- *   - base ³ëµåÀÇ mTail¸¦ self RID¸¦ ¼³Á¤(SDR_8BYTES)
+ *   - base ë…¸ë“œì˜ ridë¥¼ ì–»ëŠ”ë‹¤.
+ *   - base ë…¸ë“œì˜ mNodeCntë¥¼ 0ë¡œ ì„¤ì •    (SDR_4BYTES)
+ *   - base ë…¸ë“œì˜ mHeadë¥¼ self RIDë¥¼ ì„¤ì •(SDR_8BYTES)
+ *   - base ë…¸ë“œì˜ mTailë¥¼ self RIDë¥¼ ì„¤ì •(SDR_8BYTES)
  ***********************************************************************/
 IDE_RC sdpSglRIDList::initList( sdpSglRIDListBase*    aBaseNode,
                                 sdrMtx*               aMtx )
@@ -102,10 +102,10 @@ IDE_RC sdpSglRIDList::initNode( sdpSglRIDListNode   * aNode,
 }
 
 /***********************************************************************
- * Description : RID listÀÇ head¿¡ ³ëµå¸¦ Ãß°¡
+ * Description : RID listì˜ headì— ë…¸ë“œë¥¼ ì¶”ê°€
  *
  * + 2nd. code design
- *   => sdRIDList::insertNodeAfter¸¦ È£ÃâÇÔ
+ *   => sdRIDList::insertNodeAfterë¥¼ í˜¸ì¶œí•¨
  ***********************************************************************/
 IDE_RC sdpSglRIDList::addNode2Head( sdpSglRIDListBase   * aBaseNode,
                                     sdpSglRIDListNode   * aNewNode,
@@ -134,10 +134,10 @@ IDE_RC sdpSglRIDList::addNode2Head( sdpSglRIDListBase   * aBaseNode,
 }
 
 /***********************************************************************
- * Description :  RID listÀÇ tail¿¡ ³ëµå¸¦ Ãß°¡
+ * Description :  RID listì˜ tailì— ë…¸ë“œë¥¼ ì¶”ê°€
  *
  * + 2nd. code design
- *   - sdpSglRIDList::insertNodeBefore¸¦ È£ÃâÇÔ
+ *   - sdpSglRIDList::insertNodeBeforeë¥¼ í˜¸ì¶œí•¨
  ***********************************************************************/
 IDE_RC sdpSglRIDList::addNode2Tail( idvSQL             * aStatistics,
                                     scSpaceID            aSpaceID,
@@ -162,7 +162,7 @@ IDE_RC sdpSglRIDList::addNode2Tail( idvSQL             * aStatistics,
     }
     else
     {
-        /* TailÀÇ Next RID¸¦ aBase->mTail·Î ¼³Á¤ÇÑ´Ù. */
+        /* Tailì˜ Next RIDë¥¼ aBase->mTailë¡œ ì„¤ì •í•œë‹¤. */
         IDE_TEST( sdbBufferMgr::getPageByRID( aStatistics,
                                               aSpaceID,
                                               aBase->mTail,
@@ -191,10 +191,10 @@ IDE_RC sdpSglRIDList::addNode2Tail( idvSQL             * aStatistics,
 }
 
 /***********************************************************************
- * Description :  RID listÀÇ tail¿¡ ³ëµå¸¦ Ãß°¡
+ * Description :  RID listì˜ tailì— ë…¸ë“œë¥¼ ì¶”ê°€
  *
  * + 2nd. code design
- *   - sdpSglRIDList::insertNodeBefore¸¦ È£ÃâÇÔ
+ *   - sdpSglRIDList::insertNodeBeforeë¥¼ í˜¸ì¶œí•¨
  ***********************************************************************/
 IDE_RC sdpSglRIDList::addNode2Tail( idvSQL             * aStatistics,
                                     scSpaceID            aSpaceID,
@@ -230,7 +230,7 @@ IDE_RC sdpSglRIDList::addNode2Tail( idvSQL             * aStatistics,
     }
     else
     {
-        /* Tail Node°¡ Ãß°¡µÇ´Â Node¿Í µ¿ÀÏÇÑ ÆäÀÌÁö¿¡ Á¸ÀçÇÑ´Ù¸é */
+        /* Tail Nodeê°€ ì¶”ê°€ë˜ëŠ” Nodeì™€ ë™ì¼í•œ í˜ì´ì§€ì— ì¡´ì¬í•œë‹¤ë©´ */
         if( isSamePage( &sNewRID, &(aBase->mTail) ) == ID_TRUE )
         {
             sTailNode = (sdpSglRIDListNode*)( sNewPagePtr +
@@ -238,7 +238,7 @@ IDE_RC sdpSglRIDList::addNode2Tail( idvSQL             * aStatistics,
         }
         else
         {
-            /* TailÀÇ Next RID¸¦ aBase->mTail·Î ¼³Á¤ÇÑ´Ù. */
+            /* Tailì˜ Next RIDë¥¼ aBase->mTailë¡œ ì„¤ì •í•œë‹¤. */
             IDE_TEST( sdbBufferMgr::getPageByRID( aStatistics,
                                                   aSpaceID,
                                                   aBase->mTail,
@@ -268,7 +268,7 @@ IDE_RC sdpSglRIDList::addNode2Tail( idvSQL             * aStatistics,
 }
 
 /***********************************************************************
- * Description : ¸®½ºÆ®ÀÇ Head¿¡ List¸¦ Ãß°¡ÇÑ´Ù.
+ * Description : ë¦¬ìŠ¤íŠ¸ì˜ Headì— Listë¥¼ ì¶”ê°€í•œë‹¤.
  ***********************************************************************/
 IDE_RC sdpSglRIDList::addListToHead( sdpSglRIDListBase  * aBase,
                                      sdRID                aFstRID,
@@ -299,7 +299,7 @@ IDE_RC sdpSglRIDList::addListToHead( sdpSglRIDListBase  * aBase,
     IDE_TEST( setHeadOfList( aBase, aFstRID, aMtx )
               != IDE_SUCCESS );
 
-    /* Node°¹¼ö¸¦ aItemCnt Áõ°¡ ½ÃÅ²´Ù. */
+    /* Nodeê°¯ìˆ˜ë¥¼ aItemCnt ì¦ê°€ ì‹œí‚¨ë‹¤. */
     IDE_TEST( setNodeCnt( aBase, getNodeCnt( aBase ) + aItemCnt, aMtx )
               != IDE_SUCCESS );
 
@@ -375,7 +375,7 @@ IDE_RC sdpSglRIDList::removeNodeAtHead( idvSQL             * aStatistics,
 }
 
 /***********************************************************************
- * Description : ¸®½ºÆ®ÀÇ Head¿¡ List¸¦ Ãß°¡ÇÑ´Ù.
+ * Description : ë¦¬ìŠ¤íŠ¸ì˜ Headì— Listë¥¼ ì¶”ê°€í•œë‹¤.
  ***********************************************************************/
 IDE_RC sdpSglRIDList::addListToTail( idvSQL             * aStatistics,
                                      sdpSglRIDListBase  * aBase,
@@ -407,7 +407,7 @@ IDE_RC sdpSglRIDList::addListToTail( idvSQL             * aStatistics,
     }
     else
     {
-        /* TailÀÇ Next RID¸¦ aBase->mTail·Î ¼³Á¤ÇÑ´Ù. */
+        /* Tailì˜ Next RIDë¥¼ aBase->mTailë¡œ ì„¤ì •í•œë‹¤. */
         IDE_TEST( sdbBufferMgr::getPageByRID( aStatistics,
                                               aSpaceID,
                                               aBase->mTail,
@@ -423,7 +423,7 @@ IDE_RC sdpSglRIDList::addListToTail( idvSQL             * aStatistics,
     IDE_TEST( setTailOfList( aBase, aLstRID, aMtx )
               != IDE_SUCCESS );
 
-    /* Node°¹¼ö¸¦ aItemCnt Áõ°¡ ½ÃÅ²´Ù. */
+    /* Nodeê°¯ìˆ˜ë¥¼ aItemCnt ì¦ê°€ ì‹œí‚¨ë‹¤. */
     IDE_TEST( setNodeCnt( aBase, getNodeCnt( aBase ) + aItemCnt, aMtx )
               != IDE_SUCCESS );
 
@@ -437,7 +437,7 @@ IDE_RC sdpSglRIDList::addListToTail( idvSQL             * aStatistics,
 }
 
 /***********************************************************************
- * Description : ¸®½ºÆ®ÀÇ ¸ğµç node Ãâ·Â
+ * Description : ë¦¬ìŠ¤íŠ¸ì˜ ëª¨ë“  node ì¶œë ¥
  ***********************************************************************/
 IDE_RC sdpSglRIDList::dumpList( scSpaceID aSpaceID,
                                 sdRID     aBaseNodeRID )

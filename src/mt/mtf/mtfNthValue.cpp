@@ -52,7 +52,7 @@ mtfModule mtfNthValue = {
         MTC_NODE_FUNCTION_ANALYTIC_TRUE |
         MTC_NODE_FUNCTION_WINDOWING_TRUE,
     ~( MTC_NODE_INDEX_MASK ),
-    1.0, /* default selectivity ( ∫Ò±≥ ø¨ªÍ¿⁄∞° æ∆¥‘ ) */
+    1.0, /* default selectivity ( ÎπÑÍµê Ïó∞ÏÇ∞ÏûêÍ∞Ä ÏïÑÎãò ) */
     mtfNthValueName,
     NULL,
     mtf::initializeDefault,
@@ -135,7 +135,7 @@ IDE_RC mtfNthValueEstimate( mtcNode     * aNode,
                                         sModules )
               != IDE_SUCCESS );
 
-    /* ≥ª∫Œ Counting ¿ª ¿ß«— ƒ√∑≥ */
+    /* ÎÇ¥Î∂Ä Counting ÏùÑ ÏúÑÌïú Ïª¨Îüº */
     IDE_TEST( mtc::initializeColumn( aStack[0].column + 1,
                                      &mtdBigint,
                                      0,

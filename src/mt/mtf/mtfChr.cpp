@@ -44,7 +44,7 @@ static IDE_RC mtfChrEstimate( mtcNode*     aNode,
 mtfModule mtfChr = {
     1|MTC_NODE_OPERATOR_FUNCTION,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
+    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìžê°€ ì•„ë‹˜)
     mtfChrFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -101,7 +101,7 @@ IDE_RC mtfChrEstimate( mtcNode*     aNode,
 
     aTemplate->rows[aNode->table].execute[aNode->column] = mtfExecute;
 
-    // aStack[0].columnÀÇ ÃÊ±âÈ­
+    // aStack[0].columnì˜ ì´ˆê¸°í™”
     IDE_TEST( mtc::initializeColumn( aStack[0].column,
                                      sModule,
                                      1,
@@ -135,8 +135,8 @@ IDE_RC mtfChrCalculate( mtcNode*     aNode,
  * Implementation :
  *    CHR( n )
  *
- *    aStack[0] : ÀÔ·ÂµÈ Integer Ascii Code¸¦ ¹®ÀÚ·Î º¯È¯ÇÑ °ª 
- *    aStack[1] : n ( ÀÔ·ÂµÈ Integer Ascii Code )
+ *    aStack[0] : ìž…ë ¥ëœ Integer Ascii Codeë¥¼ ë¬¸ìžë¡œ ë³€í™˜í•œ ê°’ 
+ *    aStack[1] : n ( ìž…ë ¥ëœ Integer Ascii Code )
  *
  ***********************************************************************/
     
@@ -175,23 +175,23 @@ IDE_RC mtfChrCalculate( mtcNode*     aNode,
         // precision 1
         if( sLanguage->maxPrecision(1) == 1 )
         {
-            // 1¹ÙÀÌÆ®Â¥¸®ÀÎ °æ¿ì´Â Ã¹ÀÚ¸®¸¸
+            // 1ë°”ì´íŠ¸ì§œë¦¬ì¸ ê²½ìš°ëŠ” ì²«ìžë¦¬ë§Œ
             sResult->value[0] = sValue1;
             sResult->length = 1;
         }
         // precision 2
         else if ( sLanguage->maxPrecision(1) == 2 )
         {
-            // 2¹ÙÀÌÆ®Â¥¸®ÀÎ °æ¿ì´Â ¼ýÀÚ Å©±â¿¡ µû¶ó¼­ ´Ù¸§
+            // 2ë°”ì´íŠ¸ì§œë¦¬ì¸ ê²½ìš°ëŠ” ìˆ«ìž í¬ê¸°ì— ë”°ë¼ì„œ ë‹¤ë¦„
             if ( sLanguage->maxPrecision(1) == 2 )
             {
-                // 1¹ÙÀÌÆ®Â¥¸®
+                // 1ë°”ì´íŠ¸ì§œë¦¬
                 if( sValue2 == 0 )
                 {
                     sResult->value[0] = sValue1;
                     sResult->length = 1;
                 }
-                // 2¹ÙÀÌÆ®Â¥¸®
+                // 2ë°”ì´íŠ¸ì§œë¦¬
                 else
                 {
                     sResult->value[0] = sValue2;
@@ -202,16 +202,16 @@ IDE_RC mtfChrCalculate( mtcNode*     aNode,
         }
         else // precision 3
         {
-            // 2¹ÙÀÌÆ®Â¥¸®ÀÏ °¡´É¼º
+            // 2ë°”ì´íŠ¸ì§œë¦¬ì¼ ê°€ëŠ¥ì„±
             if( sValue3 == 0 )
             {
-                // 1¹ÙÀÌÆ®Â¥¸®
+                // 1ë°”ì´íŠ¸ì§œë¦¬
                 if( sValue2 == 0 )
                 {
                     sResult->value[0] = sValue1;
                     sResult->length = 1;
                 }
-                // 2¹ÙÀÌÆ®Â¥¸®
+                // 2ë°”ì´íŠ¸ì§œë¦¬
                 else
                 {
                     sResult->value[0] = sValue2;
@@ -221,7 +221,7 @@ IDE_RC mtfChrCalculate( mtcNode*     aNode,
             }
             else
             {
-                // 3¹ÙÀÌÆ®Â¥¸®
+                // 3ë°”ì´íŠ¸ì§œë¦¬
                 sResult->value[0] = sValue3;
                 sResult->value[1] = sValue2;
                 sResult->value[2] = sValue1;

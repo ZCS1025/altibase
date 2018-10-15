@@ -129,8 +129,8 @@ ACP_INLINE void aclConfInitDef(acl_conf_def_t *aDef)
         for (i = 0; aDef[i].mType != ACL_CONF_TYPE_NONE; i++)
         {
             /*
-             * Key°¡ NULLÀÎ (Key°¡ ÁöÁ¤µÇÁö ¾ÊÀº) CONTAINER´Â
-             * UNNAMED_CONTAINER·Î Ãë±ÞÇÔ
+             * Keyê°€ NULLì¸ (Keyê°€ ì§€ì •ë˜ì§€ ì•Šì€) CONTAINERëŠ”
+             * UNNAMED_CONTAINERë¡œ ì·¨ê¸‰í•¨
              */
             if ((aDef[i].mKey == NULL) &&
                 (aDef[i].mType == ACL_CONF_TYPE_CONTAINER))

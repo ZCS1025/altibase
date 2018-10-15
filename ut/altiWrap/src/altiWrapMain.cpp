@@ -35,8 +35,8 @@ acp_sint32_t main( acp_sint32_t aArgc, acp_char_t *aArgv[] )
 {
 /***********************************************************
  * Description :
- *     altiWrapÀÇ mainÇÔ¼ö
- *     altiWrapÀÇ syntax´Â ¾Æ·¡¿Í °°´Ù.
+ *     altiWrapì˜ mainí•¨ìˆ˜
+ *     altiWrapì˜ syntaxëŠ” ì•„ëž˜ì™€ ê°™ë‹¤.
  *         + altiwrap --iname inpath (--oname outpath) 
  **********************************************************/
 
@@ -73,49 +73,49 @@ acp_sint32_t main( acp_sint32_t aArgc, acp_char_t *aArgv[] )
             sInPath  = sAltiWrap->mFilePathInfo->mInFilePath;
             sOutPath = sAltiWrap->mFilePathInfo->mOutFilePath;
 
-            /* ÆÄÀÏÀ» ¿¬´Ù */
+            /* íŒŒì¼ì„ ì—°ë‹¤ */
             sFP = idlOS::fopen( sInPath, "r" );
             IDE_TEST_RAISE( sFP == NULL , FAIL_OPEN_FILE );
 
-            /* ÆÄÀÏ¿¡ ÀÖ´Â ÅØ½ºÆ®ÀÇ ÀüÃ¼ ±æÀÌ¸¦ ±¸ÇÑ´Ù.
-               ÀÌ ±æÀÌ´Â parsing ¶§ ¾²ÀÌ´Â ¸Þ¸ð¸®ÀÇ ÃÖ´ë Å©±â·Î »ç¿ëÇÑ´Ù.
-               prelexer¸¦ °ÅÄ¡¸é¼­ ±æÀÌ°¡ Áõ°¡ ( new line Ãß°¡µÇ°Å³ª ÇÔ ) */
+            /* íŒŒì¼ì— ìžˆëŠ” í…ìŠ¤íŠ¸ì˜ ì „ì²´ ê¸¸ì´ë¥¼ êµ¬í•œë‹¤.
+               ì´ ê¸¸ì´ëŠ” parsing ë•Œ ì“°ì´ëŠ” ë©”ëª¨ë¦¬ì˜ ìµœëŒ€ í¬ê¸°ë¡œ ì‚¬ìš©í•œë‹¤.
+               prelexerë¥¼ ê±°ì¹˜ë©´ì„œ ê¸¸ì´ê°€ ì¦ê°€ ( new line ì¶”ê°€ë˜ê±°ë‚˜ í•¨ ) */
             (void)idlOS::fseek( sFP, 0, SEEK_END );
             sTextLen = idlOS::ftell( sFP ) + 1;
 
-            /* parsingÀ» À§ÇØ »ç¿ëµÉ ¸Þ¸ð¸®¸¦ ÇÒ´ç¹Þ´Â´Ù.
-               ÇØ´ç ¸Þ¸ð¸®´Â input fileÀÇ Å©±â + 1ÀÌ µÈ´Ù. */
+            /* parsingì„ ìœ„í•´ ì‚¬ìš©ë  ë©”ëª¨ë¦¬ë¥¼ í• ë‹¹ë°›ëŠ”ë‹¤.
+               í•´ë‹¹ ë©”ëª¨ë¦¬ëŠ” input fileì˜ í¬ê¸° + 1ì´ ëœë‹¤. */
             sText    = (SChar *)idlOS::calloc(1, sTextLen + 1 ); 
             IDE_TEST_RAISE( sText == NULL, ERR_ALLOC_MEMORY );
             sState = 3;
 
-            /* prelexer¸¦ ÃÊ±âÈ­ ¼ÂÆÃ */
+            /* prelexerë¥¼ ì´ˆê¸°í™” ì…‹íŒ… */
             (void)idlOS::fseek( sFP, 0, SEEK_SET );
 
-            /* ÇÏ³ªÀÇ statemtmtÀ» text¿¡¼­ ¾ò¾î¿À±â À§ÇØ prelexer¸¦ ÇÑ´Ù. */
+            /* í•˜ë‚˜ì˜ statemtmtì„ textì—ì„œ ì–»ì–´ì˜¤ê¸° ìœ„í•´ prelexerë¥¼ í•œë‹¤. */
             gPreLexer->initialize( sFP, sText, sTextLen );
 
             while ( 1 )
             {
-                /* prelexer¿¡¼­´Â prelexerÀÇ rule¿¡ ÀÇÇØ
-                   ÇÏ³ªÀÇ statement¾¿ ÀÐ¾î¿Â´Ù. */
+                /* prelexerì—ì„œëŠ” prelexerì˜ ruleì— ì˜í•´
+                   í•˜ë‚˜ì˜ statementì”© ì½ì–´ì˜¨ë‹¤. */
                 (void) altiWrapPreLexerlex();
 
                 if ( idlOS::strlen(gPreLexer->mBuffer) != 0 )
                 {
-                    /* parsingÇÏ±â Àü¿¡ statement ¼ÂÆÃ */
+                    /* parsingí•˜ê¸° ì „ì— statement ì…‹íŒ… */
                     sAltiWrap->mPlainText->mTextLen = idlOS::strlen(gPreLexer->mBuffer);
                     sAltiWrap->mPlainText->mText    = gPreLexer->mBuffer;
                     sAltiWrap->mPlainText->mText[sAltiWrap->mPlainText->mTextLen] = '\0';
 
                     /* parsing text
-                       create psm statementÀÌ¸é ¾ÏÈ£È­ÇÏ¿© sAltiWrap->mEncryptedTextList¿¡ ´Þ°í,
-                       ±× ¿ÜÀÇ statementÀÌ¸é, plain text¸¦ ±×´ë·Î ÀÕ´Â´Ù. */
+                       create psm statementì´ë©´ ì•”í˜¸í™”í•˜ì—¬ sAltiWrap->mEncryptedTextListì— ë‹¬ê³ ,
+                       ê·¸ ì™¸ì˜ statementì´ë©´, plain textë¥¼ ê·¸ëŒ€ë¡œ ìž‡ëŠ”ë‹¤. */
                     IDE_TEST( altiWrapParseMgr::parseIt( sAltiWrap ) != IDE_SUCCESS );
                 }
                 else
                 {
-                    /* gPreLexer->mBuffer°¡ new lineÀÎ °æ¿ì */
+                    /* gPreLexer->mBufferê°€ new lineì¸ ê²½ìš° */
                     altiWrapEncrypt::setEncryptedText(
                         sAltiWrap,
                         NULL,
@@ -123,8 +123,8 @@ acp_sint32_t main( acp_sint32_t aArgc, acp_char_t *aArgv[] )
                         ID_TRUE );
                 }
 
-                /* ÆÄÀÏÀ» ´Ù ÀÐ¾úÀ¸¸é, ÇÒ´çµÈ ¸Þ¸ð¸®¸¦ ÇÁ¸®ÇÏ°í,
-                   ³²¾ÆÀÖÀ¸¸é, ÃÊ±âÈ­ÇÏ¿© ´ÙÀ½ statement¿¡ ´ëÇÑ ÁØºñ¸¦ ÇÑ´Ù. */
+                /* íŒŒì¼ì„ ë‹¤ ì½ì—ˆìœ¼ë©´, í• ë‹¹ëœ ë©”ëª¨ë¦¬ë¥¼ í”„ë¦¬í•˜ê³ ,
+                   ë‚¨ì•„ìžˆìœ¼ë©´, ì´ˆê¸°í™”í•˜ì—¬ ë‹¤ìŒ statementì— ëŒ€í•œ ì¤€ë¹„ë¥¼ í•œë‹¤. */
                 if ( gPreLexer->mIsEOF == ID_TRUE )
                 {
                     sState = 2;
@@ -139,7 +139,7 @@ acp_sint32_t main( acp_sint32_t aArgc, acp_char_t *aArgv[] )
                 }
             }
 
-            /* ÆÄÀÏÀ» ´Ý´Â´Ù. */
+            /* íŒŒì¼ì„ ë‹«ëŠ”ë‹¤. */
             idlOS::fclose( sFP );
 
             /* Write encrypted text to output file */
@@ -165,7 +165,7 @@ acp_sint32_t main( acp_sint32_t aArgc, acp_char_t *aArgv[] )
     else
     {
         /* ex) SHELL> altiwrap (enter) 
-           ¾Æ¹«·± µ¿ÀÛÇÏÁö ¾ÊÀ¸¸ç, error¹ß»ýÇÏÁö ¾ÊÀ½. */
+           ì•„ë¬´ëŸ° ë™ìž‘í•˜ì§€ ì•Šìœ¼ë©°, errorë°œìƒí•˜ì§€ ì•ŠìŒ. */
         /* Nothing to do. */
     }
 

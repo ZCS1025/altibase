@@ -94,13 +94,13 @@ struct sdiClientInfo;
 #define QC_MAX_FUNCTION_BASED_INDEX_NAME_LEN       (QC_MAX_OBJECT_NAME_LEN - 6)
 
 /* BUG-11561
- * ÇÔ¼öÀÇ ·ÎÄÃº¯¼ö·Î Char sBuffer [ QC_MAX_OBJECT_NAME_LEN + 2 ] ·Î ¹öÆÛ¸¦ Àâ¾Æ¼­
- * ±× º¯¼ö¸¦ ¹Ù·Î mtdCharType * À¸·Î Å¸ÀÔ Ä³½ºÆÃ ÇÏ¿© »ç¿ëÇÒ ¶§
- * sBuffer °¡ alignµÇÁö ¾Ê¾Æ¼­ ¹ö½º¿À·ù°¡ ¹ß»ıÇÕ´Ï´Ù.
+ * í•¨ìˆ˜ì˜ ë¡œì»¬ë³€ìˆ˜ë¡œ Char sBuffer [ QC_MAX_OBJECT_NAME_LEN + 2 ] ë¡œ ë²„í¼ë¥¼ ì¡ì•„ì„œ
+ * ê·¸ ë³€ìˆ˜ë¥¼ ë°”ë¡œ mtdCharType * ìœ¼ë¡œ íƒ€ì… ìºìŠ¤íŒ… í•˜ì—¬ ì‚¬ìš©í•  ë•Œ
+ * sBuffer ê°€ alignë˜ì§€ ì•Šì•„ì„œ ë²„ìŠ¤ì˜¤ë¥˜ê°€ ë°œìƒí•©ë‹ˆë‹¤.
  *
- * ±×·¡¼­ QC_MAX_OBJECT_NAME_LEN¸¸Å­ÀÇ ¹®ÀÚ¿­À» ÀúÀå ÇÒ ¼ö ÀÖ´Â mtdCharType ¹öÆÛ¸¦
- * ·ÎÄÃ ½ºÅÃ¿¡ Àâ°íÀÚ ÇÒ ¶§¿¡´Â ¾Æ·¡ qcNameCharBuffer·Î ¼±¾ğÇÏ¿©¾ß
- * mtdCharType * ·Î Ä³½ºÆÃÈÄ »ç¿ë½Ã¿¡ ¹ö½º ¿À·ù°¡ ¹ß»ıÇÏÁö ¾Ê½À´Ï´Ù.
+ * ê·¸ë˜ì„œ QC_MAX_OBJECT_NAME_LENë§Œí¼ì˜ ë¬¸ìì—´ì„ ì €ì¥ í•  ìˆ˜ ìˆëŠ” mtdCharType ë²„í¼ë¥¼
+ * ë¡œì»¬ ìŠ¤íƒì— ì¡ê³ ì í•  ë•Œì—ëŠ” ì•„ë˜ qcNameCharBufferë¡œ ì„ ì–¸í•˜ì—¬ì•¼
+ * mtdCharType * ë¡œ ìºìŠ¤íŒ…í›„ ì‚¬ìš©ì‹œì— ë²„ìŠ¤ ì˜¤ë¥˜ê°€ ë°œìƒí•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
  *
  * by kmkim
  */
@@ -161,9 +161,9 @@ typedef struct qcCondValueCharBuffer {
 
 // PROJ-1436
 // for qcTemplate.flag
-// plan cache ´ë»óÀÌÁö¸¸ cacheÇÒ ¼ö ¾ø´Â DML¿¡ ´ëÇÏ¿©
-// plan cache ÇÒ ¼ö ¾øÀ½À» Ç¥½ÃÇÑ´Ù.
-// ¿¹) select * from D$TBS_FREE_EXTLIST(...);
+// plan cache ëŒ€ìƒì´ì§€ë§Œ cacheí•  ìˆ˜ ì—†ëŠ” DMLì— ëŒ€í•˜ì—¬
+// plan cache í•  ìˆ˜ ì—†ìŒì„ í‘œì‹œí•œë‹¤.
+// ì˜ˆ) select * from D$TBS_FREE_EXTLIST(...);
 //     select * from t1@link1;
 //     select /* no_plan_cache */ * from t1;
 #define QC_TMP_PLAN_CACHE_IN_MASK            (0x00000008)
@@ -172,23 +172,23 @@ typedef struct qcCondValueCharBuffer {
 
 // PROJ-1436
 // for qcTemplate.flag
-// »ı¼ºµÈ plan¿¡ ´ëÇÏ¿© Åë°èÁ¤º¸ º¯°æ¿¡µµ »ı¼ºµÈ planÀ»
-// ±×´ë·Î »ç¿ëÇÒ ¼ö ÀÖ°Ô ÇÑ´Ù. ¿ø·¡´Â cacheµÈ plan¿¡
-// ´ëÇÏ¿© Åë°èÁ¤º¸ º¯°æ¿¡µµ planÀ» °è¼Ó Àç»ç¿ëÇÒ ¸ñÀûÀ¸·Î
-// ¼³°èµÇ¾úÀ¸³ª, cacheµÇÁö ¾ÊÀº planÀÌ´õ¶óµµ prepare-
-// execute·Î ½ÇÇàµÇ´Â Äõ¸®¿¡ ´ëÇÏ¿© Åë°èÁ¤º¸ º¯°æ¿¡µµ
-// planÀ» ±×´ë·Î »ç¿ëÇÒ ¼ö ÀÖµµ·Ï ÇÑ´Ù.
-// ¿¹) select /* no_plan_cache keep_plan */ * from t1;
+// ìƒì„±ëœ planì— ëŒ€í•˜ì—¬ í†µê³„ì •ë³´ ë³€ê²½ì—ë„ ìƒì„±ëœ planì„
+// ê·¸ëŒ€ë¡œ ì‚¬ìš©í•  ìˆ˜ ìˆê²Œ í•œë‹¤. ì›ë˜ëŠ” cacheëœ planì—
+// ëŒ€í•˜ì—¬ í†µê³„ì •ë³´ ë³€ê²½ì—ë„ planì„ ê³„ì† ì¬ì‚¬ìš©í•  ëª©ì ìœ¼ë¡œ
+// ì„¤ê³„ë˜ì—ˆìœ¼ë‚˜, cacheë˜ì§€ ì•Šì€ planì´ë”ë¼ë„ prepare-
+// executeë¡œ ì‹¤í–‰ë˜ëŠ” ì¿¼ë¦¬ì— ëŒ€í•˜ì—¬ í†µê³„ì •ë³´ ë³€ê²½ì—ë„
+// planì„ ê·¸ëŒ€ë¡œ ì‚¬ìš©í•  ìˆ˜ ìˆë„ë¡ í•œë‹¤.
+// ì˜ˆ) select /* no_plan_cache keep_plan */ * from t1;
 #define QC_TMP_PLAN_KEEP_MASK                (0x00000010)
 #define QC_TMP_PLAN_KEEP_FALSE               (0x00000000)
 #define QC_TMP_PLAN_KEEP_TRUE                (0x00000010)
 
 // BUG-35037
-// CREATE VIEW AS SELECT ±¸¹®À» »ç¿ëÇÒ ¶§ WIHT°¡ »ç¿ëµÇ
-// RELATED OBJECT°¡ ¸ğµç ÀÌÀü VIEWÀÇ RELATED OBJECT¸¦ Æ÷ÇÔ ÇÏ°Ô µÈ´Ù.
-// FLAG¸¦ ¼³Á¤ ÇÏ¸é parseSelect()ÇÔ¼ö°¡ ÇÏÀ§ parseViewInFromClause()
-// ÇÔ¼ö¿¡¼­ parseSelect()¸¦ Àç±Í È£Ãâ ÇÏÁö ¾Ê°Ô µÇ°í REALTED OBJECT°¡
-// Æ÷ÇÔµÇÁö ¾Ê´Â´Ù.
+// CREATE VIEW AS SELECT êµ¬ë¬¸ì„ ì‚¬ìš©í•  ë•Œ WIHTê°€ ì‚¬ìš©ë˜
+// RELATED OBJECTê°€ ëª¨ë“  ì´ì „ VIEWì˜ RELATED OBJECTë¥¼ í¬í•¨ í•˜ê²Œ ëœë‹¤.
+// FLAGë¥¼ ì„¤ì • í•˜ë©´ parseSelect()í•¨ìˆ˜ê°€ í•˜ìœ„ parseViewInFromClause()
+// í•¨ìˆ˜ì—ì„œ parseSelect()ë¥¼ ì¬ê·€ í˜¸ì¶œ í•˜ì§€ ì•Šê²Œ ë˜ê³  REALTED OBJECTê°€
+// í¬í•¨ë˜ì§€ ì•ŠëŠ”ë‹¤.
 #define QC_PARSE_CREATE_VIEW_MASK            (0x00000020)
 #define QC_PARSE_CREATE_VIEW_FALSE           (0x00000000)
 #define QC_PARSE_CREATE_VIEW_TRUE            (0x00000020)
@@ -199,7 +199,7 @@ typedef struct qcCondValueCharBuffer {
 #define QC_TMP_REF_FIXED_TABLE_TRUE          (0x00000040)
 
 /*
- * BUG-39441 replication table ÂüÁ¶¿©ºÎ
+ * BUG-39441 replication table ì°¸ì¡°ì—¬ë¶€
  * qcTemplate.flag
  */
 #define QC_TMP_REF_REPL_TABLE_MASK           (0x00000080)
@@ -213,42 +213,42 @@ typedef struct qcCondValueCharBuffer {
 #define QC_TMP_EXEC_FAST_FALSE               (0x00000200)
 
 /* BUG-42639 Monitoring query
- * Queyr°¡ ¸ğµÎ X$³ª V$ Fixed Table·Î ÀÌ·ç¾îÁ® ÀÖ´ÂÁö Ã¼Å©
- * X$ Áß¿¡¼­µµ TractionÀ» »ç¿ëÇÏ´Â °ÍÀº Á¦¿ÜÇÏ°í
- * Query¿¡ FunctionÀÌ³ª Sequence°¡ »ç¿ëµÇ´Â °Íµµ Á¦¿ÜÇÑ´Ù.
- * ¶Ç user¿¡ ÀÇÇØ »ı¼ºµÈ created view ³ª ÀÏ¹İ Å×ÀÌºíÀÌ Æ÷ÇÔµÈ
- * °æ¿ì¿¡µµ Á¦¿ÜÇÑ´Ù.
- * ÀÌ flag°¡ TRUE °¡ µÇ¸é MM¿¡¼­ TransctionÀ» ÇÒ´çÇÏÁö ¾Ê°ÔµÈ´Ù.
+ * Queyrê°€ ëª¨ë‘ X$ë‚˜ V$ Fixed Tableë¡œ ì´ë£¨ì–´ì ¸ ìˆëŠ”ì§€ ì²´í¬
+ * X$ ì¤‘ì—ì„œë„ Tractionì„ ì‚¬ìš©í•˜ëŠ” ê²ƒì€ ì œì™¸í•˜ê³ 
+ * Queryì— Functionì´ë‚˜ Sequenceê°€ ì‚¬ìš©ë˜ëŠ” ê²ƒë„ ì œì™¸í•œë‹¤.
+ * ë˜ userì— ì˜í•´ ìƒì„±ëœ created view ë‚˜ ì¼ë°˜ í…Œì´ë¸”ì´ í¬í•¨ëœ
+ * ê²½ìš°ì—ë„ ì œì™¸í•œë‹¤.
+ * ì´ flagê°€ TRUE ê°€ ë˜ë©´ MMì—ì„œ Transctionì„ í• ë‹¹í•˜ì§€ ì•Šê²Œëœë‹¤.
  */
 #define QC_TMP_ALL_FIXED_TABLE_MASK          (0x00000400)
 #define QC_TMP_ALL_FIXED_TABLE_FALSE         (0x00000400)
 #define QC_TMP_ALL_FIXED_TABLE_TRUE          (0x00000000)
 
-// shard transform ¼öÇà ¿©ºÎ
+// shard transform ìˆ˜í–‰ ì—¬ë¶€
 #define QC_TMP_SHARD_TRANSFORM_MASK          (0x00000800)
 #define QC_TMP_SHARD_TRANSFORM_DISABLE       (0x00000800)
 #define QC_TMP_SHARD_TRANSFORM_ENABLE        (0x00000000)
 
-// PROJ-2551 simple query ÃÖÀûÈ­
-// simple queryÀÎ°¡
+// PROJ-2551 simple query ìµœì í™”
+// simple queryì¸ê°€
 // qcStatement.mFlag
 #define QC_STMT_FAST_EXEC_MASK               (0x00000001)
 #define QC_STMT_FAST_EXEC_FALSE              (0x00000000)
 #define QC_STMT_FAST_EXEC_TRUE               (0x00000001)
 
-// simple queryÀÇ simple bindÀÎ°¡
+// simple queryì˜ simple bindì¸ê°€
 // qcStatement.mFlag
 #define QC_STMT_FAST_BIND_MASK               (0x00000002)
 #define QC_STMT_FAST_BIND_FALSE              (0x00000000)
 #define QC_STMT_FAST_BIND_TRUE               (0x00000002)
 
-// simple queryÀÇ Ã¹¹øÂ° resultÀÎ°¡
+// simple queryì˜ ì²«ë²ˆì§¸ resultì¸ê°€
 // qcStatement.mFlag
 #define QC_STMT_FAST_FIRST_RESULT_MASK       (0x00000004)
 #define QC_STMT_FAST_FIRST_RESULT_FALSE      (0x00000000)
 #define QC_STMT_FAST_FIRST_RESULT_TRUE       (0x00000004)
 
-// simple queryÀÇ °á°ú¸¦ Á÷Á¢ º¹»çÇß³ª
+// simple queryì˜ ê²°ê³¼ë¥¼ ì§ì ‘ ë³µì‚¬í–ˆë‚˜
 // qcStatement.mFlag
 #define QC_STMT_FAST_COPY_RESULT_MASK        (0x00000008)
 #define QC_STMT_FAST_COPY_RESULT_FALSE       (0x00000000)
@@ -266,17 +266,17 @@ typedef struct qcCondValueCharBuffer {
 #define QC_SESSION_ALTER_META_ENABLE         (0x00000001)
 
 // for qcSession.flag
-// qcg::allocStatement() ¿¡¼­
-// ÀÎÀÚ·Î ³Ñ¾î¿À´Â session °´Ã¼°¡ nullÀÎ °æ¿ì,
-// ³»ºÎ¿¡¼­ session°´Ã¼¸¦ ÇÒ´ç¹Ş°í
-// session Á¤º¸ Á¢±Ù½Ã default °ªµéÀ» ¾òµµ·Ï ÇÑ´Ù.
+// qcg::allocStatement() ì—ì„œ
+// ì¸ìë¡œ ë„˜ì–´ì˜¤ëŠ” session ê°ì²´ê°€ nullì¸ ê²½ìš°,
+// ë‚´ë¶€ì—ì„œ sessionê°ì²´ë¥¼ í• ë‹¹ë°›ê³ 
+// session ì •ë³´ ì ‘ê·¼ì‹œ default ê°’ë“¤ì„ ì–»ë„ë¡ í•œë‹¤.
 #define QC_SESSION_INTERNAL_ALLOC_MASK       (0x00000002)
 #define QC_SESSION_INTERNAL_ALLOC_FALSE      (0x00000000)
 #define QC_SESSION_INTERNAL_ALLOC_TRUE       (0x00000002)
 
 // BUG-26017
-// [PSM] server restart½Ã ¼öÇàµÇ´Â
-// psm load°úÁ¤¿¡¼­ °ü·ÃÇÁ·ÎÆÛÆ¼¸¦ ÂüÁ¶ÇÏÁö ¸øÇÏ´Â °æ¿ì ÀÖÀ½.
+// [PSM] server restartì‹œ ìˆ˜í–‰ë˜ëŠ”
+// psm loadê³¼ì •ì—ì„œ ê´€ë ¨í”„ë¡œí¼í‹°ë¥¼ ì°¸ì¡°í•˜ì§€ ëª»í•˜ëŠ” ê²½ìš° ìˆìŒ.
 #define QC_SESSION_INTERNAL_LOAD_PROC_MASK   (0x00000004)
 #define QC_SESSION_INTERNAL_LOAD_PROC_FALSE  (0x00000000)
 #define QC_SESSION_INTERNAL_LOAD_PROC_TRUE   (0x00000004)
@@ -292,14 +292,14 @@ typedef struct qcCondValueCharBuffer {
 
 // BUG-45385
 // for qcSession.flag
-// ÇöÀç tx¿¡¼­ shard meta¸¦ º¯°æÇß´Ù. tx end½Ã ÃÊ±âÈ­ÇÑ´Ù.
+// í˜„ì¬ txì—ì„œ shard metaë¥¼ ë³€ê²½í–ˆë‹¤. tx endì‹œ ì´ˆê¸°í™”í•œë‹¤.
 #define QC_SESSION_SHARD_META_TOUCH_MASK     (0x00000020)
 #define QC_SESSION_SHARD_META_TOUCH_FALSE    (0x00000000)
 #define QC_SESSION_SHARD_META_TOUCH_TRUE     (0x00000020)
 
 // BUG-45385
 // for qcSession.flag
-// ÇöÀç session¿¡¼­ plan cache¸¦ »ç¿ëÇÏÁö ¾Ê´Â´Ù.
+// í˜„ì¬ sessionì—ì„œ plan cacheë¥¼ ì‚¬ìš©í•˜ì§€ ì•ŠëŠ”ë‹¤.
 #define QC_SESSION_PLAN_CACHE_MASK           (0x00000040)
 #define QC_SESSION_PLAN_CACHE_ENABLE         (0x00000000)
 #define QC_SESSION_PLAN_CACHE_DISABLE        (0x00000040)
@@ -462,8 +462,8 @@ typedef struct qcCondValueCharBuffer {
 }
 
 /* BUG-37981
-   templateÀÇ stackBuffer, stack , stackCount , stackRemain
-   ¿¬°á ¹× ÇØÁ¦ */
+   templateì˜ stackBuffer, stack , stackCount , stackRemain
+   ì—°ê²° ë° í•´ì œ */
 #define QC_CONNECT_TEMPLATE_STACK( _detTemplate_ , _oriStackBuffer_ , _oriStack_ , _oriStackCount_ , _oriStackRemain_ )\
 {                                                                                                                   \
     _detTemplate_->tmplate.stackBuffer = _oriStackBuffer_;                                                          \
@@ -507,7 +507,7 @@ typedef IDE_RC (*qcExecuteFunc)  ( qcStatement * );
 
 //-----------------------------------------------
 // PROJ-1407 Temporary Table
-// session temporary tableÀ» ÀúÀåÇÏ±âÀ§ÇÑ ÀÚ·á±¸Á¶
+// session temporary tableì„ ì €ì¥í•˜ê¸°ìœ„í•œ ìë£Œêµ¬ì¡°
 //-----------------------------------------------
 typedef struct qcTempIndex
 {
@@ -543,19 +543,19 @@ typedef struct qcTemporaryObjInfo
 
 //-----------------------------------------------
 // [qcUserInfo]
-// Statement¸¦ ¼öÇàÁßÀÎ User ÀÇ Á¤º¸
+// Statementë¥¼ ìˆ˜í–‰ì¤‘ì¸ User ì˜ ì •ë³´
 //-----------------------------------------------
 
 typedef struct qcUserInfo
 {
-    UInt            userID;          // SessionÀÇ User ID
-    scSpaceID       tableSpaceID;    // UserÀÇ Table Space ID
-    scSpaceID       tempSpaceID;     // UserÀÇ Temp Table Space ID
+    UInt            userID;          // Sessionì˜ User ID
+    scSpaceID       tableSpaceID;    // Userì˜ Table Space ID
+    scSpaceID       tempSpaceID;     // Userì˜ Temp Table Space ID
     idBool          mIsSysdba;
 } qcUserInfo;
 
-// SYSTEM USER¸¦ À§ÇÑ Á¤º¸
-// qcmUser.cpp ¿¡ Á¤ÀÇµÊ.
+// SYSTEM USERë¥¼ ìœ„í•œ ì •ë³´
+// qcmUser.cpp ì— ì •ì˜ë¨.
 //extern qcUserInfo gQcmSystemUserInfo;
 
 // BUG-41248 DBMS_SQL package
@@ -597,7 +597,7 @@ typedef struct qcStmtListInfo
     qsxStmtList  * mStmtList;
 } qcStmtListInfo;
 
-/* BUG-43605 [mt] randomÇÔ¼öÀÇ seed ¼³Á¤À» session ´ÜÀ§·Î º¯°æÇØ¾ß ÇÕ´Ï´Ù. */
+/* BUG-43605 [mt] randomí•¨ìˆ˜ì˜ seed ì„¤ì •ì„ session ë‹¨ìœ„ë¡œ ë³€ê²½í•´ì•¼ í•©ë‹ˆë‹¤. */
 #define QC_RAND_MT_N (624)
 
 typedef struct qcRandomInfo
@@ -607,11 +607,11 @@ typedef struct qcRandomInfo
     UInt   mMap[QC_RAND_MT_N];
 } qcRandomInfo;
 
-// sessionÀ¸·Î °øÀ¯ÇØ¾ß ÇÏ´Â Á¤º¸ÀÌÁö¸¸,
-// qp¿¡¼­¸¸ »ç¿ëÇÏ´Â Á¤º¸µéÀÇ ÁıÇÕ.
+// sessionìœ¼ë¡œ ê³µìœ í•´ì•¼ í•˜ëŠ” ì •ë³´ì´ì§€ë§Œ,
+// qpì—ì„œë§Œ ì‚¬ìš©í•˜ëŠ” ì •ë³´ë“¤ì˜ ì§‘í•©.
 typedef struct qcSessionSpecific
 {
-    UInt                       mFlag;   // QC_SESSION_ALTER_META_MASK Á¤º¸
+    UInt                       mFlag;   // QC_SESSION_ALTER_META_MASK ì •ë³´
 
     // PROJ-1371 PSM File Handling
     struct qcSessionObjInfo  * mSessionObj;
@@ -644,7 +644,7 @@ typedef struct qcSessionSpecific
     // BUG-43158 Enhance statement list caching in PSM
     qcStmtListInfo             mStmtListInfo;
 
-    /* BUG-43605 [mt] randomÇÔ¼öÀÇ seed ¼³Á¤À» session ´ÜÀ§·Î º¯°æÇØ¾ß ÇÕ´Ï´Ù. */
+    /* BUG-43605 [mt] randomí•¨ìˆ˜ì˜ seed ì„¤ì •ì„ session ë‹¨ìœ„ë¡œ ë³€ê²½í•´ì•¼ í•©ë‹ˆë‹¤. */
     qcRandomInfo               mRandomInfo;
 
     // PROJ-2638
@@ -652,21 +652,21 @@ typedef struct qcSessionSpecific
 
 } qcSessionSpecific;
 
-// session Á¤º¸
+// session ì •ë³´
 typedef struct qcSession
 {
     void                * mMmSession;
     qcSessionSpecific     mQPSpecific;
 
     // BUG-24407
-    // ³»ºÎ¿¡¼­ »ı¼ºµÈ sessionÀÌ¶óµµ setSessionUserID°¡ È£ÃâµÇ´Â
-    // °æ¿ì°¡ ÀÖÀ¸¹Ç·Î userID¸¦ º°µµ·Î ÀúÀåÇÑ´Ù.
+    // ë‚´ë¶€ì—ì„œ ìƒì„±ëœ sessionì´ë¼ë„ setSessionUserIDê°€ í˜¸ì¶œë˜ëŠ”
+    // ê²½ìš°ê°€ ìˆìœ¼ë¯€ë¡œ userIDë¥¼ ë³„ë„ë¡œ ì €ì¥í•œë‹¤.
     UInt                  mUserID;
 
     /*
      * BUG-37093
-     * ³»ºÎ¿¡¼­ »ı¼ºµÈ sessionÀÌ¶óµµ MM SessionÀ» ÂüÁ¶ÇÏ´Â °æ¿ì°¡ ÀÖ¾î
-     * º°µµ·Î ÀúÀåÇÑ´Ù.
+     * ë‚´ë¶€ì—ì„œ ìƒì„±ëœ sessionì´ë¼ë„ MM Sessionì„ ì°¸ì¡°í•˜ëŠ” ê²½ìš°ê°€ ìˆì–´
+     * ë³„ë„ë¡œ ì €ì¥í•œë‹¤.
      */
     void                * mMmSessionForDatabaseLink;
 
@@ -674,7 +674,7 @@ typedef struct qcSession
 
 typedef struct qcStmtInfo
 {
-    // qp¿¡¼­ prepare/execute½Ã ÇÊ¿äÇÑ smiStatement
+    // qpì—ì„œ prepare/executeì‹œ í•„ìš”í•œ smiStatement
     smiStatement        * mSmiStmtForExecute;
     void                * mMmStatement;
     idBool                mIsQpAlloc;
@@ -687,7 +687,7 @@ typedef struct qcNamePosition
     SInt    size;
 } qcNamePosition;
 
-// sessionÁ¤º¸¸¦ ¾ò±â À§ÇÑ mmcSessionÀÇ callback ÇÔ¼öµéÀÇ ÁıÇÕ.
+// sessionì •ë³´ë¥¼ ì–»ê¸° ìœ„í•œ mmcSessionì˜ callback í•¨ìˆ˜ë“¤ì˜ ì§‘í•©.
 typedef struct qcSessionCallback
 {
     const mtlModule *(*mGetLanguage)(void * aMmSession);
@@ -734,7 +734,7 @@ typedef struct qcSessionCallback
                                  UInt    aPropValueSize );
     void         (*mMemoryCompact)();
 
-    // qsxEnv, qsfPrint¿¡¼­ »ç¿ëÇÔ.
+    // qsxEnv, qsfPrintì—ì„œ ì‚¬ìš©í•¨.
     IDE_RC       (*mPrintToClient)(void   * aMmSession,
                                    UChar  * aMessage,
                                    UInt     aMessageLen );
@@ -745,7 +745,7 @@ typedef struct qcSessionCallback
 
     UInt         (*mGetSTObjBufSize)(void * aMmSession);
 
-    /* PROJ-2446: BUG-24361 ST_ALLOW_HINT (XDB ¹ö±×) ¹İ¿µ */
+    /* PROJ-2446: BUG-24361 ST_ALLOW_HINT (XDB ë²„ê·¸) ë°˜ì˜ */
     UInt         (*mGetSTAllowLev)(void * aMmSession);
 
     idBool       (*mIsParallelDml)(void * aMmSession);
@@ -767,7 +767,7 @@ typedef struct qcSessionCallback
     UInt         (*mGetNcharLiteralReplace)(void * aMmSession);
     //BUG-21122
     UInt         (*mGetAutoRemoteExec)(void * aMmSession);
-    /* PROJ-2446: BUG-24957 plan Á¶È¸½Ã °´Ã¼ÀÇ »ç¿ëÀÚ Ç¥½Ã(XDB ¹ö±×) ¹İ¿µ */
+    /* PROJ-2446: BUG-24957 plan ì¡°íšŒì‹œ ê°ì²´ì˜ ì‚¬ìš©ì í‘œì‹œ(XDB ë²„ê·¸) ë°˜ì˜ */
     UInt         (*mGetDetailSchema)(void * aMmSession);
 
     // BUG-25999
@@ -832,7 +832,7 @@ typedef struct qcSessionCallback
     /* PROJ-2441 flashback */
     UInt         (*mGetRecyclebinEnable)(void  * aMmSession);
 
-    /* BUG-42853 LOCK TABLE¿¡ UNTIL NEXT DDL ±â´É Ãß°¡ */
+    /* BUG-42853 LOCK TABLEì— UNTIL NEXT DDL ê¸°ëŠ¥ ì¶”ê°€ */
     idBool       (*mGetLockTableUntilNextDDL)( void * aMmSession );
     void         (*mSetLockTableUntilNextDDL)( void * aMmSession, idBool aValue );
     UInt         (*mGetTableIDOfLockTableUntilNextDDL)( void * aMmSession );
@@ -906,7 +906,7 @@ typedef struct qcSessionCallback
     /* BUG-42639 Monitoring query */
     UInt         (*mGetOptimizerPerformanceView)(void * aMmSession);
 
-    /* PROJ-2624 [±â´É¼º] MM - À¯¿¬ÇÑ access_list °ü¸®¹æ¹ı Á¦°ø */
+    /* PROJ-2624 [ê¸°ëŠ¥ì„±] MM - ìœ ì—°í•œ access_list ê´€ë¦¬ë°©ë²• ì œê³µ */
     IDE_RC       (*mReloadAccessList)();
                                             
     // PROJ-2638
@@ -1011,7 +1011,7 @@ typedef struct qcRemoteTableCallback
 //---------------------------------------------------
 // BUG-16422
 // [qcTableInfoMgr]
-// executeÁß ÀÓ½Ã »ı¼ºµÈ tableInfoÀÇ °ü¸®
+// executeì¤‘ ì„ì‹œ ìƒì„±ëœ tableInfoì˜ ê´€ë¦¬
 //---------------------------------------------------
 typedef struct qcTableInfoMgr
 {
@@ -1026,54 +1026,54 @@ typedef struct qcTableInfoMgr
 //---------------------------------------------------
 // PROJ-1358
 // [qcDepInfo]
-// ÂüÁ¶ Å×ÀÌºíÀÇ Á¤º¸¸¦ °ü¸®
+// ì°¸ì¡° í…Œì´ë¸”ì˜ ì •ë³´ë¥¼ ê´€ë¦¬
 //---------------------------------------------------
 
 // PROJ-1358
-// ÇÏ³ªÀÇ ±¸¹®ÀÌ ÂüÁ¶ÇÒ ¼ö ÀÖ´Â Å×ÀÌºíÀÇ °³¼ö
+// í•˜ë‚˜ì˜ êµ¬ë¬¸ì´ ì°¸ì¡°í•  ìˆ˜ ìˆëŠ” í…Œì´ë¸”ì˜ ê°œìˆ˜
 #define QC_MAX_REF_TABLE_CNT                         (32)
 
 //---------------------------------------------------
 // PROJ-1653 Outer Join Operator (+)
 //
-// joinOper ´Â validation À» À§ÇÑ ÀÚ·á±¸Á¶·Î validation ÀÌÈÄ¿¡´Â
-// ÂüÁ¶µÇÁö ¾Ê´Â´Ù.
-// joinOper ¿¡´Â °¢°¢ÀÇ dependency Å×ÀÌºí¿¡ ´ëÇØ Outer Join Operator °¡
-// ¾î¶»°Ô ºÙ¾îÀÖ´ÂÁö¸¦ ¼³Á¤ÇÑ´Ù.
-// ÀÌ °ªÀº qmsQuerySet ÀÇ SFWGH ÀÇ °¢ Àı(from,where,...)³»¿¡¼­¸¸
-// Á¤È®È÷ oring µÇ¾î ÀÖ±â ¶§¹®¿¡, ±× »óÀ§ÀÇ ÀÚ·á±¸Á¶¿¡ ÀÖ´Â
-// depInfo.depJoinOper °ªÀº »ç¿ëÇÏ¸é ¾ÈµÈ´Ù.
+// joinOper ëŠ” validation ì„ ìœ„í•œ ìë£Œêµ¬ì¡°ë¡œ validation ì´í›„ì—ëŠ”
+// ì°¸ì¡°ë˜ì§€ ì•ŠëŠ”ë‹¤.
+// joinOper ì—ëŠ” ê°ê°ì˜ dependency í…Œì´ë¸”ì— ëŒ€í•´ Outer Join Operator ê°€
+// ì–´ë–»ê²Œ ë¶™ì–´ìˆëŠ”ì§€ë¥¼ ì„¤ì •í•œë‹¤.
+// ì´ ê°’ì€ qmsQuerySet ì˜ SFWGH ì˜ ê° ì ˆ(from,where,...)ë‚´ì—ì„œë§Œ
+// ì •í™•íˆ oring ë˜ì–´ ìˆê¸° ë•Œë¬¸ì—, ê·¸ ìƒìœ„ì˜ ìë£Œêµ¬ì¡°ì— ìˆëŠ”
+// depInfo.depJoinOper ê°’ì€ ì‚¬ìš©í•˜ë©´ ì•ˆëœë‹¤.
 //---------------------------------------------------
 
 typedef struct qcDepInfo
 {
-    UInt   depCount;                            // ÂüÁ¶ Å×ÀÌºí °³¼ö
-    UShort depend[QC_MAX_REF_TABLE_CNT];        // ÂüÁ¶ Å×ÀÌºí Á¤º¸
-    UChar  depJoinOper[QC_MAX_REF_TABLE_CNT];   // ÂüÁ¶ Å×ÀÌºíº° Outer Join Operator(+) Á¸Àç¿©ºÎ
+    UInt   depCount;                            // ì°¸ì¡° í…Œì´ë¸” ê°œìˆ˜
+    UShort depend[QC_MAX_REF_TABLE_CNT];        // ì°¸ì¡° í…Œì´ë¸” ì •ë³´
+    UChar  depJoinOper[QC_MAX_REF_TABLE_CNT];   // ì°¸ì¡° í…Œì´ë¸”ë³„ Outer Join Operator(+) ì¡´ì¬ì—¬ë¶€
 } qcDepInfo;
 
 //---------------------------------------------------
 // [qcTableMap]
-//  Statement¿¡ Á¸ÀçÇÏ´Â ¸ğµç TableµéÀÇ Map Á¤º¸
-//  ´ÙÀ½°ú °°Àº Ã³¸®ÀÇ È¿À²À» À§ÇØ Table MapÀ» µĞ´Ù.
-//  1. Dependency °áÁ¤
-//  2. ÇØ´ç Table¹× ColumnÀÇ ºü¸¥ Á¤º¸ ÃßÃâ
-//  3. Plan TreeÀÇ ÀÚµ¿ Àç±¸¼º
+//  Statementì— ì¡´ì¬í•˜ëŠ” ëª¨ë“  Tableë“¤ì˜ Map ì •ë³´
+//  ë‹¤ìŒê³¼ ê°™ì€ ì²˜ë¦¬ì˜ íš¨ìœ¨ì„ ìœ„í•´ Table Mapì„ ë‘”ë‹¤.
+//  1. Dependency ê²°ì •
+//  2. í•´ë‹¹ Tableë° Columnì˜ ë¹ ë¥¸ ì •ë³´ ì¶”ì¶œ
+//  3. Plan Treeì˜ ìë™ ì¬êµ¬ì„±
 //---------------------------------------------------
 
 typedef struct qcTableMap
 {
-    ULong             dependency;   // º¸Á¤µÈ dependency °ª
-    struct qmsFrom  * from;         // ÇØ´ç Table ID¿¡ ÇØ´çÇÏ´Â From Á¤º¸
+    ULong             dependency;   // ë³´ì •ëœ dependency ê°’
+    struct qmsFrom  * from;         // í•´ë‹¹ Table IDì— í•´ë‹¹í•˜ëŠ” From ì •ë³´
 } qcTableMap;
 
 //---------------------------------------------------
 // PROJ-1413 Simple View Merging
 // [qcTupleVarList]
-// from ÀıÀÇ relationÀ» mergeÇÏ±â À§ÇØ ÀÓÀÇÀÇ uniqueÇÑ
-// tuple variableÀ» »ı¼ºÇØ¾ß ÇÏ´Âµ¥, ÀÌ¸¦ À§ÇØ query¿¡¼­
-// »ç¿ëÇÑ ¸ğµç tuple variableÀ» ±â·ÏÇØ¾ß ÇÑ´Ù.
-// (½ÇÁ¦·Î´Â $$·Î ½ÃÀÛÇÏ´Â tuple variable¸¸ ±â·ÏÇÑ´Ù.)
+// from ì ˆì˜ relationì„ mergeí•˜ê¸° ìœ„í•´ ì„ì˜ì˜ uniqueí•œ
+// tuple variableì„ ìƒì„±í•´ì•¼ í•˜ëŠ”ë°, ì´ë¥¼ ìœ„í•´ queryì—ì„œ
+// ì‚¬ìš©í•œ ëª¨ë“  tuple variableì„ ê¸°ë¡í•´ì•¼ í•œë‹¤.
+// (ì‹¤ì œë¡œëŠ” $$ë¡œ ì‹œì‘í•˜ëŠ” tuple variableë§Œ ê¸°ë¡í•œë‹¤.)
 //---------------------------------------------------
 
 typedef struct qcTupleVarList
@@ -1090,8 +1090,8 @@ typedef struct qcComponentInfo
 {
     UInt              planID;
     idBool            isVMTR;
-    UInt              count;       /* ±¸¼º Å×ÀÌºí °¹¼ö */
-    UShort          * components; /*  ±¸¼º Å×ÀÌºíÀÇ Tuples */
+    UInt              count;       /* êµ¬ì„± í…Œì´ë¸” ê°¯ìˆ˜ */
+    UShort          * components; /*  êµ¬ì„± í…Œì´ë¸”ì˜ Tuples */
     qcComponentInfo * next;
 } qcComponentInfo;
 
@@ -1149,21 +1149,21 @@ typedef struct qcTableModifyMap
 
 typedef struct qcResultCache
 {
-    UShort              flag;         // Result Cache¿¡ »ç¿ëµÇ´Â flag
-    smTID               transID;      // Transction ID¸¦ ÀúÀåÇØ³õ°í AutoCommit Off½Ã check
-    UInt                count;        // ÀüÃ¼ Query¿¡ »ç¿ëµÈ cache count
+    UShort              flag;         // Result Cacheì— ì‚¬ìš©ë˜ëŠ” flag
+    smTID               transID;      // Transction IDë¥¼ ì €ì¥í•´ë†“ê³  AutoCommit Offì‹œ check
+    UInt                count;        // ì „ì²´ Queryì— ì‚¬ìš©ëœ cache count
     qcComponentInfo   * stack;        // ComponentInfo Stack
     qcComponentInfo   * list;         // ComponentInfo List
-    qcTableModifyMap  * modifyMap;    // Äõ¸®¿¡ »ç¿ëµÈ TableµéÀÇModifyCount Map
-    UChar             * data;         // Result CacheÀÇ Data¿µ¿ª
-    UInt              * dataFlag;     // Result CacheÀÇ Data Flag ¿µ¿ª
-    void              * bindValues;   // Bind Value¸¦ º¹»çÇØ ³õ´Â´Ù.
-    idBool              isBindChanged;// Bind Á¤º¸°¡ ¹Ù²î¾ú´ÂÁö¸¦ Ã¼Å©
-    iduMemory        ** memArray;     // °¢°¢ÀÇ Cache°¡ »ç¿ëÇÏ´Â Memory ¹è¿­
-    ULong             * memSizeArray; // °¢°¢ÀÇ Cache°¡ »ç¿ëÇÏ´Â Memory Å©±â ¹è¿­
-    ULong               qrcMemMaximum;// QCU_RESULT_CACHE_MEMORY_MAXIMUM Å©±â
-    ULong               qmxMemMaximum;// iduProperty::getExecuteMemoryMax  Å©±â
-    ULong               qmxMemSize;   // execution Memory MaxÃ¼Å©¸¦ À§ÇÑ qmxMemSize
+    qcTableModifyMap  * modifyMap;    // ì¿¼ë¦¬ì— ì‚¬ìš©ëœ Tableë“¤ì˜ModifyCount Map
+    UChar             * data;         // Result Cacheì˜ Dataì˜ì—­
+    UInt              * dataFlag;     // Result Cacheì˜ Data Flag ì˜ì—­
+    void              * bindValues;   // Bind Valueë¥¼ ë³µì‚¬í•´ ë†“ëŠ”ë‹¤.
+    idBool              isBindChanged;// Bind ì •ë³´ê°€ ë°”ë€Œì—ˆëŠ”ì§€ë¥¼ ì²´í¬
+    iduMemory        ** memArray;     // ê°ê°ì˜ Cacheê°€ ì‚¬ìš©í•˜ëŠ” Memory ë°°ì—´
+    ULong             * memSizeArray; // ê°ê°ì˜ Cacheê°€ ì‚¬ìš©í•˜ëŠ” Memory í¬ê¸° ë°°ì—´
+    ULong               qrcMemMaximum;// QCU_RESULT_CACHE_MEMORY_MAXIMUM í¬ê¸°
+    ULong               qmxMemMaximum;// iduProperty::getExecuteMemoryMax  í¬ê¸°
+    ULong               qmxMemSize;   // execution Memory Maxì²´í¬ë¥¼ ìœ„í•œ qmxMemSize
 } qcResultCache;
 
 typedef struct qcShardExecData
@@ -1177,7 +1177,7 @@ typedef struct qcShardExecData
 //---------------------------------------------------
 // PROJ-1436 SQL-Plan Cache
 // [qcgPlanProperty]
-// plan »ı¼º¿¡ °ü·ÃÇÑ ¸ğµç system & session property
+// plan ìƒì„±ì— ê´€ë ¨í•œ ëª¨ë“  system & session property
 //---------------------------------------------------
 
 enum qcPlanPropertyKind
@@ -1267,7 +1267,7 @@ typedef struct qcPlanProperty
     UInt    normalFormMaximum;
 
     idBool  defaultDateFormatRef;
-    SChar   defaultDateFormat[IDP_MAX_VALUE_LEN];  // MTC_TO_CHAR_MAX_PRECISION º¸´Ù Å©´Ù.
+    SChar   defaultDateFormat[IDP_MAX_VALUE_LEN];  // MTC_TO_CHAR_MAX_PRECISION ë³´ë‹¤ í¬ë‹¤.
 
     idBool  STObjBufSizeRef;
     UInt    STObjBufSize;
@@ -1275,7 +1275,7 @@ typedef struct qcPlanProperty
     idBool  optimizerSimpleViewMergingDisableRef;
     UInt    optimizerSimpleViewMergingDisable;
 
-    // BUG-23780 TEMP_TBS_MEMORY ÈùÆ® Àû¿ë¿©ºÎ¸¦ property·Î Á¦°ø
+    // BUG-23780 TEMP_TBS_MEMORY íŒíŠ¸ ì ìš©ì—¬ë¶€ë¥¼ propertyë¡œ ì œê³µ
     idBool  optimizerDefaultTempTbsTypeRef;
     UInt    optimizerDefaultTempTbsType;
 
@@ -1428,7 +1428,7 @@ typedef struct qcPlanProperty
     idBool  optimizerInnerJoinPushDownRef;
     UInt    optimizerInnerJoinPushDown;
 
-    // BUG-43068 Indexable order by °³¼±
+    // BUG-43068 Indexable order by ê°œì„ 
     idBool  optimizerOrderPushDownRef;
     UInt    optimizerOrderPushDown;
 
@@ -1459,7 +1459,7 @@ typedef struct qcPlanProperty
     idBool optimizerDBMSStatPolicyRef;
     UInt   optimizerDBMSStatPolicy;
 
-    /* BUG-44850 Index NL , Inverse index NL Á¶ÀÎ ÃÖÀûÈ­ ¼öÇà½Ã ºñ¿ëÀÌ µ¿ÀÏÇÏ¸é primary key¸¦ ¿ì¼±ÀûÀ¸·Î ¼±ÅÃ. */
+    /* BUG-44850 Index NL , Inverse index NL ì¡°ì¸ ìµœì í™” ìˆ˜í–‰ì‹œ ë¹„ìš©ì´ ë™ì¼í•˜ë©´ primary keyë¥¼ ìš°ì„ ì ìœ¼ë¡œ ì„ íƒ. */
     idBool optimizerIndexNLJoinAccessMethodPolicyRef;
     UInt   optimizerIndexNLJoinAccessMethodPolicy;
     
@@ -1481,19 +1481,19 @@ typedef struct qcTemplate
     mtcTemplate        tmplate;
 
     // PROJ-1358
-    // Internal TupleÀÇ ÀÚµ¿ È®ÀåÀ¸·Î ÀÎÇØ ÇÔ²² È®ÀåµÇ¾î¾ß ÇÔ.
+    // Internal Tupleì˜ ìë™ í™•ì¥ìœ¼ë¡œ ì¸í•´ í•¨ê»˜ í™•ì¥ë˜ì–´ì•¼ í•¨.
     qcTableMap       * tableMap;     // Table Map
 
     UInt               planCount;
-    UInt             * planFlag;     // ÁúÀÇ ¼öÇàÀü¿¡ ÇÒ´ç ¹× ÃÊ±âÈ­µÇ¾î¾ß ÇÔ.
+    UInt             * planFlag;     // ì§ˆì˜ ìˆ˜í–‰ì „ì— í• ë‹¹ ë° ì´ˆê¸°í™”ë˜ì–´ì•¼ í•¨.
 
-    qmcCursor        * cursorMgr;    // ÁúÀÇ Ã³¸®½Ã »ı¼ºµÈ Cursor °ü¸®
-    qmcdTempTableMgr * tempTableMgr; // ÁúÀÇ Ã³¸®½Ã »ı¼ºµÈ Temp Table °ü¸®
-    qcTableInfoMgr   * tableInfoMgr; // ÁúÀÇ Ã³¸®½Ã »ı¼ºµÈ tableInfo °ü¸®
+    qmcCursor        * cursorMgr;    // ì§ˆì˜ ì²˜ë¦¬ì‹œ ìƒì„±ëœ Cursor ê´€ë¦¬
+    qmcdTempTableMgr * tempTableMgr; // ì§ˆì˜ ì²˜ë¦¬ì‹œ ìƒì„±ëœ Temp Table ê´€ë¦¬
+    qcTableInfoMgr   * tableInfoMgr; // ì§ˆì˜ ì²˜ë¦¬ì‹œ ìƒì„±ëœ tableInfo ê´€ë¦¬
 
     vSLong             numRows;      // for NON-SELECT DML
 
-    // BUG-44536 Affected row count°ú fetched row count¸¦ ºĞ¸®ÇÕ´Ï´Ù.
+    // BUG-44536 Affected row countê³¼ fetched row countë¥¼ ë¶„ë¦¬í•©ë‹ˆë‹¤.
     qciStmtType        stmtType;
 
     UInt               fixedTableAutomataStatus;
@@ -1512,24 +1512,24 @@ typedef struct qcTemplate
     qtcNode          * currentdate;
 
     UInt               tupleVarGenNumber; // PROJ-1413
-    qcTupleVarList   * tupleVarList;      // query¿¡¼­ »ç¿ëÇÑ tuple variableÀ» ±â·Ï
+    qcTupleVarList   * tupleVarList;      // queryì—ì„œ ì‚¬ìš©í•œ tuple variableì„ ê¸°ë¡
 
-    idBool             indirectRef;  // PROJ-1436 °£Á¢ ÂüÁ¶ Äõ¸®(°´Ã¼)ÀÇ Ç¥½Ã
+    idBool             indirectRef;  // PROJ-1436 ê°„ì ‘ ì°¸ì¡° ì¿¼ë¦¬(ê°ì²´)ì˜ í‘œì‹œ
 
     /* PROJ-2448 Subquery caching */
-    UInt               forceSubqueryCacheDisable;  // QCU_FORCE_SUBQUERY_CACHE_DISABLE ±â·Ï
+    UInt               forceSubqueryCacheDisable;  // QCU_FORCE_SUBQUERY_CACHE_DISABLE ê¸°ë¡
 
     /* PROJ-2452 Caching for DETERMINISTIC Function */
-    UInt               cacheMaxCnt;     // QCU_QUERY_EXECUTION_CACHE_MAX_COUNT    ±â·Ï
-    UInt               cacheMaxSize;    // QCU_QUERY_EXECUTION_CACHE_MAX_SIZE     ±â·Ï
-    UInt               cacheBucketCnt;  // QCU_QUERY_EXECUTION_CACHE_BUCKET_COUNT ±â·Ï
-    UInt               cacheObjCnt;     // ½ÇÁ¦ »ç¿ëµÈ cache object count
+    UInt               cacheMaxCnt;     // QCU_QUERY_EXECUTION_CACHE_MAX_COUNT    ê¸°ë¡
+    UInt               cacheMaxSize;    // QCU_QUERY_EXECUTION_CACHE_MAX_SIZE     ê¸°ë¡
+    UInt               cacheBucketCnt;  // QCU_QUERY_EXECUTION_CACHE_BUCKET_COUNT ê¸°ë¡
+    UInt               cacheObjCnt;     // ì‹¤ì œ ì‚¬ìš©ëœ cache object count
     qtcCacheObj      * cacheObjects;    // cache object array
 
     /* PROJ-2553 Cache-aware Memory Hash Temp Table */
-    idBool             memHashTempPartDisable;     // QCU_HSJN_MEM_TEMP_PARTITIONING_DISABLE   ±â·Ï
-    idBool             memHashTempManualBucketCnt; // QCU_HSJN_MEM_TEMP_AUTO_BUCKETCNT_DISABLE ±â·Ï
-    UInt               memHashTempTlbCount;        // QCU_HSJN_MEM_TEMP_TLB_COUNT              ±â·Ï
+    idBool             memHashTempPartDisable;     // QCU_HSJN_MEM_TEMP_PARTITIONING_DISABLE   ê¸°ë¡
+    idBool             memHashTempManualBucketCnt; // QCU_HSJN_MEM_TEMP_AUTO_BUCKETCNT_DISABLE ê¸°ë¡
+    UInt               memHashTempTlbCount;        // QCU_HSJN_MEM_TEMP_TLB_COUNT              ê¸°ë¡
 
     /* PROJ-2462 Result Cache */
     qcResultCache      resultCache;
@@ -1545,16 +1545,16 @@ typedef struct qcTemplate
 //---------------------------------------------------
 // PROJ-1436 SQL-Plan Cache
 // [qcPrepTemplate]
-// °øÀ¯µÈ planÀ» executeÇÏ±â À§ÇØ¼­´Â private templateÀ»
-// »ı¼ºÇØ¾ß ÇÑ´Ù. prepared private templateÀº ¹Ì¸® »ı¼ºÇÑ
-// private templateÀ» »ç¿ëÇÏ¿© clone templateÀ» ÇÏÁö ¾Ê°í
-// ¹Ù·Î »ç¿ëÇÏ°Ô ÇÏ¿© ¼º´ÉÀ» Çâ»ó ½ÃÅ²´Ù.
+// ê³µìœ ëœ planì„ executeí•˜ê¸° ìœ„í•´ì„œëŠ” private templateì„
+// ìƒì„±í•´ì•¼ í•œë‹¤. prepared private templateì€ ë¯¸ë¦¬ ìƒì„±í•œ
+// private templateì„ ì‚¬ìš©í•˜ì—¬ clone templateì„ í•˜ì§€ ì•Šê³ 
+// ë°”ë¡œ ì‚¬ìš©í•˜ê²Œ í•˜ì—¬ ì„±ëŠ¥ì„ í–¥ìƒ ì‹œí‚¨ë‹¤.
 //
 // [qcPrepTemplateHeader]
-// prepared private templateÀº property¿¡ ÀÇÇØ ¹Ì¸® »ı¼ºÇÒ
-// °¹¼ö¸¦ °áÁ¤ÇÒ ¼ö ÀÖÁö¸¸ ±×º¸´Ù ´õ ºó¹øÈ÷ »ç¿ëµÇ´Â °æ¿ì
-// Ãß°¡ »ı¼ºÇÑ private templateÀ» qcPrepTemplateHeaderÀ¸·Î
-// °ü¸®ÇÏ¿© Àç»ç¿ëÇÒ ¼ö ÀÖµµ·Ï ÇÑ´Ù.
+// prepared private templateì€ propertyì— ì˜í•´ ë¯¸ë¦¬ ìƒì„±í• 
+// ê°¯ìˆ˜ë¥¼ ê²°ì •í•  ìˆ˜ ìˆì§€ë§Œ ê·¸ë³´ë‹¤ ë” ë¹ˆë²ˆíˆ ì‚¬ìš©ë˜ëŠ” ê²½ìš°
+// ì¶”ê°€ ìƒì„±í•œ private templateì„ qcPrepTemplateHeaderìœ¼ë¡œ
+// ê´€ë¦¬í•˜ì—¬ ì¬ì‚¬ìš©í•  ìˆ˜ ìˆë„ë¡ í•œë‹¤.
 //---------------------------------------------------
 
 typedef struct qcPrepTemplate
@@ -1568,10 +1568,10 @@ typedef struct qcPrepTemplate
 
 typedef struct qcPrepTemplateHeader
 {
-    /* fix BUG-29965 SQL Plan Cache¿¡¼­ plan execution template °ü¸®°¡
-       Dynamic SQL È¯°æ¿¡¼­´Â °³¼±ÀÌ ÇÊ¿äÇÏ´Ù.
-       template ÇÒ´ç, ÇØÁ¦½Ã list full scanÀ» ¹æÁö ÇÏ±â À§ÇÏ¿©
-       ´ÙÀ½°ú °°ÀÌ  free list, used listÀ» ºĞ¸®ÇÑ´Ù.
+    /* fix BUG-29965 SQL Plan Cacheì—ì„œ plan execution template ê´€ë¦¬ê°€
+       Dynamic SQL í™˜ê²½ì—ì„œëŠ” ê°œì„ ì´ í•„ìš”í•˜ë‹¤.
+       template í• ë‹¹, í•´ì œì‹œ list full scanì„ ë°©ì§€ í•˜ê¸° ìœ„í•˜ì—¬
+       ë‹¤ìŒê³¼ ê°™ì´  free list, used listì„ ë¶„ë¦¬í•œë‹¤.
      */
     iduMutex           prepMutex;
     iduList            freeList;
@@ -1583,7 +1583,7 @@ typedef struct qcPrepTemplateHeader
 
 //---------------------------------------------------
 // PROJ-2206 With clause
-// with ÀÚ·á±¸Á¶
+// with ìë£Œêµ¬ì¡°
 //---------------------------------------------------
 typedef struct qcWithStmt
 {
@@ -1595,8 +1595,8 @@ typedef struct qcWithStmt
     qcStatement         * stmt;
     idBool                isRecursiveView;
     idBool                isTop;
-    struct qcmTableInfo * tableInfo;       // recursive viewÀÇ ÇÏÀ§ tableInfo
-    UInt                  tableID;        // stmt¿¡ ÇÒ´çµÈ table id
+    struct qcmTableInfo * tableInfo;       // recursive viewì˜ í•˜ìœ„ tableInfo
+    UInt                  tableID;        // stmtì— í• ë‹¹ëœ table id
 
     qcWithStmt          * next;
 } qcWithStmt;
@@ -1604,13 +1604,13 @@ typedef struct qcWithStmt
 typedef struct qcStmtListMgr
 {
     // PROJ-2415 Grouping Sets Statement
-    // Re-Parsing½Ã Host VariableÁ¤º¸¸¦ ±âÁ¸ With¸¸ »ç¿ë ÇÏ´ø °Í¿¡¼­
-    // °ø¿ëÀ¸·Î ¹Ù²Ù±â À§ÇØ qcWithStmtListMgr -> qcStmtListMgr ÀÌ¸§ º¯°æ
+    // Re-Parsingì‹œ Host Variableì •ë³´ë¥¼ ê¸°ì¡´ Withë§Œ ì‚¬ìš© í•˜ë˜ ê²ƒì—ì„œ
+    // ê³µìš©ìœ¼ë¡œ ë°”ê¾¸ê¸° ìœ„í•´ qcWithStmtListMgr -> qcStmtListMgr ì´ë¦„ ë³€ê²½
 
     // For With
-    qcWithStmt     * head;           // withStmt Ã£±â ½ÃÀÛ head
-    qcWithStmt     * current;        // withStmt Ã£±â ÇöÀç
-    UInt             tableIDSeqNext; // ´ÙÀ½¿¡ ÇÒ´çÇÒ table id
+    qcWithStmt     * head;           // withStmt ì°¾ê¸° ì‹œì‘ head
+    qcWithStmt     * current;        // withStmt ì°¾ê¸° í˜„ì¬
+    UInt             tableIDSeqNext; // ë‹¤ìŒì— í• ë‹¹í•  table id
 
     // For HostVariable    
     SInt             hostVarOffset[ MTC_TUPLE_COLUMN_ID_MAXIMUM ];
@@ -1620,11 +1620,11 @@ typedef struct qcStmtListMgr
 // BUG-36986
 typedef struct qcNamedVarNode
 {
-    qtcNode          * varNode;      // PSM ¿¡¼­ Áßº¹À» ¹èÀçÇÑ variable node
+    qtcNode          * varNode;      // PSM ì—ì„œ ì¤‘ë³µì„ ë°°ì¬í•œ variable node
     qcNamedVarNode   * next;
 } qcNamedVarNode;
 
-// PROJ-2551 simple query ÃÖÀûÈ­
+// PROJ-2551 simple query ìµœì í™”
 typedef struct qcSimpleInfo
 {
     iduMemoryStatus           status;    // qmxMem status
@@ -1636,8 +1636,8 @@ typedef struct qcSimpleInfo
 //---------------------------------------------------
 // PROJ-1436 SQL-Plan Cache
 // [qcSharedPlan]
-// planÀ» °øÀ¯ÇÏ±â À§ÇØ qcStatement¿¡¼­ planÀ¸·Î½á
-// °øÀ¯ÇØ¾ßÇÏ´Â ¿µ¿ªÀ» ±¸ºĞÇÑ´Ù.
+// planì„ ê³µìœ í•˜ê¸° ìœ„í•´ qcStatementì—ì„œ planìœ¼ë¡œì¨
+// ê³µìœ í•´ì•¼í•˜ëŠ” ì˜ì—­ì„ êµ¬ë¶„í•œë‹¤.
 //---------------------------------------------------
 
 typedef struct qcOffset
@@ -1651,7 +1651,7 @@ typedef struct qcOffset
 
 #define QC_PLAN_FLAG_INIT                     (0x00000000)
 
-// BUG-43524 hint ±¸¹®ÀÌ ¿À·ù°¡ ³µÀ»¶§ ¾Ë¼ö ÀÖÀ¸¸é ÁÁ°Ú½À´Ï´Ù.
+// BUG-43524 hint êµ¬ë¬¸ì´ ì˜¤ë¥˜ê°€ ë‚¬ì„ë•Œ ì•Œìˆ˜ ìˆìœ¼ë©´ ì¢‹ê² ìŠµë‹ˆë‹¤.
 #define QC_PLAN_HINT_PARSE_MASK               (0x00000001)
 #define QC_PLAN_HINT_PARSE_SUCCESS            (0x00000000)
 #define QC_PLAN_HINT_PARSE_FAIL               (0x00000001)
@@ -1669,9 +1669,9 @@ typedef struct qcSharedPlan
     qcOffset                 * mHintOffset;
 
     /* PROJ-2550 PSM Encryption
-       encrypted textÀÇ Á¤º¸·Î Ã¹¹øÂ° parsing ½Ã
-       encrypted text¸¦ decryptionÇÑ ÈÄ
-       qss::setStmtText¿¡¼­ ¼ÂÆÃµÈ´Ù. */
+       encrypted textì˜ ì •ë³´ë¡œ ì²«ë²ˆì§¸ parsing ì‹œ
+       encrypted textë¥¼ decryptioní•œ í›„
+       qss::setStmtTextì—ì„œ ì…‹íŒ…ëœë‹¤. */
     SChar                    * encryptedText;
     SInt                       encryptedTextLen;
 
@@ -1690,7 +1690,7 @@ typedef struct qcSharedPlan
     UShort                     mShardParamOffset;
     UShort                     mShardParamCount;
 
-    // ¿øº» template
+    // ì›ë³¸ template
     qcTemplate               * sTmplate;    // alloc from qmpMem
 
     // BUG-20652
@@ -1711,8 +1711,8 @@ typedef struct qcSharedPlan
 typedef struct qcStatement
 {
     // PROJ-1436 shared plan
-    qcSharedPlan               privatePlan;  // qcStatementÀÇ plan
-    qcSharedPlan               sharedPlan;   // °øÀ¯µÈ plan
+    qcSharedPlan               privatePlan;  // qcStatementì˜ plan
+    qcSharedPlan               sharedPlan;   // ê³µìœ ëœ plan
     qcSharedPlan             * myPlan;       // privatePlan or sharedPlan
     qcPlanProperty           * propertyEnv;  // alloc from qmeMem (for soft-prepare)
 
@@ -1753,17 +1753,17 @@ typedef struct qcStatement
     qsxEnvInfo               * spxEnv;   // for execution
 
     /* PROJ-2197 PSM Renewal
-     * PSMÀÇ return bulk into¸¦ Ã³¸®ÇÏ±â À§ÇØ¼­ Ãß°¡ */
+     * PSMì˜ return bulk intoë¥¼ ì²˜ë¦¬í•˜ê¸° ìœ„í•´ì„œ ì¶”ê°€ */
     qsxEnvParentInfo         * parentInfo;
 
     // To fix PR-4073 check memory
     iduMutex                   stmtMutex;
 
     /* BUG-38290
-     * SM cursor open °ú addOpenedCursor ½ÇÇà ½ÃÀÇ µ¿½Ã¼º Á¦¾î¸¦ À§ÇÑ mutex
+     * SM cursor open ê³¼ addOpenedCursor ì‹¤í–‰ ì‹œì˜ ë™ì‹œì„± ì œì–´ë¥¼ ìœ„í•œ mutex
      */
     // BUG-38932 alloc, free cost of cursor mutex is too expensive.
-    // qmcCursor ¿¡ ÀÖ´Â mutex ¸¦ qcStatement ·Î ¿Å±ä´Ù.
+    // qmcCursor ì— ìˆëŠ” mutex ë¥¼ qcStatement ë¡œ ì˜®ê¸´ë‹¤.
     iduMutex                   mCursorMutex;
 
     /* PROJ-2109 : Remove the bottleneck of alloc/free stmts. */
@@ -1779,7 +1779,7 @@ typedef struct qcStatement
     idBool                     disableLeftStore;
     idBool                     mInplaceUpdateDisableFlag;
 
-    idvSQL                   * mStatistics; /* Åë°è Á¤º¸*/
+    idvSQL                   * mStatistics; /* í†µê³„ ì •ë³´*/
     qmoSystemStatistics      * mSysStat; // PROJ-2242
 
     // BUG-36986
@@ -1792,7 +1792,7 @@ typedef struct qcStatement
     iduList                  * mPRLQMemList;
     iduList                  * mPRLQChdTemplateList;
 
-    // PROJ-2551 simple query ÃÖÀûÈ­
+    // PROJ-2551 simple query ìµœì í™”
     qcSimpleInfo               simpleInfo;
 
     UInt                       mFlag;
@@ -1846,7 +1846,7 @@ typedef struct qcParseSeqCaches
     // This node is a representative node
     //      for getting tupleRowID and setting error position.
 
-    // PROJ-2365 sequence table Á¤º¸
+    // PROJ-2365 sequence table ì •ë³´
     idBool                sequenceTable;
     struct qcmTableInfo * tableInfo;
     void                * tableHandle;
@@ -1866,9 +1866,9 @@ typedef struct qcNamePosList
 typedef enum qcShardStmtType
 {
     QC_STMT_SHARD_NONE = 0,
-    QC_STMT_SHARD_ANALYZE,  // ºĞ¼®°á°ú¿¡ µû¶ó ¼öÇà
-    QC_STMT_SHARD_META,     // meta node¿¡¼­ ¼öÇà
-    QC_STMT_SHARD_DATA      // data nodes¿¡¼­ ¼öÇà
+    QC_STMT_SHARD_ANALYZE,  // ë¶„ì„ê²°ê³¼ì— ë”°ë¼ ìˆ˜í–‰
+    QC_STMT_SHARD_META,     // meta nodeì—ì„œ ìˆ˜í–‰
+    QC_STMT_SHARD_DATA      // data nodesì—ì„œ ìˆ˜í–‰
 } qcShardStmtType;
 
 // BUG-45359
@@ -1924,7 +1924,7 @@ typedef struct qcConnectionNode
 {
     PDL_SOCKET socket;
     SLong      connectNodeKey;
-    /* PROJ-2657 UTL_SMTP Áö¿ø */
+    /* PROJ-2657 UTL_SMTP ì§€ì› */
     SInt       connectState;
     struct qcConnectionNode * next;
 }qcConnectionNode;
@@ -1935,7 +1935,7 @@ typedef struct qcConnectionList
     qcConnectionNode * connectionNode;
 }qcConnectionList;
 
-/* BUG-41307 User Lock Áö¿ø */
+/* BUG-41307 User Lock ì§€ì› */
 typedef struct qcUserLockNode
 {
     SInt     id;
@@ -1958,7 +1958,7 @@ typedef struct qcSessionObjInfo
     qcUserLockList   userLockList;
 } qcSessionObjInfo;
 
-/* PROJ-2657 UTL_SMTP Áö¿ø */
+/* PROJ-2657 UTL_SMTP ì§€ì› */
 enum qcConnectionState
 {
     QC_CONNECTION_STATE_NOCONNECT = 0,
@@ -1971,16 +1971,16 @@ enum qcConnectionState
     QC_CONNECTION_STATE_SMTP_CRLF
 };
 
-/* PROJ-2657 UTL_SMTP Áö¿ø */
+/* PROJ-2657 UTL_SMTP ì§€ì› */
 enum qcProtocolType
 {
     QC_PROTOCOL_TYPE_NONE = 0,
     QC_PROTOCOL_TYPE_SMTP
 };
 
-// PROJ-2163 : Ãß°¡
-// Plan cache µî·Ï, °Ë»ö¿¡ ÇÊ¿äÇÑ bind param
-// (¼º´É Çâ»óÀ» À§ÇØ Bitmap À¸·Î º¯°æÇÒ ¼ö ÀÖÀ½)
+// PROJ-2163 : ì¶”ê°€
+// Plan cache ë“±ë¡, ê²€ìƒ‰ì— í•„ìš”í•œ bind param
+// (ì„±ëŠ¥ í–¥ìƒì„ ìœ„í•´ Bitmap ìœ¼ë¡œ ë³€ê²½í•  ìˆ˜ ìˆìŒ)
 typedef struct qcPlanBindParam {
     UShort          id;
     UInt            type;
@@ -1988,8 +1988,8 @@ typedef struct qcPlanBindParam {
     SInt            scale;
 } qcPlanBindParam;
 
-// PROJ-2163 : Ãß°¡
-// Plan cache µî·Ï, °Ë»ö¿¡ ÇÊ¿äÇÑ bind info
+// PROJ-2163 : ì¶”ê°€
+// Plan cache ë“±ë¡, ê²€ìƒ‰ì— í•„ìš”í•œ bind info
 typedef struct qcPlanBindInfo
 {
     qcPlanBindParam      * bindParam;
@@ -2014,25 +2014,25 @@ typedef struct qcPRLQMemObj
     iduMemory  * mMemory;
 } qcPRLQMemObj;
 
-/* PROJ-2551 simple query ÃÖÀûÈ­
+/* PROJ-2551 simple query ìµœì í™”
  *
- * [sql-da·Î È£ÃâÇÏ´Â °æ¿ì]
- * 1. °á°ú°¡ ÇÑ °ÇÀÓÀÌ º¸ÀåµÇ´Â °æ¿ì qcSimpleResult¸¦ »ı¼ºÇÏÁö ¾Ê°í
- *    Á÷Á¢ »ç¿ëÀÚÀÇ º¯¼ö¿¡ °ªÀ» º¹»çÇÑ´Ù.
- * 2. °á°ú°¡ ÇÑ °ÇÀÌ ¾Æ´Ñ°æ¿ì execute½ÃÁ¡¿¡¼­ fetch±îÁö ¸ğµÎ ¼öÇàÇÏ°í
- *    qcSimpleResult chunk¸¦ »ı¼ºÇÏ¿© ´ã¾Æ³õ´Â´Ù. ÀÌÈÄ fetch½Ã
- *    idx¸¦ º¯°æÇØ°¡¸ç ´Ù½Ã client·Î º¹»çÇÑ´Ù.
+ * [sql-daë¡œ í˜¸ì¶œí•˜ëŠ” ê²½ìš°]
+ * 1. ê²°ê³¼ê°€ í•œ ê±´ì„ì´ ë³´ì¥ë˜ëŠ” ê²½ìš° qcSimpleResultë¥¼ ìƒì„±í•˜ì§€ ì•Šê³ 
+ *    ì§ì ‘ ì‚¬ìš©ìì˜ ë³€ìˆ˜ì— ê°’ì„ ë³µì‚¬í•œë‹¤.
+ * 2. ê²°ê³¼ê°€ í•œ ê±´ì´ ì•„ë‹Œê²½ìš° executeì‹œì ì—ì„œ fetchê¹Œì§€ ëª¨ë‘ ìˆ˜í–‰í•˜ê³ 
+ *    qcSimpleResult chunkë¥¼ ìƒì„±í•˜ì—¬ ë‹´ì•„ë†“ëŠ”ë‹¤. ì´í›„ fetchì‹œ
+ *    idxë¥¼ ë³€ê²½í•´ê°€ë©° ë‹¤ì‹œ clientë¡œ ë³µì‚¬í•œë‹¤.
  *
- * [sql-da°¡ ¾Æ´ÏÁö¸¸ fast executeÀÎ °æ¿ì]
- * 1. execute½ÃÁ¡¿¡¼­ fetch±îÁö ¸ğµÎ ¼öÇàÇÏ°í
- *    qcSimpleResult chunk¸¦ »ı¼ºÇÏ¿© ´ã¾Æ³õ´Â´Ù. ÀÌÈÄ fetch½Ã
- *    idx¸¦ º¯°æÇØ°¡¸ç ´Ù½Ã client·Î º¹»çÇÑ´Ù.
+ * [sql-daê°€ ì•„ë‹ˆì§€ë§Œ fast executeì¸ ê²½ìš°]
+ * 1. executeì‹œì ì—ì„œ fetchê¹Œì§€ ëª¨ë‘ ìˆ˜í–‰í•˜ê³ 
+ *    qcSimpleResult chunkë¥¼ ìƒì„±í•˜ì—¬ ë‹´ì•„ë†“ëŠ”ë‹¤. ì´í›„ fetchì‹œ
+ *    idxë¥¼ ë³€ê²½í•´ê°€ë©° ë‹¤ì‹œ clientë¡œ ë³µì‚¬í•œë‹¤.
  */
 typedef struct qcSimpleResult
 {
-    SChar           * result;  // ¼­¹ö¿¡ ÀúÀåÇÏ´Â results buffer
-    UInt              count;   // ¼­¹ö¿¡ ÀúÀåÇÑ result count
-    UInt              idx;     // Å¬¶óÀÌ¾ğÆ®¿¡¼­ fetchÇÒ record index
+    SChar           * result;  // ì„œë²„ì— ì €ì¥í•˜ëŠ” results buffer
+    UInt              count;   // ì„œë²„ì— ì €ì¥í•œ result count
+    UInt              idx;     // í´ë¼ì´ì–¸íŠ¸ì—ì„œ fetchí•  record index
     qcSimpleResult  * next;
 } qcSimpleResult;
 

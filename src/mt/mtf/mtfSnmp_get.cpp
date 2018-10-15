@@ -42,7 +42,7 @@ static IDE_RC mtfSnmp_getEstimate( mtcNode*     aNode,
 mtfModule mtfSnmp_get = {
     1|MTC_NODE_OPERATOR_FUNCTION,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
+    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìê°€ ì•„ë‹˜)
     mtfSnmp_getFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -129,7 +129,7 @@ IDE_RC mtfSnmp_getCalculate( mtcNode*     aNode,
     SChar        sAttribute[512];
     mtdCharType* sVarchar;
     UInt         sLength;
-    /* PROJ-2473 SNMP Áö¿ø - net-snmp oid´Â u_long Å¸ÀÔÀÌ´Ù. */
+    /* PROJ-2473 SNMP ì§€ì› - net-snmp oidëŠ” u_long íƒ€ì…ì´ë‹¤. */
     vULong       sBuffer[100];
     idmId*       sId = (idmId*)sBuffer;
     UInt         sType;

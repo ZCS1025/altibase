@@ -47,7 +47,7 @@ static IDE_RC mtfDecodeMaxListEstimate( mtcNode*     aNode,
 mtfModule mtfDecodeMaxList = {
     2|MTC_NODE_OPERATOR_AGGREGATION,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
+    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìê°€ ì•„ë‹˜)
     mtfDecodeMaxListFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -112,15 +112,15 @@ typedef struct mtfDecodeMaxListCalculateInfo
 
 typedef struct mtfDecodeMaxListInfo
 {
-    // Ã¹¹øÂ° ÀÎÀÚ
+    // ì²«ë²ˆì§¸ ì¸ì
     mtcExecute     * sMaxColumnExecute;
     mtcNode        * sMaxColumnNode;
 
-    // µÎ¹øÂ° ÀÎÀÚ
+    // ë‘ë²ˆì§¸ ì¸ì
     mtcExecute     * sExprExecute;
     mtcNode        * sExprNode;
 
-    // return ÀÎÀÚ
+    // return ì¸ì
     mtcColumn      * sReturnColumn;
     void           * sReturnValue;
     mtcStack       * sReturnStack;
@@ -187,15 +187,15 @@ IDE_RC mtfDecodeMaxListEstimate( mtcNode*     aNode,
     
     sFence = aNode->lflag & MTC_NODE_ARGUMENT_COUNT_MASK;
 
-    /* BUG-44109 pivot ±¸¹®ÀÇ transform ÇÔ¼öÀÎ list ¿ë decode ÇÔ¼ö¿¡¼­
-       Àß¸øµÈ ÀÎÀÚ °³¼ö¸¦ »ç¿ëÇÒ °æ¿ì ºñÁ¤»óÁ¾·áÇÕ´Ï´Ù.  */
+    /* BUG-44109 pivot êµ¬ë¬¸ì˜ transform í•¨ìˆ˜ì¸ list ìš© decode í•¨ìˆ˜ì—ì„œ
+       ì˜ëª»ëœ ì¸ì ê°œìˆ˜ë¥¼ ì‚¬ìš©í•  ê²½ìš° ë¹„ì •ìƒì¢…ë£Œí•©ë‹ˆë‹¤.  */
     IDE_TEST_RAISE( ( sFence != 1 ) && ( sFence != 3 ),
                     ERR_INVALID_FUNCTION_ARGUMENT );
 
     aStack[0].column = aTemplate->rows[aNode->table].columns + aNode->column;
 
     // PROJ-2002 Column Security
-    // minÇÔ¼ö¿Í °°´Ù.
+    // miní•¨ìˆ˜ì™€ ê°™ë‹¤.
     aNode->baseTable = aNode->arguments->baseTable;
     aNode->baseColumn = aNode->arguments->baseColumn;
 
@@ -253,11 +253,11 @@ IDE_RC mtfDecodeMaxListEstimate( mtcNode*     aNode,
                 sListStack = (mtcStack*)aStack[3].value;
                 sListCount = aStack[3].column->precision;
 
-                /* BUG-40349 sListCount´Â 2ÀÌ»óÀÌ¾î¾ß ÇÑ´Ù. */
+                /* BUG-40349 sListCountëŠ” 2ì´ìƒì´ì–´ì•¼ í•œë‹¤. */
                 IDE_TEST_RAISE( sListCount < 2, ERR_LIST_COUNT );
 
-                // listÀÇ ¸ğµç element°¡ µ¿ÀÏÇÑ typeÀ¸·Î convertµÇ¾î¾ß ÇÏ¹Ç·Î
-                // listÀÇ Ã¹¹øÂ° element¿¡ ¸ÂÃá´Ù.
+                // listì˜ ëª¨ë“  elementê°€ ë™ì¼í•œ typeìœ¼ë¡œ convertë˜ì–´ì•¼ í•˜ë¯€ë¡œ
+                // listì˜ ì²«ë²ˆì§¸ elementì— ë§ì¶˜ë‹¤.
                 IDE_TEST_RAISE( sListStack[0].column->module == &mtdList,
                                 ERR_CONVERSION_NOT_APPLICABLE );
         
@@ -307,12 +307,12 @@ IDE_RC mtfDecodeMaxListEstimate( mtcNode*     aNode,
             {
                 aTemplate->rows[aNode->table].execute[aNode->column] = mtfDecodeMaxListExecute;
 
-                // Max °á°ú¸¦ ÀúÀåÇÔ
+                // Max ê²°ê³¼ë¥¼ ì €ì¥í•¨
                 // BUG-23102
-                // mtcColumnÀ¸·Î ÃÊ±âÈ­ÇÑ´Ù.
+                // mtcColumnìœ¼ë¡œ ì´ˆê¸°í™”í•œë‹¤.
                 mtc::initializeColumn( aStack[0].column, aStack[1].column );
         
-                // Max info Á¤º¸¸¦ mtdBinary¿¡ ÀúÀå
+                // Max info ì •ë³´ë¥¼ mtdBinaryì— ì €ì¥
                 sBinaryPrecision = ID_SIZEOF(mtfDecodeMaxListInfo);
                 IDE_TEST( mtc::initializeColumn( aStack[0].column + 1,
                                                  & mtdBinary,
@@ -325,19 +325,19 @@ IDE_RC mtfDecodeMaxListEstimate( mtcNode*     aNode,
             {
                 aTemplate->rows[aNode->table].execute[aNode->column] = mtfDecodeMaxListExecute;
 
-                // Max °á°ú¸¦ ÀúÀåÇÒ ÄÃ·³Á¤º¸
+                // Max ê²°ê³¼ë¥¼ ì €ì¥í•  ì»¬ëŸ¼ì •ë³´
                 IDE_TEST( aCallBack->alloc( aCallBack->info,
                                             ID_SIZEOF(mtcColumn),
                                             (void**)&sMtcColumn )
                           != IDE_SUCCESS );
         
-                // Max °á°ú¸¦ ÀúÀåÇÔ
+                // Max ê²°ê³¼ë¥¼ ì €ì¥í•¨
                 // BUG-23102
-                // mtcColumnÀ¸·Î ÃÊ±âÈ­ÇÑ´Ù.
+                // mtcColumnìœ¼ë¡œ ì´ˆê¸°í™”í•œë‹¤.
                 mtc::initializeColumn( sMtcColumn, aStack[1].column );
                 
-                // execution¿ë sListCount°³ÀÇ stack°ú value¸¦ ÀúÀåÇÒ °ø°£À» ¼³Á¤ÇÑ´Ù.
-                // BUG-42973 module alignÀ» °í·ÁÇÏ¿© list value¸¦ »ı¼ºÇÑ´Ù.
+                // executionìš© sListCountê°œì˜ stackê³¼ valueë¥¼ ì €ì¥í•  ê³µê°„ì„ ì„¤ì •í•œë‹¤.
+                // BUG-42973 module alignì„ ê³ ë ¤í•˜ì—¬ list valueë¥¼ ìƒì„±í•œë‹¤.
                 IDE_TEST( mtc::initializeColumn(
                               aStack[0].column,
                               & mtdList,
@@ -347,13 +347,13 @@ IDE_RC mtfDecodeMaxListEstimate( mtcNode*     aNode,
                                             sMtcColumn->module->align ) * sListCount )
                           != IDE_SUCCESS );
 
-                // estimate¿ë sListCount°³ÀÇ stackÀ» »ı¼ºÇÑ´Ù.
+                // estimateìš© sListCountê°œì˜ stackì„ ìƒì„±í•œë‹¤.
                 IDE_TEST( aCallBack->alloc( aCallBack->info,
                                             ID_SIZEOF(mtcStack) * sListCount,
                                             (void**)&(aStack[0].value) )
                           != IDE_SUCCESS);
 
-                // list stackÀ» smiColumn.value¿¡ ±â·ÏÇØµĞ´Ù.
+                // list stackì„ smiColumn.valueì— ê¸°ë¡í•´ë‘”ë‹¤.
                 aStack[0].column->column.value = aStack[0].value;
 
                 sListStack = (mtcStack*)aStack[0].value;
@@ -363,7 +363,7 @@ IDE_RC mtfDecodeMaxListEstimate( mtcNode*     aNode,
                     sListStack[sCount].value  = sMtcColumn->module->staticNull;
                 }
         
-                // Max info Á¤º¸¸¦ mtdBinary¿¡ ÀúÀå
+                // Max info ì •ë³´ë¥¼ mtdBinaryì— ì €ì¥
                 sBinaryPrecision = ID_SIZEOF(mtfDecodeMaxListInfo);
                 IDE_TEST( mtc::initializeColumn( aStack[0].column + 1,
                                                  & mtdBinary,
@@ -419,7 +419,7 @@ IDE_RC mtfDecodeMaxListEstimate( mtcNode*     aNode,
 
             if ( sIsConstValue == ID_TRUE )
             {
-                // mtfDecodeMaxListCalculateInfo ÀúÀåÇÒ °ø°£À» ÇÒ´ç
+                // mtfDecodeMaxListCalculateInfo ì €ì¥í•  ê³µê°„ì„ í• ë‹¹
                 IDE_TEST( aCallBack->alloc( aCallBack->info,
                                             ID_SIZEOF(mtfDecodeMaxListCalculateInfo),
                                             (void**) & sCalculateInfo )
@@ -444,7 +444,7 @@ IDE_RC mtfDecodeMaxListEstimate( mtcNode*     aNode,
 
                     sCalculateInfo->sSearchCount = 1;
                     
-                    // »ó¼ö tupleÀº ÀçÇÒ´çµÇ¹Ç·Î º¹»çÇØ¼­ ÀúÀåÇÑ´Ù.
+                    // ìƒìˆ˜ tupleì€ ì¬í• ë‹¹ë˜ë¯€ë¡œ ë³µì‚¬í•´ì„œ ì €ì¥í•œë‹¤.
                     mtc::copyColumn( sMtcColumn,
                                      &(aTemplate->rows[sNode->table].columns[sNode->column]) );
                     
@@ -477,11 +477,11 @@ IDE_RC mtfDecodeMaxListEstimate( mtcNode*     aNode,
                           ( sCount < sCalculateInfo->sSearchCount ) && ( sNode != NULL );
                           sCount++, sNode = sNode->next, sMtcColumn++ )
                     {
-                        // ¸ğµÎ µ¿ÀÏ typeÀÌ¾î¾ß ÇÑ´Ù.
+                        // ëª¨ë‘ ë™ì¼ typeì´ì–´ì•¼ í•œë‹¤.
                         IDE_DASSERT( sListStack[0].column->module->no ==
                                      sListStack[sCount].column->module->no );
                         
-                        // »ó¼ö tupleÀº ÀçÇÒ´çµÇ¹Ç·Î º¹»çÇØ¼­ ÀúÀåÇÑ´Ù.
+                        // ìƒìˆ˜ tupleì€ ì¬í• ë‹¹ë˜ë¯€ë¡œ ë³µì‚¬í•´ì„œ ì €ì¥í•œë‹¤.
                         mtc::copyColumn( sMtcColumn,
                                          &(aTemplate->rows[sNode->table].columns[sNode->column]) );
                         
@@ -501,7 +501,7 @@ IDE_RC mtfDecodeMaxListEstimate( mtcNode*     aNode,
                                   ID_SIZEOF(mtfDecodeMaxSortedValue),
                                   compareDecodeMaxSortedValue );
                 
-                    // Áßº¹ÀÌ ÀÖ¾î¼­´Â ¾ÈµÈ´Ù. (bsearch´Â ÇÑ°³¸¸ Ã£¾ÆÁØ´Ù.)
+                    // ì¤‘ë³µì´ ìˆì–´ì„œëŠ” ì•ˆëœë‹¤. (bsearchëŠ” í•œê°œë§Œ ì°¾ì•„ì¤€ë‹¤.)
                     for ( sCount = 1; sCount < sCalculateInfo->sSearchCount; sCount++ )
                     {
                         sValueInfo1.column = (const mtcColumn *)
@@ -545,12 +545,12 @@ IDE_RC mtfDecodeMaxListEstimate( mtcNode*     aNode,
         
         aTemplate->rows[aNode->table].execute[aNode->column] = mtfDecodeMaxListExecute;
 
-        // Max °á°ú¸¦ ÀúÀåÇÔ
+        // Max ê²°ê³¼ë¥¼ ì €ì¥í•¨
         // BUG-23102
-        // mtcColumnÀ¸·Î ÃÊ±âÈ­ÇÑ´Ù.
+        // mtcColumnìœ¼ë¡œ ì´ˆê¸°í™”í•œë‹¤.
         mtc::initializeColumn( aStack[0].column, aStack[1].column );
         
-        // Max info´Â ÇÊ¿ä¾ø´Ù.
+        // Max infoëŠ” í•„ìš”ì—†ë‹¤.
         IDE_TEST( mtc::initializeColumn( aStack[0].column + 1,
                                          & mtdBinary,
                                          1,
@@ -561,7 +561,7 @@ IDE_RC mtfDecodeMaxListEstimate( mtcNode*     aNode,
 
     if ( sFence == 3 )
     {
-        // decode_Max_list(i1, i2, (1,2,3))°ú °°ÀÌ ¼¼¹øÂ° ÀÎÀÚ°¡ »ó¼öÀÎ °æ¿ì
+        // decode_Max_list(i1, i2, (1,2,3))ê³¼ ê°™ì´ ì„¸ë²ˆì§¸ ì¸ìê°€ ìƒìˆ˜ì¸ ê²½ìš°
         if ( sListCount > 1 )
         {
             sIsConstValue = ID_TRUE;
@@ -618,7 +618,7 @@ IDE_RC mtfDecodeMaxListEstimate( mtcNode*     aNode,
             }
         }
             
-        // BUG-38070 undef typeÀ¸·Î re-estimateÇÏÁö ¾Ê´Â´Ù.
+        // BUG-38070 undef typeìœ¼ë¡œ re-estimateí•˜ì§€ ì•ŠëŠ”ë‹¤.
         if ( ( aTemplate->variableRow != ID_USHORT_MAX ) &&
              ( ( aNode->lflag & MTC_NODE_BIND_MASK ) == MTC_NODE_BIND_EXIST ) )
         {
@@ -696,12 +696,12 @@ IDE_RC mtfDecodeMaxListInitialize( mtcNode*     aNode,
     IDE_TEST_RAISE( sInfo == NULL, ERR_LIST_INFO );
 
     //-----------------------------
-    // Max info ÃÊ±âÈ­
+    // Max info ì´ˆê¸°í™”
     //-----------------------------
 
     sArgNode[0] = aNode->arguments;
 
-    // Max column ¼³Á¤
+    // Max column ì„¤ì •
     sInfo->sMaxColumnExecute = aTemplate->rows[sArgNode[0]->table].execute + sArgNode[0]->column;
     sInfo->sMaxColumnNode    = sArgNode[0];
 
@@ -709,7 +709,7 @@ IDE_RC mtfDecodeMaxListInitialize( mtcNode*     aNode,
     {
         sArgNode[1] = sArgNode[0]->next;
 
-        // expression column ¼³Á¤
+        // expression column ì„¤ì •
         sInfo->sExprExecute = aTemplate->rows[sArgNode[1]->table].execute + sArgNode[1]->column;
         sInfo->sExprNode    = sArgNode[1];
     }
@@ -718,7 +718,7 @@ IDE_RC mtfDecodeMaxListInitialize( mtcNode*     aNode,
         // Nothing to do.
     }
     
-    // return column ¼³Á¤
+    // return column ì„¤ì •
     sInfo->sReturnColumn = aTemplate->rows[aNode->table].columns + aNode->column;
     sInfo->sReturnValue  = (void *)
         ((UChar*) aTemplate->rows[aNode->table].row + sInfo->sReturnColumn->column.offset);
@@ -733,9 +733,9 @@ IDE_RC mtfDecodeMaxListInitialize( mtcNode*     aNode,
         sInfo->sReturnStack = (mtcStack*)sInfo->sReturnValue;
         sInfo->sReturnCount = sInfo->sReturnColumn->precision;
         
-        // stack ÃÊ±âÈ­
-        // (1) estimate¶§ »ı¼ºÇÑ column Á¤º¸·Î ÃÊ±âÈ­
-        // (2) value¸¦ ½ÇÁ¦ °ªÀ¸·Î ¼³Á¤
+        // stack ì´ˆê¸°í™”
+        // (1) estimateë•Œ ìƒì„±í•œ column ì •ë³´ë¡œ ì´ˆê¸°í™”
+        // (2) valueë¥¼ ì‹¤ì œ ê°’ìœ¼ë¡œ ì„¤ì •
         sTempStack = (mtcStack*) sInfo->sReturnColumn->column.value;
         sTempValue = 
             ( (UChar*)sInfo->sReturnStack + ID_SIZEOF(mtcStack) * sInfo->sReturnCount );
@@ -747,7 +747,7 @@ IDE_RC mtfDecodeMaxListInitialize( mtcNode*     aNode,
             sInfo->sReturnStack[sCount].column = sTempStack->column;
             sInfo->sReturnStack[sCount].value  = sTempValue;
             
-            // BUG-42973 module alignÀ» °í·ÁÇÏ¿© list value¸¦ ÇÒ´çÇÑ´Ù.
+            // BUG-42973 module alignì„ ê³ ë ¤í•˜ì—¬ list valueë¥¼ í• ë‹¹í•œë‹¤.
             sTempValue += idlOS::align(
                 sInfo->sReturnStack[sCount].column->column.size,
                 sTempStack->column->module->align );
@@ -758,7 +758,7 @@ IDE_RC mtfDecodeMaxListInitialize( mtcNode*     aNode,
     }
     
     //-----------------------------
-    // Max °á°ú¸¦ ÃÊ±âÈ­
+    // Max ê²°ê³¼ë¥¼ ì´ˆê¸°í™”
     //-----------------------------
     
     if ( sInfo->sReturnStack == NULL )
@@ -778,8 +778,8 @@ IDE_RC mtfDecodeMaxListInitialize( mtcNode*     aNode,
     {
         for ( sCount = 0; sCount < sInfo->sReturnCount; sCount++ )
         {
-            // ¼º´É°³¼±À» À§ÇØ group byÀÇ mtrRow¸¦ crallocÇÏ°í
-            // ¼º´É°³¼±À» À§ÇØ nullÀÌ ¾Æ´Ñ°æ¿ì¸¸ ¼öÇàÇÑ´Ù.
+            // ì„±ëŠ¥ê°œì„ ì„ ìœ„í•´ group byì˜ mtrRowë¥¼ crallocí•˜ê³ 
+            // ì„±ëŠ¥ê°œì„ ì„ ìœ„í•´ nullì´ ì•„ë‹Œê²½ìš°ë§Œ ìˆ˜í–‰í•œë‹¤.
             if ( sInfo->sReturnStack[sCount].column->module->isNull(
                      sInfo->sReturnStack[sCount].column,
                      sInfo->sReturnStack[sCount].value ) == ID_FALSE )
@@ -846,10 +846,10 @@ IDE_RC mtfDecodeMaxListAggregate( mtcNode*     aNode,
     {
         IDE_TEST_RAISE( aRemain < 1, ERR_STACK_OVERFLOW );
 
-        // ¼¼¹øÂ° ÀÎÀÚ´Â ¹İµå½Ã »ó¼ö¿©¾ß ÇÑ´Ù.
+        // ì„¸ë²ˆì§¸ ì¸ìëŠ” ë°˜ë“œì‹œ ìƒìˆ˜ì—¬ì•¼ í•œë‹¤.
         IDE_TEST_RAISE( sCalculateInfo == NULL, ERR_INVALID_FUNCTION_ARGUMENT );
         
-        // µÎ¹øÂ° ÀÎÀÚ
+        // ë‘ë²ˆì§¸ ì¸ì
         IDE_TEST( sInfo->sExprExecute->calculate( sInfo->sExprNode,
                                                   aStack,
                                                   aRemain,
@@ -867,7 +867,7 @@ IDE_RC mtfDecodeMaxListAggregate( mtcNode*     aNode,
                       != IDE_SUCCESS );
         }
 
-        // decode ¿¬»ê¼öÇà
+        // decode ì—°ì‚°ìˆ˜í–‰
         sExprValue.column = aStack[0].column;
         sExprValue.value  = aStack[0].value;
         sExprValue.idx    = 0;
@@ -881,13 +881,13 @@ IDE_RC mtfDecodeMaxListAggregate( mtcNode*     aNode,
     }
     else
     {
-        // null¸¸ ¾Æ´Ï¸é µÊ
+        // nullë§Œ ì•„ë‹ˆë©´ ë¨
         sFound = & sExprValue;
     }
 
     if ( sFound != NULL )
     {
-        // Ã¹¹øÂ° ÀÎÀÚ
+        // ì²«ë²ˆì§¸ ì¸ì
         IDE_TEST( sInfo->sMaxColumnExecute->calculate( sInfo->sMaxColumnNode,
                                                        aStack,
                                                        aRemain,
@@ -917,7 +917,7 @@ IDE_RC mtfDecodeMaxListAggregate( mtcNode*     aNode,
             sValueInfo2.value  = aStack[0].value;
             sValueInfo2.flag   = MTD_OFFSET_USELESS;
 
-            // NULLÀ» ºñ±³ ´ë»ó¿¡¼­ Á¦¿ÜÇÏ±â À§ÇÏ¿© Descending Key Compare¸¦ »ç¿ëÇÔ.
+            // NULLì„ ë¹„êµ ëŒ€ìƒì—ì„œ ì œì™¸í•˜ê¸° ìœ„í•˜ì—¬ Descending Key Compareë¥¼ ì‚¬ìš©í•¨.
             if ( sModule->keyCompare[MTD_COMPARE_MTDVAL_MTDVAL]
                  [MTD_COMPARE_DESCENDING]( &sValueInfo1,
                                            &sValueInfo2 ) > 0 )
@@ -944,7 +944,7 @@ IDE_RC mtfDecodeMaxListAggregate( mtcNode*     aNode,
             sValueInfo2.value  = aStack[0].value;
             sValueInfo2.flag   = MTD_OFFSET_USELESS;
             
-            // NULLÀ» ºñ±³ ´ë»ó¿¡¼­ Á¦¿ÜÇÏ±â À§ÇÏ¿© Descending Key Compare¸¦ »ç¿ëÇÔ.
+            // NULLì„ ë¹„êµ ëŒ€ìƒì—ì„œ ì œì™¸í•˜ê¸° ìœ„í•˜ì—¬ Descending Key Compareë¥¼ ì‚¬ìš©í•¨.
             if ( sModule->keyCompare[MTD_COMPARE_MTDVAL_MTDVAL]
                  [MTD_COMPARE_DESCENDING]( &sValueInfo1,
                                            &sValueInfo2 ) > 0 )

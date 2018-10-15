@@ -52,30 +52,30 @@ typedef enum
 class qsxAvl
 {
 public:
-    // avlTreeÀÇ ÃÊ±âÈ­
+    // avlTreeì˜ ì´ˆê¸°í™”
     static void initAvlTree( qsxAvlTree    * aAvlTree,
                              mtcColumn     * aKeyColumn,
                              mtcColumn     * aDataColumn,
                              idvSQL        * aStatistics );
 
-    // avlTreeÀÇ »èÁ¦
+    // avlTreeì˜ ì‚­ì œ
     static IDE_RC deleteAll( qsxAvlTree * aAvlTree );
 
-    // key¿¡ ÇØ´çÇÏ´Â ³ëµå »èÁ¦
+    // keyì— í•´ë‹¹í•˜ëŠ” ë…¸ë“œ ì‚­ì œ
     static IDE_RC deleteKey( qsxAvlTree * aAvlTree,
                              mtcColumn  * aKeyCol,
                              void       * aKey,
                              idBool     * aDeleted );
 
-    // key°ª¿¡ ÇØ´çÇÏ´Â row°¡ Á¸ÀçÇÏ¸é ÇØ´ç rowÀÇ data¸¦ updateÇÏ°í,
-    // Á¸ÀçÇÏÁö ¾Ê´Â´Ù¸é »õ·Î ¸¸µç´Ù.
-    // ÃÖÁ¾ÀûÀ¸·Î ÇØ´ç rowÀÇ pointer¸¦ ¹İÈ¯ÇÑ´Ù.
+    // keyê°’ì— í•´ë‹¹í•˜ëŠ” rowê°€ ì¡´ì¬í•˜ë©´ í•´ë‹¹ rowì˜ dataë¥¼ updateí•˜ê³ ,
+    // ì¡´ì¬í•˜ì§€ ì•ŠëŠ”ë‹¤ë©´ ìƒˆë¡œ ë§Œë“ ë‹¤.
+    // ìµœì¢…ì ìœ¼ë¡œ í•´ë‹¹ rowì˜ pointerë¥¼ ë°˜í™˜í•œë‹¤.
     static IDE_RC insert( qsxAvlTree  * aAvlTree,
                           mtcColumn   * aKeyCol,
                           void        * aKey,
                           void       ** aRowPtr );
     
-    // key°ªÀ» ÀÌ¿ëÇÑ search
+    // keyê°’ì„ ì´ìš©í•œ search
     static IDE_RC search( qsxAvlTree * aAvlTree,
                           mtcColumn  * aKeyCol,
                           void       * aKey,
@@ -88,7 +88,7 @@ public:
                                 idBool     * aFound );
 
 
-    // ÇØ´ç keyÀÇ next row¸¦ °¡Á®¿È
+    // í•´ë‹¹ keyì˜ next rowë¥¼ ê°€ì ¸ì˜´
     static IDE_RC searchNext( qsxAvlTree * aAvlTree,
                               mtcColumn  * aKeyCol,
                               void       * aKey,
@@ -113,7 +113,7 @@ public:
                              idBool     * aFound );
     
     // aKeyMin <= node->key <= aKeyMax
-    // ¸¦ ¸¸Á·ÇÏ´Â ¸ğµç row¸¦ »èÁ¦.
+    // ë¥¼ ë§Œì¡±í•˜ëŠ” ëª¨ë“  rowë¥¼ ì‚­ì œ.
     static IDE_RC deleteRange( qsxAvlTree * aAvlTree,
                                mtcColumn  * aKeyMinCol,
                                void       * aKeyMin,

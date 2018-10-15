@@ -19,7 +19,7 @@ FLEXFILES = ulpCompl.cpp ulpPreprocl.cpp
 
 INCLUDES += $(foreach i, ./include ., $(IDROPT)$(i))
 
-# parse error°¡ ³µÀ» ¶§, º¸´Ù ÀÚ¼¼ÇÑ Á¤º¸¸¦ Ãâ·ÂÇÏ´Â°Ô ÁÁ´Ù.
+# parse errorê°€ ë‚¬ì„ ë•Œ, ë³´ë‹¤ ìžì„¸í•œ ì •ë³´ë¥¼ ì¶œë ¥í•˜ëŠ”ê²Œ ì¢‹ë‹¤.
 CCFLAGS += -DYYERROR_VERBOSE
 DCCFLAGS += -DYYERROR_VERBOSE
 

@@ -37,14 +37,14 @@ ACI_RC ulnDescCreate(ulnObject         *aParentObject,
     sPool = aParentObject->mPool;
 
     /*
-     * ¸Þ¸ð¸® ÀÎ½ºÅÏ½º »ý¼º. Ã»Å© Ç®Àº »óÀ§ ¿ÀºêÁ§Æ®ÀÇ °ÍÀ» »ç¿ë.
+     * ë©”ëª¨ë¦¬ ì¸ìŠ¤í„´ìŠ¤ ìƒì„±. ì²­í¬ í’€ì€ ìƒìœ„ ì˜¤ë¸Œì íŠ¸ì˜ ê²ƒì„ ì‚¬ìš©.
      */
 
     ACI_TEST(uluMemoryCreate(sPool, &sMemory) != ACI_SUCCESS);
     ULN_FLAG_UP(sNeedDestroyMemory);
 
     /*
-     * uluDesc ÀÎ½ºÅÏ½º »ý¼º.
+     * uluDesc ì¸ìŠ¤í„´ìŠ¤ ìƒì„±.
      */
 
     ACI_TEST(sMemory->mOp->mMalloc(sMemory,
@@ -52,16 +52,16 @@ ACI_RC ulnDescCreate(ulnObject         *aParentObject,
                                    ACI_SIZEOF(ulnDesc)) != ACI_SUCCESS);
 
     /*
-     * ODBC 3.0 ½ºÆå¿¡ µû¸£¸é,
-     * Explicit Descriptor´Â »ç¿ëÀÚ°¡ SQLAllocHandle()À» ÀÌ¿ëÇØ¼­ ÇÒ´çÇÏ´Â
-     * µð½ºÅ©¸³ÅÍÀÌ´Ù.
-     * Explicit µð½ºÅ©¸³ÅÍ´Â ¹Ýµå½Ã DBC¿¡ ÇÒ´çµÇ¾î¾ß ÇÑ´Ù.
+     * ODBC 3.0 ìŠ¤íŽ™ì— ë”°ë¥´ë©´,
+     * Explicit DescriptorëŠ” ì‚¬ìš©ìžê°€ SQLAllocHandle()ì„ ì´ìš©í•´ì„œ í• ë‹¹í•˜ëŠ”
+     * ë””ìŠ¤í¬ë¦½í„°ì´ë‹¤.
+     * Explicit ë””ìŠ¤í¬ë¦½í„°ëŠ” ë°˜ë“œì‹œ DBCì— í• ë‹¹ë˜ì–´ì•¼ í•œë‹¤.
      */
 
     if (aAllocType == ULN_DESC_ALLOCTYPE_EXPLICIT)
     {
         /*
-         * BUGBUG : parent object °¡ dbc °¡ ¾Æ´Ï¸é invalid handle À» ³»¾î Áà¾ß ÇÑ´Ù.
+         * BUGBUG : parent object ê°€ dbc ê°€ ì•„ë‹ˆë©´ invalid handle ì„ ë‚´ì–´ ì¤˜ì•¼ í•œë‹¤.
          */
         sInitialState = ULN_S_D1e;
     }
@@ -78,7 +78,7 @@ ACI_RC ulnDescCreate(ulnObject         *aParentObject,
                         sMemory);
 
     /*
-     * »óÀ§ ±¸Á¶¿Í Lock À» °øÀ¯ÇÑ´Ù. »óÀ§ ±¸Á¶´Â Dbc °¡ µÉ ¼öµµ, Stmt °¡ µÉ ¼öµµ ÀÖ´Ù.
+     * ìƒìœ„ êµ¬ì¡°ì™€ Lock ì„ ê³µìœ í•œë‹¤. ìƒìœ„ êµ¬ì¡°ëŠ” Dbc ê°€ ë  ìˆ˜ë„, Stmt ê°€ ë  ìˆ˜ë„ ìžˆë‹¤.
      */
 
     sDesc->mObj.mLock = aParentObject->mLock;
@@ -88,8 +88,8 @@ ACI_RC ulnDescCreate(ulnObject         *aParentObject,
     ULN_FLAG_UP(sNeedDestroyDiagHeader);
 
     /*
-     * DescRecArray ¸¦ »ý¼ºÇÑ´Ù.
-     * ÀÏ´Ü, »çÀÌÁî °è»êÇÏ±â°¡ ±ÍÂúÀ¸´Ï, 100 °³ÀÇ element ¸¦ ±âº» ´ÜÀ§·Î ÇÏÀÚ.
+     * DescRecArray ë¥¼ ìƒì„±í•œë‹¤.
+     * ì¼ë‹¨, ì‚¬ì´ì¦ˆ ê³„ì‚°í•˜ê¸°ê°€ ê·€ì°®ìœ¼ë‹ˆ, 100 ê°œì˜ element ë¥¼ ê¸°ë³¸ ë‹¨ìœ„ë¡œ í•˜ìž.
      */
 
     sDesc->mDescRecArraySize = 50;
@@ -99,14 +99,14 @@ ACI_RC ulnDescCreate(ulnObject         *aParentObject,
     acpMemSet(sDesc->mDescRecArray, 0, sDesc->mDescRecArraySize * ACI_SIZEOF(ulnDescRec *));
 
     /*
-     * SP °¹¼ö°¡ ÃÊ°úÇÒ °æ¿ì ¿¡·¯°¡ ³².
+     * SP ê°¯ìˆ˜ê°€ ì´ˆê³¼í•  ê²½ìš° ì—ëŸ¬ê°€ ë‚¨.
      */
 
     ACI_TEST(sMemory->mOp->mMarkSP(sMemory) != ACI_SUCCESS);
     sDesc->mInitialSPIndex = sMemory->mOp->mGetCurrentSPIndex(sMemory);
 
     /*
-     * ¸¸µé¾îÁø descriptor ¸¦ ¸®ÅÏ
+     * ë§Œë“¤ì–´ì§„ descriptor ë¥¼ ë¦¬í„´
      */
 
     *aOutputDesc = sDesc;
@@ -138,25 +138,25 @@ ACI_RC ulnDescDestroy(ulnDesc *aDesc)
     aDesc->mDescRecArraySize = 0;
 
     /*
-     * PutData ÁßÀÌ¾ú´ø DescRec °¡ ÀÖÀ¸¸é Ã£¾Æ°¡¼­ mTempBuffer ¸¦ ÇØÁ¦ÇØ ÁØ´Ù.
+     * PutData ì¤‘ì´ì—ˆë˜ DescRec ê°€ ìžˆìœ¼ë©´ ì°¾ì•„ê°€ì„œ mTempBuffer ë¥¼ í•´ì œí•´ ì¤€ë‹¤.
      */
     ulnDescRemoveAllPDContext(aDesc);
 
     /*
-     * DESC °¡ °¡Áø DiagHeader ¿¡ µþ¸° ¸Þ¸ð¸® °´Ã¼µéÀ» ÆÄ±«ÇÑ´Ù.
+     * DESC ê°€ ê°€ì§„ DiagHeader ì— ë”¸ë¦° ë©”ëª¨ë¦¬ ê°ì²´ë“¤ì„ íŒŒê´´í•œë‹¤.
      */
     ACI_TEST(ulnDestroyDiagHeader(&(aDesc->mObj.mDiagHeader), ULN_DIAG_HDR_NOTOUCH_CHUNKPOOL)
              != ACI_SUCCESS);
 
     /*
-     * DESC ¸¦ ¾ø¾Ö±â Á÷Àü¿¡ ½Ç¼ö¿¡ ÀÇÇÑ Àç»ç¿ëÀ» ¹æÁöÇÏ±â À§ÇØ¼­ ulnObject ¿¡ Ç¥½Ã¸¦ ÇØ µÐ´Ù.
-     * BUG-15894 ¿Í °°Àº »ç¿ëÀÚ ÀÀ¿ë ÇÁ·Î±×·¥¿¡ ÀÇÇÑ ¹ö±×¸¦ ¹æÁöÇÏ±â À§ÇØ¼­ÀÌ´Ù.
+     * DESC ë¥¼ ì—†ì• ê¸° ì§ì „ì— ì‹¤ìˆ˜ì— ì˜í•œ ìž¬ì‚¬ìš©ì„ ë°©ì§€í•˜ê¸° ìœ„í•´ì„œ ulnObject ì— í‘œì‹œë¥¼ í•´ ë‘”ë‹¤.
+     * BUG-15894 ì™€ ê°™ì€ ì‚¬ìš©ìž ì‘ìš© í”„ë¡œê·¸ëž¨ì— ì˜í•œ ë²„ê·¸ë¥¼ ë°©ì§€í•˜ê¸° ìœ„í•´ì„œì´ë‹¤.
      */
     aDesc->mObj.mType = ULN_OBJ_TYPE_MAX;
 
     /*
-     * DESC °¡ ¼ÒÀ¯ÇÑ ulumemory ¸¦ ÆÄ±«ÇÑ´Ù.
-     * DESC °¡ °¡Áö°í ÀÖ´Â mAssociatedStmtList °¡ ÀúÀåµÈ °÷µµ ÀÚµ¿À¸·Î ÆÄ±«µÊ.
+     * DESC ê°€ ì†Œìœ í•œ ulumemory ë¥¼ íŒŒê´´í•œë‹¤.
+     * DESC ê°€ ê°€ì§€ê³  ìžˆëŠ” mAssociatedStmtList ê°€ ì €ìž¥ëœ ê³³ë„ ìžë™ìœ¼ë¡œ íŒŒê´´ë¨.
      */
     aDesc->mObj.mMemory->mOp->mDestroyMyself(aDesc->mObj.mMemory);
 
@@ -170,19 +170,19 @@ ACI_RC ulnDescDestroy(ulnDesc *aDesc)
 /*
  * ulnInitializeDesc
  *
- * ulnDesc °´Ã¼ÀÇ °ü¸® ÇÊµåµéÀ» ÃÊ±âÈ­ÇÑ´Ù.
- * »ç¿ëÀÚ°¡ ¼¼ÆÃÇÏ´Â ºÎºÐÀÎ
+ * ulnDesc ê°ì²´ì˜ ê´€ë¦¬ í•„ë“œë“¤ì„ ì´ˆê¸°í™”í•œë‹¤.
+ * ì‚¬ìš©ìžê°€ ì„¸íŒ…í•˜ëŠ” ë¶€ë¶„ì¸
  *      SQL_DESC_BIND_TYPE          : mBindType
  *      SQL_DESC_ARRAY_SIZE         : mArraySize
  *      SQL_DESC_BIND_OFFSET_PTR    : mBindOffsetPtr
  *      SQL_DESC_ROWS_PROCESSED_PTR : mRowsProcessedPtr
  *      SQL_DESC_ARAY_STATUS_PTR    : mArrayStatusPtr
- * Àº ÃÊ±âÈ­ÇÏÁö ¾Ê´Â´Ù.
+ * ì€ ì´ˆê¸°í™”í•˜ì§€ ì•ŠëŠ”ë‹¤.
  */
 ACI_RC ulnDescInitialize(ulnDesc *aDesc, ulnObject *aParentObject)
 {
     /*
-     * °ü¸® ÇÊµåµéÀÇ ÃÊ±âÈ­
+     * ê´€ë¦¬ í•„ë“œë“¤ì˜ ì´ˆê¸°í™”
      */
 
     acpListInit(&aDesc->mAssociatedStmtList);
@@ -193,7 +193,7 @@ ACI_RC ulnDescInitialize(ulnDesc *aDesc, ulnObject *aParentObject)
     aDesc->mDescRecCount = 0;
 
     // fix BUG-24380
-    // DescÀÇ ºÎ¸ð°¡ Stmt¸é StmtÀÇ Æ÷ÀÎÅÍ¸¦ ÀúÀå
+    // Descì˜ ë¶€ëª¨ê°€ Stmtë©´ Stmtì˜ í¬ì¸í„°ë¥¼ ì €ìž¥
     if (aParentObject->mType == ULN_OBJ_TYPE_STMT)
     {
         aDesc->mStmt = aParentObject;
@@ -204,7 +204,7 @@ ACI_RC ulnDescInitialize(ulnDesc *aDesc, ulnObject *aParentObject)
     }
 
     /*
-     * mHeaderÀÇ ÃÊ±âÈ­
+     * mHeaderì˜ ì´ˆê¸°í™”
      */
     if (aDesc->mObj.mState == ULN_S_D1i)
     {
@@ -227,16 +227,16 @@ ACI_RC ulnDescInitialize(ulnDesc *aDesc, ulnObject *aParentObject)
     aDesc->mHeader.mHighestBoundIndex = 0;                   /* SQL_DESC_COUNT */
 
     /*
-     * DescRecArray ¸¦ ÃÊ±âÈ­
+     * DescRecArray ë¥¼ ì´ˆê¸°í™”
      *
-     * Note : ÀÌ ÇÔ¼ö´Â unbind ½Ã¿¡µµ È£ÃâµÇ´Âµ¥, unbind ¸¦ ÇÏ¸é, Desc ÀÇ uluMemory ¸¦ ÃÊ±â
-     *        »óÅÂ·Î rolback ½ÃÄÑ¹ö¸°´Ù.
-     *        ÀÌ¶§, DescRecArray ¿¡ ÀÖ´ø ¹è¿­µéµµ ¸ðµÎ ÇØÁ¦µÇ°í DescRecArray µµ ÃÊ±â »óÅÂ·Î
-     *        µ¹¾Æ°¡ Áà¾ß ÇÑ´Ù.
+     * Note : ì´ í•¨ìˆ˜ëŠ” unbind ì‹œì—ë„ í˜¸ì¶œë˜ëŠ”ë°, unbind ë¥¼ í•˜ë©´, Desc ì˜ uluMemory ë¥¼ ì´ˆê¸°
+     *        ìƒíƒœë¡œ rolback ì‹œì¼œë²„ë¦°ë‹¤.
+     *        ì´ë•Œ, DescRecArray ì— ìžˆë˜ ë°°ì—´ë“¤ë„ ëª¨ë‘ í•´ì œë˜ê³  DescRecArray ë„ ì´ˆê¸° ìƒíƒœë¡œ
+     *        ëŒì•„ê°€ ì¤˜ì•¼ í•œë‹¤.
      */
-    // memset À» ÇØ¾ß ÇÏ³ª?
-    // ¾Æ´Ï¸é, ulnDescGetDescRec() ¿¡¼­ highest bound index ¸¦ ÃÊ°úÇÏ´Â index °¡ ¿Ã °æ¿ì
-    // NULL À» µ¹·ÁÁÖµµ·Ï Çß´Âµ¥, ±×°ÍÀ¸·Î ÃæºÐÇÑ°¡?
+    // memset ì„ í•´ì•¼ í•˜ë‚˜?
+    // ì•„ë‹ˆë©´, ulnDescGetDescRec() ì—ì„œ highest bound index ë¥¼ ì´ˆê³¼í•˜ëŠ” index ê°€ ì˜¬ ê²½ìš°
+    // NULL ì„ ëŒë ¤ì£¼ë„ë¡ í–ˆëŠ”ë°, ê·¸ê²ƒìœ¼ë¡œ ì¶©ë¶„í•œê°€?
     // uluArrayInitializeToInitial(aDesc->mDescRecArray);
     acpMemSet(aDesc->mDescRecArray, 0, aDesc->mDescRecArraySize * ACI_SIZEOF(ulnDescRec *));
 
@@ -246,16 +246,16 @@ ACI_RC ulnDescInitialize(ulnDesc *aDesc, ulnObject *aParentObject)
 ACI_RC ulnDescInitializeUserPart(ulnDesc *aDesc)
 {
     /*
-     * ulnDesc ¿¡¼­ »ç¿ëÀÚ°¡ ¼¼ÆÃÇÏ´Â ºÎºÐÀÎ
+     * ulnDesc ì—ì„œ ì‚¬ìš©ìžê°€ ì„¸íŒ…í•˜ëŠ” ë¶€ë¶„ì¸
      *      SQL_DESC_BIND_TYPE          : mBindType
      *      SQL_DESC_ARRAY_SIZE         : mArraySize
      *      SQL_DESC_BIND_OFFSET_PTR    : mBindOffsetPtr
      *      SQL_DESC_ROWS_PROCESSED_PTR : mRowsProcessedPtr
      *      SQL_DESC_ARAY_STATUS_PTR    : mArrayStatusPtr
-     * À» ÃÊ±âÈ­ÇÑ´Ù.
+     * ì„ ì´ˆê¸°í™”í•œë‹¤.
      *
-     * ¾Æ·¡ÀÇ ÇÔ¼öµé¿¡¼­ ulnDescInitialize() ¸¸ È£ÃâÇØ¾ß ÇÏ±â ¶§¹®¿¡
-     * ÀÌÃ³·³ µû·Î »© µÎ¾î¾ß ÇÒ ÇÊ¿ä°¡ ÀÖ´Ù :
+     * ì•„ëž˜ì˜ í•¨ìˆ˜ë“¤ì—ì„œ ulnDescInitialize() ë§Œ í˜¸ì¶œí•´ì•¼ í•˜ê¸° ë•Œë¬¸ì—
+     * ì´ì²˜ëŸ¼ ë”°ë¡œ ë¹¼ ë‘ì–´ì•¼ í•  í•„ìš”ê°€ ìžˆë‹¤ :
      *      Prepare
      *      Unbind
      *      ResetParams
@@ -273,10 +273,10 @@ ACI_RC ulnDescInitializeUserPart(ulnDesc *aDesc)
 /*
  * ulnDescRollBackToInitial
  *
- * ÇÔ¼ö°¡ ÇÏ´Â ÀÏ :
- *  - ulnDesc ¸¦ Ã³À½ »ý¼ºµÈ »óÅÂ·Î µÇµ¹¸°´Ù.
- *  - ¹ÙÀÎµå¸¦ ÇÑ´Ù°Å³ª ÇØ¼­ ÇÒ´çµÈ ¸ðµç ¸Þ¸ð¸®¸¦ ÇØÁ¦ÇÑ´Ù.
- *    ´ÜÁö, ulnDesc ¸¦ À§ÇÑ ¸Þ¸ð¸®¸¸ ³²°ÜµÎ°í ÇØÁ¦ÇÑ´Ù.
+ * í•¨ìˆ˜ê°€ í•˜ëŠ” ì¼ :
+ *  - ulnDesc ë¥¼ ì²˜ìŒ ìƒì„±ëœ ìƒíƒœë¡œ ë˜ëŒë¦°ë‹¤.
+ *  - ë°”ì¸ë“œë¥¼ í•œë‹¤ê±°ë‚˜ í•´ì„œ í• ë‹¹ëœ ëª¨ë“  ë©”ëª¨ë¦¬ë¥¼ í•´ì œí•œë‹¤.
+ *    ë‹¨ì§€, ulnDesc ë¥¼ ìœ„í•œ ë©”ëª¨ë¦¬ë§Œ ë‚¨ê²¨ë‘ê³  í•´ì œí•œë‹¤.
  */
 ACI_RC ulnDescRollBackToInitial(ulnDesc *aDesc)
 {
@@ -296,7 +296,7 @@ ACI_RC ulnDescRollBackToInitial(ulnDesc *aDesc)
 
 /*
  * ================================================
- * PutDataContext ¸®½ºÆ®¸¦ Á¶ÀÛÇÏ´Â ÇÔ¼öµé
+ * PutDataContext ë¦¬ìŠ¤íŠ¸ë¥¼ ì¡°ìž‘í•˜ëŠ” í•¨ìˆ˜ë“¤
  * ================================================
  */
 
@@ -322,9 +322,9 @@ void ulnDescRemoveAllPDContext(ulnDesc *aDesc)
     ACP_LIST_ITERATE_SAFE(&aDesc->mPDContextList, sIterator, sIteratorNext)
     {
         /*
-         * È¤½Ã¶óµµ PutData() ÇÏ´Ù°¡ ¿¡·¯°¡ ³µÀ» °æ¿ì ÇØ´ç PDContext ÀÇ mBuffer ´Â free
-         * µÇÁö ¾ÊÀº Ã¤·Î ³²¾Æ ÀÕ´Ù.
-         * ÀÌ°ÍµéÀ» ¸ð¾Æ¼­ Ã³¸®ÇØ ÁØ´Ù.
+         * í˜¹ì‹œë¼ë„ PutData() í•˜ë‹¤ê°€ ì—ëŸ¬ê°€ ë‚¬ì„ ê²½ìš° í•´ë‹¹ PDContext ì˜ mBuffer ëŠ” free
+         * ë˜ì§€ ì•Šì€ ì±„ë¡œ ë‚¨ì•„ ìž‡ë‹¤.
+         * ì´ê²ƒë“¤ì„ ëª¨ì•„ì„œ ì²˜ë¦¬í•´ ì¤€ë‹¤.
          */
         ((ulnPDContext *)sIterator)->mOp->mFinalize((ulnPDContext *)sIterator);
         ulnDescRemovePDContext(aDesc, (ulnPDContext *)sIterator);
@@ -332,31 +332,31 @@ void ulnDescRemoveAllPDContext(ulnDesc *aDesc)
 }
 
 /*
- * descriptor record array list °ü·Ã ÇÔ¼öµé
+ * descriptor record array list ê´€ë ¨ í•¨ìˆ˜ë“¤
  *
- * »ý°¢°°¾Æ¼­´Â °¡ÁßÄ¡ Æ®¸®¶óµçÁö, 2, 3 Áß ÀÎµ¦½º¸¦ ÀÌ¿ëÇØ¼­ ÇÏ°í ½ÍÁö¸¸,
- * ±×·¸°Ô ÇÏ¸é, Á¤ÀÛ ÇÊ¿äÇÑ °Í¿¡ ºñÇØ¼­ ¿ÏÀü ¿À¹ö´Ù. ÀÏ¹ÝÀûÀ¸·Î 100 °³ ¾ÈÂÊÀÇ
- * ÄÃ·³ È¤Àº ÆÄ¶ó¹ÌÅÍ¸¦ ¹ÙÀÎµåÇÑ´Ù°í »ý°¢ÇÏ¸é, º¸Åë desc rec array header list ´Â ÇÏ³ª¹Û¿¡
- * »ý¼ºµÇÁö ¾Ê´Â´Ù.
- * ÇöÀç±îÁö º¸°íµÈ °¡Àå ¸¹Àº ¹ÙÀÎµå °¹¼ö´Â 800°³°¡ ¾à°£ ¸ø¹ÌÄ¡´Â °ÍÀ¸·Î ¾Ë°í ÀÖ´Ù.
- * 800 °³¸é, Çì´õ 7°³ÀÌ´Ù. ÃÖ¾ÇÀÇ °æ¿ì DescRec ÇÏ³ª¸¦ Ã£±â À§ÇØ¼­ LIST ITERATION À» 6 ¹ø ÇÑ´Ù.
- * ÇöÀç 1K ´ÜÀ§¿¡¼­ ÇÏ³ªÀÇ Çì´õ¿¡´Â 124 °³ÀÇ ¹è¿­ ¿ø¼Ò°¡ ÇÒ´çµÈ´Ù. (64ºñÆ® ÇÃ·§Æû ±âÁØ)
+ * ìƒê°ê°™ì•„ì„œëŠ” ê°€ì¤‘ì¹˜ íŠ¸ë¦¬ë¼ë“ ì§€, 2, 3 ì¤‘ ì¸ë±ìŠ¤ë¥¼ ì´ìš©í•´ì„œ í•˜ê³  ì‹¶ì§€ë§Œ,
+ * ê·¸ë ‡ê²Œ í•˜ë©´, ì •ìž‘ í•„ìš”í•œ ê²ƒì— ë¹„í•´ì„œ ì™„ì „ ì˜¤ë²„ë‹¤. ì¼ë°˜ì ìœ¼ë¡œ 100 ê°œ ì•ˆìª½ì˜
+ * ì»¬ëŸ¼ í˜¹ì€ íŒŒë¼ë¯¸í„°ë¥¼ ë°”ì¸ë“œí•œë‹¤ê³  ìƒê°í•˜ë©´, ë³´í†µ desc rec array header list ëŠ” í•˜ë‚˜ë°–ì—
+ * ìƒì„±ë˜ì§€ ì•ŠëŠ”ë‹¤.
+ * í˜„ìž¬ê¹Œì§€ ë³´ê³ ëœ ê°€ìž¥ ë§Žì€ ë°”ì¸ë“œ ê°¯ìˆ˜ëŠ” 800ê°œê°€ ì•½ê°„ ëª»ë¯¸ì¹˜ëŠ” ê²ƒìœ¼ë¡œ ì•Œê³  ìžˆë‹¤.
+ * 800 ê°œë©´, í—¤ë” 7ê°œì´ë‹¤. ìµœì•…ì˜ ê²½ìš° DescRec í•˜ë‚˜ë¥¼ ì°¾ê¸° ìœ„í•´ì„œ LIST ITERATION ì„ 6 ë²ˆ í•œë‹¤.
+ * í˜„ìž¬ 1K ë‹¨ìœ„ì—ì„œ í•˜ë‚˜ì˜ í—¤ë”ì—ëŠ” 124 ê°œì˜ ë°°ì—´ ì›ì†Œê°€ í• ë‹¹ëœë‹¤. (64ë¹„íŠ¸ í”Œëž«í¼ ê¸°ì¤€)
  */
 
 /*
- * Invoking Index ´Â ¾Æ·¡ÀÇ ÇÔ¼öÀÇ È£ÃâÀ» À¯¹ßÇÑ µð½ºÅ©¸³ÅÍ ·¹ÄÚµåÀÇ ÀÎµ¦½ºÀÌ´Ù.
+ * Invoking Index ëŠ” ì•„ëž˜ì˜ í•¨ìˆ˜ì˜ í˜¸ì¶œì„ ìœ ë°œí•œ ë””ìŠ¤í¬ë¦½í„° ë ˆì½”ë“œì˜ ì¸ë±ìŠ¤ì´ë‹¤.
  *
- * ¿¹¸¦ µé¾î count 10 ÀÇ DescRecArray °¡ ¾Æ·¡ÀÇ ±×¸²°ú °°ÀÌ ´Þ·Á ÀÖ´Ù°í ÇÏÀÚ :
+ * ì˜ˆë¥¼ ë“¤ì–´ count 10 ì˜ DescRecArray ê°€ ì•„ëž˜ì˜ ê·¸ë¦¼ê³¼ ê°™ì´ ë‹¬ë ¤ ìžˆë‹¤ê³  í•˜ìž :
  *
  *      LIST  0 10 * * * * * * * * * * ; start index 0, cnt 10
  *      LIST 20 10 * * * * * * * * * * ; start index 20, cnt 10
  *
- * ÀÌ ¶§ »ç¿ëÀÚ°¡ ParamNumber 17 ¹øÀ» ¹ÙÀÎµåÇÏ¸é, ÇÔ¼öÈ£ÃâÀ» µû¶ó ¿À´Ù°¡
- * ulnDescAddDescRec() ÇÔ¼ö¿¡ ¿Í¼­ ÀÌ ÇÔ¼ö°¡ aInvokingIndex ¿¡ 17 À» °¡Áö°í È£ÃâµÇ°Ô µÈ´Ù.
+ * ì´ ë•Œ ì‚¬ìš©ìžê°€ ParamNumber 17 ë²ˆì„ ë°”ì¸ë“œí•˜ë©´, í•¨ìˆ˜í˜¸ì¶œì„ ë”°ë¼ ì˜¤ë‹¤ê°€
+ * ulnDescAddDescRec() í•¨ìˆ˜ì— ì™€ì„œ ì´ í•¨ìˆ˜ê°€ aInvokingIndex ì— 17 ì„ ê°€ì§€ê³  í˜¸ì¶œë˜ê²Œ ëœë‹¤.
  *
- * ±×·¯¸é ÀÌ ÇÔ¼ö´Â DescRecArray ¸¦ ÇÏ³ª ¸¸µå´Âµ¥, start index 10, cnt 10 ÀÎ ³à¼®À»
- * ¸¸µé¾î¼­ ¸®½ºÆ®¿¡ Ãß°¡ÇÑ´Ù.
- * ±×·¯¸é ¸®½ºÆ®´Â ´ÙÀ½ ±×¸²°ú °°ÀÌ µÈ´Ù :
+ * ê·¸ëŸ¬ë©´ ì´ í•¨ìˆ˜ëŠ” DescRecArray ë¥¼ í•˜ë‚˜ ë§Œë“œëŠ”ë°, start index 10, cnt 10 ì¸ ë…€ì„ì„
+ * ë§Œë“¤ì–´ì„œ ë¦¬ìŠ¤íŠ¸ì— ì¶”ê°€í•œë‹¤.
+ * ê·¸ëŸ¬ë©´ ë¦¬ìŠ¤íŠ¸ëŠ” ë‹¤ìŒ ê·¸ë¦¼ê³¼ ê°™ì´ ëœë‹¤ :
  *
  *      LIST  0 10 * * * * * * * * * * ; start index 0, cnt 10
  *      LIST 20 10 * * * * * * * * * * ; start index 20, cnt 10
@@ -364,7 +364,7 @@ void ulnDescRemoveAllPDContext(ulnDesc *aDesc)
  */
 
 /*
- * Note : ulnDesc ¿Í ulnDescRec ¿ÍÀÇ °ü°è¸¦ ¼³¸íÇÏ´Â ±×¸².
+ * Note : ulnDesc ì™€ ulnDescRec ì™€ì˜ ê´€ê³„ë¥¼ ì„¤ëª…í•˜ëŠ” ê·¸ë¦¼.
  *
  * +--------------+             +-DescRec-+       +-DescRec-+
  * | mDescRecList |-------------|  mList  |-------|  mList  |---
@@ -388,9 +388,9 @@ void ulnDescRemoveAllPDContext(ulnDesc *aDesc)
  *                      |                                                  |
  *                      |<------------ mDescRecArrayUnitCount ------------>|
  *
- * Note : À§ÀÇ ±×¸²¿¡¼­, uluArrayGetElement() ÇÔ¼ö¸¦ È£ÃâÇÏ¸é, ÀÌ¸¦Å×¸é, À§ ±×¸²ÀÇ
- *        A ¸¦ °¡¸®Å°´Â Æ÷ÀÎÅÍ¸¦ ¸®ÅÏÇÑ´Ù.
- *        Áï, (ulnDescRec *) Å¸ÀÔÀ» °¡¸®Å°´Â Æ÷ÀÎÅÍÀÎ (ulnDescRec **) ¸¦ ¸®ÅÏÇÑ´Ù.
+ * Note : ìœ„ì˜ ê·¸ë¦¼ì—ì„œ, uluArrayGetElement() í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•˜ë©´, ì´ë¥¼í…Œë©´, ìœ„ ê·¸ë¦¼ì˜
+ *        A ë¥¼ ê°€ë¦¬í‚¤ëŠ” í¬ì¸í„°ë¥¼ ë¦¬í„´í•œë‹¤.
+ *        ì¦‰, (ulnDescRec *) íƒ€ìž…ì„ ê°€ë¦¬í‚¤ëŠ” í¬ì¸í„°ì¸ (ulnDescRec **) ë¥¼ ë¦¬í„´í•œë‹¤.
  */
 
 ACI_RC ulnDescAddDescRec(ulnDesc *aDesc, ulnDescRec *aDescRec)
@@ -399,8 +399,8 @@ ACI_RC ulnDescAddDescRec(ulnDesc *aDesc, ulnDescRec *aDescRec)
     acp_uint32_t sSizeToExtend;
 
     /*
-     * DescRecArray ¿¡ Ãß°¡ÇÑ´Ù.
-     * ÇØ´ç ÀÎµ¦½º¿¡ ¹Ì¸® µé¾î°¡ ÀÖ´Â °ÍÀÌ ÀÖµç ¾øµç°£¿¡ ¹«ÀÛÁ¤ µ¤¾î½á¹ö¸°´Ù.
+     * DescRecArray ì— ì¶”ê°€í•œë‹¤.
+     * í•´ë‹¹ ì¸ë±ìŠ¤ì— ë¯¸ë¦¬ ë“¤ì–´ê°€ ìžˆëŠ” ê²ƒì´ ìžˆë“  ì—†ë“ ê°„ì— ë¬´ìž‘ì • ë®ì–´ì¨ë²„ë¦°ë‹¤.
      */
 
     if (aDescRec->mIndex >= aDesc->mDescRecArraySize)
@@ -423,23 +423,23 @@ ACI_RC ulnDescAddDescRec(ulnDesc *aDesc, ulnDescRec *aDescRec)
     aDesc->mDescRecArray[aDescRec->mIndex] = aDescRec;
 
     /*
-     * DescRecList ¿¡ Ãß°¡ÇÑ´Ù.
+     * DescRecList ì— ì¶”ê°€í•œë‹¤.
      *
-     * Note : ÃÖ±Ù¿¡ Ãß°¡ÇÑ DescRec ÀÏ¼ö·Ï ¾Õ¿¡ Á¸ÀçÇÑ´Ù
+     * Note : ìµœê·¼ì— ì¶”ê°€í•œ DescRec ì¼ìˆ˜ë¡ ì•žì— ì¡´ìž¬í•œë‹¤
      */
     acpListPrependNode(&(aDesc->mDescRecList), (acp_list_t *)aDescRec);
 
     /*
-     * Ä«¿îÅÍ Áõ°¡
+     * ì¹´ìš´í„° ì¦ê°€
      */
     aDesc->mDescRecCount++;
 
     /*
-     * Note : ulnDesc::mHeader::mCount ´Â
-     *        ODBC ¿¡¼­ Á¤ÀÇÇÏ´Â ÀÇ¹Ì¿Í ¿ÏÀüÈ÷ ¶È°°Àº ÀÇ¹Ì·Î µ¿ÀÛÇÏµµ·Ï ÇÑ´Ù.
-     *        ODBC ¿¡¼­ Á¤ÀÇÇÏ´Â ÀÇ¹Ì´Â Çì´õÆÄÀÏÀ» ÂüÁ¶ÇÏ¶ó.
+     * Note : ulnDesc::mHeader::mCount ëŠ”
+     *        ODBC ì—ì„œ ì •ì˜í•˜ëŠ” ì˜ë¯¸ì™€ ì™„ì „ížˆ ë˜‘ê°™ì€ ì˜ë¯¸ë¡œ ë™ìž‘í•˜ë„ë¡ í•œë‹¤.
+     *        ODBC ì—ì„œ ì •ì˜í•˜ëŠ” ì˜ë¯¸ëŠ” í—¤ë”íŒŒì¼ì„ ì°¸ì¡°í•˜ë¼.
      *
-     *        HighestBoundIndex ÀÇ ÀÌ¸§À¸·Î ¾´´Ù.
+     *        HighestBoundIndex ì˜ ì´ë¦„ìœ¼ë¡œ ì“´ë‹¤.
      */
 
     if (ulnDescGetHighestBoundIndex(aDesc) < aDescRec->mIndex)
@@ -461,48 +461,48 @@ ACI_RC ulnDescRemoveDescRec(ulnDesc    *aDesc,
     acp_uint16_t sHighestIndex;
 
     /*
-     * BUGBUG : ¿©±â¼­ unbound ÇÑ DescRec ´Â ±×³É Á»ºñ·Î ³²°Ô µÈ´Ù.
-     *          ÀçÈ°¿ëÇÒ ¹æ¾ÈÀ» ¸ð»öÇØ º¸ÀÚ.
+     * BUGBUG : ì—¬ê¸°ì„œ unbound í•œ DescRec ëŠ” ê·¸ëƒ¥ ì¢€ë¹„ë¡œ ë‚¨ê²Œ ëœë‹¤.
+     *          ìž¬í™œìš©í•  ë°©ì•ˆì„ ëª¨ìƒ‰í•´ ë³´ìž.
      *
-     *          Àç¹ÙÀÎµå ½Ã¿¡´Â ÀçÈ°¿ëÀÌ µÇÁö¸¸, »ç¿ëÀÚ°¡ ¹®ÀÚÀûÀ¸·Î µü ÁöÁ¤ÇØ¼­
-     *          "UnBind" ¸¦ ÇÏ°Ô µÇ¸é ¹æ¹ýÀÌ ´ë·« ³­°¨ÇÏ´Ù.
+     *          ìž¬ë°”ì¸ë“œ ì‹œì—ëŠ” ìž¬í™œìš©ì´ ë˜ì§€ë§Œ, ì‚¬ìš©ìžê°€ ë¬¸ìžì ìœ¼ë¡œ ë”± ì§€ì •í•´ì„œ
+     *          "UnBind" ë¥¼ í•˜ê²Œ ë˜ë©´ ë°©ë²•ì´ ëŒ€ëžµ ë‚œê°í•˜ë‹¤.
      *
-     *          FreeDescRecList ¸¦ ÇÏ³ª ¸¸µé¾î?
-     *          ÀÏ´Ü ³ªÁß¿¡ »ý°¢ÇÏÀÚ.
+     *          FreeDescRecList ë¥¼ í•˜ë‚˜ ë§Œë“¤ì–´?
+     *          ì¼ë‹¨ ë‚˜ì¤‘ì— ìƒê°í•˜ìž.
      */
 
     ACI_TEST(aDesc->mDescRecCount == 0);
 
     /*
-     * BUGBUG : ¾Æ·¡ÀÇ °æ¿ì ¸Þ¸ð¸® ¸Å´ÏÁö ¿¡·¯°¡ ¾Æ´Ï°í, »ç¿ëÀÚ°¡ ¾ð¹ÙÀÎµå ÇÏ¸é¼­ ½Ç¼ö·Î
-     *          ¹ÙÀÎµåÇÏÁöµµ ¾ÊÀº ÀÎµ¦½º¸¦ ÁØ °ÍÀÏ °¡´É¼ºµµ ÀÖ´Ù.
+     * BUGBUG : ì•„ëž˜ì˜ ê²½ìš° ë©”ëª¨ë¦¬ ë§¤ë‹ˆì§€ ì—ëŸ¬ê°€ ì•„ë‹ˆê³ , ì‚¬ìš©ìžê°€ ì–¸ë°”ì¸ë“œ í•˜ë©´ì„œ ì‹¤ìˆ˜ë¡œ
+     *          ë°”ì¸ë“œí•˜ì§€ë„ ì•Šì€ ì¸ë±ìŠ¤ë¥¼ ì¤€ ê²ƒì¼ ê°€ëŠ¥ì„±ë„ ìžˆë‹¤.
      */
 
     ACI_TEST(aDescRec->mIndex >= aDesc->mDescRecArraySize);
 
     /*
-     * DescRecArray ÀÇ ÇØ´ç ¿£Æ®¸®¿¡ ³Î Âï¾îÁÖ±â
+     * DescRecArray ì˜ í•´ë‹¹ ì—”íŠ¸ë¦¬ì— ë„ ì°ì–´ì£¼ê¸°
      */
 
     aDesc->mDescRecArray[aDescRec->mIndex] = NULL;
 
     /*
-     * ¸®½ºÆ®¿¡¼­ »èÁ¦
+     * ë¦¬ìŠ¤íŠ¸ì—ì„œ ì‚­ì œ
      */
 
     acpListDeleteNode((acp_list_t *)aDescRec);
 
     /*
-     * Desc ¿¡ ´Þ·Á ÀÖ´Â DescRec ÀÇ °¹¼ö¸¦ ³ªÅ¸³»´Â º¯¼öÀÎ mDescRecCount °¨¼Ò½ÃÅ°±â
+     * Desc ì— ë‹¬ë ¤ ìžˆëŠ” DescRec ì˜ ê°¯ìˆ˜ë¥¼ ë‚˜íƒ€ë‚´ëŠ” ë³€ìˆ˜ì¸ mDescRecCount ê°ì†Œì‹œí‚¤ê¸°
      */
 
     aDesc->mDescRecCount--;
 
 
     /*
-     * Note : ODBC ¿¡¼­´Â ÄÃ·³À» unbind ÇÑ ÈÄ¿¡, ±× descriptor ÀÇ SQL_DESC_COUNT ´Â
-     *        ±× stmt ¿¡¼­ unbind ÇÑ ÄÃ·³À» Á¦¿ÜÇÑ ³ª¸ÓÁö ÄÃ·³µé Áß °¡Àå Å« column number ¸¦
-     *        °¡Áö´Â desc record ÀÇ column number °¡ µÇ¾î¾ß ÇÑ´Ù°í ±ÔÁ¤ÇÏ°í ÀÖ´Ù.
+     * Note : ODBC ì—ì„œëŠ” ì»¬ëŸ¼ì„ unbind í•œ í›„ì—, ê·¸ descriptor ì˜ SQL_DESC_COUNT ëŠ”
+     *        ê·¸ stmt ì—ì„œ unbind í•œ ì»¬ëŸ¼ì„ ì œì™¸í•œ ë‚˜ë¨¸ì§€ ì»¬ëŸ¼ë“¤ ì¤‘ ê°€ìž¥ í° column number ë¥¼
+     *        ê°€ì§€ëŠ” desc record ì˜ column number ê°€ ë˜ì–´ì•¼ í•œë‹¤ê³  ê·œì •í•˜ê³  ìžˆë‹¤.
      */
 
     sHighestIndex = ulnDescGetHighestBoundIndex(aDesc);
@@ -513,7 +513,7 @@ ACI_RC ulnDescRemoveDescRec(ulnDesc    *aDesc,
         ulnDescSetHighestBoundIndex(aDesc, sHighestIndex);
     }
 
-    /* BUG-44858 ¸Þ¸ð¸® ÀçÈ°¿ëÀ» À§ÇØ FreeList¿¡ ³Ö¾îµÐ´Ù. */
+    /* BUG-44858 ë©”ëª¨ë¦¬ ìž¬í™œìš©ì„ ìœ„í•´ FreeListì— ë„£ì–´ë‘”ë‹¤. */
     if (aPrependToFreeList == ACP_TRUE)
     {
         acpListPrependNode(&aDesc->mFreeDescRecList, (acp_list_node_t *)aDescRec);
@@ -533,8 +533,8 @@ ACI_RC ulnDescRemoveDescRec(ulnDesc    *aDesc,
 /*
  * ulnDescAddStmtToAssociatedStmtList
  *
- * STMT ¸¦ °¡¸®Å°´Â Æ÷ÀÎÅÍ¸¦ DESC ÀÇ mAssociatedStmtList ¿¡ Ãß°¡ÇÑ´Ù.
- * SQLSetStmtAttr() ÇÔ¼ö ¼öÇàÁß¿¡ È£ÃâµÉ ¼öµµ ÀÖ´Ù.
+ * STMT ë¥¼ ê°€ë¦¬í‚¤ëŠ” í¬ì¸í„°ë¥¼ DESC ì˜ mAssociatedStmtList ì— ì¶”ê°€í•œë‹¤.
+ * SQLSetStmtAttr() í•¨ìˆ˜ ìˆ˜í–‰ì¤‘ì— í˜¸ì¶œë  ìˆ˜ë„ ìžˆë‹¤.
  */
 ACI_RC ulnDescAddStmtToAssociatedStmtList(ulnStmt *aStmt, ulnDesc *aDesc)
 {
@@ -544,7 +544,7 @@ ACI_RC ulnDescAddStmtToAssociatedStmtList(ulnStmt *aStmt, ulnDesc *aDesc)
     ACE_ASSERT(aDesc != NULL);
 
     /*
-     * ¸®½ºÆ® Item À» ¸¸µé ¸Þ¸ð¸® È®º¸
+     * ë¦¬ìŠ¤íŠ¸ Item ì„ ë§Œë“¤ ë©”ëª¨ë¦¬ í™•ë³´
      */
     ACI_TEST(aDesc->mObj.mMemory->mOp->mMalloc(aDesc->mObj.mMemory,
                                                (void **)&sItem,
@@ -565,19 +565,19 @@ ACI_RC ulnDescAddStmtToAssociatedStmtList(ulnStmt *aStmt, ulnDesc *aDesc)
 /*
  * ulnDescRemoveStmtFromAssociatedStmtList
  *
- * STMT ¸¦ DESC ÀÇ mAssociatedStmtList ¿¡¼­ Á¦°ÅÇÑ´Ù.
- * ÇÏ³ª¸¸ Á¦°ÅÇÏ´Â °ÍÀÌ ¾Æ´Ï¶ó STMT °¡ ¿©·¯¹ø ÃâÇöÇÏ¸é ±× ÃâÇöÇÏ´Â°Å ¸ðÁ¶¸® ´Ù Á¦°ÅÇÑ´Ù.
+ * STMT ë¥¼ DESC ì˜ mAssociatedStmtList ì—ì„œ ì œê±°í•œë‹¤.
+ * í•˜ë‚˜ë§Œ ì œê±°í•˜ëŠ” ê²ƒì´ ì•„ë‹ˆë¼ STMT ê°€ ì—¬ëŸ¬ë²ˆ ì¶œí˜„í•˜ë©´ ê·¸ ì¶œí˜„í•˜ëŠ”ê±° ëª¨ì¡°ë¦¬ ë‹¤ ì œê±°í•œë‹¤.
  *
  * @note
- *  È£Ãâ Æ÷ÀÎÆ®
- *      - ulnDestroyStmt() ÇÔ¼ö ¼öÇà Áß¿¡ È£ÃâµÈ´Ù.
- *      - DESC ¸¦ STMT ÀÇ Explicit Ard/Apd ·Î ¼³Á¤ÇÒ ¶§ ¾Õ¹ø¿¡
- *        ¼³Á¤µÈ Explicit Ard/Apd °¡ Á¸ÀçÇÒ¶§ È£ÃâµÈ´Ù.
+ *  í˜¸ì¶œ í¬ì¸íŠ¸
+ *      - ulnDestroyStmt() í•¨ìˆ˜ ìˆ˜í–‰ ì¤‘ì— í˜¸ì¶œëœë‹¤.
+ *      - DESC ë¥¼ STMT ì˜ Explicit Ard/Apd ë¡œ ì„¤ì •í•  ë•Œ ì•žë²ˆì—
+ *        ì„¤ì •ëœ Explicit Ard/Apd ê°€ ì¡´ìž¬í• ë•Œ í˜¸ì¶œëœë‹¤.
  */
 ACI_RC ulnDescRemoveStmtFromAssociatedStmtList(ulnStmt *aStmt, ulnDesc *aDesc)
 {
     /*
-     * BUGBUG : ¹ß°ßÇØ¼­ Áö¿ì¸é SUCCESS, ¹ß°ß ¸øÇÏ¸é FAILURE ¸¦ ¸®ÅÏÇÏ°Ô ÇÏ´Â°ÍÀº ¾î¶²°¡?
+     * BUGBUG : ë°œê²¬í•´ì„œ ì§€ìš°ë©´ SUCCESS, ë°œê²¬ ëª»í•˜ë©´ FAILURE ë¥¼ ë¦¬í„´í•˜ê²Œ í•˜ëŠ”ê²ƒì€ ì–´ë–¤ê°€?
      */
 
     acp_list_node_t *sIterator;
@@ -591,15 +591,15 @@ ACI_RC ulnDescRemoveStmtFromAssociatedStmtList(ulnStmt *aStmt, ulnDesc *aDesc)
         if (((ulnStmtAssociatedWithDesc *)sIterator)->mStmt == aStmt)
         {
             /*
-             * BUGBUG : ¿©±â¼­ ÇÒ´çµÈ ¸Þ¸ð¸®¸¦ ÇØÁ¦ÇØ Áà¾ß ÇÏ³ª ¹æ¹ýÀÌ ¹¦¿¬ÇÏ´Ù.
-             *          ±×´ÙÁö ¹®Á¦µÇÁö ¾Ê´Â °ÍÀÌ, DESC ¸¦ ÇØÁ¦ÇÏ¸é¼­ DESC ÀÇ 
-             *          uluMemory¸¦ ÆÄ±«ÇÏ¸é ÀÚµ¿À¸·Î ´Ù ÆÄ±«µÇ¹Ç·Î °ÆÁ¤ ¾ÈÇØµµ µÈ´Ù.
+             * BUGBUG : ì—¬ê¸°ì„œ í• ë‹¹ëœ ë©”ëª¨ë¦¬ë¥¼ í•´ì œí•´ ì¤˜ì•¼ í•˜ë‚˜ ë°©ë²•ì´ ë¬˜ì—°í•˜ë‹¤.
+             *          ê·¸ë‹¤ì§€ ë¬¸ì œë˜ì§€ ì•ŠëŠ” ê²ƒì´, DESC ë¥¼ í•´ì œí•˜ë©´ì„œ DESC ì˜ 
+             *          uluMemoryë¥¼ íŒŒê´´í•˜ë©´ ìžë™ìœ¼ë¡œ ë‹¤ íŒŒê´´ë˜ë¯€ë¡œ ê±±ì • ì•ˆí•´ë„ ëœë‹¤.
              */
             acpListDeleteNode(sIterator);
 
             /*
-             * ¿©·¯¹ø ¹ÙÀÎµå µÇ¾ú¾îµµ ¸ðÁ¶¸® Á¦°ÅÇÏÀÚ
-             * ---> break ¾ÈÇÏ°í °è¼Ó µ¹¾Æ¶ó.
+             * ì—¬ëŸ¬ë²ˆ ë°”ì¸ë“œ ë˜ì—ˆì–´ë„ ëª¨ì¡°ë¦¬ ì œê±°í•˜ìž
+             * ---> break ì•ˆí•˜ê³  ê³„ì† ëŒì•„ë¼.
              */
         }
     }
@@ -608,19 +608,19 @@ ACI_RC ulnDescRemoveStmtFromAssociatedStmtList(ulnStmt *aStmt, ulnDesc *aDesc)
 }
 
 /*
- * AssociatedStmtList ¸¦ ¹é¾÷ÇÏ°í º¹±¸ÇÏ´Â ÇÔ¼öµé.
+ * AssociatedStmtList ë¥¼ ë°±ì—…í•˜ê³  ë³µêµ¬í•˜ëŠ” í•¨ìˆ˜ë“¤.
  *
- * ¾Æ·¡ÀÇ µÎ ÇÔ¼ö´Â ulnFreeStmtResetParams ¿Í ulnFreeStmtUnbind ¿¡¼­ È£ÃâµÈ´Ù.
- * ¿¹Á¦´Â ±×°÷¿¡¼­ Ã£À» ¼ö ÀÖ´Ù.
+ * ì•„ëž˜ì˜ ë‘ í•¨ìˆ˜ëŠ” ulnFreeStmtResetParams ì™€ ulnFreeStmtUnbind ì—ì„œ í˜¸ì¶œëœë‹¤.
+ * ì˜ˆì œëŠ” ê·¸ê³³ì—ì„œ ì°¾ì„ ìˆ˜ ìžˆë‹¤.
  *
- * ÀÎÀÚ·Î ¹Þ´Â aMemory ´Â ÀÏ¹ÝÀûÀ¸·Î »óÀ§ °´Ã¼ÀÇ ¸Þ¸ð¸®¸¦ »ç¿ëÇÏ¸é µÇ°Ú´Ù.
+ * ì¸ìžë¡œ ë°›ëŠ” aMemory ëŠ” ì¼ë°˜ì ìœ¼ë¡œ ìƒìœ„ ê°ì²´ì˜ ë©”ëª¨ë¦¬ë¥¼ ì‚¬ìš©í•˜ë©´ ë˜ê² ë‹¤.
  *
- * Note : ¾Æ·¡ÀÇ µÎ ÇÔ¼ö
- *        ulnDescSaveAssociatedStmtList() ¿Í
- *        ulnDescRecoverAssociatedStmtList() ´Â ¹Ýµå½Ã
- *        Â¦À» ÀÌ·ç¾î¼­ ¾²¿©¾ß ÇÑ´Ù.
+ * Note : ì•„ëž˜ì˜ ë‘ í•¨ìˆ˜
+ *        ulnDescSaveAssociatedStmtList() ì™€
+ *        ulnDescRecoverAssociatedStmtList() ëŠ” ë°˜ë“œì‹œ
+ *        ì§ì„ ì´ë£¨ì–´ì„œ ì“°ì—¬ì•¼ í•œë‹¤.
  *
- *        ¶ÇÇÑ, ÇÔ¼öÀÇ ÀÎÀÚ·Î »ç¿ëµÇ´Â ¸ðµç ÀÎÀÚ´Â µ¿ÀÏÇÑ ³à¼®µé·Î »ç¿ëÇÏµµ·Ï Á¶½ÉÇØ¾ß ÇÑ´Ù!!!
+ *        ë˜í•œ, í•¨ìˆ˜ì˜ ì¸ìžë¡œ ì‚¬ìš©ë˜ëŠ” ëª¨ë“  ì¸ìžëŠ” ë™ì¼í•œ ë…€ì„ë“¤ë¡œ ì‚¬ìš©í•˜ë„ë¡ ì¡°ì‹¬í•´ì•¼ í•œë‹¤!!!
  */
 ACI_RC ulnDescSaveAssociatedStmtList(ulnDesc      *aDesc,
                                      uluMemory    *aMemory,
@@ -668,7 +668,7 @@ ACI_RC ulnDescRecoverAssociatedStmtList(ulnDesc      *aDesc,
     }
 
     /*
-     * ¾Õ¼­ Âï¾ú´ø temp sp ·Î ¿øº¹ÇÑ´Ù.
+     * ì•žì„œ ì°ì—ˆë˜ temp sp ë¡œ ì›ë³µí•œë‹¤.
      */
     ACI_TEST(aMemory->mOp->mFreeToSP(aMemory, aTempSP) != ACI_SUCCESS);
 
@@ -680,12 +680,12 @@ ACI_RC ulnDescRecoverAssociatedStmtList(ulnDesc      *aDesc,
 }
 
 /*
- * ODBC 3.0 ÀÇ SQLSetDescRec() ÇÔ¼ö ·¹ÆÛ·±½º ¸Å´º¾óÀÇ ¸Ç µÞºÎºÐ¿¡¼­ ¼³¸íÇÏ°í ÀÖ´Â
- * Consistency chech À» ±¸ÇöÇÑ ÇÔ¼öÀÌ´Ù.
+ * ODBC 3.0 ì˜ SQLSetDescRec() í•¨ìˆ˜ ë ˆí¼ëŸ°ìŠ¤ ë§¤ë‰´ì–¼ì˜ ë§¨ ë’·ë¶€ë¶„ì—ì„œ ì„¤ëª…í•˜ê³  ìžˆëŠ”
+ * Consistency chech ì„ êµ¬í˜„í•œ í•¨ìˆ˜ì´ë‹¤.
  *
- * - Consistency check ´Â IRD ¿¡ ´ëÇØ¼­´Â ¼öÇàµÉ ¼ö ¾ø´Ù.
- * - IPD ¿¡ ´ëÇØ¼­ ¼öÇàµÉ °æ¿ì, IPD ¿ë field °¡ ¾Æ´Ï´õ¶óµµ ÀÌ Ã¼Å©¸¦ ¼öÇàÇÏ±â À§ÇØ¼­
- *   Descriptor ÀÇ ÇÊµåµéÀ» °­Á¦·Î ¼¼ÆÃÇÒ ¼öµµ ÀÖ´Ù.
+ * - Consistency check ëŠ” IRD ì— ëŒ€í•´ì„œëŠ” ìˆ˜í–‰ë  ìˆ˜ ì—†ë‹¤.
+ * - IPD ì— ëŒ€í•´ì„œ ìˆ˜í–‰ë  ê²½ìš°, IPD ìš© field ê°€ ì•„ë‹ˆë”ë¼ë„ ì´ ì²´í¬ë¥¼ ìˆ˜í–‰í•˜ê¸° ìœ„í•´ì„œ
+ *   Descriptor ì˜ í•„ë“œë“¤ì„ ê°•ì œë¡œ ì„¸íŒ…í•  ìˆ˜ë„ ìžˆë‹¤.
  */
 ACI_RC ulnDescCheckConsistency(ulnDesc *aDesc)
 {
@@ -693,7 +693,7 @@ ACI_RC ulnDescCheckConsistency(ulnDesc *aDesc)
     ACI_TEST(ULN_OBJ_GET_DESC_TYPE(aDesc) == ULN_DESC_TYPE_IRD);
 
     /*
-     * BUGBUG : ÇÔ¼ö ±¸ÇöÀ» ÇØ¾ß ÇÑ´Ù.
+     * BUGBUG : í•¨ìˆ˜ êµ¬í˜„ì„ í•´ì•¼ í•œë‹¤.
      */
 
     return ACI_SUCCESS;
@@ -712,8 +712,8 @@ static void ulnDescInitStatusArrayValuesCore(ulnDesc      *aDesc,
     acp_uint32_t sRowNumber;
 
     /*
-     * Note : APD ÀÇ SQL_DESC_ARRAY_STATUS_PTR Àº driver °¡ ¾î¶»°Ô Çàµ¿ÇÒÁö app °¡ Áö½ÃÇÏ´Â
-     *        °ÍÀÌ´Ù. Áï, driver ÀÇ ÀÔÀå¿¡¼­´Â input ÀÌ´Ù.
+     * Note : APD ì˜ SQL_DESC_ARRAY_STATUS_PTR ì€ driver ê°€ ì–´ë–»ê²Œ í–‰ë™í• ì§€ app ê°€ ì§€ì‹œí•˜ëŠ”
+     *        ê²ƒì´ë‹¤. ì¦‰, driver ì˜ ìž…ìž¥ì—ì„œëŠ” input ì´ë‹¤.
      */
     ACE_ASSERT(ULN_OBJ_GET_DESC_TYPE(aDesc) == ULN_DESC_TYPE_IRD ||
                ULN_OBJ_GET_DESC_TYPE(aDesc) == ULN_DESC_TYPE_IPD);
@@ -727,8 +727,8 @@ static void ulnDescInitStatusArrayValuesCore(ulnDesc      *aDesc,
 }
 
 /*
- * aArraySize ´Â PARAMSET_SIZE È¤Àº ROWSET_SIZE ÀÌ´Ù.
- * 0 ÀÏ ¼ö ¾ø°í, 1 ÀÌ»óÀÌ¾î¾ß¸¸ ÇÑ´Ù.
+ * aArraySize ëŠ” PARAMSET_SIZE í˜¹ì€ ROWSET_SIZE ì´ë‹¤.
+ * 0 ì¼ ìˆ˜ ì—†ê³ , 1 ì´ìƒì´ì–´ì•¼ë§Œ í•œë‹¤.
  */
 void ulnDescInitStatusArrayValues(ulnDesc      *aDesc,
                                   acp_uint32_t  aStartIndex,
@@ -746,11 +746,11 @@ void ulnDescInitStatusArrayValues(ulnDesc      *aDesc,
 }
 
 /*
- * Descriptor ¿¡ ¹ÙÀÎµåµÇ¾î ÀÖ´Â DescRec µéÀÇ ÀÎµ¦½º¿Í °ü·ÃµÈ ÇÔ¼öµé
+ * Descriptor ì— ë°”ì¸ë“œë˜ì–´ ìžˆëŠ” DescRec ë“¤ì˜ ì¸ë±ìŠ¤ì™€ ê´€ë ¨ëœ í•¨ìˆ˜ë“¤
  *
- *      1. ÃÖ´ë À¯È¿ÀÎµ¦½º
- *      2. ÃÖ´ë ÀÎµ¦½º
- *      3. ÃÖ¼Ò ÀÎµ¦½º
+ *      1. ìµœëŒ€ ìœ íš¨ì¸ë±ìŠ¤
+ *      2. ìµœëŒ€ ì¸ë±ìŠ¤
+ *      3. ìµœì†Œ ì¸ë±ìŠ¤
  */
 
 static acp_uint16_t ulnDescFindEstIndex(ulnDesc *aDesc, acp_uint16_t aIndexToStartFrom, acp_sint16_t aIncrement)

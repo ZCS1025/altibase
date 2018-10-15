@@ -31,16 +31,16 @@ void makeDirectory(SChar *aDestDir, SChar *aPerm);
  * ----------------------------------------------*/
 
 
-// [·Î ½ÃÀÛÇÏ´Â ¶óÀÎÀÌ¸é 1, ¾Æ´Ï¸é, 0 ÀÌ¸é retry.
+// [ë¡œ ì‹œì‘í•˜ëŠ” ë¼ì¸ì´ë©´ 1, ì•„ë‹ˆë©´, 0 ì´ë©´ retry.
 UInt getObjectHeader(SChar *aBuffer)
 {
     /* ------------------------
-     * [1] White Space Á¦°Å
+     * [1] White Space ì œê±°
      * ----------------------*/
     eraseWhiteSpace(aBuffer);
 
     /* ---------------------------------
-     * [2] ³»¿ëÀÌ ¾ø°Å³ª ÁÖ¼®ÀÌ¸é ¹«½Ã
+     * [2] ë‚´ìš©ì´ ì—†ê±°ë‚˜ ì£¼ì„ì´ë©´ ë¬´ì‹œ
      * -------------------------------*/
     SInt len = idlOS::strlen(aBuffer);
     if (len == 0 || aBuffer[0] == '#')
@@ -65,14 +65,14 @@ UInt getObjectHeader(SChar *aBuffer)
 }
 
 /* ------------------------------------------------
- * [  ] ³»ºÎ¿¡ À§Ä¡ÇÏ´Â ÀÓÀÇÀÇ ½ºÆ®¸µÀ» °Ë»çÇÔ.
- * Çü½Ä
- *   - [ member / member / member/ member ... ] ÀÇ ÇüÅÂ¸¦ ¶ç°í ÀÖÀ½.
- *     [^member]´Â memberÀÇ ¿ªÀ» ÀÇ¹Ì.
- *   - member´Â objÀ¸·Î ÀÌ·ç¾îÁö°í, obj°£ÀÇ °ü°è´Â -·Î ºĞ¸®
- *     Áï, 4ÀÏ °æ¿ì¿¡´Â obj-obj-obj-obj ÇüÅÂ
- *         1ÀÏ °æ¿ì¿¡´Â obj ÀÓ.
- *  - ÀÌ obj°¡ *ÀÏ °æ¿ì ¸ğµç ÄÉÀÌ½º¸¦ ³ªÅ¸³¿.
+ * [  ] ë‚´ë¶€ì— ìœ„ì¹˜í•˜ëŠ” ì„ì˜ì˜ ìŠ¤íŠ¸ë§ì„ ê²€ì‚¬í•¨.
+ * í˜•ì‹
+ *   - [ member / member / member/ member ... ] ì˜ í˜•íƒœë¥¼ ë„ê³  ìˆìŒ.
+ *     [^member]ëŠ” memberì˜ ì—­ì„ ì˜ë¯¸.
+ *   - memberëŠ” objìœ¼ë¡œ ì´ë£¨ì–´ì§€ê³ , objê°„ì˜ ê´€ê³„ëŠ” -ë¡œ ë¶„ë¦¬
+ *     ì¦‰, 4ì¼ ê²½ìš°ì—ëŠ” obj-obj-obj-obj í˜•íƒœ
+ *         1ì¼ ê²½ìš°ì—ëŠ” obj ì„.
+ *  - ì´ objê°€ *ì¼ ê²½ìš° ëª¨ë“  ì¼€ì´ìŠ¤ë¥¼ ë‚˜íƒ€ëƒ„.
  * ----------------------------------------------*/
 
 SChar * getObjectInMember(SChar *aMember, SChar *aObject, idBool *aEndFlag)
@@ -81,7 +81,7 @@ SChar * getObjectInMember(SChar *aMember, SChar *aObject, idBool *aEndFlag)
 
     *aEndFlag = ID_FALSE;
 
-    // Member º¹»ç
+    // Member ë³µì‚¬
     while(1)
     {
         switch(*sBuf)
@@ -107,7 +107,7 @@ SChar * getObjectInMember(SChar *aMember, SChar *aObject, idBool *aEndFlag)
 }
 
 /* ------------------------------------------------
- * ¸â¹öÀÇ ±¸¼ºÀÇ Object¸¦ ºñ±³ÇÑ´Ù.
+ * ë©¤ë²„ì˜ êµ¬ì„±ì˜ Objectë¥¼ ë¹„êµí•œë‹¤.
  * ----------------------------------------------*/
 
 idBool compareObject(SChar *aArgObject, SChar *aMapObject)
@@ -136,10 +136,10 @@ idBool compareObjects(SChar *sObject, UInt aBegin, UInt aEnd)
     SChar *sPtr = sObject;
 
     /* ------------------------------------------------
-     *  Member°¡ 2°³ ÀÌ»óÀÇ Object ÀÏ °æ¿ì¿¡
-     *  ±× °ªÀÌ *ÀÏ °æ¿ì¿¡´Â ¹«Á¶°Ç TRUE
-     *  ±×·¸Áö ¾ÊÀ¸¸é, *¸¦ objectÈ½¼ö¸¸Å­ µ¹±â¶§¹®¿¡
-     *  ¹®Á¦°¡ »ı±è.
+     *  Memberê°€ 2ê°œ ì´ìƒì˜ Object ì¼ ê²½ìš°ì—
+     *  ê·¸ ê°’ì´ *ì¼ ê²½ìš°ì—ëŠ” ë¬´ì¡°ê±´ TRUE
+     *  ê·¸ë ‡ì§€ ì•Šìœ¼ë©´, *ë¥¼ objectíšŸìˆ˜ë§Œí¼ ëŒê¸°ë•Œë¬¸ì—
+     *  ë¬¸ì œê°€ ìƒê¹€.
      * ----------------------------------------------*/
 
     if (aBegin != aEnd)
@@ -203,7 +203,7 @@ idBool checkValidity(SChar **aPtr, UInt aBegin, UInt aEnd)
         sResult = compareObjects(sObject, aBegin, aEnd);
 
         if (sReverse == ID_TRUE) // ^
-        {   // reverse ¸ğµåÀÏ °æ¿ì¿¡´Â ¸ğµÎ AND Ã³¸®ÇÔ. ÇÏ³ª¶óµµ TRUEÀÌ¸é, return FALSE;
+        {   // reverse ëª¨ë“œì¼ ê²½ìš°ì—ëŠ” ëª¨ë‘ AND ì²˜ë¦¬í•¨. í•˜ë‚˜ë¼ë„ TRUEì´ë©´, return FALSE;
             if (sResult == ID_TRUE)
             {
                 sIsOk = ID_FALSE;
@@ -220,7 +220,7 @@ idBool checkValidity(SChar **aPtr, UInt aBegin, UInt aEnd)
 
         }
         else
-        {   // reverse ¸ğµå°¡ ¾Æ´Ò °æ¿ì¿¡´Â ¸ğµÎ OR Ã³¸®ÇÔ. ÇÏ³ª¶óµµ TRUEÀÌ¸é, return TRUE;
+        {   // reverse ëª¨ë“œê°€ ì•„ë‹ ê²½ìš°ì—ëŠ” ëª¨ë‘ OR ì²˜ë¦¬í•¨. í•˜ë‚˜ë¼ë„ TRUEì´ë©´, return TRUE;
             if (sResult == ID_TRUE)
             {
                 sIsOk = ID_TRUE;
@@ -242,28 +242,28 @@ idBool checkValidity(SChar **aPtr, UInt aBegin, UInt aEnd)
 }
 
 /* ------------------------------------------------
- *  Ext Action ¼³°è
+ *  Ext Action ì„¤ê³„
  * ----------------------------------------------*/
 
 struct extAction;
 typedef struct extAction
 {
-    SChar *mExtSym; // ½ºÆ®¸µ
+    SChar *mExtSym; // ìŠ¤íŠ¸ë§
     void (*mFunc)(SChar *aMsg,
-                  SChar *aSrcDir,  // ¾×¼Ç ÇÔ¼ö
+                  SChar *aSrcDir,  // ì•¡ì…˜ í•¨ìˆ˜
                   SChar *aSrcFile,
                   SChar *aDestDir,
                   SChar *aDestFile,
                   SChar *aFilePerm,
                   idBool aSkipError,
                   extAction *aAction);
-    altiPkgArgNum mPrefix; // º¯È¯½Ã prefix Ã·°¡
-    altiPkgArgNum mPostfix; // º¯È¯½Ã postfix Ã·°¡
+    altiPkgArgNum mPrefix; // ë³€í™˜ì‹œ prefix ì²¨ê°€
+    altiPkgArgNum mPostfix; // ë³€í™˜ì‹œ postfix ì²¨ê°€
 
 } extAction;
 
 /* ------------------------------------------------
- * µğ·ºÅä¸® »ı¼º ÇÔ¼ö
+ * ë””ë ‰í† ë¦¬ ìƒì„± í•¨ìˆ˜
  * ----------------------------------------------*/
 
 mode_t getModeFromString(SChar *aFilePerm)
@@ -304,7 +304,7 @@ void makeDirectory(SChar *aDestDir, SChar *aPerm, idBool aErrorIgnore)
 }
 
 void actDirectory(SChar *aMsg,
-                  SChar *aSrcDir,  // ¾×¼Ç ÇÔ¼ö
+                  SChar *aSrcDir,  // ì•¡ì…˜ í•¨ìˆ˜
                   SChar *aSrcFile,
                   SChar *aDestDir,
                   SChar */*aDestFile*/,
@@ -315,7 +315,7 @@ void actDirectory(SChar *aMsg,
     SChar sDestBuf[2048];
 
     /* ------------------------------------------------
-     *  Report »ı¼º
+     *  Report ìƒì„±
      * ----------------------------------------------*/
 
     reportMsg("# %s\n", aMsg);
@@ -337,7 +337,7 @@ void actDirectory(SChar *aMsg,
     }
 
     /* ------------------------------------------------
-     *  Report »ı¼º
+     *  Report ìƒì„±
      * ----------------------------------------------*/
     {
         reportMsg("# Directory CREATED : %s \n", sDestBuf);
@@ -357,7 +357,7 @@ void actDirectory(SChar *aMsg,
 }
 
 /* ------------------------------------------------
- * prefix & postfix Ã³¸®
+ * prefix & postfix ì²˜ë¦¬
  * ----------------------------------------------*/
 
 #define COPY_BUFFER_SIZE (4 * 1024)
@@ -575,7 +575,7 @@ idBool compareFile(SChar *aSrcBuf, SChar *aDestBuf)
 
 
 void actExtension(SChar *aMsg,
-                  SChar *aSrcDir,  // ¾×¼Ç ÇÔ¼ö
+                  SChar *aSrcDir,  // ì•¡ì…˜ í•¨ìˆ˜
                   SChar *aSrcFile,
                   SChar *aDestDir,
                   SChar *aDestFile,
@@ -710,7 +710,7 @@ void actExtension(SChar *aMsg,
     {
         
         /* ------------------------------------------------
-         *  Report »ı¼º
+         *  Report ìƒì„±
          * ----------------------------------------------*/
         
         reportMsg("# %s\n", aMsg);
@@ -725,13 +725,13 @@ void actExtension(SChar *aMsg,
         if (copyFile(sSrcBuf, sDestBuf, aFilePerm, aSkipError) == ID_TRUE)
         {
             /* ------------------------------------------------
-             *  Report »ı¼º
+             *  Report ìƒì„±
              * ----------------------------------------------*/
             {
                 reportMsg("# COPYED  : From %s \n", sSrcBuf);
                 reportMsg("#         : To   %s \n", sDestBuf);
 
-                // ¹Ù²ï ºÎºĞ¸¸
+                // ë°”ë€ ë¶€ë¶„ë§Œ
                 idlOS::sprintf(sDestBuf, "%s%s%s%s%s",
                                aDestDir,
                                IDL_FILE_SEPARATORS,
@@ -796,10 +796,10 @@ idBool doDistFile(SChar *aOrgBuf,
              aSrcDir, aSrcFile, aDestDir, aDestFile, aFilePerm, aExtType);
 
     /* ------------------------------------------------
-     *  EXT¿¡ µû¸¥ µ¿ÀÛ ¼³°è
-     *  - DIR : µğ·ºÅä¸® »ı¼º
-     *  - EXE, OBJ, ARL, SHL : Prefix ¹× È®ÀåÀÚ Ã³¸®
-     *  - ! °¡ Á¸ÀçÇÏ¸é, ¾ø´õ¶óµµ ¹«½ÃÇÏ°í, ÁøÇà.
+     *  EXTì— ë”°ë¥¸ ë™ì‘ ì„¤ê³„
+     *  - DIR : ë””ë ‰í† ë¦¬ ìƒì„±
+     *  - EXE, OBJ, ARL, SHL : Prefix ë° í™•ì¥ì ì²˜ë¦¬
+     *  - ! ê°€ ì¡´ì¬í•˜ë©´, ì—†ë”ë¼ë„ ë¬´ì‹œí•˜ê³ , ì§„í–‰.
      * ----------------------------------------------*/
     if ( *aExtType == '!')
     {
@@ -836,11 +836,11 @@ void doDistribution(idBool aQuiet)
     /* ------------------------------------------------
      *  - mapfile open
      *  - file read
-     *  - property Ã³¸® | true & false
+     *  - property ì²˜ë¦¬ | true & false
      *  - true
      *    + EXT-action : file name generation
      *    + COPY action if needed.
-     *    + info È­ÀÏ »ı¼º Ã³¸®
+     *    + info í™”ì¼ ìƒì„± ì²˜ë¦¬
      *
      * ----------------------------------------------*/
     FILE *sMapFP;
@@ -861,12 +861,12 @@ void doDistribution(idBool aQuiet)
         idlOS::memset(sBuffer, 0, ID_SIZEOF(sBuffer));
         if (idlOS::fgets(sBuffer, ID_SIZEOF(sBuffer), sMapFP) == NULL)
         {
-            // È­ÀÏÀÇ ³¡±îÁö ÀĞÀ½
+            // í™”ì¼ì˜ ëê¹Œì§€ ì½ìŒ
             break;
         }
 
         /* ------------------------------------------------
-         * Á¤½Ä Çì´õ [] ÀÏ °æ¿ì
+         * ì •ì‹ í—¤ë” [] ì¼ ê²½ìš°
          * ----------------------------------------------*/
         if (getObjectHeader(sBuffer) != 0)
         {
@@ -879,7 +879,7 @@ void doDistribution(idBool aQuiet)
             idlOS::memset(sDistInfo, 0, ID_SIZEOF(sDistInfo));
 
             /* ------------------------------------------------
-             *  1. Src/Dest È­ÀÏ Á¤º¸ ÀĞ±â
+             *  1. Src/Dest í™”ì¼ ì •ë³´ ì½ê¸°
              * ----------------------------------------------*/
             for (i = 0; i < 4; i++)
             {
@@ -892,9 +892,9 @@ void doDistribution(idBool aQuiet)
             }
 
             /* ------------------------------------------------
-             *  2. True/False Ã¼Å©
+             *  2. True/False ì²´í¬
              *
-             *   -  5°³ÀÇ Ç×¸ñ¿¡ ´ëÇØ ¼öÇà
+             *   -  5ê°œì˜ í•­ëª©ì— ëŒ€í•´ ìˆ˜í–‰
              *    type       arg      argcount
              * -------------------------------
              *   platform : 0,1,2,3     4
@@ -905,7 +905,7 @@ void doDistribution(idBool aQuiet)
              *
              * ----------------------------------------------*/
 
-            // Table·Î Ã³¸®ÇÒ ¼ö ÀÖÀ¸³ª, °¡µ¶¼ºÀ» ¿°·ÁÇÏ¿© ±×³É Ç®¾î¼­ ±¸ÇöÇÔ.
+            // Tableë¡œ ì²˜ë¦¬í•  ìˆ˜ ìˆìœ¼ë‚˜, ê°€ë…ì„±ì„ ì—¼ë ¤í•˜ì—¬ ê·¸ëƒ¥ í’€ì–´ì„œ êµ¬í˜„í•¨.
             // Platform Check
             if (checkValidity(&sBufCur, 0, 3) != ID_TRUE)
             {
@@ -943,7 +943,7 @@ void doDistribution(idBool aQuiet)
 
             debugMsg("******** OK VALIDITY SUCCESS ****** %s\n", sBuffer);
             /* ------------------------------------------------
-             *  3. Mod ¾ò±â
+             *  3. Mod ì–»ê¸°
              * ----------------------------------------------*/
             {
                 idBool sTmpEndFlag;
@@ -956,7 +956,7 @@ void doDistribution(idBool aQuiet)
 
 
             /* ------------------------------------------------
-             *  4. EXTTYPE ¾ò±â
+             *  4. EXTTYPE ì–»ê¸°
              * ----------------------------------------------*/
             {
                 idBool sTmpEndFlag;
@@ -982,6 +982,6 @@ void doDistribution(idBool aQuiet)
     idlOS::fprintf(stdout, "SUCCESS of Distribution. \n");
     idlOS::fprintf(stdout, "Check Report File.(%s) \n", gReportFile);
 
-    // fix BUG-25556 : [codeSonar] fclose Ãß°¡.
+    // fix BUG-25556 : [codeSonar] fclose ì¶”ê°€.
     idlOS::fclose(sMapFP);
 }

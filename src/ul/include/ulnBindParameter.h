@@ -20,7 +20,7 @@
 #include <uln.h>
 #include <ulnPrivate.h>
 
-/* PROJ-1721 Name-based Binding  @aParamName¿ª √ﬂ∞° */
+/* PROJ-1721 Name-based Binding  @aParamNameÏùÑ Ï∂îÍ∞Ä */
 ACI_RC ulnBindParamBody(ulnFnContext *aFnContext,
                         acp_uint16_t  aParamNumber,
                         acp_char_t   *aParamName,

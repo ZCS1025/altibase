@@ -24,7 +24,7 @@
 
 %initial-action
 {
-    // parse option¿¡ µû¶ó ÃÊ±â »óÅÂ¸¦ ÁöÁ¤ÇØÁÜ.
+    // parse optionì— ë”°ë¼ ì´ˆê¸° ìƒíƒœë¥¼ ì§€ì •í•´ì¤Œ.
     switch ( gUlpProgOption.mOptParseInfo )
     {
         case PARSE_NONE :
@@ -52,23 +52,23 @@
 
 //============== global variables for PPparse ================//
 
-// parserÀÇ ½ÃÀÛ »óÅÂ¸¦ ÁöÁ¤ÇÏ´Â º¯¼ö.
+// parserì˜ ì‹œì‘ ìƒíƒœë¥¼ ì§€ì •í•˜ëŠ” ë³€ìˆ˜.
 SInt            gUlpPPStartCond = PP_ST_NONE;
-// parser°¡ ÀÌÀü »óÅÂ·Î º¹±ÍÇÏ±âÀ§ÇÑ º¯¼ö.
+// parserê°€ ì´ì „ ìƒíƒœë¡œ ë³µê·€í•˜ê¸°ìœ„í•œ ë³€ìˆ˜.
 SInt            gUlpPPPrevCond  = PP_ST_NONE;
 
-// PPIF parser¿¡¼­ »ç¿ëµÇ´Â ¹öÆÛ ½ÃÀÛ/³¡ pointer
+// PPIF parserì—ì„œ ì‚¬ìš©ë˜ëŠ” ë²„í¼ ì‹œì‘/ë pointer
 SChar *gUlpPPIFbufptr = NULL;
 SChar *gUlpPPIFbuflim = NULL;
 
-// ¾Æ·¡ÀÇ macro if Ã³¸® class¸¦ ulpPPLexer Å¬·¡½º ¾ÈÀ¸·Î ³Ö°í ½ÍÁö¸¸,
-// sunÀåºñ¿¡¼­ initial µÇÁö ¾Ê´Â ¾Ë¼ö¾ø´Â ¹®Á¦°¡ÀÖ¾î ¹ÛÀ¸·Î ´Ù»­.
+// ì•„ë˜ì˜ macro if ì²˜ë¦¬ classë¥¼ ulpPPLexer í´ë˜ìŠ¤ ì•ˆìœ¼ë¡œ ë„£ê³  ì‹¶ì§€ë§Œ,
+// sunì¥ë¹„ì—ì„œ initial ë˜ì§€ ì•ŠëŠ” ì•Œìˆ˜ì—†ëŠ” ë¬¸ì œê°€ìˆì–´ ë°–ìœ¼ë¡œ ë‹¤ëºŒ.
 ulpPPifstackMgr *gUlpPPifstackMgr[MAX_HEADER_FILE_NUM];
 // gUlpPPifstackMgr index
 SInt             gUlpPPifstackInd = -1;
 
 /* externs of PPLexer */
-// include header ÆÄ½ÌÁßÀÎÁö ¿©ºÎ.
+// include header íŒŒì‹±ì¤‘ì¸ì§€ ì—¬ë¶€.
 extern idBool        gUlpPPisCInc;
 extern idBool        gUlpPPisSQLInc;
 
@@ -78,7 +78,7 @@ extern ulpCodeGen    gUlpCodeGen;
 extern iduMemory    *gUlpMem;
 // Macro table
 extern ulpMacroTable gUlpMacroT;
-// preprocessor parsing Áß ¹ß»ıÇÑ ¿¡·¯¿¡´ëÇÑ ÄÚµåÁ¤º¸.
+// preprocessor parsing ì¤‘ ë°œìƒí•œ ì—ëŸ¬ì—ëŒ€í•œ ì½”ë“œì •ë³´.
 extern SChar        *gUlpPPErrCode;
 
 //============================================================//
@@ -86,7 +86,7 @@ extern SChar        *gUlpPPErrCode;
 
 //============ Function declarations for PPparse =============//
 
-// Macro if ±¸¹® Ã³¸®¸¦ À§ÇÑ parse ÇÔ¼ö
+// Macro if êµ¬ë¬¸ ì²˜ë¦¬ë¥¼ ìœ„í•œ parse í•¨ìˆ˜
 extern SInt PPIFparse ( void *aBuf, SInt *aRes );
 extern int  PPlex  ( YYSTYPE *lvalp );
 extern void PPerror( const SChar* aMsg );
@@ -151,13 +151,13 @@ preprocessor
     :
     | preprocessor Emsql_grammar
     {
-        /* ÀÌÀü »óÅÂ·Î º¹±Í SKIP_NONE »óÅÂ È¤Àº MACRO»óÅÂ ¿¡¼­ emsql±¸¹®À» ÆÄ½ÌÇÒ ¼ö ÀÖ±â¶§¹® */
+        /* ì´ì „ ìƒíƒœë¡œ ë³µê·€ SKIP_NONE ìƒíƒœ í˜¹ì€ MACROìƒíƒœ ì—ì„œ emsqlêµ¬ë¬¸ì„ íŒŒì‹±í•  ìˆ˜ ìˆê¸°ë•Œë¬¸ */
         gUlpPPStartCond = gUlpPPPrevCond;
     }
     | preprocessor Macro_grammar
     {
-        /* macro Á¶°Ç¹®ÀÇ °æ¿ì ÂüÀÌ¸é MACRO»óÅÂ, °ÅÁşÀÌ¸é MACRO_IFSKIP »óÅÂ·Î
-         * ÀüÀÌ µÈ´Ù. ³ª¸ÓÁö °æ¿ì´Â MACRO»óÅÂ·Î ÀüÀÌµÊ. */
+        /* macro ì¡°ê±´ë¬¸ì˜ ê²½ìš° ì°¸ì´ë©´ MACROìƒíƒœ, ê±°ì§“ì´ë©´ MACRO_IFSKIP ìƒíƒœë¡œ
+         * ì „ì´ ëœë‹¤. ë‚˜ë¨¸ì§€ ê²½ìš°ëŠ” MACROìƒíƒœë¡œ ì „ì´ë¨. */
     }
     ;
 
@@ -167,39 +167,39 @@ Emsql_grammar
         /* EXEC SQL INCLUDE ... */
         SChar sStrtmp[MAX_FILE_PATH_LEN];
 
-        // ³»ÀåµÉ Çì´õÆÄÀÏÀÇ ½ÃÀÛÀ» ¾Ë¸°´Ù. my girlfriend
+        // ë‚´ì¥ë  í—¤ë”íŒŒì¼ì˜ ì‹œì‘ì„ ì•Œë¦°ë‹¤. my girlfriend
         idlOS::snprintf( sStrtmp, MAX_FILE_PATH_LEN, "@$LOVELY.K.J.H$ (%s)\n",
                          gUlpProgOption.ulpGetIncList() );
         WRITESTR2BUFPP( sStrtmp );
 
-        /* BUG-27683 : iostream »ç¿ë Á¦°Å */
-        // 0. flex ¹öÆÛ »óÅÂ ÀúÀå.
+        /* BUG-27683 : iostream ì‚¬ìš© ì œê±° */
+        // 0. flex ë²„í¼ ìƒíƒœ ì €ì¥.
         ulpPPSaveBufferState();
 
         gUlpPPisSQLInc = ID_TRUE;
 
-        // 1. doPPparse()¸¦ ÀçÈ£ÃâÇÑ´Ù.
+        // 1. doPPparse()ë¥¼ ì¬í˜¸ì¶œí•œë‹¤.
         doPPparse( gUlpProgOption.ulpGetIncList() );
 
         gUlpPPisSQLInc = ID_FALSE;
 
-        // ³»ÀåµÉ Çì´õÆÄÀÏÀÇ ³¡À» ¾Ë¸°´Ù.
+        // ë‚´ì¥ë  í—¤ë”íŒŒì¼ì˜ ëì„ ì•Œë¦°ë‹¤.
         WRITESTR2BUFPP((SChar *)"#$LOVELY.K.J.H$\n");
 
-        // 2. precompiler¸¦ ½ÇÇàÇÑ directory¸¦ current path·Î Àçsetting
+        // 2. precompilerë¥¼ ì‹¤í–‰í•œ directoryë¥¼ current pathë¡œ ì¬setting
         idlOS::strcpy( gUlpProgOption.mCurrentPath, gUlpProgOption.mStartPath );
     }
     | Emsql_include_option
     {
         /* EXEC SQL OPTION( INCLUDE = ... ) */
-        // ÇÏÀ§ ³ëµå¿¡¼­ Ã³¸®ÇÔ.
+        // í•˜ìœ„ ë…¸ë“œì—ì„œ ì²˜ë¦¬í•¨.
     }
     ;
 
 Emsql_include
     : EM_INCLUDE EM_LBRAC EM_FILENAME EM_RBRAC EM_SEMI
     {
-        // Emsql_include ¹®¹ıÀº Á¦ÀÏ µÚ¿¡ ¹İµå½Ã ';' °¡ ¿Í¾ßÇÔ.
+        // Emsql_include ë¬¸ë²•ì€ ì œì¼ ë’¤ì— ë°˜ë“œì‹œ ';' ê°€ ì™€ì•¼í•¨.
         // check exist header file in include paths
         if ( gUlpProgOption.ulpLookupHeader( $<strval>3, ID_FALSE )
              == IDE_FAILURE )
@@ -255,19 +255,19 @@ Emsql_include_path_list
 
         SChar sPath[MAX_FILE_PATH_LEN];
 
-        // path name ±æÀÌ ¿¡·¯ Ã¼Å© ÇÊ¿ä.
+        // path name ê¸¸ì´ ì—ëŸ¬ ì²´í¬ í•„ìš”.
         idlOS::strncpy( sPath, $<strval>1, MAX_FILE_PATH_LEN-1 );
 
-        // include path°¡ Ãß°¡µÇ¸é g_ProgOption.path¿¡ ÀúÀåÇÑ´Ù.
+        // include pathê°€ ì¶”ê°€ë˜ë©´ g_ProgOption.pathì— ì €ì¥í•œë‹¤.
         if ( sPath[0] == IDL_FILE_SEPARATOR )
         {
-            // Àı´ë°æ·ÎÀÎ °æ¿ì
+            // ì ˆëŒ€ê²½ë¡œì¸ ê²½ìš°
             idlOS::sprintf( gUlpProgOption.mIncludePathList[gUlpProgOption.mIncludePathCnt],
                             sPath );
         }
         else
         {
-            // »ó´ë°æ·ÎÀÎ °æ¿ì
+            // ìƒëŒ€ê²½ë¡œì¸ ê²½ìš°
               idlOS::sprintf( gUlpProgOption.mIncludePathList[gUlpProgOption.mIncludePathCnt],
                               "%s%c%s", gUlpProgOption.mCurrentPath, IDL_FILE_SEPARATOR, sPath);
         }
@@ -281,16 +281,16 @@ Emsql_include_path_list
 
         idlOS::strncpy( sPath, $<strval>3, MAX_FILE_PATH_LEN-1 );
 
-        // include path°¡ Ãß°¡µÇ¸é g_ProgOption.path¿¡ ÀúÀåÇÑ´Ù.
+        // include pathê°€ ì¶”ê°€ë˜ë©´ g_ProgOption.pathì— ì €ì¥í•œë‹¤.
         if ( sPath[0] == IDL_FILE_SEPARATOR )
         {
-            // Àı´ë°æ·ÎÀÎ °æ¿ì
+            // ì ˆëŒ€ê²½ë¡œì¸ ê²½ìš°
             idlOS::sprintf( gUlpProgOption.mIncludePathList[gUlpProgOption.mIncludePathCnt],
                             sPath );
         }
         else
         {
-            // »ó´ë°æ·ÎÀÎ °æ¿ì
+            // ìƒëŒ€ê²½ë¡œì¸ ê²½ìš°
               idlOS::sprintf( gUlpProgOption.mIncludePathList[gUlpProgOption.mIncludePathCnt],
                               "%s%c%s", gUlpProgOption.mCurrentPath, IDL_FILE_SEPARATOR, sPath);
         }
@@ -335,28 +335,28 @@ Macro_grammar
         }
         | Macro_ifdef
         {
-            /* macro Á¶°Ç¹®ÀÇ °æ¿ì ÂüÀÌ¸é MACRO»óÅÂ, °ÅÁşÀÌ¸é MACRO_IFSKIP »óÅÂ·Î
-             * ÀüÀÌ µÈ´Ù. */
+            /* macro ì¡°ê±´ë¬¸ì˜ ê²½ìš° ì°¸ì´ë©´ MACROìƒíƒœ, ê±°ì§“ì´ë©´ MACRO_IFSKIP ìƒíƒœë¡œ
+             * ì „ì´ ëœë‹¤. */
         }
         | Macro_ifndef
         {
-            /* macro Á¶°Ç¹®ÀÇ °æ¿ì ÂüÀÌ¸é MACRO»óÅÂ, °ÅÁşÀÌ¸é MACRO_IFSKIP »óÅÂ·Î
-             * ÀüÀÌ µÈ´Ù. */
+            /* macro ì¡°ê±´ë¬¸ì˜ ê²½ìš° ì°¸ì´ë©´ MACROìƒíƒœ, ê±°ì§“ì´ë©´ MACRO_IFSKIP ìƒíƒœë¡œ
+             * ì „ì´ ëœë‹¤. */
         }
         | Macro_if
         {
-            /* macro Á¶°Ç¹®ÀÇ °æ¿ì ÂüÀÌ¸é MACRO»óÅÂ, °ÅÁşÀÌ¸é MACRO_IFSKIP »óÅÂ·Î
-             * ÀüÀÌ µÈ´Ù. */
+            /* macro ì¡°ê±´ë¬¸ì˜ ê²½ìš° ì°¸ì´ë©´ MACROìƒíƒœ, ê±°ì§“ì´ë©´ MACRO_IFSKIP ìƒíƒœë¡œ
+             * ì „ì´ ëœë‹¤. */
         }
         | Macro_elif
         {
-            /* macro Á¶°Ç¹®ÀÇ °æ¿ì ÂüÀÌ¸é MACRO»óÅÂ, °ÅÁşÀÌ¸é MACRO_IFSKIP »óÅÂ·Î
-             * ÀüÀÌ µÈ´Ù. */
+            /* macro ì¡°ê±´ë¬¸ì˜ ê²½ìš° ì°¸ì´ë©´ MACROìƒíƒœ, ê±°ì§“ì´ë©´ MACRO_IFSKIP ìƒíƒœë¡œ
+             * ì „ì´ ëœë‹¤. */
         }
         | Macro_else
         {
-            /* macro Á¶°Ç¹®ÀÇ °æ¿ì ÂüÀÌ¸é MACRO»óÅÂ, °ÅÁşÀÌ¸é MACRO_IFSKIP »óÅÂ·Î
-             * ÀüÀÌ µÈ´Ù. */
+            /* macro ì¡°ê±´ë¬¸ì˜ ê²½ìš° ì°¸ì´ë©´ MACROìƒíƒœ, ê±°ì§“ì´ë©´ MACRO_IFSKIP ìƒíƒœë¡œ
+             * ì „ì´ ëœë‹¤. */
         }
         | Macro_endif
         ;
@@ -375,18 +375,18 @@ Macro_include
             else
             {
 
-                // ÇöÀç #include Ã³¸®´Ù.
+                // í˜„ì¬ #include ì²˜ë¦¬ë‹¤.
                 gUlpPPisCInc = ID_TRUE;
 
-                /* BUG-27683 : iostream »ç¿ë Á¦°Å */
-                // 2. flex ¹öÆÛ »óÅÂ ÀúÀå.
+                /* BUG-27683 : iostream ì‚¬ìš© ì œê±° */
+                // 2. flex ë²„í¼ ìƒíƒœ ì €ì¥.
                 ulpPPSaveBufferState();
-                // 3. doPPparse()¸¦ ÀçÈ£ÃâÇÑ´Ù.
+                // 3. doPPparse()ë¥¼ ì¬í˜¸ì¶œí•œë‹¤.
                 doPPparse( gUlpProgOption.ulpGetIncList() );
-                // Àü¿¡ #inlcude Ã³¸®ÁßÀÌ¾ú³ª? È®ÀÎÇÔ
+                // ì „ì— #inlcude ì²˜ë¦¬ì¤‘ì´ì—ˆë‚˜? í™•ì¸í•¨
                 gUlpPPisCInc = gUlpProgOption.ulpIsHeaderCInclude();
 
-                // 4. precompiler¸¦ ½ÇÇàÇÑ directory¸¦ current path·Î Àçsetting
+                // 4. precompilerë¥¼ ì‹¤í–‰í•œ directoryë¥¼ current pathë¡œ ì¬setting
                 idlOS::strcpy( gUlpProgOption.mCurrentPath, gUlpProgOption.mStartPath );
             }
 
@@ -403,17 +403,17 @@ Macro_include
             else
             {
 
-                // ÇöÀç #include Ã³¸®´Ù.
+                // í˜„ì¬ #include ì²˜ë¦¬ë‹¤.
                 gUlpPPisCInc = ID_TRUE;
-                /* BUG-27683 : iostream »ç¿ë Á¦°Å */
-                // 2. flex ¹öÆÛ »óÅÂ ÀúÀå.
+                /* BUG-27683 : iostream ì‚¬ìš© ì œê±° */
+                // 2. flex ë²„í¼ ìƒíƒœ ì €ì¥.
                 ulpPPSaveBufferState();
-                // 3. doPPparse()¸¦ ÀçÈ£ÃâÇÑ´Ù.
+                // 3. doPPparse()ë¥¼ ì¬í˜¸ì¶œí•œë‹¤.
                 doPPparse( gUlpProgOption.ulpGetIncList() );
-                // Àü¿¡ #inlcude Ã³¸®ÁßÀÌ¾ú³ª? È®ÀÎÇÔ
+                // ì „ì— #inlcude ì²˜ë¦¬ì¤‘ì´ì—ˆë‚˜? í™•ì¸í•¨
                 gUlpPPisCInc = gUlpProgOption.ulpIsHeaderCInclude();
 
-                // 4. precompiler¸¦ ½ÇÇàÇÑ directory¸¦ current path·Î Àçsetting
+                // 4. precompilerë¥¼ ì‹¤í–‰í•œ directoryë¥¼ current pathë¡œ ì¬setting
                 idlOS::strcpy( gUlpProgOption.mCurrentPath, gUlpProgOption.mStartPath );
             }
 
@@ -430,7 +430,7 @@ Macro_define
             //printf("ID=[%s], TEXT=[%s]\n",$<strval>2,sTmpDEFtext);
             if ( sTmpDEFtext[0] == '\0' )
             {
-                // macro symbol table¿¡ Ãß°¡ÇÔ.
+                // macro symbol tableì— ì¶”ê°€í•¨.
                 if( gUlpMacroT.ulpMDefine( $<strval>2, NULL, ID_FALSE ) == IDE_FAILURE )
                 {
                     ulpErrorMgr sErrorMgr;
@@ -443,7 +443,7 @@ Macro_define
             }
             else
             {
-                // macro symbol table¿¡ Ãß°¡ÇÔ.
+                // macro symbol tableì— ì¶”ê°€í•¨.
                 if( gUlpMacroT.ulpMDefine( $<strval>2, sTmpDEFtext, ID_FALSE ) == IDE_FAILURE )
                 {
                     ulpErrorMgr sErrorMgr;
@@ -458,15 +458,15 @@ Macro_define
         }
         | M_DEFINE M_FUNCTION
         {
-            // function macroÀÇ°æ¿ì ÀÎÀÚ Á¤º¸´Â µû·Î ÀúÀåµÇÁö ¾Ê´Â´Ù.
+            // function macroì˜ê²½ìš° ì¸ì ì •ë³´ëŠ” ë”°ë¡œ ì €ì¥ë˜ì§€ ì•ŠëŠ”ë‹¤.
             SChar sTmpDEFtext[ MAX_MACRO_DEFINE_CONTENT_LEN ];
 
             ulpPPEraseBN4MacroText( sTmpDEFtext, ID_FALSE );
 
-            // #define A() {...} ÀÌ¸é, macro id´Â AÀÌ´Ù.
+            // #define A() {...} ì´ë©´, macro idëŠ” Aì´ë‹¤.
             if ( sTmpDEFtext[0] == '\0' )
             {
-                // macro symbol table¿¡ Ãß°¡ÇÔ.
+                // macro symbol tableì— ì¶”ê°€í•¨.
                 if ( gUlpMacroT.ulpMDefine( $<strval>2, NULL, ID_TRUE ) == IDE_FAILURE )
                 {
                     ulpErrorMgr sErrorMgr;
@@ -479,7 +479,7 @@ Macro_define
             }
             else
             {
-                // macro symbol table¿¡ Ãß°¡ÇÔ.
+                // macro symbol tableì— ì¶”ê°€í•¨.
                 if ( gUlpMacroT.ulpMDefine( $<strval>2, sTmpDEFtext, ID_TRUE ) == IDE_FAILURE )
                 {
                     ulpErrorMgr sErrorMgr;
@@ -497,7 +497,7 @@ Macro_define
 Macro_undef
         : M_UNDEF M_IDENTIFIER
         {
-            // $<strval>2 ¸¦ macro symbol table¿¡¼­ »èÁ¦ ÇÑ´Ù.
+            // $<strval>2 ë¥¼ macro symbol tableì—ì„œ ì‚­ì œ í•œë‹¤.
             gUlpMacroT.ulpMUndef( $<strval>2 );
         }
         ;
@@ -511,22 +511,22 @@ Macro_if
             switch( gUlpPPifstackMgr[gUlpPPifstackInd]->ulpPrevIfStatus() )
             {
                 case PP_IF_IGNORE :
-                    // ´Ü¼øÈ÷ token¸¸ ¼Ò¸ğÇÏ´Â ¿ªÇÒÀÌ´Ù. PPIFparse È£ÃâÇÏÁö ¾Ê´Â´Ù.
+                    // ë‹¨ìˆœíˆ tokenë§Œ ì†Œëª¨í•˜ëŠ” ì—­í• ì´ë‹¤. PPIFparse í˜¸ì¶œí•˜ì§€ ì•ŠëŠ”ë‹¤.
                     ulpPPEraseBN4MacroText( sTmpExpBuf, ID_TRUE );
                     gUlpPPStartCond = PP_ST_MACRO_IF_SKIP;
-                    // if stack manager ¿¡ °á°ú Á¤º¸ push
+                    // if stack manager ì— ê²°ê³¼ ì •ë³´ push
                     gUlpPPifstackMgr[gUlpPPifstackInd]->ulpIfpush( PP_IF, PP_IF_IGNORE );
                     break;
 
                 case PP_IF_TRUE :
-                    // #if expression À» º¹»çÇØ¿Â´Ù.
+                    // #if expression ì„ ë³µì‚¬í•´ì˜¨ë‹¤.
                     ulpPPEraseBN4MacroText( sTmpExpBuf, ID_TRUE );
 
                     gUlpPPIFbufptr = sTmpExpBuf;
                     gUlpPPIFbuflim = sTmpExpBuf + idlOS::strlen(sTmpExpBuf);
                     if ( PPIFparse( sTmpExpBuf, &sVal ) != 0 )
                     {
-                        //error Ã³¸®
+                        //error ì²˜ë¦¬
                         ulpErrorMgr sErrorMgr;
 
                         ulpSetErrorCode( &sErrorMgr,
@@ -536,29 +536,29 @@ Macro_if
                     }
 
                     //idlOS::printf("## PPIF result value=%d\n",sVal);
-                    /* macro Á¶°Ç¹®ÀÇ °æ¿ì ÂüÀÌ¸é MACRO»óÅÂ, °ÅÁşÀÌ¸é MACRO_IFSKIP »óÅÂ·Î
-                    * ÀüÀÌ µÈ´Ù. */
+                    /* macro ì¡°ê±´ë¬¸ì˜ ê²½ìš° ì°¸ì´ë©´ MACROìƒíƒœ, ê±°ì§“ì´ë©´ MACRO_IFSKIP ìƒíƒœë¡œ
+                    * ì „ì´ ëœë‹¤. */
                     if ( sVal != 0 )
                     {
                         // true
                         gUlpPPStartCond = PP_ST_MACRO;
-                        // if stack manager ¿¡ °á°ú Á¤º¸ push
+                        // if stack manager ì— ê²°ê³¼ ì •ë³´ push
                         gUlpPPifstackMgr[gUlpPPifstackInd]->ulpIfpush( PP_IF, PP_IF_TRUE );
                     }
                     else
                     {
                         // false
                         gUlpPPStartCond = PP_ST_MACRO_IF_SKIP;
-                        // if stack manager ¿¡ °á°ú Á¤º¸ push
+                        // if stack manager ì— ê²°ê³¼ ì •ë³´ push
                         gUlpPPifstackMgr[gUlpPPifstackInd]->ulpIfpush( PP_IF, PP_IF_FALSE );
                     }
                     break;
 
                 case PP_IF_FALSE :
-                    // ´Ü¼øÈ÷ token¸¸ ¼Ò¸ğÇÏ´Â ¿ªÇÒÀÌ´Ù. PPIFparse È£ÃâÇÏÁö ¾Ê´Â´Ù.
+                    // ë‹¨ìˆœíˆ tokenë§Œ ì†Œëª¨í•˜ëŠ” ì—­í• ì´ë‹¤. PPIFparse í˜¸ì¶œí•˜ì§€ ì•ŠëŠ”ë‹¤.
                     ulpPPEraseBN4MacroText( sTmpExpBuf, ID_TRUE );
                     gUlpPPStartCond = PP_ST_MACRO_IF_SKIP;
-                    // if stack manager ¿¡ °á°ú Á¤º¸ push
+                    // if stack manager ì— ê²°ê³¼ ì •ë³´ push
                     gUlpPPifstackMgr[gUlpPPifstackInd]->ulpIfpush( PP_IF, PP_IF_IGNORE );
                     break;
 
@@ -574,11 +574,11 @@ Macro_elif
             SInt  sVal;
             SChar sTmpExpBuf[MAX_MACRO_IF_EXPR_LEN];
 
-            // #elif ¼ø¼­ ¹®¹ı °Ë»ç.
+            // #elif ìˆœì„œ ë¬¸ë²• ê²€ì‚¬.
             if ( gUlpPPifstackMgr[gUlpPPifstackInd]->ulpIfCheckGrammar( PP_ELIF )
                  == ID_FALSE )
             {
-                //error Ã³¸®
+                //error ì²˜ë¦¬
                 ulpErrorMgr sErrorMgr;
 
                 ulpSetErrorCode( &sErrorMgr,
@@ -590,18 +590,18 @@ Macro_elif
             switch( gUlpPPifstackMgr[gUlpPPifstackInd]->ulpPrevIfStatus() )
             {
                 case PP_IF_IGNORE :
-                    // ´Ü¼øÈ÷ token¸¸ ¼Ò¸ğÇÏ´Â ¿ªÇÒÀÌ´Ù. PPIFparse È£ÃâÇÏÁö ¾Ê´Â´Ù.
+                    // ë‹¨ìˆœíˆ tokenë§Œ ì†Œëª¨í•˜ëŠ” ì—­í• ì´ë‹¤. PPIFparse í˜¸ì¶œí•˜ì§€ ì•ŠëŠ”ë‹¤.
                     ulpPPEraseBN4MacroText( sTmpExpBuf, ID_TRUE );
                     gUlpPPStartCond = PP_ST_MACRO_IF_SKIP;
-                    // if stack manager ¿¡ °á°ú Á¤º¸ push
+                    // if stack manager ì— ê²°ê³¼ ì •ë³´ push
                     gUlpPPifstackMgr[gUlpPPifstackInd]->ulpIfpush( PP_ELIF, PP_IF_IGNORE );
                     break;
 
                 case PP_IF_TRUE :
-                    // ´Ü¼øÈ÷ token¸¸ ¼Ò¸ğÇÏ´Â ¿ªÇÒÀÌ´Ù. PPIFparse È£ÃâÇÏÁö ¾Ê´Â´Ù.
+                    // ë‹¨ìˆœíˆ tokenë§Œ ì†Œëª¨í•˜ëŠ” ì—­í• ì´ë‹¤. PPIFparse í˜¸ì¶œí•˜ì§€ ì•ŠëŠ”ë‹¤.
                     ulpPPEraseBN4MacroText( sTmpExpBuf, ID_TRUE );
                     gUlpPPStartCond = PP_ST_MACRO_IF_SKIP;
-                    // if stack manager ¿¡ °á°ú Á¤º¸ push
+                    // if stack manager ì— ê²°ê³¼ ì •ë³´ push
                     gUlpPPifstackMgr[gUlpPPifstackInd]->ulpIfpush( PP_ELIF, PP_IF_IGNORE );
                     break;
 
@@ -613,7 +613,7 @@ Macro_elif
                     //idlOS::printf("## start PPELIF parser text:[%s]\n",sTmpExpBuf);
                     if ( PPIFparse( sTmpExpBuf, &sVal ) != 0 )
                     {
-                        //error Ã³¸®
+                        //error ì²˜ë¦¬
                         ulpErrorMgr sErrorMgr;
 
                         ulpSetErrorCode( &sErrorMgr,
@@ -623,18 +623,18 @@ Macro_elif
                     }
                     //idlOS::printf("## PPELIF result value=%d\n",sVal);
 
-                    /* macro Á¶°Ç¹®ÀÇ °æ¿ì ÂüÀÌ¸é MACRO»óÅÂ, °ÅÁşÀÌ¸é MACRO_IFSKIP »óÅÂ·Î
-                     * ÀüÀÌ µÈ´Ù. */
+                    /* macro ì¡°ê±´ë¬¸ì˜ ê²½ìš° ì°¸ì´ë©´ MACROìƒíƒœ, ê±°ì§“ì´ë©´ MACRO_IFSKIP ìƒíƒœë¡œ
+                     * ì „ì´ ëœë‹¤. */
                     if ( sVal != 0 )
                     {
                         gUlpPPStartCond = PP_ST_MACRO;
-                        // if stack manager ¿¡ °á°ú Á¤º¸ push
+                        // if stack manager ì— ê²°ê³¼ ì •ë³´ push
                         gUlpPPifstackMgr[gUlpPPifstackInd]->ulpIfpush( PP_ELIF, PP_IF_TRUE );
                     }
                     else
                     {
                         gUlpPPStartCond = PP_ST_MACRO_IF_SKIP;
-                        // if stack manager ¿¡ °á°ú Á¤º¸ push
+                        // if stack manager ì— ê²°ê³¼ ì •ë³´ push
                         gUlpPPifstackMgr[gUlpPPifstackInd]->ulpIfpush( PP_ELIF, PP_IF_FALSE );
                     }
                     break;
@@ -653,14 +653,14 @@ Macro_ifdef
             {
                 case PP_IF_IGNORE :
                     gUlpPPStartCond = PP_ST_MACRO_IF_SKIP;
-                    // if stack manager ¿¡ °á°ú Á¤º¸ push
+                    // if stack manager ì— ê²°ê³¼ ì •ë³´ push
                     gUlpPPifstackMgr[gUlpPPifstackInd]->ulpIfpush( PP_IFDEF, PP_IF_IGNORE );
                     break;
 
                 case PP_IF_TRUE :
-                    /* BUG-28162 : SESC_DECLARE ºÎÈ°  */
-                    // pare°¡ full ÀÌ¾Æ´Ï°í, SESC_DECLARE°¡ ¿À°í, #includeÃ³¸®°¡ ¾Æ´Ò¶§
-                    // #ifdef SESC_DECLARE ¿¹ÀüÃ³·³ Ã³¸®µÊ.
+                    /* BUG-28162 : SESC_DECLARE ë¶€í™œ  */
+                    // pareê°€ full ì´ì•„ë‹ˆê³ , SESC_DECLAREê°€ ì˜¤ê³ , #includeì²˜ë¦¬ê°€ ì•„ë‹ë•Œ
+                    // #ifdef SESC_DECLARE ì˜ˆì „ì²˜ëŸ¼ ì²˜ë¦¬ë¨.
                     if( (gUlpProgOption.mOptParseInfo != PARSE_FULL) &&
                         (idlOS::strcmp( $<strval>2, "SESC_DECLARE" ) == 0 ) &&
                         (gUlpPPisCInc != ID_TRUE) )
@@ -671,19 +671,19 @@ Macro_ifdef
                     }
                     else
                     {
-                        // $<strval>2 ¸¦ macro symbol table¿¡ Á¸ÀçÇÏ´ÂÁö È®ÀÎÇÑ´Ù.
+                        // $<strval>2 ë¥¼ macro symbol tableì— ì¡´ì¬í•˜ëŠ”ì§€ í™•ì¸í•œë‹¤.
                         if ( gUlpMacroT.ulpMLookup($<strval>2) != NULL )
                         {
-                            // Á¸ÀçÇÑ´Ù
+                            // ì¡´ì¬í•œë‹¤
                             gUlpPPStartCond = PP_ST_MACRO;
-                            // if stack manager ¿¡ °á°ú Á¤º¸ push
+                            // if stack manager ì— ê²°ê³¼ ì •ë³´ push
                             gUlpPPifstackMgr[gUlpPPifstackInd]->ulpIfpush( PP_IFDEF, PP_IF_TRUE );
                         }
                         else
                         {
-                            // Á¸Àç¾ÈÇÑ´Ù
+                            // ì¡´ì¬ì•ˆí•œë‹¤
                             gUlpPPStartCond = PP_ST_MACRO_IF_SKIP;
-                            // if stack manager ¿¡ °á°ú Á¤º¸ push
+                            // if stack manager ì— ê²°ê³¼ ì •ë³´ push
                             gUlpPPifstackMgr[gUlpPPifstackInd]->ulpIfpush( PP_IFDEF, PP_IF_FALSE );
                         }
                     }
@@ -691,7 +691,7 @@ Macro_ifdef
 
                 case PP_IF_FALSE :
                     gUlpPPStartCond = PP_ST_MACRO_IF_SKIP;
-                    // if stack manager ¿¡ °á°ú Á¤º¸ push
+                    // if stack manager ì— ê²°ê³¼ ì •ë³´ push
                     gUlpPPifstackMgr[gUlpPPifstackInd]->ulpIfpush( PP_IFDEF, PP_IF_IGNORE );
                     break;
 
@@ -708,31 +708,31 @@ Macro_ifndef
             {
                 case PP_IF_IGNORE :
                     gUlpPPStartCond = PP_ST_MACRO_IF_SKIP;
-                    // if stack manager ¿¡ °á°ú Á¤º¸ push
+                    // if stack manager ì— ê²°ê³¼ ì •ë³´ push
                     gUlpPPifstackMgr[gUlpPPifstackInd]->ulpIfpush( PP_IFNDEF, PP_IF_IGNORE );
                     break;
 
                 case PP_IF_TRUE :
-                    // $<strval>2 ¸¦ macro symbol table¿¡ Á¸ÀçÇÏ´ÂÁö È®ÀÎÇÑ´Ù.
+                    // $<strval>2 ë¥¼ macro symbol tableì— ì¡´ì¬í•˜ëŠ”ì§€ í™•ì¸í•œë‹¤.
                     if ( gUlpMacroT.ulpMLookup($<strval>2) != NULL )
                     {
-                        // Á¸ÀçÇÑ´Ù
+                        // ì¡´ì¬í•œë‹¤
                         gUlpPPStartCond = PP_ST_MACRO_IF_SKIP;
-                        // if stack manager ¿¡ °á°ú Á¤º¸ push
+                        // if stack manager ì— ê²°ê³¼ ì •ë³´ push
                         gUlpPPifstackMgr[gUlpPPifstackInd]->ulpIfpush( PP_IFNDEF, PP_IF_FALSE );
                     }
                     else
                     {
-                        // Á¸Àç¾ÈÇÑ´Ù
+                        // ì¡´ì¬ì•ˆí•œë‹¤
                         gUlpPPStartCond = PP_ST_MACRO;
-                        // if stack manager ¿¡ °á°ú Á¤º¸ push
+                        // if stack manager ì— ê²°ê³¼ ì •ë³´ push
                         gUlpPPifstackMgr[gUlpPPifstackInd]->ulpIfpush( PP_IFNDEF, PP_IF_TRUE );
                     }
                     break;
 
                 case PP_IF_FALSE :
                     gUlpPPStartCond = PP_ST_MACRO_IF_SKIP;
-                    // if stack manager ¿¡ °á°ú Á¤º¸ push
+                    // if stack manager ì— ê²°ê³¼ ì •ë³´ push
                     gUlpPPifstackMgr[gUlpPPifstackInd]->ulpIfpush( PP_IFNDEF, PP_IF_IGNORE );
                     break;
 
@@ -745,11 +745,11 @@ Macro_ifndef
 Macro_else
         : M_ELSE
         {
-            // #else ¼ø¼­ ¹®¹ı °Ë»ç.
+            // #else ìˆœì„œ ë¬¸ë²• ê²€ì‚¬.
             if ( gUlpPPifstackMgr[gUlpPPifstackInd]->ulpIfCheckGrammar( PP_ELSE )
                  == ID_FALSE )
             {
-                // error Ã³¸®
+                // error ì²˜ë¦¬
                 ulpErrorMgr sErrorMgr;
 
                 ulpSetErrorCode( &sErrorMgr,
@@ -763,13 +763,13 @@ Macro_else
                 case PP_IF_IGNORE :
                 case PP_IF_TRUE :
                     gUlpPPStartCond = PP_ST_MACRO_IF_SKIP;
-                    // if stack manager ¿¡ °á°ú Á¤º¸ push
+                    // if stack manager ì— ê²°ê³¼ ì •ë³´ push
                     gUlpPPifstackMgr[gUlpPPifstackInd]->ulpIfpush( PP_ELSE, PP_IF_IGNORE );
                     break;
 
                 case PP_IF_FALSE :
                     gUlpPPStartCond = PP_ST_MACRO;
-                    // if stack manager ¿¡ °á°ú Á¤º¸ push
+                    // if stack manager ì— ê²°ê³¼ ì •ë³´ push
                     gUlpPPifstackMgr[gUlpPPifstackInd]->ulpIfpush( PP_ELSE, PP_IF_TRUE );
                     break;
 
@@ -784,11 +784,11 @@ Macro_endif
         {
             idBool sSescDEC;
 
-            // #endif ¼ø¼­ ¹®¹ı °Ë»ç.
+            // #endif ìˆœì„œ ë¬¸ë²• ê²€ì‚¬.
             if ( gUlpPPifstackMgr[gUlpPPifstackInd]->ulpIfCheckGrammar( PP_ENDIF )
                  == ID_FALSE )
             {
-                // error Ã³¸®
+                // error ì²˜ë¦¬
                 ulpErrorMgr sErrorMgr;
 
                 ulpSetErrorCode( &sErrorMgr,
@@ -797,25 +797,25 @@ Macro_endif
                 PPerror( ulpGetErrorMSG(&sErrorMgr) );
             }
 
-            /* BUG-28162 : SESC_DECLARE ºÎÈ°  */
-            // if stack À» ÀÌÀü Á¶°Ç¹® ±îÁö pop ÇÑ´Ù.
+            /* BUG-28162 : SESC_DECLARE ë¶€í™œ  */
+            // if stack ì„ ì´ì „ ì¡°ê±´ë¬¸ ê¹Œì§€ pop í•œë‹¤.
             sSescDEC = gUlpPPifstackMgr[gUlpPPifstackInd]->ulpIfpop4endif();
 
             if( sSescDEC == ID_TRUE )
             {
-                //#endif ¸¦ ¾Æ·¡ stringÀ¸·Î ¹Ù²ãÁØ´Ù.
+                //#endif ë¥¼ ì•„ë˜ stringìœ¼ë¡œ ë°”ê¿”ì¤€ë‹¤.
                 WRITESTR2BUFPP((SChar *)"EXEC SQL END DECLARE SECTION;");
             }
 
-            /* BUG-27961 : preprocessorÀÇ ÁßÃ¸ #ifÃ³¸®½Ã #endif ´ÙÀ½¼Ò½º ¹«Á¶°Ç Ãâ·ÂÇÏ´Â ¹ö±×  */
+            /* BUG-27961 : preprocessorì˜ ì¤‘ì²© #ifì²˜ë¦¬ì‹œ #endif ë‹¤ìŒì†ŒìŠ¤ ë¬´ì¡°ê±´ ì¶œë ¥í•˜ëŠ” ë²„ê·¸  */
             if( gUlpPPifstackMgr[gUlpPPifstackInd]->ulpIfneedSkip4Endif() == ID_TRUE )
             {
-                // Ãâ·Â ÇÏÁö¸¶¶ó.
+                // ì¶œë ¥ í•˜ì§€ë§ˆë¼.
                 gUlpPPStartCond = PP_ST_MACRO_IF_SKIP;
             }
             else
             {
-                // Ãâ·Â ÇØ¶ó.
+                // ì¶œë ¥ í•´ë¼.
                 gUlpPPStartCond = PP_ST_MACRO;
             }
         }

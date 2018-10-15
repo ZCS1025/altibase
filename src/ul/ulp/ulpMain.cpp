@@ -17,28 +17,28 @@
 /***********************************************************************
  * APRE C/C++ precompiler
  *
- *    APRE ÀÇ ±¸Á¶´Â Å©°Ô ÆÄ¼­, ÄÚµå»ı¼º±â, ±×¸®°í APRE library·Î ±¸¼ºµÈ´Ù.
+ *    APRE ì˜ êµ¬ì¡°ëŠ” í¬ê²Œ íŒŒì„œ, ì½”ë“œìƒì„±ê¸°, ê·¸ë¦¬ê³  APRE libraryë¡œ êµ¬ì„±ëœë‹¤.
  *
- *    1. ÆÄ¼­
- *          - ulpPreprocl/y    ; Macro ÆÄ½ÌÀ» ´ã´çÇÔ.
- *          - ulpPreprocIfl/y  ; Macro Á¶°ÇÀıÀÇ ÆÄ½ÌÀ» ´ã´çÇÔ.
- *          - ulpCompl/y       ; ³»Àå SQL±¸¹®°ú C¾ğ¾î ÆÄ½ÌÀ» ´ã´çÇÔ.
- *    1.1. ÆÄ½Ì Ã³¸® °úÁ¤
- *          - ulpPreprocl/y ¿¡¼­ Macro ÆÄ½ÌÀ» ÇÏ¸é¼­ #if¿Í °°Àº Á¶°ÇÀıÀ» ¸¸³ª¸é ulpPreprocIfl/y
- *            ÆÄ¼­¸¦ È£ÃâÇÏ¿© °á°ú°ªÀ» ¾ò¾î¿Â´Ù.
- *          - ulpPreprocl/y ¿¡¼­ Macro ÆÄ½ÌÀ» ¸¶Ä¡¸é macroÃ³¸®¸¦ ¿Ï·áÇÑ .pp ÆÄÀÏ(ÀÓ½ÃÆÄÀÏ)ÀÌ »ı¼ºµÈ´Ù.
- *          - ±×·±µÚ ulpCompl/y ÆÄ¼­´Â .pp¸¦ inputÀ¸·Î ³»Àå SQL±¸¹®°ú C¾ğ¾î ÆÄ½ÌÀ» ÇÑ´Ù.
- *            (ulpCompl/y ÆÄ¼­ ¿¡¼­µµ ºÎºĞÀûÀ¸·Î macro ÆÄ½ÌÀ» ÇÑ´Ù.)
- *          - ulpCompl/y ÆÄ½ÌÀÌ ¿Ï·áµÇ¸é .c/.cpp ÆÄÀÏÀÌ »ı¼ºµÈ¸ç .pp ÆÄÀÏÀº Á¦°ÅµÈ´Ù.
+ *    1. íŒŒì„œ
+ *          - ulpPreprocl/y    ; Macro íŒŒì‹±ì„ ë‹´ë‹¹í•¨.
+ *          - ulpPreprocIfl/y  ; Macro ì¡°ê±´ì ˆì˜ íŒŒì‹±ì„ ë‹´ë‹¹í•¨.
+ *          - ulpCompl/y       ; ë‚´ì¥ SQLêµ¬ë¬¸ê³¼ Cì–¸ì–´ íŒŒì‹±ì„ ë‹´ë‹¹í•¨.
+ *    1.1. íŒŒì‹± ì²˜ë¦¬ ê³¼ì •
+ *          - ulpPreprocl/y ì—ì„œ Macro íŒŒì‹±ì„ í•˜ë©´ì„œ #ifì™€ ê°™ì€ ì¡°ê±´ì ˆì„ ë§Œë‚˜ë©´ ulpPreprocIfl/y
+ *            íŒŒì„œë¥¼ í˜¸ì¶œí•˜ì—¬ ê²°ê³¼ê°’ì„ ì–»ì–´ì˜¨ë‹¤.
+ *          - ulpPreprocl/y ì—ì„œ Macro íŒŒì‹±ì„ ë§ˆì¹˜ë©´ macroì²˜ë¦¬ë¥¼ ì™„ë£Œí•œ .pp íŒŒì¼(ì„ì‹œíŒŒì¼)ì´ ìƒì„±ëœë‹¤.
+ *          - ê·¸ëŸ°ë’¤ ulpCompl/y íŒŒì„œëŠ” .ppë¥¼ inputìœ¼ë¡œ ë‚´ì¥ SQLêµ¬ë¬¸ê³¼ Cì–¸ì–´ íŒŒì‹±ì„ í•œë‹¤.
+ *            (ulpCompl/y íŒŒì„œ ì—ì„œë„ ë¶€ë¶„ì ìœ¼ë¡œ macro íŒŒì‹±ì„ í•œë‹¤.)
+ *          - ulpCompl/y íŒŒì‹±ì´ ì™„ë£Œë˜ë©´ .c/.cpp íŒŒì¼ì´ ìƒì„±ëœë©° .pp íŒŒì¼ì€ ì œê±°ëœë‹¤.
  *
- *    2. ÄÚµå»ı¼º±â
- *          - ulpGenCode.cpp   ; ÆÄ¼­¿¡¼­ ÆÄ½ÌÁß ÄÚµå»ı¼º¸ğµâÀÇ ÇÔ¼öµéÀ» È£ÃâÇÏ¿©
- *                               ÄÚµå¸¦ º¯È¯ÇÏ¿© °á°úÆÄÀÏ¿¡ ¾´´Ù.
+ *    2. ì½”ë“œìƒì„±ê¸°
+ *          - ulpGenCode.cpp   ; íŒŒì„œì—ì„œ íŒŒì‹±ì¤‘ ì½”ë“œìƒì„±ëª¨ë“ˆì˜ í•¨ìˆ˜ë“¤ì„ í˜¸ì¶œí•˜ì—¬
+ *                               ì½”ë“œë¥¼ ë³€í™˜í•˜ì—¬ ê²°ê³¼íŒŒì¼ì— ì“´ë‹¤.
  *
  *    3. APRE library
- *          - ./lib ¿¡ ÀÖ´Â ¸ğµç ÄÚµåµéÀ» Æ÷ÇÔÇÏ¸ç, apre¿¡¼­ ÀüÃ³¸®¸¦ ¸¶Ä£ º¯È¯µÈÄÚµå¿¡¼­
- *            »ç¿ëµÇ´Â interfaceµéÀ» Æ÷ÇÔÇÑ´Ù. ³»ºÎÀûÀ¸·Î ODBC cliÇÔ¼ö¸¦ È£ÃâÇÏ¿© SQL³»Àå±¸¹®µéÀÇ
- *            ±â´ÉÀ» ½ÇÇàÇÑ´Ù.
+ *          - ./lib ì— ìˆëŠ” ëª¨ë“  ì½”ë“œë“¤ì„ í¬í•¨í•˜ë©°, apreì—ì„œ ì „ì²˜ë¦¬ë¥¼ ë§ˆì¹œ ë³€í™˜ëœì½”ë“œì—ì„œ
+ *            ì‚¬ìš©ë˜ëŠ” interfaceë“¤ì„ í¬í•¨í•œë‹¤. ë‚´ë¶€ì ìœ¼ë¡œ ODBC clií•¨ìˆ˜ë¥¼ í˜¸ì¶œí•˜ì—¬ SQLë‚´ì¥êµ¬ë¬¸ë“¤ì˜
+ *            ê¸°ëŠ¥ì„ ì‹¤í–‰í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -58,17 +58,17 @@ int main( SInt argc, SChar **argv )
     gUlpProgOption.ulpInit();
 
     /*********************************
-     * 1. Command-line option Ã³¸®
-     *      : utpProgOption °´Ã¼¿¡¼­ Ã³¸®.
+     * 1. Command-line option ì²˜ë¦¬
+     *      : utpProgOption ê°ì²´ì—ì„œ ì²˜ë¦¬.
      *********************************/
 
-    /* ÁÖ¾îÁø optionµéÀ» Ã³¸®ÇÑ´Ù. */
+    /* ì£¼ì–´ì§„ optionë“¤ì„ ì²˜ë¦¬í•œë‹¤. */
     if ( gUlpProgOption.ulpParsingProgOption( argc, argv ) != IDE_SUCCESS )
     {
         idlOS::exit( 1 );
     }
 
-    /* Copywrite message¸¦ º¸¿©ÁØ´Ù. */
+    /* Copywrite messageë¥¼ ë³´ì—¬ì¤€ë‹¤. */
     if( gUlpProgOption.mOptSilent == ID_FALSE )
     {
         gUlpProgOption.ulpPrintCopyright();
@@ -88,30 +88,30 @@ int main( SInt argc, SChar **argv )
 
         gUlpProgOption.ulpAddPreDefinedMacro();
 
-        /* ÇöÀç Ã³¸®ÇÒ ³»ÀåSQL±¸¹® ÇÁ·Î±×·¥ file ¼³Á¤ & Áß°£file ¼³Á¤ & °á°úfile ¼³Á¤. */
+        /* í˜„ì¬ ì²˜ë¦¬í•  ë‚´ì¥SQLêµ¬ë¬¸ í”„ë¡œê·¸ë¨ file ì„¤ì • & ì¤‘ê°„file ì„¤ì • & ê²°ê³¼file ì„¤ì •. */
         gUlpProgOption.ulpSetInOutFiles( gUlpProgOption.mInFileList[ sI ] );
 
         /*********************************
         * 2. Do Preprocessing
         *********************************/
 
-        /* preprocessing output Áß°£ fileÀ» ¿¬´Ù. */
+        /* preprocessing output ì¤‘ê°„ fileì„ ì—°ë‹¤. */
         gUlpCodeGen.ulpGenOpenFile( gUlpProgOption.mTmpFile );
         gUlpErrDelFile = ERR_DEL_TMP_FILE;
 
         IDE_ASSERT(gUlpMem->getStatus( &sUlpMempos ) == IDE_SUCCESS);
 
-        /* PreprocessingÀ» ¼öÇàÇÑ´Ù.*/
+        /* Preprocessingì„ ìˆ˜í–‰í•œë‹¤.*/
         doPPparse( gUlpProgOption.mInFile );
 
         IDE_ASSERT(gUlpMem->setStatus( &sUlpMempos ) == IDE_SUCCESS);
 
-        /* ulpCodeGen °´Ã¼¸¦ ÃÊ±âÈ­ ½ÃÄÑÁØ´Ù. */
+        /* ulpCodeGen ê°ì²´ë¥¼ ì´ˆê¸°í™” ì‹œì¼œì¤€ë‹¤. */
         gUlpCodeGen.ulpGenClearAll();
 
         if ( gUlpProgOption.mDebugMacro == ID_TRUE )
         {
-            // macro tableÀ» º¸¿©ÁØ´Ù.
+            // macro tableì„ ë³´ì—¬ì¤€ë‹¤.
             gUlpMacroT.ulpMPrint();
         }
 
@@ -119,29 +119,29 @@ int main( SInt argc, SChar **argv )
         * 4. Do Precompiling
         *********************************/
 
-        /* BUG-28061 : preprocessingÀ»¸¶Ä¡¸é marco tableÀ» ÃÊ±âÈ­ÇÏ°í, *
-         *             ulpComp ¿¡¼­ Àç±¸ÃàÇÑ´Ù.                       */
-        // macro table ÃÊ±âÈ­.
+        /* BUG-28061 : preprocessingì„ë§ˆì¹˜ë©´ marco tableì„ ì´ˆê¸°í™”í•˜ê³ , *
+         *             ulpComp ì—ì„œ ì¬êµ¬ì¶•í•œë‹¤.                       */
+        // macro table ì´ˆê¸°í™”.
         gUlpMacroT.ulpFinalize();
         gUlpProgOption.ulpAddPreDefinedMacro();
 
-        /* precompiling output fileÀ» ¿¬´Ù. */
+        /* precompiling output fileì„ ì—°ë‹¤. */
         gUlpCodeGen.ulpGenOpenFile( gUlpProgOption.mOutFile );
         gUlpErrDelFile = ERR_DEL_ALL_FILE;
 
         IDE_ASSERT(gUlpMem->getStatus( &sUlpMempos ) == IDE_SUCCESS);
 
-        /* precompilingÀ» ¼öÇàÇÑ´Ù. */
+        /* precompilingì„ ìˆ˜í–‰í•œë‹¤. */
         doCOMPparse( gUlpProgOption.mTmpFile );
 
         IDE_ASSERT(gUlpMem->setStatus( &sUlpMempos ) == IDE_SUCCESS);
 
-        /* ulpCodeGen °´Ã¼¸¦ ÃÊ±âÈ­ ½ÃÄÑÁØ´Ù. */
+        /* ulpCodeGen ê°ì²´ë¥¼ ì´ˆê¸°í™” ì‹œì¼œì¤€ë‹¤. */
         gUlpCodeGen.ulpGenClearAll();
 
         if ( gUlpProgOption.mDebugPP != ID_TRUE )
         {
-            /* Áß°£ fileÀ» Á¦°ÅÇÑ´Ù. */
+            /* ì¤‘ê°„ fileì„ ì œê±°í•œë‹¤. */
             IDE_TEST_RAISE ( idlOS::remove( gUlpProgOption.mTmpFile ) != 0,
                              ERR_FILE_TMP_REMOVE );
         }
@@ -152,7 +152,7 @@ int main( SInt argc, SChar **argv )
 
         if ( gUlpProgOption.mDebugSymbol == ID_TRUE )
         {
-            // struct table °ú symbol table À» º¸¿©ÁØ´Ù.
+            // struct table ê³¼ symbol table ì„ ë³´ì—¬ì¤€ë‹¤.
             gUlpStructT.ulpPrintStructT();
             gUlpScopeT.ulpPrintAllSymT();
         }
@@ -170,7 +170,7 @@ int main( SInt argc, SChar **argv )
     /* iduMemory free */
     gUlpMem->destroy();
 
-    // bug-27661 : sun Àåºñ¿¡¼­ apre mainÇÔ¼ö exit ÇÒ¶§ SEGV
+    // bug-27661 : sun ì¥ë¹„ì—ì„œ apre mainí•¨ìˆ˜ exit í• ë•Œ SEGV
     idlOS::exit(0);
 
     IDE_EXCEPTION ( ERR_FILE_TMP_REMOVE );
@@ -185,7 +185,7 @@ int main( SInt argc, SChar **argv )
     }
     IDE_EXCEPTION_END;
 
-    // bug-27661 : sun Àåºñ¿¡¼­ apre mainÇÔ¼ö exit ÇÒ¶§ SEGV
+    // bug-27661 : sun ì¥ë¹„ì—ì„œ apre mainí•¨ìˆ˜ exit í• ë•Œ SEGV
     idlOS::exit(-1);
 }
 

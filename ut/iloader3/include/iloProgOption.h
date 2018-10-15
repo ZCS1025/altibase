@@ -44,11 +44,11 @@ public:
     
     SChar* GetDataFileName( iloBool isUpload );  //PROJ-1714
 
-    // BUG-26287: ¿É¼Ç Ã³¸®¹æ¹ı ÅëÀÏ
+    // BUG-26287: ì˜µì…˜ ì²˜ë¦¬ë°©ë²• í†µì¼
     void ReadEnvironment();
     void ReadServerProperties();
 
-    /* BUG-31387: ConnTypeÀ» Á¶Á¤ÇÏ°í °æ¿ì¿¡ µû¶ó °æ°í Ãâ·Â */
+    /* BUG-31387: ConnTypeì„ ì¡°ì •í•˜ê³  ê²½ìš°ì— ë”°ë¼ ê²½ê³  ì¶œë ¥ */
     void AdjustConnType( ALTIBASE_ILOADER_HANDLE aHandle );
 
     SInt IsValidOption( ALTIBASE_ILOADER_HANDLE aHandle );
@@ -61,7 +61,7 @@ public:
 
     void StrToUpper(SChar *aStr);
 
-    // BUG-17932: µµ¿ò¸» ÅëÀÏ
+    // BUG-17932: ë„ì›€ë§ í†µì¼
     static void PrintHelpScreen(ECommandType aType);
 
     SInt ExistError()   { return m_bErrorExist; }
@@ -96,8 +96,8 @@ public:
     SChar * GetSslCipher()   { return m_SslCipher; }
     SChar * GetSslVerify()   { return m_SslVerify; }
 
-    /* BUG-30693 : table ÀÌ¸§µé°ú owner ÀÌ¸§À» mtlMakeNameInFunc ÇÔ¼ö¸¦ ÀÌ¿ëÇÏ¿©
-       ´ë¹®ÀÚ·Î º¯°æÇØ¾ß ÇÒ °æ¿ì º¯°æÇÔ. */
+    /* BUG-30693 : table ì´ë¦„ë“¤ê³¼ owner ì´ë¦„ì„ mtlMakeNameInFunc í•¨ìˆ˜ë¥¼ ì´ìš©í•˜ì—¬
+       ëŒ€ë¬¸ìë¡œ ë³€ê²½í•´ì•¼ í•  ê²½ìš° ë³€ê²½í•¨. */
     void   makeTableNameInCLI(void);
 private:
     IDE_RC ValidateLOBOptions();
@@ -114,8 +114,8 @@ public:
     SInt         m_ShmId;
     SInt         m_SemId;
     
-    // BUG-26287: ¿É¼Ç Ã³¸®¹æ¹ı ÅëÀÏ
-    // -NLS_USE ¿É¼Ç Ãß°¡
+    // BUG-26287: ì˜µì…˜ ì²˜ë¦¬ë°©ë²• í†µì¼
+    // -NLS_USE ì˜µì…˜ ì¶”ê°€
     iloBool  m_bExist_NLS;
 
     SInt    m_bExist_b; // bad input checker
@@ -176,14 +176,14 @@ public:
     SInt    m_ArrayCount;
     
     SInt    m_bExist_parallel;      // PROJ-1714
-    SInt    m_ParallelCount;        // -Parallel ¿É¼Ç »ç¿ë½Ã »ç¿ëµÇ¸ç, ¼­¹ö¿¡ Á¢¼ÓÇÏ¿© ÇØ´ç Query¸¦ ½ÇÇàÇÏ´Â SessionÀÇ ¼ö¸¦ ³ªÅ¸³¿
+    SInt    m_ParallelCount;        // -Parallel ì˜µì…˜ ì‚¬ìš©ì‹œ ì‚¬ìš©ë˜ë©°, ì„œë²„ì— ì ‘ì†í•˜ì—¬ í•´ë‹¹ Queryë¥¼ ì‹¤í–‰í•˜ëŠ” Sessionì˜ ìˆ˜ë¥¼ ë‚˜íƒ€ëƒ„
     
     // PROJ-1760
     SInt    m_bExist_direct;   
-    SInt    m_directLogging;        //Direct Path Load½Ã Logging ModeÀÎÁö No Logging ModeÀÎÁö ±¸ºĞ..
+    SInt    m_directLogging;        //Direct Path Loadì‹œ Logging Modeì¸ì§€ No Logging Modeì¸ì§€ êµ¬ë¶„..
     SInt    m_bExist_ioParallel;       
-    SInt    m_ioParallelCount;      // -ioParallel ¿É¼Ç »ç¿ë½Ã »ç¿ëµÇ¸ç, Direct-Path Load ½Ã¿¡ 
-                                    // DPath Queue¿¡¼­ Page·Î ¾²´Â Thread ¼ö¸¦ ³ªÅ¸³¿
+    SInt    m_ioParallelCount;      // -ioParallel ì˜µì…˜ ì‚¬ìš©ì‹œ ì‚¬ìš©ë˜ë©°, Direct-Path Load ì‹œì— 
+                                    // DPath Queueì—ì„œ Pageë¡œ ì“°ëŠ” Thread ìˆ˜ë¥¼ ë‚˜íƒ€ëƒ„
 
     SInt    m_bExist_commit;
     SInt    m_CommitUnit;
@@ -191,7 +191,7 @@ public:
     SInt    m_bExist_errors;
     SInt    m_ErrorCount;
 
-    // BUG-18803 readsize ¿É¼Ç Ãß°¡
+    // BUG-18803 readsize ì˜µì…˜ ì¶”ê°€
     SInt    mReadSizeExist;
     SInt    mReadSzie;
 
@@ -227,24 +227,24 @@ public:
     SChar   mCSVFieldTerm;
     SChar   mCSVEnclosing;
 
-    /* use_lob_file ¿É¼Ç ÀÔ·Â ¿©ºÎ */
+    /* use_lob_file ì˜µì…˜ ì…ë ¥ ì—¬ë¶€ */
     iloBool  mExistUseLOBFile;
-    /* use_lob_file ¿É¼Ç */
+    /* use_lob_file ì˜µì…˜ */
     iloBool  mUseLOBFile;
 
-    /* lob_file_size ¿É¼Ç ÀÔ·Â ¿©ºÎ */
+    /* lob_file_size ì˜µì…˜ ì…ë ¥ ì—¬ë¶€ */
     iloBool  mExistLOBFileSize;
-    /* lob_file_size ¿É¼Ç */
+    /* lob_file_size ì˜µì…˜ */
     ULong   mLOBFileSize;
 
-    /* use_separate_files ¿É¼Ç ÀÔ·Â ¿©ºÎ */
+    /* use_separate_files ì˜µì…˜ ì…ë ¥ ì—¬ë¶€ */
     iloBool  mExistUseSeparateFiles;
-    /* use_separate_files ¿É¼Ç */
+    /* use_separate_files ì˜µì…˜ */
     iloBool  mUseSeparateFiles;
 
-    /* lob_indicator ¿É¼Ç ÀÔ·Â ¿©ºÎ */
+    /* lob_indicator ì˜µì…˜ ì…ë ¥ ì—¬ë¶€ */
     iloBool  mExistLOBIndicator;
-    /* lob_indicator ¿É¼Ç */
+    /* lob_indicator ì˜µì…˜ */
     SChar   mLOBIndicator[11];
 
     /* BUG-21332 */

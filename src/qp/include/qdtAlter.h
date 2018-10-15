@@ -30,13 +30,13 @@ class qdtAlter
 {
 private:
     
-    // Disk Data tablespace, Disk Temp Tablespace¿ë ALTER±¸¹®¿¡ ´ëÇÑ
-    // SMÀÇ Tablespace TypeÁ¶È¸
+    // Disk Data tablespace, Disk Temp Tablespaceìš© ALTERêµ¬ë¬¸ì— ëŒ€í•œ
+    // SMì˜ Tablespace Typeì¡°íšŒ
     static IDE_RC isDiskTBSType(smiTableSpaceType aQueryTBSType,
                                 smiTableSpaceType aStorageTBSType );
 
-    // Memory data tablespace¿ë ALTER±¸¹®¿¡ ´ëÇÑ
-    // SMÀÇ Tablespace TypeÁ¶È¸
+    // Memory data tablespaceìš© ALTERêµ¬ë¬¸ì— ëŒ€í•œ
+    // SMì˜ Tablespace Typeì¡°íšŒ
     static IDE_RC isMemTBSType(smiTableSpaceType aTBSType );
     
 public:
@@ -46,7 +46,7 @@ public:
     static IDE_RC validateModifyFile( qcStatement * aStatement );
     static IDE_RC validateAlterMemVolTBSAutoExtend(qcStatement * aStatement);
     static IDE_RC validateTBSOnlineOrOffline(qcStatement * aStatement);
-    //  TablespaceÀÇ Attribute Flag ¼³Á¤¿¡ ´ëÇÑ ValidationÇÔ¼ö
+    //  Tablespaceì˜ Attribute Flag ì„¤ì •ì— ëŒ€í•œ Validationí•¨ìˆ˜
     static IDE_RC validateAlterTBSAttrFlag(qcStatement * aStatement);
 
     static IDE_RC validateAlterTBSRename(qcStatement * aStatement);
@@ -64,7 +64,7 @@ public:
     static IDE_RC executeAlterMemoryTBSChkptPath(qcStatement * aStatement);
     static IDE_RC executeAlterMemVolTBSAutoExtend(qcStatement * aStatement);
 
-    // TablespaceÀÇ Attribute Flag ¼³Á¤¿¡ ´ëÇÑ ½ÇÇàÇÔ¼ö
+    // Tablespaceì˜ Attribute Flag ì„¤ì •ì— ëŒ€í•œ ì‹¤í–‰í•¨ìˆ˜
     static IDE_RC executeAlterTBSAttrFlag( qcStatement * aStatement );
 
     static IDE_RC executeAlterTBSRename(qcStatement * aStatement);

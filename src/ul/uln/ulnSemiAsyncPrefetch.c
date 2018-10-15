@@ -125,7 +125,7 @@ void ulnInitSemiAsyncPrefetch(ulnStmt *aStmt)
 }
 
 /**
- * Semi-async prefetch ±â´ÉÀÌ µ¿ÀÛµÉ ¼ö ÀÖ´ÂÁö ¿©ºÎ¸¦ È®ÀÎÇÑ´Ù.
+ * Semi-async prefetch ê¸°ëŠ¥ì´ ë™ì‘ë  ìˆ˜ ìˆëŠ”ì§€ ì—¬ë¶€ë¥¼ í™•ì¸í•œë‹¤.
  */
 acp_bool_t ulnCanSemiAsyncPrefetch(ulnFnContext *aFnContext)
 {
@@ -136,7 +136,7 @@ acp_bool_t ulnCanSemiAsyncPrefetch(ulnFnContext *aFnContext)
     ULN_FNCONTEXT_GET_DBC(aFnContext, sDbc);
 
     /* BUG-25579
-     * [CodeSonar::NullPointerDereference] ulnFetchReceiveFetchResult() ¿¡¼­ ¹ß»ı */
+     * [CodeSonar::NullPointerDereference] ulnFetchReceiveFetchResult() ì—ì„œ ë°œìƒ */
     ACE_ASSERT(sDbc != NULL);
 
     ACI_TEST_RAISE(ulnStmtGetAttrPrefetchAsync(sStmt) != ALTIBASE_PREFETCH_ASYNC_PREFERRED, NOT_ALLOWED);
@@ -157,9 +157,9 @@ acp_bool_t ulnCanSemiAsyncPrefetch(ulnFnContext *aFnContext)
 }
 
 /**
- * Auto-tuning À» µ¿ÀÛÇÒ ¼ö ÀÖ´ÂÁö ¿©ºÎ¸¦ È®ÀÎÇÑ´Ù. ¸¸¾à, auto-tuning µµÁß
- * ¿¡·¯°¡ ¹ß»ıÇÏ¿© auto-tuning ±â´ÉÀ» end ÇÏ¸é ULN_AUTO_TUNING_STATE_END »óÅÂ
- * (last state = ULN_AUTO_TUNING_STATE_FAILED)°¡ µÈ´Ù.
+ * Auto-tuning ì„ ë™ì‘í•  ìˆ˜ ìˆëŠ”ì§€ ì—¬ë¶€ë¥¼ í™•ì¸í•œë‹¤. ë§Œì•½, auto-tuning ë„ì¤‘
+ * ì—ëŸ¬ê°€ ë°œìƒí•˜ì—¬ auto-tuning ê¸°ëŠ¥ì„ end í•˜ë©´ ULN_AUTO_TUNING_STATE_END ìƒíƒœ
+ * (last state = ULN_AUTO_TUNING_STATE_FAILED)ê°€ ëœë‹¤.
  */
 acp_bool_t ulnCanSemiAsyncPrefetchAutoTuning(ulnFnContext *aFnContext)
 {
@@ -185,7 +185,7 @@ acp_bool_t ulnCanSemiAsyncPrefetchAutoTuning(ulnFnContext *aFnContext)
 }
 
 /**
- * »ç¿ëÀÚ°¡ ¼³Á¤ÇÑ auto-tuning °ü·Ã parameter µéÀ» trace logging ÇÑ´Ù.
+ * ì‚¬ìš©ìê°€ ì„¤ì •í•œ auto-tuning ê´€ë ¨ parameter ë“¤ì„ trace logging í•œë‹¤.
  */
 static void ulnTraceAutoTuningParameters(ulnFnContext *aFnContext)
 {
@@ -239,8 +239,8 @@ static void ulnTraceAutoTuningParameters(ulnFnContext *aFnContext)
 }
 
 /**
- * Auto-tuning Åë°è Á¤º¸¸¦ ¹ö¸°´Ù. ´Ü, ÀÌÀü¿¡ ¿¹ÃøÇÑ prefetch rows ¿Í
- * »óÅÂ Á¤º¸´Â À¯ÁöÇÑ´Ù.
+ * Auto-tuning í†µê³„ ì •ë³´ë¥¼ ë²„ë¦°ë‹¤. ë‹¨, ì´ì „ì— ì˜ˆì¸¡í•œ prefetch rows ì™€
+ * ìƒíƒœ ì •ë³´ëŠ” ìœ ì§€í•œë‹¤.
  */
 static void ulnPurgeStat(ulnSemiAsyncPrefetchAutoTuning *aAutoTuning)
 {
@@ -273,7 +273,7 @@ static void ulnPurgeStat(ulnSemiAsyncPrefetchAutoTuning *aAutoTuning)
 }
 
 /**
- * Network idle time (r time) À¸·Î d time °ú f time À» ºñ±³ ÃßÁ¤ÇÑ´Ù.
+ * Network idle time (r time) ìœ¼ë¡œ d time ê³¼ f time ì„ ë¹„êµ ì¶”ì •í•œë‹¤.
  */
 static ulnAutoTuningDecision ulnCompareAppLoadAndPrefetchTime(ulnSemiAsyncPrefetchAutoTuning *aAutoTuning)
 {
@@ -304,8 +304,8 @@ static ulnAutoTuningDecision ulnCompareAppLoadAndPrefetchTime(ulnSemiAsyncPrefet
 }
 
 /**
- * Auto-tuned prefetch rows ¸¦ ±â¹İÀ¸·Î ÃÖ´ë È®º¸µÇ¾î¾ß ÇÏ´Â
- * socket receive buffer ¸¦ ¼³Á¤ÇÑ´Ù.
+ * Auto-tuned prefetch rows ë¥¼ ê¸°ë°˜ìœ¼ë¡œ ìµœëŒ€ í™•ë³´ë˜ì–´ì•¼ í•˜ëŠ”
+ * socket receive buffer ë¥¼ ì„¤ì •í•œë‹¤.
  */
 static ACI_RC ulnAdjustAutoTunedSockRcvBuf(ulnFnContext                   *aFnContext,
                                            ulnSemiAsyncPrefetchAutoTuning *aAutoTuning)
@@ -413,7 +413,7 @@ static ACI_RC ulnAdjustAutoTunedSockRcvBuf(ulnFnContext                   *aFnCo
     while (0)
 
 /**
- * d < f (r = 0) ÀÎ °æ¿ìÀÌ¹Ç·Î prefetch rows ¸¦ Áõ°¡½ÃÅ²´Ù.
+ * d < f (r = 0) ì¸ ê²½ìš°ì´ë¯€ë¡œ prefetch rows ë¥¼ ì¦ê°€ì‹œí‚¨ë‹¤.
  */
 static void ulnFetchAutoTuningIncrease(ulnFnContext                   *aFnContext,
                                        ulnSemiAsyncPrefetchAutoTuning *aAutoTuning)
@@ -475,7 +475,7 @@ static void ulnFetchAutoTuningIncrease(ulnFnContext                   *aFnContex
 }
 
 /**
- * d > f (r > r_threshold_max) ÀÎ °æ¿ìÀÌ¹Ç·Î prefetch rows ¸¦ °¨¼Ò½ÃÅ²´Ù.
+ * d > f (r > r_threshold_max) ì¸ ê²½ìš°ì´ë¯€ë¡œ prefetch rows ë¥¼ ê°ì†Œì‹œí‚¨ë‹¤.
  */
 static void ulnFetchAutoTuningDecrease(ulnSemiAsyncPrefetchAutoTuning *aAutoTuning)
 {
@@ -541,7 +541,7 @@ static void ulnFetchAutoTuningDecrease(ulnSemiAsyncPrefetchAutoTuning *aAutoTuni
             ((acp_double_t)(aAutoTuning->mAppLoadTime + aAutoTuning->mSockReadTime) /
              (acp_double_t)aAutoTuning->mAppReadRows) * aAutoTuning->mFetchedRows;
 
-        /* ¾Æ·¡ º¯¼öµéÀº ¼ö½Ä ¿¬»ê¿¡ »ç¿ëµÇ¹Ç·Î ÄÚµå °¡µ¶¼ºÀ» À§ÇØ coding convention À» µû¸£Áö ¾Ê´Â´Ù. */
+        /* ì•„ë˜ ë³€ìˆ˜ë“¤ì€ ìˆ˜ì‹ ì—°ì‚°ì— ì‚¬ìš©ë˜ë¯€ë¡œ ì½”ë“œ ê°€ë…ì„±ì„ ìœ„í•´ coding convention ì„ ë”°ë¥´ì§€ ì•ŠëŠ”ë‹¤. */
         x2   = aAutoTuning->mLastFetchedRows;
         x1   = aAutoTuning->mFetchedRows;
         y2_f = aAutoTuning->mLastPrefetchTime;
@@ -591,7 +591,7 @@ static void ulnFetchAutoTuningDecrease(ulnSemiAsyncPrefetchAutoTuning *aAutoTuni
 }
 
 /**
- * Stable »óÅÂ ¶Ç´Â flooded »óÅÂÀÎÁö Ã¼Å©ÇÑ´Ù.
+ * Stable ìƒíƒœ ë˜ëŠ” flooded ìƒíƒœì¸ì§€ ì²´í¬í•œë‹¤.
  */
 static void ulnFetchAutoTuningCheckState(ulnFnContext                   *aFnContext,
                                          ulnSemiAsyncPrefetchAutoTuning *aAutoTuning)
@@ -688,7 +688,7 @@ static void ulnFetchAutoTuningCheckState(ulnFnContext                   *aFnCont
 }
 
 /**
- * Auto-tuning À» ½ÃÀÛÇÑ´Ù.
+ * Auto-tuning ì„ ì‹œì‘í•œë‹¤.
  */
 void ulnFetchBeginAutoTuning(ulnFnContext *aFnContext)
 {
@@ -713,7 +713,7 @@ void ulnFetchBeginAutoTuning(ulnFnContext *aFnContext)
 }
 
 /**
- * Socket receive buffer ·ÎºÎÅÍ read (or receive) ÀÌÀü¿¡ È£ÃâÇÏ¿© d time À» ÃøÁ¤ÇÑ´Ù.
+ * Socket receive buffer ë¡œë¶€í„° read (or receive) ì´ì „ì— í˜¸ì¶œí•˜ì—¬ d time ì„ ì¸¡ì •í•œë‹¤.
  */
 void ulnFetchAutoTuningBeforeReceive(ulnFnContext *aFnContext)
 {
@@ -738,7 +738,7 @@ void ulnFetchAutoTuningBeforeReceive(ulnFnContext *aFnContext)
 }
 
 /**
- * Auto-tuning À» ¼öÇàÇÏ¿© predicted prefetch rows ¸¦ ¹İÈ¯ÇÑ´Ù.
+ * Auto-tuning ì„ ìˆ˜í–‰í•˜ì—¬ predicted prefetch rows ë¥¼ ë°˜í™˜í•œë‹¤.
  */
 ACI_RC ulnFetchAutoTuning(ulnFnContext *aFnContext,
                           acp_uint32_t  aFetchedRows,
@@ -755,7 +755,7 @@ ACI_RC ulnFetchAutoTuning(ulnFnContext *aFnContext,
     ULN_FNCONTEXT_GET_DBC(aFnContext, sDbc);
 
     /* BUG-25579
-     * [CodeSonar::NullPointerDereference] ulnFetchReceiveFetchResult() ¿¡¼­ ¹ß»ı */
+     * [CodeSonar::NullPointerDereference] ulnFetchReceiveFetchResult() ì—ì„œ ë°œìƒ */
     ACE_ASSERT(sDbc != NULL);
 
     ACE_DASSERT(aPredictedPrefetchRows != NULL);
@@ -858,8 +858,8 @@ ACI_RC ulnFetchAutoTuning(ulnFnContext *aFnContext,
 }
 
 /**
- * Auto-tuning ÀÇ first prediction À¸·Î¼­,
- * ALTIBASE_PREFETCH_AUTO_TUNING_INIT ¶Ç´Â ALTIBASE_PREFETCH_ROWS ¼Ó¼º °ªÀ¸·Î ½ÃÀÛÇÑ´Ù.
+ * Auto-tuning ì˜ first prediction ìœ¼ë¡œì„œ,
+ * ALTIBASE_PREFETCH_AUTO_TUNING_INIT ë˜ëŠ” ALTIBASE_PREFETCH_ROWS ì†ì„± ê°’ìœ¼ë¡œ ì‹œì‘í•œë‹¤.
  */
 static ACI_RC ulnFetchAutoTuningStateFuncInit(ulnFnContext *aFnContext)
 {
@@ -897,7 +897,7 @@ static ACI_RC ulnFetchAutoTuningStateFuncInit(ulnFnContext *aFnContext)
 }
 
 /**
- * Network idle time À» ÃøÁ¤ÇÑ´Ù.
+ * Network idle time ì„ ì¸¡ì •í•œë‹¤.
  */
 static ACI_RC ulnFetchAutoTuningMeasureNetworkIdleTime(ulnSemiAsyncPrefetchAutoTuning *aAutoTuning)
 {
@@ -938,7 +938,7 @@ static ACI_RC ulnFetchAutoTuningMeasureNetworkIdleTime(ulnSemiAsyncPrefetchAutoT
 }
 
 /**
- * Tuning »óÅÂ·Î¼­, network idle time À» ±â¹İÀ¸·Î ÃÖÀûÀÇ prefetch rows ¸¦ Ã£´Â´Ù.
+ * Tuning ìƒíƒœë¡œì„œ, network idle time ì„ ê¸°ë°˜ìœ¼ë¡œ ìµœì ì˜ prefetch rows ë¥¼ ì°¾ëŠ”ë‹¤.
  */
 static ACI_RC ulnFetchAutoTuningStateFuncTuning(ulnFnContext *aFnContext)
 {
@@ -1033,7 +1033,7 @@ static ACI_RC ulnFetchAutoTuningStateFuncTuning(ulnFnContext *aFnContext)
 }
 
 /**
- * Flooded »óÅÂ·Î¼­, auto-tuning À» Æ÷±âÇÏ°í last stable prefetch rows ¸¦ Àû¿ëÇÑ´Ù.
+ * Flooded ìƒíƒœë¡œì„œ, auto-tuning ì„ í¬ê¸°í•˜ê³  last stable prefetch rows ë¥¼ ì ìš©í•œë‹¤.
  */
 static ACI_RC ulnFetchAutoTuningStateFuncFlooded(ulnFnContext *aFnContext)
 {
@@ -1060,8 +1060,8 @@ static ACI_RC ulnFetchAutoTuningStateFuncFlooded(ulnFnContext *aFnContext)
 }
 
 /**
- * Reset »óÅÂ·Î¼­, auto-tuning Åë°è Á¤º¸¸¦ ÃÊ±âÈ­ÇÑ´Ù.
- * ºñµ¿±â ¿äÃ» ÀÌÈÄ ¹Ì¸® read ÇÒ °æ¿ì auto-tuning Åë°è Á¤º¸°¡ ºÎÁ¤È®ÇÏ±â ¶§¹®¿¡ ÃÊ±âÈ­ ÇÑ´Ù.
+ * Reset ìƒíƒœë¡œì„œ, auto-tuning í†µê³„ ì •ë³´ë¥¼ ì´ˆê¸°í™”í•œë‹¤.
+ * ë¹„ë™ê¸° ìš”ì²­ ì´í›„ ë¯¸ë¦¬ read í•  ê²½ìš° auto-tuning í†µê³„ ì •ë³´ê°€ ë¶€ì •í™•í•˜ê¸° ë•Œë¬¸ì— ì´ˆê¸°í™” í•œë‹¤.
  */
 static ACI_RC ulnFetchAutoTuningStateFuncReset(ulnFnContext *aFnContext)
 {
@@ -1107,8 +1107,8 @@ static ACI_RC ulnFetchAutoTuningStateFuncReset(ulnFnContext *aFnContext)
 }
 
 /**
- * Auto-tuning Á¾·á ÈÄ ´Ù½Ã ½ÃÀÛÇÒ °æ¿ì,
- * ¸¶Áö¸· auto-tuned prefetch rows ¸¦ Àû¿ëÇÏ°í Åë°è/»óÅÂ Á¤º¸´Â ÃÊ±âÈ­ ÇÑ´Ù.
+ * Auto-tuning ì¢…ë£Œ í›„ ë‹¤ì‹œ ì‹œì‘í•  ê²½ìš°,
+ * ë§ˆì§€ë§‰ auto-tuned prefetch rows ë¥¼ ì ìš©í•˜ê³  í†µê³„/ìƒíƒœ ì •ë³´ëŠ” ì´ˆê¸°í™” í•œë‹¤.
  */
 static ACI_RC ulnFetchAutoTuningStateFuncEnd(ulnFnContext *aFnContext)
 {
@@ -1133,7 +1133,7 @@ static ACI_RC ulnFetchAutoTuningStateFuncEnd(ulnFnContext *aFnContext)
 }
 
 /**
- * ÇØ´ç »óÅÂ·Î auto-tuning ÇÒ °æ¿ì assert ¸¦ ¹ß»ı½ÃÅ²´Ù.
+ * í•´ë‹¹ ìƒíƒœë¡œ auto-tuning í•  ê²½ìš° assert ë¥¼ ë°œìƒì‹œí‚¨ë‹¤.
  */
 static ACI_RC ulnFetchAutoTuningStateFuncAssert(ulnFnContext *aFnContext)
 {
@@ -1145,7 +1145,7 @@ static ACI_RC ulnFetchAutoTuningStateFuncAssert(ulnFnContext *aFnContext)
 }
 
 /**
- * ´Ù¸¥ ÇÁ·ÎÅäÄİ¿¡ ÀÇÇØ ÀÌ¹Ì read ÇÑ °æ¿ì Åë°è Á¤º¸°¡ À¯¿ëÇÏÁö ¾ÊÀ¸¹Ç·Î reset ÇÑ´Ù.
+ * ë‹¤ë¥¸ í”„ë¡œí† ì½œì— ì˜í•´ ì´ë¯¸ read í•œ ê²½ìš° í†µê³„ ì •ë³´ê°€ ìœ ìš©í•˜ì§€ ì•Šìœ¼ë¯€ë¡œ reset í•œë‹¤.
  */
 void ulnFetchSkipAutoTuning(ulnFnContext *aFnContext)
 {
@@ -1163,7 +1163,7 @@ void ulnFetchSkipAutoTuning(ulnFnContext *aFnContext)
 }
 
 /**
- * ´ÙÀ½ result set ¿¡ ´ëÇØ auto-tuing ÇÒ °æ¿ì È£ÃâÇÑ´Ù.
+ * ë‹¤ìŒ result set ì— ëŒ€í•´ auto-tuing í•  ê²½ìš° í˜¸ì¶œí•œë‹¤.
  */
 void ulnFetchNextAutoTuning(ulnFnContext *aFnContext)
 {
@@ -1173,7 +1173,7 @@ void ulnFetchNextAutoTuning(ulnFnContext *aFnContext)
 }
 
 /**
- * Server cursor close µÉ °æ¿ì auto-tuning À» Á¾·áÇÑ´Ù.
+ * Server cursor close ë  ê²½ìš° auto-tuning ì„ ì¢…ë£Œí•œë‹¤.
  */
 ACI_RC ulnFetchEndAutoTuning(ulnFnContext *aFnContext)
 {
@@ -1184,7 +1184,7 @@ ACI_RC ulnFetchEndAutoTuning(ulnFnContext *aFnContext)
     ULN_FNCONTEXT_GET_DBC(aFnContext, sDbc);
 
     /* BUG-25579
-     * [CodeSonar::NullPointerDereference] ulnFetchReceiveFetchResult() ¿¡¼­ ¹ß»ı */
+     * [CodeSonar::NullPointerDereference] ulnFetchReceiveFetchResult() ì—ì„œ ë°œìƒ */
     ACE_ASSERT(sDbc != NULL);
 
     ACE_DASSERT(sAutoTuning != NULL);
@@ -1225,7 +1225,7 @@ ACI_RC ulnFetchEndAutoTuning(ulnFnContext *aFnContext)
 }
 
 /**
- * Auto-tuning ¿¡ ÀÇÇØ socket receive buffer °¡ Á¶ÀıµÇ¾ú´ÂÁö ¿©ºÎ¸¦ È®ÀÎÇÑ´Ù.
+ * Auto-tuning ì— ì˜í•´ socket receive buffer ê°€ ì¡°ì ˆë˜ì—ˆëŠ”ì§€ ì—¬ë¶€ë¥¼ í™•ì¸í•œë‹¤.
  */
 acp_bool_t ulnFetchIsAutoTunedSockRcvBuf(ulnDbc *aDbc)
 {

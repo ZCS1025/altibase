@@ -20,7 +20,7 @@
  *
  * Description :
  *     TASK-4990 changing the method of collecting index statistics
- *     ÇÑ IndexÀÇ Åë°èÁ¤º¸¸¦ ¼öÁıÇÑ´Ù. 
+ *     í•œ Indexì˜ í†µê³„ì •ë³´ë¥¼ ìˆ˜ì§‘í•œë‹¤. 
  *
  * Syntax :
  *    GATHER_INDEX_STATS (
@@ -62,7 +62,7 @@ static IDE_RC qsfEstimate( mtcNode*     aNode,
 mtfModule qsfGatherIndexStatsModule = {
     1|MTC_NODE_OPERATOR_MISC|MTC_NODE_VARIABLE_TRUE,
     ~0,
-    1.0,                    // default selectivity (ºñ±³ ¿¬»êÀÚ ¾Æ´Ô)
+    1.0,                    // default selectivity (ë¹„êµ ì—°ì‚°ì ì•„ë‹˜)
     qsfFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -229,7 +229,7 @@ IDE_RC qsfCalculate_GatherIndexStats( mtcNode*     aNode,
     }
     else
     {
-        // ÀÌÀü PlanµéÀ» invalidate ½ÃÅ³ ÇÊ¿ä°¡ ¾ø´Ù.
+        // ì´ì „ Planë“¤ì„ invalidate ì‹œí‚¬ í•„ìš”ê°€ ì—†ë‹¤.
         // Nothing to do.
     }
 
@@ -277,7 +277,7 @@ IDE_RC qsfCalculate_GatherIndexStats( mtcNode*     aNode,
     IDE_TEST( smiValidateAndLockObjects( (QC_SMI_STMT(sStatement))->getTrans(),
                                          sTableHandle,
                                          sTableSCN,
-                                         SMI_TBSLV_DDL_DML, // TBS Validation ¿É¼Ç
+                                         SMI_TBSLV_DDL_DML, // TBS Validation ì˜µì…˜
                                          SMI_TABLE_LOCK_IX,
                                          ID_ULONG_MAX,
                                          ID_FALSE )         // BUG-28752 isExplicitLock
@@ -318,7 +318,7 @@ IDE_RC qsfCalculate_GatherIndexStats( mtcNode*     aNode,
                                                           ID_ULONG_MAX )
                       != IDE_SUCCESS );
 
-            // index table Åë°èÁ¤º¸ °»½Å
+            // index table í†µê³„ì •ë³´ ê°±ì‹ 
             IDE_TEST( smiStatistics::gatherTableStats( 
                           sStatement->mStatistics,
                           (QC_SMI_STMT(sStatement))->getTrans(),
@@ -331,7 +331,7 @@ IDE_RC qsfCalculate_GatherIndexStats( mtcNode*     aNode,
         }
         else
         {
-            /* Partitioned IndexÀÌ¸é List ¼øÈ¸ÇÏ¸é¼­ ..*/
+            /* Partitioned Indexì´ë©´ List ìˆœíšŒí•˜ë©´ì„œ ..*/
             IDE_TEST( qcmPartition::getPartitionInfoList(
                           sStatement,
                           QC_SMI_STMT( sStatement),
@@ -342,7 +342,7 @@ IDE_RC qsfCalculate_GatherIndexStats( mtcNode*     aNode,
         
             IDE_TEST( qcmPartition::validateAndLockPartitionInfoList( sStatement,
                                                                       sPartInfoList,
-                                                                      SMI_TBSLV_DDL_DML, // TBS Validation ¿É¼Ç
+                                                                      SMI_TBSLV_DDL_DML, // TBS Validation ì˜µì…˜
                                                                       SMI_TABLE_LOCK_IX,
                                                                       ID_ULONG_MAX )
                       != IDE_SUCCESS );
@@ -396,7 +396,7 @@ IDE_RC qsfCalculate_GatherIndexStats( mtcNode*     aNode,
     }
     else
     {
-        // ÀÌÀü PlanµéÀ» invalidate ½ÃÅ³ ÇÊ¿ä°¡ ¾ø´Ù.
+        // ì´ì „ Planë“¤ì„ invalidate ì‹œí‚¬ í•„ìš”ê°€ ì—†ë‹¤.
         // Nothing to do.
     }
 

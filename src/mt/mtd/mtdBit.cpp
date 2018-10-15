@@ -166,37 +166,37 @@ mtdModule mtdBit = {
     {
         // Key Comparison
         {
-            // mt valueµé °£ÀÇ compare
+            // mt valueë“¤ ê°„ì˜ compare
             mtdBitFixedMtdFixedMtdKeyAscComp, // Ascending Key Comparison
             mtdBitFixedMtdFixedMtdKeyDescComp // Descending Key Comparison
         }
         ,
         {
-            // mt valueµé °£ÀÇ compare
+            // mt valueë“¤ ê°„ì˜ compare
             mtdBitMtdMtdKeyAscComp, // Ascending Key Comparison
             mtdBitMtdMtdKeyDescComp // Descending Key Comparison
         }
         ,
         {
-            // mt value¿Í stored value°£ÀÇ compare
+            // mt valueì™€ stored valueê°„ì˜ compare
             mtdBitStoredMtdKeyAscComp, // Ascending Key Comparison
             mtdBitStoredMtdKeyDescComp // Descending Key Comparison
         }
         ,
         {
-            // stored valueµé °£ÀÇ compare
+            // stored valueë“¤ ê°„ì˜ compare
             mtdBitStoredStoredKeyAscComp, // Ascending Key Comparison
             mtdBitStoredStoredKeyDescComp // Descending Key Comparison
         }
         ,
         {
-            /* PROJ-2433 : index Direct key¿Í fixed mt valueµé °£ÀÇ compare */
+            /* PROJ-2433 : index Direct keyì™€ fixed mt valueë“¤ ê°„ì˜ compare */
             mtdBitFixedMtdFixedMtdKeyAscComp,
             mtdBitFixedMtdFixedMtdKeyDescComp
         }
         ,
         {
-            /* PROJ-2433 : index Direct key¿Í mt valueµé °£ÀÇ compare */
+            /* PROJ-2433 : index Direct keyì™€ mt valueë“¤ ê°„ì˜ compare */
             mtdBitMtdMtdKeyAscComp,
             mtdBitMtdMtdKeyDescComp
         }
@@ -232,7 +232,7 @@ IDE_RC mtdInitialize( UInt aNo )
 {
     IDE_TEST( mtd::initializeModule( &mtdBit, aNo ) != IDE_SUCCESS );
     
-    // mtdColumnÀÇ ÃÊ±âÈ­
+    // mtdColumnì˜ ì´ˆê¸°í™”
     IDE_TEST( mtc::initializeColumn( & mtdColumn,
                                      & mtdBit,
                                      0,   // arguments
@@ -311,7 +311,7 @@ IDE_RC mtdValue( mtcTemplate* /* aTemplate */,
                       != IDE_SUCCESS );
         }
 
-        // precision, scale Àç ¼³Á¤ ÈÄ, estimate·Î semantic °Ë»ç
+        // precision, scale ì¬ ì„¤ì • í›„, estimateë¡œ semantic ê²€ì‚¬
         aColumn->flag            = 1;
         aColumn->precision       = sValue->length != 0 ? sValue->length : 1;
         aColumn->scale           = 0;
@@ -396,7 +396,7 @@ SInt mtdBitLogicalAscComp( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd Å¸ÀÔÀÇ Keyµé °£ÀÇ ascending compare
+ * Description : Mtd íƒ€ì…ì˜ Keyë“¤ ê°„ì˜ ascending compare
  *
  * Implementation :
  *
@@ -492,7 +492,7 @@ SInt mtdBitLogicalDescComp( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd Å¸ÀÔÀÇ Keyµé °£ÀÇ descending compare
+ * Description : Mtd íƒ€ì…ì˜ Keyë“¤ ê°„ì˜ descending compare
  *
  * Implementation :
  *
@@ -589,7 +589,7 @@ SInt mtdBitFixedMtdFixedMtdKeyAscComp( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd Å¸ÀÔÀÇ Keyµé °£ÀÇ ascending compare
+ * Description : Mtd íƒ€ì…ì˜ Keyë“¤ ê°„ì˜ ascending compare
  *
  * Implementation :
  *
@@ -685,7 +685,7 @@ SInt mtdBitFixedMtdFixedMtdKeyDescComp( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd Å¸ÀÔÀÇ Keyµé °£ÀÇ descending compare
+ * Description : Mtd íƒ€ì…ì˜ Keyë“¤ ê°„ì˜ descending compare
  *
  * Implementation :
  *
@@ -782,7 +782,7 @@ SInt mtdBitMtdMtdKeyAscComp( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd Å¸ÀÔÀÇ Keyµé °£ÀÇ ascending compare
+ * Description : Mtd íƒ€ì…ì˜ Keyë“¤ ê°„ì˜ ascending compare
  *
  * Implementation :
  *
@@ -888,7 +888,7 @@ SInt mtdBitMtdMtdKeyDescComp( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd Å¸ÀÔÀÇ Keyµé °£ÀÇ descending compare
+ * Description : Mtd íƒ€ì…ì˜ Keyë“¤ ê°„ì˜ descending compare
  *
  * Implementation :
  *
@@ -995,7 +995,7 @@ SInt mtdBitStoredMtdKeyAscComp( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd Å¸ÀÔÀÇ Key¿Í Stored Key °£ÀÇ ascending compare
+ * Description : Mtd íƒ€ì…ì˜ Keyì™€ Stored Key ê°„ì˜ ascending compare
  *
  * Implementation :
  *
@@ -1018,17 +1018,17 @@ SInt mtdBitStoredMtdKeyAscComp( mtdValueInfo * aValueInfo1,
     // value1
     //---------    
     // PROJ-2429 Dictionary based data compress for on-disk DB
-    // Dictionary compression columnÀÎ °æ¿ì store typeÀ»mt typeÀ¸·Î
-    // º¯È¯ÇØ¼­ ½ÇÁ¦ µ¥ÀÌÅÍ¸¦ °¡Á®¿Â´Ù.
+    // Dictionary compression columnì¸ ê²½ìš° store typeì„mt typeìœ¼ë¡œ
+    // ë³€í™˜í•´ì„œ ì‹¤ì œ ë°ì´í„°ë¥¼ ê°€ì ¸ì˜¨ë‹¤.
     if ( (((smiColumn*)aValueInfo1->column)->flag & SMI_COLUMN_COMPRESSION_MASK) !=
          SMI_COLUMN_COMPRESSION_TRUE )
     {
         sStoredLength1 = aValueInfo1->length;
 
-        // length°¡ 0( == NULL )ÀÌ ¾Æ´Ñ °æ¿ì¿¡
-        // aValueInfo1->value¿¡´Â varbit value°¡ ÀúÀåµÇ¾î ÀÖÀ½
-        // ( varbit value´Â (length + value) ÀÌ°í,
-        //   NULL value°¡ ¾Æ´Ñ °æ¿ì¿¡ length Á¤º¸¸¦ ÀĞ¾î¿Ã ¼ö ÀÖÀ½ )
+        // lengthê°€ 0( == NULL )ì´ ì•„ë‹Œ ê²½ìš°ì—
+        // aValueInfo1->valueì—ëŠ” varbit valueê°€ ì €ì¥ë˜ì–´ ìˆìŒ
+        // ( varbit valueëŠ” (length + value) ì´ê³ ,
+        //   NULL valueê°€ ì•„ë‹Œ ê²½ìš°ì— length ì •ë³´ë¥¼ ì½ì–´ì˜¬ ìˆ˜ ìˆìŒ )
         if ( sStoredLength1 != 0 )
         {
             ID_INT_BYTE_ASSIGN( &sLength1, aValueInfo1->value );
@@ -1127,7 +1127,7 @@ SInt mtdBitStoredMtdKeyDescComp( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd Å¸ÀÔÀÇ Key¿Í Stored Key °£ÀÇ descending compare
+ * Description : Mtd íƒ€ì…ì˜ Keyì™€ Stored Key ê°„ì˜ descending compare
  *
  * Implementation :
  *
@@ -1150,17 +1150,17 @@ SInt mtdBitStoredMtdKeyDescComp( mtdValueInfo * aValueInfo1,
     // value1
     //---------    
     // PROJ-2429 Dictionary based data compress for on-disk DB
-    // Dictionary compression columnÀÎ °æ¿ì store typeÀ»mt typeÀ¸·Î
-    // º¯È¯ÇØ¼­ ½ÇÁ¦ µ¥ÀÌÅÍ¸¦ °¡Á®¿Â´Ù.
+    // Dictionary compression columnì¸ ê²½ìš° store typeì„mt typeìœ¼ë¡œ
+    // ë³€í™˜í•´ì„œ ì‹¤ì œ ë°ì´í„°ë¥¼ ê°€ì ¸ì˜¨ë‹¤.
     if ( (((smiColumn*)aValueInfo1->column)->flag & SMI_COLUMN_COMPRESSION_MASK) !=
          SMI_COLUMN_COMPRESSION_TRUE )
     {
         sStoredLength1 = aValueInfo1->length;
 
-        // length°¡ 0( == NULL )ÀÌ ¾Æ´Ñ °æ¿ì¿¡
-        // aValueInfo1->value¿¡´Â varbit value°¡ ÀúÀåµÇ¾î ÀÖÀ½
-        // ( varbit value´Â (length + value) ÀÌ°í,
-        //   NULL value°¡ ¾Æ´Ñ °æ¿ì¿¡ length Á¤º¸¸¦ ÀĞ¾î¿Ã ¼ö ÀÖÀ½ )
+        // lengthê°€ 0( == NULL )ì´ ì•„ë‹Œ ê²½ìš°ì—
+        // aValueInfo1->valueì—ëŠ” varbit valueê°€ ì €ì¥ë˜ì–´ ìˆìŒ
+        // ( varbit valueëŠ” (length + value) ì´ê³ ,
+        //   NULL valueê°€ ì•„ë‹Œ ê²½ìš°ì— length ì •ë³´ë¥¼ ì½ì–´ì˜¬ ìˆ˜ ìˆìŒ )
         if ( sStoredLength1 != 0 )
         {
             ID_INT_BYTE_ASSIGN( &sLength1, aValueInfo1->value );
@@ -1259,7 +1259,7 @@ SInt mtdBitStoredStoredKeyAscComp( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Stored Keyµé °£ÀÇ ascending compare
+ * Description : Stored Keyë“¤ ê°„ì˜ ascending compare
  *
  * Implementation :
  *
@@ -1283,17 +1283,17 @@ SInt mtdBitStoredStoredKeyAscComp( mtdValueInfo * aValueInfo1,
     // value1
     //---------    
     // PROJ-2429 Dictionary based data compress for on-disk DB
-    // Dictionary compression columnÀÎ °æ¿ì store typeÀ»mt typeÀ¸·Î
-    // º¯È¯ÇØ¼­ ½ÇÁ¦ µ¥ÀÌÅÍ¸¦ °¡Á®¿Â´Ù.
+    // Dictionary compression columnì¸ ê²½ìš° store typeì„mt typeìœ¼ë¡œ
+    // ë³€í™˜í•´ì„œ ì‹¤ì œ ë°ì´í„°ë¥¼ ê°€ì ¸ì˜¨ë‹¤.
     if ( (((smiColumn*)aValueInfo1->column)->flag & SMI_COLUMN_COMPRESSION_MASK) !=
          SMI_COLUMN_COMPRESSION_TRUE )
     {
         sStoredLength1 = aValueInfo1->length;
 
-        // length°¡ 0( == NULL )ÀÌ ¾Æ´Ñ °æ¿ì¿¡
-        // aValueInfo1->value¿¡´Â varbit value°¡ ÀúÀåµÇ¾î ÀÖÀ½
-        // ( varbit value´Â (length + value) ÀÌ°í,
-        //   NULL value°¡ ¾Æ´Ñ °æ¿ì¿¡ length Á¤º¸¸¦ ÀĞ¾î¿Ã ¼ö ÀÖÀ½ )
+        // lengthê°€ 0( == NULL )ì´ ì•„ë‹Œ ê²½ìš°ì—
+        // aValueInfo1->valueì—ëŠ” varbit valueê°€ ì €ì¥ë˜ì–´ ìˆìŒ
+        // ( varbit valueëŠ” (length + value) ì´ê³ ,
+        //   NULL valueê°€ ì•„ë‹Œ ê²½ìš°ì— length ì •ë³´ë¥¼ ì½ì–´ì˜¬ ìˆ˜ ìˆìŒ )
         if( sStoredLength1 != 0 )
         {
             ID_INT_BYTE_ASSIGN( &sLength1, aValueInfo1->value );
@@ -1325,10 +1325,10 @@ SInt mtdBitStoredStoredKeyAscComp( mtdValueInfo * aValueInfo1,
     {
         sStoredLength2 = aValueInfo2->length;
 
-        // length°¡ 0( == NULL )ÀÌ ¾Æ´Ñ °æ¿ì¿¡
-        // aValueInfo2->value¿¡´Â varbit value°¡ ÀúÀåµÇ¾î ÀÖÀ½
-        // ( varbit value´Â (length + value) ÀÌ°í,
-        //   NULL value°¡ ¾Æ´Ñ °æ¿ì¿¡ length Á¤º¸¸¦ ÀĞ¾î¿Ã ¼ö ÀÖÀ½ )
+        // lengthê°€ 0( == NULL )ì´ ì•„ë‹Œ ê²½ìš°ì—
+        // aValueInfo2->valueì—ëŠ” varbit valueê°€ ì €ì¥ë˜ì–´ ìˆìŒ
+        // ( varbit valueëŠ” (length + value) ì´ê³ ,
+        //   NULL valueê°€ ì•„ë‹Œ ê²½ìš°ì— length ì •ë³´ë¥¼ ì½ì–´ì˜¬ ìˆ˜ ìˆìŒ )
         if( sStoredLength2 != 0 )
         {
             ID_INT_BYTE_ASSIGN( &sLength2, aValueInfo2->value );
@@ -1416,7 +1416,7 @@ SInt mtdBitStoredStoredKeyDescComp( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Stored Keyµé °£ÀÇ descending compare
+ * Description : Stored Keyë“¤ ê°„ì˜ descending compare
  *
  * Implementation :
  *
@@ -1440,17 +1440,17 @@ SInt mtdBitStoredStoredKeyDescComp( mtdValueInfo * aValueInfo1,
     // value1
     //---------    
     // PROJ-2429 Dictionary based data compress for on-disk DB
-    // Dictionary compression columnÀÎ °æ¿ì store typeÀ»mt typeÀ¸·Î
-    // º¯È¯ÇØ¼­ ½ÇÁ¦ µ¥ÀÌÅÍ¸¦ °¡Á®¿Â´Ù.
+    // Dictionary compression columnì¸ ê²½ìš° store typeì„mt typeìœ¼ë¡œ
+    // ë³€í™˜í•´ì„œ ì‹¤ì œ ë°ì´í„°ë¥¼ ê°€ì ¸ì˜¨ë‹¤.
     if ( (((smiColumn*)aValueInfo1->column)->flag & SMI_COLUMN_COMPRESSION_MASK) !=
          SMI_COLUMN_COMPRESSION_TRUE )
     {
         sStoredLength1 = aValueInfo1->length;
 
-        // length°¡ 0( == NULL )ÀÌ ¾Æ´Ñ °æ¿ì¿¡
-        // aValueInfo1->value¿¡´Â varbit value°¡ ÀúÀåµÇ¾î ÀÖÀ½
-        // ( varbit value´Â (length + value) ÀÌ°í,
-        //   NULL value°¡ ¾Æ´Ñ °æ¿ì¿¡ length Á¤º¸¸¦ ÀĞ¾î¿Ã ¼ö ÀÖÀ½ )
+        // lengthê°€ 0( == NULL )ì´ ì•„ë‹Œ ê²½ìš°ì—
+        // aValueInfo1->valueì—ëŠ” varbit valueê°€ ì €ì¥ë˜ì–´ ìˆìŒ
+        // ( varbit valueëŠ” (length + value) ì´ê³ ,
+        //   NULL valueê°€ ì•„ë‹Œ ê²½ìš°ì— length ì •ë³´ë¥¼ ì½ì–´ì˜¬ ìˆ˜ ìˆìŒ )
         if( sStoredLength1 != 0 )
         {
             ID_INT_BYTE_ASSIGN( &sLength1, aValueInfo1->value );
@@ -1482,10 +1482,10 @@ SInt mtdBitStoredStoredKeyDescComp( mtdValueInfo * aValueInfo1,
     {
         sStoredLength2 = aValueInfo2->length;
 
-        // length°¡ 0( == NULL )ÀÌ ¾Æ´Ñ °æ¿ì¿¡
-        // aValueInfo2->value¿¡´Â varbit value°¡ ÀúÀåµÇ¾î ÀÖÀ½
-        // ( varbit value´Â (length + value) ÀÌ°í,
-        //   NULL value°¡ ¾Æ´Ñ °æ¿ì¿¡ length Á¤º¸¸¦ ÀĞ¾î¿Ã ¼ö ÀÖÀ½ )
+        // lengthê°€ 0( == NULL )ì´ ì•„ë‹Œ ê²½ìš°ì—
+        // aValueInfo2->valueì—ëŠ” varbit valueê°€ ì €ì¥ë˜ì–´ ìˆìŒ
+        // ( varbit valueëŠ” (length + value) ì´ê³ ,
+        //   NULL valueê°€ ì•„ë‹Œ ê²½ìš°ì— length ì •ë³´ë¥¼ ì½ì–´ì˜¬ ìˆ˜ ìˆìŒ )
         if( sStoredLength2 != 0 )
         {
             ID_INT_BYTE_ASSIGN( &sLength2, aValueInfo2->value );
@@ -1640,7 +1640,7 @@ IDE_RC mtdValidate( mtcColumn * aColumn,
 {
 /***********************************************************************
  *
- * Description : valueÀÇ semantic °Ë»ç ¹× mtcColum ÃÊ±âÈ­
+ * Description : valueì˜ semantic ê²€ì‚¬ ë° mtcColum ì´ˆê¸°í™”
  *
  * Implementation :
  *
@@ -1654,9 +1654,9 @@ IDE_RC mtdValidate( mtcColumn * aColumn,
     IDE_TEST_RAISE( BIT_TO_BYTE(sVal->length) + ID_SIZEOF(UInt) != aValueSize,
                     ERR_INVALID_LENGTH );
 
-    // ÃÊ±âÈ­µÈ aColumnÀº cannonize() ½Ã¿¡ »ç¿ë
-    // ÀÌ¶§, data type moduleÀÇ precision Á¤º¸¸¸À» »ç¿ëÇÏ¹Ç·Î,
-    // language Á¤º¸ ¼³Á¤ÇÒ ÇÊ¿ä¾øÀ½
+    // ì´ˆê¸°í™”ëœ aColumnì€ cannonize() ì‹œì— ì‚¬ìš©
+    // ì´ë•Œ, data type moduleì˜ precision ì •ë³´ë§Œì„ ì‚¬ìš©í•˜ë¯€ë¡œ,
+    // language ì •ë³´ ì„¤ì •í•  í•„ìš”ì—†ìŒ
     IDE_TEST( mtc::initializeColumn( aColumn,
                                      & mtdBit,
                                      1,              // arguments
@@ -1687,8 +1687,8 @@ IDE_RC mtdStoredValue2MtdValue( UInt              aColumnSize,
 {
 /***********************************************************************
  * PROJ-1705
- * µğ½ºÅ©Å×ÀÌºíÄÃ·³ÀÇ µ¥ÀÌÅ¸¸¦
- * qp ·¹ÄÚµåÃ³¸®¿µ¿ªÀÇ ÇØ´ç ÄÃ·³À§Ä¡¿¡ º¹»ç
+ * ë””ìŠ¤í¬í…Œì´ë¸”ì»¬ëŸ¼ì˜ ë°ì´íƒ€ë¥¼
+ * qp ë ˆì½”ë“œì²˜ë¦¬ì˜ì—­ì˜ í•´ë‹¹ ì»¬ëŸ¼ìœ„ì¹˜ì— ë³µì‚¬
  **********************************************************************/
 
     mtdBitType* sBitValue;
@@ -1697,14 +1697,14 @@ IDE_RC mtdStoredValue2MtdValue( UInt              aColumnSize,
     
     if( ( aDestValueOffset == 0 ) && ( aLength == 0 ) )
     {
-        // NULL µ¥ÀÌÅ¸
+        // NULL ë°ì´íƒ€
         sBitValue->length = 0;
     }
     else
     {
-        // bit typeÀº mtdDataTypeÇüÅÂ·Î ÀúÀåµÇ¹Ç·Î
-        // length ¿¡ header size°¡ Æ÷ÇÔµÇ¾î ÀÖ¾î
-        // ¿©±â¼­ º°µµÀÇ °è»êÀ» ÇÏÁö ¾Ê¾Æµµ µÈ´Ù.
+        // bit typeì€ mtdDataTypeí˜•íƒœë¡œ ì €ì¥ë˜ë¯€ë¡œ
+        // length ì— header sizeê°€ í¬í•¨ë˜ì–´ ìˆì–´
+        // ì—¬ê¸°ì„œ ë³„ë„ì˜ ê³„ì‚°ì„ í•˜ì§€ ì•Šì•„ë„ ëœë‹¤.
         IDE_TEST_RAISE( (aDestValueOffset + aLength) > aColumnSize, ERR_INVALID_STORED_VALUE );
 
         idlOS::memcpy( (UChar*)sBitValue + aDestValueOffset, aValue, aLength );
@@ -1727,9 +1727,9 @@ UInt mtdNullValueSize()
 {
 /***********************************************************************
  * PROJ-1705
- * °¢ µ¥ÀÌÅ¸Å¸ÀÔÀÇ null ValueÀÇ Å©±â ¹İÈ¯
- * ¿¹ ) mtdBitType( UInt length; UChar value[1] ) ¿¡¼­
- *      length Å¸ÀÔÀÎ  UIntÀÇ Å©±â¸¦ ¹İÈ¯
+ * ê° ë°ì´íƒ€íƒ€ì…ì˜ null Valueì˜ í¬ê¸° ë°˜í™˜
+ * ì˜ˆ ) mtdBitType( UInt length; UChar value[1] ) ì—ì„œ
+ *      length íƒ€ì…ì¸  UIntì˜ í¬ê¸°ë¥¼ ë°˜í™˜
  **********************************************************************/
 
     return mtdActualSize( NULL, &mtdBitNull );
@@ -1739,10 +1739,10 @@ static UInt mtdHeaderSize()
 {
 /***********************************************************************
  * PROJ-1705
- * length¸¦ °¡Áö´Â µ¥ÀÌÅ¸Å¸ÀÔÀÇ length Á¤º¸¸¦ ÀúÀåÇÏ´Â º¯¼öÀÇ Å©±â ¹İÈ¯
- * ¿¹ ) mtdBitType( UInt length; UChar value[1] ) ¿¡¼­
- *      length Å¸ÀÔÀÎ  UIntÀÇ Å©±â¸¦ ¹İÈ¯
- *  integer¿Í °°Àº °íÁ¤±æÀÌ µ¥ÀÌÅ¸Å¸ÀÔÀº 0 ¹İÈ¯
+ * lengthë¥¼ ê°€ì§€ëŠ” ë°ì´íƒ€íƒ€ì…ì˜ length ì •ë³´ë¥¼ ì €ì¥í•˜ëŠ” ë³€ìˆ˜ì˜ í¬ê¸° ë°˜í™˜
+ * ì˜ˆ ) mtdBitType( UInt length; UChar value[1] ) ì—ì„œ
+ *      length íƒ€ì…ì¸  UIntì˜ í¬ê¸°ë¥¼ ë°˜í™˜
+ *  integerì™€ ê°™ì€ ê³ ì •ê¸¸ì´ ë°ì´íƒ€íƒ€ì…ì€ 0 ë°˜í™˜
  **********************************************************************/
 
     return ID_SIZEOF(UInt);

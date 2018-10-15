@@ -17,7 +17,7 @@
 package Altibase.jdbc.driver;
 
 /**
- * PROJ-2190 ClientSide Autocommit ¸ğµå°¡ Ãß°¡µÇ¾ú±â ¶§¹®¿¡ autoCommit °ªÀ» booleanÀÌ ¾Æ´Ñ enum typeÀ¸·Î Ç¥ÇöÇÑ´Ù.
+ * PROJ-2190 ClientSide Autocommit ëª¨ë“œê°€ ì¶”ê°€ë˜ì—ˆê¸° ë•Œë¬¸ì— autoCommit ê°’ì„ booleanì´ ì•„ë‹Œ enum typeìœ¼ë¡œ í‘œí˜„í•œë‹¤.
  * 
  * @author yjpark
  */

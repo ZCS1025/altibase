@@ -67,8 +67,8 @@ public:
     smxTrans          * mTrans;
     idvSQL            * mStatistics;
     ULong               mItemCnt;
-    smxTouchNode      * mNodeList; /* TASK-6950 : Touch Page NodeµéÀº circular linked list ÇüÅÂ·Î ¿¬°áµÇ¾îÀÖ°í,
-                                                  ÀÌ mNodeList´Â ±×Áß ÇöÀç »ç¿ëÁßÀÎ Touch Page Node ÇÏ³ª¸¦ °¡¸£Å²´Ù. */
+    smxTouchNode      * mNodeList; /* TASK-6950 : Touch Page Nodeë“¤ì€ circular linked list í˜•íƒœë¡œ ì—°ê²°ë˜ì–´ìˆê³ ,
+                                                  ì´ mNodeListëŠ” ê·¸ì¤‘ í˜„ì¬ ì‚¬ìš©ì¤‘ì¸ Touch Page Node í•˜ë‚˜ë¥¼ ê°€ë¥´í‚¨ë‹¤. */
     ULong               mMaxCachePageCnt;
     static iduMemPool   mMemPool;
     static UInt         mTouchNodeSize;
@@ -84,8 +84,8 @@ inline void smxTouchPageList::init( idvSQL * aStatistics )
     ULong sNeedChunkCnt;
 
     /*
-     * ¹öÆÛ Resize ¿¬»êÀÌ³ª TRANSACTION_TOUCH_PAGE_CACHE_RATIO°¡ ¿î¿µÁß¿¡
-     * º¯°æµÉ ¼ö ÀÖ±â¶§¹®¿¡ µ¿ÀûÀ¸·Î º¯°æµÉ ¼ö ÀÖ´Ù.
+     * ë²„í¼ Resize ì—°ì‚°ì´ë‚˜ TRANSACTION_TOUCH_PAGE_CACHE_RATIOê°€ ìš´ì˜ì¤‘ì—
+     * ë³€ê²½ë  ìˆ˜ ìˆê¸°ë•Œë¬¸ì— ë™ì ìœ¼ë¡œ ë³€ê²½ë  ìˆ˜ ìˆë‹¤.
      */
     mMaxCachePageCnt = (ULong)
         ( (smuProperty::getBufferAreaSize() / SD_PAGE_SIZE)
@@ -94,23 +94,23 @@ inline void smxTouchPageList::init( idvSQL * aStatistics )
     if ( mMaxCachePageCnt != 0 )
     {
         /* (TASK-6950)
-           ÇÒ´çµÈ mempool chunkÀÇ ¸ğµç element¸¦ »ç¿ëÇÏµµ·Ï
-           mMaxCachePageCnt¸¦ Á¶Á¤ÇÑ´Ù.*/
+           í• ë‹¹ëœ mempool chunkì˜ ëª¨ë“  elementë¥¼ ì‚¬ìš©í•˜ë„ë¡
+           mMaxCachePageCntë¥¼ ì¡°ì •í•œë‹¤.*/
 
-        /* chunk´ç pageÁ¤º¸ °¹¼ö */
+        /* chunkë‹¹ pageì •ë³´ ê°¯ìˆ˜ */
         sPageCntPerChunk = mMemPool.mElemCnt * smuProperty::getTransTouchPageCntByNode();
 
-        /* mMaxCachePageCnt°¡ µé¾î°¥¼ö ÀÖ´Â chunk °¹¼ö */
+        /* mMaxCachePageCntê°€ ë“¤ì–´ê°ˆìˆ˜ ìˆëŠ” chunk ê°¯ìˆ˜ */
         sNeedChunkCnt    = ( ( mMaxCachePageCnt - 1 ) / ( sPageCntPerChunk ) ) + 1 ;
 
-        /* chunk¿¡ ÃÖ´ë µé¾î°¥¼öÀÖ´Â page°¹¼ö·Î º¸Á¤ÇÑ´Ù. */
+        /* chunkì— ìµœëŒ€ ë“¤ì–´ê°ˆìˆ˜ìˆëŠ” pageê°¯ìˆ˜ë¡œ ë³´ì •í•œë‹¤. */
         mMaxCachePageCnt = sNeedChunkCnt * sPageCntPerChunk;
     }
     else
     {
         /* (TASK-6950)
-           ÇÁ·ÎÆÛÆ¼ TRANSACTION_TOUCH_PAGE_CACHE_RATIO_ = 0 À¸·Î ¼¼ÆÃµÇ¾î µé¾î¿À¸é,
-           Touch Page List¸¦ »ç¿ëÇÏÁö ¾Ê´Â´Ù´Â ÀÇ¹ÌÀÌ´Ù. (Å×½ºÆ®¿ë) */
+           í”„ë¡œí¼í‹° TRANSACTION_TOUCH_PAGE_CACHE_RATIO_ = 0 ìœ¼ë¡œ ì„¸íŒ…ë˜ì–´ ë“¤ì–´ì˜¤ë©´,
+           Touch Page Listë¥¼ ì‚¬ìš©í•˜ì§€ ì•ŠëŠ”ë‹¤ëŠ” ì˜ë¯¸ì´ë‹¤. (í…ŒìŠ¤íŠ¸ìš©) */
     }
 
     return;

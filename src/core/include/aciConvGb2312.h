@@ -29,7 +29,7 @@ ACP_EXTERN_C_BEGIN
  * GB2312.1980-0
  */
 
-/* XOR À» ÇÏ±â À§ÇÑ ÀÓÀÇÀÇ °ª. Æ¯º°ÇÑ ÀÇ¹Ì¸¦ ³ªÅ¸³»Áö ¾Ê´Â´Ù. */
+/* XOR ì„ í•˜ê¸° ìœ„í•œ ì„ì˜ì˜ ê°’. íŠ¹ë³„í•œ ì˜ë¯¸ë¥¼ ë‚˜íƒ€ë‚´ì§€ ì•ŠëŠ”ë‹¤. */
 #define GB2312_XOR_VALUE (1037)
 
 ACP_EXPORT
@@ -46,7 +46,7 @@ acp_sint32_t aciConvConvertWcToMb4Gb2312( void    * aSrc,
                                    void    * aDest,
                                    acp_sint32_t      aDestRemain );
 
-/* PROJ-2414 [±â´É¼º] GBK, CP936 character set Ãß°¡ */
+/* PROJ-2414 [ê¸°ëŠ¥ì„±] GBK, CP936 character set ì¶”ê°€ */
 ACP_EXPORT
 acp_sint32_t aciConvCopyGb2312( void         * aSrc,
                                 acp_sint32_t   aSrcRemain,

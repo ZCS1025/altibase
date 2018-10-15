@@ -24,11 +24,11 @@
 
 /***********************************************************************
  * Function    : initialize
- * Description : rpdSenderInfoÀÇ initialize¿Í destroy´Â rpcExecutor¿¡
- *               ÀÇÇØ¼­ È£ÃâµÇ¸ç, Áï ExecutorÀÇ »ı¸í ÁÖ±â¿Í µ¿ÀÏÇÏ°í
- *               deActivate, activate´Â Sender¿¡ ÀÇÇØ¼­ È£ÃâµÈ´Ù.
- *               SenderApply°¡ »ı¼ºµÇ¸é¼­ »õ·Î activate½ÃÅ°¸ç,
- *               Á¾·áÇÒ ¶§ deActivateÇÑ´Ù.
+ * Description : rpdSenderInfoì˜ initializeì™€ destroyëŠ” rpcExecutorì—
+ *               ì˜í•´ì„œ í˜¸ì¶œë˜ë©°, ì¦‰ Executorì˜ ìƒëª… ì£¼ê¸°ì™€ ë™ì¼í•˜ê³ 
+ *               deActivate, activateëŠ” Senderì— ì˜í•´ì„œ í˜¸ì¶œëœë‹¤.
+ *               SenderApplyê°€ ìƒì„±ë˜ë©´ì„œ ìƒˆë¡œ activateì‹œí‚¤ë©°,
+ *               ì¢…ë£Œí•  ë•Œ deActivateí•œë‹¤.
  **********************************************************************/
 IDE_RC rpdSenderInfo::initialize(UInt aSenderListIdx)
 {
@@ -60,7 +60,7 @@ IDE_RC rpdSenderInfo::initialize(UInt aSenderListIdx)
     (void)idlOS::memset(mRepName, 0x00, QCI_MAX_NAME_LEN + 1);
 
     //------------------------------------------------------------------------//
-    // ½ÇÆĞÇÏ¸é, ¼­¹ö ºñÁ¤»ó Á¾·á¸¦ ¹ß»ı½ÃÅ°´Â ÀÛ¾÷µé
+    // ì‹¤íŒ¨í•˜ë©´, ì„œë²„ ë¹„ì •ìƒ ì¢…ë£Œë¥¼ ë°œìƒì‹œí‚¤ëŠ” ì‘ì—…ë“¤
     //------------------------------------------------------------------------//
     IDE_TEST_RAISE(mServiceWaitCV.initialize() != IDE_SUCCESS,
                    ERR_COND_INIT);
@@ -181,11 +181,11 @@ IDE_RC rpdSenderInfo::initialize(UInt aSenderListIdx)
 }
 
 /**
- * @breif  Sync PK PoolÀ» ÃÊ±âÈ­ÇÑ´Ù.
+ * @breif  Sync PK Poolì„ ì´ˆê¸°í™”í•œë‹¤.
  *
  * @param  aReplName Replication Name
  *
- * @return ÀÛ¾÷ ¼º°ø/½ÇÆĞ
+ * @return ì‘ì—… ì„±ê³µ/ì‹¤íŒ¨
  */
 IDE_RC rpdSenderInfo::initSyncPKPool( SChar * aReplName )
 {
@@ -239,11 +239,11 @@ IDE_RC rpdSenderInfo::initSyncPKPool( SChar * aReplName )
 }
 
 /**
- * @breif  Sync PK List¸¦ ºñ¿ì°í, Sync PK PoolÀ» Á¦°ÅÇÑ´Ù.
+ * @breif  Sync PK Listë¥¼ ë¹„ìš°ê³ , Sync PK Poolì„ ì œê±°í•œë‹¤.
  *
- * @param  aSkip Sync PK List°¡ ºñ¾îÀÖÁö ¾ÊÀ» ¶§, ÀÛ¾÷À» °Ç³Ê¶ÛÁö ¿©ºÎ
+ * @param  aSkip Sync PK Listê°€ ë¹„ì–´ìˆì§€ ì•Šì„ ë•Œ, ì‘ì—…ì„ ê±´ë„ˆë›¸ì§€ ì—¬ë¶€
  *
- * @return ÀÛ¾÷ ¼º°ø/½ÇÆĞ
+ * @return ì‘ì—… ì„±ê³µ/ì‹¤íŒ¨
  */
 IDE_RC rpdSenderInfo::destroySyncPKPool( idBool aSkip )
 {
@@ -354,12 +354,12 @@ void rpdSenderInfo::destroy()
 }
 /***********************************************************************
  * Function    : finalize
- * Description : Sender´Â SenderApply°¡ ½ÃÀÛµÇ±â Àü¿¡ RestartSNÀ» SetÇÏ¸ç,
- *               SenderApply°¡ Á¾·áµÇ´õ¶óµµ »ì¾ÆÀÖ°í, SenderInfoÀÇ
- *               mRestartSNÀ» »ç¿ëÇÑ´Ù. ¶§¹®¿¡ SenderApply°¡ ¾ø´Â »óÈ²¿¡¼­
- *               Sender°¡ mRestartSNÀ» »ç¿ëÇÒ ¼ö ÀÖµµ·Ï ÇÏ±â À§ÇØ Sender°¡
- *               ½ÃÀÛÇÏ¸é¼­ XSNÀ» ÃÊ±âÈ­ ÇÒ ¶§ RestartSNÀ» setÇÏ°í, Sender°¡
- *               Á¾·áµÉ ¶§¿¡¸¸ mRestartSNÀ» ÃÊ±âÈ­ÇÑ´Ù.
+ * Description : SenderëŠ” SenderApplyê°€ ì‹œì‘ë˜ê¸° ì „ì— RestartSNì„ Setí•˜ë©°,
+ *               SenderApplyê°€ ì¢…ë£Œë˜ë”ë¼ë„ ì‚´ì•„ìˆê³ , SenderInfoì˜
+ *               mRestartSNì„ ì‚¬ìš©í•œë‹¤. ë•Œë¬¸ì— SenderApplyê°€ ì—†ëŠ” ìƒí™©ì—ì„œ
+ *               Senderê°€ mRestartSNì„ ì‚¬ìš©í•  ìˆ˜ ìˆë„ë¡ í•˜ê¸° ìœ„í•´ Senderê°€
+ *               ì‹œì‘í•˜ë©´ì„œ XSNì„ ì´ˆê¸°í™” í•  ë•Œ RestartSNì„ setí•˜ê³ , Senderê°€
+ *               ì¢…ë£Œë  ë•Œì—ë§Œ mRestartSNì„ ì´ˆê¸°í™”í•œë‹¤.
  **********************************************************************/
 void rpdSenderInfo::finalize()
 {
@@ -411,24 +411,24 @@ void rpdSenderInfo::finalize()
 }
 /***********************************************************************
  * Function    : deActivate, Activate
- * Description : deActivate, activate´Â Sender¿¡ ÀÇÇØ¼­ È£ÃâµÈ´Ù.
- *               SenderApply°¡ »ı¼ºµÇ¸é¼­ »õ·Î activate½ÃÅ°¸ç, Á¾·áÇÒ ¶§
- *               deActivate°¡ È£ÃâµÈ´Ù.
+ * Description : deActivate, activateëŠ” Senderì— ì˜í•´ì„œ í˜¸ì¶œëœë‹¤.
+ *               SenderApplyê°€ ìƒì„±ë˜ë©´ì„œ ìƒˆë¡œ activateì‹œí‚¤ë©°, ì¢…ë£Œí•  ë•Œ
+ *               deActivateê°€ í˜¸ì¶œëœë‹¤.
  **********************************************************************/
 void rpdSenderInfo::deActivate()
 {
-    //Exit(),Sync(),Disconnect()ÀÎ °æ¿ì mIsActive¸¦ ID_FALSE·Î setÇÑ´Ù.
+    //Exit(),Sync(),Disconnect()ì¸ ê²½ìš° mIsActiveë¥¼ ID_FALSEë¡œ setí•œë‹¤.
     IDE_ASSERT( mAssignedTransTableMutex.lock( NULL ) == IDE_SUCCESS );
     IDE_ASSERT(mActTransTblMtx.lock(NULL /* idvSQL* */) == IDE_SUCCESS);
     IDE_ASSERT(mServiceSNMtx.lock(NULL /* idvSQL* */) == IDE_SUCCESS);
     IDE_ASSERT(mSenderSNMtx.lock(NULL /* idvSQL* */) == IDE_SUCCESS);
 
-    //Service thread°¡ Sender ¿À·ù »óÈ²¿¡ ´ë±âÇÏÁö ¾Êµµ·ÏÇÏ±â À§ÇØ¼­
+    //Service threadê°€ Sender ì˜¤ë¥˜ ìƒí™©ì— ëŒ€ê¸°í•˜ì§€ ì•Šë„ë¡í•˜ê¸° ìœ„í•´ì„œ
     mLastProcessedSN      = SM_SN_NULL;
     mLastArrivedSN        = SM_SN_NULL;
 
     mIsSenderSleep        = ID_FALSE;
-    //Flush ¸í·ÉÀÌ Sender ¿À·ù »óÈ²¿¡ ´ë±âÇÏÁö ¾Êµµ·Ï ÇÏ±â À§ÇØ¼­
+    //Flush ëª…ë ¹ì´ Sender ì˜¤ë¥˜ ìƒí™©ì— ëŒ€ê¸°í•˜ì§€ ì•Šë„ë¡ í•˜ê¸° ìœ„í•´ì„œ
     mRmtLastCommitSN      = SM_SN_NULL;
 
     mActiveTransTbl       = NULL;
@@ -540,9 +540,9 @@ smSN rpdSenderInfo::getLastProcessedSN()
 
 /***********************************************************************
  * Function    : getMinWaitSN, setMinWaitSN
- * Description : deactiveµÈ °æ¿ì¿¡µµ mMinWaitSNÀ» º¸°í ´ë±âÇÏ°í ÀÖ´Â
- *               Service Thread°¡ ÀÖ´ÂÁö È®ÀÎÇØ¾ßÇÔ ¶§¹®¿¡ mIsActive¸¦
- *               Ã¼Å©ÇÏÁö ¾ÊÀ½
+ * Description : deactiveëœ ê²½ìš°ì—ë„ mMinWaitSNì„ ë³´ê³  ëŒ€ê¸°í•˜ê³  ìˆëŠ”
+ *               Service Threadê°€ ìˆëŠ”ì§€ í™•ì¸í•´ì•¼í•¨ ë•Œë¬¸ì— mIsActiveë¥¼
+ *               ì²´í¬í•˜ì§€ ì•ŠìŒ
  **********************************************************************/
 smSN rpdSenderInfo::getMinWaitSN()
 {
@@ -565,8 +565,8 @@ void rpdSenderInfo::setMinWaitSN(smSN aMinWaitSN)
 }
 /***********************************************************************
  * Function    : setRestartSN
- * Description : SenderApply°¡ Á¾·áµÇ°í deactiveµÈ °æ¿ì¿¡µµ Sender¿¡¼­
- *               restartSNÀ» º¸±â ¶§¹®¿¡ mIsActive¸¦ Ã¼Å©ÇÏÁö ¾Ê´Â´Ù.
+ * Description : SenderApplyê°€ ì¢…ë£Œë˜ê³  deactiveëœ ê²½ìš°ì—ë„ Senderì—ì„œ
+ *               restartSNì„ ë³´ê¸° ë•Œë¬¸ì— mIsActiveë¥¼ ì²´í¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
  **********************************************************************/
 void rpdSenderInfo::setRestartSN(smSN aRestartSN)
 {
@@ -660,11 +660,11 @@ void rpdSenderInfo::serviceWaitForNetworkError( void )
 }
 
 /***********************************************************************
- * Description : eager/acked mode¿¡¼­ service thr°¡ ¼­ºñ½º ÁßÀÎ Æ®·£Àè¼ÇÀÇ
- *               ¸¶Áö¸· ·Î±×ÀÎ aLastSNÀ» ¹Ş¾Æ ÇöÀç ´ë±â ÁßÀÎ Æ®·£Àè¼ÇµéÀÇ
- *               °¡Àå ÀÛÀº aLastSNÀÎ mMinWaitSN º¸´Ù ÀÛÀº °æ¿ì
- *               mMinWaitSNÀ» SetÇÏ°í, ´ë±âÇÑ´Ù.
- * return value: sender info°¡ acitveÀÎÁö ¾Æ´ÑÁö ¹İÈ¯ÇÑ´Ù.
+ * Description : eager/acked modeì—ì„œ service thrê°€ ì„œë¹„ìŠ¤ ì¤‘ì¸ íŠ¸ëœì­ì…˜ì˜
+ *               ë§ˆì§€ë§‰ ë¡œê·¸ì¸ aLastSNì„ ë°›ì•„ í˜„ì¬ ëŒ€ê¸° ì¤‘ì¸ íŠ¸ëœì­ì…˜ë“¤ì˜
+ *               ê°€ì¥ ì‘ì€ aLastSNì¸ mMinWaitSN ë³´ë‹¤ ì‘ì€ ê²½ìš°
+ *               mMinWaitSNì„ Setí•˜ê³ , ëŒ€ê¸°í•œë‹¤.
+ * return value: sender infoê°€ acitveì¸ì§€ ì•„ë‹Œì§€ ë°˜í™˜í•œë‹¤.
  *+----------------------------------------------+
  *|TxMode / ReplMode| Lazy    |  Acked |  Eager  |
  *|----------------------------------------------|
@@ -687,12 +687,12 @@ idBool rpdSenderInfo::serviceWaitBeforeCommit(smSN    aLastSN,
 
     IDE_DASSERT(aTxReplMode != RP_LAZY_MODE);
 
-    //Æ®·£Àè¼ÇÀÌ ÁöÁ¤ÇÑ Replication Mode°¡ ÀÖÀ» °æ¿ì
+    //íŠ¸ëœì­ì…˜ì´ ì§€ì •í•œ Replication Modeê°€ ìˆì„ ê²½ìš°
     if((aTxReplMode != RP_DEFAULT_MODE))
     {
         sMode = aTxReplMode;
     }
-    else //±âº» ¸ğµå
+    else //ê¸°ë³¸ ëª¨ë“œ
     {
         sMode = mReplMode;
     }
@@ -703,7 +703,7 @@ idBool rpdSenderInfo::serviceWaitBeforeCommit(smSN    aLastSN,
     sIsLocked = ID_TRUE;
     while(1)
     {
-        /*Exit(),Sync(),Disconnect()ÀÎ °æ¿ì skipÇÑ´Ù.*/
+        /*Exit(),Sync(),Disconnect()ì¸ ê²½ìš° skipí•œë‹¤.*/
         if(mIsActive != ID_TRUE)
         {
             sIsActive = mIsActive;
@@ -826,12 +826,12 @@ void rpdSenderInfo::serviceWaitAfterCommit( smSN aLastSN,
 
     IDE_DASSERT(aTxReplMode != RP_LAZY_MODE);
 
-    //Æ®·£Àè¼ÇÀÌ ÁöÁ¤ÇÑ Replication Mode°¡ ÀÖÀ» °æ¿ì
+    //íŠ¸ëœì­ì…˜ì´ ì§€ì •í•œ Replication Modeê°€ ìˆì„ ê²½ìš°
     if((aTxReplMode != RP_DEFAULT_MODE))
     {
         sMode = aTxReplMode;
     }
-    else //±âº» ¸ğµå
+    else //ê¸°ë³¸ ëª¨ë“œ
     {
         sMode = mReplMode;
     }
@@ -842,7 +842,7 @@ void rpdSenderInfo::serviceWaitAfterCommit( smSN aLastSN,
     sIsLocked = ID_TRUE;
     while(1)
     {
-        //Exit(),Sync(),Disconnect()ÀÎ °æ¿ì skipÇÑ´Ù.
+        //Exit(),Sync(),Disconnect()ì¸ ê²½ìš° skipí•œë‹¤.
         if(mIsActive != ID_TRUE)
         {
             break;
@@ -909,12 +909,12 @@ void rpdSenderInfo::serviceWaitAfterCommit( smSN aLastSN,
         IDE_ASSERT(smiGetLastValidGSN(&sLstSN) == IDE_SUCCESS)
 
         //BUG-22173 :
-        //V$REPSENDER act_repl_mode Ãß°¡, REPGAPÀ» ÃÊ°ú ÇÒ°æ¿ì LAZYÃ³·³
-        //altibase_rp.log¿¡ ÃÊ°ú ½ÃÁ¡ ¿¡ ·Î±× ³²±â°í ³»·Á °¥¶§ ·Î±× ³²±è
+        //V$REPSENDER act_repl_mode ì¶”ê°€, REPGAPì„ ì´ˆê³¼ í• ê²½ìš° LAZYì²˜ëŸ¼
+        //altibase_rp.logì— ì´ˆê³¼ ì‹œì  ì— ë¡œê·¸ ë‚¨ê¸°ê³  ë‚´ë ¤ ê°ˆë•Œ ë¡œê·¸ ë‚¨ê¹€
         //Delay()
         if((sMode != RP_EAGER_MODE) && (mLastProcessedSN != SM_SN_NULL))
         {
-            if((sLstSN - mLastProcessedSN) > RPU_REPLICATION_SERVICE_WAIT_MAX_LIMIT) //REPGAP ÃÊ°ú
+            if((sLstSN - mLastProcessedSN) > RPU_REPLICATION_SERVICE_WAIT_MAX_LIMIT) //REPGAP ì´ˆê³¼
             {
                 if(mIsExceedRepGap == ID_FALSE)
                 {
@@ -986,7 +986,7 @@ void rpdSenderInfo::wakeupEagerSender()
         IDE_ASSERT(mSenderSNMtx.lock(NULL /* idvSQL* */) == IDE_SUCCESS);
         if(mIsSenderSleep == ID_TRUE)
         {
-            //sender°¡ waitÁßÀÌ¶ó¸é ÀÛ¾÷À» ÁøÇàÇÏµµ·Ï ±ú¿î´Ù
+            //senderê°€ waitì¤‘ì´ë¼ë©´ ì‘ì—…ì„ ì§„í–‰í•˜ë„ë¡ ê¹¨ìš´ë‹¤
             IDE_ASSERT(mSenderWaitCV.signal() == IDE_SUCCESS);
         }
         IDE_ASSERT(mSenderSNMtx.unlock() == IDE_SUCCESS);
@@ -995,11 +995,11 @@ void rpdSenderInfo::wakeupEagerSender()
 void rpdSenderInfo::signalToAllServiceThr( idBool aForceAwake, smTID aTID )
 {
     IDE_ASSERT(mServiceSNMtx.lock(NULL /* idvSQL* */) == IDE_SUCCESS);
-    //ÀÌ ÇÔ¼ö¿¡¼­´Â °¡´É¼ºÀÖ´Â ¸ğµç ¼­ºñ½º ½º·¹µå¸¦ ±ú¿öÁÖ°í
-    //ÆÇ´ÜÀº ¼­ºñ½º ½º·¹µå°¡ Á÷Á¢ ÇÒ ¼ö ÀÖµµ·Ï ÇÑ´Ù.
+    //ì´ í•¨ìˆ˜ì—ì„œëŠ” ê°€ëŠ¥ì„±ìˆëŠ” ëª¨ë“  ì„œë¹„ìŠ¤ ìŠ¤ë ˆë“œë¥¼ ê¹¨ì›Œì£¼ê³ 
+    //íŒë‹¨ì€ ì„œë¹„ìŠ¤ ìŠ¤ë ˆë“œê°€ ì§ì ‘ í•  ìˆ˜ ìˆë„ë¡ í•œë‹¤.
     if ( aForceAwake != ID_TRUE )
     {
-        // EagerÀÏ ¶§¸¸ mMinWaitSNÀ» ¼³Á¤
+        // Eagerì¼ ë•Œë§Œ mMinWaitSNì„ ì„¤ì •
 
         if ( aTID != SM_NULL_TID )
         {
@@ -1068,16 +1068,16 @@ void rpdSenderInfo::isTransAbort(smTID   aTID,
     if(mReplMode == RP_EAGER_MODE)
     {
         IDE_ASSERT(mActTransTblMtx.lock(NULL /* idvSQL* */) == IDE_SUCCESS);
-        //Exit(),Sync(),Disconnect()ÀÎ °æ¿ì skipÇÑ´Ù.
+        //Exit(),Sync(),Disconnect()ì¸ ê²½ìš° skipí•œë‹¤.
         if((mActiveTransTbl != NULL) && (mIsActive == ID_TRUE))
         {
-            // eager replication¿¡¼­ parallel·Î Æ®·£Àè¼ÇÀ» º¹Á¦ÇÒ ¶§,
-            // parallel child´Â ÀÚ½ÅÀÌ Ã³¸®ÇØ¾ßÇÏ´Â Æ®·£Àè¼ÇÀÓ¿¡µµ ºÒ±¸ÇÏ°í
-            // ÀÚ½ÅÀÌ Ã³¸®ÇÏÁö ¾Ê°í ÀÖ´Â Æ®·£Àè¼ÇÀÌ Á¸ÀçÇÑ´Ù.
-            // ±×·¯¹Ç·Î, Active°¡ ¾Æ´Ñ Æ®·£Àè¼ÇÀÌ ÀÖÀ» ¼ö ÀÖ´Ù.
-            // failback normal½Ã parallel parent°¡ Ã³¸®ÇÏ´ø Æ®·£Àè¼ÇÀº
-            // failbackÀÌ ³¡³ª°í run »óÅÂ°¡ µÇ¾î¼­µµ parallel parentÀÌ Ã³¸®ÇÏ±â ¶§¹®¿¡
-            // ÀÚ½ÅÀÌ Ã³¸®ÇÏÁö ¾Ê°í ÀÖ´Â Æ®·£Àè¼ÇÀº parallel parent°¡ Ã³¸®ÇÏ°í ÀÖ´Ù.
+            // eager replicationì—ì„œ parallelë¡œ íŠ¸ëœì­ì…˜ì„ ë³µì œí•  ë•Œ,
+            // parallel childëŠ” ìì‹ ì´ ì²˜ë¦¬í•´ì•¼í•˜ëŠ” íŠ¸ëœì­ì…˜ì„ì—ë„ ë¶ˆêµ¬í•˜ê³ 
+            // ìì‹ ì´ ì²˜ë¦¬í•˜ì§€ ì•Šê³  ìˆëŠ” íŠ¸ëœì­ì…˜ì´ ì¡´ì¬í•œë‹¤.
+            // ê·¸ëŸ¬ë¯€ë¡œ, Activeê°€ ì•„ë‹Œ íŠ¸ëœì­ì…˜ì´ ìˆì„ ìˆ˜ ìˆë‹¤.
+            // failback normalì‹œ parallel parentê°€ ì²˜ë¦¬í•˜ë˜ íŠ¸ëœì­ì…˜ì€
+            // failbackì´ ëë‚˜ê³  run ìƒíƒœê°€ ë˜ì–´ì„œë„ parallel parentì´ ì²˜ë¦¬í•˜ê¸° ë•Œë¬¸ì—
+            // ìì‹ ì´ ì²˜ë¦¬í•˜ì§€ ì•Šê³  ìˆëŠ” íŠ¸ëœì­ì…˜ì€ parallel parentê°€ ì²˜ë¦¬í•˜ê³  ìˆë‹¤.
             if(mActiveTransTbl->isATrans(aTID) == ID_TRUE)
             {
                 *aIsAbort = mActiveTransTbl->getAbortFlag(aTID);
@@ -1106,7 +1106,7 @@ idBool rpdSenderInfo::isActiveTrans(smTID aTID)
     idBool sIsATrans = ID_FALSE;
 
     IDE_ASSERT(mActTransTblMtx.lock(NULL /* idvSQL* */) == IDE_SUCCESS);
-    //Exit(),Sync(),Disconnect()ÀÎ °æ¿ì skipÇÑ´Ù.
+    //Exit(),Sync(),Disconnect()ì¸ ê²½ìš° skipí•œë‹¤.
     if((mActiveTransTbl != NULL) && (mIsActive == ID_TRUE))
     {
         sIsATrans = mActiveTransTbl->isATrans(aTID);
@@ -1127,17 +1127,17 @@ void rpdSenderInfo::setAbortTransaction(UInt     aAbortTxCount,
         IDE_ASSERT(mActTransTblMtx.lock( NULL /* idvSQL* */) == IDE_SUCCESS);
         if((mActiveTransTbl != NULL) && (mIsActive == ID_TRUE))
         {
-            /* BUG-18045 [Eager Mode] °°Àº Tx SlotÀ» »ç¿ëÇÏ´Â ÀÌÀü TxÀÇ ¿µÇâÀ» ¹èÁ¦ÇÑ´Ù.
-             * (1) TID 0 Lazy Mode TransactionÀÌ Standby Host¿¡ ¹İ¿µ ½ÇÆĞ
+            /* BUG-18045 [Eager Mode] ê°™ì€ Tx Slotì„ ì‚¬ìš©í•˜ëŠ” ì´ì „ Txì˜ ì˜í–¥ì„ ë°°ì œí•œë‹¤.
+             * (1) TID 0 Lazy Mode Transactionì´ Standby Hostì— ë°˜ì˜ ì‹¤íŒ¨
              * (2) TID 0 Lazy Mode Transaction Commit
              * (3) TID 4096 Eager Mode Transaction Begin
-             * (4) Sender°¡ ACK ¼ö½Å (TID 0 Transaction ½ÇÆĞ) -> Abort Flag ¼³Á¤
-             * (5) TID 4096 Eager Mode Transacition Commit ½ÇÆĞ
-             * À§¿Í °°Àº °æ¿ì 5¹ø¿¡¼­ eager transaction¿¡ ¹®Á¦°¡ ¹ß»ıÇÒ
-             * ¼ö ÀÖÀ¸¹Ç·Î, receiver¿¡¼­ ¹®Á¦°¡ ¹ß»ıÇÑ ·Î±×ÀÇ SN
-             * °ú eager transactionÀÇ Begin SNÀ» ºñ±³ÇÏ¿©
-             * ¹®Á¦°¡ ¹ß»ıÇÑ ·Î±×ÀÇ SNÀÌ Å©°Å³ª °°Àº °æ¿ì¿¡¸¸
-             * abort flag¸¦ setÇÑ´Ù.
+             * (4) Senderê°€ ACK ìˆ˜ì‹  (TID 0 Transaction ì‹¤íŒ¨) -> Abort Flag ì„¤ì •
+             * (5) TID 4096 Eager Mode Transacition Commit ì‹¤íŒ¨
+             * ìœ„ì™€ ê°™ì€ ê²½ìš° 5ë²ˆì—ì„œ eager transactionì— ë¬¸ì œê°€ ë°œìƒí• 
+             * ìˆ˜ ìˆìœ¼ë¯€ë¡œ, receiverì—ì„œ ë¬¸ì œê°€ ë°œìƒí•œ ë¡œê·¸ì˜ SN
+             * ê³¼ eager transactionì˜ Begin SNì„ ë¹„êµí•˜ì—¬
+             * ë¬¸ì œê°€ ë°œìƒí•œ ë¡œê·¸ì˜ SNì´ í¬ê±°ë‚˜ ê°™ì€ ê²½ìš°ì—ë§Œ
+             * abort flagë¥¼ setí•œë‹¤.
              */
             IDE_ASSERT(mActiveTransTbl->mAbortTxMutex.lock( NULL /* idvSQL* */)
                        == IDE_SUCCESS);
@@ -1169,17 +1169,17 @@ void rpdSenderInfo::setClearTransaction(UInt     aClearTxCount,
         IDE_ASSERT(mActTransTblMtx.lock( NULL /* idvSQL* */) == IDE_SUCCESS);
         if((mActiveTransTbl != NULL) && (mIsActive == ID_TRUE))
         {
-            /* BUG-18045 [Eager Mode] °°Àº Tx SlotÀ» »ç¿ëÇÏ´Â ÀÌÀü TxÀÇ ¿µÇâÀ» ¹èÁ¦ÇÑ´Ù.
-             * (1) TID 0 Lazy Mode TransactionÀÌ Standby Host¿¡ ¹İ¿µ ½ÇÆĞ
+            /* BUG-18045 [Eager Mode] ê°™ì€ Tx Slotì„ ì‚¬ìš©í•˜ëŠ” ì´ì „ Txì˜ ì˜í–¥ì„ ë°°ì œí•œë‹¤.
+             * (1) TID 0 Lazy Mode Transactionì´ Standby Hostì— ë°˜ì˜ ì‹¤íŒ¨
              * (2) TID 0 Lazy Mode Transaction Commit
              * (3) TID 4096 Eager Mode Transaction Begin
-             * (4) Sender°¡ ACK ¼ö½Å (TID 0 Transaction ½ÇÆĞ) -> Abort Flag ¼³Á¤
-             * (5) TID 4096 Eager Mode Transacition Commit ½ÇÆĞ
-             * À§¿Í °°Àº °æ¿ì 5¹ø¿¡¼­ eager transaction¿¡ ¹®Á¦°¡ ¹ß»ıÇÒ
-             * ¼ö ÀÖÀ¸¹Ç·Î, receiver¿¡¼­ ¹®Á¦°¡ ¹ß»ıÇÑ ·Î±×ÀÇ SN
-             * °ú eager transactionÀÇ Begin SNÀ» ºñ±³ÇÏ¿©
-             * ¹®Á¦°¡ ¹ß»ıÇÑ ·Î±×ÀÇ SNÀÌ Å©°Å³ª °°Àº °æ¿ì¿¡¸¸
-             * abort flag¸¦ setÇÑ´Ù.
+             * (4) Senderê°€ ACK ìˆ˜ì‹  (TID 0 Transaction ì‹¤íŒ¨) -> Abort Flag ì„¤ì •
+             * (5) TID 4096 Eager Mode Transacition Commit ì‹¤íŒ¨
+             * ìœ„ì™€ ê°™ì€ ê²½ìš° 5ë²ˆì—ì„œ eager transactionì— ë¬¸ì œê°€ ë°œìƒí• 
+             * ìˆ˜ ìˆìœ¼ë¯€ë¡œ, receiverì—ì„œ ë¬¸ì œê°€ ë°œìƒí•œ ë¡œê·¸ì˜ SN
+             * ê³¼ eager transactionì˜ Begin SNì„ ë¹„êµí•˜ì—¬
+             * ë¬¸ì œê°€ ë°œìƒí•œ ë¡œê·¸ì˜ SNì´ í¬ê±°ë‚˜ ê°™ì€ ê²½ìš°ì—ë§Œ
+             * abort flagë¥¼ setí•œë‹¤.
              */
             IDE_ASSERT(mActiveTransTbl->mAbortTxMutex.lock( NULL /* idvSQL* */)
                        == IDE_SUCCESS);
@@ -1218,8 +1218,8 @@ RP_SENDER_STATUS rpdSenderInfo::getSenderStatus()
 }
 
 /*******************************************************************************
- * Description : Sync PK Pool¿¡¼­ ¸Ş¸ğ¸®¸¦ ÇÒ´ç¹Ş¾Æ,
- *               Sync PK¸¦ Sync PK ListÀÇ ¸¶Áö¸·¿¡ Ãß°¡ÇÑ´Ù.
+ * Description : Sync PK Poolì—ì„œ ë©”ëª¨ë¦¬ë¥¼ í• ë‹¹ë°›ì•„,
+ *               Sync PKë¥¼ Sync PK Listì˜ ë§ˆì§€ë§‰ì— ì¶”ê°€í•œë‹¤.
  *               (Called by Receiver)
  *
  ******************************************************************************/
@@ -1282,7 +1282,7 @@ IDE_RC rpdSenderInfo::addLastSyncPK(rpSyncPKType  aType,
 
     IDE_EXCEPTION_END;
 
-    // ¸Ş¸ğ¸® ÇÒ´ç¿¡ ½ÇÆĞÇÏ¿´À¸¹Ç·Î, ¸Ş¸ğ¸®¸¦ ÇØÁ¦ÇÏÁö ¾Ê´Â´Ù.
+    // ë©”ëª¨ë¦¬ í• ë‹¹ì— ì‹¤íŒ¨í•˜ì˜€ìœ¼ë¯€ë¡œ, ë©”ëª¨ë¦¬ë¥¼ í•´ì œí•˜ì§€ ì•ŠëŠ”ë‹¤.
 
     if(sIsLocked == ID_TRUE)
     {
@@ -1293,7 +1293,7 @@ IDE_RC rpdSenderInfo::addLastSyncPK(rpSyncPKType  aType,
 }
 
 /*******************************************************************************
- * Description : Sync PK List¿¡¼­ Ã¹ ¹øÂ° Sync PK Entry¸¦ »©¼­ ¹İÈ¯ÇÑ´Ù.
+ * Description : Sync PK Listì—ì„œ ì²« ë²ˆì§¸ Sync PK Entryë¥¼ ë¹¼ì„œ ë°˜í™˜í•œë‹¤.
  *               (Called by Failback Master)
  *
  ******************************************************************************/
@@ -1320,7 +1320,7 @@ void rpdSenderInfo::getFirstSyncPKEntry(rpdSyncPKEntry **aSyncPKEntry)
 }
 
 /*******************************************************************************
- * Description : Sync PK EntryÀÇ ¸Ş¸ğ¸®¸¦ Á¦°ÅÇÑ´Ù.
+ * Description : Sync PK Entryì˜ ë©”ëª¨ë¦¬ë¥¼ ì œê±°í•œë‹¤.
  *               (Called by Failback Master)
  *
  ******************************************************************************/
@@ -1330,7 +1330,7 @@ void rpdSenderInfo::removeSyncPKEntry(rpdSyncPKEntry * aSyncPKEntry)
 
     IDE_ASSERT(mSyncPKMtx.lock(NULL /* idvSQL* */) == IDE_SUCCESS);
 
-    // aXLog->mPKCols[i].value ¸Ş¸ğ¸®¸¦ ÇØÁ¦ÇÑ´Ù.
+    // aXLog->mPKCols[i].value ë©”ëª¨ë¦¬ë¥¼ í•´ì œí•œë‹¤.
     for(i = 0; i < QCI_MAX_KEY_COLUMN_COUNT; i++)
     {
         if(aSyncPKEntry->mPKCols[i].value != NULL)
@@ -1347,7 +1347,7 @@ void rpdSenderInfo::removeSyncPKEntry(rpdSyncPKEntry * aSyncPKEntry)
 }
 
 /**
- * @breif  Replication NameÀ» º¹»çÇÏ¿© ¾ò´Â´Ù.
+ * @breif  Replication Nameì„ ë³µì‚¬í•˜ì—¬ ì–»ëŠ”ë‹¤.
  *
  * @param  aOutRepName Replication Name
  */
@@ -1374,7 +1374,7 @@ void rpdSenderInfo::getRepName( SChar * aOutRepName )
 }
 
 /**
- * @breif  Replication NameÀ» ¼³Á¤ÇÑ´Ù.
+ * @breif  Replication Nameì„ ì„¤ì •í•œë‹¤.
  *
  * @param  aRepName Replication Name
  */
@@ -1401,10 +1401,10 @@ void rpdSenderInfo::setRepName( SChar * aRepName )
 }
 
 /********************************************************************
- * Description  : Sender ÀÇ Ã³¸®·®°ú ÇöÀç ½×¿© ÀÖ´Â Gap À» °¡Áö°í
- *                Transaction ÀÌ ±â´Ù·Á¾ß ÇÏ´Â ½Ã°£À» °è»ê
+ * Description  : Sender ì˜ ì²˜ë¦¬ëŸ‰ê³¼ í˜„ì¬ ìŒ“ì—¬ ìˆëŠ” Gap ì„ ê°€ì§€ê³ 
+ *                Transaction ì´ ê¸°ë‹¤ë ¤ì•¼ í•˜ëŠ” ì‹œê°„ì„ ê³„ì‚°
  *
- * Argument : aCurrentSN [IN] : ÇöÀç SM ¿¡ ±â·ÏµÈ ÃÖ±Ù SN
+ * Argument : aCurrentSN [IN] : í˜„ì¬ SM ì— ê¸°ë¡ëœ ìµœê·¼ SN
  * Return : Microseconds
  * mThroughput : byte per sec
  * ********************************************************************/
@@ -1451,9 +1451,9 @@ ULong rpdSenderInfo::getWaitTransactionTime( smSN aCurrentSN )
 }
 
 /********************************************************************
- * Description  : ÇöÀç GAP À» °è»ê
+ * Description  : í˜„ì¬ GAP ì„ ê³„ì‚°
  *
- * Argument : aCurrentSN [IN] : ÇöÀç SM ¿¡ ±â·ÏµÈ ÃÖ±Ù SN
+ * Argument : aCurrentSN [IN] : í˜„ì¬ SM ì— ê¸°ë¡ëœ ìµœê·¼ SN
  *
  * ********************************************************************/
 smSN rpdSenderInfo::calcurateCurrentGap( smSN aCurrentSN )
@@ -1532,8 +1532,8 @@ rpdSenderInfo * rpdSenderInfo::getAssignedSenderInfo( smTID     aTransID )
     else
     {
         /*
-         * mAssignedTransTable ¿¡ ÇÒ´ÙµÇ¾î ÀÖÁö ¾ÊÀ¸¸é
-         * Paraent ¿¡¼­ Ã³¸®ÁßÀÎ Transction ÀÌ´Ù
+         * mAssignedTransTable ì— í• ë‹¤ë˜ì–´ ìˆì§€ ì•Šìœ¼ë©´
+         * Paraent ì—ì„œ ì²˜ë¦¬ì¤‘ì¸ Transction ì´ë‹¤
          */
         sSenderInfo = this;
     }
@@ -1614,7 +1614,7 @@ idBool rpdSenderInfo::isAllTransFlushed( smSN aCurrentSN )
     {
         if ( aCurrentSN > mLastProcessedSNTable[i].mAckedSN )
         {
-            /* mLastSN°ú mAckedSNÀÌ °°Àº TransactionÀº Flush µÇ¾ú´Ù°í ÆÇ´ÜÇÑ´Ù. */
+            /* mLastSNê³¼ mAckedSNì´ ê°™ì€ Transactionì€ Flush ë˜ì—ˆë‹¤ê³  íŒë‹¨í•œë‹¤. */
             if ( mLastProcessedSNTable[i].mLastSN != mLastProcessedSNTable[i].mAckedSN )
             {
                 sResult = ID_FALSE;

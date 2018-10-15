@@ -217,10 +217,10 @@ ACI_RC cmnLinkPeerFinalizeSSL(cmnLink *aLink)
     cmnLinkPeerSSL *sLink = (cmnLinkPeerSSL *)aLink;
     cmbPool        *sPool = sLink->mLinkPeer.mPool;
 
-    /* TCP socketÀÌ ¿­·ÁÀÖÀ¸¸é ´ÝÀ½ */
+    /* TCP socketì´ ì—´ë ¤ìžˆìœ¼ë©´ ë‹«ìŒ */
     ACI_TEST( aLink->mOp->mClose(aLink) != ACI_SUCCESS );
 
-    /* Pending BlockÀÌ ÇÒ´çµÇ¾î ÀÖÀ¸¸é ÇØÁ¦ */
+    /* Pending Blockì´ í• ë‹¹ë˜ì–´ ìžˆìœ¼ë©´ í•´ì œ */
     if( sLink->mPendingBlock != NULL )
     {
         ACI_TEST( sPool->mOp->mFreeBlock(sPool, sLink->mPendingBlock) != ACI_SUCCESS );
@@ -274,7 +274,7 @@ ACI_RC cmnLinkPeerCloseSSL(cmnLink *aLink)
 
     ACI_TEST(cmnLinkPeerDestroySslCtx((cmnLinkPeer *)aLink) != ACI_SUCCESS);
 
-    /* TCP socketÀÌ ¿­·ÁÀÖÀ¸¸é ´ÝÀ½ */
+    /* TCP socketì´ ì—´ë ¤ìžˆìœ¼ë©´ ë‹«ìŒ */
     if (sLink->mDesc.mSock.mHandle != CMN_INVALID_SOCKET_HANDLE)
     {
         ACI_TEST(acpSockClose(&sLink->mDesc.mSock) != ACP_RC_SUCCESS);
@@ -518,7 +518,7 @@ ACI_RC cmnLinkPeerGetDescSSL(cmnLinkPeer *aLink, void *aDesc)
     cmnLinkPeerSSL *sLink = (cmnLinkPeerSSL *)aLink;
 
     /*
-     * Desc¸¦ µ¹·ÁÁÜ
+     * Descë¥¼ ëŒë ¤ì¤Œ
      */
     *(cmnLinkDescSSL **)aDesc = &sLink->mDesc;
 
@@ -598,7 +598,7 @@ ACI_RC cmnLinkPeerConnectSSL(cmnLinkPeer       *aLink,
 {
     cmnLinkPeerSSL        *sLink = (cmnLinkPeerSSL *)aLink;
 
-    /* BUG-44530 SSL¿¡¼­ ALTIBASE_SOCK_BIND_ADDR Áö¿ø */
+    /* BUG-44530 SSLì—ì„œ ALTIBASE_SOCK_BIND_ADDR ì§€ì› */
     acp_inet_addr_info_t  *sBindAddr   = NULL;
     acp_inet_addr_info_t  *sAddr       = NULL;
     acp_bool_t             sAddrIsIP   = ACP_FALSE;
@@ -611,7 +611,7 @@ ACI_RC cmnLinkPeerConnectSSL(cmnLinkPeer       *aLink,
     /* *********************************************************
      * proj-1538 ipv6: use getaddrinfo()
      * *********************************************************/
-    /* BUG-44530 SSL¿¡¼­ ALTIBASE_SOCK_BIND_ADDR Áö¿ø */
+    /* BUG-44530 SSLì—ì„œ ALTIBASE_SOCK_BIND_ADDR ì§€ì› */
     if (aConnectArg->mSSL.mBindAddr != NULL)
     {
         ACI_TEST(cmnGetAddrInfo(&sBindAddr,
@@ -663,7 +663,7 @@ ACI_RC cmnLinkPeerConnectSSL(cmnLinkPeer       *aLink,
         acpInetFreeAddrInfo(sAddr);
         sAddr = NULL;
     }
-    /* BUG-44530 SSL¿¡¼­ ALTIBASE_SOCK_BIND_ADDR Áö¿ø */
+    /* BUG-44530 SSLì—ì„œ ALTIBASE_SOCK_BIND_ADDR ì§€ì› */
     if (sBindAddr != NULL)
     {
         acpInetFreeAddrInfo(sBindAddr);
@@ -691,7 +691,7 @@ ACI_RC cmnLinkPeerConnectSSL(cmnLinkPeer       *aLink,
         acpInetFreeAddrInfo(sAddr);
         sAddr = NULL;
     }
-    /* BUG-44530 SSL¿¡¼­ ALTIBASE_SOCK_BIND_ADDR Áö¿ø */
+    /* BUG-44530 SSLì—ì„œ ALTIBASE_SOCK_BIND_ADDR ì§€ì› */
     if (sBindAddr != NULL)
     {
         acpInetFreeAddrInfo(sBindAddr);
@@ -719,7 +719,7 @@ static ACI_RC cmnLinkPeerConnByIP(cmnLinkPeer*          aLink,
                        0);
     ACI_TEST_RAISE(ACP_RC_NOT_SUCCESS(sRet), SocketError);
 
-    /* BUG-44530 SSL¿¡¼­ ALTIBASE_SOCK_BIND_ADDR Áö¿ø */
+    /* BUG-44530 SSLì—ì„œ ALTIBASE_SOCK_BIND_ADDR ì§€ì› */
     if (aBindAddr != NULL)
     {
         sRet = acpSockBind(&sLink->mDesc.mSock,
@@ -740,7 +740,7 @@ static ACI_RC cmnLinkPeerConnByIP(cmnLinkPeer*          aLink,
     acpMemCpy(&sLink->mDesc.mAddr, aAddr->ai_addr, aAddr->ai_addrlen);
     sLink->mDesc.mAddrLen = aAddr->ai_addrlen;
 
-    /* socket ÃÊ±âÈ­ */
+    /* socket ì´ˆê¸°í™” */
     ACI_TEST(aLink->mPeerOp->mSetOptions(aLink, aOption) != ACI_SUCCESS);
 
     return ACI_SUCCESS;
@@ -772,7 +772,7 @@ static ACI_RC cmnLinkPeerConnByIP(cmnLinkPeer*          aLink,
     }
     ACI_EXCEPTION_END;
 
-    // BUG-24170 [CM] cmiConnect ½ÇÆÐ ½Ã, cmiConnect ³»¿¡¼­ close
+    // BUG-24170 [CM] cmiConnect ì‹¤íŒ¨ ì‹œ, cmiConnect ë‚´ì—ì„œ close
     if (sLink->mDesc.mSock.mHandle != CMN_INVALID_SOCKET_HANDLE)
     {
         (void)acpSockClose(&sLink->mDesc.mSock);
@@ -874,7 +874,7 @@ static ACI_RC cmnLinkPeerConnByName(cmnLinkPeer*          aLink,
                            0);
         ACI_TEST_RAISE(ACP_RC_NOT_SUCCESS(sRet), SocketError);
 
-        /* BUG-44530 SSL¿¡¼­ ALTIBASE_SOCK_BIND_ADDR Áö¿ø */
+        /* BUG-44530 SSLì—ì„œ ALTIBASE_SOCK_BIND_ADDR ì§€ì› */
         if (aBindAddr != NULL)
         {
             sRet = acpSockBind(&sLink->mDesc.mSock,
@@ -914,7 +914,7 @@ static ACI_RC cmnLinkPeerConnByName(cmnLinkPeer*          aLink,
     acpMemCpy(&sLink->mDesc.mAddr, sAddr->ai_addr, sAddr->ai_addrlen);
     sLink->mDesc.mAddrLen = sAddr->ai_addrlen;
 
-    /* socket ÃÊ±âÈ­ */
+    /* socket ì´ˆê¸°í™” */
     ACI_TEST(aLink->mPeerOp->mSetOptions(aLink, aOption) != ACI_SUCCESS);
 
     return ACI_SUCCESS;
@@ -942,7 +942,7 @@ static ACI_RC cmnLinkPeerConnByName(cmnLinkPeer*          aLink,
     }
     ACI_EXCEPTION_END;
 
-    /* BUG-24170 [CM] cmiConnect ½ÇÆÐ ½Ã, cmiConnect ³»¿¡¼­ close */
+    /* BUG-24170 [CM] cmiConnect ì‹¤íŒ¨ ì‹œ, cmiConnect ë‚´ì—ì„œ close */
     if (sLink->mDesc.mSock.mHandle != CMN_INVALID_SOCKET_HANDLE)
     {
         (void)acpSockClose(&sLink->mDesc.mSock);
@@ -978,7 +978,7 @@ ACI_RC cmnLinkPeerSetOptionsSSL(cmnLinkPeer *aLink, acp_sint32_t aOption)
     struct linger   sLingerOption;
 
     /*
-     * SO_KEEPALIVE ¼¼ÆÃ
+     * SO_KEEPALIVE ì„¸íŒ…
      */
     sOption = 1;
 
@@ -989,16 +989,16 @@ ACI_RC cmnLinkPeerSetOptionsSSL(cmnLinkPeer *aLink, acp_sint32_t aOption)
                         ACI_SIZEOF(sOption));
 
     /*
-     * BUG-26484: Ãß°¡·Î ¼³Á¤ÇÒ ¼ÒÄÏ ¿É¼ÇÀ» ÁöÁ¤
+     * BUG-26484: ì¶”ê°€ë¡œ ì„¤ì •í•  ì†Œì¼“ ì˜µì…˜ì„ ì§€ì •
      */
     if (aOption == SO_LINGER)
     {
         /*
-         * ¿¬¼ÓÀ¸·Î ¿¬°áÇß´Ù ²÷±â¸¦ ¹Ýº¹ÇÏ¸é ´õ ÀÌ»ó ¿¬°áÇÒ ¼ö ¾ø°ÔµÈ´Ù.
-         * ÀÏ¹ÝÀûÀ¸·Î ¼ÒÄÏÀº closeÇØµµ TIME_WAIT »óÅÂ·Î ÀÏÁ¤½Ã°£ ´ë±âÇÏ±â ¶§¹®ÀÌ´Ù.
-         * SO_LINGER ¿É¼Ç Ãß°¡. (SO_REUSEADDR ¿É¼ÇÀ¸·Î´Â Àß ¾ÈµÉ ¼öµµ ÀÖ´Ù;)
+         * ì—°ì†ìœ¼ë¡œ ì—°ê²°í–ˆë‹¤ ëŠê¸°ë¥¼ ë°˜ë³µí•˜ë©´ ë” ì´ìƒ ì—°ê²°í•  ìˆ˜ ì—†ê²Œëœë‹¤.
+         * ì¼ë°˜ì ìœ¼ë¡œ ì†Œì¼“ì€ closeí•´ë„ TIME_WAIT ìƒíƒœë¡œ ì¼ì •ì‹œê°„ ëŒ€ê¸°í•˜ê¸° ë•Œë¬¸ì´ë‹¤.
+         * SO_LINGER ì˜µì…˜ ì¶”ê°€. (SO_REUSEADDR ì˜µì…˜ìœ¼ë¡œëŠ” ìž˜ ì•ˆë  ìˆ˜ë„ ìžˆë‹¤;)
          *
-         * SO_LINGER ¼¼ÆÃ
+         * SO_LINGER ì„¸íŒ…
         */
         sLingerOption.l_onoff  = 1;
         sLingerOption.l_linger = 0;
@@ -1012,7 +1012,7 @@ ACI_RC cmnLinkPeerSetOptionsSSL(cmnLinkPeer *aLink, acp_sint32_t aOption)
     else if (aOption == SO_REUSEADDR)
     {
         /*
-         * SO_REUSEADDR ¼¼ÆÃ
+         * SO_REUSEADDR ì„¸íŒ…
          */
         sOption = 1;
 
@@ -1028,7 +1028,7 @@ ACI_RC cmnLinkPeerSetOptionsSSL(cmnLinkPeer *aLink, acp_sint32_t aOption)
     }
 
     /*
-     * TCP_NODELAY ¼¼ÆÃ
+     * TCP_NODELAY ì„¸íŒ…
      */
     sOption = 1;
 
@@ -1039,7 +1039,7 @@ ACI_RC cmnLinkPeerSetOptionsSSL(cmnLinkPeer *aLink, acp_sint32_t aOption)
                         ACI_SIZEOF(sOption));
 
     /* BUG-22028
-     * SO_SNDBUF ¼¼ÆÃ (´ë¿ªÆø * Áö¿¬À²) * 2
+     * SO_SNDBUF ì„¸íŒ… (ëŒ€ì—­í­ * ì§€ì—°ìœ¨) * 2
      */
     sOption = CMB_BLOCK_DEFAULT_SIZE * 2;
 
@@ -1051,7 +1051,7 @@ ACI_RC cmnLinkPeerSetOptionsSSL(cmnLinkPeer *aLink, acp_sint32_t aOption)
 
     /*
      * BUG-22028
-     * SO_RCVBUF ¼¼ÆÃ (´ë¿ªÆø * Áö¿¬À²) * 2
+     * SO_RCVBUF ì„¸íŒ… (ëŒ€ì—­í­ * ì§€ì—°ìœ¨) * 2
      */
     sOption = CMB_BLOCK_DEFAULT_SIZE * 2;
 
@@ -1147,12 +1147,12 @@ static ACI_RC cmnSslSockRecv(cmnLinkPeer    *aLink,
     ACI_TEST_RAISE(gOpenssl == NULL, NoSslLibrary);
 
     /*  
-     * aSize ÀÌ»ó aBlockÀ¸·Î µ¥ÀÌÅÍ ÀÐÀ½
+     * aSize ì´ìƒ aBlockìœ¼ë¡œ ë°ì´í„° ì½ìŒ
      */
     while (aBlock->mDataSize < aSize)
     {
         /*
-         * Dispatcher¸¦ ÀÌ¿ëÇÏ¿© Timeout ¸¸Å­ ´ë±â
+         * Dispatcherë¥¼ ì´ìš©í•˜ì—¬ Timeout ë§Œí¼ ëŒ€ê¸°
          */
         if (aTimeout != ACP_TIME_INFINITE)
         {
@@ -1166,7 +1166,7 @@ static ACI_RC cmnSslSockRecv(cmnLinkPeer    *aLink,
         }
 
         /*
-         * SocketÀ¸·ÎºÎÅÍ ÀÐÀ½
+         * Socketìœ¼ë¡œë¶€í„° ì½ìŒ
          */
         sSize = gOpenssl->mFuncs.SSL_read(sLink->mDesc.mSslHandle,
                                           aBlock->mData + aBlock->mDataSize,
@@ -1255,7 +1255,7 @@ static ACI_RC cmnSslSockSend(cmnLinkPeer    *aLink,
     while (aBlock->mCursor < aBlock->mDataSize)
     {
         /*
-         * Dispatcher¸¦ ÀÌ¿ëÇÏ¿© Timeout ¸¸Å­ ´ë±â
+         * Dispatcherë¥¼ ì´ìš©í•˜ì—¬ Timeout ë§Œí¼ ëŒ€ê¸°
          */
         if (aTimeout != ACP_TIME_INFINITE)
         {
@@ -1330,7 +1330,7 @@ ACI_RC cmnLinkPeerRecvSSL(cmnLinkPeer *aLink,
     cmpPacketType   sPacketType = aLink->mLink.mPacketType;
 
     /*
-     * Pending BlockÀÖÀ¸¸é »ç¿ë ±×·¸Áö ¾ÊÀ¸¸é Block ÇÒ´ç
+     * Pending Blockìžˆìœ¼ë©´ ì‚¬ìš© ê·¸ë ‡ì§€ ì•Šìœ¼ë©´ Block í• ë‹¹
      */
     /* proj_2160 cm_type removal */
     /* A7 or CMP_PACKET_TYPE_UNKNOWN: block already allocated. */
@@ -1368,7 +1368,7 @@ ACI_RC cmnLinkPeerRecvSSL(cmnLinkPeer *aLink,
     }
 
     /*
-     * Protocol Header Size Å©±â ÀÌ»ó ÀÐÀ½
+     * Protocol Header Size í¬ê¸° ì´ìƒ ì½ìŒ
      */
     ACI_TEST_RAISE(cmnSslSockRecv(aLink,
                                   sBlock,
@@ -1376,13 +1376,13 @@ ACI_RC cmnLinkPeerRecvSSL(cmnLinkPeer *aLink,
                                   aTimeout) != ACI_SUCCESS, SockRecvError);
 
     /*
-     * Protocol Header ÇØ¼®
+     * Protocol Header í•´ì„
      */
     ACI_TEST(cmpHeaderRead(aLink, &sHeader, sBlock) != ACI_SUCCESS);
     sPacketSize = sHeader.mA7.mPayloadLength + CMP_HEADER_SIZE;
 
     /*
-     * ÆÐÅ¶ Å©±â ÀÌ»ó ÀÐÀ½
+     * íŒ¨í‚· í¬ê¸° ì´ìƒ ì½ìŒ
      */
     ACI_TEST_RAISE(cmnSslSockRecv(aLink,
                                   sBlock,
@@ -1390,7 +1390,7 @@ ACI_RC cmnLinkPeerRecvSSL(cmnLinkPeer *aLink,
                                   aTimeout) != ACI_SUCCESS, SockRecvError);
 
     /*
-     * ÆÐÅ¶ Å©±â ÀÌ»ó ÀÐÇûÀ¸¸é ÇöÀç ÆÐÅ¶ ÀÌÈÄÀÇ µ¥ÀÌÅÍ¸¦ Pending BlockÀ¸·Î ¿Å±è
+     * íŒ¨í‚· í¬ê¸° ì´ìƒ ì½í˜”ìœ¼ë©´ í˜„ìž¬ íŒ¨í‚· ì´í›„ì˜ ë°ì´í„°ë¥¼ Pending Blockìœ¼ë¡œ ì˜®ê¹€
      */
     if (sBlock->mDataSize > sPacketSize)
     {
@@ -1403,7 +1403,7 @@ ACI_RC cmnLinkPeerRecvSSL(cmnLinkPeer *aLink,
     }
 
     /*
-     * Block°ú Header¸¦ µ¹·ÁÁÜ
+     * Blockê³¼ Headerë¥¼ ëŒë ¤ì¤Œ
      */
     /* proj_2160 cm_type removal
      *  Do not use mLink.mPacketType. instead, use sPacketType.
@@ -1477,7 +1477,7 @@ ACI_RC cmnLinkPeerSendSSL(cmnLinkPeer *aLink,
                           cmbBlock *aBlock)
 {
     /*
-     * Block Àü¼Û
+     * Block ì „ì†¡
      */
     ACI_TEST(cmnSslSockSend(aLink, 
                             aBlock,
@@ -1524,13 +1524,13 @@ ACI_RC cmnLinkPeerAllocBlockSSL(cmnLinkPeer *aLink,
     ACI_TEST(aLink->mPool->mOp->mAllocBlock(aLink->mPool, &sBlock) != ACI_SUCCESS);
 
     /*
-     * Write Block ÃÊ±âÈ­
+     * Write Block ì´ˆê¸°í™”
      */
     sBlock->mDataSize = CMP_HEADER_SIZE;
     sBlock->mCursor   = CMP_HEADER_SIZE;
 
     /*
-     * Write BlockÀ» µ¹·ÁÁÜ
+     * Write Blockì„ ëŒë ¤ì¤Œ
      */
     *aBlock = sBlock;
 
@@ -1545,7 +1545,7 @@ ACI_RC cmnLinkPeerFreeBlockSSL(cmnLinkPeer *aLink,
                                cmbBlock *aBlock)
 {
     /*
-     * Block ÇØÁ¦
+     * Block í•´ì œ
      */
     ACI_TEST(aLink->mPool->mOp->mFreeBlock(aLink->mPool, aBlock) != ACI_SUCCESS);
 
@@ -1620,25 +1620,25 @@ ACI_RC cmnLinkPeerMapSSL(cmnLink *aLink)
     cmnLinkPeer *sLink = (cmnLinkPeer *)aLink;
 
     /*
-     * Link °Ë»ç
+     * Link ê²€ì‚¬
      */
     ACE_ASSERT(aLink->mType == CMN_LINK_TYPE_PEER_SERVER ||
                aLink->mType == CMN_LINK_TYPE_PEER_CLIENT);
     ACE_ASSERT(aLink->mImpl == CMN_LINK_IMPL_SSL);
 
     /*
-     * Shared Pool È¹µæ
+     * Shared Pool íšë“
      */
     ACI_TEST(cmbPoolGetSharedPool(&sLink->mPool, CMB_POOL_IMPL_LOCAL) != ACI_SUCCESS);
 
     /*
-     * ÇÔ¼ö Æ÷ÀÎÅÍ ¼¼ÆÃ
+     * í•¨ìˆ˜ í¬ì¸í„° ì„¸íŒ…
      */
     aLink->mOp     = &gCmnLinkPeerOpSSLClient;
     sLink->mPeerOp = &gCmnLinkPeerPeerOpSSLClient;
 
     /*
-     * ¸â¹ö ÃÊ±âÈ­
+     * ë©¤ë²„ ì´ˆê¸°í™”
      */
     sLink->mUserPtr    = NULL;
 

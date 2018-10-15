@@ -33,8 +33,8 @@
 
 #define DK_UNUSED(aVar) (void)(aVar)
 
-/* °¢Á¾ ¹®ÀÚ¿­ÀÇ ±æÀÌ °ü·Ã. DK_NAME_LENÀº QP¿¡¼­ Á¤ÇÑ °ªÀ» »ç¿ëÇÑ´Ù. */
-#define DK_NAME_LEN                     QCI_MAX_NAME_LEN    /* 2012.10.05 ÇöÀç 40 */
+/* ê°ì¢… ë¬¸ìžì—´ì˜ ê¸¸ì´ ê´€ë ¨. DK_NAME_LENì€ QPì—ì„œ ì •í•œ ê°’ì„ ì‚¬ìš©í•œë‹¤. */
+#define DK_NAME_LEN                     QCI_MAX_NAME_LEN    /* 2012.10.05 í˜„ìž¬ 40 */
 #define DK_PATH_LEN                     (1024)
 #define DK_DRIVER_CLASS_NAME_LEN        (1024)
 #define DK_MSG_LEN                      (2048)
@@ -43,10 +43,10 @@
 #define DK_USER_PW_LEN                  DK_NAME_LEN
 #define DK_TIME_STR_LEN                 (128)
 
-/* Altibase ¼­¹ö¿¡¼­ AltiLinker ÇÁ·Î¼¼½º·Î ÇÑ¹ø¿¡ Àü¼ÛÇÏ´Â packet ÀÇ ÃÖ´ëÅ©±â */
+/* Altibase ì„œë²„ì—ì„œ AltiLinker í”„ë¡œì„¸ìŠ¤ë¡œ í•œë²ˆì— ì „ì†¡í•˜ëŠ” packet ì˜ ìµœëŒ€í¬ê¸° */
 #define DK_MAX_PACKET_LEN               (32)*(1024) /* BUG-36837 */
 
-/* Altibase ¼­¹ö¿¡¼­ AltiLinker ÇÁ·Î¼¼½º·Î Àü´Þ°¡´ÉÇÑ SQL text ÀÇ ÃÖ´ë±æÀÌ */
+/* Altibase ì„œë²„ì—ì„œ AltiLinker í”„ë¡œì„¸ìŠ¤ë¡œ ì „ë‹¬ê°€ëŠ¥í•œ SQL text ì˜ ìµœëŒ€ê¸¸ì´ */
 #define DK_MAX_SQLTEXT_LEN              (32000)
 
 #define DK_RC_SUCCESS                   (0)
@@ -56,8 +56,8 @@
 #define DK_MAX_TARGET_COUNT             (128)
 #define DK_MAX_TARGET_SUB_ITEM_COUNT    (8)
 
-/* ÇöÀç´Â Column °³¼ö°¡ 1024 ±îÁö·Î Á¦ÇÑµÇ¾î ÀÖ´Ù. 
-   ¸¸¾à ÀÌ Á¦¾à»çÇ×ÀÌ ¹Ù²î°Ô µÇ¸é ±×¿¡ µû¶ó ÀÌ »ó¼ö°ªÀ» º¯°æÇØÁÖ¾î¾ß ÇÑ´Ù. */
+/* í˜„ìž¬ëŠ” Column ê°œìˆ˜ê°€ 1024 ê¹Œì§€ë¡œ ì œí•œë˜ì–´ ìžˆë‹¤. 
+   ë§Œì•½ ì´ ì œì•½ì‚¬í•­ì´ ë°”ë€Œê²Œ ë˜ë©´ ê·¸ì— ë”°ë¼ ì´ ìƒìˆ˜ê°’ì„ ë³€ê²½í•´ì£¼ì–´ì•¼ í•œë‹¤. */
 #define DK_MAX_COL_CNT                  (1024)
 
 /* Trace log directory name */ 
@@ -67,7 +67,7 @@
 #define DK_TRC_LOG_FORCE          IDE_DK_0
 #define DK_TRC_LOG_ERROR          IDE_DK_1
 
-/* ·ÎÄÃ IP ¹®ÀÚ¿­ */
+/* ë¡œì»¬ IP ë¬¸ìžì—´ */
 #define DK_LOCAL_IP                     ((SChar *)"127.0.0.1")
 
 #define DK_INVALID_USER_ID              (ID_UINT_MAX)

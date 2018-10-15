@@ -35,10 +35,10 @@ IDE_RC qcmDatabase::getMetaVersion( smiStatement * aSmiStmt,
 /***********************************************************************
  *
  * Description :
- *    µ¥ÀÌÅÍº£ÀÌ½º ¸ŞÅ¸ÀÇ ¹öÀüÀ» ±¸ÇÑ´Ù.
+ *    ë°ì´í„°ë² ì´ìŠ¤ ë©”íƒ€ì˜ ë²„ì „ì„ êµ¬í•œë‹¤.
  *
  * Implementation :
- *    gQcmDatabase ·ÎºÎÅÍ ¸ŞÅ¸ÀÇ MajorVersion, MinorVersion À» ±¸ÇÑ´Ù.
+ *    gQcmDatabase ë¡œë¶€í„° ë©”íƒ€ì˜ MajorVersion, MinorVersion ì„ êµ¬í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -47,7 +47,7 @@ IDE_RC qcmDatabase::getMetaVersion( smiStatement * aSmiStmt,
     const void      * sRow;
     mtcColumn       * sMtcColumn;
 
-    scGRID            sRid; // Disk TableÀ» À§ÇÑ Record IDentifier
+    scGRID            sRid; // Disk Tableì„ ìœ„í•œ Record IDentifier
 
     // initialize
     sCursor.initialize();
@@ -127,7 +127,7 @@ IDE_RC qcmDatabase::checkDatabase(
 /***********************************************************************
  *
  * Description :
- *     µ¥ÀÌÅÍº£ÀÌ½º°¡ Á¸ÀçÇÏ´ÂÁö °Ë»çÇÔ
+ *     ë°ì´í„°ë² ì´ìŠ¤ê°€ ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬í•¨
  *
  * Implementation :
  *
@@ -138,7 +138,7 @@ IDE_RC qcmDatabase::checkDatabase(
     const void      * sRow;
     mtcColumn       * sMtcColumn;
 
-    scGRID            sRid; // Disk TableÀ» À§ÇÑ Record IDentifier
+    scGRID            sRid; // Disk Tableì„ ìœ„í•œ Record IDentifier
     mtdCharType     * sOwnerDN;
 
     // initialize
@@ -211,10 +211,10 @@ IDE_RC qcmDatabase::getMetaPrevVersion( smiStatement * aSmiStmt,
  *
  * Description :
  *    PROJ-2689 downgrade meta
- *    µ¥ÀÌÅÍº£ÀÌ½º ÀÌÀü ¸ŞÅ¸ÀÇ ¹öÀüÀ» ±¸ÇÑ´Ù.
+ *    ë°ì´í„°ë² ì´ìŠ¤ ì´ì „ ë©”íƒ€ì˜ ë²„ì „ì„ êµ¬í•œë‹¤.
  *
  * Implementation :
- *    gQcmDatabase ·ÎºÎÅÍ ¸ŞÅ¸ÀÇ PrvMajorVersion, PrevMinorVersion À» ±¸ÇÑ´Ù.
+ *    gQcmDatabase ë¡œë¶€í„° ë©”íƒ€ì˜ PrvMajorVersion, PrevMinorVersion ì„ êµ¬í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -223,7 +223,7 @@ IDE_RC qcmDatabase::getMetaPrevVersion( smiStatement * aSmiStmt,
     const void      * sRow;
     mtcColumn       * sMtcColumn;
 
-    scGRID            sRid; // Disk TableÀ» À§ÇÑ Record IDentifier
+    scGRID            sRid; // Disk Tableì„ ìœ„í•œ Record IDentifier
 
     // initialize
     sCursor.initialize();

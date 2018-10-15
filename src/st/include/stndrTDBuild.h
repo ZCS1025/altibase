@@ -20,16 +20,16 @@
  *
  * Description :
  *
- * Buffer Flush ¾²·¹µå
+ * Buffer Flush ì“°ë ˆë“œ
  *
  * # Concept
  *
- * - ¹öÆÛ ¸Å´ÏÀúÀÇ dirty page list¸¦ ÁÖ±âÀûÀ¸·Î
- *   flush ÇÏ´Â ¾²·¹µå
+ * - ë²„í¼ ë§¤ë‹ˆì €ì˜ dirty page listë¥¼ ì£¼ê¸°ì ìœ¼ë¡œ
+ *   flush í•˜ëŠ” ì“°ë ˆë“œ
  *
  * # Architecture
  * 
- * - ¼­¹ö startup½Ã ÇÏ³ªÀÇ buffer flush ¾²·¹µå µ¿ÀÛ
+ * - ì„œë²„ startupì‹œ í•˜ë‚˜ì˜ buffer flush ì“°ë ˆë“œ ë™ì‘
  * 
  **********************************************************************/
 
@@ -46,7 +46,7 @@ class stndrTDBuild : public idtBaseThread
 {
 public:
 
-    /* ¾²·¹µå ÃÊ±âÈ­ */
+    /* ì“°ë ˆë“œ ì´ˆê¸°í™” */
     IDE_RC initialize( UInt             aTotalThreadCnt,
                        UInt             aID,
                        smcTableHeader * aTable,
@@ -57,9 +57,9 @@ public:
                        idvSQL         * aStatistics,
                        idBool         * aContinue );
     
-    IDE_RC destroy();         /* ¾²·¹µå ÇØÁ¦ */
+    IDE_RC destroy();         /* ì“°ë ˆë“œ í•´ì œ */
     
-    virtual void run();       /* main ½ÇÇà ·çÆ¾ */
+    virtual void run();       /* main ì‹¤í–‰ ë£¨í‹´ */
 
     stndrTDBuild();
     virtual ~stndrTDBuild();
@@ -69,8 +69,8 @@ public:
 
 private:
 
-    idBool            mFinished;    /* ¾²·¹µå ½ÇÇà ¿©ºÎ flag */
-    idBool          * mContinue;    /* ¾²·¹µå Áß´Ü ¿©ºÎ flag */
+    idBool            mFinished;    /* ì“°ë ˆë“œ ì‹¤í–‰ ì—¬ë¶€ flag */
+    idBool          * mContinue;    /* ì“°ë ˆë“œ ì¤‘ë‹¨ ì—¬ë¶€ flag */
     UInt              mErrorCode;
     ideErrorMgr       mErrorMgr;
     

@@ -23,15 +23,15 @@
     iSQLPreLexer.l
 
    DESCRIPTION
-    isql¿¡´Â ´ÙÀ½ÀÇ 3°¡Áö ¸í·É¾î Á¾°áÀÚ°¡ ÀÖ´Ù.
+    isqlì—ëŠ” ë‹¤ìŒì˜ 3ê°€ì§€ ëª…ë ¹ì–´ ì¢…ê²°ìžê°€ ìžˆë‹¤.
     -----------------------------------------------------
     \n    : isql command. ex)set, show, @, ...
     ;\n   : sql command.  ex) select, update, alter, ...
     \n/\n : create prodecure/function stmt.
     -----------------------------------------------------
-    ÀÌ ÆÄÀÏÀº ¸í·É¾îÀÇ ½ÃÀÛ ´Ü¾î¿¡ µû¶ó ¸í·É¾î ³¡À» ¾Ë¼ö ÀÖ¾î
-    ÇÏ³ªÀÇ ¸í·É¾î°¡ ¿Ï·áµÉ ¶§±îÁö ÀÔ·ÂÀ» ¹Þ¾Æµé¿© ¹öÆÛ¿¡ ÀúÀåÇÑ ´ÙÀ½
-    ¸í·É¾î°¡ ¿Ï·áµÇ¸é ¹öÆÛ¸¦ iSQLParserparseÀÇ ÀÔ·ÂÀ¸·Î ³Ñ°ÜÁØ´Ù.
+    ì´ íŒŒì¼ì€ ëª…ë ¹ì–´ì˜ ì‹œìž‘ ë‹¨ì–´ì— ë”°ë¼ ëª…ë ¹ì–´ ëì„ ì•Œìˆ˜ ìžˆì–´
+    í•˜ë‚˜ì˜ ëª…ë ¹ì–´ê°€ ì™„ë£Œë  ë•Œê¹Œì§€ ìž…ë ¥ì„ ë°›ì•„ë“¤ì—¬ ë²„í¼ì— ì €ìž¥í•œ ë‹¤ìŒ
+    ëª…ë ¹ì–´ê°€ ì™„ë£Œë˜ë©´ ë²„í¼ë¥¼ iSQLParserparseì˜ ìž…ë ¥ìœ¼ë¡œ ë„˜ê²¨ì¤€ë‹¤.
 
    PUBLIC FUNCTION(S)
 
@@ -77,11 +77,11 @@ idBool                g_IsProc = ID_FALSE;
 extern SInt           gLastReturnValue;
 /* ============================================
  * IsEOF  : isql exit if end-of-file detect
- * IsPLN  : PLNÀÌ ¿¬¼Ó È£ÃâµÉ °æ¿ì µÎ¹øÂ° PLNÀº iSQLPreLexer_input¿¡¼­
- *          attachÇÑ newline¿¡ ÀÇÇØ È£ÃâµÈ °æ¿ìÀÌ¹Ç·Î
- *          ÀÌ¶§¿¡´Â ¾Æ¹«ÀÏµµ ÇÏÁö ¾Ê´Â´Ù.
- * PLNCnt : ¿¬¼Ó enter°¡ ÀÔ·ÂµÈ °æ¿ì ÀÔ·ÂµÈ
- *          ¸í·É¾î´Â ¹«½ÃµÇ°í ÇÁ·ÒÇÁÆ®¸¦ Ãâ·ÂÇÑ´Ù.
+ * IsPLN  : PLNì´ ì—°ì† í˜¸ì¶œë  ê²½ìš° ë‘ë²ˆì§¸ PLNì€ iSQLPreLexer_inputì—ì„œ
+ *          attachí•œ newlineì— ì˜í•´ í˜¸ì¶œëœ ê²½ìš°ì´ë¯€ë¡œ
+ *          ì´ë•Œì—ëŠ” ì•„ë¬´ì¼ë„ í•˜ì§€ ì•ŠëŠ”ë‹¤.
+ * PLNCnt : ì—°ì† enterê°€ ìž…ë ¥ëœ ê²½ìš° ìž…ë ¥ëœ
+ *          ëª…ë ¹ì–´ëŠ” ë¬´ì‹œë˜ê³  í”„ë¡¬í”„íŠ¸ë¥¼ ì¶œë ¥í•œë‹¤.
  * ============================================ */
 idBool IsEOF     = ID_FALSE;
 idBool IsPLN     = ID_FALSE;
@@ -317,8 +317,8 @@ adminCom    ("STARTUP"|"SHUTDOWN")
 
 <xsql>\"                                { // Quoted String
                                           // To Fix BUG-17430
-                                          // Quoted StringÀ» ÇØ¼®ÇÒ ¼ö ÀÖ¾î¾ß ÇÔ.
-                                          // ´ÙÀ½ ±¸¹®ÀÌ ÁÖ¼®À¸·Î Ã³¸®µÉ ¼ö ÀÖÀ½
+                                          // Quoted Stringì„ í•´ì„í•  ìˆ˜ ìžˆì–´ì•¼ í•¨.
+                                          // ë‹¤ìŒ êµ¬ë¬¸ì´ ì£¼ì„ìœ¼ë¡œ ì²˜ë¦¬ë  ìˆ˜ ìžˆìŒ
                                           // Ex) "NAME--NAME";
                                           BEGIN xQuoStr;   APD();  }
 <xQuoStr>[^\"\n]*\"                     { /*BUG-25932*/ BEGIN xsql;      APD();  }
@@ -350,7 +350,7 @@ adminCom    ("STARTUP"|"SHUTDOWN")
 <xhyphen>\r?\n                          { BEGIN xsql;      PLN();  }
 
 <xsql>[^-'"/;\n]*                       { // query
-                                          // BUG-17430 Quoted String À» ºÐ¸®
+                                          // BUG-17430 Quoted String ì„ ë¶„ë¦¬
                                                            APD();  }
 <xsql>;[ \t]*(("--"|"//")[^\n]*)?\r?\n  { // end of query
                                           BEGIN INITIAL;   RTN();  }
@@ -527,8 +527,8 @@ iSQLPreLexer_input( SChar * buf,
 
 AGAIN:
     /* ============================================
-     * end-of-fileÀÌ¸é ÀÌÀü¿¡ Ã³¸®ÇÏ´ø ÆÄÀÏÀ» m_flist¿¡ ¼¼ÆÃÇÑ´Ù.
-     * ¸¸¾à ÀÌÀü¿¡ Ã³¸®ÇÏ´ø ÆÄÀÏÀÌ ¾ø´Ù¸é isqlÀ» Á¾·áÇÑ´Ù.
+     * end-of-fileì´ë©´ ì´ì „ì— ì²˜ë¦¬í•˜ë˜ íŒŒì¼ì„ m_flistì— ì„¸íŒ…í•œë‹¤.
+     * ë§Œì•½ ì´ì „ì— ì²˜ë¦¬í•˜ë˜ íŒŒì¼ì´ ì—†ë‹¤ë©´ isqlì„ ì¢…ë£Œí•œë‹¤.
      * ============================================ */
     if ( IsEOF == ID_TRUE )
     {
@@ -560,8 +560,8 @@ AGAIN:
         IsEOF = ID_FALSE;
 
         /* ============================================
-         * FileRead°¡ ¾Æ´Ï¸é stdinÀÌ¹Ç·Î ÇÁ·ÒÇÁÆ®¸¦ Ãâ·ÂÇÑ´Ù.
-         * FileRead ¿©ºÎ´Â PrintPrompt()¿¡¼­ Ã¼Å©ÇÑ´Ù.
+         * FileReadê°€ ì•„ë‹ˆë©´ stdinì´ë¯€ë¡œ í”„ë¡¬í”„íŠ¸ë¥¼ ì¶œë ¥í•œë‹¤.
+         * FileRead ì—¬ë¶€ëŠ” PrintPrompt()ì—ì„œ ì²´í¬í•œë‹¤.
          * ============================================ */
          gSQLCompiler->PrintPrompt();
     }
@@ -576,13 +576,13 @@ AGAIN:
     {
 #endif
     /* ============================================
-     * fp·ÎºÎÅÍ ÇÑ¹®ÀÚ¾¿ ÀÐ¾î buf¿¡ ÀúÀåÇÑ´Ù.
-     * newlineÀ» ¸¸³ª¸é newlineÀ» ÇÏ³ª ´õ ºÙ¿©¼­ ¸®ÅÏÇÑ´Ù.
-     * newlineÀÌ ÇÑ°³ÀÏ °æ¿ì ÆÐÅÏ¸ÅÄ¡ÇÏÁö ¾ÊÀ½. (maybe flex bug)
+     * fpë¡œë¶€í„° í•œë¬¸ìžì”© ì½ì–´ bufì— ì €ìž¥í•œë‹¤.
+     * newlineì„ ë§Œë‚˜ë©´ newlineì„ í•˜ë‚˜ ë” ë¶™ì—¬ì„œ ë¦¬í„´í•œë‹¤.
+     * newlineì´ í•œê°œì¼ ê²½ìš° íŒ¨í„´ë§¤ì¹˜í•˜ì§€ ì•ŠìŒ. (maybe flex bug)
      * ============================================ */
     while ( ID_TRUE )
     {
-        // NULL-term±îÁö ÃÖ´ë 3¹®ÀÚ¸¦ ¹öÆÛ¿¡ ¾µ ¼ö ÀÖÀ¸¹Ç·Î ¿©À¯°¡ ÀÖ´ÂÁö È®ÀÎ
+        // NULL-termê¹Œì§€ ìµœëŒ€ 3ë¬¸ìžë¥¼ ë²„í¼ì— ì“¸ ìˆ˜ ìžˆìœ¼ë¯€ë¡œ ì—¬ìœ ê°€ ìžˆëŠ”ì§€ í™•ì¸
         if ((i+3) > YY_BUF_SIZE)
         {
             gBufMgr->Reset();
@@ -614,7 +614,7 @@ AGAIN:
             else
             {
                 /* ============================================
-                 * ¸í·É¾î°¡ ÀúÀåµÇ°í ¸¶Áö¸·¿¡ EOF¸¦ ¸¸³­ °æ¿ì.
+                 * ëª…ë ¹ì–´ê°€ ì €ìž¥ë˜ê³  ë§ˆì§€ë§‰ì— EOFë¥¼ ë§Œë‚œ ê²½ìš°.
                  * ============================================ */
                 buf[i++] = '\n';
                 buf[i++] = '\n';

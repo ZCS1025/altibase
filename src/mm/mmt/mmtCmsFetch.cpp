@@ -41,7 +41,7 @@ static IDE_RC answerFetchMoveResult(cmiProtocolContext *aProtocolContext)
 
     IDE_EXCEPTION_END;
 
-    /* BUG-44124 ipcda ¸ğµå »ç¿ë Áß hang - iloader ÄÃ·³ÀÌ ¸¹Àº Å×ÀÌºí */
+    /* BUG-44124 ipcda ëª¨ë“œ ì‚¬ìš© ì¤‘ hang - iloader ì»¬ëŸ¼ì´ ë§ì€ í…Œì´ë¸” */
     if( (sWriteCheckState == CMI_WRITE_CHECK_ACTIVATED) && (cmiGetLinkImpl(aProtocolContext) == CMI_LINK_IMPL_IPCDA) )
     {
         IDE_SET(ideSetErrorCode(mmERR_ABORT_IPCDA_MESSAGE_TOO_LONG, CMB_BLOCK_DEFAULT_SIZE));
@@ -69,7 +69,7 @@ static IDE_RC answerFetchBeginResult(cmiProtocolContext *aProtocolContext, UInt 
 
     IDE_EXCEPTION_END;
 
-    /* BUG-44124 ipcda ¸ğµå »ç¿ë Áß hang - iloader ÄÃ·³ÀÌ ¸¹Àº Å×ÀÌºí */
+    /* BUG-44124 ipcda ëª¨ë“œ ì‚¬ìš© ì¤‘ hang - iloader ì»¬ëŸ¼ì´ ë§ì€ í…Œì´ë¸” */
     if( (sWriteCheckState == CMI_WRITE_CHECK_ACTIVATED) && (cmiGetLinkImpl(aProtocolContext) == CMI_LINK_IMPL_IPCDA) )
     {
         IDE_SET(ideSetErrorCode(mmERR_ABORT_IPCDA_MESSAGE_TOO_LONG, CMB_BLOCK_DEFAULT_SIZE));
@@ -97,7 +97,7 @@ static IDE_RC answerFetchEndResult(cmiProtocolContext *aProtocolContext, UInt aS
 
     IDE_EXCEPTION_END;
 
-    /* BUG-44124 ipcda ¸ğµå »ç¿ë Áß hang - iloader ÄÃ·³ÀÌ ¸¹Àº Å×ÀÌºí */
+    /* BUG-44124 ipcda ëª¨ë“œ ì‚¬ìš© ì¤‘ hang - iloader ì»¬ëŸ¼ì´ ë§ì€ í…Œì´ë¸” */
     if( (sWriteCheckState == CMI_WRITE_CHECK_ACTIVATED) && (cmiGetLinkImpl(aProtocolContext) == CMI_LINK_IMPL_IPCDA) )
     {
         IDE_SET(ideSetErrorCode(mmERR_ABORT_IPCDA_MESSAGE_TOO_LONG, CMB_BLOCK_DEFAULT_SIZE));
@@ -107,9 +107,9 @@ static IDE_RC answerFetchEndResult(cmiProtocolContext *aProtocolContext, UInt aS
 }
 
 /*******************************************************************
- PROJ-2160 CM Å¸ÀÔÁ¦°Å
- Description : 1 row ¾¿ block¿¡ ±â·ÏÇÑ´Ù.
-               Å¸ÀÔº°·Î µ¥ÀÌÅ¸°¡ Å¬¶§´Â ³ª´©¾î¼­ ±â·ÏÇÑ´Ù.
+ PROJ-2160 CM íƒ€ì…ì œê±°
+ Description : 1 row ì”© blockì— ê¸°ë¡í•œë‹¤.
+               íƒ€ì…ë³„ë¡œ ë°ì´íƒ€ê°€ í´ë•ŒëŠ” ë‚˜ëˆ„ì–´ì„œ ê¸°ë¡í•œë‹¤.
 ********************************************************************/
 static IDE_RC doFetch( cmiProtocolContext *aProtocolContext,
                        mmcSession         *aSession,
@@ -152,8 +152,8 @@ static IDE_RC doFetch( cmiProtocolContext *aProtocolContext,
 
     CMI_WOP(sCtx, CMP_OP_DB_FetchResult);
 
-    /* PROJ-2331 ¶§¹®¿¡ RowSize´Â Æ²¸± ¼ö ÀÖ´Ù.
-     * ´Ù¸¸ Client Ãø¿¡¼­ »ç¿ëµÇÁö ¾Ê±â ¶§¹®¿¡ ¹«½ÃÇÏµµ·Ï ÇÑ´Ù. */
+    /* PROJ-2331 ë•Œë¬¸ì— RowSizeëŠ” í‹€ë¦´ ìˆ˜ ìˆë‹¤.
+     * ë‹¤ë§Œ Client ì¸¡ì—ì„œ ì‚¬ìš©ë˜ì§€ ì•Šê¸° ë•Œë¬¸ì— ë¬´ì‹œí•˜ë„ë¡ í•œë‹¤. */
     CMI_WR4(sCtx, &sRowSize);
 
     for( sColumnIndex =  aColumnFrom;
@@ -178,7 +178,7 @@ static IDE_RC doFetch( cmiProtocolContext *aProtocolContext,
                 sColumnSize = sLen32 + ID_SIZEOF(SDouble);
 
                 sWriteCheckState = CMI_WRITE_CHECK_ACTIVATED;
-                /* BUG-44125 [mm-cli] IPCDA ¸ğµå Å×½ºÆ® Áß hang - iloader CLOB */
+                /* BUG-44125 [mm-cli] IPCDA ëª¨ë“œ í…ŒìŠ¤íŠ¸ ì¤‘ hang - iloader CLOB */
                 CMI_WRITE_CHECK_WITH_IPCDA( sCtx, ID_SIZEOF(SDouble), sColumnSize);
                 sWriteCheckState = CMI_WRITE_CHECK_DEACTIVATED;
 
@@ -191,7 +191,7 @@ static IDE_RC doFetch( cmiProtocolContext *aProtocolContext,
                                 != IDE_SUCCESS, MarshallingError );
                 break;
 
-            // mtdCharType, mtdNcharType, mtdByteTypeÀº ±¸Á¶°¡ ¸ğµÎ µ¿ÀÏÇÏ´Ù
+            // mtdCharType, mtdNcharType, mtdByteTypeì€ êµ¬ì¡°ê°€ ëª¨ë‘ ë™ì¼í•˜ë‹¤
             case MTD_CHAR_ID :
             case MTD_VARCHAR_ID :
             case MTD_NCHAR_ID :
@@ -225,7 +225,7 @@ static IDE_RC doFetch( cmiProtocolContext *aProtocolContext,
 				sColumnSize = sLen16 + ID_SIZEOF(UShort);
 
                 sWriteCheckState = CMI_WRITE_CHECK_ACTIVATED;
-                /* BUG-44125 [mm-cli] IPCDA ¸ğµå Å×½ºÆ® Áß hang - iloader CLOB */
+                /* BUG-44125 [mm-cli] IPCDA ëª¨ë“œ í…ŒìŠ¤íŠ¸ ì¤‘ hang - iloader CLOB */
                 CMI_WRITE_CHECK_WITH_IPCDA( sCtx, ID_SIZEOF(UShort), sColumnSize);
                 sWriteCheckState = CMI_WRITE_CHECK_DEACTIVATED;
 
@@ -243,7 +243,7 @@ static IDE_RC doFetch( cmiProtocolContext *aProtocolContext,
                 sColumnSize = sLen16 + ID_SIZEOF(UShort);
 
                 sWriteCheckState = CMI_WRITE_CHECK_ACTIVATED;
-                /* BUG-44125 [mm-cli] IPCDA ¸ğµå Å×½ºÆ® Áß hang - iloader CLOB */
+                /* BUG-44125 [mm-cli] IPCDA ëª¨ë“œ í…ŒìŠ¤íŠ¸ ì¤‘ hang - iloader CLOB */
                 CMI_WRITE_CHECK_WITH_IPCDA( sCtx, ID_SIZEOF(UShort), sColumnSize);
                 sWriteCheckState = CMI_WRITE_CHECK_DEACTIVATED;
 
@@ -331,7 +331,7 @@ static IDE_RC doFetch( cmiProtocolContext *aProtocolContext,
                     sHasData = ID_FALSE;
                 }
 
-                /* Locator, Size, HasData´Â ÇÑ¹ø¿¡ º¸³»ÀÚ. */
+                /* Locator, Size, HasDataëŠ” í•œë²ˆì— ë³´ë‚´ì. */
                 sWriteCheckState = CMI_WRITE_CHECK_ACTIVATED;
                 CMI_WRITE_CHECK(sCtx, sColumnSize);
                 sWriteCheckState = CMI_WRITE_CHECK_DEACTIVATED;
@@ -348,14 +348,14 @@ static IDE_RC doFetch( cmiProtocolContext *aProtocolContext,
                     sLen32      = 0;
 
                     /*
-                     * º¹»ç ºñ¿ëÀ» ÁÙÀÌ±â À§ÇØ ¹öÆÛ¸¦ ÀâÀ» ¼ö ¾ø±â ¶§¹®¿¡
-                     * lobRead°¡ 2¹ø È£ÃâµÉ ¼öµµ ÀÖ´Ù.
+                     * ë³µì‚¬ ë¹„ìš©ì„ ì¤„ì´ê¸° ìœ„í•´ ë²„í¼ë¥¼ ì¡ì„ ìˆ˜ ì—†ê¸° ë•Œë¬¸ì—
+                     * lobReadê°€ 2ë²ˆ í˜¸ì¶œë  ìˆ˜ë„ ìˆë‹¤.
                      */
                     do
                     {
                         sSendSize = IDL_MIN( sLobSize, sRemainSize );
 
-                        /* Åë½Å ¹öÆÛ¿¡ LOB Data¸¦ Á÷Á¢ ¾²±â À§ÇØ CMI_WCP¸¦ »ç¿ëÇÏÁö ¾Ê¾Ò´Ù. */
+                        /* í†µì‹  ë²„í¼ì— LOB Dataë¥¼ ì§ì ‘ ì“°ê¸° ìœ„í•´ CMI_WCPë¥¼ ì‚¬ìš©í•˜ì§€ ì•Šì•˜ë‹¤. */
                         IDE_TEST_RAISE(qciMisc::lobRead(aSession->getStatSQL(),
                                                         *(smLobLocator *)sFetchColumnInfo.value,
                                                         sLen32,
@@ -458,10 +458,10 @@ static IDE_RC doFetch( cmiProtocolContext *aProtocolContext,
     }
     IDE_EXCEPTION(MarshallingError);
     {
-        // ¸¶¼£¸µ ¿¡·¯°¡ ¹ß»ıÇÑ °æ¿ì ¼¼¼ÇÀ» ²÷´Â ¹æ¹ı¹Û¿¡ ¾ø´Ù.
-        // cf) Ã¹¹øÂ° ÆĞÅ¶ÀÌ ÀÌ¹Ì Àü¼ÛµÈ ÈÄ¿¡ µÎ¹øÂ° ÆĞÅ¶¿¡¼­
-        // ¸¶¼£¸µ ¿¡·¯°¡ ¹ß»ıÇÏ¸é ErrorResult Á¶Â÷µµ º¸³»¸é ¾ÈµÈ´Ù.
-        // client¿¡¼­´Â Æ¯Á¤ ÇÁ·ÎÅäÄİÀÌ ¿¬ÀÌ¾î ¿Ã°ÍÀÌ¶ó ¹Ï±â ¶§¹®¿¡.
+        // ë§ˆìƒ¬ë§ ì—ëŸ¬ê°€ ë°œìƒí•œ ê²½ìš° ì„¸ì…˜ì„ ëŠëŠ” ë°©ë²•ë°–ì— ì—†ë‹¤.
+        // cf) ì²«ë²ˆì§¸ íŒ¨í‚·ì´ ì´ë¯¸ ì „ì†¡ëœ í›„ì— ë‘ë²ˆì§¸ íŒ¨í‚·ì—ì„œ
+        // ë§ˆìƒ¬ë§ ì—ëŸ¬ê°€ ë°œìƒí•˜ë©´ ErrorResult ì¡°ì°¨ë„ ë³´ë‚´ë©´ ì•ˆëœë‹¤.
+        // clientì—ì„œëŠ” íŠ¹ì • í”„ë¡œí† ì½œì´ ì—°ì´ì–´ ì˜¬ê²ƒì´ë¼ ë¯¿ê¸° ë•Œë¬¸ì—.
         sCtx->mSessionCloseNeeded = ID_TRUE;
         ideLog::log(IDE_SERVER_1,
                     "doFetch: marshal error ["
@@ -471,7 +471,7 @@ static IDE_RC doFetch( cmiProtocolContext *aProtocolContext,
     }
     IDE_EXCEPTION_END;
 
-    /* BUG-44124 ipcda ¸ğµå »ç¿ë Áß hang - iloader ÄÃ·³ÀÌ ¸¹Àº Å×ÀÌºí */
+    /* BUG-44124 ipcda ëª¨ë“œ ì‚¬ìš© ì¤‘ hang - iloader ì»¬ëŸ¼ì´ ë§ì€ í…Œì´ë¸” */
     if( (sWriteCheckState == CMI_WRITE_CHECK_ACTIVATED) && (cmiGetLinkImpl(aProtocolContext) == CMI_LINK_IMPL_IPCDA) )
     {
         IDE_SET(ideSetErrorCode(mmERR_ABORT_IPCDA_MESSAGE_TOO_LONG, CMB_BLOCK_DEFAULT_SIZE));
@@ -493,23 +493,23 @@ static IDE_RC fetchEnd(cmiProtocolContext *aProtocolContext,
 
     sResultSet = aStatement->getResultSet( aResultSetID );
     // bug-26977: codesonar: resultset null ref
-    // nullÀÌ °¡´ÉÇÑÁö´Â ¸ğ¸£°ÚÁö¸¸, ¹æ¾îÄÚµåÀÓ.
+    // nullì´ ê°€ëŠ¥í•œì§€ëŠ” ëª¨ë¥´ê² ì§€ë§Œ, ë°©ì–´ì½”ë“œì„.
     IDE_TEST(sResultSet == NULL);
 
     sResultSetStmt = (mmcStatement*)sResultSet->mResultSetStmt;
 
     /* PROJ-1381, BUG-32902 FAC
-     * Holdable, Keyset-drivenÀº CloseCursor Àü¿¡ ÀÓÀÇ·Î Statement¸¦ Á¤¸®ÇØ¼­´Â ¾ÈµÈ´Ù. */
+     * Holdable, Keyset-drivenì€ CloseCursor ì „ì— ì„ì˜ë¡œ Statementë¥¼ ì •ë¦¬í•´ì„œëŠ” ì•ˆëœë‹¤. */
     if (aStatement->isClosableWhenFetchEnd() != ID_TRUE)
     {
-        /* Fetch ¿Ï·á ÈÄ, Á¦´ë·ÎµÈ PlanÀ» ÁÖ·Á¸é ¿©±â¼­ ¸¸µé¾îµÖ¾ßÇÑ´Ù. */
+        /* Fetch ì™„ë£Œ í›„, ì œëŒ€ë¡œëœ Planì„ ì£¼ë ¤ë©´ ì—¬ê¸°ì„œ ë§Œë“¤ì–´ë‘¬ì•¼í•œë‹¤. */
         if (aStatement->getSession()->getExplainPlan() != QCI_EXPLAIN_PLAN_OFF)
         {
             IDE_TEST(aStatement->clearPlanTreeText() != IDE_SUCCESS);
             IDE_TEST(aStatement->makePlanTreeText(ID_FALSE) != IDE_SUCCESS);
         }
 
-        /* PROJ-1381, BUG-33121 FAC : ResultSet¿¡ FetchEnd »óÅÂ Ãß°¡ */
+        /* PROJ-1381, BUG-33121 FAC : ResultSetì— FetchEnd ìƒíƒœ ì¶”ê°€ */
         IDE_TEST(aStatement->setResultSetState(aResultSetID,
                                                MMC_RESULTSET_STATE_FETCH_END)
                  != IDE_SUCCESS);
@@ -523,7 +523,7 @@ static IDE_RC fetchEnd(cmiProtocolContext *aProtocolContext,
         if (aStatement->getResultSetState(aResultSetID) != MMC_RESULTSET_STATE_FETCH_CLOSE)
         {
             // bug-26977: codesonar: resultset null ref
-            // nullÀÌ °¡´ÉÇÑÁö´Â ¸ğ¸£°ÚÁö¸¸, ¹æ¾îÄÚµåÃß°¡.
+            // nullì´ ê°€ëŠ¥í•œì§€ëŠ” ëª¨ë¥´ê² ì§€ë§Œ, ë°©ì–´ì½”ë“œì¶”ê°€.
             IDE_TEST(sResultSetStmt == NULL);
 
             mmcStatement::makePlanTreeBeforeCloseCursor( aStatement,
@@ -535,7 +535,7 @@ static IDE_RC fetchEnd(cmiProtocolContext *aProtocolContext,
 
             answerFetchEndResult(aProtocolContext, aStatement->getStmtID(), aResultSetID);
 
-            // Fetch °¡´ÉÇÑ Result SetÀ» ÇÏ³ª °¨¼Ò
+            // Fetch ê°€ëŠ¥í•œ Result Setì„ í•˜ë‚˜ ê°ì†Œ
             sEnableResultSetCount--;
             aStatement->setEnableResultSetCount(sEnableResultSetCount);
         }
@@ -598,12 +598,12 @@ IDE_RC mmtServiceThread::fetchIPCDA(cmiProtocolContext *aProtocolContext,
 
     sResultSet = aStatement->getResultSet( aResultSetID );
     // bug-26977: codesonar: resultset null ref
-    // nullÀÌ °¡´ÉÇÑÁö´Â ¸ğ¸£°ÚÁö¸¸, ¹æ¾îÄÚµåÀÓ.
+    // nullì´ ê°€ëŠ¥í•œì§€ëŠ” ëª¨ë¥´ê² ì§€ë§Œ, ë°©ì–´ì½”ë“œì„.
     IDE_TEST(sResultSet == NULL);
 
     sResultSetStmt = (mmcStatement*)sResultSet->mResultSetStmt;
     // bug-26977: codesonar: resultset null ref
-    // nullÀÌ °¡´ÉÇÑÁö´Â ¸ğ¸£°ÚÁö¸¸, ¹æ¾îÄÚµåÃß°¡.
+    // nullì´ ê°€ëŠ¥í•œì§€ëŠ” ëª¨ë¥´ê² ì§€ë§Œ, ë°©ì–´ì½”ë“œì¶”ê°€.
     IDE_TEST(sResultSetStmt == NULL);
 
     sQciStmt    = sResultSetStmt->getQciStmt();
@@ -614,7 +614,7 @@ IDE_RC mmtServiceThread::fetchIPCDA(cmiProtocolContext *aProtocolContext,
     IDE_TEST( qci::getRowSize( sQciStmt, &sSize )
                   != IDE_SUCCESS );
 
-    /* BUG-44705 prefetch°¡ ¾Æ´Ñ°æ¿ì¿¡´Â aRecordCount°ªÀ» UINT_MAX°ªÀ¸·Î ¼³Á¤ÇÑ´Ù. */
+    /* BUG-44705 prefetchê°€ ì•„ë‹Œê²½ìš°ì—ëŠ” aRecordCountê°’ì„ UINT_MAXê°’ìœ¼ë¡œ ì„¤ì •í•œë‹¤. */
     if ( aRecordCount == 0)
     {
         aRecordCount = ID_UINT_MAX;
@@ -705,12 +705,12 @@ IDE_RC mmtServiceThread::fetch(cmiProtocolContext *aProtocolContext,
 
     sResultSet = aStatement->getResultSet( aResultSetID );
     // bug-26977: codesonar: resultset null ref
-    // nullÀÌ °¡´ÉÇÑÁö´Â ¸ğ¸£°ÚÁö¸¸, ¹æ¾îÄÚµåÀÓ.
+    // nullì´ ê°€ëŠ¥í•œì§€ëŠ” ëª¨ë¥´ê² ì§€ë§Œ, ë°©ì–´ì½”ë“œì„.
     IDE_TEST(sResultSet == NULL);
 
     sResultSetStmt = (mmcStatement*)sResultSet->mResultSetStmt;
     // bug-26977: codesonar: resultset null ref
-    // nullÀÌ °¡´ÉÇÑÁö´Â ¸ğ¸£°ÚÁö¸¸, ¹æ¾îÄÚµåÃß°¡.
+    // nullì´ ê°€ëŠ¥í•œì§€ëŠ” ëª¨ë¥´ê² ì§€ë§Œ, ë°©ì–´ì½”ë“œì¶”ê°€.
     IDE_TEST(sResultSetStmt == NULL);
 
     sQciStmt    = sResultSetStmt->getQciStmt();
@@ -733,7 +733,7 @@ IDE_RC mmtServiceThread::fetch(cmiProtocolContext *aProtocolContext,
                   != IDE_SUCCESS );
     }
 
-    /* BUG-44705 [mm-cli] IPCDA ¸ğµå½Ã Fetch µ¿ÀÛ °ËÅä */
+    /* BUG-44705 [mm-cli] IPCDA ëª¨ë“œì‹œ Fetch ë™ì‘ ê²€í†  */
     if ( aRecordCount != 0)
     {
         sIsFetchRowsMode = ID_TRUE;
@@ -805,8 +805,8 @@ IDE_RC mmtServiceThread::fetch(cmiProtocolContext *aProtocolContext,
             /*
              * BUG-37642 Improve performance to fetch.
              *
-             * first row°¡ 1 blockÀ» ³Ñ¾î°¡´Â °æ¿ì ±× ´ÙÀ½ blockÀº
-             * ²Ë Ã¤¿ö¼­ º¸³½´Ù.
+             * first rowê°€ 1 blockì„ ë„˜ì–´ê°€ëŠ” ê²½ìš° ê·¸ ë‹¤ìŒ blockì€
+             * ê½‰ ì±„ì›Œì„œ ë³´ë‚¸ë‹¤.
              */
             sRemainSize = CMI_REMAIN_SPACE_IN_WRITE_BLOCK(aProtocolContext);
 
@@ -864,8 +864,8 @@ IDE_RC mmtServiceThread::fetchMoveProtocol(cmiProtocolContext *aProtocolContext,
     UChar       sWhence;
     SLong       sOffset;
 
-    /* PROJ-2160 CM Å¸ÀÔÁ¦°Å
-       ¸ğµÎ ÀĞÀº ´ÙÀ½¿¡ ÇÁ·ÎÅäÄİÀ» Ã³¸®ÇØ¾ß ÇÑ´Ù. */
+    /* PROJ-2160 CM íƒ€ì…ì œê±°
+       ëª¨ë‘ ì½ì€ ë‹¤ìŒì— í”„ë¡œí† ì½œì„ ì²˜ë¦¬í•´ì•¼ í•œë‹¤. */
     CMI_RD4(aProtocolContext, &sStatementID);
     CMI_RD2(aProtocolContext, &sResultSetID);
     CMI_RD1(aProtocolContext, sWhence);
@@ -890,7 +890,7 @@ IDE_RC mmtServiceThread::fetchMoveProtocol(cmiProtocolContext *aProtocolContext,
 
     sResultSet = sStatement->getResultSet(sResultSetID);
     // bug-26977: codesonar: resultset null ref
-    // nullÀÌ °¡´ÉÇÑÁö´Â ¸ğ¸£°ÚÁö¸¸, ¹æ¾îÄÚµåÀÓ.
+    // nullì´ ê°€ëŠ¥í•œì§€ëŠ” ëª¨ë¥´ê² ì§€ë§Œ, ë°©ì–´ì½”ë“œì„.
     IDE_TEST(sResultSet == NULL);
 
     sResultSetStmt = (mmcStatement*)sResultSet->mResultSetStmt;
@@ -914,7 +914,7 @@ IDE_RC mmtServiceThread::fetchMoveProtocol(cmiProtocolContext *aProtocolContext,
         sOffset--;
 
         // bug-26977: codesonar: resultset null ref
-        // nullÀÌ °¡´ÉÇÑÁö´Â ¸ğ¸£°ÚÁö¸¸, ¹æ¾îÄÚµåÃß°¡.
+        // nullì´ ê°€ëŠ¥í•œì§€ëŠ” ëª¨ë¥´ê² ì§€ë§Œ, ë°©ì–´ì½”ë“œì¶”ê°€.
         IDE_TEST(sResultSetStmt == NULL);
 
         for (i = 0; i < sOffset; i++)
@@ -997,8 +997,8 @@ IDE_RC mmtServiceThread::fetchProtocol(cmiProtocolContext *aProtocolContext,
 
         case CMP_OP_DB_Fetch:
         default:
-            /* PROJ-2160 CM Å¸ÀÔÁ¦°Å
-            ¸ğµÎ ÀĞÀº ´ÙÀ½¿¡ ÇÁ·ÎÅäÄİÀ» Ã³¸®ÇØ¾ß ÇÑ´Ù. */
+            /* PROJ-2160 CM íƒ€ì…ì œê±°
+            ëª¨ë‘ ì½ì€ ë‹¤ìŒì— í”„ë¡œí† ì½œì„ ì²˜ë¦¬í•´ì•¼ í•œë‹¤. */
             CMI_RD4(aProtocolContext, &sStatementID);
             CMI_RD2(aProtocolContext, &sResultSetID);
             CMI_RD2(aProtocolContext, &sRecordCount);
@@ -1025,8 +1025,8 @@ IDE_RC mmtServiceThread::fetchProtocol(cmiProtocolContext *aProtocolContext,
          * A) fetch_begin
          **********************/
         /* for new simple-query IPCDA
-         * IPCDAÀÇ ½ÉÇÃÄõ¸®¿¡¼­´Â µ¥ÀÌÅÍ°¡ Execute¿¡¼­ SHMÀ¸·Î º¹»ç°¡
-         * ÀÌ·ç¾î Áø´Ù. µû¶ó¼­, ½ÇÁ¦ fetch¿¡¼­´Â ¾Æ¹«°Íµµ ÇÏÁö ¾Ê´Â´Ù.
+         * IPCDAì˜ ì‹¬í”Œì¿¼ë¦¬ì—ì„œëŠ” ë°ì´í„°ê°€ Executeì—ì„œ SHMìœ¼ë¡œ ë³µì‚¬ê°€
+         * ì´ë£¨ì–´ ì§„ë‹¤. ë”°ë¼ì„œ, ì‹¤ì œ fetchì—ì„œëŠ” ì•„ë¬´ê²ƒë„ í•˜ì§€ ì•ŠëŠ”ë‹¤.
          */
 
         CMI_WOP(aProtocolContext, CMP_OP_DB_IPCDALastOpEnded);
@@ -1045,7 +1045,7 @@ IDE_RC mmtServiceThread::fetchProtocol(cmiProtocolContext *aProtocolContext,
 
         sResultSet = sStatement->getResultSet( sResultSetID );
         // bug-26977: codesonar: resultset null ref
-        // nullÀÌ °¡´ÉÇÑÁö´Â ¸ğ¸£°ÚÁö¸¸, ¹æ¾îÄÚµåÀÓ.
+        // nullì´ ê°€ëŠ¥í•œì§€ëŠ” ëª¨ë¥´ê² ì§€ë§Œ, ë°©ì–´ì½”ë“œì„.
         IDE_TEST(sResultSet == NULL);
 
         sResultSetStmt = (mmcStatement*)sResultSet->mResultSetStmt;
@@ -1054,12 +1054,12 @@ IDE_RC mmtServiceThread::fetchProtocol(cmiProtocolContext *aProtocolContext,
         {
             case MMC_RESULTSET_STATE_INITIALIZE:
 
-                // Result SetÀÇ moveNextReocrd()´Â Execute½Ã¿¡ È£Ãâ µÇ¾ú´Ù.
-                // Result SetÀÌ ¿©·¯°³ÀÎ °æ¿ì Ã³À½ execute½Ã¿¡ record°¡ ¾øÀ¸¸é
-                // MMC_RESULTSET_STATE_INITIALIZE»óÅÂÀÌ¸ç, ÀÌ´Â ¹Ù·Î fetchEnd
+                // Result Setì˜ moveNextReocrd()ëŠ” Executeì‹œì— í˜¸ì¶œ ë˜ì—ˆë‹¤.
+                // Result Setì´ ì—¬ëŸ¬ê°œì¸ ê²½ìš° ì²˜ìŒ executeì‹œì— recordê°€ ì—†ìœ¼ë©´
+                // MMC_RESULTSET_STATE_INITIALIZEìƒíƒœì´ë©°, ì´ëŠ” ë°”ë¡œ fetchEnd
                 sStatement->setFetchFlag(MMC_FETCH_FLAG_CLOSE);
 
-                /* PROJ-1381, BUG-33121 FAC : ResultSet¿¡ FetchEnd »óÅÂ Ãß°¡ */
+                /* PROJ-1381, BUG-33121 FAC : ResultSetì— FetchEnd ìƒíƒœ ì¶”ê°€ */
             case MMC_RESULTSET_STATE_FETCH_END:
                 IDE_RAISE(FetchEnd);
                 break;
@@ -1083,7 +1083,7 @@ IDE_RC mmtServiceThread::fetchProtocol(cmiProtocolContext *aProtocolContext,
         sStatement->setFetchStartTime(mmtSessionManager::getBaseTime());
 
         // bug-26977: codesonar: resultset null ref
-        // nullÀÌ °¡´ÉÇÑÁö´Â ¸ğ¸£°ÚÁö¸¸, ¹æ¾îÄÚµåÃß°¡.
+        // nullì´ ê°€ëŠ¥í•œì§€ëŠ” ëª¨ë¥´ê² ì§€ë§Œ, ë°©ì–´ì½”ë“œì¶”ê°€.
         IDE_TEST(sResultSetStmt == NULL);
         sColumnCount = qci::getColumnCount(sResultSetStmt->getQciStmt());
 

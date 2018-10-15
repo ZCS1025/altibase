@@ -29,18 +29,18 @@
 #include <sdnManager.h>
 
 /**********************************************************************
- * Description: aIterator°¡ ÇöÀç °¡¸®Å°°í ÀÖ´Â Row¿¡ ´ëÇØ¼­ XLockÀ»
- *              È¹µæÇÕ´Ï´Ù.
+ * Description: aIteratorê°€ í˜„ìž¬ ê°€ë¦¬í‚¤ê³  ìžˆëŠ” Rowì— ëŒ€í•´ì„œ XLockì„
+ *              íšë“í•©ë‹ˆë‹¤.
  *
  * aProperties - [IN] Cursor Property
  * aTrans      - [IN] Transaction Pointer
  * aViewSCN    - [IN] Interator View SCN
- * aSpaceID    - [IN] TableÀÌ ¼ÓÇØÀÖ´Â Tablespace ID
- * aRowRID     - [IN] Record LockÀ» ÀâÀ» RecordÀÇ ID
+ * aSpaceID    - [IN] Tableì´ ì†í•´ìžˆëŠ” Tablespace ID
+ * aRowRID     - [IN] Record Lockì„ ìž¡ì„ Recordì˜ ID
  *
  * Related Issue:
- *   BUG-19068: smiTableCursor°¡ ÇöÀç°¡¸®Å°°í ÀÖ´Â Row¿¡ ´ëÇØ¼­
- *              LockÀ» ÀâÀ»¼ö ÀÕ´Â Interface°¡ ÇÊ¿äÇÕ´Ï´Ù.
+ *   BUG-19068: smiTableCursorê°€ í˜„ìž¬ê°€ë¦¬í‚¤ê³  ìžˆëŠ” Rowì— ëŒ€í•´ì„œ
+ *              Lockì„ ìž¡ì„ìˆ˜ ìž‡ëŠ” Interfaceê°€ í•„ìš”í•©ë‹ˆë‹¤.
  *
  *********************************************************************/
 IDE_RC sdnManager::lockRow( smiCursorProperties * aProperties,
@@ -64,7 +64,7 @@ IDE_RC sdnManager::lockRow( smiCursorProperties * aProperties,
 
     sIsMtxBegin = ID_FALSE;
 
-    /*BUG-45401 : undoable ID_FALSE -> ID_TRUE·Î º¯°æ */  
+    /*BUG-45401 : undoable ID_FALSE -> ID_TRUEë¡œ ë³€ê²½ */  
     IDE_TEST( sdrMiniTrans::begin( aProperties->mStatistics,
                                    &sMtx,
                                    aTrans,
@@ -78,7 +78,7 @@ IDE_RC sdnManager::lockRow( smiCursorProperties * aProperties,
 
     sdrMiniTrans::setSavePoint( &sMtx, &sSP );
 
-    /* Record°¡ ¼ÓÇØÀÖ´Â Page¸¦ Buffer¿¡ ¿Ã¸°´Ù.*/
+    /* Recordê°€ ì†í•´ìžˆëŠ” Pageë¥¼ Bufferì— ì˜¬ë¦°ë‹¤.*/
     IDE_TEST( sdcRow::prepareUpdatePageBySID(
                              aProperties->mStatistics,
                              &sMtx,
@@ -88,8 +88,8 @@ IDE_RC sdnManager::lockRow( smiCursorProperties * aProperties,
                              &sSlot,
                              &sCTSlotIdx ) != IDE_SUCCESS );
 
-    /* ÇØ´ç Record¿¡ ´ëÇØ¼­ LockÀÌ ÀÌ¹Ì ÀâÇô ÀÖ´ÂÁö Á¶»çÇÏ°Å³ª
-     * LockÀ» ÀâÀ» ¼ö ÀÖ´ÂÁö Á¶»çÇÑ´Ù. */
+    /* í•´ë‹¹ Recordì— ëŒ€í•´ì„œ Lockì´ ì´ë¯¸ ìž¡í˜€ ìžˆëŠ”ì§€ ì¡°ì‚¬í•˜ê±°ë‚˜
+     * Lockì„ ìž¡ì„ ìˆ˜ ìžˆëŠ”ì§€ ì¡°ì‚¬í•œë‹¤. */
     IDE_TEST( sdcRow::canUpdateRowPiece(
                              aProperties->mStatistics,
                              &sMtx,
@@ -115,7 +115,7 @@ IDE_RC sdnManager::lockRow( smiCursorProperties * aProperties,
         IDE_RAISE( rebuild_already_modified );
     }
 
-    // lock undo record¸¦ »ý¼ºÇÑ´Ù.
+    // lock undo recordë¥¼ ìƒì„±í•œë‹¤.
     IDE_TEST( sdcRow::lock( aProperties->mStatistics,
                             sSlot,
                             aRowSID,
@@ -125,7 +125,7 @@ IDE_RC sdnManager::lockRow( smiCursorProperties * aProperties,
                             &sSkipLockRec )
               != IDE_SUCCESS );
 
-    /* ÇöÀç ÆäÀÌÁö¸¦ unlatch ÇØÁØ´Ù */
+    /* í˜„ìž¬ íŽ˜ì´ì§€ë¥¼ unlatch í•´ì¤€ë‹¤ */
     sIsMtxBegin = ID_FALSE;
     IDE_TEST( sdrMiniTrans::commit( &sMtx ) != IDE_SUCCESS );
 
@@ -146,14 +146,14 @@ IDE_RC sdnManager::lockRow( smiCursorProperties * aProperties,
 }
 
 /**********************************************************************
- * Description: DRDB RowFetch¸¦ À§ÇØ FetchColumnList¸¦ ±¸ÃàÇÕ´Ï´Ù. 
- *      TASK-5030À¸·Î smiTableCursor::makeFetchColumnList()°¡
- *      Ãß°¡µÇ¾ú´Ù. µÑ´Ù ºñ½ÁÇÑ ·ÎÁ÷À» °¡Áö¹Ç·Î ¼öÁ¤ÇÒ¶§´Â
- *      °°ÀÌ °í·ÁµÇ¾î¾ß ÇÑ´Ù.
+ * Description: DRDB RowFetchë¥¼ ìœ„í•´ FetchColumnListë¥¼ êµ¬ì¶•í•©ë‹ˆë‹¤. 
+ *      TASK-5030ìœ¼ë¡œ smiTableCursor::makeFetchColumnList()ê°€
+ *      ì¶”ê°€ë˜ì—ˆë‹¤. ë‘˜ë‹¤ ë¹„ìŠ·í•œ ë¡œì§ì„ ê°€ì§€ë¯€ë¡œ ìˆ˜ì •í• ë•ŒëŠ”
+ *      ê°™ì´ ê³ ë ¤ë˜ì–´ì•¼ í•œë‹¤.
  *
- * aTableHeader     - [IN]  ´ë»ó Å×ÀÌºí
- * aFetchColumnList - [OUT] ¸¸µé¾îÁø FetchColumnList
- * aMaxRowSize      - [OUT] RowÀÇ ÃÖ´ë Å©±â
+ * aTableHeader     - [IN]  ëŒ€ìƒ í…Œì´ë¸”
+ * aFetchColumnList - [OUT] ë§Œë“¤ì–´ì§„ FetchColumnList
+ * aMaxRowSize      - [OUT] Rowì˜ ìµœëŒ€ í¬ê¸°
  *********************************************************************/
 IDE_RC sdnManager::makeFetchColumnList( smcTableHeader      * aTableHeader, 
                                         smiFetchColumnList ** aFetchColumnList,
@@ -195,9 +195,9 @@ IDE_RC sdnManager::makeFetchColumnList( smcTableHeader      * aTableHeader,
         sFetchColumnList[ i ].next = &sFetchColumnList[ i + 1 ];
 
         /* BUG-34269 - Fatal until P42 testing on Disk Table execute gater_database_stats
-         * Lob ColumnÀº size°¡ UINT_MAX·Î ³Ñ¾î¿É´Ï´Ù.
-         * µû¶ó¼­ lobÀº size¸¦ ¹ÙÅÁÀ¸·Î RowSize¸¦ °è»êÇÏ¸é ¾ÈµÇ°í,
-         * smiGetLobColumnSize()¸¦ »ç¿ëÇÏ¿©¾ß ÇÕ´Ï´Ù. */
+         * Lob Columnì€ sizeê°€ UINT_MAXë¡œ ë„˜ì–´ì˜µë‹ˆë‹¤.
+         * ë”°ë¼ì„œ lobì€ sizeë¥¼ ë°”íƒ•ìœ¼ë¡œ RowSizeë¥¼ ê³„ì‚°í•˜ë©´ ì•ˆë˜ê³ ,
+         * smiGetLobColumnSize()ë¥¼ ì‚¬ìš©í•˜ì—¬ì•¼ í•©ë‹ˆë‹¤. */
         if ( (sTableColumn->flag & SMI_COLUMN_TYPE_MASK)
              == SMI_COLUMN_TYPE_FIXED )
         {
@@ -244,9 +244,9 @@ IDE_RC sdnManager::makeFetchColumnList( smcTableHeader      * aTableHeader,
 }
 
 /**********************************************************************
- * Description: fetchColumnList¸¦ FreeÇÕ´Ï´Ù.
+ * Description: fetchColumnListë¥¼ Freeí•©ë‹ˆë‹¤.
  *
- * aFetchColumnList - [IN]  Á¦°ÅÇÒ FetchColumnList
+ * aFetchColumnList - [IN]  ì œê±°í•  FetchColumnList
  *********************************************************************/
 IDE_RC sdnManager::destFetchColumnList( smiFetchColumnList * aFetchColumnList )
 {

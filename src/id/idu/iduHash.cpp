@@ -87,7 +87,7 @@ IDE_RC iduHash::destroy()
     
     sCurHashBucket = mFreeBucketList.pNext;
 
-    // Free List¿¡ ÀÖ´Â Hash BucketÀ» ¹İÈ¯ÇÑ´Ù.
+    // Free Listì— ìˆëŠ” Hash Bucketì„ ë°˜í™˜í•œë‹¤.
     while(sCurHashBucket != &mFreeBucketList)
     {
         sNxtHashBucket = sCurHashBucket->pNext;
@@ -97,7 +97,7 @@ IDE_RC iduHash::destroy()
         sCurHashBucket = sNxtHashBucket;
     }
 
-    // Hash TableÀ» »èÁ¦
+    // Hash Tableì„ ì‚­ì œ
     IDE_TEST(iduMemMgr::free(mHashTable) != IDE_SUCCESS);
 
     return IDE_SUCCESS;
@@ -184,12 +184,12 @@ void* iduHash::search(vULong aKey, iduHashBucket **aHashBucket)
 }
 
 /*
-    ¸ğµç (Hash Key, Data)¸¦ ¼øÈ¸ÇÑ´Ù
-    [IN] aVisitor   - Hash KeyÀÇ Visitor Function
-    [IN] VisitorArg - Visitor Function¿¡ ³Ñ±æ ÀÎÀÚ
+    ëª¨ë“  (Hash Key, Data)ë¥¼ ìˆœíšŒí•œë‹¤
+    [IN] aVisitor   - Hash Keyì˜ Visitor Function
+    [IN] VisitorArg - Visitor Functionì— ë„˜ê¸¸ ì¸ì
 
-    <Âü°í»çÇ×>
-     traverseµµÁß¿¡ hash¿¡¼­ ÇØ´ç bucketÀ» Á¦°ÅÇÒ ¼öµµ ÀÖµµ·Ï ¼³°èµÇ¾ú´Ù
+    <ì°¸ê³ ì‚¬í•­>
+     traverseë„ì¤‘ì— hashì—ì„œ í•´ë‹¹ bucketì„ ì œê±°í•  ìˆ˜ë„ ìˆë„ë¡ ì„¤ê³„ë˜ì—ˆë‹¤
  */
 IDE_RC iduHash::traverse( iduHashVisitor    aVisitor,
                           void            * aVisitorArg )
@@ -207,8 +207,8 @@ IDE_RC iduHash::traverse( iduHashVisitor    aVisitor,
     
         while(sCurHashBucket != sBucketList)
         {
-            // Visitor°¡ ÇöÀç BucketÀ» Á¦°ÅÇÒ °æ¿ì¿¡ ´ëºñÇÏ¿©
-            // ´ÙÀ½ BucketÀ» ¹Ì¸® ¾ò¾î³õ´Â´Ù.
+            // Visitorê°€ í˜„ì¬ Bucketì„ ì œê±°í•  ê²½ìš°ì— ëŒ€ë¹„í•˜ì—¬
+            // ë‹¤ìŒ Bucketì„ ë¯¸ë¦¬ ì–»ì–´ë†“ëŠ”ë‹¤.
             sNextHashBucket = sCurHashBucket->pNext;
             
             IDE_TEST( (*aVisitor)(sCurHashBucket->nKey,

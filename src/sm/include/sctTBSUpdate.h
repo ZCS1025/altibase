@@ -25,8 +25,8 @@
 #include <sct.h>
 
 /**
-   Disk/Memory/Volatile Tablespace¿¡ ¸ğµÎ °øÅëÀûÀ¸·Î Àû¿ëµÇ´Â
-   Alter Tablespace±¸¹®¿¡ ´ëÇÑ Redo/UndoÇÔ¼ö ±¸Çö
+   Disk/Memory/Volatile Tablespaceì— ëª¨ë‘ ê³µí†µì ìœ¼ë¡œ ì ìš©ë˜ëŠ”
+   Alter Tablespaceêµ¬ë¬¸ì— ëŒ€í•œ Redo/Undoí•¨ìˆ˜ êµ¬í˜„
 
    Ex> Alter Tablespace Log Compress ON/OFF
  */
@@ -36,7 +36,7 @@ class sctTBSUpdate
 public:
     /* Update type:  SMR_PHYSICAL */
 
-    // TablespaceÀÇ Attribute Flagº¯°æ¿¡ ´ëÇÑ ·Î±×ÀÇ Redo¼öÇà
+    // Tablespaceì˜ Attribute Flagë³€ê²½ì— ëŒ€í•œ ë¡œê·¸ì˜ Redoìˆ˜í–‰
     static IDE_RC redo_SCT_UPDATE_ALTER_ATTR_FLAG(
                        idvSQL*              aStatistics, 
                        void*                aTrans,
@@ -48,7 +48,7 @@ public:
                        idBool               /* aIsRestart */ );
 
 
-    // TablespaceÀÇ Attribute Flagº¯°æ¿¡ ´ëÇÑ ·Î±×ÀÇ Undo¼öÇà
+    // Tablespaceì˜ Attribute Flagë³€ê²½ì— ëŒ€í•œ ë¡œê·¸ì˜ Undoìˆ˜í–‰
     static IDE_RC undo_SCT_UPDATE_ALTER_ATTR_FLAG(
                        idvSQL*              aStatistics, 
                        void*                aTrans ,
@@ -60,7 +60,7 @@ public:
                        idBool               aIsRestart );
     
 private:
-    // TablespaceÀÇ Attribute Flagº¯°æ¿¡ ´ëÇÑ ·Î±×¸¦ ºĞ¼®ÇÑ´Ù.
+    // Tablespaceì˜ Attribute Flagë³€ê²½ì— ëŒ€í•œ ë¡œê·¸ë¥¼ ë¶„ì„í•œë‹¤.
     static IDE_RC getAlterAttrFlagImage( UInt       aValueSize,
                                          SChar    * aValuePtr,
                                          UInt     * aAttrFlag );

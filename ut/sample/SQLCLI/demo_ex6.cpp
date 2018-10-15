@@ -237,7 +237,7 @@ SQLRETURN execute_proc(SQLHDBC dbc)
                           SQL_INTEGER,     /* SQL data type of the parameter : char(8)*/
                           0,               /* size of the column or expression, precision */
                           0,               /* The decimal digits, scale */
-                          &id,             /* A pointer to a buffer for the parameter¡¯s data */
+                          &id,             /* A pointer to a buffer for the parameterâ€™s data */
                           0,               /* Length of the ParameterValuePtr buffer in bytes */
                           NULL);           /* indicator */
     if (!SQL_SUCCEEDED(rc))

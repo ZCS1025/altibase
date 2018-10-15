@@ -18,7 +18,7 @@
 /***********************************************************************
  * $Id: sdptbVerifyAndDump.cpp 27228 2008-07-23 17:36:52Z newdaily $
  *
- * Bitmap based TBS¸¦ verifyÇÏ°í dumpÇÏ±â À§ÇÑ  ·çÆ¾µéÀÌ´Ù.
+ * Bitmap based TBSë¥¼ verifyí•˜ê³  dumpí•˜ê¸° ìœ„í•œ  ë£¨í‹´ë“¤ì´ë‹¤.
  **********************************************************************/
 #include <sdp.h>
 #include <sdpPhyPage.h>
@@ -35,7 +35,7 @@
  * Description:
  ***********************************************************************/
 IDE_RC sdptbVerifyAndDump::dump( scSpaceID   aSpaceID,
-                                 UInt        aDumpFlag ) //ÇöÀç´Â »ç¿ëµÇÁö ¾ÊÀ½
+                                 UInt        aDumpFlag ) //í˜„ì¬ëŠ” ì‚¬ìš©ë˜ì§€ ì•ŠìŒ
 {
     UChar               * sPagePtr;
     sdrMtx                sMtx;
@@ -59,7 +59,7 @@ IDE_RC sdptbVerifyAndDump::dump( scSpaceID   aSpaceID,
               != IDE_SUCCESS );
     sState=1;
 
-    //XXX Á÷Á¢ ÆÄÀÏÀ» ÀĞ¾î¼­ ÇØ¾ßÇÔ.
+    //XXX ì§ì ‘ íŒŒì¼ì„ ì½ì–´ì„œ í•´ì•¼í•¨.
     IDE_TEST( sctTableSpaceMgr::findSpaceNodeBySpaceID( aSpaceID,
                                                         (void**)&sSpaceNode)
 
@@ -69,12 +69,12 @@ IDE_RC sdptbVerifyAndDump::dump( scSpaceID   aSpaceID,
 
     IDE_ASSERT( sSpaceNode->mHeader.mID == aSpaceID );
 
-    /* BUG-28379 [SD] sdnbBTree::dumpNodeHdr( UChar *aPage ) ³»¿¡¼­
-     * local ArrayÀÇ ptr¸¦ ¹İÈ¯ÇÏ°í ÀÖ½À´Ï´Ù. 
+    /* BUG-28379 [SD] sdnbBTree::dumpNodeHdr( UChar *aPage ) ë‚´ì—ì„œ
+     * local Arrayì˜ ptrë¥¼ ë°˜í™˜í•˜ê³  ìˆìŠµë‹ˆë‹¤. 
      *
-     * DumpÇÑ °á°ú°ªÀ» ÀúÀåÇÒ ¹öÆÛ¸¦ È®º¸ÇÕ´Ï´Ù. Stack¿¡ ¼±¾ğÇÒ °æ¿ì,
-     * ÀÌ ÇÔ¼ö¸¦ ÅëÇØ ¼­¹ö°¡ Á¾·áµÉ ¼ö ÀÖÀ¸¹Ç·Î Heap¿¡ ÇÒ´çÀ» ½ÃµµÇÑ 
-     * ÈÄ, ¼º°øÇÏ¸é ±â·Ï, ¼º°øÇÏÁö ¾ÊÀ¸¸é ±×³É returnÇÕ´Ï´Ù. */
+     * Dumpí•œ ê²°ê³¼ê°’ì„ ì €ì¥í•  ë²„í¼ë¥¼ í™•ë³´í•©ë‹ˆë‹¤. Stackì— ì„ ì–¸í•  ê²½ìš°,
+     * ì´ í•¨ìˆ˜ë¥¼ í†µí•´ ì„œë²„ê°€ ì¢…ë£Œë  ìˆ˜ ìˆìœ¼ë¯€ë¡œ Heapì— í• ë‹¹ì„ ì‹œë„í•œ 
+     * í›„, ì„±ê³µí•˜ë©´ ê¸°ë¡, ì„±ê³µí•˜ì§€ ì•Šìœ¼ë©´ ê·¸ëƒ¥ returní•©ë‹ˆë‹¤. */
     IDE_TEST( iduMemMgr::calloc( IDU_MEM_ID, 1,
                                  ID_SIZEOF( SChar ) * IDE_DUMP_DEST_LIMIT,
                                  (void**)&sTempBuf )
@@ -182,11 +182,11 @@ void sdptbVerifyAndDump::printStructureSizes(void)
 
 /***********************************************************************
  * Description:
- * ÀÌ ÇÔ¼ö´Â LG(Local Group)ÀÇ BitmapÀ» StringÇüÅÂ·Î DumpÇÏ´Â ÇÔ¼öÀÔ´Ï´Ù.
+ * ì´ í•¨ìˆ˜ëŠ” LG(Local Group)ì˜ Bitmapì„ Stringí˜•íƒœë¡œ Dumpí•˜ëŠ” í•¨ìˆ˜ì…ë‹ˆë‹¤.
  *
- * BUG-28379 [SD] sdnbBTree::dumpNodeHdr( UChar *aPage ) ³»¿¡¼­
- * local ArrayÀÇ ptr¸¦ ¹İÈ¯ÇÏ°í ÀÖ½À´Ï´Ù. 
- * Local Array´ë½Å OutBuf¸¦ ¹Ş¾Æ ¸®ÅÏÇÏµµ·Ï ¼öÁ¤ÇÕ´Ï´Ù. 
+ * BUG-28379 [SD] sdnbBTree::dumpNodeHdr( UChar *aPage ) ë‚´ì—ì„œ
+ * local Arrayì˜ ptrë¥¼ ë°˜í™˜í•˜ê³  ìˆìŠµë‹ˆë‹¤. 
+ * Local ArrayëŒ€ì‹  OutBufë¥¼ ë°›ì•„ ë¦¬í„´í•˜ë„ë¡ ìˆ˜ì •í•©ë‹ˆë‹¤. 
  *
  ***********************************************************************/
 void sdptbVerifyAndDump::printBitmapOfLG( sdptbLGHdr * aLGHdr ,
@@ -251,9 +251,9 @@ void sdptbVerifyAndDump::printBitmapOfLG( sdptbLGHdr * aLGHdr ,
 /***********************************************************************
  * Description:
  *
- * BUG-28379 [SD] sdnbBTree::dumpNodeHdr( UChar *aPage ) ³»¿¡¼­
- * local ArrayÀÇ ptr¸¦ ¹İÈ¯ÇÏ°í ÀÖ½À´Ï´Ù. 
- * Local Array´ë½Å OutBuf¸¦ ¹Ş¾Æ ¸®ÅÏÇÏµµ·Ï ¼öÁ¤ÇÕ´Ï´Ù. 
+ * BUG-28379 [SD] sdnbBTree::dumpNodeHdr( UChar *aPage ) ë‚´ì—ì„œ
+ * local Arrayì˜ ptrë¥¼ ë°˜í™˜í•˜ê³  ìˆìŠµë‹ˆë‹¤. 
+ * Local ArrayëŒ€ì‹  OutBufë¥¼ ë°›ì•„ ë¦¬í„´í•˜ë„ë¡ ìˆ˜ì •í•©ë‹ˆë‹¤. 
  ***********************************************************************/
 IDE_RC sdptbVerifyAndDump::dumpLGHdr( UChar *aPage ,
                                       SChar *aOutBuf ,
@@ -278,9 +278,9 @@ IDE_RC sdptbVerifyAndDump::dumpLGHdr( UChar *aPage ,
                      "----------- Local Group Header Begin ----------\n" );
 
     /*
-     * alloc LG ÀÎÁö dealloc LGÀÎÁö´Â GG¸¦ ºÁ¾ß ¾Ë¼öÀÖ´Ù.
-     * ¿©±â¼­´Â ±×³É ¾Õ¿¡ÀÖ´Â°ÇÁö µÚ¿¡ÀÖ´Â°ÇÁö¸¸ º¸¿©ÁÖµµ·Ï ÇÑ´Ù?
-     *              ÀÏ´ÜÀº ÁÖ¼®Ã³¸®..XXX
+     * alloc LG ì¸ì§€ dealloc LGì¸ì§€ëŠ” GGë¥¼ ë´ì•¼ ì•Œìˆ˜ìˆë‹¤.
+     * ì—¬ê¸°ì„œëŠ” ê·¸ëƒ¥ ì•ì—ìˆëŠ”ê±´ì§€ ë’¤ì—ìˆëŠ”ê±´ì§€ë§Œ ë³´ì—¬ì£¼ë„ë¡ í•œë‹¤?
+     *              ì¼ë‹¨ì€ ì£¼ì„ì²˜ë¦¬..XXX
      */
     idlVA::appendFormat( aOutBuf,
                          aOutSize,
@@ -316,9 +316,9 @@ IDE_RC sdptbVerifyAndDump::dumpLGHdr( UChar *aPage ,
 /***********************************************************************
  * Description:
  *
- * BUG-28379 [SD] sdnbBTree::dumpNodeHdr( UChar *aPage ) ³»¿¡¼­
- * local ArrayÀÇ ptr¸¦ ¹İÈ¯ÇÏ°í ÀÖ½À´Ï´Ù. 
- * Local Array´ë½Å OutBuf¸¦ ¹Ş¾Æ ¸®ÅÏÇÏµµ·Ï ¼öÁ¤ÇÕ´Ï´Ù. 
+ * BUG-28379 [SD] sdnbBTree::dumpNodeHdr( UChar *aPage ) ë‚´ì—ì„œ
+ * local Arrayì˜ ptrë¥¼ ë°˜í™˜í•˜ê³  ìˆìŠµë‹ˆë‹¤. 
+ * Local ArrayëŒ€ì‹  OutBufë¥¼ ë°›ì•„ ë¦¬í„´í•˜ë„ë¡ ìˆ˜ì •í•©ë‹ˆë‹¤. 
  ***********************************************************************/
 IDE_RC sdptbVerifyAndDump::dumpGGHdr( UChar *aPage ,
                                       SChar *aOutBuf ,
@@ -415,12 +415,12 @@ IDE_RC sdptbVerifyAndDump::printLGsCore( sdrMtx     *aMtx,
     IDE_ERROR( aMtx   != NULL );
     IDE_ERROR( aGGHdr != NULL );
 
-    /* BUG-28379 [SD] sdnbBTree::dumpNodeHdr( UChar *aPage ) ³»¿¡¼­
-     * local ArrayÀÇ ptr¸¦ ¹İÈ¯ÇÏ°í ÀÖ½À´Ï´Ù. 
+    /* BUG-28379 [SD] sdnbBTree::dumpNodeHdr( UChar *aPage ) ë‚´ì—ì„œ
+     * local Arrayì˜ ptrë¥¼ ë°˜í™˜í•˜ê³  ìˆìŠµë‹ˆë‹¤. 
      *
-     * DumpÇÑ °á°ú°ªÀ» ÀúÀåÇÒ ¹öÆÛ¸¦ È®º¸ÇÕ´Ï´Ù. Stack¿¡ ¼±¾ğÇÒ °æ¿ì,
-     * ÀÌ ÇÔ¼ö¸¦ ÅëÇØ ¼­¹ö°¡ Á¾·áµÉ ¼ö ÀÖÀ¸¹Ç·Î Heap¿¡ ÇÒ´çÀ» ½ÃµµÇÑ 
-     * ÈÄ, ¼º°øÇÏ¸é ±â·Ï, ¼º°øÇÏÁö ¾ÊÀ¸¸é ±×³É returnÇÕ´Ï´Ù. */
+     * Dumpí•œ ê²°ê³¼ê°’ì„ ì €ì¥í•  ë²„í¼ë¥¼ í™•ë³´í•©ë‹ˆë‹¤. Stackì— ì„ ì–¸í•  ê²½ìš°,
+     * ì´ í•¨ìˆ˜ë¥¼ í†µí•´ ì„œë²„ê°€ ì¢…ë£Œë  ìˆ˜ ìˆìœ¼ë¯€ë¡œ Heapì— í• ë‹¹ì„ ì‹œë„í•œ 
+     * í›„, ì„±ê³µí•˜ë©´ ê¸°ë¡, ì„±ê³µí•˜ì§€ ì•Šìœ¼ë©´ ê·¸ëƒ¥ returní•©ë‹ˆë‹¤. */
     IDE_TEST( iduMemMgr::calloc( IDU_MEM_ID, 1,
                                  ID_SIZEOF( SChar ) * IDE_DUMP_DEST_LIMIT,
                                  (void**)&sTempBuf )

@@ -31,14 +31,14 @@ ACI_RC ulnSFID_39_40(ulnFnContext *aFnContext, ulnStmtState aBackPreparedState)
         {
             /* [s]
              *
-             * Note : MoreResult ÇÔ¼ö º»Ã¼¿¡¼­ next result ¸¦
-             *        current result ·Î ¼¼ÆÃÇßÀ¸¹Ç·Î
-             *        ulnStmtGetNextResult() °¡ ¾Æ´Ñ
-             *        ulnStmtGetCurrentResult() ¸¦ È£ÃâÇØ¾ß
-             *        next result °¡ ³ª¿Â´Ù.
+             * Note : MoreResult í•¨ìˆ˜ ë³¸ì²´ì—ì„œ next result ë¥¼
+             *        current result ë¡œ ì„¸íŒ…í–ˆìœ¼ë¯€ë¡œ
+             *        ulnStmtGetNextResult() ê°€ ì•„ë‹Œ
+             *        ulnStmtGetCurrentResult() ë¥¼ í˜¸ì¶œí•´ì•¼
+             *        next result ê°€ ë‚˜ì˜¨ë‹¤.
              */
             sResult = ulnStmtGetCurrentResult(aFnContext->mHandle.mStmt);
-            ACE_ASSERT(sResult != NULL); /* NULLÀÌ¸é NO_DATA ÂÊ ÄÚµå¸¦ Å¸¾ßÇÔ */
+            ACE_ASSERT(sResult != NULL); /* NULLì´ë©´ NO_DATA ìª½ ì½”ë“œë¥¼ íƒ€ì•¼í•¨ */
 
             if (ulnStmtHasResultSet(aFnContext->mHandle.mStmt) == ACP_TRUE)
             {
@@ -53,10 +53,10 @@ ACI_RC ulnSFID_39_40(ulnFnContext *aFnContext, ulnStmtState aBackPreparedState)
             else
             {
                 /* BUGBUG (2014-04-18) #MultiStmt
-                 * °á°ú°¡ ¾øÀ¸¸é SQL_NO_DATA°¡ ¶³¾îÁö¹Ç·Î ¿©±â¸¦ Å¸¸é ¾ÈµÈ´Ù.
-                 * multi-stmt¿¡¼­´Â RowCount³ª ResultSetÀ» ¸¸µéÁö ¾ÊÀ¸¸é
-                 * MoreResults·Î ¹ÝÈ¯ÇÒ À¯È¿ÇÑ result·Î º¸Áö ¾Ê±â ¶§¹®. (MsSql-like)
-                 * ÇöÀç´Â ±×·± Ã³¸®°¡ ¾ø±ä ÇÏ´Ù¸¸, multi-stmt´Â ºñ°ø°³¹Ç·Î ±×³É ASSERT Ã³¸®ÇÑ´Ù. */
+                 * ê²°ê³¼ê°€ ì—†ìœ¼ë©´ SQL_NO_DATAê°€ ë–¨ì–´ì§€ë¯€ë¡œ ì—¬ê¸°ë¥¼ íƒ€ë©´ ì•ˆëœë‹¤.
+                 * multi-stmtì—ì„œëŠ” RowCountë‚˜ ResultSetì„ ë§Œë“¤ì§€ ì•Šìœ¼ë©´
+                 * MoreResultsë¡œ ë°˜í™˜í•  ìœ íš¨í•œ resultë¡œ ë³´ì§€ ì•Šê¸° ë•Œë¬¸. (MsSql-like)
+                 * í˜„ìž¬ëŠ” ê·¸ëŸ° ì²˜ë¦¬ê°€ ì—†ê¸´ í•˜ë‹¤ë§Œ, multi-stmtëŠ” ë¹„ê³µê°œë¯€ë¡œ ê·¸ëƒ¥ ASSERT ì²˜ë¦¬í•œë‹¤. */
                 ACE_ASSERT(0);
             }
         }
@@ -143,10 +143,10 @@ ACI_RC ulnMoreResultsCore(ulnFnContext *aFnContext,
     sStmt = aFnContext->mHandle.mStmt;
 
     /* PROJ-1381, BUG-32902, BUG-33037 FAC
-     * FetchEnd ¶§ ¼­¹ö¿¡¼­ CloseÇÏ¸ç ´ÙÀ½ °á°ú¸¦ ¹ÞÀ» ¶§ ´Ù½Ã
-     * OPEN »óÅÂ·Î ¹Ù²Ù¹Ç·Î ¿©±â¼­ FetchEnd¸¦ °í·ÁÇØ CLOSED »óÅÂ·Î ¹Ù²ãÁØ´Ù.
-     * ÇÏÁö¸¸, Holdable Statement´Â CloseCursor Àü±îÁö ÀÓÀÇ·Î ³¡³»Áö ¾ÊÀ¸¹Ç·Î
-     * »óÅÂ¸¦ ¹Ù²ÙÁö ¾Ê¾Æ¾ß ÇÑ´Ù. */
+     * FetchEnd ë•Œ ì„œë²„ì—ì„œ Closeí•˜ë©° ë‹¤ìŒ ê²°ê³¼ë¥¼ ë°›ì„ ë•Œ ë‹¤ì‹œ
+     * OPEN ìƒíƒœë¡œ ë°”ê¾¸ë¯€ë¡œ ì—¬ê¸°ì„œ FetchEndë¥¼ ê³ ë ¤í•´ CLOSED ìƒíƒœë¡œ ë°”ê¿”ì¤€ë‹¤.
+     * í•˜ì§€ë§Œ, Holdable StatementëŠ” CloseCursor ì „ê¹Œì§€ ìž„ì˜ë¡œ ëë‚´ì§€ ì•Šìœ¼ë¯€ë¡œ
+     * ìƒíƒœë¥¼ ë°”ê¾¸ì§€ ì•Šì•„ì•¼ í•œë‹¤. */
     if (ulnStmtGetAttrCursorHold(sStmt) == SQL_CURSOR_HOLD_OFF)
     {
         sCursor = ulnStmtGetCursor(sStmt);
@@ -157,7 +157,7 @@ ACI_RC ulnMoreResultsCore(ulnFnContext *aFnContext,
     if (sResult != NULL)
     {
         /*
-         * Array of ParameterÀÇ ´ÙÀ½ °á°ú°¡ Á¸Àç
+         * Array of Parameterì˜ ë‹¤ìŒ ê²°ê³¼ê°€ ì¡´ìž¬
          */
         ulnStmtSetCurrentResult(sStmt, sResult);
         ulnDiagSetRowCount(&sStmt->mObj.mDiagHeader, sResult->mAffectedRowCount);
@@ -170,25 +170,25 @@ ACI_RC ulnMoreResultsCore(ulnFnContext *aFnContext,
         if (sCurrentResultSetID < sResultSetCount - 1)
         {
             /*
-             * ´ÙÀ½ Result SetÀÌ Á¸Àç
+             * ë‹¤ìŒ Result Setì´ ì¡´ìž¬
              */
 
-            // CurrentResultSetID Áõ°¡
+            // CurrentResultSetID ì¦ê°€
             sCurrentResultSetID++;
             ulnStmtSetCurrentResultSetID(sStmt, sCurrentResultSetID);
 
-            // ResultSet ÃÊ±âÈ­
+            // ResultSet ì´ˆê¸°í™”
             sResult = ulnStmtGetCurrentResult(sStmt);
             ulnResultSetType(sResult, ULN_RESULT_TYPE_RESULTSET);
 
-            // IRD ÃÊ±âÈ­
+            // IRD ì´ˆê¸°í™”
             sDescIrd = ulnStmtGetIrd(sStmt);
             ACI_TEST_RAISE(sDescIrd == NULL, LABEL_MEM_MAN_ERR);
             ACI_TEST_RAISE(ulnDescRollBackToInitial(sDescIrd) != ACI_SUCCESS, LABEL_MEM_MAN_ERR);
             ACI_TEST_RAISE(ulnDescInitialize(sDescIrd, (ulnObject *)sStmt) != ACI_SUCCESS,
                            LABEL_NOT_ENOUGH_MEM);
 
-            // Ä³½Ã ÃÊ±âÈ­
+            // ìºì‹œ ì´ˆê¸°í™”
             ACI_TEST( ulnCacheInitialize(sStmt->mCache) != ACI_SUCCESS );
 
             if (sStmt->mKeyset != NULL)
@@ -196,7 +196,7 @@ ACI_RC ulnMoreResultsCore(ulnFnContext *aFnContext,
                 ACI_TEST(ulnKeysetInitialize(sStmt->mKeyset) != ACI_SUCCESS );
             }
 
-            // Ä¿¼­ ÃÊ±âÈ­
+            // ì»¤ì„œ ì´ˆê¸°í™”
             ulnCursorSetPosition(&sStmt->mCursor, ULN_CURSOR_POS_BEFORE_START);
 
             // fix BUG-21737
@@ -207,7 +207,7 @@ ACI_RC ulnMoreResultsCore(ulnFnContext *aFnContext,
 
             // Fetch RES
             // To Fix BUG-20390
-            // Prefetch Cnt¸¦ °è»êÇÏ¿© ¿äÃ»ÇÔ.
+            // Prefetch Cntë¥¼ ê³„ì‚°í•˜ì—¬ ìš”ì²­í•¨.
             sPrefetchCnt = ulnCacheCalcPrefetchRowSize( sStmt->mCache,
                                                         & sStmt->mCursor );
 
@@ -234,13 +234,13 @@ ACI_RC ulnMoreResultsCore(ulnFnContext *aFnContext,
         else
         {
             /*
-             * ´õ ÀÌ»ó Result SetÀÌ ¾øÀ½
+             * ë” ì´ìƒ Result Setì´ ì—†ìŒ
              */
             ULN_FNCONTEXT_SET_RC(aFnContext, SQL_NO_DATA);
         }
     }
 
-    /* PROJ-1789: ´Ù¸¥ °á°ú¼ÂÀ¸·Î ³Ñ¾î°¡¹Ç·Î ÃÊ±âÈ­ÇØÁÖ¾î¾ß ÇÑ´Ù. */
+    /* PROJ-1789: ë‹¤ë¥¸ ê²°ê³¼ì…‹ìœ¼ë¡œ ë„˜ì–´ê°€ë¯€ë¡œ ì´ˆê¸°í™”í•´ì£¼ì–´ì•¼ í•œë‹¤. */
     ulnStmtResetQstrForDelete(sStmt);
     ulnStmtResetTableNameForUpdate(sStmt);
 
@@ -262,23 +262,23 @@ ACI_RC ulnMoreResultsCore(ulnFnContext *aFnContext,
 }
 
 /*
- * Multiple Result ¸¦ ±¸ÇöÇÏ¸é¼­ ÁÖÀÇÇØ¾ß ÇÒ Æ÷ÀÎÆ®µé
+ * Multiple Result ë¥¼ êµ¬í˜„í•˜ë©´ì„œ ì£¼ì˜í•´ì•¼ í•  í¬ì¸íŠ¸ë“¤
  *
- *      1. PREPARE RESULT ¼ö½Å½Ã
- *         explicit batch ±¸Çö½Ã ÀÌ Æ÷ÀÎÆ®¸¦ °í·ÁÇØ¾ß ÇÒ ÇÊ¿ä°¡ ÀÖÀ½.
+ *      1. PREPARE RESULT ìˆ˜ì‹ ì‹œ
+ *         explicit batch êµ¬í˜„ì‹œ ì´ í¬ì¸íŠ¸ë¥¼ ê³ ë ¤í•´ì•¼ í•  í•„ìš”ê°€ ìžˆìŒ.
  *
- *      2. SQLExecute() / SQLExecDirect() ÇÔ¼ö ÁøÀÔ½Ã
+ *      2. SQLExecute() / SQLExecDirect() í•¨ìˆ˜ ì§„ìž…ì‹œ
  *         ulnStmtFreeAllResult(sStmt);
- *         sStmt->mTotalAffectedRowCount = ID_ULONG(0); <-- SQL_NO_DATA ¸®ÅÏÀ» À§ÇØ ÇÊ¿äÇÔ.
+ *         sStmt->mTotalAffectedRowCount = ID_ULONG(0); <-- SQL_NO_DATA ë¦¬í„´ì„ ìœ„í•´ í•„ìš”í•¨.
  *
- *      3. EXECUTE RESULT ¼ö½Å½Ã
+ *      3. EXECUTE RESULT ìˆ˜ì‹ ì‹œ
  *         Add new result
  *
- *      4. SQLExecute() / SQLExecDirect() ÇÔ¼ö Å»Ãâ½Ã
- *         Current result ¸¦ Ã³À½ result ·Î ¼¼ÆÃ.
- *         Diag header ÀÇ row count ¸¦ ¼¼ÆÃ
+ *      4. SQLExecute() / SQLExecDirect() í•¨ìˆ˜ íƒˆì¶œì‹œ
+ *         Current result ë¥¼ ì²˜ìŒ result ë¡œ ì„¸íŒ….
+ *         Diag header ì˜ row count ë¥¼ ì„¸íŒ…
  *
- *      5. SQLCloseCursor() È£Ãâ½Ã (SQLFreeStmt(SQL_CLOSE))
+ *      5. SQLCloseCursor() í˜¸ì¶œì‹œ (SQLFreeStmt(SQL_CLOSE))
  *         ulnStmtFreeAllResult(sStmt);
  */
 

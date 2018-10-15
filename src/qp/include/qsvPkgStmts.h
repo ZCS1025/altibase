@@ -120,23 +120,23 @@ public:
                        qsProcParseTree     ** aSubprogramPlanTree );
 
     /* BUG-41847
-       packageÀÇ local exception variableÀ» Ã£´Â´Ù. */
+       packageì˜ local exception variableì„ ì°¾ëŠ”ë‹¤. */
     static IDE_RC getPkgLocalException( qcStatement  * aStatement,
                                         qsExceptions * aException,
                                         idBool       * aFind );
 
     /* BUG-38844 , BUG-41847
-       package specÀ» spvEnv->procPlanList¿¡ ´Ş¾Æ³õ´Â´Ù. */
+       package specì„ spvEnv->procPlanListì— ë‹¬ì•„ë†“ëŠ”ë‹¤. */
     static IDE_RC makeRelatedPkgSpecToPkgBody( qcStatement * aStatement,
                                                qsxPkgInfo  * aPkgSpecInfo );
 
     /* BUG-41847
-       package specÀÇ related object¸¦ package bodyÀÇ related object·Î »ó¼Ó */
+       package specì˜ related objectë¥¼ package bodyì˜ related objectë¡œ ìƒì† */
     static IDE_RC inheritRelatedObjectFromPkgSpec( qcStatement * aStatement,
                                                    qsxPkgInfo * aPkgSpecInfo );
 
     /* BUG-41847
-       subprogramÀÌ Àç±ÍÈ£ÃâÇÏ´ÂÁö checkÇÏ´Â ÇÔ¼ö */
+       subprogramì´ ì¬ê·€í˜¸ì¶œí•˜ëŠ”ì§€ checkí•˜ëŠ” í•¨ìˆ˜ */
     static idBool checkIsRecursiveSubprogramCall( qsPkgStmts * aCurrPkgStmt,
                                                   UInt         aTargetSubprogramID );
 private:
@@ -159,8 +159,8 @@ private:
                       qsPkgStmts     * aPkgStmt );
 
     /* BUG-39220
-       subprogram ÀÌ¸§°ú parameter °¹¼ö¸¸ °°À» ¼ö ÀÖÀ¸¹Ç·Î,
-       parameter ¹× return ´ëÇÑ »ó¼¼ÇÑ ºñ±³°¡ ÇÊ¿äÇÏ´Ù. */
+       subprogram ì´ë¦„ê³¼ parameter ê°¯ìˆ˜ë§Œ ê°™ì„ ìˆ˜ ìˆìœ¼ë¯€ë¡œ,
+       parameter ë° return ëŒ€í•œ ìƒì„¸í•œ ë¹„êµê°€ í•„ìš”í•˜ë‹¤. */
     static IDE_RC compareParametersAndReturnVar(
                       qcStatement      * aStatement,
                       idBool             aIsPrivate,
@@ -168,11 +168,11 @@ private:
                       qsPkgSubprograms * aCurrSubprogram );
 
     // BUG-41262 PSM overloading
-    // create ÇÒ¶§ µ¿ÀÏÇÑ ¼­ºêÇÁ·Î±×·¥ÀÎÁö ¿©ºÎ¸¦ ¹İÈ¯ÇÑ´Ù.
+    // create í• ë•Œ ë™ì¼í•œ ì„œë¸Œí”„ë¡œê·¸ë¨ì¸ì§€ ì—¬ë¶€ë¥¼ ë°˜í™˜í•œë‹¤.
     static idBool isSubprogramEqual( qsPkgSubprograms * aCurrent,
                                      qsPkgSubprograms * aNext );
 
-    // exec ÇÒ¶§ ¾Ë¸Â´Â ¼­ºêÇÁ·Î±×·¥À» Ã£´Â´Ù.
+    // exec í• ë•Œ ì•Œë§ëŠ” ì„œë¸Œí”„ë¡œê·¸ë¨ì„ ì°¾ëŠ”ë‹¤.
     static IDE_RC matchingSubprogram( qcStatement           * aStatement,
                                       qsPkgParseTree        * aParseTree,
                                       qtcNode               * aNode,
@@ -183,8 +183,8 @@ private:
                                       qsPkgSubprogramType   * aSubprogramType,
                                       UInt                  * aSubprogramID );
 
-    // matchingSubprogram ³»ºÎ¿¡¼­ »ç¿ëÇÏ´Â ÇÔ¼ö
-    // ÄÁ¹öÁ¯À» °í·ÁÇÏ¿© ÀÎÀÚ Å¸ÀÔÀÌ À¯»çÇÑÁö¸¦ ¾Ë·ÁÁØ´Ù.
+    // matchingSubprogram ë‚´ë¶€ì—ì„œ ì‚¬ìš©í•˜ëŠ” í•¨ìˆ˜
+    // ì»¨ë²„ì ¼ì„ ê³ ë ¤í•˜ì—¬ ì¸ì íƒ€ì…ì´ ìœ ì‚¬í•œì§€ë¥¼ ì•Œë ¤ì¤€ë‹¤.
     static IDE_RC calTypeFriendly( qcStatement  * aStatement,
                                    mtcNode      * aArgNode,
                                    mtcColumn    * aArgColumn,

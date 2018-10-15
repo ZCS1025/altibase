@@ -60,7 +60,7 @@ static IDE_RC qsfEstimate( mtcNode*     aNode,
 mtfModule qsfDeleteTableStatsModule = {
     1|MTC_NODE_OPERATOR_MISC|MTC_NODE_VARIABLE_TRUE,
     ~0,
-    1.0,                    // default selectivity (ºñ±³ ¿¬»êÀÚ ¾Æ´Ô)
+    1.0,                    // default selectivity (ë¹„êµ ì—°ì‚°ì ì•„ë‹˜)
     qsfFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -263,7 +263,7 @@ IDE_RC qsfCalculate_DeleteTableStats( mtcNode*     aNode,
     }
     else
     {
-        // ÀÌÀü PlanµéÀ» invalidate ½ÃÅ³ ÇÊ¿ä°¡ ¾ø´Ù.
+        // ì´ì „ Planë“¤ì„ invalidate ì‹œí‚¬ í•„ìš”ê°€ ì—†ë‹¤.
         // Nothing to do.
     }
 
@@ -286,7 +286,7 @@ IDE_RC qsfCalculate_DeleteTableStats( mtcNode*     aNode,
     IDE_TEST( sDummyStmt.begin( sStatement->mStatistics, sDummyParentStmt, sSmiStmtFlag ) != IDE_SUCCESS);
     sState = 4;
 
-    /* Table Á¤º¸ È¹µæ */
+    /* Table ì •ë³´ íšë“ */
     IDE_TEST( qcmUser::getUserID( sStatement,
                                   (SChar*)sOwnerNameValue->value,
                                   sOwnerNameValue->length,
@@ -305,7 +305,7 @@ IDE_RC qsfCalculate_DeleteTableStats( mtcNode*     aNode,
     IDE_TEST( smiValidateAndLockObjects( (QC_SMI_STMT(sStatement))->getTrans(),
                                          sTableHandle,
                                          sTableSCN,
-                                         SMI_TBSLV_DDL_DML, // TBS Validation ¿É¼Ç
+                                         SMI_TBSLV_DDL_DML, // TBS Validation ì˜µì…˜
                                          SMI_TABLE_LOCK_IX,
                                          ID_ULONG_MAX,
                                          ID_FALSE )         // BUG-28752 isExplicitLock
@@ -322,7 +322,7 @@ IDE_RC qsfCalculate_DeleteTableStats( mtcNode*     aNode,
                 NULL )
             != IDE_SUCCESS );
 
-    /* Partition ÀÌ¸§ÀÌ ÀÔ·ÂµÈ °æ¿ì, Partition ÇÏ³ª¿¡ ´ëÇØ¼­¸¸ °í·Á */
+    /* Partition ì´ë¦„ì´ ì…ë ¥ëœ ê²½ìš°, Partition í•˜ë‚˜ì— ëŒ€í•´ì„œë§Œ ê³ ë ¤ */
     if ( sPartitionNameValue != NULL )
     {
         IDE_TEST( qcmPartition::getPartitionInfo( 
@@ -338,7 +338,7 @@ IDE_RC qsfCalculate_DeleteTableStats( mtcNode*     aNode,
         IDE_TEST( qcmPartition::validateAndLockOnePartition( sStatement,
                                                              sTableHandle,
                                                              sTableSCN,
-                                                             SMI_TBSLV_DDL_DML, // TBS Validation ¿É¼Ç
+                                                             SMI_TBSLV_DDL_DML, // TBS Validation ì˜µì…˜
                                                              SMI_TABLE_LOCK_IX,
                                                              ID_ULONG_MAX )
                   != IDE_SUCCESS );
@@ -361,7 +361,7 @@ IDE_RC qsfCalculate_DeleteTableStats( mtcNode*     aNode,
 
         IDE_TEST( qcmPartition::validateAndLockPartitionInfoList( sStatement,
                                                                   sAllPartInfoList,
-                                                                  SMI_TBSLV_DDL_DML, // TBS Validation ¿É¼Ç
+                                                                  SMI_TBSLV_DDL_DML, // TBS Validation ì˜µì…˜
                                                                   SMI_TABLE_LOCK_IX,
                                                                   ID_ULONG_MAX )
                   != IDE_SUCCESS );
@@ -375,12 +375,12 @@ IDE_RC qsfCalculate_DeleteTableStats( mtcNode*     aNode,
      * Clear Table Stats
     ***************************************************************************/
 
-    /* TableÀÌ Partitioned TableÀÌ¸é, Partition List ¼øÈ¸ÇÏ¸é¼­ Åë°è Á¤º¸ »èÁ¦ 
-     * cascade_part °ªÀÌ TRUE¿©¾ß ÇÏÀ§ PartitionÀÇ Åë°è Á¤º¸¸¦ »èÁ¦ÇÑ´Ù */
+    /* Tableì´ Partitioned Tableì´ë©´, Partition List ìˆœíšŒí•˜ë©´ì„œ í†µê³„ ì •ë³´ ì‚­ì œ 
+     * cascade_part ê°’ì´ TRUEì—¬ì•¼ í•˜ìœ„ Partitionì˜ í†µê³„ ì •ë³´ë¥¼ ì‚­ì œí•œë‹¤ */
     if ( ( sTableInfo->tablePartitionType == QCM_PARTITIONED_TABLE ) &&
          ( sCascadePart == ID_TRUE ) )
     {
-        /* Partitioned TableÀÌ¸é List ¼øÈ¸ÇÏ¸é¼­ Åë°èÁ¤º¸ »èÁ¦ */
+        /* Partitioned Tableì´ë©´ List ìˆœíšŒí•˜ë©´ì„œ í†µê³„ì •ë³´ ì‚­ì œ */
         for ( sPartInfoList = sAllPartInfoList;
               sPartInfoList != NULL;
               sPartInfoList = sPartInfoList->next )
@@ -398,8 +398,8 @@ IDE_RC qsfCalculate_DeleteTableStats( mtcNode*     aNode,
         // Nothing to do.
     }
 
-    /* À§¿¡¼­´Â Partitioned TableÀÇ °¢ Partition¿¡ ´ëÇØ¼­¸¸ Åë°è Á¤º¸¸¦ »èÁ¦ÇßÀ¸¹Ç·Î
-     * ÇöÀç TableÀÇ Æ¯Á¤ Column¿¡ ´ëÇØ¼­µµ Åë°è Á¤º¸¸¦ »èÁ¦ÇØ¾ß ÇÑ´Ù. */
+    /* ìœ„ì—ì„œëŠ” Partitioned Tableì˜ ê° Partitionì— ëŒ€í•´ì„œë§Œ í†µê³„ ì •ë³´ë¥¼ ì‚­ì œí–ˆìœ¼ë¯€ë¡œ
+     * í˜„ì¬ Tableì˜ íŠ¹ì • Columnì— ëŒ€í•´ì„œë„ í†µê³„ ì •ë³´ë¥¼ ì‚­ì œí•´ì•¼ í•œë‹¤. */
     IDE_TEST( smiStatistics::clearTableStats( (QC_SMI_STMT(sStatement))->getTrans(),
                                               sTableHandle,
                                               sNoInvalidate )
@@ -411,8 +411,8 @@ IDE_RC qsfCalculate_DeleteTableStats( mtcNode*     aNode,
 
     if ( sCascadeColumn == ID_TRUE )
     {
-        /* TableÀÌ Partitioned TableÀÌ¸é, Partition List ¼øÈ¸ÇÏ¸é¼­ Åë°è Á¤º¸ »èÁ¦ 
-         * cascade_part °ªÀÌ TRUE¿©¾ß ÇÏÀ§ PartitionÀÇ Åë°è Á¤º¸¸¦ »èÁ¦ÇÑ´Ù */
+        /* Tableì´ Partitioned Tableì´ë©´, Partition List ìˆœíšŒí•˜ë©´ì„œ í†µê³„ ì •ë³´ ì‚­ì œ 
+         * cascade_part ê°’ì´ TRUEì—¬ì•¼ í•˜ìœ„ Partitionì˜ í†µê³„ ì •ë³´ë¥¼ ì‚­ì œí•œë‹¤ */
         if ( ( sTableInfo->tablePartitionType == QCM_PARTITIONED_TABLE ) &&
              ( sCascadePart == ID_TRUE ) )
         {
@@ -440,8 +440,8 @@ IDE_RC qsfCalculate_DeleteTableStats( mtcNode*     aNode,
             // Nothing to do.
         }
 
-        /* À§¿¡¼­´Â Partitioned TableÀÇ °¢ Partition¿¡ ´ëÇØ¼­¸¸ Åë°è Á¤º¸¸¦ »èÁ¦ÇßÀ¸¹Ç·Î
-         * ÇöÀç TableÀÇ Æ¯Á¤ Column¿¡ ´ëÇØ¼­µµ Åë°è Á¤º¸¸¦ »èÁ¦ÇØ¾ß ÇÑ´Ù. */
+        /* ìœ„ì—ì„œëŠ” Partitioned Tableì˜ ê° Partitionì— ëŒ€í•´ì„œë§Œ í†µê³„ ì •ë³´ë¥¼ ì‚­ì œí–ˆìœ¼ë¯€ë¡œ
+         * í˜„ì¬ Tableì˜ íŠ¹ì • Columnì— ëŒ€í•´ì„œë„ í†µê³„ ì •ë³´ë¥¼ ì‚­ì œí•´ì•¼ í•œë‹¤. */
         for ( i = 0; i < sTableInfo->columnCount; i++ )
         {
             sColumnID = sTableInfo->columns[i].basicInfo->column.id;
@@ -465,11 +465,11 @@ IDE_RC qsfCalculate_DeleteTableStats( mtcNode*     aNode,
 
     if ( sCascadeIndex == ID_TRUE )
     {
-        /* TableÀÌ Partitioned TableÀÌ¸é, Partition List ¼øÈ¸ÇÏ¸é¼­ Åë°è Á¤º¸ »èÁ¦ 
-         * cascade_part °ªÀÌ TRUE¿©¾ß ÇÏÀ§ PartitionÀÇ Åë°è Á¤º¸¸¦ »èÁ¦ÇÑ´Ù */
+        /* Tableì´ Partitioned Tableì´ë©´, Partition List ìˆœíšŒí•˜ë©´ì„œ í†µê³„ ì •ë³´ ì‚­ì œ 
+         * cascade_part ê°’ì´ TRUEì—¬ì•¼ í•˜ìœ„ Partitionì˜ í†µê³„ ì •ë³´ë¥¼ ì‚­ì œí•œë‹¤ */
         if ( sTableInfo->tablePartitionType == QCM_PARTITIONED_TABLE )
         {
-            /* Partitioned TableÀÌ¸é List ¼øÈ¸ÇÏ¸é¼­ Åë°èÁ¤º¸ »èÁ¦ */
+            /* Partitioned Tableì´ë©´ List ìˆœíšŒí•˜ë©´ì„œ í†µê³„ì •ë³´ ì‚­ì œ */
             for ( sPartInfoList = sAllPartInfoList;
                   sPartInfoList != NULL;
                   sPartInfoList = sPartInfoList->next )
@@ -493,8 +493,8 @@ IDE_RC qsfCalculate_DeleteTableStats( mtcNode*     aNode,
             // Nothing to do.
         }
 
-        /* À§¿¡¼­´Â Partitioned TableÀÇ °¢ Partition¿¡ ´ëÇØ¼­¸¸ Åë°è Á¤º¸¸¦ »èÁ¦ÇßÀ¸¹Ç·Î
-         * ÇöÀç TableÀÇ Æ¯Á¤ Column¿¡ ´ëÇØ¼­µµ Åë°è Á¤º¸¸¦ »èÁ¦ÇØ¾ß ÇÑ´Ù. */
+        /* ìœ„ì—ì„œëŠ” Partitioned Tableì˜ ê° Partitionì— ëŒ€í•´ì„œë§Œ í†µê³„ ì •ë³´ë¥¼ ì‚­ì œí–ˆìœ¼ë¯€ë¡œ
+         * í˜„ì¬ Tableì˜ íŠ¹ì • Columnì— ëŒ€í•´ì„œë„ í†µê³„ ì •ë³´ë¥¼ ì‚­ì œí•´ì•¼ í•œë‹¤. */
         for ( i = 0; i < sTableInfo->indexCount; i++ )
         {
             sIndexInfo = &sTableInfo->indices[i];
@@ -528,7 +528,7 @@ IDE_RC qsfCalculate_DeleteTableStats( mtcNode*     aNode,
     }
     else
     {
-        // ÀÌÀü PlanµéÀ» invalidate ½ÃÅ³ ÇÊ¿ä°¡ ¾ø´Ù.
+        // ì´ì „ Planë“¤ì„ invalidate ì‹œí‚¬ í•„ìš”ê°€ ì—†ë‹¤.
         // Nothing to do.
     }
 

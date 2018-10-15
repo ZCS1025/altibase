@@ -18,7 +18,7 @@
 /***********************************************************************
  * $Id$
  *
- * µğ½ºÅ© Å×ÀÌºí½ºÆäÀÌ °ü·Ã Fixed Table ±¸Çö  
+ * ë””ìŠ¤í¬ í…Œì´ë¸”ìŠ¤í˜ì´ ê´€ë ¨ Fixed Table êµ¬í˜„  
  ***********************************************************************/
 
 #include <idu.h>
@@ -185,8 +185,8 @@ static iduFixedTableColDesc gDataFileTableColDesc[] =
 
     {
         (SChar*)"OPENED",
-        offsetof(sddDataFileNodeInfo, mIsOpened), // BUGBUG : 4byteÀÎÁö È®ÀÎ
-        IDU_FT_SIZEOF(sddDataFileNodeInfo, mIsOpened), // BUGBUG : 4byteÀÎÁö È®,
+        offsetof(sddDataFileNodeInfo, mIsOpened), // BUGBUG : 4byteì¸ì§€ í™•ì¸
+        IDU_FT_SIZEOF(sddDataFileNodeInfo, mIsOpened), // BUGBUG : 4byteì¸ì§€ í™•,
         IDU_FT_TYPE_UINTEGER,
         NULL,
         0, 0,NULL // for internal use
@@ -194,8 +194,8 @@ static iduFixedTableColDesc gDataFileTableColDesc[] =
 
     {
         (SChar*)"MODIFIED",
-        offsetof(sddDataFileNodeInfo, mIsModified), // BUGBUG : 4byteÀÎÁö È®ÀÎ
-        IDU_FT_SIZEOF(sddDataFileNodeInfo, mIsModified), // BUGBUG : 4byteÀÎÁö È®,
+        offsetof(sddDataFileNodeInfo, mIsModified), // BUGBUG : 4byteì¸ì§€ í™•ì¸
+        IDU_FT_SIZEOF(sddDataFileNodeInfo, mIsModified), // BUGBUG : 4byteì¸ì§€ í™•,
         IDU_FT_TYPE_UINTEGER,
         NULL,
         0, 0,NULL // for internal use
@@ -203,16 +203,16 @@ static iduFixedTableColDesc gDataFileTableColDesc[] =
 
     {
         (SChar*)"STATE",
-        offsetof(sddDataFileNodeInfo, mState), // BUGBUG : 4byteÀÎÁö È®ÀÎ
-        IDU_FT_SIZEOF(sddDataFileNodeInfo, mState), // BUGBUG : 4byteÀÎÁö È®,
+        offsetof(sddDataFileNodeInfo, mState), // BUGBUG : 4byteì¸ì§€ í™•ì¸
+        IDU_FT_SIZEOF(sddDataFileNodeInfo, mState), // BUGBUG : 4byteì¸ì§€ í™•,
         IDU_FT_TYPE_UINTEGER,
         NULL,
         0, 0,NULL // for internal use
     },
     {
         (SChar*)"MAX_OPEN_FD_COUNT",
-        offsetof(sddDataFileNodeInfo, mMaxOpenFDCnt), // BUGBUG : 4byteÀÎÁö È®ÀÎ
-        IDU_FT_SIZEOF(sddDataFileNodeInfo, mMaxOpenFDCnt), // BUGBUG : 4byteÀÎÁö È®,
+        offsetof(sddDataFileNodeInfo, mMaxOpenFDCnt), // BUGBUG : 4byteì¸ì§€ í™•ì¸
+        IDU_FT_SIZEOF(sddDataFileNodeInfo, mMaxOpenFDCnt), // BUGBUG : 4byteì¸ì§€ í™•,
         IDU_FT_TYPE_UINTEGER,
         NULL,
         0, 0,NULL // for internal use
@@ -311,12 +311,12 @@ IDE_RC sddDiskFT::buildFT4DATAFILES( idvSQL		 * /* aStatistics */,
                 }
 
                 /* BUG-43006 FixedTable Indexing Filter
-                 * Column Index ¸¦ »ç¿ëÇØ¼­ ÀüÃ¼ Record¸¦ »ı¼ºÇÏÁö¾Ê°í
-                 * ºÎºĞ¸¸ »ı¼ºÇØ Filtering ÇÑ´Ù.
-                 * 1. void * ¹è¿­¿¡ IDU_FT_COLUMN_INDEX ·Î ÁöÁ¤µÈ ÄÃ·³¿¡
-                 * ÇØ´çÇÏ´Â °ªÀ» ¼ø¼­´ë·Î ³Ö¾îÁÖ¾î¾ß ÇÑ´Ù.
-                 * 2. IDU_FT_COLUMN_INDEXÀÇ ÄÃ·³¿¡ ÇØ´çÇÏ´Â °ªÀ» ¸ğµÎ ³Ö
-                 * ¾î ÁÖ¾î¾ßÇÑ´Ù.
+                 * Column Index ë¥¼ ì‚¬ìš©í•´ì„œ ì „ì²´ Recordë¥¼ ìƒì„±í•˜ì§€ì•Šê³ 
+                 * ë¶€ë¶„ë§Œ ìƒì„±í•´ Filtering í•œë‹¤.
+                 * 1. void * ë°°ì—´ì— IDU_FT_COLUMN_INDEX ë¡œ ì§€ì •ëœ ì»¬ëŸ¼ì—
+                 * í•´ë‹¹í•˜ëŠ” ê°’ì„ ìˆœì„œëŒ€ë¡œ ë„£ì–´ì£¼ì–´ì•¼ í•œë‹¤.
+                 * 2. IDU_FT_COLUMN_INDEXì˜ ì»¬ëŸ¼ì— í•´ë‹¹í•˜ëŠ” ê°’ì„ ëª¨ë‘ ë„£
+                 * ì–´ ì£¼ì–´ì•¼í•œë‹¤.
                  */
                 sIndexValues[0] = &sFileNode->mSpaceID;
                 if ( iduFixedTable::checkKeyRange( aMemory,
@@ -493,7 +493,7 @@ static iduFixedTableColDesc gFileStatTableColDesc[] =
         0, 0,NULL // for internal use
     },
     // Single Block Read I/O Count
-    // ¾ËÆ¼º£ÀÌ½º´Â ´ÜÀÏ Block I/O¸¸ ¼öÇàÇÑ´Ù. 
+    // ì•Œí‹°ë² ì´ìŠ¤ëŠ” ë‹¨ì¼ Block I/Oë§Œ ìˆ˜í–‰í•œë‹¤. 
     {
         (SChar*)"SINGLEBLKRDS",
         offsetof(sddFileStatFT, mFileIOStat) +
@@ -533,7 +533,7 @@ static iduFixedTableColDesc gFileStatTableColDesc[] =
         NULL,
         0, 0,NULL // for internal use
     },
-    // Æò±Õ I/O Time ( milli-sec. )
+    // í‰ê·  I/O Time ( milli-sec. )
     {
         (SChar*)"AVGIOTIM",
         offsetof(sddFileStatFT, mAvgIOTime),
@@ -542,7 +542,7 @@ static iduFixedTableColDesc gFileStatTableColDesc[] =
         NULL,
         0, 0,NULL // for internal use
     },
-    // ¸¶Áö¸· I/O Tim e( milli-sec. )
+    // ë§ˆì§€ë§‰ I/O Tim e( milli-sec. )
     {
         (SChar*)"LSTIOTIM",
         offsetof(sddFileStatFT, mFileIOStat) +
@@ -552,7 +552,7 @@ static iduFixedTableColDesc gFileStatTableColDesc[] =
         NULL,
         0, 0,NULL // for internal use
     }, 
-    //  ÃÖ¼Ò I/O Time ( milli-sec. )
+    //  ìµœì†Œ I/O Time ( milli-sec. )
     {
         (SChar*)"MINIOTIM",
         offsetof(sddFileStatFT, mFileIOStat) +
@@ -562,7 +562,7 @@ static iduFixedTableColDesc gFileStatTableColDesc[] =
         NULL,
         0, 0,NULL // for internal use
     },
-    //  ÃÖ´ë Read I/O Time ( milli-sec. )
+    //  ìµœëŒ€ Read I/O Time ( milli-sec. )
     {
         (SChar*)"MAXIORTM",
         offsetof(sddFileStatFT, mFileIOStat) +
@@ -572,7 +572,7 @@ static iduFixedTableColDesc gFileStatTableColDesc[] =
         NULL,
         0, 0,NULL // for internal use
     },
-    //  ÃÖ´ë Write I/O Time ( milli-sec. )
+    //  ìµœëŒ€ Write I/O Time ( milli-sec. )
     {
         (SChar*)"MAXIOWTM",
         offsetof(sddFileStatFT, mFileIOStat) +
@@ -650,12 +650,12 @@ IDE_RC sddDiskFT::buildFT4FILESTAT( idvSQL		* /* aStatistics */,
                 }
                 
                 /* BUG-43006 FixedTable Indexing Filter
-                 * Column Index ¸¦ »ç¿ëÇØ¼­ ÀüÃ¼ Record¸¦ »ı¼ºÇÏÁö¾Ê°í
-                 * ºÎºĞ¸¸ »ı¼ºÇØ Filtering ÇÑ´Ù.
-                 * 1. void * ¹è¿­¿¡ IDU_FT_COLUMN_INDEX ·Î ÁöÁ¤µÈ ÄÃ·³¿¡
-                 * ÇØ´çÇÏ´Â °ªÀ» ¼ø¼­´ë·Î ³Ö¾îÁÖ¾î¾ß ÇÑ´Ù.
-                 * 2. IDU_FT_COLUMN_INDEXÀÇ ÄÃ·³¿¡ ÇØ´çÇÏ´Â °ªÀ» ¸ğµÎ ³Ö
-                 * ¾î ÁÖ¾î¾ßÇÑ´Ù.
+                 * Column Index ë¥¼ ì‚¬ìš©í•´ì„œ ì „ì²´ Recordë¥¼ ìƒì„±í•˜ì§€ì•Šê³ 
+                 * ë¶€ë¶„ë§Œ ìƒì„±í•´ Filtering í•œë‹¤.
+                 * 1. void * ë°°ì—´ì— IDU_FT_COLUMN_INDEX ë¡œ ì§€ì •ëœ ì»¬ëŸ¼ì—
+                 * í•´ë‹¹í•˜ëŠ” ê°’ì„ ìˆœì„œëŒ€ë¡œ ë„£ì–´ì£¼ì–´ì•¼ í•œë‹¤.
+                 * 2. IDU_FT_COLUMN_INDEXì˜ ì»¬ëŸ¼ì— í•´ë‹¹í•˜ëŠ” ê°’ì„ ëª¨ë‘ ë„£
+                 * ì–´ ì£¼ì–´ì•¼í•œë‹¤.
                  */
                 sIndexValues[0] = &sFileNode->mSpaceID;
                 sIndexValues[1] = &sFileNode->mFile.mStat.mPhyBlockReadCount;
@@ -678,11 +678,11 @@ IDE_RC sddDiskFT::buildFT4FILESTAT( idvSQL		* /* aStatistics */,
                                &(sFileNode->mFile.mStat),
                                ID_SIZEOF(iduFIOStat) );
                 
-                // I/O Æò±Õ ½Ã°£ °è»ê
+                // I/O í‰ê·  ì‹œê°„ ê³„ì‚°
                 if ( (sFileStatFT.mFileIOStat.mPhyReadCount+
                       sFileStatFT.mFileIOStat.mPhyWriteCount) > 0 )
                 {
-                    // ÃÑ I/O ¼öÇà ½Ã°£À» ÃÑ I/O È¸¼ö·Î ³ª´©¾î ±¸ÇÑ´Ù. 
+                    // ì´ I/O ìˆ˜í–‰ ì‹œê°„ì„ ì´ I/O íšŒìˆ˜ë¡œ ë‚˜ëˆ„ì–´ êµ¬í•œë‹¤. 
                     sFileStatFT.mAvgIOTime =
                         (sFileStatFT.mFileIOStat.mReadTime + 
                          sFileStatFT.mFileIOStat.mWriteTime ) /
@@ -694,7 +694,7 @@ IDE_RC sddDiskFT::buildFT4FILESTAT( idvSQL		* /* aStatistics */,
                     sFileStatFT.mAvgIOTime = 0;
                 }
 
-                 // I/O ÃÖ¼Ò Time 
+                 // I/O ìµœì†Œ Time 
                 if ( sFileStatFT.mFileIOStat.mMinIOTime == ID_ULONG_MAX )
                 {
                     sFileStatFT.mFileIOStat.mMinIOTime = 0;

@@ -41,7 +41,7 @@ typedef struct ulnDescRec ulnDescRec;
 typedef struct ulnIndLenPtrPair ulnIndLenPtrPair;
 /*
  * ---------------------------
- * cli2 ¿¡¼­ ³Ñ¾î¿Â »ó¼öµé
+ * cli2 ì—ì„œ ë„˜ì–´ì˜¨ ìƒìˆ˜ë“¤
  * ---------------------------
  */
 
@@ -55,7 +55,7 @@ typedef struct ulnIndLenPtrPair ulnIndLenPtrPair;
 
 /* fix BUG-17606 ,BUG-17724*/
 #if defined(HP_HPUX) ||  defined(IA64_HP_HPUX)
-/* fix BUG-22936 64bit SQLLENÀÌ 32bit , 64bit ¸ğµÎ Á¦°øÇØ¾ß ÇÕ´Ï´Ù. */
+/* fix BUG-22936 64bit SQLLENì´ 32bit , 64bit ëª¨ë‘ ì œê³µí•´ì•¼ í•©ë‹ˆë‹¤. */
 #if defined(COMPILE_64BIT)
 #if defined(BUILD_REAL_64_BIT_MODE)
 #define ALTIBASE_ODBC_NAME "libaltibase_odbc-64bit-ul64.sl"
@@ -66,7 +66,7 @@ typedef struct ulnIndLenPtrPair ulnIndLenPtrPair;
 #define ALTIBASE_ODBC_NAME "libaltibase_odbc.sl"
 #endif /* COMPILE_64BIT */
 #else /* HP_HPUX  */
-/* fix BUG-22936 64bit SQLLENÀÌ 32bit , 64bit ¸ğµÎ Á¦°øÇØ¾ß ÇÕ´Ï´Ù. */
+/* fix BUG-22936 64bit SQLLENì´ 32bit , 64bit ëª¨ë‘ ì œê³µí•´ì•¼ í•©ë‹ˆë‹¤. */
 #if defined(COMPILE_64BIT)
 #if defined(BUILD_REAL_64_BIT_MODE)
 #define ALTIBASE_ODBC_NAME "libaltibase_odbc-64bit-ul64.so"
@@ -99,13 +99,13 @@ typedef struct ulnIndLenPtrPair ulnIndLenPtrPair;
 
 #define ULN_MAX_CONVERSION_RATIO              (3)
 
-// 1¹®ÀÚÀÇ ÃÖ´ë Å©±â (°¡Àå Å« ¹®ÀÚ´Â UTF-EBCDICÀ¸·Î ÃÖ´ë 5¹ÙÀÌÆ®)
+// 1ë¬¸ìì˜ ìµœëŒ€ í¬ê¸° (ê°€ì¥ í° ë¬¸ìëŠ” UTF-EBCDICìœ¼ë¡œ ìµœëŒ€ 5ë°”ì´íŠ¸)
 #define ULN_MAX_CHARSIZE                      5
 
 /*
- * BUGBUG : ÀûÀıÇÑ À§Ä¡¸¦ Ã£¾Æ¼­ Àß blend ½ÃÄÑ¾ß ÇÒ ÅÙµ¥...
- * ¼­¹ö ¸Ş¼¼Áö°¡ ¿ÔÀ» ¶§ Äİ¹éµÇ´Â ÇÔ¼ö¸¦ Á¤ÇÏ´Â DBC ÀÇ attribute.
- * ulnSetConnectAttr() ÇÔ¼ö¿¡¼­ »ç¿ëµÈ´Ù.
+ * BUGBUG : ì ì ˆí•œ ìœ„ì¹˜ë¥¼ ì°¾ì•„ì„œ ì˜ blend ì‹œì¼œì•¼ í•  í…ë°...
+ * ì„œë²„ ë©”ì„¸ì§€ê°€ ì™”ì„ ë•Œ ì½œë°±ë˜ëŠ” í•¨ìˆ˜ë¥¼ ì •í•˜ëŠ” DBC ì˜ attribute.
+ * ulnSetConnectAttr() í•¨ìˆ˜ì—ì„œ ì‚¬ìš©ëœë‹¤.
  */
 #define ALTIBASE_MESSAGE_CALLBACK       1501
 
@@ -115,11 +115,11 @@ typedef struct ulnIndLenPtrPair ulnIndLenPtrPair;
 #define ULN_INVALID_HANDLE        -1 
 
 /*
- * ¼­¹ö¿¡¼­ ¿À´Â ¸Ş¼¼Áö¸¦ »ç¿ëÀÚ application ¿¡ ³Ñ°ÜÁÖ´Â Äİ¹é ±¸Á¶Ã¼ÀÌ´Ù.
- * iSQL ¿¡¼­ »ç¿ëÀ» ÇÏ°Ô µÇ´Âµ¥, ÀÌ°ÍÀ» ulo ¿¡ ³ÖÀ»Áö, uln ¿¡ ³ÖÀ»Áö ¸¹ÀÌ ¾Ö¸ÅÇÏ´Ù.
+ * ì„œë²„ì—ì„œ ì˜¤ëŠ” ë©”ì„¸ì§€ë¥¼ ì‚¬ìš©ì application ì— ë„˜ê²¨ì£¼ëŠ” ì½œë°± êµ¬ì¡°ì²´ì´ë‹¤.
+ * iSQL ì—ì„œ ì‚¬ìš©ì„ í•˜ê²Œ ë˜ëŠ”ë°, ì´ê²ƒì„ ulo ì— ë„£ì„ì§€, uln ì— ë„£ì„ì§€ ë§ì´ ì• ë§¤í•˜ë‹¤.
  *
- * BUGBUG : »ı°¢À» Á» ÇØ ºÁ¾ß ÇÏ´Âµ¥ Áö±İÀº ½Ã°£ÀÌ ¾øÀ¸¹Ç·Î ¿©±â´Ù°¡ ¹Ù·Î ³Ö°í,
- *          ulo.h ¿¡¼­ uln.h ¸¦ include ÇÏµµ·Ï ÇÏÀÚ.
+ * BUGBUG : ìƒê°ì„ ì¢€ í•´ ë´ì•¼ í•˜ëŠ”ë° ì§€ê¸ˆì€ ì‹œê°„ì´ ì—†ìœ¼ë¯€ë¡œ ì—¬ê¸°ë‹¤ê°€ ë°”ë¡œ ë„£ê³ ,
+ *          ulo.h ì—ì„œ uln.h ë¥¼ include í•˜ë„ë¡ í•˜ì.
  */
 typedef ACI_RC (*ulnServerMessageCallback)(acp_char_t *aMessage, acp_uint32_t aLength, void *aArgument);
 
@@ -128,8 +128,8 @@ typedef struct ulnServerMessageCallbackStruct
     ulnServerMessageCallback  mFunction;
 
     /*
-     * »ç¿ëÀÚ°¡ ÀÓÀÇÀÇ argument ¸¦ ¼¼ÆÃÇÒ ¼ö ÀÖ´Ù.
-     * ÀÌ argument ´Â mFunction ÀÌ È£Ãâ µÉ ¶§ aArgument ·Î ³Ñ¾î°¡°Ô µÈ´Ù.
+     * ì‚¬ìš©ìê°€ ì„ì˜ì˜ argument ë¥¼ ì„¸íŒ…í•  ìˆ˜ ìˆë‹¤.
+     * ì´ argument ëŠ” mFunction ì´ í˜¸ì¶œ ë  ë•Œ aArgument ë¡œ ë„˜ì–´ê°€ê²Œ ëœë‹¤.
      */
     void                     *mArgument;
 } ulnServerMessageCallbackStruct;
@@ -183,7 +183,7 @@ SQLRETURN ulnBindCol(ulnStmt      *aStmt,
                      ulvSLen      *aStrLenOrIndPtr);
 
 /*
- * ¾Æ·¡ÀÇ µÎ ÇÔ¼ö´Â SQLError() ÇÔ¼öÀÇ SQLGetDiagRec() ÇÔ¼ö·ÎÀÇ ¸ÅÇÎ¶§¹®¿¡ Á¸ÀçÇÑ´Ù.
+ * ì•„ë˜ì˜ ë‘ í•¨ìˆ˜ëŠ” SQLError() í•¨ìˆ˜ì˜ SQLGetDiagRec() í•¨ìˆ˜ë¡œì˜ ë§¤í•‘ë•Œë¬¸ì— ì¡´ì¬í•œë‹¤.
  */
 acp_sint32_t ulnObjectGetSqlErrorRecordNumber(ulnObject    *aHandle);
 ACI_RC       ulnObjectSetSqlErrorRecordNumber(ulnObject    *aHandle,
@@ -580,7 +580,7 @@ extern acp_bool_t gTrace;
 #endif
 
 /* ------------------------------------------------
- *  SQLConnect* °ü·Ã Framework
+ *  SQLConnect* ê´€ë ¨ Framework
  * ----------------------------------------------*/
 
 // =================== SQLConnect

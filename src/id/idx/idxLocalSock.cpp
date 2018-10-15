@@ -28,12 +28,12 @@ IDE_RC idxLocalSock::ping( UInt            aPID,
 {
 /***********************************************************************
  *
- * Description : Agent Process°¡ ¿¬°á °¡´ÉÇÑ »óÅÂÀÎÁö È®ÀÎÇÑ´Ù.
+ * Description : Agent Processê°€ ì—°ê²° ê°€ëŠ¥í•œ ìƒíƒœì¸ì§€ í™•ì¸í•œë‹¤.
  *          
- *       - Named Pipe´Â ÇÁ·Î¼¼½º°¡ Á¸ÀçÇÏ´ÂÁö¸¦ °ËÁõÇÏ·Á¸é Ãß°¡ ÇÚµéÀÌ ÇÊ¿äÇÑµ¥, 
- *         ÀÌ ºñ¿ëÀÌ ²Ï Å©±â ¶§¹®¿¡ ÀÌ¹Ì °¡Áö°í ÀÖ´Â Pipe ÇÚµéÀ» ÀÌ¿ëÇØ PeekÀ» ¼öÇàÇÑ´Ù.
+ *       - Named PipeëŠ” í”„ë¡œì„¸ìŠ¤ê°€ ì¡´ìž¬í•˜ëŠ”ì§€ë¥¼ ê²€ì¦í•˜ë ¤ë©´ ì¶”ê°€ í•¸ë“¤ì´ í•„ìš”í•œë°, 
+ *         ì´ ë¹„ìš©ì´ ê½¤ í¬ê¸° ë•Œë¬¸ì— ì´ë¯¸ ê°€ì§€ê³  ìžˆëŠ” Pipe í•¸ë“¤ì„ ì´ìš©í•´ Peekì„ ìˆ˜í–‰í•œë‹¤.
  *         
- *       - Unix Domain SocketÀº kill -0 ¸¦ ¼öÇàÇØ ÇÁ·Î¼¼½º°¡ Á¸ÀçÇÏ´ÂÁö °ËÁõÇÑ´Ù. 
+ *       - Unix Domain Socketì€ kill -0 ë¥¼ ìˆ˜í–‰í•´ í”„ë¡œì„¸ìŠ¤ê°€ ì¡´ìž¬í•˜ëŠ”ì§€ ê²€ì¦í•œë‹¤. 
  *
  ***********************************************************************/
 #if defined(ALTI_CFG_OS_WINDOWS)
@@ -91,13 +91,13 @@ void idxLocalSock::setPath( SChar         * aBuffer,
 {
 /***********************************************************************
  *
- * Description : Socket ÆÄÀÏ(Named Pipe ÆÄÀÏ)ÀÇ °æ·Î¸¦ »ý¼ºÇÑ´Ù.
+ * Description : Socket íŒŒì¼(Named Pipe íŒŒì¼)ì˜ ê²½ë¡œë¥¼ ìƒì„±í•œë‹¤.
  *          
- *       - Named Pipe´Â °æ·Î°¡ °íÁ¤µÇ¾î ÀÖ´Ù. (IDX_PIPEPATH Âü°í)
- *         ¿©±â¿¡ Named Pipe ÀÌ¸§¸¸ Ãß°¡ÇÏ¸é µÇÁö¸¸, 
- *         Unicode ¹®Á¦·Î ÀÎÇØ HDB/AgentÀÇ ÀÌ¸§ »ý¼º ¹æ½ÄÀ» ´Þ¸® ÇÑ´Ù.
+ *       - Named PipeëŠ” ê²½ë¡œê°€ ê³ ì •ë˜ì–´ ìžˆë‹¤. (IDX_PIPEPATH ì°¸ê³ )
+ *         ì—¬ê¸°ì— Named Pipe ì´ë¦„ë§Œ ì¶”ê°€í•˜ë©´ ë˜ì§€ë§Œ, 
+ *         Unicode ë¬¸ì œë¡œ ì¸í•´ HDB/Agentì˜ ì´ë¦„ ìƒì„± ë°©ì‹ì„ ë‹¬ë¦¬ í•œë‹¤.
  *  
- *       - Unix Domain SocketÀº $ALTIBASE_HOME/trc/(SocketÀÌ¸§)ÀÌ´Ù. 
+ *       - Unix Domain Socketì€ $ALTIBASE_HOME/trc/(Socketì´ë¦„)ì´ë‹¤. 
  *
  ***********************************************************************/
 #if defined(ALTI_CFG_OS_WINDOWS)
@@ -143,12 +143,12 @@ IDE_RC idxLocalSock::initializeSocket( IDX_LOCALSOCK * aSocket,
 {
 /***********************************************************************
  *
- * Description : SocketÀ» ÃÊ±âÈ­ÇÑ´Ù. (iduMemory)
+ * Description : Socketì„ ì´ˆê¸°í™”í•œë‹¤. (iduMemory)
  *
- *       - Named Pipe´Â Overlapped I/O¿¡ ¾²ÀÏ Event HandleÀ» »ý¼ºÇÑ´Ù.
- *         ÀÌ ¶§, iduMemory¸¦ °¡Áö°í, iduMemory::alloc()À» È£ÃâÇÑ´Ù.
+ *       - Named PipeëŠ” Overlapped I/Oì— ì“°ì¼ Event Handleì„ ìƒì„±í•œë‹¤.
+ *         ì´ ë•Œ, iduMemoryë¥¼ ê°€ì§€ê³ , iduMemory::alloc()ì„ í˜¸ì¶œí•œë‹¤.
  *
- *       - Unix Domain SocketÀº Socket °ªÀ» ÃÊ±âÈ­ÇÑ´Ù. 
+ *       - Unix Domain Socketì€ Socket ê°’ì„ ì´ˆê¸°í™”í•œë‹¤. 
  *
  ***********************************************************************/
 #if defined(ALTI_CFG_OS_WINDOWS)
@@ -162,7 +162,7 @@ IDE_RC idxLocalSock::initializeSocket( IDX_LOCALSOCK * aSocket,
                               (void**)&aSocket->mOverlap ) != IDE_SUCCESS );
     sState = 1;
                
-    // BUG-39814 offset / offsetHigh ÃÊ±âÈ­
+    // BUG-39814 offset / offsetHigh ì´ˆê¸°í™”
     aSocket->mOverlap->Offset = 0;
     aSocket->mOverlap->OffsetHigh = 0;
     
@@ -199,12 +199,12 @@ IDE_RC idxLocalSock::initializeSocket( IDX_LOCALSOCK        * aSocket,
 {
 /***********************************************************************
  *
- * Description : SocketÀ» ÃÊ±âÈ­ÇÑ´Ù. (iduMemMgr)
+ * Description : Socketì„ ì´ˆê¸°í™”í•œë‹¤. (iduMemMgr)
  *
- *       - Named Pipe´Â Overlapped I/O¿¡ ¾²ÀÏ Event HandleÀ» »ý¼ºÇÑ´Ù.
- *         ÀÌ ¶§, iduMemoryClientIndex·Î iduMemMgr::malloc()À» È£ÃâÇÑ´Ù.
+ *       - Named PipeëŠ” Overlapped I/Oì— ì“°ì¼ Event Handleì„ ìƒì„±í•œë‹¤.
+ *         ì´ ë•Œ, iduMemoryClientIndexë¡œ iduMemMgr::malloc()ì„ í˜¸ì¶œí•œë‹¤.
  *
- *       - Unix Domain SocketÀº Socket °ªÀ» ÃÊ±âÈ­ÇÑ´Ù. 
+ *       - Unix Domain Socketì€ Socket ê°’ì„ ì´ˆê¸°í™”í•œë‹¤. 
  *
  ***********************************************************************/
 #if defined(ALTI_CFG_OS_WINDOWS)
@@ -217,7 +217,7 @@ IDE_RC idxLocalSock::initializeSocket( IDX_LOCALSOCK        * aSocket,
                                  IDU_MEM_IMMEDIATE ) != IDE_SUCCESS );
     sState = 1;
     
-    // BUG-39814 offset / offsetHigh ÃÊ±âÈ­
+    // BUG-39814 offset / offsetHigh ì´ˆê¸°í™”
     aSocket->mOverlap->Offset = 0;
     aSocket->mOverlap->OffsetHigh = 0;
     
@@ -253,9 +253,9 @@ void idxLocalSock::finalizeSocket( IDX_LOCALSOCK * aSock )
 {
 /***********************************************************************
  *
- * Description : Socket ³»ºÎ¿¡ ÇÒ´çµÈ °ø°£À» ÇØÁ¦ÇÑ´Ù. (iduMemMgr)
+ * Description : Socket ë‚´ë¶€ì— í• ë‹¹ëœ ê³µê°„ì„ í•´ì œí•œë‹¤. (iduMemMgr)
  *
- *          - Agent Process´Â Á¾·á ½Ã °°ÀÌ ÇØÁ¦µÇ¹Ç·Î, È£ÃâÇÏÁö ¾Ê´Â´Ù.
+ *          - Agent ProcessëŠ” ì¢…ë£Œ ì‹œ ê°™ì´ í•´ì œë˜ë¯€ë¡œ, í˜¸ì¶œí•˜ì§€ ì•ŠëŠ”ë‹¤.
  *
  ***********************************************************************/
 #if defined(ALTI_CFG_OS_WINDOWS)
@@ -270,11 +270,11 @@ IDE_RC idxLocalSock::socket( IDX_LOCALSOCK * aSock )
 {
 /***********************************************************************
  *
- * Description : Socket °ªÀ» ÃÊ±âÈ­ÇÑ´Ù.
+ * Description : Socket ê°’ì„ ì´ˆê¸°í™”í•œë‹¤.
  *
- *       - Named Pipe´Â ÀÌ¹Ì initializeSocket ¿¡¼­ ÃÊ±âÈ­µÇ¾ú´Ù.
+ *       - Named PipeëŠ” ì´ë¯¸ initializeSocket ì—ì„œ ì´ˆê¸°í™”ë˜ì—ˆë‹¤.
  *
- *       - Unix Domain SocketÀº socket() ÇÔ¼ö¸¦ È£Ãâ, »õ °ªÀ» ¹Þ´Â´Ù.
+ *       - Unix Domain Socketì€ socket() í•¨ìˆ˜ë¥¼ í˜¸ì¶œ, ìƒˆ ê°’ì„ ë°›ëŠ”ë‹¤.
  *
  ***********************************************************************/
 #if defined(ALTI_CFG_OS_WINDOWS)
@@ -295,15 +295,15 @@ IDE_RC idxLocalSock::bind( IDX_LOCALSOCK * aSock,
 {
 /***********************************************************************
  *
- * Description : Socket °´Ã¼°¡ ¾µ Socket ÆÄÀÏ(Named Pipe ÆÄÀÏ)À» »ý¼ºÇÑ´Ù.
+ * Description : Socket ê°ì²´ê°€ ì“¸ Socket íŒŒì¼(Named Pipe íŒŒì¼)ì„ ìƒì„±í•œë‹¤.
  *
- *       - Named Pipe´Â, ÆÄÀÏ À§Ä¡´Â wchar_t·Î ³ªÅ¸³»¾ß ÇÏ¹Ç·Î
- *         ±âÁ¸ Path¸¦ wchar_t·Î º¯È¯ÇØ Named Pipe¸¦ »ý¼ºÇÑ´Ù.
+ *       - Named PipeëŠ”, íŒŒì¼ ìœ„ì¹˜ëŠ” wchar_të¡œ ë‚˜íƒ€ë‚´ì•¼ í•˜ë¯€ë¡œ
+ *         ê¸°ì¡´ Pathë¥¼ wchar_të¡œ ë³€í™˜í•´ Named Pipeë¥¼ ìƒì„±í•œë‹¤.
  *
- *       - Unix Domain SocketÀº ÆÄÀÏ À§Ä¡¸¦ °¡Áö°í bind()¸¦ È£ÃâÇÑ´Ù.
- *         ¼ÒÄÏ ÆÄÀÏÀ» unlink()·Î Áö¿öÁà¾ß »õ·Î¿î ¼ÒÄÏ ÆÄÀÏÀÌ »ý¼ºµÈ´Ù.
- *         ±× ´ÙÀ½, ¼ÒÄÏ ¿É¼ÇÀ» REUSEADDR·Î µÖ¼­ ÆÄÀÏÀÌ ÀÌ¹Ì Binding
- *         µÇ¾î ÀÖ´Ù°í ÇØµµ Àç»ç¿ëÀÌ °¡´ÉÇÏµµ·Ï Á¶Á¤ÇÑ´Ù.
+ *       - Unix Domain Socketì€ íŒŒì¼ ìœ„ì¹˜ë¥¼ ê°€ì§€ê³  bind()ë¥¼ í˜¸ì¶œí•œë‹¤.
+ *         ì†Œì¼“ íŒŒì¼ì„ unlink()ë¡œ ì§€ì›Œì¤˜ì•¼ ìƒˆë¡œìš´ ì†Œì¼“ íŒŒì¼ì´ ìƒì„±ëœë‹¤.
+ *         ê·¸ ë‹¤ìŒ, ì†Œì¼“ ì˜µì…˜ì„ REUSEADDRë¡œ ë‘¬ì„œ íŒŒì¼ì´ ì´ë¯¸ Binding
+ *         ë˜ì–´ ìžˆë‹¤ê³  í•´ë„ ìž¬ì‚¬ìš©ì´ ê°€ëŠ¥í•˜ë„ë¡ ì¡°ì •í•œë‹¤.
  *
  ***********************************************************************/
 #if defined(ALTI_CFG_OS_WINDOWS)
@@ -390,12 +390,12 @@ IDE_RC idxLocalSock::listen( IDX_LOCALSOCK aSock )
 {
 /***********************************************************************
  *
- * Description : Socket ¿¬°áÀ» ±â´Ù¸°´Ù.
+ * Description : Socket ì—°ê²°ì„ ê¸°ë‹¤ë¦°ë‹¤.
  *
- *       - Named Pipe´Â accept()¿¡¼­ ¿¬°áÀ» ±â´Ù¸°´Ù.
+ *       - Named PipeëŠ” accept()ì—ì„œ ì—°ê²°ì„ ê¸°ë‹¤ë¦°ë‹¤.
  *
- *       - Unix Domain SocketÀº 
- *         listen()À¸·Î ¿¬°á ½ÅÈ£°¡ ¿Ã ¶§ ±îÁö Blocking µÈ´Ù.
+ *       - Unix Domain Socketì€ 
+ *         listen()ìœ¼ë¡œ ì—°ê²° ì‹ í˜¸ê°€ ì˜¬ ë•Œ ê¹Œì§€ Blocking ëœë‹¤.
  *
  ***********************************************************************/
 #if defined(ALTI_CFG_OS_WINDOWS)
@@ -416,13 +416,13 @@ IDE_RC idxLocalSock::accept( IDX_LOCALSOCK   aServSock,
 {
 /***********************************************************************
  *
- * Description : Socket ¿¬°áÀ» ¼ö¶ôÇÑ´Ù.
+ * Description : Socket ì—°ê²°ì„ ìˆ˜ë½í•œë‹¤.
  *
- *       - Named Pipe´Â ¿¬°á ÀÌº¥Æ®¸¦ Overlapped I/O·Î ´ë±âÇÑ ÈÄ,
- *         ¿¬°á ÀÌº¥Æ®°¡ ÀÏ¾î³ª¸é ¿¬°áµÈ ÆÄÀÌÇÁ¸¦ ¹ÝÈ¯ÇÑ´Ù.
+ *       - Named PipeëŠ” ì—°ê²° ì´ë²¤íŠ¸ë¥¼ Overlapped I/Oë¡œ ëŒ€ê¸°í•œ í›„,
+ *         ì—°ê²° ì´ë²¤íŠ¸ê°€ ì¼ì–´ë‚˜ë©´ ì—°ê²°ëœ íŒŒì´í”„ë¥¼ ë°˜í™˜í•œë‹¤.
  *
- *       - Unix Domain SocketÀº listen()À¸·Î ¿¬°á ½ÅÈ£¸¦ ¹Þ¾ÒÀ¸¹Ç·Î
- *         accept()¸¸ È£ÃâÇÏ°Ô µÈ´Ù.
+ *       - Unix Domain Socketì€ listen()ìœ¼ë¡œ ì—°ê²° ì‹ í˜¸ë¥¼ ë°›ì•˜ìœ¼ë¯€ë¡œ
+ *         accept()ë§Œ í˜¸ì¶œí•˜ê²Œ ëœë‹¤.
  *
  ***********************************************************************/
 #if defined(ALTI_CFG_OS_WINDOWS)
@@ -434,14 +434,14 @@ IDE_RC idxLocalSock::accept( IDX_LOCALSOCK   aServSock,
     DWORD   sTransferred;
     DWORD   sWaitMsec;
     
-    /* Non-blocking mode¿¡¼­´Â °á°ú°¡ 0ÀÎµ¥µµ ´ÙÀ½°ú °°Àº (Á¤»ó) ¿¡·¯°¡ ¹ß»ýÇÒ ¼ö ÀÖ´Ù.
+    /* Non-blocking modeì—ì„œëŠ” ê²°ê³¼ê°€ 0ì¸ë°ë„ ë‹¤ìŒê³¼ ê°™ì€ (ì •ìƒ) ì—ëŸ¬ê°€ ë°œìƒí•  ìˆ˜ ìžˆë‹¤.
      *
-     * - ERROR_IO_PENDING : Áö±ÝÀº ¿¬°áÇÒ Å¬¶óÀÌ¾ðÆ®°¡ ¾ÆÁ÷ ¹ß°ßµÇÁö ¾Ê¾Ò´Ù.
-     *                      ±×·¡¼­ PENDINGÀ» true·Î µÎ°í IDLE_TIMEOUT ±îÁö ±â´Ù·Á º»´Ù.
-     * - ERROR_PIPE_CONNECTED : ´ÙÇàÈ÷, Áö±Ý ¿¬°áÇÒ Å¬¶óÀÌ¾ðÆ®°¡ Á¸ÀçÇÑ´Ù.
-     *                          PENDING ÇÒ ÇÊ¿ä ¾øÀÌ ¿¬°áÀ» ¼ö¶ôÇÑ´Ù.
+     * - ERROR_IO_PENDING : ì§€ê¸ˆì€ ì—°ê²°í•  í´ë¼ì´ì–¸íŠ¸ê°€ ì•„ì§ ë°œê²¬ë˜ì§€ ì•Šì•˜ë‹¤.
+     *                      ê·¸ëž˜ì„œ PENDINGì„ trueë¡œ ë‘ê³  IDLE_TIMEOUT ê¹Œì§€ ê¸°ë‹¤ë ¤ ë³¸ë‹¤.
+     * - ERROR_PIPE_CONNECTED : ë‹¤í–‰ížˆ, ì§€ê¸ˆ ì—°ê²°í•  í´ë¼ì´ì–¸íŠ¸ê°€ ì¡´ìž¬í•œë‹¤.
+     *                          PENDING í•  í•„ìš” ì—†ì´ ì—°ê²°ì„ ìˆ˜ë½í•œë‹¤.
      *
-     * °á°ú°¡ 0ÀÌ ¾Æ´Ñ °æ¿ì¿¡´Â ¿¡·¯ »óÈ²ÀÌ¸ç, ÀÌ °æ¿ì accept() ÇÔ¼ö¸¦ ½ÇÆÐ·Î µ¹¸°´Ù.
+     * ê²°ê³¼ê°€ 0ì´ ì•„ë‹Œ ê²½ìš°ì—ëŠ” ì—ëŸ¬ ìƒí™©ì´ë©°, ì´ ê²½ìš° accept() í•¨ìˆ˜ë¥¼ ì‹¤íŒ¨ë¡œ ëŒë¦°ë‹¤.
      */
 
     sWaitMsec = (DWORD)( aWaitTime.sec() * 1000 );
@@ -524,12 +524,12 @@ IDE_RC idxLocalSock::connect( IDX_LOCALSOCK * aSock,
 {
 /***********************************************************************
  *
- * Description : Socket ¿¬°áÀ» ½ÃµµÇÑ´Ù.
+ * Description : Socket ì—°ê²°ì„ ì‹œë„í•œë‹¤.
  *
- *       - Named Pipe´Â, ÆÄÀÏ À§Ä¡´Â wchar_t·Î ³ªÅ¸³»¾ß ÇÏ¹Ç·Î
- *         ±âÁ¸ Path¸¦ wchar_t·Î º¯È¯ÇØ Named Pipe¸¦ ¿­¾îº»´Ù.
+ *       - Named PipeëŠ”, íŒŒì¼ ìœ„ì¹˜ëŠ” wchar_të¡œ ë‚˜íƒ€ë‚´ì•¼ í•˜ë¯€ë¡œ
+ *         ê¸°ì¡´ Pathë¥¼ wchar_të¡œ ë³€í™˜í•´ Named Pipeë¥¼ ì—´ì–´ë³¸ë‹¤.
  *
- *       - Unix Domain SocketÀº connect()¸¦ È£ÃâÇØ ¿¬°áÀ» ½ÃµµÇÑ´Ù.
+ *       - Unix Domain Socketì€ connect()ë¥¼ í˜¸ì¶œí•´ ì—°ê²°ì„ ì‹œë„í•œë‹¤.
  *
  ***********************************************************************/
 #if defined(ALTI_CFG_OS_WINDOWS)
@@ -600,7 +600,7 @@ IDE_RC idxLocalSock::connect( IDX_LOCALSOCK * aSock,
     IDE_EXCEPTION_END;
 
     /* BUG-37957
-     * ECONNREFUSED°¡ ¹ß»ýÇÏ¸é, ¼ÒÄÏÀ» Àç»ý¼ºÇØ¾ß ÇÑ´Ù.
+     * ECONNREFUSEDê°€ ë°œìƒí•˜ë©´, ì†Œì¼“ì„ ìž¬ìƒì„±í•´ì•¼ í•œë‹¤.
      */
     if( errno == ECONNREFUSED )
     {
@@ -621,15 +621,15 @@ IDE_RC idxLocalSock::select( IDX_LOCALSOCK    aSock,
 {
 /***********************************************************************
  *
- * Description : SocketÀÇ »óÅÂ¸¦ ´ë±âÇÑ´Ù.
+ * Description : Socketì˜ ìƒíƒœë¥¼ ëŒ€ê¸°í•œë‹¤.
  *
- *       - Named Pipe´Â, Overlapped I/O¸¦ recv(), send()¿¡ »ç¿ëÇÏ¹Ç·Î
- *         ¿©±â¼­´Â ¾Æ¹«·± ÀÏµµ ÇÏÁö ¾Ê´Â´Ù.
+ *       - Named PipeëŠ”, Overlapped I/Oë¥¼ recv(), send()ì— ì‚¬ìš©í•˜ë¯€ë¡œ
+ *         ì—¬ê¸°ì„œëŠ” ì•„ë¬´ëŸ° ì¼ë„ í•˜ì§€ ì•ŠëŠ”ë‹¤.
  *
- *       - Unix Domain SocketÀº select()·Î ¼ÒÄÏ ÆÄÀÏ µð½ºÅ©¸³ÅÍÀÇ
- *         »óÅÂ¸¦ °üÂûÇÑ´Ù. ÇØ´ç ÆÄÀÏÀÌ ÀÐÀ» ¼ö ÀÖ´Â »óÅÂ·Î ÀüÈ¯µÇ¸é 
- *         select()´Â BlockingÀ» Ç®Áö¸¸, ±× ¿Ü¿¡´Â IDLE_TIMEOUT±îÁö
- *         ´ë±âÇÏ´Ù°¡ BlockingÀ» Ç¬´Ù (TIMEOUT)
+ *       - Unix Domain Socketì€ select()ë¡œ ì†Œì¼“ íŒŒì¼ ë””ìŠ¤í¬ë¦½í„°ì˜
+ *         ìƒíƒœë¥¼ ê´€ì°°í•œë‹¤. í•´ë‹¹ íŒŒì¼ì´ ì½ì„ ìˆ˜ ìžˆëŠ” ìƒíƒœë¡œ ì „í™˜ë˜ë©´ 
+ *         select()ëŠ” Blockingì„ í’€ì§€ë§Œ, ê·¸ ì™¸ì—ëŠ” IDLE_TIMEOUTê¹Œì§€
+ *         ëŒ€ê¸°í•˜ë‹¤ê°€ Blockingì„ í‘¼ë‹¤ (TIMEOUT)
  *
  ***********************************************************************/
 #if defined(ALTI_CFG_OS_WINDOWS)
@@ -669,9 +669,9 @@ IDE_RC idxLocalSock::send( IDX_LOCALSOCK   aSock,
  *
  * Description : Blocking Mode Message Send
  *
- *       - Named Pipe´Â, Pipe ÆÄÀÏ¿¡ ¸Þ½ÃÁö¸¦ ÀÛ¼ºÇÑ´Ù.
+ *       - Named PipeëŠ”, Pipe íŒŒì¼ì— ë©”ì‹œì§€ë¥¼ ìž‘ì„±í•œë‹¤.
  *
- *       - Unix Domain SocketÀº send() ÇÔ¼ö¸¦ È£ÃâÇÑ´Ù.
+ *       - Unix Domain Socketì€ send() í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•œë‹¤.
  *
  ***********************************************************************/
 #if defined(ALTI_CFG_OS_WINDOWS)
@@ -705,11 +705,11 @@ IDE_RC idxLocalSock::sendTimedWait( IDX_LOCALSOCK   aSock,
  *
  * Description : Non-Blocking Mode Message Send
  *
- *       - Named Pipe´Â, ¸Þ½ÃÁö¸¦ ÀüºÎ º¸³¾ ¶§ ±îÁö Overlapped I/O¸¦ »ç¿ë,
- *         ¸Þ½ÃÁö¸¦ º¸³¾ ¼ö ÀÖÀ» ¶§ ±îÁö ±â´Ù·È´Ù°¡ ¸Þ½ÃÁö¸¦ °è¼Ó º¸³½´Ù.
- *         »ó´ë¹æÀÌ ¸Þ½ÃÁö¸¦ ¹ÞÀ» ¼ö ¾ø´Â °æ¿ì, Timeout Error¸¦ ¹ÝÈ¯ÇÑ´Ù.
+ *       - Named PipeëŠ”, ë©”ì‹œì§€ë¥¼ ì „ë¶€ ë³´ë‚¼ ë•Œ ê¹Œì§€ Overlapped I/Oë¥¼ ì‚¬ìš©,
+ *         ë©”ì‹œì§€ë¥¼ ë³´ë‚¼ ìˆ˜ ìžˆì„ ë•Œ ê¹Œì§€ ê¸°ë‹¤ë ¸ë‹¤ê°€ ë©”ì‹œì§€ë¥¼ ê³„ì† ë³´ë‚¸ë‹¤.
+ *         ìƒëŒ€ë°©ì´ ë©”ì‹œì§€ë¥¼ ë°›ì„ ìˆ˜ ì—†ëŠ” ê²½ìš°, Timeout Errorë¥¼ ë°˜í™˜í•œë‹¤.
  *
- *       - Unix Domain SocketÀº send() ÇÔ¼ö¿Í µ¿ÀÏÇÏ´Ù.
+ *       - Unix Domain Socketì€ send() í•¨ìˆ˜ì™€ ë™ì¼í•˜ë‹¤.
  *
  ***********************************************************************/
 #if defined(ALTI_CFG_OS_WINDOWS)
@@ -807,9 +807,9 @@ IDE_RC idxLocalSock::recv( IDX_LOCALSOCK   aSock,
  *
  * Description : Blocking Mode Message Receive 
  *
- *       - Named Pipe´Â, Pipe ÆÄÀÏ¿¡ ¾²¿©Áø ¸Þ½ÃÁö¸¦ ÀÐ´Â´Ù.
+ *       - Named PipeëŠ”, Pipe íŒŒì¼ì— ì“°ì—¬ì§„ ë©”ì‹œì§€ë¥¼ ì½ëŠ”ë‹¤.
  *
- *       - Unix Domain SocketÀº recv() ÇÔ¼ö¸¦ È£ÃâÇÑ´Ù.
+ *       - Unix Domain Socketì€ recv() í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•œë‹¤.
  *
  ***********************************************************************/
 #if defined(ALTI_CFG_OS_WINDOWS)
@@ -828,10 +828,10 @@ IDE_RC idxLocalSock::recv( IDX_LOCALSOCK   aSock,
     idBool         sIsTimeout     = ID_FALSE;
 
     /* BUG-39814
-     * recv()´Â, Àü¼ÛµÇ´Â Á¤º¸¸¦ ´Ù ¹ÞÀ» ¶§ ±îÁö ±â´Ù¸®Áö ¾Ê´Â´Ù.
-     * ¸¸¾à recv()°¡ ¿øÇÏ´Â ±æÀÌº¸´Ù ÀûÀº ±æÀÌÀÇ Á¤º¸¸¦ ¹Þ¾Ò´Ù¸é
-     * ¾ó¸¶°£ÀÇ ½Ã°£ µ¿¾È ´õ ¸¹Àº µ¥ÀÌÅÍ°¡ µé¾î¿À´ÂÁö °¨ÁöÇÑ ´ÙÀ½ ´Ù½Ã recv() ÇØ¾ß ÇÑ´Ù.
-     * ÀÌ ½Ã°£ µ¿¾È µ¥ÀÌÅÍ°¡ ´õ ÀÌ»ó µé¾î¿ÀÁö ¾Ê´Â´Ù¸é, recv()´Â Á¾·áÇÑ´Ù.
+     * recv()ëŠ”, ì „ì†¡ë˜ëŠ” ì •ë³´ë¥¼ ë‹¤ ë°›ì„ ë•Œ ê¹Œì§€ ê¸°ë‹¤ë¦¬ì§€ ì•ŠëŠ”ë‹¤.
+     * ë§Œì•½ recv()ê°€ ì›í•˜ëŠ” ê¸¸ì´ë³´ë‹¤ ì ì€ ê¸¸ì´ì˜ ì •ë³´ë¥¼ ë°›ì•˜ë‹¤ë©´
+     * ì–¼ë§ˆê°„ì˜ ì‹œê°„ ë™ì•ˆ ë” ë§Žì€ ë°ì´í„°ê°€ ë“¤ì–´ì˜¤ëŠ”ì§€ ê°ì§€í•œ ë‹¤ìŒ ë‹¤ì‹œ recv() í•´ì•¼ í•œë‹¤.
+     * ì´ ì‹œê°„ ë™ì•ˆ ë°ì´í„°ê°€ ë” ì´ìƒ ë“¤ì–´ì˜¤ì§€ ì•ŠëŠ”ë‹¤ë©´, recv()ëŠ” ì¢…ë£Œí•œë‹¤.
      */
 
     IDE_TEST( aBufferSize <= 0 );
@@ -840,7 +840,7 @@ IDE_RC idxLocalSock::recv( IDX_LOCALSOCK   aSock,
     *aReceivedSize  = 0;
     sBuffer         = (SChar*)aBuffer;
     
-    // Ã¹ recv_i()¸¦ È£ÃâÇØ º»´Ù.
+    // ì²« recv_i()ë¥¼ í˜¸ì¶œí•´ ë³¸ë‹¤.
     sSockRet = idlVA::recv_i( aSock, 
                               (void*)sBuffer, 
                               aBufferSize );
@@ -848,7 +848,7 @@ IDE_RC idxLocalSock::recv( IDX_LOCALSOCK   aSock,
     IDE_TEST( sSockRet < 0 );
     sTotalRecvSize += (UInt)sSockRet;
 
-    // ¹Þ¾Æ¾ß ÇÒ ¸¸Å­ ¹ÞÁö ¸øÇß´Ù¸é, °è¼Ó ¹Þ´Â´Ù.
+    // ë°›ì•„ì•¼ í•  ë§Œí¼ ë°›ì§€ ëª»í–ˆë‹¤ë©´, ê³„ì† ë°›ëŠ”ë‹¤.
     while ( sTotalRecvSize < aBufferSize )
     {
         IDE_TEST( select( aSock, &sWaitTime, &sIsTimeout ) );
@@ -862,12 +862,12 @@ IDE_RC idxLocalSock::recv( IDX_LOCALSOCK   aSock,
             // Nothing to do.
         }
 
-        /* recv_i()ÀÇ ¹ÝÈ¯°ª (Blocking-mode ÀÓÀ» »ó±âÇÏÀÚ)
+        /* recv_i()ì˜ ë°˜í™˜ê°’ (Blocking-mode ìž„ì„ ìƒê¸°í•˜ìž)
          * 
-         *  return > 0  : ½ÇÁ¦·Î ÀÐÀ» µ¥ÀÌÅÍ°¡ Á¸ÀçÇØ¼­, ´É·Â²¯ ÀÐ¾î¿Â °æ¿ì
-         *  return = 0  : select() ´Â 'ÀÐÀ» ¼ö ÀÖ´Ù' °í ÇßÁö¸¸ 
-         *                »ç½Ç end-of-fileÀÌ¶ó ±×³É Á¾·áµÇ´Â °æ¿ì
-         *  return = -1 : ¿¡·¯ »óÈ² (ÀÐ´Ù°¡ ¿¬°áÀÌ ²÷±â°Å³ª, ´Ù¸¥ ÀÌÀ¯·Î)
+         *  return > 0  : ì‹¤ì œë¡œ ì½ì„ ë°ì´í„°ê°€ ì¡´ìž¬í•´ì„œ, ëŠ¥ë ¥ê» ì½ì–´ì˜¨ ê²½ìš°
+         *  return = 0  : select() ëŠ” 'ì½ì„ ìˆ˜ ìžˆë‹¤' ê³  í–ˆì§€ë§Œ 
+         *                ì‚¬ì‹¤ end-of-fileì´ë¼ ê·¸ëƒ¥ ì¢…ë£Œë˜ëŠ” ê²½ìš°
+         *  return = -1 : ì—ëŸ¬ ìƒí™© (ì½ë‹¤ê°€ ì—°ê²°ì´ ëŠê¸°ê±°ë‚˜, ë‹¤ë¥¸ ì´ìœ ë¡œ)
          */
         sSockRet = idlVA::recv_i( aSock, 
                                   (void*)(sBuffer + sTotalRecvSize), 
@@ -877,12 +877,12 @@ IDE_RC idxLocalSock::recv( IDX_LOCALSOCK   aSock,
         
         if ( sSockRet == 0 )
         {
-            // end-of-file. Áï ¼ÒÄÏÀÌ ´ÝÇûÁö¸¸ recv_i() °¡ È£ÃâµÈ »óÈ²
+            // end-of-file. ì¦‰ ì†Œì¼“ì´ ë‹«í˜”ì§€ë§Œ recv_i() ê°€ í˜¸ì¶œëœ ìƒí™©
             break;
         }
         else
         {
-            // recv_i() °¡ Á¤»óÀûÀ¸·Î µ¥ÀÌÅÍ¸¦ ¹ÞÀº »óÈ²
+            // recv_i() ê°€ ì •ìƒì ìœ¼ë¡œ ë°ì´í„°ë¥¼ ë°›ì€ ìƒí™©
             sTotalRecvSize += (UInt)sSockRet;
         }
     }
@@ -906,11 +906,11 @@ IDE_RC idxLocalSock::recvTimedWait( IDX_LOCALSOCK   aSock,
  *
  * Description : Non-Blocking Mode Message Receive 
  *
- *       - Named Pipe´Â, ¸Þ½ÃÁö¸¦ ÀüºÎ ¹ÞÀ» ¶§ ±îÁö Overlapped I/O¸¦ »ç¿ë,
- *         ¸Þ½ÃÁö¸¦ ¹ÞÀ» ¼ö ÀÖÀ» ¶§ ±îÁö ±â´Ù·È´Ù°¡ ¸Þ½ÃÁö¸¦ °è¼Ó ¹Þ´Â´Ù.
- *         »ó´ë¹æÀÌ ¸Þ½ÃÁö¸¦ º¸³¾ ÀÇ»ç°¡ ¾ø´Â °æ¿ì, TimeoutÀ» ¹ÝÈ¯ÇÑ´Ù.
+ *       - Named PipeëŠ”, ë©”ì‹œì§€ë¥¼ ì „ë¶€ ë°›ì„ ë•Œ ê¹Œì§€ Overlapped I/Oë¥¼ ì‚¬ìš©,
+ *         ë©”ì‹œì§€ë¥¼ ë°›ì„ ìˆ˜ ìžˆì„ ë•Œ ê¹Œì§€ ê¸°ë‹¤ë ¸ë‹¤ê°€ ë©”ì‹œì§€ë¥¼ ê³„ì† ë°›ëŠ”ë‹¤.
+ *         ìƒëŒ€ë°©ì´ ë©”ì‹œì§€ë¥¼ ë³´ë‚¼ ì˜ì‚¬ê°€ ì—†ëŠ” ê²½ìš°, Timeoutì„ ë°˜í™˜í•œë‹¤.
  *
- *       - Unix Domain SocketÀº recv() ÇÔ¼ö¿Í µ¿ÀÏÇÏ´Ù.
+ *       - Unix Domain Socketì€ recv() í•¨ìˆ˜ì™€ ë™ì¼í•˜ë‹¤.
  *
  ***********************************************************************/
 #if defined(ALTI_CFG_OS_WINDOWS)
@@ -1026,13 +1026,13 @@ IDE_RC idxLocalSock::setBlockMode( IDX_LOCALSOCK aSock )
 {
 /***********************************************************************
  *
- * Description : ¿¬°áÀ» Blocking Mode·Î ÀüÈ¯ÇÑ´Ù.
- *               [PROJ-1685] Extproc Execution¿¡´Â Blocking Mode·Î¸¸ ¼öÇà
+ * Description : ì—°ê²°ì„ Blocking Modeë¡œ ì „í™˜í•œë‹¤.
+ *               [PROJ-1685] Extproc Executionì—ëŠ” Blocking Modeë¡œë§Œ ìˆ˜í–‰
  *
- *       - Named Pipe´Â »ç½Ç Å« ÀÇ¹Ì°¡ ¾ø´Âµ¥, Overlapped I/O´Â
- *         Blocking Mode¿Í´Â ¹«°üÇÏ°Ô ÀÛµ¿ÇÏ±â ¶§¹®ÀÌ´Ù.
+ *       - Named PipeëŠ” ì‚¬ì‹¤ í° ì˜ë¯¸ê°€ ì—†ëŠ”ë°, Overlapped I/OëŠ”
+ *         Blocking Modeì™€ëŠ” ë¬´ê´€í•˜ê²Œ ìž‘ë™í•˜ê¸° ë•Œë¬¸ì´ë‹¤.
  *
- *       - Unix Domain SocketÀº setBlock()À» È£ÃâÇÑ´Ù.
+ *       - Unix Domain Socketì€ setBlock()ì„ í˜¸ì¶œí•œë‹¤.
  *
  ***********************************************************************/
 #if defined(ALTI_CFG_OS_WINDOWS)
@@ -1052,7 +1052,7 @@ IDE_RC idxLocalSock::setNonBlockMode( IDX_LOCALSOCK aSock )
 {
 /***********************************************************************
  *
- * Description : ¿¬°áÀ» Non-Blocking Mode·Î ÀüÈ¯ÇÑ´Ù.
+ * Description : ì—°ê²°ì„ Non-Blocking Modeë¡œ ì „í™˜í•œë‹¤.
  *
  ***********************************************************************/
 #if defined(ALTI_CFG_OS_WINDOWS)
@@ -1072,13 +1072,13 @@ IDE_RC idxLocalSock::close( IDX_LOCALSOCK *aSock )
 {
 /***********************************************************************
  *
- * Description : ¿¬°áÀ» ´Ý´Â´Ù.
+ * Description : ì—°ê²°ì„ ë‹«ëŠ”ë‹¤.
  *
- *       - Named Pipe´Â ÇöÀç °¡Áö°í ÀÖ´Â Pipe °´Ã¼¿¡ ¼­¹ö/Å¬¶óÀÌ¾ðÆ®
- *         ±¸ºÐÀÌ ¾ø´Ù. close() ÇÔ¼ö´Â Pipe ÀÚÃ¼¸¦ Æó±âÇÏ´Â ÇÔ¼öÀÌ´Ù.
+ *       - Named PipeëŠ” í˜„ìž¬ ê°€ì§€ê³  ìžˆëŠ” Pipe ê°ì²´ì— ì„œë²„/í´ë¼ì´ì–¸íŠ¸
+ *         êµ¬ë¶„ì´ ì—†ë‹¤. close() í•¨ìˆ˜ëŠ” Pipe ìžì²´ë¥¼ íê¸°í•˜ëŠ” í•¨ìˆ˜ì´ë‹¤.
  *
- *       - Unix Domain SocketÀº ÇöÀç °¡Áö°í ÀÖ´Â Socket °´Ã¼¸¸ ´Ý´Â´Ù.
- *         Áï, Client°¡ close()¸¦ ÇÏ´õ¶óµµ Server SocketÀº »ì¾ÆÀÖ´Ù.
+ *       - Unix Domain Socketì€ í˜„ìž¬ ê°€ì§€ê³  ìžˆëŠ” Socket ê°ì²´ë§Œ ë‹«ëŠ”ë‹¤.
+ *         ì¦‰, Clientê°€ close()ë¥¼ í•˜ë”ë¼ë„ Server Socketì€ ì‚´ì•„ìžˆë‹¤.
  *
  ***********************************************************************/
 #if defined(ALTI_CFG_OS_WINDOWS)
@@ -1112,13 +1112,13 @@ IDE_RC idxLocalSock::disconnect( IDX_LOCALSOCK * aSock )
 {
 /***********************************************************************
  *
- * Description : Å¬¶óÀÌ¾ðÆ® Ãø ¿¬°áÀ» ´Ý´Â´Ù.
+ * Description : í´ë¼ì´ì–¸íŠ¸ ì¸¡ ì—°ê²°ì„ ë‹«ëŠ”ë‹¤.
  *
- *       - Named Pipe´Â ÇöÀç °¡Áö°í ÀÖ´Â Pipe °´Ã¼¿¡ ¼­¹ö/Å¬¶óÀÌ¾ðÆ®
- *         ±¸ºÐÀÌ ¾ø´Ù. disconnect() ÇÔ¼ö´Â Á¢¼ÓµÈ Å¬¶óÀÌ¾ðÆ® ¿¬°á¸¸ ²÷´Â´Ù.
+ *       - Named PipeëŠ” í˜„ìž¬ ê°€ì§€ê³  ìžˆëŠ” Pipe ê°ì²´ì— ì„œë²„/í´ë¼ì´ì–¸íŠ¸
+ *         êµ¬ë¶„ì´ ì—†ë‹¤. disconnect() í•¨ìˆ˜ëŠ” ì ‘ì†ëœ í´ë¼ì´ì–¸íŠ¸ ì—°ê²°ë§Œ ëŠëŠ”ë‹¤.
  *
- *       - Unix Domain SocketÀº ÇöÀç °¡Áö°í ÀÖ´Â Socket °´Ã¼¸¸ ´Ý´Â´Ù.
- *         »ç½Ç»ó, close() ÇÔ¼ö¿Í µ¿ÀÏÇÏ´Ù.
+ *       - Unix Domain Socketì€ í˜„ìž¬ ê°€ì§€ê³  ìžˆëŠ” Socket ê°ì²´ë§Œ ë‹«ëŠ”ë‹¤.
+ *         ì‚¬ì‹¤ìƒ, close() í•¨ìˆ˜ì™€ ë™ì¼í•˜ë‹¤.
  *
  ***********************************************************************/
 #if defined(ALTI_CFG_OS_WINDOWS)

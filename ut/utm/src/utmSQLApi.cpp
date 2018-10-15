@@ -94,8 +94,8 @@ SQLRETURN init_handle()
         idlVA::appendFormat(s_conn, ID_SIZEOF(s_conn), "CONNTYPE=1");
     }
 
-    // BUG-26287: ¿É¼Ç Ã³¸®¹æ¹ı ÅëÀÏ
-    // altibase.properties¸¦ ÂüÁ¶ÇÏÁö ¾Ê´Â°Ô ÁÁ´Ù.
+    // BUG-26287: ì˜µì…˜ ì²˜ë¦¬ë°©ë²• í†µì¼
+    // altibase.propertiesë¥¼ ì°¸ì¡°í•˜ì§€ ì•ŠëŠ”ê²Œ ì¢‹ë‹¤.
     /* idlOS::snprintf(s_conn, ID_SIZEOF(s_conn),
                     "DSN={%s};UID={%s};PWD={%s};PORT_NO=%"ID_INT32_FMT";NLS_USE={%s};CONNTYPE=1",
                     gProgOption.GetServerName(),

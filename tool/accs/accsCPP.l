@@ -158,7 +158,7 @@ horizontal_white [ ]|{h_tab}
 }
 
 <PREPROCESSOR>\\[ \t]*[\n] {
-    // ÀÌ¾îÁø ¶óÀÎ 
+    // ì´ì–´ì§„ ë¼ì¸ 
     accsg_mgr.addLine(1);
     LEX_DUMP("PREPROCESSOR CONTINUE with \\");
 }

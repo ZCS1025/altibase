@@ -53,7 +53,7 @@ public:
         idBool          * aIsFound,
         qsVariables    ** aVariable );
 
-    // PROJ-2533 array¿¡ °üÇÑ variable Å½»ö
+    // PROJ-2533 arrayì— ê´€í•œ variable íƒìƒ‰
     static IDE_RC searchVarAndParaForArray(
         qcStatement      * aStatement,
         qtcNode          * aVarNode,
@@ -81,36 +81,36 @@ public:
         mtdModule      *** aDstModules,
         mtcColumn       ** aDstParaColumns );
 
-    // PROJ-1075 record/array º¯¼ö »ı¼º
+    // PROJ-1075 record/array ë³€ìˆ˜ ìƒì„±
     static IDE_RC makeUDTVariable(
         qcStatement     * aStatement,
         qsVariables     * aVariable );
 
-    // PROJ-1075 record/rowtype º¯¼ö »ı¼º
+    // PROJ-1075 record/rowtype ë³€ìˆ˜ ìƒì„±
     static IDE_RC makeRecordVariable(
         qcStatement     * aStatement,
         qsTypes         * aType,
         qsVariables     * aVariable );
 
-    // PROJ-1075 array º¯¼ö »ı¼º
+    // PROJ-1075 array ë³€ìˆ˜ ìƒì„±
     static IDE_RC makeArrayVariable(
         qcStatement     * aStatement,
         qsTypes         * aType,
         qsVariables     * aVariable );
 
-    // PROJ-1386 ref cursor º¯¼ö »ı¼º
+    // PROJ-1386 ref cursor ë³€ìˆ˜ ìƒì„±
     static IDE_RC makeRefCurVariable(
         qcStatement     * aStatement,
         qsTypes         * aType,
         qsVariables     * aVariable );
     
-    // PROJ-1075 trigger rowtypeº¯¼ö »ı¼º
+    // PROJ-1075 trigger rowtypeë³€ìˆ˜ ìƒì„±
     static IDE_RC makeTriggerRowTypeVariable(
         qcStatement     * aStatement,
         qcmTableInfo    * aTableInfo,
         qsVariables     * aVariable );
 
-    // PROJ-1075 rowtype º¯¼ö »ı¼º
+    // PROJ-1075 rowtype ë³€ìˆ˜ ìƒì„±
     static IDE_RC makeRowTypeVariable(
         qcStatement     * aStatement,
         qcmTableInfo    * aTableInfo,
@@ -145,7 +145,7 @@ public:
         idBool        * aIsFound,
         qsVariables  ** aVariable );
 
-    // PROJ-2533 array¿¡ °üÇÑ variable Å½»ö
+    // PROJ-2533 arrayì— ê´€í•œ variable íƒìƒ‰
     static IDE_RC searchVariableFromPkgForArray(
         qcStatement      * aStatement,
         qtcNode          * aVarNode,
@@ -193,7 +193,7 @@ private:
         idBool          * aIsFound,
         qsVariables    ** aVariable );
 
-    // PROJ-2533 array¿¡ °üÇÑ variable Å½»ö
+    // PROJ-2533 arrayì— ê´€í•œ variable íƒìƒ‰
     static IDE_RC searchVariableForArray(
         qcStatement      * aStatement,
         qtcNode          * aVarNode,
@@ -207,7 +207,7 @@ private:
         idBool          * aIsFound,
         qsVariables    ** aVariable );
  
-    // PROJ-2533 array¿¡ °üÇÑ variable Å½»ö
+    // PROJ-2533 arrayì— ê´€í•œ variable íƒìƒ‰
     static IDE_RC searchParameterForArray(
         qcStatement      * aStatement,
         qtcNode          * aVarNode,
@@ -263,7 +263,7 @@ private:
         idBool         * aIsFound,
         qsVariables   ** aVariable );
 
-    // PROJ-2533 array¿¡ °üÇÑ variable Å½»ö
+    // PROJ-2533 arrayì— ê´€í•œ variable íƒìƒ‰
     static IDE_RC searchPkgLocalVarForArray(
         qcStatement      * aStatement,
         qsPkgParseTree   * aPkgParseTree,
@@ -308,7 +308,7 @@ private:
         qsVariables ** aFoundVariable );
 
     /* BUG-41847
-       package local¿¡ ÀÖ´Â type¿¡ ´ëÇØ Ã£À» ¼ö ÀÖ¾î¾ß ÇÕ´Ï´Ù. */
+       package localì— ìˆëŠ” typeì— ëŒ€í•´ ì°¾ì„ ìˆ˜ ìˆì–´ì•¼ í•©ë‹ˆë‹¤. */
     static IDE_RC searchPkgLocalVarTypeInternal( qcStatement     * aStatement,
                                                  qsPkgParseTree  * aPkgParseTree,
                                                  qtcNode         * aVarNode,

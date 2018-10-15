@@ -37,7 +37,7 @@
 # define MTD_PARTIAL_KEY_MAXIMUM         (ID_ULONG_MAX)
 
 //====================================================================
-// mtcColumn.flag Á¤ÀÇ
+// mtcColumn.flag ì •ì˜
 //====================================================================
 
 /* mtcColumn.flag                                    */
@@ -116,20 +116,20 @@
 
 /* PROJ-2586 PSM Parameters and return without precision
    mtcColumn.flag
-   PSM °´Ã¼ »ı¼º ½Ã parameter ¹× returnÀÇ precisionÀ» default °ªÀ¸·Î º¯°æµÈ columnÀÓÀ» ÀÇ¹Ì */
+   PSM ê°ì²´ ìƒì„± ì‹œ parameter ë° returnì˜ precisionì„ default ê°’ìœ¼ë¡œ ë³€ê²½ëœ columnì„ì„ ì˜ë¯¸ */
 # define MTC_COLUMN_SP_SET_PRECISION_MASK      (0x01000000)
 # define MTC_COLUMN_SP_SET_PRECISION_TRUE      (0x01000000)
 # define MTC_COLUMN_SP_SET_PRECISION_FALSE     (0x00000000)
 
 /* PROJ-2586 PSM Parameters and return without precision
    mtcColumn.flag
-   PSM ½ÇÇà ½Ã parameter ¹× returnÀÇ precisionÀ» argument ¹× result value¿¡ ¸ÂÃç column Á¤º¸°¡ º¯°æµÊÀ» ÀÇ¹Ì */
+   PSM ì‹¤í–‰ ì‹œ parameter ë° returnì˜ precisionì„ argument ë° result valueì— ë§ì¶° column ì •ë³´ê°€ ë³€ê²½ë¨ì„ ì˜ë¯¸ */
 # define MTC_COLUMN_SP_ADJUST_PRECISION_MASK      (0x02000000)
 # define MTC_COLUMN_SP_ADJUST_PRECISION_TRUE      (0x02000000)
 # define MTC_COLUMN_SP_ADJUST_PRECISION_FALSE     (0x00000000)
 
 //====================================================================
-// mtcNode.flag Á¤ÀÇ
+// mtcNode.flag ì •ì˜
 //====================================================================
 
 // BUG-34127 Increase maximum arguement count(4095(0x0FFF) -> 12287(0x2FFF))
@@ -138,9 +138,9 @@
 # define MTC_NODE_ARGUMENT_COUNT_MAXIMUM                             (12287)
 
 /* mtfModule.flag                                    */
-// ¿¬»êÀÚ°¡ Â÷ÁöÇÏ´Â ColumnÀÇ °³¼ö·Î AVG()¿Í °°Àº ¿¬»êÀº
-// SUM()°ú COUNT()Á¤º¸µîÀ» °ü¸®ÇÏ±â À§ÇØ ¿©·¯°³ÀÇ
-// Column À» À¯ÁöÇØ¾ß ÇÑ´Ù.
+// ì—°ì‚°ìê°€ ì°¨ì§€í•˜ëŠ” Columnì˜ ê°œìˆ˜ë¡œ AVG()ì™€ ê°™ì€ ì—°ì‚°ì€
+// SUM()ê³¼ COUNT()ì •ë³´ë“±ì„ ê´€ë¦¬í•˜ê¸° ìœ„í•´ ì—¬ëŸ¬ê°œì˜
+// Column ì„ ìœ ì§€í•´ì•¼ í•œë‹¤.
 # define MTC_NODE_COLUMN_COUNT_MASK             ID_ULONG(0x00000000000000FF)
 
 /* mtcNode.flag                                      */
@@ -186,19 +186,19 @@
 # define MTC_NODE_LOGICAL_CONDITION_FALSE       ID_ULONG(0x0000000000000000)
 
 //----------------------------------------------------
-// [MTC_NODE_INDEX_USABLE]ÀÇ ÀÇ¹Ì
-// mtfModule.mask¿Í ÇÏÀ§ NodeµéÀÇ flagÁ¤º¸¸¦ ÀÌ¿ëÇÏ¿©
-// ÇØ´ç NodeÀÇ flagÁ¤º¸¸¦ SettingÇÏ¿© °áÁ¤µÈ´Ù.
-// MTC_NODE_INDEX_USABLEÀº ÇØ´ç PredicateÀÇ
-// ´ÙÀ½°ú °°Àº »çÇ×À» º¸ÀåÇÑ´Ù.
-//     1. Indexable Operator°¡ »ç¿ëµÊ
-//         - A3¿Í ´Ş¸® A4¿¡¼­´Â system levelÀÇ
-//           indexable operator»Ó¸¸ ¾Æ´Ï¶ó,
-//           Node TransformµîÀ» ÀÌ¿ëÇÏ¿© ÀÎµ¦½º¸¦
-//           »ç¿ëÇÒ ¼ö ÀÖ´Â user levelÀÇ indexable
-//           operatorÀÓÀ» ÀÇ¹ÌÇÑ´Ù.
-//     2. ColumnÀÌ Á¸ÀçÇÔ.
-//     3. Column¿¡ ExpressionÀÌ Æ÷ÇÔµÇ¾î ÀÖÁö ¾ÊÀ½.
+// [MTC_NODE_INDEX_USABLE]ì˜ ì˜ë¯¸
+// mtfModule.maskì™€ í•˜ìœ„ Nodeë“¤ì˜ flagì •ë³´ë¥¼ ì´ìš©í•˜ì—¬
+// í•´ë‹¹ Nodeì˜ flagì •ë³´ë¥¼ Settingí•˜ì—¬ ê²°ì •ëœë‹¤.
+// MTC_NODE_INDEX_USABLEì€ í•´ë‹¹ Predicateì˜
+// ë‹¤ìŒê³¼ ê°™ì€ ì‚¬í•­ì„ ë³´ì¥í•œë‹¤.
+//     1. Indexable Operatorê°€ ì‚¬ìš©ë¨
+//         - A3ì™€ ë‹¬ë¦¬ A4ì—ì„œëŠ” system levelì˜
+//           indexable operatorë¿ë§Œ ì•„ë‹ˆë¼,
+//           Node Transformë“±ì„ ì´ìš©í•˜ì—¬ ì¸ë±ìŠ¤ë¥¼
+//           ì‚¬ìš©í•  ìˆ˜ ìˆëŠ” user levelì˜ indexable
+//           operatorì„ì„ ì˜ë¯¸í•œë‹¤.
+//     2. Columnì´ ì¡´ì¬í•¨.
+//     3. Columnì— Expressionì´ í¬í•¨ë˜ì–´ ìˆì§€ ì•ŠìŒ.
 //----------------------------------------------------
 
 /* mtcNode.flag, mtfModule.flag                      */
@@ -207,7 +207,7 @@
 # define MTC_NODE_INDEX_UNUSABLE                ID_ULONG(0x0000000000000000)
 
 /* mtcNode.flag                                      */
-// ÇöÀç¿Í ÇÏÀ§ ³ëµå¿¡ È£½ºÆ® º¯¼ö°¡ Á¸ÀçÇÔÀ» ³ªÅ¸³½´Ù.
+// í˜„ì¬ì™€ í•˜ìœ„ ë…¸ë“œì— í˜¸ìŠ¤íŠ¸ ë³€ìˆ˜ê°€ ì¡´ì¬í•¨ì„ ë‚˜íƒ€ë‚¸ë‹¤.
 # define MTC_NODE_BIND_MASK                     ID_ULONG(0x0000000001000000)
 # define MTC_NODE_BIND_EXIST                    ID_ULONG(0x0000000001000000)
 # define MTC_NODE_BIND_ABSENT                   ID_ULONG(0x0000000000000000)
@@ -249,7 +249,7 @@
 # define MTC_NODE_REESTIMATE_FALSE              ID_ULONG(0x0000000000000000)
 
 /* mtfModule.flag                                    */
-// To Fix PR-15434 INDEX JOINÀÌ °¡´ÉÇÑ ¿¬»êÀÚÀÎÁöÀÇ ¿©ºÎ
+// To Fix PR-15434 INDEX JOINì´ ê°€ëŠ¥í•œ ì—°ì‚°ìì¸ì§€ì˜ ì—¬ë¶€
 # define MTC_NODE_INDEX_JOINABLE_MASK           ID_ULONG(0x0000000100000000)
 # define MTC_NODE_INDEX_JOINABLE_TRUE           ID_ULONG(0x0000000100000000)
 # define MTC_NODE_INDEX_JOINABLE_FALSE          ID_ULONG(0x0000000000000000)
@@ -265,7 +265,7 @@
 # define MTC_NODE_VARIABLE_FALSE                ID_ULONG(0x0000000000000000)
 
 // PROJ-1492
-// ÇöÀç³ëµåÀÇ Å¸ÀÔÀÌ validation½Ã¿¡ °áÁ¤µÇ¾úÀ½À» ³ªÅ¸³½´Ù.
+// í˜„ì¬ë…¸ë“œì˜ íƒ€ì…ì´ validationì‹œì— ê²°ì •ë˜ì—ˆìŒì„ ë‚˜íƒ€ë‚¸ë‹¤.
 /* mtcNode.flag                                      */
 # define MTC_NODE_BIND_TYPE_MASK                ID_ULONG(0x0000000800000000)
 # define MTC_NODE_BIND_TYPE_TRUE                ID_ULONG(0x0000000800000000)
@@ -281,31 +281,31 @@
 # define MTC_NODE_EQUI_VALID_SKIP_TRUE          ID_ULONG(0x0000002000000000)
 # define MTC_NODE_EQUI_VALID_SKIP_FALSE         ID_ULONG(0x0000000000000000)
 
-// fix BUG-22512 Outer Join °è¿­ Push Down Predicate ÇÒ °æ¿ì, °á°ú ¿À·ù
-// CASE2, DECODE, DIGEST, DUMP, IS NULL, IS NOT NULL, NVL, NVL2, UserDefined Function ÇÔ¼ö´Â
-// ÀÎÀÚ·Î ¹ŞÀº NULL°ªÀ» ´Ù¸¥ °ªÀ¸·Î ¹Ù²Ü ¼ö ÀÖ´Ù.
-// CASE2, DECODE, DIGEST, DUMP, IS NULL, IS NOT NULL, NVL, NVL2, UserDefined Function ÇÔ¼ö´Â 
-// outer join ÇÏÀ§ ³ëµå·Î push down ÇÒ ¼ö ¾ø´Â functionÀÓÀ» Ç¥½Ã.
+// fix BUG-22512 Outer Join ê³„ì—´ Push Down Predicate í•  ê²½ìš°, ê²°ê³¼ ì˜¤ë¥˜
+// CASE2, DECODE, DIGEST, DUMP, IS NULL, IS NOT NULL, NVL, NVL2, UserDefined Function í•¨ìˆ˜ëŠ”
+// ì¸ìë¡œ ë°›ì€ NULLê°’ì„ ë‹¤ë¥¸ ê°’ìœ¼ë¡œ ë°”ê¿€ ìˆ˜ ìˆë‹¤.
+// CASE2, DECODE, DIGEST, DUMP, IS NULL, IS NOT NULL, NVL, NVL2, UserDefined Function í•¨ìˆ˜ëŠ” 
+// outer join í•˜ìœ„ ë…¸ë“œë¡œ push down í•  ìˆ˜ ì—†ëŠ” functionì„ì„ í‘œì‹œ.
 # define MTC_NODE_EAT_NULL_MASK                 ID_ULONG(0x0000004000000000)
 # define MTC_NODE_EAT_NULL_TRUE                 ID_ULONG(0x0000004000000000)
 # define MTC_NODE_EAT_NULL_FALSE                ID_ULONG(0x0000000000000000)
 
 //----------------------------------------------------
 // BUG-19180
-// ³ëµå±â¹İÀÇ predicate Ãâ·ÂÀ» À§ÇØ ´ÙÀ½°ú °°ÀÌ
-// built-in functionµéÀÇ Ãâ·Â¹æ¹ıÀ» Á¤ÀÇÇÑ´Ù.
-// 1. prefix( ¼±¼øÀ§¿Í °ıÈ£
-//    ¿¹) ABS(...), SUB(...), FUNC1(...)
-// 2. prefix_ ¼±¼øÀ§¿Í °ø¹é
-//    ¿¹) EXISTS @, UNIQUE @, NOT @
-// 3. infix Áß¼øÀ§
-//    ¿¹) @+@, @=ANY@
-// 4. infix_ Áß¼øÀ§¿Í °ø¹é
-//    ¿¹) @ AND @, @ IN @
-// 5. _postfix ÈÄ¼øÀ§¿Í °ø¹é
-//    ¿¹) @ IS NULL
-// 6. ±âÅ¸
-//    ¿¹) between, like, cast, concat, count, minus, list µî
+// ë…¸ë“œê¸°ë°˜ì˜ predicate ì¶œë ¥ì„ ìœ„í•´ ë‹¤ìŒê³¼ ê°™ì´
+// built-in functionë“¤ì˜ ì¶œë ¥ë°©ë²•ì„ ì •ì˜í•œë‹¤.
+// 1. prefix( ì„ ìˆœìœ„ì™€ ê´„í˜¸
+//    ì˜ˆ) ABS(...), SUB(...), FUNC1(...)
+// 2. prefix_ ì„ ìˆœìœ„ì™€ ê³µë°±
+//    ì˜ˆ) EXISTS @, UNIQUE @, NOT @
+// 3. infix ì¤‘ìˆœìœ„
+//    ì˜ˆ) @+@, @=ANY@
+// 4. infix_ ì¤‘ìˆœìœ„ì™€ ê³µë°±
+//    ì˜ˆ) @ AND @, @ IN @
+// 5. _postfix í›„ìˆœìœ„ì™€ ê³µë°±
+//    ì˜ˆ) @ IS NULL
+// 6. ê¸°íƒ€
+//    ì˜ˆ) between, like, cast, concat, count, minus, list ë“±
 //----------------------------------------------------
 # define MTC_NODE_PRINT_FMT_MASK                ID_ULONG(0x00000F0000000000)
 # define MTC_NODE_PRINT_FMT_PREFIX_PA           ID_ULONG(0x0000000000000000)
@@ -325,7 +325,7 @@
 # define MTC_NODE_REMOVE_ARGUMENTS_TRUE         ID_ULONG(0x0000200000000000)
 # define MTC_NODE_REMOVE_ARGUMENTS_FALSE        ID_ULONG(0x0000000000000000)
 
-// BUG-28223 CASE expr WHEN .. THEN .. ±¸¹®ÀÇ expr¿¡ subquery »ç¿ë½Ã ¿¡·¯¹ß»ı 
+// BUG-28223 CASE expr WHEN .. THEN .. êµ¬ë¬¸ì˜ exprì— subquery ì‚¬ìš©ì‹œ ì—ëŸ¬ë°œìƒ 
 // .SIMPLE :
 //          select case i1 when 1 then 777
 //                         when 2 then 666
@@ -340,14 +340,14 @@
 //                  else 888
 //                  end
 //             from t1;
-// qtc::estimateInternal()ÇÔ¼öÀÇ ÁÖ¼® ÂüÁ¶.
+// qtc::estimateInternal()í•¨ìˆ˜ì˜ ì£¼ì„ ì°¸ì¡°.
 # define MTC_NODE_CASE_TYPE_MASK                ID_ULONG(0x0000400000000000) 
 # define MTC_NODE_CASE_TYPE_SIMPLE              ID_ULONG(0x0000400000000000) 
 # define MTC_NODE_CASE_TYPE_SEARCHED            ID_ULONG(0x0000000000000000)
 
 // BUG-38133
-// BUG-28223 CASE expr WHEN .. THEN .. ±¸¹®ÀÇ expr¿¡ subquery »ç¿ë½Ã ¿¡·¯¹ß»ı 
-// qtc::estimateInternal()ÇÔ¼öÀÇ ÁÖ¼® ÂüÁ¶.
+// BUG-28223 CASE expr WHEN .. THEN .. êµ¬ë¬¸ì˜ exprì— subquery ì‚¬ìš©ì‹œ ì—ëŸ¬ë°œìƒ 
+// qtc::estimateInternal()í•¨ìˆ˜ì˜ ì£¼ì„ ì°¸ì¡°.
 #define MTC_NODE_CASE_EXPRESSION_MAKE_PASSNODE_MASK  ID_ULONG(0x0000800000000000)
 #define MTC_NODE_CASE_EXPRESSION_MAKE_PASSNODE_TRUE  ID_ULONG(0x0000800000000000)
 #define MTC_NODE_CASE_EXPRESSION_MAKE_PASSNODE_FALSE ID_ULONG(0x0000000000000000)
@@ -358,7 +358,7 @@
 #define MTC_NODE_CASE_EXPRESSION_PASSNODE_TRUE  ID_ULONG(0x0001000000000000)
 #define MTC_NODE_CASE_EXPRESSION_PASSNODE_FALSE ID_ULONG(0x0000000000000000)
 
-// BUG-31777 µ¡¼À°ú °ö¼À ¿¬»êÀÚ¿¡ ´ëÇØ¼­ ±³È¯¹ıÄ¢À» Çã¿ëÇÑ´Ù.
+// BUG-31777 ë§ì…ˆê³¼ ê³±ì…ˆ ì—°ì‚°ìì— ëŒ€í•´ì„œ êµí™˜ë²•ì¹™ì„ í—ˆìš©í•œë‹¤.
 /* mtcNode.flag, mtfModule.flag */
 #define MTC_NODE_COMMUTATIVE_MASK               ID_ULONG(0x0002000000000000)
 #define MTC_NODE_COMMUTATIVE_TRUE               ID_ULONG(0x0002000000000000)
@@ -383,7 +383,7 @@
 // BUG-35155 Partial CNF
 // PARTIAL_NORMALIZE_CNF_TRUE  : use predicate when make CNF
 // PARTIAL_NORMALIZE_CNF_FALSE : don't use predicate when make CNF
-// PARTIAL_NORMALIZE_DNF_TRUE  : use predicate when make DNF (¹Ì±¸Çö)
+// PARTIAL_NORMALIZE_DNF_TRUE  : use predicate when make DNF (ë¯¸êµ¬í˜„)
 // PARTIAL_NORMALIZE_DNF_FALSE : don't use predicate when make DNF
 /* mtcNode.flag, mtfModule.flag                      */
 # define MTC_NODE_PARTIAL_NORMALIZE_CNF_MASK     ID_ULONG(0x0020000000000000)
@@ -414,7 +414,7 @@
 # define MTC_NODE_WITHIN_GROUP_NULLS_FIRST       ID_ULONG(0x0400000000000000)
 # define MTC_NODE_WITHIN_GROUP_NULLS_LAST        ID_ULONG(0x0000000000000000)
 
-// BUG-43858 ÀÎÀÚ°¡ Undef Å¸ÀÔÀÎ °æ¿ì aNode¿¡ Ç¥½ÃÇÑ´Ù.
+// BUG-43858 ì¸ìê°€ Undef íƒ€ì…ì¸ ê²½ìš° aNodeì— í‘œì‹œí•œë‹¤.
 # define MTC_NODE_UNDEF_TYPE_MASK                ID_ULONG(0x0800000000000000)
 # define MTC_NODE_UNDEF_TYPE_EXIST               ID_ULONG(0x0800000000000000)
 # define MTC_NODE_UNDEF_TYPE_ABSENT              ID_ULONG(0x0000000000000000)
@@ -459,9 +459,9 @@
 
 //----------------------------------------------------
 // [NATVIE2NUMERIC_PENALTY]
-//     [Á¤¼ö ¿¬»êÀÚ Á¤¼ö] ÇüÅÂÀÇ °¢Á¾ ÇÔ¼öµéÀº
-//     Native TypeÀ» ¿ì¼±ÀûÀ¸·Î »ç¿ëÇÒ ¼ö ÀÖ°Ô ÀÓ½Ã·Î
-//     SettingÇÏ´Â Penalty °ªÀ¸·Î mtvTable.cost¿¡ »ç¿ëÇÔ
+//     [ì •ìˆ˜ ì—°ì‚°ì ì •ìˆ˜] í˜•íƒœì˜ ê°ì¢… í•¨ìˆ˜ë“¤ì€
+//     Native Typeì„ ìš°ì„ ì ìœ¼ë¡œ ì‚¬ìš©í•  ìˆ˜ ìˆê²Œ ì„ì‹œë¡œ
+//     Settingí•˜ëŠ” Penalty ê°’ìœ¼ë¡œ mtvTable.costì— ì‚¬ìš©í•¨
 //----------------------------------------------------
 # define MTV_COST_NATIVE2NUMERIC_PENALTY ( MTV_COST_LOSS_PENALTY * 3 )
 
@@ -469,7 +469,7 @@
 //--------------------------------------------------------------------
 // PROJ-2002 Column Security
 // [ MTV_COST_SMALL_LOSS_PENALTY ]
-//     ¾ÏÈ£ µ¥ÀÌÅ¸ Å¸ÀÔ¿¡¼­ ¿øº» µ¥ÀÌÅ¸ Å¸ÀÔÀ¸·Î º¯È¯½Ã Ãß°¡µÇ´Â ºñ¿ë
+//     ì•”í˜¸ ë°ì´íƒ€ íƒ€ì…ì—ì„œ ì›ë³¸ ë°ì´íƒ€ íƒ€ì…ìœ¼ë¡œ ë³€í™˜ì‹œ ì¶”ê°€ë˜ëŠ” ë¹„ìš©
 //
 // ECHAR_TYPE, EVARCHAR_TYPE => CHAR_TYPE, VARCHAR_TYPE
 //--------------------------------------------------------------------
@@ -477,20 +477,20 @@
 
 
 // PROJ-1358
-// mtcTemplate.rows ´Â
-// 16°³ºÎÅÍ ½ÃÀÛÇÏ¿© 65536 °³±îÁö µ¿ÀûÀ¸·Î Áõ°¡ÇÑ´Ù.
+// mtcTemplate.rows ëŠ”
+// 16ê°œë¶€í„° ì‹œì‘í•˜ì—¬ 65536 ê°œê¹Œì§€ ë™ì ìœ¼ë¡œ ì¦ê°€í•œë‹¤.
 #define MTC_TUPLE_ROW_INIT_CNT                     (16)
 #define MTC_TUPLE_ROW_MAX_CNT           (ID_USHORT_MAX)   // BUG-17154
 
 //====================================================================
-// mtcTuple.flag Á¤ÀÇ
+// mtcTuple.flag ì •ì˜
 //====================================================================
 
 /* mtcTuple.flag                                     */
 # define MTC_TUPLE_TYPE_MAXIMUM                     (4)
-/* BUG-44490 mtcTuple flag È®Àå ÇØ¾ß ÇÕ´Ï´Ù. */
-/* 32bit flag °ø°£ ¸ğµÎ ¼Ò¸ğÇØ 64bit·Î Áõ°¡ */
-/* typeÀ» UInt¿¡¼­ ULongÀ¸·Î º¯°æ */
+/* BUG-44490 mtcTuple flag í™•ì¥ í•´ì•¼ í•©ë‹ˆë‹¤. */
+/* 32bit flag ê³µê°„ ëª¨ë‘ ì†Œëª¨í•´ 64bitë¡œ ì¦ê°€ */
+/* typeì„ UIntì—ì„œ ULongìœ¼ë¡œ ë³€ê²½ */
 # define MTC_TUPLE_TYPE_MASK               ID_ULONG(0x0000000000000003)
 # define MTC_TUPLE_TYPE_CONSTANT           ID_ULONG(0x0000000000000000)
 # define MTC_TUPLE_TYPE_VARIABLE           ID_ULONG(0x0000000000000001)
@@ -547,74 +547,74 @@
 # define MTC_TUPLE_ROW_SKIP_TRUE           ID_ULONG(0x0000000000002000)
 # define MTC_TUPLE_ROW_SKIP_FALSE          ID_ULONG(0x0000000000000000)
 
-/* PROJ-2160 row Áß¿¡ GEOMETRY Å¸ÀÔÀÌ ÀÖ´ÂÁö Ã¼Å© */
+/* PROJ-2160 row ì¤‘ì— GEOMETRY íƒ€ì…ì´ ìˆëŠ”ì§€ ì²´í¬ */
 /* mtcTuple.flag                                     */
 # define MTC_TUPLE_ROW_GEOMETRY_MASK       ID_ULONG(0x0000000000004000)
 # define MTC_TUPLE_ROW_GEOMETRY_TRUE       ID_ULONG(0x0000000000004000)
 # define MTC_TUPLE_ROW_GEOMETRY_FALSE      ID_ULONG(0x0000000000000000)
 
-/* BUG-43705 lateral view¸¦ simple view mergingÀ» ÇÏÁö¾ÊÀ¸¸é °á°ú°¡ ´Ù¸¨´Ï´Ù. */
+/* BUG-43705 lateral viewë¥¼ simple view mergingì„ í•˜ì§€ì•Šìœ¼ë©´ ê²°ê³¼ê°€ ë‹¤ë¦…ë‹ˆë‹¤. */
 /* mtcTuple.flag */
 # define MTC_TUPLE_LATERAL_VIEW_REF_MASK   ID_ULONG(0x0000000000008000)
 # define MTC_TUPLE_LATERAL_VIEW_REF_TRUE   ID_ULONG(0x0000000000008000)
 # define MTC_TUPLE_LATERAL_VIEW_REF_FALSE  ID_ULONG(0x0000000000000000)
 
 /* mtcTuple.flag                                     */
-// TupleÀÇ ÀúÀå ¸ÅÃ¼¿¡ ´ëÇÑ Á¤º¸
+// Tupleì˜ ì €ì¥ ë§¤ì²´ì— ëŒ€í•œ ì •ë³´
 # define MTC_TUPLE_STORAGE_MASK            ID_ULONG(0x0000000000010000)
 # define MTC_TUPLE_STORAGE_MEMORY          ID_ULONG(0x0000000000000000)
 # define MTC_TUPLE_STORAGE_DISK            ID_ULONG(0x0000000000010000)
 
 /* mtcTuple.flag                                     */
-// ÇØ´ç TupleÀÌ VIEW¸¦ À§ÇÑ TupleÀÎÁö¸¦ ¼³Á¤
+// í•´ë‹¹ Tupleì´ VIEWë¥¼ ìœ„í•œ Tupleì¸ì§€ë¥¼ ì„¤ì •
 # define MTC_TUPLE_VIEW_MASK               ID_ULONG(0x0000000000020000)
 # define MTC_TUPLE_VIEW_FALSE              ID_ULONG(0x0000000000000000)
 # define MTC_TUPLE_VIEW_TRUE               ID_ULONG(0x0000000000020000)
 
 /* mtcTuple.flag */
-// ÇØ´ç TupleÀÌ PlanÀ» À§ÇØ »ı¼ºµÈ TupleÀÎÁö¸¦ ¼³Á¤
+// í•´ë‹¹ Tupleì´ Planì„ ìœ„í•´ ìƒì„±ëœ Tupleì¸ì§€ë¥¼ ì„¤ì •
 # define MTC_TUPLE_PLAN_MASK               ID_ULONG(0x0000000000040000)
 # define MTC_TUPLE_PLAN_FALSE              ID_ULONG(0x0000000000000000)
 # define MTC_TUPLE_PLAN_TRUE               ID_ULONG(0x0000000000040000)
 
 /* mtcTuple.flag */
-// ÇØ´ç TupleÀÌ Materialization PlanÀ» À§ÇØ »ı¼ºµÈ Tuple
+// í•´ë‹¹ Tupleì´ Materialization Planì„ ìœ„í•´ ìƒì„±ëœ Tuple
 # define MTC_TUPLE_PLAN_MTR_MASK           ID_ULONG(0x0000000000080000)
 # define MTC_TUPLE_PLAN_MTR_FALSE          ID_ULONG(0x0000000000000000)
 # define MTC_TUPLE_PLAN_MTR_TRUE           ID_ULONG(0x0000000000080000)
 
 /* mtcTuple.flag */
 // PROJ-1502 PARTITIONED DISK TABLE
-// ÇØ´ç TupleÀÌ Partitioned TableÀ» À§ÇØ »ı¼ºµÈ Tuple
+// í•´ë‹¹ Tupleì´ Partitioned Tableì„ ìœ„í•´ ìƒì„±ëœ Tuple
 # define MTC_TUPLE_PARTITIONED_TABLE_MASK  ID_ULONG(0x0000000000100000)
 # define MTC_TUPLE_PARTITIONED_TABLE_FALSE ID_ULONG(0x0000000000000000)
 # define MTC_TUPLE_PARTITIONED_TABLE_TRUE  ID_ULONG(0x0000000000100000)
 
 /* mtcTuple.flag */
 // PROJ-1502 PARTITIONED DISK TABLE
-// ÇØ´ç TupleÀÌ PartitionÀ» À§ÇØ »ı¼ºµÈ Tuple
+// í•´ë‹¹ Tupleì´ Partitionì„ ìœ„í•´ ìƒì„±ëœ Tuple
 # define MTC_TUPLE_PARTITION_MASK          ID_ULONG(0x0000000000200000)
 # define MTC_TUPLE_PARTITION_FALSE         ID_ULONG(0x0000000000000000)
 # define MTC_TUPLE_PARTITION_TRUE          ID_ULONG(0x0000000000200000)
 
 /* mtcTuple.flag */
-/* BUG-36468 TupleÀÇ ÀúÀå¸ÅÃ¼ À§Ä¡(Location)¿¡ ´ëÇÑ Á¤º¸ */
+/* BUG-36468 Tupleì˜ ì €ì¥ë§¤ì²´ ìœ„ì¹˜(Location)ì— ëŒ€í•œ ì •ë³´ */
 # define MTC_TUPLE_STORAGE_LOCATION_MASK   ID_ULONG(0x0000000000400000)
 # define MTC_TUPLE_STORAGE_LOCATION_LOCAL  ID_ULONG(0x0000000000000000)
 # define MTC_TUPLE_STORAGE_LOCATION_REMOTE ID_ULONG(0x0000000000400000)
 
 /* mtcTuple.flag */
-/* PROJ-2464 hybrid partitioned table Áö¿ø */
-// ÇØ´ç TupleÀÌ Hybrid¸¦ À§ÇØ »ı¼ºµÈ Tuple
+/* PROJ-2464 hybrid partitioned table ì§€ì› */
+// í•´ë‹¹ Tupleì´ Hybridë¥¼ ìœ„í•´ ìƒì„±ëœ Tuple
 # define MTC_TUPLE_HYBRID_PARTITIONED_TABLE_MASK    ID_ULONG(0x0000000000800000)
 # define MTC_TUPLE_HYBRID_PARTITIONED_TABLE_FALSE   ID_ULONG(0x0000000000000000)
 # define MTC_TUPLE_HYBRID_PARTITIONED_TABLE_TRUE    ID_ULONG(0x0000000000800000)
 
 /* mtcTuple.flag */
 // PROJ-1473
-// tuple ¿¡ ´ëÇÑ Ã³¸®¹æ¹ı ÁöÁ¤.
-// (1) tuple set ¹æ½ÄÀ¸·Î Ã³¸®
-// (2) ·¹ÄÚµåÀúÀå¹æ½ÄÀ¸·Î Ã³¸®
+// tuple ì— ëŒ€í•œ ì²˜ë¦¬ë°©ë²• ì§€ì •.
+// (1) tuple set ë°©ì‹ìœ¼ë¡œ ì²˜ë¦¬
+// (2) ë ˆì½”ë“œì €ì¥ë°©ì‹ìœ¼ë¡œ ì²˜ë¦¬
 # define MTC_TUPLE_MATERIALIZE_MASK        ID_ULONG(0x0000000001000000)
 # define MTC_TUPLE_MATERIALIZE_RID         ID_ULONG(0x0000000000000000)
 # define MTC_TUPLE_MATERIALIZE_VALUE       ID_ULONG(0x0000000001000000)
@@ -635,7 +635,7 @@
 
 /*
  * PROJ-1789 PROWID
- * Target list ¶Ç´Â where Àı¿¡ RID °¡ ÀÖ´ÂÁö
+ * Target list ë˜ëŠ” where ì ˆì— RID ê°€ ìˆëŠ”ì§€
  */
 #define MTC_TUPLE_TARGET_RID_MASK          ID_ULONG(0x0000000010000000)
 #define MTC_TUPLE_TARGET_RID_EXIST         ID_ULONG(0x0000000010000000)
@@ -653,7 +653,7 @@
 #define MTC_TUPLE_TARGET_UPDATE_DELETE_TRUE  ID_ULONG(0x0000000040000000)
 #define MTC_TUPLE_TARGET_UPDATE_DELETE_FALSE ID_ULONG(0x0000000000000000)
 
-/* BUG-44382 clone tuple ¼º´É°³¼± */
+/* BUG-44382 clone tuple ì„±ëŠ¥ê°œì„  */
 /* mtcTuple.flag */
 # define MTC_TUPLE_ROW_MEMSET_MASK         ID_ULONG(0x0000000080000000)
 # define MTC_TUPLE_ROW_MEMSET_TRUE         ID_ULONG(0x0000000080000000)
@@ -661,11 +661,11 @@
 
 
 # define MTC_TUPLE_COLUMN_ID_MAXIMUM            (1024)
-/* to_charÇÒ ¶§³ª date -> char º¯È¯½Ã precision      */
+/* to_charí•  ë•Œë‚˜ date -> char ë³€í™˜ì‹œ precision      */
 # define MTC_TO_CHAR_MAX_PRECISION                 (64)
 
 /* PROJ-2446 ONE SOURCE XDB REPLACTION
- * XSN_TO_LSN ÇÔ¼ö SNÀ» LSNÀ¸·Î º¯È¯ÇÒ ¶§ max precision */
+ * XSN_TO_LSN í•¨ìˆ˜ SNì„ LSNìœ¼ë¡œ ë³€í™˜í•  ë•Œ max precision */
 # define MTC_XSN_TO_LSN_MAX_PRECISION              (40)
 
 
@@ -686,7 +686,7 @@
 # define MTD_COMPARE_FUNC_MAX_CNT                    (6)
 
 //====================================================================
-// mtdModule.flag Á¤ÀÇ
+// mtdModule.flag ì •ì˜
 //====================================================================
 
 /* mtdModule.flag                                    */
@@ -722,43 +722,43 @@
 # define MTD_COLUMN_TYPE_LOB               (0x00000200)
 
 /* mtdModule.flag                                    */
-// Selectivity¸¦ ÃßÃâÇÒ ¼ö ÀÖ´Â Data TypeÀÎÁöÀÇ ¿©ºÎ
+// Selectivityë¥¼ ì¶”ì¶œí•  ìˆ˜ ìˆëŠ” Data Typeì¸ì§€ì˜ ì—¬ë¶€
 # define MTD_SELECTIVITY_MASK              (0x00000400)
 # define MTD_SELECTIVITY_ENABLE            (0x00000400)
 # define MTD_SELECTIVITY_DISABLE           (0x00000000)
 
 /* mtdModule.flag                                    */
-// byte Å¸ÀÔ¿¡ ´ëÇØ
-// Greatest, Least, Nvl, Nvl2, Case2, DecodeµîÀÇ
-// ÇÔ¼ö°¡ Precision, ScaleÀÌ µ¿ÀÏÇÑ °æ¿ì¿¡¸¸
-// µ¿ÀÛÇÏµµ·Ï ÇÏ±â À§ÇÑ flag
-// byte¸¸ À¯ÀÏÇÏ°Ô length ÇÊµå°¡ ¾ø´Ù.
+// byte íƒ€ì…ì— ëŒ€í•´
+// Greatest, Least, Nvl, Nvl2, Case2, Decodeë“±ì˜
+// í•¨ìˆ˜ê°€ Precision, Scaleì´ ë™ì¼í•œ ê²½ìš°ì—ë§Œ
+// ë™ì‘í•˜ë„ë¡ í•˜ê¸° ìœ„í•œ flag
+// byteë§Œ ìœ ì¼í•˜ê²Œ length í•„ë“œê°€ ì—†ë‹¤.
 # define MTD_NON_LENGTH_MASK               (0x00000800)
 # define MTD_NON_LENGTH_TYPE               (0x00000800)
 # define MTD_LENGTH_TYPE                   (0x00000000)
 
 // PROJ-1364
 /* mtdModule.flag                                    */
-// ¼ıÀÚÇü°è¿­ÀÇ ´ëÇ¥ data type¿¡ ´ëÇÑ flag
+// ìˆ«ìí˜•ê³„ì—´ì˜ ëŒ€í‘œ data typeì— ëŒ€í•œ flag
 //-----------------------------------------------------------------------
-//            |                                                | ´ëÇ¥type
+//            |                                                | ëŒ€í‘œtype
 // ----------------------------------------------------------------------
-// ¹®ÀÚÇü°è¿­ | CHAR, VARCHAR                                  | VARCHAR
+// ë¬¸ìí˜•ê³„ì—´ | CHAR, VARCHAR                                  | VARCHAR
 // ----------------------------------------------------------------------
-// ¼ıÀÚÇü°è¿­ | Native | Á¤¼öÇü | BIGINT, INTEGER, SMALLINT    | BIGINT
+// ìˆ«ìí˜•ê³„ì—´ | Native | ì •ìˆ˜í˜• | BIGINT, INTEGER, SMALLINT    | BIGINT
 //            |        |-------------------------------------------------
-//            |        | ½Ç¼öÇü | DOUBLE, REAL                 | DOUBLE
+//            |        | ì‹¤ìˆ˜í˜• | DOUBLE, REAL                 | DOUBLE
 //            -----------------------------------------------------------
-//            | Non-   | °íÁ¤¼Ò¼öÁ¡Çü | NUMERIC, DECIMAL,      |
+//            | Non-   | ê³ ì •ì†Œìˆ˜ì í˜• | NUMERIC, DECIMAL,      |
 //            | Native |              | NUMBER(p), NUMBER(p,s) | NUMERIC
 //            |        |----------------------------------------
-//            |        | ºÎÁ¤¼Ò¼öÁ¡Çü | FLOAT, NUMBER          |
+//            |        | ë¶€ì •ì†Œìˆ˜ì í˜• | FLOAT, NUMBER          |
 // ----------------------------------------------------------------------
-// "ÁÖÀÇ "
-// ÀÌ °ªÀº mtd::comparisonNumberType matrixÀÇ ¹è¿­ÀÎÀÚ¸¦ ±¸ÇÏ±â À§ÇØ
-// MTD_NUMBER_GROUP_TYPE_SHIFT °ªÀ» ÀÌ¿ëÇØ¼­ right shift¸¦ ¼öÇàÇÏ°Ô µÈ´Ù.
-// µû¶ó¼­, mtdModule.flag¿¡¼­ ÀÌ flagÀÇ À§Ä¡°¡ º¯°æµÇ¸é,
-// MTD_NUMBER_GROUP_TYPE_SHIFTµµ ±×¿¡ ¸Â°Ô º¯°æµÇ¾î¾ß ÇÔ.
+// "ì£¼ì˜ "
+// ì´ ê°’ì€ mtd::comparisonNumberType matrixì˜ ë°°ì—´ì¸ìë¥¼ êµ¬í•˜ê¸° ìœ„í•´
+// MTD_NUMBER_GROUP_TYPE_SHIFT ê°’ì„ ì´ìš©í•´ì„œ right shiftë¥¼ ìˆ˜í–‰í•˜ê²Œ ëœë‹¤.
+// ë”°ë¼ì„œ, mtdModule.flagì—ì„œ ì´ flagì˜ ìœ„ì¹˜ê°€ ë³€ê²½ë˜ë©´,
+// MTD_NUMBER_GROUP_TYPE_SHIFTë„ ê·¸ì— ë§ê²Œ ë³€ê²½ë˜ì–´ì•¼ í•¨.
 # define MTD_NUMBER_GROUP_TYPE_MASK        (0x00003000)
 # define MTD_NUMBER_GROUP_TYPE_NONE        (0x00000000)
 # define MTD_NUMBER_GROUP_TYPE_BIGINT      (0x00001000)
@@ -766,9 +766,9 @@
 # define MTD_NUMBER_GROUP_TYPE_NUMERIC     (0x00003000)
 
 // PROJ-1362
-// ODBC API, SQLGetTypeInfo Áö¿øÀ» À§ÇÑ mtdModule È®Àå
-// ÀÌÀü¿¡´Â Å¸ÀÔÁ¤º¸°¡ client¿¡ ÇÏµåÄÚµùµÇ¾î ÀÖ´ø°ÍÀ»
-// ¼­¹ö¿¡¼­ Á¶È¸ÇÏµµ·Ï º¯°æÇÔ
+// ODBC API, SQLGetTypeInfo ì§€ì›ì„ ìœ„í•œ mtdModule í™•ì¥
+// ì´ì „ì—ëŠ” íƒ€ì…ì •ë³´ê°€ clientì— í•˜ë“œì½”ë”©ë˜ì–´ ìˆë˜ê²ƒì„
+// ì„œë²„ì—ì„œ ì¡°íšŒí•˜ë„ë¡ ë³€ê²½í•¨
 // mtdModule.flag
 # define MTD_CREATE_PARAM_MASK             (0x00030000)
 # define MTD_CREATE_PARAM_NONE             (0x00000000)
@@ -802,56 +802,56 @@
 # define MTD_LITERAL_TRUE                  (0x01000000)
 
 // PROJ-1705
-// defineµÈ mtdDataTypeÀÌ 
-// length Á¤º¸¸¦ °¡Áö´Â µ¥ÀÌÅ¸Å¸ÀÔÀÎÁöÀÇ ¿©ºÎ¸¦ ³ªÅ¸³½´Ù.
+// defineëœ mtdDataTypeì´ 
+// length ì •ë³´ë¥¼ ê°€ì§€ëŠ” ë°ì´íƒ€íƒ€ì…ì¸ì§€ì˜ ì—¬ë¶€ë¥¼ ë‚˜íƒ€ë‚¸ë‹¤.
 # define MTD_VARIABLE_LENGTH_TYPE_MASK     (0x02000000)
 # define MTD_VARIABLE_LENGTH_TYPE_FALSE    (0x00000000)
 # define MTD_VARIABLE_LENGTH_TYPE_TRUE     (0x02000000)
 
 // PROJ-1705
-// µğ½ºÅ©Å×ÀÌºíÀÎ °æ¿ì, 
-// SM¿¡¼­ ÄÃ·³À» ¿©·¯ row piece¿¡
-// ³ª´©¾î ÀúÀåÇØµµ µÇ´ÂÁö ¿©ºÎ¸¦ ³ªÅ¸³½´Ù. 
+// ë””ìŠ¤í¬í…Œì´ë¸”ì¸ ê²½ìš°, 
+// SMì—ì„œ ì»¬ëŸ¼ì„ ì—¬ëŸ¬ row pieceì—
+// ë‚˜ëˆ„ì–´ ì €ì¥í•´ë„ ë˜ëŠ”ì§€ ì—¬ë¶€ë¥¼ ë‚˜íƒ€ë‚¸ë‹¤. 
 # define MTD_DATA_STORE_DIVISIBLE_MASK     (0x04000000)
 # define MTD_DATA_STORE_DIVISIBLE_FALSE    (0x00000000)
 # define MTD_DATA_STORE_DIVISIBLE_TRUE     (0x04000000)
 
 // PROJ-1705
-// µğ½ºÅ©Å×ÀÌºíÀÎ °æ¿ì,
-// SM¿¡ mtdValue ÇüÅÂ·Î ÀúÀåµÇ´ÂÁöÀÇ ¿©ºÎ
-// nibble, bit, varbit ÀÎ °æ¿ì¿¡ ÇØ´çµÊ.
-// ÀÌ ¼¼°¡Áö Å¸ÀÔÀº ÀúÀåµÇ´Â length Á¤º¸·Î 
-// Äõ¸®¼öÇà½ÃÀÇ ½ÇÁ¦ length Á¤º¸¸¦ Á¤È®ÇÏ°Ô ±¸ÇÒ¼ö ¾ø¾î
-// mtdValueTypeÀ¸·Î ÀúÀåÇÑ´Ù. 
+// ë””ìŠ¤í¬í…Œì´ë¸”ì¸ ê²½ìš°,
+// SMì— mtdValue í˜•íƒœë¡œ ì €ì¥ë˜ëŠ”ì§€ì˜ ì—¬ë¶€
+// nibble, bit, varbit ì¸ ê²½ìš°ì— í•´ë‹¹ë¨.
+// ì´ ì„¸ê°€ì§€ íƒ€ì…ì€ ì €ì¥ë˜ëŠ” length ì •ë³´ë¡œ 
+// ì¿¼ë¦¬ìˆ˜í–‰ì‹œì˜ ì‹¤ì œ length ì •ë³´ë¥¼ ì •í™•í•˜ê²Œ êµ¬í• ìˆ˜ ì—†ì–´
+// mtdValueTypeìœ¼ë¡œ ì €ì¥í•œë‹¤. 
 # define MTD_DATA_STORE_MTDVALUE_MASK      (0x08000000)
 # define MTD_DATA_STORE_MTDVALUE_FALSE     (0x00000000)
 # define MTD_DATA_STORE_MTDVALUE_TRUE      (0x08000000)
 
 // PROJ-2002 Column Security
-// echar, evarchar °°Àº º¸¾È Å¸ÀÔ Á¤º¸
+// echar, evarchar ê°™ì€ ë³´ì•ˆ íƒ€ì… ì •ë³´
 // mtdModule.flag
 # define MTD_ENCRYPT_TYPE_MASK             (0x10000000)
 # define MTD_ENCRYPT_TYPE_FALSE            (0x00000000)
 # define MTD_ENCRYPT_TYPE_TRUE             (0x10000000)
 
 // PROJ-2163 Bind revise
-// ³»ºÎ¿¡¼­¸¸ ¾²ÀÌ´Â Å¸ÀÔ
-// Typed literal ÀÌ³ª CAST ¿¬»ê µî ¿ÜºÎ¿¡¼­ 
-// mtd::moduleByName À» ÅëÇØ Å¸ÀÔÀ» Ã£À» °æ¿ì
-// ¿¡·¯¸¦ ¹ß»ıÇÑ´Ù.
+// ë‚´ë¶€ì—ì„œë§Œ ì“°ì´ëŠ” íƒ€ì…
+// Typed literal ì´ë‚˜ CAST ì—°ì‚° ë“± ì™¸ë¶€ì—ì„œ 
+// mtd::moduleByName ì„ í†µí•´ íƒ€ì…ì„ ì°¾ì„ ê²½ìš°
+// ì—ëŸ¬ë¥¼ ë°œìƒí•œë‹¤.
 # define MTD_INTERNAL_TYPE_MASK            (0x20000000)
 # define MTD_INTERNAL_TYPE_FALSE           (0x00000000)
 # define MTD_INTERNAL_TYPE_TRUE            (0x20000000)
 
 // PROJ-1364
-// ¼ıÀÚÇü °è¿­°£ ºñ±³½Ã,
-// mtd::comparisonNumberType  matrix¿¡ ÀÇÇØ
-// ºñ±³±âÁØ data typeÀ» ¾ò°Ô µÇ´Âµ¥,
-// ÀÌ ¹è¿­ÀÎÀÚ¸¦ ¾ò±â À§ÇØ
-// MTD_NUMBER_GROUP_TYPE_XXXÀ» ¾Æ·¡ °ª¸¸Å­ shift
-// "ÁÖÀÇ"
-// MTD_NUMBER_GROUP_TYPE_MASKÀÇ À§Ä¡°¡ º¯°æµÇ¸é,
-// ÀÌ define »ó¼öµµ ±×¿¡ ¸Â°Ô º¯°æµÇ¾î¾ß ÇÔ.
+// ìˆ«ìí˜• ê³„ì—´ê°„ ë¹„êµì‹œ,
+// mtd::comparisonNumberType  matrixì— ì˜í•´
+// ë¹„êµê¸°ì¤€ data typeì„ ì–»ê²Œ ë˜ëŠ”ë°,
+// ì´ ë°°ì—´ì¸ìë¥¼ ì–»ê¸° ìœ„í•´
+// MTD_NUMBER_GROUP_TYPE_XXXì„ ì•„ë˜ ê°’ë§Œí¼ shift
+// "ì£¼ì˜"
+// MTD_NUMBER_GROUP_TYPE_MASKì˜ ìœ„ì¹˜ê°€ ë³€ê²½ë˜ë©´,
+// ì´ define ìƒìˆ˜ë„ ê·¸ì— ë§ê²Œ ë³€ê²½ë˜ì–´ì•¼ í•¨.
 # define MTD_NUMBER_GROUP_TYPE_SHIFT       (12)
 
 /* aFlag VON mtdFunctions                            */
@@ -860,55 +860,55 @@
 # define MTD_OFFSET_USE                    (0x00000000)
 
 /* PROJ-2433 Direct Key Index
- * ºñ±³ÇÒ direct key°¡ partial direct keyÀÎÁö ¿©ºÎ 
+ * ë¹„êµí•  direct keyê°€ partial direct keyì¸ì§€ ì—¬ë¶€ 
  * aFlag VON mtdFunctions */
 # define MTD_PARTIAL_KEY_MASK              (0x00000002)
 # define MTD_PARTIAL_KEY_ON                (0x00000002)
 # define MTD_PARTIAL_KEY_OFF               (0x00000000)
 
 /* mtcCallBack.flag                                  */
-// Child Node¿¡ ´ëÇÑ Estimation ¿©ºÎ¸¦ Ç¥ÇöÇÔ
-// ENABLEÀÏ °æ¿ì, Child¿¡ ´ëÇÑ Estimate¸¦ ¼öÇàÇÏ¸ç,
-// DISABLEÀÏ °æ¿ì, ÀÚ½Å¿¡ ´ëÇÑ Estimate¸¸À» ¼öÇàÇÑ´Ù.
+// Child Nodeì— ëŒ€í•œ Estimation ì—¬ë¶€ë¥¼ í‘œí˜„í•¨
+// ENABLEì¼ ê²½ìš°, Childì— ëŒ€í•œ Estimateë¥¼ ìˆ˜í–‰í•˜ë©°,
+// DISABLEì¼ ê²½ìš°, ìì‹ ì— ëŒ€í•œ Estimateë§Œì„ ìˆ˜í–‰í•œë‹¤.
 # define MTC_ESTIMATE_ARGUMENTS_MASK       (0x00000001)
 # define MTC_ESTIMATE_ARGUMENTS_DISABLE    (0x00000001)
 # define MTC_ESTIMATE_ARGUMENTS_ENABLE     (0x00000000)
 
 /* mtcCallBack.flag                                  */
 // PROJ-2527 WITHIN GROUP AGGR
-// initialize½ÃÀÇ ¿©ºÎ
+// initializeì‹œì˜ ì—¬ë¶€
 # define MTC_ESTIMATE_INITIALIZE_MASK      (0x00000002)
 # define MTC_ESTIMATE_INITIALIZE_TRUE      (0x00000002)
 # define MTC_ESTIMATE_INITIALIZE_FALSE     (0x00000000)
 
-// Selectivity °è»ê ½Ã Á¤È®ÇÑ °è»êÀÌ ºÒ°¡´ÉÇÒ °æ¿ì¿¡
-// ¼±ÅÃµÇ´Â °ª
+// Selectivity ê³„ì‚° ì‹œ ì •í™•í•œ ê³„ì‚°ì´ ë¶ˆê°€ëŠ¥í•  ê²½ìš°ì—
+// ì„ íƒë˜ëŠ” ê°’
 # define MTD_DEFAULT_SELECTIVITY           (   1.0/3.0)
 
 // PROJ-1484
-// Selectivity °è»ê ½Ã 10Áø¼ö·Î º¯È¯ °¡´ÉÇÑ ¹®ÀÚ¿­ÀÇ ÃÖ´ë ±æÀÌ
+// Selectivity ê³„ì‚° ì‹œ 10ì§„ìˆ˜ë¡œ ë³€í™˜ ê°€ëŠ¥í•œ ë¬¸ìì—´ì˜ ìµœëŒ€ ê¸¸ì´
 # define MTD_CHAR_DIGIT_MAX                (15)
 
 //====================================================================
-// mtkRangeCallBack.info Á¤ÀÇ
+// mtkRangeCallBack.info ì •ì˜
 //====================================================================
 
-// Ascending/Descending Á¤º¸
+// Ascending/Descending ì •ë³´
 #define MTK_COMPARE_DIRECTION_MASK  (0x00000001)
 #define MTK_COMPARE_DIRECTION_ASC   (0x00000000)
 #define MTK_COMPARE_DIRECTION_DESC  (0x00000001)
 
-// µ¿ÀÏ °è¿­³» ¼­·Î ´Ù¸¥ data type°£ÀÇ ºñ±³ ÇÔ¼ö ¿©ºÎ 
+// ë™ì¼ ê³„ì—´ë‚´ ì„œë¡œ ë‹¤ë¥¸ data typeê°„ì˜ ë¹„êµ í•¨ìˆ˜ ì—¬ë¶€ 
 #define MTK_COMPARE_SAMEGROUP_MASK  (0x00000002)
 #define MTK_COMPARE_SAMEGROUP_FALSE (0x00000000)
 #define MTK_COMPARE_SAMEGROUP_TRUE  (0x00000002)
 
 //====================================================================
-// mtl °ü·Ã Á¤ÀÇ
+// mtl ê´€ë ¨ ì •ì˜
 //====================================================================
 
 // fix BUG-13830
-// °¢ languageÀÇ ÇÑ ¹®ÀÚÀÇ ÃÖ´ë precision
+// ê° languageì˜ í•œ ë¬¸ìì˜ ìµœëŒ€ precision
 # define MTL_UTF8_PRECISION      3
 # define MTL_UTF16_PRECISION     2  // PROJ-1579 NCHAR
 # define MTL_ASCII_PRECISION     1
@@ -917,7 +917,7 @@
 # define MTL_SHIFTJIS_PRECISION  2
 # define MTL_MS932_PRECISION     2 /* PROJ-2590 support CP932 character set */
 # define MTL_GB231280_PRECISION  2
-/* PROJ-2414 [±â´É¼º] GBK, CP936 character set Ãß°¡ */
+/* PROJ-2414 [ê¸°ëŠ¥ì„±] GBK, CP936 character set ì¶”ê°€ */
 # define MTL_MS936_PRECISION     2
 # define MTL_BIG5_PRECISION      2
 # define MTL_EUCJP_PRECISION     3
@@ -930,7 +930,7 @@
         ? MTL_UTF8_PRECISION : MTL_UTF16_PRECISION      \
     )
 
-// PROJ-1361 : language type¿¡ µû¸¥ id
+// PROJ-1361 : language typeì— ë”°ë¥¸ id
 // mtlModule.id
 # define MTL_DEFAULT          0
 # define MTL_UTF8_ID      10000
@@ -943,7 +943,7 @@
 # define MTL_EUCJP_ID     41000
 # define MTL_GB231280_ID  50000
 # define MTL_BIG5_ID      51000
-/* PROJ-2414 [±â´É¼º] GBK, CP936 character set Ãß°¡ */
+/* PROJ-2414 [ê¸°ëŠ¥ì„±] GBK, CP936 character set ì¶”ê°€ */
 # define MTL_MS936_ID     52000
 //PROJ-2002 Column Security
 # define MTC_POLICY_NAME_SIZE  (16-1)
@@ -988,10 +988,10 @@ typedef struct mtcEncryptInfo   mtcEncryptInfo;
 
 typedef enum
 {
-    NC_VALID = 0,         /* Á¤»óÀûÀÎ 1±ÛÀÚ */
-    NC_INVALID,           /* firstbyte°¡ ÄÚµå¿¡ ¾È¸Â´Â 1±ÛÀÚ */
-    NC_MB_INVALID,        /* secondbyteÀÌÈÄ°¡ ÄÚµå¿¡ ¾È¸Â´Â 1±ÛÀÚ */
-    NC_MB_INCOMPLETED     /* ¸ÖÆ¼¹ÙÀÌÆ® ±ÛÀÚÀÎµ¥ byte°¡ ¸ğÀÚ¸¥ 0±ÛÀÚ */
+    NC_VALID = 0,         /* ì •ìƒì ì¸ 1ê¸€ì */
+    NC_INVALID,           /* firstbyteê°€ ì½”ë“œì— ì•ˆë§ëŠ” 1ê¸€ì */
+    NC_MB_INVALID,        /* secondbyteì´í›„ê°€ ì½”ë“œì— ì•ˆë§ëŠ” 1ê¸€ì */
+    NC_MB_INCOMPLETED     /* ë©€í‹°ë°”ì´íŠ¸ ê¸€ìì¸ë° byteê°€ ëª¨ìë¥¸ 0ê¸€ì */
 } mtlNCRet;
 
 #define MTC_CURSOR_PTR  void*
@@ -1023,7 +1023,7 @@ typedef IDE_RC (*mtcGetOpenedCursorFunc)( mtcTemplate     * aTemplate,
 typedef IDE_RC (*mtcAddOpenedLobCursorFunc)( mtcTemplate   * aTemplate,
                                              smLobLocator    aLocator );
 
-/* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø */
+/* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ì… ì§€ì› */
 typedef idBool (*mtcIsBaseTable)( mtcTemplate * aTemplate,
                                   UShort        aTable );
 
@@ -1134,26 +1134,26 @@ typedef IDE_RC (*mtdMakeColumnInfo) ( void * aStmt,
                                       UInt   aIdx );
 
 // BUG-28934
-// key range¸¦ AND mergeÇÏ´Â ÇÔ¼ö
+// key rangeë¥¼ AND mergeí•˜ëŠ” í•¨ìˆ˜
 typedef IDE_RC (*mtcMergeAndRange)( smiRange* aMerged,
                                     smiRange* aRange1,
                                     smiRange* aRange2 );
 
-// key range¸¦ OR mergeÇÏ´Â ÇÔ¼ö
+// key rangeë¥¼ OR mergeí•˜ëŠ” í•¨ìˆ˜
 typedef IDE_RC (*mtcMergeOrRangeList)( smiRange  * aMerged,
                                        smiRange ** aRangeList,
                                        SInt        aRangeCount );
 
 //-----------------------------------------------------------------------
-// Data TypeÀÇ Selectivity ÃßÃâ ÇÔ¼ö
-// Selectivity °è»ê½Ä
+// Data Typeì˜ Selectivity ì¶”ì¶œ í•¨ìˆ˜
+// Selectivity ê³„ì‚°ì‹
 //     Selectivity = (aValueMax - aValueMin) / (aColumnMax - aColumnMin)
 //-----------------------------------------------------------------------
 
-typedef SDouble (*mtdSelectivityFunc) ( void     * aColumnMax,  // ColumnÀÇ MAX°ª
-                                        void     * aColumnMin,  // ColumnÀÇ MIN°ª
-                                        void     * aValueMax,   // MAX Value °ª
-                                        void     * aValueMin,   // MIN Value °ª
+typedef SDouble (*mtdSelectivityFunc) ( void     * aColumnMax,  // Columnì˜ MAXê°’
+                                        void     * aColumnMin,  // Columnì˜ MINê°’
+                                        void     * aValueMax,   // MAX Value ê°’
+                                        void     * aValueMin,   // MIN Value ê°’
                                         SDouble    aBoundFactor,
                                         SDouble    aTotalRecordCnt );
 
@@ -1163,18 +1163,18 @@ typedef IDE_RC (*mtfFinalizeFunc)( void );
 
 /***********************************************************************
  * PROJ-1705
- * µğ½ºÅ©Å×ÀÌºíÄÃ·³ÀÇ µ¥ÀÌÅ¸¸¦
- * qp ·¹ÄÚµåÃ³¸®¿µ¿ªÀÇ ÇØ´ç ÄÃ·³À§Ä¡¿¡ º¹»ç
+ * ë””ìŠ¤í¬í…Œì´ë¸”ì»¬ëŸ¼ì˜ ë°ì´íƒ€ë¥¼
+ * qp ë ˆì½”ë“œì²˜ë¦¬ì˜ì—­ì˜ í•´ë‹¹ ì»¬ëŸ¼ìœ„ì¹˜ì— ë³µì‚¬
  *
- *     aColumnSize : Å×ÀÌºí»ı¼º½Ã Á¤ÀÇµÈ column size
- *     aDestValue : ÄÃ·³ÀÇ value°¡ º¹»çµÇ¾î¾ß ÇÒ ¸Ş¸ğ¸® ÁÖ¼Ò
- *                  qp : mtcTuple.row¿¡ ÇÒ´çµÈ
- *                       µğ½ºÅ©·¹ÄÚµå¸¦ À§ÇÑ ¸Ş¸ğ¸®Áß ÇØ´ç ÄÃ·³ÀÇ À§Ä¡
+ *     aColumnSize : í…Œì´ë¸”ìƒì„±ì‹œ ì •ì˜ëœ column size
+ *     aDestValue : ì»¬ëŸ¼ì˜ valueê°€ ë³µì‚¬ë˜ì–´ì•¼ í•  ë©”ëª¨ë¦¬ ì£¼ì†Œ
+ *                  qp : mtcTuple.rowì— í• ë‹¹ëœ
+ *                       ë””ìŠ¤í¬ë ˆì½”ë“œë¥¼ ìœ„í•œ ë©”ëª¨ë¦¬ì¤‘ í•´ë‹¹ ì»¬ëŸ¼ì˜ ìœ„ì¹˜
  *                       mtcTuple.row + column.offset    
- *     aDestValueOffset: ÄÃ·³ÀÇ value°¡ º¹»çµÇ¾î¾ß ÇÒ ¸Ş¸ğ¸®ÁÖ¼Ò·ÎºÎÅÍÀÇ offset
- *                       aDestValueÀÇ aOffset 
- *     aLength    : sm¿¡ ÀúÀåµÈ ·¹ÄÚµåÀÇ value·Î º¹»çµÉ ÄÃ·³ valueÀÇ length
- *     aValue     : sm¿¡ ÀúÀåµÈ ·¹ÄÚµåÀÇ value·Î º¹»çµÉ ÄÃ·³ value 
+ *     aDestValueOffset: ì»¬ëŸ¼ì˜ valueê°€ ë³µì‚¬ë˜ì–´ì•¼ í•  ë©”ëª¨ë¦¬ì£¼ì†Œë¡œë¶€í„°ì˜ offset
+ *                       aDestValueì˜ aOffset 
+ *     aLength    : smì— ì €ì¥ëœ ë ˆì½”ë“œì˜ valueë¡œ ë³µì‚¬ë  ì»¬ëŸ¼ valueì˜ length
+ *     aValue     : smì— ì €ì¥ëœ ë ˆì½”ë“œì˜ valueë¡œ ë³µì‚¬ë  ì»¬ëŸ¼ value 
  **********************************************************************/
 
 typedef IDE_RC (*mtdStoredValue2MtdValueFunc) ( UInt              aColumnSize,
@@ -1185,47 +1185,47 @@ typedef IDE_RC (*mtdStoredValue2MtdValueFunc) ( UInt              aColumnSize,
 
 /***********************************************************************
  * PROJ-1705
- * °¢ µ¥ÀÌÅ¸Å¸ÀÔÀÇ null ValueÀÇ Å©±â ¹İÈ¯
- * replication¿¡¼­ »ç¿ë.
+ * ê° ë°ì´íƒ€íƒ€ì…ì˜ null Valueì˜ í¬ê¸° ë°˜í™˜
+ * replicationì—ì„œ ì‚¬ìš©.
  **********************************************************************/
 
 typedef UInt (*mtdNullValueSizeFunc) ();
 
 /***********************************************************************
  * PROJ-1705
- * length¸¦ °¡Áö´Â µ¥ÀÌÅ¸Å¸ÀÔÀÇ length Á¤º¸¸¦ ÀúÀåÇÏ´Â º¯¼öÀÇ Å©±â ¹İÈ¯
- * ¿¹) mtdCharType( UShort length; UChar value[1] ) ¿¡¼­
- *      lengthÅ¸ÀÔÀÎ UShortÀÇ Å©±â¸¦ ¹İÈ¯
- *  integer¿Í °°Àº °íÁ¤±æÀÌ µ¥ÀÌÅ¸Å¸ÀÔÀº 0 ¹İÈ¯
+ * lengthë¥¼ ê°€ì§€ëŠ” ë°ì´íƒ€íƒ€ì…ì˜ length ì •ë³´ë¥¼ ì €ì¥í•˜ëŠ” ë³€ìˆ˜ì˜ í¬ê¸° ë°˜í™˜
+ * ì˜ˆ) mtdCharType( UShort length; UChar value[1] ) ì—ì„œ
+ *      lengthíƒ€ì…ì¸ UShortì˜ í¬ê¸°ë¥¼ ë°˜í™˜
+ *  integerì™€ ê°™ì€ ê³ ì •ê¸¸ì´ ë°ì´íƒ€íƒ€ì…ì€ 0 ë°˜í™˜
  **********************************************************************/
 typedef UInt (*mtdHeaderSizeFunc) ();
 
 
 /***********************************************************************
 * PROJ-2399 row tmaplate
-* sm¿¡ ÀúÀåµÇ´Â µ¥ÀÌÅÍÀÇ Å©±â¸¦ ¹İÈ¯ÇÑ´Ù.( mtheader Å©±â¸¦ »«´Ù.)
-* varchar¿Í °°Àº variable Å¸ÀÔÀÇ µ¥ÀÌÅÍ Å¸ÀÔÀº 0À» ¹İÈ¯
+* smì— ì €ì¥ë˜ëŠ” ë°ì´í„°ì˜ í¬ê¸°ë¥¼ ë°˜í™˜í•œë‹¤.( mtheader í¬ê¸°ë¥¼ ëº€ë‹¤.)
+* varcharì™€ ê°™ì€ variable íƒ€ì…ì˜ ë°ì´í„° íƒ€ì…ì€ 0ì„ ë°˜í™˜
  **********************************************************************/
 typedef UInt (*mtdStoreSizeFunc) ( const smiColumn * aColumn );
 
 //----------------------------------------------------------------
 // PROJ-1358
-// Estimation °úÁ¤¿¡¼­ SEQUENCE, SYSDATE, LEVEL, Pre-Processing,
-// Conversion µîÀ» À§ÇÏ¿© Internal TupleÀ» ÇÒ´ç¹ŞÀ» ¼ö ÀÖ´Ù.
-// ÀÌ ¶§ Internal Tuple SetÀÌ È®ÀåµÇ¸é, ÀÔ·Â ÀÎÀÚ·Î »ç¿ëµÇ´Â
-// mtcTuple * ´Â À¯È¿ÇÏÁö ¾Ê°Ô µÈ´Ù.
-// Áï, EstimatationÀÇ ÀÎÀÚ´Â Tuple SetÀÇ È®ÀåÀ» °í·ÁÇÏ¿©
-// mtcTemplate * ¸¦ ÀÎÀÚ·Î ¹Ş¾Æ mtcTemplate->rows ¸¦ ÀÌ¿ëÇÏ¿©¾ß ÇÑ´Ù.
-// Âü°í) mtfCalculateFunc, mtfEstimateRangeFunc µîÀº
-//       Internal Tuple SetÀÇ È®ÀåÀ¸·Î ÀÎÇÑ ¹®Á¦´Â ¹ß»ıÇÏÁö ¾ÊÀ¸³ª,
-//       mtcTuple* ¸¦ ÀÎÀÚ·Î ÃëÇÏ´Â ÇÔ¼ö¸¦ ¸ğµÎ Á¦°ÅÇÏ¿©
-//       ¹®Á¦¸¦ »çÀü¿¡ ¹æÁöÇÑ´Ù.
+// Estimation ê³¼ì •ì—ì„œ SEQUENCE, SYSDATE, LEVEL, Pre-Processing,
+// Conversion ë“±ì„ ìœ„í•˜ì—¬ Internal Tupleì„ í• ë‹¹ë°›ì„ ìˆ˜ ìˆë‹¤.
+// ì´ ë•Œ Internal Tuple Setì´ í™•ì¥ë˜ë©´, ì…ë ¥ ì¸ìë¡œ ì‚¬ìš©ë˜ëŠ”
+// mtcTuple * ëŠ” ìœ íš¨í•˜ì§€ ì•Šê²Œ ëœë‹¤.
+// ì¦‰, Estimatationì˜ ì¸ìëŠ” Tuple Setì˜ í™•ì¥ì„ ê³ ë ¤í•˜ì—¬
+// mtcTemplate * ë¥¼ ì¸ìë¡œ ë°›ì•„ mtcTemplate->rows ë¥¼ ì´ìš©í•˜ì—¬ì•¼ í•œë‹¤.
+// ì°¸ê³ ) mtfCalculateFunc, mtfEstimateRangeFunc ë“±ì€
+//       Internal Tuple Setì˜ í™•ì¥ìœ¼ë¡œ ì¸í•œ ë¬¸ì œëŠ” ë°œìƒí•˜ì§€ ì•Šìœ¼ë‚˜,
+//       mtcTuple* ë¥¼ ì¸ìë¡œ ì·¨í•˜ëŠ” í•¨ìˆ˜ë¥¼ ëª¨ë‘ ì œê±°í•˜ì—¬
+//       ë¬¸ì œë¥¼ ì‚¬ì „ì— ë°©ì§€í•œë‹¤.
 //----------------------------------------------------------------
 
 //----------------------------------------------------------------
 // PROJ-1358
-// ¾ÆÁÖ ºÒ°¡ÇÇÇÑ °æ¿ì°¡ ¾Æ´Ï¶ó¸é, mtcTuple * ´Â ÇÔ¼ö³»ÀÇ
-// Áö¿ªº¯¼ö·Îµµ »ç¿ëÇÏÁö ¸»¾Æ¾ß ÇÑ´Ù.
+// ì•„ì£¼ ë¶ˆê°€í”¼í•œ ê²½ìš°ê°€ ì•„ë‹ˆë¼ë©´, mtcTuple * ëŠ” í•¨ìˆ˜ë‚´ì˜
+// ì§€ì—­ë³€ìˆ˜ë¡œë„ ì‚¬ìš©í•˜ì§€ ë§ì•„ì•¼ í•œë‹¤.
 //----------------------------------------------------------------
 
 typedef IDE_RC (*mtfEstimateFunc)( mtcNode*     aNode,
@@ -1236,10 +1236,10 @@ typedef IDE_RC (*mtfEstimateFunc)( mtcNode*     aNode,
 
 //----------------------------------------------------------------
 // PROJ-1358
-// Âü°í) mtfCalculateFunc, mtfEstimateRangeFunc µîÀº
-//       Internal Tuple SetÀÇ È®ÀåÀ¸·Î ÀÎÇÑ ¹®Á¦´Â ¹ß»ıÇÏÁö ¾ÊÀ¸³ª,
-//       mtcTuple* ¸¦ ÀÎÀÚ·Î ÃëÇÏ´Â ÇÔ¼ö¸¦ ¸ğµÎ Á¦°ÅÇÏ¿©
-//       ¹®Á¦¸¦ »çÀü¿¡ ¹æÁöÇÑ´Ù.
+// ì°¸ê³ ) mtfCalculateFunc, mtfEstimateRangeFunc ë“±ì€
+//       Internal Tuple Setì˜ í™•ì¥ìœ¼ë¡œ ì¸í•œ ë¬¸ì œëŠ” ë°œìƒí•˜ì§€ ì•Šìœ¼ë‚˜,
+//       mtcTuple* ë¥¼ ì¸ìë¡œ ì·¨í•˜ëŠ” í•¨ìˆ˜ë¥¼ ëª¨ë‘ ì œê±°í•˜ì—¬
+//       ë¬¸ì œë¥¼ ì‚¬ì „ì— ë°©ì§€í•œë‹¤.
 //----------------------------------------------------------------
 
 typedef IDE_RC (*mtfCalculateFunc)( mtcNode*     aNode,
@@ -1255,10 +1255,10 @@ typedef IDE_RC (*mtfEstimateRangeFunc)( mtcNode*      aNode,
 
 //----------------------------------------------------------------
 // PROJ-1358
-// Âü°í) mtfCalculateFunc, mtfEstimateRangeFunc µîÀº
-//       Internal Tuple SetÀÇ È®ÀåÀ¸·Î ÀÎÇÑ ¹®Á¦´Â ¹ß»ıÇÏÁö ¾ÊÀ¸³ª,
-//       mtcTuple* ¸¦ ÀÎÀÚ·Î ÃëÇÏ´Â ÇÔ¼ö¸¦ ¸ğµÎ Á¦°ÅÇÏ¿©
-//       ¹®Á¦¸¦ »çÀü¿¡ ¹æÁöÇÑ´Ù.
+// ì°¸ê³ ) mtfCalculateFunc, mtfEstimateRangeFunc ë“±ì€
+//       Internal Tuple Setì˜ í™•ì¥ìœ¼ë¡œ ì¸í•œ ë¬¸ì œëŠ” ë°œìƒí•˜ì§€ ì•Šìœ¼ë‚˜,
+//       mtcTuple* ë¥¼ ì¸ìë¡œ ì·¨í•˜ëŠ” í•¨ìˆ˜ë¥¼ ëª¨ë‘ ì œê±°í•˜ì—¬
+//       ë¬¸ì œë¥¼ ì‚¬ì „ì— ë°©ì§€í•œë‹¤.
 //----------------------------------------------------------------
 
 typedef IDE_RC (*mtfExtractRangeFunc)( mtcNode*       aNode,
@@ -1320,13 +1320,13 @@ typedef idvSQL* (*mtcGetStatistics)( mtcTemplate * aTemplate );
 
 //----------------------------------------------------------------
 // PROJ-2002 Column Security
-// mtcEncrypt        : ¾ÏÈ£È­ ÇÔ¼ö
-// mtcDecrypt        : º¹È£È­ ÇÔ¼ö
-// mtcGetDecryptInfo : º¹È£È­½Ã ÇÊ¿äÇÑ Á¤º¸¸¦ ¾ò´Â ÇÔ¼ö
-// mtcEncodeECC      : ECC(Encrypted Comparison Code) encode ÇÔ¼ö
+// mtcEncrypt        : ì•”í˜¸í™” í•¨ìˆ˜
+// mtcDecrypt        : ë³µí˜¸í™” í•¨ìˆ˜
+// mtcGetDecryptInfo : ë³µí˜¸í™”ì‹œ í•„ìš”í•œ ì •ë³´ë¥¼ ì–»ëŠ” í•¨ìˆ˜
+// mtcEncodeECC      : ECC(Encrypted Comparison Code) encode í•¨ìˆ˜
 //----------------------------------------------------------------
 
-// ¾Ïº¹È£È­½Ã º¸¾È¸ğµâ¿¡ ÇÊ¿äÇÑ Á¤º¸¸¦ Àü´ŞÇÏ±â À§ÇÑ ÀÚ·á±¸Á¶
+// ì•”ë³µí˜¸í™”ì‹œ ë³´ì•ˆëª¨ë“ˆì— í•„ìš”í•œ ì •ë³´ë¥¼ ì „ë‹¬í•˜ê¸° ìœ„í•œ ìë£Œêµ¬ì¡°
 struct mtcEncryptInfo
 {
     // session info
@@ -1343,14 +1343,14 @@ struct mtcEncryptInfo
     SChar  * columnName;
 };
 
-// ¾Ïº¹È£È­½Ã º¸¾È¸ğµâ¿¡ ÇÊ¿äÇÑ Á¤º¸¸¦ Àü´ŞÇÏ±â À§ÇÑ ÀÚ·á±¸Á¶
+// ì•”ë³µí˜¸í™”ì‹œ ë³´ì•ˆëª¨ë“ˆì— í•„ìš”í•œ ì •ë³´ë¥¼ ì „ë‹¬í•˜ê¸° ìœ„í•œ ìë£Œêµ¬ì¡°
 struct mtcECCInfo
 {
     // session info
     UInt     sessionID;
 };
 
-// Echar, Evarchar canonize¿¡ »ç¿ëµÊ
+// Echar, Evarchar canonizeì— ì‚¬ìš©ë¨
 typedef IDE_RC (*mtcEncrypt) ( mtcEncryptInfo  * aEncryptInfo,
                                SChar           * aPolicyName,
                                UChar           * aPlain,
@@ -1358,7 +1358,7 @@ typedef IDE_RC (*mtcEncrypt) ( mtcEncryptInfo  * aEncryptInfo,
                                UChar           * aCipher,
                                UShort          * aCipherSize );
 
-// Echar->Char, Evarchar->Varchar conversion¿¡ »ç¿ëµÊ
+// Echar->Char, Evarchar->Varchar conversionì— ì‚¬ìš©ë¨
 typedef IDE_RC (*mtcDecrypt) ( mtcEncryptInfo  * aEncryptInfo,
                                SChar           * aPolicyName,
                                UChar           * aCipher,
@@ -1366,24 +1366,24 @@ typedef IDE_RC (*mtcDecrypt) ( mtcEncryptInfo  * aEncryptInfo,
                                UChar           * aPlain,
                                UShort          * aPlainSize );
 
-// Char->Echar, Varchar->Evarchar conversion¿¡ »ç¿ëµÊ
+// Char->Echar, Varchar->Evarchar conversionì— ì‚¬ìš©ë¨
 typedef IDE_RC (*mtcEncodeECC) ( mtcECCInfo   * aInfo,
                                  UChar        * aPlain,
                                  UShort         aPlainSize,
                                  UChar        * aCipher,
                                  UShort       * aCipherSize );
 
-// decrypt¸¦ À§ÇØ decryptInfo¸¦ »ı¼ºÇÔ
+// decryptë¥¼ ìœ„í•´ decryptInfoë¥¼ ìƒì„±í•¨
 typedef IDE_RC (*mtcGetDecryptInfo) ( mtcTemplate     * aTemplate,
                                       UShort            aTable,
                                       UShort            aColumn,
                                       mtcEncryptInfo  * aDecryptInfo );
 
-// ECC¸¦ À§ÇØ ECCInfo¸¦ »ı¼ºÇÔ
+// ECCë¥¼ ìœ„í•´ ECCInfoë¥¼ ìƒì„±í•¨
 typedef IDE_RC (*mtcGetECCInfo) ( mtcTemplate * aTemplate,
                                   mtcECCInfo  * aECCInfo );
 
-// Echar, EvarcharÀÇ initializeColumn½Ã »ç¿ëµÊ
+// Echar, Evarcharì˜ initializeColumnì‹œ ì‚¬ìš©ë¨
 typedef IDE_RC (*mtcGetECCSize) ( UInt    aSize,
                                   UInt  * aECCSize );
 
@@ -1409,21 +1409,21 @@ struct mtcExtCallback
     mtcGetCompressionColumnFunc getCompressionColumn;
 };
 
-// PROJ-1361 : language¿¡ µû¶ó ´ÙÀ½ ¹®ÀÚ·Î ÀÌµ¿
-// PROJ-1755 : nextChar ÇÔ¼ö ÃÖÀûÈ­
+// PROJ-1361 : languageì— ë”°ë¼ ë‹¤ìŒ ë¬¸ìë¡œ ì´ë™
+// PROJ-1755 : nextChar í•¨ìˆ˜ ìµœì í™”
 // PROJ-1579,PROJ-1681, BUG-21117
-// Á¤È®ÇÑ ¹®ÀÚ¿­ Ã¼Å©¸¦ À§ÇØ fence¸¦ nextchar¾È¿¡¼­ Ã¼Å©ÇØ¾ß ÇÔ.
+// ì •í™•í•œ ë¬¸ìì—´ ì²´í¬ë¥¼ ìœ„í•´ fenceë¥¼ nextcharì•ˆì—ì„œ ì²´í¬í•´ì•¼ í•¨.
 typedef mtlNCRet (*mtlNextCharFunc)( UChar ** aSource, UChar * aFence );
 
-// PROJ-1361 : language¿¡ µû¶ó ±×¿¡ ¸Â´Â chr() ÇÔ¼öÀÇ ¼öÇà ¸ğµâ
+// PROJ-1361 : languageì— ë”°ë¼ ê·¸ì— ë§ëŠ” chr() í•¨ìˆ˜ì˜ ìˆ˜í–‰ ëª¨ë“ˆ
 typedef IDE_RC (*mtlChrFunc)( UChar      * aResult,
                               const SInt   aSource );
 
-// PROJ-1361 : mtlExtractFuncSet ¶Ç´Â mtlNextDayFuncSet¿¡¼­ »ç¿ë
+// PROJ-1361 : mtlExtractFuncSet ë˜ëŠ” mtlNextDayFuncSetì—ì„œ ì‚¬ìš©
 typedef SInt (*mtlMatchFunc)( UChar* aSource,
                               UInt   aSourceLen );
 
-// BUG-13830 ¹®ÀÚ°¹¼ö¿¡ ´ëÇÑ languageº° ÃÖ´ë precision °è»ê
+// BUG-13830 ë¬¸ìê°¯ìˆ˜ì— ëŒ€í•œ languageë³„ ìµœëŒ€ precision ê³„ì‚°
 typedef SInt (*mtlMaxPrecisionFunc)( SInt aLength );
 
 /* PROJ-2208 : Multi Currency */
@@ -1435,29 +1435,29 @@ struct mtcId {
     UInt languageId;
 };
 
-// Estimate À» À§ÇÑ ºÎ°¡ Á¤º¸
+// Estimate ì„ ìœ„í•œ ë¶€ê°€ ì •ë³´
 struct mtcCallBack {
     void*                       info;     // (mtcCallBackInfo or qtcCallBackInfo)
 
-    UInt                        flag;     // Child¿¡ ´ëÇÑ estimate ¿©ºÎ
-    mtfAllocFunc                alloc;    // Memory ÇÒ´ç ÇÔ¼ö
+    UInt                        flag;     // Childì— ëŒ€í•œ estimate ì—¬ë¶€
+    mtfAllocFunc                alloc;    // Memory í• ë‹¹ í•¨ìˆ˜
 
     //----------------------------------------------------------
-    // [ConversionÀ» Ã³¸®ÇÏ±â À§ÇÑ ÇÔ¼ö Æ÷ÀÎÅÍ]
+    // [Conversionì„ ì²˜ë¦¬í•˜ê¸° ìœ„í•œ í•¨ìˆ˜ í¬ì¸í„°]
     //
     // initConversionNode
-    //    : Conversion NodeÀÇ »ı¼º ¹× ÃÊ±âÈ­
-    //    : Estimate ½ÃÁ¡¿¡ È£Ãâ
+    //    : Conversion Nodeì˜ ìƒì„± ë° ì´ˆê¸°í™”
+    //    : Estimate ì‹œì ì— í˜¸ì¶œ
     //----------------------------------------------------------
 
     mtfInitConversionNodeFunc   initConversionNode;
 };
 
-// mtcCallBack.info·Î »ç¿ëµÇ¸ç, ÇöÀç´Â ¼­¹ö ±¸µ¿½Ã¿¡¸¸ »ç¿ëµÈ´Ù.
+// mtcCallBack.infoë¡œ ì‚¬ìš©ë˜ë©°, í˜„ì¬ëŠ” ì„œë²„ êµ¬ë™ì‹œì—ë§Œ ì‚¬ìš©ëœë‹¤.
 struct mtcCallBackInfo {
-    iduMemory* memory;            // »ç¿ëÇÏ´Â Memory Mgr
-    UShort     columnCount;       // ÇöÀç ColumnÀÇ °³¼ö
-    UShort     columnMaximum;     // ColumnÀÇ ÃÖ´ë °³¼ö
+    iduMemory* memory;            // ì‚¬ìš©í•˜ëŠ” Memory Mgr
+    UShort     columnCount;       // í˜„ì¬ Columnì˜ ê°œìˆ˜
+    UShort     columnMaximum;     // Columnì˜ ìµœëŒ€ ê°œìˆ˜
 };
 
 
@@ -1469,14 +1469,14 @@ struct mtcColumn {
     SInt              scale;
 
     // PROJ-2002 Column Security
-    SInt              encPrecision;                      // ¾ÏÈ£ µ¥ÀÌÅ¸ Å¸ÀÔÀÇ precision
-    SChar             policy[MTC_POLICY_NAME_SIZE+1];    // º¸¾È Á¤Ã¥ÀÇ ÀÌ¸§ (Null Terminated String)
+    SInt              encPrecision;                      // ì•”í˜¸ ë°ì´íƒ€ íƒ€ì…ì˜ precision
+    SChar             policy[MTC_POLICY_NAME_SIZE+1];    // ë³´ì•ˆ ì •ì±…ì˜ ì´ë¦„ (Null Terminated String)
     
     const mtdModule * module;
     const mtlModule * language; // PROJ-1361 : add language module
 };
 
-// mtcColumn¿¡¼­ ÇÊ¿äÇÑ ºÎºĞ¸¸ º¹»çÇÑ´Ù.
+// mtcColumnì—ì„œ í•„ìš”í•œ ë¶€ë¶„ë§Œ ë³µì‚¬í•œë‹¤.
 #define MTC_COPY_COLUMN_DESC(_dst_, _src_)               \
 {                                                        \
     (_dst_)->column.id       = (_src_)->column.id;       \
@@ -1503,23 +1503,23 @@ struct mtcColumn {
     (_dst_)->language        = (_src_)->language;        \
 }
 
-// ¿¬»êÀÇ ¼öÇàÀ» À§ÇÑ °¢Á¾ ÇÔ¼ö Á¤º¸
+// ì—°ì‚°ì˜ ìˆ˜í–‰ì„ ìœ„í•œ ê°ì¢… í•¨ìˆ˜ ì •ë³´
 struct mtcExecute {
-    mtfCalculateFunc     initialize;    // Aggregation ÃÊ±âÈ­ ÇÔ¼ö
-    mtfCalculateFunc     aggregate;     // Aggregation ¼öÇà ÇÔ¼ö
-    mtfCalculateFunc     merge;         // Aggregation ÀÓ½Ã°ªµéÀ» ´©Àû½ÃÅ°´Â ÇÔ¼ö
-    mtfCalculateFunc     finalize;      // Aggregation Á¾·á ÇÔ¼ö
-    mtfCalculateFunc     calculate;     // ¿¬»ê ÇÔ¼ö
-    void*                calculateInfo; // ¿¬»êÀ» À§ÇÑ ºÎ°¡ Á¤º¸, ÇöÀç ¹Ì»ç¿ë
-    mtfEstimateRangeFunc estimateRange; // Key Range Å©±â ÃßÃâ ÇÔ¼ö
-    mtfExtractRangeFunc  extractRange;  // Key Range »ı¼º ÇÔ¼ö
+    mtfCalculateFunc     initialize;    // Aggregation ì´ˆê¸°í™” í•¨ìˆ˜
+    mtfCalculateFunc     aggregate;     // Aggregation ìˆ˜í–‰ í•¨ìˆ˜
+    mtfCalculateFunc     merge;         // Aggregation ì„ì‹œê°’ë“¤ì„ ëˆ„ì ì‹œí‚¤ëŠ” í•¨ìˆ˜
+    mtfCalculateFunc     finalize;      // Aggregation ì¢…ë£Œ í•¨ìˆ˜
+    mtfCalculateFunc     calculate;     // ì—°ì‚° í•¨ìˆ˜
+    void*                calculateInfo; // ì—°ì‚°ì„ ìœ„í•œ ë¶€ê°€ ì •ë³´, í˜„ì¬ ë¯¸ì‚¬ìš©
+    mtfEstimateRangeFunc estimateRange; // Key Range í¬ê¸° ì¶”ì¶œ í•¨ìˆ˜
+    mtfExtractRangeFunc  extractRange;  // Key Range ìƒì„± í•¨ìˆ˜
 };
 
-// µ¥ÀÌÅÍ Å¸ÀÔ, ¿¬»ê µîÀÇ ÀÌ¸§À» Á¤ÀÇ
+// ë°ì´í„° íƒ€ì…, ì—°ì‚° ë“±ì˜ ì´ë¦„ì„ ì •ì˜
 struct mtcName {
-    mtcName*    next;   // ´Ù¸¥ ÀÌ¸§
-    UInt        length; // ÀÌ¸§ÀÇ ±æÀÌ, Bytes
-    void*       string; // ÀÌ¸§, UTF-8
+    mtcName*    next;   // ë‹¤ë¥¸ ì´ë¦„
+    UInt        length; // ì´ë¦„ì˜ ê¸¸ì´, Bytes
+    void*       string; // ì´ë¦„, UTF-8
 };
 
 // PROJ-1473
@@ -1538,8 +1538,8 @@ struct mtcNode {
     mtcNode*         next;
     UShort           table;
     UShort           column;
-    UShort           baseTable;       // PROJ-2002 columnÀÎ °æ¿ì base table
-    UShort           baseColumn;      // PROJ-2002 columnÀÎ °æ¿ì base column
+    UShort           baseTable;       // PROJ-2002 columnì¸ ê²½ìš° base table
+    UShort           baseColumn;      // PROJ-2002 columnì¸ ê²½ìš° base column
     ULong            lflag;
     ULong            cost;
     UInt             info;
@@ -1567,23 +1567,23 @@ struct mtcNode {
 
 struct mtkRangeCallBack
 {
-    UInt              flag; // range »ı¼º ½Ã ÇÊ¿äÇÑ Á¤º¸µéÀ» °¡Áü
+    UInt              flag; // range ìƒì„± ì‹œ í•„ìš”í•œ ì •ë³´ë“¤ì„ ê°€ì§
                             // (1) Asc/Desc 
-                            // (2) µ¿ÀÏ °è¿­ ³» ¼­·Î ´Ù¸¥ data type°£ÀÇ
-                            //     compare ÇÔ¼öÀÎÁö ¿©ºÎ
-                            // (3) Operator Á¾·ù ( <=, >=, <, > )
-    UInt              columnIdx; // STOREDVALÀÇ ºñ±³¿¡ »ç¿ëµÇ´Â Ä®·³ ÀÎµ¦½º
-                                 // (Ä®·³ ¹èÄ¡ ¼ø¼­)
+                            // (2) ë™ì¼ ê³„ì—´ ë‚´ ì„œë¡œ ë‹¤ë¥¸ data typeê°„ì˜
+                            //     compare í•¨ìˆ˜ì¸ì§€ ì—¬ë¶€
+                            // (3) Operator ì¢…ë¥˜ ( <=, >=, <, > )
+    UInt              columnIdx; // STOREDVALì˜ ë¹„êµì— ì‚¬ìš©ë˜ëŠ” ì¹¼ëŸ¼ ì¸ë±ìŠ¤
+                                 // (ì¹¼ëŸ¼ ë°°ì¹˜ ìˆœì„œ)
     
     mtdCompareFunc    compare;
 
     // PROJ-1436
-    // columnDesc, valueDesc´Â shared templateÀÇ columnÀ»
-    // »ç¿ëÇØ¼­´Â ¾ÈµÈ´Ù. variable type columnÀÎ °æ¿ì
-    // µ¥ÀÌÅÍ ¿À¿°ÀÌ ¹ß»ıÇÒ ¼ö ÀÖ´Ù. µû¶ó¼­ column Á¤º¸¸¦
-    // º¹»çÇØ¼­ »ç¿ëÇÑ´Ù.
-    // ÃßÈÄ private templateÀÇ column Á¤º¸¸¦ »ç¿ëÇÒ ¼ö
-    // ÀÖµµ·Ï ¼öÁ¤ÇØ¾ß ÇÑ´Ù.
+    // columnDesc, valueDescëŠ” shared templateì˜ columnì„
+    // ì‚¬ìš©í•´ì„œëŠ” ì•ˆëœë‹¤. variable type columnì¸ ê²½ìš°
+    // ë°ì´í„° ì˜¤ì—¼ì´ ë°œìƒí•  ìˆ˜ ìˆë‹¤. ë”°ë¼ì„œ column ì •ë³´ë¥¼
+    // ë³µì‚¬í•´ì„œ ì‚¬ìš©í•œë‹¤.
+    // ì¶”í›„ private templateì˜ column ì •ë³´ë¥¼ ì‚¬ìš©í•  ìˆ˜
+    // ìˆë„ë¡ ìˆ˜ì •í•´ì•¼ í•œë‹¤.
     mtcColumn         columnDesc;
     mtcColumn         valueDesc;
     const void*       value;
@@ -1593,38 +1593,38 @@ struct mtkRangeCallBack
 };
 
 // PROJ-2527 WITHIN GROUP AGGR
-// mt¿¡¼­ »ç¿ëµÇ´Â memory pool.
+// mtì—ì„œ ì‚¬ìš©ë˜ëŠ” memory pool.
 typedef struct mtfFuncDataBasicInfo
 {
     iduMemory            * memoryMgr;
 } mtfFuncDataBasicInfo;
 
-// BUG-41944 high precision/performance hint Á¦°ø
+// BUG-41944 high precision/performance hint ì œê³µ
 typedef enum
 {
-    MTC_ARITHMETIC_OPERATION_PRECISION = 0,           // »ê¼ú¿¬»ê½Ã Á¤¹Ğµµ¿ì¼±
-    MTC_ARITHMETIC_OPERATION_PERFORMANCE_LEVEL1 = 1,  // »ê¼ú¿¬»ê½Ã ¼º´É¿ì¼±
-    MTC_ARITHMETIC_OPERATION_PERFORMANCE_LEVEL2 = 2,  // »ê¼ú¿¬»ê½Ã ¼º´É¿ì¼± SUM, AVG
+    MTC_ARITHMETIC_OPERATION_PRECISION = 0,           // ì‚°ìˆ ì—°ì‚°ì‹œ ì •ë°€ë„ìš°ì„ 
+    MTC_ARITHMETIC_OPERATION_PERFORMANCE_LEVEL1 = 1,  // ì‚°ìˆ ì—°ì‚°ì‹œ ì„±ëŠ¥ìš°ì„ 
+    MTC_ARITHMETIC_OPERATION_PERFORMANCE_LEVEL2 = 2,  // ì‚°ìˆ ì—°ì‚°ì‹œ ì„±ëŠ¥ìš°ì„  SUM, AVG
     
     MTC_ARITHMETIC_OPERATION_DEFAULT = MTC_ARITHMETIC_OPERATION_PERFORMANCE_LEVEL1
 } mtcArithmeticOpMode;
 
 //----------------------------------------------------------
-// Key Range »ı¼ºÀ» À§ÇÑ Á¤º¸
-// - column : Index Column Á¤º¸, Memory/Disk Index¸¦ Áö¿ø
-// - argument : Index ColumnÀÇ À§Ä¡ (0: left, 1: right)
-// - compValueType : ºñ±³ÇÏ´Â °ªµéÀÇ type
+// Key Range ìƒì„±ì„ ìœ„í•œ ì •ë³´
+// - column : Index Column ì •ë³´, Memory/Disk Indexë¥¼ ì§€ì›
+// - argument : Index Columnì˜ ìœ„ì¹˜ (0: left, 1: right)
+// - compValueType : ë¹„êµí•˜ëŠ” ê°’ë“¤ì˜ type
 //                   MTD_COMPARE_FIXED_MTDVAL_FIXED_MTDVAL
 //                   MTD_COMPARE_MTDVAL_MTDVAL
 //                   MTD_COMPARE_STOREDVAL_MTDVAL
 //                   MTD_COMPARE_STOREDVAL_STOREDVAL
 // - direction : MTD_COMPARE_ASCENDING, MTD_COMPARE_DESCENDING
-// - isSameGroupType : sm¿¡ callbackÀ¸·Î ³»·ÁÁÙ compare ÇÔ¼ö °áÁ¤
+// - isSameGroupType : smì— callbackìœ¼ë¡œ ë‚´ë ¤ì¤„ compare í•¨ìˆ˜ ê²°ì •
 //                     TRUE : mtd::compareSameGroupAscending
 //                            mtd::compareSameGroupDescending
-//                     FALSE: index columnÀÇ mtdModule.compare
-// - columnIdx : STOREDVAL Å¸ÀÔÀÇ ColumnÀ» ºñ±³ÇÒ¶§ »ç¿ëµÇ´Â
-//               Ä®·³ ÀÎµ¦½º
+//                     FALSE: index columnì˜ mtdModule.compare
+// - columnIdx : STOREDVAL íƒ€ì…ì˜ Columnì„ ë¹„êµí• ë•Œ ì‚¬ìš©ë˜ëŠ”
+//               ì¹¼ëŸ¼ ì¸ë±ìŠ¤
 //----------------------------------------------------------
 struct mtkRangeInfo
 {
@@ -1666,7 +1666,7 @@ struct mtcTuple {
     UInt                    rowOffset;
     UInt                    rowMaximum;
     void                  * tableHandle;
-    scGRID                  rid;          // Disk TableÀ» À§ÇÑ Record IDentifier
+    scGRID                  rid;          // Disk Tableì„ ìœ„í•œ Record IDentifier
     void                  * row;
     void                  * cursorInfo;   // PROJ-2205 rownum in DML
 };
@@ -1676,10 +1676,10 @@ struct mtcTemplate {
     SInt                    stackCount;
     mtcStack              * stack;
     SInt                    stackRemain;
-    UChar                 * data;         // executionÁ¤º¸ÀÇ data¿µ¿ª
+    UChar                 * data;         // executionì •ë³´ì˜ dataì˜ì—­
     UInt                    dataSize;
-    UChar                 * execInfo;     // ¼öÇà ¿©ºÎ ÆÇ´ÜÀ» À§ÇÑ ¿µ¿ª
-    UInt                    execInfoCnt;  // ¼öÇà ¿©ºÎ ¿µ¿ªÀÇ °³¼ö
+    UChar                 * execInfo;     // ìˆ˜í–‰ ì—¬ë¶€ íŒë‹¨ì„ ìœ„í•œ ì˜ì—­
+    UInt                    execInfoCnt;  // ìˆ˜í–‰ ì—¬ë¶€ ì˜ì—­ì˜ ê°œìˆ˜
     mtcInitSubqueryFunc     initSubquery;
     mtcFetchSubqueryFunc    fetchSubquery;
     mtcFiniSubqueryFunc     finiSubquery;
@@ -1699,10 +1699,10 @@ struct mtcTemplate {
     mtcGetECCInfo           getECCInfo;
     mtcGetECCSize           getECCSize;
 
-    // PROJ-1358 Internal TupleÀº µ¿ÀûÀ¸·Î Áõ°¡ÇÑ´Ù.
+    // PROJ-1358 Internal Tupleì€ ë™ì ìœ¼ë¡œ ì¦ê°€í•œë‹¤.
     UShort                  currentRow[MTC_TUPLE_TYPE_MAXIMUM];
-    UShort                  rowArrayCount;    // ÇÒ´çµÈ internal tupleÀÇ °³¼ö
-    UShort                  rowCount;         // »ç¿ëÁßÀÎ internal tupleÀÇ °³¼ö
+    UShort                  rowArrayCount;    // í• ë‹¹ëœ internal tupleì˜ ê°œìˆ˜
+    UShort                  rowCount;         // ì‚¬ìš©ì¤‘ì¸ internal tupleì˜ ê°œìˆ˜
     UShort                  rowCountBeforeBinding;
     UShort                  variableRow;
     mtcTuple              * rows;
@@ -1755,14 +1755,14 @@ typedef struct mtfNameIndex {
 
 //--------------------------------------------------------
 // mtdModule
-//    - name       : data type ¸í
-//    - column     : default column Á¤º¸
-//    - id         : data type¿¡ µû¸¥ id
-//    - no         : data type¿¡ µû¸¥ number
-//    - idxType    : data typeÀÌ »ç¿ëÇÒ ¼ö ÀÖ´Â ÀÎµ¦½ºÀÇ Á¾·ù(ÃÖ´ë8°³)
-//                 : idxType[0] Àº Default Index Type
-//    - initialize : no, column ÃÊ±âÈ­
-//    - estimate   : mtcColumnÀÇ data type Á¤º¸ ¼³Á¤ ¹× semantic °Ë»ç
+//    - name       : data type ëª…
+//    - column     : default column ì •ë³´
+//    - id         : data typeì— ë”°ë¥¸ id
+//    - no         : data typeì— ë”°ë¥¸ number
+//    - idxType    : data typeì´ ì‚¬ìš©í•  ìˆ˜ ìˆëŠ” ì¸ë±ìŠ¤ì˜ ì¢…ë¥˜(ìµœëŒ€8ê°œ)
+//                 : idxType[0] ì€ Default Index Type
+//    - initialize : no, column ì´ˆê¸°í™”
+//    - estimate   : mtcColumnì˜ data type ì •ë³´ ì„¤ì • ë° semantic ê²€ì‚¬
 //--------------------------------------------------------
 
 # define MTD_MAX_USABLE_INDEX_CNT                  (8)
@@ -1784,17 +1784,17 @@ struct mtdModule {
     mtdEstimateFunc        estimate;
     mtdValueFunc           value;
     mtdActualSizeFunc      actualSize;
-    mtdGetPrecisionFunc    getPrecision;  // PROJ-1877 valueÀÇ precision,scale
+    mtdGetPrecisionFunc    getPrecision;  // PROJ-1877 valueì˜ precision,scale
     mtdNullFunc            null;
     mtdHashFunc            hash;
     mtdIsNullFunc          isNull;
     mtdIsTrueFunc          isTrue;
-    mtdCompareFunc         logicalCompare[2];   // TypeÀÇ ³í¸®Àû ºñ±³
-    mtdCompareFunc         keyCompare[MTD_COMPARE_FUNC_MAX_CNT][2]; // ÀÎµ¦½º Key ºñ±³
+    mtdCompareFunc         logicalCompare[2];   // Typeì˜ ë…¼ë¦¬ì  ë¹„êµ
+    mtdCompareFunc         keyCompare[MTD_COMPARE_FUNC_MAX_CNT][2]; // ì¸ë±ìŠ¤ Key ë¹„êµ
     mtdCanonizeFunc        canonize;
     mtdEndianFunc          endian;
     mtdValidateFunc        validate;
-    mtdSelectivityFunc     selectivity;  // A4 : Selectivity °è»ê ÇÔ¼ö
+    mtdSelectivityFunc     selectivity;  // A4 : Selectivity ê³„ì‚° í•¨ìˆ˜
     mtdEncodeFunc          encode;
     mtdDecodeFunc          decode;
     mtdCompileFmtFunc      compileFmt;
@@ -1802,67 +1802,67 @@ struct mtdModule {
     mtdMakeColumnInfo      makeColumnInfo;
 
     // BUG-28934
-    // data typeÀÇ Æ¯¼º¿¡ ¸Â°Ô key range¸¦ »ı¼ºÇÑ ÈÄ, ÀÌ¸¦ mergeÇÒ ¶§µµ
-    // key rangeÀÇ Æ¯¼º¿¡ ¸Â°Ô mergeÇÏ´Â ¹æ¹ıÀÌ ÇÊ¿äÇÏ´Ù. merge´Â °á±¹
-    // compareÀÇ ¹®Á¦ÀÌ¹Ç·Î compareÇÔ¼ö¸¦ Á¤ÀÇÇÑ mtdModule¿¡ Á¤ÀÇÇÑ´Ù.
+    // data typeì˜ íŠ¹ì„±ì— ë§ê²Œ key rangeë¥¼ ìƒì„±í•œ í›„, ì´ë¥¼ mergeí•  ë•Œë„
+    // key rangeì˜ íŠ¹ì„±ì— ë§ê²Œ mergeí•˜ëŠ” ë°©ë²•ì´ í•„ìš”í•˜ë‹¤. mergeëŠ” ê²°êµ­
+    // compareì˜ ë¬¸ì œì´ë¯€ë¡œ compareí•¨ìˆ˜ë¥¼ ì •ì˜í•œ mtdModuleì— ì •ì˜í•œë‹¤.
     mtcMergeAndRange       mergeAndRange;
     mtcMergeOrRangeList    mergeOrRangeList;
     
     //-------------------------------------------------------------------
     // PROJ-1705
-    // µğ½ºÅ©Å×ÀÌºíÀÇ ·¹ÄÚµå ÀúÀå±¸Á¶ º¯°æÀ¸·Î ÀÎÇØ
-    // µğ½ºÅ© Å×ÀÌºí ·¹ÄÚµå ÆĞÄ¡½Ã 
-    // ÄÃ·³´ÜÀ§·Î qp ·¹ÄÚµåÃ³¸®¿µ¿ªÀÇ ÇØ´ç ÄÃ·³À§Ä¡¿¡ º¹»ç 
+    // ë””ìŠ¤í¬í…Œì´ë¸”ì˜ ë ˆì½”ë“œ ì €ì¥êµ¬ì¡° ë³€ê²½ìœ¼ë¡œ ì¸í•´
+    // ë””ìŠ¤í¬ í…Œì´ë¸” ë ˆì½”ë“œ íŒ¨ì¹˜ì‹œ 
+    // ì»¬ëŸ¼ë‹¨ìœ„ë¡œ qp ë ˆì½”ë“œì²˜ë¦¬ì˜ì—­ì˜ í•´ë‹¹ ì»¬ëŸ¼ìœ„ì¹˜ì— ë³µì‚¬ 
     // PROJ-2429 Dictionary based data compress for on-disk DB
-    // diskÀÇ dictionary columnÀ» fetchÇÒ¶§ »ç¿ëÇÏ´Â ÇÔ¼ö Æ÷ÀÎÅÍ¸¦ Ãß°¡·Î
-    // ÀúÀå ÇÑ´Ù.(mtd::mtdStoredValue2MtdValue4CompressColumn)
-    // char, varchar, nchar nvarchar, byte, nibble, bit, varbit, data Å¸ÀÔÀÌ
-    // ÇØ´ÜµÇ¸ç ³ª¸ÓÁö data typeÀº nullÀÌ ÀúÀåµÈ´Ù.
+    // diskì˜ dictionary columnì„ fetchí• ë•Œ ì‚¬ìš©í•˜ëŠ” í•¨ìˆ˜ í¬ì¸í„°ë¥¼ ì¶”ê°€ë¡œ
+    // ì €ì¥ í•œë‹¤.(mtd::mtdStoredValue2MtdValue4CompressColumn)
+    // char, varchar, nchar nvarchar, byte, nibble, bit, varbit, data íƒ€ì…ì´
+    // í•´ë‹¨ë˜ë©° ë‚˜ë¨¸ì§€ data typeì€ nullì´ ì €ì¥ëœë‹¤.
     //-------------------------------------------------------------------
     mtdStoredValue2MtdValueFunc  storedValue2MtdValue[MTD_COLUMN_COPY_FUNC_MAX_COUNT];    
 
     //-------------------------------------------------------------------
     // PROJ-1705
-    // °¢ µ¥ÀÌÅ¸Å¸ÀÔÀÇ null ValueÀÇ Å©±â ¹İÈ¯
-    // replication¿¡¼­ »ç¿ë
+    // ê° ë°ì´íƒ€íƒ€ì…ì˜ null Valueì˜ í¬ê¸° ë°˜í™˜
+    // replicationì—ì„œ ì‚¬ìš©
     //-------------------------------------------------------------------
     mtdNullValueSizeFunc        nullValueSize;
 
     //-------------------------------------------------------------------
     // PROJ-1705
-    // length¸¦ °¡Áö´Â µ¥ÀÌÅ¸Å¸ÀÔÀÇ length Á¤º¸¸¦ ÀúÀåÇÏ´Â º¯¼öÀÇ Å©±â ¹İÈ¯
-    // ¿¹) mtdCharType( UShort length; UChar value[1] ) ¿¡¼­
-    //      lengthÅ¸ÀÔÀÎ UShortÀÇ Å©±â¸¦ ¹İÈ¯
-    // integer¿Í °°Àº °íÁ¤±æÀÌ µ¥ÀÌÅ¸Å¸ÀÔÀº 0 ¹İÈ¯
+    // lengthë¥¼ ê°€ì§€ëŠ” ë°ì´íƒ€íƒ€ì…ì˜ length ì •ë³´ë¥¼ ì €ì¥í•˜ëŠ” ë³€ìˆ˜ì˜ í¬ê¸° ë°˜í™˜
+    // ì˜ˆ) mtdCharType( UShort length; UChar value[1] ) ì—ì„œ
+    //      lengthíƒ€ì…ì¸ UShortì˜ í¬ê¸°ë¥¼ ë°˜í™˜
+    // integerì™€ ê°™ì€ ê³ ì •ê¸¸ì´ ë°ì´íƒ€íƒ€ì…ì€ 0 ë°˜í™˜
     //-------------------------------------------------------------------
     mtdHeaderSizeFunc           headerSize;
 
     //-------------------------------------------------------------------
     // PROJ-2399 row tmaplate
-    // varchar¿Í °°Àº variable Å¸ÀÔÀÇ µ¥ÀÌÅÍ Å¸ÀÔÀº ID_UINT_MAX¸¦ ¹İÈ¯
-    // mtheader°¡ sm¿¡ ÀúÀåµÈ°æ¿ì°¡ ¾Æ´Ï¸é mtheaderÅ©±â¸¦ »©¼­ ¹İÈ¯
+    // varcharì™€ ê°™ì€ variable íƒ€ì…ì˜ ë°ì´í„° íƒ€ì…ì€ ID_UINT_MAXë¥¼ ë°˜í™˜
+    // mtheaderê°€ smì— ì €ì¥ëœê²½ìš°ê°€ ì•„ë‹ˆë©´ mtheaderí¬ê¸°ë¥¼ ë¹¼ì„œ ë°˜í™˜
     //-------------------------------------------------------------------
     mtdStoreSizeFunc             storeSize;
 };  
 
-// ¿¬»êÀÚÀÇ Æ¯Â¡À» ±â¼ú
+// ì—°ì‚°ìì˜ íŠ¹ì§•ì„ ê¸°ìˆ 
 struct mtfModule {
-    ULong             lflag; // ÇÒ´çÇÏ´Â ColumnÀÇ °³¼ö, ¿¬»êÀÚÀÇ Á¤º¸
-    ULong             lmask; // ÇÏÀ§ NodeÀÇ flag°ú Á¶ÇÕÇÏ¿© ÇØ´ç ¿¬»êÀÚÀÇ
-                             // Index »ç¿ë °¡´É ¿©ºÎ¸¦ flag¿¡ Setting
-    SDouble           selectivity;      // ¿¬»êÀÚÀÇ default selectivity
-    const mtcName*    names;            // ¿¬»êÀÚÀÇ ÀÌ¸§ Á¤º¸
-    const mtfModule*  counter;          // ÇØ´ç ¿¬»êÀÚÀÇ Counter ¿¬»êÀÚ
-    mtfInitializeFunc initialize;       // ¼­¹ö ±¸µ¿½Ã ¿¬»êÀÚ¸¦ À§ÇÑ ÃÊ±âÈ­
-    mtfFinalizeFunc   finalize;         // ¼­¹ö Á¾·á½Ã ¿¬»êÀÚ¸¦ À§ÇÑ Á¾·á ÇÔ¼ö
-    mtfEstimateFunc   estimate;         // PROJ-2163 : ¿¬»êÀÚÀÇ estimationÀ» À§ÇÑ ÇÔ¼ö
+    ULong             lflag; // í• ë‹¹í•˜ëŠ” Columnì˜ ê°œìˆ˜, ì—°ì‚°ìì˜ ì •ë³´
+    ULong             lmask; // í•˜ìœ„ Nodeì˜ flagê³¼ ì¡°í•©í•˜ì—¬ í•´ë‹¹ ì—°ì‚°ìì˜
+                             // Index ì‚¬ìš© ê°€ëŠ¥ ì—¬ë¶€ë¥¼ flagì— Setting
+    SDouble           selectivity;      // ì—°ì‚°ìì˜ default selectivity
+    const mtcName*    names;            // ì—°ì‚°ìì˜ ì´ë¦„ ì •ë³´
+    const mtfModule*  counter;          // í•´ë‹¹ ì—°ì‚°ìì˜ Counter ì—°ì‚°ì
+    mtfInitializeFunc initialize;       // ì„œë²„ êµ¬ë™ì‹œ ì—°ì‚°ìë¥¼ ìœ„í•œ ì´ˆê¸°í™”
+    mtfFinalizeFunc   finalize;         // ì„œë²„ ì¢…ë£Œì‹œ ì—°ì‚°ìë¥¼ ìœ„í•œ ì¢…ë£Œ í•¨ìˆ˜
+    mtfEstimateFunc   estimate;         // PROJ-2163 : ì—°ì‚°ìì˜ estimationì„ ìœ„í•œ í•¨ìˆ˜
 };
 
 // PROJ-1361
-//    language¿¡ µû¶ó '³â,¿ù,ÀÏ,½Ã,ºĞ,ÃÊ,¸¶ÀÌÅ©·ÎÃÊ' ¹®ÀÚ°¡ ´Ù¸£´Ù.
-//    µû¶ó¼­ EXTRACT ÇÔ¼ö ¼öÇà ½Ã,
-//    language¿¡ ¸Â°Ô '³â,¿ù,ÀÏ,½Ã,ºĞ,ÃÊ,¸¶ÀÌÅ©·ÎÃÊ' ÀÏÄ¡¿©ºÎ °Ë»ç
-//    '¼¼±â, ºĞ±â, ÁÖ' Ãß°¡
+//    languageì— ë”°ë¼ 'ë…„,ì›”,ì¼,ì‹œ,ë¶„,ì´ˆ,ë§ˆì´í¬ë¡œì´ˆ' ë¬¸ìê°€ ë‹¤ë¥´ë‹¤.
+//    ë”°ë¼ì„œ EXTRACT í•¨ìˆ˜ ìˆ˜í–‰ ì‹œ,
+//    languageì— ë§ê²Œ 'ë…„,ì›”,ì¼,ì‹œ,ë¶„,ì´ˆ,ë§ˆì´í¬ë¡œì´ˆ' ì¼ì¹˜ì—¬ë¶€ ê²€ì‚¬
+//    'ì„¸ê¸°, ë¶„ê¸°, ì£¼' ì¶”ê°€
 typedef struct mtlExtractFuncSet {
     mtlMatchFunc   matchCentury;
     mtlMatchFunc   matchYear;
@@ -1877,13 +1877,13 @@ typedef struct mtlExtractFuncSet {
     mtlMatchFunc   matchMinute;
     mtlMatchFunc   matchSecond;
     mtlMatchFunc   matchMicroSec;
-    /* BUG-45730 ROUND, TRUNC ÇÔ¼ö¿¡¼­ DATE Æ÷¸Ë IW Ãß°¡ Áö¿ø */
+    /* BUG-45730 ROUND, TRUNC í•¨ìˆ˜ì—ì„œ DATE í¬ë§· IW ì¶”ê°€ ì§€ì› */
     mtlMatchFunc   matchISOWeek;
 } mtlExtractFuncSet;
 
 // PROJ-1361
-// language¿¡ µû¶ó ¿äÀÏÀ» ³ªÅ¸³»´Â ¹®ÀÚ°¡ ´Ù¸£´Ù.
-// µû¶ó¼­ NEXT_DAY ÇÔ¼ö ¼öÇà ½Ã, language¿¡ ¸Â°Ô ¿äÀÏ ÀÏÄ¡ ¿©ºÎ °Ë»ç
+// languageì— ë”°ë¼ ìš”ì¼ì„ ë‚˜íƒ€ë‚´ëŠ” ë¬¸ìê°€ ë‹¤ë¥´ë‹¤.
+// ë”°ë¼ì„œ NEXT_DAY í•¨ìˆ˜ ìˆ˜í–‰ ì‹œ, languageì— ë§ê²Œ ìš”ì¼ ì¼ì¹˜ ì—¬ë¶€ ê²€ì‚¬
 typedef struct mtlNextDayFuncSet {
     mtlMatchFunc   matchSunDay;
     mtlMatchFunc   matchMonDay;
@@ -1898,10 +1898,10 @@ struct mtlModule {
     const mtcName*        names;
     UInt                  id;
     
-    mtlNextCharFunc       nextCharPtr;    // Language¿¡ ¸Â°Ô ´ÙÀ½ ¹®ÀÚ·Î ÀÌµ¿
-    mtlMaxPrecisionFunc   maxPrecision;   // LanguageÀÇ ÃÖ´ë precision°è»ê
-    mtlExtractFuncSet   * extractSet;     // Language¿¡ ¸Â´Â Date Type ÀÌ¸§
-    mtlNextDayFuncSet   * nextDaySet;     // Language¿¡ ¸Â´Â ¿äÀÏ ÀÌ¸§
+    mtlNextCharFunc       nextCharPtr;    // Languageì— ë§ê²Œ ë‹¤ìŒ ë¬¸ìë¡œ ì´ë™
+    mtlMaxPrecisionFunc   maxPrecision;   // Languageì˜ ìµœëŒ€ precisionê³„ì‚°
+    mtlExtractFuncSet   * extractSet;     // Languageì— ë§ëŠ” Date Type ì´ë¦„
+    mtlNextDayFuncSet   * nextDaySet;     // Languageì— ë§ëŠ” ìš”ì¼ ì´ë¦„
     
     UChar              ** specialCharSet;
     UChar                 specialCharSize;
@@ -1915,9 +1915,9 @@ struct mtvModule {
 };
 
 // PROJ-1362
-// ODBC API, SQLGetTypeInfo Áö¿øÀ» À§ÇÑ mtdModule È®Àå
-// ÀÌÀü¿¡´Â Å¸ÀÔÁ¤º¸°¡ client¿¡ ÇÏµåÄÚµùµÇ¾î ÀÖ´ø°ÍÀ»
-// ¼­¹ö¿¡¼­ Á¶È¸ÇÏµµ·Ï º¯°æÇÔ
+// ODBC API, SQLGetTypeInfo ì§€ì›ì„ ìœ„í•œ mtdModule í™•ì¥
+// ì´ì „ì—ëŠ” íƒ€ì…ì •ë³´ê°€ clientì— í•˜ë“œì½”ë”©ë˜ì–´ ìˆë˜ê²ƒì„
+// ì„œë²„ì—ì„œ ì¡°íšŒí•˜ë„ë¡ ë³€ê²½í•¨
 #define MTD_TYPE_NAME_LEN            40
 #define MTD_TYPE_LITERAL_LEN         4
 #define MTD_TYPE_CREATE_PARAM_LEN    20
@@ -1927,7 +1927,7 @@ struct mtdType
 {
     SChar    * mTypeName;
     SShort     mDataType;
-    SShort     mODBCDataType; // mDataTypeÀ» ODBC SPECÀ¸·Î º¯°æ
+    SShort     mODBCDataType; // mDataTypeì„ ODBC SPECìœ¼ë¡œ ë³€ê²½
     SInt       mColumnSize;
     SChar    * mLiteralPrefix;
     SChar    * mLiteralSuffix;
@@ -1942,7 +1942,7 @@ struct mtdType
     SShort     mMinScale;
     SShort     mMaxScale;
     SShort     mSQLDataType;
-    SShort     mODBCSQLDataType; // mSQLDataTypeÀ» ODBC SPECÀ¸·Î º¯°æ
+    SShort     mODBCSQLDataType; // mSQLDataTypeì„ ODBC SPECìœ¼ë¡œ ë³€ê²½
     SShort     mSQLDateTimeSub;
     SInt       mNumPrecRadix;
     SShort     mIntervalPrecision;
@@ -1960,14 +1960,14 @@ struct mtdType
 
 // BUG-40427
 // LobCursor.Info
-// - ³»ºÎ¿¡¼­¸¸ »ç¿ëÇÏ´Â °æ¿ì   : FALSE
-// - Client¿¡¼­µµ »ç¿ëÇÏ´Â °æ¿ì : TRUE
+// - ë‚´ë¶€ì—ì„œë§Œ ì‚¬ìš©í•˜ëŠ” ê²½ìš°   : FALSE
+// - Clientì—ì„œë„ ì‚¬ìš©í•˜ëŠ” ê²½ìš° : TRUE
 #define MTC_LOB_LOCATOR_CLIENT_MASK        (0x00000004)
 #define MTC_LOB_LOCATOR_CLIENT_TRUE        (0x00000004)
 #define MTC_LOB_LOCATOR_CLIENT_FALSE       (0x00000000)
 
 // PROJ-1362
-// Lob¿¡ ´ëÇØ LENGTH, SUBSTRÀ» ¼öÇàÇÒ ¶§ Lobµ¥ÀÌÅÍ¸¦ ÀĞ´Â ´ÜÀ§
+// Lobì— ëŒ€í•´ LENGTH, SUBSTRì„ ìˆ˜í–‰í•  ë•Œ Lobë°ì´í„°ë¥¼ ì½ëŠ” ë‹¨ìœ„
 #define MTC_LOB_BUFFER_SIZE     (32000)
 
 // PROJ-1753 One Pass Like Algorithm
@@ -1979,14 +1979,14 @@ struct mtdType
 #define MTC_FORMAT_BLOCK_PERCENT  (2)
 #define MTC_FORMAT_BLOCK_UNDER    (3)
 
-// 16byte¿¡ ¸ÂÃß¾úÀ½
+// 16byteì— ë§ì¶”ì—ˆìŒ
 struct mtcLikeBlockInfo
 {    
     UChar   * start;
 
-    // MTC_FORMAT_BLOCK_STRINGÀÎ °æ¿ì string byte size
-    // MTC_FORMAT_BLOCK_PERCENTÀÎ °æ¿ì °¹¼ö
-    // MTC_FORMAT_BLOCK_UNDERÀÎ °æ¿ì °¹¼ö
+    // MTC_FORMAT_BLOCK_STRINGì¸ ê²½ìš° string byte size
+    // MTC_FORMAT_BLOCK_PERCENTì¸ ê²½ìš° ê°¯ìˆ˜
+    // MTC_FORMAT_BLOCK_UNDERì¸ ê²½ìš° ê°¯ìˆ˜
     UShort    sizeOrCnt;
     
     UChar     type;
@@ -2013,41 +2013,41 @@ struct mtcLobBuffer
 
 // PROJ-1755
 typedef enum
-{                                   // format string¿¡ ´ëÇÏ¿©
-    MTC_FORMAT_NULL = 1,            // case 1) null È¤Àº ''·Î ±¸¼º
-    MTC_FORMAT_NORMAL,              // case 2) ÀÏ¹İ¹®ÀÚ·Î¸¸ ±¸¼º
-    MTC_FORMAT_UNDER,               // case 3) '_'·Î¸¸ ±¸¼º
-    MTC_FORMAT_PERCENT,             // case 4) '%'·Î¸¸ ±¸¼º
-    MTC_FORMAT_NORMAL_UNDER,        // case 5) ÀÏ¹İ¹®ÀÚ¿Í '_'·Î ±¸¼º
-    MTC_FORMAT_NORMAL_ONE_PERCENT,  // case 6-1) ÀÏ¹İ¹®ÀÚ¿Í '%' 1°³ ·Î ±¸¼º
-    MTC_FORMAT_NORMAL_MANY_PERCENT, // case 6-2) ÀÏ¹İ¹®ÀÚ¿Í '%' 2°³ÀÌ»óÀ¸·Î ±¸¼º
-    MTC_FORMAT_UNDER_PERCENT,       // case 7) '_'¿Í '%'·Î ±¸¼º
-    MTC_FORMAT_ALL                  // case 8) ÀÏ¹İ¹®ÀÚ¿Í '_', '%'·Î ±¸¼º
+{                                   // format stringì— ëŒ€í•˜ì—¬
+    MTC_FORMAT_NULL = 1,            // case 1) null í˜¹ì€ ''ë¡œ êµ¬ì„±
+    MTC_FORMAT_NORMAL,              // case 2) ì¼ë°˜ë¬¸ìë¡œë§Œ êµ¬ì„±
+    MTC_FORMAT_UNDER,               // case 3) '_'ë¡œë§Œ êµ¬ì„±
+    MTC_FORMAT_PERCENT,             // case 4) '%'ë¡œë§Œ êµ¬ì„±
+    MTC_FORMAT_NORMAL_UNDER,        // case 5) ì¼ë°˜ë¬¸ìì™€ '_'ë¡œ êµ¬ì„±
+    MTC_FORMAT_NORMAL_ONE_PERCENT,  // case 6-1) ì¼ë°˜ë¬¸ìì™€ '%' 1ê°œ ë¡œ êµ¬ì„±
+    MTC_FORMAT_NORMAL_MANY_PERCENT, // case 6-2) ì¼ë°˜ë¬¸ìì™€ '%' 2ê°œì´ìƒìœ¼ë¡œ êµ¬ì„±
+    MTC_FORMAT_UNDER_PERCENT,       // case 7) '_'ì™€ '%'ë¡œ êµ¬ì„±
+    MTC_FORMAT_ALL                  // case 8) ì¼ë°˜ë¬¸ìì™€ '_', '%'ë¡œ êµ¬ì„±
 } mtcLikeFormatType;
 
 // PROJ-1755
 struct mtcLikeFormatInfo
 {
-    // escape¹®ÀÚ¸¦ Á¦°ÅÇÑ format pattern
+    // escapeë¬¸ìë¥¼ ì œê±°í•œ format pattern
     UChar             * pattern;
     UShort              patternSize;
 
-    // format patternÀÇ ºĞ·ùÁ¤º¸
+    // format patternì˜ ë¶„ë¥˜ì •ë³´
     mtcLikeFormatType   type;
     UShort              underCnt;
     UShort              percentCnt;
     UShort              charCnt;
 
-    // '%'°¡ 1°³ÀÎ °æ¿ìÀÇ ºÎ°¡Á¤º¸
+    // '%'ê°€ 1ê°œì¸ ê²½ìš°ì˜ ë¶€ê°€ì •ë³´
     // [head]%[tail]
     UChar             * firstPercent;
-    UChar             * head;     // pattern¿¡¼­ÀÇ head À§Ä¡
+    UChar             * head;     // patternì—ì„œì˜ head ìœ„ì¹˜
     UShort              headSize;
-    UChar             * tail;     // pattern¿¡¼­ÀÇ tail À§Ä¡
+    UChar             * tail;     // patternì—ì„œì˜ tail ìœ„ì¹˜
     UShort              tailSize;
 
     // PROJ-1753 one pass like
-    // case 5,6-2,8¿¡ ´ëÇÑ ÃÖÀûÈ­
+    // case 5,6-2,8ì— ëŒ€í•œ ìµœì í™”
     //
     // i1 like '%abc%%__\_%de_' escape '\'
     // => 8 blocks
@@ -2069,15 +2069,15 @@ struct mtcLikeFormatInfo
 #define MTC_INLIST_ELEMENT_COUNT_MAX  (1000)
 #define MTC_INLIST_KEYRANGE_COUNT_MAX (MTC_INLIST_ELEMENT_COUNT_MAX)
 #define MTC_INLIST_ELEMRNT_LENGTH_MAX (4000)
-/* ¹®ÀÚ¿­ ÃÖ´ë±æÀÌ + (char_align-1)*MTC_INLIST_ELEMENT_COUNT_MAX + (char_header_size)*MTC_INLIST_ELEMENT_COUNT_MAX */
+/* ë¬¸ìì—´ ìµœëŒ€ê¸¸ì´ + (char_align-1)*MTC_INLIST_ELEMENT_COUNT_MAX + (char_header_size)*MTC_INLIST_ELEMENT_COUNT_MAX */
 #define MTC_INLIST_VALUE_BUFFER_MAX   (32000 + 1*MTC_INLIST_ELEMENT_COUNT_MAX + 2*MTC_INLIST_ELEMENT_COUNT_MAX)
 
 struct mtcInlistInfo
 {
-    UInt          count;                                         /* token °³¼ö               */
-    mtcColumn     valueDesc;                                     /* value ÀÇ column descirpt */
+    UInt          count;                                         /* token ê°œìˆ˜               */
+    mtcColumn     valueDesc;                                     /* value ì˜ column descirpt */
     void        * valueArray[MTC_INLIST_ELEMENT_COUNT_MAX];      /* value pointer array      */
-    ULong         valueBuf[MTC_INLIST_VALUE_BUFFER_MAX / 8 + 1]; /* ½ÇÁ¦ value buffer        */
+    ULong         valueBuf[MTC_INLIST_VALUE_BUFFER_MAX / 8 + 1]; /* ì‹¤ì œ value buffer        */
 };
 
 // PROJ-1579 NCHAR
@@ -2090,13 +2090,13 @@ typedef enum
 
 //-------------------------------------------------------------------
 // PROJ-1872
-// compare ÇÒ¶§ ÇÊ¿äÇÑ Á¤º¸
-// - mtd type À¸·Î ºñ±³ÇÒ¶§
-//   column, value, flag Á¤º¸ ÀÌ¿ëÇÔ 
-//   valueÀÇ column.offset À§Ä¡¿¡¼­ ÇØ´ç columnÀÇ value¸¦ ÀĞ¾î¿È 
-// - stored typeÀ¸·Î ºñ±³ÇÒ¶§
-//   column, value, length Á¤º¸ ÀÌ¿ëÇÔ
-//   value¸¦ length ¸¸Å­ ÀĞ¾î¿È 
+// compare í• ë•Œ í•„ìš”í•œ ì •ë³´
+// - mtd type ìœ¼ë¡œ ë¹„êµí• ë•Œ
+//   column, value, flag ì •ë³´ ì´ìš©í•¨ 
+//   valueì˜ column.offset ìœ„ì¹˜ì—ì„œ í•´ë‹¹ columnì˜ valueë¥¼ ì½ì–´ì˜´ 
+// - stored typeìœ¼ë¡œ ë¹„êµí• ë•Œ
+//   column, value, length ì •ë³´ ì´ìš©í•¨
+//   valueë¥¼ length ë§Œí¼ ì½ì–´ì˜´ 
 //-------------------------------------------------------------------
 typedef struct mtdValueInfo 
 {
@@ -2108,13 +2108,13 @@ typedef struct mtdValueInfo
 
 //-------------------------------------------------------------------
 // BUG-33663
-// ranking function¿¡ »ç¿ëÇÏ´Â define
+// ranking functionì— ì‚¬ìš©í•˜ëŠ” define
 //-------------------------------------------------------------------
 typedef enum
 {
-    MTC_RANK_VALUE_FIRST = 1,  // Ã¹¹øÂ° °ª
-    MTC_RANK_VALUE_SAME,       // ÀÌÀü °ª°ú °°´Ù.
-    MTC_RANK_VALUE_DIFF        // ÀÌÀü °ª°ú ´Ù¸£´Ù.
+    MTC_RANK_VALUE_FIRST = 1,  // ì²«ë²ˆì§¸ ê°’
+    MTC_RANK_VALUE_SAME,       // ì´ì „ ê°’ê³¼ ê°™ë‹¤.
+    MTC_RANK_VALUE_DIFF        // ì´ì „ ê°’ê³¼ ë‹¤ë¥´ë‹¤.
 } mtcRankValueType;
 
 // PROJ-1789 PROWID

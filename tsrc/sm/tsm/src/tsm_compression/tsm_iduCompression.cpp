@@ -20,7 +20,7 @@
 #define TEST_MAX_LOOP   (2000)
 #define BUFFER_SIZE_MAX (1024 * 1024 * 1) // 10M
 #define BUFFER_SIZE_MIN (1)
-#define COMPRESS_RATE   (10)              //µ¿ÀÏ µ¥ÀÌÅÍ »ı¼º·üÀ» Á¶ÀıÇÏ¿© ¾ĞÃà·üÀ» º¯°æÇÑ´Ù.
+#define COMPRESS_RATE   (10)              //ë™ì¼ ë°ì´í„° ìƒì„±ë¥ ì„ ì¡°ì ˆí•˜ì—¬ ì••ì¶•ë¥ ì„ ë³€ê²½í•œë‹¤.
 
 SLong getTime(void);
 void  printSrcDataForDebug(UChar * aSrcMem, UInt aBufferSize);
@@ -52,23 +52,23 @@ int main(void)
         sDecompMem  = (void *)malloc(sBufferSize);
 
 
-        // ¾ĞÃà ´ë»ó µ¥ÀÌÅÍ »ı¼º
+        // ì••ì¶• ëŒ€ìƒ ë°ì´í„° ìƒì„±
         for (j = 0; j < sBufferSize; j++)
         {
             ((UChar *)sSrcMem)[j] = (UChar)(idlOS::rand() % COMPRESS_RATE);
         }
 
-        // ¾ĞÃà
+        // ì••ì¶•
         IDE_TEST_RAISE(iduCompression::compress((UChar *)sSrcMem, (UInt)sBufferSize,
                                                 (UChar *)sDestMem,(UInt)IDU_COMPRESSION_MAX_OUTSIZE(sBufferSize),
                                                 (UInt *)&sDestSize, (void *)sWorkMem)
                        != IDE_SUCCESS, FAIL_COMPRESS);
 
         printf("\n%dth compression", i);
-        // compression °á°ú µ¥ÀÌÅÍÀÇ Å©±â°¡ ¿¹»ó ÃÖ´ëÄ¡ Å©±â¸¦ ³Ñ¾î¼³ ¼ö ¾ø´Ù.
+        // compression ê²°ê³¼ ë°ì´í„°ì˜ í¬ê¸°ê°€ ì˜ˆìƒ ìµœëŒ€ì¹˜ í¬ê¸°ë¥¼ ë„˜ì–´ì„¤ ìˆ˜ ì—†ë‹¤.
         IDE_TEST_RAISE(sDestSize > IDU_COMPRESSION_MAX_OUTSIZE(sBufferSize), BUF_OVERFLOW);
 
-        // ¾ĞÃàÀÌ ¾ÈµÇ´Â µ¥ÀÌÅÍÀÇ °æ¿ì, ¼Ò½ºº¸´Ù ¾ĞÃà °á°ú°¡ ´õ Ä¿Áú ¼ö ÀÖ´Ù.
+        // ì••ì¶•ì´ ì•ˆë˜ëŠ” ë°ì´í„°ì˜ ê²½ìš°, ì†ŒìŠ¤ë³´ë‹¤ ì••ì¶• ê²°ê³¼ê°€ ë” ì»¤ì§ˆ ìˆ˜ ìˆë‹¤.
 /*        if(sDestSize >= sBufferSize)
         {
             printf("\nThis data contains incompressible data.");
@@ -77,7 +77,7 @@ int main(void)
                i, sBufferSize, sDestSize,
                (((float)sDestSize * 100)/(float)sBufferSize));
 */
-        // ¾ĞÃàÇØÁ¦
+        // ì••ì¶•í•´ì œ
         IDE_TEST_RAISE(iduCompression::decompress((UChar *)sDestMem, (UInt)sDestSize,
                                                   (UChar *)sDecompMem, (UInt)sBufferSize,
                                                   (UInt *)&sDecompSize)
@@ -86,7 +86,7 @@ int main(void)
 /*        printf("%dth decompression : %d byte into %d bytes\n",
           i, sDestSize, sDecompSize);*/
 
-        // compressionÀü°ú decompression ÀÌÈÄÀÇ µ¥ÀÌÅÍ´Â µ¿ÀÏ ÇÏ¿©¾ß ÇÑ´Ù.
+        // compressionì „ê³¼ decompression ì´í›„ì˜ ë°ì´í„°ëŠ” ë™ì¼ í•˜ì—¬ì•¼ í•œë‹¤.
         IDE_TEST_RAISE(sDecompSize != sBufferSize, NOT_SAME_SIZE);
         IDE_TEST_RAISE(idlOS::memcmp(sSrcMem, sDecompMem, sBufferSize)
                        != 0, NOT_SAME_DATA);

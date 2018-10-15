@@ -20,7 +20,7 @@
  *
  * Description :
  *     PROJ-1371 PSM File Handling
- *     FILEÀ» closeÇÏ´Â ÇÔ¼ö
+ *     FILEì„ closeí•˜ëŠ” í•¨ìˆ˜
  *
  * Syntax :
  *     FILE_CLOSE( file FILE_TYPE );
@@ -48,7 +48,7 @@ static IDE_RC qsfEstimate( mtcNode*     aNode,
 mtfModule qsfFCloseModule = {
     1|MTC_NODE_OPERATOR_MISC|MTC_NODE_VARIABLE_TRUE,
     ~0,
-    1.0,                    // default selectivity (ºñ±³ ¿¬»êÀÚ ¾Æ´Ô)
+    1.0,                    // default selectivity (ë¹„êµ ì—°ì‚°ì ì•„ë‹˜)
     qsfFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -138,9 +138,9 @@ IDE_RC qsfCalculate_FClose( mtcNode*     aNode,
  *     file_close calculate
  *
  * Implementation :
- *     1. argument°¡ nullÀÎ °æ¿ì ¾Æ¹«°Íµµ ÇÏÁö ¾Ê°í success
- *     2. fileÀ» closeÇÏ°í, filelist¿¡¼­ Á¦°Å
- *     3. return value´Â null·Î ¼¼ÆÃ
+ *     1. argumentê°€ nullì¸ ê²½ìš° ì•„ë¬´ê²ƒë„ í•˜ì§€ ì•Šê³  success
+ *     2. fileì„ closeí•˜ê³ , filelistì—ì„œ ì œê±°
+ *     3. return valueëŠ” nullë¡œ ì„¸íŒ…
  *
  ***********************************************************************/
     
@@ -185,7 +185,7 @@ IDE_RC qsfCalculate_FClose( mtcNode*     aNode,
         }
         else
         {
-            // FCLOSE_ALL µîÀ¸·Î ÀÌ¹Ì ÆÄÀÏÀÌ ´İÇôÀÖ´Â °æ¿ìÀÓ.
+            // FCLOSE_ALL ë“±ìœ¼ë¡œ ì´ë¯¸ íŒŒì¼ì´ ë‹«í˜€ìˆëŠ” ê²½ìš°ì„.
             // Nothing to do
         }
     }

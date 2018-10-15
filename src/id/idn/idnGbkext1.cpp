@@ -831,11 +831,11 @@ SInt convertMbToWc4Gbkext1( void    * aSrc,
 /***********************************************************************
  *
  * Description :
- *     PROJ-2414 [±â´É¼º] GBK, CP936 character set Ãß°¡
+ *     PROJ-2414 [ê¸°ëŠ¥ì„±] GBK, CP936 character set ì¶”ê°€
  *     GBKEXT1 ==> UTF16BE
  *
  * Implementation :
- *     1) GBKEXT1 ÀÇ º¯È¯¹æ¾ÈÀ» Àû¿ë.
+ *     1) GBKEXT1 ì˜ ë³€í™˜ë°©ì•ˆì„ ì ìš©.
  *
  ***********************************************************************/
 
@@ -854,7 +854,7 @@ SInt convertMbToWc4Gbkext1( void    * aSrc,
         }
         else
         {
-            /* 1) GBKEXT1 ÀÇ º¯È¯¹æ¾ÈÀ» Àû¿ë */
+            /* 1) GBKEXT1 ì˜ ë³€í™˜ë°©ì•ˆì„ ì ìš© */
             if ( ( ( sSrcCharPtr[1] >= 0x40 ) && ( sSrcCharPtr[1] < 0x7f ) ) ||
                  ( ( sSrcCharPtr[1] >= 0x80 ) && ( sSrcCharPtr[1] < 0xff ) ) )
             {
@@ -871,7 +871,7 @@ SInt convertMbToWc4Gbkext1( void    * aSrc,
                 }
                 else
                 {
-                    /* sNum ÃÖ´ë°ªÀÌ 6079 À¸·Î »ç½Ç»ó Á¢±ÙÇÒ ¼ö ¾ø´Â ºÐ±âÀÌ´Ù.
+                    /* sNum ìµœëŒ€ê°’ì´ 6079 ìœ¼ë¡œ ì‚¬ì‹¤ìƒ ì ‘ê·¼í•  ìˆ˜ ì—†ëŠ” ë¶„ê¸°ì´ë‹¤.
                      *
                      * sNum = ( 190 * ( 0xa0 - 0x81 ) ) = 5890
                      * sNum += ( 0xfe - 0x41 ) = 189
@@ -888,7 +888,7 @@ SInt convertMbToWc4Gbkext1( void    * aSrc,
     }
     else
     {
-        /* GBK ¿¡¼­ ÀÌ¹Ì Ã¼Å©ÇÏ±â ¶§¹®¿¡, »ç½Ç»ó Á¢±ÙÇÒ ¼ö ¾ø´Â ºÐ±âÀÌ´Ù. */
+        /* GBK ì—ì„œ ì´ë¯¸ ì²´í¬í•˜ê¸° ë•Œë¬¸ì—, ì‚¬ì‹¤ìƒ ì ‘ê·¼í•  ìˆ˜ ì—†ëŠ” ë¶„ê¸°ì´ë‹¤. */
         sRet = RET_ILSEQ;
     }
 

@@ -46,7 +46,7 @@ IDE_RC qsfSecureHashStrCalculate(mtcNode*     aNode,
 mtfModule qsfSecureHashStrModule = {
     1|MTC_NODE_OPERATOR_FUNCTION,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
+    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìžê°€ ì•„ë‹˜)
     qsfSecureHashStrFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -152,12 +152,12 @@ IDE_RC qsfSecureHashStrCalculate(mtcNode*     aNode,
     sPlainText = (mtdCharType*)aStack[1].value;
     sHashType  = (mtdCharType*)aStack[2].value;
 
-    /* hash typeÀº 10 byte¸¦ ³ÑÁö ¾Ê¾Æ¾ß ÇÑ´Ù. */
+    /* hash typeì€ 10 byteë¥¼ ë„˜ì§€ ì•Šì•„ì•¼ í•œë‹¤. */
     IDE_TEST_RAISE( ( sHashType->length == 0 ) ||
                     ( sHashType->length > QCS_HASH_TYPE_MAX_SIZE ),
                     ERR_INVALID_HASH_TYPE );
 
-    /* hash typeÀº null terminate¿©¾ß ÇÑ´Ù. */
+    /* hash typeì€ null terminateì—¬ì•¼ í•œë‹¤. */
     idlOS::memcpy( sType, sHashType->value, sHashType->length );
     sType[sHashType->length] = '\0';
 

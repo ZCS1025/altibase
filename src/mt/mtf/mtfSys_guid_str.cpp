@@ -21,8 +21,8 @@
 
 /***********************************************************************
  * SYS_GUID_STR() :
- * 128bit GUID( Globally Unique IDentifier )¸¦ »ı¼ºÇÏ°í,
- * VARCHARÅ¸ÀÔÀÇ 32±ÛÀÚ Hex string ÇüÅÂ·Î ¹İÈ¯ÇÑ´Ù.
+ * 128bit GUID( Globally Unique IDentifier )ë¥¼ ìƒì„±í•˜ê³ ,
+ * VARCHARíƒ€ì…ì˜ 32ê¸€ì Hex string í˜•íƒœë¡œ ë°˜í™˜í•œë‹¤.
  * 
  * ex) 
  * SELECT SYS_GUID_STR() FROM DUAL;
@@ -32,7 +32,7 @@
  * A8C04F0335873CAD5502F6745043E51C
  * 1 row selected.
  *
- * GUID´Â ´ÙÀ½°ú °°ÀÌ ±¸¼ºµÈ´Ù. 
+ * GUIDëŠ” ë‹¤ìŒê³¼ ê°™ì´ êµ¬ì„±ëœë‹¤. 
  *
  * ( 8 Bytes ) : HOST_ID 
  * (16 Bytes ) : INCREMENTAL VALUE
@@ -69,7 +69,7 @@ static IDE_RC mtfSys_guidEstimate( mtcNode*     aNode,
 mtfModule mtfSys_guid_str = {
     1|MTC_NODE_OPERATOR_FUNCTION|MTC_NODE_VARIABLE_TRUE,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
+    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìê°€ ì•„ë‹˜)
     mtfSys_guidFunctionName,
     NULL,
     mtf::initializeDefault,

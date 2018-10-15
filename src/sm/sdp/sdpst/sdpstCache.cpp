@@ -19,8 +19,8 @@
  *
  * $Id: sdpstCache.cpp 27229 2008-07-23 17:37:19Z newdaily $
  *
- * º» ÆÄÀÏÀº Treelist Managed SegmentÀÇ Segment Runtime Cache¿¡ ´ëÇÑ
- * STATIC ÀÎÅÍÆäÀÌ½º¸¦ °ü¸®ÇÑ´Ù.
+ * ë³¸ íŒŒì¼ì€ Treelist Managed Segmentì˜ Segment Runtime Cacheì— ëŒ€í•œ
+ * STATIC ì¸í„°í˜ì´ìŠ¤ë¥¼ ê´€ë¦¬í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -36,7 +36,7 @@
 # include <smuProperty.h>
 
 /***********************************************************************
- * Description : Segment ¸ğµâ ÃÊ±âÈ­
+ * Description : Segment ëª¨ë“ˆ ì´ˆê¸°í™”
  ***********************************************************************/
 IDE_RC sdpstCache::initialize( sdpSegHandle * aSegHandle,
                                scSpaceID      aSpaceID,
@@ -66,19 +66,19 @@ IDE_RC sdpstCache::initialize( sdpSegHandle * aSegHandle,
                                  aTableOID,
                                  aIndexID );
 
-    /* Segment WM °»½ÅÀ» À§ÇÑ Latch */
+    /* Segment WM ê°±ì‹ ì„ ìœ„í•œ Latch */
     IDE_ASSERT( (sSegCache->mLatch4WM).initialize((SChar*)"TMS_WM_LATCH") == IDE_SUCCESS );
 
-    /* Segment °ø°£È®ÀåÀ» À§ÇÑ Mutex*/
+    /* Segment ê³µê°„í™•ì¥ì„ ìœ„í•œ Mutex*/
     IDE_ASSERT( sSegCache->mExtendExt.initialize(
                                      (SChar*)"TMS_EXTEND_MUTEX",
                                      IDU_MUTEX_KIND_POSIX,
                                      IDV_WAIT_INDEX_NULL ) == IDE_SUCCESS );
 
-    /* Segment °ø°£ È®Àå ÁøÇà ¿©ºÎ */
+    /* Segment ê³µê°„ í™•ì¥ ì§„í–‰ ì—¬ë¶€ */
     sSegCache->mOnExtend = ID_FALSE;
 
-    /* Condition Variable ÃÊ±âÈ­ */
+    /* Condition Variable ì´ˆê¸°í™” */
     IDE_TEST_RAISE( sSegCache->mCondVar.initialize((SChar *)"TMS_COND") != IDE_SUCCESS,
                     error_cond_init );
 
@@ -88,18 +88,18 @@ IDE_RC sdpstCache::initialize( sdpSegHandle * aSegHandle,
     /* Segment Type */
     sSegCache->mSegType = aSegType;
 
-    /* TMS It Hint ÃÊ±âÈ­ */
+    /* TMS It Hint ì´ˆê¸°í™” */
     clearItHint( sSegCache );
 
-    /* Candidate Child SetÀ» ¸¸µé±â À§ÇÑ Hint */
+    /* Candidate Child Setì„ ë§Œë“¤ê¸° ìœ„í•œ Hint */
     sSegCache->mHint4CandidateChild = 0;
 
-    /* Page Å½»ö ½ÃÀÛ Hint °»½ÅÀ» À§ÇÑ Mutex */
+    /* Page íƒìƒ‰ ì‹œì‘ Hint ê°±ì‹ ì„ ìœ„í•œ Mutex */
     IDE_ASSERT( (sSegCache->mHint4Page.mLatch4Hint).initialize(
                                      (SChar*)"TMS_ITHINT4PAGE_LATCH")
                 == IDE_SUCCESS );
 
-    /* Slot Å½»ö ½ÃÀÛ Hint °»½ÅÀ» À§ÇÑ Mutex */
+    /* Slot íƒìƒ‰ ì‹œì‘ Hint ê°±ì‹ ì„ ìœ„í•œ Mutex */
     IDE_ASSERT( (sSegCache->mHint4Slot.mLatch4Hint).initialize(
                                      (SChar*)"TMS_ITHINT4PAGE_LATCH")
                 == IDE_SUCCESS );
@@ -107,7 +107,7 @@ IDE_RC sdpstCache::initialize( sdpSegHandle * aSegHandle,
     /* format page count */
     sSegCache->mFmtPageCnt     = 0;
 
-    /* Segment Lst Alloc Page °»½ÅÀ» À§ÇÑ Mutex */
+    /* Segment Lst Alloc Page ê°±ì‹ ì„ ìœ„í•œ Mutex */
     IDE_ASSERT( sSegCache->mMutex4LstAllocPage.initialize(
                                      (SChar*)"TMS_LST_ALLOC_PAGE",
                                      IDU_MUTEX_KIND_NATIVE,
@@ -128,7 +128,7 @@ IDE_RC sdpstCache::initialize( sdpSegHandle * aSegHandle,
 
     if ( aSegHandle->mSegPID != SD_NULL_PID )
     {
-        /* HWM/format page count¸¦ ¼³Á¤ÇÑ´Ù. */
+        /* HWM/format page countë¥¼ ì„¤ì •í•œë‹¤. */
         IDE_TEST( sdbBufferMgr::getPageByPID( NULL, /* aStatistics */
                                               aSpaceID,
                                               aSegHandle->mSegPID,
@@ -151,7 +151,7 @@ IDE_RC sdpstCache::initialize( sdpSegHandle * aSegHandle,
         IDE_TEST( sdbBufferMgr::releasePage( NULL, (UChar*)sSegHdr )
                   != IDE_SUCCESS );
 
-        /* Internal Hint¸¦ ¼³Á¤ÇÑ´Ù. */
+        /* Internal Hintë¥¼ ì„¤ì •í•œë‹¤. */
         IDE_TEST( sdpstRtBMP::rescanItHint(
                                 NULL,     /* aStatistics */
                                 aSpaceID,
@@ -194,16 +194,16 @@ IDE_RC sdpstCache::initialize( sdpSegHandle * aSegHandle,
 }
 
 /***********************************************************************
- * Description : Segment CacheÀÇ Hint page array¸¦ ÇÒ´ç ¹× ÃÊ±âÈ­ÇÑ´Ù.
- *               BUG-28935 hint page array¸¦ server startÈÄ ÃÖÃÊÀÇ
- *               get insertable page¿¡¼­ alloc ÇÏµµ·Ï ¼öÁ¤
+ * Description : Segment Cacheì˜ Hint page arrayë¥¼ í• ë‹¹ ë° ì´ˆê¸°í™”í•œë‹¤.
+ *               BUG-28935 hint page arrayë¥¼ server startí›„ ìµœì´ˆì˜
+ *               get insertable pageì—ì„œ alloc í•˜ë„ë¡ ìˆ˜ì •
  ***********************************************************************/
 void sdpstCache::allocHintPageArray( sdpstSegCache * aSegCache )
 {
     lockLstAllocPage( NULL, // aStatistics
                       aSegCache );
 
-    /* AllocÇÏ´Â »çÀÌ¿¡ ´Ù¸¥ Thread°¡ ÀÌ¹Ì ÇÒ´ç ÇÏ¿´´ÂÁö È®ÀÎÇÑ´Ù.*/
+    /* Allocí•˜ëŠ” ì‚¬ì´ì— ë‹¤ë¥¸ Threadê°€ ì´ë¯¸ í• ë‹¹ í•˜ì˜€ëŠ”ì§€ í™•ì¸í•œë‹¤.*/
     if( aSegCache->mHint4DataPage == NULL )
     {
         IDE_ASSERT( iduMemMgr::calloc( IDU_MEM_SM_SDP, 1,
@@ -212,9 +212,9 @@ void sdpstCache::allocHintPageArray( sdpstSegCache * aSegCache )
                                        IDU_MEM_FORCE )
                     == IDE_SUCCESS );
 
-        /* È¤½Ã ³ªÁß¿¡ SM_NULL_PID°¡ º¯°æµÇ¾î 0ÀÌ ¾Æ´Ï°Ô µÇ¸é
-         * callocÀ¸·Î ÇÒ´ç ¹Ş¾Ò´Ù°í ÇØµµ ÃÊ±âÈ­ µÇÁö ¾ÊÀº °ÍÀÌ¹Ç·Î
-         * ÇÑ¹ø ´õ È®ÀÎÇÑ´Ù. */
+        /* í˜¹ì‹œ ë‚˜ì¤‘ì— SM_NULL_PIDê°€ ë³€ê²½ë˜ì–´ 0ì´ ì•„ë‹ˆê²Œ ë˜ë©´
+         * callocìœ¼ë¡œ í• ë‹¹ ë°›ì•˜ë‹¤ê³  í•´ë„ ì´ˆê¸°í™” ë˜ì§€ ì•Šì€ ê²ƒì´ë¯€ë¡œ
+         * í•œë²ˆ ë” í™•ì¸í•œë‹¤. */
         IDE_DASSERT( aSegCache->mHint4DataPage[0] == SM_NULL_PID );
     }
 
@@ -223,7 +223,7 @@ void sdpstCache::allocHintPageArray( sdpstSegCache * aSegCache )
 
 
 /***********************************************************************
- * Description : Segment CacheÀÇ Search HintÁ¤º¸¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+ * Description : Segment Cacheì˜ Search Hintì •ë³´ë¥¼ ì´ˆê¸°í™”í•œë‹¤.
  ***********************************************************************/
 void sdpstCache::clearItHint( void * aSegCache )
 {
@@ -232,18 +232,18 @@ void sdpstCache::clearItHint( void * aSegCache )
 
     sSegCache = (sdpstSegCache *)aSegCache;
 
-    /* Slot ÇÒ´çÀ» À§ÇÑ °¡¿ë°ø°£Å½»ö ½ÃÀÛ internal bitmap pageÀÇ Hint*/
+    /* Slot í• ë‹¹ì„ ìœ„í•œ ê°€ìš©ê³µê°„íƒìƒ‰ ì‹œì‘ internal bitmap pageì˜ Hint*/
     sdpstStackMgr::initialize( &(sSegCache->mHint4Slot.mHintItStack) );
     sSegCache->mHint4Slot.mUpdateHintItBMP       = ID_FALSE;
 
-    /* Page ÇÒ´çÀ» À§ÇÑ °¡¿ë°ø°£Å½»ö ½ÃÀÛ internal bitmap pageÀÇ Hint*/
+    /* Page í• ë‹¹ì„ ìœ„í•œ ê°€ìš©ê³µê°„íƒìƒ‰ ì‹œì‘ internal bitmap pageì˜ Hint*/
     sdpstStackMgr::initialize( &(sSegCache->mHint4Page.mHintItStack) );
     sSegCache->mHint4Page.mUpdateHintItBMP       = ID_FALSE;
 }
 
 
 /***********************************************************************
- * Description : Segment ¸ğµâ ÇØÁ¦
+ * Description : Segment ëª¨ë“ˆ í•´ì œ
  ***********************************************************************/
 IDE_RC sdpstCache::destroy( sdpSegHandle * aSegHandle )
 {
@@ -261,13 +261,13 @@ IDE_RC sdpstCache::destroy( sdpSegHandle * aSegHandle )
     IDE_TEST_RAISE( sSegCache->mCondVar.destroy() != IDE_SUCCESS,
                     error_cond_destroy );
 
-    // Segment Extent Mutex¸¦ ÇØÁ¦ÇÑ´Ù.
+    // Segment Extent Mutexë¥¼ í•´ì œí•œë‹¤.
     IDE_ASSERT( sSegCache->mExtendExt.destroy() == IDE_SUCCESS);
 
-    // Segment WM Latch¸¦ ÇØÁ¦ÇÑ´Ù.
+    // Segment WM Latchë¥¼ í•´ì œí•œë‹¤.
     IDE_ASSERT( ((sSegCache->mLatch4WM).destroy()) == IDE_SUCCESS);
 
-    // Segment Last Alloc Page Mutex¸¦ ÇØÁ¦ÇÑ´Ù.
+    // Segment Last Alloc Page Mutexë¥¼ í•´ì œí•œë‹¤.
     IDE_ASSERT( sSegCache->mMutex4LstAllocPage.destroy() == IDE_SUCCESS );
 
     if( sSegCache->mHint4DataPage != NULL )
@@ -275,7 +275,7 @@ IDE_RC sdpstCache::destroy( sdpSegHandle * aSegHandle )
         IDE_ASSERT( iduMemMgr::free( sSegCache->mHint4DataPage ) == IDE_SUCCESS );
     }
 
-    // Segment Cache¸¦ ¸Ş¸ğ¸® ÇØÁ¦ÇÑ´Ù.
+    // Segment Cacheë¥¼ ë©”ëª¨ë¦¬ í•´ì œí•œë‹¤.
     IDE_ASSERT( iduMemMgr::free( aSegHandle->mCache ) == IDE_SUCCESS );
     aSegHandle->mCache = NULL;
 
@@ -289,7 +289,7 @@ IDE_RC sdpstCache::destroy( sdpSegHandle * aSegHandle )
 }
 
 /***********************************************************************
- * Description : Segment È®Àå¿¡ ´ëÇÑ Extent MutexÀ» È¹µæ È¤Àº ´ë±â
+ * Description : Segment í™•ì¥ì— ëŒ€í•œ Extent Mutexì„ íšë“ í˜¹ì€ ëŒ€ê¸°
  ***********************************************************************/
 IDE_RC sdpstCache::prepareExtendExtOrWait( idvSQL            * aStatistics,
                                         sdpstSegCache * aSegCache,
@@ -301,14 +301,14 @@ IDE_RC sdpstCache::prepareExtendExtOrWait( idvSQL            * aStatistics,
 
     lockExtendExt( aStatistics, aSegCache );
 
-    // Extent ÁøÇà ¿©ºÎ¸¦ ÆÇ´ÜÇÑ´Ù.
+    // Extent ì§„í–‰ ì—¬ë¶€ë¥¼ íŒë‹¨í•œë‹¤.
     if( isOnExtend( aSegCache ) == ID_TRUE )
     {
-        /* BUG-44834 Æ¯Á¤ Àåºñ¿¡¼­ sprious wakeup Çö»óÀÌ ¹ß»ıÇÏ¹Ç·Î 
-                     wakeup ÈÄ¿¡µµ ´Ù½Ã È®ÀÎ ÇÏµµ·Ï while¹®À¸·Î Ã¼Å©ÇÑ´Ù.*/
+        /* BUG-44834 íŠ¹ì • ì¥ë¹„ì—ì„œ sprious wakeup í˜„ìƒì´ ë°œìƒí•˜ë¯€ë¡œ 
+                     wakeup í›„ì—ë„ ë‹¤ì‹œ í™•ì¸ í•˜ë„ë¡ whileë¬¸ìœ¼ë¡œ ì²´í¬í•œë‹¤.*/
         while ( isOnExtend( aSegCache ) == ID_TRUE )
         {
-            // ExrExt Mutex¸¦ È¹µæÇÑ »óÅÂ¿¡¼­ ´ë±âÀÚ¸¦ Áõ°¡½ÃÅ²´Ù.
+            // ExrExt Mutexë¥¼ íšë“í•œ ìƒíƒœì—ì„œ ëŒ€ê¸°ìë¥¼ ì¦ê°€ì‹œí‚¨ë‹¤.
             aSegCache->mWaitThrCnt4Extend++;
 
             IDE_TEST_RAISE( aSegCache->mCondVar.wait(&(aSegCache->mExtendExt))
@@ -316,13 +316,13 @@ IDE_RC sdpstCache::prepareExtendExtOrWait( idvSQL            * aStatistics,
 
             aSegCache->mWaitThrCnt4Extend--;
         }
-        // ÀÌ¹Ì Extend°¡ ¿Ï·áµÇ¾ú±â ¶§¹®¿¡ Extent È®ÀåÀ»
-        // ¿¬ÀÌ¾î ÇÒÇÊ¿ä¾øÀÌ °¡¿ë°ø°£ Å½»öÀ» ÁøÇàÇÑ´Ù.
+        // ì´ë¯¸ Extendê°€ ì™„ë£Œë˜ì—ˆê¸° ë•Œë¬¸ì— Extent í™•ì¥ì„
+        // ì—°ì´ì–´ í• í•„ìš”ì—†ì´ ê°€ìš©ê³µê°„ íƒìƒ‰ì„ ì§„í–‰í•œë‹¤.
         *aDoExtendExt = ID_FALSE;
     }
     else
     {
-        // Á÷Á¢ Segment È®ÀåÀ» ¼öÇàÇÏ±â À§ÇØ OnExtend¸¦ On½ÃÅ²´Ù.
+        // ì§ì ‘ Segment í™•ì¥ì„ ìˆ˜í–‰í•˜ê¸° ìœ„í•´ OnExtendë¥¼ Onì‹œí‚¨ë‹¤.
         aSegCache->mOnExtend = ID_TRUE;
         *aDoExtendExt = ID_TRUE;
     }
@@ -342,8 +342,8 @@ IDE_RC sdpstCache::prepareExtendExtOrWait( idvSQL            * aStatistics,
 
 
 /***********************************************************************
- * Description : Segment È®Àå¿¡ ´ëÇÑ Extent MutexÀ» È¹µæ È¤Àº ´ë±â
- *               ´ë±âÇÏ´Â Æ®·£Àè¼Ç ±ú¿î´Ù.
+ * Description : Segment í™•ì¥ì— ëŒ€í•œ Extent Mutexì„ íšë“ í˜¹ì€ ëŒ€ê¸°
+ *               ëŒ€ê¸°í•˜ëŠ” íŠ¸ëœì­ì…˜ ê¹¨ìš´ë‹¤.
  ***********************************************************************/
 IDE_RC sdpstCache::completeExtendExtAndWakeUp( idvSQL            * aStatistics,
                                             sdpstSegCache * aSegCache )
@@ -355,12 +355,12 @@ IDE_RC sdpstCache::completeExtendExtAndWakeUp( idvSQL            * aStatistics,
 
     if ( aSegCache->mWaitThrCnt4Extend > 0 )
     {
-        // ´ë±â Æ®·£Àè¼ÇÀ» ¸ğµÎ ±ú¿î´Ù.
+        // ëŒ€ê¸° íŠ¸ëœì­ì…˜ì„ ëª¨ë‘ ê¹¨ìš´ë‹¤.
         IDE_TEST_RAISE(aSegCache->mCondVar.broadcast() != IDE_SUCCESS,
                        error_cond_signal );
     }
 
-    // Segment È®Àå ÁøÇàÀ» ¿Ï·áÇÏ¿´À½À» ¼³Á¤ÇÑ´Ù.
+    // Segment í™•ì¥ ì§„í–‰ì„ ì™„ë£Œí•˜ì˜€ìŒì„ ì„¤ì •í•œë‹¤.
     aSegCache->mOnExtend = ID_FALSE;
 
     unlockExtendExt( aSegCache );
@@ -378,8 +378,8 @@ IDE_RC sdpstCache::completeExtendExtAndWakeUp( idvSQL            * aStatistics,
 
 
 /***********************************************************************
- * Description : °¡¿ë°ø°£ Å½»ö½Ã ½ÃÀÛ it-bmp ÆäÀÌÁöÀÇ À§Ä¡ÀÌ·ÂÀ»
- *               ÈÄÁø½ÃÅ²´Ù.
+ * Description : ê°€ìš©ê³µê°„ íƒìƒ‰ì‹œ ì‹œì‘ it-bmp í˜ì´ì§€ì˜ ìœ„ì¹˜ì´ë ¥ì„
+ *               í›„ì§„ì‹œí‚¨ë‹¤.
  ***********************************************************************/
 void sdpstCache::setItHintIfLT( idvSQL            * aStatistics,
                                 sdpstSegCache     * aSegCache,
@@ -395,7 +395,7 @@ void sdpstCache::setItHintIfLT( idvSQL            * aStatistics,
                 aSearchType == SDPST_SEARCH_NEWPAGE );
     
 
-    /* break ¹®Àº default¿¡¸¸ ÀÖ´Ù. */
+    /* break ë¬¸ì€ defaultì—ë§Œ ìˆë‹¤. */
     switch( aSearchType )
     {
         case SDPST_SEARCH_NEWPAGE:
@@ -443,8 +443,8 @@ void sdpstCache::setItHintIfLT( idvSQL            * aStatistics,
 }
 
 /***********************************************************************
- * Description : °¡¿ë°ø°£ Å½»ö½Ã ½ÃÀÛ it-bmp ÆäÀÌÁöÀÇ À§Ä¡ÀÌ·ÂÀ» ÀüÁø
- *               ½ÃÅ²´Ù.
+ * Description : ê°€ìš©ê³µê°„ íƒìƒ‰ì‹œ ì‹œì‘ it-bmp í˜ì´ì§€ì˜ ìœ„ì¹˜ì´ë ¥ì„ ì „ì§„
+ *               ì‹œí‚¨ë‹¤.
  ***********************************************************************/
 void sdpstCache::setItHintIfGT( idvSQL            * aStatistics,
                                 sdpstSegCache     * aSegCache,
@@ -496,7 +496,7 @@ void sdpstCache::setItHintIfGT( idvSQL            * aStatistics,
 }
 
 /***********************************************************************
- * Description : HWM À» º¹»çÇÑ´Ù.
+ * Description : HWM ì„ ë³µì‚¬í•œë‹¤.
  ***********************************************************************/
 void sdpstCache::copyHWM( idvSQL            * aStatistics,
                           sdpstSegCache     * aSegCache,
@@ -511,8 +511,8 @@ void sdpstCache::copyHWM( idvSQL            * aStatistics,
 }
 
 /***********************************************************************
- * Description : °¡¿ë°ø°£ Å½»ö½Ã ½ÃÀÛ it-bmp ÆäÀÌÁöÀÇ À§Ä¡ÀÌ·ÂÀ»
- *               º¹»çÇÑ´Ù.
+ * Description : ê°€ìš©ê³µê°„ íƒìƒ‰ì‹œ ì‹œì‘ it-bmp í˜ì´ì§€ì˜ ìœ„ì¹˜ì´ë ¥ì„
+ *               ë³µì‚¬í•œë‹¤.
  ***********************************************************************/
 void sdpstCache::copyItHint( idvSQL            * aStatistics,
                              sdpstSegCache     * aSegCache,
@@ -577,7 +577,7 @@ void sdpstCache::initItHint( idvSQL            * aStatistics,
 }
 
 /***********************************************************************
- * Description : it hint Áß¿¡ ÃÖ¼Ò hint À§Ä¡¸¦ ¹İÈ¯ÇÑ´Ù.
+ * Description : it hint ì¤‘ì— ìµœì†Œ hint ìœ„ì¹˜ë¥¼ ë°˜í™˜í•œë‹¤.
  ***********************************************************************/
 sdpstStack sdpstCache::getMinimumItHint( idvSQL        * aStatistics,
                                          sdpstSegCache * aSegCache )
@@ -587,8 +587,8 @@ sdpstStack sdpstCache::getMinimumItHint( idvSQL        * aStatistics,
 
     IDE_ASSERT( aSegCache != NULL );
     /*
-     * free page°¡ ¹ß»ıÇÑ À§Ä¡°¡ it hint ÆäÀÌÁöº¸´Ù ¾ÕÀÌ¶ó¸é,
-     * Segment CacheÀÇ Hint Flag¸¦ On ½ÃÄÑ¾ß ÇÑ´Ù.
+     * free pageê°€ ë°œìƒí•œ ìœ„ì¹˜ê°€ it hint í˜ì´ì§€ë³´ë‹¤ ì•ì´ë¼ë©´,
+     * Segment Cacheì˜ Hint Flagë¥¼ On ì‹œì¼œì•¼ í•œë‹¤.
      */
     sdpstCache::copyItHint( aStatistics,
                             aSegCache,
@@ -614,8 +614,8 @@ sdpstStack sdpstCache::getMinimumItHint( idvSQL        * aStatistics,
         IDE_ASSERT( 0 );
     }
 
-    /* ÀÛÀº °ÍÀ» ¼±ÅÃÇÏ´Â ÀÌÀ¯´Â free page°¡ ¹ß»ıÇÏ¸é, slot hint¿Í page hint¿¡
-     * ¸ğµÎ ¿µÇâÀ» ¹ÌÄ¡±â ¶§¹®ÀÌ´Ù */
+    /* ì‘ì€ ê²ƒì„ ì„ íƒí•˜ëŠ” ì´ìœ ëŠ” free pageê°€ ë°œìƒí•˜ë©´, slot hintì™€ page hintì—
+     * ëª¨ë‘ ì˜í–¥ì„ ë¯¸ì¹˜ê¸° ë•Œë¬¸ì´ë‹¤ */
     if ( sdpstStackMgr::compareStackPos( &sItHint4Slot, &sItHint4Page ) > 0 )
     {
         return sItHint4Page;
@@ -627,7 +627,7 @@ sdpstStack sdpstCache::getMinimumItHint( idvSQL        * aStatistics,
 }
 
 /***********************************************************************
- * Description : [INTERFACE] Hint Á¤º¸¸¦ ¹İÈ¯ÇÑ´Ù.
+ * Description : [INTERFACE] Hint ì •ë³´ë¥¼ ë°˜í™˜í•œë‹¤.
  ***********************************************************************/
 void sdpstCache::getHintPosInfo( idvSQL          * aStatistics,
                                  void            * aSegCache,
@@ -711,7 +711,7 @@ void sdpstCache::getHintPosInfo( idvSQL          * aStatistics,
 }
 
 /***********************************************************************
- * Description : [INTERFACE] SegmentÀÇ Format Page Count¸¦ ¹İÈ¯ÇÑ´Ù.
+ * Description : [INTERFACE] Segmentì˜ Format Page Countë¥¼ ë°˜í™˜í•œë‹¤.
  ***********************************************************************/
 IDE_RC sdpstCache::getFmtPageCnt( idvSQL          * /*aStatistics*/,
                                   scSpaceID         /*aSpaceID*/,
@@ -731,7 +731,7 @@ IDE_RC sdpstCache::getFmtPageCnt( idvSQL          * /*aStatistics*/,
 }
 
 /***********************************************************************
- * Description : [INTERFACE] Segment Cache¿¡ LstAllocPage¸¦ ¼³Á¤ÇÑ´Ù.
+ * Description : [INTERFACE] Segment Cacheì— LstAllocPageë¥¼ ì„¤ì •í•œë‹¤.
  ***********************************************************************/
 IDE_RC sdpstCache::setLstAllocPage( idvSQL          * aStatistics,
                                     sdpSegHandle    * aSegHandle,
@@ -747,10 +747,10 @@ IDE_RC sdpstCache::setLstAllocPage( idvSQL          * aStatistics,
 
     IDE_ASSERT( sSegCache != NULL );
 
-    /* Á¤¸»·Î °»½ÅÇØ¾ß ÇÏ´ÂÁö lockÀ» Àâ°í È®ÀÎÇØº»´Ù. */
+    /* ì •ë§ë¡œ ê°±ì‹ í•´ì•¼ í•˜ëŠ”ì§€ lockì„ ì¡ê³  í™•ì¸í•´ë³¸ë‹¤. */
     lockLstAllocPage( aStatistics, sSegCache );
 
-    /* ÀÌÀü ¸¶Áö¸· ÇÒ´çµÈ ÆäÀÌÁö ÀÌÈÄ ÆäÀÌÁöÀÌ¸é, ¼³Á¤ÇÑ´Ù. */
+    /* ì´ì „ ë§ˆì§€ë§‰ í• ë‹¹ëœ í˜ì´ì§€ ì´í›„ í˜ì´ì§€ì´ë©´, ì„¤ì •í•œë‹¤. */
     if ( sSegCache->mLstAllocSeqNo <= aLstAllocSeqNo )
     {
         sSegCache->mUseLstAllocPageHint = ID_TRUE;
@@ -764,7 +764,7 @@ IDE_RC sdpstCache::setLstAllocPage( idvSQL          * aStatistics,
 }
 
 /***********************************************************************
- * Description : Segment Cache¿¡ LstAllocPage¸¦ ¼³Á¤ÇÑ´Ù.
+ * Description : Segment Cacheì— LstAllocPageë¥¼ ì„¤ì •í•œë‹¤.
  ***********************************************************************/
 IDE_RC sdpstCache::setLstAllocPage4AllocPage( idvSQL          * aStatistics,
                                               sdpSegHandle    * aSegHandle,
@@ -780,10 +780,10 @@ IDE_RC sdpstCache::setLstAllocPage4AllocPage( idvSQL          * aStatistics,
 
     IDE_ASSERT( sSegCache != NULL );
 
-    /* Á¤¸»·Î °»½ÅÇØ¾ß ÇÏ´ÂÁö lockÀ» Àâ°í È®ÀÎÇØº»´Ù. */
+    /* ì •ë§ë¡œ ê°±ì‹ í•´ì•¼ í•˜ëŠ”ì§€ lockì„ ì¡ê³  í™•ì¸í•´ë³¸ë‹¤. */
     lockLstAllocPage( aStatistics, sSegCache );
 
-    /* ÀÌÀü ¸¶Áö¸· ÇÒ´çµÈ ÆäÀÌÁö ÀÌÈÄ ÆäÀÌÁöÀÌ¸é, ¼³Á¤ÇÑ´Ù. */
+    /* ì´ì „ ë§ˆì§€ë§‰ í• ë‹¹ëœ í˜ì´ì§€ ì´í›„ í˜ì´ì§€ì´ë©´, ì„¤ì •í•œë‹¤. */
     if ( sSegCache->mLstAllocSeqNo < aLstAllocSeqNo )
     {
         sSegCache->mLstAllocPID   = aLstAllocPID;
@@ -796,7 +796,7 @@ IDE_RC sdpstCache::setLstAllocPage4AllocPage( idvSQL          * aStatistics,
 }
 
 /***********************************************************************
- * Description : Segment Hint Data Page¸¦ °¡Á®¿Â´Ù.
+ * Description : Segment Hint Data Pageë¥¼ ê°€ì ¸ì˜¨ë‹¤.
  ***********************************************************************/
 void sdpstCache::getHintDataPage( idvSQL            * aStatistics,
                                   sdpstSegCache     * aSegCache,
@@ -821,7 +821,7 @@ void sdpstCache::getHintDataPage( idvSQL            * aStatistics,
 }
 
 /***********************************************************************
- * Description : Segment Hint Data Page¸¦ ¼³Á¤ÇÑ´Ù.
+ * Description : Segment Hint Data Pageë¥¼ ì„¤ì •í•œë‹¤.
  ***********************************************************************/
 void sdpstCache::setHintDataPage( idvSQL            * aStatistics,
                                   sdpstSegCache     * aSegCache,
@@ -845,7 +845,7 @@ void sdpstCache::setHintDataPage( idvSQL            * aStatistics,
 }
 
 /***********************************************************************
- * Description : [INTERFACE] Segment Cache Info ¸¦ °¡Á®¿Â´Ù.
+ * Description : [INTERFACE] Segment Cache Info ë¥¼ ê°€ì ¸ì˜¨ë‹¤.
  ***********************************************************************/
 IDE_RC sdpstCache::getSegCacheInfo( idvSQL          * aStatistics,
                                     sdpSegHandle    * aSegHandle,

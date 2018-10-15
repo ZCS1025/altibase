@@ -37,9 +37,9 @@
 
 /***********************************************************************
  * Description :
- * Vertex¿¡ µî·ÏµÇ¾î ÀÖ´Â VertexEntry¸¦ °¢ Entry°¡ ÂüÁ¶ÇÏ´Â ¼¼±×¸ÕÆ®ÀÇ 
- * °¢µµ¿¡ µû¶ó Á¤·ÄÇÏ°í, VertexEntryÀÇ ½ÃÀÛ°ú ³¡À» ÀÌ¾î¼­ ¼øÈ¯ÇüÅÂ·Î
- * ¸¸µç´Ù. 
+ * Vertexì— ë“±ë¡ë˜ì–´ ìˆëŠ” VertexEntryë¥¼ ê° Entryê°€ ì°¸ì¡°í•˜ëŠ” ì„¸ê·¸ë¨¼íŠ¸ì˜ 
+ * ê°ë„ì— ë”°ë¼ ì •ë ¬í•˜ê³ , VertexEntryì˜ ì‹œì‘ê³¼ ëì„ ì´ì–´ì„œ ìˆœí™˜í˜•íƒœë¡œ
+ * ë§Œë“ ë‹¤. 
  * 
  *                      Seg2 (Entry2)
  *                      /
@@ -47,11 +47,11 @@
  * (Entry1) Seg1 -----*----- Seg3 (Entry3)
  *            aVertex
  * 
- * À§ ±×¸²°ú °°Àº °æ¿ì Vertex¿¡¼­ VertexEntryÀÇ ¼ø¼­´Â 
+ * ìœ„ ê·¸ë¦¼ê³¼ ê°™ì€ ê²½ìš° Vertexì—ì„œ VertexEntryì˜ ìˆœì„œëŠ” 
  * 
- *   3->2->1->3 °ú °°Àº ÇüÅÂ·Î Á¤·ÄµÈ´Ù.
+ *   3->2->1->3 ê³¼ ê°™ì€ í˜•íƒœë¡œ ì •ë ¬ëœë‹¤.
  * 
- * Vertex* aVertex : Vertex Æ÷ÀÎÅÍ
+ * Vertex* aVertex : Vertex í¬ì¸í„°
  **********************************************************************/
 void stdPolyClip::sortVertexList( Vertex* aVertex )
 {
@@ -116,15 +116,15 @@ void stdPolyClip::sortVertexList( Vertex* aVertex )
 
 /***********************************************************************
  * Description :
- * ¼¼±×¸ÕÆ®°¡ xÃà°ú ÀÌ·ç´Â °¢À» ±¸ÇÑ´Ù.
+ * ì„¸ê·¸ë¨¼íŠ¸ê°€ xì¶•ê³¼ ì´ë£¨ëŠ” ê°ì„ êµ¬í•œë‹¤.
  *
  *          aSeg
  *           /
- *          / ) °¢
- * mCoord  *-------- xÃà
+ *          / ) ê°
+ * mCoord  *-------- xì¶•
  *
- * Segment*   aSeg   : ¼¼±×¸ÕÆ®
- * stdPoint2D mCoord : ±³Á¡ÀÇ ÁÂÇ¥
+ * Segment*   aSeg   : ì„¸ê·¸ë¨¼íŠ¸
+ * stdPoint2D mCoord : êµì ì˜ ì¢Œí‘œ
  **********************************************************************/
 SDouble stdPolyClip::getSegmentAngle( Segment*   aSeg, 
                                       stdPoint2D mCoord )
@@ -145,13 +145,13 @@ SDouble stdPolyClip::getSegmentAngle( Segment*   aSeg,
 
 /***********************************************************************
  * Description :
- * ÀÔ·ÂµÈ ¼¼±×¸ÕÆ®°¡ Intersection ¿¬»ê °á°ú¿¡ Æ÷ÇÔµÇ´ÂÁö ÆÇ´ÜÇÑ´Ù.
- * ¸¸¾à Æ÷ÇÔµÈ´Ù¸é, ¼¼±×¸ÕÆ®¸¦ ÀÔ·ÂµÈ ¹æÇâ´ë·Î »ç¿ëÇÒ Áö, 
- * ¹İ´ë ¹æÇâÀ¸·Î »ç¿ëÇÒÁö¸¦ °áÁ¤ÇÏ¿© aDir·Î ³Ñ±ä´Ù. 
+ * ì…ë ¥ëœ ì„¸ê·¸ë¨¼íŠ¸ê°€ Intersection ì—°ì‚° ê²°ê³¼ì— í¬í•¨ë˜ëŠ”ì§€ íŒë‹¨í•œë‹¤.
+ * ë§Œì•½ í¬í•¨ëœë‹¤ë©´, ì„¸ê·¸ë¨¼íŠ¸ë¥¼ ì…ë ¥ëœ ë°©í–¥ëŒ€ë¡œ ì‚¬ìš©í•  ì§€, 
+ * ë°˜ëŒ€ ë°©í–¥ìœ¼ë¡œ ì‚¬ìš©í• ì§€ë¥¼ ê²°ì •í•˜ì—¬ aDirë¡œ ë„˜ê¸´ë‹¤. 
  *
- * Segment*   aSeg : ¼¼±×¸ÕÆ®
- * Direction* aDir : ÇöÀç ¼¼±×¸ÕÆ®¸¦ »ç¿ë ÇÒ °æ¿ì ÃëÇØ¾ß ÇÏ´Â ¹æÇâ 
- * UInt       aPN  : »ç¿ëÇÏÁö ¾ÊÀ½
+ * Segment*   aSeg : ì„¸ê·¸ë¨¼íŠ¸
+ * Direction* aDir : í˜„ì¬ ì„¸ê·¸ë¨¼íŠ¸ë¥¼ ì‚¬ìš© í•  ê²½ìš° ì·¨í•´ì•¼ í•˜ëŠ” ë°©í–¥ 
+ * UInt       aPN  : ì‚¬ìš©í•˜ì§€ ì•ŠìŒ
  **********************************************************************/
 idBool stdPolyClip::segmentRuleIntersect( Segment*   aSeg, 
                                           Direction* aDir, 
@@ -175,13 +175,13 @@ idBool stdPolyClip::segmentRuleIntersect( Segment*   aSeg,
 
 /***********************************************************************
  * Description :
- * ÀÔ·ÂµÈ ¼¼±×¸ÕÆ®°¡ Union ¿¬»ê °á°ú¿¡ Æ÷ÇÔµÇ´ÂÁö ÆÇ´ÜÇÑ´Ù.
- * ¸¸¾à Æ÷ÇÔµÈ´Ù¸é, ¼¼±×¸ÕÆ®¸¦ ÀÔ·ÂµÈ ¹æÇâ´ë·Î »ç¿ëÇÒ Áö, 
- * ¹İ´ë ¹æÇâÀ¸·Î »ç¿ëÇÒÁö¸¦ °áÁ¤ÇÏ¿© aDir·Î ³Ñ±ä´Ù. 
+ * ì…ë ¥ëœ ì„¸ê·¸ë¨¼íŠ¸ê°€ Union ì—°ì‚° ê²°ê³¼ì— í¬í•¨ë˜ëŠ”ì§€ íŒë‹¨í•œë‹¤.
+ * ë§Œì•½ í¬í•¨ëœë‹¤ë©´, ì„¸ê·¸ë¨¼íŠ¸ë¥¼ ì…ë ¥ëœ ë°©í–¥ëŒ€ë¡œ ì‚¬ìš©í•  ì§€, 
+ * ë°˜ëŒ€ ë°©í–¥ìœ¼ë¡œ ì‚¬ìš©í• ì§€ë¥¼ ê²°ì •í•˜ì—¬ aDirë¡œ ë„˜ê¸´ë‹¤. 
  *
- * Segment*   aSeg : ¼¼±×¸ÕÆ®
- * Direction* aDir : ÇöÀç ¼¼±×¸ÕÆ®¸¦ »ç¿ë ÇÒ °æ¿ì ÃëÇØ¾ß ÇÏ´Â ¹æÇâ 
- * UInt       aPN  : »ç¿ëÇÏÁö ¾ÊÀ½
+ * Segment*   aSeg : ì„¸ê·¸ë¨¼íŠ¸
+ * Direction* aDir : í˜„ì¬ ì„¸ê·¸ë¨¼íŠ¸ë¥¼ ì‚¬ìš© í•  ê²½ìš° ì·¨í•´ì•¼ í•˜ëŠ” ë°©í–¥ 
+ * UInt       aPN  : ì‚¬ìš©í•˜ì§€ ì•ŠìŒ
  **********************************************************************/
 idBool stdPolyClip::segmentRuleUnion( Segment*   aSeg, 
                                       Direction* aDir, 
@@ -205,17 +205,17 @@ idBool stdPolyClip::segmentRuleUnion( Segment*   aSeg,
 
 /***********************************************************************
  * Description :
- * ÀÔ·ÂµÈ ¼¼±×¸ÕÆ®°¡ Difference ¿¬»ê °á°ú¿¡ Æ÷ÇÔµÇ´ÂÁö ÆÇ´ÜÇÑ´Ù.
- * ¸¸¾à Æ÷ÇÔµÈ´Ù¸é, ¼¼±×¸ÕÆ®¸¦ ÀÔ·ÂµÈ ¹æÇâ´ë·Î »ç¿ëÇÒ Áö, 
- * ¹İ´ë ¹æÇâÀ¸·Î »ç¿ëÇÒÁö¸¦ °áÁ¤ÇÏ¿© aDir·Î ³Ñ±ä´Ù. 
+ * ì…ë ¥ëœ ì„¸ê·¸ë¨¼íŠ¸ê°€ Difference ì—°ì‚° ê²°ê³¼ì— í¬í•¨ë˜ëŠ”ì§€ íŒë‹¨í•œë‹¤.
+ * ë§Œì•½ í¬í•¨ëœë‹¤ë©´, ì„¸ê·¸ë¨¼íŠ¸ë¥¼ ì…ë ¥ëœ ë°©í–¥ëŒ€ë¡œ ì‚¬ìš©í•  ì§€, 
+ * ë°˜ëŒ€ ë°©í–¥ìœ¼ë¡œ ì‚¬ìš©í• ì§€ë¥¼ ê²°ì •í•˜ì—¬ aDirë¡œ ë„˜ê¸´ë‹¤. 
  *
- * A difference B ¿Í °°Àº ¿¬»êÀ» ÇÏ´Â °æ¿ì ÀÔ·Â¹ŞÀº ¼¼±×¸ÕÆ®°¡ ¼ÓÇÑ
- * Æú¸®°ïÀÇ ¹øÈ£°¡ aPN º¸´Ù ÀÛÀ¸¸é ¼¼±×¸ÕÆ®´Â A¿¡ ¼ÓÇÏ´Â ¼¼±×¸ÕÆ®ÀÌ°í, 
- * Å©°Å³ª °°À¸¸é B¿¡ ¼ÓÇÏ´Â ¼¼±×¸ÕÆ®ÀÌ´Ù.
+ * A difference B ì™€ ê°™ì€ ì—°ì‚°ì„ í•˜ëŠ” ê²½ìš° ì…ë ¥ë°›ì€ ì„¸ê·¸ë¨¼íŠ¸ê°€ ì†í•œ
+ * í´ë¦¬ê³¤ì˜ ë²ˆí˜¸ê°€ aPN ë³´ë‹¤ ì‘ìœ¼ë©´ ì„¸ê·¸ë¨¼íŠ¸ëŠ” Aì— ì†í•˜ëŠ” ì„¸ê·¸ë¨¼íŠ¸ì´ê³ , 
+ * í¬ê±°ë‚˜ ê°™ìœ¼ë©´ Bì— ì†í•˜ëŠ” ì„¸ê·¸ë¨¼íŠ¸ì´ë‹¤.
  *
- * Segment*   aSeg : ¼¼±×¸ÕÆ®
- * Direction* aDir : ÇöÀç ¼¼±×¸ÕÆ®¸¦ »ç¿ë ÇÒ °æ¿ì ÃëÇØ¾ß ÇÏ´Â ¹æÇâ 
- * UInt       aPN  : Æú¸®°ï ¹øÈ£ 
+ * Segment*   aSeg : ì„¸ê·¸ë¨¼íŠ¸
+ * Direction* aDir : í˜„ì¬ ì„¸ê·¸ë¨¼íŠ¸ë¥¼ ì‚¬ìš© í•  ê²½ìš° ì·¨í•´ì•¼ í•˜ëŠ” ë°©í–¥ 
+ * UInt       aPN  : í´ë¦¬ê³¤ ë²ˆí˜¸ 
  **********************************************************************/
 idBool stdPolyClip::segmentRuleDifference( Segment*   aSeg, 
                                            Direction* aDir, 
@@ -251,13 +251,13 @@ idBool stdPolyClip::segmentRuleDifference( Segment*   aSeg,
 
 /***********************************************************************
  * Description :
- * ÀÔ·ÂµÈ ¼¼±×¸ÕÆ®°¡ SymDifference ¿¬»ê °á°ú¿¡ Æ÷ÇÔµÇ´ÂÁö ÆÇ´ÜÇÑ´Ù.
- * ¸¸¾à Æ÷ÇÔµÈ´Ù¸é, ¼¼±×¸ÕÆ®¸¦ ÀÔ·ÂµÈ ¹æÇâ´ë·Î »ç¿ëÇÒ Áö, 
- * ¹İ´ë ¹æÇâÀ¸·Î »ç¿ëÇÒÁö¸¦ °áÁ¤ÇÏ¿© aDir·Î ³Ñ±ä´Ù. 
+ * ì…ë ¥ëœ ì„¸ê·¸ë¨¼íŠ¸ê°€ SymDifference ì—°ì‚° ê²°ê³¼ì— í¬í•¨ë˜ëŠ”ì§€ íŒë‹¨í•œë‹¤.
+ * ë§Œì•½ í¬í•¨ëœë‹¤ë©´, ì„¸ê·¸ë¨¼íŠ¸ë¥¼ ì…ë ¥ëœ ë°©í–¥ëŒ€ë¡œ ì‚¬ìš©í•  ì§€, 
+ * ë°˜ëŒ€ ë°©í–¥ìœ¼ë¡œ ì‚¬ìš©í• ì§€ë¥¼ ê²°ì •í•˜ì—¬ aDirë¡œ ë„˜ê¸´ë‹¤. 
  *
- * Segment*   aSeg : ¼¼±×¸ÕÆ®
- * Direction* aDir : ÇöÀç ¼¼±×¸ÕÆ®¸¦ »ç¿ë ÇÒ °æ¿ì ÃëÇØ¾ß ÇÏ´Â ¹æÇâ 
- * UInt       aPN  : »ç¿ëÇÏÁö ¾ÊÀ½
+ * Segment*   aSeg : ì„¸ê·¸ë¨¼íŠ¸
+ * Direction* aDir : í˜„ì¬ ì„¸ê·¸ë¨¼íŠ¸ë¥¼ ì‚¬ìš© í•  ê²½ìš° ì·¨í•´ì•¼ í•˜ëŠ” ë°©í–¥ 
+ * UInt       aPN  : ì‚¬ìš©í•˜ì§€ ì•ŠìŒ
  **********************************************************************/
 idBool stdPolyClip::segmentRuleSymDifference( Segment*   aSeg, 
                                               Direction* aDir, 
@@ -288,17 +288,17 @@ idBool stdPolyClip::segmentRuleSymDifference( Segment*   aSeg,
 
 /***********************************************************************
  * Description :
- * ÀÔ·Â¹ŞÀº ¸µÀ» Å½»öÇÏ¿© Clip °á°ú¿¡ Æ÷ÇÔµÇ¾î¾ß ÇÏ´Â ¼¼±×¸ÕÆ®¸¦ Ã£°í, 
- * Ã£¾Æ³½ ¼¼±×¸ÕÆ®¸¦ ½ÃÀÛÀ¸·Î ÇÏ´Â ¸µÀ» ±¸¼ºÇÏµµ·Ï Collect¸¦ È£ÃâÇÑ´Ù.
+ * ì…ë ¥ë°›ì€ ë§ì„ íƒìƒ‰í•˜ì—¬ Clip ê²°ê³¼ì— í¬í•¨ë˜ì–´ì•¼ í•˜ëŠ” ì„¸ê·¸ë¨¼íŠ¸ë¥¼ ì°¾ê³ , 
+ * ì°¾ì•„ë‚¸ ì„¸ê·¸ë¨¼íŠ¸ë¥¼ ì‹œì‘ìœ¼ë¡œ í•˜ëŠ” ë§ì„ êµ¬ì„±í•˜ë„ë¡ Collectë¥¼ í˜¸ì¶œí•œë‹¤.
  *
  * iduMemory*   aQmxMem        :
- * Segment**    aRingList      : ¸µ ¸®½ºÆ®
- * UInt         aRingCount     : ¸µ °³¼ö
- * ResRingList* aResRingList   : °á°ú ¸µ ¸®½ºÆ®
- * Segment**    aIndexSegList  : °á°ú¿¡ ´ëÇÑ ÀÎµ¦½º
- * UInt*        aIndexSegCount : ÀÎµ¦½º ¼ö
- * SegmentRule  aRule          : °á°ú¿¡ Æ÷ÇÔµÉÁö¸¦ °áÁ¤ÇÏ´Â ÇÔ¼öÀÇ Æ÷ÀÎÅÍ
- * UInt         aPN            : Æú¸®°ï ¹øÈ£
+ * Segment**    aRingList      : ë§ ë¦¬ìŠ¤íŠ¸
+ * UInt         aRingCount     : ë§ ê°œìˆ˜
+ * ResRingList* aResRingList   : ê²°ê³¼ ë§ ë¦¬ìŠ¤íŠ¸
+ * Segment**    aIndexSegList  : ê²°ê³¼ì— ëŒ€í•œ ì¸ë±ìŠ¤
+ * UInt*        aIndexSegCount : ì¸ë±ìŠ¤ ìˆ˜
+ * SegmentRule  aRule          : ê²°ê³¼ì— í¬í•¨ë ì§€ë¥¼ ê²°ì •í•˜ëŠ” í•¨ìˆ˜ì˜ í¬ì¸í„°
+ * UInt         aPN            : í´ë¦¬ê³¤ ë²ˆí˜¸
  **********************************************************************/
 IDE_RC stdPolyClip::clip( iduMemory*   aQmxMem,    
                           Segment**    aRingList, 
@@ -381,18 +381,18 @@ IDE_RC stdPolyClip::clip( iduMemory*   aQmxMem,
 
 /***********************************************************************
  * Description :
- * ÀÔ·Â¹ŞÀº ¼¼±×¸ÕÆ®¸¦ ½ÃÀÛÀ¸·Î °á°ú¿¡ Æ÷ÇÔµÇ¾î¾ß ÇÏ´Â ¼¼±×¸ÕÆ®¸¦ 
- * Ã£¾Æ ¸µÀ» ±¸¼ºÇÏ°í °á°ú ¸µ ¸®½ºÆ®¿¡ Ãß°¡ÇÑ´Ù.
+ * ì…ë ¥ë°›ì€ ì„¸ê·¸ë¨¼íŠ¸ë¥¼ ì‹œì‘ìœ¼ë¡œ ê²°ê³¼ì— í¬í•¨ë˜ì–´ì•¼ í•˜ëŠ” ì„¸ê·¸ë¨¼íŠ¸ë¥¼ 
+ * ì°¾ì•„ ë§ì„ êµ¬ì„±í•˜ê³  ê²°ê³¼ ë§ ë¦¬ìŠ¤íŠ¸ì— ì¶”ê°€í•œë‹¤.
  *
  * iduMemory*   aQmxMem
- * ResRingList* aResRingList   : °á°ú ¸µ ¸®½ºÆ® 
- * UInt         aRingNumber    : »ı¼ºÇÒ ¸µÀÇ ¹øÈ£
- * Segment**    aIndexSegList  : °á°ú¿¡ ´ëÇÑ ÀÎµ¦½º
- * UInt*        aIndexSegCount : ÀÎµ¦½º ¼ö
- * Segment*     aSeg           : ½ÃÀÛ ¼¼±×¸ÕÆ®
- * SegmentRule  aRule          : ¼¼±×¸ÕÆ® ÆÇº° ÇÔ¼ö Æ÷ÀÎÅÍ
- * Direction*   aDir           : ¼¼±×¸ÕÆ® ¼±ÅÃ ¹æÇâ
- * UInt         aPN            : Æú¸®°ï ¹øÈ£
+ * ResRingList* aResRingList   : ê²°ê³¼ ë§ ë¦¬ìŠ¤íŠ¸ 
+ * UInt         aRingNumber    : ìƒì„±í•  ë§ì˜ ë²ˆí˜¸
+ * Segment**    aIndexSegList  : ê²°ê³¼ì— ëŒ€í•œ ì¸ë±ìŠ¤
+ * UInt*        aIndexSegCount : ì¸ë±ìŠ¤ ìˆ˜
+ * Segment*     aSeg           : ì‹œì‘ ì„¸ê·¸ë¨¼íŠ¸
+ * SegmentRule  aRule          : ì„¸ê·¸ë¨¼íŠ¸ íŒë³„ í•¨ìˆ˜ í¬ì¸í„°
+ * Direction*   aDir           : ì„¸ê·¸ë¨¼íŠ¸ ì„ íƒ ë°©í–¥
+ * UInt         aPN            : í´ë¦¬ê³¤ ë²ˆí˜¸
  **********************************************************************/
 IDE_RC  stdPolyClip::collect( iduMemory*   aQmxMem,
                               ResRingList* aResRingList,
@@ -460,8 +460,8 @@ IDE_RC  stdPolyClip::collect( iduMemory*   aQmxMem,
         }
 
         /* BUG-33634
-         * ¼¿ÇÁÅÍÄ¡°¡ ÀÖ´Â ¸µÀ» Ã£°Å³ª, ¸µ °£ Æ÷ÇÔ°ü°è¸¦ °è»êÇÒ ¼ö ÀÖµµ·Ï
-         * Clip °á°ú¿¡ ´ëÇØ¼­µµ ÀÎµ¦½º¸¦ »ı¼ºÇÑ´Ù. */
+         * ì…€í”„í„°ì¹˜ê°€ ìˆëŠ” ë§ì„ ì°¾ê±°ë‚˜, ë§ ê°„ í¬í•¨ê´€ê³„ë¥¼ ê³„ì‚°í•  ìˆ˜ ìˆë„ë¡
+         * Clip ê²°ê³¼ì— ëŒ€í•´ì„œë„ ì¸ë±ìŠ¤ë¥¼ ìƒì„±í•œë‹¤. */
 
         stdUtils::getSegProperty( &sPt,
                                   &sNextPt,
@@ -501,7 +501,7 @@ IDE_RC  stdPolyClip::collect( iduMemory*   aQmxMem,
                 // Nothing to do
             }
 
-            /* ¼Ó¼ºÀÌ ´Ù¸£¸é Ã¼ÀÎÀ» »ı¼ºÇÑ´Ù. */
+            /* ì†ì„±ì´ ë‹¤ë¥´ë©´ ì²´ì¸ì„ ìƒì„±í•œë‹¤. */
             IDE_TEST( aQmxMem->alloc( ID_SIZEOF(Chain),
                                       (void**) &sChain )
                       != IDE_SUCCESS );
@@ -520,9 +520,9 @@ IDE_RC  stdPolyClip::collect( iduMemory*   aQmxMem,
                                  sChain, 
                                  sVaritation, 
                                  sReverse, 
-                                 0,             /* Æú¸®°ï ¹øÈ£, »ç¿ë ¾ÈÇÔ */
+                                 0,             /* í´ë¦¬ê³¤ ë²ˆí˜¸, ì‚¬ìš© ì•ˆí•¨ */
                                  aRingNumber, 
-                                 ST_PARALLEL,   /* ¸µ ¹æÇâ, »ç¿ë ¾ÈÇÔ */
+                                 ST_PARALLEL,   /* ë§ ë°©í–¥, ì‚¬ìš© ì•ˆí•¨ */
                                  ST_CHAIN_NOT_OPPOSITE );
 
             if ( sPrevChain != NULL )
@@ -639,21 +639,21 @@ IDE_RC  stdPolyClip::collect( iduMemory*   aQmxMem,
 
         if ( stdUtils::isSamePoints2D4Func( &sStartPt, &sNextPt ) == ID_TRUE )
         {
-            /* ¸µÀÇ ½ÃÀÛÁ¡°ú ÇöÀç ¼¼±×¸ÕÆ®ÀÇ ³¡Á¡ÀÌ °°´Ù¸é
-             * ´İÈù ¸µÀÌ ±¸¼ºµÈ °ÍÀÌ¹Ç·Î ·çÇÁ¿¡¼­ ºüÁ®³ª¿Â´Ù. */
+            /* ë§ì˜ ì‹œì‘ì ê³¼ í˜„ì¬ ì„¸ê·¸ë¨¼íŠ¸ì˜ ëì ì´ ê°™ë‹¤ë©´
+             * ë‹«íŒ ë§ì´ êµ¬ì„±ëœ ê²ƒì´ë¯€ë¡œ ë£¨í”„ì—ì„œ ë¹ ì ¸ë‚˜ì˜¨ë‹¤. */
             break;
         }
         else
         {
             if ( isIntersectPoint( sSeg, *aDir ) == ID_TRUE )
             {
-                /* ´ÙÀ½ Á¡ÀÌ ±³Á¡ÀÌ¶ó¸é, ´ÙÀ½¿¡ ¼±ÅÃÇØ¾ß ÇÒ 
-                 * ¼¼±×¸ÕÆ®¸¦ Ã£¾Æ¾ß ÇÑ´Ù. */
+                /* ë‹¤ìŒ ì ì´ êµì ì´ë¼ë©´, ë‹¤ìŒì— ì„ íƒí•´ì•¼ í•  
+                 * ì„¸ê·¸ë¨¼íŠ¸ë¥¼ ì°¾ì•„ì•¼ í•œë‹¤. */
                 sSeg = jump( sSeg, aRule, aDir, aPN, aCount );
             }
             else
             {
-                /* ÇöÀç ¼±ÅÃ¹æÇâÀ¸·Î ´ÙÀ½ ¼¼±×¸ÕÆ®¸¦ ¼±ÅÃÇÑ´Ù. */
+                /* í˜„ì¬ ì„ íƒë°©í–¥ìœ¼ë¡œ ë‹¤ìŒ ì„¸ê·¸ë¨¼íŠ¸ë¥¼ ì„ íƒí•œë‹¤. */
                 if ( *aDir == ST_SEG_DIR_FORWARD )
                 {
                     sSeg = stdUtils::getNextSeg( sSeg );
@@ -687,7 +687,7 @@ IDE_RC  stdPolyClip::collect( iduMemory*   aQmxMem,
         sRing->mPointCnt   = sPointsCount;
         stdUtils::copyMBR( &(sRing->mMBR), &sTotalMbr );
 
-        /* ¸µÀÇ ¹æÇâ °è»ê */
+        /* ë§ì˜ ë°©í–¥ ê³„ì‚° */
         if ( sMaxSeg->mParent->mReverse == ST_NOT_REVERSE )
         {
             sRing->mOrientation = stdUtils::CCW( *getPrevPoint( sMaxSeg, ID_FALSE ),
@@ -701,8 +701,8 @@ IDE_RC  stdPolyClip::collect( iduMemory*   aQmxMem,
                                                  *getNextPoint( sMaxSeg, ID_TRUE ) );
         }
 
-        /* ¸µÀÇ ¹æÇâ¿¡ µû¶ó ¹İ½Ã°è ¹æÇâÀº ¸®½ºÆ®ÀÇ ¾Õ¿¡, 
-         * ½Ã°è¹æÇâÀº ¸®½ºÆ®ÀÇ µÚ¿¡ Ãß°¡ÇÑ´Ù. */
+        /* ë§ì˜ ë°©í–¥ì— ë”°ë¼ ë°˜ì‹œê³„ ë°©í–¥ì€ ë¦¬ìŠ¤íŠ¸ì˜ ì•ì—, 
+         * ì‹œê³„ë°©í–¥ì€ ë¦¬ìŠ¤íŠ¸ì˜ ë’¤ì— ì¶”ê°€í•œë‹¤. */
         if ( sRing->mOrientation == ST_COUNTERCLOCKWISE )
         {
             appendFirst( aResRingList, sRing );
@@ -726,10 +726,10 @@ IDE_RC  stdPolyClip::collect( iduMemory*   aQmxMem,
 
 /***********************************************************************
  * Description :
- * ¼¼±×¸ÕÆ® ¼±ÅÃ ¹æÇâ¿¡ µû¶ó ¼¼±×¸ÕÆ®ÀÇ ³¡ Á¡ÀÌ ±³Á¡ÀÎÁö ¿©ºÎ¸¦ ¹İÈ¯ÇÑ´Ù.
+ * ì„¸ê·¸ë¨¼íŠ¸ ì„ íƒ ë°©í–¥ì— ë”°ë¼ ì„¸ê·¸ë¨¼íŠ¸ì˜ ë ì ì´ êµì ì¸ì§€ ì—¬ë¶€ë¥¼ ë°˜í™˜í•œë‹¤.
  *
- * Segment*  aSeg : ¼¼±×¸ÕÆ® 
- * Direction aDir : ¼¼±×¸ÕÆ® ¼±ÅÃ ¹æÇâ 
+ * Segment*  aSeg : ì„¸ê·¸ë¨¼íŠ¸ 
+ * Direction aDir : ì„¸ê·¸ë¨¼íŠ¸ ì„ íƒ ë°©í–¥ 
  **********************************************************************/
 idBool  stdPolyClip::isIntersectPoint( Segment*  aSeg, 
                                        Direction aDir )
@@ -764,7 +764,7 @@ idBool  stdPolyClip::isIntersectPoint( Segment*  aSeg,
 
 /***********************************************************************
  * Description :
- * ÀÔ·Â¹ŞÀº ¼¼±×¸ÕÆ®¿¡¼­ ´ÙÀ½À¸·Î ¼±ÅÃÇØ¾ß ÇÏ´Â ¼¼±×¸ÕÆ®¸¦ Ã£¾Æ ¹İÈ¯ÇÑ´Ù.
+ * ì…ë ¥ë°›ì€ ì„¸ê·¸ë¨¼íŠ¸ì—ì„œ ë‹¤ìŒìœ¼ë¡œ ì„ íƒí•´ì•¼ í•˜ëŠ” ì„¸ê·¸ë¨¼íŠ¸ë¥¼ ì°¾ì•„ ë°˜í™˜í•œë‹¤.
  *
  *              (1)
  *             /
@@ -774,13 +774,13 @@ idBool  stdPolyClip::isIntersectPoint( Segment*  aSeg,
  *             \
  *              (3)
  *
- * aSeg¿¡¼­ ¹İ½Ã°è ¹æÇâÀ¸·Î µ¹¸é¼­ °á°ú¿¡ Æ÷ÇÔµÇ¾î¾ß ÇÏ´Â ¼¼±×¸ÕÆ®¸¦ Ã£´Â´Ù.
- * (1), (2), (3)ÀÇ ¼ø¼­·Î Å½»öÇÑ´Ù. 
+ * aSegì—ì„œ ë°˜ì‹œê³„ ë°©í–¥ìœ¼ë¡œ ëŒë©´ì„œ ê²°ê³¼ì— í¬í•¨ë˜ì–´ì•¼ í•˜ëŠ” ì„¸ê·¸ë¨¼íŠ¸ë¥¼ ì°¾ëŠ”ë‹¤.
+ * (1), (2), (3)ì˜ ìˆœì„œë¡œ íƒìƒ‰í•œë‹¤. 
  *
- * Segment*    aSeg  : ¼¼±×¸ÕÆ®
- * SegmentRule aRule : ¼¼±×¸ÕÆ® ÆÇº° ÇÔ¼ö Æ÷ÀÎÅÍ
- * Direction   aDir  : ¼¼±×¸ÕÆ® ¼±ÅÃ ¹æÇâ
- * UInt        aPN   : Æú¸®°ï ¹øÈ£
+ * Segment*    aSeg  : ì„¸ê·¸ë¨¼íŠ¸
+ * SegmentRule aRule : ì„¸ê·¸ë¨¼íŠ¸ íŒë³„ í•¨ìˆ˜ í¬ì¸í„°
+ * Direction   aDir  : ì„¸ê·¸ë¨¼íŠ¸ ì„ íƒ ë°©í–¥
+ * UInt        aPN   : í´ë¦¬ê³¤ ë²ˆí˜¸
  **********************************************************************/
 Segment* stdPolyClip::jump( Segment*    aSeg, 
                             SegmentRule aRule, 
@@ -859,17 +859,17 @@ Segment* stdPolyClip::jump( Segment*    aSeg,
 
 /***********************************************************************
  * Description :
- * °¢ ¼¼±×¸ÕÆ®ÀÇ ¶óº§À» ºÙÀÎ´Ù. 
- * A (op) B¿¡¼­ AÀÇ ¼ÓÇÏ´Â ¼¼±×¸ÕÆ®°¡ 
- * BÀÇ ¿ÜºÎ¿¡ ÀÖÀ¸¸é       ST_SEG_LABEL_OUTSIDE,
- * BÀÇ ³»ºÎ¿¡ ÀÖÀ¸¸é       ST_SEG_LABEL_INSIDE,
- * BÀÇ ¼¼±×¸ÕÆ®¿Í ÀÏÄ¡ÇÏ¸é ST_SEG_LABEL_SHARE1 (¹æÇâ±îÁö ÀÏÄ¡)
- *                         ST_SEG_LABEL_SHARE2 (¹æÇâÀº ´Ù¸§)
+ * ê° ì„¸ê·¸ë¨¼íŠ¸ì˜ ë¼ë²¨ì„ ë¶™ì¸ë‹¤. 
+ * A (op) Bì—ì„œ Aì˜ ì†í•˜ëŠ” ì„¸ê·¸ë¨¼íŠ¸ê°€ 
+ * Bì˜ ì™¸ë¶€ì— ìˆìœ¼ë©´       ST_SEG_LABEL_OUTSIDE,
+ * Bì˜ ë‚´ë¶€ì— ìˆìœ¼ë©´       ST_SEG_LABEL_INSIDE,
+ * Bì˜ ì„¸ê·¸ë¨¼íŠ¸ì™€ ì¼ì¹˜í•˜ë©´ ST_SEG_LABEL_SHARE1 (ë°©í–¥ê¹Œì§€ ì¼ì¹˜)
+ *                         ST_SEG_LABEL_SHARE2 (ë°©í–¥ì€ ë‹¤ë¦„)
  *
- * B¿¡ ¼ÓÇÏ´Â ¼¼±×¸ÕÆ®µµ ¸¶Âù°¡Áö ¹æ¹ıÀ¸·Î ¶óº§À» ºÙÀÎ´Ù. 
+ * Bì— ì†í•˜ëŠ” ì„¸ê·¸ë¨¼íŠ¸ë„ ë§ˆì°¬ê°€ì§€ ë°©ë²•ìœ¼ë¡œ ë¼ë²¨ì„ ë¶™ì¸ë‹¤. 
  *
  *
- * ¿¹) ¤¡ ÀÚ ¸ğ¾çÀÇ Æú¸®°ï A¿Í ¤± ÀÚ ¸ğ¾çÀÇ Æú¸®°ï B 
+ * ì˜ˆ) ã„± ì ëª¨ì–‘ì˜ í´ë¦¬ê³¤ Aì™€ ã… ì ëª¨ì–‘ì˜ í´ë¦¬ê³¤ B 
  *
  *                         ST_SEG_LABEL_OUTSIDE
  *                                /
@@ -882,15 +882,15 @@ Segment* stdPolyClip::jump( Segment*    aSeg,
  *                          |  |   |                   |
  *                          +--*===*-------------------+
  *                                \ 
- *                           ST_SEG_LABEL_SHARE1 (¹æÇâÀÌ °°Àº °æ¿ì)
- *                           ST_SEG_LABEL_SHARE2 (¹æÇâÀÌ ´Ù¸¥ °æ¿ì)
+ *                           ST_SEG_LABEL_SHARE1 (ë°©í–¥ì´ ê°™ì€ ê²½ìš°)
+ *                           ST_SEG_LABEL_SHARE2 (ë°©í–¥ì´ ë‹¤ë¥¸ ê²½ìš°)
  *
- * Segment** aRingSegList   : ¸µ ¸®½ºÆ® 
- * UInt      aRingCount     : ¸µ °³¼ö
- * Segment** aIndexSeg      : ÀÎµ¦½º 
- * UInt      aIndexSegTotal : ÀÎµ¦½º ¼ö
- * UInt      aMax1          : A (op) B ¿¡¼­ A¿¡ ¼ÓÇÏ´Â Æú¸®°ï ¹øÈ£ Áß °¡Àå Å« ¼ö
- * UInt      aMax2          : B¿¡ ¼ÓÇÏ´Â Æú¸®°ï ¹øÈ£ Áß °¡Àå Å« ¼ö
+ * Segment** aRingSegList   : ë§ ë¦¬ìŠ¤íŠ¸ 
+ * UInt      aRingCount     : ë§ ê°œìˆ˜
+ * Segment** aIndexSeg      : ì¸ë±ìŠ¤ 
+ * UInt      aIndexSegTotal : ì¸ë±ìŠ¤ ìˆ˜
+ * UInt      aMax1          : A (op) B ì—ì„œ Aì— ì†í•˜ëŠ” í´ë¦¬ê³¤ ë²ˆí˜¸ ì¤‘ ê°€ì¥ í° ìˆ˜
+ * UInt      aMax2          : Bì— ì†í•˜ëŠ” í´ë¦¬ê³¤ ë²ˆí˜¸ ì¤‘ ê°€ì¥ í° ìˆ˜
  **********************************************************************/
 IDE_RC stdPolyClip::labelingSegment( Segment** aRingSegList, 
                                      UInt      aRingCount, 
@@ -916,8 +916,8 @@ IDE_RC stdPolyClip::labelingSegment( Segment** aRingSegList,
             if ( ( sCurrSeg->mBeginVertex != NULL ) && ( sCurrSeg->mEndVertex != NULL ) )
             {
                 /* BUG-33436
-                 * ¼¼±×¸ÕÆ®ÀÇ ¾ç ³¡Á¡ÀÌ ¸ğµÎ ±³Á¡ÀÌ¶ó¸é Shared ¼¼±×¸ÕÆ®ÀÏ °¡´É¼ºÀÌ ÀÖ´Ù.
-                 * Share ÀÎÁö Ã¼Å©ÇÑ ÈÄ, ¾Æ´Ñ °æ¿ì¿¡´Â Inside ¶Ç´Â OutsideÀÎÁö Ã¼Å©ÇØ¾ßÇÑ´Ù. */
+                 * ì„¸ê·¸ë¨¼íŠ¸ì˜ ì–‘ ëì ì´ ëª¨ë‘ êµì ì´ë¼ë©´ Shared ì„¸ê·¸ë¨¼íŠ¸ì¼ ê°€ëŠ¥ì„±ì´ ìˆë‹¤.
+                 * Share ì¸ì§€ ì²´í¬í•œ í›„, ì•„ë‹Œ ê²½ìš°ì—ëŠ” Inside ë˜ëŠ” Outsideì¸ì§€ ì²´í¬í•´ì•¼í•œë‹¤. */
 
                 determineShare( sCurrSeg );
                 if ( ( sCurrSeg->mLabel != ST_SEG_LABEL_SHARED1 ) && 
@@ -1005,12 +1005,12 @@ IDE_RC stdPolyClip::labelingSegment( Segment** aRingSegList,
 
 /***********************************************************************
  * Description :
- * °á°ú ¸µÀ» ¹ÙÅÁÀ¸·Î stdLinearRing2D¸¦ »ı¼ºÇÑ´Ù.
+ * ê²°ê³¼ ë§ì„ ë°”íƒ•ìœ¼ë¡œ stdLinearRing2Dë¥¼ ìƒì„±í•œë‹¤.
  * 
- * Segment*         aFirstSeg : ¸µÀÇ Ã¹ ¹øÂ° ¼¼±×¸ÕÆ®
- * UInt             aPointCnt : ¸µÀÇ Æ÷ÀÎÆ® ¼ö
- * stdLinearRing2D* aRes      : °á°ú
- * UInt             aFence    : stdLinearRingÀÌ °¡Áú ¼ö ÀÖ´Â ÃÖ´ë Å©±â
+ * Segment*         aFirstSeg : ë§ì˜ ì²« ë²ˆì§¸ ì„¸ê·¸ë¨¼íŠ¸
+ * UInt             aPointCnt : ë§ì˜ í¬ì¸íŠ¸ ìˆ˜
+ * stdLinearRing2D* aRes      : ê²°ê³¼
+ * UInt             aFence    : stdLinearRingì´ ê°€ì§ˆ ìˆ˜ ìˆëŠ” ìµœëŒ€ í¬ê¸°
  **********************************************************************/
 IDE_RC stdPolyClip::chainToRing( Segment*         aFirstSeg,
                                  UInt             aPointCnt,
@@ -1067,11 +1067,11 @@ IDE_RC stdPolyClip::chainToRing( Segment*         aFirstSeg,
 
 /***********************************************************************
  * Description :
- * Clip °á°ú¸¦ ¹ÙÅÁÀ¸·Î Geometry¸¦ »ı¼ºÇÑ´Ù.
+ * Clip ê²°ê³¼ë¥¼ ë°”íƒ•ìœ¼ë¡œ Geometryë¥¼ ìƒì„±í•œë‹¤.
  * 
- * ResRingList*       aResRingList : Clip ÈÄ ¸µ ¸®½ºÆ® 
+ * ResRingList*       aResRingList : Clip í›„ ë§ ë¦¬ìŠ¤íŠ¸ 
  * stdGeometryHeader* aRes         : Geometry
- * UInt               aFence       : GeometryÀÇ ÃÖ´ë Å©±â
+ * UInt               aFence       : Geometryì˜ ìµœëŒ€ í¬ê¸°
  **********************************************************************/
 IDE_RC stdPolyClip::makeGeometryFromRings( ResRingList*       aResRingList, 
                                            stdGeometryHeader* aRes, 
@@ -1121,7 +1121,7 @@ IDE_RC stdPolyClip::makeGeometryFromRings( ResRingList*       aResRingList,
             
             while ( sResRing != NULL )
             {
-                /* ³»ºÎ¸µÀÌ ÀÖ´Â °æ¿ì Æú¸®°ï¿¡ ³»ºÎ¸µµéÀ» Ãß°¡ÇÑ´Ù. */
+                /* ë‚´ë¶€ë§ì´ ìˆëŠ” ê²½ìš° í´ë¦¬ê³¤ì— ë‚´ë¶€ë§ë“¤ì„ ì¶”ê°€í•œë‹¤. */
                 if ( sResRing->mOrientation == ST_CLOCKWISE )
                 {
                     sRing = STD_NEXT_RN2D(sRing);
@@ -1255,10 +1255,10 @@ void stdPolyClip::determineShare( Segment* aSeg )
 // BUG-33436
 /***********************************************************************
  * Description:
- *   ÀÔ·Â¹ŞÀº ¼¼±×¸ÕÆ®ÀÇ ¹æÇâÀÌ °°ÀºÁö¸¦ ÆÇº°ÇÑ´Ù.
+ *   ì…ë ¥ë°›ì€ ì„¸ê·¸ë¨¼íŠ¸ì˜ ë°©í–¥ì´ ê°™ì€ì§€ë¥¼ íŒë³„í•œë‹¤.
  *
- *   Direction aDir1 : 1ÀÇ ¹æÇâ
- *   Direction aDir2 : 2ÀÇ ¹æÇâ
+ *   Direction aDir1 : 1ì˜ ë°©í–¥
+ *   Direction aDir2 : 2ì˜ ë°©í–¥
  **********************************************************************/
 idBool stdPolyClip::isSameDirection( Direction aDir1, 
                                      Direction aDir2 )
@@ -1296,14 +1296,14 @@ Direction stdPolyClip::getDirection( Segment* aSeg )
 
 /***********************************************************************
 * Description:
-*   ¸µÀÇ ¹æÇâÀÌ ¿Ã¹Ù¸¥Áö °Ë»çÇÏ°í, ¾Æ´Ñ°æ¿ì ¹İ´ë·Î µÚÁı´Â´Ù. 
+*   ë§ì˜ ë°©í–¥ì´ ì˜¬ë°”ë¥¸ì§€ ê²€ì‚¬í•˜ê³ , ì•„ë‹Œê²½ìš° ë°˜ëŒ€ë¡œ ë’¤ì§‘ëŠ”ë‹¤. 
 *
-*   aRingSegList   : °¢ ¸µÀÇ Ã¹ ¼¼±×¸ÕÆ® ¸®½ºÆ®
-*   aRingCount     : ¸µÀÇ °³¼ö
-*   aIndexSeg      : °¢ Ã¼ÀÎÀÇ Ã¹ ¼¼±×¸ÕÆ® ¸®½ºÆ®
-*   aIndexSegTotal : Ã¼ÀÎÀÇ °³¼ö
-*   aMax1          : A (op) B Áß A¿¡ ¼ÓÇÏ´Â Æú¸®°ïÀÇ ¼ö 
-*   aMax2          : A (op) B Áß B¿¡ ¼ÓÇÏ´Â Æú¸®°ïÀÇ ¼ö
+*   aRingSegList   : ê° ë§ì˜ ì²« ì„¸ê·¸ë¨¼íŠ¸ ë¦¬ìŠ¤íŠ¸
+*   aRingCount     : ë§ì˜ ê°œìˆ˜
+*   aIndexSeg      : ê° ì²´ì¸ì˜ ì²« ì„¸ê·¸ë¨¼íŠ¸ ë¦¬ìŠ¤íŠ¸
+*   aIndexSegTotal : ì²´ì¸ì˜ ê°œìˆ˜
+*   aMax1          : A (op) B ì¤‘ Aì— ì†í•˜ëŠ” í´ë¦¬ê³¤ì˜ ìˆ˜ 
+*   aMax2          : A (op) B ì¤‘ Bì— ì†í•˜ëŠ” í´ë¦¬ê³¤ì˜ ìˆ˜
 **********************************************************************/
 void stdPolyClip::adjustRingOrientation( Segment** aRingSegList, 
                                          UInt      aRingCount,
@@ -1351,8 +1351,8 @@ void stdPolyClip::adjustRingOrientation( Segment** aRingSegList,
 
         if ( sRingSeg->mParent->mOrientaion != sOrientation )
         {
-            /* ¸µÀÇ ¹æÇâÀ» ¹İ´ë·Î ¹Ù²Û´Ù. 
-             * ÀÌ¿¡ µû¶ó ¸µÀ» ±¸¼ºÇÏ´Â Ã¼ÀÎÀÇ ¹æÇâµµ ¼öÁ¤ÇØ¾ß ÇÑ´Ù. */ 
+            /* ë§ì˜ ë°©í–¥ì„ ë°˜ëŒ€ë¡œ ë°”ê¾¼ë‹¤. 
+             * ì´ì— ë”°ë¼ ë§ì„ êµ¬ì„±í•˜ëŠ” ì²´ì¸ì˜ ë°©í–¥ë„ ìˆ˜ì •í•´ì•¼ í•œë‹¤. */ 
             sChain = sRingSeg->mParent;
             do
             {
@@ -1484,7 +1484,7 @@ IDE_RC stdPolyClip::removeRingFromList( ResRingList* aResRingList,
     }
     else
     {
-        /* aRingNum¿¡ ÇØ´çÇÏ´Â ¸µÀ» Ã£À» ¼ö ¾ø´Â °æ¿ì */
+        /* aRingNumì— í•´ë‹¹í•˜ëŠ” ë§ì„ ì°¾ì„ ìˆ˜ ì—†ëŠ” ê²½ìš° */
         IDE_RAISE( ERR_UNKNOWN );
     }
 
@@ -1501,12 +1501,12 @@ IDE_RC stdPolyClip::removeRingFromList( ResRingList* aResRingList,
 
 /***********************************************************************
 * Description:
-* ¼¼±×¸ÕÆ®¿¡¼­ ´ÙÀ½ Á¡ÀÇ ÁÖ¼Ò¸¦ ¹İÈ¯ÇÑ´Ù. aIsStart°¡ TRUEÀÌ¸é ¼¼±×¸ÕÆ®
-* ½ÃÀÛ Á¡ÀÇ ´ÙÀ½ Á¡(¼¼±×¸ÕÆ®ÀÇ ³¡ Á¡)À» ¹İÈ¯ÇÏ°í, FALSEÀÌ¸é ³¡ Á¡ÀÇ 
-* ´ÙÀ½ Á¡ (´ÙÀ½ ¼¼±×¸ÕÆ®ÀÇ ³¡ Á¡)À» ¹İÈ¯ÇÏ°Ô µÈ´Ù.
+* ì„¸ê·¸ë¨¼íŠ¸ì—ì„œ ë‹¤ìŒ ì ì˜ ì£¼ì†Œë¥¼ ë°˜í™˜í•œë‹¤. aIsStartê°€ TRUEì´ë©´ ì„¸ê·¸ë¨¼íŠ¸
+* ì‹œì‘ ì ì˜ ë‹¤ìŒ ì (ì„¸ê·¸ë¨¼íŠ¸ì˜ ë ì )ì„ ë°˜í™˜í•˜ê³ , FALSEì´ë©´ ë ì ì˜ 
+* ë‹¤ìŒ ì  (ë‹¤ìŒ ì„¸ê·¸ë¨¼íŠ¸ì˜ ë ì )ì„ ë°˜í™˜í•˜ê²Œ ëœë‹¤.
 *
-* Segment* aSeg     : ¼¼±×¸ÕÆ®
-* idBool   aIsStart : ¼¼±×¸ÕÆ®ÀÇ ½ÃÀÛÁ¡ÀÎ°¡?
+* Segment* aSeg     : ì„¸ê·¸ë¨¼íŠ¸
+* idBool   aIsStart : ì„¸ê·¸ë¨¼íŠ¸ì˜ ì‹œì‘ì ì¸ê°€?
 **********************************************************************/
 stdPoint2D* stdPolyClip::getNextPoint( Segment* aSeg, 
                                        idBool   aIsStart )
@@ -1560,12 +1560,12 @@ stdPoint2D* stdPolyClip::getNextPoint( Segment* aSeg,
 
 /***********************************************************************
 * Description:
-* ¼¼±×¸ÕÆ®¿¡¼­ ÀÌÀü Á¡ÀÇ ÁÖ¼Ò¸¦ ¹İÈ¯ÇÑ´Ù. aIsStart°¡ TRUEÀÌ¸é ¼¼±×¸ÕÆ®
-* ½ÃÀÛ Á¡ÀÇ ÀÌÀü Á¡(ÀÌÀü ¼¼±×¸ÕÆ®ÀÇ ½ÃÀÛ Á¡)À» ¹İÈ¯ÇÏ°í, FALSEÀÌ¸é 
-* ¼¼±×¸ÕÆ® ³¡ Á¡ÀÇ ÀÌÀü Á¡ (¼¼±×¸ÕÆ®ÀÇ ½ÃÀÛ Á¡)À» ¹İÈ¯ÇÏ°Ô µÈ´Ù.
+* ì„¸ê·¸ë¨¼íŠ¸ì—ì„œ ì´ì „ ì ì˜ ì£¼ì†Œë¥¼ ë°˜í™˜í•œë‹¤. aIsStartê°€ TRUEì´ë©´ ì„¸ê·¸ë¨¼íŠ¸
+* ì‹œì‘ ì ì˜ ì´ì „ ì (ì´ì „ ì„¸ê·¸ë¨¼íŠ¸ì˜ ì‹œì‘ ì )ì„ ë°˜í™˜í•˜ê³ , FALSEì´ë©´ 
+* ì„¸ê·¸ë¨¼íŠ¸ ë ì ì˜ ì´ì „ ì  (ì„¸ê·¸ë¨¼íŠ¸ì˜ ì‹œì‘ ì )ì„ ë°˜í™˜í•˜ê²Œ ëœë‹¤.
 *
-* Segment* aSeg     : ¼¼±×¸ÕÆ®
-* idBool   aIsStart : ¼¼±×¸ÕÆ®ÀÇ ½ÃÀÛÁ¡ÀÎ°¡?
+* Segment* aSeg     : ì„¸ê·¸ë¨¼íŠ¸
+* idBool   aIsStart : ì„¸ê·¸ë¨¼íŠ¸ì˜ ì‹œì‘ì ì¸ê°€?
 **********************************************************************/
 stdPoint2D* stdPolyClip::getPrevPoint( Segment* aSeg, 
                                        idBool   aIsStart )
@@ -1619,20 +1619,20 @@ stdPoint2D* stdPolyClip::getPrevPoint( Segment* aSeg,
 
 /***********************************************************************
  * Description :
- *   Clip °á°ú ¸µÀÇ ¼ø¼­¸¦ Á¤·ÄÇÑ´Ù. °¡Àå ¸ÕÀú ¿ÜºÎ¸µµéÀ» Á¤·ÄÇÏ°í, 
- *   ³»ºÎ¸µÀÌ ÀÚ½ÅÀÌ Æ÷ÇÔµÇ¾î¾ß ÇÏ´Â ¿ÜºÎ¸µÀÇ µÚ¿¡ À§Ä¡ÇÏµµ·Ï ¸®½ºÆ®¸¦ 
- *   Á¤·ÄÇÑ´Ù. 
- *   RingÀÇ ºÎ¸ğ´Â ÀÚ½ÅÀ» Æ÷ÇÔÇÒ ¼ö ÀÖ´Â °¡Àå ÀÛÀº ¿ÜºÎ¸µÀ» ÀÇ¹ÌÇÑ´Ù.
+ *   Clip ê²°ê³¼ ë§ì˜ ìˆœì„œë¥¼ ì •ë ¬í•œë‹¤. ê°€ì¥ ë¨¼ì € ì™¸ë¶€ë§ë“¤ì„ ì •ë ¬í•˜ê³ , 
+ *   ë‚´ë¶€ë§ì´ ìì‹ ì´ í¬í•¨ë˜ì–´ì•¼ í•˜ëŠ” ì™¸ë¶€ë§ì˜ ë’¤ì— ìœ„ì¹˜í•˜ë„ë¡ ë¦¬ìŠ¤íŠ¸ë¥¼ 
+ *   ì •ë ¬í•œë‹¤. 
+ *   Ringì˜ ë¶€ëª¨ëŠ” ìì‹ ì„ í¬í•¨í•  ìˆ˜ ìˆëŠ” ê°€ì¥ ì‘ì€ ì™¸ë¶€ë§ì„ ì˜ë¯¸í•œë‹¤.
  *
- *   ex) ÃÊ±â aResRingList
- *   - ¿ÜºÎ¸µ1->¿ÜºÎ¸µ2->¿ÜºÎ¸µ3->³»ºÎ¸µ1->³»ºÎ¸µ2
+ *   ex) ì´ˆê¸° aResRingList
+ *   - ì™¸ë¶€ë§1->ì™¸ë¶€ë§2->ì™¸ë¶€ë§3->ë‚´ë¶€ë§1->ë‚´ë¶€ë§2
  *   
- *   Á¤·Ä ÈÄ
- *   - ¿ÜºÎ¸µ1->³»ºÎ¸µ1->³»ºÎ¸µ2->¿ÜºÎ¸µ2->¿ÜºÎ¸µ3
+ *   ì •ë ¬ í›„
+ *   - ì™¸ë¶€ë§1->ë‚´ë¶€ë§1->ë‚´ë¶€ë§2->ì™¸ë¶€ë§2->ì™¸ë¶€ë§3
  *
- *   ResRingList* aResRingList   : Clip °á°ú ¸µÀÇ ¸®½ºÆ®
- *   Segment**    aIndexSeg,     : Clip °á°ú ¸µÀÇ ÀÎµ¦½º ¼¼±×¸ÕÆ® ¸®½ºÆ®
- *   UInt         aIndexSegTotal : ÀÎµ¦½º ¼¼±×¸ÕÆ®ÀÇ ¼ö 
+ *   ResRingList* aResRingList   : Clip ê²°ê³¼ ë§ì˜ ë¦¬ìŠ¤íŠ¸
+ *   Segment**    aIndexSeg,     : Clip ê²°ê³¼ ë§ì˜ ì¸ë±ìŠ¤ ì„¸ê·¸ë¨¼íŠ¸ ë¦¬ìŠ¤íŠ¸
+ *   UInt         aIndexSegTotal : ì¸ë±ìŠ¤ ì„¸ê·¸ë¨¼íŠ¸ì˜ ìˆ˜ 
  **********************************************************************/
 IDE_RC stdPolyClip::sortRings( ResRingList* aResRingList,
                                Segment**    aIndexSeg, 
@@ -1642,7 +1642,7 @@ IDE_RC stdPolyClip::sortRings( ResRingList* aResRingList,
     Ring* sCompRing;
     Ring* sTmp;
 
-    /* ¿ÜºÎ¸µ */
+    /* ì™¸ë¶€ë§ */
     while ( ( sCurrRing != NULL ) )
     {
         if ( sCurrRing->mOrientation != ST_COUNTERCLOCKWISE )
@@ -1663,9 +1663,9 @@ IDE_RC stdPolyClip::sortRings( ResRingList* aResRingList,
                                               &(sCompRing->mMBR) )
                    == ID_TRUE ) )
             {
-                /* ºÎ¸ğ°¡ °°°í, µÎ ¸µÀÇ MBRÀÌ °ãÄ¡´Â °æ¿ì¿¡¸¸ µÎ ¸µÀÇ Æ÷ÇÔ°ü°è¸¦
-                 * °è»êÇÑ´Ù. ºÎ¸ğ°¡ ´Ù¸£°Å³ª, MBRÀÌ °ãÄ¡Áö ¾Ê´Â °æ¿ì¿¡´Â 
-                 * µÎ ¸µ »çÀÌ¿¡ Æ÷ÇÔ°ü°è°¡ ÀÖÀ» ¼ö ¾ø´Ù. */
+                /* ë¶€ëª¨ê°€ ê°™ê³ , ë‘ ë§ì˜ MBRì´ ê²¹ì¹˜ëŠ” ê²½ìš°ì—ë§Œ ë‘ ë§ì˜ í¬í•¨ê´€ê³„ë¥¼
+                 * ê³„ì‚°í•œë‹¤. ë¶€ëª¨ê°€ ë‹¤ë¥´ê±°ë‚˜, MBRì´ ê²¹ì¹˜ì§€ ì•ŠëŠ” ê²½ìš°ì—ëŠ” 
+                 * ë‘ ë§ ì‚¬ì´ì— í¬í•¨ê´€ê³„ê°€ ìˆì„ ìˆ˜ ì—†ë‹¤. */
 
                 if ( stdUtils::isRingInSide( aIndexSeg,
                                              aIndexSegTotal,
@@ -1706,7 +1706,7 @@ IDE_RC stdPolyClip::sortRings( ResRingList* aResRingList,
 
         if ( sCurrRing->mParent == NULL )
         {
-            /* ºÎ¸ğ°¡ ¾ø´Ù¸é ¸®½ºÆ®ÀÇ ¸Ç ¾ÕÀ¸·Î º¸³½´Ù. */
+            /* ë¶€ëª¨ê°€ ì—†ë‹¤ë©´ ë¦¬ìŠ¤íŠ¸ì˜ ë§¨ ì•ìœ¼ë¡œ ë³´ë‚¸ë‹¤. */
             if ( sTmp != NULL )
             {
                 sTmp->mPrev = sCurrRing->mPrev;
@@ -1726,7 +1726,7 @@ IDE_RC stdPolyClip::sortRings( ResRingList* aResRingList,
         }
         else
         {
-            /* ºÎ¸ğ°¡ ÀÖ´Ù¸é ºÎ¸ğ ¸µ µÚ·Î º¸³½´Ù. */
+            /* ë¶€ëª¨ê°€ ìˆë‹¤ë©´ ë¶€ëª¨ ë§ ë’¤ë¡œ ë³´ë‚¸ë‹¤. */
             if ( sCurrRing->mPrev != sCurrRing->mParent )
             {
                 if ( sTmp != NULL )
@@ -1753,7 +1753,7 @@ IDE_RC stdPolyClip::sortRings( ResRingList* aResRingList,
         sCurrRing = sTmp;
     }
 
-    /* ³»ºÎ¸µ */
+    /* ë‚´ë¶€ë§ */
     while ( sCurrRing != NULL )
     {
         sCompRing = aResRingList->mBegin;
@@ -1793,7 +1793,7 @@ IDE_RC stdPolyClip::sortRings( ResRingList* aResRingList,
         sTmp = sCurrRing->mNext;
 
 
-        /* ºÎ¸ğ¸µÀÌ ¾ø´Â ³»ºÎ¸µÀº Á¸ÀçÇÒ ¼ö ¾ø´Ù.*/
+        /* ë¶€ëª¨ë§ì´ ì—†ëŠ” ë‚´ë¶€ë§ì€ ì¡´ì¬í•  ìˆ˜ ì—†ë‹¤.*/
         IDE_TEST_RAISE( sCurrRing->mParent == NULL, ERR_UNKNOWN ); 
         
         if ( sCurrRing->mPrev != sCurrRing->mParent )
@@ -1835,12 +1835,12 @@ IDE_RC stdPolyClip::sortRings( ResRingList* aResRingList,
 
 /***********************************************************************
  * Description :
- *   Clip °á°ú¿¡¼­ ¼¿ÇÁÅÍÄ¡°¡ ÀÖ´Â Áö Ã£¾Æ¼­ aResPrimInterSeg¿¡ µî·ÏÇÑ´Ù.
+ *   Clip ê²°ê³¼ì—ì„œ ì…€í”„í„°ì¹˜ê°€ ìˆëŠ” ì§€ ì°¾ì•„ì„œ aResPrimInterSegì— ë“±ë¡í•œë‹¤.
  * 
  *   iduMemory*     aQmxMem        
- *   Segment**      aIndexSeg,       : Clip °á°ú ¸µÀÇ ÀÎµ¦½º ¼¼±×¸ÕÆ® ¸®½ºÆ®
- *   UInt           aIndexSegTotal   : ÀÎµ¦½º ¼¼±×¸ÕÆ®ÀÇ ¼ö
- *   PrimInterSeg** aResPrimInterSeg : ¼¿ÇÁÅÍÄ¡°¡ ¹ß»ıÇÑ Á¡ÀÇ ¸®½ºÆ® 
+ *   Segment**      aIndexSeg,       : Clip ê²°ê³¼ ë§ì˜ ì¸ë±ìŠ¤ ì„¸ê·¸ë¨¼íŠ¸ ë¦¬ìŠ¤íŠ¸
+ *   UInt           aIndexSegTotal   : ì¸ë±ìŠ¤ ì„¸ê·¸ë¨¼íŠ¸ì˜ ìˆ˜
+ *   PrimInterSeg** aResPrimInterSeg : ì…€í”„í„°ì¹˜ê°€ ë°œìƒí•œ ì ì˜ ë¦¬ìŠ¤íŠ¸ 
  **********************************************************************/
 IDE_RC stdPolyClip::detectSelfTouch( iduMemory*     aQmxMem,
                                      Segment**      aIndexSeg,
@@ -1920,7 +1920,7 @@ IDE_RC stdPolyClip::detectSelfTouch( iduMemory*     aQmxMem,
             
             if ( sCmpSeg->mStart.mX > sCurrSeg->mEnd.mX )
             {
-                /* Àß ¸ø »ÌÀº ³ğÀº Àç»ç¿ë¿¡ ³Ö¾î¾ß ÇÑ´Ù. */
+                /* ì˜ ëª» ë½‘ì€ ë†ˆì€ ì¬ì‚¬ìš©ì— ë„£ì–´ì•¼ í•œë‹¤. */
                 break;                
             }
             else
@@ -1931,7 +1931,7 @@ IDE_RC stdPolyClip::detectSelfTouch( iduMemory*     aQmxMem,
             do
             {
                 /*
-                  ¿©±â¼­ intersect¿Í ¹æÇâ¿¡ ´ëÇÑ °³³äÀ» ³Ö¾î ÃÄ³¾¼ö ÀÖ´Ù.                  
+                  ì—¬ê¸°ì„œ intersectì™€ ë°©í–¥ì— ëŒ€í•œ ê°œë…ì„ ë„£ì–´ ì³ë‚¼ìˆ˜ ìˆë‹¤.                  
                  */
                 if ( ( sCurrNext != sCmpSeg ) && ( sCurrPrev != sCmpSeg ) )
                 {
@@ -1948,8 +1948,8 @@ IDE_RC stdPolyClip::detectSelfTouch( iduMemory*     aQmxMem,
                     {
                         case ST_POINT_TOUCH:
                             /* BUG-33436 
-                               ¼¿ÇÁÅÍÄ¡°¡ ¹ß»ıÇÏ´Â Á¡À¸·Î µé¾î°¡´Â ¹æÇâÀÇ ¼¼±×¸ÕÆ®¿Í 
-                               ¹ß»ıÇÑ Á¡¿¡¼­ ³ª¿À´Â ¹æÇâÀÇ ¼¼±×¸ÕÆ®¸¦ µî·ÏÇÑ´Ù.  */
+                               ì…€í”„í„°ì¹˜ê°€ ë°œìƒí•˜ëŠ” ì ìœ¼ë¡œ ë“¤ì–´ê°€ëŠ” ë°©í–¥ì˜ ì„¸ê·¸ë¨¼íŠ¸ì™€ 
+                               ë°œìƒí•œ ì ì—ì„œ ë‚˜ì˜¤ëŠ” ë°©í–¥ì˜ ì„¸ê·¸ë¨¼íŠ¸ë¥¼ ë“±ë¡í•œë‹¤.  */
                             if ( sCurrSeg->mParent->mReverse == ST_NOT_REVERSE )
                             {
                                 sStartPt[0] = &(sCurrSeg->mStart);
@@ -2010,7 +2010,7 @@ IDE_RC stdPolyClip::detectSelfTouch( iduMemory*     aQmxMem,
                         case ST_TOUCH:                       
                         case ST_INTERSECT:
                         case ST_SHARE:
-                            // Clip °á°ú¿¡¼­ INTERSECT, SHARE°¡ ¹ß»ıÇÒ ¼ö ¾ø´Ù. 
+                            // Clip ê²°ê³¼ì—ì„œ INTERSECT, SHAREê°€ ë°œìƒí•  ìˆ˜ ì—†ë‹¤. 
                             IDE_RAISE( ERR_UNKNOWN );
                             break;
 
@@ -2030,19 +2030,19 @@ IDE_RC stdPolyClip::detectSelfTouch( iduMemory*     aQmxMem,
                     break;                    
                 }
             
-                /* ³¡±îÁö Á¶»çÇÑ´Ù. */
+                /* ëê¹Œì§€ ì¡°ì‚¬í•œë‹¤. */
 
             }while( sCmpSeg->mStart.mX <= sCurrSeg->mEnd.mX );            
         }
 
-        /* Àç»ç¿ëÀ» Á¤¸® ÇÑ´Ù. */
+        /* ì¬ì‚¬ìš©ì„ ì •ë¦¬ í•œë‹¤. */
     
         
         for ( i =0; i < sReuseSegCount ; i++)
         {
             sPQueue.enqueue( sTempIndexSeg++, &sOverflow);
             IDE_TEST_RAISE( sOverflow == ID_TRUE, ERR_ABORT_ENQUEUE_ERROR );
-            /* Overflow °Ë»ç */
+            /* Overflow ê²€ì‚¬ */
         }
 
         if ( sCurrSeg->mNext != NULL )
@@ -2102,10 +2102,10 @@ IDE_RC stdPolyClip::breakRing( iduMemory*    aQmxMem,
              ( sSeg1 == stdUtils::getNextSeg( sSeg2 ) ) ||
              ( sChain1->mPolygonNum != sChain2->mPolygonNum ) )
         {
-            /* sSeg2´Â sSeg1ÀÇ ÀÌÀü,´ÙÀ½ ¼¼±×¸ÕÆ®°¡ ¾Æ´Ï¾î¾ß ÇÑ´Ù.
-             * ¸¸¾à ±×·¸´Ù¸é ÀÌ¹Ì ºĞÇÒÀÌ ÀÏ¾î³­ ÈÄ ÀÌ¹Ç·Î
-             * ÀÌ°ÍÀ» ¹«½ÃÇÏ°í ´ÙÀ½À¸·Î ³Ñ¾î°£´Ù. 
-             * µÎ ¼¼±×¸ÕÆ®ÀÇ ¸µ ¹øÈ£°¡ ´Ù¸¥ °æ¿ì¿¡µµ ´ÙÀ½À¸·Î ³Ñ¾î°£´Ù. */
+            /* sSeg2ëŠ” sSeg1ì˜ ì´ì „,ë‹¤ìŒ ì„¸ê·¸ë¨¼íŠ¸ê°€ ì•„ë‹ˆì–´ì•¼ í•œë‹¤.
+             * ë§Œì•½ ê·¸ë ‡ë‹¤ë©´ ì´ë¯¸ ë¶„í• ì´ ì¼ì–´ë‚œ í›„ ì´ë¯€ë¡œ
+             * ì´ê²ƒì„ ë¬´ì‹œí•˜ê³  ë‹¤ìŒìœ¼ë¡œ ë„˜ì–´ê°„ë‹¤. 
+             * ë‘ ì„¸ê·¸ë¨¼íŠ¸ì˜ ë§ ë²ˆí˜¸ê°€ ë‹¤ë¥¸ ê²½ìš°ì—ë„ ë‹¤ìŒìœ¼ë¡œ ë„˜ì–´ê°„ë‹¤. */
 
             sPrim = sPrim->mNext;
             continue;
@@ -2115,12 +2115,12 @@ IDE_RC stdPolyClip::breakRing( iduMemory*    aQmxMem,
             // Nothing to do
         }
 
-        /* Clip °á°ú¿¡¼­ ¼¿ÇÁÅÍÄ¡°¡ ÀÖ´Â ¸µÀ» Á¦°ÅÇÑ´Ù. */
+        /* Clip ê²°ê³¼ì—ì„œ ì…€í”„í„°ì¹˜ê°€ ìˆëŠ” ë§ì„ ì œê±°í•œë‹¤. */
         IDE_TEST( removeRingFromList( aResRingList, sChain1->mPolygonNum )
                   != IDE_SUCCESS );
 
-        /* ¼¿ÇÁÅÍÄ¡°¡ ÀÖ´Â Á¡À¸·Î µé¾î°¡´Â ¼¼±×¸ÕÆ®¿Í ¹Ù·Î ±× ´ÙÀ½ ¼¼±×¸ÕÆ®ÀÇ
-         * ºÎ¸ğ(Ã¼ÀÎ)ÀÌ °°Àº °æ¿ì, ChainÀ» ºĞ¸®ÇØ¾ß ÇÑ´Ù. */
+        /* ì…€í”„í„°ì¹˜ê°€ ìˆëŠ” ì ìœ¼ë¡œ ë“¤ì–´ê°€ëŠ” ì„¸ê·¸ë¨¼íŠ¸ì™€ ë°”ë¡œ ê·¸ ë‹¤ìŒ ì„¸ê·¸ë¨¼íŠ¸ì˜
+         * ë¶€ëª¨(ì²´ì¸)ì´ ê°™ì€ ê²½ìš°, Chainì„ ë¶„ë¦¬í•´ì•¼ í•œë‹¤. */
         if ( sSeg1->mParent == sChain1 )
         {
             IDE_TEST( aQmxMem->alloc( ID_SIZEOF(Chain), 
@@ -2133,7 +2133,7 @@ IDE_RC stdPolyClip::breakRing( iduMemory*    aQmxMem,
                                      sNewChain1, 
                                      sChain1->mVaritation,
                                      sChain1->mReverse,
-                                     0,                         /* Ring ¹øÈ£, »ç¿ë ¾ÈÇÔ */
+                                     0,                         /* Ring ë²ˆí˜¸, ì‚¬ìš© ì•ˆí•¨ */
                                      aResRingList->mRingCnt,
                                      sChain1->mOrientaion,
                                      sChain1->mOpposite );
@@ -2184,8 +2184,8 @@ IDE_RC stdPolyClip::breakRing( iduMemory*    aQmxMem,
         }
         sChain1->mNext = NULL;
 
-        /* ¼¿ÇÁÅÍÄ¡°¡ ÀÖ´Â Á¡À¸·Î µé¾î°¡´Â ¼¼±×¸ÕÆ®¿Í ¹Ù·Î ±× ´ÙÀ½ ¼¼±×¸ÕÆ®ÀÇ
-         * ºÎ¸ğ(Ã¼ÀÎ)ÀÌ °°Àº °æ¿ì, ChainÀ» ºĞ¸®ÇØ¾ß ÇÑ´Ù. */
+        /* ì…€í”„í„°ì¹˜ê°€ ìˆëŠ” ì ìœ¼ë¡œ ë“¤ì–´ê°€ëŠ” ì„¸ê·¸ë¨¼íŠ¸ì™€ ë°”ë¡œ ê·¸ ë‹¤ìŒ ì„¸ê·¸ë¨¼íŠ¸ì˜
+         * ë¶€ëª¨(ì²´ì¸)ì´ ê°™ì€ ê²½ìš°, Chainì„ ë¶„ë¦¬í•´ì•¼ í•œë‹¤. */
         if ( sSeg2->mParent == sChain2 )
         {
             IDE_TEST( aQmxMem->alloc( ID_SIZEOF(Chain), 
@@ -2249,7 +2249,7 @@ IDE_RC stdPolyClip::breakRing( iduMemory*    aQmxMem,
         }
         sChain2->mPrev = NULL;
 
-        /* µÎ °³ÀÇ ¸µÀ¸·Î ºĞ¸®µÇµµ·Ï Ã¼ÀÎÀ» ¼öÁ¤ÇÑ´Ù. */
+        /* ë‘ ê°œì˜ ë§ìœ¼ë¡œ ë¶„ë¦¬ë˜ë„ë¡ ì²´ì¸ì„ ìˆ˜ì •í•œë‹¤. */
         sChain1->mNext = sChain2;
         sChain2->mPrev = sChain1;
 
@@ -2277,8 +2277,8 @@ IDE_RC stdPolyClip::breakRing( iduMemory*    aQmxMem,
         sNewChain1->mNext->mPrev = sNewChain1;
         sNewChain2->mPrev->mNext = sNewChain2;
 
-        /* ºĞ¸®µÈ µÎ ¸µÀÇ MBR°ú ¹æÇâÀ» ´Ù½Ã °è»êÇÏ°í, 
-         * Clip °á°ú¿¡ ´Ù½Ã µî·Ï ÇÑ´Ù. */
+        /* ë¶„ë¦¬ëœ ë‘ ë§ì˜ MBRê³¼ ë°©í–¥ì„ ë‹¤ì‹œ ê³„ì‚°í•˜ê³ , 
+         * Clip ê²°ê³¼ì— ë‹¤ì‹œ ë“±ë¡ í•œë‹¤. */
 
         sFirstSeg[0] = sChain1->mBegin;
         sFirstSeg[1] = sNewChain1->mBegin;

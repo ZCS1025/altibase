@@ -150,7 +150,7 @@ public:
     utOraQuery( utOraConnection *);
 
     IDE_RC close   (void);
-    /* TASK-4212: auditÅøÀÇ ´ë¿ë·® Ã³¸®½Ã °³¼± */
+    /* TASK-4212: auditíˆ´ì˜ ëŒ€ìš©ëŸ‰ ì²˜ë¦¬ì‹œ ê°œì„  */
     IDE_RC utaCloseCur(void);
     IDE_RC clear   (void);
     IDE_RC reset   (void);
@@ -242,7 +242,7 @@ public:
     inline ub2  getValueLen() { return (mValueLen); }
 
     inline bool isNull() { return (isnull == -1); }
-    /* TASK-4212: auditÅøÀÇ ´ë¿ë·® Ã³¸®½Ã °³¼± */
+    /* TASK-4212: auditíˆ´ì˜ ëŒ€ìš©ëŸ‰ ì²˜ë¦¬ì‹œ ê°œì„  */
     inline void setIsNull(bool aIsNull) { isnull = (aIsNull)?-1:0; }
 
 protected:  friend class utOraRow;

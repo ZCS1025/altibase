@@ -21,14 +21,14 @@
 #include <uluLock.h>
 
 /*
- * uln¿¡¼­ »ç¿ëµÇ´Â °´Ã¼µéÀÇ Å¸ÀÔµé.
+ * ulnì—ì„œ ì‚¬ìš©ë˜ëŠ” ê°ì²´ë“¤ì˜ íƒ€ìž…ë“¤.
  */
 typedef enum
 {
     ULN_OBJ_TYPE_MIN  = SQL_HANDLE_ENV - 1,
 
     /*
-     * SQL_HANDLE_xxx¿Í ¸ÂÃß±â À§ÇØ¼­ 1ºÎÅÍ ½ÃÀÛÇÔ.
+     * SQL_HANDLE_xxxì™€ ë§žì¶”ê¸° ìœ„í•´ì„œ 1ë¶€í„° ì‹œìž‘í•¨.
      */
 
     ULN_OBJ_TYPE_ENV  = SQL_HANDLE_ENV,
@@ -68,7 +68,7 @@ typedef enum
                                               aSize)
 
 /*
- * BUGBUG: lock°ú °ü·ÃµÈ ÆÄÀÏ·Î ÀÌµ¿µÇ¾î¾ß ÇÑ´Ù {{{
+ * BUGBUG: lockê³¼ ê´€ë ¨ëœ íŒŒì¼ë¡œ ì´ë™ë˜ì–´ì•¼ í•œë‹¤ {{{
  */
 typedef enum
 {
@@ -95,11 +95,11 @@ struct ulnObject
     acp_sint16_t         mState;
 
     /*
-     * Statement ulnDescStmt ÀÇ S11, S12 ½ºÅ×ÀÌÆ®¿¡¼­
-     * NS ¶ó´Â »óÅÂÀüÀÌ°¡ ÀÖ´Âµ¥ ÀÌ¿¡ ÇØ´çÇÏ´Â state
-     * Á¤º¸¸¦ °¡Áö°í ÀÖ¾î¾ß ÇÒ ÇÊ¿ä°¡ ÀÖÀ½¿¡ ¸¸µç ÇÊµåÀÓ.
-     * ÀÌ ÇÊµå°¡ 0 ÀÌ ¾Æ´Ï¸é ÀÌ STMT ¿¡ ´ëÇØ ºÒ¸®¿öÁø
-     * ÇÔ¼ö°¡ ½ÇÇàµÇ°í ÀÖ´Â ÁßÀÌ¶ó´Â °ÍÀ» ³ªÅ¸³¿.
+     * Statement ulnDescStmt ì˜ S11, S12 ìŠ¤í…Œì´íŠ¸ì—ì„œ
+     * NS ë¼ëŠ” ìƒíƒœì „ì´ê°€ ìžˆëŠ”ë° ì´ì— í•´ë‹¹í•˜ëŠ” state
+     * ì •ë³´ë¥¼ ê°€ì§€ê³  ìžˆì–´ì•¼ í•  í•„ìš”ê°€ ìžˆìŒì— ë§Œë“  í•„ë“œìž„.
+     * ì´ í•„ë“œê°€ 0 ì´ ì•„ë‹ˆë©´ ì´ STMT ì— ëŒ€í•´ ë¶ˆë¦¬ì›Œì§„
+     * í•¨ìˆ˜ê°€ ì‹¤í–‰ë˜ê³  ìžˆëŠ” ì¤‘ì´ë¼ëŠ” ê²ƒì„ ë‚˜íƒ€ëƒ„.
      */
     ulnFunctionId    mExecFuncID;
 
@@ -111,8 +111,8 @@ struct ulnObject
     ulnDiagHeader    mDiagHeader;        /* Header of Diagnostic Messages */
 
     /*
-     * ¾Æ·¡ÀÇ ¸â¹ö´Â SQLError() ÇÔ¼öÀÇ SQLGetDiagRec() ÇÔ¼ö·ÎÀÇ ¸ÅÇÎ¶§¹®¿¡ Á¸ÀçÇÑ´Ù.
-     * uloSqlWrapper.cpp ÀÇ SQLError() ÇÔ¼ö¸¦ º¸¸é »ç¿ë·Ê¸¦ ¾Ë ¼ö ÀÖ´Ù.
+     * ì•„ëž˜ì˜ ë©¤ë²„ëŠ” SQLError() í•¨ìˆ˜ì˜ SQLGetDiagRec() í•¨ìˆ˜ë¡œì˜ ë§¤í•‘ë•Œë¬¸ì— ì¡´ìž¬í•œë‹¤.
+     * uloSqlWrapper.cpp ì˜ SQLError() í•¨ìˆ˜ë¥¼ ë³´ë©´ ì‚¬ìš©ë¡€ë¥¼ ì•Œ ìˆ˜ ìžˆë‹¤.
      */
     acp_sint32_t     mSqlErrorRecordNumber;
 };

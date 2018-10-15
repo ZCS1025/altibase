@@ -80,22 +80,22 @@ public:
 
 /**************************************************************************
  * Description :
- * hashValue¸¦ ¹ÙÅÁÀ¸·Î ÀÚ½Å°ú °°Àº hashValue ¹× value¸¦ °¡Áø Row¸¦
- * Ã£½À´Ï´Ù.
- * Ã£À¸¸é rowPointer ¹× RID¸¦ ¸®ÅÏÇÏ°í, ¾øÀ¸¸é
- * NULL, NULL_RID¸¦ ¹İÈ¯ÇÕ´Ï´Ù.
+ * hashValueë¥¼ ë°”íƒ•ìœ¼ë¡œ ìì‹ ê³¼ ê°™ì€ hashValue ë° valueë¥¼ ê°€ì§„ Rowë¥¼
+ * ì°¾ìŠµë‹ˆë‹¤.
+ * ì°¾ìœ¼ë©´ rowPointer ë° RIDë¥¼ ë¦¬í„´í•˜ê³ , ì—†ìœ¼ë©´
+ * NULL, NULL_RIDë¥¼ ë°˜í™˜í•©ë‹ˆë‹¤.
  *
  * <IN>
- * aHeader        - ´ë»ó Table
- * aWASegment     - ´ë»ó WASegment
+ * aHeader        - ëŒ€ìƒ Table
+ * aWASegment     - ëŒ€ìƒ WASegment
  * aResetPage     - reset page
- * aFilter        - °¡Á®¿Ã Row¿¡ ´ëÇÑ Filter
- * aHashValue     - Å½»öÇÒ ´ë»ó Hash
- * aMapIndx       - Å½»öÀ» ½ÃÀÛÇÒ HashMapÀÇ Index¹øÈ£
+ * aFilter        - ê°€ì ¸ì˜¬ Rowì— ëŒ€í•œ Filter
+ * aHashValue     - íƒìƒ‰í•  ëŒ€ìƒ Hash
+ * aMapIndx       - íƒìƒ‰ì„ ì‹œì‘í•  HashMapì˜ Indexë²ˆí˜¸
  * <OUT>
- * aRowPtr        - Row¸¦ Å½»öÇÑ °á°ú
- * aBucketGRID    - Hash°ª¿¡ ÇØ´çÇÏ´Â BucketGRIDÀÇ Æ÷ÀÎÅÍ
- * aTargetGRID    - Ã£Àº Row
+ * aRowPtr        - Rowë¥¼ íƒìƒ‰í•œ ê²°ê³¼
+ * aBucketGRID    - Hashê°’ì— í•´ë‹¹í•˜ëŠ” BucketGRIDì˜ í¬ì¸í„°
+ * aTargetGRID    - ì°¾ì€ Row
  ***************************************************************************/
 IDE_RC sdtUniqueHashModule::findExactRow( smiTempTableHeader  * aHeader,
                                           sdtWASegment        * aWASeg,
@@ -110,7 +110,7 @@ IDE_RC sdtUniqueHashModule::findExactRow( smiTempTableHeader  * aHeader,
     idBool              sResult;
     UInt                sLoop = 0;
 
-    /*MapSize¸¦ ¹ÙÅÁÀ¸·Î, Map³» SlotIndex¸¦ Ã£À½ */
+    /*MapSizeë¥¼ ë°”íƒ•ìœ¼ë¡œ, Mapë‚´ SlotIndexë¥¼ ì°¾ìŒ */
     *aMapIdx = aHashValue % sdtWAMap::getSlotCount( &aWASeg->mSortHashMapHdr );
 
     IDE_TEST( sdtWAMap::getSlotPtrWithCheckState( &aWASeg->mSortHashMapHdr,
@@ -133,7 +133,7 @@ IDE_RC sdtUniqueHashModule::findExactRow( smiTempTableHeader  * aHeader,
                   != IDE_SUCCESS );
         if( sResult == ID_TRUE )
         {
-            /* Ã£¾Ò´Ù! */
+            /* ì°¾ì•˜ë‹¤! */
             break;
         }
     }
@@ -149,17 +149,17 @@ IDE_RC sdtUniqueHashModule::findExactRow( smiTempTableHeader  * aHeader,
 
 /**************************************************************************
  * Description :
- * RowÀÇ ´ÙÀ½ Row¿¡ ´ëÇØ HaahValue°¡ °°ÀºÁö, °¡Á®¿Ã ´ë»óÀÎÁö Ã¼Å©ÇÔ
+ * Rowì˜ ë‹¤ìŒ Rowì— ëŒ€í•´ HaahValueê°€ ê°™ì€ì§€, ê°€ì ¸ì˜¬ ëŒ€ìƒì¸ì§€ ì²´í¬í•¨
  *
  * <IN>
- * aHeader        - ´ë»ó Table
- * aWASegment     - ´ë»ó WASegment
- * aFilter        - °¡Á®¿Ã Row¿¡ ´ëÇÑ Filter
- * aHashValue     - Å½»öÇÒ ´ë»ó Hash
+ * aHeader        - ëŒ€ìƒ Table
+ * aWASegment     - ëŒ€ìƒ WASegment
+ * aFilter        - ê°€ì ¸ì˜¬ Rowì— ëŒ€í•œ Filter
+ * aHashValue     - íƒìƒ‰í•  ëŒ€ìƒ Hash
  * <OUT>
- * aGRID          - ´ë»ó RowÀÇ À§Ä¡
- * aSrcRowPtr     - Row¸¦ Å½»öÇÑ °á°ú
- * aResult        - Å½»ö ¼º°ø ¿©ºÎ
+ * aGRID          - ëŒ€ìƒ Rowì˜ ìœ„ì¹˜
+ * aSrcRowPtr     - Rowë¥¼ íƒìƒ‰í•œ ê²°ê³¼
+ * aResult        - íƒìƒ‰ ì„±ê³µ ì—¬ë¶€
  ***************************************************************************/
 IDE_RC sdtUniqueHashModule::checkNextRow( smiTempTableHeader  * aHeader,
                                           sdtWASegment        * aWASegment,
@@ -185,7 +185,7 @@ IDE_RC sdtUniqueHashModule::checkNextRow( smiTempTableHeader  * aHeader,
 
     *aSrcRowPtr =(UChar*) sTRPHeader;
 
-    /*BUG-45474 fetch Áß¿¡ replace °¡ ¹ß»ıÇÒ¼ö ÀÖÀ¸¹Ç·Î GRID¸¦ ÀúÀåÇØ µÎ°í »ç¿ëÇÑ´Ù. */
+    /*BUG-45474 fetch ì¤‘ì— replace ê°€ ë°œìƒí• ìˆ˜ ìˆìœ¼ë¯€ë¡œ GRIDë¥¼ ì €ì¥í•´ ë‘ê³  ì‚¬ìš©í•œë‹¤. */
     sChildGRID = sTRPHeader->mChildGRID;
 #ifdef DEBUG
     if ( !SC_GRID_IS_NULL( sChildGRID ) )
@@ -226,7 +226,7 @@ IDE_RC sdtUniqueHashModule::checkNextRow( smiTempTableHeader  * aHeader,
     }
     else
     {
-        /* HashValueÁ¶Â÷ ´Ù¸§ */
+        /* HashValueì¡°ì°¨ ë‹¤ë¦„ */
         *aGRID = sChildGRID;
         *aResult = ID_FALSE;
     }

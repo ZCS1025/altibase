@@ -47,23 +47,23 @@ IDE_RC qdbDisjoin::validateDisjoinTable( qcStatement * aStatement )
  *    DISJOIN TABLE ... ( PARTITION ... TO TABLE ... , ... )
  *
  * Implementation :
- *    1. Å×ÀÌºí dollar name Ã¼Å©
- *    2. º¯°æ ÈÄ »ı¼ºµÇ´Â Å×ÀÌºíµéÀÇ ÀÌ¸§ÀÌ ÀÌ¹Ì Á¸ÀçÇÏ´ÂÁö Ã¼Å©
- *    3. Å×ÀÌºí Á¸Àç ¿©ºÎ Ã¼Å©
- *       3-1. Å×ÀÌºí¿¡ LOCK(IS)
- *    4. ÆÄÆ¼¼Çµå Å×ÀÌºí ¾Æ´Ï¸é ¿¡·¯
- *       4-1. ÇØ½Ã ÆÄÆ¼¼Çµå Å×ÀÌºíÀÌ¸é ¿¡·¯
- *    5. ÆÄÆ¼¼Ç ÀÌ¸§ÀÌ Á¦´ë·Î ÀûÈù °ÇÁö Ã¼Å©
- *       5.1. Hybrid Partitioned TableÀÌ¸é ¿¡·¯
- *    6. ACCESS°¡ READ_WRITEÀÎ Å×ÀÌºí¸¸ °¡´É
- *    7. statement¿¡ Å×ÀÌºíÀÇ ÆÄÆ¼¼Ç ÀüºÎ ÀÔ·ÂÇß´ÂÁö È®ÀÎ
- *    8. ÀÎµ¦½º, PK, UK, FK°¡ ÀÖÀ¸¸é ¿¡·¯
- *    9. Å×ÀÌºí¿¡ ÀÌÁßÈ­°¡ °É·ÁÀÖÀ¸¸é ¿¡·¯
- *    10. ±ÇÇÑ, operatable Ã¼Å© (CREATE & DROP)
- *    11. compression Ä®·³ÀÌ ÀÖÀ¸¸é ¿¡·¯
- *    12. hidden Ä®·³ÀÌ ÀÖÀ¸¸é ¿¡·¯
- *    13. º¸¾È Ä®·³ÀÌ ÀÖÀ¸¸é ¿¡·¯
- *    14. ÀÚ½Å¿¡ ÀÇÇØ ÀÌº¥Æ®°¡ ¹ß»ıÇÏ´Â Æ®¸®°Å°¡ ÀÖÀ¸¸é ¿¡·¯(SYS_TRIGGERS_¿¡ TABLE ID°¡ ÀÖÀ¸¸é ¿¡·¯)
+ *    1. í…Œì´ë¸” dollar name ì²´í¬
+ *    2. ë³€ê²½ í›„ ìƒì„±ë˜ëŠ” í…Œì´ë¸”ë“¤ì˜ ì´ë¦„ì´ ì´ë¯¸ ì¡´ì¬í•˜ëŠ”ì§€ ì²´í¬
+ *    3. í…Œì´ë¸” ì¡´ì¬ ì—¬ë¶€ ì²´í¬
+ *       3-1. í…Œì´ë¸”ì— LOCK(IS)
+ *    4. íŒŒí‹°ì…˜ë“œ í…Œì´ë¸” ì•„ë‹ˆë©´ ì—ëŸ¬
+ *       4-1. í•´ì‹œ íŒŒí‹°ì…˜ë“œ í…Œì´ë¸”ì´ë©´ ì—ëŸ¬
+ *    5. íŒŒí‹°ì…˜ ì´ë¦„ì´ ì œëŒ€ë¡œ ì íŒ ê±´ì§€ ì²´í¬
+ *       5.1. Hybrid Partitioned Tableì´ë©´ ì—ëŸ¬
+ *    6. ACCESSê°€ READ_WRITEì¸ í…Œì´ë¸”ë§Œ ê°€ëŠ¥
+ *    7. statementì— í…Œì´ë¸”ì˜ íŒŒí‹°ì…˜ ì „ë¶€ ì…ë ¥í–ˆëŠ”ì§€ í™•ì¸
+ *    8. ì¸ë±ìŠ¤, PK, UK, FKê°€ ìˆìœ¼ë©´ ì—ëŸ¬
+ *    9. í…Œì´ë¸”ì— ì´ì¤‘í™”ê°€ ê±¸ë ¤ìˆìœ¼ë©´ ì—ëŸ¬
+ *    10. ê¶Œí•œ, operatable ì²´í¬ (CREATE & DROP)
+ *    11. compression ì¹¼ëŸ¼ì´ ìˆìœ¼ë©´ ì—ëŸ¬
+ *    12. hidden ì¹¼ëŸ¼ì´ ìˆìœ¼ë©´ ì—ëŸ¬
+ *    13. ë³´ì•ˆ ì¹¼ëŸ¼ì´ ìˆìœ¼ë©´ ì—ëŸ¬
+ *    14. ìì‹ ì— ì˜í•´ ì´ë²¤íŠ¸ê°€ ë°œìƒí•˜ëŠ” íŠ¸ë¦¬ê±°ê°€ ìˆìœ¼ë©´ ì—ëŸ¬(SYS_TRIGGERS_ì— TABLE IDê°€ ìˆìœ¼ë©´ ì—ëŸ¬)
  *
  ***********************************************************************/
 
@@ -84,7 +84,7 @@ IDE_RC qdbDisjoin::validateDisjoinTable( qcStatement * aStatement )
 
     sParseTree = (qdDisjoinTableParseTree *)aStatement->myPlan->parseTree;
 
-    /* 1. Å×ÀÌºí dollar name Ã¼Å© */
+    /* 1. í…Œì´ë¸” dollar name ì²´í¬ */
     /* BUG-30059 */
     if ( qdbCommon::containDollarInName( &(sParseTree->tableName) ) == ID_TRUE )
     {
@@ -98,7 +98,7 @@ IDE_RC qdbDisjoin::validateDisjoinTable( qcStatement * aStatement )
         /* Nothing To Do */
     }
 
-    /* 2. º¯°æ ÈÄ »ı¼ºµÇ´Â Å×ÀÌºíµéÀÇ ÀÌ¸§ÀÌ ÀÌ¹Ì Á¸ÀçÇÏ´ÂÁö Ã¼Å© */
+    /* 2. ë³€ê²½ í›„ ìƒì„±ë˜ëŠ” í…Œì´ë¸”ë“¤ì˜ ì´ë¦„ì´ ì´ë¯¸ ì¡´ì¬í•˜ëŠ”ì§€ ì²´í¬ */
     for ( sDisjoin = sParseTree->disjoinTable;
           sDisjoin != NULL;
           sDisjoin = sDisjoin->next )
@@ -125,7 +125,7 @@ IDE_RC qdbDisjoin::validateDisjoinTable( qcStatement * aStatement )
         }
     }
 
-    /* 3. Å×ÀÌºí Á¸Àç ¿©ºÎ Ã¼Å© */
+    /* 3. í…Œì´ë¸” ì¡´ì¬ ì—¬ë¶€ ì²´í¬ */
     IDE_TEST( qdbCommon::checkTableInfo( aStatement,
                                          sParseTree->userName,  /* empty */
                                          sParseTree->tableName,
@@ -135,11 +135,11 @@ IDE_RC qdbDisjoin::validateDisjoinTable( qcStatement * aStatement )
                                          &(sParseTree->tableSCN) )
               != IDE_SUCCESS);
 
-    // ÆÄÆ¼¼Çµå Å×ÀÌºí¿¡ LOCK(IS)
+    // íŒŒí‹°ì…˜ë“œ í…Œì´ë¸”ì— LOCK(IS)
     IDE_TEST( smiValidateAndLockObjects( ( QC_SMI_STMT( aStatement ) )->getTrans(),
                                          sParseTree->tableHandle,
                                          sParseTree->tableSCN,
-                                         SMI_TBSLV_DROP_TBS, // TBS Validation ¿É¼Ç
+                                         SMI_TBSLV_DROP_TBS, // TBS Validation ì˜µì…˜
                                          SMI_TABLE_LOCK_IS,
                                          ( ( smiGetDDLLockTimeOut() == -1 ) ?
                                            ID_ULONG_MAX :
@@ -156,53 +156,53 @@ IDE_RC qdbDisjoin::validateDisjoinTable( qcStatement * aStatement )
                                                   & (sParseTree->partInfoList) )
               != IDE_SUCCESS );
 
-    // ¸ğµç ÆÄÆ¼¼Ç¿¡ LOCK(IS)
+    // ëª¨ë“  íŒŒí‹°ì…˜ì— LOCK(IS)
     IDE_TEST( qcmPartition::validateAndLockPartitionInfoList( aStatement,
                                                               sParseTree->partInfoList,
-                                                              SMI_TBSLV_DROP_TBS, // TBS Validation ¿É¼Ç
+                                                              SMI_TBSLV_DROP_TBS, // TBS Validation ì˜µì…˜
                                                               SMI_TABLE_LOCK_IS,
                                                               ( ( smiGetDDLLockTimeOut() == -1 ) ?
                                                                 ID_ULONG_MAX :
                                                                 smiGetDDLLockTimeOut() * 1000000 ) )
               != IDE_SUCCESS );
 
-    /* PROJ-2464 hybrid partitioned table Áö¿ø */
+    /* PROJ-2464 hybrid partitioned table ì§€ì› */
     sTableType = sTableInfo->tableFlag & SMI_TABLE_TYPE_MASK;
 
-    /* 4. ÆÄÆ¼¼Çµå Å×ÀÌºí ¾Æ´Ï¸é ¿¡·¯ */
+    /* 4. íŒŒí‹°ì…˜ë“œ í…Œì´ë¸” ì•„ë‹ˆë©´ ì—ëŸ¬ */
     IDE_TEST_RAISE( sTableInfo->tablePartitionType  == QCM_NONE_PARTITIONED_TABLE,
                     ERR_DISJOIN_TABLE_NON_PART_TABLE );
-    /* 4-1. ÇØ½Ã ÆÄÆ¼¼Çµå Å×ÀÌºíÀÌ¸é ¿¡·¯ */
+    /* 4-1. í•´ì‹œ íŒŒí‹°ì…˜ë“œ í…Œì´ë¸”ì´ë©´ ì—ëŸ¬ */
     IDE_TEST_RAISE( sTableInfo->partitionMethod == QCM_PARTITION_METHOD_HASH,
                     ERR_DISJOIN_TABLE_NON_PART_TABLE );
 
-    /* 5. ÆÄÆ¼¼Ç ÀÌ¸§ÀÌ Á¦´ë·Î ÀûÈù °ÇÁö(Á¸ÀçÇÏ´ÂÁö), ÆÄÆ¼¼Ç ÀüÃ¼ ÀÌ¸§À» ½è´ÂÁö Ã¼Å© */
-    /*    + partition info list °¡Á®¿Í¼­ parse tree¿¡ ´Ş¾Æ ³õ´Â´Ù. */
+    /* 5. íŒŒí‹°ì…˜ ì´ë¦„ì´ ì œëŒ€ë¡œ ì íŒ ê±´ì§€(ì¡´ì¬í•˜ëŠ”ì§€), íŒŒí‹°ì…˜ ì „ì²´ ì´ë¦„ì„ ì¼ëŠ”ì§€ ì²´í¬ */
+    /*    + partition info list ê°€ì ¸ì™€ì„œ parse treeì— ë‹¬ì•„ ë†“ëŠ”ë‹¤. */
     IDE_TEST( checkPartitionExistByName( aStatement,
                                          sParseTree->partInfoList,
                                          sParseTree->disjoinTable )
               != IDE_SUCCESS );
 
-    /* PROJ-2464 hybrid partitioned table Áö¿ø
-     *  - 5.1. Hybrid Partitioned TableÀÌ¸é ¿¡·¯
+    /* PROJ-2464 hybrid partitioned table ì§€ì›
+     *  - 5.1. Hybrid Partitioned Tableì´ë©´ ì—ëŸ¬
      */
-    /* 5.1.1. Partition ±¸¼ºÀ» °Ë»çÇÑ´Ù. */
+    /* 5.1.1. Partition êµ¬ì„±ì„ ê²€ì‚¬í•œë‹¤. */
     qdbCommon::getTableTypeCountInPartInfoList( & sTableType,
                                                 sParseTree->partInfoList,
                                                 & sCountDiskType,
                                                 & sCountMemType,
                                                 & sCountVolType );
 
-    /* 5.1.2. Hybrid Partitioned Table ¿¡¼­´Â Disjoin Table¸¦ Áö¿øÇÏÁö ¾Ê´Â´Ù. */
+    /* 5.1.2. Hybrid Partitioned Table ì—ì„œëŠ” Disjoin Tableë¥¼ ì§€ì›í•˜ì§€ ì•ŠëŠ”ë‹¤. */
     sTotalCount = sCountDiskType + sCountMemType + sCountVolType;
 
-    /* 5.1.3. ¸ğµÎ °°Àº TypeÀÎÁö °Ë»çÇÑ´Ù. Hybrid Partitioned Table°¡ ¾Æ´Ï´Ù. */
+    /* 5.1.3. ëª¨ë‘ ê°™ì€ Typeì¸ì§€ ê²€ì‚¬í•œë‹¤. Hybrid Partitioned Tableê°€ ì•„ë‹ˆë‹¤. */
     IDE_TEST_RAISE( !( ( sTotalCount == sCountDiskType ) ||
                        ( sTotalCount == sCountMemType ) ||
                        ( sTotalCount == sCountVolType ) ),
                     ERR_UNSUPPORT_ON_HYBRID_PARTITIONED_TABLE );
     
-    /* 6. READ_WRITEÀÎ Å×ÀÌºí¸¸ °¡´É */
+    /* 6. READ_WRITEì¸ í…Œì´ë¸”ë§Œ ê°€ëŠ¥ */
     if ( sTableInfo->accessOption != QCM_ACCESS_OPTION_READ_WRITE )
     {
         sqlInfo.setSourceInfo( aStatement,
@@ -214,7 +214,7 @@ IDE_RC qdbDisjoin::validateDisjoinTable( qcStatement * aStatement )
         /* Nothing To Do */
     }
 
-    /* 6-1. READ_WRITEÀÎ ÆÄÆ¼¼Ç¸¸ °¡´É */
+    /* 6-1. READ_WRITEì¸ íŒŒí‹°ì…˜ë§Œ ê°€ëŠ¥ */
     for ( sDisjoin = sParseTree->disjoinTable;
           sDisjoin != NULL;
           sDisjoin = sDisjoin->next )
@@ -231,7 +231,7 @@ IDE_RC qdbDisjoin::validateDisjoinTable( qcStatement * aStatement )
         }
     }
 
-    /* 7. statement¿¡ Å×ÀÌºíÀÇ ÆÄÆ¼¼Ç ÀüºÎ ÀÔ·ÂÇß´ÂÁö È®ÀÎ */
+    /* 7. statementì— í…Œì´ë¸”ì˜ íŒŒí‹°ì…˜ ì „ë¶€ ì…ë ¥í–ˆëŠ”ì§€ í™•ì¸ */
     IDE_TEST( qcmPartition::getPartitionCount( aStatement,
                                                sTableInfo->tableID,
                                                & sPartCount )
@@ -240,7 +240,7 @@ IDE_RC qdbDisjoin::validateDisjoinTable( qcStatement * aStatement )
     IDE_TEST_RAISE( sPartCount != sParseTree->partCount,
                     ERR_DISJOIN_MISS_SOME_PARTITION );
 
-    /* 8. ÀÎµ¦½º, PK, Unique, FK, Trigger(ÀÚ½Å¿¡ ÀÇÇØ DML ¹ßµ¿ÇÏ´Â °Í¸¸)°¡ ÀÖÀ¸¸é ¿¡·¯ */
+    /* 8. ì¸ë±ìŠ¤, PK, Unique, FK, Trigger(ìì‹ ì— ì˜í•´ DML ë°œë™í•˜ëŠ” ê²ƒë§Œ)ê°€ ìˆìœ¼ë©´ ì—ëŸ¬ */
     IDE_TEST_RAISE( sTableInfo->primaryKey != NULL,
                     ERR_JOIN_DISJOIN_TABLE_SPEC );
 
@@ -256,13 +256,13 @@ IDE_RC qdbDisjoin::validateDisjoinTable( qcStatement * aStatement )
     IDE_TEST_RAISE( sTableInfo->triggerCount != 0,
                     ERR_JOIN_DISJOIN_TABLE_SPEC );
 
-    /* 9. Å×ÀÌºí¿¡ ÀÌÁßÈ­°¡ °É·Á ÀÖÀ¸¸é ¿¡·¯ */
+    /* 9. í…Œì´ë¸”ì— ì´ì¤‘í™”ê°€ ê±¸ë ¤ ìˆìœ¼ë©´ ì—ëŸ¬ */
     IDE_TEST_RAISE( sTableInfo->replicationCount > 0,
                     ERR_DDL_WITH_REPLICATED_TABLE );
-    //proj-1608:replicationCount°¡ 0ÀÏ ¶§ recovery count´Â Ç×»ó 0ÀÌ¾î¾ß ÇÔ
+    //proj-1608:replicationCountê°€ 0ì¼ ë•Œ recovery countëŠ” í•­ìƒ 0ì´ì–´ì•¼ í•¨
     IDE_DASSERT( sTableInfo->replicationRecoveryCount == 0 );
 
-    /* 10. ±ÇÇÑ, operatable Ã¼Å© (CREATE & DROP) */
+    /* 10. ê¶Œí•œ, operatable ì²´í¬ (CREATE & DROP) */
     IDE_TEST( qdpRole::checkDDLCreateTablePriv( aStatement,
                                                 sParseTree->userID )
               != IDE_SUCCESS );
@@ -274,9 +274,9 @@ IDE_RC qdbDisjoin::validateDisjoinTable( qcStatement * aStatement )
     IDE_TEST_RAISE( QCM_IS_OPERATABLE_QP_DROP_TABLE( sTableInfo->operatableFlag ) != ID_TRUE,
                     ERR_NOT_EXIST_TABLE );
 
-    /* 11. compression Ä®·³ÀÌ ÀÖÀ¸¸é ¿¡·¯ */
-    /* 12. hidden Ä®·³ÀÌ ÀÖÀ¸¸é ¿¡·¯ */
-    /* 13. º¸¾È Ä®·³ÀÌ ÀÖÀ¸¸é ¿¡·¯ */
+    /* 11. compression ì¹¼ëŸ¼ì´ ìˆìœ¼ë©´ ì—ëŸ¬ */
+    /* 12. hidden ì¹¼ëŸ¼ì´ ìˆìœ¼ë©´ ì—ëŸ¬ */
+    /* 13. ë³´ì•ˆ ì¹¼ëŸ¼ì´ ìˆìœ¼ë©´ ì—ëŸ¬ */
     for ( sColumn = sTableInfo->columns;
           sColumn != NULL;
           sColumn = sColumn->next  )
@@ -356,7 +356,7 @@ IDE_RC qdbDisjoin::validateDisjoinTable( qcStatement * aStatement )
                                   sqlInfo.getErrMessage() ) );
         (void)sqlInfo.fini();
     }
-    /* PROJ-2464 hybrid partitioned table Áö¿ø */
+    /* PROJ-2464 hybrid partitioned table ì§€ì› */
     IDE_EXCEPTION( ERR_UNSUPPORT_ON_HYBRID_PARTITIONED_TABLE );
     {
         IDE_SET( ideSetErrorCode( qpERR_ABORT_QDB_CANNOT_SUPPORT_ON_HYBRID_PARTITIONED_TABLE ) );
@@ -374,18 +374,18 @@ IDE_RC qdbDisjoin::executeDisjoinTable( qcStatement * aStatement )
  *    DISJOIN TABLE ... ( PARTITION ... TO TABLE ... , ... )
  *
  * Implementation :
- *    1. table/partition info¸¦ °¡Á®¿Â´Ù
- *    2. ÆÄÆ¼¼Ç º°·Î ´ÙÀ½À» ¼öÇàÇÑ´Ù. (¸ŞÅ¸ INSERT´Â ±âÁ¸ Å×ÀÌºí µ¥ÀÌÅÍ¸¦ ÂüÁ¶ÇØ¼­ »ı¼º)
- *       2-1. ÆÄÆ¼¼ÇÀ» À§ÇÑ table ID¸¦ »ı¼º.
- *       2-2. ÆÄÆ¼¼ÇÀ» À§ÇÑ table µ¥ÀÌÅÍ¸¦ ¸ŞÅ¸ Å×ÀÌºí¿¡ Ãß°¡
- *       2-3. ÆÄÆ¼¼ÇÀ» À§ÇÑ column ID¸¦ »ı¼ºÇÏ°í column µ¥ÀÌÅÍ¸¦ ¸ŞÅ¸ Å×ÀÌºí¿¡ Ãß°¡
- *       2-4. constraint º°·Î ID »ı¼º, µ¥ÀÌÅÍ¸¦ ¸ŞÅ¸¿¡ Ãß°¡
- *    3. ±âÁ¸ Å×ÀÌºíÀÇ ¸ŞÅ¸ Á¤º¸¸¦ »èÁ¦ÇÑ´Ù.
- *    4. °ü·Ã psm, pkg, view invalid
- *    5. constraint °ü·Ã function/procedure Á¤º¸ »èÁ¦
+ *    1. table/partition infoë¥¼ ê°€ì ¸ì˜¨ë‹¤
+ *    2. íŒŒí‹°ì…˜ ë³„ë¡œ ë‹¤ìŒì„ ìˆ˜í–‰í•œë‹¤. (ë©”íƒ€ INSERTëŠ” ê¸°ì¡´ í…Œì´ë¸” ë°ì´í„°ë¥¼ ì°¸ì¡°í•´ì„œ ìƒì„±)
+ *       2-1. íŒŒí‹°ì…˜ì„ ìœ„í•œ table IDë¥¼ ìƒì„±.
+ *       2-2. íŒŒí‹°ì…˜ì„ ìœ„í•œ table ë°ì´í„°ë¥¼ ë©”íƒ€ í…Œì´ë¸”ì— ì¶”ê°€
+ *       2-3. íŒŒí‹°ì…˜ì„ ìœ„í•œ column IDë¥¼ ìƒì„±í•˜ê³  column ë°ì´í„°ë¥¼ ë©”íƒ€ í…Œì´ë¸”ì— ì¶”ê°€
+ *       2-4. constraint ë³„ë¡œ ID ìƒì„±, ë°ì´í„°ë¥¼ ë©”íƒ€ì— ì¶”ê°€
+ *    3. ê¸°ì¡´ í…Œì´ë¸”ì˜ ë©”íƒ€ ì •ë³´ë¥¼ ì‚­ì œí•œë‹¤.
+ *    4. ê´€ë ¨ psm, pkg, view invalid
+ *    5. constraint ê´€ë ¨ function/procedure ì •ë³´ ì‚­ì œ
  *    6. smi::droptable
- *    7. ÆÄÆ¼¼Ç(ÀÌÁ¦´Â Å×ÀÌºí) ¸ŞÅ¸ Ä³½Ã Àç±¸¼º
- *    8. Å×ÀÌºí ¸ŞÅ¸ Ä³½¬¿¡¼­ »èÁ¦
+ *    7. íŒŒí‹°ì…˜(ì´ì œëŠ” í…Œì´ë¸”) ë©”íƒ€ ìºì‹œ ì¬êµ¬ì„±
+ *    8. í…Œì´ë¸” ë©”íƒ€ ìºì‰¬ì—ì„œ ì‚­ì œ
  *
  ***********************************************************************/
 
@@ -409,11 +409,11 @@ IDE_RC qdbDisjoin::executeDisjoinTable( qcStatement * aStatement )
     sParseTree = (qdDisjoinTableParseTree *)aStatement->myPlan->parseTree;
 
     // TASK-2176
-    // Table¿¡ ´ëÇÑ LockÀ» È¹µæÇÑ´Ù.
+    // Tableì— ëŒ€í•œ Lockì„ íšë“í•œë‹¤.
     IDE_TEST( smiValidateAndLockObjects( ( QC_SMI_STMT( aStatement ) )->getTrans(),
                                          sParseTree->tableHandle,
                                          sParseTree->tableSCN,
-                                         SMI_TBSLV_DROP_TBS, // TBS Validation ¿É¼Ç
+                                         SMI_TBSLV_DROP_TBS, // TBS Validation ì˜µì…˜
                                          SMI_TABLE_LOCK_X,
                                          ( ( smiGetDDLLockTimeOut() == -1 ) ?
                                            ID_ULONG_MAX :
@@ -424,17 +424,17 @@ IDE_RC qdbDisjoin::executeDisjoinTable( qcStatement * aStatement )
     sTableInfo = sParseTree->tableInfo;  /* old table info */
 
     // PROJ-1502 PARTITIONED DISK TABLE
-    // ¸ğµç ÆÄÆ¼¼Ç¿¡ LOCK(X)
+    // ëª¨ë“  íŒŒí‹°ì…˜ì— LOCK(X)
     IDE_TEST( qcmPartition::validateAndLockPartitionInfoList( aStatement,
                                                               sParseTree->partInfoList,
-                                                              SMI_TBSLV_DROP_TBS, // TBS Validation ¿É¼Ç
+                                                              SMI_TBSLV_DROP_TBS, // TBS Validation ì˜µì…˜
                                                               SMI_TABLE_LOCK_X,
                                                               ( ( smiGetDDLLockTimeOut() == -1 ) ?
                                                                 ID_ULONG_MAX :
                                                                 smiGetDDLLockTimeOut() * 1000000 ) )
               != IDE_SUCCESS );
 
-    // ¿¹¿Ü Ã³¸®¸¦ À§ÇÏ¿©, LockÀ» ÀâÀº ÈÄ¿¡ Partition List¸¦ ¼³Á¤ÇÑ´Ù.
+    // ì˜ˆì™¸ ì²˜ë¦¬ë¥¼ ìœ„í•˜ì—¬, Lockì„ ì¡ì€ í›„ì— Partition Listë¥¼ ì„¤ì •í•œë‹¤.
     sOldPartInfoList = sParseTree->partInfoList;
 
     for ( sPartInfoList = sOldPartInfoList;
@@ -444,7 +444,7 @@ IDE_RC qdbDisjoin::executeDisjoinTable( qcStatement * aStatement )
         sPartitionCount++;
     }
 
-    // »õ·Î¿î qcmPartitionInfoµéÀÇ pointerÁ¤º¸¸¦ °¡Áö´Â ¹è¿­ »ı¼º
+    // ìƒˆë¡œìš´ qcmPartitionInfoë“¤ì˜ pointerì •ë³´ë¥¼ ê°€ì§€ëŠ” ë°°ì—´ ìƒì„±
     sAllocSize = (ULong)sPartitionCount * ID_SIZEOF(qcmTableInfo*);
     IDU_FIT_POINT_RAISE( "qdbDisjoin::executeDisjoinTable::cralloc::sNewTableInfoArr",
                          ERR_MEMORY_ALLOCATION );
@@ -453,8 +453,8 @@ IDE_RC qdbDisjoin::executeDisjoinTable( qcStatement * aStatement )
                     (void**) & sNewTableInfoArr )
                     != IDE_SUCCESS, ERR_MEMORY_ALLOCATION );
 
-    /* PROJ-1723 [MDW/INTEGRATOR] Altibase Plugin °³¹ß
-     DDL Statement TextÀÇ ·Î±ë
+    /* PROJ-1723 [MDW/INTEGRATOR] Altibase Plugin ê°œë°œ
+     DDL Statement Textì˜ ë¡œê¹…
      */
     if ( QCU_DDL_SUPPLEMENTAL_LOG == 1 )
     {
@@ -468,12 +468,12 @@ IDE_RC qdbDisjoin::executeDisjoinTable( qcStatement * aStatement )
         /* Nothing to do */
     }
 
-    /* 2. ÆÄÆ¼¼Ç º°·Î ¸ŞÅ¸ copy ¼öÇà */
-    /* ÇÊ¿äÇÑ table ID, column ID, constraint ID µîÀ» »ı¼º ÈÄ */
-    /* ±âÁ¸ ÆÄÆ¼¼Çµå Å×ÀÌºíÀÇ µ¥ÀÌÅÍ¸¦ ±â¹İÀ¸·Î ¸ŞÅ¸ Å×ÀÌºí ³»¿ëÀ» copy */
+    /* 2. íŒŒí‹°ì…˜ ë³„ë¡œ ë©”íƒ€ copy ìˆ˜í–‰ */
+    /* í•„ìš”í•œ table ID, column ID, constraint ID ë“±ì„ ìƒì„± í›„ */
+    /* ê¸°ì¡´ íŒŒí‹°ì…˜ë“œ í…Œì´ë¸”ì˜ ë°ì´í„°ë¥¼ ê¸°ë°˜ìœ¼ë¡œ ë©”íƒ€ í…Œì´ë¸” ë‚´ìš©ì„ copy */
 
-    /* sDisjoinÀº ÆÄÆ¼¼Ç ÇÏ³ª¿¡ ´ëÀÀµÈ´Ù. */
-    /* sPartInfo´Â ±× ÆÄÆ¼¼ÇÀÇ tableInfo´Ù. */
+    /* sDisjoinì€ íŒŒí‹°ì…˜ í•˜ë‚˜ì— ëŒ€ì‘ëœë‹¤. */
+    /* sPartInfoëŠ” ê·¸ íŒŒí‹°ì…˜ì˜ tableInfoë‹¤. */
     for ( sDisjoin = sParseTree->disjoinTable;
           sDisjoin != NULL;
           sDisjoin = sDisjoin->next )
@@ -484,7 +484,7 @@ IDE_RC qdbDisjoin::executeDisjoinTable( qcStatement * aStatement )
                   != IDE_SUCCESS );
         sTableID = sDisjoin->newTableID;
 
-        /* ¸ŞÅ¸ º¹»ç */
+        /* ë©”íƒ€ ë³µì‚¬ */
 
         /* sys_tables_ */
         IDE_TEST( qcmTablespace::getTBSAttrByID( sPartInfo->TBSID,
@@ -501,9 +501,9 @@ IDE_RC qdbDisjoin::executeDisjoinTable( qcStatement * aStatement )
         sNewColumnID = sTableID * SMI_COLUMN_ID_MAXIMUM;
         sColumn = sTableInfo->columns;
 
-        /* ÆÄÆ¼¼Ç Çì´õÀÇ column ID¸¦ ¼öÁ¤ÇÑ µÚ ¸ŞÅ¸¿¡ »õ Å×ÀÌºíÀÇ column specÀ» Ãß°¡ÇÑ´Ù. */
-        /* ÆÄÆ¼¼Çµå Å×ÀÌºíÀÇ Ã¹ ¹øÂ° Ä®·³(qcmcolumn)°ú */
-        /* »õ Å×ÀÌºíÀÇ Ã¹¹øÂ° Ä®·³ ID¸¦ ³Ñ°ÜÁØ´Ù. */
+        /* íŒŒí‹°ì…˜ í—¤ë”ì˜ column IDë¥¼ ìˆ˜ì •í•œ ë’¤ ë©”íƒ€ì— ìƒˆ í…Œì´ë¸”ì˜ column specì„ ì¶”ê°€í•œë‹¤. */
+        /* íŒŒí‹°ì…˜ë“œ í…Œì´ë¸”ì˜ ì²« ë²ˆì§¸ ì¹¼ëŸ¼(qcmcolumn)ê³¼ */
+        /* ìƒˆ í…Œì´ë¸”ì˜ ì²«ë²ˆì§¸ ì¹¼ëŸ¼ IDë¥¼ ë„˜ê²¨ì¤€ë‹¤. */
         IDE_TEST( modifyColumnID( aStatement,
                                   sDisjoin->oldPartInfo->columns,   /* column(partition's first) */
                                   sTableInfo->columnCount,          /* column count */
@@ -513,7 +513,7 @@ IDE_RC qdbDisjoin::executeDisjoinTable( qcStatement * aStatement )
         
         for ( i = 0; i < sTableInfo->columnCount; i++ )
         {
-            /* ÄÃ·³ ÇÏ³ªÀÇ µ¥ÀÌÅÍ¸¦ Ä«ÇÇ */
+            /* ì»¬ëŸ¼ í•˜ë‚˜ì˜ ë°ì´í„°ë¥¼ ì¹´í”¼ */
             IDE_TEST( copyColumnSpec( aStatement,
                                       sParseTree->userID,               /* user ID */
                                       sTableInfo->tableID,              /* table ID(old) */
@@ -525,9 +525,9 @@ IDE_RC qdbDisjoin::executeDisjoinTable( qcStatement * aStatement )
                       != IDE_SUCCESS );
         }
 
-        /* constraint º°·Î »õ ÀÌ¸§, ID¸¦ »ı¼ºÇÏ°í ¸ŞÅ¸¸¦ º¹»çÇÑ´Ù. */
+        /* constraint ë³„ë¡œ ìƒˆ ì´ë¦„, IDë¥¼ ìƒì„±í•˜ê³  ë©”íƒ€ë¥¼ ë³µì‚¬í•œë‹¤. */
         /* sys_constraints_ */
-        /* constraint ID¸¦ ±â¹İÀ¸·Î searchÇÏ°í constraint name »ı¼º, ¸ŞÅ¸ copy */
+        /* constraint IDë¥¼ ê¸°ë°˜ìœ¼ë¡œ searchí•˜ê³  constraint name ìƒì„±, ë©”íƒ€ copy */
 
         IDE_TEST( copyConstraintSpec( aStatement,
                                       sTableInfo->tableID,  /* old table ID */
@@ -538,7 +538,7 @@ IDE_RC qdbDisjoin::executeDisjoinTable( qcStatement * aStatement )
                              ERR_FIT_TEST );
     }
 
-    /* 3. ÆÄÆ¼¼Çµå Å×ÀÌºíÀÇ ¸ŞÅ¸ delete */
+    /* 3. íŒŒí‹°ì…˜ë“œ í…Œì´ë¸”ì˜ ë©”íƒ€ delete */
 
     /* delete from partition related meta */
     for ( sDisjoin = sParseTree->disjoinTable;
@@ -570,7 +570,7 @@ IDE_RC qdbDisjoin::executeDisjoinTable( qcStatement * aStatement )
     IDE_TEST( qdnTrigger::dropTrigger4DropTable( aStatement, sTableInfo )
               != IDE_SUCCESS );
 
-    /*  4. °ü·Ã psm, pkg, view invalid */
+    /*  4. ê´€ë ¨ psm, pkg, view invalid */
     /* PROJ-2197 PSM Renewal */
     // related PSM
     IDE_TEST( qcmProc::relSetInvalidProcOfRelated( aStatement,
@@ -599,8 +599,8 @@ IDE_RC qdbDisjoin::executeDisjoinTable( qcStatement * aStatement )
                                                 QS_TABLE )
               != IDE_SUCCESS );
 
-    /*  5. constraint/index °ü·Ã function/procedure Á¤º¸ »èÁ¦ */
-    /* BUG-35445 Check Constraint, Function-Based Index¿¡¼­ »ç¿ë ÁßÀÎ FunctionÀ» º¯°æ/Á¦°Å ¹æÁö */
+    /*  5. constraint/index ê´€ë ¨ function/procedure ì •ë³´ ì‚­ì œ */
+    /* BUG-35445 Check Constraint, Function-Based Indexì—ì„œ ì‚¬ìš© ì¤‘ì¸ Functionì„ ë³€ê²½/ì œê±° ë°©ì§€ */
     IDE_TEST( qcmProc::relRemoveRelatedToConstraintByTableID(
                     aStatement,
                     sTableInfo->tableID )
@@ -629,7 +629,7 @@ IDE_RC qdbDisjoin::executeDisjoinTable( qcStatement * aStatement )
                                    SMI_TBSLV_DROP_TBS )
               != IDE_SUCCESS);
 
-    /* 7. ÆÄÆ¼¼Ç(ÀÌÁ¦´Â Å×ÀÌºí) ¸ŞÅ¸ Ä³½Ã Àç±¸¼º */
+    /* 7. íŒŒí‹°ì…˜(ì´ì œëŠ” í…Œì´ë¸”) ë©”íƒ€ ìºì‹œ ì¬êµ¬ì„± */
     for ( sDisjoin = sParseTree->disjoinTable, i = 0;
           sDisjoin != NULL;
           sDisjoin = sDisjoin->next, i++ )
@@ -655,16 +655,16 @@ IDE_RC qdbDisjoin::executeDisjoinTable( qcStatement * aStatement )
     }
 
     /////////////////////////////////////////////////////////////////////////
-    // ÇöÀç DISJOIN TABLE ±¸¹®¿¡¼­ Æ®¸®°Å ÀÖ´Â Å×ÀÌºíÀ» Çã¿ëÇÏÁö ¾ÊÀ¸¹Ç·Î
-    // »ç¿ëÇÏÁö ¾Ê´Â´Ù.
+    // í˜„ì¬ DISJOIN TABLE êµ¬ë¬¸ì—ì„œ íŠ¸ë¦¬ê±° ìˆëŠ” í…Œì´ë¸”ì„ í—ˆìš©í•˜ì§€ ì•Šìœ¼ë¯€ë¡œ
+    // ì‚¬ìš©í•˜ì§€ ì•ŠëŠ”ë‹¤.
     // IDE_TEST( qdnTrigger::freeTriggerCaches4DropTable( sTableInfo )
     //           != IDE_SUCCESS );
     /////////////////////////////////////////////////////////////////////////
 
-    /* (±¸) ÆÄÆ¼¼Ç ¸ŞÅ¸ Ä³½¬ »èÁ¦ */
+    /* (êµ¬) íŒŒí‹°ì…˜ ë©”íƒ€ ìºì‰¬ ì‚­ì œ */
     (void)qcmPartition::destroyQcmPartitionInfoList( sOldPartInfoList );
 
-    /* 8. Å×ÀÌºí ¸ŞÅ¸ Ä³½¬¿¡¼­ »èÁ¦ */
+    /* 8. í…Œì´ë¸” ë©”íƒ€ ìºì‰¬ì—ì„œ ì‚­ì œ */
     (void)qcm::destroyQcmTableInfo( sTableInfo );
 
     return IDE_SUCCESS;
@@ -681,7 +681,7 @@ IDE_RC qdbDisjoin::executeDisjoinTable( qcStatement * aStatement )
     }
     IDE_EXCEPTION_END;
 
-    // ½ÇÆĞ ½Ã »õ·Î ¸¸µç table info¸¦ »èÁ¦ÇÑ´Ù.
+    // ì‹¤íŒ¨ ì‹œ ìƒˆë¡œ ë§Œë“  table infoë¥¼ ì‚­ì œí•œë‹¤.
     if ( sNewTableInfoArr != NULL )
     {
         for ( i = 0; i < sPartitionCount; i++ )
@@ -710,21 +710,21 @@ IDE_RC qdbDisjoin::copyTableSpec( qcStatement     * aStatement,
 /***********************************************************************
  *
  *  Description : PROJ-1810 Partition Exchange
- *                ¿øº» Å×ÀÌºíÀÇ table ¸ŞÅ¸ Á¤º¸¸¦ º¹»çÇÏ¿©
- *                »õ·Î »ı¼ºµÇ´Â Å×ÀÌºí ÇÏ³ªÀÇ table specÀ» ¸ŞÅ¸¿¡ Ãß°¡ÇÑ´Ù.
+ *                ì›ë³¸ í…Œì´ë¸”ì˜ table ë©”íƒ€ ì •ë³´ë¥¼ ë³µì‚¬í•˜ì—¬
+ *                ìƒˆë¡œ ìƒì„±ë˜ëŠ” í…Œì´ë¸” í•˜ë‚˜ì˜ table specì„ ë©”íƒ€ì— ì¶”ê°€í•œë‹¤.
  *
  *  Implementation :
- *      SYS_TABLES_¿¡¼­ ÆÄÆ¼¼Çµå Å×ÀÌºíÀÇ TABLE ID·Î SELECTÇÑ µÚ
- *      TABLE_ID, TABLE_OID, TABLE_NAME µî¸¸ ¼öÁ¤ÇØ¼­ SYS_TABLES_¿¡ INSERT.
+ *      SYS_TABLES_ì—ì„œ íŒŒí‹°ì…˜ë“œ í…Œì´ë¸”ì˜ TABLE IDë¡œ SELECTí•œ ë’¤
+ *      TABLE_ID, TABLE_OID, TABLE_NAME ë“±ë§Œ ìˆ˜ì •í•´ì„œ SYS_TABLES_ì— INSERT.
  *
- *      TABLE_ID, TABLE_NAMEÀº ¼±Çà °úÁ¤¿¡¼­ ±¸ÇÑ °ÍÀ» »ç¿ëÇÏ°í
- *      (table ID´Â execution °úÁ¤¿¡¼­ »ı¼º, table nameÀº »ç¿ëÀÚ°¡ ¸í½Ã or ÀÚµ¿ »ı¼º)
+ *      TABLE_ID, TABLE_NAMEì€ ì„ í–‰ ê³¼ì •ì—ì„œ êµ¬í•œ ê²ƒì„ ì‚¬ìš©í•˜ê³ 
+ *      (table IDëŠ” execution ê³¼ì •ì—ì„œ ìƒì„±, table nameì€ ì‚¬ìš©ìê°€ ëª…ì‹œ or ìë™ ìƒì„±)
  *
- *      TABLE_OID´Â ÆÄÆ¼¼ÇÀÇ OID¸¦ »ç¿ë.
+ *      TABLE_OIDëŠ” íŒŒí‹°ì…˜ì˜ OIDë¥¼ ì‚¬ìš©.
  *
- *      TABLE_TYPE, IS_PARTITIONED, TEMPORARY, HIDDEN, PARALLEL_DEGREE´Â °íÁ¤µÈ °ªÀ» »ç¿ëÇÑ´Ù.
- *      LAST_DDL_TIMEÀº SYSDATE¸¦ ÀÔ·ÂÇÑ´Ù.
- *      ±× ¿Ü¿¡´Â ÆÄÆ¼¼Çµå Å×ÀÌºíÀÇ Á¤º¸¸¦ ±×´ë·Î º¹»çÇÑ´Ù.
+ *      TABLE_TYPE, IS_PARTITIONED, TEMPORARY, HIDDEN, PARALLEL_DEGREEëŠ” ê³ ì •ëœ ê°’ì„ ì‚¬ìš©í•œë‹¤.
+ *      LAST_DDL_TIMEì€ SYSDATEë¥¼ ì…ë ¥í•œë‹¤.
+ *      ê·¸ ì™¸ì—ëŠ” íŒŒí‹°ì…˜ë“œ í…Œì´ë¸”ì˜ ì •ë³´ë¥¼ ê·¸ëŒ€ë¡œ ë³µì‚¬í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -800,12 +800,12 @@ IDE_RC qdbDisjoin::copyColumnSpec( qcStatement     * aStatement,
 /***********************************************************************
  *
  *  Description : PROJ-1810 Partition Exchange
- *                ¿øº» Å×ÀÌºíÀÇ column, lob column ¸ŞÅ¸ Á¤º¸¸¦ º¹»çÇÏ¿©
- *                »õ·Î »ı¼ºµÇ´Â Å×ÀÌºí ÇÏ³ªÀÇ column spec, lob specÀ» ¸ŞÅ¸¿¡ Ãß°¡ÇÑ´Ù.
+ *                ì›ë³¸ í…Œì´ë¸”ì˜ column, lob column ë©”íƒ€ ì •ë³´ë¥¼ ë³µì‚¬í•˜ì—¬
+ *                ìƒˆë¡œ ìƒì„±ë˜ëŠ” í…Œì´ë¸” í•˜ë‚˜ì˜ column spec, lob specì„ ë©”íƒ€ì— ì¶”ê°€í•œë‹¤.
  *
  *  Implementation :
- *      SYS_COLUMNS_¿¡¼­ ÆÄÆ¼¼Çµå Å×ÀÌºí Ä®·³ÀÇ COLUMN_ID·Î SELECTÇÑ µÚ
- *      COLUMN_ID, TABLE_ID¸¸ ¼öÁ¤ÇØ¼­ SYS_COLUMNS_¿¡ INSERT.
+ *      SYS_COLUMNS_ì—ì„œ íŒŒí‹°ì…˜ë“œ í…Œì´ë¸” ì¹¼ëŸ¼ì˜ COLUMN_IDë¡œ SELECTí•œ ë’¤
+ *      COLUMN_ID, TABLE_IDë§Œ ìˆ˜ì •í•´ì„œ SYS_COLUMNS_ì— INSERT.
  *
  ***********************************************************************/
 
@@ -846,7 +846,7 @@ IDE_RC qdbDisjoin::copyColumnSpec( qcStatement     * aStatement,
 
     if ( ( aFlag & MTD_COLUMN_TYPE_MASK ) == MTD_COLUMN_TYPE_LOB )
     {
-        /* LOB columnÀÎ °æ¿ì SYS_LOBS_¿¡ Ãß°¡·Î ±â·ÏÇÑ´Ù. */
+        /* LOB columnì¸ ê²½ìš° SYS_LOBS_ì— ì¶”ê°€ë¡œ ê¸°ë¡í•œë‹¤. */
         idlOS::snprintf( sSqlStr, QD_MAX_SQL_LENGTH + 1,
                          "INSERT INTO SYS_LOBS_ "
                              "SELECT A.USER_ID, "
@@ -898,20 +898,20 @@ IDE_RC qdbDisjoin::copyConstraintSpec( qcStatement     * aStatement,
 /***********************************************************************
  *
  *  Description : PROJ-1810 Partition Exchange
- *                ¿øº» Å×ÀÌºíÀÇ constraint ¸ŞÅ¸ Á¤º¸¸¦ º¹»çÇÏ¿©
- *                »õ·Î »ı¼ºµÇ´Â Å×ÀÌºíµéÀÇ constraint specÀ» ¸ŞÅ¸¿¡ Ãß°¡ÇÑ´Ù.
+ *                ì›ë³¸ í…Œì´ë¸”ì˜ constraint ë©”íƒ€ ì •ë³´ë¥¼ ë³µì‚¬í•˜ì—¬
+ *                ìƒˆë¡œ ìƒì„±ë˜ëŠ” í…Œì´ë¸”ë“¤ì˜ constraint specì„ ë©”íƒ€ì— ì¶”ê°€í•œë‹¤.
  *
  *  Implementation :
- *      SYS_CONSTRAINTS_ ¸ŞÅ¸¸¦ searchÇØ¼­ ÇÊ¿äÇÑ Á¤º¸µéÀ» ¾ò¾î¾ß ÇÑ´Ù.
- *      ¸ÕÀú »õ·Ó°Ô »ı¼ºÇÑ constraint ID¸¦ »ç¿ëÇØ »õ·Î¿î constraint ÀÌ¸§À» ¸¸µç´Ù.
- *      ÀÌ·± ÀÛ¾÷µéÀ» À§ÇØ ¸ŞÅ¸¿¡¼­ ±âÁ¸ÀÇ constraint ID, table ID¸¦ Ã£¾Æ ÀúÀåÇÑ´Ù.
+ *      SYS_CONSTRAINTS_ ë©”íƒ€ë¥¼ searchí•´ì„œ í•„ìš”í•œ ì •ë³´ë“¤ì„ ì–»ì–´ì•¼ í•œë‹¤.
+ *      ë¨¼ì € ìƒˆë¡­ê²Œ ìƒì„±í•œ constraint IDë¥¼ ì‚¬ìš©í•´ ìƒˆë¡œìš´ constraint ì´ë¦„ì„ ë§Œë“ ë‹¤.
+ *      ì´ëŸ° ì‘ì—…ë“¤ì„ ìœ„í•´ ë©”íƒ€ì—ì„œ ê¸°ì¡´ì˜ constraint ID, table IDë¥¼ ì°¾ì•„ ì €ì¥í•œë‹¤.
  *
- *      ¸¶Áö¸·À¸·Î ±âÁ¸ constraintÀÇ table ID, constraint ID·Î ¸ŞÅ¸ÀÇ ÇÑ row¸¦ selectÇÏ°í
- *      table ID, constraint ID, constraint name¸¦ ¼öÁ¤ÇØ insertÇÑ´Ù.
+ *      ë§ˆì§€ë§‰ìœ¼ë¡œ ê¸°ì¡´ constraintì˜ table ID, constraint IDë¡œ ë©”íƒ€ì˜ í•œ rowë¥¼ selectí•˜ê³ 
+ *      table ID, constraint ID, constraint nameë¥¼ ìˆ˜ì •í•´ insertí•œë‹¤.
  *
- *      constraint ID, nameÀº ¾Õ¼­ ¸¸µç °ÍÀ» »ç¿ëÇÑ´Ù.
+ *      constraint ID, nameì€ ì•ì„œ ë§Œë“  ê²ƒì„ ì‚¬ìš©í•œë‹¤.
  *
- *      Ãß°¡·Î SYS_CONSTRAINT_COLUMNS_ ¸ŞÅ¸µµ ¸¶Âù°¡Áö·Î insert.
+ *      ì¶”ê°€ë¡œ SYS_CONSTRAINT_COLUMNS_ ë©”íƒ€ë„ ë§ˆì°¬ê°€ì§€ë¡œ insert.
  *
  ***********************************************************************/
 
@@ -937,42 +937,42 @@ IDE_RC qdbDisjoin::copyConstraintSpec( qcStatement     * aStatement,
 
     sCursor.initialize();
 
-    // constraint user_id column Á¤º¸
+    // constraint user_id column ì •ë³´
     IDE_TEST( smiGetTableColumns( gQcmConstraints,
                                   QCM_CONSTRAINTS_CONSTRAINT_ID_COL_ORDER,
                                   (const smiColumn**)&sConstrConstraintIDCol )
               != IDE_SUCCESS );
-    // mtdModule ¼³Á¤
+    // mtdModule ì„¤ì •
     IDE_TEST( mtd::moduleById( &sConstrConstraintIDCol->module,
                                sConstrConstraintIDCol->type.dataTypeId )
               != IDE_SUCCESS );
 
-    // constraint table_id column Á¤º¸
+    // constraint table_id column ì •ë³´
     IDE_TEST( smiGetTableColumns( gQcmConstraints,
                                   QCM_CONSTRAINTS_TABLE_ID_COL_ORDER,
                                   (const smiColumn**)&sConstrTableIDCol )
               != IDE_SUCCESS );
-    // mtdModule ¼³Á¤
+    // mtdModule ì„¤ì •
     IDE_TEST( mtd::moduleById( &sConstrTableIDCol->module,
                                sConstrTableIDCol->type.dataTypeId )
               != IDE_SUCCESS );
 
-    // constraint type column Á¤º¸
+    // constraint type column ì •ë³´
     IDE_TEST( smiGetTableColumns( gQcmConstraints,
                                   QCM_CONSTRAINTS_CONSTRAINT_TYPE_COL_ORDER,
                                   (const smiColumn**)&sConstrTypeCol )
               != IDE_SUCCESS );
-    // mtdModule ¼³Á¤
+    // mtdModule ì„¤ì •
     IDE_TEST( mtd::moduleById( &sConstrTypeCol->module,
                                sConstrTypeCol->type.dataTypeId )
               != IDE_SUCCESS );
 
-    // constraint column count column Á¤º¸
+    // constraint column count column ì •ë³´
     IDE_TEST( smiGetTableColumns( gQcmConstraints,
                                   QCM_CONSTRAINTS_COLUMN_CNT_COL_ORDER,
                                   (const smiColumn**)&sConstrColumnCountCol )
               != IDE_SUCCESS );
-    // mtdModule ¼³Á¤
+    // mtdModule ì„¤ì •
     IDE_TEST( mtd::moduleById( &sConstrColumnCountCol->module,
                                sConstrColumnCountCol->type.dataTypeId )
               != IDE_SUCCESS );
@@ -1062,7 +1062,7 @@ IDE_RC qdbDisjoin::copyConstraintSpec( qcStatement     * aStatement,
         }
         else
         {
-            /* not null, null, timestamp, check ÀÌ¿ÜÀÇ constraint°¡ ¿À¸é ¿À·ù. */
+            /* not null, null, timestamp, check ì´ì™¸ì˜ constraintê°€ ì˜¤ë©´ ì˜¤ë¥˜. */
             IDE_DASSERT( 0 );
         }
 
@@ -1086,12 +1086,12 @@ IDE_RC qdbDisjoin::copyConstraintSpec( qcStatement     * aStatement,
 
     IDE_TEST( sCursor.close() != IDE_SUCCESS );
 
-    /* ÀÌÈÄ constraint id º°·Î sys_constraints_¿¡ insertÇÑ´Ù. */
+    /* ì´í›„ constraint id ë³„ë¡œ sys_constraints_ì— insertí•œë‹¤. */
     for ( sConstrInfo = sFirstConstrInfo;
           sConstrInfo != NULL;
           sConstrInfo = sConstrInfo->next )
     {
-        /* table_id, constraint_id, constraint_name¸¦ ¹Ù²ã¾ß ÇÑ´Ù. */
+        /* table_id, constraint_id, constraint_nameë¥¼ ë°”ê¿”ì•¼ í•œë‹¤. */
         idlOS::snprintf( sSqlStr, QD_MAX_SQL_LENGTH + 1,
                          "INSERT INTO SYS_CONSTRAINTS_ "
                             "SELECT USER_ID, "
@@ -1121,14 +1121,14 @@ IDE_RC qdbDisjoin::copyConstraintSpec( qcStatement     * aStatement,
         IDE_TEST_RAISE( sRowCnt != 1, ERR_META_CRASH );
 
         /***********************************************************************
-         * constraint column ¸ŞÅ¸¿¡¼­ »õ·Î ¹Ù²Ù´Â column ID´Â ÀÌ·¸°Ô Ã£´Â´Ù.
+         * constraint column ë©”íƒ€ì—ì„œ ìƒˆë¡œ ë°”ê¾¸ëŠ” column IDëŠ” ì´ë ‡ê²Œ ì°¾ëŠ”ë‹¤.
          * 
-         * column ID¸¦ SMI_COLUMN_ID_MAXIMUMÀ¸·Î modÇÏ¸é column order°¡ ³ª¿Â´Ù.
-         * new table ID¿¡ SMI_COLUMN_ID_MAXIMUMÀ» °öÇÏ¸é
-         * new tableÀÇ Ã¹¹øÂ° ÄÃ·³ÀÇ ID°¡ ³ª¿Â´Ù.
-         * ÀÌ µÑÀ» ´õÇÏ¸é new table¿¡¼­ ´ëÀÀµÇ´Â constraintÀÇ column ID°¡ ³ª¿Â´Ù.
+         * column IDë¥¼ SMI_COLUMN_ID_MAXIMUMìœ¼ë¡œ modí•˜ë©´ column orderê°€ ë‚˜ì˜¨ë‹¤.
+         * new table IDì— SMI_COLUMN_ID_MAXIMUMì„ ê³±í•˜ë©´
+         * new tableì˜ ì²«ë²ˆì§¸ ì»¬ëŸ¼ì˜ IDê°€ ë‚˜ì˜¨ë‹¤.
+         * ì´ ë‘˜ì„ ë”í•˜ë©´ new tableì—ì„œ ëŒ€ì‘ë˜ëŠ” constraintì˜ column IDê°€ ë‚˜ì˜¨ë‹¤.
          *
-         * constraint ID: À§¿¡ SYS_CONSTRAINTS_ copyÇÒ ¶§ »ç¿ëÇÑ list ÀçÈ°¿ëÇÑ´Ù.
+         * constraint ID: ìœ„ì— SYS_CONSTRAINTS_ copyí•  ë•Œ ì‚¬ìš©í•œ list ì¬í™œìš©í•œë‹¤.
          ***********************************************************************/
 
         idlOS::snprintf( sSqlStr, QD_MAX_SQL_LENGTH + 1,
@@ -1183,14 +1183,14 @@ IDE_RC qdbDisjoin::checkPartitionExistByName( qcStatement          * aStatement,
 /***********************************************************************
  *
  *  Description : PROJ-1810 Partition Exchange
- *                Å×ÀÌºí ID·Î ¸ğµç ÆÄÆ¼¼ÇÀ» °¡Á®¿Â´Ù.
+ *                í…Œì´ë¸” IDë¡œ ëª¨ë“  íŒŒí‹°ì…˜ì„ ê°€ì ¸ì˜¨ë‹¤.
  *
  *  Implementation :
- *      DISJOIN SQL statement¿¡¼­ »ç¿ëÀÚ°¡ ÆÄÆ¼¼ÇÀ» ÁöÁ¤ÇÑ ¼ø¼­¿Í
- *      part info list¿¡ ÆÄÆ¼¼Ç info°¡ ÀúÀåµÇ´Â ¼ø¼­´Â ´Ù¸¦ ¼ö ÀÖ´Ù.
- *      ¶§¹®¿¡ »õ Å×ÀÌºí ÀÌ¸§°ú info¸¦ ¸ÅÄ¡½ÃÄÑÁÖ±â À§ÇØ
- *      part infoÀÇ ÀÌ¸§°ú parse tree¿¡ »ç¿ëÀÚ°¡ ÁØ °ªÀ» ºñ±³ÇØ¼­
- *      ÀÏÄ¡ÇÏ´Â ÆÄÆ¼¼Ç info, ID, OID¸¦ disjoinTable¿¡ ´Ş¾ÆÁØ´Ù.
+ *      DISJOIN SQL statementì—ì„œ ì‚¬ìš©ìê°€ íŒŒí‹°ì…˜ì„ ì§€ì •í•œ ìˆœì„œì™€
+ *      part info listì— íŒŒí‹°ì…˜ infoê°€ ì €ì¥ë˜ëŠ” ìˆœì„œëŠ” ë‹¤ë¥¼ ìˆ˜ ìˆë‹¤.
+ *      ë•Œë¬¸ì— ìƒˆ í…Œì´ë¸” ì´ë¦„ê³¼ infoë¥¼ ë§¤ì¹˜ì‹œì¼œì£¼ê¸° ìœ„í•´
+ *      part infoì˜ ì´ë¦„ê³¼ parse treeì— ì‚¬ìš©ìê°€ ì¤€ ê°’ì„ ë¹„êµí•´ì„œ
+ *      ì¼ì¹˜í•˜ëŠ” íŒŒí‹°ì…˜ info, ID, OIDë¥¼ disjoinTableì— ë‹¬ì•„ì¤€ë‹¤.
  *
  ***********************************************************************/
 
@@ -1200,26 +1200,26 @@ IDE_RC qdbDisjoin::checkPartitionExistByName( qcStatement          * aStatement,
     qdDisjoinTable          * sDisjoin = NULL;
     idBool                    sFound = ID_FALSE;
 
-    /* »ç¿ëÀÚ°¡ ÀÔ·ÂÇÑ ÆÄÆ¼¼Ç ÀÌ¸§À¸·Î Ã£¾Æ¼­ */
-    /* qdDisjoinTable ±¸Á¶Ã¼¿¡ ÆÄÆ¼¼Ç ID, OID, info¸¦ ´Ş¾Æ ³õ´Â´Ù. */
+    /* ì‚¬ìš©ìê°€ ì…ë ¥í•œ íŒŒí‹°ì…˜ ì´ë¦„ìœ¼ë¡œ ì°¾ì•„ì„œ */
+    /* qdDisjoinTable êµ¬ì¡°ì²´ì— íŒŒí‹°ì…˜ ID, OID, infoë¥¼ ë‹¬ì•„ ë†“ëŠ”ë‹¤. */
     for ( sDisjoin = aDisjoin;
           sDisjoin != NULL;
           sDisjoin = sDisjoin->next )
     {
         sFound = ID_FALSE;
-        /* ÁÖ¾îÁø ÀÌ¸§ÀÇ ÆÄÆ¼¼ÇÀÌ ÀÖ´ÂÁö Ã£¾Æº»´Ù. */
+        /* ì£¼ì–´ì§„ ì´ë¦„ì˜ íŒŒí‹°ì…˜ì´ ìˆëŠ”ì§€ ì°¾ì•„ë³¸ë‹¤. */
         for ( sPartInfoList = aPartInfoList;
               sPartInfoList != NULL;
               sPartInfoList = sPartInfoList->next )
         {
             sPartInfo = sPartInfoList->partitionInfo;
-            /* ÀÌ¸§À¸·Î ÆÄÆ¼¼Ç ºñ±³ */
+            /* ì´ë¦„ìœ¼ë¡œ íŒŒí‹°ì…˜ ë¹„êµ */
             if ( idlOS::strMatch( sPartInfo->name,
                                   idlOS::strlen( sPartInfo->name ),
                                   (SChar*)( sDisjoin->oldPartName.stmtText + sDisjoin->oldPartName.offset ),
                                   (UInt)sDisjoin->oldPartName.size ) == 0 )
             {
-                /* Ã£¾Æ³»¸é ÆÄÆ¼¼Ç ID, ÆÄÆ¼¼Ç OID, ÆÄÆ¼¼Ç info¸¦ ÀúÀåÇÑ´Ù. */
+                /* ì°¾ì•„ë‚´ë©´ íŒŒí‹°ì…˜ ID, íŒŒí‹°ì…˜ OID, íŒŒí‹°ì…˜ infoë¥¼ ì €ì¥í•œë‹¤. */
                 sDisjoin->oldPartID = sPartInfo->partitionID;
                 sDisjoin->oldPartOID = sPartInfo->tableOID;
                 sDisjoin->oldPartInfo = sPartInfo;
@@ -1232,7 +1232,7 @@ IDE_RC qdbDisjoin::checkPartitionExistByName( qcStatement          * aStatement,
             }
         }
 
-        /* Ã£¾Æ³»Áö ¸øÇÏ¸é error */
+        /* ì°¾ì•„ë‚´ì§€ ëª»í•˜ë©´ error */
         if ( sFound == ID_FALSE )
         {
             sqlInfo.setSourceInfo( aStatement,
@@ -1268,12 +1268,12 @@ IDE_RC qdbDisjoin::modifyColumnID( qcStatement     * aStatement,
 /***********************************************************************
  *
  *  Description : PROJ-1810 Partition Exchange
- *                »õ column ID¸¦ Å×ÀÌºí·Î ¹Ù²î´Â ÆÄÆ¼¼ÇÀÇ Çì´õ¿¡ ¹İ¿µÇÑ´Ù.
- *                executeDisjoin, executeJoin¿¡¼­ È£ÃâµÈ´Ù.
+ *                ìƒˆ column IDë¥¼ í…Œì´ë¸”ë¡œ ë°”ë€ŒëŠ” íŒŒí‹°ì…˜ì˜ í—¤ë”ì— ë°˜ì˜í•œë‹¤.
+ *                executeDisjoin, executeJoinì—ì„œ í˜¸ì¶œëœë‹¤.
  *
  *  Implementation :
- *      »õ column ID·Î mtcColumnÀ» ¸¸µé°í smiColumnList »ı¼º
- *      »ı¼ºÇÑ smiColumnList¿Í aHandle·Î modifyTableInfo
+ *      ìƒˆ column IDë¡œ mtcColumnì„ ë§Œë“¤ê³  smiColumnList ìƒì„±
+ *      ìƒì„±í•œ smiColumnListì™€ aHandleë¡œ modifyTableInfo
  *
  ***********************************************************************/
 
@@ -1297,8 +1297,8 @@ IDE_RC qdbDisjoin::modifyColumnID( qcStatement     * aStatement,
                                          (void**)&sSmiColumnList )
               != IDE_SUCCESS );
 
-    /* partition columnº°·Î mtcColumnÀ» º¹»çÇÏ°í column ID¸¸ ¹Ù²ãÁØ´Ù. */
-    /* mtcColumnÀ¸·Î smiColumnList¸¦ ¸¸µç´Ù. */
+    /* partition columnë³„ë¡œ mtcColumnì„ ë³µì‚¬í•˜ê³  column IDë§Œ ë°”ê¿”ì¤€ë‹¤. */
+    /* mtcColumnìœ¼ë¡œ smiColumnListë¥¼ ë§Œë“ ë‹¤. */
     for ( sColumn = aColumn, i = 0;
           sColumn != NULL;
           sColumn = sColumn->next, i++ )
@@ -1319,7 +1319,7 @@ IDE_RC qdbDisjoin::modifyColumnID( qcStatement     * aStatement,
 
     IDE_DASSERT( sSmiColumnList != NULL );
 
-    /* table header¿¡¼­ columnÀÇ ID¸¸ º¯°æ. */
+    /* table headerì—ì„œ columnì˜ IDë§Œ ë³€ê²½. */
     IDE_TEST( smiTable::modifyTableInfo( QC_SMI_STMT( aStatement ),
                                          aHandle,
                                          sSmiColumnList,

@@ -36,15 +36,15 @@
 /* Define DK module link object */
 typedef struct dkoLink
 {
-    UInt            mId;        /* ÀÌ µ¥ÀÌÅÍº£ÀÌ½º ¸µÅ©ÀÇ ½Äº°ÀÚ        */
-    UInt            mUserId;    /* ¸µÅ©¸¦ »ı¼ºÇÑ user ÀÇ id             */
-    SInt            mUserMode;  /* ¸µÅ© °´Ã¼°¡ public/private °´Ã¼ÀÎÁö  */
-    SInt            mLinkType;  /* heterogeneous/homogeneous link ÀÎÁö  */
-    smOID           mLinkOID;   /* SM ¿¡¼­ ºÎ¿©ÇÏ´Â object id           */
-    SChar           mLinkName[DK_NAME_LEN + 1];     /* ¸µÅ© °´Ã¼ÀÇ ÀÌ¸§ */
-    SChar           mTargetName[DK_NAME_LEN + 1];   /* target ¿ø°İ¼­¹ö  */
-    SChar           mRemoteUserId[DK_NAME_LEN + 1]; /* ¿ø°İ¼­¹ö Á¢¼Ó id */
-    SChar           mRemoteUserPasswd[DK_NAME_LEN + 1];/* Á¢¼Ó password */
+    UInt            mId;        /* ì´ ë°ì´í„°ë² ì´ìŠ¤ ë§í¬ì˜ ì‹ë³„ì        */
+    UInt            mUserId;    /* ë§í¬ë¥¼ ìƒì„±í•œ user ì˜ id             */
+    SInt            mUserMode;  /* ë§í¬ ê°ì²´ê°€ public/private ê°ì²´ì¸ì§€  */
+    SInt            mLinkType;  /* heterogeneous/homogeneous link ì¸ì§€  */
+    smOID           mLinkOID;   /* SM ì—ì„œ ë¶€ì—¬í•˜ëŠ” object id           */
+    SChar           mLinkName[DK_NAME_LEN + 1];     /* ë§í¬ ê°ì²´ì˜ ì´ë¦„ */
+    SChar           mTargetName[DK_NAME_LEN + 1];   /* target ì›ê²©ì„œë²„  */
+    SChar           mRemoteUserId[DK_NAME_LEN + 1]; /* ì›ê²©ì„œë²„ ì ‘ì† id */
+    SChar           mRemoteUserPasswd[DK_NAME_LEN + 1];/* ì ‘ì† password */
 } dkoLink;
 
 #endif /* _O_DKO_DEF_H_ */

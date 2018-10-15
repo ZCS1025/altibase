@@ -43,10 +43,10 @@ public:
     
     inline vULong getDirtyPageCnt() { return mDirtyPageCnt; }
 
-    // Dirty Page IDµéÀ» ¼ÒÆÃÇÏ°í Page ID°¡ ÀÛÀº°ÍºÎÅÍ ·Î±ëÇÑ´Ù.
+    // Dirty Page IDë“¤ì„ ì†ŒíŒ…í•˜ê³  Page IDê°€ ìž‘ì€ê²ƒë¶€í„° ë¡œê¹…í•œë‹¤.
     IDE_RC writePIDLogs();
     
-    // Dirty PageµéÀ» Checkpoint Image¿¡ WriteÇÑ´Ù.
+    // Dirty Pageë“¤ì„ Checkpoint Imageì— Writeí•œë‹¤.
     IDE_RC writeDirtyPages(
                 smmTBSNode                * aTBSNode,
                 smmGetFlushTargetDBNoFunc   aGetFlushTargetDBNoFunc,
@@ -57,7 +57,7 @@ public:
                 ULong                     * aWaitTime,
                 ULong                     * aSyncTime );
 
-    //  SMM Dirty Page Mgr·ÎºÎÅÍ Dirty PageµéÀ» °¡Á®¿Â´Ù
+    //  SMM Dirty Page Mgrë¡œë¶€í„° Dirty Pageë“¤ì„ ê°€ì ¸ì˜¨ë‹¤
     IDE_RC moveDirtyPagesFrom( smmDirtyPageMgr * aSmmDPMgr,
                                scPageID        * aNewCnt,
                                scPageID        * aDupCnt);
@@ -72,7 +72,7 @@ public:
     inline IDE_RC unlock() { return mMutex.unlock(); };
     
 private:
-    // Áßº¹µÈ PID°¡ ¾ø´ÂÁö Ã¼Å©ÇÑ´Ù.
+    // ì¤‘ë³µëœ PIDê°€ ì—†ëŠ”ì§€ ì²´í¬í•œë‹¤.
     idBool isAllPageUnique();
     
     inline void remove( smmPCH * aPCHPtr );
@@ -82,18 +82,18 @@ private:
                                   smmDatabaseFile* aDBFilePtr, 
                                   scPageID         aPID); 
 
-    // Page ID Array°¡ ±â·ÏµÈ Log Buffer¸¦ Log Record·Î ±â·ÏÇÑ´Ù.
+    // Page ID Arrayê°€ ê¸°ë¡ëœ Log Bufferë¥¼ Log Recordë¡œ ê¸°ë¡í•œë‹¤.
     static IDE_RC writePIDLogRec(SChar * aLogBuffer,
                                  UInt    aDirtyPageCount);
 
 
-    // Page Image¸¦ Checkpoint Image¿¡ ±â·ÏÇÑ´Ù.
+    // Page Imageë¥¼ Checkpoint Imageì— ê¸°ë¡í•œë‹¤.
    
     static IDE_RC writePageImage( smmTBSNode * aTBSNode,
                                   SInt         aWhichDB,
                                   scPageID     aPageID );
     
-    // ÀÌ Dirty Page°ü¸®ÀÚ´Â ÀÌ Tablespace¿¡ ¼ÓÇÑ Pageµé¸¸ °ü¸®ÇÑ´Ù.
+    // ì´ Dirty Pageê´€ë¦¬ìžëŠ” ì´ Tablespaceì— ì†í•œ Pageë“¤ë§Œ ê´€ë¦¬í•œë‹¤.
     scSpaceID   mSpaceID ;
     vULong            mMaxDirtyPageCnt;
     vULong            mDirtyPageCnt;
@@ -115,8 +115,8 @@ inline void  smrDirtyPageList::add( smmPCH    * aPCHPtr,
     
     if(aPCHPtr->m_pnxtDirtyPCH == NULL)
     {
-        /* ÀÌ ÆäÀÌÁö°¡ DirtyPageList¿¡ ¾øÀ½ */
-        /* Áßº¹µÈ Dirty Page°¡ Á¸ÀçÇÏ´ÂÁö Ã¼Å©ÇÑ´Ù. */
+        /* ì´ íŽ˜ì´ì§€ê°€ DirtyPageListì— ì—†ìŒ */
+        /* ì¤‘ë³µëœ Dirty Pageê°€ ì¡´ìž¬í•˜ëŠ”ì§€ ì²´í¬í•œë‹¤. */
 #if defined(DEBUG_SMR_DIRTY_PAGE_LIST_CHECK )
         for( i = 0; i < mDirtyPageCnt; i++)
         {
@@ -163,7 +163,7 @@ inline void  smrDirtyPageList::add( smmPCH    * aPCHPtr,
     }
     else
     {
-        /* ÀÌ ÆäÀÌÁö°¡ ÀÌ¹Ì DirtyPageList¿¡ µé¾î°¡ ÀÖÀ½ */
+        /* ì´ íŽ˜ì´ì§€ê°€ ì´ë¯¸ DirtyPageListì— ë“¤ì–´ê°€ ìžˆìŒ */
         IDE_ASSERT((aPCHPtr->m_dirtyStat & SMM_PCH_DIRTY_STAT_MASK)
                    != SMM_PCH_DIRTY_STAT_INIT);
 

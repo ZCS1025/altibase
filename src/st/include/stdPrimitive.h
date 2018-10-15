@@ -19,8 +19,8 @@
  * $Id: stdPrimitive.h 18883 2006-11-14 01:48:40Z sabbra $
  *
  * Description:
- * stdGeometry.cpp·Î ºÎÅÍ È£ÃâµÇ´Â stdValue(), stdBinValue() ¹×
- * Endian ¿¬»ê, validation Ã¼Å©, Geometry °´Ã¼ÀÇ ±âº» ¼Ó¼º ÇÔ¼ö
+ * stdGeometry.cppë¡œ ë¶€í„° í˜¸ì¶œë˜ëŠ” stdValue(), stdBinValue() ë°
+ * Endian ì—°ì‚°, validation ì²´í¬, Geometry ê°ì²´ì˜ ê¸°ë³¸ ì†ì„± í•¨ìˆ˜
  **********************************************************************/
 
 #ifndef _O_STD_GEO_PRIMITIVE_H_
@@ -43,8 +43,8 @@ typedef struct stdTouchPointInfo
 class stdPrimitive
 {
 public:
-    // BUG-15981 : Add aEqualEndian º¯¼ö Ãß°¡, aEqualEndianÀº º¯È¯Àü
-    //             Geometry°¡ ¼­¹ö¿Í °°Àº EndianÀÎÁö ¿©ºÎ¸¦ ³ªÅ¸³½´Ù.
+    // BUG-15981 : Add aEqualEndian ë³€ìˆ˜ ì¶”ê°€, aEqualEndianì€ ë³€í™˜ì „
+    //             Geometryê°€ ì„œë²„ì™€ ê°™ì€ Endianì¸ì§€ ì—¬ë¶€ë¥¼ ë‚˜íƒ€ë‚¸ë‹¤.
     static void cvtEndianPoint2D(stdPoint2DType * aPoint);
     static void cvtEndianLineString2D( idBool aEqualEndian,
                                        stdLineString2DType * aLine);

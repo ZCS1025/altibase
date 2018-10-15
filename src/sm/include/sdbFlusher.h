@@ -147,88 +147,88 @@ private:
                                        sdbFlushJob             *aNormalFlushJob,
                                        ULong                   *aRetFlushedCount );
 private:
-    /* Data page Å©±â. ÇöÀç´Â 8K */
+    /* Data page í¬ê¸°. í˜„ì¬ëŠ” 8K */
     UInt           mPageSize;
 
-    /* flusher ¾²·¹µå ½ÃÀÛ ¿©ºÎ. run½Ã¿¡ ID_TRUE·Î ¼³Á¤  */
+    /* flusher ì“°ë ˆë“œ ì‹œì‘ ì—¬ë¶€. runì‹œì— ID_TRUEë¡œ ì„¤ì •  */
     idBool         mStarted;
 
-    /* flusher ¾²·¹µå¸¦ Á¾·á ½ÃÅ°±â À§ÇØ¼­ ¿ÜºÎ¿¡¼­ ID_TRUE·Î ¼³Á¤ÇÑ´Ù. */
+    /* flusher ì“°ë ˆë“œë¥¼ ì¢…ë£Œ ì‹œí‚¤ê¸° ìœ„í•´ì„œ ì™¸ë¶€ì—ì„œ ID_TRUEë¡œ ì„¤ì •í•œë‹¤. */
     idBool         mFinish;
 
-    /* ÇÃ·¯¼Å ½Äº°ÀÚ */
+    /* í”ŒëŸ¬ì…” ì‹ë³„ì */
     UInt           mFlusherID;
 
-    /* ÇöÀç IOB¿¡ º¹»çµÈ page°³¼ö */
+    /* í˜„ì¬ IOBì— ë³µì‚¬ëœ pageê°œìˆ˜ */
     UInt           mIOBPos;
 
-    /* IOB°¡ ÃÖ´ë·Î °¡Áú ¼ö ÀÖ´Â ÆäÀÌÁö °³¼ö */
+    /* IOBê°€ ìµœëŒ€ë¡œ ê°€ì§ˆ ìˆ˜ ìˆëŠ” í˜ì´ì§€ ê°œìˆ˜ */
     UInt           mIOBPageCount;
 
-    /* °¢ mIOBÀÇ ¸Ş¸ğ¸® °ø°£ ÁÖ¼Ò°ªÀ» °¡Áö°í ÀÖ´Â ¹è¿­.
-     * ¸¸¾à 3¹øÂ° mIOBÀÇ ÁÖ¼Ò°ªÀ» Á¢±ÙÇÑ´Ù¸é, mIOBPtr[3]ÀÌ·± ½ÄÀ¸·Î Á¢±Ù */
+    /* ê° mIOBì˜ ë©”ëª¨ë¦¬ ê³µê°„ ì£¼ì†Œê°’ì„ ê°€ì§€ê³  ìˆëŠ” ë°°ì—´.
+     * ë§Œì•½ 3ë²ˆì§¸ mIOBì˜ ì£¼ì†Œê°’ì„ ì ‘ê·¼í•œë‹¤ë©´, mIOBPtr[3]ì´ëŸ° ì‹ìœ¼ë¡œ ì ‘ê·¼ */
     UChar        **mIOBPtr;
 
-    /* mIOB¿¡ ÀúÀåµÈ °¢ frameÀÇ BCB¸¦ Æ÷ÀÎÆÃÇÏ°í ÀÖ´Â array */
+    /* mIOBì— ì €ì¥ëœ ê° frameì˜ BCBë¥¼ í¬ì¸íŒ…í•˜ê³  ìˆëŠ” array */
     sdbBCB       **mIOBBCBArray;
 
-    /* mIOBSpace¸¦ 8K alignÇÑ ¸Ş¸ğ¸® °ø°£.
-     * ½ÇÁ¦ mIOB¸¦ Á¢±ÙÇÒ¶§´Â ÀÌ°÷À¸·Î Á¢±ÙÇÑ´Ù. */
+    /* mIOBSpaceë¥¼ 8K aligní•œ ë©”ëª¨ë¦¬ ê³µê°„.
+     * ì‹¤ì œ mIOBë¥¼ ì ‘ê·¼í• ë•ŒëŠ” ì´ê³³ìœ¼ë¡œ ì ‘ê·¼í•œë‹¤. */
     UChar         *mIOB;
 
-    /* ½ÇÁ¦ IOB ¸Ş¸ğ¸® °ø°£. 8K alignµÇ¾î ÀÖÁö ¾Ê°í
-     * ½ÇÁ¦ ÇÊ¿äÇÑ ¾çº¸´Ù 8K´õ Å©´Ù. ½ÇÁ¦ ¸Ş¸ğ¸® ÇÒ´ç¹× ÇØÁ¦¿¡¸¸ ¾²ÀÎ´Ù. */
+    /* ì‹¤ì œ IOB ë©”ëª¨ë¦¬ ê³µê°„. 8K alignë˜ì–´ ìˆì§€ ì•Šê³ 
+     * ì‹¤ì œ í•„ìš”í•œ ì–‘ë³´ë‹¤ 8Kë” í¬ë‹¤. ì‹¤ì œ ë©”ëª¨ë¦¬ í• ë‹¹ë° í•´ì œì—ë§Œ ì“°ì¸ë‹¤. */
     UChar         *mIOBSpace;
 
-    /* mMinRecoveryLSN ¼³Á¤¿¡ ´ëÇÑ µ¿½Ã¼ºÀ» À¯ÁöÇÏ±â À§ÇÑ ¹ÂÅØ½º */
+    /* mMinRecoveryLSN ì„¤ì •ì— ëŒ€í•œ ë™ì‹œì„±ì„ ìœ ì§€í•˜ê¸° ìœ„í•œ ë®¤í…ìŠ¤ */
     iduMutex       mMinRecoveryLSNMutex;
 
-    /* mIOB¿¡ ÀúÀåµÈ pageÀÇ recoveryLSNÁß °¡Àå ÀÛÀº °ª  */
+    /* mIOBì— ì €ì¥ëœ pageì˜ recoveryLSNì¤‘ ê°€ì¥ ì‘ì€ ê°’  */
     smLSN          mMinRecoveryLSN;
 
-    /* mIOB¿¡ ÀúÀåµÈ pageÀÇ pageLSN°ªÁß °¡Àå Å«°ª. WALÀ» ÁöÅ°±â À§ÇØ page flushÀü¿¡
-     * log flush¸¦ À§ÇØ ¾²ÀÓ */
+    /* mIOBì— ì €ì¥ëœ pageì˜ pageLSNê°’ì¤‘ ê°€ì¥ í°ê°’. WALì„ ì§€í‚¤ê¸° ìœ„í•´ page flushì „ì—
+     * log flushë¥¼ ìœ„í•´ ì“°ì„ */
     smLSN          mMaxPageLSN;
 
-    /* ÇÏ³ªÀÇ ÀÛ¾÷À» ³¡¸¶Ä£ flusher°¡ ½¬¾î¾ß ÇÒ ½Ã°£À» ÁöÁ¤ÇØ ÁØ´Ù. */
+    /* í•˜ë‚˜ì˜ ì‘ì—…ì„ ëë§ˆì¹œ flusherê°€ ì‰¬ì–´ì•¼ í•  ì‹œê°„ì„ ì§€ì •í•´ ì¤€ë‹¤. */
     UInt           mWaitTime;
 
-    /* ÇÃ·¯½Ã ÇÏ´Â  buffer pool¿¡ ¼ÓÇÑ checkpoint List set*/
+    /* í”ŒëŸ¬ì‹œ í•˜ëŠ”  buffer poolì— ì†í•œ checkpoint List set*/
     sdbCPListSet  *mCPListSet;
 
-    /* ÇÃ·¯½Ã ÇÏ´Â  buffer pool */
+    /* í”ŒëŸ¬ì‹œ í•˜ëŠ”  buffer pool */
     sdbBufferPool *mPool;
 
-    // Åë°è Á¤º¸¸¦ À§ÇÑ private session ¹× statistics Á¤º¸
+    // í†µê³„ ì •ë³´ë¥¼ ìœ„í•œ private session ë° statistics ì •ë³´
     idvSQL         mStatistics;
     idvSession     mCurrSess;
     idvSession     mOldSess;
 
-    // ¾²·¹µå Á¦¾î¸¦ À§ÇÑ ¸É¹ö
+    // ì“°ë ˆë“œ ì œì–´ë¥¼ ìœ„í•œ ë§´ë²„
     iduCond        mCondVar;
     iduMutex       mRunningMutex;
 
-    // DWFile °´Ã¼¸¦ flusher¸¶´Ù °¡Áö°í ÀÖ´Â´Ù.
+    // DWFile ê°ì²´ë¥¼ flusherë§ˆë‹¤ ê°€ì§€ê³  ìˆëŠ”ë‹¤.
     sddDWFile      mDWFile;
 
-    // Åë°èÁ¤º¸¸¦ ¼öÁıÇÏ´Â °´Ã¼
+    // í†µê³„ì •ë³´ë¥¼ ìˆ˜ì§‘í•˜ëŠ” ê°ì²´
     sdbFlusherStat mStat;
 
-    // WritePageÈÄ SyncÇÒ TBSIDµé
+    // WritePageí›„ Syncí•  TBSIDë“¤
     scSpaceID     *mArrSyncTBSID;
 
-    // Secondary Buffer °¡ »ç¿ë °¡´ÉÇÑ°¡.
+    // Secondary Buffer ê°€ ì‚¬ìš© ê°€ëŠ¥í•œê°€.
     idBool         mServiceable;
 
     /* PROJ-2669
-     * Delayed Flush ±â´ÉÀ» on/off ÇÏ¸ç
-     * 0ÀÌ ¾Æ´Ñ°æ¿ì Delayed Flush List ÀÇ ÃÖ´ë ±æÀÌ(percent)¸¦ ÀÇ¹ÌÇÑ´Ù */
+     * Delayed Flush ê¸°ëŠ¥ì„ on/off í•˜ë©°
+     * 0ì´ ì•„ë‹Œê²½ìš° Delayed Flush List ì˜ ìµœëŒ€ ê¸¸ì´(percent)ë¥¼ ì˜ë¯¸í•œë‹¤ */
     UInt           mDelayedFlushListPct;
 
     /* PROJ-2669
-     * Flush ´ë»ó BCB°¡ 
-     * Touch µÈ ÈÄ ½Ã°£ÀÌ ±âÁØ ½Ã°£(DELAYED_FLUSH_PROTECTION_TIME_MSEC) ÀÌÇÏÀÏ °æ¿ì
-     * Delyaed Flush List ·Î ¿Å°ÜÁö¸ç Flush µ¿ÀÛÀ» ³ªÁßÀ¸·Î ¹Ì·é´Ù.  */
+     * Flush ëŒ€ìƒ BCBê°€ 
+     * Touch ëœ í›„ ì‹œê°„ì´ ê¸°ì¤€ ì‹œê°„(DELAYED_FLUSH_PROTECTION_TIME_MSEC) ì´í•˜ì¼ ê²½ìš°
+     * Delyaed Flush List ë¡œ ì˜®ê²¨ì§€ë©° Flush ë™ì‘ì„ ë‚˜ì¤‘ìœ¼ë¡œ ë¯¸ë£¬ë‹¤.  */
     ULong          mDelayedFlushProtectionTimeUsec;
 };
 
@@ -248,8 +248,8 @@ idBool sdbFlusher::isRunning()
 
 /******************************************************************************
  * Description :
- *   Flush list ¿¡ Æ÷ÇÔµÈ BCB¸¦ ´ë»óÀ¸·Î HOT BCB ¿©ºÎ¸¦ ÆÇ´ÜÇÑ´Ù.
- *   ±âÁØ: ÇöÀç ½Ã°£ - ¸¶Áö¸· BCB Touch ½Ã°£ <= HOT_FLUSH_PROTECTION_TIME_MSEC
+ *   Flush list ì— í¬í•¨ëœ BCBë¥¼ ëŒ€ìƒìœ¼ë¡œ HOT BCB ì—¬ë¶€ë¥¼ íŒë‹¨í•œë‹¤.
+ *   ê¸°ì¤€: í˜„ì¬ ì‹œê°„ - ë§ˆì§€ë§‰ BCB Touch ì‹œê°„ <= HOT_FLUSH_PROTECTION_TIME_MSEC
  *
  *  aBCB         - [IN]  BCB Pointer
  *  aCurrentTime - [IN]  Current Time

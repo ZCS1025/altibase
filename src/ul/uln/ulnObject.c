@@ -23,21 +23,21 @@
  * ulnObjectInitialize
  *
  * @param aObject
- *  ÃÊ±âÈ­ÇÏ°íÀÚ ÇÏ´Â °´Ã¼¸¦ °¡¸®Å°´Â Æ÷ÀÎÅÍ.
+ *  ì´ˆê¸°í™”í•˜ê³ ìž í•˜ëŠ” ê°ì²´ë¥¼ ê°€ë¦¬í‚¤ëŠ” í¬ì¸í„°.
  * @param aType
- *  °´Ã¼ÀÇ Å¸ÀÔ.
+ *  ê°ì²´ì˜ íƒ€ìž….
  * @param aSubType
- *  °´Ã¼ÀÇ ¼­ºêÅ¸ÀÔ. DESC ¿¡¸¸ ÇØ´çÇÑ´Ù. °´Ã¼ÀÇ Å¸ÀÔÀÌ DESC °¡ ¾Æ´Ï¸é
- *  ULN_DESC_TYPE_NODESC ¸¦ ³Ñ°ÜÁÖ¸é µÈ´Ù.
+ *  ê°ì²´ì˜ ì„œë¸Œíƒ€ìž…. DESC ì—ë§Œ í•´ë‹¹í•œë‹¤. ê°ì²´ì˜ íƒ€ìž…ì´ DESC ê°€ ì•„ë‹ˆë©´
+ *  ULN_DESC_TYPE_NODESC ë¥¼ ë„˜ê²¨ì£¼ë©´ ëœë‹¤.
  * @param aState
- *  ÃÊ±â »óÅÂ·Î ¼³Á¤ÇÏ°íÀÚ ÇÏ´Â state.
+ *  ì´ˆê¸° ìƒíƒœë¡œ ì„¤ì •í•˜ê³ ìž í•˜ëŠ” state.
  * @param aPool
- *  °´Ã¼°¡ »ç¿ëÇÒ Ã»Å© Ç®À» °¡¸®Å°´Â Æ÷ÀÎÅÍ.
+ *  ê°ì²´ê°€ ì‚¬ìš©í•  ì²­í¬ í’€ì„ ê°€ë¦¬í‚¤ëŠ” í¬ì¸í„°.
  * @param aMemory
- *  °´Ã¼°¡ »ç¿ëÇÒ ¸Þ¸ð¸® ÀÎ½ºÅÏ½º¸¦ °¡¸®Å°´Â Æ÷ÀÎÅÍ.
+ *  ê°ì²´ê°€ ì‚¬ìš©í•  ë©”ëª¨ë¦¬ ì¸ìŠ¤í„´ìŠ¤ë¥¼ ê°€ë¦¬í‚¤ëŠ” í¬ì¸í„°.
  *
  * @note
- *  ÁÖÀÇ : ÀÌ ÇÔ¼ö´Â Object ¾ÈÀÇ diagnostic header ¿Í record ´Â °Çµå¸®Áö ¾Ê´Â´Ù.
+ *  ì£¼ì˜ : ì´ í•¨ìˆ˜ëŠ” Object ì•ˆì˜ diagnostic header ì™€ record ëŠ” ê±´ë“œë¦¬ì§€ ì•ŠëŠ”ë‹¤.
  */
 ACI_RC ulnObjectInitialize(ulnObject    *aObject,
                            ulnObjType    aType,
@@ -59,11 +59,11 @@ ACI_RC ulnObjectInitialize(ulnObject    *aObject,
     ULN_OBJ_SET_STATE(aObject, aState);
 
     /*
-     * ÀÏ´Ü ÃÖÃÊ¿¡ °´Ã¼°¡ ¸¸µé¾îÁ³À» ¶§¿¡´Â AllocHandle ÀÏ °æ¿ìÀÌ´Ù.
-     * ±×·¯³ª, AllocHandle ¿¡¼­ ºüÁ®³ª°¡°í ÇÒ ¶§ ´Ù½Ã ULN_FID_NONE À¸·Î ¼¼ÆÃÇÏ±â ¾î·Á¿ì¹Ç·Î
-     * Áö±Ý °ðÀå FID_NONE À¸·Î ¼¼ÆÃÇÏÀÚ.
-     * ¼ÖÁ÷È÷ AllocHandle ÀÌ ¸®ÅÏÇÏ±âµµ Àü¿¡ ±× ÇÚµé·Î ÇÔ¼ö È£ÃâÇÏ°Å³ª ÇÏ´Â °æ¿ì´Â ¾ø´Ù°í ºÁµµ
-     * ¹«¹æÇÒ °ÍÀÌ´Ù.
+     * ì¼ë‹¨ ìµœì´ˆì— ê°ì²´ê°€ ë§Œë“¤ì–´ì¡Œì„ ë•Œì—ëŠ” AllocHandle ì¼ ê²½ìš°ì´ë‹¤.
+     * ê·¸ëŸ¬ë‚˜, AllocHandle ì—ì„œ ë¹ ì ¸ë‚˜ê°€ê³  í•  ë•Œ ë‹¤ì‹œ ULN_FID_NONE ìœ¼ë¡œ ì„¸íŒ…í•˜ê¸° ì–´ë ¤ìš°ë¯€ë¡œ
+     * ì§€ê¸ˆ ê³§ìž¥ FID_NONE ìœ¼ë¡œ ì„¸íŒ…í•˜ìž.
+     * ì†”ì§ížˆ AllocHandle ì´ ë¦¬í„´í•˜ê¸°ë„ ì „ì— ê·¸ í•¸ë“¤ë¡œ í•¨ìˆ˜ í˜¸ì¶œí•˜ê±°ë‚˜ í•˜ëŠ” ê²½ìš°ëŠ” ì—†ë‹¤ê³  ë´ë„
+     * ë¬´ë°©í•  ê²ƒì´ë‹¤.
      */
     aObject->mExecFuncID = ULN_FID_NONE;
 
@@ -71,8 +71,8 @@ ACI_RC ulnObjectInitialize(ulnObject    *aObject,
     aObject->mMemory     = aMemory;
 
     /*
-     * SQLError() ÇÔ¼ö¶§¹®¿¡ Á¸ÀçÇÑ´Ù.
-     * ulnClearDiagnosticInfoFromObject() ÇÔ¼ö¿¡¼­µµ 1 ·Î ÃÊ±âÈ­ ÇÑ´Ù.
+     * SQLError() í•¨ìˆ˜ë•Œë¬¸ì— ì¡´ìž¬í•œë‹¤.
+     * ulnClearDiagnosticInfoFromObject() í•¨ìˆ˜ì—ì„œë„ 1 ë¡œ ì´ˆê¸°í™” í•œë‹¤.
      */
     aObject->mSqlErrorRecordNumber = 1;
 

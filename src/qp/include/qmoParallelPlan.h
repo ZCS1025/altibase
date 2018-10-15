@@ -25,7 +25,7 @@
 #include <qc.h>
 #include <qmoDependency.h>
 
-// PRLQ ³ëµåÀÇ dependency¸¦ È£ÃâÀ» À§ÇÑ flag
+// PRLQ ë…¸ë“œì˜ dependencyë¥¼ í˜¸ì¶œì„ ìœ„í•œ flag
 #define QMO_PRLQ_DEPENDENCY ( QMO_DEPENDENCY_STEP1_SET_TABLE_MAP_TRUE      |   \
                               QMO_DEPENDENCY_STEP2_BASE_TABLE_FALSE        |   \
                               QMO_DEPENDENCY_STEP2_DEP_WITH_PREDICATE      |   \
@@ -36,7 +36,7 @@
                               QMO_DEPENDENCY_STEP2_DEP_WITH_MATERIALIZATION|   \
 */
 
-/* PSCRD³ëµåÀÇ dependency¸¦ È£ÃâÀ» À§ÇÑ flag */
+/* PSCRDë…¸ë“œì˜ dependencyë¥¼ í˜¸ì¶œì„ ìœ„í•œ flag */
 #define QMO_PSCRD_DEPENDENCY (QMO_DEPENDENCY_STEP1_SET_TABLE_MAP_TRUE     |    \
                               QMO_DEPENDENCY_STEP2_BASE_TABLE_TRUE        |    \
                               QMO_DEPENDENCY_STEP2_DEP_WITH_PREDICATE     |    \

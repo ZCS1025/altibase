@@ -75,12 +75,12 @@ IDE_RC qmnPSCRD::init(qcTemplate* aTemplate, qmnPlan* aPlan)
                                              sChild->childPlan)
                      != IDE_SUCCESS);
 
-            /* PROJ-2464 hybrid partitioned table Áö¿ø
-             *  - PRLQÀÇ ¸Ş¸ğ¸® ÇÒ´çÀ» ÃÖÀûÈ­ÇÏ±â À§ÇØ¼­, Disk PartitionÀÌ Æ÷ÇÔµÇ¾ú´ÂÁö °Ë»çÇÑ´Ù.
-             *    1. ÇÏºÎ PLAN¿¡ Disk°¡ Æ÷ÇÔµÇ¾ú´ÂÁö °Ë»çÇÑ´Ù.
-             *    2. PRLQ¿¡ Ãß°¡ÀûÀÎ Á¤º¸¸¦ Àü´ŞÇÑ´Ù.
+            /* PROJ-2464 hybrid partitioned table ì§€ì›
+             *  - PRLQì˜ ë©”ëª¨ë¦¬ í• ë‹¹ì„ ìµœì í™”í•˜ê¸° ìœ„í•´ì„œ, Disk Partitionì´ í¬í•¨ë˜ì—ˆëŠ”ì§€ ê²€ì‚¬í•œë‹¤.
+             *    1. í•˜ë¶€ PLANì— Diskê°€ í¬í•¨ë˜ì—ˆëŠ”ì§€ ê²€ì‚¬í•œë‹¤.
+             *    2. PRLQì— ì¶”ê°€ì ì¸ ì •ë³´ë¥¼ ì „ë‹¬í•œë‹¤.
              */
-            /* 1. ÇÏºÎ PLAN¿¡ Disk°¡ Æ÷ÇÔµÇ¾ú´ÂÁö °Ë»çÇÑ´Ù. */
+            /* 1. í•˜ë¶€ PLANì— Diskê°€ í¬í•¨ë˜ì—ˆëŠ”ì§€ ê²€ì‚¬í•œë‹¤. */
             if ( ( sChild->childPlan->left->flag & QMN_PLAN_STORAGE_MASK ) == QMN_PLAN_STORAGE_DISK )
             {
                 sExistDisk     = ID_TRUE;
@@ -93,7 +93,7 @@ IDE_RC qmnPSCRD::init(qcTemplate* aTemplate, qmnPlan* aPlan)
             }
         }
 
-        /* 2. PRLQ¿¡ Ãß°¡ÀûÀÎ Á¤º¸¸¦ Àü´ŞÇÑ´Ù. */
+        /* 2. PRLQì— ì¶”ê°€ì ì¸ ì •ë³´ë¥¼ ì „ë‹¬í•œë‹¤. */
         for ( sChild = aPlan->childrenPRLQ; sChild != NULL; sChild = sChild->next )
         {
             qmnPRLQ::setPRLQInfo( aTemplate,
@@ -103,8 +103,8 @@ IDE_RC qmnPSCRD::init(qcTemplate* aTemplate, qmnPlan* aPlan)
         }
 
         // PROJ-2444
-        // PSCRD´Â ÇÏÀ§ SCAN ÇÃ·£µÇ tuple ¸¦ °øÀ¯ÇÑ´Ù.
-        // PSCRD¿¡¼­ tuple->row ¸¦ º¯°æÇÏ±â ¶§¹®¿¡ ¿øº»À» À¯ÁöÇØÁÖ¾î¾ß ÇÑ´Ù.
+        // PSCRDëŠ” í•˜ìœ„ SCAN í”Œëœë˜ tuple ë¥¼ ê³µìœ í•œë‹¤.
+        // PSCRDì—ì„œ tuple->row ë¥¼ ë³€ê²½í•˜ê¸° ë•Œë¬¸ì— ì›ë³¸ì„ ìœ ì§€í•´ì£¼ì–´ì•¼ í•œë‹¤.
         sDataPlan->mOrgRow = sDataPlan->plan.myTuple->row;
         sDataPlan->doIt    = qmnPSCRD::doItFirst;
 
@@ -184,7 +184,7 @@ IDE_RC qmnPSCRD::padNull(qcTemplate* aTemplate, qmnPlan* aPlan)
     sCodePlan = (qmncPSCRD*)aPlan;
     sDataPlan = (qmndPSCRD*)(aTemplate->tmplate.data + aPlan->offset);
 
-    /* ÃÊ±âÈ­°¡ ¼öÇàµÇÁö ¾ÊÀº °æ¿ì ÃÊ±âÈ­¸¦ ¼öÇà */
+    /* ì´ˆê¸°í™”ê°€ ìˆ˜í–‰ë˜ì§€ ì•Šì€ ê²½ìš° ì´ˆê¸°í™”ë¥¼ ìˆ˜í–‰ */
     if ((aTemplate->planFlag[sCodePlan->planID] & QMND_PSCRD_INIT_DONE_MASK) ==
         QMND_PSCRD_INIT_DONE_FALSE)
     {
@@ -201,7 +201,7 @@ IDE_RC qmnPSCRD::padNull(qcTemplate* aTemplate, qmnPlan* aPlan)
 
         if (sDataPlan->mNullRow == NULL)
         {
-            /* null row¸¦ °¡Á®¿Â ÀûÀÌ ¾ø´Â °æ¿ì */
+            /* null rowë¥¼ ê°€ì ¸ì˜¨ ì ì´ ì—†ëŠ” ê²½ìš° */
 
             IDE_DASSERT(sDataPlan->plan.myTuple->rowOffset > 0);
 
@@ -220,25 +220,25 @@ IDE_RC qmnPSCRD::padNull(qcTemplate* aTemplate, qmnPlan* aPlan)
         }
         else
         {
-            /* ÀÌ¹Ì null row¸¦ °¡Á®¿ÔÀ½. */
+            /* ì´ë¯¸ null rowë¥¼ ê°€ì ¸ì™”ìŒ. */
             /* nothing to do */
         }
 
-        /* Null Row º¹»ç */
+        /* Null Row ë³µì‚¬ */
         idlOS::memcpy(sDataPlan->plan.myTuple->row,
                       sDataPlan->mNullRow,
                       sDataPlan->plan.myTuple->rowOffset);
 
-        /* Null RIDÀÇ º¹»ç */
+        /* Null RIDì˜ ë³µì‚¬ */
         idlOS::memcpy(&sDataPlan->plan.myTuple->rid,
                       &sDataPlan->mNullRID,
                       ID_SIZEOF(scGRID));
     }
     else
     {
-        /* Memory TableÀÎ °æ¿ì */
+        /* Memory Tableì¸ ê²½ìš° */
 
-        /* null row ¸¦ °¡Á®¿Â´Ù. */
+        /* null row ë¥¼ ê°€ì ¸ì˜¨ë‹¤. */
         IDE_TEST(smiGetTableNullRow( sCodePlan->mTableHandle,
                                      (void **)&sDataPlan->plan.myTuple->row,
                                      &sDataPlan->plan.myTuple->rid )
@@ -281,7 +281,7 @@ IDE_RC qmnPSCRD::printPlan(qcTemplate  * aTemplate,
 
     /*
      * ----------------------------------------------------
-     * table name Ãâ·Â
+     * table name ì¶œë ¥
      * ----------------------------------------------------
      */
     if ((sCodePlan->mTableOwnerName.name != NULL) &&
@@ -342,13 +342,13 @@ IDE_RC qmnPSCRD::printPlan(qcTemplate  * aTemplate,
     iduVarStringAppendLength(aString, " )\n", 3);
 
     //----------------------------
-    // Plan ID Ãâ·Â
+    // Plan ID ì¶œë ¥
     //----------------------------
     if ( QCU_TRCLOG_DETAIL_MTRNODE == 1 )
     {
         qmn::printSpaceDepth(aString, aDepth);
 
-        // sCodePlan ÀÇ °ªÀ» Ãâ·ÂÇÏ±â¶§¹®¿¡ qmn::printMTRinfoÀ» »ç¿ëÇÏÁö ¸øÇÑ´Ù.
+        // sCodePlan ì˜ ê°’ì„ ì¶œë ¥í•˜ê¸°ë•Œë¬¸ì— qmn::printMTRinfoì„ ì‚¬ìš©í•˜ì§€ ëª»í•œë‹¤.
         iduVarStringAppendFormat( aString,
                                   "[ SELF NODE INFO, "
                                   "SELF: %"ID_INT32_FMT" ]\n",
@@ -407,7 +407,7 @@ IDE_RC qmnPSCRD::printPlan(qcTemplate  * aTemplate,
 
     /*
      * ----------------------------------------------------
-     * child PRLQ planÀÇ Á¤º¸ Ãâ·Â
+     * child PRLQ planì˜ ì •ë³´ ì¶œë ¥
      * ----------------------------------------------------
      */
     if (QCU_TRCLOG_DISPLAY_CHILDREN == 1)
@@ -485,8 +485,8 @@ IDE_RC qmnPSCRD::doIt(qcTemplate* aTemplate,
 
 /*
  * ------------------------------------------------------------------
- * PSCRD ÃÖÃÊ doIt ½ÇÇà ÇÔ¼ö
- * ÇÏÀ§ PRLQ ¸¦ ¸ğµÎ ½ÃÀÛ½ÃÅ² ÈÄ row ÇÏ³ª¸¦ ¾ò¾î¿Â´Ù.
+ * PSCRD ìµœì´ˆ doIt ì‹¤í–‰ í•¨ìˆ˜
+ * í•˜ìœ„ PRLQ ë¥¼ ëª¨ë‘ ì‹œì‘ì‹œí‚¨ í›„ row í•˜ë‚˜ë¥¼ ì–»ì–´ì˜¨ë‹¤.
  * ------------------------------------------------------------------
  */
 IDE_RC qmnPSCRD::doItFirst(qcTemplate* aTemplate,
@@ -545,10 +545,10 @@ IDE_RC qmnPSCRD::doItFirst(qcTemplate* aTemplate,
 
 /*
  * ------------------------------------------------------------------
- * PSCRD ÀÏ¹İ doIt ÇÔ¼ö
+ * PSCRD ì¼ë°˜ doIt í•¨ìˆ˜
  *
- * ÇöÀç child ¸¦ ´Ù ÀĞ¾ú°Å³ª queue °¡ ÀÓ½Ã·Î ºñ¾îÀÖÀ¸¸é child switch
- * 1024 °³ rows ÀĞÀ»¶§¸¶´Ù child switch
+ * í˜„ì¬ child ë¥¼ ë‹¤ ì½ì—ˆê±°ë‚˜ queue ê°€ ì„ì‹œë¡œ ë¹„ì–´ìˆìœ¼ë©´ child switch
+ * 1024 ê°œ rows ì½ì„ë•Œë§ˆë‹¤ child switch
  * ------------------------------------------------------------------
  */
 IDE_RC qmnPSCRD::doItNext(qcTemplate* aTemplate,
@@ -565,9 +565,9 @@ IDE_RC qmnPSCRD::doItNext(qcTemplate* aTemplate,
     sDataPlan = (qmndPSCRD*)(aTemplate->tmplate.data + aPlan->offset);
 
     // PROJ-2444
-    // PSCRD´Â ÇÏÀ§ SCAN ÇÃ·£ÀÇ tuple ¸¦ °øÀ¯ÇÑ´Ù.
-    // »óÀ§ ÇÃ·£¿¡¼­ SCAN ÀÇ tuple->row °¡ °¡¸£Å°´Â ¸Ş¸ğ¸®¸¦ ÀúÀåÇÒ¼ö ÀÖ´Ù.
-    // PSCRD¿¡¼­ tuple->row ¸¦ º¯°æÇÏ±â ¶§¹®¿¡ ¿øº»À» À¯ÁöÇØÁÖ¾î¾ß ÇÑ´Ù.
+    // PSCRDëŠ” í•˜ìœ„ SCAN í”Œëœì˜ tuple ë¥¼ ê³µìœ í•œë‹¤.
+    // ìƒìœ„ í”Œëœì—ì„œ SCAN ì˜ tuple->row ê°€ ê°€ë¥´í‚¤ëŠ” ë©”ëª¨ë¦¬ë¥¼ ì €ì¥í• ìˆ˜ ìˆë‹¤.
+    // PSCRDì—ì„œ tuple->row ë¥¼ ë³€ê²½í•˜ê¸° ë•Œë¬¸ì— ì›ë³¸ì„ ìœ ì§€í•´ì£¼ì–´ì•¼ í•œë‹¤.
     sDataPlan->plan.myTuple->row = sDataPlan->mOrgRow;
 
     while (1)
@@ -583,7 +583,7 @@ IDE_RC qmnPSCRD::doItNext(qcTemplate* aTemplate,
         if ((sFlag & QMC_ROW_DATA_MASK) == QMC_ROW_DATA_EXIST)
         {
             // PROJ-2444
-            // ÀÚ½Ä PRLQ ÀÇ µ¥ÀÌÅ¸¸¦ Á÷Á¢ ÀĞ¾î¿Â´Ù.
+            // ìì‹ PRLQ ì˜ ë°ì´íƒ€ë¥¼ ì§ì ‘ ì½ì–´ì˜¨ë‹¤.
             sDataPlan->plan.myTuple->rid = sChildPRLQDataPlan->mRid;
             sDataPlan->plan.myTuple->row = sChildPRLQDataPlan->mRow;
 
@@ -708,8 +708,8 @@ IDE_RC qmnPSCRD::doItNext(qcTemplate* aTemplate,
     if ((sFlag & QMC_ROW_DATA_MASK) == QMC_ROW_DATA_NONE)
     {
         /*
-         * record °¡ ¾ø´Â °æ¿ì,
-         * ´ÙÀ½ ¼öÇàÀ» À§ÇØ ÃÖÃÊ ¼öÇà ÇÔ¼ö·Î ¼³Á¤
+         * record ê°€ ì—†ëŠ” ê²½ìš°,
+         * ë‹¤ìŒ ìˆ˜í–‰ì„ ìœ„í•´ ìµœì´ˆ ìˆ˜í–‰ í•¨ìˆ˜ë¡œ ì„¤ì •
          */
         sDataPlan->doIt = qmnPSCRD::doItFirst;
     }
@@ -739,8 +739,8 @@ IDE_RC qmnPSCRD::doItAllFalse(qcTemplate* /*aTemplate*/,
 
 /*
  * ------------------------------------------------------------------
- * doItFirst °úÁ¤Áß¿¡
- * data plan ¿µ¿ª¿¡ ½ÇÇàÇÒ children plan ±¸¼º
+ * doItFirst ê³¼ì •ì¤‘ì—
+ * data plan ì˜ì—­ì— ì‹¤í–‰í•  children plan êµ¬ì„±
  * ------------------------------------------------------------------
  */
 void qmnPSCRD::makeChildrenPRLQArea(qcTemplate* aTemplate, qmnPlan* aPlan)

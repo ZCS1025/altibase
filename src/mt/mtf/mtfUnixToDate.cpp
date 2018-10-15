@@ -45,7 +45,7 @@ static IDE_RC mtfUnixToDateEstimate( mtcNode     * aNode,
 mtfModule mtfUnixToDate = {
     1|MTC_NODE_OPERATOR_FUNCTION,
     ~(MTC_NODE_INDEX_MASK),
-    1.0, // default selectivity (∫Ò±≥ ø¨ªÍ¿⁄∞° æ∆¥‘)
+    1.0, // default selectivity (ÎπÑÍµê Ïó∞ÏÇ∞ÏûêÍ∞Ä ÏïÑÎãò)
     mtfUnixToDateFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -136,8 +136,8 @@ IDE_RC mtfUnixToDateCalculate( mtcNode     * aNode,
  * Implementation :
  *    unix_to_date( 1239079710 )
  *
- *    aStack[0] : Bigint ∞™¿ª Date Type ¿∏∑Œ ∫Ø»Ø«— Date ∞™
- *    aStack[1] : Unix Time ¿« Bigint ∞™
+ *    aStack[0] : Bigint Í∞íÏùÑ Date Type ÏúºÎ°ú Î≥ÄÌôòÌïú Date Í∞í
+ *    aStack[1] : Unix Time Ïùò Bigint Í∞í
  *
  *    ex) unix_to_date( 1239079710 ) ==> 2009-04-07 04:48:30
  *
@@ -180,10 +180,10 @@ IDE_RC mtfUnixToDateCalculate( mtcNode     * aNode,
             }
         }
 
-        /* Time ∞¥√º∑Œ ∫Ø»Ø */
+        /* Time Í∞ùÏ≤¥Î°ú Î≥ÄÌôò */
         idlOS::gmtime_r( &sTime, &sGlobaltime );
 
-        /* Date ∞¥√º∑Œ ∫Ø»Ø */
+        /* Date Í∞ùÏ≤¥Î°ú Î≥ÄÌôò */
         IDE_TEST( mtdDateInterface::makeDate( sDate,
                                               (SShort)sGlobaltime.tm_year + 1900,
                                               sGlobaltime.tm_mon + 1,

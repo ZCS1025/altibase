@@ -69,8 +69,8 @@ SInt Formlex(YYSTYPE * yylval_param, yyscan_t yyscanner, void *param );
 void Formerror ( yyscan_t yyscanner, void *, const SChar *s);
 SChar *ltrim(SChar *s);
 SChar *rtrim(SChar *s);
-/* BUG-17563 : iloader ¿¡¼­ Å«µû¿ÈÇ¥ ÀÌ¿ëÇÑ Naming Rule Á¦¾à Á¦°Å  */
-/* src string¿¡¼­ "..." -> ... À¸·Î º¯°æÇØÁÜ. */
+/* BUG-17563 : iloader ì—ì„œ í°ë”°ì˜´í‘œ ì´ìš©í•œ Naming Rule ì œì•½ ì œê±°  */
+/* src stringì—ì„œ "..." -> ... ìœ¼ë¡œ ë³€ê²½í•´ì¤Œ. */
 SChar *eraseDQuotes(SChar *aSrc);
 
 /* BUG-40310 [ux-iloader] Fail to handle where condition when 'WHERE' keyword has mixed case.
@@ -114,7 +114,7 @@ ILOADER_FORM
       }
     ;
 
-// BUG-25359 iloader ¿¡¼­ download condition ÀÌ Àû¿ëµÇÁö ¾Ê½À´Ï´Ù.
+// BUG-25359 iloader ì—ì„œ download condition ì´ ì ìš©ë˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
 FORM_OPTION_LIST
     : { /* empty */ }
     | FORM_OPTION_LIST FORM_OPTION
@@ -133,7 +133,7 @@ DOWN_COND_DEF
       {
         if( PARAM->mParser.mTableNode->m_Condition == NULL)
         {
-            /* BUG-17563 : iloader ¿¡¼­ Å«µû¿ÈÇ¥ ÀÌ¿ëÇÑ Naming Rule Á¦¾à Á¦°Å  */
+            /* BUG-17563 : iloader ì—ì„œ í°ë”°ì˜´í‘œ ì´ìš©í•œ Naming Rule ì œì•½ ì œê±°  */
             $$ = new iloTableNode(DOWN_NODE, eraseDQuotes($3), NULL, NULL);
             PARAM->mParser.mTableNode->m_Condition = $$;
         }
@@ -152,7 +152,7 @@ DOWN_COND_DEF
       {
         if( PARAM->mParser.mTableNode->m_Condition == NULL)
         {
-            /* BUG-17563 : iloader ¿¡¼­ Å«µû¿ÈÇ¥ ÀÌ¿ëÇÑ Naming Rule Á¦¾à Á¦°Å  */
+            /* BUG-17563 : iloader ì—ì„œ í°ë”°ì˜´í‘œ ì´ìš©í•œ Naming Rule ì œì•½ ì œê±°  */
             $$ = new iloTableNode(DOWN_NODE, eraseDQuotes($3), NULL, NULL, eraseDQuotes($5));
             PARAM->mParser.mTableNode->m_Condition = $$;
         }
@@ -296,7 +296,7 @@ ATTRIBUTE_DEF_LIST
 function_option
     : T_STRING
     {
-        /* BUG-17563 : iloader ¿¡¼­ Å«µû¿ÈÇ¥ ÀÌ¿ëÇÑ Naming Rule Á¦¾à Á¦°Å  */
+        /* BUG-17563 : iloader ì—ì„œ í°ë”°ì˜´í‘œ ì´ìš©í•œ Naming Rule ì œì•½ ì œê±°  */
         $$ = eraseDQuotes($1);
     }
     | /* empty */
@@ -313,8 +313,8 @@ ATTRIBUTE_DEF
           {
               pAttrType = new iloTableNode(ATTRTYPE_NODE, (SChar *)"char", NULL, NULL);
               pAttrName = new iloTableNode(ATTRNAME_NODE, $1, NULL, pAttrType);
-              /* BUG-26485 iloader ¿¡ trim ±â´ÉÀ» Ãß°¡ÇØ¾ß ÇÕ´Ï´Ù. */
-              /* »ç¿ëÀÚ°¡ ÀÔ·ÂÇÑ ¹®ÀÚ¿­À» ÀúÀåÇÕ´Ï´Ù. */
+              /* BUG-26485 iloader ì— trim ê¸°ëŠ¥ì„ ì¶”ê°€í•´ì•¼ í•©ë‹ˆë‹¤. */
+              /* ì‚¬ìš©ìê°€ ì…ë ¥í•œ ë¬¸ìì—´ì„ ì €ì¥í•©ë‹ˆë‹¤. */
               $$ = new iloTableNode(ATTR_NODE, $7, pAttrName, NULL);
               $$->setSkipFlag($6 & SKIP_MASK);
               $$->setBinaryFlag($6 & BINARY_MASK);
@@ -493,8 +493,8 @@ ATTRIBUTE_DEF
           {
               pAttrType = new iloTableNode(ATTRTYPE_NODE, (SChar *)"bit", NULL, NULL);
               pAttrName = new iloTableNode(ATTRNAME_NODE, $1, NULL, pAttrType);
-              /* BUG-26485 iloader ¿¡ trim ±â´ÉÀ» Ãß°¡ÇØ¾ß ÇÕ´Ï´Ù. */
-              /* »ç¿ëÀÚ°¡ ÀÔ·ÂÇÑ ¹®ÀÚ¿­À» ÀúÀåÇÕ´Ï´Ù. */
+              /* BUG-26485 iloader ì— trim ê¸°ëŠ¥ì„ ì¶”ê°€í•´ì•¼ í•©ë‹ˆë‹¤. */
+              /* ì‚¬ìš©ìê°€ ì…ë ¥í•œ ë¬¸ìì—´ì„ ì €ì¥í•©ë‹ˆë‹¤. */
               $$ = new iloTableNode(ATTR_NODE, $7, pAttrName, NULL);
               $$->setSkipFlag($6 & SKIP_MASK);
               $$->setPrecision($4, 0);
@@ -519,7 +519,7 @@ ATTRIBUTE_DEF
           }
       }
 
-      //PROJ-2030, CT_CASE-3020 CHAR outfile Áö¿ø
+      //PROJ-2030, CT_CASE-3020 CHAR outfile ì§€ì›
     | column_name T_IDENTIFIER T_LBRACKET T_NUMBER T_RBRACKET T_OUTFILE T_SEMICOLON
       {
           iloTableNode *pAttrName, *pAttrType;
@@ -597,8 +597,8 @@ ATTRIBUTE_DEF
               PARAM->mParser.mDateForm[0] = '\0';
               pAttrType = new iloTableNode(ATTRTYPE_NODE, (SChar *)"date", NULL, NULL);
               pAttrName = new iloTableNode(ATTRNAME_NODE, $1, NULL, pAttrType);
-              // nodeValue ¸¦ dateFormat ÀúÀåÀå¼Ò·Î »ç¿ë
-              /* BUG-17563 : iloader ¿¡¼­ Å«µû¿ÈÇ¥ ÀÌ¿ëÇÑ Naming Rule Á¦¾à Á¦°Å  */
+              // nodeValue ë¥¼ dateFormat ì €ì¥ì¥ì†Œë¡œ ì‚¬ìš©
+              /* BUG-17563 : iloader ì—ì„œ í°ë”°ì˜´í‘œ ì´ìš©í•œ Naming Rule ì œì•½ ì œê±°  */
               $$ = new iloTableNode(ATTR_NODE, eraseDQuotes($4), pAttrName, NULL);
               $$->setSkipFlag($5);
 #ifdef _ILOADER_DEBUG
@@ -631,8 +631,8 @@ ATTRIBUTE_DEF
           {
               pAttrType = new iloTableNode(ATTRTYPE_NODE, (SChar *)"double", NULL, NULL);
               pAttrName = new iloTableNode(ATTRNAME_NODE, $1, NULL, pAttrType);
-              /* BUG-26485 iloader ¿¡ trim ±â´ÉÀ» Ãß°¡ÇØ¾ß ÇÕ´Ï´Ù. */
-              /* »ç¿ëÀÚ°¡ ÀÔ·ÂÇÑ ¹®ÀÚ¿­À» ÀúÀåÇÕ´Ï´Ù. */
+              /* BUG-26485 iloader ì— trim ê¸°ëŠ¥ì„ ì¶”ê°€í•´ì•¼ í•©ë‹ˆë‹¤. */
+              /* ì‚¬ìš©ìê°€ ì…ë ¥í•œ ë¬¸ìì—´ì„ ì €ì¥í•©ë‹ˆë‹¤. */
               $$ = new iloTableNode(ATTR_NODE, $4, pAttrName, NULL);
               $$->setSkipFlag($3 & SKIP_MASK);
               $$->setPrecision(0, 0);
@@ -979,8 +979,8 @@ ATTRIBUTE_DEF
 
               pAttrType = new iloTableNode(ATTRTYPE_NODE, (SChar *)"numeric_long", NULL, NULL);
               pAttrName = new iloTableNode(ATTRNAME_NODE, $1, NULL, pAttrType);
-              /* BUG-26485 iloader ¿¡ trim ±â´ÉÀ» Ãß°¡ÇØ¾ß ÇÕ´Ï´Ù. */
-              /* »ç¿ëÀÚ°¡ ÀÔ·ÂÇÑ ¹®ÀÚ¿­À» ÀúÀåÇÕ´Ï´Ù. */
+              /* BUG-26485 iloader ì— trim ê¸°ëŠ¥ì„ ì¶”ê°€í•´ì•¼ í•©ë‹ˆë‹¤. */
+              /* ì‚¬ìš©ìê°€ ì…ë ¥í•œ ë¬¸ìì—´ì„ ì €ì¥í•©ë‹ˆë‹¤. */
               $$ = new iloTableNode(ATTR_NODE, $9, pAttrName, NULL);
               $$->setSkipFlag($8 & SKIP_MASK);
               $$->setNoExpFlag($8 & NOEXP_MASK);
@@ -1015,8 +1015,8 @@ ATTRIBUTE_DEF
           {
               pAttrType = new iloTableNode(ATTRTYPE_NODE, (SChar *)"numeric_double", NULL, NULL);
               pAttrName = new iloTableNode(ATTRNAME_NODE, $1, NULL, pAttrType);
-              /* BUG-26485 iloader ¿¡ trim ±â´ÉÀ» Ãß°¡ÇØ¾ß ÇÕ´Ï´Ù. */
-              /* »ç¿ëÀÚ°¡ ÀÔ·ÂÇÑ ¹®ÀÚ¿­À» ÀúÀåÇÕ´Ï´Ù. */
+              /* BUG-26485 iloader ì— trim ê¸°ëŠ¥ì„ ì¶”ê°€í•´ì•¼ í•©ë‹ˆë‹¤. */
+              /* ì‚¬ìš©ìê°€ ì…ë ¥í•œ ë¬¸ìì—´ì„ ì €ì¥í•©ë‹ˆë‹¤. */
               $$ = new iloTableNode(ATTR_NODE, $9, pAttrName, NULL);
               $$->setSkipFlag($8 & SKIP_MASK);
               $$->setNoExpFlag($8 & NOEXP_MASK);
@@ -1140,8 +1140,8 @@ identifier_keyword
       }
    | T_STRING
       {
-          /* BUG-17563 : iloader ¿¡¼­ Å«µû¿ÈÇ¥ ÀÌ¿ëÇÑ Naming Rule Á¦¾à Á¦°Å  */
-          /* table/column ÀÌ¸§À¸·Î case±¸ºĞÀ» À§ÇØ "..."¿Í°°Àº stringÀÌ ¿Ã¼ö ÀÖ¾î¾ßÇÔ */
+          /* BUG-17563 : iloader ì—ì„œ í°ë”°ì˜´í‘œ ì´ìš©í•œ Naming Rule ì œì•½ ì œê±°  */
+          /* table/column ì´ë¦„ìœ¼ë¡œ caseêµ¬ë¶„ì„ ìœ„í•´ "..."ì™€ê°™ì€ stringì´ ì˜¬ìˆ˜ ìˆì–´ì•¼í•¨ */
           $$ = $1;
       }
     ;

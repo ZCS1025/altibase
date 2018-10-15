@@ -45,7 +45,7 @@ static IDE_RC mtfGrouphash256Estimate( mtcNode     * aNode,
 mtfModule mtfGrouphash256 = {
     2|MTC_NODE_OPERATOR_AGGREGATION,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
+    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìžê°€ ì•„ë‹˜)
     mtfGrouphash256FunctionName,
     NULL,
     mtf::initializeDefault,
@@ -105,7 +105,7 @@ IDE_RC mtfGrouphash256Estimate( mtcNode     * aNode,
 
     sModuleId = (SInt) aStack[1].column->module->id;
 
-    /* ¿¬»ê ´ë»óÀÎ ÄÃ·³ ¿Ü¿¡´Â ¿¡·¯¸¦ Ãâ·ÂÇÑ´Ù. */
+    /* ì—°ì‚° ëŒ€ìƒì¸ ì»¬ëŸ¼ ì™¸ì—ëŠ” ì—ëŸ¬ë¥¼ ì¶œë ¥í•œë‹¤. */
     if ( idlOS::strlen( (SChar*)aNode->arguments->module->names->string ) == 6 )
     {
         if ( idlOS::strncmp( (SChar*)aNode->arguments->module->names->string,
@@ -116,7 +116,7 @@ IDE_RC mtfGrouphash256Estimate( mtcNode     * aNode,
         }
         else
         {
-            /* ¿¬»ê ´ë»ó ¿ÜÀÎ ÄÃ·³ Å¸ÀÔÀº ¿¡·¯¸¦ Ãâ·ÂÇÑ´Ù. */
+            /* ì—°ì‚° ëŒ€ìƒ ì™¸ì¸ ì»¬ëŸ¼ íƒ€ìž…ì€ ì—ëŸ¬ë¥¼ ì¶œë ¥í•œë‹¤. */
             switch ( sModuleId )
             {
                 case MTD_BLOB_ID:
@@ -145,7 +145,7 @@ IDE_RC mtfGrouphash256Estimate( mtcNode     * aNode,
                                      0 )
               != IDE_SUCCESS );
 
-    /* ÇØ½Ì ÄÁÅØ½ºÆ®¸¦ »ý¼ºÇÑ´Ù. */
+    /* í•´ì‹± ì»¨í…ìŠ¤íŠ¸ë¥¼ ìƒì„±í•œë‹¤. */
     IDE_TEST( mtc::initializeColumn( aStack[0].column + 1,
                                      &mtdBinary,
                                      1,
@@ -177,7 +177,7 @@ IDE_RC mtfGrouphash256Initialize( mtcNode     * aNode,
     mtdBinaryType    * sInfo;
     idsSHA256Context * sContext;
 
-    /* ÇØ½Ì ÄÁÅØ½ºÆ®À» ÃÊ±âÈ­ ÇÑ´Ù. */
+    /* í•´ì‹± ì»¨í…ìŠ¤íŠ¸ì„ ì´ˆê¸°í™” í•œë‹¤. */
     sColumn = aTemplate->rows[aNode->table].columns + aNode->column + 1;
     sInfo = (mtdBinaryType*) mtc::value( sColumn,
                                          aTemplate->rows[aNode->table].row,
@@ -207,9 +207,9 @@ IDE_RC mtfGrouphash256Aggregate( mtcNode     * aNode,
  *
  *  GROUPHASH256( I1 )
  *
- *  ÇÑ ÄÃ·³À» ÇØ½ÌÇÏ´Â Áý¾àÇÔ¼ö¸¦ ±¸ÇöÇÑ´Ù.
- *    1. ÇØ½Ì ÇÔ¼ö¿¡ ÄÃ·³ÀÇ °ªÀ» Àü´ÞÇÑ´Ù.
- *    2. ¹öÆÛ¿Í ¿ÀÇÁ¼ÂÀº ÇØ½Ì ÇÔ¼ö¿¡¼­ ÀÌ¿ëÇÑ´Ù.
+ *  í•œ ì»¬ëŸ¼ì„ í•´ì‹±í•˜ëŠ” ì§‘ì•½í•¨ìˆ˜ë¥¼ êµ¬í˜„í•œë‹¤.
+ *    1. í•´ì‹± í•¨ìˆ˜ì— ì»¬ëŸ¼ì˜ ê°’ì„ ì „ë‹¬í•œë‹¤.
+ *    2. ë²„í¼ì™€ ì˜¤í”„ì…‹ì€ í•´ì‹± í•¨ìˆ˜ì—ì„œ ì´ìš©í•œë‹¤.
  *
  ***********************************************************************/
 

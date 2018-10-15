@@ -31,10 +31,10 @@ public final class ByteUtils
     }
 
     /**
-     * Hex StringÀ¸·Î ¾µ ¼ö ÀÖ´Â ¹®ÀÚÀÎÁö È®ÀÎÇÑ´Ù.
+     * Hex Stringìœ¼ë¡œ ì“¸ ìˆ˜ ìˆëŠ” ë¬¸ìì¸ì§€ í™•ì¸í•œë‹¤.
      *
-     * @param c È®ÀÎÇÒ ¹®ÀÚ
-     * @return [0-9a-fA-F]ÀÌ¸é true, ¾Æ´Ï¸é false
+     * @param c í™•ì¸í•  ë¬¸ì
+     * @return [0-9a-fA-F]ì´ë©´ true, ì•„ë‹ˆë©´ false
      */
     public static boolean isHexCharacter(char c)
     {
@@ -48,12 +48,12 @@ public final class ByteUtils
     }
 
     /**
-     * hex stringÀ» byte array·Î º¯È¯ÇÑ´Ù.
+     * hex stringì„ byte arrayë¡œ ë³€í™˜í•œë‹¤.
      * <p>
-     * ¸¸¾à hex stringÀÌ Â¦¼ö°¡ ¾Æ´Ï¶ó¸é, ¸¶Áö¸· ¹ÙÀÌÆ®ÀÇ ÇÏÀ§ 4bit´Â 0À¸·Î Ã¤¿î´Ù.
+     * ë§Œì•½ hex stringì´ ì§ìˆ˜ê°€ ì•„ë‹ˆë¼ë©´, ë§ˆì§€ë§‰ ë°”ì´íŠ¸ì˜ í•˜ìœ„ 4bitëŠ” 0ìœ¼ë¡œ ì±„ìš´ë‹¤.
      * 
-     * @param aHexString byte array·Î º¯È¯ÇÒ hex string
-     * @return º¯È¯µÈ byte array. hex stringÀÌ nullÀÌ¸é null, ºó ¹®ÀÚ¿­ÀÌ¸é ±æÀÌ°¡ 0ÀÎ ¹è¿­.
+     * @param aHexString byte arrayë¡œ ë³€í™˜í•  hex string
+     * @return ë³€í™˜ëœ byte array. hex stringì´ nullì´ë©´ null, ë¹ˆ ë¬¸ìì—´ì´ë©´ ê¸¸ì´ê°€ 0ì¸ ë°°ì—´.
      */
     public static byte[] parseByteArray(String aHexString)
     {
@@ -61,17 +61,17 @@ public final class ByteUtils
     }
 
     /**
-     * hex stringÀ» byte array·Î º¯È¯ÇÑ´Ù.
+     * hex stringì„ byte arrayë¡œ ë³€í™˜í•œë‹¤.
      * <p>
-     * hex stringÀÇ ±æÀÌ°¡ 2ÀÇ ¹è¼ö°¡ ¾Æ´Ò¶§, 0À¸·Î ÆĞµùÇÒ ¼öµµ ÀÖ°í ¿¹¿Ü¸¦ ³¾ ¼öµµ ÀÖ´Ù.
-     * ¸¸¾à 2ÀÇ ¹è¼ö°¡ ¾Æ´Ò ¶§, ÆĞµùÀ» »ç¿ëÇÑ´Ù¸é ¸¶Áö¸· ¹ÙÀÌÆ®ÀÇ ÇÏÀ§ 4bit´Â 0À¸·Î Ã¤¿ì°í,
-     * ÆĞµùÀ» »ç¿ëÇÏÁö ¾Ê´Â´Ù¸é ¿¹¿Ü¸¦ ´øÁø´Ù.
+     * hex stringì˜ ê¸¸ì´ê°€ 2ì˜ ë°°ìˆ˜ê°€ ì•„ë‹ë•Œ, 0ìœ¼ë¡œ íŒ¨ë”©í•  ìˆ˜ë„ ìˆê³  ì˜ˆì™¸ë¥¼ ë‚¼ ìˆ˜ë„ ìˆë‹¤.
+     * ë§Œì•½ 2ì˜ ë°°ìˆ˜ê°€ ì•„ë‹ ë•Œ, íŒ¨ë”©ì„ ì‚¬ìš©í•œë‹¤ë©´ ë§ˆì§€ë§‰ ë°”ì´íŠ¸ì˜ í•˜ìœ„ 4bitëŠ” 0ìœ¼ë¡œ ì±„ìš°ê³ ,
+     * íŒ¨ë”©ì„ ì‚¬ìš©í•˜ì§€ ì•ŠëŠ”ë‹¤ë©´ ì˜ˆì™¸ë¥¼ ë˜ì§„ë‹¤.
      *
-     * @param aHexString byte array·Î º¯È¯ÇÒ hex string
-     * @param aUsePadding hex stringÀÌ 2ÀÇ ¹è¼ö°¡ ¾Æ´Ò ¶§, 0À¸·Î ÆĞµùÇÒÁö ¿©ºÎ.
-     * @return º¯È¯µÈ byte array. hex stringÀÌ nullÀÌ¸é null, ºó ¹®ÀÚ¿­ÀÌ¸é ±æÀÌ°¡ 0ÀÎ ¹è¿­.
-     * @exception IllegalArgumentException hex stringÀÌ ¿Ã¹Ù¸£Áö ¾ÊÀ» °æ¿ì
-     * @exception IllegalArgumentException ÆĞµùÀ» »ç¿ëÇÏÁö ¾ÊÀ» ¶§, hex stringÀÌ 2ÀÇ ¹è¼ö°¡ ¾Æ´Ñ °æ¿ì
+     * @param aHexString byte arrayë¡œ ë³€í™˜í•  hex string
+     * @param aUsePadding hex stringì´ 2ì˜ ë°°ìˆ˜ê°€ ì•„ë‹ ë•Œ, 0ìœ¼ë¡œ íŒ¨ë”©í• ì§€ ì—¬ë¶€.
+     * @return ë³€í™˜ëœ byte array. hex stringì´ nullì´ë©´ null, ë¹ˆ ë¬¸ìì—´ì´ë©´ ê¸¸ì´ê°€ 0ì¸ ë°°ì—´.
+     * @exception IllegalArgumentException hex stringì´ ì˜¬ë°”ë¥´ì§€ ì•Šì„ ê²½ìš°
+     * @exception IllegalArgumentException íŒ¨ë”©ì„ ì‚¬ìš©í•˜ì§€ ì•Šì„ ë•Œ, hex stringì´ 2ì˜ ë°°ìˆ˜ê°€ ì•„ë‹Œ ê²½ìš°
      */
     public static byte[] parseByteArray(String aHexString, boolean aUsePadding)
     {
@@ -100,7 +100,7 @@ public final class ByteUtils
             {
                 Error.throwIllegalArgumentException(ErrorDef.INVALID_HEX_STRING_ELEMENT, String.valueOf(i), String.valueOf(c));
             }
-            c |= 0x20; // to lowercase. hext charÀÓÀ» È®ÀÎÇßÀ¸¹Ç·Î ÀÌ·¸°Ô ÇØµµ µÈ´Ù.
+            c |= 0x20; // to lowercase. hext charì„ì„ í™•ì¸í–ˆìœ¼ë¯€ë¡œ ì´ë ‡ê²Œ í•´ë„ ëœë‹¤.
             int v = (c < 'a') ? (c - '0') : (10 + c - 'a');
             if ((i % 2) == 0)
             {
@@ -112,10 +112,10 @@ public final class ByteUtils
     }
 
     /**
-     * byte array¸¦ hex stringÀ¸·Î º¯È¯ÇÑ´Ù.
+     * byte arrayë¥¼ hex stringìœ¼ë¡œ ë³€í™˜í•œë‹¤.
      * 
-     * @param aByteArray hex stringÀ¸·Î º¯È¯ÇÒ byte array
-     * @return º¯È¯µÈ hex string. byte array°¡ nullÀÌ¸é "null", ±æÀÌ°¡ 0ÀÌ¸é ºó ¹®ÀÚ¿­.
+     * @param aByteArray hex stringìœ¼ë¡œ ë³€í™˜í•  byte array
+     * @return ë³€í™˜ëœ hex string. byte arrayê°€ nullì´ë©´ "null", ê¸¸ì´ê°€ 0ì´ë©´ ë¹ˆ ë¬¸ìì—´.
      */
     public static String toHexString(byte[] aByteArray)
     {
@@ -123,13 +123,13 @@ public final class ByteUtils
     }
 
     /**
-     * byte array¸¦ hex stringÀ¸·Î º¯È¯ÇÑ´Ù.
+     * byte arrayë¥¼ hex stringìœ¼ë¡œ ë³€í™˜í•œë‹¤.
      * 
-     * @param aByteArray hex stringÀ¸·Î º¯È¯ÇÒ byte array
-     * @param aStartIdx Ã¹ index (inclusive)
-     * @param aEndIdx ³¡ index (exclusive)
-     * @return º¯È¯µÈ hex string. byte array°¡ nullÀÌ¸é "null", ±æÀÌ°¡ 0ÀÌ¸é ºó ¹®ÀÚ¿­.
-     * @exception IllegalArgumentException ÀÎÀÚ°¡ ¿Ã¹Ù¸£Áö ¾ÊÀ» °æ¿ì
+     * @param aByteArray hex stringìœ¼ë¡œ ë³€í™˜í•  byte array
+     * @param aStartIdx ì²« index (inclusive)
+     * @param aEndIdx ë index (exclusive)
+     * @return ë³€í™˜ëœ hex string. byte arrayê°€ nullì´ë©´ "null", ê¸¸ì´ê°€ 0ì´ë©´ ë¹ˆ ë¬¸ìì—´.
+     * @exception IllegalArgumentException ì¸ìê°€ ì˜¬ë°”ë¥´ì§€ ì•Šì„ ê²½ìš°
      */
     public static String toHexString(byte[] aByteArray, int aStartIdx, int aEndIdx)
     {
@@ -137,11 +137,11 @@ public final class ByteUtils
     }
 
     /**
-     * byte array¸¦ hex stringÀ¸·Î º¯È¯ÇÑ´Ù.
+     * byte arrayë¥¼ hex stringìœ¼ë¡œ ë³€í™˜í•œë‹¤.
      * 
-     * @param aByteArray hex stringÀ¸·Î º¯È¯ÇÒ byte array
-     * @param aSpacingBase °ø¹éÀ» »ğÀÔÇÒ ´ÜÀ§. 0ÀÌ¸é °ø¹éÀ» ºÙÀÌÁö ¾Ê´Â´Ù.
-     * @return º¯È¯µÈ hex string. byte array°¡ nullÀÌ¸é "null", ±æÀÌ°¡ 0ÀÌ¸é ºó ¹®ÀÚ¿­.
+     * @param aByteArray hex stringìœ¼ë¡œ ë³€í™˜í•  byte array
+     * @param aSpacingBase ê³µë°±ì„ ì‚½ì…í•  ë‹¨ìœ„. 0ì´ë©´ ê³µë°±ì„ ë¶™ì´ì§€ ì•ŠëŠ”ë‹¤.
+     * @return ë³€í™˜ëœ hex string. byte arrayê°€ nullì´ë©´ "null", ê¸¸ì´ê°€ 0ì´ë©´ ë¹ˆ ë¬¸ìì—´.
      */
     public static String toHexString(byte[] aByteArray, int aSpacingBase)
     {
@@ -149,12 +149,12 @@ public final class ByteUtils
     }
 
     /**
-     * byte array¸¦ hex stringÀ¸·Î º¯È¯ÇÑ´Ù.
+     * byte arrayë¥¼ hex stringìœ¼ë¡œ ë³€í™˜í•œë‹¤.
      * 
-     * @param aByteArray hex stringÀ¸·Î º¯È¯ÇÒ byte array
-     * @param aAppendingBase aAppendingChar¸¦ »ğÀÔÇÒ ´ÜÀ§. 0ÀÌ¸é ºÙÀÌÁö ¾Ê´Â´Ù.
-     * @param aAppendingString aAppendingBase ¸¶´Ù Ãß°¡ÇÒ ¹®ÀÚ¿­
-     * @return º¯È¯µÈ hex string. byte array°¡ nullÀÌ¸é "null", ±æÀÌ°¡ 0ÀÌ¸é ºó ¹®ÀÚ¿­.
+     * @param aByteArray hex stringìœ¼ë¡œ ë³€í™˜í•  byte array
+     * @param aAppendingBase aAppendingCharë¥¼ ì‚½ì…í•  ë‹¨ìœ„. 0ì´ë©´ ë¶™ì´ì§€ ì•ŠëŠ”ë‹¤.
+     * @param aAppendingString aAppendingBase ë§ˆë‹¤ ì¶”ê°€í•  ë¬¸ìì—´
+     * @return ë³€í™˜ëœ hex string. byte arrayê°€ nullì´ë©´ "null", ê¸¸ì´ê°€ 0ì´ë©´ ë¹ˆ ë¬¸ìì—´.
      */
     public static String toHexString(byte[] aByteArray, int aAppendingBase, String aAppendingString)
     {
@@ -162,16 +162,16 @@ public final class ByteUtils
     }
 
     /**
-     * byte array¸¦ hex stringÀ¸·Î º¯È¯ÇÑ´Ù.
+     * byte arrayë¥¼ hex stringìœ¼ë¡œ ë³€í™˜í•œë‹¤.
      * 
-     * @param aByteArray hex stringÀ¸·Î º¯È¯ÇÒ byte array
-     * @param aStartIdx Ã¹ index (inclusive)
-     * @param aEndIdx ³¡ index (exclusive)
-     * @param aAppendingBase aAppendingChar¸¦ »ğÀÔÇÒ ´ÜÀ§. 0ÀÌ¸é ºÙÀÌÁö ¾Ê´Â´Ù.
-     * @param aAppendingString aAppendingBase ¸¶´Ù Ãß°¡ÇÒ ¹®ÀÚ¿­
-     * @param aToUpper Upper case·Î º¯È¯ÇÒ°ÍÀÎÁö ¿©ºÎ
-     * @return º¯È¯µÈ hex string. byte array°¡ nullÀÌ¸é "null", ±æÀÌ°¡ 0ÀÌ¸é ºó ¹®ÀÚ¿­.
-     * @exception IllegalArgumentException ÀÎÀÚ°¡ ¿Ã¹Ù¸£Áö ¾ÊÀ» °æ¿ì
+     * @param aByteArray hex stringìœ¼ë¡œ ë³€í™˜í•  byte array
+     * @param aStartIdx ì²« index (inclusive)
+     * @param aEndIdx ë index (exclusive)
+     * @param aAppendingBase aAppendingCharë¥¼ ì‚½ì…í•  ë‹¨ìœ„. 0ì´ë©´ ë¶™ì´ì§€ ì•ŠëŠ”ë‹¤.
+     * @param aAppendingString aAppendingBase ë§ˆë‹¤ ì¶”ê°€í•  ë¬¸ìì—´
+     * @param aToUpper Upper caseë¡œ ë³€í™˜í• ê²ƒì¸ì§€ ì—¬ë¶€
+     * @return ë³€í™˜ëœ hex string. byte arrayê°€ nullì´ë©´ "null", ê¸¸ì´ê°€ 0ì´ë©´ ë¹ˆ ë¬¸ìì—´.
+     * @exception IllegalArgumentException ì¸ìê°€ ì˜¬ë°”ë¥´ì§€ ì•Šì„ ê²½ìš°
      */
     public static String toHexString(byte[] aByteArray, int aStartIdx, int aEndIdx, int aAppendingBase, String aAppendingString, boolean aToUpper)
     {
@@ -231,10 +231,10 @@ public final class ByteUtils
     }
 
     /**
-     * ByteBuffer¸¦ hex stringÀ¸·Î º¯È¯ÇÑ´Ù.
+     * ByteBufferë¥¼ hex stringìœ¼ë¡œ ë³€í™˜í•œë‹¤.
      * 
-     * @param aByteArray hex stringÀ¸·Î º¯È¯ÇÒ ByteBuffer
-     * @return º¯È¯µÈ hex string. byte array°¡ nullÀÌ¸é "null", ±æÀÌ°¡ 0ÀÌ¸é ºó ¹®ÀÚ¿­.
+     * @param aByteArray hex stringìœ¼ë¡œ ë³€í™˜í•  ByteBuffer
+     * @return ë³€í™˜ëœ hex string. byte arrayê°€ nullì´ë©´ "null", ê¸¸ì´ê°€ 0ì´ë©´ ë¹ˆ ë¬¸ìì—´.
      */
     public static String toHexString(ByteBuffer mByteBuffer)
     {
@@ -246,12 +246,12 @@ public final class ByteUtils
     }
 
     /**
-     * ByteBuffer¸¦ hex stringÀ¸·Î º¯È¯ÇÑ´Ù.
+     * ByteBufferë¥¼ hex stringìœ¼ë¡œ ë³€í™˜í•œë‹¤.
      * 
-     * @param aByteArray hex stringÀ¸·Î º¯È¯ÇÒ ByteBuffer
-     * @param aStartIdx Ã¹ index (inclusive)
-     * @param aEndIdx ³¡ index (exclusive)
-     * @return º¯È¯µÈ hex string. byte array°¡ nullÀÌ¸é "null", ±æÀÌ°¡ 0ÀÌ¸é ºó ¹®ÀÚ¿­.
+     * @param aByteArray hex stringìœ¼ë¡œ ë³€í™˜í•  ByteBuffer
+     * @param aStartIdx ì²« index (inclusive)
+     * @param aEndIdx ë index (exclusive)
+     * @return ë³€í™˜ëœ hex string. byte arrayê°€ nullì´ë©´ "null", ê¸¸ì´ê°€ 0ì´ë©´ ë¹ˆ ë¬¸ìì—´.
      */
     public static String toHexString(ByteBuffer mByteBuffer, int aStartIdx, int aEndIdx)
     {

@@ -21,16 +21,16 @@
  * Description :
  *   [Sort Temp Table]
  *
- *   A4¿¡¼­´Â Memory ¹× Disk TableÀ» ¸ğµÎ Áö¿øÇÑ´Ù.
- *   Áß°£ °á°ú¸¦ ÀúÀåÇÏ´Â Nodeµé Áß Sort¸¦ ÀÌ¿ëÇÑ Áß°£ °á°ú¸¦ ¸¸µå´Â
- *   Materialized NodeµéÀº Memory Sort Temp Table ¶Ç´Â Disk Sort Temp
- *   TableÀ» »ç¿ëÇÏ°Ô µÈ´Ù.
+ *   A4ì—ì„œëŠ” Memory ë° Disk Tableì„ ëª¨ë‘ ì§€ì›í•œë‹¤.
+ *   ì¤‘ê°„ ê²°ê³¼ë¥¼ ì €ì¥í•˜ëŠ” Nodeë“¤ ì¤‘ Sortë¥¼ ì´ìš©í•œ ì¤‘ê°„ ê²°ê³¼ë¥¼ ë§Œë“œëŠ”
+ *   Materialized Nodeë“¤ì€ Memory Sort Temp Table ë˜ëŠ” Disk Sort Temp
+ *   Tableì„ ì‚¬ìš©í•˜ê²Œ ëœë‹¤.
  *
- *   ÀÌ ¶§, °¢ ³ëµå°¡ Memory/Disk Sort Temp Table¿¡ µû¶ó ¼­·Î ´Ù¸¥
- *   µ¿ÀÛÀ» ÇÏÁö ¾Êµµ·Ï ÇÏ±â À§ÇÏ¿© ´ÙÀ½°ú °°Àº Sort Temp TableÀ»
- *   ÀÌ¿ëÇÏ¿© TransparentÇÑ ±¸Çö ¹× µ¿ÀÛÀÌ °¡´ÉÇÏµµ·Ï ÇÑ´Ù.
+ *   ì´ ë•Œ, ê° ë…¸ë“œê°€ Memory/Disk Sort Temp Tableì— ë”°ë¼ ì„œë¡œ ë‹¤ë¥¸
+ *   ë™ì‘ì„ í•˜ì§€ ì•Šë„ë¡ í•˜ê¸° ìœ„í•˜ì—¬ ë‹¤ìŒê³¼ ê°™ì€ Sort Temp Tableì„
+ *   ì´ìš©í•˜ì—¬ Transparentí•œ êµ¬í˜„ ë° ë™ì‘ì´ ê°€ëŠ¥í•˜ë„ë¡ í•œë‹¤.
  *
- *   ÀÌ·¯ÇÑ °³³äÀ» ³ªÅ¸³½ ±×¸²Àº ¾Æ·¡¿Í °°´Ù.
+ *   ì´ëŸ¬í•œ ê°œë…ì„ ë‚˜íƒ€ë‚¸ ê·¸ë¦¼ì€ ì•„ë˜ì™€ ê°™ë‹¤.
  *
  *                                                     -------------
  *                                                  -->[Memory Sort]
@@ -39,9 +39,9 @@
  *     ---------------     -------------------      -->[Disk Sort]
  *                                                     -----------
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  **********************************************************************/
 
@@ -55,46 +55,46 @@
 #define QMCD_SORT_TMP_INITIALIZE                 (0x00000000)
 
 /* qmcdSortTempTable.flag                                  */
-// Sort Temp TableÀÇ ÀúÀå ¸ÅÃ¼
+// Sort Temp Tableì˜ ì €ì¥ ë§¤ì²´
 #define QMCD_SORT_TMP_STORAGE_TYPE               (0x00000004)
 #define QMCD_SORT_TMP_STORAGE_MEMORY             (0x00000000)
 #define QMCD_SORT_TMP_STORAGE_DISK               (0x00000004)
 
 /* PROJ-2201 Innovation in sorting and hashing(temp)
- * QMNC_SORT_SEARCH_MASK ¸¦ °è½ÂÇØ Flag¸¦ ¼³Á¤ÇÔ */
+ * QMNC_SORT_SEARCH_MASK ë¥¼ ê³„ìŠ¹í•´ Flagë¥¼ ì„¤ì •í•¨ */
 /* qmcdSortTempTable.flag                                  */
-// Sort Temp TableÀÇ Å½»ö ¹æ¹ı
+// Sort Temp Tableì˜ íƒìƒ‰ ë°©ë²•
 #define QMCD_SORT_TMP_SEARCH_MASK               (0x00000008)
 #define QMCD_SORT_TMP_SEARCH_SEQUENTIAL         (0x00000000)
 #define QMCD_SORT_TMP_SEARCH_RANGE              (0x00000008)
 
-// Sort Temp Table ÀÚ·á ±¸Á¶
+// Sort Temp Table ìë£Œ êµ¬ì¡°
 typedef struct qmcdSortTemp
 {
     UInt               flag;
 
     qcTemplate       * mTemplate;
-    qmdMtrNode       * recordNode;  // Record ±¸¼º Á¤º¸
-    qmdMtrNode       * sortNode;    // SortÇÒ Column Á¤º¸
+    qmdMtrNode       * recordNode;  // Record êµ¬ì„± ì •ë³´
+    qmdMtrNode       * sortNode;    // Sortí•  Column ì •ë³´
 
-    UInt               mtrRowSize;  // ÀúÀå RecordÀÇ Å©±â
-    UInt               nullRowSize; // ÀúÀå null recordÀÇ Å©±â
-    SLong              recordCnt;   // ÀúÀåµÈ Record °³¼ö
-    qmcMemory        * memoryMgr;   // ÀúÀå Record¸¦ À§ÇÑ ¸Ş¸ğ¸® °ü¸®ÀÚ
+    UInt               mtrRowSize;  // ì €ì¥ Recordì˜ í¬ê¸°
+    UInt               nullRowSize; // ì €ì¥ null recordì˜ í¬ê¸°
+    SLong              recordCnt;   // ì €ì¥ëœ Record ê°œìˆ˜
+    qmcMemory        * memoryMgr;   // ì €ì¥ Recordë¥¼ ìœ„í•œ ë©”ëª¨ë¦¬ ê´€ë¦¬ì
     iduMemory        * memory;
     UInt               memoryIdx;
 
-    SChar            * nullRow;     // Memory Temp TableÀ» À§ÇÑ Null Row
+    SChar            * nullRow;     // Memory Temp Tableì„ ìœ„í•œ Null Row
 
-    // Memory Temp TableÀ» À§ÇÑ Á¤º¸
-    smiRange         * range;       // Range °Ë»öÀ» À§ÇÑ Key Range
-    smiRange         * rangeArea;   // Range °Ë»öÀ» À§ÇÑ Key Range Area
+    // Memory Temp Tableì„ ìœ„í•œ ì •ë³´
+    smiRange         * range;       // Range ê²€ìƒ‰ì„ ìœ„í•œ Key Range
+    smiRange         * rangeArea;   // Range ê²€ìƒ‰ì„ ìœ„í•œ Key Range Area
 
     qmcdMemSortTemp  * memoryTemp;  // Memory Sort Temp Table
     qmcdDiskSortTemp * diskTemp;    // Disk Sort Temp Table
 
-    idBool             existTempType;  // TEMP_TYPE ÄÃ·³ÀÌ Á¸ÀçÇÏ´ÂÁö
-    void             * insertRow;   // insert¸¦ À§ÇÑ ÀÓ½Ã ¹öÆÛ
+    idBool             existTempType;  // TEMP_TYPE ì»¬ëŸ¼ì´ ì¡´ì¬í•˜ëŠ”ì§€
+    void             * insertRow;   // insertë¥¼ ìœ„í•œ ì„ì‹œ ë²„í¼
     
 } qmcdSortTemp;
 
@@ -103,10 +103,10 @@ class qmcSortTemp
 public:
 
     //------------------------------------------------
-    // Sort Temp TableÀÇ °ü¸®
+    // Sort Temp Tableì˜ ê´€ë¦¬
     //------------------------------------------------
 
-    // Sort Temp TableÀ» ÃÊ±âÈ­ÇÑ´Ù.
+    // Sort Temp Tableì„ ì´ˆê¸°í™”í•œë‹¤.
     static IDE_RC init( qmcdSortTemp * aTempTable,
                         qcTemplate   * aTemplate,
                         UInt           aMemoryIdx,
@@ -115,144 +115,144 @@ public:
                         SDouble        aStoreRowCount,
                         UInt           aFlag );
 
-    // Sort Temp TableÀÇ Data¸¦ Á¦°ÅÇÑ´Ù.
+    // Sort Temp Tableì˜ Dataë¥¼ ì œê±°í•œë‹¤.
     static IDE_RC clear( qmcdSortTemp * aTempTable );
 
-    // Sort Temp Table³»ÀÇ ¸ğµç DataÀÇ flagÀ» ÃÊ±âÈ­ÇÑ´Ù.
+    // Sort Temp Tableë‚´ì˜ ëª¨ë“  Dataì˜ flagì„ ì´ˆê¸°í™”í•œë‹¤.
     static IDE_RC clearHitFlag( qmcdSortTemp * aTempTable );
 
     //------------------------------------------------
-    // Sort Temp TableÀÇ ±¸¼º
+    // Sort Temp Tableì˜ êµ¬ì„±
     //------------------------------------------------
 
-    // Data¸¦ À§ÇÑ Memory ÇÒ´ç
+    // Dataë¥¼ ìœ„í•œ Memory í• ë‹¹
     static IDE_RC alloc( qmcdSortTemp  * aTempTable,
                          void         ** aRow );
 
-    // Data¸¦ »ğÀÔ
+    // Dataë¥¼ ì‚½ì…
     static IDE_RC addRow( qmcdSortTemp * aTempTable,
                           void         * aRow );
 
-    // insert row »ı¼º
+    // insert row ìƒì„±
     static IDE_RC makeTempTypeRow( qmcdSortTemp  * aTempTable,
                                    void          * aRow,
                                    void         ** aExtRow );
     
-    // ÀúÀåµÈ DataµéÀÇ Á¤·ÄÀ» ¼öÇà
+    // ì €ì¥ëœ Dataë“¤ì˜ ì •ë ¬ì„ ìˆ˜í–‰
     static IDE_RC sort( qmcdSortTemp * aTempTable );
 
-    // Limit SortingÀ» ¼öÇàÇÔ
+    // Limit Sortingì„ ìˆ˜í–‰í•¨
     static IDE_RC shiftAndAppend( qmcdSortTemp * aTempTable,
                                   void         * aRow,
                                   void        ** aReturnRow );
 
-    // Min-Max ÀúÀåÀ» À§ÇÑ Limit SortingÀ» ¼öÇàÇÔ
+    // Min-Max ì €ì¥ì„ ìœ„í•œ Limit Sortingì„ ìˆ˜í–‰í•¨
     static IDE_RC changeMinMax( qmcdSortTemp * aTempTable,
                                 void         * aRow,
                                 void        ** aReturnRow );
 
     //------------------------------------------------
-    // Sort Temp TableÀÇ °Ë»ö
+    // Sort Temp Tableì˜ ê²€ìƒ‰
     //------------------------------------------------
 
     //-------------------------
-    // ¼øÂ÷ °Ë»ö
+    // ìˆœì°¨ ê²€ìƒ‰
     //-------------------------
 
-    // Ã¹¹øÂ° ¼øÂ÷ °Ë»ö (ORDER BY, Two Pass Sort JoinÀÇ Left¿¡¼­ »ç¿ë)
+    // ì²«ë²ˆì§¸ ìˆœì°¨ ê²€ìƒ‰ (ORDER BY, Two Pass Sort Joinì˜ Leftì—ì„œ ì‚¬ìš©)
     static IDE_RC getFirstSequence( qmcdSortTemp * aTempTable,
                                     void        ** aRow );
 
-    // µÎ¹øÂ° ¼øÂ÷ °Ë»ö
+    // ë‘ë²ˆì§¸ ìˆœì°¨ ê²€ìƒ‰
     static IDE_RC getNextSequence( qmcdSortTemp * aTempTable,
                                    void        ** aRow );
 
     //-------------------------
-    // Range °Ë»ö
+    // Range ê²€ìƒ‰
     //-------------------------
 
-    // Ã¹¹øÂ° Range °Ë»ö (Sort JoinÀÇ Right¿¡¼­ »ç¿ë)
+    // ì²«ë²ˆì§¸ Range ê²€ìƒ‰ (Sort Joinì˜ Rightì—ì„œ ì‚¬ìš©)
     static IDE_RC getFirstRange( qmcdSortTemp * aTempTable,
                                  qtcNode      * aRangePredicate,
                                  void        ** aRow );
 
-    // µÎ¹øÂ° Range °Ë»ö
+    // ë‘ë²ˆì§¸ Range ê²€ìƒ‰
     static IDE_RC getNextRange( qmcdSortTemp * aTempTable,
                                 void        ** aRow );
 
     //-------------------------
-    // Hit °Ë»ö
+    // Hit ê²€ìƒ‰
     //-------------------------
 
-    // Ã¹¹øÂ° Hit Record °Ë»ö
+    // ì²«ë²ˆì§¸ Hit Record ê²€ìƒ‰
     static IDE_RC getFirstHit( qmcdSortTemp * aTempTable,
                                void        ** aRow );
 
-    // µÎ¹øÂ° Hit Record °Ë»ö
+    // ë‘ë²ˆì§¸ Hit Record ê²€ìƒ‰
     static IDE_RC getNextHit( qmcdSortTemp * aTempTable,
                               void        ** aRow );
 
     //-------------------------
-    // Non-Hit °Ë»ö
+    // Non-Hit ê²€ìƒ‰
     //-------------------------
 
-    // Ã¹¹øÂ° Non Hit Record °Ë»ö
+    // ì²«ë²ˆì§¸ Non Hit Record ê²€ìƒ‰
     static IDE_RC getFirstNonHit( qmcdSortTemp * aTempTable,
                                   void        ** aRow );
 
-    // µÎ¹øÂ° Non Hit Record °Ë»ö
+    // ë‘ë²ˆì§¸ Non Hit Record ê²€ìƒ‰
     static IDE_RC getNextNonHit( qmcdSortTemp * aTempTable,
                                  void        ** aRow );
 
-    // Null Row °Ë»ö (ÀúÀåµÈ Null Row È¹µæ)
+    // Null Row ê²€ìƒ‰ (ì €ì¥ëœ Null Row íšë“)
     static IDE_RC getNullRow( qmcdSortTemp * aTempTable,
                               void        ** aRow );
 
     //------------------------------------------------
-    // Sort Temp TableÀÇ ±âÅ¸ ÇÔ¼ö
+    // Sort Temp Tableì˜ ê¸°íƒ€ í•¨ìˆ˜
     //------------------------------------------------
 
-    // °Ë»öµÈ Record¿¡ Hit Flag ¼³Á¤
+    // ê²€ìƒ‰ëœ Recordì— Hit Flag ì„¤ì •
     static IDE_RC setHitFlag( qmcdSortTemp * aTempTable );
 
-    // °Ë»öµÈ RecordÀÇ Hit Flag°¡ ¼³Á¤µÇ¾î ÀÖ´ÂÁö È®ÀÎ
+    // ê²€ìƒ‰ëœ Recordì˜ Hit Flagê°€ ì„¤ì •ë˜ì–´ ìˆëŠ”ì§€ í™•ì¸
     static idBool isHitFlagged( qmcdSortTemp * aTempTable );
 
-    // ÇöÀç Cursor À§Ä¡¸¦ ÀúÀå (Merge Join¿¡¼­ »ç¿ë)
+    // í˜„ì¬ Cursor ìœ„ì¹˜ë¥¼ ì €ì¥ (Merge Joinì—ì„œ ì‚¬ìš©)
     static IDE_RC storeCursor( qmcdSortTemp     * aTempTable,
                                smiCursorPosInfo * aCursorInfo );
 
-    // ÁöÁ¤µÈ Cursor À§Ä¡·Î º¹¿ø (Merge Join¿¡¼­ »ç¿ë)
+    // ì§€ì •ëœ Cursor ìœ„ì¹˜ë¡œ ë³µì› (Merge Joinì—ì„œ ì‚¬ìš©)
     static IDE_RC restoreCursor( qmcdSortTemp     * aTempTable,
                                  smiCursorPosInfo * aCursorInfo );
 
-    // View Scanµî¿¡¼­ Á¢±ÙÇÏ±â À§ÇÑ Information ÃßÃâ
+    // View Scanë“±ì—ì„œ ì ‘ê·¼í•˜ê¸° ìœ„í•œ Information ì¶”ì¶œ
     static IDE_RC getCursorInfo( qmcdSortTemp     * aTempTable,
                                  void            ** aTableHandle,
                                  void            ** aIndexHandle,
                                  qmcdMemSortTemp ** aMemSortTemp,
                                  qmdMtrNode      ** aMemSortRecord );
 
-    // Plan Display¸¦ À§ÇÑ Á¤º¸ È¹µæ
+    // Plan Displayë¥¼ ìœ„í•œ ì •ë³´ íšë“
     static IDE_RC getDisplayInfo( qmcdSortTemp * aTempTable,
                                   ULong        * aDiskPageCount,
                                   SLong        * aRecordCount );
 
     //------------------------------------------------
-    // Window Sort (WNST)¸¦ À§ÇÑ ±â´É
+    // Window Sort (WNST)ë¥¼ ìœ„í•œ ê¸°ëŠ¥
     //------------------------------------------------
     
-    // ÃÊ±âÈ­µÇ°í, µ¥ÀÌÅÍ°¡ ÀÔ·ÂµÈ Temp TableÀÇ Á¤·ÄÅ°¸¦ º¯°æ
-    // (Window Sort¿¡¼­ »ç¿ë)
+    // ì´ˆê¸°í™”ë˜ê³ , ë°ì´í„°ê°€ ì…ë ¥ëœ Temp Tableì˜ ì •ë ¬í‚¤ë¥¼ ë³€ê²½
+    // (Window Sortì—ì„œ ì‚¬ìš©)
     static IDE_RC setSortNode( qmcdSortTemp     * aTempTable,
                                const qmdMtrNode * aSortNode );
 
-    // update¸¦ ¼öÇàÇÒ column list¸¦ ¼³Á¤
-    // ÁÖÀÇ: Disk Sort TempÀÇ °æ¿ì hitFlag¿Í ÇÔ²² »ç¿ë ºÒ°¡
+    // updateë¥¼ ìˆ˜í–‰í•  column listë¥¼ ì„¤ì •
+    // ì£¼ì˜: Disk Sort Tempì˜ ê²½ìš° hitFlagì™€ í•¨ê»˜ ì‚¬ìš© ë¶ˆê°€
     static IDE_RC setUpdateColumnList( qmcdSortTemp     * aTempTable,
                                        const qmdMtrNode * aUpdateColumns );
 
-    // ÇöÀç °Ë»ö ÁßÀÎ À§Ä¡ÀÇ row¸¦ update
+    // í˜„ì¬ ê²€ìƒ‰ ì¤‘ì¸ ìœ„ì¹˜ì˜ rowë¥¼ update
     static IDE_RC updateRow( qmcdSortTemp * aTempTable );
 
     /* PROJ-1715 Get Last Key */
@@ -265,17 +265,17 @@ public:
 private:
 
     //------------------------------------------------
-    // ÃÊ±âÈ­¸¦ À§ÇÑ ÇÔ¼ö
+    // ì´ˆê¸°í™”ë¥¼ ìœ„í•œ í•¨ìˆ˜
     //------------------------------------------------
 
-    // Memory Temp TableÀ» À§ÇÑ NULL ROW »ı¼º
+    // Memory Temp Tableì„ ìœ„í•œ NULL ROW ìƒì„±
     static IDE_RC makeMemNullRow( qmcdSortTemp * aTempTable );
 
     //------------------------------------------------
-    // Range °Ë»öÀ» À§ÇÑ ÇÔ¼ö
+    // Range ê²€ìƒ‰ì„ ìœ„í•œ í•¨ìˆ˜
     //------------------------------------------------
 
-    // Memory Temp TableÀ» À§ÇÑ Key Range »ı¼º
+    // Memory Temp Tableì„ ìœ„í•œ Key Range ìƒì„±
     static IDE_RC makeMemKeyRange( qmcdSortTemp * aTempTable,
                                    qtcNode      * aRangePredicate );
 

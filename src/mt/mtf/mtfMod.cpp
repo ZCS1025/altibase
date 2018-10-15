@@ -47,7 +47,7 @@ static IDE_RC mtfModEstimate( mtcNode*     aNode,
 mtfModule mtfMod = {
     1|MTC_NODE_OPERATOR_FUNCTION,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (∫Ò±≥ ø¨ªÍ¿⁄∞° æ∆¥‘)
+    1.0,  // default selectivity (ÎπÑÍµê Ïó∞ÏÇ∞ÏûêÍ∞Ä ÏïÑÎãò)
     mtfModFunctionName,
     NULL,
     mtfModInitialize,
@@ -114,7 +114,7 @@ static mtfSubModule* mtfGroupTable[MTD_GROUP_MAXIMUM][MTD_GROUP_MAXIMUM] = {
 };
 
 // BUG-41994
-// high precisionøÎ group table
+// high precisionÏö© group table
 static mtfSubModule mtfNP[4] = {
     { mtfNP+1, mtfModEstimateInteger  },
     { mtfNP+2, mtfModEstimateSmallint },

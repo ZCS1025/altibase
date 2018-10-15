@@ -19,8 +19,8 @@
  * $Id: stdMethod.h 18883 2006-11-14 01:48:40Z sabbra $
  *
  * Description:
- * Geometry °´Ã¼¸¦ WKT(Well Known Text) ¶Ç´Â WKB(Well Known Binary)·Î
- * Ãâ·ÂÇÏ´Â ¸ğµâ
+ * Geometry ê°ì²´ë¥¼ WKT(Well Known Text) ë˜ëŠ” WKB(Well Known Binary)ë¡œ
+ * ì¶œë ¥í•˜ëŠ” ëª¨ë“ˆ
  **********************************************************************/
 
 #ifndef _O_STD_GEO_METHOD_H_

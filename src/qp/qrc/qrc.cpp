@@ -91,7 +91,7 @@ IDE_RC qrc::validateStart(qcStatement * aStatement)
 }
 
 /* PROJ-1915 
- * SYS_REPL_OFFLINE_DIR_ °¡ ÀÖ´ÂÁö Á¶È¸ ÇÑ´Ù.
+ * SYS_REPL_OFFLINE_DIR_ ê°€ ìˆëŠ”ì§€ ì¡°íšŒ í•œë‹¤.
  */
 IDE_RC qrc::validateOfflineStart(qcStatement * aStatement)
 {
@@ -190,9 +190,9 @@ IDE_RC qrc::executeStop(qcStatement * aStatement)
     smSCN             sDummySCN;
     SInt              sState        = 0;
 
-    /* BUG-42852 STOP°ú FLUSH¸¦ DCL·Î º¯È¯ÇÕ´Ï´Ù.
-     *  DCLÀÌ¹Ç·Î, µû·Î Validate¸¦ ÇÏÁö ¾Ê½À´Ï´Ù.
-     *  º°µµÀÇ TransactionÀ¸·Î DCLÀ» ¼öÇàÇÕ´Ï´Ù.
+    /* BUG-42852 STOPê³¼ FLUSHë¥¼ DCLë¡œ ë³€í™˜í•©ë‹ˆë‹¤.
+     *  DCLì´ë¯€ë¡œ, ë”°ë¡œ Validateë¥¼ í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
+     *  ë³„ë„ì˜ Transactionìœ¼ë¡œ DCLì„ ìˆ˜í–‰í•©ë‹ˆë‹¤.
      */
     IDE_TEST( sSmiTrans.initialize() != IDE_SUCCESS );
     sState = 1;
@@ -215,8 +215,8 @@ IDE_RC qrc::executeStop(qcStatement * aStatement)
     qcg::setSmiStmt( aStatement, &sSmiStmt );
     sState = 3;
 
-    // TASK-2401 Disk/Memory LogºĞ¸®
-    //           LFG=2ÀÏ¶§ Trans Commit½Ã ·Î±× ÇÃ·¯½¬ ÇÏµµ·Ï ¼³Á¤
+    // TASK-2401 Disk/Memory Logë¶„ë¦¬
+    //           LFG=2ì¼ë•Œ Trans Commitì‹œ ë¡œê·¸ í”ŒëŸ¬ì‰¬ í•˜ë„ë¡ ì„¤ì •
     IDE_TEST( sSmiTrans.setMetaTableModified() != IDE_SUCCESS );
 
     IDE_TEST( qdpRole::checkDDLReplicationPriv( aStatement ) != IDE_SUCCESS );
@@ -282,7 +282,7 @@ IDE_RC qrc::executeFlush( qcStatement * aStatement )
  *
  * Description :
  *    To Fix PR-10590
- *    ALTER REPLICATION name FLUSH ¿¡ ´ëÇÑ Execution
+ *    ALTER REPLICATION name FLUSH ì— ëŒ€í•œ Execution
  *
  * Implementation :
  *
@@ -299,9 +299,9 @@ IDE_RC qrc::executeFlush( qcStatement * aStatement )
     smSCN             sDummySCN;
     SInt              sState        = 0;
 
-    /* BUG-42852 STOP°ú FLUSH¸¦ DCL·Î º¯È¯ÇÕ´Ï´Ù.
-     *  DCLÀÌ¹Ç·Î, µû·Î Validate¸¦ ÇÏÁö ¾Ê½À´Ï´Ù.
-     *  º°µµÀÇ TransactionÀ¸·Î DCLÀ» ¼öÇàÇÕ´Ï´Ù.
+    /* BUG-42852 STOPê³¼ FLUSHë¥¼ DCLë¡œ ë³€í™˜í•©ë‹ˆë‹¤.
+     *  DCLì´ë¯€ë¡œ, ë”°ë¡œ Validateë¥¼ í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
+     *  ë³„ë„ì˜ Transactionìœ¼ë¡œ DCLì„ ìˆ˜í–‰í•©ë‹ˆë‹¤.
      */
     IDE_TEST( sSmiTrans.initialize() != IDE_SUCCESS );
     sState = 1;
@@ -324,8 +324,8 @@ IDE_RC qrc::executeFlush( qcStatement * aStatement )
     qcg::setSmiStmt( aStatement, &sSmiStmt );
     sState = 3;
 
-    // TASK-2401 Disk/Memory LogºĞ¸®
-    //           LFG=2ÀÏ¶§ Trans Commit½Ã ·Î±× ÇÃ·¯½¬ ÇÏµµ·Ï ¼³Á¤
+    // TASK-2401 Disk/Memory Logë¶„ë¦¬
+    //           LFG=2ì¼ë•Œ Trans Commitì‹œ ë¡œê·¸ í”ŒëŸ¬ì‰¬ í•˜ë„ë¡ ì„¤ì •
     IDE_TEST( sSmiTrans.setMetaTableModified() != IDE_SUCCESS );
 
     IDE_TEST( qdpRole::checkDDLReplicationPriv( aStatement ) != IDE_SUCCESS );
@@ -411,7 +411,7 @@ IDE_RC qrc::validateAlterSetRecovery(qcStatement * aStatement)
 
 
 /* PROJ-1915 off-line replicator
- * ALTER REPLICATION replicatoin_name SET OFFLINE ENABLE WITH °æ·Î ... °æ·Î ...
+ * ALTER REPLICATION replicatoin_name SET OFFLINE ENABLE WITH ê²½ë¡œ ... ê²½ë¡œ ...
  */
 IDE_RC qrc::validateAlterSetOffline(qcStatement * aStatement)
 {

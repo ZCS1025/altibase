@@ -33,16 +33,16 @@ class qmcThrObj : public idtBaseThread
 {
 public:
     iduListNode     mNode;
-    iduMutex        mMutex;       /* mCV ¿Í ÇÔ²² ¾²ÀÓ */
-    iduCond         mCV;          /* µ¿±âÈ­¸¦ À§ÇÑ cond var */
-    UInt            mStatus;      /* thread »óÅÂ¸¦ ³ªÅ¸³¿ */
-    idBool          mStopFlag;    /* thread ¸ØÃß±â À§ÇÑ flag */
-    void*           mPrivateArg;  /* 1. PRLQ °íÀ¯ data plan */
+    iduMutex        mMutex;       /* mCV ì™€ í•¨ê»˜ ì“°ì„ */
+    iduCond         mCV;          /* ë™ê¸°í™”ë¥¼ ìœ„í•œ cond var */
+    UInt            mStatus;      /* thread ìƒíƒœë¥¼ ë‚˜íƒ€ëƒ„ */
+    idBool          mStopFlag;    /* thread ë©ˆì¶”ê¸° ìœ„í•œ flag */
+    void*           mPrivateArg;  /* 1. PRLQ ê³ ìœ  data plan */
                                   /* 2. PROJ-2451 DBMS_CONCURRENT_EXEC
                                    *    qscExecInfo */
-    qmcThrFunc      mRun;         /* thread °¡ ½ÇÇàÇÒ ÇÔ¼ö */
+    qmcThrFunc      mRun;         /* thread ê°€ ì‹¤í–‰í•  í•¨ìˆ˜ */
     UInt            mID;          /* thread id */
-    UInt            mErrorCode;   /* error °¡ ³µÀ»¶§ set */
+    UInt            mErrorCode;   /* error ê°€ ë‚¬ì„ë•Œ set */
     SChar*          mErrorMsg;
 
     qmcThrObj() : idtBaseThread()
@@ -64,14 +64,14 @@ typedef struct qmcThrMgr
 } qmcThrMgr;
 
 /* qmcThrObj.mStatus */
-#define QMC_THR_STATUS_NONE           (0) /* thread start ÀÌÀü */
-#define QMC_THR_STATUS_CREATED        (1) /* thread start Á÷ÈÄ wait Á÷Àü */
-#define QMC_THR_STATUS_WAIT           (2) /* thread start ÈÄ ´ë±â */
-#define QMC_THR_STATUS_RUN            (3) /* thread ÀÛ¾÷ Áß */
-#define QMC_THR_STATUS_END            (4) /* thread Á¾·á (error ¹ß»ı or stopflag) */
-#define QMC_THR_STATUS_JOINED         (5) /* thread Á¾·á, join ¿Ï·á */
-#define QMC_THR_STATUS_FAIL           (6) /* thread start ½ÇÆĞ */
-#define QMC_THR_STATUS_RUN_FOR_JOIN   (7) /* thread joinÇÏ±â À§ÇØ ÀÛ¾÷ Áß ( BUG-41627 ) */
+#define QMC_THR_STATUS_NONE           (0) /* thread start ì´ì „ */
+#define QMC_THR_STATUS_CREATED        (1) /* thread start ì§í›„ wait ì§ì „ */
+#define QMC_THR_STATUS_WAIT           (2) /* thread start í›„ ëŒ€ê¸° */
+#define QMC_THR_STATUS_RUN            (3) /* thread ì‘ì—… ì¤‘ */
+#define QMC_THR_STATUS_END            (4) /* thread ì¢…ë£Œ (error ë°œìƒ or stopflag) */
+#define QMC_THR_STATUS_JOINED         (5) /* thread ì¢…ë£Œ, join ì™„ë£Œ */
+#define QMC_THR_STATUS_FAIL           (6) /* thread start ì‹¤íŒ¨ */
+#define QMC_THR_STATUS_RUN_FOR_JOIN   (7) /* thread joiní•˜ê¸° ìœ„í•´ ì‘ì—… ì¤‘ ( BUG-41627 ) */
 
 /* qmcThrObj.mErrorCode */
 #define QMC_THR_ERROR_CODE_NONE (0)

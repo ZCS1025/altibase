@@ -3,12 +3,12 @@
 # CVS Info : $Id: wrs-vxworks-gcc.mk 26440 2008-06-10 04:02:48Z jdlee $
 #
 
-# Àü´ŞµÇ´Â ¿ÜºÎ º¯¼öµé : GCC
+# ì „ë‹¬ë˜ëŠ” ì™¸ë¶€ ë³€ìˆ˜ë“¤ : GCC
 
-# ID_DIR      : SM µğ·ºÅä¸® 
-# ID_PDL_ROOT : ¶óÀÌºê·¯¸® ÆĞ½º
-# compile64   : ÄÄÆÄÀÏ È¯°æ
-# compat5     : CC 5.0 À¸·Î?
+# ID_DIR      : SM ë””ë ‰í† ë¦¬ 
+# ID_PDL_ROOT : ë¼ì´ë¸ŒëŸ¬ë¦¬ íŒ¨ìŠ¤
+# compile64   : ì»´íŒŒì¼ í™˜ê²½
+# compat5     : CC 5.0 ìœ¼ë¡œ?
 
 ifndef	BUILD_MODE
 	@echo "ERROR BUILD_MODE!!!!"
@@ -35,7 +35,7 @@ PURIFYCOV   = $(PURIFY) $(PURECOV)
 # IDL(PDL) Library
 # Library
 
-# readline library ¼³Á¤
+# readline library ì„¤ì •
 
 ifeq "$(USE_READLINE)" "1"
 READLINE_INCLUDES = -I/usr/local/include/readline
@@ -45,19 +45,19 @@ endif # use readline library
 
 LIBS     = $(READLINE_LIBRARY) -ldl -lpthread -lcrypt
 
-# ¸ÅÅ©·Î ¼±¾ğ
+# ë§¤í¬ë¡œ ì„ ì–¸
 CLASSIC_LIB = 
 LIB64_DIRS  =
 LIB32_DIRS  =
 
 
-# PDL¿Í ÄÄÆÄÀÏ ¿É¼ÇÀ» ÀÏÄ¡½ÃÅ²´Ù.
+# PDLì™€ ì»´íŒŒì¼ ì˜µì…˜ì„ ì¼ì¹˜ì‹œí‚¨ë‹¤.
 # inline = -D__PDL_INLINE__ 
 # else   =  -DPDL_NO_INLINE
 #
 #PDL_FLAG = -W -Wall -Wpointer-arith -pipe  -O2 -g -fno-implicit-templates   -fno-exceptions -fcheck-new -DPDL_NO_INLINE -DPDL_LACKS_PDL_TOKEN -DPDL_LACKS_PDL_OTHER 
 
-# µ¿Àû ÄÄÆÄÀÏ ¿É¼Ç ¼±¾ğ
+# ë™ì  ì»´íŒŒì¼ ì˜µì…˜ ì„ ì–¸
 #
 EXTRA_CXXOPT  =
 EXTRA_LOPT += $(LIB32_DIRS)
@@ -77,12 +77,12 @@ CXXOPT_DEPENDANCY = -MM
 # CVS Info : $Id: wrs-vxworks-gcc.mk 26440 2008-06-10 04:02:48Z jdlee $
 #
 
-# BUILD_MODEÀÇ Á¾·ù
-#	debug		: Debug ¸ğµå
+# BUILD_MODEì˜ ì¢…ë¥˜
+#	debug		: Debug ëª¨ë“œ
 #   prerelease      : -DDEBUG(x) -g (o)
-#	release		: release ¹öÁ¯, ½ÇÁ¦ product¿¡ ÇØ´ç
+#	release		: release ë²„ì ¼, ì‹¤ì œ productì— í•´ë‹¹
 
-# LINK MODE Á¾·ù 
+# LINK MODE ì¢…ë¥˜ 
 #	purify		: purify version
 #	quantify	: quantify version
 #	purecov		: purecov version

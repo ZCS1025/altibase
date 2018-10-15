@@ -21,8 +21,8 @@
 
 /***********************************************************************
  * BASE64_DECODE() : 
- * �Է¹��� VARBYTE�� BASE64 ���ڵ��Ͽ�
- * VARBYTEŸ������ ��ȯ�Ѵ�.
+ * 입력받은 VARBYTE을 BASE64 디코딩하여
+ * VARBYTE타입으로 반환한다.
  *
  * ex) SELECT BASE64_DECODE('71673D3D') FROM DUAL;
  * BASE64_DECODE('71673D3D') 
@@ -73,7 +73,7 @@ static IDE_RC mtfBase64DecodeEstimate( mtcNode     * aNode,
 mtfModule mtfBase64_decode = {
     1|MTC_NODE_OPERATOR_FUNCTION,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (�� �����ڰ� �ƴ�)
+    1.0,  // default selectivity (비교 연산자가 아님)
     mtfBase64DecodeFunctionName,
     NULL,
     mtf::initializeDefault,

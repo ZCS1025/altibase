@@ -28,24 +28,24 @@
 
 /**************************************************************************
  * Description :
- * WorkArea¸¦ ÇÒ´ç¹Ş°í temptableHeaderµîÀ» ÃÊ±âÈ­ ÇØÁØ´Ù.
- * HashGroup, SubGroupÀ» ¸¸µé¾îÁØ´Ù.
+ * WorkAreaë¥¼ í• ë‹¹ë°›ê³  temptableHeaderë“±ì„ ì´ˆê¸°í™” í•´ì¤€ë‹¤.
+ * HashGroup, SubGroupì„ ë§Œë“¤ì–´ì¤€ë‹¤.
  *
  * <IN>
- * aHeader        - ´ë»ó Table
+ * aHeader        - ëŒ€ìƒ Table
  ***************************************************************************/
 IDE_RC sdtHashModule::init( void * aHeader )
 {
     smiTempTableHeader * sHeader = (smiTempTableHeader*)aHeader;
     sdtWASegment       * sWASegment;
     UInt                 sInitGroupPageCount;
-    UInt                 sHashGroupPageCount;    /* HashPartitionµé */
-    UInt                 sSubGroupPageCount;     /* Flush´ë±âÇÏ´Â Group */
-    UInt                 sPartmapGroupPageCount; /* HashPartitionÀÇ Map */
+    UInt                 sHashGroupPageCount;    /* HashPartitionë“¤ */
+    UInt                 sSubGroupPageCount;     /* FlushëŒ€ê¸°í•˜ëŠ” Group */
+    UInt                 sPartmapGroupPageCount; /* HashPartitionì˜ Map */
 
     sWASegment = (sdtWASegment*)sHeader->mWASegment;
 
-    /* Clustered Hash´Â unique Ã¼Å© ¾ÈÇÔ */
+    /* Clustered HashëŠ” unique ì²´í¬ ì•ˆí•¨ */
     IDE_ERROR( SM_IS_FLAG_OFF( sHeader->mTTFlag, SMI_TTFLAG_UNIQUE ) );
 
     sInitGroupPageCount = sdtWASegment::getAllocableWAGroupPageCount(
@@ -100,17 +100,17 @@ IDE_RC sdtHashModule::init( void * aHeader )
 
 /**************************************************************************
  * Description :
- * Á¤¸®ÇÑ´Ù. WorkArea¹× CursorµîÀº smiTemp¿¡¼­ ¾Ë¾Æ¼­ ÇÑ´Ù.
+ * ì •ë¦¬í•œë‹¤. WorkAreaë° Cursorë“±ì€ smiTempì—ì„œ ì•Œì•„ì„œ í•œë‹¤.
  *
  * <IN>
- * aHeader        - ´ë»ó Table
+ * aHeader        - ëŒ€ìƒ Table
  ***************************************************************************/
 IDE_RC sdtHashModule::destroy( void * aHeader )
 {
     smiTempTableHeader * sHeader = (smiTempTableHeader*)aHeader;
 
-    /* Á¾·áµÇ¸é¼­ ¿¹Ãø Åë°èÄ¡¸¦ °è»êÇÑ´Ù. */
-    /* Optimal(InMemory)Àº ¸ğµç µ¥ÀÌÅÍ°¡ SortArea¿¡ ´ã±æ Å©±â¸é µÈ´Ù. */
+    /* ì¢…ë£Œë˜ë©´ì„œ ì˜ˆì¸¡ í†µê³„ì¹˜ë¥¼ ê³„ì‚°í•œë‹¤. */
+    /* Optimal(InMemory)ì€ ëª¨ë“  ë°ì´í„°ê°€ SortAreaì— ë‹´ê¸¸ í¬ê¸°ë©´ ëœë‹¤. */
     sHeader->mStatsPtr->mEstimatedOptimalHashSize =
         (ULong)(( SDT_TR_HEADER_SIZE_FULL + sHeader->mRowSize )
                 * sHeader->mRowCount
@@ -122,15 +122,15 @@ IDE_RC sdtHashModule::destroy( void * aHeader )
 
 /**************************************************************************
  * Description :
- * µ¥ÀÌÅÍ¸¦ PartitionÀ» Ã£¾Æ »ğÀÔÇÑ´Ù
+ * ë°ì´í„°ë¥¼ Partitionì„ ì°¾ì•„ ì‚½ì…í•œë‹¤
  *
  * <IN>
- * aTable           - ´ë»ó Table
- * aValue           - »ğÀÔÇÒ Value
- * aHashValue       - »ğÀÔÇÒ HashValue (HashTemp¸¸ À¯È¿ )
+ * aTable           - ëŒ€ìƒ Table
+ * aValue           - ì‚½ì…í•  Value
+ * aHashValue       - ì‚½ì…í•  HashValue (HashTempë§Œ ìœ íš¨ )
  * <OUT>
- * aGRID            - »ğÀÔÇÑ À§Ä¡
- * aResult          - »ğÀÔÀÌ ¼º°øÇÏ¿´´Â°¡?(UniqueViolation Check¿ë )
+ * aGRID            - ì‚½ì…í•œ ìœ„ì¹˜
+ * aResult          - ì‚½ì…ì´ ì„±ê³µí•˜ì˜€ëŠ”ê°€?(UniqueViolation Checkìš© )
  ***************************************************************************/
 IDE_RC sdtHashModule::insert(void     * aHeader,
                              smiValue * aValue,
@@ -150,17 +150,17 @@ IDE_RC sdtHashModule::insert(void     * aHeader,
 
     IDE_ERROR( sHeader->mTTState == SMI_TTSTATE_CLUSTERHASH_PARTITIONING );
 
-    /* Unique HashtempÀü¿ë. µû¶ó¼­  ¹«Á¶°Ç True·Î ¼³Á¤ÇÔ */
+    /* Unique Hashtempì „ìš©. ë”°ë¼ì„œ  ë¬´ì¡°ê±´ Trueë¡œ ì„¤ì •í•¨ */
     *aResult = ID_TRUE;
 
-    /*************************** »ğÀÔÇÒ À§Ä¡ Å½»ö *************************/
+    /*************************** ì‚½ì…í•  ìœ„ì¹˜ íƒìƒ‰ *************************/
     sIdx        = getPartitionIdx( sHeader, aHashValue );
     sTargetWPID = getPartitionWPID( sWASeg, sIdx );
 
     if( sdtWASegment::getWAPageState( sWASeg, sTargetWPID )
         == SDT_WA_PAGESTATE_NONE )
     {
-        /* ÆäÀÌÁö(Partition)¿¡ ´ëÇØ ÃÖÃÊ »ç¿ëÀÌ¸é */
+        /* í˜ì´ì§€(Partition)ì— ëŒ€í•´ ìµœì´ˆ ì‚¬ìš©ì´ë©´ */
         sWAPagePtr = sdtWASegment::getWAPagePtr( sWASeg,
                                                  SDT_WAGROUPID_HASH,
                                                  sTargetWPID );
@@ -176,7 +176,7 @@ IDE_RC sdtHashModule::insert(void     * aHeader,
                   != IDE_SUCCESS );
     }
 
-    /******************************** »ğÀÔ ******************************/
+    /******************************** ì‚½ì… ******************************/
     sdtTempRow::makeTRPInfo( SDT_TRFLAG_HEAD,
                              0, /*HitSequence */
                              aHashValue,
@@ -211,7 +211,7 @@ IDE_RC sdtHashModule::insert(void     * aHeader,
         }
         else
         {
-            /* »ğÀÔÇÒ°Ô ³²¾Ò´Ù´Â ¸»Àº ÀÌ ÆäÀÌÁö°¡ °¡µæ Ã¡´Ù´Â ¸» */
+            /* ì‚½ì…í• ê²Œ ë‚¨ì•˜ë‹¤ëŠ” ë§ì€ ì´ í˜ì´ì§€ê°€ ê°€ë“ ì°¼ë‹¤ëŠ” ë§ */
             IDE_TEST( movePartition( sHeader,
                                      sTargetWPID,
                                      sWAPagePtr,
@@ -238,13 +238,13 @@ IDE_RC sdtHashModule::insert(void     * aHeader,
 
 /***************************************************************************
  * Description :
- * Ä¿¼­¸¦ ¿±´Ï´Ù.
- * ÀÌ¶§ ÀÌÀü¿¡ Partitioning »óÅÂ¿´À¸¸é, Scan»óÅÂ·Î º¯°æÇÑ´Ù.
+ * ì»¤ì„œë¥¼ ì—½ë‹ˆë‹¤.
+ * ì´ë•Œ ì´ì „ì— Partitioning ìƒíƒœì˜€ìœ¼ë©´, Scanìƒíƒœë¡œ ë³€ê²½í•œë‹¤.
  *
  * <IN>
- * aHeader        - ´ë»ó Table
+ * aHeader        - ëŒ€ìƒ Table
  * <OUT>
- * aCursor        - ¹İÈ¯°ª
+ * aCursor        - ë°˜í™˜ê°’
  ***************************************************************************/
 IDE_RC sdtHashModule::openCursor(void * aHeader,
                                  void * aCursor )
@@ -254,12 +254,12 @@ IDE_RC sdtHashModule::openCursor(void * aHeader,
     UInt                 sSlotIdx;
 
     IDE_ERROR( SM_IS_FLAG_ON( sCursor->mTCFlag, SMI_TCFLAG_FORWARD ) );
-    /* Hash¿¡¼­ OrderScanÀº ºÒ°¡´ÉÇÔ */
+    /* Hashì—ì„œ OrderScanì€ ë¶ˆê°€ëŠ¥í•¨ */
     IDE_ERROR( SM_IS_FLAG_OFF( sCursor->mTCFlag, SMI_TCFLAG_ORDEREDSCAN ) );
 
     /************************* prepare ***********************************
-     * Partition»óÅÂ¿´´Ù°¡, Ã³À½À¸·Î OpenCursor°¡ µÈ °æ¿ì¸é
-     * »óÅÂ¸¦ ÀüÈ¯½ÃÅ²´Ù. */
+     * Partitionìƒíƒœì˜€ë‹¤ê°€, ì²˜ìŒìœ¼ë¡œ OpenCursorê°€ ëœ ê²½ìš°ë©´
+     * ìƒíƒœë¥¼ ì „í™˜ì‹œí‚¨ë‹¤. */
     if( sHeader->mTTState == SMI_TTSTATE_CLUSTERHASH_PARTITIONING )
     {
         IDE_TEST( prepareScan( sHeader ) != IDE_SUCCESS );
@@ -305,11 +305,11 @@ IDE_RC sdtHashModule::openCursor(void * aHeader,
 
 /***************************************************************************
  * Description :
- * ÇØ´ç PartitionÀ» Á¶È¸ÇÏ±â À§ÇÑ ÃÊ±âÈ­¸¦ ¼öÇàÇÕ´Ï´Ù.
+ * í•´ë‹¹ Partitionì„ ì¡°íšŒí•˜ê¸° ìœ„í•œ ì´ˆê¸°í™”ë¥¼ ìˆ˜í–‰í•©ë‹ˆë‹¤.
  *
  * <IN>
- * aCursor        - ´ë»ó Ä¿¼­
- * aSlotIdx       - PartitionÀÇ Index
+ * aCursor        - ëŒ€ìƒ ì»¤ì„œ
+ * aSlotIdx       - Partitionì˜ Index
  ***************************************************************************/
 IDE_RC sdtHashModule::initPartition( smiTempCursor * aCursor,
                                      UInt            aSlotIdx )
@@ -356,13 +356,13 @@ IDE_RC sdtHashModule::initPartition( smiTempCursor * aCursor,
 
 /**************************************************************************
  * Description :
- * Ä¿¼­·ÎºÎÅÍ HashValue¸¦ ¹ÙÅÁÀ¸·Î ´ÙÀ½ Row¸¦ °¡Á®¿É´Ï´Ù.
+ * ì»¤ì„œë¡œë¶€í„° HashValueë¥¼ ë°”íƒ•ìœ¼ë¡œ ë‹¤ìŒ Rowë¥¼ ê°€ì ¸ì˜µë‹ˆë‹¤.
  *
  * <IN>
- * aCursor        - ´ë»ó Cursor
+ * aCursor        - ëŒ€ìƒ Cursor
  * <OUT>
- * aRow           - ´ë»ó Row
- * aGRID          - °¡Á®¿Â RowÀÇ GRID
+ * aRow           - ëŒ€ìƒ Row
+ * aGRID          - ê°€ì ¸ì˜¨ Rowì˜ GRID
  ***************************************************************************/
 IDE_RC sdtHashModule::fetchHashScan(void    * aCursor,
                                     UChar  ** aRow,
@@ -385,14 +385,14 @@ IDE_RC sdtHashModule::fetchHashScan(void    * aCursor,
 
 /**************************************************************************
  * Description :
- * Ä¿¼­·ÎºÎÅÍ ¸ğµç Row¸¦ ´ë»óÀ¸·Î FetchNext·Î °¡Á®¿É´Ï´Ù.
- * ´Ù¸¸ Row´Â Partitionº°·Î ³ª´©¾î °¡Á®¿À°Ô µË´Ï´Ù.
+ * ì»¤ì„œë¡œë¶€í„° ëª¨ë“  Rowë¥¼ ëŒ€ìƒìœ¼ë¡œ FetchNextë¡œ ê°€ì ¸ì˜µë‹ˆë‹¤.
+ * ë‹¤ë§Œ RowëŠ” Partitionë³„ë¡œ ë‚˜ëˆ„ì–´ ê°€ì ¸ì˜¤ê²Œ ë©ë‹ˆë‹¤.
  *
  * <IN>
- * aCursor        - ´ë»ó Cursor
+ * aCursor        - ëŒ€ìƒ Cursor
  * <OUT>
- * aRow           - ´ë»ó Row
- * aGRID          - °¡Á®¿Â RowÀÇ GRID
+ * aRow           - ëŒ€ìƒ Row
+ * aGRID          - ê°€ì ¸ì˜¨ Rowì˜ GRID
  ***************************************************************************/
 IDE_RC sdtHashModule::fetchFullScan(void    * aCursor,
                                     UChar  ** aRow,
@@ -411,7 +411,7 @@ IDE_RC sdtHashModule::fetchFullScan(void    * aCursor,
                   != IDE_SUCCESS );
         if ( sResult == ID_FALSE )
         {
-            /* ÀÌ Partition¿¡ ´ëÇÑ Á¶È¸´Â ¸ğµÎ ¸¶ÃÆÀ¸´Ï, ´ÙÀ½ PartitionÀ¸·Î */
+            /* ì´ Partitionì— ëŒ€í•œ ì¡°íšŒëŠ” ëª¨ë‘ ë§ˆì³¤ìœ¼ë‹ˆ, ë‹¤ìŒ Partitionìœ¼ë¡œ */
             sCursor->mSeq ++;
             if ( sCursor->mSeq < getPartitionPageCount( sHeader ) )
             {
@@ -420,13 +420,13 @@ IDE_RC sdtHashModule::fetchFullScan(void    * aCursor,
             }
             else
             {
-                /* ¸ğµç PartitionÀ» Á¶È¸ÇßÀ½ */
+                /* ëª¨ë“  Partitionì„ ì¡°íšŒí–ˆìŒ */
                 break;
             }
         }
         else
         {
-            /* À¯È¿ÇÑ °á°ú¸¦ Ã£¾ÒÀ½ */
+            /* ìœ íš¨í•œ ê²°ê³¼ë¥¼ ì°¾ì•˜ìŒ */
             break;
         }
     }
@@ -440,15 +440,15 @@ IDE_RC sdtHashModule::fetchFullScan(void    * aCursor,
 
 /**************************************************************************
  * Description :
- * Partition¿¡¼­ Row¸¦ ÇÏ³ª FetchÇØ¼­ ¿Ã¸³´Ï´Ù.
- * fetchHashScan, fetchFullScan ¸ğµÎ ÀÌ ÇÔ¼ö¸¦ ÀÌ¿ëÇÕ´Ï´Ù.
+ * Partitionì—ì„œ Rowë¥¼ í•˜ë‚˜ Fetchí•´ì„œ ì˜¬ë¦½ë‹ˆë‹¤.
+ * fetchHashScan, fetchFullScan ëª¨ë‘ ì´ í•¨ìˆ˜ë¥¼ ì´ìš©í•©ë‹ˆë‹¤.
  *
  * <IN>
- * aCursor        - ´ë»ó Cursor
+ * aCursor        - ëŒ€ìƒ Cursor
  * <OUT>
- * aRow           - ´ë»ó Row
- * aGRID          - °¡Á®¿Â RowÀÇ GRID
- * aResult        - ¼º°ø ¿©ºÎ
+ * aRow           - ëŒ€ìƒ Row
+ * aGRID          - ê°€ì ¸ì˜¨ Rowì˜ GRID
+ * aResult        - ì„±ê³µ ì—¬ë¶€
  ***************************************************************************/
 IDE_RC sdtHashModule::fetchAtPartition( smiTempCursor * aCursor,
                                         UChar        ** aRow,
@@ -477,11 +477,11 @@ IDE_RC sdtHashModule::fetchAtPartition( smiTempCursor * aCursor,
 
             if( sIsValidSlot == ID_FALSE )
             {
-                /* Page³» SlotÀ» ÀüºÎ ¼øÈ¸ÇÔ */
+                /* Pageë‚´ Slotì„ ì „ë¶€ ìˆœíšŒí•¨ */
                 sNPID = sdtTempPage::getNextPID( sPtr );
                 if ( sNPID == SD_NULL_PID )
                 {
-                    /*¸ğµç Page¸¦ ¼øÈ¸ÇÔ */
+                    /*ëª¨ë“  Pageë¥¼ ìˆœíšŒí•¨ */
                     break;
                 }
                 else
@@ -505,7 +505,7 @@ IDE_RC sdtHashModule::fetchAtPartition( smiTempCursor * aCursor,
             }
             else
             {
-                /* Head TRP¿©¾ß¸¸ Fetch ´ë»óÀÌ´Ù. */
+                /* Head TRPì—¬ì•¼ë§Œ Fetch ëŒ€ìƒì´ë‹¤. */
                 if ( SM_IS_FLAG_ON( ( (sdtTRPHeader*)sPtr )->mTRFlag,
                                     SDT_TRFLAG_HEAD ) )
                 {
@@ -543,29 +543,29 @@ IDE_RC sdtHashModule::fetchAtPartition( smiTempCursor * aCursor,
 
 /**************************************************************************
  * Description :
- * Ä¿¼­¸¦ ´İ½À´Ï´Ù.
+ * ì»¤ì„œë¥¼ ë‹«ìŠµë‹ˆë‹¤.
  *
  * <IN>
- * aCursor        - ´ë»ó Cursor
+ * aCursor        - ëŒ€ìƒ Cursor
  ***************************************************************************/
 IDE_RC sdtHashModule::closeCursor(void * /*aTempCursor*/)
 {
-    /* ÇÒ°Å ¾øÀ½ */
+    /* í• ê±° ì—†ìŒ */
     return IDE_SUCCESS;
 }
 
 
 /**************************************************************************
  * Description :
- * ÇØ´ç partitionÀ» FlushGroupÀ¸·Î ¿Å±é´Ï´Ù. ±×·¯¸é async write ¹×,
- * partition°£ ºÒ±ÕÇüÀ» ¿ÏÈ­ÇÒ ¼ö ÀÖ½À´Ï´Ù.
+ * í•´ë‹¹ partitionì„ FlushGroupìœ¼ë¡œ ì˜®ê¹ë‹ˆë‹¤. ê·¸ëŸ¬ë©´ async write ë°,
+ * partitionê°„ ë¶ˆê· í˜•ì„ ì™„í™”í•  ìˆ˜ ìˆìŠµë‹ˆë‹¤.
  *
  * <IN>
- * aHeader        - ´ë»ó Table
- * aSrcWPID       - ¿øº»ÀÇ WPID
- * aSrcPagePtr    - ¿øº»ÀÇ PagePtr
+ * aHeader        - ëŒ€ìƒ Table
+ * aSrcWPID       - ì›ë³¸ì˜ WPID
+ * aSrcPagePtr    - ì›ë³¸ì˜ PagePtr
  * <OUT>
- * aTargetNPID    - º¹»çµÈ ´ë»óNPID
+ * aTargetNPID    - ë³µì‚¬ëœ ëŒ€ìƒNPID
  ***************************************************************************/
 IDE_RC sdtHashModule::movePartition( smiTempTableHeader  * aHeader,
                                      scPageID              aSrcWPID,
@@ -575,7 +575,7 @@ IDE_RC sdtHashModule::movePartition( smiTempTableHeader  * aHeader,
     scPageID       sFlushWPID;
     sdtWASegment * sWASeg = (sdtWASegment*)aHeader->mWASegment;
 
-    /* SubGroup¿¡¼­ ÆäÀÌÁö ¾ò¾î³»¾î ÇØ´ç À§Ä¡·Î º¹»çÇÔ */
+    /* SubGroupì—ì„œ í˜ì´ì§€ ì–»ì–´ë‚´ì–´ í•´ë‹¹ ìœ„ì¹˜ë¡œ ë³µì‚¬í•¨ */
     IDE_TEST( sdtWASegment::getFreeWAPage( sWASeg,
                                            SDT_WAGROUPID_SUB,
                                            &sFlushWPID )
@@ -611,10 +611,10 @@ IDE_RC sdtHashModule::movePartition( smiTempTableHeader  * aHeader,
 
 /**************************************************************************
  * Description :
- * ScanÇÏ±â À§ÇÑ ÁØºñ¸¦ ÇÔ
+ * Scaní•˜ê¸° ìœ„í•œ ì¤€ë¹„ë¥¼ í•¨
  *
  * <IN>
- * aHeader        - ´ë»ó Table
+ * aHeader        - ëŒ€ìƒ Table
  ***************************************************************************/
 IDE_RC sdtHashModule::prepareScan( smiTempTableHeader * aHeader )
 {
@@ -624,7 +624,7 @@ IDE_RC sdtHashModule::prepareScan( smiTempTableHeader * aHeader )
     sdtWASegment   * sWASeg = (sdtWASegment*)aHeader->mWASegment;
     UInt             i;
 
-    /* PartitionÀÇ HeadPageµéÀ» Assign(NPIDÇÒ´ç)ÇÏ°í Map¿¡ NPID¸¦ ÀúÀåÇÑ´Ù.*/
+    /* Partitionì˜ HeadPageë“¤ì„ Assign(NPIDí• ë‹¹)í•˜ê³  Mapì— NPIDë¥¼ ì €ì¥í•œë‹¤.*/
     for( i = 0 ; i < sPartitionCount ; i ++ )
     {
         sTargetWPID = getPartitionWPID( sWASeg, i );
@@ -632,7 +632,7 @@ IDE_RC sdtHashModule::prepareScan( smiTempTableHeader * aHeader )
         if( sdtWASegment::getWAPageState( sWASeg, sTargetWPID )
             == SDT_WA_PAGESTATE_INIT )
         {
-            /* µ¥ÀÌÅÍ°¡ »ğÀÔÀº µÇ¾ú´Âµ¥, ÇÒ´çÀº ¾ÈµÈ ÆäÀÌÁöÀÏ °æ¿ì */
+            /* ë°ì´í„°ê°€ ì‚½ì…ì€ ë˜ì—ˆëŠ”ë°, í• ë‹¹ì€ ì•ˆëœ í˜ì´ì§€ì¼ ê²½ìš° */
             IDE_TEST( sdtWASegment::allocAndAssignNPage( sWASeg, sTargetWPID )
                       != IDE_SUCCESS );
             sNPID = sdtWASegment::getNPID( sWASeg, sTargetWPID );
@@ -649,9 +649,9 @@ IDE_RC sdtHashModule::prepareScan( smiTempTableHeader * aHeader )
                   != IDE_SUCCESS );
     }
 
-    /* Hash¿Í Sub´Â Insert¸¦ À§ÇØ µĞ °ÍÀ¸·Î, Insert°¡ Á¾·áµÇ¾úÀ¸´Ï
-     * ³²°ÜµÑ ÇÊ¿ä ¾øÀ½.
-     * Hash, SubGroupÀ» Hash ÇÏ³ª·Î ÇÕÄ£´Ù. */
+    /* Hashì™€ SubëŠ” Insertë¥¼ ìœ„í•´ ë‘” ê²ƒìœ¼ë¡œ, Insertê°€ ì¢…ë£Œë˜ì—ˆìœ¼ë‹ˆ
+     * ë‚¨ê²¨ë‘˜ í•„ìš” ì—†ìŒ.
+     * Hash, SubGroupì„ Hash í•˜ë‚˜ë¡œ í•©ì¹œë‹¤. */
     IDE_TEST( sdtWASegment::mergeWAGroup( sWASeg,
                                           SDT_WAGROUPID_HASH,
                                           SDT_WAGROUPID_SUB,

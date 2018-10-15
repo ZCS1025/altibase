@@ -256,10 +256,10 @@ private:
 };
 
 /**********************************************************************
- * aLobDesc¿¡¼­ aOffset¿¡ ÇØ´çÇÏ´Â PCH¸¦ Ã£´Â´Ù.
+ * aLobDescì—ì„œ aOffsetì— í•´ë‹¹í•˜ëŠ” PCHë¥¼ ì°¾ëŠ”ë‹¤.
  *
  * aLobDesc      [IN] LOB Descriptor
- * aOffset       [IN] Ã£°íÀÚÇÏ´Â À§Ä¡
+ * aOffset       [IN] ì°¾ê³ ìí•˜ëŠ” ìœ„ì¹˜
  **********************************************************************/
 inline smcLPCH* smcLob::findPosition( smcLobDesc* aLobDesc,
                                       UInt        aOffset )

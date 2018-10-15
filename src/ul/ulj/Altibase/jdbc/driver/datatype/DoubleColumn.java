@@ -65,7 +65,7 @@ public class DoubleColumn extends AbstractColumn
 
     public int getMaxDisplaySize()
     {
-        // BUGBUG ¿¹Àü JDBC µå¶óÀÌ¹ö ¼Ò½º·ÎºÎÅÍ...
+        // BUGBUG ì˜ˆì „ JDBC ë“œë¼ì´ë²„ ì†ŒìŠ¤ë¡œë¶€í„°...
         return 20;
     }
 

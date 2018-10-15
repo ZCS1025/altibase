@@ -19,12 +19,12 @@
  * $Id: qmcMemHashTempTable.h 82075 2018-01-17 06:39:52Z jina.kim $
  *
  * Description :
- *     Memory Hash Temp TableÀ» À§ÇÑ Á¤ÀÇ
- *   - Chained Hash AlgorithmÀ» »ç¿ëÇÑ´Ù.
+ *     Memory Hash Temp Tableì„ ìœ„í•œ ì •ì˜
+ *   - Chained Hash Algorithmì„ ì‚¬ìš©í•œë‹¤.
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  **********************************************************************/
 
@@ -35,27 +35,27 @@
 #include <qtcDef.h>
 #include <qmc.h>
 
-// BUG-38961 hint ÀÇ max °ª°ú ½ÇÁ¦ »ç¿ëÇÒ¼ö ÀÖ´Â max °ªÀ» µ¿ÀÏÇÏ°Ô ÇÑ´Ù.
-// ÃÖ´ë Bucket °³¼ö
+// BUG-38961 hint ì˜ max ê°’ê³¼ ì‹¤ì œ ì‚¬ìš©í• ìˆ˜ ìˆëŠ” max ê°’ì„ ë™ì¼í•˜ê²Œ í•œë‹¤.
+// ìµœëŒ€ Bucket ê°œìˆ˜
 #define QMC_MEM_HASH_MAX_BUCKET_CNT  QMS_MAX_BUCKET_CNT
 
-// BucketÀÇ ÀÚµ¿ È®Àå Á¶°Ç ( Record °³¼ö > BucketCnt * 2 )
+// Bucketì˜ ìë™ í™•ì¥ ì¡°ê±´ ( Record ê°œìˆ˜ > BucketCnt * 2 )
 #define QMC_MEM_HASH_AUTO_EXTEND_CONDITION        ( 2 )
 
-// BucketÀÇ ÀÚµ¿ È®Àå Á¤µµ (BucketCnt = Record °³¼ö * 4 )
+// Bucketì˜ ìë™ í™•ì¥ ì •ë„ (BucketCnt = Record ê°œìˆ˜ * 4 )
 #define QMC_MEM_HASH_AUTO_EXTEND_RATIO            ( 4 )
 
 /* qmcdMemHashTemp.flag                              */
 #define QMC_MEM_HASH_INITIALIZE            (0x00000000)
 
 /* qmcdMemHashTemp.flag                              */
-// Distinct Insertion ¿©ºÎ
+// Distinct Insertion ì—¬ë¶€
 #define QMC_MEM_HASH_DISTINCT_MASK         (0x00000001)
 #define QMC_MEM_HASH_DISTINCT_FALSE        (0x00000000)
 #define QMC_MEM_HASH_DISTINCT_TRUE         (0x00000001)
 
 /* qmcdMemHashTemp.flag                              */
-// BucketÀÇ ÀÚµ¿ È®Àå °¡´É ¿©ºÎ
+// Bucketì˜ ìë™ í™•ì¥ ê°€ëŠ¥ ì—¬ë¶€
 #define QMC_MEM_HASH_AUTO_EXTEND_MASK      (0x00000002)
 #define QMC_MEM_HASH_AUTO_EXTEND_ENABLE    (0x00000000)
 #define QMC_MEM_HASH_AUTO_EXTEND_DISABLE   (0x00000002)
@@ -63,27 +63,27 @@
 struct qmcdMemHashTemp;
 
 //---------------------------------------
-// Insert¸¦ À§ÇÑ ÇÔ¼ö Æ÷ÀÎÅÍ
+// Insertë¥¼ ìœ„í•œ í•¨ìˆ˜ í¬ì¸í„°
 //---------------------------------------
 
-// DistinctionÀÎÁö ¾Æ´ÑÁö¿¡ µû¶ó »óÀÌÇÑ ÇÔ¼ö¸¦ È£ÃâÇÑ´Ù.
+// Distinctionì¸ì§€ ì•„ë‹Œì§€ì— ë”°ë¼ ìƒì´í•œ í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•œë‹¤.
 typedef IDE_RC (* qmcHashInsertFunc) ( qmcdMemHashTemp * aTempTable,
                                        UInt              aHash, 
                                        void            * aElement,
                                        void           ** aOutElement );
 
 //---------------------------------------
-// Bucket ÀÚ·á ±¸Á¶
+// Bucket ìë£Œ êµ¬ì¡°
 //---------------------------------------
 
 typedef struct qmcBucket
 {
-    qmcMemHashElement * element;   // Bucket ³»ÀÇ ÃÖÃÊ Element
-    qmcBucket         * next;      // Record°¡ ÀÖ´Â ´ÙÀ½ Bucket
+    qmcMemHashElement * element;   // Bucket ë‚´ì˜ ìµœì´ˆ Element
+    qmcBucket         * next;      // Recordê°€ ìˆëŠ” ë‹¤ìŒ Bucket
 } qmcBucket;
 
 //--------------------------------------------------------------
-// [Memory Hash Temp TableÀÇ ÀÚ·á ±¸Á¶]
+// [Memory Hash Temp Tableì˜ ìë£Œ êµ¬ì¡°]
 //
 //               mBucket
 //               --------
@@ -103,53 +103,53 @@ typedef struct qmcBucket
 //        -------| next |             mNext
 //               --------
 //
-// À§¿Í °°ÀÌ Bucket°£ÀÇ ¿¬°á °ü°è¸¦ À¯ÁöÇÏ¿© ¼øÂ÷ °Ë»öÀÇ
-// ¼º´ÉÀ» Çâ»ó½ÃÅ²´Ù.
-// Áï, element°¡ ¾ø´Â BucketÀ» Á¢±ÙÇÏÁö ¾Êµµ·Ï ÇÑ´Ù.
+// ìœ„ì™€ ê°™ì´ Bucketê°„ì˜ ì—°ê²° ê´€ê³„ë¥¼ ìœ ì§€í•˜ì—¬ ìˆœì°¨ ê²€ìƒ‰ì˜
+// ì„±ëŠ¥ì„ í–¥ìƒì‹œí‚¨ë‹¤.
+// ì¦‰, elementê°€ ì—†ëŠ” Bucketì„ ì ‘ê·¼í•˜ì§€ ì•Šë„ë¡ í•œë‹¤.
 //
 //--------------------------------------------------------------
 
 typedef struct qmcdMemHashTemp
 {
     //----------------------------------------------------
-    // Memory Hash Temp TableÀÇ ±âº» Á¤º¸
+    // Memory Hash Temp Tableì˜ ê¸°ë³¸ ì •ë³´
     //----------------------------------------------------
 
-    UInt                 flag;         // Distinction¿©ºÎ
+    UInt                 flag;         // Distinctionì—¬ë¶€
     qcTemplate         * mTemplate;    // Template
     iduMemory          * mMemory;
     
-    UInt                 mBucketCnt;   // BucketÀÇ °³¼ö
-    qmcBucket          * mBucket;      // ÇÒ´ç ¹ŞÀº Bucket
-    qmdMtrNode         * mRecordNode;  // Record ±¸¼º Á¤º¸
-    qmdMtrNode         * mHashNode;    // Hashing ÇÒ Column Á¤º¸
+    UInt                 mBucketCnt;   // Bucketì˜ ê°œìˆ˜
+    qmcBucket          * mBucket;      // í• ë‹¹ ë°›ì€ Bucket
+    qmdMtrNode         * mRecordNode;  // Record êµ¬ì„± ì •ë³´
+    qmdMtrNode         * mHashNode;    // Hashing í•  Column ì •ë³´
 
     //----------------------------------------------------
-    // »ğÀÔÀ» À§ÇÑ Á¤º¸
+    // ì‚½ì…ì„ ìœ„í•œ ì •ë³´
     //----------------------------------------------------
     
-    qmcHashInsertFunc    insert;       // »ğÀÔ ÇÔ¼ö Æ÷ÀÎÅÍ
-    qmcBucket          * mTop;         // ÃÖÃÊ Record°¡ ÀÖ´Â Bucket
-    qmcBucket          * mLast;        // ¸¶Áö¸·¿¡ ÇÒ´ç¹ŞÀº Bucket
-    SLong                mRecordCnt;   // ÃÑ ÀúÀå Record °³¼ö
+    qmcHashInsertFunc    insert;       // ì‚½ì… í•¨ìˆ˜ í¬ì¸í„°
+    qmcBucket          * mTop;         // ìµœì´ˆ Recordê°€ ìˆëŠ” Bucket
+    qmcBucket          * mLast;        // ë§ˆì§€ë§‰ì— í• ë‹¹ë°›ì€ Bucket
+    SLong                mRecordCnt;   // ì´ ì €ì¥ Record ê°œìˆ˜
 
     //----------------------------------------------------
-    // °Ë»öÀ» À§ÇÑ Á¤º¸
+    // ê²€ìƒ‰ì„ ìœ„í•œ ì •ë³´
     //----------------------------------------------------
     
-    qmcBucket          * mCurrent;     // ÇöÀç °Ë»öÁßÀÎ Bucket
-    qmcMemHashElement  * mNext;        // ÇöÀç °Ë»öÁßÀÎ Element
-    UInt                 mKey;         // °Ë»öÇÒ Hash Key °ª
-    qtcNode            * mFilter;      // Range °Ë»öÀ» À§ÇÑ Filter
+    qmcBucket          * mCurrent;     // í˜„ì¬ ê²€ìƒ‰ì¤‘ì¸ Bucket
+    qmcMemHashElement  * mNext;        // í˜„ì¬ ê²€ìƒ‰ì¤‘ì¸ Element
+    UInt                 mKey;         // ê²€ìƒ‰í•  Hash Key ê°’
+    qtcNode            * mFilter;      // Range ê²€ìƒ‰ì„ ìœ„í•œ Filter
 
     //----------------------------------------------------
-    // ÀÚµ¿ Bucket È®ÀåÀ» À§ÇÑ Á¤º¸
+    // ìë™ Bucket í™•ì¥ì„ ìœ„í•œ ì •ë³´
     //----------------------------------------------------
 
-    UInt                 mExtBucketCnt; // È®ÀåµÈ BucketÀÇ °³¼ö
-    qmcBucket          * mExtBucket;    // È®Àå Bucket
-    qmcBucket          * mExtTop;       // È®Àå BucketÀÇ ÃÖÃÊ Bucket
-    qmcBucket          * mExtLast;      // È®Àå BucketÀÇ ¸¶Áö¸· Bucket
+    UInt                 mExtBucketCnt; // í™•ì¥ëœ Bucketì˜ ê°œìˆ˜
+    qmcBucket          * mExtBucket;    // í™•ì¥ Bucket
+    qmcBucket          * mExtTop;       // í™•ì¥ Bucketì˜ ìµœì´ˆ Bucket
+    qmcBucket          * mExtLast;      // í™•ì¥ Bucketì˜ ë§ˆì§€ë§‰ Bucket
 
 } qmcdMemHashTemp;
 
@@ -158,10 +158,10 @@ class qmcMemHash
 public:
 
     //------------------------------------------------
-    // Memory Hash Temp TableÀÇ °ü¸®
+    // Memory Hash Temp Tableì˜ ê´€ë¦¬
     //------------------------------------------------
     
-    // ÃÊ±âÈ­¸¦ ÇÑ´Ù.
+    // ì´ˆê¸°í™”ë¥¼ í•œë‹¤.
     static IDE_RC  init( qmcdMemHashTemp * aTempTable,
                          qcTemplate      * aTemplate,
                          iduMemory       * aMemory,
@@ -170,40 +170,40 @@ public:
                          UInt              aBucketCnt,
                          idBool            aDistinct );
     
-    // Temp Table³»ÀÇ BucketÀ» ÃÊ±âÈ­ÇÑ´Ù.
+    // Temp Tableë‚´ì˜ Bucketì„ ì´ˆê¸°í™”í•œë‹¤.
     static IDE_RC  clear( qmcdMemHashTemp * aTempTable );
 
-    // ¸ğµç RecordÀÇ Hit FlagÀ» ResetÇÔ
+    // ëª¨ë“  Recordì˜ Hit Flagì„ Resetí•¨
     static IDE_RC clearHitFlag( qmcdMemHashTemp * aTempTable );
 
     //------------------------------------------------
-    // Memory Sort Hash TableÀÇ ±¸¼º
+    // Memory Sort Hash Tableì˜ êµ¬ì„±
     //------------------------------------------------
 
-    // ÃÖÃÊ Record¸¦ »ğÀÔÇÑ´Ù.
+    // ìµœì´ˆ Recordë¥¼ ì‚½ì…í•œë‹¤.
     static IDE_RC  insertFirst( qmcdMemHashTemp * aTempTable,
                                 UInt              aHash,
                                 void            * aElement,
                                 void           ** aOutElement );
 
-    // ¹«Á¶°Ç Record¸¦ »ğÀÔÇÑ´Ù.
+    // ë¬´ì¡°ê±´ Recordë¥¼ ì‚½ì…í•œë‹¤.
     static IDE_RC  insertAny( qmcdMemHashTemp * aTempTable,
                               UInt             aHash, 
                               void           * aElement,
                               void          ** aOutElement );
 
-    // µ¿ÀÏÇÑ Record°¡ ¾øÀ» °æ¿ì »ğÀÔÇÑ´Ù.
+    // ë™ì¼í•œ Recordê°€ ì—†ì„ ê²½ìš° ì‚½ì…í•œë‹¤.
     static IDE_RC  insertDist( qmcdMemHashTemp * aTempTable,
                                UInt              aHash, 
                                void            * aElement, 
                                void           ** aOutElement );
 
     //------------------------------------------------
-    // Memory Hash Temp TableÀÇ °Ë»ö
+    // Memory Hash Temp Tableì˜ ê²€ìƒ‰
     //------------------------------------------------
 
     //----------------------------
-    // ¼øÂ÷ °Ë»ö
+    // ìˆœì°¨ ê²€ìƒ‰
     //----------------------------
 
     static IDE_RC  getFirstSequence( qmcdMemHashTemp * aTempTable,
@@ -213,7 +213,7 @@ public:
                                     void           ** aElement);
 
     //----------------------------
-    // Range °Ë»ö
+    // Range ê²€ìƒ‰
     //----------------------------
     
     static IDE_RC  getFirstRange( qmcdMemHashTemp * aTempTable,
@@ -225,7 +225,7 @@ public:
                                  void           ** aElement );
 
     //----------------------------
-    // Same Row & NonHit °Ë»ö
+    // Same Row & NonHit ê²€ìƒ‰
     //----------------------------
 
     static IDE_RC  getSameRowAndNonHit( qmcdMemHashTemp * aTempTable,
@@ -234,7 +234,7 @@ public:
                                         void           ** aElement );
     
     //----------------------------
-    // Hit °Ë»ö
+    // Hit ê²€ìƒ‰
     //----------------------------
 
     static IDE_RC  getFirstHit( qmcdMemHashTemp * aTempTable,
@@ -244,7 +244,7 @@ public:
                                void           ** aElement );
     
     //----------------------------
-    // NonHit °Ë»ö
+    // NonHit ê²€ìƒ‰
     //----------------------------
 
     static IDE_RC  getFirstNonHit( qmcdMemHashTemp * aTempTable,
@@ -254,38 +254,38 @@ public:
                                void           ** aElement );
     
     //----------------------------
-    // ±âÅ¸ ÇÔ¼ö
+    // ê¸°íƒ€ í•¨ìˆ˜
     //----------------------------
 
-    // ¼öÇà ºñ¿ë Á¤º¸ È¹µæ
+    // ìˆ˜í–‰ ë¹„ìš© ì •ë³´ íšë“
     static IDE_RC  getDisplayInfo( qmcdMemHashTemp * aTempTable,
                                    SLong           * aRecordCnt,
                                    UInt            * aBucketCnt );
     
 private:
 
-    // Bucket ID¸¦ Ã£´Â´Ù.
+    // Bucket IDë¥¼ ì°¾ëŠ”ë‹¤.
     static UInt   getBucketID( qmcdMemHashTemp * aTempTable,
                                UInt              aHash );
 
-    // µÎ record°£ÀÇ ´ë¼Ò ºñ±³
+    // ë‘ recordê°„ì˜ ëŒ€ì†Œ ë¹„êµ
     static SInt   compareRow ( qmcdMemHashTemp * aTempTable, 
                                void            * aElem1, 
                                void            * aElem2 );
 
-    // Range °Ë»ö½Ã Á¶°Ç °Ë»ç
+    // Range ê²€ìƒ‰ì‹œ ì¡°ê±´ ê²€ì‚¬
     static IDE_RC judgeFilter ( qmcdMemHashTemp * aTempTable,
                                 void            * aElem,
                                 idBool          * aResult );
 
-    // BucketÀÇ ÀÚµ¿ È®Àå
+    // Bucketì˜ ìë™ í™•ì¥
     static IDE_RC extendBucket (qmcdMemHashTemp * aTempTable );
 
-    // »õ·Î¿î Bucket¿¡ ÃÖÃÊ Record »ğÀÔ
+    // ìƒˆë¡œìš´ Bucketì— ìµœì´ˆ Record ì‚½ì…
     static IDE_RC insertFirstNewBucket( qmcdMemHashTemp   * aTempTable,
                                         qmcMemHashElement * aElem );
 
-    // »õ·Î¿î Bucket¿¡ ´ÙÀ½ record »ğÀÔ
+    // ìƒˆë¡œìš´ Bucketì— ë‹¤ìŒ record ì‚½ì…
     static IDE_RC insertNextNewBucket( qmcdMemHashTemp   * aTempTable,
                                        qmcMemHashElement * aElem );
     

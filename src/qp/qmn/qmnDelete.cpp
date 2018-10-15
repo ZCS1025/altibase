@@ -21,11 +21,11 @@
  * Description :
  *     DETE(DEleTE) Node
  *
- *     °ü°èÇü ¸ğµ¨¿¡¼­ delete¸¦ ¼öÇàÇÏ´Â Plan Node ÀÌ´Ù.
+ *     ê´€ê³„í˜• ëª¨ë¸ì—ì„œ deleteë¥¼ ìˆ˜í–‰í•˜ëŠ” Plan Node ì´ë‹¤.
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  **********************************************************************/
 
@@ -45,7 +45,7 @@ qmnDETE::init( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    DETE ³ëµåÀÇ ÃÊ±âÈ­
+ *    DETE ë…¸ë“œì˜ ì´ˆê¸°í™”
  *
  * Implementation :
  *
@@ -62,46 +62,46 @@ qmnDETE::init( qcTemplate * aTemplate,
     sDataPlan->doIt = qmnDETE::doItDefault;
     
     //------------------------------------------------
-    // ÃÖÃÊ ÃÊ±âÈ­ ¼öÇà ¿©ºÎ ÆÇ´Ü
+    // ìµœì´ˆ ì´ˆê¸°í™” ìˆ˜í–‰ ì—¬ë¶€ íŒë‹¨
     //------------------------------------------------
 
     if ( ( *sDataPlan->flag & QMND_DETE_INIT_DONE_MASK )
          == QMND_DETE_INIT_DONE_FALSE )
     {
-        // ÃÖÃÊ ÃÊ±âÈ­ ¼öÇà
+        // ìµœì´ˆ ì´ˆê¸°í™” ìˆ˜í–‰
         IDE_TEST( firstInit(aTemplate, sCodePlan, sDataPlan) != IDE_SUCCESS );
         
         //------------------------------------------------
-        // Child PlanÀÇ ÃÊ±âÈ­
+        // Child Planì˜ ì´ˆê¸°í™”
         //------------------------------------------------
         
         IDE_TEST( aPlan->left->init( aTemplate,
                                      aPlan->left ) != IDE_SUCCESS);
 
         //---------------------------------
-        // trigger row¸¦ »ı¼º
+        // trigger rowë¥¼ ìƒì„±
         //---------------------------------
 
-        // childÀÇ offsetÀ» ÀÌ¿ëÇÏ¹Ç·Î firstInitÀÌ ³¡³ª¾ß offsetÀ» ÀÌ¿ëÇÒ ¼ö ÀÖ´Ù.
+        // childì˜ offsetì„ ì´ìš©í•˜ë¯€ë¡œ firstInitì´ ëë‚˜ì•¼ offsetì„ ì´ìš©í•  ìˆ˜ ìˆë‹¤.
         IDE_TEST( allocTriggerRow(aTemplate, sCodePlan, sDataPlan)
                   != IDE_SUCCESS );
         
         //---------------------------------
-        // returnInto row¸¦ »ı¼º
+        // returnInto rowë¥¼ ìƒì„±
         //---------------------------------
         
         IDE_TEST( allocReturnRow( aTemplate, sCodePlan, sDataPlan )
                   != IDE_SUCCESS );
     
         //---------------------------------
-        // index table cursor¸¦ »ı¼º
+        // index table cursorë¥¼ ìƒì„±
         //---------------------------------
 
         IDE_TEST( allocIndexTableCursor(aTemplate, sCodePlan, sDataPlan)
                   != IDE_SUCCESS );
         
         //---------------------------------
-        // ÃÊ±âÈ­ ¿Ï·á¸¦ Ç¥±â
+        // ì´ˆê¸°í™” ì™„ë£Œë¥¼ í‘œê¸°
         //---------------------------------
         
         *sDataPlan->flag &= ~QMND_DETE_INIT_DONE_MASK;
@@ -110,7 +110,7 @@ qmnDETE::init( qcTemplate * aTemplate,
     else
     {
         //------------------------------------------------
-        // Child PlanÀÇ ÃÊ±âÈ­
+        // Child Planì˜ ì´ˆê¸°í™”
         //------------------------------------------------
         
         IDE_TEST( aPlan->left->init( aTemplate,
@@ -118,14 +118,14 @@ qmnDETE::init( qcTemplate * aTemplate,
     }
 
     //------------------------------------------------
-    // °¡º¯ Data ÀÇ ÃÊ±âÈ­
+    // ê°€ë³€ Data ì˜ ì´ˆê¸°í™”
     //------------------------------------------------
 
-    // Limit ½ÃÀÛ °³¼öÀÇ ÃÊ±âÈ­
+    // Limit ì‹œì‘ ê°œìˆ˜ì˜ ì´ˆê¸°í™”
     sDataPlan->limitCurrent = 1;
         
     //------------------------------------------------
-    // ¼öÇà ÇÔ¼ö °áÁ¤
+    // ìˆ˜í–‰ í•¨ìˆ˜ ê²°ì •
     //------------------------------------------------
     
     sDataPlan->doIt = qmnDETE::doItFirst;
@@ -147,10 +147,10 @@ qmnDETE::doIt( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    DETE ÀÇ °íÀ¯ ±â´ÉÀ» ¼öÇàÇÑ´Ù.
+ *    DETE ì˜ ê³ ìœ  ê¸°ëŠ¥ì„ ìˆ˜í–‰í•œë‹¤.
  *
  * Implementation :
- *    ÁöÁ¤µÈ ÇÔ¼ö Æ÷ÀÎÅÍ¸¦ ¼öÇàÇÑ´Ù.
+ *    ì§€ì •ëœ í•¨ìˆ˜ í¬ì¸í„°ë¥¼ ìˆ˜í–‰í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -172,8 +172,8 @@ qmnDETE::padNull( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    DETE ³ëµå´Â º°µµÀÇ null row¸¦ °¡ÁöÁö ¾ÊÀ¸¸ç,
- *    Child¿¡ ´ëÇÏ¿© padNull()À» È£ÃâÇÑ´Ù.
+ *    DETE ë…¸ë“œëŠ” ë³„ë„ì˜ null rowë¥¼ ê°€ì§€ì§€ ì•Šìœ¼ë©°,
+ *    Childì— ëŒ€í•˜ì—¬ padNull()ì„ í˜¸ì¶œí•œë‹¤.
  *
  * Implementation :
  *
@@ -189,7 +189,7 @@ qmnDETE::padNull( qcTemplate * aTemplate,
     if ( (aTemplate->planFlag[sCodePlan->planID] & QMND_DETE_INIT_DONE_MASK)
          == QMND_DETE_INIT_DONE_FALSE )
     {
-        // ÃÊ±âÈ­µÇÁö ¾ÊÀº °æ¿ì ÃÊ±âÈ­ ¼öÇà
+        // ì´ˆê¸°í™”ë˜ì§€ ì•Šì€ ê²½ìš° ì´ˆê¸°í™” ìˆ˜í–‰
         IDE_TEST( aPlan->init( aTemplate, aPlan ) != IDE_SUCCESS );
     }
     else
@@ -197,7 +197,7 @@ qmnDETE::padNull( qcTemplate * aTemplate,
         // Nothing To Do
     }
 
-    // Child Plan¿¡ ´ëÇÏ¿© Null Padding¼öÇà
+    // Child Planì— ëŒ€í•˜ì—¬ Null Paddingìˆ˜í–‰
     IDE_TEST( aPlan->left->padNull( aTemplate, aPlan->left )
               != IDE_SUCCESS );
 
@@ -220,7 +220,7 @@ qmnDETE::printPlan( qcTemplate   * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    DETE ³ëµåÀÇ ¼öÇà Á¤º¸¸¦ Ãâ·ÂÇÑ´Ù.
+ *    DETE ë…¸ë“œì˜ ìˆ˜í–‰ ì •ë³´ë¥¼ ì¶œë ¥í•œë‹¤.
  *
  * Implementation :
  *
@@ -238,7 +238,7 @@ qmnDETE::printPlan( qcTemplate   * aTemplate,
     sDataPlan->flag = & aTemplate->planFlag[sCodePlan->planID];
 
     //------------------------------------------------------
-    // ½ÃÀÛ Á¤º¸ÀÇ Ãâ·Â
+    // ì‹œì‘ ì •ë³´ì˜ ì¶œë ¥
     //------------------------------------------------------
 
     for ( i = 0; i < aDepth; i++ )
@@ -248,10 +248,10 @@ qmnDETE::printPlan( qcTemplate   * aTemplate,
     }
 
     //------------------------------------------------------
-    // DETE Target Á¤º¸ÀÇ Ãâ·Â
+    // DETE Target ì •ë³´ì˜ ì¶œë ¥
     //------------------------------------------------------
 
-    // DETE Á¤º¸ÀÇ Ãâ·Â
+    // DETE ì •ë³´ì˜ ì¶œë ¥
     if ( sCodePlan->tableRef->tableType == QCM_VIEW )
     {
         iduVarStringAppendFormat( aString,
@@ -277,7 +277,7 @@ qmnDETE::printPlan( qcTemplate   * aTemplate,
     }
 
     //----------------------------
-    // Table Name Ãâ·Â
+    // Table Name ì¶œë ¥
     //----------------------------
 
     if ( ( sCodePlan->tableName.size <= QC_MAX_OBJECT_NAME_LEN ) &&
@@ -294,14 +294,14 @@ qmnDETE::printPlan( qcTemplate   * aTemplate,
     }
     
     //----------------------------
-    // Alias Name Ãâ·Â
+    // Alias Name ì¶œë ¥
     //----------------------------
     
     if ( sCodePlan->aliasName.name != NULL &&
          sCodePlan->aliasName.size > 0  &&
          sCodePlan->aliasName.name != sCodePlan->tableName.name )
     {
-        // Table ÀÌ¸§ Á¤º¸¿Í Alias ÀÌ¸§ Á¤º¸°¡ ´Ù¸¦ °æ¿ì
+        // Table ì´ë¦„ ì •ë³´ì™€ Alias ì´ë¦„ ì •ë³´ê°€ ë‹¤ë¥¼ ê²½ìš°
         // (alias name)
         iduVarStringAppend( aString, " " );
         
@@ -318,17 +318,17 @@ qmnDETE::printPlan( qcTemplate   * aTemplate,
     }
     else
     {
-        // Alias ÀÌ¸§ Á¤º¸°¡ ¾ø°Å³ª Table ÀÌ¸§ Á¤º¸°¡ µ¿ÀÏÇÑ °æ¿ì
+        // Alias ì´ë¦„ ì •ë³´ê°€ ì—†ê±°ë‚˜ Table ì´ë¦„ ì •ë³´ê°€ ë™ì¼í•œ ê²½ìš°
         // Nothing To Do
     }
 
     //----------------------------
-    // New line Ãâ·Â
+    // New line ì¶œë ¥
     //----------------------------
     iduVarStringAppend( aString, " )\n" );
 
     //------------------------------------------------------
-    // Child Plan Á¤º¸ÀÇ Ãâ·Â
+    // Child Plan ì •ë³´ì˜ ì¶œë ¥
     //------------------------------------------------------
 
     IDE_TEST( aPlan->left->printPlan( aTemplate,
@@ -354,10 +354,10 @@ qmnDETE::firstInit( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    DETE nodeÀÇ Data ¿µ¿ªÀÇ ¸â¹ö¿¡ ´ëÇÑ ÃÊ±âÈ­¸¦ ¼öÇà
+ *    DETE nodeì˜ Data ì˜ì—­ì˜ ë©¤ë²„ì— ëŒ€í•œ ì´ˆê¸°í™”ë¥¼ ìˆ˜í–‰
  *
  * Implementation :
- *    - Data ¿µ¿ªÀÇ ÁÖ¿ä ¸â¹ö¿¡ ´ëÇÑ ÃÊ±âÈ­¸¦ ¼öÇà
+ *    - Data ì˜ì—­ì˜ ì£¼ìš” ë©¤ë²„ì— ëŒ€í•œ ì´ˆê¸°í™”ë¥¼ ìˆ˜í–‰
  *
  ***********************************************************************/
 
@@ -367,39 +367,39 @@ qmnDETE::firstInit( qcTemplate * aTemplate,
     ULong    sCount;
 
     //--------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //--------------------------------
 
     //--------------------------------
-    // DETE °íÀ¯ Á¤º¸ÀÇ ÃÊ±âÈ­
+    // DETE ê³ ìœ  ì •ë³´ì˜ ì´ˆê¸°í™”
     //--------------------------------
 
-    // Tuple SetÁ¤º¸ÀÇ ÃÊ±âÈ­
+    // Tuple Setì •ë³´ì˜ ì´ˆê¸°í™”
     aDataPlan->deleteTuple = & aTemplate->tmplate.rows[aCodePlan->tableRef->table];
     aDataPlan->deleteCursor = NULL;
     aDataPlan->deleteTupleID = ID_USHORT_MAX;
 
-    /* PROJ-2464 hybrid partitioned table Áö¿ø */
+    /* PROJ-2464 hybrid partitioned table ì§€ì› */
     aDataPlan->deletePartInfo = NULL;
 
-    // index table cursor ÃÊ±âÈ­
+    // index table cursor ì´ˆê¸°í™”
     aDataPlan->indexDeleteCursor = NULL;
     aDataPlan->indexDeleteTuple = NULL;
 
-    // where column list ÃÊ±âÈ­
-    // set, where column list ÃÊ±âÈ­
+    // where column list ì´ˆê¸°í™”
+    // set, where column list ì´ˆê¸°í™”
     smiInitDMLRetryInfo( &(aDataPlan->retryInfo) );
 
     /* PROJ-2359 Table/Partition Access Option */
     aDataPlan->accessOption = QCM_ACCESS_OPTION_READ_WRITE;
 
     //--------------------------------
-    // cursorInfo »ı¼º
+    // cursorInfo ìƒì„±
     //--------------------------------
     
     if ( aCodePlan->insteadOfTrigger == ID_TRUE )
     {
-        // instead of trigger´Â cursor°¡ ÇÊ¿ä¾ø´Ù.
+        // instead of triggerëŠ” cursorê°€ í•„ìš”ì—†ë‹¤.
         // Nothing to do.
     }
     else
@@ -409,7 +409,7 @@ qmnDETE::firstInit( qcTemplate * aTemplate,
     }
     
     //--------------------------------
-    // Limitation °ü·Ã Á¤º¸ÀÇ ÃÊ±âÈ­
+    // Limitation ê´€ë ¨ ì •ë³´ì˜ ì´ˆê¸°í™”
     //--------------------------------
     
     if( aCodePlan->limit != NULL )
@@ -434,7 +434,7 @@ qmnDETE::firstInit( qcTemplate * aTemplate,
         aDataPlan->limitEnd   = 0;
     }
 
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     if ( aDataPlan->limitEnd > 0 )
     {
         IDE_ASSERT( (aCodePlan->flag & QMNC_DETE_LIMIT_MASK)
@@ -472,14 +472,14 @@ qmnDETE::allocCursorInfo( qcTemplate * aTemplate,
     UInt                i = 0;
 
     //--------------------------------
-    // cursorInfo »ı¼º
+    // cursorInfo ìƒì„±
     //--------------------------------
     
     IDE_TEST( aTemplate->stmt->qmxMem->alloc( ID_SIZEOF(qmnCursorInfo),
                                               (void**)& sCursorInfo )
               != IDE_SUCCESS );
         
-    // cursorInfo ÃÊ±âÈ­
+    // cursorInfo ì´ˆê¸°í™”
     sCursorInfo->cursor              = NULL;
     sCursorInfo->selectedIndex       = NULL;
     sCursorInfo->selectedIndexTuple  = NULL;
@@ -490,15 +490,15 @@ qmnDETE::allocCursorInfo( qcTemplate * aTemplate,
     sCursorInfo->inplaceUpdate       = ID_FALSE;
     sCursorInfo->lockMode            = SMI_LOCK_WRITE;
 
-    /* PROJ-2464 hybrid partitioned table Áö¿ø */
+    /* PROJ-2464 hybrid partitioned table ì§€ì› */
     sCursorInfo->stmtRetryColLst     = aCodePlan->whereColumnList;
     sCursorInfo->rowRetryColLst      = NULL;
 
-    // cursorInfo ¼³Á¤
+    // cursorInfo ì„¤ì •
     aDataPlan->deleteTuple->cursorInfo = sCursorInfo;
     
     //--------------------------------
-    // partition cursorInfo »ı¼º
+    // partition cursorInfo ìƒì„±
     //--------------------------------
     
     if ( aCodePlan->tableRef->partitionRef != NULL )
@@ -511,7 +511,7 @@ qmnDETE::allocCursorInfo( qcTemplate * aTemplate,
             sPartitionCount++;
         }
         
-        // cursorInfo »ı¼º
+        // cursorInfo ìƒì„±
         IDE_TEST( aTemplate->stmt->qmxMem->alloc(
                       sPartitionCount * ID_SIZEOF(qmnCursorInfo),
                       (void**)& sCursorInfo )
@@ -521,7 +521,7 @@ qmnDETE::allocCursorInfo( qcTemplate * aTemplate,
               sPartitionRef != NULL;
               sPartitionRef = sPartitionRef->next, sCursorInfo++, i++ )
         {
-            // cursorInfo ÃÊ±âÈ­
+            // cursorInfo ì´ˆê¸°í™”
             sCursorInfo->cursor              = NULL;
             sCursorInfo->selectedIndex       = NULL;
             sCursorInfo->selectedIndexTuple  = NULL;
@@ -533,11 +533,11 @@ qmnDETE::allocCursorInfo( qcTemplate * aTemplate,
             sCursorInfo->inplaceUpdate       = ID_FALSE;
             sCursorInfo->lockMode            = SMI_LOCK_WRITE;
 
-            /* PROJ-2464 hybrid partitioned table Áö¿ø */
+            /* PROJ-2464 hybrid partitioned table ì§€ì› */
             sCursorInfo->stmtRetryColLst     = aCodePlan->wherePartColumnList[i];
             sCursorInfo->rowRetryColLst      = NULL;
 
-            // cursorInfo ¼³Á¤
+            // cursorInfo ì„¤ì •
             aTemplate->tmplate.rows[sPartitionRef->table].cursorInfo = sCursorInfo;
         }
     }
@@ -574,7 +574,7 @@ qmnDETE::allocTriggerRow( qcTemplate * aTemplate,
     UInt sMaxRowOffset = 0;
 
     //---------------------------------
-    // Trigger¸¦ À§ÇÑ °ø°£À» ¸¶·Ã
+    // Triggerë¥¼ ìœ„í•œ ê³µê°„ì„ ë§ˆë ¨
     //---------------------------------
 
     if ( aCodePlan->tableRef->tableInfo->triggerCount > 0 )
@@ -592,10 +592,10 @@ qmnDETE::allocTriggerRow( qcTemplate * aTemplate,
             sMaxRowOffset = qmx::getMaxRowOffset( &(aTemplate->tmplate),
                                                   aCodePlan->tableRef );
 
-            // ÀûÇÕ¼º °Ë»ç
+            // ì í•©ì„± ê²€ì‚¬
             IDE_DASSERT( sMaxRowOffset > 0 );
 
-            // Old Row ReferencingÀ» À§ÇÑ °ø°£ ÇÒ´ç
+            // Old Row Referencingì„ ìœ„í•œ ê³µê°„ í• ë‹¹
             IDE_TEST( aTemplate->stmt->qmxMem->alloc(
                     sMaxRowOffset,
                     (void**) & aDataPlan->oldRow )
@@ -643,7 +643,7 @@ qmnDETE::allocReturnRow( qcTemplate * aTemplate,
     UInt sMaxRowOffset;
 
     //---------------------------------
-    // return into¸¦ À§ÇÑ °ø°£À» ¸¶·Ã
+    // return intoë¥¼ ìœ„í•œ ê³µê°„ì„ ë§ˆë ¨
     //---------------------------------
 
     if ( ( aCodePlan->returnInto != NULL ) &&
@@ -652,7 +652,7 @@ qmnDETE::allocReturnRow( qcTemplate * aTemplate,
         sMaxRowOffset = qmx::getMaxRowOffset( &(aTemplate->tmplate),
                                               aCodePlan->tableRef );
 
-        // New Row ReferencingÀ» À§ÇÑ °ø°£ ÇÒ´ç
+        // New Row Referencingì„ ìœ„í•œ ê³µê°„ í• ë‹¹
         IDE_TEST( aTemplate->stmt->qmxMem->cralloc(
                 sMaxRowOffset,
                 (void**) & aDataPlan->returnRow )
@@ -689,7 +689,7 @@ qmnDETE::allocIndexTableCursor( qcTemplate * aTemplate,
     IDE_MSGLOG_FUNC(IDE_MSGLOG_BODY("qmnDETE::allocIndexTableCursor"));
 
     //---------------------------------
-    // index table Ã³¸®¸¦ À§ÇÑ Á¤º¸
+    // index table ì²˜ë¦¬ë¥¼ ìœ„í•œ ì •ë³´
     //---------------------------------
 
     if ( aCodePlan->tableRef->indexTableRef != NULL )
@@ -727,7 +727,7 @@ qmnDETE::doItDefault( qcTemplate * /* aTemplate */,
 /***********************************************************************
  *
  * Description :
- *    ÀÌ ÇÔ¼ö°¡ ¼öÇàµÇ¸é ¾ÈµÊ.
+ *    ì´ í•¨ìˆ˜ê°€ ìˆ˜í–‰ë˜ë©´ ì•ˆë¨.
  *
  * Implementation :
  *
@@ -751,7 +751,7 @@ qmnDETE::doItFirst( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    DETEÀÇ ÃÖÃÊ ¼öÇà ÇÔ¼ö
+ *    DETEì˜ ìµœì´ˆ ìˆ˜í–‰ í•¨ìˆ˜
  *
  * Implementation :
  *    - Cursor Open
@@ -770,13 +770,13 @@ qmnDETE::doItFirst( qcTemplate * aTemplate,
     idBool     sIsTableCursorChanged;
 
     //-----------------------------------
-    // Child PlanÀ» ¼öÇàÇÔ
+    // Child Planì„ ìˆ˜í–‰í•¨
     //-----------------------------------
 
     // To fix PR-3921
     if ( sDataPlan->limitCurrent == sDataPlan->limitEnd )
     {
-        // ÁÖ¾îÁø Limit Á¶°Ç¿¡ ´Ù´Ù¸¥ °æ¿ì
+        // ì£¼ì–´ì§„ Limit ì¡°ê±´ì— ë‹¤ë‹¤ë¥¸ ê²½ìš°
         *aFlag = QMC_ROW_DATA_NONE;
     }
     else
@@ -788,13 +788,13 @@ qmnDETE::doItFirst( qcTemplate * aTemplate,
 
     if ( ( *aFlag & QMC_ROW_DATA_MASK ) == QMC_ROW_DATA_EXIST )
     {
-        // Limit Start Ã³¸®
+        // Limit Start ì²˜ë¦¬
         for ( ;
               sDataPlan->limitCurrent < sDataPlan->limitStart;
               sDataPlan->limitCurrent++ )
         {
-            // Limitation ¹üÀ§¿¡ µéÁö ¾Ê´Â´Ù.
-            // µû¶ó¼­ Delete¾øÀÌ Child¸¦ ¼öÇàÇÏ±â¸¸ ÇÑ´Ù.
+            // Limitation ë²”ìœ„ì— ë“¤ì§€ ì•ŠëŠ”ë‹¤.
+            // ë”°ë¼ì„œ Deleteì—†ì´ Childë¥¼ ìˆ˜í–‰í•˜ê¸°ë§Œ í•œë‹¤.
             IDE_TEST( aPlan->left->doIt( aTemplate, aPlan->left, aFlag )
                       != IDE_SUCCESS );
 
@@ -813,12 +813,12 @@ qmnDETE::doItFirst( qcTemplate * aTemplate,
             if ( ( sDataPlan->limitCurrent >= sDataPlan->limitStart ) &&
                  ( sDataPlan->limitCurrent < sDataPlan->limitEnd ) )
             {
-                // Limit°ª Áõ°¡
+                // Limitê°’ ì¦ê°€
                 sDataPlan->limitCurrent++;
             }
             else
             {
-                // Limitation ¹üÀ§¸¦ ¹ş¾î³­ °æ¿ì
+                // Limitation ë²”ìœ„ë¥¼ ë²—ì–´ë‚œ ê²½ìš°
                 *aFlag = QMC_ROW_DATA_NONE;
             }
         }
@@ -891,8 +891,8 @@ qmnDETE::doItNext( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    DETEÀÇ ´ÙÀ½ ¼öÇà ÇÔ¼ö
- *    ´ÙÀ½ Record¸¦ »èÁ¦ÇÑ´Ù.
+ *    DETEì˜ ë‹¤ìŒ ìˆ˜í–‰ í•¨ìˆ˜
+ *    ë‹¤ìŒ Recordë¥¼ ì‚­ì œí•œë‹¤.
  *
  * Implementation :
  *    - delete one record
@@ -910,13 +910,13 @@ qmnDETE::doItNext( qcTemplate * aTemplate,
     idBool     sIsTableCursorChanged;
 
     //-----------------------------------
-    // Child PlanÀ» ¼öÇàÇÔ
+    // Child Planì„ ìˆ˜í–‰í•¨
     //-----------------------------------
 
     // To fix PR-3921
     if ( sDataPlan->limitCurrent == sDataPlan->limitEnd )
     {
-        // ÁÖ¾îÁø Limit Á¶°Ç¿¡ ´Ù´Ù¸¥ °æ¿ì
+        // ì£¼ì–´ì§„ Limit ì¡°ê±´ì— ë‹¤ë‹¤ë¥¸ ê²½ìš°
         *aFlag = QMC_ROW_DATA_NONE;
     }
     else
@@ -933,12 +933,12 @@ qmnDETE::doItNext( qcTemplate * aTemplate,
             if ( ( sDataPlan->limitCurrent >= sDataPlan->limitStart ) &&
                  ( sDataPlan->limitCurrent < sDataPlan->limitEnd ) )
             {
-                // Limit°ª Áõ°¡
+                // Limitê°’ ì¦ê°€
                 sDataPlan->limitCurrent++;
             }
             else
             {
-                // Limitation ¹üÀ§¸¦ ¹ş¾î³­ °æ¿ì
+                // Limitation ë²”ìœ„ë¥¼ ë²—ì–´ë‚œ ê²½ìš°
                 *aFlag = QMC_ROW_DATA_NONE;
             }
         }
@@ -984,15 +984,15 @@ qmnDETE::doItNext( qcTemplate * aTemplate,
         }
         else
         {
-            // record°¡ ¾ø´Â °æ¿ì
-            // ´ÙÀ½ ¼öÇàÀ» À§ÇØ ÃÖÃÊ ¼öÇà ÇÔ¼ö·Î ¼³Á¤ÇÔ.
+            // recordê°€ ì—†ëŠ” ê²½ìš°
+            // ë‹¤ìŒ ìˆ˜í–‰ì„ ìœ„í•´ ìµœì´ˆ ìˆ˜í–‰ í•¨ìˆ˜ë¡œ ì„¤ì •í•¨.
             sDataPlan->doIt = qmnDETE::doItFirst;
         }
     }
     else
     {
-        // record°¡ ¾ø´Â °æ¿ì
-        // ´ÙÀ½ ¼öÇàÀ» À§ÇØ ÃÖÃÊ ¼öÇà ÇÔ¼ö·Î ¼³Á¤ÇÔ.
+        // recordê°€ ì—†ëŠ” ê²½ìš°
+        // ë‹¤ìŒ ìˆ˜í–‰ì„ ìœ„í•´ ìµœì´ˆ ìˆ˜í–‰ í•¨ìˆ˜ë¡œ ì„¤ì •í•¨.
         sDataPlan->doIt = qmnDETE::doItFirst;
     }
 
@@ -1040,7 +1040,7 @@ qmnDETE::checkTrigger( qcTemplate * aTemplate,
         }
         else
         {
-            // Trigger¸¦ À§ÇÑ Referencing Row°¡ ÇÊ¿äÇÑÁö¸¦ °Ë»ç
+            // Triggerë¥¼ ìœ„í•œ Referencing Rowê°€ í•„ìš”í•œì§€ë¥¼ ê²€ì‚¬
             IDE_TEST( qdnTrigger::needTriggerRow(
                           aTemplate->stmt,
                           sCodePlan->tableRef->tableInfo,
@@ -1093,7 +1093,7 @@ qmnDETE::getCursor( qcTemplate * aTemplate,
  * Description :
  *
  * Implementation :
- *     ÇÏÀ§ scanÀÌ openÇÑ cursor¸¦ ¾ò´Â´Ù.
+ *     í•˜ìœ„ scanì´ opení•œ cursorë¥¼ ì–»ëŠ”ë‹¤.
  *
  ***********************************************************************/
 
@@ -1115,7 +1115,7 @@ qmnDETE::getCursor( qcTemplate * aTemplate,
         {
             sDataPlan->deleteTupleID = sCodePlan->tableRef->table;
             
-            // cursor¸¦ ¾ò´Â´Ù.
+            // cursorë¥¼ ì–»ëŠ”ë‹¤.
             sCursorInfo = (qmnCursorInfo*)
                 aTemplate->tmplate.rows[sDataPlan->deleteTupleID].cursorInfo;
             
@@ -1123,7 +1123,7 @@ qmnDETE::getCursor( qcTemplate * aTemplate,
 
             sDataPlan->deleteCursor = sCursorInfo->cursor;
    
-            /* PROJ-2464 hybrid partitioned table Áö¿ø */
+            /* PROJ-2464 hybrid partitioned table ì§€ì› */
             sDataPlan->deletePartInfo = sCodePlan->tableRef->tableInfo;
 
             sDataPlan->retryInfo.mIsWithoutRetry  = sCodePlan->withoutRetry;
@@ -1144,7 +1144,7 @@ qmnDETE::getCursor( qcTemplate * aTemplate,
         {
             sDataPlan->deleteTupleID = sDataPlan->deleteTuple->partitionTupleID;
             
-            // partitionÀÇ cursor¸¦ ¾ò´Â´Ù.
+            // partitionì˜ cursorë¥¼ ì–»ëŠ”ë‹¤.
             sCursorInfo = (qmnCursorInfo*)
                 aTemplate->tmplate.rows[sDataPlan->deleteTupleID].cursorInfo;
 
@@ -1163,7 +1163,7 @@ qmnDETE::getCursor( qcTemplate * aTemplate,
 
             sDataPlan->deleteCursor = sCursorInfo->cursor;
 
-            /* PROJ-2464 hybrid partitioned table Áö¿ø */
+            /* PROJ-2464 hybrid partitioned table ì§€ì› */
             IDE_TEST( smiGetTableTempInfo( sDataPlan->deleteTuple->tableHandle,
                                            (void **)&(sDataPlan->deletePartInfo) )
                       != IDE_SUCCESS );
@@ -1180,7 +1180,7 @@ qmnDETE::getCursor( qcTemplate * aTemplate,
             /* Nothing to do */
         }
         
-        // index table cursor¸¦ ¾ò´Â´Ù.
+        // index table cursorë¥¼ ì–»ëŠ”ë‹¤.
         if ( sDataPlan->indexDeleteCursor == NULL )
         {
             sCursorInfo = (qmnCursorInfo*)
@@ -1269,11 +1269,11 @@ qmnDETE::deleteOneRow( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    DETE ÀÇ °íÀ¯ ±â´ÉÀ» ¼öÇàÇÑ´Ù.
+ *    DETE ì˜ ê³ ìœ  ê¸°ëŠ¥ì„ ìˆ˜í–‰í•œë‹¤.
  *
  * Implementation :
- *    - delete one record ¼öÇà
- *    - trigger each row ¼öÇà
+ *    - delete one record ìˆ˜í–‰
+ *    - trigger each row ìˆ˜í–‰
  *
  ***********************************************************************/
 
@@ -1305,7 +1305,7 @@ qmnDETE::deleteOneRow( qcTemplate * aTemplate,
     
     if ( sDataPlan->needTriggerRow == ID_TRUE )
     {
-        // OLD ROW REFERENCINGÀ» À§ÇÑ ÀúÀå
+        // OLD ROW REFERENCINGì„ ìœ„í•œ ì €ì¥
         idlOS::memcpy( sDataPlan->oldRow,
                        sDataPlan->deleteTuple->row,
                        sDataPlan->deleteTuple->rowOffset );
@@ -1337,7 +1337,7 @@ qmnDETE::deleteOneRow( qcTemplate * aTemplate,
     if ( sDataPlan->existTrigger == ID_TRUE )
     {
         // PROJ-1359 Trigger
-        // ROW GRANULARITY TRIGGERÀÇ ¼öÇà
+        // ROW GRANULARITY TRIGGERì˜ ìˆ˜í–‰
         IDE_TEST( qdnTrigger::fireTrigger(
                       aTemplate->stmt,
                       aTemplate->stmt->qmxMem,
@@ -1408,7 +1408,7 @@ qmnDETE::deleteOneRow( qcTemplate * aTemplate,
     if ( sDataPlan->existTrigger == ID_TRUE )
     {
         // PROJ-1359 Trigger
-        // ROW GRANULARITY TRIGGERÀÇ ¼öÇà
+        // ROW GRANULARITY TRIGGERì˜ ìˆ˜í–‰
         IDE_TEST( qdnTrigger::fireTrigger(
                       aTemplate->stmt,
                       aTemplate->stmt->qmxMem,
@@ -1474,10 +1474,10 @@ qmnDETE::fireInsteadOfTrigger( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    DETE ÀÇ °íÀ¯ ±â´ÉÀ» ¼öÇàÇÑ´Ù.
+ *    DETE ì˜ ê³ ìœ  ê¸°ëŠ¥ì„ ìˆ˜í–‰í•œë‹¤.
  *
  * Implementation :
- *    - trigger each row ¼öÇà
+ *    - trigger each row ìˆ˜í–‰
  *
  ***********************************************************************/
 
@@ -1506,8 +1506,8 @@ qmnDETE::fireInsteadOfTrigger( qcTemplate * aTemplate,
         IDE_TEST_RAISE( sRemain < sDataPlan->deleteTuple->columnCount,
                         ERR_STACK_OVERFLOW );
         
-        // DELETE¿Í VIEW »çÀÌ¿¡ FILT °°Àº ´Ù¸¥ ³ëµåµé¿¡ ÀÇÇØ stackÀÌ º¯°æµÇ¾úÀ» ¼ö ÀÖÀ¸¹Ç·Î
-        // stackÀ» view tupleÀÇ ÄÃ·³À¸·Î Àç¼³Á¤ÇÑ´Ù.
+        // DELETEì™€ VIEW ì‚¬ì´ì— FILT ê°™ì€ ë‹¤ë¥¸ ë…¸ë“œë“¤ì— ì˜í•´ stackì´ ë³€ê²½ë˜ì—ˆì„ ìˆ˜ ìˆìœ¼ë¯€ë¡œ
+        // stackì„ view tupleì˜ ì»¬ëŸ¼ìœ¼ë¡œ ì¬ì„¤ì •í•œë‹¤.
         for ( i = 0, sColumn = sDataPlan->deleteTuple->columns;
               i < sDataPlan->deleteTuple->columnCount;
               i++, sColumn++, sStack++ )
@@ -1517,7 +1517,7 @@ qmnDETE::fireInsteadOfTrigger( qcTemplate * aTemplate,
                 (void*)((SChar*)sDataPlan->deleteTuple->row + sColumn->column.offset);
         }
 
-        /* PROJ-2464 hybrid partitioned table Áö¿ø */
+        /* PROJ-2464 hybrid partitioned table ì§€ì› */
         if ( sTableInfo->tablePartitionType == QCM_PARTITIONED_TABLE )
         {
             if ( sDataPlan->deletePartInfo != NULL )
@@ -1648,22 +1648,22 @@ qmnDETE::checkDeleteRef( qcTemplate * aTemplate,
     sDataPlan = (qmndDETE*) ( aTemplate->tmplate.data + aPlan->offset );
     
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_DASSERT( aTemplate != NULL );
     
     //------------------------------------------
-    // child constraint °Ë»ç
+    // child constraint ê²€ì‚¬
     //------------------------------------------
 
     if ( sCodePlan->childConstraints != NULL )
     {
-        // BUG-17940 parent key¸¦ °»½ÅÇÏ°í child key¸¦ Ã£À»¶§
-        // parent row¿¡ lockÀ» ÀâÀº ÀÌÈÄ view¸¦ º¸±âÀ§ÇØ
-        // »õ·Î¿î smiStmt¸¦ ÀÌ¿ëÇÑ´Ù.
-        // Delete cascade ¿É¼Ç¿¡ ´ëºñÇØ¼­ normal·Î ÇÑ´Ù.
-        // child tableÀÇ Å¸ÀÔÀ» ÇöÀç ¾Ë ¼ö ¾ø±â ¶§¹®¿¡ ALL CURSOR·Î ÇÑ´Ù.
+        // BUG-17940 parent keyë¥¼ ê°±ì‹ í•˜ê³  child keyë¥¼ ì°¾ì„ë•Œ
+        // parent rowì— lockì„ ì¡ì€ ì´í›„ viewë¥¼ ë³´ê¸°ìœ„í•´
+        // ìƒˆë¡œìš´ smiStmtë¥¼ ì´ìš©í•œë‹¤.
+        // Delete cascade ì˜µì…˜ì— ëŒ€ë¹„í•´ì„œ normalë¡œ í•œë‹¤.
+        // child tableì˜ íƒ€ì…ì„ í˜„ì¬ ì•Œ ìˆ˜ ì—†ê¸° ë•Œë¬¸ì— ALL CURSORë¡œ í•œë‹¤.
         qcg::getSmiStmt( aTemplate->stmt, & sSmiStmtOrg );
 
         IDE_TEST( sSmiStmt.begin( aTemplate->stmt->mStatistics,
@@ -1745,7 +1745,7 @@ qmnDETE::checkDeleteChildRefOnScan( qcTemplate     * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    DELETE ±¸¹® ¼öÇà ½Ã Child Table¿¡ ´ëÇÑ Referencing Á¦¾à Á¶°ÇÀ» °Ë»ç
+ *    DELETE êµ¬ë¬¸ ìˆ˜í–‰ ì‹œ Child Tableì— ëŒ€í•œ Referencing ì œì•½ ì¡°ê±´ì„ ê²€ì‚¬
  *
  * Implementation :
  *
@@ -1761,15 +1761,15 @@ qmnDETE::checkDeleteChildRefOnScan( qcTemplate     * aTemplate,
     qmnCursorInfo   * sCursorInfo;
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_DASSERT( aTemplate != NULL );
     IDE_DASSERT( aCodePlan->childConstraints != NULL );
 
     //------------------------------------------
-    // DELETEµÈ ·Î¿ì °Ë»öÀ» À§ÇØ,
-    // °»½Å¿¬»êÀÌ ¼öÇàµÈ Ã¹¹øÂ° row ÀÌÀü À§Ä¡·Î cursor À§Ä¡ ¼³Á¤
+    // DELETEëœ ë¡œìš° ê²€ìƒ‰ì„ ìœ„í•´,
+    // ê°±ì‹ ì—°ì‚°ì´ ìˆ˜í–‰ëœ ì²«ë²ˆì§¸ row ì´ì „ ìœ„ì¹˜ë¡œ cursor ìœ„ì¹˜ ì„¤ì •
     //------------------------------------------
 
     sCursorInfo = (qmnCursorInfo*) aDeleteTuple->cursorInfo;
@@ -1779,14 +1779,14 @@ qmnDETE::checkDeleteChildRefOnScan( qcTemplate     * aTemplate,
     sDeleteCursor = sCursorInfo->cursor;
 
     // PROJ-1624 non-partitioned index
-    // index table scanÀ¸·Î openµÇÁö ¾ÊÀº partitionÀÌ Á¸ÀçÇÑ´Ù.
+    // index table scanìœ¼ë¡œ openë˜ì§€ ì•Šì€ partitionì´ ì¡´ì¬í•œë‹¤.
     if ( sDeleteCursor != NULL )
     {
         IDE_TEST( sDeleteCursor->beforeFirstModified( SMI_FIND_MODIFIED_OLD )
                   != IDE_SUCCESS );
 
         //------------------------------------------
-        // Referencing °Ë»ç¸¦ À§ÇØ »èÁ¦µÈ RowµéÀ» °Ë»ö
+        // Referencing ê²€ì‚¬ë¥¼ ìœ„í•´ ì‚­ì œëœ Rowë“¤ì„ ê²€ìƒ‰
         //------------------------------------------
 
         sOrgRow = sSearchRow = aDeleteTuple->row;
@@ -1799,12 +1799,12 @@ qmnDETE::checkDeleteChildRefOnScan( qcTemplate     * aTemplate,
 
         while( sSearchRow != NULL )
         {
-            // Memory Àç»ç¿ëÀ» À§ÇÏ¿© ÇöÀç À§Ä¡ ±â·Ï
+            // Memory ì¬ì‚¬ìš©ì„ ìœ„í•˜ì—¬ í˜„ì¬ ìœ„ì¹˜ ê¸°ë¡
             IDE_TEST( aTemplate->stmt->qmxMem->getStatus(&sQmxMemStatus)
                       != IDE_SUCCESS );
         
             //------------------------------------------
-            // Child Table¿¡ ´ëÇÑ Referencing °Ë»ç
+            // Child Tableì— ëŒ€í•œ Referencing ê²€ì‚¬
             //------------------------------------------
         
             IDE_TEST( qdnForeignKey::checkChildRefOnDelete(
@@ -1816,7 +1816,7 @@ qmnDETE::checkDeleteChildRefOnScan( qcTemplate     * aTemplate,
                           ID_TRUE )
                       != IDE_SUCCESS );
         
-            // Memory Àç»ç¿ëÀ» À§ÇÑ Memory ÀÌµ¿
+            // Memory ì¬ì‚¬ìš©ì„ ìœ„í•œ Memory ì´ë™
             IDE_TEST( aTemplate->stmt->qmxMem->setStatus(&sQmxMemStatus)
                       != IDE_SUCCESS );
         
@@ -1859,7 +1859,7 @@ qmnDETE::deleteIndexTableCursor( qcTemplate     * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    DELETE ±¸¹® ¼öÇà ½Ã index table¿¡ ´ëÇÑ delete ¼öÇà
+ *    DELETE êµ¬ë¬¸ ìˆ˜í–‰ ì‹œ index tableì— ëŒ€í•œ delete ìˆ˜í–‰
  *
  * Implementation :
  *
@@ -1876,7 +1876,7 @@ qmnDETE::deleteIndexTableCursor( qcTemplate     * aTemplate,
         if ( aCodePlan->tableRef->selectedIndexTable != NULL )
         {
             // PROJ-2204 join update, delete
-            // tuple ¿øº¹½Ã cursorµµ ¿øº¹ÇØ¾ßÇÑ´Ù.
+            // tuple ì›ë³µì‹œ cursorë„ ì›ë³µí•´ì•¼í•œë‹¤.
             if ( ( aCodePlan->flag & QMNC_DETE_VIEW_MASK )
                  == QMNC_DETE_VIEW_TRUE )
             {
@@ -1898,7 +1898,7 @@ qmnDETE::deleteIndexTableCursor( qcTemplate     * aTemplate,
             // Nothing to do.
         }
         
-        // ´Ù¸¥ index tableµµ update
+        // ë‹¤ë¥¸ index tableë„ update
         IDE_TEST( qmsIndexTable::deleteIndexTableCursors(
                       aTemplate->stmt,
                       & (aDataPlan->indexTableCursorInfo),
@@ -1925,11 +1925,11 @@ IDE_RC qmnDETE::checkDuplicateDelete( qmncDETE   * aCodePlan,
 /***********************************************************************
  *
  * Description : BUG-39399 remove search key preserved table
- *       join view delete½Ã Áßº¹ update¿©ºÎ Ã¼Å©
+ *       join view deleteì‹œ ì¤‘ë³µ updateì—¬ë¶€ ì²´í¬
  * Implementation :
- *    1. joinÀÇ °á°ú nullÀÎÁö Ã¼Å©.
- *    2. cursor ¿øº¹
- *    3. update Áßº¹ Ã¼Å©
+ *    1. joinì˜ ê²°ê³¼ nullì¸ì§€ ì²´í¬.
+ *    2. cursor ì›ë³µ
+ *    3. update ì¤‘ë³µ ì²´í¬
  ***********************************************************************/
     
     scGRID            nullRID;
@@ -1938,7 +1938,7 @@ IDE_RC qmnDETE::checkDuplicateDelete( qmncDETE   * aCodePlan,
     void            * sTableHandle = NULL;
     idBool            sIsDupDelete = ID_FALSE;
     
-    /* PROJ-2464 hybrid partitioned table Áö¿ø */
+    /* PROJ-2464 hybrid partitioned table ì§€ì› */
     if ( aCodePlan->tableRef->partitionRef == NULL )
     {
         sTableType   = aCodePlan->tableRef->tableInfo->tableFlag & SMI_TABLE_TYPE_MASK;
@@ -1971,12 +1971,12 @@ IDE_RC qmnDETE::checkDuplicateDelete( qmncDETE   * aCodePlan,
     }
         
     // PROJ-2204 join update, delete
-    // tuple ¿øº¹½Ã cursorµµ ¿øº¹ÇØ¾ßÇÑ´Ù.
+    // tuple ì›ë³µì‹œ cursorë„ ì›ë³µí•´ì•¼í•œë‹¤.
     IDE_TEST( aDataPlan->deleteCursor->setRowPosition( aDataPlan->deleteTuple->row,
                                                        aDataPlan->deleteTuple->rid )
               != IDE_SUCCESS );
         
-    /* Áßº¹ deleteÀÎÁö Ã¼Å© */
+    /* ì¤‘ë³µ deleteì¸ì§€ ì²´í¬ */
     IDE_TEST( aDataPlan->deleteCursor->isUpdatedRowBySameStmt( &sIsDupDelete )
               != IDE_SUCCESS );
 

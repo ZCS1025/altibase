@@ -21,9 +21,9 @@
  * Description :
  *     Multiple INST(Multi INSerT) Node
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  **********************************************************************/
 
@@ -38,7 +38,7 @@ qmnMTIT::init( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    MTIT ³ëµåÀÇ ÃÊ±âÈ­
+ *    MTIT ë…¸ë“œì˜ ì´ˆê¸°í™”
  *
  * Implementation :
  *
@@ -54,7 +54,7 @@ qmnMTIT::init( qcTemplate * aTemplate,
     qmnChildren * sChildren;
     
     //---------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //---------------------------------
 
     IDE_DASSERT( aPlan->left     == NULL );
@@ -62,7 +62,7 @@ qmnMTIT::init( qcTemplate * aTemplate,
     IDE_DASSERT( aPlan->children != NULL );
 
     //---------------------------------
-    // ±âº» ÃÊ±âÈ­
+    // ê¸°ë³¸ ì´ˆê¸°í™”
     //---------------------------------
     
     sDataPlan->flag = & aTemplate->planFlag[sCodePlan->planID];
@@ -81,7 +81,7 @@ qmnMTIT::init( qcTemplate * aTemplate,
     }
 
     //------------------------------------------------
-    // Child PlanÀÇ ÃÊ±âÈ­
+    // Child Planì˜ ì´ˆê¸°í™”
     //------------------------------------------------
 
     for ( sChildren = sCodePlan->plan.children;
@@ -99,7 +99,7 @@ qmnMTIT::init( qcTemplate * aTemplate,
     }
 
     //------------------------------------------------
-    // ¼öÇà ÇÔ¼ö °áÁ¤
+    // ìˆ˜í–‰ í•¨ìˆ˜ ê²°ì •
     //------------------------------------------------
 
     sDataPlan->doIt = qmnMTIT::doIt;
@@ -121,7 +121,7 @@ qmnMTIT::doIt( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    MTITÀÇ °íÀ¯ ±â´ÉÀ» ¼öÇàÇÑ´Ù.
+ *    MTITì˜ ê³ ìœ  ê¸°ëŠ¥ì„ ìˆ˜í–‰í•œë‹¤.
  *
  * Implementation :
  *
@@ -135,12 +135,12 @@ qmnMTIT::doIt( qcTemplate * aTemplate,
     qmcRowFlag    sFlag = QMC_ROW_INITIALIZE;
     
     //--------------------------------------------------
-    // ¸ğµç Child¸¦ ¼öÇàÇÑ´Ù.
+    // ëª¨ë“  Childë¥¼ ìˆ˜í–‰í•œë‹¤.
     //--------------------------------------------------
 
     sChildren = sCodePlan->plan.children;
 
-    // Ã¹¹øÂ° °á°ú¸¸ ³Ñ±ä´Ù.
+    // ì²«ë²ˆì§¸ ê²°ê³¼ë§Œ ë„˜ê¸´ë‹¤.
     IDE_TEST( sChildren->childPlan->doIt( aTemplate,
                                           sChildren->childPlan,
                                           aFlag )
@@ -179,9 +179,9 @@ qmnMTIT::padNull( qcTemplate * /* aTemplate */,
 /***********************************************************************
  *
  * Description :
- *    È£ÃâµÇ¾î¼­´Â ¾ÈµÊ.
- *    »óÀ§ Node´Â ¹İµå½Ã VIEW³ëµåÀÌ¸ç,
- *    View´Â ÀÚ½ÅÀÇ Null Row¸¸À» ¼³Á¤ÇÏ±â ¶§¹®ÀÌ´Ù.
+ *    í˜¸ì¶œë˜ì–´ì„œëŠ” ì•ˆë¨.
+ *    ìƒìœ„ NodeëŠ” ë°˜ë“œì‹œ VIEWë…¸ë“œì´ë©°,
+ *    ViewëŠ” ìì‹ ì˜ Null Rowë§Œì„ ì„¤ì •í•˜ê¸° ë•Œë¬¸ì´ë‹¤.
  *    
  * Implementation :
  *
@@ -207,7 +207,7 @@ qmnMTIT::printPlan( qcTemplate   * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    ¼öÇà Á¤º¸¸¦ Ãâ·ÂÇÑ´Ù.
+ *    ìˆ˜í–‰ ì •ë³´ë¥¼ ì¶œë ¥í•œë‹¤.
  *
  * Implementation :
  *
@@ -226,7 +226,7 @@ qmnMTIT::printPlan( qcTemplate   * aTemplate,
     qmnChildren * sChildren;
 
     //----------------------------
-    // Display À§Ä¡ °áÁ¤
+    // Display ìœ„ì¹˜ ê²°ì •
     //----------------------------
     
     for ( i = 0; i < aDepth; i++ )
@@ -236,14 +236,14 @@ qmnMTIT::printPlan( qcTemplate   * aTemplate,
     }
 
     //----------------------------
-    // MTIT ³ëµå Ç¥½Ã
+    // MTIT ë…¸ë“œ í‘œì‹œ
     //----------------------------
     
     iduVarStringAppend( aString,
                         "MULTIPLE-INSERT\n" );
 
     //----------------------------
-    // Child PlanÀÇ Á¤º¸ Ãâ·Â
+    // Child Planì˜ ì •ë³´ ì¶œë ¥
     //----------------------------
 
     for ( sChildren = sCodePlan->plan.children;
@@ -275,7 +275,7 @@ qmnMTIT::doItDefault( qcTemplate * /* aTemplate */,
 /***********************************************************************
  *
  * Description :
- *    È£ÃâµÇ¾î¼­´Â ¾ÈµÊ
+ *    í˜¸ì¶œë˜ì–´ì„œëŠ” ì•ˆë¨
  *
  * Implementation :
  *
@@ -297,7 +297,7 @@ qmnMTIT::firstInit( qmndMTIT   * aDataPlan )
 /***********************************************************************
  *
  * Description :
- *    Data ¿µ¿ª¿¡ ´ëÇÑ ÃÊ±âÈ­
+ *    Data ì˜ì—­ì— ëŒ€í•œ ì´ˆê¸°í™”
  *
  * Implementation :
  *
@@ -307,7 +307,7 @@ qmnMTIT::firstInit( qmndMTIT   * aDataPlan )
     IDE_MSGLOG_FUNC(IDE_MSGLOG_BODY(""));
 
     //---------------------------------
-    // ÃÊ±âÈ­ ¿Ï·á¸¦ Ç¥±â
+    // ì´ˆê¸°í™” ì™„ë£Œë¥¼ í‘œê¸°
     //---------------------------------
 
     *aDataPlan->flag &= ~QMND_MTIT_INIT_DONE_MASK;

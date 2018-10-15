@@ -24,7 +24,7 @@
  *   utmPropertyMgr.cpp
  *
  * DESCRIPTION
- *   utmPropertyMgr ±¸Çö
+ *   utmPropertyMgr êµ¬í˜„
  *
  * PUBLIC FUNCTION(S)
  *
@@ -95,10 +95,10 @@ SInt utmPropertyMgr::readProperties()
         idlOS::memset(buffer, 0, 1024);
         if (idlOS::fgets(buffer, 1024, fp) == NULL)
         {
-            // È­ÀÏÀÇ ³¡±îÁö ÀĞÀ½
+            // í™”ì¼ì˜ ëê¹Œì§€ ì½ìŒ
             break;
         }
-        // buffer¿¡ ÇÑÁÙÀÇ Á¤º¸°¡ ÀÖÀ½
+        // bufferì— í•œì¤„ì˜ ì •ë³´ê°€ ìˆìŒ
 
         Name  = NULL;
         Value = NULL;
@@ -109,7 +109,7 @@ SInt utmPropertyMgr::readProperties()
             return IDE_FAILURE;
         }
 
-        if (Name) // ÇÁ·ÎÆÛÆ¼ ¶óÀÎ¿¡ Á¤º¸°¡ ÀÖÀ½(ÀÌ¸§+°ª ¾²±â)
+        if (Name) // í”„ë¡œí¼í‹° ë¼ì¸ì— ì •ë³´ê°€ ìˆìŒ(ì´ë¦„+ê°’ ì“°ê¸°)
         {
             utmPropertyPair *curr = &ppair_[cnt_of_properties_];
 
@@ -119,7 +119,7 @@ SInt utmPropertyMgr::readProperties()
 
             if (Value)
             {
-                if (Value[0] == '?') // Ä¡È¯¹®ÀÚ¿­ Á¸Àç
+                if (Value[0] == '?') // ì¹˜í™˜ë¬¸ìì—´ ì¡´ì¬
                 {
                     int length = idlOS::strlen(home_dir_) +
                         idlOS::strlen(Value) + 2;
@@ -140,12 +140,12 @@ SInt utmPropertyMgr::readProperties()
         }
     }
 
-    // BUGBUG : Ã¼Å© ¿ä¸Á
+    // BUGBUG : ì²´í¬ ìš”ë§
     idlOS::fclose(fp);
 
     return IDE_SUCCESS;
 
-    // »óÀ§ ÀÎÅÍÆäÀÌ½º utmGetPropertyMgr()¸¦ »ç¿ëÇÏ´Â °÷¿¡¼­ ¿¡·¯ Ã³¸®
+    // ìƒìœ„ ì¸í„°í˜ì´ìŠ¤ utmGetPropertyMgr()ë¥¼ ì‚¬ìš©í•˜ëŠ” ê³³ì—ì„œ ì—ëŸ¬ ì²˜ë¦¬
 
     IDE_EXCEPTION_END;
 
@@ -158,7 +158,7 @@ SInt utmPropertyMgr::readProperties()
 #undef IDE_FN
 }
 
-/* ½ºÆ®¸µ¿¡ Á¸ÀçÇÏ´Â ¸ğµç WHITE-SPACE¸¦ Á¦°Å */
+/* ìŠ¤íŠ¸ë§ì— ì¡´ì¬í•˜ëŠ” ëª¨ë“  WHITE-SPACEë¥¼ ì œê±° */
 static void eraseWhiteSpaceForProperty(SChar *buffer)
 {
 
@@ -175,7 +175,7 @@ static void eraseWhiteSpaceForProperty(SChar *buffer)
             buffer[i]= 0;
             return;
         }
-        if (isspace(buffer[i])) // ½ºÆäÀÌ½º ÀÓ
+        if (isspace(buffer[i])) // ìŠ¤í˜ì´ìŠ¤ ì„
         {
             SInt j;
 
@@ -199,26 +199,26 @@ SInt utmPropertyMgr::parseBuffer(SChar *buffer,
 #define IDE_FN "SInt utmPropertyMgr::parseBuffer(SChar *buffer, SChar **Name, SChar **Value)"
     IDE_MSGLOG_FUNC(IDE_MSGLOG_BODY("buffer=%s", buffer));
 
-    // 1. White Space Á¦°Å
+    // 1. White Space ì œê±°
     eraseWhiteSpaceForProperty(buffer);
 
-    // 2. ³»¿ëÀÌ ¾ø°Å³ª ÁÖ¼®ÀÌ¸é ¹«½Ã
+    // 2. ë‚´ìš©ì´ ì—†ê±°ë‚˜ ì£¼ì„ì´ë©´ ë¬´ì‹œ
     SInt len = idlOS::strlen(buffer);
     if (len == 0 || buffer[0] == '#')
     {
         return IDE_SUCCESS;
     }
 
-    *Name = buffer; // ÀÌ¸§À» °áÁ¤
+    *Name = buffer; // ì´ë¦„ì„ ê²°ì •
 
-    // 3. °ª Á¸ÀçÀ¯¹« °Ë»ç
+    // 3. ê°’ ì¡´ì¬ìœ ë¬´ ê²€ì‚¬
     SInt i;
 
     for (i = 0; i < len; i++)
     {
         if (buffer[i] == '=')
         {
-            // ±¸ºĞÀÚ°¡ Á¸ÀçÇÏ¸é,
+            // êµ¬ë¶„ìê°€ ì¡´ì¬í•˜ë©´,
             buffer[i] = 0;
 
             if (buffer[i + 1])
@@ -227,7 +227,7 @@ SInt utmPropertyMgr::parseBuffer(SChar *buffer,
 
                 if (idlOS::strlen(&buffer[i + 1]) > 256)
                 {
-                    // ¾²·¹±â°ªÀÌ ÀÖÀ½..
+                    // ì“°ë ˆê¸°ê°’ì´ ìˆìŒ..
                     return IDE_FAILURE;
                 }
             }
@@ -294,9 +294,9 @@ SChar* utmPropertyMgr::getConfFile()
  *
  * utmGetPropertyMgr()
  *
- * return °ªÀÌ NULL ÀÌ¸é ¿¡·¯..
- * ÀÌ ÇÔ¼öÀÇ È£Ãâ½Ã ÃÊ±âÈ­µÇÁö ¾ÊÀº »óÅÂÀÌ¸é, ÃÊ±âÈ­ÇÑ °á°ú¸¦
- * µ¹·ÁÁØ´Ù.
+ * return ê°’ì´ NULL ì´ë©´ ì—ëŸ¬..
+ * ì´ í•¨ìˆ˜ì˜ í˜¸ì¶œì‹œ ì´ˆê¸°í™”ë˜ì§€ ì•Šì€ ìƒíƒœì´ë©´, ì´ˆê¸°í™”í•œ ê²°ê³¼ë¥¼
+ * ëŒë ¤ì¤€ë‹¤.
  *
  * ============================================================*/
 
@@ -313,12 +313,12 @@ utmPropertyMgr* utmGetPropertyMgr(SChar *EnvString,
 
     static utmPropertyMgr *iduBP = NULL;
 
-    if (iduBP == NULL) // ÃÊ±âÈ­ µÇÁö ¾ÊÀº ½Ã½ºÅÛ ÇÁ·ÎÆÛÆ¼ »óÅÂ
+    if (iduBP == NULL) // ì´ˆê¸°í™” ë˜ì§€ ì•Šì€ ì‹œìŠ¤í…œ í”„ë¡œí¼í‹° ìƒíƒœ
     {
         SChar *home_dir  = NULL;
         SChar *conf_file = NULL;
 
-        // EnvString¿¡´Â [ALTIBASE_HOME]À» È¯°æº¯¼ö¿¡¼­ ¾ò±â À§ÇÑ ½ºÆ®¸µ Á¸Àç
+        // EnvStringì—ëŠ” [ALTIBASE_HOME]ì„ í™˜ê²½ë³€ìˆ˜ì—ì„œ ì–»ê¸° ìœ„í•œ ìŠ¤íŠ¸ë§ ì¡´ì¬
         if (EnvString == NULL)
         {
             EnvString = IDP_HOME_ENV;
@@ -333,18 +333,18 @@ utmPropertyMgr* utmGetPropertyMgr(SChar *EnvString,
         }
 
         /* ---------------------
-         *  [1] HOME µğ·ºÅä¸® ¼³Á¤
+         *  [1] HOME ë””ë ‰í† ë¦¬ ì„¤ì •
          * -------------------*/
 
-        if (HomeDir == NULL) // µğÆúÆ® È¯°æº¯¼ö¿¡¼­ ÇÁ·ÎÆÛÆ¼ ·Îµù
+        if (HomeDir == NULL) // ë””í´íŠ¸ í™˜ê²½ë³€ìˆ˜ì—ì„œ í”„ë¡œí¼í‹° ë¡œë”©
         {
             home_dir = idlOS::getenv(EnvString);
             if (home_dir == NULL)
             {
-                return NULL; // È¯°æº¯¼ö°¡ ¼ÂÆÃµÇ¾î ÀÖÁö ¾ÊÀ½
+                return NULL; // í™˜ê²½ë³€ìˆ˜ê°€ ì…‹íŒ…ë˜ì–´ ìˆì§€ ì•ŠìŒ
             }
         }
-        else // HomeDirÀÌ NULLÀÌ ¾Æ´Ô
+        else // HomeDirì´ NULLì´ ì•„ë‹˜
         {
             size_t  homelen = idlOS::strlen(HomeDir);
             if (homelen == 0)
@@ -352,7 +352,7 @@ utmPropertyMgr* utmGetPropertyMgr(SChar *EnvString,
                 home_dir = idlOS::getenv(EnvString);
                 if (home_dir == NULL)
                 {
-                    return NULL; // È¯°æº¯¼ö°¡ ¼ÂÆÃµÇ¾î ÀÖÁö ¾ÊÀ½
+                    return NULL; // í™˜ê²½ë³€ìˆ˜ê°€ ì…‹íŒ…ë˜ì–´ ìˆì§€ ì•ŠìŒ
                 }
             }
             else
@@ -362,7 +362,7 @@ utmPropertyMgr* utmGetPropertyMgr(SChar *EnvString,
         }
 
         /* ---------------------
-         *  [2] Conf File  ¼³Á¤
+         *  [2] Conf File  ì„¤ì •
          * -------------------*/
 
         if (ConfFile != NULL)
@@ -372,8 +372,8 @@ utmPropertyMgr* utmGetPropertyMgr(SChar *EnvString,
             {
                 conf_file = ConfFile;
                 /*
-                 * ÇöÀç »óÅÂ´Â home_dir¿¡ ALTIBASEÀÇ HOME µğ·ºÅä¸®¿Í
-                 * Conf È­ÀÏÀÌ ¼³Á¤µÇ¾î ÀÖÀ½
+                 * í˜„ì¬ ìƒíƒœëŠ” home_dirì— ALTIBASEì˜ HOME ë””ë ‰í† ë¦¬ì™€
+                 * Conf í™”ì¼ì´ ì„¤ì •ë˜ì–´ ìˆìŒ
                  */
                 iduBP = utmReadPropertyMgr(home_dir, conf_file);
             }
@@ -419,7 +419,7 @@ utmPropertyMgr* utmReadPropertyMgr(SChar *HomeDir,
         }
     }
     idlOS::free( bp );
-    /* ¸Ş¸ğ¸® ºÎÁ· or read ½Ã¿¡ ¿¡·¯ ¹ß»ı */
+    /* ë©”ëª¨ë¦¬ ë¶€ì¡± or read ì‹œì— ì—ëŸ¬ ë°œìƒ */
     return NULL;
 
 

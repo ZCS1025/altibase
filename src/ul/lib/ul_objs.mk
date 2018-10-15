@@ -234,7 +234,7 @@ UL_SRCS_ACS         = $(ULS_SRCS) $(ULO_SRCS_ACS)
 UL_SRCS_ULA         = $(MT_C_CLIENT_SRCS) $(ULN_SRCS) $(ULU_SRCS) $(ULS_SRCS) $(ULSDN_SRCS) $(ULA_API_SRCS) $(ULA_SRCS) $(ULX_SRCS)
 
 #
-# ÃÖÁ¾ÀûÀ¸·Î »ý»êµÇ¾î¾ß ÇÏ´Â ¶óÀÌºê·¯¸®µéÀÇ ÆÄÀÏ¸íµé
+# ìµœì¢…ì ìœ¼ë¡œ ìƒì‚°ë˜ì–´ì•¼ í•˜ëŠ” ë¼ì´ë¸ŒëŸ¬ë¦¬ë“¤ì˜ íŒŒì¼ëª…ë“¤
 #
 SHARDCLI_LIB_PATH      = $(ALTI_HOME)/lib/$(LIBPRE)shardcli.$(LIBEXT)
 SHARDCLI_SHLIB_PATH    = $(ALTI_HOME)/lib/$(LIBPRE)shardcli_sl.$(SOEXT)
@@ -287,7 +287,7 @@ ALA_OBJS   = $(patsubst $(DEV_DIR)/%,$(TARGET_DIR)/%_aoc.$(OBJEXT),$(basename $(
 ALA_SHOBJS = $(patsubst $(DEV_DIR)/%,$(TARGET_DIR)/%_soc.$(OBJEXT),$(basename $(ALA_SRCS)))
 
 ###########################################
-# Indirect build ½Ã »ý¼ºÇÒ object list ÆÄÀÏ
+# Indirect build ì‹œ ìƒì„±í•  object list íŒŒì¼
 ###########################################
 
 OBJLIST=objlist.txt

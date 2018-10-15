@@ -26,33 +26,33 @@
 #if defined(ALTI_CFG_OS_WINDOWS) && !defined(ACP_CFG_DOXYGEN)
 
 /*
- * Windows Vista ÀÌÀü ¹öÀü¿¡¼­´Â condition variable API°¡ Á¸ÀçÇÏÁö ¾Ê±â ¶§¹®¿¡
- * Win32 Event °´Ã¼¿Í atomic operationÀ» ÅëÇØ ±¸ÇöÇÑ´Ù.
+ * Windows Vista ì´ì „ ë²„ì „ì—ì„œëŠ” condition variable APIê°€ ì¡´ìž¬í•˜ì§€ ì•Šê¸° ë•Œë¬¸ì—
+ * Win32 Event ê°ì²´ì™€ atomic operationì„ í†µí•´ êµ¬í˜„í•œë‹¤.
  *
- * Win32 condition variable ±¸Çö¿¡¼­ ´ÙÀ½ÀÇ ¹®Á¦µéÀÌ ¹ß»ýÇÒ ¼ö ÀÖÀ¸¹Ç·Î
- * ÁÖÀÇÇØ¾ß ÇÑ´Ù.
+ * Win32 condition variable êµ¬í˜„ì—ì„œ ë‹¤ìŒì˜ ë¬¸ì œë“¤ì´ ë°œìƒí•  ìˆ˜ ìžˆìœ¼ë¯€ë¡œ
+ * ì£¼ì˜í•´ì•¼ í•œë‹¤.
  *
  * - lost wakeup
- *   cond_waitÇÔ¼ö°¡ mutex unlockÈÄ event waitÀü¿¡ ´Ù¸¥ ¾²·¹µå°¡ PulseEvent()
- *   ÇÔ¼ö¸¦ ÅëÇØ signalÀ» Àü¼ÛÇÏ¸é cond_waitÇÔ¼ö´Â ±ú¾î³ªÁö ¾Ê´Â´Ù.
- *   mutex¿Í event°¡ atomicÇÏ°Ô unlock-wait-lockµÇÁö ¾Ê±â ¶§¹®¿¡ PulseEvent()
- *   ÇÔ¼ö¸¦ ¾²Áö ¾Ê´Â °ÍÀÌ ÁÁ´Ù.
+ *   cond_waití•¨ìˆ˜ê°€ mutex unlockí›„ event waitì „ì— ë‹¤ë¥¸ ì“°ë ˆë“œê°€ PulseEvent()
+ *   í•¨ìˆ˜ë¥¼ í†µí•´ signalì„ ì „ì†¡í•˜ë©´ cond_waití•¨ìˆ˜ëŠ” ê¹¨ì–´ë‚˜ì§€ ì•ŠëŠ”ë‹¤.
+ *   mutexì™€ eventê°€ atomicí•˜ê²Œ unlock-wait-lockë˜ì§€ ì•Šê¸° ë•Œë¬¸ì— PulseEvent()
+ *   í•¨ìˆ˜ë¥¼ ì“°ì§€ ì•ŠëŠ” ê²ƒì´ ì¢‹ë‹¤.
  *
  * - unfairness
- *   cond_broadcastÇÔ¼ö´Â cond_waitÇÏ°í ÀÖ´ø ¸ðµç ¾²·¹µå¸¦ ±ú¿öÁØ´Ù. ÇÏÁö¸¸,
- *   Win32 Event¿¡¼­ ¸ðµç ¾²·¹µå¸¦ ÇÑ¹ø¿¡ ±ú¿ï·Á¸é auto-reset event¸¦ »ç¿ëÇÒ
- *   ¼ö ¾ø°í manual-reset event¸¦ »ç¿ëÇØ¾ß ÇÑ´Ù. ÀÌ ¶§, ¸ðµç cond_wait ¾²·¹µå°¡
- *   ±ú¾î³ª´Â °ÍÀÌ º¸ÀåµÇ¾î¾ß ÇÑ´Ù.
+ *   cond_broadcastí•¨ìˆ˜ëŠ” cond_waití•˜ê³  ìžˆë˜ ëª¨ë“  ì“°ë ˆë“œë¥¼ ê¹¨ì›Œì¤€ë‹¤. í•˜ì§€ë§Œ,
+ *   Win32 Eventì—ì„œ ëª¨ë“  ì“°ë ˆë“œë¥¼ í•œë²ˆì— ê¹¨ìš¸ë ¤ë©´ auto-reset eventë¥¼ ì‚¬ìš©í• 
+ *   ìˆ˜ ì—†ê³  manual-reset eventë¥¼ ì‚¬ìš©í•´ì•¼ í•œë‹¤. ì´ ë•Œ, ëª¨ë“  cond_wait ì“°ë ˆë“œê°€
+ *   ê¹¨ì–´ë‚˜ëŠ” ê²ƒì´ ë³´ìž¥ë˜ì–´ì•¼ í•œë‹¤.
  *
  * - incorrectness
- *   PulseEvent()ÇÔ¼ö¸¦ »ç¿ëÇÏÁö ¾Ê´Â ÇÑ Win32 Event´Â reliableÇÏ´Ù.
- *   Áï, event waitÀü¿¡ set event°¡ ¹ß»ýÇÏ´õ¶óµµ event waitÀº event¸¦ ¾ò¾î¿Â´Ù.
- *   ´Ù¸¥ ¾²·¹µå°¡ cond_signalÀÌ³ª cond_broadcastÈ£Ãâ ÈÄ¿¡ cond_waitÀ» ½ÃÀÛÇÏ´Â
- *   ¾²·¹µå°¡ wakeupµÇ¸é ¾ÈµÈ´Ù.
+ *   PulseEvent()í•¨ìˆ˜ë¥¼ ì‚¬ìš©í•˜ì§€ ì•ŠëŠ” í•œ Win32 EventëŠ” reliableí•˜ë‹¤.
+ *   ì¦‰, event waitì „ì— set eventê°€ ë°œìƒí•˜ë”ë¼ë„ event waitì€ eventë¥¼ ì–»ì–´ì˜¨ë‹¤.
+ *   ë‹¤ë¥¸ ì“°ë ˆë“œê°€ cond_signalì´ë‚˜ cond_broadcastí˜¸ì¶œ í›„ì— cond_waitì„ ì‹œìž‘í•˜ëŠ”
+ *   ì“°ë ˆë“œê°€ wakeupë˜ë©´ ì•ˆëœë‹¤.
  *
  * - busy waiting
- *   unfairness¿Í(³ª) incorrectness¸¦ º¸ÀåÇÏ±â À§ÇØ busy waitÀ» ÇØ¾ßÇÏ´Â °æ¿ì°¡
- *   ÀÖÀ» ¼ö ÀÖ´Ù. ÃÖ¼ÒÇÑÀÇ busy wait¸¸ ÇÏµµ·Ï ±¸ÇöÇØ¾ß ÇÑ´Ù.
+ *   unfairnessì™€(ë‚˜) incorrectnessë¥¼ ë³´ìž¥í•˜ê¸° ìœ„í•´ busy waitì„ í•´ì•¼í•˜ëŠ” ê²½ìš°ê°€
+ *   ìžˆì„ ìˆ˜ ìžˆë‹¤. ìµœì†Œí•œì˜ busy waitë§Œ í•˜ë„ë¡ êµ¬í˜„í•´ì•¼ í•œë‹¤.
  */
 
 static acp_rc_t acpThrCondTimedWaitInternal(acp_thr_cond_t  *aCond,
@@ -77,7 +77,7 @@ static acp_rc_t acpThrCondTimedWaitInternal(acp_thr_cond_t  *aCond,
     /*
      * [3] Signal Wait
      *
-     * cond_signal/cond_broadcast°¡ È£ÃâµÉ ¶§±îÁö ÁÖ¾îÁø timeout¸¸Å­ ´ë±â
+     * cond_signal/cond_broadcastê°€ í˜¸ì¶œë  ë•Œê¹Œì§€ ì£¼ì–´ì§„ timeoutë§Œí¼ ëŒ€ê¸°
      */
     sRet = WaitForSingleObject(aCond->mSemaphore, aMsec);
 
@@ -89,9 +89,9 @@ static acp_rc_t acpThrCondTimedWaitInternal(acp_thr_cond_t  *aCond,
     /*
      * [5] Event To Signaling Thread
      *
-     * cond_signal/cond_broadcast¾²·¹µå¿¡ wakeupÀÌ ¿Ï·áµÇ¾úÀ½À» event·Î ¾Ë·ÁÁÜ
+     * cond_signal/cond_broadcastì“°ë ˆë“œì— wakeupì´ ì™„ë£Œë˜ì—ˆìŒì„ eventë¡œ ì•Œë ¤ì¤Œ
      *
-     * cond_broadcastÀÇ °æ¿ì cond_waitÇÏ´ø ¸ðµç ¾²·¹µå°¡ ±ú¾î³µÀ»¶§ event¸¦ º¸³¿
+     * cond_broadcastì˜ ê²½ìš° cond_waití•˜ë˜ ëª¨ë“  ì“°ë ˆë“œê°€ ê¹¨ì–´ë‚¬ì„ë•Œ eventë¥¼ ë³´ëƒ„
      */
     sIsBroadcast = acpAtomicGet32(&aCond->mIsBroadcast);
     switch(sRet)
@@ -173,8 +173,8 @@ ACP_EXPORT acp_rc_t acpThrCondCreate(acp_thr_cond_t *aCond)
     aCond->mWaiterCount = 0;
 
     /*
-     * cond_signal/cond_broadcast°¡
-     * cond_wait¾²·¹µå¸¦ ±ú¿ì±â À§ÇØ »ç¿ëÇÏ´Â semaphore
+     * cond_signal/cond_broadcastê°€
+     * cond_waitì“°ë ˆë“œë¥¼ ê¹¨ìš°ê¸° ìœ„í•´ ì‚¬ìš©í•˜ëŠ” semaphore
      */
     aCond->mSemaphore = CreateSemaphore(NULL, 0, ACP_SINT32_MAX, NULL);
 
@@ -188,8 +188,8 @@ ACP_EXPORT acp_rc_t acpThrCondCreate(acp_thr_cond_t *aCond)
     }
 
     /*
-     * cond_signal/cond_broadcast°¡
-     * cond_wait¾²·¹µå ±ú¿ì±â°¡ ¿Ï·áµÉ ¶§±îÁö ±â´Ù¸®±â À§ÇÑ event
+     * cond_signal/cond_broadcastê°€
+     * cond_waitì“°ë ˆë“œ ê¹¨ìš°ê¸°ê°€ ì™„ë£Œë  ë•Œê¹Œì§€ ê¸°ë‹¤ë¦¬ê¸° ìœ„í•œ event
      */
     aCond->mWaitDone = CreateEvent(NULL, FALSE, FALSE, NULL);
 
@@ -249,7 +249,7 @@ ACP_EXPORT acp_rc_t acpThrCondTimedWait(acp_thr_cond_t  *aCond,
     }
 
     /*
-     * microsecond´ÜÀ§ÀÇ timeoutÀ» millisecond´ÜÀ§·Î º¯È¯
+     * microsecondë‹¨ìœ„ì˜ timeoutì„ millisecondë‹¨ìœ„ë¡œ ë³€í™˜
      */
     if (aTimeout == ACP_TIME_INFINITE)
     {
@@ -258,7 +258,7 @@ ACP_EXPORT acp_rc_t acpThrCondTimedWait(acp_thr_cond_t  *aCond,
     else
     {
         /*
-         * absolute timeoutÀ» relative timeoutÀ¸·Î º¯È¯
+         * absolute timeoutì„ relative timeoutìœ¼ë¡œ ë³€í™˜
          */
         if (aTimeoutType == ACP_TIME_ABS)
         {
@@ -298,12 +298,12 @@ ACP_EXPORT acp_rc_t acpThrCondSignal(acp_thr_cond_t *aCond)
     }
 
     /*
-     * cond_waitÇÏ´Â ¾²·¹µå°¡ ¾øÀ¸¸é ¾Æ¹«°Íµµ ÇÏÁö ¾ÊÀ½
+     * cond_waití•˜ëŠ” ì“°ë ˆë“œê°€ ì—†ìœ¼ë©´ ì•„ë¬´ê²ƒë„ í•˜ì§€ ì•ŠìŒ
      */
     if (acpAtomicGet32(&aCond->mWaiterCount) > 0)
     {
         /*
-         * cond_waitÇÏ´Â ¾²·¹µå Áß ÇÏ³ª¸¸ ±ú¿ò
+         * cond_waití•˜ëŠ” ì“°ë ˆë“œ ì¤‘ í•˜ë‚˜ë§Œ ê¹¨ì›€
          */
         sRet = ReleaseSemaphore(aCond->mSemaphore, 1, 0);
 
@@ -317,7 +317,7 @@ ACP_EXPORT acp_rc_t acpThrCondSignal(acp_thr_cond_t *aCond)
         }
 
         /*
-         * cond_wait¾²·¹µå°¡ ±ú¾î³¯ ¶§±îÁö ´ë±â
+         * cond_waitì“°ë ˆë“œê°€ ê¹¨ì–´ë‚  ë•Œê¹Œì§€ ëŒ€ê¸°
          */
         (void)WaitForSingleObject(aCond->mWaitDone, INFINITE);
     }
@@ -344,20 +344,20 @@ ACP_EXPORT acp_rc_t acpThrCondBroadcast(acp_thr_cond_t *aCond)
     }
 
     /*
-     * cond_waitÇÏ´Â ¾²·¹µå°¡ ¾øÀ¸¸é ¾Æ¹«°Íµµ ÇÏÁö ¾ÊÀ½
+     * cond_waití•˜ëŠ” ì“°ë ˆë“œê°€ ì—†ìœ¼ë©´ ì•„ë¬´ê²ƒë„ í•˜ì§€ ì•ŠìŒ
      */
     sWaiterCount = acpAtomicGet32(&aCond->mWaiterCount);
 
     if (sWaiterCount > 0)
     {
         /*
-         * ¸ðµç cond_waitÇÏ´Â ¾²·¹µå°¡ ±ú¾î³­ ÈÄ WaitDone event¸¦ ¹ß»ý½ÃÅ°µµ·Ï
-         * IsBroadcast flag¸¦ 1·Î ¼¼ÆÃ
+         * ëª¨ë“  cond_waití•˜ëŠ” ì“°ë ˆë“œê°€ ê¹¨ì–´ë‚œ í›„ WaitDone eventë¥¼ ë°œìƒì‹œí‚¤ë„ë¡
+         * IsBroadcast flagë¥¼ 1ë¡œ ì„¸íŒ…
          */
         (void)acpAtomicSet32(&aCond->mIsBroadcast, 1);
 
         /*
-         * ÇöÀç cond_waitÇÏ°í ÀÖ´Â ¾²·¹µå¸¦ ¸ðµÎ ±ú¿ò
+         * í˜„ìž¬ cond_waití•˜ê³  ìžˆëŠ” ì“°ë ˆë“œë¥¼ ëª¨ë‘ ê¹¨ì›€
          */
         sRet = ReleaseSemaphore(aCond->mSemaphore, sWaiterCount, 0);
 
@@ -371,12 +371,12 @@ ACP_EXPORT acp_rc_t acpThrCondBroadcast(acp_thr_cond_t *aCond)
         }
 
         /*
-         * ¸ðµç cond_wait¾²·¹µå°¡ ±ú¾î³¯ ¶§±îÁö ´ë±â
+         * ëª¨ë“  cond_waitì“°ë ˆë“œê°€ ê¹¨ì–´ë‚  ë•Œê¹Œì§€ ëŒ€ê¸°
          */
         (void)WaitForSingleObject(aCond->mWaitDone, INFINITE);
 
         /*
-         * IsBroadcast flag¸¦ 0À¸·Î ¿øº¹
+         * IsBroadcast flagë¥¼ 0ìœ¼ë¡œ ì›ë³µ
          */
         (void)acpAtomicSet32(&aCond->mIsBroadcast, 0);
     }

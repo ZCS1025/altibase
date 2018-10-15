@@ -26,11 +26,11 @@
     This file was created for BUG-41163 SET SQLP[ROMPT]
 
    DESCRIPTION
-    ÀÔ·Â ¹ŞÀº prompt¿¡¼­ º¯¼ö¸¦ ÇØ´çÇÏ´Â °ªÀ¸·Î Ä¡È¯ÇÑ´Ù.
-     - Áö¿ø º¯¼ö: _CONNECT_IDENTIFIER, _DATE, _PRIVILEGE, _USER
+    ì…ë ¥ ë°›ì€ promptì—ì„œ ë³€ìˆ˜ë¥¼ í•´ë‹¹í•˜ëŠ” ê°’ìœ¼ë¡œ ì¹˜í™˜í•œë‹¤.
+     - ì§€ì› ë³€ìˆ˜: _CONNECT_IDENTIFIER, _DATE, _PRIVILEGE, _USER
 
-   cf. prompt ¹®ÀÚ¿­ÀÇ syntax °Ë»ç´Â iSQLLexer.l¿¡¼­ ¼öÇàÇÏ°í
-       ¿©±â¿¡¼­´Â º¯¼ö Ä¡È¯¸¸ ¼öÇàÇÑ´Ù.
+   cf. prompt ë¬¸ìì—´ì˜ syntax ê²€ì‚¬ëŠ” iSQLLexer.lì—ì„œ ìˆ˜í–‰í•˜ê³ 
+       ì—¬ê¸°ì—ì„œëŠ” ë³€ìˆ˜ ì¹˜í™˜ë§Œ ìˆ˜í–‰í•œë‹¤.
 
    2.
     Rules starting with the <params> start condition were added 
@@ -218,7 +218,7 @@ BEGIN(INITIAL);
     sTmp = yytext;
     while ( *sTmp )
     {
-        if (isdigit(*sTmp) != 0) // ¼ıÀÚÀÌ¸é...
+        if (isdigit(*sTmp) != 0) // ìˆ«ìì´ë©´...
         {
             sVar = sTmp;
             break;
@@ -228,7 +228,7 @@ BEGIN(INITIAL);
     sTmp = yytext + yyleng - 1;
     while ( *sTmp )
     {
-        if (isdigit(*sTmp) != 0) // ¼ıÀÚÀÌ¸é...
+        if (isdigit(*sTmp) != 0) // ìˆ«ìì´ë©´...
         {
             sTmp++;
             *sTmp = '\0';
@@ -308,7 +308,7 @@ BEGIN(INITIAL);
 %%
 
 /*
- * ÀÎÀÚ·Î ¹ŞÀº ¹®ÀÚ¿­À» CommandBuf¿¡ Ãß°¡
+ * ì¸ìë¡œ ë°›ì€ ë¬¸ìì—´ì„ CommandBufì— ì¶”ê°€
  */
 void appendCommandStr(SChar *aValue)
 {
@@ -320,7 +320,7 @@ void appendCommandStr(SChar *aValue)
 }
 
 /*
- * ÀÎÀÚ·Î ¹ŞÀº ¹®ÀÚ¿­À» OldLineBuf¿¡ Ãß°¡.
+ * ì¸ìë¡œ ë°›ì€ ë¬¸ìì—´ì„ OldLineBufì— ì¶”ê°€.
  */
 void appendOldLine(SChar *aValue)
 {
@@ -332,7 +332,7 @@ void appendOldLine(SChar *aValue)
 }
 
 /*
- * ÀÎÀÚ·Î ¹ŞÀº ¹®ÀÚ¿­À» NewPrompt ¹öÆÛ¿¡ Ãß°¡
+ * ì¸ìë¡œ ë°›ì€ ë¬¸ìì—´ì„ NewPrompt ë²„í¼ì— ì¶”ê°€
  */
 void appendText(SChar *aValue)
 {
@@ -344,8 +344,8 @@ void appendText(SChar *aValue)
 }
 
 /*
- * _CONNECT_IDENTIFIER variable¿¡ »óÀÀÇÏ´Â °ªÀ» ±¸ÇØ¼­ ÀÓ½Ã ¹öÆÛ¿¡ ÀúÀå
- * NATC ¼öÇà½Ã¿¡´Â diff ¹æÁö¸¦ À§ÇØ Á¤ÇØÁø ¹®ÀÚ¿­ ¹İÈ¯ ^^;;
+ * _CONNECT_IDENTIFIER variableì— ìƒì‘í•˜ëŠ” ê°’ì„ êµ¬í•´ì„œ ì„ì‹œ ë²„í¼ì— ì €ì¥
+ * NATC ìˆ˜í–‰ì‹œì—ëŠ” diff ë°©ì§€ë¥¼ ìœ„í•´ ì •í•´ì§„ ë¬¸ìì—´ ë°˜í™˜ ^^;;
  */
 void getConnectIdentifier()
 {
@@ -363,7 +363,7 @@ void getConnectIdentifier()
 }
 
 /*
- * º¯¼ö ÃÊ±âÈ­ ¹× start condition ¼³Á¤
+ * ë³€ìˆ˜ ì´ˆê¸°í™” ë° start condition ì„¤ì •
  */
 void initSqlPrompt()
 {
@@ -375,21 +375,21 @@ void initSqlPrompt()
 }
 
 /*
- * »ç¿ëÀÚ ÀÔ·Â prompt ÅØ½ºÆ®¸¦ ½ºÄµÇÏ¿© º¯¼ö¸¦ ÇØ´çÇÏ´Â °ªÀ¸·Î Ä¡È¯ÇÑ´Ù.
+ * ì‚¬ìš©ì ì…ë ¥ prompt í…ìŠ¤íŠ¸ë¥¼ ìŠ¤ìº”í•˜ì—¬ ë³€ìˆ˜ë¥¼ í•´ë‹¹í•˜ëŠ” ê°’ìœ¼ë¡œ ì¹˜í™˜í•œë‹¤.
  *
- * aSqlPrompt    : ÀÔ·Â prompt
- * aNewPromptBuf : ÃÖÁ¾ prompt°¡ ÀúÀåµÉ ¹öÆÛ
- * aPromptRefreshFlag: Ä¡È¯º¯¼ö°¡ Á¸ÀçÇÏ´Â °æ¿ì, prompt¸¦ Ãâ·ÂÇÒ ¶§¸¶´Ù
- *                 prompt °ªÀÌ º¯°æµÉ ¼ö ÀÖ´Ù.
- *                 ÀÌ °ªÀº prompt°¡ µ¿ÀûÀ¸·Î º¯°æµÇ¾î¾ß ÇÏ´ÂÁö ¿©ºÎ¸¦ ¹İÈ¯ÇÑ´Ù.
+ * aSqlPrompt    : ì…ë ¥ prompt
+ * aNewPromptBuf : ìµœì¢… promptê°€ ì €ì¥ë  ë²„í¼
+ * aPromptRefreshFlag: ì¹˜í™˜ë³€ìˆ˜ê°€ ì¡´ì¬í•˜ëŠ” ê²½ìš°, promptë¥¼ ì¶œë ¥í•  ë•Œë§ˆë‹¤
+ *                 prompt ê°’ì´ ë³€ê²½ë  ìˆ˜ ìˆë‹¤.
+ *                 ì´ ê°’ì€ promptê°€ ë™ì ìœ¼ë¡œ ë³€ê²½ë˜ì–´ì•¼ í•˜ëŠ”ì§€ ì—¬ë¶€ë¥¼ ë°˜í™˜í•œë‹¤.
  *
- * return        : ÀÔ·Â prompt text°¡ À¯È¿ÇÏÁö ¾ÊÀº °æ¿ì IDE_FAILURE ¹İÈ¯.
+ * return        : ì…ë ¥ prompt textê°€ ìœ íš¨í•˜ì§€ ì•Šì€ ê²½ìš° IDE_FAILURE ë°˜í™˜.
  */
 SInt lexSqlPrompt(const SChar *aSqlPrompt,
                   SChar       *aNewPromptBuf,
                   UInt        *aPromptRefreshFlag)
 {
-    /* lexerÀÇ ÀÔ·ÂÀ» stdin¿¡¼­ ¹öÆÛ·Î ±³Ã¼ */
+    /* lexerì˜ ì…ë ¥ì„ stdinì—ì„œ ë²„í¼ë¡œ êµì²´ */
     yy_switch_to_buffer(yy_scan_string(aSqlPrompt));
 
     gNewPromptBufPtr = aNewPromptBuf;
@@ -404,10 +404,10 @@ SInt lexSqlPrompt(const SChar *aSqlPrompt,
  * BUG-41173 Passing Parameters through the START command.
  ***********************************************************/
 /*
- * º¯¼ö ¼³¸í:
- * gCommandBuf: Ä¡È¯º¯¼ö°¡ °ªÀ¸·Î Ä¡È¯µÈ ¹®ÀÚ¿­ÀÌ ÀúÀåµÈ´Ù.
- * gOldLineBuf: Ä¡È¯µÇ±â ÀüÀÇ ¹®ÀÚ¿­ÀÌ ¶óÀÎ ´ÜÀ§·Î ÀúÀåµÈ´Ù.
- * gNewLinePtr: gCommandBuf¿¡¼­ °¢ ¶óÀÎÀÇ ½ÃÀÛ À§Ä¡¸¦ °¡¸®Å²´Ù.
+ * ë³€ìˆ˜ ì„¤ëª…:
+ * gCommandBuf: ì¹˜í™˜ë³€ìˆ˜ê°€ ê°’ìœ¼ë¡œ ì¹˜í™˜ëœ ë¬¸ìì—´ì´ ì €ì¥ëœë‹¤.
+ * gOldLineBuf: ì¹˜í™˜ë˜ê¸° ì „ì˜ ë¬¸ìì—´ì´ ë¼ì¸ ë‹¨ìœ„ë¡œ ì €ì¥ëœë‹¤.
+ * gNewLinePtr: gCommandBufì—ì„œ ê° ë¼ì¸ì˜ ì‹œì‘ ìœ„ì¹˜ë¥¼ ê°€ë¦¬í‚¨ë‹¤.
  */
 void initPassingParams()
 {
@@ -420,18 +420,18 @@ void initPassingParams()
 
 /*
  * Description:
- *   Äõ¸® ¹®ÀÚ¿­À» ½ºÄµÇÏ¸é¼­ &[num]À¸·Î Ç¥½ÃµÈ
- *   substitution variableÀ» Ã£¾Æ¼­ Àü´ŞµÈ °ªÀ¸·Î Ä¡È¯ÇÑ´Ù.
+ *   ì¿¼ë¦¬ ë¬¸ìì—´ì„ ìŠ¤ìº”í•˜ë©´ì„œ &[num]ìœ¼ë¡œ í‘œì‹œëœ
+ *   substitution variableì„ ì°¾ì•„ì„œ ì „ë‹¬ëœ ê°’ìœ¼ë¡œ ì¹˜í™˜í•œë‹¤.
  */
 void lexSubstituteVars()
 {
     SChar *sCommandStr   = NULL;
 
-    /* º¯¼ö ¼³¸í:
+    /* ë³€ìˆ˜ ì„¤ëª…:
      * gBufMgr->GetBuf(): original sql text
-     * sCommandStr: original sql text¸¦ sCommandStr·Î º¹»çÇÑ ÈÄ,
-     *              lexerÀÇ input buffer·Î »ç¿ë
-     * gCommandBufPtr: gBufMgr->GetBuf()ÀÇ Æ÷ÀÎÅÍ·Î½á, Ä¡È¯µÈ Äõ¸®¹® ÀúÀå
+     * sCommandStr: original sql textë¥¼ sCommandStrë¡œ ë³µì‚¬í•œ í›„,
+     *              lexerì˜ input bufferë¡œ ì‚¬ìš©
+     * gCommandBufPtr: gBufMgr->GetBuf()ì˜ í¬ì¸í„°ë¡œì¨, ì¹˜í™˜ëœ ì¿¼ë¦¬ë¬¸ ì €ì¥
      */
     sCommandStr = (SChar *)idlOS::malloc(
                       idlOS::strlen(gBufMgr->GetBuf()) + 1);
@@ -439,7 +439,7 @@ void lexSubstituteVars()
 
     idlOS::strcpy(sCommandStr, gBufMgr->GetBuf());
 
-    /* lexerÀÇ ÀÔ·ÂÀ» stdin¿¡¼­ ¹öÆÛ·Î ±³Ã¼ */
+    /* lexerì˜ ì…ë ¥ì„ stdinì—ì„œ ë²„í¼ë¡œ êµì²´ */
     yy_switch_to_buffer(yy_scan_string(sCommandStr));
 
     gCommandBufPtr = gBufMgr->GetBuf();
@@ -447,7 +447,7 @@ void lexSubstituteVars()
 
     initPassingParams();
 
-    /* start condition º¯°æ */
+    /* start condition ë³€ê²½ */
     yy_push_state(params);
 
     iSQLScanLexerlex();
@@ -471,15 +471,15 @@ IDE_RC addHostVar(SChar *aHostVar)
 
 /*
  * Description: BUG-41724
- *   stored proc/fuc ½ÇÇà ±¸¹®À» ½ºÄµÇÏ¸é¼­ :varÀ¸·Î Ç¥½ÃµÈ
- *   host variableÀ» bind list·Î ¿Ï¼ºÇÑ´Ù.
+ *   stored proc/fuc ì‹¤í–‰ êµ¬ë¬¸ì„ ìŠ¤ìº”í•˜ë©´ì„œ :varìœ¼ë¡œ í‘œì‹œëœ
+ *   host variableì„ bind listë¡œ ì™„ì„±í•œë‹¤.
  */
 SInt lexHostVariables(SChar *aBuf)
 {
-    /* lexerÀÇ ÀÔ·ÂÀ» stdin¿¡¼­ ¹öÆÛ·Î ±³Ã¼ */
+    /* lexerì˜ ì…ë ¥ì„ stdinì—ì„œ ë²„í¼ë¡œ êµì²´ */
     yy_switch_to_buffer(yy_scan_string(aBuf));
 
-    /* start condition º¯°æ */
+    /* start condition ë³€ê²½ */
     yy_push_state(hostvar);
 
     gHostVarMgr.initBindList();

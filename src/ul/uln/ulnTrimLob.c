@@ -49,7 +49,7 @@ SQLRETURN ulnTrimLob(ulnStmt     *aStmt,
     ULN_FLAG_UP(sNeedExit);
 
     sPtContext = &(aStmt->mParentDbc->mPtContext);
-    /* BUG-44125 [mm-cli] IPCDA ¸ðµå Å×½ºÆ® Áß hang - iloader CLOB */
+    /* BUG-44125 [mm-cli] IPCDA ëª¨ë“œ í…ŒìŠ¤íŠ¸ ì¤‘ hang - iloader CLOB */
     ACI_TEST_RAISE(cmiGetLinkImpl(&sPtContext->mCmiPtContext) == CMI_LINK_IMPL_IPCDA,
                    IPCDANotSupport);
     /*
@@ -71,7 +71,7 @@ SQLRETURN ulnTrimLob(ulnStmt     *aStmt,
 
 
     /*
-     * ulnLob ±¸Á¶Ã¼ ÃÊ±âÈ­
+     * ulnLob êµ¬ì¡°ì²´ ì´ˆê¸°í™”
      */
 
     ulnLobInitialize(&sLob, sMTYPE);                        /* ULN_LOB_ST_INITIALIZED */

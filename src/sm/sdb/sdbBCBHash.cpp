@@ -25,15 +25,15 @@
  *
  * BCB Buffer Hash (PROJ-1568. SM - Buffer manager renewal)
  *
- * ¾ËÆ¼º£ÀÌ½º¿¡¼­ °øÅëÀ¸·Î »ç¿ëÇÏ´Â hash tableÀ» »ç¿ëÇÏÁö ¾Ê°í,
- * »õ·Î¿î hash¸¦ ¸¸µé¾î¼­ ¿ÀÁ÷ buffer manager¿¡¼­¸¸ »ç¿ëÇÏ°Ô ÇÔ.
+ * ì•Œí‹°ë² ì´ìŠ¤ì—ì„œ ê³µí†µìœ¼ë¡œ ì‚¬ìš©í•˜ëŠ” hash tableì„ ì‚¬ìš©í•˜ì§€ ì•Šê³ ,
+ * ìƒˆë¡œìš´ hashë¥¼ ë§Œë“¤ì–´ì„œ ì˜¤ì§ buffer managerì—ì„œë§Œ ì‚¬ìš©í•˜ê²Œ í•¨.
  * 
  *
- * #Æ¯Â¡
- *      - ÇØ½Ã Å×ÀÌºí Å©±â¸¦ µ¿ÀûÀ¸·Î º¯°æÇÒ ¼ö ÀÖ´Ù.
- *      - ¿©·¯ bucket¿¡ ÇÏ³ªÀÇ mutex¸¦ ¸ÅÇÎ½ÃÄÑ »ç¿ëÇÒ ¼ö ÀÖ´Ù.
- *      - ÇØ½Ã Å×ÀÌºíÀÇ Å©±â¸¦ ÃÖ¼ÒÇÑÀ¸·Î À¯ÁöÇÑ´Ù.
- *      - BCB¿¡ Æ¯È­ ½ÃÄ×±â ¶§¹®¿¡ ¼Óµµ°¡ ´õ ºü¸§.
+ * #íŠ¹ì§•
+ *      - í•´ì‹œ í…Œì´ë¸” í¬ê¸°ë¥¼ ë™ì ìœ¼ë¡œ ë³€ê²½í•  ìˆ˜ ìžˆë‹¤.
+ *      - ì—¬ëŸ¬ bucketì— í•˜ë‚˜ì˜ mutexë¥¼ ë§¤í•‘ì‹œì¼œ ì‚¬ìš©í•  ìˆ˜ ìžˆë‹¤.
+ *      - í•´ì‹œ í…Œì´ë¸”ì˜ í¬ê¸°ë¥¼ ìµœì†Œí•œìœ¼ë¡œ ìœ ì§€í•œë‹¤.
+ *      - BCBì— íŠ¹í™” ì‹œì¼°ê¸° ë•Œë¬¸ì— ì†ë„ê°€ ë” ë¹ ë¦„.
  * 
  *****************************************************************/
 
@@ -48,10 +48,10 @@
 
 /***********************************************************************
  * Description :
- *  Æ¯Á¤ ¼ýÀÚ¸¦ ÀÔ·ÂÀ¸·Î ¹Þ¾Æ ÀÌ ¼ýÀÚ º¸´Ù Å« 2ÀÇ Á¦°ö ¼ö¸¦ ¸®ÅÏÇÑ´Ù.
- *  Áï, ÀÔ·ÂÀÌ 3ÀÌ¸é 4¸¦ ¸®ÅÏÇÏ°í, ÀÔ·ÂÀÌ 5ÀÌ¸é 8À» ¸®ÅÏÇÑ´Ù.
+ *  íŠ¹ì • ìˆ«ìžë¥¼ ìž…ë ¥ìœ¼ë¡œ ë°›ì•„ ì´ ìˆ«ìž ë³´ë‹¤ í° 2ì˜ ì œê³± ìˆ˜ë¥¼ ë¦¬í„´í•œë‹¤.
+ *  ì¦‰, ìž…ë ¥ì´ 3ì´ë©´ 4ë¥¼ ë¦¬í„´í•˜ê³ , ìž…ë ¥ì´ 5ì´ë©´ 8ì„ ë¦¬í„´í•œë‹¤.
  *
- *  aNum         - [IN] ÀÔ·Â ¼ýÀÚ
+ *  aNum         - [IN] ìž…ë ¥ ìˆ«ìž
  ***********************************************************************/
 static UInt makeSqure2(UInt aNum)
 {
@@ -74,9 +74,9 @@ static UInt makeSqure2(UInt aNum)
 /***********************************************************************
  * Description:
  * 
- *  aBucketCnt         - [IN]  ÇØ½Ã°¡ À¯ÁöÇÒ ÃÑ bucket °³¼ö
- *  aBucketCntPerLatch - [IN]  ÇÏ³ªÀÇ HashChainsLacth°¡ °ü¸®ÇÏ´Â bucketÀÇ °¹¼ö
- *  aType              - [IN]  BufferMgr or Secondary BufferMgr¿¡¼­ È£ÃâµÇ¾ú´ÂÁö
+ *  aBucketCnt         - [IN]  í•´ì‹œê°€ ìœ ì§€í•  ì´ bucket ê°œìˆ˜
+ *  aBucketCntPerLatch - [IN]  í•˜ë‚˜ì˜ HashChainsLacthê°€ ê´€ë¦¬í•˜ëŠ” bucketì˜ ê°¯ìˆ˜
+ *  aType              - [IN]  BufferMgr or Secondary BufferMgrì—ì„œ í˜¸ì¶œë˜ì—ˆëŠ”ì§€
  ***********************************************************************/ 
 IDE_RC sdbBCBHash::initialize( UInt           aBucketCnt,
                                UInt           aBucketCntPerLatch,
@@ -86,9 +86,9 @@ IDE_RC sdbBCBHash::initialize( UInt           aBucketCnt,
     UInt   i;
     SChar  sMutexName[128];
 
-    /* mLatchMask ¼³Á¤
-     * bucket¿¡ ÇØ´çÇÏ´Â mutex¸¦ ±¸ÇÒ¶§ »ç¿ëÇÏ´Â º¯¼ö¸¦ ¼³Á¤ÇÑ´Ù.
-     * mLatchArray[key & mLatchMask] ¸¦ ÅëÇØ¼­ ÇØ´ç ·¡Ä¡¸¦ ±¸ÇÑ´Ù. */
+    /* mLatchMask ì„¤ì •
+     * bucketì— í•´ë‹¹í•˜ëŠ” mutexë¥¼ êµ¬í• ë•Œ ì‚¬ìš©í•˜ëŠ” ë³€ìˆ˜ë¥¼ ì„¤ì •í•œë‹¤.
+     * mLatchArray[key & mLatchMask] ë¥¼ í†µí•´ì„œ í•´ë‹¹ ëž˜ì¹˜ë¥¼ êµ¬í•œë‹¤. */
     IDE_ASSERT(aBucketCntPerLatch != 0);
     
     mBucketCnt = aBucketCnt;
@@ -96,23 +96,23 @@ IDE_RC sdbBCBHash::initialize( UInt           aBucketCnt,
 
     if (mLatchCnt == mBucketCnt)
     {
-        /* ¾Æ·¡¿Í °°ÀÌ mask°ªÀ» Á¤ÇÏ¸é ¹öÅ¶°ú °°Àº °ªÀÌ ¹Ù·Î ³ª¿Â´Ù.
-         * Áï, bucket°ú latch°¡ 1:1·Î ¸ÅÇÎµÈ´Ù. */
+        /* ì•„ëž˜ì™€ ê°™ì´ maskê°’ì„ ì •í•˜ë©´ ë²„í‚·ê³¼ ê°™ì€ ê°’ì´ ë°”ë¡œ ë‚˜ì˜¨ë‹¤.
+         * ì¦‰, bucketê³¼ latchê°€ 1:1ë¡œ ë§¤í•‘ëœë‹¤. */
         mLatchMask = ID_UINT_MAX;
     }
     else
     {
-        /* aLatchRatio´Â ¹Ýµå½Ã 1¶Ç´Â 2ÀÇ ¹è¼ö¿©¾ß ÇÑ´Ù.
-         * 2ÀÇ ¹è¼öÀÎ °æ¿ì¿¡ ¾Æ·¡ÀÇ assert´Â ¹Ýµå½Ã Åë°úµÈ´Ù.
+        /* aLatchRatioëŠ” ë°˜ë“œì‹œ 1ë˜ëŠ” 2ì˜ ë°°ìˆ˜ì—¬ì•¼ í•œë‹¤.
+         * 2ì˜ ë°°ìˆ˜ì¸ ê²½ìš°ì— ì•„ëž˜ì˜ assertëŠ” ë°˜ë“œì‹œ í†µê³¼ëœë‹¤.
          *
-         * aLatchRatio´Â ¹Ýµå½Ã 0010000 ÀÌ¿Í °°Àº Çü½ÄÀÌ°í,( 1ÀÌ ¿ÀÁ÷ ÇÑ°³ )
-         * ÀÌ °ª¿¡¼­ 1À» »©¸é    0001111 °ú °°ÀÌ µÇ¹Ç·Î ¿øÇÏ´Â mask¸¦ ¾òÀ» ¼ö ÀÖ´Ù.
-         * ¿¹¸¦ µé¾îº¸¸é, mask°¡ 0x0011ÀÌ°í key°¡ 0x1010ÀÎ°æ¿ì,
-         * key°¡ 0x1110, 0x0110, 0x0010ÀÎ °Íµé°ú °°Àº latch¸¦ »ç¿ëÇÑ´Ù. */
+         * aLatchRatioëŠ” ë°˜ë“œì‹œ 0010000 ì´ì™€ ê°™ì€ í˜•ì‹ì´ê³ ,( 1ì´ ì˜¤ì§ í•œê°œ )
+         * ì´ ê°’ì—ì„œ 1ì„ ë¹¼ë©´    0001111 ê³¼ ê°™ì´ ë˜ë¯€ë¡œ ì›í•˜ëŠ” maskë¥¼ ì–»ì„ ìˆ˜ ìžˆë‹¤.
+         * ì˜ˆë¥¼ ë“¤ì–´ë³´ë©´, maskê°€ 0x0011ì´ê³  keyê°€ 0x1010ì¸ê²½ìš°,
+         * keyê°€ 0x1110, 0x0110, 0x0010ì¸ ê²ƒë“¤ê³¼ ê°™ì€ latchë¥¼ ì‚¬ìš©í•œë‹¤. */
         mLatchCnt = makeSqure2(mLatchCnt);
         mLatchMask = mLatchCnt - 1;
 
-        /*aLatchRatio´Â ¹Ýµå½Ã 2ÀÇ Á¦°ö¼ö¿©¾ß ÇÑ´Ù.*/
+        /*aLatchRatioëŠ” ë°˜ë“œì‹œ 2ì˜ ì œê³±ìˆ˜ì—¬ì•¼ í•œë‹¤.*/
         IDE_ASSERT((mLatchMask & mLatchCnt) == 0);
     }
 
@@ -121,9 +121,9 @@ IDE_RC sdbBCBHash::initialize( UInt           aBucketCnt,
                           insufficient_memory );
 
 
-    /* mTable ¼³Á¤ */
-    /*BUG-30439  102GB ÀÌ»ó BUFFER_AREA_SIZE¸¦ ÇÒ´çÇÒ °æ¿ì, MutexÇÒ´ç °è»ê 
-                      ¿À·ù·Î ¸Þ¸ð¸® ÇÒ´çÀ» Àß¸øÇÒ ¼ö ÀÖ½À´Ï´Ù. */
+    /* mTable ì„¤ì • */
+    /*BUG-30439  102GB ì´ìƒ BUFFER_AREA_SIZEë¥¼ í• ë‹¹í•  ê²½ìš°, Mutexí• ë‹¹ ê³„ì‚° 
+                      ì˜¤ë¥˜ë¡œ ë©”ëª¨ë¦¬ í• ë‹¹ì„ ìž˜ëª»í•  ìˆ˜ ìžˆìŠµë‹ˆë‹¤. */
     IDE_TEST_RAISE(iduMemMgr::malloc(IDU_MEM_SM_SDB,
                                      (ULong)ID_SIZEOF( sdbBCBHashBucket ) 
                                          * (mBucketCnt),
@@ -139,9 +139,9 @@ IDE_RC sdbBCBHash::initialize( UInt           aBucketCnt,
     IDU_FIT_POINT_RAISE( "sdbBCBHash::initialize::malloc2",
                           insufficient_memory );
 
-    /* mMutexArray ¼³Á¤ */
-    /*BUG-30439  102GB ÀÌ»ó BUFFER_AREA_SIZE¸¦ ÇÒ´çÇÒ °æ¿ì, MutexÇÒ´ç °è»ê 
-                      ¿À·ù·Î ¸Þ¸ð¸® ÇÒ´çÀ» Àß¸øÇÒ ¼ö ÀÖ½À´Ï´Ù. */
+    /* mMutexArray ì„¤ì • */
+    /*BUG-30439  102GB ì´ìƒ BUFFER_AREA_SIZEë¥¼ í• ë‹¹í•  ê²½ìš°, Mutexí• ë‹¹ ê³„ì‚° 
+                      ì˜¤ë¥˜ë¡œ ë©”ëª¨ë¦¬ í• ë‹¹ì„ ìž˜ëª»í•  ìˆ˜ ìžˆìŠµë‹ˆë‹¤. */
     IDE_TEST_RAISE(iduMemMgr::malloc(IDU_MEM_SM_SDB,
                                      (ULong)ID_SIZEOF(iduLatch) 
                                          * mLatchCnt,
@@ -180,9 +180,9 @@ IDE_RC sdbBCBHash::initialize( UInt           aBucketCnt,
         }
     }
 
-    // [ÁÖÀÇ]
-    // ÀÌ ¶óÀÎ ¾Æ·¡¿¡ IDE_TEST ±¸¹®À» Ãß°¡ÇÏ·Á¸é
-    // EXCEPTION Ã³¸® ·çÆ¾¿¡¼­ mMutexArray¸¦ mLatchCnt¸¸Å­ µ¹¸é¼­ destroyÇØ¾ß ÇÑ´Ù.
+    // [ì£¼ì˜]
+    // ì´ ë¼ì¸ ì•„ëž˜ì— IDE_TEST êµ¬ë¬¸ì„ ì¶”ê°€í•˜ë ¤ë©´
+    // EXCEPTION ì²˜ë¦¬ ë£¨í‹´ì—ì„œ mMutexArrayë¥¼ mLatchCntë§Œí¼ ëŒë©´ì„œ destroyí•´ì•¼ í•œë‹¤.
 
     return IDE_SUCCESS;
 
@@ -207,7 +207,7 @@ IDE_RC sdbBCBHash::initialize( UInt           aBucketCnt,
 
 /***********************************************************************
  * Description :
- *  Á¦°Å ÇÔ¼ö
+ *  ì œê±° í•¨ìˆ˜
  ***********************************************************************/
 IDE_RC sdbBCBHash::destroy()
 {
@@ -230,12 +230,12 @@ IDE_RC sdbBCBHash::destroy()
 
 /***********************************************************************
  * Description:
- *  BCB¸¦ hash¿¡ »ðÀÔ. »ðÀÔÇÏ´Â BCB¿Í °°Àº (pid,spaceID)¸¦ °¡Áø BCB°¡ ÀÖ´Ù¸é ±×
- *  BCB¸¦ ¸®ÅÏ
+ *  BCBë¥¼ hashì— ì‚½ìž…. ì‚½ìž…í•˜ëŠ” BCBì™€ ê°™ì€ (pid,spaceID)ë¥¼ ê°€ì§„ BCBê°€ ìžˆë‹¤ë©´ ê·¸
+ *  BCBë¥¼ ë¦¬í„´
  *  
- *  aTargetBCB        - [IN]  »ðÀÔÇÒ BCB
- *  aAlreadyExistBCB  - [OUT] °°Àº (pid, spaceID)¸¦ °¡Áø BCB°¡ ÀÖ´Ù¸é,
- *                              »ðÀÔÀ» ÇÏ´Â´ë½Å ÀÌ BCB¸¦ ¸®ÅÏÇÑ´Ù.
+ *  aTargetBCB        - [IN]  ì‚½ìž…í•  BCB
+ *  aAlreadyExistBCB  - [OUT] ê°™ì€ (pid, spaceID)ë¥¼ ê°€ì§„ BCBê°€ ìžˆë‹¤ë©´,
+ *                              ì‚½ìž…ì„ í•˜ëŠ”ëŒ€ì‹  ì´ BCBë¥¼ ë¦¬í„´í•œë‹¤.
  ***********************************************************************/
 void sdbBCBHash::insertBCB( void  * aTargetBCB,
                             void ** aAlreadyExistBCB )
@@ -260,7 +260,7 @@ void sdbBCBHash::insertBCB( void  * aTargetBCB,
         sBCB = (sdBCB*)sListNode->mData;
         if ((sBCB->mPageID == sPID) && (sBCB->mSpaceID == sSpaceID))
         {
-            /*ÀÌ¹Ì °°Àº pid¸¦ °¡Áø BCB°¡ hash¿¡ Á¸ÀçÇÏ´Â °æ¿ì*/
+            /*ì´ë¯¸ ê°™ì€ pidë¥¼ ê°€ì§„ BCBê°€ hashì— ì¡´ìž¬í•˜ëŠ” ê²½ìš°*/
             break;
         }
         else
@@ -286,10 +286,10 @@ void sdbBCBHash::insertBCB( void  * aTargetBCB,
 
 /***********************************************************************
  * Description:
- *  BCB¸¦ hash¿¡¼­ »èÁ¦ÇÑ´Ù. ¹Ýµå½Ã »èÁ¦ÇÒ BCB°¡ hash¿¡ Á¸ÀçÇØ¾ß ÇÑ´Ù. ±×·¸Áö
- *  ¾ÊÀ¸¸é ¼­¹ö »ç¸Á
+ *  BCBë¥¼ hashì—ì„œ ì‚­ì œí•œë‹¤. ë°˜ë“œì‹œ ì‚­ì œí•  BCBê°€ hashì— ì¡´ìž¬í•´ì•¼ í•œë‹¤. ê·¸ë ‡ì§€
+ *  ì•Šìœ¼ë©´ ì„œë²„ ì‚¬ë§
  *
- * aTargetBCB   - [IN]  Á¦°ÅÇÒ BCB  
+ * aTargetBCB   - [IN]  ì œê±°í•  BCB  
  ***********************************************************************/
 void sdbBCBHash::removeBCB( void *aTargetBCB )
 {
@@ -314,8 +314,8 @@ void sdbBCBHash::removeBCB( void *aTargetBCB )
 
 /***********************************************************************
  * Description:
- *  aSpaceID¿Í aPID¿¡ ÇØ´çÇÏ´Â BCB¸¦ ¾ò°íÀÚ ¼öÇàÇÏ´Â ÇÔ¼ö, Hash¿¡ BCB°¡ Á¸ÀçÇÒ
- *  °æ¿ì¿£ ±× BCB¸¦ ¸®ÅÏÇÑ´Ù. ¾øÀ¸¸é NULLÀ» ¸®ÅÏ 
+ *  aSpaceIDì™€ aPIDì— í•´ë‹¹í•˜ëŠ” BCBë¥¼ ì–»ê³ ìž ìˆ˜í–‰í•˜ëŠ” í•¨ìˆ˜, Hashì— BCBê°€ ì¡´ìž¬í• 
+ *  ê²½ìš°ì—” ê·¸ BCBë¥¼ ë¦¬í„´í•œë‹¤. ì—†ìœ¼ë©´ NULLì„ ë¦¬í„´ 
  *
  *  aSpaceID    - [IN]  table space ID
  *  aPID        - [IN]  page ID
@@ -421,10 +421,10 @@ IDE_RC sdbBCBHash::findBCB( scSpaceID    aSpaceID,
 
 /***********************************************************************
  * Description:
- *  ÇöÀç °¡Áø ¸ðµç BCB¸¦ aNewHash·Î ¿Å±ä´Ù.
- *  ÀÌ ÇÔ¼ö ¼öÇà Áß Àý´ë hash¿¡ Á¢±ÙÇØ¼­´Â ¾ÈµÈ´Ù.
+ *  í˜„ìž¬ ê°€ì§„ ëª¨ë“  BCBë¥¼ aNewHashë¡œ ì˜®ê¸´ë‹¤.
+ *  ì´ í•¨ìˆ˜ ìˆ˜í–‰ ì¤‘ ì ˆëŒ€ hashì— ì ‘ê·¼í•´ì„œëŠ” ì•ˆëœë‹¤.
  *
- *  aNewHash    - [IN]  ÀÌ hashTable·Î ¸ðµç BCB¸¦ ¿Å±ä´Ù.
+ *  aNewHash    - [IN]  ì´ hashTableë¡œ ëª¨ë“  BCBë¥¼ ì˜®ê¸´ë‹¤.
  ***********************************************************************/
 void sdbBCBHash::moveDataToNewHash(sdbBCBHash *aNewHash)
 {
@@ -435,17 +435,17 @@ void sdbBCBHash::moveDataToNewHash(sdbBCBHash *aNewHash)
     smuList            * sListNode;
     UInt                 i;
 
-    /* BUG-20861 ¹öÆÛ hash resize¸¦ ÇÏ±â À§ÇØ¼­ ´Ù¸¥ Æ®·£Àè¼ÇµéÀ» ¸ðµÎ Á¢±ÙÇÏÁö
-     * ¸øÇÏ°Ô ÇØ¾ß ÇÕ´Ï´Ù.
-     * data moveÁß¿¡ Æ®·£Àè¼ÇÀÌ Á¢±ÙÇÑ´Ù¸é, Àß¸øµÈ Á¤º¸¸¦ º¼ ¼ö ÀÖÀ¸¹Ç·Î,
-     * ÀÌ°ÍÀº Àý´ë ÀÏ¾î³ªÁö ¸»¾Æ¾ß ÇÑ´Ù.
-     * ±×·¸±â ¶§¹®¿¡ mTableÀ» NULL·Î ÇØ¼­, Á¢±ÙÇÏ´Â Æ®·£Àè¼ÇÀÌ ÀÖ´Ù¸é
-     * ¼¼±×¸ÕÆ® ¿¡·¯¸¦ ¹ß»ýÇÏ°Ô ÇØ¼­ ¼­¹ö¸¦ Á×ÀÎ´Ù.
+    /* BUG-20861 ë²„í¼ hash resizeë¥¼ í•˜ê¸° ìœ„í•´ì„œ ë‹¤ë¥¸ íŠ¸ëžœìž­ì…˜ë“¤ì„ ëª¨ë‘ ì ‘ê·¼í•˜ì§€
+     * ëª»í•˜ê²Œ í•´ì•¼ í•©ë‹ˆë‹¤.
+     * data moveì¤‘ì— íŠ¸ëžœìž­ì…˜ì´ ì ‘ê·¼í•œë‹¤ë©´, ìž˜ëª»ëœ ì •ë³´ë¥¼ ë³¼ ìˆ˜ ìžˆìœ¼ë¯€ë¡œ,
+     * ì´ê²ƒì€ ì ˆëŒ€ ì¼ì–´ë‚˜ì§€ ë§ì•„ì•¼ í•œë‹¤.
+     * ê·¸ë ‡ê¸° ë•Œë¬¸ì— mTableì„ NULLë¡œ í•´ì„œ, ì ‘ê·¼í•˜ëŠ” íŠ¸ëžœìž­ì…˜ì´ ìžˆë‹¤ë©´
+     * ì„¸ê·¸ë¨¼íŠ¸ ì—ëŸ¬ë¥¼ ë°œìƒí•˜ê²Œ í•´ì„œ ì„œë²„ë¥¼ ì£½ì¸ë‹¤.
      */
     sWorkTable = mTable;
     mTable = NULL;
-    /* sWorkTableÀÇ °¢ bucket´ÜÀ§·Î move¸¦ ¼öÇàÇÑ´Ù. ÇÑ¹ø move¸¦ ¼öÇàÇÏ°í
-     * ³­ bucket¿¡´Â Àý´ë·Î »ðÀÔÀÌ ÀÏ¾î³¯ ¼ö ¾ø´Ù.*/
+    /* sWorkTableì˜ ê° bucketë‹¨ìœ„ë¡œ moveë¥¼ ìˆ˜í–‰í•œë‹¤. í•œë²ˆ moveë¥¼ ìˆ˜í–‰í•˜ê³ 
+     * ë‚œ bucketì—ëŠ” ì ˆëŒ€ë¡œ ì‚½ìž…ì´ ì¼ì–´ë‚  ìˆ˜ ì—†ë‹¤.*/
     for (i = 0; i < mBucketCnt; i++)
     {
         sBucket   = &sWorkTable[i];
@@ -472,7 +472,7 @@ void sdbBCBHash::moveDataToNewHash(sdbBCBHash *aNewHash)
 }
 
 /************************************************************************
- * Description: ÇØ½ÃÅ×ÀÌºíÀÇ Å©±â ¹× latch´ç bucket°¹¼ö
+ * Description: í•´ì‹œí…Œì´ë¸”ì˜ í¬ê¸° ë° latchë‹¹ bucketê°¯ìˆ˜
  ************************************************************************/
 IDE_RC sdbBCBHash::resize( UInt aBucketCnt,
                            UInt aBucketCntPerLatch )
@@ -499,12 +499,12 @@ IDE_RC sdbBCBHash::resize( UInt aBucketCnt,
 
 
 /***********************************************************************
- * Description:     µÎ ÇØ½Ã Å×ÀÌºí°£ÀÇ ³»¿ëÀ» º¯°æÇÑ´Ù.(swap)
- *  ÁÖÀÇ!! ¹Ýµå½Ã BufferManager global x latch°¡ ÀâÈù »óÅÂ¿¡¼­ ºÒ·Á¾ß ÇÑ´Ù.
- *  Áï, µÎ Hash¿¡ ´ëÇÑ Á¢±ÙÀÌ ÀüÇô ¾ø´Â »óÅÂ¿¡¼­ ÀÌ ÇÔ¼ö°¡ ºÒ·Á¾ß ÇÑ´Ù.
+ * Description:     ë‘ í•´ì‹œ í…Œì´ë¸”ê°„ì˜ ë‚´ìš©ì„ ë³€ê²½í•œë‹¤.(swap)
+ *  ì£¼ì˜!! ë°˜ë“œì‹œ BufferManager global x latchê°€ ìž¡ížŒ ìƒíƒœì—ì„œ ë¶ˆë ¤ì•¼ í•œë‹¤.
+ *  ì¦‰, ë‘ Hashì— ëŒ€í•œ ì ‘ê·¼ì´ ì „í˜€ ì—†ëŠ” ìƒíƒœì—ì„œ ì´ í•¨ìˆ˜ê°€ ë¶ˆë ¤ì•¼ í•œë‹¤.
  *
- *  aHash1  - [IN]  º¯°æÇÒ sdbBCBHash
- *  aHash2  - [IN]  º¯°æÇÒ sdbBCBHash
+ *  aHash1  - [IN]  ë³€ê²½í•  sdbBCBHash
+ *  aHash2  - [IN]  ë³€ê²½í•  sdbBCBHash
  ***********************************************************************/
 void sdbBCBHash::exchangeHashContents(sdbBCBHash *aHash1, sdbBCBHash *aHash2)
 {
@@ -537,8 +537,8 @@ void sdbBCBHash::exchangeHashContents(sdbBCBHash *aHash1, sdbBCBHash *aHash2)
 
 /***********************************************************************
  * Description :
- *  hash table³»¿¡ Á¸ÀçÇÏ´Â ¸ðµç BCB°¹¼ö ÇÕ ¸®ÅÏ. ·¡Ä¡¸¦ ÀâÁö ¾ÊÀ¸¹Ç·Î,
- *  Á¤È®ÇÑ °ªÀº ¾Æ´Ï´Ù.
+ *  hash tableë‚´ì— ì¡´ìž¬í•˜ëŠ” ëª¨ë“  BCBê°¯ìˆ˜ í•© ë¦¬í„´. ëž˜ì¹˜ë¥¼ ìž¡ì§€ ì•Šìœ¼ë¯€ë¡œ,
+ *  ì •í™•í•œ ê°’ì€ ì•„ë‹ˆë‹¤.
  ***********************************************************************/
 UInt sdbBCBHash::getBCBCount()
 {

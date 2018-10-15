@@ -93,7 +93,7 @@ SQLRETURN getStorage( SChar * aUser,
                       SChar * aDdl,
                       SInt  * aDdlPos );
 
-/* BUG-43010 Table DDL »ı¼º ½Ã, ·Î±× ¾ĞÃà¿©ºÎ¸¦ È®ÀÎÇØ¾ß ÇÕ´Ï´Ù. */
+/* BUG-43010 Table DDL ìƒì„± ì‹œ, ë¡œê·¸ ì••ì¶•ì—¬ë¶€ë¥¼ í™•ì¸í•´ì•¼ í•©ë‹ˆë‹¤. */
 IDE_RC utmWriteLogCompressionClause( SChar  * aUserName,
                                      SChar  * aTableName,
                                      SChar  * aDdlStr,

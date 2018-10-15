@@ -18,7 +18,7 @@
 /*******************************************************************************
  * $Id: sdbDPathBufferMgr.cpp 82075 2018-01-17 06:39:52Z jina.kim $
  *
- * Description : DPath Insert¸¦ ¼öÇàÇÒ ¶§ »ç¿ëÇÏ´Â Àü¿ë ¹öÆÛ¸¦ °ü¸®ÇÑ´Ù.
+ * Description : DPath Insertë¥¼ ìˆ˜í–‰í•  ë•Œ ì‚¬ìš©í•˜ëŠ” ì „ìš© ë²„í¼ë¥¼ ê´€ë¦¬í•œë‹¤.
  ******************************************************************************/
 
 #include <idl.h>
@@ -40,7 +40,7 @@ UInt       sdbDPathBufferMgr::mMaxBuffPageCnt;
 UInt       sdbDPathBufferMgr::mAllocBuffPageCnt;
 
 /***********************************************************************
- * Description : ÃÊ±âÈ­ FunctionÀ¸·Î ¼¼°³ÀÇ Memory PoolÀ» ÃÊ±âÈ­ÇÑ´Ù.
+ * Description : ì´ˆê¸°í™” Functionìœ¼ë¡œ ì„¸ê°œì˜ Memory Poolì„ ì´ˆê¸°í™”í•œë‹¤.
  **********************************************************************/
 IDE_RC sdbDPathBufferMgr::initializeStatic()
 {
@@ -51,7 +51,7 @@ IDE_RC sdbDPathBufferMgr::initializeStatic()
                  (SChar*)"DIRECT_PATH_BUFFER_BCB_MEMPOOL",
                  1, /* List Count */
                  ID_SIZEOF( sdbDPathBCB ),
-                 1024, /* »ı¼º½Ã °¡Áö°í ÀÖ´Â Item°¹¼ö */
+                 1024, /* ìƒì„±ì‹œ ê°€ì§€ê³  ìˆëŠ” Itemê°¯ìˆ˜ */
                  IDU_AUTOFREE_CHUNK_LIMIT,			/* ChunkLimit */
                  ID_TRUE,							/* UseMutex */
                  IDU_MEM_POOL_DEFAULT_ALIGN_SIZE,	/* AlignByte */
@@ -84,7 +84,7 @@ IDE_RC sdbDPathBufferMgr::initializeStatic()
                   (SChar*)"DIRECT_PATH_BUFFER_FLUSH_THREAD_MEMPOOL",
                   1, /* List Count */
                   ID_SIZEOF( sdbDPathBFThread ),
-                  32, /* »ı¼º½Ã °¡Áö°í ÀÖ´Â Item°¹¼ö */
+                  32, /* ìƒì„±ì‹œ ê°€ì§€ê³  ìˆëŠ” Itemê°¯ìˆ˜ */
                   IDU_AUTOFREE_CHUNK_LIMIT,			/* ChunkLimit */
                   ID_TRUE,							/* UseMutex */
                   IDU_MEM_POOL_DEFAULT_ALIGN_SIZE,	/* AlignByte */
@@ -124,7 +124,7 @@ IDE_RC sdbDPathBufferMgr::initializeStatic()
 }
 
 /***********************************************************************
- * Description : ¼¼°³ÀÇ ¸Ş¸ğ¸® PoolÀ» Á¤¸®ÇÑ´Ù.
+ * Description : ì„¸ê°œì˜ ë©”ëª¨ë¦¬ Poolì„ ì •ë¦¬í•œë‹¤.
  **********************************************************************/
 IDE_RC sdbDPathBufferMgr::destroyStatic()
 {
@@ -142,9 +142,9 @@ IDE_RC sdbDPathBufferMgr::destroyStatic()
 }
 
 /***********************************************************************
- * Description : <aSpaceID, aPageID>¿¡ ÇØ´çÇÏ´Â Direct Path Buffer¸¦ ¸¸µç´Ù.
+ * Description : <aSpaceID, aPageID>ì— í•´ë‹¹í•˜ëŠ” Direct Path Bufferë¥¼ ë§Œë“ ë‹¤.
  *
- * aStatistics  - [IN] Åë°èÁ¤º¸
+ * aStatistics  - [IN] í†µê³„ì •ë³´
  * aSpaceID     - [IN] Space ID
  * aPageID      - [IN] Page ID
  * aDPathInfo   - [IN] DPathBuffInfo
@@ -152,19 +152,19 @@ IDE_RC sdbDPathBufferMgr::destroyStatic()
  * aIsLogging   - [IN] Logging Mode 
  * aPagePtr     - [OUT] Page Pointer
  *
- * ¾Ë°í¸®Áò:
- * 1. <aSpaceID, aPageID>¿¡ ÇØ´çÇÏ´Â ÆäÀÌÁö°¡ Normal Buffer¿¡ Á¸ÀçÇÒ °æ¿ì
- *    ÀÌ ÆäÀÌÁö´Â Direct Path Buffer·Î »ç¿ëÇÒ ¼ö°¡ ¾ø´Ù. ¿Ö³ÄÇÏ¸é Normal
- *    Buffer¿Í Direct Path Buffer¿¡¼­ µ¿½Ã¿¡ ÀÌ ÆäÀÌÁö¿¡ ´ëÇØ¼­ Á¢±ÙÇÏ¿©
- *    Consistency°¡ ±úÁö±â ¶§¹®ÀÌ´Ù. *aPagePtr = NULL·Î ÇÏ°í ReturnÇÑ´Ù.
- *    ¾Æ´Ï¸é °è¼Ó ÁøÇà.
- * 2. sDPathBCB = DPathBCB Pool¿¡¼­ BCB¸¦ ÇÒ´çÇÑ´Ù.
- * 3. sDPathBCB¸¦ aSpaceID, aPageID·Î ÃÊ±âÈ­¼öÇàÇÑ´Ù.
- * 4. sDPathBCB.mPage = Direct Buffer Pool·Î »õ·Î¿î Page ¸¦ ÇÒ´çÇÑ´Ù.
- * 5. sDPathBCBÀÇ »óÅÂ¸¦ SDB_DPB_APPEND·Î ¸¸µç´Ù.
- * 6. sDPathBCB¸¦ TransactionÀÇ DirectPathBuffer InfoÀÇ Append Page List¿¡
- *    Ãß°¡ÇÑ´Ù.
- * 7. aPagePtr = sNewFrameBuf¸¦ ÇØÁØ´Ù.
+ * ì•Œê³ ë¦¬ì¦˜:
+ * 1. <aSpaceID, aPageID>ì— í•´ë‹¹í•˜ëŠ” í˜ì´ì§€ê°€ Normal Bufferì— ì¡´ì¬í•  ê²½ìš°
+ *    ì´ í˜ì´ì§€ëŠ” Direct Path Bufferë¡œ ì‚¬ìš©í•  ìˆ˜ê°€ ì—†ë‹¤. ì™œëƒí•˜ë©´ Normal
+ *    Bufferì™€ Direct Path Bufferì—ì„œ ë™ì‹œì— ì´ í˜ì´ì§€ì— ëŒ€í•´ì„œ ì ‘ê·¼í•˜ì—¬
+ *    Consistencyê°€ ê¹¨ì§€ê¸° ë•Œë¬¸ì´ë‹¤. *aPagePtr = NULLë¡œ í•˜ê³  Returní•œë‹¤.
+ *    ì•„ë‹ˆë©´ ê³„ì† ì§„í–‰.
+ * 2. sDPathBCB = DPathBCB Poolì—ì„œ BCBë¥¼ í• ë‹¹í•œë‹¤.
+ * 3. sDPathBCBë¥¼ aSpaceID, aPageIDë¡œ ì´ˆê¸°í™”ìˆ˜í–‰í•œë‹¤.
+ * 4. sDPathBCB.mPage = Direct Buffer Poolë¡œ ìƒˆë¡œìš´ Page ë¥¼ í• ë‹¹í•œë‹¤.
+ * 5. sDPathBCBì˜ ìƒíƒœë¥¼ SDB_DPB_APPENDë¡œ ë§Œë“ ë‹¤.
+ * 6. sDPathBCBë¥¼ Transactionì˜ DirectPathBuffer Infoì˜ Append Page Listì—
+ *    ì¶”ê°€í•œë‹¤.
+ * 7. aPagePtr = sNewFrameBufë¥¼ í•´ì¤€ë‹¤.
  **********************************************************************/
 IDE_RC sdbDPathBufferMgr::createPage( idvSQL           * aStatistics,
                                       void             * aTrans,
@@ -205,18 +205,18 @@ IDE_RC sdbDPathBufferMgr::createPage( idvSQL           * aStatistics,
         IDE_ASSERT( 0 );
     }
 
-    /* Step 1. <aSpaceID, aPageID>¿¡ ÇØ´çÇÏ´Â ÆäÀÌÁö°¡ Normal Buffer¿¡
-     * Á¸ÀçÇÏ¸é Á¦°ÅÇÑ´Ù.  */
+    /* Step 1. <aSpaceID, aPageID>ì— í•´ë‹¹í•˜ëŠ” í˜ì´ì§€ê°€ Normal Bufferì—
+     * ì¡´ì¬í•˜ë©´ ì œê±°í•œë‹¤.  */
     IDE_TEST( sdbBufferMgr::removePageInBuffer( aStatistics,
                                                 aSpaceID,
                                                 aPageID )
               != IDE_SUCCESS );
 
-    /* Buffer¿¡¼­ Á¦°ÅÇßÀ¸¹Ç·Î Á¦°ÅµÇ¾ú´ÂÁö È®ÀÎÇÑ´Ù. ºÎÇÏ°¡ Å¬°ÍÀ¸·Î
-     * »ı°¢µÇ¾î DebugÀÏ¶§¸¸ Ã¼Å©ÇÑ´Ù.
-     * Normal Buffer¿Í Direct Path Buffer¿¡¼­ µ¿½Ã¿¡ °°Àº
-     * ÆäÀÌÁö°¡ ÀÖ´Â °æ¿ì Consistency°¡ ±úÁú¼ö ÀÖ´Ù.
-     * ¿¹) µ¿½Ã¿¡ Disk¿¡ ÆäÀÌÁö°¡ ±â·ÏµÇ´Â °æ¿ì */
+    /* Bufferì—ì„œ ì œê±°í–ˆìœ¼ë¯€ë¡œ ì œê±°ë˜ì—ˆëŠ”ì§€ í™•ì¸í•œë‹¤. ë¶€í•˜ê°€ í´ê²ƒìœ¼ë¡œ
+     * ìƒê°ë˜ì–´ Debugì¼ë•Œë§Œ ì²´í¬í•œë‹¤.
+     * Normal Bufferì™€ Direct Path Bufferì—ì„œ ë™ì‹œì— ê°™ì€
+     * í˜ì´ì§€ê°€ ìˆëŠ” ê²½ìš° Consistencyê°€ ê¹¨ì§ˆìˆ˜ ìˆë‹¤.
+     * ì˜ˆ) ë™ì‹œì— Diskì— í˜ì´ì§€ê°€ ê¸°ë¡ë˜ëŠ” ê²½ìš° */
     IDE_DASSERT( sdbBufferMgr::isPageExist( aStatistics,
                                             aSpaceID,
                                             aPageID ) == ID_FALSE );
@@ -225,13 +225,13 @@ IDE_RC sdbDPathBufferMgr::createPage( idvSQL           * aStatistics,
     {
         sDPathBuffInfo->mTotalPgCnt++;
 
-        /* Step 2. DPathBCB Pool¿¡¼­ BCB¸¦ ÇÒ´çÇÑ´Ù */
+        /* Step 2. DPathBCB Poolì—ì„œ BCBë¥¼ í• ë‹¹í•œë‹¤ */
         /* sdbDPathBufferMgr_createPage_alloc_NewBCB.tc */
         IDU_FIT_POINT("sdbDPathBufferMgr::createPage::alloc::NewBCB");
         IDE_TEST( mBCBPool.alloc( (void**)&sNewBCB ) != IDE_SUCCESS );
         sState = 1;
 
-        /* Step 3. BCB¸¦ ÃÊ±âÈ­ÇÑ´Ù. */
+        /* Step 3. BCBë¥¼ ì´ˆê¸°í™”í•œë‹¤. */
         sNewBCB->mIsLogging     = aIsLogging;
         sNewBCB->mSpaceID       = aSpaceID;
         sNewBCB->mPageID        = aPageID;
@@ -240,7 +240,7 @@ IDE_RC sdbDPathBufferMgr::createPage( idvSQL           * aStatistics,
         SMU_LIST_INIT_NODE(&(sNewBCB->mNode));
         sNewBCB->mNode.mData = sNewBCB;
 
-        /* Step 4. Page Buffer¸¦ ÇÒ´çÇÏ¿© BCB¿¡ ¸Å´Ü´Ù. */
+        /* Step 4. Page Bufferë¥¼ í• ë‹¹í•˜ì—¬ BCBì— ë§¤ë‹¨ë‹¤. */
         IDE_TEST( allocBuffPage( aStatistics,
                                  sDPathBuffInfo,
                                  (void**)&(sNewBCB->mPage) )
@@ -251,10 +251,10 @@ IDE_RC sdbDPathBufferMgr::createPage( idvSQL           * aStatistics,
         sFrameHdr->mBCBPtr = sNewBCB;
         sFrameHdr->mSpaceID = aSpaceID;
 
-        /* Step 5. BCB¸¦ Append»óÅÂ·Î ¹Ù²Û´Ù. */
+        /* Step 5. BCBë¥¼ Appendìƒíƒœë¡œ ë°”ê¾¼ë‹¤. */
         sNewBCB->mState   = SDB_DPB_APPEND;
 
-        /* Step 6. Append Page List¿¡ µÚ¿¡ Ãß°¡ÇÑ´Ù. */
+        /* Step 6. Append Page Listì— ë’¤ì— ì¶”ê°€í•œë‹¤. */
         SMU_LIST_ADD_LAST(&(sDPathBuffInfo->mAPgList),
                           &(sNewBCB->mNode));
 
@@ -263,9 +263,9 @@ IDE_RC sdbDPathBufferMgr::createPage( idvSQL           * aStatistics,
     }
     else
     {
-        /* Normal Buffer¿Í Direct Path Buffer¿¡¼­ µ¿½Ã¿¡ °°Àº
-         * ÆäÀÌÁö°¡ ÀÖ´Â °æ¿ì Consistency°¡ ±úÁú¼ö ÀÖ´Ù.
-         * ¿¹) µ¿½Ã¿¡ Disk¿¡ ÆäÀÌÁö°¡ ±â·ÏµÇ´Â °æ¿ì
+        /* Normal Bufferì™€ Direct Path Bufferì—ì„œ ë™ì‹œì— ê°™ì€
+         * í˜ì´ì§€ê°€ ìˆëŠ” ê²½ìš° Consistencyê°€ ê¹¨ì§ˆìˆ˜ ìˆë‹¤.
+         * ì˜ˆ) ë™ì‹œì— Diskì— í˜ì´ì§€ê°€ ê¸°ë¡ë˜ëŠ” ê²½ìš°
          * */
     }
 
@@ -289,16 +289,16 @@ IDE_RC sdbDPathBufferMgr::createPage( idvSQL           * aStatistics,
 }
 
 /***********************************************************************
- * Description : aPagePtr¿¡ ÇØ´çÇÏ´Â BCBÀÇ »óÅÂ¸¦ SDB_DPB_DIRTY·Î ¸¸µé°í
- *               Flush Request List¿¡ µî·ÏÇÑ´Ù.
+ * Description : aPagePtrì— í•´ë‹¹í•˜ëŠ” BCBì˜ ìƒíƒœë¥¼ SDB_DPB_DIRTYë¡œ ë§Œë“¤ê³ 
+ *               Flush Request Listì— ë“±ë¡í•œë‹¤.
  *
  * aPagePtr - [IN] Page Pointer
  *
- * ¾Ë°í¸®Áò
- * 1. aPagePtr¿¡ ÇØ´çÇÏ´Â BCB¸¦ Ã£´Â´Ù.
- * 2. APPEND List¿¡¼­ Á¦°ÅÇÑ´Ù.
- * 3. BCBÀÇ »óÅÂ¸¦ SDB_DPB_DIRTY·Î ¸¸µç´Ù.
- * 4. Flush Request List¿¡ Ãß°¡ÇÑ´Ù.
+ * ì•Œê³ ë¦¬ì¦˜
+ * 1. aPagePtrì— í•´ë‹¹í•˜ëŠ” BCBë¥¼ ì°¾ëŠ”ë‹¤.
+ * 2. APPEND Listì—ì„œ ì œê±°í•œë‹¤.
+ * 3. BCBì˜ ìƒíƒœë¥¼ SDB_DPB_DIRTYë¡œ ë§Œë“ ë‹¤.
+ * 4. Flush Request Listì— ì¶”ê°€í•œë‹¤.
  **********************************************************************/
 IDE_RC sdbDPathBufferMgr::setDirtyPage( void* aPagePtr )
 {
@@ -310,25 +310,25 @@ IDE_RC sdbDPathBufferMgr::setDirtyPage( void* aPagePtr )
     IDE_DASSERT( aPagePtr != NULL );
 
 
-    /* 1. ÆäÀÌÁöÀÇ ½ÃÀÛÀ§Ä¡ ¾Õ¿¡ BCBÀÇ PointerÀúÀåµÇ¾î ÀÖ´Ù .*/
+    /* 1. í˜ì´ì§€ì˜ ì‹œì‘ìœ„ì¹˜ ì•ì— BCBì˜ Pointerì €ì¥ë˜ì–´ ìˆë‹¤ .*/
     sFrameHdr = (sdbFrameHdr*) aPagePtr;
     sBCB = (sdbDPathBCB*)(sFrameHdr->mBCBPtr);
 
     sDPathBCBInfo = sBCB->mDPathBuffInfo;
 
-    /* TransactionÀÇ Flush Request List´Â Direct Path Flush Thread¿Í
-     * µ¿½Ã¿¡ Á¢±ÙÇÏ´Â ¸®½ºÆ®ÀÌ±â¶§¹®¿¡ ¹İµå½Ã Mutex¸¦ Àâ¾Æ¾ß ÇÑ´Ù.*/
+    /* Transactionì˜ Flush Request ListëŠ” Direct Path Flush Threadì™€
+     * ë™ì‹œì— ì ‘ê·¼í•˜ëŠ” ë¦¬ìŠ¤íŠ¸ì´ê¸°ë•Œë¬¸ì— ë°˜ë“œì‹œ Mutexë¥¼ ì¡ì•„ì•¼ í•œë‹¤.*/
     IDE_TEST( sDPathBCBInfo->mMutex.lock( NULL /* idvSQL* */ )
               != IDE_SUCCESS );
     sState = 1;
 
-    /* 2. APPEND List¿¡¼­ Á¦°ÅÇÑ´Ù. */
+    /* 2. APPEND Listì—ì„œ ì œê±°í•œë‹¤. */
     SMU_LIST_DELETE( &(sBCB->mNode) );
 
-    /* 3. BCBÀÇ »óÅÂ¸¦ SDB_DPB_DIRTY·Î ¸¸µç´Ù. */
+    /* 3. BCBì˜ ìƒíƒœë¥¼ SDB_DPB_DIRTYë¡œ ë§Œë“ ë‹¤. */
     sBCB->mState = SDB_DPB_DIRTY;
 
-    /* 4. Flush Request List¿¡ Ãß°¡ÇÑ´Ù. */
+    /* 4. Flush Request Listì— ì¶”ê°€í•œë‹¤. */
     SMU_LIST_ADD_LAST(&(sDPathBCBInfo->mFReqPgList),
                       &(sBCB->mNode));
 
@@ -353,18 +353,18 @@ IDE_RC sdbDPathBufferMgr::setDirtyPage( void* aPagePtr )
 }
 
 /***********************************************************************
- * Description : aDPathBuffInfo°¡ »ı¼ºÇÑ ¸ğµç Direct Path Buffer¸¦
- *               µğ½ºÅ©¿¡ ³»¸°´Ù. ÀÌ´Â TransactionÀÇ CommitÀü¿¡ È£ÃâÇÑ´Ù.
+ * Description : aDPathBuffInfoê°€ ìƒì„±í•œ ëª¨ë“  Direct Path Bufferë¥¼
+ *               ë””ìŠ¤í¬ì— ë‚´ë¦°ë‹¤. ì´ëŠ” Transactionì˜ Commitì „ì— í˜¸ì¶œí•œë‹¤.
  *
  * aTrans - [IN] Transaction Pointer
  *
- * ¾Ë°í¸®Áò
- * 1. aTrans·Î ºÎÅÍ DPBI(Direct Path Buffer Info)¸¦ ±¸ÇÑ´Ù.
- * 2. APPEND List¿¡´Â ÆäÀÌÁö¸¦ Disk¿¡ ³»¸°´Ù.
- * 3. Flush List¿¡ ÀÖ´Â ÆäÀÌÁöÁß BCBÀÇ »óÅÂ°¡ DirtyÀÎ°ÍÀÇ Flag¸¦ FLUSH·Î
- *    ¹Ù²Ù°í Á÷Á¢³»¸°´Ù.
- * 4. Flush Request List°¡ ¿ÏÀüÈ÷ ºô¶§±îÁö ±â´Ù¸°´Ù. Áï Flush Thread°¡
- *    IOÀÛ¾÷À» ¿Ï·áÇÒ¶§±îÁö ±â´Ù¸°´Ù.
+ * ì•Œê³ ë¦¬ì¦˜
+ * 1. aTransë¡œ ë¶€í„° DPBI(Direct Path Buffer Info)ë¥¼ êµ¬í•œë‹¤.
+ * 2. APPEND Listì—ëŠ” í˜ì´ì§€ë¥¼ Diskì— ë‚´ë¦°ë‹¤.
+ * 3. Flush Listì— ìˆëŠ” í˜ì´ì§€ì¤‘ BCBì˜ ìƒíƒœê°€ Dirtyì¸ê²ƒì˜ Flagë¥¼ FLUSHë¡œ
+ *    ë°”ê¾¸ê³  ì§ì ‘ë‚´ë¦°ë‹¤.
+ * 4. Flush Request Listê°€ ì™„ì „íˆ ë¹Œë•Œê¹Œì§€ ê¸°ë‹¤ë¦°ë‹¤. ì¦‰ Flush Threadê°€
+ *    IOì‘ì—…ì„ ì™„ë£Œí• ë•Œê¹Œì§€ ê¸°ë‹¤ë¦°ë‹¤.
  *
  **********************************************************************/
 IDE_RC sdbDPathBufferMgr::flushAllPage( idvSQL            * aStatistics,
@@ -380,12 +380,12 @@ IDE_RC sdbDPathBufferMgr::flushAllPage( idvSQL            * aStatistics,
     sState = 1;
 
     //---------------------------------------------------------------
-    // Flush Thread¸¦ ¸ÕÀú Á¾·á½ÃÅ²´Ù.
+    // Flush Threadë¥¼ ë¨¼ì € ì¢…ë£Œì‹œí‚¨ë‹¤.
     //---------------------------------------------------------------
     IDE_TEST( destFlushThread( aDPathBuffInfo ) != IDE_SUCCESS );
 
     //---------------------------------------------------------------------
-    // DPathBuffInfo¿¡ ÀÖ´Â ¸ğµç ÆäÀÌÁöµé¿¡ ´ëÇÏ¿© Flush¸¦ ¼öÇàÇÑ´Ù.
+    // DPathBuffInfoì— ìˆëŠ” ëª¨ë“  í˜ì´ì§€ë“¤ì— ëŒ€í•˜ì—¬ Flushë¥¼ ìˆ˜í–‰í•œë‹¤.
     //---------------------------------------------------------------------
     IDE_TEST( flushBCBInDPathInfo( aStatistics,
                                    aDPathBuffInfo,
@@ -404,7 +404,7 @@ IDE_RC sdbDPathBufferMgr::flushAllPage( idvSQL            * aStatistics,
     switch( sState )
     {
         case 1:
-            // BulkIOInfo¿¡ ¸Å´Ş·Á ÀÖ´ø Pageµéµµ ÀüºÎ free ÇØÁØ´Ù.
+            // BulkIOInfoì— ë§¤ë‹¬ë ¤ ìˆë˜ Pageë“¤ë„ ì „ë¶€ free í•´ì¤€ë‹¤.
             IDE_ASSERT( freeBCBInList( &sDPathBulkIOInfo.mBaseNode )
                         == IDE_SUCCESS );
             IDE_ASSERT( sdbDPathBufferMgr::destBulkIOInfo( &sDPathBulkIOInfo )
@@ -413,8 +413,8 @@ IDE_RC sdbDPathBufferMgr::flushAllPage( idvSQL            * aStatistics,
             break;
     }
 
-    // º» ÇÔ¼ö°¡ È£Ãâ µÇ¸é flush°¡ µÆµç, ½ÇÆĞÇÏ¿© freeÇÏ°Ô µÇµç
-    // DPathBuffInfo¿¡ ´Ş·ÁÀÖ´Â BCB¿Í PageµéÀ» freeÇØÁÖ°í ³ª°¡µµ·Ï ÇÑ´Ù.
+    // ë³¸ í•¨ìˆ˜ê°€ í˜¸ì¶œ ë˜ë©´ flushê°€ ëë“ , ì‹¤íŒ¨í•˜ì—¬ freeí•˜ê²Œ ë˜ë“ 
+    // DPathBuffInfoì— ë‹¬ë ¤ìˆëŠ” BCBì™€ Pageë“¤ì„ freeí•´ì£¼ê³  ë‚˜ê°€ë„ë¡ í•œë‹¤.
     IDE_ASSERT( freeBCBInDPathInfo( aDPathBuffInfo ) == IDE_SUCCESS );
     IDE_POP();
 
@@ -422,15 +422,15 @@ IDE_RC sdbDPathBufferMgr::flushAllPage( idvSQL            * aStatistics,
 }
 
 /***********************************************************************
- * Description : aDPathBuffInfoÀÇ ¸ğµç Direct Path Buffer ÆäÀÌÁöÀÇ
- *               Flush ¿äÃ»À» ¸ğµÎ ÃÖ¼ÒÇÑ´Ù. ÀÌ´Â Rollback½Ã¿¡ È£ÃâÇÑ´Ù.
+ * Description : aDPathBuffInfoì˜ ëª¨ë“  Direct Path Buffer í˜ì´ì§€ì˜
+ *               Flush ìš”ì²­ì„ ëª¨ë‘ ìµœì†Œí•œë‹¤. ì´ëŠ” Rollbackì‹œì— í˜¸ì¶œí•œë‹¤.
  *
  * aDPathBuffInfo  - [IN] Direct Path Info
  **********************************************************************/
 IDE_RC sdbDPathBufferMgr::cancelAll( sdbDPathBuffInfo  * aDPathBuffInfo )
 {
     //---------------------------------------------------------------
-    // Flush Thread¸¦ ¸ÕÀú Á¾·á½ÃÅ²´Ù.
+    // Flush Threadë¥¼ ë¨¼ì € ì¢…ë£Œì‹œí‚¨ë‹¤.
     //---------------------------------------------------------------
     IDE_TEST( destFlushThread( aDPathBuffInfo )
                 != IDE_SUCCESS );
@@ -445,15 +445,15 @@ IDE_RC sdbDPathBufferMgr::cancelAll( sdbDPathBuffInfo  * aDPathBuffInfo )
 }
 
 /***********************************************************************
- * Description : Direct Path Buffer Info¿¡ ÀÖ´Â ¸ğµç BCB¿¡ ´ëÇØ Flush¸¦
- *               ¼öÇàÇÏ°í ¿Ï·áµÇ¸é BCB¿Í ÇÒ´çµÈ Buffer Page¸¦ Free½ÃÅ²´Ù.
- *               ÀÌ¶§ aNeedWritePage°¡ ID_TRUE¸é Flush¸¦ ¼öÇàÇÏ°í ID_FALSE
- *               ÀÌ¸é Free¸¸ÇÑ´Ù.
+ * Description : Direct Path Buffer Infoì— ìˆëŠ” ëª¨ë“  BCBì— ëŒ€í•´ Flushë¥¼
+ *               ìˆ˜í–‰í•˜ê³  ì™„ë£Œë˜ë©´ BCBì™€ í• ë‹¹ëœ Buffer Pageë¥¼ Freeì‹œí‚¨ë‹¤.
+ *               ì´ë•Œ aNeedWritePageê°€ ID_TRUEë©´ Flushë¥¼ ìˆ˜í–‰í•˜ê³  ID_FALSE
+ *               ì´ë©´ Freeë§Œí•œë‹¤.
  *
  * aDPathBCBInfo   - [IN] Direct Path Buffer Info
- * aNeedWritePage  - [IN] if ID_TRUE, BCBÀÇ ÆäÀÌÁö¿¡ ´ëÇØ WritePage¼öÇà,
- *                        ¾Æ´Ï¸é writePage¸¦ ¼öÇàÇÏÁö ¾Ê°í ´ÜÁö Free¸¸
- *                        ½ÃÅ²´Ù.
+ * aNeedWritePage  - [IN] if ID_TRUE, BCBì˜ í˜ì´ì§€ì— ëŒ€í•´ WritePageìˆ˜í–‰,
+ *                        ì•„ë‹ˆë©´ writePageë¥¼ ìˆ˜í–‰í•˜ì§€ ì•Šê³  ë‹¨ì§€ Freeë§Œ
+ *                        ì‹œí‚¨ë‹¤.
  **********************************************************************/
 IDE_RC sdbDPathBufferMgr::flushBCBInDPathInfo(
     idvSQL             * aStatistics,
@@ -467,14 +467,14 @@ IDE_RC sdbDPathBufferMgr::flushBCBInDPathInfo(
 
     if( aDPathBCBInfo->mTotalPgCnt != 0 )
     {
-        /* Append List¿¡ ÀÖ´Â ¸ğµç Page¸¦ write ÇÑ´Ù. */
+        /* Append Listì— ìˆëŠ” ëª¨ë“  Pageë¥¼ write í•œë‹¤. */
         IDE_TEST( flushBCBInList( aStatistics,
                                   aDPathBCBInfo,
                                   aDPathBulkIOInfo,
                                   &(aDPathBCBInfo->mAPgList),
                                   &sNeedSyncSpaceID )
                   != IDE_SUCCESS );
-        /* Flush Request List¿¡ ÀÖ´Â ¸ğµç ÆäÀÌÁö¸¦ writeÇÑ´Ù */
+        /* Flush Request Listì— ìˆëŠ” ëª¨ë“  í˜ì´ì§€ë¥¼ writeí•œë‹¤ */
         IDE_TEST( flushBCBInList( aStatistics,
                                   aDPathBCBInfo,
                                   aDPathBulkIOInfo,
@@ -482,8 +482,8 @@ IDE_RC sdbDPathBufferMgr::flushBCBInDPathInfo(
                                   &sNeedSyncSpaceID )
                   != IDE_SUCCESS );
 
-        /* Bulk IOÀÌ±â¶§¹®¿¡ ¾ÆÁ÷ ¹öÆÛ°¡ Â÷Áö ¾Ê¾Æ¼­ Disk¿¡ ±â·ÏÇÏÁö
-         * ¾ÊÀº ÆäÀÌÁö°¡ ÀÖÀ»¼ö ÀÖ´Ù. ¶§¹®¿¡ write¸¦ ¿äÃ»ÇÑ´Ù.*/
+        /* Bulk IOì´ê¸°ë•Œë¬¸ì— ì•„ì§ ë²„í¼ê°€ ì°¨ì§€ ì•Šì•„ì„œ Diskì— ê¸°ë¡í•˜ì§€
+         * ì•Šì€ í˜ì´ì§€ê°€ ìˆì„ìˆ˜ ìˆë‹¤. ë•Œë¬¸ì— writeë¥¼ ìš”ì²­í•œë‹¤.*/
         IDE_TEST( writePagesByBulkIO( aStatistics,
                                       aDPathBCBInfo,
                                       aDPathBulkIOInfo,
@@ -506,28 +506,28 @@ IDE_RC sdbDPathBufferMgr::flushBCBInDPathInfo(
 }
 
 /***********************************************************************
- * Description : aBaseNodeÀÇ BCB¿¡ ´ëÇØ FlushÀÛ¾÷À» ÇÑ´Ù.
+ * Description : aBaseNodeì˜ BCBì— ëŒ€í•´ Flushì‘ì—…ì„ í•œë‹¤.
  * 
- * ¾Ë°í¸®Áò
- * + aBaseNodeÀÇ °¢°¢ÀÇ Node¿¡ ´ÙÀ½°ú °°Àº ¿¬»êÀ» ¼öÇàÇÑ´Ù.
- *  1. ÇöÀç NodeÀÇ BCBÀÇ »óÅÂ°¡ SDB_DPB_FLUSHÀÌ ¾Æ´Ï¸é
- *   1.1 aFlushPage°¡ ID_TRUE¸é
- *    - BCB»óÅÂ¸¦ SDB_DPB_FLUSH·Î ¹Ù²Û´Ù.
- *    - BCB°¡ °¡¸®Å°´Â ÆäÀÌÁö¸¦ Disk¿¡ ±â·ÏÇÑ´Ù.
- *   1.2 aBaseNodeÀÇ ¸®½ºÆ®¿¡¼­ ÇöÀç BCB¸¦ Á¦°ÅÇÑ´Ù.
- *   1.3 BCB¿Í BCBÀÇ ÇÒ´çµÈ Buffer Page¸¦ FreeÇÑ´Ù.
+ * ì•Œê³ ë¦¬ì¦˜
+ * + aBaseNodeì˜ ê°ê°ì˜ Nodeì— ë‹¤ìŒê³¼ ê°™ì€ ì—°ì‚°ì„ ìˆ˜í–‰í•œë‹¤.
+ *  1. í˜„ì¬ Nodeì˜ BCBì˜ ìƒíƒœê°€ SDB_DPB_FLUSHì´ ì•„ë‹ˆë©´
+ *   1.1 aFlushPageê°€ ID_TRUEë©´
+ *    - BCBìƒíƒœë¥¼ SDB_DPB_FLUSHë¡œ ë°”ê¾¼ë‹¤.
+ *    - BCBê°€ ê°€ë¦¬í‚¤ëŠ” í˜ì´ì§€ë¥¼ Diskì— ê¸°ë¡í•œë‹¤.
+ *   1.2 aBaseNodeì˜ ë¦¬ìŠ¤íŠ¸ì—ì„œ í˜„ì¬ BCBë¥¼ ì œê±°í•œë‹¤.
+ *   1.3 BCBì™€ BCBì˜ í• ë‹¹ëœ Buffer Pageë¥¼ Freeí•œë‹¤.
 
  *
  * aDPathBCBInfo    - [IN] Direct Path Buffer Info
  * aDPathBulkIOInfo - [IN] Direct Path Bulk IO Info
- * aBaseNode        - [IN] FlushÀÛ¾÷ ¹× FreeÇÒ ListÀÇ BaseNode
- * aFlushPage       - [IN] if ID_TRUE, BCBÀÇ ÆäÀÌÁö¿¡ ´ëÇØ WritePage¼öÇà, ¾Æ´Ï¸é
- *                         WritePage¸¦ ¼öÇàÇÏÁö ¾Ê°í ´ÜÁö Free¸¸ ½ÃÅ²´Ù.
- * aNeedSyncSpaceID - [IN-OUT] FlushÇØ¾ßÇÒ TableSpaceID¸¦ °¡¸®Å²´Ù. ÀÌ °ªÀÌ
- *                        ÇöÀç ±â·ÏÇØ¾ßÇÒ BCBÀÇ TableSpaceID¿Í ´Ù¸¦¶§
- *                        aNeedSyncSpaceID°¡ °¡¸®Å°´Â TableSpace¸¦ FlushÇÑ´Ù.
- *                        ±×¸®°í aNeedSyncSpaceID¸¦ BCBÀÇ TableSpaceID·Î
- *                        °»½ÅÇÑ´Ù.
+ * aBaseNode        - [IN] Flushì‘ì—… ë° Freeí•  Listì˜ BaseNode
+ * aFlushPage       - [IN] if ID_TRUE, BCBì˜ í˜ì´ì§€ì— ëŒ€í•´ WritePageìˆ˜í–‰, ì•„ë‹ˆë©´
+ *                         WritePageë¥¼ ìˆ˜í–‰í•˜ì§€ ì•Šê³  ë‹¨ì§€ Freeë§Œ ì‹œí‚¨ë‹¤.
+ * aNeedSyncSpaceID - [IN-OUT] Flushí•´ì•¼í•  TableSpaceIDë¥¼ ê°€ë¦¬í‚¨ë‹¤. ì´ ê°’ì´
+ *                        í˜„ì¬ ê¸°ë¡í•´ì•¼í•  BCBì˜ TableSpaceIDì™€ ë‹¤ë¥¼ë•Œ
+ *                        aNeedSyncSpaceIDê°€ ê°€ë¦¬í‚¤ëŠ” TableSpaceë¥¼ Flushí•œë‹¤.
+ *                        ê·¸ë¦¬ê³  aNeedSyncSpaceIDë¥¼ BCBì˜ TableSpaceIDë¡œ
+ *                        ê°±ì‹ í•œë‹¤.
  **********************************************************************/
 IDE_RC sdbDPathBufferMgr::flushBCBInList(
     idvSQL*              aStatistics,
@@ -554,10 +554,10 @@ IDE_RC sdbDPathBufferMgr::flushBCBInList(
         sCurBCB = (sdbDPathBCB*)sCurNode->mData;
         sNxtNode = SMU_LIST_GET_NEXT( sCurNode );
 
-        /* List¿¡¼­ Á¦°ÅÇÑ´Ù. */
+        /* Listì—ì„œ ì œê±°í•œë‹¤. */
         SMU_LIST_DELETE( sCurNode );
 
-        /* ÇöÀç BCB¿¡ ´ëÇØ Flush¸¦ ¼öÇàÁßÀÌ¶ó°í Ç¥½ÃÇÑ´Ù. */
+        /* í˜„ì¬ BCBì— ëŒ€í•´ Flushë¥¼ ìˆ˜í–‰ì¤‘ì´ë¼ê³  í‘œì‹œí•œë‹¤. */
         sCurBCB->mState = SDB_DPB_FLUSH;
 
         if( isNeedBulkIO( aDPathBulkIOInfo, sCurBCB ) == ID_TRUE )
@@ -565,7 +565,7 @@ IDE_RC sdbDPathBufferMgr::flushBCBInList(
             sState = 0;
             IDE_TEST( aDPathBCBInfo->mMutex.unlock() != IDE_SUCCESS );
 
-            /* Bulk IO¸¦ ¼öÇàÇÑ´Ù. µ¿½Ã¿¡ ¸®½ºÆ®¿¡¼­ Á¦°ÅÇÏ°í free ÇÑ´Ù. */
+            /* Bulk IOë¥¼ ìˆ˜í–‰í•œë‹¤. ë™ì‹œì— ë¦¬ìŠ¤íŠ¸ì—ì„œ ì œê±°í•˜ê³  free í•œë‹¤. */
             IDE_TEST( writePagesByBulkIO( aStatistics,
                                           aDPathBCBInfo,
                                           aDPathBulkIOInfo,
@@ -575,10 +575,10 @@ IDE_RC sdbDPathBufferMgr::flushBCBInList(
             IDE_TEST( aDPathBCBInfo->mMutex.lock( NULL /* idvSQL* */ )
                       != IDE_SUCCESS );
             sState = 1;
-            /* MutexÇ®±âÀü¿¡ ±¸ÇÑ sNxtNodeÀÌ ValidÇÏ´Ù´Â °ÍÀ» º¸ÀåÇÒ ¼ö ¾ø´Ù.
-             * ¿Ö³ÄÇÏ¸é ÀÌ ¸®½ºÆ®´Â Transactoin°ú Flush Thread°¡ µ¿½Ã¿¡
-             * Á¢±ÙÇØ¼­ IO¸¦ ¼öÇàÇÏ¿© Mutex¸¦ Ç¬»çÀÌ¿¡ ´Ù¸¥ Thread°¡
-             * ±× nextnode¿¡ ´ëÇØ¼­ ÀÛ¾÷À» ¿Ï·áÇÏ¿© free½ÃÄÑ¹ö¸±¼öµµ ÀÖ±â¶§¹®ÀÌ´Ù.*/
+            /* Mutexí’€ê¸°ì „ì— êµ¬í•œ sNxtNodeì´ Validí•˜ë‹¤ëŠ” ê²ƒì„ ë³´ì¥í•  ìˆ˜ ì—†ë‹¤.
+             * ì™œëƒí•˜ë©´ ì´ ë¦¬ìŠ¤íŠ¸ëŠ” Transactoinê³¼ Flush Threadê°€ ë™ì‹œì—
+             * ì ‘ê·¼í•´ì„œ IOë¥¼ ìˆ˜í–‰í•˜ì—¬ Mutexë¥¼ í‘¼ì‚¬ì´ì— ë‹¤ë¥¸ Threadê°€
+             * ê·¸ nextnodeì— ëŒ€í•´ì„œ ì‘ì—…ì„ ì™„ë£Œí•˜ì—¬ freeì‹œì¼œë²„ë¦´ìˆ˜ë„ ìˆê¸°ë•Œë¬¸ì´ë‹¤.*/
             sNxtNode  = SMU_LIST_GET_FIRST(aBaseNode);
         }
 
@@ -610,8 +610,8 @@ IDE_RC sdbDPathBufferMgr::flushBCBInList(
 }
 
 /***********************************************************************
- * Description : Direct Path Buffer Info¿¡ ÀÖ´Â ¸ğµç BCB¿¡ ´ëÇØ Free¸¦
- *               ¼öÇà ÇÑ´Ù.
+ * Description : Direct Path Buffer Infoì— ìˆëŠ” ëª¨ë“  BCBì— ëŒ€í•´ Freeë¥¼
+ *               ìˆ˜í–‰ í•œë‹¤.
  *
  * aDPathBCBInfo   - [IN] Direct Path Buffer Info
  **********************************************************************/
@@ -628,10 +628,10 @@ IDE_RC sdbDPathBufferMgr::freeBCBInDPathInfo(
                 != IDE_SUCCESS );
         sState = 1;
 
-        /* Append List¿¡ ÀÖ´Â ¸ğµç Page¸¦ free ÇÑ´Ù. */
+        /* Append Listì— ìˆëŠ” ëª¨ë“  Pageë¥¼ free í•œë‹¤. */
         IDE_TEST( freeBCBInList( &(aDPathBCBInfo->mAPgList) )
                   != IDE_SUCCESS );
-        /* Flush Request List¿¡ ÀÖ´Â ¸ğµç ÆäÀÌÁö¸¦ free ÇÑ´Ù */
+        /* Flush Request Listì— ìˆëŠ” ëª¨ë“  í˜ì´ì§€ë¥¼ free í•œë‹¤ */
         IDE_TEST( freeBCBInList( &(aDPathBCBInfo->mFReqPgList) )
                   != IDE_SUCCESS );
 
@@ -657,9 +657,9 @@ IDE_RC sdbDPathBufferMgr::freeBCBInDPathInfo(
 }
 
 /***********************************************************************
- * Description : aBaseNodeÀÇ BCB¿¡ ´ëÇØ FreeÀÛ¾÷À» ÇÑ´Ù.
+ * Description : aBaseNodeì˜ BCBì— ëŒ€í•´ Freeì‘ì—…ì„ í•œë‹¤.
  *
- * aBaseNode        - [IN] FlushÀÛ¾÷ ¹× FreeÇÒ ListÀÇ BaseNode
+ * aBaseNode        - [IN] Flushì‘ì—… ë° Freeí•  Listì˜ BaseNode
  **********************************************************************/
 IDE_RC sdbDPathBufferMgr::freeBCBInList( smuList* aBaseNode )
 {
@@ -674,10 +674,10 @@ IDE_RC sdbDPathBufferMgr::freeBCBInList( smuList* aBaseNode )
     {
         sCurBCB = (sdbDPathBCB*)sCurNode->mData;
 
-        /* List¿¡¼­ Á¦°ÅÇÑ´Ù. */
+        /* Listì—ì„œ ì œê±°í•œë‹¤. */
         SMU_LIST_DELETE( sCurNode );
 
-        /* BCB¿Í ÇÒ´çµÈ ¹öÆÛ¸¦ FreeÇÑ´Ù */
+        /* BCBì™€ í• ë‹¹ëœ ë²„í¼ë¥¼ Freeí•œë‹¤ */
         IDE_TEST( freeBuffPage( sCurBCB->mPage )
                   != IDE_SUCCESS );
         IDE_TEST( mBCBPool.memfree( sCurBCB ) != IDE_SUCCESS );
@@ -691,8 +691,8 @@ IDE_RC sdbDPathBufferMgr::freeBCBInList( smuList* aBaseNode )
 }
 
 /***********************************************************************
- * Description : Direct Path Info¿¡ ´ëÇØ¼­ ¹é±×¶ó¿îµå·Î FlushÇÒ Flush Thread
- *               »ı¼º ¹× ½ÃÀÛ½ÃÅ²´Ù.
+ * Description : Direct Path Infoì— ëŒ€í•´ì„œ ë°±ê·¸ë¼ìš´ë“œë¡œ Flushí•  Flush Thread
+ *               ìƒì„± ë° ì‹œì‘ì‹œí‚¨ë‹¤.
  *
  * aDPathBCBInfo - [IN] Direct Path Info
  **********************************************************************/
@@ -749,7 +749,7 @@ IDE_RC sdbDPathBufferMgr::createFlushThread( sdbDPathBuffInfo*  aDPathBCBInfo )
 }
 
 /***********************************************************************
- * Description : Direct Path InfoÀÇ Flush Thread¸¦ Á¾·á½ÃÅ²´Ù.
+ * Description : Direct Path Infoì˜ Flush Threadë¥¼ ì¢…ë£Œì‹œí‚¨ë‹¤.
  *
  * aDPathBCBInfo - [IN] Direct Path Info
  **********************************************************************/
@@ -757,8 +757,8 @@ IDE_RC sdbDPathBufferMgr::destFlushThread( sdbDPathBuffInfo*  aDPathBCBInfo )
 {
     IDE_DASSERT( aDPathBCBInfo != NULL );
 
-    // BUG-30216 destFlushThread ÇÔ¼ö°¡ µ¿ÀÏ TX ³»¿¡¼­ ¿©·¯¹ø ºÒ¸± ¼ö ÀÖ±â
-    // ¶§¹®¿¡ Flush Thread°¡ Á¸Àç ÇÒ ¶§¸¸ ÆÄ±«ÇØ ÁØ´Ù.
+    // BUG-30216 destFlushThread í•¨ìˆ˜ê°€ ë™ì¼ TX ë‚´ì—ì„œ ì—¬ëŸ¬ë²ˆ ë¶ˆë¦´ ìˆ˜ ìˆê¸°
+    // ë•Œë¬¸ì— Flush Threadê°€ ì¡´ì¬ í•  ë•Œë§Œ íŒŒê´´í•´ ì¤€ë‹¤.
     if( aDPathBCBInfo->mFlushThread != NULL )
     {
         IDE_TEST( aDPathBCBInfo->mFlushThread->shutdown()
@@ -781,7 +781,7 @@ IDE_RC sdbDPathBufferMgr::destFlushThread( sdbDPathBuffInfo*  aDPathBCBInfo )
 }
 
 /***********************************************************************
- * Description : Direct Path Info¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+ * Description : Direct Path Infoë¥¼ ì´ˆê¸°í™”í•œë‹¤.
  *
  * aDPathBCBInfo - [IN-OUT] Direct Path Info
  **********************************************************************/
@@ -838,7 +838,7 @@ IDE_RC sdbDPathBufferMgr::initDPathBuffInfo( sdbDPathBuffInfo *aDPathBuffInfo )
 }
 
 /***********************************************************************
- * Description : Direct Path Info¸¦ ¼Ò¸ê½ÃÅ²´Ù.
+ * Description : Direct Path Infoë¥¼ ì†Œë©¸ì‹œí‚¨ë‹¤.
  *
  * aDPathBCBInfo - [IN] Direct Path Info
  **********************************************************************/
@@ -866,13 +866,13 @@ IDE_RC sdbDPathBufferMgr::destDPathBuffInfo( sdbDPathBuffInfo *aDPathBuffInfo )
 }
 
 /***********************************************************************
- * Description : Direct Path Bulk IO¿¡ ´ëÇÑ structure¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+ * Description : Direct Path Bulk IOì— ëŒ€í•œ structureë¥¼ ì´ˆê¸°í™”í•œë‹¤.
  *
  * aDPathBulkIOInfo - [IN] Direct Path Bulk IO Info
  **********************************************************************/
 IDE_RC sdbDPathBufferMgr::initBulkIOInfo( sdbDPathBulkIOInfo *aDPathBulkIOInfo )
 {
-    /* Bulk IO¸¦ ¼öÇàÇÒ¶§ ÇÑ¹ø¿¡ ±â·ÏµÉ ÆäÀÌÁöÀÇ °¹¼ö¸¦ °¡Á®¿Â´Ù. */
+    /* Bulk IOë¥¼ ìˆ˜í–‰í• ë•Œ í•œë²ˆì— ê¸°ë¡ë  í˜ì´ì§€ì˜ ê°¯ìˆ˜ë¥¼ ê°€ì ¸ì˜¨ë‹¤. */
     aDPathBulkIOInfo->mDBufferSize =
         smuProperty::getBulkIOPageCnt4DPInsert();
 
@@ -881,7 +881,7 @@ IDE_RC sdbDPathBufferMgr::initBulkIOInfo( sdbDPathBulkIOInfo *aDPathBulkIOInfo )
     aDPathBulkIOInfo->mLstSpaceID   = SC_NULL_SPACEID;
     aDPathBulkIOInfo->mLstPageID    = SC_NULL_PID;
 
-    /* Bulk IO¸¦ ¼öÇàÇÒ¶§ ÇÑ¹ø¿¡ ±â·ÏÇÏ±â À§ÇØ ÇÊ¿äÇÑ ¹öÆÛ°ø°£À» ÇÒ´çÇÑ´Ù . */
+    /* Bulk IOë¥¼ ìˆ˜í–‰í• ë•Œ í•œë²ˆì— ê¸°ë¡í•˜ê¸° ìœ„í•´ í•„ìš”í•œ ë²„í¼ê³µê°„ì„ í• ë‹¹í•œë‹¤ . */
     IDE_TEST( iduFile::allocBuff4DirectIO(
                   IDU_MEM_SM_SDB,
                   aDPathBulkIOInfo->mDBufferSize * SD_PAGE_SIZE,
@@ -899,7 +899,7 @@ IDE_RC sdbDPathBufferMgr::initBulkIOInfo( sdbDPathBulkIOInfo *aDPathBulkIOInfo )
 }
 
 /***********************************************************************
- * Description : Direct Path Bulk IO¿¡ ´ëÇÑ structure¸¦ Á¤¸®ÇÑ´Ù.
+ * Description : Direct Path Bulk IOì— ëŒ€í•œ structureë¥¼ ì •ë¦¬í•œë‹¤.
  *
  * aDPathBulkIOInfo - [IN] Direct Path Bulk IO Info
  **********************************************************************/
@@ -926,23 +926,23 @@ IDE_RC sdbDPathBufferMgr::destBulkIOInfo( sdbDPathBulkIOInfo *aDPathBulkIOInfo )
 }
 
 /***********************************************************************
- * Description : aBCB¸¦ Bulk IO Buffer¿¡ Ãß°¡°¡´ÉÇÑÁö Á¶»çÇÑ´Ù. ºÒ°¡ÇÏ¸é
- *               Buffer¿¡ ÀÖ´Â °ÍÀ» ³»·Á¾ß ÇÑ´Ù. ¶§¹®¿¡ ID_TRUE, ¾Æ´Ï¸é
+ * Description : aBCBë¥¼ Bulk IO Bufferì— ì¶”ê°€ê°€ëŠ¥í•œì§€ ì¡°ì‚¬í•œë‹¤. ë¶ˆê°€í•˜ë©´
+ *               Bufferì— ìˆëŠ” ê²ƒì„ ë‚´ë ¤ì•¼ í•œë‹¤. ë•Œë¬¸ì— ID_TRUE, ì•„ë‹ˆë©´
  *               ID_FALSE.
  *
  * aDPathBulkIOInfo - [IN] Direct Path Bulk IO Info
- * aBCB             - [IN] aDPathBulkIOInfoÀÇ mBaseNode¿¡ Ãß°¡µÉ BCB
+ * aBCB             - [IN] aDPathBulkIOInfoì˜ mBaseNodeì— ì¶”ê°€ë  BCB
  **********************************************************************/
 idBool sdbDPathBufferMgr::isNeedBulkIO( sdbDPathBulkIOInfo *aDPathBulkIOInfo,
                                         sdbDPathBCB        *aBCB )
 {
     idBool  sIsNeed = ID_TRUE;
 
-    /* ´ÙÀ½°ú °°Àº °æ¿ì Bulk IO¸¦ ¼öÇàÇÑ´Ù.
-     * 1. Bulk IO Buffer°¡ Full
-     * 2. ¿¬¼ÓµÈ ÆäÀÌÁö°¡ ¾Æ´Ñ°æ¿ì
-     *   - SpaceID°¡ Æ²¸°°æ¿ì
-     *   - PageID°¡ ÀÌÀü¿¡ AddÇÑ ÆäÀÌÁö¿Í ¿¬¼ÓµÇÁö ¾ÊÀ» ¶§ */
+    /* ë‹¤ìŒê³¼ ê°™ì€ ê²½ìš° Bulk IOë¥¼ ìˆ˜í–‰í•œë‹¤.
+     * 1. Bulk IO Bufferê°€ Full
+     * 2. ì—°ì†ëœ í˜ì´ì§€ê°€ ì•„ë‹Œê²½ìš°
+     *   - SpaceIDê°€ í‹€ë¦°ê²½ìš°
+     *   - PageIDê°€ ì´ì „ì— Addí•œ í˜ì´ì§€ì™€ ì—°ì†ë˜ì§€ ì•Šì„ ë•Œ */
     if( ( aDPathBulkIOInfo->mIORequestCnt >= aDPathBulkIOInfo->mDBufferSize ) ||
         ( (aBCB->mSpaceID != aDPathBulkIOInfo->mLstSpaceID) &&
           (aDPathBulkIOInfo->mLstSpaceID != 0 )) ||
@@ -960,7 +960,7 @@ idBool sdbDPathBufferMgr::isNeedBulkIO( sdbDPathBulkIOInfo *aDPathBulkIOInfo,
 }
 
 /***********************************************************************
- * Description : Bulk IO Info¿¡ IO Request¸¦ Ãß°¡ÇÑ´Ù.
+ * Description : Bulk IO Infoì— IO Requestë¥¼ ì¶”ê°€í•œë‹¤.
  *
  * aDPathBCBInfo - [IN] Direct Path Info
  * aDPathBCB     - [IN] Direct Path BCB Pointer
@@ -986,11 +986,11 @@ IDE_RC sdbDPathBufferMgr::addNode4BulkIO( sdbDPathBulkIOInfo *aDPathBulkIOInfo,
 }
 
 /***********************************************************************
- * Description : Bulk IO¸¦ ¼öÇàÇÑ´Ù.
+ * Description : Bulk IOë¥¼ ìˆ˜í–‰í•œë‹¤.
  *
  * aDPathBulkIOInfo - [IN] Direct Path Bulk IO Info
- * aPrevSpaceID     - ÀÌÀü¿¡ writePage¸¦ ¼öÇàÇÑ BCBÀÇ TableSpaceÀÇ ID
- *                    return½Ã ÇöÀç BCBÀÇ SpaceID·Î º¯°æ.
+ * aPrevSpaceID     - ì´ì „ì— writePageë¥¼ ìˆ˜í–‰í•œ BCBì˜ TableSpaceì˜ ID
+ *                    returnì‹œ í˜„ì¬ BCBì˜ SpaceIDë¡œ ë³€ê²½.
  **********************************************************************/
 IDE_RC sdbDPathBufferMgr::writePagesByBulkIO(
     idvSQL             *aStatistics,
@@ -1016,12 +1016,12 @@ IDE_RC sdbDPathBufferMgr::writePagesByBulkIO(
         sCurNode  = SMU_LIST_GET_FIRST( &(aDPathBulkIOInfo->mBaseNode) );
         sCurBCB   = (sdbDPathBCB*)sCurNode->mData;
 
-        /* sddDiskMgr::syncTableSpaceInNormalÀÇ È£ÃâÈ½¼ö¸¦ ÁÙÀÌ±â À§ÇØ¼­
-         * writePage¶§¸¶´Ù ÇÏÁö ¾ÊÁö ¾Ê°í writePage½Ã ÀÌÀü¿¡ writePage¸¦
-         * ¿äÃ»ÇÑ BCBÀÇ SpaceID¿Í ÇöÀç writePage¸¦ ¿äÃ»ÇÑ BCBÀÇ SpaceID°¡
-         * ´Ù¸¦¶§¸¸ syncTableSpaceInNormal¸¦ ¼öÇàÇÑ´Ù. ±×¸®°í ¸¶Áö¸·
-         * writePageÈÄ aPrevSpaceID°¡ °¡¸®Å°´Â TableSpace¿¡ ´ëÇØ¼­
-         * syncTableSpaceInNormal¸¦ ¼öÇàÇÑ´Ù. */
+        /* sddDiskMgr::syncTableSpaceInNormalì˜ í˜¸ì¶œíšŸìˆ˜ë¥¼ ì¤„ì´ê¸° ìœ„í•´ì„œ
+         * writePageë•Œë§ˆë‹¤ í•˜ì§€ ì•Šì§€ ì•Šê³  writePageì‹œ ì´ì „ì— writePageë¥¼
+         * ìš”ì²­í•œ BCBì˜ SpaceIDì™€ í˜„ì¬ writePageë¥¼ ìš”ì²­í•œ BCBì˜ SpaceIDê°€
+         * ë‹¤ë¥¼ë•Œë§Œ syncTableSpaceInNormalë¥¼ ìˆ˜í–‰í•œë‹¤. ê·¸ë¦¬ê³  ë§ˆì§€ë§‰
+         * writePageí›„ aPrevSpaceIDê°€ ê°€ë¦¬í‚¤ëŠ” TableSpaceì— ëŒ€í•´ì„œ
+         * syncTableSpaceInNormalë¥¼ ìˆ˜í–‰í•œë‹¤. */
         if( *aPrevSpaceID != 0 )
         {
             if( *aPrevSpaceID != sCurBCB->mSpaceID )
@@ -1038,17 +1038,17 @@ IDE_RC sdbDPathBufferMgr::writePagesByBulkIO(
         sSpaceID = sCurBCB->mSpaceID;
         sPageID  = sCurBCB->mPageID;
 
-        /* ÀÌ ÆäÀÌÁö¿¡ ´ëÇØ¼­ ·Î±ëÀ» ÇÏÁö ¾ÊÀ» °æ¿ì redo½Ã LSNÀÌ
-         * Page°¡ writeµÇ´Â ½ÃÁ¡ÀÇ System LSNº¸´Ù LSNÀÌ ÀÛ°Ô ¼³Á¤µÇ¸é
-         * ÀÌÀü¿¡ ÀÌ Page¿¡ update »ç¿ëµÈ Log°¡ Redo°¡ µÉ ¼ö ÀÖ´Ù.
-         * ¶§¹®¿¡ LSNÀº ÇöÀç write½ÃÁ¡ÀÇ system last lsnÀ¸·Î ¼³Á¤ÇÑ´Ù. */
+        /* ì´ í˜ì´ì§€ì— ëŒ€í•´ì„œ ë¡œê¹…ì„ í•˜ì§€ ì•Šì„ ê²½ìš° redoì‹œ LSNì´
+         * Pageê°€ writeë˜ëŠ” ì‹œì ì˜ System LSNë³´ë‹¤ LSNì´ ì‘ê²Œ ì„¤ì •ë˜ë©´
+         * ì´ì „ì— ì´ Pageì— update ì‚¬ìš©ëœ Logê°€ Redoê°€ ë  ìˆ˜ ìˆë‹¤.
+         * ë•Œë¬¸ì— LSNì€ í˜„ì¬ writeì‹œì ì˜ system last lsnìœ¼ë¡œ ì„¤ì •í•œë‹¤. */
         (void)smLayerCallback::getLstLSN( &sLstLSN );
 
         for( i = 0; i < aDPathBulkIOInfo->mIORequestCnt; i++ )
         {
             if ( sCurBCB->mIsLogging == ID_TRUE ) 
             {
-                /* PROJ-1665 : PageÀÇ Physical Image¸¦ LoggingÇÑ´Ù */
+                /* PROJ-1665 : Pageì˜ Physical Imageë¥¼ Loggingí•œë‹¤ */
                 SC_MAKE_GRID(sPageGRID,sCurBCB->mSpaceID,sCurBCB->mPageID,0);
 
                 IDE_TEST( smLayerCallback::writeDPathPageLogRec( aStatistics,
@@ -1074,7 +1074,7 @@ IDE_RC sdbDPathBufferMgr::writePagesByBulkIO(
             sNxtNode = SMU_LIST_GET_NEXT( sCurNode );
             SMU_LIST_DELETE( sCurNode );
 
-            /* BCB¿Í ÇÒ´çµÈ ¹öÆÛ¸¦ FreeÇÑ´Ù */
+            /* BCBì™€ í• ë‹¹ëœ ë²„í¼ë¥¼ Freeí•œë‹¤ */
             IDE_TEST( freeBuffPage( sCurBCB->mPage )
                       != IDE_SUCCESS );
 
@@ -1084,7 +1084,7 @@ IDE_RC sdbDPathBufferMgr::writePagesByBulkIO(
             sCurBCB  = (sdbDPathBCB*)sCurNode->mData;
         }
 
-        /* Bulk IO¸¦ ¼öÇàÇÑ´Ù. */
+        /* Bulk IOë¥¼ ìˆ˜í–‰í•œë‹¤. */
 
         IDE_TEST( sddDiskMgr::write4DPath( aStatistics,
                                            sSpaceID,
@@ -1136,14 +1136,14 @@ IDE_RC sdbDPathBufferMgr::writePagesByBulkIO(
 }
 
 /***********************************************************************
- * Description : Direct Path Buffer¸¦ ÇÒ´çÇÑ´Ù. mPageBuffPoolÀº ¸ğµç
- *               Direct Path Insert¸¦ ¼öÇàÇÏ´Â TransactionµéÀÌ °øÀ¯ÇÑ´Ù. ¶§¹®¿¡
- *               µ¿½Ã¼º Á¦¾î°¡ ÇÊ¿äÇÏ°í ¹«ÇÑÁ¤ °ø°£ÀÌ ´Ã¾î³ª¸é µÇÁö ¾Ê±â¶§¹®¿¡
- *               DIRECT_PATH_BUFFER_PAGE_COUNT¶ó´Â ¼Ó¼ºÀ» µÎ°í ÀÌ °ª ÀÌ»óÀ¸·Î
- *               ¸Ş¸ğ¸®°¡ ÇÒ´çµÇÁö ¾Êµµ·Ï ÇÏ¿´´Ù. ÀÌ ¼Ó¼ºÀº Alter±¸¹®À» ÀÌ¿ëÇØ¼­
- *               ¹Ù²Ü ¼ö°¡ ÀÖ´Ù. ÇÒ´çµÇ´Â ¸Ş¸ğ¸® Å©±â´Â SD_PAGE_SIZEÀÌ´Ù.
+ * Description : Direct Path Bufferë¥¼ í• ë‹¹í•œë‹¤. mPageBuffPoolì€ ëª¨ë“ 
+ *               Direct Path Insertë¥¼ ìˆ˜í–‰í•˜ëŠ” Transactionë“¤ì´ ê³µìœ í•œë‹¤. ë•Œë¬¸ì—
+ *               ë™ì‹œì„± ì œì–´ê°€ í•„ìš”í•˜ê³  ë¬´í•œì • ê³µê°„ì´ ëŠ˜ì–´ë‚˜ë©´ ë˜ì§€ ì•Šê¸°ë•Œë¬¸ì—
+ *               DIRECT_PATH_BUFFER_PAGE_COUNTë¼ëŠ” ì†ì„±ì„ ë‘ê³  ì´ ê°’ ì´ìƒìœ¼ë¡œ
+ *               ë©”ëª¨ë¦¬ê°€ í• ë‹¹ë˜ì§€ ì•Šë„ë¡ í•˜ì˜€ë‹¤. ì´ ì†ì„±ì€ Alterêµ¬ë¬¸ì„ ì´ìš©í•´ì„œ
+ *               ë°”ê¿€ ìˆ˜ê°€ ìˆë‹¤. í• ë‹¹ë˜ëŠ” ë©”ëª¨ë¦¬ í¬ê¸°ëŠ” SD_PAGE_SIZEì´ë‹¤.
  *
- * aPage - [OUT] ÇÒ´çµÈ ¸Ş¸ğ¸®¸¦ ¹Ş´Â´Ù.
+ * aPage - [OUT] í• ë‹¹ëœ ë©”ëª¨ë¦¬ë¥¼ ë°›ëŠ”ë‹¤.
  *
  **********************************************************************/
 IDE_RC sdbDPathBufferMgr::allocBuffPage( idvSQL            * aStatistics,
@@ -1207,9 +1207,9 @@ IDE_RC sdbDPathBufferMgr::allocBuffPage( idvSQL            * aStatistics,
 }
 
 /***********************************************************************
- * Description : Direct Path Buffer¸¦ ¹İÈ¯ÇÑ´Ù.
+ * Description : Direct Path Bufferë¥¼ ë°˜í™˜í•œë‹¤.
  *
- * aPage - [IN] ¹İÈ¯µÉ ¸Ş¸ğ¸® ÆäÀÌÁö ½ÃÀÛÁÖ¼Ò.
+ * aPage - [IN] ë°˜í™˜ë  ë©”ëª¨ë¦¬ í˜ì´ì§€ ì‹œì‘ì£¼ì†Œ.
  *
  **********************************************************************/
 IDE_RC sdbDPathBufferMgr::freeBuffPage( void* aPage )
@@ -1245,10 +1245,10 @@ IDE_RC sdbDPathBufferMgr::freeBuffPage( void* aPage )
 }
 
 /*******************************************************************************
- * Description : DPathBuffInfo¸¦ dumpÇÑ´Ù.
+ * Description : DPathBuffInfoë¥¼ dumpí•œë‹¤.
  *
  * Parameters :
- *      aDPathBuffInfo - [IN] dumpÇÒ DPathBuffInfo
+ *      aDPathBuffInfo - [IN] dumpí•  DPathBuffInfo
  ******************************************************************************/
 IDE_RC sdbDPathBufferMgr::dumpDPathBuffInfo( sdbDPathBuffInfo *aDPathBuffInfo )
 {
@@ -1305,10 +1305,10 @@ IDE_RC sdbDPathBufferMgr::dumpDPathBuffInfo( sdbDPathBuffInfo *aDPathBuffInfo )
 }
 
 /*******************************************************************************
- * Description : DPathBulkIOInfo¸¦ dumpÇÑ´Ù.
+ * Description : DPathBulkIOInfoë¥¼ dumpí•œë‹¤.
  *
  * Parameters :
- *      aDPathBulkIOInfo - [IN] dumpÇÒ DPathBulkIOInfo
+ *      aDPathBulkIOInfo - [IN] dumpí•  DPathBulkIOInfo
  ******************************************************************************/
 IDE_RC sdbDPathBufferMgr::dumpDPathBulkIOInfo(
                                     sdbDPathBulkIOInfo *aDPathBulkIOInfo )
@@ -1355,10 +1355,10 @@ IDE_RC sdbDPathBufferMgr::dumpDPathBulkIOInfo(
 }
 
 /*******************************************************************************
- * Description : DPathBCB¸¦ ¸ğµÎ Ãâ·ÂÇÑ´Ù.
+ * Description : DPathBCBë¥¼ ëª¨ë‘ ì¶œë ¥í•œë‹¤.
  *
  * Parameters :
- *      aDPathBCB   - [IN] dumpÇÒ DPathBCB
+ *      aDPathBCB   - [IN] dumpí•  DPathBCB
  ******************************************************************************/
 IDE_RC sdbDPathBufferMgr::dumpDPathBCB( sdbDPathBCB *aDPathBCB )
 {

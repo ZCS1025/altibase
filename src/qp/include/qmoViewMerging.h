@@ -19,11 +19,11 @@
  * $Id: qmoViewMerging.h 23857 2008-03-19 02:36:53Z sungminee $
  *
  * Description :
- *     PROJ-1413 Simple View MergingÀ» À§ÇÑ ÀÚ·á ±¸Á¶ Á¤ÀÇ
+ *     PROJ-1413 Simple View Mergingì„ ìœ„í•œ ìë£Œ êµ¬ì¡° ì •ì˜
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  **********************************************************************/
 
@@ -40,61 +40,61 @@
 #define DEFAULT_VIEW_NAME_LEN     (6)
 
 //---------------------------------------------------
-// View MergingÀÇ rollbackÀ» À§ÇÑ ÀÚ·á±¸Á¶
+// View Mergingì˜ rollbackì„ ìœ„í•œ ìë£Œêµ¬ì¡°
 //---------------------------------------------------
 
 typedef struct qmoViewRollbackInfo
 {
     //---------------------------------------------------
-    // HintÀıÀÇ rollback Á¤º¸
+    // Hintì ˆì˜ rollback ì •ë³´
     //---------------------------------------------------
 
     idBool                    hintMerged;
     
-    // join method hintÀÇ mergeÀü ¸¶Áö¸· ³ëµå¸¦ ±â·ÏÇÑ´Ù.
+    // join method hintì˜ mergeì „ ë§ˆì§€ë§‰ ë…¸ë“œë¥¼ ê¸°ë¡í•œë‹¤.
     qmsJoinMethodHints      * lastJoinMethod;
     
-    // table access hintÀÇ mergeÀü ¸¶Áö¸· ³ëµå¸¦ ±â·ÏÇÑ´Ù.
+    // table access hintì˜ mergeì „ ë§ˆì§€ë§‰ ë…¸ë“œë¥¼ ê¸°ë¡í•œë‹¤.
     qmsTableAccessHints     * lastTableAccess;
 
     // BUG-22236
-    // ÀÌÀü interResultTypeÀ» ±â·ÏÇÑ´Ù. 
+    // ì´ì „ interResultTypeì„ ê¸°ë¡í•œë‹¤. 
     qmoInterResultType        interResultType;    // DISK/MEMORY
 
     //---------------------------------------------------
-    // Target ListÀÇ rollback Á¤º¸
+    // Target Listì˜ rollback ì •ë³´
     //---------------------------------------------------
 
     idBool                    targetMerged;
     
     //---------------------------------------------------
-    // From ÀıÀÇ rollback Á¤º¸
+    // From ì ˆì˜ rollback ì •ë³´
     //---------------------------------------------------
 
     idBool                    fromMerged;
     
-    // ÇöÀç query blockÀÇ from Àı mergeÀü Ã¹¹øÂ° fromÀ» ±â·ÏÇÑ´Ù.
+    // í˜„ì¬ query blockì˜ from ì ˆ mergeì „ ì²«ë²ˆì§¸ fromì„ ê¸°ë¡í•œë‹¤.
     qmsFrom                 * firstFrom;
     
-    // ÇÏÀ§ query blockÀÇ from Àı mergeÀü ¸¶Áö¸· fromÀ» ±â·ÏÇÑ´Ù.
+    // í•˜ìœ„ query blockì˜ from ì ˆ mergeì „ ë§ˆì§€ë§‰ fromì„ ê¸°ë¡í•œë‹¤.
     qmsFrom                 * lastFrom;
 
-    // mergeÀü tuple variableÀÇ ÀÌ¸§À» ±â·ÏÇÑ´Ù.
+    // mergeì „ tuple variableì˜ ì´ë¦„ì„ ê¸°ë¡í•œë‹¤.
     qcNamePosition          * oldAliasName;
     
-    // mergeÈÄ tuple variableÀÇ ÀÌ¸§À» ±â·ÏÇÑ´Ù.
+    // mergeí›„ tuple variableì˜ ì´ë¦„ì„ ê¸°ë¡í•œë‹¤.
     qcNamePosition          * newAliasName;
     
     //---------------------------------------------------
-    // Where ÀıÀÇ rollback Á¤º¸
+    // Where ì ˆì˜ rollback ì •ë³´
     //---------------------------------------------------
 
     idBool                    whereMerged;
     
-    // mergeÀü ÇöÀç whereÀıÀÇ ³ëµå¸¦ ±â·ÏÇÑ´Ù.
+    // mergeì „ í˜„ì¬ whereì ˆì˜ ë…¸ë“œë¥¼ ê¸°ë¡í•œë‹¤.
     qtcNode                 * currentWhere;
 
-    // mergeÀü ÇÏÀ§ whereÀıÀÇ ³ëµå¸¦ ±â·ÏÇÑ´Ù.
+    // mergeì „ í•˜ìœ„ whereì ˆì˜ ë…¸ë“œë¥¼ ê¸°ë¡í•œë‹¤.
     qtcNode                 * underWhere;
     
 } qmoViewRollbackInfo;
@@ -105,7 +105,7 @@ class qmoViewMerging
 public:
 
     //------------------------------------------
-    // (simple) view mergingÀÇ ¼öÇà
+    // (simple) view mergingì˜ ìˆ˜í–‰
     //------------------------------------------
     
     static IDE_RC  doTransform( qcStatement  * aStatement,
@@ -117,62 +117,62 @@ public:
 private:
 
     //------------------------------------------
-    // simple view mergingÀÇ ¼öÇà
+    // simple view mergingì˜ ìˆ˜í–‰
     //------------------------------------------
 
-    // query blockÀ» ¼øÈ¸ÇÏ¸ç simple view merging ¼öÇà
+    // query blockì„ ìˆœíšŒí•˜ë©° simple view merging ìˆ˜í–‰
     static IDE_RC  processTransform( qcStatement  * aStatement,
                                      qcParseTree  * aParseTree,
                                      qmsQuerySet  * aQuerySet );
 
-    // query setÀ» ¼øÈ¸ÇÏ¸ç simple view merging ¼öÇà
+    // query setì„ ìˆœíšŒí•˜ë©° simple view merging ìˆ˜í–‰
     static IDE_RC  processTransformForQuerySet( qcStatement  * aStatement,
                                                 qmsQuerySet  * aQuerySet,
                                                 idBool       * aIsTransformed );
 
-    // joined tableÀÇ ÇÏÀ§ query setÀ» ¼øÈ¸ÇÏ¸ç simple view merging ¼öÇà
+    // joined tableì˜ í•˜ìœ„ query setì„ ìˆœíšŒí•˜ë©° simple view merging ìˆ˜í–‰
     static IDE_RC  processTransformForJoinedTable( qcStatement  * aStatement,
                                                    qmsFrom      * aFrom );
 
-    // Expression¿¡ Æ÷ÇÔµÈ subqueryµéÀ» Ã£¾Æ simple view merging ¼öÇà
+    // Expressionì— í¬í•¨ëœ subqueryë“¤ì„ ì°¾ì•„ simple view merging ìˆ˜í–‰
     static IDE_RC  processTransformForExpression( qcStatement * aStatement,
                                                   qtcNode     * aNode );
 
     //------------------------------------------
-    // simple view °Ë»ç
+    // simple view ê²€ì‚¬
     //------------------------------------------
 
-    // query blockÀÌ simple queryÀÎÁö °Ë»ç
+    // query blockì´ simple queryì¸ì§€ ê²€ì‚¬
     static IDE_RC  isSimpleQuery( qmsParseTree * aParseTree,
                                   idBool       * aIsSimpleQuery );
 
     //------------------------------------------
-    // merge Á¶°Ç °Ë»ç
+    // merge ì¡°ê±´ ê²€ì‚¬
     //------------------------------------------
 
-    // ÇöÀç query block°ú ÇÏÀ§ query blockÀÇ merge Á¶°Ç °Ë»ç
+    // í˜„ì¬ query blockê³¼ í•˜ìœ„ query blockì˜ merge ì¡°ê±´ ê²€ì‚¬
     static IDE_RC  canMergeView( qcStatement  * aStatement,
                                  qmsSFWGH     * aCurrentSFWGH,
                                  qmsSFWGH     * aUnderSFWGH,
                                  qmsTableRef  * aUnderTableRef,
                                  idBool       * aCanMergeView );
 
-    // ÇöÀç query blockÀÇ merge Á¶°Ç °Ë»ç
+    // í˜„ì¬ query blockì˜ merge ì¡°ê±´ ê²€ì‚¬
     static IDE_RC  checkCurrentSFWGH( qmsSFWGH     * aSFWGH,
                                       idBool       * aCanMerge );
     
-    // ÇÏÀ§ query blockÀÇ merge Á¶°Ç °Ë»ç
+    // í•˜ìœ„ query blockì˜ merge ì¡°ê±´ ê²€ì‚¬
     static IDE_RC  checkUnderSFWGH( qcStatement  * aStatement,
                                     qmsSFWGH     * aSFWGH,
                                     qmsTableRef  * aTableRef,
                                     idBool       * aCanMerge );
 
-    // dependency °Ë»ç
+    // dependency ê²€ì‚¬
     static IDE_RC  checkDependency( qmsSFWGH     * aCurrentSFWGH,
                                     qmsSFWGH     * aUnderSFWGH,
                                     idBool       * aCanMerge );
 
-    // normal form °Ë»ç
+    // normal form ê²€ì‚¬
     static IDE_RC  checkNormalForm( qcStatement  * aStatement,
                                     qmsSFWGH     * aCurrentSFWGH,
                                     qmsSFWGH     * aUnderSFWGH,
@@ -182,55 +182,55 @@ private:
     // merging
     //------------------------------------------
 
-    // ÇöÀç query block°ú ÇÏÀ§ (view) query blockÀÇ merge ¼öÇà
+    // í˜„ì¬ query blockê³¼ í•˜ìœ„ (view) query blockì˜ merge ìˆ˜í–‰
     static IDE_RC  processMerging( qcStatement  * aStatement,
                                    qmsSFWGH     * aCurrentSFWGH,
                                    qmsSFWGH     * aUnderSFWGH,
                                    qmsFrom      * aUnderFrom,
                                    idBool       * aIsMerged );
 
-    // hint ÀıÀÇ merge ¼öÇà
+    // hint ì ˆì˜ merge ìˆ˜í–‰
     static IDE_RC  mergeForHint( qmsSFWGH            * aCurrentSFWGH,
                                  qmsSFWGH            * aUnderSFWGH,
                                  qmsFrom             * aUnderFrom,
                                  qmoViewRollbackInfo * aRollbackInfo,
                                  idBool              * aIsMerged );
 
-    // hint ÀıÀÇ rollback ¼öÇà
+    // hint ì ˆì˜ rollback ìˆ˜í–‰
     static IDE_RC  rollbackForHint( qmsSFWGH            * aCurrentSFWGH,
                                     qmoViewRollbackInfo * aRollbackInfo );
 
-    // target listÀÇ merge ¼öÇà
+    // target listì˜ merge ìˆ˜í–‰
     static IDE_RC  mergeForTargetList( qcStatement         * aStatement,
                                        qmsSFWGH            * aUnderSFWGH,
                                        qmsTableRef         * aUnderTableRef,
                                        qmoViewRollbackInfo * aRollbackInfo,
                                        idBool              * aIsMerged );
 
-    // targetÀÌ ¼ø¼ö ÄÃ·³ÀÏ ¶§ÀÇ merge ¼öÇà
+    // targetì´ ìˆœìˆ˜ ì»¬ëŸ¼ì¼ ë•Œì˜ merge ìˆ˜í–‰
     static IDE_RC  mergeForTargetColumn( qcStatement         * aStatement,
                                          qmsColumnRefList    * aColumnRef,
                                          qtcNode             * aTargetColumn,
                                          idBool              * aIsMerged );
 
-    // targetÀÌ »ó¼öÀÏ ¶§ÀÇ merge ¼öÇà
+    // targetì´ ìƒìˆ˜ì¼ ë•Œì˜ merge ìˆ˜í–‰
     static IDE_RC  mergeForTargetValue( qcStatement         * aStatement,
                                         qmsColumnRefList    * aColumnRef,
                                         qtcNode             * aTargetColumn,
                                         idBool              * aIsMerged );
 
-    // targetÀÌ expressionÀÏ ¶§ÀÇ merge ¼öÇà
+    // targetì´ expressionì¼ ë•Œì˜ merge ìˆ˜í–‰
     static IDE_RC  mergeForTargetExpression( qcStatement         * aStatement,
                                              qmsSFWGH            * aUnderSFWGH,
                                              qmsColumnRefList    * aColumnRef,
                                              qtcNode             * aTargetColumn,
                                              idBool              * aIsMerged );
 
-    // target listÀÇ rollback ¼öÇà
+    // target listì˜ rollback ìˆ˜í–‰
     static IDE_RC  rollbackForTargetList( qmsTableRef         * aUnderTableRef,
                                           qmoViewRollbackInfo * aRollbackInfo );
 
-    // from ÀıÀÇ merget ¼öÇà
+    // from ì ˆì˜ merget ìˆ˜í–‰
     static IDE_RC  mergeForFrom( qcStatement         * aStatement,
                                  qmsSFWGH            * aCurrentSFWGH,
                                  qmsSFWGH            * aUnderSFWGH,
@@ -238,7 +238,7 @@ private:
                                  qmoViewRollbackInfo * aRollbackInfo,
                                  idBool              * aIsMerged );
 
-    // tuple variableÀÇ »ı¼º
+    // tuple variableì˜ ìƒì„±
     static IDE_RC  makeTupleVariable( qcStatement    * aStatement,
                                       qcNamePosition * aViewName,
                                       qcNamePosition * aTableName,
@@ -246,65 +246,65 @@ private:
                                       qcNamePosition * aNewTableName,
                                       idBool         * aIsCreated );
 
-    // from ÀıÀÇ rollback ¼öÇà
+    // from ì ˆì˜ rollback ìˆ˜í–‰
     static IDE_RC  rollbackForFrom( qmsSFWGH            * aCurrentSFWGH,
                                     qmsSFWGH            * aUnderSFWGH,
                                     qmoViewRollbackInfo * aRollbackInfo );
 
-    // where ÀıÀÇ merge ¼öÇà
+    // where ì ˆì˜ merge ìˆ˜í–‰
     static IDE_RC  mergeForWhere( qcStatement         * aStatement,
                                   qmsSFWGH            * aCurrentSFWGH,
                                   qmsSFWGH            * aUnderSFWGH,
                                   qmoViewRollbackInfo * aRollbackInfo,
                                   idBool              * aIsMerged );
 
-    // where ÀıÀÇ rollback ¼öÇà
+    // where ì ˆì˜ rollback ìˆ˜í–‰
     static IDE_RC  rollbackForWhere( qmsSFWGH            * aCurrentSFWGH,
                                      qmsSFWGH            * aUnderSFWGH,
                                      qmoViewRollbackInfo * aRollbackInfo );
 
-    // mergeµÈ viewÀÇ Á¦°Å
+    // mergeëœ viewì˜ ì œê±°
     static IDE_RC  removeMergedView( qmsSFWGH     * aSFWGH );
 
     //------------------------------------------
     // validation
     //------------------------------------------
 
-    // query setÀÇ validation ¼öÇà
+    // query setì˜ validation ìˆ˜í–‰
     static IDE_RC  validateQuerySet( qcStatement  * aStatement,
                                      qmsQuerySet  * aQuerySet );
 
-    // SFWGHÀÇ validation ¼öÇà
+    // SFWGHì˜ validation ìˆ˜í–‰
     static IDE_RC  validateSFWGH( qcStatement  * aStatement,
                                   qmsSFWGH     * aSFWGH );
 
-    // order by ÀıÀÇ validation ¼öÇà
+    // order by ì ˆì˜ validation ìˆ˜í–‰
     static IDE_RC  validateOrderBy( qcStatement  * aStatement,
                                     qmsParseTree * aParseTree );
     
 public:
-    // qtcNodeÀÇ validation ¼öÇà
+    // qtcNodeì˜ validation ìˆ˜í–‰
     static IDE_RC  validateNode( qcStatement  * aStatement,
                                  qtcNode      * aNode );
 private:
     // BUG-27526
-    // over ÀıÀÇ validation ¼öÇà
+    // over ì ˆì˜ validation ìˆ˜í–‰
     static IDE_RC  validateNode4OverClause( qcStatement  * aStatement,
                                             qtcNode      * aNode );
 
-    // Á¦°ÅµÈ viewÀÇ dependency °Ë»ç
+    // ì œê±°ëœ viewì˜ dependency ê²€ì‚¬
     static IDE_RC  checkViewDependency( qcStatement  * aStatement,
                                         qcDepInfo    * aDepInfo );
     
     // PROJ-2418
-    // qmsFrom¿¡ ÀÖ´Â Lateral View¿¡ ´ëÇØ ´Ù½Ã Validation
+    // qmsFromì— ìˆëŠ” Lateral Viewì— ëŒ€í•´ ë‹¤ì‹œ Validation
     static IDE_RC  validateFrom( qmsFrom * aFrom );
 
     //------------------------------------------
-    // ±âÅ¸ ÈÄÃ³¸® ÇÔ¼ö
+    // ê¸°íƒ€ í›„ì²˜ë¦¬ í•¨ìˆ˜
     //------------------------------------------
 
-    // mergeµÈ view¿¡ ´ëÇÑ µ¿ÀÏ view reference Á¦°Å
+    // mergeëœ viewì— ëŒ€í•œ ë™ì¼ view reference ì œê±°
     static IDE_RC  modifySameViewRef( qcStatement  * aStatement );
 };
 

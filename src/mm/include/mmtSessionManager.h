@@ -186,8 +186,8 @@ private:
                                     UInt          sStartTime,
                                     UInt          aTimeout,
                                     UInt          aTimeoutIndex);
-    //fix BUG-24362 dequeue ´ë±â ¼¼¼ÇÀÌ closeµÉ¶§ , sessionÀÇ queue ¼³Á¤¿¡¼­
-    // µ¿½Ã¼º¿¡ ¹®Á¦°¡ ÀÖÀ½.
+    //fix BUG-24362 dequeue ëŒ€ê¸° ì„¸ì…˜ì´ closeë ë•Œ , sessionì˜ queue ì„¤ì •ì—ì„œ
+    // ë™ì‹œì„±ì— ë¬¸ì œê°€ ìˆìŒ.
     static void wakeupEnqueWaitIfNessary(mmcTask*  aTask,
                                          mmcSession * aSession);
 

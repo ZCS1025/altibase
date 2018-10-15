@@ -363,7 +363,7 @@ ACI_RC ulnConnStrBuildOutConnString(ulnFnContext *aContext,
     }
     /*
      * TXN_ISOLATION
-     * BUGBUG : Áö±Ý ¸Å´º¾ó¿¡´Â ¾ø´Â °Í. ±¸Çö ¾ÈµÊ.
+     * BUGBUG : ì§€ê¸ˆ ë§¤ë‰´ì–¼ì—ëŠ” ì—†ëŠ” ê²ƒ. êµ¬í˜„ ì•ˆë¨.
      */
     if ( (acp_uint32_t)gUlnConnAttrTable[ ULN_CONN_ATTR_TXN_ISOLATION ].mDefValue != sDbc->mAttrTxnIsolation)
     {

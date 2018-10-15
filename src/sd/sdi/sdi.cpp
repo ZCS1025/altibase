@@ -144,7 +144,7 @@ IDE_RC sdi::setAnalysisResultForInsert( qcStatement    * aStatement,
 {
     SDI_INIT_ANALYZE_INFO(aAnalyzeInfo);
 
-    // analyzer¸¦ ÅëÇÏÁö ¾Ê°í Á÷Á¢ analyze Á¤º¸¸¦ »ı¼ºÇÑ´Ù.
+    // analyzerë¥¼ í†µí•˜ì§€ ì•Šê³  ì§ì ‘ analyze ì •ë³´ë¥¼ ìƒì„±í•œë‹¤.
     if ( aShardObjInfo->mTableInfo.mSplitMethod != SDI_SPLIT_SOLO )
     {
         aAnalyzeInfo->mValueCount = 1;
@@ -206,7 +206,7 @@ IDE_RC sdi::setAnalysisResultForTable( qcStatement    * aStatement,
 {
     SDI_INIT_ANALYZE_INFO(aAnalyzeInfo);
 
-    // analyzer¸¦ ÅëÇÏÁö ¾Ê°í Á÷Á¢ analyze Á¤º¸¸¦ »ı¼ºÇÑ´Ù.
+    // analyzerë¥¼ í†µí•˜ì§€ ì•Šê³  ì§ì ‘ analyze ì •ë³´ë¥¼ ìƒì„±í•œë‹¤.
     aAnalyzeInfo->mValueCount = 0;
     aAnalyzeInfo->mIsCanMerge = 1;
     aAnalyzeInfo->mSplitMethod = aShardObjInfo->mTableInfo.mSplitMethod;
@@ -297,8 +297,8 @@ void sdi::getNodeInfo( sdiNodeInfo * aNodeInfo )
     /* init */
     aNodeInfo->mCount = 0;
 
-    /* PROJ-2446 ONE SOURCE MM ¿¡¼­ statisticsÁ¤º¸¸¦ ³Ñ°Ü ¹Ş¾Æ¾ß ÇÑ´Ù.
-     * ÃßÈÄ ÀÛ¾÷ */
+    /* PROJ-2446 ONE SOURCE MM ì—ì„œ statisticsì •ë³´ë¥¼ ë„˜ê²¨ ë°›ì•„ì•¼ í•œë‹¤.
+     * ì¶”í›„ ì‘ì—… */
     IDE_TEST( sTrans.initialize() != IDE_SUCCESS );
 
     sStage++; //1
@@ -412,7 +412,7 @@ IDE_RC sdi::validateNodeNames( qcStatement  * aStatement,
           sNodeName != NULL;
           sNodeName = sNodeName->next )
     {
-        // length °Ë»ç
+        // length ê²€ì‚¬
         if ( ( sNodeName->namePos.size <= 0 ) ||
              ( sNodeName->namePos.size > SDI_NODE_NAME_MAX_SIZE ) )
         {
@@ -429,7 +429,7 @@ IDE_RC sdi::validateNodeNames( qcStatement  * aStatement,
               sNodeName2 != NULL;
               sNodeName2 = sNodeName2->next )
         {
-            // duplicate °Ë»ç
+            // duplicate ê²€ì‚¬
             if ( QC_IS_NAME_CASELESS_MATCHED( sNodeName->namePos,
                                               sNodeName2->namePos ) == ID_TRUE )
             {
@@ -618,9 +618,9 @@ IDE_RC sdi::getProcedureInfo( qcStatement      * aStatement,
             QC_STR_COPY( sProcName, aProcName );
         }
 
-        // º°µµÀÇ stmt¸¦ ¿­¾î Ç×»ó ÃÖ½ÅÀÇ view¸¦ º»´Ù.
-        // (shard meta´Â ÀÏ¹İ memory tableÀÌ¹Ç·Î normal·Î ¿­µÇ,
-        // »óÀ§ stmt°¡ untouchableÀÏ ¼ö ÀÖÀ¸¹Ç·Î self¸¦ Ãß°¡ÇÑ´Ù.)
+        // ë³„ë„ì˜ stmtë¥¼ ì—´ì–´ í•­ìƒ ìµœì‹ ì˜ viewë¥¼ ë³¸ë‹¤.
+        // (shard metaëŠ” ì¼ë°˜ memory tableì´ë¯€ë¡œ normalë¡œ ì—´ë˜,
+        // ìƒìœ„ stmtê°€ untouchableì¼ ìˆ˜ ìˆìœ¼ë¯€ë¡œ selfë¥¼ ì¶”ê°€í•œë‹¤.)
         IDE_TEST( sSmiStmt.begin( aStatement->mStatistics,
                                   QC_SMI_STMT( aStatement ),
                                   SMI_STATEMENT_NORMAL |
@@ -642,7 +642,7 @@ IDE_RC sdi::getProcedureInfo( qcStatement      * aStatement,
                                 ( sShardTableInfo.mKeyColumnName[0] == '\0' ),
                                 ERR_NO_SHARD_KEY_COLUMN );
 
-                // keyFlags¸¦ Ãß°¡»ı¼ºÇÑ´Ù.
+                // keyFlagsë¥¼ ì¶”ê°€ìƒì„±í•œë‹¤.
                 IDE_TEST( QC_QMP_MEM(aStatement)->alloc(
                               ID_SIZEOF( sdiObjectInfo ) + aProcPlanTree->paraDeclCount,
                               (void**) & sShardObjInfo )
@@ -659,7 +659,7 @@ IDE_RC sdi::getProcedureInfo( qcStatement      * aStatement,
                 if ( ( sShardTableInfo.mSplitMethod != SDI_SPLIT_CLONE ) &&
                      ( sShardTableInfo.mSplitMethod != SDI_SPLIT_SOLO ) )
                 {
-                    // Hash, Range or List-based sharding ÀÇ shard key columnÀ» Ã£´Â´Ù.
+                    // Hash, Range or List-based sharding ì˜ shard key columnì„ ì°¾ëŠ”ë‹¤.
                     for ( sParaDecls = aProcPlanTree->paraDecls, i = 0;
                           sParaDecls != NULL;
                           sParaDecls = sParaDecls->next, i++ )
@@ -766,7 +766,7 @@ IDE_RC sdi::getProcedureInfo( qcStatement      * aStatement,
                                              &(sShardObjInfo->mRangeInfo) )
                           != IDE_SUCCESS );
 
-                // default nodeµµ ¾ø°í range Á¤º¸µµ ¾ø´Ù¸é ¿¡·¯
+                // default nodeë„ ì—†ê³  range ì •ë³´ë„ ì—†ë‹¤ë©´ ì—ëŸ¬
                 IDE_TEST_RAISE(
                     ( sShardObjInfo->mTableInfo.mDefaultNodeId == ID_USHORT_MAX ) &&
                     ( sShardObjInfo->mRangeInfo.mCount == 0 ),
@@ -867,9 +867,9 @@ IDE_RC sdi::getTableInfo( qcStatement    * aStatement,
          ( aTableInfo->tableType == QCM_USER_TABLE ) &&
          ( *aShardObjInfo == NULL ) )
     {
-        // º°µµÀÇ stmt¸¦ ¿­¾î Ç×»ó ÃÖ½ÅÀÇ view¸¦ º»´Ù.
-        // (shard meta´Â ÀÏ¹İ memory tableÀÌ¹Ç·Î normal·Î ¿­µÇ,
-        // »óÀ§ stmt°¡ untouchableÀÏ ¼ö ÀÖÀ¸¹Ç·Î self¸¦ Ãß°¡ÇÑ´Ù.)
+        // ë³„ë„ì˜ stmtë¥¼ ì—´ì–´ í•­ìƒ ìµœì‹ ì˜ viewë¥¼ ë³¸ë‹¤.
+        // (shard metaëŠ” ì¼ë°˜ memory tableì´ë¯€ë¡œ normalë¡œ ì—´ë˜,
+        // ìƒìœ„ stmtê°€ untouchableì¼ ìˆ˜ ìˆìœ¼ë¯€ë¡œ selfë¥¼ ì¶”ê°€í•œë‹¤.)
         IDE_TEST( sSmiStmt.begin( aStatement->mStatistics,
                                   QC_SMI_STMT( aStatement ),
                                   SMI_STATEMENT_NORMAL |
@@ -891,7 +891,7 @@ IDE_RC sdi::getTableInfo( qcStatement    * aStatement,
                                 ( sShardTableInfo.mKeyColumnName[0] == '\0' ),
                                 ERR_NO_SHARD_KEY_COLUMN );
 
-                // keyFlags¸¦ Ãß°¡»ı¼ºÇÑ´Ù.
+                // keyFlagsë¥¼ ì¶”ê°€ìƒì„±í•œë‹¤.
                 IDE_TEST( QC_QMP_MEM(aStatement)->alloc(
                               ID_SIZEOF( sdiObjectInfo ) + aTableInfo->columnCount,
                               (void**) & sShardObjInfo )
@@ -908,7 +908,7 @@ IDE_RC sdi::getTableInfo( qcStatement    * aStatement,
                 if ( ( sShardTableInfo.mSplitMethod != SDI_SPLIT_CLONE ) &&
                      ( sShardTableInfo.mSplitMethod != SDI_SPLIT_SOLO ) )
                 {
-                    // Hash, Range or List-based sharding ÀÇ shard key columnÀ» Ã£´Â´Ù.
+                    // Hash, Range or List-based sharding ì˜ shard key columnì„ ì°¾ëŠ”ë‹¤.
                     for ( i = 0; i < aTableInfo->columnCount; i++ )
                     {
                         if ( idlOS::strMatch( aTableInfo->columns[i].name,
@@ -1003,7 +1003,7 @@ IDE_RC sdi::getTableInfo( qcStatement    * aStatement,
                                              &(sShardObjInfo->mRangeInfo) )
                           != IDE_SUCCESS );
 
-                // default nodeµµ ¾ø°í range Á¤º¸µµ ¾ø´Ù¸é ¿¡·¯
+                // default nodeë„ ì—†ê³  range ì •ë³´ë„ ì—†ë‹¤ë©´ ì—ëŸ¬
                 IDE_TEST_RAISE(
                     ( sShardObjInfo->mTableInfo.mDefaultNodeId == ID_USHORT_MAX ) &&
                     ( sShardObjInfo->mRangeInfo.mCount == 0 ),
@@ -1123,7 +1123,7 @@ IDE_RC sdi::getViewInfo( qcStatement    * aStatement,
 
         if ( sIsExist == ID_TRUE )
         {
-            // keyFlags¸¦ Ãß°¡»ı¼ºÇÑ´Ù.
+            // keyFlagsë¥¼ ì¶”ê°€ìƒì„±í•œë‹¤.
             IDE_TEST( QC_QMP_MEM(aStatement)->alloc(
                           ID_SIZEOF( sdiObjectInfo ) + sColumnCount,
                           (void**) & sShardObjInfo )
@@ -1304,14 +1304,14 @@ IDE_RC sdi::initializeSession( qcSession  * aSession,
 
             sConnectInfo->mConnectType = sConnectType;
 
-            // node id¿Í node nameÀº ¹Ì¸® ¼³Á¤ÇÑ´Ù.
+            // node idì™€ node nameì€ ë¯¸ë¦¬ ì„¤ì •í•œë‹¤.
             sConnectInfo->mNodeId = sDataNode->mNodeId;
             idlOS::strncpy( sConnectInfo->mNodeName,
                             sDataNode->mNodeName,
                             SDI_NODE_NAME_MAX_SIZE );
             sConnectInfo->mNodeName[ SDI_NODE_NAME_MAX_SIZE ] = '\0';
 
-            // connect¸¦ À§ÇÑ ¼¼¼ÇÁ¤º¸
+            // connectë¥¼ ìœ„í•œ ì„¸ì…˜ì •ë³´
             if ( aSession->mMmSession != NULL )
             {
                 sConnectInfo->mMessageCallback.mFunction = sdi::printMessage;
@@ -1398,12 +1398,12 @@ IDE_RC sdi::allocConnect( sdiConnectInfo * aConnectInfo )
         aConnectInfo->mFlag &= ~SDI_CONNECT_PLANATTR_CHANGE_MASK;
         aConnectInfo->mFlag |= SDI_CONNECT_PLANATTR_CHANGE_FALSE;
 
-        // xid info ÃÊ±âÈ­
+        // xid info ì´ˆê¸°í™”
         xidInitialize( aConnectInfo );
     }
     else
     {
-        // ÀÌÀü connectionÀ» Àç»ç¿ëÇÏ´Â °æ¿ì
+        // ì´ì „ connectionì„ ì¬ì‚¬ìš©í•˜ëŠ” ê²½ìš°
         if ( ( aConnectInfo->mFlag & SDI_CONNECT_TRANSACTION_END_MASK )
              == SDI_CONNECT_TRANSACTION_END_TRUE )
         {
@@ -1751,7 +1751,7 @@ IDE_RC sdi::shardExecDirect( qcStatement * aStatement,
     sdiConnectInfo * sConnectInfo = NULL;
     UShort           i = 0;
     idBool           sSuccess = ID_TRUE;
-    UInt             sErrorCode;  // Ã¹¹øÂ° ¿¡·¯ÄÚµå
+    UInt             sErrorCode;  // ì²«ë²ˆì§¸ ì—ëŸ¬ì½”ë“œ
     SChar            sErrorMsg[MAX_ERROR_MSG_LEN + 256];
     UInt             sErrorMsgLen = 0;
 
@@ -1820,7 +1820,7 @@ IDE_RC sdi::shardExecDirect( qcStatement * aStatement,
             }
             else
             {
-                // ¼öÇàÀÌ ½ÇÆĞÇÑ °æ¿ì
+                // ìˆ˜í–‰ì´ ì‹¤íŒ¨í•œ ê²½ìš°
                 qdkDelShardTransaction( sConnectInfo );
 
                 if ( sSuccess == ID_TRUE )
@@ -1966,7 +1966,7 @@ void sdi::closeDataInfo( qcStatement     * aStatement,
         sClientInfo = aStatement->session->mQPSpecific.mClientInfo;
         sDataInfo = (sdiDataNodes*)aExecData->execInfo;
 
-        // statement°¡ clearµÇ´Â °æ¿ì stmtµéÀ» freeÇÑ´Ù.
+        // statementê°€ clearë˜ëŠ” ê²½ìš° stmtë“¤ì„ freeí•œë‹¤.
         for ( i = 0; i < aExecData->planCount; i++, sDataInfo++ )
         {
             if ( sDataInfo->mInitialized == ID_TRUE )
@@ -2001,7 +2001,7 @@ void sdi::clearDataInfo( qcStatement     * aStatement,
         sClientInfo  = aStatement->session->mQPSpecific.mClientInfo;
         sDataInfo = (sdiDataNodes*)aExecData->execInfo;
 
-        // statement°¡ clearµÇ´Â °æ¿ì stmtµéÀ» freeÇÑ´Ù.
+        // statementê°€ clearë˜ëŠ” ê²½ìš° stmtë“¤ì„ freeí•œë‹¤.
         for ( i = 0; i < aExecData->planCount; i++, sDataInfo++ )
         {
             if ( sDataInfo->mInitialized == ID_TRUE )
@@ -2080,7 +2080,7 @@ IDE_RC sdi::initShardDataInfo( qcTemplate     * aTemplate,
     IDE_TEST_RAISE( aShardAnalysis == NULL, ERR_NOT_EXIST_SHARD_ANALYSIS );
 
     //----------------------------------------
-    // data info ÃÊ±âÈ­
+    // data info ì´ˆê¸°í™”
     //----------------------------------------
 
     aDataInfo->mCount = aClientInfo->mCount;
@@ -2094,12 +2094,12 @@ IDE_RC sdi::initShardDataInfo( qcTemplate     * aTemplate,
     }
 
     //----------------------------------------
-    // data node prepare ÈÄº¸ ¼±ÅÃ
+    // data node prepare í›„ë³´ ì„ íƒ
     //----------------------------------------
 
     if ( aShardAnalysis == & gAnalyzeInfoForAllNodes )
     {
-        // ÀüÃ¼ data node¸¦ ¼±ÅÃ
+        // ì „ì²´ data nodeë¥¼ ì„ íƒ
         for ( i = 0; i < aClientInfo->mCount; i++ )
         {
             aDataInfo->mNodes[i].mState = SDI_NODE_STATE_PREPARE_CANDIDATED;
@@ -2134,7 +2134,7 @@ IDE_RC sdi::initShardDataInfo( qcTemplate     * aTemplate,
             {
                 for ( i = 0; i < aClientInfo->mCount; i++, sConnectInfo++, sDataNode++ )
                 {
-                    // rangeInfo¿¡ Æ÷ÇÔµÇ¾î ÀÖ°Å³ª, default node´Â prepare ´ë»óÀÌ´Ù.
+                    // rangeInfoì— í¬í•¨ë˜ì–´ ìˆê±°ë‚˜, default nodeëŠ” prepare ëŒ€ìƒì´ë‹¤.
                     if ( ( findRangeInfo( &(aShardAnalysis->mRangeInfo),
                                           sConnectInfo->mNodeId ) == ID_TRUE ) ||
                          ( aShardAnalysis->mDefaultNodeId == sConnectInfo->mNodeId ) )
@@ -2208,7 +2208,7 @@ IDE_RC sdi::initShardDataInfo( qcTemplate     * aTemplate,
 
                     if ( sFound == ID_FALSE )
                     {
-                        // ±æÀÌ°Ë»ç´Â ÀÌ¹Ì Çß´Ù.
+                        // ê¸¸ì´ê²€ì‚¬ëŠ” ì´ë¯¸ í–ˆë‹¤.
                         idlOS::memcpy( sNodeNameBuf,
                                        sNodeName->namePos.stmtText + sNodeName->namePos.offset,
                                        sNodeName->namePos.size );
@@ -2227,10 +2227,10 @@ IDE_RC sdi::initShardDataInfo( qcTemplate     * aTemplate,
                 sConnectInfo = aClientInfo->mConnectInfo;
                 sDataNode = aDataInfo->mNodes;
 
-                // cloneÀÌ¶óµµ range nodeÁ¤º¸´Â ÀÖ´Ù.
+                // cloneì´ë¼ë„ range nodeì •ë³´ëŠ” ìˆë‹¤.
                 for ( i = 0; i < aClientInfo->mCount; i++, sConnectInfo++, sDataNode++ )
                 {
-                    // rangeInfo¿¡ Æ÷ÇÔµÇ¾î ÀÖ°Å³ª, default node´Â prepare ´ë»óÀÌ´Ù.
+                    // rangeInfoì— í¬í•¨ë˜ì–´ ìˆê±°ë‚˜, default nodeëŠ” prepare ëŒ€ìƒì´ë‹¤.
                     if ( ( findRangeInfo( &(aShardAnalysis->mRangeInfo),
                                           sConnectInfo->mNodeId ) == ID_TRUE ) ||
                          ( aShardAnalysis->mDefaultNodeId == sConnectInfo->mNodeId ) )
@@ -2281,7 +2281,7 @@ IDE_RC sdi::reuseShardDataInfo( qcTemplate     * aTemplate,
     SD_UNUSED( aClientInfo );
 
     //----------------------------------------
-    // data info ÃÊ±âÈ­
+    // data info ì´ˆê¸°í™”
     //----------------------------------------
 
     sDataNode = aDataInfo->mNodes;
@@ -2291,12 +2291,12 @@ IDE_RC sdi::reuseShardDataInfo( qcTemplate     * aTemplate,
     {
         IDE_DASSERT( sDataNode->mBindParamCount == aBindParamCount );
 
-        // bind parameter°¡ º¯°æµÇ¾ú³ª?
+        // bind parameterê°€ ë³€ê²½ë˜ì—ˆë‚˜?
         if ( idlOS::memcmp( sDataNode->mBindParams,
                             aBindParams,
                             ID_SIZEOF( sdiBindParam ) * aBindParamCount ) != 0 )
         {
-            // bind Á¤º¸´Â ÇöÀç ÇÑ¹úÀÌ¹Ç·Î ÇÑ¹ø¸¸ º¹»çÇÑ´Ù.
+            // bind ì •ë³´ëŠ” í˜„ì¬ í•œë²Œì´ë¯€ë¡œ í•œë²ˆë§Œ ë³µì‚¬í•œë‹¤.
             idlOS::memcpy( sDataNode->mBindParams,
                            aBindParams,
                            ID_SIZEOF( sdiBindParam ) * aBindParamCount );
@@ -2346,12 +2346,12 @@ IDE_RC sdi::decideShardDataInfo( qcTemplate     * aTemplate,
                     ERR_NULL_SHARD_QUERY );
 
     //----------------------------------------
-    // data node execute ÈÄº¸ ¼±ÅÃ
+    // data node execute í›„ë³´ ì„ íƒ
     //----------------------------------------
 
     if ( aShardAnalysis == & gAnalyzeInfoForAllNodes )
     {
-        // ÀüÃ¼ data node¸¦ ¼±ÅÃ
+        // ì „ì²´ data nodeë¥¼ ì„ íƒ
         setPrepareSelected( aClientInfo,
                             aDataInfo,
                             ID_TRUE,  // all nodes
@@ -2420,8 +2420,8 @@ IDE_RC sdi::decideShardDataInfo( qcTemplate     * aTemplate,
             case SDI_SPLIT_LIST:
 
                 /*
-                 * Shard value( bind or constant value )°¡
-                 * Analysis result»óÀÇ range info¿¡¼­ ¸î ¹ø Â°(range index) À§Ä¡ÇÑ valueÀÎÁö Ã£´Â´Ù.
+                 * Shard value( bind or constant value )ê°€
+                 * Analysis resultìƒì˜ range infoì—ì„œ ëª‡ ë²ˆ ì§¸(range index) ìœ„ì¹˜í•œ valueì¸ì§€ ì°¾ëŠ”ë‹¤.
                  */
                 IDE_TEST( getExecNodeRangeIndex( aTemplate,
                                                  aShardKeyTuple,
@@ -2451,14 +2451,14 @@ IDE_RC sdi::decideShardDataInfo( qcTemplate     * aTemplate,
                     if ( sExecDefaultNode == ID_TRUE )
                     {
                         /* BUG-45738 */
-                        // Default node¿Ü¿¡ ¼öÇà ´ë»ó ³ëµå°¡ ¾ø´Âµ¥
-                        // Default node°¡ ¼³Á¤ µÇ¾îÀÖÁö ¾Ê´Ù¸é ¿¡·¯
+                        // Default nodeì™¸ì— ìˆ˜í–‰ ëŒ€ìƒ ë…¸ë“œê°€ ì—†ëŠ”ë°
+                        // Default nodeê°€ ì„¤ì • ë˜ì–´ìˆì§€ ì•Šë‹¤ë©´ ì—ëŸ¬
                         IDE_TEST_RAISE( ( sRangeIndexCount == 0 ) &&
                                         ( aShardAnalysis->mDefaultNodeId == ID_USHORT_MAX ),
                                         ERR_NO_EXEC_NODE_FOUND );
 
-                        // Default node°¡ ¾ø´õ¶óµµ, ¼öÇà ´ë»ó ³ëµå°¡ ÇÏ³ª¶óµµ ÀÖÀ¸¸é
-                        // ±× ³ëµå¿¡¼­¸¸ ¼öÇà½ÃÅ²´Ù. ( for SELECT )
+                        // Default nodeê°€ ì—†ë”ë¼ë„, ìˆ˜í–‰ ëŒ€ìƒ ë…¸ë“œê°€ í•˜ë‚˜ë¼ë„ ìˆìœ¼ë©´
+                        // ê·¸ ë…¸ë“œì—ì„œë§Œ ìˆ˜í–‰ì‹œí‚¨ë‹¤. ( for SELECT )
                         if ( aShardAnalysis->mDefaultNodeId != ID_USHORT_MAX )
                         {
                             setPrepareSelected( aClientInfo,
@@ -2540,7 +2540,7 @@ IDE_RC sdi::decideShardDataInfo( qcTemplate     * aTemplate,
     }
 
     //----------------------------------------
-    // data node execute ÈÄº¸ ÁØºñ
+    // data node execute í›„ë³´ ì¤€ë¹„
     //----------------------------------------
 
     IDE_TEST( prepare( aClientInfo,
@@ -2597,7 +2597,7 @@ IDE_RC sdi::getExecNodeRangeIndex( qcTemplate        * aTemplate,
         /*
          * CASE 1 : ( mValueCount == 0 && mSubValueCount == 0 )
          *
-         * Shard value°¡ ¾ø´Ù¸é, ¸ğµç ³ëµå°¡ ¼öÇà ´ë»óÀÌ´Ù.
+         * Shard valueê°€ ì—†ë‹¤ë©´, ëª¨ë“  ë…¸ë“œê°€ ìˆ˜í–‰ ëŒ€ìƒì´ë‹¤.
          *
          */
         *aExecAllNodes = ID_TRUE;
@@ -2605,7 +2605,7 @@ IDE_RC sdi::getExecNodeRangeIndex( qcTemplate        * aTemplate,
     }
     else
     {
-        // shard key value¿¡ ÇØ´çÇÏ´Â range infoÀÇ indexµéÀ» ±¸ÇÑ´Ù.
+        // shard key valueì— í•´ë‹¹í•˜ëŠ” range infoì˜ indexë“¤ì„ êµ¬í•œë‹¤.
         for ( i = 0; i < aShardAnalysis->mValueCount; i++ )
         {
             IDE_TEST( getRangeIndexByValue( aTemplate,
@@ -2620,16 +2620,16 @@ IDE_RC sdi::getExecNodeRangeIndex( qcTemplate        * aTemplate,
                       != IDE_SUCCESS );
         }
 
-        // Sub-shard key°¡ Á¸ÀçÇÏ´Â °æ¿ì
+        // Sub-shard keyê°€ ì¡´ì¬í•˜ëŠ” ê²½ìš°
         if ( aShardAnalysis->mSubKeyExists == 1 )
         {
             if ( aShardAnalysis->mValueCount > 1 )
             {
                 /*
-                 * Sub-shard key°¡ ÀÖ´Â °æ¿ì,
-                 * Ã¹ ¹ø Â° shard key¿¡ ´ëÇÑ value °¡ µÑ ÀÌ»óÀÌ¶ó¸é, ¼öÇà³ëµå¸¦ Á¤È®È÷ ±¸ºĞ ÇØ ³¾ ¼ö ¾ø´Ù.
-                 * ´Ù¸¸, Ã¹ ¹ø Â° shard key¿¡ ´ëÇÑ value°¡ ¿©·¯°³¶óµµ ¸ğµÎ °°Àº °ªÀÌ¶ó¸é,
-                 * ¼öÇà³ëµå¸¦ ÆÇº° ÇÒ ¼ö ÀÖ±â ¶§¹®¿¡ Çã¿ëÇÑ´Ù.
+                 * Sub-shard keyê°€ ìˆëŠ” ê²½ìš°,
+                 * ì²« ë²ˆ ì§¸ shard keyì— ëŒ€í•œ value ê°€ ë‘˜ ì´ìƒì´ë¼ë©´, ìˆ˜í–‰ë…¸ë“œë¥¼ ì •í™•íˆ êµ¬ë¶„ í•´ ë‚¼ ìˆ˜ ì—†ë‹¤.
+                 * ë‹¤ë§Œ, ì²« ë²ˆ ì§¸ shard keyì— ëŒ€í•œ valueê°€ ì—¬ëŸ¬ê°œë¼ë„ ëª¨ë‘ ê°™ì€ ê°’ì´ë¼ë©´,
+                 * ìˆ˜í–‰ë…¸ë“œë¥¼ íŒë³„ í•  ìˆ˜ ìˆê¸° ë•Œë¬¸ì— í—ˆìš©í•œë‹¤.
                  *
                  * e.x.    WHERE ( KEY1 = 100 AND KEY2 = 200 ) OR ( KEY1 = 100 AND KEY2 = 300 )
                  *       = WHERE ( KEY1 = 100 ) AND ( KEY2 = 100 OR KEY2 = 200 )
@@ -2695,7 +2695,7 @@ IDE_RC sdi::getExecNodeRangeIndex( qcTemplate        * aTemplate,
                     /*
                      * CASE 2 : ( mValueCount > 0 && mSubValueCount > 0 )
                      *
-                     * value¿Í sub valueÀÇ range index°¡ °°Àº ³ëµåµéÀÌ ¼öÇà´ë»óÀÌ µÈ´Ù.
+                     * valueì™€ sub valueì˜ range indexê°€ ê°™ì€ ë…¸ë“œë“¤ì´ ìˆ˜í–‰ëŒ€ìƒì´ ëœë‹¤.
                      *
                      */
 
@@ -2752,7 +2752,7 @@ IDE_RC sdi::getExecNodeRangeIndex( qcTemplate        * aTemplate,
                     /*
                      * CASE 3 : ( mValueCount > 0 && mSubValueCount == 0 )
                      *
-                     * valueÀÇ range index¿¡ ÇØ´çÇÏ´Â ³ëµåµéÀÌ ¼öÇà´ë»óÀÌ µÈ´Ù.
+                     * valueì˜ range indexì— í•´ë‹¹í•˜ëŠ” ë…¸ë“œë“¤ì´ ìˆ˜í–‰ëŒ€ìƒì´ ëœë‹¤.
                      *
                      */
                     for ( i = 0; i < sFirstRangeIndexCount; i++ )
@@ -2779,7 +2779,7 @@ IDE_RC sdi::getExecNodeRangeIndex( qcTemplate        * aTemplate,
                 /*
                  * CASE 4 : ( mValueCount == 0 && mSubValueCount > 0 )
                  *
-                 * sub valueÀÇ range index¿¡ ÇØ´çÇÏ´Â ³ëµåµéÀÌ ¼öÇà´ë»óÀÌ µÈ´Ù.
+                 * sub valueì˜ range indexì— í•´ë‹¹í•˜ëŠ” ë…¸ë“œë“¤ì´ ìˆ˜í–‰ëŒ€ìƒì´ ëœë‹¤.
                  *
                  */
                 for ( j = 0; j < sSecondRangeIndexCount; j++ )
@@ -2835,7 +2835,7 @@ void sdi::setPrepareSelected( sdiClientInfo    * aClientInfo,
              ( sConnectInfo->mNodeId == aNodeId ) )
         {
             //-------------------------------
-            // shard statement ÁØºñ
+            // shard statement ì¤€ë¹„
             //-------------------------------
 
             if ( sDataNode->mState == SDI_NODE_STATE_PREPARED )
@@ -2858,7 +2858,7 @@ void sdi::setPrepareSelected( sdiClientInfo    * aClientInfo,
             }
 
             //-------------------------------
-            // ÈÄº¸ ¼±Á¤
+            // í›„ë³´ ì„ ì •
             //-------------------------------
 
             if ( sDataNode->mState == SDI_NODE_STATE_PREPARE_CANDIDATED )
@@ -2889,7 +2889,7 @@ IDE_RC sdi::prepare( sdiClientInfo    * aClientInfo,
     sdiDataNode    * sDataNode = NULL;
     void           * sCallback = NULL;
     idBool           sSuccess = ID_TRUE;
-    UInt             sErrorCode;  // Ã¹¹øÂ° ¿¡·¯ÄÚµå
+    UInt             sErrorCode;  // ì²«ë²ˆì§¸ ì—ëŸ¬ì½”ë“œ
     SChar            sErrorMsg[MAX_ERROR_MSG_LEN + 256];
     UInt             sErrorMsgLen = 0;
     UInt             i = 0;
@@ -2903,7 +2903,7 @@ IDE_RC sdi::prepare( sdiClientInfo    * aClientInfo,
     for ( i = 0; i < aClientInfo->mCount; i++, sConnectInfo++, sDataNode++ )
     {
         //-------------------------------
-        // shard statement ÃÊ±âÈ­
+        // shard statement ì´ˆê¸°í™”
         //-------------------------------
 
         if ( sDataNode->mState == SDI_NODE_STATE_PREPARE_SELECTED )
@@ -2984,7 +2984,7 @@ IDE_RC sdi::prepare( sdiClientInfo    * aClientInfo,
                                       &(sConnectInfo->mLinkFailure) )
                  == IDE_SUCCESS )
             {
-                // bind¸¦ ÇØ¾ßÇÑ´Ù.
+                // bindë¥¼ í•´ì•¼í•œë‹¤.
                 sDataNode->mBindParamChanged = ID_TRUE;
                 sDataNode->mExecCount = 0;
                 sDataNode->mState = SDI_NODE_STATE_PREPARED;
@@ -3032,7 +3032,7 @@ IDE_RC sdi::prepare( sdiClientInfo    * aClientInfo,
     for ( i = 0; i < aClientInfo->mCount; i++, sConnectInfo++, sDataNode++ )
     {
         //-------------------------------
-        // shard statement Àç¹ÙÀÎµå
+        // shard statement ì¬ë°”ì¸ë“œ
         //-------------------------------
 
         if ( ( sDataNode->mState == SDI_NODE_STATE_EXECUTE_SELECTED ) &&
@@ -3105,7 +3105,7 @@ IDE_RC sdi::executeDML( qcStatement    * aStatement,
     sdiDataNode    * sDataNode = NULL;
     void           * sCallback = NULL;
     idBool           sSuccess = ID_TRUE;
-    UInt             sErrorCode;  // Ã¹¹øÂ° ¿¡·¯ÄÚµå
+    UInt             sErrorCode;  // ì²«ë²ˆì§¸ ì—ëŸ¬ì½”ë“œ
     SChar            sErrorMsg[MAX_ERROR_MSG_LEN + 256];
     UInt             sErrorMsgLen = 0;
     vSLong           sNumRows = 0;
@@ -3143,12 +3143,12 @@ IDE_RC sdi::executeDML( qcStatement    * aStatement,
     // PROJ-2670 nested execution
     sdl::doCallback( sCallback );
 
-    // add shard tx ¼ø¼­ÀÇ ¹İ´ë·Î del shard tx¸¦ ¼öÇàÇØ¾ßÇÑ´Ù.
+    // add shard tx ìˆœì„œì˜ ë°˜ëŒ€ë¡œ del shard txë¥¼ ìˆ˜í–‰í•´ì•¼í•œë‹¤.
     for ( i--, sConnectInfo--, sDataNode--; i >= 0; i--, sConnectInfo--, sDataNode-- )
     {
         if ( sDataNode->mState == SDI_NODE_STATE_EXECUTE_SELECTED )
         {
-            // ¼öÇàÀü touch count Áõ°¡
+            // ìˆ˜í–‰ì „ touch count ì¦ê°€
             sConnectInfo->mTouchCount++;
 
             if ( sdl::resultCallback( sCallback,
@@ -3161,7 +3161,7 @@ IDE_RC sdi::executeDML( qcStatement    * aStatement,
                                       &(sConnectInfo->mLinkFailure) )
                  == IDE_SUCCESS )
             {
-                // ¼öÇàÈÄ
+                // ìˆ˜í–‰í›„
                 sDataNode->mState = SDI_NODE_STATE_EXECUTED;
                 sDataNode->mExecCount++;
 
@@ -3197,7 +3197,7 @@ IDE_RC sdi::executeDML( qcStatement    * aStatement,
             }
             else
             {
-                // ¼öÇàÀÌ ½ÇÆĞÇÑ °æ¿ì
+                // ìˆ˜í–‰ì´ ì‹¤íŒ¨í•œ ê²½ìš°
                 sDataNode->mState = SDI_NODE_STATE_EXECUTE_CANDIDATED;
                 qdkDelShardTransaction( sConnectInfo );
 
@@ -3275,7 +3275,7 @@ IDE_RC sdi::executeInsert( qcStatement    * aStatement,
     sdiDataNode    * sDataNode = NULL;
     void           * sCallback = NULL;
     idBool           sSuccess = ID_TRUE;
-    UInt             sErrorCode;  // Ã¹¹øÂ° ¿¡·¯ÄÚµå
+    UInt             sErrorCode;  // ì²«ë²ˆì§¸ ì—ëŸ¬ì½”ë“œ
     SChar            sErrorMsg[MAX_ERROR_MSG_LEN + 256];
     UInt             sErrorMsgLen = 0;
     SInt             i;
@@ -3312,12 +3312,12 @@ IDE_RC sdi::executeInsert( qcStatement    * aStatement,
     // PROJ-2670 nested execution
     sdl::doCallback( sCallback );
 
-    // add shard tx ¼ø¼­ÀÇ ¹İ´ë·Î del shard tx¸¦ ¼öÇàÇØ¾ßÇÑ´Ù.
+    // add shard tx ìˆœì„œì˜ ë°˜ëŒ€ë¡œ del shard txë¥¼ ìˆ˜í–‰í•´ì•¼í•œë‹¤.
     for ( i--, sConnectInfo--, sDataNode--; i >= 0; i--, sConnectInfo--, sDataNode-- )
     {
         if ( sDataNode->mState == SDI_NODE_STATE_EXECUTE_SELECTED )
         {
-            // ¼öÇàÀü touch count Áõ°¡
+            // ìˆ˜í–‰ì „ touch count ì¦ê°€
             sConnectInfo->mTouchCount++;
 
             if ( sdl::resultCallback( sCallback,
@@ -3330,7 +3330,7 @@ IDE_RC sdi::executeInsert( qcStatement    * aStatement,
                                       &(sConnectInfo->mLinkFailure) )
                  == IDE_SUCCESS )
             {
-                // ¼öÇàÈÄ
+                // ìˆ˜í–‰í›„
                 sDataNode->mState = SDI_NODE_STATE_EXECUTED;
                 sDataNode->mExecCount++;
 
@@ -3354,7 +3354,7 @@ IDE_RC sdi::executeInsert( qcStatement    * aStatement,
             }
             else
             {
-                // ¼öÇàÀÌ ½ÇÆĞÇÑ °æ¿ì
+                // ìˆ˜í–‰ì´ ì‹¤íŒ¨í•œ ê²½ìš°
                 sDataNode->mState = SDI_NODE_STATE_EXECUTE_CANDIDATED;
                 qdkDelShardTransaction( sConnectInfo );
 
@@ -3431,7 +3431,7 @@ IDE_RC sdi::executeSelect( qcStatement    * aStatement,
     sdiDataNode    * sDataNode = NULL;
     void           * sCallback = NULL;
     idBool           sSuccess = ID_TRUE;
-    UInt             sErrorCode;  // Ã¹¹øÂ° ¿¡·¯ÄÚµå
+    UInt             sErrorCode;  // ì²«ë²ˆì§¸ ì—ëŸ¬ì½”ë“œ
     SChar            sErrorMsg[MAX_ERROR_MSG_LEN + 256];
     UInt             sErrorMsgLen = 0;
     SInt             i;
@@ -3468,7 +3468,7 @@ IDE_RC sdi::executeSelect( qcStatement    * aStatement,
     // PROJ-2670 nested execution
     sdl::doCallback( sCallback );
 
-    // add shard tx ¼ø¼­ÀÇ ¹İ´ë·Î del shard tx¸¦ ¼öÇàÇØ¾ßÇÑ´Ù.
+    // add shard tx ìˆœì„œì˜ ë°˜ëŒ€ë¡œ del shard txë¥¼ ìˆ˜í–‰í•´ì•¼í•œë‹¤.
     for ( i--, sConnectInfo--, sDataNode--; i >= 0; i--, sConnectInfo--, sDataNode-- )
     {
         if ( sDataNode->mState == SDI_NODE_STATE_EXECUTE_SELECTED )
@@ -3483,13 +3483,13 @@ IDE_RC sdi::executeSelect( qcStatement    * aStatement,
                                       &(sConnectInfo->mLinkFailure) )
                  == IDE_SUCCESS )
             {
-                // ¼öÇàÈÄ
+                // ìˆ˜í–‰í›„
                 sDataNode->mState = SDI_NODE_STATE_EXECUTED;
                 sDataNode->mExecCount++;
             }
             else
             {
-                // ¼öÇàÀÌ ½ÇÆĞÇÑ °æ¿ì
+                // ìˆ˜í–‰ì´ ì‹¤íŒ¨í•œ ê²½ìš°
                 sDataNode->mState = SDI_NODE_STATE_EXECUTE_CANDIDATED;
                 qdkDelShardTransaction( sConnectInfo );
 
@@ -3687,7 +3687,7 @@ void sdi::touchShardMeta( qcSession * aSession )
         // Nothing to do.
     }
 
-    // ÇöÀç ¼¼¼Ç¿¡¼­ plan cache »ç¿ë±İÁö
+    // í˜„ì¬ ì„¸ì…˜ì—ì„œ plan cache ì‚¬ìš©ê¸ˆì§€
     if ( ( aSession->mQPSpecific.mFlag & QC_SESSION_PLAN_CACHE_MASK ) ==
          QC_SESSION_PLAN_CACHE_ENABLE )
     {

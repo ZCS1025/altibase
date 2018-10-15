@@ -20,12 +20,12 @@
  *
  * Description :
  *
- * º» ÆÄÀÏÀº undo segment¿¡ ´ëÇÑ header ÆÄÀÏÀÌ´Ù
+ * ë³¸ íŒŒì¼ì€ undo segmentì— ëŒ€í•œ header íŒŒì¼ì´ë‹¤
  *
- * # °³³ä
+ * # ê°œë…
  *
- *   undo record´Â DRDBÀÇ MVCC, garbage collecting, Æ®·£Àè¼Ç rollback
- *   Ã³¸®¿¡ ÇÊ¿äÇÑ undo record¸¦ ÀúÀåÇÏ±â À§ÇÑ segment ÀÚ·á±¸Á¶ÀÌ´Ù.
+ *   undo recordëŠ” DRDBì˜ MVCC, garbage collecting, íŠ¸ëœì­ì…˜ rollback
+ *   ì²˜ë¦¬ì— í•„ìš”í•œ undo recordë¥¼ ì €ì¥í•˜ê¸° ìœ„í•œ segment ìë£Œêµ¬ì¡°ì´ë‹¤.
  *
  **********************************************************************/
 
@@ -131,8 +131,8 @@ public:
         UChar*            aKey,
         sdSID            *aUndoSID );
 
-    /* TASK-4007 [SM] PBT¸¦ À§ÇÑ ±â´É Ãß°¡ - dumpddfÁ¤»óÈ­
-     * Undo ÆäÀÌÁö Dump */
+    /* TASK-4007 [SM] PBTë¥¼ ìœ„í•œ ê¸°ëŠ¥ ì¶”ê°€ - dumpddfì •ìƒí™”
+     * Undo í˜ì´ì§€ Dump */
     static IDE_RC dump( UChar *aPage ,
                         SChar *aOutBuf ,
                         UInt   aOutSize );
@@ -195,14 +195,14 @@ private:
                                   sdrMtxStartInfo * aStartInfo,
                                   smSCN           * aOldestTransBSCN );
 #endif
-    /* ¾î¶² Å¸ÀÔÀÌµç undo record¸¦ ÀÛ¼ºÇÑ ÈÄ ÀÌ ÇÔ¼ö°¡ È£ÃâµÇ¾î
-       redo log¸¦ mtx¿¡ ¹öÆÛ¸µÇÑ´Ù. */
+    /* ì–´ë–¤ íƒ€ì…ì´ë“  undo recordë¥¼ ì‘ì„±í•œ í›„ ì´ í•¨ìˆ˜ê°€ í˜¸ì¶œë˜ì–´
+       redo logë¥¼ mtxì— ë²„í¼ë§í•œë‹¤. */
     IDE_RC makeRedoLogOfUndoRec(UChar*        aUndoRecPtr,
                                 UShort        aLength,
                                 smOID         aTableOID,
                                 sdrMtx*       aMtx);
 
-    /* undo record¸¦ ±â·ÏÇÒ undo record ptr¸¦ ¹İÈ¯ */
+    /* undo recordë¥¼ ê¸°ë¡í•  undo record ptrë¥¼ ë°˜í™˜ */
     IDE_RC allocSlot( idvSQL           * aStatistics,
                       void             * aTrans,
                       UShort             aUndoRecSize,
@@ -221,25 +221,25 @@ private:
 
 private:
 
-    ULong            mFreeUndoPageCnt;   /* FreeµÈ UndoPage °³¼ö */
-    ULong            mCreateUndoPageCnt; /* »ı¼ºµÈ UndoPage °³¼ö */
-    sdcTXSegEntry *  mEntryPtr;          /* ÀÚ½ÅÀÌ ¼Ò¼ÓµÈ Æ®·£Àè¼Ç ¼¼±×¸ÕÆ® ¿£Æ®¸® Æ÷ÀÎÅÍ */
+    ULong            mFreeUndoPageCnt;   /* Freeëœ UndoPage ê°œìˆ˜ */
+    ULong            mCreateUndoPageCnt; /* ìƒì„±ëœ UndoPage ê°œìˆ˜ */
+    sdcTXSegEntry *  mEntryPtr;          /* ìì‹ ì´ ì†Œì†ëœ íŠ¸ëœì­ì…˜ ì„¸ê·¸ë¨¼íŠ¸ ì—”íŠ¸ë¦¬ í¬ì¸í„° */
 
-    sdpSegmentDesc   mUDSegDesc;           /* Segment ±â¼úÀÚ */
-    sdRID            mCurAllocExtRID;      /* ÇöÀç »ç¿ëÁßÀÎ ExtDescÀÇ RID */
-    scPageID         mFstPIDOfCurAllocExt; /* ÇöÀç »ç¿ëÁßÀÎ ExtDescÀÇ Ã¹¹øÂ° PID */
-    scPageID         mCurAllocPID;             /* ÇöÀç »ç¿ëÁßÀÎ Undo ÆäÀÌÁöÀÇ PID */
-    smSCN            mFstDskViewSCNofCurTrans; /* ÇöÀç »ç¿ëÁßÀÎ Æ®·£Àè¼ÇÀÇ
-                                                * Ã¹¹øÂ° Dsk Stmt ViewSCN */
+    sdpSegmentDesc   mUDSegDesc;           /* Segment ê¸°ìˆ ì */
+    sdRID            mCurAllocExtRID;      /* í˜„ì¬ ì‚¬ìš©ì¤‘ì¸ ExtDescì˜ RID */
+    scPageID         mFstPIDOfCurAllocExt; /* í˜„ì¬ ì‚¬ìš©ì¤‘ì¸ ExtDescì˜ ì²«ë²ˆì§¸ PID */
+    scPageID         mCurAllocPID;             /* í˜„ì¬ ì‚¬ìš©ì¤‘ì¸ Undo í˜ì´ì§€ì˜ PID */
+    smSCN            mFstDskViewSCNofCurTrans; /* í˜„ì¬ ì‚¬ìš©ì¤‘ì¸ íŠ¸ëœì­ì…˜ì˜
+                                                * ì²«ë²ˆì§¸ Dsk Stmt ViewSCN */
 
-    /* À§ Cache¿¡ ´ëÇØ Mtx RollbackÀÌ ÀÏ¾î³µÀ»¶§ º¹±¸ÇÏ±â À§ÇÑ ¹é¾÷º» */
+    /* ìœ„ Cacheì— ëŒ€í•´ Mtx Rollbackì´ ì¼ì–´ë‚¬ì„ë•Œ ë³µêµ¬í•˜ê¸° ìœ„í•œ ë°±ì—…ë³¸ */
     sdRID            mCurAllocExtRID4MtxRollback;
     scPageID         mFstPIDOfCurAllocExt4MtxRollback;
     scPageID         mCurAllocPID4MtxRollback;
 };
 
 /***********************************************************************
- * Description : Undo Page ÃÊ±âÈ­
+ * Description : Undo Page ì´ˆê¸°í™”
  **********************************************************************/
 inline IDE_RC sdcUndoSegment::initPage( UChar  * aPagePtr )
 {
@@ -253,9 +253,9 @@ inline IDE_RC sdcUndoSegment::initPage( UChar  * aPagePtr )
     sOffset = (scOffset)(sdpPhyPage::getPageFooterStartPtr( aPagePtr ) -
                          aPagePtr);
 
-    // Ã¹¹øÂ° SlotEntry´Â FooterÀÇ OffsetÀ» ÀúÀåÇÑ´Ù.
-    // ÀÌÈÄ¿¡ SlotEntry(i) - SlotEntry(i-1)·Î
-    // UndoRecÀÇ ±æÀÌ¸¦ ±¸ÇÒ¼ö ÀÖ´Ù.
+    // ì²«ë²ˆì§¸ SlotEntryëŠ” Footerì˜ Offsetì„ ì €ì¥í•œë‹¤.
+    // ì´í›„ì— SlotEntry(i) - SlotEntry(i-1)ë¡œ
+    // UndoRecì˜ ê¸¸ì´ë¥¼ êµ¬í• ìˆ˜ ìˆë‹¤.
     IDE_ERROR( sdpSlotDirectory::alloc( (sdpPhyPageHdr*)aPagePtr,
                                         sOffset,
                                         &sAllocSlotNum )
@@ -272,11 +272,11 @@ inline IDE_RC sdcUndoSegment::initPage( UChar  * aPagePtr )
 
 /***********************************************************************
  *
- * Description : ÇöÀç »ç¿ëÁßÀÎ UndoPage¿¡ X-latch È¹µæÈÄ ¹İÈ¯
+ * Description : í˜„ì¬ ì‚¬ìš©ì¤‘ì¸ UndoPageì— X-latch íšë“í›„ ë°˜í™˜
  *
- * aStatistics [IN]  - Åë°èÁ¤º¸
- * aMtx        [IN]  - Mtx Æ÷ÀÎÅÍ
- * aCurPagePtr [OUT] - ÇöÀç »ç¿ëÁßÀÎ Undo ÆäÀÌÁö Æ÷ÀÎÅÍ
+ * aStatistics [IN]  - í†µê³„ì •ë³´
+ * aMtx        [IN]  - Mtx í¬ì¸í„°
+ * aCurPagePtr [OUT] - í˜„ì¬ ì‚¬ìš©ì¤‘ì¸ Undo í˜ì´ì§€ í¬ì¸í„°
  **
  * ********************************************************************/
 inline IDE_RC sdcUndoSegment::getCurPID4Update( idvSQL    * aStatistics,
@@ -308,11 +308,11 @@ inline IDE_RC sdcUndoSegment::getCurPID4Update( idvSQL    * aStatistics,
 
 /***********************************************************************
  *
- * Description : ÇöÀç »ç¿ëÁßÀÎ UndoPage¿¡ S-latch È¹µæÈÄ ¹İÈ¯
+ * Description : í˜„ì¬ ì‚¬ìš©ì¤‘ì¸ UndoPageì— S-latch íšë“í›„ ë°˜í™˜
  *
- * aStatistics [IN]  - Åë°èÁ¤º¸
- * aMtx        [IN]  - Mtx Æ÷ÀÎÅÍ
- * aCurPagePtr [OUT] - ÇöÀç »ç¿ëÁßÀÎ Undo ÆäÀÌÁö Æ÷ÀÎÅÍ
+ * aStatistics [IN]  - í†µê³„ì •ë³´
+ * aMtx        [IN]  - Mtx í¬ì¸í„°
+ * aCurPagePtr [OUT] - í˜„ì¬ ì‚¬ìš©ì¤‘ì¸ Undo í˜ì´ì§€ í¬ì¸í„°
  *
  **********************************************************************/
 inline IDE_RC sdcUndoSegment::getCurPID4Read( idvSQL    * aStatistics,
@@ -343,18 +343,18 @@ inline IDE_RC sdcUndoSegment::getCurPID4Read( idvSQL    * aStatistics,
 
 /***********************************************************************
  *
- * Description : ÇöÀç UndoPage ÇÒ´çÁ¤º¸ ¼³Á¤
+ * Description : í˜„ì¬ UndoPage í• ë‹¹ì •ë³´ ì„¤ì •
  *
- * [IN] aCurAllocExtRID      - ÇöÀç »ç¿ëÁßÀÎ ExtDesc RID
- * [IN] aFstPIDOfCurAllocExt - ÇöÀç »ç¿ëÁßÀÎ ExtDescÀÇ Ã¹¹øÂ° PID
- * [IN] aCurAllocExtRID      - ÇöÀç »ç¿ëÁßÀÎ ÆäÀÌÁöÀÇ PID
+ * [IN] aCurAllocExtRID      - í˜„ì¬ ì‚¬ìš©ì¤‘ì¸ ExtDesc RID
+ * [IN] aFstPIDOfCurAllocExt - í˜„ì¬ ì‚¬ìš©ì¤‘ì¸ ExtDescì˜ ì²«ë²ˆì§¸ PID
+ * [IN] aCurAllocExtRID      - í˜„ì¬ ì‚¬ìš©ì¤‘ì¸ í˜ì´ì§€ì˜ PID
  *
  **********************************************************************/
 inline void sdcUndoSegment::setCurAllocInfo( sdRID     aCurAllocExtRID,
                                              scPageID  aFstPIDOfCurAllocExt,
                                              scPageID  aCurAllocPID )
 {
-    /* Mtx RollbackÀÌ ÀÏ¾î³µÀ»¶§ º¹±¸ÇÏ±â À§ÇÑ ¹é¾÷º» */
+    /* Mtx Rollbackì´ ì¼ì–´ë‚¬ì„ë•Œ ë³µêµ¬í•˜ê¸° ìœ„í•œ ë°±ì—…ë³¸ */
     mCurAllocExtRID4MtxRollback      = mCurAllocExtRID;
     mFstPIDOfCurAllocExt4MtxRollback = mFstPIDOfCurAllocExt;
     mCurAllocPID4MtxRollback         = mCurAllocPID;

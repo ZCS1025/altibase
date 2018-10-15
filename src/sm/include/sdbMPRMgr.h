@@ -48,11 +48,11 @@ public:
     UChar* getCurPagePtr();
 
     /* TASK-4990 changing the method of collecting index statistics
-     * MPRÀÇ ParallelScan±â´ÉÀ» SamplingÀ¸·Î ÀÌ¿ëÇÏ±â À§ÇØ,
-     * ±âÁ¸ ParallalScanÀ» À§ÇÑ Filter¸¦ ±âº»À¸·Î Á¦°øÇÑ´Ù. */
+     * MPRì˜ ParallelScanê¸°ëŠ¥ì„ Samplingìœ¼ë¡œ ì´ìš©í•˜ê¸° ìœ„í•´,
+     * ê¸°ì¡´ ParallalScanì„ ìœ„í•œ Filterë¥¼ ê¸°ë³¸ìœ¼ë¡œ ì œê³µí•œë‹¤. */
     static idBool filter4PScan( ULong   aExtSeq,
                                 void  * aFilterData );
-    /* Sampling ¹× ParallelScan */
+    /* Sampling ë° ParallelScan */
     static idBool filter4SamplingAndPScan( ULong   aExtSeq,
                                            void  * aFilterData );
 
@@ -67,13 +67,13 @@ private:
                     scPageID aFstReadPID );
 
 private:
-    // Åë°è Á¤º¸
+    // í†µê³„ ì •ë³´
     idvSQL            *mStatistics;
 
-    // SCAN¿¡ Âü¿©ÇÒ Thread Count
+    // SCANì— ì°¸ì—¬í•  Thread Count
     sdbMPRFilterFunc   mFilter;
 
-    // Segment¿¬»êÀÚ Å×ÀÌºí
+    // Segmentì—°ì‚°ì í…Œì´ë¸”
     sdpSegMgmtOp      *mSegMgmtOP;
 
     // Buffer Pool Pointer
@@ -85,41 +85,41 @@ private:
     // Segment Handle
     sdpSegHandle      *mSegHandle;
 
-    // Segment Info·Î¼­ Segment Scan½Ã ÇÊ¿äÇÑ Á¤º¸°¡ ÀÖ´Ù.
+    // Segment Infoë¡œì„œ Segment Scanì‹œ í•„ìš”í•œ ì •ë³´ê°€ ìˆë‹¤.
     sdpSegInfo         mSegInfo;
 
-    // Segment Cache Info·Î¼­ Segment Scan½Ã ÇÊ¿äÇÑ Á¤º¸°¡ ÀÖ´Ù.
+    // Segment Cache Infoë¡œì„œ Segment Scanì‹œ í•„ìš”í•œ ì •ë³´ê°€ ìˆë‹¤.
     sdpSegCacheInfo    mSegCacheInfo;
 
-    // ÇöÀç ÀĞ°í ÀÖ´Â ÆäÀÌÁö°¡ ÀÖ´Â Extent Info
+    // í˜„ì¬ ì½ê³  ìˆëŠ” í˜ì´ì§€ê°€ ìˆëŠ” Extent Info
     sdpExtInfo         mCurExtInfo;
 
     // Multi Page Read Key
     sdbMPRKey          mMPRKey;
 
-    // Multi Page Read Count·Î ÀÌ ´ÜÀ§·Î DataFileÀ» ReadÇÑ´Ù.
+    // Multi Page Read Countë¡œ ì´ ë‹¨ìœ„ë¡œ DataFileì„ Readí•œë‹¤.
     UInt               mMPRCnt;
 
-    // ÇöÀç ÀĞ°í ÀÖ´Â Extent RID
+    // í˜„ì¬ ì½ê³  ìˆëŠ” Extent RID
     sdRID              mCurExtRID;
 
-    // ÇöÀç Extent Sequence Number
+    // í˜„ì¬ Extent Sequence Number
     ULong              mCurExtSeq;
 
-    // ÇöÀç ÀĞ°í ÀÖ´Â ÆäÀÌÁö ID
+    // í˜„ì¬ ì½ê³  ìˆëŠ” í˜ì´ì§€ ID
     scPageID           mCurPageID;
 
-    // Segment¿¡¼­ ¸¶Áö¸·À¸·Î ÇÒ´çµÈ ÆäÀÌÁö ID¿Í SeqNo
+    // Segmentì—ì„œ ë§ˆì§€ë§‰ìœ¼ë¡œ í• ë‹¹ëœ í˜ì´ì§€ IDì™€ SeqNo
     scPageID           mLstAllocPID;
     ULong              mLstAllocSeqNo;
 
-    // Segment¿¡ ¸¶Áö¸· PID, SeqNo¸¦ °»½ÅÇØ¾ß ÇÏ´Â°¡?
+    // Segmentì— ë§ˆì§€ë§‰ PID, SeqNoë¥¼ ê°±ì‹ í•´ì•¼ í•˜ëŠ”ê°€?
     idBool             mFoundLstAllocPage;
 
-    // MPR¿¡ ÀÇÇØ¼­ Buffer Pool¿¡ Page°¡ PinµÇ¾îÀÖ´Â°¡?
+    // MPRì— ì˜í•´ì„œ Buffer Poolì— Pageê°€ Pinë˜ì–´ìˆëŠ”ê°€?
     idBool             mIsFetchPage;
 
-    // MPR·Î ÀĞÀº ÆäÀÌµéÀ» CachingÇÒ °ÍÀÎ°¡?
+    // MPRë¡œ ì½ì€ í˜ì´ë“¤ì„ Cachingí•  ê²ƒì¸ê°€?
     idBool             mIsCachePage;
 
     /* BUG-33762 [sm-disk-resource] The MPR should uses the mempool instead

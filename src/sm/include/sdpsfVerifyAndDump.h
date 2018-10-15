@@ -19,8 +19,8 @@
  *
  * $Id: sdpsfVerifyAndDump.h 27220 2008-07-23 14:56:22Z newdaily $
  *
- * º» ÆÄÀÏÀº Freelist Managed SegmentÀÇ ÀÚ·á±¸Á¶ È®ÀÎ ¹× Ãâ·Â°ú °ü·ÃµÈ STATIC
- * ÀÎÅÍÆäÀÌ½º¸¦ °ü¸®ÇÑ´Ù.
+ * ë³¸ íŒŒì¼ì€ Freelist Managed Segmentì˜ ìë£Œêµ¬ì¡° í™•ì¸ ë° ì¶œë ¥ê³¼ ê´€ë ¨ëœ STATIC
+ * ì¸í„°í˜ì´ìŠ¤ë¥¼ ê´€ë¦¬í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -35,12 +35,12 @@ class sdpsfVerifyAndDump
 
 public:
 
-    /* [ INTERFACE ] Segment DescriptorÀÇ ÀÚ·á±¸Á¶¸¦ Ç¥ÁØÃâ·ÂÀ¸·Î Ãâ·ÂÇÑ´Ù */
+    /* [ INTERFACE ] Segment Descriptorì˜ ìë£Œêµ¬ì¡°ë¥¼ í‘œì¤€ì¶œë ¥ìœ¼ë¡œ ì¶œë ¥í•œë‹¤ */
     static void dump( scSpaceID      aSpaceID,
                       sdpsfSegHdr   *aSegHdr,
                       idBool         aDisplayAll);
 
-    /*  [ INTERFACE ] Segment Descriptor¸¦ È®ÀÎÇÑ´Ù */
+    /*  [ INTERFACE ] Segment Descriptorë¥¼ í™•ì¸í•œë‹¤ */
     static IDE_RC verify(idvSQL       * aStatistics,
                          scSpaceID      aSpaceID,
                          sdpsfSegHdr  * aSegHdr,
@@ -48,7 +48,7 @@ public:
                          idBool         aAllUsed,
                          scPageID       aUsedLimit);
 
-    /* Segment DescirptorÀÇ ÀÚ·á±¸Á¶¸¦ È®ÀÎÇÑ´Ù. */
+    /* Segment Descirptorì˜ ìë£Œêµ¬ì¡°ë¥¼ í™•ì¸í•œë‹¤. */
     static IDE_RC verifyStateSeg( idvSQL   *aStatistics,
                                   sdrMtx   *aMtx,
                                   scSpaceID aSpaceID,
@@ -57,7 +57,7 @@ public:
 private:
 
 
-    /* Segment DescirptorÀÇ ÀÚ·á±¸Á¶¸¦ È®ÀÎÇÑ´Ù. */
+    /* Segment Descirptorì˜ ìë£Œêµ¬ì¡°ë¥¼ í™•ì¸í•œë‹¤. */
     static IDE_RC verifyStateExt( idvSQL   *aStatistics,
                                   sdrMtx   *aMtx,
                                   scSpaceID aSpaceID,
@@ -65,7 +65,7 @@ private:
                                   idBool    aUsedState,
                                   sdRID    *aNextExtRID );
 
-    /* Segment DescirptorÀÇ ÀÚ·á±¸Á¶¸¦ È®ÀÎÇÑ´Ù. */
+    /* Segment Descirptorì˜ ìë£Œêµ¬ì¡°ë¥¼ í™•ì¸í•œë‹¤. */
     static IDE_RC verifyStatePage( sdpsfExtDesc  *aExtDesc,
                                    UInt           aPageIndex,
                                    UInt           aExtState,

@@ -82,7 +82,7 @@ public:  /* Global configs */
     SInt        mCountToCommit; // Count of oops before commit
     SInt        mTimeInterval; // Check properties time interval
 
-    /* TASK-4212: auditÅøÀÇ ´ë¿ë·® Ã³¸®½Ã °³¼± */
+    /* TASK-4212: auditíˆ´ì˜ ëŒ€ìš©ëŸ‰ ì²˜ë¦¬ì‹œ ê°œì„  */
     // write to CSV file.
     SInt        mMaxArrayFetch; // array fetch size
 
@@ -101,7 +101,7 @@ public:  /* Global configs */
     /* 
      * BUG-32566
      *
-     * iloader¿Í °°ÀÌ Version Ãâ·ÂµÇµµ·Ï ¼öÁ¤
+     * iloaderì™€ ê°™ì´ Version ì¶œë ¥ë˜ë„ë¡ ìˆ˜ì •
      */
     void printVersion();
 

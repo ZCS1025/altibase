@@ -23,10 +23,10 @@
 #include <iduMemMgr.h>
 
 /***********************************************************************
- * iduMemMgr_libc.cpp : IDU_SERVER_TYPE¿¡¼­ »ç¿ë
- * iduMemMgrÀ» ¼­¹ö ¸ðµå·Î ÃÊ±âÈ­ÇÑ ÀÌÈÄ
- * ¸Þ¸ð¸® °ü¸®ÀÚ Å¸ÀÔÀÌ LIBC(=0)ÀÏ ¶§ »ç¿ëÇÑ´Ù.
- * ¸Þ¸ð¸® Åë°èÁ¤º¸¸¦ ±â·ÏÇÑ´Ù.
+ * iduMemMgr_libc.cpp : IDU_SERVER_TYPEì—ì„œ ì‚¬ìš©
+ * iduMemMgrì„ ì„œë²„ ëª¨ë“œë¡œ ì´ˆê¸°í™”í•œ ì´í›„
+ * ë©”ëª¨ë¦¬ ê´€ë¦¬ìž íƒ€ìž…ì´ LIBC(=0)ì¼ ë•Œ ì‚¬ìš©í•œë‹¤.
+ * ë©”ëª¨ë¦¬ í†µê³„ì •ë³´ë¥¼ ê¸°ë¡í•œë‹¤.
  **********************************************************************/
 
 IDE_RC iduMemMgr::libc_initializeStatic(void)

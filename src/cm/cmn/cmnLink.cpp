@@ -100,15 +100,15 @@ static cmnLinkAllocInfo gCmnLinkAllocInfo[CMN_LINK_IMPL_MAX][CMN_LINK_TYPE_MAX] 
 static UInt gCmnLinkFeature[CMN_LINK_IMPL_MAX][CMN_LINK_TYPE_MAX] =
 {
     // bug-19279 remote sysdba enable + sys can kill session
-    // ÀÌ °ªÀÌ »ç¿ëµÇ´Â ºÎºÐ:
+    // ì´ ê°’ì´ ì‚¬ìš©ë˜ëŠ” ë¶€ë¶„:
     // mmtServiceThread::connectProtocol -> mmcTask::authenticate()
-    // À§ÀÇ ÇÔ¼ö¿¡¼­ client°¡ sysdba·Î Á¢¼ÓÇÑ °æ¿ì ¼­¹ö taskÀÇ link°¡
-    // CMN_LINK_FEATURE_SYSDBA Æ¯¼ºÀ» °¡Á®¾ß¸¸ Á¢¼ÓÀÌ Çã¿ëµÈ´Ù.
-    // º¯°æ ³»¿ë:
-    // task »ý¼º½Ã ±âÁ¸¿¡´Â tcp linkÀÇ °æ¿ì sysdbaÆ¯¼ºÀÌ ¾ø¾ú´Âµ¥
-    // ¿ø°Ý sysdba  Á¢¼ÓÀ» Çã¿ëÇÏ±â À§ÇØ ¸ðµç tcp link¿¡ ´ëÇØ
-    // sysdbaÆ¯¼ºÀ» ºÎ¿©ÇÑ´Ù
-    // => °á±¹ ¼­¹ö taskÀÇ link¿¡ ´ëÇÑ sysdba Æ¯¼º ÇÊµå°¡ ¹«ÀÇ¹ÌÇØ Áø´Ù.
+    // ìœ„ì˜ í•¨ìˆ˜ì—ì„œ clientê°€ sysdbaë¡œ ì ‘ì†í•œ ê²½ìš° ì„œë²„ taskì˜ linkê°€
+    // CMN_LINK_FEATURE_SYSDBA íŠ¹ì„±ì„ ê°€ì ¸ì•¼ë§Œ ì ‘ì†ì´ í—ˆìš©ëœë‹¤.
+    // ë³€ê²½ ë‚´ìš©:
+    // task ìƒì„±ì‹œ ê¸°ì¡´ì—ëŠ” tcp linkì˜ ê²½ìš° sysdbaíŠ¹ì„±ì´ ì—†ì—ˆëŠ”ë°
+    // ì›ê²© sysdba  ì ‘ì†ì„ í—ˆìš©í•˜ê¸° ìœ„í•´ ëª¨ë“  tcp linkì— ëŒ€í•´
+    // sysdbaíŠ¹ì„±ì„ ë¶€ì—¬í•œë‹¤
+    // => ê²°êµ­ ì„œë²„ taskì˜ linkì— ëŒ€í•œ sysdba íŠ¹ì„± í•„ë“œê°€ ë¬´ì˜ë¯¸í•´ ì§„ë‹¤.
     // listen,   server,    client
 
     /* DUMMY */
@@ -168,12 +168,12 @@ IDE_RC cmnLinkAlloc(cmnLink **aLink, cmnLinkType aType, cmnLinkImpl aImpl)
     cmnLinkAllocInfo *sAllocInfo;
 
     /*
-     * Áö¿øÇÏ´Â ImplÀÎÁö °Ë»ç
+     * ì§€ì›í•˜ëŠ” Implì¸ì§€ ê²€ì‚¬
      */
     IDE_TEST_RAISE(cmnLinkIsSupportedImpl(aImpl) != ID_TRUE, UnsupportedLinkImpl);
 
     /*
-     * AllocInfo È¹µæ
+     * AllocInfo íšë“
      */
     sAllocInfo = &gCmnLinkAllocInfo[sImpl][aType];
 
@@ -184,7 +184,7 @@ IDE_RC cmnLinkAlloc(cmnLink **aLink, cmnLinkType aType, cmnLinkImpl aImpl)
                           InsufficientMemory );
 
     /*
-     * ¸Þ¸ð¸® ÇÒ´ç
+     * ë©”ëª¨ë¦¬ í• ë‹¹
      */
      
     IDE_TEST_RAISE(iduMemMgr::malloc(IDU_MEM_CMN,
@@ -193,7 +193,7 @@ IDE_RC cmnLinkAlloc(cmnLink **aLink, cmnLinkType aType, cmnLinkImpl aImpl)
                                      IDU_MEM_IMMEDIATE) != IDE_SUCCESS, InsufficientMemory );
 
     /*
-     * ¸â¹ö ÃÊ±âÈ­
+     * ë©¤ë²„ ì´ˆê¸°í™”
      */
     (*aLink)->mType    = aType;
     (*aLink)->mImpl    = aImpl;
@@ -206,12 +206,12 @@ IDE_RC cmnLinkAlloc(cmnLink **aLink, cmnLinkType aType, cmnLinkImpl aImpl)
     IDU_LIST_INIT_OBJ(&(*aLink)->mReadyListNode, *aLink);
 
     /*
-     * ÇÔ¼ö Æ÷ÀÎÅÍ ¸ÅÇÎ
+     * í•¨ìˆ˜ í¬ì¸í„° ë§¤í•‘
      */
     IDE_TEST_RAISE(sAllocInfo->mMap(*aLink) != IDE_SUCCESS, InitializeFail);
 
     /*
-     * ÃÊ±âÈ­
+     * ì´ˆê¸°í™”
      */
     IDE_TEST_RAISE((*aLink)->mOp->mInitialize(*aLink) != IDE_SUCCESS, InitializeFail);
 
@@ -238,17 +238,17 @@ IDE_RC cmnLinkAlloc(cmnLink **aLink, cmnLinkType aType, cmnLinkImpl aImpl)
 IDE_RC cmnLinkFree(cmnLink *aLink)
 {
     /*
-     * Dispatcher¿¡ µî·ÏµÇ¾î ÀÖ´Â LinkÀÎÁö °Ë»ç
+     * Dispatcherì— ë“±ë¡ë˜ì–´ ìžˆëŠ” Linkì¸ì§€ ê²€ì‚¬
      */
     IDE_ASSERT(IDU_LIST_IS_EMPTY(&aLink->mDispatchListNode) == ID_TRUE);
 
     /*
-     * Á¤¸®
+     * ì •ë¦¬
      */
     IDE_TEST(aLink->mOp->mFinalize(aLink) != IDE_SUCCESS);
 
     /*
-     * ¸Þ¸ð¸® ÇØÁ¦
+     * ë©”ëª¨ë¦¬ í•´ì œ
      */
     IDE_TEST(iduMemMgr::free(aLink) != IDE_SUCCESS);
 

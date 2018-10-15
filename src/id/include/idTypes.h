@@ -216,8 +216,8 @@ typedef uint64_t ULong;   /* Unsigned 64-bits */
 # endif   /* INTEL_LINUX */
 
 /*
- * vSLong, vULongÀº ÄÄÆÄÀÏ È¯°æ 32, 64 ºñÆ®ÀÇ Å©±â¿¡ ¸Â°Ô
- * Á¶ÀıµÊ.
+ * vSLong, vULongì€ ì»´íŒŒì¼ í™˜ê²½ 32, 64 ë¹„íŠ¸ì˜ í¬ê¸°ì— ë§ê²Œ
+ * ì¡°ì ˆë¨.
  */
 
 # ifdef COMPILE_64BIT
@@ -261,24 +261,24 @@ typedef uint32_t      vULong;  /* varibale Unsigned [32],64-bits */
 # endif   /* VC_WIN32 | VC_WIN64 */
 
 /* ------------------------------------------------------------
- *            64ºñÆ® Literal Á¤ÀÇ½Ã »ç¿ëµÊ
- * (ÄÄÆÄÀÏ·¯ È¯°æ¿¡ µû¶ó Á¶°ÇÀûÀ¸·Î Á¤ÀÇ)
- * ex) #define MYLONG   0x1234567812345678 (Æ²¸²)
- *     #define MYLONG   ID_ULONG(0x1234567812345678) (¸ÂÀ½)
+ *            64ë¹„íŠ¸ Literal ì •ì˜ì‹œ ì‚¬ìš©ë¨
+ * (ì»´íŒŒì¼ëŸ¬ í™˜ê²½ì— ë”°ë¼ ì¡°ê±´ì ìœ¼ë¡œ ì •ì˜)
+ * ex) #define MYLONG   0x1234567812345678 (í‹€ë¦¼)
+ *     #define MYLONG   ID_ULONG(0x1234567812345678) (ë§ìŒ)
  * ------------------------------------------------------------*/
 
-/* 1. Windows È¯°æ (ULL ÀÌ ¾ø¾î¾ß ÇÔ) */
+/* 1. Windows í™˜ê²½ (ULL ì´ ì—†ì–´ì•¼ í•¨) */
 # if defined(VC_WIN32) || defined(VC_WIN64)
  
 #define ID_LONG(a)  a ## i64
 #define ID_ULONG(a) a ## ui64
 
-# elif defined( __GNUC__ ) /* 2. GNU ÄÄÆÄÀÏ·¯ (ULLÀÌ ÀÖ¾î¾ß ÇÔ) */
+# elif defined( __GNUC__ ) /* 2. GNU ì»´íŒŒì¼ëŸ¬ (ULLì´ ìˆì–´ì•¼ í•¨) */
 
 #define ID_LONG(a)  a ## LL
 #define ID_ULONG(a) a ## ULL
 
-# else                     /* 3. ±âÅ¸ ÄÄÆÄÀÏ·¯ : Ãß°¡¿µ¿ª */
+# else                     /* 3. ê¸°íƒ€ ì»´íŒŒì¼ëŸ¬ : ì¶”ê°€ì˜ì—­ */
 
 #define ID_LONG(a)  a ## LL
 #define ID_ULONG(a) a ## ULL
@@ -399,7 +399,7 @@ typedef enum
     IDE_CM_STOP =  1
 } IDE_RC;
 
-// Shared MemoryÀÇ »ó´ë ÁÖ¼Ò¸¦ ¾Ë¾Æ³»±â À§ÇÑ Type
+// Shared Memoryì˜ ìƒëŒ€ ì£¼ì†Œë¥¼ ì•Œì•„ë‚´ê¸° ìœ„í•œ Type
 typedef ULong  idShmAddr;
 
 typedef UInt   idLPID;
@@ -408,8 +408,8 @@ typedef UInt   idGblThrID;
 
 
 /* ------------------------------------------------
- *  BUGBUG : Float, DoubleÀ» À§ÇÑ ÀÓ½Ã ¼³Á¤
- *  ³ªÁß¿¡´Â °¢ ÇÃ·§Æû ¿µ¿ª¿¡ ÀûÀıÇÏ°Ô Á¤ÀÇÇØ¾ß ÇÔ.
+ *  BUGBUG : Float, Doubleì„ ìœ„í•œ ì„ì‹œ ì„¤ì •
+ *  ë‚˜ì¤‘ì—ëŠ” ê° í”Œë«í¼ ì˜ì—­ì— ì ì ˆí•˜ê²Œ ì •ì˜í•´ì•¼ í•¨.
  * ----------------------------------------------*/
 
 typedef float  SFloat;
@@ -433,8 +433,8 @@ typedef struct idMBR
 #define ID_MAXBQUALSIZE    64      /* maximum size in bytes of bqual */
 
 /*
- * fix BUG-23656 session,xid ,transactionÀ» ¿¬°èÇÑ performance view¸¦ Á¦°øÇÏ°í,
- * ±×µé°£ÀÇ °ü°è¸¦ Á¤È®È÷ À¯ÁöÇØ¾ß ÇÔ.
+ * fix BUG-23656 session,xid ,transactionì„ ì—°ê³„í•œ performance viewë¥¼ ì œê³µí•˜ê³ ,
+ * ê·¸ë“¤ê°„ì˜ ê´€ê³„ë¥¼ ì •í™•íˆ ìœ ì§€í•´ì•¼ í•¨.
  */
 #define ID_NULL_SESSION_ID  ID_UINT_MAX
 #define ID_NULL_TRANS_ID    ID_UINT_MAX
@@ -473,9 +473,9 @@ typedef struct id_host_id_t
 
 #define ID_MAX_HOST_ID_NUM 256
 
-/* BUG-21307: VS6.0¿¡¼­ Compile Error¹ß»ı.
+/* BUG-21307: VS6.0ì—ì„œ Compile Errorë°œìƒ.
  *
- * ULongÀÌ double·Î casting½Ã win32¿¡¼­ ¿¡·¯ ¹ß»ı */
+ * ULongì´ doubleë¡œ castingì‹œ win32ì—ì„œ ì—ëŸ¬ ë°œìƒ */
 #ifdef _MSC_VER
 /* Conversion from unsigned __int64 to double is not implemented in windows
  * and results in a compile error, thus the value must first be cast to

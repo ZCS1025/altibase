@@ -28,7 +28,7 @@ typedef enum
 
 typedef struct sdpjString
 {
-    SInt         mOffset;  /* jString Å©±â¸¦ ÁÙÀÌ±âÀ§ÇØ pointer°¡ ¾Æ´Ï¶ó offsetÀ» »ç¿ëÇÑ´Ù. */
+    SInt         mOffset;  /* jString í¬ê¸°ë¥¼ ì¤„ì´ê¸°ìœ„í•´ pointerê°€ ì•„ë‹ˆë¼ offsetì„ ì‚¬ìš©í•œë‹¤. */
     SInt         mSize;
 } sdpjString;
 

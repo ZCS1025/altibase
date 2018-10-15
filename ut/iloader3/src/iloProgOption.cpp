@@ -25,7 +25,7 @@
 extern SChar gszCommand[COMMAND_LEN];
 extern SChar *getpass(const SChar *prompt);
 
-// BUG-17932: µµ¿ò¸» ÅëÀÏ
+// BUG-17932: ë„ì›€ë§ í†µì¼
 static const SChar *gHelpCommand[] =
 {
 #ifndef COMPILE_SHARDCLI
@@ -131,7 +131,7 @@ void PrintHelpScreenCore(ECommandType aType)
     idlOS::printf("\n");
 }
 
-// BUG-17932: µµ¿ò¸» ÅëÀÏ
+// BUG-17932: ë„ì›€ë§ í†µì¼
 void iloProgOption::PrintHelpScreen(ECommandType aType)
 {
     switch (aType)
@@ -182,10 +182,10 @@ iloProgOption::iloProgOption()
     mCSVFieldTerm = ',';
     mCSVEnclosing = '"';
 
-    /* BUG-29932 : [WIN] iloader µµ noprompt ¿É¼ÇÀÌ ÇÊ¿äÇÕ´Ï´Ù. */
+    /* BUG-29932 : [WIN] iloader ë„ noprompt ì˜µì…˜ì´ í•„ìš”í•©ë‹ˆë‹¤. */
     mNoPrompt = ILO_FALSE;
 
-    /* BUG-30415: ¿¡·¯ ¹ß»ý ÇÃ·¡±× ÃÊ±âÈ­ */
+    /* BUG-30415: ì—ëŸ¬ ë°œìƒ í”Œëž˜ê·¸ ì´ˆê¸°í™” */
     m_bErrorExist = SQL_FALSE;
 
     InitOption();
@@ -197,8 +197,8 @@ void iloProgOption::InitOption()
     idlOS::strcpy(m_FieldTerm, m_DefaultFieldTerm);
     idlOS::strcpy(m_RowTerm, m_DefaultRowTerm);
 
-    // BUG-26287: ¿É¼Ç Ã³¸®¹æ¹ý ÅëÀÏ
-    // -NLS_USE ¿É¼Ç Ãß°¡
+    // BUG-26287: ì˜µì…˜ ì²˜ë¦¬ë°©ë²• í†µì¼
+    // -NLS_USE ì˜µì…˜ ì¶”ê°€
     m_bExist_NLS = ILO_FALSE;
     m_bExist_b = SQL_FALSE; // bad input checker
     m_bExist_T = SQL_FALSE;
@@ -243,9 +243,9 @@ void iloProgOption::InitOption()
     m_ioParallelCount   = 0;           
 
     m_bExist_errors = SQL_FALSE;
-    // BUG-24879 errors ¿É¼Ç Áö¿ø ±âº»°ª 50
+    // BUG-24879 errors ì˜µì…˜ ì§€ì› ê¸°ë³¸ê°’ 50
     m_ErrorCount = 50;
-    // BUG-18803 readsize ¿É¼Ç Ãß°¡
+    // BUG-18803 readsize ì˜µì…˜ ì¶”ê°€
     mReadSizeExist  = SQL_FALSE;
     mReadSzie       = FILE_READ_SIZE_DEFAULT;
 
@@ -378,8 +378,8 @@ SInt iloProgOption::ParsingCommandLine( ALTIBASE_ILOADER_HANDLE  aHandle,
 
     while (i<argc)
     {
-        // BUG-17932: µµ¿ò¸» ÅëÀÏ
-        // command line¿¡¼­ µµ¿ò¸»À» Ãâ·ÂÇÒ ¶§´Â Ç×»ó ÀüÃ¼ µµ¿ò¸» Ãâ·Â
+        // BUG-17932: ë„ì›€ë§ í†µì¼
+        // command lineì—ì„œ ë„ì›€ë§ì„ ì¶œë ¥í•  ë•ŒëŠ” í•­ìƒ ì „ì²´ ë„ì›€ë§ ì¶œë ¥
         if (idlOS::strcasecmp(argv[i], "-h") == 0
          || idlOS::strcasecmp(argv[i], "help") == 0
          || idlOS::strcasecmp(argv[i], "--help") == 0)
@@ -454,11 +454,11 @@ SInt iloProgOption::ParsingCommandLine( ALTIBASE_ILOADER_HANDLE  aHandle,
             m_PortNum     = idlOS::atoi(argv[i+1]);
             i += 2;
         }
-        // BUG-26287: ¿É¼Ç Ã³¸®¹æ¹ý ÅëÀÏ
-        // -NLS_USE ¿É¼Ç Ãß°¡
+        // BUG-26287: ì˜µì…˜ ì²˜ë¦¬ë°©ë²• í†µì¼
+        // -NLS_USE ì˜µì…˜ ì¶”ê°€
         else if (idlOS::strcasecmp(argv[i], "-NLS_USE") == 0)
         {
-            /* NLS°¡ ¾ø´Â °æ¿ì */
+            /* NLSê°€ ì—†ëŠ” ê²½ìš° */
             IDE_TEST_RAISE(argc <= i+1, print_help_screen);
             IDE_TEST_RAISE(argv[i+1][1] == '-', print_help_screen);
 
@@ -491,8 +491,8 @@ SInt iloProgOption::ParsingCommandLine( ALTIBASE_ILOADER_HANDLE  aHandle,
         else if (idlOS::strcmp(argv[i], "-plus") == 0 ||
                  idlOS::strcmp(argv[i], "-PLUS") == 0)
         {
-            // BUG-28708 -plus ¿É¼ÇÀÌ dropµÊ
-            // È£È¯¼ºÀ» À§ÇØ ¿É¼Ç ÀÚÃ¼´Â ³²°ÜµÎµÇ, ¹«½ÃÇÑ´Ù.
+            // BUG-28708 -plus ì˜µì…˜ì´ dropë¨
+            // í˜¸í™˜ì„±ì„ ìœ„í•´ ì˜µì…˜ ìžì²´ëŠ” ë‚¨ê²¨ë‘ë˜, ë¬´ì‹œí•œë‹¤.
             (void)idlOS::printf("NOTICE: -plus option is deprecated. " \
                                 "Thus, the option will be ignored.\n");
             i++;
@@ -527,9 +527,9 @@ SInt iloProgOption::ParsingCommandLine( ALTIBASE_ILOADER_HANDLE  aHandle,
                                 argv[i]);
             i++;
 
-            /* ¼ÐÀÌ "lob_option_string"¿¡¼­
-             * µû¿ÈÇ¥¸¦ Á¦°ÅÇÏ°í '\"'´Â '"'À¸·Î º¯°æÇØ¹ö¸° °ÍÀ»
-             * ¿ø»óº¹±Í½ÃÅ²´Ù. */
+            /* ì…¸ì´ "lob_option_string"ì—ì„œ
+             * ë”°ì˜´í‘œë¥¼ ì œê±°í•˜ê³  '\"'ëŠ” '"'ìœ¼ë¡œ ë³€ê²½í•´ë²„ë¦° ê²ƒì„
+             * ì›ìƒë³µê·€ì‹œí‚¨ë‹¤. */
             if (i < argc && argv[i][0] != '-')
             {
 #define APPEND_CHAR_TO_CMD(aC) \
@@ -560,7 +560,7 @@ SInt iloProgOption::ParsingCommandLine( ALTIBASE_ILOADER_HANDLE  aHandle,
 #undef APPEND_CHAR_TO_CMD
             }
         }
-        /* BUG-29932 : [WIN] iloader µµ noprompt ¿É¼ÇÀÌ ÇÊ¿äÇÕ´Ï´Ù. */
+        /* BUG-29932 : [WIN] iloader ë„ noprompt ì˜µì…˜ì´ í•„ìš”í•©ë‹ˆë‹¤. */
         else if (idlOS::strcmp(argv[i], "-noprompt") == 0 ||
                  idlOS::strcmp(argv[i], "-NOPROMPT") == 0)
         {
@@ -667,7 +667,7 @@ SInt iloProgOption::ParsingCommandLine( ALTIBASE_ILOADER_HANDLE  aHandle,
 
     if( m_ConnType == ILO_CONNTYPE_NONE )
     {
-        /* BUG-31387: ConnTypeÀ» ÇÑ¹ø¸¸ ¾ò¾î ÀçÈ°¿ë */
+        /* BUG-31387: ConnTypeì„ í•œë²ˆë§Œ ì–»ì–´ ìž¬í™œìš© */
         sPtr = idlOS::getenv(ENV_ISQL_CONNECTION);
         if (sPtr != NULL)
         {
@@ -854,7 +854,7 @@ SInt iloProgOption::ParsingCommandLine( ALTIBASE_ILOADER_HANDLE  aHandle,
             utePrintfErrorCode(stdout, sHandle->mErrorMgr);
         }
     }
-    /* BUG-29932 : [WIN] iloader µµ noprompt ¿É¼ÇÀÌ ÇÊ¿äÇÕ´Ï´Ù. */
+    /* BUG-29932 : [WIN] iloader ë„ noprompt ì˜µì…˜ì´ í•„ìš”í•©ë‹ˆë‹¤. */
     IDE_EXCEPTION( err_noprompt );
     {
         m_bErrorExist = SQL_TRUE;
@@ -901,15 +901,15 @@ SInt iloProgOption::ParsingCommandLine( ALTIBASE_ILOADER_HANDLE  aHandle,
 
 /* BUG-31387 */
 /**
- * IPC¿Í Unix domainÀº localhost¿¡ Á¢¼Ó ÇÒ ¶§¸¸ »ç¿ëÇÒ ¼ö ÀÖÀ¸¹Ç·Î,
- * ServerNameÀÌ localhost°¡ ¾Æ´Ï¶ó¸é TCP¸¦ »ç¿ëÇÏµµ·Ï ¿¬°á À¯ÇüÀ» Á¶ÀýÇÑ´Ù.
+ * IPCì™€ Unix domainì€ localhostì— ì ‘ì† í•  ë•Œë§Œ ì‚¬ìš©í•  ìˆ˜ ìžˆìœ¼ë¯€ë¡œ,
+ * ServerNameì´ localhostê°€ ì•„ë‹ˆë¼ë©´ TCPë¥¼ ì‚¬ìš©í•˜ë„ë¡ ì—°ê²° ìœ í˜•ì„ ì¡°ì ˆí•œë‹¤.
  *
- * ¿ø°Ý ¼­¹ö¿¡ Á¢¼ÓÇÒ ¶§ IPC, Unix domainÀ» »ç¿ëÇÏµµ·Ï ¼³Á¤Çß´Ù¸é
- * ¿¬°á À¯Çü ¼³Á¤ÀÌ ¹«½ÃµÊÀ» ¾Ë¸®´Â °æ°í ¸Þ½ÃÁö¸¦ Ãâ·ÂÇÑ´Ù.
- * Unix ÇÃ·§Æû¿¡¼­ Unix domainÀ» »ç¿ëÇÒ ¶§´Â Æ÷Æ® ¹øÈ£°¡ ÇÊ¿äÇÏÁö ¾ÊÀ¸¹Ç·Î
- * -port ¿É¼ÇÀ» ÁöÁ¤ÇßÀ»¶§µµ °æ°í¸¦ Ãâ·ÂÇÑ´Ù.
+ * ì›ê²© ì„œë²„ì— ì ‘ì†í•  ë•Œ IPC, Unix domainì„ ì‚¬ìš©í•˜ë„ë¡ ì„¤ì •í–ˆë‹¤ë©´
+ * ì—°ê²° ìœ í˜• ì„¤ì •ì´ ë¬´ì‹œë¨ì„ ì•Œë¦¬ëŠ” ê²½ê³  ë©”ì‹œì§€ë¥¼ ì¶œë ¥í•œë‹¤.
+ * Unix í”Œëž«í¼ì—ì„œ Unix domainì„ ì‚¬ìš©í•  ë•ŒëŠ” í¬íŠ¸ ë²ˆí˜¸ê°€ í•„ìš”í•˜ì§€ ì•Šìœ¼ë¯€ë¡œ
+ * -port ì˜µì…˜ì„ ì§€ì •í–ˆì„ë•Œë„ ê²½ê³ ë¥¼ ì¶œë ¥í•œë‹¤.
  *
- * @param aHandle iLoader ÇÚµé
+ * @param aHandle iLoader í•¸ë“¤
  */
 void iloProgOption::AdjustConnType( ALTIBASE_ILOADER_HANDLE aHandle )
 {
@@ -976,7 +976,7 @@ SInt iloProgOption::ReadProgOptionInteractive()
         m_bExist_S = SQL_TRUE;
     }
 
-    // BUG-26287: ¿É¼Ç Ã³¸®¹æ¹ý ÅëÀÏ
+    // BUG-26287: ì˜µì…˜ ì²˜ë¦¬ë°©ë²• í†µì¼
 #if defined(VC_WIN32)
     if ( m_bExist_PORT == SQL_FALSE )
 #else
@@ -1007,12 +1007,12 @@ SInt iloProgOption::ReadProgOptionInteractive()
         idlOS::gets(szInStr, sizeof(szInStr));
 
         m_bExist_U = SQL_TRUE;
-        /* BUG-17563 : iloader ¿¡¼­ Å«µû¿ÈÇ¥ ÀÌ¿ëÇÑ Naming Rule Á¦¾à Á¦°Å  */
-        /*    Interactive ¸ðµåÀÏ °æ¿ì¿¡¸¸ userIDÀÇ case¸¦ "..."·Î ±¸ºÐÇØÁÜ.
-         *    - Quoted NameÀÎ °æ¿ì
-         *      : ±×´ë·Î »ç¿ë - "Quoted Name" ==> "Quoted Name"
-         *    - Non-Quoted NameÀÎ °æ¿ì
-         *      : ´ë¹®ÀÚ·Î º¯°æ - NonQuotedName ==> NONQUOTEDNAME
+        /* BUG-17563 : iloader ì—ì„œ í°ë”°ì˜´í‘œ ì´ìš©í•œ Naming Rule ì œì•½ ì œê±°  */
+        /*    Interactive ëª¨ë“œì¼ ê²½ìš°ì—ë§Œ userIDì˜ caseë¥¼ "..."ë¡œ êµ¬ë¶„í•´ì¤Œ.
+         *    - Quoted Nameì¸ ê²½ìš°
+         *      : ê·¸ëŒ€ë¡œ ì‚¬ìš© - "Quoted Name" ==> "Quoted Name"
+         *    - Non-Quoted Nameì¸ ê²½ìš°
+         *      : ëŒ€ë¬¸ìžë¡œ ë³€ê²½ - NonQuotedName ==> NONQUOTEDNAME
         */
         utString::makeNameInCLI(m_LoginID,
                                 ID_SIZEOF(m_LoginID),
@@ -1027,27 +1027,27 @@ SInt iloProgOption::ReadProgOptionInteractive()
         idlOS::strcpy(m_Password, getpass("Write Password : "));
     }
 
-    // BUG-26287: ¿É¼Ç Ã³¸®¹æ¹ý ÅëÀÏ
-    // -NLS_USE ¿É¼Ç Ãß°¡
+    // BUG-26287: ì˜µì…˜ ì²˜ë¦¬ë°©ë²• í†µì¼
+    // -NLS_USE ì˜µì…˜ ì¶”ê°€
     if (m_bExist_NLS == ILO_FALSE)
     {
-        // BUG-24126 isql ¿¡¼­ ALTIBASE_NLS_USE È¯°æº¯¼ö°¡ ¾ø¾îµµ ±âº» NLS¸¦ ¼¼ÆÃÇÏµµ·Ï ÇÑ´Ù.
-        // ¿À¶óÅ¬°ú µ¿ÀÌÇÏ°Ô US7ASCII ·Î ÇÕ´Ï´Ù.
+        // BUG-24126 isql ì—ì„œ ALTIBASE_NLS_USE í™˜ê²½ë³€ìˆ˜ê°€ ì—†ì–´ë„ ê¸°ë³¸ NLSë¥¼ ì„¸íŒ…í•˜ë„ë¡ í•œë‹¤.
+        // ì˜¤ë¼í´ê³¼ ë™ì´í•˜ê²Œ US7ASCII ë¡œ í•©ë‹ˆë‹¤.
         idlOS::strncpy(m_NLS, "US7ASCII", ID_SIZEOF(m_NLS));
         m_bExist_NLS = ILO_TRUE;
     }
 
-    // BUG-25359 iloader ¿¡¼­ download condition ÀÌ Àû¿ëµÇÁö ¾Ê½À´Ï´Ù.
-    // ±âÁ¸ : form file ¿¡¼­ ±âº»°ªÀ» ¼¼ÆÃÇÏ°í ÀÖ¾úÀ½
-    // form file ÆÄ¼­ ¼öÁ¤½Ã ±âº»°ªÀ» ¼¼ÆÃÇÒ¼ö ¾øÀ¸¹Ç·Î ¿©±â¼­ ¼¼ÆÃÇÏµµ·Ï º¯°æÇÔ
+    // BUG-25359 iloader ì—ì„œ download condition ì´ ì ìš©ë˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
+    // ê¸°ì¡´ : form file ì—ì„œ ê¸°ë³¸ê°’ì„ ì„¸íŒ…í•˜ê³  ìžˆì—ˆìŒ
+    // form file íŒŒì„œ ìˆ˜ì •ì‹œ ê¸°ë³¸ê°’ì„ ì„¸íŒ…í• ìˆ˜ ì—†ìœ¼ë¯€ë¡œ ì—¬ê¸°ì„œ ì„¸íŒ…í•˜ë„ë¡ ë³€ê²½í•¨
     idlOS::strcpy(m_DataNLS, m_NLS);
 
     return SQL_TRUE;
 
 }
 
-// BUG-26287: ¿É¼Ç Ã³¸®¹æ¹ý ÅëÀÏ
-// altibase.properties¸¦ ÂüÁ¶ÇÏÁö ¾Ê´Â°Ô ÁÁ´Ù.
+// BUG-26287: ì˜µì…˜ ì²˜ë¦¬ë°©ë²• í†µì¼
+// altibase.propertiesë¥¼ ì°¸ì¡°í•˜ì§€ ì•ŠëŠ”ê²Œ ì¢‹ë‹¤.
 void iloProgOption::ReadEnvironment()
 {
     SChar *sCharData;
@@ -1080,10 +1080,10 @@ void iloProgOption::ReadEnvironment()
     }
 }
 
-// BUG-26287: ¿É¼Ç Ã³¸®¹æ¹ý ÅëÀÏ
-// ¼­¹ö¸¦ ¼³Ä¡ÇÑ °æ¿ì È¯°æº¯¼ö¸¦ ¼³Á¤ÇÏÁö ¾Ê°í altibase.properties¸¸ ¼³Á¤ÇØ¼­
-// ¾µ ¼ö ÀÖÀ¸¹Ç·Î altibase.properties°¡ ÀÖÀ¸¸é ÀÐ¾î¿Àµµ·ÏÇØ¾ß
-// ±âÁ¸ ½ºÅ©¸³Æ®¿¡¼­ ¿¡·¯°¡ ¾È³­´Ù.
+// BUG-26287: ì˜µì…˜ ì²˜ë¦¬ë°©ë²• í†µì¼
+// ì„œë²„ë¥¼ ì„¤ì¹˜í•œ ê²½ìš° í™˜ê²½ë³€ìˆ˜ë¥¼ ì„¤ì •í•˜ì§€ ì•Šê³  altibase.propertiesë§Œ ì„¤ì •í•´ì„œ
+// ì“¸ ìˆ˜ ìžˆìœ¼ë¯€ë¡œ altibase.propertiesê°€ ìžˆìœ¼ë©´ ì½ì–´ì˜¤ë„ë¡í•´ì•¼
+// ê¸°ì¡´ ìŠ¤í¬ë¦½íŠ¸ì—ì„œ ì—ëŸ¬ê°€ ì•ˆë‚œë‹¤.
 void iloProgOption::ReadServerProperties()
 {
     IDE_RC  sRead;
@@ -1172,7 +1172,7 @@ SInt iloProgOption::IsValidOption( ALTIBASE_ILOADER_HANDLE aHandle )
         IDE_TEST_RAISE( ( m_bExist_array == SQL_FALSE ) &&
                         ( m_bExist_atomic == SQL_TRUE ), err_atomic );
         //PROJ-1760
-        // -ioparallelÀº -direct ¿É¼Ç°ú ÇÔ²² »ç¿ëÇØ¾ß¸¸ ÇÑ´Ù.
+        // -ioparallelì€ -direct ì˜µì…˜ê³¼ í•¨ê»˜ ì‚¬ìš©í•´ì•¼ë§Œ í•œë‹¤.
         IDE_TEST_RAISE( ( m_bExist_direct == SQL_FALSE ) &&
                         ( m_bExist_ioParallel == SQL_TRUE), err_ioparallel );
 #endif /* COMPILE_SHARDCLI */
@@ -1383,7 +1383,7 @@ SInt iloProgOption::TestCommandLineOption( ALTIBASE_ILOADER_HANDLE aHandle )
                         ( m_bExist_atomic == SQL_TRUE ), err_atomic );
 
         //PROJ-1760
-        // 1. -ioparallelÀº -direct ¿É¼Ç°ú ÇÔ²² »ç¿ëÇØ¾ß¸¸ ÇÑ´Ù.
+        // 1. -ioparallelì€ -direct ì˜µì…˜ê³¼ í•¨ê»˜ ì‚¬ìš©í•´ì•¼ë§Œ í•œë‹¤.
         IDE_TEST_RAISE( ( m_bExist_direct == SQL_FALSE ) &&
                         ( m_bExist_ioParallel == SQL_TRUE), err_ioparallel );
 #endif /* COMPILE_SHARDCLI */
@@ -1556,7 +1556,7 @@ SInt iloProgOption::TestCommandLineOption( ALTIBASE_ILOADER_HANDLE aHandle )
 /**
  * ValidateLOBOptions.
  *
- * »ç¿ëÀÚ°¡ ÀÔ·ÂÇÑ ¸í·É¿¡¼­ LOB ¿É¼ÇµéÀÌ Àß¸øµÈ Á¡ÀÌ ¾ø´Â°¡ °Ë»çÇÑ´Ù.
+ * ì‚¬ìš©ìžê°€ ìž…ë ¥í•œ ëª…ë ¹ì—ì„œ LOB ì˜µì…˜ë“¤ì´ ìž˜ëª»ëœ ì ì´ ì—†ëŠ”ê°€ ê²€ì‚¬í•œë‹¤.
  */
 IDE_RC iloProgOption::ValidateLOBOptions()
 {
@@ -1619,10 +1619,10 @@ void iloProgOption::ResetError(void)
  * StrToUpper.
  *
  *
- * ¹®ÀÚ¿­À» ´ë¹®ÀÚ·Î ¸¸µç´Ù.
+ * ë¬¸ìžì—´ì„ ëŒ€ë¬¸ìžë¡œ ë§Œë“ ë‹¤.
  *
  * @param[in,out] aStr
- *  ´ë¹®ÀÚ·Î ¸¸µé ¹®ÀÚ¿­.
+ *  ëŒ€ë¬¸ìžë¡œ ë§Œë“¤ ë¬¸ìžì—´.
  */
 void iloProgOption::StrToUpper(SChar *aStr)
 {
@@ -1638,8 +1638,8 @@ void iloProgOption::StrToUpper(SChar *aStr)
 }
 
 /* PROJ-1714
- * µ¥ÀÌÅÍ ÆÄÀÏÀ» ÀÔ·Â¹Þ´Â´Ù.
- * ParallelÀÇ ÃÖ´ë °ª±îÁö¸¸ ÀÔ·Â ¹ÞÀ» ¼ö ÀÖ´Ù.
+ * ë°ì´í„° íŒŒì¼ì„ ìž…ë ¥ë°›ëŠ”ë‹¤.
+ * Parallelì˜ ìµœëŒ€ ê°’ê¹Œì§€ë§Œ ìž…ë ¥ ë°›ì„ ìˆ˜ ìžˆë‹¤.
  */
  
 SInt iloProgOption::AddDataFileName( SChar *aFileName )
@@ -1662,8 +1662,8 @@ SInt iloProgOption::AddDataFileName( SChar *aFileName )
 
 /*
  * PROJ-1714
- * »ç¿ëÀÚ°¡ ÀÔ·ÂÇÑ ÆÄÀÏ ÀÌ¸§À» ¼øÂ÷ÀûÀ¸·Î ¾ò±â À§ÇØ¼­´Â ID_TRUE°ªÀ» (Data Uploading ¿¡¼­ »ç¿ëµÊ)
- * »ç¿ëÀÚ°¡ ÀÔ·ÂÇÑ ÆÄÀÏ ÀÌ¸§ ÇÏ³ª¸¦ °è¼ÓÀûÀ¸·Î ¾ò±â À§ÇØ¼­´Â ID_FALSE°ªÀ» »ç¿ë(Data Downloading¿¡¼­ »ç¿ëµÊ)  
+ * ì‚¬ìš©ìžê°€ ìž…ë ¥í•œ íŒŒì¼ ì´ë¦„ì„ ìˆœì°¨ì ìœ¼ë¡œ ì–»ê¸° ìœ„í•´ì„œëŠ” ID_TRUEê°’ì„ (Data Uploading ì—ì„œ ì‚¬ìš©ë¨)
+ * ì‚¬ìš©ìžê°€ ìž…ë ¥í•œ íŒŒì¼ ì´ë¦„ í•˜ë‚˜ë¥¼ ê³„ì†ì ìœ¼ë¡œ ì–»ê¸° ìœ„í•´ì„œëŠ” ID_FALSEê°’ì„ ì‚¬ìš©(Data Downloadingì—ì„œ ì‚¬ìš©ë¨)  
  */
 
 SChar* iloProgOption::GetDataFileName( iloBool aIsUpload )
@@ -1685,11 +1685,11 @@ SChar* iloProgOption::GetDataFileName( iloBool aIsUpload )
 }
 
 
-/* BUG-30693 : table ÀÌ¸§µé°ú owner ÀÌ¸§À» mtlMakeNameInFunc ÇÔ¼ö¸¦ ÀÌ¿ëÇÏ¿©
-               ´ë¹®ÀÚ·Î º¯°æÇØ¾ß ÇÒ °æ¿ì º¯°æÇÔ.
-   CommandParser¿¡¼­ º¯È¯ÇÏ¸é ¾ÈµÈ´Ù. ±× ÀÌÀ¯´Â ulnDbcInitialize ÇÔ¼ö°¡ È£ÃâµÇ±â ÀüÀÌ¶ó
-   ¹«Á¶°Ç ASCII ¶ó°í °£ÁÖµÇ±â ¶§¹®¿¡, SHIFTJIS¿Í °°Àº ÀÎÄÚµùÀÇ ¹®ÀÚ¿­ÀÌ ¿ÔÀ»°æ¿ì ´ë¹®ÀÚ º¯È¯ÀÌ
-   Àß¸øµÉ ¼ö ÀÖ´Ù.
+/* BUG-30693 : table ì´ë¦„ë“¤ê³¼ owner ì´ë¦„ì„ mtlMakeNameInFunc í•¨ìˆ˜ë¥¼ ì´ìš©í•˜ì—¬
+               ëŒ€ë¬¸ìžë¡œ ë³€ê²½í•´ì•¼ í•  ê²½ìš° ë³€ê²½í•¨.
+   CommandParserì—ì„œ ë³€í™˜í•˜ë©´ ì•ˆëœë‹¤. ê·¸ ì´ìœ ëŠ” ulnDbcInitialize í•¨ìˆ˜ê°€ í˜¸ì¶œë˜ê¸° ì „ì´ë¼
+   ë¬´ì¡°ê±´ ASCII ë¼ê³  ê°„ì£¼ë˜ê¸° ë•Œë¬¸ì—, SHIFTJISì™€ ê°™ì€ ì¸ì½”ë”©ì˜ ë¬¸ìžì—´ì´ ì™”ì„ê²½ìš° ëŒ€ë¬¸ìž ë³€í™˜ì´
+   ìž˜ëª»ë  ìˆ˜ ìžˆë‹¤.
 */
 void iloProgOption::makeTableNameInCLI(void)
 {

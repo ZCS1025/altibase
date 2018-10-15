@@ -49,7 +49,7 @@ mtfModule mtfAdd2 = {
         MTC_NODE_PRINT_FMT_MISC|
         MTC_NODE_COMMUTATIVE_TRUE,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
+    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìê°€ ì•„ë‹˜)
     mtfAdd2FunctionName,
     NULL,
     mtfAdd2Initialize,
@@ -128,7 +128,7 @@ static mtfSubModule mtfXX[1] = {
 //};
 
 // To Fix PR-8722
-// [Overflow(Underflow)-PRONE ¿¬»êÀÇ Á¦°Å]
+// [Overflow(Underflow)-PRONE ì—°ì‚°ì˜ ì œê±°]
 
 static mtfSubModule mtfNN[5] = {
     { mtfNN+1, mtfAdd2EstimateInteger  },
@@ -161,7 +161,7 @@ static mtfSubModule* mtfGroupTable[MTD_GROUP_MAXIMUM][MTD_GROUP_MAXIMUM] = {
 };
 
 // BUG-41994
-// high precision¿ë group table
+// high precisionìš© group table
 static mtfSubModule mtfNP[3] = {
     { mtfNP+1, mtfAdd2EstimateInteger  },
     { mtfNP+2, mtfAdd2EstimateBigint   },
@@ -642,7 +642,7 @@ IDE_RC mtfAdd2EstimateFloat( mtcNode*     aNode,
  *
  * Description :
  *    Add Float : aStack[0] = aStack[1] + aStack[2] 
- *    ½ÇÁ¦ÀûÀÎ °è»êÀº idaAdd¿¡¼­ ÀÌ·ç¾îÁø´Ù.
+ *    ì‹¤ì œì ì¸ ê³„ì‚°ì€ idaAddì—ì„œ ì´ë£¨ì–´ì§„ë‹¤.
  * ---------------------------------------------------------------------------*/
  IDE_RC mtfAdd2CalculateFloat( 
                           mtcNode*     aNode,

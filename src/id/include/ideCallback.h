@@ -22,10 +22,10 @@
 #include <idTypes.h>
 #include <ideErrorMgr.h>
 
-// Trace ÀÎÀÚ ³Ñ±æ¶§ NULL Æ÷ÀÎÅÍ¸¦ ÇÇÇÏ±â À§ÇÔ.
+// Trace ì¸ì ë„˜ê¸¸ë•Œ NULL í¬ì¸í„°ë¥¼ í”¼í•˜ê¸° ìœ„í•¨.
 #define IDE_PTR(a) ((vULong)(a))
 
-// Trace ÀÎÀÚ ³Ñ±æ¶§ String(Char *) Æ÷ÀÎÅÍ¸¦ ÇÇÇÏ±â À§ÇÔ.
+// Trace ì¸ì ë„˜ê¸¸ë•Œ String(Char *) í¬ì¸í„°ë¥¼ í”¼í•˜ê¸° ìœ„í•¨.
 #define IDE_STR(a) ((a) == NULL ? "NULL" : (a))
 
 #define IDE_CALLBACK_SEND_MSG(a) gCallbackForMessage(a, 1, ID_TRUE)
@@ -34,7 +34,7 @@
 #define IDE_CALLBACK_SEND_SYM_NOLOG(a) gCallbackForMessage(a, 0, ID_FALSE)
 #define IDE_CALLBACK_FATAL(a)    gCallbackForFatal((SChar *)idlVA::basename(__FILE__), __LINE__, (SChar *)a)
 
-// PROJ-1681 ¼­¹öÀÇ National CharacterSet Àü¼Û
+// PROJ-1681 ì„œë²„ì˜ National CharacterSet ì „ì†¡
 #define IDE_CALLBACK_SEND_NCHAR() gCallbackForNChar()
 
 #define IDE_WARNING(mod, msg)      ideLog::log(mod, msg)
@@ -46,7 +46,7 @@
 #define os_assert(a) assert(a)
 #endif
 
-// ÇÁ·ÎÆÛÆ¼°¡ ·ÎµùµÇ±â Àü±îÁö IDE_ASSERT()¸¦ »ç¿ëÇØ¼­´Â ¾ÈµÊ!
+// í”„ë¡œí¼í‹°ê°€ ë¡œë”©ë˜ê¸° ì „ê¹Œì§€ IDE_ASSERT()ë¥¼ ì‚¬ìš©í•´ì„œëŠ” ì•ˆë¨!
 #if !defined(SMALL_FOOTPRINT)
 
 #define IDE_ASSERT(a)    if( IDL_LIKELY_TRUE( (a) )) { } else {         \
@@ -83,7 +83,7 @@
     } while (0)
 #else /* defined(SMALL_FOOTPRINT) */
 
-//¸ÅÅ©·Î¸¦ ÇÔ¼ö·Î ´ëÃ¼ÇÑ´Ù.
+//ë§¤í¬ë¡œë¥¼ í•¨ìˆ˜ë¡œ ëŒ€ì²´í•œë‹¤.
 extern void ideAssert( const SChar * aSource,
                        idBool        aAcceptFaultTolerance, /* PROJ-2617 */
                        const SChar * aFile,
@@ -104,8 +104,8 @@ extern void ideAssert( const SChar * aSource,
 
 #endif /* !defined(SMALL_FOOTPRINT) */
 
-/* PROJ-2118 BUG Reporting - Message ±â·Ï Assert ¸ÅÅ©·Î Ãß°¡ */
-//¸ÅÅ©·Î¸¦ ÇÔ¼ö·Î ´ëÃ¼ÇÑ´Ù.
+/* PROJ-2118 BUG Reporting - Message ê¸°ë¡ Assert ë§¤í¬ë¡œ ì¶”ê°€ */
+//ë§¤í¬ë¡œë¥¼ í•¨ìˆ˜ë¡œ ëŒ€ì²´í•œë‹¤.
 extern void ideAssertMsg( const SChar * aSource,
                           idBool        aAcceptFaultTolerance, /* PROJ-2617 */
                           const SChar * aFile,

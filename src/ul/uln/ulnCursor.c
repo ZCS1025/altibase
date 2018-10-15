@@ -31,16 +31,16 @@ void ulnCursorInitialize(ulnCursor *aCursor, ulnStmt *aParentStmt)
     aCursor->mServerCursorState     = ULN_CURSOR_STATE_CLOSED;
 
     /*
-     * BUGBUG : ODBC ½ºÆå¿¡¼­ ÁöÁ¤ÇÏ´Â µğÆúÆ® °ªÀº SQL_UNSPECIFIED ÀÌÁö¸¸,
-     *          ÇöÀç ul °ú cm ¹× mm ¿¡¼­ sensitive ÇÑ Ä¿¼­¸¦ Áö¿øÇÏÁö ¸øÇÏ±â ¶§¹®¿¡
-     *          INSENSITIVE ¸¦ ±âº»À¸·Î Çß´Ù
+     * BUGBUG : ODBC ìŠ¤í™ì—ì„œ ì§€ì •í•˜ëŠ” ë””í´íŠ¸ ê°’ì€ SQL_UNSPECIFIED ì´ì§€ë§Œ,
+     *          í˜„ì¬ ul ê³¼ cm ë° mm ì—ì„œ sensitive í•œ ì»¤ì„œë¥¼ ì§€ì›í•˜ì§€ ëª»í•˜ê¸° ë•Œë¬¸ì—
+     *          INSENSITIVE ë¥¼ ê¸°ë³¸ìœ¼ë¡œ í–ˆë‹¤
      *
-     *          °ú¿¬.. INSENSITIVE °¡ ¸Â´ÂÁö, ¾Æ´Ï¸é UNSPECIFIED °¡ ¸Â´ÂÁö ¸ğ¸£°Ú´Ù.
+     *          ê³¼ì—°.. INSENSITIVE ê°€ ë§ëŠ”ì§€, ì•„ë‹ˆë©´ UNSPECIFIED ê°€ ë§ëŠ”ì§€ ëª¨ë¥´ê² ë‹¤.
      */
     aCursor->mAttrCursorSensitivity = SQL_INSENSITIVE;
 
     /*
-     * note: M$DN ODBC30 ¿¡ µğÆúÆ® °ªÀÌ ¾È³ª¿Â´Ù. ³»¸¾´ë·Î NON_UNIQUE ·Î ÇÔ
+     * note: M$DN ODBC30 ì— ë””í´íŠ¸ ê°’ì´ ì•ˆë‚˜ì˜¨ë‹¤. ë‚´ë§˜ëŒ€ë¡œ NON_UNIQUE ë¡œ í•¨
      */
     aCursor->mAttrSimulateCursor    = SQL_SC_NON_UNIQUE;
 
@@ -106,12 +106,12 @@ ACI_RC ulnCursorClose(ulnFnContext *aFnContext, ulnCursor *aCursor)
     sStmt = aFnContext->mHandle.mStmt;
 
     // To Fix BUG-18358
-    // Cursor Close½Ã ÀÌ¿Í °ü·ÃµÈ Statement ÀÚ·á ±¸Á¶ÀÎ
-    // GD(GetData) Column Numberµµ ÃÊ±âÈ­ÇÏ¿©¾ß ÇÑ´Ù.
+    // Cursor Closeì‹œ ì´ì™€ ê´€ë ¨ëœ Statement ìë£Œ êµ¬ì¡°ì¸
+    // GD(GetData) Column Numberë„ ì´ˆê¸°í™”í•˜ì—¬ì•¼ í•œë‹¤.
     sStmt->mGDColumnNumber = ULN_GD_COLUMN_NUMBER_INIT_VALUE;
 
     /*
-     * uln ÀÇ Ä¿¼­¸¦ ´İ´Â´Ù.
+     * uln ì˜ ì»¤ì„œë¥¼ ë‹«ëŠ”ë‹¤.
      */
     ulnCursorSetState(aCursor, ULN_CURSOR_STATE_CLOSED);
 
@@ -122,44 +122,44 @@ ACI_RC ulnCursorClose(ulnFnContext *aFnContext, ulnCursor *aCursor)
     sCurrentResultSetID = ulnStmtGetCurrentResultSetID(sStmt);
 
     /*
-     * ¼­¹öÀÇ Ä¿¼­°¡ ¾ÆÁ÷ ¿­·Á ÀÖ°í, ¿©ÀüÈ÷ ¿¬°áµÈ »óÅÂÀÏ ¶§¿¡¸¸ ¼­¹ö·Î close cursor Àü¼Û
+     * ì„œë²„ì˜ ì»¤ì„œê°€ ì•„ì§ ì—´ë ¤ ìˆê³ , ì—¬ì „íˆ ì—°ê²°ëœ ìƒíƒœì¼ ë•Œì—ë§Œ ì„œë²„ë¡œ close cursor ì „ì†¡
      */
     if (ulnDbcIsConnected(sDbc) == ACP_TRUE)
     {
         // BUG-17514
-        // ResultSetID´Â 0ºÎÅÍ ½ÃÀÛÇÏ¹Ç·Î
-        // ¸¶Áö¸· ResultSetID´Â ÀüÃ¼ ResultSetÀÇ °¹¼öº¸´Ù 1 ÀÛ´Ù.
+        // ResultSetIDëŠ” 0ë¶€í„° ì‹œì‘í•˜ë¯€ë¡œ
+        // ë§ˆì§€ë§‰ ResultSetIDëŠ” ì „ì²´ ResultSetì˜ ê°¯ìˆ˜ë³´ë‹¤ 1 ì‘ë‹¤.
         if (ulnCursorGetServerCursorState(aCursor) == ULN_CURSOR_STATE_OPEN ||
             sCurrentResultSetID < (sResultSetCount - 1))
         {
             /*
-             * ¼­¹ö·Î close cursor ¸í·É Àü¼Û
+             * ì„œë²„ë¡œ close cursor ëª…ë ¹ ì „ì†¡
              *
-             * Note : ¼­¹öÀÇ Ä¿¼­°¡ ´İÇô ÀÖ´Â »óÅÂÀÌ°Å³ª ¿­·¯ÀÖÁö ¾ÊÀºµ¥µµ CLOSE CURSOR REQ ¸¦
-             *        ¼­¹ö·Î Àü¼ÛÇÏ´õ¶óµµ, ¼­¹ö´Â ±×³É ¹«½ÃÇÑ´Ù.
+             * Note : ì„œë²„ì˜ ì»¤ì„œê°€ ë‹«í˜€ ìˆëŠ” ìƒíƒœì´ê±°ë‚˜ ì—´ëŸ¬ìˆì§€ ì•Šì€ë°ë„ CLOSE CURSOR REQ ë¥¼
+             *        ì„œë²„ë¡œ ì „ì†¡í•˜ë”ë¼ë„, ì„œë²„ëŠ” ê·¸ëƒ¥ ë¬´ì‹œí•œë‹¤.
              *
-             *        ´ÜÁö ÀÌ°ÍÀ» Ã¼Å©ÇÏ´Â ÀÌÀ¯´Â, I/O transaction À» ÇÑ¹øÀÌ¶óµµ ÁÙ¿©º¼±î
-             *        ÇØ¼­ÀÌ´Ù.
+             *        ë‹¨ì§€ ì´ê²ƒì„ ì²´í¬í•˜ëŠ” ì´ìœ ëŠ”, I/O transaction ì„ í•œë²ˆì´ë¼ë„ ì¤„ì—¬ë³¼ê¹Œ
+             *        í•´ì„œì´ë‹¤.
              */
             if (sStmt->mIsSimpleQuerySelectExecuted != ACP_TRUE)
             {
                 /* PROJ-2616 */
-                /* IPCDA-SimpleQuery-Execute´Â Ä¿¼­¸¦ »ç¿ëÇÏÁö ¾ÊÀ½.
-                 * µû¶ó¼­, IPCDA-SimpleQuery-Execute°¡ ¾Æ´Ñ °æ¿ì¿¡¸¸ È£Ãâ ÇÔ.*/
+                /* IPCDA-SimpleQuery-ExecuteëŠ” ì»¤ì„œë¥¼ ì‚¬ìš©í•˜ì§€ ì•ŠìŒ.
+                 * ë”°ë¼ì„œ, IPCDA-SimpleQuery-Executeê°€ ì•„ë‹Œ ê²½ìš°ì—ë§Œ í˜¸ì¶œ í•¨.*/
                 ACI_TEST(ulnFreeHandleStmtSendFreeREQ(aFnContext, sDbc, CMP_DB_FREE_CLOSE)
                          != ACI_SUCCESS);
             }
 
-            /* PROJ-1381, BUG-32932 FAC : Close »óÅÂ ±â¾ï */
+            /* PROJ-1381, BUG-32932 FAC : Close ìƒíƒœ ê¸°ì–µ */
             ulnCursorSetServerCursorState(aCursor, ULN_CURSOR_STATE_CLOSED);
         }
     }
 
     /* PROJ-2616 */
-    /* SimpleQuery-Select-Execute ´Â lobÀ» Áö¿øÇÏÁö ¾ÊÀ¸¸ç,
-     * cache¸¦ »ç¿ëÇÏÁö ¾Ê´Â´Ù.
-     * SHMÀÇ µ¥ÀÌÅÍ¸¦ ¹Ù·Î ÀĞ¾î¼­ »ç¿ëÀÚÀÇ ¹öÆÛ¿¡ ³Ö´Â´Ù.
-     * µû¶ó¼­, ÀÌ ±â´ÉÀº ¹«½ÃÇÏ±â·Î ÇÑ´Ù.
+    /* SimpleQuery-Select-Execute ëŠ” lobì„ ì§€ì›í•˜ì§€ ì•Šìœ¼ë©°,
+     * cacheë¥¼ ì‚¬ìš©í•˜ì§€ ì•ŠëŠ”ë‹¤.
+     * SHMì˜ ë°ì´í„°ë¥¼ ë°”ë¡œ ì½ì–´ì„œ ì‚¬ìš©ìì˜ ë²„í¼ì— ë„£ëŠ”ë‹¤.
+     * ë”°ë¼ì„œ, ì´ ê¸°ëŠ¥ì€ ë¬´ì‹œí•˜ê¸°ë¡œ í•œë‹¤.
      */
     ACI_TEST_RAISE(sStmt->mIsSimpleQuerySelectExecuted == ACP_TRUE,
                    ContCursorClose);
@@ -175,15 +175,15 @@ ACI_RC ulnCursorClose(ulnFnContext *aFnContext, ulnCursor *aCursor)
     }
 
     /*
-     * Ä³½¬ ¸Ş¸ğ¸®°¡ Á¸ÀçÇÒ °æ¿ì ÃÖÃÊ¿¡ ¸¸µé¾îÁø »óÅÂ·Î ÃÊ±âÈ­½ÃÄÑ¹ö¸°´Ù.
-     * ´Ü, ¸Ş¸ğ¸® ÇØÁ¦´Â ÇÏÁö ¾Ê´Â´Ù.
+     * ìºì‰¬ ë©”ëª¨ë¦¬ê°€ ì¡´ì¬í•  ê²½ìš° ìµœì´ˆì— ë§Œë“¤ì–´ì§„ ìƒíƒœë¡œ ì´ˆê¸°í™”ì‹œì¼œë²„ë¦°ë‹¤.
+     * ë‹¨, ë©”ëª¨ë¦¬ í•´ì œëŠ” í•˜ì§€ ì•ŠëŠ”ë‹¤.
      */
     sCache = ulnStmtGetCache(sStmt);
 
     if (sCache != NULL)
     {
         /*
-         * row ¿¡ lob ÄÃ·³ÀÌ ÀÖÀ» °æ¿ì lob column À» Ã£¾Æ¼­ lob µéÀ» close ÇØ ÁØ´Ù.
+         * row ì— lob ì»¬ëŸ¼ì´ ìˆì„ ê²½ìš° lob column ì„ ì°¾ì•„ì„œ lob ë“¤ì„ close í•´ ì¤€ë‹¤.
          */
 
         if (ulnCacheHasLob(sCache) == ACP_TRUE)
@@ -196,7 +196,7 @@ ACI_RC ulnCursorClose(ulnFnContext *aFnContext, ulnCursor *aCursor)
         }
 
         /*
-         * BUGBUG : Àß¸øÇÏ¸é Á×°Ú´Ù...
+         * BUGBUG : ì˜ëª»í•˜ë©´ ì£½ê² ë‹¤...
          */
         ACI_TEST(ulnCacheCloseLobInCurrentContents(aFnContext,
                                                    &(sDbc->mPtContext),
@@ -211,8 +211,8 @@ ACI_RC ulnCursorClose(ulnFnContext *aFnContext, ulnCursor *aCursor)
         }
 
         /*
-         * Note : CloseCursor() ´Â ´õ ÀÌ»ó fetch ¸¦ ÇÏÁö ¾Ê°Ú´Ù´Â ÀÌ¾ß±âÀÌ´Ù.
-         *  fix BUG-18260  row-cache¸¦ ÃÊ±âÈ­ ÇÑ´Ù.
+         * Note : CloseCursor() ëŠ” ë” ì´ìƒ fetch ë¥¼ í•˜ì§€ ì•Šê² ë‹¤ëŠ” ì´ì•¼ê¸°ì´ë‹¤.
+         *  fix BUG-18260  row-cacheë¥¼ ì´ˆê¸°í™” í•œë‹¤.
          */
         ACI_TEST( ulnCacheInitialize(sCache) != ACI_SUCCESS );
     }
@@ -226,11 +226,11 @@ ACI_RC ulnCursorClose(ulnFnContext *aFnContext, ulnCursor *aCursor)
                        LABEL_MEM_MAN_ERR);
     }
 
-    /* PROJ-2177: Fetch°¡ ³¡³ª¸é ÃÊ±âÈ­ */
+    /* PROJ-2177: Fetchê°€ ëë‚˜ë©´ ì´ˆê¸°í™” */
     ulnStmtResetLastFetchFuncID(sStmt);
 
     /* PROJ-1789 Updatable Scrollable Cursor
-     * Rowset Cache¸¦ À§ÇÑ Stmt Close */
+     * Rowset Cacheë¥¼ ìœ„í•œ Stmt Close */
     sRowsetStmt = sStmt->mRowsetStmt;
     if ( (ulnCursorGetType(&sStmt->mCursor) == SQL_CURSOR_KEYSET_DRIVEN) &&  
          (sRowsetStmt != SQL_NULL_HSTMT) &&  
@@ -310,7 +310,7 @@ void ulnCursorSetPosition(ulnCursor *aCursor, acp_sint64_t aPosition)
 }
 
 /*
- * ¸î°³ÀÇ row ¸¦ »ç¿ëÀÚ ¹öÆÛ·Î º¹»çÇØ¾ß ÇÏ´ÂÁö °è»êÇÏ´Â ÇÔ¼ö
+ * ëª‡ê°œì˜ row ë¥¼ ì‚¬ìš©ì ë²„í¼ë¡œ ë³µì‚¬í•´ì•¼ í•˜ëŠ”ì§€ ê³„ì‚°í•˜ëŠ” í•¨ìˆ˜
  */
 acp_uint32_t ulnCursorCalcRowCountToCopyToUser(ulnCursor *aCursor)
 {
@@ -334,15 +334,15 @@ acp_uint32_t ulnCursorCalcRowCountToCopyToUser(ulnCursor *aCursor)
     {
 
         /*
-         * BUGBUG : ulnCacheGetResultSetSize() °¡ Ç×»ó ¾ç¼ö¶ó´Â °ÍÀ» °ËÁõÇÏ°í º¸ÀåÇØ¾ß ÇÑ´Ù.
+         * BUGBUG : ulnCacheGetResultSetSize() ê°€ í•­ìƒ ì–‘ìˆ˜ë¼ëŠ” ê²ƒì„ ê²€ì¦í•˜ê³  ë³´ì¥í•´ì•¼ í•œë‹¤.
          */
 
         sResultSetSize = ulnCacheGetResultSetSize(aCursor->mParentStmt->mCache);
         sCursorSize    = ulnCursorGetSize(aCursor);
 
         /*
-         * Note : row number ´Â 1 ºÎÅÍ ½ÃÀÛÇÑ´Ù´Â °ÍÀ» ¸í½ÉÇÑ´Ù.
-         *        ¹°·Ğ cursor ÀÇ mPosition µµ 1 ÀÌ Ã¹¹øÂ° row ¸¦ °¡¸®Å²´Ù.
+         * Note : row number ëŠ” 1 ë¶€í„° ì‹œì‘í•œë‹¤ëŠ” ê²ƒì„ ëª…ì‹¬í•œë‹¤.
+         *        ë¬¼ë¡  cursor ì˜ mPosition ë„ 1 ì´ ì²«ë²ˆì§¸ row ë¥¼ ê°€ë¦¬í‚¨ë‹¤.
          */
 
         if (sCursorPosition + sCursorSize - 1 > sResultSetSize)
@@ -350,9 +350,9 @@ acp_uint32_t ulnCursorCalcRowCountToCopyToUser(ulnCursor *aCursor)
             sRowCountToCopyToUser = sResultSetSize - sCursorPosition + 1;
 
             /*
-             * Ä¿¼­ position Àº 20, ¼­¹ö·Î ÆäÄ¡¸¦ ½ÃµµÇØ º¸´Ï result set ÀÌ 16 ¹Û¿¡ ¾ø´õ¶ó.
-             * ±×·² °æ¿ì À§ÀÇ ½ÄÀ» °è»êÇÏ¸é À½¼ö°¡ ³ª¿Â´Ù.
-             * »ç¿ëÀÚ¿¡°Ô º¹»çÇØ ÁÙ row ÀÇ °¹¼ö´Â 0
+             * ì»¤ì„œ position ì€ 20, ì„œë²„ë¡œ í˜ì¹˜ë¥¼ ì‹œë„í•´ ë³´ë‹ˆ result set ì´ 16 ë°–ì— ì—†ë”ë¼.
+             * ê·¸ëŸ´ ê²½ìš° ìœ„ì˜ ì‹ì„ ê³„ì‚°í•˜ë©´ ìŒìˆ˜ê°€ ë‚˜ì˜¨ë‹¤.
+             * ì‚¬ìš©ìì—ê²Œ ë³µì‚¬í•´ ì¤„ row ì˜ ê°¯ìˆ˜ëŠ” 0
              */
             if (sRowCountToCopyToUser < 0)
             {
@@ -369,9 +369,9 @@ acp_uint32_t ulnCursorCalcRowCountToCopyToUser(ulnCursor *aCursor)
 }
 
 /*
- * Note : ¾Æ·¡ÀÇ ulnCursorMoveXXX ÇÔ¼öµéÀº ¸ğµÎ SQLFetchScroll ÀÇ
- *        fetch orientation ÀÇ ¿É¼Ç ÇÏ³ª¾¿¿¡ ÇØ´çÇÏ´Â ÇÔ¼öµéÀÌ´Ù.
- *        rowset ´ÜÀ§·Î Ä¿¼­¸¦ ¿òÁ÷ÀÌ´Â ÇÔ¼öµéÀÌ´Ù.
+ * Note : ì•„ë˜ì˜ ulnCursorMoveXXX í•¨ìˆ˜ë“¤ì€ ëª¨ë‘ SQLFetchScroll ì˜
+ *        fetch orientation ì˜ ì˜µì…˜ í•˜ë‚˜ì”©ì— í•´ë‹¹í•˜ëŠ” í•¨ìˆ˜ë“¤ì´ë‹¤.
+ *        rowset ë‹¨ìœ„ë¡œ ì»¤ì„œë¥¼ ì›€ì§ì´ëŠ” í•¨ìˆ˜ë“¤ì´ë‹¤.
  */
 
 void ulnCursorMoveAbsolute(ulnFnContext *aFnContext, ulnCursor *aCursor, acp_sint32_t aOffset)
@@ -495,14 +495,14 @@ void ulnCursorMoveRelative(ulnFnContext *aFnContext, ulnCursor *aCursor, acp_sin
                 if (sCurrentPosition + aOffset <= sResultSetSize)
                 {
                     /*
-                     * 1 <= CurrRowsetStart + FetchOffset <= LastResultRow (M$ODBC Ç¥ÀÇ 6¹øÂ° ÁÙ)
+                     * 1 <= CurrRowsetStart + FetchOffset <= LastResultRow (M$ODBC í‘œì˜ 6ë²ˆì§¸ ì¤„)
                      */
                     ulnCursorSetPosition(aCursor, sCurrentPosition + aOffset);
                 }
                 else
                 {
                     /*
-                     * CurrRowsetStart + FetchOffset > LastResultRow (M$ ODBC Ç¥ÀÇ 7¹øÂ° ÁÙ)
+                     * CurrRowsetStart + FetchOffset > LastResultRow (M$ ODBC í‘œì˜ 7ë²ˆì§¸ ì¤„)
                      */
                     ulnCursorSetPosition(aCursor, ULN_CURSOR_POS_AFTER_END);
                 }
@@ -512,7 +512,7 @@ void ulnCursorMoveRelative(ulnFnContext *aFnContext, ulnCursor *aCursor, acp_sin
                 if (sCurrentPosition == 1 && aOffset < 0)
                 {
                     /*
-                     * CurrRowsetStart = 1 AND FetchOffset < 0 (M$ ODBC Ç¥ÀÇ 3¹øÂ° ÁÙ)
+                     * CurrRowsetStart = 1 AND FetchOffset < 0 (M$ ODBC í‘œì˜ 3ë²ˆì§¸ ì¤„)
                      */
                     ulnCursorSetPosition(aCursor, ULN_CURSOR_POS_BEFORE_START);
                 }
@@ -525,7 +525,7 @@ void ulnCursorMoveRelative(ulnFnContext *aFnContext, ulnCursor *aCursor, acp_sin
                             /*
                              * CurrRowsetStart > 1 AND CurrRowsetStart + FetchOffset < 1 AND
                              *      | FetchOffset | > RowsetSize
-                             * (M$ ODBC Ç¥ÀÇ 4¹øÂ° ÁÙ)
+                             * (M$ ODBC í‘œì˜ 4ë²ˆì§¸ ì¤„)
                              */
                             ulnCursorSetPosition(aCursor, ULN_CURSOR_POS_BEFORE_START);
                         }
@@ -534,7 +534,7 @@ void ulnCursorMoveRelative(ulnFnContext *aFnContext, ulnCursor *aCursor, acp_sin
                             /*
                              * CurrRowsetStart > 1 AND CurrRowsetStart + FetchOffset < 1 AND
                              *      | FetchOffset | <= RowsetSize[3]
-                             * (M$ ODBC Ç¥ÀÇ 5¹øÀç ÁÙ)
+                             * (M$ ODBC í‘œì˜ 5ë²ˆì¬ ì¤„)
                              */
                             ulnCursorSetPosition(aCursor, 1);
 
@@ -544,12 +544,12 @@ void ulnCursorMoveRelative(ulnFnContext *aFnContext, ulnCursor *aCursor, acp_sin
                     else
                     {
                         /*
-                         * BUGBUG : ¿©±â°¡ M$ ODBC SQLFetchScroll() ÇÔ¼ö ¼³¸í¿¡¼­ Àû¾îµĞ
-                         *          Cursor positioning rule ¿¡ ÀÖ´Â SQL_FETCH_RELATIVE ¿¡ ÀÖ´Â
-                         *          Ç¥ »ó¿¡¼­ÀÇ ³í¸®»óÀÇ ±¸¸ÛÀÎµ¥,
-                         *          Á¤¸» ±¸¸ÛÀÏ±î? ¸Ó¸®¾ÆÇÁ´Ù. ±×³É µÎÀÚ. Á×À»±î ±×³É?
+                         * BUGBUG : ì—¬ê¸°ê°€ M$ ODBC SQLFetchScroll() í•¨ìˆ˜ ì„¤ëª…ì—ì„œ ì ì–´ë‘”
+                         *          Cursor positioning rule ì— ìˆëŠ” SQL_FETCH_RELATIVE ì— ìˆëŠ”
+                         *          í‘œ ìƒì—ì„œì˜ ë…¼ë¦¬ìƒì˜ êµ¬ë©ì¸ë°,
+                         *          ì •ë§ êµ¬ë©ì¼ê¹Œ? ë¨¸ë¦¬ì•„í”„ë‹¤. ê·¸ëƒ¥ ë‘ì. ì£½ì„ê¹Œ ê·¸ëƒ¥?
                          *
-                         *          ±¸¸Û°°¾Æ º¸ÀÌÁö¸¸, ½Ç»ó ±¸¸ÛÀÌ ¾Æ´Ï´Ù.
+                         *          êµ¬ë©ê°™ì•„ ë³´ì´ì§€ë§Œ, ì‹¤ìƒ êµ¬ë©ì´ ì•„ë‹ˆë‹¤.
                          *              if (1 <= sCurrentPosition + aOffset) {}
                          *              else
                          *              .... if (1 > sCurrentPosition + aOffset)
@@ -581,7 +581,7 @@ void ulnCursorMoveNext(ulnFnContext *aFnContext, ulnCursor *aCursor)
 
 #if 0
     /*
-     * BUGBUG : °ú¿¬ ¶È°°Àº°¡?
+     * BUGBUG : ê³¼ì—° ë˜‘ê°™ì€ê°€?
      */
     ulnCursorMoveRelative(aFnContext, aCursor, ulnCursorGetSize(aCursor));
 
@@ -594,13 +594,13 @@ void ulnCursorMoveNext(ulnFnContext *aFnContext, ulnCursor *aCursor)
     ACP_UNUSED(aFnContext);
 
     sRowSetSize      = ulnCursorGetSize(aCursor);
-    // bug-35198: row array(rowset) size°¡ º¯°æµÈÈÄ fetchÇÏ´Â °æ¿ì
-    // ÀÌÀüÀÇ size¸¦ ÇÑ¹øÀº »ç¿ëÇØ¼­ cursor¸¦ ¿òÁ÷¿©¾ß ÇÑ´Ù
-    // MovePriorÀÇ °æ¿ì °í·ÁÇÒ ÇÊ¿ä ¾ø´Ù (msdn¿¡ ³ª¿Í ÀÖÀ½)
+    // bug-35198: row array(rowset) sizeê°€ ë³€ê²½ëœí›„ fetchí•˜ëŠ” ê²½ìš°
+    // ì´ì „ì˜ sizeë¥¼ í•œë²ˆì€ ì‚¬ìš©í•´ì„œ cursorë¥¼ ì›€ì§ì—¬ì•¼ í•œë‹¤
+    // MovePriorì˜ ê²½ìš° ê³ ë ¤í•  í•„ìš” ì—†ë‹¤ (msdnì— ë‚˜ì™€ ìˆìŒ)
     if (sStmt->mPrevRowSetSize != 0)
     {
         sRowSetSize = sStmt->mPrevRowSetSize;
-        sStmt->mPrevRowSetSize = 0; // ÇÑ¹ø »ç¿ëÇßÀ¸¸é clear
+        sStmt->mPrevRowSetSize = 0; // í•œë²ˆ ì‚¬ìš©í–ˆìœ¼ë©´ clear
     }
     sCurrentPosition = ulnCursorGetPosition(aCursor);
 
@@ -617,7 +617,7 @@ void ulnCursorMoveNext(ulnFnContext *aFnContext, ulnCursor *aCursor)
         default:
 
             /*
-             * BUGBUG : ulnCacheGetResultSetSize() °¡ Ç×»ó ¾ç¼ö¶ó´Â °ÍÀ» °ËÁõÇÏ°í º¸ÀåÇØ¾ß ÇÑ´Ù.
+             * BUGBUG : ulnCacheGetResultSetSize() ê°€ í•­ìƒ ì–‘ìˆ˜ë¼ëŠ” ê²ƒì„ ê²€ì¦í•˜ê³  ë³´ì¥í•´ì•¼ í•œë‹¤.
              */
 
             if ( (sCurrentPosition + sRowSetSize) >
@@ -646,7 +646,7 @@ void ulnCursorMovePrior(ulnFnContext *aFnContext, ulnCursor *aCursor)
 {
 #if 0
     /*
-     * BUGBUG : °ú¿¬ ¶È°°Àº°¡?
+     * BUGBUG : ê³¼ì—° ë˜‘ê°™ì€ê°€?
      */
     ulnCursorMoveRelative(aFnContext, aCursor, ulnCursorGetSize(aCursor) * (-1));
 
@@ -668,7 +668,7 @@ void ulnCursorMovePrior(ulnFnContext *aFnContext, ulnCursor *aCursor)
         case ULN_CURSOR_POS_AFTER_END:
 
             /*
-             * BUGBUG : ulnCacheGetResultSetSize() °¡ Ç×»ó ¾ç¼ö¶ó´Â °ÍÀ» °ËÁõÇÏ°í º¸ÀåÇØ¾ß ÇÑ´Ù.
+             * BUGBUG : ulnCacheGetResultSetSize() ê°€ í•­ìƒ ì–‘ìˆ˜ë¼ëŠ” ê²ƒì„ ê²€ì¦í•˜ê³  ë³´ì¥í•´ì•¼ í•œë‹¤.
              */
 
             if (sRowSetSize > ulnCacheGetResultSetSize(aCursor->mParentStmt->mCache))
@@ -737,7 +737,7 @@ void ulnCursorMoveLast(ulnCursor *aCursor)
 
 
     /*
-     * BUGBUG : ulnCacheGetResultSetSize() °¡ Ç×»ó ¾ç¼ö¶ó´Â °ÍÀ» °ËÁõÇÏ°í º¸ÀåÇØ¾ß ÇÑ´Ù.
+     * BUGBUG : ulnCacheGetResultSetSize() ê°€ í•­ìƒ ì–‘ìˆ˜ë¼ëŠ” ê²ƒì„ ê²€ì¦í•˜ê³  ë³´ì¥í•´ì•¼ í•œë‹¤.
      */
 
     if (sRowSetSize > sResultSetSize)
@@ -756,11 +756,11 @@ void ulnCursorMoveLast(ulnCursor *aCursor)
 /* PROJ-1789 Updatable Scrollable Cursor */
 
 /**
- * Bookmark¸¦ ±âÁØÀ¸·Î Ä¿¼­¸¦ ¿òÁ÷ÀÎ´Ù.
+ * Bookmarkë¥¼ ê¸°ì¤€ìœ¼ë¡œ ì»¤ì„œë¥¼ ì›€ì§ì¸ë‹¤.
  *
  * @param[in] aFnContext function context
- * @param[in] aCursor    Ä¿¼­
- * @param[in] aOffset    Bookmark row·Î ºÎÅÍÀÇ »ó´ë À§Ä¡
+ * @param[in] aCursor    ì»¤ì„œ
+ * @param[in] aOffset    Bookmark rowë¡œ ë¶€í„°ì˜ ìƒëŒ€ ìœ„ì¹˜
  */
 void ulnCursorMoveByBookmark(ulnFnContext *aFnContext, ulnCursor *aCursor, acp_sint32_t aOffset)
 {
@@ -795,11 +795,11 @@ void ulnCursorMoveByBookmark(ulnFnContext *aFnContext, ulnCursor *aCursor, acp_s
 }
 
 /**
- * Ä¿¼­ ¹æÇâÀ» ¾ò´Â´Ù.
+ * ì»¤ì„œ ë°©í–¥ì„ ì–»ëŠ”ë‹¤.
  *
  * @param[in] aCursor cursor object
  *
- * @return Ä¿¼­ ¹æÇâ
+ * @return ì»¤ì„œ ë°©í–¥
  */
 ulnCursorDir ulnCursorGetDirection(ulnCursor *aCursor)
 {
@@ -807,10 +807,10 @@ ulnCursorDir ulnCursorGetDirection(ulnCursor *aCursor)
 }
 
 /**
- * Ä¿¼­ ¹æÇâÀ» ¼³Á¤ÇÑ´Ù.
+ * ì»¤ì„œ ë°©í–¥ì„ ì„¤ì •í•œë‹¤.
  *
  * @param[in] aCursor    cursor object
- * @param[in] aDirection Ä¿¼­ ¹æÇâ
+ * @param[in] aDirection ì»¤ì„œ ë°©í–¥
  */
 void ulnCursorSetDirection(ulnCursor *aCursor, ulnCursorDir aDirection)
 {

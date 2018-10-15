@@ -80,7 +80,7 @@ IDE_RC utISPApi::EndTran(idBool a_IsCommit)
 /**
  * Cancel.
  *
- * ÇöÀç ½ÇÇàÁßÀÎ SQL statement°¡ ÀÖÀ» °æ¿ì ½ÇÇàÀ» Ãë¼ÒÇÑ´Ù.
+ * í˜„ìž¬ ì‹¤í–‰ì¤‘ì¸ SQL statementê°€ ìžˆì„ ê²½ìš° ì‹¤í–‰ì„ ì·¨ì†Œí•œë‹¤.
  */
 IDE_RC utISPApi::Cancel()
 {
@@ -94,9 +94,9 @@ IDE_RC utISPApi::Cancel()
 
     IDE_EXCEPTION(StmtError);
     {
-        /* BUG-43489 SQLCancel ½ÇÆÐÇÑ ÈÄ¿¡ ´Ù¸¥ SQLCLI ÇÔ¼ö¸¦ È£ÃâÇÏ¸é
-         * hang °É¸± ¼ö ÀÖ´Ù.
-         * µû¶ó¼­ SQLGetDiagRectÀ» È£ÃâÇÏÁö ¾Ê°í ¿¡·¯ ¸Þ½ÃÁö¸¦ Á÷Á¢ ¼ÂÆÃÇØ¾ß ÇÑ´Ù. */
+        /* BUG-43489 SQLCancel ì‹¤íŒ¨í•œ í›„ì— ë‹¤ë¥¸ SQLCLI í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•˜ë©´
+         * hang ê±¸ë¦´ ìˆ˜ ìžˆë‹¤.
+         * ë”°ë¼ì„œ SQLGetDiagRectì„ í˜¸ì¶œí•˜ì§€ ì•Šê³  ì—ëŸ¬ ë©”ì‹œì§€ë¥¼ ì§ì ‘ ì…‹íŒ…í•´ì•¼ í•œë‹¤. */
         uteSetErrorCode(mErrorMgr, utERR_ABORT_Failed_To_Cancel);
     }
     IDE_EXCEPTION_END;

@@ -426,7 +426,7 @@ static ace_rc_t oaJNIMethodInitialize( oaContext * aContext, oaJNIInterfaceHandl
 
     return ACE_RC_SUCCESS;
  
-    // °³¹ß ½Ã¿¡¸¸ ÇÊ¿ä, ½ÇÁ¦ µ¿ÀÛ¿¡¼­´Â ¹ß»ıÇÒ ÀÏÀÌ ¾ø´Ù.
+    // ê°œë°œ ì‹œì—ë§Œ í•„ìš”, ì‹¤ì œ ë™ì‘ì—ì„œëŠ” ë°œìƒí•  ì¼ì´ ì—†ë‹¤.
     ACE_EXCEPTION( ERR_NOT_FOUND_CLASS )
     {
         oaLogMessage( OAM_MSG_NOT_FOUND_CLASS, gJNIMethodDesc[i].mClassName );
@@ -464,8 +464,8 @@ ace_rc_t oaJNIInitialize( oaContext * aContext, oaJNIInterfaceHandle * aHandle )
  
     ACE_EXCEPTION_END;
 
-    /* DestroyJavaVMÀº Adapter ¿ÏÀü Á¾·á ½Ã ÇÑ¹ø¸¸ ÇÑ´Ù.
-       ±×·¡¼­ ¿©±â¿¡¼­´Â Ã³¸® ÇÏÁö ¾Ê´Â´Ù. */
+    /* DestroyJavaVMì€ Adapter ì™„ì „ ì¢…ë£Œ ì‹œ í•œë²ˆë§Œ í•œë‹¤.
+       ê·¸ë˜ì„œ ì—¬ê¸°ì—ì„œëŠ” ì²˜ë¦¬ í•˜ì§€ ì•ŠëŠ”ë‹¤. */
     
     return ACE_RC_FAILURE;
 }
@@ -474,8 +474,8 @@ void oaJNIFinalize( oaJNIInterfaceHandle    * aHandle )
 {
     (void)( *(aHandle->mEnv) )->PopLocalFrame( aHandle->mEnv, NULL );
 
-/* DestroyJavaVMÀº Adapter ¿ÏÀü Á¾·á ½Ã ÇÑ¹ø¸¸ ÇÑ´Ù.
-   ±×·¡¼­ ¿©±â¿¡¼­´Â Ã³¸® ÇÏÁö ¾Ê´Â´Ù. */
+/* DestroyJavaVMì€ Adapter ì™„ì „ ì¢…ë£Œ ì‹œ í•œë²ˆë§Œ í•œë‹¤.
+   ê·¸ë˜ì„œ ì—¬ê¸°ì—ì„œëŠ” ì²˜ë¦¬ í•˜ì§€ ì•ŠëŠ”ë‹¤. */
 //    oaJNIDestroyJAVAVM( aHandle );
 }
 

@@ -19,7 +19,7 @@
  * $Id: smiStatistics.h
  * 
  * TASK-4990 changing the method of collecting index statistics
- * ¼öµ¿ Åë°èÁ¤º¸ ¼öÁı ±â´É
+ * ìˆ˜ë™ í†µê³„ì •ë³´ ìˆ˜ì§‘ ê¸°ëŠ¥
  **********************************************************************/
 
 #ifndef __O_SMI_STATISTICS_H__
@@ -39,28 +39,28 @@
 #include <idtBaseThread.h>
 
 /* TASK-4990 changing the method of collecting index statistics
- * ¼öµ¿ Åë°èÁ¤º¸ ¼öÁı ±â´É
+ * ìˆ˜ë™ í†µê³„ì •ë³´ ìˆ˜ì§‘ ê¸°ëŠ¥
  * =======================================================================
- * Åë°èÁ¤º¸ Set/Get½Ã ¹İµå½Ã ¾Æ·¡ ÇÔ¼ö¸¦ »ç¿ëÇØ¾ßÇÔ.
- * AtomicOperationÀ¸·ÎÀÇ ÀüÈ¯µµ ½ÃµµÇßÁö¸¸, 40ByteÀÇ Value¸¦ º¹Á¦ÇØ¾ßÇÏ´Â
- * Min/MaxValueÀÇ Á¸Àç·Î ºÒ°¡´ÉÇÏ¿´°í, ±âÁ¸ÀÇ PetersonAlgorithmÀ» º¸°­ÇÏ´Â
- * ÇüÅÂ·Î ±¸ÇöµÇ¾úÀ½.
+ * í†µê³„ì •ë³´ Set/Getì‹œ ë°˜ë“œì‹œ ì•„ë˜ í•¨ìˆ˜ë¥¼ ì‚¬ìš©í•´ì•¼í•¨.
+ * AtomicOperationìœ¼ë¡œì˜ ì „í™˜ë„ ì‹œë„í–ˆì§€ë§Œ, 40Byteì˜ Valueë¥¼ ë³µì œí•´ì•¼í•˜ëŠ”
+ * Min/MaxValueì˜ ì¡´ì¬ë¡œ ë¶ˆê°€ëŠ¥í•˜ì˜€ê³ , ê¸°ì¡´ì˜ PetersonAlgorithmì„ ë³´ê°•í•˜ëŠ”
+ * í˜•íƒœë¡œ êµ¬í˜„ë˜ì—ˆìŒ.
  *
- * Set : LOCK -> AtomicB++ -> Set -> AtomicA++ -> UNLOCKÀ»
+ * Set : LOCK -> AtomicB++ -> Set -> AtomicA++ -> UNLOCKì„
  * Get : while{ A=AtomicA; Get; B=AtomicB; if(A==B) break; }
  *
- * ÇöÀç IndexÂÊ AtomicStructure¿Í, ±×¿Ü GlobalAtomicStructure·Î ³ª´µ¾î¼­
- * ±¸ÇöµÇ¾î ÀÖ½À´Ï´Ù. ÀÏ´Ü ÇâÈÄ ¸ñÀûÀº Global·Î ¸ğµÎ ÅëÇÕÇÏ´Â °ÍÀÔ´Ï´Ù.
- * ±×·¯¸é Åë°èÁ¤º¸ ¼³Á¤½Ã ÇÏ³ªÀÇ Mutex¸¸ »ç¿ëÇÏ°Ô µÇÁö¸¸, ¾îÂ÷ÇÇ ¼öµ¿ Åë°è°»½Å
- * ¹æ½ÄÀÌ¶ó¸é Åë°èÁ¤º¸ °»½ÅÀÌ ÀÚÁÖ ¾øÀ¸´Ï »ó°ü¾ø½À´Ï´Ù.
+ * í˜„ì¬ Indexìª½ AtomicStructureì™€, ê·¸ì™¸ GlobalAtomicStructureë¡œ ë‚˜ë‰˜ì–´ì„œ
+ * êµ¬í˜„ë˜ì–´ ìˆìŠµë‹ˆë‹¤. ì¼ë‹¨ í–¥í›„ ëª©ì ì€ Globalë¡œ ëª¨ë‘ í†µí•©í•˜ëŠ” ê²ƒì…ë‹ˆë‹¤.
+ * ê·¸ëŸ¬ë©´ í†µê³„ì •ë³´ ì„¤ì •ì‹œ í•˜ë‚˜ì˜ Mutexë§Œ ì‚¬ìš©í•˜ê²Œ ë˜ì§€ë§Œ, ì–´ì°¨í”¼ ìˆ˜ë™ í†µê³„ê°±ì‹ 
+ * ë°©ì‹ì´ë¼ë©´ í†µê³„ì •ë³´ ê°±ì‹ ì´ ìì£¼ ì—†ìœ¼ë‹ˆ ìƒê´€ì—†ìŠµë‹ˆë‹¤.
  *
- * ±×·¯³ª ¾ÆÁ÷ ±âÁ¸ÀÇ ´©Àû Åë°è°»½Å ¹æ½ÄÀÌ ³²¾ÆÀÖ±â ¶§¹®¿¡, ´©Àû Åë°è°»½Å½Ã
- * º¯°æÇÏ´Â Index¸¦ À§ÇØ Indexº°·Î AtomicStructure¸¦ ³ª´©¾îµÎ¾ú½À´Ï´Ù.
+ * ê·¸ëŸ¬ë‚˜ ì•„ì§ ê¸°ì¡´ì˜ ëˆ„ì  í†µê³„ê°±ì‹  ë°©ì‹ì´ ë‚¨ì•„ìˆê¸° ë•Œë¬¸ì—, ëˆ„ì  í†µê³„ê°±ì‹ ì‹œ
+ * ë³€ê²½í•˜ëŠ” Indexë¥¼ ìœ„í•´ Indexë³„ë¡œ AtomicStructureë¥¼ ë‚˜ëˆ„ì–´ë‘ì—ˆìŠµë‹ˆë‹¤.
  *
- * Âü°í·Î GlobalAtomicOperation¿¡¼­ SMI_GETSTAT¸¸ ÀÖ°í, SMI_SETSTATÀº ¾ø´Âµ¥
- * ÀÌ´Â lock/unlock ÇÔ¼ö¿¡¼­ atomicA,B º¯°æ ·ÎÁ÷ÀÌ Æ÷ÇÔµÇ¾î ÀÖ±â ¶§¹®¿¡
- * Lock/Unlock¸¸ Àß È£ÃâµÇ¸é SMI_SETSTATÀÌ¶õ ¸ÅÅ©·Î¸¦ Á¤ÀÇÇÒ ÇÊ¿ä°¡
- * ¾ø¾î¼­ ±×·¸½À´Ï´Ù. */
+ * ì°¸ê³ ë¡œ GlobalAtomicOperationì—ì„œ SMI_GETSTATë§Œ ìˆê³ , SMI_SETSTATì€ ì—†ëŠ”ë°
+ * ì´ëŠ” lock/unlock í•¨ìˆ˜ì—ì„œ atomicA,B ë³€ê²½ ë¡œì§ì´ í¬í•¨ë˜ì–´ ìˆê¸° ë•Œë¬¸ì—
+ * Lock/Unlockë§Œ ì˜ í˜¸ì¶œë˜ë©´ SMI_SETSTATì´ë€ ë§¤í¬ë¡œë¥¼ ì •ì˜í•  í•„ìš”ê°€
+ * ì—†ì–´ì„œ ê·¸ë ‡ìŠµë‹ˆë‹¤. */
 
 #define SMI_GETSTAT( aExeStmt )                    \
         while(1)                                   \
@@ -110,19 +110,19 @@ class smiStatistics : public idtBaseThread
 public:
     /************************************************************
      * Automatic statistic gathering
-     * Background Thread°¡ Åë°èÁ¤º¸¸¦ ÀÚµ¿À¸·Î ¼öÁıÇÑ´Ù.
+     * Background Threadê°€ í†µê³„ì •ë³´ë¥¼ ìë™ìœ¼ë¡œ ìˆ˜ì§‘í•œë‹¤.
      ************************************************************/
     smiStatistics() : idtBaseThread() {}
     static IDE_RC initializeStatic();
     static IDE_RC finalizeStatic();
-    virtual void run(); /* »ó¼Ó¹ŞÀº main ½ÇÇà ·çÆ¾ */
+    virtual void run(); /* ìƒì†ë°›ì€ main ì‹¤í–‰ ë£¨í‹´ */
 
     static smiStatistics mStatThread;
     static idBool        mDone;
 
     /************************************************************
      * Gather
-     * Åë°èÁ¤º¸¸¦ Á¶È¸ÇÏ¿© ¼öÁıÇÏ°í ÀúÀåÇÑ´Ù
+     * í†µê³„ì •ë³´ë¥¼ ì¡°íšŒí•˜ì—¬ ìˆ˜ì§‘í•˜ê³  ì €ì¥í•œë‹¤
      ************************************************************/
     static IDE_RC gatherSystemStats( idBool   aSaveMemBase );
     static IDE_RC gatherTableStats( idvSQL * aStatistics,
@@ -141,7 +141,7 @@ public:
     
     /************************************************************
      * Get
-     * ÀúÀåµÈ Åë°èÁ¤º¸¸¦ °¡Á®¿Â´Ù.
+     * ì €ì¥ëœ í†µê³„ì •ë³´ë¥¼ ê°€ì ¸ì˜¨ë‹¤.
      ************************************************************/
     /*-------------------------System--------------------------*/
     static idBool isValidSystemStat()
@@ -203,8 +203,8 @@ public:
         {
             if( smuProperty::getDBMSStatMethod() == SMU_DBMS_STAT_METHOD_AUTO )
             {
-                /* Auto»óÅÂ¸é, Åë°èÁ¤º¸ ±¸Ãà ½Ã°£ÀÌ ´ç¿¬È÷ 0ÀÏÅ×´Ï
-                 * Index¸¸ ConsistentÇÏ´Ù¸é ¹«Á¶°Ç À¯È¿ÇÔ */
+                /* Autoìƒíƒœë©´, í†µê³„ì •ë³´ êµ¬ì¶• ì‹œê°„ì´ ë‹¹ì—°íˆ 0ì¼í…Œë‹ˆ
+                 * Indexë§Œ Consistentí•˜ë‹¤ë©´ ë¬´ì¡°ê±´ ìœ íš¨í•¨ */
                 sRet = ID_TRUE;
             }
             else
@@ -265,7 +265,7 @@ public:
 
     /************************************************************
      * set___StatsByuser
-     * »ç¿ëÀÚ·ÎºÎÅÍ ¹ŞÀº Åë°èÁ¤º¸ÆÄ¶ó¸ŞÅÍ¸¦ °­Á¦·Î ¼³Á¤ÇÑ´Ù.
+     * ì‚¬ìš©ìë¡œë¶€í„° ë°›ì€ í†µê³„ì •ë³´íŒŒë¼ë©”í„°ë¥¼ ê°•ì œë¡œ ì„¤ì •í•œë‹¤.
      ************************************************************/
 
     static IDE_RC setSystemStatsByUser( SDouble * aSReadTime,
@@ -306,7 +306,7 @@ public:
     /************************************************************
      * BUG-38238 add statistical information initialize interface 
      * clear___Stats
-     * Åë°èÁ¤º¸ÆÄ¶ó¸ŞÅÍ¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+     * í†µê³„ì •ë³´íŒŒë¼ë©”í„°ë¥¼ ì´ˆê¸°í™”í•œë‹¤.
      ************************************************************/
 
     static IDE_RC clearSystemStats( void );
@@ -328,9 +328,9 @@ public:
 
     /************************************************************
      * Store
-     * Logging ÇÏ°í SetDirtyÇÏ¿© DurableÇÏµµ·Ï ÀúÀåÇÑ´Ù.
-     * ´Ù¸¸ 'BeforeImage'´Â ÀúÀåÇÏÁö ¾Ê´Â´Ù. ¾îÂ÷ÇÇ Åë°èÀÌ±â ¶§¹®¿¡
-     * ½ÇÆĞÇÏ¸é Àç¼öÁıÇÏ¸é ±×¸¸ÀÌ±â ¶§¹®ÀÌ´Ù.
+     * Logging í•˜ê³  SetDirtyí•˜ì—¬ Durableí•˜ë„ë¡ ì €ì¥í•œë‹¤.
+     * ë‹¤ë§Œ 'BeforeImage'ëŠ” ì €ì¥í•˜ì§€ ì•ŠëŠ”ë‹¤. ì–´ì°¨í”¼ í†µê³„ì´ê¸° ë•Œë¬¸ì—
+     * ì‹¤íŒ¨í•˜ë©´ ì¬ìˆ˜ì§‘í•˜ë©´ ê·¸ë§Œì´ê¸° ë•Œë¬¸ì´ë‹¤.
      ************************************************************/
     static IDE_RC storeTableStat( void           * aSmiTrans,
                                   smcTableHeader * aTable );
@@ -354,13 +354,13 @@ public:
 
     /************************************************************
      * Analysis Functions
-     * Table/Index µîÀ» Á¶È¸/ºĞ¼®ÇÏ´Â Åë°èÁ¤º¸ ¼öÁı ¿¬»êÀ»
-     * º¸Á¶ÇÑ´Ù.
+     * Table/Index ë“±ì„ ì¡°íšŒ/ë¶„ì„í•˜ëŠ” í†µê³„ì •ë³´ ìˆ˜ì§‘ ì—°ì‚°ì„
+     * ë³´ì¡°í•œë‹¤.
      ************************************************************/
     /*--------------------- Table & Column ---------------------*/
-    /* ¾îÂ÷ÇÇ ColumnÀÌ°Ç TableÀÇ Row°Ç °Ç°Ç¸¶´Ù ºĞ¼®ÇØ¾ß ÇÏ±â ¶§¹®¿¡
-     * µ¿½Ã¿¡ ºĞ¼®ÇÑ´Ù. ±×¸®°í DRDB°Ç MRDB°Ç FetchÇÑ RowÇüÅÂ´Â
-     * °°±â ¶§¹®¿¡, ¿©±â¼­ ÀüºÎ ºĞ¼®ÇÒ ¼ö ÀÖ´Ù. */
+    /* ì–´ì°¨í”¼ Columnì´ê±´ Tableì˜ Rowê±´ ê±´ê±´ë§ˆë‹¤ ë¶„ì„í•´ì•¼ í•˜ê¸° ë•Œë¬¸ì—
+     * ë™ì‹œì— ë¶„ì„í•œë‹¤. ê·¸ë¦¬ê³  DRDBê±´ MRDBê±´ Fetchí•œ Rowí˜•íƒœëŠ”
+     * ê°™ê¸° ë•Œë¬¸ì—, ì—¬ê¸°ì„œ ì „ë¶€ ë¶„ì„í•  ìˆ˜ ìˆë‹¤. */
     static IDE_RC beginTableStat( smcTableHeader  * aHeader,
                                   SFloat            aPercentage,
                                   idBool            aDynamicMode,
@@ -392,9 +392,9 @@ public:
                                 idBool           aDynamicMode );
 
     /*------------------------- Index -------------------------*/
-    /* Index´Â ±âÁ¸ Åë°èÁ¤º¸ ¼öÁı ¹æ¹ı (Accumulated)À» À¯Áö
-     * ÇØ¾ß ÇÏ±â ¶§¹®¿¡, ±âÁ¸ ¹æ¹ı¿¡¼­ »ç¿ëÇÏ´Â Åë°èÁ¤º¸ ÀÏºÎ¼öÁ¤
-     * ÇÔ¼öµé (incIndexNumDistµî)µµ Áö¿øÇÑ´Ù.*/
+    /* IndexëŠ” ê¸°ì¡´ í†µê³„ì •ë³´ ìˆ˜ì§‘ ë°©ë²• (Accumulated)ì„ ìœ ì§€
+     * í•´ì•¼ í•˜ê¸° ë•Œë¬¸ì—, ê¸°ì¡´ ë°©ë²•ì—ì„œ ì‚¬ìš©í•˜ëŠ” í†µê³„ì •ë³´ ì¼ë¶€ìˆ˜ì •
+     * í•¨ìˆ˜ë“¤ (incIndexNumDistë“±)ë„ ì§€ì›í•œë‹¤.*/
     static IDE_RC beginIndexStat( smcTableHeader   * aTableHeader,
                                   smnIndexHeader   * aPerHeader,
                                   idBool             aDynamicMode );
@@ -426,7 +426,7 @@ public:
 
     /************************************************************
      * Build fixed table
-     * FixedTable X$DBMS_STATSÀ» ¸¸µå´Âµ¥ »ç¿ëµÈ´Ù.
+     * FixedTable X$DBMS_STATSì„ ë§Œë“œëŠ”ë° ì‚¬ìš©ëœë‹¤.
      ************************************************************/
     static IDE_RC buildDBMSStatRecord( idvSQL              * /*aStatistics*/,
                                        void                * aHeader,
@@ -447,34 +447,34 @@ public:
                                      iduFixedTableMemory * aMemory );
 
 private:
-    /* TableÅë°èÁ¤º¸¸¦ TraceÆÄÀÏ¿¡ Ãâ·ÂÇÔ */
+    /* Tableí†µê³„ì •ë³´ë¥¼ TraceíŒŒì¼ì— ì¶œë ¥í•¨ */
     static IDE_RC traceTableStat( smcTableHeader  * aHeader,
                                   const SChar     * aTitle );
 
-    /* IndexÅë°èÁ¤º¸¸¦ TraceÆÄÀÏ¿¡ Ãâ·ÂÇÔ */
+    /* Indexí†µê³„ì •ë³´ë¥¼ TraceíŒŒì¼ì— ì¶œë ¥í•¨ */
     static IDE_RC traceIndexStat( smcTableHeader  * aTableHeader,
                                   smnIndexHeader  * aPersHeader,
                                   const SChar     * aTitle );
 
-    /* Key2String ÇÔ¼ö¸¦ ÀÌ¿ëÇØ, Value¸¦ StringÀ¸·Î º¯È¯ÇÔ */
+    /* Key2String í•¨ìˆ˜ë¥¼ ì´ìš©í•´, Valueë¥¼ Stringìœ¼ë¡œ ë³€í™˜í•¨ */
     static IDE_RC getValueString( smiColumn * aColumn,
                                   UChar     * aValue,
                                   UInt        aBufferLength,
                                   SChar     * aBuffer );
 
     /* for Analyze Column stat 
-     * ±âÁ¸ÀÇ °ª°ú ºñ±³ÇÏ¿© Min ¶Ç´Â Max°ªÀÌ¸é, ¼³Á¤ÇØÁÜ. */
+     * ê¸°ì¡´ì˜ ê°’ê³¼ ë¹„êµí•˜ì—¬ Min ë˜ëŠ” Maxê°’ì´ë©´, ì„¤ì •í•´ì¤Œ. */
     static IDE_RC compareAndSetMinMaxValue( smiStatTableArgument * aTableArgument,
                                             UChar                * aRow,
                                             smiColumn            * aColumn,
                                             UInt                   aColumnIdx,
                                             UInt                   aColumnSize );
 
-    /* ½ÇÁ¦·Î Åë°èÁ¤º¸¸¦ ¼³Á¤(´ëÀÔ) ÇÔ.
+    /* ì‹¤ì œë¡œ í†µê³„ì •ë³´ë¥¼ ì„¤ì •(ëŒ€ì…) í•¨.
      * - BUGBUG - 
-     * Peterson Algorithm »ç¿ëÀ» À§ÇØ Macro½èÀ»¶§, 
-     * ÀÚ²Ù Syntax¸¦ VI°¡ Àß¸ø ÀĞ¾î¼­ WarningÀÌ ¶ß±â¿¡ Ãß°¡ÇÑ ÇÔ¼ö
-     * µû¶ó¼­ ±âÁ¸ÀÇ Åë°è ´©Àû¹æ½ÄÀÌ ¾ø¾îÁö¸é Á¦°Å °¡´É */
+     * Peterson Algorithm ì‚¬ìš©ì„ ìœ„í•´ Macroì¼ì„ë•Œ, 
+     * ìê¾¸ Syntaxë¥¼ VIê°€ ì˜ëª» ì½ì–´ì„œ Warningì´ ëœ¨ê¸°ì— ì¶”ê°€í•œ í•¨ìˆ˜
+     * ë”°ë¼ì„œ ê¸°ì¡´ì˜ í†µê³„ ëˆ„ì ë°©ì‹ì´ ì—†ì–´ì§€ë©´ ì œê±° ê°€ëŠ¥ */
     static void setIndexStatInternal( smiIndexStat * aStat,
                                       SLong        * aKeyCount,
                                       SLong        * aNumPage,
@@ -488,8 +488,8 @@ private:
                                       SLong        * aFreeSpace,
                                       SFloat       * aSampleSize );
 
-    /* QPÂÊ¿¡¼­´Â smiTarns°¡ ÀÎÀÚ·Î ¿À°í, SM¿¡¼­´Â smxTrans¸¦ ÀÎÀÚ·Î
-     * º¸³»±â¿¡, Internal ÇÔ¼ö¸¦ µû·Î µÒ. */
+    /* QPìª½ì—ì„œëŠ” smiTarnsê°€ ì¸ìë¡œ ì˜¤ê³ , SMì—ì„œëŠ” smxTransë¥¼ ì¸ìë¡œ
+     * ë³´ë‚´ê¸°ì—, Internal í•¨ìˆ˜ë¥¼ ë”°ë¡œ ë‘ . */
     static IDE_RC gatherTableStatInternal( idvSQL   * aStatistics,
                                            void     * aSmxTrans,
                                            void     * aTable, 
@@ -524,7 +524,7 @@ private:
                                         UInt                    aHashValue, 
                                         UInt                    aColumnSize );
 
-    /* Peterson AlgorithmÀ» °í·ÁÇØ¾ßÇÔ. ÆÄÀÏ ÃÖ»ó´Ü ÁÖ¼® ÂüÁ¶. */
+    /* Peterson Algorithmì„ ê³ ë ¤í•´ì•¼í•¨. íŒŒì¼ ìµœìƒë‹¨ ì£¼ì„ ì°¸ì¡°. */
     inline static IDE_RC lock4SetStat()
     { 
         IDE_TEST( mStatMutex.lock(NULL) != IDE_SUCCESS );
@@ -693,13 +693,13 @@ inline IDE_RC smiStatistics::getSystemStatStoreTime( SDouble  * aRet )
 
 /************************************************************************
  * DESCRIPTION : 
- *     TableÀÇ Row °³¼ö¸¦ ¹İÈ¯ÇÕ´Ï´Ù.
+ *     Tableì˜ Row ê°œìˆ˜ë¥¼ ë°˜í™˜í•©ë‹ˆë‹¤.
  *
- *  aTable               - [IN]  ´ë»ó Å×ÀÌºí
- *  aCurrent             - [IN]  'ÇöÀç½ÃÁ¡'ÀÇ Åë°è¸¦ °¡Á®¿Ã °ÍÀÎ°¡?
- *  aSmiTrans            - [IN]  'ÇöÀç½ÃÁ¡'ÀÇ °ªÀ» °¡Á®¿Ã¶§, TransactionÀÌ
- *                               »ğÀÔ/»èÁ¦ÇÑ Rowµµ °í·ÁÇØ¾ß ÇÑ´Ù.
- *  aRet                 - [OUT] Åë°è°ª
+ *  aTable               - [IN]  ëŒ€ìƒ í…Œì´ë¸”
+ *  aCurrent             - [IN]  'í˜„ì¬ì‹œì 'ì˜ í†µê³„ë¥¼ ê°€ì ¸ì˜¬ ê²ƒì¸ê°€?
+ *  aSmiTrans            - [IN]  'í˜„ì¬ì‹œì 'ì˜ ê°’ì„ ê°€ì ¸ì˜¬ë•Œ, Transactionì´
+ *                               ì‚½ì…/ì‚­ì œí•œ Rowë„ ê³ ë ¤í•´ì•¼ í•œë‹¤.
+ *  aRet                 - [OUT] í†µê³„ê°’
  ************************************************************************/
 inline IDE_RC smiStatistics::getTableStatNumRow( void       * aTable,
                                                  idBool       aCurrent, 
@@ -767,11 +767,11 @@ inline IDE_RC smiStatistics::getTableStatNumRow( void       * aTable,
 
 /************************************************************************
  * DESCRIPTION : 
- *     TableÀÇ page°³¼ö¸¦ ¹İÈ¯ÇÕ´Ï´Ù.
+ *     Tableì˜ pageê°œìˆ˜ë¥¼ ë°˜í™˜í•©ë‹ˆë‹¤.
  *
- *  aTable               - [IN]  ´ë»ó Å×ÀÌºí
- *  aCurrent             - [IN]  'ÇöÀç½ÃÁ¡'ÀÇ Åë°è¸¦ °¡Á®¿Ã °ÍÀÎ°¡?
- *  aRet                 - [OUT] Åë°è°ª
+ *  aTable               - [IN]  ëŒ€ìƒ í…Œì´ë¸”
+ *  aCurrent             - [IN]  'í˜„ì¬ì‹œì 'ì˜ í†µê³„ë¥¼ ê°€ì ¸ì˜¬ ê²ƒì¸ê°€?
+ *  aRet                 - [OUT] í†µê³„ê°’
  ************************************************************************/
 inline IDE_RC smiStatistics::getTableStatNumPage( void   * aTable, 
                                                   idBool   aCurrent, 
@@ -904,11 +904,11 @@ inline IDE_RC smiStatistics::getIndexStatKeyCount( void * aIndex, SLong * aRet )
 
 /************************************************************************
  * DESCRIPTION : 
- *     IndexÀÇ page°³¼ö¸¦ ¹İÈ¯ÇÕ´Ï´Ù.
+ *     Indexì˜ pageê°œìˆ˜ë¥¼ ë°˜í™˜í•©ë‹ˆë‹¤.
  *
- *  aTable               - [IN]  ´ë»ó Å×ÀÌºí
- *  aCurrent             - [IN]  'ÇöÀç½ÃÁ¡'ÀÇ Åë°è¸¦ °¡Á®¿Ã °ÍÀÎ°¡?
- *  aRet                 - [OUT] Åë°è°ª
+ *  aTable               - [IN]  ëŒ€ìƒ í…Œì´ë¸”
+ *  aCurrent             - [IN]  'í˜„ì¬ì‹œì 'ì˜ í†µê³„ë¥¼ ê°€ì ¸ì˜¬ ê²ƒì¸ê°€?
+ *  aRet                 - [OUT] í†µê³„ê°’
  ************************************************************************/
 inline IDE_RC smiStatistics::getIndexStatNumPage( void          * aIndex,
                                                   idBool          aCurrent,
@@ -928,12 +928,12 @@ inline IDE_RC smiStatistics::getIndexStatNumPage( void          * aIndex,
         if( smnManager::getIsConsistentOfIndexHeader( aIndex )
             == ID_FALSE )
         {
-            /* Index°¡ InconsistentÇÏ±â ¶§¹®¿¡ 0À» ¼³Á¤ÇØÁÜ.
-             * ¿©±â¼­ ¿¹¿ÜÃ³¸®ÇÏ¸é QP°¡ PlanÀ» ±¸ÃàÇÏ´Â °úÁ¤¿¡¼­
-             * ½ÇÆĞÇÏ±â ¶§¹®¿¡, ¾Æ¿¹ Á¤»óÀûÀÎ ´Ù¸¥ Indexµµ Á¢±ÙÀ» ¸øÇÔ
-             * µû¶ó¼­ NumDist¸¦ ³·Àº °ªÀ¸·Î ÇÏ¿© ÀÏ´Ü ÀÌ Index¿¡ ´ëÇÑ
-             * Á¢±Ù ¿ì¼±¼øÀ§¸¦ ³·Ãã. ¾îÂ÷ÇÇ Àß¸øµÇ¸é ½ÇÇà °úÁ¤¿¡¼­ ¿¹¿Ü
-             * Ã³¸®µÊ */
+            /* Indexê°€ Inconsistentí•˜ê¸° ë•Œë¬¸ì— 0ì„ ì„¤ì •í•´ì¤Œ.
+             * ì—¬ê¸°ì„œ ì˜ˆì™¸ì²˜ë¦¬í•˜ë©´ QPê°€ Planì„ êµ¬ì¶•í•˜ëŠ” ê³¼ì •ì—ì„œ
+             * ì‹¤íŒ¨í•˜ê¸° ë•Œë¬¸ì—, ì•„ì˜ˆ ì •ìƒì ì¸ ë‹¤ë¥¸ Indexë„ ì ‘ê·¼ì„ ëª»í•¨
+             * ë”°ë¼ì„œ NumDistë¥¼ ë‚®ì€ ê°’ìœ¼ë¡œ í•˜ì—¬ ì¼ë‹¨ ì´ Indexì— ëŒ€í•œ
+             * ì ‘ê·¼ ìš°ì„ ìˆœìœ„ë¥¼ ë‚®ì¶¤. ì–´ì°¨í”¼ ì˜ëª»ë˜ë©´ ì‹¤í–‰ ê³¼ì •ì—ì„œ ì˜ˆì™¸
+             * ì²˜ë¦¬ë¨ */
             sRet = 0;
         }
         else
@@ -1026,7 +1026,7 @@ inline IDE_RC smiStatistics::getIndexStatNumDist( void      * aIndex,
                                                        (void**)&sTableHeader )
                       != IDE_SUCCESS );
 
-            /* UniqueÀÌ°í AutoÀÏ °æ¿ì, Cardinality °»½ÅÀ» ÇÏÁö ¾Ê´Â´Ù */
+            /* Uniqueì´ê³  Autoì¼ ê²½ìš°, Cardinality ê°±ì‹ ì„ í•˜ì§€ ì•ŠëŠ”ë‹¤ */
             IDE_TEST( getTableStatNumRow( sTableHeader - SMP_SLOT_HEADER_SIZE, // BUG-42323
                                           ID_TRUE, /* aCurrent */
                                           NULL,    /* aTrans */
@@ -1270,8 +1270,8 @@ inline IDE_RC smiStatistics::getColumnStatMax( void         * aTable,
     return IDE_SUCCESS;
 }
 
-#define EPSILON (1e-8)  // Á¤¹Ğµµ.
-/* Àû´çÇÑ Sampling °ªÀ» PageÅ©±â ¹× BaseÅ©±â ¹ÙÅÁÀ¸·Î °è»êÇÔ */
+#define EPSILON (1e-8)  // ì •ë°€ë„.
+/* ì ë‹¹í•œ Sampling ê°’ì„ Pageí¬ê¸° ë° Baseí¬ê¸° ë°”íƒ•ìœ¼ë¡œ ê³„ì‚°í•¨ */
 inline SFloat smiStatistics::getAdjustedPercentage( SFloat aPercentage,
                                                     SLong  aTargetSize )
 {
@@ -1285,7 +1285,7 @@ inline SFloat smiStatistics::getAdjustedPercentage( SFloat aPercentage,
         }
         else
         {
-            /* AutomaticÇÏ°Ô °áÁ¤ÇÔ */
+            /* Automaticí•˜ê²Œ ê²°ì •í•¨ */
             sRet = 1.0f / 
                 idlOS::sqrt( ((SFloat)aTargetSize) 
                              / smuProperty::getDBMSStatSamplingBaseCnt() );
@@ -1298,8 +1298,8 @@ inline SFloat smiStatistics::getAdjustedPercentage( SFloat aPercentage,
 
     /* BUG-34240 [SM] sampling percentage that is greater then 1.0
      *           in GATHER_INDEX_STATS must be adjusted.
-     * sRet´Â 0.0 ~ 1.0 »çÀÌÀÇ °ªÀÌ¾î¾ß ÇÑ´Ù.
-     * ÀÌ ¹üÀ§¸¦ ³Ñ¾î°¡´Â °æ¿ì 0.0 ¶Ç´Â 1.0À¸·Î º¸Á¤ÇØÁØ´Ù. */
+     * sRetëŠ” 0.0 ~ 1.0 ì‚¬ì´ì˜ ê°’ì´ì–´ì•¼ í•œë‹¤.
+     * ì´ ë²”ìœ„ë¥¼ ë„˜ì–´ê°€ëŠ” ê²½ìš° 0.0 ë˜ëŠ” 1.0ìœ¼ë¡œ ë³´ì •í•´ì¤€ë‹¤. */
     if ( sRet < 0.0f )
     {
         sRet = 0.0f;
@@ -1319,7 +1319,7 @@ inline SFloat smiStatistics::getAdjustedPercentage( SFloat aPercentage,
     return sRet;
 }
 
-/* ParallelDegree¸¦ °¡Á®¿È */
+/* ParallelDegreeë¥¼ ê°€ì ¸ì˜´ */
 inline SInt smiStatistics::getAdjustedDegree( SInt         aDegree )
 {
     SInt sRet = 0;
@@ -1336,7 +1336,7 @@ inline SInt smiStatistics::getAdjustedDegree( SInt         aDegree )
     return sRet;
 }
 
-/* NoInvalidate ¿É¼Ç¿¡ µû¶ó, TableÀÇ Plan Àç±¸Ãà ¿©ºÎ¸¦ ÆÇ´ÜÇÔ */
+/* NoInvalidate ì˜µì…˜ì— ë”°ë¼, Tableì˜ Plan ì¬êµ¬ì¶• ì—¬ë¶€ë¥¼ íŒë‹¨í•¨ */
 inline void smiStatistics::checkNoInvalidate( smcTableHeader * aTarget,
                                               SChar            aNoInvalidate )
 {
@@ -1344,9 +1344,9 @@ inline void smiStatistics::checkNoInvalidate( smcTableHeader * aTarget,
     {
         if( ( aTarget->mFlag & SMI_TABLE_TYPE_MASK ) == SMI_TABLE_META )
         {
-            /* META TableÀº Rebuild¸¦ ÇÏÁö ¾Ê´Â´Ù. ¿Ö³ÄÇÏ¸é gather... Á¾·ù´Â
-             * Meta¸¦ ÀÌ¿ëÇÏ´Âµ¥, ÀÌ Meta°¡ Rebuild µÇ¸é ¹«ÇÑ Rebuild°¡
-             * ÀÏ¾î³¯ ¼ö ÀÖ±â ¶§¹®ÀÌ´Ù. */
+            /* META Tableì€ Rebuildë¥¼ í•˜ì§€ ì•ŠëŠ”ë‹¤. ì™œëƒí•˜ë©´ gather... ì¢…ë¥˜ëŠ”
+             * Metaë¥¼ ì´ìš©í•˜ëŠ”ë°, ì´ Metaê°€ Rebuild ë˜ë©´ ë¬´í•œ Rebuildê°€
+             * ì¼ì–´ë‚  ìˆ˜ ìˆê¸° ë•Œë¬¸ì´ë‹¤. */
         }
         else
         {

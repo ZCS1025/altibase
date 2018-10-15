@@ -31,9 +31,9 @@
 #include <qcsModule.h>
 #include <qcg.h>
 
-// 0 : ºñ±³ÇÊ¿ä
-// 1 or -1 : 1Àº Ã¹¹øÂ°°¡ Å«°Å, -1Àº µÎ¹øÂ°°¡ Å«°Å
-// 2 : ºñ±³ÇÊ¿ä¾øÀÌ ¼­·Î °°À½
+// 0 : ë¹„êµí•„ìš”
+// 1 or -1 : 1ì€ ì²«ë²ˆì§¸ê°€ í°ê±°, -1ì€ ë‘ë²ˆì§¸ê°€ í°ê±°
+// 2 : ë¹„êµí•„ìš”ì—†ì´ ì„œë¡œ ê°™ìŒ
 SInt qmoPartition::mCompareCondValType
 [QMS_PARTKEYCONDVAL_TYPE_COUNT][QMS_PARTKEYCONDVAL_TYPE_COUNT] =
 {             /* normal */ /* min */ /* default */
@@ -48,34 +48,34 @@ IDE_RC qmoPartition::optimizeInto( qcStatement  * aStatement,
 /***********************************************************************
  *
  *  Description : PROJ-1502 PARTITIONED DISK TABLE
- *                INTO¿¡ ´ëÇÑ ÆÄÆ¼¼Çµå Å×ÀÌºí ÃÖÀûÈ­
- *                INTO°¡ ÀÖ´Â DML : INSERT, MOVE
+ *                INTOì— ëŒ€í•œ íŒŒí‹°ì…˜ë“œ í…Œì´ë¸” ìµœì í™”
+ *                INTOê°€ ìžˆëŠ” DML : INSERT, MOVE
  *
  *  Implementation :
- * (1) rangeÀÎ °æ¿ì
- *  ¸ðµç ÆÄÆ¼¼Ç¿¡ ´ëÇØ ÆÄÆ¼¼Ç ±âÁØ°ªÀ» ±¸ÇØ ³õÀ½
- *  partition key column¿¡ ¼ÓÇÑ valuesÀÇ °ªÀÌ constant°¡ ¾Æ´Ò ¶§±îÁö ±¸ÇÔ.
- *  ÆÄÆ¼¼Ç ±âÁØ°ª¿¡ ºÎÇÕÇÏ´Â ÆÄÆ¼¼ÇÀ» ¼±ÅÃ.
- *   values°ªÀÌ ÀüºÎ constant°¡ ¾Æ´Ï¶ó¸é ¸ðµç ÆÄÆ¼¼Ç ¼±ÅÃ.
- *   ±×·¸Áö ¾Ê´Ù¸é ±âÁØ°ª °Ë»öÇÏ¿© ÆÄÆ¼¼Ç ¼±ÅÃ.
+ * (1) rangeì¸ ê²½ìš°
+ *  ëª¨ë“  íŒŒí‹°ì…˜ì— ëŒ€í•´ íŒŒí‹°ì…˜ ê¸°ì¤€ê°’ì„ êµ¬í•´ ë†“ìŒ
+ *  partition key columnì— ì†í•œ valuesì˜ ê°’ì´ constantê°€ ì•„ë‹ ë•Œê¹Œì§€ êµ¬í•¨.
+ *  íŒŒí‹°ì…˜ ê¸°ì¤€ê°’ì— ë¶€í•©í•˜ëŠ” íŒŒí‹°ì…˜ì„ ì„ íƒ.
+ *   valuesê°’ì´ ì „ë¶€ constantê°€ ì•„ë‹ˆë¼ë©´ ëª¨ë“  íŒŒí‹°ì…˜ ì„ íƒ.
+ *   ê·¸ë ‡ì§€ ì•Šë‹¤ë©´ ê¸°ì¤€ê°’ ê²€ìƒ‰í•˜ì—¬ íŒŒí‹°ì…˜ ì„ íƒ.
  *
- * (2) listÀÎ °æ¿ì
- *  ¸ðµç ÆÄÆ¼¼Ç¿¡ ´ëÇØ ÆÄÆ¼¼Ç ±âÁØ°ª ±¸ÇØ ³õÀ½
- *  partition key columnÀÌ ÇÏ³ªÀÌ¹Ç·Î ÇØ´ç ÄÃ·³ÀÇ value°¡ constant¿©¾ß ÇÔ.
- *  constant¶ó¸é
- *   ÆÄÆ¼¼Ç ±âÁØ°ª¿¡ ºÎÇÕÇÏ´Â ÆÄÆ¼¼ÇÀ» ¼±ÅÃ
- *  constant°¡ ¾Æ´Ï¶ó¸é
- *   ¸ðµç ÆÄÆ¼¼Ç ¼±ÅÃ
+ * (2) listì¸ ê²½ìš°
+ *  ëª¨ë“  íŒŒí‹°ì…˜ì— ëŒ€í•´ íŒŒí‹°ì…˜ ê¸°ì¤€ê°’ êµ¬í•´ ë†“ìŒ
+ *  partition key columnì´ í•˜ë‚˜ì´ë¯€ë¡œ í•´ë‹¹ ì»¬ëŸ¼ì˜ valueê°€ constantì—¬ì•¼ í•¨.
+ *  constantë¼ë©´
+ *   íŒŒí‹°ì…˜ ê¸°ì¤€ê°’ì— ë¶€í•©í•˜ëŠ” íŒŒí‹°ì…˜ì„ ì„ íƒ
+ *  constantê°€ ì•„ë‹ˆë¼ë©´
+ *   ëª¨ë“  íŒŒí‹°ì…˜ ì„ íƒ
  *
- * (3) hashÀÎ °æ¿ì
- *  partition key column¿¡ ¼ÓÇÑ valuesÀÇ °ªÀÌ ¸ðµÎ constant¿©¾ß ÇÑ´Ù.
- *  ¸ðµÎ constant¶ó¸é
- *   values¿¡¼­ hash°ª »ý¼º.
- *   hash°ªÀ» ÀÌ¿ëÇÏ¿© hashÅ° »ý¼º
- *   ÆÄÆ¼¼Ç °³¼ö·Î modular¿¬»ê. = partition order°¡ ³ª¿È.
- *   partition order¿¡ ¸Â´Â ÆÄÆ¼¼Ç¸¸ ¼±ÅÃ.
- *  ÇÏ³ª¶óµµ constant°¡ ¾Æ´Ï¶ó¸é
- *   ¸ðµç ÆÄÆ¼¼ÇÀ» ¼±ÅÃ
+ * (3) hashì¸ ê²½ìš°
+ *  partition key columnì— ì†í•œ valuesì˜ ê°’ì´ ëª¨ë‘ constantì—¬ì•¼ í•œë‹¤.
+ *  ëª¨ë‘ constantë¼ë©´
+ *   valuesì—ì„œ hashê°’ ìƒì„±.
+ *   hashê°’ì„ ì´ìš©í•˜ì—¬ hashí‚¤ ìƒì„±
+ *   íŒŒí‹°ì…˜ ê°œìˆ˜ë¡œ modularì—°ì‚°. = partition orderê°€ ë‚˜ì˜´.
+ *   partition orderì— ë§žëŠ” íŒŒí‹°ì…˜ë§Œ ì„ íƒ.
+ *  í•˜ë‚˜ë¼ë„ constantê°€ ì•„ë‹ˆë¼ë©´
+ *   ëª¨ë“  íŒŒí‹°ì…˜ì„ ì„ íƒ
  *
  ***********************************************************************/
 
@@ -92,7 +92,7 @@ IDE_RC qmoPartition::optimizeInto( qcStatement  * aStatement,
     IDU_FIT_POINT_FATAL( "qmoPartition::optimizeInto::__FT__" );
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aTableRef != NULL );
@@ -112,12 +112,12 @@ IDE_RC qmoPartition::optimizeInto( qcStatement  * aStatement,
                                                                    SMI_TABLE_LOCK_IS )
                           != IDE_SUCCESS );
 
-                /* PROJ-2464 hybrid partitioned table Áö¿ø */
+                /* PROJ-2464 hybrid partitioned table ì§€ì› */
                 IDE_TEST( qcmPartition::makePartitionSummary( aStatement,
                                                               aTableRef )
                           != IDE_SUCCESS );
 
-                // insert½Ã partition tupleÀÌ ÇÊ¿äÇÏ´Ù.
+                // insertì‹œ partition tupleì´ í•„ìš”í•˜ë‹¤.
                 for ( sPartitionRef  = aTableRef->partitionRef;
                       sPartitionRef != NULL;
                       sPartitionRef  = sPartitionRef->next )
@@ -129,9 +129,9 @@ IDE_RC qmoPartition::optimizeInto( qcStatement  * aStatement,
                                               MTC_COLUMN_NOTNULL_TRUE ) // PR-13597
                               != IDE_SUCCESS );
 
-                    /* PROJ-2464 hybrid partitioned table Áö¿ø
-                     *  Partitioned Table Tuple¿¡¼­ ¼öÁýÇÑ Á¤º¸¸¦ Partition Tuple¿¡ Ãß°¡ÇÑ´Ù.
-                     *  ´ë»ó : INSERT, MOVE, UPDATE
+                    /* PROJ-2464 hybrid partitioned table ì§€ì›
+                     *  Partitioned Table Tupleì—ì„œ ìˆ˜ì§‘í•œ ì •ë³´ë¥¼ Partition Tupleì— ì¶”ê°€í•œë‹¤.
+                     *  ëŒ€ìƒ : INSERT, MOVE, UPDATE
                      */
                     sColumnCount = QC_SHARED_TMPLATE(aStatement)->tmplate.rows[aTableRef->table].columnCount;
                     sMtcTuple = &(QC_SHARED_TMPLATE(aStatement)->tmplate.rows[sPartitionRef->table]);
@@ -178,14 +178,14 @@ IDE_RC qmoPartition::makePartitions(
 /***********************************************************************
  *
  *  Description : PROJ-1502 PARTITIONED DISK TABLE
- *               tableRef¿¡ partitionRef¸¦ ±¸¼ºÇÑ´Ù.
+ *               tableRefì— partitionRefë¥¼ êµ¬ì„±í•œë‹¤.
  *
  *  Implementation :
- *          (1) ¼±Çà ÇÁ·ç´×ÀÎ °æ¿ì
- *              - ÀÌ¹Ì ¸¸µé¾îÁ® ÀÖÀ¸¹Ç·Î, ÇØ´ç ÆÄÆ¼¼Ç¿¡ ÇÊ¿äÇÑ
- *                Á¤º¸¸¸À» ±¸¼ºÇÑ´Ù.
- *          (2) ¼±Çà ÇÁ·ç´×ÀÌ ¾Æ´Ñ °æ¿ì
- *              - ¸ðµç ÆÄÆ¼¼Ç Á¤º¸¸¦ ±¸¼ºÇÑ´Ù.
+ *          (1) ì„ í–‰ í”„ë£¨ë‹ì¸ ê²½ìš°
+ *              - ì´ë¯¸ ë§Œë“¤ì–´ì ¸ ìžˆìœ¼ë¯€ë¡œ, í•´ë‹¹ íŒŒí‹°ì…˜ì— í•„ìš”í•œ
+ *                ì •ë³´ë§Œì„ êµ¬ì„±í•œë‹¤.
+ *          (2) ì„ í–‰ í”„ë£¨ë‹ì´ ì•„ë‹Œ ê²½ìš°
+ *              - ëª¨ë“  íŒŒí‹°ì…˜ ì •ë³´ë¥¼ êµ¬ì„±í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -213,9 +213,9 @@ IDE_RC qmoPartition::makePartitions(
 
     IDU_FIT_POINT_FATAL( "qmoPartition::makePartitions::__FT__::STAGE1" );
 
-    // ÀÌ¹Ì ÆÄÆ¼¼ÇÀÌ »ý¼ºµÈ ÀûÀÌ ÀÖ´Ù¸é
-    // partitionRef¸¦ NULL·Î ¼¼ÆÃÇÏ¿© »õ·Î ¸¸µé°Ô ÇÑ´Ù.
-    // CNF/DNF optimizationÀ» µÎ¹ø ÇÏ´Â °æ¿ì°¡ ÀÖ±â ¶§¹®ÀÓ.
+    // ì´ë¯¸ íŒŒí‹°ì…˜ì´ ìƒì„±ëœ ì ì´ ìžˆë‹¤ë©´
+    // partitionRefë¥¼ NULLë¡œ ì„¸íŒ…í•˜ì—¬ ìƒˆë¡œ ë§Œë“¤ê²Œ í•œë‹¤.
+    // CNF/DNF optimizationì„ ë‘ë²ˆ í•˜ëŠ” ê²½ìš°ê°€ ìžˆê¸° ë•Œë¬¸ìž„.
     if ( ( aTableRef->flag & QMS_TABLE_REF_PARTITION_MADE_MASK ) ==
            QMS_TABLE_REF_PARTITION_MADE_TRUE )
     {
@@ -227,8 +227,8 @@ IDE_RC qmoPartition::makePartitions(
     }
 
     // BUG-42229
-    // partition list ¼øÈ¸µµÁß splitÀÌ ¹ß»ýÇÏ´Â °æ¿ì¸¦ ´ëºñÇÏ¿©
-    // ÃÖ½Å viewSCNÀ¸·Î ÇÑ¹ø ´õ °Ë»çÇÑ´Ù.
+    // partition list ìˆœíšŒë„ì¤‘ splitì´ ë°œìƒí•˜ëŠ” ê²½ìš°ë¥¼ ëŒ€ë¹„í•˜ì—¬
+    // ìµœì‹  viewSCNìœ¼ë¡œ í•œë²ˆ ë” ê²€ì‚¬í•œë‹¤.
     while( aTableRef->partitionCount != sPartitionCount )
     {
         sLoopCount++;
@@ -248,16 +248,16 @@ IDE_RC qmoPartition::makePartitions(
         if ( ( aTableRef->flag & QMS_TABLE_REF_PRE_PRUNING_MASK )
                == QMS_TABLE_REF_PRE_PRUNING_TRUE )
         {
-            // ¼±Çà ÇÁ·ç´×ÀÇ °æ¿ì ¸í½ÃÇÑ ÆÄÆ¼¼Ç¿¡ ´ëÇÑ
-            // ÆÄÆ¼¼Ç Å° Á¶°Ç ¶Ç´Â ÆÄÆ¼¼Ç ¼ø¼­¸¦ ±¸ÇÏ¸é µÈ´Ù.
+            // ì„ í–‰ í”„ë£¨ë‹ì˜ ê²½ìš° ëª…ì‹œí•œ íŒŒí‹°ì…˜ì— ëŒ€í•œ
+            // íŒŒí‹°ì…˜ í‚¤ ì¡°ê±´ ë˜ëŠ” íŒŒí‹°ì…˜ ìˆœì„œë¥¼ êµ¬í•˜ë©´ ëœë‹¤.
             IDE_TEST( qcmPartition::getPrePruningPartitionRef( aStatement,
                                                                aTableRef )
                       != IDE_SUCCESS );
         }
         else
         {
-            // ¼±Çà ÇÁ·ç´× µÇ¾î ÀÖÁö ¾ÊÀº °æ¿ì
-            // ÀüºÎ ´Ù ±¸ÇÑ´Ù.
+            // ì„ í–‰ í”„ë£¨ë‹ ë˜ì–´ ìžˆì§€ ì•Šì€ ê²½ìš°
+            // ì „ë¶€ ë‹¤ êµ¬í•œë‹¤.
             IDE_TEST( qcmPartition::getAllPartitionRef( aStatement,
                                                         aTableRef )
                       != IDE_SUCCESS );
@@ -293,7 +293,7 @@ IDE_RC qmoPartition::makePartitions(
         IDE_NOFT_TEST( sSmiStmt.end( SMI_STATEMENT_RESULT_SUCCESS ) != IDE_SUCCESS );
     }/* while */
 
-    // ÆÄÆ¼¼Ç »ý¼ºÈÄ ÆÄÆ¼¼Ç »ý¼ºÀÌ µÇ¾ú´Ù°í flag¸¦ ¼¼ÆÃ.
+    // íŒŒí‹°ì…˜ ìƒì„±í›„ íŒŒí‹°ì…˜ ìƒì„±ì´ ë˜ì—ˆë‹¤ê³  flagë¥¼ ì„¸íŒ….
     aTableRef->flag |= QMS_TABLE_REF_PARTITION_MADE_TRUE;
 
     qcg::setSmiStmt( aStatement, sSmiStmtOri );
@@ -341,12 +341,12 @@ IDE_RC qmoPartition::getPartCondValues(
 /***********************************************************************
  *
  *  Description : PROJ-1502 PARTITIONED DISK TABLE
- *                values¸®½ºÆ®¿¡¼­ ÆÄÆ¼¼Ç Å° Á¶°Ç°ª¿¡ ÇØ´çÇÏ´Â
- *                °ªÀ» ÃßÃâÇÑ´Ù.
+ *                valuesë¦¬ìŠ¤íŠ¸ì—ì„œ íŒŒí‹°ì…˜ í‚¤ ì¡°ê±´ê°’ì— í•´ë‹¹í•˜ëŠ”
+ *                ê°’ì„ ì¶”ì¶œí•œë‹¤.
  *
- *  Implementation : ÆÄÆ¼¼Ç Å° ¼ø¼­´ë·Î
- *                   constant°¡ ¾Æ´Ò ¶§°¡Áö ÃßÃâÇÒ ¼ö ÀÖ´Â¸¸Å­
- *                   ÃßÃâÇÑ´Ù.
+ *  Implementation : íŒŒí‹°ì…˜ í‚¤ ìˆœì„œëŒ€ë¡œ
+ *                   constantê°€ ì•„ë‹ ë•Œê°€ì§€ ì¶”ì¶œí•  ìˆ˜ ìžˆëŠ”ë§Œí¼
+ *                   ì¶”ì¶œí•œë‹¤.
  *
  ***********************************************************************/
 
@@ -368,13 +368,13 @@ IDE_RC qmoPartition::getPartCondValues(
     aPartCondVal->partCondValCount = 0;
     aPartCondVal->partCondValType = QMS_PARTCONDVAL_NORMAL;
 
-    // ÆÄÆ¼¼Ç Å° ÄÃ·³¸¸Å­ ·çÇÁ
+    // íŒŒí‹°ì…˜ í‚¤ ì»¬ëŸ¼ë§Œí¼ ë£¨í”„
     for( sCurrPartKeyColumn = aPartKeyColumns;
          sCurrPartKeyColumn != NULL;
          sCurrPartKeyColumn = sCurrPartKeyColumn->next )
     {
-        // ÆÄÆ¼¼Ç Å° ¼ø¼­´ë·Î °Ë»ö
-        // ¸ðµç ÄÃ·³¸¸Å­ ·çÇÁ
+        // íŒŒí‹°ì…˜ í‚¤ ìˆœì„œëŒ€ë¡œ ê²€ìƒ‰
+        // ëª¨ë“  ì»¬ëŸ¼ë§Œí¼ ë£¨í”„
         for( sCurrColumn = aColumnList,
                  sCurrValue = aValueList;
              (sCurrColumn != NULL) && (sCurrValue != NULL);
@@ -386,29 +386,29 @@ IDE_RC qmoPartition::getPartCondValues(
             {
                 sNode = &sCurrValue->value->node;
 
-                // constant°¡ ¾Æ´Ò ¶§±îÁö ±¸ÇÑ´Ù.
+                // constantê°€ ì•„ë‹ ë•Œê¹Œì§€ êµ¬í•œë‹¤.
                 IDE_TEST_CONT( qtc::isConstValue( QC_SHARED_TMPLATE(aStatement),
                                                   sCurrValue->value ) == ID_FALSE,
                                non_constant );
 
-                // column, value¸¦ ¹Ù·Î »Ì¾Æ¿Ã ¼ö ÀÖ´Â ÀÌÀ¯´Â
-                // constant valueÀÌ±â ¶§¹®ÀÌ´Ù.
+                // column, valueë¥¼ ë°”ë¡œ ë½‘ì•„ì˜¬ ìˆ˜ ìžˆëŠ” ì´ìœ ëŠ”
+                // constant valueì´ê¸° ë•Œë¬¸ì´ë‹¤.
                 sValueColumn = sTemplate->rows[sNode->table].columns + sNode->column;
                 sValue = (void*)( (UChar*)sTemplate->rows[sNode->table].row
                                   + sValueColumn->column.offset );
 
-                // µ¥ÀÌÅÍ Å¸ÀÔÀÌ ¹Ýµå½Ã °°¾Æ¾ß ÇÔ.
+                // ë°ì´í„° íƒ€ìž…ì´ ë°˜ë“œì‹œ ê°™ì•„ì•¼ í•¨.
                 IDE_DASSERT( sCurrColumn->basicInfo->type.dataTypeId ==
                              sValueColumn->type.dataTypeId );
 
                 // PROJ-2002 Column Security
-                // aPartCondValÀº DMLÀÇ optimize½Ã partition pruningÀ» À§ÇÑ °ÍÀ¸·Î
-                // compare¿¡¸¸ »ç¿ëµÈ´Ù. ±×·¯¹Ç·Î value¸¦ columnÀÇ policy¿¡ ¸ÂÃç
-                // ¾ÏÈ£È­ÇÒ ÇÊ¿ä°¡ ¾ø°í, default policy·Î canonizeÇÑ´Ù.
+                // aPartCondValì€ DMLì˜ optimizeì‹œ partition pruningì„ ìœ„í•œ ê²ƒìœ¼ë¡œ
+                // compareì—ë§Œ ì‚¬ìš©ëœë‹¤. ê·¸ëŸ¬ë¯€ë¡œ valueë¥¼ columnì˜ policyì— ë§žì¶°
+                // ì•”í˜¸í™”í•  í•„ìš”ê°€ ì—†ê³ , default policyë¡œ canonizeí•œë‹¤.
                 if ( (sCurrColumn->basicInfo->module->flag & MTD_ENCRYPT_TYPE_MASK)
                      == MTD_ENCRYPT_TYPE_TRUE )
                 {
-                    // value´Â Ç×»ó default policy¸¦ °®´Â´Ù.
+                    // valueëŠ” í•­ìƒ default policyë¥¼ ê°–ëŠ”ë‹¤.
                     IDE_DASSERT( QCS_IS_DEFAULT_POLICY( sValueColumn )
                                  == ID_TRUE );
 
@@ -435,8 +435,8 @@ IDE_RC qmoPartition::getPartCondValues(
                 }
 
                 // canonize
-                // canonize°¡ ½ÇÆÐÇÏ´Â °æ¿ì´Â overflow°¡ ³ª´Â °æ¿ì.
-                // ÆÄÆ¼¼Ç Å° Á¶°Ç °ªµµ Å×ÀÌºí¿¡ ÀúÀåµÉ ¼ö ÀÖ´Â °ªÀÌ¾î¾ß ÇÑ´Ù.
+                // canonizeê°€ ì‹¤íŒ¨í•˜ëŠ” ê²½ìš°ëŠ” overflowê°€ ë‚˜ëŠ” ê²½ìš°.
+                // íŒŒí‹°ì…˜ í‚¤ ì¡°ê±´ ê°’ë„ í…Œì´ë¸”ì— ì €ìž¥ë  ìˆ˜ ìžˆëŠ” ê°’ì´ì–´ì•¼ í•œë‹¤.
                 if ( ( sCurrColumn->basicInfo->module->flag & MTD_CANON_MASK )
                      == MTD_CANON_NEED )
                 {
@@ -505,8 +505,8 @@ IDE_RC qmoPartition::getPartOrder(
 /***********************************************************************
  *
  *  Description : PROJ-1502 PARTITIONED DISK TABLE
- *                values¿¡¼­ ÃßÃâÇÑ ÆÄÆ¼¼Ç Å° Á¶°Ç °ªÀ» °¡Áö°í
- *                hash°ªÀ» ¸¸µé¾î¼­ ÆÄÆ¼¼Ç °³¼ö·Î modular
+ *                valuesì—ì„œ ì¶”ì¶œí•œ íŒŒí‹°ì…˜ í‚¤ ì¡°ê±´ ê°’ì„ ê°€ì§€ê³ 
+ *                hashê°’ì„ ë§Œë“¤ì–´ì„œ íŒŒí‹°ì…˜ ê°œìˆ˜ë¡œ modular
  *
  *  Implementation :
  *
@@ -542,7 +542,7 @@ SInt qmoPartition::compareRangePartition(
 /***********************************************************************
  *
  *  Description : PROJ-1502 PARTITIONED DISK TABLE
- *                RANGE PARTITION KEY CONDITION VALUEÀÇ ºñ±³
+ *                RANGE PARTITION KEY CONDITION VALUEì˜ ë¹„êµ
  *
  *  Implementation :
  *
@@ -621,15 +621,15 @@ SInt qmoPartition::compareRangePartition(
     }
     else
     {
-        // 2´Â ºñ±³ÇÒ°Å¾øÀÌ ¼­·Î °°Àº °æ¿ì
+        // 2ëŠ” ë¹„êµí• ê±°ì—†ì´ ì„œë¡œ ê°™ì€ ê²½ìš°
         if( sCompareType == 2 )
         {
             sRet = 0;
         }
         else
         {
-            // -1 ¶Ç´Â 1, ºñ±³ÇÒ°Å¾øÀÌ ¼­·Î Å©°Å³ª ÀÛ°Å³ª ÇÑ °æ¿ì
-            // ±×´ë·Î comparetypeÀ» ´ëÀÀ½ÃÅ´.
+            // -1 ë˜ëŠ” 1, ë¹„êµí• ê±°ì—†ì´ ì„œë¡œ í¬ê±°ë‚˜ ìž‘ê±°ë‚˜ í•œ ê²½ìš°
+            // ê·¸ëŒ€ë¡œ comparetypeì„ ëŒ€ì‘ì‹œí‚´.
             sRet = sCompareType;
         }
     }
@@ -645,17 +645,17 @@ idBool qmoPartition::compareListPartition(
 /***********************************************************************
  *
  *  Description : PROJ-1502 PARTITIONED DISK TABLE
- *                list partition key ºñ±³.
- *                list partition key condition value¿Í
- *                ÇÏ³ªÀÇ value¿Í ºñ±³.
+ *                list partition key ë¹„êµ.
+ *                list partition key condition valueì™€
+ *                í•˜ë‚˜ì˜ valueì™€ ë¹„êµ.
  *
  *  Implementation :
- *             (1) default partitionÀÎ °æ¿ì´Â ¹«Á¶°Ç ¹ÌÆ÷ÇÔÀ¸·Î
- *                 °á°ú°¡ ³ª¿Â´Ù.
- *                 - ¸¸¾à ¸ðµç ÆÄÆ¼¼ÇÀÌ Æ÷ÇÔÀÌ ¾ÈµÇ¸é
- *                   default partitionÀ» ¼±ÅÃÇÏµµ·Ï »óÀ§ÄÚµå¿¡¼­
- *                   Ã³¸®ÇÑ´Ù.
- *             (2) Æ÷ÇÔÀÌ¸é ID_TRUE¹ÝÈ¯, ¹ÌÆ÷ÇÔÀÌ¸é ID_FALSE¹ÝÈ¯.
+ *             (1) default partitionì¸ ê²½ìš°ëŠ” ë¬´ì¡°ê±´ ë¯¸í¬í•¨ìœ¼ë¡œ
+ *                 ê²°ê³¼ê°€ ë‚˜ì˜¨ë‹¤.
+ *                 - ë§Œì•½ ëª¨ë“  íŒŒí‹°ì…˜ì´ í¬í•¨ì´ ì•ˆë˜ë©´
+ *                   default partitionì„ ì„ íƒí•˜ë„ë¡ ìƒìœ„ì½”ë“œì—ì„œ
+ *                   ì²˜ë¦¬í•œë‹¤.
+ *             (2) í¬í•¨ì´ë©´ ID_TRUEë°˜í™˜, ë¯¸í¬í•¨ì´ë©´ ID_FALSEë°˜í™˜.
  *
  ***********************************************************************/
 
@@ -711,8 +711,8 @@ IDE_RC qmoPartition::getPartCondValuesFromRow(
 /***********************************************************************
  *
  *  Description : PROJ-1502 PARTITIONED DISK TABLE
- *                insertÇÒ¶§ÀÇ smiValueÇüÅÂ·Î µÈ row¸¦ ÀÌ¿ëÇÏ¿©
- *                partition key conditionÇüÅÂ·Î º¯È¯ÇÑ´Ù.
+ *                insertí• ë•Œì˜ smiValueí˜•íƒœë¡œ ëœ rowë¥¼ ì´ìš©í•˜ì—¬
+ *                partition key conditioní˜•íƒœë¡œ ë³€í™˜í•œë‹¤.
  *  Implementation :
  *
  ***********************************************************************/
@@ -741,10 +741,10 @@ IDE_RC qmoPartition::getPartCondValuesFromRow(
         else
         {
             // PROJ-1705
-            // smiValue->value´Â
-            // ¿ø·¡ rowÀÇ mtdValueTypeÀÇ value¸¦ sm¿¡ ÀúÀåÇÒ value·Î °¡¸®Å°¹Ç·Î,
-            // ¿ø·¡ rowÀÇ mtdValueTypeÀÇ value Æ÷ÀÎÅÍ·Î CondValue¸¦ ¾ò¾î¾ß ÇÑ´Ù.
-            // ( qdbCommon::storingValue2MtdValue() ÁÖ¼® ±×¸² ÂüÁ¶. )
+            // smiValue->valueëŠ”
+            // ì›ëž˜ rowì˜ mtdValueTypeì˜ valueë¥¼ smì— ì €ìž¥í•  valueë¡œ ê°€ë¦¬í‚¤ë¯€ë¡œ,
+            // ì›ëž˜ rowì˜ mtdValueTypeì˜ value í¬ì¸í„°ë¡œ CondValueë¥¼ ì–»ì–´ì•¼ í•œë‹¤.
+            // ( qdbCommon::storingValue2MtdValue() ì£¼ì„ ê·¸ë¦¼ ì°¸ì¡°. )
 
             IDE_TEST( qdbCommon::storingValue2MtdValue( sColumn->basicInfo,
                                                         (void*)( aValues[sColumnOrder].value ),
@@ -786,10 +786,10 @@ IDE_RC qmoPartition::partitionFilteringWithRow(
     {
         case QCM_PARTITION_METHOD_RANGE:
             {
-                // smiValue¿¡¼­ partition key¿¡ ÇØ´çÇÏ´Â °Í¸¸ »©³¿
+                // smiValueì—ì„œ partition keyì— í•´ë‹¹í•˜ëŠ” ê²ƒë§Œ ë¹¼ëƒ„
                 // range partition filtering
-                // filteringÀÇ °á°ú´Â ¿ÀÁ÷ ÇÏ³ª¸¸ ³ª¿Í¾ß ÇÔ.
-                // ¾È³ª¿À´Â °æ¿ì´Â ¿¡·¯(no match)
+                // filteringì˜ ê²°ê³¼ëŠ” ì˜¤ì§ í•˜ë‚˜ë§Œ ë‚˜ì™€ì•¼ í•¨.
+                // ì•ˆë‚˜ì˜¤ëŠ” ê²½ìš°ëŠ” ì—ëŸ¬(no match)
                 IDE_TEST( getPartCondValuesFromRow( aTableRef->tableInfo->partKeyColumns,
                                                     aValues,
                                                     & sPartCondVal )
@@ -804,10 +804,10 @@ IDE_RC qmoPartition::partitionFilteringWithRow(
 
         case QCM_PARTITION_METHOD_LIST:
         {
-            // smiValue¿¡¼­ partition key¿¡ ÇØ´çÇÏ´Â °Í¸¸ »©³¿
+            // smiValueì—ì„œ partition keyì— í•´ë‹¹í•˜ëŠ” ê²ƒë§Œ ë¹¼ëƒ„
             // list partition filtering
-            // filteringÀÇ °á°ú´Â ¿ÀÁ÷ ÇÏ³ª¸¸ ³ª¿Í¾ß ÇÔ.
-            // ¾È³ª¿À´Â °æ¿ì´Â ¿¡·¯(no match)
+            // filteringì˜ ê²°ê³¼ëŠ” ì˜¤ì§ í•˜ë‚˜ë§Œ ë‚˜ì™€ì•¼ í•¨.
+            // ì•ˆë‚˜ì˜¤ëŠ” ê²½ìš°ëŠ” ì—ëŸ¬(no match)
             IDE_TEST( getPartCondValuesFromRow( aTableRef->tableInfo->partKeyColumns,
                                                 aValues,
                                                 & sPartCondVal )
@@ -824,10 +824,10 @@ IDE_RC qmoPartition::partitionFilteringWithRow(
 
         case QCM_PARTITION_METHOD_HASH:
         {
-            // smiValue¿¡¼­ partition key¿¡ ÇØ´çÇÏ´Â °Í¸¸ »©³¿
-            // partition order¸¦ ±¸ÇÔ.
-            // ÇØ´ç partitoin order°¡ partitionRef¿¡ ÀÖ´ÂÁö °Ë»ç.
-            // ÀÖÀ¸¸é ÀÖ´Â°Å »©³»¼­ ¿Ã¸®°í, ¾øÀ¸¸é ¿¡·¯(no match)
+            // smiValueì—ì„œ partition keyì— í•´ë‹¹í•˜ëŠ” ê²ƒë§Œ ë¹¼ëƒ„
+            // partition orderë¥¼ êµ¬í•¨.
+            // í•´ë‹¹ partitoin orderê°€ partitionRefì— ìžˆëŠ”ì§€ ê²€ì‚¬.
+            // ìžˆìœ¼ë©´ ìžˆëŠ”ê±° ë¹¼ë‚´ì„œ ì˜¬ë¦¬ê³ , ì—†ìœ¼ë©´ ì—ëŸ¬(no match)
             IDE_TEST( getPartCondValuesFromRow(  aTableRef->tableInfo->partKeyColumns,
                                                  aValues,
                                                  & sPartCondVal )
@@ -879,10 +879,10 @@ IDE_RC qmoPartition::rangePartitionFilteringWithValues(
  *
  *  Description : PROJ-1502 PARTITIONED DISK TABLE
  *                range partition filtering with values
- *                intoÀý¿¡ ¾²ÀÌ´Â °Í¿¡ ´ëÇÑ Ã³¸®
+ *                intoì ˆì— ì“°ì´ëŠ” ê²ƒì— ëŒ€í•œ ì²˜ë¦¬
  *
- *  Implementation : °ªÀÌ Æ÷ÇÔµÇ´Â ÇÏ³ªÀÇ ÆÄÆ¼¼ÇÀ» Ã£¾Æ¼­ ¸®ÅÏ.
- *                   ¸øÃ£À¸¸é ¿¡·¯.
+ *  Implementation : ê°’ì´ í¬í•¨ë˜ëŠ” í•˜ë‚˜ì˜ íŒŒí‹°ì…˜ì„ ì°¾ì•„ì„œ ë¦¬í„´.
+ *                   ëª»ì°¾ìœ¼ë©´ ì—ëŸ¬.
  *
  ***********************************************************************/
 
@@ -904,7 +904,7 @@ IDE_RC qmoPartition::rangePartitionFilteringWithValues(
 
         if ( sRet == 1 )
         {
-            // max partition keyº¸´Ù ÀÛÀº °æ¿ì.
+            // max partition keyë³´ë‹¤ ìž‘ì€ ê²½ìš°.
             sRet = compareRangePartition(
                 aTableRef->tableInfo->partKeyColumns,
                 &sCurrRef->minPartCondVal,
@@ -912,10 +912,10 @@ IDE_RC qmoPartition::rangePartitionFilteringWithValues(
 
             if ( (sRet == 0) || (sRet == -1) )
             {
-                // min partition key¿Í °°°Å³ª Å« °æ¿ì
+                // min partition keyì™€ ê°™ê±°ë‚˜ í° ê²½ìš°
                 *aSelectedPartitionRef = sCurrRef;
 
-                // TODO1502: µð¹ö±ë¿ë ÄÚµåÀÓ.
+                // TODO1502: ë””ë²„ê¹…ìš© ì½”ë“œìž„.
 //                ideLog::log( IDE_QP_0,
 //                             "INSERT RANGE PARTITION FILTERING, tableID: %d,partitionID: %d\n",
 //                             aTableRef->tableInfo->tableID,
@@ -955,14 +955,14 @@ IDE_RC qmoPartition::listPartitionFilteringWithValue(
 /***********************************************************************
  *
  *  Description : PROJ-1502 PARTITIONED DISK TABLE
- *                ÇÏ³ªÀÇ °ª¿¡ ´ëÇÑ list partition filtering
+ *                í•˜ë‚˜ì˜ ê°’ì— ëŒ€í•œ list partition filtering
  *  Implementation :
  *
  ***********************************************************************/
 
-    // TODO1502: default partition¿¡ ´ëÇØ °í·Á°¡ ÇÊ¿äÇÔ.
-    // default partition¿¡ Æ÷ÇÔµÇ´ÂÁö ¾ÈÆ÷ÇÔµÇ´ÂÁö º¸·Á¸é
-    // ´Ù¸¥ ÆÄÆ¼¼Ç Å°°¡ Á¸ÀçÇØ¾ß ÇÑ´Ù!
+    // TODO1502: default partitionì— ëŒ€í•´ ê³ ë ¤ê°€ í•„ìš”í•¨.
+    // default partitionì— í¬í•¨ë˜ëŠ”ì§€ ì•ˆí¬í•¨ë˜ëŠ”ì§€ ë³´ë ¤ë©´
+    // ë‹¤ë¥¸ íŒŒí‹°ì…˜ í‚¤ê°€ ì¡´ìž¬í•´ì•¼ í•œë‹¤!
 
     qmsPartitionRef * sCurrRef;
     idBool            sRet;
@@ -983,7 +983,7 @@ IDE_RC qmoPartition::listPartitionFilteringWithValue(
         if ( sRet == ID_TRUE )
         {
             *aSelectedPartitionRef = sCurrRef;
-            // TODO1502: µð¹ö±ë¿ë ÄÚµåÀÓ.
+            // TODO1502: ë””ë²„ê¹…ìš© ì½”ë“œìž„.
 //            ideLog::log( IDE_QP_0,
 //                         "INSERT LIST PARTITION FILTERING, tableID: %d,partitionID: %d\n",
 //                         aTableRef->tableInfo->tableID,
@@ -1020,8 +1020,8 @@ IDE_RC qmoPartition::hashPartitionFilteringWithPartOrder(
 /***********************************************************************
  *
  *  Description : PROJ-1502 PARTITIONED DISK TABLE
- *                hash partition filteringÀº
- *                partition order·Î ÇØ´çÇÏ´Â ÆÄÆ¼¼ÇÀ» ¼±ÅÃ
+ *                hash partition filteringì€
+ *                partition orderë¡œ í•´ë‹¹í•˜ëŠ” íŒŒí‹°ì…˜ì„ ì„ íƒ
  *
  *  Implementation :
  *
@@ -1076,13 +1076,13 @@ qmoPartition::isIntersectRangePartition(
 /***********************************************************************
  *
  *  Description : PROJ-1502 PARTITIONED DISK TABLE
- *                partitionÀÇ min, max condition°ú keyrange¿Í ºñ±³ÇÑ´Ù.
- *                range¿Í intersectÇÏ¸é ID_TRUE, ¾Æ´Ï¸é ID_FALSE¸¦ ¸®ÅÏ.
+ *                partitionì˜ min, max conditionê³¼ keyrangeì™€ ë¹„êµí•œë‹¤.
+ *                rangeì™€ intersectí•˜ë©´ ID_TRUE, ì•„ë‹ˆë©´ ID_FALSEë¥¼ ë¦¬í„´.
  *
  *  Implementation :
- *                min conditionº¸´Ù rangeÀÇ max°¡ ÀÛÀ¸¸é not intersect.
- *                max contitionº¸´Ù rangeÀÇ minÀÌ Å©°Å³ª °°À¸¸é not intersect.
- *                ³ª¸ÓÁö °æ¿ì´Â intersect.
+ *                min conditionë³´ë‹¤ rangeì˜ maxê°€ ìž‘ìœ¼ë©´ not intersect.
+ *                max contitionë³´ë‹¤ rangeì˜ minì´ í¬ê±°ë‚˜ ê°™ìœ¼ë©´ not intersect.
+ *                ë‚˜ë¨¸ì§€ ê²½ìš°ëŠ” intersect.
  *
  ***********************************************************************/
 
@@ -1094,29 +1094,29 @@ qmoPartition::isIntersectRangePartition(
     mtdValueInfo       sValueInfo2;
 
     // min condition check.QMS_PARTCONDVAL_MIN
-    // min conditionÀÌ ¿ø·¡ partitioned tableÀÇ minÀÎ °æ¿ì ¹«Á¶°Ç Æ÷ÇÔ.
+    // min conditionì´ ì›ëž˜ partitioned tableì˜ minì¸ ê²½ìš° ë¬´ì¡°ê±´ í¬í•¨.
     if( aMinPartCondVal->partCondValType == QMS_PARTCONDVAL_MIN )
     {
         sIsIntersect = ID_TRUE;
     }
     else
     {
-        // min partcondvalÀº defaultÀÏ ¼ö ¾øÀ½.
+        // min partcondvalì€ defaultì¼ ìˆ˜ ì—†ìŒ.
         IDE_DASSERT( aMinPartCondVal->partCondValType !=
                      QMS_PARTCONDVAL_DEFAULT );
 
-        // range·Î ¿À´Â °Í: LE, LT
-        // partcondvalÀÇ °á°ú¿Í range maximum°úÀÇ °á°ú´Â
-        // LEÀÎ °æ¿ì : range maximumÀÌ partcondvalº¸´Ù ÀÛ¾Æ¾ßÇÔ
-        // LTÀÎ °æ¿ì : range maximumÀÌ partcondvalº¸´Ù ÀÛ°Å³ª °°¾Æ¾ßÇÔ.
+        // rangeë¡œ ì˜¤ëŠ” ê²ƒ: LE, LT
+        // partcondvalì˜ ê²°ê³¼ì™€ range maximumê³¼ì˜ ê²°ê³¼ëŠ”
+        // LEì¸ ê²½ìš° : range maximumì´ partcondvalë³´ë‹¤ ìž‘ì•„ì•¼í•¨
+        // LTì¸ ê²½ìš° : range maximumì´ partcondvalë³´ë‹¤ ìž‘ê±°ë‚˜ ê°™ì•„ì•¼í•¨.
 
         sData = (mtkRangeCallBack*)aPartKeyRange->maximum.data;
         i = 0;
 
         while(1)
         {
-            // key range compare¿¡¼­´Â fixed compare¸¦ È£ÃâÇÏ¹Ç·Î
-            // offsetÀ» 0À¸·Î º¯°æÇÑ´Ù.
+            // key range compareì—ì„œëŠ” fixed compareë¥¼ í˜¸ì¶œí•˜ë¯€ë¡œ
+            // offsetì„ 0ìœ¼ë¡œ ë³€ê²½í•œë‹¤.
             sData->columnDesc.column.offset = 0;
             
             sValueInfo1.column = &(sData->columnDesc);
@@ -1147,11 +1147,11 @@ qmoPartition::isIntersectRangePartition(
                 else if ( i == aMinPartCondVal->partCondValCount )
                 {
                     // ex)
-                    // partition ¹üÀ§min : 10
+                    // partition ë²”ìœ„min : 10
                     // i1 = 10 and i2 < 10
                     // i1 = 10 and i2 <= 10
-                    // µÚ¿¡ ÄÃ·³ÀÌ ÇÏ³ª ´õ ÀÖÀ½À¸·Î ÇØ¼­ ¹«Á¶°Ç
-                    // keyrangeÀÇ max°¡ Å©´Ù.
+                    // ë’¤ì— ì»¬ëŸ¼ì´ í•˜ë‚˜ ë” ìžˆìŒìœ¼ë¡œ í•´ì„œ ë¬´ì¡°ê±´
+                    // keyrangeì˜ maxê°€ í¬ë‹¤.
 
                     sOrder = -1;
 
@@ -1160,11 +1160,11 @@ qmoPartition::isIntersectRangePartition(
                 else
                 {
                     // ex)
-                    // partition ¹üÀ§min : 10, 10
+                    // partition ë²”ìœ„min : 10, 10
                     // i1 < 10   .... (1)
                     // i1 <= 10  .... (2)
-                    // 1ÀÇ °æ¿ì´Â partition minÀÌ Å©´Ù.
-                    // ÇÏÁö¸¸, 2ÀÇ °æ¿ì´Â keyrangeÀÇ max°¡ Å©´Ù.
+                    // 1ì˜ ê²½ìš°ëŠ” partition minì´ í¬ë‹¤.
+                    // í•˜ì§€ë§Œ, 2ì˜ ê²½ìš°ëŠ” keyrangeì˜ maxê°€ í¬ë‹¤.
                     if( ( aPartKeyRange->maximum.callback
                           == mtk::rangeCallBackLT4Mtd )
                         ||
@@ -1214,32 +1214,32 @@ qmoPartition::isIntersectRangePartition(
 
     if( sIsIntersect == ID_TRUE )
     {
-        // À§¿¡¼­ Ã¼Å©Çß´Âµ¥ intersectÀÎ °æ¿ì
-        // max conditionÇÏ°í range minimumÇÏ°í Ã¼Å©ÇØºÁ¾ß ÇÑ´Ù.
+        // ìœ„ì—ì„œ ì²´í¬í–ˆëŠ”ë° intersectì¸ ê²½ìš°
+        // max conditioní•˜ê³  range minimumí•˜ê³  ì²´í¬í•´ë´ì•¼ í•œë‹¤.
 
         // max condition check.
-        // max conditionÀÌ ¿ø·¡ partitioned tableÀÇ maxÀÎ °æ¿ì ¹«Á¶°Ç Æ÷ÇÔ.
+        // max conditionì´ ì›ëž˜ partitioned tableì˜ maxì¸ ê²½ìš° ë¬´ì¡°ê±´ í¬í•¨.
         if( aMaxPartCondVal->partCondValType == QMS_PARTCONDVAL_DEFAULT )
         {
             sIsIntersect = ID_TRUE;
         }
         else
         {
-            // max partcondvalÀº minÀÏ ¼ö ¾øÀ½.
+            // max partcondvalì€ minì¼ ìˆ˜ ì—†ìŒ.
             IDE_DASSERT( aMaxPartCondVal->partCondValType
                          != QMS_PARTCONDVAL_MIN );
 
-            // range·Î ¿À´Â °Í : GE, GT
-            // partcondvalÀÇ °á°ú¿Í range minimum°úÀÇ °á°ú´Â
-            // GT, GEÀÎ °æ¿ì : range minimumÀÌ partcondvalº¸´Ù °°°Å³ª Ä¿¾ß ÇÔ.
+            // rangeë¡œ ì˜¤ëŠ” ê²ƒ : GE, GT
+            // partcondvalì˜ ê²°ê³¼ì™€ range minimumê³¼ì˜ ê²°ê³¼ëŠ”
+            // GT, GEì¸ ê²½ìš° : range minimumì´ partcondvalë³´ë‹¤ ê°™ê±°ë‚˜ ì»¤ì•¼ í•¨.
 
             i = 0;
             sData  = (mtkRangeCallBack*)aPartKeyRange->minimum.data;
 
             while(1)
             {
-                // key range compare¿¡¼­´Â fixed compare¸¦ È£ÃâÇÏ¹Ç·Î
-                // offsetÀ» 0À¸·Î º¯°æÇÑ´Ù.
+                // key range compareì—ì„œëŠ” fixed compareë¥¼ í˜¸ì¶œí•˜ë¯€ë¡œ
+                // offsetì„ 0ìœ¼ë¡œ ë³€ê²½í•œë‹¤.
                 sData->columnDesc.column.offset = 0;
             
                 sValueInfo1.column = &(sData->columnDesc);
@@ -1270,11 +1270,11 @@ qmoPartition::isIntersectRangePartition(
                     else if ( i == aMaxPartCondVal->partCondValCount )
                     {
                         // ex)
-                        // partition ¹üÀ§min : 10
+                        // partition ë²”ìœ„min : 10
                         // i1 = 10 and i2 > 10
                         // i1 = 10 and i2 >= 10
-                        // µÚ¿¡ ÄÃ·³ÀÌ ÇÏ³ª ´õ ÀÖÀ½À¸·Î ÇØ¼­ ¹«Á¶°Ç
-                        // keyrangeÀÇ minÀÌ Å©´Ù.
+                        // ë’¤ì— ì»¬ëŸ¼ì´ í•˜ë‚˜ ë” ìžˆìŒìœ¼ë¡œ í•´ì„œ ë¬´ì¡°ê±´
+                        // keyrangeì˜ minì´ í¬ë‹¤.
 
                         sOrder = -1;
                         break;
@@ -1282,11 +1282,11 @@ qmoPartition::isIntersectRangePartition(
                     else
                     {
                         // ex)
-                        // partition ¹üÀ§min : 10, 10
+                        // partition ë²”ìœ„min : 10, 10
                         // i1 > 10   .... (1)
                         // i1 >= 10  .... (2)
-                        // 1ÀÇ °æ¿ì´Â keyrangeÀÇ max°¡ ´õ Å©´Ù.
-                        // ÇÏÁö¸¸, 2ÀÇ °æ¿ì´Â keyrangeÀÇ minÀÌ Å©´Ù.
+                        // 1ì˜ ê²½ìš°ëŠ” keyrangeì˜ maxê°€ ë” í¬ë‹¤.
+                        // í•˜ì§€ë§Œ, 2ì˜ ê²½ìš°ëŠ” keyrangeì˜ minì´ í¬ë‹¤.
                         if( ( aPartKeyRange->minimum.callback ==
                               mtk::rangeCallBackGT4Mtd )
                             ||
@@ -1334,17 +1334,17 @@ qmoPartition::isIntersectListPartition(
 /***********************************************************************
  *
  *  Description : PROJ-1502 PARTITIONED DISK TABLE
- *                partition condition°ú keyrange¿Í ºñ±³ÇÑ´Ù.
- *                range¿Í intersectÇÏ¸é ID_TRUE, ¾Æ´Ï¸é ID_FALSE¸¦ ¸®ÅÏ.
+ *                partition conditionê³¼ keyrangeì™€ ë¹„êµí•œë‹¤.
+ *                rangeì™€ intersectí•˜ë©´ ID_TRUE, ì•„ë‹ˆë©´ ID_FALSEë¥¼ ë¦¬í„´.
  *
  *  Implementation :
- *                list partition key columnÀº ÇÏ³ªÀÌ°í, °ªÀÌ ¿©·¯°³ÀÓ.
- *                partition condition°ú keyrangeÁß ÇÏ³ª¶óµµ ÀÏÄ¡ÇÏ´Â °ÍÀÌ
- *                ÀÖÀ¸¸é intersect. ±×·¸Áö ¾ÊÀ¸¸é not intersect.
- *                ´Ü, default´Â ´Ù¸¥ ÆÄÆ¼¼Ç Á¶°ÇÀÇ ¹Ý´ëÀÌ¹Ç·Î,
- *                not(intersect°ª)À» ¹ÝÈ¯ÇÑ´Ù.
- *                equal, is null range¸¸ ¿À±â ¶§¹®¿¡, GE, LE callback¸¸ÀÌ
- *                Á¸ÀçÇÑ´Ù. µû¶ó¼­, µÑÁß ÇÏ³ª¸¸ ÀÏÄ¡ÇÏ¸é intersect.
+ *                list partition key columnì€ í•˜ë‚˜ì´ê³ , ê°’ì´ ì—¬ëŸ¬ê°œìž„.
+ *                partition conditionê³¼ keyrangeì¤‘ í•˜ë‚˜ë¼ë„ ì¼ì¹˜í•˜ëŠ” ê²ƒì´
+ *                ìžˆìœ¼ë©´ intersect. ê·¸ë ‡ì§€ ì•Šìœ¼ë©´ not intersect.
+ *                ë‹¨, defaultëŠ” ë‹¤ë¥¸ íŒŒí‹°ì…˜ ì¡°ê±´ì˜ ë°˜ëŒ€ì´ë¯€ë¡œ,
+ *                not(intersectê°’)ì„ ë°˜í™˜í•œë‹¤.
+ *                equal, is null rangeë§Œ ì˜¤ê¸° ë•Œë¬¸ì—, GE, LE callbackë§Œì´
+ *                ì¡´ìž¬í•œë‹¤. ë”°ë¼ì„œ, ë‘˜ì¤‘ í•˜ë‚˜ë§Œ ì¼ì¹˜í•˜ë©´ intersect.
  *
  ***********************************************************************/
 
@@ -1355,10 +1355,10 @@ qmoPartition::isIntersectListPartition(
     mtdValueInfo       sValueInfo1;
     mtdValueInfo       sValueInfo2;
 
-    // ÀûÇÕ¼º °Ë»ç.
-    // list partition columnÀº ÇÏ³ªÀÓ.
-    // keyrange´Â composite°¡ ¾Æ´Ô.
-    // Greater Equal, Less EqualÀÇ Á¶ÇÕ¸¸ °¡´É.
+    // ì í•©ì„± ê²€ì‚¬.
+    // list partition columnì€ í•˜ë‚˜ìž„.
+    // keyrangeëŠ” compositeê°€ ì•„ë‹˜.
+    // Greater Equal, Less Equalì˜ ì¡°í•©ë§Œ ê°€ëŠ¥.
     IDE_DASSERT( ((mtkRangeCallBack*)aPartKeyRange->minimum.data)->next == NULL );
     IDE_DASSERT( ((mtkRangeCallBack*)aPartKeyRange->maximum.data)->next == NULL );
 
@@ -1366,8 +1366,8 @@ qmoPartition::isIntersectListPartition(
 
     for( i = 0; i < aPartCondVal->partCondValCount; i++ )
     {
-        // key range compare¿¡¼­´Â fixed compare¸¦ È£ÃâÇÏ¹Ç·Î
-        // offsetÀ» 0À¸·Î º¯°æÇÑ´Ù.
+        // key range compareì—ì„œëŠ” fixed compareë¥¼ í˜¸ì¶œí•˜ë¯€ë¡œ
+        // offsetì„ 0ìœ¼ë¡œ ë³€ê²½í•œë‹¤.
         sMinData->columnDesc.column.offset = 0;
             
         sValueInfo1.column = &(sMinData->columnDesc);
@@ -1393,7 +1393,7 @@ qmoPartition::isIntersectListPartition(
 
     if( aPartCondVal->partCondValType == QMS_PARTCONDVAL_DEFAULT )
     {
-        // default partitionÀÎ °æ¿ì´Â intersect°ªÀ» µÚÁý´Â´Ù.
+        // default partitionì¸ ê²½ìš°ëŠ” intersectê°’ì„ ë’¤ì§‘ëŠ”ë‹¤.
         if( sIsIntersect == ID_TRUE )
         {
             sIsIntersect = ID_FALSE;
@@ -1420,12 +1420,12 @@ qmoPartition::makeHashKeyFromPartKeyRange(
 {
 /***********************************************************************
  *
- *  Description : smiRange·ÎºÎÅÍ hash key¸¦ ¾ò¾î³½´Ù.
- *                »ý¼ºÇÑ hash key´Â smiRangeÀÇ mHashVal¿¡ ¼¼ÆÃÇÑ´Ù.
+ *  Description : smiRangeë¡œë¶€í„° hash keyë¥¼ ì–»ì–´ë‚¸ë‹¤.
+ *                ìƒì„±í•œ hash keyëŠ” smiRangeì˜ mHashValì— ì„¸íŒ…í•œë‹¤.
  *
- *  Implementation : is nullÀÇ °æ¿ì minimum condition¿¡ columnÁ¤º¸°¡ ¾ø´Ù.
- *                   µû¶ó¼­, is nullÀº µû·Î ÇØ´ç ¸ðµâÀÇ staticNullÀ»
- *                   ÀÌ¿ëÇØ¾ß ÇÑ´Ù.
+ *  Implementation : is nullì˜ ê²½ìš° minimum conditionì— columnì •ë³´ê°€ ì—†ë‹¤.
+ *                   ë”°ë¼ì„œ, is nullì€ ë”°ë¡œ í•´ë‹¹ ëª¨ë“ˆì˜ staticNullì„
+ *                   ì´ìš©í•´ì•¼ í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -1446,9 +1446,9 @@ qmoPartition::makeHashKeyFromPartKeyRange(
 
     IDU_FIT_POINT_FATAL( "qmoPartition::makeHashKeyFromPartKeyRange::__FT__" );
 
-    // ÀûÇÕ¼º °Ë»ç.
-    // keyrange´Â composite°¡ ¾Æ´Ô.
-    // Greater Equal, Less EqualÀÇ Á¶ÇÕ¸¸ °¡´É.
+    // ì í•©ì„± ê²€ì‚¬.
+    // keyrangeëŠ” compositeê°€ ì•„ë‹˜.
+    // Greater Equal, Less Equalì˜ ì¡°í•©ë§Œ ê°€ëŠ¥.
 
     if((( aPartKeyRange->minimum.callback == mtk::rangeCallBackGE4Mtd )
         ||
@@ -1471,7 +1471,7 @@ qmoPartition::makeHashKeyFromPartKeyRange(
                 ( sData->compare == mtk::compareMaximumLimit4Stored ) )
             {
                 sDestValue = sData->columnDesc.module->staticNull;
-                // is nullÀÎ °æ¿ìÀÓ.
+                // is nullì¸ ê²½ìš°ìž„.
             }
             else
             {
@@ -1479,7 +1479,7 @@ qmoPartition::makeHashKeyFromPartKeyRange(
                     sData->valueDesc.type.dataTypeId )
                 {
                     // PROJ-2002 Column Security
-                    // echar, evarchar´Â µ¿ÀÏ groupÀÌ ¾Æ´Ï¹Ç·Î µé¾î¿Ã ¼ö ¾ø´Ù.
+                    // echar, evarcharëŠ” ë™ì¼ groupì´ ì•„ë‹ˆë¯€ë¡œ ë“¤ì–´ì˜¬ ìˆ˜ ì—†ë‹¤.
                     IDE_DASSERT(
                         (sData->columnDesc.type.dataTypeId != MTD_ECHAR_ID) &&
                         (sData->columnDesc.type.dataTypeId != MTD_EVARCHAR_ID) &&
@@ -1598,14 +1598,14 @@ qmoPartition::makeHashKeyFromPartKeyRange(
 
     *aIsValidHashVal = ID_FALSE;
 
-    /* PROJ-2617 [¾ÈÁ¤¼º] QP - PVO¿¡¼­ÀÇ ¾ÈÁ¤¼º Çâ»ó
-     *  - ´ÙÁß ¹ÝÈ¯±¸¹®À» Áö´Ñ °æ¿ì·Î, ¿©·¯ ¹ÝÈ¯±¸¹® »óÀ§¿¡¼­ IDE_FT_EXCEPTION_END¸¦ È£ÃâÇÑ´Ù.
+    /* PROJ-2617 [ì•ˆì •ì„±] QP - PVOì—ì„œì˜ ì•ˆì •ì„± í–¥ìƒ
+     *  - ë‹¤ì¤‘ ë°˜í™˜êµ¬ë¬¸ì„ ì§€ë‹Œ ê²½ìš°ë¡œ, ì—¬ëŸ¬ ë°˜í™˜êµ¬ë¬¸ ìƒìœ„ì—ì„œ IDE_FT_EXCEPTION_ENDë¥¼ í˜¸ì¶œí•œë‹¤.
      */
     IDE_FT_EXCEPTION_END();
 
     sErrorCode = ideGetErrorCode();
 
-    // overflow ¿¡·¯¿¡ ´ëÇØ¼­´Â ¹«½ÃÇÑ´Ù.
+    // overflow ì—ëŸ¬ì— ëŒ€í•´ì„œëŠ” ë¬´ì‹œí•œë‹¤.
     if( sErrorCode == mtERR_ABORT_VALUE_OVERFLOW )
     {
         IDE_CLEAR();
@@ -1629,12 +1629,12 @@ qmoPartition::makeHashKeyFromPartKeyRange(
 {
 /***********************************************************************
  *
- *  Description : smiRange·ÎºÎÅÍ hash key¸¦ ¾ò¾î³½´Ù.
- *                »ý¼ºÇÑ hash key´Â smiRangeÀÇ mHashVal¿¡ ¼¼ÆÃÇÑ´Ù.
+ *  Description : smiRangeë¡œë¶€í„° hash keyë¥¼ ì–»ì–´ë‚¸ë‹¤.
+ *                ìƒì„±í•œ hash keyëŠ” smiRangeì˜ mHashValì— ì„¸íŒ…í•œë‹¤.
  *
- *  Implementation : is nullÀÇ °æ¿ì minimum condition¿¡ columnÁ¤º¸°¡ ¾ø´Ù.
- *                   µû¶ó¼­, is nullÀº µû·Î ÇØ´ç ¸ðµâÀÇ staticNullÀ»
- *                   ÀÌ¿ëÇØ¾ß ÇÑ´Ù.
+ *  Implementation : is nullì˜ ê²½ìš° minimum conditionì— columnì •ë³´ê°€ ì—†ë‹¤.
+ *                   ë”°ë¼ì„œ, is nullì€ ë”°ë¡œ í•´ë‹¹ ëª¨ë“ˆì˜ staticNullì„
+ *                   ì´ìš©í•´ì•¼ í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -1655,9 +1655,9 @@ qmoPartition::makeHashKeyFromPartKeyRange(
 
     IDU_FIT_POINT_FATAL( "qmoPartition::makeHashKeyFromPartKeyRange::__FT__" );
 
-    // ÀûÇÕ¼º °Ë»ç.
-    // keyrange´Â composite°¡ ¾Æ´Ô.
-    // Greater Equal, Less EqualÀÇ Á¶ÇÕ¸¸ °¡´É.
+    // ì í•©ì„± ê²€ì‚¬.
+    // keyrangeëŠ” compositeê°€ ì•„ë‹˜.
+    // Greater Equal, Less Equalì˜ ì¡°í•©ë§Œ ê°€ëŠ¥.
 
     if((( aPartKeyRange->minimum.callback == mtk::rangeCallBackGE4Mtd )
         ||
@@ -1680,7 +1680,7 @@ qmoPartition::makeHashKeyFromPartKeyRange(
                 ( sData->compare == mtk::compareMaximumLimit4Stored ) )
             {
                 sDestValue = sData->columnDesc.module->staticNull;
-                // is nullÀÎ °æ¿ìÀÓ.
+                // is nullì¸ ê²½ìš°ìž„.
             }
             else
             {
@@ -1688,7 +1688,7 @@ qmoPartition::makeHashKeyFromPartKeyRange(
                     sData->valueDesc.type.dataTypeId )
                 {
                     // PROJ-2002 Column Security
-                    // echar, evarchar´Â µ¿ÀÏ groupÀÌ ¾Æ´Ï¹Ç·Î µé¾î¿Ã ¼ö ¾ø´Ù.
+                    // echar, evarcharëŠ” ë™ì¼ groupì´ ì•„ë‹ˆë¯€ë¡œ ë“¤ì–´ì˜¬ ìˆ˜ ì—†ë‹¤.
                     IDE_DASSERT(
                         (sData->columnDesc.type.dataTypeId != MTD_ECHAR_ID) &&
                         (sData->columnDesc.type.dataTypeId != MTD_EVARCHAR_ID) &&
@@ -1803,14 +1803,14 @@ qmoPartition::makeHashKeyFromPartKeyRange(
 
     *aIsValidHashVal = ID_FALSE;
 
-    /* PROJ-2617 [¾ÈÁ¤¼º] QP - PVO¿¡¼­ÀÇ ¾ÈÁ¤¼º Çâ»ó
-     *  - ´ÙÁß ¹ÝÈ¯±¸¹®À» Áö´Ñ °æ¿ì·Î, ¿©·¯ ¹ÝÈ¯±¸¹® »óÀ§¿¡¼­ IDE_FT_EXCEPTION_END¸¦ È£ÃâÇÑ´Ù.
+    /* PROJ-2617 [ì•ˆì •ì„±] QP - PVOì—ì„œì˜ ì•ˆì •ì„± í–¥ìƒ
+     *  - ë‹¤ì¤‘ ë°˜í™˜êµ¬ë¬¸ì„ ì§€ë‹Œ ê²½ìš°ë¡œ, ì—¬ëŸ¬ ë°˜í™˜êµ¬ë¬¸ ìƒìœ„ì—ì„œ IDE_FT_EXCEPTION_ENDë¥¼ í˜¸ì¶œí•œë‹¤.
      */
     IDE_FT_EXCEPTION_END();
 
     sErrorCode = ideGetErrorCode();
 
-    // overflow ¿¡·¯¿¡ ´ëÇØ¼­´Â ¹«½ÃÇÑ´Ù.
+    // overflow ì—ëŸ¬ì— ëŒ€í•´ì„œëŠ” ë¬´ì‹œí•œë‹¤.
     if( sErrorCode == mtERR_ABORT_VALUE_OVERFLOW )
     {
         IDE_CLEAR();
@@ -1969,7 +1969,7 @@ qmoPartition::rangePartitionPruningWithKeyRange(
         }
         else
         {
-            // intersectµÇÁö ¾ÊÀ¸¸é partitionRef ¸®½ºÆ®¿¡¼­ Á¦°Å.
+            // intersectë˜ì§€ ì•Šìœ¼ë©´ partitionRef ë¦¬ìŠ¤íŠ¸ì—ì„œ ì œê±°.
             if ( sPrevRef == NULL )
             {
                 aTableRef->partitionRef = sCurrRef->next;
@@ -2028,7 +2028,7 @@ qmoPartition::listPartitionPruningWithKeyRange(
         }
         else
         {
-            // intersectµÇÁö ¾ÊÀ¸¸é partitionRef ¸®½ºÆ®¿¡¼­ Á¦°Å.
+            // intersectë˜ì§€ ì•Šìœ¼ë©´ partitionRef ë¦¬ìŠ¤íŠ¸ì—ì„œ ì œê±°.
             if ( sPrevRef == NULL )
             {
                 aTableRef->partitionRef = sCurrRef->next;
@@ -2070,8 +2070,8 @@ qmoPartition::hashPartitionPruningWithKeyRange(
 
         if ( sIsValidHashVal == ID_FALSE )
         {
-            // invalidÇÏ´Ù´Â Ç¥½Ã¸¦ callbackÀ» null·Î ¹Ù²Ù¾î¼­ È®ÀÎÇÑ´Ù.
-            // ÀÏ¹ÝÀûÀ¸·Î callbackÀÌ nullÀÏ ÀÏÀº Àý´ë·Î ¹ß»ýÇÏÁö ¾ÊÀ½.
+            // invalidí•˜ë‹¤ëŠ” í‘œì‹œë¥¼ callbackì„ nullë¡œ ë°”ê¾¸ì–´ì„œ í™•ì¸í•œë‹¤.
+            // ì¼ë°˜ì ìœ¼ë¡œ callbackì´ nullì¼ ì¼ì€ ì ˆëŒ€ë¡œ ë°œìƒí•˜ì§€ ì•ŠìŒ.
             sPartKeyRange->minimum.callback = NULL;
         }
         else
@@ -2094,7 +2094,7 @@ qmoPartition::hashPartitionPruningWithKeyRange(
         {
             if ( sPartKeyRange->minimum.callback == NULL )
             {
-                // hash key°¡ invalidÇÑ °æ¿ìÀÓ.
+                // hash keyê°€ invalidí•œ ê²½ìš°ìž„.
                 // Nothing to do.
             }
             else
@@ -2120,7 +2120,7 @@ qmoPartition::hashPartitionPruningWithKeyRange(
         }
         else
         {
-            // intersectµÇÁö ¾ÊÀ¸¸é partitionRef ¸®½ºÆ®¿¡¼­ Á¦°Å.
+            // intersectë˜ì§€ ì•Šìœ¼ë©´ partitionRef ë¦¬ìŠ¤íŠ¸ì—ì„œ ì œê±°.
             if ( sPrevRef == NULL )
             {
                 aTableRef->partitionRef = sCurrRef->next;
@@ -2404,8 +2404,8 @@ qmoPartition::hashPartitionFilteringWithPartitionFilter(
 
         if ( sIsValidHashVal == ID_FALSE )
         {
-            // invalidÇÏ´Ù´Â Ç¥½Ã¸¦ callbackÀ» null·Î ¹Ù²Ù¾î¼­ È®ÀÎÇÑ´Ù.
-            // ÀÏ¹ÝÀûÀ¸·Î callbackÀÌ nullÀÏ ÀÏÀº Àý´ë·Î ¹ß»ýÇÏÁö ¾ÊÀ½.
+            // invalidí•˜ë‹¤ëŠ” í‘œì‹œë¥¼ callbackì„ nullë¡œ ë°”ê¾¸ì–´ì„œ í™•ì¸í•œë‹¤.
+            // ì¼ë°˜ì ìœ¼ë¡œ callbackì´ nullì¼ ì¼ì€ ì ˆëŒ€ë¡œ ë°œìƒí•˜ì§€ ì•ŠìŒ.
             sPartFilter->minimum.callback = NULL;
         }
         else
@@ -2432,7 +2432,7 @@ qmoPartition::hashPartitionFilteringWithPartitionFilter(
 
             if ( sPartFilter->minimum.callback == NULL )
             {
-                // hash key°¡ invalidÇÑ °æ¿ìÀÓ.
+                // hash keyê°€ invalidí•œ ê²½ìš°ìž„.
                 // Nothing to do.
             }
             else
@@ -2572,7 +2572,7 @@ qmoPartition::makePartUpdateColumnList( qcStatement      * aStatement,
  *  Description :
  *
  *  Implementation :
- *      partition¿ë update column list¸¦ »ý¼ºÇÑ´Ù.
+ *      partitionìš© update column listë¥¼ ìƒì„±í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -2595,7 +2595,7 @@ qmoPartition::makePartUpdateColumnList( qcStatement      * aStatement,
                                                    (void **) & sCurrColumn )
                   != IDE_SUCCESS );
 
-        // smiColumnList Á¤º¸ ¼³Á¤
+        // smiColumnList ì •ë³´ ì„¤ì •
         sCurrColumn->next = NULL;
 
         for ( sQcmColumn  = aPartitionRef->partitionInfo->columns;
@@ -2702,7 +2702,7 @@ SInt qmoPartition::comparePartMinRangeMax( qmsPartCondValList * aMinPartCondVal,
     }
     else
     {
-        // min partcondvalÀº defaultÀÏ ¼ö ¾øÀ½.
+        // min partcondvalì€ defaultì¼ ìˆ˜ ì—†ìŒ.
         IDE_DASSERT( aMinPartCondVal->partCondValType !=
                      QMS_PARTCONDVAL_DEFAULT );
 
@@ -2711,8 +2711,8 @@ SInt qmoPartition::comparePartMinRangeMax( qmsPartCondValList * aMinPartCondVal,
 
         while( 1 )
         {
-            // key range compare¿¡¼­´Â fixed compare¸¦ È£ÃâÇÏ¹Ç·Î
-            // offsetÀ» 0À¸·Î º¯°æÇÑ´Ù.
+            // key range compareì—ì„œëŠ” fixed compareë¥¼ í˜¸ì¶œí•˜ë¯€ë¡œ
+            // offsetì„ 0ìœ¼ë¡œ ë³€ê²½í•œë‹¤.
             sData->columnDesc.column.offset = 0;
             
             sValueInfo1.column = &(sData->columnDesc);
@@ -2743,11 +2743,11 @@ SInt qmoPartition::comparePartMinRangeMax( qmsPartCondValList * aMinPartCondVal,
                 else if ( i == aMinPartCondVal->partCondValCount )
                 {
                     // ex)
-                    // partition ¹üÀ§min : 10
+                    // partition ë²”ìœ„min : 10
                     // i1 = 10 and i2 < 10
                     // i1 = 10 and i2 <= 10
-                    // µÚ¿¡ ÄÃ·³ÀÌ ÇÏ³ª ´õ ÀÖÀ½À¸·Î ÇØ¼­ ¹«Á¶°Ç
-                    // keyrangeÀÇ max°¡ Å©´Ù.
+                    // ë’¤ì— ì»¬ëŸ¼ì´ í•˜ë‚˜ ë” ìžˆìŒìœ¼ë¡œ í•´ì„œ ë¬´ì¡°ê±´
+                    // keyrangeì˜ maxê°€ í¬ë‹¤.
 
                     sOrder = -1;
 
@@ -2756,11 +2756,11 @@ SInt qmoPartition::comparePartMinRangeMax( qmsPartCondValList * aMinPartCondVal,
                 else
                 {
                     // ex)
-                    // partition ¹üÀ§min : 10, 10
+                    // partition ë²”ìœ„min : 10, 10
                     // i1 < 10   .... (1)
                     // i1 <= 10  .... (2)
-                    // 1ÀÇ °æ¿ì´Â partition minÀÌ Å©´Ù.
-                    // ÇÏÁö¸¸, 2ÀÇ °æ¿ì´Â keyrangeÀÇ max°¡ Å©´Ù.
+                    // 1ì˜ ê²½ìš°ëŠ” partition minì´ í¬ë‹¤.
+                    // í•˜ì§€ë§Œ, 2ì˜ ê²½ìš°ëŠ” keyrangeì˜ maxê°€ í¬ë‹¤.
                     if( ( aPartKeyRange->maximum.callback
                           == mtk::rangeCallBackLT4Mtd )
                         ||
@@ -2801,7 +2801,7 @@ SInt qmoPartition::comparePartMinRangeMin( qmsPartCondValList * aMinPartCondVal,
     }
     else
     {
-        // min partcondvalÀº defaultÀÏ ¼ö ¾øÀ½.
+        // min partcondvalì€ defaultì¼ ìˆ˜ ì—†ìŒ.
         IDE_DASSERT( aMinPartCondVal->partCondValType !=
                      QMS_PARTCONDVAL_DEFAULT );
 
@@ -2810,8 +2810,8 @@ SInt qmoPartition::comparePartMinRangeMin( qmsPartCondValList * aMinPartCondVal,
 
         while( 1 )
         {
-            // key range compare¿¡¼­´Â fixed compare¸¦ È£ÃâÇÏ¹Ç·Î
-            // offsetÀ» 0À¸·Î º¯°æÇÑ´Ù.
+            // key range compareì—ì„œëŠ” fixed compareë¥¼ í˜¸ì¶œí•˜ë¯€ë¡œ
+            // offsetì„ 0ìœ¼ë¡œ ë³€ê²½í•œë‹¤.
             sData->columnDesc.column.offset = 0;
            
             sValueInfo1.column = &(sData->columnDesc);
@@ -2842,11 +2842,11 @@ SInt qmoPartition::comparePartMinRangeMin( qmsPartCondValList * aMinPartCondVal,
                 else if ( i == aMinPartCondVal->partCondValCount )
                 {
                     // ex)
-                    // partition ¹üÀ§min : 10
+                    // partition ë²”ìœ„min : 10
                     // i1 = 10 and i2 < 10
                     // i1 = 10 and i2 <= 10
-                    // µÚ¿¡ ÄÃ·³ÀÌ ÇÏ³ª ´õ ÀÖÀ½À¸·Î ÇØ¼­ ¹«Á¶°Ç
-                    // keyrangeÀÇ max°¡ Å©´Ù.
+                    // ë’¤ì— ì»¬ëŸ¼ì´ í•˜ë‚˜ ë” ìžˆìŒìœ¼ë¡œ í•´ì„œ ë¬´ì¡°ê±´
+                    // keyrangeì˜ maxê°€ í¬ë‹¤.
 
                     sOrder = -1;
 
@@ -2855,11 +2855,11 @@ SInt qmoPartition::comparePartMinRangeMin( qmsPartCondValList * aMinPartCondVal,
                 else
                 {
                     // ex)
-                    // partition ¹üÀ§min : 10, 10
+                    // partition ë²”ìœ„min : 10, 10
                     // i1 > 10   .... (1)
                     // i1 >= 10  .... (2)
-                    // 1ÀÇ °æ¿ì´Â keyrangeÀÇ max°¡ ´õ Å©´Ù.
-                    // ÇÏÁö¸¸, 2ÀÇ °æ¿ì´Â keyrangeÀÇ minÀÌ Å©´Ù.
+                    // 1ì˜ ê²½ìš°ëŠ” keyrangeì˜ maxê°€ ë” í¬ë‹¤.
+                    // í•˜ì§€ë§Œ, 2ì˜ ê²½ìš°ëŠ” keyrangeì˜ minì´ í¬ë‹¤.
                     if( ( aPartKeyRange->minimum.callback ==
                           mtk::rangeCallBackGT4Mtd )
                         ||
@@ -2900,7 +2900,7 @@ SInt qmoPartition::comparePartMaxRangeMin( qmsPartCondValList * aMaxPartCondVal,
     }
     else
     {
-        // max partcondvalÀº minÀÏ ¼ö ¾øÀ½.
+        // max partcondvalì€ minì¼ ìˆ˜ ì—†ìŒ.
         IDE_DASSERT( aMaxPartCondVal->partCondValType
                      != QMS_PARTCONDVAL_MIN );
 
@@ -2909,8 +2909,8 @@ SInt qmoPartition::comparePartMaxRangeMin( qmsPartCondValList * aMaxPartCondVal,
 
         while( 1 )
         {
-            // key range compare¿¡¼­´Â fixed compare¸¦ È£ÃâÇÏ¹Ç·Î
-            // offsetÀ» 0À¸·Î º¯°æÇÑ´Ù.
+            // key range compareì—ì„œëŠ” fixed compareë¥¼ í˜¸ì¶œí•˜ë¯€ë¡œ
+            // offsetì„ 0ìœ¼ë¡œ ë³€ê²½í•œë‹¤.
             sData->columnDesc.column.offset = 0;
             
             sValueInfo1.column = &(sData->columnDesc);
@@ -2941,11 +2941,11 @@ SInt qmoPartition::comparePartMaxRangeMin( qmsPartCondValList * aMaxPartCondVal,
                 else if ( i == aMaxPartCondVal->partCondValCount )
                 {
                     // ex)
-                    // partition ¹üÀ§min : 10
+                    // partition ë²”ìœ„min : 10
                     // i1 = 10 and i2 > 10
                     // i1 = 10 and i2 >= 10
-                    // µÚ¿¡ ÄÃ·³ÀÌ ÇÏ³ª ´õ ÀÖÀ½À¸·Î ÇØ¼­ ¹«Á¶°Ç
-                    // keyrangeÀÇ minÀÌ Å©´Ù.
+                    // ë’¤ì— ì»¬ëŸ¼ì´ í•˜ë‚˜ ë” ìžˆìŒìœ¼ë¡œ í•´ì„œ ë¬´ì¡°ê±´
+                    // keyrangeì˜ minì´ í¬ë‹¤.
 
                     sOrder = -1;
                     break;
@@ -2953,11 +2953,11 @@ SInt qmoPartition::comparePartMaxRangeMin( qmsPartCondValList * aMaxPartCondVal,
                 else
                 {
                     // ex)
-                    // partition ¹üÀ§min : 10, 10
+                    // partition ë²”ìœ„min : 10, 10
                     // i1 > 10   .... (1)
                     // i1 >= 10  .... (2)
-                    // 1ÀÇ °æ¿ì´Â keyrangeÀÇ max°¡ ´õ Å©´Ù.
-                    // ÇÏÁö¸¸, 2ÀÇ °æ¿ì´Â keyrangeÀÇ minÀÌ Å©´Ù.
+                    // 1ì˜ ê²½ìš°ëŠ” keyrangeì˜ maxê°€ ë” í¬ë‹¤.
+                    // í•˜ì§€ë§Œ, 2ì˜ ê²½ìš°ëŠ” keyrangeì˜ minì´ í¬ë‹¤.
                     if( ( aPartKeyRange->minimum.callback ==
                           mtk::rangeCallBackGT4Mtd )
                         ||
@@ -2998,7 +2998,7 @@ SInt qmoPartition::comparePartMaxRangeMax( qmsPartCondValList * aMaxPartCondVal,
     }
     else
     {
-        // max partcondvalÀº minÀÏ ¼ö ¾øÀ½.
+        // max partcondvalì€ minì¼ ìˆ˜ ì—†ìŒ.
         IDE_DASSERT( aMaxPartCondVal->partCondValType
                      != QMS_PARTCONDVAL_MIN );
 
@@ -3007,8 +3007,8 @@ SInt qmoPartition::comparePartMaxRangeMax( qmsPartCondValList * aMaxPartCondVal,
 
         while( 1 )
         {
-            // key range compare¿¡¼­´Â fixed compare¸¦ È£ÃâÇÏ¹Ç·Î
-            // offsetÀ» 0À¸·Î º¯°æÇÑ´Ù.
+            // key range compareì—ì„œëŠ” fixed compareë¥¼ í˜¸ì¶œí•˜ë¯€ë¡œ
+            // offsetì„ 0ìœ¼ë¡œ ë³€ê²½í•œë‹¤.
             sData->columnDesc.column.offset = 0;
             
             sValueInfo1.column = &(sData->columnDesc);
@@ -3039,11 +3039,11 @@ SInt qmoPartition::comparePartMaxRangeMax( qmsPartCondValList * aMaxPartCondVal,
                 else if ( i == aMaxPartCondVal->partCondValCount )
                 {
                     // ex)
-                    // partition ¹üÀ§min : 10
+                    // partition ë²”ìœ„min : 10
                     // i1 = 10 and i2 < 10
                     // i1 = 10 and i2 <= 10
-                    // µÚ¿¡ ÄÃ·³ÀÌ ÇÏ³ª ´õ ÀÖÀ½À¸·Î ÇØ¼­ ¹«Á¶°Ç
-                    // keyrangeÀÇ max°¡ Å©´Ù.
+                    // ë’¤ì— ì»¬ëŸ¼ì´ í•˜ë‚˜ ë” ìžˆìŒìœ¼ë¡œ í•´ì„œ ë¬´ì¡°ê±´
+                    // keyrangeì˜ maxê°€ í¬ë‹¤.
 
                     sOrder = -1;
 
@@ -3052,11 +3052,11 @@ SInt qmoPartition::comparePartMaxRangeMax( qmsPartCondValList * aMaxPartCondVal,
                 else
                 {
                     // ex)
-                    // partition ¹üÀ§min : 10, 10
+                    // partition ë²”ìœ„min : 10, 10
                     // i1 < 10   .... (1)
                     // i1 <= 10  .... (2)
-                    // 1ÀÇ °æ¿ì´Â partition maxÀÌ Å©´Ù.
-                    // ÇÏÁö¸¸, 2ÀÇ °æ¿ì´Â keyrangeÀÇ max°¡ Å©´Ù.
+                    // 1ì˜ ê²½ìš°ëŠ” partition maxì´ í¬ë‹¤.
+                    // í•˜ì§€ë§Œ, 2ì˜ ê²½ìš°ëŠ” keyrangeì˜ maxê°€ í¬ë‹¤.
                     if( ( aPartKeyRange->maximum.callback
                           == mtk::rangeCallBackLT4Mtd )
                         ||

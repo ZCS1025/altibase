@@ -49,7 +49,7 @@ static IDE_RC mtfStddevKeepEstimate( mtcNode     * aNode,
 mtfModule mtfStddevKeep = {
     5 | MTC_NODE_OPERATOR_AGGREGATION,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
+    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìžê°€ ì•„ë‹˜)
     mtfStddevKeepFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -160,7 +160,7 @@ IDE_RC mtfStddevKeepEstimate( mtcNode     * aNode,
                     ( aStack[1].column->module == &mtdBoolean ),
                     ERR_CONVERSION_NOT_APPLICABLE );
 
-    // funcData »ç¿ë
+    // funcData ì‚¬ìš©
     aNode->info = aTemplate->funcDataCnt;
     aTemplate->funcDataCnt++;
 
@@ -220,7 +220,7 @@ IDE_RC mtfStddevKeepInitialize( mtcNode     * aNode,
         IDE_TEST( mtf::initializeFuncDataBasicInfo( sFuncData,
                                                     sMemoryMgr )
                   != IDE_SUCCESS );
-        // µî·Ï
+        // ë“±ë¡
         aTemplate->funcData[aNode->info] = sFuncData;
     }
     else

@@ -515,7 +515,7 @@ IDE_RC rpxReceiver::initialize( cmiProtocolContext * aProtocolContext,
     idlOS::memset( mMyIP, 0x00, RP_IP_ADDR_LEN );
     idlOS::memset( mPeerIP, 0x00, RP_IP_ADDR_LEN );
 
-    /* BUG-31545 : receiver Åë°èÁ¤º¸ ¼öÁıÀ» À§ÇÑ ÀÓÀÇ sessionÀ» ÃÊ±âÈ­ */
+    /* BUG-31545 : receiver í†µê³„ì •ë³´ ìˆ˜ì§‘ì„ ìœ„í•œ ì„ì˜ sessionì„ ì´ˆê¸°í™” */
     idvManager::initSession(&mStatSession, 0 /* unuse */, NULL /* unuse */);
     idvManager::initSession(&mOldStatSession, 0 /* unuse */, NULL /* unuse */);
     idvManager::initSQL(&mOpStatistics,
@@ -655,7 +655,7 @@ IDE_RC rpxReceiver::initializeThread()
     idCoreAclMemTlsfInit  sAllocInit = {0};
     rpdMeta             * sRemoteMeta = NULL;
 
-    /* ThreadÀÇ run()¿¡¼­¸¸ »ç¿ëÇÏ´Â ¸Ş¸ğ¸®¸¦ ÇÒ´çÇÑ´Ù. */
+    /* Threadì˜ run()ì—ì„œë§Œ ì‚¬ìš©í•˜ëŠ” ë©”ëª¨ë¦¬ë¥¼ í• ë‹¹í•œë‹¤. */
 
     if ( sAllocType != ACL_MEM_ALLOC_LIBC )
     {
@@ -681,7 +681,7 @@ IDE_RC rpxReceiver::initializeThread()
         /* Nothing to do */
     }
 
-    /* mMeta´Â rpcManager Thread°¡ Handshake¸¦ ¼öÇàÇÒ ¶§¿¡µµ »ç¿ëÇÏ¹Ç·Î, ¿©±â¿¡ ¿À¸é ¾È µÈ´Ù. */
+    /* mMetaëŠ” rpcManager Threadê°€ Handshakeë¥¼ ìˆ˜í–‰í•  ë•Œì—ë„ ì‚¬ìš©í•˜ë¯€ë¡œ, ì—¬ê¸°ì— ì˜¤ë©´ ì•ˆ ëœë‹¤. */
 
     IDE_TEST( mApply.initializeInLocalMemory() != IDE_SUCCESS );
 
@@ -705,7 +705,7 @@ IDE_RC rpxReceiver::initializeThread()
 
     setSendAckFlag();
 
-    /* mHashMutex, mThreadJoinCV, mThreadJoinMutex´Â Thread Á¾·á ½Ã¿¡ »ç¿ëÇÏ¹Ç·Î, ¿©±â¿¡ ¿À¸é ¾È µÈ´Ù. */
+    /* mHashMutex, mThreadJoinCV, mThreadJoinMutexëŠ” Thread ì¢…ë£Œ ì‹œì— ì‚¬ìš©í•˜ë¯€ë¡œ, ì—¬ê¸°ì— ì˜¤ë©´ ì•ˆ ëœë‹¤. */
 
     return IDE_SUCCESS;
 
@@ -781,8 +781,8 @@ void rpxReceiver::waitAllApplierComplete( void )
 
     sTimeValue.initialize( 0, 1000 );
 
-    /* Stop À¸·Î ÀÎÇÑ Á¾·á°¡ ¾Æ´Ò °æ¿ì Queue ¿¡ ³²Àº XLog µéÀ» ´Ù ¹İ¿µÇÒ¶§±îÁö ±â´Ù¸°´Ù. */ 
-    /* ±â´Ù¸®´Â µ¿¾È Applier ¿¡¼­ º¯°æµÈ mRestartSN À» ¹İ¿µÇÑ´Ù. */
+    /* Stop ìœ¼ë¡œ ì¸í•œ ì¢…ë£Œê°€ ì•„ë‹ ê²½ìš° Queue ì— ë‚¨ì€ XLog ë“¤ì„ ë‹¤ ë°˜ì˜í• ë•Œê¹Œì§€ ê¸°ë‹¤ë¦°ë‹¤. */ 
+    /* ê¸°ë‹¤ë¦¬ëŠ” ë™ì•ˆ Applier ì—ì„œ ë³€ê²½ëœ mRestartSN ì„ ë°˜ì˜í•œë‹¤. */
     while ( ( isAllApplierFinish() == ID_FALSE ) && ( mExitFlag != ID_TRUE ) )
     {
         mRestartSN = getRestartSNInParallelApplier();
@@ -950,10 +950,10 @@ void rpxReceiver::shutdownAllApplier()
 
 void rpxReceiver::finalize() // call by receiver itself
 {
-	/* BUG-44863 Applier °¡ Queue ¿¡ ³²Àº Log ¸¦ Ã³¸®ÇÏ´Ù°¡ Activer Server °¡ ´Ù½Ã »ì¾Æ³¯ °æ¿ì
-     * Receiver °¡ Á¾·á´çÇÏ°Ô µÇ°í updateRemoteXSN µµ locktimeout ¿¡ ÀÇÇØ 
-     * mRestartSN ÀÌ °»½ÅµÇÁö ¾Ê´Â´Ù.
-     * µû¶ó¼­ mRestartSN º¯È­·®À» ÃÖ¼ÒÈ­ ÇÏ±â À§ÇÏ¿© ¸ÕÀú ¾÷µ¥ÀÌÆ®¸¦ ÇÑ¹ø ÇÑ´Ù. */
+	/* BUG-44863 Applier ê°€ Queue ì— ë‚¨ì€ Log ë¥¼ ì²˜ë¦¬í•˜ë‹¤ê°€ Activer Server ê°€ ë‹¤ì‹œ ì‚´ì•„ë‚  ê²½ìš°
+     * Receiver ê°€ ì¢…ë£Œë‹¹í•˜ê²Œ ë˜ê³  updateRemoteXSN ë„ locktimeout ì— ì˜í•´ 
+     * mRestartSN ì´ ê°±ì‹ ë˜ì§€ ì•ŠëŠ”ë‹¤.
+     * ë”°ë¼ì„œ mRestartSN ë³€í™”ëŸ‰ì„ ìµœì†Œí™” í•˜ê¸° ìœ„í•˜ì—¬ ë¨¼ì € ì—…ë°ì´íŠ¸ë¥¼ í•œë²ˆ í•œë‹¤. */
     if ( updateRemoteXSN( mRestartSN ) != IDE_SUCCESS )
     {
         IDE_ERRLOG( IDE_RP_0 );
@@ -1029,8 +1029,8 @@ void rpxReceiver::finalize() // call by receiver itself
         IDE_ERRLOG(IDE_RP_0);
     }
 
-    /* receiver initialize ½Ã¿¡ executor·Î ºÎÅÍ ¹ŞÀº protocol contextÀÌ´Ù. allocÀº executor¿¡¼­ ÇßÁö¸¸,
-     * free´Â receiverÁ¾·á½Ã¿¡ ÇÑ´Ù. */
+    /* receiver initialize ì‹œì— executorë¡œ ë¶€í„° ë°›ì€ protocol contextì´ë‹¤. allocì€ executorì—ì„œ í–ˆì§€ë§Œ,
+     * freeëŠ” receiverì¢…ë£Œì‹œì— í•œë‹¤. */
     (void)iduMemMgr::free( mProtocolContext );
 
     if(mLink != NULL)
@@ -1650,7 +1650,7 @@ IDE_RC rpxReceiver::runNormal( void )
         rpdQueue::recycleXLog( &sXLog, mAllocator );
     }
 
-    // Sender·ÎºÎÅÍ Replication Á¾·á ¸Ş¼¼Áö°¡ µµÂøÇÏÁö ¾ÊÀº °æ¿ì
+    // Senderë¡œë¶€í„° Replication ì¢…ë£Œ ë©”ì„¸ì§€ê°€ ë„ì°©í•˜ì§€ ì•Šì€ ê²½ìš°
     if ( sIsEnd != ID_TRUE )
     {
         IDE_SET( ideSetErrorCode( rpERR_ABORT_ALREADY_FINAL ) );
@@ -1698,10 +1698,10 @@ IDE_RC rpxReceiver::runNormal( void )
         /* do nothing */
     }
 
-    // Executor°¡ (1)Handshake¸¦ ÇÏ°í (2)Receiver Thread¸¦ µ¿ÀÛ½ÃÅ²´Ù.
-    // Sender ¶Ç´Â ExecutorÀÇ ¿äÃ»ÀÌ ¾Æ´Ï°í Network ¿À·ù°¡ ¾Æ´Ñµ¥µµ Receiver Thread°¡ ºñÁ¤»ó Á¾·áÇÏ¸é,
-    // º¹±¸ ºÒ°¡´ÉÇÑ µ¥ÀÌÅÍ ºÒÀÏÄ¡°¡ È®»êµÇ´Â °ÍÀ» ¸·±â À§ÇØ,
-    // Eager ReceiverÀÎÁö È®ÀÎÇÏ¿© Server¸¦ ºñÁ¤»ó Á¾·áÇÑ´Ù.
+    // Executorê°€ (1)Handshakeë¥¼ í•˜ê³  (2)Receiver Threadë¥¼ ë™ì‘ì‹œí‚¨ë‹¤.
+    // Sender ë˜ëŠ” Executorì˜ ìš”ì²­ì´ ì•„ë‹ˆê³  Network ì˜¤ë¥˜ê°€ ì•„ë‹Œë°ë„ Receiver Threadê°€ ë¹„ì •ìƒ ì¢…ë£Œí•˜ë©´,
+    // ë³µêµ¬ ë¶ˆê°€ëŠ¥í•œ ë°ì´í„° ë¶ˆì¼ì¹˜ê°€ í™•ì‚°ë˜ëŠ” ê²ƒì„ ë§‰ê¸° ìœ„í•´,
+    // Eager Receiverì¸ì§€ í™•ì¸í•˜ì—¬ Serverë¥¼ ë¹„ì •ìƒ ì¢…ë£Œí•œë‹¤.
     if ( (mExitFlag != ID_TRUE) && (mNetworkError != ID_TRUE) )
     {
         mErrorInfo.mErrorStopCount++;
@@ -1800,7 +1800,7 @@ IDE_RC rpxReceiver::runParallelAppiler( void )
         }
     }
 
-    // Sender·ÎºÎÅÍ Replication Á¾·á ¸Ş¼¼Áö°¡ µµÂøÇÏÁö ¾ÊÀº °æ¿ì
+    // Senderë¡œë¶€í„° Replication ì¢…ë£Œ ë©”ì„¸ì§€ê°€ ë„ì°©í•˜ì§€ ì•Šì€ ê²½ìš°
     if ( sIsEnd != ID_TRUE )
     {
         IDE_SET( ideSetErrorCode( rpERR_ABORT_ALREADY_FINAL ) );
@@ -1846,7 +1846,7 @@ void rpxReceiver::run()
 
     mMeta.printNeedConvertSQLTable();
 
-    // Handshake¸¦ Á¤»óÀûÀ¸·Î ¼öÇàÇÑ ÈÄ, Receiver Thread°¡ µ¿ÀÛÇÑ´Ù.
+    // Handshakeë¥¼ ì •ìƒì ìœ¼ë¡œ ìˆ˜í–‰í•œ í›„, Receiver Threadê°€ ë™ì‘í•œë‹¤.
     mNetworkError = ID_FALSE;
 
     if ( ( mApplierCount == 0 ) || 
@@ -1948,8 +1948,8 @@ IDE_RC rpxReceiver::checkSelfReplication( idBool    aIsLocalReplication,
         case RP_RECEIVER_SYNC:
         case RP_RECEIVER_RECOVERY:
         case RP_RECEIVER_PARALLEL:
-            /* BUG-45236 Local Replication Áö¿ø
-             *  Local ReplicationÀÌ¸é, ÀÌÈÄ¿¡ Table OID¸¦ Ãß°¡ÀûÀ¸·Î °Ë»çÇÑ´Ù.
+            /* BUG-45236 Local Replication ì§€ì›
+             *  Local Replicationì´ë©´, ì´í›„ì— Table OIDë¥¼ ì¶”ê°€ì ìœ¼ë¡œ ê²€ì‚¬í•œë‹¤.
              */
             IDE_TEST_RAISE( ( idlOS::strcmp( aMeta->mReplication.mServerID,
                                              mMeta.mReplication.mServerID ) == 0 ) &&
@@ -1958,7 +1958,7 @@ IDE_RC rpxReceiver::checkSelfReplication( idBool    aIsLocalReplication,
             break;
 
         case RP_RECEIVER_OFFLINE:
-            /* PROJ-1915 : Off-line Replicator´Â Local ReplicationÀ¸·Î Á¢¼ÓÇÑ´Ù. */
+            /* PROJ-1915 : Off-line ReplicatorëŠ” Local Replicationìœ¼ë¡œ ì ‘ì†í•œë‹¤. */
             break;
     }
 
@@ -1995,8 +1995,8 @@ IDE_RC rpxReceiver::checkMeta( rpdMeta  * aMeta )
 {
     idBool  sIsLocalReplication = ID_FALSE;
 
-    /* BUG-45236 Local Replication Áö¿ø
-     *  Receiver¿¡¼­ Meta¸¦ ºñ±³ÇÏ¹Ç·Î, SenderÀÇ Meta¸¦ »ç¿ëÇÏ¿© Local ReplicationÀÎÁö È®ÀÎÇÑ´Ù.
+    /* BUG-45236 Local Replication ì§€ì›
+     *  Receiverì—ì„œ Metaë¥¼ ë¹„êµí•˜ë¯€ë¡œ, Senderì˜ Metaë¥¼ ì‚¬ìš©í•˜ì—¬ Local Replicationì¸ì§€ í™•ì¸í•œë‹¤.
      */
     sIsLocalReplication = rpdMeta::isLocalReplication( aMeta );
 
@@ -2465,7 +2465,7 @@ rpxReceiver::waitThreadJoin(idvSQL *aStatistics)
 
         if ( aStatistics != NULL )
         {
-            // BUG-22637 MM¿¡¼­ QUERY_TIMEOUT, Session Closed¸¦ ¼³Á¤Çß´ÂÁö È®ÀÎ
+            // BUG-22637 MMì—ì„œ QUERY_TIMEOUT, Session Closedë¥¼ ì„¤ì •í–ˆëŠ”ì§€ í™•ì¸
             IDE_TEST( iduCheckSessionEvent( aStatistics ) != IDE_SUCCESS );
         }
         else
@@ -2522,12 +2522,12 @@ SInt rpxReceiver::decideFailbackStatus(rpdMeta * aPeerMeta)
 
     IDE_DASSERT(aPeerMeta != NULL);
 
-    // Eager Replication¿¡¸¸ FailbackÀ» Àû¿ëÇÑ´Ù.
+    // Eager Replicationì—ë§Œ Failbackì„ ì ìš©í•œë‹¤.
     if((aPeerMeta->mReplication.mReplMode == RP_EAGER_MODE) &&
        (mMeta.mReplication.mReplMode == RP_EAGER_MODE))
     {
-        /* ÀÌÀü »óÅÂ°¡ µÑ Áß ÇÏ³ª¶óµµ StopÀÌ¸é, Failback-NormalÀÌ´Ù.
-         * REPLICATION_FAILBACK_INCREMENTAL_SYNC = 0 ÀÌ¸é, Failback-NormalÀÌ´Ù.
+        /* ì´ì „ ìƒíƒœê°€ ë‘˜ ì¤‘ í•˜ë‚˜ë¼ë„ Stopì´ë©´, Failback-Normalì´ë‹¤.
+         * REPLICATION_FAILBACK_INCREMENTAL_SYNC = 0 ì´ë©´, Failback-Normalì´ë‹¤.
          */
         if((aPeerMeta->mReplication.mIsStarted == 0) ||
            (mMeta.mReplication.mIsStarted == 0) ||
@@ -2537,9 +2537,9 @@ SInt rpxReceiver::decideFailbackStatus(rpdMeta * aPeerMeta)
         }
         else
         {
-            // Receiver°¡ Failback »óÅÂ¸¦ °áÁ¤ÇÏ¹Ç·Î, Sender¸¦ ±âÁØÀ¸·Î
-            // Receiverº¸´Ù Remote Fault Detect TimeÀÌ ´ÊÀ¸¸é, Failback-MasterÀÌ´Ù.
-            // Receiverº¸´Ù Remote Fault Detect TimeÀÌ ÀÌ¸£¸é, Failback-SlaveÀÌ´Ù.
+            // Receiverê°€ Failback ìƒíƒœë¥¼ ê²°ì •í•˜ë¯€ë¡œ, Senderë¥¼ ê¸°ì¤€ìœ¼ë¡œ
+            // Receiverë³´ë‹¤ Remote Fault Detect Timeì´ ëŠ¦ìœ¼ë©´, Failback-Masterì´ë‹¤.
+            // Receiverë³´ë‹¤ Remote Fault Detect Timeì´ ì´ë¥´ë©´, Failback-Slaveì´ë‹¤.
             sCompare = idlOS::strncmp(aPeerMeta->mReplication.mRemoteFaultDetectTime,
                                       mMeta.mReplication.mRemoteFaultDetectTime,
                                       RP_DEFAULT_DATE_FORMAT_LEN);
@@ -2553,9 +2553,9 @@ SInt rpxReceiver::decideFailbackStatus(rpdMeta * aPeerMeta)
             }
             else
             {
-                // Àå¾Ö °¨Áö ½Ã°£±îÁö °°Àº °æ¿ì, Sender¸¦ ±âÁØÀ¸·Î
-                // Receiverº¸´Ù Server ID°¡ Å©¸é, Failback-MasterÀÌ´Ù.
-                // Receiverº¸´Ù Server ID°¡ ÀÛÀ¸¸é, Failback-SlaveÀÌ´Ù.
+                // ì¥ì•  ê°ì§€ ì‹œê°„ê¹Œì§€ ê°™ì€ ê²½ìš°, Senderë¥¼ ê¸°ì¤€ìœ¼ë¡œ
+                // Receiverë³´ë‹¤ Server IDê°€ í¬ë©´, Failback-Masterì´ë‹¤.
+                // Receiverë³´ë‹¤ Server IDê°€ ì‘ìœ¼ë©´, Failback-Slaveì´ë‹¤.
                 sCompare = idlOS::strncmp(aPeerMeta->mReplication.mServerID,
                                           mMeta.mReplication.mServerID,
                                           IDU_SYSTEM_INFO_LENGTH);
@@ -2573,7 +2573,7 @@ SInt rpxReceiver::decideFailbackStatus(rpdMeta * aPeerMeta)
                 }
             }
 
-            /* Startup ´Ü°è¿¡¼­¸¸ Incremetal Sync¸¦ Çã¿ëÇÑ´Ù. */
+            /* Startup ë‹¨ê³„ì—ì„œë§Œ Incremetal Syncë¥¼ í—ˆìš©í•œë‹¤. */
             if ( sFailbackStatus == RP_FAILBACK_MASTER )
             {
                 if ( rpcManager::isStartupFailback() != ID_TRUE )
@@ -2613,13 +2613,13 @@ SInt rpxReceiver::decideFailbackStatus(rpdMeta * aPeerMeta)
 }
 
 /*******************************************************************************
- * Description : ÇÚµå½¦ÀÌÅ©½Ã¿¡ ¿ÀÇÁ¶óÀÎ ¸®ÇÃ¸®ÄÉÀÌÅÍ ¿É¼ÇÀÌ ÀÖ´Ù¸é
- * ´ÙÀ½°ú °°Àº Á¤º¸¸¦ °Ë»çÇÑ´Ù.
+ * Description : í•¸ë“œì‰ì´í¬ì‹œì— ì˜¤í”„ë¼ì¸ ë¦¬í”Œë¦¬ì¼€ì´í„° ì˜µì…˜ì´ ìˆë‹¤ë©´
+ * ë‹¤ìŒê³¼ ê°™ì€ ì •ë³´ë¥¼ ê²€ì‚¬í•œë‹¤.
  * LFG count , Compile bit, SM version, OS info, Log file size
- * µğ·ºÅä¸® ¹× ÆÄÀÏ Á¸Àç °Ë»ç¸¦ ÇÏÁö ¾Ê´Â´Ù.
- * ÇÚµå½¦ÀÌÅ©½Ã¿¡´Â ¿ÀÇÁ¶óÀÎ ¿É¼ÇÀ¸·Î ¾ÆÁ÷ Á¤ÇØÁöÁö ¾ÊÀº °æ·Î¸¦ ¼³Á¤ ÇÒ¼öÀÖ´Ù.
- * Àå¾Ö ¹ß»ıÈÄ ¸¶¿îÆ® ¶Ç´Â ftp ¸¦ ÅëÇÑ ¿ÀÇÁ¶óÀÎ ·Î±× Á¢±Ù ÇÏ´Â °æ·Î°¡ º¯°æ µÉ¼ö ÀÖ±â ¶§¹®¿¡
- * µğ·ºÅä¸® ¹× ÆÄÀÏ Á¸Àç °Ë»ç´Â ¿ÀÇÁ¶óÀÎ ¼¾´õ ±¸µ¿½Ã¿¡ ÇÏ°í ÇÚµå½¦ÀÌÅ©½Ã¿¡´Â ÇÏÁö ¾Ê´Â´Ù.
+ * ë””ë ‰í† ë¦¬ ë° íŒŒì¼ ì¡´ì¬ ê²€ì‚¬ë¥¼ í•˜ì§€ ì•ŠëŠ”ë‹¤.
+ * í•¸ë“œì‰ì´í¬ì‹œì—ëŠ” ì˜¤í”„ë¼ì¸ ì˜µì…˜ìœ¼ë¡œ ì•„ì§ ì •í•´ì§€ì§€ ì•Šì€ ê²½ë¡œë¥¼ ì„¤ì • í• ìˆ˜ìˆë‹¤.
+ * ì¥ì•  ë°œìƒí›„ ë§ˆìš´íŠ¸ ë˜ëŠ” ftp ë¥¼ í†µí•œ ì˜¤í”„ë¼ì¸ ë¡œê·¸ ì ‘ê·¼ í•˜ëŠ” ê²½ë¡œê°€ ë³€ê²½ ë ìˆ˜ ìˆê¸° ë•Œë¬¸ì—
+ * ë””ë ‰í† ë¦¬ ë° íŒŒì¼ ì¡´ì¬ ê²€ì‚¬ëŠ” ì˜¤í”„ë¼ì¸ ì„¼ë” êµ¬ë™ì‹œì— í•˜ê³  í•¸ë“œì‰ì´í¬ì‹œì—ëŠ” í•˜ì§€ ì•ŠëŠ”ë‹¤.
  ******************************************************************************/
 IDE_RC rpxReceiver::checkOfflineReplAvailable(rpdMeta  * aMeta)
 {
@@ -2646,7 +2646,7 @@ IDE_RC rpxReceiver::checkOfflineReplAvailable(rpdMeta  * aMeta)
 
     IDU_FIT_POINT_RAISE( "rpxReceiver::checkOfflineReplAvailable::Erratic::rpERR_ABORT_MISMATCH_OFFLINE_LOG_LFGCOUNT",
                          ERR_LFGCOUNT_MISMATCH );
-    IDE_TEST_RAISE(1 != aMeta->mReplication.mLFGCount,//[TASK-6757]LFG,SN Á¦°Å
+    IDE_TEST_RAISE(1 != aMeta->mReplication.mLFGCount,//[TASK-6757]LFG,SN ì œê±°
                    ERR_LFGCOUNT_MISMATCH);
 
     IDU_FIT_POINT_RAISE( "rpxReceiver::checkOfflineReplAvailable::Erratic::rpERR_ABORT_MISMATCH_OFFLINE_LOG_COMPILEBIT",
@@ -2654,7 +2654,7 @@ IDE_RC rpxReceiver::checkOfflineReplAvailable(rpdMeta  * aMeta)
     IDE_TEST_RAISE(sCompileBit != aMeta->mReplication.mCompileBit,
                    ERR_COMPILEBIT_MISMATCH);
 
-    //sm Version Àº ¸¶½ºÅ© ÇØ¼­ °Ë»ç ÇÑ´Ù.
+    //sm Version ì€ ë§ˆìŠ¤í¬ í•´ì„œ ê²€ì‚¬ í•œë‹¤.
     sSmVer1 = sSmVersionID & SM_CHECK_VERSION_MASK;
     sSmVer2 = aMeta->mReplication.mSmVersionID & SM_CHECK_VERSION_MASK;
 
@@ -2705,11 +2705,11 @@ IDE_RC rpxReceiver::checkOfflineReplAvailable(rpdMeta  * aMeta)
 }
 
 /**
-* @breif XLog¿¡¼­ Àç»ç¿ëÇÒ ¹öÆÛÀÇ Å©±â¸¦ ±¸ÇÑ´Ù.
+* @breif XLogì—ì„œ ì¬ì‚¬ìš©í•  ë²„í¼ì˜ í¬ê¸°ë¥¼ êµ¬í•œë‹¤.
 *
-* ¹öÆÛ °ø°£ÀÌ ºÎÁ·ÇÏ¿© È®ÀåÇÑ Å©±â´Â Àç»ç¿ëÇÏÁö ¾Ê´Â´Ù.
+* ë²„í¼ ê³µê°„ì´ ë¶€ì¡±í•˜ì—¬ í™•ì¥í•œ í¬ê¸°ëŠ” ì¬ì‚¬ìš©í•˜ì§€ ì•ŠëŠ”ë‹¤.
 *
-* @return XLog¿¡¼­ Àç»ç¿ëÇÒ ¹öÆÛÀÇ Å©±â
+* @return XLogì—ì„œ ì¬ì‚¬ìš©í•  ë²„í¼ì˜ í¬ê¸°
 */
 ULong rpxReceiver::getBaseXLogBufferSize()
 {
@@ -2717,7 +2717,7 @@ ULong rpxReceiver::getBaseXLogBufferSize()
     ULong   sMax        = idlOS::align8( RP_SAVEPOINT_NAME_LEN + 1 );
     SInt    sIndex      = 0;
 
-    /* ±âº»ÀûÀ¸·Î ÇÒ´çÇÒ °ø°£¿¡¼­ Geometry(ÃÖ´ë 100MB)¿Í LOB(ÃÖ´ë 4GB)Àº Á¦¿ÜÇÑ´Ù. */
+    /* ê¸°ë³¸ì ìœ¼ë¡œ í• ë‹¹í•  ê³µê°„ì—ì„œ Geometry(ìµœëŒ€ 100MB)ì™€ LOB(ìµœëŒ€ 4GB)ì€ ì œì™¸í•œë‹¤. */
     for( sIndex = 0; sIndex < mMeta.mReplication.mItemCount; sIndex++ )
     {
         sMax = IDL_MAX( sMax,
@@ -2726,7 +2726,7 @@ ULong rpxReceiver::getBaseXLogBufferSize()
 
     sBufferSize += sMax;
 
-    /* ¹öÆÛ Å©±â¿¡ Header°¡ Æ÷ÇÔµÇ¾î ÀÖÀ¸¹Ç·Î, Header Å©±â¸¦ ´õÇÑ´Ù. */
+    /* ë²„í¼ í¬ê¸°ì— Headerê°€ í¬í•¨ë˜ì–´ ìˆìœ¼ë¯€ë¡œ, Header í¬ê¸°ë¥¼ ë”í•œë‹¤. */
     sBufferSize += idlOS::align8( ID_SIZEOF(iduMemoryHeader) );
 
     return sBufferSize;
@@ -2864,7 +2864,7 @@ IDE_RC rpxReceiver::searchTableFromRemoteMeta( rpdMetaItem ** aItem,
 }
 
 /*
- * ÀÌ ÇÔ¼ö¸¦ È£Ãâ ÇÑ °÷¿¡¼­ aRemoteTable¿¡ ´ëÇÑ ¸Ş¸ğ¸® ÇØÁ¦¸¦ ÇØÁÖ¾î¾ßÇÑ´Ù.
+ * ì´ í•¨ìˆ˜ë¥¼ í˜¸ì¶œ í•œ ê³³ì—ì„œ aRemoteTableì— ëŒ€í•œ ë©”ëª¨ë¦¬ í•´ì œë¥¼ í•´ì£¼ì–´ì•¼í•œë‹¤.
  */
 IDE_RC rpxReceiver::recvSyncTablesInfo( UInt * aSyncTableNumber,
                                         rpdMetaItem ** aRemoteTable )
@@ -2874,7 +2874,7 @@ IDE_RC rpxReceiver::recvSyncTablesInfo( UInt * aSyncTableNumber,
 
     IDE_ASSERT( *aRemoteTable == NULL );
 
-    /* SyncÇÒ Å×ÀÌºíÀÇ °¹¼ö¸¦ ¹Ş¾Æ¿Â´Ù. */
+    /* Syncí•  í…Œì´ë¸”ì˜ ê°¯ìˆ˜ë¥¼ ë°›ì•„ì˜¨ë‹¤. */
     IDE_TEST( rpnComm::recvSyncTableNumber( mProtocolContext,
                                             aSyncTableNumber,
                                             RPU_REPLICATION_RECEIVE_TIMEOUT )
@@ -2882,8 +2882,8 @@ IDE_RC rpxReceiver::recvSyncTablesInfo( UInt * aSyncTableNumber,
 
     IDE_TEST_RAISE ( *aSyncTableNumber == 0, ERR_INVALID_SYNC_TABLE_NUMBER );
 
-    /* Sync table Á¤º¸¸¦ ´ãÀ» °ø°£ ÇÒ´ç.
-     * ¸Ş¸ğ¸® ÇØÁ¦´Â receiver applyÀÇ finalize´Ü°è¿¡¼­ ÇÑ´Ù. */
+    /* Sync table ì •ë³´ë¥¼ ë‹´ì„ ê³µê°„ í• ë‹¹.
+     * ë©”ëª¨ë¦¬ í•´ì œëŠ” receiver applyì˜ finalizeë‹¨ê³„ì—ì„œ í•œë‹¤. */
     IDU_FIT_POINT_RAISE( "rpxReceiver::recvSyncTablesInfo::calloc::RemoteTable",
                           ERR_MEMORY_ALLOC_TABLE );
     IDE_TEST_RAISE( iduMemMgr::calloc( IDU_MEM_RP_RPD_META,
@@ -2893,7 +2893,7 @@ IDE_RC rpxReceiver::recvSyncTablesInfo( UInt * aSyncTableNumber,
                                        IDU_MEM_IMMEDIATE )
                     != IDE_SUCCESS, ERR_MEMORY_ALLOC_TABLE );
 
-    /* SyncTableNumber¸¸Å­ Meta¸¦ ¹Ş¾Æ¿Â´Ù. */
+    /* SyncTableNumberë§Œí¼ Metaë¥¼ ë°›ì•„ì˜¨ë‹¤. */
     for ( i = 0; i < *aSyncTableNumber; i++ )
     {
         IDE_TEST( rpnComm::recvMetaReplTbl( mProtocolContext,
@@ -2970,8 +2970,8 @@ ULong rpxReceiver::getApplierQueueSize( ULong aRowSize, ULong aBufferSize )
 
     mXLogSize = aRowSize + ID_SIZEOF( rpdXLog );
     
-    /* BufferSize °¡ XLogSize º¸´Ù ÀÛÀ» °æ¿ì ±âÁ¸ ÇÁ·ÎÆÛÆ¼°ªÀ» ¹İÈ¯ÇÑ´Ù. 
-     * »çÀÌÁîÀÇ ÃÖ¼Ò°ªÀº ÇÁ·ÎÆÛÆ¼°ªÀ¸·Î ÇÑ´Ù. */
+    /* BufferSize ê°€ XLogSize ë³´ë‹¤ ì‘ì„ ê²½ìš° ê¸°ì¡´ í”„ë¡œí¼í‹°ê°’ì„ ë°˜í™˜í•œë‹¤. 
+     * ì‚¬ì´ì¦ˆì˜ ìµœì†Œê°’ì€ í”„ë¡œí¼í‹°ê°’ìœ¼ë¡œ í•œë‹¤. */
     if ( aBufferSize <= ( mXLogSize * RPU_REPLICATION_RECEIVER_APPLIER_QUEUE_SIZE ) )
     {
         sQueSize = RPU_REPLICATION_RECEIVER_APPLIER_QUEUE_SIZE;
@@ -2985,7 +2985,7 @@ ULong rpxReceiver::getApplierQueueSize( ULong aRowSize, ULong aBufferSize )
                  "[ Initialize Applier Buffer Size : %"ID_UINT64_FMT" Bytes, Applier XLog Size :%"ID_UINT64_FMT" Bytes ]",
                  sQueSize, aBufferSize, mXLogSize );
 
-    /* ±¸¹® ¶Ç´Â ÇÁ·ÎÆÛÆ¼·Î ¾òÀº »çÀÌÁî¸¦ ¹İÈ¯ÇÑ´Ù */
+    /* êµ¬ë¬¸ ë˜ëŠ” í”„ë¡œí¼í‹°ë¡œ ì–»ì€ ì‚¬ì´ì¦ˆë¥¼ ë°˜í™˜í•œë‹¤ */
     return sQueSize;
 }
 
@@ -3123,7 +3123,7 @@ UInt rpxReceiver::assignApplyIndex( smTID aTID )
     sIndex = aTID % mTransactionTableSize;
     sApplyIndex = mTransToApplierIndex[sIndex];
 
-    /* ¾øÀ¸¸é Transaction ÀÇ ½ÃÀÛ ÀÌ´Ù */
+    /* ì—†ìœ¼ë©´ Transaction ì˜ ì‹œì‘ ì´ë‹¤ */
 
     if ( sApplyIndex == -1 )
     {
@@ -3301,7 +3301,7 @@ IDE_RC rpxReceiver::buildXLogAckInParallelAppiler( rpdXLog      * aXLog,
 
     switch ( aXLog->mType )
     {
-        case RP_X_HANDSHAKE:   // PROJ-1442 Replication Online Áß DDL Çã¿ë
+        case RP_X_HANDSHAKE:   // PROJ-1442 Replication Online ì¤‘ DDL í—ˆìš©
             IDE_WARNING( IDE_RP_0, RP_TRC_RA_NTC_HANDSHAKE_XLOG );
             aAck->mAckType = RP_X_HANDSHAKE_READY;
             break;
@@ -3563,7 +3563,7 @@ ULong rpxReceiver::getApplierInitBufferUsage( void )
     ULong sSize = 0;
     ULong sQueueSize = 0;
 
-     /* ÇöÀç Applier µéÀÌ °¡Áö°í ÀÖ´Â queue µéÀÇ °¹¼ö¸¦ ±¸ÇÑ´Ù. */
+     /* í˜„ì¬ Applier ë“¤ì´ ê°€ì§€ê³  ìˆëŠ” queue ë“¤ì˜ ê°¯ìˆ˜ë¥¼ êµ¬í•œë‹¤. */
     sQueueSize = mApplierQueueSize - mFreeXLogQueue.getSize();
     sSize = sQueueSize * mXLogSize;
 

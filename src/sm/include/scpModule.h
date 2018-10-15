@@ -26,7 +26,7 @@
 
 #include <smiDef.h>
 
-//export¸¦ ½ÃÀÛÇÑ´Ù.
+//exportë¥¼ ì‹œì‘í•œë‹¤.
 typedef IDE_RC (*scpBeginExport)( idvSQL              * aStatistics,
                                   void               ** aHandle,
                                   smiDataPortHeader   * aHeader,
@@ -34,31 +34,31 @@ typedef IDE_RC (*scpBeginExport)( idvSQL              * aStatistics,
                                   SChar               * aDirectory,
                                   SLong                 aSplit );
 
-//Row¸¦ ÇÏ³ª WriteÇÑ´Ù.
+//Rowë¥¼ í•˜ë‚˜ Writeí•œë‹¤.
 typedef IDE_RC (*scpWrite)( idvSQL         * aStatistics,
                             void           * aHandle,
                             smiValue       * aValueList );
 
-// LobÀ» ¾µ ÁØºñ¸¦ ÇÑ´Ù.
+// Lobì„ ì“¸ ì¤€ë¹„ë¥¼ í•œë‹¤.
 typedef IDE_RC (*scpPrepareLob)( idvSQL         * aStatistics,
                                  void           * aHandle,
                                  UInt             aLobLength );
 
-// LobÀ» ±â·ÏÇÑ´Ù.
+// Lobì„ ê¸°ë¡í•œë‹¤.
 typedef IDE_RC (*scpWriteLob)( idvSQL         * aStatistics,
                                void           * aHandle,
                                UInt             aLobPieceLength,
                                UChar          * aLobPieceValue );
 
-// LobÀ» ±â·ÏÀ» ¿Ï·áÇÑ´Ù.
+// Lobì„ ê¸°ë¡ì„ ì™„ë£Œí•œë‹¤.
 typedef IDE_RC (*scpFinishLobWriting)( idvSQL         * aStatistics,
                                        void           * aHandle );
 
-// Export¸¦ Á¾·áÇÑ´Ù.
+// Exportë¥¼ ì¢…ë£Œí•œë‹¤.
 typedef IDE_RC (*scpEndExport)( idvSQL         * aStatistics,
                                 void           * aHandle );
 
-//import¸¦ ½ÃÀÛÇÑ´Ù. Çì´õ¸¦ ÀĞ¾î Header¿¡ ³Ö´Â´Ù.
+//importë¥¼ ì‹œì‘í•œë‹¤. í—¤ë”ë¥¼ ì½ì–´ Headerì— ë„£ëŠ”ë‹¤.
 typedef IDE_RC (*scpBeginImport)( idvSQL              * aStatistics,
                                   void               ** aHandle,
                                   smiDataPortHeader   * aHeader,
@@ -67,29 +67,29 @@ typedef IDE_RC (*scpBeginImport)( idvSQL              * aStatistics,
                                   SChar               * aObjName,
                                   SChar               * aDirectory );
 
-//rowµéÀ» ÀĞ´Â´Ù.
+//rowë“¤ì„ ì½ëŠ”ë‹¤.
 typedef IDE_RC (*scpRead)( idvSQL         * aStatistics,
                            void           * aHandle,
                            smiRow4DP     ** aRows,
                            UInt           * aRowCount );
 
-//LobÀÇ ÃÑ ±æÀÌ¸¦ ¹İÈ¯ÇÑ´Ù.
+//Lobì˜ ì´ ê¸¸ì´ë¥¼ ë°˜í™˜í•œë‹¤.
 typedef IDE_RC (*scpReadLobLength)( idvSQL         * aStatistics,
                                     void           * aHandle,
                                     UInt           * aLength );
 
-//LobÀ» ÀĞ´Â´Ù.
+//Lobì„ ì½ëŠ”ë‹¤.
 typedef IDE_RC (*scpReadLob)( idvSQL         * aStatistics,
                               void           * aHandle,
                               UInt           * aLobPieceLength,
                               UChar         ** aLobPieceValue );
 
-//LobÀ» ÀĞ±â¸¦ ¿Ï·áÇÑ´Ù.
+//Lobì„ ì½ê¸°ë¥¼ ì™„ë£Œí•œë‹¤.
 typedef IDE_RC (*scpFinishLobReading)( idvSQL         * aStatistics,
                                        void           * aHandle );
 
 
-//import¸¦ Á¾·áÇÑ´Ù.
+//importë¥¼ ì¢…ë£Œí•œë‹¤.
 typedef IDE_RC (*scpEndImport)( idvSQL         * aStatistics,
                                 void           * aHandle );
 

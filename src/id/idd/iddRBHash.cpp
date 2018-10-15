@@ -34,19 +34,19 @@ iddRBHashLink   iddRBHash::mGlobalLink;
 iduMutex        iddRBHash::mGlobalMutex;
 
 /**
- * Hash¸¦ ÃÊ±âÈ­ÇÑ´Ù
+ * Hashë¥¼ ì´ˆê¸°í™”í•œë‹¤
  *
- * @param aName : RB HashÀÇ ÀÌ¸§
- * @param aIndex : ³»ºÎÀûÀ¸·Î »ç¿ëÇÒ ¸Þ¸ð¸® ÇÒ´ç ÀÎµ¦½º
- * @param aKeyLength : Å° Å©±â(bytes)
- * @param aUseLatch : ·¡Ä¡ »ç¿ë ¿©ºÎ(µ¿½Ã¼ºÁ¦¾î¿ë)
- * @param aHashFunc : ÇØ½Ã°ª »ý¼º¿ë ÇÔ¼ö
- *                    SInt(const void* aKey) ÇüÅÂ
- * @param aCompFunc : Å° ºñ±³¿ë ÇÔ¼ö
- *                    SInt(const void* aKey1, const void* aKey2) ÇüÅÂÀÌ¸ç
- *                    aKey1 >  aKey2ÀÌ¸é 1 ÀÌ»óÀ»,
- *                    aKey1 == aKey2ÀÌ¸é 0 À»
- *                    aKey1 < aKey2ÀÌ¸é -1 ÀÌÇÏ¸¦ ¸®ÅÏÇØ¾ß ÇÑ´Ù.
+ * @param aName : RB Hashì˜ ì´ë¦„
+ * @param aIndex : ë‚´ë¶€ì ìœ¼ë¡œ ì‚¬ìš©í•  ë©”ëª¨ë¦¬ í• ë‹¹ ì¸ë±ìŠ¤
+ * @param aKeyLength : í‚¤ í¬ê¸°(bytes)
+ * @param aUseLatch : ëž˜ì¹˜ ì‚¬ìš© ì—¬ë¶€(ë™ì‹œì„±ì œì–´ìš©)
+ * @param aHashFunc : í•´ì‹œê°’ ìƒì„±ìš© í•¨ìˆ˜
+ *                    SInt(const void* aKey) í˜•íƒœ
+ * @param aCompFunc : í‚¤ ë¹„êµìš© í•¨ìˆ˜
+ *                    SInt(const void* aKey1, const void* aKey2) í˜•íƒœì´ë©°
+ *                    aKey1 >  aKey2ì´ë©´ 1 ì´ìƒì„,
+ *                    aKey1 == aKey2ì´ë©´ 0 ì„
+ *                    aKey1 < aKey2ì´ë©´ -1 ì´í•˜ë¥¼ ë¦¬í„´í•´ì•¼ í•œë‹¤.
  * @return IDE_SUCCESS
  *         IDE_FAILURE
  */
@@ -128,7 +128,7 @@ IDE_RC iddRBHash::initialize(const SChar*               aName,
 }
 
 /**
- * HashÀÇ ³»ºÎ µ¥ÀÌÅÍ¸¦ ±ø±×¸® ºñ¿î´Ù
+ * Hashì˜ ë‚´ë¶€ ë°ì´í„°ë¥¼ ê¹¡ê·¸ë¦¬ ë¹„ìš´ë‹¤
  *
  * @return IDE_SUCCESS
  *         IDE_FAILURE
@@ -149,7 +149,7 @@ IDE_RC iddRBHash::reset(void)
 }
 
 /**
- * HashÀÇ ³»ºÎ µ¥ÀÌÅÍ¸¦ ºñ¿ì°í ÇÒ´ç¹ÞÀº ¸ðµç ¸Þ¸ð¸®¸¦ ÇØÁ¦ÇÑ´Ù
+ * Hashì˜ ë‚´ë¶€ ë°ì´í„°ë¥¼ ë¹„ìš°ê³  í• ë‹¹ë°›ì€ ëª¨ë“  ë©”ëª¨ë¦¬ë¥¼ í•´ì œí•œë‹¤
  *
  * @return IDE_SUCCESS
  *         IDE_FAILURE
@@ -183,12 +183,12 @@ IDE_RC iddRBHash::destroy(void)
 }
 
 /**
- * Hash Table¿¡ Å°/µ¥ÀÌÅÍ¸¦ Ãß°¡ÇÑ´Ù.
+ * Hash Tableì— í‚¤/ë°ì´í„°ë¥¼ ì¶”ê°€í•œë‹¤.
  *
- * @param aKey : Å°
- * @param aData : °ªÀ» Áö´Ï°í ÀÖ´Â Æ÷ÀÎÅÍ
+ * @param aKey : í‚¤
+ * @param aData : ê°’ì„ ì§€ë‹ˆê³  ìžˆëŠ” í¬ì¸í„°
  * @return IDE_SUCCESS
- *         IDE_FAILURE Áßº¹ °ªÀÌ ÀÖ°Å³ª ¸Þ¸ð¸® ÇÒ´ç¿¡ ½ÇÆÐÇßÀ» ¶§
+ *         IDE_FAILURE ì¤‘ë³µ ê°’ì´ ìžˆê±°ë‚˜ ë©”ëª¨ë¦¬ í• ë‹¹ì— ì‹¤íŒ¨í–ˆì„ ë•Œ
  */
 IDE_RC iddRBHash::insert(const void* aKey, void* aData)
 {
@@ -202,13 +202,13 @@ IDE_RC iddRBHash::insert(const void* aKey, void* aData)
 }
 
 /**
- * Hash Table¿¡¼­ aKey¸¦ °Ë»öÇÑ´Ù
- * °Ë»öµÈ Å°¿¡ ÇØ´çÇÏ´Â µ¥ÀÌÅÍ´Â aData¿¡ ÀúÀåµÈ´Ù
+ * Hash Tableì—ì„œ aKeyë¥¼ ê²€ìƒ‰í•œë‹¤
+ * ê²€ìƒ‰ëœ í‚¤ì— í•´ë‹¹í•˜ëŠ” ë°ì´í„°ëŠ” aDataì— ì €ìž¥ëœë‹¤
  *
- * @param aKey : Å°
- * @param aData : °Ë»öµÈ µ¥ÀÌÅÍ¸¦ Áö´Ò Æ÷ÀÎÅÍ µ¥ÀÌÅÍ°¡ ¾øÀ¸¸é NULLÀÌ ÀúÀåµÈ´Ù
- * @return IDE_SUCCESS : °ªÀÌ ¾ø¾îµµ SUCCESS¸¦ ¸®ÅÏÇÑ´Ù
- *         IDE_FAILURE : ·¡Ä¡ È¹µæ ½ÇÆÐ
+ * @param aKey : í‚¤
+ * @param aData : ê²€ìƒ‰ëœ ë°ì´í„°ë¥¼ ì§€ë‹ í¬ì¸í„° ë°ì´í„°ê°€ ì—†ìœ¼ë©´ NULLì´ ì €ìž¥ëœë‹¤
+ * @return IDE_SUCCESS : ê°’ì´ ì—†ì–´ë„ SUCCESSë¥¼ ë¦¬í„´í•œë‹¤
+ *         IDE_FAILURE : ëž˜ì¹˜ íšë“ ì‹¤íŒ¨
  */
 IDE_RC iddRBHash::search(const void* aKey, void** aData)
 {
@@ -222,14 +222,14 @@ IDE_RC iddRBHash::search(const void* aKey, void** aData)
 }
 
 /**
- * Hash Table¿¡¼­ aKey¿¡ ÇØ´çÇÏ´Â µ¥ÀÌÅÍ¸¦ aNewData·Î ´ëÃ¼ÇÑ´Ù
- * °ú°ÅÀÇ °ªÀº aOldData°¡ NULLÀÌ ¾Æ´Ò ¶§ ÀúÀåÇÑ´Ù
+ * Hash Tableì—ì„œ aKeyì— í•´ë‹¹í•˜ëŠ” ë°ì´í„°ë¥¼ aNewDataë¡œ ëŒ€ì²´í•œë‹¤
+ * ê³¼ê±°ì˜ ê°’ì€ aOldDataê°€ NULLì´ ì•„ë‹ ë•Œ ì €ìž¥í•œë‹¤
  *
- * @param aKey : Å°
- * @param aNewData : »õ µ¥ÀÌÅÍ
- * @param aOldData : °ú°Å µ¥ÀÌÅÍ¸¦ ÀúÀåÇÒ Æ÷ÀÎÅÍ NULLÀÌ ¿Ã ¼ö ÀÖ´Ù
- * @return IDE_SUCCESS °ªÀ» Ã£¾ÒÀ» ¶§
- *         IDE_FAILURE °ªÀÌ ¾ø°Å³ª ·¡Ä¡ È¹µæ ½ÇÆÐ
+ * @param aKey : í‚¤
+ * @param aNewData : ìƒˆ ë°ì´í„°
+ * @param aOldData : ê³¼ê±° ë°ì´í„°ë¥¼ ì €ìž¥í•  í¬ì¸í„° NULLì´ ì˜¬ ìˆ˜ ìžˆë‹¤
+ * @return IDE_SUCCESS ê°’ì„ ì°¾ì•˜ì„ ë•Œ
+ *         IDE_FAILURE ê°’ì´ ì—†ê±°ë‚˜ ëž˜ì¹˜ íšë“ ì‹¤íŒ¨
  */
 IDE_RC iddRBHash::update(const void* aKey, void* aData, void** aOldData)
 {
@@ -243,13 +243,13 @@ IDE_RC iddRBHash::update(const void* aKey, void* aData, void** aOldData)
 }
 
 /**
- * Hash Table¿¡¼­ Å°¿Í µ¥ÀÌÅÍ¸¦ »èÁ¦ÇÑ´Ù
- * »èÁ¦µÈ µ¥ÀÌÅÍ´Â aData¿¡ ÀúÀåµÈ´Ù.
+ * Hash Tableì—ì„œ í‚¤ì™€ ë°ì´í„°ë¥¼ ì‚­ì œí•œë‹¤
+ * ì‚­ì œëœ ë°ì´í„°ëŠ” aDataì— ì €ìž¥ëœë‹¤.
  *
- * @param aKey : Å°
- * @param aData : »èÁ¦µÈ µ¥ÀÌÅÍ¸¦ Áö´Ò Æ÷ÀÎÅÍ. aKey°¡ ¾øÀ¸¸é NULLÀÌ ÀúÀåµÈ´Ù.
+ * @param aKey : í‚¤
+ * @param aData : ì‚­ì œëœ ë°ì´í„°ë¥¼ ì§€ë‹ í¬ì¸í„°. aKeyê°€ ì—†ìœ¼ë©´ NULLì´ ì €ìž¥ëœë‹¤.
  * @return IDE_SUCCESS
- *         IDE_FAILURE ¸Þ¸ð¸® ÇØÁ¦, È¤Àº ·¡Ä¡ È¹µæ¿¡ ½ÇÆÐÇßÀ» ¶§
+ *         IDE_FAILURE ë©”ëª¨ë¦¬ í•´ì œ, í˜¹ì€ ëž˜ì¹˜ íšë“ì— ì‹¤íŒ¨í–ˆì„ ë•Œ
  */
 IDE_RC iddRBHash::remove(const void* aKey, void** aData)
 {
@@ -263,8 +263,8 @@ IDE_RC iddRBHash::remove(const void* aKey, void** aData)
 }
 
 /**
- * Hash TableÀ» ¼øÈ¸ÇÒ ¼ö ÀÖµµ·Ï Ä¿¼­¸¦ ¿¬´Ù
- * @return Ç×»ó IDE_SUCCESS
+ * Hash Tableì„ ìˆœíšŒí•  ìˆ˜ ìžˆë„ë¡ ì»¤ì„œë¥¼ ì—°ë‹¤
+ * @return í•­ìƒ IDE_SUCCESS
  */
 IDE_RC iddRBHash::open(void)
 {
@@ -277,8 +277,8 @@ IDE_RC iddRBHash::open(void)
 }
 
 /**
- * Hash TableÀÇ ¼øÈ¸¸¦ ¸¶Ä¡°í Ä¿¼­¸¦ ´Ý´Â´Ù
- * @return Ç×»ó IDE_SUCCESS
+ * Hash Tableì˜ ìˆœíšŒë¥¼ ë§ˆì¹˜ê³  ì»¤ì„œë¥¼ ë‹«ëŠ”ë‹¤
+ * @return í•­ìƒ IDE_SUCCESS
  */
 IDE_RC iddRBHash::close(void)
 {
@@ -288,7 +288,7 @@ IDE_RC iddRBHash::close(void)
 }
 
 /**
- * ÇöÀç ¿­·Á ÀÖ´Â Ä¿¼­°¡ Hash TableÀÇ ³¡ÀÎ°¡?
+ * í˜„ìž¬ ì—´ë ¤ ìžˆëŠ” ì»¤ì„œê°€ Hash Tableì˜ ëì¸ê°€?
  * @return ID_TRUE/ID_FALSE
  */
 idBool iddRBHash::isEnd(void)
@@ -298,8 +298,8 @@ idBool iddRBHash::isEnd(void)
 }
 
 /**
- * ÇöÀç ¿­·Á ÀÖ´Â Ä¿¼­ À§Ä¡ÀÇ µ¥ÀÌÅÍ¸¦ ¾ò´Â´Ù
- * @return Ä¿¼­ À§Ä¡ÀÇ µ¥ÀÌÅÍ
+ * í˜„ìž¬ ì—´ë ¤ ìžˆëŠ” ì»¤ì„œ ìœ„ì¹˜ì˜ ë°ì´í„°ë¥¼ ì–»ëŠ”ë‹¤
+ * @return ì»¤ì„œ ìœ„ì¹˜ì˜ ë°ì´í„°
  */
 void* iddRBHash::getCurNode(void)
 {
@@ -308,8 +308,8 @@ void* iddRBHash::getCurNode(void)
 }
 
 /**
- * ÇöÀç ¿­·Á ÀÖ´Â Ä¿¼­ ´ÙÀ½ À§Ä¡ÀÇ µ¥ÀÌÅÍ¸¦ ¾ò´Â´Ù
- * @return Ä¿¼­ ´ÙÀ½ À§Ä¡ÀÇ µ¥ÀÌÅÍ
+ * í˜„ìž¬ ì—´ë ¤ ìžˆëŠ” ì»¤ì„œ ë‹¤ìŒ ìœ„ì¹˜ì˜ ë°ì´í„°ë¥¼ ì–»ëŠ”ë‹¤
+ * @return ì»¤ì„œ ë‹¤ìŒ ìœ„ì¹˜ì˜ ë°ì´í„°
  */
 void* iddRBHash::getNxtNode(void)
 {
@@ -320,12 +320,12 @@ void* iddRBHash::getNxtNode(void)
 }
 
 /**
- * Hash Table¿¡¼­ Ä¿¼­ À§Ä¡ÀÇ Å°¿Í µ¥ÀÌÅÍ¸¦ »èÁ¦ÇÑ´Ù
- * ´ÙÀ½ À§Ä¡ÀÇ µ¥ÀÌÅÍ¸¦ ¾ò¾î¿Â´Ù
+ * Hash Tableì—ì„œ ì»¤ì„œ ìœ„ì¹˜ì˜ í‚¤ì™€ ë°ì´í„°ë¥¼ ì‚­ì œí•œë‹¤
+ * ë‹¤ìŒ ìœ„ì¹˜ì˜ ë°ì´í„°ë¥¼ ì–»ì–´ì˜¨ë‹¤
  *
- * @param aNxtData : ´ÙÀ½ À§Ä¡ÀÇ µ¥ÀÌÅÍ¸¦ ´ãÀ» Æ÷ÀÎÅÍ
+ * @param aNxtData : ë‹¤ìŒ ìœ„ì¹˜ì˜ ë°ì´í„°ë¥¼ ë‹´ì„ í¬ì¸í„°
  * @return IDE_SUCCESS
- *         IDE_FAILURE ¸Þ¸ð¸® ÇØÁ¦, È¤Àº ·¡Ä¡ È¹µæ¿¡ ½ÇÆÐÇßÀ» ¶§
+ *         IDE_FAILURE ë©”ëª¨ë¦¬ í•´ì œ, í˜¹ì€ ëž˜ì¹˜ íšë“ì— ì‹¤íŒ¨í–ˆì„ ë•Œ
  */
 IDE_RC iddRBHash::delCurNode(void** aNxtData)
 {
@@ -346,13 +346,13 @@ IDE_RC iddRBHash::delCurNode(void** aNxtData)
 }
 
 /**
- * Hash Table¿¡¼­ Ä¿¼­ À§Ä¡ÀÇ Å°¿Í µ¥ÀÌÅÍ¸¦ »èÁ¦ÇÏ°í
- * Ä¿¼­¸¦ ÇÏ³ª µÚ·Î ÀÌµ¿½ÃÅ²´Ù
- * Ä¿¼­°¡ ÀÖ´ø À§Ä¡ÀÇ µ¥ÀÌÅÍ¸¦ ¾ò¾î¿Â´Ù
+ * Hash Tableì—ì„œ ì»¤ì„œ ìœ„ì¹˜ì˜ í‚¤ì™€ ë°ì´í„°ë¥¼ ì‚­ì œí•˜ê³ 
+ * ì»¤ì„œë¥¼ í•˜ë‚˜ ë’¤ë¡œ ì´ë™ì‹œí‚¨ë‹¤
+ * ì»¤ì„œê°€ ìžˆë˜ ìœ„ì¹˜ì˜ ë°ì´í„°ë¥¼ ì–»ì–´ì˜¨ë‹¤
  *
- * @param aData : µ¥ÀÌÅÍ¸¦ ´ãÀ» Æ÷ÀÎÅÍ
+ * @param aData : ë°ì´í„°ë¥¼ ë‹´ì„ í¬ì¸í„°
  * @return IDE_SUCCESS
- *         IDE_FAILURE ¸Þ¸ð¸® ÇØÁ¦, È¤Àº ·¡Ä¡ È¹µæ¿¡ ½ÇÆÐÇßÀ» ¶§
+ *         IDE_FAILURE ë©”ëª¨ë¦¬ í•´ì œ, í˜¹ì€ ëž˜ì¹˜ íšë“ì— ì‹¤íŒ¨í–ˆì„ ë•Œ
  */
 IDE_RC iddRBHash::cutCurNode(void** aData)
 {
@@ -462,9 +462,9 @@ IDE_RC iddRBHash::destroyStatic(void)
 }
 
 /**
- * ÇØ½Ã Åë°è Á¤º¸ Áß ÀÌ¸§À» º¹»çÇÑ´Ù
+ * í•´ì‹œ í†µê³„ ì •ë³´ ì¤‘ ì´ë¦„ì„ ë³µì‚¬í•œë‹¤
  *
- * @param aStat : Åë°è ±¸Á¶Ã¼
+ * @param aStat : í†µê³„ êµ¬ì¡°ì²´
  */
 void iddRBHash::fillHashStat(iddRBHashStat* aStat)
 {
@@ -472,9 +472,9 @@ void iddRBHash::fillHashStat(iddRBHashStat* aStat)
 }
 
 /**
- * °¢ ¹öÅ¶ÀÇ Åë°è¸¦ Åë°èÁ¤º¸¿¡ º¹»çÇÑ´Ù
+ * ê° ë²„í‚·ì˜ í†µê³„ë¥¼ í†µê³„ì •ë³´ì— ë³µì‚¬í•œë‹¤
  *
- * @param aStat : Åë°è ±¸Á¶Ã¼
+ * @param aStat : í†µê³„ êµ¬ì¡°ì²´
  */
 void iddRBHash::fillBucketStat(iddRBHashStat* aStat, const UInt aBucketNo)
 {
@@ -484,7 +484,7 @@ void iddRBHash::fillBucketStat(iddRBHashStat* aStat, const UInt aBucketNo)
 }
 
 /**
- * ÇØ½ÃÀÇ Åë°è Á¤º¸¸¦ ÃÊ±âÈ­ÇÑ´Ù
+ * í•´ì‹œì˜ í†µê³„ ì •ë³´ë¥¼ ì´ˆê¸°í™”í•œë‹¤
  */
 void iddRBHash::clearStat(void)
 {

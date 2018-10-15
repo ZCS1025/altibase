@@ -101,17 +101,17 @@ void * tsm_dml_del_del_all_1_B( void *data );
 
 
 //=========================================================================
-// ÃÊ±â ¼³Á¤ ÇÔ¼ö
+// ì´ˆê¸° ì„¤ì • í•¨ìˆ˜
 IDE_RC upt_upt_environment();
 IDE_RC upt_del_environment();
 IDE_RC del_del_environment();
 
-// ½Ã³ª¸®¿À ±¸µ¿À» À§ÇÑ ¾²·¹µå »ı¼º ÇÔ¼ö
+// ì‹œë‚˜ë¦¬ì˜¤ êµ¬ë™ì„ ìœ„í•œ ì“°ë ˆë“œ ìƒì„± í•¨ìˆ˜
 IDE_RC upt_upt_doIt( UInt data1, UInt data2 );
 IDE_RC upt_del_doIt( UInt data1, UInt data2 );
 IDE_RC del_del_doIt( UInt data1, UInt data2 );
 
-// ½Ã³ª¸®¿À ¼öÇàÈÄ È¯°æ º¹±¸ ÇÔ¼ö
+// ì‹œë‚˜ë¦¬ì˜¤ ìˆ˜í–‰í›„ í™˜ê²½ ë³µêµ¬ í•¨ìˆ˜
 IDE_RC upt_upt_clear();
 IDE_RC upt_del_clear();
 IDE_RC del_del_clear();
@@ -1542,9 +1542,9 @@ void * tsm_dml_upt_upt_all_1_A( void *data )
                     alloc_error_space_error );
 
 // PHASE : 1
-// °°Àº Row¿¡ ´ëÇÏ¿© ´Ù¸¥ Thread°¡ update¸¦ ½ÃµµÇÑ´Ù.
-// ¸ÕÀú LockÀ» È¹µæÇÑ ¾²·¹µåÀÇ commit½Ã ´Ù¸¥ Thread°¡
-// ¿¡·¯ Ã³¸®¸¦ Á¦´ë·Î ÇÏ´ÂÁö °Ë»ç    
+// ê°™ì€ Rowì— ëŒ€í•˜ì—¬ ë‹¤ë¥¸ Threadê°€ updateë¥¼ ì‹œë„í•œë‹¤.
+// ë¨¼ì € Lockì„ íšë“í•œ ì“°ë ˆë“œì˜ commitì‹œ ë‹¤ë¥¸ Threadê°€
+// ì—ëŸ¬ ì²˜ë¦¬ë¥¼ ì œëŒ€ë¡œ í•˜ëŠ”ì§€ ê²€ì‚¬    
     if( sIdxType == INDEX_TYPE_1 )
     {
         IDE_TEST( tsmCreateIndex( gOwnerID,
@@ -1710,9 +1710,9 @@ void * tsm_dml_upt_upt_all_1_A( void *data )
 
     
 // PHASE : 2
-// °°Àº Row¿¡ ´ëÇÏ¿© ´Ù¸¥ Thread°¡ update¸¦ ½ÃµµÇÑ´Ù.
-// ¸ÕÀú LockÀ» È¹µæÇÑ ¾²·¹µå°¡ rollback½Ã ´Ù¸¥ Thread°¡
-// block»óÅÂ¿¡¼­ ±ú¾î³ª¼­ Á¤»óÀûÀ¸·Î Update¸¦ ¼öÇàÇØ¾ß ÇÔ.
+// ê°™ì€ Rowì— ëŒ€í•˜ì—¬ ë‹¤ë¥¸ Threadê°€ updateë¥¼ ì‹œë„í•œë‹¤.
+// ë¨¼ì € Lockì„ íšë“í•œ ì“°ë ˆë“œê°€ rollbackì‹œ ë‹¤ë¥¸ Threadê°€
+// blockìƒíƒœì—ì„œ ê¹¨ì–´ë‚˜ì„œ ì •ìƒì ìœ¼ë¡œ Updateë¥¼ ìˆ˜í–‰í•´ì•¼ í•¨.
 
     IDE_TEST_RAISE( sTrans.begin(&spRootStmt, NULL)
                     != IDE_SUCCESS, trans_begin_error );
@@ -1931,8 +1931,8 @@ void * tsm_dml_upt_upt_all_1_A( void *data )
     IDE_TEST( PDL_OS::sema_wait(&threads2) != 0 );
 
 // PHASE : 3
-// ´Ù¸¥ Thread°¡ µ¿ÀÏÇÑ TableÀÇ ´Ù¸¥ Row¿¡ ´ëÇÏ¿© °¢°¢ Update¸¦ ¼öÇàÇÑ´Ù.
-// °¢°¢ÀÇ ¾²·¹µå°¡ ¿¬»êÀ» Á¤»óÀûÀ¸·Î ¼öÇàÇØ¾ß ÇÔ.
+// ë‹¤ë¥¸ Threadê°€ ë™ì¼í•œ Tableì˜ ë‹¤ë¥¸ Rowì— ëŒ€í•˜ì—¬ ê°ê° Updateë¥¼ ìˆ˜í–‰í•œë‹¤.
+// ê°ê°ì˜ ì“°ë ˆë“œê°€ ì—°ì‚°ì„ ì •ìƒì ìœ¼ë¡œ ìˆ˜í–‰í•´ì•¼ í•¨.
 
     IDE_TEST( tsmDropTable( gOwnerID,
                             gTableName1 )
@@ -3080,9 +3080,9 @@ void * tsm_dml_upt_del_all_1_A( void *data )
     }
 
 // PHASE : 1
-// °°Àº Row¿¡ ´ëÇÏ¿© °¢°¢ÀÇ ¾²·¹µå°¡  update, delete¸¦ ½ÃµµÇÑ´Ù.
-// ¸ÕÀú LockÀ» È¹µæÇÑ update¾²·¹µåÀÇ commit½Ã delete Thread°¡
-// ¿¡·¯ Ã³¸®¸¦ Á¦´ë·Î ÇÏ´ÂÁö °Ë»ç    
+// ê°™ì€ Rowì— ëŒ€í•˜ì—¬ ê°ê°ì˜ ì“°ë ˆë“œê°€  update, deleteë¥¼ ì‹œë„í•œë‹¤.
+// ë¨¼ì € Lockì„ íšë“í•œ updateì“°ë ˆë“œì˜ commitì‹œ delete Threadê°€
+// ì—ëŸ¬ ì²˜ë¦¬ë¥¼ ì œëŒ€ë¡œ í•˜ëŠ”ì§€ ê²€ì‚¬    
     IDE_TEST_RAISE( sTrans.initialize() != IDE_SUCCESS,
                     trans_begin_error );
     
@@ -3222,9 +3222,9 @@ void * tsm_dml_upt_del_all_1_A( void *data )
 
     
 // PHASE : 2
-// °°Àº Row¿¡ ´ëÇÏ¿© °¢°¢ÀÇ Thread°¡ update, delete¸¦ ½ÃµµÇÑ´Ù.
-// ¸ÕÀú LockÀ» È¹µæÇÑ update¾²·¹µå°¡ rollback½Ã delete Thread°¡
-// block»óÅÂ¿¡¼­ ±ú¾î³ª¼­ Á¤»óÀûÀ¸·Î delete¸¦ ¼öÇàÇØ¾ß ÇÔ.
+// ê°™ì€ Rowì— ëŒ€í•˜ì—¬ ê°ê°ì˜ Threadê°€ update, deleteë¥¼ ì‹œë„í•œë‹¤.
+// ë¨¼ì € Lockì„ íšë“í•œ updateì“°ë ˆë“œê°€ rollbackì‹œ delete Threadê°€
+// blockìƒíƒœì—ì„œ ê¹¨ì–´ë‚˜ì„œ ì •ìƒì ìœ¼ë¡œ deleteë¥¼ ìˆ˜í–‰í•´ì•¼ í•¨.
 
     IDE_TEST_RAISE( sTrans.begin(&spRootStmt, NULL)
                     != IDE_SUCCESS, trans_begin_error );
@@ -3941,9 +3941,9 @@ void * tsm_dml_del_del_all_1_A( void *data )
     }
 
     // PHASE : 1
-    // °°Àº Row¿¡ ´ëÇÏ¿© °¢°¢ÀÇ ¾²·¹µå°¡  delete, delete¸¦ ½ÃµµÇÑ´Ù.
-    // ¸ÕÀú LockÀ» È¹µæÇÑ delete¾²·¹µåÀÇ commit½Ã ´Ù¸¥ delete Thread°¡
-    // ¿¡·¯ Ã³¸®¸¦ Á¦´ë·Î ÇÏ´ÂÁö °Ë»ç
+    // ê°™ì€ Rowì— ëŒ€í•˜ì—¬ ê°ê°ì˜ ì“°ë ˆë“œê°€  delete, deleteë¥¼ ì‹œë„í•œë‹¤.
+    // ë¨¼ì € Lockì„ íšë“í•œ deleteì“°ë ˆë“œì˜ commitì‹œ ë‹¤ë¥¸ delete Threadê°€
+    // ì—ëŸ¬ ì²˜ë¦¬ë¥¼ ì œëŒ€ë¡œ í•˜ëŠ”ì§€ ê²€ì‚¬
     IDE_TEST_RAISE( sTrans.initialize() != IDE_SUCCESS, trans_begin_error );
     
     IDE_TEST_RAISE( sTrans.begin(&spRootStmt, NULL)
@@ -4062,9 +4062,9 @@ void * tsm_dml_del_del_all_1_A( void *data )
 
     
 // PHASE : 2
-// °°Àº Row¿¡ ´ëÇÏ¿© °¢°¢ÀÇ Thread°¡ delete, delete¸¦ ½ÃµµÇÑ´Ù.
-// ¸ÕÀú LockÀ» È¹µæÇÑ delete¾²·¹µå°¡ rollback½Ã ´Ù¸¥ delete Thread°¡
-// block»óÅÂ¿¡¼­ ±ú¾î³ª¼­ Á¤»óÀûÀ¸·Î delete¸¦ ¼öÇàÇØ¾ß ÇÔ.
+// ê°™ì€ Rowì— ëŒ€í•˜ì—¬ ê°ê°ì˜ Threadê°€ delete, deleteë¥¼ ì‹œë„í•œë‹¤.
+// ë¨¼ì € Lockì„ íšë“í•œ deleteì“°ë ˆë“œê°€ rollbackì‹œ ë‹¤ë¥¸ delete Threadê°€
+// blockìƒíƒœì—ì„œ ê¹¨ì–´ë‚˜ì„œ ì •ìƒì ìœ¼ë¡œ deleteë¥¼ ìˆ˜í–‰í•´ì•¼ í•¨.
 
     IDE_TEST_RAISE( sTrans.begin(&spRootStmt, NULL)
                     != IDE_SUCCESS, trans_begin_error );
@@ -4132,7 +4132,7 @@ void * tsm_dml_del_del_all_1_A( void *data )
                     trans_commit_error );
     sTransBegin = ID_FALSE;
     
-    // PHASE 2ÀÇ ÁØºñ ÀÛ¾÷
+    // PHASE 2ì˜ ì¤€ë¹„ ì‘ì—…
     IDE_TEST_RAISE( sTrans.begin(&spRootStmt, NULL)
                     != IDE_SUCCESS, trans_begin_error );
     sTransBegin = ID_TRUE;

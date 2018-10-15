@@ -34,7 +34,7 @@
 iduHash smrDPListMgr::mMgrHash;
 
 /*
-    Tablespaceº° Dirty Page°ü¸®ÀÚ¸¦ °ü¸®ÇÏ´Â smrDPListMgrÀ» ÃÊ±âÈ­
+    Tablespaceë³„ Dirty Pageê´€ë¦¬ìë¥¼ ê´€ë¦¬í•˜ëŠ” smrDPListMgrì„ ì´ˆê¸°í™”
  */
 IDE_RC smrDPListMgr::initializeStatic()
 {
@@ -51,12 +51,12 @@ IDE_RC smrDPListMgr::initializeStatic()
 }
 
 /*
-    Tablespaceº° Dirty Page°ü¸®ÀÚ¸¦ °ü¸®ÇÏ´Â smrDPListMgrÀ» ÆÄ±«
+    Tablespaceë³„ Dirty Pageê´€ë¦¬ìë¥¼ ê´€ë¦¬í•˜ëŠ” smrDPListMgrì„ íŒŒê´´
  */
 IDE_RC smrDPListMgr::destroyStatic()
 {
 
-    // ¸ğµç TBS¿¡ ´ëÇØ Dirty Page°ü¸®ÀÚ Á¦°Å
+    // ëª¨ë“  TBSì— ëŒ€í•´ Dirty Pageê´€ë¦¬ì ì œê±°
     IDE_TEST( destroyAllMgrs() != IDE_SUCCESS );
 
     IDE_TEST( mMgrHash.destroy() != IDE_SUCCESS );
@@ -69,9 +69,9 @@ IDE_RC smrDPListMgr::destroyStatic()
 }
 
 /*
-    °¢°¢ÀÇ Hash Element¿¡ ´ëÇØ È£ÃâµÉ VisitorÇÔ¼ö
+    ê°ê°ì˜ Hash Elementì— ëŒ€í•´ í˜¸ì¶œë  Visitorí•¨ìˆ˜
 
-    Shutdown½Ã¿¡ È£ÃâµÇ¸ç mMgrHash¿¡ ÀÜÁ¸ÇÏ´Â TBS¿¡ ´ëÇØ ¼öÇàµÈ´Ù.
+    Shutdownì‹œì— í˜¸ì¶œë˜ë©° mMgrHashì— ì”ì¡´í•˜ëŠ” TBSì— ëŒ€í•´ ìˆ˜í–‰ëœë‹¤.
  */
 IDE_RC smrDPListMgr::destoyingVisitor( vULong   aKey,
                                        void   * aData,
@@ -82,28 +82,28 @@ IDE_RC smrDPListMgr::destoyingVisitor( vULong   aKey,
 
     IDE_DASSERT( sDPMgr != NULL );
 
-    // DROP/DISCARD/OFFLINEµÇÁö ¾ÊÀº Tablespace¶ó¸é ?
+    // DROP/DISCARD/OFFLINEë˜ì§€ ì•Šì€ Tablespaceë¼ë©´ ?
     if ( sctTableSpaceMgr::isOnlineTBS( sSpaceID ) == ID_TRUE )
     {
-        // BUGBUG-1548 - smrRecoveryMgr::destroy½Ã¿¡
-        //               Checkpoint°¡ 2¹ø ¿Ï·áµÇ¸é ´õÀÌ»ó Dirty Page°¡
-        //               ÀÖÀ» ¼ö°¡ ¾ø´Ù.
-        //               removeAll´ë½Å Dirty Page°¡ ¾øÀ½À»
-        //               ASSERT·Î È®ÀÎÇÏµµ·Ï ¼öÁ¤ (°ËÁõÇÊ¿ä)
+        // BUGBUG-1548 - smrRecoveryMgr::destroyì‹œì—
+        //               Checkpointê°€ 2ë²ˆ ì™„ë£Œë˜ë©´ ë”ì´ìƒ Dirty Pageê°€
+        //               ìˆì„ ìˆ˜ê°€ ì—†ë‹¤.
+        //               removeAllëŒ€ì‹  Dirty Pageê°€ ì—†ìŒì„
+        //               ASSERTë¡œ í™•ì¸í•˜ë„ë¡ ìˆ˜ì • (ê²€ì¦í•„ìš”)
         //
 
-        // Dirty PageÀÇ PCH¿¡ Á¢±ÙÇÏ¿© Dirty»óÅÂ°¡ ¾Æ´Ñ »óÅÂ·Î ÀüÀÌÇØÁØ´Ù.
+        // Dirty Pageì˜ PCHì— ì ‘ê·¼í•˜ì—¬ Dirtyìƒíƒœê°€ ì•„ë‹Œ ìƒíƒœë¡œ ì „ì´í•´ì¤€ë‹¤.
         sDPMgr->removeAll(ID_FALSE); // return void
     }
     else
     {
-        // DROP/DISCARD/OFFLINE µÈ TablespaceÀÇ
-        // PCH´Â ÀÌ¹Ì FreeµÇ¾î ¾ø´Â »óÅÂÀÌ´Ù.
-        // ¾Æ¹«·± Ã³¸®µµ ÇÊ¿äÇÏÁö ¾Ê´Ù.
+        // DROP/DISCARD/OFFLINE ëœ Tablespaceì˜
+        // PCHëŠ” ì´ë¯¸ Freeë˜ì–´ ì—†ëŠ” ìƒíƒœì´ë‹¤.
+        // ì•„ë¬´ëŸ° ì²˜ë¦¬ë„ í•„ìš”í•˜ì§€ ì•Šë‹¤.
     }
 
-    // Dirt Page List¸¦ ÆÄ±«ÇÏ°í
-    // Hash¿¡¼­ Á¦°ÅÇÑ´Ù. ( VisitingµµÁß Á¦°Å°¡ °¡´ÉÇÏ´Ù )
+    // Dirt Page Listë¥¼ íŒŒê´´í•˜ê³ 
+    // Hashì—ì„œ ì œê±°í•œë‹¤. ( Visitingë„ì¤‘ ì œê±°ê°€ ê°€ëŠ¥í•˜ë‹¤ )
     IDE_TEST( removeDPList( aKey ) != IDE_SUCCESS );
 
     return IDE_SUCCESS;
@@ -114,7 +114,7 @@ IDE_RC smrDPListMgr::destoyingVisitor( vULong   aKey,
 }
 
 /*
- * Hashtable¿¡ µî·ÏµÈ ¸ğµç smrDirtyPageList¸¦ destroyÇÑ´Ù.
+ * Hashtableì— ë“±ë¡ëœ ëª¨ë“  smrDirtyPageListë¥¼ destroyí•œë‹¤.
  */
 IDE_RC smrDPListMgr::destroyAllMgrs()
 {
@@ -131,7 +131,7 @@ IDE_RC smrDPListMgr::destroyAllMgrs()
 }
 
 /*
-    Æ¯Á¤ TablespaceÀÇ Dirty Page°ü¸®ÀÚ¿¡ Dirty Page¸¦ Ãß°¡ÇÑ´Ù.
+    íŠ¹ì • Tablespaceì˜ Dirty Pageê´€ë¦¬ìì— Dirty Pageë¥¼ ì¶”ê°€í•œë‹¤.
  */
 IDE_RC smrDPListMgr::add(scSpaceID aSpaceID,
                          smmPCH*   aPCHPtr,
@@ -145,7 +145,7 @@ IDE_RC smrDPListMgr::add(scSpaceID aSpaceID,
 
     if ( sDPList == NULL )
     {
-        // TablespaceÀÇ Dirty Page°ü¸®ÀÚ°¡ ¾øÀ» °æ¿ì »õ·Î ¸¸µé¾îÁØ´Ù.
+        // Tablespaceì˜ Dirty Pageê´€ë¦¬ìê°€ ì—†ì„ ê²½ìš° ìƒˆë¡œ ë§Œë“¤ì–´ì¤€ë‹¤.
         IDE_TEST( createDPList( aSpaceID ) != IDE_SUCCESS );
 
         IDE_TEST( findDPList( aSpaceID, & sDPList ) != IDE_SUCCESS );
@@ -163,7 +163,7 @@ IDE_RC smrDPListMgr::add(scSpaceID aSpaceID,
 }
 
 /*
- * smrDPListMgr::flushDP ¸¦ À§ÇÑ ActionÀÎÀÚ
+ * smrDPListMgr::flushDP ë¥¼ ìœ„í•œ Actionì¸ì
  */
 typedef struct smrFlushDPArg
 {
@@ -171,7 +171,7 @@ typedef struct smrFlushDPArg
     ULong                       mRemoveCnt;
     ULong                       mTotalWaitTime;  /* microsecond */
     ULong                       mTotalSyncTime;  /* microsecond */
-    /* ShutdownÁ÷ÀüÀÇ ¸¶Áö¸· CheckpointÀÎÁö ¿©ºÎ*/
+    /* Shutdownì§ì „ì˜ ë§ˆì§€ë§‰ Checkpointì¸ì§€ ì—¬ë¶€*/
     idBool                      mIsFinalWrite;
     smmGetFlushTargetDBNoFunc   mGetFlushTargetDBNoFunc;
     sctStateSet                 mStateSet;
@@ -179,27 +179,27 @@ typedef struct smrFlushDPArg
 
 
 /*
-   smrDirtyPageList::writeDirtyPage¸¦ ¼öÇàÇÏ´Â ActionÇÔ¼ö
+   smrDirtyPageList::writeDirtyPageë¥¼ ìˆ˜í–‰í•˜ëŠ” Actioní•¨ìˆ˜
 
-   [ OFFLINEÀÌ°Å³ª DROPPEDÀÎ TBS => Dirty Page FlushÇÏÁö ¾ÊÀ½ ]
+   [ OFFLINEì´ê±°ë‚˜ DROPPEDì¸ TBS => Dirty Page Flushí•˜ì§€ ì•ŠìŒ ]
 
-      Tablespace¸¦ DropÇÏ´Â °æ¿ì Checkpoint Image FileÀ»
-      Áö¿ï ¼öµµ ÀÖ´Ù.  Checkpoint¿¡¼­´Â Áö¿öÁö´Â ¿ÍÁß¿¡ ÀÖ´Â
-      (È¤Àº ÀÌ¹Ì Áö¿öÁø) Checkpoint Image¿¡ ´ëÇØ
-      Dirty Page¸¦ FlushÇÏÁö ¾Ê´Â´Ù.
+      Tablespaceë¥¼ Dropí•˜ëŠ” ê²½ìš° Checkpoint Image Fileì„
+      ì§€ìš¸ ìˆ˜ë„ ìˆë‹¤.  Checkpointì—ì„œëŠ” ì§€ì›Œì§€ëŠ” ì™€ì¤‘ì— ìˆëŠ”
+      (í˜¹ì€ ì´ë¯¸ ì§€ì›Œì§„) Checkpoint Imageì— ëŒ€í•´
+      Dirty Pageë¥¼ Flushí•˜ì§€ ì•ŠëŠ”ë‹¤.
 
-      Tablespace¸¦ OfflineÀÌ³ª DropÇÏ´Â°æ¿ì
-      PCH¹× PCH Array°¡ Áß°£¿¡ ÇØÁ¦µÉ ¼öµµ ÀÖ´Ù.
-        => PCH / PCH Array´Â Dirty Page FlushÇÏ´Âµ¥ ÇÊ¼ö µ¥ÀÌÅÍ±¸Á¶ÀÌ´Ù.
+      Tablespaceë¥¼ Offlineì´ë‚˜ Dropí•˜ëŠ”ê²½ìš°
+      PCHë° PCH Arrayê°€ ì¤‘ê°„ì— í•´ì œë  ìˆ˜ë„ ìˆë‹¤.
+        => PCH / PCH ArrayëŠ” Dirty Page Flushí•˜ëŠ”ë° í•„ìˆ˜ ë°ì´í„°êµ¬ì¡°ì´ë‹¤.
 
-   [ µ¿½Ã¼º Á¦¾î ]
+   [ ë™ì‹œì„± ì œì–´ ]
 
-      TBS»óÅÂ°¡ DROPÀÌ³ª OFFLINEÀ¸·Î ÀüÀÌµÇÁö ¾Êµµ·Ï
-      Dirty Page¸¦ Checkpoint Image·Î ±â·ÏÇÏ´Â µ¿¾È
-      TBS.SyncMutex¸¦ È¹µæÇÑ´Ù.
+      TBSìƒíƒœê°€ DROPì´ë‚˜ OFFLINEìœ¼ë¡œ ì „ì´ë˜ì§€ ì•Šë„ë¡
+      Dirty Pageë¥¼ Checkpoint Imageë¡œ ê¸°ë¡í•˜ëŠ” ë™ì•ˆ
+      TBS.SyncMutexë¥¼ íšë“í•œë‹¤.
 
-      - Âü°í : TBS»óÅÂ¸¦ DROPÀÌ³ª OFFLINEÀ¸·Î ÀüÀÌ½ÃÅ°´Â Tx´Â
-                TBS.SyncMutex¸¦ Àâ´Â´Ù.
+      - ì°¸ê³  : TBSìƒíƒœë¥¼ DROPì´ë‚˜ OFFLINEìœ¼ë¡œ ì „ì´ì‹œí‚¤ëŠ” TxëŠ”
+                TBS.SyncMutexë¥¼ ì¡ëŠ”ë‹¤.
 
  */
 IDE_RC smrDPListMgr::writeDirtyPageAction( idvSQL            * /* aStatistics */,
@@ -220,7 +220,7 @@ IDE_RC smrDPListMgr::writeDirtyPageAction( idvSQL            * /* aStatistics */
 
     if(sctTableSpaceMgr::isMemTableSpace(aSpaceNode->mID) == ID_TRUE)
     {
-        // TBS»óÅÂ°¡ DROPÀÌ³ª OFFLINEÀ¸·Î ÀüÀÌµÇÁö ¾Êµµ·Ï º¸Àå
+        // TBSìƒíƒœê°€ DROPì´ë‚˜ OFFLINEìœ¼ë¡œ ì „ì´ë˜ì§€ ì•Šë„ë¡ ë³´ì¥
         IDE_TEST( sctTableSpaceMgr::latchSyncMutex( aSpaceNode )
                   != IDE_SUCCESS );
         sStage = 1;
@@ -229,19 +229,19 @@ IDE_RC smrDPListMgr::writeDirtyPageAction( idvSQL            * /* aStatistics */
                                    aSpaceNode,
                                    sActionArg->mStateSet ) == ID_TRUE )
         {
-            /* »óÅÂ¸¦ ¸¸Á·ÇÏÁö ¾Ê´Â °æ¿ì */
+            /* ìƒíƒœë¥¼ ë§Œì¡±í•˜ì§€ ì•ŠëŠ” ê²½ìš° */
             switch ( sActionArg->mStateSet )
             {
                 case SCT_SS_SKIP_CHECKPOINT:
-                    // Chkpt½Ã¿¡´Â
-                    // DROP/DISCARD/OFFLINEµÈ Tablespace¶ó¸é
-                    // ÇØ´ç TablespaceÀÇ Dirty Page°ü¸®ÀÚ¸¦ ÆÄ±«, Á¦°ÅÇÑ´Ù.
-                    // (Âü°í. removeDPList´Â PCH¹× Dirty Page¸¦
-                    // °Çµå¸®Áö ¾Ê´Â´Ù. )
+                    // Chkptì‹œì—ëŠ”
+                    // DROP/DISCARD/OFFLINEëœ Tablespaceë¼ë©´
+                    // í•´ë‹¹ Tablespaceì˜ Dirty Pageê´€ë¦¬ìë¥¼ íŒŒê´´, ì œê±°í•œë‹¤.
+                    // (ì°¸ê³ . removeDPListëŠ” PCHë° Dirty Pageë¥¼
+                    // ê±´ë“œë¦¬ì§€ ì•ŠëŠ”ë‹¤. )
                     IDE_TEST( removeDPList( aSpaceNode->mID ) != IDE_SUCCESS );
                     break;
                 case SCT_SS_UNABLE_MEDIA_RECOVERY:
-                    // DROP/DISCARDµÈ Tablespace´Â Á¦¿ÜÇÑ´Ù.
+                    // DROP/DISCARDëœ TablespaceëŠ” ì œì™¸í•œë‹¤.
                     IDE_TEST( removeDPList( aSpaceNode->mID ) != IDE_SUCCESS );
                     break;
                 default:
@@ -251,27 +251,27 @@ IDE_RC smrDPListMgr::writeDirtyPageAction( idvSQL            * /* aStatistics */
         }
         else
         {
-            // »óÅÂ¸¦ ¸¸Á·ÇÏ´Â °æ¿ì
+            // ìƒíƒœë¥¼ ë§Œì¡±í•˜ëŠ” ê²½ìš°
             switch ( sActionArg->mStateSet )
             {
                 case SCT_SS_SKIP_CHECKPOINT:
-                    // TableSpace°¡ ONLINE»óÀÇ °æ¿ì Flush ¼öÇà
+                    // TableSpaceê°€ ONLINEìƒì˜ ê²½ìš° Flush ìˆ˜í–‰
                     break;
                 case SCT_SS_UNABLE_MEDIA_RECOVERY:
-                    // TableSpace°¡ ONLINE/OFFLINE»óÅÂÀÌ¹Ç·Î Flush ¼öÇà
+                    // TableSpaceê°€ ONLINE/OFFLINEìƒíƒœì´ë¯€ë¡œ Flush ìˆ˜í–‰
                     break;
                 default:
                     IDE_ASSERT( 0 );
                     break;
             }
 
-            // SMR Dirty Page List °´Ã¼ ¾ò¾î¿À±â
+            // SMR Dirty Page List ê°ì²´ ì–»ì–´ì˜¤ê¸°
             IDE_TEST( findDPList( aSpaceNode->mID,
                         & sDPList ) != IDE_SUCCESS );
 
             if ( sDPList != NULL )
             {
-                // FLush½Ç½Ã
+                // FLushì‹¤ì‹œ
                 IDE_TEST( sDPList->writeDirtyPages(
                             (smmTBSNode*) aSpaceNode,
                             sActionArg->mGetFlushTargetDBNoFunc,
@@ -290,8 +290,8 @@ IDE_RC smrDPListMgr::writeDirtyPageAction( idvSQL            * /* aStatistics */
             }
             else
             {
-                // TBS¿¡ ÇØ´çÇÏ´Â SMR Dirty Page List°¡ ¾ø´Ù
-                // => FlushÇÒ Dirty Page °¡ ¾ø´Â °ÍÀÌ¹Ç·Î ¾Æ¹«°Íµµ ÇÏÁö ¾Ê´Â´Ù.
+                // TBSì— í•´ë‹¹í•˜ëŠ” SMR Dirty Page Listê°€ ì—†ë‹¤
+                // => Flushí•  Dirty Page ê°€ ì—†ëŠ” ê²ƒì´ë¯€ë¡œ ì•„ë¬´ê²ƒë„ í•˜ì§€ ì•ŠëŠ”ë‹¤.
             }
         }
 
@@ -323,13 +323,13 @@ IDE_RC smrDPListMgr::writeDirtyPageAction( idvSQL            * /* aStatistics */
 
 
 /*
-   smrDirtyPageList::writePIDLogs¸¦ ¼öÇàÇÏ´Â ActionÇÔ¼ö
+   smrDirtyPageList::writePIDLogsë¥¼ ìˆ˜í–‰í•˜ëŠ” Actioní•¨ìˆ˜
 
-   [ OFFLINEÀÌ°Å³ª DROPPEDÀÎ TBS => Dirty Page FlushÇÏÁö ¾ÊÀ½ ]
-       writeDirtyPageAction ¿Í µ¿ÀÏ
+   [ OFFLINEì´ê±°ë‚˜ DROPPEDì¸ TBS => Dirty Page Flushí•˜ì§€ ì•ŠìŒ ]
+       writeDirtyPageAction ì™€ ë™ì¼
 
-   [ µ¿½Ã¼º Á¦¾î ]
-       writeDirtyPageAction ¿Í µ¿ÀÏ
+   [ ë™ì‹œì„± ì œì–´ ]
+       writeDirtyPageAction ì™€ ë™ì¼
 
  */
 IDE_RC smrDPListMgr::writePIDLogAction( idvSQL*             /* aStatistics */,
@@ -344,32 +344,32 @@ IDE_RC smrDPListMgr::writePIDLogAction( idvSQL*             /* aStatistics */,
 
     if(sctTableSpaceMgr::isMemTableSpace(aSpaceNode->mID) == ID_TRUE)
     {
-        // TBS»óÅÂ°¡ DROPÀÌ³ª OFFLINEÀ¸·Î ÀüÀÌµÇÁö ¾Êµµ·Ï º¸Àå
+        // TBSìƒíƒœê°€ DROPì´ë‚˜ OFFLINEìœ¼ë¡œ ì „ì´ë˜ì§€ ì•Šë„ë¡ ë³´ì¥
         IDE_TEST( sctTableSpaceMgr::latchSyncMutex( aSpaceNode )
                   != IDE_SUCCESS );
         sStage = 1;
 
-        // DROP/DISCARD/OFFLINEµÈ Tablespace¶ó¸é ?
+        // DROP/DISCARD/OFFLINEëœ Tablespaceë¼ë©´ ?
         if ( sctTableSpaceMgr::hasState( aSpaceNode, SCT_SS_SKIP_CHECKPOINT )
              == ID_TRUE )
         {
-            // DROP/DISCARD/OFFLINEµÈ Tablespace¶ó¸é
-            // ¾Æ¹«·± Ã³¸®µµ ¼öÇàÇÏÁö ¾Ê´Â´Ù.
+            // DROP/DISCARD/OFFLINEëœ Tablespaceë¼ë©´
+            // ì•„ë¬´ëŸ° ì²˜ë¦¬ë„ ìˆ˜í–‰í•˜ì§€ ì•ŠëŠ”ë‹¤.
         }
         else
         {
-            // SMR Dirty Page List °´Ã¼ ¾ò¾î¿À±â
+            // SMR Dirty Page List ê°ì²´ ì–»ì–´ì˜¤ê¸°
             IDE_TEST( findDPList( aSpaceNode->mID,
                                   & sDPList ) != IDE_SUCCESS );
             if ( sDPList != NULL )
             {
-                // Page Write½Ç½Ã
+                // Page Writeì‹¤ì‹œ
                 IDE_TEST( sDPList->writePIDLogs() != IDE_SUCCESS );
             }
             else
             {
-                // TBS¿¡ ÇØ´çÇÏ´Â SMR Dirty Page List°¡ ¾ø´Â »óÈ²
-                // Dirty Page°¡ ¾ø´Â »óÈ²ÀÌ¹Ç·Î Page ID·Î±ëµµ ÇÏÁö ¾Ê´Â´Ù.
+                // TBSì— í•´ë‹¹í•˜ëŠ” SMR Dirty Page Listê°€ ì—†ëŠ” ìƒí™©
+                // Dirty Pageê°€ ì—†ëŠ” ìƒí™©ì´ë¯€ë¡œ Page IDë¡œê¹…ë„ í•˜ì§€ ì•ŠëŠ”ë‹¤.
             }
         }
 
@@ -401,18 +401,18 @@ IDE_RC smrDPListMgr::writePIDLogAction( idvSQL*             /* aStatistics */,
 
 
 /*
-    ¸ğµç TablespaceÀÇ Dirty Page¿¡ ´ëÇØ
-    PID¸¦ ·Î±ëÇÏ°í Page Image¸¦ Checkpoint Image¿¡ ±â·Ï
+    ëª¨ë“  Tablespaceì˜ Dirty Pageì— ëŒ€í•´
+    PIDë¥¼ ë¡œê¹…í•˜ê³  Page Imageë¥¼ Checkpoint Imageì— ê¸°ë¡
 
-    [OUT] aTotalCnt  - Flush ½Ç½ÃÇÑ DIRTY PAGE °³¼ö
-    [OUT] aRemoveCnt - Dirty Page List¿¡¼­ Á¦°ÅµÈ PageÀÇ ¼ö
-    [IN]  aOption    - Dirty Page±â·Ï¿É¼Ç
-                       ex> PID·Î±ë ¾ÈÇÏ±â (Media Recovery½Ã Àû¿ë)
+    [OUT] aTotalCnt  - Flush ì‹¤ì‹œí•œ DIRTY PAGE ê°œìˆ˜
+    [OUT] aRemoveCnt - Dirty Page Listì—ì„œ ì œê±°ëœ Pageì˜ ìˆ˜
+    [IN]  aOption    - Dirty Pageê¸°ë¡ì˜µì…˜
+                       ex> PIDë¡œê¹… ì•ˆí•˜ê¸° (Media Recoveryì‹œ ì ìš©)
 
-    [¾Ë°í¸®Áò]
-       (010) ¸ğµç TBS¿¡ ´ëÇØ Dirty Page ID¸¦ 0¹ø LFG¿¡ ·Î±ë
-       (020) Page ID Log°¡ ±â·ÏµÈ DISK(0¹ø) LFG¸¦ FLUSH
-       (030) ¸ğµç TBS¿¡ ´ëÇØ Dirty Page¸¦ Checkpoint Image¿¡ ±â·Ï
+    [ì•Œê³ ë¦¬ì¦˜]
+       (010) ëª¨ë“  TBSì— ëŒ€í•´ Dirty Page IDë¥¼ 0ë²ˆ LFGì— ë¡œê¹…
+       (020) Page ID Logê°€ ê¸°ë¡ëœ DISK(0ë²ˆ) LFGë¥¼ FLUSH
+       (030) ëª¨ë“  TBSì— ëŒ€í•´ Dirty Pageë¥¼ Checkpoint Imageì— ê¸°ë¡
  */
 IDE_RC smrDPListMgr::writeDirtyPages4AllTBS(
                      sctStateSet                 aStateSet,
@@ -427,7 +427,7 @@ IDE_RC smrDPListMgr::writeDirtyPages4AllTBS(
     smrFlushDPArg sActArg;
 
     /* BUG-39925 [PROJ-2506] Insure++ Warning
-     * - º¯¼ö ÃÊ±âÈ­°¡ ÇÊ¿äÇÕ´Ï´Ù.
+     * - ë³€ìˆ˜ ì´ˆê¸°í™”ê°€ í•„ìš”í•©ë‹ˆë‹¤.
      */
     idlOS::memset( &sActArg, 0, ID_SIZEOF( sActArg ) );
 
@@ -442,14 +442,14 @@ IDE_RC smrDPListMgr::writeDirtyPages4AllTBS(
 
     IDE_TEST(smmDatabase::checkMembaseIsValid() != IDE_SUCCESS);
 
-    // Checkpoint Á÷ÀüÀÇ ¸¶Áö¸· dirty page writeÀÎÁö?
+    // Checkpoint ì§ì „ì˜ ë§ˆì§€ë§‰ dirty page writeì¸ì§€?
     if ( ( aWriteOption & SMR_WDP_FINAL_WRITE ) != SMR_WDP_FINAL_WRITE )
     {
-        /* BUG-28554 [SM] CHECKPOINT_BULK_WRITE_SLEEP_[U]SECÀÌ Á¦´ë·Î 
-         * µ¿ÀÛÇÏÁö ¾Ê½À´Ï´Ù.
-         * FINAL_WRITE°¡ ¾Æ´Ñ °æ¿ì, Áï Shutdown½ÃÀÇ Checkpoint°¡ ¾Æ´Ï¸é
-         * ÀÌÇÏ mIsFinalWriteFlag°¡ False·Î ¼³Á¤µÇ¾î¾ß CHECKPOINT_BULK-
-         * _WRITE_SLEEP ÀÌ Á¦´ë·Î µ¿ÀÛÇÕ´Ï´Ù. */
+        /* BUG-28554 [SM] CHECKPOINT_BULK_WRITE_SLEEP_[U]SECì´ ì œëŒ€ë¡œ 
+         * ë™ì‘í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
+         * FINAL_WRITEê°€ ì•„ë‹Œ ê²½ìš°, ì¦‰ Shutdownì‹œì˜ Checkpointê°€ ì•„ë‹ˆë©´
+         * ì´í•˜ mIsFinalWriteFlagê°€ Falseë¡œ ì„¤ì •ë˜ì–´ì•¼ CHECKPOINT_BULK-
+         * _WRITE_SLEEP ì´ ì œëŒ€ë¡œ ë™ì‘í•©ë‹ˆë‹¤. */
         sActArg.mIsFinalWrite = ID_FALSE;
     }
     else
@@ -460,7 +460,7 @@ IDE_RC smrDPListMgr::writeDirtyPages4AllTBS(
     if ( ( aWriteOption & SMR_WDP_NO_PID_LOGGING ) != SMR_WDP_NO_PID_LOGGING )
     {
         /////////////////////////////////////////////////////////////////
-        // (010) ¸ğµç TBS¿¡ ´ëÇØ Dirty Page ID¸¦ 0¹ø LFG¿¡ ·Î±ë
+        // (010) ëª¨ë“  TBSì— ëŒ€í•´ Dirty Page IDë¥¼ 0ë²ˆ LFGì— ë¡œê¹…
         IDE_TEST( sctTableSpaceMgr::doAction4EachTBS( NULL, /* idvSQL* */
                                                       writePIDLogAction,
                                                       (void*) & sActArg,
@@ -469,7 +469,7 @@ IDE_RC smrDPListMgr::writeDirtyPages4AllTBS(
 
 
         /////////////////////////////////////////////////////////////////
-        // (020) Page ID Log°¡ ±â·ÏµÈ DISK(0¹ø) LFG¸¦ FLUSH
+        // (020) Page ID Logê°€ ê¸°ë¡ëœ DISK(0ë²ˆ) LFGë¥¼ FLUSH
         IDE_TEST(smrLogMgr::getLstLSN(&sSyncLstLSN)
                  != IDE_SUCCESS);
         IDE_TEST(smrLogMgr::syncLFThread( SMR_LOG_SYNC_BY_CKP,
@@ -478,7 +478,7 @@ IDE_RC smrDPListMgr::writeDirtyPages4AllTBS(
     }
 
     /////////////////////////////////////////////////////////////////
-    // (030) ¸ğµç TBS¿¡ ´ëÇØ Dirty Page¸¦ Checkpoint Image¿¡ ±â·Ï
+    // (030) ëª¨ë“  TBSì— ëŒ€í•´ Dirty Pageë¥¼ Checkpoint Imageì— ê¸°ë¡
     IDE_TEST( sctTableSpaceMgr::doAction4EachTBS( NULL, /* idvSQL* */
                                                   writeDirtyPageAction,
                                                   (void*) & sActArg,
@@ -501,7 +501,7 @@ IDE_RC smrDPListMgr::writeDirtyPages4AllTBS(
 
 
 /*
- * getTotalDirtyPageCnt ¸¦ À§ÇÑ ActionÀÎÀÚ
+ * getTotalDirtyPageCnt ë¥¼ ìœ„í•œ Actionì¸ì
  */
 typedef struct smrCountDPArg
 {
@@ -510,7 +510,7 @@ typedef struct smrCountDPArg
 
 
 /*
- * getTotalDirtyPageCnt ¸¦ À§ÇÑ ActionÇÔ¼ö
+ * getTotalDirtyPageCnt ë¥¼ ìœ„í•œ Actioní•¨ìˆ˜
  */
 IDE_RC smrDPListMgr::countDPAction( idvSQL*             /*aStatistics */,
                                     sctTableSpaceNode * aSpaceNode,
@@ -523,12 +523,12 @@ IDE_RC smrDPListMgr::countDPAction( idvSQL*             /*aStatistics */,
 
     if(sctTableSpaceMgr::isMemTableSpace(aSpaceNode->mID) == ID_TRUE)
     {
-        // TBS»óÅÂ°¡ DROPÀÌ³ª OFFLINEÀ¸·Î ÀüÀÌµÇÁö ¾Êµµ·Ï º¸Àå
+        // TBSìƒíƒœê°€ DROPì´ë‚˜ OFFLINEìœ¼ë¡œ ì „ì´ë˜ì§€ ì•Šë„ë¡ ë³´ì¥
         IDE_TEST( sctTableSpaceMgr::latchSyncMutex( aSpaceNode )
                   != IDE_SUCCESS );
         sStage = 1;
 
-        // DROP/DISCARD/OFFLINEµÇÁö ¾ÊÀº Tablespace¶ó¸é ?
+        // DROP/DISCARD/OFFLINEë˜ì§€ ì•Šì€ Tablespaceë¼ë©´ ?
         if ( sctTableSpaceMgr::isOnlineTBS( aSpaceNode->mID ) == ID_TRUE )
         {
             IDE_TEST( findDPList( aSpaceNode->mID,
@@ -540,15 +540,15 @@ IDE_RC smrDPListMgr::countDPAction( idvSQL*             /*aStatistics */,
             }
             else
             {
-                // TBS¿¡ ÇØ´çÇÏ´Â SMR Dirty Page List°¡ ¾ø´Ù´Â °ÍÀº
-                // ¾ÆÁ÷ Dirty Page°¡ ÇÏ³ªµµ ¾ø´Â °æ¿ìÀÌ´Ù
+                // TBSì— í•´ë‹¹í•˜ëŠ” SMR Dirty Page Listê°€ ì—†ë‹¤ëŠ” ê²ƒì€
+                // ì•„ì§ Dirty Pageê°€ í•˜ë‚˜ë„ ì—†ëŠ” ê²½ìš°ì´ë‹¤
             }
         }
         else
         {
-            // DROP/DISCARD/OFFLINEµÈ Tablespace¶ó¸é ?
+            // DROP/DISCARD/OFFLINEëœ Tablespaceë¼ë©´ ?
 
-            // Dirty Page¸¦ ¼¼Áö ¾Ê´Â´Ù.
+            // Dirty Pageë¥¼ ì„¸ì§€ ì•ŠëŠ”ë‹¤.
         }
 
         sStage = 0;
@@ -578,8 +578,8 @@ IDE_RC smrDPListMgr::countDPAction( idvSQL*             /*aStatistics */,
 }
 
 /*
-   ¸ğµç TablespaceÀÇ Dirty Page¼ö¸¦ °è»ê
-    [OUT] aDirtyPageCount - Dirty Page¼ö
+   ëª¨ë“  Tablespaceì˜ Dirty Pageìˆ˜ë¥¼ ê³„ì‚°
+    [OUT] aDirtyPageCount - Dirty Pageìˆ˜
 */
 IDE_RC smrDPListMgr::getTotalDirtyPageCnt( ULong * aDirtyPageCount)
 {
@@ -607,10 +607,10 @@ IDE_RC smrDPListMgr::getTotalDirtyPageCnt( ULong * aDirtyPageCount)
 
 
 /*
-    Æ¯Á¤ TablespaceÀÇ Dirty Page¼ö¸¦ °è»êÇÑ´Ù.
+    íŠ¹ì • Tablespaceì˜ Dirty Pageìˆ˜ë¥¼ ê³„ì‚°í•œë‹¤.
 
-    [IN]  aTBSID          - Dirty Page¼ö¸¦ °è»êÇÒ Tablespace ID
-    [OUT] aDirtyPageCount - Dirty Page¼ö
+    [IN]  aTBSID          - Dirty Pageìˆ˜ë¥¼ ê³„ì‚°í•  Tablespace ID
+    [OUT] aDirtyPageCount - Dirty Pageìˆ˜
 */
 IDE_RC smrDPListMgr::getDirtyPageCountOfTBS( scSpaceID   aTBSID,
                                              scPageID  * aDirtyPageCount )
@@ -626,8 +626,8 @@ IDE_RC smrDPListMgr::getDirtyPageCountOfTBS( scSpaceID   aTBSID,
     }
     else
     {
-        // aTBSIDÀÇ Dirty PageµéÀ» ÀúÀåÇÏ´Â SMR Dirty Page List °¡ ¾ø´Ù.
-        // => Dirty Page°¹¼ö´Â 0°³
+        // aTBSIDì˜ Dirty Pageë“¤ì„ ì €ì¥í•˜ëŠ” SMR Dirty Page List ê°€ ì—†ë‹¤.
+        // => Dirty Pageê°¯ìˆ˜ëŠ” 0ê°œ
         *aDirtyPageCount = 0;
     }
 
@@ -642,9 +642,9 @@ IDE_RC smrDPListMgr::getDirtyPageCountOfTBS( scSpaceID   aTBSID,
 
 
 /*
-    Æ¯Á¤ Tablespace¸¦ À§ÇÑ Dirty Page°ü¸®ÀÚ¸¦ »ı¼ºÇÑ´Ù.
+    íŠ¹ì • Tablespaceë¥¼ ìœ„í•œ Dirty Pageê´€ë¦¬ìë¥¼ ìƒì„±í•œë‹¤.
 
-    [IN] aSpaceID - »ı¼ºÇÏ°íÀÚ ÇÏ´Â Dirty Page°ü¸®ÀÚ°¡ ¼ÓÇÑ TablespaceÀÇ ID
+    [IN] aSpaceID - ìƒì„±í•˜ê³ ì í•˜ëŠ” Dirty Pageê´€ë¦¬ìê°€ ì†í•œ Tablespaceì˜ ID
  */
 IDE_RC smrDPListMgr::createDPList(scSpaceID aSpaceID )
 {
@@ -688,11 +688,11 @@ IDE_RC smrDPListMgr::createDPList(scSpaceID aSpaceID )
 }
 
 /*
-   Æ¯Á¤ Tablespace¸¦ À§ÇÑ Dirty Page°ü¸®ÀÚ¸¦ Ã£¾Æ³½´Ù.
-   Ã£Áö ¸øÇÑ °æ¿ì NULLÀÌ ¸®ÅÏµÈ´Ù.
+   íŠ¹ì • Tablespaceë¥¼ ìœ„í•œ Dirty Pageê´€ë¦¬ìë¥¼ ì°¾ì•„ë‚¸ë‹¤.
+   ì°¾ì§€ ëª»í•œ ê²½ìš° NULLì´ ë¦¬í„´ëœë‹¤.
 
-   [IN]  aSpaceID - Ã£°íÀÚ ÇÏ´Â DirtyPage°ü¸®ÀÚ°¡ ¼ÓÇÑ TablespaceÀÇ ID
-   [OUT] aDPList   - Ã£¾Æ³½ Dirty Page °ü¸®ÀÚ
+   [IN]  aSpaceID - ì°¾ê³ ì í•˜ëŠ” DirtyPageê´€ë¦¬ìê°€ ì†í•œ Tablespaceì˜ ID
+   [OUT] aDPList   - ì°¾ì•„ë‚¸ Dirty Page ê´€ë¦¬ì
 */
 
 IDE_RC smrDPListMgr::findDPList( scSpaceID           aSpaceID,
@@ -704,9 +704,9 @@ IDE_RC smrDPListMgr::findDPList( scSpaceID           aSpaceID,
 }
 
 /*
-    Æ¯Á¤ TablespaceÀÇ Dirty Page°ü¸®ÀÚ¸¦ Á¦°ÅÇÑ´Ù.
+    íŠ¹ì • Tablespaceì˜ Dirty Pageê´€ë¦¬ìë¥¼ ì œê±°í•œë‹¤.
 
-    [IN] aSpaceID - Á¦°ÅÇÏ°íÀÚ ÇÏ´Â Dirty Page°ü¸®ÀÚ°¡ ¼ÓÇÑ Tablespace ID
+    [IN] aSpaceID - ì œê±°í•˜ê³ ì í•˜ëŠ” Dirty Pageê´€ë¦¬ìê°€ ì†í•œ Tablespace ID
  */
 IDE_RC smrDPListMgr::removeDPList( scSpaceID aSpaceID )
 {
@@ -714,10 +714,10 @@ IDE_RC smrDPListMgr::removeDPList( scSpaceID aSpaceID )
 
     sDPList = (smrDirtyPageList *) mMgrHash.search( aSpaceID );
 
-    // SMR Dirty Page List°¡ Á¸ÀçÇÒ °æ¿ì
+    // SMR Dirty Page Listê°€ ì¡´ì¬í•  ê²½ìš°
     if ( sDPList != NULL )
     {
-        // Á¦°Å ½Ç½Ã
+        // ì œê±° ì‹¤ì‹œ
         IDE_TEST( sDPList->destroy() != IDE_SUCCESS );
 
         IDE_TEST( iduMemMgr::free( sDPList ) != IDE_SUCCESS );
@@ -733,11 +733,11 @@ IDE_RC smrDPListMgr::removeDPList( scSpaceID aSpaceID )
 }
 
 /*
-    Æ¯Á¤ TablespaceÀÇ Dirty Page¸¦ SMM=>SMR·Î ÀÌµ¿ÇÑ´Ù.
+    íŠ¹ì • Tablespaceì˜ Dirty Pageë¥¼ SMM=>SMRë¡œ ì´ë™í•œë‹¤.
 
-    [IN] aSpaceID - Dirty Page¸¦ ÀÌµ¿ÇÏ°íÀÚ ÇÏ´Â TablespaceÀÇ ID
-    [OUT] aNewCnt - »õ·Î Ãß°¡µÈ Dirty Page ¼ö
-    [OUT] aDupCnt - ±âÁ¸¿¡ Á¸ÀçÇÏ¿´´ø Dirty Page ¼ö
+    [IN] aSpaceID - Dirty Pageë¥¼ ì´ë™í•˜ê³ ì í•˜ëŠ” Tablespaceì˜ ID
+    [OUT] aNewCnt - ìƒˆë¡œ ì¶”ê°€ëœ Dirty Page ìˆ˜
+    [OUT] aDupCnt - ê¸°ì¡´ì— ì¡´ì¬í•˜ì˜€ë˜ Dirty Page ìˆ˜
  */
 IDE_RC smrDPListMgr::moveDirtyPages4TBS(scSpaceID   aSpaceID,
                                         scPageID  * aNewCnt,
@@ -750,16 +750,16 @@ IDE_RC smrDPListMgr::moveDirtyPages4TBS(scSpaceID   aSpaceID,
     IDE_TEST( smmDirtyPageMgr::findDPMgr( aSpaceID, & sSmmDPMgr )
               != IDE_SUCCESS );
 
-    // SMM Dirty Page Mgr´Â TBS°¡ ÃÊ±âÈ­µÇ¸é¼­ ÇÔ²² ÃÊ±âÈ­ µÈ´Ù.
-    // ÀÌ ÇÔ¼ö´Â ONLINE»óÅÂÀÎ Tablespace¿¡ ´ëÇØ È£ÃâµÇ±â ¶§¹®¿¡
-    // SMM Dirty Page MgrÀÌ Á¸ÀçÇØ¾ß ÇÑ´Ù.
+    // SMM Dirty Page MgrëŠ” TBSê°€ ì´ˆê¸°í™”ë˜ë©´ì„œ í•¨ê»˜ ì´ˆê¸°í™” ëœë‹¤.
+    // ì´ í•¨ìˆ˜ëŠ” ONLINEìƒíƒœì¸ Tablespaceì— ëŒ€í•´ í˜¸ì¶œë˜ê¸° ë•Œë¬¸ì—
+    // SMM Dirty Page Mgrì´ ì¡´ì¬í•´ì•¼ í•œë‹¤.
     IDE_ASSERT( sSmmDPMgr != NULL );
 
     IDE_TEST( findDPList( aSpaceID, &sSmrDPList ) != IDE_SUCCESS );
     if( sSmrDPList == NULL )
     {
-        // ¾ÆÁ÷ ÇÑ¹øµµ SMM => SMR·Î Dirty PageÀÌµ¿ÀÌ µÇÁö ¾ÊÀº °æ¿ì
-        // TablespaceÀÇ Dirty Page°ü¸®ÀÚ°¡ ¾øÀ» °æ¿ì »õ·Î ¸¸µé¾îÁØ´Ù.
+        // ì•„ì§ í•œë²ˆë„ SMM => SMRë¡œ Dirty Pageì´ë™ì´ ë˜ì§€ ì•Šì€ ê²½ìš°
+        // Tablespaceì˜ Dirty Pageê´€ë¦¬ìê°€ ì—†ì„ ê²½ìš° ìƒˆë¡œ ë§Œë“¤ì–´ì¤€ë‹¤.
         IDE_TEST( createDPList( aSpaceID ) != IDE_SUCCESS );
 
         IDE_TEST( findDPList( aSpaceID, & sSmrDPList ) != IDE_SUCCESS );
@@ -780,7 +780,7 @@ IDE_RC smrDPListMgr::moveDirtyPages4TBS(scSpaceID   aSpaceID,
 
 
 /*
- * moveDirtyPages4AllTBS ¸¦ À§ÇÑ ActionÀÎÀÚ
+ * moveDirtyPages4AllTBS ë¥¼ ìœ„í•œ Actionì¸ì
  */
 typedef struct smrMoveDPArg
 {
@@ -790,7 +790,7 @@ typedef struct smrMoveDPArg
 } smrMoveDPArg;
 
 /*
- * moveDirtyPages4AllTBS ¸¦ À§ÇÑ ActionÇÔ¼ö
+ * moveDirtyPages4AllTBS ë¥¼ ìœ„í•œ Actioní•¨ìˆ˜
  */
 IDE_RC smrDPListMgr::moveDPAction( idvSQL*            /*  aStatistics */,
                                    sctTableSpaceNode * aSpaceNode,
@@ -804,7 +804,7 @@ IDE_RC smrDPListMgr::moveDPAction( idvSQL*            /*  aStatistics */,
 
     if(sctTableSpaceMgr::isMemTableSpace(aSpaceNode->mID) == ID_TRUE)
     {
-        // TBS»óÅÂ°¡ DROPÀÌ³ª OFFLINEÀ¸·Î ÀüÀÌµÇÁö ¾Êµµ·Ï º¸Àå
+        // TBSìƒíƒœê°€ DROPì´ë‚˜ OFFLINEìœ¼ë¡œ ì „ì´ë˜ì§€ ì•Šë„ë¡ ë³´ì¥
         IDE_TEST( sctTableSpaceMgr::latchSyncMutex( aSpaceNode )
                   != IDE_SUCCESS );
         sStage = 1;
@@ -816,11 +816,11 @@ IDE_RC smrDPListMgr::moveDPAction( idvSQL*            /*  aStatistics */,
             switch ( sActionArg->mStateSet )
             {
                 case SCT_SS_SKIP_CHECKPOINT:
-                    // Chkpt½Ã¿¡´Â DROP/DISCARD/OFFLINEµÈ Tablespace¶ó¸é
-                    // ¾Æ¹«°Íµµ ÇÏÁö ¾Ê´Â´Ù.
+                    // Chkptì‹œì—ëŠ” DROP/DISCARD/OFFLINEëœ Tablespaceë¼ë©´
+                    // ì•„ë¬´ê²ƒë„ í•˜ì§€ ì•ŠëŠ”ë‹¤.
                     break;
                 case SCT_SS_UNABLE_MEDIA_RECOVERY:
-                    // DROP/DISCARDµÈ Tablespace´Â Á¦¿ÜÇÑ´Ù.
+                    // DROP/DISCARDëœ TablespaceëŠ” ì œì™¸í•œë‹¤.
                     break;
                 default:
                     IDE_ASSERT( 0 );
@@ -866,11 +866,11 @@ IDE_RC smrDPListMgr::moveDPAction( idvSQL*            /*  aStatistics */,
 
 
 /*
-    ¸ğµç TablespaceÀÇ Dirty Page¸¦ SMM=>SMR·Î ÀÌµ¿ÇÑ´Ù.
+    ëª¨ë“  Tablespaceì˜ Dirty Pageë¥¼ SMM=>SMRë¡œ ì´ë™í•œë‹¤.
 
-    [IN]  aIsOnChkpt - Chkpt ¶Ç´Â Media Recovery
-    [OUT] aNewCnt    - »õ·Î Ãß°¡µÈ Dirty Page ¼ö
-    [OUT] aDupCnt    - ±âÁ¸¿¡ Á¸ÀçÇÏ¿´´ø Dirty Page ¼ö
+    [IN]  aIsOnChkpt - Chkpt ë˜ëŠ” Media Recovery
+    [OUT] aNewCnt    - ìƒˆë¡œ ì¶”ê°€ëœ Dirty Page ìˆ˜
+    [OUT] aDupCnt    - ê¸°ì¡´ì— ì¡´ì¬í•˜ì˜€ë˜ Dirty Page ìˆ˜
  */
 IDE_RC smrDPListMgr::moveDirtyPages4AllTBS( sctStateSet aStateSet,
                                             ULong *     aNewCnt,
@@ -904,8 +904,8 @@ IDE_RC smrDPListMgr::moveDirtyPages4AllTBS( sctStateSet aStateSet,
 }
 
 /*
-    ¸ğµç TablespaceÀÇ Dirty Page¸¦ discard½ÃÅ²´Ù.
-    ¹Ìµğ¾îº¹±¸¿¡¼­¸¸ È£ÃâµÈ´Ù.
+    ëª¨ë“  Tablespaceì˜ Dirty Pageë¥¼ discardì‹œí‚¨ë‹¤.
+    ë¯¸ë””ì–´ë³µêµ¬ì—ì„œë§Œ í˜¸ì¶œëœë‹¤.
 */
 IDE_RC smrDPListMgr::discardDirtyPages4AllTBS()
 {
@@ -924,7 +924,7 @@ IDE_RC smrDPListMgr::discardDirtyPages4AllTBS()
 }
 
 /*
- * discardDirtyPages4AllTBS ¸¦ À§ÇÑ ActionÇÔ¼ö
+ * discardDirtyPages4AllTBS ë¥¼ ìœ„í•œ Actioní•¨ìˆ˜
  */
 IDE_RC smrDPListMgr::discardDPAction( idvSQL            * /* aStatistics */,
                                       sctTableSpaceNode * aSpaceNode,
@@ -934,14 +934,14 @@ IDE_RC smrDPListMgr::discardDPAction( idvSQL            * /* aStatistics */,
 
     if(sctTableSpaceMgr::isMemTableSpace(aSpaceNode->mID) == ID_TRUE)
     {
-        // ONLINE/OFFLINEµÈ Å×ÀÌºí½ºÆäÀÌ½º¿¡ ´ëÇØ¼­¸¸ Media Recovery°¡
-        // °¡´ÉÇÏ¹Ç·Î ´ÙÀ½ »óÅÂ¿¡ ASSERT Ã³¸®ÇÑ´Ù.
+        // ONLINE/OFFLINEëœ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì— ëŒ€í•´ì„œë§Œ Media Recoveryê°€
+        // ê°€ëŠ¥í•˜ë¯€ë¡œ ë‹¤ìŒ ìƒíƒœì— ASSERT ì²˜ë¦¬í•œë‹¤.
         if ( sctTableSpaceMgr::hasState( aSpaceNode,
                                          SCT_SS_UNABLE_MEDIA_RECOVERY )
              == ID_TRUE )
         {
-            // ¹Ìµğ¾îº¹±¸°¡ ºÒ°¡´ÉÇÑ TBSÀÇ °æ¿ì´Â
-            // discardÇÒ dirty page°¡ Á¸ÀçÇÏÁö ¾Ê´Â´Ù.
+            // ë¯¸ë””ì–´ë³µêµ¬ê°€ ë¶ˆê°€ëŠ¥í•œ TBSì˜ ê²½ìš°ëŠ”
+            // discardí•  dirty pageê°€ ì¡´ì¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
         }
         else
         {
@@ -959,9 +959,9 @@ IDE_RC smrDPListMgr::discardDPAction( idvSQL            * /* aStatistics */,
 }
 
 /*
-    Æ¯Á¤ TablespaceÀÇ °­Á¦·Î Dirty Page¸¦ Á¦°ÅÇÑ´Ù.
+    íŠ¹ì • Tablespaceì˜ ê°•ì œë¡œ Dirty Pageë¥¼ ì œê±°í•œë‹¤.
 
-    [IN] aSpaceID - Dirty Page¸¦ Á¦°ÅÇÏ°íÀÚ ÇÏ´Â TablespaceÀÇ ID
+    [IN] aSpaceID - Dirty Pageë¥¼ ì œê±°í•˜ê³ ì í•˜ëŠ” Tablespaceì˜ ID
  */
 IDE_RC smrDPListMgr::discardDirtyPages4TBS( scSpaceID   aSpaceID )
 {
@@ -971,12 +971,12 @@ IDE_RC smrDPListMgr::discardDirtyPages4TBS( scSpaceID   aSpaceID )
 
     if( sSmrDPList != NULL )
     {
-        // SMR¿¡ dirty page°¡ Á¸ÀçÇÏ´Â °æ¿ì
+        // SMRì— dirty pageê°€ ì¡´ì¬í•˜ëŠ” ê²½ìš°
         sSmrDPList->removeAll( ID_TRUE );  // aIsForce
     }
     else
     {
-        // SMR¿¡ dirty page°¡ Á¸ÀçÇÏÁö ¾Ê´Â °æ¿ì
+        // SMRì— dirty pageê°€ ì¡´ì¬í•˜ì§€ ì•ŠëŠ” ê²½ìš°
     }
 
     return IDE_SUCCESS;

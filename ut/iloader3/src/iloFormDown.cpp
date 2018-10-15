@@ -534,7 +534,7 @@ SInt iloFormDown::WriteColumns( SInt aPartitionCnt )
 
     //===============================================================
     // proj1778 nchar
-    // syntax Á¤ÀÇ¿¡ ÀÇÇØ formout ÆÄÀÏ ¸Ç µÚ¿¡ ±â·ÏÇÑ´Ù
+    // syntax ì •ì˜ì— ì˜í•´ formout íŒŒì¼ ë§¨ ë’¤ì— ê¸°ë¡í•œë‹¤
     idlOS::fprintf(m_fpForm, "DATA_NLS_USE=%s\n", m_pProgOption->GetNLS());
     // if nchar type column exist, then write this
     if (sNCharFlag == 1)
@@ -560,8 +560,8 @@ SInt iloFormDown::WriteColumnsAsStruct()
     SInt   i;
     UInt   sBitPartSize;
 
-    /* BUG-17563 : iloader ¿¡¼­ Å«µû¿ÈÇ¥ ÀÌ¿ëÇÑ Naming Rule Á¦¾à Á¦°Å  */
-    /* structout ÇÏ¿© formÆÄÀÏÀ» ¸¸µé°æ¿ì, ´ë¼Ò¹®ÀÚ¸¦ ±¸ºÐÇÏ¿© º¯¼öÀÌ¸§À» ÁöÁ¤ÇØÁØ´Ù.
+    /* BUG-17563 : iloader ì—ì„œ í°ë”°ì˜´í‘œ ì´ìš©í•œ Naming Rule ì œì•½ ì œê±°  */
+    /* structout í•˜ì—¬ formíŒŒì¼ì„ ë§Œë“¤ê²½ìš°, ëŒ€ì†Œë¬¸ìžë¥¼ êµ¬ë¶„í•˜ì—¬ ë³€ìˆ˜ì´ë¦„ì„ ì§€ì •í•´ì¤€ë‹¤.
      * ex) create table "t1" (i1 integer, "i2" integer);
      * structout form file  ==>   typedef struct t1_STRUCT
                                   {

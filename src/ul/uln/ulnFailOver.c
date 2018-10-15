@@ -26,7 +26,7 @@
 #include <xa.h>
 #include <mmErrorCodeClient.h>
 
-/* BUGBUG (2016-11-10) °ª ÀÏÄ¡ ÇÊ¿ä: MMC_FAILOVER_SOURCE_MAX_LEN */
+/* BUGBUG (2016-11-10) ê°’ ì¼ì¹˜ í•„ìš”: MMC_FAILOVER_SOURCE_MAX_LEN */
 #define ULN_MAX_FAILOVER_SOURCE_LEN 256
 
 /* BUG-31390 Failover info for v$session */
@@ -49,16 +49,16 @@ acp_bool_t ulnFailoverIsOn(ulnDbc *aDbc)
 }
 
 /**
- * FAILOVER_SOURCE·Î ¾µ ¹®ÀÚ¿­À» ¸¸µç´Ù.
+ * FAILOVER_SOURCEë¡œ ì“¸ ë¬¸ìì—´ì„ ë§Œë“ ë‹¤.
  *
- * Çü½ÄÀº "{TYPE} {IP}:{PORT}[/{DBNAME}]".
+ * í˜•ì‹ì€ "{TYPE} {IP}:{PORT}[/{DBNAME}]".
  *
- * @param[out] aBuf          ¹®ÀÚ¿­À» ÀúÀåÇÒ ¹öÆÛ
- * @param[in]  aBufSize      ¹öÆÛ Å©±â (´ÜÀ§: Byte)
- * @param[in]  aFailoverType Failover Å¸ÀÔ
- * @param[in]  aServerInfo   ¼­¹ö Á¤º¸
+ * @param[out] aBuf          ë¬¸ìì—´ì„ ì €ì¥í•  ë²„í¼
+ * @param[in]  aBufSize      ë²„í¼ í¬ê¸° (ë‹¨ìœ„: Byte)
+ * @param[in]  aFailoverType Failover íƒ€ì…
+ * @param[in]  aServerInfo   ì„œë²„ ì •ë³´
  *
- * @return ¸¸µç ¹®ÀÚ¿­ÀÇ ±æÀÌ
+ * @return ë§Œë“  ë¬¸ìì—´ì˜ ê¸¸ì´
  */
 ACP_INLINE
 acp_sint32_t ulnFailoverMakeSource( acp_char_t            *aBuf,
@@ -88,13 +88,13 @@ acp_sint32_t ulnFailoverMakeSource( acp_char_t            *aBuf,
 }
 
 /**
- * ÁöÁ¤ ¼­¹ö·Î Á¢¼ÓÇÑ´Ù.
+ * ì§€ì • ì„œë²„ë¡œ ì ‘ì†í•œë‹¤.
  *
  * @param[in]  aFnContext     Function Context
- * @param[in]  aFailoverType  Failover Å¸ÀÔ
- * @param[in]  aNewServerInfo Á¢¼ÓÇÒ ¼­¹ö Á¤º¸
+ * @param[in]  aFailoverType  Failover íƒ€ì…
+ * @param[in]  aNewServerInfo ì ‘ì†í•  ì„œë²„ ì •ë³´
  *
- * @return Á¢¼Ó ¼º°ø ¿©ºÎ: ¼º°øÇÏ¸é ACP_TRUE, ¾Æ´Ï¸é ACP_FALSE
+ * @return ì ‘ì† ì„±ê³µ ì—¬ë¶€: ì„±ê³µí•˜ë©´ ACP_TRUE, ì•„ë‹ˆë©´ ACP_FALSE
  */
 ACP_INLINE ACI_RC ulnFailoverConnect(ulnFnContext *aFnContext, ulnFailoverType aFailoverType, ulnFailoverServerInfo *aNewServerInfo)
 {
@@ -225,9 +225,9 @@ ACP_INLINE acp_bool_t ulnFailoverIsNeeded(ulnDbc *aDbc)
 
     if (ulnGetDiagRecFromObject(&aDbc->mObj, &sDiagRec, 1) == ACI_SUCCESS)
     {
-        /* Failover ´ë»ó
-           - CM ¿¡·¯, ¿¬°á ½ÇÆĞ (ref. ulnErrorMgrSetCmError)
-           - ¿¹¿Ü·Î ADMIN_MODE_ERROR (ref. BUG-32092) */
+        /* Failover ëŒ€ìƒ
+           - CM ì—ëŸ¬, ì—°ê²° ì‹¤íŒ¨ (ref. ulnErrorMgrSetCmError)
+           - ì˜ˆì™¸ë¡œ ADMIN_MODE_ERROR (ref. BUG-32092) */
         switch (sDiagRec->mNativeErrorCode)
         {
             case ACI_E_ERROR_CODE(ulERR_FATAL_FAIL_TO_ESTABLISH_CONNECTION):
@@ -241,8 +241,8 @@ ACP_INLINE acp_bool_t ulnFailoverIsNeeded(ulnDbc *aDbc)
                 break;
 
             default:
-                /* BUGBUG (2016-12-22) ¾ÈÇØµµ µÉ°Í °°Àº°Ô, ul ¿¡·¯·Î ¹Ù²Ù±â ¶§¹®.
-                   ±×·¡µµ ÀÏ´Ü ¹æ¾î Â÷¿ø¿¡¼­ ÇØµĞ´Ù. ¾î¶»°Ô ¹Ù²ğÁö ¸ğ¸£°í. */
+                /* BUGBUG (2016-12-22) ì•ˆí•´ë„ ë ê²ƒ ê°™ì€ê²Œ, ul ì—ëŸ¬ë¡œ ë°”ê¾¸ê¸° ë•Œë¬¸.
+                   ê·¸ë˜ë„ ì¼ë‹¨ ë°©ì–´ ì°¨ì›ì—ì„œ í•´ë‘”ë‹¤. ì–´ë–»ê²Œ ë°”ë€”ì§€ ëª¨ë¥´ê³ . */
                 ACI_TEST(ulnIsCmError(sDiagRec->mNativeErrorCode) != ACP_TRUE);
                 break;
         }
@@ -356,15 +356,15 @@ ACI_RC ulnFailoverDoSTF(ulnFnContext *aFnContext)
             {
                 ulnDbcSetFailoverCallbackState(sDbc, ULN_FAILOVER_CALLBACK_IN_STATE);
 
-                // »ç¿ëÀÚ FailOver Callback¿¡¼­ FailOver ValidationÀ» À§ÇÏ¿©
-                //  statement ¸¦ allcÇÒ¼ö ÀÖ´Ù.
+                // ì‚¬ìš©ì FailOver Callbackì—ì„œ FailOver Validationì„ ìœ„í•˜ì—¬
+                //  statement ë¥¼ allcí• ìˆ˜ ìˆë‹¤.
                 ULN_OBJECT_UNLOCK(&(sDbc->mObj), ULN_FID_NONE);
 
                 sFailoverIntention  = sFailoverCallbackContext->mFailOverCallbackFunc(sFailoverCallbackContext->mDBC,
                                                                                       sFailoverCallbackContext->mAppContext,
                                                                                       ALTIBASE_FO_END);
 
-                // ´Ù½Ã Àâ¾ÆÁØ´Ù.
+                // ë‹¤ì‹œ ì¡ì•„ì¤€ë‹¤.
                 ULN_OBJECT_LOCK(&(sDbc->mObj), ULN_FID_NONE);
 
                 ulnDbcSetFailoverCallbackState(sDbc, ULN_FAILOVER_CALLBACK_OUT_STATE);
@@ -398,7 +398,7 @@ ACI_RC ulnFailoverDoSTF(ulnFnContext *aFnContext)
             }
             else
             {
-                //STF °¡  FailµÇ¾úÀ½À» ¾Ë¸².
+                //STF ê°€  Failë˜ì—ˆìŒì„ ì•Œë¦¼.
 
                 (void)sFailoverCallbackContext->mFailOverCallbackFunc(sFailoverCallbackContext->mDBC,
                                                                       sFailoverCallbackContext->mAppContext,
@@ -460,7 +460,7 @@ static ACI_RC ulnFailoverCreatePrimaryServerInfo( ulnFnContext           *aFnCon
                        LABEL_PORT_NO_NOT_SET);
 
         /*
-         * 32 ºñÆ® int ÀÇ ÃÖ´ë°ª : 4294967295 : 10ÀÚ¸®
+         * 32 ë¹„íŠ¸ int ì˜ ìµœëŒ€ê°’ : 4294967295 : 10ìë¦¬
          */
         ACI_TEST_RAISE(ulnDrvConnStrToInt(sPortNoEnvValue,
                                           acpCStrLen(sPortNoEnvValue, 10),
@@ -509,7 +509,7 @@ ACI_RC ulnFailoverBuildServerList(ulnFnContext *aFnContext)
 
     ulnFailoverClearServerList(sDbc);
 
-    /* Failover´Â TCP/SSL¿¡¼­¸¸ Çã¿ë. (¹Ì¼³Á¤ÀÏ °æ¿ì, TCP·Î °£ÁÖ) */
+    /* FailoverëŠ” TCP/SSLì—ì„œë§Œ í—ˆìš©. (ë¯¸ì„¤ì •ì¼ ê²½ìš°, TCPë¡œ ê°„ì£¼) */
     ACI_TEST_RAISE( (ulnDbcGetConnType(sDbc) != ULN_CONNTYPE_INVALID) &&
                     (ulnDbcGetConnType(sDbc) != ULN_CONNTYPE_TCP) &&
                     (ulnDbcGetConnType(sDbc) != ULN_CONNTYPE_SSL),
@@ -550,14 +550,14 @@ void ulnFailoverClearServerList(ulnDbc *aDbc)
 }
 
 /**
- * Failover¸¦ À§ÇÑ ¼­¹ö Á¤º¸¸¦ »ı¼ºÇÑ´Ù.
+ * Failoverë¥¼ ìœ„í•œ ì„œë²„ ì •ë³´ë¥¼ ìƒì„±í•œë‹¤.
  *
- * @param[in] aServerInfo »ı¼ºÇÑ ¼­¹ö Á¤º¸¸¦ °¡¸®Å³ º¯¼ö Æ÷ÀÎÅÍ
- * @param[in] aHost       È£½ºÆ®
- * @param[in] aPort       Æ÷Æ® ¹øÈ£
- * @param[in] aDBName     µ¥ÀÌÅ¸º£ÀÌ½º ÀÌ¸§
+ * @param[in] aServerInfo ìƒì„±í•œ ì„œë²„ ì •ë³´ë¥¼ ê°€ë¦¬í‚¬ ë³€ìˆ˜ í¬ì¸í„°
+ * @param[in] aHost       í˜¸ìŠ¤íŠ¸
+ * @param[in] aPort       í¬íŠ¸ ë²ˆí˜¸
+ * @param[in] aDBName     ë°ì´íƒ€ë² ì´ìŠ¤ ì´ë¦„
  *
- * @return ¼­¹ö Á¤º¸¸¦ »ı¼ºÇßÀ¸¸é ACI_SUCCESS, ¾Æ´Ï¸é ACI_FAILURE
+ * @return ì„œë²„ ì •ë³´ë¥¼ ìƒì„±í–ˆìœ¼ë©´ ACI_SUCCESS, ì•„ë‹ˆë©´ ACI_FAILURE
  */
 ACI_RC ulnFailoverCreateServerInfo( ulnFailoverServerInfo **aServerInfo,
                                     acp_char_t             *aHost,
@@ -622,15 +622,15 @@ void ulnFailoverAddServer( ulnDbc                *aDbc,
 }
 
 /**
- * Failover¸¦ À§ÇÑ ´ëÃ¼ ¼­¹ö ¸ñ·Ï ¹®ÀÚ¿­À» ÆÄ½ÌÇØ ¸ñ·ÏÀ¸·Î ¸¸µç´Ù.
+ * Failoverë¥¼ ìœ„í•œ ëŒ€ì²´ ì„œë²„ ëª©ë¡ ë¬¸ìì—´ì„ íŒŒì‹±í•´ ëª©ë¡ìœ¼ë¡œ ë§Œë“ ë‹¤.
  *
- * ´ëÃ¼ ¼­¹ö ¸ñ·Ï ¹®ÀÚ¿­ÀÇ Çü½ÄÀº ´ÙÀ½°ú °°´Ù:
+ * ëŒ€ì²´ ì„œë²„ ëª©ë¡ ë¬¸ìì—´ì˜ í˜•ì‹ì€ ë‹¤ìŒê³¼ ê°™ë‹¤:
  * ( ip:port[/dbname][, ip:port[/dbname]]* )
  *
  * @param[in] aFnContext           Function Context
- * @param[in] aAlternateServerList ´ëÃ¼ ¼­¹ö ¸ñ·Ï ¹®ÀÚ¿­
+ * @param[in] aAlternateServerList ëŒ€ì²´ ì„œë²„ ëª©ë¡ ë¬¸ìì—´
  *
- * @return ¼º°øÇÏ¸é ACI_SUCCESS, ¾Æ´Ï¸é ACI_FAILURE
+ * @return ì„±ê³µí•˜ë©´ ACI_SUCCESS, ì•„ë‹ˆë©´ ACI_FAILURE
  */
 ACI_RC ulnFailoverAddServerList( ulnFnContext *aFnContext,
                                  acp_char_t   *aAlternateServerList )

@@ -87,7 +87,7 @@ static SInt mtlKSC5601Extract_MatchSecond( UChar* aSource,
 static SInt mtlKSC5601Extract_MatchMicroSec( UChar* aSource,
                                              UInt   aSourceLen );
 
-/* BUG-45730 ROUND, TRUNC «‘ºˆø°º≠ DATE ∆˜∏À IW √ﬂ∞° ¡ˆø¯ */
+/* BUG-45730 ROUND, TRUNC Ìï®ÏàòÏóêÏÑú DATE Ìè¨Îß∑ IW Ï∂îÍ∞Ä ÏßÄÏõê */
 static SInt mtlKSC5601Extract_MatchISOWeek( UChar * aSource,
                                             UInt    aSourceLen );
 
@@ -105,7 +105,7 @@ mtlExtractFuncSet mtlKSC5601ExtractSet = {
     mtlKSC5601Extract_MatchMinute,
     mtlKSC5601Extract_MatchSecond,
     mtlKSC5601Extract_MatchMicroSec,
-    /* BUG-45730 ROUND, TRUNC «‘ºˆø°º≠ DATE ∆˜∏À IW √ﬂ∞° ¡ˆø¯ */
+    /* BUG-45730 ROUND, TRUNC Ìï®ÏàòÏóêÏÑú DATE Ìè¨Îß∑ IW Ï∂îÍ∞Ä ÏßÄÏõê */
     mtlKSC5601Extract_MatchISOWeek
 };
 
@@ -156,10 +156,10 @@ mtlNCRet mtlKSC5601NextChar( UChar ** aSource, UChar * aFence )
 {
 /***********************************************************************
  *
- * Description : PROJ-1755 Next Char √÷¿˚»≠
+ * Description : PROJ-1755 Next Char ÏµúÏ†ÅÌôî
  *
  * Implementation :
- *    ¥Ÿ¿Ω πÆ¿⁄ ¿ßƒ°∑Œ pointer ¿Ãµø
+ *    Îã§Ïùå Î¨∏Ïûê ÏúÑÏπòÎ°ú pointer Ïù¥Îèô
  *
  ***********************************************************************/    
 
@@ -204,14 +204,14 @@ static SInt mtlKSC5601MaxPrecision( SInt aLength )
 {
 /***********************************************************************
  *
- * Description : πÆ¿⁄∞πºˆ(aLength)¿« KSC5601¿« √÷¥Î precision ∞ËªÍ
+ * Description : Î¨∏ÏûêÍ∞ØÏàò(aLength)Ïùò KSC5601Ïùò ÏµúÎåÄ precision Í≥ÑÏÇ∞
  *
  * Implementation :
  *
- *    ¿Œ¿⁄∑Œ πﬁ¿∫ aLengthø°
- *    KSC5601 «—πÆ¿⁄¿« √÷¥Î ≈©±‚∏¶ ∞ˆ«— ∞™¿ª ∏Æ≈œ«‘.
+ *    Ïù∏ÏûêÎ°ú Î∞õÏùÄ aLengthÏóê
+ *    KSC5601 ÌïúÎ¨∏ÏûêÏùò ÏµúÎåÄ ÌÅ¨Í∏∞Î•º Í≥±Ìïú Í∞íÏùÑ Î¶¨ÌÑ¥Ìï®.
  *
- *    aLength¥¬ πÆ¿⁄∞πºˆ¿« ¿«πÃ∞° ¿÷¿Ω.
+ *    aLengthÎäî Î¨∏ÏûêÍ∞ØÏàòÏùò ÏùòÎØ∏Í∞Ä ÏûàÏùå.
  *
  ***********************************************************************/
     
@@ -222,7 +222,7 @@ SInt mtlKSC5601Extract_MatchCentury( UChar* aSource,
                                      UInt   aSourceLen )
 {
     if ( idlOS::strCaselessMatch( aSource, aSourceLen, "CENTURY", 7 ) == 0 ||
-         idlOS::strMatch( aSource, aSourceLen, "ºº±‚", 4 ) == 0 ||
+         idlOS::strMatch( aSource, aSourceLen, "ÏÑ∏Í∏∞", 4 ) == 0 ||
          idlOS::strCaselessMatch( aSource, aSourceLen, "SCC", 3 ) == 0 ||
          idlOS::strCaselessMatch( aSource, aSourceLen, "CC",2 ) == 0 ) 
     {
@@ -235,7 +235,7 @@ SInt mtlKSC5601Extract_MatchYear( UChar* aSource,
                                   UInt   aSourceLen )
 {
     if ( idlOS::strCaselessMatch( aSource, aSourceLen, "YEAR", 4 ) == 0 ||
-         idlOS::strMatch( aSource, aSourceLen, "≥‚", 2 ) == 0 ||
+         idlOS::strMatch( aSource, aSourceLen, "ÎÖÑ", 2 ) == 0 ||
          idlOS::strCaselessMatch( aSource, aSourceLen, "SYYYY", 5 ) == 0 ||
          idlOS::strCaselessMatch( aSource, aSourceLen, "YYYY", 4 ) == 0 ||
          idlOS::strCaselessMatch( aSource, aSourceLen, "YYY", 3 ) == 0 ||
@@ -251,7 +251,7 @@ SInt mtlKSC5601Extract_MatchQuarter( UChar* aSource,
                                      UInt   aSourceLen )
 {
     if ( idlOS::strCaselessMatch( aSource, aSourceLen, "QUARTER", 7 ) == 0 ||
-         idlOS::strMatch( aSource, aSourceLen, "∫–±‚", 4 ) == 0 ||
+         idlOS::strMatch( aSource, aSourceLen, "Î∂ÑÍ∏∞", 4 ) == 0 ||
          idlOS::strCaselessMatch( aSource, aSourceLen, "Q", 1 ) == 0 )
     {
         return 0;
@@ -263,7 +263,7 @@ SInt mtlKSC5601Extract_MatchMonth( UChar* aSource,
                                    UInt   aSourceLen )
 {
     if ( idlOS::strCaselessMatch( aSource, aSourceLen, "MONTH", 5 ) == 0 ||
-         idlOS::strMatch( aSource, aSourceLen, "ø˘", 2 ) == 0 ||
+         idlOS::strMatch( aSource, aSourceLen, "Ïõî", 2 ) == 0 ||
          idlOS::strCaselessMatch( aSource, aSourceLen, "MON", 3 ) == 0 ||
          idlOS::strCaselessMatch( aSource, aSourceLen, "MM", 2 ) == 0 ||
          idlOS::strCaselessMatch( aSource, aSourceLen, "RM", 2 ) == 0 )
@@ -277,7 +277,7 @@ SInt mtlKSC5601Extract_MatchWeek( UChar* aSource,
                                   UInt   aSourceLen )
 {
     if ( idlOS::strCaselessMatch( aSource, aSourceLen, "WEEK", 4 ) == 0 ||
-         idlOS::strMatch( aSource, aSourceLen, "¡÷", 2 ) == 0 ||
+         idlOS::strMatch( aSource, aSourceLen, "Ï£º", 2 ) == 0 ||
          idlOS::strCaselessMatch( aSource, aSourceLen, "WW", 2 ) == 0 )
     {
         return 0;
@@ -289,7 +289,7 @@ SInt mtlKSC5601Extract_MatchWeekOfMonth( UChar* aSource,
                                          UInt   aSourceLen )
 {
     if ( idlOS::strCaselessMatch( aSource, aSourceLen, "WEEKOFMONTH", 11 ) == 0 ||
-         idlOS::strMatch( aSource, aSourceLen, "ø˘¡ﬂ¡÷", 6 ) == 0  ||
+         idlOS::strMatch( aSource, aSourceLen, "ÏõîÏ§ëÏ£º", 6 ) == 0  ||
          idlOS::strCaselessMatch( aSource, aSourceLen, "W", 1 ) == 0 )
     {
         return 0;
@@ -301,7 +301,7 @@ SInt mtlKSC5601Extract_MatchDay( UChar* aSource,
                                  UInt   aSourceLen )
 {
     if ( idlOS::strCaselessMatch( aSource, aSourceLen, "DAY", 3 ) == 0 ||
-         idlOS::strMatch( aSource, aSourceLen, "¿œ", 2 ) == 0 ||
+         idlOS::strMatch( aSource, aSourceLen, "Ïùº", 2 ) == 0 ||
          idlOS::strCaselessMatch( aSource, aSourceLen, "DDD", 3 ) == 0 ||
          idlOS::strCaselessMatch( aSource, aSourceLen, "DD", 2 ) == 0 ||
          idlOS::strCaselessMatch( aSource, aSourceLen, "J", 1 ) == 0  )
@@ -315,7 +315,7 @@ SInt mtlKSC5601Extract_MatchDayOfYear( UChar* aSource,
                                        UInt   aSourceLen )
 {
     if( idlOS::strCaselessMatch( aSource, aSourceLen, "DAYOFYEAR", 9 ) == 0 ||
-        idlOS::strMatch( aSource, aSourceLen, "≥‚¡ﬂ¿œ", 6 ) == 0 )
+        idlOS::strMatch( aSource, aSourceLen, "ÎÖÑÏ§ëÏùº", 6 ) == 0 )
     {
         return 0;
     }
@@ -326,7 +326,7 @@ SInt mtlKSC5601Extract_MatchDayOfWeek( UChar* aSource,
                                        UInt   aSourceLen )
 {
     if ( idlOS::strCaselessMatch( aSource, aSourceLen, "DAYOFWEEK", 9 ) == 0 ||
-         idlOS::strMatch( aSource, aSourceLen, "¡÷¡ﬂ¿œ", 6 ) == 0 ||
+         idlOS::strMatch( aSource, aSourceLen, "Ï£ºÏ§ëÏùº", 6 ) == 0 ||
          idlOS::strCaselessMatch( aSource, aSourceLen, "DY", 2 ) == 0 ||
          idlOS::strCaselessMatch( aSource, aSourceLen, "D", 1 ) == 0 )
     {
@@ -339,7 +339,7 @@ SInt mtlKSC5601Extract_MatchHour( UChar* aSource,
                                   UInt   aSourceLen )
 {
     if ( idlOS::strCaselessMatch( aSource, aSourceLen, "HOUR", 4 ) == 0 ||
-         idlOS::strMatch( aSource, aSourceLen, "Ω√", 2 ) == 0 ||
+         idlOS::strMatch( aSource, aSourceLen, "Ïãú", 2 ) == 0 ||
          idlOS::strCaselessMatch( aSource, aSourceLen, "HH", 2 ) == 0 ||
          idlOS::strCaselessMatch( aSource, aSourceLen, "HH12", 4 ) == 0 ||
          idlOS::strCaselessMatch( aSource, aSourceLen, "HH24", 4 ) == 0 )
@@ -353,7 +353,7 @@ SInt mtlKSC5601Extract_MatchMinute( UChar* aSource,
                                     UInt   aSourceLen )
 {
     if ( idlOS::strCaselessMatch( aSource, aSourceLen, "MINUTE", 6 ) == 0 ||
-         idlOS::strMatch( aSource, aSourceLen, "∫–", 2 ) == 0 ||
+         idlOS::strMatch( aSource, aSourceLen, "Î∂Ñ", 2 ) == 0 ||
          idlOS::strCaselessMatch( aSource, aSourceLen, "MI", 2 ) == 0 )
     {
         return 0;
@@ -365,7 +365,7 @@ SInt mtlKSC5601Extract_MatchSecond( UChar* aSource,
                                     UInt   aSourceLen )
 {
     if( idlOS::strCaselessMatch( aSource, aSourceLen, "SECOND", 6 ) == 0 ||
-        idlOS::strMatch( aSource, aSourceLen, "√ ", 2 ) == 0 )
+        idlOS::strMatch( aSource, aSourceLen, "Ï¥à", 2 ) == 0 )
     {
         return 0;
     }
@@ -376,7 +376,7 @@ SInt mtlKSC5601Extract_MatchMicroSec( UChar* aSource,
                                       UInt   aSourceLen )
 {
     if( idlOS::strCaselessMatch( aSource, aSourceLen, "MICROSECOND", 11 ) == 0 ||
-        idlOS::strMatch( aSource, aSourceLen, "∏∂¿Ã≈©∑Œ√ ", 10 ) == 0 )
+        idlOS::strMatch( aSource, aSourceLen, "ÎßàÏù¥ÌÅ¨Î°úÏ¥à", 10 ) == 0 )
     {
     
         return 0;
@@ -389,8 +389,8 @@ SInt mtlKSC5601NextDay_MatchSunDay( UChar* aSource,
 {
     if( idlOS::strCaselessMatch( aSource, aSourceLen, "SUNDAY", 6 ) == 0 ||
         idlOS::strCaselessMatch( aSource, aSourceLen, "SUN", 3 ) == 0 ||
-        idlOS::strMatch( aSource, aSourceLen, "¿œø‰¿œ", 6 ) == 0 ||
-        idlOS::strMatch( aSource, aSourceLen, "¿œ", 2 ) == 0 )
+        idlOS::strMatch( aSource, aSourceLen, "ÏùºÏöîÏùº", 6 ) == 0 ||
+        idlOS::strMatch( aSource, aSourceLen, "Ïùº", 2 ) == 0 )
     {
         return 0;
     }
@@ -402,8 +402,8 @@ SInt mtlKSC5601NextDay_MatchMonDay( UChar* aSource,
 {
     if( idlOS::strCaselessMatch( aSource, aSourceLen, "MONDAY", 6 ) == 0 ||
         idlOS::strCaselessMatch( aSource, aSourceLen, "MON", 3 ) == 0 ||
-        idlOS::strMatch( aSource, aSourceLen, "ø˘ø‰¿œ", 6 ) == 0 ||
-        idlOS::strMatch( aSource, aSourceLen, "ø˘", 2 ) == 0 )
+        idlOS::strMatch( aSource, aSourceLen, "ÏõîÏöîÏùº", 6 ) == 0 ||
+        idlOS::strMatch( aSource, aSourceLen, "Ïõî", 2 ) == 0 )
     {
         return 0;
     }
@@ -415,8 +415,8 @@ SInt mtlKSC5601NextDay_MatchTueDay( UChar* aSource,
 {
     if( idlOS::strCaselessMatch( aSource, aSourceLen, "TUESDAY", 7 ) == 0 ||
         idlOS::strCaselessMatch( aSource, aSourceLen, "TUE", 3 ) == 0 ||
-        idlOS::strMatch( aSource, aSourceLen, "»≠ø‰¿œ", 6 ) == 0 ||
-        idlOS::strMatch( aSource, aSourceLen, "»≠", 2 ) == 0 )
+        idlOS::strMatch( aSource, aSourceLen, "ÌôîÏöîÏùº", 6 ) == 0 ||
+        idlOS::strMatch( aSource, aSourceLen, "Ìôî", 2 ) == 0 )
     {
         return 0;
     }
@@ -428,8 +428,8 @@ SInt mtlKSC5601NextDay_MatchWedDay( UChar* aSource,
 {
     if( idlOS::strCaselessMatch( aSource, aSourceLen, "WEDNESDAY", 9 ) == 0 ||
         idlOS::strCaselessMatch( aSource, aSourceLen, "WED", 3 ) == 0 ||
-        idlOS::strMatch( aSource, aSourceLen, "ºˆø‰¿œ", 6 ) == 0 ||
-        idlOS::strMatch( aSource, aSourceLen, "ºˆ", 2 ) == 0 )
+        idlOS::strMatch( aSource, aSourceLen, "ÏàòÏöîÏùº", 6 ) == 0 ||
+        idlOS::strMatch( aSource, aSourceLen, "Ïàò", 2 ) == 0 )
     {
         return 0;
     }
@@ -441,8 +441,8 @@ SInt mtlKSC5601NextDay_MatchThuDay( UChar* aSource,
 {
     if( idlOS::strCaselessMatch( aSource, aSourceLen, "THURSDAY", 8 ) == 0 ||
         idlOS::strCaselessMatch( aSource, aSourceLen, "THU", 3 ) == 0 ||
-        idlOS::strMatch( aSource, aSourceLen, "∏Òø‰¿œ", 6 ) == 0 ||
-        idlOS::strMatch( aSource, aSourceLen, "∏Ò", 2 ) == 0 )
+        idlOS::strMatch( aSource, aSourceLen, "Î™©ÏöîÏùº", 6 ) == 0 ||
+        idlOS::strMatch( aSource, aSourceLen, "Î™©", 2 ) == 0 )
     {
         return 0;
     }
@@ -455,8 +455,8 @@ SInt mtlKSC5601NextDay_MatchFriDay( UChar* aSource,
 {
     if( idlOS::strCaselessMatch( aSource, aSourceLen, "FRIDAY", 6 ) == 0 ||
         idlOS::strCaselessMatch( aSource, aSourceLen, "FRI", 3 ) == 0 ||
-        idlOS::strMatch( aSource, aSourceLen, "±›ø‰¿œ", 6 ) == 0 ||
-        idlOS::strMatch( aSource, aSourceLen, "±›", 2 ) == 0 )
+        idlOS::strMatch( aSource, aSourceLen, "Í∏àÏöîÏùº", 6 ) == 0 ||
+        idlOS::strMatch( aSource, aSourceLen, "Í∏à", 2 ) == 0 )
     {
         return 0;
     }
@@ -468,15 +468,15 @@ SInt mtlKSC5601NextDay_MatchSatDay( UChar* aSource,
 {
     if( idlOS::strCaselessMatch( aSource, aSourceLen, "SATURDAY", 8 ) == 0 ||
         idlOS::strCaselessMatch( aSource, aSourceLen, "SAT", 3 ) == 0 ||
-        idlOS::strMatch( aSource, aSourceLen, "≈‰ø‰¿œ", 6 ) == 0 ||
-        idlOS::strMatch( aSource, aSourceLen, "≈‰", 2 ) == 0 )
+        idlOS::strMatch( aSource, aSourceLen, "ÌÜ†ÏöîÏùº", 6 ) == 0 ||
+        idlOS::strMatch( aSource, aSourceLen, "ÌÜ†", 2 ) == 0 )
     {
         return 0;
     }
     return 1;
 }
 
-/* BUG-45730 ROUND, TRUNC «‘ºˆø°º≠ DATE ∆˜∏À IW √ﬂ∞° ¡ˆø¯ */
+/* BUG-45730 ROUND, TRUNC Ìï®ÏàòÏóêÏÑú DATE Ìè¨Îß∑ IW Ï∂îÍ∞Ä ÏßÄÏõê */
 SInt mtlKSC5601Extract_MatchISOWeek( UChar * aSource,
                                      UInt    aSourceLen )
 {

@@ -28,19 +28,19 @@ const void * gQcmMaterializedViewsIndex     [QCM_MAX_META_INDICES];
 /***********************************************************************
  *
  * Description :
- *    Materialized ViewÀÇ Materialized View ID¸¦ ¾ò´Â´Ù.
+ *    Materialized Viewì˜ Materialized View IDë¥¼ ì–»ëŠ”ë‹¤.
  *      SELECT MVIEW_ID
  *        FROM SYS_MATERIALIZED_VIEWS_
  *       WHERE MVIEW_NAME = aMViewName AND USER_ID = aUserID;
  *
  * Implementation :
- *    1. SYS_MATERIALIZED_VIEWS_ Å×ÀÌºíÀÇ USER_ID, MVIEW_NAME,
- *       MVIEW_ID ÄÃ·³À» ±¸ÇÑ´Ù.
- *    2. SYS_MATERIALIZED_VIEWS_ Å×ÀÌºí¿¡ ÀÎµ¦½º°¡ ÀÖÀ¸¸é,
- *       ¸í½ÃµÈ User ID, Materialized View Name À¸·Î keyRange ¸¦ ¸¸µé¾î Ã£´Â´Ù.
- *       ÀÎµ¦½º°¡ ¾øÀ¸¸é,
- *       ¸í½ÃµÈ User ID, Materialized View Name À¸·Î ÇÏ³ª¾¿ ºñ±³ÇØ¼­ Ã£´Â´Ù.
- *    3. Ã£Àº Row¿¡¼­ Materialized View ID¸¦ ¾ò´Â´Ù.
+ *    1. SYS_MATERIALIZED_VIEWS_ í…Œì´ë¸”ì˜ USER_ID, MVIEW_NAME,
+ *       MVIEW_ID ì»¬ëŸ¼ì„ êµ¬í•œë‹¤.
+ *    2. SYS_MATERIALIZED_VIEWS_ í…Œì´ë¸”ì— ì¸ë±ìŠ¤ê°€ ìžˆìœ¼ë©´,
+ *       ëª…ì‹œëœ User ID, Materialized View Name ìœ¼ë¡œ keyRange ë¥¼ ë§Œë“¤ì–´ ì°¾ëŠ”ë‹¤.
+ *       ì¸ë±ìŠ¤ê°€ ì—†ìœ¼ë©´,
+ *       ëª…ì‹œëœ User ID, Materialized View Name ìœ¼ë¡œ í•˜ë‚˜ì”© ë¹„êµí•´ì„œ ì°¾ëŠ”ë‹¤.
+ *    3. ì°¾ì€ Rowì—ì„œ Materialized View IDë¥¼ ì–»ëŠ”ë‹¤.
  *
  ***********************************************************************/
 IDE_RC qcmMView::getMViewID(
@@ -66,7 +66,7 @@ IDE_RC qcmMView::getMViewID(
     qcNameCharBuffer      sMViewNameValueBuffer;
     mtdCharType         * sMViewNameValue = (mtdCharType *)&sMViewNameValueBuffer;
 
-    scGRID                sRid; /* Disk TableÀ» À§ÇÑ Record IDentifier */
+    scGRID                sRid; /* Disk Tableì„ ìœ„í•œ Record IDentifier */
     smiCursorProperties   sCursorProperty;
 
     sCursor.initialize();
@@ -143,7 +143,7 @@ IDE_RC qcmMView::getMViewID(
     }
     else
     {
-        /* mtdModule ¼³Á¤ */
+        /* mtdModule ì„¤ì • */
         IDE_TEST( mtd::moduleById( &(sUserIDColumn->module),
                                    sUserIDColumn->type.dataTypeId )
                   != IDE_SUCCESS );
@@ -151,7 +151,7 @@ IDE_RC qcmMView::getMViewID(
                                    sMViewNameColumn->type.dataTypeId )
                   != IDE_SUCCESS );
 
-        /* mtlModule ¼³Á¤ */
+        /* mtlModule ì„¤ì • */
         IDE_TEST( mtl::moduleById( &(sUserIDColumn->language),
                                    sUserIDColumn->type.languageId )
                   != IDE_SUCCESS );

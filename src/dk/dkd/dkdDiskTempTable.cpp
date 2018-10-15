@@ -227,10 +227,10 @@ IDE_RC dkdDiskTempTableCreate( void * aQcStatement,
                   0, /* aWorkAreaSize */
                   sStatement,
                   SMI_TTFLAG_TYPE_SORT | SMI_TTFLAG_RANGESCAN, /* SORT Temp Table  */
-                  sHandle->mSmiColumnList,         // TableÀÇ Column ±¸¼º
+                  sHandle->mSmiColumnList,         // Tableì˜ Column êµ¬ì„±
                   sHandle->mSmiColumnList,         // key column list
                   0,                               // WorkGroupRatio
-                (const void **) &sHandle->mTable ) // Table ÇÚµé
+                (const void **) &sHandle->mTable ) // Table í•¸ë“¤
         != IDE_SUCCESS );
     
     *aHandle = sHandle;
@@ -337,7 +337,7 @@ IDE_RC dkdDiskTempTableOpenCursor( dkdDiskTempTableHandle * aHandle )
     IDE_TEST( smiTempTable::openCursor( 
                   aHandle->mTable,
                   sFlag,
-                  NULL,  // Update ColumnÁ¤º¸
+                  NULL,  // Update Columnì •ë³´
                   smiGetDefaultKeyRange(),
                   smiGetDefaultKeyRange(),
                   smiGetDefaultFilter(),

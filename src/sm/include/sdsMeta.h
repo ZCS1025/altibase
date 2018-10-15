@@ -28,7 +28,7 @@
 
 #include <sdbBCBHash.h>
 
-/* sdsMetaData(24byte) º¯°æµÇ¸é ÇÏ³ªÀÇ Group¿¡ ÃÖ´ë  64*32 °³ÀÇ meta°¡ »ğÀÔµÇ´Â °è»êÀÌ ±úÁü 
+/* sdsMetaData(24byte) ë³€ê²½ë˜ë©´ í•˜ë‚˜ì˜ Groupì— ìµœëŒ€  64*32 ê°œì˜ metaê°€ ì‚½ì…ë˜ëŠ” ê³„ì‚°ì´ ê¹¨ì§ 
  *  seq  + chechsum + sizeof(sdsMetaData)*2048 + checksum 
  = 4byte + 12 byte  + 49152byte +              + 12byte 
  = 49180 byte (7page = 57,344 byte)
@@ -41,10 +41,10 @@
 
 typedef struct sdsMetaData
 {
-    scSpaceID       mSpaceID; /* ÇØ´ç pageÀÇ spaceID */
-    scPageID        mPageID;  /* ÇØ´ç pageÀÇ pageID  */
-    sdsSBCBState    mState;   /* ÇØ´ç pageÀÇ »óÅÂ. Áï dirty / clean »óÅÂ*/
-    smLSN           mPageLSN; /* LSN Á¤º¸            */
+    scSpaceID       mSpaceID; /* í•´ë‹¹ pageì˜ spaceID */
+    scPageID        mPageID;  /* í•´ë‹¹ pageì˜ pageID  */
+    sdsSBCBState    mState;   /* í•´ë‹¹ pageì˜ ìƒíƒœ. ì¦‰ dirty / clean ìƒíƒœ*/
+    smLSN           mPageLSN; /* LSN ì •ë³´            */
 } sdsMetaData;
 
 class sdsMeta
@@ -122,13 +122,13 @@ public :
 
 private:
     sdsMetaData  ** mMetaData;  // Meta data array  
-    /* Secondary Buffer ¸¦ °ü¸®ÇÏ±â À§ÇØ ÇÊ¿äÇÑ ÃÖ´ë meta talble °¹¼ö */
+    /* Secondary Buffer ë¥¼ ê´€ë¦¬í•˜ê¸° ìœ„í•´ í•„ìš”í•œ ìµœëŒ€ meta talble ê°¯ìˆ˜ */
     UInt            mMaxMetaTableCnt;
-    /* Group¾È¿¡ Æ÷ÇÔµÇ´Â ExtÀÇ °¹¼ö */
+    /* Groupì•ˆì— í¬í•¨ë˜ëŠ” Extì˜ ê°¯ìˆ˜ */
     UInt            mExtCntInGroup;
-    /* ÇÏ³ªÀÇ Extent¿¡ Æ÷ÇÔµÇ´Â meta data °¹¼ö */
+    /* í•˜ë‚˜ì˜ Extentì— í¬í•¨ë˜ëŠ” meta data ê°¯ìˆ˜ */
     UInt            mFrameCntInExt; 
-     /* MetaTable ¾µ·Á°í È®º¸ÇÏ´Â °ø°£ */    
+     /* MetaTable ì“¸ë ¤ê³  í™•ë³´í•˜ëŠ” ê³µê°„ */    
     UChar         * mBase;
     UChar         * mBasePtr;
     /*  */

@@ -18,7 +18,7 @@
  * $Id: idnConv.h 24174 2007-11-19 01:23:49Z copyrei $
  *
  * Description :
- *     Ä³¸¯ÅÍ ¼Â º¯È¯ ¸ğµâ
+ *     ìºë¦­í„° ì…‹ ë³€í™˜ ëª¨ë“ˆ
  *
  **********************************************************************/
 
@@ -49,7 +49,7 @@
   UShort used; // bitmask of used entries
 } Summary16; */
 
-// Ä³¸¯ÅÍ ¼Â º¯È¯À» À§ÇÑ ÇÔ¼ö Æ÷ÀÎÅÍ
+// ìºë¦­í„° ì…‹ ë³€í™˜ì„ ìœ„í•œ í•¨ìˆ˜ í¬ì¸í„°
 typedef SInt (*charSetConvFunc)( void* aSrc, 
                                  SInt aSrcRemain, 
                                  void* aDest, 
@@ -57,7 +57,7 @@ typedef SInt (*charSetConvFunc)( void* aSrc,
 
 typedef struct idnCharSetConvModule
 {
-    UInt             convPass; // ÇÊ¿äÇÑ º¯È¯ È½¼ö
+    UInt             convPass; // í•„ìš”í•œ ë³€í™˜ íšŸìˆ˜
     charSetConvFunc  conv1;
     charSetConvFunc  conv2;
 } idnCharSetConvModule;
@@ -71,9 +71,9 @@ convertCharSet( idnCharSetList   aSrcCharSet,
                 SInt           * aDestRemain,
                 SInt             aNlsNcharConvExcp );
 
-// To fix BUG-22699 UTF16Àº BIG ENDIANÀ¸·Î ÅëÀÏ.
-// ´ÙÀ½ ¸ÅÅ©·Î´Â ÄÁ¹öÀü ¿¬»êÀÌ³ª ºñ±³°Ë»ç ½Ã¿¡
-// Wide-Char(ÄÄÇ»ÅÍ°¡ ¾Ë¾Æº¼ ¼ö ÀÖ´Â unicode)°¡ ÇÊ¿äÇÏ¹Ç·Î ±×¶§ »ç¿ë.
+// To fix BUG-22699 UTF16ì€ BIG ENDIANìœ¼ë¡œ í†µì¼.
+// ë‹¤ìŒ ë§¤í¬ë¡œëŠ” ì»¨ë²„ì „ ì—°ì‚°ì´ë‚˜ ë¹„êµê²€ì‚¬ ì‹œì—
+// Wide-Char(ì»´í“¨í„°ê°€ ì•Œì•„ë³¼ ìˆ˜ ìˆëŠ” unicode)ê°€ í•„ìš”í•˜ë¯€ë¡œ ê·¸ë•Œ ì‚¬ìš©.
 
 #if defined(ENDIAN_IS_BIG_ENDIAN)
 

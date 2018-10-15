@@ -84,8 +84,8 @@ IDE_RC qsxExecutor::initializeSqlCursor( qsxExecutorInfo  * aExecInfo,
     else
     {
         /* PROJ-1073 Package
-         * package bodyÀÇ initialize section¿¡¼­ DML¹®ÀÌ ½ÇÇà °¡´ÉÇØ¾ßÇÕ´Ï´Ù.
-         * ±×·¸±â ¶§¹®¿¡ SP cursor°¡ ÇÊ¿äÇÏ¸ç, ÀÌ cursor¿¡ ´ëÇØ initialize¸¦ ÇØÁà¾ß ÇÕ´Ï´Ù. */
+         * package bodyì˜ initialize sectionì—ì„œ DMLë¬¸ì´ ì‹¤í–‰ ê°€ëŠ¥í•´ì•¼í•©ë‹ˆë‹¤.
+         * ê·¸ë ‡ê¸° ë•Œë¬¸ì— SP cursorê°€ í•„ìš”í•˜ë©°, ì´ cursorì— ëŒ€í•´ initializeë¥¼ í•´ì¤˜ì•¼ í•©ë‹ˆë‹¤. */
         aExecInfo->mSqlCursorInfo = (qsxCursorInfo *)
             QTC_TMPL_FIXEDDATA( QC_PRIVATE_TMPLATE(aQcStmt),
                                 aExecInfo->mPkgPlanTree->sqlCursorTypeNode );
@@ -160,7 +160,7 @@ IDE_RC qsxExecutor::execPlan ( qsxExecutorInfo  * aExecInfo,
     }
 
     // BUG-17489
-    // ÃÖ»óÀ§ PSMÈ£ÃâÀÎ °æ¿ì planTreeFlag¸¦ FALSE·Î ¹Ù²Û´Ù.
+    // ìµœìƒìœ„ PSMí˜¸ì¶œì¸ ê²½ìš° planTreeFlagë¥¼ FALSEë¡œ ë°”ê¾¼ë‹¤.
     qcg::lock( aQcStmt );
     if ( aQcStmt->planTreeFlag == ID_TRUE )
     {
@@ -194,8 +194,8 @@ IDE_RC qsxExecutor::execPlan ( qsxExecutorInfo  * aExecInfo,
     sSourceTemplate = QC_PRIVATE_TMPLATE(aQcStmt);
     sStage = 2;
 
-    // Æ®¸®°Å°¡ ¾Æ´Ï¸é mTriggerTmplateÀÇ °ªÀº NULLÀÌ´Ù.
-    // package subprogramÀÌ ¾Æ´Ï¸é mPkgTemplateÀÇ °ªÀº NULLÀÌ´Ù.
+    // íŠ¸ë¦¬ê±°ê°€ ì•„ë‹ˆë©´ mTriggerTmplateì˜ ê°’ì€ NULLì´ë‹¤.
+    // package subprogramì´ ì•„ë‹ˆë©´ mPkgTemplateì˜ ê°’ì€ NULLì´ë‹¤.
     if( aExecInfo->mTriggerTmplate == NULL )
     { 
         if( aExecInfo->mPkgTemplate == NULL )
@@ -234,7 +234,7 @@ IDE_RC qsxExecutor::execPlan ( qsxExecutorInfo  * aExecInfo,
     }
     else
     {
-        // Æ®¸®°Å´Â ÀÌ¹Ì º¹»ç°¡ µÇ¼­ ³Ñ¾î¿Â´Ù.
+        // íŠ¸ë¦¬ê±°ëŠ” ì´ë¯¸ ë³µì‚¬ê°€ ë˜ì„œ ë„˜ì–´ì˜¨ë‹¤.
         QC_PRIVATE_TMPLATE(aQcStmt) = aExecInfo->mTriggerTmplate;
     }
 
@@ -254,7 +254,7 @@ IDE_RC qsxExecutor::execPlan ( qsxExecutorInfo  * aExecInfo,
             }
         }
 
-        // ±âÁ¸¿¡ µî·ÏÇÑ °ÍÀÌ ¾ø´Â °æ¿ì.
+        // ê¸°ì¡´ì— ë“±ë¡í•œ ê²ƒì´ ì—†ëŠ” ê²½ìš°.
         if ( sStmtList == NULL )
         {
             if ( sStmtListInfo->mStmtListFreedCount > 0 )
@@ -319,9 +319,9 @@ IDE_RC qsxExecutor::execPlan ( qsxExecutorInfo  * aExecInfo,
     QC_PRIVATE_TMPLATE(aQcStmt)->tmplate.stackRemain = aStackRemain;
     QC_PRIVATE_TMPLATE(aQcStmt)->stmt                = aQcStmt;
  
-    // BUG-11192 date format session property Ãß°¡
-    // cloneµÈ templateÀÇ dateFormatÀº ´Ù¸¥ ¼¼¼ÇÀÇ °ªÀÌ¹Ç·Î
-    // »õ·ÎÀÌ assignÇØÁÖ¾î¾ß ÇÑ´Ù.
+    // BUG-11192 date format session property ì¶”ê°€
+    // cloneëœ templateì˜ dateFormatì€ ë‹¤ë¥¸ ì„¸ì…˜ì˜ ê°’ì´ë¯€ë¡œ
+    // ìƒˆë¡œì´ assigní•´ì£¼ì–´ì•¼ í•œë‹¤.
     QC_PRIVATE_TMPLATE(aQcStmt)->tmplate.dateFormat     = sSourceTemplate->tmplate.dateFormat;
 
     /* PROJ-2208 Multi Currency */
@@ -346,8 +346,8 @@ IDE_RC qsxExecutor::execPlan ( qsxExecutorInfo  * aExecInfo,
               != IDE_SUCCESS );
 
     /* PROJ-1073 Package - package cursor
-       package¿¡ ¼±¾ğµÈ cursor ¿ª½Ã procedureÀÇ cursor¿Í µ¿ÀÏÇÏ°Ô
-       ½ÇÇà ½Ã ÃÊ±âÈ­ ½ÃÅ°°í ½ÇÇà Á¾·á¿Í µ¿½Ã¿¡ close ½ÃÅ²´Ù. */
+       packageì— ì„ ì–¸ëœ cursor ì—­ì‹œ procedureì˜ cursorì™€ ë™ì¼í•˜ê²Œ
+       ì‹¤í–‰ ì‹œ ì´ˆê¸°í™” ì‹œí‚¤ê³  ì‹¤í–‰ ì¢…ë£Œì™€ ë™ì‹œì— close ì‹œí‚¨ë‹¤. */
     if ( sTopExec == 1 )
     {
         for( sPlanList = aQcStmt->spvEnv->procPlanList ;
@@ -379,10 +379,10 @@ IDE_RC qsxExecutor::execPlan ( qsxExecutorInfo  * aExecInfo,
     }
     sVarStage = 1;
 
-    // PROJ-1075 returnTypeVar¿¡ ´ëÇÑ ÃÊ±âÈ­°¡ ÀÌ·ç¾î Á®¾ß ÇÑ´Ù.
-    // arrayº¯¼öÀÎ °æ¿ì ÃÊ±âÈ­°¡ ¹İµå½Ã ÇÊ¿äÇÔ.
-    // ÃÊ±âÈ­´Â ÇÏÁö¸¸ ÇÔ¼ö Á¾·á Á÷Àü±îÁö ÇÒ´ç ÇØÁ¦´Â ÇÏÁö ¾ÊÀ½
-    // ->ÀÌ ÇÔ¼öÀÇ È£ÃâÀÚ°¡ ÇØÁ¦
+    // PROJ-1075 returnTypeVarì— ëŒ€í•œ ì´ˆê¸°í™”ê°€ ì´ë£¨ì–´ ì ¸ì•¼ í•œë‹¤.
+    // arrayë³€ìˆ˜ì¸ ê²½ìš° ì´ˆê¸°í™”ê°€ ë°˜ë“œì‹œ í•„ìš”í•¨.
+    // ì´ˆê¸°í™”ëŠ” í•˜ì§€ë§Œ í•¨ìˆ˜ ì¢…ë£Œ ì§ì „ê¹Œì§€ í• ë‹¹ í•´ì œëŠ” í•˜ì§€ ì•ŠìŒ
+    // ->ì´ í•¨ìˆ˜ì˜ í˜¸ì¶œìê°€ í•´ì œ
     if( sParseTree->returnTypeVar != NULL )
     {
         IDE_TEST( initVariableItems( aExecInfo,
@@ -408,8 +408,8 @@ IDE_RC qsxExecutor::execPlan ( qsxExecutorInfo  * aExecInfo,
         // Nothing to do.
     }
 
-    // PROJ-1075 parameter¿¡ ´ëÇÑ ÃÊ±âÈ­°¡ ÀÌ·ç¾î Á®¾ß ÇÑ´Ù.
-    // arrayº¯¼öÀÎ °æ¿ì ÃÊ±âÈ­°¡ ¹İµå½Ã ÇÊ¿äÇÔ.
+    // PROJ-1075 parameterì— ëŒ€í•œ ì´ˆê¸°í™”ê°€ ì´ë£¨ì–´ ì ¸ì•¼ í•œë‹¤.
+    // arrayë³€ìˆ˜ì¸ ê²½ìš° ì´ˆê¸°í™”ê°€ ë°˜ë“œì‹œ í•„ìš”í•¨.
     IDE_TEST( initVariableItems( aExecInfo,
                                  aQcStmt,
                                  sParseTree->paraDecls,
@@ -418,7 +418,7 @@ IDE_RC qsxExecutor::execPlan ( qsxExecutorInfo  * aExecInfo,
     sVarStage = 3;
 
     // PROJ-1502 PARTITIONED DISK TABLE
-    // PSMÀÏ °æ¿ì¿¡¸¸ argument¸¦ º¹»çÇÑ´Ù.
+    // PSMì¼ ê²½ìš°ì—ë§Œ argumentë¥¼ ë³µì‚¬í•œë‹¤.
     if( sEnvTrigger != ID_TRUE )
     {
         IDE_TEST( setArgumentValuesFromSourceTemplate(
@@ -450,7 +450,7 @@ IDE_RC qsxExecutor::execPlan ( qsxExecutorInfo  * aExecInfo,
     }
 
     // PROJ-1502 PARTITIONED DISK TABLE
-    // PSMÀÏ °æ¿ì¿¡¸¸ argument¸¦ º¹»çÇÑ´Ù.
+    // PSMì¼ ê²½ìš°ì—ë§Œ argumentë¥¼ ë³µì‚¬í•œë‹¤.
     if( sEnvTrigger != ID_TRUE )
     {
         IDE_TEST( setOutArgumentValuesToSourceTemplate(
@@ -512,18 +512,18 @@ IDE_RC qsxExecutor::execPlan ( qsxExecutorInfo  * aExecInfo,
                         err_no_return );
 
         /* PROJ-2586 PSM Parameters and return without precision
-           packageÀÇ °æ¿ì, session¿¡ ÀÖ´Â templateÀ» °¡Á®¿Í »ç¿ëÇÔÀ¸·Î
-           ÀÌÀü ½ÇÇàÇß´ø °á°ú¿¡ ´ëÇÑ precision, scale ¹× smiColumn size Á¤º¸¸¦ °¡Áö°í ÀÖ´Ù.
-           ÀÌ¸¦ precision, scale ¹× smiColumn size¸¦ default°ªÀ¸·Î ¿øº¹ ½ÃÄÑÁÖ ÈÄ
-           ÇöÀç ½ÇÇàÇÏ´Â °á°úÀÇ precision, scale ¹× smiColumn size¸¦ Á¶Á¤ÇÑ´Ù. */
+           packageì˜ ê²½ìš°, sessionì— ìˆëŠ” templateì„ ê°€ì ¸ì™€ ì‚¬ìš©í•¨ìœ¼ë¡œ
+           ì´ì „ ì‹¤í–‰í–ˆë˜ ê²°ê³¼ì— ëŒ€í•œ precision, scale ë° smiColumn size ì •ë³´ë¥¼ ê°€ì§€ê³  ìˆë‹¤.
+           ì´ë¥¼ precision, scale ë° smiColumn sizeë¥¼ defaultê°’ìœ¼ë¡œ ì›ë³µ ì‹œì¼œì£¼ í›„
+           í˜„ì¬ ì‹¤í–‰í•˜ëŠ” ê²°ê³¼ì˜ precision, scale ë° smiColumn sizeë¥¼ ì¡°ì •í•œë‹¤. */
         IDE_TEST( qsxUtil::finalizeParamAndReturnColumnInfo( aExecInfo->mSourceTemplateStack->column )
                   != IDE_SUCCESS );
 
         // set return value to stack[0] of source template.
-        // PROJ-1075 return value°¡ ¸¸¾à arrayÀÎ °æ¿ì
-        // stackÀÇ value´Â psmº¯¼ö°¡ ¾Æ´Ï±â ¶§¹®¿¡ ÃÊ±âÈ­°¡ µÇ¾î ÀÖÁö ¾Ê´Ù.
-        // µû¶ó¼­ ÀÌ ¶§´Â reference copy¸¦ ÇÔ.
-        // ->assignValueÀÇ ¸¶Áö¸· ÀÎÀÚ°¡ TRUE ÀÌ¸é reference copy
+        // PROJ-1075 return valueê°€ ë§Œì•½ arrayì¸ ê²½ìš°
+        // stackì˜ valueëŠ” psmë³€ìˆ˜ê°€ ì•„ë‹ˆê¸° ë•Œë¬¸ì— ì´ˆê¸°í™”ê°€ ë˜ì–´ ìˆì§€ ì•Šë‹¤.
+        // ë”°ë¼ì„œ ì´ ë•ŒëŠ” reference copyë¥¼ í•¨.
+        // ->assignValueì˜ ë§ˆì§€ë§‰ ì¸ìê°€ TRUE ì´ë©´ reference copy
         IDE_TEST( qsxUtil::assignValue( QC_QMX_MEM( aQcStmt ),
                                         sParseTree->returnTypeVar->variableTypeNode,  // source
                                         QC_PRIVATE_TMPLATE(aQcStmt),                  // source
@@ -531,13 +531,13 @@ IDE_RC qsxExecutor::execPlan ( qsxExecutorInfo  * aExecInfo,
                                         aExecInfo->mSourceTemplateStack,              // dest
                                         aExecInfo->mSourceTemplateStackRemain,        // dest
                                         sSourceTemplate,
-                                        ID_TRUE,                                      // parameter ¶Ç´Â return ¿©ºÎ
+                                        ID_TRUE,                                      // parameter ë˜ëŠ” return ì—¬ë¶€
                                         ID_TRUE )                                     // copyRef
                   != IDE_SUCCESS );
 
         // PROJ-1075
-        // ¸¸¾à return typeÀÌ arrayÀÌ¸é
-        // qsxEnvÀÇ returnedArray¿¡ ¿¬°á.
+        // ë§Œì•½ return typeì´ arrayì´ë©´
+        // qsxEnvì˜ returnedArrayì— ì—°ê²°.
         if( sParseTree->returnTypeVar->variableType == QS_ASSOCIATIVE_ARRAY_TYPE )
         {
             IDE_DASSERT( aExecInfo->mSourceTemplateStack->column->module->id
@@ -549,7 +549,7 @@ IDE_RC qsxExecutor::execPlan ( qsxExecutorInfo  * aExecInfo,
 
             IDE_TEST_RAISE( *sArrayInfo == NULL, ERR_INVALID_ARRAY );
 
-            // qsxEnvÀÇ returnedArray¿¡ ¿¬°á.
+            // qsxEnvì˜ returnedArrayì— ì—°ê²°.
             IDE_TEST( qsxEnv::addReturnArray( QC_QSX_ENV(aQcStmt),
                                               *sArrayInfo )           // source tmplate value
                       != IDE_SUCCESS );
@@ -563,8 +563,8 @@ IDE_RC qsxExecutor::execPlan ( qsxExecutorInfo  * aExecInfo,
     }
 
     sVarStage = 2;
-    // PROJ-1075 parameter º¯¼öÀÇ finalization
-    // arrayº¯¼öÀÎ °æ¿ì ÇÒ´ç ÇØÁ¦¸¦ ÀÌ ¾È¿¡¼­ ÇØÁØ´Ù.
+    // PROJ-1075 parameter ë³€ìˆ˜ì˜ finalization
+    // arrayë³€ìˆ˜ì¸ ê²½ìš° í• ë‹¹ í•´ì œë¥¼ ì´ ì•ˆì—ì„œ í•´ì¤€ë‹¤.
     IDE_TEST( finiVariableItems( aQcStmt,
                                  sParseTree->paraDecls )
               != IDE_SUCCESS );
@@ -583,8 +583,8 @@ IDE_RC qsxExecutor::execPlan ( qsxExecutorInfo  * aExecInfo,
 
     sVarStage = 0;
     /* PROJ-1073 Package - package cursor
-       package¿¡ ¼±¾ğµÈ cursor ¿ª½Ã procedureÀÇ cursor¿Í µ¿ÀÏÇÏ°Ô
-       ½ÇÇà ½Ã ÃÊ±âÈ­ ½ÃÅ°°í ½ÇÇà Á¾·á¿Í µ¿½Ã¿¡ close ½ÃÅ²´Ù. */
+       packageì— ì„ ì–¸ëœ cursor ì—­ì‹œ procedureì˜ cursorì™€ ë™ì¼í•˜ê²Œ
+       ì‹¤í–‰ ì‹œ ì´ˆê¸°í™” ì‹œí‚¤ê³  ì‹¤í–‰ ì¢…ë£Œì™€ ë™ì‹œì— close ì‹œí‚¨ë‹¤. */
     if ( sTopExec == 1 )
     {
         for( sPlanList = aQcStmt->spvEnv->procPlanList ;
@@ -653,7 +653,7 @@ IDE_RC qsxExecutor::execPlan ( qsxExecutorInfo  * aExecInfo,
     sStage = 1;
     QC_PRIVATE_TMPLATE(aQcStmt) = sSourceTemplate;
 
-    // BUG-44294 PSM³»¿¡¼­ ½ÇÇàÇÑ DMLÀÌ º¯°æÇÑ row ¼ö¸¦ ¹İÈ¯ÇÏµµ·Ï ÇÕ´Ï´Ù.
+    // BUG-44294 PSMë‚´ì—ì„œ ì‹¤í–‰í•œ DMLì´ ë³€ê²½í•œ row ìˆ˜ë¥¼ ë°˜í™˜í•˜ë„ë¡ í•©ë‹ˆë‹¤.
     if ( ( aExecInfo->mTriggerTmplate == NULL ) &&
          ( aQcStmt->spxEnv->mFlag == QSX_ENV_FLAG_INIT ) )
     {
@@ -724,8 +724,8 @@ IDE_RC qsxExecutor::execPlan ( qsxExecutorInfo  * aExecInfo,
     IDE_EXCEPTION(err_pass);
     IDE_EXCEPTION_END;
 
-    // PROJ-1075 ¿¡·¯°¡ ³ª´Â °æ¿ì
-    // parameter »Ó¸¸ ¾Æ´Ï¶ó return valueµµ °°ÀÌ ÇÒ´ç ÇØÁ¦¸¦ ÇØÁÖ¾î¾ß ÇÑ´Ù.
+    // PROJ-1075 ì—ëŸ¬ê°€ ë‚˜ëŠ” ê²½ìš°
+    // parameter ë¿ë§Œ ì•„ë‹ˆë¼ return valueë„ ê°™ì´ í• ë‹¹ í•´ì œë¥¼ í•´ì£¼ì–´ì•¼ í•œë‹¤.
     switch( sVarStage )
     {
         case 3:
@@ -906,8 +906,8 @@ IDE_RC qsxExecutor::setArgumentValuesFromSourceTemplate (
         {
             case QS_OUT :
                 // To fix BUG-15195
-                // ÆÄ¶ó¹ÌÅÍ´Â initVariableItems¿¡¼­ ÃÊ±âÈ­ ÇßÀ¸¹Ç·Î
-                // ¿©±â¼­ ÃÊ±âÈ­ ÇÏ¸é ¾ÈµÊ.
+                // íŒŒë¼ë¯¸í„°ëŠ” initVariableItemsì—ì„œ ì´ˆê¸°í™” í–ˆìœ¼ë¯€ë¡œ
+                // ì—¬ê¸°ì„œ ì´ˆê¸°í™” í•˜ë©´ ì•ˆë¨.
                 break;
             case QS_IN :
             case QS_INOUT :
@@ -929,7 +929,7 @@ IDE_RC qsxExecutor::setArgumentValuesFromSourceTemplate (
                           != IDE_SUCCESS );
                 break;
             default :
-                // IN-OUT TypeÀÌ Á¤ÇØÁöÁö ¾ÊÀ» ¼ö ¾øÀ½
+                // IN-OUT Typeì´ ì •í•´ì§€ì§€ ì•Šì„ ìˆ˜ ì—†ìŒ
                 IDE_ERROR( 0 );
                 break;
         }
@@ -989,14 +989,14 @@ IDE_RC qsxExecutor::setOutArgumentValuesToSourceTemplate (
                         sStack,
                         sStackRemain,
                         aSourceTmplate,
-                        ID_TRUE,      // parameter ¶Ç´Â return ¿©ºÎ
+                        ID_TRUE,      // parameter ë˜ëŠ” return ì—¬ë¶€
                         sCopyRef )
                     != IDE_SUCCESS );
                 break;
             case QS_IN :
                 break;
             default :
-                // IN-OUT TypeÀÌ Á¤ÇØÁöÁö ¾ÊÀ» ¼ö ¾øÀ½
+                // IN-OUT Typeì´ ì •í•´ì§€ì§€ ì•Šì„ ìˆ˜ ì—†ìŒ
                 IDE_ERROR( 0 );
                 break;
         }
@@ -1050,7 +1050,7 @@ IDE_RC qsxExecutor::getRaisedExceptionName( qsxExecutorInfo * aExecInfo,
             if ( QC_IS_NULL_NAME( aExecInfo->mRecentRaise->exception->userNamePos )
                  != ID_TRUE )
             {
-                // Buffer Length¸¦ ³ÑÁö ¾Ê´Â ¹üÀ§¿¡¼­ º¹»çÇÏ±â À§ÇÑ ±æÀÌ ÃøÁ¤
+                // Buffer Lengthë¥¼ ë„˜ì§€ ì•ŠëŠ” ë²”ìœ„ì—ì„œ ë³µì‚¬í•˜ê¸° ìœ„í•œ ê¸¸ì´ ì¸¡ì •
                 sLength = IDL_MIN( aExecInfo->mRecentRaise->exception->userNamePos.size , QC_MAX_OBJECT_NAME_LEN );
 
                 idlOS::snprintf( QC_QSX_ENV(aQcStmt)->mRaisedExcpInfo.mRaisedExcpErrorMsg,
@@ -1071,7 +1071,7 @@ IDE_RC qsxExecutor::getRaisedExceptionName( qsxExecutorInfo * aExecInfo,
             if ( QC_IS_NULL_NAME( aExecInfo->mRecentRaise->exception->labelNamePos )
                  != ID_TRUE )
             {
-                // Buffer Length¸¦ ³ÑÁö ¾Ê´Â ¹üÀ§¿¡¼­ º¹»çÇÏ±â À§ÇÑ ±æÀÌ ÃøÁ¤
+                // Buffer Lengthë¥¼ ë„˜ì§€ ì•ŠëŠ” ë²”ìœ„ì—ì„œ ë³µì‚¬í•˜ê¸° ìœ„í•œ ê¸¸ì´ ì¸¡ì •
                 sLength = IDL_MIN( aExecInfo->mRecentRaise->exception->labelNamePos.size , QC_MAX_OBJECT_NAME_LEN );
 
                 idlOS::snprintf( QC_QSX_ENV(aQcStmt)->mRaisedExcpInfo.mRaisedExcpErrorMsg + sTotalLength,
@@ -1089,7 +1089,7 @@ IDE_RC qsxExecutor::getRaisedExceptionName( qsxExecutorInfo * aExecInfo,
                 // Nothing to do.
             }
 
-            // Buffer Length¸¦ ³ÑÁö ¾Ê´Â ¹üÀ§¿¡¼­ º¹»çÇÏ±â À§ÇÑ ±æÀÌ ÃøÁ¤
+            // Buffer Lengthë¥¼ ë„˜ì§€ ì•ŠëŠ” ë²”ìœ„ì—ì„œ ë³µì‚¬í•˜ê¸° ìœ„í•œ ê¸¸ì´ ì¸¡ì •
             sLength = IDL_MIN( aExecInfo->mRecentRaise->exception->exceptionNamePos.size , QC_MAX_OBJECT_NAME_LEN );
 
             idlOS::snprintf( QC_QSX_ENV(aQcStmt)->mRaisedExcpInfo.mRaisedExcpErrorMsg + sTotalLength,
@@ -1151,10 +1151,10 @@ IDE_RC qsxExecutor::execBlock (
 
     sStage=2;
 
-    // PROJ-1335 RAISE Áö¿ø
+    // PROJ-1335 RAISE ì§€ì›
     // To fix BUG-12642
-    // exception handlingÀÌ ÀÌ·ç¾îÁö¸é ºí·Ï ½ÃÀÛ ÀÌÀüÀÇ
-    // ¿¡·¯ÄÚµå·Î µ¹¾Æ°¡¾ß ÇÔ
+    // exception handlingì´ ì´ë£¨ì–´ì§€ë©´ ë¸”ë¡ ì‹œì‘ ì´ì „ì˜
+    // ì—ëŸ¬ì½”ë“œë¡œ ëŒì•„ê°€ì•¼ í•¨
     IDE_TEST( QC_QMX_MEM(aQcStmt)->alloc(
             MAX_ERROR_MSG_LEN + 1,
             (void**) & sOriSqlErrorMsg )
@@ -1190,9 +1190,9 @@ IDE_RC qsxExecutor::execBlock (
         // Nothing to do.
     }
 
-    // PROJ-1335 RAISE Áö¿ø
+    // PROJ-1335 RAISE ì§€ì›
     // To fix BUG-12642
-    // re-raiseµÇÁö ¾Ê¾Ò´Ù¸é ÀÌÀü ¿¡·¯ÄÚµå·Î º¹±Í.
+    // re-raiseë˜ì§€ ì•Šì•˜ë‹¤ë©´ ì´ì „ ì—ëŸ¬ì½”ë“œë¡œ ë³µê·€.
     if( aExecInfo->mFlow != QSX_FLOW_RAISE )
     {
         QC_QSX_ENV(aQcStmt)->mSqlCode = sOriSqlCode;
@@ -1359,8 +1359,8 @@ IDE_RC qsxExecutor::initVariableItems(
                     if ( (sVariable->variableTypeNode->lflag & QTC_NODE_SP_PARAM_OR_RETURN_MASK)
                          == QTC_NODE_SP_PARAM_OR_RETURN_TRUE )
                     {
-                        /* parameter´Â qsxExecutor::setArgumentFromSourceTemplate¿¡¼­
-                           default value¸¦ ÇÒ´çÇÑ´Ù. */
+                        /* parameterëŠ” qsxExecutor::setArgumentFromSourceTemplateì—ì„œ
+                           default valueë¥¼ í• ë‹¹í•œë‹¤. */
                         // Nothing to do.
                     }
                     else
@@ -1400,7 +1400,7 @@ IDE_RC qsxExecutor::initVariableItems(
                 break;
             case QS_TRIGGER_VARIABLE:
                 // PROJ-1359 Trigger
-                // ÀÌ¹Ì Æ¯Á¤°ªÀ¸·Î ÃÊ±âÈ­µÇ¾î ÀÖÀ½.
+                // ì´ë¯¸ íŠ¹ì •ê°’ìœ¼ë¡œ ì´ˆê¸°í™”ë˜ì–´ ìˆìŒ.
                 // Nothing To Do
                 break;
             case QS_CURSOR :
@@ -1416,8 +1416,8 @@ IDE_RC qsxExecutor::initVariableItems(
 
                 sCursorInfo->mCursor = sCursor;
 
-                // PROJ-2197¿¡¼­ ½Ç½Ã°£ rebuild¸¦ Á¦°ÅÇÏ¿©
-                // execOpen, execOpenFor¿¡¼­ °¢°¢ ¼öÇàÇÏ´ø °ÍÀ» ¿øº¹ÇÔ.
+                // PROJ-2197ì—ì„œ ì‹¤ì‹œê°„ rebuildë¥¼ ì œê±°í•˜ì—¬
+                // execOpen, execOpenForì—ì„œ ê°ê° ìˆ˜í–‰í•˜ë˜ ê²ƒì„ ì›ë³µí•¨.
                 (void)qsxCursor::setCursorSpec( sCursorInfo,
                                                 sCursor->paraDecls );
 
@@ -1445,7 +1445,7 @@ IDE_RC qsxExecutor::initVariableItems(
     IDE_EXCEPTION( err_pass_wrap_sqltext )
     {
         // To fix BUG-13208
-        // system_À¯Àú°¡ ¸¸µç ÇÁ·Î½ÃÁ®´Â ³»ºÎ°ø°³ ¾ÈÇÔ.
+        // system_ìœ ì €ê°€ ë§Œë“  í”„ë¡œì‹œì ¸ëŠ” ë‚´ë¶€ê³µê°œ ì•ˆí•¨.
         if ( aExecInfo->mDefinerUserID == QC_SYSTEM_USER_ID )
         {
             qsxEnv::setErrorCode( QC_QSX_ENV(aQcStmt) );
@@ -1457,7 +1457,7 @@ IDE_RC qsxExecutor::initVariableItems(
             qsxEnv::setErrorCode( QC_QSX_ENV(aQcStmt) );
 
             // BUG-43998
-            // PSM »ı¼º ¿À·ù ¹ß»ı½Ã ¿À·ù ¹ß»ı À§Ä¡¸¦ ÇÑ ¹ø¸¸ Ãâ·ÂÇÏµµ·Ï ÇÕ´Ï´Ù.
+            // PSM ìƒì„± ì˜¤ë¥˜ ë°œìƒì‹œ ì˜¤ë¥˜ ë°œìƒ ìœ„ì¹˜ë¥¼ í•œ ë²ˆë§Œ ì¶œë ¥í•˜ë„ë¡ í•©ë‹ˆë‹¤.
             if ( ideHasErrorPosition() == ID_FALSE )
             {
                 (void)sSqlInfo.initWithBeforeMessage( QC_QMX_MEM(aQcStmt) );
@@ -1553,7 +1553,7 @@ IDE_RC qsxExecutor::finiVariableItems(
                 else if ( (sVariable->variableType == QS_ROW_TYPE) ||
                           (sVariable->variableType == QS_RECORD_TYPE) )
                 {
-                    // record type¿¡ array typeÀ» Æ÷ÇÔÇÏ´Â °æ¿ì °¢ arrayµµ finalize ÇØ¾ß ÇÑ´Ù.
+                    // record typeì— array typeì„ í¬í•¨í•˜ëŠ” ê²½ìš° ê° arrayë„ finalize í•´ì•¼ í•œë‹¤.
                     IDE_TEST( qsxUtil::finalizeRecordVar( QC_PRIVATE_TMPLATE(aQcStmt),
                                                           sVariable->variableTypeNode )
                               != IDE_SUCCESS );
@@ -1687,8 +1687,8 @@ IDE_RC qsxExecutor::execStmtList (
                                &sLabel )
                     == ID_TRUE )
                 {
-                    // goto°¡ ÂüÁ¶ÇÏ´Â labelÀÌ parent¿¡ ÀÖ´Â °æ¿ì
-                    // ´ÙÀ½ ½ÇÇà statement¸¦ label->stmt·Î ÁöÁ¤
+                    // gotoê°€ ì°¸ì¡°í•˜ëŠ” labelì´ parentì— ìˆëŠ” ê²½ìš°
+                    // ë‹¤ìŒ ì‹¤í–‰ statementë¥¼ label->stmtë¡œ ì§€ì •
                     sProcNextStmts = sLabel->stmt;
                     unsetFlowControl(aExecInfo);
                 }
@@ -1710,9 +1710,9 @@ IDE_RC qsxExecutor::execStmtList (
                 IDE_RAISE(err_unknown_flow_control);
         }
 
-        // PROJ-1075 ÇÏ³ªÀÇ procedure statement¸¦ ½ÇÇàÇÑ ÀÌÈÄ
-        // È¤½Ã function¿¡¼­ returnµÈ arrayº¯¼ö°¡ ÀÖ³ª Ã¼Å©ÇÏ°í
-        // ÀÖÀ¸¸é ÇÒ´ç ÇØÁ¦.
+        // PROJ-1075 í•˜ë‚˜ì˜ procedure statementë¥¼ ì‹¤í–‰í•œ ì´í›„
+        // í˜¹ì‹œ functionì—ì„œ returnëœ arrayë³€ìˆ˜ê°€ ìˆë‚˜ ì²´í¬í•˜ê³ 
+        // ìˆìœ¼ë©´ í• ë‹¹ í•´ì œ.
         qsxEnv::freeReturnArray( QC_QSX_ENV(aQcStmt) );
 
         // BUG-41311
@@ -2009,10 +2009,10 @@ IDE_RC qsxExecutor::execInvoke (
         != IDE_SUCCESS )
     {
         /* BUG-43160
-           unhandling µÈ exception value°¡ package exception valueÀÏ ¼öµµ ÀÖ´Ù.
-           µû¶ó¼­, error¸¦ º¸°í unhandling errorÀÏ °æ¿ì,
-           qsxEnvInfo¿¡ ÀúÀåÇØ ³õ°í Á¤º¸¸¦ qsxExecutorInfo¿¡ ¼ÂÆÃÇØÁØ´Ù.
-           execInvoke¿¡¼­ ½ÇÇà±â°£ »ç¿ëµÈ qsxExecutorInfo¿Í aExecInfo´Â ´Ù¸¥ qsxExecutorInfoÀÌ´Ù. */
+           unhandling ëœ exception valueê°€ package exception valueì¼ ìˆ˜ë„ ìˆë‹¤.
+           ë”°ë¼ì„œ, errorë¥¼ ë³´ê³  unhandling errorì¼ ê²½ìš°,
+           qsxEnvInfoì— ì €ì¥í•´ ë†“ê³  ì •ë³´ë¥¼ qsxExecutorInfoì— ì…‹íŒ…í•´ì¤€ë‹¤.
+           execInvokeì—ì„œ ì‹¤í–‰ê¸°ê°„ ì‚¬ìš©ëœ qsxExecutorInfoì™€ aExecInfoëŠ” ë‹¤ë¥¸ qsxExecutorInfoì´ë‹¤. */
         if ( ideGetErrorCode() != qpERR_ABORT_QSX_UNHANDLED_EXCEPTION )
         {
             IDE_RAISE(err_pass_wrap_sqltext);
@@ -2113,10 +2113,10 @@ IDE_RC qsxExecutor::execSelect (
     sStage = 2;
 
     /* PROJ-2197 PSM Renewal
-     * 1. mmStmt¿¡¼­ qcStmt¸¦ ¾ò¾î¿Í¼­
-     * 2. callDepth¸¦ ¼³Á¤ÇÑ´Ù.
-     * qcd¸¦ ÅëÇØ ½ÇÇàÇÏ¸é qcStmtÀÇ »ó¼Ó°ü°è°¡ ¾ø±â ¶§¹®¿¡
-     * stack overflow·Î server°¡ ºñÁ¤»ó Á¾·áÇÒ ¼ö ÀÖ´Ù. */
+     * 1. mmStmtì—ì„œ qcStmtë¥¼ ì–»ì–´ì™€ì„œ
+     * 2. callDepthë¥¼ ì„¤ì •í•œë‹¤.
+     * qcdë¥¼ í†µí•´ ì‹¤í–‰í•˜ë©´ qcStmtì˜ ìƒì†ê´€ê³„ê°€ ì—†ê¸° ë•Œë¬¸ì—
+     * stack overflowë¡œ serverê°€ ë¹„ì •ìƒ ì¢…ë£Œí•  ìˆ˜ ìˆë‹¤. */
     IDE_TEST( qcd::getQcStmt( sHstmt,
                               &sExecQcStmt )
               != IDE_SUCCESS );
@@ -2179,8 +2179,8 @@ IDE_RC qsxExecutor::execSelect (
     }
 
     /* PROJ-2197 PSM Renewal
-     * prepare ÀÌÈÄ¿¡ stmt¸¦ ÃÊ±âÈ­ÇÏ¹Ç·Î
-     * executeÀü¿¡ call depth¸¦ ´Ù½Ã º¯°æÇÑ´Ù. */
+     * prepare ì´í›„ì— stmtë¥¼ ì´ˆê¸°í™”í•˜ë¯€ë¡œ
+     * executeì „ì— call depthë¥¼ ë‹¤ì‹œ ë³€ê²½í•œë‹¤. */
     sExecQcStmt->spxEnv->mCallDepth = aQcStmt->spxEnv->mCallDepth;
     // BUG-41279
     // Prevent parallel execution while executing 'select for update' clause.
@@ -2439,10 +2439,10 @@ IDE_RC qsxExecutor::execNonSelectDML (
     sStage = 2;
 
     /* PROJ-2197 PSM Renewal
-     * 1. mmStmt¿¡¼­ qcStmt¸¦ ¾ò¾î¿Í¼­
-     * 2. callDepth¸¦ ¼³Á¤ÇÑ´Ù.
-     * qcd¸¦ ÅëÇØ ½ÇÇàÇÏ¸é qcStmtÀÇ »ó¼Ó°ü°è°¡ ¾ø±â ¶§¹®¿¡
-     * stack overflow·Î server°¡ ºñÁ¤»ó Á¾·áÇÒ ¼ö ÀÖ´Ù. */
+     * 1. mmStmtì—ì„œ qcStmtë¥¼ ì–»ì–´ì™€ì„œ
+     * 2. callDepthë¥¼ ì„¤ì •í•œë‹¤.
+     * qcdë¥¼ í†µí•´ ì‹¤í–‰í•˜ë©´ qcStmtì˜ ìƒì†ê´€ê³„ê°€ ì—†ê¸° ë•Œë¬¸ì—
+     * stack overflowë¡œ serverê°€ ë¹„ì •ìƒ ì¢…ë£Œí•  ìˆ˜ ìˆë‹¤. */
     IDE_TEST( qcd::getQcStmt( sHstmt,
                               &sExecQcStmt )
               != IDE_SUCCESS );
@@ -2512,7 +2512,7 @@ IDE_RC qsxExecutor::execNonSelectDML (
     }
 
     // BUG-37011
-    // associative array¸¦ truncate ÇØ¾ß ÇÑ´Ù.
+    // associative arrayë¥¼ truncate í•´ì•¼ í•œë‹¤.
     if( sExecQcStmt->parentInfo->parentReturnInto != NULL )
     {
         if( sExecQcStmt->parentInfo->parentReturnInto->bulkCollect == ID_TRUE )
@@ -2533,8 +2533,8 @@ IDE_RC qsxExecutor::execNonSelectDML (
     }
 
     /* PROJ-2197 PSM Renewal
-     * prepare ÀÌÈÄ¿¡ stmt¸¦ ÃÊ±âÈ­ÇÏ¹Ç·Î
-     * executeÀü¿¡ call depth¸¦ ´Ù½Ã º¯°æÇÑ´Ù. */
+     * prepare ì´í›„ì— stmtë¥¼ ì´ˆê¸°í™”í•˜ë¯€ë¡œ
+     * executeì „ì— call depthë¥¼ ë‹¤ì‹œ ë³€ê²½í•œë‹¤. */
     sExecQcStmt->spxEnv->mCallDepth = aQcStmt->spxEnv->mCallDepth;
     // BUG-41279
     // Prevent parallel execution while executing 'select for update' clause.
@@ -2796,10 +2796,10 @@ IDE_RC qsxExecutor::execIf (
         sStage = 2;
 
         /* PROJ-2197 PSM Renewal
-         * 1. mmStmt¿¡¼­ qcStmt¸¦ ¾ò¾î¿Í¼­
-         * 2. callDepth¸¦ ¼³Á¤ÇÑ´Ù.
-         * qcd¸¦ ÅëÇØ ½ÇÇàÇÏ¸é qcStmtÀÇ »ó¼Ó°ü°è°¡ ¾ø±â ¶§¹®¿¡
-         * stack overflow·Î server°¡ ºñÁ¤»ó Á¾·áÇÒ ¼ö ÀÖ´Ù. */
+         * 1. mmStmtì—ì„œ qcStmtë¥¼ ì–»ì–´ì™€ì„œ
+         * 2. callDepthë¥¼ ì„¤ì •í•œë‹¤.
+         * qcdë¥¼ í†µí•´ ì‹¤í–‰í•˜ë©´ qcStmtì˜ ìƒì†ê´€ê³„ê°€ ì—†ê¸° ë•Œë¬¸ì—
+         * stack overflowë¡œ serverê°€ ë¹„ì •ìƒ ì¢…ë£Œí•  ìˆ˜ ìˆë‹¤. */
         IDE_TEST( qcd::getQcStmt( sHstmt,
                                   &sExecQcStmt )
                   != IDE_SUCCESS );
@@ -2846,8 +2846,8 @@ IDE_RC qsxExecutor::execIf (
                   != IDE_SUCCESS );
 
         /* PROJ-2197 PSM Renewal
-         * prepare ÀÌÈÄ¿¡ stmt¸¦ ÃÊ±âÈ­ÇÏ¹Ç·Î
-         * executeÀü¿¡ call depth¸¦ ´Ù½Ã º¯°æÇÑ´Ù. */
+         * prepare ì´í›„ì— stmtë¥¼ ì´ˆê¸°í™”í•˜ë¯€ë¡œ
+         * executeì „ì— call depthë¥¼ ë‹¤ì‹œ ë³€ê²½í•œë‹¤. */
         sExecQcStmt->spxEnv->mCallDepth = aQcStmt->spxEnv->mCallDepth;
         // BUG-41279
         // Prevent parallel execution while executing 'select for update' clause.
@@ -2916,7 +2916,7 @@ IDE_RC qsxExecutor::execIf (
         }
         else
         {
-            // else ±¸¹®Àº ¾øÀ» ¼öµµ ÀÖ´Ù.
+            // else êµ¬ë¬¸ì€ ì—†ì„ ìˆ˜ë„ ìˆë‹¤.
         }
     }
 
@@ -3141,20 +3141,20 @@ IDE_RC qsxExecutor::execFor (
 {
 /***********************************************************************
  *
- * Description : For loopÀÇ execution ( fix BUG-11391 )
+ * Description : For loopì˜ execution ( fix BUG-11391 )
  *
  * Implementation :
  *    (1) lowerVar := lowerNode
  *    (2) upperVar := upperNode
  *    (3) stepVar := stepNode
- *    (4) counterVar := lowerVar( or upperVar reverseÀÏ¶§)
- *    (5) stepVar°¡ 0º¸´Ù Å«Áö Ã¼Å©(isStepOkNode)
- *    (6) lowerVar <= upperVarÀÎÁö Ã¼Å©(isIntervalOkNode)
+ *    (4) counterVar := lowerVar( or upperVar reverseì¼ë•Œ)
+ *    (5) stepVarê°€ 0ë³´ë‹¤ í°ì§€ ì²´í¬(isStepOkNode)
+ *    (6) lowerVar <= upperVarì¸ì§€ ì²´í¬(isIntervalOkNode)
  *    (7) loop
- *    (7.1) lower <= counterVar <= upperVarÀÎÁö Ã¼Å©(conditionNode)
+ *    (7.1) lower <= counterVar <= upperVarì¸ì§€ ì²´í¬(conditionNode)
  *    (7.2) execStmtList
  *    (7.3) counterVar := counterVar + stepVar (newCounterNode)
- *    (7.3) flow Ã¼Å©
+ *    (7.3) flow ì²´í¬
  *    (8) end loop
  *
  ***********************************************************************/
@@ -3391,12 +3391,12 @@ IDE_RC qsxExecutor::execCursorFor (
 
     if( sProcCursorFor->openCursorSpecNode->node.objectID != QS_EMPTY_OID )
     {
-        // objectIDÀÇ pkgInfo¸¦ °¡Á®¿Â´Ù.
+        // objectIDì˜ pkgInfoë¥¼ ê°€ì ¸ì˜¨ë‹¤.
         IDE_TEST( qsxPkg::getPkgInfo( sProcCursorFor->openCursorSpecNode->node.objectID,
                                       &sPkgInfo )
                   != IDE_SUCCESS );
 
-        // objectIDÀÇ templateÀ» °¡Á®¿Â´Ù.
+        // objectIDì˜ templateì„ ê°€ì ¸ì˜¨ë‹¤.
         IDE_TEST( qcuSessionPkg::searchPkgInfoFromSession( 
                      aQcStmt,
                      sPkgInfo,
@@ -3626,11 +3626,11 @@ IDE_RC qsxExecutor::execOpen (
 
     if( sProcOpen->openCursorSpecNode->node.objectID != QS_EMPTY_OID )
     {
-        // objectIDÀÇ pkgInfo¸¦ °¡Á®¿Â´Ù.
+        // objectIDì˜ pkgInfoë¥¼ ê°€ì ¸ì˜¨ë‹¤.
         IDE_TEST( qsxPkg::getPkgInfo( sProcOpen->openCursorSpecNode->node.objectID,
                                       &sPkgInfo )
                   != IDE_SUCCESS );
-        // objectIDÀÇ templateÀ» °¡Á®¿Â´Ù.
+        // objectIDì˜ templateì„ ê°€ì ¸ì˜¨ë‹¤.
         IDE_TEST( qcuSessionPkg::searchPkgInfoFromSession( aQcStmt,
                                                            sPkgInfo,
                                                            QC_PRIVATE_TMPLATE(aQcStmt)->tmplate.stack,
@@ -3680,11 +3680,11 @@ IDE_RC qsxExecutor::execFetch (
 
     if ( sProcStmtFetch->cursorNode->node.objectID != QS_EMPTY_OID )
     {
-        // objectIDÀÇ pkgInfo¸¦ °¡Á®¿Â´Ù.
+        // objectIDì˜ pkgInfoë¥¼ ê°€ì ¸ì˜¨ë‹¤.
         IDE_TEST( qsxPkg::getPkgInfo( sProcStmtFetch->cursorNode->node.objectID,
                                       &sPkgInfo )
                   != IDE_SUCCESS );
-        // objectIDÀÇ templateÀ» °¡Á®¿Â´Ù.
+        // objectIDì˜ templateì„ ê°€ì ¸ì˜¨ë‹¤.
         IDE_TEST( qcuSessionPkg::searchPkgInfoFromSession( aQcStmt,
                                                            sPkgInfo,
                                                            QC_PRIVATE_TMPLATE(aQcStmt)->tmplate.stack,
@@ -3757,11 +3757,11 @@ IDE_RC qsxExecutor::execClose (
 
     if( sProcStmtClose->cursorNode->node.objectID != QS_EMPTY_OID )
     {
-        // objectIDÀÇ pkgInfo¸¦ °¡Á®¿Â´Ù.
+        // objectIDì˜ pkgInfoë¥¼ ê°€ì ¸ì˜¨ë‹¤.
         IDE_TEST( qsxPkg::getPkgInfo( sProcStmtClose->cursorNode->node.objectID,
                                       &sPkgInfo )
                   != IDE_SUCCESS );
-        // objectIDÀÇ templateÀ» °¡Á®¿Â´Ù.
+        // objectIDì˜ templateì„ ê°€ì ¸ì˜¨ë‹¤.
         IDE_TEST( qcuSessionPkg::searchPkgInfoFromSession( aQcStmt,
                                                            sPkgInfo,
                                                            QC_PRIVATE_TMPLATE(aQcStmt)->tmplate.stack,
@@ -3828,13 +3828,13 @@ IDE_RC qsxExecutor::execAssign (
     }
     else
     {
-        // stackÀÇ µÎ¹øÂ° ºÎºĞ¿¡ rightNodeÀÇ °á°ú°ª ¼¼ÆÃ
+        // stackì˜ ë‘ë²ˆì§¸ ë¶€ë¶„ì— rightNodeì˜ ê²°ê³¼ê°’ ì„¸íŒ…
         sAssignStack[1].column = QC_PRIVATE_TMPLATE(aQcStmt)->tmplate.stack[0].column;
         sAssignStack[1].value = QC_PRIVATE_TMPLATE(aQcStmt)->tmplate.stack[0].value;
     }
 
     // PROJ-1075
-    // array typeÀÇ indexÂüÁ¶¸¦ À§ÇØ left nodeµµ calculateÇØ¾ß ÇÔ.
+    // array typeì˜ indexì°¸ì¡°ë¥¼ ìœ„í•´ left nodeë„ calculateí•´ì•¼ í•¨.
     if( qtc::calculate( sProcAssign->leftNode,
                         QC_PRIVATE_TMPLATE(aQcStmt) )
         != IDE_SUCCESS )
@@ -3843,7 +3843,7 @@ IDE_RC qsxExecutor::execAssign (
     }
     else
     {
-        // stackÀÇ Ã¹¹øÂ° ºÎºĞ¿¡ leftNodeÀÇ °á°ú°ª ¼¼ÆÃ
+        // stackì˜ ì²«ë²ˆì§¸ ë¶€ë¶„ì— leftNodeì˜ ê²°ê³¼ê°’ ì„¸íŒ…
         sAssignStack[0].column = QC_PRIVATE_TMPLATE(aQcStmt)->tmplate.stack[0].column;
         sAssignStack[0].value = QC_PRIVATE_TMPLATE(aQcStmt)->tmplate.stack[0].value;
     }
@@ -3901,15 +3901,15 @@ IDE_RC qsxExecutor::execRaise (
 {
 /***********************************************************************
  *
- * Description : RAISE exception_name; ¹× RAISE; ÀÇ executeÇÔ¼ö
+ * Description : RAISE exception_name; ë° RAISE; ì˜ executeí•¨ìˆ˜
  *
  * Implementation :
- *    (1) RAISE exception_name;Àº ´ÙÀ½ µÎ°¡Áö °æ¿ì·Î ³ª´®
+ *    (1) RAISE exception_name;ì€ ë‹¤ìŒ ë‘ê°€ì§€ ê²½ìš°ë¡œ ë‚˜ëˆ”
  *    (1.1) RAISE use-defined-exception_name;
  *    (1.2) RAISE system-defined-exception_name;
- *    (2) RAISE;Àº ´ÙÀ½ µÎ°¡Áö °æ¿ì·Î ³ª´®
- *    (2.1) user-defined-exceptionÀ» re-raiseÇÏ´Â °æ¿ì
- *    (2.2) system-defined-exceptionÀ» re-raiseÇÏ´Â °æ¿ì
+ *    (2) RAISE;ì€ ë‹¤ìŒ ë‘ê°€ì§€ ê²½ìš°ë¡œ ë‚˜ëˆ”
+ *    (2.1) user-defined-exceptionì„ re-raiseí•˜ëŠ” ê²½ìš°
+ *    (2.2) system-defined-exceptionì„ re-raiseí•˜ëŠ” ê²½ìš°
  *
  ***********************************************************************/
 
@@ -3933,9 +3933,9 @@ IDE_RC qsxExecutor::execRaise (
 
             if ( QSX_RAISE->exception->errorCode == 0 )
             {
-                // user-defined exceptionÀÎ °æ¿ì
-                // ½ÇÁ¦ ¿¡·¯°¡ ¹ß»ıÇÏÁø ¾Ê°í sqlcode, sqlerrm¿¡¸¸
-                // user-defined exceptionÀÌ¶ó°í ¿¡·¯ ¼¼ÆÃ
+                // user-defined exceptionì¸ ê²½ìš°
+                // ì‹¤ì œ ì—ëŸ¬ê°€ ë°œìƒí•˜ì§„ ì•Šê³  sqlcode, sqlerrmì—ë§Œ
+                // user-defined exceptionì´ë¼ê³  ì—ëŸ¬ ì„¸íŒ…
                 IDE_SET( ideSetErrorCode(qpERR_ABORT_QSX_USER_DEFINED_EXCEPTION) );
             }
             else
@@ -3951,18 +3951,18 @@ IDE_RC qsxExecutor::execRaise (
     }
     else
     {
-        // re-raiseÇÏ´Â °æ¿ì.
+        // re-raiseí•˜ëŠ” ê²½ìš°.
         if( QSX_ENV_ERROR_CODE(aQcStmt->spxEnv) ==
             qpERR_ABORT_QSX_USER_DEFINED_EXCEPTION )
         {
-            // User-defined ExceptionÀÎ °æ¿ì flow¿Í flowId¸¸ ¹Ù²Ş.
+            // User-defined Exceptionì¸ ê²½ìš° flowì™€ flowIdë§Œ ë°”ê¿ˆ.
             aExecInfo->mFlow = QSX_FLOW_RAISE;
             aExecInfo->mFlowId = QSX_USER_DEFINED_EXCEPTION_NO;
         }
         else
         {
-            // qcStatementÀÇ qsxEnv¿¡¼­ errorCode, errorMsg¸¦ °¡Á®¿Í¼­
-            // raise¸¦ ÇØ¾ß ÇÔ
+            // qcStatementì˜ qsxEnvì—ì„œ errorCode, errorMsgë¥¼ ê°€ì ¸ì™€ì„œ
+            // raiseë¥¼ í•´ì•¼ í•¨
             IDE_RAISE(RAISE_CURRENT_ERROR);
         }
     }
@@ -4144,9 +4144,9 @@ IDE_RC qsxExecutor::execGoto (
 #define QSX_GOTO ( ( qsProcStmtGoto * ) aProcGoto )
 
     // PROJ-1335, To fix BUG-12475
-    // GOTO´Â QSX_FLOW_GOTO¸¦ ¹ß»ı.
-    // aExecInfo->mFlowId´Â labelID
-    // parent statementÀÇ label°ú °°ÀºÁö °Ë»çÇÏ±â À§ÇÔ
+    // GOTOëŠ” QSX_FLOW_GOTOë¥¼ ë°œìƒ.
+    // aExecInfo->mFlowIdëŠ” labelID
+    // parent statementì˜ labelê³¼ ê°™ì€ì§€ ê²€ì‚¬í•˜ê¸° ìœ„í•¨
 
     aExecInfo->mFlow = QSX_FLOW_GOTO;
     aExecInfo->mFlowId = QSX_GOTO->labelID;
@@ -4180,7 +4180,7 @@ IDE_RC qsxExecutor::execExecImm (
 
     QSX_CURSOR_SET_ROWCOUNT_NULL( aExecInfo->mSqlCursorInfo );
 
-    // stmtÃÊ±âÈ­
+    // stmtì´ˆê¸°í™”
     qcd::initStmt(&sHstmt);
 
     IDE_TEST( QC_QMX_MEM(aQcStmt)->getStatus( &sQmxMemStatus )
@@ -4209,7 +4209,7 @@ IDE_RC qsxExecutor::execExecImm (
               != IDE_SUCCESS );
 
     /* BUG-45678
-     * Select Áß¿¡ non select dmlÀ» ¼öÇàÇÒ ¼ö ¾ø´Ù. */
+     * Select ì¤‘ì— non select dmlì„ ìˆ˜í–‰í•  ìˆ˜ ì—†ë‹¤. */
     IDE_TEST_RAISE( ((aQcStmt->spxEnv->mFlag & QSX_ENV_DURING_SELECT) == QSX_ENV_DURING_SELECT) &&
                     ((sStmtType & QCI_STMT_MASK_DCL) == QCI_STMT_MASK_DCL) ,
                     ERR_PSM_INSIDE_QUERY );
@@ -4231,8 +4231,8 @@ IDE_RC qsxExecutor::execExecImm (
         }
 
         /* BUG-43415
-           execute immediate¿¡¼­ ½ÇÇàÇÏ°íÀÚ ÇÏ´Â query°¡ fetch typeÀÌ ¾Æ´Ñ °æ¿ì¿¡´Â
-           intoÀı ¶Ç´Â bulk collect intoÀıÀÌ ÀÖÀ¸¸é ¿¡·¯¸¦ ¹ß»ı ÇØ ÁØ´Ù. */
+           execute immediateì—ì„œ ì‹¤í–‰í•˜ê³ ì í•˜ëŠ” queryê°€ fetch typeì´ ì•„ë‹Œ ê²½ìš°ì—ëŠ”
+           intoì ˆ ë˜ëŠ” bulk collect intoì ˆì´ ìˆìœ¼ë©´ ì—ëŸ¬ë¥¼ ë°œìƒ í•´ ì¤€ë‹¤. */
         if ( (sStmtType == QCI_STMT_SELECT) || 
              (sStmtType == QCI_STMT_SELECT_FOR_UPDATE) ||
              (sStmtType == QCI_STMT_DEQUEUE) ||
@@ -4351,7 +4351,7 @@ IDE_RC qsxExecutor::execOpenFor (
 /***********************************************************************
  *
  *  Description : PROJ-1386 Dynamic-SQL
- *                ref cursor variable¿¡ ´ëÇØ open
+ *                ref cursor variableì— ëŒ€í•´ open
  *
  *  Implementation :
  *
@@ -4373,11 +4373,11 @@ IDE_RC qsxExecutor::execOpenFor (
 
     if( sOpenFor->refCursorVarNode->node.objectID != QS_EMPTY_OID )
     {
-        // objectIDÀÇ pkgInfo¸¦ °¡Á®¿Â´Ù.
+        // objectIDì˜ pkgInfoë¥¼ ê°€ì ¸ì˜¨ë‹¤.
         IDE_TEST( qsxPkg::getPkgInfo( sOpenFor->refCursorVarNode->node.objectID,
                                       &sPkgInfo )
                   != IDE_SUCCESS );
-        // objectIDÀÇ templateÀ» °¡Á®¿Â´Ù.
+        // objectIDì˜ templateì„ ê°€ì ¸ì˜¨ë‹¤.
         IDE_TEST( qcuSessionPkg::searchPkgInfoFromSession( aQcStmt,
                                                            sPkgInfo,
                                                            QC_PRIVATE_TMPLATE(aQcStmt)->tmplate.stack,
@@ -4442,7 +4442,7 @@ IDE_RC qsxExecutor::execOpenFor (
                   != IDE_SUCCESS );
     }
 
-    // package subprogramÀÏ ¶§¸¸ ¿øº¹ÇÑ´Ù.
+    // package subprogramì¼ ë•Œë§Œ ì›ë³µí•œë‹¤.
     if( sOpenFor->refCursorVarNode->node.objectID != QS_EMPTY_OID ) 
     {
         sStage = 0;
@@ -4450,7 +4450,7 @@ IDE_RC qsxExecutor::execOpenFor (
         sTemplate->stmt = NULL;
 
         /* QC_PRIVATE_TMPLATE(aQcStmt)->
-                 template.stackBuffer/stack/stackCount/stackRemain ¿øº¹ */
+                 template.stackBuffer/stack/stackCount/stackRemain ì›ë³µ */
         QC_CONNECT_TEMPLATE_STACK(
             QC_PRIVATE_TMPLATE(aQcStmt),
             sOriStackBuffer,
@@ -4469,7 +4469,7 @@ IDE_RC qsxExecutor::execOpenFor (
         sTemplate->stmt = NULL;
 
         /* QC_PRIVATE_TMPLATE(aQcStmt)->
-           template.stackBuffer/stack/stackCount/stackRemain ¿øº¹ */
+           template.stackBuffer/stack/stackCount/stackRemain ì›ë³µ */
         QC_CONNECT_TEMPLATE_STACK(
             QC_PRIVATE_TMPLATE(aQcStmt),
             sOriStackBuffer,
@@ -4539,7 +4539,7 @@ idBool qsxExecutor::findLabel( qsProcStmts *  aProcStmt,
 /***********************************************************************
  *
  * Description : PROJ-1335, To fix BUG-12475
- *               statement¿¡ aLabelID¿Í µ¿ÀÏÇÑ labelÀÌ Á¸ÀçÇÏ´ÂÁö °Ë»ç
+ *               statementì— aLabelIDì™€ ë™ì¼í•œ labelì´ ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬
  * Implementation :
  *
  ***********************************************************************/
@@ -4624,7 +4624,7 @@ qsxExecutor::execExtproc( qsxExecutorInfo * aExecInfo,
     // returnInfo
     if( sParseTree->returnTypeVar != NULL )
     {
-        // sParseTree->returnTypeVar->common ¿¡ table/column
+        // sParseTree->returnTypeVar->common ì— table/column
         IDE_TEST( qsxExtProc::fillReturnInfo( aQcStmt->qmxMem,
                                               sParseTree->returnTypeVar->common,
                                               sTmplate,
@@ -4686,7 +4686,7 @@ IDE_RC qsxExecutor::execPkgPlan( qsxExecutorInfo * aExecInfo,
     aQcStmt->spvEnv->mStmtList = NULL;
 
     // BUG-17489
-    // ÃÖ»óÀ§ PSMÈ£ÃâÀÎ °æ¿ì planTreeFlag¸¦ FALSE·Î ¹Ù²Û´Ù.
+    // ìµœìƒìœ„ PSMí˜¸ì¶œì¸ ê²½ìš° planTreeFlagë¥¼ FALSEë¡œ ë°”ê¾¼ë‹¤.
     qcg::lock( aQcStmt );
     if ( aQcStmt->planTreeFlag == ID_TRUE )
     {
@@ -4716,8 +4716,8 @@ IDE_RC qsxExecutor::execPkgPlan( qsxExecutorInfo * aExecInfo,
     sSourceTemplate = QC_PRIVATE_TMPLATE(aQcStmt);
     sStage = 2;
 
-    /* °¢ ¼¼¼Ç¿¡¼­ package¸¦ Ã³À½ ½ÇÇà ½Ã Å¸´Â ÇÔ¼öÀÌ´Ù.
-       µû¶ó¼­, packageÀÇ templateÀº ¹«Á¶°Ç Á¸ÀçÇÑ´Ù. */
+    /* ê° ì„¸ì…˜ì—ì„œ packageë¥¼ ì²˜ìŒ ì‹¤í–‰ ì‹œ íƒ€ëŠ” í•¨ìˆ˜ì´ë‹¤.
+       ë”°ë¼ì„œ, packageì˜ templateì€ ë¬´ì¡°ê±´ ì¡´ì¬í•œë‹¤. */
     QC_PRIVATE_TMPLATE(aQcStmt) = aExecInfo->mPkgTemplate;
 
     // set stack buffer PR2475
@@ -4730,9 +4730,9 @@ IDE_RC qsxExecutor::execPkgPlan( qsxExecutorInfo * aExecInfo,
         aStackRemain,
         aStackRemain );
     QC_PRIVATE_TMPLATE(aQcStmt)->stmt = aQcStmt;
-    // BUG-11192 date format session property Ãß°¡
-    // cloneµÈ templateÀÇ dateFormatÀº ´Ù¸¥ ¼¼¼ÇÀÇ °ªÀÌ¹Ç·Î
-    // »õ·ÎÀÌ assignÇØÁÖ¾î¾ß ÇÑ´Ù.
+    // BUG-11192 date format session property ì¶”ê°€
+    // cloneëœ templateì˜ dateFormatì€ ë‹¤ë¥¸ ì„¸ì…˜ì˜ ê°’ì´ë¯€ë¡œ
+    // ìƒˆë¡œì´ assigní•´ì£¼ì–´ì•¼ í•œë‹¤.
     QC_PRIVATE_TMPLATE(aQcStmt)->tmplate.dateFormat  = sSourceTemplate->tmplate.dateFormat;
     /* PROJ-2208 Multi Currency */
     QC_PRIVATE_TMPLATE(aQcStmt)->tmplate.nlsCurrency = sSourceTemplate->tmplate.nlsCurrency;
@@ -5019,10 +5019,10 @@ IDE_RC qsxExecutor::execPkgBlock( qsxExecutorInfo * aExecInfo,
               != IDE_SUCCESS);
     sStage=1;
 
-    // PROJ-1335 RAISE Áö¿ø
+    // PROJ-1335 RAISE ì§€ì›
     // To fix BUG-12642
-    // exception handlingÀÌ ÀÌ·ç¾îÁö¸é ºí·Ï ½ÃÀÛ ÀÌÀüÀÇ
-    // ¿¡·¯ÄÚµå·Î µ¹¾Æ°¡¾ß ÇÔ
+    // exception handlingì´ ì´ë£¨ì–´ì§€ë©´ ë¸”ë¡ ì‹œì‘ ì´ì „ì˜
+    // ì—ëŸ¬ì½”ë“œë¡œ ëŒì•„ê°€ì•¼ í•¨
     IDE_TEST( QC_QMX_MEM(aQcStmt)->alloc(
             MAX_ERROR_MSG_LEN + 1,
             (void**) & sOriSqlErrorMsg )
@@ -5057,9 +5057,9 @@ IDE_RC qsxExecutor::execPkgBlock( qsxExecutorInfo * aExecInfo,
         // Nothing to do.
     }
 
-    // PROJ-1335 RAISE Áö¿ø
+    // PROJ-1335 RAISE ì§€ì›
     // To fix BUG-12642
-    // re-raiseµÇÁö ¾Ê¾Ò´Ù¸é ÀÌÀü ¿¡·¯ÄÚµå·Î º¹±Í.
+    // re-raiseë˜ì§€ ì•Šì•˜ë‹¤ë©´ ì´ì „ ì—ëŸ¬ì½”ë“œë¡œ ë³µê·€.
     if( aExecInfo->mFlow != QSX_FLOW_RAISE )
     {
         QC_QSX_ENV(aQcStmt)->mSqlCode = sOriSqlCode;
@@ -5114,7 +5114,7 @@ IDE_RC qsxExecutor::bindParam( qcStatement   * aQcStmt,
     mtcColumn    * sMtcColumn;
 
     /* BUG-36907
-     * Ã³À½ ½ÇÇàÇÏ´Â °æ¿ì¿¡¸¸ bindParmaInfoSet ÇÔ¼ö¸¦ È£ÃâÇÑ´Ù. */
+     * ì²˜ìŒ ì‹¤í–‰í•˜ëŠ” ê²½ìš°ì—ë§Œ bindParmaInfoSet í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•œë‹¤. */
     if( aIsFirst == ID_TRUE )
     {
         // param info bind
@@ -5239,7 +5239,7 @@ void qsxExecutor::adjustErrorMsg( qsxExecutorInfo  * aExecInfo,
     qsxEnv::setErrorCode( QC_QSX_ENV(aQcStmt) );
 
     // To fix BUG-13208
-    // system_À¯Àú°¡ ¸¸µç ÇÁ·Î½ÃÁ®´Â ³»ºÎ°ø°³ ¾ÈÇÔ.
+    // system_ìœ ì €ê°€ ë§Œë“  í”„ë¡œì‹œì ¸ëŠ” ë‚´ë¶€ê³µê°œ ì•ˆí•¨.
     if( ( aExecInfo->mDefinerUserID == QC_SYSTEM_USER_ID ) ||
         ( QCU_PSM_SHOW_ERROR_STACK == 2 ) )
     {
@@ -5298,8 +5298,8 @@ IDE_RC qsxExecutor::processIntoClause( qsxExecutorInfo * aExecInfo,
  *
  * Description : 
  *    BUG-37273
- *    select into ±¸¹® ¶Ç´Â execute immediate¿¡¼­ »ç¿ëµÇ´Â into ±¸¹®À»
- *    Ã³¸®ÇÏ±â À§ÇÑ ÇÔ¼ö.
+ *    select into êµ¬ë¬¸ ë˜ëŠ” execute immediateì—ì„œ ì‚¬ìš©ë˜ëŠ” into êµ¬ë¬¸ì„
+ *    ì²˜ë¦¬í•˜ê¸° ìœ„í•œ í•¨ìˆ˜.
  *
  * Implementation :
  *
@@ -5340,8 +5340,8 @@ IDE_RC qsxExecutor::processIntoClause( qsxExecutorInfo * aExecInfo,
              sIntoNode = (qtcNode*)sIntoNode->node.next )
         {
             /* BUG-37273
-               Ã¹¹øÂ° ³ëµå¿¡¼­¸¸ size °è»ê,
-               ±× ´ÙÀ½ºÎÅÍ´Â µ¿ÀÏÇÏ±â ¶§¹®¿¡ size¸¦ °è»êÇÒ ÇÊ¿ä°¡ ¾ø´Ù.*/
+               ì²«ë²ˆì§¸ ë…¸ë“œì—ì„œë§Œ size ê³„ì‚°,
+               ê·¸ ë‹¤ìŒë¶€í„°ëŠ” ë™ì¼í•˜ê¸° ë•Œë¬¸ì— sizeë¥¼ ê³„ì‚°í•  í•„ìš”ê°€ ì—†ë‹¤.*/
             if( sRowCount == 0 )
             {
                 sPos.size = sIntoNode->position.offset + 
@@ -5378,7 +5378,7 @@ IDE_RC qsxExecutor::processIntoClause( qsxExecutorInfo * aExecInfo,
         sBindColumnId = 0;
         sBindColumnDataList = NULL;
 
-        // bindColumnDataList»ı¼º
+        // bindColumnDataListìƒì„±
         if( aIsIntoVarRecordType == ID_TRUE )
         {
             IDE_DASSERT( aIntoVariables->intoNodes != NULL );

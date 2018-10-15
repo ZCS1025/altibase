@@ -24,7 +24,7 @@
 #include <aciConvCp932.h>
 #include <aciConvCp932ext.h>
 
-/* PROJ-2590 [±â´É¼º] CP932 database character set Áö¿ø */
+/* PROJ-2590 [ê¸°ëŠ¥ì„±] CP932 database character set ì§€ì› */
 ACP_EXPORT
 acp_sint32_t aciConvConvertMbToWc4Cp932( void         * aSrc,
                                          acp_sint32_t   aSrcRemain,
@@ -157,7 +157,7 @@ acp_sint32_t aciConvConvertMbToWc4Cp932( void         * aSrc,
     return sRet;
 }
 
-/* PROJ-2590 [±â´É¼º] CP932 database character set Áö¿ø */
+/* PROJ-2590 [ê¸°ëŠ¥ì„±] CP932 database character set ì§€ì› */
 ACP_EXPORT
 acp_sint32_t aciConvConvertWcToMb4Cp932( void         * aSrc,
                                          acp_sint32_t   aSrcRemain,

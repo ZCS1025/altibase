@@ -91,7 +91,7 @@ FILE* iloFileOpen( ALTIBASE_ILOADER_HANDLE  aHandle,
                    SChar                   *aMode,
                    eLockType                aLockType);
 
-// BUG-25421 [CodeSonar] mutex ÀÇ ¿¡·¯Ã³¸®°¡ ¾ø½À´Ï´Ù.
+// BUG-25421 [CodeSonar] mutex ì˜ ì—ëŸ¬ì²˜ë¦¬ê°€ ì—†ìŠµë‹ˆë‹¤.
 void iloMutexLock( ALTIBASE_ILOADER_HANDLE aHandle, PDL_thread_mutex_t *aMutex);
 void iloMutexUnLock( ALTIBASE_ILOADER_HANDLE aHandle, PDL_thread_mutex_t *aMutex);
 

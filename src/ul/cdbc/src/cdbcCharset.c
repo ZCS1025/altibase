@@ -19,11 +19,11 @@
 
 
 /**
- * Å¬¶óÀÌ¾ğÆ® ÄÉ¸¯ÅÍ¼Â Á¤º¸¸¦ ¾ò´Â´Ù.
+ * í´ë¼ì´ì–¸íŠ¸ ì¼€ë¦­í„°ì…‹ ì •ë³´ë¥¼ ì–»ëŠ”ë‹¤.
  *
- * @param[in] aABConn ¿¬°á ÇÚµé
- * @param[in,out] aCharsetInfo ÄÉ¸¯ÅÍ¼Â Á¤º¸¸¦ ´ãÀ» ±¸Á¶Ã¼
- * @return ¼º°øÇÏ¸é ALTIBASE_SUCCESS, ±×·¸Áö ¾ÊÀ¸¸é ALTIBASE_ERROR
+ * @param[in] aABConn ì—°ê²° í•¸ë“¤
+ * @param[in,out] aCharsetInfo ì¼€ë¦­í„°ì…‹ ì •ë³´ë¥¼ ë‹´ì„ êµ¬ì¡°ì²´
+ * @return ì„±ê³µí•˜ë©´ ALTIBASE_SUCCESS, ê·¸ë ‡ì§€ ì•Šìœ¼ë©´ ALTIBASE_ERROR
  */
 CDBC_EXPORT
 ALTIBASE_RC altibase_get_charset_info (ALTIBASE               aABConn,
@@ -42,7 +42,7 @@ ALTIBASE_RC altibase_get_charset_info (ALTIBASE               aABConn,
 
     CDBC_TEST_RAISE(aCharsetInfo == NULL, InvalidNullPtr);
 
-    /* BUGBUG: (CLI) mbmaxlen Á¤º¸¸¦ ¾òÀ» ¼ö ¾ø´Ù */
+    /* BUGBUG: (CLI) mbmaxlen ì •ë³´ë¥¼ ì–»ì„ ìˆ˜ ì—†ë‹¤ */
     CDBC_RAISE(NotSupported);
 
     CDBCLOG_OUT_VAL("%s", "ALTIBASE_SUCCESS");
@@ -75,10 +75,10 @@ ALTIBASE_RC altibase_get_charset_info (ALTIBASE               aABConn,
 }
 
 /**
- * Å¬¶óÀÌ¾ğÆ® Ä³¸¯ÅÍ¼Â ÀÌ¸§À» ¾ò´Â´Ù.
+ * í´ë¼ì´ì–¸íŠ¸ ìºë¦­í„°ì…‹ ì´ë¦„ì„ ì–»ëŠ”ë‹¤.
  *
- * @param[in] aABConn ¿¬°á ÇÚµé
- * @return Å¬¶óÀÌ¾ğÆ® Ä³¸¯ÅÍ¼Â ÀÌ¸§. ¿¡·¯°¡ ¹ß»ıÇÏ¸é NULL
+ * @param[in] aABConn ì—°ê²° í•¸ë“¤
+ * @return í´ë¼ì´ì–¸íŠ¸ ìºë¦­í„°ì…‹ ì´ë¦„. ì—ëŸ¬ê°€ ë°œìƒí•˜ë©´ NULL
  */
 CDBC_EXPORT
 const acp_char_t * altibase_get_charset (ALTIBASE aABConn)
@@ -123,11 +123,11 @@ const acp_char_t * altibase_get_charset (ALTIBASE aABConn)
 }
 
 /**
- * Å¬¶óÀÌ¾ğÆ® Ä³¸¯ÅÍ¼ÂÀ» ÀÌ¸§À¸·Î ¼³Á¤ÇÑ´Ù.
+ * í´ë¼ì´ì–¸íŠ¸ ìºë¦­í„°ì…‹ì„ ì´ë¦„ìœ¼ë¡œ ì„¤ì •í•œë‹¤.
  *
- * @param[in] aABConn ¿¬°á ÇÚµé
- * @param[in] aCharsetName ÄÉ¸¯ÅÍ¼Â ÀÌ¸§
- * @return ¼º°øÇÏ¸é ALTIBASE_SUCCESS, ±×·¸Áö ¾ÊÀ¸¸é ALTIBASE_ERROR
+ * @param[in] aABConn ì—°ê²° í•¸ë“¤
+ * @param[in] aCharsetName ì¼€ë¦­í„°ì…‹ ì´ë¦„
+ * @return ì„±ê³µí•˜ë©´ ALTIBASE_SUCCESS, ê·¸ë ‡ì§€ ì•Šìœ¼ë©´ ALTIBASE_ERROR
  */
 CDBC_EXPORT
 ALTIBASE_RC altibase_set_charset (ALTIBASE aABConn, const acp_char_t *aCharsetName)

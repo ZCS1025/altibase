@@ -25,10 +25,10 @@ import Altibase.jdbc.driver.ex.Error;
 import Altibase.jdbc.driver.ex.ErrorDef;
 
 /**
- * Altibase¿ë <tt>Properties</tt> Å¬·¡½º.
+ * Altibaseìš© <tt>Properties</tt> í´ë˜ìŠ¤.
  * <p>
- * ´ë¼Ò¹®ÀÚ¸¦ ±¸º°ÇÏÁö ¾Ê´Â ¹®ÀÚ¿­À» Å°°ªÀ¸·Î ¾²¸ç,
- * ÆíÀÇ¸¦ À§ÇØ ¼Ó¼º °ªÀ» <tt>int</tt>³ª <tt>boolean</tt>°ú °°Àº °ªÀ¸·Î ¾ò°Å³ª ¼³Á¤ÇÏ´Â ¸Ş¼Òµå¸¦ Á¦°øÇÑ´Ù.
+ * ëŒ€ì†Œë¬¸ìë¥¼ êµ¬ë³„í•˜ì§€ ì•ŠëŠ” ë¬¸ìì—´ì„ í‚¤ê°’ìœ¼ë¡œ ì“°ë©°,
+ * í¸ì˜ë¥¼ ìœ„í•´ ì†ì„± ê°’ì„ <tt>int</tt>ë‚˜ <tt>boolean</tt>ê³¼ ê°™ì€ ê°’ìœ¼ë¡œ ì–»ê±°ë‚˜ ì„¤ì •í•˜ëŠ” ë©”ì†Œë“œë¥¼ ì œê³µí•œë‹¤.
  */
 public class AltibaseProperties extends CaseInsensitiveProperties
 {
@@ -47,30 +47,30 @@ public class AltibaseProperties extends CaseInsensitiveProperties
     public static final String  PROP_CONNECT_MODE                    = "privilege";
     public static final String  PROP_DESCRIPTION                     = "description";
     public static final String  PROP_DATASOURCE_NAME                 = "datasource";
-    /** connect¸¦ ½ÃµµÇÒ ¶§ÀÇ timeout(ÃÊ ´ÜÀ§)(Client side) */
+    /** connectë¥¼ ì‹œë„í•  ë•Œì˜ timeout(ì´ˆ ë‹¨ìœ„)(Client side) */
     public static final String  PROP_LOGIN_TIMEOUT                   = "login_timeout";
-    /** connectÈÄ ¼­¹ö·ÎºÎÅÍÀÇ ¸ğµç ÀÀ´ä receive ´ë±â ½Ã°£(ÃÊ ´ÜÀ§)(Client side) */
+    /** connectí›„ ì„œë²„ë¡œë¶€í„°ì˜ ëª¨ë“  ì‘ë‹µ receive ëŒ€ê¸° ì‹œê°„(ì´ˆ ë‹¨ìœ„)(Client side) */
     public static final String  PROP_RESPONSE_TIMEOUT                = "response_timeout";
-    /** Äõ¸® ¼öÇà Á¦ÇÑ ½Ã°£(ÃÊ ´ÜÀ§)(Server side). ¾ËÆ¼º£ÀÌ½º ÇÁ·ÎÆÛÆ¼ QUERY_TIMEOUT Âü°í. */
+    /** ì¿¼ë¦¬ ìˆ˜í–‰ ì œí•œ ì‹œê°„(ì´ˆ ë‹¨ìœ„)(Server side). ì•Œí‹°ë² ì´ìŠ¤ í”„ë¡œí¼í‹° QUERY_TIMEOUT ì°¸ê³ . */
     public static final String  PROP_QUERY_TIMEOUT                   = "query_timeout";
-    /** ¼¼¼Ç À¯ÈŞ Á¦ÇÑ ½Ã°£(ÃÊ ´ÜÀ§)(Server side). ¾ËÆ¼º£ÀÌ½º ÇÁ·ÎÆÛÆ¼ IDLE_TIMEOUT Âü°í. */
+    /** ì„¸ì…˜ ìœ íœ´ ì œí•œ ì‹œê°„(ì´ˆ ë‹¨ìœ„)(Server side). ì•Œí‹°ë² ì´ìŠ¤ í”„ë¡œí¼í‹° IDLE_TIMEOUT ì°¸ê³ . */
     public static final String  PROP_IDLE_TIMEOUT                    = "idle_timeout";
-    /** FETCH ¼öÇà Á¦ÇÑ ½Ã°£(ÃÊ ´ÜÀ§)(Server side). ¾ËÆ¼º£ÀÌ½º ÇÁ·ÎÆÛÆ¼ FETCH_TIMEOUT Âü°í. */
+    /** FETCH ìˆ˜í–‰ ì œí•œ ì‹œê°„(ì´ˆ ë‹¨ìœ„)(Server side). ì•Œí‹°ë² ì´ìŠ¤ í”„ë¡œí¼í‹° FETCH_TIMEOUT ì°¸ê³ . */
     public static final String  PROP_FETCH_TIMEOUT                   = "fetch_timeout";
-    /** º¯°æ ¿¬»ê(UPDATE, INSERT, DELETE) ¼öÇà Á¦ÇÑ ½Ã°£(ÃÊ ´ÜÀ§)(Server side). ¾ËÆ¼º£ÀÌ½º ÇÁ·ÎÆÛÆ¼ UTRANS_TIMEOUT Âü°í. */
+    /** ë³€ê²½ ì—°ì‚°(UPDATE, INSERT, DELETE) ìˆ˜í–‰ ì œí•œ ì‹œê°„(ì´ˆ ë‹¨ìœ„)(Server side). ì•Œí‹°ë² ì´ìŠ¤ í”„ë¡œí¼í‹° UTRANS_TIMEOUT ì°¸ê³ . */
     public static final String  PROP_UTRANS_TIMEOUT                  = "utrans_timeout";
-    /** DDL ¼öÇà Á¦ÇÑ ½Ã°£(ÃÊ ´ÜÀ§)(Server side). ¾ËÆ¼º£ÀÌ½º ÇÁ·ÎÆÛÆ¼ DDL_TIMEOUT Âü°í. */
+    /** DDL ìˆ˜í–‰ ì œí•œ ì‹œê°„(ì´ˆ ë‹¨ìœ„)(Server side). ì•Œí‹°ë² ì´ìŠ¤ í”„ë¡œí¼í‹° DDL_TIMEOUT ì°¸ê³ . */
     public static final String  PROP_DDL_TIMEOUT                     = "ddl_timeout";
     public static final String  PROP_AUTO_COMMIT                     = "auto_commit";
     public static final String  PROP_DATE_FORMAT                     = "date_format";
     private static final int    MAX_DATE_FORMAT_LENGTH               = 64; /* = MMC_DATEFORMAT_MAX_LEN = MTC_TO_CHAR_MAX_PRECISION */
     public static final String  PROP_NCHAR_LITERAL_REPLACE           = "ncharliteralreplace";
-    /** ÇÑ session´ç »ı¼ºÇÒ¼ö ÀÖ´Â ÃÖ´ë statement °¹¼ö Á¦¾à */
+    /** í•œ sessionë‹¹ ìƒì„±í• ìˆ˜ ìˆëŠ” ìµœëŒ€ statement ê°¯ìˆ˜ ì œì•½ */
     public static final String  PROP_MAX_STATEMENTS_PER_SESSION      = "max_statements_per_session";
     public static final String  PROP_APP_INFO                        = "app_info";
     private static final int    MAX_APP_INFO_LENGTH                  = 128; /* = MMC_APPINFO_MAX_LEN */
     public static final String  PROP_TXI_LEVEL                       = "isolation_level";
-    /** Failover¸¦ À§ÇÑ ´ë¾È ¼­¹ö ¸ñ·Ï */
+    /** Failoverë¥¼ ìœ„í•œ ëŒ€ì•ˆ ì„œë²„ ëª©ë¡ */
     public static final String  PROP_ALT_SERVERS                     = "alternateservers";
     public static final String  PROP_CTF_RETRY_COUNT                 = "connectionretrycount";
     public static final String  PROP_CTF_RETRY_DELAY                 = "connectionretrydelay";
@@ -80,7 +80,7 @@ public class AltibaseProperties extends CaseInsensitiveProperties
     // IPV6
     public static final String  PROP_PREFER_IPV6                     = "prefer_ipv6";
     public static final boolean DEFAULT_PREFER_IPV6                  = false;
-    /** Client Side Auto Commit ¿©ºÎ */
+    /** Client Side Auto Commit ì—¬ë¶€ */
     public static final String  PROP_CLIENT_SIDE_AUTO_COMMIT         = "clientside_auto_commit";
     public static final boolean DEFAULT_CLIENT_SIDE_AUTO_COMMIT      = false;
     // TimeZone
@@ -94,17 +94,17 @@ public class AltibaseProperties extends CaseInsensitiveProperties
     public static final String  PROP_REMOVE_REDUNDANT_TRANSMISSION   = "remove_redundant_transmission";
     public static final int     DEFAULT_REMOVE_REDUNDANT_TRANSMISSION = 0;
     
-    /** deferred prepare »ç¿ë ¿©ºÎ */
+    /** deferred prepare ì‚¬ìš© ì—¬ë¶€ */
     public static final String  PROP_DEFERRED_PREPARE                = "defer_prepares";
     public static final boolean DEFAULT_DEFERRED_PREPARE             = false;
     
-    /** PROJ-2474 ssl º¸¾È Åë½ÅÀ» »ç¿ëÇÒÁö ¿©ºÎ */
+    /** PROJ-2474 ssl ë³´ì•ˆ í†µì‹ ì„ ì‚¬ìš©í• ì§€ ì—¬ë¶€ */
     public static final String  PROP_SSL_ENABLE                      = "ssl_enable";
     public static final boolean DEFAULT_SSL_ENABLE                   = false;
     
-    /** Statement¸¦ ¸¸µé ¶§ ±âº»À¸·Î »ç¿ëÇÒ Fetch Size */
+    /** Statementë¥¼ ë§Œë“¤ ë•Œ ê¸°ë³¸ìœ¼ë¡œ ì‚¬ìš©í•  Fetch Size */
     public static final String  PROP_FETCH_ENOUGH                    = "fetch_enough";
-    /** µüÈ÷ °¹¼ö¸¦ Á¤ÇØµÎÁö ¾Ê°í, ÇÑ¹ø Åë½ÅÀ¸·Î ¾òÀ» ¼ö ÀÖÀ» ¸¸Å­ ¾ò´Â´Ù. */
+    /** ë”±íˆ ê°¯ìˆ˜ë¥¼ ì •í•´ë‘ì§€ ì•Šê³ , í•œë²ˆ í†µì‹ ìœ¼ë¡œ ì–»ì„ ìˆ˜ ìˆì„ ë§Œí¼ ì–»ëŠ”ë‹¤. */
     public static final int     DEFAULT_FETCH_ENOUGH                 = 0;
 
     /* BUG-37642 Improve performance to fetch */
@@ -135,7 +135,7 @@ public class AltibaseProperties extends CaseInsensitiveProperties
 
     public static final String  DEFAULT_SERVER                       = "localhost";
     public static final int     DEFAULT_PORT                         = 20300;
-    // PROJ-2474 SSL Åë½ÅÀ» À§ÇÑ ±âº»Æ÷Æ® ¼±¾ğ (±âº»°ª:20443)
+    // PROJ-2474 SSL í†µì‹ ì„ ìœ„í•œ ê¸°ë³¸í¬íŠ¸ ì„ ì–¸ (ê¸°ë³¸ê°’:20443)
     public static final int     DEFAULT_SSL_PORT                     = 20443;
     public static final String  DEFAULT_DBNAME                       = "mydb";
     public static final int     DEFAULT_LOGIN_TIMEOUT                = 0;
@@ -257,10 +257,10 @@ public class AltibaseProperties extends CaseInsensitiveProperties
     }
 
     /**
-     * ¼Ó¼º °ªÀ» <tt>int</tt>·Î ¾ò´Â´Ù.
+     * ì†ì„± ê°’ì„ <tt>int</tt>ë¡œ ì–»ëŠ”ë‹¤.
      * 
-     * @param aKey Å°°ª
-     * @return <tt>int</tt>·Î º¯È¯ÇÑ ¼Ó¼º°ª, ¼Ó¼º°ªÀÌ ÁöÁ¤µÇ¾îÀÖÁö ¾Ê°Å³ª ¿Ã¹Ù¸£Áö ¾ÊÀº Æ÷¸ËÀÌ¸é 0
+     * @param aKey í‚¤ê°’
+     * @return <tt>int</tt>ë¡œ ë³€í™˜í•œ ì†ì„±ê°’, ì†ì„±ê°’ì´ ì§€ì •ë˜ì–´ìˆì§€ ì•Šê±°ë‚˜ ì˜¬ë°”ë¥´ì§€ ì•Šì€ í¬ë§·ì´ë©´ 0
      */
     public int getIntProperty(String aKey)
     {
@@ -268,11 +268,11 @@ public class AltibaseProperties extends CaseInsensitiveProperties
     }
 
     /**
-     * ¼Ó¼º °ªÀ» <tt>int</tt>·Î ¾ò´Â´Ù.
+     * ì†ì„± ê°’ì„ <tt>int</tt>ë¡œ ì–»ëŠ”ë‹¤.
      *
-     * @param aKey Å°°ª
-     * @param aDefaultValue ±âº»°ª
-     * @return <tt>int</tt>·Î º¯È¯ÇÑ ¼Ó¼º°ª, ¼Ó¼º°ªÀÌ ÁöÁ¤µÇ¾îÀÖÁö ¾Ê°Å³ª ¿Ã¹Ù¸£Áö ¾ÊÀº Æ÷¸ËÀÌ¸é ±âº»°ª
+     * @param aKey í‚¤ê°’
+     * @param aDefaultValue ê¸°ë³¸ê°’
+     * @return <tt>int</tt>ë¡œ ë³€í™˜í•œ ì†ì„±ê°’, ì†ì„±ê°’ì´ ì§€ì •ë˜ì–´ìˆì§€ ì•Šê±°ë‚˜ ì˜¬ë°”ë¥´ì§€ ì•Šì€ í¬ë§·ì´ë©´ ê¸°ë³¸ê°’
      */
     public int getIntProperty(String aKey, int aDefaultValue)
     {
@@ -293,10 +293,10 @@ public class AltibaseProperties extends CaseInsensitiveProperties
     }
 
     /**
-     * ¼Ó¼º °ªÀ» <tt>short</tt>À¸·Î ¾ò´Â´Ù.
+     * ì†ì„± ê°’ì„ <tt>short</tt>ìœ¼ë¡œ ì–»ëŠ”ë‹¤.
      * 
-     * @param aKey Å°°ª
-     * @return <tt>short</tt>À¸·Î º¯È¯ÇÑ ¼Ó¼º°ª, ¼Ó¼º°ªÀÌ ÁöÁ¤µÇ¾îÀÖÁö ¾Ê°Å³ª ¿Ã¹Ù¸£Áö ¾ÊÀº Æ÷¸ËÀÌ¸é 0
+     * @param aKey í‚¤ê°’
+     * @return <tt>short</tt>ìœ¼ë¡œ ë³€í™˜í•œ ì†ì„±ê°’, ì†ì„±ê°’ì´ ì§€ì •ë˜ì–´ìˆì§€ ì•Šê±°ë‚˜ ì˜¬ë°”ë¥´ì§€ ì•Šì€ í¬ë§·ì´ë©´ 0
      */
     public short getShortProperty(String aKey)
     {
@@ -304,11 +304,11 @@ public class AltibaseProperties extends CaseInsensitiveProperties
     }
 
     /**
-     * ¼Ó¼º °ªÀ» <tt>short</tt>À¸·Î ¾ò´Â´Ù.
+     * ì†ì„± ê°’ì„ <tt>short</tt>ìœ¼ë¡œ ì–»ëŠ”ë‹¤.
      *
-     * @param aKey Å°°ª
-     * @param aDefaultValue ±âº»°ª
-     * @return <tt>short</tt>À¸·Î º¯È¯ÇÑ ¼Ó¼º°ª, ¼Ó¼º°ªÀÌ ÁöÁ¤µÇ¾îÀÖÁö ¾Ê°Å³ª ¿Ã¹Ù¸£Áö ¾ÊÀº Æ÷¸ËÀÌ¸é ±âº»°ª
+     * @param aKey í‚¤ê°’
+     * @param aDefaultValue ê¸°ë³¸ê°’
+     * @return <tt>short</tt>ìœ¼ë¡œ ë³€í™˜í•œ ì†ì„±ê°’, ì†ì„±ê°’ì´ ì§€ì •ë˜ì–´ìˆì§€ ì•Šê±°ë‚˜ ì˜¬ë°”ë¥´ì§€ ì•Šì€ í¬ë§·ì´ë©´ ê¸°ë³¸ê°’
      */
     public short getShortProperty(String aKey, short aDefaultValue)
     {
@@ -329,10 +329,10 @@ public class AltibaseProperties extends CaseInsensitiveProperties
     }
 
     /**
-     * ¼Ó¼º °ªÀ» <tt>long</tt>·Î ¾ò´Â´Ù.
+     * ì†ì„± ê°’ì„ <tt>long</tt>ë¡œ ì–»ëŠ”ë‹¤.
      * 
-     * @param aKey Å°°ª
-     * @return <tt>long</tt>·Î º¯È¯ÇÑ ¼Ó¼º°ª, ¼Ó¼º°ªÀÌ ÁöÁ¤µÇ¾îÀÖÁö ¾Ê°Å³ª ¿Ã¹Ù¸£Áö ¾ÊÀº Æ÷¸ËÀÌ¸é 0
+     * @param aKey í‚¤ê°’
+     * @return <tt>long</tt>ë¡œ ë³€í™˜í•œ ì†ì„±ê°’, ì†ì„±ê°’ì´ ì§€ì •ë˜ì–´ìˆì§€ ì•Šê±°ë‚˜ ì˜¬ë°”ë¥´ì§€ ì•Šì€ í¬ë§·ì´ë©´ 0
      */
     public long getLongProperty(String aKey)
     {
@@ -340,11 +340,11 @@ public class AltibaseProperties extends CaseInsensitiveProperties
     }
 
     /**
-     * ¼Ó¼º °ªÀ» <tt>long</tt>À¸·Î ¾ò´Â´Ù.
+     * ì†ì„± ê°’ì„ <tt>long</tt>ìœ¼ë¡œ ì–»ëŠ”ë‹¤.
      *
-     * @param aKey Å°°ª
-     * @param aDefaultValue ±âº»°ª
-     * @return <tt>long</tt>À¸·Î º¯È¯ÇÑ ¼Ó¼º°ª, ¼Ó¼º°ªÀÌ ÁöÁ¤µÇ¾îÀÖÁö ¾Ê°Å³ª ¿Ã¹Ù¸£Áö ¾ÊÀº Æ÷¸ËÀÌ¸é ±âº»°ª
+     * @param aKey í‚¤ê°’
+     * @param aDefaultValue ê¸°ë³¸ê°’
+     * @return <tt>long</tt>ìœ¼ë¡œ ë³€í™˜í•œ ì†ì„±ê°’, ì†ì„±ê°’ì´ ì§€ì •ë˜ì–´ìˆì§€ ì•Šê±°ë‚˜ ì˜¬ë°”ë¥´ì§€ ì•Šì€ í¬ë§·ì´ë©´ ê¸°ë³¸ê°’
      */
     public long getLongProperty(String aKey, long aDefaultValue)
     {
@@ -365,10 +365,10 @@ public class AltibaseProperties extends CaseInsensitiveProperties
     }
 
     /**
-     * ¼Ó¼º °ªÀ» <tt>booelan</tt>À¸·Î ¾ò´Â´Ù.
+     * ì†ì„± ê°’ì„ <tt>booelan</tt>ìœ¼ë¡œ ì–»ëŠ”ë‹¤.
      * 
-     * @param aKey Å°°ª
-     * @return <tt>booelan</tt>·Î º¯È¯ÇÑ ¼Ó¼º°ª, ¼Ó¼º°ªÀÌ ÁöÁ¤µÇ¾îÀÖÁö ¾Ê°Å³ª ¼Ó¼º°ªÀ» <tt>true</tt>¶ó°í ÃßÁ¤ÇÒ ¼ö ¾ø´Ù¸é <tt>false</tt>
+     * @param aKey í‚¤ê°’
+     * @return <tt>booelan</tt>ë¡œ ë³€í™˜í•œ ì†ì„±ê°’, ì†ì„±ê°’ì´ ì§€ì •ë˜ì–´ìˆì§€ ì•Šê±°ë‚˜ ì†ì„±ê°’ì„ <tt>true</tt>ë¼ê³  ì¶”ì •í•  ìˆ˜ ì—†ë‹¤ë©´ <tt>false</tt>
      */
     public boolean getBooleanProperty(String aKey)
     {
@@ -376,12 +376,12 @@ public class AltibaseProperties extends CaseInsensitiveProperties
     }
 
     /**
-     * ¼Ó¼º °ªÀ» <tt>booelan</tt>À¸·Î ¾ò´Â´Ù.
+     * ì†ì„± ê°’ì„ <tt>booelan</tt>ìœ¼ë¡œ ì–»ëŠ”ë‹¤.
      *
-     * @param aKey Å°°ª
-     * @param aDefaultValue ±âº»°ª
-     * @return <tt>true</tt>¶ó°í ÃßÁ¤ÇÒ ¼ö ÀÖ´Â °ª(1, TRUE, T, ON, O, YES, Y)ÀÌ¸é <tt>true</tt>, ¾Æ´Ï¸é <tt>false</tt>.
-     *          ¼Ó¼º°ªÀÌ ÁöÁ¤µÇ¾îÀÖÁö ¾Ê´Ù¸é ±âº»°ª
+     * @param aKey í‚¤ê°’
+     * @param aDefaultValue ê¸°ë³¸ê°’
+     * @return <tt>true</tt>ë¼ê³  ì¶”ì •í•  ìˆ˜ ìˆëŠ” ê°’(1, TRUE, T, ON, O, YES, Y)ì´ë©´ <tt>true</tt>, ì•„ë‹ˆë©´ <tt>false</tt>.
+     *          ì†ì„±ê°’ì´ ì§€ì •ë˜ì–´ìˆì§€ ì•Šë‹¤ë©´ ê¸°ë³¸ê°’
      */
     public boolean getBooleanProperty(String aKey, boolean aDefaultValue)
     {
@@ -409,11 +409,11 @@ public class AltibaseProperties extends CaseInsensitiveProperties
     }
 
     /**
-     * <tt>boolean</tt>À¸·Î ¼Ó¼º°ªÀ» ¼³Á¤ÇÑ´Ù.
+     * <tt>boolean</tt>ìœ¼ë¡œ ì†ì„±ê°’ì„ ì„¤ì •í•œë‹¤.
      * 
-     * @param aKey ¼Ó¼º ±¸º°À» À§ÇÑ Å°°ª
-     * @param aValue Å°°ª¿¡ ¼³Á¤ÇÒ °ª
-     * @return ÀÌÀü¿¡ ¼³Á¤µÇÀÖ´ø °ª. ¸¸¾à Àü¿¡ ¼³Á¤µÇ¾îÀÖ´ø °ªÀÌ ¾ø¾ú´Ù¸é null.
+     * @param aKey ì†ì„± êµ¬ë³„ì„ ìœ„í•œ í‚¤ê°’
+     * @param aValue í‚¤ê°’ì— ì„¤ì •í•  ê°’
+     * @return ì´ì „ì— ì„¤ì •ë˜ìˆë˜ ê°’. ë§Œì•½ ì „ì— ì„¤ì •ë˜ì–´ìˆë˜ ê°’ì´ ì—†ì—ˆë‹¤ë©´ null.
      */
     public Object setProperty(String aKey, boolean aValue)
     {
@@ -421,11 +421,11 @@ public class AltibaseProperties extends CaseInsensitiveProperties
     }
 
     /**
-     * <tt>int</tt>À¸·Î ¼Ó¼º°ªÀ» ¼³Á¤ÇÑ´Ù.
+     * <tt>int</tt>ìœ¼ë¡œ ì†ì„±ê°’ì„ ì„¤ì •í•œë‹¤.
      * 
-     * @param aKey ¼Ó¼º ±¸º°À» À§ÇÑ Å°°ª
-     * @param aValue Å°°ª¿¡ ¼³Á¤ÇÒ °ª
-     * @return ÀÌÀü¿¡ ¼³Á¤µÇÀÖ´ø °ª. ¸¸¾à Àü¿¡ ¼³Á¤µÇ¾îÀÖ´ø °ªÀÌ ¾ø¾ú´Ù¸é null.
+     * @param aKey ì†ì„± êµ¬ë³„ì„ ìœ„í•œ í‚¤ê°’
+     * @param aValue í‚¤ê°’ì— ì„¤ì •í•  ê°’
+     * @return ì´ì „ì— ì„¤ì •ë˜ìˆë˜ ê°’. ë§Œì•½ ì „ì— ì„¤ì •ë˜ì–´ìˆë˜ ê°’ì´ ì—†ì—ˆë‹¤ë©´ null.
      */
     public Object setProperty(String aKey, int aValue)
     {
@@ -433,18 +433,18 @@ public class AltibaseProperties extends CaseInsensitiveProperties
     }
 
     /**
-     * <tt>short</tt>À¸·Î ¼Ó¼º°ªÀ» ¼³Á¤ÇÑ´Ù.
+     * <tt>short</tt>ìœ¼ë¡œ ì†ì„±ê°’ì„ ì„¤ì •í•œë‹¤.
      * 
-     * @param aKey ¼Ó¼º ±¸º°À» À§ÇÑ Å°°ª
-     * @param aValue Å°°ª¿¡ ¼³Á¤ÇÒ °ª
-     * @return ÀÌÀü¿¡ ¼³Á¤µÇÀÖ´ø °ª. ¸¸¾à Àü¿¡ ¼³Á¤µÇ¾îÀÖ´ø °ªÀÌ ¾ø¾ú´Ù¸é null.
+     * @param aKey ì†ì„± êµ¬ë³„ì„ ìœ„í•œ í‚¤ê°’
+     * @param aValue í‚¤ê°’ì— ì„¤ì •í•  ê°’
+     * @return ì´ì „ì— ì„¤ì •ë˜ìˆë˜ ê°’. ë§Œì•½ ì „ì— ì„¤ì •ë˜ì–´ìˆë˜ ê°’ì´ ì—†ì—ˆë‹¤ë©´ null.
      */
     public Object setProperty(String aKey, short aValue)
     {
         return setProperty(aKey, Short.toString(aValue));
     }
 
-    // #region ÆíÀÇ¸¦ À§ÇÑ ·¦ÆÛ
+    // #region í¸ì˜ë¥¼ ìœ„í•œ ë©í¼
 
     public String getServer()
     {
@@ -738,8 +738,8 @@ public class AltibaseProperties extends CaseInsensitiveProperties
     }
 
     /**
-     * ClientAutoCommitÀÌ ¼ÂÆÃµÇ¾î ÀÖ´ÂÁö È®ÀÎÇÑ´Ù.
-     * @return true clientside_auto_commitÀÌ È°¼ºÈ­µÇ¾î ÀÖ´Ù. <br/> false clientside_auto_commit ÀÌ falseÀÌ°Å³ª ¼ÂÆÃµÇÁö ¾Ê¾ÒÀ»¶§
+     * ClientAutoCommitì´ ì…‹íŒ…ë˜ì–´ ìˆëŠ”ì§€ í™•ì¸í•œë‹¤.
+     * @return true clientside_auto_commitì´ í™œì„±í™”ë˜ì–´ ìˆë‹¤. <br/> false clientside_auto_commit ì´ falseì´ê±°ë‚˜ ì…‹íŒ…ë˜ì§€ ì•Šì•˜ì„ë•Œ
      */
     public boolean isClientSideAutoCommit()
     {
@@ -747,7 +747,7 @@ public class AltibaseProperties extends CaseInsensitiveProperties
     }
     
     /**
-     * Deferred Prepare°¡ È°¼ºÈ­ µÇ¾î ÀÖ´ÂÁö È®ÀÎÇÑ´Ù.
+     * Deferred Prepareê°€ í™œì„±í™” ë˜ì–´ ìˆëŠ”ì§€ í™•ì¸í•œë‹¤.
      * @return
      */
     public boolean isDeferredPrepare()
@@ -756,7 +756,7 @@ public class AltibaseProperties extends CaseInsensitiveProperties
     }
     
     /**
-     * PROJ-2474 ssl_enable ÇÁ·ÎÆÛÆ¼°¡ È°¼ºÈ­ µÇ¾î ÀÖ´ÂÁö Ã¼Å©ÇÑ´Ù.
+     * PROJ-2474 ssl_enable í”„ë¡œí¼í‹°ê°€ í™œì„±í™” ë˜ì–´ ìˆëŠ”ì§€ ì²´í¬í•œë‹¤.
      * @return
      */
     public boolean isSslEnabled()
@@ -780,7 +780,7 @@ public class AltibaseProperties extends CaseInsensitiveProperties
     }
 
     /**
-     * Property ·Î ¼³Á¤µÈ ºñµ¿±â fetch ¹æ½ÄÀ» ¾ò´Â´Ù.
+     * Property ë¡œ ì„¤ì •ëœ ë¹„ë™ê¸° fetch ë°©ì‹ì„ ì–»ëŠ”ë‹¤.
      * 
      * @return <code>0</code>, if synchronous prefetch.
      *         <code>1</code>, if semi-async prefetch.
@@ -791,7 +791,7 @@ public class AltibaseProperties extends CaseInsensitiveProperties
     }
 
     /**
-     * Property ·Î ¼³Á¤µÈ auto-tuning È°¼ºÈ­ ¿©ºÎ¸¦ È®ÀÎÇÑ´Ù.
+     * Property ë¡œ ì„¤ì •ëœ auto-tuning í™œì„±í™” ì—¬ë¶€ë¥¼ í™•ì¸í•œë‹¤.
      * 
      * @return <code>true</code>, if auto-tuning is enable.
      *         <code>false</code>, otherwise.
@@ -802,7 +802,7 @@ public class AltibaseProperties extends CaseInsensitiveProperties
     }
 
     /**
-     * Property ¿¡ fetch auto-tuning ¿©ºÎ¸¦ ¼³Á¤ÇÑ´Ù.
+     * Property ì— fetch auto-tuning ì—¬ë¶€ë¥¼ ì„¤ì •í•œë‹¤.
      */
     public void setFetchAutoTuning(boolean aIsFetchAutoTuning)
     {
@@ -810,7 +810,7 @@ public class AltibaseProperties extends CaseInsensitiveProperties
     }
 
     /**
-     * Property ·Î ¼³Á¤µÈ auto-tuning ½ÃÀÛ½Ã ÃÊ±â prefetch rows ¸¦ ¾ò´Â´Ù.
+     * Property ë¡œ ì„¤ì •ëœ auto-tuning ì‹œì‘ì‹œ ì´ˆê¸° prefetch rows ë¥¼ ì–»ëŠ”ë‹¤.
      */
     public int getFetchAutoTuningInit()
     {
@@ -818,7 +818,7 @@ public class AltibaseProperties extends CaseInsensitiveProperties
     }
 
     /**
-     * Property ·Î ¼³Á¤µÈ auto-tuning µ¿ÀÛ½Ã ÃÖ¼Ò Á¦ÇÑ Å©±âÀÇ prefetch rows ¸¦ ¾ò´Â´Ù.
+     * Property ë¡œ ì„¤ì •ëœ auto-tuning ë™ì‘ì‹œ ìµœì†Œ ì œí•œ í¬ê¸°ì˜ prefetch rows ë¥¼ ì–»ëŠ”ë‹¤.
      */
     public int getFetchAutoTuningMin()
     {
@@ -826,7 +826,7 @@ public class AltibaseProperties extends CaseInsensitiveProperties
     }
 
     /**
-     * Property ·Î ¼³Á¤µÈ auto-tuning µ¿ÀÛ½Ã ÃÖ´ë Á¦ÇÑ Å©±âÀÇ prefetch rows ¸¦ ¾ò´Â´Ù.
+     * Property ë¡œ ì„¤ì •ëœ auto-tuning ë™ì‘ì‹œ ìµœëŒ€ ì œí•œ í¬ê¸°ì˜ prefetch rows ë¥¼ ì–»ëŠ”ë‹¤.
      */
     public int getFetchAutoTuningMax()
     {
@@ -834,7 +834,7 @@ public class AltibaseProperties extends CaseInsensitiveProperties
     }
 
     /**
-     * Property ·Î ¼³Á¤ÇÑ socket receive buffer Å©±âÀÇ CM block ºñÀ²À» ¾ò´Â´Ù.
+     * Property ë¡œ ì„¤ì •í•œ socket receive buffer í¬ê¸°ì˜ CM block ë¹„ìœ¨ì„ ì–»ëŠ”ë‹¤.
      */
     public int getSockRcvBufBlockRatio()
     {
@@ -842,7 +842,7 @@ public class AltibaseProperties extends CaseInsensitiveProperties
     }
 
     /**
-     * Property ¿¡ socket receive buffer Å©±âÀÇ CM block ºñÀ²À» ¼³Á¤ÇÑ´Ù.
+     * Property ì— socket receive buffer í¬ê¸°ì˜ CM block ë¹„ìœ¨ì„ ì„¤ì •í•œë‹¤.
      */
     public void setSockRcvBufBlockRatio(int aSockRcvBufBlockRatio)
     {
@@ -854,10 +854,10 @@ public class AltibaseProperties extends CaseInsensitiveProperties
     private static final Pattern PROP_STR_PATTERN      = Pattern.compile("^\\s*\\{\\s*" + PROP_PAIR_PATTERN_STR + "(?:\\s*,\\s*" + PROP_PAIR_PATTERN_STR + ")*\\s*\\}\\s*$");
 
     /**
-     * ¹®ÀÚ¿­À» °´Ã¼·Î º¯È¯ÇÑ´Ù.
+     * ë¬¸ìì—´ì„ ê°ì²´ë¡œ ë³€í™˜í•œë‹¤.
      * 
-     * @param aPropStr {@link #toString()}¿Í °°Àº "{key1=val1, key2=val2, ...}" ÇüÅÂÀÇ ¹®ÀÚ¿­.
-     * @return ¹®ÀÚ¿­·ÎºÎÅÍ »ı¼ºÇÑ AltibaseProperties °´Ã¼
+     * @param aPropStr {@link #toString()}ì™€ ê°™ì€ "{key1=val1, key2=val2, ...}" í˜•íƒœì˜ ë¬¸ìì—´.
+     * @return ë¬¸ìì—´ë¡œë¶€í„° ìƒì„±í•œ AltibaseProperties ê°ì²´
      */
     public static AltibaseProperties valueOf(String aPropStr)
     {

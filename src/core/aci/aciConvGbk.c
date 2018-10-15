@@ -35,14 +35,14 @@ ACP_EXPORT acp_sint32_t aciConvConvertMbToWc4Gbk( void         * aSrc,
 /***********************************************************************
  *
  * Description :
- *     PROJ-2414 [±â´É¼º] GBK, CP936 character set Ãß°¡
+ *     PROJ-2414 [ê¸°ëŠ¥ì„±] GBK, CP936 character set ì¶”ê°€
  *     GBK ==> UTF16BE
  *
  * Implementation :
- *     1) ¼­ºê¼ÂÀÎ GB2312 ¿Í »óÀÌÇÑ ¹®ÀÚ¸¦ ¸ÕÀú º¯È¯.
- *     2) ±×¿ÜÀÇ ¹®ÀÚ´Â ¼­ºê¼ÂÀÎ GB2312 ¿¡ Àü´Þ.
- *     3) User_Defined_Area ÀÎ °æ¿ì CP936EXT ¿¡ Àü´Þ.
- *     4) º¯È¯¿¡ ½ÇÆÐÇÏ¸é, GBK ÀÇ º¯È¯¹æ¾ÈÀ» Àû¿ë.
+ *     1) ì„œë¸Œì…‹ì¸ GB2312 ì™€ ìƒì´í•œ ë¬¸ìžë¥¼ ë¨¼ì € ë³€í™˜.
+ *     2) ê·¸ì™¸ì˜ ë¬¸ìžëŠ” ì„œë¸Œì…‹ì¸ GB2312 ì— ì „ë‹¬.
+ *     3) User_Defined_Area ì¸ ê²½ìš° CP936EXT ì— ì „ë‹¬.
+ *     4) ë³€í™˜ì— ì‹¤íŒ¨í•˜ë©´, GBK ì˜ ë³€í™˜ë°©ì•ˆì„ ì ìš©.
  *
  ***********************************************************************/
 
@@ -63,25 +63,25 @@ ACP_EXPORT acp_sint32_t aciConvConvertMbToWc4Gbk( void         * aSrc,
         {
             if ( ( sSrcCharPtr[0] >= 0xa1 ) && ( sSrcCharPtr[0] <= 0xf7 ) )
             {
-                /* 1) ¼­ºê¼ÂÀÎ GB2312 ¿Í »óÀÌÇÑ ¹®ÀÚ¸¦ ¸ÕÀú º¯È¯
+                /* 1) ì„œë¸Œì…‹ì¸ GB2312 ì™€ ìƒì´í•œ ë¬¸ìžë¥¼ ë¨¼ì € ë³€í™˜
                  *
-                 * GB2312 ¿Í GBK °£¿¡ µ¿ÀÏÇÑ ¹®ÀÚ¿¡ »óÀÌÇÑ À¯´ÏÄÚµå °ªÀ» Áö´Ï´Â
-                 * ¹®ÀÚ°¡ ÀÖÀ¸¸ç, ±×¹®ÀÚ¸¦ Ã³¸®ÇÏ±â À§ÇÑ ºÐ±â¹®ÀÌ´Ù. ¾Æ·¡¿¡ ÇØ´ç
-                 * ÇÏ´Â ¹®ÀÚ °ª°ú À¯´ÏÄÚµå °ªÀ» ºñ±³ÇÏ¿´´Ù.
+                 * GB2312 ì™€ GBK ê°„ì— ë™ì¼í•œ ë¬¸ìžì— ìƒì´í•œ ìœ ë‹ˆì½”ë“œ ê°’ì„ ì§€ë‹ˆëŠ”
+                 * ë¬¸ìžê°€ ìžˆìœ¼ë©°, ê·¸ë¬¸ìžë¥¼ ì²˜ë¦¬í•˜ê¸° ìœ„í•œ ë¶„ê¸°ë¬¸ì´ë‹¤. ì•„ëž˜ì— í•´ë‹¹
+                 * í•˜ëŠ” ë¬¸ìž ê°’ê³¼ ìœ ë‹ˆì½”ë“œ ê°’ì„ ë¹„êµí•˜ì˜€ë‹¤.
                  *
                  * Code      GB2312    GBK
                  * 0xA1A4    U+30FB    U+00B7    MIDDLE DOT
                  * 0xA1AA    U+2015    U+2014    EM DASH
                  *
-                 * µû¶ó¼­, ¾Æ·¡ÀÇ ¿¹¿ÜÃ³¸®´Â À§ÀÇ ¹®ÀÚ¸¦ GB2312 ¿¡°Ô Àü´ÞÇÏ±â ¾Ê
-                 * °í, GBK ÀÇ À¯´ÏÄÚµå °ªÀ¸·Î º¯È¯ÇÏ´Â ÀÛ¾÷ÀÌ´Ù.
+                 * ë”°ë¼ì„œ, ì•„ëž˜ì˜ ì˜ˆì™¸ì²˜ë¦¬ëŠ” ìœ„ì˜ ë¬¸ìžë¥¼ GB2312 ì—ê²Œ ì „ë‹¬í•˜ê¸° ì•Š
+                 * ê³ , GBK ì˜ ìœ ë‹ˆì½”ë“œ ê°’ìœ¼ë¡œ ë³€í™˜í•˜ëŠ” ìž‘ì—…ì´ë‹¤.
                  */
                 if ( sSrcCharPtr[0] == 0xa1 )
                 {
                     if ( sSrcCharPtr[1] == 0xa4 )
                     {
-                        /* ÀÌ À¯´ÏÄÚµå´Â UTF16BE ÀÇ °ªÀ¸·Î, ÀÌÈÄ¿¡ UTF16LE ÀÌ Ãß
-                         * °¡µÇ¸é °ªÀ» ¼öÁ¤ÇØ¾ß ÇÑ´Ù.
+                        /* ì´ ìœ ë‹ˆì½”ë“œëŠ” UTF16BE ì˜ ê°’ìœ¼ë¡œ, ì´í›„ì— UTF16LE ì´ ì¶”
+                         * ê°€ë˜ë©´ ê°’ì„ ìˆ˜ì •í•´ì•¼ í•œë‹¤.
                          */
                         sWc = 0x00b7;
                         ACICONV_WC_TO_UTF16BE( aDest, sWc );
@@ -91,7 +91,7 @@ ACP_EXPORT acp_sint32_t aciConvConvertMbToWc4Gbk( void         * aSrc,
                     }
                     else if ( sSrcCharPtr[1] == 0xaa )
                     {
-                        /* ÀÌÈÄ¿¡ UTF16LE ÀÌ Ãß°¡µÇ¸é °ªÀ» ¼öÁ¤ÇØ¾ß ÇÑ´Ù. */
+                        /* ì´í›„ì— UTF16LE ì´ ì¶”ê°€ë˜ë©´ ê°’ì„ ìˆ˜ì •í•´ì•¼ í•œë‹¤. */
                         sWc = 0x2014;
                         ACICONV_WC_TO_UTF16BE( aDest, sWc );
 
@@ -100,9 +100,9 @@ ACP_EXPORT acp_sint32_t aciConvConvertMbToWc4Gbk( void         * aSrc,
                     }
                     else
                     {
-                        /* ¿¹¿Ü Ã³¸® ¹üÀ§¿¡ Æ÷ÇÔµÇÁö ¾Ê´Â ¹®ÀÚÀÌ´Ù. GB2312 ·Î Ã³
-                         * ¸®ÇØ¾ß ÇÑ´Ù. ¾ÆÁ÷, º¯È¯µÇÁö ¾ÊÀº °ÍÀ» ¾Ë¸®±â À§ÇØ sRe
-                         * t °ªÀ» ¼³Á¤ÇÑ´Ù.
+                        /* ì˜ˆì™¸ ì²˜ë¦¬ ë²”ìœ„ì— í¬í•¨ë˜ì§€ ì•ŠëŠ” ë¬¸ìžì´ë‹¤. GB2312 ë¡œ ì²˜
+                         * ë¦¬í•´ì•¼ í•œë‹¤. ì•„ì§, ë³€í™˜ë˜ì§€ ì•Šì€ ê²ƒì„ ì•Œë¦¬ê¸° ìœ„í•´ sRe
+                         * t ê°’ì„ ì„¤ì •í•œë‹¤.
                          */
                         *aSrcAdvance = 2;
                         sRet = ACICONV_RET_ILSEQ;
@@ -110,7 +110,7 @@ ACP_EXPORT acp_sint32_t aciConvConvertMbToWc4Gbk( void         * aSrc,
                 }
                 else
                 {
-                    /* º¯È¯µÇÁö ¾ÊÀº °ÍÀ» ¾Ë¸®±â À§ÇØ sRet °ªÀ» ¼³Á¤ÇÑ´Ù. */
+                    /* ë³€í™˜ë˜ì§€ ì•Šì€ ê²ƒì„ ì•Œë¦¬ê¸° ìœ„í•´ sRet ê°’ì„ ì„¤ì •í•œë‹¤. */
                     *aSrcAdvance = 2;
                     sRet = ACICONV_RET_ILSEQ;
                 }
@@ -124,7 +124,7 @@ ACP_EXPORT acp_sint32_t aciConvConvertMbToWc4Gbk( void         * aSrc,
                     /* Nothing to do */
                 }
 
-                /* 2) ±×¿ÜÀÇ ¹®ÀÚ´Â ¼­ºê¼ÂÀÎ GB2312 ¿¡ Àü´Þ */
+                /* 2) ê·¸ì™¸ì˜ ë¬¸ìžëŠ” ì„œë¸Œì…‹ì¸ GB2312 ì— ì „ë‹¬ */
                 if ( ( sSrcCharPtr[1] >= 0xa1 ) &&
                      ( sSrcCharPtr[1] < 0xff ) )
                 {
@@ -143,12 +143,12 @@ ACP_EXPORT acp_sint32_t aciConvConvertMbToWc4Gbk( void         * aSrc,
                         /* Nothing to do */
                     }
 
-                    /* 3) CP936EXT ¿¡ Àü´Þ
+                    /* 3) CP936EXT ì— ì „ë‹¬
                      *
-                     * GB2312 ¿¡¼­ º¯È¯ÇÏÁö ¾Ê´Â User_Defined_AreaÀÇ ¹®ÀÚ°¡ Á¸Àç
-                     * ÇÑ´Ù. ÀÌ·¯ÇÑ ¹®ÀÚ´Â GB2312 ¹üÀ§¿¡ ÀÖÁö¸¸, º¯È¯ ÄÚµåÆäÀÌÁö
-                     * ( ÄÚµå°ª ¹è¿­ )°¡ ¾ø´Ù. µû¶ó¼­, ÄÚµåÆäÀÌÁö°¡ Á¤ÀÇµÈ CP936
-                     * EXT ¿¡ Àü´ÞÇÑ´Ù.
+                     * GB2312 ì—ì„œ ë³€í™˜í•˜ì§€ ì•ŠëŠ” User_Defined_Areaì˜ ë¬¸ìžê°€ ì¡´ìž¬
+                     * í•œë‹¤. ì´ëŸ¬í•œ ë¬¸ìžëŠ” GB2312 ë²”ìœ„ì— ìžˆì§€ë§Œ, ë³€í™˜ ì½”ë“œíŽ˜ì´ì§€
+                     * ( ì½”ë“œê°’ ë°°ì—´ )ê°€ ì—†ë‹¤. ë”°ë¼ì„œ, ì½”ë“œíŽ˜ì´ì§€ê°€ ì •ì˜ëœ CP936
+                     * EXT ì— ì „ë‹¬í•œë‹¤.
                      */
                     sRet = aciConvConvertMbToWc4Cp936ext( aSrc,
                                                           aSrcRemain,
@@ -164,7 +164,7 @@ ACP_EXPORT acp_sint32_t aciConvConvertMbToWc4Gbk( void         * aSrc,
             }
             else
             {
-                /* 4) GBK ÀÇ º¯È¯¹æ¾ÈÀ» Àû¿ë */
+                /* 4) GBK ì˜ ë³€í™˜ë°©ì•ˆì„ ì ìš© */
                 if ( ( sSrcCharPtr[0] >= 0x81 ) && ( sSrcCharPtr[0] <= 0xa0 ) )
                 {
                     sRet = aciConvConvertMbToWc4Gbkext1( aSrc,
@@ -189,7 +189,7 @@ ACP_EXPORT acp_sint32_t aciConvConvertMbToWc4Gbk( void         * aSrc,
                 /* Nothing to do */
             }
 
-            /* 4) GBK ÀÇ º¯È¯¹æ¾ÈÀ» Àû¿ë */
+            /* 4) GBK ì˜ ë³€í™˜ë°©ì•ˆì„ ì ìš© */
             if ( ( sSrcCharPtr[0] >= 0xa8 ) &&
                  ( sSrcCharPtr[0] <= 0xfe ) )
             {
@@ -246,12 +246,12 @@ ACP_EXPORT acp_sint32_t aciConvConvertWcToMb4Gbk( void         * aSrc,
 /***********************************************************************
  *
  * Description :
- *     PROJ-2414 [±â´É¼º] GBK, CP936 character set Ãß°¡
+ *     PROJ-2414 [ê¸°ëŠ¥ì„±] GBK, CP936 character set ì¶”ê°€
  *     UTF16BE ==> GBK
  *
  * Implementation :
- *     1) GB2312 ¿¡ Àü´Þ.
- *     2) GBK ÀÇ º¯È¯¹æ¾ÈÀ» Àû¿ë.
+ *     1) GB2312 ì— ì „ë‹¬.
+ *     2) GBK ì˜ ë³€í™˜ë°©ì•ˆì„ ì ìš©.
  *
  ***********************************************************************/
 
@@ -270,7 +270,7 @@ ACP_EXPORT acp_sint32_t aciConvConvertWcToMb4Gbk( void         * aSrc,
     }
     else
     {
-        /* 1) GB2312 ¿¡ Àü´Þ */
+        /* 1) GB2312 ì— ì „ë‹¬ */
         if ( ( sWc != 0x30fb ) && ( sWc != 0x2015 ) )
         {
             sRet = aciConvConvertWcToMb4Gb2312( aSrc,
@@ -281,7 +281,7 @@ ACP_EXPORT acp_sint32_t aciConvConvertWcToMb4Gbk( void         * aSrc,
         }
         else
         {
-            /* º¯È¯µÇÁö ¾ÊÀº °ÍÀ» ¾Ë¸®±â À§ÇØ sRet °ªÀ» ¼³Á¤ÇÑ´Ù. */
+            /* ë³€í™˜ë˜ì§€ ì•Šì€ ê²ƒì„ ì•Œë¦¬ê¸° ìœ„í•´ sRet ê°’ì„ ì„¤ì •í•œë‹¤. */
             *aSrcAdvance = 2;
             sRet = ACICONV_RET_ILUNI;
         }
@@ -295,7 +295,7 @@ ACP_EXPORT acp_sint32_t aciConvConvertWcToMb4Gbk( void         * aSrc,
             /* Nothing to do */
         }
 
-        /* 2) GBK ÀÇ º¯È¯¹æ¾ÈÀ» Àû¿ë */
+        /* 2) GBK ì˜ ë³€í™˜ë°©ì•ˆì„ ì ìš© */
         sRet = aciConvConvertWcToMb4Gbkextinv(aSrc,
                                               aSrcRemain,
                                               aSrcAdvance,
@@ -336,7 +336,7 @@ ACP_EXPORT acp_sint32_t aciConvConvertWcToMb4Gbk( void         * aSrc,
                 /* Nothing to do */
             }
 
-            /* ¼­ºê¼ÂÀÎ GB2312 ¿Í »óÀÌÇÑ ¹®ÀÚÀÇ ¿¹¿ÜÃ³¸®ÀÌ´Ù. */
+            /* ì„œë¸Œì…‹ì¸ GB2312 ì™€ ìƒì´í•œ ë¬¸ìžì˜ ì˜ˆì™¸ì²˜ë¦¬ì´ë‹¤. */
             if ( sWc == 0x00b7 )
             {
                 sDestCharPtr[0] = 0xa1;
@@ -368,10 +368,10 @@ ACP_EXPORT acp_sint32_t aciConvConvertWcToMb4Gbk( void         * aSrc,
 
     return sRet;
 }
-/* PROJ-2414 [±â´É¼º] GBK, CP936 character set Ãß°¡
+/* PROJ-2414 [ê¸°ëŠ¥ì„±] GBK, CP936 character set ì¶”ê°€
  *
- *  - GB18030 ÀÌ Ãß°¡µÇ¾úÀ» ¶§¿¡ »ç¿ëÇÒ ¼ö ÀÖ´Â º¹»ç ÇÔ¼öÀÌ´Ù.
- *  - ÇöÀç¿¡ »ç¿ëÇÏÁö ¾ÊÀ¸¹Ç·Î ÁÖ¼®Ã³¸®¸¦ ÇÑ´Ù. ( 2014-07-15 )
+ *  - GB18030 ì´ ì¶”ê°€ë˜ì—ˆì„ ë•Œì— ì‚¬ìš©í•  ìˆ˜ ìžˆëŠ” ë³µì‚¬ í•¨ìˆ˜ì´ë‹¤.
+ *  - í˜„ìž¬ì— ì‚¬ìš©í•˜ì§€ ì•Šìœ¼ë¯€ë¡œ ì£¼ì„ì²˜ë¦¬ë¥¼ í•œë‹¤. ( 2014-07-15 )
  *
  * ACP_EXPORT acp_sint32_t aciConvCopyGbk( void         * aSrc,
  *                                         acp_sint32_t   aSrcRemain,
@@ -383,12 +383,12 @@ ACP_EXPORT acp_sint32_t aciConvConvertWcToMb4Gbk( void         * aSrc,
 /***********************************************************************
  *
  * Description :
- *     PROJ-2414 [±â´É¼º] GBK, CP936 character set Ãß°¡
+ *     PROJ-2414 [ê¸°ëŠ¥ì„±] GBK, CP936 character set ì¶”ê°€
  *     ex) GBK ==> CP936
  *             ==> GB18030
  *
  * Implementation :
- *     ±âÁ¸ÀÇ Ä³¸¯ÅÍ ¼Â º¹»çÇÔ¼ö¿Í ¼³°è ¹× ±¸ÇöÀÌ µ¿ÀÏÇÏ´Ù.
+ *     ê¸°ì¡´ì˜ ìºë¦­í„° ì…‹ ë³µì‚¬í•¨ìˆ˜ì™€ ì„¤ê³„ ë° êµ¬í˜„ì´ ë™ì¼í•˜ë‹¤.
  *
  ***********************************************************************/
 /*

@@ -19,7 +19,7 @@
  *
  * $Id: sdpscFT.cpp 82075 2018-01-17 06:39:52Z jina.kim $
  *
- * º» ÆÄÀÏÀº Circular-List Managed Segment¿¡ ´ëÇÑ Fixed TableÀÇ ±¸ÇöÆÄÀÏÀÌ´Ù.
+ * ë³¸ íŒŒì¼ì€ Circular-List Managed Segmentì— ëŒ€í•œ Fixed Tableì˜ êµ¬í˜„íŒŒì¼ì´ë‹¤.
  *
  **********************************************************************/
 
@@ -40,8 +40,8 @@
 
 
 
-/* TASK-4007 [SM]PBT¸¦ À§ÇÑ ±â´É Ãß°¡
- * SegTypeÀ» ¿µ¾î ´Ü¹®ÀÚ·Î Ç¥Çö
+/* TASK-4007 [SM]PBTë¥¼ ìœ„í•œ ê¸°ëŠ¥ ì¶”ê°€
+ * SegTypeì„ ì˜ì–´ ë‹¨ë¬¸ìë¡œ í‘œí˜„
  * U = Undo Segment
  * T = TSS Segment
  * */
@@ -94,7 +94,7 @@ IDE_RC sdpscFT::destroy()
 }
 
 //------------------------------------------------------
-// X$DISK_UNDO_SEGHDR Dump TableÀÇ ·¹ÄÚµå Build
+// X$DISK_UNDO_SEGHDR Dump Tableì˜ ë ˆì½”ë“œ Build
 //------------------------------------------------------
 IDE_RC sdpscFT::buildRecord4SegHdr(
                             idvSQL              * /*aStatistics*/,
@@ -112,9 +112,9 @@ IDE_RC sdpscFT::buildRecord4SegHdr(
 
     /* BUG-30567 Users need the function that check the amount of 
      * usable undo tablespace. 
-     * UndoSegemnt ID¸¦ ÀÔ·ÂÇØ¾ß Çß´ø D$DISK_UNDO_SEGHDR¸¦
-     * X$DISK_UNDO_SEGHDR·Î º¯°æÇÏ¿©, Undo tablespace¿¡ ´ëÇÑ Á¤º¸¸¦
-     * º¸±â ÆíÇÏµµ·Ï ¼öÁ¤ÇÕ´Ï´Ù.*/
+     * UndoSegemnt IDë¥¼ ì…ë ¥í•´ì•¼ í–ˆë˜ D$DISK_UNDO_SEGHDRë¥¼
+     * X$DISK_UNDO_SEGHDRë¡œ ë³€ê²½í•˜ì—¬, Undo tablespaceì— ëŒ€í•œ ì •ë³´ë¥¼
+     * ë³´ê¸° í¸í•˜ë„ë¡ ìˆ˜ì •í•©ë‹ˆë‹¤.*/
     sTotEntryCnt = sdcTXSegMgr::getTotEntryCnt();
     for( sSegEntryID = 0; sSegEntryID < sTotEntryCnt; sSegEntryID++ )
     {
@@ -149,7 +149,7 @@ IDE_RC sdpscFT::buildRecord4SegHdr(
     return IDE_FAILURE;
 }
         
-// ¼¼±×¸ÕÆ® Çì´õ Dump
+// ì„¸ê·¸ë¨¼íŠ¸ í—¤ë” Dump
 IDE_RC sdpscFT::dumpSegHdr( scSpaceID             aSpaceID,
                             scPageID              aPageID,
                             sdpSegType            aSegType,
@@ -220,13 +220,13 @@ IDE_RC sdpscFT::dumpSegHdr( scSpaceID             aSpaceID,
 
     if ( aSegType == SDP_SEG_TYPE_TSS )
     {
-        /* TSS Seg ´Â ÀüºÎ TxExtCnt ·Î °è»ê */
+        /* TSS Seg ëŠ” ì „ë¶€ TxExtCnt ë¡œ ê³„ì‚° */
         sDumpRow->mTxExtCnt += sSegHdr->mExtDirCntlHdr.mExtCnt;  /* TSS SegHdr */
     }
     else 
     {
         IDE_ERROR( aSegType == SDP_SEG_TYPE_UNDO );
-        /* Undo SegHdr ´Â steal ÇÒ¼ö ¾øÀ½ */
+        /* Undo SegHdr ëŠ” steal í• ìˆ˜ ì—†ìŒ */
         sDumpRow->mUnStealExtCnt += sSegHdr->mExtDirCntlHdr.mExtCnt; /* Undo SegHdr */
     }
 
@@ -242,10 +242,10 @@ IDE_RC sdpscFT::dumpSegHdr( scSpaceID             aSpaceID,
               != IDE_SUCCESS );
     sDumpRow->mIsOnline = convertToChar( (idBool)aEntry->mStatus );
    
-    /* SegHdr ÇÏ³ª¸¸ ÀÖ´Â °æ¿ì */
+    /* SegHdr í•˜ë‚˜ë§Œ ìˆëŠ” ê²½ìš° */
     IDE_TEST_CONT( sPageID == sDumpRow->mSegPID, SKIP_BUILD_RECORDS );
 
-    /* next¸¦ full scan ÇÏÀÚ */
+    /* nextë¥¼ full scan í•˜ì */
     while ( sPageID != SD_NULL_PID )
     {
         IDE_DASSERT( sPageID != sDumpRow->mSegPID );
@@ -260,14 +260,14 @@ IDE_RC sdpscFT::dumpSegHdr( scSpaceID             aSpaceID,
 
         if ( aSegType == SDP_SEG_TYPE_TSS )
         {
-            /* TSS Seg ´Â ÀüºÎ TxExtCnt ·Î °è»ê */
+            /* TSS Seg ëŠ” ì „ë¶€ TxExtCnt ë¡œ ê³„ì‚° */
             sDumpRow->mTxExtCnt += sExtDirCntlHdr->mExtCnt; 
         }
         else
         {
             IDE_ERROR( aSegType == SDP_SEG_TYPE_UNDO );
 
-            /* 1.Áö±İ º¸°í ÀÖ´Â ExtDir Àº ½ºÆ¿ ºÒ°¡ */
+            /* 1.ì§€ê¸ˆ ë³´ê³  ìˆëŠ” ExtDir ì€ ìŠ¤í‹¸ ë¶ˆê°€ */
             if ( sPageID == sdcTXSegMgr::getUDSegPtr(aEntry)->getCurAllocExtDir() )
             {
                 sDumpRow->mUnStealExtCnt += sExtDirCntlHdr->mExtCnt;
@@ -345,7 +345,7 @@ IDE_RC sdpscFT::dumpSegHdr( scSpaceID             aSpaceID,
 }
 
 //------------------------------------------------------
-// X$DISK_UNDO_SEGHDR Dump TableÀÇ Column Description
+// X$DISK_UNDO_SEGHDR Dump Tableì˜ Column Description
 //------------------------------------------------------
 static iduFixedTableColDesc gDumpDiskCmsSegHdrColDesc[]=
 {
@@ -361,8 +361,8 @@ static iduFixedTableColDesc gDumpDiskCmsSegHdrColDesc[]=
         (SChar*)"SEGTYPE",
         offsetof( sdpscDumpSegHdrInfo, mSegType ),
         IDU_FT_SIZEOF( sdpscDumpSegHdrInfo, mSegType ),
-        IDU_FT_TYPE_CHAR, /* BUG-28729 D$DISK_UNDO_SEGHDRÀÇ SEGTYPEÀÇ µ¥ÀÌÅÍ
-                           * Å¸ÀÔÀÌ Àß¸øµÇ¾î ÀÖ½À´Ï´Ù. */
+        IDU_FT_TYPE_CHAR, /* BUG-28729 D$DISK_UNDO_SEGHDRì˜ SEGTYPEì˜ ë°ì´í„°
+                           * íƒ€ì…ì´ ì˜ëª»ë˜ì–´ ìˆìŠµë‹ˆë‹¤. */
         NULL,
         0, 0,NULL // for internal use
     },
@@ -514,7 +514,7 @@ static iduFixedTableColDesc gDumpDiskCmsSegHdrColDesc[]=
 };
 
 //------------------------------------------------------
-// X$DISK_UNDO_SEGHDR Dump TableÀÇ Table Description
+// X$DISK_UNDO_SEGHDR Dump Tableì˜ Table Description
 //------------------------------------------------------
 iduFixedTableDesc  gDumpDiskCmsSegHdrTableDesc =
 {
@@ -528,7 +528,7 @@ iduFixedTableDesc  gDumpDiskCmsSegHdrTableDesc =
     NULL
 };
 
-// ExtentDirectoryÇì´õ Dump
+// ExtentDirectoryí—¤ë” Dump
 IDE_RC sdpscFT::dumpExtDirHdr( scSpaceID             aSpaceID,
                                scPageID              aPageID,
                                sdpSegType            /*aSegType*/,
@@ -631,8 +631,8 @@ IDE_RC sdpscFT::dumpExtDirHdr( scSpaceID             aSpaceID,
         sDumpRow.mLstCommitSCN  = sCntlHdr->mLstCommitSCN;
         sDumpRow.mFstDskViewSCN = sCntlHdr->mFstDskViewSCN;
 
-        // BUG-28567  [SM] D$DISK_UNDO_EXTDIRHDR¿¡¼­ Àß¸øµÈ DUMP Á¤º¸¸¦ Ãâ·ÂÇÏ°í
-        // ÀÖ½À´Ï´Ù.
+        // BUG-28567  [SM] D$DISK_UNDO_EXTDIRHDRì—ì„œ ì˜ëª»ëœ DUMP ì •ë³´ë¥¼ ì¶œë ¥í•˜ê³ 
+        // ìˆìŠµë‹ˆë‹¤.
         IDE_TEST( iduFixedTable::buildRecord( aHeader,
                                               aMemory,
                                               (void *)&sDumpRow )
@@ -651,10 +651,10 @@ IDE_RC sdpscFT::dumpExtDirHdr( scSpaceID             aSpaceID,
         }
 
         sCheckCnt++;
-        /* UndoEDÀÇ ÃÖ¼Ò Å©±â´Â Page 8°³ ÀÌ´Ù.
-         * (SYS_UNDO_TBS_EXTENT_SIZEÀÇ ½ÇÁúÀûÀÎ ÃÖ¼Ò°ªÀÌ 65536ÀÌ´Ù)
-         * µû¶ó¼­ ±× ÀÌ»ó ·çÇÁ¸¦ µ¹°í ÀÖ´Ù´Â °ÍÀº ¹«ÇÑ·çÇÁÀÌ´Ù.
-         * ÀÌ °æ¿ì UndoTBS°¡ ²¿¿©ÀÖÀ» °ÍÀÌ±â ¶§¹®¿¡ »ç¸Á½ÃÅ²´Ù. */
+        /* UndoEDì˜ ìµœì†Œ í¬ê¸°ëŠ” Page 8ê°œ ì´ë‹¤.
+         * (SYS_UNDO_TBS_EXTENT_SIZEì˜ ì‹¤ì§ˆì ì¸ ìµœì†Œê°’ì´ 65536ì´ë‹¤)
+         * ë”°ë¼ì„œ ê·¸ ì´ìƒ ë£¨í”„ë¥¼ ëŒê³  ìˆë‹¤ëŠ” ê²ƒì€ ë¬´í•œë£¨í”„ì´ë‹¤.
+         * ì´ ê²½ìš° UndoTBSê°€ ê¼¬ì—¬ìˆì„ ê²ƒì´ê¸° ë•Œë¬¸ì— ì‚¬ë§ì‹œí‚¨ë‹¤. */
         if( sCheckCnt >= ( ID_UINT_MAX / 8 ) )
         {
             ideLog::log( IDE_SERVER_0,
@@ -713,7 +713,7 @@ IDE_RC sdpscFT::dumpExtDirHdr( scSpaceID             aSpaceID,
 }
 
 //------------------------------------------------------
-// X$DISK_UNDO_EXTDIRHDR Dump TableÀÇ ·¹ÄÚµå Build
+// X$DISK_UNDO_EXTDIRHDR Dump Tableì˜ ë ˆì½”ë“œ Build
 //------------------------------------------------------
 IDE_RC sdpscFT::buildRecord4ExtDirHdr(
                                 idvSQL              * /*aStatistics*/,
@@ -731,9 +731,9 @@ IDE_RC sdpscFT::buildRecord4ExtDirHdr(
 
     /* BUG-30567 Users need the function that check the amount of 
      * usable undo tablespace. 
-     * UndoSegemnt ID¸¦ ÀÔ·ÂÇØ¾ß Çß´ø D$DISK_UNDO_DIRHDR¸¦
-     * X$DISK_UNDO_DIRHDR·Î º¯°æÇÏ¿©, Undo tablespace¿¡ ´ëÇÑ Á¤º¸¸¦
-     * º¸±â ÆíÇÏµµ·Ï ¼öÁ¤ÇÕ´Ï´Ù.*/
+     * UndoSegemnt IDë¥¼ ì…ë ¥í•´ì•¼ í–ˆë˜ D$DISK_UNDO_DIRHDRë¥¼
+     * X$DISK_UNDO_DIRHDRë¡œ ë³€ê²½í•˜ì—¬, Undo tablespaceì— ëŒ€í•œ ì •ë³´ë¥¼
+     * ë³´ê¸° í¸í•˜ë„ë¡ ìˆ˜ì •í•©ë‹ˆë‹¤.*/
     sTotEntryCnt = sdcTXSegMgr::getTotEntryCnt();
     for( sSegEntryID = 0; sSegEntryID < sTotEntryCnt; sSegEntryID++ )
     {
@@ -766,7 +766,7 @@ IDE_RC sdpscFT::buildRecord4ExtDirHdr(
 }
 
 //------------------------------------------------------
-// X$DISK_UNDO_EXTDIRHDR Dump TableÀÇ Column Description
+// X$DISK_UNDO_EXTDIRHDR Dump Tableì˜ Column Description
 //------------------------------------------------------
 static iduFixedTableColDesc gDumpDiskCmsExtDirHdrColDesc[]=
 {
@@ -853,7 +853,7 @@ static iduFixedTableColDesc gDumpDiskCmsExtDirHdrColDesc[]=
 };
 
 //------------------------------------------------------
-// X$DISK_UNDO_EXTDIRHDR Dump TableÀÇ Table Description
+// X$DISK_UNDO_EXTDIRHDR Dump Tableì˜ Table Description
 //------------------------------------------------------
 iduFixedTableDesc  gDumpDiskCmsExtDirHdrTableDesc =
 {

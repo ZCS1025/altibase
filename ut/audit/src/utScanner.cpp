@@ -21,7 +21,7 @@
 #include <uto.h>
 #include <utAtb.h>
 
-/* TASK-4212: auditÅøÀÇ ´ë¿ë·® Ã³¸®½Ã °³¼± */
+/* TASK-4212: auditíˆ´ì˜ ëŒ€ìš©ëŸ‰ ì²˜ë¦¬ì‹œ ê°œì„  */
 // static variables
 SChar utScanner::mFieldTerm = ',';
 SChar utScanner::mRowTerm   = '\n';
@@ -30,7 +30,7 @@ utProperties *utScanner::mProp;
 
 IDL_EXTERN_C  SChar * str_case_str(const SChar*,const SChar*);
 
-// row ´ÜÀ§·Î ºñ±³¼öÇàÇÔ.
+// row ë‹¨ìœ„ë¡œ ë¹„êµìˆ˜í–‰í•¨.
 compare_t utScanner::compare()
 {
     SInt       i, count, c;
@@ -59,8 +59,8 @@ compare_t utScanner::compare()
         s = mRowB->getField(i);
 
         /* BUG-40205
-         * lob Å¸ÀÔÀº f->mValue¿¡ µ¥ÀÌÅÍ¸¦ °¡Á®¿ÀÁö ¾Ê±â ¶§¹®¿¡ ºñ±³°¡ ÀÇ¹Ì¾øÀ½
-         * Áï, Ç×»ó °°À½À¸·Î °Ë»çµÇ±â ¶§¹®¿¡ °Ç³Ê¶Ùµµ·Ï ¼öÁ¤.
+         * lob íƒ€ìž…ì€ f->mValueì— ë°ì´í„°ë¥¼ ê°€ì ¸ì˜¤ì§€ ì•Šê¸° ë•Œë¬¸ì— ë¹„êµê°€ ì˜ë¯¸ì—†ìŒ
+         * ì¦‰, í•­ìƒ ê°™ìŒìœ¼ë¡œ ê²€ì‚¬ë˜ê¸° ë•Œë¬¸ì— ê±´ë„ˆë›°ë„ë¡ ìˆ˜ì •.
          */
         if((f->getSQLType() == SQL_BLOB) || (f->getSQLType() == SQL_CLOB))
         {
@@ -82,12 +82,12 @@ compare_t utScanner::compare()
     /* 
      * BUG-32566
      *
-     * mMI º¯¼ö NULL Ã¼Å©ÇÏµµ·Ï ¼öÁ¤
-     * Insert Master°¡ OFF µÇ¾î ÀÖ´Â °æ¿ì SegFault ¹æÁö.
+     * mMI ë³€ìˆ˜ NULL ì²´í¬í•˜ë„ë¡ ìˆ˜ì •
+     * Insert Masterê°€ OFF ë˜ì–´ ìžˆëŠ” ê²½ìš° SegFault ë°©ì§€.
      * BUG-40205
-     * => Insert Master°¡ OFF ÀÎ °æ¿ì lob Å¸ÀÔÀÇ °Ë»ç°¡ µÇÁö ¾ÊÀ¸¹Ç·Î 
-     *    mSI, mSD µîÀ» »ç¿ëÇÒ ¼ö ÀÖµµ·Ï ¼öÁ¤.
-     *    lobAtToAt ÇÔ¼ö´Â static À¸·Î ¹Ù²Ù´Â °ÍÀÌ ³ªÀ» µí ÇÏÁö¸¸ ´ÙÀ½¿¡..
+     * => Insert Masterê°€ OFF ì¸ ê²½ìš° lob íƒ€ìž…ì˜ ê²€ì‚¬ê°€ ë˜ì§€ ì•Šìœ¼ë¯€ë¡œ 
+     *    mSI, mSD ë“±ì„ ì‚¬ìš©í•  ìˆ˜ ìžˆë„ë¡ ìˆ˜ì •.
+     *    lobAtToAt í•¨ìˆ˜ëŠ” static ìœ¼ë¡œ ë°”ê¾¸ëŠ” ê²ƒì´ ë‚˜ì„ ë“¯ í•˜ì§€ë§Œ ë‹¤ìŒì—..
      */
     if(isLob == true)// && mMI != NULL)
     {
@@ -114,8 +114,8 @@ compare_t utScanner::compare()
         mSelectA->lobCompareMode = false;
         IDE_TEST_RAISE(((mSelectA->getLobDiffCol() != NULL) ||
                         (mSelectB->getLobDiffCol() != NULL)), diff_column);
-        /* TASK-4212: auditÅøÀÇ ´ë¿ë·® Ã³¸®½Ã °³¼± */
-        // lob ÀÌ Æ÷ÇÔµÇ¾îÀÖ´Â row¸¦ ºñ±³ÇÏ¸é, ºñ±³ÇÑµÚ comitÇØ¹ö¸².
+        /* TASK-4212: auditíˆ´ì˜ ëŒ€ìš©ëŸ‰ ì²˜ë¦¬ì‹œ ê°œì„  */
+        // lob ì´ í¬í•¨ë˜ì–´ìžˆëŠ” rowë¥¼ ë¹„êµí•˜ë©´, ë¹„êµí•œë’¤ comití•´ë²„ë¦¼.
         if ( mIsFileMode == true )
         {
             IDE_TEST( mConnA->commit() != IDE_SUCCESS);
@@ -161,7 +161,7 @@ compare_t utScanner::compare()
 IDE_RC utScanner::fetch( bool aFetchA, bool aFetchB)
 {
 
-    /* TASK-4212: auditÅøÀÇ ´ë¿ë·® Ã³¸®½Ã °³¼± */
+    /* TASK-4212: auditíˆ´ì˜ ëŒ€ìš©ëŸ‰ ì²˜ë¦¬ì‹œ ê°œì„  */
     if ( mIsFileMode == false )
     {
         if(mRowA && aFetchA)
@@ -250,7 +250,7 @@ IDE_RC utScanner::execute()
     // delete row
     (void)reset();
 
-    /* TASK-4212: auditÅøÀÇ ´ë¿ë·® Ã³¸®½Ã °³¼± */
+    /* TASK-4212: auditíˆ´ì˜ ëŒ€ìš©ëŸ‰ ì²˜ë¦¬ì‹œ ê°œì„  */
     if ( mIsFileMode == false )
     {
         /* next execution */
@@ -282,9 +282,9 @@ IDE_RC utScanner::execute()
 
     // ** 1. pair fetching process ** //
     //If there's column that data type is Lob, it will execute updating after inserting.
-    //doM?S?()¾È¿¡¼­ bind()¿Í execute() ¼öÇà.
-    //bind()½Ã¿¡ lob ÄÃ·³ÀÇ °ªÀ» NULL·Î ¼³Á¤.
-    //execute()½Ã¿¡ lobÄÃ·³ÀÌ Á¸ÀçÇÏ¸é ±×¿¡ ´ëÇÑ ÀÛ¾÷À» Ãß°¡¼öÇàÇÑ´Ù.
+    //doM?S?()ì•ˆì—ì„œ bind()ì™€ execute() ìˆ˜í–‰.
+    //bind()ì‹œì— lob ì»¬ëŸ¼ì˜ ê°’ì„ NULLë¡œ ì„¤ì •.
+    //execute()ì‹œì— lobì»¬ëŸ¼ì´ ì¡´ìž¬í•˜ë©´ ê·¸ì— ëŒ€í•œ ìž‘ì—…ì„ ì¶”ê°€ìˆ˜í–‰í•œë‹¤.
     while( mRowA && mRowB )
    {
         cmp = compare();
@@ -327,7 +327,7 @@ IDE_RC utScanner::execute()
         }
     }
 
-    /* TASK-4212: auditÅøÀÇ ´ë¿ë·® Ã³¸®½Ã °³¼± */
+    /* TASK-4212: auditíˆ´ì˜ ëŒ€ìš©ëŸ‰ ì²˜ë¦¬ì‹œ ê°œì„  */
     // ** 2. Tail processing for Master ** //
     cmp = CMP_PKB;
     while( mRowA != NULL )
@@ -381,7 +381,7 @@ IDE_RC utScanner::execute()
         idlOS::fflush(flog);
     }
 
-    /* TASK-4212: auditÅøÀÇ ´ë¿ë·® Ã³¸®½Ã °³¼± */
+    /* TASK-4212: auditíˆ´ì˜ ëŒ€ìš©ëŸ‰ ì²˜ë¦¬ì‹œ ê°œì„  */
     if ( mIsFileMode == true )
     {
         IDE_TEST_RAISE(idlOS::fclose(mMasterFile.mFile) != 0, ERR_MFILE_CLOSE);
@@ -432,14 +432,14 @@ IDE_RC utScanner::execute()
 }
 
 
-/* TASK-4212: auditÅøÀÇ ´ë¿ë·® Ã³¸®½Ã °³¼± */
+/* TASK-4212: auditíˆ´ì˜ ëŒ€ìš©ëŸ‰ ì²˜ë¦¬ì‹œ ê°œì„  */
 Row *utScanner::utaReadCSVRow( utaFileInfo *aFileInfo, Query *aQuery )
 {
 /***********************************************************************
  *
  * Description :
- *    file buffer ·ÎºÎÅÍ ÇÑrowÀÇ field¼ö¸¸Å­ ¹Ýº¹ÇØ¼­ CSV data¸¦ ¿ø·¡ data·Î
- *    º¯È¯ÇÏ¿© ¾ò¾î¿Â´Ù.
+ *    file buffer ë¡œë¶€í„° í•œrowì˜ fieldìˆ˜ë§Œí¼ ë°˜ë³µí•´ì„œ CSV dataë¥¼ ì›ëž˜ dataë¡œ
+ *    ë³€í™˜í•˜ì—¬ ì–»ì–´ì˜¨ë‹¤.
  *
  ***********************************************************************/
     SInt   i;
@@ -453,9 +453,9 @@ Row *utScanner::utaReadCSVRow( utaFileInfo *aFileInfo, Query *aQuery )
     switch( aFileInfo->mOffset )
     {
         case -1:
-            // ¾ÆÁ÷ fileÀ» ÀÐ¾î¿ÀÁö ¾Ê¾Ò´Ù.
+            // ì•„ì§ fileì„ ì½ì–´ì˜¤ì§€ ì•Šì•˜ë‹¤.
         case MAX_FILE_BUF:
-            // ³¡±îÁö ÀÐ¾ú´Ù.
+            // ëê¹Œì§€ ì½ì—ˆë‹¤.
             aFileInfo->mFence = idlOS::fread(aFileInfo->mBuffer, 1, MAX_FILE_BUF,
                                              aFileInfo->mFile);
 
@@ -473,7 +473,7 @@ Row *utScanner::utaReadCSVRow( utaFileInfo *aFileInfo, Query *aQuery )
     sRow = aQuery->getRow();
     for( i = 1 ; i <= mFiledsCount ; i++ )
     {
-        // ¿ì¼± field data°¡ nullÀÌ ¾Æ´Ï¶ó°í ÃÊ±âÈ­½ÃÄÑÁÜ.
+        // ìš°ì„  field dataê°€ nullì´ ì•„ë‹ˆë¼ê³  ì´ˆê¸°í™”ì‹œì¼œì¤Œ.
         /* BUG-32569 The string with null character should be processed in Audit */
         sValueLength = 0;
         sRow->getField(i)->setIsNull( false );
@@ -489,7 +489,7 @@ Row *utScanner::utaReadCSVRow( utaFileInfo *aFileInfo, Query *aQuery )
             sRow->getField(i)->setValueLength(sValueLength);
         }
         else
-        {   // LOB typeÀÌ¶ó¸é ¹«Á¶°Ç T_NULL_VALUE°¡ ¸®ÅÏµÉ°ÍÀÌ±â ¶§¹®¿¡, value buffer³ª size°¡ ÇÊ¿ä¾ø´Ù.
+        {   // LOB typeì´ë¼ë©´ ë¬´ì¡°ê±´ T_NULL_VALUEê°€ ë¦¬í„´ë ê²ƒì´ê¸° ë•Œë¬¸ì—, value bufferë‚˜ sizeê°€ í•„ìš”ì—†ë‹¤.
             sTmpToken = utaGetCSVTokenFromBuff( aFileInfo, NULL, (UInt) 0, NULL );
         }
 
@@ -531,7 +531,7 @@ Row *utScanner::utaReadCSVRow( utaFileInfo *aFileInfo, Query *aQuery )
             break;
     }
 
-    // row¸¦ ÇÏ³ª ¾ò¾î¿ÔÀ¸´Ï _rows º¯¼ö¸¦ 1Áß°¡ ½ÃÅ²´Ù.
+    // rowë¥¼ í•˜ë‚˜ ì–»ì–´ì™”ìœ¼ë‹ˆ _rows ë³€ìˆ˜ë¥¼ 1ì¤‘ê°€ ì‹œí‚¨ë‹¤.
     aQuery->utaIncRows();
 
     return sRow;
@@ -590,7 +590,7 @@ IDE_RC utScanner::exec(dmlQuery * aQ)
         {
             sType = aQ->getType();
 
-            //sync mode¿¡¼­¸¸ ¼öÇàµÇ¹Ç·Î mModeÃ¼Å©´Â ÇÊ¿ä ¾øÀ» µí..
+            //sync modeì—ì„œë§Œ ìˆ˜í–‰ë˜ë¯€ë¡œ mModeì²´í¬ëŠ” í•„ìš” ì—†ì„ ë“¯..
             if(sType[1] == 'I' || sType[1] == 'U')
             {
                 if(sType[0] == 'M')
@@ -726,7 +726,7 @@ IDE_RC utScanner::doMOSX()
     return IDE_SUCCESS;
 }
 
-/* TASK-4212: auditÅøÀÇ ´ë¿ë·® Ã³¸®½Ã °³¼± */
+/* TASK-4212: auditíˆ´ì˜ ëŒ€ìš©ëŸ‰ ì²˜ë¦¬ì‹œ ê°œì„  */
 IDE_RC utScanner::prepare( utProperties *aProp )
 {
     SChar *     sqlA;
@@ -766,9 +766,9 @@ IDE_RC utScanner::prepare( utProperties *aProp )
         IDE_TEST_RAISE( mFiledsCount != mSelectB->columns() , err_diff_rssize );
     }
 
-    /* TASK-4212: auditÅøÀÇ ´ë¿ë·® Ã³¸®½Ã °³¼± */
-    // mMaxArrayFetch°¡ 0º¸´Ù Å©¸é fetchÈÄ CSV file¿¡ ¾´´Ù.
-    // oracle DB°¡ ÇÏ³ª¶óµµ Á¸Á¦ÇÏ¸é file·Î ¾²Áö ¾Ê°í ÇÏ³ªÇÏ³ª fetchÈÄ ºñ±³.
+    /* TASK-4212: auditíˆ´ì˜ ëŒ€ìš©ëŸ‰ ì²˜ë¦¬ì‹œ ê°œì„  */
+    // mMaxArrayFetchê°€ 0ë³´ë‹¤ í¬ë©´ fetchí›„ CSV fileì— ì“´ë‹¤.
+    // oracle DBê°€ í•˜ë‚˜ë¼ë„ ì¡´ì œí•˜ë©´ fileë¡œ ì“°ì§€ ì•Šê³  í•˜ë‚˜í•˜ë‚˜ fetchí›„ ë¹„êµ.
     if ( (aProp->mMaxArrayFetch  < 1)   ||
          (mSelectA->getDbType() != DBA_ATB) ||
          (mSelectB->getDbType() != DBA_ATB) )
@@ -785,7 +785,7 @@ IDE_RC utScanner::prepare( utProperties *aProp )
         mSelectB->getRow()->setFileMode4Fields( true );
 
         /* 1. set array fetch count */
-        // altibase DB¿¡¼­¸¸ array fetch ÇÔ. ¿À¶óÅ¬Àº X.
+        // altibase DBì—ì„œë§Œ array fetch í•¨. ì˜¤ë¼í´ì€ X.
         if ( aProp->mMaxArrayFetch > 1 )
         {
             mSelectA->setArrayCount( aProp->mMaxArrayFetch );
@@ -929,14 +929,14 @@ IDE_RC utScanner::prepare( utProperties *aProp )
 }
 
 
-/* TASK-4212: auditÅøÀÇ ´ë¿ë·® Ã³¸®½Ã °³¼± */
+/* TASK-4212: auditíˆ´ì˜ ëŒ€ìš©ëŸ‰ ì²˜ë¦¬ì‹œ ê°œì„  */
 void *utScanner::utaFileModeWrite( void *aFileArg )
 {
 /***********************************************************************
  *
  * Description :
- *    array fetch¸¦ ÇÑ´ÙÀ½ row¼ö¸¸Å­ ¹Ýº¹ÇÏ¿©, °¢°¢ rowÀÇ fieldµéÀ» csv format
- *    À¸·Î º¯È¯ÇÏ¿© file¿¡ ¾²¸ç, ÆÄÀÏ¿¡ ´Ù ½èÀ¸¸é statement¸¦ closeÇØÁÜ.
+ *    array fetchë¥¼ í•œë‹¤ìŒ rowìˆ˜ë§Œí¼ ë°˜ë³µí•˜ì—¬, ê°ê° rowì˜ fieldë“¤ì„ csv format
+ *    ìœ¼ë¡œ ë³€í™˜í•˜ì—¬ fileì— ì“°ë©°, íŒŒì¼ì— ë‹¤ ì¼ìœ¼ë©´ statementë¥¼ closeí•´ì¤Œ.
  *
  ***********************************************************************/
     SInt   sFetchedCount;
@@ -981,8 +981,8 @@ void *utScanner::utaFileModeWrite( void *aFileArg )
                         sField   = sRow->getField( i );
 
                         if ( sSqlType == SQL_BYTE )
-                        {   // SQL_BYTEÀÏ°æ¿ì ±âÁ¸ÄÚµå¿ÍÀÇ È£È¯¼ºÀ»À§ÇØ +1 ÇØÁÜ.
-                            // utAtbField::bindColumn() ÂüÁ¶.
+                        {   // SQL_BYTEì¼ê²½ìš° ê¸°ì¡´ì½”ë“œì™€ì˜ í˜¸í™˜ì„±ì„ìœ„í•´ +1 í•´ì¤Œ.
+                            // utAtbField::bindColumn() ì°¸ì¡°.
                             sValue = (SChar*) (sField->getValue() +
                                      sArrayNum * (sField->getValueSize()+1));
                         }
@@ -1031,7 +1031,7 @@ void *utScanner::utaFileModeWrite( void *aFileArg )
                 }
 
                 if ( i == sFiledsCount )
-                {   // ÇÑ rowÀÇ ¸¶Áö¸· columnÀÏ°æ¿ì.
+                {   // í•œ rowì˜ ë§ˆì§€ë§‰ columnì¼ê²½ìš°.
                     IDE_TEST_RAISE( idlOS::fwrite( &mRowTerm, 1, 1, sFile ) != (UInt)1,
                                     ERR_WRITE_FILE );
                 }
@@ -1251,11 +1251,11 @@ IDE_RC utScanner::setTable( utTableProp * aTab)
     return IDE_FAILURE;
 }
 
-//BUG-24467 : logÆÄÀÏ¸íÀ»  Å×ÀÌºíA-À¯ÀúÀÌ¸§.Å×ÀÌºíB.log·Î »ý¼º
-/* BUG-39623 object ±æÀÌ Á¦ÇÑÀÌ 128·Î ´Ã¾î³ª¸é¼­ ÆÄÀÏ ÀÌ¸§ÀÌ ³Ê¹« ±æ¾îÁü
-* ÆÄÀÏ ÀÌ¸§ÀÇ ÃÖ´ë Á¦ÇÑ ±æÀÌ => fat system:226bytes, ext system:255bytes
-* So, [master_tbl] + [slave_usr] + [slave_tbl] = 210 bytes·Î Á¦ÇÑÇÏ°í
-* °¢°¢ÀÇ ±æÀÌ¸¦ 70 bytes·Î Á¦ÇÑÇÔ */
+//BUG-24467 : logíŒŒì¼ëª…ì„  í…Œì´ë¸”A-ìœ ì €ì´ë¦„.í…Œì´ë¸”B.logë¡œ ìƒì„±
+/* BUG-39623 object ê¸¸ì´ ì œí•œì´ 128ë¡œ ëŠ˜ì–´ë‚˜ë©´ì„œ íŒŒì¼ ì´ë¦„ì´ ë„ˆë¬´ ê¸¸ì–´ì§
+* íŒŒì¼ ì´ë¦„ì˜ ìµœëŒ€ ì œí•œ ê¸¸ì´ => fat system:226bytes, ext system:255bytes
+* So, [master_tbl] + [slave_usr] + [slave_tbl] = 210 bytesë¡œ ì œí•œí•˜ê³ 
+* ê°ê°ì˜ ê¸¸ì´ë¥¼ 70 bytesë¡œ ì œí•œí•¨ */
 void utScanner::generateLogName(SChar              *aFullLogName,
                                 const SChar        *aLogDir,
                                 const SChar        *aTableNameA,
@@ -1449,7 +1449,7 @@ IDE_RC utScanner::initialize(Connection * aConnA,
     mMXSODiffCount = 0;
     mMOSXDiffCount = 0;
 
-    /* TASK-4212: auditÅøÀÇ ´ë¿ë·® Ã³¸®½Ã °³¼± */
+    /* TASK-4212: auditíˆ´ì˜ ëŒ€ìš©ëŸ‰ ì²˜ë¦¬ì‹œ ê°œì„  */
     mProp = NULL;
     mCSVNextToken = T_INIT;
     mIsFileMode   = false;
@@ -1849,13 +1849,13 @@ IDE_RC utScanner::setMI()
     return IDE_FAILURE;
 }
 
-/* TASK-4212: auditÅøÀÇ ´ë¿ë·® Ã³¸®½Ã °³¼± */
+/* TASK-4212: auditíˆ´ì˜ ëŒ€ìš©ëŸ‰ ì²˜ë¦¬ì‹œ ê°œì„  */
 IDE_RC utScanner::utaCSVWrite ( SChar *aValue, UInt aValueLen, FILE *aWriteFp )
 {
 /***********************************************************************
  *
  * Description :
- *    aValueLen±æÀÌÀÇ aValue stringÀ» ¹Þ¾Æ CSV formatÇüÅÂ·Î º¯Çü½ÃÄÑ, ÆÄÀÏ¿¡ ¾²´Â ÇÔ¼ö.
+ *    aValueLenê¸¸ì´ì˜ aValue stringì„ ë°›ì•„ CSV formatí˜•íƒœë¡œ ë³€í˜•ì‹œì¼œ, íŒŒì¼ì— ì“°ëŠ” í•¨ìˆ˜.
  *
  ***********************************************************************/
     UInt  i;
@@ -1916,7 +1916,7 @@ IDE_RC utScanner::utaCSVWrite ( SChar *aValue, UInt aValueLen, FILE *aWriteFp )
     return IDE_FAILURE;
 }
 
-/* TASK-4212: auditÅøÀÇ ´ë¿ë·® Ã³¸®½Ã °³¼± */
+/* TASK-4212: auditíˆ´ì˜ ëŒ€ìš©ëŸ‰ ì²˜ë¦¬ì‹œ ê°œì„  */
 /* parse csv format data, and store the token value */
 
 /* BUG-32569 The string with null character should be processed in Audit */
@@ -1942,14 +1942,14 @@ utaCSVTOKENTYPE utScanner::utaGetCSVTokenFromBuff( utaFileInfo *aFileInfo,
     utaCSVTOKENTYPE sTmpToken;
 
     sState    = stStart;
-    /* ÅäÅ«ÀÇ ÃÖ´ë ±æÀÌ = VARBIT ¹®ÀÚ¿­ Ç¥ÇöÀÇ ÃÖ´ë ±æÀÌ */
+    /* í† í°ì˜ ìµœëŒ€ ê¸¸ì´ = VARBIT ë¬¸ìžì—´ í‘œí˜„ì˜ ìµœëŒ€ ê¸¸ì´ */
     sMaxTokenSize = MAX_TOKEN_VALUE_LEN;
     sInQuotes   = ID_FALSE;
     sReadLen    = 0;
     sPartialLen = 0;
     sTokenBuffIndex = 0;
 
-    // ´ÙÀ½¿¡ ¿Ã ÅäÅ«ÀÌ ÀÌ¹Ì ÁöÁ¤µÅÀÖ¾ú´Ù¸é.
+    // ë‹¤ìŒì— ì˜¬ í† í°ì´ ì´ë¯¸ ì§€ì •ë¼ìžˆì—ˆë‹¤ë©´.
     if ( mCSVNextToken != T_INIT )
     {
         sTmpToken     = mCSVNextToken;
@@ -1968,7 +1968,7 @@ utaCSVTOKENTYPE utScanner::utaGetCSVTokenFromBuff( utaFileInfo *aFileInfo,
     {
 
         /* 1. READ FROM FILE */
-        // ¾ÆÁ÷ file ·ÎºÎÅÍ ÀÐ¾î¿Ã°Ô ÀÖÀ»¼öµµ ÀÖ°í, buffer ÀÇ 95%¸¦ Ã³¸®Çß´Ù¸é file·Î ºÎÅÍ ´õ ÀÐ±â¸¦ ½ÃµµÇØº»´Ù.
+        // ì•„ì§ file ë¡œë¶€í„° ì½ì–´ì˜¬ê²Œ ìžˆì„ìˆ˜ë„ ìžˆê³ , buffer ì˜ 95%ë¥¼ ì²˜ë¦¬í–ˆë‹¤ë©´ fileë¡œ ë¶€í„° ë” ì½ê¸°ë¥¼ ì‹œë„í•´ë³¸ë‹¤.
         if ( (aFileInfo->mFence == MAX_FILE_BUF) &&
              (aFileInfo->mOffset > FILE_BUF_LIMIT) )
         {
@@ -1989,7 +1989,7 @@ utaCSVTOKENTYPE utScanner::utaGetCSVTokenFromBuff( utaFileInfo *aFileInfo,
         }
         else
         {
-            // fileÀÇ ³¡±îÁö ÀÐ¾ú´Ù¸é...
+            // fileì˜ ëê¹Œì§€ ì½ì—ˆë‹¤ë©´...
             if ( aFileInfo->mFence == aFileInfo->mOffset )
             {
                 return T_EOF;

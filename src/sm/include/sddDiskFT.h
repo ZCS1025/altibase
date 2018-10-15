@@ -20,7 +20,7 @@
  *
  * Description :
  *
- * µğ½ºÅ© Å×ÀÌºí½ºÆäÀÌ½º °ü·Ã Fixed Table Á¤ÀÇ
+ * ë””ìŠ¤í¬ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ê´€ë ¨ Fixed Table ì •ì˜
  * 
  **********************************************************************/
 
@@ -37,10 +37,10 @@ typedef struct sddFileStatFT
     scSpaceID       mSpaceID;
     sdFileID        mFileID;
 
-    /* File I/O Åë°èÁ¤º¸ */
+    /* File I/O í†µê³„ì •ë³´ */
     iduFIOStat      mFileIOStat;
 
-    /* I/O Æò±Õ Time */
+    /* I/O í‰ê·  Time */
     ULong           mAvgIOTime;
     
 } sddFileStatFT;

@@ -17,7 +17,7 @@
 #ifndef _ULP_KEYWORDS_
 #define _ULP_KEYWORDS_ 1
 
-/* c �ڵ�ȿ� id�� ���Ǿ�� �ȵǴ� keywords */
+/* c 코드안에 id로 사용되어서는 안되는 keywords */
 const SChar gUlpKeywords4C[][MAX_KEYWORD_LEN] =
 {
     "MAX_CHAR_PTR",
@@ -56,7 +56,7 @@ const SChar gUlpKeywords4C[][MAX_KEYWORD_LEN] =
     "VARCHAR"
 };
 
-/* ����SQL�����ȿ� ���̺���, Į�������� ���Ǹ� �ȵǴ� keywords */
+/* 내장SQL구문안에 테이블명, 칼럼명으로 사용되면 안되는 keywords */
 const SChar gUlpKeywords4Emsql[][MAX_KEYWORD_LEN] =
 {
     "MODE",

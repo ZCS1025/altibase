@@ -19,8 +19,8 @@
  * $Id: stfBasic.h 18883 2006-11-14 01:48:40Z sabbra $
  *
  * Description:
- * Geometry °´Ã¼ÀÇ ±âº» ¼Ó¼º ÇÔ¼ö
- * »ó¼¼ ±¸ÇöÀ» ÇÊ¿ä·Î ÇÏ´Â ÇÔ¼ö´Â stdPrimitive.cpp¸¦ ½ÇÇàÇÑ´Ù.
+ * Geometry ê°ì²´ì˜ ê¸°ë³¸ ì†ì„± í•¨ìˆ˜
+ * ìƒì„¸ êµ¬í˜„ì„ í•„ìš”ë¡œ í•˜ëŠ” í•¨ìˆ˜ëŠ” stdPrimitive.cppë¥¼ ì‹¤í–‰í•œë‹¤.
  **********************************************************************/
 
 #ifndef _O_STF_BASIC_H_
@@ -105,7 +105,7 @@ public:
                     void*        aInfo,
                     mtcTemplate* aTemplate);
 
-    static IDE_RC SRID(         // stm¿¡ Á¸ÀçÇÏ´Â SRSÀÇ ID¸¦ °¡Á®¿Â´Ù.
+    static IDE_RC SRID(         // stmì— ì¡´ì¬í•˜ëŠ” SRSì˜ IDë¥¼ ê°€ì ¸ì˜¨ë‹¤.
                     mtcNode*     aNode,
                     mtcStack*    aStack,
                     SInt         aRemain,
@@ -144,7 +144,7 @@ public:
                     stdGeometryHeader*  aObj,
                     mtdIntegerType*     aRet );
 
-    /* BUG-45645 ST_Reverse, ST_MakeEnvelope ÇÔ¼ö Áö¿ø */
+    /* BUG-45645 ST_Reverse, ST_MakeEnvelope í•¨ìˆ˜ ì§€ì› */
     static IDE_RC getRectangle( mtcTemplate       * aTemplate,
                                 mtdDoubleType       aX1,
                                 mtdDoubleType       aY1,

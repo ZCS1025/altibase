@@ -29,15 +29,15 @@ void cmnLinkPeerSetUserPtr(cmnLinkPeer *aLink, void *aUserPtr)
 
 /* BUG-44271 */
 /**
- * ip ¶Ç´Â hostname¿¡ ´ëÇÑ ÁÖ¼Ò Á¤º¸¸¦ ¾ò´Â´Ù.
- * ¿©±â¼­ ¾òÀº Á¤º¸´Â ¹İµå½Ã acpInetFreeAddrInfo(acp_inet_addr_info_t*)·Î ÇØÁöÇØ¾ß ÇÑ´Ù.
+ * ip ë˜ëŠ” hostnameì— ëŒ€í•œ ì£¼ì†Œ ì •ë³´ë¥¼ ì–»ëŠ”ë‹¤.
+ * ì—¬ê¸°ì„œ ì–»ì€ ì •ë³´ëŠ” ë°˜ë“œì‹œ acpInetFreeAddrInfo(acp_inet_addr_info_t*)ë¡œ í•´ì§€í•´ì•¼ í•œë‹¤.
  *
- * @param[out] aAddr     ÁÖ¼Ò Á¤º¸¸¦ ¹ŞÀ» Æ÷ÀÎÅÍ º¯¼ö
- * @param[out] aIsIPAddr hostnameÀÌ ¾Æ´Ñ ipÀÎÁö ¿©ºÎ
- * @param[in]  aServer   ip ¶Ç´Â hostname ¹®ÀÚ¿­
+ * @param[out] aAddr     ì£¼ì†Œ ì •ë³´ë¥¼ ë°›ì„ í¬ì¸í„° ë³€ìˆ˜
+ * @param[out] aIsIPAddr hostnameì´ ì•„ë‹Œ ipì¸ì§€ ì—¬ë¶€
+ * @param[in]  aServer   ip ë˜ëŠ” hostname ë¬¸ìì—´
  * @param[in]  aPort     port number
  *
- * @return ¼º°øÇÏ¸é ACI_SUCCESS, ¾Æ´Ï¸é ACI_FAILURE
+ * @return ì„±ê³µí•˜ë©´ ACI_SUCCESS, ì•„ë‹ˆë©´ ACI_FAILURE
  */
 ACI_RC cmnGetAddrInfo(acp_inet_addr_info_t **aAddr,
                       acp_bool_t            *aIsIPAddr,

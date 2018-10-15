@@ -114,9 +114,9 @@ IDE_RC altiWrapEncrypt::combineEncryptedText( altiWrap             * aAltiWrap,
     IDE_TEST_RAISE( sEncryptedText == NULL, ERR_ALLOC_MEMORY );
     sState = 1;
 
-    /* snprintfÀÇ °æ¿ì, ¸Ç ¸¶Áö¸·¿¡ NULL paddingÀ» ¾Ë¾Æ¼­ ÇØÁÖ±â ¶§¹®¿¡ 
-       ¿ø·¡ ±æÀÌº¸´Ù +1À» ÇØÁà¾ß ¿øÇÏ´Â ±æÀÌ¸¸Å­ º¹»çµÈ´Ù. */
-    /*header º¹»ç */
+    /* snprintfì˜ ê²½ìš°, ë§¨ ë§ˆì§€ë§‰ì— NULL paddingì„ ì•Œì•„ì„œ í•´ì£¼ê¸° ë•Œë¬¸ì— 
+       ì›ëž˜ ê¸¸ì´ë³´ë‹¤ +1ì„ í•´ì¤˜ì•¼ ì›í•˜ëŠ” ê¸¸ì´ë§Œí¼ ë³µì‚¬ëœë‹¤. */
+    /*header ë³µì‚¬ */
     idlOS::snprintf( sEncryptedText,
                      aHeaderPos.mSize + 1, "%s",
                      (SChar *)aHeaderPos.mText + aHeaderPos.mOffset );
@@ -189,7 +189,7 @@ IDE_RC altiWrapEncrypt::doEncryption( altiWrap * aAltiWrap )
                                     aAltiWrap->mCrtPSMStmtHeaderPos )
               != IDE_SUCCESS );
 
-    /* idsAltiWrap::encryption¿¡¼­ ÇÒ´ç ¹ÞÀº ¸Þ¸ð¸® ÇØÁ¦ */
+    /* idsAltiWrap::encryptionì—ì„œ í• ë‹¹ ë°›ì€ ë©”ëª¨ë¦¬ í•´ì œ */
     sState = 0;
     IDE_TEST( idsAltiWrap::freeResultMem( sEncryptedText )
               != IDE_SUCCESS );
@@ -232,9 +232,9 @@ void altiWrapEncrypt::adjustPlainTextLen( altiWrap             * aAltiWrap,
     IDE_DASSERT( aAltiWrap != NULL );
     IDE_DASSERT( aAltiWrap->mPlainText != NULL );
 
-    /* aBodyÀÇ mOffset°ú mSize¸¦ ´õÇÑ ±æÀÌ´Â ¸¶Áö¸· newlineÀ» Á¦°ÅÇÑ 
-       plain textÀÇ ±æÀÌ°¡ µÈ´Ù. ³¡ÀÇ /¸¦ È®ÀÎÇÏ±â À§ÇØ ¾Æ·¡¿Í °°ÀÌ 
-       whileÀ» Á¶°ÇÀ» µÐ´Ù. */
+    /* aBodyì˜ mOffsetê³¼ mSizeë¥¼ ë”í•œ ê¸¸ì´ëŠ” ë§ˆì§€ë§‰ newlineì„ ì œê±°í•œ 
+       plain textì˜ ê¸¸ì´ê°€ ëœë‹¤. ëì˜ /ë¥¼ í™•ì¸í•˜ê¸° ìœ„í•´ ì•„ëž˜ì™€ ê°™ì´ 
+       whileì„ ì¡°ê±´ì„ ë‘”ë‹¤. */
     sPlainText    = aAltiWrap->mPlainText->mText;
     sPlainTextLen = aBody.mOffset + aBody.mSize;
 

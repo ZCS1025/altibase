@@ -22,7 +22,7 @@
 #ifndef _O_SDU_VERSION_H_
 #define _O_SDU_VERSION_H_ 1
 
-/* shard meta, shard protocol ÅëÇÕ ¹öÁ¯ */
+/* shard meta, shard protocol í†µí•© ë²„ì ¼ */
 #define SHARD_MAJOR_VERSION 2
 #define SHARD_MINOR_VERSION 0
 #define SHARD_PATCH_VERSION 0

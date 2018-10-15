@@ -19,11 +19,11 @@
  * $Id: qmgCounting.h 20233 2007-02-01 01:58:21Z shsuh $
  *
  * Description :
- *     Counting Graph¸¦ À§ÇÑ Á¤ÀÇ
+ *     Counting Graphë¥¼ ìœ„í•œ ì •ì˜
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  **********************************************************************/
 
@@ -35,45 +35,45 @@
 #include <qmoPredicate.h>
 
 //---------------------------------------------------
-// Counting GraphÀÇ Define »ó¼ö
+// Counting Graphì˜ Define ìƒìˆ˜
 //---------------------------------------------------
 
 //---------------------------------------------------
-// Counting Graph ¸¦ °ü¸®ÇÏ±â À§ÇÑ ÀÚ·á ±¸Á¶
+// Counting Graph ë¥¼ ê´€ë¦¬í•˜ê¸° ìœ„í•œ ìë£Œ êµ¬ì¡°
 //---------------------------------------------------
 
 typedef struct qmgCNTG
 {
-    qmgGraph         graph;      // °øÅë Graph Á¤º¸
+    qmgGraph         graph;      // ê³µí†µ Graph ì •ë³´
 
     qmoPredicate   * stopkeyPredicate;
     qmoPredicate   * filterPredicate;
 
-    SLong            stopRecordCount;   // stopkey·Î ¼±ÅÃµÇ´Â ·¹ÄÚµå ¼ö
+    SLong            stopRecordCount;   // stopkeyë¡œ ì„ íƒë˜ëŠ” ë ˆì½”ë“œ ìˆ˜
     
 } qmgCNTG;
 
 //---------------------------------------------------
-// Counting Graph ¸¦ °ü¸®ÇÏ±â À§ÇÑ ÇÔ¼ö
+// Counting Graph ë¥¼ ê´€ë¦¬í•˜ê¸° ìœ„í•œ í•¨ìˆ˜
 //---------------------------------------------------
 
 class qmgCounting
 {
 public:
-    // Graph ÀÇ ÃÊ±âÈ­
+    // Graph ì˜ ì´ˆê¸°í™”
     static IDE_RC  init( qcStatement  * aStatement,
                          qmsQuerySet  * aQuerySet,
                          qmoPredicate * aRownumPredicate,
                          qmgGraph     * aChildGraph,
                          qmgGraph    ** aGraph );
 
-    // GraphÀÇ ÃÖÀûÈ­ ¼öÇà
+    // Graphì˜ ìµœì í™” ìˆ˜í–‰
     static IDE_RC  optimize( qcStatement * aStatement, qmgGraph * aGraph );
 
-    // GraphÀÇ Plan Tree »ı¼º
+    // Graphì˜ Plan Tree ìƒì„±
     static IDE_RC  makePlan( qcStatement * aStatement, const qmgGraph * aParent, qmgGraph * aGraph );
 
-    // GraphÀÇ °øÅë Á¤º¸¸¦ Ãâ·ÂÇÔ.
+    // Graphì˜ ê³µí†µ ì •ë³´ë¥¼ ì¶œë ¥í•¨.
     static IDE_RC  printGraph( qcStatement  * aStatement,
                                qmgGraph     * aGraph,
                                ULong          aDepth,
@@ -83,7 +83,7 @@ public:
 
 private:
     
-    // Left ChildÀÇ Graph·ÎºÎÅÍ Preserved Order¸¦ »ı¼ºÇÑ´Ù.
+    // Left Childì˜ Graphë¡œë¶€í„° Preserved Orderë¥¼ ìƒì„±í•œë‹¤.
     static IDE_RC makeOrderFromChild( qcStatement * aStatement,
                                       qmgGraph    * aGraph );
 };

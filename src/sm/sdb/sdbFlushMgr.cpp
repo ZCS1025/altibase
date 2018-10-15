@@ -20,37 +20,37 @@
  **********************************************************************/
 /******************************************************************************
  * Description :
- *    sdbFlushMgrÀº static class·Î¼­ flusherµéÀ» »ı¼º, °ü¸®ÇÏ¸ç
- *    flush ·®, waiting time, flush job scheduling µîÀ» ´ã´çÇÑ´Ù.
- *    flush manager´Â ½Ã½ºÅÛ¿¡¼­ ÇÏ³ª¸¸ Á¸ÀçÇÏ¸ç, ¸ğµç flusherµéÀ»
- *    »ı¼º¿¡¼­ ¼Ò¸ê, ¾²·¹µå Á¤Áö, ±ú¿ì±â µîÀÇ ±â´ÉÀ» ¼öÇàÇÑ´Ù.
- *    ½Ã½ºÅÛÀÇ »óÈ²¿¡µû¶ó flush·®À» Á¶ÀıÇÏ¸ç flusherµéÀÇ waiting timeµµ
- *    µ¿ÀûÀ¸·Î Á¶ÀıÇÑ´Ù.
- *    ¶ÇÇÑ Æ®·£Àè¼Ç ¾²·¹µåµéÀÌ victimÀ» Ã£´Ù°¡ list warp¸¦ ÇÏ±âÀü¿¡
- *    flush jobÀ» µî·Ï½ÃÄÑÁÖµµ·ÏÇÏ´Â ÀÎÅÍÆäÀÌ½ºµµ Á¦°øÇÑ´Ù.
- *    µî·ÏµÈ replacement flush jobÀÌ ¾øÀ¸¸é flush manager´Â flush listÀÇ
- *    ±æÀÌ¸¦ º¸°í replacement flush¸¦ ÇÒ °ÍÀÎÁö, checkpoint flush¸¦ ÇÒ °ÍÀÎÁö
- *    °áÁ¤ÇÑ ÈÄ flusher¿¡°Ô flush ÀÛ¾÷À» ÇÒ´çÇÑ´Ù.
+ *    sdbFlushMgrì€ static classë¡œì„œ flusherë“¤ì„ ìƒì„±, ê´€ë¦¬í•˜ë©°
+ *    flush ëŸ‰, waiting time, flush job scheduling ë“±ì„ ë‹´ë‹¹í•œë‹¤.
+ *    flush managerëŠ” ì‹œìŠ¤í…œì—ì„œ í•˜ë‚˜ë§Œ ì¡´ì¬í•˜ë©°, ëª¨ë“  flusherë“¤ì„
+ *    ìƒì„±ì—ì„œ ì†Œë©¸, ì“°ë ˆë“œ ì •ì§€, ê¹¨ìš°ê¸° ë“±ì˜ ê¸°ëŠ¥ì„ ìˆ˜í–‰í•œë‹¤.
+ *    ì‹œìŠ¤í…œì˜ ìƒí™©ì—ë”°ë¼ flushëŸ‰ì„ ì¡°ì ˆí•˜ë©° flusherë“¤ì˜ waiting timeë„
+ *    ë™ì ìœ¼ë¡œ ì¡°ì ˆí•œë‹¤.
+ *    ë˜í•œ íŠ¸ëœì­ì…˜ ì“°ë ˆë“œë“¤ì´ victimì„ ì°¾ë‹¤ê°€ list warpë¥¼ í•˜ê¸°ì „ì—
+ *    flush jobì„ ë“±ë¡ì‹œì¼œì£¼ë„ë¡í•˜ëŠ” ì¸í„°í˜ì´ìŠ¤ë„ ì œê³µí•œë‹¤.
+ *    ë“±ë¡ëœ replacement flush jobì´ ì—†ìœ¼ë©´ flush managerëŠ” flush listì˜
+ *    ê¸¸ì´ë¥¼ ë³´ê³  replacement flushë¥¼ í•  ê²ƒì¸ì§€, checkpoint flushë¥¼ í•  ê²ƒì¸ì§€
+ *    ê²°ì •í•œ í›„ flusherì—ê²Œ flush ì‘ì—…ì„ í• ë‹¹í•œë‹¤.
  *
- *    À§ Ã³·³ ½Ã½ºÅÛÀÌ ÁÖ±âÀûÀ¸·Î ¼öÇàÇÏ´Â Ã¼Å©Æ÷ÀÎÆ®¸¦ system checkpoint¶ó°í ÇÏ°í
- *    »ç¿ëÀÚÀÇ ÀÔ·Â¿¡ ÀÇÇÑ Ã¼Å©Æ÷ÀÎÆ®¸¦ user checkpoint¶ó°í ÇÑ´Ù.
+ *    ìœ„ ì²˜ëŸ¼ ì‹œìŠ¤í…œì´ ì£¼ê¸°ì ìœ¼ë¡œ ìˆ˜í–‰í•˜ëŠ” ì²´í¬í¬ì¸íŠ¸ë¥¼ system checkpointë¼ê³  í•˜ê³ 
+ *    ì‚¬ìš©ìì˜ ì…ë ¥ì— ì˜í•œ ì²´í¬í¬ì¸íŠ¸ë¥¼ user checkpointë¼ê³  í•œë‹¤.
  *
- *    flush jobÀÇ ¿ì¼± ¼øÀ§´Â ´ÙÀ½°ú °°´Ù.
- *      1. Æ®·£Àè¼Ç ¾²·¹µå¿¡ ÀÇÇØ µî·ÏµÈ replacement flush job ¶Ç´Â
- *         checkpoint ¾²·¹µå¿¡ ÀÇÇØ µî·ÏµÈ full checkpoint flush job
- *      2. flush list°¡ ÀÏÁ¤ ±æÀÌ ÀÌ»óÀÌ µÇ¾úÀ» ¶§ ÁÖ±âÀûÀ¸·Î Ã³¸®µÇ´Â
+ *    flush jobì˜ ìš°ì„  ìˆœìœ„ëŠ” ë‹¤ìŒê³¼ ê°™ë‹¤.
+ *      1. íŠ¸ëœì­ì…˜ ì“°ë ˆë“œì— ì˜í•´ ë“±ë¡ëœ replacement flush job ë˜ëŠ”
+ *         checkpoint ì“°ë ˆë“œì— ì˜í•´ ë“±ë¡ëœ full checkpoint flush job
+ *      2. flush listê°€ ì¼ì • ê¸¸ì´ ì´ìƒì´ ë˜ì—ˆì„ ë•Œ ì£¼ê¸°ì ìœ¼ë¡œ ì²˜ë¦¬ë˜ëŠ”
  *         replacement flush job
  *      3. checkpoint flush job
  *
  * Implementation :
- *    flush manager´Â flusherµé¿¡°Ô sdbFlushJobÀÌ¶ó´Â ±¸Á¶Ã¼¸¦ ¸Å°³·Î
- *    flush jobÀ» ÇÒ´çÇÑ´Ù.
- *    flush manager´Â À§ÀÇ 1¹ø jobµéÀ» ¿äÃ»¹Ş±â À§ÇØ ³»ºÎÀûÀ¸·Î job queue¸¦
- *    À¯ÁöÇÑ´Ù. ÀÌ¶§ »ç¿ëµÇ´Â ¸É¹ö°¡ mReqJobQueueÀÌ´Ù.
- *    job queue´Â array·Î °ü¸®µÇ¸ç mReqJobAddPos À§Ä¡¿¡ ³Ö°í,
- *    mReqJobGetPos¿¡¼­ jobÀ» ¾ò´Â´Ù. job queue´Â mReqJobMutex¿¡ ÀÇÇØ
- *    µ¿½Ã¼ºÀÌ Á¦¾îµÈ´Ù.
- *    SDB_FLUSH_JOB_MAXº¸´Ù ¸¹Àº jobÀ» µî·ÏÇÏ·Á°í ½ÃµµÇÏ¸é µî·ÏÀÌ ½ÇÆĞÇÑ´Ù.
+ *    flush managerëŠ” flusherë“¤ì—ê²Œ sdbFlushJobì´ë¼ëŠ” êµ¬ì¡°ì²´ë¥¼ ë§¤ê°œë¡œ
+ *    flush jobì„ í• ë‹¹í•œë‹¤.
+ *    flush managerëŠ” ìœ„ì˜ 1ë²ˆ jobë“¤ì„ ìš”ì²­ë°›ê¸° ìœ„í•´ ë‚´ë¶€ì ìœ¼ë¡œ job queueë¥¼
+ *    ìœ ì§€í•œë‹¤. ì´ë•Œ ì‚¬ìš©ë˜ëŠ” ë§´ë²„ê°€ mReqJobQueueì´ë‹¤.
+ *    job queueëŠ” arrayë¡œ ê´€ë¦¬ë˜ë©° mReqJobAddPos ìœ„ì¹˜ì— ë„£ê³ ,
+ *    mReqJobGetPosì—ì„œ jobì„ ì–»ëŠ”ë‹¤. job queueëŠ” mReqJobMutexì— ì˜í•´
+ *    ë™ì‹œì„±ì´ ì œì–´ëœë‹¤.
+ *    SDB_FLUSH_JOB_MAXë³´ë‹¤ ë§ì€ jobì„ ë“±ë¡í•˜ë ¤ê³  ì‹œë„í•˜ë©´ ë“±ë¡ì´ ì‹¤íŒ¨í•œë‹¤.
  ******************************************************************************/
 #include <sdbFlushMgr.h>
 #include <smErrorCode.h>
@@ -70,11 +70,11 @@ sdbCPListSet  *sdbFlushMgr::mCPListSet;
 
 /******************************************************************************
  * Description :
- *    flush manager¸¦ ÃÊ±âÈ­ÇÑ´Ù.
- *    flusherÀÇ °³¼ö¸¦ ÀÎÀÚ·Î ¹Ş´Â´Ù.
- *    ÃÊ±âÈ­ °úÁ¤Áß¿¡ flusher °´Ã¼µéÀ» »ı¼ºÇÑ´Ù.
+ *    flush managerë¥¼ ì´ˆê¸°í™”í•œë‹¤.
+ *    flusherì˜ ê°œìˆ˜ë¥¼ ì¸ìë¡œ ë°›ëŠ”ë‹¤.
+ *    ì´ˆê¸°í™” ê³¼ì •ì¤‘ì— flusher ê°ì²´ë“¤ì„ ìƒì„±í•œë‹¤.
  *
- *  aFlusherCount   - [IN]  ±¸µ¿½ÃÅ³ ÇÃ·Á¼Å °¹¼ö
+ *  aFlusherCount   - [IN]  êµ¬ë™ì‹œí‚¬ í”Œë ¤ì…” ê°¯ìˆ˜
  ******************************************************************************/
 IDE_RC sdbFlushMgr::initialize(UInt aFlusherCount)
 {
@@ -88,7 +88,7 @@ IDE_RC sdbFlushMgr::initialize(UInt aFlusherCount)
     mFlusherCount   = aFlusherCount;
     mCPListSet      = sdbBufferMgr::getPool()->getCPListSet();
 
-    // job queue¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+    // job queueë¥¼ ì´ˆê¸°í™”í•œë‹¤.
     for (i = 0; i < SDB_FLUSH_JOB_MAX; i++)
     {
         initJob(&mReqJobQueue[i]);
@@ -105,14 +105,14 @@ IDE_RC sdbFlushMgr::initialize(UInt aFlusherCount)
                == IDE_SUCCESS); 
     sState = 2; 
 
-    // ¸¶Áö¸· flush ½Ã°¢À» ¼¼ÆÃÇÑ´Ù.
+    // ë§ˆì§€ë§‰ flush ì‹œê°ì„ ì„¸íŒ…í•œë‹¤.
     IDV_TIME_GET(&mLastFlushedTime);
 
     /* TC/FIT/Limit/sm/sdb/sdbFlushMgr_initialize_malloc.sql */
     IDU_FIT_POINT_RAISE( "sdbFlushMgr::initialize::malloc",
                           insufficient_memory );
 
-    // flusherµéÀ» »ı¼ºÇÑ´Ù.
+    // flusherë“¤ì„ ìƒì„±í•œë‹¤.
     IDE_TEST_RAISE( iduMemMgr::malloc(IDU_MEM_SM_SDB,
                                       (ULong)ID_SIZEOF(sdbFlusher) * aFlusherCount,
                                       (void**)&mFlushers) != IDE_SUCCESS,
@@ -124,8 +124,8 @@ IDE_RC sdbFlushMgr::initialize(UInt aFlusherCount)
     {
         new (&mFlushers[sFlusherIdx]) sdbFlusher();
 
-        // ÇöÀç´Â ¸ğµç ÇÃ·¯µéÀÌ °°Àº Å©±âÀÇ ÆäÀÌÁö »çÀÌÁî¿Í
-        // °°Àº Å©±âÀÇ IOB Å©±â¸¦ °¡Áø´Ù.
+        // í˜„ì¬ëŠ” ëª¨ë“  í”ŒëŸ¬ë“¤ì´ ê°™ì€ í¬ê¸°ì˜ í˜ì´ì§€ ì‚¬ì´ì¦ˆì™€
+        // ê°™ì€ í¬ê¸°ì˜ IOB í¬ê¸°ë¥¼ ê°€ì§„ë‹¤.
         IDE_TEST(mFlushers[sFlusherIdx].initialize(
                     sFlusherIdx,
                     SD_PAGE_SIZE,
@@ -175,7 +175,7 @@ IDE_RC sdbFlushMgr::initialize(UInt aFlusherCount)
 
 /******************************************************************************
  * Description :
- *    ¸ğµç flusherµéÀ» ±¸µ¿½ÃÅ²´Ù.
+ *    ëª¨ë“  flusherë“¤ì„ êµ¬ë™ì‹œí‚¨ë‹¤.
  ******************************************************************************/
 void sdbFlushMgr::startUpFlushers()
 {
@@ -189,7 +189,7 @@ void sdbFlushMgr::startUpFlushers()
 
 /******************************************************************************
  * Description :
- *    ±¸µ¿ÁßÀÎ ¸ğµç flusherµéÀ» Á¾·á½ÃÅ°°í ÀÚ¿ø ÇØÁ¦½ÃÅ²´Ù.
+ *    êµ¬ë™ì¤‘ì¸ ëª¨ë“  flusherë“¤ì„ ì¢…ë£Œì‹œí‚¤ê³  ìì› í•´ì œì‹œí‚¨ë‹¤.
  *
  ******************************************************************************/
 IDE_RC sdbFlushMgr::destroy()
@@ -218,8 +218,8 @@ IDE_RC sdbFlushMgr::destroy()
 
 /******************************************************************************
  * Description :
- *    ¸ğµç flusherµéÀ» ±ú¿î´Ù. ÀÌ¹Ì È°µ¿ÁßÀÎ flusher¿¡ ´ëÇØ¼­´Â
- *    ¾Æ¹«·± ÀÛ¾÷À» ÇÏÁö ¾Ê´Â´Ù.
+ *    ëª¨ë“  flusherë“¤ì„ ê¹¨ìš´ë‹¤. ì´ë¯¸ í™œë™ì¤‘ì¸ flusherì— ëŒ€í•´ì„œëŠ”
+ *    ì•„ë¬´ëŸ° ì‘ì—…ì„ í•˜ì§€ ì•ŠëŠ”ë‹¤.
  *
  ******************************************************************************/
 IDE_RC sdbFlushMgr::wakeUpAllFlushers()
@@ -241,8 +241,8 @@ IDE_RC sdbFlushMgr::wakeUpAllFlushers()
 
 /******************************************************************************
  * Description :
- *    FlusherµéÀÌ ÀÛ¾÷ÁßÀÎ ÀÛ¾÷ÀÌ Á¾·áµÉ¶§±îÁö ´ë±âÇÑ´Ù. ½¬°í ÀÖ´Â FlusherµéÀº
- *    ¹«½ÃÇÑ´Ù.
+ *    Flusherë“¤ì´ ì‘ì—…ì¤‘ì¸ ì‘ì—…ì´ ì¢…ë£Œë ë•Œê¹Œì§€ ëŒ€ê¸°í•œë‹¤. ì‰¬ê³  ìˆëŠ” Flusherë“¤ì€
+ *    ë¬´ì‹œí•œë‹¤.
  *
  ******************************************************************************/
 IDE_RC sdbFlushMgr::wait4AllFlusher2Do1JobDone()
@@ -259,10 +259,10 @@ IDE_RC sdbFlushMgr::wait4AllFlusher2Do1JobDone()
 
 /******************************************************************************
  * Description :
- *  flusherµéÁß °¡Àå ÀÛÀº recoveryLSNÀ» ¸®ÅÏÇÑ´Ù.
+ *  flusherë“¤ì¤‘ ê°€ì¥ ì‘ì€ recoveryLSNì„ ë¦¬í„´í•œë‹¤.
  *
- *  aStatistics - [IN]  Åë°èÁ¤º¸
- *  aRet        - [OUT] flusherµéÁß °¡Àå ÀÛÀº recoveryLSNÀ» ¸®ÅÏÇÑ´Ù.
+ *  aStatistics - [IN]  í†µê³„ì •ë³´
+ *  aRet        - [OUT] flusherë“¤ì¤‘ ê°€ì¥ ì‘ì€ recoveryLSNì„ ë¦¬í„´í•œë‹¤.
  ******************************************************************************/
 void sdbFlushMgr::getMinRecoveryLSN(idvSQL *aStatistics,
                                     smLSN  *aRet)
@@ -283,10 +283,10 @@ void sdbFlushMgr::getMinRecoveryLSN(idvSQL *aStatistics,
 
 /******************************************************************************
  * Description :
- *    job queue¿¡ µî·ÏµÈ jobÀ» ÇÏ³ª ¾ò´Â´Ù.
+ *    job queueì— ë“±ë¡ëœ jobì„ í•˜ë‚˜ ì–»ëŠ”ë‹¤.
  *
- *  aStatistics - [IN]  Åë°èÁ¤º¸
- *  aRetJob     - [OUT] ¸®ÅÏÇÒ Job
+ *  aStatistics - [IN]  í†µê³„ì •ë³´
+ *  aRetJob     - [OUT] ë¦¬í„´í•  Job
  ******************************************************************************/
 void sdbFlushMgr::getReqJob(idvSQL      *aStatistics,
                             sdbFlushJob *aRetJob)
@@ -301,7 +301,7 @@ void sdbFlushMgr::getReqJob(idvSQL      *aStatistics,
     {
         IDE_ASSERT(mReqJobMutex.lock(aStatistics) == IDE_SUCCESS);
 
-        // lockÀ» ÀâÀº µÚ¿¡ ´Ù½Ã ¹Ş¾Æ¿Í¾ß ÇÑ´Ù.
+        // lockì„ ì¡ì€ ë’¤ì— ë‹¤ì‹œ ë°›ì•„ì™€ì•¼ í•œë‹¤.
         sJob = &mReqJobQueue[mReqJobGetPos];
 
         if (sJob->mType == SDB_FLUSH_JOB_NOTHING)
@@ -310,11 +310,11 @@ void sdbFlushMgr::getReqJob(idvSQL      *aStatistics,
         }
         else
         {
-            // req jobÀÌ ÀÖ´Ù.
+            // req jobì´ ìˆë‹¤.
             *aRetJob    = *sJob;
             sJob->mType = SDB_FLUSH_JOB_NOTHING;
 
-            // get positionÀ» ÇÏ³ª ÁøÇà½ÃÅ²´Ù.
+            // get positionì„ í•˜ë‚˜ ì§„í–‰ì‹œí‚¨ë‹¤.
             incPos(&mReqJobGetPos);
         }
 
@@ -324,27 +324,27 @@ void sdbFlushMgr::getReqJob(idvSQL      *aStatistics,
 
 /*****************************************************************************
  * Description :
- *    flusher¿¡ ÀÇÇØ È£ÃâµÇ¸ç flusher°¡ ÇÒÀÏÀ» ¹İÈ¯ÇÑ´Ù.
- *    flusher°¡ ÇÒÀÏÀº ´ÙÀ½°ú °°À¸¸ç ¹øÈ£´Â ¿ì¼±¼øÀ§ÀÌ´Ù.
+ *    flusherì— ì˜í•´ í˜¸ì¶œë˜ë©° flusherê°€ í• ì¼ì„ ë°˜í™˜í•œë‹¤.
+ *    flusherê°€ í• ì¼ì€ ë‹¤ìŒê³¼ ê°™ìœ¼ë©° ë²ˆí˜¸ëŠ” ìš°ì„ ìˆœìœ„ì´ë‹¤.
  *    1.    requested  object flushjob
- *             ÀÌ jobÀº pageout/flush page µîÀ¸·Î »ç¿ëÀÚÀÇ ¸í½ÃÀûÀÎ ¿äÃ»À¸·Î
- *             µî·ÏµÈ´Ù. addReqObjectFlushJob()¸¦ ÅëÇØ µî·ÏµÈ´Ù. 
+ *             ì´ jobì€ pageout/flush page ë“±ìœ¼ë¡œ ì‚¬ìš©ìì˜ ëª…ì‹œì ì¸ ìš”ì²­ìœ¼ë¡œ
+ *             ë“±ë¡ëœë‹¤. addReqObjectFlushJob()ë¥¼ í†µí•´ ë“±ë¡ëœë‹¤. 
  *         requested checkpoint flush job
- *           : À§ÀÇ requested object flush job°ú µ¿µîÇÑ ¿ì¼±¼øÀ§¸¦ °¡Áö¸ç
- *             ¸ÕÀú µî·ÏµÈ ¼øÀ¸·Î Ã³¸®µÈ´Ù.
- *             ÀÌ jobÀº checkpoint ¾²·¹µå°¡ checkpoint ½ÃÁ¡ÀÌ ³Ê¹« ´Ê¾îÁ³´Ù°í
- *             ÆÇ´ÜÇßÀ» °æ¿ì µî·ÏµÇ°Å³ª »ç¿ëÀÚÀÇ ¸í½ÃÀû checkpoint ¸í·É½Ã
- *             µî·ÏµÈ´Ù. addReqCPFlushJob()À» ÅëÇØ µî·ÏµÈ´Ù.
+ *           : ìœ„ì˜ requested object flush jobê³¼ ë™ë“±í•œ ìš°ì„ ìˆœìœ„ë¥¼ ê°€ì§€ë©°
+ *             ë¨¼ì € ë“±ë¡ëœ ìˆœìœ¼ë¡œ ì²˜ë¦¬ëœë‹¤.
+ *             ì´ jobì€ checkpoint ì“°ë ˆë“œê°€ checkpoint ì‹œì ì´ ë„ˆë¬´ ëŠ¦ì–´ì¡Œë‹¤ê³ 
+ *             íŒë‹¨í–ˆì„ ê²½ìš° ë“±ë¡ë˜ê±°ë‚˜ ì‚¬ìš©ìì˜ ëª…ì‹œì  checkpoint ëª…ë ¹ì‹œ
+ *             ë“±ë¡ëœë‹¤. addReqCPFlushJob()ì„ í†µí•´ ë“±ë¡ëœë‹¤.
  *      2. main replacement flush job
- *           : flusherµéÀÌ ÁÖ±âÀûÀ¸·Î µ¹¸é¼­ flush listÀÇ ±æÀÌ°¡
- *             ÀÏÁ¤ ¼öÄ¡¸¦ ³Ñ¾î¼­¸é flushÇÏ°Ô µÇ´Âµ¥ ÀÌ ÀÛ¾÷À» ¸»ÇÑ´Ù.
- *             ÀÌ ÀÛ¾÷Àº Æ®·£Àè¼Ç ¾²·¹µå¿¡ ÀÇÇØ µî·ÏµÇ´Â°Ô ¾Æ´Ï¶ó
- *             flusherµé¿¡ ÀÇÇØ µî·ÏµÇ°í Ã³¸®µÈ´Ù.
+ *           : flusherë“¤ì´ ì£¼ê¸°ì ìœ¼ë¡œ ëŒë©´ì„œ flush listì˜ ê¸¸ì´ê°€
+ *             ì¼ì • ìˆ˜ì¹˜ë¥¼ ë„˜ì–´ì„œë©´ flushí•˜ê²Œ ë˜ëŠ”ë° ì´ ì‘ì—…ì„ ë§í•œë‹¤.
+ *             ì´ ì‘ì—…ì€ íŠ¸ëœì­ì…˜ ì“°ë ˆë“œì— ì˜í•´ ë“±ë¡ë˜ëŠ”ê²Œ ì•„ë‹ˆë¼
+ *             flusherë“¤ì— ì˜í•´ ë“±ë¡ë˜ê³  ì²˜ë¦¬ëœë‹¤.
  *      3. system checkpoint flush job
- *           : 1, 2¹ø ÀÛ¾÷ÀÌ ¾øÀ» °æ¿ì system checkpoint flush¸¦ ¼öÇàÇÑ´Ù.
+ *           : 1, 2ë²ˆ ì‘ì—…ì´ ì—†ì„ ê²½ìš° system checkpoint flushë¥¼ ìˆ˜í–‰í•œë‹¤.
  *
- *  aStatistics - [IN]  Åë°èÁ¤º¸
- *  aRetJob     - [OUT] ¸®ÅÏÇÒ job
+ *  aStatistics - [IN]  í†µê³„ì •ë³´
+ *  aRetJob     - [OUT] ë¦¬í„´í•  job
  *****************************************************************************/
 void sdbFlushMgr::getJob(idvSQL      *aStatistics,
                          sdbFlushJob *aRetJob)
@@ -357,28 +357,28 @@ void sdbFlushMgr::getJob(idvSQL      *aStatistics,
 
         if (aRetJob->mType == SDB_FLUSH_JOB_NOTHING)
         {
-            // checkpoint flush jobÀ» ±¸ÇÑ´Ù.
+            // checkpoint flush jobì„ êµ¬í•œë‹¤.
             getCPFlushJob(aStatistics, aRetJob);
         }
         else
         {
-            // replace flush jobÀ» ÇÏ³ª ¾ò¾ú´Ù.
+            // replace flush jobì„ í•˜ë‚˜ ì–»ì—ˆë‹¤.
         }
     }
     else
     {
-        // req jobÀ» ÇÏ³ª ¾ò¾ú´Ù.
+        // req jobì„ í•˜ë‚˜ ì–»ì—ˆë‹¤.
     }
 }
 
 /******************************************************************************
  * Description :
  *    PROJ-2669
- *      Delayed Flush List ¿¡ BCB°¡ ÀÖÀ» °æ¿ì JobÀ» ¹İÈ¯ÇÑ´Ù.
- *      Flush ´ë»ó Flush list ´Â Delayed Flush list ¸¦ ¼³Á¤ÇÑ´Ù.
+ *      Delayed Flush List ì— BCBê°€ ìˆì„ ê²½ìš° Jobì„ ë°˜í™˜í•œë‹¤.
+ *      Flush ëŒ€ìƒ Flush list ëŠ” Delayed Flush list ë¥¼ ì„¤ì •í•œë‹¤.
  *
- *  aStatistics - [IN]  Åë°èÁ¤º¸
- *  aRetJob     - [OUT] ¸®ÅÏµÇ´Â job
+ *  aStatistics - [IN]  í†µê³„ì •ë³´
+ *  aRetJob     - [OUT] ë¦¬í„´ë˜ëŠ” job
  ******************************************************************************/
 void sdbFlushMgr::getDelayedFlushJob( sdbFlushJob *aColdJob,
                                       sdbFlushJob *aRetJob)
@@ -412,22 +412,22 @@ void sdbFlushMgr::getDelayedFlushJob( sdbFlushJob *aColdJob,
 
 /*****************************************************************************
  * Description :
- *   ÀÌ ÇÔ¼ö´Â checkpoint thread°¡ recovery LSNÀÌ ³Ê¹« ¿À·§µ¿¾È
- *   °»½ÅµÇÁö ¾Ê¾Æ checkpoint flush¸¦ ÇÒ ÇÊ¿ä°¡ ÀÖ´Ù°í ÆÇ´ÜÇÑ °æ¿ì
- *   È£ÃâµÈ´Ù.
- *   jobDoneÀ» ¿É¼ÇÀ¸·Î ÁÙ ¼ö ÀÖ´Âµ¥ ÀÌ °ªÀ» ¼¼ÆÃÇÏ¸é jobÀÌ ¿Ï·áµÇ¾úÀ» ¶§
- *   ¾î¶² Ã³¸®¸¦ ¼öÇàÇÒ ¼ö ÀÖ´Ù. job ¿Ï·á¸¦ Åëº¸¹ŞÀ» ÇÊ¿ä¾øÀ¸¸é
- *   ÀÌ ÀÎÀÚ¿¡ NULLÀ» ¼¼ÆÃÇÏ¸é µÈ´Ù.
+ *   ì´ í•¨ìˆ˜ëŠ” checkpoint threadê°€ recovery LSNì´ ë„ˆë¬´ ì˜¤ë«ë™ì•ˆ
+ *   ê°±ì‹ ë˜ì§€ ì•Šì•„ checkpoint flushë¥¼ í•  í•„ìš”ê°€ ìˆë‹¤ê³  íŒë‹¨í•œ ê²½ìš°
+ *   í˜¸ì¶œëœë‹¤.
+ *   jobDoneì„ ì˜µì…˜ìœ¼ë¡œ ì¤„ ìˆ˜ ìˆëŠ”ë° ì´ ê°’ì„ ì„¸íŒ…í•˜ë©´ jobì´ ì™„ë£Œë˜ì—ˆì„ ë•Œ
+ *   ì–´ë–¤ ì²˜ë¦¬ë¥¼ ìˆ˜í–‰í•  ìˆ˜ ìˆë‹¤. job ì™„ë£Œë¥¼ í†µë³´ë°›ì„ í•„ìš”ì—†ìœ¼ë©´
+ *   ì´ ì¸ìì— NULLì„ ì„¸íŒ…í•˜ë©´ ëœë‹¤.
  *
- *  aStatistics       - [IN]  Åë°èÁ¤º¸
- *  aReqFlushCount    - [IN]  flush ¼öÇà µÇ±æ ¿øÇÏ´Â ÃÖ¼Ò ÆäÀÌÁö °³¼ö
- *  aRedoPageCount    - [IN]  Restart Recovery½Ã¿¡ RedoÇÒ Page ¼ö,
- *                            ¹İ´ë·Î ¸»ÇÏ¸é CP List¿¡ ³²°ÜµÑ Dirty PageÀÇ ¼ö
- *  aRedoLogFileCount - [IN]  Restart Recovery½Ã¿¡ RedoÇÒ LogFile ¼ö,
- *                            ¹İ´ë·Î BufferPool¿¡ ³²°ÜµÑ LSN °£°İ (LogFile¼ö ±âÁØ)
- *  aJobDoneParam     - [IN]  job ¿Ï·á¸¦ Åëº¸ ¹Ş±â¸¦ ¿øÇÒ¶§, ÀÌ ÆÄ¶ó¹ÌÅÍ¸¦ ¼³Á¤ÇÑ´Ù.
- *  aAdded            - [OUT] job µî·Ï ¼º°ø ¿©ºÎ. ¸¸¾à SDB_FLUSH_JOB_MAXº¸´Ù ¸¹Àº
- *                            jobÀ» µî·ÏÇÏ·Á°í ½ÃµµÇÏ¸é µî·ÏÀÌ ½ÇÆĞÇÑ´Ù.
+ *  aStatistics       - [IN]  í†µê³„ì •ë³´
+ *  aReqFlushCount    - [IN]  flush ìˆ˜í–‰ ë˜ê¸¸ ì›í•˜ëŠ” ìµœì†Œ í˜ì´ì§€ ê°œìˆ˜
+ *  aRedoPageCount    - [IN]  Restart Recoveryì‹œì— Redoí•  Page ìˆ˜,
+ *                            ë°˜ëŒ€ë¡œ ë§í•˜ë©´ CP Listì— ë‚¨ê²¨ë‘˜ Dirty Pageì˜ ìˆ˜
+ *  aRedoLogFileCount - [IN]  Restart Recoveryì‹œì— Redoí•  LogFile ìˆ˜,
+ *                            ë°˜ëŒ€ë¡œ BufferPoolì— ë‚¨ê²¨ë‘˜ LSN ê°„ê²© (LogFileìˆ˜ ê¸°ì¤€)
+ *  aJobDoneParam     - [IN]  job ì™„ë£Œë¥¼ í†µë³´ ë°›ê¸°ë¥¼ ì›í• ë•Œ, ì´ íŒŒë¼ë¯¸í„°ë¥¼ ì„¤ì •í•œë‹¤.
+ *  aAdded            - [OUT] job ë“±ë¡ ì„±ê³µ ì—¬ë¶€. ë§Œì•½ SDB_FLUSH_JOB_MAXë³´ë‹¤ ë§ì€
+ *                            jobì„ ë“±ë¡í•˜ë ¤ê³  ì‹œë„í•˜ë©´ ë“±ë¡ì´ ì‹¤íŒ¨í•œë‹¤.
  *****************************************************************************/
 void sdbFlushMgr::addReqCPFlushJob(
         idvSQL                     * aStatistics,
@@ -471,21 +471,21 @@ void sdbFlushMgr::addReqCPFlushJob(
 
 /*****************************************************************************
  * Description :
- *   ÀÌ ÇÔ¼ö´Â tablespace ¶Ç´Â tableÀÌ drop ¶Ç´Â offlineµÇ¾úÀ» ¶§,
- *   ÀÌ tablespace³ª table¿¡ ´ëÇØ¼­ flush ÀÛ¾÷À» ÇÒ ¶§ »ç¿ëµÈ´Ù.
- *   jobDoneÀ» ¿É¼ÇÀ¸·Î ÁÙ ¼ö ÀÖ´Âµ¥ ÀÌ °ªÀ» ¼¼ÆÃÇÏ¸é jobÀÌ ¿Ï·áµÇ¾úÀ» ¶§
- *   ¾î¶² Ã³¸®¸¦ ¼öÇàÇÒ ¼ö ÀÖ´Ù. job ¿Ï·á¸¦ Åëº¸¹ŞÀ» ÇÊ¿ä¾øÀ¸¸é
- *   ÀÌ ÀÎÀÚ¿¡ NULLÀ» ¼¼ÆÃÇÏ¸é µÈ´Ù.
+ *   ì´ í•¨ìˆ˜ëŠ” tablespace ë˜ëŠ” tableì´ drop ë˜ëŠ” offlineë˜ì—ˆì„ ë•Œ,
+ *   ì´ tablespaceë‚˜ tableì— ëŒ€í•´ì„œ flush ì‘ì—…ì„ í•  ë•Œ ì‚¬ìš©ëœë‹¤.
+ *   jobDoneì„ ì˜µì…˜ìœ¼ë¡œ ì¤„ ìˆ˜ ìˆëŠ”ë° ì´ ê°’ì„ ì„¸íŒ…í•˜ë©´ jobì´ ì™„ë£Œë˜ì—ˆì„ ë•Œ
+ *   ì–´ë–¤ ì²˜ë¦¬ë¥¼ ìˆ˜í–‰í•  ìˆ˜ ìˆë‹¤. job ì™„ë£Œë¥¼ í†µë³´ë°›ì„ í•„ìš”ì—†ìœ¼ë©´
+ *   ì´ ì¸ìì— NULLì„ ì„¸íŒ…í•˜ë©´ ëœë‹¤.
  *
  * Implementation:
  *
- *  aStatistics - [IN]  Åë°èÁ¤º¸
- *  aBCBQueue   - [IN]  flush¸¦ ¼öÇàÇÒ BCBÆ÷ÀÎÅÍ°¡ µé¾îÀÖ´Â Å¥
- *  aFiltFunc   - [IN]  aBCBQueue¿¡ ÀÖ´Â BCBÁß aFiltFuncÁ¶°Ç¿¡ ¸Â´Â BCB¸¸ flush
- *  aFiltObj    - [IN]  aFiltFunc¿¡ ÆÄ¶ó¹ÌÅÍ·Î ³Ö¾îÁÖ´Â °ª
- *  aJobDoneParam-[IN]  job ¿Ï·á¸¦ Åëº¸ ¹Ş±â¸¦ ¿øÇÒ¶§, ÀÌ ÆÄ¶ó¹ÌÅÍ¸¦ ¼³Á¤ÇÑ´Ù.
- *  aAdded      - [OUT] job µî·Ï ¼º°ø ¿©ºÎ. ¸¸¾à SDB_FLUSH_JOB_MAXº¸´Ù ¸¹Àº
- *                      jobÀ» µî·ÏÇÏ·Á°í ½ÃµµÇÏ¸é µî·ÏÀÌ ½ÇÆĞÇÑ´Ù.
+ *  aStatistics - [IN]  í†µê³„ì •ë³´
+ *  aBCBQueue   - [IN]  flushë¥¼ ìˆ˜í–‰í•  BCBí¬ì¸í„°ê°€ ë“¤ì–´ìˆëŠ” í
+ *  aFiltFunc   - [IN]  aBCBQueueì— ìˆëŠ” BCBì¤‘ aFiltFuncì¡°ê±´ì— ë§ëŠ” BCBë§Œ flush
+ *  aFiltObj    - [IN]  aFiltFuncì— íŒŒë¼ë¯¸í„°ë¡œ ë„£ì–´ì£¼ëŠ” ê°’
+ *  aJobDoneParam-[IN]  job ì™„ë£Œë¥¼ í†µë³´ ë°›ê¸°ë¥¼ ì›í• ë•Œ, ì´ íŒŒë¼ë¯¸í„°ë¥¼ ì„¤ì •í•œë‹¤.
+ *  aAdded      - [OUT] job ë“±ë¡ ì„±ê³µ ì—¬ë¶€. ë§Œì•½ SDB_FLUSH_JOB_MAXë³´ë‹¤ ë§ì€
+ *                      jobì„ ë“±ë¡í•˜ë ¤ê³  ì‹œë„í•˜ë©´ ë“±ë¡ì´ ì‹¤íŒ¨í•œë‹¤.
  *****************************************************************************/
 void sdbFlushMgr::addReqDBObjectFlushJob(
         idvSQL                     *aStatistics,
@@ -527,19 +527,19 @@ void sdbFlushMgr::addReqDBObjectFlushJob(
 
 /******************************************************************************
  * Description :
- *    main jobÀ» ÇÏ³ª ¾ò´Â´Ù. main jobÀÌ¶õ flush list°¡ ÀÏÁ¤ ±æÀÌ°¡ ÃÊ°úµÇ¸é
- *    flush ´ë»óÀ¸·Î °£ÁÖÇÏ°í replacement flush jobÀ» »ı¼ºÇÏ¿© ¹İÈ¯ÇÑ´Ù.
+ *    main jobì„ í•˜ë‚˜ ì–»ëŠ”ë‹¤. main jobì´ë€ flush listê°€ ì¼ì • ê¸¸ì´ê°€ ì´ˆê³¼ë˜ë©´
+ *    flush ëŒ€ìƒìœ¼ë¡œ ê°„ì£¼í•˜ê³  replacement flush jobì„ ìƒì„±í•˜ì—¬ ë°˜í™˜í•œë‹¤.
  *
  * Implementation :
- *    poolÀÇ flush listµé Áß¿¡ °¡Àå ±ä list¸¦ ¾ò¾î¿Í flush ±æÀÌ¸¦ ÃÊ°úÇÏ´ÂÁö
- *    °Ë»çÇÏ¿© ÃÊ°úµÇ¸é flush jobÀ¸·Î »ı¼ºÇÑ ÈÄ ¹İÈ¯ÇÑ´Ù.
- *    ÀÌ ¾Ë°í¸®Áò¿¡ ÀÇÇÏ¸é µ¿½Ã¿¡ ¿©·¯ flusherµéÀÌ ÇÑ flush list¿¡ ´ëÇØ¼­¸¸
- *    flushÇÒ ¼öµµ ÀÖ´Ù. ÇÏÁö¸¸ flush listÀÇ ±æÀÌ°¡ ÁÙ¾îµé¸é flusherµéÀº
- *    ´Ù¸¥ flush list¿¡ ´ëÇØ ÀÛ¾÷À» ¼öÇàÇÒ °ÍÀÌ´Ù.
- *    ÇÑ flush list¿¡ ´ëÇØ¼­ ¿©·¯°³ÀÇ flusher°¡ flush ÀÛ¾÷À» ¼öÇàÇØµµ
- *    ¼º´ÉÀÌ ¶³¾îÁöÁö ¾Ê°Ô²û ¼³°èµÇ¾î ÀÖ´Ù.
+ *    poolì˜ flush listë“¤ ì¤‘ì— ê°€ì¥ ê¸´ listë¥¼ ì–»ì–´ì™€ flush ê¸¸ì´ë¥¼ ì´ˆê³¼í•˜ëŠ”ì§€
+ *    ê²€ì‚¬í•˜ì—¬ ì´ˆê³¼ë˜ë©´ flush jobìœ¼ë¡œ ìƒì„±í•œ í›„ ë°˜í™˜í•œë‹¤.
+ *    ì´ ì•Œê³ ë¦¬ì¦˜ì— ì˜í•˜ë©´ ë™ì‹œì— ì—¬ëŸ¬ flusherë“¤ì´ í•œ flush listì— ëŒ€í•´ì„œë§Œ
+ *    flushí•  ìˆ˜ë„ ìˆë‹¤. í•˜ì§€ë§Œ flush listì˜ ê¸¸ì´ê°€ ì¤„ì–´ë“¤ë©´ flusherë“¤ì€
+ *    ë‹¤ë¥¸ flush listì— ëŒ€í•´ ì‘ì—…ì„ ìˆ˜í–‰í•  ê²ƒì´ë‹¤.
+ *    í•œ flush listì— ëŒ€í•´ì„œ ì—¬ëŸ¬ê°œì˜ flusherê°€ flush ì‘ì—…ì„ ìˆ˜í–‰í•´ë„
+ *    ì„±ëŠ¥ì´ ë–¨ì–´ì§€ì§€ ì•Šê²Œë” ì„¤ê³„ë˜ì–´ ìˆë‹¤.
  *
- *    aRetJob   - [OUT] ¸®ÅÏµÇ´Â job
+ *    aRetJob   - [OUT] ë¦¬í„´ë˜ëŠ” job
  ******************************************************************************/
 void sdbFlushMgr::getReplaceFlushJob(sdbFlushJob *aRetJob)
 {
@@ -551,25 +551,25 @@ void sdbFlushMgr::getReplaceFlushJob(sdbFlushJob *aRetJob)
 
     initJob(aRetJob);
 
-    /* BUG-24303 Dirty ÆäÀÌÁö°¡ ¾ø¾îµµ Wait¾øÀÌ Checkpoint Flush JobÀÌ ¹«ÇÑ ¹ß»ı
+    /* BUG-24303 Dirty í˜ì´ì§€ê°€ ì—†ì–´ë„ Waitì—†ì´ Checkpoint Flush Jobì´ ë¬´í•œ ë°œìƒ
      *
-     * Replacement Flush°¡ ¹ß»ıÇÏ´Â Á¶°ÇÀ» ´Ù½Ã Á¤¸®ÇÏÀÚ´Â °ÍÀÌ´Ù.
+     * Replacement Flushê°€ ë°œìƒí•˜ëŠ” ì¡°ê±´ì„ ë‹¤ì‹œ ì •ë¦¬í•˜ìëŠ” ê²ƒì´ë‹¤.
      *
-     * ¼­¹ö°¡ BusyÇÏ´Ù°í ÆÇ´ÜÇÏ´Â °æ¿ì·Î HIGH_FLUSH_PCT ÀÌ»óÀÎ °æ¿ì
-     * ¸¸ °í·ÁÇÏ¿´´Âµ¥, ÀÌ°Í»Ó¸¸ ¾Æ´Ï¶ó LOW_FLUSH_PCT ÀÌ»ó LOW_RREPARE_PCT
-     * ÀÌÇÏ ÀÎ °æ¿ìÀÌ´Ù. Áï, ÀÌ Á¶°ÇÀº Replacement Flush°¡ ¹ß»ıÇÒ ¼ö ÀÖ´Â Á¶°Ç°ú
-     * µ¿Ä¡ÀÌ´Ù.
+     * ì„œë²„ê°€ Busyí•˜ë‹¤ê³  íŒë‹¨í•˜ëŠ” ê²½ìš°ë¡œ HIGH_FLUSH_PCT ì´ìƒì¸ ê²½ìš°
+     * ë§Œ ê³ ë ¤í•˜ì˜€ëŠ”ë°, ì´ê²ƒë¿ë§Œ ì•„ë‹ˆë¼ LOW_FLUSH_PCT ì´ìƒ LOW_RREPARE_PCT
+     * ì´í•˜ ì¸ ê²½ìš°ì´ë‹¤. ì¦‰, ì´ ì¡°ê±´ì€ Replacement Flushê°€ ë°œìƒí•  ìˆ˜ ìˆëŠ” ì¡°ê±´ê³¼
+     * ë™ì¹˜ì´ë‹¤.
      *
-     * ¹®Á¦´Â ¼­¹ö°¡ Replacement Flush°¡ ¹ß»ıÇÒ ¼ö ÀÖ´Â Á¶°Ç¿¡¼­ BusyÇÏ´Ù°í ÆÇ´Ü
-     * ÇÏ°í´Â ½¬Áö¾Ê°í Flush JobÀ» ¹ß»ı½ÃÅ°´Âµ¥ ÀÌ¶§, Á¶°Ç°Ë»ç ´©¶ôÀ¸·Î 
-     * Replacement Flush´Â ¹ß»ıµÇÁö ¾Ê°í, °è¼Ó Checkpoint List Flush¸¸À» 
-     * »ı¼ºÇÏ¿© ¹ß»ıÇÏ¹Ç·Î ÇØ¼­ CPU¸¦ ÃÖ´ë·Î »ç¿ëÇÏ´Â ¹®Á¦°¡ ¹ß»ıÇÑ´Ù.
-     * ( ChkptList Flush¿¡ ÀÇÇØ¼­ Flush List ±æÀÌ°¡ ÁÙ¾îµéÁö ¾Ê´Â °ÍÀº
-     * FlushÀÌÈÄ Dirty »óÅÂ°¡ ÇØÁ¦µÇ¾îµµ Flush List¿¡ Á¸ÀçÇÒ ¼ö ÀÖ±â ¶§¹®ÀÌ´Ù. )
+     * ë¬¸ì œëŠ” ì„œë²„ê°€ Replacement Flushê°€ ë°œìƒí•  ìˆ˜ ìˆëŠ” ì¡°ê±´ì—ì„œ Busyí•˜ë‹¤ê³  íŒë‹¨
+     * í•˜ê³ ëŠ” ì‰¬ì§€ì•Šê³  Flush Jobì„ ë°œìƒì‹œí‚¤ëŠ”ë° ì´ë•Œ, ì¡°ê±´ê²€ì‚¬ ëˆ„ë½ìœ¼ë¡œ 
+     * Replacement FlushëŠ” ë°œìƒë˜ì§€ ì•Šê³ , ê³„ì† Checkpoint List Flushë§Œì„ 
+     * ìƒì„±í•˜ì—¬ ë°œìƒí•˜ë¯€ë¡œ í•´ì„œ CPUë¥¼ ìµœëŒ€ë¡œ ì‚¬ìš©í•˜ëŠ” ë¬¸ì œê°€ ë°œìƒí•œë‹¤.
+     * ( ChkptList Flushì— ì˜í•´ì„œ Flush List ê¸¸ì´ê°€ ì¤„ì–´ë“¤ì§€ ì•ŠëŠ” ê²ƒì€
+     * Flushì´í›„ Dirty ìƒíƒœê°€ í•´ì œë˜ì–´ë„ Flush Listì— ì¡´ì¬í•  ìˆ˜ ìˆê¸° ë•Œë¬¸ì´ë‹¤. )
      *
-     * ±×·¯¹Ç·Î, getJob½Ã Replacement Flush JobÀ» »ı¼ºÇÏµµ·Ï ÇØ¼­ Flush
-     * ListÀÇ clean BCB°¡ prepare list·Î ÀÌµ¿½ÃÄÑ, Busy Á¶°ÇÀ» ¸¸Á·ÇÏÁö ¾Êµµ·Ï
-     * ÇØ¾ßÇÑ´Ù.
+     * ê·¸ëŸ¬ë¯€ë¡œ, getJobì‹œ Replacement Flush Jobì„ ìƒì„±í•˜ë„ë¡ í•´ì„œ Flush
+     * Listì˜ clean BCBê°€ prepare listë¡œ ì´ë™ì‹œì¼œ, Busy ì¡°ê±´ì„ ë§Œì¡±í•˜ì§€ ì•Šë„ë¡
+     * í•´ì•¼í•œë‹¤.
      */
     if ( isCond4ReplaceFlush() == ID_TRUE )
     {
@@ -589,14 +589,14 @@ void sdbFlushMgr::getReplaceFlushJob(sdbFlushJob *aRetJob)
 
 /******************************************************************************
  * Description :
- *   incremental checkpoint¸¦ ¼öÇàÇÏ´Â jobÀ» ¾ò´Â´Ù.
- *   ÀÌ ÇÔ¼ö¸¦ ¼öÇàÇÑ´Ù°í ÇØ¼­ ±×³É jobÀ» ÁÖÁö´Â ¾Ê´Â´Ù. Áï, ¾î¶² Á¶°ÇÀ» ¸¸Á·
- *   ÇØ¾ß ÇÏ´Âµ¥, ±×Á¶°ÇÀº ¾Æ·¡ µÑÁß ÇÏ³ª¸¦ ¸¸Á· ÇÒ ¶§ÀÌ´Ù.
- *   1. ¸¶Áö¸· checkpoint ¼öÇà ÈÄ ½Ã°£ÀÌ ¸¹ÀÌ Áö³µ´Ù
- *   2. Recovery LSNÀÌ ³Ê¹« ÀÛÀ»¶§
+ *   incremental checkpointë¥¼ ìˆ˜í–‰í•˜ëŠ” jobì„ ì–»ëŠ”ë‹¤.
+ *   ì´ í•¨ìˆ˜ë¥¼ ìˆ˜í–‰í•œë‹¤ê³  í•´ì„œ ê·¸ëƒ¥ jobì„ ì£¼ì§€ëŠ” ì•ŠëŠ”ë‹¤. ì¦‰, ì–´ë–¤ ì¡°ê±´ì„ ë§Œì¡±
+ *   í•´ì•¼ í•˜ëŠ”ë°, ê·¸ì¡°ê±´ì€ ì•„ë˜ ë‘˜ì¤‘ í•˜ë‚˜ë¥¼ ë§Œì¡± í•  ë•Œì´ë‹¤.
+ *   1. ë§ˆì§€ë§‰ checkpoint ìˆ˜í–‰ í›„ ì‹œê°„ì´ ë§ì´ ì§€ë‚¬ë‹¤
+ *   2. Recovery LSNì´ ë„ˆë¬´ ì‘ì„ë•Œ
  *
- *  aStatistics - [IN]  Åë°èÁ¤º¸
- *  aRetJob     - [OUT] ¸®ÅÏµÇ´Â job
+ *  aStatistics - [IN]  í†µê³„ì •ë³´
+ *  aRetJob     - [OUT] ë¦¬í„´ë˜ëŠ” job
  ******************************************************************************/
 void sdbFlushMgr::getCPFlushJob(idvSQL *aStatistics, sdbFlushJob *aRetJob)
 {
@@ -630,11 +630,11 @@ void sdbFlushMgr::getCPFlushJob(idvSQL *aStatistics, sdbFlushJob *aRetJob)
 
 /******************************************************************************
  * Description :
- *    flusher ¾²·¹µå¸¦ Á¾·á½ÃÅ²´Ù. Áï flusher ÇÏ³ª¸¦ Á¤Áö½ÃÅ²´Ù.
- *    ¾²·¹µå¸¸ Á¾·áÇÒ »Ó ÀÚ¿øÀº ÇØÁ¦ÇÏÁö ¾Ê´Â´Ù.
- *    Á¤ÁöµÈ flusher´Â turnOnFlusher()·Î ´Ù½Ã ±¸µ¿½ÃÅ³ ¼ö ÀÖ´Ù.
+ *    flusher ì“°ë ˆë“œë¥¼ ì¢…ë£Œì‹œí‚¨ë‹¤. ì¦‰ flusher í•˜ë‚˜ë¥¼ ì •ì§€ì‹œí‚¨ë‹¤.
+ *    ì“°ë ˆë“œë§Œ ì¢…ë£Œí•  ë¿ ìì›ì€ í•´ì œí•˜ì§€ ì•ŠëŠ”ë‹¤.
+ *    ì •ì§€ëœ flusherëŠ” turnOnFlusher()ë¡œ ë‹¤ì‹œ êµ¬ë™ì‹œí‚¬ ìˆ˜ ìˆë‹¤.
  *
- *  aStatistics - [IN]  Åë°èÁ¤º¸
+ *  aStatistics - [IN]  í†µê³„ì •ë³´
  *  aFlusherID  - [IN]  flusher id
  ******************************************************************************/
 IDE_RC sdbFlushMgr::turnOffFlusher(idvSQL *aStatistics, UInt aFlusherID)
@@ -647,10 +647,10 @@ IDE_RC sdbFlushMgr::turnOffFlusher(idvSQL *aStatistics, UInt aFlusherID)
     ideLog::log( IDE_SM_0, "[PREPARE] Stop flusher ID(%d)\n", aFlusherID );
 
     // BUG-26476 
-    // checkpoint°¡ ¹ß»ıÇØ¼­ checkpoint flush jobÀÌ ¼öÇàµÇ±â¸¦ 
-    // ´ë±â ÇÏ°í ÀÖ´Â ¾²·¹µå°¡ ÀÖÀ» ¼ö ÀÖ´Ù. ±×·± °æ¿ì 
-    // flusher¸¦ ²ô¸é ´ë±âÇÏ´ø ¾²·¹µå°¡ ¹«ÇÑÁ¤ ´ë±âÇÒ ¼ö 
-    // ÀÖ±â ¶§¹®¿¡ ÀÌ¶© ´ë±âÇÏ´Â ¾²·¹µå°¡ ±ú¾î³ª±â±îÁö ±â´ë·Á¾ß ÇÑ´Ù. 
+    // checkpointê°€ ë°œìƒí•´ì„œ checkpoint flush jobì´ ìˆ˜í–‰ë˜ê¸°ë¥¼ 
+    // ëŒ€ê¸° í•˜ê³  ìˆëŠ” ì“°ë ˆë“œê°€ ìˆì„ ìˆ˜ ìˆë‹¤. ê·¸ëŸ° ê²½ìš° 
+    // flusherë¥¼ ë„ë©´ ëŒ€ê¸°í•˜ë˜ ì“°ë ˆë“œê°€ ë¬´í•œì • ëŒ€ê¸°í•  ìˆ˜ 
+    // ìˆê¸° ë•Œë¬¸ì— ì´ë• ëŒ€ê¸°í•˜ëŠ” ì“°ë ˆë“œê°€ ê¹¨ì–´ë‚˜ê¸°ê¹Œì§€ ê¸°ëŒ€ë ¤ì•¼ í•œë‹¤. 
 
     IDE_ASSERT(mFCLatch.lockWrite(NULL, 
                                   NULL) 
@@ -693,7 +693,7 @@ IDE_RC sdbFlushMgr::turnOffFlusher(idvSQL *aStatistics, UInt aFlusherID)
 
 /******************************************************************************
  * Description :
- *    Á¾·áµÈ flusher¸¦ ´Ù½Ã Àç±¸µ¿½ÃÅ²´Ù.
+ *    ì¢…ë£Œëœ flusherë¥¼ ë‹¤ì‹œ ì¬êµ¬ë™ì‹œí‚¨ë‹¤.
  *
  *  aFlusherID  - [IN]  flusher id
  ******************************************************************************/
@@ -736,7 +736,7 @@ IDE_RC sdbFlushMgr::turnOnFlusher(UInt aFlusherID)
 
 /******************************************************************************
  * Description :
- *    Á¾·áµÈ¸ğµç flusher¸¦ ´Ù½Ã Àç±¸µ¿½ÃÅ²´Ù.
+ *    ì¢…ë£Œëœëª¨ë“  flusherë¥¼ ë‹¤ì‹œ ì¬êµ¬ë™ì‹œí‚¨ë‹¤.
  *
  ******************************************************************************/
 IDE_RC sdbFlushMgr::turnOnAllflushers()
@@ -768,10 +768,10 @@ IDE_RC sdbFlushMgr::turnOnAllflushers()
 
 /******************************************************************************
  * Description :
- *  »ç¿ëÀÚ°¡ ¿äÃ»ÇÑ flushÀÛ¾÷ ¿äÃ»ÀÌ ³¡³µ´ÂÁö È®ÀÎÇÏ´Â ¼ö´ÜÀÎ
- *  sdbFlushJobDoneNotifyParam À» ÃÊ±âÈ­ ÇÑ´Ù.
+ *  ì‚¬ìš©ìê°€ ìš”ì²­í•œ flushì‘ì—… ìš”ì²­ì´ ëë‚¬ëŠ”ì§€ í™•ì¸í•˜ëŠ” ìˆ˜ë‹¨ì¸
+ *  sdbFlushJobDoneNotifyParam ì„ ì´ˆê¸°í™” í•œë‹¤.
  *
- *  aParam  - [IN]  ÃÊ±âÈ­ÇÒ º¯¼ö
+ *  aParam  - [IN]  ì´ˆê¸°í™”í•  ë³€ìˆ˜
  ******************************************************************************/
 IDE_RC sdbFlushMgr::initJobDoneNotifyParam(sdbFlushJobDoneNotifyParam *aParam)
 {
@@ -797,21 +797,21 @@ IDE_RC sdbFlushMgr::initJobDoneNotifyParam(sdbFlushJobDoneNotifyParam *aParam)
 
 /******************************************************************************
  * Description :
- *  ÃÊ±âÈ­µÈ sdbFlushJobDoneNotifyParamÀ» ¹ÙÅÁÀ¸·Î
- *  ¿äÃ»µÈ ÀÛ¾÷ÀÌ Á¾·áÇÏ±â¸¦ ´ë±âÇÑ´Ù.
+ *  ì´ˆê¸°í™”ëœ sdbFlushJobDoneNotifyParamì„ ë°”íƒ•ìœ¼ë¡œ
+ *  ìš”ì²­ëœ ì‘ì—…ì´ ì¢…ë£Œí•˜ê¸°ë¥¼ ëŒ€ê¸°í•œë‹¤.
  *
- *  aParam  - [IN]  ´ë±â¸¦ À§ÇØ ÇÊ¿äÇÑ º¯¼ö
+ *  aParam  - [IN]  ëŒ€ê¸°ë¥¼ ìœ„í•´ í•„ìš”í•œ ë³€ìˆ˜
  ******************************************************************************/
 IDE_RC sdbFlushMgr::waitForJobDone(sdbFlushJobDoneNotifyParam *aParam)
 {
     IDE_ASSERT(aParam->mMutex.lock(NULL) == IDE_SUCCESS);
 
-    /* BUG-44834 Æ¯Á¤ Àåºñ¿¡¼­ sprious wakeup Çö»óÀÌ ¹ß»ıÇÏ¹Ç·Î 
-                 wakeup ÈÄ¿¡µµ ´Ù½Ã È®ÀÎ ÇÏµµ·Ï while¹®À¸·Î Ã¼Å©ÇÑ´Ù.*/
+    /* BUG-44834 íŠ¹ì • ì¥ë¹„ì—ì„œ sprious wakeup í˜„ìƒì´ ë°œìƒí•˜ë¯€ë¡œ 
+                 wakeup í›„ì—ë„ ë‹¤ì‹œ í™•ì¸ í•˜ë„ë¡ whileë¬¸ìœ¼ë¡œ ì²´í¬í•œë‹¤.*/
     while( aParam->mJobDone == ID_FALSE )
     {
-        /* µî·ÏÇÑ jobÀÌ Ã³¸® ¿Ï·áµÉ¶§±îÁö ´ë±âÇÑ´Ù.
-         * cond_waitÀ» ¼öÇàÇÔ°ú µ¿½Ã¿¡ mMutex¸¦ Ç¬´Ù. */
+        /* ë“±ë¡í•œ jobì´ ì²˜ë¦¬ ì™„ë£Œë ë•Œê¹Œì§€ ëŒ€ê¸°í•œë‹¤.
+         * cond_waitì„ ìˆ˜í–‰í•¨ê³¼ ë™ì‹œì— mMutexë¥¼ í‘¼ë‹¤. */
         IDE_TEST_RAISE(aParam->mCondVar.wait(&(aParam->mMutex))
                        != IDE_SUCCESS, err_cond_wait);
     }
@@ -840,20 +840,20 @@ IDE_RC sdbFlushMgr::waitForJobDone(sdbFlushJobDoneNotifyParam *aParam)
 
 /******************************************************************************
  * Description :
- *    CPListSetÀÇ dirty ¹öÆÛµéÀ» flushÇÑ´Ù.
- *    flush°¡ ¿Ï·áµÉ ¶§±îÁö ÀÌ ÇÔ¼ö¸¦ ºüÁ®³ª°¡Áö ¾Ê´Â´Ù.
+ *    CPListSetì˜ dirty ë²„í¼ë“¤ì„ flushí•œë‹¤.
+ *    flushê°€ ì™„ë£Œë  ë•Œê¹Œì§€ ì´ í•¨ìˆ˜ë¥¼ ë¹ ì ¸ë‚˜ê°€ì§€ ì•ŠëŠ”ë‹¤.
  *
  * Implementation :
- *    ÀÌ ÇÔ¼ö´Â ÀÇ¿Ü·Î º¹ÀâÇÏ´Ù. checkpoint flush jobÀ» µî·ÏÇÏ°í
- *    ÀÌ jobÀÌ Ã³¸® ¿Ï·áµÉ ¶§±îÁö ±â´Ù¸®±â À§ÇØ, mutex¸¦ »ı¼ºÇÏ°í
- *    condition variableÀ» »ı¼ºÇÏ¿© cond_waitÀ» ÇÏ°ÔµÈ´Ù.
- *    ÀÌ ´ë±â »óÅÂ¿¡ ÀÖ´Ù°¡ flusher°¡ ÀÌ¶§ ¿äÃ»µÈ jobÀ» Ã³¸® ¿Ï·áÇÏ¸é
- *    notifyJobDone()À» È£ÃâÇÏ°Ô µÇ´Âµ¥ ±×·¯¸é cond_signal()À» È£ÃâÇÏ°Ô µÇ¾î
- *    cond_wait¿¡¼­ Ç®·Á³ª°Ô µÇ°í ±×·¯¸é ºñ·Î¼Ò ÀÌ ÇÔ¼ö¸¦ ºüÁ®³ª°¡°Ô µÈ´Ù.
+ *    ì´ í•¨ìˆ˜ëŠ” ì˜ì™¸ë¡œ ë³µì¡í•˜ë‹¤. checkpoint flush jobì„ ë“±ë¡í•˜ê³ 
+ *    ì´ jobì´ ì²˜ë¦¬ ì™„ë£Œë  ë•Œê¹Œì§€ ê¸°ë‹¤ë¦¬ê¸° ìœ„í•´, mutexë¥¼ ìƒì„±í•˜ê³ 
+ *    condition variableì„ ìƒì„±í•˜ì—¬ cond_waitì„ í•˜ê²Œëœë‹¤.
+ *    ì´ ëŒ€ê¸° ìƒíƒœì— ìˆë‹¤ê°€ flusherê°€ ì´ë•Œ ìš”ì²­ëœ jobì„ ì²˜ë¦¬ ì™„ë£Œí•˜ë©´
+ *    notifyJobDone()ì„ í˜¸ì¶œí•˜ê²Œ ë˜ëŠ”ë° ê·¸ëŸ¬ë©´ cond_signal()ì„ í˜¸ì¶œí•˜ê²Œ ë˜ì–´
+ *    cond_waitì—ì„œ í’€ë ¤ë‚˜ê²Œ ë˜ê³  ê·¸ëŸ¬ë©´ ë¹„ë¡œì†Œ ì´ í•¨ìˆ˜ë¥¼ ë¹ ì ¸ë‚˜ê°€ê²Œ ëœë‹¤.
  *
- *  aStatistics     - [IN]  Åë°èÁ¤º¸
- *  aFlushAll       - [IN]  check point list³»ÀÇ ¸ğµç BCB¸¦ flush ÇÏ·Á¸é
- *                          ÀÌ º¯¼ö¸¦ ID_TRUE·Î ¼³Á¤ÇÑ´Ù.
+ *  aStatistics     - [IN]  í†µê³„ì •ë³´
+ *  aFlushAll       - [IN]  check point listë‚´ì˜ ëª¨ë“  BCBë¥¼ flush í•˜ë ¤ë©´
+ *                          ì´ ë³€ìˆ˜ë¥¼ ID_TRUEë¡œ ì„¤ì •í•œë‹¤.
  ******************************************************************************/
 IDE_RC sdbFlushMgr::flushDirtyPagesInCPList(idvSQL    * aStatistics,
                                             idBool      aFlushAll,
@@ -869,9 +869,9 @@ IDE_RC sdbFlushMgr::flushDirtyPagesInCPList(idvSQL    * aStatistics,
     idBool                      sLatchLocked    = ID_FALSE; 
 
     /* BUG-26476 
-     * checkpoint ¼öÇà½Ã flusherµéÀÌ stopµÇ¾î ÀÖÀ¸¸é skipÀ» ÇØ¾ß ÇÑ´Ù. 
-     * ÇÏÁö¸¸ checkpoint¿¡ ÀÇÇØ checkpoint flush°¡ ¼öÇàµÇ°í ÀÖ´Â µ¿¾È 
-     * flush°¡ stopµÇ¸é ¾ÈµÈ´Ù. */
+     * checkpoint ìˆ˜í–‰ì‹œ flusherë“¤ì´ stopë˜ì–´ ìˆìœ¼ë©´ skipì„ í•´ì•¼ í•œë‹¤. 
+     * í•˜ì§€ë§Œ checkpointì— ì˜í•´ checkpoint flushê°€ ìˆ˜í–‰ë˜ê³  ìˆëŠ” ë™ì•ˆ 
+     * flushê°€ stopë˜ë©´ ì•ˆëœë‹¤. */
     IDE_ASSERT(mFCLatch.lockRead(NULL, 
                                  NULL) 
                == IDE_SUCCESS); 
@@ -891,7 +891,7 @@ IDE_RC sdbFlushMgr::flushDirtyPagesInCPList(idvSQL    * aStatistics,
     else
     {
         sMinFlushCount    = mCPListSet->getTotalBCBCnt();
-        sRedoPageCount    = 0; // DirtyPage¸¦ BufferPool¿¡ ³²°ÜµÎÁö ¾Ê´Â´Ù.
+        sRedoPageCount    = 0; // DirtyPageë¥¼ BufferPoolì— ë‚¨ê²¨ë‘ì§€ ì•ŠëŠ”ë‹¤.
         sRedoLogFileCount = 0;
     }
 
@@ -941,14 +941,14 @@ IDE_RC sdbFlushMgr::flushDirtyPagesInCPList(idvSQL    * aStatistics,
 }
 
 /******************************************************************************
- * BCB Æ÷ÀÎÅÍ°¡ µé¾îÀÖ´Â queue¿Í ±× BCBµéÀ» flush ÇØ¾ß ÇÒÁö ¸»Áö
- * °áÁ¤ÇÒ ¼ö ÀÖ´Â aFiltFunc ¹× aFiltObj¸¦ ¹ÙÅÁÀ¸·Î
- * ÇÃ·¯½Ã¸¦ ¼öÇàÇÑ´Ù.
+ * BCB í¬ì¸í„°ê°€ ë“¤ì–´ìˆëŠ” queueì™€ ê·¸ BCBë“¤ì„ flush í•´ì•¼ í• ì§€ ë§ì§€
+ * ê²°ì •í•  ìˆ˜ ìˆëŠ” aFiltFunc ë° aFiltObjë¥¼ ë°”íƒ•ìœ¼ë¡œ
+ * í”ŒëŸ¬ì‹œë¥¼ ìˆ˜í–‰í•œë‹¤.
  *
- *  aStatistics - [IN]  Åë°èÁ¤º¸
- *  aBCBQueue   - [IN]  flushÇÒ ´ë»óÀÌ µé¾î ÀÖ´Â BCBÀÇ Æ÷ÀÎÅÍ°¡ ÀÖ´Â queue
- *  aFiltFunc   - [IN]  aBCBQueue¿¡ ÀÖ´Â BCBÁß aFiltFuncÁ¶°Ç¿¡ ¸Â´Â BCB¸¸ flush
- *  aFiltObj    - [IN]  aFiltFunc¿¡ ÆÄ¶ó¹ÌÅÍ·Î ³Ö¾îÁÖ´Â °ª
+ *  aStatistics - [IN]  í†µê³„ì •ë³´
+ *  aBCBQueue   - [IN]  flushí•  ëŒ€ìƒì´ ë“¤ì–´ ìˆëŠ” BCBì˜ í¬ì¸í„°ê°€ ìˆëŠ” queue
+ *  aFiltFunc   - [IN]  aBCBQueueì— ìˆëŠ” BCBì¤‘ aFiltFuncì¡°ê±´ì— ë§ëŠ” BCBë§Œ flush
+ *  aFiltObj    - [IN]  aFiltFuncì— íŒŒë¼ë¯¸í„°ë¡œ ë„£ì–´ì£¼ëŠ” ê°’
  ******************************************************************************/
 IDE_RC sdbFlushMgr::flushObjectDirtyPages(idvSQL       *aStatistics,
                                           smuQueueMgr  *aBCBQueue,
@@ -983,12 +983,12 @@ IDE_RC sdbFlushMgr::flushObjectDirtyPages(idvSQL       *aStatistics,
 
 /******************************************************************************
  * Description :
- *    jobÀ» Ã³¸®ÇßÀ½À» ¾Ë¸°´Ù. ¸¸¾à jobDoneÀ» ¼¼ÆÃÇÏÁö ¾Ê¾ÒÀ¸¸é
- *    ÀÌ ÇÔ¼ö¾È¿¡¼­ ¾Æ¹«·± ÀÛ¾÷µµ ÇÏÁö ¾Ê´Â´Ù.
- *    jobDoneÀº jobÀ» µî·ÏÇÒ ¶§ ¿É¼ÇÀ¸·Î ÁÙ ¼ö ÀÖ´Ù.
+ *    jobì„ ì²˜ë¦¬í–ˆìŒì„ ì•Œë¦°ë‹¤. ë§Œì•½ jobDoneì„ ì„¸íŒ…í•˜ì§€ ì•Šì•˜ìœ¼ë©´
+ *    ì´ í•¨ìˆ˜ì•ˆì—ì„œ ì•„ë¬´ëŸ° ì‘ì—…ë„ í•˜ì§€ ì•ŠëŠ”ë‹¤.
+ *    jobDoneì€ jobì„ ë“±ë¡í•  ë•Œ ì˜µì…˜ìœ¼ë¡œ ì¤„ ìˆ˜ ìˆë‹¤.
  *
- * aParam   - [IN]  ÀÌ º¯¼ö¿¡ ´ë±âÇÏ°í ÀÖ´Â ¾²·¹µåµé¿¡°Ô jobÀÌ Á¾·á µÇ¾úÀ½À»
- *                  ¾Ë¸°´Ù.
+ * aParam   - [IN]  ì´ ë³€ìˆ˜ì— ëŒ€ê¸°í•˜ê³  ìˆëŠ” ì“°ë ˆë“œë“¤ì—ê²Œ jobì´ ì¢…ë£Œ ë˜ì—ˆìŒì„
+ *                  ì•Œë¦°ë‹¤.
  ******************************************************************************/
 void sdbFlushMgr::notifyJobDone(sdbFlushJobDoneNotifyParam *aParam)
 {
@@ -1006,9 +1006,9 @@ void sdbFlushMgr::notifyJobDone(sdbFlushJobDoneNotifyParam *aParam)
 
 /******************************************************************************
  * Description :
- *    flush listÀÇ ±æÀÌ°¡ Çö ÇÔ¼öÀÇ ¸®ÅÏ°ª ÀÌ»óÀÌµÇ¸é, ¸¹Àº ¾çÀÇ BCB¿¡ ´ëÇØ
- *    flush¸¦ ¼öÇàÇÑ´Ù.
- *    ÀÚ¼¼ÇÑ ¿ëµµ´Â sdbFlushMgr::isCond4ReplaceFlush À» º¸¸é ¾Ë¼ö ÀÖ´Ù.
+ *    flush listì˜ ê¸¸ì´ê°€ í˜„ í•¨ìˆ˜ì˜ ë¦¬í„´ê°’ ì´ìƒì´ë˜ë©´, ë§ì€ ì–‘ì˜ BCBì— ëŒ€í•´
+ *    flushë¥¼ ìˆ˜í–‰í•œë‹¤.
+ *    ìì„¸í•œ ìš©ë„ëŠ” sdbFlushMgr::isCond4ReplaceFlush ì„ ë³´ë©´ ì•Œìˆ˜ ìˆë‹¤.
  ******************************************************************************/
 ULong sdbFlushMgr::getLowFlushLstLen4FF()
 {
@@ -1027,9 +1027,9 @@ ULong sdbFlushMgr::getLowFlushLstLen4FF()
 
 /******************************************************************************
  * Description :
- *    flush listÀÇ ±æÀÌ°¡ Çö ÇÔ¼öÀÇ ¸®ÅÏ°ª ÀÌ»óÀÌµÇ¸é ¸¹Àº ¾çÀÇ BCB¿¡ ´ëÇØ
- *    flush¸¦ ¼öÇàÇÑ´Ù.
- *    ÀÚ¼¼ÇÑ ¿ëµµ´Â sdbFlushMgr::isCond4ReplaceFlushÀ» º¸¸é ¾Ë¼ö ÀÖ´Ù.
+ *    flush listì˜ ê¸¸ì´ê°€ í˜„ í•¨ìˆ˜ì˜ ë¦¬í„´ê°’ ì´ìƒì´ë˜ë©´ ë§ì€ ì–‘ì˜ BCBì— ëŒ€í•´
+ *    flushë¥¼ ìˆ˜í–‰í•œë‹¤.
+ *    ìì„¸í•œ ìš©ë„ëŠ” sdbFlushMgr::isCond4ReplaceFlushì„ ë³´ë©´ ì•Œìˆ˜ ìˆë‹¤.
  ******************************************************************************/
 ULong sdbFlushMgr::getHighFlushLstLen4FF()
 {
@@ -1047,9 +1047,9 @@ ULong sdbFlushMgr::getHighFlushLstLen4FF()
 
 /******************************************************************************
  * Description :
- *    prepare listÀÇ ±æÀÌ°¡ ÀÌ ±æÀÌ ÀÌÇÏ°¡ µÇ¸é ¸¹Àº ¾çÀÇ BCB¿¡ ´ëÇØ
- *    flush¸¦ ¼öÇàÇÑ´Ù.
- *    ÀÚ¼¼ÇÑ ¿ëµµ´Â sdbFlushMgr::isCond4ReplaceFlushÀ» º¸¸é ¾Ë ¼ö ÀÖ´Ù.
+ *    prepare listì˜ ê¸¸ì´ê°€ ì´ ê¸¸ì´ ì´í•˜ê°€ ë˜ë©´ ë§ì€ ì–‘ì˜ BCBì— ëŒ€í•´
+ *    flushë¥¼ ìˆ˜í–‰í•œë‹¤.
+ *    ìì„¸í•œ ìš©ë„ëŠ” sdbFlushMgr::isCond4ReplaceFlushì„ ë³´ë©´ ì•Œ ìˆ˜ ìˆë‹¤.
  ******************************************************************************/
 ULong sdbFlushMgr:: getLowPrepareLstLen4FF()
 {
@@ -1064,16 +1064,16 @@ ULong sdbFlushMgr:: getLowPrepareLstLen4FF()
 
 /******************************************************************************
  *
- * Description : Replacement Flush ÀÇ Á¶°Ç
+ * Description : Replacement Flush ì˜ ì¡°ê±´
  *
- * RF°¡ ¹ß»ıÇÒ ¼ö ÀÖ´Â Á¶°ÇÀº ´ÙÀ½°ú °°´Ù.
+ * RFê°€ ë°œìƒí•  ìˆ˜ ìˆëŠ” ì¡°ê±´ì€ ë‹¤ìŒê³¼ ê°™ë‹¤.
  *
- * Ã¹¹øÂ°, ÃÖ´ë±æÀÌÀÇ Flush ListÀÇ ±æÀÌ°¡ ÀüÃ¼¹öÆÛ ´ëºñ HIGH_FLUSH_PCT(±âº»°ª5%)
- *        ÀÌ»óÀÎ °æ¿ì¸¦ ¸¸Á·ÇÑ´Ù.
+ * ì²«ë²ˆì§¸, ìµœëŒ€ê¸¸ì´ì˜ Flush Listì˜ ê¸¸ì´ê°€ ì „ì²´ë²„í¼ ëŒ€ë¹„ HIGH_FLUSH_PCT(ê¸°ë³¸ê°’5%)
+ *        ì´ìƒì¸ ê²½ìš°ë¥¼ ë§Œì¡±í•œë‹¤.
  *
- * µÎ¹øÂ°, ÃÖ¼Ò±æÀÌÀÇ Prepared ListÀÇ ±æÀÌ°¡ ÀüÃ¼¹öÆÛ ´ëºñ LOW_PREPARE_PCT(±âº»°ª1%) ÀÌÇÏ
- *        ÀÌ¸é¼­ ÃÖ´ë±æÀÌÀÇ Flush ListÀÇ ±æÀÌ°¡ ÀüÃ¼¹öÆÛ ´ëºñ LOW_FLUSH_PCT(±âº»°ª1%) ÀÌ»ó
- *        ÀÎ °æ¿ì¸¦ ¸¸Á·ÇÑ´Ù.
+ * ë‘ë²ˆì§¸, ìµœì†Œê¸¸ì´ì˜ Prepared Listì˜ ê¸¸ì´ê°€ ì „ì²´ë²„í¼ ëŒ€ë¹„ LOW_PREPARE_PCT(ê¸°ë³¸ê°’1%) ì´í•˜
+ *        ì´ë©´ì„œ ìµœëŒ€ê¸¸ì´ì˜ Flush Listì˜ ê¸¸ì´ê°€ ì „ì²´ë²„í¼ ëŒ€ë¹„ LOW_FLUSH_PCT(ê¸°ë³¸ê°’1%) ì´ìƒ
+ *        ì¸ ê²½ìš°ë¥¼ ë§Œì¡±í•œë‹¤.
  *
  ******************************************************************************/
 idBool sdbFlushMgr::isCond4ReplaceFlush()
@@ -1087,17 +1087,17 @@ idBool sdbFlushMgr::isCond4ReplaceFlush()
     sPool = sdbBufferMgr::getPool();
 
     /* PROJ-2669
-     * ±âÁ¸ Flush List ¿¡ Delayed Flush List °¡ Ãß°¡µÇ¾úÀ¸¹Ç·Î
-     * Delayed/Normal °¹¼ö¸¦ ÇÕÃÄÁÖ´Â ÇÔ¼ö¸¦ »ç¿ëÇØ¾ß ÇÑ´Ù.      */
+     * ê¸°ì¡´ Flush List ì— Delayed Flush List ê°€ ì¶”ê°€ë˜ì—ˆìœ¼ë¯€ë¡œ
+     * Delayed/Normal ê°¯ìˆ˜ë¥¼ í•©ì³ì£¼ëŠ” í•¨ìˆ˜ë¥¼ ì‚¬ìš©í•´ì•¼ í•œë‹¤.      */
     sFlushList = sPool->getMaxLengthFlushList();
 
     sNormalFlushLength = sFlushList->getPartialLength();
     sTotalLength = sPool->getFlushListLength( sFlushList->getID() );
 
     /* PROJ-2669
-     * Normal Flush List ÀÇ Length==0 ÀÌ¶ó¸é
-     * ÇöÀç À¯ÀÔµÇ°í ÀÖ´Â Dirty Page°¡ ¾øÀ¸¹Ç·Î
-     * Replacement Flush Condition À¸·Î ÆÇÁ¤ÇÏÁö ¾Ê¾Æµµ µÈ´Ù. */
+     * Normal Flush List ì˜ Length==0 ì´ë¼ë©´
+     * í˜„ì¬ ìœ ì…ë˜ê³  ìˆëŠ” Dirty Pageê°€ ì—†ìœ¼ë¯€ë¡œ
+     * Replacement Flush Condition ìœ¼ë¡œ íŒì •í•˜ì§€ ì•Šì•„ë„ ëœë‹¤. */
     if ( sNormalFlushLength != 0 )
     {
         if ( sTotalLength > getHighFlushLstLen4FF() )
@@ -1131,9 +1131,9 @@ idBool sdbFlushMgr::isCond4ReplaceFlush()
 
 /******************************************************************************
  * Description :
- *    flusher°¡ jobÀ» Ã³¸®ÇÏ°í ´ÙÀ½ jobÀ» Ã³¸®ÇÒ ¶§±îÁö ´ë±âÇÒ ½Ã°£À»
- *    ¹İÈ¯ÇÑ´Ù. ½Ã½ºÅÛÀÇ »óÈ²¿¡ µû¶ó °¡º¯ÀûÀÌ´Ù. flushÇÒ°Ô ¸¹À¸¸é
- *    ´ë±â ½Ã°£Àº Âª°í ÇÒ°Ô º°·Î ¾øÀ¸¸é ´ë±â ½Ã°£Àº ±æ¾îÁø´Ù.
+ *    flusherê°€ jobì„ ì²˜ë¦¬í•˜ê³  ë‹¤ìŒ jobì„ ì²˜ë¦¬í•  ë•Œê¹Œì§€ ëŒ€ê¸°í•  ì‹œê°„ì„
+ *    ë°˜í™˜í•œë‹¤. ì‹œìŠ¤í…œì˜ ìƒí™©ì— ë”°ë¼ ê°€ë³€ì ì´ë‹¤. flushí• ê²Œ ë§ìœ¼ë©´
+ *    ëŒ€ê¸° ì‹œê°„ì€ ì§§ê³  í• ê²Œ ë³„ë¡œ ì—†ìœ¼ë©´ ëŒ€ê¸° ì‹œê°„ì€ ê¸¸ì–´ì§„ë‹¤.
  *
  ******************************************************************************/
 idBool sdbFlushMgr::isBusyCondition()
@@ -1154,7 +1154,7 @@ idBool sdbFlushMgr::isBusyCondition()
 }
 
 /******************************************************************************
- * Abstraction : ÇöÀç °¡µ¿ÁßÀÎ flusherÀÇ ¼ö¸¦ ¹İÈ¯ÇÑ´Ù.
+ * Abstraction : í˜„ì¬ ê°€ë™ì¤‘ì¸ flusherì˜ ìˆ˜ë¥¼ ë°˜í™˜í•œë‹¤.
  ******************************************************************************/
 UInt sdbFlushMgr::getActiveFlusherCount()
 {
@@ -1174,7 +1174,7 @@ UInt sdbFlushMgr::getActiveFlusherCount()
 /******************************************************************************
  * Description :
  *  PROJ-2669
- *   Delayed Flush ±â´É¿¡ °ü·ÃµÈ ÇÁ·ÎÆÛÆ¼ ¼³Á¤ ÇÔ¼ö
+ *   Delayed Flush ê¸°ëŠ¥ì— ê´€ë ¨ëœ í”„ë¡œí¼í‹° ì„¤ì • í•¨ìˆ˜
  ******************************************************************************/
 void sdbFlushMgr::setDelayedFlushProperty( UInt aDelayedFlushListPct,
                                            UInt aDelayedFlushProtectionTimeMsec )

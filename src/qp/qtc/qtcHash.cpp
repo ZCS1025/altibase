@@ -22,7 +22,7 @@
  *
  *      PROJ-2452 Result caching of Statement level
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
  **********************************************************************/
 
@@ -38,8 +38,8 @@ IDE_RC qtcHash::initialize( iduMemory     * aMemory,
                             qtcHashTable ** aHashTable )
 /***********************************************************************
  *
- * Description : STATE_MAKE_HASH_TABLE ÀÏ ¶§ ¼öÇàµÇ¸ç
- *               cacheObj->mHashTable À» »ı¼ºÇÑ´Ù.
+ * Description : STATE_MAKE_HASH_TABLE ì¼ ë•Œ ìˆ˜í–‰ë˜ë©°
+ *               cacheObj->mHashTable ì„ ìƒì„±í•œë‹¤.
  *
  * Implementation :
  *
@@ -108,7 +108,7 @@ IDE_RC qtcHash::insert( qtcHashTable  * aHashTable,
                         qtcHashRecord * aNewRecord )
 /***********************************************************************
  *
- * Description : currRecord ¸¦ hashTable ¿¡ Ãß°¡
+ * Description : currRecord ë¥¼ hashTable ì— ì¶”ê°€
  *
  * Implementation : 
  *
@@ -167,7 +167,7 @@ IDE_RC qtcHash::compareKeyData( mtcStack      * aStack,
 /***********************************************************************
  *
  * Description : PROJ-2452 DETERMINISTIC function caching
- *               stack °ú qtcHashRecord ÀÇ ºñ±³ °á°ú¸¦ ¹İÈ¯ÇÑ´Ù.
+ *               stack ê³¼ qtcHashRecord ì˜ ë¹„êµ ê²°ê³¼ë¥¼ ë°˜í™˜í•œë‹¤.
  *
  * Implementation : 
  *

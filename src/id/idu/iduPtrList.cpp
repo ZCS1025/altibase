@@ -203,7 +203,7 @@ IDE_RC iduPtrList::add(idBool a_bLock, void* a_pItem)
     {
         if(m_pCurPage->m_pNext == &m_head)
         {
-            // refine½Ã °´Ã¼»ç¿ë : immediate ¸ğµå OK
+            // refineì‹œ ê°ì²´ì‚¬ìš© : immediate ëª¨ë“œ OK
             IDE_TEST(iduMemMgr::malloc(mIndex,
                                        m_nPageSize,
                                        (void**)&s_pNewPage)

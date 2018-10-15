@@ -186,9 +186,9 @@ iSQLSpool::PrintPrompt()
 void
 iSQLSpool::Print()
 {
-    /* set term off´Â script ÆÄÀÏÀ» ½ÇÇàÇÒ ¶§¸¸ Àû¿ëµÈ´Ù.
-     * interactiveÇÏ°Ô ½ÇÇàÇÒ ¶§´Â term off ¿µÇâÀ» ¹ÞÁö ¾Ê´Â´Ù.
-     * Áï,
+    /* set term offëŠ” script íŒŒì¼ì„ ì‹¤í–‰í•  ë•Œë§Œ ì ìš©ëœë‹¤.
+     * interactiveí•˜ê²Œ ì‹¤í–‰í•  ë•ŒëŠ” term off ì˜í–¥ì„ ë°›ì§€ ì•ŠëŠ”ë‹¤.
+     * ì¦‰,
      * if ( gProperty.GetTerm() == ID_FALSE &&
      *      gSQLCompiler->IsFileRead() == ID_TRUE )
      * {
@@ -202,7 +202,7 @@ iSQLSpool::Print()
         idlOS::fflush(gProgOption.m_OutFile);
     }
 
-    /* Spool ÆÄÀÏÀÌ ¼³Á¤µÇ¾î ÀÖÀ¸¸é ÇØ´ç ÆÄÀÏ·Î °á°ú¸¦ ¹«Á¶°Ç Ãâ·Â */
+    /* Spool íŒŒì¼ì´ ì„¤ì •ë˜ì–´ ìžˆìœ¼ë©´ í•´ë‹¹ íŒŒì¼ë¡œ ê²°ê³¼ë¥¼ ë¬´ì¡°ê±´ ì¶œë ¥ */
     if ( m_bSpoolOn == ID_TRUE && m_fpSpool != NULL )
     {
         idlOS::fprintf(m_fpSpool, "%s", m_Buf);
@@ -243,7 +243,7 @@ iSQLSpool::PrintWithDouble(SInt *aPos)
 /***********************************************************************
  *
  * Description :
- *    DOUBLE °ªÀ» ÀûÀýÇÑ Æ÷¸ËÀ¸·Î Ãâ·Â
+ *    DOUBLE ê°’ì„ ì ì ˆí•œ í¬ë§·ìœ¼ë¡œ ì¶œë ¥
  *
  * Implementation :
  *
@@ -257,7 +257,7 @@ iSQLSpool::PrintWithDouble(SInt *aPos)
 #endif
 
     // fix PR-12295
-    // 0¿¡ °¡±î¿î ÀÛÀº °ªÀº 0À¸·Î Ãâ·ÂÇÔ.
+    // 0ì— ê°€ê¹Œìš´ ìž‘ì€ ê°’ì€ 0ìœ¼ë¡œ ì¶œë ¥í•¨.
     if( ( m_DoubleBuf < 1E-7 ) &&
         ( m_DoubleBuf > -1E-7 ) )
     {
@@ -298,7 +298,7 @@ iSQLSpool::PrintWithFloat(SInt *aPos)
 /***********************************************************************
  *
  * Description :
- *    REAL °ªÀ» ÀûÀýÇÑ Æ÷¸ËÀ¸·Î Ãâ·Â
+ *    REAL ê°’ì„ ì ì ˆí•œ í¬ë§·ìœ¼ë¡œ ì¶œë ¥
  *
  * Implementation :
  *
@@ -312,7 +312,7 @@ iSQLSpool::PrintWithFloat(SInt *aPos)
 #endif
 
     // fix PR-12295
-    // 0¿¡ °¡±î¿î ÀÛÀº °ªÀº 0À¸·Î Ãâ·ÂÇÔ.
+    // 0ì— ê°€ê¹Œìš´ ìž‘ì€ ê°’ì€ 0ìœ¼ë¡œ ì¶œë ¥í•¨.
     if( ( m_FloatBuf < 1E-7 ) &&
         ( m_FloatBuf > -1E-7 ) )
     {

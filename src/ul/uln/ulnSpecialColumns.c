@@ -51,7 +51,7 @@ static ACI_RC ulnSpColCreateQueryString(ulnFnContext *aFnContext,
     // ACI_TEST_RAISE(aTableName  == NULL, ERR_HY009);
 
     // bug-25905: conn nls not applied to client lang module
-    // aMtlModule ÀÎÀÚ Ãß°¡
+    // aMtlModule ì¸ìž ì¶”ê°€
     ACI_TEST_RAISE(ulnMakeNullTermNameInSQL(sDbc->mClientCharsetLangModule,
                                             sUserName,
                                             ACI_SIZEOF(sUserName),
@@ -75,7 +75,7 @@ static ACI_RC ulnSpColCreateQueryString(ulnFnContext *aFnContext,
                        "t.sql_data_type as DATA_TYPE,"
                        "t.type_name as TYPE_NAME,"
                        "cast( decode(c.precision, 0, "
-                       "             decode(c.data_type, "     // fix BUG-26817 ¹®ÀÚ¿­ÀÇ pricisionÀÌ 0ÀÌ¸é 0 ¹ÝÈ¯
+                       "             decode(c.data_type, "     // fix BUG-26817 ë¬¸ìžì—´ì˜ pricisionì´ 0ì´ë©´ 0 ë°˜í™˜
                        "                    1, c.precision, "
                        "                    12, c.precision, "
                        "                    -8, c.precision, "
@@ -111,7 +111,7 @@ static ACI_RC ulnSpColCreateQueryString(ulnFnContext *aFnContext,
     if (acpCStrLen(sUserName, MAX_NAME_LEN) > 0)
     {
         // bug-25905: conn nls not applied to client lang module
-        // aFnContext ÀÎÀÚ Ãß°¡
+        // aFnContext ì¸ìž ì¶”ê°€
         sSize = ulnAppendFormatParameter(aFnContext,
                                          aQueryBuffer,
                                          aQueryBufferSize,
@@ -186,7 +186,7 @@ SQLRETURN ulnSpecialColumns(ulnStmt      *aStmt,
     ULN_FLAG_UP(sNeedExit);
 
     /*
-     * BUGBUG : Argument validity checking À» ¼öÇàÇØ¾ß ÇÑ´Ù.
+     * BUGBUG : Argument validity checking ì„ ìˆ˜í–‰í•´ì•¼ í•œë‹¤.
      */
 
     ACI_TEST(ulnSpColCreateQueryString(&sFnContext,
@@ -199,7 +199,7 @@ SQLRETURN ulnSpecialColumns(ulnStmt      *aStmt,
                                        ACI_SIZEOF(sQueryStringBuffer)) != ACI_SUCCESS);
 
     /*
-     * Protocol Context ÃÊ±âÈ­
+     * Protocol Context ì´ˆê¸°í™”
      */
     //fix BUG-17722
     ACI_TEST(ulnInitializeProtocolContext(&sFnContext,
@@ -229,13 +229,13 @@ SQLRETURN ulnSpecialColumns(ulnStmt      *aStmt,
                                      aStmt->mParentDbc->mConnTimeoutValue) != ACI_SUCCESS);
 
     /*
-     * Protocol Context Á¤¸®
+     * Protocol Context ì •ë¦¬
      */
     ULN_FLAG_DOWN(sNeedFinPtContext);
     ACI_TEST(ulnFinalizeProtocolContext(&sFnContext,&(aStmt->mParentDbc->mPtContext)) != ACI_SUCCESS);
 
     /*
-     * BUGBUG : ÄÃ·³ÀÇ Å¸ÀÔÀ» °­Á¦·Î ÁöÁ¤ÇØ ÁÖ´Â ÄÚµå°¡ cli2 ¿¡´Â ÀÖ¾ú´Ù.
+     * BUGBUG : ì»¬ëŸ¼ì˜ íƒ€ìž…ì„ ê°•ì œë¡œ ì§€ì •í•´ ì£¼ëŠ” ì½”ë“œê°€ cli2 ì—ëŠ” ìžˆì—ˆë‹¤.
      *          stmt->bindings[1-1].forced_type = SQL_C_SSHORT;
      *          stmt->bindings[3-1].forced_type = SQL_C_SSHORT;
      *          stmt->bindings[5-1].forced_type = SQL_C_SLONG;

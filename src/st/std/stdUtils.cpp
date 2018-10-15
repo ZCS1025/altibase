@@ -20,7 +20,7 @@
  * $Id: stdUtils.cpp 18883 2006-11-14 01:48:40Z sabbra $
  *
  * Description:
- * Geometry ¿¬»ê¿¡ ÇÊ¿äÇÑ ±âº» ¿¬»êÀÚµé ±¸Çö
+ * Geometry ì—°ì‚°ì— í•„ìš”í•œ ê¸°ë³¸ ì—°ì‚°ìë“¤ êµ¬í˜„
  **********************************************************************/
 
 #include <idl.h>
@@ -39,10 +39,10 @@ extern mtdModule mtdSmallint;
 
 /***********************************************************************
  * Description:
- * Geometry °´Ã¼ÀÇ TypeÀ» ¼³Á¤ÇÑ´Ù.
+ * Geometry ê°ì²´ì˜ Typeì„ ì„¤ì •í•œë‹¤.
  *
- * stdGeometryHeader * Geom(Out): Geometry °´Ã¼ Æ÷ÀÎÅÍ
- * UShort aType(In): ¼³Á¤ÇÒ Type
+ * stdGeometryHeader * Geom(Out): Geometry ê°ì²´ í¬ì¸í„°
+ * UShort aType(In): ì„¤ì •í•  Type
  **********************************************************************/
 void stdUtils::setType( stdGeometryHeader * aGeom, UShort aType )
 {
@@ -61,13 +61,13 @@ void stdUtils::setType( stdGeometryHeader * aGeom, UShort aType )
 /***********************************************************************
  * Description:
  *
- *    Geometry °´Ã¼·Î ºÎÅÍ TypeÀ» ÀĞ¾î¿Â´Ù.
+ *    Geometry ê°ì²´ë¡œ ë¶€í„° Typeì„ ì½ì–´ì˜¨ë‹¤.
  *
- * stdGeometryHeader * Geom(In): Geometry °´Ã¼ Æ÷ÀÎÅÍ
+ * stdGeometryHeader * Geom(In): Geometry ê°ì²´ í¬ì¸í„°
  *
  * Implementation:
  *
- *    Byte Order¿¡ °ü°è¾øÀÌ ÀÏÁ¤ÇÑ °ªÀ» ÁÖ¾î¾ß ÇÔ
+ *    Byte Orderì— ê´€ê³„ì—†ì´ ì¼ì •í•œ ê°’ì„ ì£¼ì–´ì•¼ í•¨
  *
  **********************************************************************/
 UShort stdUtils::getType( stdGeometryHeader * aGeom )
@@ -100,7 +100,7 @@ UShort stdUtils::getType( stdGeometryHeader * aGeom )
  * Description:
  *
  *   To Fix BUG-15854
- *   Å¬¶óÀÌ¾ğÆ®·ÎºÎÅÍ Àü¼ÛµÈ Binary °´Ã¼°¡ EndianÀÌ µ¿ÀÏÇÑÁö¸¦ °Ë»ç
+ *   í´ë¼ì´ì–¸íŠ¸ë¡œë¶€í„° ì „ì†¡ëœ Binary ê°ì²´ê°€ Endianì´ ë™ì¼í•œì§€ë¥¼ ê²€ì‚¬
  *
  **********************************************************************/
 
@@ -163,11 +163,11 @@ IDE_RC stdUtils::compareEndian(UChar   aGeomEndian,
 
 /***********************************************************************
  * Description:
- * Geometry °´Ã¼ÀÇ TypeÀ» ÀÔ·Â¹Ş¾Æ ¹®ÀÚ¿­ ¹öÆÛ¿¡ ¾´´Ù.
+ * Geometry ê°ì²´ì˜ Typeì„ ì…ë ¥ë°›ì•„ ë¬¸ìì—´ ë²„í¼ì— ì“´ë‹¤.
  *
- * UShort aType(In): Geometry °´Ã¼ Type
- * SChar* aTypeText(Out): ¹®ÀÚ¿­ ¹öÆÛ
- * UShort* aLen(Out): ¹®ÀÚ¿­ÀÇ ±æÀÌ
+ * UShort aType(In): Geometry ê°ì²´ Type
+ * SChar* aTypeText(Out): ë¬¸ìì—´ ë²„í¼
+ * UShort* aLen(Out): ë¬¸ìì—´ì˜ ê¸¸ì´
  **********************************************************************/
 void stdUtils::getTypeText( UShort aType, SChar* aTypeText, UShort* aLen )
 {
@@ -175,7 +175,7 @@ void stdUtils::getTypeText( UShort aType, SChar* aTypeText, UShort* aLen )
     {
         switch(aType)
         {
-        // Fix Bug-15416 aLen¿¡ ³Î¹®ÀÚ¸¦ Á¦¿ÜÇÑ ±æÀÌ¸¦ ³Ö¾î¾ßÇÑ´Ù.
+        // Fix Bug-15416 aLenì— ë„ë¬¸ìë¥¼ ì œì™¸í•œ ê¸¸ì´ë¥¼ ë„£ì–´ì•¼í•œë‹¤.
         case STD_EMPTY_TYPE :
             *aLen = STD_EMPTY_NAME_LEN;
             idlOS::strcpy(aTypeText, STD_EMPTY_NAME);
@@ -230,7 +230,7 @@ void stdUtils::getTypeText( UShort aType, SChar* aTypeText, UShort* aLen )
 
 /***********************************************************************
  * Description:
- * 2°³ÀÇ MBRÀ» ÀĞ¾î¼­ MBR1ÀÌ MBR2¿Í IntersectÇÏ¸é ID_TRUE ¾Æ´Ï¸é ID_FALSE
+ * 2ê°œì˜ MBRì„ ì½ì–´ì„œ MBR1ì´ MBR2ì™€ Intersectí•˜ë©´ ID_TRUE ì•„ë‹ˆë©´ ID_FALSE
  *
  * stdMBR* sMBR1(In): MBR1
  * stdMBR* sMBR2(In): MBR2
@@ -250,7 +250,7 @@ idBool stdUtils::isMBRIntersects( stdMBR* sMBR1, stdMBR* sMBR2 )
 
 /***********************************************************************
  * Description:
- * 2°³ÀÇ MBRÀ» ÀĞ¾î¼­ MBR1ÀÌ MBR2¸¦ ContainsÇÏ¸é ID_TRUE ¾Æ´Ï¸é ID_FALSE
+ * 2ê°œì˜ MBRì„ ì½ì–´ì„œ MBR1ì´ MBR2ë¥¼ Containsí•˜ë©´ ID_TRUE ì•„ë‹ˆë©´ ID_FALSE
  *
  * stdMBR* sMBR1(In): MBR1
  * stdMBR* sMBR2(In): MBR2
@@ -270,7 +270,7 @@ idBool stdUtils::isMBRContains( stdMBR* sMBR1, stdMBR* sMBR2 )
 
 /***********************************************************************
  * Description:
- * 2°³ÀÇ MBRÀ» ÀĞ¾î¼­ MBR1ÀÌ MBR2¿¡ WithinÇÏ¸é ID_TRUE ¾Æ´Ï¸é ID_FALSE
+ * 2ê°œì˜ MBRì„ ì½ì–´ì„œ MBR1ì´ MBR2ì— Withiní•˜ë©´ ID_TRUE ì•„ë‹ˆë©´ ID_FALSE
  *
  * stdMBR* sMBR1(In): MBR1
  * stdMBR* sMBR2(In): MBR2
@@ -290,7 +290,7 @@ idBool stdUtils::isMBRWithin( stdMBR* sMBR1, stdMBR* sMBR2 )
 
 /***********************************************************************
  * Description:
- * 2°³ÀÇ MBRÀ» ÀĞ¾î¼­ MBR1ÀÌ MBR2¿Í EqualsÇÏ¸é ID_TRUE ¾Æ´Ï¸é ID_FALSE
+ * 2ê°œì˜ MBRì„ ì½ì–´ì„œ MBR1ì´ MBR2ì™€ Equalsí•˜ë©´ ID_TRUE ì•„ë‹ˆë©´ ID_FALSE
  *
  * stdMBR* sMBR1(In): MBR1
  * stdMBR* sMBR2(In): MBR2
@@ -310,12 +310,12 @@ idBool stdUtils::isMBREquals( stdMBR* sMBR1, stdMBR* sMBR2 )
 
 /***********************************************************************
  * Description:
- * aDst, aSrcÀÇ Geometry °´Ã¼¸¦ ÀĞ¾î¼­ ºñ±³ÇÑ ÈÄ aDst¿¡ ±â·ÏÇÑ´Ù.
- * min~ : °¡Àå ÀÛÀº °ª
- * max~ : °¡Àå Å« °ª
+ * aDst, aSrcì˜ Geometry ê°ì²´ë¥¼ ì½ì–´ì„œ ë¹„êµí•œ í›„ aDstì— ê¸°ë¡í•œë‹¤.
+ * min~ : ê°€ì¥ ì‘ì€ ê°’
+ * max~ : ê°€ì¥ í° ê°’
  *
- * stdGeometryHeader*  aDst(InOut): Ãâ·ÂÀÌ ±â·ÏµÉ Geometry °´Ã¼
- * stdGeometryHeader*  aSrc(In): ÀÔ·ÂµÇ¾î ºñ±³µÇ´Â Geometry °´Ã¼
+ * stdGeometryHeader*  aDst(InOut): ì¶œë ¥ì´ ê¸°ë¡ë  Geometry ê°ì²´
+ * stdGeometryHeader*  aSrc(In): ì…ë ¥ë˜ì–´ ë¹„êµë˜ëŠ” Geometry ê°ì²´
  **********************************************************************/
 IDE_RC stdUtils::mergeMBRFromHeader(stdGeometryHeader*  aDst, 
                                     stdGeometryHeader*  aSrc)
@@ -344,17 +344,17 @@ IDE_RC stdUtils::mergeMBRFromHeader(stdGeometryHeader*  aDst,
 
 /***********************************************************************
  * Description:
- * 2Â÷¿ø Point °ªÀ» ÀĞ¾î¼­ ºñ±³ÇÑ ÈÄ aDst¿¡ ±â·ÏÇÑ´Ù.
- * min~ : °¡Àå ÀÛÀº °ª
- * max~ : °¡Àå Å« °ª
+ * 2ì°¨ì› Point ê°’ì„ ì½ì–´ì„œ ë¹„êµí•œ í›„ aDstì— ê¸°ë¡í•œë‹¤.
+ * min~ : ê°€ì¥ ì‘ì€ ê°’
+ * max~ : ê°€ì¥ í° ê°’
  *
- * stdGeometryHeader*  aDst(InOut): Ãâ·ÂÀÌ ±â·ÏµÉ Geometry °´Ã¼
- * const stdPoint2D*   aPoint(In): ÀÔ·ÂµÇ¾î ºñ±³µÇ´Â 2Â÷¿ø Point
+ * stdGeometryHeader*  aDst(InOut): ì¶œë ¥ì´ ê¸°ë¡ë  Geometry ê°ì²´
+ * const stdPoint2D*   aPoint(In): ì…ë ¥ë˜ì–´ ë¹„êµë˜ëŠ” 2ì°¨ì› Point
  **********************************************************************/
 IDE_RC stdUtils::mergeMBRFromPoint2D(stdGeometryHeader*  aGeom, 
                                      const stdPoint2D*   aPoint)
 {
-    // Fix BUG-15412 mtdModule.isNull »ç¿ë
+    // Fix BUG-15412 mtdModule.isNull ì‚¬ìš©
     if((mtdDouble.isNull(NULL, &aGeom->mMbr.mMaxX)==ID_TRUE) ||
        (mtdDouble.isNull(NULL, &aGeom->mMbr.mMaxY)==ID_TRUE) )
     {
@@ -377,10 +377,10 @@ IDE_RC stdUtils::mergeMBRFromPoint2D(stdGeometryHeader*  aGeom,
 
 /***********************************************************************
  * Description:
- * aSrc MBRÀ» aDst MBR¿¡ º¹»çÇÑ´Ù.
+ * aSrc MBRì„ aDst MBRì— ë³µì‚¬í•œë‹¤.
  *
- * stdMBR* aDst(Out): Ãâ·Â
- * stdMBR* aSrc(In): ÀÔ·Â
+ * stdMBR* aDst(Out): ì¶œë ¥
+ * stdMBR* aSrc(In): ì…ë ¥
  **********************************************************************/
 void stdUtils::copyMBR(stdMBR* aDst, stdMBR* aSrc)
 {
@@ -389,10 +389,10 @@ void stdUtils::copyMBR(stdMBR* aDst, stdMBR* aSrc)
 
 /***********************************************************************
  * Description:
- * ÀÔ·ÂµÈ Geometry TypeÀÌ À¯È¿ÇÏ¸é ID_TRUE ¾Æ´Ï¸é ID_FALSE
+ * ì…ë ¥ëœ Geometry Typeì´ ìœ íš¨í•˜ë©´ ID_TRUE ì•„ë‹ˆë©´ ID_FALSE
  *
  * UShort aType(In): Geometry Type
- * idBool bIncludeNull(In): NullÀ» À¯È¿ÇÏ°Ô º¼°ÍÀÎÁö ¾Æ´ÑÁö ¿É¼Ç ¼³Á¤
+ * idBool bIncludeNull(In): Nullì„ ìœ íš¨í•˜ê²Œ ë³¼ê²ƒì¸ì§€ ì•„ë‹Œì§€ ì˜µì…˜ ì„¤ì •
  **********************************************************************/
 idBool stdUtils::isValidType(UShort aType, idBool bIncludeNull)
 {
@@ -425,7 +425,7 @@ idBool stdUtils::isValidType(UShort aType, idBool bIncludeNull)
 
 /***********************************************************************
  * Description:
- * ÀÔ·ÂµÈ Geometry TypeÀÌ 2Â÷¿øÀÌ¸é ID_TRUE ¾Æ´Ï¸é ID_FALSE
+ * ì…ë ¥ëœ Geometry Typeì´ 2ì°¨ì›ì´ë©´ ID_TRUE ì•„ë‹ˆë©´ ID_FALSE
  *
  * UShort aType(In): Geometry Type
  **********************************************************************/
@@ -448,9 +448,9 @@ idBool stdUtils::is2DType(UShort aType)
 
 /***********************************************************************
  * Description:
- * ÀÔ·ÂµÈ Geometry °´Ã¼ÀÇ Â÷¿ø°ªÀ» ¸®ÅÏ
+ * ì…ë ¥ëœ Geometry ê°ì²´ì˜ ì°¨ì›ê°’ì„ ë¦¬í„´
  *
- * stdGeometryHeader*  aObj(In): Geometry °´Ã¼
+ * stdGeometryHeader*  aObj(In): Geometry ê°ì²´
  **********************************************************************/
 SInt stdUtils::getDimension( stdGeometryHeader*  aObj )
 {
@@ -516,9 +516,9 @@ SInt stdUtils::getDimension( stdGeometryHeader*  aObj )
 
 /***********************************************************************
  * Description:
- * Geometry °´Ã¼¸¦ Null °´Ã¼·Î ¸¸µç´Ù.
+ * Geometry ê°ì²´ë¥¼ Null ê°ì²´ë¡œ ë§Œë“ ë‹¤.
  *
- * stdGeometryHeader* aGeom(In): Geometry °´Ã¼
+ * stdGeometryHeader* aGeom(In): Geometry ê°ì²´
  **********************************************************************/
 void stdUtils::nullify(stdGeometryHeader* aGeom)
 {
@@ -527,9 +527,9 @@ void stdUtils::nullify(stdGeometryHeader* aGeom)
 
 /***********************************************************************
  * Description:
- * Geometry °´Ã¼¸¦ Empty °´Ã¼·Î ¸¸µç´Ù.
+ * Geometry ê°ì²´ë¥¼ Empty ê°ì²´ë¡œ ë§Œë“ ë‹¤.
  *
- * stdGeometryHeader* aGeom(In): Geometry °´Ã¼
+ * stdGeometryHeader* aGeom(In): Geometry ê°ì²´
  **********************************************************************/
 void stdUtils::makeEmpty(stdGeometryHeader* aGeom)
 {
@@ -538,13 +538,13 @@ void stdUtils::makeEmpty(stdGeometryHeader* aGeom)
    
 /***********************************************************************
  * Description:
- * Geometry °´Ã¼°¡ Null °´Ã¼ÀÌ¸é ID_TRUE ¾Æ´Ï¸é ID_FALSE
+ * Geometry ê°ì²´ê°€ Null ê°ì²´ì´ë©´ ID_TRUE ì•„ë‹ˆë©´ ID_FALSE
  *
- * stdGeometryHeader* aGeom(In): Geometry °´Ã¼
+ * stdGeometryHeader* aGeom(In): Geometry ê°ì²´
  **********************************************************************/
 idBool stdUtils::isNull(const stdGeometryHeader* aGeom)
 {
-    // fix BUG-15862 : GeometryÅ¸ÀÔÀÇ Null°Ë»ç´Â Å¸ÀÔ¸¸ °¡Áö°í ºñ±³ÇØ¾ßÇÑ´Ù.
+    // fix BUG-15862 : Geometryíƒ€ì…ì˜ Nullê²€ì‚¬ëŠ” íƒ€ì…ë§Œ ê°€ì§€ê³  ë¹„êµí•´ì•¼í•œë‹¤.
     if ( aGeom->mType==STD_NULL_TYPE )
     {
         return ID_TRUE;
@@ -557,13 +557,13 @@ idBool stdUtils::isNull(const stdGeometryHeader* aGeom)
 
 /***********************************************************************
  * Description:
- * Geometry °´Ã¼°¡ Empty °´Ã¼ÀÌ¸é ID_TRUE ¾Æ´Ï¸é ID_FALSE
+ * Geometry ê°ì²´ê°€ Empty ê°ì²´ì´ë©´ ID_TRUE ì•„ë‹ˆë©´ ID_FALSE
  *
- * stdGeometryHeader* aGeom(In): Geometry °´Ã¼
+ * stdGeometryHeader* aGeom(In): Geometry ê°ì²´
  **********************************************************************/
 idBool stdUtils::isEmpty(const stdGeometryHeader* aGeom)
 {
-    // fix BUG-15862 : GeometryÅ¸ÀÔÀÇ Null°Ë»ç´Â Å¸ÀÔ¸¸ °¡Áö°í ºñ±³ÇØ¾ßÇÑ´Ù.
+    // fix BUG-15862 : Geometryíƒ€ì…ì˜ Nullê²€ì‚¬ëŠ” íƒ€ì…ë§Œ ê°€ì§€ê³  ë¹„êµí•´ì•¼í•œë‹¤.
     if ( aGeom->mType==STD_EMPTY_TYPE )
     {
         return ID_TRUE;
@@ -576,10 +576,10 @@ idBool stdUtils::isEmpty(const stdGeometryHeader* aGeom)
 
 /***********************************************************************
  * Description:y
- * aSrc Geometry Çì´õ ³»¿ëÀ» aDst¿¡ º¹»çÇÑ´Ù
+ * aSrc Geometry í—¤ë” ë‚´ìš©ì„ aDstì— ë³µì‚¬í•œë‹¤
  * 
- * stdGeometryHeader*    aDst(Out): Ãâ·ÂµÉ Geometry Çì´õ
- * stdGeometryHeader*    aSrc(In): ÀÔ·ÂµÇ´Â Geometry Çì´õ
+ * stdGeometryHeader*    aDst(Out): ì¶œë ¥ë  Geometry í—¤ë”
+ * stdGeometryHeader*    aSrc(In): ì…ë ¥ë˜ëŠ” Geometry í—¤ë”
  **********************************************************************/
 void stdUtils::makeGeoHeader(
                     stdGeometryHeader*    aDst,
@@ -593,9 +593,9 @@ void stdUtils::makeGeoHeader(
 
 /***********************************************************************
  * Description:
- * Geometry °´Ã¼ÀÇ °³¼ö¸¦ ¸®ÅÏ
+ * Geometry ê°ì²´ì˜ ê°œìˆ˜ë¥¼ ë¦¬í„´
  *
- * stdGeometryHeader* aGeom(In): Geometry °´Ã¼
+ * stdGeometryHeader* aGeom(In): Geometry ê°ì²´
  **********************************************************************/
 UInt stdUtils::getGeometryNum( stdGeometryHeader* aGeom )
 {
@@ -639,9 +639,9 @@ UInt stdUtils::getGeometryNum( stdGeometryHeader* aGeom )
 
 /***********************************************************************
  * Description:
- * ´Ü¼ø Geometry °´Ã¼ÀÌ¸é ±× °´Ã¼¸¦, º¹ÇÕ Geometry °´Ã¼ÀÌ¸é Ã¹¹øÂ° °´Ã¼¸¦ ¸®ÅÏ
+ * ë‹¨ìˆœ Geometry ê°ì²´ì´ë©´ ê·¸ ê°ì²´ë¥¼, ë³µí•© Geometry ê°ì²´ì´ë©´ ì²«ë²ˆì§¸ ê°ì²´ë¥¼ ë¦¬í„´
  *
- * stdGeometryHeader* aGeom(In): Geometry °´Ã¼
+ * stdGeometryHeader* aGeom(In): Geometry ê°ì²´
  **********************************************************************/
 stdGeometryHeader* stdUtils::getFirstGeometry( stdGeometryHeader* aGeom )
 {
@@ -672,12 +672,12 @@ stdGeometryHeader* stdUtils::getFirstGeometry( stdGeometryHeader* aGeom )
 
 /***********************************************************************
  * Description:
- * ÇöÀç Geometry °´Ã¼ÀÇ ´ÙÀ½ °´Ã¼¸¦ ¸®ÅÏÇÑ´Ù.
- * ´Ü¼ø Geometry °´Ã¼ÀÌ¸é NullÀ», º¹ÇÕ Geometry °´Ã¼ÀÌ¸é ´ÙÀ½ °´Ã¼¸¦ °¡Á®¿Â´Ù.
- * ÀÌ ÇÔ¼ö´Â ÀÚÃ¼ÀûÀ¸·Î ¸¶Áö¸· °´Ã¼¸¦ ÆÇ´ÜÇÒ ¼ö ¾øÀ¸¹Ç·Î ÀÌ ÇÔ¼öÀÇ ¿ÜºÎ¿¡¼­ 
- * getGeometryNum()À» ÀÌ¿ëÇÏ¿© Fence¸¦ Ã¼Å©ÇØ¾ßÇÑ´Ù.
+ * í˜„ì¬ Geometry ê°ì²´ì˜ ë‹¤ìŒ ê°ì²´ë¥¼ ë¦¬í„´í•œë‹¤.
+ * ë‹¨ìˆœ Geometry ê°ì²´ì´ë©´ Nullì„, ë³µí•© Geometry ê°ì²´ì´ë©´ ë‹¤ìŒ ê°ì²´ë¥¼ ê°€ì ¸ì˜¨ë‹¤.
+ * ì´ í•¨ìˆ˜ëŠ” ìì²´ì ìœ¼ë¡œ ë§ˆì§€ë§‰ ê°ì²´ë¥¼ íŒë‹¨í•  ìˆ˜ ì—†ìœ¼ë¯€ë¡œ ì´ í•¨ìˆ˜ì˜ ì™¸ë¶€ì—ì„œ 
+ * getGeometryNum()ì„ ì´ìš©í•˜ì—¬ Fenceë¥¼ ì²´í¬í•´ì•¼í•œë‹¤.
  *
- * stdGeometryHeader* aGeom(In): Geometry °´Ã¼
+ * stdGeometryHeader* aGeom(In): Geometry ê°ì²´
  **********************************************************************/
 stdGeometryHeader* stdUtils::getNextGeometry( stdGeometryHeader* aGeom )
 {
@@ -703,13 +703,13 @@ stdGeometryHeader* stdUtils::getNextGeometry( stdGeometryHeader* aGeom )
 
 /***********************************************************************
  * Description:
- * ÇöÀç stdPoint2D¿Í ÁÂÇ¥°ªÀÌ Áßº¹µÇÁö ¾Ê´Â ´ÙÀ½ stdPoint2D¸¦ ¸®ÅÏÇÑ´Ù.
- * ÀÌ ÇÔ¼ö´Â mNumPoints¸¦ °®´Â °³Ã¼ÀÎ  stdLinearRing°ú stdLineString¿¡¼­
- * »ç¿ëÇÒ ¼ö ÀÖ´Ù.
+ * í˜„ì¬ stdPoint2Dì™€ ì¢Œí‘œê°’ì´ ì¤‘ë³µë˜ì§€ ì•ŠëŠ” ë‹¤ìŒ stdPoint2Dë¥¼ ë¦¬í„´í•œë‹¤.
+ * ì´ í•¨ìˆ˜ëŠ” mNumPointsë¥¼ ê°–ëŠ” ê°œì²´ì¸  stdLinearRingê³¼ stdLineStringì—ì„œ
+ * ì‚¬ìš©í•  ìˆ˜ ìˆë‹¤.
  *
- * stdPoint2D* aPt: stdPoint2D ¹è¿­ÀÇ ½ÃÀÛ À§Ä¡
- * UInt aCurr: ÇöÀç stdPoint2DÀÇ À§Ä¡
- * UInt aSize: ¹è¿­ ÀÎÀÚÀÇ °³¼ö
+ * stdPoint2D* aPt: stdPoint2D ë°°ì—´ì˜ ì‹œì‘ ìœ„ì¹˜
+ * UInt aCurr: í˜„ì¬ stdPoint2Dì˜ ìœ„ì¹˜
+ * UInt aSize: ë°°ì—´ ì¸ìì˜ ê°œìˆ˜
  **********************************************************************/
 stdPoint2D* stdUtils::findNextPointInRing2D(
                             stdPoint2D* aPt,
@@ -742,13 +742,13 @@ stdPoint2D* stdUtils::findNextPointInRing2D(
 
 /***********************************************************************
  * Description:
- * ÇöÀç stdPoint2D¿Í ÁÂÇ¥°ªÀÌ Áßº¹µÇÁö ¾Ê´Â ÀÌÀü stdPoint2D¸¦ ¸®ÅÏÇÑ´Ù.
- * ÀÌ ÇÔ¼ö´Â mNumPoints¸¦ °®´Â °³Ã¼ÀÎ  stdLinearRing°ú stdLineString¿¡¼­
- * »ç¿ëÇÒ ¼ö ÀÖ´Ù.
+ * í˜„ì¬ stdPoint2Dì™€ ì¢Œí‘œê°’ì´ ì¤‘ë³µë˜ì§€ ì•ŠëŠ” ì´ì „ stdPoint2Dë¥¼ ë¦¬í„´í•œë‹¤.
+ * ì´ í•¨ìˆ˜ëŠ” mNumPointsë¥¼ ê°–ëŠ” ê°œì²´ì¸  stdLinearRingê³¼ stdLineStringì—ì„œ
+ * ì‚¬ìš©í•  ìˆ˜ ìˆë‹¤.
  *
- * stdPoint2D* aPt: stdPoint2D ¹è¿­ÀÇ ½ÃÀÛ À§Ä¡
- * UInt aCurr: ÇöÀç stdPoint2DÀÇ À§Ä¡
- * UInt aSize: ¹è¿­ ÀÎÀÚÀÇ °³¼ö
+ * stdPoint2D* aPt: stdPoint2D ë°°ì—´ì˜ ì‹œì‘ ìœ„ì¹˜
+ * UInt aCurr: í˜„ì¬ stdPoint2Dì˜ ìœ„ì¹˜
+ * UInt aSize: ë°°ì—´ ì¸ìì˜ ê°œìˆ˜
  **********************************************************************/
 stdPoint2D* stdUtils::findPrevPointInRing2D(
                             stdPoint2D* aPt,
@@ -781,13 +781,13 @@ stdPoint2D* stdUtils::findPrevPointInRing2D(
 
 /***********************************************************************
  * Description:
- * ÇöÀç stdPoint2D¿Í ÁÂÇ¥°ªÀÌ Áßº¹µÇÁö ¾Ê´Â ´ÙÀ½ stdPoint2D¸¦ ¸®ÅÏÇÑ´Ù.
- * ÀÌ ÇÔ¼ö´Â ÀÚÃ¼ÀûÀ¸·Î ¸¶Áö¸· stdPoint2D¸¦ ÆÇ´ÜÇÒ ¼ö ¾øÀ¸¹Ç·Î ÀÌ ÇÔ¼öÀÇ ¿ÜºÎ¿¡¼­ 
- * mNumPoints¸¦ ÀÌ¿ëÇÏ¿© Fence¸¦ Ã¼Å©ÇØ¾ßÇÑ´Ù.
- * ÀÌ ÇÔ¼ö´Â mNumPoints¸¦ °®´Â °³Ã¼ÀÎ  stdLinearRing°ú stdLineString¿¡¼­
- * »ç¿ëÇÒ ¼ö ÀÖ´Ù.
+ * í˜„ì¬ stdPoint2Dì™€ ì¢Œí‘œê°’ì´ ì¤‘ë³µë˜ì§€ ì•ŠëŠ” ë‹¤ìŒ stdPoint2Dë¥¼ ë¦¬í„´í•œë‹¤.
+ * ì´ í•¨ìˆ˜ëŠ” ìì²´ì ìœ¼ë¡œ ë§ˆì§€ë§‰ stdPoint2Dë¥¼ íŒë‹¨í•  ìˆ˜ ì—†ìœ¼ë¯€ë¡œ ì´ í•¨ìˆ˜ì˜ ì™¸ë¶€ì—ì„œ 
+ * mNumPointsë¥¼ ì´ìš©í•˜ì—¬ Fenceë¥¼ ì²´í¬í•´ì•¼í•œë‹¤.
+ * ì´ í•¨ìˆ˜ëŠ” mNumPointsë¥¼ ê°–ëŠ” ê°œì²´ì¸  stdLinearRingê³¼ stdLineStringì—ì„œ
+ * ì‚¬ìš©í•  ìˆ˜ ìˆë‹¤.
  *
- * stdPoint2D* aPt(In): ÇöÀç stdPoint2D
+ * stdPoint2D* aPt(In): í˜„ì¬ stdPoint2D
  **********************************************************************/
 stdPoint2D* stdUtils::findNextPointInLine2D(
                                  stdPoint2D * aPt,
@@ -810,13 +810,13 @@ stdPoint2D* stdUtils::findNextPointInLine2D(
 
 /***********************************************************************
  * Description:
- * ÇöÀç stdPoint2D¿Í ÁÂÇ¥°ªÀÌ Áßº¹µÇÁö ¾Ê´Â ÀÌÀü stdPoint2D¸¦ ¸®ÅÏÇÑ´Ù.
- * ÀÌ ÇÔ¼ö´Â ÀÚÃ¼ÀûÀ¸·Î ¸¶Áö¸· stdPoint2D¸¦ ÆÇ´ÜÇÒ ¼ö ¾øÀ¸¹Ç·Î ÀÌ ÇÔ¼öÀÇ ¿ÜºÎ¿¡¼­ 
- * mNumPoints¸¦ ÀÌ¿ëÇÏ¿© Fence¸¦ Ã¼Å©ÇØ¾ßÇÑ´Ù.
- * ÀÌ ÇÔ¼ö´Â mNumPoints¸¦ °®´Â °³Ã¼ÀÎ  stdLinearRing°ú stdLineString¿¡¼­
- * »ç¿ëÇÒ ¼ö ÀÖ´Ù.
+ * í˜„ì¬ stdPoint2Dì™€ ì¢Œí‘œê°’ì´ ì¤‘ë³µë˜ì§€ ì•ŠëŠ” ì´ì „ stdPoint2Dë¥¼ ë¦¬í„´í•œë‹¤.
+ * ì´ í•¨ìˆ˜ëŠ” ìì²´ì ìœ¼ë¡œ ë§ˆì§€ë§‰ stdPoint2Dë¥¼ íŒë‹¨í•  ìˆ˜ ì—†ìœ¼ë¯€ë¡œ ì´ í•¨ìˆ˜ì˜ ì™¸ë¶€ì—ì„œ 
+ * mNumPointsë¥¼ ì´ìš©í•˜ì—¬ Fenceë¥¼ ì²´í¬í•´ì•¼í•œë‹¤.
+ * ì´ í•¨ìˆ˜ëŠ” mNumPointsë¥¼ ê°–ëŠ” ê°œì²´ì¸  stdLinearRingê³¼ stdLineStringì—ì„œ
+ * ì‚¬ìš©í•  ìˆ˜ ìˆë‹¤.
  *
- * stdPoint2D* aPt(In): ÇöÀç stdPoint2D
+ * stdPoint2D* aPt(In): í˜„ì¬ stdPoint2D
  **********************************************************************/
 stdPoint2D* stdUtils::findPrevPointInLine2D(
                                  stdPoint2D * aPt,
@@ -838,11 +838,11 @@ stdPoint2D* stdUtils::findPrevPointInLine2D(
 
 /***********************************************************************
  * Description:
- * aPt2¸¦ ÁßÁ¡À¸·Î ÇÏ´Â °¢À» ±¸ÇÑ´Ù.
+ * aPt2ë¥¼ ì¤‘ì ìœ¼ë¡œ í•˜ëŠ” ê°ì„ êµ¬í•œë‹¤.
  *
- * stdPoint2D* aPt1(In): ½ÃÀÛÁ¡
- * stdPoint2D* aPt2(In): Áß°£Á¡
- * stdPoint2D* aPt3(In): ³¡Á¡
+ * stdPoint2D* aPt1(In): ì‹œì‘ì 
+ * stdPoint2D* aPt2(In): ì¤‘ê°„ì 
+ * stdPoint2D* aPt3(In): ëì 
  **********************************************************************/
 SDouble stdUtils::getAngle2D(
                         stdPoint2D*     aPt1,
@@ -876,10 +876,10 @@ SDouble stdUtils::getAngle2D(
 
 /***********************************************************************
  * Description:
- * µÎÁ¡ÀÌ °°Àº Á¡ÀÌ¸é ID_TRUE ¾Æ´Ï¸é ID_FALSE ¸®ÅÏ
+ * ë‘ì ì´ ê°™ì€ ì ì´ë©´ ID_TRUE ì•„ë‹ˆë©´ ID_FALSE ë¦¬í„´
  *
- * const stdPoint2D* aP1(In): Á¡1
- * const stdPoint2D* aP2(In): Á¡2
+ * const stdPoint2D* aP1(In): ì 1
+ * const stdPoint2D* aP2(In): ì 2
  **********************************************************************/
 idBool stdUtils::isSamePoints2D(
                     const stdPoint2D*     aP1,
@@ -897,10 +897,10 @@ idBool stdUtils::isSamePoints2D(
 
 /***********************************************************************
  * Description:
- * aPoint°¡ aLineÀÇ ³¡ Á¡ÀÌ¸é ID_TRUE ¾Æ´Ï¸é ID_FALSE ¸®ÅÏ
+ * aPointê°€ aLineì˜ ë ì ì´ë©´ ID_TRUE ì•„ë‹ˆë©´ ID_FALSE ë¦¬í„´
  *
- * const stdPoint2D* aPoint(In): ºñ±³µÉ Á¡
- * const stdLineString2DType* aLine(In): ºñ±³µÉ ¶óÀÎ
+ * const stdPoint2D* aPoint(In): ë¹„êµë  ì 
+ * const stdLineString2DType* aLine(In): ë¹„êµë  ë¼ì¸
  **********************************************************************/
 idBool stdUtils::isEndPoint2D(
                     const stdPoint2D*               aPoint,
@@ -928,9 +928,9 @@ idBool stdUtils::isEndPoint2D(
 
 /***********************************************************************
  * Description:
- * ÀÔ·ÂµÇ´Â Line °´Ã¼°¡ ´İÇôÀÖÀ¸¸é ID_TRUE ¾Æ´Ï¸é ID_FALSE ¸®ÅÏ
+ * ì…ë ¥ë˜ëŠ” Line ê°ì²´ê°€ ë‹«í˜€ìˆìœ¼ë©´ ID_TRUE ì•„ë‹ˆë©´ ID_FALSE ë¦¬í„´
  *
- * stdGeometryHeader*    aObj(In): Line °´Ã¼
+ * stdGeometryHeader*    aObj(In): Line ê°ì²´
  **********************************************************************/
 idBool stdUtils::isClosed2D( stdGeometryHeader*    aObj )
 {
@@ -1006,10 +1006,10 @@ idBool stdUtils::isClosed2D( stdGeometryHeader*    aObj )
 
 /***********************************************************************
  * Description:
- * aPoint°¡ ÀÔ·ÂµÇ´Â Line °´Ã¼ÀÇ ClosedµÈ Æ÷ÀÎÆ®ÀÌ¸é ID_TRUE ¾Æ´Ï¸é ID_FALSE ¸®ÅÏ
+ * aPointê°€ ì…ë ¥ë˜ëŠ” Line ê°ì²´ì˜ Closedëœ í¬ì¸íŠ¸ì´ë©´ ID_TRUE ì•„ë‹ˆë©´ ID_FALSE ë¦¬í„´
  *
- * const stdPoint2D* aPoint(In): ºñ±³µÉ Á¡
- * const stdLineString2DType* aLine(In): ºñ±³µÉ ¶óÀÎ
+ * const stdPoint2D* aPoint(In): ë¹„êµë  ì 
+ * const stdLineString2DType* aLine(In): ë¹„êµë  ë¼ì¸
  **********************************************************************/
 idBool stdUtils::isClosedPoint2D(
                     const stdPoint2D*               aPoint,
@@ -1073,10 +1073,10 @@ idBool stdUtils::isClosedPoint2D(
 
 /***********************************************************************
  * Description:
- * µÎ º¤ÅÍÀÇ ³»Àû
+ * ë‘ ë²¡í„°ì˜ ë‚´ì 
  *
- * const stdPoint2D* aP1(In): º¤ÅÍ1
- * const stdPoint2D* aP2(In): º¤ÅÍ2
+ * const stdPoint2D* aP1(In): ë²¡í„°1
+ * const stdPoint2D* aP2(In): ë²¡í„°2
  **********************************************************************/
 SDouble stdUtils::dot2D(
                     const stdPoint2D*     aP1,
@@ -1087,9 +1087,9 @@ SDouble stdUtils::dot2D(
 
 /***********************************************************************
  * Description:
- * ÇÑ º¤ÅÍÀÇ ³»Àû( = ±æÀÌÀÇ Á¦°ö)
+ * í•œ ë²¡í„°ì˜ ë‚´ì ( = ê¸¸ì´ì˜ ì œê³±)
  *
- * const stdPoint2D* aP(In): º¤ÅÍ
+ * const stdPoint2D* aP(In): ë²¡í„°
  **********************************************************************/
 SDouble stdUtils::length2D( const stdPoint2D *aP )
 {
@@ -1098,11 +1098,11 @@ SDouble stdUtils::length2D( const stdPoint2D *aP )
 
 /***********************************************************************
  * Description:
- * µÎ º¤ÅÍÀÇ Â÷ º¤ÅÍ3 = º¤ÅÍ1 - º¤ÅÍ2
+ * ë‘ ë²¡í„°ì˜ ì°¨ ë²¡í„°3 = ë²¡í„°1 - ë²¡í„°2
  *
- * const stdPoint2D* aP1(In): º¤ÅÍ1
- * const stdPoint2D* aP2(In): º¤ÅÍ2
- * stdPoint2D *aP3(Out): º¤ÅÍ3
+ * const stdPoint2D* aP1(In): ë²¡í„°1
+ * const stdPoint2D* aP2(In): ë²¡í„°2
+ * stdPoint2D *aP3(Out): ë²¡í„°3
  **********************************************************************/
 void stdUtils::subVec2D(
                     const stdPoint2D*     aP1,
@@ -1114,19 +1114,19 @@ void stdUtils::subVec2D(
 }
 
 //==============================================================================
-// TASK-2015 ¼±ºĞÀ» ±âÁØÀ¸·Î Á¡ÀÇ ÁÂ¿ì ÆÇº°
+// TASK-2015 ì„ ë¶„ì„ ê¸°ì¤€ìœ¼ë¡œ ì ì˜ ì¢Œìš° íŒë³„
 //==============================================================================
 
 /***********************************************************************
  * Description:
- * Á¡1 Á¡2ÀÇ ¼±ºĞ°ú Á¡3¿ÍÀÇ °ü°è
- * °á°ú °ª > 0 ¼±ºĞÀÇ ¿ŞÂÊ
- * °á°ú °ª = 0 ¼±ºĞ°ú °°Àº Á÷¼±»ó¿¡ Á¸Àç
- * °á°ú °ª < 0 ¼±ºĞÀÇ ¿À¸¥ÂÊ
+ * ì 1 ì 2ì˜ ì„ ë¶„ê³¼ ì 3ì™€ì˜ ê´€ê³„
+ * ê²°ê³¼ ê°’ > 0 ì„ ë¶„ì˜ ì™¼ìª½
+ * ê²°ê³¼ ê°’ = 0 ì„ ë¶„ê³¼ ê°™ì€ ì§ì„ ìƒì— ì¡´ì¬
+ * ê²°ê³¼ ê°’ < 0 ì„ ë¶„ì˜ ì˜¤ë¥¸ìª½
  *
- * const stdPoint2D* aP1(In): Á¡1
- * const stdPoint2D* aP2(In): Á¡2
- * const stdPoint2D* aP3(In): Á¡3
+ * const stdPoint2D* aP1(In): ì 1
+ * const stdPoint2D* aP2(In): ì 2
+ * const stdPoint2D* aP3(In): ì 3
  **********************************************************************/
 SDouble stdUtils::area2D( 
                         const stdPoint2D*   aP1,
@@ -1153,11 +1153,11 @@ SDouble stdUtils::area2D(
 
 /***********************************************************************
  * Description:
- * Á¡1 Á¡2ÀÇ ¼±ºĞÀÇ ¿ŞÂÊ¿¡ Á¡3ÀÌ ÀÖÀ¸¸é ID_TRUE ¾Æ´Ï¸é ID_FALSE
+ * ì 1 ì 2ì˜ ì„ ë¶„ì˜ ì™¼ìª½ì— ì 3ì´ ìˆìœ¼ë©´ ID_TRUE ì•„ë‹ˆë©´ ID_FALSE
  *
- * const stdPoint2D* aP1(In): Á¡1
- * const stdPoint2D* aP2(In): Á¡2
- * const stdPoint2D* aP3(In): Á¡3
+ * const stdPoint2D* aP1(In): ì 1
+ * const stdPoint2D* aP2(In): ì 2
+ * const stdPoint2D* aP3(In): ì 3
  **********************************************************************/
 idBool stdUtils::left2D(
                         const stdPoint2D*   aP1,
@@ -1173,11 +1173,11 @@ idBool stdUtils::left2D(
 
 /***********************************************************************
  * Description:
- * Á¡1 Á¡2ÀÇ ¼±ºĞÀÇ ¿ŞÂÊ¿¡ Á¡3ÀÌ ÀÖ°Å³ª ¼±ºĞ À§¿¡ ÀÖÀ¸¸é ID_TRUE ¾Æ´Ï¸é ID_FALSE
+ * ì 1 ì 2ì˜ ì„ ë¶„ì˜ ì™¼ìª½ì— ì 3ì´ ìˆê±°ë‚˜ ì„ ë¶„ ìœ„ì— ìˆìœ¼ë©´ ID_TRUE ì•„ë‹ˆë©´ ID_FALSE
  *
- * const stdPoint2D* aP1(In): Á¡1
- * const stdPoint2D* aP2(In): Á¡2
- * const stdPoint2D* aP3(In): Á¡3
+ * const stdPoint2D* aP1(In): ì 1
+ * const stdPoint2D* aP2(In): ì 2
+ * const stdPoint2D* aP3(In): ì 3
  **********************************************************************/
 idBool stdUtils::leftOn2D(
                         const stdPoint2D*   aP1,
@@ -1193,11 +1193,11 @@ idBool stdUtils::leftOn2D(
 
 /***********************************************************************
  * Description:
- * Á¡1 Á¡2ÀÇ ¼±ºĞÀÇ ¿À¸¥ÂÊ¿¡ Á¡3ÀÌ ÀÖÀ¸¸é ID_TRUE ¾Æ´Ï¸é ID_FALSE
+ * ì 1 ì 2ì˜ ì„ ë¶„ì˜ ì˜¤ë¥¸ìª½ì— ì 3ì´ ìˆìœ¼ë©´ ID_TRUE ì•„ë‹ˆë©´ ID_FALSE
  *
- * const stdPoint2D* aP1(In): Á¡1
- * const stdPoint2D* aP2(In): Á¡2
- * const stdPoint2D* aP3(In): Á¡3
+ * const stdPoint2D* aP1(In): ì 1
+ * const stdPoint2D* aP2(In): ì 2
+ * const stdPoint2D* aP3(In): ì 3
  **********************************************************************/
 idBool stdUtils::right2D(
                         const stdPoint2D*   aP1,
@@ -1214,11 +1214,11 @@ idBool stdUtils::right2D(
 
 /***********************************************************************
  * Description:
- * Á¡1 Á¡2ÀÇ ¼±ºĞÀÇ ¿À¸¥ÂÊ¿¡ Á¡3ÀÌ ÀÖ°Å³ª ¼±ºĞ À§¿¡ ÀÖÀ¸¸é ID_TRUE ¾Æ´Ï¸é ID_FALSE
+ * ì 1 ì 2ì˜ ì„ ë¶„ì˜ ì˜¤ë¥¸ìª½ì— ì 3ì´ ìˆê±°ë‚˜ ì„ ë¶„ ìœ„ì— ìˆìœ¼ë©´ ID_TRUE ì•„ë‹ˆë©´ ID_FALSE
  *
- * const stdPoint2D* aP1(In): Á¡1
- * const stdPoint2D* aP2(In): Á¡2
- * const stdPoint2D* aP3(In): Á¡3
+ * const stdPoint2D* aP1(In): ì 1
+ * const stdPoint2D* aP2(In): ì 2
+ * const stdPoint2D* aP3(In): ì 3
  **********************************************************************/
 idBool stdUtils::rightOn2D(
                         const stdPoint2D*   aP1,
@@ -1235,11 +1235,11 @@ idBool stdUtils::rightOn2D(
 
 /***********************************************************************
  * Description:
- * ¼¼Á¡ÀÌ ÇÑ Á÷¼± À§¿¡ ÀÖÀ¸¸é ID_TRUE ¾Æ´Ï¸é ID_FALSE
+ * ì„¸ì ì´ í•œ ì§ì„  ìœ„ì— ìˆìœ¼ë©´ ID_TRUE ì•„ë‹ˆë©´ ID_FALSE
  *
- * const stdPoint2D* aP1(In): Á¡1
- * const stdPoint2D* aP2(In): Á¡2
- * const stdPoint2D* aP3(In): Á¡3
+ * const stdPoint2D* aP1(In): ì 1
+ * const stdPoint2D* aP2(In): ì 2
+ * const stdPoint2D* aP3(In): ì 3
  **********************************************************************/
 idBool stdUtils::collinear2D(
                         const stdPoint2D*   aP1,
@@ -1255,12 +1255,12 @@ idBool stdUtils::collinear2D(
 
 /***********************************************************************
  * Description:
- * ³×Á¡ÀÌ ÇÑ Á÷¼± À§¿¡ ÀÖÀ¸¸é ID_TRUE ¾Æ´Ï¸é ID_FALSE
+ * ë„¤ì ì´ í•œ ì§ì„  ìœ„ì— ìˆìœ¼ë©´ ID_TRUE ì•„ë‹ˆë©´ ID_FALSE
  *
- * const stdPoint2D* aP1(In): Á¡1
- * const stdPoint2D* aP2(In): Á¡2
- * const stdPoint2D* aP3(In): Á¡3
- * const stdPoint2D* aP4(In): Á¡4
+ * const stdPoint2D* aP1(In): ì 1
+ * const stdPoint2D* aP2(In): ì 2
+ * const stdPoint2D* aP3(In): ì 3
+ * const stdPoint2D* aP4(In): ì 4
  **********************************************************************/
 idBool stdUtils::quadLinear2D(
                         const stdPoint2D*   aP1,
@@ -1276,17 +1276,17 @@ idBool stdUtils::quadLinear2D(
 }
 
 //==============================================================================
-// TASK-2015 ¼±ºĞ¿¡ Á¡ÀÌ Æ÷ÇÔµÇ´ÂÁö ÆÇº°
+// TASK-2015 ì„ ë¶„ì— ì ì´ í¬í•¨ë˜ëŠ”ì§€ íŒë³„
 //==============================================================================
 
 /***********************************************************************
  * Description:
- * Á¡1 Á¡2ÀÇ ¼±ºĞÀÇ ³»ºÎ¿¡ Á¡3ÀÌ ÀÖÀ¸¸é ID_TRUE ¾Æ´Ï¸é ID_FALSE
- * ¼±ºĞ ³¡¿¡ Á¡3ÀÌ ÀÖÀ»¶§ Á¦¿Ü
+ * ì 1 ì 2ì˜ ì„ ë¶„ì˜ ë‚´ë¶€ì— ì 3ì´ ìˆìœ¼ë©´ ID_TRUE ì•„ë‹ˆë©´ ID_FALSE
+ * ì„ ë¶„ ëì— ì 3ì´ ìˆì„ë•Œ ì œì™¸
  *
- * const stdPoint2D* aP1(In): Á¡1
- * const stdPoint2D* aP2(In): Á¡2
- * const stdPoint2D* aP3(In): Á¡3
+ * const stdPoint2D* aP1(In): ì 1
+ * const stdPoint2D* aP2(In): ì 2
+ * const stdPoint2D* aP3(In): ì 3
  **********************************************************************/
 idBool stdUtils::betweenI2D(
                         const stdPoint2D*   aP1,
@@ -1331,12 +1331,12 @@ idBool stdUtils::betweenI2D(
 
 /***********************************************************************
  * Description:
- * Á¡1 Á¡2ÀÇ ¼±ºĞÀÇ ³»ºÎ¿¡ Á¡3ÀÌ ÀÖÀ¸¸é ID_TRUE ¾Æ´Ï¸é ID_FALSE
- * ¼±ºĞ ³¡¿¡ Á¡3ÀÌ ÀÖÀ»¶§ OK
+ * ì 1 ì 2ì˜ ì„ ë¶„ì˜ ë‚´ë¶€ì— ì 3ì´ ìˆìœ¼ë©´ ID_TRUE ì•„ë‹ˆë©´ ID_FALSE
+ * ì„ ë¶„ ëì— ì 3ì´ ìˆì„ë•Œ OK
  *
- * const stdPoint2D* aP1(In): Á¡1
- * const stdPoint2D* aP2(In): Á¡2
- * const stdPoint2D* aP3(In): Á¡3
+ * const stdPoint2D* aP1(In): ì 1
+ * const stdPoint2D* aP2(In): ì 2
+ * const stdPoint2D* aP3(In): ì 3
  **********************************************************************/
 idBool stdUtils::between2D(
                         const stdPoint2D*   aP1,
@@ -1381,12 +1381,12 @@ idBool stdUtils::between2D(
 
 /***********************************************************************
  * Description:
- * Á¡1 Á¡2ÀÇ ¼±ºĞÀÇ ³»ºÎ¿¡ Á¡3ÀÌ ÀÖÀ¸¸é ID_TRUE ¾Æ´Ï¸é ID_FALSE
- * Á¡1°ú Á¡3ÀÌ °°À»¶§ OK
+ * ì 1 ì 2ì˜ ì„ ë¶„ì˜ ë‚´ë¶€ì— ì 3ì´ ìˆìœ¼ë©´ ID_TRUE ì•„ë‹ˆë©´ ID_FALSE
+ * ì 1ê³¼ ì 3ì´ ê°™ì„ë•Œ OK
  *
- * const stdPoint2D* aP1(In): Á¡1
- * const stdPoint2D* aP2(In): Á¡2
- * const stdPoint2D* aP3(In): Á¡3
+ * const stdPoint2D* aP1(In): ì 1
+ * const stdPoint2D* aP2(In): ì 2
+ * const stdPoint2D* aP3(In): ì 3
  **********************************************************************/
 idBool stdUtils::betweenOnLeft2D(
                         const stdPoint2D*   aP1,
@@ -1430,12 +1430,12 @@ idBool stdUtils::betweenOnLeft2D(
 
 /***********************************************************************
  * Description:
- * Á¡1 Á¡2ÀÇ ¼±ºĞÀÇ ³»ºÎ¿¡ Á¡3ÀÌ ÀÖÀ¸¸é ID_TRUE ¾Æ´Ï¸é ID_FALSE
- * Á¡2¿Í Á¡3ÀÌ °°À»¶§ OK
+ * ì 1 ì 2ì˜ ì„ ë¶„ì˜ ë‚´ë¶€ì— ì 3ì´ ìˆìœ¼ë©´ ID_TRUE ì•„ë‹ˆë©´ ID_FALSE
+ * ì 2ì™€ ì 3ì´ ê°™ì„ë•Œ OK
  *
- * const stdPoint2D* aP1(In): Á¡1
- * const stdPoint2D* aP2(In): Á¡2
- * const stdPoint2D* aP3(In): Á¡3
+ * const stdPoint2D* aP1(In): ì 1
+ * const stdPoint2D* aP2(In): ì 2
+ * const stdPoint2D* aP3(In): ì 3
  **********************************************************************/
 idBool stdUtils::betweenOnRight2D(
                         const stdPoint2D*   aP1,
@@ -1479,13 +1479,13 @@ idBool stdUtils::betweenOnRight2D(
 
 /***********************************************************************
  * Description:
- * Á¡1 Á¡2ÀÇ ¼±ºĞÀÇ ³»ºÎ¿¡ Á¡3ÀÌ ÀÖÀ¸¸é 0 ÁÂÃøÀÌ¸é -1 ¿ìÃøÀÌ¸é +1 
- * ¼±ºĞ ³¡¿¡ Á¡3ÀÌ ÀÖÀ»¶§ 0
+ * ì 1 ì 2ì˜ ì„ ë¶„ì˜ ë‚´ë¶€ì— ì 3ì´ ìˆìœ¼ë©´ 0 ì¢Œì¸¡ì´ë©´ -1 ìš°ì¸¡ì´ë©´ +1 
+ * ì„ ë¶„ ëì— ì 3ì´ ìˆì„ë•Œ 0
  *
- * const stdPoint2D* aP1(In): Á¡1
- * const stdPoint2D* aP2(In): Á¡2
- * const stdPoint2D* aP3(In): Á¡3
- * UInt*             aPos(Out): ¼±ºĞ³»ÀÇ Á¡3ÀÇ À§Ä¡°ª.
+ * const stdPoint2D* aP1(In): ì 1
+ * const stdPoint2D* aP2(In): ì 2
+ * const stdPoint2D* aP3(In): ì 3
+ * UInt*             aPos(Out): ì„ ë¶„ë‚´ì˜ ì 3ì˜ ìœ„ì¹˜ê°’.
  **********************************************************************/
 SInt stdUtils::sector2D(
                         const stdPoint2D*   aP1,
@@ -1514,17 +1514,17 @@ SInt stdUtils::sector2D(
 }
 
 //==============================================================================
-// TASK-2015 ¼±ºĞÀÌ ÁßÃ¸µÇ´ÂÁö ÆÇº°
+// TASK-2015 ì„ ë¶„ì´ ì¤‘ì²©ë˜ëŠ”ì§€ íŒë³„
 //==============================================================================
 
 /***********************************************************************
  * Description:
- * Á¡1 Á¡2 Á¡3ÀÌ ÇÑ Á÷¼±¿¡ ÀÖ°í Á¡2¿¡¼­ µÇµ¹¾Æ ¿Â´Ù. 
- * Áï ¼±ºĞÀÌ ÁßÃ¸µÇ¸é ID_TRUE ¾Æ´Ï¸é ID_FALSE
+ * ì 1 ì 2 ì 3ì´ í•œ ì§ì„ ì— ìˆê³  ì 2ì—ì„œ ë˜ëŒì•„ ì˜¨ë‹¤. 
+ * ì¦‰ ì„ ë¶„ì´ ì¤‘ì²©ë˜ë©´ ID_TRUE ì•„ë‹ˆë©´ ID_FALSE
  *
- * const stdPoint2D* aP1(In): ½ÃÀÛÁ¡
- * const stdPoint2D* aP2(In): Áß°£Á¡
- * const stdPoint2D* aP3(In): ³¡Á¡
+ * const stdPoint2D* aP1(In): ì‹œì‘ì 
+ * const stdPoint2D* aP2(In): ì¤‘ê°„ì 
+ * const stdPoint2D* aP3(In): ëì 
  **********************************************************************/
 idBool stdUtils::isReturned2D(
                         const stdPoint2D*   aP1,
@@ -1551,18 +1551,18 @@ idBool stdUtils::isReturned2D(
 
 
 //==============================================================================
-// TASK-2015 µÎ ¼±ºĞÀÌ ±³Â÷ÇÏ´ÂÁö ÆÇº°
+// TASK-2015 ë‘ ì„ ë¶„ì´ êµì°¨í•˜ëŠ”ì§€ íŒë³„
 //==============================================================================
 /***********************************************************************
  * Description:
  *    To Fix BUG-21196
- *    ¼±ºĞ12¿Í ¼±ºĞ34ÀÇ MBR ¿µ¿ªÀÌ ±³Â÷ÇÏ´Â Áö¸¦ ÆÇ´Ü.
- *    MBR ÀÌ ±³Â÷ÇÏÁö ¾Ê´Â´Ù¸é ¼±ºĞÀÌ ±³Â÷ÇÏÁö ¾ÊÀ½À» º¸ÀåÇÒ ¼ö ÀÖ´Ù.
+ *    ì„ ë¶„12ì™€ ì„ ë¶„34ì˜ MBR ì˜ì—­ì´ êµì°¨í•˜ëŠ” ì§€ë¥¼ íŒë‹¨.
+ *    MBR ì´ êµì°¨í•˜ì§€ ì•ŠëŠ”ë‹¤ë©´ ì„ ë¶„ì´ êµì°¨í•˜ì§€ ì•ŠìŒì„ ë³´ì¥í•  ìˆ˜ ìˆë‹¤.
  *
- * const stdPoint2D* aP1(In): Á¡1
- * const stdPoint2D* aP2(In): Á¡2
- * const stdPoint2D* aP3(In): Á¡3
- * const stdPoint2D* aP4(In): Á¡4
+ * const stdPoint2D* aP1(In): ì 1
+ * const stdPoint2D* aP2(In): ì 2
+ * const stdPoint2D* aP3(In): ì 3
+ * const stdPoint2D* aP4(In): ì 4
  **********************************************************************/
 
 idBool stdUtils::intersectLineMBR2D( const stdPoint2D* aP1,
@@ -1598,13 +1598,13 @@ idBool stdUtils::intersectLineMBR2D( const stdPoint2D* aP1,
 
 /***********************************************************************
  * Description:
- * ¼±ºĞ12¿Í ¼±ºĞ34°¡ ±³Â÷ÇÏ¸é ID_TRUE ¾Æ´Ï¸é ID_FALSE
- * ¼±ºĞ ³¡¿¡¼­ ¸¸³ª´Â °Í Á¦¿Ü
+ * ì„ ë¶„12ì™€ ì„ ë¶„34ê°€ êµì°¨í•˜ë©´ ID_TRUE ì•„ë‹ˆë©´ ID_FALSE
+ * ì„ ë¶„ ëì—ì„œ ë§Œë‚˜ëŠ” ê²ƒ ì œì™¸
  *
- * const stdPoint2D* aP1(In): Á¡1
- * const stdPoint2D* aP2(In): Á¡2
- * const stdPoint2D* aP3(In): Á¡3
- * const stdPoint2D* aP4(In): Á¡4
+ * const stdPoint2D* aP1(In): ì 1
+ * const stdPoint2D* aP2(In): ì 2
+ * const stdPoint2D* aP3(In): ì 3
+ * const stdPoint2D* aP4(In): ì 4
  **********************************************************************/
 idBool stdUtils::intersectI2D(
                             const stdPoint2D*   aP1,
@@ -1612,9 +1612,9 @@ idBool stdUtils::intersectI2D(
                             const stdPoint2D*   aP3,
                             const stdPoint2D*   aP4 )
 {
-    // To Fix BUG-21196 (Description ÂüÁ¶)
-    // ¼±ºĞÀÌ ±³Â÷ÇÏ´ÂÁö °Ë»çÇÏ±â Àü¿¡ MBR ¿µ¿ªÀÌ ±³Â÷ÇÏ´Â Áö¸¦ ¸ÕÀú ÆÇ´ÜÇÑ´Ù.
-    // ±×·¸Áö ¾ÊÀ» °æ¿ì ¿¬»ê Á¤¹Ğµµ·Î ÀÎÇØ ¼±ºĞÀÌ °ÅÀÇ ÀÏÁ÷¼±¿¡ °¡±î¿ï °æ¿ì ¹®Á¦°¡ µÈ´Ù.
+    // To Fix BUG-21196 (Description ì°¸ì¡°)
+    // ì„ ë¶„ì´ êµì°¨í•˜ëŠ”ì§€ ê²€ì‚¬í•˜ê¸° ì „ì— MBR ì˜ì—­ì´ êµì°¨í•˜ëŠ” ì§€ë¥¼ ë¨¼ì € íŒë‹¨í•œë‹¤.
+    // ê·¸ë ‡ì§€ ì•Šì„ ê²½ìš° ì—°ì‚° ì •ë°€ë„ë¡œ ì¸í•´ ì„ ë¶„ì´ ê±°ì˜ ì¼ì§ì„ ì— ê°€ê¹Œìš¸ ê²½ìš° ë¬¸ì œê°€ ëœë‹¤.
     if ( intersectLineMBR2D( aP1, aP2, aP3, aP4 ) == ID_FALSE )
     {
         return ID_FALSE;
@@ -1639,13 +1639,13 @@ idBool stdUtils::intersectI2D(
 
 /***********************************************************************
  * Description:
- * ¼±ºĞ12¿Í ¼±ºĞ34°¡ ±³Â÷ÇÏ¸é ID_TRUE ¾Æ´Ï¸é ID_FALSE
- * ¼±ºĞ ³¡¿¡¼­ ¸¸³ªµµ OK
+ * ì„ ë¶„12ì™€ ì„ ë¶„34ê°€ êµì°¨í•˜ë©´ ID_TRUE ì•„ë‹ˆë©´ ID_FALSE
+ * ì„ ë¶„ ëì—ì„œ ë§Œë‚˜ë„ OK
  *
- * const stdPoint2D* aP1(In): Á¡1
- * const stdPoint2D* aP2(In): Á¡2
- * const stdPoint2D* aP3(In): Á¡3
- * const stdPoint2D* aP4(In): Á¡4
+ * const stdPoint2D* aP1(In): ì 1
+ * const stdPoint2D* aP2(In): ì 2
+ * const stdPoint2D* aP3(In): ì 3
+ * const stdPoint2D* aP4(In): ì 4
  **********************************************************************/
 idBool stdUtils::intersect2D(
                             const stdPoint2D*   aP1,
@@ -1670,18 +1670,18 @@ idBool stdUtils::intersect2D(
 
 /***********************************************************************
  * Description:
- * ¿¬¼ÓµÇ´Â 3Á¡À¸·Î ÀÌ·ç¾îÁø ¼±ºĞ A123 °ú ¼±ºĞ B123ÀÌ 
- * ±³Â÷ÇÏ¸é                             STD_STAT_INT
- * ¶³¾îÁ® ÀÖÀ¸¸é                      STD_STAT_DIS
- * Á¢ÃËÇÏ¸é                             STD_STAT_TCH
- * ÁßÃ¸ÇÏ°Å³ª 2Á¡ÀÌ»ó ¸¸³ª¸é    STD_STAT_OVR
+ * ì—°ì†ë˜ëŠ” 3ì ìœ¼ë¡œ ì´ë£¨ì–´ì§„ ì„ ë¶„ A123 ê³¼ ì„ ë¶„ B123ì´ 
+ * êµì°¨í•˜ë©´                             STD_STAT_INT
+ * ë–¨ì–´ì ¸ ìˆìœ¼ë©´                      STD_STAT_DIS
+ * ì ‘ì´‰í•˜ë©´                             STD_STAT_TCH
+ * ì¤‘ì²©í•˜ê±°ë‚˜ 2ì ì´ìƒ ë§Œë‚˜ë©´    STD_STAT_OVR
  *
- * const stdPoint2D*     aPtA1(In): Á¡A1
- * const stdPoint2D*     aPtA2(In): Á¡A2
- * const stdPoint2D*     aPtA3(In): Á¡A3
- * const stdPoint2D*     aPtB1(In): Á¡B1
- * const stdPoint2D*     aPtB2(In): Á¡B2
- * const stdPoint2D*     aPtB3(In): Á¡B3
+ * const stdPoint2D*     aPtA1(In): ì A1
+ * const stdPoint2D*     aPtA2(In): ì A2
+ * const stdPoint2D*     aPtA3(In): ì A3
+ * const stdPoint2D*     aPtB1(In): ì B1
+ * const stdPoint2D*     aPtB2(In): ì B2
+ * const stdPoint2D*     aPtB3(In): ì B3
  **********************************************************************/
 GeoStatusTypes stdUtils::getStatus3Points3Points2D(
                 stdPoint2D*     aPtA1,
@@ -1837,7 +1837,7 @@ GeoStatusTypes stdUtils::getStatus3Points3Points2D(
         }
         /* 
         Fix BUG-15925
-        sSectorA1¸¸ °Ë»çÇØ¾ß LoopÀ» µ¹¸é¼­ 2¹ø °ËÃâµÇÁö ¾Ê´Â´Ù.
+        sSectorA1ë§Œ ê²€ì‚¬í•´ì•¼ Loopì„ ëŒë©´ì„œ 2ë²ˆ ê²€ì¶œë˜ì§€ ì•ŠëŠ”ë‹¤.
         else
         {
             if( area2D(aPtB2, aPtB3, aPtA1) * area2D(aPtB2, aPtB3, aPtA3) < 0)
@@ -1865,7 +1865,7 @@ GeoStatusTypes stdUtils::getStatus3Points3Points2D(
         }
         /*
         Fix BUG-15925
-        sSectorB1¸¸ °Ë»çÇØ¾ß LoopÀ» µ¹¸é¼­ 2¹ø °ËÃâµÇÁö ¾Ê´Â´Ù.
+        sSectorB1ë§Œ ê²€ì‚¬í•´ì•¼ Loopì„ ëŒë©´ì„œ 2ë²ˆ ê²€ì¶œë˜ì§€ ì•ŠëŠ”ë‹¤.
         else
         {
             if( area2D(aPtA2, aPtA3, aPtB1) * area2D(aPtA2, aPtA3, aPtB3) < 0)
@@ -1885,10 +1885,10 @@ GeoStatusTypes stdUtils::getStatus3Points3Points2D(
 
 /***********************************************************************
  * Description:
- * µÎ°³ÀÇ stdLineString2DType °´Ã¼°¡ ±³Â÷ÇÏ¸é ID_TRUE ¾Æ´Ï¸é ID_FALSE
+ * ë‘ê°œì˜ stdLineString2DType ê°ì²´ê°€ êµì°¨í•˜ë©´ ID_TRUE ì•„ë‹ˆë©´ ID_FALSE
  *
- * const stdLineString2DType* aLine1(In): ¶óÀÎ1
- * const stdLineString2DType* aLine2(In): ¶óÀÎ2
+ * const stdLineString2DType* aLine1(In): ë¼ì¸1
+ * const stdLineString2DType* aLine2(In): ë¼ì¸2
  **********************************************************************/
 idBool stdUtils::intersectLineToLine2D(
                             const stdLineString2DType*     aLine1,
@@ -1996,12 +1996,12 @@ idBool stdUtils::intersectLineToLine2D(
 
 /***********************************************************************
  * Description:
- * aRing1? aRing¸¦ Æ÷ÇÔÇÏ¸é ID_TRUE ¾Æ´Ï¸é ID_FALSE ¸®ÅÏ
+ * aRing1? aRingë¥¼ í¬í•¨í•˜ë©´ ID_TRUE ì•„ë‹ˆë©´ ID_FALSE ë¦¬í„´
  *
- * stdLinearRing2D*    aRing1(In): ¸µ1
- * stdMBR*             aMBR1(In): ¸µ1ÀÇ MBR
- * stdLinearRing2D*    aRing2(In): ¸µ2
- * stdMBR*             aMBR2(In): ¸µ2ÀÇ MBR
+ * stdLinearRing2D*    aRing1(In): ë§1
+ * stdMBR*             aMBR1(In): ë§1ì˜ MBR
+ * stdLinearRing2D*    aRing2(In): ë§2
+ * stdMBR*             aMBR2(In): ë§2ì˜ MBR
  **********************************************************************/
 idBool stdUtils::isRingContainsRing2D(
                         stdLinearRing2D*    aRing1,
@@ -2080,10 +2080,10 @@ idBool stdUtils::isRingContainsRing2D(
 
 /***********************************************************************
  * Description:
- * aRing1ÀÌ aRing2¸¦ Æ÷ÇÔÇÏ¸é ID_TRUE ¾Æ´Ï¸é ID_FALSE ¸®ÅÏ
+ * aRing1ì´ aRing2ë¥¼ í¬í•¨í•˜ë©´ ID_TRUE ì•„ë‹ˆë©´ ID_FALSE ë¦¬í„´
  *
- * stdLinearRing2D*    aRing1(In): ¸µ1
- * stdLinearRing2D*    aRing2(In): ¸µ2
+ * stdLinearRing2D*    aRing1(In): ë§1
+ * stdLinearRing2D*    aRing2(In): ë§2
  **********************************************************************/
 idBool stdUtils::isRingContainsRing2D(
                         stdLinearRing2D*    aRing1,
@@ -2156,12 +2156,12 @@ idBool stdUtils::isRingContainsRing2D(
 
 /***********************************************************************
  * Description:
- * aRing1ÀÌ aRing2¸¦ Æ÷ÇÔÇÏ¸é ID_TRUE ¾Æ´Ï¸é ID_FALSE ¸®ÅÏ
+ * aRing1ì´ aRing2ë¥¼ í¬í•¨í•˜ë©´ ID_TRUE ì•„ë‹ˆë©´ ID_FALSE ë¦¬í„´
  *
- * stdLinearRing2D*    aRing1(In): ¸µ1
- * stdMBR*             aMBR1(In): ¸µ1ÀÇ MBR
- * stdLinearRing2D*    aRing2(In): ¸µ2
- * stdMBR*             aMBR2(In): ¸µ2ÀÇ MBR
+ * stdLinearRing2D*    aRing1(In): ë§1
+ * stdMBR*             aMBR1(In): ë§1ì˜ MBR
+ * stdLinearRing2D*    aRing2(In): ë§2
+ * stdMBR*             aMBR2(In): ë§2ì˜ MBR
  **********************************************************************/
 idBool stdUtils::isRingNotDisjoint2D(
                         stdLinearRing2D*    aRing1,
@@ -2225,7 +2225,7 @@ idBool stdUtils::isRingNotDisjoint2D(
             
             sPt2 = STD_NEXT_PT2D(sPt2);
         }
-        // pt1ÀÌ ring2 ¾È¿¡ ÀÖ´ÂÁö¸¦ È®½ÅÇÏÁö ¸øÇÑ´Ù.
+        // pt1ì´ ring2 ì•ˆì— ìˆëŠ”ì§€ë¥¼ í™•ì‹ í•˜ì§€ ëª»í•œë‹¤.
         
         if (isMBRContainsPt(aMBR2, sPt1) == ID_TRUE)
         {
@@ -2257,15 +2257,15 @@ idBool stdUtils::isRingNotDisjoint2D(
 }
 
 //==============================================================================
-// TASK-2015 ÇÑ Á¡ÀÌ ¸µ ³»ºÎ¿¡ Á¸ÀçÇÏ´ÂÁö ÆÇº°
+// TASK-2015 í•œ ì ì´ ë§ ë‚´ë¶€ì— ì¡´ì¬í•˜ëŠ”ì§€ íŒë³„
 //==============================================================================
 
 /***********************************************************************
  * Description:
- * Á¡ÀÌ Boundary¸¦ Æ÷ÇÔÇÑ RingÀÇ ³»ºÎ¿¡ ÀÖÀ¸¸é ID_TRUE ¾Æ´Ï¸é ID_FALSE
+ * ì ì´ Boundaryë¥¼ í¬í•¨í•œ Ringì˜ ë‚´ë¶€ì— ìˆìœ¼ë©´ ID_TRUE ì•„ë‹ˆë©´ ID_FALSE
  *
- * const stdPoint2D*       aPt(In): Á¡
- * const stdLinearRing2D* aRing(In): ¸µ
+ * const stdPoint2D*       aPt(In): ì 
+ * const stdLinearRing2D* aRing(In): ë§
  **********************************************************************/
 idBool stdUtils::insideRing2D(
                             const stdPoint2D*          aPt,
@@ -2288,12 +2288,12 @@ idBool stdUtils::insideRing2D(
         
         if( STD_NEXTN_PT2D(sVtx,i)->mY <= aPt->mY)
         {
-            if( STD_NEXTN_PT2D(sVtx,i+1)->mY > aPt->mY)  // ¼±ºĞÀÌ À§·Î ÁøÇà
+            if( STD_NEXTN_PT2D(sVtx,i+1)->mY > aPt->mY)  // ì„ ë¶„ì´ ìœ„ë¡œ ì§„í–‰
             {
                 if(area2D(
                     STD_NEXTN_PT2D(sVtx,i), 
                     STD_NEXTN_PT2D(sVtx,i+1), 
-                    aPt) > 0)  // aPtÀÌ ¿ŞÂÊ
+                    aPt) > 0)  // aPtì´ ì™¼ìª½
                 {
                     ++sCnt;
                 }
@@ -2301,12 +2301,12 @@ idBool stdUtils::insideRing2D(
         }
         else
         {
-            if( STD_NEXTN_PT2D(sVtx,i+1)->mY <= aPt->mY)  // ¼±ºĞÀÌ ¾Æ·¡·Î ÁøÇà
+            if( STD_NEXTN_PT2D(sVtx,i+1)->mY <= aPt->mY)  // ì„ ë¶„ì´ ì•„ë˜ë¡œ ì§„í–‰
             {
                 if(area2D(
                     STD_NEXTN_PT2D(sVtx,i), 
                     STD_NEXTN_PT2D(sVtx,i+1), 
-                    aPt) < 0)   // aPtÀÌ ¿À¸¥ÂÊ
+                    aPt) < 0)   // aPtì´ ì˜¤ë¥¸ìª½
                 {
                     --sCnt;
                 }
@@ -2325,10 +2325,10 @@ idBool stdUtils::insideRing2D(
 
 /***********************************************************************
  * Description:
- * Á¡ÀÌ RingÀÇ ³»ºÎ¿¡ ÀÖÀ¸¸é ID_TRUE ¾Æ´Ï¸é ID_FALSE
+ * ì ì´ Ringì˜ ë‚´ë¶€ì— ìˆìœ¼ë©´ ID_TRUE ì•„ë‹ˆë©´ ID_FALSE
  *
- * const stdPoint2D*       aPt(In): Á¡
- * const stdLinearRing2D* aRing(In): ¸µ
+ * const stdPoint2D*       aPt(In): ì 
+ * const stdLinearRing2D* aRing(In): ë§
  **********************************************************************/
 idBool stdUtils::insideRingI2D(
                             const stdPoint2D*          aPt,
@@ -2352,12 +2352,12 @@ idBool stdUtils::insideRingI2D(
         
         if( STD_NEXTN_PT2D(sVtx,i)->mY <= aPt->mY)
         {
-            if( STD_NEXTN_PT2D(sVtx,i+1)->mY > aPt->mY)  // ¼±ºĞÀÌ À§·Î ÁøÇà
+            if( STD_NEXTN_PT2D(sVtx,i+1)->mY > aPt->mY)  // ì„ ë¶„ì´ ìœ„ë¡œ ì§„í–‰
             {
                 if(area2D(
                     STD_NEXTN_PT2D(sVtx,i), 
                     STD_NEXTN_PT2D(sVtx,i+1), 
-                    aPt) > 0)  // aPtÀÌ ¿ŞÂÊ
+                    aPt) > 0)  // aPtì´ ì™¼ìª½
                 {
                     ++sCnt;
                 }
@@ -2365,12 +2365,12 @@ idBool stdUtils::insideRingI2D(
         }
         else
         {
-            if( STD_NEXTN_PT2D(sVtx,i+1)->mY <= aPt->mY)  // ¼±ºĞÀÌ ¾Æ·¡·Î ÁøÇà
+            if( STD_NEXTN_PT2D(sVtx,i+1)->mY <= aPt->mY)  // ì„ ë¶„ì´ ì•„ë˜ë¡œ ì§„í–‰
             {
                 if(area2D(
                     STD_NEXTN_PT2D(sVtx,i), 
                     STD_NEXTN_PT2D(sVtx,i+1), 
-                    aPt) < 0)   // aPtÀÌ ¿À¸¥ÂÊ
+                    aPt) < 0)   // aPtì´ ì˜¤ë¥¸ìª½
                 {
                     --sCnt;
                 }
@@ -2389,9 +2389,9 @@ idBool stdUtils::insideRingI2D(
 
 /***********************************************************************
  * Description:
- * ¸µÀÇ ÁÂÇ¥ Á¤·ÄÀÌ Counter Clock WiseÀÌ¸é ID_TRUE ¾Æ´Ï¸é ID_FALSE
+ * ë§ì˜ ì¢Œí‘œ ì •ë ¬ì´ Counter Clock Wiseì´ë©´ ID_TRUE ì•„ë‹ˆë©´ ID_FALSE
  *
- * stdLinearRing2D* aRing(In): ¸µ
+ * stdLinearRing2D* aRing(In): ë§
  **********************************************************************/
 idBool stdUtils::isCCW2D( stdLinearRing2D *aRing )
 {
@@ -2429,19 +2429,19 @@ idBool stdUtils::isCCW2D( stdLinearRing2D *aRing )
 }
 
 //==============================================================================
-// TASK-2015 µÎ ¼±ºĞÀÇ ±³Á¡ Ã£±â
+// TASK-2015 ë‘ ì„ ë¶„ì˜ êµì  ì°¾ê¸°
 //==============================================================================
 
 /***********************************************************************
  * Description:
- * ¼±ºĞ12 ¼±ºĞ34ÀÇ ±³Â÷Á¡À» aResult·Î ¹Ş¾Æ ¿Â´Ù.
- * ÀÌ ÇÔ¼öÀÇ ¿ÜºÎ¿¡¼­ ¼±ºĞÀÌ ÆòÇàÇÏ°Å³ª µ¿ÀÏÇÑ °æ¿ì¸¦ Á¦¿ÜÇØ¾ßÇÑ´Ù.
+ * ì„ ë¶„12 ì„ ë¶„34ì˜ êµì°¨ì ì„ aResultë¡œ ë°›ì•„ ì˜¨ë‹¤.
+ * ì´ í•¨ìˆ˜ì˜ ì™¸ë¶€ì—ì„œ ì„ ë¶„ì´ í‰í–‰í•˜ê±°ë‚˜ ë™ì¼í•œ ê²½ìš°ë¥¼ ì œì™¸í•´ì•¼í•œë‹¤.
  *
- * const stdPoint2D*   aPt1(In): Á¡1
- * const stdPoint2D*   aPt2(In): Á¡2
- * const stdPoint2D*   aPt3(In): Á¡3
- * const stdPoint2D*   aPt4(In): Á¡4
- * stdPoint2D* aResult(Out): ±³Â÷Á¡
+ * const stdPoint2D*   aPt1(In): ì 1
+ * const stdPoint2D*   aPt2(In): ì 2
+ * const stdPoint2D*   aPt3(In): ì 3
+ * const stdPoint2D*   aPt4(In): ì 4
+ * stdPoint2D* aResult(Out): êµì°¨ì 
  **********************************************************************/
 idBool stdUtils::getIntersection2D(
                         const stdPoint2D*   aPt1,
@@ -2500,13 +2500,13 @@ idBool stdUtils::getIntersection2D(
 
 /***********************************************************************
  * Description:
- * ¼±ºĞ12¿Í Æú¸®°ïÀÇ ±³Â÷Á¡À» aResult·Î ¹Ş¾Æ ¿Â´Ù.
- * ÀÌ ÇÔ¼öÀÇ ¿ÜºÎ¿¡¼­ ±³Â÷ÇÏÁö ¾Ê´Â °æ¿ì¸¦ Á¦¿ÜÇØ¾ßÇÑ´Ù.
+ * ì„ ë¶„12ì™€ í´ë¦¬ê³¤ì˜ êµì°¨ì ì„ aResultë¡œ ë°›ì•„ ì˜¨ë‹¤.
+ * ì´ í•¨ìˆ˜ì˜ ì™¸ë¶€ì—ì„œ êµì°¨í•˜ì§€ ì•ŠëŠ” ê²½ìš°ë¥¼ ì œì™¸í•´ì•¼í•œë‹¤.
  *
- * const stdPoint2D*        aPt1(In): Á¡1
- * const stdPoint2D*        aPt2(In): Á¡2
- * const stdPolygon2DType*  aPoly(In): Æú¸®°ï
- * stdPoint2D*              aResult(Out): ±³Â÷Á¡
+ * const stdPoint2D*        aPt1(In): ì 1
+ * const stdPoint2D*        aPt2(In): ì 2
+ * const stdPolygon2DType*  aPoly(In): í´ë¦¬ê³¤
+ * stdPoint2D*              aResult(Out): êµì°¨ì 
  **********************************************************************/
 idBool stdUtils::getIntersection2D(
                         const stdPoint2D*       aPt1,
@@ -2539,14 +2539,14 @@ idBool stdUtils::getIntersection2D(
 
 /***********************************************************************
  * Description:
- * ¼±ºĞ12 ¼±ºĞ34ÀÇ ±³Â÷Á¡À» aPointSet¿¡ ¹Ş¾Æ ¿Â´Ù.
+ * ì„ ë¶„12 ì„ ë¶„34ì˜ êµì°¨ì ì„ aPointSetì— ë°›ì•„ ì˜¨ë‹¤.
  * 
- * const stdPoint2D*   aPt1(In): Á¡1
- * const stdPoint2D*   aPt2(In): Á¡2
- * const stdPoint2D*   aPt3(In): Á¡3
- * const stdPoint2D*   aPt4(In): Á¡4
- * stdPoint2D* aResult(Out): ±³Â÷Á¡
- * aNumPoints: ±³Â÷Á¡ÀÇ °³¼ö
+ * const stdPoint2D*   aPt1(In): ì 1
+ * const stdPoint2D*   aPt2(In): ì 2
+ * const stdPoint2D*   aPt3(In): ì 3
+ * const stdPoint2D*   aPt4(In): ì 4
+ * stdPoint2D* aResult(Out): êµì°¨ì 
+ * aNumPoints: êµì°¨ì ì˜ ê°œìˆ˜
  **********************************************************************/
 idBool stdUtils::getIntersects2D( 
                             const stdPoint2D*   aSp0,
@@ -2653,16 +2653,16 @@ idBool stdUtils::getIntersects2D(
 }
 
 //==============================================================================
-// TASK-2015 »ï°¢ÇüÀÇ ³ĞÀÌ
+// TASK-2015 ì‚¼ê°í˜•ì˜ ë„“ì´
 //==============================================================================
 
 /***********************************************************************
  * Description:
- * »ï°¢ÇüÀÇ ³ĞÀÌÀÇ 2¹èÀÇ °ªÀ» ¸®ÅÏ
+ * ì‚¼ê°í˜•ì˜ ë„“ì´ì˜ 2ë°°ì˜ ê°’ì„ ë¦¬í„´
  * 
- * stdPoint2D*   aPt1(In): Á¡1
- * stdPoint2D*   aPt2(In): Á¡2
- * stdPoint2D*   aPt3(In): Á¡3
+ * stdPoint2D*   aPt1(In): ì 1
+ * stdPoint2D*   aPt2(In): ì 2
+ * stdPoint2D*   aPt3(In): ì 3
  **********************************************************************/
 inline SDouble areaDigon2D(
                             stdPoint2D* aPt1,
@@ -2675,9 +2675,9 @@ inline SDouble areaDigon2D(
 
 /***********************************************************************
  * Description:
- * RingÀÇ ³ĞÀÌ ¸®ÅÏ
+ * Ringì˜ ë„“ì´ ë¦¬í„´
  * 
- * stdLinearRing2D* aRing(In): ¸µ
+ * stdLinearRing2D* aRing(In): ë§
  **********************************************************************/
 SDouble stdUtils::areaRing2D( stdLinearRing2D* aRing )
 {
@@ -2713,7 +2713,7 @@ SDouble stdUtils::areaRing2D( stdLinearRing2D* aRing )
 }
 
 //==============================================================================
-// TASK-2015 RingÀÇ ¹«°Ô Áß½É
+// TASK-2015 Ringì˜ ë¬´ê²Œ ì¤‘ì‹¬
 //==============================================================================
 
 inline void centroidDigon2D(
@@ -2729,10 +2729,10 @@ inline void centroidDigon2D(
 
 /***********************************************************************
  * Description:
- * RingÀÇ ¹«°Ô Áß½ÉÀ» aResult·Î ¸®ÅÏ
+ * Ringì˜ ë¬´ê²Œ ì¤‘ì‹¬ì„ aResultë¡œ ë¦¬í„´
  * 
- * stdLinearRing2D* aRing(In): ¸µ
- * stdPoint2D* aResult(Out): ¹«°Ô Áß½É
+ * stdLinearRing2D* aRing(In): ë§
+ * stdPoint2D* aResult(Out): ë¬´ê²Œ ì¤‘ì‹¬
  **********************************************************************/
 IDE_RC stdUtils::centroidRing2D(
                     stdLinearRing2D* aRing,
@@ -2789,11 +2789,11 @@ IDE_RC stdUtils::centroidRing2D(
 
 /***********************************************************************
  * Description:
- * Æú¸®°ïÀÇ ¹«°Ô Áß½ÉÀ» aResult·Î ¸®ÅÏ
- * ¸ÖÆ¼ Æú¸®°ïÀÇ ¹«°Ô Áß½ÉÀº °¢ÀÚÀÇ Æú¸®°ïÀÇ ¹«°Ô Áß½ÉÀ» ±¸ÇÏ¿© ÀÌ°ÍÀ» Æò±ÕÀ» ³½´Ù
+ * í´ë¦¬ê³¤ì˜ ë¬´ê²Œ ì¤‘ì‹¬ì„ aResultë¡œ ë¦¬í„´
+ * ë©€í‹° í´ë¦¬ê³¤ì˜ ë¬´ê²Œ ì¤‘ì‹¬ì€ ê°ìì˜ í´ë¦¬ê³¤ì˜ ë¬´ê²Œ ì¤‘ì‹¬ì„ êµ¬í•˜ì—¬ ì´ê²ƒì„ í‰ê· ì„ ë‚¸ë‹¤
  * BUG-28690
- * stdMultiPolygon2DType* aMPoly(In): ¸µ
- * stdPoint2D*          aResult(Out): ¹«°Ô Áß½É
+ * stdMultiPolygon2DType* aMPoly(In): ë§
+ * stdPoint2D*          aResult(Out): ë¬´ê²Œ ì¤‘ì‹¬
  **********************************************************************/
 IDE_RC stdUtils::centroidMPolygon2D(
                     stdMultiPolygon2DType*  aMPoly,
@@ -2846,7 +2846,7 @@ IDE_RC stdUtils::centroidMPolygon2D(
 }
 
 //==============================================================================
-// TASK-2015 Polygon ³»ºÎÀÇ ÇÑ Á¡ ±¸ÇÏ±â
+// TASK-2015 Polygon ë‚´ë¶€ì˜ í•œ ì  êµ¬í•˜ê¸°
 //==============================================================================
 
 extern "C" SInt cmpDouble(const void * aV1, const void * aV2)
@@ -2918,10 +2918,10 @@ extern "C" SInt cmpSegment(const void * aV1, const void * aV2)
 
 /***********************************************************************
  * Description:
- * Æú¸®°ï ³»ºÎÀÇ ÇÑ Á¡À» aResult·Î ¸®ÅÏ
+ * í´ë¦¬ê³¤ ë‚´ë¶€ì˜ í•œ ì ì„ aResultë¡œ ë¦¬í„´
  * 
- * stdMultiPolygon2DType* aMPoly(In): ¸µ
- * stdPoint2D*          aResult(Out): ¹«°Ô Áß½É
+ * stdMultiPolygon2DType* aMPoly(In): ë§
+ * stdPoint2D*          aResult(Out): ë¬´ê²Œ ì¤‘ì‹¬
  **********************************************************************/
 IDE_RC
 stdUtils::getPointOnSurface2D( iduMemory*              aQmxMem,
@@ -3205,8 +3205,8 @@ IDE_RC stdUtils::setMBRFromRing2D(stdMBR* aMBR, stdLinearRing2D*  aRing)
 
 /***********************************************************************
  * Description :
- * Line(Pt1,Pt2)¿Í Point(Pt)°£ÀÇ Distance^2À» ±¸ÇÑ´Ù.
- * Point·Î ºÎÅÍ ¶óÀÎ¿¡ ±×Àº ¹ı¼±°£ÀÇ °Å¸®¸¦ ±¸ÇÑ´Ù.
+ * Line(Pt1,Pt2)ì™€ Point(Pt)ê°„ì˜ Distance^2ì„ êµ¬í•œë‹¤.
+ * Pointë¡œ ë¶€í„° ë¼ì¸ì— ê·¸ì€ ë²•ì„ ê°„ì˜ ê±°ë¦¬ë¥¼ êµ¬í•œë‹¤.
  **********************************************************************/
 SDouble stdUtils::getDistanceSqLineToPoint2D( const stdPoint2D *aPt1,
                                               const stdPoint2D *aPt2,
@@ -3235,9 +3235,9 @@ SDouble stdUtils::getDistanceSqLineToPoint2D( const stdPoint2D *aPt1,
 
 /***********************************************************************
  * Description :
- * LineSegment(Pt1,Pt2)¿Í Point(Pt)°£ÀÇ Distance^2À» ±¸ÇÑ´Ù. 
- * Point·Î ºÎÅÍ ¶óÀÎ¿¡ ±×Àº ¹ı¼±ÀÌ LineSegmentÁß°£ÀÌ¶ó¸é
- * ±×°£ÀÇ °Å¸®¸¦ ±¸ÇÑ´Ù. ¾Æ´Ï¶ó¸é °¡±î¿î ³¡Á¡±îÁöÀÇ °Å¸®¸¦ ±¸ÇÑ´Ù.
+ * LineSegment(Pt1,Pt2)ì™€ Point(Pt)ê°„ì˜ Distance^2ì„ êµ¬í•œë‹¤. 
+ * Pointë¡œ ë¶€í„° ë¼ì¸ì— ê·¸ì€ ë²•ì„ ì´ LineSegmentì¤‘ê°„ì´ë¼ë©´
+ * ê·¸ê°„ì˜ ê±°ë¦¬ë¥¼ êµ¬í•œë‹¤. ì•„ë‹ˆë¼ë©´ ê°€ê¹Œìš´ ëì ê¹Œì§€ì˜ ê±°ë¦¬ë¥¼ êµ¬í•œë‹¤.
  **********************************************************************/
 SDouble stdUtils::getDistanceSqLineSegmentToPoint2D( const stdPoint2D *aPt1,
                                                      const stdPoint2D *aPt2,
@@ -3279,7 +3279,7 @@ SDouble stdUtils::getDistanceSqLineSegmentToPoint2D( const stdPoint2D *aPt1,
         }
     }
     
-    return sDistanceSquare; // ½Ç°Å¸® Distance = sqrt( sDistanceSquare );
+    return sDistanceSquare; // ì‹¤ê±°ë¦¬ Distance = sqrt( sDistanceSquare );
 }
 
 
@@ -3303,8 +3303,8 @@ idBool stdUtils::checkBetween2D( const stdPoint2D *aPt1,
 
 /***********************************************************************
  * Description :
- * Line(Pt1,Pt2)¿Í Line(Pt3,Pt4)°¡  ±³Â÷Á¡À» ±¸ÇÑ´Ù. 
- * aCode °¡ 1ÀÌ¸é ÆòÇà°ü°èÀÌ´Ù.
+ * Line(Pt1,Pt2)ì™€ Line(Pt3,Pt4)ê°€  êµì°¨ì ì„ êµ¬í•œë‹¤. 
+ * aCode ê°€ 1ì´ë©´ í‰í–‰ê´€ê³„ì´ë‹¤.
  **********************************************************************/
 idBool stdUtils::getIntersectLineToLine2D(  const stdPoint2D *aPt1,
                                             const stdPoint2D *aPt2,
@@ -3375,9 +3375,9 @@ idBool stdUtils::getIntersectLineToLine2D(  const stdPoint2D *aPt1,
 
 /***********************************************************************
  * Description :
- * LineStringÀÇ Interior IntersectsÀÎÁö Ã¼Å©ÇÏ´Â ¼­ºê·çÆ¾ 
- * Line(Pt1,Pt2)¿Í Line(Pt3,Pt4)°¡  ±³Â÷ÇÏ´ÂÁö ¿©ºÎ Á¶»ç
- * LineString»óÀÇ ³¡Á¡ÀÎÁö ¿©ºÎ°¡ Áß¿ä
+ * LineStringì˜ Interior Intersectsì¸ì§€ ì²´í¬í•˜ëŠ” ì„œë¸Œë£¨í‹´ 
+ * Line(Pt1,Pt2)ì™€ Line(Pt3,Pt4)ê°€  êµì°¨í•˜ëŠ”ì§€ ì—¬ë¶€ ì¡°ì‚¬
+ * LineStringìƒì˜ ëì ì¸ì§€ ì—¬ë¶€ê°€ ì¤‘ìš”
  **********************************************************************/
 idBool stdUtils::isIntersectsLineToLine2D( const stdPoint2D *aPt1,
                                            const stdPoint2D *aPt2,
@@ -3456,7 +3456,7 @@ idBool stdUtils::isIntersectsLineToLine2D( const stdPoint2D *aPt1,
         IDE_RAISE( is_not_intersects );
     }
     
-    if( sCode==1 ) // ÆòÇà¼± 
+    if( sCode==1 ) // í‰í–‰ì„  
     {
         if( sSamePtCnt==0 )
         {
@@ -3504,12 +3504,12 @@ idBool stdUtils::isIntersectsLineToLine2D( const stdPoint2D *aPt1,
     {
         if( sSamePtCnt==1 )
         {
-            // ¼±ºĞÀÌ ³¡Á¡,³¡Á¡¿¡¼­ ¸¸³ª´Â °æ¿ì 
+            // ì„ ë¶„ì´ ëì ,ëì ì—ì„œ ë§Œë‚˜ëŠ” ê²½ìš° 
             sRet = ID_FALSE;
         }
         else
         {
-            // ¼±ºĞ ³¡Á¡ÀÌ ´Ù¸¥ ¼±ºĞ Áß°£¿¡ ¸¸³ª´Â °æ¿ì Ã³¸®
+            // ì„ ë¶„ ëì ì´ ë‹¤ë¥¸ ì„ ë¶„ ì¤‘ê°„ì— ë§Œë‚˜ëŠ” ê²½ìš° ì²˜ë¦¬
             if( isSamePoints2D( aPt1, &sPt )==ID_TRUE )
             {
                 sRet = (aIsEnd1==ID_FALSE) ? ID_TRUE:ID_FALSE;
@@ -3528,7 +3528,7 @@ idBool stdUtils::isIntersectsLineToLine2D( const stdPoint2D *aPt1,
             }
             else
             {
-                // ¼±ºĞÀÌ ¼­·Î Áß°£¿¡¼­ ¸¸³ª´Â °æ¿ì 
+                // ì„ ë¶„ì´ ì„œë¡œ ì¤‘ê°„ì—ì„œ ë§Œë‚˜ëŠ” ê²½ìš° 
                 sRet = ID_TRUE;
             }
         }
@@ -3963,9 +3963,9 @@ SInt stdUtils::getOrientationFromRing( stdLinearRing2D* aRing )
         sPt = STD_NEXT_PT2D(sPt);
 
         /* BUG-33634 
-         * Y°ªÀÌ °¡Àå Å« Á¡ÀÌ 3°³ ÀÌ»óÀÖ´Â °æ¿ì ¸µÀÇ ¹æÇâÀÌ 0 (ST_PARALLEL)ÀÎ
-         * °æ¿ì°¡ ¹ß»ıÇÒ ¼ö ÀÖ¾î¼­ Y°ªÀÌ °¡Àå Å« Á¡µé Áß¿¡¼­ X°ªÀÌ °¡Àå Å« Á¡À»
-         * ¼±ÅÃÇÏµµ·Ï ¼öÁ¤ÇÏ¿´´Ù. */
+         * Yê°’ì´ ê°€ì¥ í° ì ì´ 3ê°œ ì´ìƒìˆëŠ” ê²½ìš° ë§ì˜ ë°©í–¥ì´ 0 (ST_PARALLEL)ì¸
+         * ê²½ìš°ê°€ ë°œìƒí•  ìˆ˜ ìˆì–´ì„œ Yê°’ì´ ê°€ì¥ í° ì ë“¤ ì¤‘ì—ì„œ Xê°’ì´ ê°€ì¥ í° ì ì„
+         * ì„ íƒí•˜ë„ë¡ ìˆ˜ì •í•˜ì˜€ë‹¤. */
 
         if( sMaxPt->mY < sPt->mY )
         {
@@ -4132,7 +4132,7 @@ IDE_RC stdUtils::classfyPolygonChain( iduMemory*        aQmxMem,
         sPt     = STD_FIRST_PT2D(sRing);
         sOrientation = stdUtils::getOrientationFromRing(sRing);
 
-        // ÃÖ¼Ò ¸µ¿¡ Æ÷ÇÔµÈ Á¡Àº 4°³ ÀÌ»óÀ» º¸ÀåÇÑ´Ù.
+        // ìµœì†Œ ë§ì— í¬í•¨ëœ ì ì€ 4ê°œ ì´ìƒì„ ë³´ì¥í•œë‹¤.
         IDE_TEST_RAISE( sMax < 4, ERR_ABORT_INVALID_NUM_OF_POINTS );
         
         sPrevChain = NULL;
@@ -4194,7 +4194,7 @@ IDE_RC stdUtils::classfyPolygonChain( iduMemory*        aQmxMem,
                     (*aIndexSegTotal)++;
                 }
                 
-                // ¼Ó¼ºÀÌ ´Ù¸£¸é Ã¼ÀÎÀ» »ı¼ºÇÑ´Ù.
+                // ì†ì„±ì´ ë‹¤ë¥´ë©´ ì²´ì¸ì„ ìƒì„±í•œë‹¤.
                 IDE_TEST( aQmxMem->alloc( ID_SIZEOF(Chain),
                                           (void**) & sChain )
                           != IDE_SUCCESS);
@@ -4306,7 +4306,7 @@ Segment* stdUtils::getNextSeg( Segment* aSeg )
     Segment* sReturn;
    
     /* BUG-33634 
-     * ¹æÇâÀÌ Àß¸øµÈ ¸µÀÇ ¹æÇâÀ» ¹Ù²Û °æ¿ì¸¦ °í·ÁÇÏµµ·Ï ¼öÁ¤ÇÔ. */ 
+     * ë°©í–¥ì´ ì˜ëª»ëœ ë§ì˜ ë°©í–¥ì„ ë°”ê¾¼ ê²½ìš°ë¥¼ ê³ ë ¤í•˜ë„ë¡ ìˆ˜ì •í•¨. */ 
     if( sReverse == ST_NOT_REVERSE  )
     {
         sReturn = aSeg->mNext;
@@ -4347,7 +4347,7 @@ Segment* stdUtils::getPrevSeg( Segment* aSeg )
     Segment* sReturn;
 
     /* BUG-33634 
-     * ¹æÇâÀÌ Àß¸øµÈ ¸µÀÇ ¹æÇâÀ» ¹Ù²Û °æ¿ì¸¦ °í·ÁÇÏµµ·Ï ¼öÁ¤ÇÔ. */
+     * ë°©í–¥ì´ ì˜ëª»ëœ ë§ì˜ ë°©í–¥ì„ ë°”ê¾¼ ê²½ìš°ë¥¼ ê³ ë ¤í•˜ë„ë¡ ìˆ˜ì •í•¨. */
     if( sReverse == ST_NOT_REVERSE )
     {
         sReturn = aSeg->mPrev;
@@ -4531,7 +4531,7 @@ IDE_RC stdUtils::addVertex( iduMemory*       aQmxMem,
         (*aResult)->mNext   = NULL;
         sNewVertexEn->mNext = NULL;
         sNewVertexEn->mPrev = NULL;
-        // °ª ÃÊ±âÈ­ 
+        // ê°’ ì´ˆê¸°í™” 
     }
     else
     {
@@ -4554,7 +4554,7 @@ IDE_RC stdUtils::addVertex( iduMemory*       aQmxMem,
                                       (void**) &sNewVer )
                       != IDE_SUCCESS);
 
-            // °ª ÃÊ±âÈ­
+            // ê°’ ì´ˆê¸°í™”
             
             sPreVer->mNext      = sNewVer;            
             *aResult            = sNewVer;
@@ -4606,15 +4606,15 @@ IDE_RC stdUtils::reassign( iduMemory*    aQmxMem,
         while( sFindSeg != NULL )
         {
             // BUG-33436
-            // Between2D¸¦ checkBetween2D·Î ¼öÁ¤
-            // ¼¼±×¸ÕÆ®°¡ ºĞ¸®µÊ¿¡ µû¶ó ±âÁ¸¿¡ ±¸ÇÑ ±³Á¡°úÀÇ Area2D¿¬»êÀÌ 
-            // 0ÀÌ ¾Æ´Ñ°ªÀÌ ³ª¿À´Â °æ¿ì°¡ ÀÖÀ½
-            // ¼¼±×¸ÕÆ®ÀÇ ½ÃÀÛÁ¡°ú ³¡Á¡ÀÌ ÀÌ·ç´Â »ç°¢Çü ¾È¿¡ Æ÷ÀÎÆ®°¡ 
-            // Æ÷ÇÔµÇ´ÂÁö ÆÇ´ÜÇÏ´Â °ÍÀ¸·Î ´ëÃ¼ÇÔ
+            // Between2Dë¥¼ checkBetween2Dë¡œ ìˆ˜ì •
+            // ì„¸ê·¸ë¨¼íŠ¸ê°€ ë¶„ë¦¬ë¨ì— ë”°ë¼ ê¸°ì¡´ì— êµ¬í•œ êµì ê³¼ì˜ Area2Dì—°ì‚°ì´ 
+            // 0ì´ ì•„ë‹Œê°’ì´ ë‚˜ì˜¤ëŠ” ê²½ìš°ê°€ ìˆìŒ
+            // ì„¸ê·¸ë¨¼íŠ¸ì˜ ì‹œì‘ì ê³¼ ëì ì´ ì´ë£¨ëŠ” ì‚¬ê°í˜• ì•ˆì— í¬ì¸íŠ¸ê°€ 
+            // í¬í•¨ë˜ëŠ”ì§€ íŒë‹¨í•˜ëŠ” ê²ƒìœ¼ë¡œ ëŒ€ì²´í•¨
 
             // BUG-40707
-            // ºÎµ¿¼Ò¼öÁ¡ ¿¬»ê¿ÀÂ÷·Î ÀÎÇØ overlaps ¿¬»ê½Ã ¿¡·¯¹ß»ı
-            // checkBetween2D¸¦ checkBetween2D4Func·Î ¼öÁ¤
+            // ë¶€ë™ì†Œìˆ˜ì  ì—°ì‚°ì˜¤ì°¨ë¡œ ì¸í•´ overlaps ì—°ì‚°ì‹œ ì—ëŸ¬ë°œìƒ
+            // checkBetween2Dë¥¼ checkBetween2D4Funcë¡œ ìˆ˜ì •
             
             if ( checkBetween2D4Func( &(sFindSeg->mStart),
                                       &(sFindSeg->mEnd),
@@ -4797,8 +4797,8 @@ IDE_RC stdUtils::reassignSeg( iduMemory*  aQmxMem,
             sSeg->mLabel         = ST_SEG_LABEL_OUTSIDE;
 
             // BUG-33436 
-            // ±âÁ¸ ¼¼±×¸ÕÆ®ÀÇ ±³Á¡ Á¤º¸¸¦ »õ ¼¼±×¸ÕÆ®·Î ¿Å±â°í 
-            // ±âÁ¸ ¼¼±×¸ÕÆ®¸¦ °¡¸®Å°°í ÀÖ´Â °ÍÀ» »õ ¼¼±×¸ÕÆ®·Î ¼öÁ¤
+            // ê¸°ì¡´ ì„¸ê·¸ë¨¼íŠ¸ì˜ êµì  ì •ë³´ë¥¼ ìƒˆ ì„¸ê·¸ë¨¼íŠ¸ë¡œ ì˜®ê¸°ê³  
+            // ê¸°ì¡´ ì„¸ê·¸ë¨¼íŠ¸ë¥¼ ê°€ë¦¬í‚¤ê³  ìˆëŠ” ê²ƒì„ ìƒˆ ì„¸ê·¸ë¨¼íŠ¸ë¡œ ìˆ˜ì •
             sSeg->mEndVertex     = sFindSeg1->mEndVertex;
             sFindSeg1->mEndVertex = NULL;
             if ( sSeg->mEndVertex != NULL )
@@ -4926,8 +4926,8 @@ IDE_RC stdUtils::reassignSeg( iduMemory*  aQmxMem,
             sSeg2->mLabel         = ST_SEG_LABEL_OUTSIDE;
 
             // BUG-33436 
-            // ±âÁ¸ ¼¼±×¸ÕÆ®ÀÇ ±³Á¡ Á¤º¸¸¦ »õ ¼¼±×¸ÕÆ®·Î ¿Å±â°í 
-            // ±âÁ¸ ¼¼±×¸ÕÆ®¸¦ °¡¸®Å°°í ÀÖ´Â °ÍÀ» »õ ¼¼±×¸ÕÆ®·Î ¼öÁ¤
+            // ê¸°ì¡´ ì„¸ê·¸ë¨¼íŠ¸ì˜ êµì  ì •ë³´ë¥¼ ìƒˆ ì„¸ê·¸ë¨¼íŠ¸ë¡œ ì˜®ê¸°ê³  
+            // ê¸°ì¡´ ì„¸ê·¸ë¨¼íŠ¸ë¥¼ ê°€ë¦¬í‚¤ê³  ìˆëŠ” ê²ƒì„ ìƒˆ ì„¸ê·¸ë¨¼íŠ¸ë¡œ ìˆ˜ì •
             sSeg2->mEndVertex     = sFindSeg2->mEndVertex;
             sFindSeg2->mEndVertex = NULL;
             if ( sSeg2->mEndVertex != NULL )
@@ -4994,7 +4994,7 @@ IDE_RC stdUtils::reassignSeg( iduMemory*  aQmxMem,
         {
             if ( *sVertex11 != NULL )
             {
-                // sVertex2 °¡ NULL
+                // sVertex2 ê°€ NULL
                 IDE_TEST( addSegmentToVertex( aQmxMem, *sVertex11, sFindSeg2 )    != IDE_SUCCESS );
                 IDE_TEST( addSegmentToVertex( aQmxMem, *sVertex11, sAnotherSeg2 ) != IDE_SUCCESS );
                 *sVertex21 = *sVertex11;
@@ -5002,7 +5002,7 @@ IDE_RC stdUtils::reassignSeg( iduMemory*  aQmxMem,
             }
             else if ( *sVertex22 != NULL )
             {
-                // sVertex1 ÀÌ NULL
+                // sVertex1 ì´ NULL
                 IDE_TEST( addSegmentToVertex( aQmxMem, *sVertex22, sFindSeg1 )    != IDE_SUCCESS );
                 IDE_TEST( addSegmentToVertex( aQmxMem, *sVertex22, sAnotherSeg1 ) != IDE_SUCCESS );
                 *sVertex11 = *sVertex22;
@@ -5010,7 +5010,7 @@ IDE_RC stdUtils::reassignSeg( iduMemory*  aQmxMem,
             }
             else
             {
-                // µÑ´Ù NULL
+                // ë‘˜ë‹¤ NULL
                 IDE_TEST( aQmxMem->alloc( ID_SIZEOF( Vertex ),
                                           (void**) &sNewVertex )
                           != IDE_SUCCESS );
@@ -5175,8 +5175,8 @@ idBool stdUtils::isRingInSide( Segment**  aIndexSeg,
                     else
                     {
                         /* BUG-33904
-                         * UCharÀÇ ÃÖ´ë°ª 255¿¡¼­ 1À» ´õ ÇßÀ»¶§ 0ÀÌ µÇ¹Ç·Î
-                         * È¦, Â¦ °è»ê¿¡ ¹®Á¦°¡ ¾ø´Ù */
+                         * UCharì˜ ìµœëŒ€ê°’ 255ì—ì„œ 1ì„ ë” í–ˆì„ë•Œ 0ì´ ë˜ë¯€ë¡œ
+                         * í™€, ì§ ê³„ì‚°ì— ë¬¸ì œê°€ ì—†ë‹¤ */
                         aCount[sCurrSeg->mParent->mPolygonNum]++;
                     }
                 }
@@ -5221,12 +5221,12 @@ idBool stdUtils::isRingInSide( Segment**  aIndexSeg,
 //BUG-33436
 /***********************************************************************
  * Description:
- *  ¼¼±×¸ÕÆ® ºĞ¸® ÈÄ ±âÁ¸ ¼¼±×¸ÕÆ®¸¦ °¡¸®Å°°í ÀÖ´Â ±³Á¡ Á¤º¸¸¦ 
- *  ¼öÁ¤ÇÏ¿© »õ ¼¼±×¸ÕÆ®¸¦ °¡¸®Å°µµ·Ï ¼öÁ¤ÇÑ´Ù.
+ *  ì„¸ê·¸ë¨¼íŠ¸ ë¶„ë¦¬ í›„ ê¸°ì¡´ ì„¸ê·¸ë¨¼íŠ¸ë¥¼ ê°€ë¦¬í‚¤ê³  ìˆëŠ” êµì  ì •ë³´ë¥¼ 
+ *  ìˆ˜ì •í•˜ì—¬ ìƒˆ ì„¸ê·¸ë¨¼íŠ¸ë¥¼ ê°€ë¦¬í‚¤ë„ë¡ ìˆ˜ì •í•œë‹¤.
  *
- *  Vertex*  aVertex (InOut) : ±³Á¡¿¡ ´ëÇÑ Æ÷ÀÎÅÍ
- *  Segment* aOldSeg (In)    : ±âÁ¸ ¼¼±×¸ÕÆ®ÀÇ Æ÷ÀÎÅÍ
- *  Segment* aNewSeg (In)    : »õ ¼¼±×¸ÕÆ®ÀÇ Æ÷ÀÎÅÍ
+ *  Vertex*  aVertex (InOut) : êµì ì— ëŒ€í•œ í¬ì¸í„°
+ *  Segment* aOldSeg (In)    : ê¸°ì¡´ ì„¸ê·¸ë¨¼íŠ¸ì˜ í¬ì¸í„°
+ *  Segment* aNewSeg (In)    : ìƒˆ ì„¸ê·¸ë¨¼íŠ¸ì˜ í¬ì¸í„°
  **********************************************************************/
 void stdUtils::adjustVertex( Vertex*  aVertex, 
                              Segment* aOldSeg, 

@@ -21,14 +21,14 @@
  * Description :
  *     GRBY(GRoup BY) Node
  *
- *     °ü°èÇü ¸ðµ¨¿¡¼­ ´ÙÀ½°ú °°Àº ±â´ÉÀ» ¼öÇàÇÏ´Â Plan Node ÀÌ´Ù.
+ *     ê´€ê³„í˜• ëª¨ë¸ì—ì„œ ë‹¤ìŒê³¼ ê°™ì€ ê¸°ëŠ¥ì„ ìˆ˜í–‰í•˜ëŠ” Plan Node ì´ë‹¤.
  *
  *         - Sort-based Distinction
  *         - Sort-based Grouping
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  **********************************************************************/
 
@@ -44,7 +44,7 @@ qmnGRBY::init( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    GRBY ³ëµåÀÇ ÃÊ±âÈ­
+ *    GRBY ë…¸ë“œì˜ ì´ˆê¸°í™”
  *
  * Implementation :
  *
@@ -92,10 +92,10 @@ qmnGRBY::doIt( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    GRBYÀÇ °íÀ¯ ±â´ÉÀ» ¼öÇàÇÑ´Ù.
+ *    GRBYì˜ ê³ ìœ  ê¸°ëŠ¥ì„ ìˆ˜í–‰í•œë‹¤.
  *
  * Implementation :
- *    ÁöÁ¤µÈ ÇÔ¼ö Æ÷ÀÎÅÍ¸¦ ¼öÇàÇÑ´Ù.
+ *    ì§€ì •ëœ í•¨ìˆ˜ í¬ì¸í„°ë¥¼ ìˆ˜í–‰í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -123,8 +123,8 @@ qmnGRBY::padNull( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    Child¿¡ ´ëÇÏ¿© padNull()À» È£ÃâÇÏ°í
- *    GRBY ³ëµåÀÇ null row¸¦ settingÇÑ´Ù.
+ *    Childì— ëŒ€í•˜ì—¬ padNull()ì„ í˜¸ì¶œí•˜ê³ 
+ *    GRBY ë…¸ë“œì˜ null rowë¥¼ settingí•œë‹¤.
  *
  * Implementation :
  *
@@ -140,7 +140,7 @@ qmnGRBY::padNull( qcTemplate * aTemplate,
     if ( (aTemplate->planFlag[sCodePlan->planID] & QMND_GRBY_INIT_DONE_MASK)
          == QMND_GRBY_INIT_DONE_FALSE )
     {
-        // ÃÊ±âÈ­µÇÁö ¾ÊÀº °æ¿ì ÃÊ±âÈ­ ¼öÇà
+        // ì´ˆê¸°í™”ë˜ì§€ ì•Šì€ ê²½ìš° ì´ˆê¸°í™” ìˆ˜í–‰
         IDE_TEST( aPlan->init( aTemplate, aPlan ) != IDE_SUCCESS );
     }
     else
@@ -148,14 +148,14 @@ qmnGRBY::padNull( qcTemplate * aTemplate,
         // Nothing To Do
     }
 
-    // Child Plan¿¡ ´ëÇÏ¿© Null Padding¼öÇà
+    // Child Planì— ëŒ€í•˜ì—¬ Null Paddingìˆ˜í–‰
     IDE_TEST( aPlan->left->padNull( aTemplate, aPlan->left )
               != IDE_SUCCESS );
 
-    // GRBY ³ëµåÀÇ Null Row¼³Á¤
+    // GRBY ë…¸ë“œì˜ Null Rowì„¤ì •
     sDataPlan->plan.myTuple->row = sDataPlan->nullRow;
 
-    // Null Paddingµµ record°¡ º¯ÇÑ °ÍÀÓ
+    // Null Paddingë„ recordê°€ ë³€í•œ ê²ƒìž„
     sDataPlan->plan.myTuple->modify++;
 
     return IDE_SUCCESS;
@@ -177,7 +177,7 @@ qmnGRBY::printPlan( qcTemplate   * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    GRBY ³ëµåÀÇ ¼öÇà Á¤º¸¸¦ Ãâ·ÂÇÑ´Ù.
+ *    GRBY ë…¸ë“œì˜ ìˆ˜í–‰ ì •ë³´ë¥¼ ì¶œë ¥í•œë‹¤.
  *
  * Implementation :
  *
@@ -218,7 +218,7 @@ qmnGRBY::printPlan( qcTemplate   * aTemplate,
     }
 
     //----------------------------
-    // Operatorº° °á°ú Á¤º¸ Ãâ·Â
+    // Operatorë³„ ê²°ê³¼ ì •ë³´ ì¶œë ¥
     //----------------------------
     if ( QCU_TRCLOG_RESULT_DESC == 1 )
     {
@@ -256,7 +256,7 @@ qmnGRBY::doItDefault( qcTemplate * /* aTemplate */,
 /***********************************************************************
  *
  * Description :
- *    ÀÌ ÇÔ¼ö°¡ ¼öÇàµÇ¸é ¾ÈµÊ.
+ *    ì´ í•¨ìˆ˜ê°€ ìˆ˜í–‰ë˜ë©´ ì•ˆë¨.
  *
  * Implementation :
  *
@@ -280,10 +280,10 @@ qmnGRBY::doItFirst( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    GRBY ÀÇ ÃÖÃÊ ¼öÇà ÇÔ¼ö
- *    Child¸¦ ¼öÇàÇÏ°í ¿ëµµ¿¡ ¸Â´Â ¼öÇà ÇÔ¼ö¸¦ °áÁ¤ÇÑ´Ù.
- *    ÃÖÃÊ ¼±ÅÃµÈ Row´Â ¹Ýµå½Ã »óÀ§ ³ëµå·Î Àü´ÞµÇ±â ¶§¹®¿¡
- *    ¿ëµµ¿¡ ¸Â´Â Ã³¸®°¡ ÇÊ¿ä¾ø´Ù.
+ *    GRBY ì˜ ìµœì´ˆ ìˆ˜í–‰ í•¨ìˆ˜
+ *    Childë¥¼ ìˆ˜í–‰í•˜ê³  ìš©ë„ì— ë§žëŠ” ìˆ˜í–‰ í•¨ìˆ˜ë¥¼ ê²°ì •í•œë‹¤.
+ *    ìµœì´ˆ ì„ íƒëœ RowëŠ” ë°˜ë“œì‹œ ìƒìœ„ ë…¸ë“œë¡œ ì „ë‹¬ë˜ê¸° ë•Œë¬¸ì—
+ *    ìš©ë„ì— ë§žëŠ” ì²˜ë¦¬ê°€ í•„ìš”ì—†ë‹¤.
  *
  * Implementation :
  *
@@ -297,28 +297,28 @@ qmnGRBY::doItFirst( qcTemplate * aTemplate,
         (qmndGRBY *) (aTemplate->tmplate.data + aPlan->offset);
     qmcRowFlag sFlag     = QMC_ROW_INITIALIZE;
 
-    // Child¸¦ ¼öÇà
+    // Childë¥¼ ìˆ˜í–‰
     IDE_TEST( sCodePlan->plan.left->doIt( aTemplate,
                                           sCodePlan->plan.left,
                                           & sFlag ) != IDE_SUCCESS );
 
     if ( (sFlag & QMC_ROW_DATA_MASK) == QMC_ROW_DATA_EXIST )
     {
-        // ÀúÀå Row¸¦ »ý¼º.
+        // ì €ìž¥ Rowë¥¼ ìƒì„±.
         IDE_TEST( setMtrRow( aTemplate, sDataPlan )
                   != IDE_SUCCESS );
 
         *aFlag = sFlag;
 
-        // µ¿ÀÏ Row°¡ ¾Æ´ÔÀ» Ç¥±â
+        // ë™ì¼ Rowê°€ ì•„ë‹˜ì„ í‘œê¸°
         *aFlag &= ~QMC_ROW_GROUP_MASK;
         *aFlag |= QMC_ROW_GROUP_NULL;
 
-        // »óÀ§¿¡¼­ ÀúÀå Row¸¦ »ç¿ëÇÒ ¼ö ÀÖµµ·Ï Tuple Set¿¡ ¼³Á¤
+        // ìƒìœ„ì—ì„œ ì €ìž¥ Rowë¥¼ ì‚¬ìš©í•  ìˆ˜ ìžˆë„ë¡ Tuple Setì— ì„¤ì •
         IDE_TEST( setTupleSet( aTemplate, sDataPlan )
                   != IDE_SUCCESS );
 
-        // ¿ëµµ¿¡ ¸Â´Â ¼öÇà ÇÔ¼ö¸¦ °áÁ¤ÇÑ´Ù.
+        // ìš©ë„ì— ë§žëŠ” ìˆ˜í–‰ í•¨ìˆ˜ë¥¼ ê²°ì •í•œë‹¤.
         switch (sCodePlan->flag & QMNC_GRBY_METHOD_MASK)
         {
             case QMNC_GRBY_METHOD_DISTINCTION :
@@ -343,7 +343,7 @@ qmnGRBY::doItFirst( qcTemplate * aTemplate,
         *aFlag = QMC_ROW_DATA_NONE;
     }
 
-    // ´ÙÀ½¿¡ ÀúÀåÇÒ À§Ä¡ ÁöÁ¤
+    // ë‹¤ìŒì— ì €ìž¥í•  ìœ„ì¹˜ ì§€ì •
     sDataPlan->mtrRowIdx++;
 
     return IDE_SUCCESS;
@@ -364,8 +364,8 @@ qmnGRBY::doItGroup( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    Sort-Based GroupingÀ» Ã³¸®ÇÒ ¶§, ¼öÇàµÇ´Â ÇÔ¼öÀÌ´Ù.
- *    µ¿ÀÏ GroupÀÎÁö¿¡ ´ëÇÑ ÆÇ´ÜÀ» ÇÑ´Ù.
+ *    Sort-Based Groupingì„ ì²˜ë¦¬í•  ë•Œ, ìˆ˜í–‰ë˜ëŠ” í•¨ìˆ˜ì´ë‹¤.
+ *    ë™ì¼ Groupì¸ì§€ì— ëŒ€í•œ íŒë‹¨ì„ í•œë‹¤.
  *
  * Implementation :
  *
@@ -380,20 +380,20 @@ qmnGRBY::doItGroup( qcTemplate * aTemplate,
 
     qmcRowFlag sFlag     = QMC_ROW_INITIALIZE;
 
-    // Child ¼öÇà
+    // Child ìˆ˜í–‰
     IDE_TEST( sCodePlan->plan.left->doIt( aTemplate,
                                           sCodePlan->plan.left,
                                           & sFlag ) != IDE_SUCCESS );
 
     if ( (sFlag & QMC_ROW_DATA_MASK) == QMC_ROW_DATA_EXIST )
     {
-        // ÀúÀå Row¸¦ ±¸¼º
+        // ì €ìž¥ Rowë¥¼ êµ¬ì„±
         IDE_TEST( setMtrRow( aTemplate, sDataPlan )
                   != IDE_SUCCESS );
 
         *aFlag = sFlag;
 
-        // ÀúÀåµÈ µÎ Row¸¦ ºñ±³ÇÏ¿© µ¿ÀÏ GroupÀÎÁö¸¦ ÆÇ´Ü.
+        // ì €ìž¥ëœ ë‘ Rowë¥¼ ë¹„êµí•˜ì—¬ ë™ì¼ Groupì¸ì§€ë¥¼ íŒë‹¨.
         if ( compareRows( sDataPlan ) == 0 )
         {
             *aFlag &= ~QMC_ROW_GROUP_MASK;
@@ -404,8 +404,8 @@ qmnGRBY::doItGroup( qcTemplate * aTemplate,
             *aFlag &= ~QMC_ROW_GROUP_MASK;
             *aFlag |= QMC_ROW_GROUP_NULL;
 
-            // µ¿ÀÏ GroupÀÌ ¾Æ´Ñ °æ¿ì
-            // »óÀ§¿¡¼­ ÀúÀå Row¸¦ »ç¿ëÇÒ ¼ö ÀÖµµ·Ï Tuple Set¿¡ ¼³Á¤
+            // ë™ì¼ Groupì´ ì•„ë‹Œ ê²½ìš°
+            // ìƒìœ„ì—ì„œ ì €ìž¥ Rowë¥¼ ì‚¬ìš©í•  ìˆ˜ ìžˆë„ë¡ Tuple Setì— ì„¤ì •
             IDE_TEST( setTupleSet( aTemplate, sDataPlan )
                       != IDE_SUCCESS );
         }
@@ -435,11 +435,11 @@ qmnGRBY::doItDistinct( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    Sort-based DistinctionÀ» À§ÇÑ ¼öÇà ÇÔ¼ö
+ *    Sort-based Distinctionì„ ìœ„í•œ ìˆ˜í–‰ í•¨ìˆ˜
  *
  * Implementation :
- *    µ¿ÀÏ RecordÀÎÁö¸¦ ÆÇ´ÜÇÏ¿© ´Ù¸¥ RecordÀÏ °æ¿ì¿¡¸¸,
- *    »óÀ§ Plan¿¡ Àü´ÞÇÑ´Ù.
+ *    ë™ì¼ Recordì¸ì§€ë¥¼ íŒë‹¨í•˜ì—¬ ë‹¤ë¥¸ Recordì¼ ê²½ìš°ì—ë§Œ,
+ *    ìƒìœ„ Planì— ì „ë‹¬í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -505,7 +505,7 @@ qmnGRBY::firstInit( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    GRBY nodeÀÇ Data ¿µ¿ªÀÇ ¸â¹ö¿¡ ´ëÇÑ ÃÊ±âÈ­¸¦ ¼öÇà
+ *    GRBY nodeì˜ Data ì˜ì—­ì˜ ë©¤ë²„ì— ëŒ€í•œ ì´ˆê¸°í™”ë¥¼ ìˆ˜í–‰
  *
  * Implementation :
  *
@@ -514,51 +514,51 @@ qmnGRBY::firstInit( qcTemplate * aTemplate,
 #define IDE_FN "qmnGRBY::firstInit"
     IDE_MSGLOG_FUNC(IDE_MSGLOG_BODY(""));
 
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     IDE_DASSERT( aTemplate != NULL );
     IDE_DASSERT( aCodePlan != NULL );
     IDE_DASSERT( aDataPlan != NULL );
 
     //---------------------------------
-    // GRBY °íÀ¯ Á¤º¸ÀÇ ÃÊ±âÈ­
+    // GRBY ê³ ìœ  ì •ë³´ì˜ ì´ˆê¸°í™”
     //---------------------------------
 
-    // 1. ÀúÀå ColumnÀÇ Á¤º¸ ÃÊ±âÈ­
+    // 1. ì €ìž¥ Columnì˜ ì •ë³´ ì´ˆê¸°í™”
     IDE_TEST( initMtrNode( aTemplate, aCodePlan, aDataPlan ) != IDE_SUCCESS );
 
-    // 2. Group Column À§Ä¡ ÁöÁ¤
+    // 2. Group Column ìœ„ì¹˜ ì§€ì •
     IDE_TEST( initGroupNode( aDataPlan )
               != IDE_SUCCESS );
 
     IDE_ASSERT( aDataPlan->mtrNode != NULL );
     
-    // 3. TupleÁ¤º¸ÀÇ ¼³Á¤
+    // 3. Tupleì •ë³´ì˜ ì„¤ì •
     aDataPlan->plan.myTuple = aDataPlan->mtrNode->dstTuple;
 
     //---------------------------------
-    // µ¿ÀÏ Group ÆÇ´ÜÀ» À§ÇÑ ÀÚ·á ±¸Á¶ÀÇ ÃÊ±âÈ­
+    // ë™ì¼ Group íŒë‹¨ì„ ìœ„í•œ ìžë£Œ êµ¬ì¡°ì˜ ì´ˆê¸°í™”
     //---------------------------------
 
-    // 1. ÀúÀå ColumnÀÇ Row Size °è»ê
-    // ÀûÇÕ¼º °Ë»ç
+    // 1. ì €ìž¥ Columnì˜ Row Size ê³„ì‚°
+    // ì í•©ì„± ê²€ì‚¬
     IDE_DASSERT( (aDataPlan->plan.myTuple->lflag & MTC_TUPLE_STORAGE_MASK)
                  == MTC_TUPLE_STORAGE_MEMORY );
 
-    // TupleÀÇ Row Size ¼³Á¤
+    // Tupleì˜ Row Size ì„¤ì •
     IDE_TEST( qmc::setRowSize( aTemplate->stmt->qmxMem,
                                & aTemplate->tmplate,
                                aDataPlan->mtrNode->dstNode->node.table )
               != IDE_SUCCESS );
 
-    // Row Size È¹µæ
+    // Row Size íšë“
     aDataPlan->mtrRowSize = qmc::getMtrRowSize( aDataPlan->mtrNode );
 
-    // 2. ºñ±³¸¦ À§ÇÑ °ø°£ ÇÒ´ç ¹× Null Row »ý¼º
+    // 2. ë¹„êµë¥¼ ìœ„í•œ ê³µê°„ í• ë‹¹ ë° Null Row ìƒì„±
     IDE_TEST( allocMtrRow( aTemplate, aDataPlan )
               != IDE_SUCCESS );
 
     //---------------------------------
-    // ÃÊ±âÈ­ ¿Ï·á¸¦ Ç¥±â
+    // ì´ˆê¸°í™” ì™„ë£Œë¥¼ í‘œê¸°
     //---------------------------------
 
     *aDataPlan->flag &= ~QMND_GRBY_INIT_DONE_MASK;
@@ -581,7 +581,7 @@ qmnGRBY::initMtrNode( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    ÀúÀå ColumnÀÇ Á¤º¸¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+ *    ì €ìž¥ Columnì˜ ì •ë³´ë¥¼ ì´ˆê¸°í™”í•œë‹¤.
  *
  * Implementation :
  *
@@ -590,26 +590,26 @@ qmnGRBY::initMtrNode( qcTemplate * aTemplate,
 #define IDE_FN "qmnGRBY::initMtrNode"
     IDE_MSGLOG_FUNC(IDE_MSGLOG_BODY(""));
 
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     IDE_DASSERT( aCodePlan->mtrNodeOffset > 0 );
 
-    // ÀúÀå ColumnÀÇ ¿µ¿ª È¹µæ
+    // ì €ìž¥ Columnì˜ ì˜ì—­ íšë“
     aDataPlan->mtrNode =
         (qmdMtrNode*) (aTemplate->tmplate.data + aCodePlan->mtrNodeOffset);
 
-    // ÀúÀå ColumnÀÇ ¿¬°á Á¤º¸ »ý¼º
+    // ì €ìž¥ Columnì˜ ì—°ê²° ì •ë³´ ìƒì„±
     IDE_TEST( qmc::linkMtrNode( aCodePlan->myNode,
                                 aDataPlan->mtrNode ) != IDE_SUCCESS );
 
-    // ÀúÀå ColumnÀÇ ÃÊ±âÈ­
+    // ì €ìž¥ Columnì˜ ì´ˆê¸°í™”
     IDE_TEST( qmc::initMtrNode( aTemplate,
                                 aDataPlan->mtrNode,
-                                aCodePlan->baseTableCount ) //basetableÀ»°ü¸®ÇÏÁö¾ÊÀ½
+                                aCodePlan->baseTableCount ) //basetableì„ê´€ë¦¬í•˜ì§€ì•ŠìŒ
               != IDE_SUCCESS );
 
-    // ÀúÀå ColumnÀÇ offsetÀ» ÀçÁ¶Á¤.
+    // ì €ìž¥ Columnì˜ offsetì„ ìž¬ì¡°ì •.
     IDE_TEST( qmc::refineOffsets( aDataPlan->mtrNode,
-                                  0) // º°µµÀÇ Header°¡ Á¸ÀçÇÏÁö ¾ÊÀ½
+                                  0) // ë³„ë„ì˜ Headerê°€ ì¡´ìž¬í•˜ì§€ ì•ŠìŒ
               != IDE_SUCCESS );
 
     return IDE_SUCCESS;
@@ -627,7 +627,7 @@ qmnGRBY::initGroupNode( qmndGRBY   * aDataPlan )
 /***********************************************************************
  *
  * Description :
- *    ÀúÀå ColumnÁß¿¡¼­ Group NodeÀÇ ½ÃÀÛ À§Ä¡¸¦ Ã£´Â´Ù.
+ *    ì €ìž¥ Columnì¤‘ì—ì„œ Group Nodeì˜ ì‹œìž‘ ìœ„ì¹˜ë¥¼ ì°¾ëŠ”ë‹¤.
  *
  * Implementation :
  *
@@ -649,7 +649,7 @@ qmnGRBY::initGroupNode( qmndGRBY   * aDataPlan )
 
     aDataPlan->groupNode = sNode;
 
-    // ÀûÇÕ¼º °Ë»ç.
+    // ì í•©ì„± ê²€ì‚¬.
     IDE_DASSERT( aDataPlan->groupNode != NULL );
 
     return IDE_SUCCESS;
@@ -664,7 +664,7 @@ qmnGRBY::allocMtrRow( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    ÀúÀå Row¸¦ À§ÇÑ °ø°£À» ÇÒ´ç¹Þ´Â´Ù.
+ *    ì €ìž¥ Rowë¥¼ ìœ„í•œ ê³µê°„ì„ í• ë‹¹ë°›ëŠ”ë‹¤.
  *
  * Implementation :
  *
@@ -679,7 +679,7 @@ qmnGRBY::allocMtrRow( qcTemplate * aTemplate,
     sMemory = aTemplate->stmt->qmxMem;
 
     //-------------------------------------------
-    // µÎ RowÀÇ ºñ±³¸¦ À§ÇÑ °ø°£ ÇÒ´ç
+    // ë‘ Rowì˜ ë¹„êµë¥¼ ìœ„í•œ ê³µê°„ í• ë‹¹
     //-------------------------------------------
 
     IDE_TEST( sMemory->alloc( aDataPlan->mtrRowSize,
@@ -693,7 +693,7 @@ qmnGRBY::allocMtrRow( qcTemplate * aTemplate,
     IDE_TEST_RAISE( aDataPlan->mtrRow[1] == NULL, err_mem_alloc );
 
     //-------------------------------------------
-    // Null Row¸¦ À§ÇÑ °ø°£ ÇÒ´ç
+    // Null Rowë¥¼ ìœ„í•œ ê³µê°„ í• ë‹¹
     //-------------------------------------------
 
     IDE_TEST( sMemory->alloc(aDataPlan->mtrRowSize,
@@ -704,14 +704,14 @@ qmnGRBY::allocMtrRow( qcTemplate * aTemplate,
     *(qmcRowFlag*)aDataPlan->nullRow = QMC_ROW_DATA_EXIST | QMC_ROW_VALUE_NULL;
 
     //-------------------------------------------
-    // Null RowÀÇ »ý¼º
+    // Null Rowì˜ ìƒì„±
     //-------------------------------------------
 
     for ( sNode = aDataPlan->mtrNode; sNode != NULL; sNode = sNode->next )
     {
         //-----------------------------------------------
-        // ½ÇÁ¦ °ªÀ» ÀúÀåÇÏ´Â Column¿¡ ´ëÇØ¼­¸¸
-        // NULL Value¸¦ »ý¼ºÇÑ´Ù.
+        // ì‹¤ì œ ê°’ì„ ì €ìž¥í•˜ëŠ” Columnì— ëŒ€í•´ì„œë§Œ
+        // NULL Valueë¥¼ ìƒì„±í•œë‹¤.
         //-----------------------------------------------
 
         sNode->func.makeNull( sNode, aDataPlan->nullRow );
@@ -737,7 +737,7 @@ qmnGRBY::setMtrRow( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    ÀúÀå Row¸¦ ±¸¼ºÇÑ´Ù.
+ *    ì €ìž¥ Rowë¥¼ êµ¬ì„±í•œë‹¤.
  *
  * Implementation :
  *
@@ -749,10 +749,10 @@ qmnGRBY::setMtrRow( qcTemplate * aTemplate,
     qmdMtrNode * sNode;
     // idBool       sExist;
 
-    // ÀúÀåÇÒ À§Ä¡¸¦ °áÁ¤
+    // ì €ìž¥í•  ìœ„ì¹˜ë¥¼ ê²°ì •
     aDataPlan->plan.myTuple->row = aDataPlan->mtrRow[aDataPlan->mtrRowIdx % 2];
 
-    // ÀúÀå Row¸¦ ±¸¼º
+    // ì €ìž¥ Rowë¥¼ êµ¬ì„±
     for ( sNode = aDataPlan->mtrNode;
           sNode != NULL;
           sNode = sNode->next )
@@ -779,7 +779,7 @@ qmnGRBY::setTupleSet( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    »óÀ§¿¡¼­ ÀúÀå Row¸¦ »ç¿ëÇÒ ¼ö ÀÖµµ·Ï Tuple Set¿¡ ¼³Á¤
+ *    ìƒìœ„ì—ì„œ ì €ìž¥ Rowë¥¼ ì‚¬ìš©í•  ìˆ˜ ìžˆë„ë¡ Tuple Setì— ì„¤ì •
  *
  * Implementation :
  *
@@ -793,8 +793,8 @@ qmnGRBY::setTupleSet( qcTemplate * aTemplate,
 
     aDataPlan->plan.myTuple->row = aDataPlan->mtrRow[aDataPlan->mtrRowIdx % 2];
 
-    // Base TableÀÌ Á¸ÀçÇÏÁö ¾ÊÁö¸¸, Memory ColumnÀ» ÀúÀåÇßÀ» °æ¿ìÀÇ
-    // Ã³¸®¸¦ À§ÇØ Tuple SetÀ» ¿øº¹½ÃÅ²´Ù.
+    // Base Tableì´ ì¡´ìž¬í•˜ì§€ ì•Šì§€ë§Œ, Memory Columnì„ ì €ìž¥í–ˆì„ ê²½ìš°ì˜
+    // ì²˜ë¦¬ë¥¼ ìœ„í•´ Tuple Setì„ ì›ë³µì‹œí‚¨ë‹¤.
     for ( sNode = aDataPlan->mtrNode;
           sNode != NULL;
           sNode = sNode->next )
@@ -818,7 +818,7 @@ qmnGRBY::compareRows( qmndGRBY   * aDataPlan )
 /***********************************************************************
  *
  * Description :
- *    ÀúÀåÇÑ µÎ Row°£ÀÇ µ¿ÀÏ ¿©ºÎ¸¦ ÆÇ´ÜÇÑ´Ù.
+ *    ì €ìž¥í•œ ë‘ Rowê°„ì˜ ë™ì¼ ì—¬ë¶€ë¥¼ íŒë‹¨í•œë‹¤.
  *
  * Implementation :
  *

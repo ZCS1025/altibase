@@ -23,80 +23,80 @@ class svpAllocPageList
 {
 public:
 
-    // AllocPageList¸¦ ÃÊ±âÈ­ÇÑ´Ù
+    // AllocPageListë¥¼ ì´ˆê¸°í™”í•œë‹¤
     static void     initializePageListEntry(
         smpAllocPageListEntry* aAllocPageList );
 
-    // Runtime ItemÀ» NULL·Î ¼³Á¤ÇÑ´Ù.
+    // Runtime Itemì„ NULLë¡œ ì„¤ì •í•œë‹¤.
     static IDE_RC setRuntimeNull(
         UInt                   aAllocPageListCount,
         smpAllocPageListEntry* aAllocPageListArray );
 
-    // AllocPageListÀÇ Runtime Á¤º¸(Mutex) ÃÊ±âÈ­
+    // AllocPageListì˜ Runtime ì •ë³´(Mutex) ì´ˆê¸°í™”
     static IDE_RC   initEntryAtRuntime( smpAllocPageListEntry* aAllocPageList,
                                         smOID                  aTableOID,
                                         smpPageType            aPageType );
 
-    // AllocPageListÀÇ Runtime Á¤º¸ ÇØÁ¦
+    // AllocPageListì˜ Runtime ì •ë³´ í•´ì œ
     static IDE_RC   finEntryAtRuntime( smpAllocPageListEntry* aAllocPageList );
 
-    // aAllocPageHead~aAllocPageTail ¸¦ AllocPageList¿¡ Ãß°¡
+    // aAllocPageHead~aAllocPageTail ë¥¼ AllocPageListì— ì¶”ê°€
     static IDE_RC   addPageList( scSpaceID                aSpaceID,
                                  smpAllocPageListEntry  * aAllocPageList,
                                  smpPersPage            * aAllocPageHead,
                                  smpPersPage            * aAllocPageTail );
 
-    // AllocPageList Á¦°ÅÇØ¼­ DB·Î ¹İ³³
+    // AllocPageList ì œê±°í•´ì„œ DBë¡œ ë°˜ë‚©
     static IDE_RC   freePageListToDB( void*                  aTrans,
                                       scSpaceID              aSpaceID,
                                       smpAllocPageListEntry* aAllocPageList );
 
-    // AllocPageList¿¡¼­ aPageID¸¦ Á¦°ÅÇØ¼­ DB·Î ¹İ³³
+    // AllocPageListì—ì„œ aPageIDë¥¼ ì œê±°í•´ì„œ DBë¡œ ë°˜ë‚©
     static IDE_RC   removePage( scSpaceID               aSpaceID,
                                 smpAllocPageListEntry * aAllocPageList,
                                 scPageID                aPageID );
     
-    // aHeadPage~aTailPage±îÁöÀÇ PageListÀÇ ¿¬°áÀÌ ¿Ã¹Ù¸¥Áö °Ë»çÇÑ´Ù.
+    // aHeadPage~aTailPageê¹Œì§€ì˜ PageListì˜ ì—°ê²°ì´ ì˜¬ë°”ë¥¸ì§€ ê²€ì‚¬í•œë‹¤.
     static idBool   isValidPageList( scSpaceID aSpaceID,
                                      scPageID  aHeadPage,
                                      scPageID  aTailPage,
                                      vULong    aPageCount );
 
-    // aCurRow´ÙÀ½ À¯È¿ÇÑ aNxtRow¸¦ ¸®ÅÏÇÑ´Ù.
+    // aCurRowë‹¤ìŒ ìœ íš¨í•œ aNxtRowë¥¼ ë¦¬í„´í•œë‹¤.
     static IDE_RC   nextOIDall( scSpaceID              aSpaceID,
                                 smpAllocPageListEntry* aAllocPageList,
                                 SChar*                 aCurRow,
                                 vULong                 aSlotSize,
                                 SChar**                aNxtRow );
 
-    // ´ÙÁßÈ­µÈ aAllocPageList¿¡¼­ aPageIDÀÇ ´ÙÀ½ PageID ¹İÈ¯
+    // ë‹¤ì¤‘í™”ëœ aAllocPageListì—ì„œ aPageIDì˜ ë‹¤ìŒ PageID ë°˜í™˜
     static scPageID getNextAllocPageID( scSpaceID              aSpaceID,
                                         smpAllocPageListEntry* aAllocPageList,
                                         scPageID               aPageID );
-    // ´ÙÁßÈ­µÈ aAllocPageList¿¡¼­ aPagePtrÀÇ ´ÙÀ½ PageID ¹İÈ¯
+    // ë‹¤ì¤‘í™”ëœ aAllocPageListì—ì„œ aPagePtrì˜ ë‹¤ìŒ PageID ë°˜í™˜
     // added for dumpci
     static scPageID getNextAllocPageID( smpAllocPageListEntry * aAllocPageList,
                                         smpPersPageHeader     * aPagePtr );
 
-    // ´ÙÁßÈ­µÈ aAllocPageList¿¡¼­ aPageIDÀÇ ÀÌÀü PageID ¹İÈ¯
+    // ë‹¤ì¤‘í™”ëœ aAllocPageListì—ì„œ aPageIDì˜ ì´ì „ PageID ë°˜í™˜
     static scPageID getPrevAllocPageID( scSpaceID              aSpaceID,
                                         smpAllocPageListEntry* aAllocPageList,
                                         scPageID               aPageID);
 
-    // aAllocPageListÀÇ Ã¹ PageID ¹İÈ¯
+    // aAllocPageListì˜ ì²« PageID ë°˜í™˜
     static scPageID getFirstAllocPageID( smpAllocPageListEntry* aAllocPageList );
 
-    // aAllocPageListÀÇ ¸¶Áö¸· PageID ¹İÈ¯
+    // aAllocPageListì˜ ë§ˆì§€ë§‰ PageID ë°˜í™˜
     static scPageID getLastAllocPageID( smpAllocPageListEntry* aAllocPageList );
 
 private:
 
-    // TableHeader¿¡¼­ aAllocPageListÀÇ Offset °è»ê
+    // TableHeaderì—ì„œ aAllocPageListì˜ Offset ê³„ì‚°
     static inline scOffset makeOffsetAllocPageList(
         smOID                  aTableOID,
         smpAllocPageListEntry* aAllocPageList );
 
-    // nextOIDallÀ» À§ÇØ aRow¿¡¼­ ÇØ´ç Page¸¦ Ã£¾ÆÁØ´Ù.
+    // nextOIDallì„ ìœ„í•´ aRowì—ì„œ í•´ë‹¹ Pageë¥¼ ì°¾ì•„ì¤€ë‹¤.
     static inline void     initForScan(
         scSpaceID              aSpaceID,
         smpAllocPageListEntry* aAllocPageList,
@@ -108,9 +108,9 @@ private:
 };
 
 /**********************************************************************
- * TableHeader¿¡¼­ AllocPageListÀÇ Offset °è»ê
+ * TableHeaderì—ì„œ AllocPageListì˜ Offset ê³„ì‚°
  *
- * aAllocPageList : °è»êÇÏ·Á´Â AllocPageList
+ * aAllocPageList : ê³„ì‚°í•˜ë ¤ëŠ” AllocPageList
  **********************************************************************/
 
 inline scOffset svpAllocPageList::makeOffsetAllocPageList(
@@ -120,9 +120,9 @@ inline scOffset svpAllocPageList::makeOffsetAllocPageList(
     UInt    sOffset;
     SChar * sPagePtr;
 
-    // ¤¿¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤ÑsOffset¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ã
+    // ã…ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡sOffsetã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…“
     // [...TableHeader...mFixed.mMMDB.mAllocPageList[0][1]...[n]...]
-    // ^ Å×ÀÌºíÇì´õÆäÀÌÁö                                       ^ aAllocPageList
+    // ^ í…Œì´ë¸”í—¤ë”í˜ì´ì§€                                       ^ aAllocPageList
     
 
     IDE_ASSERT( svmManager::getPersPagePtr( SMI_ID_TABLESPACE_SYSTEM_MEMORY_DIC,

@@ -33,9 +33,9 @@
 #include "sdpjl.h"
 
 // To Fix PR-11793 To Remove Warning
-// LinuxÀÇ °æ¿ì /usr/include/bits/termios.h ¿¡ ECHO°¡ Á¤ÀÇµÇ¾î ÀÖÀ½.'
-// Flex°¡ ECHO¸¦ defineÇÏ¿© »ç¿ëÇÏ¹Ç·Î, undefÇØ¾ß ÇÔ.
-// ÂüÁ¶) Flex°¡ »ı¼ºÇÏ´Â sdpjl.cpp ¿¡´Â ´ÙÀ½°ú °°Àº Code°¡ »ı¼ºµÊ.
+// Linuxì˜ ê²½ìš° /usr/include/bits/termios.h ì— ECHOê°€ ì •ì˜ë˜ì–´ ìˆìŒ.'
+// Flexê°€ ECHOë¥¼ defineí•˜ì—¬ ì‚¬ìš©í•˜ë¯€ë¡œ, undefí•´ì•¼ í•¨.
+// ì°¸ì¡°) Flexê°€ ìƒì„±í•˜ëŠ” sdpjl.cpp ì—ëŠ” ë‹¤ìŒê³¼ ê°™ì€ Codeê°€ ìƒì„±ë¨.
 //       #ifndef ECHO
 //       #define ECHO LexerOutput( yytext, yyleng )
 //       #endif

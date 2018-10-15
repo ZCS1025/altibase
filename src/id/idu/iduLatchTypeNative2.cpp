@@ -26,8 +26,8 @@
  *
  *  Primitive Mutex Implementations
  *
- *  => ¸ğµç ÇÃ·§ÆûÀº ¾Æ·¡ÀÇ 3°³ÀÇ Define°ú 3°³ÀÇ ÇÔ¼ö¸¦ ±¸ÇöÇÏ¸é,
- *     ÀÚµ¿À¸·Î LatchÀÇ µ¿ÀÛÀÌ ±¸ÇöµÇµµ·Ï µÇ¾î ÀÖ´Ù.
+ *  => ëª¨ë“  í”Œë«í¼ì€ ì•„ë˜ì˜ 3ê°œì˜ Defineê³¼ 3ê°œì˜ í•¨ìˆ˜ë¥¼ êµ¬í˜„í•˜ë©´,
+ *     ìë™ìœ¼ë¡œ Latchì˜ ë™ì‘ì´ êµ¬í˜„ë˜ë„ë¡ ë˜ì–´ ìˆë‹¤.
  *  Wrappers Implementations
  *
  *  - Used Symbol
@@ -187,7 +187,7 @@ IDE_RC iduLatchNative2::lockRead(void*  aStatSQL, void* aWeArgs)
             sleepForLatchValueChange(0);
             (void)tryLockRead(&sSuccess, NULL);
         } while(sSuccess != ID_TRUE);
-        /* ´ë±âÀÌº¥Æ® Wait Time ÃøÁ¤À» ¿Ï·áÇÑ´Ù. */
+        /* ëŒ€ê¸°ì´ë²¤íŠ¸ Wait Time ì¸¡ì •ì„ ì™„ë£Œí•œë‹¤. */
         IDV_END_WAIT_EVENT( aStatSQL, aWeArgs );
         IDE_ASSERT(mMode > 0);
     }
@@ -216,7 +216,7 @@ IDE_RC iduLatchNative2::lockWrite(void* aStatSQL, void* aWeArgs)
             sleepForLatchValueChange(1);
             (void)tryLockWrite(&sSuccess, NULL);
         } while(sSuccess != ID_TRUE);
-        /* ´ë±âÀÌº¥Æ® Wait Time ÃøÁ¤À» ¿Ï·áÇÑ´Ù. */
+        /* ëŒ€ê¸°ì´ë²¤íŠ¸ Wait Time ì¸¡ì •ì„ ì™„ë£Œí•œë‹¤. */
         IDV_END_WAIT_EVENT( aStatSQL, aWeArgs );
         IDE_ASSERT(mMode < 0);
     }
@@ -252,9 +252,9 @@ IDE_RC iduLatchNative2::unlock()
 
 /*
  *  sleepForValueChange();
- *  Latch°¡ Ç®¸±¶§ ±îÁö ´ë±â
- *  ´ë±â ½Ã°£Àº 200 usec¿¡¼­ ºÎÅÍ *2 ·Î Áõ°¡ÇÏ¿©,
- *  ÃÖ´ë 99999 usec±îÁö Áõ°¡ÇÑ´Ù.
+ *  Latchê°€ í’€ë¦´ë•Œ ê¹Œì§€ ëŒ€ê¸°
+ *  ëŒ€ê¸° ì‹œê°„ì€ 200 usecì—ì„œ ë¶€í„° *2 ë¡œ ì¦ê°€í•˜ì—¬,
+ *  ìµœëŒ€ 99999 usecê¹Œì§€ ì¦ê°€í•œë‹¤.
  */
 
 /* 0 : Read, 1 : write */

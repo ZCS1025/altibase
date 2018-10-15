@@ -27,17 +27,17 @@
 #include <sdptb.h>
 #include <mtdTypes.h>
 
-SChar     gInputValue[256] = {0};   //»ç¿ëÀÚ·ÎºÎÅÍ ÀÔ·Â¹ŞÀº °ª
-SChar     gInputType[256] = "DECI"; //ÀÔ·Â °ªÀÇ µ¥ÀÌÅÍ Å¸ÀÔ(Default´Â 10Áø¼ö)
-ULong     gConvertedInputValue;     //µ¥ÀÌÅÍ Å¸ÀÔ¿¡ µû¶ó º¯È¯µÈ °ª
+SChar     gInputValue[256] = {0};   //ì‚¬ìš©ìë¡œë¶€í„° ì…ë ¥ë°›ì€ ê°’
+SChar     gInputType[256] = "DECI"; //ì…ë ¥ ê°’ì˜ ë°ì´í„° íƒ€ì…(DefaultëŠ” 10ì§„ìˆ˜)
+ULong     gConvertedInputValue;     //ë°ì´í„° íƒ€ì…ì— ë”°ë¼ ë³€í™˜ëœ ê°’
 
-SChar     gConversion[256] = {0};   //¼öÇàÇÒ º¯È¯(Default´Â ¸ğµÎ Display)
+SChar     gConversion[256] = {0};   //ìˆ˜í–‰í•  ë³€í™˜(DefaultëŠ” ëª¨ë‘ Display)
 
 /**************************************************
  * output 
- * µ¥ÀÌÅÍ º¯È¯¿¡ °üÇÑ ÇÔ¼öµéÀÔ´Ï´Ù.
- * CHECK_AND_CONVERT ¸ÅÅ©·Î¸¦ ÅëÇØ »ç¿ëÀÚ·ÎºÎÅÍ ÀÔ·Â
- * ¹ŞÀº ÀÎÀÚ¿Í ÀÌ¸§À» ºñ±³ÇÏ¿©, ¸ÂÀ¸¸é º¯È¯À» ¼öÇàÇÕ´Ï´Ù.
+ * ë°ì´í„° ë³€í™˜ì— ê´€í•œ í•¨ìˆ˜ë“¤ì…ë‹ˆë‹¤.
+ * CHECK_AND_CONVERT ë§¤í¬ë¡œë¥¼ í†µí•´ ì‚¬ìš©ìë¡œë¶€í„° ì…ë ¥
+ * ë°›ì€ ì¸ìì™€ ì´ë¦„ì„ ë¹„êµí•˜ì—¬, ë§ìœ¼ë©´ ë³€í™˜ì„ ìˆ˜í–‰í•©ë‹ˆë‹¤.
  **************************************************/
 void convertOutputValue( );
 
@@ -51,8 +51,8 @@ void convertMtdValue();
 
 /**************************************************
  * input
- * ÀÔ·ÂµÈ °ªÀÌ 10Áø¼ö(Decimal)ÀÎÁö 16Áø¼ö(Hexa deci-
- * mal)ÀÎÁö ÆÇ´ÜÇÏ¿© °ªÀ» ÀĞ½À´Ï´Ù.
+ * ì…ë ¥ëœ ê°’ì´ 10ì§„ìˆ˜(Decimal)ì¸ì§€ 16ì§„ìˆ˜(Hexa deci-
+ * mal)ì¸ì§€ íŒë‹¨í•˜ì—¬ ê°’ì„ ì½ìŠµë‹ˆë‹¤.
  **************************************************/
 void  convertInputValue( );
 
@@ -90,7 +90,7 @@ void usage( );
 // Output value
 //--------------------------------------------------
 
-// ÀÔ·ÂµÈ °ªÀ» RID·Î ¿©±â°í PID, Offset µîÀ¸·Î º¯È¯ÇÏ¿© Ãâ·ÂÇÕ´Ï´Ù.
+// ì…ë ¥ëœ ê°’ì„ RIDë¡œ ì—¬ê¸°ê³  PID, Offset ë“±ìœ¼ë¡œ ë³€í™˜í•˜ì—¬ ì¶œë ¥í•©ë‹ˆë‹¤.
 void convertRID( )
 {
     idlOS::printf("\t\t%-16s %"ID_UINT32_FMT"\n", 
@@ -108,7 +108,7 @@ void convertRID( )
                   SM_MAKE_OFFSET( gConvertedInputValue ) );
 }
 
-// ÀÔ·ÂµÈ °ªÀ» PID·Î ¿©±â°í FID, FPID, RID, OIDµîÀ¸·Î º¯È¯ÇÏ¿© Ãâ·ÂÇÕ´Ï´Ù.
+// ì…ë ¥ëœ ê°’ì„ PIDë¡œ ì—¬ê¸°ê³  FID, FPID, RID, OIDë“±ìœ¼ë¡œ ë³€í™˜í•˜ì—¬ ì¶œë ¥í•©ë‹ˆë‹¤.
 void convertPID( )
 {
     idlOS::printf("\t\t%-16s %"ID_UINT64_FMT"\n", 
@@ -126,8 +126,8 @@ void convertPID( )
                   SM_MAKE_OID( gConvertedInputValue, 0 ) );
 }
 
-// Character·Î º¯È¯ÇÏ¿© Ãâ·ÂÇÕ´Ï´Ù. %s´ë½Å %c·Î ÇÏ³ªÇÏ³ª Ãâ·ÂÇÏ¿©
-// Áß°£Áß°£ '\0'ÀÌ ÀÖ¾îµµ µÚÂÊ±îÁö Ãâ·ÂÇÏµµ·Ï ÇÕ´Ï´Ù.
+// Characterë¡œ ë³€í™˜í•˜ì—¬ ì¶œë ¥í•©ë‹ˆë‹¤. %sëŒ€ì‹  %cë¡œ í•˜ë‚˜í•˜ë‚˜ ì¶œë ¥í•˜ì—¬
+// ì¤‘ê°„ì¤‘ê°„ '\0'ì´ ìˆì–´ë„ ë’¤ìª½ê¹Œì§€ ì¶œë ¥í•˜ë„ë¡ í•©ë‹ˆë‹¤.
 void convertCharacter( )
 {
     SChar * sSrcPtr;
@@ -143,14 +143,14 @@ void convertCharacter( )
     idlOS::printf( "\n" );
 }
 
-// ±â¼ö¹ı¿¡ µû¶ó, 10Áø¼ö ¶Ç´Â 16Áø¼ö·Î Ãâ·ÂÇÕ´Ï´Ù.
+// ê¸°ìˆ˜ë²•ì— ë”°ë¼, 10ì§„ìˆ˜ ë˜ëŠ” 16ì§„ìˆ˜ë¡œ ì¶œë ¥í•©ë‹ˆë‹¤.
 void convertNumeralSystem ( )
 {
     idlOS::printf("\t\t%-16s %"ID_UINT64_FMT"\n", "Decimal", gConvertedInputValue );
     idlOS::printf("\t\t%-16s %016"ID_XINT64_FMT"\n", "Hexa Decimal", gConvertedInputValue );
 }
 
-// mtdValueÇüÅÂ·Î º¯È¯ÇÏ¿© Ãâ·ÂÇÕ´Ï´Ù.
+// mtdValueí˜•íƒœë¡œ ë³€í™˜í•˜ì—¬ ì¶œë ¥í•©ë‹ˆë‹¤.
 void convertMtdValue ( )
 {
     mtdCharType    *sChar;
@@ -214,7 +214,7 @@ void convertOutputValue( )
 // Input value
 //--------------------------------------------------
 
-// StringÀ» 10Áø¼ö·Î ÀĞ½À´Ï´Ù. 
+// Stringì„ 10ì§„ìˆ˜ë¡œ ì½ìŠµë‹ˆë‹¤. 
 ULong getByDeci()
 {
     ULong   sRet = 0;
@@ -262,7 +262,7 @@ UInt htoi( UChar *aSrc )
     return sRet;
 }
 
-// ¹®ÀÚ¿­À» 16Áø¼ö·Î ÀĞ½À´Ï´Ù.
+// ë¬¸ìì—´ì„ 16ì§„ìˆ˜ë¡œ ì½ìŠµë‹ˆë‹¤.
 ULong getByHexa()
 {
     ULong   sRet = 0;
@@ -326,8 +326,8 @@ int main( int argc, char *argv[] )
     UInt      sTotalArgCnt = 0;
 
     SInt      sLGID        = 0; // LGID
-    SInt      sPagesPerExt = 0; // Extent´ç Page¼ö(±âº» 32)
-    SInt      sWhichLG     = 0; // ¾ÕÀÇ LG³Ä ,µÚÀÇ LG³Ä.
+    SInt      sPagesPerExt = 0; // Extentë‹¹ Pageìˆ˜(ê¸°ë³¸ 32)
+    SInt      sWhichLG     = 0; // ì•ì˜ LGëƒ ,ë’¤ì˜ LGëƒ.
 
     sOpr = idlOS::getopt( argc, argv, "g:w:e:v:i:c:" );
     
@@ -368,9 +368,9 @@ int main( int argc, char *argv[] )
 
     IDE_TEST_RAISE( sTotalArgCnt == 0, err_invalid_use );
 
-    if( sLGIDArgCnt != 0 ) //LGID °ü·Ã ÀÎÀÚ°¡ ÀÔ·ÂµÇ¾úÀ» °æ¿ì
+    if( sLGIDArgCnt != 0 ) //LGID ê´€ë ¨ ì¸ìê°€ ì…ë ¥ë˜ì—ˆì„ ê²½ìš°
     {
-        IDE_TEST_RAISE( sLGIDArgCnt != 3, err_need_more_argument ); //ÀÎÀÚ°¡ ºÎÁ·ÇÒ °æ¿ì
+        IDE_TEST_RAISE( sLGIDArgCnt != 3, err_need_more_argument ); //ì¸ìê°€ ë¶€ì¡±í•  ê²½ìš°
 
         idlOS::printf("%"ID_UINT32_FMT"\n",
             SDPTB_GG_HDR_PAGE_CNT + sLGID *SDPTB_PAGES_PER_LG(sPagesPerExt)
@@ -378,7 +378,7 @@ int main( int argc, char *argv[] )
     }
     else
     {
-        //ÀÏ¹İÀûÀÎ º¯È¯ °úÁ¤À» ¼öÇà
+        //ì¼ë°˜ì ì¸ ë³€í™˜ ê³¼ì •ì„ ìˆ˜í–‰
         convertInputValue();
         convertOutputValue();                                           
     }

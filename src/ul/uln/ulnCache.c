@@ -23,7 +23,7 @@
 
 /*
  * ===================================================================================
- * ulnCache ÀÇ ±¸Á¶
+ * ulnCache ì˜ êµ¬ì¡°
  *
  *                           +----+
  *                           |    |
@@ -93,7 +93,7 @@ ACI_RC ulnCacheCreate(ulnCache **aCache)
     sStage = 2;
 
     /* BUG-32474
-     * ulnCache¸¦ ¸¸µé ¶§, »ç¿ëÀÚ°¡ °¡Á®°£ locator¸¦ ±â¾ïÇÏ±â À§ÇÑ Hash »ı¼º */
+     * ulnCacheë¥¼ ë§Œë“¤ ë•Œ, ì‚¬ìš©ìê°€ ê°€ì ¸ê°„ locatorë¥¼ ê¸°ì–µí•˜ê¸° ìœ„í•œ Hash ìƒì„± */
     ACI_TEST(aclHashCreate(&sCache->mReadLobLocatorHash,
                            19,
                            ACI_SIZEOF(acp_uint64_t),
@@ -105,7 +105,7 @@ ACI_RC ulnCacheCreate(ulnCache **aCache)
     /*
      * BUG-37642 Improve performance to fetch.
      *
-     * 8K¾¿ ¸Ş¸ğ¸®¸¦ µ¢¾î¸®·Î ÇÒ´çÇØ ÇÒ´çºñ¿ë°ú Àç»ç¿ë·üÀ» ³ôÀÎ´Ù.
+     * 8Kì”© ë©”ëª¨ë¦¬ë¥¼ ë©ì–´ë¦¬ë¡œ í• ë‹¹í•´ í• ë‹¹ë¹„ìš©ê³¼ ì¬ì‚¬ìš©ë¥ ì„ ë†’ì¸ë‹¤.
      */
     aclMemAreaCreate(sCache->mChunk, 8192);
 
@@ -141,7 +141,7 @@ ACI_RC ulnCacheCreate(ulnCache **aCache)
 static void ulnCacheFreeAllBlocks(ulnCache *aCache)
 {
     /*
-     * RowBlock À» ¸ğÁ¶¸® free ÇÏ¹Ç·Î Ä³½¬µÈ row µµ ¸ğÁ¶¸® »ç¶óÁü.
+     * RowBlock ì„ ëª¨ì¡°ë¦¬ free í•˜ë¯€ë¡œ ìºì‰¬ëœ row ë„ ëª¨ì¡°ë¦¬ ì‚¬ë¼ì§.
      */
     aCache->mRowCount         = 0;
     aCache->mRowStartPosition = 1;
@@ -151,7 +151,7 @@ static void ulnCacheFreeAllBlocks(ulnCache *aCache)
 void ulnCacheDestroy(ulnCache *aCache)
 {
     /*
-     * Cache Chunk ÇØÁ¦
+     * Cache Chunk í•´ì œ
      */
     if( aCache->mChunk != NULL )
     {
@@ -161,7 +161,7 @@ void ulnCacheDestroy(ulnCache *aCache)
     }
 
     /*
-     * ColumnInfoArray ÇØÁ¦
+     * ColumnInfoArray í•´ì œ
      */
     if (aCache->mColumnInfoArray != NULL)
     {
@@ -169,7 +169,7 @@ void ulnCacheDestroy(ulnCache *aCache)
     }
 
     /*
-     * ColumnBuffer ÇØÁ¦
+     * ColumnBuffer í•´ì œ
      */
     if (aCache->mColumnBuffer != NULL)
     {
@@ -177,23 +177,23 @@ void ulnCacheDestroy(ulnCache *aCache)
     }
 
     /*
-     * RowBlock ÇØÁ¦
+     * RowBlock í•´ì œ
      */
     ulnCacheFreeAllBlocks(aCache);
 
     /*
-     * RowBlockArray ÇØÁ¦
+     * RowBlockArray í•´ì œ
      */
     if (aCache->mRPAB.mBlock != NULL)
     {
         acpMemFree(aCache->mRPAB.mBlock);
     }
 
-    /* BUG-32474: ReadLobLocatorHash ÇØÁ¦ */
+    /* BUG-32474: ReadLobLocatorHash í•´ì œ */
     aclHashDestroy(&aCache->mReadLobLocatorHash);
 
     /*
-     * Cache ÇØÁ¦
+     * Cache í•´ì œ
      */
     acpMemFree(aCache);
 }
@@ -216,12 +216,12 @@ void ulnCacheAdjustStartPosition( ulnCache * aCache )
 /*
  * =======================================================
  *
- * 1. ÇÑ¹øÀÇ fetch ÀÇ ´ÜÀ§°¡µÇ´Â row ÀÇ °¹¼ö °è»ê
+ * 1. í•œë²ˆì˜ fetch ì˜ ë‹¨ìœ„ê°€ë˜ëŠ” row ì˜ ê°¯ìˆ˜ ê³„ì‚°
  *
- * 2. ¼­¹ö·ÎºÎÅÍ °¡Áö°í ¿Ã ÇÊ¿ä°¡ ÀÖ´Â row ÀÇ °¹¼ö °è»ê
+ * 2. ì„œë²„ë¡œë¶€í„° ê°€ì§€ê³  ì˜¬ í•„ìš”ê°€ ìˆëŠ” row ì˜ ê°¯ìˆ˜ ê³„ì‚°
  *
- * 3. prefetch ¿É¼Ç »ç¿ë½Ã ´õ ÀÌ»ó ulnRow ¸¦ ÇÒ´çÇÏÁö ¾Ê°í
- *    ´Ù½Ã cache ÀÇ Ã¹¹øÂ° row ·Î µ¹¾Æ°¥ ½ÃÁ¡ °áÁ¤
+ * 3. prefetch ì˜µì…˜ ì‚¬ìš©ì‹œ ë” ì´ìƒ ulnRow ë¥¼ í• ë‹¹í•˜ì§€ ì•Šê³ 
+ *    ë‹¤ì‹œ cache ì˜ ì²«ë²ˆì§¸ row ë¡œ ëŒì•„ê°ˆ ì‹œì  ê²°ì •
  *
  * =======================================================
  */
@@ -236,10 +236,10 @@ acp_uint32_t ulnCacheCalcBlockSizeOfOneFetch(ulnCache *aCache, ulnCursor *aCurso
     acp_uint32_t  sPrefetchMemory;
 
     /*
-     * prefetch ¿É¼ÇµéÀ» ¸ğµÎ °í·ÁÇØ¼­ ÇÑ¹øÀÇ fetch op ¿¡ °¡Á®¿À°Ô µÉ
-     * ÀÌ»óÀûÀÎ row ÀÇ °¹¼ö¸¦ °è»êÇÑ´Ù.
+     * prefetch ì˜µì…˜ë“¤ì„ ëª¨ë‘ ê³ ë ¤í•´ì„œ í•œë²ˆì˜ fetch op ì— ê°€ì ¸ì˜¤ê²Œ ë 
+     * ì´ìƒì ì¸ row ì˜ ê°¯ìˆ˜ë¥¼ ê³„ì‚°í•œë‹¤.
      *
-     * non scrollable Ä¿¼­¿¡¼­´Â ÀÌ °ªÀÌ ÀÏÁ¾ÀÇ row limit À¸·Î ÀÛ¿ëÇÑ´Ù.
+     * non scrollable ì»¤ì„œì—ì„œëŠ” ì´ ê°’ì´ ì¼ì¢…ì˜ row limit ìœ¼ë¡œ ì‘ìš©í•œë‹¤.
      */
 
     sPrefetchRows   = ulnStmtGetAttrPrefetchRows(aCursor->mParentStmt);
@@ -278,7 +278,7 @@ acp_uint32_t ulnCacheCalcBlockSizeOfOneFetch(ulnCache *aCache, ulnCursor *aCurso
 /*
  * =======================================================
  *
- * »ç¿ëÀÚ°¡ ÁöÁ¤ÇÑ PREFETCH ROW SIZE¸¦ ¸®ÅÏÇÑ´Ù.
+ * ì‚¬ìš©ìê°€ ì§€ì •í•œ PREFETCH ROW SIZEë¥¼ ë¦¬í„´í•œë‹¤.
  *
  * =======================================================
  */
@@ -331,7 +331,7 @@ acp_sint32_t ulnCacheCalcNumberOfRowsToGet(ulnCache *aCache, ulnCursor *aCursor,
     acp_sint64_t sNumberOfRowsToGet;
 
     /*
-     * Note : Cache ÀÇ row µéÀÇ number ´Â 1 º£ÀÌ½ºÀÌ´Ù.
+     * Note : Cache ì˜ row ë“¤ì˜ number ëŠ” 1 ë² ì´ìŠ¤ì´ë‹¤.
      *
      *        0 NULL                  0 NULL                       0 NULL
      *        1 #########             1 #########                  1 #########
@@ -345,20 +345,20 @@ acp_sint32_t ulnCacheCalcNumberOfRowsToGet(ulnCache *aCache, ulnCursor *aCursor,
      *    |   9 ---------             9 ---------                  9 ---------
      *    +- 10 ---------            10 ---------                 10 ---------
      *
-     * ´õ °¡Á®¿Í¾ß ÇÏ´Â row °¹¼ö = CursorPosition - NumberOfCachedRows + CursorSize - 1
+     * ë” ê°€ì ¸ì™€ì•¼ í•˜ëŠ” row ê°¯ìˆ˜ = CursorPosition - NumberOfCachedRows + CursorSize - 1
      *
-     * »ç¿ëÀÚ°¡ Ä¿¼­¸¦ ¾Æ·¡·Î    Á¤»óÀûÀ¸·Î Ä³½¬¿¡¼­ °¡Áö°í      ¿¡·¯ÀÎ °æ¿ì
-     * ¸¹ÀÌ ½ºÅ©·Ñ ½ÃÄÑ¼­ ÆäÄ¡   ¿À´Ù°¡ 4¹ø row ¿¡¼­ Ä³½¬
-     * ÇÏ´Â °æ¿ì                 miss ¹ß»ıÇÑ °æ¿ì
+     * ì‚¬ìš©ìê°€ ì»¤ì„œë¥¼ ì•„ë˜ë¡œ    ì •ìƒì ìœ¼ë¡œ ìºì‰¬ì—ì„œ ê°€ì§€ê³       ì—ëŸ¬ì¸ ê²½ìš°
+     * ë§ì´ ìŠ¤í¬ë¡¤ ì‹œì¼œì„œ í˜ì¹˜   ì˜¤ë‹¤ê°€ 4ë²ˆ row ì—ì„œ ìºì‰¬
+     * í•˜ëŠ” ê²½ìš°                 miss ë°œìƒí•œ ê²½ìš°
      * 6 - 3 + 5 - 1= 7          2 - 3 + 5 - 1 = 3               2 - 7 + 5 - 1 = -1
      *
-     * Á¤È®È÷ ´õ ÇÊ¿äÇÑ row ÀÇ °¹¼ö. À½¼ö°¡ µÉ °æ¿ì´Â cursor °¡ cache µÈ row ¾È¿¡
-     * µé¾î°¡¼­ À§Ä¡ÇØ ÀÖ´Â °æ¿ì ¹Û¿¡ ¾ø´Ù. µû¶ó¼­, sRow °¡ NULL ÀÌ¾î¼­´Â ¾ÈµÇ´Âµ¥,
-     * ÀÌ°÷À¸·Î ¿ÔÀ¸¹Ç·Î ½É°¢ÇÑ ¿¡·¯ÀÌ´Ù.
+     * ì •í™•íˆ ë” í•„ìš”í•œ row ì˜ ê°¯ìˆ˜. ìŒìˆ˜ê°€ ë  ê²½ìš°ëŠ” cursor ê°€ cache ëœ row ì•ˆì—
+     * ë“¤ì–´ê°€ì„œ ìœ„ì¹˜í•´ ìˆëŠ” ê²½ìš° ë°–ì— ì—†ë‹¤. ë”°ë¼ì„œ, sRow ê°€ NULL ì´ì–´ì„œëŠ” ì•ˆë˜ëŠ”ë°,
+     * ì´ê³³ìœ¼ë¡œ ì™”ìœ¼ë¯€ë¡œ ì‹¬ê°í•œ ì—ëŸ¬ì´ë‹¤.
      */
 
     // To Fix BUG-20409
-    // Cursor PositionÀº Logical ÇÔ.
+    // Cursor Positionì€ Logical í•¨.
     sNumberOfRowsToGet = aCursor->mPosition - ulnCacheGetTotalRowCnt(aCache)
                        + aBlockSizeOfOneFetch - 1;
 
@@ -397,12 +397,12 @@ ulnRow *ulnCacheGetCachedRow(ulnCache *aCache, acp_sint64_t aLogicalCurPos)
     acp_sint64_t sRowNumber;
 
     /*
-     * Note : cache ¹Ù±ù¿¡¼­ÀÇ row number ´Â ¸ğµÎ 1 º£ÀÌ½ºÀÌ³ª
-     *        cache ¾È¿¡¼­´Â 0 º£ÀÌ½ºÀÌ´Ù.
+     * Note : cache ë°”ê¹¥ì—ì„œì˜ row number ëŠ” ëª¨ë‘ 1 ë² ì´ìŠ¤ì´ë‚˜
+     *        cache ì•ˆì—ì„œëŠ” 0 ë² ì´ìŠ¤ì´ë‹¤.
      */
 
     // To Fix BUG-20480
-    // ³í¸®Àû Cursor PositionÀ» ¹°¸®Àû À§Ä¡·Î º¯°æÇÑ´Ù.
+    // ë…¼ë¦¬ì  Cursor Positionì„ ë¬¼ë¦¬ì  ìœ„ì¹˜ë¡œ ë³€ê²½í•œë‹¤.
     sRowNumber = aLogicalCurPos - aCache->mRowStartPosition;
 
     /*
@@ -414,7 +414,7 @@ ulnRow *ulnCacheGetCachedRow(ulnCache *aCache, acp_sint64_t aLogicalCurPos)
     }
 
     /*
-     * row number ´Â 1¹øºÎÅÍ ½ÃÀÛÇÑ´Ù.
+     * row number ëŠ” 1ë²ˆë¶€í„° ì‹œì‘í•œë‹¤.
      */
     if (sRowNumber >= aCache->mRowCount)
     {
@@ -438,7 +438,7 @@ ACI_RC ulnCacheReBuildRPA( ulnCache *aCache )
     ulnRow       *sNewRPA   = NULL;
     acp_uint32_t  sRPAIndex = 0;
 
-    // ½ÃÀÛ À§Ä¡ºÎÅÍ ¸¶Áö¸· À§Ä¡±îÁö RPA¸¦ Àç±¸¼ºÇÑ´Ù.
+    // ì‹œì‘ ìœ„ì¹˜ë¶€í„° ë§ˆì§€ë§‰ ìœ„ì¹˜ê¹Œì§€ RPAë¥¼ ì¬êµ¬ì„±í•œë‹¤.
     for( sRPAIndex = 0; sRPAIndex < aCache->mRPAB.mUsedCount; ++sRPAIndex)
     {
         ACI_TEST( ulnCacheAllocChunk( aCache,
@@ -455,7 +455,7 @@ ACI_RC ulnCacheReBuildRPA( ulnCache *aCache )
 
     return ACI_FAILURE;
 }
-// BUG-21746 ÀÌ¹Ì »ı¼ºµÇ¾îÀÖÀ» °æ¿ì´Â »ı¼ºÇÏÁö ¾Ê´Â´Ù.
+// BUG-21746 ì´ë¯¸ ìƒì„±ë˜ì–´ìˆì„ ê²½ìš°ëŠ” ìƒì„±í•˜ì§€ ì•ŠëŠ”ë‹¤.
 #define NEED_MORE_RPA(x) \
         ((((x)->mRowCount) / ULN_CACHE_MAX_ROW_IN_RPA) >= ((x)->mRPAB.mUsedCount))
 
@@ -534,9 +534,9 @@ ACI_RC ulnCacheExtendRPAB(ulnCache *aCache)
 /*
  * ================================================================
  *
- * Cache µÇ¾î ÀÖ´Â row ÀÇ ³»¿ëÀ» convert ÇØ¼­ »ç¿ëÀÚ ¹öÆÛ¿¡ º¹»ç
+ * Cache ë˜ì–´ ìˆëŠ” row ì˜ ë‚´ìš©ì„ convert í•´ì„œ ì‚¬ìš©ì ë²„í¼ì— ë³µì‚¬
  *
- *    : SQLFetch() ÀÇ ÇÙ½ÉºÎ.
+ *    : SQLFetch() ì˜ í•µì‹¬ë¶€.
  *
  * ================================================================
  */
@@ -549,7 +549,7 @@ ACI_RC ulnCacheRowCopyToUserBuffer(ulnFnContext *aFnContext,
                                    acp_uint32_t  aUserRowNumber)
 {
     /*
-     * aUserRowNumber ´Â 1 º£ÀÌ½º ÀÎµ¦½º
+     * aUserRowNumber ëŠ” 1 ë² ì´ìŠ¤ ì¸ë±ìŠ¤
      */
 
     acp_uint32_t      i;
@@ -565,8 +565,8 @@ ACI_RC ulnCacheRowCopyToUserBuffer(ulnFnContext *aFnContext,
     void             *sBackupArg;
 
     /* PROJ-1789 Updatable Scrollable Cursor
-     * - Á¤º¸¸¦ ¾ò°í ¼³Á¤ÇÏ´Â°Ç KeysetStmt¸¦ ½á¾ßÇÑ´Ù.
-     * - SensitiveÀÏ¶§´Â _PROWID°¡ ¸Ç ¾Õ¿¡ ºÙÀ¸¹Ç·Î Column 0ºÎÅÍ ½ÃÀÛÇÑ´Ù. */
+     * - ì •ë³´ë¥¼ ì–»ê³  ì„¤ì •í•˜ëŠ”ê±´ KeysetStmtë¥¼ ì¨ì•¼í•œë‹¤.
+     * - Sensitiveì¼ë•ŒëŠ” _PROWIDê°€ ë§¨ ì•ì— ë¶™ìœ¼ë¯€ë¡œ Column 0ë¶€í„° ì‹œì‘í•œë‹¤. */
     if (aStmt->mParentStmt != NULL)
     {
         sKeysetStmt = aStmt->mParentStmt;
@@ -618,15 +618,15 @@ ACI_RC ulnCacheRowCopyToUserBuffer(ulnFnContext *aFnContext,
             sSrc += sColumn->mMTLength;
         }
 
-        /* bind ÇÏÁö ¾ÊÀº ÄÃ·³ÀÌ¸é µ¥ÀÌÅ¸ º¹»ç´Â °Ç³Ê ¶Ú´Ù. */
+        /* bind í•˜ì§€ ì•Šì€ ì»¬ëŸ¼ì´ë©´ ë°ì´íƒ€ ë³µì‚¬ëŠ” ê±´ë„ˆ ë›´ë‹¤. */
         if (sDescRecArd == NULL)
         {
             continue;
         }
 
         // fix BUG-24380
-        // SetDescField¸¦ »ç¿ëÇØ »õ·Î¿î DescRec¸¦ »ı¼ºÇÏ¿´Áö¸¸
-        // µ¥ÀÌÅÍ °ø°£ ÇÒ´çÀÌ ¾ÈµÇ¾î ÀÖÀ» ¼ö ÀÖ´Ù.
+        // SetDescFieldë¥¼ ì‚¬ìš©í•´ ìƒˆë¡œìš´ DescRecë¥¼ ìƒì„±í•˜ì˜€ì§€ë§Œ
+        // ë°ì´í„° ê³µê°„ í• ë‹¹ì´ ì•ˆë˜ì–´ ìˆì„ ìˆ˜ ìˆë‹¤.
         if (sDescRecArd->mDataPtr == NULL)
         {
             continue;
@@ -643,7 +643,7 @@ ACI_RC ulnCacheRowCopyToUserBuffer(ulnFnContext *aFnContext,
         ulnBindCalcUserIndLenPair(sDescRecArd, aUserRowNumber - 1, &sUserIndLenPair);
 
         /*
-         * Ä³½¬¿¡¼­ »ç¿ëÀÚ ¹öÆÛ·Î µ¥ÀÌÅÍ º¯È¯ÇØ¼­ º¹»ç.
+         * ìºì‰¬ì—ì„œ ì‚¬ìš©ì ë²„í¼ë¡œ ë°ì´í„° ë³€í™˜í•´ì„œ ë³µì‚¬.
          */
 
         sBackupArg        = aFnContext->mArgs;
@@ -662,8 +662,8 @@ ACI_RC ulnCacheRowCopyToUserBuffer(ulnFnContext *aFnContext,
             /* Do Nothing. */
             /*************************************************
              * PROJ-2638 shard native linker
-             * MtDataFetchÀÏ °æ¿ì¿¡´Â ulnConvert¸¦ È£ÃâÇÏÁö ¾Ê°í,
-             * MT Å¸ÀÔÀÇ µ¥ÀÌÅÍ¸¦ ¹İÈ¯ÇÑ´Ù.
+             * MtDataFetchì¼ ê²½ìš°ì—ëŠ” ulnConvertë¥¼ í˜¸ì¶œí•˜ì§€ ì•Šê³ ,
+             * MT íƒ€ì…ì˜ ë°ì´í„°ë¥¼ ë°˜í™˜í•œë‹¤.
              *************************************************/
         }
 
@@ -681,7 +681,7 @@ ACI_RC ulnCacheRowCopyToUserBuffer(ulnFnContext *aFnContext,
     }
 
     /*
-     * ¿©ÅÂ±îÁö ¸®ÅÏµÈ °¢ ÄÃ·³ÀÇ status µéÀ» Á¾ÇÕÇØ¼­ row status °áÁ¤
+     * ì—¬íƒœê¹Œì§€ ë¦¬í„´ëœ ê° ì»¬ëŸ¼ì˜ status ë“¤ì„ ì¢…í•©í•´ì„œ row status ê²°ì •
      */
 
     if (sRowStatus & ULN_ROW_ERROR)
@@ -696,7 +696,7 @@ ACI_RC ulnCacheRowCopyToUserBuffer(ulnFnContext *aFnContext,
         }
         else
         {
-            /* PROJ-1789 SetPos(SQL_REFRESH)·Î °»½Å¿¡ ¼º°øÇßÀ»¶§´Â UPDATED */
+            /* PROJ-1789 SetPos(SQL_REFRESH)ë¡œ ê°±ì‹ ì— ì„±ê³µí–ˆì„ë•ŒëŠ” UPDATED */
             if (aFnContext->mFuncID == ULN_FID_SETPOS)
             {
                 ulnStmtSetAttrRowStatusValue(sKeysetStmt, aUserRowNumber - 1, SQL_ROW_UPDATED);
@@ -772,7 +772,7 @@ ACI_RC ulnCacheCloseLobInCurrentContents(ulnFnContext *aFnContext,
     acp_uint64_t  sBuffer[ULN_STMT_MAX_MEMORY_CHUNK_SIZE / 8];
 
     // BUG-21241
-    // ulnFlushAndReadProtocolÀ» È£ÃâÇÏ±â À§ÇØ sDbc¸¦ ¾òÀ½
+    // ulnFlushAndReadProtocolì„ í˜¸ì¶œí•˜ê¸° ìœ„í•´ sDbcë¥¼ ì–»ìŒ
     ULN_FNCONTEXT_GET_DBC(aFnContext, sDbc);
 
     ACI_TEST( sDbc == NULL);
@@ -802,8 +802,8 @@ ACI_RC ulnCacheCloseLobInCurrentContents(ulnFnContext *aFnContext,
                 CM_ENDIAN_ASSIGN8(&sLobLocatorID, sSrc);
 
                 /* BUG-32474
-                 * fetch³ª GetData·Î lob locator¸¦ °¡Á®°¬´ÂÁö È®ÀÎ
-                 * °¡Á®°¬À¸¸é locator ÇØÁö´Â »ç¿ëÀÚÀÇ ¸òÀÌ¹Ç·Î ³Ñ¾î°£´Ù. */
+                 * fetchë‚˜ GetDataë¡œ lob locatorë¥¼ ê°€ì ¸ê°”ëŠ”ì§€ í™•ì¸
+                 * ê°€ì ¸ê°”ìœ¼ë©´ locator í•´ì§€ëŠ” ì‚¬ìš©ìì˜ ëª«ì´ë¯€ë¡œ ë„˜ì–´ê°„ë‹¤. */
                 sRC = ulnCacheRemoveReadLobLocator(aCache, &sLobLocatorID);
                 if (ACP_RC_IS_SUCCESS(sRC))
                 {
@@ -828,7 +828,7 @@ ACI_RC ulnCacheCloseLobInCurrentContents(ulnFnContext *aFnContext,
                              != ACI_SUCCESS);
 
                     // BUG-21241
-                    // ulnFlushProtocol()À» È£ÃâÇÏ´Â ´ë½Å ulnFlushAndReadProtocol()À» È£Ãâ
+                    // ulnFlushProtocol()ì„ í˜¸ì¶œí•˜ëŠ” ëŒ€ì‹  ulnFlushAndReadProtocol()ì„ í˜¸ì¶œ
                     ACI_TEST(ulnFlushAndReadProtocol(aFnContext,
                                                      aPtContext,
                                                      sDbc->mConnTimeoutValue)
@@ -851,7 +851,7 @@ ACI_RC ulnCacheCloseLobInCurrentContents(ulnFnContext *aFnContext,
                  != ACI_SUCCESS);
 
         // BUG-21241
-        // ulnFlushProtocol()À» È£ÃâÇÏ´Â ´ë½Å ulnFlushAndReadProtocol()À» È£Ãâ
+        // ulnFlushProtocol()ì„ í˜¸ì¶œí•˜ëŠ” ëŒ€ì‹  ulnFlushAndReadProtocol()ì„ í˜¸ì¶œ
         ACI_TEST(ulnFlushAndReadProtocol(aFnContext,
                                          aPtContext,
                                          sDbc->mConnTimeoutValue)
@@ -885,20 +885,20 @@ ACI_RC ulnCacheCloseLobInCurrentContents(ulnFnContext *aFnContext,
 }
 
 /**
- * lob locator¸¦ Hash¿¡ Ãß°¡ÇÑ´Ù.
- * ÀÌ¹Ì Hash¿¡ ÀÖ´Ù¸é Á¶¿ëÈ÷ ³Ñ¾î°£´Ù.
+ * lob locatorë¥¼ Hashì— ì¶”ê°€í•œë‹¤.
+ * ì´ë¯¸ Hashì— ìˆë‹¤ë©´ ì¡°ìš©íˆ ë„˜ì–´ê°„ë‹¤.
  *
  * @param[in] aCache          cache
  * @param[in] aLobLocatorID   lob locator
  *
- * @return lob locator¸¦ Àß Ãß°¡ÇßÀ¸¸é ACI_SUCCESS, ¾Æ´Ï¸é ACI_FAILURE
+ * @return lob locatorë¥¼ ì˜ ì¶”ê°€í–ˆìœ¼ë©´ ACI_SUCCESS, ì•„ë‹ˆë©´ ACI_FAILURE
  */
 acp_rc_t ulnCacheAddReadLobLocator(ulnCache     *aCache,
                                    acp_uint64_t *aLobLocatorID)
 {
     acp_rc_t sRC;
 
-    // ¹æ¾î ÄÚµå
+    // ë°©ì–´ ì½”ë“œ
     ACE_ASSERT(aCache != NULL);
     ACE_ASSERT(aLobLocatorID != NULL);
 
@@ -915,21 +915,21 @@ acp_rc_t ulnCacheAddReadLobLocator(ulnCache     *aCache,
 }
 
 /**
- * Hash¿¡¼­ lob locator¸¦ Á¦°ÅÇÑ´Ù.
+ * Hashì—ì„œ lob locatorë¥¼ ì œê±°í•œë‹¤.
  *
  * @param[in] aCache          cache
  * @param[in] aLobLocatorID   lob locator
  *
- * @return lob locator¸¦ Hash¿¡¼­ Á¦°ÅÇßÀ¸¸é ACI_SUCCESS,
- *         Hash¿¡ ¾øÀ¸¸é ACI_ENOENT,
- *         ¿¡·¯°¡ ¹ß»ıÇßÀ¸¸é ¿¡·¯ ÄÚµå
+ * @return lob locatorë¥¼ Hashì—ì„œ ì œê±°í–ˆìœ¼ë©´ ACI_SUCCESS,
+ *         Hashì— ì—†ìœ¼ë©´ ACI_ENOENT,
+ *         ì—ëŸ¬ê°€ ë°œìƒí–ˆìœ¼ë©´ ì—ëŸ¬ ì½”ë“œ
  */
 acp_rc_t ulnCacheRemoveReadLobLocator(ulnCache     *aCache,
                                       acp_uint64_t *aLobLocatorID)
 {
     acp_uint64_t    sValue;
 
-    // ¹æ¾î ÄÚµå
+    // ë°©ì–´ ì½”ë“œ
     ACE_ASSERT(aCache != NULL);
     ACE_ASSERT(aLobLocatorID != NULL);
 
@@ -939,14 +939,14 @@ acp_rc_t ulnCacheRemoveReadLobLocator(ulnCache     *aCache,
 /*
  * BUG-38818 Prevent to fail a assertion in ulnCacheInitialize()
  *
- * Cursor close, Fetch °úÁ¤¿¡¼­ ³×Æ®¿öÅ©°¡ ´ÜÀıµÈ ½ÇÆĞ°¡ ³ª´Â °æ¿ì
- * Lob locator hash°¡ Á¦´ë·Î ¾È ºñ¿öÁö´Â °æ¿ì°¡ ÀÖ±â¿¡ ÇÔ¼ö¸¦ Ãß°¡ÇÑ´Ù.
+ * Cursor close, Fetch ê³¼ì •ì—ì„œ ë„¤íŠ¸ì›Œí¬ê°€ ë‹¨ì ˆëœ ì‹¤íŒ¨ê°€ ë‚˜ëŠ” ê²½ìš°
+ * Lob locator hashê°€ ì œëŒ€ë¡œ ì•ˆ ë¹„ì›Œì§€ëŠ” ê²½ìš°ê°€ ìˆê¸°ì— í•¨ìˆ˜ë¥¼ ì¶”ê°€í•œë‹¤.
  */
 
 /**
- * ulnCacheEmptyHashTable - Hash TableÀ» ºñ¿î´Ù.
+ * ulnCacheEmptyHashTable - Hash Tableì„ ë¹„ìš´ë‹¤.
  *
- * @aHashTable : À¯È¿ÇÑ Hash Table
+ * @aHashTable : ìœ íš¨í•œ Hash Table
  */
 ACI_RC ulnCacheEmptyHashTable(acl_hash_table_t *aHashTable)
 {
@@ -963,7 +963,7 @@ ACI_RC ulnCacheEmptyHashTable(acl_hash_table_t *aHashTable)
 
     do
     {
-        /* aclHashTraverseNext()´Â ACP_RC_EOF, ACP_RC_SUCCESS¸¸ ¸®ÅÏÇÑ´Ù. */
+        /* aclHashTraverseNext()ëŠ” ACP_RC_EOF, ACP_RC_SUCCESSë§Œ ë¦¬í„´í•œë‹¤. */
         sRC = aclHashTraverseNext(&sHashTraverse, (void **)&sValue);
     } while (ACP_RC_NOT_EOF(sRC));
 
@@ -979,7 +979,7 @@ ACI_RC ulnCacheEmptyHashTable(acl_hash_table_t *aHashTable)
 /* PROJ-1789 Updatable Scrollable Cursor */
 
 /**
- * Cache¿¡ ½×ÀÏ Ã¹ RowÀÇ PositionÀ» ¼³Á¤ÇÑ´Ù.
+ * Cacheì— ìŒ“ì¼ ì²« Rowì˜ Positionì„ ì„¤ì •í•œë‹¤.
  *
  * @param[in] aCache           cache object
  * @param[in] aStartPosition   start position
@@ -990,13 +990,13 @@ void ulnCacheSetStartPosition(ulnCache *aCache, acp_sint64_t aStartPosition)
 }
 
 /**
- * Æ¯Á¤ ¹üÀ§ÀÇ Row°¡ ¸ğµÎ CacheµÇ¾î ÀÖ´ÂÁö È®ÀÎÇÑ´Ù.
+ * íŠ¹ì • ë²”ìœ„ì˜ Rowê°€ ëª¨ë‘ Cacheë˜ì–´ ìˆëŠ”ì§€ í™•ì¸í•œë‹¤.
  *
  * @param[in] aCache           cache
  * @param[in] aStartPosition   start position (inclusive)
  * @param[in] aEndPosition     end position (inclusive)
  *
- * @return ÁöÁ¤ ¹üÀ§ÀÇ Row°¡ ¸ğµÎ ÀÖÀ¸¸é ACP_TRUE, ¾Æ´Ï¸é ACP_FALSE
+ * @return ì§€ì • ë²”ìœ„ì˜ Rowê°€ ëª¨ë‘ ìˆìœ¼ë©´ ACP_TRUE, ì•„ë‹ˆë©´ ACP_FALSE
  */
 acp_bool_t ulnCacheCheckRowsCached(ulnCache     *aCache,
                                    acp_sint64_t  aStartPosition,
@@ -1019,10 +1019,10 @@ acp_bool_t ulnCacheCheckRowsCached(ulnCache     *aCache,
 }
 
 /**
- * Cache¸¦ ÃÊ±âÈ­ÇÏ°í RPA¸¦ ´Ù½Ã »ı¼ºÇÑ´Ù.
+ * Cacheë¥¼ ì´ˆê¸°í™”í•˜ê³  RPAë¥¼ ë‹¤ì‹œ ìƒì„±í•œë‹¤.
  *
- * ÀÌ ¶§, RP¿¡ ¼³Á¤µÈ °ªÀÌ ¾øÀ½À» ³ªÅ¸³»±â À§ÇØ¼­
- * RPÀÇ RowNumber´Â NULL, Row´Â 0À¸·Î ÃÊ±âÈ­ÇÑ´Ù.
+ * ì´ ë•Œ, RPì— ì„¤ì •ëœ ê°’ì´ ì—†ìŒì„ ë‚˜íƒ€ë‚´ê¸° ìœ„í•´ì„œ
+ * RPì˜ RowNumberëŠ” NULL, RowëŠ” 0ìœ¼ë¡œ ì´ˆê¸°í™”í•œë‹¤.
  *
  * @param[in] aCache cache
  *
@@ -1037,9 +1037,9 @@ ACI_RC ulnCacheRebuildRPAForSensitive(ulnStmt *aRowsetStmt, ulnCache *aCache)
 
     if (ulnStmtGetFetchMode(aRowsetStmt) == ULN_STMT_FETCHMODE_BOOKMARK)
     {
-        /* BOOKMARK·Î FetchÇÏ¸é, ¿¬¼ÓµÇÁö ¾ÊÀº Row¸¦ ¾ò´Â´Ù.
-         * ±×·¯¹Ç·Î, Position ±â¹İÀ¸·Î Á¢±ÙÇÏ·Á¸é
-         * RPA¸¦ CacheµÈ Keyset °³¼ö¸¸Å­ ¹Ì¸® ¸¸µé¾î µÎ¾î¾ß ÇÑ´Ù. */
+        /* BOOKMARKë¡œ Fetchí•˜ë©´, ì—°ì†ë˜ì§€ ì•Šì€ Rowë¥¼ ì–»ëŠ”ë‹¤.
+         * ê·¸ëŸ¬ë¯€ë¡œ, Position ê¸°ë°˜ìœ¼ë¡œ ì ‘ê·¼í•˜ë ¤ë©´
+         * RPAë¥¼ Cacheëœ Keyset ê°œìˆ˜ë§Œí¼ ë¯¸ë¦¬ ë§Œë“¤ì–´ ë‘ì–´ì•¼ í•œë‹¤. */
         ACE_DASSERT(aRowsetStmt->mParentStmt != NULL);
         sPreBuildSize = ulnKeysetGetKeyCount(ulnStmtGetKeyset(aRowsetStmt->mParentStmt));
     }
@@ -1049,7 +1049,7 @@ ACI_RC ulnCacheRebuildRPAForSensitive(ulnStmt *aRowsetStmt, ulnCache *aCache)
                                                         ulnStmtGetCursor(aRowsetStmt));
     }
 
-    /* Hole °¨Áö¸¦ À§ÇØ PrefetchSize ¸¸Å­ ÃÊ±âÈ­¸¦ ÇØµÖ¾ß ÇÑ´Ù. */
+    /* Hole ê°ì§€ë¥¼ ìœ„í•´ PrefetchSize ë§Œí¼ ì´ˆê¸°í™”ë¥¼ í•´ë‘¬ì•¼ í•œë‹¤. */
     sRPACount = (sPreBuildSize / ULN_CACHE_MAX_ROW_IN_RPA);
     if ((sPreBuildSize % ULN_CACHE_MAX_ROW_IN_RPA) > 0)
     {
@@ -1083,7 +1083,7 @@ ACI_RC ulnCacheRebuildRPAForSensitive(ulnStmt *aRowsetStmt, ulnCache *aCache)
 }
 
 /**
- * Position¿¡ ÇØ´çÇÏ´Â RP¸¦ ¼³Á¤ÇÑ´Ù.
+ * Positionì— í•´ë‹¹í•˜ëŠ” RPë¥¼ ì„¤ì •í•œë‹¤.
  *
  * @param[in] aCache      cache
  * @param[in] aRow        row data
@@ -1118,8 +1118,8 @@ ACI_RC ulnCacheSetRPByPosition( ulnCache     *aCache,
 
 
 /* PROJ-2616 ulnCacheCreateIPCDA
- * ¼³¸í : IPCDAÀÇ Connection¿¡ 1°³ ÀÌ»óÀÇ Statement°¡ »ı¼ºµÉ°æ¿ì
- *        Statementº°·Î Memory¸¦ »ı¼ºÇÏ°í ShardMemoryÀÇ Á¤º¸¸¦ copyÇÑ´Ù.
+ * ì„¤ëª… : IPCDAì˜ Connectionì— 1ê°œ ì´ìƒì˜ Statementê°€ ìƒì„±ë ê²½ìš°
+ *        Statementë³„ë¡œ Memoryë¥¼ ìƒì„±í•˜ê³  ShardMemoryì˜ ì •ë³´ë¥¼ copyí•œë‹¤.
  *
  * @aFnContext[in] - ulnFnContext
  * @aDbc[in]       - ulnDbc
@@ -1133,7 +1133,7 @@ ACI_RC ulnCacheCreateIPCDA(ulnFnContext *aFnContext, ulnDbc *aDbc)
     ulnStmt            *sStmtTmp  = NULL;
     cmiProtocolContext *sCtx      = NULL;
 
-    /* PROJ-2616 FAC ÀÚµ¿ ¼³Á¤ÇÏ±â */
+    /* PROJ-2616 FAC ìë™ ì„¤ì •í•˜ê¸° */
     if ((ulnDbcGetCmiLinkImpl(aDbc) == CMI_LINK_IMPL_IPCDA) &&
         (ulnDbcGetStmtCount(aDbc) > 1))
     {
@@ -1144,7 +1144,7 @@ ACI_RC ulnCacheCreateIPCDA(ulnFnContext *aFnContext, ulnDbc *aDbc)
 
             if (sStmtTmp->mCacheIPCDA.mIsAllocFetchBuffer == ACP_FALSE)
             {
-                /* mFetchBuffer¿¡ ShardMemory°¡ ÇÒ´çµÇ¾î ÀÖÀ»¼ö ÀÖÀ¸¹Ç·Î NULL·Î ÃÊ±âÈ­ ÇØ¾ß ÇÑ´Ù. */
+                /* mFetchBufferì— ShardMemoryê°€ í• ë‹¹ë˜ì–´ ìˆì„ìˆ˜ ìˆìœ¼ë¯€ë¡œ NULLë¡œ ì´ˆê¸°í™” í•´ì•¼ í•œë‹¤. */
                 sStmtTmp->mCacheIPCDA.mFetchBuffer = NULL;
                 ACI_TEST_RAISE(acpMemAlloc((void**)&sStmtTmp->mCacheIPCDA.mFetchBuffer, cmbBlockGetIPCDASimpleQueryDataBlockSize()) != ACI_SUCCESS,
                                LABEL_NOT_ENOUGH_MEM);
@@ -1172,7 +1172,7 @@ ACI_RC ulnCacheCreateIPCDA(ulnFnContext *aFnContext, ulnDbc *aDbc)
 
 /*PROJ-2616 ulnCacheDestoryIPCDA
  *
- * ¼³¸í : IPCDAÀÇ Statement¿¡ ÇÒ´çµÈ Cache ¹öÆÛ¸¦ ÇØÁ¦ ÇÑ´Ù.
+ * ì„¤ëª… : IPCDAì˜ Statementì— í• ë‹¹ëœ Cache ë²„í¼ë¥¼ í•´ì œ í•œë‹¤.
  *
  * @aStmt[in] - ulnStmt
  *

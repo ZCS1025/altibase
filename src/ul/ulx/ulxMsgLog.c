@@ -117,7 +117,7 @@ void ulxMsgLogParseOpenStr(ulxMsgLog   *aMsgLog,
                             &sIndex,
                             0,
                             0)))
-    {  // XA_LOG_DIR ÇÊµå°¡ ¾øÀ¸¸é $ALTIBASE_HOME/trc µð·ºÅä¸®¿¡ ·Î±ë
+    {  // XA_LOG_DIR í•„ë“œê°€ ì—†ìœ¼ë©´ $ALTIBASE_HOME/trc ë””ë ‰í† ë¦¬ì— ë¡œê¹…
         if (acpEnvGet("ALTIBASE_HOME", &sHome) == ACP_RC_SUCCESS)
         {
             acpSnprintf(aMsgLog->mLogDir,
@@ -127,7 +127,7 @@ void ulxMsgLogParseOpenStr(ulxMsgLog   *aMsgLog,
                         ACI_DIRECTORY_SEPARATOR_STR_A,
                         "trc");
         }
-        // XA_LOG_DIR ÇÊµå°¡ ¾ø°í  $ALTIBASE_HOMEÈ¯°æº¯¼öµµ ¾øÀ¸¸é ÇöÀç µð·ºÅä¸®¿¡ ·Î±ë
+        // XA_LOG_DIR í•„ë“œê°€ ì—†ê³   $ALTIBASE_HOMEí™˜ê²½ë³€ìˆ˜ë„ ì—†ìœ¼ë©´ í˜„ìž¬ ë””ë ‰í† ë¦¬ì— ë¡œê¹…
         else
         {
             acpSnprintf(aMsgLog->mLogDir,

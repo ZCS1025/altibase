@@ -66,7 +66,7 @@ IDE_RC mtfRegExpReplaceString( const mtlModule  * aLanguage,
 mtfModule mtfRegExpReplace = {
     2|MTC_NODE_OPERATOR_FUNCTION,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
+    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìžê°€ ì•„ë‹˜)
     mtfRegExpReplaceFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -299,7 +299,7 @@ IDE_RC mtfRegExpReplaceEstimate( mtcNode*     aNode,
                                         sModules )
               != IDE_SUCCESS );
 
-    /* regexpÀÇ compiled patternÀ» ÀúÀåÇÔ */
+    /* regexpì˜ compiled patternì„ ì €ìž¥í•¨ */
     sPrecision = MTF_REG_EXPRESSION_SIZE( aStack[2].column->precision );
     
     IDE_TEST( mtc::initializeColumn( aStack[0].column + 1,
@@ -554,7 +554,7 @@ IDE_RC mtfRegExpReplaceEstimate( mtcNode*     aNode,
             aTemplate->rows[aNode->table].execute[aNode->column].calculateInfo =
                 sCompiledExpression;
 
-            // ´õÀÌ»ó »ç¿ëÇÏÁö ¾ÊÀ½
+            // ë”ì´ìƒ ì‚¬ìš©í•˜ì§€ ì•ŠìŒ
             IDE_TEST( mtc::initializeColumn( aStack[0].column + 1,
                                              & mtdBinary,
                                              1,
@@ -587,7 +587,7 @@ IDE_RC mtfRegExpReplaceEstimate( mtcNode*     aNode,
         aNode->lflag &= ~MTC_NODE_REESTIMATE_MASK;
         aNode->lflag |= MTC_NODE_REESTIMATE_TRUE;
             
-        // BUG-38070 undef typeÀ¸·Î re-estimateÇÏÁö ¾Ê´Â´Ù.
+        // BUG-38070 undef typeìœ¼ë¡œ re-estimateí•˜ì§€ ì•ŠëŠ”ë‹¤.
         if ( ( aTemplate->variableRow != ID_USHORT_MAX ) &&
              ( ( aNode->lflag & MTC_NODE_BIND_MASK ) == MTC_NODE_BIND_EXIST ) )
         {
@@ -613,7 +613,7 @@ IDE_RC mtfRegExpReplaceEstimate( mtcNode*     aNode,
         aNode->lflag |= MTC_NODE_REESTIMATE_FALSE;
     }
 
-    /* BUG-44740 mtfRegExpression Àç»ç¿ëÀ» À§ÇØ Tuple Row¸¦ ÃÊ±âÈ­ÇÑ´Ù. */
+    /* BUG-44740 mtfRegExpression ìž¬ì‚¬ìš©ì„ ìœ„í•´ Tuple Rowë¥¼ ì´ˆê¸°í™”í•œë‹¤. */
     aTemplate->rows[aNode->table].lflag &= ~MTC_TUPLE_ROW_MEMSET_MASK;
     aTemplate->rows[aNode->table].lflag |= MTC_TUPLE_ROW_MEMSET_TRUE;
 
@@ -658,7 +658,7 @@ IDE_RC mtfRegExpReplaceString( const mtlModule  * aLanguage,
     idBool       sFound = ID_FALSE;
     idBool       sBlankMatched = ID_FALSE;
     
-    // Å½»öÀ» ½ÃÀÛÇÒ À§Ä¡ Á¶Á¤
+    // íƒìƒ‰ì„ ì‹œìž‘í•  ìœ„ì¹˜ ì¡°ì •
     sSourceIndex = (UChar*) aSource;
     sNextIndex = sSourceIndex;
     sResultIndex = aResult;
@@ -697,8 +697,8 @@ IDE_RC mtfRegExpReplaceString( const mtlModule  * aLanguage,
     sBeginStr = (SChar*)sSourceIndex;
     
     // BUG-45386
-    // 'ABC', 'B*' ÀÌ·± °æ¿ì endOfLine¿¡¼­µµ ¸ÅÄ¡µÇ¾î¾ß ÇÑ´Ù.
-    // µû¶ó¼­ sSourceIndex°¡ sSourceFenceÀÎ °æ¿ì¿¡µµ search¸¦ ÇÑ´Ù.
+    // 'ABC', 'B*' ì´ëŸ° ê²½ìš° endOfLineì—ì„œë„ ë§¤ì¹˜ë˜ì–´ì•¼ í•œë‹¤.
+    // ë”°ë¼ì„œ sSourceIndexê°€ sSourceFenceì¸ ê²½ìš°ì—ë„ searchë¥¼ í•œë‹¤.
     while ( sSourceIndex <= sSourceFence )
     {
         if ( mtfRegExp::search( aExp,
@@ -707,11 +707,11 @@ IDE_RC mtfRegExpReplaceString( const mtlModule  * aLanguage,
                                 &sBeginStr,
                                 &sEndStr ) == ID_TRUE )
         {
-            sFound = ID_TRUE;           // ÆÐÅÏÀÌ ÇÑ¹øÀÌ¶óµµ ¸ÅÄ¡-> TRUE
-            sBlankMatched = ID_FALSE;   // ÆÐÅÏÀÌ empty string('')¿¡ ¸ÅÄ¡
+            sFound = ID_TRUE;           // íŒ¨í„´ì´ í•œë²ˆì´ë¼ë„ ë§¤ì¹˜-> TRUE
+            sBlankMatched = ID_FALSE;   // íŒ¨í„´ì´ empty string('')ì— ë§¤ì¹˜
             
-            // source ¹®ÀÚ¿­¿¡¼­ sSourceIndex À§Ä¡ºÎÅÍ ¸ÅÄ¡µÈ ÆÐÅÏ ¾Õ À§Ä¡±îÁö¸¦ Result¿¡ º¹»ç
-            // ex: regexp_replace( 'ABC', 'B' ) -> 'A'±îÁö Result¿¡ º¹»ç
+            // source ë¬¸ìžì—´ì—ì„œ sSourceIndex ìœ„ì¹˜ë¶€í„° ë§¤ì¹˜ëœ íŒ¨í„´ ì•ž ìœ„ì¹˜ê¹Œì§€ë¥¼ Resultì— ë³µì‚¬
+            // ex: regexp_replace( 'ABC', 'B' ) -> 'A'ê¹Œì§€ Resultì— ë³µì‚¬
             if ( sSourceIndex != (UChar*)sBeginStr )
             {
                 sLen = (UShort)( (vULong)sBeginStr - (vULong)sSourceIndex );
@@ -728,12 +728,12 @@ IDE_RC mtfRegExpReplaceString( const mtlModule  * aLanguage,
             }
             else
             {
-                // ÆÐÅÏÀÌ ½ÃÀÛ À§Ä¡(sSourceIndex)¿¡¼­ ¹Ù·Î ÀâÈù °æ¿ì
+                // íŒ¨í„´ì´ ì‹œìž‘ ìœ„ì¹˜(sSourceIndex)ì—ì„œ ë°”ë¡œ ìž¡ížŒ ê²½ìš°
                 // ex: regexp_replace( 'ABC', 'A' )
                 // Nothing To Do
             }
 
-            // 'ABC','B*' ÀÌ·¯ÇÑ °æ¿ì sEndStrÀÌ ÁÖ¾îÁø sSourceIndex¿Í °°À»¼ö ÀÖ´Ù.
+            // 'ABC','B*' ì´ëŸ¬í•œ ê²½ìš° sEndStrì´ ì£¼ì–´ì§„ sSourceIndexì™€ ê°™ì„ìˆ˜ ìžˆë‹¤.
             // sSourceIndex = sBeginStr = sEndStr
             if ( sSourceIndex != (UChar*)sEndStr )
             {
@@ -756,15 +756,15 @@ IDE_RC mtfRegExpReplaceString( const mtlModule  * aLanguage,
             {
                 if ( aOccurrence == sCnt )
                 {
-                    // ÀâÈù ÆÐÅÏÀ» aReplace·Î ¹Ù²ã¼­ copy
+                    // ìž¡ížŒ íŒ¨í„´ì„ aReplaceë¡œ ë°”ê¿”ì„œ copy
                     if ( aReplace == NULL )
                     {
-                        // NULLÀÎ °æ¿ì Result¿¡ º¹»çÇÏÁö ¾Ê´Â´Ù(ÆÐÅÏ »èÁ¦)
+                        // NULLì¸ ê²½ìš° Resultì— ë³µì‚¬í•˜ì§€ ì•ŠëŠ”ë‹¤(íŒ¨í„´ ì‚­ì œ)
                         // Nothing To Do
                     }
                     else
                     {
-                        // sResult¿¡ aReplace¸¦ º¹»çÇÑ´Ù
+                        // sResultì— aReplaceë¥¼ ë³µì‚¬í•œë‹¤
                         if ( aReplaceLen > 0 )
                         {
                             IDE_TEST_RAISE( sResultLen + aReplaceLen > sResultFence,
@@ -779,20 +779,20 @@ IDE_RC mtfRegExpReplaceString( const mtlModule  * aLanguage,
                         }
                         else
                         {
-                            // Ä¡È¯ ¹®ÀÚ¿­(aReplace)ÀÇ ±æÀÌ°¡ 0ÀÎ °æ¿ì Result¿¡ º¹»çÇÏÁö ¾Ê´Â´Ù(ÆÐÅÏ »èÁ¦)
+                            // ì¹˜í™˜ ë¬¸ìžì—´(aReplace)ì˜ ê¸¸ì´ê°€ 0ì¸ ê²½ìš° Resultì— ë³µì‚¬í•˜ì§€ ì•ŠëŠ”ë‹¤(íŒ¨í„´ ì‚­ì œ)
                             // Nothing To Do
                         }
                     }
 
-                    // 'ABC','B*' ÀÌ·¯ÇÑ °æ¿ì
-                    // ¾Æ¹«°Íµµ ¾ø´Âµ¥ ¹®ÀÚ »çÀÌ»çÀÌ¿¡¼­ ºó ¹®ÀÚ¿­('')°ú ¸ÅÄ¡µÉ ¼ö ÀÖ´Ù.
-                    // ÀÌ ¶§´Â replace stringÀ» ¾Õ¿¡ ºÙÀÌ°í source¸¦ º¹»çÇØÁØ´Ù.
+                    // 'ABC','B*' ì´ëŸ¬í•œ ê²½ìš°
+                    // ì•„ë¬´ê²ƒë„ ì—†ëŠ”ë° ë¬¸ìž ì‚¬ì´ì‚¬ì´ì—ì„œ ë¹ˆ ë¬¸ìžì—´('')ê³¼ ë§¤ì¹˜ë  ìˆ˜ ìžˆë‹¤.
+                    // ì´ ë•ŒëŠ” replace stringì„ ì•žì— ë¶™ì´ê³  sourceë¥¼ ë³µì‚¬í•´ì¤€ë‹¤.
                     // ex) SELECT REGEXP_REPLACE('ABC', 'B*', '123') FROM DUAL;
-                    // °á°ú: '123A123123C'
-                    // (B¸¸ 123À¸·Î ´ëÃ¼, ³ª¸ÓÁö A¿Í C´Â »ì°í ¾Õ¿¡ 123¸¸ ºÙÀÎ ÇüÅÂ)
+                    // ê²°ê³¼: '123A123123C'
+                    // (Bë§Œ 123ìœ¼ë¡œ ëŒ€ì²´, ë‚˜ë¨¸ì§€ Aì™€ CëŠ” ì‚´ê³  ì•žì— 123ë§Œ ë¶™ì¸ í˜•íƒœ)
 
-                    // ÀÌ line±îÁö´Â aResult¿¡ replace string¸¸ ºÙ¿©³ÖÀº »óÅÂ.
-                    // source string ÇÑ ±ÛÀÚ¸¸ º¹»çÇØ¼­ ºÙ¿©³ÖÀ¸¸é µÈ´Ù.
+                    // ì´ lineê¹Œì§€ëŠ” aResultì— replace stringë§Œ ë¶™ì—¬ë„£ì€ ìƒíƒœ.
+                    // source string í•œ ê¸€ìžë§Œ ë³µì‚¬í•´ì„œ ë¶™ì—¬ë„£ìœ¼ë©´ ëœë‹¤.
                     if ( sBlankMatched == ID_TRUE )
                     {
                         sOneCharSize = (UShort) mtl::getOneCharSize( (UChar*)sEndStr,
@@ -817,18 +817,18 @@ IDE_RC mtfRegExpReplaceString( const mtlModule  * aLanguage,
                 }
                 else
                 {
-                    // ÀâÈù ÆÐÅÏÀ» Ä¡È¯ÇÏÁö¾Ê°í ±×´ë·Î º¹»ç
+                    // ìž¡ížŒ íŒ¨í„´ì„ ì¹˜í™˜í•˜ì§€ì•Šê³  ê·¸ëŒ€ë¡œ ë³µì‚¬
                     sCnt++;
 
-                    // 'ABC','B*' ÀÌ·¯ÇÑ °æ¿ì
-                    // ¾Æ¹«°Íµµ ¾ø´Âµ¥ ¹®ÀÚ »çÀÌ»çÀÌ¿¡¼­ ºó ¹®ÀÚ¿­('')°ú ¸ÅÄ¡µÉ ¼ö ÀÖ´Ù.
-                    // ÀÌ ¶§´Â replace stringÀ» ¾Õ¿¡ ºÙÀÌ°í source¸¦ º¹»çÇØÁØ´Ù.
+                    // 'ABC','B*' ì´ëŸ¬í•œ ê²½ìš°
+                    // ì•„ë¬´ê²ƒë„ ì—†ëŠ”ë° ë¬¸ìž ì‚¬ì´ì‚¬ì´ì—ì„œ ë¹ˆ ë¬¸ìžì—´('')ê³¼ ë§¤ì¹˜ë  ìˆ˜ ìžˆë‹¤.
+                    // ì´ ë•ŒëŠ” replace stringì„ ì•žì— ë¶™ì´ê³  sourceë¥¼ ë³µì‚¬í•´ì¤€ë‹¤.
                     // ex) SELECT REGEXP_REPLACE('ABC', 'B*', '123') FROM DUAL;
-                    // °á°ú: '123A123123C'
-                    // (B¸¸ 123À¸·Î ´ëÃ¼, ³ª¸ÓÁö A¿Í C´Â »ì°í ¾Õ¿¡ 123¸¸ ºÙÀÎ ÇüÅÂ)
+                    // ê²°ê³¼: '123A123123C'
+                    // (Bë§Œ 123ìœ¼ë¡œ ëŒ€ì²´, ë‚˜ë¨¸ì§€ Aì™€ CëŠ” ì‚´ê³  ì•žì— 123ë§Œ ë¶™ì¸ í˜•íƒœ)
                    
-                    // aOccurrence¿Í ÀÏÄ¡ÇÏÁö ¾ÊÀ¸¹Ç·Î Ä¡È¯ ¹®ÀÚ¿­(aReplace)Àº ³ÖÁö ¾Ê°í
-                    // source string ÇÑ ±ÛÀÚ¸¸ º¹»çÇØ¼­ ºÙ¿©³ÖÀ¸¸é µÈ´Ù.
+                    // aOccurrenceì™€ ì¼ì¹˜í•˜ì§€ ì•Šìœ¼ë¯€ë¡œ ì¹˜í™˜ ë¬¸ìžì—´(aReplace)ì€ ë„£ì§€ ì•Šê³ 
+                    // source string í•œ ê¸€ìžë§Œ ë³µì‚¬í•´ì„œ ë¶™ì—¬ë„£ìœ¼ë©´ ëœë‹¤.
                     if ( sBeginStr == sEndStr )
                     {
                         sLen = (UShort) mtl::getOneCharSize( (UChar*)sEndStr,
@@ -853,10 +853,10 @@ IDE_RC mtfRegExpReplaceString( const mtlModule  * aLanguage,
             }
             else
             {
-                // ¸Å¹ø ¸ÅÄ¡µÉ ¶§¸¶´Ù Ä¡È¯ÇØ¼­ º¹»ç
+                // ë§¤ë²ˆ ë§¤ì¹˜ë  ë•Œë§ˆë‹¤ ì¹˜í™˜í•´ì„œ ë³µì‚¬
                 if ( aReplace == NULL )
                 {
-                    // NULLÀÎ °æ¿ì Result¿¡ º¹»çÇÏÁö ¾Ê´Â´Ù(ÆÐÅÏ »èÁ¦)
+                    // NULLì¸ ê²½ìš° Resultì— ë³µì‚¬í•˜ì§€ ì•ŠëŠ”ë‹¤(íŒ¨í„´ ì‚­ì œ)
                     // Nothing To Do
                 }
                 else
@@ -875,20 +875,20 @@ IDE_RC mtfRegExpReplaceString( const mtlModule  * aLanguage,
                     }
                     else
                     {
-                        // Ä¡È¯ ¹®ÀÚ¿­(aReplace)ÀÇ ±æÀÌ°¡ 0ÀÎ °æ¿ì Result¿¡ º¹»çÇÏÁö ¾Ê´Â´Ù(ÆÐÅÏ »èÁ¦)
+                        // ì¹˜í™˜ ë¬¸ìžì—´(aReplace)ì˜ ê¸¸ì´ê°€ 0ì¸ ê²½ìš° Resultì— ë³µì‚¬í•˜ì§€ ì•ŠëŠ”ë‹¤(íŒ¨í„´ ì‚­ì œ)
                         // Nothing To Do
                     }
                 }
 
-                // 'ABC','B*' ÀÌ·¯ÇÑ °æ¿ì
-                // ¾Æ¹«°Íµµ ¾ø´Âµ¥ ¹®ÀÚ »çÀÌ»çÀÌ¿¡¼­ ºó ¹®ÀÚ¿­('')°ú ¸ÅÄ¡µÉ ¼ö ÀÖ´Ù.
-                // ÀÌ ¶§´Â replace stringÀ» ¾Õ¿¡ ºÙÀÌ°í source¸¦ º¹»çÇØÁØ´Ù.
+                // 'ABC','B*' ì´ëŸ¬í•œ ê²½ìš°
+                // ì•„ë¬´ê²ƒë„ ì—†ëŠ”ë° ë¬¸ìž ì‚¬ì´ì‚¬ì´ì—ì„œ ë¹ˆ ë¬¸ìžì—´('')ê³¼ ë§¤ì¹˜ë  ìˆ˜ ìžˆë‹¤.
+                // ì´ ë•ŒëŠ” replace stringì„ ì•žì— ë¶™ì´ê³  sourceë¥¼ ë³µì‚¬í•´ì¤€ë‹¤.
                 // ex) SELECT REGEXP_REPLACE('ABC', 'B*', '123') FROM DUAL;
-                // °á°ú: '123A123123C'
-                // (B¸¸ 123À¸·Î ´ëÃ¼, ³ª¸ÓÁö A¿Í C´Â »ì°í ¾Õ¿¡ 123¸¸ ºÙÀÎ ÇüÅÂ)
+                // ê²°ê³¼: '123A123123C'
+                // (Bë§Œ 123ìœ¼ë¡œ ëŒ€ì²´, ë‚˜ë¨¸ì§€ Aì™€ CëŠ” ì‚´ê³  ì•žì— 123ë§Œ ë¶™ì¸ í˜•íƒœ)
 
-                // ÀÌ line±îÁö´Â aResult¿¡ replace string¸¸ ºÙ¿©³ÖÀº »óÅÂ.
-                // source string ÇÑ ±ÛÀÚ¸¸ º¹»çÇØ¼­ ºÙ¿©³ÖÀ¸¸é µÈ´Ù.
+                // ì´ lineê¹Œì§€ëŠ” aResultì— replace stringë§Œ ë¶™ì—¬ë„£ì€ ìƒíƒœ.
+                // source string í•œ ê¸€ìžë§Œ ë³µì‚¬í•´ì„œ ë¶™ì—¬ë„£ìœ¼ë©´ ëœë‹¤.
                 if ( sBlankMatched == ID_TRUE )
                 {
                     sOneCharSize = (UShort) mtl::getOneCharSize( (UChar*)sEndStr,
@@ -917,9 +917,9 @@ IDE_RC mtfRegExpReplaceString( const mtlModule  * aLanguage,
         }
 
         // BUG-45386
-        // 'ABC', 'B*' ÀÌ·± °æ¿ì endOfLine¿¡¼­µµ ¸ÅÄ¡µÇ¾î¾ß ÇÑ´Ù.
-        // µû¶ó¼­ sSourceIndex°¡ sSourceFenceÀÎ °æ¿ì¿¡µµ search¸¦ ÇÑ´Ù.
-        // ´Ü Fence¿¡ µµ´ÞÇßÀ» ¶§ 1¹ø¸¸ searchÇÏ¸é µÇ±â ¶§¹®¿¡ ¿©±â¼­ breakÇÑ´Ù.
+        // 'ABC', 'B*' ì´ëŸ° ê²½ìš° endOfLineì—ì„œë„ ë§¤ì¹˜ë˜ì–´ì•¼ í•œë‹¤.
+        // ë”°ë¼ì„œ sSourceIndexê°€ sSourceFenceì¸ ê²½ìš°ì—ë„ searchë¥¼ í•œë‹¤.
+        // ë‹¨ Fenceì— ë„ë‹¬í–ˆì„ ë•Œ 1ë²ˆë§Œ searchí•˜ë©´ ë˜ê¸° ë•Œë¬¸ì— ì—¬ê¸°ì„œ breakí•œë‹¤.
         if ( ( sSourceIndex == (UChar*)sBeginStr ) && ( sSourceIndex == sSourceFence ) )
         {
             break;
@@ -932,7 +932,7 @@ IDE_RC mtfRegExpReplaceString( const mtlModule  * aLanguage,
 
     if ( sFound != ID_TRUE )
     {
-        // ¾Æ¹«°Íµµ Ä¡È¯µÇÁö ¾ÊÀ½; search ³»¿ªÀÌ ¾ø¾î ¿©±â¼­ source ÀüÃ¼¸¦ Result¿¡ º¹»ç
+        // ì•„ë¬´ê²ƒë„ ì¹˜í™˜ë˜ì§€ ì•ŠìŒ; search ë‚´ì—­ì´ ì—†ì–´ ì—¬ê¸°ì„œ source ì „ì²´ë¥¼ Resultì— ë³µì‚¬
         if ( sSourceIndex < sSourceFence )
         {
             IDE_TEST_RAISE( aSourceLen > sResultFence,
@@ -950,8 +950,8 @@ IDE_RC mtfRegExpReplaceString( const mtlModule  * aLanguage,
     }
     else
     {
-        // Ä¡È¯ ÁøÇàµÇ°í ¸¶Áö¸· ÆÐÅÏ±îÁö °Ë»ö ³¡³­ °æ¿ì
-        // source¿¡ ³²Àº stringÀ» Result¿¡ º¹»ç
+        // ì¹˜í™˜ ì§„í–‰ë˜ê³  ë§ˆì§€ë§‰ íŒ¨í„´ê¹Œì§€ ê²€ìƒ‰ ëë‚œ ê²½ìš°
+        // sourceì— ë‚¨ì€ stringì„ Resultì— ë³µì‚¬
         if ( sSourceIndex < sSourceFence )
         {
             sLen = (UShort)( (vULong)sSourceFence - (vULong)sSourceIndex );
@@ -997,9 +997,9 @@ IDE_RC mtfRegExpReplaceCalculateFor2Args( mtcNode*     aNode,
  * Implementation :
  *    REGEXP_REPLACE( char, string1 ( string2, int1, int2 ) )
  *
- *    aStack[0] : char Áß string1¿¡ ÇØ´çÇÏ´Â ºÎºÐÀÌ »èÁ¦µÊ
+ *    aStack[0] : char ì¤‘ string1ì— í•´ë‹¹í•˜ëŠ” ë¶€ë¶„ì´ ì‚­ì œë¨
  *    aStack[1] : char 
- *    aStack[2] : string1 ( Ä¡È¯ ´ë»ó ¹®ÀÚ )
+ *    aStack[2] : string1 ( ì¹˜í™˜ ëŒ€ìƒ ë¬¸ìž )
  *
  ***********************************************************************/
     mtdCharType      * sResult;
@@ -1052,9 +1052,9 @@ IDE_RC mtfRegExpReplaceCalculateFor2Args( mtcNode*     aNode,
             sCompiledExpression = (mtfRegExpression*)(sTempValue->mValue);
 
             /* BUG-45213 valgrin warning
-             * SortTemp¿Í °°ÀÌ mtrNode·Î ½×ÀÏ °æ¿ì Ç×»ó »õ·Î¿î Row°¡
-             * ÇÒ´çµÇ¹Ç·Î ÀÌÀü sCompiledExpression->patternLen ºñ±³ÇØºÁ¾ß
-             * ÀÇ¹Ì°¡ ¾ø´Ù µû¶ó¼­ ÀÌ·²°æ¿ì ±×³É CompileÇÑ´Ù.
+             * SortTempì™€ ê°™ì´ mtrNodeë¡œ ìŒ“ì¼ ê²½ìš° í•­ìƒ ìƒˆë¡œìš´ Rowê°€
+             * í• ë‹¹ë˜ë¯€ë¡œ ì´ì „ sCompiledExpression->patternLen ë¹„êµí•´ë´ì•¼
+             * ì˜ë¯¸ê°€ ì—†ë‹¤ ë”°ë¼ì„œ ì´ëŸ´ê²½ìš° ê·¸ëƒ¥ Compileí•œë‹¤.
              */
             if ( ( aTemplate->rows[aNode->table].lflag & MTC_TUPLE_PLAN_MTR_MASK )
                  == MTC_TUPLE_PLAN_MTR_TRUE )
@@ -1127,10 +1127,10 @@ IDE_RC mtfRegExpReplaceCalculateFor3Args( mtcNode*     aNode,
  * Implementation :
  *    REGEXP_REPLACE( char, string1, string2 ( int1, int2 ) )
  *
- *    aStack[0] : char Áß string1¿¡ ÇØ´çÇÏ´Â ºÎºÐÀÌ Ä¡È¯µÊ
+ *    aStack[0] : char ì¤‘ string1ì— í•´ë‹¹í•˜ëŠ” ë¶€ë¶„ì´ ì¹˜í™˜ë¨
  *    aStack[1] : char 
- *    aStack[2] : string1 ( Ä¡È¯ ´ë»ó ¹®ÀÚ )
- *    aStack[3] : string2 ( Ä¡È¯ ¹®ÀÚ )
+ *    aStack[2] : string1 ( ì¹˜í™˜ ëŒ€ìƒ ë¬¸ìž )
+ *    aStack[3] : string2 ( ì¹˜í™˜ ë¬¸ìž )
  *
  ***********************************************************************/
     mtdCharType      * sResult;
@@ -1185,9 +1185,9 @@ IDE_RC mtfRegExpReplaceCalculateFor3Args( mtcNode*     aNode,
             sCompiledExpression = (mtfRegExpression*)(sTempValue->mValue);
 
             /* BUG-45213 valgrin warning
-             * SortTemp¿Í °°ÀÌ mtrNode·Î ½×ÀÏ °æ¿ì Ç×»ó »õ·Î¿î Row°¡
-             * ÇÒ´çµÇ¹Ç·Î ÀÌÀü sCompiledExpression->patternLen ºñ±³ÇØºÁ¾ß
-             * ÀÇ¹Ì°¡ ¾ø´Ù µû¶ó¼­ ÀÌ·²°æ¿ì ±×³É CompileÇÑ´Ù.
+             * SortTempì™€ ê°™ì´ mtrNodeë¡œ ìŒ“ì¼ ê²½ìš° í•­ìƒ ìƒˆë¡œìš´ Rowê°€
+             * í• ë‹¹ë˜ë¯€ë¡œ ì´ì „ sCompiledExpression->patternLen ë¹„êµí•´ë´ì•¼
+             * ì˜ë¯¸ê°€ ì—†ë‹¤ ë”°ë¼ì„œ ì´ëŸ´ê²½ìš° ê·¸ëƒ¥ Compileí•œë‹¤.
              */
             if ( ( aTemplate->rows[aNode->table].lflag & MTC_TUPLE_PLAN_MTR_MASK )
                  == MTC_TUPLE_PLAN_MTR_TRUE )
@@ -1260,11 +1260,11 @@ IDE_RC mtfRegExpReplaceCalculateFor4Args( mtcNode*     aNode,
  * Implementation :
  *    REGEXP_REPLACE( char, string1, string2, int1 ( int2 ) )
  *
- *    aStack[0] : char Áß string1¿¡ ÇØ´çÇÏ´Â ºÎºÐÀÌ Ä¡È¯µÊ
+ *    aStack[0] : char ì¤‘ string1ì— í•´ë‹¹í•˜ëŠ” ë¶€ë¶„ì´ ì¹˜í™˜ë¨
  *    aStack[1] : char 
- *    aStack[2] : string1 ( Ä¡È¯ ´ë»ó ¹®ÀÚ )
- *    aStack[3] : string2 ( Ä¡È¯ ¹®ÀÚ )
- *    aStack[4] : int1 ( °Ë»ö ½ÃÀÛ À§Ä¡ )
+ *    aStack[2] : string1 ( ì¹˜í™˜ ëŒ€ìƒ ë¬¸ìž )
+ *    aStack[3] : string2 ( ì¹˜í™˜ ë¬¸ìž )
+ *    aStack[4] : int1 ( ê²€ìƒ‰ ì‹œìž‘ ìœ„ì¹˜ )
  *
  ***********************************************************************/
     mtdCharType      * sResult;
@@ -1324,9 +1324,9 @@ IDE_RC mtfRegExpReplaceCalculateFor4Args( mtcNode*     aNode,
             sCompiledExpression = (mtfRegExpression*)(sTempValue->mValue);
             
             /* BUG-45213 valgrin warning
-             * SortTemp¿Í °°ÀÌ mtrNode·Î ½×ÀÏ °æ¿ì Ç×»ó »õ·Î¿î Row°¡
-             * ÇÒ´çµÇ¹Ç·Î ÀÌÀü sCompiledExpression->patternLen ºñ±³ÇØºÁ¾ß
-             * ÀÇ¹Ì°¡ ¾ø´Ù µû¶ó¼­ ÀÌ·²°æ¿ì ±×³É CompileÇÑ´Ù.
+             * SortTempì™€ ê°™ì´ mtrNodeë¡œ ìŒ“ì¼ ê²½ìš° í•­ìƒ ìƒˆë¡œìš´ Rowê°€
+             * í• ë‹¹ë˜ë¯€ë¡œ ì´ì „ sCompiledExpression->patternLen ë¹„êµí•´ë´ì•¼
+             * ì˜ë¯¸ê°€ ì—†ë‹¤ ë”°ë¼ì„œ ì´ëŸ´ê²½ìš° ê·¸ëƒ¥ Compileí•œë‹¤.
              */
             if ( ( aTemplate->rows[aNode->table].lflag & MTC_TUPLE_PLAN_MTR_MASK )
                  == MTC_TUPLE_PLAN_MTR_TRUE )
@@ -1403,12 +1403,12 @@ IDE_RC mtfRegExpReplaceCalculateFor5Args( mtcNode*     aNode,
  * Implementation :
  *    REGEXP_REPLACE( char, string1, string2, int1, int2 )
  *
- *    aStack[0] : char Áß string1¿¡ ÇØ´çÇÏ´Â ºÎºÐÀÌ Ä¡È¯µÊ
+ *    aStack[0] : char ì¤‘ string1ì— í•´ë‹¹í•˜ëŠ” ë¶€ë¶„ì´ ì¹˜í™˜ë¨
  *    aStack[1] : char 
- *    aStack[2] : string1 ( Ä¡È¯ ´ë»ó ¹®ÀÚ )
- *    aStack[3] : string2 ( Ä¡È¯ ¹®ÀÚ )
- *    aStack[4] : int1 ( °Ë»ö ½ÃÀÛ À§Ä¡ )
- *    aStack[5] : int2 ( ¼ø¹ø )
+ *    aStack[2] : string1 ( ì¹˜í™˜ ëŒ€ìƒ ë¬¸ìž )
+ *    aStack[3] : string2 ( ì¹˜í™˜ ë¬¸ìž )
+ *    aStack[4] : int1 ( ê²€ìƒ‰ ì‹œìž‘ ìœ„ì¹˜ )
+ *    aStack[5] : int2 ( ìˆœë²ˆ )
  *
  ***********************************************************************/
     mtdCharType      * sResult;
@@ -1473,9 +1473,9 @@ IDE_RC mtfRegExpReplaceCalculateFor5Args( mtcNode*     aNode,
             sCompiledExpression = (mtfRegExpression*)(sTempValue->mValue);
 
             /* BUG-45213 valgrin warning
-             * SortTemp¿Í °°ÀÌ mtrNode·Î ½×ÀÏ °æ¿ì Ç×»ó »õ·Î¿î Row°¡
-             * ÇÒ´çµÇ¹Ç·Î ÀÌÀü sCompiledExpression->patternLen ºñ±³ÇØºÁ¾ß
-             * ÀÇ¹Ì°¡ ¾ø´Ù µû¶ó¼­ ÀÌ·²°æ¿ì ±×³É CompileÇÑ´Ù.
+             * SortTempì™€ ê°™ì´ mtrNodeë¡œ ìŒ“ì¼ ê²½ìš° í•­ìƒ ìƒˆë¡œìš´ Rowê°€
+             * í• ë‹¹ë˜ë¯€ë¡œ ì´ì „ sCompiledExpression->patternLen ë¹„êµí•´ë´ì•¼
+             * ì˜ë¯¸ê°€ ì—†ë‹¤ ë”°ë¼ì„œ ì´ëŸ´ê²½ìš° ê·¸ëƒ¥ Compileí•œë‹¤.
              */
             if ( ( aTemplate->rows[aNode->table].lflag & MTC_TUPLE_PLAN_MTR_MASK )
                  == MTC_TUPLE_PLAN_MTR_TRUE )
@@ -1556,9 +1556,9 @@ IDE_RC mtfRegExpReplaceCalculateNcharFor2Args( mtcNode*     aNode,
  * Implementation :
  *    REGEXP_REPLACE( char, string1 ( string2, int1, int2 ) )
  *
- *    aStack[0] : char Áß string1¿¡ ÇØ´çÇÏ´Â ºÎºÐÀÌ »èÁ¦µÊ
+ *    aStack[0] : char ì¤‘ string1ì— í•´ë‹¹í•˜ëŠ” ë¶€ë¶„ì´ ì‚­ì œë¨
  *    aStack[1] : char 
- *    aStack[2] : string1 ( Ä¡È¯ ´ë»ó ¹®ÀÚ )
+ *    aStack[2] : string1 ( ì¹˜í™˜ ëŒ€ìƒ ë¬¸ìž )
  *
  ***********************************************************************/
     mtdCharType      * sResult;
@@ -1617,9 +1617,9 @@ IDE_RC mtfRegExpReplaceCalculateNcharFor2Args( mtcNode*     aNode,
             sCompiledExpression = (mtfRegExpression*)(sTempValue->mValue);
 
             /* BUG-45213 valgrin warning
-             * SortTemp¿Í °°ÀÌ mtrNode·Î ½×ÀÏ °æ¿ì Ç×»ó »õ·Î¿î Row°¡
-             * ÇÒ´çµÇ¹Ç·Î ÀÌÀü sCompiledExpression->patternLen ºñ±³ÇØºÁ¾ß
-             * ÀÇ¹Ì°¡ ¾ø´Ù µû¶ó¼­ ÀÌ·²°æ¿ì ±×³É CompileÇÑ´Ù.
+             * SortTempì™€ ê°™ì´ mtrNodeë¡œ ìŒ“ì¼ ê²½ìš° í•­ìƒ ìƒˆë¡œìš´ Rowê°€
+             * í• ë‹¹ë˜ë¯€ë¡œ ì´ì „ sCompiledExpression->patternLen ë¹„êµí•´ë´ì•¼
+             * ì˜ë¯¸ê°€ ì—†ë‹¤ ë”°ë¼ì„œ ì´ëŸ´ê²½ìš° ê·¸ëƒ¥ Compileí•œë‹¤.
              */
             if ( ( aTemplate->rows[aNode->table].lflag & MTC_TUPLE_PLAN_MTR_MASK )
                  == MTC_TUPLE_PLAN_MTR_TRUE )
@@ -1692,10 +1692,10 @@ IDE_RC mtfRegExpReplaceCalculateNcharFor3Args( mtcNode*     aNode,
  * Implementation :
  *    REGEXP_REPLACE( char, string1, string2 ( int1, int2 ) )
  *
- *    aStack[0] : char Áß string1¿¡ ÇØ´çÇÏ´Â ºÎºÐÀÌ Ä¡È¯µÊ
+ *    aStack[0] : char ì¤‘ string1ì— í•´ë‹¹í•˜ëŠ” ë¶€ë¶„ì´ ì¹˜í™˜ë¨
  *    aStack[1] : char 
- *    aStack[2] : string1 ( Ä¡È¯ ´ë»ó ¹®ÀÚ )
- *    aStack[3] : string2 ( Ä¡È¯ ¹®ÀÚ )
+ *    aStack[2] : string1 ( ì¹˜í™˜ ëŒ€ìƒ ë¬¸ìž )
+ *    aStack[3] : string2 ( ì¹˜í™˜ ë¬¸ìž )
  *
  ***********************************************************************/
     mtdCharType      * sResult;
@@ -1756,9 +1756,9 @@ IDE_RC mtfRegExpReplaceCalculateNcharFor3Args( mtcNode*     aNode,
             sCompiledExpression = (mtfRegExpression*)(sTempValue->mValue);
 
             /* BUG-45213 valgrin warning
-             * SortTemp¿Í °°ÀÌ mtrNode·Î ½×ÀÏ °æ¿ì Ç×»ó »õ·Î¿î Row°¡
-             * ÇÒ´çµÇ¹Ç·Î ÀÌÀü sCompiledExpression->patternLen ºñ±³ÇØºÁ¾ß
-             * ÀÇ¹Ì°¡ ¾ø´Ù µû¶ó¼­ ÀÌ·²°æ¿ì ±×³É CompileÇÑ´Ù.
+             * SortTempì™€ ê°™ì´ mtrNodeë¡œ ìŒ“ì¼ ê²½ìš° í•­ìƒ ìƒˆë¡œìš´ Rowê°€
+             * í• ë‹¹ë˜ë¯€ë¡œ ì´ì „ sCompiledExpression->patternLen ë¹„êµí•´ë´ì•¼
+             * ì˜ë¯¸ê°€ ì—†ë‹¤ ë”°ë¼ì„œ ì´ëŸ´ê²½ìš° ê·¸ëƒ¥ Compileí•œë‹¤.
              */
             if ( ( aTemplate->rows[aNode->table].lflag & MTC_TUPLE_PLAN_MTR_MASK )
                  == MTC_TUPLE_PLAN_MTR_TRUE )
@@ -1831,11 +1831,11 @@ IDE_RC mtfRegExpReplaceCalculateNcharFor4Args( mtcNode*     aNode,
  * Implementation :
  *    REGEXP_REPLACE( char, string1, string2, int1 ( int2 ) )
  *
- *    aStack[0] : char Áß string1¿¡ ÇØ´çÇÏ´Â ºÎºÐÀÌ Ä¡È¯µÊ
+ *    aStack[0] : char ì¤‘ string1ì— í•´ë‹¹í•˜ëŠ” ë¶€ë¶„ì´ ì¹˜í™˜ë¨
  *    aStack[1] : char 
- *    aStack[2] : string1 ( Ä¡È¯ ´ë»ó ¹®ÀÚ )
- *    aStack[3] : string2 ( Ä¡È¯ ¹®ÀÚ )
- *    aStack[4] : int1 ( °Ë»ö ½ÃÀÛ À§Ä¡ )
+ *    aStack[2] : string1 ( ì¹˜í™˜ ëŒ€ìƒ ë¬¸ìž )
+ *    aStack[3] : string2 ( ì¹˜í™˜ ë¬¸ìž )
+ *    aStack[4] : int1 ( ê²€ìƒ‰ ì‹œìž‘ ìœ„ì¹˜ )
  *
  ***********************************************************************/
     mtdCharType      * sResult;
@@ -1901,9 +1901,9 @@ IDE_RC mtfRegExpReplaceCalculateNcharFor4Args( mtcNode*     aNode,
             sCompiledExpression = (mtfRegExpression*)(sTempValue->mValue);
 
             /* BUG-45213 valgrin warning
-             * SortTemp¿Í °°ÀÌ mtrNode·Î ½×ÀÏ °æ¿ì Ç×»ó »õ·Î¿î Row°¡
-             * ÇÒ´çµÇ¹Ç·Î ÀÌÀü sCompiledExpression->patternLen ºñ±³ÇØºÁ¾ß
-             * ÀÇ¹Ì°¡ ¾ø´Ù µû¶ó¼­ ÀÌ·²°æ¿ì ±×³É CompileÇÑ´Ù.
+             * SortTempì™€ ê°™ì´ mtrNodeë¡œ ìŒ“ì¼ ê²½ìš° í•­ìƒ ìƒˆë¡œìš´ Rowê°€
+             * í• ë‹¹ë˜ë¯€ë¡œ ì´ì „ sCompiledExpression->patternLen ë¹„êµí•´ë´ì•¼
+             * ì˜ë¯¸ê°€ ì—†ë‹¤ ë”°ë¼ì„œ ì´ëŸ´ê²½ìš° ê·¸ëƒ¥ Compileí•œë‹¤.
              */
             if ( ( aTemplate->rows[aNode->table].lflag & MTC_TUPLE_PLAN_MTR_MASK )
                  == MTC_TUPLE_PLAN_MTR_TRUE )
@@ -1980,12 +1980,12 @@ IDE_RC mtfRegExpReplaceCalculateNcharFor5Args( mtcNode*     aNode,
  * Implementation :
  *    REGEXP_REPLACE( char, string1, string2, int1, int2 )
  *
- *    aStack[0] : char Áß string1¿¡ ÇØ´çÇÏ´Â ºÎºÐÀÌ Ä¡È¯µÊ
+ *    aStack[0] : char ì¤‘ string1ì— í•´ë‹¹í•˜ëŠ” ë¶€ë¶„ì´ ì¹˜í™˜ë¨
  *    aStack[1] : char 
- *    aStack[2] : string1 ( Ä¡È¯ ´ë»ó ¹®ÀÚ )
- *    aStack[3] : string2 ( Ä¡È¯ ¹®ÀÚ )
- *    aStack[4] : int1 ( °Ë»ö ½ÃÀÛ À§Ä¡ )
- *    aStack[5] : int2 ( ¼ø¹ø )
+ *    aStack[2] : string1 ( ì¹˜í™˜ ëŒ€ìƒ ë¬¸ìž )
+ *    aStack[3] : string2 ( ì¹˜í™˜ ë¬¸ìž )
+ *    aStack[4] : int1 ( ê²€ìƒ‰ ì‹œìž‘ ìœ„ì¹˜ )
+ *    aStack[5] : int2 ( ìˆœë²ˆ )
  *
  ***********************************************************************/
     mtdCharType      * sResult;
@@ -2056,9 +2056,9 @@ IDE_RC mtfRegExpReplaceCalculateNcharFor5Args( mtcNode*     aNode,
             sCompiledExpression = (mtfRegExpression*)(sTempValue->mValue);
 
             /* BUG-45213 valgrin warning
-             * SortTemp¿Í °°ÀÌ mtrNode·Î ½×ÀÏ °æ¿ì Ç×»ó »õ·Î¿î Row°¡
-             * ÇÒ´çµÇ¹Ç·Î ÀÌÀü sCompiledExpression->patternLen ºñ±³ÇØºÁ¾ß
-             * ÀÇ¹Ì°¡ ¾ø´Ù µû¶ó¼­ ÀÌ·²°æ¿ì ±×³É CompileÇÑ´Ù.
+             * SortTempì™€ ê°™ì´ mtrNodeë¡œ ìŒ“ì¼ ê²½ìš° í•­ìƒ ìƒˆë¡œìš´ Rowê°€
+             * í• ë‹¹ë˜ë¯€ë¡œ ì´ì „ sCompiledExpression->patternLen ë¹„êµí•´ë´ì•¼
+             * ì˜ë¯¸ê°€ ì—†ë‹¤ ë”°ë¼ì„œ ì´ëŸ´ê²½ìš° ê·¸ëƒ¥ Compileí•œë‹¤.
              */
             if ( ( aTemplate->rows[aNode->table].lflag & MTC_TUPLE_PLAN_MTR_MASK )
                  == MTC_TUPLE_PLAN_MTR_TRUE )

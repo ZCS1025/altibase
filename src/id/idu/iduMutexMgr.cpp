@@ -27,7 +27,7 @@ iduMutexOP *iduMutexMgr::mMutexOpArrayServer[IDU_MUTEX_KIND_MAX] =
     &gPosixMutexServerOps,
     &gNativeMutexServerOps,
     &gNativeMutexServerOps,
-    &gNativeMutexServerOps // BUG-28856 logging º´¸ñÁ¦°Å
+    &gNativeMutexServerOps // BUG-28856 logging ë³‘ëª©ì œê±°
 };
 
 iduMutexOP *iduMutexMgr::mMutexOpArrayClient[IDU_MUTEX_KIND_MAX] =
@@ -35,7 +35,7 @@ iduMutexOP *iduMutexMgr::mMutexOpArrayClient[IDU_MUTEX_KIND_MAX] =
     &gPosixMutexClientOps,
     &gNativeMutexClientOps,
     &gNativeMutexServerOps,
-    &gNativeMutexClientOps // BUG-28856 logging º´¸ñÁ¦°Å
+    &gNativeMutexClientOps // BUG-28856 logging ë³‘ëª©ì œê±°
 };
 
 iduMutexEntry      iduMutexMgr::mPosixEntry;
@@ -189,11 +189,11 @@ IDE_RC iduMutexMgr::initializeStatic(iduPeerType aMutexMgrType)
         mInfoTailEntry.setPrevInfo( &mInfoHeadEntry );
 
         /*
-         * BUG-45416 IDLE mutexÀÇ Á¤¸®°¡ ÇÊ¿äÇÏ´Ù.
-         * __MUTEX_POOL_MAX_SIZE ¸¦ Ãß°¡ÇÏ¿©, ¼³Á¤ °ª ÀÌ»óÀÎ °æ¿ì mutex¸¦ freeÇÑ´Ù.
-         * freeIdles¿¡¼­ ½º·¹µå µ¿±âÈ­¸¦ À§ÇØ mPoolCount¸¦ atomicÇÏ°Ô °¨¼Ò ÈÄ
-         * while Á¶°Ç¹®¿¡¼­ mPoolMaxCount¿Í ºñ±³ÇÏ´Âµ¥, ÀÌ °úÁ¤¿¡¼­ unsigned int ÇüÀÎ
-         * mPoolCount°¡ underflow¸¦ ¹ß»ı½ÃÅ°Áö ¾Êµµ·Ï ÃÊ±â°ªÀ» 1·Î ¼³Á¤ÇÑ´Ù.
+         * BUG-45416 IDLE mutexì˜ ì •ë¦¬ê°€ í•„ìš”í•˜ë‹¤.
+         * __MUTEX_POOL_MAX_SIZE ë¥¼ ì¶”ê°€í•˜ì—¬, ì„¤ì • ê°’ ì´ìƒì¸ ê²½ìš° mutexë¥¼ freeí•œë‹¤.
+         * freeIdlesì—ì„œ ìŠ¤ë ˆë“œ ë™ê¸°í™”ë¥¼ ìœ„í•´ mPoolCountë¥¼ atomicí•˜ê²Œ ê°ì†Œ í›„
+         * while ì¡°ê±´ë¬¸ì—ì„œ mPoolMaxCountì™€ ë¹„êµí•˜ëŠ”ë°, ì´ ê³¼ì •ì—ì„œ unsigned int í˜•ì¸
+         * mPoolCountê°€ underflowë¥¼ ë°œìƒì‹œí‚¤ì§€ ì•Šë„ë¡ ì´ˆê¸°ê°’ì„ 1ë¡œ ì„¤ì •í•œë‹¤.
          * */
         mPoolCount = 1;
         setPoolMaxCount( iduProperty::getMutexPoolMaxSize() );
@@ -218,7 +218,7 @@ IDE_RC iduMutexMgr::initializeStatic(iduPeerType aMutexMgrType)
 IDE_RC iduMutexMgr::destroyStatic()
 {
     UInt    i;
-    UInt    sShowMutexLeakList = 1; //1:Ãâ·Â   0:Ãâ·Â¾ÈÇÔ
+    UInt    sShowMutexLeakList = 1; //1:ì¶œë ¥   0:ì¶œë ¥ì•ˆí•¨
 
     //BUG-21080 
     IDE_ASSERT(idlOS::thread_mutex_lock(&gMutexMgrInitMutex) == 0);
@@ -232,10 +232,10 @@ IDE_RC iduMutexMgr::destroyStatic()
     if (gMutexMgrInitCount == 0)
     {
         /*
-         * BUG-21487    Mutex Leak ListÃâ·ÂÀ» propertyÈ­ ÇØ¾ßÇÕ´Ï´Ù.
+         * BUG-21487    Mutex Leak Listì¶œë ¥ì„ propertyí™” í•´ì•¼í•©ë‹ˆë‹¤.
          */
 #if !defined(SMALL_FOOTPRINT) || defined(WRS_VXWORKS)
-        if ( sShowMutexLeakList == 1 ) //1:Ãâ·Â
+        if ( sShowMutexLeakList == 1 ) //1:ì¶œë ¥
         {
             iduMutexEntry *sEntry;
             iduMutexEntry *sNextEntry;

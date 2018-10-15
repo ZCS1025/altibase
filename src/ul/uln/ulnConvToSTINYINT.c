@@ -336,8 +336,8 @@ ACI_RC ulncINTERVAL_STINYINT(ulnFnContext  *aFnContext,
     ACP_UNUSED(aLength);
 
     /*
-     * BUGBUG : ¿ø·¡´Â inteval Å¸ÀÔ¿¡ single field ¸¸ ÀÖÀ¸¸é °¡´ÉÇÏµµ·Ï ÇØ¾ß ÇÏ´Âµ¥,
-     *          ÀÏ´Ü ÀÌ·¸°Ô µÎÀÚ.
+     * BUGBUG : ì›ëž˜ëŠ” inteval íƒ€ìž…ì— single field ë§Œ ìžˆìœ¼ë©´ ê°€ëŠ¥í•˜ë„ë¡ í•´ì•¼ í•˜ëŠ”ë°,
+     *          ì¼ë‹¨ ì´ë ‡ê²Œ ë‘ìž.
      */
 
     /*
@@ -363,8 +363,8 @@ ACI_RC ulncNUMERIC_STINYINT(ulnFnContext  *aFnContext,
     acp_bool_t   sIsOverflow  = ACP_FALSE;
 
     /*
-     * cmtNumeric ¿¡¼­ °ðÀå ULong À¸·Î °¡´Ï±î overflow µðÅØÆ®°¡ ³Ê¹« ¸Ó¸®¾ÆÆÄ¼­
-     * ÀÏ´Ü ulncDecimal ÀÇ 10Áø¼ö·Î º¯È¯ ÇÑ ÈÄ ULong À¸·Î °¡µµ·Ï ÇÑ´Ù.
+     * cmtNumeric ì—ì„œ ê³§ìž¥ ULong ìœ¼ë¡œ ê°€ë‹ˆê¹Œ overflow ë””í…íŠ¸ê°€ ë„ˆë¬´ ë¨¸ë¦¬ì•„íŒŒì„œ
+     * ì¼ë‹¨ ulncDecimal ì˜ 10ì§„ìˆ˜ë¡œ ë³€í™˜ í•œ í›„ ULong ìœ¼ë¡œ ê°€ë„ë¡ í•œë‹¤.
      */
     ulncNumericInitialize(&sDecimal, 10, ULNC_ENDIAN_BIG, sBuffer, ULNC_NUMERIC_ALLOCSIZE);
     ulncCmtNumericToDecimal((cmtNumeric *)aColumn->mBuffer, &sDecimal);

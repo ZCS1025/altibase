@@ -25,13 +25,13 @@
  *
  *	Related Files	:
  *
- *	Description		:	¿¡·¯ Ã³¸® ¸ğµâ
+ *	Description		:	ì—ëŸ¬ ì²˜ë¦¬ ëª¨ë“ˆ
  *
  *
  **********************************************************************/
 
 /* ----------------------------------------------------------------------------
- * ¼º´É °í·Á·Î ÀÎÇØ class ´ë½Å struct ¹× plain function À¸·Î ±¸Çö
+ * ì„±ëŠ¥ ê³ ë ¤ë¡œ ì¸í•´ class ëŒ€ì‹  struct ë° plain function ìœ¼ë¡œ êµ¬í˜„
  * ---------------------------------------------------------------------------*/
 
 #include <idl.h>
@@ -52,12 +52,12 @@
 
 /* ----------------------------------------------------------------------------
  *
- *  PDL ¿¡·¯ ¼öÁ¤
+ *  PDL ì—ëŸ¬ ìˆ˜ì •
  *
- *  Sparc Solaris 2.7¿¡¼­ 64ºñÆ® ÄÄÆÄÀÏ ¸ğµåÀÏ °æ¿ì
- *  Àü¿ª ½Ã½ºÅÛ ¿¡·¯ÄÚµå¹øÈ£ º¯¼öÀÎ sys_nerrÀÌ ¾ø¾îÁø´Ù.
- *  ±×·¯³ª, PDL¿¡¼­´Â ÀÌ°ÍÀ» °í·ÁÇÏÁö ¾Ê°í »ç¿ëÇÏ±â ¶§¹®¿¡
- *  ¸µÅ©¿¡·¯¸¦ ¹ß»ıÇÑ´Ù. ÀÌ°ÍÀ» ¹æÁöÇÏ±â À§ÇØ ÀÓ½Ã·Î sys_nerrÀ» Á¤ÀÇÇÑ´Ù.
+ *  Sparc Solaris 2.7ì—ì„œ 64ë¹„íŠ¸ ì»´íŒŒì¼ ëª¨ë“œì¼ ê²½ìš°
+ *  ì „ì—­ ì‹œìŠ¤í…œ ì—ëŸ¬ì½”ë“œë²ˆí˜¸ ë³€ìˆ˜ì¸ sys_nerrì´ ì—†ì–´ì§„ë‹¤.
+ *  ê·¸ëŸ¬ë‚˜, PDLì—ì„œëŠ” ì´ê²ƒì„ ê³ ë ¤í•˜ì§€ ì•Šê³  ì‚¬ìš©í•˜ê¸° ë•Œë¬¸ì—
+ *  ë§í¬ì—ëŸ¬ë¥¼ ë°œìƒí•œë‹¤. ì´ê²ƒì„ ë°©ì§€í•˜ê¸° ìœ„í•´ ì„ì‹œë¡œ sys_nerrì„ ì •ì˜í•œë‹¤.
  *
  * --------------------------------------------------------------------------*/
 
@@ -73,10 +73,10 @@ int sys_nerr;
 struct ideErrorMgr *toppers_error = NULL;
 #endif
 
-/* TASK-6739 Altibase 710 ¼º´É °³¼± */
+/* TASK-6739 Altibase 710 ì„±ëŠ¥ ê°œì„  */
 IDTHREAD ideErrorMgr gIdeErrorMgr;
 
-ideErrTypeInfo typeInfo[] = // ¿¡·¯ ¸Ş½ÃÁö È­ÀÏ¿¡ »ç¿ëµÇ´Â µ¥ÀÌÅ¸ Å¸ÀÔ Á¾·ù
+ideErrTypeInfo typeInfo[] = // ì—ëŸ¬ ë©”ì‹œì§€ í™”ì¼ì— ì‚¬ìš©ë˜ëŠ” ë°ì´íƒ€ íƒ€ì… ì¢…ë¥˜
 {
     { IDE_ERR_SCHAR   , "%c"  , "%c"  , 2 },
     { IDE_ERR_STRING  , "%s"  , "%s"  , 2 },
@@ -120,7 +120,7 @@ const idBool ideErrorConversionMatrix[IDE_MAX_ERROR_ACTION][IDE_MAX_ERROR_ACTION
 
 /* ----------------------------------------------------------------------
  *
- *  MT Å¬¶óÀÌ¾ğÆ®¸¦ À§ÇÑ ÄÄÆÄÀÏ - shore storage manager ÂüÁ¶
+ *  MT í´ë¼ì´ì–¸íŠ¸ë¥¼ ìœ„í•œ ì»´íŒŒì¼ - shore storage manager ì°¸ì¡°
  *
  * ---------------------------------------------------------------------- */
 
@@ -161,7 +161,7 @@ void ideLogError(SChar* aErrInfo,
 
 /* ----------------------------------------------------------------------
  *
- *  ID ¿¡·¯ ÄÚµå°ª ¾ò±â : SERVER, CLIENT °øÅë ÇÔ¼ö
+ *  ID ì—ëŸ¬ ì½”ë“œê°’ ì–»ê¸° : SERVER, CLIENT ê³µí†µ í•¨ìˆ˜
  *
  * ----------------------------------------------------------------------*/
 
@@ -266,7 +266,7 @@ SInt   ideIsRebuild()
 
 /* ----------------------------------------------------------------------
  *
- *  ¿¡·¯ ÄÚµå°ª ¼³Á¤ + ¸Ş½ÃÁö ±¸¼º
+ *  ì—ëŸ¬ ì½”ë“œê°’ ì„¤ì • + ë©”ì‹œì§€ êµ¬ì„±
  *
  * ----------------------------------------------------------------------*/
 
@@ -284,13 +284,13 @@ IDL_EXTERN_C void ideClearError()
 
 /* ----------------------------------------------------------------------
  *
- *  ¼­¹ö¸¦ À§ÇÑ ID ¿¡·¯ ¸Ş½ÃÁö ·Îµù ¹× ¾ò±â
+ *  ì„œë²„ë¥¼ ìœ„í•œ ID ì—ëŸ¬ ë©”ì‹œì§€ ë¡œë”© ë° ì–»ê¸°
  *
  * ----------------------------------------------------------------------*/
 
 static ideErrorFactory ideErrorStorage[E_MODULE_COUNT];
 
-// formatted stirngÀ» ÀĞ¾î¼­ °¡º¯ÀÎÀÚ Á¤º¸¸¦ ±¸¼º
+// formatted stirngì„ ì½ì–´ì„œ ê°€ë³€ì¸ì ì •ë³´ë¥¼ êµ¬ì„±
 static SInt ideGetArgumentInfo(SChar *orgFmt, ideArgInfo *orgInfo, va_list args)
 {
     UInt  maxInfoCnt = 0;
@@ -302,18 +302,18 @@ static SInt ideGetArgumentInfo(SChar *orgFmt, ideArgInfo *orgInfo, va_list args)
     SChar      *fmt;
 
     fmt = orgFmt;
-    orgInfo[0].type_info = NULL; // ÃÊ±âÈ­
+    orgInfo[0].type_info = NULL; // ì´ˆê¸°í™”
 
     while(( c = *fmt++) )
     {
-        if (c == '<') // [<] ÃâÇö
+        if (c == '<') // [<] ì¶œí˜„
         {
-            SChar numBuf[8]; // ÀÎÀÚ¹øÈ£ ÀÔ·Â
+            SChar numBuf[8]; // ì¸ìë²ˆí˜¸ ì…ë ¥
 
             /* ------------------
-             * [1] ÀÎÀÚ¹øÈ£ ¾ò±â
+             * [1] ì¸ìë²ˆí˜¸ ì–»ê¸°
              * -----------------*/
-            if (isdigit(*fmt) == 0) // ¼ıÀÚ°¡ ¾Æ´Ô
+            if (isdigit(*fmt) == 0) // ìˆ«ìê°€ ì•„ë‹˜
             {
                 continue;
             }
@@ -327,7 +327,7 @@ static SInt ideGetArgumentInfo(SChar *orgFmt, ideArgInfo *orgInfo, va_list args)
                 }
                 numBuf[i] = *fmt++;
             }
-            // ¸î¹øÂ° ÀÔ·Â ÀÎÀÚÀÎ°¡? Æ÷ÀÎÅÍ ´ëÀÔ
+            // ëª‡ë²ˆì§¸ ì…ë ¥ ì¸ìì¸ê°€? í¬ì¸í„° ëŒ€ì…
             inputOrder        = (UInt)idlOS::strtol(numBuf, NULL, 10);
             if (inputOrder >= MAX_ARGUMENT)
             {
@@ -340,7 +340,7 @@ static SInt ideGetArgumentInfo(SChar *orgFmt, ideArgInfo *orgInfo, va_list args)
             if (inputOrder > maxInfoCnt) maxInfoCnt = inputOrder;
 
             /* ------------------
-             * [2] ÀÎÀÚÅ¸ÀÔ ¾ò±â
+             * [2] ì¸ìíƒ€ì… ì–»ê¸°
              * -----------------*/
             for (i = 0; ; i++)
             {
@@ -368,14 +368,14 @@ static SInt ideGetArgumentInfo(SChar *orgFmt, ideArgInfo *orgInfo, va_list args)
     {
         return IDE_FAILURE;
     }
-    orgInfo[maxInfoCnt + 1].type_info = NULL; // NULLÀ» ÁöÁ¤ ; ¸¶Áö¸· flag
+    orgInfo[maxInfoCnt + 1].type_info = NULL; // NULLì„ ì§€ì • ; ë§ˆì§€ë§‰ flag
 
     /* ------------------
-     * [3] ÀÎÀÚ Æ÷ÀÎÅÍ ´ëÀÔ
-     //     argument *¸¦ ´Ù½Ã ÀúÀå.
+     * [3] ì¸ì í¬ì¸í„° ëŒ€ì…
+     //     argument *ë¥¼ ë‹¤ì‹œ ì €ì¥.
      * -----------------*/
 
-    for (i = 0; ; i++) // BUGBUG : sizeof(data types)·Î ÇØ¼­ ¹Ì¸® °è»êÇÒ ¼ö ÀÖÀ½.
+    for (i = 0; ; i++) // BUGBUG : sizeof(data types)ë¡œ í•´ì„œ ë¯¸ë¦¬ ê³„ì‚°í•  ìˆ˜ ìˆìŒ.
     {
         ideErrTypeInfo *typeinfo = orgInfo[i].type_info;
         if (typeinfo == NULL) break;
@@ -437,17 +437,17 @@ static SInt ideConcatErrorArg(SChar *orgBuf, SChar *fmt, ideArgInfo *info)
     UInt  orgBufLen;
 
     /* ---------------------------
-     * [1] formatted string ±¸¼º
+     * [1] formatted string êµ¬ì„±
      * --------------------------*/
     while( (c = *fmt++) != 0)
     {
-        if (c == '<') // [<] ÃâÇö
+        if (c == '<') // [<] ì¶œí˜„
         {
-            while(*fmt++ != '>') ; //[>]°¡ ³ª¿Ã¶§ ±îÁö skip ¹× ¸Ş½ÃÁö ±¸Çö
+            while(*fmt++ != '>') ; //[>]ê°€ ë‚˜ì˜¬ë•Œ ê¹Œì§€ skip ë° ë©”ì‹œì§€ êµ¬í˜„
 
-            // BUG-21296 : HPÀåºñ¿¡¼­ ±ä error message·Î ÀÎÇØ ¸Ş¸®°¡ ±ÜÈû
-            // orgBuf¿¡ append½ÃÅ°°í orgBufLenÀ» Àç°è»êÇØ¾ß ÇÏ°í
-            // MAX_ERROR_MSG_LENGº¸´Ù ±ä error message¸¦ truncateÇÔ
+            // BUG-21296 : HPì¥ë¹„ì—ì„œ ê¸´ error messageë¡œ ì¸í•´ ë©”ë¦¬ê°€ ê¸í˜
+            // orgBufì— appendì‹œí‚¤ê³  orgBufLenì„ ì¬ê³„ì‚°í•´ì•¼ í•˜ê³ 
+            // MAX_ERROR_MSG_LENGë³´ë‹¤ ê¸´ error messageë¥¼ truncateí•¨
             orgBufLen = idlOS::strlen(orgBuf);
 
             switch(info->outputOrder->type_info->type)
@@ -594,7 +594,7 @@ UInt ideGetErrorArgCount(UInt ErrorCode)
     
     while( (c = *Fmt) )
     {
-        if (c == '<') // [<] ÃâÇö
+        if (c == '<') // [<] ì¶œí˜„
         {
             Count++;
             Fmt++;
@@ -613,7 +613,7 @@ UInt ideGetErrorArgCount(UInt ErrorCode)
     return Count;
 }
 
-// Error Code¸¦ ÇÒ´çÇÒ ¼ö ¾øÀ½.
+// Error Codeë¥¼ í• ë‹¹í•  ìˆ˜ ì—†ìŒ.
 SInt ideRegistErrorMsb(SChar *fn)
 {
     int             i;
@@ -625,7 +625,7 @@ SInt ideRegistErrorMsb(SChar *fn)
     ideErrorFactory *Storage;
 
     /* --------------------------
-     * [0] ÀÎÀÚ °Ë»ç
+     * [0] ì¸ì ê²€ì‚¬
      * -------------------------*/
 
     if (fn == NULL)
@@ -634,7 +634,7 @@ SInt ideRegistErrorMsb(SChar *fn)
     }
 
     /* --------------------------
-     * [1] MSB È­ÀÏÀ» ÀĞ´Â´Ù.
+     * [1] MSB í™”ì¼ì„ ì½ëŠ”ë‹¤.
      * -------------------------*/
 #ifndef GEN_ERR_MSG
     if ( (sFD = idf::open(fn, O_RDONLY)) == PDL_INVALID_HANDLE)
@@ -657,7 +657,7 @@ SInt ideRegistErrorMsb(SChar *fn)
     }
 
     /* ------------------------------------------
-     * [2] ÀĞÀº ÀÓ½Ã Çì´õ µ¥ÀÌÅ¸ ÀúÀå
+     * [2] ì½ì€ ì„ì‹œ í—¤ë” ë°ì´íƒ€ ì €ì¥
      * -----------------------------------------*/
     AltiVer  = idlOS::ntoh(TempMsbHeader.value_.header.AltiVersionId);
     errCount = idlOS::ntoh(TempMsbHeader.value_.header.ErrorCount);
@@ -667,7 +667,7 @@ SInt ideRegistErrorMsb(SChar *fn)
     TempMsbHeader.value_.header.Section       = Section;
 
     /* ------------------------------------------
-     * [2.5] Çì´õÀÇ ¹öÀü Á¤º¸ °Ë»ç
+     * [2.5] í—¤ë”ì˜ ë²„ì „ ì •ë³´ ê²€ì‚¬
      * -----------------------------------------*/
 
     if (AltiVer != iduVersionID)
@@ -684,13 +684,13 @@ SInt ideRegistErrorMsb(SChar *fn)
     }
 
     /* ------------------------------------------
-     * [3] Error StorageÀÇ Section °áÁ¤ ¹× Çì´õ ÀúÀå
+     * [3] Error Storageì˜ Section ê²°ì • ë° í—¤ë” ì €ì¥
      * -----------------------------------------*/
     Storage = &ideErrorStorage[Section];
     idlOS::memcpy(&Storage->MsbHeader, &TempMsbHeader, sizeof(idErrorMsbType));
 
     /* ------------------------------------------
-     * [4] ½ÇÁ¦ ¿¡·¯ ¸Ş½ÃÁö¸¦ ÀĞ¾î µéÀÓ
+     * [4] ì‹¤ì œ ì—ëŸ¬ ë©”ì‹œì§€ë¥¼ ì½ì–´ ë“¤ì„
      * -----------------------------------------*/
     MsgBuf = (SChar **)idlOS::calloc(errCount, sizeof(SChar *));
     if (MsgBuf == NULL)
@@ -704,7 +704,7 @@ SInt ideRegistErrorMsb(SChar *fn)
     for (i = 0; !idlOS::fdeof(sFD) && i < (SInt)errCount; i++)
 #endif
     {
-        // ¿¡·¯ ¸Ş½ÃÁö¸¦ ÀĞ¾î¼­ º¸°ü
+        // ì—ëŸ¬ ë©”ì‹œì§€ë¥¼ ì½ì–´ì„œ ë³´ê´€
         SChar buffer[1024];
 
 #ifndef GEN_ERR_MSG
@@ -737,7 +737,7 @@ SInt ideRegistErrorMsb(SChar *fn)
     (void)idlOS::close(sFD);
 #endif
     /* ------------------------------------------
-     * [5] Error Storage ¿Ï¼º
+     * [5] Error Storage ì™„ì„±
      * -----------------------------------------*/
     Storage->MsgBuf = MsgBuf;
 
@@ -765,7 +765,7 @@ static void ideSetServerErrorCode(ideErrorMgr *aErrorMgr,
     static SChar *ERR_PARSE_ARG_MESSAGE  = (SChar *)"Invalid Error-Formatted String";
     static SChar *ERR_CONCAT_ARG_MESSAGE = (SChar *)"Invalid Error-Concatenation";
 
-    /* ¿¡·¯ ¸Ş½ÃÁö ±¸¼º ÁØºñ*/
+    /* ì—ëŸ¬ ë©”ì‹œì§€ êµ¬ì„± ì¤€ë¹„*/
     UInt         Section;
     UInt         Index;
     ideArgInfo   argInfo[MAX_ARGUMENT];
@@ -781,7 +781,7 @@ static void ideSetServerErrorCode(ideErrorMgr *aErrorMgr,
         aErrorMgr->Stack.HasErrorPosition = ID_FALSE;
         idlOS::strcpy(aErrorMgr->Stack.LastErrorMsg, NULL_MESSAGE );
     }
-    else if (Index < Storage->MsbHeader.value_.header.ErrorCount) // ¿¡·¯ ¸Ş½ÃÁö¸¦ ±¸¼ºÇÏÀÚ.
+    else if (Index < Storage->MsbHeader.value_.header.ErrorCount) // ì—ëŸ¬ ë©”ì‹œì§€ë¥¼ êµ¬ì„±í•˜ì.
     {
         SChar *fmt = Storage->MsgBuf[Index];
 
@@ -839,7 +839,7 @@ static void ideSetServerErrorCode(ideErrorMgr *aErrorMgr,
 
 ideErrorMgr* ideSetErrorCode(UInt ErrorCode, ...)
 {
-    SInt         systemErrno = errno; // ¹Ì¸® ¼³Á¤
+    SInt         systemErrno = errno; // ë¯¸ë¦¬ ì„¤ì •
     va_list      args;
     ideErrorMgr* sErrMgr = ideGetErrorMgr();
 
@@ -858,7 +858,7 @@ ideErrorMgr* ideSetErrorCode(UInt ErrorCode, ...)
 
 ideErrorMgr* ideFitSetErrorCode( UInt aErrorCode, va_list aArgs )
 {
-    SInt         sSystemErrno = errno; // ¹Ì¸® ¼³Á¤
+    SInt         sSystemErrno = errno; // ë¯¸ë¦¬ ì„¤ì •
     ideErrorMgr* sErrMgr = ideGetErrorMgr();
 
     ideSetServerErrorCode( sErrMgr,
@@ -870,10 +870,10 @@ ideErrorMgr* ideFitSetErrorCode( UInt aErrorCode, va_list aArgs )
 }
 #endif
 
-// PROJ-1335 errorCode, errorMsg¸¦ Á÷Á¢ ¼¼ÆÃ
+// PROJ-1335 errorCode, errorMsgë¥¼ ì§ì ‘ ì„¸íŒ…
 ideErrorMgr* ideSetErrorCodeAndMsg( UInt ErrorCode, SChar* ErrorMsg )
 {
-    SInt         systemErrno = errno; // ¹Ì¸® ¼³Á¤
+    SInt         systemErrno = errno; // ë¯¸ë¦¬ ì„¤ì •
     ideErrorMgr* sErrMgr = ideGetErrorMgr();
 
     sErrMgr->Stack.LastError       = ErrorCode;
@@ -892,7 +892,7 @@ void ideDump()
 
     errbuf = (SChar *)idlOS::calloc(1, errbuflen);
     /* BUG-25586
-     * [CodeSonar::NullPointerDereference] ideDump() ¿¡¼­ ¹ß»ı */
+     * [CodeSonar::NullPointerDereference] ideDump() ì—ì„œ ë°œìƒ */
     IDE_TEST_RAISE( errbuf == NULL, skip_err_dump );
 
     {
@@ -900,8 +900,8 @@ void ideDump()
 #ifndef GEN_ERR_MSG
         UInt sSourceInfo = 0;
         /* ------------------------------------------------
-         *  genErrMsg¸¦ ¸¸µé°æ¿ì property¸¦
-         *  ÂüÁ¶ÇÏÁö ¾Êµµ·Ï!
+         *  genErrMsgë¥¼ ë§Œë“¤ê²½ìš° propertyë¥¼
+         *  ì°¸ì¡°í•˜ì§€ ì•Šë„ë¡!
          * ----------------------------------------------*/
         (void)idp::read("SOURCE_INFO", &sSourceInfo);
 
@@ -940,14 +940,14 @@ void ideSetClientErrorCode(ideClientErrorMgr     *aErrorMgr,
     static SChar *ERR_PARSE_ARG_MESSAGE  = (SChar *)"Invalid Error-Formatted String";
     static SChar *ERR_CONCAT_ARG_MESSAGE = (SChar *)"Invalid Error-Concatenation";
 
-    /* ¿¡·¯ ¸Ş½ÃÁö ±¸¼º ÁØºñ*/
+    /* ì—ëŸ¬ ë©”ì‹œì§€ êµ¬ì„± ì¤€ë¹„*/
     UInt         Index;
     ideArgInfo   argInfo[MAX_ARGUMENT];
     Index   =  aErrorCode & E_INDEX_MASK;
     
     aErrorMgr->mErrorCode       = aErrorCode;
 
-    if (1)//Index < Storage->MsbHeader.value_.header.ErrorCount) // ¿¡·¯ ¸Ş½ÃÁö¸¦ ±¸¼ºÇÏÀÚ.
+    if (1)//Index < Storage->MsbHeader.value_.header.ErrorCount) // ì—ëŸ¬ ë©”ì‹œì§€ë¥¼ êµ¬ì„±í•˜ì.
     {
         SChar *fmt = (SChar *)aFactory[Index].mErrorMsg;
 

@@ -123,7 +123,7 @@ ACI_RC ulnSFID_83(ulnFnContext *aFnContext)
 
 /*
  * ULN_SFID_84
- * SQLSetConnectAttr(), DBC »óÅÂ ÀüÀÌÇÔ¼ö : C6 »óÅÂ
+ * SQLSetConnectAttr(), DBC ìƒíƒœ ì „ì´í•¨ìˆ˜ : C6 ìƒíƒœ
  *      --[3] and [6]
  *      C5[8]
  *      (08002)[4]
@@ -307,9 +307,9 @@ static ACI_RC ulnSetConnAttrConnType(ulnFnContext *aFnContext, ulnConnType aConn
 {
     ulnDbc *sDbc = aFnContext->mHandle.mDbc;
 
-    if (ulnDbcGetConnType(sDbc) == ULN_CONNTYPE_INVALID) // ¼³Á¤µÇ¾úÀ¸¸é ¹«½Ã
+    if (ulnDbcGetConnType(sDbc) == ULN_CONNTYPE_INVALID) // ì„¤ì •ë˜ì—ˆìœ¼ë©´ ë¬´ì‹œ
     {
-        // ¼³Á¤µÇ¾î ÀÖÁö ¾ÊÀ» °æ¿ì¿¡¸¸ ¼öÇà
+        // ì„¤ì •ë˜ì–´ ìˆì§€ ì•Šì„ ê²½ìš°ì—ë§Œ ìˆ˜í–‰
 
         switch (aConnType)
         {
@@ -386,14 +386,14 @@ static ACI_RC ulnSetConnAttrCheckValue(ulnFnContext  *aFnContext,
     ulnMetricPrefixInt *sAllowedMIntList;
 
     /*
-     * BUGBUG : ÀÌ ÇÔ¼ö¿¡ µé¾î¿À´Â ¸ğµç String Å¸ÀÔ ¼Ó¼º ¼¼ÆÃÀÇ aValuePtr Àº
-     *          null terminated °¡ º¸ÀåµÇ¾î¾ß ÇÑ´Ù.
+     * BUGBUG : ì´ í•¨ìˆ˜ì— ë“¤ì–´ì˜¤ëŠ” ëª¨ë“  String íƒ€ì… ì†ì„± ì„¸íŒ…ì˜ aValuePtr ì€
+     *          null terminated ê°€ ë³´ì¥ë˜ì–´ì•¼ í•œë‹¤.
      */
 
     acp_slong_t sValue = (acp_slong_t)aValuePtr;
 
     /*
-     * ¹üÀ§ °Ë»ç ¹× ±æÀÌ Ã¼Å©, ±×¸®°í optional feature not implemented Ã¼Å©
+     * ë²”ìœ„ ê²€ì‚¬ ë° ê¸¸ì´ ì²´í¬, ê·¸ë¦¬ê³  optional feature not implemented ì²´í¬
      */
     switch (gUlnConnAttrTable[aConnAttrID].mAttrType)
     {
@@ -487,8 +487,8 @@ static ACI_RC ulnSetConnAttr(ulnFnContext  *aFnContext,
                              acp_sint32_t   aLength)
 {
     /*
-     * BUGBUG : ÀÌ ÇÔ¼ö¿¡ µé¾î¿À´Â ¸ğµç String Å¸ÀÔ ¼Ó¼º ¼¼ÆÃÀÇ aValuePtr Àº
-     *          null terminated °¡ º¸ÀåµÇ¾î¾ß ÇÑ´Ù.
+     * BUGBUG : ì´ í•¨ìˆ˜ì— ë“¤ì–´ì˜¤ëŠ” ëª¨ë“  String íƒ€ì… ì†ì„± ì„¸íŒ…ì˜ aValuePtr ì€
+     *          null terminated ê°€ ë³´ì¥ë˜ì–´ì•¼ í•œë‹¤.
      */
 
     acp_slong_t  sValue = (acp_slong_t)aValuePtr;
@@ -498,7 +498,7 @@ static ACI_RC ulnSetConnAttr(ulnFnContext  *aFnContext,
     acp_sint32_t sNlsUseLen;
 
     /*
-     * ¹üÀ§ °Ë»ç ¹× ±æÀÌ Ã¼Å©, ±×¸®°í optional feature not implemented Ã¼Å©
+     * ë²”ìœ„ ê²€ì‚¬ ë° ê¸¸ì´ ì²´í¬, ê·¸ë¦¬ê³  optional feature not implemented ì²´í¬
      */
 
     ACI_TEST(ulnSetConnAttrCheckValue(aFnContext, aConnAttrID, aValuePtr, aLength)
@@ -507,8 +507,8 @@ static ACI_RC ulnSetConnAttr(ulnFnContext  *aFnContext,
     /* 
      * BUG-36256 Improve property's communication
      *
-     * ¼­¹ö¿¡¼­ Áö¿øµÇÁö ¾Ê´Â ÇÁ·ÎÆÛÆ¼´Â ¼­¹ö¿¡ ¿äÃ»À» ÇÏÁö ¾Ê´Â´Ù.
-     * Áï OnÀ» ÇØµµ Ç×»ó Off µÈ´Ù.
+     * ì„œë²„ì—ì„œ ì§€ì›ë˜ì§€ ì•ŠëŠ” í”„ë¡œí¼í‹°ëŠ” ì„œë²„ì— ìš”ì²­ì„ í•˜ì§€ ì•ŠëŠ”ë‹¤.
+     * ì¦‰ Onì„ í•´ë„ í•­ìƒ Off ëœë‹¤.
      */
     ACI_TEST_RAISE(ulnConnAttrArrHasId(&sDbc->mUnsupportedProperties,
                                        aConnAttrID) == ACI_SUCCESS,
@@ -518,13 +518,13 @@ static ACI_RC ulnSetConnAttr(ulnFnContext  *aFnContext,
     {
         /*
          * =================================================================
-         * Connection String ÀÌ³ª ODBC.INI ¸¦ ÅëÇØ¼­¸¸ ¼³Á¤ÇÒ ¼ö ÀÖ´Â ¼Ó¼ºµé
+         * Connection String ì´ë‚˜ ODBC.INI ë¥¼ í†µí•´ì„œë§Œ ì„¤ì •í•  ìˆ˜ ìˆëŠ” ì†ì„±ë“¤
          * =================================================================
          */
 
         /*
          * --------------------------------------
-         * String ¼Ó¼ºµé : null Ã¼Å©´Â ÀÌ¹Ì ÀÌ·ç¾îÁ³À½
+         * String ì†ì„±ë“¤ : null ì²´í¬ëŠ” ì´ë¯¸ ì´ë£¨ì–´ì¡ŒìŒ
          * --------------------------------------
          */
 
@@ -560,7 +560,7 @@ static ACI_RC ulnSetConnAttr(ulnFnContext  *aFnContext,
 
         /*
          * ---------------------------------------
-         * acp_uint32_t, Bool ¼Ó¼ºµé
+         * acp_uint32_t, Bool ì†ì„±ë“¤
          * ---------------------------------------
          */
 
@@ -596,24 +596,24 @@ static ACI_RC ulnSetConnAttr(ulnFnContext  *aFnContext,
 
         /*
          * =================================================================================
-         * Connection String, ODBC.INI, SQLSetConnectAttr ¾î´À°ÍÀ¸·Îµç ¼³Á¤ÇÒ ¼ö ÀÖ´Â ¼Ó¼ºµé
+         * Connection String, ODBC.INI, SQLSetConnectAttr ì–´ëŠê²ƒìœ¼ë¡œë“  ì„¤ì •í•  ìˆ˜ ìˆëŠ” ì†ì„±ë“¤
          * =================================================================================
          */
 
         /*
          * --------------------------------------
-         * String ¼Ó¼ºµé
+         * String ì†ì„±ë“¤
          * --------------------------------------
          */
 
         case ULN_CONN_ATTR_NLS_USE:
             /* ------------------------------------------------
-             *  1. ÀÌ¹Ì ¿¬°áµÈ »óÅÂÀÌ°Å³ª,
-             *  2. ÃÊ±â ¿¬°áString È¤Àº DSN À¸·Î ºÎÅÍ ÀĞ¾î¿Ã ¶§ ÃÊ±â»óÅÂÀÏ °æ¿ì
-             *     ¿¡¸¸ ¼³Á¤°¡´ÉÇÏ´Ù.
+             *  1. ì´ë¯¸ ì—°ê²°ëœ ìƒíƒœì´ê±°ë‚˜,
+             *  2. ì´ˆê¸° ì—°ê²°String í˜¹ì€ DSN ìœ¼ë¡œ ë¶€í„° ì½ì–´ì˜¬ ë•Œ ì´ˆê¸°ìƒíƒœì¼ ê²½ìš°
+             *     ì—ë§Œ ì„¤ì •ê°€ëŠ¥í•˜ë‹¤.
              *
-             *     ===> ulnSendConnectAttr() À» È£ÃâÇÏÁö ¾Ê´Â´Ù.
-             *          (PROJ-1579 NCHAR¿¡¼­ È£ÃâÇÏ´Â °ÍÀ¸·Î º¯°æµÊ)
+             *     ===> ulnSendConnectAttr() ì„ í˜¸ì¶œí•˜ì§€ ì•ŠëŠ”ë‹¤.
+             *          (PROJ-1579 NCHARì—ì„œ í˜¸ì¶œí•˜ëŠ” ê²ƒìœ¼ë¡œ ë³€ê²½ë¨)
              * ----------------------------------------------*/
             ACI_TEST_RAISE(aValuePtr == NULL, ERR_HY090);
 
@@ -623,14 +623,14 @@ static ACI_RC ulnSetConnAttr(ulnFnContext  *aFnContext,
             acpCStrToUpper(sNlsUse, sNlsUseLen);
 
             //BUG-22684
-            // Client CharactersetÀ»  mClientCharsetLangModule¿¡ ÀúÀåÇÑ´Ù.
+            // Client Charactersetì„  mClientCharsetLangModuleì— ì €ì¥í•œë‹¤.
             ACI_TEST_RAISE(mtlModuleByName((const mtlModule **)&(sDbc->mClientCharsetLangModule),
                                            sNlsUse,
                                            sNlsUseLen)
                            != ACI_SUCCESS, LABEL_CHARACTERSET_NOT_FOUND);
 
             // bug-26661: nls_use not applied to nls module for ut
-            // nls_use °ªÀ» UT¿¡¼­ »ç¿ëÇÒ gNlsModuleForUT¿¡µµ Àû¿ë
+            // nls_use ê°’ì„ UTì—ì„œ ì‚¬ìš©í•  gNlsModuleForUTì—ë„ ì ìš©
             ACI_TEST_RAISE(mtlModuleByName((const mtlModule **)&gNlsModuleForUT,
                                            sNlsUse,
                                            sNlsUseLen)
@@ -640,7 +640,7 @@ static ACI_RC ulnSetConnAttr(ulnFnContext  *aFnContext,
                            LABEL_NOT_ENOUGH_MEMORY);
 
             // PROJ-1579 NCHAR
-            // ¼­¹ö¿¡ ALTIBASE_NLS_USE(Å¬¶óÀÌ¾ğÆ® Ä³¸¯ÅÍ ¼Â) Á¤º¸¸¦ ¾Ë·ÁÁØ´Ù.
+            // ì„œë²„ì— ALTIBASE_NLS_USE(í´ë¼ì´ì–¸íŠ¸ ìºë¦­í„° ì…‹) ì •ë³´ë¥¼ ì•Œë ¤ì¤€ë‹¤.
             ACI_TEST(ulnSendConnectAttr(aFnContext, ULN_PROPERTY_NLS, sDbc->mNlsLangString)
                      != ACI_SUCCESS);
             break;
@@ -685,7 +685,7 @@ static ACI_RC ulnSetConnAttr(ulnFnContext  *aFnContext,
 
         /*
          * --------------------------------
-         * Integer, discrete integer ¼Ó¼ºµé
+         * Integer, discrete integer ì†ì„±ë“¤
          * --------------------------------
          */
 
@@ -695,7 +695,7 @@ static ACI_RC ulnSetConnAttr(ulnFnContext  *aFnContext,
             break;
 
         case ULN_CONN_ATTR_LOGIN_TIMEOUT:
-            //BUG-24574 [ODBC] SQLSetConnectAttr(dbc, SQL_ATTR_LOGIN_TIMEOUT, 0, 0); ÇßÀ»¶§ Á¢¼Ó ½ÇÆĞ
+            //BUG-24574 [ODBC] SQLSetConnectAttr(dbc, SQL_ATTR_LOGIN_TIMEOUT, 0, 0); í–ˆì„ë•Œ ì ‘ì† ì‹¤íŒ¨
             if (sValue != 0)
             {
                 sDbc->mAttrLoginTimeout = (acp_uint32_t)sValue;
@@ -737,7 +737,7 @@ static ACI_RC ulnSetConnAttr(ulnFnContext  *aFnContext,
 
         case ULN_CONN_ATTR_CONNECTION_POOLING:
             /*
-             * BUGBUG : ENV ÀÇ ¼³Á¤¿¡ ¸Â°Ô °í·ÁÇØ¾ß ÇÑ´Ù.
+             * BUGBUG : ENV ì˜ ì„¤ì •ì— ë§ê²Œ ê³ ë ¤í•´ì•¼ í•œë‹¤.
              */
             sDbc->mAttrConnPooling = (acp_uint8_t)sValue;
             break;
@@ -885,7 +885,7 @@ static ACI_RC ulnSetConnAttr(ulnFnContext  *aFnContext,
             break;
         /*
          * ====================================================
-         * SQLSetConnectAttr() À» ÅëÇØ¼­¸¸ ¼³Á¤°¡´ÉÇÑ ¼Ó¼ºµé
+         * SQLSetConnectAttr() ì„ í†µí•´ì„œë§Œ ì„¤ì •ê°€ëŠ¥í•œ ì†ì„±ë“¤
          * ====================================================
          */
 
@@ -899,13 +899,13 @@ static ACI_RC ulnSetConnAttr(ulnFnContext  *aFnContext,
 
         /*
          * =====================================================================
-         * ¾ÆÁ÷ ±¸ÇöÇÏÁö ¾Ê¾Ò°Å³ª Áö¿øÇÏÁö ¾Ê´Â ¼Ó¼ºµé : À­ÂÊ¿¡¼­ ¿¡·¯ ³»¾î¹ö¸².
+         * ì•„ì§ êµ¬í˜„í•˜ì§€ ì•Šì•˜ê±°ë‚˜ ì§€ì›í•˜ì§€ ì•ŠëŠ” ì†ì„±ë“¤ : ìœ—ìª½ì—ì„œ ì—ëŸ¬ ë‚´ì–´ë²„ë¦¼.
          * =====================================================================
          */
 
         case ULN_CONN_ATTR_URL:
             break;
-        case ULN_CONN_ATTR_ODBC_CURSORS: /* odbc 3.0 ¿¡¼­´Â ¾µ ¼ö ¾ø´Ù. stmt ¼Ó¼º */
+        case ULN_CONN_ATTR_ODBC_CURSORS: /* odbc 3.0 ì—ì„œëŠ” ì“¸ ìˆ˜ ì—†ë‹¤. stmt ì†ì„± */
             sDbc->mAttrOdbcCursors = (acp_uint32_t)sValue;
             break;
 
@@ -1024,8 +1024,8 @@ static ACI_RC ulnSetConnAttr(ulnFnContext  *aFnContext,
             break;
 
         /*
-         * Warning : ¾ÕÀ¸·Î Ãß°¡µÇ´Â ¼­¹ö-Å¬¶óÀÌ¾ğÆ® ÇÁ·ÎÆÛÆ¼´Â ¹İµå½Ã
-         *           ulnSetConnectAttrOff()¿¡ Ãß°¡µÇ¾î¾ß ÇÑ´Ù.
+         * Warning : ì•ìœ¼ë¡œ ì¶”ê°€ë˜ëŠ” ì„œë²„-í´ë¼ì´ì–¸íŠ¸ í”„ë¡œí¼í‹°ëŠ” ë°˜ë“œì‹œ
+         *           ulnSetConnectAttrOff()ì— ì¶”ê°€ë˜ì–´ì•¼ í•œë‹¤.
          */
 
         /* PROJ-2638 shard native linker */
@@ -1060,7 +1060,7 @@ static ACI_RC ulnSetConnAttr(ulnFnContext  *aFnContext,
             break;
 
         /*
-         * Note : compiler warning ÀÌ ³ªÁö ¾Ê¾Æ¾ß ÇÑ´Ù. ¸¸¾à warning ³ª¸é ¹º°¡ ÇÏ³ª ºüÁø°ÍÀÓ.
+         * Note : compiler warning ì´ ë‚˜ì§€ ì•Šì•„ì•¼ í•œë‹¤. ë§Œì•½ warning ë‚˜ë©´ ë­”ê°€ í•˜ë‚˜ ë¹ ì§„ê²ƒì„.
          */
     }
 
@@ -1093,20 +1093,20 @@ static ACI_RC ulnSetConnAttr(ulnFnContext  *aFnContext,
 
 /*
  * Note :
- *      ulnSetConnAttrByConnString() ¿¡¼­ È£ÃâµÇ´Â ulnSetConnAttrById
- *          NTS guarantee    : OK. Ç×»ó NTS
- *          aAttrValueLength : Ç×»ó string ÀÇ ±æÀÌ. ¾ç¼ö È¤Àº 0
+ *      ulnSetConnAttrByConnString() ì—ì„œ í˜¸ì¶œë˜ëŠ” ulnSetConnAttrById
+ *          NTS guarantee    : OK. í•­ìƒ NTS
+ *          aAttrValueLength : í•­ìƒ string ì˜ ê¸¸ì´. ì–‘ìˆ˜ í˜¹ì€ 0
  *
- *      ulnSetConnAttrByProfileFunc() ¿¡¼­ È£ÃâµÇ´Â ulnSetConnAttrById
- *          NTS guarantee    : ?. NTS ÀÎÁö ¾Æ´ÑÁö odbc ¹®¼­¿¡¼­ ÀÌ¾ß±â ¾ÈÇÔ.
- *          aAttrValueLength : Ç×»ó string ÀÇ ±æÀÌ. ¾ç¼ö. ??
+ *      ulnSetConnAttrByProfileFunc() ì—ì„œ í˜¸ì¶œë˜ëŠ” ulnSetConnAttrById
+ *          NTS guarantee    : ?. NTS ì¸ì§€ ì•„ë‹Œì§€ odbc ë¬¸ì„œì—ì„œ ì´ì•¼ê¸° ì•ˆí•¨.
+ *          aAttrValueLength : í•­ìƒ string ì˜ ê¸¸ì´. ì–‘ìˆ˜. ??
  */
 /*
- * BUGBUG : ulnConnAttrProcess*** ÇÔ¼öµéÀº
- *              1. aAttrValue ¿¡ NULL Æ÷ÀÎÅÍ°¡ ¾Èµé¾î¿Â´Ù´Â °Í.
- *              2. aAttrValue ¿¡ NTS °¡ µé¾î¿Â´Ù´Â °Í
- *              3. aAttrValueLength ¿¡ ¾ç¼öÀÇ À¯È¿ÇÑ °ªÀÌ µé¾î¿Â´Ù´Â °Í
- *          À» ¹İµå½Ã º¸ÀåÇÒ °Í.
+ * BUGBUG : ulnConnAttrProcess*** í•¨ìˆ˜ë“¤ì€
+ *              1. aAttrValue ì— NULL í¬ì¸í„°ê°€ ì•ˆë“¤ì–´ì˜¨ë‹¤ëŠ” ê²ƒ.
+ *              2. aAttrValue ì— NTS ê°€ ë“¤ì–´ì˜¨ë‹¤ëŠ” ê²ƒ
+ *              3. aAttrValueLength ì— ì–‘ìˆ˜ì˜ ìœ íš¨í•œ ê°’ì´ ë“¤ì–´ì˜¨ë‹¤ëŠ” ê²ƒ
+ *          ì„ ë°˜ë“œì‹œ ë³´ì¥í•  ê²ƒ.
  */
 static ACI_RC ulnConnAttrProcessIntAttr(ulnFnContext  *aFnContext,
                                         ulnConnAttrID  aConnAttr,
@@ -1135,7 +1135,7 @@ static ACI_RC ulnConnAttrProcessIntAttr(ulnFnContext  *aFnContext,
 
     sValue = (acp_sint64_t)sSel * sSign; /* BUG-44151 */
 
-    /* K, M, G, sec, hours¿Í °°Àº ´ÜÀ§ º¯È¯ ¹®ÀÚ Ã³¸® */
+    /* K, M, G, sec, hoursì™€ ê°™ì€ ë‹¨ìœ„ ë³€í™˜ ë¬¸ì ì²˜ë¦¬ */
     sPosLen = ulnParseIndexOfNonWhitespace(aAttrValue, aAttrValueLength, (acp_sint32_t)(sCurr - aAttrValue));
     if (sPosLen < aAttrValueLength)
     {
@@ -1159,12 +1159,12 @@ static ACI_RC ulnConnAttrProcessIntAttr(ulnFnContext  *aFnContext,
     }
 
     /*
-     * Note : ¹üÀ§ Ã¼Å©´Â ulnSetConnAttr ¿¡¼­ ÇÑ´Ù.
+     * Note : ë²”ìœ„ ì²´í¬ëŠ” ulnSetConnAttr ì—ì„œ í•œë‹¤.
      */
 
     /*
      * BUG-28980 [CodeSonar]strncpy Length Unreasonable
-     * aAttrValueLength´Â »ç¿ëµÉ ÀÏÀÌ ¾øÀ¸³ª °æ°í Á¦°Å¸¦ À§ÇØ
+     * aAttrValueLengthëŠ” ì‚¬ìš©ë  ì¼ì´ ì—†ìœ¼ë‚˜ ê²½ê³  ì œê±°ë¥¼ ìœ„í•´
      */
     ACI_TEST(ulnSetConnAttr(aFnContext,
                             aConnAttr,
@@ -1216,16 +1216,16 @@ static ACI_RC ulnConnAttrProcessDiscreteIntAttr(ulnFnContext  *aFnContext,
     }
 
     /*
-     * ¼³Á¤ °¡´ÉÇÑ Å°¿öµå (ulnConnAttributre.cpp ÆÄÀÏÀÇ Å×ÀÌºíµé¿¡¼­ Á¤ÀÇÇØ µĞ Å°¿öµå) °¡
-     * ¾Æ´Ï¸é, ULN_CONN_ATTR_INVALID_VALUE °¡ sValue ¿¡ ¼¼ÆÃµÊ.
+     * ì„¤ì • ê°€ëŠ¥í•œ í‚¤ì›Œë“œ (ulnConnAttributre.cpp íŒŒì¼ì˜ í…Œì´ë¸”ë“¤ì—ì„œ ì •ì˜í•´ ë‘” í‚¤ì›Œë“œ) ê°€
+     * ì•„ë‹ˆë©´, ULN_CONN_ATTR_INVALID_VALUE ê°€ sValue ì— ì„¸íŒ…ë¨.
      *
-     * ¿¡·¯´Â ulnSetConnAttr() ÇÔ¼ö¿¡¼­ ¹üÀ§ Ã¼Å©ÇÏ¸é¼­ ¹ß»ı.
+     * ì—ëŸ¬ëŠ” ulnSetConnAttr() í•¨ìˆ˜ì—ì„œ ë²”ìœ„ ì²´í¬í•˜ë©´ì„œ ë°œìƒ.
      */
 
     sValue = sAllowedPair->mValue;
     /*
      * BUG-28980 [CodeSonar]strncpy Length Unreasonable
-     * aAttrValueLength´Â »ç¿ëµÉ ÀÏÀÌ ¾øÀ¸³ª °æ°í Á¦°Å¸¦ À§ÇØ
+     * aAttrValueLengthëŠ” ì‚¬ìš©ë  ì¼ì´ ì—†ìœ¼ë‚˜ ê²½ê³  ì œê±°ë¥¼ ìœ„í•´
      */
     ACI_TEST(ulnSetConnAttr(aFnContext,
                             aConnAttr,
@@ -1233,7 +1233,7 @@ static ACI_RC ulnConnAttrProcessDiscreteIntAttr(ulnFnContext  *aFnContext,
                             ACI_SIZEOF(acp_slong_t)) != ACI_SUCCESS);
 
     /*
-     * Note : ¹üÀ§ Ã¼Å©´Â ulnSetConnAttr() ¿¡¼­ ÇÑ´Ù.
+     * Note : ë²”ìœ„ ì²´í¬ëŠ” ulnSetConnAttr() ì—ì„œ í•œë‹¤.
      */
 
     return ACI_SUCCESS;
@@ -1283,8 +1283,8 @@ static ACI_RC ulnConnAttrProcessStringAttr(ulnFnContext  *aFnContext,
     if (sReservedWordList->mKey == NULL)
     {
         /*
-         * ¸ÅÄ¡µÇ´Â ¹®ÀÚ¿­ÀÌ ¾ø¾î¼­ ÀÔ·Â¹ŞÀº ¹®ÀÚ¿­À» ±×´ë·Î ¼¼ÆÃÇÒ·Á°í ÇÏ´Âµ¥,
-         * ÀÔ·Â¹ŞÀº ¹®ÀÚ¿­ÀÌ NULL ÀÌ³ª "" ÀÌ¸é, NULL À» ¼¼ÆÃÇÑ´Ù.
+         * ë§¤ì¹˜ë˜ëŠ” ë¬¸ìì—´ì´ ì—†ì–´ì„œ ì…ë ¥ë°›ì€ ë¬¸ìì—´ì„ ê·¸ëŒ€ë¡œ ì„¸íŒ…í• ë ¤ê³  í•˜ëŠ”ë°,
+         * ì…ë ¥ë°›ì€ ë¬¸ìì—´ì´ NULL ì´ë‚˜ "" ì´ë©´, NULL ì„ ì„¸íŒ…í•œë‹¤.
          */
         if (aAttrValue != NULL)
         {
@@ -1297,7 +1297,7 @@ static ACI_RC ulnConnAttrProcessStringAttr(ulnFnContext  *aFnContext,
     else
     {
         /*
-         * ¸ÅÄ¡µÇ´Â ¹®ÀÚ¿­ÀÌ ÀÖ¾î¼­ È®ÀåÀ» ÇÑ´Ù.
+         * ë§¤ì¹˜ë˜ëŠ” ë¬¸ìì—´ì´ ìˆì–´ì„œ í™•ì¥ì„ í•œë‹¤.
          */
         aAttrValue = (acp_char_t *)(sReservedWordList->mValue);
     }
@@ -1332,7 +1332,7 @@ static ACI_RC ulnConnAttrProcessUpperCaseStringAttr(ulnFnContext  *aFnContext,
     const mtlModule *sDefaultModule;// = mtlDefaultModule();
 
     //BUG-22684
-    // ConnectionÀÌ ÀÌ·ç¾îÁö±â Àü¿¡ ÇÔ¼ö°¡ È£ÃâµÉ °æ¿ì¿¡´Â sDbs°¡ NULLÀÌ±â ¶§¹®¿¡ ÀÌ¶§´Â default ModuleÀ» »ç¿ëÇÏµµ·Ï ÇÑ´Ù.
+    // Connectionì´ ì´ë£¨ì–´ì§€ê¸° ì „ì— í•¨ìˆ˜ê°€ í˜¸ì¶œë  ê²½ìš°ì—ëŠ” sDbsê°€ NULLì´ê¸° ë•Œë¬¸ì— ì´ë•ŒëŠ” default Moduleì„ ì‚¬ìš©í•˜ë„ë¡ í•œë‹¤.
     ULN_FNCONTEXT_GET_DBC(aFnContext, sDbc);
 
     ACI_TEST( sDbc == NULL );           //BUG-28623 [CodeSonar]Null Pointer Dereference
@@ -1442,9 +1442,9 @@ ACI_RC ulnSetConnAttrById(ulnFnContext  *aFnContext,
         case ULN_CONN_ATTR_TYPE_CALLBACK:
         case ULN_CONN_ATTR_TYPE_POINTER:
             /*
-             * Note : Æ÷ÀÎÅÍÇü attribute (callback µî) ´Â connection string ÀÌ³ª
-             *        profile string À¸·Î ¼¼ÆÃÇÒ ¼ö ¾ø´Ù.
-             *        ¿ÀÁ÷ SQLSetConnectAttr() ·Î¸¸ ¼¼ÆÃÇÒ ¼ö ÀÖÀ¸¹Ç·Î ÀÌ ÇÔ¼ö¸¦ Å¸Áö ¾Ê´Â´Ù.
+             * Note : í¬ì¸í„°í˜• attribute (callback ë“±) ëŠ” connection string ì´ë‚˜
+             *        profile string ìœ¼ë¡œ ì„¸íŒ…í•  ìˆ˜ ì—†ë‹¤.
+             *        ì˜¤ì§ SQLSetConnectAttr() ë¡œë§Œ ì„¸íŒ…í•  ìˆ˜ ìˆìœ¼ë¯€ë¡œ ì´ í•¨ìˆ˜ë¥¼ íƒ€ì§€ ì•ŠëŠ”ë‹¤.
              */
             ACI_RAISE(LABEL_MEM_MAN_ERR);
             break;
@@ -1549,7 +1549,7 @@ acp_sint32_t ulnCallbackSetConnAttr( void                         *aContext,
             break;
 
         case ULN_CONNSTR_PARSE_EVENT_ERROR:
-            /* ÂüÁ¶ ¹®ÀÚ°¡ ¾øÀ¸¸é '?'·Î */
+            /* ì°¸ì¡° ë¬¸ìê°€ ì—†ìœ¼ë©´ '?'ë¡œ */
             ACI_TEST( ulnError(sFnContext, ulERR_ABORT_INVALID_CONNECTION_STR_FORM,
                                aPos, (aKey == NULL) ? '?' : aKey[0])
                       != ACI_SUCCESS );
@@ -1588,13 +1588,13 @@ ACI_RC ulnSetConnAttrByProfileFunc(ulnFnContext  *aFnContext,
     {
         /*
          * unix-odbc
-         *      setupSQLGetPrivateProfileString() ¿¡¼­ dlsym() À» ÅëÇØ ¾ò¾î¿Â ÇÔ¼ö¸¦ È£Ãâ.
+         *      setupSQLGetPrivateProfileString() ì—ì„œ dlsym() ì„ í†µí•´ ì–»ì–´ì˜¨ í•¨ìˆ˜ë¥¼ í˜¸ì¶œ.
          *
          * sqlcli
-         *      ÀÌ ÇÔ¼ö ÄÄÆÄÀÏ ¾ÈµÊ.
-         *      ÀÌ ÇÔ¼ö ´ë½Å ¾Æ·¡ÂÊÀÇ ¾Æ¹«°Íµµ ¾ÈÇÏ´Â ¹öÁ¯ÀÌ ÄÄÆÄÀÏµÊ.
+         *      ì´ í•¨ìˆ˜ ì»´íŒŒì¼ ì•ˆë¨.
+         *      ì´ í•¨ìˆ˜ ëŒ€ì‹  ì•„ë˜ìª½ì˜ ì•„ë¬´ê²ƒë„ ì•ˆí•˜ëŠ” ë²„ì ¼ì´ ì»´íŒŒì¼ë¨.
          *
-         * ÀÚ¼¼ÇÑ °ÍÀº gSQLConnectModule À» tag ·Î Âï¾îº¸µµ·Ï.
+         * ìì„¸í•œ ê²ƒì€ gSQLConnectModule ì„ tag ë¡œ ì°ì–´ë³´ë„ë¡.
          */
         sSize = gPrivateProfileFuncPtr(aDSNString,
                                        (acp_char_t *)(gUlnConnAttrMap_PROFILE[i].mKey),
@@ -1608,9 +1608,9 @@ ACI_RC ulnSetConnAttrByProfileFunc(ulnFnContext  *aFnContext,
             sConnAttr = gUlnConnAttrMap_PROFILE[i].mConnAttrID;
 
             /*
-             * BUGBUG : null-terminating ÇÏ´Â ºÎºĞÀÌ ÁÖ¼®Ã³¸®µÇ¾î ÀÖ¾úÀ½.
-             *          SQLGetPrivateProfileString() ÀÌ null terminated string À» ÁØ´Ù´Â º¸ÀåÀÌ...
-             *          ¹®¼­¿¡ ÀĞ¾îºÁµµ ¾ğ±ŞÀÌ ¾ø´øµ¥...
+             * BUGBUG : null-terminating í•˜ëŠ” ë¶€ë¶„ì´ ì£¼ì„ì²˜ë¦¬ë˜ì–´ ìˆì—ˆìŒ.
+             *          SQLGetPrivateProfileString() ì´ null terminated string ì„ ì¤€ë‹¤ëŠ” ë³´ì¥ì´...
+             *          ë¬¸ì„œì— ì½ì–´ë´ë„ ì–¸ê¸‰ì´ ì—†ë˜ë°...
              */
 
             ACI_TEST(ulnSetConnAttrById(aFnContext,
@@ -1655,7 +1655,7 @@ ACI_RC ulnSetConnAttrBySQLConstant(ulnFnContext *aFnContext,
     acp_sint32_t  sRealLength;
 
     /*
-     * ulnConnAttrID ¾ò¾î¿À±â
+     * ulnConnAttrID ì–»ì–´ì˜¤ê¸°
      */
 
     sConnAttr = ulnGetConnAttrIDfromSQL_ATTR_ID(aSQLConstant);
@@ -1666,11 +1666,11 @@ ACI_RC ulnSetConnAttrBySQLConstant(ulnFnContext *aFnContext,
         gUlnConnAttrTable[sConnAttr].mAttrType == ULN_CONN_ATTR_TYPE_UPPERCASE_STRING)
     {
         /*
-         * Note : SQLSetConnectAttr() ¿¡¼­µµ string À¸·Î ¼¼ÆÃÇÏ´Â ¼Ó¼ºµéÀº
-         *        °øÅëµÇ´Â ±æÀÌ, reserved word Ã¼Å© µîÀ» ¼öÇàÇÏ±â À§ÇØ¼­
-         *        ulnSetConnAttrById() ÇÔ¼ö¸¦ ÅëÇØ¼­ ulnSetConnAttr() À» È£ÃâÇØ¾ß ÇÑ´Ù.
+         * Note : SQLSetConnectAttr() ì—ì„œë„ string ìœ¼ë¡œ ì„¸íŒ…í•˜ëŠ” ì†ì„±ë“¤ì€
+         *        ê³µí†µë˜ëŠ” ê¸¸ì´, reserved word ì²´í¬ ë“±ì„ ìˆ˜í–‰í•˜ê¸° ìœ„í•´ì„œ
+         *        ulnSetConnAttrById() í•¨ìˆ˜ë¥¼ í†µí•´ì„œ ulnSetConnAttr() ì„ í˜¸ì¶œí•´ì•¼ í•œë‹¤.
          *
-         * sRealLength ´Â À½¼ö¿©¼­´Â ¾ÈµÊ.
+         * sRealLength ëŠ” ìŒìˆ˜ì—¬ì„œëŠ” ì•ˆë¨.
          */
         ACI_TEST_RAISE(aValuePtr == NULL, LABEL_INVALID_USE_OF_NULL);
 
@@ -1685,7 +1685,7 @@ ACI_RC ulnSetConnAttrBySQLConstant(ulnFnContext *aFnContext,
     else
     {
         /*
-         * string ÀÌ ¾Æ´Ñ ÀÏ¹İÀûÀÎ connection attribute ¼¼ÆÃÇÏ±â
+         * string ì´ ì•„ë‹Œ ì¼ë°˜ì ì¸ connection attribute ì„¸íŒ…í•˜ê¸°
          */
         ACI_TEST(ulnSetConnAttr(aFnContext,
                                 sConnAttr,
@@ -1722,11 +1722,11 @@ ACI_RC ulnSetConnAttrBySQLConstant(ulnFnContext *aFnContext,
 
 
 /*
- * Note : 64 ºñÆ® odbc °í·Á
+ * Note : 64 ë¹„íŠ¸ odbc ê³ ë ¤
  *
  * When the Attribute parameter has one of the following values,
  * a 64-bit value is passed in Value:
- *      SQL_ATTR_QUIET_MODE  --> »ç¿ëÇÏÁö ¾ÊÀ¸¹Ç·Î ¹«½Ã
+ *      SQL_ATTR_QUIET_MODE  --> ì‚¬ìš©í•˜ì§€ ì•Šìœ¼ë¯€ë¡œ ë¬´ì‹œ
  *
  * When the Option parameter has one of the following values,
  * a 64-bit value is passed in *Value:
@@ -1735,7 +1735,7 @@ ACI_RC ulnSetConnAttrBySQLConstant(ulnFnContext *aFnContext,
  *      SQL_ROWSET_SIZE
  *      SQL_KEYSET_SIZE
  *
- *      »ó±â ¸ğµç ¿¬°á ¼Ó¼ºµéÀ» ÇöÀç´Â ¾²Áö ¾ÊÀ½.
+ *      ìƒê¸° ëª¨ë“  ì—°ê²° ì†ì„±ë“¤ì„ í˜„ì¬ëŠ” ì“°ì§€ ì•ŠìŒ.
  */
 
 SQLRETURN ulnSetConnectAttr(ulnDbc *aDbc, acp_sint32_t aSQL_ATTR_ID, void *aValuePtr, acp_sint32_t aLength)
@@ -1809,7 +1809,7 @@ ACI_RC ulnCallbackDBPropertySetResult(cmiProtocolContext *aProtocolContext,
     ACP_UNUSED(aUserContext);
 
     /*
-     * ³»¿ë ¾øÀ½.
+     * ë‚´ìš© ì—†ìŒ.
      */
     return ACI_SUCCESS;
 }
@@ -1822,14 +1822,14 @@ ACI_RC ulnCallbackDBPropertySetResult(cmiProtocolContext *aProtocolContext,
  * @aDbc        : Object
  * @aPropertyID : Property ID
  *
- * aPropertyID¸¦ Off ÇÑ´Ù.
- * ¸±¸®Áî ÀÌÈÄ Ãß°¡µÇ´Â ¼­¹ö-Å¬¶óÀÌ¾ğÆ® ÇÁ·ÎÆÛÆ¼´Â ¸ğµÎ Ãß°¡µÇ¾î¾ß ÇÑ´Ù.
- * (ULN_PROPERTY_LOB_CACHE_THRESHOLD´Â »ùÇÃ)
+ * aPropertyIDë¥¼ Off í•œë‹¤.
+ * ë¦´ë¦¬ì¦ˆ ì´í›„ ì¶”ê°€ë˜ëŠ” ì„œë²„-í´ë¼ì´ì–¸íŠ¸ í”„ë¡œí¼í‹°ëŠ” ëª¨ë‘ ì¶”ê°€ë˜ì–´ì•¼ í•œë‹¤.
+ * (ULN_PROPERTY_LOB_CACHE_THRESHOLDëŠ” ìƒ˜í”Œ)
  *
- * tag°£ ÇÏÀ§ ¹öÀüÀÇ ¼­¹ö¿¡ »óÀ§¹öÀüÀÇ Å¬¶óÀÌ¾ğÆ®°¡ Á¢¼ÓÇÏ´Â °æ¿ì ¼­¹ö¿¡¼­
- * Áö¿øµÇÁö ¾Ê´Â ÇÁ·ÎÆÛÆ¼´Â °­Á¦·Î ²¨¾ß ÇÑ´Ù. ¸¸¾à ¹İµå½Ã Áö¿øµÇ¾î¾ß ÇÑ´Ù¸é
- * INCOMPATIBLE_PROPERTY¸¦ ¹ß»ı½ÃÄÑ¾ß ÇÑ´Ù. tag°£¿¡´Â È£È¯ÀÌ µÇµµ·Ï »õ·Î¿î
- * ÇÁ·ÎÆÛÆ¼´Â ¹İµå½Ã Off ¼Ó¼ºÀ» °¡Á®¾ß ÇÑ´Ù.
+ * tagê°„ í•˜ìœ„ ë²„ì „ì˜ ì„œë²„ì— ìƒìœ„ë²„ì „ì˜ í´ë¼ì´ì–¸íŠ¸ê°€ ì ‘ì†í•˜ëŠ” ê²½ìš° ì„œë²„ì—ì„œ
+ * ì§€ì›ë˜ì§€ ì•ŠëŠ” í”„ë¡œí¼í‹°ëŠ” ê°•ì œë¡œ êº¼ì•¼ í•œë‹¤. ë§Œì•½ ë°˜ë“œì‹œ ì§€ì›ë˜ì–´ì•¼ í•œë‹¤ë©´
+ * INCOMPATIBLE_PROPERTYë¥¼ ë°œìƒì‹œì¼œì•¼ í•œë‹¤. tagê°„ì—ëŠ” í˜¸í™˜ì´ ë˜ë„ë¡ ìƒˆë¡œìš´
+ * í”„ë¡œí¼í‹°ëŠ” ë°˜ë“œì‹œ Off ì†ì„±ì„ ê°€ì ¸ì•¼ í•œë‹¤.
  */
 ACI_RC ulnSetConnectAttrOff(ulnFnContext  *aFnContext,
                             ulnDbc        *aDbc,
@@ -1869,8 +1869,8 @@ ACI_RC ulnSetConnectAttrOff(ulnFnContext  *aFnContext,
             break;
 
         /*
-         * »õ·Î¿î ÇÁ·ÎÆÛÆ¼ Ãß°¡½Ã ¾Æ·¡¿Í °°Àº ÄÚµå´Â °¡´ÉÇÑ
-         * ¸¸µé¾îÁöÁö ¾Ê¾Æ¾ß ÇÑ´Ù.
+         * ìƒˆë¡œìš´ í”„ë¡œí¼í‹° ì¶”ê°€ì‹œ ì•„ë˜ì™€ ê°™ì€ ì½”ë“œëŠ” ê°€ëŠ¥í•œ
+         * ë§Œë“¤ì–´ì§€ì§€ ì•Šì•„ì•¼ í•œë‹¤.
         case ULN_PRPOERTY_???_PROPERTY:
             sConnAttrID = ULN_CONN_ATTR_???;
             ACI_RAISE(LABEL_ABORT_INCOMPATIBLE_PROPERTY);

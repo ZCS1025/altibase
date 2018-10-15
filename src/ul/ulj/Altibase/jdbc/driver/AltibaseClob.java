@@ -50,7 +50,7 @@ public class AltibaseClob extends AltibaseLob implements Clob
         if (mAsciiStream == null)
         {
             mAsciiStream = (BlobInputStream)LobObjectFactory.createAsciiStream(mLocatorId, mLobLength, mLobByteCache);
-            if (mChannel != null) // BUG-38008 Ã¤³ÎÀÌ ¿ÀÇÂµÇ¾î ÀÖ´ÂÁö È®ÀÎÇÑ´Ù.
+            if (mChannel != null) // BUG-38008 ì±„ë„ì´ ì˜¤í”ˆë˜ì–´ ìˆëŠ”ì§€ í™•ì¸í•œë‹¤.
             {
                 mAsciiStream.open(mChannel);
             }

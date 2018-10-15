@@ -65,20 +65,20 @@ ACP_INLINE acp_sint32_t mtcDayOfCommonEra( acp_sint32_t aYear,
 
     if ( aYear < 1582 )
     {
-        /* BUG-36296 ±â¿øÀü¿¡´Â 4³â¸¶´Ù À±³âÀÌ¶ó°í °¡Á¤ÇÑ´Ù.
-         *  - °í´ë ·Î¸¶ÀÇ Á¤Ä¡°¡ À²¸®¿ì½º Ä«ÀÌ»ç¸£°¡ ±â¿øÀü 45³âºÎÅÍ À²¸®¿ì½º·ÂÀ» ½ÃÇàÇÏ¿´´Ù.
-         *  - ÃÊ±âÀÇ À²¸®¿ì½º·Â(±â¿øÀü 45³â ~ ±â¿øÀü 8³â)¿¡¼­´Â À±³âÀ» 3³â¿¡ ÇÑ ¹ø ½Ç½ÃÇÏ¿´´Ù. (Oracle 11g ¹ÌÀû¿ë)
-         *  - BC 4713³âºÎÅÍ À²¸®¿ì½ºÀÏÀ» °è»êÇÑ´Ù. Ãµ¹®ÇÐÀÚµéÀÌ À²¸®¿ì½ºÀÏÀ» »ç¿ëÇÑ´Ù. 4³â¸¶´Ù À±³âÀÌ´Ù.
+        /* BUG-36296 ê¸°ì›ì „ì—ëŠ” 4ë…„ë§ˆë‹¤ ìœ¤ë…„ì´ë¼ê³  ê°€ì •í•œë‹¤.
+         *  - ê³ ëŒ€ ë¡œë§ˆì˜ ì •ì¹˜ê°€ ìœ¨ë¦¬ìš°ìŠ¤ ì¹´ì´ì‚¬ë¥´ê°€ ê¸°ì›ì „ 45ë…„ë¶€í„° ìœ¨ë¦¬ìš°ìŠ¤ë ¥ì„ ì‹œí–‰í•˜ì˜€ë‹¤.
+         *  - ì´ˆê¸°ì˜ ìœ¨ë¦¬ìš°ìŠ¤ë ¥(ê¸°ì›ì „ 45ë…„ ~ ê¸°ì›ì „ 8ë…„)ì—ì„œëŠ” ìœ¤ë…„ì„ 3ë…„ì— í•œ ë²ˆ ì‹¤ì‹œí•˜ì˜€ë‹¤. (Oracle 11g ë¯¸ì ìš©)
+         *  - BC 4713ë…„ë¶€í„° ìœ¨ë¦¬ìš°ìŠ¤ì¼ì„ ê³„ì‚°í•œë‹¤. ì²œë¬¸í•™ìžë“¤ì´ ìœ¨ë¦¬ìš°ìŠ¤ì¼ì„ ì‚¬ìš©í•œë‹¤. 4ë…„ë§ˆë‹¤ ìœ¤ë…„ì´ë‹¤.
          *
-         *  AD 0³âÀº Á¸ÀçÇÏÁö ¾Ê´Â´Ù. aYear°¡ 0ÀÌ¸é, BC 1³âÀÌ´Ù. Áï, BC 1³âÀÇ ´ÙÀ½Àº AD 1³âÀÌ´Ù.
+         *  AD 0ë…„ì€ ì¡´ìž¬í•˜ì§€ ì•ŠëŠ”ë‹¤. aYearê°€ 0ì´ë©´, BC 1ë…„ì´ë‹¤. ì¦‰, BC 1ë…„ì˜ ë‹¤ìŒì€ AD 1ë…„ì´ë‹¤.
          */
         if ( aYear <= 0 )
         {
             sDays = ( aYear * 365 ) + ( aYear / 4 )
                   + mtcDayOfYear( aYear, aMonth, aDay )
-                  - 366; /* BC 1³â(aYear == 0)ÀÌ À±³âÀÌ´Ù. */
+                  - 366; /* BC 1ë…„(aYear == 0)ì´ ìœ¤ë…„ì´ë‹¤. */
         }
-        /* BUG-36296 ±×·¹°í¸®·ÂÀÇ À±³â ±ÔÄ¢Àº 1583³âºÎÅÍ Àû¿ëÇÑ´Ù. 1582³â ÀÌÀü¿¡´Â 4³â¸¶´Ù À±³âÀÌ´Ù. */
+        /* BUG-36296 ê·¸ë ˆê³ ë¦¬ë ¥ì˜ ìœ¤ë…„ ê·œì¹™ì€ 1583ë…„ë¶€í„° ì ìš©í•œë‹¤. 1582ë…„ ì´ì „ì—ëŠ” 4ë…„ë§ˆë‹¤ ìœ¤ë…„ì´ë‹¤. */
         else
         {
             sDays = ( ( aYear - 1 ) * 365 ) + ( ( aYear - 1 ) / 4 )
@@ -87,7 +87,7 @@ ACP_INLINE acp_sint32_t mtcDayOfCommonEra( acp_sint32_t aYear,
     }
     else if ( aYear == 1582 )
     {
-        /* BUG-36296 ±×·¹°í¸®·ÂÀº 1582³â 10¿ù 15ÀÏºÎÅÍ ½ÃÀÛÇÑ´Ù. */
+        /* BUG-36296 ê·¸ë ˆê³ ë¦¬ë ¥ì€ 1582ë…„ 10ì›” 15ì¼ë¶€í„° ì‹œìž‘í•œë‹¤. */
         if ( ( aMonth < 10 ) ||
              ( ( aMonth == 10 ) && ( aDay < 15 ) ) )
         {
@@ -98,45 +98,45 @@ ACP_INLINE acp_sint32_t mtcDayOfCommonEra( acp_sint32_t aYear,
         {
             sDays = ( ( aYear - 1 ) * 365 ) + ( ( aYear - 1 ) / 4 )
                   + mtcDayOfYear( aYear, aMonth, aDay )
-                  - 10; /* 1582³â 10¿ù 4ÀÏ(¸ñ)¿¡¼­ 10¿ù 15ÀÏ(±Ý)À¸·Î ¹Ù·Î °Ç³Ê¶Ú´Ù. */
+                  - 10; /* 1582ë…„ 10ì›” 4ì¼(ëª©)ì—ì„œ 10ì›” 15ì¼(ê¸ˆ)ìœ¼ë¡œ ë°”ë¡œ ê±´ë„ˆë›´ë‹¤. */
         }
     }
     else
     {
-        /* BUG-36296 1600³â ÀÌÀüÀº À²¸®¿ì½º·Â°ú ±×·¹°í¸®·ÂÀÇ À±³âÀÌ °°´Ù. */
+        /* BUG-36296 1600ë…„ ì´ì „ì€ ìœ¨ë¦¬ìš°ìŠ¤ë ¥ê³¼ ê·¸ë ˆê³ ë¦¬ë ¥ì˜ ìœ¤ë…„ì´ ê°™ë‹¤. */
         if ( aYear <= 1600 )
         {
             sDays = ( ( aYear - 1 ) * 365 ) + ( ( aYear - 1 ) / 4 )
                   + mtcDayOfYear( aYear, aMonth, aDay )
-                  - 10; /* 1582³â 10¿ù 4ÀÏ(¸ñ)¿¡¼­ 10¿ù 15ÀÏ(±Ý)À¸·Î ¹Ù·Î °Ç³Ê¶Ú´Ù. */
+                  - 10; /* 1582ë…„ 10ì›” 4ì¼(ëª©)ì—ì„œ 10ì›” 15ì¼(ê¸ˆ)ìœ¼ë¡œ ë°”ë¡œ ê±´ë„ˆë›´ë‹¤. */
         }
         else
         {
             sDays = ( ( aYear - 1 ) * 365 ) + ( ( aYear - 1 ) / 4 )
                   - ( ( aYear - 1 - 1600 ) / 100 ) + ( ( aYear - 1 - 1600 ) / 400 )
                   + mtcDayOfYear( aYear, aMonth, aDay )
-                  - 10; /* 1582³â 10¿ù 4ÀÏ(¸ñ)¿¡¼­ 10¿ù 15ÀÏ(±Ý)À¸·Î ¹Ù·Î °Ç³Ê¶Ú´Ù. */
+                  - 10; /* 1582ë…„ 10ì›” 4ì¼(ëª©)ì—ì„œ 10ì›” 15ì¼(ê¸ˆ)ìœ¼ë¡œ ë°”ë¡œ ê±´ë„ˆë›´ë‹¤. */
         }
     }
 
-    /* AD 0001³â 1¿ù 1ÀÏÀº Day 0 ÀÌ´Ù. ±×¸®°í, BC 0001³â 12¿ù 31ÀÏÀº Day -1 ÀÌ´Ù. */
+    /* AD 0001ë…„ 1ì›” 1ì¼ì€ Day 0 ì´ë‹¤. ê·¸ë¦¬ê³ , BC 0001ë…„ 12ì›” 31ì¼ì€ Day -1 ì´ë‹¤. */
     sDays--;
 
     return sDays;
 }
 
-/* ÀÏ¿äÀÏ : 0, Åä¿äÀÏ : 6 */
+/* ì¼ìš”ì¼ : 0, í† ìš”ì¼ : 6 */
 ACP_INLINE acp_sint32_t mtcDayOfWeek( acp_sint32_t aYear,
                                       acp_sint32_t aMonth,
                                       acp_sint32_t aDay )
 {
-    /* ±â¿øÀüÀÎ °æ¿ì¿¡´Â À½¼ö°¡ ³ª¿À¹Ç·Î, %7À» ¸ÕÀúÇÏ°í º¸Á¤°ªÀ» ´õÇÑ´Ù.
-     * AD 0001³â 01¿ù 01ÀÏÀº Åä¿äÀÏ(sDays = 0)ÀÌ´Ù. +6¸¦ ÇÏ¿© º¸Á¤ÇÑ´Ù.
+    /* ê¸°ì›ì „ì¸ ê²½ìš°ì—ëŠ” ìŒìˆ˜ê°€ ë‚˜ì˜¤ë¯€ë¡œ, %7ì„ ë¨¼ì €í•˜ê³  ë³´ì •ê°’ì„ ë”í•œë‹¤.
+     * AD 0001ë…„ 01ì›” 01ì¼ì€ í† ìš”ì¼(sDays = 0)ì´ë‹¤. +6ë¥¼ í•˜ì—¬ ë³´ì •í•œë‹¤.
      */
     return ( ( mtcDayOfCommonEra( aYear, aMonth, aDay ) % 7 ) + 6 ) % 7;
 }
 
-/* ´Þ·Â°ú ÀÏÄ¡ÇÏ´Â ÁÖÂ÷ : ÁÖ°¡ ÀÏ¿äÀÏºÎÅÍ ½ÃÀÛÇÑ´Ù. */
+/* ë‹¬ë ¥ê³¼ ì¼ì¹˜í•˜ëŠ” ì£¼ì°¨ : ì£¼ê°€ ì¼ìš”ì¼ë¶€í„° ì‹œìž‘í•œë‹¤. */
 ACP_INLINE acp_sint32_t mtcWeekOfYear( acp_sint32_t aYear,
                                        acp_sint32_t aMonth,
                                        acp_sint32_t aDay )
@@ -151,7 +151,7 @@ ACP_INLINE acp_sint32_t mtcWeekOfYear( acp_sint32_t aYear,
     return (acp_sint32_t)sWeek;
 }
 
-/* BUG-42941 TO_CHAR()¿¡ WW2(Oracle Version WW) Ãß°¡ */
+/* BUG-42941 TO_CHAR()ì— WW2(Oracle Version WW) ì¶”ê°€ */
 ACP_INLINE acp_sint32_t mtcWeekOfYearForOracle( acp_sint32_t aYear,
                                                 acp_sint32_t aMonth,
                                                 acp_sint32_t aDay )
@@ -163,14 +163,14 @@ ACP_INLINE acp_sint32_t mtcWeekOfYearForOracle( acp_sint32_t aYear,
     return sWeek;
 }
 
-/* BUG-42926 TO_CHAR()¿¡ IW Ãß°¡ */
+/* BUG-42926 TO_CHAR()ì— IW ì¶”ê°€ */
 acp_sint32_t mtcWeekOfYearForStandard( acp_sint32_t aYear,
                                        acp_sint32_t aMonth,
                                        acp_sint32_t aDay );
 
 extern const acp_uint32_t mtcHashInitialValue;
 
-// mtd::valueForModule¿¡¼­ »ç¿ëÇÑ´Ù.
+// mtd::valueForModuleì—ì„œ ì‚¬ìš©í•œë‹¤.
 // PROJ-1579 NCHAR
 extern mtcGetDBCharSet            getDBCharSet;
 extern mtcGetNationalCharSet      getNationalCharSet;
@@ -326,21 +326,21 @@ ACI_RC mtcRoundFloat( mtdNumericType *aValue,
 ACI_RC mtcNumeric2Slong( acp_sint64_t          *aValue,
                          mtdNumericType *aArgument1 );
 
-// To fix BUG-12944 Á¤È®ÇÑ precision ¾ò¾î¿À±â.
+// To fix BUG-12944 ì •í™•í•œ precision ì–»ì–´ì˜¤ê¸°.
 ACI_RC mtcGetPrecisionScaleFloat( const mtdNumericType * aValue,
                                   acp_sint32_t         * aPrecision,
                                   acp_sint32_t         * aScale );
 
-// BUG-30257 Clinet C Æ÷ÆÃ ÀÌÈÄ Client¿ë Image ºñ±³ ÇÔ¼ö
+// BUG-30257 Clinet C í¬íŒ… ì´í›„ Clientìš© Image ë¹„êµ í•¨ìˆ˜
 acp_bool_t mtcIsSamePhysicalImageByModule( const mtdModule* aModule,
                                            const void     * aValue1,
                                            const void     * aValue2);
 
 //----------------------
-// mtcColumnÀÇ ÃÊ±âÈ­
+// mtcColumnì˜ ì´ˆê¸°í™”
 //----------------------
 
-// data module ¹× language moduleÀ» ÁöÁ¤ÇÑ °æ¿ì
+// data module ë° language moduleì„ ì§€ì •í•œ ê²½ìš°
 ACI_RC mtcInitializeColumn( mtcColumn       * aColumn,
                             const mtdModule * aModule,
                             acp_uint32_t      aArguments,

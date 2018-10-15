@@ -33,26 +33,26 @@ const void * gQcmTBSUsers;
 const void * gQcmTBSUsersIndex[ QCM_MAX_META_INDICES ];
 
 /*
-  Alias => Tablespace ÀÌ¸§ À¸·ÎÀÇ Mapping TableÀ» À§ÇÑ Entry
+  Alias => Tablespace ì´ë¦„ ìœ¼ë¡œì˜ Mapping Tableì„ ìœ„í•œ Entry
 */
 struct qdbTBSNameAlias
 {
     SChar * mAliasName; /* Tablespace Alias */
-    SChar * mTBSName;   /* ½ÇÁ¦ Tablespace ÀÌ¸§ */
+    SChar * mTBSName;   /* ì‹¤ì œ Tablespace ì´ë¦„ */
 };
 
 /*
-  Alias => Tablespace ÀÌ¸§ À¸·ÎÀÇ Mapping À» ½Ç½Ã
+  Alias => Tablespace ì´ë¦„ ìœ¼ë¡œì˜ Mapping ì„ ì‹¤ì‹œ
 
-  To Fix BUG-16839 ±âÁ¸ÀÇ ½Ã½ºÅÛ TablespaceÀÌ¸§À»
-  ±×´ë·Î »ç¿ëÇÒ ¼ö ÀÖµµ·Ï Áö¿ø
+  To Fix BUG-16839 ê¸°ì¡´ì˜ ì‹œìŠ¤í…œ Tablespaceì´ë¦„ì„
+  ê·¸ëŒ€ë¡œ ì‚¬ìš©í•  ìˆ˜ ìžˆë„ë¡ ì§€ì›
 
-  ½Ã³ë´ÔÀ» ÅëÇØ 1Â÷ ±¸ÇöÇÏ¿´À¸³ª,
-  QPÀÇ ÄÁ¼Á¿¡ ¸ÂÁö ¾Ê¾Æ¼­ ÄÚµå ¿øº¹ÇÏ°í
-  TablespaceÀÌ¸§ ¸ÅÇÎ Å×ÀÌºíÀ» °£´ÜÈ÷ ±¸ÇöÇÔ
+  ì‹œë…¸ë‹˜ì„ í†µí•´ 1ì°¨ êµ¬í˜„í•˜ì˜€ìœ¼ë‚˜,
+  QPì˜ ì»¨ì…‰ì— ë§žì§€ ì•Šì•„ì„œ ì½”ë“œ ì›ë³µí•˜ê³ 
+  Tablespaceì´ë¦„ ë§¤í•‘ í…Œì´ë¸”ì„ ê°„ë‹¨ížˆ êµ¬í˜„í•¨
 
-  [IN] aAliasNamePtr - Alias ¹®ÀÚ¿­ ½ÃÀÛ
-  [OUT] aTBSNamePtr - Tablespace ÀÌ¸§ ¹®ÀÚ¿­ ½ÃÀÛ
+  [IN] aAliasNamePtr - Alias ë¬¸ìžì—´ ì‹œìž‘
+  [OUT] aTBSNamePtr - Tablespace ì´ë¦„ ë¬¸ìžì—´ ì‹œìž‘
 */
 IDE_RC qcmTablespace::lookupTBSNameAlias(
     SChar         * aAliasName,
@@ -74,8 +74,8 @@ IDE_RC qcmTablespace::lookupTBSNameAlias(
     IDE_DASSERT( aAliasName    != NULL );
     IDE_DASSERT( aFoundTBSName != NULL );
 
-    // ¾Æ¹«°Íµµ ¸ø Ã£À»¶§¿¡ ´ëºñÇÏ¿©
-    // ±âº»ÀûÀ¸·Î InputÀ» ±×´ë·Î Output¿¡ ±â·Ï
+    // ì•„ë¬´ê²ƒë„ ëª» ì°¾ì„ë•Œì— ëŒ€ë¹„í•˜ì—¬
+    // ê¸°ë³¸ì ìœ¼ë¡œ Inputì„ ê·¸ëŒ€ë¡œ Outputì— ê¸°ë¡
     *aFoundTBSName = aAliasName;
 
     for ( i=0; sAliasLookup[i].mAliasName != NULL; i++ )
@@ -106,12 +106,12 @@ qcmTablespace::getTBSAttrByName( qcStatement       * aStatement,
 /***********************************************************************
  *
  * Description :
- *    ÁÖ¾îÁø Tablespace ÀÌ¸§À» ÀÌ¿ëÇÏ¿© Tablespace Á¤º¸¸¦ ¾ò´Â´Ù.
+ *    ì£¼ì–´ì§„ Tablespace ì´ë¦„ì„ ì´ìš©í•˜ì—¬ Tablespace ì •ë³´ë¥¼ ì–»ëŠ”ë‹¤.
  *
  * Implementation :
  *    To Fix PR-10780
- *    Table Space °ü·Ã Meta TableÀ» Á¦°ÅÇÏ¿©
- *    SM À¸·ÎºÎÅÍ ÇØ´ç Á¤º¸¸¦ È¹µæÇÑ´Ù.
+ *    Table Space ê´€ë ¨ Meta Tableì„ ì œê±°í•˜ì—¬
+ *    SM ìœ¼ë¡œë¶€í„° í•´ë‹¹ ì •ë³´ë¥¼ íšë“í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -120,7 +120,7 @@ qcmTablespace::getTBSAttrByName( qcStatement       * aStatement,
     SChar       * sTBSName;
 
     //----------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //----------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -130,13 +130,13 @@ qcmTablespace::getTBSAttrByName( qcStatement       * aStatement,
     IDE_DASSERT( aTBSAttr != NULL );
 
     //----------------------------------------
-    // Storage Manager·ÎºÎÅÍ Á¤º¸ È¹µæ
+    // Storage Managerë¡œë¶€í„° ì •ë³´ íšë“
     //----------------------------------------
 
     idlOS::memcpy( sTBSNameBuffer, aName, aNameLength );
     sTBSNameBuffer[aNameLength] = '\0';
 
-    // Tablespace AliasÀÎ °æ¿ì ÀÌ¸¦ ½ÇÁ¦ TablespaceÀÌ¸§À¸·Î º¯È¯
+    // Tablespace Aliasì¸ ê²½ìš° ì´ë¥¼ ì‹¤ì œ Tablespaceì´ë¦„ìœ¼ë¡œ ë³€í™˜
     IDE_TEST( lookupTBSNameAlias( sTBSNameBuffer,
                                   & sTBSName ) != IDE_SUCCESS );
 
@@ -144,8 +144,8 @@ qcmTablespace::getTBSAttrByName( qcStatement       * aStatement,
               != IDE_SUCCESS );
 
     //----------------------------------------
-    // Cursor °ü¸®¸¦ À§ÇÑ Á¤º¸ ¼³Á¤
-    // Memory ¶Ç´Â Disk Tablespace ¿µ¿ªÀÇ Á¢±Ù ¿©ºÎ ¼³Á¤
+    // Cursor ê´€ë¦¬ë¥¼ ìœ„í•œ ì •ë³´ ì„¤ì •
+    // Memory ë˜ëŠ” Disk Tablespace ì˜ì—­ì˜ ì ‘ê·¼ ì—¬ë¶€ ì„¤ì •
     //----------------------------------------
 
     if ( QC_SHARED_TMPLATE(aStatement) != NULL )
@@ -153,14 +153,14 @@ qcmTablespace::getTBSAttrByName( qcStatement       * aStatement,
         if ( (smiTableSpace::isMemTableSpaceType( aTBSAttr->mType )  == ID_TRUE) ||
              (smiTableSpace::isVolatileTableSpaceType( aTBSAttr->mType ) == ID_TRUE) )
         {
-            // Memory Table Space¸¦ »ç¿ëÇÏ´Â DDLÀÎ °æ¿ì
-            // Cursor FlagÀÇ ´©Àû
+            // Memory Table Spaceë¥¼ ì‚¬ìš©í•˜ëŠ” DDLì¸ ê²½ìš°
+            // Cursor Flagì˜ ëˆ„ì 
             QC_SHARED_TMPLATE(aStatement)->smiStatementFlag |= SMI_STATEMENT_MEMORY_CURSOR;
         }
         else
         {
-            // Disk Table Space¸¦ »ç¿ëÇÏ´Â DDLÀÎ °æ¿ì
-            // Cursor FlagÀÇ ´©Àû
+            // Disk Table Spaceë¥¼ ì‚¬ìš©í•˜ëŠ” DDLì¸ ê²½ìš°
+            // Cursor Flagì˜ ëˆ„ì 
             QC_SHARED_TMPLATE(aStatement)->smiStatementFlag |= SMI_STATEMENT_DISK_CURSOR;
         }
     }
@@ -182,21 +182,21 @@ IDE_RC qcmTablespace::getTBSAttrByID( scSpaceID           aTBSID,
 /***********************************************************************
  *
  * Description :
- *     TBS ID¸¦ ÀÌ¿ëÇÏ¿© TBS Á¤º¸¸¦ È¹µæÇÔ
+ *     TBS IDë¥¼ ì´ìš©í•˜ì—¬ TBS ì •ë³´ë¥¼ íšë“í•¨
  *
  * Implementation :
- *     Storage Manager·ÎºÎÅÍ TBS Á¤º¸¸¦ È¹µæÇÔ.
+ *     Storage Managerë¡œë¶€í„° TBS ì •ë³´ë¥¼ íšë“í•¨.
  *
  ***********************************************************************/
 
     //-------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //-------------------------------------
 
     IDE_DASSERT( aTBSAttr != NULL );
 
     //-------------------------------------
-    // Storage Manager·ÎºÎÅÍ Á¤º¸¸¦ È¹µæÇÔ
+    // Storage Managerë¡œë¶€í„° ì •ë³´ë¥¼ íšë“í•¨
     //-------------------------------------
 
     IDE_TEST( smiTableSpace::getAttrByID( aTBSID, aTBSAttr )
@@ -219,17 +219,17 @@ qcmTablespace::existDataFileInTBS( scSpaceID   aTBSID,
 /***********************************************************************
  *
  * Description :
- *    ÁöÁ¤µÈ TBS ³»¿¡ µ¿ÀÏÇÑ Data FileÀÌ Á¸ÀçÇÏ´Â Áö °Ë»ç
+ *    ì§€ì •ëœ TBS ë‚´ì— ë™ì¼í•œ Data Fileì´ ì¡´ìž¬í•˜ëŠ” ì§€ ê²€ì‚¬
  *
  * Implementation :
- *    Storage Manager·ÎºÎÅÍ Á¸Àç ¿©ºÎ¸¦ È®ÀÎÇÑ´Ù.
+ *    Storage Managerë¡œë¶€í„° ì¡´ìž¬ ì—¬ë¶€ë¥¼ í™•ì¸í•œë‹¤.
  *
  ***********************************************************************/
 
     SChar sDataFileName[SMI_MAX_DATAFILE_NAME_LEN + 1];
 
     //---------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //---------------------------------------
 
     IDE_DASSERT( aName != NULL );
@@ -238,7 +238,7 @@ qcmTablespace::existDataFileInTBS( scSpaceID   aTBSID,
     IDE_DASSERT( aExist != NULL );
 
     //---------------------------------------
-    // Storage Manager·ÎºÎÅÍ Á¸Àç ¿©ºÎ È®ÀÎ
+    // Storage Managerë¡œë¶€í„° ì¡´ìž¬ ì—¬ë¶€ í™•ì¸
     //---------------------------------------
 
     idlOS::memcpy( sDataFileName, aName, aNameLength );
@@ -262,17 +262,17 @@ qcmTablespace::existDataFileInDB( SChar     * aName,
 /***********************************************************************
  *
  * Description :
- *    ÀüÃ¼ DB ³»¿¡ µ¿ÀÏÇÑ Data FileÀÌ Á¸ÀçÇÏ´Â Áö °Ë»ç
+ *    ì „ì²´ DB ë‚´ì— ë™ì¼í•œ Data Fileì´ ì¡´ìž¬í•˜ëŠ” ì§€ ê²€ì‚¬
  *
  * Implementation :
- *    Storage Manager·ÎºÎÅÍ Á¸Àç ¿©ºÎ¸¦ È®ÀÎÇÑ´Ù.
+ *    Storage Managerë¡œë¶€í„° ì¡´ìž¬ ì—¬ë¶€ë¥¼ í™•ì¸í•œë‹¤.
  *
  ***********************************************************************/
 
     SChar sDataFileName[SMI_MAX_DATAFILE_NAME_LEN + 1];
 
     //---------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //---------------------------------------
 
     IDE_DASSERT( aName != NULL );
@@ -281,7 +281,7 @@ qcmTablespace::existDataFileInDB( SChar     * aName,
     IDE_DASSERT( aExist != NULL );
 
     //---------------------------------------
-    // Storage Manager·ÎºÎÅÍ Á¸Àç ¿©ºÎ È®ÀÎ
+    // Storage Managerë¡œë¶€í„° ì¡´ìž¬ ì—¬ë¶€ í™•ì¸
     //---------------------------------------
 
     idlOS::memcpy( sDataFileName, aName, aNameLength );
@@ -304,14 +304,14 @@ IDE_RC qcmTablespace::existObject(qcStatement      *aStatement,
 /***********************************************************************
  *
  * Description :
- *    ¸í½ÃÇÑ Å×ÀÌºí½ºÆäÀÌ½º¿¡ ¼ÓÇØ ÀÖ´Â °´Ã¼°¡ ÀÖ´ÂÁö Ã¼Å©ÇÑ´Ù
+ *    ëª…ì‹œí•œ í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ì— ì†í•´ ìžˆëŠ” ê°ì²´ê°€ ìžˆëŠ”ì§€ ì²´í¬í•œë‹¤
  *
  * Implementation :
- *    1. SYS_TABLES_ Ã¼Å©
- *    2. SYS_TABLE_PARTITIONS_ Ã¼Å©
- *    3. SYS_LOBS_ Ã¼Å©
- *    4. SYS_INDICES_ Ã¼Å©
- *    5. SYS_INDEX_PARTITIONS_ Ã¼Å©
+ *    1. SYS_TABLES_ ì²´í¬
+ *    2. SYS_TABLE_PARTITIONS_ ì²´í¬
+ *    3. SYS_LOBS_ ì²´í¬
+ *    4. SYS_INDICES_ ì²´í¬
+ *    5. SYS_INDEX_PARTITIONS_ ì²´í¬
  *
  ***********************************************************************/
 
@@ -322,7 +322,7 @@ IDE_RC qcmTablespace::existObject(qcStatement      *aStatement,
     const void            * sRow;
     smiTableCursor          sCursor;
     smiCursorProperties     sCursorProperty;
-    scGRID                  sRid; // Disk TableÀ» À§ÇÑ Record IDentifier
+    scGRID                  sRid; // Disk Tableì„ ìœ„í•œ Record IDentifier
     mtdIntegerType          sIntDataOfTBSID = (mtdIntegerType) aTBSID;
 
     *aExist = ID_FALSE;
@@ -562,13 +562,13 @@ IDE_RC qcmTablespace::findTableInfoListInTBS(
 /***********************************************************************
  *
  * Description :
- *    qdtDrop::validate, qdtDrop::execute ·ÎºÎÅÍ È£Ãâ, drop °¡´ÉÇÑ
- *    Å×ÀÌºíÀÇ ¸®½ºÆ®¸¦ µ¹·ÁÁØ´Ù.
+ *    qdtDrop::validate, qdtDrop::execute ë¡œë¶€í„° í˜¸ì¶œ, drop ê°€ëŠ¥í•œ
+ *    í…Œì´ë¸”ì˜ ë¦¬ìŠ¤íŠ¸ë¥¼ ëŒë ¤ì¤€ë‹¤.
  *
- *    smiValidateAndLockObjects ¿¡¼­ TBS¿¡ ´ëÇØ¼­´Â
- *    SMI_TBSLV_DROP_TBS¿É¼ÇÀ¸·Î Ã³¸®ÇÏ±â ¶§¹®¿¡
- *    Drop µÈ TBSÀÌ¿Ü¿¡ ONLINE/OFFLINE/DISCARDED »óÅÂÀÇ TBS¿¡
- *    ´ëÇØ¼­µµ Àá±ÝÀ» È¹µæÇÒ ¼ö ÀÖ´Ù.
+ *    smiValidateAndLockObjects ì—ì„œ TBSì— ëŒ€í•´ì„œëŠ”
+ *    SMI_TBSLV_DROP_TBSì˜µì…˜ìœ¼ë¡œ ì²˜ë¦¬í•˜ê¸° ë•Œë¬¸ì—
+ *    Drop ëœ TBSì´ì™¸ì— ONLINE/OFFLINE/DISCARDED ìƒíƒœì˜ TBSì—
+ *    ëŒ€í•´ì„œë„ ìž ê¸ˆì„ íšë“í•  ìˆ˜ ìžˆë‹¤.
  *
  * Implementation :
  *
@@ -593,7 +593,7 @@ IDE_RC qcmTablespace::findTableInfoListInTBS(
     qcmTableInfoList      * sTempTableInfoList = NULL;
     qcmTableInfoList      * sCurrTableInfoList;
     smiCursorProperties     sCursorProperty;
-    scGRID                  sRid; // Disk TableÀ» À§ÇÑ Record IDentifier
+    scGRID                  sRid; // Disk Tableì„ ìœ„í•œ Record IDentifier
     idBool                  sFound;
     mtdIntegerType          sIntDataOfTBSID = (mtdIntegerType) aTBSID;
 
@@ -678,7 +678,7 @@ IDE_RC qcmTablespace::findTableInfoListInTBS(
         sHidden = sHiddenStr->value;
 
         // PROJ-1624 Global Non-partitioned Index
-        // hidden tableÀº hidden tableÀ» ¼ÒÀ¯ÇÑ °´Ã¼°¡ Á÷Á¢Ã³¸®ÇÑ´Ù.
+        // hidden tableì€ hidden tableì„ ì†Œìœ í•œ ê°ì²´ê°€ ì§ì ‘ì²˜ë¦¬í•œë‹¤.
         // if we want to get the table is sequence or not
         /* BUG-35460 Add TABLE_TYPE G in SYS_TABLES_ */
         if ( ( ( idlOS::strMatch( (SChar*)sTableType, sTableTypeStr->length, "T", 1 ) == 0 ) ||
@@ -698,24 +698,24 @@ IDE_RC qcmTablespace::findTableInfoListInTBS(
                                            &sSCN,
                                            &sTableHandle) != IDE_SUCCESS);
 
-            // fix BUG-17285  Disk Tablespace ¸¦ OFFLINE/DISCARD ÈÄ DROP½Ã
-            // ¿¡·¯¹ß»ý
-            // Å×ÀÌºíÀÇ Å×ÀÌºí½ºÆäÀÌ½º°¡ OFFLINE/ONLINE/DISCARDED »óÅÂÀÎ
-            // °æ¿ì¿¡µµ LockÀ» È¹µæÇÒ ¼ö ÀÖµµ·Ï ÇÑ´Ù.
+            // fix BUG-17285  Disk Tablespace ë¥¼ OFFLINE/DISCARD í›„ DROPì‹œ
+            // ì—ëŸ¬ë°œìƒ
+            // í…Œì´ë¸”ì˜ í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ê°€ OFFLINE/ONLINE/DISCARDED ìƒíƒœì¸
+            // ê²½ìš°ì—ë„ Lockì„ íšë“í•  ìˆ˜ ìžˆë„ë¡ í•œë‹¤.
             IDE_TEST(smiValidateAndLockObjects( (QC_SMI_STMT( aStatement ))->getTrans(),
                                                 sTableHandle,
                                                 sSCN,
-                                                SMI_TBSLV_DROP_TBS, // TBS Validation ¿É¼Ç
+                                                SMI_TBSLV_DROP_TBS, // TBS Validation ì˜µì…˜
                                                 sLockMode,
                                                 ((smiGetDDLLockTimeOut() == -1) ?
                                                  ID_ULONG_MAX :
                                                  smiGetDDLLockTimeOut()*1000000),
-                                                ID_FALSE ) // BUG-28752 ¸í½ÃÀû Lock°ú ³»ÀçÀû LockÀ» ±¸ºÐÇÕ´Ï´Ù.
+                                                ID_FALSE ) // BUG-28752 ëª…ì‹œì  Lockê³¼ ë‚´ìž¬ì  Lockì„ êµ¬ë¶„í•©ë‹ˆë‹¤.
                      != IDE_SUCCESS);
 
             IDE_TEST_RAISE(sTableInfo->replicationCount > 0,
                            ERR_DDL_WITH_REPLICATED_TABLE);
-            //proj-1608:replicationCount°¡ 0ÀÏ ¶§ recovery count´Â Ç×»ó 0ÀÌ¾î¾ß ÇÔ
+            //proj-1608:replicationCountê°€ 0ì¼ ë•Œ recovery countëŠ” í•­ìƒ 0ì´ì–´ì•¼ í•¨
             IDE_DASSERT(sTableInfo->replicationRecoveryCount == 0);
 
             if (sTableInfoList == NULL)
@@ -831,7 +831,7 @@ IDE_RC qcmTablespace::findTableInfoListInTBS(
                                        &sSCN,
                                        &sTableHandle) != IDE_SUCCESS);
 
-        // Áßº¹À» Á¦°ÅÇÑ´Ù.
+        // ì¤‘ë³µì„ ì œê±°í•œë‹¤.
         sFound = ID_FALSE;
 
         if (*aTableInfoList != NULL)
@@ -863,17 +863,17 @@ IDE_RC qcmTablespace::findTableInfoListInTBS(
             IDE_TEST(smiValidateAndLockObjects( (QC_SMI_STMT( aStatement ))->getTrans(),
                                                 sTableHandle,
                                                 sSCN,
-                                                SMI_TBSLV_DROP_TBS, // TBS Validation ¿É¼Ç
+                                                SMI_TBSLV_DROP_TBS, // TBS Validation ì˜µì…˜
                                                 sLockMode,
                                                 ((smiGetDDLLockTimeOut() == -1) ?
                                                  ID_ULONG_MAX :
                                                  smiGetDDLLockTimeOut()*1000000),
-                                                ID_FALSE ) // BUG-28752 ¸í½ÃÀû Lock°ú ³»ÀçÀû LockÀ» ±¸ºÐÇÕ´Ï´Ù.
+                                                ID_FALSE ) // BUG-28752 ëª…ì‹œì  Lockê³¼ ë‚´ìž¬ì  Lockì„ êµ¬ë¶„í•©ë‹ˆë‹¤.
                      != IDE_SUCCESS);
 
             IDE_TEST_RAISE(sTableInfo->replicationCount > 0,
                            ERR_DDL_WITH_REPLICATED_TABLE);
-            //proj-1608:replicationCount°¡ 0ÀÏ ¶§ recovery count´Â Ç×»ó 0ÀÌ¾î¾ß ÇÔ
+            //proj-1608:replicationCountê°€ 0ì¼ ë•Œ recovery countëŠ” í•­ìƒ 0ì´ì–´ì•¼ í•¨
             IDE_DASSERT(sTableInfo->replicationRecoveryCount == 0);
 
             if (sTableInfoList == NULL)
@@ -1004,7 +1004,7 @@ static IDE_RC findTablePartInfoListInTBSInternal(qcStatement       *aStatement,
     void                  * sTablePartHandle;
 
     smiCursorProperties     sCursorProperty;
-    scGRID                  sRid; // Disk TableÀ» À§ÇÑ Record IDentifier
+    scGRID                  sRid; // Disk Tableì„ ìœ„í•œ Record IDentifier
     mtdIntegerType          sIntDataOfTBSID = (mtdIntegerType) aTBSID;
 
     qcmTableInfoList      * sTablePartInfoList     = NULL;
@@ -1039,8 +1039,8 @@ static IDE_RC findTablePartInfoListInTBSInternal(qcStatement       *aStatement,
     IDE_TEST(sCursor.readRow(&sRow, &sRid, SMI_FIND_NEXT) != IDE_SUCCESS);
 
     /*
-     * Àü´ÞµÇ¾îÁ® ¿Â list ÀÇ µÚ¿¡¼­ºÎÅÍ Ãß°¡ÇÏ±â À§ÇØ¼­, current position À»
-     * ¸®½ºÆ®ÀÇ ¸Ç µÚ·Î ¿Å±ä´Ù.
+     * ì „ë‹¬ë˜ì–´ì ¸ ì˜¨ list ì˜ ë’¤ì—ì„œë¶€í„° ì¶”ê°€í•˜ê¸° ìœ„í•´ì„œ, current position ì„
+     * ë¦¬ìŠ¤íŠ¸ì˜ ë§¨ ë’¤ë¡œ ì˜®ê¸´ë‹¤.
      */
     sLastNode = *aTablePartInfoList;
     if (sLastNode != NULL)
@@ -1071,7 +1071,7 @@ static IDE_RC findTablePartInfoListInTBSInternal(qcStatement       *aStatement,
         IDE_TEST( qcmPartition::validateAndLockOnePartition( aStatement,
                                                              sTablePartHandle,
                                                              sSCN,
-                                                             SMI_TBSLV_DROP_TBS, // TBS Validation ¿É¼Ç
+                                                             SMI_TBSLV_DROP_TBS, // TBS Validation ì˜µì…˜
                                                              SMI_TABLE_LOCK_IS,
                                                              ( ( smiGetDDLLockTimeOut() == -1 ) ?
                                                                ID_ULONG_MAX :
@@ -1083,7 +1083,7 @@ static IDE_RC findTablePartInfoListInTBSInternal(qcStatement       *aStatement,
                                        &sTablePartInfoList) != IDE_SUCCESS);
 
         /*
-         * aTablePartInfoList ¸®½ºÆ®¿¡ Ãß°¡ÇÑ´Ù.
+         * aTablePartInfoList ë¦¬ìŠ¤íŠ¸ì— ì¶”ê°€í•œë‹¤.
          */
         if (sFirstNode == NULL)
         {
@@ -1126,13 +1126,13 @@ IDE_RC qcmTablespace::findTablePartInfoListInTBS(
 /***********************************************************************
  *
  * Description :
- *    qdtDrop::validate ·ÎºÎÅÍ È£Ãâ, drop °¡´ÉÇÑ ÆÄÆ¼¼ÇÀÇ
- *    ¸®½ºÆ®¸¦ µ¹·ÁÁØ´Ù.
+ *    qdtDrop::validate ë¡œë¶€í„° í˜¸ì¶œ, drop ê°€ëŠ¥í•œ íŒŒí‹°ì…˜ì˜
+ *    ë¦¬ìŠ¤íŠ¸ë¥¼ ëŒë ¤ì¤€ë‹¤.
  *
- *    smiValidateAndLockObjects ¿¡¼­ TBS¿¡ ´ëÇØ¼­´Â
- *    SMI_TBSLV_DROP_TBS¿É¼ÇÀ¸·Î Ã³¸®ÇÏ±â ¶§¹®¿¡
- *    Drop µÈ TBSÀÌ¿Ü¿¡ ONLINE/OFFLINE/DISCARDED »óÅÂÀÇ TBS¿¡
- *    ´ëÇØ¼­µµ Àá±ÝÀ» È¹µæÇÒ ¼ö ÀÖ´Ù.
+ *    smiValidateAndLockObjects ì—ì„œ TBSì— ëŒ€í•´ì„œëŠ”
+ *    SMI_TBSLV_DROP_TBSì˜µì…˜ìœ¼ë¡œ ì²˜ë¦¬í•˜ê¸° ë•Œë¬¸ì—
+ *    Drop ëœ TBSì´ì™¸ì— ONLINE/OFFLINE/DISCARDED ìƒíƒœì˜ TBSì—
+ *    ëŒ€í•´ì„œë„ ìž ê¸ˆì„ íšë“í•  ìˆ˜ ìžˆë‹¤.
  *
  * Implementation :
  *
@@ -1198,14 +1198,14 @@ IDE_RC qcmTablespace::findIndexInfoListInTBS(
 /***********************************************************************
  *
  * Description :
- *    ¸í½ÃÇÑ Å×ÀÌºí½ºÆäÀÌ½º¿¡ ¼ÓÇØ ÀÖ´Â ÀÎµ¦½º¸¦ Ã£¾Æ¼­ ±× ID ¿Í Å×ÀÌºíÀÇ
- *    ID ¸¦ ¸®½ºÆ®·Î  ¹ÝÈ¯ÇÑ´Ù.
- *    ÀÌ ¶§ ÀÎµ¦½º°¡ °É·ÁÀÖ´Â Å×ÀÌºíÀº ´Ù¸¥ Å×ÀÌºí½ºÆäÀÌ½º¿¡ Á¸ÀçÇØ¾ß ÇÑ´Ù.
+ *    ëª…ì‹œí•œ í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ì— ì†í•´ ìžˆëŠ” ì¸ë±ìŠ¤ë¥¼ ì°¾ì•„ì„œ ê·¸ ID ì™€ í…Œì´ë¸”ì˜
+ *    ID ë¥¼ ë¦¬ìŠ¤íŠ¸ë¡œ  ë°˜í™˜í•œë‹¤.
+ *    ì´ ë•Œ ì¸ë±ìŠ¤ê°€ ê±¸ë ¤ìžˆëŠ” í…Œì´ë¸”ì€ ë‹¤ë¥¸ í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ì— ì¡´ìž¬í•´ì•¼ í•œë‹¤.
  *
- *    smiValidateAndLockObjects ¿¡¼­ TBS¿¡ ´ëÇØ¼­´Â
- *    SMI_TBSLV_DROP_TBS¿É¼ÇÀ¸·Î Ã³¸®ÇÏ±â ¶§¹®¿¡
- *    Drop µÈ TBSÀÌ¿Ü¿¡ ONLINE/OFFLINE/DISCARDED »óÅÂÀÇ TBS¿¡
- *    ´ëÇØ¼­µµ Àá±ÝÀ» È¹µæÇÒ ¼ö ÀÖ´Ù.
+ *    smiValidateAndLockObjects ì—ì„œ TBSì— ëŒ€í•´ì„œëŠ”
+ *    SMI_TBSLV_DROP_TBSì˜µì…˜ìœ¼ë¡œ ì²˜ë¦¬í•˜ê¸° ë•Œë¬¸ì—
+ *    Drop ëœ TBSì´ì™¸ì— ONLINE/OFFLINE/DISCARDED ìƒíƒœì˜ TBSì—
+ *    ëŒ€í•´ì„œë„ ìž ê¸ˆì„ íšë“í•  ìˆ˜ ìžˆë‹¤.
  *
  * Implementation :
  *
@@ -1228,7 +1228,7 @@ IDE_RC qcmTablespace::findIndexInfoListInTBS(
     const void            * sRow;
     smiTableCursor          sCursor;
     smiCursorProperties     sCursorProperty;
-    scGRID                  sRid; // Disk TableÀ» À§ÇÑ Record IDentifier
+    scGRID                  sRid; // Disk Tableì„ ìœ„í•œ Record IDentifier
     qcmIndexInfoList      * sFirstIndexInfoList = NULL;
     qcmIndexInfoList      * sIndexInfoList;
     void                  * sTableHandle;
@@ -1313,12 +1313,12 @@ IDE_RC qcmTablespace::findIndexInfoListInTBS(
         IDE_TEST(smiValidateAndLockObjects( (QC_SMI_STMT( aStatement ))->getTrans(),
                                             sTableHandle,
                                             sSCN,
-                                            SMI_TBSLV_DROP_TBS, // TBS Validation ¿É¼Ç
+                                            SMI_TBSLV_DROP_TBS, // TBS Validation ì˜µì…˜
                                             sLockMode,
                                             ((smiGetDDLLockTimeOut() == -1) ?
                                              ID_ULONG_MAX :
                                              smiGetDDLLockTimeOut()*1000000),
-                                            ID_FALSE ) // BUG-28752 ¸í½ÃÀû Lock°ú ³»ÀçÀû LockÀ» ±¸ºÐÇÕ´Ï´Ù.
+                                            ID_FALSE ) // BUG-28752 ëª…ì‹œì  Lockê³¼ ë‚´ìž¬ì  Lockì„ êµ¬ë¶„í•©ë‹ˆë‹¤.
                  != IDE_SUCCESS);
 
         if (sTableInfo->TBSID != aTBSID)
@@ -1327,7 +1327,7 @@ IDE_RC qcmTablespace::findIndexInfoListInTBS(
             IDE_TEST_RAISE(sTableInfo->replicationCount > 0,
                            ERR_DDL_WITH_REPLICATED_TABLE);
 
-            //proj-1608:replicationCount°¡ 0ÀÏ ¶§ recovery count´Â Ç×»ó 0ÀÌ¾î¾ß ÇÔ
+            //proj-1608:replicationCountê°€ 0ì¼ ë•Œ recovery countëŠ” í•­ìƒ 0ì´ì–´ì•¼ í•¨
             IDE_DASSERT(sTableInfo->replicationRecoveryCount == 0);
 
             if( aIsForValidation == ID_TRUE )
@@ -1371,12 +1371,12 @@ IDE_RC qcmTablespace::findIndexInfoListInTBS(
             {
                 if ( sIndexInfoList->isPartitionedIndex == ID_TRUE )
                 {
-                    // partitioned index´Â index tableÀ» °¡Áú ¼ö ¾ø´Ù.
+                    // partitioned indexëŠ” index tableì„ ê°€ì§ˆ ìˆ˜ ì—†ë‹¤.
                     IDE_TEST_RAISE( sIndexTableID != 0, ERR_META_CRASH );
                 }
                 else
                 {
-                    // non-partitioned index¶ó¸é index tableÀÌ ÀÖ¾î¾ßÇÑ´Ù.
+                    // non-partitioned indexë¼ë©´ index tableì´ ìžˆì–´ì•¼í•œë‹¤.
                     IDE_TEST_RAISE( sIndexTableID == 0, ERR_META_CRASH );
 
                     sIndexTable = & sIndexInfoList->indexTable;
@@ -1394,12 +1394,12 @@ IDE_RC qcmTablespace::findIndexInfoListInTBS(
                     IDE_TEST( smiValidateAndLockObjects( (QC_SMI_STMT( aStatement ))->getTrans(),
                                                          sIndexTable->tableHandle,
                                                          sIndexTable->tableSCN,
-                                                         SMI_TBSLV_DROP_TBS, // TBS Validation ¿É¼Ç
+                                                         SMI_TBSLV_DROP_TBS, // TBS Validation ì˜µì…˜
                                                          sLockMode,
                                                          ((smiGetDDLLockTimeOut() == -1) ?
                                                           ID_ULONG_MAX :
                                                           smiGetDDLLockTimeOut()*1000000),
-                                                         ID_FALSE ) // BUG-28752 ¸í½ÃÀû Lock°ú ³»ÀçÀû LockÀ» ±¸ºÐÇÕ´Ï´Ù.
+                                                         ID_FALSE ) // BUG-28752 ëª…ì‹œì  Lockê³¼ ë‚´ìž¬ì  Lockì„ êµ¬ë¶„í•©ë‹ˆë‹¤.
                               != IDE_SUCCESS );
 
                     sIndexTable->tableOID = smiGetTableId(sIndexTable->tableHandle);
@@ -1408,11 +1408,11 @@ IDE_RC qcmTablespace::findIndexInfoListInTBS(
             }
             else
             {
-                // non-partitioned tableÀº partitioned index¸¦ °¡Áú ¼ö ¾ø´Ù.
+                // non-partitioned tableì€ partitioned indexë¥¼ ê°€ì§ˆ ìˆ˜ ì—†ë‹¤.
                 IDE_TEST_RAISE( sIndexInfoList->isPartitionedIndex == ID_TRUE,
                                 ERR_META_CRASH );
 
-                // non-partitioned tableÀº index tableÀ» °¡Áú ¼ö ¾ø´Ù.
+                // non-partitioned tableì€ index tableì„ ê°€ì§ˆ ìˆ˜ ì—†ë‹¤.
                 IDE_TEST_RAISE( sIndexTableID != 0, ERR_META_CRASH );
             }
             
@@ -1466,13 +1466,13 @@ IDE_RC qcmTablespace::findIndexPartInfoListInTBS(
 /***********************************************************************
  *
  * Description :
- *    ¸í½ÃÇÑ Å×ÀÌºí½ºÆäÀÌ½º¿¡ ¼ÓÇØ ÀÖ´Â ÀÎµ¦½º ÆÄÆ¼¼ÇÀ» Ã£¾Æ¼­ ±× ID ¿Í
- *    Å×ÀÌºíÀÇ ID ¸¦ ¸®½ºÆ®·Î  ¹ÝÈ¯ÇÑ´Ù.
+ *    ëª…ì‹œí•œ í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ì— ì†í•´ ìžˆëŠ” ì¸ë±ìŠ¤ íŒŒí‹°ì…˜ì„ ì°¾ì•„ì„œ ê·¸ ID ì™€
+ *    í…Œì´ë¸”ì˜ ID ë¥¼ ë¦¬ìŠ¤íŠ¸ë¡œ  ë°˜í™˜í•œë‹¤.
  *
- *    smiValidateAndLockObjects ¿¡¼­ TBS¿¡ ´ëÇØ¼­´Â
- *    SMI_TBSLV_DROP_TBS¿É¼ÇÀ¸·Î Ã³¸®ÇÏ±â ¶§¹®¿¡
- *    Drop µÈ TBSÀÌ¿Ü¿¡ ONLINE/OFFLINE/DISCARDED »óÅÂÀÇ TBS¿¡
- *    ´ëÇØ¼­µµ Àá±ÝÀ» È¹µæÇÒ ¼ö ÀÖ´Ù.
+ *    smiValidateAndLockObjects ì—ì„œ TBSì— ëŒ€í•´ì„œëŠ”
+ *    SMI_TBSLV_DROP_TBSì˜µì…˜ìœ¼ë¡œ ì²˜ë¦¬í•˜ê¸° ë•Œë¬¸ì—
+ *    Drop ëœ TBSì´ì™¸ì— ONLINE/OFFLINE/DISCARDED ìƒíƒœì˜ TBSì—
+ *    ëŒ€í•´ì„œë„ ìž ê¸ˆì„ íšë“í•  ìˆ˜ ìžˆë‹¤.
  *
  * Implementation :
  *
@@ -1490,7 +1490,7 @@ IDE_RC qcmTablespace::findIndexPartInfoListInTBS(
     const void            * sRow;
     smiTableCursor          sCursor;
     smiCursorProperties     sCursorProperty;
-    scGRID                  sRid; // Disk TableÀ» À§ÇÑ Record IDentifier
+    scGRID                  sRid; // Disk Tableì„ ìœ„í•œ Record IDentifier
     qcmIndexInfoList      * sFirstIndexPartInfoList = NULL;
     qcmIndexInfoList      * sIndexPartInfoList;
     void                  * sTableHandle;
@@ -1555,12 +1555,12 @@ IDE_RC qcmTablespace::findIndexPartInfoListInTBS(
         IDE_TEST(smiValidateAndLockObjects( (QC_SMI_STMT( aStatement ))->getTrans(),
                                             sTableHandle,
                                             sSCN,
-                                            SMI_TBSLV_DROP_TBS, // TBS Validation ¿É¼Ç
+                                            SMI_TBSLV_DROP_TBS, // TBS Validation ì˜µì…˜
                                             SMI_TABLE_LOCK_IS,
                                             ((smiGetDDLLockTimeOut() == -1) ?
                                              ID_ULONG_MAX :
                                              smiGetDDLLockTimeOut()*1000000),
-                                            ID_FALSE ) // BUG-28752 ¸í½ÃÀû Lock°ú ³»ÀçÀû LockÀ» ±¸ºÐÇÕ´Ï´Ù.
+                                            ID_FALSE ) // BUG-28752 ëª…ì‹œì  Lockê³¼ ë‚´ìž¬ì  Lockì„ êµ¬ë¶„í•©ë‹ˆë‹¤.
                  != IDE_SUCCESS);
 
         IDU_FIT_POINT( "qcmTablespace::findIndexPartInfoListInTBS::cralloc::sIndexPartInfoList",
@@ -1617,13 +1617,13 @@ IDE_RC qcmTablespace::checkAccessTBS(
 /***********************************************************************
  *
  * Description :
- *    ¸í½ÃÇÑ Å×ÀÌºí½ºÆäÀÌ½º¿¡ user °¡ Á¢±ÙÇÒ ¼ö ÀÖ´ÂÁö °Ë»çÇÑ´Ù.
- *    Á¢±ÙÇÒ ¼ö ¾øÀ¸¸é ¿¡·¯¸¦ ¼ÂÆÃÇÏ°í IDE_FAILURE ¸¦ ¹ÝÈ¯ÇÑ´Ù.
+ *    ëª…ì‹œí•œ í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ì— user ê°€ ì ‘ê·¼í•  ìˆ˜ ìžˆëŠ”ì§€ ê²€ì‚¬í•œë‹¤.
+ *    ì ‘ê·¼í•  ìˆ˜ ì—†ìœ¼ë©´ ì—ëŸ¬ë¥¼ ì…‹íŒ…í•˜ê³  IDE_FAILURE ë¥¼ ë°˜í™˜í•œë‹¤.
  *
  * Implementation :
- *    1. aUserID °¡ system privilege ¸¦ °®°í ÀÖÀ¸¸é IDE_SUCCESS ¸¦ ¹ÝÈ¯.
- *    2. °Ë»ç½Ã¿¡ user ÀÇ default TBS ¿Í temp TBS µµ ºñ±³ ´ë»ó¿¡ Æ÷ÇÔÇØ¾ß ÇÑ´Ù.
- *    3. SYS_TBS_USERS_ ¿¡ ·¹ÄÚµå°¡  Á¸ÀçÇÏÁö ¾ÊÀ¸¸é Á¢±Ù ºÒ°¡
+ *    1. aUserID ê°€ system privilege ë¥¼ ê°–ê³  ìžˆìœ¼ë©´ IDE_SUCCESS ë¥¼ ë°˜í™˜.
+ *    2. ê²€ì‚¬ì‹œì— user ì˜ default TBS ì™€ temp TBS ë„ ë¹„êµ ëŒ€ìƒì— í¬í•¨í•´ì•¼ í•œë‹¤.
+ *    3. SYS_TBS_USERS_ ì— ë ˆì½”ë“œê°€  ì¡´ìž¬í•˜ì§€ ì•Šìœ¼ë©´ ì ‘ê·¼ ë¶ˆê°€
  *
  ***********************************************************************/
 
@@ -1642,7 +1642,7 @@ IDE_RC qcmTablespace::checkAccessTBS(
     const void            * sRow = NULL;
     SInt                    sStage = 0;
     smiCursorProperties     sCursorProperty;
-    scGRID                  sRid; // Disk TableÀ» À§ÇÑ Record IDentifier
+    scGRID                  sRid; // Disk Tableì„ ìœ„í•œ Record IDentifier
     mtcColumn             * sIsAccessMtcColumn;
 
     if ( gQcmTBSUsers == NULL )
@@ -1670,7 +1670,7 @@ IDE_RC qcmTablespace::checkAccessTBS(
             if ( aTBSID != sDefaultTBSID &&
                  aTBSID != sTempTBSID )
             {
-                // 3. SYS_TBS_USERS_ ¿¡ ·¹ÄÚµå°¡  Á¸ÀçÇÏÁö ¾ÊÀ¸¸é Á¢±Ù ºÒ°¡
+                // 3. SYS_TBS_USERS_ ì— ë ˆì½”ë“œê°€  ì¡´ìž¬í•˜ì§€ ì•Šìœ¼ë©´ ì ‘ê·¼ ë¶ˆê°€
                 sCursor.initialize();
 
 
@@ -1683,12 +1683,12 @@ IDE_RC qcmTablespace::checkAccessTBS(
                                               (const smiColumn**)&sTBSIDCol )
                           != IDE_SUCCESS );
 
-                // mtdModule ¼³Á¤
+                // mtdModule ì„¤ì •
                 IDE_TEST( mtd::moduleById( &sTBSIDCol->module,
                                            sTBSIDCol->type.dataTypeId )
                           != IDE_SUCCESS );
 
-                // mtlModule ¼³Á¤
+                // mtlModule ì„¤ì •
                 IDE_TEST( mtl::moduleById( &sTBSIDCol->language,
                                            sTBSIDCol->type.languageId )
                           != IDE_SUCCESS );
@@ -1698,12 +1698,12 @@ IDE_RC qcmTablespace::checkAccessTBS(
                                               (const smiColumn**)&sUserIDCol )
                           != IDE_SUCCESS );
 
-                // mtdModule ¼³Á¤
+                // mtdModule ì„¤ì •
                 IDE_TEST( mtd::moduleById( &sUserIDCol->module,
                                            sUserIDCol->type.dataTypeId )
                           != IDE_SUCCESS );
 
-                // mtlModule ¼³Á¤
+                // mtlModule ì„¤ì •
                 IDE_TEST( mtl::moduleById( &sUserIDCol->language,
                                            sUserIDCol->type.languageId )
                           != IDE_SUCCESS );
@@ -1782,8 +1782,8 @@ IDE_RC qcmTablespace::existAccessTBS(
 /***********************************************************************
  *
  * Description :
- *    SYS_TBS_USERS_ ¿¡ ÇØ´ç user_id, tbs_id °¡ Á¸ÀçÇÏ´ÂÁö °Ë»çÇÑ´Ù.
- *    ·¹ÄÚµåÀÇ Á¸Àç¿©ºÎ´Â aExist ¿¡ ¹ÝÈ¯ÇÑ´Ù.
+ *    SYS_TBS_USERS_ ì— í•´ë‹¹ user_id, tbs_id ê°€ ì¡´ìž¬í•˜ëŠ”ì§€ ê²€ì‚¬í•œë‹¤.
+ *    ë ˆì½”ë“œì˜ ì¡´ìž¬ì—¬ë¶€ëŠ” aExist ì— ë°˜í™˜í•œë‹¤.
  *
  * Implementation :
  *
@@ -1800,7 +1800,7 @@ IDE_RC qcmTablespace::existAccessTBS(
     const void            * sRow = NULL;
     SInt                    sStage = 0;
     smiCursorProperties     sCursorProperty;
-    scGRID                  sRid; // Disk TableÀ» À§ÇÑ Record IDentifier
+    scGRID                  sRid; // Disk Tableì„ ìœ„í•œ Record IDentifier
 
     if ( gQcmTBSUsers == NULL )
     {
@@ -1820,12 +1820,12 @@ IDE_RC qcmTablespace::existAccessTBS(
                                       (const smiColumn**)&sTBSIDCol )
                   != IDE_SUCCESS );
 
-        // mtdModule ¼³Á¤
+        // mtdModule ì„¤ì •
         IDE_TEST( mtd::moduleById( &sTBSIDCol->module,
                                    sTBSIDCol->type.dataTypeId )
                   != IDE_SUCCESS );
 
-        // mtlModule ¼³Á¤
+        // mtlModule ì„¤ì •
         IDE_TEST( mtl::moduleById( &sTBSIDCol->language,
                                    sTBSIDCol->type.languageId )
                   != IDE_SUCCESS );
@@ -1835,12 +1835,12 @@ IDE_RC qcmTablespace::existAccessTBS(
                                       (const smiColumn**)&sUserIDCol )
                   != IDE_SUCCESS );
 
-        // mtdModule ¼³Á¤
+        // mtdModule ì„¤ì •
         IDE_TEST( mtd::moduleById( &sUserIDCol->module,
                                    sUserIDCol->type.dataTypeId )
                   != IDE_SUCCESS );
 
-        // mtlModule ¼³Á¤
+        // mtlModule ì„¤ì •
         IDE_TEST( mtl::moduleById( &sUserIDCol->language,
                                    sUserIDCol->type.languageId )
                   != IDE_SUCCESS );

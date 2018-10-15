@@ -355,7 +355,7 @@ public class AltibaseCallableStatement extends AltibasePreparedStatement impleme
 
     public void registerOutParameter(int aIndex, int aSqlType, String aTypeName) throws SQLException
     {
-        // REF, STRUCT, DISTINCT¸¦ Áö¿øÇÏÁö ¾Ê±â ¶§¹®¿¡ aTypeNameÀ» ¹«½ÃÇÑ´Ù.
+        // REF, STRUCT, DISTINCTë¥¼ ì§€ì›í•˜ì§€ ì•Šê¸° ë•Œë¬¸ì— aTypeNameì„ ë¬´ì‹œí•œë‹¤.
         registerOutParameter(aIndex, aSqlType);
     }
 

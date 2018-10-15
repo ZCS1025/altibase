@@ -127,7 +127,7 @@ void rpxSenderApply::shutdown()
 
 void rpxSenderApply::destroy()
 {
-    //wait ÁßÀÎ Service thread°¡ ¾ø¾î¾ß ÇÔ
+    //wait ì¤‘ì¸ Service threadê°€ ì—†ì–´ì•¼ í•¨
     IDE_ASSERT(mSenderInfo->getMinWaitSN() == SM_SN_NULL);
 
     (void)idlOS::memset(&mReceivedAck, 0, ID_SIZEOF(rpXLogAck));
@@ -140,7 +140,7 @@ IDE_RC rpxSenderApply::initializeThread()
 {
     SChar          sName[IDU_MUTEX_NAME_LEN];
 
-    /* ThreadÀÇ run()¿¡¼­¸¸ »ç¿ëÇÏ´Â ¸Ş¸ğ¸®¸¦ ÇÒ´çÇÑ´Ù. */
+    /* Threadì˜ run()ì—ì„œë§Œ ì‚¬ìš©í•˜ëŠ” ë©”ëª¨ë¦¬ë¥¼ í• ë‹¹í•œë‹¤. */
 
     IDU_FIT_POINT_RAISE( "rpxSenderApply::initializeThread::calloc::AbortTxList",
                          ERR_MEMORY_ALLOC_ABORT_TX_LIST );
@@ -277,7 +277,7 @@ IDE_RC rpxSenderApply::updateXSN(smSN aSN)
     smSCN             sDummySCN;
     UInt              sFlag = 0;
 
-    // Recovery Sender´Â SenderApply¸¦ ¶ç¿ìÁö ¾Ê´Â´Ù.
+    // Recovery SenderëŠ” SenderApplyë¥¼ ë„ìš°ì§€ ì•ŠëŠ”ë‹¤.
     IDE_DASSERT(*mSenderType != RP_RECOVERY);
 
     //----------------------------------------------------------------//
@@ -285,10 +285,10 @@ IDE_RC rpxSenderApply::updateXSN(smSN aSN)
     //----------------------------------------------------------------//
     IDE_TEST_CONT((aSN == SM_SN_NULL) || (aSN == 0), NORMAL_EXIT);
 
-    /* Eager ÀÇ °æ¿ì mUpdatedRestartSNGap ÀÌ ¼³Á¤µÈ´Ù.
-     * Remote ¿¡¼­ commit ÀÌ ¿Ï·á µÇ¾úÁö¸¸ ÇØ´ç ·Î±×°¡ µğ½ºÅ©¿¡ ¾ÆÁ÷
-     * sync °¡ ¾ÈµÇ¾î ÀÖÀ»¼ö ÀÖ´Ù. ±×·¸±â ¶§¹®¿¡ Restart SN °ªÀ» 
-     * Æ¯Á¤°ªÀ» »« ÀÌÈÄ¿¡ ¾÷µ¥ÀÌÆ® ÇÑ´Ù. 
+    /* Eager ì˜ ê²½ìš° mUpdatedRestartSNGap ì´ ì„¤ì •ëœë‹¤.
+     * Remote ì—ì„œ commit ì´ ì™„ë£Œ ë˜ì—ˆì§€ë§Œ í•´ë‹¹ ë¡œê·¸ê°€ ë””ìŠ¤í¬ì— ì•„ì§
+     * sync ê°€ ì•ˆë˜ì–´ ìˆì„ìˆ˜ ìˆë‹¤. ê·¸ë ‡ê¸° ë•Œë¬¸ì— Restart SN ê°’ì„ 
+     * íŠ¹ì •ê°’ì„ ëº€ ì´í›„ì— ì—…ë°ì´íŠ¸ í•œë‹¤. 
      */
     IDE_TEST_RAISE( aSN <= mEagerUpdatedRestartSNGap, NORMAL_EXIT );
     aSN = aSN - mEagerUpdatedRestartSNGap;
@@ -299,8 +299,8 @@ IDE_RC rpxSenderApply::updateXSN(smSN aSN)
     if((isParallelChild() == ID_TRUE) ||
        (*mSenderType == RP_OFFLINE))
     {
-        // Parallel Child, Offline Sender´Â Restart SNÀ» °»½ÅÇÏÁö ¾ÊÀ¸¸ç,
-        // µÚ¿¡ ¿À´Â ÀÛ¾÷ÀÌ ¾ø´Ù.
+        // Parallel Child, Offline SenderëŠ” Restart SNì„ ê°±ì‹ í•˜ì§€ ì•Šìœ¼ë©°,
+        // ë’¤ì— ì˜¤ëŠ” ì‘ì—…ì´ ì—†ë‹¤.
         mSenderInfo->setRestartSN(aSN);
         mPrevRestartSN = aSN;
     }
@@ -310,12 +310,12 @@ IDE_RC rpxSenderApply::updateXSN(smSN aSN)
             (*mSenderType == RP_SYNC) ||
             (*mSenderType == RP_SYNC_ONLY))
     {
-        // Failback, Sync, Sync OnlyÀÇ SenderApply´Â Restart SNÀ» °»½ÅÇÏÁö ¾Ê´Â´Ù.
-        // SyncÁßÀÎ Sender°¡ Restart SNÀ» °»½ÅÇÏ¸é, Sender¿Í SenderApply°£¿¡ DeadlockÀÌ ¹ß»ıÇÑ´Ù.
+        // Failback, Sync, Sync Onlyì˜ SenderApplyëŠ” Restart SNì„ ê°±ì‹ í•˜ì§€ ì•ŠëŠ”ë‹¤.
+        // Syncì¤‘ì¸ Senderê°€ Restart SNì„ ê°±ì‹ í•˜ë©´, Senderì™€ SenderApplyê°„ì— Deadlockì´ ë°œìƒí•œë‹¤.
     }
     else
     {
-        // Lazy/Acked Sender, Parallel Mgr Sender¿¡¼­ XSNÀ» °»½ÅÇÑ´Ù.
+        // Lazy/Acked Sender, Parallel Mgr Senderì—ì„œ XSNì„ ê°±ì‹ í•œë‹¤.
 
         IDU_FIT_POINT_RAISE( "rpxSenderApply::updateXSN::Erratic::rpERR_ABORT_RP_SENDER_UPDATE_XSN",
                              ERR_TRANS_INIT );         
@@ -446,10 +446,10 @@ void rpxSenderApply::run()
             IDE_TEST_RAISE(sWaitTime >= RPU_REPLICATION_RECEIVE_TIMEOUT,
                            ERR_RECV_ACK_TIMEOUT);
 
-            /* BUG-31545 sender apply ¾²·¹µå¿Í sender ¾²·¹µåÀÇ Åë°èÁ¤º¸ °ª º¯°æ ½ÃÁ¡ÀÌ
-             * °ãÄ¡Áö ¾Êµµ·Ï °¢ÀÚ µû·Î ¼¼¼Ç¿¡ ¹İ¿µÇÏ°í ÃÊ±âÈ­ÇÑ´Ù.
-             * ¸¸¾à ÀÌ ÀÛ¾÷À» sender¿¡¼­ ÇÏ°ÔµÇ¸é, sender°¡ initÇÏ´Â µµÁß
-             * apply°¡ Åë°èÁ¤º¸°ªÀ» ¾µ ¼ö ÀÖ´Ù.
+            /* BUG-31545 sender apply ì“°ë ˆë“œì™€ sender ì“°ë ˆë“œì˜ í†µê³„ì •ë³´ ê°’ ë³€ê²½ ì‹œì ì´
+             * ê²¹ì¹˜ì§€ ì•Šë„ë¡ ê°ì ë”°ë¡œ ì„¸ì…˜ì— ë°˜ì˜í•˜ê³  ì´ˆê¸°í™”í•œë‹¤.
+             * ë§Œì•½ ì´ ì‘ì—…ì„ senderì—ì„œ í•˜ê²Œë˜ë©´, senderê°€ inití•˜ëŠ” ë„ì¤‘
+             * applyê°€ í†µê³„ì •ë³´ê°’ì„ ì“¸ ìˆ˜ ìˆë‹¤.
              */
             idvManager::applyOpTimeToSession(mStatSession, mOpStatistics);
             idvManager::initRPSenderApplyAccumTime(mOpStatistics);
@@ -468,7 +468,7 @@ void rpxSenderApply::run()
 
             if(sRC != IDE_SUCCESS)
             {
-                /* BUG-30341 ACK ¼ö½Å Áß¿¡ mExitFlag°¡ ¼³Á¤µÇ¸é, Á¤»ó Á¾·á·Î Ã³¸® */
+                /* BUG-30341 ACK ìˆ˜ì‹  ì¤‘ì— mExitFlagê°€ ì„¤ì •ë˜ë©´, ì •ìƒ ì¢…ë£Œë¡œ ì²˜ë¦¬ */
                 IDE_TEST_CONT(mExitFlag == ID_TRUE, NORMAL_EXIT);
 
                 IDE_TEST( checkHBT() != IDE_SUCCESS );
@@ -519,7 +519,7 @@ void rpxSenderApply::run()
 
         mSenderInfo->signalToAllServiceThr( ID_FALSE, mReceivedAck.mTID );
 
-        if ( mIsSupportRecovery == ID_TRUE ) //recovery optionÀÌ setµÇ¾îÀÖ´Â °æ¿ì
+        if ( mIsSupportRecovery == ID_TRUE ) //recovery optionì´ setë˜ì–´ìˆëŠ” ê²½ìš°
         {
             IDE_TEST(insertRestartSNforRecovery(mReceivedAck.mRestartSN)
                      != IDE_SUCCESS);
@@ -559,8 +559,8 @@ void rpxSenderApply::run()
 
         mSenderInfo->setRmtLastCommitSN(mReceivedAck.mLastCommitSN);
 
-        /* PROJ-1442 Replication Online Áß DDL Çã¿ë
-         * Handshake Áß¿¡´Â Sender Apply¸¦ ÁßÁöÇÑ´Ù.
+        /* PROJ-1442 Replication Online ì¤‘ DDL í—ˆìš©
+         * Handshake ì¤‘ì—ëŠ” Sender Applyë¥¼ ì¤‘ì§€í•œë‹¤.
          */
         if(mReceivedAck.mAckType == RP_X_HANDSHAKE_READY)
         {
@@ -569,8 +569,8 @@ void rpxSenderApply::run()
             while((mIsSuspended   == ID_TRUE) &&
                   (mExitFlag      != ID_TRUE) &&
                   (*mNetworkError != ID_TRUE) &&
-                  // BUG-24290 [RP] DDL·Î ÀÎÇØ SenderApply°¡ ´ë±â ÁßÀÏ ¶§
-                  //     Sender¸¦ STOP½ÃÅ°¸é, SenderApplyÀÇ ´ë±â¸¦ Ç®¾î¾ß ÇÕ´Ï´Ù
+                  // BUG-24290 [RP] DDLë¡œ ì¸í•´ SenderApplyê°€ ëŒ€ê¸° ì¤‘ì¼ ë•Œ
+                  //     Senderë¥¼ STOPì‹œí‚¤ë©´, SenderApplyì˜ ëŒ€ê¸°ë¥¼ í’€ì–´ì•¼ í•©ë‹ˆë‹¤
                   (*mSenderStopFlag != ID_TRUE))
             {
                 IDE_TEST( checkHBT() != IDE_SUCCESS );
@@ -584,7 +584,7 @@ void rpxSenderApply::run()
 
     ideLog::log( IDE_RP_0, RP_TRC_SA_SENDER_APPLY_END, mRepName );
 
-    // Commit ´ë±â ÁßÀÎ Service Thread¸¦ ´õ ÀÌ»ó ±ú¿ï ¼ö ¾øÀ¸¹Ç·Î, deActivate()¸¦ ¼öÇàÇÑ´Ù.
+    // Commit ëŒ€ê¸° ì¤‘ì¸ Service Threadë¥¼ ë” ì´ìƒ ê¹¨ìš¸ ìˆ˜ ì—†ìœ¼ë¯€ë¡œ, deActivate()ë¥¼ ìˆ˜í–‰í•œë‹¤.
     mSenderInfo->deActivate();
     mSenderInfo->signalToAllServiceThr(ID_TRUE, SM_NULL_TID );
 
@@ -609,8 +609,8 @@ void rpxSenderApply::run()
 
     IDE_ERRLOG(IDE_RP_0);
 
-    // Network ¿À·ù°¡ ¾Æ´Ñ °æ¿ì¿¡´Â Service ThreadÀÇ CommitÀ» Áö¿¬½ÃÄÑ¾ß ÇÏ¹Ç·Î,
-    // SenderInfo¸¦ Á¶ÀÛÇÏÁö ¾Ê´Â´Ù.
+    // Network ì˜¤ë¥˜ê°€ ì•„ë‹Œ ê²½ìš°ì—ëŠ” Service Threadì˜ Commitì„ ì§€ì—°ì‹œì¼œì•¼ í•˜ë¯€ë¡œ,
+    // SenderInfoë¥¼ ì¡°ì‘í•˜ì§€ ì•ŠëŠ”ë‹¤.
 
     *mApplyFaultFlag = ID_TRUE;
     return;

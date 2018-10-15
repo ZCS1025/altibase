@@ -23,8 +23,8 @@
  *
  *  Description : PROJ-1502 PARTITIONED DISK TABLE
  *
- *  partitioned table¹× non partitioned table¿¡ ´ëÇÑ
- *  insert cursor¸¦ °ü¸®ÇÑ´Ù.
+ *  partitioned tableë° non partitioned tableì— ëŒ€í•œ
+ *  insert cursorë¥¼ ê´€ë¦¬í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -44,7 +44,7 @@ typedef struct qmxLobInfo qmxLobInfo;
 
 //-----------------------------------------------------------
 // BUG-34085 partition lock pruning
-// partition °Ë»öºñ¿ëÀ» ÁÙÀÌ±â À§ÇØ cursor array¿Í index¸¦ »ç¿ëÇÑ´Ù.
+// partition ê²€ìƒ‰ë¹„ìš©ì„ ì¤„ì´ê¸° ìœ„í•´ cursor arrayì™€ indexë¥¼ ì‚¬ìš©í•œë‹¤.
 //
 // partition count = 6
 // mCursorIndexCount = 2
@@ -71,7 +71,7 @@ typedef struct qmxLobInfo qmxLobInfo;
 class qmcInsertCursor
 {
 public:
-    // partition °Ë»öºñ¿ëÀ» ÁÙÀÌ±â À§ÇØ cursor array¿Í index¸¦ »ç¿ëÇÑ´Ù.
+    // partition ê²€ìƒ‰ë¹„ìš©ì„ ì¤„ì´ê¸° ìœ„í•´ cursor arrayì™€ indexë¥¼ ì‚¬ìš©í•œë‹¤.
     qmcInsertPartCursor ** mCursorIndex;
     UInt                   mCursorIndexCount;
     qmcInsertPartCursor  * mCursors;
@@ -83,12 +83,12 @@ private:
     idBool                 mIsPartitioned;
     qmsTableRef          * mTableRef;
 
-    // non-partitioned table inset cursorÀÎ °æ¿ì allocÇÏÁö ¾Ê°í
-    // internal cursor¸¦ »ç¿ëÇÑ´Ù.
+    // non-partitioned table inset cursorì¸ ê²½ìš° allocí•˜ì§€ ì•Šê³ 
+    // internal cursorë¥¼ ì‚¬ìš©í•œë‹¤.
     qmcInsertPartCursor  * mInternalCursorIndex;
     qmcInsertPartCursor    mInternalCursor;
 
-    // ¾ğÁ¦µçÁö cursor¸¦ openÇÒ ¼ö ÀÖµµ·Ï Á¤º¸¸¦ ÀúÀåÇÑ´Ù.
+    // ì–¸ì œë“ ì§€ cursorë¥¼ opení•  ìˆ˜ ìˆë„ë¡ ì •ë³´ë¥¼ ì €ì¥í•œë‹¤.
     smiStatement         * mCursorSmiStmt;
     UInt                   mCursorFlag;
     smiCursorProperties    mCursorProperties;
@@ -111,7 +111,7 @@ public:
 
     IDE_RC getSelectedPartitionOID( smOID * aPartOID );
 
-    /* PROJ-2464 hybrid partitioned table Áö¿ø */
+    /* PROJ-2464 hybrid partitioned table ì§€ì› */
     IDE_RC getSelectedPartitionTupleID( UShort * aPartTupleID );
 
     IDE_RC closeCursor();

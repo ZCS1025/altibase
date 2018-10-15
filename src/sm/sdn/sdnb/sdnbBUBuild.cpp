@@ -41,7 +41,7 @@
 /*
  * PROJ-1671 Bitmap-based Tablespace And Segment Space Management
  *
- * sdnIndexBuildThread´Â °ø°£°ü¸® ¹æ½ÄÀÌ FELT¿Í FMS ±â¹İÀ¸·Î ±¸ÇöµÇ¾î ÀÖ´Ù.
+ * sdnIndexBuildThreadëŠ” ê³µê°„ê´€ë¦¬ ë°©ì‹ì´ FELTì™€ FMS ê¸°ë°˜ìœ¼ë¡œ êµ¬í˜„ë˜ì–´ ìˆë‹¤.
  */
 static UInt gMtxDLogType = SM_DLOG_ATTR_DEFAULT;
 
@@ -91,7 +91,7 @@ IDE_RC sdnbBUBuild::getKeyInfoFromLKey( scPageID       aPageID,
 }
 
 /* ------------------------------------------------
- * KeyMap¿¡¼­ swap
+ * KeyMapì—ì„œ swap
  * ----------------------------------------------*/
 void sdnbBUBuild::swapKeyMap( UInt aPos1,
                               UInt aPos2 )
@@ -106,7 +106,7 @@ void sdnbBUBuild::swapKeyMap( UInt aPos1,
 }
 
 /* ------------------------------------------------
- * ¾²·¹µå ÀÛ¾÷ ½ÃÀÛ ·çÆ¾
+ * ì“°ë ˆë“œ ì‘ì—… ì‹œì‘ ë£¨í‹´
  * ----------------------------------------------*/
 IDE_RC sdnbBUBuild::threadRun( UInt                 aPhase,
                                UInt                 aThreadCnt,
@@ -114,7 +114,7 @@ IDE_RC sdnbBUBuild::threadRun( UInt                 aPhase,
 {
     UInt             i;
 
-    // Working Thread ½ÇÇà
+    // Working Thread ì‹¤í–‰
     for( i = 0; i < aThreadCnt; i++ )
     {
         aThreads[i].mPhase = aPhase;
@@ -122,13 +122,13 @@ IDE_RC sdnbBUBuild::threadRun( UInt                 aPhase,
         IDE_TEST( aThreads[i].start( ) != IDE_SUCCESS );
     }
 
-    // Working Thread Á¾·á ´ë±â
+    // Working Thread ì¢…ë£Œ ëŒ€ê¸°
     for( i = 0; i < aThreadCnt; i++ )
     {
         IDE_TEST( aThreads[i].join() != IDE_SUCCESS );
     }
 
-    // Working Thread ¼öÇà °á°ú È®ÀÎ
+    // Working Thread ìˆ˜í–‰ ê²°ê³¼ í™•ì¸
     for( i = 0; i < aThreadCnt; i++ )
     {
         if( aThreads[i].mIsSuccess == ID_FALSE )
@@ -195,8 +195,8 @@ IDE_RC sdnbBUBuild::main( idvSQL          *aStatistics,
     sAvailablePageSize -= idlOS::align8((UInt)ID_SIZEOF(sdnbNodeHdr)) + ID_SIZEOF( sdpSlotDirHdr );
 
     /* BUG-23525
-     * KeyBufÀÇ Å©±â´Â ÆäÀÌÁö¿Í ¿ÏÀüÈ÷ °°Àº ¿ë·®À¸·Î Àâ´Â´Ù.
-     * KeyMapÀÇ °³¼ö´Â ÃÖ¼Ò Å©±âÀÇ Å°°¡ »ğÀÔµÉ¶§, Áï ÃÖ´ë °³¼ö·Î Àâ´Â´Ù. */
+     * KeyBufì˜ í¬ê¸°ëŠ” í˜ì´ì§€ì™€ ì™„ì „íˆ ê°™ì€ ìš©ëŸ‰ìœ¼ë¡œ ì¡ëŠ”ë‹¤.
+     * KeyMapì˜ ê°œìˆ˜ëŠ” ìµœì†Œ í¬ê¸°ì˜ í‚¤ê°€ ì‚½ì…ë ë•Œ, ì¦‰ ìµœëŒ€ ê°œìˆ˜ë¡œ ì¡ëŠ”ë‹¤. */
     sMinKeyValueSize = sdnbBTree::getMinimumKeyValueSize(aIndex);
     sInsertableMaxKeyCnt = sSortAreaPageCnt *
         sdnbBTree::getInsertableMaxKeyCnt( sMinKeyValueSize );
@@ -302,7 +302,7 @@ IDE_RC sdnbBUBuild::main( idvSQL          *aStatistics,
                                     aStatFlag )
               != IDE_SUCCESS );
 
-    // BUG-18201 : Memory/Disk Index Åë°èÄ¡
+    // BUG-18201 : Memory/Disk Index í†µê³„ì¹˜
     SDNB_ADD_STATISTIC( &(((sdnbHeader*)aIndex->mHeader)->mDMLStat),
                         &sIndexStat );
 
@@ -341,7 +341,7 @@ IDE_RC sdnbBUBuild::main( idvSQL          *aStatistics,
 /* ------------------------------------------------
  * Description :
  *
- * Index build ¾²·¹µå ÃÊ±âÈ­
+ * Index build ì“°ë ˆë“œ ì´ˆê¸°í™”
  * ----------------------------------------------*/
 IDE_RC sdnbBUBuild::initialize( UInt             aTotalThreadCnt,
                                 UInt             aID,
@@ -464,7 +464,7 @@ IDE_RC sdnbBUBuild::initialize( UInt             aTotalThreadCnt,
 /* ------------------------------------------------
  * Description :
  *
- * buffer flush ¾²·¹µå ÇØÁ¦
+ * buffer flush ì“°ë ˆë“œ í•´ì œ
  * ----------------------------------------------*/
 IDE_RC sdnbBUBuild::destroy()
 {
@@ -521,7 +521,7 @@ IDE_RC sdnbBUBuild::destroy()
 /* ------------------------------------------------
  * Description :
  *
- * ¾²·¹µå ¸ŞÀÎ ½ÇÇà ·çÆ¾
+ * ì“°ë ˆë“œ ë©”ì¸ ì‹¤í–‰ ë£¨í‹´
  *
  * ----------------------------------------------*/
 void sdnbBUBuild::run()
@@ -547,7 +547,7 @@ void sdnbBUBuild::run()
             IDE_ASSERT(0);
     }
 
-    // BUG-18201 : Memory/Disk Index Åë°èÄ¡
+    // BUG-18201 : Memory/Disk Index í†µê³„ì¹˜
     SDNB_ADD_STATISTIC( &(((sdnbHeader*)mIndex->mHeader)->mDMLStat),
                         &sIndexStat );
 
@@ -594,7 +594,7 @@ IDE_RC sdnbBUBuild::extractNSort( sdnbStatistic * aIndexStat )
     ULong                sKeyValueBuf[SDNB_MAX_KEY_BUFFER_SIZE/ID_SIZEOF(ULong)];
     idBool               sIsRowDeleted;
     sdbMPRMgr            sMPRMgr;
-    UChar                sBuffer4Compaction[ SD_PAGE_SIZE ]; //Â¥Åõ¸®¸¦ ÀúÀåÇØµÎ´Â °ø°£
+    UChar                sBuffer4Compaction[ SD_PAGE_SIZE ]; //ì§œíˆ¬ë¦¬ë¥¼ ì €ì¥í•´ë‘ëŠ” ê³µê°„
     UInt                 sKeySize4Compaction;
     UInt                 sCompactionCount = 0;
     idBool               sIsPageLatchReleased = ID_TRUE;
@@ -635,7 +635,7 @@ IDE_RC sdnbBUBuild::extractNSort( sdnbStatistic * aIndexStat )
 
     IDE_TEST( sMPRMgr.beforeFst() != IDE_SUCCESS );
 
-    // table¿¡ allocµÈ extent list¸¦ ¼øÈ¸ÇÏ¸ç ÀÛ¾÷
+    // tableì— allocëœ extent listë¥¼ ìˆœíšŒí•˜ë©° ì‘ì—…
     while (1)              // 1
     {
         IDE_TEST( sMPRMgr.getNxtPageID( (void*)&sFilter4Scan,
@@ -666,7 +666,7 @@ IDE_RC sdnbBUBuild::extractNSort( sdnbStatistic * aIndexStat )
             sSlotDirPtr = sdpPhyPage::getSlotDirStartPtr(sPage);
             sSlotCount  = sdpSlotDirectory::getCount(sSlotDirPtr);
 
-            // page¿¡ allocµÈ slot ¼øÈ¸
+            // pageì— allocëœ slot ìˆœíšŒ
             for( i = 0; i < (UInt)sSlotCount; i++ )       // 4
             {
                 if( sdpSlotDirectory::isUnusedSlotEntry(sSlotDirPtr, i)
@@ -714,16 +714,16 @@ IDE_RC sdnbBUBuild::extractNSort( sdnbStatistic * aIndexStat )
                 IDE_ASSERT( sIsRowDeleted == ID_FALSE );
 
                 /* BUG-23319
-                 * [SD] ÀÎµ¦½º Scan½Ã sdcRow::fetch ÇÔ¼ö¿¡¼­ Deadlock ¹ß»ı°¡´É¼ºÀÌ ÀÖÀ½. */
-                /* row fetch¸¦ ÇÏ´ÂÁß¿¡ next rowpiece·Î ÀÌµ¿ÇØ¾ß ÇÏ´Â °æ¿ì,
-                 * ±âÁ¸ pageÀÇ latch¸¦ Ç®Áö ¾ÊÀ¸¸é deadlock ¹ß»ı°¡´É¼ºÀÌ ÀÖ´Ù.
-                 * ±×·¡¼­ page latch¸¦ Ç¬ ´ÙÀ½ next rowpiece·Î ÀÌµ¿ÇÏ´Âµ¥,
-                 * »óÀ§ ÇÔ¼ö¿¡¼­´Â page latch¸¦ Ç®¾ú´ÂÁö ¿©ºÎ¸¦ output parameter·Î È®ÀÎÇÏ°í
-                 * »óÈ²¿¡ µû¶ó ÀûÀıÇÑ Ã³¸®¸¦ ÇØ¾ß ÇÑ´Ù. */
+                 * [SD] ì¸ë±ìŠ¤ Scanì‹œ sdcRow::fetch í•¨ìˆ˜ì—ì„œ Deadlock ë°œìƒê°€ëŠ¥ì„±ì´ ìˆìŒ. */
+                /* row fetchë¥¼ í•˜ëŠ”ì¤‘ì— next rowpieceë¡œ ì´ë™í•´ì•¼ í•˜ëŠ” ê²½ìš°,
+                 * ê¸°ì¡´ pageì˜ latchë¥¼ í’€ì§€ ì•Šìœ¼ë©´ deadlock ë°œìƒê°€ëŠ¥ì„±ì´ ìˆë‹¤.
+                 * ê·¸ë˜ì„œ page latchë¥¼ í‘¼ ë‹¤ìŒ next rowpieceë¡œ ì´ë™í•˜ëŠ”ë°,
+                 * ìƒìœ„ í•¨ìˆ˜ì—ì„œëŠ” page latchë¥¼ í’€ì—ˆëŠ”ì§€ ì—¬ë¶€ë¥¼ output parameterë¡œ í™•ì¸í•˜ê³ 
+                 * ìƒí™©ì— ë”°ë¼ ì ì ˆí•œ ì²˜ë¦¬ë¥¼ í•´ì•¼ í•œë‹¤. */
                 if( sIsPageLatchReleased == ID_TRUE )
                 {
                     /* BUG-25126
-                     * [5.3.1 SD] Index Bottom-up Build ½Ã Page fetch½Ã ¼­¹ö»ç¸Á!! */
+                     * [5.3.1 SD] Index Bottom-up Build ì‹œ Page fetchì‹œ ì„œë²„ì‚¬ë§!! */
                     IDE_TEST( sdbBufferMgr::getPage( mStatistics,
                                                      sTBSID,
                                                      sCurPageID,
@@ -738,8 +738,8 @@ IDE_RC sdnbBUBuild::extractNSort( sdnbStatistic * aIndexStat )
                     sSlotDirPtr = sdpPhyPage::getSlotDirStartPtr(sPage);
                     sSlotCount  = sdpSlotDirectory::getCount(sSlotDirPtr);
 
-                    /* page latch°¡ Ç®¸° »çÀÌ¿¡ ´Ù¸¥ Æ®·£Àè¼ÇÀÌ
-                     * µ¿ÀÏ ÆäÀÌÁö¿¡ Á¢±ÙÇÏ¿© º¯°æ ¿¬»êÀ» ¼öÇàÇÒ ¼ö ÀÖ´Ù. */
+                    /* page latchê°€ í’€ë¦° ì‚¬ì´ì— ë‹¤ë¥¸ íŠ¸ëœì­ì…˜ì´
+                     * ë™ì¼ í˜ì´ì§€ì— ì ‘ê·¼í•˜ì—¬ ë³€ê²½ ì—°ì‚°ì„ ìˆ˜í–‰í•  ìˆ˜ ìˆë‹¤. */
                     if( sdpSlotDirectory::isUnusedSlotEntry(sSlotDirPtr, i)
                         == ID_TRUE )
                     {
@@ -749,10 +749,10 @@ IDE_RC sdnbBUBuild::extractNSort( sdnbStatistic * aIndexStat )
 
                 if( sIsNotNullIndex == ID_TRUE )
                 {
-                    // ÁÖÀÇ
-                    // NotNull IndexÀÌ¸é, Column Áß ÇÏ³ªµµ NullÀÌ¸é ¾ÈµÈ´Ù.
-                    // µû¶ó¼­ ¸ğµÎ NullÀÎÁö ¾Æ´ÑÁö¸¸ ÆÇ´ÜÇÏ´Â isNull·Î´Â
-                    // ÀÌ ÄÉÀÌ½º¸¦ È®ÀÎÇÏ¿©¼­´Â ¾ÈµÈ´Ù.
+                    // ì£¼ì˜
+                    // NotNull Indexì´ë©´, Column ì¤‘ í•˜ë‚˜ë„ Nullì´ë©´ ì•ˆëœë‹¤.
+                    // ë”°ë¼ì„œ ëª¨ë‘ Nullì¸ì§€ ì•„ë‹Œì§€ë§Œ íŒë‹¨í•˜ëŠ” isNullë¡œëŠ”
+                    // ì´ ì¼€ì´ìŠ¤ë¥¼ í™•ì¸í•˜ì—¬ì„œëŠ” ì•ˆëœë‹¤.
                     for( sColumn = &sIndexHeader->mColumns[0],
                              sOffset = 0,
                              k = 0;
@@ -775,7 +775,7 @@ IDE_RC sdnbBUBuild::extractNSort( sdnbStatistic * aIndexStat )
                     }
                 }
 
-                // fix BUG-23525 mKeyBuf¿¡ ´õÀÌ»ó ³ÖÀ» ¼ö ¾ø°Å³ª, InsertableKeyCnt¿¡µµ µµ´ŞÇÏ¸é
+                // fix BUG-23525 mKeyBufì— ë”ì´ìƒ ë„£ì„ ìˆ˜ ì—†ê±°ë‚˜, InsertableKeyCntì—ë„ ë„ë‹¬í•˜ë©´
                 sKeyValueSize = sdnbBTree::getKeyValueLength ( sColLenInfoList, (UChar*)sKeyValueBuf );
 
                 if( (sUsedBufferSize + sKeyValueSize + ID_SIZEOF(sdnbLKey) > mKeyBufferSize) ||
@@ -783,11 +783,11 @@ IDE_RC sdnbBUBuild::extractNSort( sdnbStatistic * aIndexStat )
                 {
                     IDE_DASSERT( 0<sLastPos );
 
-                    // sort areaÀÇ key Á¤·Ä
+                    // sort areaì˜ key ì •ë ¬
                     IDE_TEST( quickSort( aIndexStat, 0, sLastPos - 1 )
                               != IDE_SUCCESS );
 
-                    // temp segment ¿¡ ³»¸²
+                    // temp segment ì— ë‚´ë¦¼
                     IDE_TEST( storeSortedRun(0, sLastPos -1, &sLeftPos, &sUsedBufferSize)
                               != IDE_SUCCESS );
 
@@ -797,13 +797,13 @@ IDE_RC sdnbBUBuild::extractNSort( sdnbStatistic * aIndexStat )
 
                     if( sLeftCnt > 0 )
                     {
-                        //KeyValueµéÀ» ¸Ç ¾ÕÂÊÀ¸·Î ºÙ¿©³Ö±â
+                        //KeyValueë“¤ì„ ë§¨ ì•ìª½ìœ¼ë¡œ ë¶™ì—¬ë„£ê¸°
                         for( j = 0; j < sLeftCnt; j++ )
                         {
                             swapKeyMap( j, (sLeftPos + j) );
 
-                            /* fix BUG-23525 ÀúÀåµÇ´Â Å°ÀÇ ±æÀÌ°¡ VaraibaleÇÏ¸é
-                             * FragmentationÀÌ ÀÏ¾î³¯ ¼ö ¹Û¿¡ ¾ø°í, µû¶ó¼­ Compaction°úÁ¤Àº ÇÊ¼ö*/
+                            /* fix BUG-23525 ì €ì¥ë˜ëŠ” í‚¤ì˜ ê¸¸ì´ê°€ Varaibaleí•˜ë©´
+                             * Fragmentationì´ ì¼ì–´ë‚  ìˆ˜ ë°–ì— ì—†ê³ , ë”°ë¼ì„œ Compactionê³¼ì •ì€ í•„ìˆ˜*/
                             sKeySize4Compaction = sdnbBTree::getKeyLength( sColLenInfoList,
                                                                            (UChar*)mKeyMap[j],
                                                                            ID_TRUE );
@@ -857,13 +857,13 @@ IDE_RC sdnbBUBuild::extractNSort( sdnbStatistic * aIndexStat )
     sState = 1;
     IDE_TEST( sMPRMgr.destroy() != IDE_SUCCESS );
     
-    // ÀÛ¾÷ °ø°£¿¡ ³²¾Æ ÀÖ´Â °Íµé Ã³¸®
+    // ì‘ì—… ê³µê°„ì— ë‚¨ì•„ ìˆëŠ” ê²ƒë“¤ ì²˜ë¦¬
     if( sLastPos > 0 )
     {
         // in-memory sort
         IDE_TEST( quickSort( aIndexStat, 0, sLastPos - 1 )
                   != IDE_SUCCESS );
-        // temp segment·Î ³»¸°´Ù.
+        // temp segmentë¡œ ë‚´ë¦°ë‹¤.
         IDE_TEST( storeSortedRun(0, sLastPos - 1, NULL, NULL) != IDE_SUCCESS );
         sTotalRunCnt++;
     }
@@ -897,7 +897,7 @@ IDE_RC sdnbBUBuild::extractNSort( sdnbStatistic * aIndexStat )
 
     return IDE_SUCCESS;
 
-    /* PRIMARY KEY´Â NULL°ªÀ» »öÀÎÇÒ¼ö ¾ø´Ù */
+    /* PRIMARY KEYëŠ” NULLê°’ì„ ìƒ‰ì¸í• ìˆ˜ ì—†ë‹¤ */
     IDE_EXCEPTION( ERR_NOTNULL_VIOLATION );
     {
         IDE_SET( ideSetErrorCode( smERR_ABORT_NOT_NULL_VIOLATION ) );
@@ -957,7 +957,7 @@ IDE_RC sdnbBUBuild::quickSort( sdnbStatistic *aIndexStat,
     sColumnFence                = ((sdnbHeader*)mIndex->mHeader)->mColumnFence;
     sColLenInfoList             = &(((sdnbHeader*)mIndex->mHeader)->mColLenInfoList);
 
-    //fix BUG-27403 ÃÖÃÊ ÇØ¾ßÇÒ ÀÏ ÀÔ·Â
+    //fix BUG-27403 ìµœì´ˆ í•´ì•¼í•  ì¼ ì…ë ¥
     sCurStack.mLeftPos   = aHead;
     sCurStack.mRightPos  = aTail;
     IDE_TEST( mSortStack.push(ID_FALSE, &sCurStack) != IDE_SUCCESS );
@@ -970,8 +970,8 @@ IDE_RC sdnbBUBuild::quickSort( sdnbStatistic *aIndexStat,
                  != IDE_SUCCESS);
 
         // Bug-27403
-        // QuickSortÀÇ ¾Ë°í¸®Áò»ó, CallStackÀº ItemCountº¸´Ù ¸¹¾ÆÁú ¼ö ¾ø´Ù.
-        // µû¶ó¼­ ÀÌº¸´Ù ¸¹À¸¸é, ¹«ÇÑ·çÇÁ¿¡ ºüÁ³À» °¡´É¼ºÀÌ ³ô´Ù.
+        // QuickSortì˜ ì•Œê³ ë¦¬ì¦˜ìƒ, CallStackì€ ItemCountë³´ë‹¤ ë§ì•„ì§ˆ ìˆ˜ ì—†ë‹¤.
+        // ë”°ë¼ì„œ ì´ë³´ë‹¤ ë§ìœ¼ë©´, ë¬´í•œë£¨í”„ì— ë¹ ì¡Œì„ ê°€ëŠ¥ì„±ì´ ë†’ë‹¤.
         IDE_ASSERT( (aTail - aHead +1 ) > mSortStack.getTotItemCnt() );
 
         if( sEmpty == ID_TRUE)
@@ -1125,7 +1125,7 @@ idBool sdnbBUBuild::checkSort( sdnbStatistic *aIndexStat,
 
 
 /* ------------------------------------------------
- * sorted blockÀ» disk¿¡ ³»¸²
+ * sorted blockì„ diskì— ë‚´ë¦¼
  * ----------------------------------------------*/
 IDE_RC sdnbBUBuild::storeSortedRun( UInt    aHead,
                                     UInt    aTail,
@@ -1150,7 +1150,7 @@ IDE_RC sdnbBUBuild::storeSortedRun( UInt    aHead,
 
     IDE_DASSERT( aTail < mInsertableMaxKeyCnt );
 
-    // sorted runÀ» ÀúÀåÇÒ page¸¦ ÇÒ´ç
+    // sorted runì„ ì €ì¥í•  pageë¥¼ í• ë‹¹
     sAllocatedPageCnt++;
     
     IDE_TEST( sdrMiniTrans::begin( mStatistics, /* idvSQL* */
@@ -1162,8 +1162,8 @@ IDE_RC sdnbBUBuild::storeSortedRun( UInt    aHead,
               != IDE_SUCCESS );
     sState = 1;
 
-    // NOLOGGING mini-transactionÀÇ Persistent flag ¼³Á¤
-    // PERSISTENT_ON : Persistent (nologging index buildÀÏ °æ¿ì¿¡¸¸)
+    // NOLOGGING mini-transactionì˜ Persistent flag ì„¤ì •
+    // PERSISTENT_ON : Persistent (nologging index buildì¼ ê²½ìš°ì—ë§Œ)
     sdrMiniTrans::setNologgingPersistent( &sMtx );
 
     IDE_TEST( allocPage( &sMtx,
@@ -1175,7 +1175,7 @@ IDE_RC sdnbBUBuild::storeSortedRun( UInt    aHead,
                          &sNullPID ) // aNextPID
               != IDE_SUCCESS );
 
-    // sorted runÀÇ Ã¹¹øÂ° pageÀÇ PID¸¦ PIDBlkQueue¿¡ enqueue
+    // sorted runì˜ ì²«ë²ˆì§¸ pageì˜ PIDë¥¼ PIDBlkQueueì— enqueue
     sQueueInfo.mStartPID = sCurrPID;
     IDE_TEST( mPIDBlkQueue.enqueue(ID_FALSE, (void*)&sQueueInfo)
               != IDE_SUCCESS );
@@ -1185,7 +1185,7 @@ IDE_RC sdnbBUBuild::storeSortedRun( UInt    aHead,
 
     if ( aLeftPos != NULL )
     {
-        /* BUG-23525 ³²Àº Å° Å©±â °è»êÀ» À§ÇØ aLeftSizeµµ ÀÖ¾î¾ß ÇÔ. */
+        /* BUG-23525 ë‚¨ì€ í‚¤ í¬ê¸° ê³„ì‚°ì„ ìœ„í•´ aLeftSizeë„ ìˆì–´ì•¼ í•¨. */
         IDE_ASSERT( aLeftSize != NULL ); 
         *aLeftPos = aTail + 1;
     }
@@ -1205,8 +1205,8 @@ IDE_RC sdnbBUBuild::storeSortedRun( UInt    aHead,
                                        SDP_1BYTE_ALIGN_SIZE )
              != ID_TRUE )
         {
-            // ³²Àº Å°°¡ ÀÏÁ¤ ÀÌ»óÀÌ¶ó¸é ´Ù½Ã »ğÀÔÀ», ÀÏÁ¤ ÀÌÇÏ·Î ÀÛ´Ù¸é ´ÙÀ½À¸·Î ¹Ì·é´Ù.
-            // Å°ÀÇ Å©±â°¡ ÀÛ´Ù¸é ´ÙÀ½¿¡ ´Ù½Ã ÇÑ¹ø sortingÇÑ´Ù.
+            // ë‚¨ì€ í‚¤ê°€ ì¼ì • ì´ìƒì´ë¼ë©´ ë‹¤ì‹œ ì‚½ì…ì„, ì¼ì • ì´í•˜ë¡œ ì‘ë‹¤ë©´ ë‹¤ìŒìœ¼ë¡œ ë¯¸ë£¬ë‹¤.
+            // í‚¤ì˜ í¬ê¸°ê°€ ì‘ë‹¤ë©´ ë‹¤ìŒì— ë‹¤ì‹œ í•œë²ˆ sortingí•œë‹¤.
             if ( aLeftPos != NULL )
             {
                 if ( mLeftSizeThreshold > *aLeftSize )
@@ -1220,7 +1220,7 @@ IDE_RC sdnbBUBuild::storeSortedRun( UInt    aHead,
                 /* nothing to do */
             }
             
-            // Page¿¡ ÃæºĞÇÑ °ø°£ÀÌ ³²¾ÆÀÖÁö ¾Ê´Ù¸é »õ·Î¿î Page Alloc
+            // Pageì— ì¶©ë¶„í•œ ê³µê°„ì´ ë‚¨ì•„ìˆì§€ ì•Šë‹¤ë©´ ìƒˆë¡œìš´ Page Alloc
             sPrevPID = sCurrPage->mPageID;
             
             IDE_TEST( allocPage( &sMtx,
@@ -1246,11 +1246,11 @@ IDE_RC sdnbBUBuild::storeSortedRun( UInt    aHead,
                       != IDE_SUCCESS );
             sState = 1;
 
-            // NOLOGGING mini-transactionÀÇ Persistent flag ¼³Á¤
-            // PERSISTENT_ON : Persistent (nologging index buildÀÏ °æ¿ì¿¡¸¸)
+            // NOLOGGING mini-transactionì˜ Persistent flag ì„¤ì •
+            // PERSISTENT_ON : Persistent (nologging index buildì¼ ê²½ìš°ì—ë§Œ)
             sdrMiniTrans::setNologgingPersistent( &sMtx );
             
-            // ÀÌÀü page¸¦ PrevTail¿¡ getpage
+            // ì´ì „ pageë¥¼ PrevTailì— getpage
             IDE_TEST( sdbBufferMgr::getPageByPID( mStatistics,
                                                   mIndex->mIndexSegDesc.mSpaceID,
                                                   sCurrPID,
@@ -1263,16 +1263,16 @@ IDE_RC sdnbBUBuild::storeSortedRun( UInt    aHead,
                                                   NULL )
                       != IDE_SUCCESS );
 
-            /* BUG-27527 Disk Index Bottom Up Build½Ã, ·Î±× ¾øÀÌ Key InsertÇÒ °æ¿ì
-             * ÆäÀÌÁö°¡ DirtyµÇÁö ¾ÊÀ½.
-             * ÀÌÈÄ¿¡ ÀÌ ÆäÀÌÁö¿¡ ·Î±×¸¦ ³²±âÁö ¾Ê´Â WriteÀÛ¾÷ÀÌ ÀÏ¾î³ª, ÆäÀÌÁö°¡
-             * DirtyµÅÁö ¾Ê´Â´Ù.  µû¶ó¼­ °­Á¦·Î Dirt½ÃÅ²´Ù.*/
+            /* BUG-27527 Disk Index Bottom Up Buildì‹œ, ë¡œê·¸ ì—†ì´ Key Insertí•  ê²½ìš°
+             * í˜ì´ì§€ê°€ Dirtyë˜ì§€ ì•ŠìŒ.
+             * ì´í›„ì— ì´ í˜ì´ì§€ì— ë¡œê·¸ë¥¼ ë‚¨ê¸°ì§€ ì•ŠëŠ” Writeì‘ì—…ì´ ì¼ì–´ë‚˜, í˜ì´ì§€ê°€
+             * Dirtyë¼ì§€ ì•ŠëŠ”ë‹¤.  ë”°ë¼ì„œ ê°•ì œë¡œ Dirtì‹œí‚¨ë‹¤.*/
             sdbBufferMgr::setDirtyPageToBCB( mStatistics, (UChar*)sCurrPage );
             
             sSlotSeq = -1;
         }
         sSlotSeq++;
-        //fix BUG-23525 ÆäÀÌÁö ÇÒ´çÀ» À§ÇÑ ÆÇ´Ü ÀÚ·á
+        //fix BUG-23525 í˜ì´ì§€ í• ë‹¹ì„ ìœ„í•œ íŒë‹¨ ìë£Œ
         if ( aLeftSize != NULL )
         {
             IDE_DASSERT( SDNB_LKEY_LEN( sKeyValueSize, SDNB_KEY_TB_CTS ) <= (*aLeftSize) );
@@ -1317,7 +1317,7 @@ IDE_RC sdnbBUBuild::storeSortedRun( UInt    aHead,
 /*********************************************************************
  * FUNCTION DESCRIPTION : sdnbBUBuild::preparePages                    *
  * ------------------------------------------------------------------*
- * ÁÖ¾îÁø °³¼ö¸¸Å­ÀÇ ÆäÀÌÁö¸¦ ÇÒ´ç¹ŞÀ»¼ö ÀÖÀ»Áö °Ë»çÇÑ´Ù.            *
+ * ì£¼ì–´ì§„ ê°œìˆ˜ë§Œí¼ì˜ í˜ì´ì§€ë¥¼ í• ë‹¹ë°›ì„ìˆ˜ ìˆì„ì§€ ê²€ì‚¬í•œë‹¤.            *
  *********************************************************************/
 IDE_RC sdnbBUBuild::preparePages( UInt aNeedPageCnt )
 {
@@ -1389,11 +1389,11 @@ IDE_RC sdnbBUBuild::allocPage(sdrMtx         * aMtx,
                              &sIsEmpty )
               != IDE_SUCCESS );
 
-    if( sIsEmpty == ID_TRUE ) // »ç¿ëÈÄ free µÈ page°¡ ¾øÀ» °æ¿ì
+    if( sIsEmpty == ID_TRUE ) // ì‚¬ìš©í›„ free ëœ pageê°€ ì—†ì„ ê²½ìš°
     {
-        /* Bottom-up index build ½Ã »ç¿ëÇÒ pageµéÀ» ÇÒ´çÇÑ´Ù.
-         * Logging mode·Î new page¸¦ alloc ¹ŞÀ½ : index build¸¦
-         * undoÇÒ °æ¿ì extent¸¦ free ½ÃÅ°±â À§ÇØ¼­   */
+        /* Bottom-up index build ì‹œ ì‚¬ìš©í•  pageë“¤ì„ í• ë‹¹í•œë‹¤.
+         * Logging modeë¡œ new pageë¥¼ alloc ë°›ìŒ : index buildë¥¼
+         * undoí•  ê²½ìš° extentë¥¼ free ì‹œí‚¤ê¸° ìœ„í•´ì„œ   */
         IDE_TEST( sdrMiniTrans::begin( mStatistics, /* idvSQL* */
                                        &sMtx,
                                        mTrans,
@@ -1465,10 +1465,10 @@ IDE_RC sdnbBUBuild::allocPage(sdrMtx         * aMtx,
                                               NULL )
                   != IDE_SUCCESS );
 
-        // BUG-17615 ·Î±ë¾ç ÁÙÀÌ±â
-        // 1´Ü°è(extractNSort), 2´Ü°è(merge)¿¡¼­ ¹İÈ¯µÈ ÆäÀÌÁöµéÀº
-        // LOGICAL HEADER´Â »ç¿ëµÈÀûÀÌ ¾ø±â ¶§¹®¿¡ PHYSICAL HEADER¸¸
-        // RESET ÇÑ´Ù.
+        // BUG-17615 ë¡œê¹…ì–‘ ì¤„ì´ê¸°
+        // 1ë‹¨ê³„(extractNSort), 2ë‹¨ê³„(merge)ì—ì„œ ë°˜í™˜ëœ í˜ì´ì§€ë“¤ì€
+        // LOGICAL HEADERëŠ” ì‚¬ìš©ëœì ì´ ì—†ê¸° ë•Œë¬¸ì— PHYSICAL HEADERë§Œ
+        // RESET í•œë‹¤.
         IDE_TEST( sdpPhyPage::reset((sdpPhyPageHdr*)sCurrPage,
                                     ID_SIZEOF(sdnbNodeHdr),
                                     aMtx) 
@@ -1685,7 +1685,7 @@ IDE_RC sdnbBUBuild::merge( sdnbStatistic * aIndexStat )
     UInt                sState = 0;
     UInt                sHeapMapCount = 1;
 
-    // merge¿¡ »ç¿ëµÇ´Â runÀÇ ÀÚ·á±¸Á¶
+    // mergeì— ì‚¬ìš©ë˜ëŠ” runì˜ ìë£Œêµ¬ì¡°
     sdnbMergeRunInfo   *sMergeRunInfo;
 
     scPageID            sCurrOutPID;
@@ -1735,14 +1735,14 @@ IDE_RC sdnbBUBuild::merge( sdnbStatistic * aIndexStat )
 
         sQueueLength = mPIDBlkQueue.getQueueLength( );
 
-        // mergeÇØ¾ß ÇÒ runÀÇ ¼ö°¡ merge °¡´ÉÇÑ pageÀÇ ¼öº¸´Ù ÀÛÀ¸¸é
-        // merge Á¾·áÇÏ°í make tree ¼öÇà
+        // mergeí•´ì•¼ í•  runì˜ ìˆ˜ê°€ merge ê°€ëŠ¥í•œ pageì˜ ìˆ˜ë³´ë‹¤ ì‘ìœ¼ë©´
+        // merge ì¢…ë£Œí•˜ê³  make tree ìˆ˜í–‰
         if( sQueueLength <= mMergePageCount )
         {
             break;
         }
 
-        // ÇÑ¹ø¿¡ mergeÇÒ page ¼ö¸¸Å­ °¢ runÀÇ Ã¹¹øÂ° page¸¦ fix
+        // í•œë²ˆì— mergeí•  page ìˆ˜ë§Œí¼ ê° runì˜ ì²«ë²ˆì§¸ pageë¥¼ fix
         while( 1 )
         {
             IDE_TEST( mPIDBlkQueue.dequeue( ID_FALSE,
@@ -1765,9 +1765,9 @@ IDE_RC sdnbBUBuild::merge( sdnbStatistic * aIndexStat )
             
             sQueueLength = mPIDBlkQueue.getQueueLength( );
 
-            // ¹è¿­ ¹üÀ§¸¦ ³Ñ¾î°¡°Å³ª,
-            // ´ÙÀ½ ½ºÅÜ¿¡¼­ Merge Page Count¸¦ ³Ñ¾î°¡´Â °æ¿ì
-            // (Queue¸¦ Merge Page Count¸¸Å­ Ã¤¿ì±â À§ÇØ)
+            // ë°°ì—´ ë²”ìœ„ë¥¼ ë„˜ì–´ê°€ê±°ë‚˜,
+            // ë‹¤ìŒ ìŠ¤í…ì—ì„œ Merge Page Countë¥¼ ë„˜ì–´ê°€ëŠ” ê²½ìš°
+            // (Queueë¥¼ Merge Page Countë§Œí¼ ì±„ìš°ê¸° ìœ„í•´)
             if( (sLastPos > mMergePageCount - 1) ||
                 ((sQueueLength + 1) <= mMergePageCount) )
             {
@@ -1784,8 +1784,8 @@ IDE_RC sdnbBUBuild::merge( sdnbStatistic * aIndexStat )
                   != IDE_SUCCESS );
         sState = 3;
 
-        // NOLOGGING mini-transactionÀÇ Persistent flag ¼³Á¤
-        // PERSISTENT_ON : Persistent (nologging index buildÀÏ °æ¿ì¿¡¸¸)
+        // NOLOGGING mini-transactionì˜ Persistent flag ì„¤ì •
+        // PERSISTENT_ON : Persistent (nologging index buildì¼ ê²½ìš°ì—ë§Œ)
         sdrMiniTrans::setNologgingPersistent( &sMtx );
 
         IDE_TEST( allocPage( &sMtx,
@@ -1835,8 +1835,8 @@ IDE_RC sdnbBUBuild::merge( sdnbStatistic * aIndexStat )
                                            SDP_1BYTE_ALIGN_SIZE )
                  != ID_TRUE )
             {
-                // Page¿¡ ÃæºĞÇÑ °ø°£ÀÌ ³²¾ÆÀÖÁö ¾Ê´Ù¸é
-                // »õ·Î¿î Page Alloc
+                // Pageì— ì¶©ë¶„í•œ ê³µê°„ì´ ë‚¨ì•„ìˆì§€ ì•Šë‹¤ë©´
+                // ìƒˆë¡œìš´ Page Alloc
                 sPrevOutPID = sCurrOutPID;
 
                 IDE_TEST( allocPage( &sMtx,
@@ -1861,8 +1861,8 @@ IDE_RC sdnbBUBuild::merge( sdnbStatistic * aIndexStat )
                           != IDE_SUCCESS );
                 sState = 3;
 
-                // NOLOGGING mini-transactionÀÇ Persistent flag ¼³Á¤
-                // PERSISTENT_ON : Persistent (nologging index buildÀÏ °æ¿ì¿¡¸¸)
+                // NOLOGGING mini-transactionì˜ Persistent flag ì„¤ì •
+                // PERSISTENT_ON : Persistent (nologging index buildì¼ ê²½ìš°ì—ë§Œ)
                 sdrMiniTrans::setNologgingPersistent( &sMtx );
 
                 IDE_TEST( sdbBufferMgr::getPageByPID( mStatistics,
@@ -1877,10 +1877,10 @@ IDE_RC sdnbBUBuild::merge( sdnbStatistic * aIndexStat )
                                                       NULL )
                           != IDE_SUCCESS );                                
 
-                /* BUG-27527 Disk Index Bottom Up Build½Ã, ·Î±× ¾øÀÌ Key InsertÇÒ °æ¿ì
-                 * ÆäÀÌÁö°¡ DirtyµÇÁö ¾ÊÀ½.
-                 * ÀÌÈÄ¿¡ ÀÌ ÆäÀÌÁö¿¡ ·Î±×¸¦ ³²±âÁö ¾Ê´Â WriteÀÛ¾÷ÀÌ ÀÏ¾î³ª, ÆäÀÌÁö°¡
-                 * DirtyµÅÁö ¾Ê´Â´Ù.  µû¶ó¼­ °­Á¦·Î Dirt½ÃÅ²´Ù.*/
+                /* BUG-27527 Disk Index Bottom Up Buildì‹œ, ë¡œê·¸ ì—†ì´ Key Insertí•  ê²½ìš°
+                 * í˜ì´ì§€ê°€ Dirtyë˜ì§€ ì•ŠìŒ.
+                 * ì´í›„ì— ì´ í˜ì´ì§€ì— ë¡œê·¸ë¥¼ ë‚¨ê¸°ì§€ ì•ŠëŠ” Writeì‘ì—…ì´ ì¼ì–´ë‚˜, í˜ì´ì§€ê°€
+                 * Dirtyë¼ì§€ ì•ŠëŠ”ë‹¤.  ë”°ë¼ì„œ ê°•ì œë¡œ Dirtì‹œí‚¨ë‹¤.*/
                 sdbBufferMgr::setDirtyPageToBCB( mStatistics, (UChar*)sCurrOutRun );
                     
                 sOutSlotSeq = -1;
@@ -1986,7 +1986,7 @@ IDE_RC sdnbBUBuild::makeTree( sdnbBUBuild    * aThreads,
     scPageID            sMinNode = SD_NULL_PID;
     scPageID            sMaxNode = SD_NULL_PID;
 
-    sdnbMergeRunInfo  * sMergeRunInfo;    // merge¿¡ »ç¿ëµÇ´Â run
+    sdnbMergeRunInfo  * sMergeRunInfo;    // mergeì— ì‚¬ìš©ë˜ëŠ” run
     
     sdnbStack           sStack;
     sdnbSortedBlk       sQueueInfo;
@@ -2099,15 +2099,15 @@ IDE_RC sdnbBUBuild::makeTree( sdnbBUBuild    * aThreads,
               != IDE_SUCCESS );
     sState = 3;
 
-    // NOLOGGING mini-transactionÀÇ Persistent flag ¼³Á¤
-    // PERSISTENT_ON : Persistent (nologging index buildÀÏ °æ¿ì¿¡¸¸)
+    // NOLOGGING mini-transactionì˜ Persistent flag ì„¤ì •
+    // PERSISTENT_ON : Persistent (nologging index buildì¼ ê²½ìš°ì—ë§Œ)
     sdrMiniTrans::setNologgingPersistent( &sMtx );
         
     while( 1 )
     {
         if( sClosedRun == sLastPos ) // merge : finished
         {
-            // BUG-17615 ·Î±ë·® ÁÙÀÌ±â
+            // BUG-17615 ë¡œê¹…ëŸ‰ ì¤„ì´ê¸°
             if ( sLeafPage != NULL )
             {
                 IDE_TEST( sdrMiniTrans::writeLogRec( &sMtx, 
@@ -2132,7 +2132,7 @@ IDE_RC sdnbBUBuild::makeTree( sdnbBUBuild    * aThreads,
                                   &sIsDupValue )
                   != IDE_SUCCESS );
 
-        /* Åë°èÁ¤º¸ ±¸Ãà */
+        /* í†µê³„ì •ë³´ êµ¬ì¶• */
         sPrevPID4Stat = sCurPID4Stat;
         sCurPID4Stat  = ((sdnbKeyInfo*)&sMergeRunInfo[sMinIdx].mRunKey)->mRowPID;
         sKeyCount++;
@@ -2145,11 +2145,11 @@ IDE_RC sdnbBUBuild::makeTree( sdnbBUBuild    * aThreads,
                ( ((sdnRuntimeHeader*)mIndex->mHeader)->mIsNotNull == ID_TRUE ) ) ||
              ( sIsDupValue == ID_FALSE ) )
         {
-            /* BUG-30074 - disk tableÀÇ unique index¿¡¼­ NULL key »èÁ¦ ½Ã/
-             *             non-unique index¿¡¼­ deleted key Ãß°¡ ½Ã NumDistÀÇ
-             *             Á¤È®¼ºÀÌ ¸¹ÀÌ ¶³¾îÁı´Ï´Ù.
+            /* BUG-30074 - disk tableì˜ unique indexì—ì„œ NULL key ì‚­ì œ ì‹œ/
+             *             non-unique indexì—ì„œ deleted key ì¶”ê°€ ì‹œ NumDistì˜
+             *             ì •í™•ì„±ì´ ë§ì´ ë–¨ì–´ì§‘ë‹ˆë‹¤.
              *
-             * Null KeyÀÇ °æ¿ì NumDist¸¦ °»½ÅÇÏÁö ¾Êµµ·Ï ÇÑ´Ù. */
+             * Null Keyì˜ ê²½ìš° NumDistë¥¼ ê°±ì‹ í•˜ì§€ ì•Šë„ë¡ í•œë‹¤. */
             if ( sdnbBTree::isNullKey( (sdnbHeader*)mIndex->mHeader,
                                        sMergeRunInfo[sMinIdx].mRunKey.mKeyValue )
                  != ID_TRUE )
@@ -2184,7 +2184,7 @@ IDE_RC sdnbBUBuild::makeTree( sdnbBUBuild    * aThreads,
 
     /*
      * To fix BUG-23676
-     * NOLOGGING¿¡¼­ÀÇ Consistent Flag´Â »ğÀÔµÈ Å°¿Í Ä¿¹ÔµÇ¾î¾ß ÇÑ´Ù.
+     * NOLOGGINGì—ì„œì˜ Consistent FlagëŠ” ì‚½ì…ëœ í‚¤ì™€ ì»¤ë°‹ë˜ì–´ì•¼ í•œë‹¤.
      */
     for( sHeight = sStack.mIndexDepth; sHeight >= 0; sHeight-- )
     {
@@ -2329,8 +2329,8 @@ IDE_RC sdnbBUBuild::write2LeafNode( sdnbStatistic  *aIndexStat,
     *aIsDupValue = ID_FALSE;
 
     /* BUG-44973
-     * TBK Å×½ºÆ® À§ÇØ Ãß°¡µÈ ÇÁ·ÎÆÛÆ¼( __DISABLE_TRANSACTION_BOUND_IN_CTS = 1 )¸¦ ¼³Á¤ÇÏ¸é
-     * INDEX BOTTOM UP BUILD ¿¡¼­µµ  TBK·Î ¸¸µé¾î Áöµµ·Ï ÇÑ´Ù. */
+     * TBK í…ŒìŠ¤íŠ¸ ìœ„í•´ ì¶”ê°€ëœ í”„ë¡œí¼í‹°( __DISABLE_TRANSACTION_BOUND_IN_CTS = 1 )ë¥¼ ì„¤ì •í•˜ë©´
+     * INDEX BOTTOM UP BUILD ì—ì„œë„  TBKë¡œ ë§Œë“¤ì–´ ì§€ë„ë¡ í•œë‹¤. */
     sTxBoundType = ( ( smuProperty::getDisableTransactionBoundInCTS() == 1 ) ? SDNB_KEY_TB_KEY : SDNB_KEY_TB_CTS );
 
     if( *aPage == NULL )
@@ -2397,20 +2397,20 @@ IDE_RC sdnbBUBuild::write2LeafNode( sdnbStatistic  *aIndexStat,
          != ID_TRUE )
     {
         /*
-         *  page ÇÒ´ç ½ÇÆĞ·Î ÀÎÇÑ ¿¹¿Ü ¹ß»ıÀ¸·Î ÀÎÇÏ¿©
-         *  log°¡ ºÎºĞÀûÀ¸·Î¸¸ ¾²ÀÏ ¼ö ÀÖ´Ù.
-         *  µû¶ó¼­ ¹Ì¸® page°¡ ÇÒ´ç °¡´ÉÇÑÁö ÆÇ´ÜÇØ¾ß ÇÑ´Ù.
-         *  ÃÖ´ë ÇÒ´ç ÆäÀÌÁö ¼ö´Â depth + 2 ÀÌ´Ù.
+         *  page í• ë‹¹ ì‹¤íŒ¨ë¡œ ì¸í•œ ì˜ˆì™¸ ë°œìƒìœ¼ë¡œ ì¸í•˜ì—¬
+         *  logê°€ ë¶€ë¶„ì ìœ¼ë¡œë§Œ ì“°ì¼ ìˆ˜ ìˆë‹¤.
+         *  ë”°ë¼ì„œ ë¯¸ë¦¬ pageê°€ í• ë‹¹ ê°€ëŠ¥í•œì§€ íŒë‹¨í•´ì•¼ í•œë‹¤.
+         *  ìµœëŒ€ í• ë‹¹ í˜ì´ì§€ ìˆ˜ëŠ” depth + 2 ì´ë‹¤.
          */
         IDE_TEST( preparePages( aStack->mIndexDepth + 2 )
                   != IDE_SUCCESS );
         
-        // Page¿¡ ÃæºĞÇÑ °ø°£ÀÌ ¾ø´Ù¸é
-        // »õ·Î¿î Page Alloc
-        // 2°³ ÀÌ»óÀÇ leaf page°¡ »ı¼ºµÇ¾úÀ¸¹Ç·Î internal page ÇÊ¿äÇÔ
+        // Pageì— ì¶©ë¶„í•œ ê³µê°„ì´ ì—†ë‹¤ë©´
+        // ìƒˆë¡œìš´ Page Alloc
+        // 2ê°œ ì´ìƒì˜ leaf pageê°€ ìƒì„±ë˜ì—ˆìœ¼ë¯€ë¡œ internal page í•„ìš”í•¨
         sPrevPID = sCurrPage->mPageID;
 
-        // BUG-17615 ·Î±ë·® ÁÙÀÌ±â
+        // BUG-17615 ë¡œê¹…ëŸ‰ ì¤„ì´ê¸°
         IDE_TEST( sdrMiniTrans::writeLogRec( aMtx, 
                                              (UChar*)sCurrPage,
                                              (void*)sCurrPage,
@@ -2420,7 +2420,7 @@ IDE_RC sdnbBUBuild::write2LeafNode( sdnbStatistic  *aIndexStat,
         
         /*
          * To fix BUG-23676
-         * NOLOGGING¿¡¼­ÀÇ Consistent Flag´Â »ğÀÔµÈ Å°¿Í °°ÀÌ Ä¿¹ÔµÇ¾î¾ß ÇÑ´Ù.
+         * NOLOGGINGì—ì„œì˜ Consistent FlagëŠ” ì‚½ì…ëœ í‚¤ì™€ ê°™ì´ ì»¤ë°‹ë˜ì–´ì•¼ í•œë‹¤.
          */
         if ( mLoggingMode == SDR_MTX_NOLOGGING )
         {
@@ -2478,14 +2478,14 @@ IDE_RC sdnbBUBuild::write2LeafNode( sdnbStatistic  *aIndexStat,
                                        gMtxDLogType )
                   != IDE_SUCCESS );
 
-        // NOLOGGING mini-transactionÀÇ Persistent flag ¼³Á¤
-        // PERSISTENT_ON : Persistent (nologging index buildÀÏ °æ¿ì¿¡¸¸)
+        // NOLOGGING mini-transactionì˜ Persistent flag ì„¤ì •
+        // PERSISTENT_ON : Persistent (nologging index buildì¼ ê²½ìš°ì—ë§Œ)
         sdrMiniTrans::setNologgingPersistent( aMtx );
 
-        /* BUG-39162 timeout È®ÀÎ À§Ä¡ º¯°æ */
+        /* BUG-39162 timeout í™•ì¸ ìœ„ì¹˜ ë³€ê²½ */
         // To fix BUG-17728
-        // ¸Å¹ø Session Event¸¦ °Ë»çÇÏ´Â °ÍÀº ¼º´É»ó ºÎÇÏÀÌ±â ¶§¹®¿¡,
-        // »õ·Î¿î LeafNode°¡ »ı¼ºµÉ¶§¸¶´Ù Session Event¸¦ °Ë»çÇÑ´Ù.
+        // ë§¤ë²ˆ Session Eventë¥¼ ê²€ì‚¬í•˜ëŠ” ê²ƒì€ ì„±ëŠ¥ìƒ ë¶€í•˜ì´ê¸° ë•Œë¬¸ì—,
+        // ìƒˆë¡œìš´ LeafNodeê°€ ìƒì„±ë ë•Œë§ˆë‹¤ Session Eventë¥¼ ê²€ì‚¬í•œë‹¤.
         IDE_TEST( iduCheckSessionEvent(mStatistics) != IDE_SUCCESS );
 
         /* FIT/ART/sm/Bugs/BUG-39162/BUG-39162.tc */
@@ -2548,7 +2548,7 @@ IDE_RC sdnbBUBuild::write2ParentNode( sdrMtx         *aMtx,
     
     IDE_DASSERT( aKeyInfo != NULL );
 
-    /* »õ·Î¿î ·çÆ® ³ëµå°¡ »ı¼ºµÇ´Â °æ¿ì¶ó¸é */
+    /* ìƒˆë¡œìš´ ë£¨íŠ¸ ë…¸ë“œê°€ ìƒì„±ë˜ëŠ” ê²½ìš°ë¼ë©´ */
     if( aStack->mIndexDepth < sHeight ) 
     {
         IDE_TEST( allocPage( aMtx,
@@ -2619,12 +2619,12 @@ IDE_RC sdnbBUBuild::write2ParentNode( sdrMtx         *aMtx,
                                        SDP_1BYTE_ALIGN_SIZE )
              != ID_TRUE )
         {
-            /* ÇÒ´çÇÒ °ø°£ÀÌ ³²¾Æ ÀÖÁö ¾Ê´Ù¸é */
+            /* í• ë‹¹í•  ê³µê°„ì´ ë‚¨ì•„ ìˆì§€ ì•Šë‹¤ë©´ */
             sPrevPID = sCurrPage->mPageID;
 
             /*
              * To fix BUG-23676
-             * NOLOGGING¿¡¼­ÀÇ Consistent Flag´Â »ğÀÔµÈ Å°¿Í °°ÀÌ Ä¿¹ÔµÇ¾î¾ß ÇÑ´Ù.
+             * NOLOGGINGì—ì„œì˜ Consistent FlagëŠ” ì‚½ì…ëœ í‚¤ì™€ ê°™ì´ ì»¤ë°‹ë˜ì–´ì•¼ í•œë‹¤.
              */
             if ( mLoggingMode == SDR_MTX_NOLOGGING )
             {
@@ -2663,7 +2663,7 @@ IDE_RC sdnbBUBuild::write2ParentNode( sdrMtx         *aMtx,
             
             sSlotSeq = 0;
 
-            // parent page¿¡ ¹İ¿µ
+            // parent pageì— ë°˜ì˜
             aStack->mStack[sHeight].mNode = sCurrPID;
             aStack->mStack[sHeight].mKeyMapSeq = -1;
 
@@ -2686,8 +2686,8 @@ IDE_RC sdnbBUBuild::write2ParentNode( sdrMtx         *aMtx,
                                            gMtxDLogType )
                       != IDE_SUCCESS );
 
-            // NOLOGGING mini-transactionÀÇ Persistent flag ¼³Á¤
-            // PERSISTENT_ON : Persistent (nologging index buildÀÏ °æ¿ì¿¡¸¸)
+            // NOLOGGING mini-transactionì˜ Persistent flag ì„¤ì •
+            // PERSISTENT_ON : Persistent (nologging index buildì¼ ê²½ìš°ì—ë§Œ)
             sdrMiniTrans::setNologgingPersistent( aMtx );
         }
         else
@@ -2968,7 +2968,7 @@ IDE_RC sdnbBUBuild::heapPop( sdnbStatistic    * aIndexStat,
 
 
 /* ------------------------------------------------
- * ¸ğµç ÄÃ·³ÀÌ NULLÀ» °¡Áö°í ÀÖ´ÂÁö °Ë»ç
+ * ëª¨ë“  ì»¬ëŸ¼ì´ NULLì„ ê°€ì§€ê³  ìˆëŠ”ì§€ ê²€ì‚¬
  * ----------------------------------------------*/
 idBool sdnbBUBuild::isNull( sdnbHeader * aHeader,
                             UChar      * aKey )
@@ -2992,7 +2992,7 @@ idBool sdnbBUBuild::isNull( sdnbHeader * aHeader,
 
 
 /* ------------------------------------------------
- * Index Åë°è Á¤º¸ °»½Å
+ * Index í†µê³„ ì •ë³´ ê°±ì‹ 
  * ----------------------------------------------*/
 IDE_RC sdnbBUBuild::updateStatistics( idvSQL         * aStatistics,
                                       sdrMtx         * aMtx,

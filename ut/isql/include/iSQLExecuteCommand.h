@@ -37,8 +37,8 @@ public:
 
     void   EndTran(SInt aAutocommit);
 
-    /* [ select * from tab Äõ¸®ÀÇ ½ÇÇà]
-     * Å×ÀÌºí ¸®½ºÆ®¸¦ º¸¿©ÁÖ°Å³ª TABÅ×ÀÌºíÀÇ ROW¸¦ º¸¿©ÁØ´Ù. */
+    /* [ select * from tab ì¿¼ë¦¬ì˜ ì‹¤í–‰]
+     * í…Œì´ë¸” ë¦¬ìŠ¤íŠ¸ë¥¼ ë³´ì—¬ì£¼ê±°ë‚˜ TABí…Œì´ë¸”ì˜ ROWë¥¼ ë³´ì—¬ì¤€ë‹¤. */
     IDE_RC DisplayTableListOrSelect(SChar *aCmdStr, SChar *aQueryStr);
     IDE_RC DisplayTableListOrPrepare(SChar *aCmdStr, SChar *aQueryStr,
                                      SInt aQueryBufLen);
@@ -127,7 +127,7 @@ public:
     IDE_RC ShowForeignKeys( SChar * a_UserName,
                             SChar * a_TableName );
 
-    /* PROJ-1107 Check Constraint Áö¿ø */
+    /* PROJ-1107 Check Constraint ì§€ì› */
     IDE_RC ShowCheckConstraints( SChar * aUserName,
                                  SChar * aTableName );
 
@@ -161,8 +161,8 @@ public:
     };
     idBool IsFetchCanceled()  { return m_IsFetchCanceled;     };
 
-    /* BUG-39620 DESC, select * from tab, select * from seq°¡ Ãâ·ÂÇÏ´Â
-     * °´Ã¼ÀÇ DISPLAY SIZE °áÁ¤, SET FULLNAME ON/OFF ½Ã È£ÃâµÈ´Ù. */
+    /* BUG-39620 DESC, select * from tab, select * from seqê°€ ì¶œë ¥í•˜ëŠ”
+     * ê°ì²´ì˜ DISPLAY SIZE ê²°ì •, SET FULLNAME ON/OFF ì‹œ í˜¸ì¶œëœë‹¤. */
     void   SetObjectDispLen( UInt aObjectDispLen )
                               { mObjectDispLen = aObjectDispLen; };
 
@@ -187,13 +187,13 @@ private:
     idBool       m_IsFetchCanceled;
     UInt         mObjectDispLen;
 
-    /* ÇöÀç »ç¿ëÀÚ°¡ °ü¸®ÀÚ ±ÇÇÑÀ» °¡Áø ½´ÆÛÀ¯ÀúÀÎÁö ¾Ë¾Æ³½´Ù. */
+    /* í˜„ì¬ ì‚¬ìš©ìê°€ ê´€ë¦¬ì ê¶Œí•œì„ ê°€ì§„ ìŠˆí¼ìœ ì €ì¸ì§€ ì•Œì•„ë‚¸ë‹¤. */
     idBool IsSysUser();
 
-    /* Å×ÀÌºí ¸®½ºÆ®¸¦ º¸¿©ÁØ´Ù. */
+    /* í…Œì´ë¸” ë¦¬ìŠ¤íŠ¸ë¥¼ ë³´ì—¬ì¤€ë‹¤. */
     IDE_RC DisplayTableList( SChar * a_CommandStr );
 
-    /* BUG-39620 ÇÔ¼ö ¼³¸íÀº cpp ÂüÁ¶ */
+    /* BUG-39620 í•¨ìˆ˜ ì„¤ëª…ì€ cpp ì°¸ì¡° */
     void   printObjectForDesc( const SChar  * aName,
                                const idBool   aIsFixedLen,
                                const SChar  * aWhiteSpace );

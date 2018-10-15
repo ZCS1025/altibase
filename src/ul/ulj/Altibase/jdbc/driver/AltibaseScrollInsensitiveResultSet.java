@@ -38,8 +38,8 @@ public class AltibaseScrollInsensitiveResultSet extends AltibaseScrollableResult
     }
 
     /**
-     * ÇÏÀ§ Å¬·¡½º »ı¼º½Ã Áßº¹ ÀÛ¾÷À» ÇÇÇÏ±â À§ÇÑ »ı¼ºÀÚ.
-     * ÀÌ »ı¼ºÀÚ¸¦ ¾µ ¶§´Â protected ¸â¹ö¸¦ ÇÏÀ§Å¬·¡½º¿¡¼­ Á÷Á¢ ÃÊ±âÈ­ ÇØÁà¾ß ÇÑ´Ù.
+     * í•˜ìœ„ í´ë˜ìŠ¤ ìƒì„±ì‹œ ì¤‘ë³µ ì‘ì—…ì„ í”¼í•˜ê¸° ìœ„í•œ ìƒì„±ì.
+     * ì´ ìƒì„±ìë¥¼ ì“¸ ë•ŒëŠ” protected ë©¤ë²„ë¥¼ í•˜ìœ„í´ë˜ìŠ¤ì—ì„œ ì§ì ‘ ì´ˆê¸°í™” í•´ì¤˜ì•¼ í•œë‹¤.
      */
     protected AltibaseScrollInsensitiveResultSet()
     {
@@ -124,9 +124,9 @@ public class AltibaseScrollInsensitiveResultSet extends AltibaseScrollableResult
         throwErrorForClosed();
         if (mFetchResult.fetchRemains())
         {
-            // fetchÇÒ°Ô ³²¾Æ ÀÖÀ¸¸é ÃÖ¼ÒÇÑ ÇÑ row ÀÌ»óÀº ÀÖ´Ù°í °¡Á¤ÇÑ °ÍÀÌ´Ù.
-            // ¸¸¾à fetchÇÒ°Ô ³²¾Æ ÀÖ´Ù°í ÇßÁö¸¸ ½ÇÁ¦ fetchNext¸¦ ¿äÃ»ÇßÀ» ¶§
-            // row°¡ ÇÏ³ªµµ ¾È¿À°í fetch end°¡ ¿Ã ¼ö ÀÖ´Ù¸é ÀÌ ÄÚµå´Â ¹ö±×ÀÌ´Ù.
+            // fetchí• ê²Œ ë‚¨ì•„ ìˆìœ¼ë©´ ìµœì†Œí•œ í•œ row ì´ìƒì€ ìˆë‹¤ê³  ê°€ì •í•œ ê²ƒì´ë‹¤.
+            // ë§Œì•½ fetchí• ê²Œ ë‚¨ì•„ ìˆë‹¤ê³  í–ˆì§€ë§Œ ì‹¤ì œ fetchNextë¥¼ ìš”ì²­í–ˆì„ ë•Œ
+            // rowê°€ í•˜ë‚˜ë„ ì•ˆì˜¤ê³  fetch endê°€ ì˜¬ ìˆ˜ ìˆë‹¤ë©´ ì´ ì½”ë“œëŠ” ë²„ê·¸ì´ë‹¤.
             return false;
         }
         else
@@ -143,7 +143,7 @@ public class AltibaseScrollInsensitiveResultSet extends AltibaseScrollableResult
         if (aRow < 0)
         {
             fetchAll();
-            // aRow°¡ -1ÀÌ¸é last À§Ä¡¸¦ °¡¸®Å²´Ù.
+            // aRowê°€ -1ì´ë©´ last ìœ„ì¹˜ë¥¼ ê°€ë¦¬í‚¨ë‹¤.
             aRow = mFetchResult.rowHandle().size() + 1 + aRow;
             sResult = mFetchResult.rowHandle().setPosition(aRow);
         }
@@ -200,7 +200,7 @@ public class AltibaseScrollInsensitiveResultSet extends AltibaseScrollableResult
             {
                 if (mFetchResult.fetchRemains())
                 {
-                    // forward only¿Í´Â ´Ù¸£°Ô cache¸¦ Áö¿ìÁö ¾Ê´Â´Ù.
+                    // forward onlyì™€ëŠ” ë‹¤ë¥´ê²Œ cacheë¥¼ ì§€ìš°ì§€ ì•ŠëŠ”ë‹¤.
                     try
                     {
                         CmProtocol.fetchNext(mStatement.getProtocolContext(), mFetchSize);
@@ -213,7 +213,7 @@ public class AltibaseScrollInsensitiveResultSet extends AltibaseScrollableResult
                     {
                         mWarning = Error.processServerError(mWarning, mStatement.getProtocolContext().getError());
                     }
-                    // continue¸¦ ÇÏ¸é next()·Î ÇÑ¹ø ÀÌµ¿ÇÒ °ÍÀÌ±â ¶§¹®¿¡ ¹Ì¸® ÇÑÄ­ ´ç±ä´Ù.
+                    // continueë¥¼ í•˜ë©´ next()ë¡œ í•œë²ˆ ì´ë™í•  ê²ƒì´ê¸° ë•Œë¬¸ì— ë¯¸ë¦¬ í•œì¹¸ ë‹¹ê¸´ë‹¤.
                     mFetchResult.rowHandle().previous();
                     continue;
                 }

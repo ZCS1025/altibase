@@ -48,7 +48,7 @@ mtfModule mtfLastValue = {
         MTC_NODE_FUNCTION_ANALYTIC_TRUE |
         MTC_NODE_FUNCTION_WINDOWING_TRUE,
     ~( MTC_NODE_INDEX_MASK ),
-    1.0, /* default selectivity ( ∫Ò±≥ ø¨ªÍ¿⁄∞° æ∆¥‘ ) */
+    1.0, /* default selectivity ( ÎπÑÍµê Ïó∞ÏÇ∞ÏûêÍ∞Ä ÏïÑÎãò ) */
     mtfLastValueName,
     NULL,
     mtf::initializeDefault,

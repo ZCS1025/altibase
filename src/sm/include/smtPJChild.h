@@ -28,7 +28,7 @@
 
 // signal section 
 #define SMT_PJ_SIGNAL_NONE     (0x00000001) // not Running : Just destroyed
-#define SMT_PJ_SIGNAL_EXIT     (0x00000002) // Normal Á¾·á : to be join..
+#define SMT_PJ_SIGNAL_EXIT     (0x00000002) // Normal ì¢…ë£Œ : to be join..
 #define SMT_PJ_SIGNAL_ERROR    (0x00000004) // Error 
 #define SMT_PJ_SIGNAL_RUNNING  (0x00000008) // Running : Now Running
 #define SMT_PJ_SIGNAL_SLEEP    (0x00000010) // sleep

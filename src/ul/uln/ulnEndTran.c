@@ -73,7 +73,7 @@ static ACI_RC ulnEndTranDbcMain(ulnFnContext    *aFnContext,
     if ((aDbc->mAttrAutoCommit == SQL_AUTOCOMMIT_OFF) && (aDbc->mIsConnected == ACP_TRUE))
     {
         /*
-         * protocol context ÃÊ±âÈ­
+         * protocol context ì´ˆê¸°í™”
          */
         // fix BUG-17722
         ACI_TEST(ulnInitializeProtocolContext(aFnContext,
@@ -83,7 +83,7 @@ static ACI_RC ulnEndTranDbcMain(ulnFnContext    *aFnContext,
         ULN_FLAG_UP(sNeedFinPtContext);
 
         /*
-         * ÆĞÅ¶ ¾²±â
+         * íŒ¨í‚· ì“°ê¸°
          */
         ACI_TEST(ulnWriteTransactionREQ(aFnContext,
                                         &(aDbc->mPtContext),
@@ -91,7 +91,7 @@ static ACI_RC ulnEndTranDbcMain(ulnFnContext    *aFnContext,
         != ACI_SUCCESS);
 
         /*
-         * ÆĞÅ¶ Àü¼Û
+         * íŒ¨í‚· ì „ì†¡
          */
         ACI_TEST(ulnFlushProtocol(aFnContext,&(aDbc->mPtContext)) != ACI_SUCCESS);
 
@@ -120,7 +120,7 @@ static ACI_RC ulnEndTranDbcMain(ulnFnContext    *aFnContext,
         /* 
          * PROJ-2047 Strengthening LOB - LOBCACHE
          *
-         * Stmt ListÀÇ LOB Cache¸¦ Á¦°ÅÇÏÀÚ.
+         * Stmt Listì˜ LOB Cacheë¥¼ ì œê±°í•˜ì.
          */
         ACP_LIST_ITERATE(&(aDbc->mStmtList), sIterator)
         {
@@ -129,7 +129,7 @@ static ACI_RC ulnEndTranDbcMain(ulnFnContext    *aFnContext,
         }
 
         /*
-         * Protocol Context Á¤¸®
+         * Protocol Context ì •ë¦¬
          */
         ULN_FLAG_DOWN(sNeedFinPtContext);
         // fix BUG-17722
@@ -154,10 +154,10 @@ static ACI_RC ulnEndTranDbcMain(ulnFnContext    *aFnContext,
 }
 
 /*
- * ÀÌ ÇÔ¼ö´Â
- *  ulnEndTran ¿¡¼­ ¹Ù·Î È£ÃâµÇ±âµµ ÇÏ¸ç (ÀÌ °æ¿ì, DBC ´Â context ¿¡¼­ ¾òÀ½)
- *  ulnEndTranInEnv ¿¡¼­ È£ÃâµÇ±âµµ ÇÑ´Ù (ÀÌ °æ¿ì, Context ÀÇ obj ´Â ENV ÀÌ´Ù)
- * ±×·¡¼­ ulnDbc *aDbc °¡ ÇÊ¿äÇÏ´Ù.
+ * ì´ í•¨ìˆ˜ëŠ”
+ *  ulnEndTran ì—ì„œ ë°”ë¡œ í˜¸ì¶œë˜ê¸°ë„ í•˜ë©° (ì´ ê²½ìš°, DBC ëŠ” context ì—ì„œ ì–»ìŒ)
+ *  ulnEndTranInEnv ì—ì„œ í˜¸ì¶œë˜ê¸°ë„ í•œë‹¤ (ì´ ê²½ìš°, Context ì˜ obj ëŠ” ENV ì´ë‹¤)
+ * ê·¸ë˜ì„œ ulnDbc *aDbc ê°€ í•„ìš”í•˜ë‹¤.
  */
 static SQLRETURN ulnEndTranDbc(ulnDbc *aDbc, ulnTransactionOp aCompletionType)
 {
@@ -177,7 +177,7 @@ static SQLRETURN ulnEndTranDbc(ulnDbc *aDbc, ulnTransactionOp aCompletionType)
     ACI_TEST(ulnEndTranCheckArgs(&sFnContext, aCompletionType) != ACI_SUCCESS);
 
     /*
-     * End Transaction ¸ŞÀÎ ·çÆ¾
+     * End Transaction ë©”ì¸ ë£¨í‹´
      */
     ACI_TEST(ulnEndTranDbcMain(&sFnContext, aDbc, aCompletionType) != ACI_SUCCESS);
 
@@ -228,8 +228,8 @@ static SQLRETURN ulnEndTranEnv(ulnEnv *aEnv, ulnTransactionOp aCompletionType)
     ACP_LIST_ITERATE(&(aEnv->mDbcList), sIterator)
     {
         /*
-         * BUGBUG : DBC ¸¦ lock ÇØ¾ß ÇÏ³ª? lock ÇØ¾ß ÇÏ³×.
-         *          DBC ¿¡´Ù°¡ Diagnostic record µµ ¸Å´Ş¾Æ¾ß ÇÏ´Âµ¥.. -_-;
+         * BUGBUG : DBC ë¥¼ lock í•´ì•¼ í•˜ë‚˜? lock í•´ì•¼ í•˜ë„¤.
+         *          DBC ì—ë‹¤ê°€ Diagnostic record ë„ ë§¤ë‹¬ì•„ì•¼ í•˜ëŠ”ë°.. -_-;
          */
         // if(ulnEndTranDbcMain(&sFnContext, (ulnDbc *)sIterator, aCompletionType) != ACI_SUCCESS)
         rc = ulnEndTranDbc((ulnDbc *)sIterator, aCompletionType);
@@ -263,8 +263,8 @@ static SQLRETURN ulnEndTranEnv(ulnEnv *aEnv, ulnTransactionOp aCompletionType)
 }
 
 /*
- * BUGBUG: ÀÏ´ÜÀº Auto commit ¸ğµå¸¸ »ç¿ëÇÏ´Â °ÍÀ¸·Î °¡Á¤ÇÏÀÚ.
- *         Manual Commit ¸ğµåÀÏ °æ¿ì cursor ¿Í °ü·ÃµÈ °Íµµ °í·ÁÇØ Áà¾ß ÇÑ´Ù.
+ * BUGBUG: ì¼ë‹¨ì€ Auto commit ëª¨ë“œë§Œ ì‚¬ìš©í•˜ëŠ” ê²ƒìœ¼ë¡œ ê°€ì •í•˜ì.
+ *         Manual Commit ëª¨ë“œì¼ ê²½ìš° cursor ì™€ ê´€ë ¨ëœ ê²ƒë„ ê³ ë ¤í•´ ì¤˜ì•¼ í•œë‹¤.
  */
 SQLRETURN ulnEndTran(acp_sint16_t aHandleType, ulnObject *aObject, acp_sint16_t aCompletionType)
 {
@@ -302,7 +302,7 @@ SQLRETURN ulnEndTran(acp_sint16_t aHandleType, ulnObject *aObject, acp_sint16_t 
         default:
             /*
              * BUGBUG : HY092 : Invalid attribute / option identifier
-             *          Diagnostic record ¸¦ ¸Å´Ş °´Ã¼´Â?
+             *          Diagnostic record ë¥¼ ë§¤ë‹¬ ê°ì²´ëŠ”?
              */
             sRet = SQL_ERROR;
             break;

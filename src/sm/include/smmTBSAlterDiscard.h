@@ -31,40 +31,40 @@
 
 
 /*
-  [Âü°í] SMM¾È¿¡¼­ÀÇ File°£ÀÇ Layer¹× ¿ªÇÒÀº ´ÙÀ½°ú °°´Ù.
-         ÇÏÀ§ LayerÀÇ ÄÚµå¿¡¼­´Â »óÀ§ LayerÀÇ ÄÚµå¸¦ »ç¿ëÇÒ ¼ö ¾ø´Ù.
+  [ì°¸ê³ ] SMMì•ˆì—ì„œì˜ Fileê°„ì˜ Layerë° ì—­í• ì€ ë‹¤ìŒê³¼ ê°™ë‹¤.
+         í•˜ìœ„ Layerì˜ ì½”ë“œì—ì„œëŠ” ìƒìœ„ Layerì˜ ì½”ë“œë¥¼ ì‚¬ìš©í•  ìˆ˜ ì—†ë‹¤.
 
   ----------------------------------------------------------------------------
-  smmTBSCreate          ; Create Tablespace ±¸Çö
-  smmTBSDrop            ; Drop Tablespace ±¸Çö
-  smmTBSAlterAutoExtend ; Alter Tablespace Auto Extend ±¸Çö
-  smmTBSAlterChkptPath  ; Alter Tablespace Add/Rename/Drop Checkpoint Path±¸Çö
-  smmTBSAlterDiscard    ; Alter Tablespace Discard ±¸Çö
-  smmTBSStartupShutdown ; Startup, Shutdown½ÃÀÇ Tablespace°ü·Ã Ã³¸®¸¦ ±¸Çö
+  smmTBSCreate          ; Create Tablespace êµ¬í˜„
+  smmTBSDrop            ; Drop Tablespace êµ¬í˜„
+  smmTBSAlterAutoExtend ; Alter Tablespace Auto Extend êµ¬í˜„
+  smmTBSAlterChkptPath  ; Alter Tablespace Add/Rename/Drop Checkpoint Pathêµ¬í˜„
+  smmTBSAlterDiscard    ; Alter Tablespace Discard êµ¬í˜„
+  smmTBSStartupShutdown ; Startup, Shutdownì‹œì˜ Tablespaceê´€ë ¨ ì²˜ë¦¬ë¥¼ êµ¬í˜„
   ----------------------------------------------------------------------------
-  smmTBSChkptPath  ; TablespaceÀÇ Checkpoint Path °ü¸®
-  smmTBSMultiPhase ; TablespaceÀÇ ´Ù´Ü°è ÃÊ±âÈ­
+  smmTBSChkptPath  ; Tablespaceì˜ Checkpoint Path ê´€ë¦¬
+  smmTBSMultiPhase ; Tablespaceì˜ ë‹¤ë‹¨ê³„ ì´ˆê¸°í™”
   ----------------------------------------------------------------------------
-  smmManager       ; TablespaceÀÇ ³»ºÎ ±¸Çö 
-  smmFPLManager    ; Tablespace Free Page ListÀÇ ³»ºÎ ±¸Çö
-  smmExpandChunk   ; ChunkÀÇ ³»ºÎ±¸Á¶ ±¸Çö
+  smmManager       ; Tablespaceì˜ ë‚´ë¶€ êµ¬í˜„ 
+  smmFPLManager    ; Tablespace Free Page Listì˜ ë‚´ë¶€ êµ¬í˜„
+  smmExpandChunk   ; Chunkì˜ ë‚´ë¶€êµ¬ì¡° êµ¬í˜„
   ----------------------------------------------------------------------------
   
-  c.f> Memory TablespaceÀÇ Alter Online/OfflineÀº smp layer¿¡ ±¸ÇöµÇ¾î ÀÖ´Ù.
+  c.f> Memory Tablespaceì˜ Alter Online/Offlineì€ smp layerì— êµ¬í˜„ë˜ì–´ ìˆë‹¤.
 */
 
 
 /*
-  Memory TablespaceÀÇ Alter Tablespace Discard ±¸Çö
+  Memory Tablespaceì˜ Alter Tablespace Discard êµ¬í˜„
  */
 class smmTBSAlterDiscard
 {
 public :
-    // »ı¼ºÀÚ (¾Æ¹«°Íµµ ¾ÈÇÔ)
+    // ìƒì„±ì (ì•„ë¬´ê²ƒë„ ì•ˆí•¨)
     smmTBSAlterDiscard();
 
         
-    // »ç¿ëÀÚ Å×ÀÌºí ½ºÆäÀÌ½º¸¦ DISCARDÇÑ´Ù.
+    // ì‚¬ìš©ì í…Œì´ë¸” ìŠ¤í˜ì´ìŠ¤ë¥¼ DISCARDí•œë‹¤.
     static IDE_RC alterTBSdiscard( smmTBSNode * aTBSNode );
 
 };

@@ -50,7 +50,7 @@ struct mmmPhaseAction;
 
 typedef IDE_RC (*mmmPhaseActionFunc)(mmmPhase, UInt, mmmPhaseAction *);
 
-#define MMM_ACTION_NO_LOG  0x00000001 /* ·Î±ë Á¶Â÷ ÇÒ ¼ö ¾ø´Â °æ¿ì */
+#define MMM_ACTION_NO_LOG  0x00000001 /* ë¡œê¹… ì¡°ì°¨ í•  ìˆ˜ ì—†ëŠ” ê²½ìš° */
 
 typedef struct mmmPhaseAction
 {

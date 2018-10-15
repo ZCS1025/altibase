@@ -96,9 +96,9 @@ private:
 
     /* For Buffer Management */
     static iduMutex   mBuffMtx;
-    /* Direct Path Buffer PoolÀÌ °¡Áú¼ö ÀÖ´Â ÃÖ´ë ¹öÆÛ ÆäÀÌÁö °¹¼ö */
+    /* Direct Path Buffer Poolì´ ê°€ì§ˆìˆ˜ ìˆëŠ” ìµœëŒ€ ë²„í¼ í˜ì´ì§€ ê°¯ìˆ˜ */
     static UInt       mMaxBuffPageCnt;
-    /* ÇöÀç Direct Path Buffer Pool¿¡¼­ ÇÒ´çµÈ ÆäÀÌÁöÀÇ °¹¼ö */
+    /* í˜„ì¬ Direct Path Buffer Poolì—ì„œ í• ë‹¹ëœ í˜ì´ì§€ì˜ ê°¯ìˆ˜ */
     static UInt       mAllocBuffPageCnt;
 };
 

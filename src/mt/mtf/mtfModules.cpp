@@ -354,11 +354,11 @@ extern mtfModule mtfCovarSamp;
 extern mtfModule mtfCovarPop;
 extern mtfModule mtfCorr;
 
-/* BUG-44256 NUMSHIFT, NUMAND ÇÔ¼ö Ãß°¡ ÇØ¾ß ÇÕ´Ï´Ù. */
+/* BUG-44256 NUMSHIFT, NUMAND í•¨ìˆ˜ ì¶”ê°€ í•´ì•¼ í•©ë‹ˆë‹¤. */
 extern mtfModule mtfNumShift;
 extern mtfModule mtfNumAnd;
 
-/* BUG-44260 NUMOR, NUMXOR, NUMNOT ÇÔ¼ö Ãß°¡ ÇØ¾ß ÇÕ´Ï´Ù. */
+/* BUG-44260 NUMOR, NUMXOR, NUMNOT í•¨ìˆ˜ ì¶”ê°€ í•´ì•¼ í•©ë‹ˆë‹¤. */
 extern mtfModule mtfNumOr;
 extern mtfModule mtfNumXor;
 
@@ -635,10 +635,10 @@ const mtfModule* mtf::mInternalModule[] = {
     &mtfCovarSamp,
     &mtfCovarPop,
     &mtfCorr,
-    &mtfNumShift, /* BUG-44256 NUMSHIFT, NUMAND ÇÔ¼ö Ãß°¡ ÇØ¾ß ÇÕ´Ï´Ù. */
-    &mtfNumAnd,   /* BUG-44256 NUMSHIFT, NUMAND ÇÔ¼ö Ãß°¡ ÇØ¾ß ÇÕ´Ï´Ù. */
-    &mtfNumOr,  /* BUG-44260 NUMOR, NUMXOR, NUMNOT ÇÔ¼ö Ãß°¡ ÇØ¾ß ÇÕ´Ï´Ù. */
-    &mtfNumXor, /* BUG-44260 NUMOR, NUMXOR, NUMNOT ÇÔ¼ö Ãß°¡ ÇØ¾ß ÇÕ´Ï´Ù. */
+    &mtfNumShift, /* BUG-44256 NUMSHIFT, NUMAND í•¨ìˆ˜ ì¶”ê°€ í•´ì•¼ í•©ë‹ˆë‹¤. */
+    &mtfNumAnd,   /* BUG-44256 NUMSHIFT, NUMAND í•¨ìˆ˜ ì¶”ê°€ í•´ì•¼ í•©ë‹ˆë‹¤. */
+    &mtfNumOr,  /* BUG-44260 NUMOR, NUMXOR, NUMNOT í•¨ìˆ˜ ì¶”ê°€ í•´ì•¼ í•©ë‹ˆë‹¤. */
+    &mtfNumXor, /* BUG-44260 NUMOR, NUMXOR, NUMNOT í•¨ìˆ˜ ì¶”ê°€ í•´ì•¼ í•©ë‹ˆë‹¤. */
     &mtfMinKeep,
     &mtfMaxKeep,
     &mtfSumKeep,

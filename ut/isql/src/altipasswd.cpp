@@ -86,7 +86,7 @@ int main(int /*__ argc __*/ , char* /*__ argv __*/ [])
     fp = idlOS::fopen(sPasswordFile, "w+");
     IDE_TEST_RAISE( fp == NULL, ERR_PASSWD_FILE );
 
-    // BUG-38565 password ¾ÏÈ£È­ ¾Ë°í¸®µë º¯°æ
+    // BUG-38565 password ì•”í˜¸í™” ì•Œê³ ë¦¬ë“¬ ë³€ê²½
     idsPassword::crypt( sCryptStr, sUserPasswd, sUserPassLen, NULL );
     
     idlOS::fwrite(sCryptStr, 1, idlOS::strlen(sCryptStr), fp);
@@ -166,7 +166,7 @@ IDE_RC checkPrevPassword(SChar *aPasswordFile, SChar *aPassword)
     IDE_TEST_RAISE( (sUserPassLen == 0) || (sUserPassLen > IDS_MAX_PASSWORD_LEN),
                     invalid_passwd_error );
 
-    // BUG-38565 password ¾ÏÈ£È­ ¾Ë°í¸®µë º¯°æ
+    // BUG-38565 password ì•”í˜¸í™” ì•Œê³ ë¦¬ë“¬ ë³€ê²½
     idsPassword::crypt( sCryptStr, aPassword, sUserPassLen, sUserPass );
     
     IDE_TEST_RAISE( idlOS::strcmp( sCryptStr, sUserPass ) != 0,

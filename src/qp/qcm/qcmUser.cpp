@@ -38,7 +38,7 @@ const void   * gQcmUsersIndex [ QCM_MAX_META_INDICES ];
 qcmTableInfo * gQcmUsersTempInfo;
 
 //------------------------------------------------
-// SYSTEM USER¸¦ À§ÇÑ Á¤º¸
+// SYSTEM USERë¥¼ ìœ„í•œ ì •ë³´
 //------------------------------------------------
 /*
   qcUserInfo gQcmSystemUserInfo =
@@ -76,7 +76,7 @@ IDE_RC qcmUser::getUserID(
     IDE_EXCEPTION_END;
 
     // BUG-38883 print error position
-    // sqlSourceInfo°¡ ¾ø´Â error¶ó¸é.
+    // sqlSourceInfoê°€ ì—†ëŠ” errorë¼ë©´.
     if ( ( QC_IS_NULL_NAME(aUserName) == ID_FALSE ) &&
          ( ideHasErrorPosition() == ID_FALSE ) &&
          ( aUserName.offset != 0 ) )
@@ -120,21 +120,21 @@ IDE_RC qcmUser::getUserID(
 /***********************************************************************
  *
  * Description :
- *    »ç¿ëÀÚÀÇ ID ¸¦ ±¸ÇÑ´Ù.
+ *    ì‚¬ìš©ìžì˜ ID ë¥¼ êµ¬í•œë‹¤.
  *
  * Implementation :
- *    À¯Àú¸íÀÌ ÁÖ¾îÁöÁö ¾Ê¾ÒÀ» °æ¿ì
- *        ¼¼¼ÇÀÇ À¯Àú ID ¸¦ ¹ÝÈ¯ÇÑ´Ù.
- *    À¯Àú¸íÀÌ ÁÖ¾îÁ³À» °æ¿ì
- *        createdb ½Ã
- *        1. SYS_USERS_ ¸ÞÅ¸ Å×ÀÌºíÀÇ ÇÚµéÀ» ±¸ÇÑ´Ù.
- *        2. 1 ÀÇ Å×ÀÌºíÀÇ µ¥ÀÌÅÍ¿¡¼­ ¸í½ÃµÈ À¯Àú¸í°ú ÀÏÄ¡ÇÏ´Â À¯Àú°¡ ÀÖÀ¸¸é
- *           USER_ID ¸¦ ¹ÝÈ¯ÇÏ°í, ±×·¸Áö ¾ÊÀ¸¸é ¿¡·¯¸¦ ¹ÝÈ¯ÇÑ´Ù.
- *        createdb °¡ ¾Æ´Ò ¶§
- *        1. ¸ÞÅ¸ Ä³½¬·ÎºÎÅÍ USER_NAME ¿¡ ÇØ´çÇÏ´Â ÄÃ·³À» Ã£¾Æ¼­
- *        2. ¸í½ÃÇÑ À¯Àú¸íÀ¸·Î keyRange ¸¦ ¸¸µç´Ù.
- *        3. Ä¿¼­ open ,beforeFirst, readRow ¸¦ ÅëÇØ¼­ userID ¸¦ ±¸ÇÑ´Ù.
- *        4. readRow ÀÇ °ªÀÌ ¾øÀ¸¸é ¿¡·¯¸¦ ¹ÝÈ¯ÇÑ´Ù.
+ *    ìœ ì €ëª…ì´ ì£¼ì–´ì§€ì§€ ì•Šì•˜ì„ ê²½ìš°
+ *        ì„¸ì…˜ì˜ ìœ ì € ID ë¥¼ ë°˜í™˜í•œë‹¤.
+ *    ìœ ì €ëª…ì´ ì£¼ì–´ì¡Œì„ ê²½ìš°
+ *        createdb ì‹œ
+ *        1. SYS_USERS_ ë©”íƒ€ í…Œì´ë¸”ì˜ í•¸ë“¤ì„ êµ¬í•œë‹¤.
+ *        2. 1 ì˜ í…Œì´ë¸”ì˜ ë°ì´í„°ì—ì„œ ëª…ì‹œëœ ìœ ì €ëª…ê³¼ ì¼ì¹˜í•˜ëŠ” ìœ ì €ê°€ ìžˆìœ¼ë©´
+ *           USER_ID ë¥¼ ë°˜í™˜í•˜ê³ , ê·¸ë ‡ì§€ ì•Šìœ¼ë©´ ì—ëŸ¬ë¥¼ ë°˜í™˜í•œë‹¤.
+ *        createdb ê°€ ì•„ë‹ ë•Œ
+ *        1. ë©”íƒ€ ìºì‰¬ë¡œë¶€í„° USER_NAME ì— í•´ë‹¹í•˜ëŠ” ì»¬ëŸ¼ì„ ì°¾ì•„ì„œ
+ *        2. ëª…ì‹œí•œ ìœ ì €ëª…ìœ¼ë¡œ keyRange ë¥¼ ë§Œë“ ë‹¤.
+ *        3. ì»¤ì„œ open ,beforeFirst, readRow ë¥¼ í†µí•´ì„œ userID ë¥¼ êµ¬í•œë‹¤.
+ *        4. readRow ì˜ ê°’ì´ ì—†ìœ¼ë©´ ì—ëŸ¬ë¥¼ ë°˜í™˜í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -162,18 +162,18 @@ IDE_RC qcmUser::getUserID(
 /***********************************************************************
  *
  * Description :
- *    »ç¿ëÀÚÀÇ ID ¸¦ ±¸ÇÑ´Ù.
+ *    ì‚¬ìš©ìžì˜ ID ë¥¼ êµ¬í•œë‹¤.
  *
  * Implementation :
- *        createdb ½Ã
- *        1. SYS_USERS_ ¸ÞÅ¸ Å×ÀÌºíÀÇ ÇÚµéÀ» ±¸ÇÑ´Ù.
- *        2. 1 ÀÇ Å×ÀÌºíÀÇ µ¥ÀÌÅÍ¿¡¼­ ¸í½ÃµÈ À¯Àú¸í°ú ÀÏÄ¡ÇÏ´Â À¯Àú°¡ ÀÖÀ¸¸é
- *           USER_ID ¸¦ ¹ÝÈ¯ÇÏ°í, ±×·¸Áö ¾ÊÀ¸¸é ¿¡·¯¸¦ ¹ÝÈ¯ÇÑ´Ù.
- *        createdb °¡ ¾Æ´Ò ¶§
- *        1. ¸ÞÅ¸ Ä³½¬·ÎºÎÅÍ USER_NAME ¿¡ ÇØ´çÇÏ´Â ÄÃ·³À» Ã£¾Æ¼­
- *        2. ¸í½ÃÇÑ À¯Àú¸íÀ¸·Î keyRange ¸¦ ¸¸µç´Ù.
- *        3. Ä¿¼­ open ,beforeFirst, readRow ¸¦ ÅëÇØ¼­ userID ¸¦ ±¸ÇÑ´Ù.
- *        4. readRow ÀÇ °ªÀÌ ¾øÀ¸¸é ¿¡·¯¸¦ ¹ÝÈ¯ÇÑ´Ù.
+ *        createdb ì‹œ
+ *        1. SYS_USERS_ ë©”íƒ€ í…Œì´ë¸”ì˜ í•¸ë“¤ì„ êµ¬í•œë‹¤.
+ *        2. 1 ì˜ í…Œì´ë¸”ì˜ ë°ì´í„°ì—ì„œ ëª…ì‹œëœ ìœ ì €ëª…ê³¼ ì¼ì¹˜í•˜ëŠ” ìœ ì €ê°€ ìžˆìœ¼ë©´
+ *           USER_ID ë¥¼ ë°˜í™˜í•˜ê³ , ê·¸ë ‡ì§€ ì•Šìœ¼ë©´ ì—ëŸ¬ë¥¼ ë°˜í™˜í•œë‹¤.
+ *        createdb ê°€ ì•„ë‹ ë•Œ
+ *        1. ë©”íƒ€ ìºì‰¬ë¡œë¶€í„° USER_NAME ì— í•´ë‹¹í•˜ëŠ” ì»¬ëŸ¼ì„ ì°¾ì•„ì„œ
+ *        2. ëª…ì‹œí•œ ìœ ì €ëª…ìœ¼ë¡œ keyRange ë¥¼ ë§Œë“ ë‹¤.
+ *        3. ì»¤ì„œ open ,beforeFirst, readRow ë¥¼ í†µí•´ì„œ userID ë¥¼ êµ¬í•œë‹¤.
+ *        4. readRow ì˜ ê°’ì´ ì—†ìœ¼ë©´ ì—ëŸ¬ë¥¼ ë°˜í™˜í•œë‹¤.
  *
  ***********************************************************************/
 IDE_RC qcmUser::getUserID( idvSQL       * aStatistics,
@@ -197,7 +197,7 @@ IDE_RC qcmUser::getUserID( idvSQL       * aStatistics,
     mtdCharType           * sUserName = ( mtdCharType * ) & sUserNameBuffer;
     UChar                   sSearchingUserName[ QC_MAX_OBJECT_NAME_LEN + 1 ];
     smiCursorProperties     sCursorProperty;
-    scGRID                  sRid; // Disk TableÀ» À§ÇÑ Record IDentifier
+    scGRID                  sRid; // Disk Tableì„ ìœ„í•œ Record IDentifier
     mtcColumn             * sUserTypeCol;
     mtdCharType           * sUserTypeStr;
     UChar                 * sUserType;
@@ -400,20 +400,20 @@ IDE_RC qcmUser::getUserIDAndType( qcStatement     * aStatement,
 /***********************************************************************
  *
  * Description : PROJ-1812 ROLE
- *    »ç¿ëÀÚÀÇ ROLE ID, USER ID, USER TYPE ¸¦ ±¸ÇÑ´Ù.
- *    create user, create role ½Ã userid ´Â user type¿¡ »ó°ü¾øÀÌ ¸ðµÎ Ã¼Å©
- *    ±âÁ¸ getUserID() ¿¹ user type return Ãß°¡.
+ *    ì‚¬ìš©ìžì˜ ROLE ID, USER ID, USER TYPE ë¥¼ êµ¬í•œë‹¤.
+ *    create user, create role ì‹œ userid ëŠ” user typeì— ìƒê´€ì—†ì´ ëª¨ë‘ ì²´í¬
+ *    ê¸°ì¡´ getUserID() ì˜ˆ user type return ì¶”ê°€.
  *
  * Implementation :
- *        createdb ½Ã
- *        1. SYS_USERS_ ¸ÞÅ¸ Å×ÀÌºíÀÇ ÇÚµéÀ» ±¸ÇÑ´Ù.
- *        2. 1 ÀÇ Å×ÀÌºíÀÇ µ¥ÀÌÅÍ¿¡¼­ ¸í½ÃµÈ À¯Àú¸í°ú ÀÏÄ¡ÇÏ´Â À¯Àú°¡ ÀÖÀ¸¸é
- *           USER_ID ¸¦ ¹ÝÈ¯ÇÏ°í, ±×·¸Áö ¾ÊÀ¸¸é ¿¡·¯¸¦ ¹ÝÈ¯ÇÑ´Ù.
- *        createdb °¡ ¾Æ´Ò ¶§
- *        1. ¸ÞÅ¸ Ä³½¬·ÎºÎÅÍ USER_NAME ¿¡ ÇØ´çÇÏ´Â ÄÃ·³À» Ã£¾Æ¼­
- *        2. ¸í½ÃÇÑ À¯Àú¸íÀ¸·Î keyRange ¸¦ ¸¸µç´Ù.
- *        3. Ä¿¼­ open ,beforeFirst, readRow ¸¦ ÅëÇØ¼­ userID ¸¦ ±¸ÇÑ´Ù.
- *        4. readRow ÀÇ °ªÀÌ ¾øÀ¸¸é ¿¡·¯¸¦ ¹ÝÈ¯ÇÑ´Ù.
+ *        createdb ì‹œ
+ *        1. SYS_USERS_ ë©”íƒ€ í…Œì´ë¸”ì˜ í•¸ë“¤ì„ êµ¬í•œë‹¤.
+ *        2. 1 ì˜ í…Œì´ë¸”ì˜ ë°ì´í„°ì—ì„œ ëª…ì‹œëœ ìœ ì €ëª…ê³¼ ì¼ì¹˜í•˜ëŠ” ìœ ì €ê°€ ìžˆìœ¼ë©´
+ *           USER_ID ë¥¼ ë°˜í™˜í•˜ê³ , ê·¸ë ‡ì§€ ì•Šìœ¼ë©´ ì—ëŸ¬ë¥¼ ë°˜í™˜í•œë‹¤.
+ *        createdb ê°€ ì•„ë‹ ë•Œ
+ *        1. ë©”íƒ€ ìºì‰¬ë¡œë¶€í„° USER_NAME ì— í•´ë‹¹í•˜ëŠ” ì»¬ëŸ¼ì„ ì°¾ì•„ì„œ
+ *        2. ëª…ì‹œí•œ ìœ ì €ëª…ìœ¼ë¡œ keyRange ë¥¼ ë§Œë“ ë‹¤.
+ *        3. ì»¤ì„œ open ,beforeFirst, readRow ë¥¼ í†µí•´ì„œ userID ë¥¼ êµ¬í•œë‹¤.
+ *        4. readRow ì˜ ê°’ì´ ì—†ìœ¼ë©´ ì—ëŸ¬ë¥¼ ë°˜í™˜í•œë‹¤.
  *
  ***********************************************************************/
 IDE_RC qcmUser::getUserIDAndTypeByName(
@@ -646,13 +646,13 @@ IDE_RC qcmUser::getUserPassword(
 /***********************************************************************
  *
  * Description :
- *    »ç¿ëÀÚÀÇ ¾ÏÈ£¸¦ ±¸ÇÑ´Ù.
+ *    ì‚¬ìš©ìžì˜ ì•”í˜¸ë¥¼ êµ¬í•œë‹¤.
  *
  * Implementation :
- *    1. ¸ÞÅ¸ Ä³½¬·ÎºÎÅÍ USER_ID ¿¡ ÇØ´çÇÏ´Â ÄÃ·³À» Ã£¾Æ¼­
- *    2. ¸í½ÃÇÑ À¯ÀúID ·Î keyRange ¸¦ ¸¸µç´Ù.
- *    3. Ä¿¼­ open ,beforeFirst, readRow ¸¦ ÅëÇØ¼­ password ¸¦ ±¸ÇÑ´Ù.
- *    4. readRow ÀÇ °ªÀÌ ¾øÀ¸¸é ¿¡·¯¸¦ ¹ÝÈ¯ÇÑ´Ù.
+ *    1. ë©”íƒ€ ìºì‰¬ë¡œë¶€í„° USER_ID ì— í•´ë‹¹í•˜ëŠ” ì»¬ëŸ¼ì„ ì°¾ì•„ì„œ
+ *    2. ëª…ì‹œí•œ ìœ ì €ID ë¡œ keyRange ë¥¼ ë§Œë“ ë‹¤.
+ *    3. ì»¤ì„œ open ,beforeFirst, readRow ë¥¼ í†µí•´ì„œ password ë¥¼ êµ¬í•œë‹¤.
+ *    4. readRow ì˜ ê°’ì´ ì—†ìœ¼ë©´ ì—ëŸ¬ë¥¼ ë°˜í™˜í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -665,7 +665,7 @@ IDE_RC qcmUser::getUserPassword(
     SInt                    sStage = 0;
     const void            * sRow;
     smiCursorProperties     sCursorProperty;
-    scGRID                  sRid; // Disk TableÀ» À§ÇÑ Record IDentifier
+    scGRID                  sRid; // Disk Tableì„ ìœ„í•œ Record IDentifier
     mtcColumn             * sUserTypeColumn;
     mtdCharType           * sUserTypeStr;
     UChar                 * sUserType;
@@ -679,12 +679,12 @@ IDE_RC qcmUser::getUserPassword(
 
     IDE_ASSERT( sColumn != NULL );
     
-    // mtdModule ¼³Á¤
+    // mtdModule ì„¤ì •
     IDE_TEST(mtd::moduleById( &(sColumn->basicInfo->module),
                               sColumn->basicInfo->type.dataTypeId)
              != IDE_SUCCESS);
 
-    // mtlModule ¼³Á¤
+    // mtlModule ì„¤ì •
     IDE_TEST(mtl::moduleById( &(sColumn->basicInfo->language),
                               sColumn->basicInfo->type.languageId)
              != IDE_SUCCESS);
@@ -770,13 +770,13 @@ IDE_RC qcmUser::getUserName(
 /***********************************************************************
  *
  * Description :
- *    »ç¿ëÀÚÀÇ ÀÌ¸§À» ±¸ÇÑ´Ù.
+ *    ì‚¬ìš©ìžì˜ ì´ë¦„ì„ êµ¬í•œë‹¤.
  *
  * Implementation :
- *    1. ¸ÞÅ¸ Ä³½¬·ÎºÎÅÍ USER_ID ¿¡ ÇØ´çÇÏ´Â ÄÃ·³À» Ã£¾Æ¼­
- *    2. ¸í½ÃÇÑ À¯ÀúID ·Î keyRange ¸¦ ¸¸µç´Ù.
- *    3. Ä¿¼­ open ,beforeFirst, readRow ¸¦ ÅëÇØ¼­ user name À» ±¸ÇÑ´Ù.
- *    4. readRow ÀÇ °ªÀÌ ¾øÀ¸¸é ¿¡·¯¸¦ ¹ÝÈ¯ÇÑ´Ù.
+ *    1. ë©”íƒ€ ìºì‰¬ë¡œë¶€í„° USER_ID ì— í•´ë‹¹í•˜ëŠ” ì»¬ëŸ¼ì„ ì°¾ì•„ì„œ
+ *    2. ëª…ì‹œí•œ ìœ ì €ID ë¡œ keyRange ë¥¼ ë§Œë“ ë‹¤.
+ *    3. ì»¤ì„œ open ,beforeFirst, readRow ë¥¼ í†µí•´ì„œ user name ì„ êµ¬í•œë‹¤.
+ *    4. readRow ì˜ ê°’ì´ ì—†ìœ¼ë©´ ì—ëŸ¬ë¥¼ ë°˜í™˜í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -789,10 +789,10 @@ IDE_RC qcmUser::getUserName(
     SInt                    sStage = 0;
     const void            * sRow;
     smiCursorProperties     sCursorProperty;
-    scGRID                  sRid; // Disk TableÀ» À§ÇÑ Record IDentifier
+    scGRID                  sRid; // Disk Tableì„ ìœ„í•œ Record IDentifier
 
     // BUG-24540
-    // SYSTEM_ USERÀÎ °æ¿ì, µñ¼Å³Ê¸® Å×ÀÌºíÀ» °Ë»çÇÏÁö ¾Ê°í ¹Ù·Î ¸®ÅÏ
+    // SYSTEM_ USERì¸ ê²½ìš°, ë”•ì…”ë„ˆë¦¬ í…Œì´ë¸”ì„ ê²€ì‚¬í•˜ì§€ ì•Šê³  ë°”ë¡œ ë¦¬í„´
     if( aUserID == QC_SYSTEM_USER_ID )
     {
         idlOS::strcpy(aUserName,
@@ -806,7 +806,7 @@ IDE_RC qcmUser::getUserName(
     }
 
     // BUG-24540
-    // SYS USERÀÎ °æ¿ì, µñ¼Å³Ê¸® Å×ÀÌºíÀ» °Ë»çÇÏÁö ¾Ê°í ¹Ù·Î ¸®ÅÏ
+    // SYS USERì¸ ê²½ìš°, ë”•ì…”ë„ˆë¦¬ í…Œì´ë¸”ì„ ê²€ì‚¬í•˜ì§€ ì•Šê³  ë°”ë¡œ ë¦¬í„´
     if( aUserID == QC_SYS_USER_ID )
     {
         idlOS::strcpy(aUserName,
@@ -828,12 +828,12 @@ IDE_RC qcmUser::getUserName(
 
     IDE_ASSERT( sColumn != NULL );
     
-    // mtdModule ¼³Á¤
+    // mtdModule ì„¤ì •
     IDE_TEST(mtd::moduleById( &(sColumn->basicInfo->module),
                               sColumn->basicInfo->type.dataTypeId)
              != IDE_SUCCESS);
 
-    // mtlModule ¼³Á¤
+    // mtlModule ì„¤ì •
     IDE_TEST(mtl::moduleById( &(sColumn->basicInfo->language),
                               sColumn->basicInfo->type.languageId)
              != IDE_SUCCESS);
@@ -903,11 +903,11 @@ IDE_RC qcmUser::getNextUserID(qcStatement *aStatement,
 /***********************************************************************
  *
  * Description :
- *    »õ·Î¿î »ç¿ëÀÚ »ý¼º½Ã user ID ¸¦ ºÎ¿©ÇÑ´Ù
+ *    ìƒˆë¡œìš´ ì‚¬ìš©ìž ìƒì„±ì‹œ user ID ë¥¼ ë¶€ì—¬í•œë‹¤
  *
  * Implementation :
- *    1. USER ¸¦ ºÎ¿©ÇÏ´Â ¸ÞÅ¸ ½ÃÄö½ºÀÇ ÇÚµéÀ» Ã£´Â´Ù.
- *    2. 1ÀÇ ÇÚµé·Î ½ÃÄö½ºÀÇ nextval À» Ã£¾Æ¼­ ¹ÝÈ¯ÇÑ´Ù.
+ *    1. USER ë¥¼ ë¶€ì—¬í•˜ëŠ” ë©”íƒ€ ì‹œí€€ìŠ¤ì˜ í•¸ë“¤ì„ ì°¾ëŠ”ë‹¤.
+ *    2. 1ì˜ í•¸ë“¤ë¡œ ì‹œí€€ìŠ¤ì˜ nextval ì„ ì°¾ì•„ì„œ ë°˜í™˜í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -937,9 +937,9 @@ IDE_RC qcmUser::getNextUserID(qcStatement *aStatement,
                                          NULL )
                  != IDE_SUCCESS );
 
-        // sSeqValÀº ºñ·Ï SLongÀÌÁö¸¸, sequence¸¦ »ý¼ºÇÒ ¶§
-        // max¸¦ integer max¸¦ ¾È³Ñµµ·Ï ÇÏ¿´±â ¶§¹®¿¡
-        // ¿©±â¼­ overflowÃ¼Å©´Â ÇÏÁö ¾Ê´Â´Ù.
+        // sSeqValì€ ë¹„ë¡ SLongì´ì§€ë§Œ, sequenceë¥¼ ìƒì„±í•  ë•Œ
+        // maxë¥¼ integer maxë¥¼ ì•ˆë„˜ë„ë¡ í•˜ì˜€ê¸° ë•Œë¬¸ì—
+        // ì—¬ê¸°ì„œ overflowì²´í¬ëŠ” í•˜ì§€ ì•ŠëŠ”ë‹¤.
         IDE_TEST( searchUserID( QC_SMI_STMT( aStatement ),
                                 (SInt)sSeqVal,
                                 &sExist )
@@ -952,8 +952,8 @@ IDE_RC qcmUser::getNextUserID(qcStatement *aStatement,
         }
         else
         {
-            // Ã£´ÙÃ£´Ù ÇÑ¹ÙÄû µ· °æ¿ì.
-            // ÀÌ´Â object°¡ ²Ë Âù °ÍÀ» ÀÇ¹ÌÇÔ.
+            // ì°¾ë‹¤ì°¾ë‹¤ í•œë°”í€´ ëˆ ê²½ìš°.
+            // ì´ëŠ” objectê°€ ê½‰ ì°¬ ê²ƒì„ ì˜ë¯¸í•¨.
             IDE_TEST_RAISE( sSeqVal == sSeqValFirst, ERR_OBJECTS_OVERFLOW );
         }
     }
@@ -980,7 +980,7 @@ IDE_RC qcmUser::searchUserID( smiStatement * aSmiStmt,
 {
 /***********************************************************************
  *
- * Description : user id°¡ Á¸ÀçÇÏ´ÂÁö °Ë»ç.
+ * Description : user idê°€ ì¡´ìž¬í•˜ëŠ”ì§€ ê²€ì‚¬.
  *
  * Implementation :
  *
@@ -993,15 +993,15 @@ IDE_RC qcmUser::searchUserID( smiStatement * aSmiStmt,
     UInt                sFlag = QCM_META_CURSOR_FLAG;
     mtcColumn         * sQcmUsersIndexColumn;
     qtcMetaRangeColumn  sRangeColumn;
-    scGRID              sRid; // Disk TableÀ» À§ÇÑ Record IDentifier
+    scGRID              sRid; // Disk Tableì„ ìœ„í•œ Record IDentifier
     smiCursorProperties sCursorProperty;
 
     *aExist = ID_FALSE;
 
     if( gQcmUsersIndex[QCM_USER_USERID_IDX_ORDER] == NULL )
     {
-        // createdbÇÏ´Â °æ¿ìÀÓ.
-        // ÀÌ¶§´Â °Ë»ç ÇÒ ÇÊ¿ä°¡ ¾ø´Ù
+        // createdbí•˜ëŠ” ê²½ìš°ìž„.
+        // ì´ë•ŒëŠ” ê²€ì‚¬ í•  í•„ìš”ê°€ ì—†ë‹¤
     }
     else
     {
@@ -1072,13 +1072,13 @@ IDE_RC qcmUser::getDefaultTBS(
 /***********************************************************************
  *
  * Description :
- *    »ç¿ëÀÚÀÇ default tablespace ¸¦ ±¸ÇÑ´Ù.
+ *    ì‚¬ìš©ìžì˜ default tablespace ë¥¼ êµ¬í•œë‹¤.
  *
  * Implementation :
- *    1. ¸ÞÅ¸ Ä³½¬·ÎºÎÅÍ USER_ID ¿¡ ÇØ´çÇÏ´Â ÄÃ·³À» Ã£¾Æ¼­
- *    2. ¸í½ÃÇÑ À¯ÀúID ·Î keyRange ¸¦ ¸¸µç´Ù.
- *    3. Ä¿¼­ open ,beforeFirst, readRow ¸¦ ÅëÇØ¼­ DEFAULT_TBS_ID À» ±¸ÇÑ´Ù.
- *    4. readRow ÀÇ °ªÀÌ ¾øÀ¸¸é ¿¡·¯¸¦ ¹ÝÈ¯ÇÑ´Ù.
+ *    1. ë©”íƒ€ ìºì‰¬ë¡œë¶€í„° USER_ID ì— í•´ë‹¹í•˜ëŠ” ì»¬ëŸ¼ì„ ì°¾ì•„ì„œ
+ *    2. ëª…ì‹œí•œ ìœ ì €ID ë¡œ keyRange ë¥¼ ë§Œë“ ë‹¤.
+ *    3. ì»¤ì„œ open ,beforeFirst, readRow ë¥¼ í†µí•´ì„œ DEFAULT_TBS_ID ì„ êµ¬í•œë‹¤.
+ *    4. readRow ì˜ ê°’ì´ ì—†ìœ¼ë©´ ì—ëŸ¬ë¥¼ ë°˜í™˜í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -1090,7 +1090,7 @@ IDE_RC qcmUser::getDefaultTBS(
     SInt                    sStage = 0;
     const void            * sRow;
     smiCursorProperties     sCursorProperty;
-    scGRID                  sRid; // Disk TableÀ» À§ÇÑ Record IDentifier
+    scGRID                  sRid; // Disk Tableì„ ìœ„í•œ Record IDentifier
 
     sCursor.initialize();
 
@@ -1111,12 +1111,12 @@ IDE_RC qcmUser::getDefaultTBS(
 
         IDE_ASSERT( sColumn != NULL );
         
-        // mtdModule ¼³Á¤
+        // mtdModule ì„¤ì •
         IDE_TEST(mtd::moduleById( &(sColumn->basicInfo->module),
                                   sColumn->basicInfo->type.dataTypeId)
                  != IDE_SUCCESS);
 
-        // mtlModule ¼³Á¤
+        // mtlModule ì„¤ì •
         IDE_TEST(mtl::moduleById( &(sColumn->basicInfo->language),
                                   sColumn->basicInfo->type.languageId)
                  != IDE_SUCCESS);
@@ -1193,7 +1193,7 @@ IDE_RC qcmUser::getCurrentDate( qcStatement     * aStatement,
 /***********************************************************************
  *
  * Description : PROJ-2207 Password policy support
- *        select query ·Î ±âÁØ ³¯ÀÚ·Î ºÎÅÍ ÇöÀç ³¯ÀÚÀÇ ÀÏ¼ö¸¦ °¡Á®¿Â´Ù.
+ *        select query ë¡œ ê¸°ì¤€ ë‚ ìžë¡œ ë¶€í„° í˜„ìž¬ ë‚ ìžì˜ ì¼ìˆ˜ë¥¼ ê°€ì ¸ì˜¨ë‹¤.
  *
  * Implementation :
  *
@@ -1202,7 +1202,7 @@ IDE_RC qcmUser::getCurrentDate( qcStatement     * aStatement,
     idBool        sRecordExist;
     mtdBigintType sResult;
 
-    /* BUG-365618 datediff¿¡¼­ DEFAULT_DATE_FORMATE°ú °°¾Æ¾ß µÈ´Ù.. */
+    /* BUG-365618 datediffì—ì„œ DEFAULT_DATE_FORMATEê³¼ ê°™ì•„ì•¼ ëœë‹¤.. */
     idlOS::snprintf( sBuffer, QD_MAX_SQL_LENGTH,
                      "SELECT DATEDIFF( TO_DATE( '%s','DD-MON-RRRR'),SYSDATE,'DAY' ) "
                      "FROM "
@@ -1239,13 +1239,13 @@ IDE_RC qcmUser::getPasswPolicyInfo( qcStatement     * aStatement,
 /***********************************************************************
  *
  * Description : PROJ-2207 Password policy support
- *    SYS_USERS_ ¸ïÅ¸·Î PASSWORD POLICY Á¤º¸¸¦ °¡Á®¿Â´Ù.
+ *    SYS_USERS_ ëªŒíƒ€ë¡œ PASSWORD POLICY ì •ë³´ë¥¼ ê°€ì ¸ì˜¨ë‹¤.
  *
  * Implementation :
- *    1. ¸ÞÅ¸ Ä³½¬·ÎºÎÅÍ USER_ID ¿¡ ÇØ´çÇÏ´Â ÄÃ·³À» Ã£¾Æ¼­
- *    2. ¸í½ÃÇÑ À¯ÀúID ·Î keyRange ¸¦ ¸¸µç´Ù.
- *    3. Ä¿¼­ open ,beforeFirst, readRow ¸¦ ÅëÇØ¼­ password ¸¦ ±¸ÇÑ´Ù.
- *    4. readRow ÀÇ °ªÀÌ ¾øÀ¸¸é ¿¡·¯¸¦ ¹ÝÈ¯ÇÑ´Ù.
+ *    1. ë©”íƒ€ ìºì‰¬ë¡œë¶€í„° USER_ID ì— í•´ë‹¹í•˜ëŠ” ì»¬ëŸ¼ì„ ì°¾ì•„ì„œ
+ *    2. ëª…ì‹œí•œ ìœ ì €ID ë¡œ keyRange ë¥¼ ë§Œë“ ë‹¤.
+ *    3. ì»¤ì„œ open ,beforeFirst, readRow ë¥¼ í†µí•´ì„œ password ë¥¼ êµ¬í•œë‹¤.
+ *    4. readRow ì˜ ê°’ì´ ì—†ìœ¼ë©´ ì—ëŸ¬ë¥¼ ë°˜í™˜í•œë‹¤.
  *
  ***********************************************************************/
     smiTableCursor          sCursor;
@@ -1259,7 +1259,7 @@ IDE_RC qcmUser::getPasswPolicyInfo( qcStatement     * aStatement,
     SInt                    sStage = 0;
     const void            * sRow;
     smiCursorProperties     sCursorProperty;
-    scGRID                  sRid; // Disk TableÀ» À§ÇÑ Record IDentifier
+    scGRID                  sRid; // Disk Tableì„ ìœ„í•œ Record IDentifier
     SInt                    sIsNull = 0;
     mtcColumn             * sPasswReuseDateCol;
     mtdDateType           * sPasswReuseDateStr;
@@ -1304,12 +1304,12 @@ IDE_RC qcmUser::getPasswPolicyInfo( qcStatement     * aStatement,
                                            0 )
                != IDE_SUCCESS );
     
-    // mtdModule ¼³Á¤
+    // mtdModule ì„¤ì •
     IDE_TEST(mtd::moduleById( &(sColumn->basicInfo->module),
                               sColumn->basicInfo->type.dataTypeId)
              != IDE_SUCCESS);
 
-    // mtlModule ¼³Á¤
+    // mtlModule ì„¤ì •
     IDE_TEST(mtl::moduleById( &(sColumn->basicInfo->language),
                               sColumn->basicInfo->type.languageId)
              != IDE_SUCCESS);
@@ -1557,12 +1557,12 @@ IDE_RC qcmUser::updateFailedCount( smiStatement * aStatement,
 /***********************************************************************
  *
  * Description : PROJ-2207 Password policy support
- *      SYS_USERS_ ¸ïÅ¸ÀÇ FAILED_LOGIN_ATTEMPTS °ªÀ» °»½Å.
+ *      SYS_USERS_ ëªŒíƒ€ì˜ FAILED_LOGIN_ATTEMPTS ê°’ì„ ê°±ì‹ .
  *
  *      CONNECT FAILED : +1, CONNECT SUCCESS : 0
  *
  * Implementation :
- *      aUserID ±âÁØÀ¸·Î ÇØ´ç »ç¿ëÀÚ¸¸.
+ *      aUserID ê¸°ì¤€ìœ¼ë¡œ í•´ë‹¹ ì‚¬ìš©ìžë§Œ.
  *
  ***********************************************************************/
 
@@ -1575,7 +1575,7 @@ IDE_RC qcmUser::updateFailedCount( smiStatement * aStatement,
             ( aUserInfo->mAccLimitOpts.mAccLockStatus == QCI_ACCOUNT_LOCKED_TO_OPEN ) ||
             ( aUserInfo->mAccLimitOpts.mAccLockStatus == QCI_ACCOUNT_OPEN_TO_LOCKED ))
         {
-            /* BUG-44303 Password Policy¸¦ ÁöÁ¤ÇÑ °æ¿ì, ÇØ´ç User°¡ Log-InÇÒ ¶§, Ç×»ó Meta TableÀ» °»½ÅÇÕ´Ï´Ù. */
+            /* BUG-44303 Password Policyë¥¼ ì§€ì •í•œ ê²½ìš°, í•´ë‹¹ Userê°€ Log-Iní•  ë•Œ, í•­ìƒ Meta Tableì„ ê°±ì‹ í•©ë‹ˆë‹¤. */
             idlOS::snprintf( sBuffer, QD_MAX_SQL_LENGTH,
                              "UPDATE DBA_USERS_ "
                              "SET "
@@ -1622,16 +1622,16 @@ IDE_RC qcmUser::updateLockDate( smiStatement * aStatement,
 /***********************************************************************
  *
  * Description : PROJ-2207 Password policy support
- *      SYS_USERS_ ¸ïÅ¸ÀÇ LOCK_DATE °ªÀ» °»½Å.
+ *      SYS_USERS_ ëªŒíƒ€ì˜ LOCK_DATE ê°’ì„ ê°±ì‹ .
  *
  * Implementation :
  *    1. ACCOUNT_STATUS : LOCKED
- *         - LOCK_DATE¸¦ Çö ½ÃÁ¡ÀÇ °ªÀ¸·Î °»½Å
- *         - LOCK_DATE´Â FAILED_LOGIN_ATTEMPTS, PASSWORD_LOCK_TIME °ª¿¡
- *           µû¶ó ¼³Á¤µÈ´Ù.
+ *         - LOCK_DATEë¥¼ í˜„ ì‹œì ì˜ ê°’ìœ¼ë¡œ ê°±ì‹ 
+ *         - LOCK_DATEëŠ” FAILED_LOGIN_ATTEMPTS, PASSWORD_LOCK_TIME ê°’ì—
+ *           ë”°ë¼ ì„¤ì •ëœë‹¤.
  *    2. ACCOUNT_STATUS : LOCKED -> OPEN
- *         - LOCK_DATEÀÇ °ªÀ» NULL·Î °»½Å.
- *         - ·Î±×ÀÎ µÇ¾úÀ» °æ¿ì¿Í PASSWORD_LOCK_TIME ¼³Á¤ °ªÀÌ Áö³­ Á´¿ì
+ *         - LOCK_DATEì˜ ê°’ì„ NULLë¡œ ê°±ì‹ .
+ *         - ë¡œê·¸ì¸ ë˜ì—ˆì„ ê²½ìš°ì™€ PASSWORD_LOCK_TIME ì„¤ì • ê°’ì´ ì§€ë‚œ ì¡ìš°
  *
  ***********************************************************************/
 
@@ -1644,7 +1644,7 @@ IDE_RC qcmUser::updateLockDate( smiStatement * aStatement,
         /* PASSWORD_LOCK_TIME
          * ACCOUNT_LOCK = N
          * ACCOUNT_LOCK_DATE = NULL */
-        /* BUG-44303 Password Policy¸¦ ÁöÁ¤ÇÑ °æ¿ì, ÇØ´ç User°¡ Log-InÇÒ ¶§, Ç×»ó Meta TableÀ» °»½ÅÇÕ´Ï´Ù. */
+        /* BUG-44303 Password Policyë¥¼ ì§€ì •í•œ ê²½ìš°, í•´ë‹¹ Userê°€ Log-Iní•  ë•Œ, í•­ìƒ Meta Tableì„ ê°±ì‹ í•©ë‹ˆë‹¤. */
         idlOS::snprintf( sBuffer, QD_MAX_SQL_LENGTH,
                          "UPDATE DBA_USERS_ "
                          "SET "
@@ -1671,8 +1671,8 @@ IDE_RC qcmUser::updateLockDate( smiStatement * aStatement,
         // BUG-41230 SYS_USERS_ => DBA_USERS_
         /* FAILED_LOGIN_ATTEMPTS
          * ACCOUNT_LOCK = L
-         * ACCOUNT_LOCK_DATE = 20010101 + ÇöÀç ÀÏ¼ö */
-        /* BUG-44303 Password Policy¸¦ ÁöÁ¤ÇÑ °æ¿ì, ÇØ´ç User°¡ Log-InÇÒ ¶§, Ç×»ó Meta TableÀ» °»½ÅÇÕ´Ï´Ù. */
+         * ACCOUNT_LOCK_DATE = 20010101 + í˜„ìž¬ ì¼ìˆ˜ */
+        /* BUG-44303 Password Policyë¥¼ ì§€ì •í•œ ê²½ìš°, í•´ë‹¹ Userê°€ Log-Iní•  ë•Œ, í•­ìƒ Meta Tableì„ ê°±ì‹ í•©ë‹ˆë‹¤. */
         idlOS::snprintf( sBuffer, QD_MAX_SQL_LENGTH,
                          "UPDATE DBA_USERS_ "
                          "SET "
@@ -1721,15 +1721,15 @@ IDE_RC qcmUser::findTableListByUserID( qcStatement * aStatement,
 /***********************************************************************
  *
  * Description :
- *    executeDropUserCascade ·ÎºÎÅÍ È£Ãâ, drop °¡´ÉÇÑ Å×ÀÌºíÀÇ
- *    ¸®½ºÆ®¸¦ µ¹·ÁÁØ´Ù.
+ *    executeDropUserCascade ë¡œë¶€í„° í˜¸ì¶œ, drop ê°€ëŠ¥í•œ í…Œì´ë¸”ì˜
+ *    ë¦¬ìŠ¤íŠ¸ë¥¼ ëŒë ¤ì¤€ë‹¤.
  *
  * Implementation :
- *    1. SYS_TABLES_ Å×ÀÌºíÀÇ USER_ID, TABLE_OID,TABLE_ID ÄÃ·³À» ±¸ÇØ µÐ´Ù.
- *    2. ¸í½ÃµÈ userID ·Î keyRange ¸¦ ¸¸µç´Ù.
- *    3. ÇÑ row ¾¿ ÀÐÀ¸¸é¼­ tableOID, tableID ¸¦ ±¸ÇÑ ´ÙÀ½, Ä³½¬µÈ
- *       qcmTableInfo ¿Í Å×ÀÌºí ÇÚµéÀ» ±¸ÇÑ´Ù.
- *    4. drop ÇØ¾ßÇÒ qcmTableInfo ¸¦ list ·Î ¿¬°áÇÏ¿© ¹ÝÈ¯ÇÑ´Ù.
+ *    1. SYS_TABLES_ í…Œì´ë¸”ì˜ USER_ID, TABLE_OID,TABLE_ID ì»¬ëŸ¼ì„ êµ¬í•´ ë‘”ë‹¤.
+ *    2. ëª…ì‹œëœ userID ë¡œ keyRange ë¥¼ ë§Œë“ ë‹¤.
+ *    3. í•œ row ì”© ì½ìœ¼ë©´ì„œ tableOID, tableID ë¥¼ êµ¬í•œ ë‹¤ìŒ, ìºì‰¬ëœ
+ *       qcmTableInfo ì™€ í…Œì´ë¸” í•¸ë“¤ì„ êµ¬í•œë‹¤.
+ *    4. drop í•´ì•¼í•  qcmTableInfo ë¥¼ list ë¡œ ì—°ê²°í•˜ì—¬ ë°˜í™˜í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -1750,7 +1750,7 @@ IDE_RC qcmUser::findTableListByUserID( qcStatement * aStatement,
     qcmTableInfoList    * sTableInfoList     = NULL;
     qcmTableInfoList    * sFirstTableInfoList = NULL;
     smiCursorProperties   sCursorProperty;
-    scGRID                sRid; // Disk TableÀ» À§ÇÑ Record IDentifier
+    scGRID                sRid; // Disk Tableì„ ìœ„í•œ Record IDentifier
 
     mtcColumn           * sTableNameCol;
     UChar               * sTableType;
@@ -1829,7 +1829,7 @@ IDE_RC qcmUser::findTableListByUserID( qcStatement * aStatement,
         sHidden = sHiddenStr->value;
 
         // PROJ-1624 Global Non-partitioned Index
-        // hidden tableÀº hidden tableÀ» ¼ÒÀ¯ÇÑ °´Ã¼°¡ Á÷Á¢Ã³¸®ÇÑ´Ù.
+        // hidden tableì€ hidden tableì„ ì†Œìœ í•œ ê°ì²´ê°€ ì§ì ‘ì²˜ë¦¬í•œë‹¤.
         // if we want to get the table is sequence or not
         /* BUG-35460 Add TABLE_TYPE G in SYS_TABLES_ */
         if ( ( ( idlOS::strMatch( (SChar*)sTableType, sTableTypeStr->length, "T", 1 ) == 0 ) ||
@@ -1858,7 +1858,7 @@ IDE_RC qcmUser::findTableListByUserID( qcStatement * aStatement,
             IDE_TEST_RAISE(sTableInfo->replicationCount > 0,
                            ERR_DDL_WITH_REPLICATED_TABLE);
 
-            //proj-1608:replicationCount°¡ 0ÀÏ ¶§ recovery count´Â Ç×»ó 0ÀÌ¾î¾ß ÇÔ
+            //proj-1608:replicationCountê°€ 0ì¼ ë•Œ recovery countëŠ” í•­ìƒ 0ì´ì–´ì•¼ í•¨
             IDE_DASSERT(sTableInfo->replicationRecoveryCount == 0);
 
             IDU_LIMITPOINT("qcmUser::findTableListByUserID::malloc");
@@ -1918,8 +1918,8 @@ IDE_RC qcmUser::findIndexListByUserID( qcStatement * aStatement,
 /***********************************************************************
  *
  * Description :
- *    executeDropUserCascade ·ÎºÎÅÍ È£Ãâ,
- *    drop °¡´ÉÇÑ ÀÎµ¦½ºÀÇ ¸®½ºÆ®¸¦ µ¹·Á ÁØ´Ù.
+ *    executeDropUserCascade ë¡œë¶€í„° í˜¸ì¶œ,
+ *    drop ê°€ëŠ¥í•œ ì¸ë±ìŠ¤ì˜ ë¦¬ìŠ¤íŠ¸ë¥¼ ëŒë ¤ ì¤€ë‹¤.
  *
  * Implementation :
  *
@@ -1942,7 +1942,7 @@ IDE_RC qcmUser::findIndexListByUserID( qcStatement * aStatement,
     const void            * sRow;
     smiTableCursor          sCursor;
     smiCursorProperties     sCursorProperty;
-    scGRID                  sRid; // Disk TableÀ» À§ÇÑ Record IDentifier
+    scGRID                  sRid; // Disk Tableì„ ìœ„í•œ Record IDentifier
     qcmIndexInfoList      * sFirstIndexInfoList = NULL;
     qcmIndexInfoList      * sIndexInfoList;
     void                  * sTableHandle;
@@ -2025,7 +2025,7 @@ IDE_RC qcmUser::findIndexListByUserID( qcStatement * aStatement,
             IDE_TEST_RAISE(sTableInfo->replicationCount > 0,
                            ERR_DDL_WITH_REPLICATED_TABLE);
 
-            //proj-1608:replicationCount°¡ 0ÀÏ ¶§ recovery count´Â Ç×»ó 0ÀÌ¾î¾ß ÇÔ
+            //proj-1608:replicationCountê°€ 0ì¼ ë•Œ recovery countëŠ” í•­ìƒ 0ì´ì–´ì•¼ í•¨
             IDE_DASSERT(sTableInfo->replicationRecoveryCount == 0);
 
             IDU_LIMITPOINT("qcmUser::findIndexListByUserID::malloc");
@@ -2056,24 +2056,24 @@ IDE_RC qcmUser::findIndexListByUserID( qcStatement * aStatement,
             {
                 if ( sIndexInfoList->isPartitionedIndex == ID_TRUE )
                 {
-                    // partitioned index´Â index tableÀ» °¡Áú ¼ö ¾ø´Ù.
+                    // partitioned indexëŠ” index tableì„ ê°€ì§ˆ ìˆ˜ ì—†ë‹¤.
                     IDE_TEST_RAISE( sIndexInfoList->indexTable.tableID != 0,
                                     ERR_META_CRASH );
                 }
                 else
                 {
-                    // non-partitioned index¶ó¸é index tableÀÌ ÀÖ¾î¾ßÇÑ´Ù.
+                    // non-partitioned indexë¼ë©´ index tableì´ ìžˆì–´ì•¼í•œë‹¤.
                     IDE_TEST_RAISE( sIndexInfoList->indexTable.tableID == 0,
                                     ERR_META_CRASH );
                 }
             }
             else
             {
-                // non-partitioned tableÀº partitioned index¸¦ °¡Áú ¼ö ¾ø´Ù.
+                // non-partitioned tableì€ partitioned indexë¥¼ ê°€ì§ˆ ìˆ˜ ì—†ë‹¤.
                 IDE_TEST_RAISE( sIndexInfoList->isPartitionedIndex == ID_TRUE,
                                 ERR_META_CRASH );
 
-                // non-partitioned tableÀº index tableÀ» °¡Áú ¼ö ¾ø´Ù.
+                // non-partitioned tableì€ index tableì„ ê°€ì§ˆ ìˆ˜ ì—†ë‹¤.
                 IDE_TEST_RAISE( sIndexInfoList->indexTable.tableID != 0,
                                 ERR_META_CRASH );
             }
@@ -2129,15 +2129,15 @@ IDE_RC qcmUser::findSequenceListByUserID( qcStatement         * aStatement,
  *
  * Description :
  *    BUG-16980
- *    executeDropUserCascade ·ÎºÎÅÍ È£Ãâ, drop °¡´ÉÇÑ Å×ÀÌºíÀÇ
- *    ¸®½ºÆ®¸¦ µ¹·ÁÁØ´Ù.
+ *    executeDropUserCascade ë¡œë¶€í„° í˜¸ì¶œ, drop ê°€ëŠ¥í•œ í…Œì´ë¸”ì˜
+ *    ë¦¬ìŠ¤íŠ¸ë¥¼ ëŒë ¤ì¤€ë‹¤.
  *
  * Implementation :
- *    1. SYS_TABLES_ Å×ÀÌºíÀÇ USER_ID, TABLE_OID,TABLE_ID ÄÃ·³À» ±¸ÇØ µÐ´Ù.
- *    2. ¸í½ÃµÈ userID ·Î keyRange ¸¦ ¸¸µç´Ù.
- *    3. ÇÑ row ¾¿ ÀÐÀ¸¸é¼­ tableOID, tableID ¸¦ ±¸ÇÑ ´ÙÀ½,
- *       qcmSequenceInfo¸¦ ±¸¼ºÇÑ´Ù.
- *    4. drop ÇØ¾ßÇÒ qcmSequenceInfo ¸¦ list ·Î ¿¬°áÇÏ¿© ¹ÝÈ¯ÇÑ´Ù.
+ *    1. SYS_TABLES_ í…Œì´ë¸”ì˜ USER_ID, TABLE_OID,TABLE_ID ì»¬ëŸ¼ì„ êµ¬í•´ ë‘”ë‹¤.
+ *    2. ëª…ì‹œëœ userID ë¡œ keyRange ë¥¼ ë§Œë“ ë‹¤.
+ *    3. í•œ row ì”© ì½ìœ¼ë©´ì„œ tableOID, tableID ë¥¼ êµ¬í•œ ë‹¤ìŒ,
+ *       qcmSequenceInfoë¥¼ êµ¬ì„±í•œë‹¤.
+ *    4. drop í•´ì•¼í•  qcmSequenceInfo ë¥¼ list ë¡œ ì—°ê²°í•˜ì—¬ ë°˜í™˜í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -2154,7 +2154,7 @@ IDE_RC qcmUser::findSequenceListByUserID( qcStatement         * aStatement,
     qcmSequenceInfoList * sSequenceInfoList = NULL;
     qcmSequenceInfoList * sFirstSequenceInfoList = NULL;
     smiCursorProperties   sCursorProperty;
-    scGRID                sRid; // Disk TableÀ» À§ÇÑ Record IDentifier
+    scGRID                sRid; // Disk Tableì„ ìœ„í•œ Record IDentifier
 
     mtcColumn           * sTableNameCol;
     mtdCharType         * sTableNameStr;
@@ -2224,7 +2224,7 @@ IDE_RC qcmUser::findSequenceListByUserID( qcStatement         * aStatement,
         sTableType = sTableTypeStr->value;
 
         // if we want to get the table is sequence or not
-        // QUEUE_SEQUENCE´Â QUEUE_TABLE°ú °°ÀÌ »èÁ¦µÇ¹Ç·Î skipÇÑ´Ù.
+        // QUEUE_SEQUENCEëŠ” QUEUE_TABLEê³¼ ê°™ì´ ì‚­ì œë˜ë¯€ë¡œ skipí•œë‹¤.
         if ( idlOS::strMatch( (SChar*)sTableType, sTableTypeStr->length, "S", 1 ) == 0 )
         {
             IDU_LIMITPOINT("qcmUser::findSequenceListByUserID::malloc");
@@ -2285,8 +2285,8 @@ IDE_RC qcmUser::findProcListByUserID( qcStatement     * aStatement,
 /***********************************************************************
  *
  * Description :
- *    executeDropUserCascade ·ÎºÎÅÍ È£Ãâ,
- *    drop °¡´ÉÇÑ ÇÁ·Î½ÃÁ®ÀÇ ¸®½ºÆ®¸¦ µ¹·ÁÁØ´Ù.
+ *    executeDropUserCascade ë¡œë¶€í„° í˜¸ì¶œ,
+ *    drop ê°€ëŠ¥í•œ í”„ë¡œì‹œì ¸ì˜ ë¦¬ìŠ¤íŠ¸ë¥¼ ëŒë ¤ì¤€ë‹¤.
  *
  * Implementation :
  *
@@ -2360,8 +2360,8 @@ IDE_RC qcmUser::findTriggerListByUserID( qcStatement * aStatement,
 /***********************************************************************
  *
  * Description :
- *    executeDropUserCascade ·ÎºÎÅÍ È£Ãâ,
- *    drop °¡´ÉÇÑ Æ®¸®°ÅÀÇ ¸®½ºÆ®¸¦ µ¹·ÁÁØ´Ù.
+ *    executeDropUserCascade ë¡œë¶€í„° í˜¸ì¶œ,
+ *    drop ê°€ëŠ¥í•œ íŠ¸ë¦¬ê±°ì˜ ë¦¬ìŠ¤íŠ¸ë¥¼ ëŒë ¤ì¤€ë‹¤.
  *
  * Implementation :
  *
@@ -2380,7 +2380,7 @@ IDE_RC qcmUser::findTriggerListByUserID( qcStatement * aStatement,
     const void            * sRow;
     smiTableCursor          sCursor;
     smiCursorProperties     sCursorProperty;
-    scGRID                  sRid; // Disk TableÀ» À§ÇÑ Record IDentifier
+    scGRID                  sRid; // Disk Tableì„ ìœ„í•œ Record IDentifier
     qcmTriggerInfoList    * sFirstTriggerInfoList = NULL;
     qcmTriggerInfoList    * sTriggerInfoList;
     void                  * sTableHandle;
@@ -2455,7 +2455,7 @@ IDE_RC qcmUser::findTriggerListByUserID( qcStatement * aStatement,
             IDE_TEST_RAISE(sTableInfo->replicationCount > 0,
                            ERR_DDL_WITH_REPLICATED_TABLE);
 
-            //proj-1608:replicationCount°¡ 0ÀÏ ¶§ recovery count´Â Ç×»ó 0ÀÌ¾î¾ß ÇÔ
+            //proj-1608:replicationCountê°€ 0ì¼ ë•Œ recovery countëŠ” í•­ìƒ 0ì´ì–´ì•¼ í•¨
             IDE_DASSERT(sTableInfo->replicationRecoveryCount == 0);
 
             IDU_LIMITPOINT("qcmUser::findTriggerListByUserID::malloc");
@@ -2506,7 +2506,7 @@ IDE_RC qcmUser::getMetaUserName( smiStatement * aSmiStmt,
 /***********************************************************************
  *
  * Description : BUG-24957
- *    meta table¿¡¼­ user nameÀ» °¡Á®¿Â´Ù.
+ *    meta tableì—ì„œ user nameì„ ê°€ì ¸ì˜¨ë‹¤.
  *
  * Implementation :
  *
@@ -2519,7 +2519,7 @@ IDE_RC qcmUser::getMetaUserName( smiStatement * aSmiStmt,
     mtdCharType           * sUserNameStr;
     SInt                    sStage = 0;
     const void            * sRow;
-    scGRID                  sRid; // Disk TableÀ» À§ÇÑ Record IDentifier
+    scGRID                  sRid; // Disk Tableì„ ìœ„í•œ Record IDentifier
     smiCursorProperties     sCursorProperty;
     mtcColumn             * sFstMtcColumn;
 
@@ -2599,8 +2599,8 @@ IDE_RC qcmUser::findPkgListByUserID( qcStatement     * aStatement,
 /***********************************************************************
  *
  * Description :
- *    executeDropUserCascade ·ÎºÎÅÍ È£Ãâ,
- *    drop °¡´ÉÇÑ packageÀÇ ¸®½ºÆ®¸¦ µ¹·ÁÁØ´Ù.
+ *    executeDropUserCascade ë¡œë¶€í„° í˜¸ì¶œ,
+ *    drop ê°€ëŠ¥í•œ packageì˜ ë¦¬ìŠ¤íŠ¸ë¥¼ ëŒë ¤ì¤€ë‹¤.
  *
  * Implementation :
  *
@@ -2670,13 +2670,13 @@ IDE_RC qcmUser::findPkgListByUserID( qcStatement     * aStatement,
 /***********************************************************************
  *
  * Description : PROJ-1812 ROLE
- *    »ç¿ëÀÚÀÇ ¾ÏÈ£, default tablespace ¸¦ ±¸ÇÑ´Ù.
+ *    ì‚¬ìš©ìžì˜ ì•”í˜¸, default tablespace ë¥¼ êµ¬í•œë‹¤.
  *
  * Implementation :
- *    1. ¸ÞÅ¸ Ä³½¬·ÎºÎÅÍ USER_ID ¿¡ ÇØ´çÇÏ´Â ÄÃ·³À» Ã£¾Æ¼­
- *    2. ¸í½ÃÇÑ À¯ÀúID ·Î keyRange ¸¦ ¸¸µç´Ù.
- *    3. Ä¿¼­ open ,beforeFirst, readRow ¸¦ ÅëÇØ¼­ password ¸¦ ±¸ÇÑ´Ù.
- *    4. readRow ÀÇ °ªÀÌ ¾øÀ¸¸é ¿¡·¯¸¦ ¹ÝÈ¯ÇÑ´Ù.
+ *    1. ë©”íƒ€ ìºì‰¬ë¡œë¶€í„° USER_ID ì— í•´ë‹¹í•˜ëŠ” ì»¬ëŸ¼ì„ ì°¾ì•„ì„œ
+ *    2. ëª…ì‹œí•œ ìœ ì €ID ë¡œ keyRange ë¥¼ ë§Œë“ ë‹¤.
+ *    3. ì»¤ì„œ open ,beforeFirst, readRow ë¥¼ í†µí•´ì„œ password ë¥¼ êµ¬í•œë‹¤.
+ *    4. readRow ì˜ ê°’ì´ ì—†ìœ¼ë©´ ì—ëŸ¬ë¥¼ ë°˜í™˜í•œë‹¤.
  *
  ***********************************************************************/
 IDE_RC qcmUser::getUserPasswordAndDefaultTBS( qcStatement     * aStatement,
@@ -2697,7 +2697,7 @@ IDE_RC qcmUser::getUserPasswordAndDefaultTBS( qcStatement     * aStatement,
     SInt                    sStage = 0;
     const void            * sRow;
     smiCursorProperties     sCursorProperty;
-    scGRID                  sRid; // Disk TableÀ» À§ÇÑ Record IDentifier
+    scGRID                  sRid; // Disk Tableì„ ìœ„í•œ Record IDentifier
     mtcColumn             * sUserTypeColumn;
     mtdCharType           * sUserTypeStr;
     UChar                 * sUserType;
@@ -2713,12 +2713,12 @@ IDE_RC qcmUser::getUserPasswordAndDefaultTBS( qcStatement     * aStatement,
 
     IDE_ASSERT( sColumn != NULL );
     
-    // mtdModule ¼³Á¤
+    // mtdModule ì„¤ì •
     IDE_TEST( mtd::moduleById( &( sColumn->basicInfo->module ),
                                sColumn->basicInfo->type.dataTypeId )
               != IDE_SUCCESS );
 
-    // mtlModule ¼³Á¤
+    // mtlModule ì„¤ì •
     IDE_TEST( mtl::moduleById( &(sColumn->basicInfo->language),
                                sColumn->basicInfo->type.languageId)
               != IDE_SUCCESS );

@@ -87,7 +87,7 @@ SQLRETURN ulnSetDescRec(ulnDesc      *aDesc,
          *
          *
          *
-         * BUGBUG : ¿©±â±îÁö¸¸ ±¸ÇöÇßÀ¸¸ç ÀÌ ´ÙÀ½ºÎÅÍ ±¸ÇöÇØ¾ß ÇÑ´Ù.
+         * BUGBUG : ì—¬ê¸°ê¹Œì§€ë§Œ êµ¬í˜„í–ˆìœ¼ë©° ì´ ë‹¤ìŒë¶€í„° êµ¬í˜„í•´ì•¼ í•œë‹¤.
          *
          *
          *
@@ -102,7 +102,7 @@ SQLRETURN ulnSetDescRec(ulnDesc      *aDesc,
     }
 
     /*
-     * BUGBUG : Consistency check ¸¦ ÇØ¾ß ÇÏ´Âµ¥... ±×°Å ÇÏ´Â ·çÆ¾ÀÌ ul ÀÚÃ¼¿¡ ¾ÆÁ÷ ¾øÀ½.
+     * BUGBUG : Consistency check ë¥¼ í•´ì•¼ í•˜ëŠ”ë°... ê·¸ê±° í•˜ëŠ” ë£¨í‹´ì´ ul ìžì²´ì— ì•„ì§ ì—†ìŒ.
      */
 
     /*

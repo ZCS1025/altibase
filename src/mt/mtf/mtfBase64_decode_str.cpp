@@ -21,8 +21,8 @@
 
 /***********************************************************************
  * BASE64_DECODE_STR() : 
- * ÀÔ·Â¹ÞÀº ¹®ÀÚ¿­À» BASE64 µðÄÚµùÇÏ¿©
- * VARCHARÅ¸ÀÔÀÇ HexstringÀ» ¹ÝÈ¯ÇÑ´Ù.
+ * ìž…ë ¥ë°›ì€ ë¬¸ìžì—´ì„ BASE64 ë””ì½”ë”©í•˜ì—¬
+ * VARCHARíƒ€ìž…ì˜ Hexstringì„ ë°˜í™˜í•œë‹¤.
  *
  * ex) SELECT BASE64_DECODE_STR('qg==') FROM DUAL;
  * BASE64_DECODE_STR('qg==') 
@@ -80,7 +80,7 @@ static IDE_RC mtfBase64_decodeEstimate( mtcNode*     aNode,
 mtfModule mtfBase64_decode_str = {
     2|MTC_NODE_OPERATOR_FUNCTION,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
+    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìžê°€ ì•„ë‹˜)
     mtfBase64_decodeFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -275,7 +275,7 @@ IDE_RC mtfBase64_decodeEstimate( mtcNode*     aNode,
 
     aTemplate->rows[aNode->table].execute[aNode->column] = mtfExecute;
 
-    /* BUG-44791 BASE64_ENCODE_STR, BASE64_DECODE_STR ÇÔ¼ö¿¡¼­ Àß¸øµÈ °á°ú·Î °è»êÇÕ´Ï´Ù. */
+    /* BUG-44791 BASE64_ENCODE_STR, BASE64_DECODE_STR í•¨ìˆ˜ì—ì„œ ìž˜ëª»ëœ ê²°ê³¼ë¡œ ê³„ì‚°í•©ë‹ˆë‹¤. */
     sBufferSize = aStack[1].column->precision;
     sPrecision  = ( ( sBufferSize - 1 ) / 4 + 1 ) * 3 * 2;
 
@@ -331,7 +331,7 @@ IDE_RC mtfBase64_decodeCalculate( mtcNode*     aNode,
     {
         sResult   = (mtdCharType*) aStack[0].value;
 
-        /* BUG-44791 BASE64_ENCODE_STR, BASE64_DECODE_STR ÇÔ¼ö¿¡¼­ Àß¸øµÈ °á°ú·Î °è»êÇÕ´Ï´Ù. */
+        /* BUG-44791 BASE64_ENCODE_STR, BASE64_DECODE_STR í•¨ìˆ˜ì—ì„œ ìž˜ëª»ëœ ê²°ê³¼ë¡œ ê³„ì‚°í•©ë‹ˆë‹¤. */
         sColumn = aTemplate->rows[aNode->table].columns + aNode->column;
         sBuffer = (mtdCharType*)((UChar*)aTemplate->rows[aNode->table].row
                                  + sColumn[1].column.offset);

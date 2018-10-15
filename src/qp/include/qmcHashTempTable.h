@@ -21,16 +21,16 @@
  * Description :
  *   [Hash Temp Table]
  *
- *   A4¿¡¼­´Â Memory ¹× Disk TableÀ» ¸ğµÎ Áö¿øÇÑ´Ù.
- *   Áß°£ °á°ú¸¦ ÀúÀåÇÏ´Â Nodeµé Áß Hash¸¦ ÀÌ¿ëÇÑ Áß°£ °á°ú¸¦ ¸¸µå´Â
- *   Materialized NodeµéÀº Memory Hash Temp Table ¶Ç´Â Disk Hash Temp
- *   TableÀ» »ç¿ëÇÏ°Ô µÈ´Ù.
+ *   A4ì—ì„œëŠ” Memory ë° Disk Tableì„ ëª¨ë‘ ì§€ì›í•œë‹¤.
+ *   ì¤‘ê°„ ê²°ê³¼ë¥¼ ì €ì¥í•˜ëŠ” Nodeë“¤ ì¤‘ Hashë¥¼ ì´ìš©í•œ ì¤‘ê°„ ê²°ê³¼ë¥¼ ë§Œë“œëŠ”
+ *   Materialized Nodeë“¤ì€ Memory Hash Temp Table ë˜ëŠ” Disk Hash Temp
+ *   Tableì„ ì‚¬ìš©í•˜ê²Œ ëœë‹¤.
  *
- *   ÀÌ ¶§, °¢ ³ëµå°¡ Memory/Disk Hash Temp Table¿¡ µû¶ó ¼­·Î ´Ù¸¥
- *   µ¿ÀÛÀ» ÇÏÁö ¾Êµµ·Ï ÇÏ±â À§ÇÏ¿© ´ÙÀ½°ú °°Àº Hash Temp TableÀ»
- *   ÀÌ¿ëÇÏ¿© TransparentÇÑ ±¸Çö ¹× µ¿ÀÛÀÌ °¡´ÉÇÏµµ·Ï ÇÑ´Ù.
+ *   ì´ ë•Œ, ê° ë…¸ë“œê°€ Memory/Disk Hash Temp Tableì— ë”°ë¼ ì„œë¡œ ë‹¤ë¥¸
+ *   ë™ì‘ì„ í•˜ì§€ ì•Šë„ë¡ í•˜ê¸° ìœ„í•˜ì—¬ ë‹¤ìŒê³¼ ê°™ì€ Hash Temp Tableì„
+ *   ì´ìš©í•˜ì—¬ Transparentí•œ êµ¬í˜„ ë° ë™ì‘ì´ ê°€ëŠ¥í•˜ë„ë¡ í•œë‹¤.
  *
- *   ÀÌ·¯ÇÑ °³³äÀ» ³ªÅ¸³½ ±×¸²Àº ¾Æ·¡¿Í °°´Ù.
+ *   ì´ëŸ¬í•œ ê°œë…ì„ ë‚˜íƒ€ë‚¸ ê·¸ë¦¼ì€ ì•„ë˜ì™€ ê°™ë‹¤.
  *
  *                                                     -------------
  *                                                  -->[Memory Hash]
@@ -39,9 +39,9 @@
  *     ---------------     -------------------      -->[Disk Hash]
  *                                                     -----------
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  **********************************************************************/
 
@@ -56,63 +56,63 @@
 #define QMCD_HASH_TMP_INITIALIZE                 (0x00000000)
 
 /* qmcdHashTempTable.flag                                  */
-// Hash Temp TableÀÇ ÀúÀå ¸ÅÃ¼
+// Hash Temp Tableì˜ ì €ì¥ ë§¤ì²´
 #define QMCD_HASH_TMP_STORAGE_TYPE               (0x00000001)
 #define QMCD_HASH_TMP_STORAGE_MEMORY             (0x00000000)
 #define QMCD_HASH_TMP_STORAGE_DISK               (0x00000001)
 
 /* qmcdHashTempTable.flag                                  */
-// DistinctÀÇ ¿©ºÎ
+// Distinctì˜ ì—¬ë¶€
 #define QMCD_HASH_TMP_DISTINCT_MASK              (0x00000002)
 #define QMCD_HASH_TMP_DISTINCT_FALSE             (0x00000000)
 #define QMCD_HASH_TMP_DISTINCT_TRUE              (0x00000002)
 
 /* qmcdHashTempTable.flag                                  */
-// Primary Temp TableÀÇ ¿©ºÎ
+// Primary Temp Tableì˜ ì—¬ë¶€
 #define QMCD_HASH_TMP_PRIMARY_MASK               (0x00000004)
 #define QMCD_HASH_TMP_PRIMARY_TRUE               (0x00000000)
 #define QMCD_HASH_TMP_PRIMARY_FALSE              (0x00000004)
 
 /* qmcdHashTempTable.flag                                  */
-// Temp TableÀÇ rid fix ¿©ºÎ
+// Temp Tableì˜ rid fix ì—¬ë¶€
 #define QMCD_HASH_TMP_FIXED_RID_MASK             (0x00000008)
 #define QMCD_HASH_TMP_FIXED_RID_FALSE            (0x00000000)
 #define QMCD_HASH_TMP_FIXED_RID_TRUE             (0x00000008)
 
 /* qmcdHashTempTable.flag                                  */
 // PROJ-2553 Cache-aware Memory Hash Temp Table
-// Hash Temp TableÀÇ ÀúÀå/Å½»ö ¹æ¹ı (Bucket List / Partitioned Array)
+// Hash Temp Tableì˜ ì €ì¥/íƒìƒ‰ ë°©ë²• (Bucket List / Partitioned Array)
 #define QMCD_HASH_TMP_HASHING_TYPE               (0x00000010)
 #define QMCD_HASH_TMP_HASHING_BUCKET             (0x00000000)
 #define QMCD_HASH_TMP_HASHING_PARTITIONED        (0x00000010)
 
-// Hash Temp Table ÀÚ·á ±¸Á¶
+// Hash Temp Table ìë£Œ êµ¬ì¡°
 typedef struct qmcdHashTemp
 {
     UInt                  flag;
 
     qcTemplate          * mTemplate;
-    qmdMtrNode          * recordNode;       // Record ±¸¼º Á¤º¸
-    qmdMtrNode          * hashNode;         // HashÇÒ Column Á¤º¸
-    qmdMtrNode          * aggrNode;         // Aggregation Node Á¤º¸
+    qmdMtrNode          * recordNode;       // Record êµ¬ì„± ì •ë³´
+    qmdMtrNode          * hashNode;         // Hashí•  Column ì •ë³´
+    qmdMtrNode          * aggrNode;         // Aggregation Node ì •ë³´
 
-    UInt                  bucketCnt;        // Bucket°³¼ö
-    UInt                  mtrRowSize;       // ÀúÀå RecordÀÇ Å©±â
-    UInt                  nullRowSize;      // ÀúÀå null RecordÀÇ Å©±â
-    qmcMemory           * memoryMgr;        // ÀúÀå Record¸¦ À§ÇÑ ¸Ş¸ğ¸® °ü¸®ÀÚ
-    iduMemory           * memory;           // Hash Temp¿¡ »ç¿ëµÇ´Â Memory
+    UInt                  bucketCnt;        // Bucketê°œìˆ˜
+    UInt                  mtrRowSize;       // ì €ì¥ Recordì˜ í¬ê¸°
+    UInt                  nullRowSize;      // ì €ì¥ null Recordì˜ í¬ê¸°
+    qmcMemory           * memoryMgr;        // ì €ì¥ Recordë¥¼ ìœ„í•œ ë©”ëª¨ë¦¬ ê´€ë¦¬ì
+    iduMemory           * memory;           // Hash Tempì— ì‚¬ìš©ë˜ëŠ” Memory
     UInt                  memoryIdx;
 
-    SChar               * nullRow;          // Memory Temp TableÀ» À§ÇÑ Null Row
+    SChar               * nullRow;          // Memory Temp Tableì„ ìœ„í•œ Null Row
 
-    UInt                  hashKey;          // Range°Ë»öÀ» À§ÇÑ Hash Key
+    UInt                  hashKey;          // Rangeê²€ìƒ‰ì„ ìœ„í•œ Hash Key
 
     qmcdMemHashTemp     * memoryTemp;       // Memory Hash Temp Table
     qmcdMemPartHashTemp * memoryPartTemp;   // PROJ-2553 Memory Partitioned Hash Temp Table
     qmcdDiskHashTemp    * diskTemp;         // Disk Hash Temp Table
 
-    idBool                existTempType;    // TEMP_TYPE ÄÃ·³ÀÌ Á¸ÀçÇÏ´ÂÁö
-    void                * insertRow;        // insert¸¦ À§ÇÑ ÀÓ½Ã ¹öÆÛ
+    idBool                existTempType;    // TEMP_TYPE ì»¬ëŸ¼ì´ ì¡´ì¬í•˜ëŠ”ì§€
+    void                * insertRow;        // insertë¥¼ ìœ„í•œ ì„ì‹œ ë²„í¼
 
 } qmcdHashTemp;
 
@@ -121,10 +121,10 @@ class qmcHashTemp
 public:
 
     //------------------------------------------------
-    // Hash Temp TableÀÇ °ü¸®
+    // Hash Temp Tableì˜ ê´€ë¦¬
     //------------------------------------------------
 
-    // Temp TableÀÇ ÃÊ±âÈ­
+    // Temp Tableì˜ ì´ˆê¸°í™”
     static IDE_RC      init( qmcdHashTemp * aTempTable,
                              qcTemplate   * aTemplate,
                              UInt           aMemoryIdx,
@@ -134,66 +134,66 @@ public:
                              UInt           aBucketCnt,
                              UInt           aFlag );
 
-    // Temp TableÀÇ Data¸¦ Á¦°ÅÇÑ´Ù.
+    // Temp Tableì˜ Dataë¥¼ ì œê±°í•œë‹¤.
     static IDE_RC      clear( qmcdHashTemp * aTempTable );
 
-    // Temp Table³»ÀÇ ¸ğµç DataÀÇ flagÀ» ÃÊ±âÈ­ÇÑ´Ù.
+    // Temp Tableë‚´ì˜ ëª¨ë“  Dataì˜ flagì„ ì´ˆê¸°í™”í•œë‹¤.
     static IDE_RC      clearHitFlag( qmcdHashTemp * aTempTable );
 
     //------------------------------------------------
-    // Hash Temp TableÀÇ ±¸¼º
+    // Hash Temp Tableì˜ êµ¬ì„±
     //------------------------------------------------
 
-    // Data¸¦ À§ÇÑ Memory ÇÒ´ç
+    // Dataë¥¼ ìœ„í•œ Memory í• ë‹¹
     static IDE_RC      alloc( qmcdHashTemp * aTempTable,
                               void        ** aRow );
 
-    // Non-Distinction Data »ğÀÔ
+    // Non-Distinction Data ì‚½ì…
     static IDE_RC      addRow( qmcdHashTemp * aTempTable,
                                void         * aRow );
 
-    // Distinction Data »ğÀÔ
+    // Distinction Data ì‚½ì…
     static IDE_RC      addDistRow( qmcdHashTemp  * aTempTable,
                                    void         ** aRow,
                                    idBool        * aResult );
 
-    // insert row »ı¼º
+    // insert row ìƒì„±
     static IDE_RC      makeTempTypeRow( qmcdHashTemp  * aTempTable,
                                         void          * aRow,
                                         void         ** aExtRow );
 
-    // Aggregation Column¿¡ ´ëÇÑ Update¸¦ ¼öÇà
+    // Aggregation Columnì— ëŒ€í•œ Updateë¥¼ ìˆ˜í–‰
     static IDE_RC      updateAggr( qmcdHashTemp * aTempTable );
 
     // To Fix PR-8415
-    // Aggregation ColumnÀÇ Final Update
+    // Aggregation Columnì˜ Final Update
     static IDE_RC      updateFiniAggr( qmcdHashTemp * aTempTable );
 
     // To Fix PR-8213
-    // Group Aggregation¿¡¼­¸¸ »ç¿ëµÇ¸ç, »õ·Î¿î GroupÀ» µî·ÏÇÑ´Ù.
+    // Group Aggregationì—ì„œë§Œ ì‚¬ìš©ë˜ë©°, ìƒˆë¡œìš´ Groupì„ ë“±ë¡í•œë‹¤.
     static IDE_RC      addNewGroup( qmcdHashTemp * aTempTable,
                                     void         * aRow );
 
     // To Fix PR-8415
-    // Disk Temp TableÀ» »ç¿ëÇÒ °æ¿ì AggregationÀÇ ÃÖÁ¾ °á°ú¸¦
-    // ÀúÀåÇÏ¿©¾ß ÇÑ´Ù.  ÀÌ¸¦ À§ÇØ ¼øÂ÷ÀûÀ¸·Î GroupÀ» ÀĞ¾î
-    // Ã³¸®ÇÒ ¼ö ÀÖ´Â ÀÎÅÍÆäÀÌ½º¸¦ Á¦°øÇÑ´Ù.
-    // ÀÏ¹İ ¼øÂ÷ °Ë»öÀ» »ç¿ëÇÏÁö ¾Ê´Â ÀÌÀ¯´Â
-    // Aggregation °á°ú¸¦ UpdateÇØ¾ß ÇÏ±â ¶§¹®ÀÌ´Ù.
-    // Ã¹¹øÂ° group ¼øÂ÷ °Ë»ö
+    // Disk Temp Tableì„ ì‚¬ìš©í•  ê²½ìš° Aggregationì˜ ìµœì¢… ê²°ê³¼ë¥¼
+    // ì €ì¥í•˜ì—¬ì•¼ í•œë‹¤.  ì´ë¥¼ ìœ„í•´ ìˆœì°¨ì ìœ¼ë¡œ Groupì„ ì½ì–´
+    // ì²˜ë¦¬í•  ìˆ˜ ìˆëŠ” ì¸í„°í˜ì´ìŠ¤ë¥¼ ì œê³µí•œë‹¤.
+    // ì¼ë°˜ ìˆœì°¨ ê²€ìƒ‰ì„ ì‚¬ìš©í•˜ì§€ ì•ŠëŠ” ì´ìœ ëŠ”
+    // Aggregation ê²°ê³¼ë¥¼ Updateí•´ì•¼ í•˜ê¸° ë•Œë¬¸ì´ë‹¤.
+    // ì²«ë²ˆì§¸ group ìˆœì°¨ ê²€ìƒ‰
     static IDE_RC      getFirstGroup( qmcdHashTemp * aTempTable,
                                       void        ** aRow );
 
-    // ´ÙÀ½ group ¼øÂ÷ °Ë»ö
+    // ë‹¤ìŒ group ìˆœì°¨ ê²€ìƒ‰
     static IDE_RC      getNextGroup( qmcdHashTemp * aTempTable,
                                      void        ** aRow );
 
     //------------------------------------------------
-    // Hash Temp TableÀÇ °Ë»ö
+    // Hash Temp Tableì˜ ê²€ìƒ‰
     //------------------------------------------------
 
     //-------------------------
-    // ¼øÂ÷ °Ë»ö
+    // ìˆœì°¨ ê²€ìƒ‰
     //-------------------------
 
     static IDE_RC      getFirstSequence( qmcdHashTemp * aTempTable,
@@ -202,7 +202,7 @@ public:
                                         void        ** aRow );
 
     //-------------------------
-    // Range °Ë»ö
+    // Range ê²€ìƒ‰
     //-------------------------
 
     static IDE_RC      getFirstRange( qmcdHashTemp * aTempTable,
@@ -213,7 +213,7 @@ public:
                                      void        ** aRow );
 
     //-------------------------
-    // Hit °Ë»ö
+    // Hit ê²€ìƒ‰
     //-------------------------
 
     static IDE_RC      getFirstHit( qmcdHashTemp * aTempTable,
@@ -222,7 +222,7 @@ public:
                                    void        ** aRow );
 
     //-------------------------
-    // Non-Hit °Ë»ö
+    // Non-Hit ê²€ìƒ‰
     //-------------------------
 
     static IDE_RC      getFirstNonHit( qmcdHashTemp * aTempTable,
@@ -231,7 +231,7 @@ public:
                                       void        ** aRow );
 
     //-------------------------
-    // Same Row And Non-Hit °Ë»ö
+    // Same Row And Non-Hit ê²€ìƒ‰
     //-------------------------
 
     static IDE_RC      getSameRowAndNonHit( qmcdHashTemp * aTempTable,
@@ -239,14 +239,14 @@ public:
                                             void        ** aResultRow );
 
     //-------------------------
-    // Null Row °Ë»ö
+    // Null Row ê²€ìƒ‰
     //-------------------------
 
     static IDE_RC      getNullRow( qmcdHashTemp * aTempTable,
                                    void        ** aRow );
     //-------------------------
     // To Fix PR-8213
-    // Same Group °Ë»ö (Group Aggregation)¿¡¼­¸¸ »ç¿ë
+    // Same Group ê²€ìƒ‰ (Group Aggregation)ì—ì„œë§Œ ì‚¬ìš©
     //-------------------------
 
     static IDE_RC      getSameGroup( qmcdHashTemp  * aTempTable,
@@ -254,13 +254,13 @@ public:
                                      void         ** aResultRow );
 
     //------------------------------------------------
-    // Hash Temp TableÀÇ ±âÅ¸ ÇÔ¼ö
+    // Hash Temp Tableì˜ ê¸°íƒ€ í•¨ìˆ˜
     //------------------------------------------------
 
-    // °Ë»öµÈ Record¿¡ Hit Flag ¼³Á¤
+    // ê²€ìƒ‰ëœ Recordì— Hit Flag ì„¤ì •
     static IDE_RC      setHitFlag( qmcdHashTemp * aTempTable );
 
-    // °Ë»öµÈ RecordÀÇ Hit Flag°¡ ¼³Á¤µÇ¾î ÀÖ´ÂÁö È®ÀÎ
+    // ê²€ìƒ‰ëœ Recordì˜ Hit Flagê°€ ì„¤ì •ë˜ì–´ ìˆëŠ”ì§€ í™•ì¸
     static idBool      isHitFlagged( qmcdHashTemp * aTempTable );
 
     static IDE_RC      getDisplayInfo( qmcdHashTemp * aTempTable,
@@ -271,14 +271,14 @@ public:
 private:
 
     //------------------------------------------------
-    // ÃÊ±âÈ­¸¦ À§ÇÑ ÇÔ¼ö
+    // ì´ˆê¸°í™”ë¥¼ ìœ„í•œ í•¨ìˆ˜
     //------------------------------------------------
 
-    // Memory Temp TableÀ» À§ÇÑ NULL ROW »ı¼º
+    // Memory Temp Tableì„ ìœ„í•œ NULL ROW ìƒì„±
     static IDE_RC makeMemNullRow( qmcdHashTemp * aTempTable );
 
     //------------------------------------------------
-    // ÃÊ±âÈ­¸¦ À§ÇÑ ÇÔ¼ö
+    // ì´ˆê¸°í™”ë¥¼ ìœ„í•œ í•¨ìˆ˜
     //------------------------------------------------
 
     static IDE_RC getHashKey( qmcdHashTemp * aTempTable,

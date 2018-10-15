@@ -644,7 +644,7 @@ rpdCatalog::insertRepl( smiStatement     * aSmiStmt,
                      aReplications->mParallelApplierCount,
                      aReplications->mApplierInitBufferSize,
                      aReplications->mRemoteXSN,
-                     aReplications->mPeerRepName ); /* BUG-45236 Local Replication Áö¿ø */
+                     aReplications->mPeerRepName ); /* BUG-45236 Local Replication ì§€ì› */
 
     IDE_TEST( qciMisc::runDMLforDDL( aSmiStmt, sBuffer, & sRowCnt )
               != IDE_SUCCESS );
@@ -2179,7 +2179,7 @@ IDE_RC rpdCatalog::updateReplTransWaitFlag( void         * aQcStatement,
                                            &sSCN )
               != IDE_SUCCESS );
 
-    // Caller¿¡¼­ ÀÌ¹Ì LockÀ» Àâ¾Ò´Ù. (Partitioned Table)
+    // Callerì—ì„œ ì´ë¯¸ Lockì„ ì¡ì•˜ë‹¤. (Partitioned Table)
 
     sTableInfo = (qcmTableInfo *)rpdGetTableTempInfo( sTableHandle );
 
@@ -2193,7 +2193,7 @@ IDE_RC rpdCatalog::updateReplTransWaitFlag( void         * aQcStatement,
                                                  &sPartInfoList )
                   != IDE_SUCCESS );
 
-        // Caller¿¡¼­ ÀÌ¹Ì LockÀ» Àâ¾Ò´Ù. (Table Partition)
+        // Callerì—ì„œ ì´ë¯¸ Lockì„ ì¡ì•˜ë‹¤. (Table Partition)
     }
     else
     {
@@ -2294,7 +2294,7 @@ IDE_RC rpdCatalog::updateReplPartitionTransWaitFlag(  void       *  aQcStatement
 
     mtdBigintType          sTableOID = 0;
 
-    // Caller¿¡¼­ ÀÌ¹Ì LockÀ» Àâ¾Ò´Ù. (Partitioned Table, Table Partition)
+    // Callerì—ì„œ ì´ë¯¸ Lockì„ ì¡ì•˜ë‹¤. (Partitioned Table, Table Partition)
 
     sTableInfo = (qcmTableInfo *)rpdGetTableTempInfo( aPartInfo->tableHandle );
 
@@ -2478,7 +2478,7 @@ rpdCatalog::updateReplicationFlag( void         * aQcStatement,
                                            & sSCN )
             != IDE_SUCCESS );
 
-    // Caller¿¡¼­ ÀÌ¹Ì LockÀ» Àâ¾Ò´Ù. (Partitioned Table)
+    // Callerì—ì„œ ì´ë¯¸ Lockì„ ì¡ì•˜ë‹¤. (Partitioned Table)
 
     sTableInfo = (qcmTableInfo *)rpdGetTableTempInfo(sTableHandle);
 
@@ -2492,7 +2492,7 @@ rpdCatalog::updateReplicationFlag( void         * aQcStatement,
                                                  &sPartInfoList )
                   != IDE_SUCCESS );
 
-        // Caller¿¡¼­ ÀÌ¹Ì LockÀ» Àâ¾Ò´Ù. (Table Partition)
+        // Callerì—ì„œ ì´ë¯¸ Lockì„ ì¡ì•˜ë‹¤. (Table Partition)
     }
 
     /*    PROJ-2397 Compressed Column Table Replication     */
@@ -2516,7 +2516,7 @@ rpdCatalog::updateReplicationFlag( void         * aQcStatement,
                                                  ( ( smiGetDDLLockTimeOut() == -1 ) ?
                                                    ID_ULONG_MAX :
                                                    smiGetDDLLockTimeOut() * 1000000 ),
-                                                 ID_FALSE ) // BUG-28752 ¸í½ÃÀû Lock°ú ³»ÀçÀû LockÀ» ±¸ºĞÇÕ´Ï´Ù.
+                                                 ID_FALSE ) // BUG-28752 ëª…ì‹œì  Lockê³¼ ë‚´ì¬ì  Lockì„ êµ¬ë¶„í•©ë‹ˆë‹¤.
                       != IDE_SUCCESS );
         }
         else
@@ -2694,7 +2694,7 @@ IDE_RC rpdCatalog::updatePartitionReplicationFlag( void                 * /* aQc
                                            & sSCN )
             != IDE_SUCCESS );
 
-    // Caller¿¡¼­ ÀÌ¹Ì LockÀ» Àâ¾Ò´Ù. (Partitioned Table, Table Partition)
+    // Callerì—ì„œ ì´ë¯¸ Lockì„ ì¡ì•˜ë‹¤. (Partitioned Table, Table Partition)
 
     sTableInfo = (qcmTableInfo *)rpdGetTableTempInfo(sTableHandle);
 
@@ -2821,7 +2821,7 @@ rpdCatalog::updateReplRecoveryCnt( void         * aQcStatement,
                                        & sTableHandle,
                                        & sSCN ) != IDE_SUCCESS );
 
-    // Caller¿¡¼­ ÀÌ¹Ì LockÀ» Àâ¾Ò´Ù. (Partitioned Table)
+    // Callerì—ì„œ ì´ë¯¸ Lockì„ ì¡ì•˜ë‹¤. (Partitioned Table)
 
     sTableInfo = (qcmTableInfo *)rpdGetTableTempInfo(sTableHandle);
 
@@ -2835,7 +2835,7 @@ rpdCatalog::updateReplRecoveryCnt( void         * aQcStatement,
                                                  &sPartInfoList )
                   != IDE_SUCCESS );
 
-        // Caller¿¡¼­ ÀÌ¹Ì LockÀ» Àâ¾Ò´Ù. (Table Partition)
+        // Callerì—ì„œ ì´ë¯¸ Lockì„ ì¡ì•˜ë‹¤. (Table Partition)
 
         for( sTempPartInfoList = sPartInfoList;
              sTempPartInfoList != NULL;
@@ -2939,7 +2939,7 @@ IDE_RC rpdCatalog::updatePartitionReplRecoveryCnt( void          * /* aQcStateme
                                            & sSCN )
               != IDE_SUCCESS );
 
-    // Caller¿¡¼­ ÀÌ¹Ì LockÀ» Àâ¾Ò´Ù. (Partitioned Table, Table Partition)
+    // Callerì—ì„œ ì´ë¯¸ Lockì„ ì¡ì•˜ë‹¤. (Partitioned Table, Table Partition)
 
     if ( aIsRecoveryOn == ID_TRUE ) //recovery count on(1)
     {
@@ -2955,8 +2955,8 @@ IDE_RC rpdCatalog::updatePartitionReplRecoveryCnt( void          * /* aQcStateme
         
         IDE_TEST( qciMisc::runDMLforDDL( aSmiStmt, sBuffer, & sRowCnt )
                   != IDE_SUCCESS );
-        //ÀÌ¹Ì ´Ù¸¥ replication¿¡ ÀÇÇØ¼­ recovery°¡
-        //Áö¿øµÇ°í ÀÖ´Â »óÈ²ÀÏ ¶§ row cnt°¡ 0ÀÏ ¼ö ÀÖÀ¸³ª validation¿¡¼­ °É·¯Á®¾ßÇÔ
+        //ì´ë¯¸ ë‹¤ë¥¸ replicationì— ì˜í•´ì„œ recoveryê°€
+        //ì§€ì›ë˜ê³  ìˆëŠ” ìƒí™©ì¼ ë•Œ row cntê°€ 0ì¼ ìˆ˜ ìˆìœ¼ë‚˜ validationì—ì„œ ê±¸ëŸ¬ì ¸ì•¼í•¨
         IDE_TEST_RAISE( sRowCnt != 1, ERR_REPL_RECOVERY_COUNT);
     }
     else //a Recovery off(0)
@@ -3016,7 +3016,7 @@ rpdCatalog::setReplMember( rpdReplications * aRepl,
     // ROLE                     INTEGER
     // OPTIONS                  INTEGER
     // INVALID_RECOVERY         INTEGER
-    // REMOTE_FAULT_DETECT_TIME DATE ==> dblink bug·Î »ı±ä ÇÁ·ÎÆÛÇÇÀÓ
+    // REMOTE_FAULT_DETECT_TIME DATE ==> dblink bugë¡œ ìƒê¸´ í”„ë¡œí¼í”¼ì„
     // PARALLEL_APPIER_COUNT    INTEGER
     // APPIER_INIT_BUFFER_SIZE  BIGINT
     // REMOTE_XSN               BIGINT
@@ -4016,9 +4016,9 @@ IDE_RC rpdCatalog::getNextHostNo(void        * aQcStatement,
                                         NULL)
                  != IDE_SUCCESS);
 
-        // sSeqValÀº ºñ·Ï SLongÀÌÁö¸¸, sequence¸¦ »ı¼ºÇÒ ¶§
-        // max¸¦ integer max¸¦ ¾È³Ñµµ·Ï ÇÏ¿´±â ¶§¹®¿¡
-        // ¿©±â¼­ overflowÃ¼Å©´Â ÇÏÁö ¾Ê´Â´Ù.
+        // sSeqValì€ ë¹„ë¡ SLongì´ì§€ë§Œ, sequenceë¥¼ ìƒì„±í•  ë•Œ
+        // maxë¥¼ integer maxë¥¼ ì•ˆë„˜ë„ë¡ í•˜ì˜€ê¸° ë•Œë¬¸ì—
+        // ì—¬ê¸°ì„œ overflowì²´í¬ëŠ” í•˜ì§€ ì•ŠëŠ”ë‹¤.
         IDE_TEST( searchReplHostNo( QCI_SMI_STMT( aQcStatement ),
                                     (SInt)sSeqVal,
                                     &sExist )
@@ -4031,8 +4031,8 @@ IDE_RC rpdCatalog::getNextHostNo(void        * aQcStatement,
         }
         else
         {
-            // Ã£´ÙÃ£´Ù ÇÑ¹ÙÄû µ· °æ¿ì.
-            // ÀÌ´Â object°¡ ²Ë Âù °ÍÀ» ÀÇ¹ÌÇÔ.
+            // ì°¾ë‹¤ì°¾ë‹¤ í•œë°”í€´ ëˆ ê²½ìš°.
+            // ì´ëŠ” objectê°€ ê½‰ ì°¬ ê²ƒì„ ì˜ë¯¸í•¨.
             IDE_TEST_RAISE( sSeqVal == sSeqValFirst, ERR_OBJECTS_OVERFLOW );    
         }
     }
@@ -4058,7 +4058,7 @@ IDE_RC rpdCatalog::searchReplHostNo( smiStatement * aSmiStmt,
 {
 /***********************************************************************
  *
- * Description : replication host no°¡ Á¸ÀçÇÏ´ÂÁö °Ë»ç.
+ * Description : replication host noê°€ ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬.
  *
  * Implementation :
  *
@@ -4072,13 +4072,13 @@ IDE_RC rpdCatalog::searchReplHostNo( smiStatement * aSmiStmt,
     mtcColumn          *sQcmReplHostsIndexColumn;
     qriMetaRangeColumn  sRangeColumn;
 
-    scGRID              sRid; // Disk TableÀ» À§ÇÑ Record IDentifier
+    scGRID              sRid; // Disk Tableì„ ìœ„í•œ Record IDentifier
     smiCursorProperties sCursorProperty;
 
     if( gQcmReplHostsIndex[QCM_REPLHOST_INDEX_HOSTNO] == NULL )
     {
-        // createdbÇÏ´Â °æ¿ìÀÓ.
-        // ÀÌ¶§´Â °Ë»ç ÇÒ ÇÊ¿ä°¡ ¾ø´Ù
+        // createdbí•˜ëŠ” ê²½ìš°ì„.
+        // ì´ë•ŒëŠ” ê²€ì‚¬ í•  í•„ìš”ê°€ ì—†ë‹¤
         *aExist = ID_FALSE;
     }
     else
@@ -4556,7 +4556,7 @@ IDE_RC rpdCatalog::insertReplOldColumn(smiStatement  * aSmiStmt,
                     (SInt)aColumn->mMTFlag,
                     aColumn->mMTPrecision,
                     aColumn->mMTScale,
-                    //BUG-26891 : º¸¾È ÄÃ·³ °ü·Ã Á¤º¸
+                    //BUG-26891 : ë³´ì•ˆ ì»¬ëŸ¼ ê´€ë ¨ ì •ë³´
                     aColumn->mMTEncPrecision,
                     aColumn->mMTPolicy,
                     (SInt)aColumn->mSMID,
@@ -5892,7 +5892,7 @@ IDE_RC rpdCatalog::selectReplOldChecks( smiStatement  * aSmiStmt,
     {
         IDE_TEST_RAISE( sCount >= aCheckMetaCount, ERR_TOO_MANY_OLD_CHECKS );
 
-        /* ¾Æ·¡ ÇÔ¼ö È£Ãâ½Ã aCheckMeta[sCount].mCondition ÀÌ ÇÒ´çµÊ */
+        /* ì•„ë˜ í•¨ìˆ˜ í˜¸ì¶œì‹œ aCheckMeta[sCount].mCondition ì´ í• ë‹¹ë¨ */
         IDE_TEST( setReplOldCheckMember( &aCheckMeta[sCount], sRow ) != IDE_SUCCESS );
         sCount++;
 
@@ -6400,7 +6400,7 @@ rpdCatalog::checkReplItemRecoveryCntByName( void          * aQcStatement,
     while ( sRow != NULL )
     {
         setReplItemMember(sReplItem,  sRow);
-        /*¿©±â¼­ repnameÀÇ replication¿¡ Æ÷ÇÔµÈ repl item¸¶´Ù recovery count¸¦ È®ÀÎÇÑ´Ù*/
+        /*ì—¬ê¸°ì„œ repnameì˜ replicationì— í¬í•¨ëœ repl itemë§ˆë‹¤ recovery countë¥¼ í™•ì¸í•œë‹¤*/
 
         IDE_TEST(qciMisc::getUserID(aQcStatement,
                                     sReplItem->mLocalUsername,
@@ -6501,7 +6501,7 @@ rpdCatalog::checkReplItemRecoveryCntByName( void          * aQcStatement,
     return IDE_FAILURE;
 }
 
-//proj-1608 SYS_REPL_RECOVERY_INFOS_°ü·Ã ÇÔ¼öµé
+//proj-1608 SYS_REPL_RECOVERY_INFOS_ê´€ë ¨ í•¨ìˆ˜ë“¤
 IDE_RC
 rpdCatalog::getReplRecoveryInfosCount( smiStatement * aSmiStmt,
                                        SChar        * aReplName,
@@ -6687,7 +6687,7 @@ rpdCatalog::setReplRecoveryInfoMember( rpdRecoveryInfo * aRepl,
                                        const void      * aRow )
 {
     // ------ SYS_REPL_RECOVERY_INFOS_ -------
-    // REPLICATION_NAME       CHAR(40) RP¿¡¼­ »ç¿ëÇÏÁö ¾ÊÀ¸¹Ç·Î ¼³Á¤ÇÏÁö ¾ÊÀ½
+    // REPLICATION_NAME       CHAR(40) RPì—ì„œ ì‚¬ìš©í•˜ì§€ ì•Šìœ¼ë¯€ë¡œ ì„¤ì •í•˜ì§€ ì•ŠìŒ
     // MASTER_BEGIN_SN        BIGINT
     // MASTER_COMMIT_SN       BIGINT
     // REPLICATED_BEGIN_SN    BIGINT
@@ -6738,10 +6738,10 @@ IDE_RC rpdCatalog::updateReplItemsTableOID(smiStatement * aSmiStmt,
 
     idBool sIsExist = ID_FALSE;
 
-    /* BUG-38306 Partitioned Replication¿¡¼­´Â tableÀÇ ¸ğµç partitionÀÌ 
-       SYS_REPL_ITEMS_¿¡ µé¾î°¡Áö ¾ÊÀ» ¼ö ÀÖ´Ù. ÀÌ ¶§ partitioned table¿¡ 
-       ´ëÇØ¼­ DDLÀ» ¼öÇàÇÑ´Ù¸é ¸ğµç partition¿¡ ´ëÇØ¼­ ÀÌ ÇÔ¼ö¸¦ È£ÃâÇÑ´Ù.
-       µû¶ó¼­ ¸ÕÀú OID·Î repl item¿¡ Á¸ÀçÇÏ´Â Áö È®ÀÎÇÏ´Â ·ÎÁ÷ÀÌ ÇÊ¿äÇÏ´Ù. */
+    /* BUG-38306 Partitioned Replicationì—ì„œëŠ” tableì˜ ëª¨ë“  partitionì´ 
+       SYS_REPL_ITEMS_ì— ë“¤ì–´ê°€ì§€ ì•Šì„ ìˆ˜ ìˆë‹¤. ì´ ë•Œ partitioned tableì— 
+       ëŒ€í•´ì„œ DDLì„ ìˆ˜í–‰í•œë‹¤ë©´ ëª¨ë“  partitionì— ëŒ€í•´ì„œ ì´ í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•œë‹¤.
+       ë”°ë¼ì„œ ë¨¼ì € OIDë¡œ repl itemì— ì¡´ì¬í•˜ëŠ” ì§€ í™•ì¸í•˜ëŠ” ë¡œì§ì´ í•„ìš”í•˜ë‹¤. */
     IDE_TEST( rpdCatalog::checkReplItemExistByOID( aSmiStmt,
                                                    aBeforeTableOID,
                                                    &sIsExist )
@@ -6760,7 +6760,7 @@ IDE_RC rpdCatalog::updateReplItemsTableOID(smiStatement * aSmiStmt,
 
     IDU_FIT_POINT_RAISE( "rpdCatalog::updateReplItemsTableOID::Erratic::rpERR_ABORT_RPD_INTERNAL_ARG",
                          ERR_INVALID_UPDATE );
-    // BUG-24497 [RP] SYS_REPL_ITEMS_ÀÇ TABLE_OID°¡ µÑ ÀÌ»ó °»½ÅµÉ ¼ö ÀÖ½À´Ï´Ù
+    // BUG-24497 [RP] SYS_REPL_ITEMS_ì˜ TABLE_OIDê°€ ë‘˜ ì´ìƒ ê°±ì‹ ë  ìˆ˜ ìˆìŠµë‹ˆë‹¤
     IDE_TEST_RAISE( sRowCnt <= 0  , ERR_INVALID_UPDATE );
 
     RP_LABEL(NORMAL_EXIT);

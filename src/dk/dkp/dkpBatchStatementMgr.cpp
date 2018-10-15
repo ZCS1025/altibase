@@ -372,9 +372,9 @@ IDE_RC dkpBatchStatementMgrAddBatchStatement( dkpBatchStatementMgr * aManager,
     else
     {
         /*
-         * 2°³ ÀÌ»óÀÇ ÆĞÅ¶À¸·Î ³ª´©´Â ÁöÁ¡
-         *      Bind Variable Index ½ÃÀÛ ºÎºĞ
-         *      Bind Variable ValueÀÇ Áß°£ ºÎºĞ
+         * 2ê°œ ì´ìƒì˜ íŒ¨í‚·ìœ¼ë¡œ ë‚˜ëˆ„ëŠ” ì§€ì 
+         *      Bind Variable Index ì‹œì‘ ë¶€ë¶„
+         *      Bind Variable Valueì˜ ì¤‘ê°„ ë¶€ë¶„
          */
         
         UInt sThreeFieldLength = ID_SIZEOF( UInt ) + ID_SIZEOF( UInt ) + ID_SIZEOF( UInt );

@@ -25,26 +25,26 @@
 #include <ulpMacro.h>
 #include <ulpTypes.h>
 
-/* WHENEVER ±¸¹® Á¤º¸ ÀÚ·á±¸Á¶*/
+/* WHENEVER êµ¬ë¬¸ ì •ë³´ ìë£Œêµ¬ì¡°*/
 typedef struct ulpGenWheneverDetail 
 {
     SInt               mScopeDepth;
     ulpGENWHENEVERACT  mAction;
-    // Action¿¡ ÇÊ¿äÇÑ string ÀúÀå.
+    // Actionì— í•„ìš”í•œ string ì €ì¥.
     SChar              mText[MAX_WHENEVER_ACTION_LEN];
 } ulpGenWheneverDetail;
 
-/* ÇöÀç WHENEVER ±¸¹® ¼³Á¤Á¤º¸ */
+/* í˜„ì¬ WHENEVER êµ¬ë¬¸ ì„¤ì •ì •ë³´ */
 typedef struct ulpWhenever
 {
-    ulpGENWHENEVERCOND   mCondition;  // ÇöÀç Ã³¸®´ë»óÀÎ Condition¿¡ ´ëÇÑ Á¤º¸¸¦ °®´Â´Ù.
-    // ÇöÀç Condition ¿¡´ëÇÑ action Á¤º¸¸¦ °®´Â´Ù.
-    // [0] : SQL_NOTFOUND »óÅÂ¿¡ ´ëÇÑ Á¤º¸.
-    // [1] : SQL_ERROR »óÅÂ¿¡ ´ëÇÑ Á¤º¸.
+    ulpGENWHENEVERCOND   mCondition;  // í˜„ì¬ ì²˜ë¦¬ëŒ€ìƒì¸ Conditionì— ëŒ€í•œ ì •ë³´ë¥¼ ê°–ëŠ”ë‹¤.
+    // í˜„ì¬ Condition ì—ëŒ€í•œ action ì •ë³´ë¥¼ ê°–ëŠ”ë‹¤.
+    // [0] : SQL_NOTFOUND ìƒíƒœì— ëŒ€í•œ ì •ë³´.
+    // [1] : SQL_ERROR ìƒíƒœì— ëŒ€í•œ ì •ë³´.
     ulpGenWheneverDetail mContent[2];
 } ulpWhenever;
 
-/* codeº¯È¯À» À§ÇØ ÆÄ½ÌÁß È£½ºÆ® º¯¼ö Á¤º¸¸¦ list·Î ÀúÀåÇÑ´Ù. */
+/* codeë³€í™˜ì„ ìœ„í•´ íŒŒì‹±ì¤‘ í˜¸ìŠ¤íŠ¸ ë³€ìˆ˜ ì •ë³´ë¥¼ listë¡œ ì €ì¥í•œë‹¤. */
 typedef struct ulpGenHostVarList
 {
     SChar              mRealName[MAX_HOSTVAR_NAME_SIZE * 2];
@@ -55,7 +55,7 @@ typedef struct ulpGenHostVarList
     ulpSymTElement    *mInd;
 } ulpGenHostVarList;
 
-/* ÇöÀç º¯È¯ ÇÏ·Á´Â ³»Àå SQL±¸¹®¿¡ ´ëÇÑ Á¤º¸¸¦ ÀúÀåÇÑ´Ù. */
+/* í˜„ì¬ ë³€í™˜ í•˜ë ¤ëŠ” ë‚´ì¥ SQLêµ¬ë¬¸ì— ëŒ€í•œ ì •ë³´ë¥¼ ì €ì¥í•œë‹¤. */
 typedef struct  ulpGenEmSQLInfo
 {
     SChar       mConnName[MAX_HOSTVAR_NAME_SIZE];
@@ -71,27 +71,27 @@ typedef struct  ulpGenEmSQLInfo
     UInt        mCursorSensitivity;
     UInt        mCursorWithHold;
 
-    // ³»Àå Äõ¸®¿¡¼­ cli·Î ³Ñ°ÜÁÖ±âÀ§ÇØ ¾ÕºÎºĞÀ» Àß¶ó³½ Äõ¸® pointer.
+    // ë‚´ì¥ ì¿¼ë¦¬ì—ì„œ clië¡œ ë„˜ê²¨ì£¼ê¸°ìœ„í•´ ì•ë¶€ë¶„ì„ ì˜ë¼ë‚¸ ì¿¼ë¦¬ pointer.
     SChar      *mQueryStr;
     SChar       mQueryHostValue[MAX_HOSTVAR_NAME_SIZE];
 
-    /* hostº¯¼öÀÇ Á¤º¸¸¦ °®´Â ulpSymbolNode ¸¦ listÇüÅÂ·Î ÀúÀåÇÑ´Ù. */
+    /* hostë³€ìˆ˜ì˜ ì •ë³´ë¥¼ ê°–ëŠ” ulpSymbolNode ë¥¼ listí˜•íƒœë¡œ ì €ì¥í•œë‹¤. */
     iduList     mHostVar;
-    // hostº¯¼ö list¿¡ ÀúÀåµÈ º¯¼öµé¿¡ ´ëÇÑ array,struct,arraystruct type Á¤º¸ÀúÀå.
-    // (isarr, isstruct °ü·Ã code º¯È¯½Ã ÂüÁ¶µÊ)
+    // hostë³€ìˆ˜ listì— ì €ì¥ëœ ë³€ìˆ˜ë“¤ì— ëŒ€í•œ array,struct,arraystruct type ì •ë³´ì €ì¥.
+    // (isarr, isstruct ê´€ë ¨ code ë³€í™˜ì‹œ ì°¸ì¡°ë¨)
     ulpGENhvType       mHostValueType;
 
-    /* PSM ¿©ºÎ Á¤º¸. */
+    /* PSM ì—¬ë¶€ ì •ë³´. */
     idBool mIsPSMExec;
-    /* ¿©ºĞÀÇ string Á¤º¸¸¦ ÀúÀåÇÔ. */
+    /* ì—¬ë¶„ì˜ string ì •ë³´ë¥¼ ì €ì¥í•¨. */
     SChar *mExtraStr;
-    /* SQL_ATTR_PARAM_STATUS_PTR º¯¼ö Á¤º¸ */
+    /* SQL_ATTR_PARAM_STATUS_PTR ë³€ìˆ˜ ì •ë³´ */
     SChar  mStatusPtr[MAX_HOSTVAR_NAME_SIZE];
-    /* ATOMIC Á¤º¸.*/
+    /* ATOMIC ì •ë³´.*/
     SChar  mAtomic[GEN_EMSQL_INFO_SIZE];
-    /* ErrCode º¯¼ö Á¤º¸ */
+    /* ErrCode ë³€ìˆ˜ ì •ë³´ */
     SChar  mErrCodePtr[MAX_HOSTVAR_NAME_SIZE];
-    /* Multithread ¿©ºÎ Á¤º¸. */
+    /* Multithread ì—¬ë¶€ ì •ë³´. */
     idBool mIsMT;
 } ulpGenEmSQLInfo;
 
@@ -124,27 +124,27 @@ typedef struct ulpGenCurFileInfo
 /**********************************************************
  * DESCRIPTION :
  *
- * Embedded SQL ±¸¹®À» C¾ğ¾î·Î º¯È¯½ÃÄÑÁÖ´Â ¸ğµâÀÌ¸ç,
- * File ÇÚµé°ú file¿¡ ¾²±âÀü tempraryÇÏ°Ô ÀúÀåµÇ´Â ¹öÆÛ¸¦ °ü¸®ÇÑ´Ù.
+ * Embedded SQL êµ¬ë¬¸ì„ Cì–¸ì–´ë¡œ ë³€í™˜ì‹œì¼œì£¼ëŠ” ëª¨ë“ˆì´ë©°,
+ * File í•¸ë“¤ê³¼ fileì— ì“°ê¸°ì „ tempraryí•˜ê²Œ ì €ì¥ë˜ëŠ” ë²„í¼ë¥¼ ê´€ë¦¬í•œë‹¤.
  **********************************************************/
 class ulpCodeGen
 {
 
 private:
 
-    /* º¯È¯µÈ query stringÀÌ ÀúÀåµÈ´Ù. Initial size´Â 32k ÀÌ³ª,
-       Äõ¸® size°¡ ÀÌº¸´Ù ´õ Å©¸é 2¹è·Î reallocÇÏ¿© »ç¿ëµÈ´Ù.*/
+    /* ë³€í™˜ëœ query stringì´ ì €ì¥ëœë‹¤. Initial sizeëŠ” 32k ì´ë‚˜,
+       ì¿¼ë¦¬ sizeê°€ ì´ë³´ë‹¤ ë” í¬ë©´ 2ë°°ë¡œ reallocí•˜ì—¬ ì‚¬ìš©ëœë‹¤.*/
     SChar *mQueryBuf;
-    /* 10k °íÁ¤ size ÀÌ¸ç, 10k°¡ ²ËÂ÷¸é ÀÚµ¿ÀûÀ¸·Î
-       utpGenWriteFile ÇÔ¼ö¸¦ È£ÃâÇÏ¿© file¿¡ ¾´´Ù. */
+    /* 10k ê³ ì • size ì´ë©°, 10kê°€ ê½‰ì°¨ë©´ ìë™ì ìœ¼ë¡œ
+       utpGenWriteFile í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•˜ì—¬ fileì— ì“´ë‹¤. */
     SChar mWriteBuf [ GEN_WRITE_BUF_SIZE ];
 
-    ulpGenEmSQLInfo mEmSQLInfo;        /* º¯È¯ ÇÏ·Á´Â ³»Àå SQL±¸¹®¿¡ ´ëÇÑ Á¤º¸¸¦ ÀúÀåÇÑ´Ù. */
-    UInt mWriteBufOffset;              /* write buffer°¡ ¾ó¸¸Å­ Ã¤¿öÁ³´ÂÁö ³ªÅ¸³¿ (0-base)*/
-    UInt mQueryBufSize;                /* ÇöÀç query bufferÀÇ max size°ªÀ» °®À½. */
-    UInt mQueryBufOffset;              /* query buffer°¡ ¾ó¸¸Å­ Ã¤¿öÁ³´ÂÁö ³ªÅ¸³¿ (0-base)*/
+    ulpGenEmSQLInfo mEmSQLInfo;        /* ë³€í™˜ í•˜ë ¤ëŠ” ë‚´ì¥ SQLêµ¬ë¬¸ì— ëŒ€í•œ ì •ë³´ë¥¼ ì €ì¥í•œë‹¤. */
+    UInt mWriteBufOffset;              /* write bufferê°€ ì–¼ë§Œí¼ ì±„ì›Œì¡ŒëŠ”ì§€ ë‚˜íƒ€ëƒ„ (0-base)*/
+    UInt mQueryBufSize;                /* í˜„ì¬ query bufferì˜ max sizeê°’ì„ ê°–ìŒ. */
+    UInt mQueryBufOffset;              /* query bufferê°€ ì–¼ë§Œí¼ ì±„ì›Œì¡ŒëŠ”ì§€ ë‚˜íƒ€ëƒ„ (0-base)*/
 
-    /* ³»Àå±¸¹®ÀÇ È£½ºÆ® º¯¼ö¸¦ ?·Î º¯È¯ÇÏ´Âµ¥ ÇÊ¿äÇÑ È£½ºÆ®º¯¼ö ÇÏ³ªÇÏ³ª¿¡ ´ëÇÑ ?°³¼ö Á¤º¸¸¦ ¹è¿­¿¡ ÀúÀå */
+    /* ë‚´ì¥êµ¬ë¬¸ì˜ í˜¸ìŠ¤íŠ¸ ë³€ìˆ˜ë¥¼ ?ë¡œ ë³€í™˜í•˜ëŠ”ë° í•„ìš”í•œ í˜¸ìŠ¤íŠ¸ë³€ìˆ˜ í•˜ë‚˜í•˜ë‚˜ì— ëŒ€í•œ ?ê°œìˆ˜ ì •ë³´ë¥¼ ë°°ì—´ì— ì €ì¥ */
     UInt *mHostVarNumArr;
     UInt mHostVarNumOffset;
     UInt mHostVarNumSize;
@@ -152,10 +152,10 @@ private:
     FILE *mOutFilePtr;                 /* output file pointer */
     SChar mOutFileName[ID_MAX_FILE_NAME + 1];
 
-    ulpErrorMgr mErrorMgr;             /* Error Ã³¸®¸¦ À§ÇÑ ÀÚ·á±¸Á¶ */
+    ulpErrorMgr mErrorMgr;             /* Error ì²˜ë¦¬ë¥¼ ìœ„í•œ ìë£Œêµ¬ì¡° */
 
-    /* BUGBUG: »ç½Ç scope table¿¡¼­ °ü¸®ÇØ¾ß ÇÑ´Ù. */
-    ulpWhenever mWhenever;             /* WHENEVER ±¸¹® Á¤º¸ */
+    /* BUGBUG: ì‚¬ì‹¤ scope tableì—ì„œ ê´€ë¦¬í•´ì•¼ í•œë‹¤. */
+    ulpWhenever mWhenever;             /* WHENEVER êµ¬ë¬¸ ì •ë³´ */
 
     void ulpGenSnprintf( SChar *aBuf, UInt aSize, const SChar *aStr, SInt aType );
 
@@ -182,37 +182,37 @@ public:
 
     SChar *ulpGetQueryBuf();
 
-    void ulpGenNString ( SChar *aStr, UInt aLen);  /* Æ¯Á¤ stringÀ» ÇØ´ç ±æÀÌ¸¸Å­ ±×´ë·Î buffer¿¡ ¾´´Ù. */
+    void ulpGenNString ( SChar *aStr, UInt aLen);  /* íŠ¹ì • stringì„ í•´ë‹¹ ê¸¸ì´ë§Œí¼ ê·¸ëŒ€ë¡œ bufferì— ì“´ë‹¤. */
 
-    void ulpGenString ( SChar *aStr );  /* Æ¯Á¤ stringÀ» ±×´ë·Î buffer¿¡ ¾´´Ù. */
+    void ulpGenString ( SChar *aStr );  /* íŠ¹ì • stringì„ ê·¸ëŒ€ë¡œ bufferì— ì“´ë‹¤. */
 
-    void ulpGenPutChar ( SChar aCh ); /* Æ¯Á¤ charater¸¦ buffer¿¡ ¾´´Ù. */
+    void ulpGenPutChar ( SChar aCh ); /* íŠ¹ì • charaterë¥¼ bufferì— ì“´ë‹¤. */
 
-    void ulpGenUnputChar ( void );  /* mWriteBufOffset¸¦  °¨¼Ò½ÃÅ²´Ù. */
+    void ulpGenUnputChar ( void );  /* mWriteBufOffsetë¥¼  ê°ì†Œì‹œí‚¨ë‹¤. */
 
-    IDE_RC ulpGenQueryString ( SChar *aStr );  /* Æ¯Á¤ query stringÀ» ±×´ë·Î mQueryBuf¿¡ ¾´´Ù. */
+    IDE_RC ulpGenQueryString ( SChar *aStr );  /* íŠ¹ì • query stringì„ ê·¸ëŒ€ë¡œ mQueryBufì— ì“´ë‹¤. */
 
-    /* Æ¯Á¤ query stringÀ» aLen ¸¸Å­ ±×´ë·Î mQueryBuf¿¡ ¾´´Ù. */
+    /* íŠ¹ì • query stringì„ aLen ë§Œí¼ ê·¸ëŒ€ë¡œ mQueryBufì— ì“´ë‹¤. */
     //IDE_RC ulpGenQueryNString ( SChar *aStr, UInt aLen );
 
-    void ulpGenComment( SChar *aStr );  /* Æ¯Á¤ stringÀ» comment ÇüÅÂ·Î buffer¿¡ ¾´´Ù. */
+    void ulpGenComment( SChar *aStr );  /* íŠ¹ì • stringì„ comment í˜•íƒœë¡œ bufferì— ì“´ë‹¤. */
 
-    /* varchar¼±¾ğ ºÎºĞÀ» C code·Î º¯È¯ÇÏ¿© buffer¿¡ ¾´´Ù. */
+    /* varcharì„ ì–¸ ë¶€ë¶„ì„ C codeë¡œ ë³€í™˜í•˜ì—¬ bufferì— ì“´ë‹¤. */
     void ulpGenVarchar( ulpSymTElement *aSymNode );
 
     /* BUG-35518 Shared pointer should be supported in APRE */
     void ulpGenSharedPtr( ulpSymTElement *aSymNode );
     SChar *ulpConvertFromHostType( ulpHostType aHostType );
 
-    /* Embedded SQL ±¸¹®¿¡ ´ëÇÑ Á¤º¸¸¦ mEmSQLInfo ¿¡ ÀúÀåÇÑ´Ù. */
+    /* Embedded SQL êµ¬ë¬¸ì— ëŒ€í•œ ì •ë³´ë¥¼ mEmSQLInfo ì— ì €ì¥í•œë‹¤. */
     void ulpGenEmSQL( ulpGENSQLINFO aType, void *aValue );
 
-    /* mEmSQLInfoÁ¤º¸¿Í mQueryBuf¸¦ Åä´ë·Î ÄÚµå¸¦ »ı¼ºÇÏ¿© mWriteBuf¿¡ ¾´´Ù.  */
+    /* mEmSQLInfoì •ë³´ì™€ mQueryBufë¥¼ í† ëŒ€ë¡œ ì½”ë“œë¥¼ ìƒì„±í•˜ì—¬ mWriteBufì— ì“´ë‹¤.  */
     void ulpGenEmSQLFlush( ulpStmtType aStmtType, idBool aIsPrintQuery );
 
     void ulpGenHostVar( ulpStmtType aStmtType, ulpGenHostVarList *aHostVar, UInt *aCnt );
 
-    /* mEmSQLInfo->mHostVar¿¡ hostº¯¼ö Á¤º¸¸¦ °®´Â utpSymbolNode ¸¦ Ãß°¡ÇÑ´Ù. */
+    /* mEmSQLInfo->mHostVarì— hostë³€ìˆ˜ ì •ë³´ë¥¼ ê°–ëŠ” utpSymbolNode ë¥¼ ì¶”ê°€í•œë‹¤. */
     IDE_RC ulpGenAddHostVarList( SChar          *aRealName,
                                  ulpSymTElement *aNode,
                                  SChar          *aIndName,
@@ -220,7 +220,7 @@ public:
                                  SChar          *aFileOptName,
                                  ulpHVarType     aIOType );
 
-    /* mWriteBufÀÇ data¸¦ file¿¡ ¾´´Ù. */
+    /* mWriteBufì˜ dataë¥¼ fileì— ì“´ë‹¤. */
     IDE_RC ulpGenWriteFile( );
 
     IDE_RC ulpGenOpenFile( SChar *aFileName);
@@ -230,25 +230,25 @@ public:
     /* BUG-33025 Predefined types should be able to be set by user in APRE */
     IDE_RC ulpGenRemovePredefine(SChar *aFileName);
 
-    /* Ã³À½ utpInitialize °¡ È£Ãâ µÇ¾ú´ø °ÍÃ³·³ ÃÊ±âÈ­ µÈ´Ù. */
+    /* ì²˜ìŒ utpInitialize ê°€ í˜¸ì¶œ ë˜ì—ˆë˜ ê²ƒì²˜ëŸ¼ ì´ˆê¸°í™” ëœë‹¤. */
     void ulpGenClearAll();
 
-    /* query buffer ¸¦ ÃÊ±âÈ­ ÇØÁØ´Ù. */
+    /* query buffer ë¥¼ ì´ˆê¸°í™” í•´ì¤€ë‹¤. */
     void ulpGenInitQBuff( void );
 
-    /* mEmSQLInfo.mNumofHostvar ¸¦ aNum ¸¸Å­ Áõ°¡ ½ÃÅ²´Ù. */
+    /* mEmSQLInfo.mNumofHostvar ë¥¼ aNum ë§Œí¼ ì¦ê°€ ì‹œí‚¨ë‹¤. */
     void ulpIncHostVarNum( UInt aNum );
 
-    /* mEmSQLInfo¸¦ ÃÊ±âÈ­ ÇØÁØ´Ù. */
+    /* mEmSQLInfoë¥¼ ì´ˆê¸°í™” í•´ì¤€ë‹¤. */
     void ulpClearEmSQLInfo();
 
     /* BUG-35518 Shared pointer should be supported in APRE */
     void ulpClearSharedPtrInfo();
 
-    /* ³»Àå ±¸¹®À» cli°¡ ¼öÇàÇÒ¼ö ÀÖµµ·Ï º¯°æÇØÁØ´Ù. */
+    /* ë‚´ì¥ êµ¬ë¬¸ì„ cliê°€ ìˆ˜í–‰í• ìˆ˜ ìˆë„ë¡ ë³€ê²½í•´ì¤€ë‹¤. */
     void ulpTransEmQuery ( SChar *aQueryBuf );
 
-    /* WHENEVER ±¸¹® »óÅÂÁ¤º¸ ¼³Á¤ ÇÔ¼ö */
+    /* WHENEVER êµ¬ë¬¸ ìƒíƒœì •ë³´ ì„¤ì • í•¨ìˆ˜ */
     void ulpGenSetWhenever( SInt aDepth,
                             ulpGENWHENEVERCOND aCond,
                             ulpGENWHENEVERACT aAct,
@@ -274,12 +274,12 @@ public:
 
     ulpGenEmSQLInfo *ulpGenGetEmSQLInfo( void );
 
-    /* BUG-29479 : double ¹è¿­ »ç¿ë½Ã precompile Àß¸øµÇ´Â °æ¿ì¹ß»ıÇÔ. */
-    /*    È£½ºÆ®º¯¼ö ÀÌ¸§À» ÀÎÀÚ·Î ¹Ş¾Æ ÀÌ¸§ ¸ÇµÚ¿¡ array index¸¦ ÁöÁ¤ÇÏ´Â ¹®¹ıÀÎ
-     *   [...] °¡ ¸î¹ø ¹İº¹µÇ´ÂÁö countÇØÁÖ´Â ÇÔ¼ö. */
+    /* BUG-29479 : double ë°°ì—´ ì‚¬ìš©ì‹œ precompile ì˜ëª»ë˜ëŠ” ê²½ìš°ë°œìƒí•¨. */
+    /*    í˜¸ìŠ¤íŠ¸ë³€ìˆ˜ ì´ë¦„ì„ ì¸ìë¡œ ë°›ì•„ ì´ë¦„ ë§¨ë’¤ì— array indexë¥¼ ì§€ì •í•˜ëŠ” ë¬¸ë²•ì¸
+     *   [...] ê°€ ëª‡ë²ˆ ë°˜ë³µë˜ëŠ”ì§€ countí•´ì£¼ëŠ” í•¨ìˆ˜. */
     SShort ulpGenBraceCnt4HV( SChar *aValueName, SInt aLen );
 
-    /* host valueÀÇ Á¤º¸µé¸¦ bitsetÀ¸·Î ¼³Á¤ÇØÁØ´Ù. */
+    /* host valueì˜ ì •ë³´ë“¤ë¥¼ bitsetìœ¼ë¡œ ì„¤ì •í•´ì¤€ë‹¤. */
     void ulpGenGetHostValInfo( idBool          aIsField,
                                ulpSymTElement *aHVNode,
                                ulpSymTElement *aINDNode,

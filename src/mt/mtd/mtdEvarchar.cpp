@@ -172,37 +172,37 @@ mtdModule mtdEvarchar = {
     {
         // Key Comparison
         {
-            // mt valueµé °£ÀÇ compare
+            // mt valueë“¤ ê°„ì˜ compare
             mtdEvarcharFixedMtdFixedMtdKeyAscComp, // Ascending Key Comparison
             mtdEvarcharFixedMtdFixedMtdKeyDescComp // Descending Key Comparison
         }
         ,
         {
-            // mt valueµé °£ÀÇ compare
+            // mt valueë“¤ ê°„ì˜ compare
             mtdEvarcharMtdMtdKeyAscComp, // Ascending Key Comparison
             mtdEvarcharMtdMtdKeyDescComp // Descending Key Comparison
         }
         ,
         {
-            // mt value¿Í stored value°£ÀÇ compare
+            // mt valueì™€ stored valueê°„ì˜ compare
             mtdEvarcharStoredMtdKeyAscComp, // Ascending Key Comparison
             mtdEvarcharStoredMtdKeyDescComp // Descending Key Comparison
         }
         ,
         {
-            // stored valueµé °£ÀÇ compare
+            // stored valueë“¤ ê°„ì˜ compare
             mtdEvarcharStoredStoredKeyAscComp, // Ascending Key Comparison
             mtdEvarcharStoredStoredKeyDescComp // Descending Key Comparison
         }
         ,
         {
-            /* PROJ-2433 : index Direct key¿Í fixed mt valueµé °£ÀÇ compare */
+            /* PROJ-2433 : index Direct keyì™€ fixed mt valueë“¤ ê°„ì˜ compare */
             mtdEvarcharFixedMtdFixedMtdKeyAscComp,
             mtdEvarcharFixedMtdFixedMtdKeyDescComp
         }
         ,
         {
-            /* PROJ-2433 : index Direct key¿Í mt valueµé °£ÀÇ compare */
+            /* PROJ-2433 : index Direct keyì™€ mt valueë“¤ ê°„ì˜ compare */
             mtdEvarcharMtdMtdKeyAscComp,
             mtdEvarcharMtdMtdKeyDescComp
         }
@@ -240,7 +240,7 @@ IDE_RC mtdInitialize( UInt aNo )
     IDE_TEST( mtd::initializeModule( &mtdEvarchar, aNo )
               != IDE_SUCCESS );
 
-    // mtdColumnÀÇ ÃÊ±âÈ­
+    // mtdColumnì˜ ì´ˆê¸°í™”
     IDE_TEST( mtc::initializeColumn( & mtdColumn,
                                      & mtdEvarchar,
                                      0,   // arguments
@@ -312,8 +312,8 @@ IDE_RC mtdValue( mtcTemplate* aTemplate,
     *aResult = IDE_SUCCESS;
 
     // To fix BUG-13444
-    // tokenFence¿Í RowFence´Â º°°³ÀÇ °Ë»ç°úÁ¤ÀÌ¹Ç·Î,
-    // ¸ÕÀú RowFence°Ë»ç ÈÄ TokenFence°Ë»ç¸¦ ÇØ¾ß ÇÑ´Ù.
+    // tokenFenceì™€ RowFenceëŠ” ë³„ê°œì˜ ê²€ì‚¬ê³¼ì •ì´ë¯€ë¡œ,
+    // ë¨¼ì € RowFenceê²€ì‚¬ í›„ TokenFenceê²€ì‚¬ë¥¼ í•´ì•¼ í•œë‹¤.
     sIterator = sValue->mValue;
     sFence    = (UChar*)aValue + aValueSize;
     if( sIterator >= sFence )
@@ -344,7 +344,7 @@ IDE_RC mtdValue( mtcTemplate* aTemplate,
     
     if( *aResult == IDE_SUCCESS )
     {
-        // value¿¡ cipher text length ¼ÂÆÃ
+        // valueì— cipher text length ì…‹íŒ…
         sValue->mCipherLength = sIterator - sValue->mValue;
 
         if( sValue->mCipherLength > 0 )
@@ -353,7 +353,7 @@ IDE_RC mtdValue( mtcTemplate* aTemplate,
                                              & sInfo )
                       != IDE_SUCCESS );
             
-            // value¿¡ ecc value & ecc length ¼ÂÆÃ
+            // valueì— ecc value & ecc length ì…‹íŒ…
             IDE_TEST( aTemplate->encodeECC( & sInfo,
                                             (UChar*)sValue->mValue,
                                             (UShort)sValue->mCipherLength,
@@ -368,7 +368,7 @@ IDE_RC mtdValue( mtcTemplate* aTemplate,
         
         sValueLength = sValue->mCipherLength + sValue->mEccLength;
 
-        // precision, scale Àç ¼³Á¤ ÈÄ, estimate·Î semantic °Ë»ç
+        // precision, scale ì¬ ì„¤ì • í›„, estimateë¡œ semantic ê²€ì‚¬
         aColumn->flag         = 1;
         aColumn->precision    = sValue->mCipherLength != 0 ? sValue->mCipherLength : 1;
         aColumn->scale        = 0;
@@ -431,7 +431,7 @@ UInt mtdHash( UInt             aHash,
               const mtcColumn* ,
               const void*      aRow )
 {
-    // ecc·Î ÇØ½Ã ¼öÇà
+    // eccë¡œ í•´ì‹œ ìˆ˜í–‰
     return mtc::hash( aHash, 
            ((mtdEcharType*)aRow)->mValue + ((mtdEcharType*)aRow)->mCipherLength,
            ((mtdEcharType*)aRow)->mEccLength );
@@ -458,7 +458,7 @@ SInt mtdEvarcharLogicalAscComp( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd Å¸ÀÔÀÇ Keyµé °£ÀÇ ascending compare
+ * Description : Mtd íƒ€ì…ì˜ Keyë“¤ ê°„ì˜ ascending compare
  *
  * Implementation :
  *
@@ -487,7 +487,7 @@ SInt mtdEvarcharLogicalAscComp( mtdValueInfo * aValueInfo1,
     // compare
     //---------
 
-    // ecc·Î ºñ±³
+    // eccë¡œ ë¹„êµ
     if( (sEccLength1 != 0) && (sEccLength2 != 0) )
     {
         sValue1  = sEvarcharValue1->mValue + sEvarcharValue1->mCipherLength;
@@ -531,7 +531,7 @@ SInt mtdEvarcharLogicalDescComp( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd Å¸ÀÔÀÇ Keyµé °£ÀÇ descending compare
+ * Description : Mtd íƒ€ì…ì˜ Keyë“¤ ê°„ì˜ descending compare
  *
  * Implementation :
  *
@@ -560,7 +560,7 @@ SInt mtdEvarcharLogicalDescComp( mtdValueInfo * aValueInfo1,
     // compare
     //---------
 
-    // ecc·Î ºñ±³
+    // eccë¡œ ë¹„êµ
     if( (sEccLength1 != 0) && (sEccLength2 != 0) )
     {
         sValue1  = sEvarcharValue1->mValue + sEvarcharValue1->mCipherLength;
@@ -604,7 +604,7 @@ SInt mtdEvarcharFixedMtdFixedMtdKeyAscComp( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd Å¸ÀÔÀÇ Keyµé °£ÀÇ ascending compare
+ * Description : Mtd íƒ€ì…ì˜ Keyë“¤ ê°„ì˜ ascending compare
  *
  * Implementation :
  *
@@ -633,7 +633,7 @@ SInt mtdEvarcharFixedMtdFixedMtdKeyAscComp( mtdValueInfo * aValueInfo1,
     // compare
     //---------
 
-    // ecc·Î ºñ±³
+    // eccë¡œ ë¹„êµ
     if( (sEccLength1 != 0) && (sEccLength2 != 0) )
     {
         sValue1  = sEvarcharValue1->mValue + sEvarcharValue1->mCipherLength;
@@ -677,7 +677,7 @@ SInt mtdEvarcharFixedMtdFixedMtdKeyDescComp( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd Å¸ÀÔÀÇ Keyµé °£ÀÇ descending compare
+ * Description : Mtd íƒ€ì…ì˜ Keyë“¤ ê°„ì˜ descending compare
  *
  * Implementation :
  *
@@ -706,7 +706,7 @@ SInt mtdEvarcharFixedMtdFixedMtdKeyDescComp( mtdValueInfo * aValueInfo1,
     // compare
     //---------
 
-    // ecc·Î ºñ±³
+    // eccë¡œ ë¹„êµ
     if( (sEccLength1 != 0) && (sEccLength2 != 0) )
     {
         sValue1  = sEvarcharValue1->mValue + sEvarcharValue1->mCipherLength;
@@ -750,7 +750,7 @@ SInt mtdEvarcharMtdMtdKeyAscComp( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd Å¸ÀÔÀÇ Keyµé °£ÀÇ ascending compare
+ * Description : Mtd íƒ€ì…ì˜ Keyë“¤ ê°„ì˜ ascending compare
  *
  * Implementation :
  *
@@ -787,7 +787,7 @@ SInt mtdEvarcharMtdMtdKeyAscComp( mtdValueInfo * aValueInfo1,
     // compare
     //---------
 
-    // ecc·Î ºñ±³
+    // eccë¡œ ë¹„êµ
     if( (sEccLength1 != 0) && (sEccLength2 != 0) )
     {
         sValue1  = sEvarcharValue1->mValue + sEvarcharValue1->mCipherLength;
@@ -831,7 +831,7 @@ SInt mtdEvarcharMtdMtdKeyDescComp( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd Å¸ÀÔÀÇ Keyµé °£ÀÇ descending compare
+ * Description : Mtd íƒ€ì…ì˜ Keyë“¤ ê°„ì˜ descending compare
  *
  * Implementation :
  *
@@ -868,7 +868,7 @@ SInt mtdEvarcharMtdMtdKeyDescComp( mtdValueInfo * aValueInfo1,
     // compare
     //---------
 
-    // ecc·Î ºñ±³
+    // eccë¡œ ë¹„êµ
     if( (sEccLength1 != 0) && (sEccLength2 != 0) )
     {
         sValue1  = sEvarcharValue1->mValue + sEvarcharValue1->mCipherLength;
@@ -912,7 +912,7 @@ SInt mtdEvarcharStoredMtdKeyAscComp( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd Å¸ÀÔÀÇ Key¿Í Stored Key °£ÀÇ ascending compare
+ * Description : Mtd íƒ€ì…ì˜ Keyì™€ Stored Key ê°„ì˜ ascending compare
  *
  * Implementation :
  *
@@ -952,7 +952,7 @@ SInt mtdEvarcharStoredMtdKeyAscComp( mtdValueInfo * aValueInfo1,
     // compare
     //---------
 
-    // ecc·Î ºñ±³
+    // eccë¡œ ë¹„êµ
     if( (sEccLength1 != 0) && (sEccLength2 != 0) )
     {
         ID_SHORT_BYTE_ASSIGN( &sCipherLength1,
@@ -999,7 +999,7 @@ SInt mtdEvarcharStoredMtdKeyDescComp( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd Å¸ÀÔÀÇ Key¿Í Stored Key °£ÀÇ descending compare
+ * Description : Mtd íƒ€ì…ì˜ Keyì™€ Stored Key ê°„ì˜ descending compare
  *
  * Implementation :
  *
@@ -1039,7 +1039,7 @@ SInt mtdEvarcharStoredMtdKeyDescComp( mtdValueInfo * aValueInfo1,
     // compare
     //---------
 
-    // ecc·Î ºñ±³
+    // eccë¡œ ë¹„êµ
     if( (aValueInfo1->length != 0) && (sEccLength2 != 0) )
     {
         ID_SHORT_BYTE_ASSIGN( &sCipherLength1,
@@ -1086,7 +1086,7 @@ SInt mtdEvarcharStoredStoredKeyAscComp( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Stored Keyµé °£ÀÇ ascending compare
+ * Description : Stored Keyë“¤ ê°„ì˜ ascending compare
  *
  * Implementation :
  *
@@ -1129,7 +1129,7 @@ SInt mtdEvarcharStoredStoredKeyAscComp( mtdValueInfo * aValueInfo1,
     // compare
     //---------
 
-    // ecc·Î ºñ±³
+    // eccë¡œ ë¹„êµ
     if( (aValueInfo1->length != 0) && (aValueInfo2->length != 0) )
     {
         ID_SHORT_BYTE_ASSIGN( &sCipherLength1,
@@ -1178,7 +1178,7 @@ SInt mtdEvarcharStoredStoredKeyDescComp( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Stored Keyµé °£ÀÇ descending compare
+ * Description : Stored Keyë“¤ ê°„ì˜ descending compare
  *
  * Implementation :
  *
@@ -1221,7 +1221,7 @@ SInt mtdEvarcharStoredStoredKeyDescComp( mtdValueInfo * aValueInfo1,
     // compare
     //---------
 
-    // ecc·Î ºñ±³
+    // eccë¡œ ë¹„êµ
     if( (aValueInfo1->length != 0) && (aValueInfo2->length != 0) )
     {
         ID_SHORT_BYTE_ASSIGN( &sCipherLength1,
@@ -1283,7 +1283,7 @@ static IDE_RC mtdCanonize( const mtcColumn * aCanon,
     sCanonized = (mtdEcharType*)*aCanonized;
     sPlain = sDecryptedBuf;
     
-    // ÄÃ·³ÀÇ º¸¾ÈÁ¤Ã¥À¸·Î ¾ÏÈ£È­
+    // ì»¬ëŸ¼ì˜ ë³´ì•ˆì •ì±…ìœ¼ë¡œ ì•”í˜¸í™”
     if( ( aColumn->policy[0] == '\0' ) && ( aCanon->policy[0] == '\0' ) )
     {
         //-----------------------------------------------------
@@ -1479,7 +1479,7 @@ IDE_RC mtdValidate( mtcColumn * aColumn,
 {
 /***********************************************************************
  *
- * Description : valueÀÇ semantic °Ë»ç ¹× mtcColumn ÃÊ±âÈ­
+ * Description : valueì˜ semantic ê²€ì‚¬ ë° mtcColumn ì´ˆê¸°í™”
  *
  * Implementation :
  *
@@ -1493,9 +1493,9 @@ IDE_RC mtdValidate( mtcColumn * aColumn,
                     + ID_SIZEOF(UShort) + ID_SIZEOF(UShort) != aValueSize,
                     ERR_INVALID_LENGTH );
     
-    // ÃÊ±âÈ­µÈ aColumnÀº cannonize() ½Ã¿¡ »ç¿ë
-    // ÀÌ¶§, data type moduleÀÇ precision Á¤º¸¸¸À» »ç¿ëÇÏ¹Ç·Î,
-    // language Á¤º¸ ¼³Á¤ÇÒ ÇÊ¿ä¾øÀ½
+    // ì´ˆê¸°í™”ëœ aColumnì€ cannonize() ì‹œì— ì‚¬ìš©
+    // ì´ë•Œ, data type moduleì˜ precision ì •ë³´ë§Œì„ ì‚¬ìš©í•˜ë¯€ë¡œ,
+    // language ì •ë³´ ì„¤ì •í•  í•„ìš”ì—†ìŒ
     IDE_TEST( mtc::initializeColumn( aColumn,
                                      & mtdEvarchar,
                                      1,                            // arguments
@@ -1533,8 +1533,8 @@ static IDE_RC mtdStoredValue2MtdValue( UInt              aColumnSize,
 {
 /*******************************************************************
  * PROJ-1705
- * µğ½ºÅ©Å×ÀÌºíÄÃ·³ÀÇ µ¥ÀÌÅ¸¸¦
- * qp ·¹ÄÚµåÃ³¸®¿µ¿ªÀÇ ÇØ´ç ÄÃ·³À§Ä¡¿¡ º¹»ç
+ * ë””ìŠ¤í¬í…Œì´ë¸”ì»¬ëŸ¼ì˜ ë°ì´íƒ€ë¥¼
+ * qp ë ˆì½”ë“œì²˜ë¦¬ì˜ì—­ì˜ í•´ë‹¹ ì»¬ëŸ¼ìœ„ì¹˜ì— ë³µì‚¬
  *******************************************************************/
 
     mtdEcharType* sEvarcharValue;
@@ -1543,7 +1543,7 @@ static IDE_RC mtdStoredValue2MtdValue( UInt              aColumnSize,
     
     if( ( aDestValueOffset == 0 ) && ( aLength == 0 ) )
     {
-        // NULL µ¥ÀÌÅ¸
+        // NULL ë°ì´íƒ€
         sEvarcharValue->mCipherLength = 0;
         sEvarcharValue->mEccLength = 0;
     }
@@ -1572,9 +1572,9 @@ UInt mtdNullValueSize()
 {
 /*******************************************************************
  * PROJ-1705
- * °¢ µ¥ÀÌÅ¸Å¸ÀÔÀÇ null ValueÀÇ Å©±â ¹İÈ¯
- * ¿¹ ) mtdEcharType( UShort length; UChar value[1] ) ¿¡¼­
- *      length Å¸ÀÔÀÎ UShortÀÇ Å©±â¸¦ ¹İÈ¯
+ * ê° ë°ì´íƒ€íƒ€ì…ì˜ null Valueì˜ í¬ê¸° ë°˜í™˜
+ * ì˜ˆ ) mtdEcharType( UShort length; UChar value[1] ) ì—ì„œ
+ *      length íƒ€ì…ì¸ UShortì˜ í¬ê¸°ë¥¼ ë°˜í™˜
  *******************************************************************/
     return mtdActualSize( NULL, &mtdEvarcharNull );
 }
@@ -1583,10 +1583,10 @@ static UInt mtdHeaderSize()
 {
 /***********************************************************************
  * PROJ-1705
- * length¸¦ °¡Áö´Â µ¥ÀÌÅ¸Å¸ÀÔÀÇ length Á¤º¸¸¦ ÀúÀåÇÏ´Â º¯¼öÀÇ Å©±â ¹İÈ¯
- * ¿¹ ) mtdEcharType( UShort length; UChar value[1] ) ¿¡¼­
- *      length Å¸ÀÔÀÎ UShortÀÇ Å©±â¸¦ ¹İÈ¯
- *  integer¿Í °°Àº °íÁ¤±æÀÌ µ¥ÀÌÅ¸Å¸ÀÔÀº 0 ¹İÈ¯
+ * lengthë¥¼ ê°€ì§€ëŠ” ë°ì´íƒ€íƒ€ì…ì˜ length ì •ë³´ë¥¼ ì €ì¥í•˜ëŠ” ë³€ìˆ˜ì˜ í¬ê¸° ë°˜í™˜
+ * ì˜ˆ ) mtdEcharType( UShort length; UChar value[1] ) ì—ì„œ
+ *      length íƒ€ì…ì¸ UShortì˜ í¬ê¸°ë¥¼ ë°˜í™˜
+ *  integerì™€ ê°™ì€ ê³ ì •ê¸¸ì´ ë°ì´íƒ€íƒ€ì…ì€ 0 ë°˜í™˜
  **********************************************************************/
     return ID_SIZEOF(UShort) + ID_SIZEOF(UShort);
 }
@@ -1595,9 +1595,9 @@ static UInt mtdStoreSize( const smiColumn * /*aColumn*/ )
 {
 /***********************************************************************
  * PROJ-2399 row tmaplate 
- * sm¿¡ ÀúÀåµÇ´Â µ¥ÀÌÅÍÀÇ Å©±â¸¦ ¹İÈ¯ÇÑ´Ù.
- * variable Å¸ÀÔÀÇ µ¥ÀÌÅÍ Å¸ÀÔÀº ID_UINT_MAX¸¦ ¹İÈ¯
- * mtheader°¡ sm¿¡ ÀúÀåµÈ°æ¿ì°¡ ¾Æ´Ï¸é mtheaderÅ©±â¸¦ »©¼­ ¹İÈ¯
+ * smì— ì €ì¥ë˜ëŠ” ë°ì´í„°ì˜ í¬ê¸°ë¥¼ ë°˜í™˜í•œë‹¤.
+ * variable íƒ€ì…ì˜ ë°ì´í„° íƒ€ì…ì€ ID_UINT_MAXë¥¼ ë°˜í™˜
+ * mtheaderê°€ smì— ì €ì¥ëœê²½ìš°ê°€ ì•„ë‹ˆë©´ mtheaderí¬ê¸°ë¥¼ ë¹¼ì„œ ë°˜í™˜
  **********************************************************************/
 
     return ID_UINT_MAX;

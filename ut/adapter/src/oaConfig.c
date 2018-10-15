@@ -2365,7 +2365,7 @@ void oaConfigGetBasicConfiguration(oaConfigHandle *aHandle,
 }
 
 /**
- * @breif  Constraint ÇÁ¶óÆÛÆ¼¸¦ ¾ò´Â´Ù.
+ * @breif  Constraint í”„ë¼í¼í‹°ë¥¼ ì–»ëŠ”ë‹¤.
  *
  * @param  aHandle All Properties
  * @param  aConfig Constraint Properties

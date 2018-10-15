@@ -21,15 +21,15 @@
  * Description :
  *     Plan Generator
  *
- *     Two-child Materialized PlanÀ» »ý¼ºÇÏ±â À§ÇÑ °ü¸®ÀÚÀÌ´Ù.
+ *     Two-child Materialized Planì„ ìƒì„±í•˜ê¸° ìœ„í•œ ê´€ë¦¬ìžì´ë‹¤.
  *
- *     ´ÙÀ½°ú °°Àº Plan NodeÀÇ »ý¼ºÀ» °ü¸®ÇÑ´Ù.
- *         - SITS ³ëµå
- *         - SDIF ³ëµå
+ *     ë‹¤ìŒê³¼ ê°™ì€ Plan Nodeì˜ ìƒì„±ì„ ê´€ë¦¬í•œë‹¤.
+ *         - SITS ë…¸ë“œ
+ *         - SDIF ë…¸ë“œ
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  **********************************************************************/
 
@@ -45,18 +45,18 @@ qmoTwoMtrPlan::initSITS( qcStatement  * aStatement ,
 {
 /***********************************************************************
  *
- * Description : SITS ³ëµå¸¦ »ý¼ºÇÑ´Ù
+ * Description : SITS ë…¸ë“œë¥¼ ìƒì„±í•œë‹¤
  *
  * Implementation :
- *     + ÃÊ±âÈ­ ÀÛ¾÷
- *         - qmncSITSÀÇ ÇÒ´ç ¹× ÃÊ±âÈ­
- *     + ¸ÞÀÎ ÀÛ¾÷
- *         - leftDepTupleRowID , rightDepTupleID ¼³Á¤
- *         - SITS ³ëµåÀÇ ±¸¼º
- *     + ¸¶¹«¸® ÀÛ¾÷
- *         - data ¿µ¿ªÀÇ Å©±â °è»ê
- *         - dependencyÀÇ Ã³¸®
- *         - subqueryÀÇ Ã³¸®
+ *     + ì´ˆê¸°í™” ìž‘ì—…
+ *         - qmncSITSì˜ í• ë‹¹ ë° ì´ˆê¸°í™”
+ *     + ë©”ì¸ ìž‘ì—…
+ *         - leftDepTupleRowID , rightDepTupleID ì„¤ì •
+ *         - SITS ë…¸ë“œì˜ êµ¬ì„±
+ *     + ë§ˆë¬´ë¦¬ ìž‘ì—…
+ *         - data ì˜ì—­ì˜ í¬ê¸° ê³„ì‚°
+ *         - dependencyì˜ ì²˜ë¦¬
+ *         - subqueryì˜ ì²˜ë¦¬
  *
  * TO DO
  *
@@ -68,17 +68,17 @@ qmoTwoMtrPlan::initSITS( qcStatement  * aStatement ,
     IDU_FIT_POINT_FATAL( "qmoTwoMtrPlan::initSITS::__FT__" );
 
     //----------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //----------------------------------
 
     IDE_FT_ASSERT( aStatement != NULL );
     IDE_FT_ASSERT( aQuerySet != NULL );
 
     //-------------------------------------------------------------
-    // ÃÊ±âÈ­ ÀÛ¾÷
+    // ì´ˆê¸°í™” ìž‘ì—…
     //-------------------------------------------------------------
 
-    //qmncSITSÀÇ ÇÒ´ç ¹× ÃÊ±âÈ­
+    //qmncSITSì˜ í• ë‹¹ ë° ì´ˆê¸°í™”
     IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF(qmncSITS) , (void **)&sSITS )
               != IDE_SUCCESS );
 
@@ -124,18 +124,18 @@ qmoTwoMtrPlan::makeSITS( qcStatement  * aStatement ,
 {
 /***********************************************************************
  *
- * Description : SITS ³ëµå¸¦ »ý¼ºÇÑ´Ù
+ * Description : SITS ë…¸ë“œë¥¼ ìƒì„±í•œë‹¤
  *
  * Implementation :
- *     + ÃÊ±âÈ­ ÀÛ¾÷
- *         - qmncSITSÀÇ ÇÒ´ç ¹× ÃÊ±âÈ­
- *     + ¸ÞÀÎ ÀÛ¾÷
- *         - leftDepTupleRowID , rightDepTupleID ¼³Á¤
- *         - SITS ³ëµåÀÇ ±¸¼º
- *     + ¸¶¹«¸® ÀÛ¾÷
- *         - data ¿µ¿ªÀÇ Å©±â °è»ê
- *         - dependencyÀÇ Ã³¸®
- *         - subqueryÀÇ Ã³¸®
+ *     + ì´ˆê¸°í™” ìž‘ì—…
+ *         - qmncSITSì˜ í• ë‹¹ ë° ì´ˆê¸°í™”
+ *     + ë©”ì¸ ìž‘ì—…
+ *         - leftDepTupleRowID , rightDepTupleID ì„¤ì •
+ *         - SITS ë…¸ë“œì˜ êµ¬ì„±
+ *     + ë§ˆë¬´ë¦¬ ìž‘ì—…
+ *         - data ì˜ì—­ì˜ í¬ê¸° ê³„ì‚°
+ *         - dependencyì˜ ì²˜ë¦¬
+ *         - subqueryì˜ ì²˜ë¦¬
  *
  * TO DO
  *
@@ -160,7 +160,7 @@ qmoTwoMtrPlan::makeSITS( qcStatement  * aStatement ,
     IDU_FIT_POINT_FATAL( "qmoTwoMtrPlan::makeSITS::__FT__" );
 
     //----------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //----------------------------------
 
     IDE_FT_ASSERT( aStatement != NULL );
@@ -169,7 +169,7 @@ qmoTwoMtrPlan::makeSITS( qcStatement  * aStatement ,
     IDE_FT_ASSERT( aRightChild != NULL );
 
     //-------------------------------------------------------------
-    // ÃÊ±âÈ­ ÀÛ¾÷
+    // ì´ˆê¸°í™” ìž‘ì—…
     //-------------------------------------------------------------
 
     sMtcTemplate = & QC_SHARED_TMPLATE(aStatement)->tmplate;
@@ -184,27 +184,27 @@ qmoTwoMtrPlan::makeSITS( qcStatement  * aStatement ,
     sSITS->mtrNodeOffset = sDataNodeOffset;
 
     //----------------------------------
-    // Flag ¼³Á¤
+    // Flag ì„¤ì •
     //----------------------------------
 
     sSITS->flag = QMN_PLAN_FLAG_CLEAR;
     sSITS->plan.flag = QMN_PLAN_FLAG_CLEAR;
 
     //-------------------------------------------------------------
-    // ¸ÞÀÎ ÀÛ¾÷
+    // ë©”ì¸ ìž‘ì—…
     //-------------------------------------------------------------
 
     sSITS->bucketCnt       = aBucketCount;
 
     //----------------------------------
-    // Æ©ÇÃÀÇ ÇÒ´ç
+    // íŠœí”Œì˜ í• ë‹¹
     //----------------------------------
 
     // To Fix PR-8060
-    // TargetÀ¸·ÎºÎÅÍ Tuple ID¸¦ È¹µæÇÏ¸é ¾ÈµÊ.
-    // TargetÀÇ Á¤º¸´Â VIEW¿¡ ´ëÇÑ Á¢±ÙÀ¸·Î ±¸¼ºµÇ¾î ÀÖ´Ù.
-    // µû¶ó¼­, ÀÏ¹Ý Mtr NODE¿Í ¸¶Âù°¡Áö·Î »õ·Î¿î ID¸¦ ÇÒ´ç¹Þ¾Æ
-    // Ã³¸®ÇÏ¿©¾ß ÇÑ´Ù.
+    // Targetìœ¼ë¡œë¶€í„° Tuple IDë¥¼ íšë“í•˜ë©´ ì•ˆë¨.
+    // Targetì˜ ì •ë³´ëŠ” VIEWì— ëŒ€í•œ ì ‘ê·¼ìœ¼ë¡œ êµ¬ì„±ë˜ì–´ ìžˆë‹¤.
+    // ë”°ë¼ì„œ, ì¼ë°˜ Mtr NODEì™€ ë§ˆì°¬ê°€ì§€ë¡œ ìƒˆë¡œìš´ IDë¥¼ í• ë‹¹ë°›ì•„
+    // ì²˜ë¦¬í•˜ì—¬ì•¼ í•œë‹¤.
     // Tuple is alloced in qmvQuerySet::validate
     // sTupleID         = aQuerySet->target->targetColumn->node.table;
     // sTuple           = aStatement->tmplate->tmplate.rows + sTupleID;
@@ -213,8 +213,8 @@ qmoTwoMtrPlan::makeSITS( qcStatement  * aStatement ,
               != IDE_SUCCESS );
 
     // To Fix PR-8493
-    // ÄÃ·³ÀÇ ´ëÃ¼ ¿©ºÎ¸¦ °áÁ¤ÇÏ±â À§ÇØ¼­´Â
-    // TupleÀÇ ÀúÀå ¸ÅÃ¼ Á¤º¸¸¦ ¹Ì¸® ±â·ÏÇÏ°í ÀÖ¾î¾ß ÇÑ´Ù.
+    // ì»¬ëŸ¼ì˜ ëŒ€ì²´ ì—¬ë¶€ë¥¼ ê²°ì •í•˜ê¸° ìœ„í•´ì„œëŠ”
+    // Tupleì˜ ì €ìž¥ ë§¤ì²´ ì •ë³´ë¥¼ ë¯¸ë¦¬ ê¸°ë¡í•˜ê³  ìžˆì–´ì•¼ í•œë‹¤.
     if( (aFlag & QMO_MAKESITS_TEMP_TABLE_MASK) ==
         QMO_MAKESITS_MEMORY_TEMP_TABLE )
     {
@@ -228,12 +228,12 @@ qmoTwoMtrPlan::makeSITS( qcStatement  * aStatement ,
     }
 
     //----------------------------------
-    // flagÀÇ ±¸¼º
+    // flagì˜ êµ¬ì„±
     //----------------------------------
 
     if( QC_SHARED_TMPLATE(aStatement)->stmt == aStatement )
     {
-        // ÃÖ»óÀ§ Query¿¡¼­ »ç¿ëµÇ´Â °æ¿ì
+        // ìµœìƒìœ„ Queryì—ì„œ ì‚¬ìš©ë˜ëŠ” ê²½ìš°
         sSITS->flag &= ~QMNC_SITS_IN_TOP_MASK;
         sSITS->flag |= QMNC_SITS_IN_TOP_TRUE;
 
@@ -244,7 +244,7 @@ qmoTwoMtrPlan::makeSITS( qcStatement  * aStatement ,
     }
     else
     {
-        // ÃÖ»óÀ§ Query°¡ ¾Æ´Ñ°æ¿ì
+        // ìµœìƒìœ„ Queryê°€ ì•„ë‹Œê²½ìš°
         sSITS->flag &= ~QMNC_SITS_IN_TOP_MASK;
         sSITS->flag |= QMNC_SITS_IN_TOP_FALSE;
 
@@ -255,7 +255,7 @@ qmoTwoMtrPlan::makeSITS( qcStatement  * aStatement ,
     }
 
     //----------------------------------
-    // myNodeÀÇ ±¸¼º
+    // myNodeì˜ êµ¬ì„±
     //----------------------------------
     sSITS->myNode = NULL;
 
@@ -265,8 +265,8 @@ qmoTwoMtrPlan::makeSITS( qcStatement  * aStatement ,
     {
         sCopiedNode = *sItrAttr->expr;
         // To Fix PR-8060
-        // »õ·Î ÇÒ´ç¹ÞÀº Tuple ID¸¦ ±âÁØÀ¸·Î
-        // ÀúÀå ColumnÀ» »ý¼ºÇÏ¿©¾ß ÇÑ´Ù.
+        // ìƒˆë¡œ í• ë‹¹ë°›ì€ Tuple IDë¥¼ ê¸°ì¤€ìœ¼ë¡œ
+        // ì €ìž¥ Columnì„ ìƒì„±í•˜ì—¬ì•¼ í•œë‹¤.
         IDE_TEST( qmg::makeColumnMtrNode( aStatement ,
                                           aQuerySet ,
                                           &sCopiedNode,
@@ -300,8 +300,8 @@ qmoTwoMtrPlan::makeSITS( qcStatement  * aStatement ,
 
     // To Fix PR-8060
     //----------------------------------
-    // Tuple columnÀÇ ÇÒ´ç
-    // mtcColumn , mtcExecute Á¤º¸ÀÇ ±¸Ãà
+    // Tuple columnì˜ í• ë‹¹
+    // mtcColumn , mtcExecute ì •ë³´ì˜ êµ¬ì¶•
     //----------------------------------
 
     IDE_TEST( qtc::allocIntermediateTuple( aStatement,
@@ -316,7 +316,7 @@ qmoTwoMtrPlan::makeSITS( qcStatement  * aStatement ,
     sMtcTemplate->rows[sTupleID].lflag &= ~MTC_TUPLE_PLAN_MTR_MASK;
     sMtcTemplate->rows[sTupleID].lflag |= MTC_TUPLE_PLAN_MTR_TRUE;
 
-    //GRAPH¿¡¼­ ÁöÁ¤ÇÑ ÀúÀå¸ÅÃ¼¸¦ »ç¿ëÇÑ´Ù.
+    //GRAPHì—ì„œ ì§€ì •í•œ ì €ìž¥ë§¤ì²´ë¥¼ ì‚¬ìš©í•œë‹¤.
     if( (aFlag & QMO_MAKESITS_TEMP_TABLE_MASK) ==
         QMO_MAKESITS_MEMORY_TEMP_TABLE )
     {
@@ -338,7 +338,7 @@ qmoTwoMtrPlan::makeSITS( qcStatement  * aStatement ,
               != IDE_SUCCESS);
 
     //----------------------------------
-    // PROJ-1473 column locate ÁöÁ¤.
+    // PROJ-1473 column locate ì§€ì •.
     //----------------------------------
 
     IDE_TEST( qmg::setColumnLocate( aStatement,
@@ -346,24 +346,24 @@ qmoTwoMtrPlan::makeSITS( qcStatement  * aStatement ,
               != IDE_SUCCESS );
 
     //-------------------------------------------------------------
-    // ¸¶¹«¸® ÀÛ¾÷
+    // ë§ˆë¬´ë¦¬ ìž‘ì—…
     //-------------------------------------------------------------
 
-    //data ¿µ¿ªÀÇ Å©±â °è»ê
+    //data ì˜ì—­ì˜ í¬ê¸° ê³„ì‚°
     QC_SHARED_TMPLATE(aStatement)->tmplate.dataSize = sDataNodeOffset +
         sColumnCount * idlOS::align8( ID_SIZEOF(qmdMtrNode) );
 
     //----------------------------------
-    //dependency Ã³¸® ¹× subquery Ã³¸®
+    //dependency ì²˜ë¦¬ ë° subquery ì²˜ë¦¬
     //----------------------------------
 
     // PROJ-1358
-    // Set¿¡ ´ëÇÑ dependency´Â ´©ÀûÇÏÁö ¾Ê´Â´Ù.
+    // Setì— ëŒ€í•œ dependencyëŠ” ëˆ„ì í•˜ì§€ ì•ŠëŠ”ë‹¤.
     sMtrNode[0] = NULL;
 
     // To Fix PR-12791
-    // PROJ-1358 ·Î ÀÎÇØ dependency °áÁ¤ ¾Ë°í¸®ÁòÀÌ ¼öÁ¤µÇ¾úÀ¸¸ç
-    // Query Set¿¡¼­ ¼³Á¤ÇÑ dependency Á¤º¸¸¦ ´©ÀûÇØ¾ß ÇÔ.
+    // PROJ-1358 ë¡œ ì¸í•´ dependency ê²°ì • ì•Œê³ ë¦¬ì¦˜ì´ ìˆ˜ì •ë˜ì—ˆìœ¼ë©°
+    // Query Setì—ì„œ ì„¤ì •í•œ dependency ì •ë³´ë¥¼ ëˆ„ì í•´ì•¼ í•¨.
     IDE_TEST( qmoDependency::setDependency( aStatement ,
                                             aQuerySet ,
                                             &sSITS->plan ,
@@ -432,18 +432,18 @@ qmoTwoMtrPlan::initSDIF( qcStatement  * aStatement,
 
 /***********************************************************************
  *
- * Description : SDIF ³ëµå¸¦ »ý¼ºÇÑ´Ù
+ * Description : SDIF ë…¸ë“œë¥¼ ìƒì„±í•œë‹¤
  *
  * Implementation :
- *     + ÃÊ±âÈ­ ÀÛ¾÷
- *         - qmncSDIFÀÇ ÇÒ´ç ¹× ÃÊ±âÈ­
- *     + ¸ÞÀÎ ÀÛ¾÷
- *         - leftDepTupleRowID , rightDepTupleID ¼³Á¤
- *         - SDIF ³ëµåÀÇ ±¸¼º
- *     + ¸¶¹«¸® ÀÛ¾÷
- *         - data ¿µ¿ªÀÇ Å©±â °è»ê
- *         - dependencyÀÇ Ã³¸®
- *         - subqueryÀÇ Ã³¸®
+ *     + ì´ˆê¸°í™” ìž‘ì—…
+ *         - qmncSDIFì˜ í• ë‹¹ ë° ì´ˆê¸°í™”
+ *     + ë©”ì¸ ìž‘ì—…
+ *         - leftDepTupleRowID , rightDepTupleID ì„¤ì •
+ *         - SDIF ë…¸ë“œì˜ êµ¬ì„±
+ *     + ë§ˆë¬´ë¦¬ ìž‘ì—…
+ *         - data ì˜ì—­ì˜ í¬ê¸° ê³„ì‚°
+ *         - dependencyì˜ ì²˜ë¦¬
+ *         - subqueryì˜ ì²˜ë¦¬
  *
  * TO DO
  *
@@ -455,16 +455,16 @@ qmoTwoMtrPlan::initSDIF( qcStatement  * aStatement,
     IDU_FIT_POINT_FATAL( "qmoTwoMtrPlan::initSDIF::__FT__" );
 
     //----------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //----------------------------------
 
     IDE_DASSERT( aStatement != NULL );
 
     //-------------------------------------------------------------
-    // ÃÊ±âÈ­ ÀÛ¾÷
+    // ì´ˆê¸°í™” ìž‘ì—…
     //-------------------------------------------------------------
 
-    //qmncSITSÀÇ ÇÒ´ç ¹× ÃÊ±âÈ­
+    //qmncSITSì˜ í• ë‹¹ ë° ì´ˆê¸°í™”
     IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF(qmncSDIF) , (void **)&sSDIF )
               != IDE_SUCCESS );
 
@@ -511,18 +511,18 @@ qmoTwoMtrPlan::makeSDIF( qcStatement  * aStatement,
 
 /***********************************************************************
  *
- * Description : SDIF ³ëµå¸¦ »ý¼ºÇÑ´Ù
+ * Description : SDIF ë…¸ë“œë¥¼ ìƒì„±í•œë‹¤
  *
  * Implementation :
- *     + ÃÊ±âÈ­ ÀÛ¾÷
- *         - qmncSDIFÀÇ ÇÒ´ç ¹× ÃÊ±âÈ­
- *     + ¸ÞÀÎ ÀÛ¾÷
- *         - leftDepTupleRowID , rightDepTupleID ¼³Á¤
- *         - SDIF ³ëµåÀÇ ±¸¼º
- *     + ¸¶¹«¸® ÀÛ¾÷
- *         - data ¿µ¿ªÀÇ Å©±â °è»ê
- *         - dependencyÀÇ Ã³¸®
- *         - subqueryÀÇ Ã³¸®
+ *     + ì´ˆê¸°í™” ìž‘ì—…
+ *         - qmncSDIFì˜ í• ë‹¹ ë° ì´ˆê¸°í™”
+ *     + ë©”ì¸ ìž‘ì—…
+ *         - leftDepTupleRowID , rightDepTupleID ì„¤ì •
+ *         - SDIF ë…¸ë“œì˜ êµ¬ì„±
+ *     + ë§ˆë¬´ë¦¬ ìž‘ì—…
+ *         - data ì˜ì—­ì˜ í¬ê¸° ê³„ì‚°
+ *         - dependencyì˜ ì²˜ë¦¬
+ *         - subqueryì˜ ì²˜ë¦¬
  *
  * TO DO
  *
@@ -547,7 +547,7 @@ qmoTwoMtrPlan::makeSDIF( qcStatement  * aStatement,
     IDU_FIT_POINT_FATAL( "qmoTwoMtrPlan::makeSDIF::__FT__" );
 
     //----------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //----------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -556,7 +556,7 @@ qmoTwoMtrPlan::makeSDIF( qcStatement  * aStatement,
     IDE_DASSERT( aRightChild != NULL );
 
     //-------------------------------------------------------------
-    // ÃÊ±âÈ­ ÀÛ¾÷
+    // ì´ˆê¸°í™” ìž‘ì—…
     //-------------------------------------------------------------
 
     sMtcTemplate = & QC_SHARED_TMPLATE(aStatement)->tmplate;
@@ -571,31 +571,31 @@ qmoTwoMtrPlan::makeSDIF( qcStatement  * aStatement,
     sSDIF->mtrNodeOffset = sDataNodeOffset;
 
     //----------------------------------
-    // Flag ¼³Á¤
+    // Flag ì„¤ì •
     //----------------------------------
 
     sSDIF->flag = QMN_PLAN_FLAG_CLEAR;
     sSDIF->plan.flag = QMN_PLAN_FLAG_CLEAR;
 
     //-------------------------------------------------------------
-    // ¸ÞÀÎ ÀÛ¾÷
+    // ë©”ì¸ ìž‘ì—…
     //-------------------------------------------------------------
 
     sSDIF->bucketCnt       = aBucketCount;
 
     //----------------------------------
-    // Æ©ÇÃÀÇ ÇÒ´ç
+    // íŠœí”Œì˜ í• ë‹¹
     //----------------------------------
 
     //----------------------------------
-    // Æ©ÇÃÀÇ ÇÒ´ç
+    // íŠœí”Œì˜ í• ë‹¹
     //----------------------------------
 
     // To Fix PR-8060
-    // TargetÀ¸·ÎºÎÅÍ Tuple ID¸¦ È¹µæÇÏ¸é ¾ÈµÊ.
-    // TargetÀÇ Á¤º¸´Â VIEW¿¡ ´ëÇÑ Á¢±ÙÀ¸·Î ±¸¼ºµÇ¾î ÀÖ´Ù.
-    // µû¶ó¼­, ÀÏ¹Ý Mtr NODE¿Í ¸¶Âù°¡Áö·Î »õ·Î¿î ID¸¦ ÇÒ´ç¹Þ¾Æ
-    // Ã³¸®ÇÏ¿©¾ß ÇÑ´Ù.
+    // Targetìœ¼ë¡œë¶€í„° Tuple IDë¥¼ íšë“í•˜ë©´ ì•ˆë¨.
+    // Targetì˜ ì •ë³´ëŠ” VIEWì— ëŒ€í•œ ì ‘ê·¼ìœ¼ë¡œ êµ¬ì„±ë˜ì–´ ìžˆë‹¤.
+    // ë”°ë¼ì„œ, ì¼ë°˜ Mtr NODEì™€ ë§ˆì°¬ê°€ì§€ë¡œ ìƒˆë¡œìš´ IDë¥¼ í• ë‹¹ë°›ì•„
+    // ì²˜ë¦¬í•˜ì—¬ì•¼ í•œë‹¤.
     // Tuple is alloced in qmvQuerySet::validate
     // sTupleID         = aQuerySet->target->targetColumn->node.table;
     // sTuple           = aStatement->tmplate->tmplate.rows + sTupleID;
@@ -604,8 +604,8 @@ qmoTwoMtrPlan::makeSDIF( qcStatement  * aStatement,
               != IDE_SUCCESS );
 
     // To Fix PR-8493
-    // ÄÃ·³ÀÇ ´ëÃ¼ ¿©ºÎ¸¦ °áÁ¤ÇÏ±â À§ÇØ¼­´Â
-    // TupleÀÇ ÀúÀå ¸ÅÃ¼ Á¤º¸¸¦ ¹Ì¸® ±â·ÏÇÏ°í ÀÖ¾î¾ß ÇÑ´Ù.
+    // ì»¬ëŸ¼ì˜ ëŒ€ì²´ ì—¬ë¶€ë¥¼ ê²°ì •í•˜ê¸° ìœ„í•´ì„œëŠ”
+    // Tupleì˜ ì €ìž¥ ë§¤ì²´ ì •ë³´ë¥¼ ë¯¸ë¦¬ ê¸°ë¡í•˜ê³  ìžˆì–´ì•¼ í•œë‹¤.
     if( (aFlag & QMO_MAKESDIF_TEMP_TABLE_MASK) ==
         QMO_MAKESDIF_MEMORY_TEMP_TABLE )
     {
@@ -619,7 +619,7 @@ qmoTwoMtrPlan::makeSDIF( qcStatement  * aStatement,
     }
 
     //----------------------------------
-    // myNodeÀÇ ±¸¼º
+    // myNodeì˜ êµ¬ì„±
     //----------------------------------
 
     sSDIF->myNode = NULL;
@@ -631,8 +631,8 @@ qmoTwoMtrPlan::makeSDIF( qcStatement  * aStatement,
         sCopiedNode = *sItrAttr->expr;
 
         // To Fix PR-8060
-        // »õ·Î ÇÒ´ç¹ÞÀº Tuple ID¸¦ ±âÁØÀ¸·Î
-        // ÀúÀå ColumnÀ» »ý¼ºÇÏ¿©¾ß ÇÑ´Ù.
+        // ìƒˆë¡œ í• ë‹¹ë°›ì€ Tuple IDë¥¼ ê¸°ì¤€ìœ¼ë¡œ
+        // ì €ìž¥ Columnì„ ìƒì„±í•˜ì—¬ì•¼ í•œë‹¤.
         IDE_TEST( qmg::makeColumnMtrNode( aStatement ,
                                           aQuerySet ,
                                           &sCopiedNode,
@@ -666,8 +666,8 @@ qmoTwoMtrPlan::makeSDIF( qcStatement  * aStatement,
 
     // To Fix PR-8060
     //----------------------------------
-    // Tuple columnÀÇ ÇÒ´ç
-    // mtcColumn , mtcExecute Á¤º¸ÀÇ ±¸Ãà
+    // Tuple columnì˜ í• ë‹¹
+    // mtcColumn , mtcExecute ì •ë³´ì˜ êµ¬ì¶•
     //----------------------------------
 
     IDE_TEST( qtc::allocIntermediateTuple( aStatement,
@@ -682,7 +682,7 @@ qmoTwoMtrPlan::makeSDIF( qcStatement  * aStatement,
     sMtcTemplate->rows[sTupleID].lflag &= ~MTC_TUPLE_PLAN_MTR_MASK;
     sMtcTemplate->rows[sTupleID].lflag |= MTC_TUPLE_PLAN_MTR_TRUE;
 
-    //GRAPH¿¡¼­ ÁöÁ¤ÇÑ ÀúÀå¸ÅÃ¼¸¦ »ç¿ëÇÑ´Ù.
+    //GRAPHì—ì„œ ì§€ì •í•œ ì €ìž¥ë§¤ì²´ë¥¼ ì‚¬ìš©í•œë‹¤.
     if( (aFlag & QMO_MAKESDIF_TEMP_TABLE_MASK) ==
         QMO_MAKESDIF_MEMORY_TEMP_TABLE )
     {
@@ -704,7 +704,7 @@ qmoTwoMtrPlan::makeSDIF( qcStatement  * aStatement,
               != IDE_SUCCESS);
 
     //----------------------------------
-    // PROJ-1473 column locate ÁöÁ¤.
+    // PROJ-1473 column locate ì§€ì •.
     //----------------------------------
 
     IDE_TEST( qmg::setColumnLocate( aStatement,
@@ -712,24 +712,24 @@ qmoTwoMtrPlan::makeSDIF( qcStatement  * aStatement,
               != IDE_SUCCESS );
 
     //-------------------------------------------------------------
-    // ¸¶¹«¸® ÀÛ¾÷
+    // ë§ˆë¬´ë¦¬ ìž‘ì—…
     //-------------------------------------------------------------
 
-    //data ¿µ¿ªÀÇ Å©±â °è»ê
+    //data ì˜ì—­ì˜ í¬ê¸° ê³„ì‚°
     QC_SHARED_TMPLATE(aStatement)->tmplate.dataSize = sDataNodeOffset +
         sColumnCount * idlOS::align8( ID_SIZEOF(qmdMtrNode) );
 
     //----------------------------------
-    //dependency Ã³¸® ¹× subquery Ã³¸®
+    //dependency ì²˜ë¦¬ ë° subquery ì²˜ë¦¬
     //----------------------------------
 
     // PROJ-1358
-    // SET¿¡ ´ëÇÑ depedency´Â ´©ÀûÇÏÁö ¾Ê´Â´Ù.
+    // SETì— ëŒ€í•œ depedencyëŠ” ëˆ„ì í•˜ì§€ ì•ŠëŠ”ë‹¤.
     sMtrNode[0] = NULL;
 
     // To Fix PR-12791
-    // PROJ-1358 ·Î ÀÎÇØ dependency °áÁ¤ ¾Ë°í¸®ÁòÀÌ ¼öÁ¤µÇ¾úÀ¸¸ç
-    // Query Set¿¡¼­ ¼³Á¤ÇÑ dependency Á¤º¸¸¦ ´©ÀûÇØ¾ß ÇÔ.
+    // PROJ-1358 ë¡œ ì¸í•´ dependency ê²°ì • ì•Œê³ ë¦¬ì¦˜ì´ ìˆ˜ì •ë˜ì—ˆìœ¼ë©°
+    // Query Setì—ì„œ ì„¤ì •í•œ dependency ì •ë³´ë¥¼ ëˆ„ì í•´ì•¼ í•¨.
     IDE_TEST( qmoDependency::setDependency( aStatement ,
                                             aQuerySet ,
                                             &sSDIF->plan ,

@@ -35,7 +35,7 @@ ACP_EXTERN_C_BEGIN
 typedef enum
 {
     /*
-     * BUGBUG : �Ʒ��� enum �� �ݵ�� cm/src/include/cmpDefDB.h �� enum �� �ݵ�� ��ġ�ؾ� �Ѵ�.
+     * BUGBUG : 아래의 enum 은 반드시 cm/src/include/cmpDefDB.h 의 enum 과 반드시 일치해야 한다.
      */
     ULN_PROPERTY_CLIENT_PACKAGE_VERSION  = CMP_DB_PROPERTY_CLIENT_PACKAGE_VERSION,
     ULN_PROPERTY_CLIENT_PROTOCOL_VERSION = CMP_DB_PROPERTY_CLIENT_PROTOCOL_VERSION,

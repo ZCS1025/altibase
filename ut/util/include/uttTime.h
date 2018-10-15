@@ -39,7 +39,7 @@ public:
     void   print(UTTTimeScale ts=UTT_MSEC);
     void   println(UTTTimeScale ts=UTT_MSEC);
     void   showAutoScale();
-    // BUG-24096 : iloader °æ°ú ½Ã°£ Ç¥½Ã
+    // BUG-24096 : iloader ê²½ê³¼ ì‹œê°„ í‘œì‹œ
     void   showAutoScale4Wall();
     SInt   getMicroseconds();
     double getTime(UTTTimeClass tc, UTTTimeScale ts);

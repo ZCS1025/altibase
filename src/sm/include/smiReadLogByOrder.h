@@ -28,99 +28,99 @@
 #include <iduReusedMemoryHandle.h>
 #include <smrRemoteLogMgr.h>
 
-/* Parallel Logging : Log¸¦ »ý¼º
-   ¼ø¼­´ë·Î º¸³»¾ß ÇÏ´Â ReplicaitonÀ» À§ÇØ ±¸ÇöµÇ¾ú´Ù.
-   ÇöÀç º¸³»¾ß ÇÏ´Â LogÀÇ À§Ä¡¸¦ °¡Áö°í
-   ÀÖ°í, º¸³¾¶§ ÇöÀç °¡¸®Å°´Â ·Î±×ÀÇ LSNÁß °¡Àå ÀÛÀº Log¸¦
-   ÀÐ¾î¼­ º¸³½´Ù.
+/* Parallel Logging : Logë¥¼ ìƒì„±
+   ìˆœì„œëŒ€ë¡œ ë³´ë‚´ì•¼ í•˜ëŠ” Replicaitonì„ ìœ„í•´ êµ¬í˜„ë˜ì—ˆë‹¤.
+   í˜„ìž¬ ë³´ë‚´ì•¼ í•˜ëŠ” Logì˜ ìœ„ì¹˜ë¥¼ ê°€ì§€ê³ 
+   ìžˆê³ , ë³´ë‚¼ë•Œ í˜„ìž¬ ê°€ë¦¬í‚¤ëŠ” ë¡œê·¸ì˜ LSNì¤‘ ê°€ìž¥ ìž‘ì€ Logë¥¼
+   ì½ì–´ì„œ ë³´ë‚¸ë‹¤.
    .*/
 typedef struct smiReadInfo
 {
-    /* ReadÇÒ Log LSN */
+    /* Readí•  Log LSN */
     smLSN       mReadLSN;
-    /* mReadLSNÀÌ °¡¸®Å°´Â LogÀÇ LogHead */
+    /* mReadLSNì´ ê°€ë¦¬í‚¤ëŠ” Logì˜ LogHead */
     smrLogHead  mLogHead;
-    /* mReadLSNÀÌ °¡¸®Å°´Â LogÀÇ LogBuffer Ptr - ºñ¾ÐÃà ·Î±×*/
+    /* mReadLSNì´ ê°€ë¦¬í‚¤ëŠ” Logì˜ LogBuffer Ptr - ë¹„ì••ì¶• ë¡œê·¸*/
     SChar     * mLogPtr;
-    /* mReadLSNÀÌ °¡¸®Å°´Â Log°¡ ÀÖ´Â logfile Ptr */
+    /* mReadLSNì´ ê°€ë¦¬í‚¤ëŠ” Logê°€ ìžˆëŠ” logfile Ptr */
     smrLogFile* mLogFilePtr;
-    /* mReadLSNÀÌ °¡¸®Å°´Â Log°¡ ValidÇÏ¸é ID_TRUE, ¾Æ´Ï¸é ID_FALSE */
+    /* mReadLSNì´ ê°€ë¦¬í‚¤ëŠ” Logê°€ Validí•˜ë©´ ID_TRUE, ì•„ë‹ˆë©´ ID_FALSE */
     idBool      mIsValid;
 
-    /* ¸¶Áö¸·À¸·Î ReadÇÑ Valid ·Î±×ÀÇ LSN°ªÀ» ReturnÇÑ´Ù.*/
+    /* ë§ˆì§€ë§‰ìœ¼ë¡œ Readí•œ Valid ë¡œê·¸ì˜ LSNê°’ì„ Returní•œë‹¤.*/
     smLSN        mLstLogLSN;
 
     /* Log Switch*/
     idBool      mIsLogSwitch;
 
-    /* ·Î±×ÀÇ ¾ÐÃàÇØÁ¦ ¹öÆÛ ÇÚµé
+    /* ë¡œê·¸ì˜ ì••ì¶•í•´ì œ ë²„í¼ í•¸ë“¤
      * 
-     * ¾ÐÃàµÈ ·Î±×ÀÇ °æ¿ì, ÀÌ ÇÚµéÀÌ Áö´Ï´Â ¸Þ¸ð¸®¿¡ ¾ÐÃàÀ» ÇØÁ¦ÇÏ°í
-     * ·Î±×·¹ÄÚµåÀÇ Æ÷ÀÎÅÍ°¡ ÀÌ ¸Þ¸ð¸®¸¦ Á÷Á¢ °¡¸®Å°°Ô µÈ´Ù.
-     * µû¶ó¼­, smiReadInfoÇÏ³ª´ç ¾ÐÃà ÇØÁ¦ ¹öÆÛ¸¦ Áö³à¾ß ÇÑ´Ù. */
+     * ì••ì¶•ëœ ë¡œê·¸ì˜ ê²½ìš°, ì´ í•¸ë“¤ì´ ì§€ë‹ˆëŠ” ë©”ëª¨ë¦¬ì— ì••ì¶•ì„ í•´ì œí•˜ê³ 
+     * ë¡œê·¸ë ˆì½”ë“œì˜ í¬ì¸í„°ê°€ ì´ ë©”ëª¨ë¦¬ë¥¼ ì§ì ‘ ê°€ë¦¬í‚¤ê²Œ ëœë‹¤.
+     * ë”°ë¼ì„œ, smiReadInfoí•˜ë‚˜ë‹¹ ì••ì¶• í•´ì œ ë²„í¼ë¥¼ ì§€ë…€ì•¼ í•œë‹¤. */
     iduReusedMemoryHandle mDecompBufferHandle;
 
-    /* ÀÐÀº ·Î±×ÀÇ Å©±â
+    /* ì½ì€ ë¡œê·¸ì˜ í¬ê¸°
      * 
-     * ¾ÐÃàµÈ ·Î±×ÀÇ °æ¿ì ·Î±×ÀÇ Å©±â¿Í
-     * ÆÄÀÏ»óÀÇ Å©±â°¡ ´Ù¸¦ ¼ö ÀÖ´Ù.
-     * ´ÙÀ½ ÀÐÀ» ·Î±×ÀÇ À§Ä¡¸¦ °è»êÇÒ¶§ ÀÌ °ªÀ» »ç¿ëÇÏ¿©¾ß ÇÑ´Ù. */
+     * ì••ì¶•ëœ ë¡œê·¸ì˜ ê²½ìš° ë¡œê·¸ì˜ í¬ê¸°ì™€
+     * íŒŒì¼ìƒì˜ í¬ê¸°ê°€ ë‹¤ë¥¼ ìˆ˜ ìžˆë‹¤.
+     * ë‹¤ìŒ ì½ì„ ë¡œê·¸ì˜ ìœ„ì¹˜ë¥¼ ê³„ì‚°í• ë•Œ ì´ ê°’ì„ ì‚¬ìš©í•˜ì—¬ì•¼ í•œë‹¤. */
     UInt mLogSizeAtDisk;
 } smiReadInfo;
 
 class smiReadLogByOrder
 {
 public:
-    /* ÃÊ±âÈ­ ¼öÇà */
+    /* ì´ˆê¸°í™” ìˆ˜í–‰ */
     IDE_RC initialize( smSN       aInitSN,
                        UInt       aPreOpenFileCnt,
                        idBool     aIsRemoteLog,
                        ULong      aLogFileSize, 
                        SChar   ** aLogDirPath );
 
-    /* ÇÒ´çµÈ Resource¸¦ Á¤¸®ÇÑ´Ù.*/
+    /* í• ë‹¹ëœ Resourceë¥¼ ì •ë¦¬í•œë‹¤.*/
     IDE_RC destroy();
 
-    /* mSortRedoInfo¿¡ µé¾îÀÖ´Â smrRedoInfoÁß¿¡¼­
-     * °¡Àå ÀÛÀº mLSN°ªÀ» °¡Áø Log¸¦ ÀÐ¾îµéÀÎ´Ù. */
+    /* mSortRedoInfoì— ë“¤ì–´ìžˆëŠ” smrRedoInfoì¤‘ì—ì„œ
+     * ê°€ìž¥ ìž‘ì€ mLSNê°’ì„ ê°€ì§„ Logë¥¼ ì½ì–´ë“¤ì¸ë‹¤. */
     IDE_RC readLog( smSN       * aInitSN,
                     smLSN      * aLSN,
                     void      ** aLogHeadPtr,
                     void      ** aLogPtr,
                     idBool     * aIsValid );
 
-    /* ¸ðµç LogFileÀ» Á¶»çÇØ¼­ aMinLSNº¸´Ù ÀÛÀº LSNÀ»
-       °¡Áö´Â ·Î±×¸¦ Ã¹¹øÂ°·Î °¡Áö´Â LogFile No¸¦ ±¸ÇØ¼­ Ã¹¹øÂ°·Î ÀÐÀ»·Î±×·Î
-       SettingÇÑ´Ù.*/
+    /* ëª¨ë“  LogFileì„ ì¡°ì‚¬í•´ì„œ aMinLSNë³´ë‹¤ ìž‘ì€ LSNì„
+       ê°€ì§€ëŠ” ë¡œê·¸ë¥¼ ì²«ë²ˆì§¸ë¡œ ê°€ì§€ëŠ” LogFile Noë¥¼ êµ¬í•´ì„œ ì²«ë²ˆì§¸ë¡œ ì½ì„ë¡œê·¸ë¡œ
+       Settingí•œë‹¤.*/
     IDE_RC setFirstReadLogFile( smLSN aInitLSN );
-    /* setFirstReadLogFile¿¡¼­ Ã£Àº ÆÄÀÏ¿¡ ´ëÇØ¼­ ½ÇÁ¦·Î Ã¹¹øÂ°·Î ÀÐ¾î¾ßÇÒ
-       ·Î±×ÀÇ À§Ä¡¸¦ Ã£´Â´Ù. Áï aInitLSNº¸´Ù Å©°Å³ª °°Àº LSN°ªÀ» °¡Áø ·Î±×Áß
-       °¡Àå ÀÛÀº LSN°ªÀ» °¡Áø logÀÇ À§Ä¡¸¦ Ã£´Â´Ù.*/
+    /* setFirstReadLogFileì—ì„œ ì°¾ì€ íŒŒì¼ì— ëŒ€í•´ì„œ ì‹¤ì œë¡œ ì²«ë²ˆì§¸ë¡œ ì½ì–´ì•¼í• 
+       ë¡œê·¸ì˜ ìœ„ì¹˜ë¥¼ ì°¾ëŠ”ë‹¤. ì¦‰ aInitLSNë³´ë‹¤ í¬ê±°ë‚˜ ê°™ì€ LSNê°’ì„ ê°€ì§„ ë¡œê·¸ì¤‘
+       ê°€ìž¥ ìž‘ì€ LSNê°’ì„ ê°€ì§„ logì˜ ìœ„ì¹˜ë¥¼ ì°¾ëŠ”ë‹¤.*/
     IDE_RC setFirstReadLogPos( smLSN aInitLSN );
 
-    /* validÇÑ ·Î±×¸¦ ÀÐ¾îµéÀÎ´Ù.*/
+    /* validí•œ ë¡œê·¸ë¥¼ ì½ì–´ë“¤ì¸ë‹¤.*/
     IDE_RC searchValidLog( idBool *aIsValid );
     
     /* PROJ-1915 
-      * ¿ÀÇÁ¶óÀÎ ·Î±×¿¡¼­ ¸¶Áö¸· À¸·Î ±â·ÏµÈ LSNÀ» ¾ò´Â´Ù. 
+      * ì˜¤í”„ë¼ì¸ ë¡œê·¸ì—ì„œ ë§ˆì§€ë§‰ ìœ¼ë¡œ ê¸°ë¡ëœ LSNì„ ì–»ëŠ”ë‹¤. 
       */
     IDE_RC getRemoteLastUsedGSN( smSN * aSN );
 
     /*
-      ÇöÀç ÀÐ°í ÀÖ´Â ÁöÁ¡ÀÌÀüÀÇ ¸ðµç ·Î±×°¡
-      Sync°¡ µÇ¾ú´ÂÁö CheckÇÑ´Ù.
+      í˜„ìž¬ ì½ê³  ìžˆëŠ” ì§€ì ì´ì „ì˜ ëª¨ë“  ë¡œê·¸ê°€
+      Syncê°€ ë˜ì—ˆëŠ”ì§€ Checkí•œë‹¤.
     */
     IDE_RC isAllReadLogSynced( idBool *aIsSynced );
   
     IDE_RC stop();
     IDE_RC startByLSN(smLSN aLstReadLSN);
     /*
-      Pre FetchÇÒ ·Î±×ÆÄÀÏ °³¼ö¸¦ ÀçÁöÁ¤ÇÑ´Ù 
+      Pre Fetchí•  ë¡œê·¸íŒŒì¼ ê°œìˆ˜ë¥¼ ìž¬ì§€ì •í•œë‹¤ 
     */ 
     void    setPreReadFileCnt(UInt aFileCnt)   { mPreReadFileCnt = aFileCnt; }
 
     /*
-      Read Á¤º¸¸¦ Á¦°øÇÑ´Ù.
+      Read ì •ë³´ë¥¼ ì œê³µí•œë‹¤.
     */
     void   getReadLSN( smLSN *aReadLSN );
 
@@ -130,31 +130,31 @@ public:
 private:
     static SInt   compare( const void *arg1,  const void *arg2 );
 
-    // Read Info¸¦ ÃÊ±âÈ­ ÇÑ´Ù.
+    // Read Infoë¥¼ ì´ˆê¸°í™” í•œë‹¤.
     IDE_RC initializeReadInfo( smiReadInfo * aReadInfo );
 
-    // Read Info¸¦ ÆÄ±«ÇÑ´Ù.
+    // Read Infoë¥¼ íŒŒê´´í•œë‹¤.
     IDE_RC destroyReadInfo( smiReadInfo * aReadInfo );
     
     
 private:
-    /* ReadÁ¤º¸¸¦ °¡Áö°í ÀÖ´Ù. */
+    /* Readì •ë³´ë¥¼ ê°€ì§€ê³  ìžˆë‹¤. */
     smiReadInfo  mReadInfo;
-    /* smrRedoInfoÀÇ mLogHeadÀÇ mLSNÀ» ±âÁØÀ¸·Î smrRedoInfo¸¦
-       SortingÇØ¼­ °¡Áö°í ÀÖ´Ù.*/
+    /* smrRedoInfoì˜ mLogHeadì˜ mLSNì„ ê¸°ì¤€ìœ¼ë¡œ smrRedoInfoë¥¼
+       Sortingí•´ì„œ ê°€ì§€ê³  ìžˆë‹¤.*/
     iduPriorityQueue mPQueueRedoInfo;
-    /* ÇöÀç Read¸¦ ¼öÇàÁßÀÎ smiReadInfo */
+    /* í˜„ìž¬ Readë¥¼ ìˆ˜í–‰ì¤‘ì¸ smiReadInfo */
     smiReadInfo* mCurReadInfoPtr;
-    /* ·Î±×ÆÄÀÏÀ» ¹Ì¸® ÀÐ´Â ThreadÀÌ´Ù. */
+    /* ë¡œê·¸íŒŒì¼ì„ ë¯¸ë¦¬ ì½ëŠ” Threadì´ë‹¤. */
     smrPreReadLFileThread mPreReadLFThread;
-    /* ·Î±×ÆÄÀÏÀ» ¹Ì¸® ÀÐÀ» °¹¼öÀÌ´Ù. */
+    /* ë¡œê·¸íŒŒì¼ì„ ë¯¸ë¦¬ ì½ì„ ê°¯ìˆ˜ì´ë‹¤. */
     UInt         mPreReadFileCnt;
-    /* ¸¶Áö¸·À¸·Î ÀÐ¾ú´ø ·Î±×ÀÇ Sequence Number */
+    /* ë§ˆì§€ë§‰ìœ¼ë¡œ ì½ì—ˆë˜ ë¡œê·¸ì˜ Sequence Number */
     smLSN        mLstReadLogLSN;
 
-    /* PROJ-1915 off-line ·Î±× ÀÎÁö Local ·Î±×ÀÎÁö */
+    /* PROJ-1915 off-line ë¡œê·¸ ì¸ì§€ Local ë¡œê·¸ì¸ì§€ */
     idBool       mIsRemoteLog;
-    /* PROJ-1915 ¸®¸ðÆ® ·Î±× ¸Þ´ÏÁ® */
+    /* PROJ-1915 ë¦¬ëª¨íŠ¸ ë¡œê·¸ ë©”ë‹ˆì ¸ */
     smrRemoteLogMgr mRemoteLogMgr;
 };
 

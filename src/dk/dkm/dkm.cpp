@@ -43,8 +43,8 @@
 
 
 /************************************************************************
- * Description : ÇÁ·ÎÆÛÆ¼ ÆÄÀÏ¿¡ database link ¸¦ »ç¿ëÇÏµµ·Ï ¼³Á¤µÇ¾î
- *               ÀÖ´ÂÁö °Ë»çÇÑ´Ù.
+ * Description : í”„ë¡œí¼í‹° íŒŒì¼ì— database link ë¥¼ ì‚¬ìš©í•˜ë„ë¡ ì„¤ì •ë˜ì–´
+ *               ìˆëŠ”ì§€ ê²€ì‚¬í•œë‹¤.
  *
  ************************************************************************/
 IDE_RC dkmCheckDblinkEnabled( void )
@@ -97,9 +97,9 @@ idBool dkmDblinkStarted()
 }
 
 /************************************************************************
- * Description : DK module ÀÇ °¢ ÄÄÆ÷³ÍÆ®µéÀ» ÃÊ±âÈ­ÇÑ´Ù.
- * PROJ-2569¸¦ ÅëÇØ sm º¹±¸´Ü°è¿¡¼­ dkÁ¤º¸¿Í Äİ¹éÀ» »ç¿ëÇÏ¹Ç·Î
- * DK_ENABLE ÇÁ·ÎÆÛÆ¼¿Í »ó°ü¾øÀÌ ÃÊ±âÈ­ÇØ¾ßÇÔ.
+ * Description : DK module ì˜ ê° ì»´í¬ë„ŒíŠ¸ë“¤ì„ ì´ˆê¸°í™”í•œë‹¤.
+ * PROJ-2569ë¥¼ í†µí•´ sm ë³µêµ¬ë‹¨ê³„ì—ì„œ dkì •ë³´ì™€ ì½œë°±ì„ ì‚¬ìš©í•˜ë¯€ë¡œ
+ * DK_ENABLE í”„ë¡œí¼í‹°ì™€ ìƒê´€ì—†ì´ ì´ˆê¸°í™”í•´ì•¼í•¨.
  ************************************************************************/
 IDE_RC dkmInitialize()
 {
@@ -191,9 +191,9 @@ IDE_RC dkmInitialize()
 }
 
 /************************************************************************
- * Description : DK module ÀÇ °¢ ÄÄÆ÷³ÍÆ®µéÀ» Á¤¸®ÇØÁØ´Ù.
+ * Description : DK module ì˜ ê° ì»´í¬ë„ŒíŠ¸ë“¤ì„ ì •ë¦¬í•´ì¤€ë‹¤.
  *
- *  BUG-37487 : return °ªÀ» IDE_RC --> void ·Î º¯°æ.
+ *  BUG-37487 : return ê°’ì„ IDE_RC --> void ë¡œ ë³€ê²½.
  *
  ************************************************************************/
 IDE_RC dkmFinalize()
@@ -237,11 +237,11 @@ IDE_RC dkmFinalize()
 }
 
 /************************************************************************
- * Description : Linker data session À» »ı¼ºÇÏ°í ÃÊ±âÈ­ÇØÁØ´Ù.
+ * Description : Linker data session ì„ ìƒì„±í•˜ê³  ì´ˆê¸°í™”í•´ì¤€ë‹¤.
  *
- *  aSessionID  - [IN] »ı¼ºÇÒ linker data session id
- *  aSession    - [OUT] »ı¼ºÇÑ linker data session. dkmSession À¸·Î
- *                      mapping µÈ´Ù.
+ *  aSessionID  - [IN] ìƒì„±í•  linker data session id
+ *  aSession    - [OUT] ìƒì„±í•œ linker data session. dkmSession ìœ¼ë¡œ
+ *                      mapping ëœë‹¤.
  *
  ************************************************************************/
 IDE_RC dkmSessionInitialize( UInt          aSessionID,
@@ -278,9 +278,9 @@ IDE_RC dkmSessionInitialize( UInt          aSessionID,
 }
 
 /************************************************************************
- * Description : ÀÔ·Â¹ŞÀº linker data session À» Á¤¸®ÇØÁØ´Ù.
+ * Description : ì…ë ¥ë°›ì€ linker data session ì„ ì •ë¦¬í•´ì¤€ë‹¤.
  *
- *  aSession    - [IN] Á¤¸®ÇÒ linker data session
+ *  aSession    - [IN] ì •ë¦¬í•  linker data session
  *
  ************************************************************************/
 IDE_RC dkmSessionFinalize( dkmSession   *aSession )
@@ -310,9 +310,9 @@ IDE_RC dkmSessionFinalize( dkmSession   *aSession )
 }
 
 /************************************************************************
- * Description : ÀÔ·Â¹ŞÀº user id ¸¦ linker data session ¿¡ copy ÇÑ´Ù.
+ * Description : ì…ë ¥ë°›ì€ user id ë¥¼ linker data session ì— copy í•œë‹¤.
  *
- *  aSession    - [IN] ÀÔ·Â¹ŞÀº user id ¸¦ ¼³Á¤ÇÒ ´ë»ó linker data session
+ *  aSession    - [IN] ì…ë ¥ë°›ì€ user id ë¥¼ ì„¤ì •í•  ëŒ€ìƒ linker data session
  *  aUserId     - [IN] User id
  *
  ************************************************************************/
@@ -330,7 +330,7 @@ void dkmSessionSetUserId( dkmSession * aSession, UInt aUserId )
 }
 
 /************************************************************************
- * Description : Global transaction level À» ¾ò¾î¿Â´Ù.
+ * Description : Global transaction level ì„ ì–»ì–´ì˜¨ë‹¤.
  *
  *  aValue      - [IN] Global transaction level
  *
@@ -355,7 +355,7 @@ IDE_RC dkmGetGlobalTransactionLevel( UInt * aValue )
  *
  */
 /************************************************************************
- * Description : Global transaction level À» ¾ò¾î¿Â´Ù.
+ * Description : Global transaction level ì„ ì–»ì–´ì˜¨ë‹¤.
  *
  *  aValue      - [IN] Global transaction level
  *
@@ -377,7 +377,7 @@ IDE_RC dkmGetRemoteStatementAutoCommit( UInt * aValue )
 }
 
 /************************************************************************
- * Description : Global transaction level À» ¾ò¾î¿Â´Ù.
+ * Description : Global transaction level ì„ ì–»ì–´ì˜¨ë‹¤.
  *
  *  aValue      - [IN] Global transaction level
  *
@@ -393,7 +393,7 @@ IDE_RC dkmSessionSetGlobalTransactionLevel( dkmSession * aSession,
         IDE_TEST_RAISE( aValue > DKT_ADLP_TWO_PHASE_COMMIT, ERR_INVALID_VALUE );
 
         /* PROJ-2569                                         *
-         * Æ®·£Àè¼Ç ÁøÇàÁß¿¡´Â Æ®·£Àè¼Ç ·¹º§ º¯°æ ÇÒ ¼ö ¾øÀ½ */
+         * íŠ¸ëœì­ì…˜ ì§„í–‰ì¤‘ì—ëŠ” íŠ¸ëœì­ì…˜ ë ˆë²¨ ë³€ê²½ í•  ìˆ˜ ì—†ìŒ */
         IDE_TEST_RAISE( aSession->mGlobalTxId != DK_INIT_GTX_ID, ERR_CANNOT_CHANGE );
 
         aSession->mAtomicTxLevel = (dktAtomicTxLevel)aValue;
@@ -429,13 +429,13 @@ IDE_RC dkmSessionSetGlobalTransactionLevel( dkmSession * aSession,
 }
 
 /************************************************************************
- * Description  : Linker data session ÀÇ remote statement auto commit
- *                À» ÀÔ·Â¹ŞÀº °ª( aValue )À¸·Î ¼³Á¤ÇÏ°í AltiLinker ¿¡
- *                ¿¬°áµÇ¾î ÀÖ´Â ¸ğµç remote server ÀÇ auto commit ¼³Á¤
- *                °ªÀ» º¯°æ½ÃÅ²´Ù.
+ * Description  : Linker data session ì˜ remote statement auto commit
+ *                ì„ ì…ë ¥ë°›ì€ ê°’( aValue )ìœ¼ë¡œ ì„¤ì •í•˜ê³  AltiLinker ì—
+ *                ì—°ê²°ë˜ì–´ ìˆëŠ” ëª¨ë“  remote server ì˜ auto commit ì„¤ì •
+ *                ê°’ì„ ë³€ê²½ì‹œí‚¨ë‹¤.
  *
- *  aSession    - [IN] Remote statement auto commit À» ¼³Á¤ÇÒ session
- *  aValue      - [IN] Remote statement auto commit ¼³Á¤°ª
+ *  aSession    - [IN] Remote statement auto commit ì„ ì„¤ì •í•  session
+ *  aValue      - [IN] Remote statement auto commit ì„¤ì •ê°’
  *
  ************************************************************************/
 IDE_RC dkmSessionSetRemoteStatementAutoCommit( dkmSession   *aSession,
@@ -529,9 +529,9 @@ IDE_RC dkmSessionSetRemoteStatementAutoCommit( dkmSession   *aSession,
 }
 
 /************************************************************************
- * Description : Global transaction À» Prepare ÇÑ´Ù.
+ * Description : Global transaction ì„ Prepare í•œë‹¤.
  *
- *  aSession    - [IN] Commit ÇÒ linker data session
+ *  aSession    - [IN] Commit í•  linker data session
  *
  ************************************************************************/
 IDE_RC dkmPrepare( dkmSession * aSession )
@@ -564,7 +564,7 @@ IDE_RC dkmPrepare( dkmSession * aSession )
 
             if ( sGlobalCoordinator->getGTxStatus() == DKT_GTX_STATUS_PREPARED )
             {
-                /* ÀÌ¹Ì prepared »óÅÂÀÓ */
+                /* ì´ë¯¸ prepared ìƒíƒœì„ */
             }
             else
             {
@@ -643,9 +643,9 @@ void dkmSetGtxPreparedStatus( dkmSession * aSession )
 }
 
 /************************************************************************
- * Description : Global transaction À» commit ÇÑ´Ù.
+ * Description : Global transaction ì„ commit í•œë‹¤.
  *
- *  aSession    - [IN] Commit ÇÒ linker data session
+ *  aSession    - [IN] Commit í•  linker data session
  *
  ************************************************************************/
 IDE_RC dkmCommit( dkmSession    *aSession )
@@ -751,10 +751,10 @@ IDE_RC dkmCommit( dkmSession    *aSession )
 }
 
 /************************************************************************
- * Description : Global transaction À» rollback ÇÑ´Ù.
+ * Description : Global transaction ì„ rollback í•œë‹¤.
  *
- *  aSession    - [IN] Rollback ÇÒ linker data session
- *  aSavepoint  - [IN] Rollback ÇÒ ÁöÁ¡À» °¡¸®Å°´Â savepoint
+ *  aSession    - [IN] Rollback í•  linker data session
+ *  aSavepoint  - [IN] Rollback í•  ì§€ì ì„ ê°€ë¦¬í‚¤ëŠ” savepoint
  *
  ************************************************************************/
 IDE_RC dkmRollback( dkmSession  *aSession, SChar  *aSavepoint )
@@ -858,14 +858,14 @@ IDE_RC dkmRollback( dkmSession  *aSession, SChar  *aSavepoint )
 }
 
 /************************************************************************
- * Description : Global transaction À» °­Á¦·Î rollback ÇÑ´Ù.
- *               ¿©±â¼­ °­Á¦·Î rollback ÇÑ´Ù´Â °ÍÀº network failure µîÀÇ
- *               ¹®Á¦·Î ÀÎÇØ ÀÏºÎ ¿ø°İ³ëµå¿¡ ´ëÇØ global transaction ÀÇ
- *               rollback À» ¼öÇàÇÒ ¼ö ¾ø´Â »óÈ²¿¡¼­ rollback ÀÌ °¡´ÉÇÑ
- *               remote transaction µé¿¡ ´ëÇØ rollback À» ¼öÇàÇÒ ¼ö ÀÖ°Ô
- *               ÇÏ±â À§ÇÑ ÇÔ¼öÀÌ´Ù.
+ * Description : Global transaction ì„ ê°•ì œë¡œ rollback í•œë‹¤.
+ *               ì—¬ê¸°ì„œ ê°•ì œë¡œ rollback í•œë‹¤ëŠ” ê²ƒì€ network failure ë“±ì˜
+ *               ë¬¸ì œë¡œ ì¸í•´ ì¼ë¶€ ì›ê²©ë…¸ë“œì— ëŒ€í•´ global transaction ì˜
+ *               rollback ì„ ìˆ˜í–‰í•  ìˆ˜ ì—†ëŠ” ìƒí™©ì—ì„œ rollback ì´ ê°€ëŠ¥í•œ
+ *               remote transaction ë“¤ì— ëŒ€í•´ rollback ì„ ìˆ˜í–‰í•  ìˆ˜ ìˆê²Œ
+ *               í•˜ê¸° ìœ„í•œ í•¨ìˆ˜ì´ë‹¤.
  *
- *  aSession    - [IN] Rollback ÇÒ linker data session
+ *  aSession    - [IN] Rollback í•  linker data session
  *
  ************************************************************************/
 IDE_RC dkmRollbackForce( dkmSession * aSession )
@@ -959,7 +959,7 @@ IDE_RC dkmRollbackForce( dkmSession * aSession )
 }
 
 /************************************************************************
- * Description : Savepoint ¸¦ ¼³Á¤ÇÑ´Ù.
+ * Description : Savepoint ë¥¼ ì„¤ì •í•œë‹¤.
  *
  *  aSession    - [IN] Linker data session
  *  aSavepoint  - [IN] Savepoint name
@@ -1097,11 +1097,11 @@ IDE_RC dkmSavepoint( dkmSession *aSession, const SChar  *aSavepoint )
 }
 
 /************************************************************************
- * Description : AltiLinker process ÀÇ »óÅÂÁ¤º¸¸¦ ¾ò¾î¿Â´Ù.
+ * Description : AltiLinker process ì˜ ìƒíƒœì •ë³´ë¥¼ ì–»ì–´ì˜¨ë‹¤.
  *
  *      - Related Performance View : V$DBLINK_ALTILINKER_STATUS
  *
- *  aStatus     - [IN] AltiLinker process ÀÇ »óÅÂÁ¤º¸¸¦ ´ãÀ» ±¸Á¶Ã¼
+ *  aStatus     - [IN] AltiLinker process ì˜ ìƒíƒœì •ë³´ë¥¼ ë‹´ì„ êµ¬ì¡°ì²´
  *
  ************************************************************************/
 static IDE_RC dkmGetAltiLinkerStatusInternal( dkmAltiLinkerStatus  *aStatus )
@@ -1167,12 +1167,12 @@ IDE_RC dkmGetAltiLinkerStatus( dkmAltiLinkerStatus  *aStatus )
 }
 
 /************************************************************************
- * Description : Database link Á¤º¸¸¦ ¾ò¾î¿Â´Ù.
+ * Description : Database link ì •ë³´ë¥¼ ì–»ì–´ì˜¨ë‹¤.
  *
  *      - Related Performance View : V$DBLINK_DATABASE_LINK_INFO
  *
- *  aInfo       - [OUT] Database link ÀÇ Á¤º¸¸¦ ´ã°í ÀÖ´Â ±¸Á¶Ã¼ ¹è¿­
- *  aInfoCount  - [OUT] Database link ÀÇ °¹¼ö
+ *  aInfo       - [OUT] Database link ì˜ ì •ë³´ë¥¼ ë‹´ê³  ìˆëŠ” êµ¬ì¡°ì²´ ë°°ì—´
+ *  aInfoCount  - [OUT] Database link ì˜ ê°¯ìˆ˜
  *
  ************************************************************************/
 IDE_RC dkmGetDatabaseLinkInfo( dkmDatabaseLinkInfo **aInfo,
@@ -1198,13 +1198,13 @@ IDE_RC dkmGetDatabaseLinkInfo( dkmDatabaseLinkInfo **aInfo,
 }
 
 /************************************************************************
- * Description : Linker session Á¤º¸¸¦ ¾ò¾î¿Â´Ù.
+ * Description : Linker session ì •ë³´ë¥¼ ì–»ì–´ì˜¨ë‹¤.
  *
  *      - Related Performance View : V$DBLINK_LINKER_SESSION_INFO
  *
- *  aInfo       - [OUT] Linker session ÀÇ Á¤º¸¸¦ ´ã°í ÀÖ´Â ±¸Á¶Ã¼ ¹è¿­
- *  aInfoCount  - [OUT] Linker control session, linker data session À»
- *                      ¸ğµÎ Æ÷ÇÔÇÑ linker session ÀÇ °¹¼ö
+ *  aInfo       - [OUT] Linker session ì˜ ì •ë³´ë¥¼ ë‹´ê³  ìˆëŠ” êµ¬ì¡°ì²´ ë°°ì—´
+ *  aInfoCount  - [OUT] Linker control session, linker data session ì„
+ *                      ëª¨ë‘ í¬í•¨í•œ linker session ì˜ ê°¯ìˆ˜
  *
  ************************************************************************/
 IDE_RC dkmGetLinkerSessionInfo( dkmLinkerSessionInfo **aInfo,
@@ -1222,11 +1222,11 @@ IDE_RC dkmGetLinkerSessionInfo( dkmLinkerSessionInfo **aInfo,
 }
 
 /************************************************************************
- * Description : Linker session Á¤º¸¸¦ ¾ò¾î¿Â´Ù.
+ * Description : Linker session ì •ë³´ë¥¼ ì–»ì–´ì˜¨ë‹¤.
  *
  *      - Related Performance View : V$DBLINK_LINKER_CONTROL_SESSION_INFO
  *
- *  aInfo       - [OUT] Linker control session ÀÇ Á¤º¸
+ *  aInfo       - [OUT] Linker control session ì˜ ì •ë³´
  *
  ************************************************************************/
 IDE_RC dkmGetLinkerControlSessionInfo( dkmLinkerControlSessionInfo **aInfo )
@@ -1270,12 +1270,12 @@ IDE_RC dkmGetLinkerControlSessionInfo( dkmLinkerControlSessionInfo **aInfo )
 }
 
 /************************************************************************
- * Description : Linker session Á¤º¸¸¦ ¾ò¾î¿Â´Ù.
+ * Description : Linker session ì •ë³´ë¥¼ ì–»ì–´ì˜¨ë‹¤.
  *
  *      - Related Performance View : V$DBLINK_LINKER_DATA_SESSION_INFO
  *
- *  aInfo       - [OUT] Linker data session ÀÇ Á¤º¸¸¦ ´ã°í ÀÖ´Â ±¸Á¶Ã¼ ¹è¿­
- *  aInfoCount  - [OUT] Linker data session ÀÇ °¹¼ö
+ *  aInfo       - [OUT] Linker data session ì˜ ì •ë³´ë¥¼ ë‹´ê³  ìˆëŠ” êµ¬ì¡°ì²´ ë°°ì—´
+ *  aInfoCount  - [OUT] Linker data session ì˜ ê°¯ìˆ˜
  *
  ************************************************************************/
 IDE_RC dkmGetLinkerDataSessionInfo( dkmLinkerDataSessionInfo **aInfo,
@@ -1294,12 +1294,12 @@ IDE_RC dkmGetLinkerDataSessionInfo( dkmLinkerDataSessionInfo **aInfo,
 }
 
 /************************************************************************
- * Description : ÇöÀç ¼öÇàÁßÀÎ ¸ğµç global transaction ÀÇ Á¤º¸¸¦ ¾ò¾î¿Â´Ù.
+ * Description : í˜„ì¬ ìˆ˜í–‰ì¤‘ì¸ ëª¨ë“  global transaction ì˜ ì •ë³´ë¥¼ ì–»ì–´ì˜¨ë‹¤.
  *
  *      - Related Performance View : V$DBLINK_GLOBAL_TRANSACTION_INFO
  *
- *  aInfo       - [OUT] Global transaction ÀÇ Á¤º¸¸¦ ´ã°í ÀÖ´Â ±¸Á¶Ã¼ ¹è¿­
- *  aInfoCount  - [OUT] ¸ğµç global transaction ÀÇ °¹¼ö
+ *  aInfo       - [OUT] Global transaction ì˜ ì •ë³´ë¥¼ ë‹´ê³  ìˆëŠ” êµ¬ì¡°ì²´ ë°°ì—´
+ *  aInfoCount  - [OUT] ëª¨ë“  global transaction ì˜ ê°¯ìˆ˜
  *
  ************************************************************************/
 IDE_RC dkmGetGlobalTransactionInfo( dkmGlobalTransactionInfo **aInfo,
@@ -1316,12 +1316,12 @@ IDE_RC dkmGetGlobalTransactionInfo( dkmGlobalTransactionInfo **aInfo,
 }
 
 /************************************************************************
- * Description : ÇöÀç ¼öÇàÁßÀÎ ¸ğµç remote transaction ÀÇ Á¤º¸¸¦ ¾ò¾î¿Â´Ù.
+ * Description : í˜„ì¬ ìˆ˜í–‰ì¤‘ì¸ ëª¨ë“  remote transaction ì˜ ì •ë³´ë¥¼ ì–»ì–´ì˜¨ë‹¤.
  *
  *      - Related Performance View : V$DBLINK_REMOTE_TRANSACTION_INFO
  *
- *  aInfo       - [OUT] Remote transaction ÀÇ Á¤º¸¸¦ ´ã°í ÀÖ´Â ±¸Á¶Ã¼ ¹è¿­
- *  aInfoCount  - [OUT] ¸ğµç remote transaction ÀÇ °¹¼ö
+ *  aInfo       - [OUT] Remote transaction ì˜ ì •ë³´ë¥¼ ë‹´ê³  ìˆëŠ” êµ¬ì¡°ì²´ ë°°ì—´
+ *  aInfoCount  - [OUT] ëª¨ë“  remote transaction ì˜ ê°¯ìˆ˜
  *
  ************************************************************************/
 IDE_RC dkmGetRemoteTransactionInfo( dkmRemoteTransactionInfo **aInfo,
@@ -1339,10 +1339,10 @@ IDE_RC dkmGetRemoteTransactionInfo( dkmRemoteTransactionInfo **aInfo,
 }
 
 /************************************************************************
- * Description : ÇöÀç ¼öÇàÁßÀÎ ¸ğµç notifier transaction ÀÇ Á¤º¸¸¦ ¾ò¾î¿Â´Ù.
+ * Description : í˜„ì¬ ìˆ˜í–‰ì¤‘ì¸ ëª¨ë“  notifier transaction ì˜ ì •ë³´ë¥¼ ì–»ì–´ì˜¨ë‹¤.
  *
- *  aInfo       - [OUT] Remote transaction ÀÇ Á¤º¸¸¦ ´ã°í ÀÖ´Â ±¸Á¶Ã¼ ¹è¿­
- *  aInfoCount  - [OUT] ¸ğµç notifier transaction ÀÇ °¹¼ö
+ *  aInfo       - [OUT] Remote transaction ì˜ ì •ë³´ë¥¼ ë‹´ê³  ìˆëŠ” êµ¬ì¡°ì²´ ë°°ì—´
+ *  aInfoCount  - [OUT] ëª¨ë“  notifier transaction ì˜ ê°¯ìˆ˜
  *
  ************************************************************************/
 IDE_RC dkmGetNotifierTransactionInfo( dkmNotifierTransactionInfo ** aInfo,
@@ -1360,12 +1360,12 @@ IDE_RC dkmGetNotifierTransactionInfo( dkmNotifierTransactionInfo ** aInfo,
 }
 
 /************************************************************************
- * Description : ÇöÀç ¼öÇàÁßÀÎ ¸ğµç remote statement ÀÇ Á¤º¸¸¦ ¾ò¾î¿Â´Ù.
+ * Description : í˜„ì¬ ìˆ˜í–‰ì¤‘ì¸ ëª¨ë“  remote statement ì˜ ì •ë³´ë¥¼ ì–»ì–´ì˜¨ë‹¤.
  *
  *      - Related Performance View : V$DBLINK_REMOTE_STATEMENT_INFO
  *
- *  aInfo       - [OUT] Remote statement ÀÇ Á¤º¸¸¦ ´ã°í ÀÖ´Â ±¸Á¶Ã¼ ¹è¿­
- *  aInfoCount  - [OUT] Remote statement ÀÇ °¹¼ö
+ *  aInfo       - [OUT] Remote statement ì˜ ì •ë³´ë¥¼ ë‹´ê³  ìˆëŠ” êµ¬ì¡°ì²´ ë°°ì—´
+ *  aInfoCount  - [OUT] Remote statement ì˜ ê°¯ìˆ˜
  *
  ************************************************************************/
 IDE_RC dkmGetRemoteStatementInfo( dkmRemoteStatementInfo    **aInfo,
@@ -1423,10 +1423,10 @@ IDE_RC dkmGetRemoteStatementInfo( dkmRemoteStatementInfo    **aInfo,
 }
 
 /************************************************************************
- * Description : Performance view ¸¦ À§ÇÑ Á¤º¸Á¦°øÀ» ¸ñÀûÀ¸·Î ÇÒ´ç¹ŞÀº
- *               aInfo ÀÇ ¸Ş¸ğ¸®¸¦ ÇØÁ¦ÇÑ´Ù.
+ * Description : Performance view ë¥¼ ìœ„í•œ ì •ë³´ì œê³µì„ ëª©ì ìœ¼ë¡œ í• ë‹¹ë°›ì€
+ *               aInfo ì˜ ë©”ëª¨ë¦¬ë¥¼ í•´ì œí•œë‹¤.
  *
- *  aInfo       - [IN] ÇØÁ¦ÇÒ ¸Ş¸ğ¸®
+ *  aInfo       - [IN] í•´ì œí•  ë©”ëª¨ë¦¬
  *
  ************************************************************************/
 IDE_RC dkmFreeInfoMemory( void  *aInfo )
@@ -1448,11 +1448,11 @@ IDE_RC dkmFreeInfoMemory( void  *aInfo )
 }
 
 /************************************************************************
- * Description : Global transaction id ¸¦ ¾ò¾î¿Â´Ù.
+ * Description : Global transaction id ë¥¼ ì–»ì–´ì˜¨ë‹¤.
  *
- *  aQcStatement         - [IN] SM À¸·ÎºÎÅÍ transaction id ¸¦ ¾ò¾î¿À±â
- *                              À§ÇØ ÇÊ¿äÇÑ Á¤º¸
- *  aGlobalTransactionId - [OUT] global transaction ÀÇ id
+ *  aQcStatement         - [IN] SM ìœ¼ë¡œë¶€í„° transaction id ë¥¼ ì–»ì–´ì˜¤ê¸°
+ *                              ìœ„í•´ í•„ìš”í•œ ì •ë³´
+ *  aGlobalTransactionId - [OUT] global transaction ì˜ id
  *
  ************************************************************************/
 static IDE_RC dkmGetLocalTransactionId( void   *aQcStatement,
@@ -1535,8 +1535,8 @@ static IDE_RC dkmAllocStatement( void            *aQcStatement,
        2. Create remote statement object :
       _____________________________________________________________
      |                                                             |
-     |  ÇØ´ç ¼¼¼Ç¿¡ global coordinator °¡ ÇÒ´çµÇ¾î ÀÖ´ÂÁö °Ë»çÇÏ°í |
-     | ¾øÀ¸¸é »õ·Î ÇÒ´ç. È£ÃâÇÏ´Â ¼ø¼­´Â ´ÙÀ½°ú °°´Ù.              |
+     |  í•´ë‹¹ ì„¸ì…˜ì— global coordinator ê°€ í• ë‹¹ë˜ì–´ ìˆëŠ”ì§€ ê²€ì‚¬í•˜ê³  |
+     | ì—†ìœ¼ë©´ ìƒˆë¡œ í• ë‹¹. í˜¸ì¶œí•˜ëŠ” ìˆœì„œëŠ” ë‹¤ìŒê³¼ ê°™ë‹¤.              |
      |                                                             |
      |      a. global coordinator                                  |
      |      b. remote transaction                                  |
@@ -1736,13 +1736,13 @@ static IDE_RC dkmAllocStatement( void            *aQcStatement,
 }
     
 /************************************************************************
- * Description : Remote statement ¸¦ remote server ¿¡ prepare ½ÃÅ²´Ù.
+ * Description : Remote statement ë¥¼ remote server ì— prepare ì‹œí‚¨ë‹¤.
  *
- *  aQcStatement    - [IN] SM À¸·ÎºÎÅÍ transaction id ¸¦ ¾ò¾î¿À±â À§ÇØ 
- *                         ÇÊ¿äÇÑ Á¤º¸
+ *  aQcStatement    - [IN] SM ìœ¼ë¡œë¶€í„° transaction id ë¥¼ ì–»ì–´ì˜¤ê¸° ìœ„í•´ 
+ *                         í•„ìš”í•œ ì •ë³´
  *  aSession        - [IN] Linker data session
  *  aDblinkName     - [IN] Database link name
- *  aStmtStr        - [IN] Remote statement ¹®ÀÚ¿­ ±¸¹®
+ *  aStmtStr        - [IN] Remote statement ë¬¸ìì—´ êµ¬ë¬¸
  *  aStatementId    - [OUT] Remote statement id 
  *
  ************************************************************************/
@@ -1792,13 +1792,13 @@ IDE_RC dkmCalculateAllocStatementBatch( void            *aQcStatement,
 }
 
 /************************************************************************
- * Description : 'REMOTE_EXECUTE_STATEMENT' ¸¦ ¼öÇàÇÑ´Ù.
+ * Description : 'REMOTE_EXECUTE_STATEMENT' ë¥¼ ìˆ˜í–‰í•œë‹¤.
  *
- *  aQcStatement    - [IN] Link object validation ¿¡ ÇÊ¿äÇÑ Á¤º¸
+ *  aQcStatement    - [IN] Link object validation ì— í•„ìš”í•œ ì •ë³´
  *  aSession        - [IN] Linker data session
  *  aDblinkName     - [IN] Database link name
  *  aStatementId    - [IN] Remote statement id
- *  aResult         - [OUT] Remote statement ÀÇ ¼öÇà°á°ú
+ *  aResult         - [OUT] Remote statement ì˜ ìˆ˜í–‰ê²°ê³¼
  *
  ************************************************************************/
 IDE_RC dkmCalculateExecuteStatement( void           *aQcStatement,
@@ -1889,7 +1889,7 @@ IDE_RC dkmCalculateExecuteStatement( void           *aQcStatement,
      */
     IDE_TEST( sRemoteStmt->executeProtocol( &sSession->mSession,
                                             sSession->mId,
-                                            ID_FALSE, /* remoteTx°¡ BeginµÈ »óÅÂÀÌ¹Ç·Î */
+                                            ID_FALSE, /* remoteTxê°€ Beginëœ ìƒíƒœì´ë¯€ë¡œ */
                                             &(sRemoteTx->mXID),
                                             &sLinkObj,
                                             &sResult )
@@ -2394,13 +2394,13 @@ IDE_RC dkmCalculateExecuteBatch( void * aQcStatement,
 
 
 /************************************************************************
- * Description : 'REMOTE_EXECUTE_IMMEDIATE' ¸¦ ¼öÇàÇÑ´Ù.
+ * Description : 'REMOTE_EXECUTE_IMMEDIATE' ë¥¼ ìˆ˜í–‰í•œë‹¤.
  *
- *  aQcStatement    - [IN] Link object validation ¿¡ ÇÊ¿äÇÑ Á¤º¸
+ *  aQcStatement    - [IN] Link object validation ì— í•„ìš”í•œ ì •ë³´
  *  aSession        - [IN] Linker data session
  *  aDblinkName     - [IN] Database link name
- *  aStmtStr        - [IN] Remote statement ±¸¹® ¹®ÀÚ¿­
- *  aResult         - [OUT] Remote statement ÀÇ ¼öÇà°á°ú
+ *  aStmtStr        - [IN] Remote statement êµ¬ë¬¸ ë¬¸ìì—´
+ *  aResult         - [OUT] Remote statement ì˜ ìˆ˜í–‰ê²°ê³¼
  *
  ************************************************************************/
 IDE_RC dkmCalculateExecuteImmediate( void           *aQcStatement,
@@ -2853,13 +2853,13 @@ static IDE_RC dkmBindVariable( void           *aQcStatement,
 }
 
 /************************************************************************
- * Description : Remote statement ¿¡ ´ëÇØ bind ¸¦ ¼öÇàÇÑ´Ù.
+ * Description : Remote statement ì— ëŒ€í•´ bind ë¥¼ ìˆ˜í–‰í•œë‹¤.
  *
- *  aQcStatement    - [IN] Link object validation ¿¡ ÇÊ¿äÇÑ Á¤º¸
+ *  aQcStatement    - [IN] Link object validation ì— í•„ìš”í•œ ì •ë³´
  *  aSession        - [IN] Linker data session
  *  aDblinkName     - [IN] Database link name
  *  aStatementId    - [IN] Remote statement id
- *  aVariableIndex  - [IN] Bind variable ÀÇ ¼ø¼­»ó »ó´ëÀ§Ä¡¸¦ °¡¸®Å°´Â 
+ *  aVariableIndex  - [IN] Bind variable ì˜ ìˆœì„œìƒ ìƒëŒ€ìœ„ì¹˜ë¥¼ ê°€ë¦¬í‚¤ëŠ” 
  *                         index
  *  aValue          - [IN] Bind value
  *
@@ -3096,9 +3096,9 @@ static  IDE_RC dkmFreeStatement( void           *aQcStatement,
 }
 
 /************************************************************************
- * Description : 'REMOTE_FREE_STATEMENT' ¸¦ ¼öÇàÇÑ´Ù.
+ * Description : 'REMOTE_FREE_STATEMENT' ë¥¼ ìˆ˜í–‰í•œë‹¤.
  *
- *  aQcStatement    - [IN] Link object validation ¿¡ ÇÊ¿äÇÑ Á¤º¸
+ *  aQcStatement    - [IN] Link object validation ì— í•„ìš”í•œ ì •ë³´
  *  aSession        - [IN] Linker data session
  *  aDblinkName     - [IN] Database link name
  *  aStatementId    - [IN] Remote statement id
@@ -3524,15 +3524,15 @@ IDE_RC dkmCalculateGetResultBatch( void * aQcStatement,
 
 
 /************************************************************************
- * Description : 'REMOTE_NEXT_ROW' ¸¦ ¼öÇàÇÑ´Ù.
+ * Description : 'REMOTE_NEXT_ROW' ë¥¼ ìˆ˜í–‰í•œë‹¤.
  *
- *  aQcStatement    - [IN] Link object validation ¿¡ ÇÊ¿äÇÑ Á¤º¸
+ *  aQcStatement    - [IN] Link object validation ì— í•„ìš”í•œ ì •ë³´
  *  aSession        - [IN] Linker data session
  *  aDblinkName     - [IN] Database link name
  *  aStatementId    - [IN] Remote statement id
- *  aResult         - [OUT] Remote statement ÀÇ ¼öÇà°á°ú
- *                          0 : row °¡ Á¸ÀçÇÏ´Â °æ¿ì
- *                         -1 : ´õ ÀÌ»óÀÇ row °¡ Á¸ÀçÇÏÁö ¾Ê´Â °æ¿ì
+ *  aResult         - [OUT] Remote statement ì˜ ìˆ˜í–‰ê²°ê³¼
+ *                          0 : row ê°€ ì¡´ì¬í•˜ëŠ” ê²½ìš°
+ *                         -1 : ë” ì´ìƒì˜ row ê°€ ì¡´ì¬í•˜ì§€ ì•ŠëŠ” ê²½ìš°
  *
  ************************************************************************/
 extern IDE_RC dkmCalculateNextRow( void         *aQcStatement,
@@ -3682,14 +3682,14 @@ extern IDE_RC dkmCalculateNextRow( void         *aQcStatement,
 }
 
 /************************************************************************
- * Description : 'REMOTE_GET_COLUMN_VALUE_type' ¸¦ ¼öÇàÇÑ´Ù.
+ * Description : 'REMOTE_GET_COLUMN_VALUE_type' ë¥¼ ìˆ˜í–‰í•œë‹¤.
  *
- *  aQcStatement    - [IN] Link object validation ¿¡ ÇÊ¿äÇÑ Á¤º¸
+ *  aQcStatement    - [IN] Link object validation ì— í•„ìš”í•œ ì •ë³´
  *  aSession        - [IN] Linker data session
  *  aDblinkName     - [IN] Database link name
  *  aStatementId    - [IN] Remote statement id
  *  aColumnIndex    - [IN] Column index
- *  aColumn         - [OUT] mtcColumn Á¤º¸
+ *  aColumn         - [OUT] mtcColumn ì •ë³´
  *  aColumnValue    - [OUT] Column value
  *
  ************************************************************************/
@@ -3865,15 +3865,15 @@ IDE_RC dkmCalculateGetColumnValue( void         *aQcStatement,
 }
 
 /************************************************************************
- * Description : 'REMOTE_GET_ERROR_INFO' ¸¦ ¼öÇàÇÑ´Ù.
+ * Description : 'REMOTE_GET_ERROR_INFO' ë¥¼ ìˆ˜í–‰í•œë‹¤.
  *
- *  aQcStatement        - [IN] Link object validation ¿¡ ÇÊ¿äÇÑ Á¤º¸
+ *  aQcStatement        - [IN] Link object validation ì— í•„ìš”í•œ ì •ë³´
  *  aSession            - [IN] Linker data session
  *  aDblinkName         - [IN] Database link name
  *  aStatementId        - [IN] Remote statement id
- *  aErrorInfoBuffer    - [IN/OUT] Error Á¤º¸¸¦
- *  aErrorInfoBufferSize- [IN] Error info buffer ÀÇ Å©±â
- *  aErrorInfoLength    - [OUT] ½ÇÁ¦ error Á¤º¸ÀÇ ±æÀÌ
+ *  aErrorInfoBuffer    - [IN/OUT] Error ì •ë³´ë¥¼
+ *  aErrorInfoBufferSize- [IN] Error info buffer ì˜ í¬ê¸°
+ *  aErrorInfoLength    - [OUT] ì‹¤ì œ error ì •ë³´ì˜ ê¸¸ì´
  *
  ************************************************************************/
 IDE_RC dkmCalculateGetRemoteErrorInfo( void         *aQcStatement,
@@ -4106,7 +4106,7 @@ static IDE_RC dkmStartAltilinkerProcessInternal( void )
 }
 
 /************************************************************************
- * Description : AltiLinker ÇÁ·Î¼¼½º¸¦ ½ÃÀÛ½ÃÅ²´Ù.
+ * Description : AltiLinker í”„ë¡œì„¸ìŠ¤ë¥¼ ì‹œì‘ì‹œí‚¨ë‹¤.
  *
  ************************************************************************/
 IDE_RC dkmStartAltilinkerProcess( void )
@@ -4188,7 +4188,7 @@ IDE_RC dkmStartAltilinkerProcess( void )
 }
 
 /************************************************************************
- * Description : AltiLinker ÇÁ·Î¼¼½º¸¦ Á¾·á½ÃÅ²´Ù.
+ * Description : AltiLinker í”„ë¡œì„¸ìŠ¤ë¥¼ ì¢…ë£Œì‹œí‚¨ë‹¤.
  *
  ************************************************************************/
 IDE_RC dkmStopAltilinkerProcess( idBool aForceFlag )
@@ -4229,7 +4229,7 @@ IDE_RC dkmStopAltilinkerProcess( idBool aForceFlag )
 }
 
 /************************************************************************
- * Description : AltiLinker ÇÁ·Î¼¼½ºÀÇ Á¤º¸¸¦ altibase_lk_dump.log¿¡ Ãâ·ÂÇÑ´Ù.
+ * Description : AltiLinker í”„ë¡œì„¸ìŠ¤ì˜ ì •ë³´ë¥¼ altibase_lk_dump.logì— ì¶œë ¥í•œë‹¤.
  *
  ************************************************************************/
 IDE_RC dkmDumpAltilinkerProcess( void )
@@ -4261,7 +4261,7 @@ IDE_RC dkmDumpAltilinkerProcess( void )
 }
 
 /************************************************************************
- * Description : 'ALTER SESSION CLOSE DATABASE LINK ALL' ¸¦ ¼öÇàÇÑ´Ù.
+ * Description : 'ALTER SESSION CLOSE DATABASE LINK ALL' ë¥¼ ìˆ˜í–‰í•œë‹¤.
  *
  *  aSession            - [IN] Linker data session
  *
@@ -4309,7 +4309,7 @@ IDE_RC dkmCloseSessionAll( idvSQL * aStatistics, dkmSession   *aSession )
 
 /************************************************************************
  * Description : 'ALTER SESSION CLOSE DATABASE LINK dblink_name'
- *               ¸¦ ¼öÇàÇÑ´Ù.
+ *               ë¥¼ ìˆ˜í–‰í•œë‹¤.
  *
  *  aSession    - [IN] Linker data session
  *  aDblinkName - [IN] Database link name
@@ -4361,20 +4361,20 @@ IDE_RC dkmCloseSession( idvSQL       *aStatistics,
 }
 
 /************************************************************************
- * Description : »ı¼ºÇÒ µ¥ÀÌÅÍº£ÀÌ½º ¸µÅ© °´Ã¼¸¦ À§ÇØ validation À»
- *               ¼öÇàÇÑ´Ù.
+ * Description : ìƒì„±í•  ë°ì´í„°ë² ì´ìŠ¤ ë§í¬ ê°ì²´ë¥¼ ìœ„í•´ validation ì„
+ *               ìˆ˜í–‰í•œë‹¤.
  *
- *  aQcStatement    - [IN] Link object validation ¿¡ ÇÊ¿äÇÑ Á¤º¸
- *  aPublicFlag     - [IN] »ı¼ºÇÒ µ¥ÀÌÅÍº£ÀÌ½º ¸µÅ©ÀÇ user mode
+ *  aQcStatement    - [IN] Link object validation ì— í•„ìš”í•œ ì •ë³´
+ *  aPublicFlag     - [IN] ìƒì„±í•  ë°ì´í„°ë² ì´ìŠ¤ ë§í¬ì˜ user mode
  *      @ Database link user mode:
- *          1. PUBLIC  : ID_TRUE / owner ÀÌ¿ÜÀÇ »ç¿ëÀÚ°¡ »ç¿ë°¡´É
- *          2. PRIVATE : ID_FALSE / owner È¤Àº sysdba ¸¸ »ç¿ë°¡´É
+ *          1. PUBLIC  : ID_TRUE / owner ì´ì™¸ì˜ ì‚¬ìš©ìê°€ ì‚¬ìš©ê°€ëŠ¥
+ *          2. PRIVATE : ID_FALSE / owner í˜¹ì€ sysdba ë§Œ ì‚¬ìš©ê°€ëŠ¥
  *
  *  aDblinkName     - [IN] Database link name
- *  aUserID         - [IN] Target server ¿¡ Á¢¼ÓÇÏ±â À§ÇÑ »ç¿ëÀÚ id
- *  aPassword       - [IN] Target server ¿¡ Á¢¼ÓÇÏ±â À§ÇÑ »ç¿ëÀÚ password
- *  aTargetName     - [IN] »ı¼ºÇÒ µ¥ÀÌÅÍº£ÀÌ½º ¸µÅ©°¡ °¡¸®Å³ target
- *                         ÀÇ ÀÌ¸§
+ *  aUserID         - [IN] Target server ì— ì ‘ì†í•˜ê¸° ìœ„í•œ ì‚¬ìš©ì id
+ *  aPassword       - [IN] Target server ì— ì ‘ì†í•˜ê¸° ìœ„í•œ ì‚¬ìš©ì password
+ *  aTargetName     - [IN] ìƒì„±í•  ë°ì´í„°ë² ì´ìŠ¤ ë§í¬ê°€ ê°€ë¦¬í‚¬ target
+ *                         ì˜ ì´ë¦„
  *
  ************************************************************************/
 IDE_RC dkmValidateCreateDatabaseLink( void      *aQcStatement,
@@ -4430,19 +4430,19 @@ IDE_RC dkmValidateCreateDatabaseLink( void      *aQcStatement,
 }
 
 /************************************************************************
- * Description : µ¥ÀÌÅÍº£ÀÌ½º ¸µÅ© °´Ã¼¸¦ »ı¼ºÇÑ´Ù.
+ * Description : ë°ì´í„°ë² ì´ìŠ¤ ë§í¬ ê°ì²´ë¥¼ ìƒì„±í•œë‹¤.
  *
- *  aQcStatement    - [IN] Link object validation ¿¡ ÇÊ¿äÇÑ Á¤º¸
- *  aPublicFlag     - [IN] »ı¼ºÇÒ µ¥ÀÌÅÍº£ÀÌ½º ¸µÅ©ÀÇ user mode
+ *  aQcStatement    - [IN] Link object validation ì— í•„ìš”í•œ ì •ë³´
+ *  aPublicFlag     - [IN] ìƒì„±í•  ë°ì´í„°ë² ì´ìŠ¤ ë§í¬ì˜ user mode
  *      @ Database link user mode:
- *          1. PUBLIC  : ID_TRUE / owner ÀÌ¿ÜÀÇ »ç¿ëÀÚ°¡ »ç¿ë°¡´É
- *          2. PRIVATE : ID_FALSE / owner È¤Àº sysdba ¸¸ »ç¿ë°¡´É
+ *          1. PUBLIC  : ID_TRUE / owner ì´ì™¸ì˜ ì‚¬ìš©ìê°€ ì‚¬ìš©ê°€ëŠ¥
+ *          2. PRIVATE : ID_FALSE / owner í˜¹ì€ sysdba ë§Œ ì‚¬ìš©ê°€ëŠ¥
  *
  *  aDblinkName     - [IN] Database link name
- *  aRemoteUserID   - [IN] Target server ¿¡ Á¢¼ÓÇÏ±â À§ÇÑ »ç¿ëÀÚ id
- *  aPassword       - [IN] Target server ¿¡ Á¢¼ÓÇÏ±â À§ÇÑ »ç¿ëÀÚ password
- *  aTargetName     - [IN] »ı¼ºÇÒ µ¥ÀÌÅÍº£ÀÌ½º ¸µÅ©°¡ °¡¸®Å³ target
- *                         ÀÇ ÀÌ¸§
+ *  aRemoteUserID   - [IN] Target server ì— ì ‘ì†í•˜ê¸° ìœ„í•œ ì‚¬ìš©ì id
+ *  aPassword       - [IN] Target server ì— ì ‘ì†í•˜ê¸° ìœ„í•œ ì‚¬ìš©ì password
+ *  aTargetName     - [IN] ìƒì„±í•  ë°ì´í„°ë² ì´ìŠ¤ ë§í¬ê°€ ê°€ë¦¬í‚¬ target
+ *                         ì˜ ì´ë¦„
  *
  ************************************************************************/
 IDE_RC dkmExecuteCreateDatabaseLink( void       *aQcStatement,
@@ -4509,11 +4509,11 @@ IDE_RC dkmExecuteCreateDatabaseLink( void       *aQcStatement,
 }
 
 /************************************************************************
- * Description : Á¦°ÅÇÒ µ¥ÀÌÅÍº£ÀÌ½º ¸µÅ© °´Ã¼¿¡ ´ëÇØ validation À»
- *               ¼öÇàÇÑ´Ù.
+ * Description : ì œê±°í•  ë°ì´í„°ë² ì´ìŠ¤ ë§í¬ ê°ì²´ì— ëŒ€í•´ validation ì„
+ *               ìˆ˜í–‰í•œë‹¤.
  *
- *  aQcStatement    - [IN] Link object validation ¿¡ ÇÊ¿äÇÑ Á¤º¸
- *  aPublicFlag     - [IN] Á¦°ÅÇÒ µ¥ÀÌÅÍº£ÀÌ½º ¸µÅ©ÀÇ user mode
+ *  aQcStatement    - [IN] Link object validation ì— í•„ìš”í•œ ì •ë³´
+ *  aPublicFlag     - [IN] ì œê±°í•  ë°ì´í„°ë² ì´ìŠ¤ ë§í¬ì˜ user mode
  *  aDblinkName     - [IN] Database link name
  *
  ************************************************************************/
@@ -4576,10 +4576,10 @@ IDE_RC dkmValidateDropDatabaseLink( void    *aQcStatement,
 }
 
 /************************************************************************
- * Description : µ¥ÀÌÅÍº£ÀÌ½º ¸µÅ© °´Ã¼¸¦ Á¦°ÅÇÑ´Ù.
+ * Description : ë°ì´í„°ë² ì´ìŠ¤ ë§í¬ ê°ì²´ë¥¼ ì œê±°í•œë‹¤.
  *
- *  aQcStatement    - [IN] Link object validation ¿¡ ÇÊ¿äÇÑ Á¤º¸
- *  aPublicFlag     - [IN] Á¦°ÅÇÒ µ¥ÀÌÅÍº£ÀÌ½º ¸µÅ©ÀÇ user mode
+ *  aQcStatement    - [IN] Link object validation ì— í•„ìš”í•œ ì •ë³´
+ *  aPublicFlag     - [IN] ì œê±°í•  ë°ì´í„°ë² ì´ìŠ¤ ë§í¬ì˜ user mode
  *  aDblinkName     - [IN] Database link name
  *
  ************************************************************************/
@@ -4605,7 +4605,7 @@ IDE_RC dkmExecuteDropDatabaseLink( void     *aQcStatement,
                                                sLinkObj.mLinkOID )
               != IDE_SUCCESS );
 
-    /* 3. result set meta Á¤¸® */
+    /* 3. result set meta ì •ë¦¬ */
     IDE_TEST( dkdResultSetMetaCacheDelete( aDblinkName ) != IDE_SUCCESS );
 
     /* 4. Destroy dblink object */
@@ -4620,10 +4620,10 @@ IDE_RC dkmExecuteDropDatabaseLink( void     *aQcStatement,
 }
 
 /************************************************************************
- * Description : ÇØ´ç »ç¿ëÀÚ°¡ »ı¼ºÇÑ ¸ğµç µ¥ÀÌÅÍº£ÀÌ½º ¸µÅ© °´Ã¼¸¦
- *               Á¦°ÅÇÑ´Ù.
+ * Description : í•´ë‹¹ ì‚¬ìš©ìê°€ ìƒì„±í•œ ëª¨ë“  ë°ì´í„°ë² ì´ìŠ¤ ë§í¬ ê°ì²´ë¥¼
+ *               ì œê±°í•œë‹¤.
  *
- *  aQcStatement    - [IN] Link object validation ¿¡ ÇÊ¿äÇÑ Á¤º¸
+ *  aQcStatement    - [IN] Link object validation ì— í•„ìš”í•œ ì •ë³´
  *  aUserId         - [IN] User id
  *
  ************************************************************************/
@@ -4648,18 +4648,18 @@ IDE_RC dkmDropDatabaseLinkByUserId( idvSQL *aStatistics, void  *aQcStatement, UI
 }
 
 /************************************************************************
- * Description : Result set meta cache ·ÎºÎÅÍ column Á¤º¸¸¦ ¾ò¾î¿Â´Ù.
+ * Description : Result set meta cache ë¡œë¶€í„° column ì •ë³´ë¥¼ ì–»ì–´ì˜¨ë‹¤.
  *
  *      @ Related Keyword : REMOTE_TABLE
  *                          REMOTE_TABLE_STORE
  *
- *  aQcStatement        - [IN] Link object validation ¿¡ ÇÊ¿äÇÑ Á¤º¸
+ *  aQcStatement        - [IN] Link object validation ì— í•„ìš”í•œ ì •ë³´
  *  aSession            - [IN] Linker data session
  *  aDblinkName         - [IN] Database link name
- *  aRemoteQuery        - [IN] Remote query ±¸¹®ÀÇ ¹®ÀÚ¿­
+ *  aRemoteQuery        - [IN] Remote query êµ¬ë¬¸ì˜ ë¬¸ìì—´
  *  aRemoteTableHandle  - [OUT] Remote table handle
- *  aColCnt             - [OUT] ¾ò¾î¿Ã column Á¤º¸ÀÇ °¹¼ö
- *  aColInfoArr         - [OUT] ¾ò¾î¿Ã column Á¤º¸µéÀÇ ¹è¿­
+ *  aColCnt             - [OUT] ì–»ì–´ì˜¬ column ì •ë³´ì˜ ê°¯ìˆ˜
+ *  aColInfoArr         - [OUT] ì–»ì–´ì˜¬ column ì •ë³´ë“¤ì˜ ë°°ì—´
  *
  ************************************************************************/
 IDE_RC dkmGetColumnInfoFromCache( void              *aQcStatement,
@@ -4785,7 +4785,7 @@ IDE_RC dkmGetColumnInfoFromCache( void              *aQcStatement,
 }
 
 /************************************************************************
- * Description : ÀÔ·Â¹ŞÀº aColumnInfoArray ¿¡ ÇÒ´çµÈ ¸Ş¸ğ¸®¸¦ ¹İ³³ÇÑ´Ù.
+ * Description : ì…ë ¥ë°›ì€ aColumnInfoArray ì— í• ë‹¹ëœ ë©”ëª¨ë¦¬ë¥¼ ë°˜ë‚©í•œë‹¤.
  *
  *      @ Related Keyword : REMOTE_TABLE
  *                          REMOTE_TABLE_STORE
@@ -4801,15 +4801,15 @@ IDE_RC dkmFreeColumnInfo( dkmColumnInfo * aColumnInfoArray )
 }
 
 /************************************************************************
- * Description : Remote query ±¸¹®¿¡ ´ëÇØ ¿ø°İ¼­¹ö¿¡ prepare ¹× execute
- *               ¸¦ ¼öÇàÇÏ°í ¿ø°İ¼­¹ö·ÎºÎÅÍ record ¸¦ fetch ÇØ¿Â´Ù.
+ * Description : Remote query êµ¬ë¬¸ì— ëŒ€í•´ ì›ê²©ì„œë²„ì— prepare ë° execute
+ *               ë¥¼ ìˆ˜í–‰í•˜ê³  ì›ê²©ì„œë²„ë¡œë¶€í„° record ë¥¼ fetch í•´ì˜¨ë‹¤.
  *
  *      @ Related Keyword : REMOTE_TABLE
  *
- *  aQcStatement    - [IN] Link object validation ¿¡ ÇÊ¿äÇÑ Á¤º¸
+ *  aQcStatement    - [IN] Link object validation ì— í•„ìš”í•œ ì •ë³´
  *  aSession        - [IN] Linker data session
  *  aDblinkName     - [IN] Database link name
- *  aRemoteQuery    - [IN] Remote query ±¸¹®ÀÇ ¹®ÀÚ¿­
+ *  aRemoteQuery    - [IN] Remote query êµ¬ë¬¸ì˜ ë¬¸ìì—´
  *  aStatementId    - [OUT] Remote statement id
  *
  ************************************************************************/
@@ -4971,8 +4971,8 @@ IDE_RC dkmAllocAndExecuteQueryStatement( void           *aQcStatement,
      */
     IDE_TEST( sRemoteStmt->executeProtocol( &sSession->mSession,
                                             sSession->mId,
-                                            ID_FALSE, /* À§ prepareProtocol() È£Ãâ¿¡¼­ TX_BEGINÀ» 
-                                                         ¼¼ÆÃÇßÀ¸¹Ç·Î FALSE¸¦ ¼¼ÆÃÇÑ´Ù. */
+                                            ID_FALSE, /* ìœ„ prepareProtocol() í˜¸ì¶œì—ì„œ TX_BEGINì„ 
+                                                         ì„¸íŒ…í–ˆìœ¼ë¯€ë¡œ FALSEë¥¼ ì„¸íŒ…í•œë‹¤. */
                                             &(sRemoteTx->mXID),
                                             &sLinkObj,
                                             &sResult )
@@ -5153,16 +5153,16 @@ IDE_RC dkmAllocAndExecuteQueryStatement( void           *aQcStatement,
 }
 
 /************************************************************************
- * Description : Remote query ±¸¹®¿¡ ´ëÇØ ¿ø°İ¼­¹ö¿¡ prepare ¹× execute
- *               ¸¦ ¼öÇàÇÑ´Ù. ¿©±â¼­´Â ½ÇÁ¦·Î record ¸¦ °¡Á®¿ÀÁø ¾Ê°í
- *               result set meta ¸¦ ¾ò¾î¿À±â¸¸ ÇÑ´Ù.
+ * Description : Remote query êµ¬ë¬¸ì— ëŒ€í•´ ì›ê²©ì„œë²„ì— prepare ë° execute
+ *               ë¥¼ ìˆ˜í–‰í•œë‹¤. ì—¬ê¸°ì„œëŠ” ì‹¤ì œë¡œ record ë¥¼ ê°€ì ¸ì˜¤ì§„ ì•Šê³ 
+ *               result set meta ë¥¼ ì–»ì–´ì˜¤ê¸°ë§Œ í•œë‹¤.
  *
  *      @ Related Keyword : REMOTE_TABLE
  *
- *  aQcStatement    - [IN] Link object validation ¿¡ ÇÊ¿äÇÑ Á¤º¸
+ *  aQcStatement    - [IN] Link object validation ì— í•„ìš”í•œ ì •ë³´
  *  aSession        - [IN] Linker data session
  *  aDblinkName     - [IN] Database link name
- *  aRemoteQuery    - [IN] Remote query ±¸¹®ÀÇ ¹®ÀÚ¿­
+ *  aRemoteQuery    - [IN] Remote query êµ¬ë¬¸ì˜ ë¬¸ìì—´
  *  aStatementId    - [OUT] Remote statement id
  *
  ************************************************************************/
@@ -5327,7 +5327,7 @@ IDE_RC dkmAllocAndExecuteQueryStatementWithoutFetch( void           *aQcStatemen
          */
         IDE_TEST( sRemoteStmt->executeProtocol( &sSession->mSession,
                                                 sSession->mId,
-                                                ID_FALSE, /* À§ prepareProtocol() È£Ãâ¿¡¼­ TX_BEGINÀ» ¼¼ÆÃÇßÀ¸¹Ç·Î FALSE¸¦ ¼¼ÆÃÇÑ´Ù. */
+                                                ID_FALSE, /* ìœ„ prepareProtocol() í˜¸ì¶œì—ì„œ TX_BEGINì„ ì„¸íŒ…í–ˆìœ¼ë¯€ë¡œ FALSEë¥¼ ì„¸íŒ…í•œë‹¤. */
                                                 &(sRemoteTx->mXID),
                                                 &sLinkObj,
                                                 &sResult )
@@ -5461,7 +5461,7 @@ IDE_RC dkmAllocAndExecuteQueryStatementWithoutFetch( void           *aQcStatemen
 
 
 /************************************************************************
- * Description : Remote query ±¸¹®À» free ½ÃÄÑÁØ´Ù.
+ * Description : Remote query êµ¬ë¬¸ì„ free ì‹œì¼œì¤€ë‹¤.
  *
  *      @ Related Keyword : REMOTE_TABLE
  *                          REMOTE_TABLE_STORE
@@ -5596,7 +5596,7 @@ IDE_RC dkmFreeQueryStatement( dkmSession    *aSession,
 }
 
 /************************************************************************
- * Description : Database link object handle À» ¾ò¾î¿Â´Ù.
+ * Description : Database link object handle ì„ ì–»ì–´ì˜¨ë‹¤.
  *
  *      @ Related Keyword : REMOTE_TABLE
  *                          REMOTE_TABLE_STORE
@@ -5631,15 +5631,15 @@ IDE_RC dkmGetLinkObjectHandle( idvSQL   *aStatistics,
 }
 
 /************************************************************************
- * Description : Column Á¤º¸¸¦ ¾ò¾î¿Â´Ù.
+ * Description : Column ì •ë³´ë¥¼ ì–»ì–´ì˜¨ë‹¤.
  *
  *      @ Related Keyword : REMOTE_TABLE
  *                          REMOTE_TABLE_STORE
  *
  *  aSession         - [IN] Linker data session
  *  aStatementId     - [IN] Remote statement id
- *  aColumnCount     - [OUT] Column ÀÇ °¹¼ö
- *  aColumnInfoArray - [OUT] ¾ò¾î¿Â column Á¤º¸µéÀÇ ¹è¿­
+ *  aColumnCount     - [OUT] Column ì˜ ê°¯ìˆ˜
+ *  aColumnInfoArray - [OUT] ì–»ì–´ì˜¨ column ì •ë³´ë“¤ì˜ ë°°ì—´
  *
  ************************************************************************/
 IDE_RC dkmGetColumnInfo( dkmSession         *aSession,
@@ -5798,15 +5798,15 @@ static IDE_RC dkmFetchNextRowInternal( dksDataSession          *aSession,
 }
 
 /************************************************************************
- * Description : Cursor °¡ ÇöÀç °¡¸®Å°´Â row ¸¦ ¹İÈ¯ÇÑ µÚ cursor °¡ ´ÙÀ½
- *               row ¸¦ °¡¸®Å°µµ·Ï ÀÌµ¿½ÃÅ²´Ù.
+ * Description : Cursor ê°€ í˜„ì¬ ê°€ë¦¬í‚¤ëŠ” row ë¥¼ ë°˜í™˜í•œ ë’¤ cursor ê°€ ë‹¤ìŒ
+ *               row ë¥¼ ê°€ë¦¬í‚¤ë„ë¡ ì´ë™ì‹œí‚¨ë‹¤.
  *
  *      @ Related Keyword : REMOTE_TABLE
  *                          REMOTE_TABLE_STORE
  *
  *  aSession        - [IN] Linker data session
  *  aStatementId    - [IN] Remote statement id
- *  aRow            - [OUT] Fetch ÇÒ row
+ *  aRow            - [OUT] Fetch í•  row
  *
  ************************************************************************/
 IDE_RC dkmFetchNextRow( dkmSession      *aSession,
@@ -5879,7 +5879,7 @@ static IDE_RC dkmRestartRowInternal( dksDataSession * aSession,
     {
         IDE_TEST( aRemoteStmt->executeProtocol( &aSession->mSession,
                                                 aSession->mId,
-                                                ID_FALSE, /* remoteTx°¡ BeginµÈ »óÅÂÀÌ¹Ç·Î */
+                                                ID_FALSE, /* remoteTxê°€ Beginëœ ìƒíƒœì´ë¯€ë¡œ */
                                                 aXID,
                                                 sLinkObj,
                                                 &sResult )
@@ -5904,7 +5904,7 @@ static IDE_RC dkmRestartRowInternal( dksDataSession * aSession,
 }
 
 /************************************************************************
- * Description : Cursor restart ¸¦ ¼öÇàÇÑ´Ù.
+ * Description : Cursor restart ë¥¼ ìˆ˜í–‰í•œë‹¤.
  *
  *      @ Related Keyword : REMOTE_TABLE
  *                          REMOTE_TABLE_STORE
@@ -5979,8 +5979,8 @@ IDE_RC dkmRestartRow( dkmSession    *aSession,
 }
 
 /************************************************************************
- * Description : ¸ŞÅ¸¿¡ ÀúÀåµÇ¾î ÀÖ´Â Á¤º¸¸¦ ÅëÇØ DK link object ¸¦
- *               »ı¼ºÇÑ´Ù.
+ * Description : ë©”íƒ€ì— ì €ì¥ë˜ì–´ ìˆëŠ” ì •ë³´ë¥¼ í†µí•´ DK link object ë¥¼
+ *               ìƒì„±í•œë‹¤.
  *
  *      @ Related Keyword : REMOTE_TABLE
  *                          REMOTE_TABLE_STORE
@@ -6240,7 +6240,7 @@ IDE_RC dkmAddShardTransaction( idvSQL         * aStatistics,
 
     sSession = (dksDataSession *)aSession;
 
-    /* ÃÊ±âÈ­ */
+    /* ì´ˆê¸°í™” */
     aConnectInfo->mFlag &= ~SDI_CONNECT_COORDINATOR_CREATE_MASK;
     aConnectInfo->mFlag |= SDI_CONNECT_COORDINATOR_CREATE_FALSE;
     aConnectInfo->mFlag &= ~SDI_CONNECT_REMOTE_TX_CREATE_MASK;
@@ -6304,7 +6304,7 @@ IDE_RC dkmAddShardTransaction( idvSQL         * aStatistics,
         aConnectInfo->mFlag |= SDI_CONNECT_REMOTE_TX_CREATE_TRUE;
     }
 
-    /* sharding¿¡¼­´Â remoteStmt ¾øÀÌ remoteTx¸¸ »ı¼ºµÈ´Ù. */
+    /* shardingì—ì„œëŠ” remoteStmt ì—†ì´ remoteTxë§Œ ìƒì„±ëœë‹¤. */
     if ( ( sIsRTxCreated == ID_TRUE ) &&
          ( dksSessionMgr::getDataSessionAtomicTxLevel( sSession ) ==
            DKT_ADLP_TWO_PHASE_COMMIT ) )

@@ -18,9 +18,9 @@
 /*******************************************************************************
  * $Id: sdpDPathInfoMgr.cpp 82075 2018-01-17 06:39:52Z jina.kim $
  *
- * Description : Direct-Path INSERT¸¦ ¼öÇàÇÒ ¶§ ½ÇÁ¦ Table¿¡ ¹İ¿µÇÒ SegmentÀÇ
- *          Á¤º¸¸¦ °ü¸®ÇÏ´Â ÀÚ·á±¸Á¶°¡ DPathInfoÀÌ´Ù. sdpDPathInfoMgr Å¬·¡½º´Â
- *          ÀÌ DPathInfo¸¦ Á¶ÀÛÇÏ±â À§ÇÑ ÇÔ¼öµéÀ» Á¦°øÇÑ´Ù.
+ * Description : Direct-Path INSERTë¥¼ ìˆ˜í–‰í•  ë•Œ ì‹¤ì œ Tableì— ë°˜ì˜í•  Segmentì˜
+ *          ì •ë³´ë¥¼ ê´€ë¦¬í•˜ëŠ” ìë£Œêµ¬ì¡°ê°€ DPathInfoì´ë‹¤. sdpDPathInfoMgr í´ë˜ìŠ¤ëŠ”
+ *          ì´ DPathInfoë¥¼ ì¡°ì‘í•˜ê¸° ìœ„í•œ í•¨ìˆ˜ë“¤ì„ ì œê³µí•œë‹¤.
  ******************************************************************************/
 
 #include <sdb.h>
@@ -34,7 +34,7 @@
 iduMemPool sdpDPathInfoMgr::mSegInfoPool;
 
 /*******************************************************************************
- * Description : Static º¯¼öµéÀÇ ÃÊ±âÈ­¸¦ ¼öÇàÇÑ´Ù.
+ * Description : Static ë³€ìˆ˜ë“¤ì˜ ì´ˆê¸°í™”ë¥¼ ìˆ˜í–‰í•œë‹¤.
  ******************************************************************************/
 IDE_RC sdpDPathInfoMgr::initializeStatic()
 {
@@ -43,7 +43,7 @@ IDE_RC sdpDPathInfoMgr::initializeStatic()
                  (SChar*)"DIRECT_PATH_SEGINFO_MEMPOOL",
                  1, /* List Count */
                  ID_SIZEOF( sdpDPathSegInfo ),
-                 128, /* »ı¼º½Ã °¡Áö°í ÀÖ´Â Item°¹¼ö */
+                 128, /* ìƒì„±ì‹œ ê°€ì§€ê³  ìˆëŠ” Itemê°¯ìˆ˜ */
                  IDU_AUTOFREE_CHUNK_LIMIT,			/* ChunkLimit */
                  ID_TRUE,							/* UseMutex */
                  IDU_MEM_POOL_DEFAULT_ALIGN_SIZE,	/* AlignByte */
@@ -60,7 +60,7 @@ IDE_RC sdpDPathInfoMgr::initializeStatic()
 }
 
 /*******************************************************************************
- * Description : Static º¯¼öµéÀ» ÆÄ±«ÇÑ´Ù.
+ * Description : Static ë³€ìˆ˜ë“¤ì„ íŒŒê´´í•œë‹¤.
  ******************************************************************************/
 IDE_RC sdpDPathInfoMgr::destroyStatic()
 {
@@ -74,10 +74,10 @@ IDE_RC sdpDPathInfoMgr::destroyStatic()
 }
 
 /*******************************************************************************
- * Description : Direct Path Info¸¦ »ı¼ºÇÏ¿© ¹İÈ¯ÇÑ´Ù.
+ * Description : Direct Path Infoë¥¼ ìƒì„±í•˜ì—¬ ë°˜í™˜í•œë‹¤.
  *
  * Parameters :
- *      aDPathInfo - [OUT] »õ·Î »ı¼ºÇÑ Direct Path Info
+ *      aDPathInfo - [OUT] ìƒˆë¡œ ìƒì„±í•œ Direct Path Info
  ******************************************************************************/
 IDE_RC sdpDPathInfoMgr::initDPathInfo( sdpDPathInfo *aDPathInfo )
 {
@@ -100,10 +100,10 @@ IDE_RC sdpDPathInfoMgr::initDPathInfo( sdpDPathInfo *aDPathInfo )
 }
 
 /*******************************************************************************
- * Description : Direct Path Info¿¡ ´Ş·Á ÀÖ´Â ¸ğµç DPathSegInfoÀ» ÆÄ±«ÇÑ´Ù.
+ * Description : Direct Path Infoì— ë‹¬ë ¤ ìˆëŠ” ëª¨ë“  DPathSegInfoì„ íŒŒê´´í•œë‹¤.
  *
  * Parameters :
- *      aDPathInfo - [IN] ÆÄ±«ÇÒ Direct Path Info
+ *      aDPathInfo - [IN] íŒŒê´´í•  Direct Path Info
  ******************************************************************************/
 IDE_RC sdpDPathInfoMgr::destDPathInfo( sdpDPathInfo *aDPathInfo )
 {
@@ -120,14 +120,14 @@ IDE_RC sdpDPathInfoMgr::destDPathInfo( sdpDPathInfo *aDPathInfo )
 }
 
 /*******************************************************************************
- * Description : DPathSegInfo¸¦ »ı¼ºÇÏ°í ÃÊ±âÈ­ ÇÑ´Ù.
+ * Description : DPathSegInfoë¥¼ ìƒì„±í•˜ê³  ì´ˆê¸°í™” í•œë‹¤.
  *
  * Parameters :
- *      aStatistics     - [IN] Åë°è
- *      aTrans          - [IN] DPath INSERT¸¦ ¼öÇàÇÏ´Â Transaction
- *      aTableOID       - [IN] »ı¼ºÇÒ DPathSegInfo¿¡ ÇØ´çÇÏ´Â TableÀÇ OID
- *      aDPathInfo      - [IN] »ı¼ºÇÑ DPathSegInfo¸¦ ¿¬°áÇÒ DPathInfo
- *      aDPathSegInfo   - [OUT] »ı¼ºÇÑ DPathSegInfo¸¦ ¹İÈ¯
+ *      aStatistics     - [IN] í†µê³„
+ *      aTrans          - [IN] DPath INSERTë¥¼ ìˆ˜í–‰í•˜ëŠ” Transaction
+ *      aTableOID       - [IN] ìƒì„±í•  DPathSegInfoì— í•´ë‹¹í•˜ëŠ” Tableì˜ OID
+ *      aDPathInfo      - [IN] ìƒì„±í•œ DPathSegInfoë¥¼ ì—°ê²°í•  DPathInfo
+ *      aDPathSegInfo   - [OUT] ìƒì„±í•œ DPathSegInfoë¥¼ ë°˜í™˜
  ******************************************************************************/
 IDE_RC sdpDPathInfoMgr::createDPathSegInfo( idvSQL           * aStatistics,
                                             void*              aTrans,
@@ -160,7 +160,7 @@ IDE_RC sdpDPathInfoMgr::createDPathSegInfo( idvSQL           * aStatistics,
     *aDPathSegInfo  = NULL;
 
     //--------------------------------------------------------------------
-    // Áö¿ª º¯¼ö ÃÊ±âÈ­
+    // ì§€ì—­ ë³€ìˆ˜ ì´ˆê¸°í™”
     //--------------------------------------------------------------------
     sPageEntry  = (sdpPageListEntry*)smLayerCallback::getPageListEntry( aTableOID );
     sSegDesc    = &sPageEntry->mSegDesc;
@@ -168,7 +168,7 @@ IDE_RC sdpDPathInfoMgr::createDPathSegInfo( idvSQL           * aStatistics,
     sSegPID     = sdpPageList::getTableSegDescPID( sPageEntry );
 
     //--------------------------------------------------------------------
-    // DPathSegInfo ÇÏ³ª¸¦ ÇÒ´çÇÑ´Ù.
+    // DPathSegInfo í•˜ë‚˜ë¥¼ í• ë‹¹í•œë‹¤.
     //--------------------------------------------------------------------
     /* sdpDPathInfoMgr_createDPathSegInfo_alloc_DPathSegInfo.tc */
     IDU_FIT_POINT("sdpDPathInfoMgr::createDPathSegInfo::alloc::DPathSegInfo");
@@ -176,7 +176,7 @@ IDE_RC sdpDPathInfoMgr::createDPathSegInfo( idvSQL           * aStatistics,
     sState = 1;
     
     //--------------------------------------------------------------------
-    // DPathSegInfo¿¡ Ç×»ó µ¿ÀÏÇÏ°Ô ÃÊ±âÈ­ µÇ´Â ºÎºĞµéÀ» ¸ÕÀú ÃÊ±âÈ­
+    // DPathSegInfoì— í•­ìƒ ë™ì¼í•˜ê²Œ ì´ˆê¸°í™” ë˜ëŠ” ë¶€ë¶„ë“¤ì„ ë¨¼ì € ì´ˆê¸°í™”
     //--------------------------------------------------------------------
     SMU_LIST_INIT_NODE( &sDPathSegInfo->mNode );
     (&sDPathSegInfo->mNode)->mData = sDPathSegInfo;
@@ -194,24 +194,24 @@ IDE_RC sdpDPathInfoMgr::createDPathSegInfo( idvSQL           * aStatistics,
     if( sLstSegInfo != NULL )
     {
         //------------------------------------------------------------
-        //  ÀÌÀü Statement¿¡¼­ Áö±İ Insert¸¦ ¼öÇàÇÏ·Á´Â Segment¿¡
-        // Direct Path Insert¸¦ ¼öÇàÇÑ ÀûÀÌ ÀÖ´Â °æ¿ì, ±âÁ¸¿¡ ¼öÇàÇß´ø
-        // Direct Path Insert¿¡ ÀÌ¾î ºÙÀÌµµ·Ï DPathSegInfo¸¦ ±¸¼ºÇÑ´Ù.
+        //  ì´ì „ Statementì—ì„œ ì§€ê¸ˆ Insertë¥¼ ìˆ˜í–‰í•˜ë ¤ëŠ” Segmentì—
+        // Direct Path Insertë¥¼ ìˆ˜í–‰í•œ ì ì´ ìˆëŠ” ê²½ìš°, ê¸°ì¡´ì— ìˆ˜í–‰í–ˆë˜
+        // Direct Path Insertì— ì´ì–´ ë¶™ì´ë„ë¡ DPathSegInfoë¥¼ êµ¬ì„±í•œë‹¤.
         //------------------------------------------------------------
         sDPathSegInfo->mLstAllocExtRID      = sLstSegInfo->mLstAllocExtRID;
         sDPathSegInfo->mLstAllocPID         = sLstSegInfo->mLstAllocPID;
         sDPathSegInfo->mFstPIDOfLstAllocExt = sLstSegInfo->mFstPIDOfLstAllocExt;
         sDPathSegInfo->mTotalPageCount      = sLstSegInfo->mTotalPageCount;
 
-        // ±âÁ¸ SegInfoÀÇ mIsLastSeg ÇÃ·¡±×´Â FALSE·Î º¯°æÇØÁØ´Ù.
+        // ê¸°ì¡´ SegInfoì˜ mIsLastSeg í”Œë˜ê·¸ëŠ” FALSEë¡œ ë³€ê²½í•´ì¤€ë‹¤.
         sLstSegInfo->mIsLastSeg           = ID_FALSE;
     }
     else
     {
         //-------------------------------------------------------------
-        //  ÇöÀç Transaction ³»¿¡¼­ Ã³À½ Direct Path Insert¸¦ ¼öÇàÇÏ´Â
-        // SegmentÀÏ °æ¿ì, Insert ´ë»ó Å×ÀÌºíÀÇ Segment Á¤º¸¸¦ ¹Ş¾Æ¿Í¼­
-        // DPathSegInfo¸¦ ±¸¼ºÇÑ´Ù.
+        //  í˜„ì¬ Transaction ë‚´ì—ì„œ ì²˜ìŒ Direct Path Insertë¥¼ ìˆ˜í–‰í•˜ëŠ”
+        // Segmentì¼ ê²½ìš°, Insert ëŒ€ìƒ í…Œì´ë¸”ì˜ Segment ì •ë³´ë¥¼ ë°›ì•„ì™€ì„œ
+        // DPathSegInfoë¥¼ êµ¬ì„±í•œë‹¤.
         //-------------------------------------------------------------
         sSegMgmtOp  = sdpSegDescMgr::getSegMgmtOp( sSpaceID );
 
@@ -240,11 +240,11 @@ IDE_RC sdpDPathInfoMgr::createDPathSegInfo( idvSQL           * aStatistics,
         }
 
         //--------------------------------------------------------------------
-        //  ÇÒ´çÇÒ Page¸¦ Ã£´Â ½ÃÀÛÁ¡ÀÎ LstAllocPID¸¦ HWMPID·Î ¼³Á¤ÇÔÀ¸·Î½á
-        // HWM ÀÌÈÄÀÇ ÆäÀÌÁöºÎÅÍ ÇÒ´çÇÏµµ·Ï ÁöÁ¤ÇÑ´Ù.
+        //  í• ë‹¹í•  Pageë¥¼ ì°¾ëŠ” ì‹œì‘ì ì¸ LstAllocPIDë¥¼ HWMPIDë¡œ ì„¤ì •í•¨ìœ¼ë¡œì¨
+        // HWM ì´í›„ì˜ í˜ì´ì§€ë¶€í„° í• ë‹¹í•˜ë„ë¡ ì§€ì •í•œë‹¤.
         //
-        //  TMS¿¡¼­ HWM´Â Extent ´ÜÀ§·Î ¼³Á¤µÈ´Ù. µû¶ó¼­ ÃÖÃÊ·Î Page¸¦ ÇÒ´çÇÒ
-        // ¶§´Â »õ·Î¿î Extent¸¦ ÇÒ´ç¹Ş¾Æ¼­ »ç¿ëÇÑ´Ù.
+        //  TMSì—ì„œ HWMëŠ” Extent ë‹¨ìœ„ë¡œ ì„¤ì •ëœë‹¤. ë”°ë¼ì„œ ìµœì´ˆë¡œ Pageë¥¼ í• ë‹¹í• 
+        // ë•ŒëŠ” ìƒˆë¡œìš´ Extentë¥¼ í• ë‹¹ë°›ì•„ì„œ ì‚¬ìš©í•œë‹¤.
         //--------------------------------------------------------------------
         sDPathSegInfo->mLstAllocExtRID      = sSegInfo.mLstAllocExtRID;
         sDPathSegInfo->mLstAllocPID         = sSegInfo.mHWMPID;
@@ -253,8 +253,8 @@ IDE_RC sdpDPathInfoMgr::createDPathSegInfo( idvSQL           * aStatistics,
     }
 
     //-------------------------------------------------------------------
-    // »õ·Î »ı¼ºÇÑ DPathSegInfo¸¦ DPathInfo¿¡ Ãß°¡ÇÑ´Ù.
-    // RollbackÀ» Áö¿øÇÏ±â DPathSegInfo°¡ Ãß°¡µÉ ¶§ ¸¶´Ù ·Î±ëÀ» ÇØ µĞ´Ù.
+    // ìƒˆë¡œ ìƒì„±í•œ DPathSegInfoë¥¼ DPathInfoì— ì¶”ê°€í•œë‹¤.
+    // Rollbackì„ ì§€ì›í•˜ê¸° DPathSegInfoê°€ ì¶”ê°€ë  ë•Œ ë§ˆë‹¤ ë¡œê¹…ì„ í•´ ë‘”ë‹¤.
     //-------------------------------------------------------------------
     sStartInfo.mTrans   = aTrans;
     sStartInfo.mLogMode = SDR_MTX_LOGGING;
@@ -320,12 +320,12 @@ IDE_RC sdpDPathInfoMgr::createDPathSegInfo( idvSQL           * aStatistics,
 }
 
 /*******************************************************************************
- * Description : DPathSegInfo¸¦ ÆÄ±«ÇÑ´Ù.
+ * Description : DPathSegInfoë¥¼ íŒŒê´´í•œë‹¤.
  *
  * Parameters :
- *      aDPathInfo      - [IN] ÆÄ±«ÇÒ DPathSegInfo°¡ ´Ş¸° DPathInfo
- *      aDPathSegInfo   - [IN] ÆÄ±«ÇÒ DPathSegInfo
- *      aMoveLastFlag   - [IN] Last Flag¸¦ ¿Å°ÜÁÙÁö ¸»Áö ¿©ºÎ
+ *      aDPathInfo      - [IN] íŒŒê´´í•  DPathSegInfoê°€ ë‹¬ë¦° DPathInfo
+ *      aDPathSegInfo   - [IN] íŒŒê´´í•  DPathSegInfo
+ *      aMoveLastFlag   - [IN] Last Flagë¥¼ ì˜®ê²¨ì¤„ì§€ ë§ì§€ ì—¬ë¶€
  ******************************************************************************/
 IDE_RC sdpDPathInfoMgr::destDPathSegInfo( sdpDPathInfo    * aDPathInfo,
                                           sdpDPathSegInfo * aDPathSegInfo,
@@ -336,13 +336,13 @@ IDE_RC sdpDPathInfoMgr::destDPathSegInfo( sdpDPathInfo    * aDPathInfo,
     IDE_DASSERT( aDPathInfo != NULL );
     IDE_DASSERT( aDPathSegInfo != NULL );
 
-    // BUG-30262 ÆÄ±«ÇÒ DPathSegInfo¸¦ ¸ÕÀú ¸®½ºÆ®¿¡¼­ Á¦°ÅÇØ ÁÖ¾î¾ß ÇÕ´Ï´Ù.
+    // BUG-30262 íŒŒê´´í•  DPathSegInfoë¥¼ ë¨¼ì € ë¦¬ìŠ¤íŠ¸ì—ì„œ ì œê±°í•´ ì£¼ì–´ì•¼ í•©ë‹ˆë‹¤.
     SMU_LIST_DELETE( &aDPathSegInfo->mNode );
 
-    // rollbackÀ» ¼öÇàÇÒ ¶§¿Í °°ÀÌ LastFlag¸¦ ¿Å°ÜÁà¾ß ÇÒ °æ¿ì
+    // rollbackì„ ìˆ˜í–‰í•  ë•Œì™€ ê°™ì´ LastFlagë¥¼ ì˜®ê²¨ì¤˜ì•¼ í•  ê²½ìš°
     if( aMoveLastFlag == ID_TRUE )
     {
-        // °¡Àå ÃÖ±ÙÀÇ DPathSegInfo¸¦ Ã£¾Æ¼­,
+        // ê°€ì¥ ìµœê·¼ì˜ DPathSegInfoë¥¼ ì°¾ì•„ì„œ,
         sPrvDPathSegInfo = findLastDPathSegInfo( aDPathInfo,
                                                  aDPathSegInfo->mTableOID );
 
@@ -362,10 +362,10 @@ IDE_RC sdpDPathInfoMgr::destDPathSegInfo( sdpDPathInfo    * aDPathInfo,
 }
 
 /*******************************************************************************
- * Description : DPathInfo¿¡ ´Ş·ÁÀÖ´Â ¸ğµç DPathSegInfoÀ» ÆÄ±«ÇÑ´Ù.
+ * Description : DPathInfoì— ë‹¬ë ¤ìˆëŠ” ëª¨ë“  DPathSegInfoì„ íŒŒê´´í•œë‹¤.
  *
  * Parameters :
- *      aDPathInfo  - ´Ş·ÁÀÖ´Â ¸ğµç DPathSegInfoÀ» ÆÄ±«ÇÒ DPathInfo
+ *      aDPathInfo  - ë‹¬ë ¤ìˆëŠ” ëª¨ë“  DPathSegInfoì„ íŒŒê´´í•  DPathInfo
  ******************************************************************************/
 IDE_RC sdpDPathInfoMgr::destAllDPathSegInfo( sdpDPathInfo  * aDPathInfo )
 {
@@ -376,7 +376,7 @@ IDE_RC sdpDPathInfoMgr::destAllDPathSegInfo( sdpDPathInfo  * aDPathInfo )
     IDE_DASSERT( aDPathInfo != NULL );
 
     //----------------------------------------------------------------------
-    // DPathInfo¿¡ SegInfoList¸¦ µ¹¸é¼­ ¸ğµÎ ÆÄ±«ÇØÁØ´Ù.
+    // DPathInfoì— SegInfoListë¥¼ ëŒë©´ì„œ ëª¨ë‘ íŒŒê´´í•´ì¤€ë‹¤.
     //----------------------------------------------------------------------
     sBaseNode = &aDPathInfo->mSegInfoList;
 
@@ -399,17 +399,17 @@ IDE_RC sdpDPathInfoMgr::destAllDPathSegInfo( sdpDPathInfo  * aDPathInfo )
 }
 
 /*******************************************************************************
- * Description : aDPathSegInfo¿¡ ´Ş¸° ¸ğµç DPathSegInfo¸¦ Table Segment¿¡
- *          merge ÇÑ´Ù.
+ * Description : aDPathSegInfoì— ë‹¬ë¦° ëª¨ë“  DPathSegInfoë¥¼ Table Segmentì—
+ *          merge í•œë‹¤.
  *
  * Implementation :
- *    (1) DPath Insert µÈ record °³¼ö¸¦ table info¿¡ ¹İ¿µ
- *    (3) Table SegmentÀÇ HWM °»½Å
+ *    (1) DPath Insert ëœ record ê°œìˆ˜ë¥¼ table infoì— ë°˜ì˜
+ *    (3) Table Segmentì˜ HWM ê°±ì‹ 
  *
  * Parameters :
- *      aStatistics     - [IN] Åë°è
- *      aTrans          - [IN] merge¸¦ ¼öÇàÇÏ´Â TX
- *      aDPathInfo      - [IN] merge¸¦ ¼öÇàÇÒ ´ë»ó DPathInfo
+ *      aStatistics     - [IN] í†µê³„
+ *      aTrans          - [IN] mergeë¥¼ ìˆ˜í–‰í•˜ëŠ” TX
+ *      aDPathInfo      - [IN] mergeë¥¼ ìˆ˜í–‰í•  ëŒ€ìƒ DPathInfo
  ******************************************************************************/
 IDE_RC sdpDPathInfoMgr::mergeAllSegOfDPathInfo(
                                         idvSQL*         aStatistics,
@@ -441,7 +441,7 @@ IDE_RC sdpDPathInfoMgr::mergeAllSegOfDPathInfo(
         IDU_FIT_POINT( "3.PROJ-1665@sdpDPathInfoMgr::mergeAllSegOfDPathInfo" );
 
         //------------------------------------------------------
-        // INSERT ÇÏ·¯ µé¾î¿Ô´Âµ¥, ÇÒ´çÇÑ Page°¡ ¾øÀ¸¸é ASSERT
+        // INSERT í•˜ëŸ¬ ë“¤ì–´ì™”ëŠ”ë°, í• ë‹¹í•œ Pageê°€ ì—†ìœ¼ë©´ ASSERT
         //------------------------------------------------------
         if( sDPathSegInfo->mFstAllocPID == SD_NULL_PID )
         {
@@ -461,9 +461,9 @@ IDE_RC sdpDPathInfoMgr::mergeAllSegOfDPathInfo(
         sBaseSegHandle  = &(sSegDesc->mSegHandle);
 
         //-----------------------------------------------------------------
-        // ¸¶Áö¸· SegInfoÀÎ °æ¿ì ÇØ´ç DPath Insert°¡ ¼öÇàÇÑ ¸¶Áö¸· ÆäÀÌÁö°¡ 
-        // Æ÷ÇÔµÈ ExtentÀÇ ³ª¸ÓÁö ÆäÀÌÁöµéÀ» ¸ğµÎ ÀçÆ÷¸ËÇÑ´Ù.
-        // rollback½Ã ÇØ´ç ÆäÀÌÁö¿¡ ¾²·¹±â °ªÀÌ Á¸ÀçÇÒ ¼ö ÀÖ±â ¶§¹®. 
+        // ë§ˆì§€ë§‰ SegInfoì¸ ê²½ìš° í•´ë‹¹ DPath Insertê°€ ìˆ˜í–‰í•œ ë§ˆì§€ë§‰ í˜ì´ì§€ê°€ 
+        // í¬í•¨ëœ Extentì˜ ë‚˜ë¨¸ì§€ í˜ì´ì§€ë“¤ì„ ëª¨ë‘ ì¬í¬ë§·í•œë‹¤.
+        // rollbackì‹œ í•´ë‹¹ í˜ì´ì§€ì— ì“°ë ˆê¸° ê°’ì´ ì¡´ì¬í•  ìˆ˜ ìˆê¸° ë•Œë¬¸. 
         //-----------------------------------------------------------------
         if( sDPathSegInfo->mIsLastSeg == ID_TRUE )
         {
@@ -508,19 +508,19 @@ IDE_RC sdpDPathInfoMgr::mergeAllSegOfDPathInfo(
 }
 
 /*******************************************************************************
- * Description : aTableOID¿¡ ÇØ´çÇÏ´Â ¸¶Áö¸· DPathSegInfo¸¦ Ã£¾ÆÁØ´Ù.
+ * Description : aTableOIDì— í•´ë‹¹í•˜ëŠ” ë§ˆì§€ë§‰ DPathSegInfoë¥¼ ì°¾ì•„ì¤€ë‹¤.
  *
- *           µ¿ÀÏ Æ®·£Àè¼Ç ³»¿¡, DPath INSERT¸¦ ¼öÇàÇÑ Å×ÀÌºí¿¡ ´ëÇØ DML ¼öÇàÀ»
- *          ±İÁöÇÏ´Âµ¥, Ä¿¼­¸¦ OpenÇÒ ¶§ º» ÇÔ¼ö¸¦ ÅëÇØ Ä¿¼­¸¦ ¿ÀÇÂÇÑ Å×ÀÌºíÀÌ 
- *          µ¿ÀÏ Æ®·£Àè¼Ç ³»¿¡¼­ DPath Insert¸¦ ¼öÇàÇß´ø Å×ÀÌºíÀÎÁö °Ë»çÇÑ´Ù.
+ *           ë™ì¼ íŠ¸ëœì­ì…˜ ë‚´ì—, DPath INSERTë¥¼ ìˆ˜í–‰í•œ í…Œì´ë¸”ì— ëŒ€í•´ DML ìˆ˜í–‰ì„
+ *          ê¸ˆì§€í•˜ëŠ”ë°, ì»¤ì„œë¥¼ Opení•  ë•Œ ë³¸ í•¨ìˆ˜ë¥¼ í†µí•´ ì»¤ì„œë¥¼ ì˜¤í”ˆí•œ í…Œì´ë¸”ì´ 
+ *          ë™ì¼ íŠ¸ëœì­ì…˜ ë‚´ì—ì„œ DPath Insertë¥¼ ìˆ˜í–‰í–ˆë˜ í…Œì´ë¸”ì¸ì§€ ê²€ì‚¬í•œë‹¤.
  *
  * Parameters :
- *      aDPathInfo  - [IN] Transaction¿¡ ´Ş·ÁÀÖ´Â sdpDPathInfo
- *      aTableOID   - [IN] Ã£À» DPathSegInfo¿¡ ÇØ´çÇÏ´Â TableOID
+ *      aDPathInfo  - [IN] Transactionì— ë‹¬ë ¤ìˆëŠ” sdpDPathInfo
+ *      aTableOID   - [IN] ì°¾ì„ DPathSegInfoì— í•´ë‹¹í•˜ëŠ” TableOID
  *
  * Return :
- *       aTableOID¿¡ ÇØ´çÇÏ´Â sdpDPathSegInfo°¡ aDPathInfo¿¡ Á¸ÀçÇÑ´Ù¸é Ã£¾Æ³½
- *      sdpDPathSegInfoÀÇ Æ÷ÀÎÅÍ, Á¸ÀçÇÏÁö ¾Ê´Â´Ù¸é NULLÀ» ¹İÈ¯ÇÑ´Ù.
+ *       aTableOIDì— í•´ë‹¹í•˜ëŠ” sdpDPathSegInfoê°€ aDPathInfoì— ì¡´ì¬í•œë‹¤ë©´ ì°¾ì•„ë‚¸
+ *      sdpDPathSegInfoì˜ í¬ì¸í„°, ì¡´ì¬í•˜ì§€ ì•ŠëŠ”ë‹¤ë©´ NULLì„ ë°˜í™˜í•œë‹¤.
  ******************************************************************************/
 sdpDPathSegInfo* sdpDPathInfoMgr::findLastDPathSegInfo(
                                             sdpDPathInfo  * aDPathInfo,
@@ -552,10 +552,10 @@ sdpDPathSegInfo* sdpDPathInfoMgr::findLastDPathSegInfo(
 }
 
 /*******************************************************************************
- * Description : DPathInfo¸¦ dump ÇÑ´Ù.
+ * Description : DPathInfoë¥¼ dump í•œë‹¤.
  *
  * Parameters :
- *      aDPathInfo  - [IN] dumpÇÒ DPathInfo
+ *      aDPathInfo  - [IN] dumpí•  DPathInfo
  ******************************************************************************/
 IDE_RC sdpDPathInfoMgr::dumpDPathInfo( sdpDPathInfo *aDPathInfo )
 {
@@ -593,10 +593,10 @@ IDE_RC sdpDPathInfoMgr::dumpDPathInfo( sdpDPathInfo *aDPathInfo )
 }
 
 /*******************************************************************************
- * Description : DPathSegInfo¸¦ dump ÇÑ´Ù.
+ * Description : DPathSegInfoë¥¼ dump í•œë‹¤.
  *
  * Parameters :
- *      aDPathSegInfo   - [IN] dumpÇÒ DPathSegInfo
+ *      aDPathSegInfo   - [IN] dumpí•  DPathSegInfo
  ******************************************************************************/
 IDE_RC sdpDPathInfoMgr::dumpDPathSegInfo( sdpDPathSegInfo *aDPathSegInfo )
 {

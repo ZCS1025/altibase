@@ -121,9 +121,9 @@ typedef acp_sint32_t ALTIBASE_STATE;
 
 
 
-/* cdbcABDiagRecÀº, aci_client_error_mgr_t¿Í ´Ş¸®,
- * mErrorCode°¡ ¾ğÁ¦³ª real error code´Ù.
- * ±×·¯¹Ç·Î, mErrorCode °ªÀ» »ç¿ëÇÒ ¶§ ACI_E_ERROR_CORE()¸¦ ¾²Áö ¾Ê¾Æ¾ß ÇÑ´Ù.
+/* cdbcABDiagRecì€, aci_client_error_mgr_tì™€ ë‹¬ë¦¬,
+ * mErrorCodeê°€ ì–¸ì œë‚˜ real error codeë‹¤.
+ * ê·¸ëŸ¬ë¯€ë¡œ, mErrorCode ê°’ì„ ì‚¬ìš©í•  ë•Œ ACI_E_ERROR_CORE()ë¥¼ ì“°ì§€ ì•Šì•„ì•¼ í•œë‹¤.
  */
 typedef aci_client_error_mgr_t cdbcABDiagRec;
 
@@ -191,8 +191,8 @@ struct cdbcABStmt
     cdbcABQueryType      mQueryType;
 
     SQLSMALLINT          mParamCount;
-    ALTIBASE_BIND       *mBindParam;        /**< »ç¿ëÀÚ°¡ ¼³Á¤ÇÑ param bind Á¤º¸ */
-    ALTIBASE_BIND       *mBindResult;       /**< »ç¿ëÀÚ°¡ ¼³Á¤ÇÑ result bind Á¤º¸ */
+    ALTIBASE_BIND       *mBindParam;        /**< ì‚¬ìš©ìê°€ ì„¤ì •í•œ param bind ì •ë³´ */
+    ALTIBASE_BIND       *mBindResult;       /**< ì‚¬ìš©ìê°€ ì„¤ì •í•œ result bind ì •ë³´ */
 
     cdbcBufferMng        mBindBuffer;
     ALTIBASE_BIND       *mBakBindParam;
@@ -200,51 +200,51 @@ struct cdbcABStmt
     ALTIBASE_BOOL       *mBakBindParamIsNull;
     ALTIBASE_LONG       *mRealBindParamLength;
 
-    acp_sint32_t         mArrayBindSize;    /**< »ç¿ëÀÚ°¡ ¼³Á¤ÇÑ array bind size */
-    acp_sint32_t         mArrayFetchSize;   /**< »ç¿ëÀÚ°¡ ¼³Á¤ÇÑ array fetch size */
+    acp_sint32_t         mArrayBindSize;    /**< ì‚¬ìš©ìê°€ ì„¤ì •í•œ array bind size */
+    acp_sint32_t         mArrayFetchSize;   /**< ì‚¬ìš©ìê°€ ì„¤ì •í•œ array fetch size */
 
     cdbcABRes           *mRes;
 };
 
 struct cdbcABRowList
 {
-    ALTIBASE_ROW     mRow;          /**< ÇÑ ÇàÀÇ µ¥ÀÌÅ¸ */
-    ALTIBASE_LONG   *mLengths;      /**< °¢ ÄÃ·³ µ¥ÀÌÅ¸ÀÇ ±æÀÌ */
+    ALTIBASE_ROW     mRow;          /**< í•œ í–‰ì˜ ë°ì´íƒ€ */
+    ALTIBASE_LONG   *mLengths;      /**< ê° ì»¬ëŸ¼ ë°ì´íƒ€ì˜ ê¸¸ì´ */
     ALTIBASE_LONG    mStatus;       /**< array status */
-    cdbcABRowList   *mNext;         /**< ´ÙÀ½ ÇàÀ» °¡¸®Å°´Â Æ÷ÀÎÅÍ */
+    cdbcABRowList   *mNext;         /**< ë‹¤ìŒ í–‰ì„ ê°€ë¦¬í‚¤ëŠ” í¬ì¸í„° */
 };
 
 /* ALTIBASE_RES */
 struct cdbcABRes
 {
     cdbcABHandle     mBaseHandle;
-    cdbcABDiagRec   *mDiagRec;              /**< ¿¡·¯ Á¤º¸¸¦ ´ãÀ» Æ÷ÀÎÅÍ */
+    cdbcABDiagRec   *mDiagRec;              /**< ì—ëŸ¬ ì •ë³´ë¥¼ ë‹´ì„ í¬ì¸í„° */
     SQLHSTMT         mHstmt;
-    ALTIBASE_STATE  *mState;                /**< »óÅÂ°ª */
+    ALTIBASE_STATE  *mState;                /**< ìƒíƒœê°’ */
 
-    SQLSMALLINT      mFieldCount;           /**< °á°ú¼ÂÀÇ ÇÊµå °³¼ö */
-    ALTIBASE_FIELD  *mFieldInfos;           /**< °á°ú¼ÂÀÇ ÇÊµå Á¤º¸ */
+    SQLSMALLINT      mFieldCount;           /**< ê²°ê³¼ì…‹ì˜ í•„ë“œ ê°œìˆ˜ */
+    ALTIBASE_FIELD  *mFieldInfos;           /**< ê²°ê³¼ì…‹ì˜ í•„ë“œ ì •ë³´ */
     acp_bool_t       mFieldInfoEx;
 
-    acp_sint32_t     mArrayBindSize;        /**< array binding Àü¿ë. */
-    acp_uint16_t    *mArrayStatusParam;     /**< array binding Àü¿ë. */
-    SQLLEN           mArrayProcessed;       /**< array binding Àü¿ë. */
-    acp_sint32_t     mArrayFetchSize;       /**< array fetch   Àü¿ë. */
-    acp_uint16_t    *mArrayStatusResult;    /**< array fetch   Àü¿ë. */
-    SQLLEN           mArrayFetched;         /**< array fetch   Àü¿ë. */
+    acp_sint32_t     mArrayBindSize;        /**< array binding ì „ìš©. */
+    acp_uint16_t    *mArrayStatusParam;     /**< array binding ì „ìš©. */
+    SQLLEN           mArrayProcessed;       /**< array binding ì „ìš©. */
+    acp_sint32_t     mArrayFetchSize;       /**< array fetch   ì „ìš©. */
+    acp_uint16_t    *mArrayStatusResult;    /**< array fetch   ì „ìš©. */
+    SQLLEN           mArrayFetched;         /**< array fetch   ì „ìš©. */
 
-    ALTIBASE_BIND   *mBindResult;           /**< fetch¿¡ ¾µ ¹ÙÀÎµù Á¤º¸ */
+    ALTIBASE_BIND   *mBindResult;           /**< fetchì— ì“¸ ë°”ì¸ë”© ì •ë³´ */
 
     ALTIBASE_LONG    mRowCount;
-    cdbcABRowList  **mRowMap;               /**< store result Àü¿ë, row ¹Ù·Î °¡±â¿ë ¸Ê */
-    acp_bool_t       mRowMapAllocFailed;    /**< mRowMap »ı¼º¿¡ ½ÇÆĞÇß´ÂÁö ¿©ºÎ. mRowMap »ı¼ºÀ» ÇÑ¹ø¸¸ ½ÃµµÇÏ±â À§ÇØ¼­ »ç¿ë. */
-    cdbcABRowList   *mRowCursor;            /**< store result Àü¿ë */
-    cdbcABRowList   *mFetchedRowCursor;     /**< store result Àü¿ë. altibase_stmt_fetch_column()¿¡¼­ fetchµÈ Ä¿¼­¿¡ Á¢±ÙÇÏ±â À§ÇØ¼­ »ç¿ë */
-    ALTIBASE_LONG   *mFetchedColOffset;     /**< store result Àü¿ë */
-    acp_sint32_t     mFetchedColOffsetMaxCount; /**< store result Àü¿ë */
-    cdbcABRowList   *mRowList;              /**< store result Àü¿ë, ÀüÃ¼ µ¥ÀÌÅ¸ */
-    ALTIBASE_ROW     mFetchedRow;           /**< use   result Àü¿ë, fetchµÈ µ¥ÀÌÅ¸ */
-    ALTIBASE_LONG   *mLengths;              /**< *_fetch_lengths()¿¡¼­ ¹İÈ¯ÇÒ Á¤º¸ */
+    cdbcABRowList  **mRowMap;               /**< store result ì „ìš©, row ë°”ë¡œ ê°€ê¸°ìš© ë§µ */
+    acp_bool_t       mRowMapAllocFailed;    /**< mRowMap ìƒì„±ì— ì‹¤íŒ¨í–ˆëŠ”ì§€ ì—¬ë¶€. mRowMap ìƒì„±ì„ í•œë²ˆë§Œ ì‹œë„í•˜ê¸° ìœ„í•´ì„œ ì‚¬ìš©. */
+    cdbcABRowList   *mRowCursor;            /**< store result ì „ìš© */
+    cdbcABRowList   *mFetchedRowCursor;     /**< store result ì „ìš©. altibase_stmt_fetch_column()ì—ì„œ fetchëœ ì»¤ì„œì— ì ‘ê·¼í•˜ê¸° ìœ„í•´ì„œ ì‚¬ìš© */
+    ALTIBASE_LONG   *mFetchedColOffset;     /**< store result ì „ìš© */
+    acp_sint32_t     mFetchedColOffsetMaxCount; /**< store result ì „ìš© */
+    cdbcABRowList   *mRowList;              /**< store result ì „ìš©, ì „ì²´ ë°ì´íƒ€ */
+    ALTIBASE_ROW     mFetchedRow;           /**< use   result ì „ìš©, fetchëœ ë°ì´íƒ€ */
+    ALTIBASE_LONG   *mLengths;              /**< *_fetch_lengths()ì—ì„œ ë°˜í™˜í•  ì •ë³´ */
 
     cdbcBufferMng    mDatBuffer;
     cdbcBufferMng    mBindBuffer;

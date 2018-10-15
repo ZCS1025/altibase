@@ -16,7 +16,7 @@
 
 /*
   PROJ-1645 UL Fail-Over
-  Trace Logging ±â´É.
+  Trace Logging ê¸°ëŠ¥.
  */
 
 #include <uln.h>
@@ -32,8 +32,8 @@ void ulnInitTraceLog()
     acp_char_t  *sEnvStr;
 
     /* bug-35142 cli trace log
-       trace ÆÄÀÏ¸íÀ» ÁöÁ¤ÇÑ´Ù. ÁöÁ¤ÇÏÁö ¾ÊÀ¸¸é default ·Î
-       ÇöÀç µð·ºÅä¸® ¹Ø¿¡ altibase_cli_mmddhh.log ÆÄÀÏÀ» »ý¼º */
+       trace íŒŒì¼ëª…ì„ ì§€ì •í•œë‹¤. ì§€ì •í•˜ì§€ ì•Šìœ¼ë©´ default ë¡œ
+       í˜„ìž¬ ë””ë ‰í† ë¦¬ ë°‘ì— altibase_cli_mmddhh.log íŒŒì¼ì„ ìƒì„± */
     if (acpEnvGet("ALTIBASE_CLI_TRCLOG_FILE", &sEnvStr) == ACP_RC_SUCCESS)
     {
         acpSnprintf(gTraceLogFile.mCurrentFileName,
@@ -41,20 +41,20 @@ void ulnInitTraceLog()
     }
     else
     {
-        //fix BUG-25972 Trace Log¿¡¼­ HOME Directory´Â
-        //Á¦¿ÜÇÏÀÚ!!
+        //fix BUG-25972 Trace Logì—ì„œ HOME DirectoryëŠ”
+        //ì œì™¸í•˜ìž!!
         //current directory
         acpSnprintf(gTraceLogFile.mCurrentFileName,
                     ULN_TRACE_LOG_PATH_LEN, "%s", ULN_TRACE_LOG_FILE_NAME);
     }//else
 
     /* bug-35142 cli trace log
-     trace levelÀº ÃÖÃÊ ÇÑ¹ø ÁöÁ¤ÇÏ¸ç Àü¿ªÀûÀ¸·Î »ç¿ëµÊ.
-     levelÀº  off, low, mid, high·Î ±¸ºÐµÈ´Ù. 
-     off - default, Ãâ·Â ¾ÈÇÔ
-     low - ÃÖ¼Ò Ãâ·Â ex) connect, prepare, execute, error
-     mid - Á»´õ Ãâ·Â ex) allocHandle, bindParameter, bindCol
-     high- »ó¼¼ Ãâ·Â ex) fetch, fetched data */
+     trace levelì€ ìµœì´ˆ í•œë²ˆ ì§€ì •í•˜ë©° ì „ì—­ì ìœ¼ë¡œ ì‚¬ìš©ë¨.
+     levelì€  off, low, mid, highë¡œ êµ¬ë¶„ëœë‹¤. 
+     off - default, ì¶œë ¥ ì•ˆí•¨
+     low - ìµœì†Œ ì¶œë ¥ ex) connect, prepare, execute, error
+     mid - ì¢€ë” ì¶œë ¥ ex) allocHandle, bindParameter, bindCol
+     high- ìƒì„¸ ì¶œë ¥ ex) fetch, fetched data */
     if (acpEnvGet("ALTIBASE_CLI_TRCLOG_LEVEL", &sEnvStr) == ACP_RC_SUCCESS)
     {
         if (acpCStrCaseCmp(sEnvStr, "low", 3) == 0)
@@ -90,7 +90,7 @@ void ulnFinalTraceLog()
     ACE_ASSERT(acpThrRwlockDestroy(&gTraceLogFile.mFileLatch) == ACP_RC_SUCCESS);
 }
 
-/* bug-36098: compile error on linux: inline À» »ç¿ëÇÏÁö ¾Ê±â·Î ÇÔ */
+/* bug-36098: compile error on linux: inline ì„ ì‚¬ìš©í•˜ì§€ ì•Šê¸°ë¡œ í•¨ */
 void ULN_TRACE_LOG(ulnFnContext     *aCtx,
                    acp_sint32_t      aLevel,
                    void             *aData,
@@ -133,7 +133,7 @@ void ULN_TRACE_LOG_V(ulnFnContext     *aCtx,
     sThrId = acpThrGetSelfID();
 
     /* bug-35142 cli trace log
-       connection °ú stmt handleÀ» Ãâ·Â */
+       connection ê³¼ stmt handleì„ ì¶œë ¥ */
     if (aCtx != NULL)
     {
         if (aCtx->mHandle.mObj != NULL)
@@ -201,8 +201,8 @@ void ULN_TRACE_LOG_V(ulnFnContext     *aCtx,
     acpVfprintf(&sFP, aFormat, aArgs);
 
     /* bug-35142 cli trace log
-       data¸¦ hex dump ÇÒ ¶§ »ç¿ë. dump ¾ç °ü°è·Î 30bytes ·Î Á¦ÇÑ.
-       ÇöÀç´Â fetch data¸¦ º¼¶§¸¸ (ulnCharSetConvertUseBuffer) »ç¿ë */
+       dataë¥¼ hex dump í•  ë•Œ ì‚¬ìš©. dump ì–‘ ê´€ê³„ë¡œ 30bytes ë¡œ ì œí•œ.
+       í˜„ìž¬ëŠ” fetch dataë¥¼ ë³¼ë•Œë§Œ (ulnCharSetConvertUseBuffer) ì‚¬ìš© */
     if (sData != NULL && aDataLen > 0)
     {
         sDataLen = (aDataLen > ULN_TRACE_LOG_MAX_DATA_LEN)?

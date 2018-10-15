@@ -21,19 +21,19 @@
  * Description :
  *     Plan Generator
  *
- *     Two-child Non-materialized PlanÀ» »ı¼ºÇÏ±â À§ÇÑ °ü¸®ÀÚÀÌ´Ù.
+ *     Two-child Non-materialized Planì„ ìƒì„±í•˜ê¸° ìœ„í•œ ê´€ë¦¬ìì´ë‹¤.
  *
- *     ´ÙÀ½°ú °°Àº Plan NodeÀÇ »ı¼ºÀ» °ü¸®ÇÑ´Ù.
- *         - JOIN ³ëµå
- *         - MGJN ³ëµå
- *         - LOJN ³ëµå
- *         - FOJN ³ëµå
- *         - AOJN ³ëµå
- *         - CONC ³ëµå
- *         - BUNI ³ëµå
- * ¿ë¾î ¼³¸í :
+ *     ë‹¤ìŒê³¼ ê°™ì€ Plan Nodeì˜ ìƒì„±ì„ ê´€ë¦¬í•œë‹¤.
+ *         - JOIN ë…¸ë“œ
+ *         - MGJN ë…¸ë“œ
+ *         - LOJN ë…¸ë“œ
+ *         - FOJN ë…¸ë“œ
+ *         - AOJN ë…¸ë“œ
+ *         - CONC ë…¸ë“œ
+ *         - BUNI ë…¸ë“œ
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  **********************************************************************/
 
@@ -50,7 +50,7 @@
 #include <qmoSubquery.h>
 
 //------------------------------
-//JOIN³ëµåÀÇ dependency¸¦ È£ÃâÀ» À§ÇÑ flag
+//JOINë…¸ë“œì˜ dependencyë¥¼ í˜¸ì¶œì„ ìœ„í•œ flag
 //------------------------------
 #define QMO_JOIN_DEPENDENCY ( QMO_DEPENDENCY_STEP1_SET_TABLE_MAP_FALSE     |    \
                               QMO_DEPENDENCY_STEP2_BASE_TABLE_FALSE        |    \
@@ -60,7 +60,7 @@
                               QMO_DEPENDENCY_STEP6_DEPENDENCIES_REFINE_FALSE )
 
 //------------------------------
-//MGJN³ëµåÀÇ dependency¸¦ È£ÃâÀ» À§ÇÑ flag
+//MGJNë…¸ë“œì˜ dependencyë¥¼ í˜¸ì¶œì„ ìœ„í•œ flag
 //------------------------------
 #define QMO_MGJN_DEPENDENCY ( QMO_DEPENDENCY_STEP1_SET_TABLE_MAP_TRUE     |     \
                               QMO_DEPENDENCY_STEP2_BASE_TABLE_FALSE        |    \
@@ -70,7 +70,7 @@
                               QMO_DEPENDENCY_STEP6_DEPENDENCIES_REFINE_FALSE )
 
 //------------------------------
-//LOJN³ëµåÀÇ dependency¸¦ È£ÃâÀ» À§ÇÑ flag
+//LOJNë…¸ë“œì˜ dependencyë¥¼ í˜¸ì¶œì„ ìœ„í•œ flag
 //------------------------------
 #define QMO_LOJN_DEPENDENCY ( QMO_DEPENDENCY_STEP1_SET_TABLE_MAP_FALSE     |    \
                               QMO_DEPENDENCY_STEP2_BASE_TABLE_FALSE        |    \
@@ -80,7 +80,7 @@
                               QMO_DEPENDENCY_STEP6_DEPENDENCIES_REFINE_FALSE )
 
 //------------------------------
-//FOJN³ëµåÀÇ dependency¸¦ È£ÃâÀ» À§ÇÑ flag
+//FOJNë…¸ë“œì˜ dependencyë¥¼ í˜¸ì¶œì„ ìœ„í•œ flag
 //------------------------------
 #define QMO_FOJN_DEPENDENCY ( QMO_DEPENDENCY_STEP1_SET_TABLE_MAP_FALSE     |    \
                               QMO_DEPENDENCY_STEP2_BASE_TABLE_FALSE        |    \
@@ -90,7 +90,7 @@
                               QMO_DEPENDENCY_STEP6_DEPENDENCIES_REFINE_FALSE )
 
 //------------------------------
-//AOJN³ëµåÀÇ dependency¸¦ È£ÃâÀ» À§ÇÑ flag
+//AOJNë…¸ë“œì˜ dependencyë¥¼ í˜¸ì¶œì„ ìœ„í•œ flag
 //------------------------------
 #define QMO_AOJN_DEPENDENCY ( QMO_DEPENDENCY_STEP1_SET_TABLE_MAP_FALSE     |    \
                               QMO_DEPENDENCY_STEP2_BASE_TABLE_FALSE        |    \
@@ -100,7 +100,7 @@
                               QMO_DEPENDENCY_STEP6_DEPENDENCIES_REFINE_FALSE )
 
 //------------------------------
-//CONC³ëµåÀÇ dependency¸¦ È£ÃâÀ» À§ÇÑ flag
+//CONCë…¸ë“œì˜ dependencyë¥¼ í˜¸ì¶œì„ ìœ„í•œ flag
 //------------------------------
 #define QMO_CONC_DEPENDENCY ( QMO_DEPENDENCY_STEP1_SET_TABLE_MAP_FALSE     |    \
                               QMO_DEPENDENCY_STEP2_BASE_TABLE_FALSE        |    \
@@ -110,7 +110,7 @@
                               QMO_DEPENDENCY_STEP6_DEPENDENCIES_REFINE_FALSE )
 
 //------------------------------
-//BUNI³ëµåÀÇ dependency¸¦ È£ÃâÀ» À§ÇÑ flag
+//BUNIë…¸ë“œì˜ dependencyë¥¼ í˜¸ì¶œì„ ìœ„í•œ flag
 //------------------------------
 #define QMO_BUNI_DEPENDENCY ( QMO_DEPENDENCY_STEP1_SET_TABLE_MAP_FALSE     |    \
                               QMO_DEPENDENCY_STEP2_BASE_TABLE_FALSE        |    \
@@ -121,7 +121,7 @@
 
 // PROJ-2582 recursive with
 //------------------------------
-// SREC³ëµåÀÇ dependency¸¦ È£ÃâÀ» À§ÇÑ flag
+// SRECë…¸ë“œì˜ dependencyë¥¼ í˜¸ì¶œì„ ìœ„í•œ flag
 //------------------------------
 #define QMO_SREC_DEPENDENCY ( QMO_DEPENDENCY_STEP1_SET_TABLE_MAP_FALSE     |    \
                               QMO_DEPENDENCY_STEP2_BASE_TABLE_FALSE        |    \
@@ -131,19 +131,19 @@
                               QMO_DEPENDENCY_STEP6_DEPENDENCIES_REFINE_FALSE )
 
 //---------------------------------------------------
-// Two-Child Non-Meterialized PlanÀ» °ü¸®ÇÏ±â À§ÇÑ ÀÚ·á ±¸Á¶
+// Two-Child Non-Meterialized Planì„ ê´€ë¦¬í•˜ê¸° ìœ„í•œ ìë£Œ êµ¬ì¡°
 //---------------------------------------------------
 
 
 //---------------------------------------------------
-// Two-Child Non-Materialized PlanÀ» °ü¸®ÇÏ±â À§ÇÑ ÇÔ¼ö
+// Two-Child Non-Materialized Planì„ ê´€ë¦¬í•˜ê¸° ìœ„í•œ í•¨ìˆ˜
 //---------------------------------------------------
 
 class qmoTwoNonPlan
 {
 public:
 
-    // JOIN ³ëµåÀÇ »ı¼º
+    // JOIN ë…¸ë“œì˜ ìƒì„±
     static IDE_RC    initJOIN( qcStatement   * aStatement,
                                qmsQuerySet   * aQuerySet,
                                qmsQuerySet   * aViewQuerySet,
@@ -160,7 +160,7 @@ public:
                                qmnPlan      * aRightChild ,
                                qmnPlan      * aPlan );
 
-    // MGJN ³ëµåÀÇ »ı¼º
+    // MGJN ë…¸ë“œì˜ ìƒì„±
     static IDE_RC    initMGJN( qcStatement   * aStatement ,
                                qmsQuerySet   * aQuerySet ,
                                qmoPredicate  * aJoinPredicate ,
@@ -177,7 +177,7 @@ public:
                                qmnPlan      * aRightChild ,
                                qmnPlan      * aPlan );
 
-    // LOJN ³ëµåÀÇ »ı¼º
+    // LOJN ë…¸ë“œì˜ ìƒì„±
     static IDE_RC    initLOJN( qcStatement   * aStatement ,
                                qmsQuerySet   * aQuerySet ,
                                qtcNode       * aJoinPredicate,
@@ -193,7 +193,7 @@ public:
                                 qmnPlan      * aRightChild ,
                                 qmnPlan      * aPlan );
 
-    // FOJN ³ëµåÀÇ »ı¼º
+    // FOJN ë…¸ë“œì˜ ìƒì„±
     static IDE_RC    initFOJN( qcStatement   * aStatement ,
                                qmsQuerySet   * aQuerySet ,
                                qtcNode       * aJoinPredicate,
@@ -209,7 +209,7 @@ public:
                                qmnPlan      * aRightChild ,
                                qmnPlan      * aPlan );
 
-    // AOJN ³ëµåÀÇ »ı¼º
+    // AOJN ë…¸ë“œì˜ ìƒì„±
     static IDE_RC    initAOJN( qcStatement   * aStatement ,
                                qmsQuerySet   * aQuerySet ,
                                qtcNode       * aFilter ,
@@ -224,7 +224,7 @@ public:
                                qmnPlan      * aRightChild ,
                                qmnPlan      * aPlan );
 
-    // CONC ³ëµåÀÇ »ı¼º
+    // CONC ë…¸ë“œì˜ ìƒì„±
     static IDE_RC    initCONC( qcStatement  * aStatement ,
                                qmsQuerySet  * aQuerySet ,
                                qmnPlan      * aParent,
@@ -237,7 +237,7 @@ public:
                                qmnPlan      * aRightChild ,
                                qmnPlan      * aPlan );
 
-    // BUNI ³ëµåÀÇ »ı¼º
+    // BUNI ë…¸ë“œì˜ ìƒì„±
     static IDE_RC    initBUNI( qcStatement  * aStatement ,
                                qmsQuerySet  * aQuerySet ,
                                qmnPlan      * aParent,
@@ -250,7 +250,7 @@ public:
                                qmnPlan      * aPlan );
     
     // PROJ-2582 recursive with
-    // SREC ³ëµåÀÇ »ı¼º
+    // SREC ë…¸ë“œì˜ ìƒì„±
     static IDE_RC    initSREC( qcStatement  * aStatement ,
                                qmsQuerySet  * aQuerySet ,
                                qmnPlan      * aParent,
@@ -265,7 +265,7 @@ public:
     
 private:
 
-    // PROJ-2551 simple query ÃÖÀûÈ­
+    // PROJ-2551 simple query ìµœì í™”
     static IDE_RC checkSimpleJOIN( qcStatement  * aStatement,
                                    qmncJOIN     * aJOIN );
 };

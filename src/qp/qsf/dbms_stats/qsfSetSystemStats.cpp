@@ -20,7 +20,7 @@
  *
  * Description :
  *     TASK-4990 changing the method of collecting index statistics
- *     SystemÀÇ Åë°èÁ¤º¸¸¦ ¼³Á¤ÇÑ´Ù.
+ *     Systemì˜ í†µê³„ì •ë³´ë¥¼ ì„¤ì •í•œë‹¤.
  *
  * Syntax :
  *    SET_SYSTEM_STATS (
@@ -55,7 +55,7 @@ static IDE_RC qsfEstimate( mtcNode*     aNode,
 mtfModule qsfSetSystemStatsModule = {
     1|MTC_NODE_OPERATOR_MISC|MTC_NODE_VARIABLE_TRUE,
     ~0,
-    1.0,                    // default selectivity (ºñ±³ ¿¬»êÀÚ ¾Æ´Ô)
+    1.0,                    // default selectivity (ë¹„êµ ì—°ì‚°ìž ì•„ë‹˜)
     qsfFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -189,7 +189,7 @@ IDE_RC qsfCalculate_SetSystemStats( mtcNode*     aNode,
 
     sStatValue = *sStatValuePtr;
 
-    // smiStatistics.cpp gDBMSStatColDesc ÀÇ ÀÌ¸§°ú µ¿ÀÏÇØ¾ß ÇÑ´Ù.
+    // smiStatistics.cpp gDBMSStatColDesc ì˜ ì´ë¦„ê³¼ ë™ì¼í•´ì•¼ í•œë‹¤.
     if ( idlOS::strMatch( (const SChar*)sStatName->value,
                           sStatName->length,
                           "SREAD_TIME",

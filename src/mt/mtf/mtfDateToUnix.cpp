@@ -45,7 +45,7 @@ static IDE_RC mtfDateToUnixEstimate( mtcNode     * aNode,
 mtfModule mtfDateToUnix = {
     1|MTC_NODE_OPERATOR_FUNCTION,
     ~(MTC_NODE_INDEX_MASK),
-    1.0, // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
+    1.0, // default selectivity (ë¹„êµ ì—°ì‚°ìžê°€ ì•„ë‹˜)
     mtfDateToUnixFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -136,8 +136,8 @@ IDE_RC mtfDateToUnixCalculate( mtcNode     * aNode,
  * Implementation :
  *   date_to_unix( 2009-04-07 04:48:30 )
  *
- *    aStack[0] : Unix Date ÀÇ Bigint °ª
- *    aStack[1] : Date °ª
+ *    aStack[0] : Unix Date ì˜ Bigint ê°’
+ *    aStack[1] : Date ê°’
  *
  *    ex) date_to_unix ( 2009-04-07 04:48:30 ) ==> 1239079710
  *

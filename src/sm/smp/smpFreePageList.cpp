@@ -28,10 +28,10 @@
 #include <smmManager.h>
 
 /**********************************************************************
- * Runtime ItemÀ» NULL·Î ¼³Á¤ÇÑ´Ù.
- * DISCARD/OFFLINE Tablespace¿¡ ¼ÓÇÑ Tableµé¿¡ ´ëÇØ ¼öÇàµÈ´Ù.
+ * Runtime Itemì„ NULLë¡œ ì„¤ì •í•œë‹¤.
+ * DISCARD/OFFLINE Tablespaceì— ì†í•œ Tableë“¤ì— ëŒ€í•´ ìˆ˜í–‰ëœë‹¤.
  *
- * aPageListEntry : ±¸ÃàÇÏ·Á´Â PageListEntry
+ * aPageListEntry : êµ¬ì¶•í•˜ë ¤ëŠ” PageListEntry
  **********************************************************************/
 IDE_RC smpFreePageList::setRuntimeNull( smpPageListEntry* aPageListEntry )
 {
@@ -42,10 +42,10 @@ IDE_RC smpFreePageList::setRuntimeNull( smpPageListEntry* aPageListEntry )
 
 
 /**********************************************************************
- * PageListEntry¿¡¼­ FreePage¿Í °ü·ÃµÈ RuntimeEntry¿¡ ´ëÇÑ ÃÊ±âÈ­ ¹×
- * FreePageListÀÇ Mutex ÃÊ±âÈ­
+ * PageListEntryì—ì„œ FreePageì™€ ê´€ë ¨ëœ RuntimeEntryì— ëŒ€í•œ ì´ˆê¸°í™” ë°
+ * FreePageListì˜ Mutex ì´ˆê¸°í™”
  *
- * aPageListEntry : ±¸ÃàÇÏ·Á´Â PageListEntry
+ * aPageListEntry : êµ¬ì¶•í•˜ë ¤ëŠ” PageListEntry
  **********************************************************************/
 
 IDE_RC smpFreePageList::initEntryAtRuntime( smpPageListEntry* aPageListEntry )
@@ -69,15 +69,15 @@ IDE_RC smpFreePageList::initEntryAtRuntime( smpPageListEntry* aPageListEntry )
              != IDE_SUCCESS);
 
     /*
-     * BUG-25327 : [MDB] Free Page Size Class °³¼ö¸¦ PropertyÈ­ ÇØ¾ß ÇÕ´Ï´Ù.
+     * BUG-25327 : [MDB] Free Page Size Class ê°œìˆ˜ë¥¼ Propertyí™” í•´ì•¼ í•©ë‹ˆë‹¤.
      */
     aPageListEntry->mRuntimeEntry->mSizeClassCount = smuProperty::getMemSizeClassCount();
     
-    // Record Count °ü·Ã ÃÊ±âÈ­
+    // Record Count ê´€ë ¨ ì´ˆê¸°í™”
     aPageListEntry->mRuntimeEntry->mInsRecCnt = 0;
     aPageListEntry->mRuntimeEntry->mDelRecCnt = 0;
 
-    //BUG-17371 [MMDB] AgingÀÌ ¹Ğ¸±°æ¿ì System¿¡ °úºÎÇÏ ¹× AgingÀÌ ¹Ğ¸®´Â Çö»óÀÌ ´õ ½ÉÈ­µÊ.
+    //BUG-17371 [MMDB] Agingì´ ë°€ë¦´ê²½ìš° Systemì— ê³¼ë¶€í•˜ ë° Agingì´ ë°€ë¦¬ëŠ” í˜„ìƒì´ ë” ì‹¬í™”ë¨.
     aPageListEntry->mRuntimeEntry->mOldVersionCount = 0;
     aPageListEntry->mRuntimeEntry->mUniqueViolationCount = 0;
     aPageListEntry->mRuntimeEntry->mUpdateRetryCount = 0;
@@ -94,10 +94,10 @@ IDE_RC smpFreePageList::initEntryAtRuntime( smpPageListEntry* aPageListEntry )
                  IDV_WAIT_INDEX_NULL)
              != IDE_SUCCESS);
 
-    // FreePageList&Pool ÃÊ±âÈ­
+    // FreePageList&Pool ì´ˆê¸°í™”
     initializeFreePageListAndPool( aPageListEntry );
     
-    // FreePagePoolÀÇ Mutex ÃÊ±âÈ­
+    // FreePagePoolì˜ Mutex ì´ˆê¸°í™”
     sFreePagePool = &(aPageListEntry->mRuntimeEntry->mFreePagePool);
     
     idlOS::snprintf( sBuffer, 128,
@@ -109,7 +109,7 @@ IDE_RC smpFreePageList::initEntryAtRuntime( smpPageListEntry* aPageListEntry )
                                                IDV_WAIT_INDEX_NULL )
              != IDE_SUCCESS);
 
-    // FreePageListÀÇ Mutex ÃÊ±âÈ­
+    // FreePageListì˜ Mutex ì´ˆê¸°í™”
     for( sPageListID = 0;
          sPageListID < SMP_PAGE_LIST_COUNT;
          sPageListID++ )
@@ -137,10 +137,10 @@ IDE_RC smpFreePageList::initEntryAtRuntime( smpPageListEntry* aPageListEntry )
 }
 
 /**********************************************************************
- * PageListEntry¿¡¼­ FreePage¿Í °ü·ÃµÈ RuntimeEntry¿¡ ´ëÇÑ ÇØÁ¦ ¹×
- * FreePageListÀÇ Mutex Á¦°Å
+ * PageListEntryì—ì„œ FreePageì™€ ê´€ë ¨ëœ RuntimeEntryì— ëŒ€í•œ í•´ì œ ë°
+ * FreePageListì˜ Mutex ì œê±°
  *
- * aPageListEntry : ÇØÁ¦ÇÏ·Á´Â PageListEntry
+ * aPageListEntry : í•´ì œí•˜ë ¤ëŠ” PageListEntry
  **********************************************************************/
 
 IDE_RC smpFreePageList::finEntryAtRuntime( smpPageListEntry* aPageListEntry )
@@ -167,7 +167,7 @@ IDE_RC smpFreePageList::finEntryAtRuntime( smpPageListEntry* aPageListEntry )
                 != IDE_SUCCESS);
         }
 
-        // RuntimeEntry Á¦°Å
+        // RuntimeEntry ì œê±°
         // To Fix BUG-14185
         IDE_TEST(aPageListEntry->mRuntimeEntry->mMutex.destroy() != IDE_SUCCESS );
     
@@ -178,7 +178,7 @@ IDE_RC smpFreePageList::finEntryAtRuntime( smpPageListEntry* aPageListEntry )
     else
     {
         // Do Nothing
-        // OFFLINE/DISCARD Tablespace´Â mRuntimeEntry°¡ NULLÀÏ ¼ö ÀÖ´Ù
+        // OFFLINE/DISCARD TablespaceëŠ” mRuntimeEntryê°€ NULLì¼ ìˆ˜ ìˆë‹¤
     }
     
     
@@ -190,9 +190,9 @@ IDE_RC smpFreePageList::finEntryAtRuntime( smpPageListEntry* aPageListEntry )
 }
 
 /**********************************************************************
- * PageListEntry ÇØÁ¦¸¦ À§ÇÑ FreePage¿Í °ü·ÃµÈ RuntimeEntry Á¤º¸ ÇØÁ¦
+ * PageListEntry í•´ì œë¥¼ ìœ„í•œ FreePageì™€ ê´€ë ¨ëœ RuntimeEntry ì •ë³´ í•´ì œ
  *
- * aPageListEntry : ÇØÁ¦ÇÏ·Á´Â PageListEntry
+ * aPageListEntry : í•´ì œí•˜ë ¤ëŠ” PageListEntry
  **********************************************************************/
 
 void smpFreePageList::initializeFreePageListAndPool(
@@ -238,12 +238,12 @@ void smpFreePageList::initializeFreePageListAndPool(
 }
 
 /**********************************************************************
- * FreeSlotList¸¦ ÃÊ±âÈ­ÇÑ´Ù.
- * ( Page³»ÀÇ ¸ğµç FreeSlotÀº ¿¬°áµÇ¾î ÀÖÀ¸¸ç,
- *   FreeSlotList¸¦ FreePageHeader¿¡ ºÙÀÌ´Â ÀÛ¾÷À» ÇÑ´Ù. )
+ * FreeSlotListë¥¼ ì´ˆê¸°í™”í•œë‹¤.
+ * ( Pageë‚´ì˜ ëª¨ë“  FreeSlotì€ ì—°ê²°ë˜ì–´ ìˆìœ¼ë©°,
+ *   FreeSlotListë¥¼ FreePageHeaderì— ë¶™ì´ëŠ” ì‘ì—…ì„ í•œë‹¤. )
  *
- * aPageListEntry : ÃÊ±âÈ­ÇÏ·Á´Â PageListEntry
- * aPagePtr       : ÃÊ±âÈ­ÇÏ·Á´Â Page
+ * aPageListEntry : ì´ˆê¸°í™”í•˜ë ¤ëŠ” PageListEntry
+ * aPagePtr       : ì´ˆê¸°í™”í•˜ë ¤ëŠ” Page
  **********************************************************************/
 
 void smpFreePageList::initializeFreeSlotListAtPage(
@@ -257,18 +257,18 @@ void smpFreePageList::initializeFreeSlotListAtPage(
     IDE_DASSERT( aPageListEntry != NULL );
     IDE_DASSERT( aPagePtr != NULL );
     
-    // Page³»ÀÇ Ã¹ SlotÀ§Ä¡¸¦ À§ÇÑ OffsetÀ» ±¸ÇÑ´Ù.
+    // Pageë‚´ì˜ ì²« Slotìœ„ì¹˜ë¥¼ ìœ„í•œ Offsetì„ êµ¬í•œë‹¤.
     sPageBodyOffset = (UShort)SMP_PERS_PAGE_BODY_OFFSET;
     
     if( SMP_GET_PERS_PAGE_TYPE( aPagePtr ) == SMP_PAGETYPE_VAR)
     {
-        // VarPageÀÎ °æ¿ì Ãß°¡ÀûÀÎ VarPageHeader¸¸Å­ OffsetÀ» ´õÇÑ´Ù.
+        // VarPageì¸ ê²½ìš° ì¶”ê°€ì ì¸ VarPageHeaderë§Œí¼ Offsetì„ ë”í•œë‹¤.
         sPageBodyOffset += ID_SIZEOF(smpVarPageHeader);
     }
     
     sFreePageHeader = getFreePageHeader(aSpaceID, aPagePtr);
 
-    // Ã¹ SlotÀ» Head¿¡ µî·ÏÇÑ´Ù.
+    // ì²« Slotì„ Headì— ë“±ë¡í•œë‹¤.
     
     sFreePageHeader->mFreeSlotHead  = (SChar*)aPagePtr + sPageBodyOffset;
     sFreePageHeader->mFreeSlotTail  = (SChar*)aPagePtr + sPageBodyOffset
@@ -280,18 +280,18 @@ void smpFreePageList::initializeFreeSlotListAtPage(
 }
 
 /**********************************************************************
- * FreePageList ±¸Ãà
+ * FreePageList êµ¬ì¶•
  *
- * refineDB¿¡¼­ ¸ğµç Page¸¦ ScanÇÏ¸é¼­ °¢ PageÀÇ FreeSlotList¸¦ ±¸ÃàÇß°í,
- * °¢ FreePage¸¦ FreePageList[0]¿¡ µî·ÏÇÏ¿´´Ù.
+ * refineDBì—ì„œ ëª¨ë“  Pageë¥¼ Scaní•˜ë©´ì„œ ê° Pageì˜ FreeSlotListë¥¼ êµ¬ì¶•í–ˆê³ ,
+ * ê° FreePageë¥¼ FreePageList[0]ì— ë“±ë¡í•˜ì˜€ë‹¤.
  *
- * ¿©±â¼­´Â FreePageList[0]¿¡¼­ °¢ FreePageListº°·Î FreePage¸¦ ³ª´©¾î ÁØ´Ù.
+ * ì—¬ê¸°ì„œëŠ” FreePageList[0]ì—ì„œ ê° FreePageListë³„ë¡œ FreePageë¥¼ ë‚˜ëˆ„ì–´ ì¤€ë‹¤.
  *
- * buildFreePageListÀº refineDB½Ã admin Æ®·£Àè¼Ç¿¡ ÀÇÇØ¼­¸¸ ¼öÇàµÇ°í,
- * Ager¿Í °°Àº ´Ù¸¥ Æ®·£Àè¼ÇÀº ÀüÇô °£¼·À» ÇÏÁö ¾ÊÀ¸¹Ç·Î Mutex¸¦ ¾ÈÀâ°í ¼öÇà
+ * buildFreePageListì€ refineDBì‹œ admin íŠ¸ëœì­ì…˜ì— ì˜í•´ì„œë§Œ ìˆ˜í–‰ë˜ê³ ,
+ * Agerì™€ ê°™ì€ ë‹¤ë¥¸ íŠ¸ëœì­ì…˜ì€ ì „í˜€ ê°„ì„­ì„ í•˜ì§€ ì•Šìœ¼ë¯€ë¡œ Mutexë¥¼ ì•ˆì¡ê³  ìˆ˜í–‰
  *
- * aTrans         : ÀÛ¾÷À» ¼öÇàÇÏ´Â Æ®·£Àè¼Ç °´Ã¼
- * aPageListEntry : ±¸ÃàÇÏ·Á´Â PageListEntry
+ * aTrans         : ì‘ì—…ì„ ìˆ˜í–‰í•˜ëŠ” íŠ¸ëœì­ì…˜ ê°ì²´
+ * aPageListEntry : êµ¬ì¶•í•˜ë ¤ëŠ” PageListEntry
  **********************************************************************/
 
 void smpFreePageList::distributePagesFromFreePageList0ToTheOthers(
@@ -333,9 +333,9 @@ void smpFreePageList::distributePagesFromFreePageList0ToTheOthers(
         if( (sSizeClassID == sEmptySizeClassID) &&
             (sFreePageList0->mPageCount[sSizeClassID] > sNeedAssignCount) )
         {
-            // ¸¶Áö¸· SIZE_CLASS (EmptyPage)ÀÎ °æ¿ì ¹«Á¶°Ç 1/NÇÏ´Â°Ô ¾Æ´Ï¶ó
-            // FREE_THRESHOLD ¸¸Å­¾¿¸¸ ³ª´©¾î ÁÖ°í ³²Àº °ÍÀº FreePagePool¿¡
-            // ¹İÈ¯ÇÑ´Ù.
+            // ë§ˆì§€ë§‰ SIZE_CLASS (EmptyPage)ì¸ ê²½ìš° ë¬´ì¡°ê±´ 1/Ní•˜ëŠ”ê²Œ ì•„ë‹ˆë¼
+            // FREE_THRESHOLD ë§Œí¼ì”©ë§Œ ë‚˜ëˆ„ì–´ ì£¼ê³  ë‚¨ì€ ê²ƒì€ FreePagePoolì—
+            // ë°˜í™˜í•œë‹¤.
             sAssignCount = SMP_FREEPAGELIST_MINPAGECOUNT;
         }
         else
@@ -346,7 +346,7 @@ void smpFreePageList::distributePagesFromFreePageList0ToTheOthers(
         
         if(sAssignCount > 0)
         {
-            // sFreePageList[0] ~> [1]...[N] ³ª´©¾î ÁØ´Ù.
+            // sFreePageList[0] ~> [1]...[N] ë‚˜ëˆ„ì–´ ì¤€ë‹¤.
             for( sPageListID = 1;
                  sPageListID < SMP_PAGE_LIST_COUNT;
                  sPageListID++ )
@@ -362,12 +362,12 @@ void smpFreePageList::distributePagesFromFreePageList0ToTheOthers(
                 // sFreePageList[1] : []-[]
                 // sFreePageList[2] :       []-[]
 
-                // List0ÀÇ Head¸¦ ³ª´©¾îÁÙ ListÀÇ Head·Î ³Ñ°ÜÁÖ°í
+                // List0ì˜ Headë¥¼ ë‚˜ëˆ„ì–´ì¤„ Listì˜ Headë¡œ ë„˜ê²¨ì£¼ê³ 
                 sFreePageHeader = sFreePageList0->mHead[sSizeClassID];
                 
                 sFreePageList->mHead[sSizeClassID] = sFreePageHeader;
 
-                // AssignCount¸¸Å­ SkipÇÏ°í
+                // AssignCountë§Œí¼ Skipí•˜ê³ 
                 for( sPageCounter = 0;
                      sPageCounter < sAssignCount - 1;
                      sPageCounter++ )
@@ -380,17 +380,17 @@ void smpFreePageList::distributePagesFromFreePageList0ToTheOthers(
                     sFreePageHeader = sFreePageHeader->mFreeNext;
                 }
 
-                // ¸¶Áö¸· FreePage±îÁö NULLÀÌ ¾Æ´Ï¾î¾ß ÇÑ´Ù.
+                // ë§ˆì§€ë§‰ FreePageê¹Œì§€ NULLì´ ì•„ë‹ˆì–´ì•¼ í•œë‹¤.
                 IDE_DASSERT( sFreePageHeader != NULL );
                 
-                // ¸¶Áö¸· FreePage¸¦ Tail·Î µî·ÏÇÏ°í
+                // ë§ˆì§€ë§‰ FreePageë¥¼ Tailë¡œ ë“±ë¡í•˜ê³ 
                 sFreePageList->mTail[sSizeClassID] = sFreePageHeader;
                 sFreePageHeader->mFreeListID       = sPageListID;
                 sFreePageHeader->mSizeClassID      = sSizeClassID;
 
                 sNextFreePageHeader = sFreePageHeader->mFreeNext;
 
-                // ¸¶Áö¸· FreePageÀÇ ¸µÅ©¸¦ ²÷¾îÁØ´Ù.
+                // ë§ˆì§€ë§‰ FreePageì˜ ë§í¬ë¥¼ ëŠì–´ì¤€ë‹¤.
                 if(sNextFreePageHeader == NULL)
                 {
                     sFreePageList0->mTail[sSizeClassID] = NULL;
@@ -401,7 +401,7 @@ void smpFreePageList::distributePagesFromFreePageList0ToTheOthers(
                     sNextFreePageHeader->mFreePrev = NULL;
                 }
 
-                // ¸¶Áö¸· FreePage ´ÙÀ½ FreePageºÎÅÍ List0·Î ´Ù½Ã µî·ÏÇÑ´Ù.
+                // ë§ˆì§€ë§‰ FreePage ë‹¤ìŒ FreePageë¶€í„° List0ë¡œ ë‹¤ì‹œ ë“±ë¡í•œë‹¤.
                 sFreePageList0->mHead[sSizeClassID] = sNextFreePageHeader;
 
                 sFreePageList0->mPageCount[sSizeClassID] -= sAssignCount;
@@ -427,16 +427,16 @@ void smpFreePageList::distributePagesFromFreePageList0ToTheOthers(
 }
 
 /**********************************************************************
- * FreePagePool ±¸Ãà
+ * FreePagePool êµ¬ì¶•
  *
- * EmptyPageÀÇ °æ¿ì °¢ FreePageList¿¡ FREE_THRESHOLD¸¸Å­¾¿¸¸ ³ª´²ÁÖ°í,
- * ³²¾ÒÀ» °æ¿ì FreePageList[0]¿¡¼­ ±× ÀÌ»óÀÇ °ÍÀ» FreePagePool·Î ¹İÈ¯ÇÑ´Ù.
+ * EmptyPageì˜ ê²½ìš° ê° FreePageListì— FREE_THRESHOLDë§Œí¼ì”©ë§Œ ë‚˜ëˆ ì£¼ê³ ,
+ * ë‚¨ì•˜ì„ ê²½ìš° FreePageList[0]ì—ì„œ ê·¸ ì´ìƒì˜ ê²ƒì„ FreePagePoolë¡œ ë°˜í™˜í•œë‹¤.
  *
- * buildFreePagePoolÀº refineDB½Ã admin Æ®·£Àè¼Ç¿¡ ÀÇÇØ¼­¸¸ ¼öÇàµÇ°í,
- * Ager¿Í °°Àº ´Ù¸¥ Æ®·£Àè¼ÇÀº ÀüÇô °£¼·À» ÇÏÁö ¾ÊÀ¸¹Ç·Î Mutex¸¦ ¾ÈÀâ°í ¼öÇà
+ * buildFreePagePoolì€ refineDBì‹œ admin íŠ¸ëœì­ì…˜ì— ì˜í•´ì„œë§Œ ìˆ˜í–‰ë˜ê³ ,
+ * Agerì™€ ê°™ì€ ë‹¤ë¥¸ íŠ¸ëœì­ì…˜ì€ ì „í˜€ ê°„ì„­ì„ í•˜ì§€ ì•Šìœ¼ë¯€ë¡œ Mutexë¥¼ ì•ˆì¡ê³  ìˆ˜í–‰
  *
- * aTrans         : ÀÛ¾÷À» ¼öÇàÇÏ´Â Æ®·£Àè¼Ç °´Ã¼
- * aPageListEntry : ±¸ÃàÇÏ·Á´Â PageListEntry
+ * aTrans         : ì‘ì—…ì„ ìˆ˜í–‰í•˜ëŠ” íŠ¸ëœì­ì…˜ ê°ì²´
+ * aPageListEntry : êµ¬ì¶•í•˜ë ¤ëŠ” PageListEntry
  **********************************************************************/
 
 IDE_RC smpFreePageList::distributePagesFromFreePageList0ToFreePagePool(
@@ -471,8 +471,8 @@ IDE_RC smpFreePageList::distributePagesFromFreePageList0ToFreePagePool(
     if( sFreePageList0->mPageCount[sEmptySizeClassID]
         > SMP_FREEPAGELIST_MINPAGECOUNT )
     {
-        // FreePageList[0]¿¡ FreePageCount°¡ FREE_THRESHOLDº¸´Ù Å¬ °æ¿ì
-        // FREE_THRESHOLDÀÌ»óÀÇ °ÍÀ» FreePagePool·Î ¹İ³³ÇÑ´Ù.
+        // FreePageList[0]ì— FreePageCountê°€ FREE_THRESHOLDë³´ë‹¤ í´ ê²½ìš°
+        // FREE_THRESHOLDì´ìƒì˜ ê²ƒì„ FreePagePoolë¡œ ë°˜ë‚©í•œë‹¤.
         sAssignCount  = sFreePageList0->mPageCount[sEmptySizeClassID]
                       - SMP_FREEPAGELIST_MINPAGECOUNT;
         
@@ -480,8 +480,8 @@ IDE_RC smpFreePageList::distributePagesFromFreePageList0ToFreePagePool(
 
         IDE_DASSERT( sFreePagePool->mHead == NULL );
 
-        // SIZE_CLASS_COUNT°¡ 1ÀÏ °æ¿ì Non-EmptyPage¿Í EmptyPage°¡ ¼¯¿©ÀÖÀ¸¹Ç·Î,
-        // FreePagePool¿¡ µé¾î°¥ ¼ö ÀÖ´Â EmptyPage¸¸À» °É·¯¾ß ÇÑ´Ù.
+        // SIZE_CLASS_COUNTê°€ 1ì¼ ê²½ìš° Non-EmptyPageì™€ EmptyPageê°€ ì„ì—¬ìˆìœ¼ë¯€ë¡œ,
+        // FreePagePoolì— ë“¤ì–´ê°ˆ ìˆ˜ ìˆëŠ” EmptyPageë§Œì„ ê±¸ëŸ¬ì•¼ í•œë‹¤.
 
         // Before :
         // sFreePageList[0] : []-[]-[]-[]
@@ -489,18 +489,18 @@ IDE_RC smpFreePageList::distributePagesFromFreePageList0ToFreePagePool(
         // sFreePageList[0] :       []-[]
         // sFreePagePool    : []-[]
 
-        // List0ÀÇ Head¸¦ Pool·Î ¿Å±â°í
+        // List0ì˜ Headë¥¼ Poolë¡œ ì˜®ê¸°ê³ 
         sFreePageHeader = sFreePageList0->mHead[sEmptySizeClassID];
 
-        // AssignCount ¸¸Å­ SkipÇÏ°í
+        // AssignCount ë§Œí¼ Skipí•˜ê³ 
         while( (sPageCounter < sAssignCount) && (sFreePageHeader != NULL) )
         {
             sNextFreePageHeader = sFreePageHeader->mFreeNext;
 
             /*
-             * BUG-25327 : [MDB] Free Page Size Class °³¼ö¸¦ PropertyÈ­ ÇØ¾ß ÇÕ´Ï´Ù.
-             * Free Page Size Class°¡ 1ÀÎ °æ¿ì´Â Non-EmptyPage¿Í EmptyÆäÀÌÁö°¡ °øÁ¸ÇÒ¼ö ÀÖ´Ù.
-             * Empty ÆäÀÌÁö¸¸À» Free Page Pool·Î ¿Å±ä´Ù.
+             * BUG-25327 : [MDB] Free Page Size Class ê°œìˆ˜ë¥¼ Propertyí™” í•´ì•¼ í•©ë‹ˆë‹¤.
+             * Free Page Size Classê°€ 1ì¸ ê²½ìš°ëŠ” Non-EmptyPageì™€ Emptyí˜ì´ì§€ê°€ ê³µì¡´í• ìˆ˜ ìˆë‹¤.
+             * Empty í˜ì´ì§€ë§Œì„ Free Page Poolë¡œ ì˜®ê¸´ë‹¤.
              */
             if( aPageListEntry->mSlotCount == sFreePageHeader->mFreeSlotCount )
             {
@@ -566,7 +566,7 @@ IDE_RC smpFreePageList::distributePagesFromFreePageList0ToFreePagePool(
         sFreePageList0->mPageCount[sEmptySizeClassID] -= sPageCounter;
         sFreePagePool->mPageCount                     += sPageCounter;
 
-        // Pool¿¡ µî·ÏµÈ FreePage(EmptyPage)°¡ ³Ê¹« ¸¹À¸¸é DB·Î ¹İ³³ÇÑ´Ù.
+        // Poolì— ë“±ë¡ëœ FreePage(EmptyPage)ê°€ ë„ˆë¬´ ë§ìœ¼ë©´ DBë¡œ ë°˜ë‚©í•œë‹¤.
         if( sFreePagePool->mPageCount > SMP_FREEPAGELIST_MINPAGECOUNT )
         {
             IDE_TEST( freePagesFromFreePagePoolToDB( aTrans,
@@ -597,12 +597,12 @@ IDE_RC smpFreePageList::distributePagesFromFreePageList0ToFreePagePool(
 }
 
 /**********************************************************************
- * FreePagePool·ÎºÎÅÍ FreePageList¿¡ FREE_THRESHOLD¸¸Å­¾¿
- * FreePages¸¦ ÇÒ´çÇÒ ¼ö ÀÖÀ»Áö °Ë»çÇÏ°í °¡´ÉÇÏ¸é ÇÒ´çÇÑ´Ù.
+ * FreePagePoolë¡œë¶€í„° FreePageListì— FREE_THRESHOLDë§Œí¼ì”©
+ * FreePagesë¥¼ í• ë‹¹í•  ìˆ˜ ìˆì„ì§€ ê²€ì‚¬í•˜ê³  ê°€ëŠ¥í•˜ë©´ í• ë‹¹í•œë‹¤.
  *
- * aPageListEntry : ÀÛ¾÷ÇÒ PageListEntry
- * aPageListID    : ÇÒ´ç¹ŞÀ» FreePageListÀÇ ListID
- * aRc            : ÇÒ´ç¹Ş¾Ò´ÂÁö °á°ú¸¦ ¹İÈ¯ÇÑ´Ù.
+ * aPageListEntry : ì‘ì—…í•  PageListEntry
+ * aPageListID    : í• ë‹¹ë°›ì„ FreePageListì˜ ListID
+ * aRc            : í• ë‹¹ë°›ì•˜ëŠ”ì§€ ê²°ê³¼ë¥¼ ë°˜í™˜í•œë‹¤.
  **********************************************************************/
 
 IDE_RC smpFreePageList::tryForAllocPagesFromPool(
@@ -625,13 +625,13 @@ IDE_RC smpFreePageList::tryForAllocPagesFromPool(
 
     if(sFreePagePool->mPageCount >= SMP_MOVEPAGECOUNT_POOL2LIST)
     {
-        // PoolÀÇ °¹¼ö¸¦ ¸ÕÀú °¡Á®¿Ã ¸¸Å­ ÀÖ´ÂÁö º¸°í,
-        // Pool¿¡ lockÀ» Àâ°í ÀÛ¾÷ÇÑ´Ù. ListÀÇ lockÀº ÇÏÀ§ ÇÔ¼ö¿¡¼­ Àâ´Â´Ù.
+        // Poolì˜ ê°¯ìˆ˜ë¥¼ ë¨¼ì € ê°€ì ¸ì˜¬ ë§Œí¼ ìˆëŠ”ì§€ ë³´ê³ ,
+        // Poolì— lockì„ ì¡ê³  ì‘ì—…í•œë‹¤. Listì˜ lockì€ í•˜ìœ„ í•¨ìˆ˜ì—ì„œ ì¡ëŠ”ë‹¤.
         IDE_TEST(sFreePagePool->mMutex.lock( NULL /* idvSQL* */ )
                  != IDE_SUCCESS);
         sState = 1;
         
-        // lockÀ» Àâ±âÀü¿¡ ´Ù¸¥ Tx¿¡ ÀÇÇØ º¯°æµÇ¾ú´ÂÁö ´Ù½Ã È®ÀÎ
+        // lockì„ ì¡ê¸°ì „ì— ë‹¤ë¥¸ Txì— ì˜í•´ ë³€ê²½ë˜ì—ˆëŠ”ì§€ ë‹¤ì‹œ í™•ì¸
         if(sFreePagePool->mPageCount >= SMP_MOVEPAGECOUNT_POOL2LIST)
         {
             IDE_TEST(getPagesFromFreePagePool( aPageListEntry,
@@ -664,12 +664,12 @@ IDE_RC smpFreePageList::tryForAllocPagesFromPool(
 }
 
 /**********************************************************************
- * FreePagePool·ÎºÎÅÍ FreePageList¿¡ FREE_THRESHOLD¸¸Å­¾¿ FreePages ÇÒ´ç
+ * FreePagePoolë¡œë¶€í„° FreePageListì— FREE_THRESHOLDë§Œí¼ì”© FreePages í• ë‹¹
  *
- * Pool¿¡ ´ëÇÑ LockÀ» Àâ°í µé¾î¿Í¾ß ÇÑ´Ù.
+ * Poolì— ëŒ€í•œ Lockì„ ì¡ê³  ë“¤ì–´ì™€ì•¼ í•œë‹¤.
  *
- * aPageListEntry : ÀÛ¾÷ÇÒ PageListEntry
- * aPageListID    : ÇÒ´ç¹ŞÀ» FreePageList ID
+ * aPageListEntry : ì‘ì—…í•  PageListEntry
+ * aPageListID    : í• ë‹¹ë°›ì„ FreePageList ID
  **********************************************************************/
 
 IDE_RC smpFreePageList::getPagesFromFreePagePool(
@@ -717,13 +717,13 @@ IDE_RC smpFreePageList::getPagesFromFreePagePool(
     // sFreePageList : []-[]
     // sFreePagePool :       []-[]
         
-     // FreePagePoolÀÇ Head¸¦ FreePageList·Î ¿Å±â°í
+     // FreePagePoolì˜ Headë¥¼ FreePageListë¡œ ì˜®ê¸°ê³ 
     sCurFreePageHeader  = sFreePagePool->mHead;
     sTailFreePageHeader = sFreePageList->mTail[sEmptySizeClassID];
     
     if(sTailFreePageHeader == NULL)
     {
-        // ListÀÇ TailÀÌ NULLÀÌ¶ó¸é List°¡ ºñ¾îÀÖ´Ù.
+        // Listì˜ Tailì´ NULLì´ë¼ë©´ Listê°€ ë¹„ì–´ìˆë‹¤.
         IDE_DASSERT( sFreePageList->mHead[sEmptySizeClassID] == NULL );
         
         sFreePageList->mHead[sEmptySizeClassID] = sCurFreePageHeader;
@@ -736,7 +736,7 @@ IDE_RC smpFreePageList::getPagesFromFreePagePool(
         sCurFreePageHeader->mFreePrev      = sTailFreePageHeader;
     }
 
-    // AssignCount¸¸Å­ SkipÇÏ°í
+    // AssignCountë§Œí¼ Skipí•˜ê³ 
     for( sPageCounter = 0;
          sPageCounter < sAssignCount;
          sPageCounter++ )
@@ -751,7 +751,7 @@ IDE_RC smpFreePageList::getPagesFromFreePagePool(
 
     if(sCurFreePageHeader == NULL)
     {
-        // ¸¶Áö¸· FreePage ´ÙÀ½ÀÌ NULLÀÌ¶ó¸é ¸¶Áö¸·ÀÌ TailÀÌ´Ù.
+        // ë§ˆì§€ë§‰ FreePage ë‹¤ìŒì´ NULLì´ë¼ë©´ ë§ˆì§€ë§‰ì´ Tailì´ë‹¤.
         sTailFreePageHeader = sFreePagePool->mTail;
 
         sFreePagePool->mTail = NULL;
@@ -760,12 +760,12 @@ IDE_RC smpFreePageList::getPagesFromFreePagePool(
     {
         sTailFreePageHeader = sCurFreePageHeader->mFreePrev;
 
-        // ¾çÂÊ ¸®½ºÆ®¸¦ ²÷¾îÁØ´Ù.
+        // ì–‘ìª½ ë¦¬ìŠ¤íŠ¸ë¥¼ ëŠì–´ì¤€ë‹¤.
         sTailFreePageHeader->mFreeNext = NULL;
         sCurFreePageHeader->mFreePrev  = NULL;
     }
     
-    // AssignCount¹øÂ° Page¸¦ FreePageListÀÇ Tail·Î µî·Ï
+    // AssignCountë²ˆì§¸ Pageë¥¼ FreePageListì˜ Tailë¡œ ë“±ë¡
     sFreePageList->mTail[sEmptySizeClassID] = sTailFreePageHeader;
     sFreePagePool->mHead                    = sCurFreePageHeader;
 
@@ -804,10 +804,10 @@ IDE_RC smpFreePageList::getPagesFromFreePagePool(
 }
 
 /**********************************************************************
- * FreePagePool¿¡ FreePage Ãß°¡
+ * FreePagePoolì— FreePage ì¶”ê°€
  *
- * aPageListEntry  : ±¸ÃàÇÏ·Á´Â PageListEntry
- * aFreePageHeader : Ãß°¡ÇÏ·Á´Â FreePageHeader
+ * aPageListEntry  : êµ¬ì¶•í•˜ë ¤ëŠ” PageListEntry
+ * aFreePageHeader : ì¶”ê°€í•˜ë ¤ëŠ” FreePageHeader
  **********************************************************************/
 
 IDE_RC smpFreePageList::addPageToFreePagePool(
@@ -825,10 +825,10 @@ IDE_RC smpFreePageList::addPageToFreePagePool(
 
     IDE_DASSERT(sFreePagePool != NULL);
 
-    // Pool¿¡ µé¾î¿À´Â Page´Â EmptyPage¿©¾ß ÇÑ´Ù.
+    // Poolì— ë“¤ì–´ì˜¤ëŠ” PageëŠ” EmptyPageì—¬ì•¼ í•œë‹¤.
     IDE_DASSERT(aFreePageHeader->mFreeSlotCount == aPageListEntry->mSlotCount);
 
-    // FreePageHeader Á¤º¸ ÃÊ±âÈ­
+    // FreePageHeader ì •ë³´ ì´ˆê¸°í™”
     aFreePageHeader->mFreeNext    = (smpFreePageHeader *)SM_NULL_PID;
     aFreePageHeader->mFreeListID  = SMP_POOL_PAGELISTID;
     aFreePageHeader->mSizeClassID = SMP_EMPTYPAGE_CLASSID( aPageListEntry->mRuntimeEntry );
@@ -843,7 +843,7 @@ IDE_RC smpFreePageList::addPageToFreePagePool(
 
     sTailFreePageHeader = sFreePagePool->mTail;
 
-    // FreePagePoolÀÇ Tail¿¡ ºÙÀÎ´Ù.
+    // FreePagePoolì˜ Tailì— ë¶™ì¸ë‹¤.
     if(sTailFreePageHeader == NULL)
     {
         IDE_DASSERT(sFreePagePool->mHead == NULL);
@@ -888,13 +888,13 @@ IDE_RC smpFreePageList::addPageToFreePagePool(
 }
 
 /**********************************************************************
- * FreePageµéÀ» PageListEntry¿¡¼­ Á¦°Å
+ * FreePageë“¤ì„ PageListEntryì—ì„œ ì œê±°
  *
- * FreePage¸¦ Á¦°ÅÇÏ±â À§ÇØ¼­´Â ´Ù¸¥ Tx°¡ Á¢±ÙÇØ¼­´Â ¾ÈµÈ´Ù.
- * refineDB¶§¿Í °°ÀÌ ÇÏ³ªÀÇ Tx¸¸ Á¢±ÙÇØ¾ß µÈ´Ù.
+ * FreePageë¥¼ ì œê±°í•˜ê¸° ìœ„í•´ì„œëŠ” ë‹¤ë¥¸ Txê°€ ì ‘ê·¼í•´ì„œëŠ” ì•ˆëœë‹¤.
+ * refineDBë•Œì™€ ê°™ì´ í•˜ë‚˜ì˜ Txë§Œ ì ‘ê·¼í•´ì•¼ ëœë‹¤.
  *
- * aTrans         : ÀÛ¾÷À» ¼öÇàÇÏ´Â Æ®·£Àè¼Ç °´Ã¼
- * aPageListEntry : Á¦°ÅÇÏ·Á´Â PageListEntry
+ * aTrans         : ì‘ì—…ì„ ìˆ˜í–‰í•˜ëŠ” íŠ¸ëœì­ì…˜ ê°ì²´
+ * aPageListEntry : ì œê±°í•˜ë ¤ëŠ” PageListEntry
  * aPages         : # of Pages for compaction
  **********************************************************************/
 
@@ -934,12 +934,12 @@ IDE_RC smpFreePageList::freePagesFromFreePagePoolToDB(
     IDE_ASSERT( sFreePagePool != NULL );
 
     // To fix BUG-28189
-    // Ager °¡ Á¢±ÙÇÏÁö ¸øÇÏµµ·Ï lock À» Àâ´Â´Ù.
+    // Ager ê°€ ì ‘ê·¼í•˜ì§€ ëª»í•˜ë„ë¡ lock ì„ ì¡ëŠ”ë‹¤.
     IDE_TEST( sFreePagePool->mMutex.lock(NULL /* idvSQL* */) != IDE_SUCCESS );
     sIsLocked = ID_TRUE;
 
     // To fix BUG-28189
-    // ÃÖ¼ÒÇÑÀÇ page count ¿Í °°°Å³ª ÀÛÀ¸¸é ´õ ÀÌ»ó compact ¸¦ ÇÒ ÇÊ¿ä°¡ ¾ø´Ù.
+    // ìµœì†Œí•œì˜ page count ì™€ ê°™ê±°ë‚˜ ì‘ìœ¼ë©´ ë” ì´ìƒ compact ë¥¼ í•  í•„ìš”ê°€ ì—†ë‹¤.
     if( sFreePagePool->mPageCount <= sLimitMinFreePageCount )
     {
         sIsLocked = ID_FALSE;
@@ -952,12 +952,12 @@ IDE_RC smpFreePageList::freePagesFromFreePagePoolToDB(
                                       sFreePagePool->mPageCount)
                  == ID_TRUE );
 
-    // FreePagePool¿¡¼­ FREE_THRESHOLD¸¸Å­¸¸ ³²±â°í Á¦°ÅÇÑ´Ù.
+    // FreePagePoolì—ì„œ FREE_THRESHOLDë§Œí¼ë§Œ ë‚¨ê¸°ê³  ì œê±°í•œë‹¤.
     sRemovePageCount = sFreePagePool->mPageCount - sLimitMinFreePageCount;
 
-    /* BUG-43464 compaction ±â´É¿¡¼­ ÆäÀÌÁö ¼ö¸¦ Á¦ÇÑÇÒ¼ö ÀÖµµ·Ï ÇÕ´Ï´Ù.
-     * #compact pages °¡ ÀÔ·ÂµÇ¾ú°í freePage ¼öº¸´Ù ÀûÀ» °æ¿ì´Â
-     * ÀÔ·ÂµÈ ¼ö ¸¸Å­¸¸ compaction ¼öÇà */
+    /* BUG-43464 compaction ê¸°ëŠ¥ì—ì„œ í˜ì´ì§€ ìˆ˜ë¥¼ ì œí•œí• ìˆ˜ ìˆë„ë¡ í•©ë‹ˆë‹¤.
+     * #compact pages ê°€ ì…ë ¥ë˜ì—ˆê³  freePage ìˆ˜ë³´ë‹¤ ì ì„ ê²½ìš°ëŠ”
+     * ì…ë ¥ëœ ìˆ˜ ë§Œí¼ë§Œ compaction ìˆ˜í–‰ */
     if ( (sRemovePageCount > aPages) && (aPages > 0) )
     {
         sRemovePageCount = aPages;
@@ -985,8 +985,8 @@ IDE_RC smpFreePageList::freePagesFromFreePagePoolToDB(
     sCurFreePageHeader = sFreePagePool->mHead;
 
     /* BUG-27516 [5.3.3 release] Klocwork SM (5) 
-     * CurFreePageHeader°¡ NullÀÌ¶õ ¶æÀº FreePagePoolÀÌ ºñ¾ú´Ù´Â ¶æÀ¸·Î
-     * DB·Î ¹İÈ¯ÇÒ ÆäÀÌÁö°¡ ¾ø´Ù´Â ¶æÀÌ´Ù.
+     * CurFreePageHeaderê°€ Nullì´ë€ ëœ»ì€ FreePagePoolì´ ë¹„ì—ˆë‹¤ëŠ” ëœ»ìœ¼ë¡œ
+     * DBë¡œ ë°˜í™˜í•  í˜ì´ì§€ê°€ ì—†ë‹¤ëŠ” ëœ»ì´ë‹¤.
      */
     if ( sCurFreePageHeader == NULL )
     {
@@ -1000,12 +1000,12 @@ IDE_RC smpFreePageList::freePagesFromFreePagePoolToDB(
     }
 
     // To fix BUG-28189
-    // Á¦°ÅÇÏ°íÀÚ ÇÏ´Â FreePagePool ÀÇ À§Ä¡¸¦ ±â¾ïÇØµĞ´Ù.
+    // ì œê±°í•˜ê³ ì í•˜ëŠ” FreePagePool ì˜ ìœ„ì¹˜ë¥¼ ê¸°ì–µí•´ë‘”ë‹¤.
     sHeadFreePageHeader = sFreePagePool->mHead;
     sTailFreePageHeader = sFreePagePool->mHead;
 
-    // FreePagePoolÀÇ HeadºÎÅÍ sRemovePageCount¸¸Å­
-    // sRemoveHead~sRemoveTailÀ» ¸¸µé¾î Á¦°Å
+    // FreePagePoolì˜ Headë¶€í„° sRemovePageCountë§Œí¼
+    // sRemoveHead~sRemoveTailì„ ë§Œë“¤ì–´ ì œê±°
     IDE_ERROR_MSG( smmManager::getPersPagePtr( aSpaceID,
                                                sCurFreePageHeader->mSelfPageID,
                                                (void**)&sRemoveHead )
@@ -1020,9 +1020,9 @@ IDE_RC smpFreePageList::freePagesFromFreePagePoolToDB(
     sRemovePrevID = SM_NULL_PID;
 
     // To fix BUG-28189
-    // sTailFreePageHeader ÀÇ À§Ä¡¸¦ ¸Ç ³¡À¸·Î ¿Å±ä´Ù.
-    // Á¦°ÅÇÏ°íÀÚ ÇÏ´Â count º¸´Ù 1 ÀÛ°Ô ¿Å°Ü¾ß list ÀÇ ³¡À¸·Î ¿Å±æ ¼ö ÀÖ´Ù.
-    // ±×·¸Áö ¾ÊÀ¸¸é Á¦°ÅÇÏ°íÀÚ ÇÏ´Â list ÀÇ ¹üÀ§¸¦ ¹ş¾î³ª°Ô µÈ´Ù.
+    // sTailFreePageHeader ì˜ ìœ„ì¹˜ë¥¼ ë§¨ ëìœ¼ë¡œ ì˜®ê¸´ë‹¤.
+    // ì œê±°í•˜ê³ ì í•˜ëŠ” count ë³´ë‹¤ 1 ì‘ê²Œ ì˜®ê²¨ì•¼ list ì˜ ëìœ¼ë¡œ ì˜®ê¸¸ ìˆ˜ ìˆë‹¤.
+    // ê·¸ë ‡ì§€ ì•Šìœ¼ë©´ ì œê±°í•˜ê³ ì í•˜ëŠ” list ì˜ ë²”ìœ„ë¥¼ ë²—ì–´ë‚˜ê²Œ ëœë‹¤.
     for( sPageCounter = 0;
          sPageCounter < (sRemovePageCount - 1);
          sPageCounter++ )
@@ -1034,22 +1034,22 @@ IDE_RC smpFreePageList::freePagesFromFreePagePoolToDB(
     }
 
     // BUG-28990, BUG-29271 [Codesonar] Null Pointer Dereference
-    // SMP_FREEPAGELIST_MINPAGECOUNT °ªÀ¸·Î sRemovePageCount¸¦ ÃÖ¼ÒÇÑ ÇÑÆäÀÌÁö¸¦
-    // ³²±â°í Á¦°ÅÇÏµµ·Ï Á¶ÀıÇØ ÁÖ±â ¶§¹®¿¡ sTailFreePageHeaderÀÇ
-    // mFreeNext´Â NULLÀÌ µÇ¸é ¾ÈµÈ´Ù.
+    // SMP_FREEPAGELIST_MINPAGECOUNT ê°’ìœ¼ë¡œ sRemovePageCountë¥¼ ìµœì†Œí•œ í•œí˜ì´ì§€ë¥¼
+    // ë‚¨ê¸°ê³  ì œê±°í•˜ë„ë¡ ì¡°ì ˆí•´ ì£¼ê¸° ë•Œë¬¸ì— sTailFreePageHeaderì˜
+    // mFreeNextëŠ” NULLì´ ë˜ë©´ ì•ˆëœë‹¤.
     IDE_ERROR( sTailFreePageHeader != NULL );
     IDE_ERROR( sTailFreePageHeader->mFreeNext != NULL );
 
     // To fix BUG-28189
-    // Á¦°ÅÇÑ sRemoveTailÀÇ ´ÙÀ½ Page°¡ FreePagePoolÀÇ Head°¡ µÇ¾î¾ß ÇÑ´Ù.
+    // ì œê±°í•œ sRemoveTailì˜ ë‹¤ìŒ Pageê°€ FreePagePoolì˜ Headê°€ ë˜ì–´ì•¼ í•œë‹¤.
     sFreePagePool->mHead            = sTailFreePageHeader->mFreeNext;
     sFreePagePool->mHead->mFreePrev = NULL;
     sFreePagePool->mPageCount      -= sRemovePageCount;
     sTailFreePageHeader->mFreeNext  = NULL;
 
 
-    /* ºÎºĞÀûÀÎ ÆäÀÌÁö ¹İÈ¯ÀÌ ÀÖ±â ¶§¹®¿¡ ³²Àº ÆäÀÌÁöÀÇ ¼ö´Â limit º¸´Ù
-       Å©°Å³ª(ÁÖ¾îÁø #page ¸¸Å­ free), °°±â¸¸(max·Î free) ÇÏ¸é µÈ´Ù */
+    /* ë¶€ë¶„ì ì¸ í˜ì´ì§€ ë°˜í™˜ì´ ìˆê¸° ë•Œë¬¸ì— ë‚¨ì€ í˜ì´ì§€ì˜ ìˆ˜ëŠ” limit ë³´ë‹¤
+       í¬ê±°ë‚˜(ì£¼ì–´ì§„ #page ë§Œí¼ free), ê°™ê¸°ë§Œ(maxë¡œ free) í•˜ë©´ ëœë‹¤ */
     IDE_ERROR_MSG( sFreePagePool->mPageCount >= sLimitMinFreePageCount,
                    "FreePageCount  : %"ID_UINT32_FMT"\n"
                    "LimitPageCount : %"ID_UINT32_FMT"\n",
@@ -1070,11 +1070,11 @@ IDE_RC smpFreePageList::freePagesFromFreePagePoolToDB(
     IDE_TEST( sFreePagePool->mMutex.unlock() != IDE_SUCCESS );
 
     // To fix BUG-28189
-    // FreePageList ¿¡¼­ Á¦°ÅÇÏ°íÀÚ ÇÏ´Â List ¸¦ ¶¼¾î³ÂÀ¸¸é sState °¡ 1 ÀÌ´Ù.
+    // FreePageList ì—ì„œ ì œê±°í•˜ê³ ì í•˜ëŠ” List ë¥¼ ë–¼ì–´ëƒˆìœ¼ë©´ sState ê°€ 1 ì´ë‹¤.
     sState = 1;
 
     // To fix BUG-28189
-    // compact table °ú Ager »çÀÌ¿¡ µ¿½Ã¼º Á¦¾î°¡ µÇÁö ¾Ê½À´Ï´Ù.
+    // compact table ê³¼ Ager ì‚¬ì´ì— ë™ì‹œì„± ì œì–´ê°€ ë˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
     IDU_FIT_POINT( "1.BUG-28189@smpFreePageList::freePagesFromFreePagePoolToDB" );
 
     for( sPageCounter = 0;
@@ -1085,7 +1085,7 @@ IDE_RC smpFreePageList::freePagesFromFreePagePoolToDB(
         
         sCurPageID = sCurFreePageHeader->mSelfPageID;
 
-        // FreePage¸¦ ¹İ³³ÇÏ±â Àü¿¡ AllocPageList¿¡¼­µµ ÇØ´ç Page¸¦ Á¦°ÅÇØ¾ß ÇÑ´Ù.
+        // FreePageë¥¼ ë°˜ë‚©í•˜ê¸° ì „ì— AllocPageListì—ì„œë„ í•´ë‹¹ Pageë¥¼ ì œê±°í•´ì•¼ í•œë‹¤.
 
         IDE_ERROR_MSG( smmManager::getPersPagePtr( aSpaceID,
                                                    sCurPageID,
@@ -1108,10 +1108,10 @@ IDE_RC smpFreePageList::freePagesFromFreePagePoolToDB(
                        sCurFreePageHeader->mFreeSlotCount,
                        aPageListEntry->mSlotCount );
 
-        // DB·Î ¹İ³³ÇÒ PageListÀÇ ¸µÅ©¸¦ ¿¬°áÇÏ±â À§ÇØ Next¸¦ ±¸ÇÑ´Ù.
+        // DBë¡œ ë°˜ë‚©í•  PageListì˜ ë§í¬ë¥¼ ì—°ê²°í•˜ê¸° ìœ„í•´ Nextë¥¼ êµ¬í•œë‹¤.
         if(sPageCounter == sRemovePageCount - 1)
         {
-            // sRemoveTailÀÇ Next´Â NULL
+            // sRemoveTailì˜ NextëŠ” NULL
             sFreeNextID = SM_NULL_PID;
         }
         else
@@ -1129,7 +1129,7 @@ IDE_RC smpFreePageList::freePagesFromFreePagePoolToDB(
                                                 sTableOID )
                   != IDE_SUCCESS );
         
-        // BUGBUG : DB¿¡ ¹İ³³ÇÏ´Â ÆäÀÌÁö¸®½ºÆ®´Â DurableÇÏÁö ¾Ê±â ¶§¹®¿¡ ·Î±ë ºÒÇÊ¿ä
+        // BUGBUG : DBì— ë°˜ë‚©í•˜ëŠ” í˜ì´ì§€ë¦¬ìŠ¤íŠ¸ëŠ” Durableí•˜ì§€ ì•Šê¸° ë•Œë¬¸ì— ë¡œê¹… ë¶ˆí•„ìš”
         
         IDE_TEST( smrUpdate::updateLinkAtPersPage(
                                               NULL /* idvSQL* */,
@@ -1144,10 +1144,10 @@ IDE_RC smpFreePageList::freePagesFromFreePagePoolToDB(
         
         
         sCurPageHeader->mPrevPageID = sRemovePrevID;
-        // ´ÙÀ½ RemovePageÀÇ RemovePrevID´Â CurPageIDÀÌ´Ù.
+        // ë‹¤ìŒ RemovePageì˜ RemovePrevIDëŠ” CurPageIDì´ë‹¤.
         sRemovePrevID         = sCurPageID;
 
-        // ¹İ³³ÇÒ FreePage¸¦ sRemoveHead ~ sRemoveTail ÀÇ ¸®½ºÆ®·Î ¸¸µé¾î ¹İ³³ÇÑ´Ù.
+        // ë°˜ë‚©í•  FreePageë¥¼ sRemoveHead ~ sRemoveTail ì˜ ë¦¬ìŠ¤íŠ¸ë¡œ ë§Œë“¤ì–´ ë°˜ë‚©í•œë‹¤.
         
         sRemoveTail = (smpPersPage*)sCurPageHeader;
         sCurPageHeader->mNextPageID = sFreeNextID;
@@ -1158,7 +1158,7 @@ IDE_RC smpFreePageList::freePagesFromFreePagePoolToDB(
         sCurFreePageHeader = sCurFreePageHeader->mFreeNext;
 
         // To fix BUG-28189
-        // compact table °ú Ager »çÀÌ¿¡ µ¿½Ã¼º Á¦¾î°¡ µÇÁö ¾Ê½À´Ï´Ù.
+        // compact table ê³¼ Ager ì‚¬ì´ì— ë™ì‹œì„± ì œì–´ê°€ ë˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
         IDU_FIT_POINT( "2.BUG-28189@smpFreePageList::freePagesFromFreePagePoolToDB" );
     }
 
@@ -1168,7 +1168,7 @@ IDE_RC smpFreePageList::freePagesFromFreePagePoolToDB(
                                                     sRemovePageCount )
                  == ID_TRUE );
 
-    // sRemoveHead~sRemoveTailÀ» DB·Î ¹İ³³
+    // sRemoveHead~sRemoveTailì„ DBë¡œ ë°˜ë‚©
     IDE_TEST(smmManager::freePersPageList( aTrans,
                                            aSpaceID,
                                            sRemoveHead,
@@ -1193,14 +1193,14 @@ IDE_RC smpFreePageList::freePagesFromFreePagePoolToDB(
     }
     else 
     {
-        /* ¼ø¼­»ó sState °¡ 1ÀÌ·Á¸é lock Àº Ç®·Á ÀÖ¾î¾ß ÇÑ´Ù. */
+        /* ìˆœì„œìƒ sState ê°€ 1ì´ë ¤ë©´ lock ì€ í’€ë ¤ ìˆì–´ì•¼ í•œë‹¤. */
         IDE_DASSERT( sState == 1 ); 
     }
 
     if( sState == 1 )
     {
         // To fix BUG-28189
-        // freePage ¸¦ ¼öÇàÇÏ´Â µµÁß ¿¹¿Ü°¡ ¹ß»ıÇÏ¸é FreePagePool À» ´Ù½Ã ¿øº¹½ÃÄÑÁà¾ß ÇÑ´Ù.
+        // freePage ë¥¼ ìˆ˜í–‰í•˜ëŠ” ë„ì¤‘ ì˜ˆì™¸ê°€ ë°œìƒí•˜ë©´ FreePagePool ì„ ë‹¤ì‹œ ì›ë³µì‹œì¼œì¤˜ì•¼ í•œë‹¤.
         IDE_ASSERT( sFreePagePool->mMutex.lock(NULL /* idvSQL* */) == IDE_SUCCESS );
 
         sFreePagePool->mHead->mFreePrev = sTailFreePageHeader;
@@ -1222,9 +1222,9 @@ IDE_RC smpFreePageList::freePagesFromFreePagePoolToDB(
 }
 
 /**********************************************************************
- * FreePageHeader »ı¼º È¤Àº DB¿¡¼­ ÆäÀÌÁö ÇÒ´ç½Ã ÃÊ±âÈ­
+ * FreePageHeader ìƒì„± í˜¹ì€ DBì—ì„œ í˜ì´ì§€ í• ë‹¹ì‹œ ì´ˆê¸°í™”
  *
- * aFreePageHeader : ÃÊ±âÈ­ÇÏ·Á´Â FreePageHeader
+ * aFreePageHeader : ì´ˆê¸°í™”í•˜ë ¤ëŠ” FreePageHeader
  **********************************************************************/
 
 void smpFreePageList::initializeFreePageHeader(
@@ -1245,9 +1245,9 @@ void smpFreePageList::initializeFreePageHeader(
 }
 
 /**********************************************************************
- * PageListEntryÀÇ ¸ğµç FreePageHeader ÃÊ±âÈ­
+ * PageListEntryì˜ ëª¨ë“  FreePageHeader ì´ˆê¸°í™”
  *
- * aPageListEntry : ÃÊ±âÈ­ÇÏ·Á´Â PageListEntry
+ * aPageListEntry : ì´ˆê¸°í™”í•˜ë ¤ëŠ” PageListEntry
  **********************************************************************/
 
 void smpFreePageList::initAllFreePageHeader( scSpaceID         aSpaceID,
@@ -1273,9 +1273,9 @@ void smpFreePageList::initAllFreePageHeader( scSpaceID         aSpaceID,
 }
 
 /**********************************************************************
- * FreePageHeader ÃÊ±âÈ­
+ * FreePageHeader ì´ˆê¸°í™”
  *
- * aPageID : ÃÊ±âÈ­ÇÏ·Á´Â PageÀÇ ID
+ * aPageID : ì´ˆê¸°í™”í•˜ë ¤ëŠ” Pageì˜ ID
  **********************************************************************/
 
 IDE_RC smpFreePageList::initializeFreePageHeaderAtPCH( scSpaceID aSpaceID,
@@ -1286,9 +1286,9 @@ IDE_RC smpFreePageList::initializeFreePageHeaderAtPCH( scSpaceID aSpaceID,
     smpFreePageHeader * sFreePageHeader;
     UInt                sState  = 0;
 
-    // FreePageHeader ÃÊ±âÈ­
+    // FreePageHeader ì´ˆê¸°í™”
 
-    // BUGBUG : aPageID ¹üÀ§ °Ë»ç ÇÊ¿ä!!
+    // BUGBUG : aPageID ë²”ìœ„ ê²€ì‚¬ í•„ìš”!!
     sPCH = smmManager::getPCH(aSpaceID, aPageID);
 
     IDE_DASSERT( sPCH != NULL );
@@ -1334,9 +1334,9 @@ IDE_RC smpFreePageList::initializeFreePageHeaderAtPCH( scSpaceID aSpaceID,
 }
 
 /**********************************************************************
- * FreePageHeader Á¦°Å
+ * FreePageHeader ì œê±°
  *
- * aPageID : Á¦°ÅÇÏ·Á´Â PageÀÇ ID
+ * aPageID : ì œê±°í•˜ë ¤ëŠ” Pageì˜ ID
  **********************************************************************/
 
 IDE_RC smpFreePageList::destroyFreePageHeaderAtPCH( scSpaceID aSpaceID,
@@ -1367,14 +1367,14 @@ IDE_RC smpFreePageList::destroyFreePageHeaderAtPCH( scSpaceID aSpaceID,
 }
 
 /**********************************************************************
- * FreePage¿¡ ´ëÇÑ SizeClass º¯°æ
+ * FreePageì— ëŒ€í•œ SizeClass ë³€ê²½
  *
- * SizeClass¸¦ º¯°æÇÏ±â À§ÇØ ÇØ´ç Page´Â lockÀ» Àâ°í µé¾î¿Í¾ßÇÏ¸ç,
- * List/PoolÀº ¿Å±â´Â ÀÛ¾÷À» ÇÒ¶§ lockÀ» Àâ°í ÀÛ¾÷ÇÑ´Ù.
+ * SizeClassë¥¼ ë³€ê²½í•˜ê¸° ìœ„í•´ í•´ë‹¹ PageëŠ” lockì„ ì¡ê³  ë“¤ì–´ì™€ì•¼í•˜ë©°,
+ * List/Poolì€ ì˜®ê¸°ëŠ” ì‘ì—…ì„ í• ë•Œ lockì„ ì¡ê³  ì‘ì—…í•œë‹¤.
  *
- * aTrans          : ÀÛ¾÷ÇÏ´Â Æ®·£Àè¼Ç °´Ã¼
- * aPageListEntry  : FreePageÀÇ ¼Ò¼Ó PageListEntry
- * aFreePageHeader : SizeClass º¯°æÇÏ·Á´Â FreePageHeader
+ * aTrans          : ì‘ì—…í•˜ëŠ” íŠ¸ëœì­ì…˜ ê°ì²´
+ * aPageListEntry  : FreePageì˜ ì†Œì† PageListEntry
+ * aFreePageHeader : SizeClass ë³€ê²½í•˜ë ¤ëŠ” FreePageHeader
  **********************************************************************/
 IDE_RC smpFreePageList::modifyPageSizeClass( void*              aTrans,
                                              smpPageListEntry*  aPageListEntry,
@@ -1400,7 +1400,7 @@ IDE_RC smpFreePageList::modifyPageSizeClass( void*              aTrans,
 #endif
     sOldPageListID  = aFreePageHeader->mFreeListID;
         
-    // º¯°æµÈ SizeClassID °ªÀ» ±¸ÇÑ´Ù.
+    // ë³€ê²½ëœ SizeClassID ê°’ì„ êµ¬í•œë‹¤.
     sNewSizeClassID = getSizeClass( aPageListEntry->mRuntimeEntry,
                                     aPageListEntry->mSlotCount,
                                     aFreePageHeader->mFreeSlotCount );
@@ -1412,8 +1412,8 @@ IDE_RC smpFreePageList::modifyPageSizeClass( void*              aTrans,
     {
         IDE_DASSERT(sOldSizeClassID == SMP_SIZECLASSID_NULL);
         
-        // SlotÀüÃ¼°¡ »ç¿ëÁßÀÌ´ø Page¶ó¼­ FreePageList¿¡ ¾ø¾ú´Ù¸é
-        // ÇöÀç Æ®·£Àè¼ÇÀÇ RSGroupID°ªÀÇ FreePageList¿¡ µî·ÏÇÑ´Ù.
+        // Slotì „ì²´ê°€ ì‚¬ìš©ì¤‘ì´ë˜ Pageë¼ì„œ FreePageListì— ì—†ì—ˆë‹¤ë©´
+        // í˜„ì¬ íŠ¸ëœì­ì…˜ì˜ RSGroupIDê°’ì˜ FreePageListì— ë“±ë¡í•œë‹¤.
 
         smLayerCallback::allocRSGroupID( aTrans,
                                          &sNewPageListID );
@@ -1430,12 +1430,12 @@ IDE_RC smpFreePageList::modifyPageSizeClass( void*              aTrans,
         sFreePageList =
             &(aPageListEntry->mRuntimeEntry->mFreePageList[sNewPageListID]);
 
-        // ÇöÀç Free Page°¡ ÆäÀÌÁö ¸®½ºÆ®¿¡ ÀÖ¾ú´Â°¡?
+        // í˜„ì¬ Free Pageê°€ í˜ì´ì§€ ë¦¬ìŠ¤íŠ¸ì— ìˆì—ˆëŠ”ê°€?
         if(sOldPageListID != SMP_PAGELISTID_NULL)
         {
             IDE_DASSERT(sOldSizeClassID != SMP_SIZECLASSID_NULL);
             
-            // ±âÁ¸ SizeClass¿¡¼­ Page ºĞ¸®
+            // ê¸°ì¡´ SizeClassì—ì„œ Page ë¶„ë¦¬
             IDE_TEST( removePageFromFreePageList(aPageListEntry,
                                                  sOldPageListID,
                                                  aFreePageHeader->mSizeClassID,
@@ -1443,32 +1443,32 @@ IDE_RC smpFreePageList::modifyPageSizeClass( void*              aTrans,
                       != IDE_SUCCESS );
         }
             
-        // FreeSlotÀÌ ÇÏ³ª¶óµµ ÀÖ´Â°¡?
-        // FreeSlotÀÌ ¾ø´Ù¸é FreePage°¡ ¾Æ´Ï¹Ç·Î FreePageList¿¡ µî·ÏÇÏÁö ¾Ê´Â´Ù.
+        // FreeSlotì´ í•˜ë‚˜ë¼ë„ ìˆëŠ”ê°€?
+        // FreeSlotì´ ì—†ë‹¤ë©´ FreePageê°€ ì•„ë‹ˆë¯€ë¡œ FreePageListì— ë“±ë¡í•˜ì§€ ì•ŠëŠ”ë‹¤.
         if(aFreePageHeader->mFreeSlotCount != 0)
         {
             if((aFreePageHeader->mFreeSlotCount == aPageListEntry->mSlotCount) &&
                (sFreePageList->mPageCount[sNewSizeClassID] >= SMP_FREEPAGELIST_MINPAGECOUNT))
             {
-                // PageÀÇ Slot ÀüÃ¼°¡ FreeSlotÀÌ¸é
-                // aFreePageHeader´Â ¿ÏÀü EmptyPageÀÌ´Ù.
+                // Pageì˜ Slot ì „ì²´ê°€ FreeSlotì´ë©´
+                // aFreePageHeaderëŠ” ì™„ì „ EmptyPageì´ë‹¤.
                 
-                // FreePageList¿¡ PageCount°¡ FREE_THRESHOLDº¸´Ù ¸¹´Ù¸é
-                // FreePagePool¿¡ µî·ÏÇÑ´Ù.
+                // FreePageListì— PageCountê°€ FREE_THRESHOLDë³´ë‹¤ ë§ë‹¤ë©´
+                // FreePagePoolì— ë“±ë¡í•œë‹¤.
                 IDE_TEST( addPageToFreePagePool( aPageListEntry,
                                                  aFreePageHeader )
                           != IDE_SUCCESS );
             }
             else
             {
-                // EmptyPage°¡ ¾Æ´Ï°Å³ª FreePageList¿¡ ¾ÆÁ÷ ¿©À¯°¡ ÀÖ´Ù.
+                // EmptyPageê°€ ì•„ë‹ˆê±°ë‚˜ FreePageListì— ì•„ì§ ì—¬ìœ ê°€ ìˆë‹¤.
 
-                // BUGBUG: addPageToFreePageListHead·Î ÀÎÇØ Emergency¿ë
-                //         FreeSlotÀÌ º¯°æµÇ¾î INSERT ¼ø¼­¿Í SELECT ¼ø¼­°¡
-                //         ¸ÂÁö ¾Ê´Â ¹®Á¦ ¹ß»ıÀ¸·Î ¿ì¼± ¹«Á¶°Ç Tail·Î µî·Ï
-                //         ÃßÈÄ Head·Î ÀÌµ¿ÇÏ´Â °ÍÀÌ ¼º´É¿¡ ÁÁÀºÁö,
-                //         È¤Àº Emergency¿ë FreeSlot´ë½Å DB¿¡¼­ Emergency¿ë
-                //         FreePage¸¦ °®´Â ¹æ¹ıÀ¸·Î °³¼±ÇÒ ÇÊ¿äÀÖÀ½.
+                // BUGBUG: addPageToFreePageListHeadë¡œ ì¸í•´ Emergencyìš©
+                //         FreeSlotì´ ë³€ê²½ë˜ì–´ INSERT ìˆœì„œì™€ SELECT ìˆœì„œê°€
+                //         ë§ì§€ ì•ŠëŠ” ë¬¸ì œ ë°œìƒìœ¼ë¡œ ìš°ì„  ë¬´ì¡°ê±´ Tailë¡œ ë“±ë¡
+                //         ì¶”í›„ Headë¡œ ì´ë™í•˜ëŠ” ê²ƒì´ ì„±ëŠ¥ì— ì¢‹ì€ì§€,
+                //         í˜¹ì€ Emergencyìš© FreeSlotëŒ€ì‹  DBì—ì„œ Emergencyìš©
+                //         FreePageë¥¼ ê°–ëŠ” ë°©ë²•ìœ¼ë¡œ ê°œì„ í•  í•„ìš”ìˆìŒ.
 
                 IDE_TEST( addPageToFreePageListTail( aPageListEntry,
                                                      sNewPageListID,
@@ -1480,9 +1480,9 @@ IDE_RC smpFreePageList::modifyPageSizeClass( void*              aTrans,
                 if(sOldPageListID == SMP_PAGELISTID_NULL ||
                    sOldSizeClassID < sNewSizeClassID)
                 {
-                    // SizeClassID°¡ ³·Àº°÷¿¡¼­ ÀÌµ¿Çß´Ù¸é
-                    // ÇöÀç SizeClassÀÇ FreeSlotCountÀÇ ÃÖ¼Ò°ªÀÌ¹Ç·Î
-                    // FreeSlotÀÌ ÀÛÀº FreePage¸¦ ListÀÇ µÚ¿¡ ºÙÀÌ°í,
+                    // SizeClassIDê°€ ë‚®ì€ê³³ì—ì„œ ì´ë™í–ˆë‹¤ë©´
+                    // í˜„ì¬ SizeClassì˜ FreeSlotCountì˜ ìµœì†Œê°’ì´ë¯€ë¡œ
+                    // FreeSlotì´ ì‘ì€ FreePageë¥¼ Listì˜ ë’¤ì— ë¶™ì´ê³ ,
                     IDE_TEST( addPageToFreePageListTail( aPageListEntry,
                                                          sNewPageListID,
                                                          sNewSizeClassID,
@@ -1491,10 +1491,10 @@ IDE_RC smpFreePageList::modifyPageSizeClass( void*              aTrans,
                 }
                 else
                 {
-                    // SizeClassID°¡ ³ôÀº°÷¿¡¼­ ÀÌµ¿Çß´Ù¸é
-                    // ÇöÀç SizeClassÀÇ FreeSlotCountÀÇ ÃÖ´ë°ªÀÌ¹Ç·Î
-                    // FreeSlotÀÌ ¸¹Àº FreePage´Â ListÀÇ ¾Õ¿¡ ºÙÀÌ´Â°Ô
-                    // allocSlotÀ» ¾Õ¿¡¼­ºÎÅÍ ÇÏ±â¶§¹®¿¡ È¿À²ÀûÀÌ´Ù.
+                    // SizeClassIDê°€ ë†’ì€ê³³ì—ì„œ ì´ë™í–ˆë‹¤ë©´
+                    // í˜„ì¬ SizeClassì˜ FreeSlotCountì˜ ìµœëŒ€ê°’ì´ë¯€ë¡œ
+                    // FreeSlotì´ ë§ì€ FreePageëŠ” Listì˜ ì•ì— ë¶™ì´ëŠ”ê²Œ
+                    // allocSlotì„ ì•ì—ì„œë¶€í„° í•˜ê¸°ë•Œë¬¸ì— íš¨ìœ¨ì ì´ë‹¤.
                     IDE_TEST( addPageToFreePageListTail( aPageListEntry,
                                                          sNewPageListID,
                                                          sNewSizeClassID,
@@ -1515,12 +1515,12 @@ IDE_RC smpFreePageList::modifyPageSizeClass( void*              aTrans,
 }
 
 /**********************************************************************
- * FreePageList¿¡¼­ FreePage Á¦°Å
+ * FreePageListì—ì„œ FreePage ì œê±°
  *
- * aPageListEntry  : FreePageÀÇ ¼Ò¼Ó PageListEntry
- * aPageListID     : FreePageÀÇ ¼Ò¼Ó FreePageList ID
- * aSizeClassID    : FreePageÀÇ ¼Ò¼Ó SizeClass ID
- * aFreePageHeader : Á¦°ÅÇÏ·Á´Â FreePageHeader
+ * aPageListEntry  : FreePageì˜ ì†Œì† PageListEntry
+ * aPageListID     : FreePageì˜ ì†Œì† FreePageList ID
+ * aSizeClassID    : FreePageì˜ ì†Œì† SizeClass ID
+ * aFreePageHeader : ì œê±°í•˜ë ¤ëŠ” FreePageHeader
  **********************************************************************/
 
 IDE_RC smpFreePageList::removePageFromFreePageList(
@@ -1554,7 +1554,7 @@ IDE_RC smpFreePageList::removePageFromFreePageList(
 
     if(sPrevFreePageHeader == NULL)
     {
-        // FreePrev°¡ ¾ø´Ù¸é HeadPageÀÌ´Ù.
+        // FreePrevê°€ ì—†ë‹¤ë©´ HeadPageì´ë‹¤.
         IDE_DASSERT( sFreePageList->mHead[aSizeClassID] == aFreePageHeader );
         
         sFreePageList->mHead[aSizeClassID] = sNextFreePageHeader;
@@ -1563,13 +1563,13 @@ IDE_RC smpFreePageList::removePageFromFreePageList(
     {
         IDE_DASSERT( sFreePageList->mHead[aSizeClassID] != aFreePageHeader );
 
-        // ¾ÕÂÊ ¸µÅ©¸¦ ²÷´Â´Ù.
+        // ì•ìª½ ë§í¬ë¥¼ ëŠëŠ”ë‹¤.
         sPrevFreePageHeader->mFreeNext = sNextFreePageHeader;
     }
 
     if(sNextFreePageHeader == NULL)
     {
-        // FreeNext°¡ ¾ø´Ù¸é TailPageÀÌ´Ù.
+        // FreeNextê°€ ì—†ë‹¤ë©´ TailPageì´ë‹¤.
         IDE_DASSERT( sFreePageList->mTail[aSizeClassID] == aFreePageHeader );
         
         sFreePageList->mTail[aSizeClassID] = sPrevFreePageHeader;
@@ -1578,7 +1578,7 @@ IDE_RC smpFreePageList::removePageFromFreePageList(
     {
         IDE_DASSERT( sFreePageList->mTail[aSizeClassID] != aFreePageHeader );
 
-        // µÚÂÊ ¸µÅ©¸¦ ²÷´Â´Ù.
+        // ë’¤ìª½ ë§í¬ë¥¼ ëŠëŠ”ë‹¤.
         sNextFreePageHeader->mFreePrev = sPrevFreePageHeader;
     }
 
@@ -1616,12 +1616,12 @@ IDE_RC smpFreePageList::removePageFromFreePageList(
 }
 
 /**********************************************************************
- * FreePageListÀÇ Tail¿¡ FreePage µî·Ï
+ * FreePageListì˜ Tailì— FreePage ë“±ë¡
  *
- * aPageListEntry  : FreePageÀÇ ¼Ò¼Ó PageListEntry
- * aPageListID     : FreePageÀÇ ¼Ò¼Ó FreePageList ID
- * aSizeClassID    : FreePageÀÇ ¼Ò¼Ó SizeClass ID
- * aFreePageHeader : µî·ÏÇÏ·Á´Â FreePageHeader
+ * aPageListEntry  : FreePageì˜ ì†Œì† PageListEntry
+ * aPageListID     : FreePageì˜ ì†Œì† FreePageList ID
+ * aSizeClassID    : FreePageì˜ ì†Œì† SizeClass ID
+ * aFreePageHeader : ë“±ë¡í•˜ë ¤ëŠ” FreePageHeader
  **********************************************************************/
 
 IDE_RC smpFreePageList::addPageToFreePageListTail(
@@ -1644,7 +1644,7 @@ IDE_RC smpFreePageList::addPageToFreePageListTail(
 
     IDE_ERROR( sFreePageList != NULL );
     
-    // aFreePageHeader°¡ À¯È¿ÇÑÁö °Ë»ç
+    // aFreePageHeaderê°€ ìœ íš¨í•œì§€ ê²€ì‚¬
     IDE_ERROR( aFreePageHeader->mFreeSlotCount > 0 );
     IDE_ERROR( aFreePageHeader->mFreeListID == SMP_PAGELISTID_NULL );
     IDE_ERROR( aFreePageHeader->mSizeClassID == SMP_SIZECLASSID_NULL );
@@ -1658,7 +1658,7 @@ IDE_RC smpFreePageList::addPageToFreePageListTail(
     {
         IDE_ERROR( sFreePageList->mHead[aSizeClassID] == NULL );
         
-        // Head°¡ ºñ¾îÀÖ´Ù¸é FreePage·Î Head/TailÀ» ´Ù Ã¤¿ö¾ß ÇÑ´Ù.
+        // Headê°€ ë¹„ì–´ìˆë‹¤ë©´ FreePageë¡œ Head/Tailì„ ë‹¤ ì±„ì›Œì•¼ í•œë‹¤.
         sFreePageList->mHead[aSizeClassID] = aFreePageHeader;
     }
     else /* sTailPageHeader != NULL */
@@ -1705,12 +1705,12 @@ IDE_RC smpFreePageList::addPageToFreePageListTail(
 
 
 /**********************************************************************
- * refineDB ¶§ °¢ Page¸¦ ScanÇÏ¸é¼­ FreePageÀÏ °æ¿ì 0¹øÂ° FreePageList¿¡
- * µî·ÏÇÑ ÈÄ, buildFreePageList¶§ 0¹øÂ° FreePageList¿¡¼­ °¢ FreePageList¿¡
- * FreePageµéÀ» ³ª´©¾î ÁØ´Ù.
+ * refineDB ë•Œ ê° Pageë¥¼ Scaní•˜ë©´ì„œ FreePageì¼ ê²½ìš° 0ë²ˆì§¸ FreePageListì—
+ * ë“±ë¡í•œ í›„, buildFreePageListë•Œ 0ë²ˆì§¸ FreePageListì—ì„œ ê° FreePageListì—
+ * FreePageë“¤ì„ ë‚˜ëˆ„ì–´ ì¤€ë‹¤.
  *
- * aPageListEntry : °Ë»çÇÏ·Á´Â PageListEntry
- * aRecordCount   : Record °¹¼ö
+ * aPageListEntry : ê²€ì‚¬í•˜ë ¤ëŠ” PageListEntry
+ * aRecordCount   : Record ê°¯ìˆ˜
  **********************************************************************/
 
 IDE_RC smpFreePageList::addPageToFreePageListAtInit(
@@ -1762,11 +1762,11 @@ IDE_RC smpFreePageList::addPageToFreePageListAtInit(
 }
 
 /**********************************************************************
- * PrivatePageListÀÇ FreePageµéÀ» aPageListEntry¿¡ Ãß°¡ÇÑ´Ù.
+ * PrivatePageListì˜ FreePageë“¤ì„ aPageListEntryì— ì¶”ê°€í•œë‹¤.
  *
- * aTrans           : ÀÛ¾÷ÇÏ´Â Æ®·£Àè¼Ç °´Ã¼
- * aPageListEntry   : Ãß°¡°¡ µÉ Å×ÀÌºíÀÇ PageListEntry
- * aHeadFreePage    : Ãß°¡ÇÏ·Á´Â FreePageµéÀÇ Head
+ * aTrans           : ì‘ì—…í•˜ëŠ” íŠ¸ëœì­ì…˜ ê°ì²´
+ * aPageListEntry   : ì¶”ê°€ê°€ ë  í…Œì´ë¸”ì˜ PageListEntry
+ * aHeadFreePage    : ì¶”ê°€í•˜ë ¤ëŠ” FreePageë“¤ì˜ Head
  **********************************************************************/
 
 IDE_RC smpFreePageList::addFreePagesToTable( void*              aTrans,
@@ -1804,11 +1804,11 @@ IDE_RC smpFreePageList::addFreePagesToTable( void*              aTrans,
 }
 
 /**********************************************************************
- * PrivatePageList¿¡ FreePage ¿¬°á
+ * PrivatePageListì— FreePage ì—°ê²°
  *
- * aCurPID  : FreeNext¸¦ ¼³Á¤ÇÒ PageID
- * aPrevPID : FreePrevÀÎ PageID
- * aNextPID : FreeNextÀÎ PageID
+ * aCurPID  : FreeNextë¥¼ ì„¤ì •í•  PageID
+ * aPrevPID : FreePrevì¸ PageID
+ * aNextPID : FreeNextì¸ PageID
  **********************************************************************/
 
 void smpFreePageList::addFreePageToPrivatePageList( scSpaceID aSpaceID,
@@ -1842,7 +1842,7 @@ void smpFreePageList::addFreePageToPrivatePageList( scSpaceID aSpaceID,
         sNextFreePageHeader = getFreePageHeader(aSpaceID, aNextPID);
     }
 
-    // FreePageHeader Á¤º¸ ÃÊ±âÈ­
+    // FreePageHeader ì •ë³´ ì´ˆê¸°í™”
     sCurFreePageHeader->mFreeListID  = SMP_PRIVATE_PAGELISTID;
     sCurFreePageHeader->mSizeClassID = SMP_PRIVATE_SIZECLASSID;
     sCurFreePageHeader->mFreePrev    = sPrevFreePageHeader;
@@ -1853,10 +1853,10 @@ void smpFreePageList::addFreePageToPrivatePageList( scSpaceID aSpaceID,
 }
 
 /**********************************************************************
- * PrivatePageList¿¡¼­ FixedFreePage Á¦°Å
+ * PrivatePageListì—ì„œ FixedFreePage ì œê±°
  *
- * aPrivatePageList : Á¦°ÅµÉ PrivatePageList
- * aFreePageHeader  : Á¦°ÅÇÒ FreePageHeader
+ * aPrivatePageList : ì œê±°ë  PrivatePageList
+ * aFreePageHeader  : ì œê±°í•  FreePageHeader
  **********************************************************************/
 
 void smpFreePageList::removeFixedFreePageFromPrivatePageList(
@@ -1868,7 +1868,7 @@ void smpFreePageList::removeFixedFreePageFromPrivatePageList(
 
     if(aFreePageHeader->mFreePrev == NULL)
     {
-        // Prev°¡ ¾ø´Ù¸é HeadÀÌ´Ù.
+        // Prevê°€ ì—†ë‹¤ë©´ Headì´ë‹¤.
         IDE_DASSERT( aPrivatePageList->mFixedFreePageHead == aFreePageHeader );
 
         aPrivatePageList->mFixedFreePageHead = aFreePageHeader->mFreeNext;
@@ -1882,7 +1882,7 @@ void smpFreePageList::removeFixedFreePageFromPrivatePageList(
 
     if(aFreePageHeader->mFreeNext == NULL)
     {
-        // Next°¡ ¾ø´Ù¸é TailÀÌ´Ù.
+        // Nextê°€ ì—†ë‹¤ë©´ Tailì´ë‹¤.
         IDE_DASSERT( aPrivatePageList->mFixedFreePageTail == aFreePageHeader );
 
         aPrivatePageList->mFixedFreePageTail = aFreePageHeader->mFreePrev;
@@ -1902,11 +1902,11 @@ void smpFreePageList::removeFixedFreePageFromPrivatePageList(
 
 
 /**********************************************************************
- * aHeadFreePage~aTailFreePage±îÁöÀÇ FreePageListÀÇ ¿¬°áÀÌ ¿Ã¹Ù¸¥Áö °Ë»çÇÑ´Ù.
+ * aHeadFreePage~aTailFreePageê¹Œì§€ì˜ FreePageListì˜ ì—°ê²°ì´ ì˜¬ë°”ë¥¸ì§€ ê²€ì‚¬í•œë‹¤.
  *
- * aHeadFreePage : °Ë»çÇÏ·Á´Â ListÀÇ Head
- * aTailFreePage : °Ë»çÇÏ·Á´Â ListÀÇ Tail
- * aPageCount    : °Ë»çÇÏ·Á´Â ListÀÇ PageÀÇ °¹¼ö
+ * aHeadFreePage : ê²€ì‚¬í•˜ë ¤ëŠ” Listì˜ Head
+ * aTailFreePage : ê²€ì‚¬í•˜ë ¤ëŠ” Listì˜ Tail
+ * aPageCount    : ê²€ì‚¬í•˜ë ¤ëŠ” Listì˜ Pageì˜ ê°¯ìˆ˜
  **********************************************************************/
 idBool smpFreePageList::isValidFreePageList( smpFreePageHeader* aHeadFreePage,
                                              smpFreePageHeader* aTailFreePage,

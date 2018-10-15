@@ -17,8 +17,8 @@
 /***********************************************************************
  * $Id: sdptbGroup.h 27220 2008-07-23 14:56:22Z newdaily $
  *
- * Bitmap based TBS¿¡¼­ Global Group( Space Header) °ú Local GroupÀ» 
- * °ü¸®ÇÏ±â À§ÇÑ ÇÔ¼öµéÀÌ´Ù.
+ * Bitmap based TBSì—ì„œ Global Group( Space Header) ê³¼ Local Groupì„ 
+ * ê´€ë¦¬í•˜ê¸° ìœ„í•œ í•¨ìˆ˜ë“¤ì´ë‹¤.
  ***********************************************************************/
 
 # ifndef _O_SDPTB_GROUP_H_
@@ -32,7 +32,7 @@ public:
     static IDE_RC initialize(){ return IDE_SUCCESS; }
     static IDE_RC destroy(){ return IDE_SUCCESS; }
 
-    /* Å×ÀÌºí½ºÆäÀÌ½º ³ëµå¿¡ Space Cache¸¦ ÇÒ´çÇÏ°í ÃÊ±âÈ­ÇÑ´Ù.*/
+    /* í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ ë…¸ë“œì— Space Cacheë¥¼ í• ë‹¹í•˜ê³  ì´ˆê¸°í™”í•œë‹¤.*/
     static IDE_RC allocAndInitSpaceCache( scSpaceID         aSpaceID,
                                           smiExtMgmtType    aExtMgmtType,
                                           smiSegMgmtType    aSegMgmtType,
@@ -40,10 +40,10 @@ public:
 
     static IDE_RC refineCache( scSpaceID  aSpaceID );
 
-    /* Å×ÀÌºí½ºÆäÀÌ½º ³ëµå¿¡¼­ Space Cache¸¦ ¸Þ¸ð¸® ÇØÁ¦ÇÑ´Ù.*/
+    /* í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ ë…¸ë“œì—ì„œ Space Cacheë¥¼ ë©”ëª¨ë¦¬ í•´ì œí•œë‹¤.*/
     static IDE_RC destroySpaceCache( scSpaceID  aSpaceID );
 
-    /* GG ¹× LG header¸¦ »ý¼ºÇÑ´Ù.*/
+    /* GG ë° LG headerë¥¼ ìƒì„±í•œë‹¤.*/
     static IDE_RC makeMetaHeaders( idvSQL           *aStatistics,
                                    sdrMtxStartInfo  *aStartInfo,
                                    UInt              aSpaceID,
@@ -80,22 +80,22 @@ public:
                             UInt                 aGGID,
                             UInt                 aNewPageCnt );
 
-    /* LG Çì´õ ÇÏ³ª¸¦ º¯°æÇÑ´Ù */
+    /* LG í—¤ë” í•˜ë‚˜ë¥¼ ë³€ê²½í•œë‹¤ */
     static IDE_RC resizeLGHdr( idvSQL     * aStatistics,
                                sdrMtx     * aMtx,
                                scSpaceID    aSpaceID,
-                               ULong        aValidBitsNew, //¼öÁ¤µÈ Ext Cnt
+                               ULong        aValidBitsNew, //ìˆ˜ì •ëœ Ext Cnt
                                scPageID     aAllocLGPID,              
                                scPageID     aDeallocLGPID,
                                UInt       * aFreeInLG );
 
-    /*ÆÄÀÏÀÇ Å©±â¸¦ page´ÜÀ§·Î ¹Þ¾Æ¼­ ¸î°³ÀÇ LG¸¦ ¸¸µé¼öÀÖ´ÂÁö °è»êÇÑ´Ù */
+    /*íŒŒì¼ì˜ í¬ê¸°ë¥¼ pageë‹¨ìœ„ë¡œ ë°›ì•„ì„œ ëª‡ê°œì˜ LGë¥¼ ë§Œë“¤ìˆ˜ìžˆëŠ”ì§€ ê³„ì‚°í•œë‹¤ */
     static UInt getNGroups( ULong            aSize,
                             sdptbSpaceCache *aCache, 
                             idBool          *aHasExtraLG);
 
 
-    /* GGÇì´õ¿¡´ëÇÑ ·Î±×Ã³¸®¸¦ ÇÑ´Ù. */
+    /* GGí—¤ë”ì—ëŒ€í•œ ë¡œê·¸ì²˜ë¦¬ë¥¼ í•œë‹¤. */
     static IDE_RC logAndInitGGHdrPage( sdrMtx                * aMtx,
                                        UInt                    aSpaceID,
                                        sdptbGGHdr            * aGGHdrPtr,
@@ -105,7 +105,7 @@ public:
                                        UInt                    aPageCnt,
                                        idBool                  aIsExtraLG);
 
-    /* LGÇì´õ¿¡´ëÇÑ ·Î±×Ã³¸®¸¦ ÇÑ´Ù. */
+    /* LGí—¤ë”ì—ëŒ€í•œ ë¡œê·¸ì²˜ë¦¬ë¥¼ í•œë‹¤. */
     static IDE_RC logAndInitLGHdrPage( idvSQL          *  aStatistics,
                                        sdrMtx          *  aMtx,
                                        UInt               aSpaceID,
@@ -120,8 +120,8 @@ public:
     static IDE_RC doRefineSpaceCacheCore( sddTableSpaceNode * aSpaceNode );
 
     /*
-     * LG¿¡ ÀúÀåÇÒ ¼ö ÀÖ´Â ºñÆ®ÀÇ °¹¼ö.
-     * ÀÌ°ªÀº ÇÏ³ªÀÇ LG¿¡¼­ °ü¸®ÇÒ ¼ö ÀÖ´Â extentÀÇ °¹¼ö¸¦ ÀÇ¹ÌÇÏ±âµµ ÇÑ´Ù.
+     * LGì— ì €ìž¥í•  ìˆ˜ ìžˆëŠ” ë¹„íŠ¸ì˜ ê°¯ìˆ˜.
+     * ì´ê°’ì€ í•˜ë‚˜ì˜ LGì—ì„œ ê´€ë¦¬í•  ìˆ˜ ìžˆëŠ” extentì˜ ê°¯ìˆ˜ë¥¼ ì˜ë¯¸í•˜ê¸°ë„ í•œë‹¤.
      */ 
 
     static inline UInt nBitsPerLG(void)
@@ -143,7 +143,7 @@ public:
         return sBits;
     }
 
-    /* LG ¿¡¼­ °ü¸®µÇ´Â ºñÆ®µéÀÇ ±æÀÌ(byte) */
+    /* LG ì—ì„œ ê´€ë¦¬ë˜ëŠ” ë¹„íŠ¸ë“¤ì˜ ê¸¸ì´(byte) */
     static inline UInt getLenBitmapOfLG()
     {
         return sdptbGroup::nBitsPerLG() / SDPTB_BITS_PER_BYTE;
@@ -171,7 +171,7 @@ public:
                                      ULong     * aAllocPageCount );
 
     /////////////////////////////////////////////////////////////
-    //     GG       Logging °ü·Ã ÇÔ¼öµé.
+    //     GG       Logging ê´€ë ¨ í•¨ìˆ˜ë“¤.
     /////////////////////////////////////////////////////////////
     static IDE_RC logAndSetHWMOfGG( sdrMtx       * aMtx,
                                     sdptbGGHdr   * aGGHdr,
@@ -212,7 +212,7 @@ public:
                                          UInt          aVal );
 
     /////////////////////////////////////////////////////////////
-    //     LG       Logging °ü·Ã ÇÔ¼öµé.
+    //     LG       Logging ê´€ë ¨ í•¨ìˆ˜ë“¤.
     /////////////////////////////////////////////////////////////
 
     static IDE_RC logAndSetStartPIDOfLG( sdrMtx       * aMtx,
@@ -237,7 +237,7 @@ public:
     static IDE_RC initGG( sdrMtx      * aMtx,
                           UChar       * aPagePtr );
 
-    /* dealocation LG header page ÀÇ °æ¿ì´Â ºñÆ®¸ÊÀ» ¸ðµÎ 1·Î ÃÊ±âÈ­ÇÑ´Ù.*/
+    /* dealocation LG header page ì˜ ê²½ìš°ëŠ” ë¹„íŠ¸ë§µì„ ëª¨ë‘ 1ë¡œ ì´ˆê¸°í™”í•œë‹¤.*/
     static void initBitmapOfLG( UChar      * aPagePtr,
                                 UChar        aBitVal,
                                 UInt         aStartIdx,
@@ -267,9 +267,9 @@ public:
                                                sdptbSpaceCache * aCache );
 
     /* BUG-31608 [sm-disk-page] add datafile during DML
-     * ¾Æ·¡ µÎ ÇÔ¼ö´Â AddDataFileÀÇ µ¿½Ã¼º Ã³¸®¸¦ ´ã´çÇÑ´Ù. »ó´ÜÀÇ 
-     * prepare/complete ExtendFileÇÔ¼ö¿Í ´õºÒ¾î Critical-sectionÀ» 
-     * Á¶ÀýÇÑ´Ù. */
+     * ì•„ëž˜ ë‘ í•¨ìˆ˜ëŠ” AddDataFileì˜ ë™ì‹œì„± ì²˜ë¦¬ë¥¼ ë‹´ë‹¹í•œë‹¤. ìƒë‹¨ì˜ 
+     * prepare/complete ExtendFileí•¨ìˆ˜ì™€ ë”ë¶ˆì–´ Critical-sectionì„ 
+     * ì¡°ì ˆí•œë‹¤. */
     static void prepareAddDataFile( idvSQL          * aStatistics,
                                     sdptbSpaceCache * aCache );
 
@@ -303,7 +303,7 @@ public:
     }
 
 
-    /* alloc LGÀÇ index¸¦ ¾ò´Â´Ù */
+    /* alloc LGì˜ indexë¥¼ ì–»ëŠ”ë‹¤ */
     static inline UInt getAllocLGIdx(sdptbGGHdr   * aGGHdr)
     {
         IDE_ASSERT( aGGHdr != NULL);
@@ -311,13 +311,13 @@ public:
         return aGGHdr->mAllocLGIdx ;
     }
 
-    /* dealloc LGÀÇ index¸¦ ¾ò´Â´Ù */
+    /* dealloc LGì˜ indexë¥¼ ì–»ëŠ”ë‹¤ */
     static inline UInt getDeallocLGIdx(sdptbGGHdr   * aGGHdr)
     {
         IDE_ASSERT( aGGHdr != NULL);
 
          /* !(aGGHdr->mAllocLGIdx)
-          * ÀÌ ÄÚµå¿¡¼­ ÇÏ´Â ¿ªÇÒÀ» ºÎ¿¬¼³¸íÇÏ¸é ´ÙÀ½°ú °°´Ù.
+          * ì´ ì½”ë“œì—ì„œ í•˜ëŠ” ì—­í• ì„ ë¶€ì—°ì„¤ëª…í•˜ë©´ ë‹¤ìŒê³¼ ê°™ë‹¤.
           *
           *(aGGHdr->mAllocLGIdx == SDPTB_ALLOC_LG_IDX_0 ) ? 
           *                     SDPTB_ALLOC_LG_IDX_1 : SDPTB_ALLOC_LG_IDX_0 ;
@@ -330,26 +330,26 @@ public:
 private:
 
 
-    // ÇöÀç ÆÄÀÏ È®Àå ¿©ºÎ ¹ÝÈ¯
+    // í˜„ìž¬ íŒŒì¼ í™•ìž¥ ì—¬ë¶€ ë°˜í™˜
     static inline idBool isOnExtend( sdptbSpaceCache * aCache );
 
-    //Extend¸¦ À§ÇÑ Mutex È¹µæ
+    //Extendë¥¼ ìœ„í•œ Mutex íšë“
     static inline void  lockForExtend( idvSQL           * aStatistics,
                                        sdptbSpaceCache  * aCache );
 
-    //Extend¸¦ À§ÇÑ Mutex ÇØÁ¦
+    //Extendë¥¼ ìœ„í•œ Mutex í•´ì œ
     static inline void  unlockForExtend( sdptbSpaceCache  * aCache );
 
-    //addDataFileÀ» À§ÇÑ Mutex È¹µæ
+    //addDataFileì„ ìœ„í•œ Mutex íšë“
     static inline void  lockForAddDataFile( idvSQL           * aStatistics,
                                             sdptbSpaceCache  * aCache );
 
-    //addDataFileÀ» À§ÇÑ Mutex ÇØÁ¦
+    //addDataFileì„ ìœ„í•œ Mutex í•´ì œ
     static inline void  unlockForAddDataFile( sdptbSpaceCache  * aCache );
 
     /* 
-     * ¸¶Áö¸· LGÀÇ extent°¹¼ö¸¦ ±¸ÇÑ´Ù. 
-     * ¿©±â¼­ aPageCnt´Â GG header¸¦ Æ÷ÇÔÇÑ ¸ðµç Å©±âÀÓ
+     * ë§ˆì§€ë§‰ LGì˜ extentê°¯ìˆ˜ë¥¼ êµ¬í•œë‹¤. 
+     * ì—¬ê¸°ì„œ aPageCntëŠ” GG headerë¥¼ í¬í•¨í•œ ëª¨ë“  í¬ê¸°ìž„
      */
 
     static inline UInt  getExtCntOfLastLG( UInt aPageCnt, 
@@ -358,12 +358,12 @@ private:
         UInt sExtCnt;
         UInt sRestPageCnt;
 
-        //²ËÂù LG¸¦ Á¦¿ÜÇÑ ³ª¸ÓÁö ÆäÀÌÁö °¹¼ö
+        //ê½‰ì°¬ LGë¥¼ ì œì™¸í•œ ë‚˜ë¨¸ì§€ íŽ˜ì´ì§€ ê°¯ìˆ˜
         sRestPageCnt = (aPageCnt - SDPTB_GG_HDR_PAGE_CNT) 
                               % SDPTB_PAGES_PER_LG(aPagesPerExt);
 
-        // ±× Â¥Åõ¸®°¡... ÁøÂ¥·Î Á¸ÀçÇÏ´Â LGÀÎ°¡ ¾Æ´Ï¸é...
-        // illusionÀÎ°¡ È®ÀÎÇØ¾ßÇÔ!!
+        // ê·¸ ì§œíˆ¬ë¦¬ê°€... ì§„ì§œë¡œ ì¡´ìž¬í•˜ëŠ” LGì¸ê°€ ì•„ë‹ˆë©´...
+        // illusionì¸ê°€ í™•ì¸í•´ì•¼í•¨!!
         if ( sRestPageCnt >= (SDPTB_LG_HDR_PAGE_CNT + aPagesPerExt) )
         {
             sExtCnt = ( sRestPageCnt - SDPTB_LG_HDR_PAGE_CNT ) / aPagesPerExt;
@@ -378,7 +378,7 @@ private:
 
     }
 
-    /* page°¹¼ö¸¦ ÀÎÀÚ·Î ¹Þ¾Æ¼­ ±× Å©±â¿¡¼­ÀÇ extent °¹¼ö¸¦ ±¸ÇÑ´Ù. */
+    /* pageê°¯ìˆ˜ë¥¼ ì¸ìžë¡œ ë°›ì•„ì„œ ê·¸ í¬ê¸°ì—ì„œì˜ extent ê°¯ìˆ˜ë¥¼ êµ¬í•œë‹¤. */
     static inline UInt    getExtentCntByPageCnt( sdptbSpaceCache  *aCache,
                                                  UInt              aPageCnt )
     {
@@ -414,7 +414,7 @@ inline idBool sdptbGroup::isOnExtend( sdptbSpaceCache * aCache )
 }
 
 
-    // Extend Extent Mutex È¹µæ
+    // Extend Extent Mutex íšë“
 inline void  sdptbGroup::lockForExtend( idvSQL           * aStatistics,
                                         sdptbSpaceCache  * aCache )
 {
@@ -422,7 +422,7 @@ inline void  sdptbGroup::lockForExtend( idvSQL           * aStatistics,
     return;
 }
 
-    // Extend Extent Mutex ÇØÁ¦
+    // Extend Extent Mutex í•´ì œ
 inline void  sdptbGroup::unlockForExtend( sdptbSpaceCache  * aCache )
 {
     IDE_ASSERT( aCache->mMutexForExtend.unlock() == IDE_SUCCESS );
@@ -430,7 +430,7 @@ inline void  sdptbGroup::unlockForExtend( sdptbSpaceCache  * aCache )
 }
 
 /* BUG-31608 [sm-disk-page] add datafile during DML 
- * Add Datafile Mutex È¹µæ */
+ * Add Datafile Mutex íšë“ */
 inline void  sdptbGroup::lockForAddDataFile ( idvSQL           * aStatistics,
                                               sdptbSpaceCache  * aCache )
 {
@@ -440,7 +440,7 @@ inline void  sdptbGroup::lockForAddDataFile ( idvSQL           * aStatistics,
 }
 
 /* BUG-31608 [sm-disk-page] add datafile during DML 
- * Add Datafile Mutex ÇØÁ¦ */
+ * Add Datafile Mutex í•´ì œ */
 inline void  sdptbGroup::unlockForAddDataFile( sdptbSpaceCache  * aCache )
 {
     IDE_ASSERT( aCache->mMutexForAddDataFile.unlock() == IDE_SUCCESS );

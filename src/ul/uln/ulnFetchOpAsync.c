@@ -27,7 +27,7 @@
     (aNumberOfRowsToGet > 0) ? ((acp_uint32_t)aNumberOfRowsToGet) : (aNumberOfPrefetchRows)
 
 /**
- * ºñµ¿±â¿ë fetch ÇÁ·ÎÅäÄİÀ» ¼Û½ÅÇÑ´Ù.
+ * ë¹„ë™ê¸°ìš© fetch í”„ë¡œí† ì½œì„ ì†¡ì‹ í•œë‹¤.
  */
 static ACI_RC ulnFetchRequestFetchAsync(ulnFnContext *aFnContext,
                                         ulnPtContext *aPtContext,
@@ -57,7 +57,7 @@ static ACI_RC ulnFetchRequestFetchAsync(ulnFnContext *aFnContext,
 }
 
 /**
- * ºñµ¿±â¿ë fetch ÇÁ·ÎÅäÄİÀ» ¼ö½ÅÇÑ´Ù.
+ * ë¹„ë™ê¸°ìš© fetch í”„ë¡œí† ì½œì„ ìˆ˜ì‹ í•œë‹¤.
  */
 ACI_RC ulnFetchReceiveFetchResultAsync(ulnFnContext *aFnContext, ulnPtContext *aPtContext)
 {
@@ -66,7 +66,7 @@ ACI_RC ulnFetchReceiveFetchResultAsync(ulnFnContext *aFnContext, ulnPtContext *a
     ULN_FNCONTEXT_GET_DBC(aFnContext, sDbc);
 
     /* BUG-25579
-     * [CodeSonar::NullPointerDereference] ulnFetchReceiveFetchResult() ¿¡¼­ ¹ß»ı */
+     * [CodeSonar::NullPointerDereference] ulnFetchReceiveFetchResult() ì—ì„œ ë°œìƒ */
     ACE_ASSERT(sDbc != NULL);
 
     ulnFetchInitForFetchResult(aFnContext);
@@ -87,8 +87,8 @@ ACI_RC ulnFetchReceiveFetchResultAsync(ulnFnContext *aFnContext, ulnPtContext *a
 }
 
 /**
- * ºñµ¿±â·Î fetch ÇØ ¿Ô´Âµ¥ cursor size ´ëºñ ºÎÁ·ÇÒ °æ¿ì ºÎÁ·ÇÑ ¾ç¸¸Å­ ´Ù½Ã ¿äÃ»ÇÑ´Ù.
- * e.g.) ºñµ¿±â·Î 0 À¸·Î ¿äÃ»ÇÏ¿´´Âµ¥ ±× ¾çÀÌ cursor size º¸´Ù ºÎÁ·ÇÑ °æ¿ì
+ * ë¹„ë™ê¸°ë¡œ fetch í•´ ì™”ëŠ”ë° cursor size ëŒ€ë¹„ ë¶€ì¡±í•  ê²½ìš° ë¶€ì¡±í•œ ì–‘ë§Œí¼ ë‹¤ì‹œ ìš”ì²­í•œë‹¤.
+ * e.g.) ë¹„ë™ê¸°ë¡œ 0 ìœ¼ë¡œ ìš”ì²­í•˜ì˜€ëŠ”ë° ê·¸ ì–‘ì´ cursor size ë³´ë‹¤ ë¶€ì¡±í•œ ê²½ìš°
  */
 static acp_uint32_t ulnFetchGetInsufficientRows(ulnCache  *aCache,
                                                 ulnCursor *aCursor)
@@ -119,8 +119,8 @@ static acp_uint32_t ulnFetchGetInsufficientRows(ulnCache  *aCache,
 }
 
 /**
- * Server ·ÎºÎÅÍ fetch ¸¦ ¿äÃ»ÇÏ´Â ºñµ¿±â¿ë ÇÔ¼ö.
- * ¸¸¾à, ºñµ¿±â·Î send ÇÏÁö ¾Ê¾Ò´Ù¸é µ¿±â·Î ¼Û¼ö½ÅÇÏ°í ºñµ¿±â·Î ¼Û½ÅÇØ ³õÀ½.
+ * Server ë¡œë¶€í„° fetch ë¥¼ ìš”ì²­í•˜ëŠ” ë¹„ë™ê¸°ìš© í•¨ìˆ˜.
+ * ë§Œì•½, ë¹„ë™ê¸°ë¡œ send í•˜ì§€ ì•Šì•˜ë‹¤ë©´ ë™ê¸°ë¡œ ì†¡ìˆ˜ì‹ í•˜ê³  ë¹„ë™ê¸°ë¡œ ì†¡ì‹ í•´ ë†“ìŒ.
  */
 ACI_RC ulnFetchMoreFromServerAsync(ulnFnContext *aFnContext,
                                    ulnPtContext *aPtContext,
@@ -156,8 +156,8 @@ ACI_RC ulnFetchMoreFromServerAsync(ulnFnContext *aFnContext,
         sOriginalRC = ULN_FNCONTEXT_GET_RC(aFnContext);
 
         /* BUG-27119
-         * »õ·Î Cache ÇÒ µ¥ÀÌÅÍÀÇ °á°ú¸¦ SQL_SUCCESS·Î ÃÊ±âÈ­ ÇÑ´Ù.
-         * ±×·¸Áö ¾ÊÀ» °æ¿ì¿¡´Â ±âÁ¸¿¡ ¼¼ÆÃµÈ aFnContext->mSqlReturn °ªÀ» °è¼Ó »ç¿ëÇÏ°Ô µÈ´Ù.
+         * ìƒˆë¡œ Cache í•  ë°ì´í„°ì˜ ê²°ê³¼ë¥¼ SQL_SUCCESSë¡œ ì´ˆê¸°í™” í•œë‹¤.
+         * ê·¸ë ‡ì§€ ì•Šì„ ê²½ìš°ì—ëŠ” ê¸°ì¡´ì— ì„¸íŒ…ëœ aFnContext->mSqlReturn ê°’ì„ ê³„ì† ì‚¬ìš©í•˜ê²Œ ëœë‹¤.
          */
         ULN_FNCONTEXT_SET_RC(aFnContext, SQL_SUCCESS);
 
@@ -168,7 +168,7 @@ ACI_RC ulnFetchMoreFromServerAsync(ulnFnContext *aFnContext,
 
         if (ULN_FNCONTEXT_GET_RC(aFnContext) == SQL_NO_DATA)
         {
-            /* ÇÏ³ª¶óµµ FetchÇØ ¿Ô´Ù¸é SQL_NO_DATA°¡ ¾Æ´Ï´Ù. */
+            /* í•˜ë‚˜ë¼ë„ Fetchí•´ ì™”ë‹¤ë©´ SQL_NO_DATAê°€ ì•„ë‹ˆë‹¤. */
             if (sFetchedRowsAsync > 0)
             {
                 ULN_FNCONTEXT_SET_RC(aFnContext, sOriginalRC);
@@ -179,9 +179,9 @@ ACI_RC ulnFetchMoreFromServerAsync(ulnFnContext *aFnContext,
         else if (ULN_FNCONTEXT_GET_RC(aFnContext) == SQL_SUCCESS)
         {
             /* BUG-27119 
-             * ÀÌ ÇÔ¼ö¿¡ »ç¿ëµÈ aFnContext´Â ¼­¹ö¿¡¼­ »õ·Î ¹ŞÀº °á°úÀÌ´Ù.
-             * ¹Ì¸® CacheµÇ¾îÀÖ´ø µ¥ÀÌÅÍ¸¦ FetchÇß¾úÀ» ¼ö ÀÖ±â ¶§¹®¿¡
-             * Original °ªÀ¸·Î º¯°æÇØ¾ß ÇÑ´Ù.
+             * ì´ í•¨ìˆ˜ì— ì‚¬ìš©ëœ aFnContextëŠ” ì„œë²„ì—ì„œ ìƒˆë¡œ ë°›ì€ ê²°ê³¼ì´ë‹¤.
+             * ë¯¸ë¦¬ Cacheë˜ì–´ìˆë˜ ë°ì´í„°ë¥¼ Fetchí–ˆì—ˆì„ ìˆ˜ ìˆê¸° ë•Œë¬¸ì—
+             * Original ê°’ìœ¼ë¡œ ë³€ê²½í•´ì•¼ í•œë‹¤.
              */
             ULN_FNCONTEXT_SET_RC(aFnContext, sOriginalRC);
         }
@@ -273,10 +273,10 @@ ACI_RC ulnFetchMoreFromServerAsync(ulnFnContext *aFnContext,
 }
 
 /**
- * Auto-tuning À» ÅëÇØ ÃÖÀûÀÇ fetch ¾çÀ» Á¶ÀıÇØ °¡¸é¼­ server ·ÎºÎÅÍ fetch ¸¦
- * ¿äÃ»ÇÏ´Â ºñµ¿±â¿ë ÇÔ¼ö. ÃÖÀûÀÇ fetch ¾çÀº network idle time À» 0 ¿¡ ±Ù»çÇÔ.
- * ¸¸¾à, auto-tuning µµÁß ¿¡·¯°¡ ¹ß»ıÇÏ¸é OFF ½ÃÅ°°í ÀÌÈÄºÎÅÍ´Â ºñµ¿±â·Î¸¸
- * µ¿ÀÛµÊ.
+ * Auto-tuning ì„ í†µí•´ ìµœì ì˜ fetch ì–‘ì„ ì¡°ì ˆí•´ ê°€ë©´ì„œ server ë¡œë¶€í„° fetch ë¥¼
+ * ìš”ì²­í•˜ëŠ” ë¹„ë™ê¸°ìš© í•¨ìˆ˜. ìµœì ì˜ fetch ì–‘ì€ network idle time ì„ 0 ì— ê·¼ì‚¬í•¨.
+ * ë§Œì•½, auto-tuning ë„ì¤‘ ì—ëŸ¬ê°€ ë°œìƒí•˜ë©´ OFF ì‹œí‚¤ê³  ì´í›„ë¶€í„°ëŠ” ë¹„ë™ê¸°ë¡œë§Œ
+ * ë™ì‘ë¨.
  */
 ACI_RC ulnFetchMoreFromServerAsyncWithAutoTuning(ulnFnContext *aFnContext,
                                                  ulnPtContext *aPtContext,
@@ -312,8 +312,8 @@ ACI_RC ulnFetchMoreFromServerAsyncWithAutoTuning(ulnFnContext *aFnContext,
         sOriginalRC = ULN_FNCONTEXT_GET_RC(aFnContext);
 
         /* BUG-27119
-         * »õ·Î Cache ÇÒ µ¥ÀÌÅÍÀÇ °á°ú¸¦ SQL_SUCCESS·Î ÃÊ±âÈ­ ÇÑ´Ù.
-         * ±×·¸Áö ¾ÊÀ» °æ¿ì¿¡´Â ±âÁ¸¿¡ ¼¼ÆÃµÈ aFnContext->mSqlReturn °ªÀ» °è¼Ó »ç¿ëÇÏ°Ô µÈ´Ù.
+         * ìƒˆë¡œ Cache í•  ë°ì´í„°ì˜ ê²°ê³¼ë¥¼ SQL_SUCCESSë¡œ ì´ˆê¸°í™” í•œë‹¤.
+         * ê·¸ë ‡ì§€ ì•Šì„ ê²½ìš°ì—ëŠ” ê¸°ì¡´ì— ì„¸íŒ…ëœ aFnContext->mSqlReturn ê°’ì„ ê³„ì† ì‚¬ìš©í•˜ê²Œ ëœë‹¤.
          */
         ULN_FNCONTEXT_SET_RC(aFnContext, SQL_SUCCESS);
 
@@ -324,7 +324,7 @@ ACI_RC ulnFetchMoreFromServerAsyncWithAutoTuning(ulnFnContext *aFnContext,
 
         if (ULN_FNCONTEXT_GET_RC(aFnContext) == SQL_NO_DATA)
         {
-            /* ÇÏ³ª¶óµµ FetchÇØ ¿Ô´Ù¸é SQL_NO_DATA°¡ ¾Æ´Ï´Ù. */
+            /* í•˜ë‚˜ë¼ë„ Fetchí•´ ì™”ë‹¤ë©´ SQL_NO_DATAê°€ ì•„ë‹ˆë‹¤. */
             if (ulnStmtGetFetchedRowCountFromServer(sStmt) > 0)
             {
                 ULN_FNCONTEXT_SET_RC(aFnContext, sOriginalRC);
@@ -335,9 +335,9 @@ ACI_RC ulnFetchMoreFromServerAsyncWithAutoTuning(ulnFnContext *aFnContext,
         else if (ULN_FNCONTEXT_GET_RC(aFnContext) == SQL_SUCCESS)
         {
             /* BUG-27119 
-             * ÀÌ ÇÔ¼ö¿¡ »ç¿ëµÈ aFnContext´Â ¼­¹ö¿¡¼­ »õ·Î ¹ŞÀº °á°úÀÌ´Ù.
-             * ¹Ì¸® CacheµÇ¾îÀÖ´ø µ¥ÀÌÅÍ¸¦ FetchÇß¾úÀ» ¼ö ÀÖ±â ¶§¹®¿¡
-             * Original °ªÀ¸·Î º¯°æÇØ¾ß ÇÑ´Ù.
+             * ì´ í•¨ìˆ˜ì— ì‚¬ìš©ëœ aFnContextëŠ” ì„œë²„ì—ì„œ ìƒˆë¡œ ë°›ì€ ê²°ê³¼ì´ë‹¤.
+             * ë¯¸ë¦¬ Cacheë˜ì–´ìˆë˜ ë°ì´í„°ë¥¼ Fetchí–ˆì—ˆì„ ìˆ˜ ìˆê¸° ë•Œë¬¸ì—
+             * Original ê°’ìœ¼ë¡œ ë³€ê²½í•´ì•¼ í•œë‹¤.
              */
             ULN_FNCONTEXT_SET_RC(aFnContext, sOriginalRC);
         }
@@ -402,7 +402,7 @@ ACI_RC ulnFetchMoreFromServerAsyncWithAutoTuning(ulnFnContext *aFnContext,
 }
 
 /**
- * Fetch ¾çÀ» °è»êÇÏ´Â ºñµ¿±â¿ë ÇÔ¼ö
+ * Fetch ì–‘ì„ ê³„ì‚°í•˜ëŠ” ë¹„ë™ê¸°ìš© í•¨ìˆ˜
  */
 void ulnFetchCalcPrefetchRowsAsync(ulnCache     *aCache,
                                    ulnCursor    *aCursor,
@@ -429,7 +429,7 @@ void ulnFetchCalcPrefetchRowsAsync(ulnCache     *aCache,
 }
 
 /**
- * ºñµ¿±â fetch ¸¦ ½ÃÀÛÇÑ´Ù.
+ * ë¹„ë™ê¸° fetch ë¥¼ ì‹œì‘í•œë‹¤.
  */
 ACI_RC ulnFetchBeginAsync(ulnFnContext *aFnContext,
                           ulnPtContext *aPtContext)
@@ -485,7 +485,7 @@ ACI_RC ulnFetchBeginAsync(ulnFnContext *aFnContext,
 }
 
 /**
- * SQLMoreResults() ÇÔ¼ö µî¿¡¼­ ´ÙÀ½ result set À¸·Î fetch ¸¦ ½ÃÀÛÇÒ °æ¿ì È£ÃâÇÑ´Ù.
+ * SQLMoreResults() í•¨ìˆ˜ ë“±ì—ì„œ ë‹¤ìŒ result set ìœ¼ë¡œ fetch ë¥¼ ì‹œì‘í•  ê²½ìš° í˜¸ì¶œí•œë‹¤.
  */
 ACI_RC ulnFetchNextAsync(ulnFnContext *aFnContext,
                          ulnPtContext *aPtContext)
@@ -539,7 +539,7 @@ ACI_RC ulnFetchNextAsync(ulnFnContext *aFnContext,
 }
 
 /**
- * Curosr close ¶Ç´Â free statement ½Ã ºñµ¿±â fetch ¸¦ Á¾·áÇÑ´Ù.
+ * Curosr close ë˜ëŠ” free statement ì‹œ ë¹„ë™ê¸° fetch ë¥¼ ì¢…ë£Œí•œë‹¤.
  */
 ACI_RC ulnFetchEndAsync(ulnFnContext *aFnContext,
                         ulnPtContext *aPtContext)
@@ -596,8 +596,8 @@ ACI_RC ulnFetchEndAsync(ulnFnContext *aFnContext,
 }
 
 /**
- * ºñµ¿±â·Î ÇÁ·ÎÅäÄİ ¼Û½ÅÇÑ »óÅÂ¿¡¼­ ´Ù¸¥ ÇÁ·ÎÅäÄİ ¼Û¼ö½ÅÇÏ°íÀÚ ÇÒ °æ¿ì,
- * ºñµ¿±â·Î ¼Û½ÅÇÑ ÇÁ·ÎÅäÄİÀ» ¼ö½ÅÇÑ´Ù.
+ * ë¹„ë™ê¸°ë¡œ í”„ë¡œí† ì½œ ì†¡ì‹ í•œ ìƒíƒœì—ì„œ ë‹¤ë¥¸ í”„ë¡œí† ì½œ ì†¡ìˆ˜ì‹ í•˜ê³ ì í•  ê²½ìš°,
+ * ë¹„ë™ê¸°ë¡œ ì†¡ì‹ í•œ í”„ë¡œí† ì½œì„ ìˆ˜ì‹ í•œë‹¤.
  */
 ACI_RC ulnFetchReceiveFetchResultForSync(ulnFnContext *aFnContext,
                                          ulnPtContext *aPtContext,

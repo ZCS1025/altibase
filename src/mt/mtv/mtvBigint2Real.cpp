@@ -109,7 +109,7 @@ IDE_RC mtvCalculate_Bigint2Real( mtcNode*,
                         == ID_TRUE, ERR_VALUE_OVERFLOW );
 
         // To fix BUG-12281
-        // underflow °Ë»ç
+        // underflow ê²€ì‚¬
         if( ( idlOS::fabs( sDouble ) < MTD_REAL_MINIMUM ) &&
             ( *(mtdRealType*)aStack[0].value != 0 ) )
         {

@@ -29,7 +29,7 @@
 
 /* ------------------------------------------------
  * for A4
- * checksum °è»êÀ» À§ÇÑ random-mask
+ * checksum ê³„ì‚°ì„ ìœ„í•œ random-mask
  * ----------------------------------------------*/
 #define SMU_CHECKSUM_RANDOM_MASK1    (1463735687)
 #define SMU_CHECKSUM_RANDOM_MASK2    (1653893711)
@@ -60,7 +60,7 @@ public:
     static SInt outputMsg(const SChar *aFmt, ...);
     static SInt outputErr(const SChar *aFmt, ...);
 
-    /* µ¥ÀÌÅ¸ º£ÀÌ½º name creation */
+    /* ë°ì´íƒ€ ë² ì´ìŠ¤ name creation */
 
 //      static IDE_RC makeDatabaseFileName(SChar  *aDBName,
 //                                         SChar **aDBDir);
@@ -73,7 +73,7 @@ public:
 
     /* ------------------------------------------------
      * for A4
-     * checksum °è»êÀ» À§ÇÑ Á¢±â ÇÔ¼öµé..
+     * checksum ê³„ì‚°ì„ ìœ„í•œ ì ‘ê¸° í•¨ìˆ˜ë“¤..
      * ----------------------------------------------*/
     static inline UInt foldBinary(UChar* aBuffer,
                                   UInt   aLength); 
@@ -81,14 +81,14 @@ public:
     static inline UInt foldUIntPair(UInt aNum1, 
                                     UInt aNum2);
 
-    // ¹®ÀÚ°¡ ¾ËÆÄºªÀÌ³ª ¼ıÀÚÀÎ °æ¿ì true ¹İÈ¯
+    // ë¬¸ìê°€ ì•ŒíŒŒë²³ì´ë‚˜ ìˆ«ìì¸ ê²½ìš° true ë°˜í™˜
     static inline idBool isAlNum( SChar aChar );
-    // ¹®ÀÚ°¡ ¼ıÀÚÀÎ °æ¿ì true¸¦ ¹İÈ¯
+    // ë¬¸ìê°€ ìˆ«ìì¸ ê²½ìš° trueë¥¼ ë°˜í™˜
     static inline idBool isDigit( SChar aChar );
-    // ¹®ÀÚ¿­ÀÌ ¸ğµÎ ¼ıÀÚ·Î ÀÌ·ç¾îÁ® ÀÖ´ÂÁö ÆÇ´ÜÇÏ´Â ÇÔ¼ö
+    // ë¬¸ìì—´ì´ ëª¨ë‘ ìˆ«ìë¡œ ì´ë£¨ì–´ì ¸ ìˆëŠ”ì§€ íŒë‹¨í•˜ëŠ” í•¨ìˆ˜
     static inline idBool isDigitForString( SChar * aChar, UInt aLength );
 
-    /* Å©°Å³ª °°Àº 2^n °ªÀ» ¹İÈ¯ */
+    /* í¬ê±°ë‚˜ ê°™ì€ 2^n ê°’ì„ ë°˜í™˜ */
     static inline UInt getPowerofTwo( UInt aValue );
 
     static inline IDE_RC allocAlignedBuf( iduMemoryClientIndex aAllocIndex,
@@ -105,7 +105,7 @@ public:
                                UInt    aBufferLength,
                                SChar * aBuffer );
 
-    /* Dump¿ë ÇÔ¼ö */
+    /* Dumpìš© í•¨ìˆ˜ */
     static void dumpFuncWithBuffer( UInt           aChkFlag, 
                                     ideLogModule   aModule, 
                                     UInt           aLevel, 
@@ -114,7 +114,7 @@ public:
     static void printFuncWithBuffer( smuDumpFunc    aDumpFunc,
                                      void         * aTarget);
 
-    /* °ø¿ë º¯¼öµé¿¡ ´ëÇÑ DumpFunction */
+    /* ê³µìš© ë³€ìˆ˜ë“¤ì— ëŒ€í•œ DumpFunction */
     static void dumpGRID( void  * aTarget,
                           SChar * aOutBuf, 
                           UInt    aOutSize );
@@ -131,15 +131,15 @@ public:
                              SChar * aOutBuf, 
                              UInt    aOutSize );
 public:
-    // unit test¸¦ À§ÇÑ º¯¼ö
-    // verify´Â ideLog::logÀ» »ç¿ëÇÏ³ª
-    // unitÀº idlOS::printf·Î º¸¿©ÁÖ±â À§ÇØ unit¿¡¼­¸¸ ÀÌ¸¦
-    // ´Ù¸¥ ÇÔ¼ö·Î ´ëÄ¡ÇÏ¿© »ç¿ëÇÑ´Ù.
+    // unit testë¥¼ ìœ„í•œ ë³€ìˆ˜
+    // verifyëŠ” ideLog::logì„ ì‚¬ìš©í•˜ë‚˜
+    // unitì€ idlOS::printfë¡œ ë³´ì—¬ì£¼ê¸° ìœ„í•´ unitì—ì„œë§Œ ì´ë¥¼
+    // ë‹¤ë¥¸ í•¨ìˆ˜ë¡œ ëŒ€ì¹˜í•˜ì—¬ ì‚¬ìš©í•œë‹¤.
     static smuWriteErrFunc mWriteError;
 };
 
 /* ------------------------------------------------
- * ¹ÙÀÌ³Ê¸® ½ºÆ®¸µ Á¶ÇÕ 
+ * ë°”ì´ë„ˆë¦¬ ìŠ¤íŠ¸ë§ ì¡°í•© 
  * ----------------------------------------------*/
 inline UInt smuUtility::foldBinary(UChar* aBuffer, 
                                    UInt   aLength)
@@ -162,7 +162,7 @@ inline UInt smuUtility::foldBinary(UChar* aBuffer,
 }
 
 /* ------------------------------------------------
- * µÎ°³ÀÇ UInt °ª Á¶ÇÕ
+ * ë‘ê°œì˜ UInt ê°’ ì¡°í•©
  * ----------------------------------------------*/
 inline UInt smuUtility::foldUIntPair(UInt aNum1,
                                      UInt aNum2)
@@ -174,8 +174,8 @@ inline UInt smuUtility::foldUIntPair(UInt aNum1,
 }
 
 /***********************************************************************
- * Description : ¿µ¹®ÀÚ¿Í ¼ıÀÚ¸¦ ÆÇ´ÜÇÏ´Â
- * alphavet ÀÌ³ª digitÀÌ¸é true ±×·¸Áö¾ÊÀ¸¸é false
+ * Description : ì˜ë¬¸ìì™€ ìˆ«ìë¥¼ íŒë‹¨í•˜ëŠ”
+ * alphavet ì´ë‚˜ digitì´ë©´ true ê·¸ë ‡ì§€ì•Šìœ¼ë©´ false
  **********************************************************************/
 inline idBool smuUtility::isAlNum( SChar aChar )
 {
@@ -190,8 +190,8 @@ inline idBool smuUtility::isAlNum( SChar aChar )
 }
 
 /***********************************************************************
- * Description : ¼ıÀÚ¸¦ ÆÇ´ÜÇÏ´Â ÇÔ¼ö 
- * digitÀÌ¸é true ±×·¸Áö¾ÊÀ¸¸é false
+ * Description : ìˆ«ìë¥¼ íŒë‹¨í•˜ëŠ” í•¨ìˆ˜ 
+ * digitì´ë©´ true ê·¸ë ‡ì§€ì•Šìœ¼ë©´ false
  **********************************************************************/
 inline idBool smuUtility::isDigit( SChar aChar )
 {
@@ -204,8 +204,8 @@ inline idBool smuUtility::isDigit( SChar aChar )
 }
 
 /***********************************************************************
- * Description : ¹®ÀÚ¿­ÀÌ ¸ğµÎ ¼ıÀÚ·Î ÀÌ·ç¾îÁ® ÀÖ´ÂÁö ÆÇ´ÜÇÏ´Â ÇÔ¼ö
- * digitÀÌ¸é true ±×·¸Áö¾ÊÀ¸¸é false
+ * Description : ë¬¸ìì—´ì´ ëª¨ë‘ ìˆ«ìë¡œ ì´ë£¨ì–´ì ¸ ìˆëŠ”ì§€ íŒë‹¨í•˜ëŠ” í•¨ìˆ˜
+ * digitì´ë©´ true ê·¸ë ‡ì§€ì•Šìœ¼ë©´ false
  **********************************************************************/
 inline idBool smuUtility::isDigitForString( SChar * aChar, UInt aLength )
 {
@@ -225,7 +225,7 @@ inline idBool smuUtility::isDigitForString( SChar * aChar, UInt aLength )
 }
 
 /***********************************************************************
- * Description : UInt °ªÀ» ÀÔ·Â¹Ş¾Æ Å©°Å³ª °°Àº 2^n °ªÀ» ¹İÈ¯
+ * Description : UInt ê°’ì„ ì…ë ¥ë°›ì•„ í¬ê±°ë‚˜ ê°™ì€ 2^n ê°’ì„ ë°˜í™˜
  **********************************************************************/
 inline UInt smuUtility::getPowerofTwo( UInt aValue )
 {
@@ -254,7 +254,7 @@ inline UInt smuUtility::getPowerofTwo( UInt aValue )
 /* --------------------------------------------------------------------
  * PROJ-2118 BUG Reporting
  *
- * Description : ÁÖ¾îÁø align¿¡ ¸ÂÃß¾î memory¸¦ alloc ÇÑ´Ù.
+ * Description : ì£¼ì–´ì§„ alignì— ë§ì¶”ì–´ memoryë¥¼ alloc í•œë‹¤.
  *
  * ----------------------------------------------------------------- */
 IDE_RC smuUtility::allocAlignedBuf( iduMemoryClientIndex aAllocIndex,
@@ -299,7 +299,7 @@ IDE_RC smuUtility::allocAlignedBuf( iduMemoryClientIndex aAllocIndex,
 /* --------------------------------------------------------------------
  * PROJ-2118 BUG Reporting
  *
- * Description : allocAlignedBuf ¿¡¼­ Alloc ÇÑ ¸Ş¸ğ¸®¸¦ ÇØÁ¦ÇÑ´Ù.
+ * Description : allocAlignedBuf ì—ì„œ Alloc í•œ ë©”ëª¨ë¦¬ë¥¼ í•´ì œí•œë‹¤.
  *
  * ----------------------------------------------------------------- */
 IDE_RC smuUtility::freeAlignedBuf( smuAlignBuf* aAllocPtr )

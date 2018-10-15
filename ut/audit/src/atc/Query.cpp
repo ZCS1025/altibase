@@ -123,7 +123,7 @@ SInt Query::getSQLType(UInt i)
  return (mRow)? mRow->getSQLType(i):0;
 }
 
-/* TASK-4212: auditÅøÀÇ ´ë¿ë·® Ã³¸®½Ã °³¼± */
+/* TASK-4212: auditíˆ´ì˜ ëŒ€ìš©ëŸ‰ ì²˜ë¦¬ì‹œ ê°œì„  */
 void Query::setArrayCount( SInt aArrayCount )
 {
     if(mRow)

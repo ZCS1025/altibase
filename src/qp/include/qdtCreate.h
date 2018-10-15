@@ -32,7 +32,7 @@ public:
     // validation
     static IDE_RC validateDiskDataTBS( qcStatement * aStatement );
     static IDE_RC validateDiskTemporaryTBS( qcStatement * aStatement );
-    // CREATE MEMORY TABLESPACE¿¡ ´ëÇÑ Validation
+    // CREATE MEMORY TABLESPACEì— ëŒ€í•œ Validation
     static IDE_RC validateMemoryTBS( qcStatement * aStatement );
     static IDE_RC validateVolatileTBS( qcStatement * aStatement );
 
@@ -43,16 +43,16 @@ public:
     static IDE_RC executeVolatileTBS( qcStatement * aStatement );
 
 private:
-    // ÇöÀç Á¢¼ÓÇÑ »ç¿ëÀÚ¿¡°Ô Æ¯Á¤ Tablespace ·ÎÀÇ Á¢±Ù±ÇÇÑÀ» ÁØ´Ù.
+    // í˜„ì¬ ì ‘ì†í•œ ì‚¬ìš©ìì—ê²Œ íŠ¹ì • Tablespace ë¡œì˜ ì ‘ê·¼ê¶Œí•œì„ ì¤€ë‹¤.
     static IDE_RC grantTBSAccess(qcStatement * aStatement,
                                  scSpaceID     aTBSID );
 
-    //  TablespaceÀÇ Attribute Flag List·ÎºÎÅÍ
+    //  Tablespaceì˜ Attribute Flag Listë¡œë¶€í„°
     static IDE_RC calculateTBSAttrFlag(  qcStatement          * aStatement,
                                          qdCreateTBSParseTree * aCreateTBS );
 
     
-    // Volatile Tablespace»ı¼ºÁß ¼öÇàÇÏ´Â ¿¡·¯Ã³¸®
+    // Volatile Tablespaceìƒì„±ì¤‘ ìˆ˜í–‰í•˜ëŠ” ì—ëŸ¬ì²˜ë¦¬
 
     static IDE_RC checkError4CreateVolatileTBS(
                       qdCreateTBSParseTree  * aCreateTBS );

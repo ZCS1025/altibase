@@ -31,14 +31,14 @@ SInt convertMbToWc4Cp936( void    * aSrc,
 /***********************************************************************
  *
  * Description :
- *     PROJ-2414 [±â´É¼º] GBK, CP936 character set Ãß°¡
+ *     PROJ-2414 [ê¸°ëŠ¥ì„±] GBK, CP936 character set ì¶”ê°€
  *     CP936 ==> UTF16BE
  *
  * Implementation :
- *     1) 1¹ÙÀÌÆ® ÀÎÄÚµùÀº ASCII ¿¡ Àü´Þ.
- *     2) 2¹ÙÀÌÆ® ÀÎÄÚµùÀº µÎ ´Ü°è·Î Ã³¸®.
- *        2-1) ¼­ºê¼ÂÀÎ GBK ¿¡ Àü´Þ.
- *        2-2) GBK ÀÇ ¹üÀ§À» ³Ñ´Â ¹®ÀÚ¶ó¸é, MS936 ÀÇ º¯È¯¹æ¾ÈÀ» Àû¿ë.
+ *     1) 1ë°”ì´íŠ¸ ì¸ì½”ë”©ì€ ASCII ì— ì „ë‹¬.
+ *     2) 2ë°”ì´íŠ¸ ì¸ì½”ë”©ì€ ë‘ ë‹¨ê³„ë¡œ ì²˜ë¦¬.
+ *        2-1) ì„œë¸Œì…‹ì¸ GBK ì— ì „ë‹¬.
+ *        2-2) GBK ì˜ ë²”ìœ„ì„ ë„˜ëŠ” ë¬¸ìžë¼ë©´, MS936 ì˜ ë³€í™˜ë°©ì•ˆì„ ì ìš©.
  *
  ***********************************************************************/
 
@@ -48,14 +48,14 @@ SInt convertMbToWc4Cp936( void    * aSrc,
 
     sSrcCharPtr = (UChar *)aSrc;
 
-    /* 1) ASCII ¿¡ Àü´Þ */
+    /* 1) ASCII ì— ì „ë‹¬ */
     if ( sSrcCharPtr[0] < 0x80 )
     {
         sRet = convertMbToWc4Ascii( aSrc, aSrcRemain, aDest, aDestRemain );
     }
     else
     {
-        /* 2-1) GBK ¿¡ Àü´Þ */
+        /* 2-1) GBK ì— ì „ë‹¬ */
         if ( ( sSrcCharPtr[0] >= 0x81 ) && ( sSrcCharPtr[0] < 0xff ) )
         {
             if ( aSrcRemain < 2 )
@@ -72,13 +72,13 @@ SInt convertMbToWc4Cp936( void    * aSrc,
         }
         else
         {
-            /* 2-2) MS936 ÀÇ º¯È¯¹æ¾ÈÀ» Àû¿ë */
+            /* 2-2) MS936 ì˜ ë³€í™˜ë°©ì•ˆì„ ì ìš© */
             if ( sSrcCharPtr[0] == 0x80 )
             {
-                /* MS936 ºÎÅÍ 0x80 ¿¡ EURO SIGN À» Ãß°¡ÇÏ¿´´Ù.
+                /* MS936 ë¶€í„° 0x80 ì— EURO SIGN ì„ ì¶”ê°€í•˜ì˜€ë‹¤.
                  *
-                 * 0x20ac ´Â UTF16BE ÀÇ EURO SIGN °ªÀÌ´Ù. ÀÌÈÄ¿¡ UTF16LE ÀÌ Ãß°¡
-                 * µÇ¸é °ªÀ» ¼öÁ¤ÇØ¾ß ÇÑ´Ù.
+                 * 0x20ac ëŠ” UTF16BE ì˜ EURO SIGN ê°’ì´ë‹¤. ì´í›„ì— UTF16LE ì´ ì¶”ê°€
+                 * ë˜ë©´ ê°’ì„ ìˆ˜ì •í•´ì•¼ í•œë‹¤.
                  */
                 sWc = 0x20ac;
                 WC_TO_UTF16BE( aDest, sWc );
@@ -100,7 +100,7 @@ SInt convertMbToWc4Cp936( void    * aSrc,
             /* Nothing to do. */
         }
 
-        /* 2-2) MS936 ÀÇ º¯È¯¹æ¾ÈÀ» Àû¿ë */
+        /* 2-2) MS936 ì˜ ë³€í™˜ë°©ì•ˆì„ ì ìš© */
         if ( ( sSrcCharPtr[0] >= 0xa1 ) && ( sSrcCharPtr[0] <= 0xa2 ) )
         {
             if ( aSrcRemain < 2 )
@@ -176,13 +176,13 @@ SInt convertWcToMb4Cp936( void    * aSrc,
 /***********************************************************************
  *
  * Description :
- *     PROJ-2414 [±â´É¼º] GBK, CP936 character set Ãß°¡
+ *     PROJ-2414 [ê¸°ëŠ¥ì„±] GBK, CP936 character set ì¶”ê°€
  *     UTF16BE ==> CP936
  *
  * Implementation :
- *     1) ASCII ¿¡ Àü´Þ.
- *     2) º¯È¯ ½ÇÆÐ ½Ã, GBK ¿¡ Àü´Þ.
- *     3) º¯È¯ ½ÇÆÐ ½Ã, MS936 ÀÇ º¯È¯¹æ¾ÈÀ» Àû¿ë.
+ *     1) ASCII ì— ì „ë‹¬.
+ *     2) ë³€í™˜ ì‹¤íŒ¨ ì‹œ, GBK ì— ì „ë‹¬.
+ *     3) ë³€í™˜ ì‹¤íŒ¨ ì‹œ, MS936 ì˜ ë³€í™˜ë°©ì•ˆì„ ì ìš©.
  *
  ***********************************************************************/
 
@@ -194,7 +194,7 @@ SInt convertWcToMb4Cp936( void    * aSrc,
 
     sDestCharPtr = (UChar *)aDest;
 
-    /* 1) ASCII ¿¡ Àü´Þ */
+    /* 1) ASCII ì— ì „ë‹¬ */
     sRet = convertWcToMb4Ascii( aSrc, aSrcRemain, aDest, aDestRemain );
 
     if ( sRet != RET_ILUNI )
@@ -206,7 +206,7 @@ SInt convertWcToMb4Cp936( void    * aSrc,
         /* Nothing to do. */
     }
 
-    /* 2) GBK ¿¡ Àü´Þ */
+    /* 2) GBK ì— ì „ë‹¬ */
     sRet = convertWcToMb4Gbk( aSrc, aSrcRemain, aDest, aDestRemain );
 
     if ( sRet != RET_ILUNI )
@@ -218,7 +218,7 @@ SInt convertWcToMb4Cp936( void    * aSrc,
         /* Nothing to do. */
     }
 
-    /* 3) MS936 ÀÇ º¯È¯¹æ¾ÈÀ» Àû¿ë. */
+    /* 3) MS936 ì˜ ë³€í™˜ë°©ì•ˆì„ ì ìš©. */
     UTF16BE_TO_WC( sWc, aSrc );
 
     if ( ( sWc >= 0xe000 ) && ( sWc < 0xe586 ) )
@@ -253,8 +253,8 @@ SInt convertWcToMb4Cp936( void    * aSrc,
     }
     else
     {
-        /* 0x20ac ´Â UTF16BE ÀÇ EURO SIGN °ªÀÌ´Ù. ÀÌÈÄ¿¡ UTF16LEÀÌ Ãß°¡µÇ¸é °ªÀ»
-         * ¼öÁ¤ÇØ¾ß ÇÑ´Ù.
+        /* 0x20ac ëŠ” UTF16BE ì˜ EURO SIGN ê°’ì´ë‹¤. ì´í›„ì— UTF16LEì´ ì¶”ê°€ë˜ë©´ ê°’ì„
+         * ìˆ˜ì •í•´ì•¼ í•œë‹¤.
          */
         if ( sWc == 0x20ac )
         {

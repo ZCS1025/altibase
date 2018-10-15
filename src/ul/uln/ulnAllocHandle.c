@@ -21,7 +21,7 @@
 /*
  * State transition functions
  *
- * AllocHandle ÀÇ °æ¿ì ulnFnContext ÀÇ *mArgs ¿¡ SShort aHandleType ÀÌ ³Ñ¾î¿Â´Ù.
+ * AllocHandle ì˜ ê²½ìš° ulnFnContext ì˜ *mArgs ì— SShort aHandleType ì´ ë„˜ì–´ì˜¨ë‹¤.
  */
 
 /*
@@ -219,33 +219,33 @@ static ACI_RC ulnAllocHandleCheckArgs(ulnFnContext *aContext,
 /**
  * ulnAllocEnv.
  *
- * ENV °´Ã¼¸¦ ÇÏ³ª ÇÒ´çÇØ¼­ ±× Æ÷ÀÎÅÍ¸¦ ¸®ÅÏÇÑ´Ù.
+ * ENV ê°ì²´ë¥¼ í•˜ë‚˜ í• ë‹¹í•´ì„œ ê·¸ í¬ì¸í„°ë¥¼ ë¦¬í„´í•œë‹¤.
  *
  * @param[in] aContext
- *  ulnAllocHandle() ÀÇ Context ¸¦ °¡¸®Å°´Â Æ÷ÀÎÅÍ.
- *  ÀÌ Context ¿¡ »óÀ§ ÇÚµéÀ» °¡¸®Å°´Â Æ÷ÀÎÅÍ°¡ µé¾î ÀÖ´Ù.
- *  ÀÌ ÇÔ¼öÀÇ °æ¿ì, »óÀ§ÇÚµéÀÌ ¾øÀ¸¹Ç·Î aContext->mHandle.mObject ¿¡ NULL ÀÌ µé¾î ÀÖ´Ù.
+ *  ulnAllocHandle() ì˜ Context ë¥¼ ê°€ë¦¬í‚¤ëŠ” í¬ì¸í„°.
+ *  ì´ Context ì— ìƒìœ„ í•¸ë“¤ì„ ê°€ë¦¬í‚¤ëŠ” í¬ì¸í„°ê°€ ë“¤ì–´ ìžˆë‹¤.
+ *  ì´ í•¨ìˆ˜ì˜ ê²½ìš°, ìƒìœ„í•¸ë“¤ì´ ì—†ìœ¼ë¯€ë¡œ aContext->mHandle.mObject ì— NULL ì´ ë“¤ì–´ ìžˆë‹¤.
  * @param[out] aOutputHandlePtr
- *  ÇÔ¼ö ½ÇÇà °á°ú·Î ÇÒ´çµÈ ENV °´Ã¼ÀÇ Æ÷ÀÎÅÍ°¡ ÀúÀåµÉ º¯¼öÀÇ Æ÷ÀÎÅÍ.
+ *  í•¨ìˆ˜ ì‹¤í–‰ ê²°ê³¼ë¡œ í• ë‹¹ëœ ENV ê°ì²´ì˜ í¬ì¸í„°ê°€ ì €ìž¥ë  ë³€ìˆ˜ì˜ í¬ì¸í„°.
  */
 static SQLRETURN ulnAllocHandleEnv(ulnEnv **aOutputHandlePtr)
 {
     ulnEnv *sEnv;
     /*
-     * ENV ´Â ¾ø´ø°É ¸¸µå´Â °ÍÀÌ¹Ç·Î Context °¡ ÇÊ¿ä ¾ø´Ù.
+     * ENV ëŠ” ì—†ë˜ê±¸ ë§Œë“œëŠ” ê²ƒì´ë¯€ë¡œ Context ê°€ í•„ìš” ì—†ë‹¤.
      */
 
     /*
-     * ENVÀÇ ÀÎ½ºÅÏ½º »ý¼º
+     * ENVì˜ ì¸ìŠ¤í„´ìŠ¤ ìƒì„±
      */
     ACI_TEST(ulnEnvCreate(&sEnv) != ACI_SUCCESS);
 
     /*
-     * BUGBUG: ÀÎ½ºÅÏ½º¸¦ »ý¼ºÇÏ°í °ðÀå lock ÇØ¾ß ÇÏÁö ¾ÊÀ»±î?
+     * BUGBUG: ì¸ìŠ¤í„´ìŠ¤ë¥¼ ìƒì„±í•˜ê³  ê³§ìž¥ lock í•´ì•¼ í•˜ì§€ ì•Šì„ê¹Œ?
      */
 
     /*
-     * ulnEnv ÀÇ ³ª¸ÓÁö ºÎºÐÀÇ ÃÊ±âÈ­ (µðÆúÆ® °ªÀ¸·Î)
+     * ulnEnv ì˜ ë‚˜ë¨¸ì§€ ë¶€ë¶„ì˜ ì´ˆê¸°í™” (ë””í´íŠ¸ ê°’ìœ¼ë¡œ)
      */
     ulnEnvInitialize(sEnv);
 
@@ -264,19 +264,19 @@ static SQLRETURN ulnAllocHandleEnv(ulnEnv **aOutputHandlePtr)
 /**
  * ulnAllocDbc.
  *
- * DBC °´Ã¼¸¦ ÇÏ³ª ÇÒ´çÇØ¼­ ±× Æ÷ÀÎÅÍ¸¦ ¸®ÅÏÇÑ´Ù.
+ * DBC ê°ì²´ë¥¼ í•˜ë‚˜ í• ë‹¹í•´ì„œ ê·¸ í¬ì¸í„°ë¥¼ ë¦¬í„´í•œë‹¤.
  *
  * @param[in] aContext
- *  ulnAllocHandle() ÀÇ Context ¸¦ °¡¸®Å°´Â Æ÷ÀÎÅÍ.
- *  ÀÌ Context ¿¡ »óÀ§ ÇÚµéÀ» °¡¸®Å°´Â Æ÷ÀÎÅÍ°¡ µé¾î ÀÖ´Ù.
+ *  ulnAllocHandle() ì˜ Context ë¥¼ ê°€ë¦¬í‚¤ëŠ” í¬ì¸í„°.
+ *  ì´ Context ì— ìƒìœ„ í•¸ë“¤ì„ ê°€ë¦¬í‚¤ëŠ” í¬ì¸í„°ê°€ ë“¤ì–´ ìžˆë‹¤.
  * @param[out] aOutputHandlePtr
- *  ÇÒ´çµÈ DBC °´Ã¼ÀÇ Æ÷ÀÎÅÍ°¡ ÀúÀåµÉ º¯¼öÀÇ Æ÷ÀÎÅÍ
+ *  í• ë‹¹ëœ DBC ê°ì²´ì˜ í¬ì¸í„°ê°€ ì €ìž¥ë  ë³€ìˆ˜ì˜ í¬ì¸í„°
  *
  * MSDN ODBC 3.0 :
- * Application Àº, ¿¡·¯¿¡ ´ëÇÑ Á¤º¸¸¦ »óÀ§ ÇÚµéÀÎ
- * InputHandle ¿¡ ¸Å´Þ·Á ÀÖ´Â Diagnostic ±¸Á¶Ã¼·ÎºÎÅÍ
- * ¾ò¾î¿Ã ¼ö ÀÖ´Ù.
- * --> Áï, »óÀ§ÇÚµéÀÇ DiagHeader ¿¡ ¹ß»ýÇÑ ¿¡·¯¸¦ ³Ö¾î ÁÖ¾î¾ß ÇÑ´Ù.
+ * Application ì€, ì—ëŸ¬ì— ëŒ€í•œ ì •ë³´ë¥¼ ìƒìœ„ í•¸ë“¤ì¸
+ * InputHandle ì— ë§¤ë‹¬ë ¤ ìžˆëŠ” Diagnostic êµ¬ì¡°ì²´ë¡œë¶€í„°
+ * ì–»ì–´ì˜¬ ìˆ˜ ìžˆë‹¤.
+ * --> ì¦‰, ìƒìœ„í•¸ë“¤ì˜ DiagHeader ì— ë°œìƒí•œ ì—ëŸ¬ë¥¼ ë„£ì–´ ì£¼ì–´ì•¼ í•œë‹¤.
  */
 static SQLRETURN ulnAllocHandleDbc(ulnEnv *aEnv, ulnDbc **aOutputHandlePtr)
 {
@@ -306,19 +306,19 @@ static SQLRETURN ulnAllocHandleDbc(ulnEnv *aEnv, ulnDbc **aOutputHandlePtr)
                                      (ulnObject **)aOutputHandlePtr) != ACI_SUCCESS);
 
     /*
-     * DBC ÀÎ½ºÅÏ½º »ý¼º
+     * DBC ì¸ìŠ¤í„´ìŠ¤ ìƒì„±
      */
-    // BUG-25315 [CodeSonar] ÃÊ±âÈ­µÇÁö ¾Ê´Â º¯¼ö »ç¿ë
+    // BUG-25315 [CodeSonar] ì´ˆê¸°í™”ë˜ì§€ ì•ŠëŠ” ë³€ìˆ˜ ì‚¬ìš©
     ACI_TEST_RAISE(ulnDbcCreate(&sDbc) != ACI_SUCCESS, MEMORY_ERROR);
 
     /*
-     * DBC ÀÎ½ºÅÏ½ºÀÇ ÃÊ±âÈ­
+     * DBC ì¸ìŠ¤í„´ìŠ¤ì˜ ì´ˆê¸°í™”
      */
-    // BUG-25315 [CodeSonar] ÃÊ±âÈ­µÇÁö ¾Ê´Â º¯¼ö »ç¿ë
+    // BUG-25315 [CodeSonar] ì´ˆê¸°í™”ë˜ì§€ ì•ŠëŠ” ë³€ìˆ˜ ì‚¬ìš©
     ACI_TEST_RAISE(ulnDbcInitialize(sDbc) != ACI_SUCCESS, INIT_ERROR);
 
     /*
-     * DBC ¸¦ ENV ¿¡ ¸Å´Þ±â
+     * DBC ë¥¼ ENV ì— ë§¤ë‹¬ê¸°
      */
     ulnEnvAddDbc(sFnContext.mHandle.mEnv, sDbc);
 
@@ -331,7 +331,7 @@ static SQLRETURN ulnAllocHandleDbc(ulnEnv *aEnv, ulnDbc **aOutputHandlePtr)
     /* 
      * BUG-35332 The socket files can be moved
      *
-     * È¯°æº¯¼ö or ÇÁ·ÎÆÛÆ¼ ÆÄÀÏ¿¡¼­ ÀÐÀº °ªÀ¸·Î ÃÊ±âÈ­ÇÑ´Ù.
+     * í™˜ê²½ë³€ìˆ˜ or í”„ë¡œí¼í‹° íŒŒì¼ì—ì„œ ì½ì€ ê°’ìœ¼ë¡œ ì´ˆê¸°í™”í•œë‹¤.
      */
     ulnStrCpyToCStr( sDbc->mUnixdomainFilepath,
                      IPC_FILE_PATH_LEN,
@@ -356,7 +356,7 @@ static SQLRETURN ulnAllocHandleDbc(ulnEnv *aEnv, ulnDbc **aOutputHandlePtr)
 
     return ULN_FNCONTEXT_GET_RC(&sFnContext);
 
-    // BUG-25315 [CodeSonar] ÃÊ±âÈ­µÇÁö ¾Ê´Â º¯¼ö »ç¿ë
+    // BUG-25315 [CodeSonar] ì´ˆê¸°í™”ë˜ì§€ ì•ŠëŠ” ë³€ìˆ˜ ì‚¬ìš©
     ACI_EXCEPTION(MEMORY_ERROR);
     {
         ulnError(&sFnContext, ulERR_FATAL_MEMORY_ALLOC_ERROR, "ulnAllocHandleDbc");
@@ -364,11 +364,11 @@ static SQLRETURN ulnAllocHandleDbc(ulnEnv *aEnv, ulnDbc **aOutputHandlePtr)
     ACI_EXCEPTION(INIT_ERROR);
     {
         // bug-25905: conn nls not applied to client lang module
-        // ulnDbcInitialize¿¡¼­ nls moduleÀ» Ã£Áö ¸øÇÏ´Â °æ¿ì
-        // error ¹ß»ý °¡´É
-        // ulnDbcInitailize ³»¿¡¼­ error Ã³¸® ¾ÈÇÏ´Â ÀÌÀ¯:
-        // ulnFailoverHealthCheck¿¡¼­µµ ulnDbcInitialize¸¦ È£ÃâÇÏ´Âµ¥
-        // ÀÌ ¶§, FnContext¸¦ ±¸ÇÏÁö ¸øÇÏ±â ¶§¹®ÀÌ´Ù.
+        // ulnDbcInitializeì—ì„œ nls moduleì„ ì°¾ì§€ ëª»í•˜ëŠ” ê²½ìš°
+        // error ë°œìƒ ê°€ëŠ¥
+        // ulnDbcInitailize ë‚´ì—ì„œ error ì²˜ë¦¬ ì•ˆí•˜ëŠ” ì´ìœ :
+        // ulnFailoverHealthCheckì—ì„œë„ ulnDbcInitializeë¥¼ í˜¸ì¶œí•˜ëŠ”ë°
+        // ì´ ë•Œ, FnContextë¥¼ êµ¬í•˜ì§€ ëª»í•˜ê¸° ë•Œë¬¸ì´ë‹¤.
         ulnError(&sFnContext, ulERR_ABORT_idnSetDefaultFactoryError,
                  "ulnAllocHandleDbc");
         ulnDbcDestroy(sDbc);
@@ -386,16 +386,16 @@ static SQLRETURN ulnAllocHandleDbc(ulnEnv *aEnv, ulnDbc **aOutputHandlePtr)
 /**
  * ulnAllocStmt.
  *
- * STMT °´Ã¼¸¦ ÇÏ³ª ÇÒ´çÇØ¼­ ±× Æ÷ÀÎÅÍ¸¦ ³Ñ°ÜÁØ´Ù.
+ * STMT ê°ì²´ë¥¼ í•˜ë‚˜ í• ë‹¹í•´ì„œ ê·¸ í¬ì¸í„°ë¥¼ ë„˜ê²¨ì¤€ë‹¤.
  *
  * @param[in] aContext
- *  ulnAllocHandle() ÀÇ Context ¸¦ °¡¸®Å°´Â Æ÷ÀÎÅÍ.
- *  ÀÌ Context ¿¡ »óÀ§ ÇÚµéÀ» °¡¸®Å°´Â Æ÷ÀÎÅÍ°¡ µé¾î ÀÖ´Ù.
+ *  ulnAllocHandle() ì˜ Context ë¥¼ ê°€ë¦¬í‚¤ëŠ” í¬ì¸í„°.
+ *  ì´ Context ì— ìƒìœ„ í•¸ë“¤ì„ ê°€ë¦¬í‚¤ëŠ” í¬ì¸í„°ê°€ ë“¤ì–´ ìžˆë‹¤.
  * @param[out] aOutputHandlePtr
- *  ÇÒ´çµÈ STMT °´Ã¼ÀÇ Æ÷ÀÎÅÍ°¡ ÀúÀåµÉ º¯¼öÀÇ Æ÷ÀÎÅÍ
+ *  í• ë‹¹ëœ STMT ê°ì²´ì˜ í¬ì¸í„°ê°€ ì €ìž¥ë  ë³€ìˆ˜ì˜ í¬ì¸í„°
  *
- * ÇÔ¼ö ¼öÇà½Ã ¹ß»ýÇÑ ¿¡·¯´Â »óÀ§ ÇÚµéÀÎ DBC °³°ÔÀÇ Diagnostic
- * ±¸Á¶Ã¼¿¡´Ù°¡ ¸Å´Þ¾Æ ÁÖ¾î¾ß ÇÑ´Ù.
+ * í•¨ìˆ˜ ìˆ˜í–‰ì‹œ ë°œìƒí•œ ì—ëŸ¬ëŠ” ìƒìœ„ í•¸ë“¤ì¸ DBC ê°œê²Œì˜ Diagnostic
+ * êµ¬ì¡°ì²´ì—ë‹¤ê°€ ë§¤ë‹¬ì•„ ì£¼ì–´ì•¼ í•œë‹¤.
  */
 static SQLRETURN ulnAllocHandleStmt(ulnDbc *aDbc, ulnStmt **aOutputHandlePtr)
 {
@@ -427,29 +427,29 @@ static SQLRETURN ulnAllocHandleStmt(ulnDbc *aDbc, ulnStmt **aOutputHandlePtr)
                                      (ulnObject *)sDbc,
                                      (ulnObject **)aOutputHandlePtr) != ACI_SUCCESS);
 
-    /* PROJ-2177 Stmt °³¼ö Á¦ÇÑ */
+    /* PROJ-2177 Stmt ê°œìˆ˜ ì œí•œ */
     ACI_TEST_RAISE(ulnDbcGetStmtCount(sDbc) >= ULN_DBC_MAX_STMT, TOO_MANY_STMT_ERROR);
 
     /*
-     * ulnStmt ÀÎ½ºÅÏ½º »ý¼º
+     * ulnStmt ì¸ìŠ¤í„´ìŠ¤ ìƒì„±
      */
-    // BUG-25315 [CodeSonar] ÃÊ±âÈ­µÇÁö ¾Ê´Â º¯¼ö »ç¿ë
+    // BUG-25315 [CodeSonar] ì´ˆê¸°í™”ë˜ì§€ ì•ŠëŠ” ë³€ìˆ˜ ì‚¬ìš©
     ACI_TEST_RAISE(ulnStmtCreate(sDbc, &sStmt) != ACI_SUCCESS, MEMORY_ERROR);
 
     /*
-     * ulnStmtÃÊ±âÈ­
+     * ulnStmtì´ˆê¸°í™”
      */
     ulnStmtInitialize(sStmt);
 
     /*
-     * DBC ¿¡ ¸Å´Þ±â
+     * DBC ì— ë§¤ë‹¬ê¸°
      */
     ulnDbcAddStmt(sDbc, sStmt);
 
-    /* PROJ-2616 IPCDA Cache Buffer »ý¼ºÇÏ±â */
+    /* PROJ-2616 IPCDA Cache Buffer ìƒì„±í•˜ê¸° */
     ulnCacheCreateIPCDA(&sFnContext, sDbc);
 
-    /* ÇÊ¿äÇÑ DBC ÀÇ ¼Ó¼ºµéÀ» »ó¼Ó¹Þ±â */
+    /* í•„ìš”í•œ DBC ì˜ ì†ì„±ë“¤ì„ ìƒì†ë°›ê¸° */
     ulnStmtSetAttrPrefetchRows(sStmt, ulnDbcGetAttrFetchAheadRows(sStmt->mParentDbc));
     ulnStmtSetAttrDeferredPrepare(sStmt, ulnDbcGetAttrDeferredPrepare(sStmt->mParentDbc));
 
@@ -460,12 +460,12 @@ static SQLRETURN ulnAllocHandleStmt(ulnDbc *aDbc, ulnStmt **aOutputHandlePtr)
 
     return ULN_FNCONTEXT_GET_RC(&sFnContext);
 
-    /* PROJ-2177 Stmt °³¼ö Á¦ÇÑ */
+    /* PROJ-2177 Stmt ê°œìˆ˜ ì œí•œ */
     ACI_EXCEPTION(TOO_MANY_STMT_ERROR);
     {
         ulnError(&sFnContext, ulERR_ABORT_TOO_MANY_STATEMENT);
     }
-    // BUG-25315 [CodeSonar] ÃÊ±âÈ­µÇÁö ¾Ê´Â º¯¼ö »ç¿ë
+    // BUG-25315 [CodeSonar] ì´ˆê¸°í™”ë˜ì§€ ì•ŠëŠ” ë³€ìˆ˜ ì‚¬ìš©
     ACI_EXCEPTION(MEMORY_ERROR);
     {
         ulnError(&sFnContext, ulERR_FATAL_MEMORY_ALLOC_ERROR, "AllocHandleStmt");
@@ -484,14 +484,14 @@ static SQLRETURN ulnAllocHandleStmt(ulnDbc *aDbc, ulnStmt **aOutputHandlePtr)
  * ulnAllocHandleDesc.
  *
  * @param[in] aContext
- *  ulnAllocHandle() ÀÇ Context ¸¦ °¡¸®Å°´Â Æ÷ÀÎÅÍ.
- *  ÀÌ Context ¿¡ »óÀ§ ÇÚµéÀ» °¡¸®Å°´Â Æ÷ÀÎÅÍ°¡ µé¾î ÀÖ´Ù.
+ *  ulnAllocHandle() ì˜ Context ë¥¼ ê°€ë¦¬í‚¤ëŠ” í¬ì¸í„°.
+ *  ì´ Context ì— ìƒìœ„ í•¸ë“¤ì„ ê°€ë¦¬í‚¤ëŠ” í¬ì¸í„°ê°€ ë“¤ì–´ ìžˆë‹¤.
  * @param[out] aOutputHandlePtr
- *  ÇÒ´çµÈ DESC °´Ã¼ÀÇ Æ÷ÀÎÅÍ°¡ ÀúÀåµÉ º¯¼öÀÇ Æ÷ÀÎÅÍ
+ *  í• ë‹¹ëœ DESC ê°ì²´ì˜ í¬ì¸í„°ê°€ ì €ìž¥ë  ë³€ìˆ˜ì˜ í¬ì¸í„°
  *
- * µð½ºÅ©¸³ÅÍ¸¦ ÇÒ´çÇÑ´Ù.
- * ÀÌ °æ¿ì´Â »ç¿ëÀÚ°¡ SQLAllocHandle()ÇÔ¼ö¸¦ ÀÌ¿ëÇØ¼­ ExplicitÇÏ°Ô ÇÒ´çÇÏ´Â °æ¿ìÀÌ´Ù.
- * »ç¿ëÀÚ´Â APD³ª ARD¸¸ »ý¼ºÇÒ ¼ö ÀÖ´Ù.
+ * ë””ìŠ¤í¬ë¦½í„°ë¥¼ í• ë‹¹í•œë‹¤.
+ * ì´ ê²½ìš°ëŠ” ì‚¬ìš©ìžê°€ SQLAllocHandle()í•¨ìˆ˜ë¥¼ ì´ìš©í•´ì„œ Explicití•˜ê²Œ í• ë‹¹í•˜ëŠ” ê²½ìš°ì´ë‹¤.
+ * ì‚¬ìš©ìžëŠ” APDë‚˜ ARDë§Œ ìƒì„±í•  ìˆ˜ ìžˆë‹¤.
  */
 static SQLRETURN ulnAllocHandleDesc(ulnDbc *aDbc, ulnDesc **aOutputHandlePtr)
 {
@@ -518,11 +518,11 @@ static SQLRETURN ulnAllocHandleDesc(ulnDbc *aDbc, ulnDesc **aOutputHandlePtr)
     sNeedExit = ACP_TRUE;
 
     /*
-     * ulnDesc »ý¼º, ÃÊ±âÈ­
+     * ulnDesc ìƒì„±, ì´ˆê¸°í™”
      */
     ACI_TEST_RAISE(ulnDescCreate(sFnContext.mHandle.mObj,
                                  &sDesc,
-                                 ULN_DESC_TYPE_ARD, /* BUGBUG: ÀÏ´Ü ARD ·Î Å¸ÀÔÀ» ÀâÀÚ  */
+                                 ULN_DESC_TYPE_ARD, /* BUGBUG: ì¼ë‹¨ ARD ë¡œ íƒ€ìž…ì„ ìž¡ìž  */
                                  ULN_DESC_ALLOCTYPE_EXPLICIT) != ACI_SUCCESS,
                    LABEL_NOT_ENOUGH_MEM);
 
@@ -531,12 +531,12 @@ static SQLRETURN ulnAllocHandleDesc(ulnDbc *aDbc, ulnDesc **aOutputHandlePtr)
     ulnDescInitializeUserPart(sDesc);
 
     /*
-     * DBC ¿¡ ¸Å´Þ±â
+     * DBC ì— ë§¤ë‹¬ê¸°
      */
     ulnDbcAddDesc(sFnContext.mHandle.mDbc, sDesc);
 
     /*
-     * Note: DESC ÀÇ »óÅÂ ÀüÀÌ´Â ÇÊ¿ä ¾ø´Ù. ÇÒ´ç ¼º°øÇÏ¸é ¹«Á¶°Ç 1
+     * Note: DESC ì˜ ìƒíƒœ ì „ì´ëŠ” í•„ìš” ì—†ë‹¤. í• ë‹¹ ì„±ê³µí•˜ë©´ ë¬´ì¡°ê±´ 1
      */
 
     *aOutputHandlePtr = sDesc;
@@ -576,11 +576,11 @@ static SQLRETURN ulnAllocHandleDesc(ulnDbc *aDbc, ulnDesc **aOutputHandlePtr)
 /**
  * ulnAllocHandle.
  *
- * SQLAllocHandle ÀÌ °ðÀå ¸ÅÇÎµÇ´Â ÇÔ¼öÀÌ´Ù.
- * ODBC 3.0 ÀÌÀüÀÇ ½ºÆå¿¡¼­ »ç¿ëµÇ´ø SQLAllocEnv, SQLAllocDbc, SQLAllocStmtµîÀÇ
- * ÇÔ¼öµéÀº °¢°¢ ulnAllocEnv¿Í °°Àº ÇÔ¼ö¸¦ µû·Î ºÎ¸£Áö ¸»°í ulnAllocHandle ÇÔ¼ö¸¦
- * È£ÃâÇÏ´Â ¹æ½ÄÀ¸·Î ¸ÅÇÎÀÌ ÀÌ·ç¾îÁ®¾ß ÇÏ°Ú´Ù.
- * Áï, ÀÌ ÇÔ¼ö´Â ¸ðµç SQLAllocXXXX ÇÔ¼öÀÇ uln À¸·ÎÀÇ ¿£Æ®¸® Æ÷ÀÎÆ®¶ó ÇÏ°Ú´Ù.
+ * SQLAllocHandle ì´ ê³§ìž¥ ë§¤í•‘ë˜ëŠ” í•¨ìˆ˜ì´ë‹¤.
+ * ODBC 3.0 ì´ì „ì˜ ìŠ¤íŽ™ì—ì„œ ì‚¬ìš©ë˜ë˜ SQLAllocEnv, SQLAllocDbc, SQLAllocStmtë“±ì˜
+ * í•¨ìˆ˜ë“¤ì€ ê°ê° ulnAllocEnvì™€ ê°™ì€ í•¨ìˆ˜ë¥¼ ë”°ë¡œ ë¶€ë¥´ì§€ ë§ê³  ulnAllocHandle í•¨ìˆ˜ë¥¼
+ * í˜¸ì¶œí•˜ëŠ” ë°©ì‹ìœ¼ë¡œ ë§¤í•‘ì´ ì´ë£¨ì–´ì ¸ì•¼ í•˜ê² ë‹¤.
+ * ì¦‰, ì´ í•¨ìˆ˜ëŠ” ëª¨ë“  SQLAllocXXXX í•¨ìˆ˜ì˜ uln ìœ¼ë¡œì˜ ì—”íŠ¸ë¦¬ í¬ì¸íŠ¸ë¼ í•˜ê² ë‹¤.
  */
 SQLRETURN ulnAllocHandle(acp_sint16_t   aHandleType,
                          void          *aInputHandle,
@@ -616,8 +616,8 @@ SQLRETURN ulnAllocHandle(acp_sint16_t   aHandleType,
              * HY092 : Invalid Attribute/Option Identifier
              *
              * BUGBUG:
-             * ¿©±â¼­´Â context °¡ ¾øÀ¸¹Ç·Î °´Ã¼°¡ À¯È¿ÇÑ °æ¿ì¿¡ Àá½Ã lock À» ÇÏ°í,
-             * ±×·± ÈÄ Á÷Á¢ diagnostic record ¸¦ ¸Å¾î´Þµµ·Ï ÇÏÀÚ.
+             * ì—¬ê¸°ì„œëŠ” context ê°€ ì—†ìœ¼ë¯€ë¡œ ê°ì²´ê°€ ìœ íš¨í•œ ê²½ìš°ì— ìž ì‹œ lock ì„ í•˜ê³ ,
+             * ê·¸ëŸ° í›„ ì§ì ‘ diagnostic record ë¥¼ ë§¤ì–´ë‹¬ë„ë¡ í•˜ìž.
              */
             // ACI_TEST_RAISE(ulnProcessErrorSituation(&sFnContext, 1, ULN_EI_HY092)
                            // != ACI_SUCCESS,
@@ -628,8 +628,8 @@ SQLRETURN ulnAllocHandle(acp_sint16_t   aHandleType,
 	}
 
     /*
-     * MSDN ODBC 3.0 SQLAllocHandle() Returns ¼½¼Ç :
-     * ÇÔ¼ö°¡ SQL_ERROR ¸¦ ¸®ÅÏÇÏ¸é OutputHandlePtr À» NULL ·Î ¼¼ÆÃÇÑ´Ù.
+     * MSDN ODBC 3.0 SQLAllocHandle() Returns ì„¹ì…˜ :
+     * í•¨ìˆ˜ê°€ SQL_ERROR ë¥¼ ë¦¬í„´í•˜ë©´ OutputHandlePtr ì„ NULL ë¡œ ì„¸íŒ…í•œë‹¤.
      */
     if(sReturnCode == SQL_ERROR)
     {

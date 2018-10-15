@@ -52,10 +52,10 @@ private:
     static idwStWatchDogInfo * mStWatchDogInfo;
 
 public:
-    /* idrRecProcess¿¡¼­ ÇÁ·Î¼¼½º Á¤º¸¿Í ¿¬°áµÈ StStmtInfo¸¦
-     * Á¦°ÅÇÏ±â À§ÇÏ¿© È£ÃâµÇ´Â Äİ¹é ÇÔ¼ö Æ÷ÀÎÅÍ.
-    * mmcStatementManager¿¡ ÀÖ´Â removeStStmtInfo°¡ ÇÔ¼öÀÇ 
-    * Æ÷ÀÎÅÍ°¡ µî·ÏµÈ´Ù.
+    /* idrRecProcessì—ì„œ í”„ë¡œì„¸ìŠ¤ ì •ë³´ì™€ ì—°ê²°ëœ StStmtInfoë¥¼
+     * ì œê±°í•˜ê¸° ìœ„í•˜ì—¬ í˜¸ì¶œë˜ëŠ” ì½œë°± í•¨ìˆ˜ í¬ì¸í„°.
+    * mmcStatementManagerì— ìˆëŠ” removeStStmtInfoê°€ í•¨ìˆ˜ì˜ 
+    * í¬ì¸í„°ê°€ ë“±ë¡ëœë‹¤.
      */
     static iduShmStStmtRemoveFunc mStStmtRmFunc;
     static idWatchDogStatus       mWatchDogStatus;

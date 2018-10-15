@@ -67,7 +67,7 @@ static IDE_RC xaOpTransactionA5(cmiProtocolContext   *aProtocolContext,
     sXid.bqual_length = aArg->mBQUALLength;
 
     /* bug-36037: invalid xid
-       invalid xid °ü·Ã ¼­¹öÂÊ °Ë»çÄÚµå Ãß°¡ */
+       invalid xid ê´€ë ¨ ì„œë²„ìª½ ê²€ì‚¬ì½”ë“œ ì¶”ê°€ */
     if ((sXid.gtrid_length <= (vSLong) 0)               ||
         (sXid.gtrid_length >  (vSLong) ID_MAXGTRIDSIZE) ||
         (sXid.bqual_length <= (vSLong) 0)               ||
@@ -352,7 +352,7 @@ IDE_RC mmtServiceThread::xaTransactionProtocolA5(cmiProtocolContext *aProtocolCo
     IDE_EXCEPTION_END;
 
     /* bug-36037: invalid xid
-       invalid xidÀÇ °æ¿ì client·Î ¿¡·¯ÀÀ´äÀ» ¸ÕÀúÁÖ°í ²÷´Â´Ù */
+       invalid xidì˜ ê²½ìš° clientë¡œ ì—ëŸ¬ì‘ë‹µì„ ë¨¼ì €ì£¼ê³  ëŠëŠ”ë‹¤ */
     if (sXaContext.mReturnValue != XA_OK )
     {
         sThread->answerErrorResultA5(aProtocolContext,

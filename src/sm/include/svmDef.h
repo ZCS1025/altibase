@@ -24,10 +24,10 @@
 #include <sctDef.h>
 
 
-// Tablespace¿¡¼­ Ã¹ µ¥ÀÌÅÍ ÆäÀÌÁö ¾ÆÀÌµğ
-// 0¹ø ÆäÀÌÁö ¾ÆÀÌµğ´Â SM_NULL_PIDÀÌ¹Ç·Î »ç¿ëÀ» ÇÇÇÑ´Ù.
-// PCHArray[0]Àº m_page°¡ NULLÀÌ´Ù.
-// Áï ±âÁ¸ÀÇ meta page(membase)´Â ¾ø¾îÁ³´Ù.
+// Tablespaceì—ì„œ ì²« ë°ì´í„° í˜ì´ì§€ ì•„ì´ë””
+// 0ë²ˆ í˜ì´ì§€ ì•„ì´ë””ëŠ” SM_NULL_PIDì´ë¯€ë¡œ ì‚¬ìš©ì„ í”¼í•œë‹¤.
+// PCHArray[0]ì€ m_pageê°€ NULLì´ë‹¤.
+// ì¦‰ ê¸°ì¡´ì˜ meta page(membase)ëŠ” ì—†ì–´ì¡Œë‹¤.
 #define SVM_TBS_FIRST_PAGE_ID      (1)
 
 /* PROJ-1490 DB Free Page List
@@ -35,20 +35,20 @@
 typedef struct svmDBFreePageList
 {
     // Free Page List ID
-    // svmMemBase.mFreePageLists³»¿¡¼­ÀÇ index
-    scPageID   mFirstFreePageID ; // Ã¹¹øÂ° Free Page ÀÇ ID
-    vULong     mFreePageCount ;   // Free Page ¼ö
+    // svmMemBase.mFreePageListsë‚´ì—ì„œì˜ index
+    scPageID   mFirstFreePageID ; // ì²«ë²ˆì§¸ Free Page ì˜ ID
+    vULong     mFreePageCount ;   // Free Page ìˆ˜
 } svmDBFreePageList ;
 
-// ÃÖ´ë Free Page ListÀÇ ¼ö 
+// ìµœëŒ€ Free Page Listì˜ ìˆ˜ 
 #define SVM_MAX_FPL_COUNT (SM_MAX_PAGELIST_COUNT)
 
 typedef struct svmMemBase
 {
     SChar              mDBname[SM_MAX_DB_NAME]; // DB Name
     vULong             mAllocPersPageCount;
-    vULong             mExpandChunkPageCnt;    // ExpandChunk ´ç Page¼ö
-    vULong             mCurrentExpandChunkCnt; // ÇöÀç ÇÒ´çÇÑ ExpandChunkÀÇ ¼ö
+    vULong             mExpandChunkPageCnt;    // ExpandChunk ë‹¹ Pageìˆ˜
+    vULong             mCurrentExpandChunkCnt; // í˜„ì¬ í• ë‹¹í•œ ExpandChunkì˜ ìˆ˜
     UInt               mFreePageListCount;
     svmDBFreePageList  mFreePageLists[SVM_MAX_FPL_COUNT];
 } svmMemBase;
@@ -89,16 +89,16 @@ typedef struct svmPCH // Page Control Header : PCH
 {
     void               *m_page;
 
-    // m_pageÀÇ Page Memory¸¦ FreeÇÏ·Á´Â Thread¿Í m_page¸¦ Disk¿¡ ³»¸®·Á´Â
-    // Checkpoint Thread°£ÀÇ µ¿½Ã¼º Á¦¾î¸¦ À§ÇÑ Mutex.
-    // m_mutex¸¦ »ç¿ëÇÏ°Ô µÇ¸é, ÀÏ¹İ Æ®·£Àè¼Çµé°ú
-    // Checkpoint Thread°¡ ºÒÇÊ¿äÇÑ Contension¿¡ °É¸®°Ô µÈ´Ù.
+    // m_pageì˜ Page Memoryë¥¼ Freeí•˜ë ¤ëŠ” Threadì™€ m_pageë¥¼ Diskì— ë‚´ë¦¬ë ¤ëŠ”
+    // Checkpoint Threadê°„ì˜ ë™ì‹œì„± ì œì–´ë¥¼ ìœ„í•œ Mutex.
+    // m_mutexë¥¼ ì‚¬ìš©í•˜ê²Œ ë˜ë©´, ì¼ë°˜ íŠ¸ëœì­ì…˜ë“¤ê³¼
+    // Checkpoint Threadê°€ ë¶ˆí•„ìš”í•œ Contensionì— ê±¸ë¦¬ê²Œ ëœë‹¤.
     /* BUG-31569 [sm-mem-page] When executing full scan, hold page X Latch
      * in MMDB */
     iduLatch            mPageMemLatch;
 
     /*
-     * BUG-25179 [SMM] Full ScanÀ» À§ÇÑ ÆäÀÌÁö°£ Scan List°¡ ÇÊ¿äÇÕ´Ï´Ù.
+     * BUG-25179 [SMM] Full Scanì„ ìœ„í•œ í˜ì´ì§€ê°„ Scan Listê°€ í•„ìš”í•©ë‹ˆë‹¤.
      */
     scPageID            mNxtScanPID;
     scPageID            mPrvScanPID;
@@ -107,23 +107,23 @@ typedef struct svmPCH // Page Control Header : PCH
     void               *mFreePageHeader; // PROJ-1490
 } svmPCH;
 
-// BUG-43463 ¿¡¼­ »ç¿ë scanlist link/unlink ½Ã¿¡
-// page°¡ List¿¡¼­ Á¦°ÅµÇ°Å³ª ¿¬°á µÉ ¶§ °»½ÅÇÑ´Ù.
-// È¦¼öÀÌ¸é ¼öÁ¤Áß, Â¦¼öÀÌ¸é ¼öÁ¤ ¿Ï·á
+// BUG-43463 ì—ì„œ ì‚¬ìš© scanlist link/unlink ì‹œì—
+// pageê°€ Listì—ì„œ ì œê±°ë˜ê±°ë‚˜ ì—°ê²° ë  ë•Œ ê°±ì‹ í•œë‹¤.
+// í™€ìˆ˜ì´ë©´ ìˆ˜ì •ì¤‘, ì§ìˆ˜ì´ë©´ ìˆ˜ì • ì™„ë£Œ
 #define SVM_PCH_SET_MODIFYING( aPCH ) \
     SMM_PCH_SET_MODIFYING( aPCH );
 
 #define SVM_PCH_SET_MODIFIED( aPCH ) \
     SMM_PCH_SET_MODIFIED( aPCH );              \
 
-// BUG-43463 smnnSeq::moveNext/PrevµîÀÇ ÇÔ¼ö¿¡¼­ »ç¿ë
-// ÇöÀç page°¡ link/unlinkÀÛ¾÷ ÁßÀÎÁö È®ÀÎÇÑ´Ù.
+// BUG-43463 smnnSeq::moveNext/Prevë“±ì˜ í•¨ìˆ˜ì—ì„œ ì‚¬ìš©
+// í˜„ì¬ pageê°€ link/unlinkì‘ì—… ì¤‘ì¸ì§€ í™•ì¸í•œë‹¤.
 #define SVM_PAGE_IS_MODIFYING( aScanModifySeq ) \
     SMM_PAGE_IS_MODIFYING( aScanModifySeq )
 
 
 /* ------------------------------------------------
- *  CPU CACHE Set : BUGBUG : ID Layer·Î ¿Å±æ¼ö ÀÖÀ½!
+ *  CPU CACHE Set : BUGBUG : ID Layerë¡œ ì˜®ê¸¸ìˆ˜ ìˆìŒ!
  * ----------------------------------------------*/
 #if defined(SPARC_SOLARIS)
 #define SVM_CPU_CACHE_LINE      (64)
@@ -146,33 +146,33 @@ typedef struct svmPCH // Page Control Header : PCH
 #define SVM_CAT_TABLE_OFFSET     SVM_CACHE_ALIGN(SVM_MEMBASE_OFFSET + ID_SIZEOF(struct svmMemBase))
 
 /* ------------------------------------------------
-   PROJ-1490 ÆäÀÌÁö¸®½ºÆ® ´ÙÁßÈ­¹× ¸Ş¸ğ¸® ¹İ³³ °ü·Ã
+   PROJ-1490 í˜ì´ì§€ë¦¬ìŠ¤íŠ¸ ë‹¤ì¤‘í™”ë° ë©”ëª¨ë¦¬ ë°˜ë‚© ê´€ë ¨
  * ----------------------------------------------*/
 
-// Free Page List ÀÇ ¼ö
+// Free Page List ì˜ ìˆ˜
 #define SVM_FREE_PAGE_LIST_COUNT (smuProperty::getPageListGroupCount())
 
-// ÃÖ¼Ò ¸î°³ÀÇ Page¸¦ °¡Áø Free Page List¸¦ ºĞÇÒ ÇÒ °ÍÀÎ°¡?
+// ìµœì†Œ ëª‡ê°œì˜ Pageë¥¼ ê°€ì§„ Free Page Listë¥¼ ë¶„í•  í•  ê²ƒì¸ê°€?
 #define SVM_FREE_PAGE_SPLIT_THRESHOLD                       \
             ( smuProperty::getMinPagesDBTableFreeList() )
 
 
-// Expand ChunkÇÒ´ç½Ã °¢ Free Page¿¡ ¸î°³ÀÇ Page¾¿À» ¿¬°áÇÒ °ÍÀÎÁö °áÁ¤.
+// Expand Chunkí• ë‹¹ì‹œ ê° Free Pageì— ëª‡ê°œì˜ Pageì”©ì„ ì—°ê²°í•  ê²ƒì¸ì§€ ê²°ì •.
 #define SVM_PER_LIST_DIST_PAGE_COUNT                       \
             ( smuProperty::getPerListDistPageCount() )
 
-// ÆäÀÌÁö°¡ ºÎÁ·ÇÒ ¶§ ÇÑ¹ø¿¡ ¸î°³ÀÇ Expand Chunk¸¦ ÇÒ´ç¹ŞÀ» °ÍÀÎ°¡?
+// í˜ì´ì§€ê°€ ë¶€ì¡±í•  ë•Œ í•œë²ˆì— ëª‡ê°œì˜ Expand Chunkë¥¼ í• ë‹¹ë°›ì„ ê²ƒì¸ê°€?
 #define SVM_EXPAND_CHUNK_COUNT (1)
 
-// Volatile TBSÀÇ ¸ŞÅ¸ ÆäÀÌÁö °³¼ö¸¦ ÁöÁ¤ÇÑ´Ù.
+// Volatile TBSì˜ ë©”íƒ€ í˜ì´ì§€ ê°œìˆ˜ë¥¼ ì§€ì •í•œë‹¤.
 #define SVM_TBS_META_PAGE_CNT ((vULong)1)
 
-// PROJ-1490 ÆäÀÌÁö¸®½ºÆ® ´ÙÁßÈ­¹× ¸Ş¸ğ¸®¹İ³³
-// Page°¡ Å×ÀÌºí·Î ÇÒ´çµÉ ¶§ ÇØ´ç PageÀÇ Free List Info Page¿¡ ¼³Á¤µÉ °ª
-// ¼­¹ö ±âµ¿½Ã Free Page¿Í Allocated Page¸¦ ±¸ºĞÇÏ±â À§ÇÑ ¿ëµµ·Î »ç¿ëµÈ´Ù.
+// PROJ-1490 í˜ì´ì§€ë¦¬ìŠ¤íŠ¸ ë‹¤ì¤‘í™”ë° ë©”ëª¨ë¦¬ë°˜ë‚©
+// Pageê°€ í…Œì´ë¸”ë¡œ í• ë‹¹ë  ë•Œ í•´ë‹¹ Pageì˜ Free List Info Pageì— ì„¤ì •ë  ê°’
+// ì„œë²„ ê¸°ë™ì‹œ Free Pageì™€ Allocated Pageë¥¼ êµ¬ë¶„í•˜ê¸° ìœ„í•œ ìš©ë„ë¡œ ì‚¬ìš©ëœë‹¤.
 #define SVM_FLI_ALLOCATED_PID ( SM_SPECIAL_PID )
 
-/* BUG-31881  smmDef.hÀÇ smmPageReservation¿Í °°Àº ¿ªÇÒ.*/
+/* BUG-31881  smmDef.hì˜ smmPageReservationì™€ ê°™ì€ ì—­í• .*/
 
 #define SVM_PAGE_RESERVATION_MAX  (64)
 #define SVM_PAGE_RESERVATION_NULL ID_UINT_MAX
@@ -186,7 +186,7 @@ typedef struct svmPageReservation
 
 
 // Memory Tablespace Node
-// ÇÏ³ªÀÇ Memory Tablespace¿¡ ´ëÇÑ ¸ğµç RuntimeÁ¤º¸¸¦ Áö´Ñ´Ù.
+// í•˜ë‚˜ì˜ Memory Tablespaceì— ëŒ€í•œ ëª¨ë“  Runtimeì •ë³´ë¥¼ ì§€ë‹Œë‹¤.
 typedef struct svmTBSNode
 {
     /******** FROM svmTableSpace ********************/
@@ -203,39 +203,39 @@ typedef struct svmTBSNode
     iduMemPool        mPCHMemPool;
 
     // BUG-17216
-    // membase¸¦ 0¹ø ÆäÀÌÁö°¡ ¾Æ´Ñ TBSNode ¾È¿¡ µÎµµ·Ï ¼öÁ¤ÇÑ´Ù.
+    // membaseë¥¼ 0ë²ˆ í˜ì´ì§€ê°€ ì•„ë‹Œ TBSNode ì•ˆì— ë‘ë„ë¡ ìˆ˜ì •í•œë‹¤.
     svmMemBase        mMemBase;
     
     /******** FROM svmFPLManager ********************/
 
-    // °¢ Free Page Listº° Mutex ¹è¿­
-    // Mutex´Â DurableÇÑ Á¤º¸°¡ ¾Æ´Ï±â ¶§¹®¿¡,
-    // membase¿¡ Free Page ListÀÇ Mutex¸¦ ÇÔ²² µÎÁö ¾Ê´Â´Ù.
+    // ê° Free Page Listë³„ Mutex ë°°ì—´
+    // MutexëŠ” Durableí•œ ì •ë³´ê°€ ì•„ë‹ˆê¸° ë•Œë¬¸ì—,
+    // membaseì— Free Page Listì˜ Mutexë¥¼ í•¨ê»˜ ë‘ì§€ ì•ŠëŠ”ë‹¤.
     iduMutex   * mArrFPLMutex;
 
-    // ÇÏ³ªÀÇ Æ®·£Àè¼ÇÀÌ Expand Chunk¸¦ ÇÒ´çÇÏ°í ÀÖÀ» ¶§,
-    // ´Ù¸¥ Æ®·£Àè¼ÇÀÌ PageºÎÁ·½Ã Expand Chunk¸¦ ¶Ç ÇÒ´çÇÏÁö ¾Ê°í,
-    // Expand ChunkÇÒ´ç ÀÛ¾÷ÀÌ Á¾·áµÇ±â¸¦ ±â´Ù¸®µµ·Ï ÇÏ±â À§ÇÑ Mutex.
+    // í•˜ë‚˜ì˜ íŠ¸ëœì­ì…˜ì´ Expand Chunkë¥¼ í• ë‹¹í•˜ê³  ìˆì„ ë•Œ,
+    // ë‹¤ë¥¸ íŠ¸ëœì­ì…˜ì´ Pageë¶€ì¡±ì‹œ Expand Chunkë¥¼ ë˜ í• ë‹¹í•˜ì§€ ì•Šê³ ,
+    // Expand Chunkí• ë‹¹ ì‘ì—…ì´ ì¢…ë£Œë˜ê¸°ë¥¼ ê¸°ë‹¤ë¦¬ë„ë¡ í•˜ê¸° ìœ„í•œ Mutex.
     iduMutex     mAllocChunkMutex;
     
     /* BUG-31881 [sm-mem-resource] When executing alter table in MRDB and 
      * using space by other transaction,
      * The server can not do restart recovery. 
-     * FreePageListCount¸¸Å­ ´ÙÁßÈ­µÇ¾î mArrFPLMutex¸¦ ÅëÇØ Á¦¾îµÈ´Ù. */
+     * FreePageListCountë§Œí¼ ë‹¤ì¤‘í™”ë˜ì–´ mArrFPLMutexë¥¼ í†µí•´ ì œì–´ëœë‹¤. */
     svmPageReservation * mArrPageReservation;
 
     /******** FROM svmExpandChunk ********************/
 
-    // Free List Info Page³»ÀÇ Slot±â·ÏÀ» ½ÃÀÛÇÒ À§Ä¡ 
+    // Free List Info Pageë‚´ì˜ Slotê¸°ë¡ì„ ì‹œì‘í•  ìœ„ì¹˜ 
     UInt              mFLISlotBase;
-    // Free List Info PageÀÇ ¼öÀÌ´Ù.
+    // Free List Info Pageì˜ ìˆ˜ì´ë‹¤.
     UInt              mChunkFLIPageCnt;
-    // ÇÏ³ªÀÇ Expand Chunk°¡ Áö´Ï´Â PageÀÇ ¼ö
-    // Free List Info PageÀÇ ¼ö ±îÁö Æ÷ÇÔÇÑ ÀüÃ¼ Page ¼ö ÀÌ´Ù.
+    // í•˜ë‚˜ì˜ Expand Chunkê°€ ì§€ë‹ˆëŠ” Pageì˜ ìˆ˜
+    // Free List Info Pageì˜ ìˆ˜ ê¹Œì§€ í¬í•¨í•œ ì „ì²´ Page ìˆ˜ ì´ë‹¤.
     vULong            mChunkPageCnt;
     
     // PRJ-1548 User Memory Tablespace
-    // Loganchor ¸Ş¸ğ¸®¹öÆÛ»óÀÇ TBS Attribute ÀúÀå¿ÀÇÁ¼Â
+    // Loganchor ë©”ëª¨ë¦¬ë²„í¼ìƒì˜ TBS Attribute ì €ì¥ì˜¤í”„ì…‹
     UInt              mAnchorOffset;
     
 } svmTBSNode;

@@ -968,7 +968,7 @@ public:
                                     UShort          aFromIdx,
                                     UShort          aToIdx );
 
-    // BUG-29538 split½Ã TBK count¸¦ Á¶Á¤ÇÏÁö ¾Ê°í ÀÖ½À´Ï´Ù.
+    // BUG-29538 splitì‹œ TBK countë¥¼ ì¡°ì •í•˜ì§€ ì•Šê³  ìžˆìŠµë‹ˆë‹¤.
     static IDE_RC freeKeysLeaf( sdpPhyPageHdr * aPage,
                                 stndrKeyArray * aKeyArray,
                                 UShort          aFromIdx,

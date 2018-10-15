@@ -20,13 +20,13 @@
  *
  * PROJ-1353
  *
- * RollupÀº SortµÈ ÀÚ·á¸¦ ÇÑ¹ø ÀĞ¾îµé¿© ( n + 1 ) °³ÀÇ ±×·ìÀÇ °è»êÀ» ¼öÇàÇÑ´Ù.
+ * Rollupì€ Sortëœ ìë£Œë¥¼ í•œë²ˆ ì½ì–´ë“¤ì—¬ ( n + 1 ) ê°œì˜ ê·¸ë£¹ì˜ ê³„ì‚°ì„ ìˆ˜í–‰í•œë‹¤.
  *
- * Rollup PlanÀº ÇÏÀ§¿¡ Sort PlanÀÌ ¿À°Å³ª SortµÈ ÀÚ·á¸¦ ÀĞ¾î¾ß ÇÑ´Ù.
+ * Rollup Planì€ í•˜ìœ„ì— Sort Planì´ ì˜¤ê±°ë‚˜ Sortëœ ìë£Œë¥¼ ì½ì–´ì•¼ í•œë‹¤.
  *
- * select i1, i2 from t1 group by rollup(i1), i2 ¿Í °°ÀÌ µÇ¾î ÀÖÀ»Áö¶óµµ
- * Sort µÇ¾î¾ßÇÏ´Â ÄÃ·³ ¼ø¼­´Â i2, i1 ¼øÀ¸·Î rollup¿¡ ÇØ´çÇÏ´Â ÄÃ·³ÀÌ °¡Àå ¸¶Áö¸·¿¡
- * ¿Í¾ßÇÑ´Ù.
+ * select i1, i2 from t1 group by rollup(i1), i2 ì™€ ê°™ì´ ë˜ì–´ ìˆì„ì§€ë¼ë„
+ * Sort ë˜ì–´ì•¼í•˜ëŠ” ì»¬ëŸ¼ ìˆœì„œëŠ” i2, i1 ìˆœìœ¼ë¡œ rollupì— í•´ë‹¹í•˜ëŠ” ì»¬ëŸ¼ì´ ê°€ì¥ ë§ˆì§€ë§‰ì—
+ * ì™€ì•¼í•œë‹¤.
  *
  **********************************************************************/
 #include <idl.h>
@@ -38,7 +38,7 @@
 /**
  * init
  *
- *  ROLL Plan ÃÊ±âÈ­ ¼öÇà
+ *  ROLL Plan ì´ˆê¸°í™” ìˆ˜í–‰
  */
 IDE_RC qmnROLL::init( qcTemplate * aTemplate, qmnPlan * aPlan )
 {
@@ -59,7 +59,7 @@ IDE_RC qmnROLL::init( qcTemplate * aTemplate, qmnPlan * aPlan )
         sDataPlan->plan.myTuple->row = sDataPlan->myRow;
     }
 
-    /* doItÁß¿¡ initÀÌ È£ÃâµÇ´Â °æ¿ì Àç¼öÇàÀ» À§ÇØ ÃÊ±âÈ­ÇÑ´Ù. */
+    /* doItì¤‘ì— initì´ í˜¸ì¶œë˜ëŠ” ê²½ìš° ì¬ìˆ˜í–‰ì„ ìœ„í•´ ì´ˆê¸°í™”í•œë‹¤. */
     if ( sDataPlan->groupIndex != -1 )
     {
         sDataPlan->isDataNone = ID_FALSE;
@@ -74,7 +74,7 @@ IDE_RC qmnROLL::init( qcTemplate * aTemplate, qmnPlan * aPlan )
     IDE_TEST( checkDependency( aTemplate, sCodePlan, sDataPlan, &sDep )
               != IDE_SUCCESS );
 
-    /* Dependency °¡ ´Ù¸£´Ù¸é ´Ù½Ã ½×¾Æ¾ßÇÑ´Ù. */
+    /* Dependency ê°€ ë‹¤ë¥´ë‹¤ë©´ ë‹¤ì‹œ ìŒ“ì•„ì•¼í•œë‹¤. */
     if ( sDep == ID_TRUE )
     {
         if ( sCodePlan->preservedOrderMode == ID_FALSE )
@@ -96,7 +96,7 @@ IDE_RC qmnROLL::init( qcTemplate * aTemplate, qmnPlan * aPlan )
             }
         }
 
-        /* memory valeu node°¡ ÀÖÀ» °æ¿ì rollupÀÇ ¼öÇà°á°ú¸¦ memory temp¿¡ ½×´Â´Ù */
+        /* memory valeu nodeê°€ ìˆì„ ê²½ìš° rollupì˜ ìˆ˜í–‰ê²°ê³¼ë¥¼ memory tempì— ìŒ“ëŠ”ë‹¤ */
         if ( sCodePlan->valueTempNode != NULL )
         {
             IDE_TEST( qmcSortTemp::clear( sDataPlan->valueTempMTR ) != IDE_SUCCESS );
@@ -181,7 +181,7 @@ IDE_RC qmnROLL::checkDependency( qcTemplate * aTemplate,
 /**
  * linkAggrNode
  *
- *  CodePlanÀÇ AggrNode¸¦ DataPlanÀÇ aggrNode·Î ¿¬°áÇÑ´Ù.
+ *  CodePlanì˜ AggrNodeë¥¼ DataPlanì˜ aggrNodeë¡œ ì—°ê²°í•œë‹¤.
  */
 IDE_RC qmnROLL::linkAggrNode( qmncROLL * aCodePlan, qmndROLL * aDataPlan )
 {
@@ -215,8 +215,8 @@ IDE_RC qmnROLL::linkAggrNode( qmncROLL * aCodePlan, qmndROLL * aDataPlan )
 /**
  * initDistNode
  *
- *  Distinct ÄÃ·³ÀÌ d °³ÀÏ °æ¿ì  Rollup Group ¼ö( n + 1 ) * d ¸¸Å­ÀÇ DistNode°¡ »ı¼ºµÈ´Ù.
- *  ÀÌ´Â 2Áß ¹è¿­À» ÅëÇØ¼­ °ü¸®µÇ¸ç °¢°¢ Distinct¸¦ À§ÇÑ HashTemp¸¦ »ı¼ºÇÑ´Ù.
+ *  Distinct ì»¬ëŸ¼ì´ d ê°œì¼ ê²½ìš°  Rollup Group ìˆ˜( n + 1 ) * d ë§Œí¼ì˜ DistNodeê°€ ìƒì„±ëœë‹¤.
+ *  ì´ëŠ” 2ì¤‘ ë°°ì—´ì„ í†µí•´ì„œ ê´€ë¦¬ë˜ë©° ê°ê° Distinctë¥¼ ìœ„í•œ HashTempë¥¼ ìƒì„±í•œë‹¤.
  */
 IDE_RC qmnROLL::initDistNode( qcTemplate * aTemplate,
                               qmncROLL   * aCodePlan,
@@ -267,11 +267,11 @@ IDE_RC qmnROLL::initDistNode( qcTemplate * aTemplate,
     }
 
     // PROJ-2553
-    // DISTINCT HashingÀº Bucket List Hashing ¹æ¹ıÀ» ½á¾ß ÇÑ´Ù.
+    // DISTINCT Hashingì€ Bucket List Hashing ë°©ë²•ì„ ì¨ì•¼ í•œë‹¤.
     sFlag &= ~QMCD_HASH_TMP_HASHING_TYPE;
     sFlag |= QMCD_HASH_TMP_HASHING_BUCKET;
 
-    /* Rollup Group count ¸¸Å­ distinct ³ëµå¸¦ »ı¼ºÇÑ´Ù. */
+    /* Rollup Group count ë§Œí¼ distinct ë…¸ë“œë¥¼ ìƒì„±í•œë‹¤. */
     for ( sGroup = 0; sGroup < (UInt)aCodePlan->groupCount; sGroup++ )
     {
         for ( i = 0, sDistNode = aDataPlan->distNode[sGroup];
@@ -316,7 +316,7 @@ IDE_RC qmnROLL::initDistNode( qcTemplate * aTemplate,
 /**
  * clearDistNode
  *
- *   ±×·ì index¸¦ ÀÎÀÚ·Î ¹Ş¾Æ ÇØ´çÇÏ´Â Distinct³ëµåÀÇ ÃÊ±âÈ­¸¦ ¼öÇàÇÑ´Ù.
+ *   ê·¸ë£¹ indexë¥¼ ì¸ìë¡œ ë°›ì•„ í•´ë‹¹í•˜ëŠ” Distinctë…¸ë“œì˜ ì´ˆê¸°í™”ë¥¼ ìˆ˜í–‰í•œë‹¤.
  */
 IDE_RC qmnROLL::clearDistNode( qmncROLL * aCodePlan,
                                qmndROLL * aDataPlan,
@@ -345,10 +345,10 @@ IDE_RC qmnROLL::clearDistNode( qmncROLL * aCodePlan,
 /**
  * initMtrNode
  *
- *  mtrNode, myNode, aggrNode, distNode, valeTempNodeÀÇ ÃÊ±âÈ­¸¦ ¼öÇàÇÑ´Ù.
+ *  mtrNode, myNode, aggrNode, distNode, valeTempNodeì˜ ì´ˆê¸°í™”ë¥¼ ìˆ˜í–‰í•œë‹¤.
  *
- *  aggrNode´Â Rollup¿ëÀ¸·Î 1°³¸¸ »ı¼ºµÇÁö¸¸ distNode´Â Rollup±×·ì °¹¼ö ¸¸Å­ »ı¼ºµÈ´Ù.
- *  ÀÏ´Ü distNodeÀÇ 0¹øÂ°·Î ¿¬°áÇØ ³õ´Â´Ù.
+ *  aggrNodeëŠ” Rollupìš©ìœ¼ë¡œ 1ê°œë§Œ ìƒì„±ë˜ì§€ë§Œ distNodeëŠ” Rollupê·¸ë£¹ ê°¯ìˆ˜ ë§Œí¼ ìƒì„±ëœë‹¤.
+ *  ì¼ë‹¨ distNodeì˜ 0ë²ˆì§¸ë¡œ ì—°ê²°í•´ ë†“ëŠ”ë‹¤.
  */
 IDE_RC qmnROLL::initMtrNode( qcTemplate * aTemplate,
                              qmncROLL   * aCodePlan,
@@ -537,7 +537,7 @@ IDE_RC qmnROLL::initMtrNode( qcTemplate * aTemplate,
 
     sMemory = aTemplate->stmt->qmxMem;
 
-    /* valueTempNode°¡ ÀÖ´Ù¸é MTR Node¸¦ »ı¼ºÇÏ°í STORE¿ë TempTableÀ» initializeÇÑ´Ù */
+    /* valueTempNodeê°€ ìˆë‹¤ë©´ MTR Nodeë¥¼ ìƒì„±í•˜ê³  STOREìš© TempTableì„ initializeí•œë‹¤ */
     if ( aCodePlan->valueTempNode != NULL )
     {
         if ( ( *aDataPlan->flag & QMN_PLAN_RESULT_CACHE_EXIST_MASK )
@@ -635,7 +635,7 @@ IDE_RC qmnROLL::initMtrNode( qcTemplate * aTemplate,
 /**
  * allocMtrRow
  *
- *   °¢°¢ ÇÊ¿äÇÑ RowÀÇ Å©±â¸¦ ÇÒ´çÇÑ´Ù.
+ *   ê°ê° í•„ìš”í•œ Rowì˜ í¬ê¸°ë¥¼ í• ë‹¹í•œë‹¤.
  */
 IDE_RC qmnROLL::allocMtrRow( qcTemplate * aTemplate,
                              qmncROLL   * aCodePlan,
@@ -677,8 +677,8 @@ IDE_RC qmnROLL::allocMtrRow( qcTemplate * aTemplate,
               != IDE_SUCCESS );
     
     /**
-     * aggrNodeÀÇ °æ¿ì mtrNode´Â 1°³¸¸ ÀÖÁö¸¸ Row´Â Rollup ±×·ì¼ö(n+1) ¸¸Å­ Á¸ÀçÇÏ°Ô µÈ´Ù.
-     * ÀÌ¸¦ ÅëÇØ¼­ ÇÑ¹ø ºñ±³¸¦ ÅëÇØ¼­ ( n + 1 ) ±×·ìÀÇ aggregationÀ» ¼öÇàÇÒ ¼ö ÀÖ´Ù.
+     * aggrNodeì˜ ê²½ìš° mtrNodeëŠ” 1ê°œë§Œ ìˆì§€ë§Œ RowëŠ” Rollup ê·¸ë£¹ìˆ˜(n+1) ë§Œí¼ ì¡´ì¬í•˜ê²Œ ëœë‹¤.
+     * ì´ë¥¼ í†µí•´ì„œ í•œë²ˆ ë¹„êµë¥¼ í†µí•´ì„œ ( n + 1 ) ê·¸ë£¹ì˜ aggregationì„ ìˆ˜í–‰í•  ìˆ˜ ìˆë‹¤.
      */
     if ( aCodePlan->aggrNode != NULL )
     {
@@ -727,7 +727,7 @@ IDE_RC qmnROLL::allocMtrRow( qcTemplate * aTemplate,
 /**
  * firstInit
  *
- *   Rollup ÃÊ±â initialize¸¦ ¼öÇàÇÑ´Ù.
+ *   Rollup ì´ˆê¸° initializeë¥¼ ìˆ˜í–‰í•œë‹¤.
  */
 IDE_RC qmnROLL::firstInit( qcTemplate * aTemplate,
                            qmncROLL   * aCodePlan,
@@ -822,7 +822,7 @@ IDE_RC qmnROLL::doIt( qcTemplate * aTemplate,
 /**
  * initAggregation
  *
- *   Aggregation NodeÀÇ ÃÊ±âÈ­¸¦ ¼öÇàÇÑ´Ù.
+ *   Aggregation Nodeì˜ ì´ˆê¸°í™”ë¥¼ ìˆ˜í–‰í•œë‹¤.
  */
 IDE_RC qmnROLL::initAggregation( qcTemplate * aTemplate,
                                  qmndROLL   * aDataPlan,
@@ -849,8 +849,8 @@ IDE_RC qmnROLL::initAggregation( qcTemplate * aTemplate,
 /**
  * setDistMtrColumns
  *
- *   ±×·ì Index¸¦ ÀÎÀÚ·Î ¹Ş¾Æ ÇØ´ç ÀÎµ¦½ºÀÇ distint NodeÀÇ HashTemp¿¡ ÇöÁ¦
- *   °ªÀ» ³Ö¾îº¸°í °ãÄ¡´Â ÀÚ·áÀÎÁö ¾Æ´ÑÁö¸¦ ¼³Á¤ÇÑ´Ù.
+ *   ê·¸ë£¹ Indexë¥¼ ì¸ìë¡œ ë°›ì•„ í•´ë‹¹ ì¸ë±ìŠ¤ì˜ distint Nodeì˜ HashTempì— í˜„ì œ
+ *   ê°’ì„ ë„£ì–´ë³´ê³  ê²¹ì¹˜ëŠ” ìë£Œì¸ì§€ ì•„ë‹Œì§€ë¥¼ ì„¤ì •í•œë‹¤.
  */
 IDE_RC qmnROLL::setDistMtrColumns( qcTemplate * aTemplate,
                                    qmncROLL   * aCodePlan,
@@ -897,9 +897,9 @@ IDE_RC qmnROLL::setDistMtrColumns( qcTemplate * aTemplate,
 /**
  * execAggregation
  *
- *   ÇØ´çÇÏ´Â ±×·ìÀÇ RowÀÇ AggregationÀÇ °è»êÀ» ¼öÇàÇÑ´Ù.
- *   ¸¸¾à Distinct ³ëµå°¡ ÀÖ´Â°æ¿ì¿¡´Â ÇØ´çÇÏ´Â distNodeÀÇ distinct¿©ºÎ¸¦ º¸°í
- *   aggregate ÀÇ ¼öÇà ¿©ºÎ¸¦ °áÁ¤ÇÑ´Ù.
+ *   í•´ë‹¹í•˜ëŠ” ê·¸ë£¹ì˜ Rowì˜ Aggregationì˜ ê³„ì‚°ì„ ìˆ˜í–‰í•œë‹¤.
+ *   ë§Œì•½ Distinct ë…¸ë“œê°€ ìˆëŠ”ê²½ìš°ì—ëŠ” í•´ë‹¹í•˜ëŠ” distNodeì˜ distinctì—¬ë¶€ë¥¼ ë³´ê³ 
+ *   aggregate ì˜ ìˆ˜í–‰ ì—¬ë¶€ë¥¼ ê²°ì •í•œë‹¤.
  */
 IDE_RC qmnROLL::execAggregation( qcTemplate * aTemplate,
                                  qmncROLL   * aCodePlan,
@@ -950,7 +950,7 @@ IDE_RC qmnROLL::execAggregation( qcTemplate * aTemplate,
 /**
  *  finiAggregation
  *
- *   finialize¸¦ ¼öÇàÇÑ´Ù.
+ *   finializeë¥¼ ìˆ˜í–‰í•œë‹¤.
  */
 IDE_RC qmnROLL::finiAggregation( qcTemplate * aTemplate,
                                  qmndROLL   * aDataPlan )
@@ -975,7 +975,7 @@ IDE_RC qmnROLL::finiAggregation( qcTemplate * aTemplate,
 /**
  * setMtrRow
  *
- *   ÇöÁ¦ Row¿¡ setMtrÀ» ¼öÇàÇÑ´Ù. ÀÌ¸¦ ÅëÇØ¼­ °¢ ÄÃ·³ÀÌ Á¦´ë·Î °ªÀ» ¾ò´Â´Ù.
+ *   í˜„ì œ Rowì— setMtrì„ ìˆ˜í–‰í•œë‹¤. ì´ë¥¼ í†µí•´ì„œ ê° ì»¬ëŸ¼ì´ ì œëŒ€ë¡œ ê°’ì„ ì–»ëŠ”ë‹¤.
  */
 IDE_RC qmnROLL::setMtrRow( qcTemplate * aTemplate,
                            qmndROLL   * aDataPlan )
@@ -1002,10 +1002,10 @@ IDE_RC qmnROLL::setMtrRow( qcTemplate * aTemplate,
 /**
  * copyMtrRowToMyRow
  *
- *   ÀĞ¾î¿Â mtrRow¿¡¼­ myRow·Î µ¥ÀÌÅÍ¸¦ copyÇÑ´Ù.
- *   myRow´Â myNode¿¡¼­ »ç¿ëÇÏ´Â Row·Î 1°³¸¸ Á¸Àç ÇÑ´Ù. °æ¿ì¿¡ µû¶ó¼­ ÄÃ·³ÀÌ NULLÀÌ µÉ¼ö ÀÖ´Ù.
+ *   ì½ì–´ì˜¨ mtrRowì—ì„œ myRowë¡œ ë°ì´í„°ë¥¼ copyí•œë‹¤.
+ *   myRowëŠ” myNodeì—ì„œ ì‚¬ìš©í•˜ëŠ” Rowë¡œ 1ê°œë§Œ ì¡´ì¬ í•œë‹¤. ê²½ìš°ì— ë”°ë¼ì„œ ì»¬ëŸ¼ì´ NULLì´ ë ìˆ˜ ìˆë‹¤.
  *
- *   RowNumÀÌ³ª level°°Àº °æ¿ì Pointer°¡ ¾Æ´Ñ value·Î ¿Ã¶ó¿Â´Ù. µû¶ó¼­ valueÃ³¸®ÇØ¾ßÇÑ´Ù.
+ *   RowNumì´ë‚˜ levelê°™ì€ ê²½ìš° Pointerê°€ ì•„ë‹Œ valueë¡œ ì˜¬ë¼ì˜¨ë‹¤. ë”°ë¼ì„œ valueì²˜ë¦¬í•´ì•¼í•œë‹¤.
  */
 IDE_RC qmnROLL::copyMtrRowToMyRow( qmndROLL * aDataPlan )
 {
@@ -1060,8 +1060,8 @@ IDE_RC qmnROLL::copyMtrRowToMyRow( qmndROLL * aDataPlan )
 /**
  * doItFirst
  *
- *  doItFrist¿¡¼­´Â ¸ÕÀú ÇÏÀ§ Plan¿¡¼­ Row¸¦ ÇÏ³ª ¾ò°í¼­ ÃÊ±âÈ­¸¦ ¼öÇàÇÑ´Ù.
- *  ±×¸®°í ÀÌ Ã¹ ¹øÂ° Row¸¦ myRow¿¡ º¹»çÇØ ³õ´Â´Ù.
+ *  doItFristì—ì„œëŠ” ë¨¼ì € í•˜ìœ„ Planì—ì„œ Rowë¥¼ í•˜ë‚˜ ì–»ê³ ì„œ ì´ˆê¸°í™”ë¥¼ ìˆ˜í–‰í•œë‹¤.
+ *  ê·¸ë¦¬ê³  ì´ ì²« ë²ˆì§¸ Rowë¥¼ myRowì— ë³µì‚¬í•´ ë†“ëŠ”ë‹¤.
  */
 IDE_RC qmnROLL::doItFirst( qcTemplate * aTemplate,
                            qmnPlan    * aPlan,
@@ -1150,7 +1150,7 @@ IDE_RC qmnROLL::doItFirst( qcTemplate * aTemplate,
 /**
  * compareRows
  *
- *  myNodeÀÇ Row¿Í mtrNodeÀÇ Row¸¦ ºñ·áÇØ¼­ °¢ ÄÃ·³ÀÌ matching ¿©ºÎ¸¦ Ç¥½ÃÇÑ´Ù.
+ *  myNodeì˜ Rowì™€ mtrNodeì˜ Rowë¥¼ ë¹„ë£Œí•´ì„œ ê° ì»¬ëŸ¼ì´ matching ì—¬ë¶€ë¥¼ í‘œì‹œí•œë‹¤.
  */
 IDE_RC qmnROLL::compareRows( qmndROLL * aDataPlan )
 {
@@ -1176,9 +1176,9 @@ IDE_RC qmnROLL::compareRows( qmndROLL * aDataPlan )
         }
         else
         {
-            // PROJ-2362 memory temp ÀúÀå È¿À²¼º °³¼±
-            // mtrNode°¡ TEMP_TYPEÀÎ °æ¿ì compare functionÀº logical compareÀÌ¹Ç·Î
-            // myRowÀÇ value¸¦ offset_useless·Î º¯°æÇÑ´Ù.
+            // PROJ-2362 memory temp ì €ì¥ íš¨ìœ¨ì„± ê°œì„ 
+            // mtrNodeê°€ TEMP_TYPEì¸ ê²½ìš° compare functionì€ logical compareì´ë¯€ë¡œ
+            // myRowì˜ valueë¥¼ offset_uselessë¡œ ë³€ê²½í•œë‹¤.
             if ( sMtrNode->func.setTuple == &qmc::setTupleByValue )
             {
                 if ( SMI_COLUMN_TYPE_IS_TEMP( sMtrNode->dstColumn->column.flag ) == ID_TRUE )
@@ -1309,9 +1309,9 @@ IDE_RC qmnROLL::compareRows( qmndROLL * aDataPlan )
 /**
  * compareGroupExecAggr
  *
- *   RollupÀÇ ±×·ìº°·Î matched µÇ¾î¾ß ÇÏ´Â ÄÃ·³ÀÌ ´Ù¸£¹Ç·Î °¢ ±×·ìº°·Î matchedµÇ¾î¾ß
- *   ÇÏ´Â ÄÃ·³¸¸ ¼±º°ÇÏ¿© compareResults°¡ µÇ´ÂÁö¸¦ ÆÇº°ÇÏ°í
- *   ÀÌ ±×·ìÀÌ myNode¿¡ ÀÖ´Â ÀÚ·á¿Í ±×·ìÈ­ µÇ¾îÀÖ´Ù¸é execAggregationÀ» ¼öÇàÇÑ´Ù.
+ *   Rollupì˜ ê·¸ë£¹ë³„ë¡œ matched ë˜ì–´ì•¼ í•˜ëŠ” ì»¬ëŸ¼ì´ ë‹¤ë¥´ë¯€ë¡œ ê° ê·¸ë£¹ë³„ë¡œ matchedë˜ì–´ì•¼
+ *   í•˜ëŠ” ì»¬ëŸ¼ë§Œ ì„ ë³„í•˜ì—¬ compareResultsê°€ ë˜ëŠ”ì§€ë¥¼ íŒë³„í•˜ê³ 
+ *   ì´ ê·¸ë£¹ì´ myNodeì— ìˆëŠ” ìë£Œì™€ ê·¸ë£¹í™” ë˜ì–´ìˆë‹¤ë©´ execAggregationì„ ìˆ˜í–‰í•œë‹¤.
  */
 IDE_RC qmnROLL::compareGroupsExecAggr( qcTemplate * aTemplate,
                                        qmncROLL   * aCodePlan,
@@ -1327,7 +1327,7 @@ IDE_RC qmnROLL::compareGroupsExecAggr( qcTemplate * aTemplate,
     {
         sIsGroup = ID_TRUE;
 
-        /* ÃÑ°èÀÇ °æ¿ì¿¡´Â Ç×»ó AggregationÀ» ¼öÇàÇÑ´Ù. */
+        /* ì´ê³„ì˜ ê²½ìš°ì—ëŠ” í•­ìƒ Aggregationì„ ìˆ˜í–‰í•œë‹¤. */
         if ( ( (SInt)i == aCodePlan->groupCount - 1 ) &&
              ( aCodePlan->partialRollup == -1 ) )
         {
@@ -1335,8 +1335,8 @@ IDE_RC qmnROLL::compareGroupsExecAggr( qcTemplate * aTemplate,
         }
         else
         {
-            /* ÇöÁ¦ ±×·ìÀÇ ÄÃ·³Áß ÇØ´ç»çÇ×ÀÌ ÀÖ´Â°Í¸¸ compareResuts¸¦ ºñ·áÇÑ´Ù
-             * mtrGroup¿¡´Â  111 °ú °°Àº rollup ÄÃ·³Áß ºñ±³ÇØ¾ßÇÒ ÄÃ·³ÀÌ ÁöÁ¤µÇ¾îÀÖ´Ù.
+            /* í˜„ì œ ê·¸ë£¹ì˜ ì»¬ëŸ¼ì¤‘ í•´ë‹¹ì‚¬í•­ì´ ìˆëŠ”ê²ƒë§Œ compareResutsë¥¼ ë¹„ë£Œí•œë‹¤
+             * mtrGroupì—ëŠ”  111 ê³¼ ê°™ì€ rollup ì»¬ëŸ¼ì¤‘ ë¹„êµí•´ì•¼í•  ì»¬ëŸ¼ì´ ì§€ì •ë˜ì–´ìˆë‹¤.
              *              110
              *              100
              *              000
@@ -1363,7 +1363,7 @@ IDE_RC qmnROLL::compareGroupsExecAggr( qcTemplate * aTemplate,
         }
         if ( sIsGroup == ID_TRUE )
         {
-            /* ÇöÁ¦ ±×·ìÀÌ ¸Â´Ù¸é Status¸¦ ¾÷µ¥ÀÌÆ®ÇÏ°í AggregationÀ» ¼öÇàÇÑ´Ù. */
+            /* í˜„ì œ ê·¸ë£¹ì´ ë§ë‹¤ë©´ Statusë¥¼ ì—…ë°ì´íŠ¸í•˜ê³  Aggregationì„ ìˆ˜í–‰í•œë‹¤. */
             aDataPlan->groupStatus[i] = QMND_ROLL_GROUP_MATCHED;
             if ( aCodePlan->aggrNode != NULL )
             {
@@ -1394,7 +1394,7 @@ IDE_RC qmnROLL::compareGroupsExecAggr( qcTemplate * aTemplate,
 /**
  * doItNext
  *
- *   doItNext¸¦ ¼öÇàÇÑ´Ù.
+ *   doItNextë¥¼ ìˆ˜í–‰í•œë‹¤.
  *
  *
  */
@@ -1413,7 +1413,7 @@ IDE_RC qmnROLL::doItNext( qcTemplate * aTemplate,
     if ( ( sCodePlan->aggrNode   != NULL ) &&
          ( sDataPlan->groupIndex != 0 ) )
     {
-        /* ÀÌ¹Ì ¿Ã·ÁÁø ±×·ì¿¡ ´ëÇØ AggregationÀ» ÃÊ±âÈ­ÇÑ´Ù. */
+        /* ì´ë¯¸ ì˜¬ë ¤ì§„ ê·¸ë£¹ì— ëŒ€í•´ Aggregationì„ ì´ˆê¸°í™”í•œë‹¤. */
         IDE_TEST( initAggregation( aTemplate, sDataPlan, sDataPlan->groupIndex - 1 )
                   != IDE_SUCCESS );
         if ( sCodePlan->distNode != NULL )
@@ -1442,9 +1442,9 @@ IDE_RC qmnROLL::doItNext( qcTemplate * aTemplate,
         /* Nothing to do */
     }
 
-    /* Rollup ±×·ì Áß ¿¹¸¦ µé¾î rollup( i1, i2, i3 ) Áß¿¡ (i1,i2) (i1) ±×·ì¿¡¼­
-     * ±×·ìÀÌ ´Ş¶óÁ®¼­ »óÀ§ ·Î º¸³»Á®¾ßÇÒ ¶§ ¾Æ·¡¿Í °°ÀÌ ÀûÀıÇÑ ÄÃ·³ÀÇ NULL·Î ¸¸µé°í ÇØ´ç
-     * ±×·ìÀÇ Aggr Row¸¦ ÁöÁ¤ÇØ¼­ NORMAL_EXIT·Î ³¡³ª°Ô µÈ´Ù.
+    /* Rollup ê·¸ë£¹ ì¤‘ ì˜ˆë¥¼ ë“¤ì–´ rollup( i1, i2, i3 ) ì¤‘ì— (i1,i2) (i1) ê·¸ë£¹ì—ì„œ
+     * ê·¸ë£¹ì´ ë‹¬ë¼ì ¸ì„œ ìƒìœ„ ë¡œ ë³´ë‚´ì ¸ì•¼í•  ë•Œ ì•„ë˜ì™€ ê°™ì´ ì ì ˆí•œ ì»¬ëŸ¼ì˜ NULLë¡œ ë§Œë“¤ê³  í•´ë‹¹
+     * ê·¸ë£¹ì˜ Aggr Rowë¥¼ ì§€ì •í•´ì„œ NORMAL_EXITë¡œ ëë‚˜ê²Œ ëœë‹¤.
      */
     if ( sCodePlan->partialRollup != -1 )
     {
@@ -1515,7 +1515,7 @@ IDE_RC qmnROLL::doItNext( qcTemplate * aTemplate,
 
     if ( sDataPlan->needCopy == ID_TRUE )
     {
-        /* ¼­·Î ´Ù¸¥ ±×·ìÀÌ ¹ß°ßµÇ¾î ÀÌÀü ±×·ìÀÇ myNode°¡ Ã³¸®µÇ¾î myNode¿¡ »õ·Î¿î °ªÀ» ³Ö°Ô µÈ´Ù. */
+        /* ì„œë¡œ ë‹¤ë¥¸ ê·¸ë£¹ì´ ë°œê²¬ë˜ì–´ ì´ì „ ê·¸ë£¹ì˜ myNodeê°€ ì²˜ë¦¬ë˜ì–´ myNodeì— ìƒˆë¡œìš´ ê°’ì„ ë„£ê²Œ ëœë‹¤. */
         IDE_TEST( copyMtrRowToMyRow( sDataPlan )
                   != IDE_SUCCESS );
         sDataPlan->needCopy = ID_FALSE;
@@ -1525,9 +1525,9 @@ IDE_RC qmnROLL::doItNext( qcTemplate * aTemplate,
         /* Nothing to do */
     }
 
-    /* µ¥ÀÌÅÍ°¡ ¾øÀ» °æ¿ì ÃÑ°è¿¡ ´ëÇÑ Row¸¦ À§·Î ¿Ã·Áº¸³½´Ù. ¿ª½Ã ¸¶Áö¸· columnÀ» NULL·Î ¸¸µé°í
-     * ÃÑ°è¿¡ ÇØ´çÇÏ´Â Aggr Row¸¦ ÁöÁ¤ÇÑµÚ¿¡ doIt ÇÔ¼ö¸¦ doItFirst·Î ÁöÁ¤ÇØ doItFirst¿¡¼­
-     * data noneÀ» ¿Ã·ÁÁÖµµ·Ï ÇÑ´Ù.
+    /* ë°ì´í„°ê°€ ì—†ì„ ê²½ìš° ì´ê³„ì— ëŒ€í•œ Rowë¥¼ ìœ„ë¡œ ì˜¬ë ¤ë³´ë‚¸ë‹¤. ì—­ì‹œ ë§ˆì§€ë§‰ columnì„ NULLë¡œ ë§Œë“¤ê³ 
+     * ì´ê³„ì— í•´ë‹¹í•˜ëŠ” Aggr Rowë¥¼ ì§€ì •í•œë’¤ì— doIt í•¨ìˆ˜ë¥¼ doItFirstë¡œ ì§€ì •í•´ doItFirstì—ì„œ
+     * data noneì„ ì˜¬ë ¤ì£¼ë„ë¡ í•œë‹¤.
      */
     if ( sDataPlan->isDataNone == ID_TRUE )
     {
@@ -1591,7 +1591,7 @@ IDE_RC qmnROLL::doItNext( qcTemplate * aTemplate,
             IDE_TEST( setMtrRow( aTemplate, sDataPlan )
                       != IDE_SUCCESS );
 
-            /* distNode°¡ ÀÖÀ» °æ¿ì ÇöÁ¦ ÀĞÀº RowÀÇ Distinct ¿©ºÎ¸¦ ÆÇº°ÇÑ´Ù. */
+            /* distNodeê°€ ìˆì„ ê²½ìš° í˜„ì œ ì½ì€ Rowì˜ Distinct ì—¬ë¶€ë¥¼ íŒë³„í•œë‹¤. */
             if ( sCodePlan->distNode != NULL )
             {
                 for ( i = 0; i < sCodePlan->groupCount; i ++ )
@@ -1608,18 +1608,18 @@ IDE_RC qmnROLL::doItNext( qcTemplate * aTemplate,
                 /* Nothing to do */
             }
 
-            /* myNode¿Í mtrNodeÀÇ Row¸¦ ¼­·Î ºñ±³ÇØ °¢ ÄÃ·³ÀÌ ¸Â´ÂÁö ºñ±³ÇÑ´Ù */
+            /* myNodeì™€ mtrNodeì˜ Rowë¥¼ ì„œë¡œ ë¹„êµí•´ ê° ì»¬ëŸ¼ì´ ë§ëŠ”ì§€ ë¹„êµí•œë‹¤ */
             IDE_TEST( compareRows( sDataPlan )
                       != IDE_SUCCESS );
 
-            /* °¢ ±×·ìº°·Î ±×·ìÀÌ µÇ´ÂÁö ¾Æ´ÑÁö¸¦ ÆÇº°ÇÏ°í ±×·ìÀÌ¶ó¸é exeAggrÀ» ¼öÇàÇÑ´Ù. */
+            /* ê° ê·¸ë£¹ë³„ë¡œ ê·¸ë£¹ì´ ë˜ëŠ”ì§€ ì•„ë‹Œì§€ë¥¼ íŒë³„í•˜ê³  ê·¸ë£¹ì´ë¼ë©´ exeAggrì„ ìˆ˜í–‰í•œë‹¤. */
             IDE_TEST( compareGroupsExecAggr( aTemplate,
                                              sCodePlan,
                                              sDataPlan,
                                              &sAllMatched )
                       != IDE_SUCCESS );
 
-            /* ¸ğµç ±×·ìÀÌ ¸Â´Ù¸é ´ÙÀ½ Row¸¦ ÀĞ¾î¼­ ¹İº¹ÇÑ´Ù */
+            /* ëª¨ë“  ê·¸ë£¹ì´ ë§ë‹¤ë©´ ë‹¤ìŒ Rowë¥¼ ì½ì–´ì„œ ë°˜ë³µí•œë‹¤ */
             if ( sAllMatched == ID_TRUE )
             {
                 IDE_TEST( sCodePlan->plan.left->doIt( aTemplate,
@@ -1628,8 +1628,8 @@ IDE_RC qmnROLL::doItNext( qcTemplate * aTemplate,
                           != IDE_SUCCESS );
                 if ( sFlag == QMC_ROW_DATA_NONE )
                 {
-                    /* µ¥ÀÌÅÍ°¡ Á¸Àç ÇÏÁö ¾Ê´Â´Ù¸é groupStatus¸¦ ¸ğµÎ not matched·Î ¸¸µé¾î
-                     * ¸ğµç ±×·ìÀÇ µ¥ÀÌÅÍ¸¦ ¿Ã·Áº¸³»°Ô ÇÑ´Ù.
+                    /* ë°ì´í„°ê°€ ì¡´ì¬ í•˜ì§€ ì•ŠëŠ”ë‹¤ë©´ groupStatusë¥¼ ëª¨ë‘ not matchedë¡œ ë§Œë“¤ì–´
+                     * ëª¨ë“  ê·¸ë£¹ì˜ ë°ì´í„°ë¥¼ ì˜¬ë ¤ë³´ë‚´ê²Œ í•œë‹¤.
                      */
                     sDataPlan->isDataNone = ID_TRUE;
                     sDataPlan->groupIndex = 1;
@@ -1656,7 +1656,7 @@ IDE_RC qmnROLL::doItNext( qcTemplate * aTemplate,
             }
             else
             {
-                /* [0] ¹ø ±×·ì¿¡ ´ë´çÇÏ´Â Aggregation³ëµå¸¦ ÁöÁ¤ÈÄ¿¡ ³ª°£´Ù */
+                /* [0] ë²ˆ ê·¸ë£¹ì— ëŒ€ë‹¹í•˜ëŠ” Aggregationë…¸ë“œë¥¼ ì§€ì •í›„ì— ë‚˜ê°„ë‹¤ */
                 sDataPlan->needCopy   = ID_TRUE;
                 sDataPlan->groupIndex = 1;
 
@@ -1674,8 +1674,8 @@ IDE_RC qmnROLL::doItNext( qcTemplate * aTemplate,
     }
     else
     {
-        /* µ¥ÀÌÅÍ°¡ Á¸Àç ÇÏÁö ¾Ê´Â´Ù¸é groupStatus¸¦ ¸ğµÎ not matched·Î ¸¸µé¾î
-         * ¸ğµç ±×·ìÀÇ µ¥ÀÌÅÍ¸¦ ¿Ã·Áº¸³»°Ô ÇÑ´Ù.
+        /* ë°ì´í„°ê°€ ì¡´ì¬ í•˜ì§€ ì•ŠëŠ”ë‹¤ë©´ groupStatusë¥¼ ëª¨ë‘ not matchedë¡œ ë§Œë“¤ì–´
+         * ëª¨ë“  ê·¸ë£¹ì˜ ë°ì´í„°ë¥¼ ì˜¬ë ¤ë³´ë‚´ê²Œ í•œë‹¤.
          */
         sDataPlan->isDataNone = ID_TRUE;
         sDataPlan->groupIndex = 1;
@@ -1717,7 +1717,7 @@ IDE_RC qmnROLL::doItNext( qcTemplate * aTemplate,
 /**
  * padNull
  *
- *   Null padingÀ» ¼öÇàÇÑ´Ù.
+ *   Null padingì„ ìˆ˜í–‰í•œë‹¤.
  */
 IDE_RC qmnROLL::padNull( qcTemplate * aTemplate, qmnPlan * aPlan )
 {
@@ -1743,7 +1743,7 @@ IDE_RC qmnROLL::padNull( qcTemplate * aTemplate, qmnPlan * aPlan )
     {
         sDataPlan->plan.myTuple->row = sDataPlan->nullRow;
         
-        // PROJ-2362 memory temp ÀúÀå È¿À²¼º °³¼±
+        // PROJ-2362 memory temp ì €ì¥ íš¨ìœ¨ì„± ê°œì„ 
         sColumn = sDataPlan->plan.myTuple->columns;
         for ( i = 0; i < sDataPlan->plan.myTuple->columnCount; i++, sColumn++ )
         {
@@ -1988,7 +1988,7 @@ IDE_RC qmnROLL::doItNextSortMTR( qcTemplate * aTemplate,
     if ( ( sCodePlan->aggrNode   != NULL ) &&
          ( sDataPlan->groupIndex != 0 ) )
     {
-        /* ÀÌ¹Ì ¿Ã·ÁÁø ±×·ì¿¡ ´ëÇØ AggregationÀ» ÃÊ±âÈ­ÇÑ´Ù. */
+        /* ì´ë¯¸ ì˜¬ë ¤ì§„ ê·¸ë£¹ì— ëŒ€í•´ Aggregationì„ ì´ˆê¸°í™”í•œë‹¤. */
         IDE_TEST( initAggregation( aTemplate, sDataPlan, sDataPlan->groupIndex - 1 )
                   != IDE_SUCCESS );
         if ( sCodePlan->distNode != NULL )
@@ -2017,9 +2017,9 @@ IDE_RC qmnROLL::doItNextSortMTR( qcTemplate * aTemplate,
         /* Nothing to do */
     }
 
-    /* Rollup ±×·ì Áß ¿¹¸¦ µé¾î rollup( i1, i2, i3 ) Áß¿¡ (i1,i2) (i1) ±×·ì¿¡¼­
-     * ±×·ìÀÌ ´Ş¶óÁ®¼­ »óÀ§ ·Î º¸³»Á®¾ßÇÒ ¶§ ¾Æ·¡¿Í °°ÀÌ ÀûÀıÇÑ ÄÃ·³ÀÇ NULL·Î ¸¸µé°í ÇØ´ç
-     * ±×·ìÀÇ Aggr Row¸¦ ÁöÁ¤ÇØ¼­ NORMAL_EXIT·Î ³¡³ª°Ô µÈ´Ù.
+    /* Rollup ê·¸ë£¹ ì¤‘ ì˜ˆë¥¼ ë“¤ì–´ rollup( i1, i2, i3 ) ì¤‘ì— (i1,i2) (i1) ê·¸ë£¹ì—ì„œ
+     * ê·¸ë£¹ì´ ë‹¬ë¼ì ¸ì„œ ìƒìœ„ ë¡œ ë³´ë‚´ì ¸ì•¼í•  ë•Œ ì•„ë˜ì™€ ê°™ì´ ì ì ˆí•œ ì»¬ëŸ¼ì˜ NULLë¡œ ë§Œë“¤ê³  í•´ë‹¹
+     * ê·¸ë£¹ì˜ Aggr Rowë¥¼ ì§€ì •í•´ì„œ NORMAL_EXITë¡œ ëë‚˜ê²Œ ëœë‹¤.
      */
     if ( sCodePlan->partialRollup != -1 )
     {
@@ -2090,7 +2090,7 @@ IDE_RC qmnROLL::doItNextSortMTR( qcTemplate * aTemplate,
 
     if ( sDataPlan->needCopy == ID_TRUE )
     {
-        /* ¼­·Î ´Ù¸¥ ±×·ìÀÌ ¹ß°ßµÇ¾î ÀÌÀü ±×·ìÀÇ myNode°¡ Ã³¸®µÇ¾î myNode¿¡ »õ·Î¿î °ªÀ» ³Ö°Ô µÈ´Ù. */
+        /* ì„œë¡œ ë‹¤ë¥¸ ê·¸ë£¹ì´ ë°œê²¬ë˜ì–´ ì´ì „ ê·¸ë£¹ì˜ myNodeê°€ ì²˜ë¦¬ë˜ì–´ myNodeì— ìƒˆë¡œìš´ ê°’ì„ ë„£ê²Œ ëœë‹¤. */
         IDE_TEST( copyMtrRowToMyRow( sDataPlan )
                   != IDE_SUCCESS );
         sDataPlan->needCopy = ID_FALSE;
@@ -2100,9 +2100,9 @@ IDE_RC qmnROLL::doItNextSortMTR( qcTemplate * aTemplate,
         /* Nothing to do */
     }
 
-    /* µ¥ÀÌÅÍ°¡ ¾øÀ» °æ¿ì ÃÑ°è¿¡ ´ëÇÑ Row¸¦ À§·Î ¿Ã·Áº¸³½´Ù. ¿ª½Ã ¸¶Áö¸· columnÀ» NULL·Î ¸¸µé°í
-     * ÃÑ°è¿¡ ÇØ´çÇÏ´Â Aggr Row¸¦ ÁöÁ¤ÇÑµÚ¿¡ doIt ÇÔ¼ö¸¦ doItFirst·Î ÁöÁ¤ÇØ doItFirst¿¡¼­
-     * data noneÀ» ¿Ã·ÁÁÖµµ·Ï ÇÑ´Ù.
+    /* ë°ì´í„°ê°€ ì—†ì„ ê²½ìš° ì´ê³„ì— ëŒ€í•œ Rowë¥¼ ìœ„ë¡œ ì˜¬ë ¤ë³´ë‚¸ë‹¤. ì—­ì‹œ ë§ˆì§€ë§‰ columnì„ NULLë¡œ ë§Œë“¤ê³ 
+     * ì´ê³„ì— í•´ë‹¹í•˜ëŠ” Aggr Rowë¥¼ ì§€ì •í•œë’¤ì— doIt í•¨ìˆ˜ë¥¼ doItFirstë¡œ ì§€ì •í•´ doItFirstì—ì„œ
+     * data noneì„ ì˜¬ë ¤ì£¼ë„ë¡ í•œë‹¤.
      */
     if ( sDataPlan->isDataNone == ID_TRUE )
     {
@@ -2168,7 +2168,7 @@ IDE_RC qmnROLL::doItNextSortMTR( qcTemplate * aTemplate,
             IDE_TEST( setTupleMtrNode( aTemplate, sDataPlan )
                       != IDE_SUCCESS );
 
-            /* distNode°¡ ÀÖÀ» °æ¿ì ÇöÁ¦ ÀĞÀº RowÀÇ Distinct ¿©ºÎ¸¦ ÆÇº°ÇÑ´Ù. */
+            /* distNodeê°€ ìˆì„ ê²½ìš° í˜„ì œ ì½ì€ Rowì˜ Distinct ì—¬ë¶€ë¥¼ íŒë³„í•œë‹¤. */
             if ( sCodePlan->distNode != NULL )
             {
                 for ( i = 0; i < sCodePlan->groupCount; i ++ )
@@ -2185,18 +2185,18 @@ IDE_RC qmnROLL::doItNextSortMTR( qcTemplate * aTemplate,
                 /* Nothing to do */
             }
 
-            /* myNode¿Í mtrNodeÀÇ Row¸¦ ¼­·Î ºñ±³ÇØ °¢ ÄÃ·³ÀÌ ¸Â´ÂÁö ºñ±³ÇÑ´Ù */
+            /* myNodeì™€ mtrNodeì˜ Rowë¥¼ ì„œë¡œ ë¹„êµí•´ ê° ì»¬ëŸ¼ì´ ë§ëŠ”ì§€ ë¹„êµí•œë‹¤ */
             IDE_TEST( compareRows( sDataPlan )
                       != IDE_SUCCESS );
 
-            /* °¢ ±×·ìº°·Î ±×·ìÀÌ µÇ´ÂÁö ¾Æ´ÑÁö¸¦ ÆÇº°ÇÏ°í ±×·ìÀÌ¶ó¸é exeAggrÀ» ¼öÇàÇÑ´Ù. */
+            /* ê° ê·¸ë£¹ë³„ë¡œ ê·¸ë£¹ì´ ë˜ëŠ”ì§€ ì•„ë‹Œì§€ë¥¼ íŒë³„í•˜ê³  ê·¸ë£¹ì´ë¼ë©´ exeAggrì„ ìˆ˜í–‰í•œë‹¤. */
             IDE_TEST( compareGroupsExecAggr( aTemplate,
                                              sCodePlan,
                                              sDataPlan,
                                              &sAllMatched )
                       != IDE_SUCCESS );
 
-            /* ¸ğµç ±×·ìÀÌ ¸Â´Ù¸é ´ÙÀ½ Row¸¦ ÀĞ¾î¼­ ¹İº¹ÇÑ´Ù */
+            /* ëª¨ë“  ê·¸ë£¹ì´ ë§ë‹¤ë©´ ë‹¤ìŒ Rowë¥¼ ì½ì–´ì„œ ë°˜ë³µí•œë‹¤ */
             if ( sAllMatched == ID_TRUE )
             {
                 sOrgRow = sSearchRow = sDataPlan->mtrTuple->row;
@@ -2208,8 +2208,8 @@ IDE_RC qmnROLL::doItNextSortMTR( qcTemplate * aTemplate,
 
                 if ( sSearchRow == NULL )
                 {
-                    /* µ¥ÀÌÅÍ°¡ Á¸Àç ÇÏÁö ¾Ê´Â´Ù¸é groupStatus¸¦ ¸ğµÎ not matched·Î ¸¸µé¾î
-                     * ¸ğµç ±×·ìÀÇ µ¥ÀÌÅÍ¸¦ ¿Ã·Áº¸³»°Ô ÇÑ´Ù.
+                    /* ë°ì´í„°ê°€ ì¡´ì¬ í•˜ì§€ ì•ŠëŠ”ë‹¤ë©´ groupStatusë¥¼ ëª¨ë‘ not matchedë¡œ ë§Œë“¤ì–´
+                     * ëª¨ë“  ê·¸ë£¹ì˜ ë°ì´í„°ë¥¼ ì˜¬ë ¤ë³´ë‚´ê²Œ í•œë‹¤.
                      */
                     sDataPlan->isDataNone = ID_TRUE;
                     sDataPlan->groupIndex = 1;
@@ -2236,7 +2236,7 @@ IDE_RC qmnROLL::doItNextSortMTR( qcTemplate * aTemplate,
             }
             else
             {
-                /* [0] ¹ø ±×·ì¿¡ ´ë´çÇÏ´Â Aggregation³ëµå¸¦ ÁöÁ¤ÈÄ¿¡ ³ª°£´Ù */
+                /* [0] ë²ˆ ê·¸ë£¹ì— ëŒ€ë‹¹í•˜ëŠ” Aggregationë…¸ë“œë¥¼ ì§€ì •í›„ì— ë‚˜ê°„ë‹¤ */
                 sDataPlan->needCopy   = ID_TRUE;
                 sDataPlan->groupIndex = 1;
 
@@ -2254,8 +2254,8 @@ IDE_RC qmnROLL::doItNextSortMTR( qcTemplate * aTemplate,
     }
     else
     {
-        /* µ¥ÀÌÅÍ°¡ Á¸Àç ÇÏÁö ¾Ê´Â´Ù¸é groupStatus¸¦ ¸ğµÎ not matched·Î ¸¸µé¾î
-         * ¸ğµç ±×·ìÀÇ µ¥ÀÌÅÍ¸¦ ¿Ã·Áº¸³»°Ô ÇÑ´Ù.
+        /* ë°ì´í„°ê°€ ì¡´ì¬ í•˜ì§€ ì•ŠëŠ”ë‹¤ë©´ groupStatusë¥¼ ëª¨ë‘ not matchedë¡œ ë§Œë“¤ì–´
+         * ëª¨ë“  ê·¸ë£¹ì˜ ë°ì´í„°ë¥¼ ì˜¬ë ¤ë³´ë‚´ê²Œ í•œë‹¤.
          */
         sDataPlan->isDataNone = ID_TRUE;
         sDataPlan->groupIndex = 1;
@@ -2297,8 +2297,8 @@ IDE_RC qmnROLL::doItNextSortMTR( qcTemplate * aTemplate,
 /**
  * valueTempStore
  *
- *  µ¥ÀÌºíÀÌ ¸Ş¸ğ¸®ÀÌ°í »óÀ§¿¡¼­ Sort³ª Window Sort¿Í °°ÀÌ ¸Ş¸ğ¸® Æ÷ÀÎÅÍ¸¦ ½×¾Æ¼­ ÀÛ¾÷À» ÇÏ´Â
- *  °æ¿ì¿¡ ±âÁ¸ ·ÎÁ÷À» µ¿ÀÛ½ÃÄÑ »õ·Î¿î Temp¿¡ ÀúÀåÇÑ´Ù.
+ *  ë°ì´ë¸”ì´ ë©”ëª¨ë¦¬ì´ê³  ìƒìœ„ì—ì„œ Sortë‚˜ Window Sortì™€ ê°™ì´ ë©”ëª¨ë¦¬ í¬ì¸í„°ë¥¼ ìŒ“ì•„ì„œ ì‘ì—…ì„ í•˜ëŠ”
+ *  ê²½ìš°ì— ê¸°ì¡´ ë¡œì§ì„ ë™ì‘ì‹œì¼œ ìƒˆë¡œìš´ Tempì— ì €ì¥í•œë‹¤.
  */
 IDE_RC qmnROLL::valueTempStore( qcTemplate * aTemplate,
                                 qmnPlan    * aPlan )
@@ -2401,8 +2401,8 @@ IDE_RC qmnROLL::valueTempStore( qcTemplate * aTemplate,
 /**
  * doItFirstValeTempMTR
  *
- *  µ¥ÀÌºíÀÌ ¸Ş¸ğ¸®ÀÌ°í »óÀ§¿¡¼­ Sort³ª Window Sort¿Í °°ÀÌ ¸Ş¸ğ¸® Æ÷ÀÎÅÍ¸¦ ½×¾Æ¼­ ÀÛ¾÷À» ÇÏ´Â
- *  °æ¿ì¿¡ ±âÁ¸ ·ÎÁ÷À» µ¿ÀÛ½ÃÄÑ »õ·Î¿î Memory Temp¿¡ ÀúÀå½ÃÅ°°í ÀÌ¶§Temp¿¡¼­ Ã¹¹ø Â° Row¸¦ ¾ò´Â´Ù.
+ *  ë°ì´ë¸”ì´ ë©”ëª¨ë¦¬ì´ê³  ìƒìœ„ì—ì„œ Sortë‚˜ Window Sortì™€ ê°™ì´ ë©”ëª¨ë¦¬ í¬ì¸í„°ë¥¼ ìŒ“ì•„ì„œ ì‘ì—…ì„ í•˜ëŠ”
+ *  ê²½ìš°ì— ê¸°ì¡´ ë¡œì§ì„ ë™ì‘ì‹œì¼œ ìƒˆë¡œìš´ Memory Tempì— ì €ì¥ì‹œí‚¤ê³  ì´ë•ŒTempì—ì„œ ì²«ë²ˆ ì§¸ Rowë¥¼ ì–»ëŠ”ë‹¤.
  */
 IDE_RC qmnROLL::doItFirstValueTempMTR( qcTemplate * aTemplate,
                                        qmnPlan    * aPlan,
@@ -2443,8 +2443,8 @@ IDE_RC qmnROLL::doItFirstValueTempMTR( qcTemplate * aTemplate,
 /**
  * doItNextValueTempMTR
  *
- *  µ¥ÀÌºíÀÌ ¸Ş¸ğ¸®ÀÌ°í »óÀ§¿¡¼­ Sort³ª Window Sort¿Í °°ÀÌ ¸Ş¸ğ¸® Æ÷ÀÎÅÍ¸¦ ½×¾Æ¼­ ÀÛ¾÷À» ÇÏ´Â
- *  °æ¿ì¿¡ ±âÁ¸ ·ÎÁ÷À» µ¿ÀÛ½ÃÄÑ »õ·Î¿î Memory Temp¿¡ ÀúÀå½ÃÅ°°í ÀÌ¶§Temp¿¡¼­ ´Ù Â° Row¸¦ ¾ò´Â´Ù.
+ *  ë°ì´ë¸”ì´ ë©”ëª¨ë¦¬ì´ê³  ìƒìœ„ì—ì„œ Sortë‚˜ Window Sortì™€ ê°™ì´ ë©”ëª¨ë¦¬ í¬ì¸í„°ë¥¼ ìŒ“ì•„ì„œ ì‘ì—…ì„ í•˜ëŠ”
+ *  ê²½ìš°ì— ê¸°ì¡´ ë¡œì§ì„ ë™ì‘ì‹œì¼œ ìƒˆë¡œìš´ Memory Tempì— ì €ì¥ì‹œí‚¤ê³  ì´ë•ŒTempì—ì„œ ë‹¤ ì§¸ Rowë¥¼ ì–»ëŠ”ë‹¤.
  */
 IDE_RC qmnROLL::doItNextValueTempMTR( qcTemplate * aTemplate,
                                       qmnPlan    * aPlan,
@@ -2544,7 +2544,7 @@ IDE_RC qmnROLL::printPlan( qcTemplate   * aTemplate,
     }
 
     //----------------------------
-    // Cost Ãâ·Â
+    // Cost ì¶œë ¥
     //----------------------------
     qmn::printCost( aString,
                     sCodePlan->plan.qmgAllCost );

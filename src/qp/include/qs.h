@@ -45,7 +45,7 @@ enum qsVariableType
     QS_PRIM_TYPE,
     QS_ROW_TYPE,
     QS_COL_TYPE,
-    QS_UD_TYPE,    // PROJ-1075 record/array typeÃß°¡.
+    QS_UD_TYPE,    // PROJ-1075 record/array typeì¶”ê°€.
     QS_RECORD_TYPE,
     QS_ASSOCIATIVE_ARRAY_TYPE,
     QS_REF_CURSOR_TYPE
@@ -68,8 +68,8 @@ typedef smOID qsOID;
 #define     QS_PKG_VARIABLE_ID     ( ID_UINT_MAX )
 
 /* PROJ-2586 PSM Parameters and return without precision
-   char typeÀÇ default precision¿¡ ´ëÇØ ±âÁ¸°ú µ¿ÀÏÇÑ ºñÀ²·Î
-   bit¿Í byteÀÇ precisionÀÇ default precision °áÁ¤ */
+   char typeì˜ default precisionì— ëŒ€í•´ ê¸°ì¡´ê³¼ ë™ì¼í•œ ë¹„ìœ¨ë¡œ
+   bitì™€ byteì˜ precisionì˜ default precision ê²°ì • */
 #define   QS_BIT_PRECISION_DEFAULT      ( 2 * QCU_PSM_CHAR_DEFAULT_PRECISION )
 #define   QS_VARBIT_PRECISION_DEFAULT   ( QS_BIT_PRECISION_DEFAULT )
 #define   QS_BYTE_PRECISION_DEFAULT      ( QCU_PSM_CHAR_DEFAULT_PRECISION )
@@ -121,7 +121,7 @@ typedef struct qsExecParseTree
     idBool                  isDeterministic;
     
     UInt                    userID;
-    /* procedure, function, package specÀÇ OID */
+    /* procedure, function, package specì˜ OID */
     qsOID                   procOID;
     /* BUG-38720 package body OID */
     qsOID                   pkgBodyOID;     

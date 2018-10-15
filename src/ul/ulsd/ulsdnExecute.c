@@ -431,7 +431,7 @@ void ulsdDoCallback( ulsdFuncCallback *aCallback )
             aCallback->mDbc->mShardDbcCxt.mCallback = aCallback->mNext;
         }
 
-        /* call depth¸¦ Á¦ÇÑÇÑ´Ù. */
+        /* call depthë¥¼ ì œí•œí•œë‹¤. */
         if ( aCallback->mCount % ULSD_CALLBACK_DEPTH_MAX == 0 )
         {
             if ( aCallback->mStmt != NULL )
@@ -596,7 +596,7 @@ SQLRETURN ulsdGetResultCallback( acp_uint32_t      aIndex,
 
             if ( ( sRet == (SQLRETURN)(-1111) ) && ( aReCall == 1 ) )
             {
-                /* ÀÌÀü callback ÀÇ error ·Î ÀÎÇØ ¼öÇàÇÏÁö ¾ÊÀº °æ¿ì Àç½Ãµµ */
+                /* ì´ì „ callback ì˜ error ë¡œ ì¸í•´ ìˆ˜í–‰í•˜ì§€ ì•Šì€ ê²½ìš° ìž¬ì‹œë„ */
                 ulsdReDoCallback( sCallback );
                 sRet = sCallback->mRet;
             }
@@ -623,7 +623,7 @@ void ulsdRemoveCallback( ulsdFuncCallback *aCallback )
 
     while ( sCallback != NULL )
     {
-        /* ÃÊ±âÈ­ */
+        /* ì´ˆê¸°í™” */
         if ( sCallback->mStmt != NULL )
         {
             sCallback->mStmt->mShardStmtCxt.mCallback = NULL;

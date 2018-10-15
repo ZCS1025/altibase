@@ -29,10 +29,10 @@ typedef enum ulnDescAllocType
 /*
  * ulnStmtAssociatedWithDesc
  *
- * SQLFreeHandle() ÇÔ¼ö·Î µğ½ºÅ©¸³ÅÍ¸¦ ÇØÁ¦ÇÒ ¶§
- * ±× µğ½ºÅ©¸³ÅÍ¸¦ APD ³ª ARD ·Î »ç¿ëÇÏ´ø statement ÀÇ APD È¤Àº ARD ¸¦
- * ¿øº¹ÇØ Áà¾ß ÇÑ´Ù.
- * ±×·±µ¥, µğ½ºÅ©¸³ÅÍ´Â ¿©·¯°³ÀÇ statement ÀÇ APD, ARD ·Î »ç¿ëµÉ ¼ö ÀÖ´Ù.
+ * SQLFreeHandle() í•¨ìˆ˜ë¡œ ë””ìŠ¤í¬ë¦½í„°ë¥¼ í•´ì œí•  ë•Œ
+ * ê·¸ ë””ìŠ¤í¬ë¦½í„°ë¥¼ APD ë‚˜ ARD ë¡œ ì‚¬ìš©í•˜ë˜ statement ì˜ APD í˜¹ì€ ARD ë¥¼
+ * ì›ë³µí•´ ì¤˜ì•¼ í•œë‹¤.
+ * ê·¸ëŸ°ë°, ë””ìŠ¤í¬ë¦½í„°ëŠ” ì—¬ëŸ¬ê°œì˜ statement ì˜ APD, ARD ë¡œ ì‚¬ìš©ë  ìˆ˜ ìˆë‹¤.
  */
 struct ulnStmtAssociatedWithDesc
 {
@@ -42,36 +42,36 @@ struct ulnStmtAssociatedWithDesc
 
 /*
  * ulnDescHeader
- *  - µğ½ºÅ©¸³ÅÍ ÀÚÃ¼¿¡ ´ëÇÑ Á¤º¸¸¦ °¡Áø´Ù.
- *  - ODBC ½ºÆå¿¡´Â µğ½ºÅ©¸³ÅÍ Çì´õ¶ó°í Ç¥ÇöµÈ´Ù.
+ *  - ë””ìŠ¤í¬ë¦½í„° ìì²´ì— ëŒ€í•œ ì •ë³´ë¥¼ ê°€ì§„ë‹¤.
+ *  - ODBC ìŠ¤í™ì—ëŠ” ë””ìŠ¤í¬ë¦½í„° í—¤ë”ë¼ê³  í‘œí˜„ëœë‹¤.
  */
 typedef struct ulnDescHeader
 {
     /*
      * BUGBUG:
-     * ÀÌ·¸°Ô ºĞ¸®ÇØ ºÁ¾ß º° º¼ÀÏ ¾ø´Âµ¥, Çò°¥¸®±â¸¸ ÇÏ°í.
-     * ±×³É ulnDesc ¾ÈÀ¸·Î Áı¾î³ÖÀ»±î?
+     * ì´ë ‡ê²Œ ë¶„ë¦¬í•´ ë´ì•¼ ë³„ ë³¼ì¼ ì—†ëŠ”ë°, í—·ê°ˆë¦¬ê¸°ë§Œ í•˜ê³ .
+     * ê·¸ëƒ¥ ulnDesc ì•ˆìœ¼ë¡œ ì§‘ì–´ë„£ì„ê¹Œ?
      */
     ulnDescAllocType  mAllocType;             /* SQL_DESC_ALLOC_TYPE.
-                                                 Explicit ÀÎÁö Implicit ÀÎÁöÀÇ ¿©ºÎ.
+                                                 Explicit ì¸ì§€ Implicit ì¸ì§€ì˜ ì—¬ë¶€.
                                                  ULN_DESC_ALLOCTYPE_IMPLICIT(SQL_DESC_ALLOC_AUTO)
                                                  ULN_DESC_ALLOCTYPE_IMPLICIT(SQL_DESC_ALLOC_USER) */
 
     ulvULen          *mRowsProcessedPtr;      /* SQL_DESC_ROWS_PROCESSED_PTR */
     acp_uint16_t     *mArrayStatusPtr;        /* SQL_DESC_ARRAY_STATUS_PTR */
-    // fix BUG-20745 BIND_OFFSET_PTR Áö¿ø
+    // fix BUG-20745 BIND_OFFSET_PTR ì§€ì›
     ulvULen          *mBindOffsetPtr;         /* SQL_DESC_BIND_OFFSET_PTR */
 
     acp_uint32_t      mArraySize;             /* SQL_DESC_ARRAY_SIZE.
-                                                 Array Binding ½Ã Array ÀÇ °¹¼ö */
+                                                 Array Binding ì‹œ Array ì˜ ê°¯ìˆ˜ */
 
     acp_uint32_t      mBindType;              /* SQL_DESC_BIND_TYPE
-                                                 SQL_BIND_BY_COLUMN È¤Àº row °¹¼ö. */
+                                                 SQL_BIND_BY_COLUMN í˜¹ì€ row ê°¯ìˆ˜. */
 
     /*
-     * »ç¿ëÀÚ°¡ ¹ÙÀÎµåÇÑ ÄÃ·³ È¤Àº ÆÄ¶ó¹ÌÅÍÀÇ ÀÎµ¦½º Á¤º¸¸¦ °ü¸®ÇÏ±â À§ÇÑ ¸â¹öµé.
+     * ì‚¬ìš©ìê°€ ë°”ì¸ë“œí•œ ì»¬ëŸ¼ í˜¹ì€ íŒŒë¼ë¯¸í„°ì˜ ì¸ë±ìŠ¤ ì •ë³´ë¥¼ ê´€ë¦¬í•˜ê¸° ìœ„í•œ ë©¤ë²„ë“¤.
      *
-     * ¾Æ·¡ÀÇ ¸â¹öµé¿¡ °ªÀ» ¼¼ÆÃÇÏ´Â ÀÏÀÌ ¹ß»ıÇÏ´Â ÇÔ¼öµé :
+     * ì•„ë˜ì˜ ë©¤ë²„ë“¤ì— ê°’ì„ ì„¸íŒ…í•˜ëŠ” ì¼ì´ ë°œìƒí•˜ëŠ” í•¨ìˆ˜ë“¤ :
      *      0. ulnDescInitialize()
      *      1. ulnDescAddDescRec()         : mHighestIndex, mLowestIndex
      *      2. ulnDescRemoveDescRec()      : mHighestIndex, mLowestIndex
@@ -86,26 +86,26 @@ struct ulnDesc
 
     ulnDescHeader  mHeader;
 
-    acp_uint32_t   mInitialSPIndex;        /* ÃÖÃÊ¿¡ Desc °¡ »ı¼ºµÇ¾úÀ» ¶§ ÂïÀº SP ÀÇ ÀÎµ¦½º.
-                                              ¸ğµç ¹ÙÀÎµù Á¤º¸¸¦ ¾ø¾Ù·Á¸é ÀÌ ½ÃÁ¡À¸·Î
-                                              freetoSP ÇÏ¸é µÈ´Ù. */
+    acp_uint32_t   mInitialSPIndex;        /* ìµœì´ˆì— Desc ê°€ ìƒì„±ë˜ì—ˆì„ ë•Œ ì°ì€ SP ì˜ ì¸ë±ìŠ¤.
+                                              ëª¨ë“  ë°”ì¸ë”© ì •ë³´ë¥¼ ì—†ì•¨ë ¤ë©´ ì´ ì‹œì ìœ¼ë¡œ
+                                              freetoSP í•˜ë©´ ëœë‹¤. */
 
-    acp_list_t     mAssociatedStmtList;    /* ulnStmtAssociatedWithDesc µéÀÇ ¸®½ºÆ®ÀÌ´Ù. */
+    acp_list_t     mAssociatedStmtList;    /* ulnStmtAssociatedWithDesc ë“¤ì˜ ë¦¬ìŠ¤íŠ¸ì´ë‹¤. */
 
     acp_uint32_t   mDescRecArraySize;
     ulnDescRec   **mDescRecArray;
-    acp_list_t     mDescRecList;           /* ulnDescRec µéÀÇ ¸®½ºÆ® */
-    acp_uint16_t   mDescRecCount;          /* mDescRecList ¿¡ ÀÖ´Â ulnDescRec ÀÇ °¹¼ö */
+    acp_list_t     mDescRecList;           /* ulnDescRec ë“¤ì˜ ë¦¬ìŠ¤íŠ¸ */
+    acp_uint16_t   mDescRecCount;          /* mDescRecList ì— ìˆëŠ” ulnDescRec ì˜ ê°¯ìˆ˜ */
 
-    acp_list_t     mPDContextList;         /* È°¼ºÈ­µÈ PDContext µéÀÇ ¸®½ºÆ® */
+    acp_list_t     mPDContextList;         /* í™œì„±í™”ëœ PDContext ë“¤ì˜ ë¦¬ìŠ¤íŠ¸ */
 
-    /* BUG-44858 DescRec¸¦ ÀçÈ°¿ëÇÏÀÚ */
-    acp_list_t     mFreeDescRecList;       /* FreeµÈ ulnDescRec µéÀÇ ¸®½ºÆ® */
+    /* BUG-44858 DescRecë¥¼ ì¬í™œìš©í•˜ì */
+    acp_list_t     mFreeDescRecList;       /* Freeëœ ulnDescRec ë“¤ì˜ ë¦¬ìŠ¤íŠ¸ */
 
     /*
-     * PROJ-1697: SQLSetDescField or SQLSetDescRec¿¡¼­ DescRecÀ» ¼öÁ¤ÇÒ °æ¿ì,
-     * ÀÌ¸¦ stmt¿¡ ¹İ¿µÇÏ±â À§ÇÔ. ¸¸¾à SQLCopyDesc°¡ ±¸ÇöµÈ´Ù¸é mStmt´Â
-     * Á¦°ÅµÇ¾î¾ß ÇÑ´Ù.
+     * PROJ-1697: SQLSetDescField or SQLSetDescRecì—ì„œ DescRecì„ ìˆ˜ì •í•  ê²½ìš°,
+     * ì´ë¥¼ stmtì— ë°˜ì˜í•˜ê¸° ìœ„í•¨. ë§Œì•½ SQLCopyDescê°€ êµ¬í˜„ëœë‹¤ë©´ mStmtëŠ”
+     * ì œê±°ë˜ì–´ì•¼ í•œë‹¤.
      */
     void           *mStmt;
 };
@@ -161,7 +161,7 @@ ACP_INLINE void ulnDescSetBindType(ulnDesc *aDesc, acp_uint32_t aType)
     aDesc->mHeader.mBindType = aType;
 }
 
-// fix BUG-20745 BIND_OFFSET_PTR Áö¿ø
+// fix BUG-20745 BIND_OFFSET_PTR ì§€ì›
 ACP_INLINE void ulnDescSetBindOffsetPtr(ulnDesc *aDesc, ulvULen *aOffsetPtr)
 {
     aDesc->mHeader.mBindOffsetPtr = aOffsetPtr;
@@ -177,7 +177,7 @@ ACP_INLINE ulvULen ulnDescGetBindOffsetValue(ulnDesc *aDesc)
     ulvULen *sOffsetPtr = NULL;
 
     /*
-     * ¸¸¾à »ç¿ëÀÚ°¡ Bind Offset À» ÁöÁ¤ÇÏ¿´´Ù¸é ±× °ªÀ» ¾ò¾î¿Â´Ù.
+     * ë§Œì•½ ì‚¬ìš©ìê°€ Bind Offset ì„ ì§€ì •í•˜ì˜€ë‹¤ë©´ ê·¸ ê°’ì„ ì–»ì–´ì˜¨ë‹¤.
      */
     sOffsetPtr = aDesc->mHeader.mBindOffsetPtr;
 
@@ -221,10 +221,10 @@ ACP_INLINE void ulnDescSetRowsProcessedPtrValue(ulnDesc *aDesc, ulvULen aValue)
     if (aDesc->mHeader.mRowsProcessedPtr != NULL)
     {
         // CASE-21536
-        // Ç¥ÁØÀº SQLULENÀÌ ¸ÂÀ¸³ª °í°´ÀÌ »ç¿ëÇÏ´Â ÇÁ·Î±×·¥ÀÌ SQLUINTEGER¸¦ »ç¿ëÇÏ°í ÀÖÀ¸¸ç,
-        // ÇØ´ç ÇÁ·Î±×·¥Àº ´Ù¸¥ DB¿Í ¿¬µ¿ÀÌ Àß µÇ´Â »óÈ²ÀÌ¾î¼­, °á±¹ ¿ì¸®°¡ ÀÓ½Ã·Î ÄÚµå ¼öÁ¤À» ÇØ ¹èÆ÷ÇÔ.
-        // ÄÚµå´Â Ç¥ÁØ¿¡ ¸Âµµ·Ï À¯ÁöµÇ°í ÀÖÀ¸³ª À§ °í°´ÀÌ »õ·Î¿î ÆĞÅ°Áö¸¦ ¿äÃ»ÇÏ¸é
-        // ¾Æ·¡ ÄÚµå ÁÖ¼®À» ´ÙÀ½°ú °°ÀÌ º¯°æÇØ ÄÄÆÄÀÏ ÇØ¾ß ÇÔ.
+        // í‘œì¤€ì€ SQLULENì´ ë§ìœ¼ë‚˜ ê³ ê°ì´ ì‚¬ìš©í•˜ëŠ” í”„ë¡œê·¸ë¨ì´ SQLUINTEGERë¥¼ ì‚¬ìš©í•˜ê³  ìˆìœ¼ë©°,
+        // í•´ë‹¹ í”„ë¡œê·¸ë¨ì€ ë‹¤ë¥¸ DBì™€ ì—°ë™ì´ ì˜ ë˜ëŠ” ìƒí™©ì´ì–´ì„œ, ê²°êµ­ ìš°ë¦¬ê°€ ì„ì‹œë¡œ ì½”ë“œ ìˆ˜ì •ì„ í•´ ë°°í¬í•¨.
+        // ì½”ë“œëŠ” í‘œì¤€ì— ë§ë„ë¡ ìœ ì§€ë˜ê³  ìˆìœ¼ë‚˜ ìœ„ ê³ ê°ì´ ìƒˆë¡œìš´ íŒ¨í‚¤ì§€ë¥¼ ìš”ì²­í•˜ë©´
+        // ì•„ë˜ ì½”ë“œ ì£¼ì„ì„ ë‹¤ìŒê³¼ ê°™ì´ ë³€ê²½í•´ ì»´íŒŒì¼ í•´ì•¼ í•¨.
         // *((acp_uint32_t*)(aDesc->mHeader.mRowsProcessedPtr)) = (acp_uint32_t)aValue;
         *(aDesc->mHeader.mRowsProcessedPtr) = aValue;
     }
@@ -241,7 +241,7 @@ ACP_INLINE acp_uint32_t ulnDescGetArraySize(ulnDesc *aDesc)
 }
 
 /*
- * Descriptor ¿¡ ¹ÙÀÎµåµÇ¾î ÀÖ´Â DescRec µéÀÇ ÀÎµ¦½º¿Í °ü·ÃµÈ ÇÔ¼öµé
+ * Descriptor ì— ë°”ì¸ë“œë˜ì–´ ìˆëŠ” DescRec ë“¤ì˜ ì¸ë±ìŠ¤ì™€ ê´€ë ¨ëœ í•¨ìˆ˜ë“¤
  */
 acp_uint16_t ulnDescFindHighestBoundIndex(ulnDesc *aDesc, acp_uint16_t aCurrentHighestBoundIndex);
 
@@ -268,7 +268,7 @@ ACP_INLINE ulnDescRec *ulnDescGetDescRec(ulnDesc *aDesc, acp_uint16_t aIndex)
 }
 
 /*
- * DescRecArray °ü·Ã ÇÔ¼öµé
+ * DescRecArray ê´€ë ¨ í•¨ìˆ˜ë“¤
  */
 ulnDescRec **ulnDescGetDescRecArrayEntry(ulnDesc *aDesc, acp_uint16_t aIndex);
 
@@ -283,7 +283,7 @@ void ulnDescRemovePDContext(ulnDesc *aDesc, ulnPDContext *aPDContext);
 void ulnDescRemoveAllPDContext(ulnDesc *aDesc);
 
 /*
- * StatusArray °ü·Ã ÇÔ¼öµé
+ * StatusArray ê´€ë ¨ í•¨ìˆ˜ë“¤
  */
 #if 0
 ACI_RC ulnDescSetStatusArrayElementValue(ulnDessc, *aDesc, acp_uint32_t aRowNumber, acp_uint16_t aValue);

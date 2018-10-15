@@ -89,8 +89,8 @@ public class InsertTestBit extends AltibaseTestCase
         assertEquals(1, sStmt.executeUpdate());
         assertExecuteScalar("101");
 
-        // ColumnInfo¸¦ ÃÊ±âÈ­ÇÏ±â À§ÇØ¼­ ´Ù¸¥ Å¸ÀÔÀ¸·Î ÇÑ¹ø set ÇÑ´Ù.
-        // Áö¿øÇÏÁö ¾Ê´Â Å¸ÀÔÀÌ¹Ç·Î ´ç¿¬È÷ ¿¡·¯°¡ ¶³¾îÁø´Ù.
+        // ColumnInfoë¥¼ ì´ˆê¸°í™”í•˜ê¸° ìœ„í•´ì„œ ë‹¤ë¥¸ íƒ€ì…ìœ¼ë¡œ í•œë²ˆ set í•œë‹¤.
+        // ì§€ì›í•˜ì§€ ì•ŠëŠ” íƒ€ì…ì´ë¯€ë¡œ ë‹¹ì—°íˆ ì—ëŸ¬ê°€ ë–¨ì–´ì§„ë‹¤.
         sStmt.setObject(1, new java.sql.Date(1));
         try
         {
@@ -101,7 +101,7 @@ public class InsertTestBit extends AltibaseTestCase
         {
         }
 
-        // BIT Å¸ÀÔ¿ë ColumnInfo¸¦ ´Ù½Ã ¸¸µå¹Ç·Î PrecisionÀÌ 0À¸·Î ÃÊ±âÈ­µÇ¾îÀÖ´Ù.
+        // BIT íƒ€ì…ìš© ColumnInfoë¥¼ ë‹¤ì‹œ ë§Œë“œë¯€ë¡œ Precisionì´ 0ìœ¼ë¡œ ì´ˆê¸°í™”ë˜ì–´ìˆë‹¤.
         sStmt.setObject(1, "1", Types.BIT);
         assertEquals(1, sStmt.executeUpdate());
         assertExecuteScalar("100");

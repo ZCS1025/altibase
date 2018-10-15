@@ -30,12 +30,12 @@ ACI_RC ulnBindColBody(ulnFnContext *aFnContext,
     ulnMetaInitialize(&aDescRecArd->mMeta);
 
     /*
-     * BUGBUG : ¾Æ¹«·± ÀÇ¹Ì°¡ ¾øÁö¸¸ ÃÊ±âÈ­ÀÇ ÀÇ¹Ì·Î ÀÏ´Ü ÇØ µÎÀÚ.
+     * BUGBUG : ì•„ë¬´ëŸ° ì˜ë¯¸ê°€ ì—†ì§€ë§Œ ì´ˆê¸°í™”ì˜ ì˜ë¯¸ë¡œ ì¼ë‹¨ í•´ ë‘ìž.
      */
     ulnDescRecSetParamInOut(aDescRecArd, ULN_PARAM_INOUT_TYPE_MAX);
 
     /*
-     * »ç¿ëÀÚ º¯¼öÀÇ Å¸ÀÔÀ» ¹¦»çÇÏ´Â meta ±¸Á¶Ã¼ ÀÛ¾÷
+     * ì‚¬ìš©ìž ë³€ìˆ˜ì˜ íƒ€ìž…ì„ ë¬˜ì‚¬í•˜ëŠ” meta êµ¬ì¡°ì²´ ìž‘ì—…
      */
     ulnMetaBuild4ArdApd(&aDescRecArd->mMeta,
                         ulnTypeMap_SQLC_CTYPE(aTargetType),
@@ -47,14 +47,14 @@ ACI_RC ulnBindColBody(ulnFnContext *aFnContext,
     ulnMetaSetScale(&aDescRecArd->mMeta, ULN_NUMERIC_UNDEF_SCALE);
 
     /*
-     * »ç¿ëÀÚ º¯¼öÀÇ ¸Þ¸ð¸®¸¦ ¹¦»çÇÏ´Â desc rec ¸â¹ö ¼¼ÆÃ
+     * ì‚¬ìš©ìž ë³€ìˆ˜ì˜ ë©”ëª¨ë¦¬ë¥¼ ë¬˜ì‚¬í•˜ëŠ” desc rec ë©¤ë²„ ì„¸íŒ…
      */
     ulnDescRecSetDataPtr(aDescRecArd, aTargetValuePtr);
     ulnDescRecSetOctetLengthPtr(aDescRecArd, aStrLenOrIndPtr);
     ulnDescRecSetIndicatorPtr(aDescRecArd, aStrLenOrIndPtr);
 
     /*
-     * ARD record ¸¦ ARD¿¡ ¸Å´Þ±â
+     * ARD record ë¥¼ ARDì— ë§¤ë‹¬ê¸°
      */
     ACI_TEST_RAISE(ulnDescAddDescRec(sStmt->mAttrArd, aDescRecArd) != ACI_SUCCESS,
                    LABEL_NOT_ENOUGH_MEM);
@@ -87,9 +87,9 @@ static ACI_RC ulnBindColCheckArgs(ulnFnContext *aContext,
                    LABEL_INVALID_SQL_C_TYPE);
 
     /*
-     * Note : MS ODBC ¿¡¼­´Â BufferLength °¡ 0 ÀÌ¶óµµ »ó°ü ¾øÁö¸¸,
-     *        ±¸Çö»ó 0 ÀÌ¸é ¹®Á¦°¡ ½É°¢ÇØÁø´Ù. °Ô´Ù°¡ MS ODBC ¿¡¼­µµ X/Open CLI ¿¡ ¸ÂÃá
-     *        µå¶óÀÌ¹öÀÇ °æ¿ì¿¡´Â 0 À» ÁÖ¸é ¾ÈµÈ´Ù°í Àû¾î µÎ¾ú´Ù.
+     * Note : MS ODBC ì—ì„œëŠ” BufferLength ê°€ 0 ì´ë¼ë„ ìƒê´€ ì—†ì§€ë§Œ,
+     *        êµ¬í˜„ìƒ 0 ì´ë©´ ë¬¸ì œê°€ ì‹¬ê°í•´ì§„ë‹¤. ê²Œë‹¤ê°€ MS ODBC ì—ì„œë„ X/Open CLI ì— ë§žì¶˜
+     *        ë“œë¼ì´ë²„ì˜ ê²½ìš°ì—ëŠ” 0 ì„ ì£¼ë©´ ì•ˆëœë‹¤ê³  ì ì–´ ë‘ì—ˆë‹¤.
      */
     ACI_TEST_RAISE((aTargetType == SQL_C_CHAR && aBufferLength <= ULN_vLEN(0)) ||
                    (aTargetType == SQL_C_BINARY && aBufferLength <= ULN_vLEN(0)),
@@ -122,13 +122,13 @@ static ACI_RC ulnBindColCheckArgs(ulnFnContext *aContext,
 /**
  * ulnBindCol.
  *
- * SQLBindCol() ÇÔ¼ö¿Í 1:1 ·Î ¸ÅÇÎµÇ´Â ÇÔ¼ö.
+ * SQLBindCol() í•¨ìˆ˜ì™€ 1:1 ë¡œ ë§¤í•‘ë˜ëŠ” í•¨ìˆ˜.
  *
  * @param[in] aColumnNumber
- *  ODBC 3.0 ÀÇ Á¤ÀÇ : Number of the result set column to bind.
- *  0 ºÎÅÍ ½ÃÀÛµÈ´Ù. 0 Àº ºÏ¸¶Å© ÄÃ·³ÀÌ´Ù.
- *  ¸¸¾à ºÏ¸¶Å©°¡ »ç¿ëµÇÁö ¾ÊÀ¸¸é, Áï, SQL_ATTR_USE_BOOKMARKS Statement Attribute °¡
- *  SQL_UB_OFF ÀÌ¸é column number ´Â 1 ºÎÅÍ ½ÃÀÛµÈ´Ù.
+ *  ODBC 3.0 ì˜ ì •ì˜ : Number of the result set column to bind.
+ *  0 ë¶€í„° ì‹œìž‘ëœë‹¤. 0 ì€ ë¶ë§ˆí¬ ì»¬ëŸ¼ì´ë‹¤.
+ *  ë§Œì•½ ë¶ë§ˆí¬ê°€ ì‚¬ìš©ë˜ì§€ ì•Šìœ¼ë©´, ì¦‰, SQL_ATTR_USE_BOOKMARKS Statement Attribute ê°€
+ *  SQL_UB_OFF ì´ë©´ column number ëŠ” 1 ë¶€í„° ì‹œìž‘ëœë‹¤.
  * @param[in] aTargetType
  *  The identifier of the C data type of the *TargetValuePtr buffer.
  */
@@ -151,7 +151,7 @@ SQLRETURN ulnBindCol(ulnStmt      *aStmt,
     ULN_FLAG_UP(sNeedExit);
 
     sPtContext = &(aStmt->mParentDbc->mPtContext);
-    /* BUG-44125 [mm-cli] IPCDA ¸ðµå Å×½ºÆ® Áß hang - iloader CLOB */
+    /* BUG-44125 [mm-cli] IPCDA ëª¨ë“œ í…ŒìŠ¤íŠ¸ ì¤‘ hang - iloader CLOB */
     ACI_TEST_RAISE( (aTargetType == SQL_C_BLOB_LOCATOR ||
                      aTargetType == SQL_C_CLOB_LOCATOR ||
                      aTargetType == SQL_CLOB           ||
@@ -164,7 +164,7 @@ SQLRETURN ulnBindCol(ulnStmt      *aStmt,
                                  aTargetType,
                                  aBufferLength) != ACI_SUCCESS);
 
-    /* ARD record ÁØºñ*/
+    /* ARD record ì¤€ë¹„*/
     ACI_TEST_RAISE(ulnBindArrangeNewDescRec(aStmt->mAttrArd, aColumnNumber, &sDescRecArd)
                    != ACI_SUCCESS,
                    LABEL_NOT_ENOUGH_MEM);

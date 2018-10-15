@@ -32,7 +32,7 @@
 #include <sdcDef.h>
 #include <smiLegacyTrans.h>
 
-/* StmtÀÇ Cursor À¯Çü¿¡ µû¶ó Æ®·£Àè¼ÇÀÇ MinViewSCNµéÀ» °»½ÅÇÏ´Â ÇÔ¼öµéÀ» Á¤ÀÇÇÑ´Ù. */
+/* Stmtì˜ Cursor ìœ í˜•ì— ë”°ë¼ íŠ¸ëœì­ì…˜ì˜ MinViewSCNë“¤ì„ ê°±ì‹ í•˜ëŠ” í•¨ìˆ˜ë“¤ì„ ì •ì˜í•œë‹¤. */
 static smiTryUptTransViewSCNFunc
              gSmiTryUptTransViewSCNFuncs[ SMI_STATEMENT_CURSOR_MASK + 1 ] = {
     NULL,
@@ -42,10 +42,10 @@ static smiTryUptTransViewSCNFunc
 };
 
 /***********************************************************************
- * Description : Statement¸¦ BeginÇÑ´Ù.
+ * Description : Statementë¥¼ Beginí•œë‹¤.
  *
  * aParent - [IN] Parent Statement
- * aFlag   - [IN] Statement¼Ó¼º
+ * aFlag   - [IN] Statementì†ì„±
  *                1. SMI_STATEMENT_NORMAL | SMI_STATEMENT_UNTOUCHABLE
  *                2. SMI_STATEMENT_MEMORY_CURSOR | SMI_STATEMENT_DISK_CURSOR
  *                   | SMI_STATEMENT_ALL_CURSOR
@@ -71,8 +71,8 @@ IDE_RC smiStatement::begin( idvSQL       * aStatistics,
     else
     {
         mRoot  = aParent->mRoot;
-        /* BUG-17073: ÃÖ»óÀ§ Statement°¡ ¾Æ´Ñ Statment¿¡ ´ëÇØ¼­µµ
-         * Partial RollbackÀ» Áö¿øÇØ¾ß ÇÕ´Ï´Ù. */
+        /* BUG-17073: ìµœìƒìœ„ Statementê°€ ì•„ë‹Œ Statmentì— ëŒ€í•´ì„œë„
+         * Partial Rollbackì„ ì§€ì›í•´ì•¼ í•©ë‹ˆë‹¤. */
         mDepth = aParent->mDepth + 1;
 
         IDU_FIT_POINT_RAISE( "smiStatement::begin::ERR_MAX_DELPTH_LEVEL", ERR_MAX_DELPTH_LEVEL);
@@ -83,12 +83,12 @@ IDE_RC smiStatement::begin( idvSQL       * aStatistics,
 
     sTrans = (smxTrans*)aParent->mTrans->getTrans();
 
-    // PROJ-2199 SELECT func() FOR UPDATE Áö¿ø
-    // SMI_STATEMENT_FORUPDATE Ãß°¡
+    // PROJ-2199 SELECT func() FOR UPDATE ì§€ì›
+    // SMI_STATEMENT_FORUPDATE ì¶”ê°€
     if( ( ((aFlag & SMI_STATEMENT_MASK) == SMI_STATEMENT_NORMAL) ||
           ((aFlag & SMI_STATEMENT_MASK) == SMI_STATEMENT_FORUPDATE) )
         &&
-        // foreign key¿ëÀ¸·Î »ı¼ºÇÑ statement´Â normalÀÌ³ª cursor closeÀÌÈÄ »ı¼ºµÇ¹Ç·Î °Ë»çÇÒ ÇÊ¿ä°¡ ¾ø´Ù.
+        // foreign keyìš©ìœ¼ë¡œ ìƒì„±í•œ statementëŠ” normalì´ë‚˜ cursor closeì´í›„ ìƒì„±ë˜ë¯€ë¡œ ê²€ì‚¬í•  í•„ìš”ê°€ ì—†ë‹¤.
         ( (aFlag & SMI_STATEMENT_SELF_MASK) == SMI_STATEMENT_SELF_FALSE ) )
     {
         IDU_FIT_POINT_RAISE( "smiStatement::begin::ERR_CANT_BEGIN_UPDATE_STATEMENT", ERR_CANT_BEGIN_UPDATE_STATEMENT );
@@ -104,24 +104,24 @@ IDE_RC smiStatement::begin( idvSQL       * aStatistics,
                   != IDE_SUCCESS );
     }
 
-    /* BUG-15906: non-autocommit¸ğµå¿¡¼­ Select¿Ï·áÈÄ IS_LOCKÀÌ ÇØÁ¦µÇ¸é
-     * ÁÁ°Ú½À´Ï´Ù.
-     * Select StatementÀÏ¶§ LockÀ» ¾îµğ±îÁö Ç®¾î¾ß ÇÒÁö¸¦ °áÁ¤ÇÏ±â À§ÇØ
-     * TransactionÀÌ »ç¿ëÇÑ ¸¶Áö¸· Lock Sequence Number¸¦ mLockSequence¿¡
-     * ÀúÀåÇØ µĞ´Ù. */
+    /* BUG-15906: non-autocommitëª¨ë“œì—ì„œ Selectì™„ë£Œí›„ IS_LOCKì´ í•´ì œë˜ë©´
+     * ì¢‹ê² ìŠµë‹ˆë‹¤.
+     * Select Statementì¼ë•Œ Lockì„ ì–´ë””ê¹Œì§€ í’€ì–´ì•¼ í• ì§€ë¥¼ ê²°ì •í•˜ê¸° ìœ„í•´
+     * Transactionì´ ì‚¬ìš©í•œ ë§ˆì§€ë§‰ Lock Sequence Numberë¥¼ mLockSequenceì—
+     * ì €ì¥í•´ ë‘”ë‹¤. */
 
-    /* BUG-22639: Child Statement°¡ Á¾·á½Ã ÇØ´ç TransactionÀÇ ¸ğµç IS Lock
-     * ÀÌ ÇØÁ¦µË´Ï´Ù.
+    /* BUG-22639: Child Statementê°€ ì¢…ë£Œì‹œ í•´ë‹¹ Transactionì˜ ëª¨ë“  IS Lock
+     * ì´ í•´ì œë©ë‹ˆë‹¤.
      *
-     * ¸ğµç Statement°¡ end½Ã ISLock UnlockÀ» ½ÃµµÇÏ±â ¶§¹®¿¡ ¸ğµç Statement¿¡
-     * ´ëÇØ¼­ °ªÀ» ¼³Á¤ÇØ¾ß ÇÑ´Ù.
+     * ëª¨ë“  Statementê°€ endì‹œ ISLock Unlockì„ ì‹œë„í•˜ê¸° ë•Œë¬¸ì— ëª¨ë“  Statementì—
+     * ëŒ€í•´ì„œ ê°’ì„ ì„¤ì •í•´ì•¼ í•œë‹¤.
      * */
 
     mLockSlotSequence = smlLockMgr::getLastLockSequence( sTrans->getSlotID() );
 
-    /* Memory Table¶Ç´Â  Disk TableÀ» Á¢±ÙÇÏ´ÂÁö ¸ğµÎ Á¢±ÙÇÏ´ÂÁö¿¡
-     * ´ëÇÑ ÀÎÀÚ¸¦ Àü´ŞÇÏ¿© ÀÌ¿¡ µû¶ó Æ®·£Àè¼ÇÀÇ MemViewSCN,
-     * DskViewSCNÀ» °»½Å½ÃµµÇÑ´Ù. */
+    /* Memory Tableë˜ëŠ”  Disk Tableì„ ì ‘ê·¼í•˜ëŠ”ì§€ ëª¨ë‘ ì ‘ê·¼í•˜ëŠ”ì§€ì—
+     * ëŒ€í•œ ì¸ìë¥¼ ì „ë‹¬í•˜ì—¬ ì´ì— ë”°ë¼ íŠ¸ëœì­ì…˜ì˜ MemViewSCN,
+     * DskViewSCNì„ ê°±ì‹ ì‹œë„í•œë‹¤. */
     sTrans->allocViewSCN( aFlag, &sSCN );
 
     mTrans               = aParent->mTrans;
@@ -133,7 +133,7 @@ IDE_RC smiStatement::begin( idvSQL       * aStatistics,
     mNext->mPrev         = this;
 
     /* PROJ-1381 Fetch Across Commits
-     * Legacy Trans¸¦ Æ÷ÇÔÇÏ´Â ÀüÃ¼ stmt List */
+     * Legacy Transë¥¼ í¬í•¨í•˜ëŠ” ì „ì²´ stmt List */
     mAllPrev             = mParent;
     mAllNext             = mParent->mAllNext;
     mAllPrev->mAllNext   =
@@ -148,7 +148,7 @@ IDE_RC smiStatement::begin( idvSQL       * aStatistics,
     mSCN                 = sSCN;
     mTransID             = smxTrans::getTransID( sTrans );
 
-    //Statement Begin½Ã ÇöÀç TransactionÀÇ InfiniteSCN ÀúÀåÇÑ´Ù.
+    //Statement Beginì‹œ í˜„ì¬ Transactionì˜ InfiniteSCN ì €ì¥í•œë‹¤.
     mInfiniteSCN         = sTrans->getInfiniteSCN();
     mFlag                = aFlag;
     mOpenCursorCnt       = 0;
@@ -156,8 +156,8 @@ IDE_RC smiStatement::begin( idvSQL       * aStatistics,
     mParent->mChildStmtCnt++;
 
     /*
-     * [BUG-24187] RollbackµÉ statement´Â Internal CloseCurosr¸¦
-     * ¼öÇàÇÒ ÇÊ¿ä°¡ ¾ø½À´Ï´Ù.
+     * [BUG-24187] Rollbackë  statementëŠ” Internal CloseCurosrë¥¼
+     * ìˆ˜í–‰í•  í•„ìš”ê°€ ì—†ìŠµë‹ˆë‹¤.
      */
     mSkipCursorClose = ID_FALSE;
 
@@ -173,9 +173,9 @@ IDE_RC smiStatement::begin( idvSQL       * aStatistics,
 }
 
 /***********************************************************************
- * Description : Statement¸¦ Á¾·á ½ÃÅ²´Ù.
+ * Description : Statementë¥¼ ì¢…ë£Œ ì‹œí‚¨ë‹¤.
  *
- * aFlag - [IN] StatemnetÀÇ ¼º°ø ¿©ºÎ
+ * aFlag - [IN] Statemnetì˜ ì„±ê³µ ì—¬ë¶€
  *           - SMI_STATEMENT_RESULT_SUCCESS | SMI_STATEMENT_RESULT_FAILURE
  **********************************************************************/
 IDE_RC smiStatement::end( UInt aFlag )
@@ -192,8 +192,8 @@ IDE_RC smiStatement::end( UInt aFlag )
                     mCursors.mNext       != &mCursors,
                     ERR_CANT_END_STATEMENT_NOT_CLOSED_CURSOR );
 
-    // PROJ-2199 SELECT func() FOR UPDATE Áö¿ø
-    // SMI_STATEMENT_FORUPDATE Ãß°¡
+    // PROJ-2199 SELECT func() FOR UPDATE ì§€ì›
+    // SMI_STATEMENT_FORUPDATE ì¶”ê°€
     if( ( ((mFlag & SMI_STATEMENT_MASK ) == SMI_STATEMENT_NORMAL) ||
           ((mFlag & SMI_STATEMENT_MASK ) == SMI_STATEMENT_FORUPDATE)) &&
         ( (mFlag & SMI_STATEMENT_SELF_MASK) == SMI_STATEMENT_SELF_FALSE ) )
@@ -209,19 +209,19 @@ IDE_RC smiStatement::end( UInt aFlag )
         }
         else
         {
-            /* BUG-15906: Non-Autocommit¸ğµå¿¡¼­ Select¿Ï·áÈÄ IS_LOCKÀÌ
-             * ÇØÁ¦µÇ¸é ÁÁ°Ú½À´Ï´Ù. : Statement°¡ ³¡³¯¶§ ISLock¸¸À» ÇØÁ¦
-             * ÇÕ´Ï´Ù. */
+            /* BUG-15906: Non-Autocommitëª¨ë“œì—ì„œ Selectì™„ë£Œí›„ IS_LOCKì´
+             * í•´ì œë˜ë©´ ì¢‹ê² ìŠµë‹ˆë‹¤. : Statementê°€ ëë‚ ë•Œ ISLockë§Œì„ í•´ì œ
+             * í•©ë‹ˆë‹¤. */
             /*
              * BUG-21743
-             * Select ¿¬»ê¿¡¼­ User Temp TBS »ç¿ë½Ã TBS¿¡ LockÀÌ ¾ÈÇ®¸®´Â Çö»ó
+             * Select ì—°ì‚°ì—ì„œ User Temp TBS ì‚¬ìš©ì‹œ TBSì— Lockì´ ì•ˆí’€ë¦¬ëŠ” í˜„ìƒ
              */
             IDE_TEST( ((smxTrans *)mTrans->mTrans)->unlockSeveralLock( mLockSlotSequence )
                       != IDE_SUCCESS );
         }
 
-        /* Begin½Ã TransactionÀÇ Implicit SVP List¿¡ Ãß°¡µÈ Implicit
-         * SVP¸¦ Á¦°ÅÇÑ´Ù. */
+        /* Beginì‹œ Transactionì˜ Implicit SVP Listì— ì¶”ê°€ëœ Implicit
+         * SVPë¥¼ ì œê±°í•œë‹¤. */
         IDE_TEST( ((smxTrans *)mTrans->mTrans)->unsetImpSavepoint( mISavepoint )
                   != IDE_SUCCESS );
 
@@ -229,12 +229,12 @@ IDE_RC smiStatement::end( UInt aFlag )
     }
     else
     {
-        /* BUG-15906: Non-Autocommit¸ğµå¿¡¼­ Select¿Ï·áÈÄ IS_LOCKÀÌ
-         * ÇØÁ¦µÇ¸é ÁÁ°Ú½À´Ï´Ù. : Statement°¡ ³¡³¯¶§ ISLock¸¸À» ÇØÁ¦
-         * ÇÕ´Ï´Ù. */
+        /* BUG-15906: Non-Autocommitëª¨ë“œì—ì„œ Selectì™„ë£Œí›„ IS_LOCKì´
+         * í•´ì œë˜ë©´ ì¢‹ê² ìŠµë‹ˆë‹¤. : Statementê°€ ëë‚ ë•Œ ISLockë§Œì„ í•´ì œ
+         * í•©ë‹ˆë‹¤. */
         /*
          * BUG-21743
-         * Select ¿¬»ê¿¡¼­ User Temp TBS »ç¿ë½Ã TBS¿¡ LockÀÌ ¾ÈÇ®¸®´Â Çö»ó
+         * Select ì—°ì‚°ì—ì„œ User Temp TBS ì‚¬ìš©ì‹œ TBSì— Lockì´ ì•ˆí’€ë¦¬ëŠ” í˜„ìƒ
          */
         IDE_TEST( ((smxTrans *)mTrans->mTrans)->unlockSeveralLock( mLockSlotSequence )
                   != IDE_SUCCESS );
@@ -247,9 +247,9 @@ IDE_RC smiStatement::end( UInt aFlag )
                 (sFlag == SMI_STATEMENT_DISK_CURSOR) );
 
     /* BUG-41814 :
-     * Legacy Transaction commit ÀÌÈÄ statement ¸¦ ´İÀ»¶§,
-     * Legacy TransactionÀÇ OIDList¿¡ AgerÀÇ Á¢±ÙÀ» ¸·±â À§ÇØ
-     * MinViewSCN °»½ÅÀ» ÇÏÁö ¾Ê´Â´Ù. */
+     * Legacy Transaction commit ì´í›„ statement ë¥¼ ë‹«ì„ë•Œ,
+     * Legacy Transactionì˜ OIDListì— Agerì˜ ì ‘ê·¼ì„ ë§‰ê¸° ìœ„í•´
+     * MinViewSCN ê°±ì‹ ì„ í•˜ì§€ ì•ŠëŠ”ë‹¤. */
     if ( ( (smxTrans *)mTrans->mTrans )->mLegacyTransCnt == 0 )
     {
         gSmiTryUptTransViewSCNFuncs[sFlag](this);
@@ -277,8 +277,8 @@ IDE_RC smiStatement::end( UInt aFlag )
         ( mParent->mChildStmtCnt == 0 ) )
     {
         /* PROJ-1381 Fetch Across Commits
-         * Stmt°¡ Legacy¿¡ ¼ÓÇÏ°í, Legacy Trans¿¡ ¼ÓÇÑ ¸ğµç stmt¸¦
-         * ¿Ï·áÇßÀ¸¸é Legacy Trans¸¦ Á¦°ÅÇÑ´Ù. */
+         * Stmtê°€ Legacyì— ì†í•˜ê³ , Legacy Transì— ì†í•œ ëª¨ë“  stmtë¥¼
+         * ì™„ë£Œí–ˆìœ¼ë©´ Legacy Transë¥¼ ì œê±°í•œë‹¤. */
         IDE_TEST( smiLegacyTrans::removeLegacyTrans( mParent,
                                                      (void*)mTrans->mTrans )
                   != IDE_SUCCESS );
@@ -319,19 +319,19 @@ IDE_RC smiStatement::end( UInt aFlag )
 
 /***************************************************************************
  *
- * Description: Æ®·£Àè¼ÇÀÇ ÁöÁ¤µÈ Ä¿¼­Å¸ÀÔ¿¡ ÇØ´çÇÏ´Â Stmt Áß¿¡¼­ °¡Àå ÀÛÀº
- *              ViewSCNÀ» ±¸ÇÑ´Ù.
+ * Description: íŠ¸ëœì­ì…˜ì˜ ì§€ì •ëœ ì»¤ì„œíƒ€ì…ì— í•´ë‹¹í•˜ëŠ” Stmt ì¤‘ì—ì„œ ê°€ì¥ ì‘ì€
+ *              ViewSCNì„ êµ¬í•œë‹¤.
  *
- * TransViewSCNÀº Æ®·£Àè¼ÇÀÇ DiskViewSCN¶Ç´Â MemViewSCNÀÏ ¼ö ÀÖÀ¸¸ç,
- * EndÇÏ´Â Stmt¸¦ Á¦¿ÜÇÑ ³ª¸ÓÁö StmtÁß¿¡ Á¦ÀÏ ÀÛÀº °ªÀ¸·Î °»½ÅÇÑ´Ù.
- * ¸¸¾à ´Ù½Ã ±¸ÇÑ Á¦ÀÏ ÀÛÀº °ªÀÌ ÇöÀç Æ®·£Àè¼ÇÀÇ MinViewSCN°ú °°À¸¸é °»½ÅÇÒ
- * ÇÊ¿ä°¡ ¾ø´Ù. End ÇÒ¶§ ´Ù¸¥ Stmt°¡ ¾øÀ¸¸é, Æ®·£Àè¼ÇÀÇ ViewSCNÀ»
- * INFINITESCNÀ¸·Î ÃÊ±âÈ­ÇÑ´Ù.
+ * TransViewSCNì€ íŠ¸ëœì­ì…˜ì˜ DiskViewSCNë˜ëŠ” MemViewSCNì¼ ìˆ˜ ìˆìœ¼ë©°,
+ * Endí•˜ëŠ” Stmtë¥¼ ì œì™¸í•œ ë‚˜ë¨¸ì§€ Stmtì¤‘ì— ì œì¼ ì‘ì€ ê°’ìœ¼ë¡œ ê°±ì‹ í•œë‹¤.
+ * ë§Œì•½ ë‹¤ì‹œ êµ¬í•œ ì œì¼ ì‘ì€ ê°’ì´ í˜„ì¬ íŠ¸ëœì­ì…˜ì˜ MinViewSCNê³¼ ê°™ìœ¼ë©´ ê°±ì‹ í• 
+ * í•„ìš”ê°€ ì—†ë‹¤. End í• ë•Œ ë‹¤ë¥¸ Stmtê°€ ì—†ìœ¼ë©´, íŠ¸ëœì­ì…˜ì˜ ViewSCNì„
+ * INFINITESCNìœ¼ë¡œ ì´ˆê¸°í™”í•œë‹¤.
  *
- * aStatement    - [IN]  EndÇÏ´Â StmtÀÇ Æ÷ÀÎÅÍ
- * aCursorFlag   - [IN]  StmtÀÇ Cursor Flag °ª
- * aTransViewSCN - [IN]  Æ®·£Àè¼ÇÀÇ MemViewSCN È¤Àº DskViewSCNÀÌ´Ù (Á¾·áÁ¶°ÇÀ¸·Î»ç¿ë)
- * aMinViewSCN   - [OUT] Ä¿¼­Å¸ÀÔº°
+ * aStatement    - [IN]  Endí•˜ëŠ” Stmtì˜ í¬ì¸í„°
+ * aCursorFlag   - [IN]  Stmtì˜ Cursor Flag ê°’
+ * aTransViewSCN - [IN]  íŠ¸ëœì­ì…˜ì˜ MemViewSCN í˜¹ì€ DskViewSCNì´ë‹¤ (ì¢…ë£Œì¡°ê±´ìœ¼ë¡œì‚¬ìš©)
+ * aMinViewSCN   - [OUT] ì»¤ì„œíƒ€ì…ë³„
  *
  ****************************************************************************/
 void smiStatement::getMinViewSCN( smiStatement * aStmt,
@@ -372,14 +372,14 @@ void smiStatement::getMinViewSCN( smiStatement * aStmt,
 
 /***************************************************************************
  *
- * Description: Æ®·£Àè¼ÇÀÇ ¸ğµç Stmt¸¦ È®ÀÎÇÏ¿© MinMemViewSCN°ú MinDskViewSCNÀ»
- *              ±¸ÇÑ´Ù.
+ * Description: íŠ¸ëœì­ì…˜ì˜ ëª¨ë“  Stmtë¥¼ í™•ì¸í•˜ì—¬ MinMemViewSCNê³¼ MinDskViewSCNì„
+ *              êµ¬í•œë‹¤.
  *
- * ÀÚ½ÅÀÇ Stmt´Â EndÇÏ´Â ÁßÀÌ±â ¶§¹®¿¡ Á¦¿Ü½ÃÅ²´Ù.
+ * ìì‹ ì˜ StmtëŠ” Endí•˜ëŠ” ì¤‘ì´ê¸° ë•Œë¬¸ì— ì œì™¸ì‹œí‚¨ë‹¤.
  *
- * aStatement     - [IN]  EndÇÏ´Â StmtÀÇ Æ÷ÀÎÅÍ
- * aMinDskViewSCN - [OUT] ÇöÀç Æ®·£Àè¼ÇÀÇ StmtÁß °¡Àå ÀÛÀº DskViewSCN
- * aMinMemViewSCN - [OUT] ÇöÀç Æ®·£Àè¼ÇÀÇ StmtÁß °¡Àå ÀÛÀº MemViewSCN
+ * aStatement     - [IN]  Endí•˜ëŠ” Stmtì˜ í¬ì¸í„°
+ * aMinDskViewSCN - [OUT] í˜„ì¬ íŠ¸ëœì­ì…˜ì˜ Stmtì¤‘ ê°€ì¥ ì‘ì€ DskViewSCN
+ * aMinMemViewSCN - [OUT] í˜„ì¬ íŠ¸ëœì­ì…˜ì˜ Stmtì¤‘ ê°€ì¥ ì‘ì€ MemViewSCN
  *
  ***************************************************************************/
 void smiStatement::getMinViewSCNOfAll( smiStatement * aStmt,
@@ -399,7 +399,7 @@ void smiStatement::getMinViewSCNOfAll( smiStatement * aStmt,
     {
         if( sStmt == aStmt)
         {
-            /* endÇÏ´Â statement´Â Á¦¿Ü */
+            /* endí•˜ëŠ” statementëŠ” ì œì™¸ */
             continue;
         }
 
@@ -442,9 +442,9 @@ void smiStatement::getMinViewSCNOfAll( smiStatement * aStmt,
 
 /*********************************************************************
  *
- * Description: Statement End½Ã¿¡ TransactionÀÇ MemViewSCN °»½Å½ÃµµÇÑ´Ù.
+ * Description: Statement Endì‹œì— Transactionì˜ MemViewSCN ê°±ì‹ ì‹œë„í•œë‹¤.
  *
- * aStmt - [IN] EndÇÏ´Â StmtÀÇ Æ÷ÀÎÅÍ
+ * aStmt - [IN] Endí•˜ëŠ” Stmtì˜ í¬ì¸í„°
  *
  **********************************************************************/
 void smiStatement::tryUptTransMemViewSCN( smiStatement* aStmt )
@@ -462,10 +462,10 @@ void smiStatement::tryUptTransMemViewSCN( smiStatement* aStmt )
 
 /*********************************************************************
  *
- * Description: Statement End½Ã¿¡ TransactionÀÇ Disk ViewSCN
- *              °»½Å½ÃµµÇÑ´Ù.
+ * Description: Statement Endì‹œì— Transactionì˜ Disk ViewSCN
+ *              ê°±ì‹ ì‹œë„í•œë‹¤.
  *
- * aStmt - [IN] EndÇÏ´Â StmtÀÇ Æ÷ÀÎÅÍ
+ * aStmt - [IN] Endí•˜ëŠ” Stmtì˜ í¬ì¸í„°
  *
  **********************************************************************/
 void smiStatement::tryUptTransDskViewSCN( smiStatement* aStmt )
@@ -482,24 +482,24 @@ void smiStatement::tryUptTransDskViewSCN( smiStatement* aStmt )
 }
 
 /***************************************************************************
- * Description: End Statement°¡ Memory¿Í Disk¸¦ ¸ğµÎ °ÉÄ¡´Â °æ¿ì¿¡
- *              TransactionÀÇ ViewSCNÀ» °»½Å½ÃµµÇÑ´Ù.
+ * Description: End Statementê°€ Memoryì™€ Diskë¥¼ ëª¨ë‘ ê±¸ì¹˜ëŠ” ê²½ìš°ì—
+ *              Transactionì˜ ViewSCNì„ ê°±ì‹ ì‹œë„í•œë‹¤.
  *
- * ¾Æ·¡¾Æ °°ÀÌ 3°¡Áö °æ¿ì°¡ ÀÖÀ» ¼ö ÀÖ´Ù.
+ * ì•„ë˜ì•„ ê°™ì´ 3ê°€ì§€ ê²½ìš°ê°€ ìˆì„ ìˆ˜ ìˆë‹¤.
  *
- * A. End StatementÀÇ viewSCN°ú transactionÀÇ memory,disk
- *    View scn°ú ¸ğµÎ °°Àº °æ¿ì
- *    : ¸ğµÎ °»½ÅÇÑ´Ù.
+ * A. End Statementì˜ viewSCNê³¼ transactionì˜ memory,disk
+ *    View scnê³¼ ëª¨ë‘ ê°™ì€ ê²½ìš°
+ *    : ëª¨ë‘ ê°±ì‹ í•œë‹¤.
  *
- * B. End StatementÀÇ ViewSCN°ú transactionÀÇ memory viewSCN
- *    °ú °°Àº °æ¿ì.
- *    : Memory ViewSCN¸¸ °»½ÅÇÑ´Ù.
+ * B. End Statementì˜ ViewSCNê³¼ transactionì˜ memory viewSCN
+ *    ê³¼ ê°™ì€ ê²½ìš°.
+ *    : Memory ViewSCNë§Œ ê°±ì‹ í•œë‹¤.
  *
- * C. EndÇÏ´Â statementÀÇ viewSCN°ú transactionÀÇ disk viewSCN
- *    °ú °°Àº °æ¿ì.
- *    : Disk ViewSCN¸¸ °»½ÅÇÑ´Ù.
+ * C. Endí•˜ëŠ” statementì˜ viewSCNê³¼ transactionì˜ disk viewSCN
+ *    ê³¼ ê°™ì€ ê²½ìš°.
+ *    : Disk ViewSCNë§Œ ê°±ì‹ í•œë‹¤.
  *
- * aStmt - [IN] EndÇÏ´Â StmtÀÇ Æ÷ÀÎÅÍ
+ * aStmt - [IN] Endí•˜ëŠ” Stmtì˜ í¬ì¸í„°
  *
  ***************************************************************************/
 void smiStatement::tryUptTransAllViewSCN( smiStatement* aStmt )
@@ -537,19 +537,19 @@ void smiStatement::tryUptTransAllViewSCN( smiStatement* aStmt )
 
 /***************************************************************************
  *
- * Description: EndÇÏ´Â StmtÀÇ ViewSCNÀÌ Æ®·£Àè¼ÇÀÇ MinViewSCN°ú ´Ù¸¥ °æ¿ì¿¡
- *              °»½ÅÇÑ´Ù.
+ * Description: Endí•˜ëŠ” Stmtì˜ ViewSCNì´ íŠ¸ëœì­ì…˜ì˜ MinViewSCNê³¼ ë‹¤ë¥¸ ê²½ìš°ì—
+ *              ê°±ì‹ í•œë‹¤.
  *
- * TransViewSCNÀº Æ®·£Àè¼ÇÀÇ DiskViewSCN È¤Àº MemViewSCN ÀÌ´Ù.
- * EndÇÏ´Â Stmt¸¦ Á¦¿ÜÇÑ ³ª¸ÓÁö StmtÁß¿¡ Á¦ÀÏ ÀÛÀº °ªÀ¸·Î Æ®·£Àè¼ÇÀÇ MinViewSCNÀÌ
- * °»½ÅÇÑ´Ù.
+ * TransViewSCNì€ íŠ¸ëœì­ì…˜ì˜ DiskViewSCN í˜¹ì€ MemViewSCN ì´ë‹¤.
+ * Endí•˜ëŠ” Stmtë¥¼ ì œì™¸í•œ ë‚˜ë¨¸ì§€ Stmtì¤‘ì— ì œì¼ ì‘ì€ ê°’ìœ¼ë¡œ íŠ¸ëœì­ì…˜ì˜ MinViewSCNì´
+ * ê°±ì‹ í•œë‹¤.
  *
- * ¸¸¾à ´Ù½Ã ±¸ÇÑ Á¦ÀÏ ÀÛÀº °ªÀÌ ÇöÀç Æ®·£Àè¼ÇÀÇ MinViewSCN°ú °°À¸¸é °»½ÅÇÒ ÇÊ¿ä°¡ ¾ø´Ù.
- * End ÇÒ¶§ ´Ù¸¥ Stmt°¡ ¾øÀ¸¸é, Æ®·£Àè¼ÇÀÇ ViewSCNÀ» Infinite SCNÀ¸·Î ÃÊ±âÈ­ÇÑ´Ù.
+ * ë§Œì•½ ë‹¤ì‹œ êµ¬í•œ ì œì¼ ì‘ì€ ê°’ì´ í˜„ì¬ íŠ¸ëœì­ì…˜ì˜ MinViewSCNê³¼ ê°™ìœ¼ë©´ ê°±ì‹ í•  í•„ìš”ê°€ ì—†ë‹¤.
+ * End í• ë•Œ ë‹¤ë¥¸ Stmtê°€ ì—†ìœ¼ë©´, íŠ¸ëœì­ì…˜ì˜ ViewSCNì„ Infinite SCNìœ¼ë¡œ ì´ˆê¸°í™”í•œë‹¤.
  *
- * aStatement    - [IN] EndÇÏ´Â StmtÀÇ Æ÷ÀÎÅÍ
- * aCursorFlag   - [IN] StmtÀÇ Cursor Flag °ª
- * aTransViewSCN - [IN] Æ®·£Àè¼ÇÀÇ MemViewSCN È¤Àº DskViewSCN (Á¾·áÁ¶°ÇÀ¸·Î »ç¿ë)
+ * aStatement    - [IN] Endí•˜ëŠ” Stmtì˜ í¬ì¸í„°
+ * aCursorFlag   - [IN] Stmtì˜ Cursor Flag ê°’
+ * aTransViewSCN - [IN] íŠ¸ëœì­ì…˜ì˜ MemViewSCN í˜¹ì€ DskViewSCN (ì¢…ë£Œì¡°ê±´ìœ¼ë¡œ ì‚¬ìš©)
  *
  ****************************************************************************/
 void smiStatement::tryUptMinViewSCN( smiStatement * aStmt,
@@ -585,17 +585,17 @@ void smiStatement::tryUptMinViewSCN( smiStatement * aStmt,
 
 /***************************************************************************
  *
- * Description: EndÇÏ´Â StmtÀÇ ViewSCNÀÌ Æ®·£Àè¼ÇÀÇ MinViewSCN°ú ´Ù¸¥ °æ¿ì¿¡
- *              °»½ÅÇÑ´Ù.
+ * Description: Endí•˜ëŠ” Stmtì˜ ViewSCNì´ íŠ¸ëœì­ì…˜ì˜ MinViewSCNê³¼ ë‹¤ë¥¸ ê²½ìš°ì—
+ *              ê°±ì‹ í•œë‹¤.
  *
- * TransViewSCNÀº Æ®·£Àè¼ÇÀÇ DiskViewSCN È¤Àº MemViewSCN ÀÌ´Ù.
- * EndÇÏ´Â Stmt¸¦ Á¦¿ÜÇÑ ³ª¸ÓÁö StmtÁß¿¡ Á¦ÀÏ ÀÛÀº °ªÀ¸·Î Æ®·£Àè¼ÇÀÇ MinViewSCNÀÌ
- * °»½ÅÇÑ´Ù.
+ * TransViewSCNì€ íŠ¸ëœì­ì…˜ì˜ DiskViewSCN í˜¹ì€ MemViewSCN ì´ë‹¤.
+ * Endí•˜ëŠ” Stmtë¥¼ ì œì™¸í•œ ë‚˜ë¨¸ì§€ Stmtì¤‘ì— ì œì¼ ì‘ì€ ê°’ìœ¼ë¡œ íŠ¸ëœì­ì…˜ì˜ MinViewSCNì´
+ * ê°±ì‹ í•œë‹¤.
  *
- * ¸¸¾à ´Ù½Ã ±¸ÇÑ Á¦ÀÏ ÀÛÀº °ªÀÌ ÇöÀç Æ®·£Àè¼ÇÀÇ MinViewSCN°ú °°À¸¸é °»½ÅÇÒ ÇÊ¿ä°¡ ¾ø´Ù.
- * End ÇÒ¶§ ´Ù¸¥ Stmt°¡ ¾øÀ¸¸é, Æ®·£Àè¼ÇÀÇ ViewSCNÀ» Infinite SCNÀ¸·Î ÃÊ±âÈ­ÇÑ´Ù.
+ * ë§Œì•½ ë‹¤ì‹œ êµ¬í•œ ì œì¼ ì‘ì€ ê°’ì´ í˜„ì¬ íŠ¸ëœì­ì…˜ì˜ MinViewSCNê³¼ ê°™ìœ¼ë©´ ê°±ì‹ í•  í•„ìš”ê°€ ì—†ë‹¤.
+ * End í• ë•Œ ë‹¤ë¥¸ Stmtê°€ ì—†ìœ¼ë©´, íŠ¸ëœì­ì…˜ì˜ ViewSCNì„ Infinite SCNìœ¼ë¡œ ì´ˆê¸°í™”í•œë‹¤.
  *
- * aStmt - [IN]  EndÇÏ´Â StmtÀÇ Æ÷ÀÎÅÍ
+ * aStmt - [IN]  Endí•˜ëŠ” Stmtì˜ í¬ì¸í„°
  *
  ****************************************************************************/
 void smiStatement::tryUptMinViewSCNofAll( smiStatement  * aStmt )
@@ -637,10 +637,10 @@ void smiStatement::tryUptMinViewSCNofAll( smiStatement  * aStmt )
 
 /***************************************************************************
  *
- * Description: aStmt°¡ ¼ÓÇÑ TransactionÀÇ ¸ğµç StatementÀÇ ViewSCNÀ»
- *              Infinite·Î ÃÊ±âÈ­ÇÑ´Ù.
+ * Description: aStmtê°€ ì†í•œ Transactionì˜ ëª¨ë“  Statementì˜ ViewSCNì„
+ *              Infiniteë¡œ ì´ˆê¸°í™”í•œë‹¤.
  *
- * aStmt - [IN] Statement °´Ã¼
+ * aStmt - [IN] Statement ê°ì²´
  *
  ****************************************************************************/
 IDE_RC smiStatement::initViewSCNOfAllStmt( smiStatement* aStmt )
@@ -658,7 +658,7 @@ IDE_RC smiStatement::initViewSCNOfAllStmt( smiStatement* aStmt )
     {
         /* BUG-31993 [sm_interface] The server does not reset Iterator ViewSCN 
          * after building index for Temp Table
-         * Cursor¸¦ ÀÌ¹Ì ¿­¾î¹ö¸° Statement´Â ÁøÇàÇØ¼­´Â ¾ÈµÈ´Ù. */
+         * Cursorë¥¼ ì´ë¯¸ ì—´ì–´ë²„ë¦° StatementëŠ” ì§„í–‰í•´ì„œëŠ” ì•ˆëœë‹¤. */
         IDE_TEST_RAISE( sStatement->mOpenCursorCnt > 0, error_internal );
 
         SM_SET_SCN_INFINITE_AND_TID( &sStatement->mSCN, sTransID );
@@ -686,10 +686,10 @@ IDE_RC smiStatement::initViewSCNOfAllStmt( smiStatement* aStmt )
 
 /***************************************************************************
  *
- * Description: aStmt°¡ ¼ÓÇÑ TransactionÀÇ ¸ğµç StatementÀÇ ViewSCNÀ»
- *              »õ·Î¿î SCNÀ¸·Î °»½ÅÇÑ´Ù.
+ * Description: aStmtê°€ ì†í•œ Transactionì˜ ëª¨ë“  Statementì˜ ViewSCNì„
+ *              ìƒˆë¡œìš´ SCNìœ¼ë¡œ ê°±ì‹ í•œë‹¤.
  *
- * aStmt - [IN] Statement °´Ã¼
+ * aStmt - [IN] Statement ê°ì²´
  *
  ****************************************************************************/
 IDE_RC smiStatement::setViewSCNOfAllStmt( smiStatement* aStmt )
@@ -708,7 +708,7 @@ IDE_RC smiStatement::setViewSCNOfAllStmt( smiStatement* aStmt )
     {
         /* BUG-31993 [sm_interface] The server does not reset Iterator
          * ViewSCN after building index for Temp Table
-         * Cursor¸¦ ÀÌ¹Ì ¿­¾î¹ö¸° Statement´Â ÁøÇàÇØ¼­´Â ¾ÈµÈ´Ù. */
+         * Cursorë¥¼ ì´ë¯¸ ì—´ì–´ë²„ë¦° StatementëŠ” ì§„í–‰í•´ì„œëŠ” ì•ˆëœë‹¤. */
         IDE_TEST_RAISE( sStmt->mOpenCursorCnt > 0, error_internal );
 
         ((smxTrans*)sStmt->mTrans->getTrans())->allocViewSCN( 
@@ -741,24 +741,24 @@ IDE_RC smiStatement::setViewSCNOfAllStmt( smiStatement* aStmt )
  *
  * Description :
  *
- *   prepare execution Å¸ÀÔÀÎ statement´Â statement¸¦ ½ÃÀÛÇÏ±â Àü¿¡ ÀÌ¹Ì
- *   QP¿¡¼­ PVO°úÁ¤ÀÌ ¸ğµÎ ³¡³ª¼­ Á¢±ÙÇÏ´Â Å×ÀÌºí¿¡´ëÇÑ Á¤º¸¸¦ ¸ğµÎ ¾Ë±â
- *   ¶§¹®¿¡, ¸Ş¸ğ¸® Å×ÀÌºíÀ» Á¢±ÙÇÏ´ÂÁö µğ½ºÅ© Å×ÀÌºíÀ» Á¢±ÙÇÏ´ÂÁö ¹Ì¸®
- *   ¾Ë°í begin½Ã¿¡ ¼¼ÆÃÇÒ ¼ö ÀÖ´Ù.
- *   ÇÏÁö¸¸, direct execution Å¸ÀÔÀÇ statement¿¡¼­´Â statement¸¦ beginÇÑ
- *   ÀÌÈÄ¿¡ PVO°úÁ¤À» ¼öÇàÇÏ°í executionÇÏ±â ¶§¹®¿¡, begin½ÃÁ¡¿¡ ÇØ´ç
- *   statement°¡ Á¢±ÙÇÏ´Â Å×ÀÌºíÀÇ Á¾·ù¸¦ ¾Ë ¼ö ¾ø´Ù.
- *   ÀÌ¸¦ À§ÇØ, direct executionÀÎ statementÀÇ °æ¿ì¿¡ begin ½ÃÁ¡¿¡¼­´Â
- *   ¸Ş¸ğ¸®¿Í µğ½ºÅ© Å×ÀÌºíÀ» ¸ğµÎ Á¢±ÙÇÑ´Ù°í ÀÏ´Ü ¼¼ÆÃÇØ µĞ ÀÌÈÄ¿¡,
- *   execution Á÷Àü¿¡(PVO ÀÌÈÄ) statementÀÇ ¼º°İÀ» ´Ù½Ã º¯°æÇÏµµ·Ï ÇÑ´Ù.
+ *   prepare execution íƒ€ì…ì¸ statementëŠ” statementë¥¼ ì‹œì‘í•˜ê¸° ì „ì— ì´ë¯¸
+ *   QPì—ì„œ PVOê³¼ì •ì´ ëª¨ë‘ ëë‚˜ì„œ ì ‘ê·¼í•˜ëŠ” í…Œì´ë¸”ì—ëŒ€í•œ ì •ë³´ë¥¼ ëª¨ë‘ ì•Œê¸°
+ *   ë•Œë¬¸ì—, ë©”ëª¨ë¦¬ í…Œì´ë¸”ì„ ì ‘ê·¼í•˜ëŠ”ì§€ ë””ìŠ¤í¬ í…Œì´ë¸”ì„ ì ‘ê·¼í•˜ëŠ”ì§€ ë¯¸ë¦¬
+ *   ì•Œê³  beginì‹œì— ì„¸íŒ…í•  ìˆ˜ ìˆë‹¤.
+ *   í•˜ì§€ë§Œ, direct execution íƒ€ì…ì˜ statementì—ì„œëŠ” statementë¥¼ beginí•œ
+ *   ì´í›„ì— PVOê³¼ì •ì„ ìˆ˜í–‰í•˜ê³  executioní•˜ê¸° ë•Œë¬¸ì—, beginì‹œì ì— í•´ë‹¹
+ *   statementê°€ ì ‘ê·¼í•˜ëŠ” í…Œì´ë¸”ì˜ ì¢…ë¥˜ë¥¼ ì•Œ ìˆ˜ ì—†ë‹¤.
+ *   ì´ë¥¼ ìœ„í•´, direct executionì¸ statementì˜ ê²½ìš°ì— begin ì‹œì ì—ì„œëŠ”
+ *   ë©”ëª¨ë¦¬ì™€ ë””ìŠ¤í¬ í…Œì´ë¸”ì„ ëª¨ë‘ ì ‘ê·¼í•œë‹¤ê³  ì¼ë‹¨ ì„¸íŒ…í•´ ë‘” ì´í›„ì—,
+ *   execution ì§ì „ì—(PVO ì´í›„) statementì˜ ì„±ê²©ì„ ë‹¤ì‹œ ë³€ê²½í•˜ë„ë¡ í•œë‹¤.
  *
- *   statementÀÇ ¼º°İÀ» ¼¼ÆÃÇÏ´Â ÀÌÀ¯´Â ´ÙÀ½ µÎ°¡ÁöÀÌ´Ù.
+ *   statementì˜ ì„±ê²©ì„ ì„¸íŒ…í•˜ëŠ” ì´ìœ ëŠ” ë‹¤ìŒ ë‘ê°€ì§€ì´ë‹¤.
  *
- *   -  µğ½ºÅ© Å×ÀÌºí¸¸ Á¢±ÙÇÏ´Â statement
- *      ¶§¹®¿¡ memory GC(Ager)°¡ ¿µÇâÀ» ¹ŞÁö ¾Êµµ·Ï ÇÏ±â À§ÇØ¼­ÀÌ´Ù.
+ *   -  ë””ìŠ¤í¬ í…Œì´ë¸”ë§Œ ì ‘ê·¼í•˜ëŠ” statement
+ *      ë•Œë¬¸ì— memory GC(Ager)ê°€ ì˜í–¥ì„ ë°›ì§€ ì•Šë„ë¡ í•˜ê¸° ìœ„í•´ì„œì´ë‹¤.
  *
- *   -  ¸Ş¸ğ¸® Å×ÀÌºí ¸¸ Á¢±ÙÇÏ´Â statement
- *      ¶§¹®¿¡  disk  GC°¡  ¿µÇâÀ» ¹ŞÁö ¾Êµµ·Ï ÇÏ±â À§ÇØ¼­ ÀÌ´Ù.
+ *   -  ë©”ëª¨ë¦¬ í…Œì´ë¸” ë§Œ ì ‘ê·¼í•˜ëŠ” statement
+ *      ë•Œë¬¸ì—  disk  GCê°€  ì˜í–¥ì„ ë°›ì§€ ì•Šë„ë¡ í•˜ê¸° ìœ„í•´ì„œ ì´ë‹¤.
  *
  ****************************************************************************/
 IDE_RC smiStatement::resetCursorFlag( UInt aFlag )
@@ -772,28 +772,28 @@ IDE_RC smiStatement::resetCursorFlag( UInt aFlag )
                 (sNewStmtCursorFlag == SMI_STATEMENT_MEMORY_CURSOR) ||
                 (sNewStmtCursorFlag == SMI_STATEMENT_DISK_CURSOR) );
 
-    // direct executionÀÎ statementÀÇ °æ¿ì¿¡ begin ½ÃÁ¡¿¡¼­´Â
-    // ¸Ş¸ğ¸®¿Í µğ½ºÅ© Å×ÀÌºíÀ» ¸ğµÎ Á¢±ÙÇÑ´Ù°í ÀÌÀü¿¡ ¼¼ÆÃÇÏ¿´´Ù.
+    // direct executionì¸ statementì˜ ê²½ìš°ì— begin ì‹œì ì—ì„œëŠ”
+    // ë©”ëª¨ë¦¬ì™€ ë””ìŠ¤í¬ í…Œì´ë¸”ì„ ëª¨ë‘ ì ‘ê·¼í•œë‹¤ê³  ì´ì „ì— ì„¸íŒ…í•˜ì˜€ë‹¤.
     sNoAccessMedia = SMI_STATEMENT_ALL_CURSOR - sNewStmtCursorFlag;
 
     switch(sNoAccessMedia)
     {
         case SMI_STATEMENT_DISK_CURSOR:
-            //disk¸¦ Á¢±ÙÇÏÁö ¾Ê´Â cursor.
+            //diskë¥¼ ì ‘ê·¼í•˜ì§€ ì•ŠëŠ” cursor.
             mFlag &= ~(sNoAccessMedia);
-            // transactionÀÇ disk view scn °»½Å.
-            // ->È¤½Ã ÀÌ statement¶§¹®¿¡ ÀÛÀº °ªÀ»
-            // °¡Áö·Î ÀÖ´Ù¸é Áõ°¡,¶Ç´Â infinite·Î ¼³Á¤ÇÔ.
+            // transactionì˜ disk view scn ê°±ì‹ .
+            // ->í˜¹ì‹œ ì´ statementë•Œë¬¸ì— ì‘ì€ ê°’ì„
+            // ê°€ì§€ë¡œ ìˆë‹¤ë©´ ì¦ê°€,ë˜ëŠ” infiniteë¡œ ì„¤ì •í•¨.
             tryUptTransDskViewSCN(this);
             break;
 
         case SMI_STATEMENT_MEMORY_CURSOR:
-            // memory ¸¦ Á¢±Ù ¾Ê´Â cursor.
-            // statementÀÇ cursor flag °»½Å.
+            // memory ë¥¼ ì ‘ê·¼ ì•ŠëŠ” cursor.
+            // statementì˜ cursor flag ê°±ì‹ .
             mFlag &= ~(sNoAccessMedia);
-            // transactionÀÇ memory view scn °»½Å.
-            // ->È¤½Ã ÀÌ statement¶§¹®¿¡ ÀÛÀº °ªÀ»
-            // °¡Áö·Î ÀÖ´Ù¸é Áõ°¡,¶Ç´Â infinite·Î ¼³Á¤ÇÔ.
+            // transactionì˜ memory view scn ê°±ì‹ .
+            // ->í˜¹ì‹œ ì´ statementë•Œë¬¸ì— ì‘ì€ ê°’ì„
+            // ê°€ì§€ë¡œ ìˆë‹¤ë©´ ì¦ê°€,ë˜ëŠ” infiniteë¡œ ì„¤ì •í•¨.
             tryUptTransMemViewSCN(this);
             break;
     }
@@ -801,13 +801,13 @@ IDE_RC smiStatement::resetCursorFlag( UInt aFlag )
 }
 
 /***********************************************************************
- * Description : DDLÀ» ¼öÇàÇÏ´Â Statement´Â ´ÙÀ½°ú °°Àº Á¶°ÇÀ» ¸¸Á·ÇØ¾ß ÇÑ´Ù.
+ * Description : DDLì„ ìˆ˜í–‰í•˜ëŠ” StatementëŠ” ë‹¤ìŒê³¼ ê°™ì€ ì¡°ê±´ì„ ë§Œì¡±í•´ì•¼ í•œë‹¤.
  *
  *                1. Root Statement
  *                2. Update statement
- *                3. GroupÀÇ À¯ÀÏÇÑ Statement
- *                4. Update Cursor°¡ openµÈ°ÍÀÌ ¾ø¾î¾ß ÇÑ´Ù.
- *                5. Cursor¶ÇÇÑ openµÈ°ÍÀÌ ¾ø¾î¾ß ÇÑ´Ù.
+ *                3. Groupì˜ ìœ ì¼í•œ Statement
+ *                4. Update Cursorê°€ openëœê²ƒì´ ì—†ì–´ì•¼ í•œë‹¤.
+ *                5. Cursorë˜í•œ openëœê²ƒì´ ì—†ì–´ì•¼ í•œë‹¤.
  *
  **********************************************************************/
 IDE_RC smiStatement::prepareDDL( smiTrans *aTrans )
@@ -819,7 +819,7 @@ IDE_RC smiStatement::prepareDDL( smiTrans *aTrans )
     sTrans->mIsDDL = ID_TRUE;
 
     /* PROJ-2162 RestartRiskReductino
-     * DB°¡ Inconsistency ÇÏ±â ¶§¹®¿¡ DDLÀ» ¸·´Â´Ù. */
+     * DBê°€ Inconsistency í•˜ê¸° ë•Œë¬¸ì— DDLì„ ë§‰ëŠ”ë‹¤. */
     IDE_TEST_RAISE( (smrRecoveryMgr::getConsistency() == ID_FALSE ) &&
                     ( smuProperty::getCrashTolerance() == 0 ),
                     ERROR_INCONSISTENT_DB );
@@ -850,11 +850,11 @@ IDE_RC smiStatement::prepareDDL( smiTrans *aTrans )
 }
 
 /***********************************************************************
- * Description : aCursor¸¦ Statement¿¡ Ãß°¡ÇÑ´Ù.
+ * Description : aCursorë¥¼ Statementì— ì¶”ê°€í•œë‹¤.
  *
- * aCursor     - [IN]  statement¿¡ Ãß°¡ÇÒ cursor
- * aIsSoloOpenUpdateCursor - [OUT] statement¿¡ À¯ÀÏÇÏ°Ô openµÈ update cursor
- *                                 ¶ó¸é ID_TRUE, else,ID_FALSE.
+ * aCursor     - [IN]  statementì— ì¶”ê°€í•  cursor
+ * aIsSoloOpenUpdateCursor - [OUT] statementì— ìœ ì¼í•˜ê²Œ openëœ update cursor
+ *                                 ë¼ë©´ ID_TRUE, else,ID_FALSE.
  *
  **********************************************************************/
 IDE_RC smiStatement::openCursor( smiTableCursor * aCursor,
@@ -868,11 +868,11 @@ IDE_RC smiStatement::openCursor( smiTableCursor * aCursor,
     smcTableHeader* sTableHeader = (smcTableHeader*)aCursor->mTable;
     UInt            sTableType = SMI_GET_TABLE_TYPE( sTableHeader );
 
-    // statement memory ,disk cursor flag¿Í table Á¾·ù
+    // statement memory ,disk cursor flagì™€ table ì¢…ë¥˜
     // validation.
     if(sTableType == SMI_TABLE_DISK)
     {
-        // statement cursor flag¿¡ disk°¡ ÀÖ¾î¾ß ÇÑ´Ù.
+        // statement cursor flagì— diskê°€ ìˆì–´ì•¼ í•œë‹¤.
         IDE_DASSERT((SMI_STATEMENT_DISK_CURSOR & mFlag) != 0);
     }
     else
@@ -881,7 +881,7 @@ IDE_RC smiStatement::openCursor( smiTableCursor * aCursor,
             (sTableType == SMI_TABLE_META)   ||
             (sTableType == SMI_TABLE_FIXED) )
         {
-            // statement cursor flag¿¡ memory°¡ ÀÖ¾î¾ß ÇÑ´Ù.
+            // statement cursor flagì— memoryê°€ ìˆì–´ì•¼ í•œë‹¤.
             IDE_DASSERT((SMI_STATEMENT_MEMORY_CURSOR & mFlag) != 0);
         }
     }
@@ -896,27 +896,27 @@ IDE_RC smiStatement::openCursor( smiTableCursor * aCursor,
 
     if ( aCursor->mUntouchable == ID_FALSE )
     {
-        // PROJ-2199 SELECT func() FOR UPDATE Áö¿ø
-        // SMI_STATEMENT_FORUPDATE Ãß°¡
+        // PROJ-2199 SELECT func() FOR UPDATE ì§€ì›
+        // SMI_STATEMENT_FORUPDATE ì¶”ê°€
         IDE_TEST_RAISE( (( mFlag & SMI_STATEMENT_MASK ) != SMI_STATEMENT_NORMAL) &&
                         (( mFlag & SMI_STATEMENT_MASK ) != SMI_STATEMENT_FORUPDATE),
                         ERR_CANT_OPEN_UPDATE_CURSOR );
 
         aCursor->mSCN        = mSCN;
         aCursor->mInfinite   = mInfiniteSCN;
-        // PROJ-1362, select c1,b1 from t1 for update ¿¡¼­
-        // º¯°æÇÏ´Â lob cursor°¡ µ¿½Ã¿¡ µÎ°³ ÀÌ»ó¿­¸®´Â °æ¿ì¸¦ À§ÇÏ¿©
-        // ´ÙÀ½À» Ãß°¡.
+        // PROJ-1362, select c1,b1 from t1 for update ì—ì„œ
+        // ë³€ê²½í•˜ëŠ” lob cursorê°€ ë™ì‹œì— ë‘ê°œ ì´ìƒì—´ë¦¬ëŠ” ê²½ìš°ë¥¼ ìœ„í•˜ì—¬
+        // ë‹¤ìŒì„ ì¶”ê°€.
         aCursor->mInfinite4DiskLob = mInfiniteSCN;
 
         if( aCursor->mCursorType == SMI_LOCKROW_CURSOR )
         {
-            // BUG-17940 referential integrity check¸¦ À§ÇÑ Ä¿¼­
-            // lock¸¸ ÀâÀ½
+            // BUG-17940 referential integrity checkë¥¼ ìœ„í•œ ì»¤ì„œ
+            // lockë§Œ ì¡ìŒ
             *aIsSoloOpenUpdateCursor = ID_FALSE;
 
-            // È¤½Ã³ª parallel·Î DML ÁúÀÇ¸¦ ¼öÇàÇÏ°Ô µÇ´Â °æ¿ì¿¡ ´ëºñÇØ¼­
-            // update cursor list¿¡ ´ŞÁö ¾Ê´Â´Ù.
+            // í˜¹ì‹œë‚˜ parallelë¡œ DML ì§ˆì˜ë¥¼ ìˆ˜í–‰í•˜ê²Œ ë˜ëŠ” ê²½ìš°ì— ëŒ€ë¹„í•´ì„œ
+            // update cursor listì— ë‹¬ì§€ ì•ŠëŠ”ë‹¤.
             aCursor->mPrev        = &mCursors;
             aCursor->mNext        = mCursors.mNext;
         }
@@ -930,14 +930,14 @@ IDE_RC smiStatement::openCursor( smiTableCursor * aCursor,
             {
                 if(sCursor->mTable == aCursor->mTable)
                 {
-                    /* ÇÑ TransactionÀÌ µ¿ÀÏÇÑ Table¿¡ ÇÏ³ªÀÇ Update Cursor¸¸À»
-                       ¿­¾î¾ß ÇÑ´Ù. ¿Ö³ÄÇÏ¸é µÎ°³ÀÇ Cursor°¡ µ¿ÀÏÇÑ Data¸¦ µ¿½Ã¿¡
-                       °»½ÅÇÒ ¼ö ÀÖ±â ¶§¹®ÀÌ´Ù. */
+                    /* í•œ Transactionì´ ë™ì¼í•œ Tableì— í•˜ë‚˜ì˜ Update Cursorë§Œì„
+                       ì—´ì–´ì•¼ í•œë‹¤. ì™œëƒí•˜ë©´ ë‘ê°œì˜ Cursorê°€ ë™ì¼í•œ Dataë¥¼ ë™ì‹œì—
+                       ê°±ì‹ í•  ìˆ˜ ìˆê¸° ë•Œë¬¸ì´ë‹¤. */
                     IDE_TEST_RAISE(sCursor->mUntouchable == ID_FALSE,
                                    ERR_UPDATE_SAME_TABLE);
 
-                    /* Update CursorÀÌÀü¿¡ ReadOnly Cursor°¡ ÀÌ¹Ì openµÇ¾î ÀÖ´Ù.
-                       ¶§¹®¿¡ ÀÌ Cursor´Â Update Only Cursor°¡ ¾Æ´Ï´Ù.*/
+                    /* Update Cursorì´ì „ì— ReadOnly Cursorê°€ ì´ë¯¸ openë˜ì–´ ìˆë‹¤.
+                       ë•Œë¬¸ì— ì´ CursorëŠ” Update Only Cursorê°€ ì•„ë‹ˆë‹¤.*/
                     *aIsSoloOpenUpdateCursor = ID_FALSE;
                 }
             }
@@ -975,10 +975,10 @@ IDE_RC smiStatement::openCursor( smiTableCursor * aCursor,
                         aCursor->mInfinite4DiskLob = sCursor->mInfinite4DiskLob;
 
                         /* BUG-33800
-                         * 1) update cursor, 2) select cursor ¼ø¼­·Î
-                         * Ä¿¼­°¡ ¿­¸®¸é, update cursor°¡ select cursor Á¸Àç¸¦
-                         * ¸ğ¸£°í mIsSoloCursor = ID_TRUE·Î °¡Áö°í ÀÖ´Ù.
-                         * update cursorÀÇ mIsSoloCursor¸¦ ¼öÁ¤ÇÑ´Ù. */
+                         * 1) update cursor, 2) select cursor ìˆœì„œë¡œ
+                         * ì»¤ì„œê°€ ì—´ë¦¬ë©´, update cursorê°€ select cursor ì¡´ì¬ë¥¼
+                         * ëª¨ë¥´ê³  mIsSoloCursor = ID_TRUEë¡œ ê°€ì§€ê³  ìˆë‹¤.
+                         * update cursorì˜ mIsSoloCursorë¥¼ ìˆ˜ì •í•œë‹¤. */
                         sCursor->mIsSoloCursor = ID_FALSE;
 
                         goto out_for; /* break */
@@ -1022,15 +1022,15 @@ out_for: /* break */
 }
 
 /***********************************************************************
- * Description : aCursor¸¦ Statement¿¡¼­ Á¦°ÅÇÑ´Ù.
+ * Description : aCursorë¥¼ Statementì—ì„œ ì œê±°í•œë‹¤.
  *
- * aCursor     - [IN]  statement¿¡¼­ Á¦°ÅÇÒ Cursor
+ * aCursor     - [IN]  statementì—ì„œ ì œê±°í•  Cursor
  **********************************************************************/
 void smiStatement::closeCursor( smiTableCursor* aCursor )
 {
     /* BUG-32963
-     * openCursor()¿¡¼­ infiniteSCNÀ» ¿Ã¸®Áö ¾ÊÀ½.
-     * ReadOnly°¡ ¾Æ´Ñ Ä¿¼­¿¡¼­´ëÇØ closeCursor()¿¡¼­ infiniteSCNÀ» ¿Ã·Á ÁÜ */
+     * openCursor()ì—ì„œ infiniteSCNì„ ì˜¬ë¦¬ì§€ ì•ŠìŒ.
+     * ReadOnlyê°€ ì•„ë‹Œ ì»¤ì„œì—ì„œëŒ€í•´ closeCursor()ì—ì„œ infiniteSCNì„ ì˜¬ë ¤ ì¤Œ */
     IDE_ASSERT(mOpenCursorCnt > 0);
 
     if (aCursor->mUntouchable == ID_FALSE) // not ReadOnly, Write!!!
@@ -1057,10 +1057,10 @@ void smiStatement::closeCursor( smiTableCursor* aCursor )
 /**
  * PROJ-2626 Snapshot Export
  *
- * ÀÌ Set SCNÀº Snpashot Export¿¡¼­¸¸ Á¦ÇÑÀûÀ¸·Î
- * »ç¿ëµÇ´Â CodeÀÔ´Ï´Ù.
+ * ì´ Set SCNì€ Snpashot Exportì—ì„œë§Œ ì œí•œì ìœ¼ë¡œ
+ * ì‚¬ìš©ë˜ëŠ” Codeì…ë‹ˆë‹¤.
  *
- * ´Ù¸¥ ¸ñÀûÀ¸·Î »ç¿ëµÇÁö ¾Ê¾Æ¾ßÇÕ´Ï´Ù.
+ * ë‹¤ë¥¸ ëª©ì ìœ¼ë¡œ ì‚¬ìš©ë˜ì§€ ì•Šì•„ì•¼í•©ë‹ˆë‹¤.
  */
 void smiStatement::setScnForSnapshot( smSCN * aSCN )
 {

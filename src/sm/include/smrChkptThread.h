@@ -56,10 +56,10 @@ public:
     
     virtual void run();
 
-    // Checkpoint°¡ ¼öÇàµÇÁö ¾Êµµ·Ï ¸·´Â´Ù.
+    // Checkpointê°€ ìˆ˜í–‰ë˜ì§€ ì•Šë„ë¡ ë§‰ëŠ”ë‹¤.
     static IDE_RC blockCheckpoint();
 
-    // Checkpoint°¡ ´Ù½Ã ¼öÇàµÇµµ·Ï Checkpoint¸¦ UnblockÇÑ´Ù.
+    // Checkpointê°€ ë‹¤ì‹œ ìˆ˜í–‰ë˜ë„ë¡ Checkpointë¥¼ Unblockí•œë‹¤.
     static IDE_RC unblockCheckpoint();
 
     void applyStatisticsForSystem();

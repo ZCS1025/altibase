@@ -26,9 +26,9 @@
 #include <qmsParseTree.h>
 #include <qmmParseTree.h>
 
-// qmv::validateSelect¿¡ ÀÎÀÚ·Î ³Ñ±â´Â flag °ª¿¡ ´ëÇÑ Á¤ÀÇ
-// ÇâÈÄ¿¡ Æ¯Á¤ µ¿ÀÛÀ» À§ÇÏ¿© flag¸¦ ¼³Á¤ÇÏ¿©¾ß ÇÏ´Â °æ¿ì
-// ±â´É¿¡ µû¶ó¼­ È®ÀåÇÏ¸é µÊ.
+// qmv::validateSelectì— ì¸ìë¡œ ë„˜ê¸°ëŠ” flag ê°’ì— ëŒ€í•œ ì •ì˜
+// í–¥í›„ì— íŠ¹ì • ë™ì‘ì„ ìœ„í•˜ì—¬ flagë¥¼ ì„¤ì •í•˜ì—¬ì•¼ í•˜ëŠ” ê²½ìš°
+// ê¸°ëŠ¥ì— ë”°ë¼ì„œ í™•ì¥í•˜ë©´ ë¨.
 #define QMV_PERFORMANCE_VIEW_CREATION_MASK           (0x00000001)
 #define QMV_PERFORMANCE_VIEW_CREATION_FALSE          (0x00000000)
 #define QMV_PERFORMANCE_VIEW_CREATION_TRUE           (0x00000001)
@@ -38,7 +38,7 @@
 #define QMV_VIEW_CREATION_TRUE                       (0x00000002)
 
 // BUG-20272
-// subqueryÀÇ query setÀÎÁö¸¦ ±â·ÏÇÑ´Ù.
+// subqueryì˜ query setì¸ì§€ë¥¼ ê¸°ë¡í•œë‹¤.
 #define QMV_QUERYSET_SUBQUERY_MASK                   (0x00000004)
 #define QMV_QUERYSET_SUBQUERY_FALSE                  (0x00000000)
 #define QMV_QUERYSET_SUBQUERY_TRUE                   (0x00000004)
@@ -56,14 +56,14 @@
 #define QMV_SFWGH_JOIN_RIGHT_OUTER                   (0x00000080)
 
 // PROJ-2204 join update, delete
-// key preserved tableÀ» °è»êÇØ¾ßÇÏ´Â SFWGHÀÎÁö ¼³Á¤ÇÑ´Ù.
+// key preserved tableì„ ê³„ì‚°í•´ì•¼í•˜ëŠ” SFWGHì¸ì§€ ì„¤ì •í•œë‹¤.
 // create view, update view, delete view, insert view
 #define QMV_SFWGH_UPDATABLE_VIEW_MASK                (0x00000100)
 #define QMV_SFWGH_UPDATABLE_VIEW_FALSE               (0x00000000)
 #define QMV_SFWGH_UPDATABLE_VIEW_TRUE                (0x00000100)
 
 // PROJ-2394 Bulk Pivot Aggregation
-// pivot transformationÀ¸·Î »ı¼ºµÇ´Â Ã¹¹øÂ° viewÀÓÀ» ¼³Á¤ÇÑ´Ù.
+// pivot transformationìœ¼ë¡œ ìƒì„±ë˜ëŠ” ì²«ë²ˆì§¸ viewì„ì„ ì„¤ì •í•œë‹¤.
 #define QMV_SFWGH_PIVOT_FIRST_VIEW_MASK              (0x00000200)
 #define QMV_SFWGH_PIVOT_FIRST_VIEW_FALSE             (0x00000000)
 #define QMV_SFWGH_PIVOT_FIRST_VIEW_TRUE              (0x00000200)
@@ -81,13 +81,13 @@
 #define QMV_SFWGH_GBGS_TRANSFORM_BOTTOM_MTR          (0x00004000)
 
 // BUG-41311 table function
-// table function transformationÀ¸·Î »ı¼ºµÇ´Â viewÀÓÀ» ¼³Á¤ÇÑ´Ù.
+// table function transformationìœ¼ë¡œ ìƒì„±ë˜ëŠ” viewì„ì„ ì„¤ì •í•œë‹¤.
 #define QMV_SFWGH_TABLE_FUNCTION_VIEW_MASK           (0x00008000)
 #define QMV_SFWGH_TABLE_FUNCTION_VIEW_FALSE          (0x00000000)
 #define QMV_SFWGH_TABLE_FUNCTION_VIEW_TRUE           (0x00008000)
 
 // BUG-41573 Lateral View with GROUPING SETS
-// QuerySetÀÌ Lateral ViewÀÎÁö ¼³Á¤ÇÑ´Ù.
+// QuerySetì´ Lateral Viewì¸ì§€ ì„¤ì •í•œë‹¤.
 #define QMV_QUERYSET_LATERAL_MASK                    (0x00010000)
 #define QMV_QUERYSET_LATERAL_FALSE                   (0x00000000)
 #define QMV_QUERYSET_LATERAL_TRUE                    (0x00010000)
@@ -145,7 +145,7 @@
 class qmv
 {
 
-    // BUGBUG: jhseong, FT,PV È¥¿ë°¡´ÉÇÑ ÄÚµå·Î º¯°æ.
+    // BUGBUG: jhseong, FT,PV í˜¼ìš©ê°€ëŠ¥í•œ ì½”ë“œë¡œ ë³€ê²½.
 public:
     // parse DEFAULT values of INSERT
     static IDE_RC parseInsertValues( qcStatement * aStatement );
@@ -284,7 +284,7 @@ private:
     static IDE_RC insertCommon(
         qcStatement       * aStatement,
         qmsTableRef       * aTableRef,
-        qdConstraintSpec ** aCheckConstrSpec,      /* PROJ-1107 Check Constraint Áö¿ø */
+        qdConstraintSpec ** aCheckConstrSpec,      /* PROJ-1107 Check Constraint ì§€ì› */
         qcmColumn        ** aDefaultExprColumns,   /* PROJ-1090 Function-based Index */
         qmsTableRef      ** aDefaultTableRef );
 

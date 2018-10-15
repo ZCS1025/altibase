@@ -143,7 +143,7 @@ typedef struct mtfRegExpression
     mtfRegExpNode   nodes[1];
 }mtfRegExpression;
 
-// ÃÖ´ë pattern ±æÀÇÀÇ 4¹èÀÇ node¸¦ »ı¼ºÇÒ ¼ö ÀÖ´Ù.
+// ìµœëŒ€ pattern ê¸¸ì˜ì˜ 4ë°°ì˜ nodeë¥¼ ìƒì„±í•  ìˆ˜ ìˆë‹¤.
 #define MTF_REG_EXPRESSION_SIZE( aPatternLen ) \
     ( ID_SIZEOF(mtfRegExpression) + ID_SIZEOF(mtfRegExpNode) * (aPatternLen) * 4 )
 

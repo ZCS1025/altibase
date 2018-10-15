@@ -19,11 +19,11 @@
  * $Id: qmgGrouping.h 82075 2018-01-17 06:39:52Z jina.kim $
  *
  * Description :
- *     Grouping Graph¸¦ À§ÇÑ Á¤ÀÇ
+ *     Grouping Graphë¥¼ ìœ„í•œ ì •ì˜
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  **********************************************************************/
 
@@ -35,7 +35,7 @@
 #include <qmoDef.h>
 
 //---------------------------------------------------
-// Grouping GraphÀÇ Define »ó¼ö
+// Grouping Graphì˜ Define ìƒìˆ˜
 //---------------------------------------------------
 
 // qmgGROP.graph.flag
@@ -55,22 +55,22 @@
 #define QMG_GROP_OPT_TIP_GROUPING_SETS          (0x07000000)
 
 //---------------------------------------------------
-// Grouping Graph ¸¦ °ü¸®ÇÏ±â À§ÇÑ ÀÚ·á ±¸Á¶
+// Grouping Graph ë¥¼ ê´€ë¦¬í•˜ê¸° ìœ„í•œ ìë£Œ êµ¬ì¡°
 //---------------------------------------------------
 
 typedef struct qmgGROP
 {
-    qmgGraph           graph;         // °øÅë Graph Á¤º¸
+    qmgGraph           graph;         // ê³µí†µ Graph ì •ë³´
 
     //--------------------------------------------------
-    // Grouping Graph Àü¿ë Á¤º¸
-    //    - agg : aggregation Á¤º¸ 
-    //      ÀÏ¹İ GroupingÀÎ °æ¿ì, aggsDepth1·Î ¼³Á¤
-    //      Nested GroupingÀÎ °æ¿ì, aggsDepth2·Î ¼³Á¤
-    //    - group : group by Á¤º¸
-    //    - having : having Á¤º¸
-    //    - distAggArg : AggregationÀÇ argumentÀÇ bucket count Á¤º¸
-    //      (ÀÌ °æ¿ì, Sort based groupingÀ¸·Î¸¸ ¼öÇà °¡´É)
+    // Grouping Graph ì „ìš© ì •ë³´
+    //    - agg : aggregation ì •ë³´ 
+    //      ì¼ë°˜ Groupingì¸ ê²½ìš°, aggsDepth1ë¡œ ì„¤ì •
+    //      Nested Groupingì¸ ê²½ìš°, aggsDepth2ë¡œ ì„¤ì •
+    //    - group : group by ì •ë³´
+    //    - having : having ì •ë³´
+    //    - distAggArg : Aggregationì˜ argumentì˜ bucket count ì •ë³´
+    //      (ì´ ê²½ìš°, Sort based groupingìœ¼ë¡œë§Œ ìˆ˜í–‰ ê°€ëŠ¥)
     //
     //--------------------------------------------------
 
@@ -80,31 +80,31 @@ typedef struct qmgGROP
     qmoPredicate     * havingPred;
     qmoDistAggArg    * distAggArg;    
     
-    UInt               hashBucketCnt; // Hash Based GroupingÀÎ °æ¿ì, ¼³Á¤
+    UInt               hashBucketCnt; // Hash Based Groupingì¸ ê²½ìš°, ì„¤ì •
     
 } qmgGROP;
 
 //---------------------------------------------------
-// Grouping Graph ¸¦ °ü¸®ÇÏ±â À§ÇÑ ÇÔ¼ö
+// Grouping Graph ë¥¼ ê´€ë¦¬í•˜ê¸° ìœ„í•œ í•¨ìˆ˜
 //---------------------------------------------------
 
 class qmgGrouping
 {
 public:
-    // Graph ÀÇ ÃÊ±âÈ­
+    // Graph ì˜ ì´ˆê¸°í™”
     static IDE_RC  init( qcStatement * aStatement,
                          qmsQuerySet * aQuerySet,
                          qmgGraph    * aChildGraph,
                          idBool        aIsNested, 
                          qmgGraph   ** aGraph );
 
-    // GraphÀÇ ÃÖÀûÈ­ ¼öÇà
+    // Graphì˜ ìµœì í™” ìˆ˜í–‰
     static IDE_RC  optimize( qcStatement * aStatement, qmgGraph * aGraph );
 
-    // GraphÀÇ Plan Tree »ı¼º
+    // Graphì˜ Plan Tree ìƒì„±
     static IDE_RC  makePlan( qcStatement * aStatement, const qmgGraph * aParent, qmgGraph * aGraph );
 
-    // GraphÀÇ °øÅë Á¤º¸¸¦ Ãâ·ÂÇÔ.
+    // Graphì˜ ê³µí†µ ì •ë³´ë¥¼ ì¶œë ¥í•¨.
     static IDE_RC  printGraph( qcStatement  * aStatement,
                                qmgGraph     * aGraph,
                                ULong          aDepth,
@@ -134,56 +134,56 @@ private:
     static IDE_RC makeIndexDistAggr( qcStatement * aStatement,
                                      qmgGROP     * aMyGraph );
 
-    // PROJ-1353 Rollup Plan »ı¼º
+    // PROJ-1353 Rollup Plan ìƒì„±
     static IDE_RC makeRollup( qcStatement    * aStatement,
                               qmgGROP        * aMyGraph );
 
-    // PROJ-1353 Cube Plan »ı¼º
+    // PROJ-1353 Cube Plan ìƒì„±
     static IDE_RC makeCube( qcStatement    * aStatement,
                             qmgGROP        * aMyGraph );
 
-    // Grouping MethodÀÇ °áÁ¤(GROUP BY ¿¡ ´ëÇÑ ÃÖÀûÈ­¸¦ ¼öÇà)
+    // Grouping Methodì˜ ê²°ì •(GROUP BY ì— ëŒ€í•œ ìµœì í™”ë¥¼ ìˆ˜í–‰)
     static IDE_RC setGroupingMethod( qcStatement        * aStatement,
                                      qmgGROP            * aGroupGraph,
                                      SDouble              aRecordSize,
                                      SDouble              aAggrCost );
 
-    // GROUP BY ÄÃ·³ Á¤º¸¸¦ ÀÌ¿ëÇÏ¿©Order ÀÚ·á ±¸Á¶¸¦ ±¸ÃàÇÑ´Ù.
+    // GROUP BY ì»¬ëŸ¼ ì •ë³´ë¥¼ ì´ìš©í•˜ì—¬Order ìë£Œ êµ¬ì¡°ë¥¼ êµ¬ì¶•í•œë‹¤.
     static IDE_RC makeGroupByOrder( qcStatement        * aStatement,
                                     qmsConcatElement   * aGroupBy,
                                     qmgPreservedOrder ** sNewGroupByOrder );
                                   
-    // indexable group by ÃÖÀûÈ­
+    // indexable group by ìµœì í™”
     static IDE_RC indexableGroupBy( qcStatement        * aStatement,
                                     qmgGROP            * aGroupGraph,
                                     idBool             * aIndexableGroupBy );
 
-    // count(*) ÃÖÀûÈ­
+    // count(*) ìµœì í™”
     static IDE_RC countStar( qcStatement      * aStatement,
                              qmgGROP          * aGroupGraph,
                              idBool           * aCountStar );
     
     
-    // GROUP BY°¡ ¾øÀº °æ¿ìÀÇ optimize tipÀ» Àû¿ë
+    // GROUP BYê°€ ì—†ì€ ê²½ìš°ì˜ optimize tipì„ ì ìš©
     static IDE_RC nonGroupOptTip( qcStatement * aStatement,
                                   qmgGROP     * aGroupGraph,
                                   SDouble       aRecordSize,
                                   SDouble       aAggrCost );
 
-    // group columnµéÀÇ bucket count¸¦ ±¸ÇÔ
+    // group columnë“¤ì˜ bucket countë¥¼ êµ¬í•¨
     static IDE_RC getBucketCnt4Group( qcStatement  * aStatement,
                                       qmgGROP      * aGroupGraph,
                                       UInt           aHintBucketCnt,
                                       UInt         * aBucketCnt );
 
-    // Preserved Order ¹æ½ÄÀ» »ç¿ëÇÏ¿´À» °æ¿ìÀÇ ºñ¿ë °è»ê
+    // Preserved Order ë°©ì‹ì„ ì‚¬ìš©í•˜ì˜€ì„ ê²½ìš°ì˜ ë¹„ìš© ê³„ì‚°
     static IDE_RC getCostByPrevOrder( qcStatement      * aStatement,
                                       qmgGROP          * aGroupGraph,
                                       SDouble          * aAccessCost,
                                       SDouble          * aDiskCost,
                                       SDouble          * aTotalCost );
 
-    /* PROJ-1353 Group Extension Preserved OrderÀÇ °áÁ¤ ( ROLLUP ) */
+    /* PROJ-1353 Group Extension Preserved Orderì˜ ê²°ì • ( ROLLUP ) */
     static IDE_RC setPreOrderGroupExtension( qcStatement * aStatement,
                                              qmgGROP     * aGroupGraph,
                                              SDouble       aRecordSize );

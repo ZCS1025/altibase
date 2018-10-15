@@ -25,7 +25,7 @@
 #include <ideErrorMgr.h>
 #include <idErrorCode.h>
 
-/* SD¿ë ¿¡·¯ ÄÚµå */
+/* SDìš© ì—ëŸ¬ ì½”ë“œ */
 enum SDERR_CODE
 {
 #include <sdErrorCode.ih>

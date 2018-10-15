@@ -20,11 +20,11 @@
  *
  * Description :
  *
- *     Foreign Key Reference Constraint Ã³¸®¸¦ À§ÇÑ ¸ğµâ
+ *     Foreign Key Reference Constraint ì²˜ë¦¬ë¥¼ ìœ„í•œ ëª¨ë“ˆ
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  **********************************************************************/
 
@@ -52,17 +52,17 @@ qdnForeignKey::reorderForeignKeySpec( qdConstraintSpec * aUniqueKeyConstr,
  *
  * Description :
  *    BUG-27001
- *    foreign keyÀÇ ÂüÁ¶ ¼ø¼­°¡ ÂüÁ¶µÇ´Â unique key ÀÎµ¦½ºÀÇ ÄÃ·³¼ø¼­¿Í
- *    ÀÏÄ¡ÇÏµµ·Ï foreign key ÄÃ·³µéÀÇ ¼ø¼­¸¦ ÀçÁ¤·Ä ÇÔ
+ *    foreign keyì˜ ì°¸ì¡° ìˆœì„œê°€ ì°¸ì¡°ë˜ëŠ” unique key ì¸ë±ìŠ¤ì˜ ì»¬ëŸ¼ìˆœì„œì™€
+ *    ì¼ì¹˜í•˜ë„ë¡ foreign key ì»¬ëŸ¼ë“¤ì˜ ìˆœì„œë¥¼ ì¬ì •ë ¬ í•¨
  *
  * Implementation :
- *    sOldRefColsÀÇ ¸®½ºÆ®¿¡¼­ unique keyÀÇ ÄÃ·³ ¼ø¼­´ë·Î ÇÑ°³¾¿
- *    ÄÃ·³À» »©³»¾î, sNewRefCols¿¡ Àç±¸¼ºÇÔ
+ *    sOldRefColsì˜ ë¦¬ìŠ¤íŠ¸ì—ì„œ unique keyì˜ ì»¬ëŸ¼ ìˆœì„œëŒ€ë¡œ í•œê°œì”©
+ *    ì»¬ëŸ¼ì„ ë¹¼ë‚´ì–´, sNewRefColsì— ì¬êµ¬ì„±í•¨
  *
  * Remark :
- *    ¹İµå½Ã aUniqueKeyConstr¿Í aForeignKeyConstrÀÇ constraintColumns,
- *    aForeignKeyConstrÀÇ referentialConstraintSpec->referencedColList
- *    ±æÀÌ´Â °°¾Æ¾ß ÇÑ´Ù
+ *    ë°˜ë“œì‹œ aUniqueKeyConstrì™€ aForeignKeyConstrì˜ constraintColumns,
+ *    aForeignKeyConstrì˜ referentialConstraintSpec->referencedColList
+ *    ê¸¸ì´ëŠ” ê°™ì•„ì•¼ í•œë‹¤
  *
  ***********************************************************************/
     qcmColumn* sUniqueKeyCols = aUniqueKeyConstr->constraintColumns;
@@ -90,7 +90,7 @@ qdnForeignKey::reorderForeignKeySpec( qdConstraintSpec * aUniqueKeyConstr,
 
         while( sCurrRefCol != NULL )
         {
-            // unique key column°ú ÀÏÄ¡ÇÏ´Â ref. key column°Ë»ö
+            // unique key columnê³¼ ì¼ì¹˜í•˜ëŠ” ref. key columnê²€ìƒ‰
             if ( QC_IS_NAME_MATCHED( sUniqueKeyCols->namePos, sCurrRefCol->namePos ) )
             {
                 break;
@@ -108,25 +108,25 @@ qdnForeignKey::reorderForeignKeySpec( qdConstraintSpec * aUniqueKeyConstr,
         IDE_ASSERT( sCurrRefCol != NULL );
         IDE_ASSERT( sCurrConstrCol != NULL );
 
-        // old list¿¡¼­ ÇÑ °³ÀÇ ³ëµå¸¦ »©³¿
+        // old listì—ì„œ í•œ ê°œì˜ ë…¸ë“œë¥¼ ë¹¼ëƒ„
         if( sCurrRefCol == sOldRefCols )
         {
-            // Ã¹ ¹øÂ° ³ëµå¸¦ »©³ÂÀ» °æ¿ì, ´ÙÀ½ ³ëµå¸¦ Ã¹ ¹øÂ° ³ëµå·Î ÁöÁ¤
+            // ì²« ë²ˆì§¸ ë…¸ë“œë¥¼ ë¹¼ëƒˆì„ ê²½ìš°, ë‹¤ìŒ ë…¸ë“œë¥¼ ì²« ë²ˆì§¸ ë…¸ë“œë¡œ ì§€ì •
             sOldRefCols = sCurrRefCol->next;
             sOldConstrCols = sCurrConstrCol->next;
         }
         else
         {
-            // Áß°£¿¡¼­ »©³ÂÀ» °æ¿ì, ÇöÀç ³ëµåÀÇ ´ÙÀ½ ³ëµå¸¦ ÀÌÀü ³ëµåÀÇ
-            // ´ÙÀ½³ëµå·Î ÁöÁ¤
+            // ì¤‘ê°„ì—ì„œ ë¹¼ëƒˆì„ ê²½ìš°, í˜„ì¬ ë…¸ë“œì˜ ë‹¤ìŒ ë…¸ë“œë¥¼ ì´ì „ ë…¸ë“œì˜
+            // ë‹¤ìŒë…¸ë“œë¡œ ì§€ì •
             sPrevRefCol->next = sCurrRefCol->next;
             sPrevConstrCol->next = sCurrConstrCol->next;
         }
 
-        // new listÀÇ tail¿¡ ³ëµå¸¦ Ãß°¡ÇÑ´Ù
+        // new listì˜ tailì— ë…¸ë“œë¥¼ ì¶”ê°€í•œë‹¤
         if( sNewRefTail == NULL )
         {
-            // new list°¡ ºñ¾îÀÖ´Â °æ¿ì
+            // new listê°€ ë¹„ì–´ìˆëŠ” ê²½ìš°
             sNewRefCols = sCurrRefCol;
             sNewRefTail = sCurrRefCol;
 
@@ -135,9 +135,9 @@ qdnForeignKey::reorderForeignKeySpec( qdConstraintSpec * aUniqueKeyConstr,
         }
         else
         {
-            // new list°¡ ºñ¾îÀÖÁö ¾ÊÀº °æ¿ì
-            sNewRefTail->next = sCurrRefCol;    // ³ëµå Ãß°¡
-            sNewRefTail = sNewRefTail->next;    // listÀÇ tail º¯°æ
+            // new listê°€ ë¹„ì–´ìˆì§€ ì•Šì€ ê²½ìš°
+            sNewRefTail->next = sCurrRefCol;    // ë…¸ë“œ ì¶”ê°€
+            sNewRefTail = sNewRefTail->next;    // listì˜ tail ë³€ê²½
 
             sNewConstrTail->next = sCurrConstrCol;
             sNewConstrTail = sNewConstrTail->next;
@@ -161,17 +161,17 @@ qdnForeignKey::reorderForeignKeySpec( qcmIndex         * aUniqueIndex,
  *
  * Description :
  *    BUG-27001
- *    foreign keyÀÇ ÂüÁ¶ ¼ø¼­°¡ ÂüÁ¶µÇ´Â unique key ÀÎµ¦½ºÀÇ ÄÃ·³¼ø¼­¿Í
- *    ÀÏÄ¡ÇÏµµ·Ï foreign key ÄÃ·³µéÀÇ ¼ø¼­¸¦ ÀçÁ¤·Ä ÇÔ
+ *    foreign keyì˜ ì°¸ì¡° ìˆœì„œê°€ ì°¸ì¡°ë˜ëŠ” unique key ì¸ë±ìŠ¤ì˜ ì»¬ëŸ¼ìˆœì„œì™€
+ *    ì¼ì¹˜í•˜ë„ë¡ foreign key ì»¬ëŸ¼ë“¤ì˜ ìˆœì„œë¥¼ ì¬ì •ë ¬ í•¨
  *
  * Implementation :
- *    sOldRefColsÀÇ ¸®½ºÆ®¿¡¼­ unique keyÀÇ ÄÃ·³ ¼ø¼­´ë·Î ÇÑ°³¾¿
- *    ÄÃ·³À» »©³»¾î, sNewRefCols¿¡ Àç±¸¼ºÇÔ
+ *    sOldRefColsì˜ ë¦¬ìŠ¤íŠ¸ì—ì„œ unique keyì˜ ì»¬ëŸ¼ ìˆœì„œëŒ€ë¡œ í•œê°œì”©
+ *    ì»¬ëŸ¼ì„ ë¹¼ë‚´ì–´, sNewRefColsì— ì¬êµ¬ì„±í•¨
  *
  * Remark :
- *    ¹İµå½Ã aUniqueKeyConstr¿Í aForeignKeyConstrÀÇ constraintColumns,
- *    aForeignKeyConstrÀÇ referentialConstraintSpec->referencedColList
- *    ±æÀÌ´Â °°¾Æ¾ß ÇÑ´Ù
+ *    ë°˜ë“œì‹œ aUniqueKeyConstrì™€ aForeignKeyConstrì˜ constraintColumns,
+ *    aForeignKeyConstrì˜ referentialConstraintSpec->referencedColList
+ *    ê¸¸ì´ëŠ” ê°™ì•„ì•¼ í•œë‹¤
  *
  ***********************************************************************/
     UInt       i;
@@ -199,7 +199,7 @@ qdnForeignKey::reorderForeignKeySpec( qcmIndex         * aUniqueIndex,
 
         while( sCurrRefCol != NULL )
         {
-            // unique key column°ú ÀÏÄ¡ÇÏ´Â ref. key column°Ë»ö
+            // unique key columnê³¼ ì¼ì¹˜í•˜ëŠ” ref. key columnê²€ìƒ‰
             if( aUniqueIndex->keyColumns[i].column.id ==
                 sCurrRefCol->basicInfo->column.id )
             {
@@ -218,25 +218,25 @@ qdnForeignKey::reorderForeignKeySpec( qcmIndex         * aUniqueIndex,
         IDE_ASSERT( sCurrRefCol != NULL );
         IDE_ASSERT( sCurrConstrCol != NULL );
 
-        // old list¿¡¼­ ÇÑ °³ÀÇ ³ëµå¸¦ »©³¿
+        // old listì—ì„œ í•œ ê°œì˜ ë…¸ë“œë¥¼ ë¹¼ëƒ„
         if( sCurrRefCol == sOldRefCols )
         {
-            // Ã¹ ¹øÂ° ³ëµå¸¦ »©³ÂÀ» °æ¿ì, ´ÙÀ½ ³ëµå¸¦ Ã¹ ¹øÂ° ³ëµå·Î ÁöÁ¤
+            // ì²« ë²ˆì§¸ ë…¸ë“œë¥¼ ë¹¼ëƒˆì„ ê²½ìš°, ë‹¤ìŒ ë…¸ë“œë¥¼ ì²« ë²ˆì§¸ ë…¸ë“œë¡œ ì§€ì •
             sOldRefCols = sCurrRefCol->next;
             sOldConstrCols = sCurrConstrCol->next;
         }
         else
         {
-            // Áß°£¿¡¼­ »©³ÂÀ» °æ¿ì, ÇöÀç ³ëµåÀÇ ´ÙÀ½ ³ëµå¸¦ ÀÌÀü ³ëµåÀÇ
-            // ´ÙÀ½³ëµå·Î ÁöÁ¤
+            // ì¤‘ê°„ì—ì„œ ë¹¼ëƒˆì„ ê²½ìš°, í˜„ì¬ ë…¸ë“œì˜ ë‹¤ìŒ ë…¸ë“œë¥¼ ì´ì „ ë…¸ë“œì˜
+            // ë‹¤ìŒë…¸ë“œë¡œ ì§€ì •
             sPrevRefCol->next = sCurrRefCol->next;
             sPrevConstrCol->next = sCurrConstrCol->next;
         }
 
-        // new listÀÇ tail¿¡ ³ëµå¸¦ Ãß°¡ÇÑ´Ù
+        // new listì˜ tailì— ë…¸ë“œë¥¼ ì¶”ê°€í•œë‹¤
         if( sNewRefTail == NULL )
         {
-            // new list°¡ ºñ¾îÀÖ´Â °æ¿ì
+            // new listê°€ ë¹„ì–´ìˆëŠ” ê²½ìš°
             sNewRefCols = sCurrRefCol;
             sNewRefTail = sCurrRefCol;
 
@@ -245,9 +245,9 @@ qdnForeignKey::reorderForeignKeySpec( qcmIndex         * aUniqueIndex,
         }
         else
         {
-            // new list°¡ ºñ¾îÀÖÁö ¾ÊÀº °æ¿ì
-            sNewRefTail->next = sCurrRefCol;    // ³ëµå Ãß°¡
-            sNewRefTail = sNewRefTail->next;    // listÀÇ tail º¯°æ
+            // new listê°€ ë¹„ì–´ìˆì§€ ì•Šì€ ê²½ìš°
+            sNewRefTail->next = sCurrRefCol;    // ë…¸ë“œ ì¶”ê°€
+            sNewRefTail = sNewRefTail->next;    // listì˜ tail ë³€ê²½
 
             sNewConstrTail->next = sCurrConstrCol;
             sNewConstrTail = sNewConstrTail->next;
@@ -270,34 +270,34 @@ qdnForeignKey::validateForeignKeySpec( qcStatement      * aStatement,
 /***********************************************************************
  *
  * Description :
- *    validateConstraints ¿¡¼­ È£Ãâ, reference ÀÇ validation ¼öÇà
+ *    validateConstraints ì—ì„œ í˜¸ì¶œ, reference ì˜ validation ìˆ˜í–‰
  *
  * Implementation :
- *    ÂüÁ¶µÇ´Â Å×ÀÌºíÀÌ self Å×ÀÌºíÀÏ ¶§
+ *    ì°¸ì¡°ë˜ëŠ” í…Œì´ë¸”ì´ self í…Œì´ë¸”ì¼ ë•Œ
  *    -- if create
- *         1. ÄÃ·³ÀÌ ¸í½ÃµÇÁö ¾Ê¾ÒÀ¸¸é primary key ÄÃ·³À» ÂüÁ¶ÇÏµµ·Ï
- *            ÄÃ·³ÀÌ ¸í½ÃµÇ¾úÀ¸¸é ¸í½ÃµÈ ÄÃ·³À» ÂüÁ¶ÇÏµµ·Ï
- *         2. ÂüÁ¶ÇÏ´Â ÄÃ·³°ú ÂüÁ¶µÇ´Â ÄÃ·³ÀÇ Å¸ÀÔÀÌ Compatible ÇÑÁö Ã¼Å©
- *         3. ÂüÁ¶µÇ´Â ÄÃ·³À¸·Î ±¸¼ºµÈ primary key
- *            ¶Ç´Â unique °¡ Á¸ÀçÇÏ´ÂÁö Ã¼Å©
+ *         1. ì»¬ëŸ¼ì´ ëª…ì‹œë˜ì§€ ì•Šì•˜ìœ¼ë©´ primary key ì»¬ëŸ¼ì„ ì°¸ì¡°í•˜ë„ë¡
+ *            ì»¬ëŸ¼ì´ ëª…ì‹œë˜ì—ˆìœ¼ë©´ ëª…ì‹œëœ ì»¬ëŸ¼ì„ ì°¸ì¡°í•˜ë„ë¡
+ *         2. ì°¸ì¡°í•˜ëŠ” ì»¬ëŸ¼ê³¼ ì°¸ì¡°ë˜ëŠ” ì»¬ëŸ¼ì˜ íƒ€ì…ì´ Compatible í•œì§€ ì²´í¬
+ *         3. ì°¸ì¡°ë˜ëŠ” ì»¬ëŸ¼ìœ¼ë¡œ êµ¬ì„±ëœ primary key
+ *            ë˜ëŠ” unique ê°€ ì¡´ì¬í•˜ëŠ”ì§€ ì²´í¬
  *    -- else (add col, add constraint)
- *         1. ÂüÁ¶µÇ´Â ÄÃ·³ÀÌ ¸í½ÃµÇÁö ¾Ê¾ÒÀ¸¸é
- *            primary key ÄÃ·³ÀÌ ÀÖ´ÂÁö Ã¼Å©
- *            ÂüÁ¶µÇ´Â ÄÃ·³ÀÌ ¸í½ÃµÇ¾úÀ¸¸é ¸í½ÃµÈ ÄÃ·³ÀÌ Á¸ÀçÇÏ´ÂÁö Ã¼Å©
- *         2. ÂüÁ¶µÇ´Â ÄÃ·³À¸·Î ±¸¼ºµÈ unique key
- *            ¶Ç´Â constraint °¡ Á¸ÀçÇÏ´ÂÁö Ã¼Å©
- *         3. ÂüÁ¶ÇÏ´Â ÄÃ·³°ú ÂüÁ¶µÇ´Â ÄÃ·³ÀÇ Å¸ÀÔÀÌ Compatible ÇÑÁö Ã¼Å©
+ *         1. ì°¸ì¡°ë˜ëŠ” ì»¬ëŸ¼ì´ ëª…ì‹œë˜ì§€ ì•Šì•˜ìœ¼ë©´
+ *            primary key ì»¬ëŸ¼ì´ ìˆëŠ”ì§€ ì²´í¬
+ *            ì°¸ì¡°ë˜ëŠ” ì»¬ëŸ¼ì´ ëª…ì‹œë˜ì—ˆìœ¼ë©´ ëª…ì‹œëœ ì»¬ëŸ¼ì´ ì¡´ì¬í•˜ëŠ”ì§€ ì²´í¬
+ *         2. ì°¸ì¡°ë˜ëŠ” ì»¬ëŸ¼ìœ¼ë¡œ êµ¬ì„±ëœ unique key
+ *            ë˜ëŠ” constraint ê°€ ì¡´ì¬í•˜ëŠ”ì§€ ì²´í¬
+ *         3. ì°¸ì¡°í•˜ëŠ” ì»¬ëŸ¼ê³¼ ì°¸ì¡°ë˜ëŠ” ì»¬ëŸ¼ì˜ íƒ€ì…ì´ Compatible í•œì§€ ì²´í¬
  *
- *    ÂüÁ¶µÇ´Â Å×ÀÌºíÀÌ ´Ù¸¥ Å×ÀÌºíÀÏ ¶§
- *    1. ÂüÁ¶µÇ´Â Å×ÀÌºíÀÇ qcmTableInfo ±¸ÇÏ±â
- *    2. »ı¼º ±ÇÇÑÀÌ ÀÖ´ÂÁö °Ë»ç
- *    3. ±ÇÇÑÀÌ ÀÖ´ÂÁö °Ë»ç
- *    4. ÂüÁ¶µÇ´Â ÄÃ·³ÀÌ ¸í½ÃµÇÁö ¾Ê¾ÒÀ¸¸é,
- *          ÂüÁ¶ÇÒ Å×ÀÌºí¿¡ primary key ÄÃ·³ÀÌ ÀÖ´ÂÁö Ã¼Å©
- *       ÂüÁ¶µÇ´Â ÄÃ·³ÀÌ ¸í½ÃµÇ¾úÀ¸¸é,
- *          ¸í½ÃµÈ ÄÃ·³ÀÌ ÂüÁ¶ÇÒ Å×ÀÌºí¿¡ Á¸ÀçÇÏ´ÂÁö Ã¼Å©
- *    5. ÂüÁ¶µÇ´Â ÄÃ·³À¸·Î ±¸¼ºµÈ unique key °¡ Á¸ÀçÇÏ´ÂÁö Ã¼Å©
- *    6. ÂüÁ¶ÇÏ´Â ÄÃ·³°ú ÂüÁ¶µÇ´Â ÄÃ·³ÀÇ Å¸ÀÔÀÌ Compatible ÇÑÁö Ã¼Å©
+ *    ì°¸ì¡°ë˜ëŠ” í…Œì´ë¸”ì´ ë‹¤ë¥¸ í…Œì´ë¸”ì¼ ë•Œ
+ *    1. ì°¸ì¡°ë˜ëŠ” í…Œì´ë¸”ì˜ qcmTableInfo êµ¬í•˜ê¸°
+ *    2. ìƒì„± ê¶Œí•œì´ ìˆëŠ”ì§€ ê²€ì‚¬
+ *    3. ê¶Œí•œì´ ìˆëŠ”ì§€ ê²€ì‚¬
+ *    4. ì°¸ì¡°ë˜ëŠ” ì»¬ëŸ¼ì´ ëª…ì‹œë˜ì§€ ì•Šì•˜ìœ¼ë©´,
+ *          ì°¸ì¡°í•  í…Œì´ë¸”ì— primary key ì»¬ëŸ¼ì´ ìˆëŠ”ì§€ ì²´í¬
+ *       ì°¸ì¡°ë˜ëŠ” ì»¬ëŸ¼ì´ ëª…ì‹œë˜ì—ˆìœ¼ë©´,
+ *          ëª…ì‹œëœ ì»¬ëŸ¼ì´ ì°¸ì¡°í•  í…Œì´ë¸”ì— ì¡´ì¬í•˜ëŠ”ì§€ ì²´í¬
+ *    5. ì°¸ì¡°ë˜ëŠ” ì»¬ëŸ¼ìœ¼ë¡œ êµ¬ì„±ëœ unique key ê°€ ì¡´ì¬í•˜ëŠ”ì§€ ì²´í¬
+ *    6. ì°¸ì¡°í•˜ëŠ” ì»¬ëŸ¼ê³¼ ì°¸ì¡°ë˜ëŠ” ì»¬ëŸ¼ì˜ íƒ€ì…ì´ Compatible í•œì§€ ì²´í¬
  *
  ***********************************************************************/
 
@@ -354,7 +354,7 @@ qdnForeignKey::validateForeignKeySpec( qcStatement      * aStatement,
             //-------------------------------------
 
             // PROJ-1407 Temporary Table
-            // temporary table¿¡´Â self referencing foreign key constraint¸¦ »ı¼ºÇÒ ¼ö ¾ø´Ù.
+            // temporary tableì—ëŠ” self referencing foreign key constraintë¥¼ ìƒì„±í•  ìˆ˜ ì—†ë‹¤.
             IDE_TEST_RAISE( ( sParseTree->flag & QDT_CREATE_TEMPORARY_MASK )
                             == QDT_CREATE_TEMPORARY_TRUE,
                             ERR_CANNOT_CREATE_FOREIGN_KEY_ON_TEMPORARY_TABLE );
@@ -405,8 +405,8 @@ qdnForeignKey::validateForeignKeySpec( qcStatement      * aStatement,
                     //                    sColumnInfo->basicInfo);
 
                     // To Fix PR-10247
-                    // À§¿Í °°Àº MacroÀÇ »ç¿ëÀº ÀÚ·á ±¸Á¶ÀÇ º¯°æ¿¡
-                    // À¯¿¬ÇÏ°Ô ´ëÃ³ÇÒ ¼ö ¾ø´Ù.
+                    // ìœ„ì™€ ê°™ì€ Macroì˜ ì‚¬ìš©ì€ ìë£Œ êµ¬ì¡°ì˜ ë³€ê²½ì—
+                    // ìœ ì—°í•˜ê²Œ ëŒ€ì²˜í•  ìˆ˜ ì—†ë‹¤.
 
                     // fix BUG-33258
                     if( sColumn->basicInfo != sColumnInfo->basicInfo )
@@ -447,7 +447,7 @@ qdnForeignKey::validateForeignKeySpec( qcStatement      * aStatement,
             //--------------------------------------------
 
             // PROJ-1407 Temporary Table
-            // temporary table¿¡´Â foreign key¸¦ »ı¼ºÇÒ ¼ö ¾ø´Ù.
+            // temporary tableì—ëŠ” foreign keyë¥¼ ìƒì„±í•  ìˆ˜ ì—†ë‹¤.
             IDE_TEST_RAISE( qcuTemporaryObj::isTemporaryTable( aTableInfo ) == ID_TRUE,
                             ERR_CANNOT_CREATE_FOREIGN_KEY_ON_TEMPORARY_TABLE );
 
@@ -505,8 +505,8 @@ qdnForeignKey::validateForeignKeySpec( qcStatement      * aStatement,
                     //                    sColumnInfo->basicInfo);
 
                     // To Fix PR-10247
-                    // À§¿Í °°Àº MacroÀÇ »ç¿ëÀº ÀÚ·á ±¸Á¶ÀÇ º¯°æ¿¡
-                    // À¯¿¬ÇÏ°Ô ´ëÃ³ÇÒ ¼ö ¾ø´Ù.
+                    // ìœ„ì™€ ê°™ì€ Macroì˜ ì‚¬ìš©ì€ ìë£Œ êµ¬ì¡°ì˜ ë³€ê²½ì—
+                    // ìœ ì—°í•˜ê²Œ ëŒ€ì²˜í•  ìˆ˜ ì—†ë‹¤.
 
                     // fix BUG-33258
                     if( sColumn->basicInfo != sColumnInfo->basicInfo )
@@ -523,8 +523,8 @@ qdnForeignKey::validateForeignKeySpec( qcStatement      * aStatement,
             sColumn = sRefSpec->referencedColList;
 
             // BUG-17126
-            // Foreign Key Constraint´Â Unique Constraint³ª Primary Constraint°¡
-            // ÀÖÀ»¶§¸¸ »ı¼ºÇÒ ¼ö ÀÖ´Ù.
+            // Foreign Key ConstraintëŠ” Unique Constraintë‚˜ Primary Constraintê°€
+            // ìˆì„ë•Œë§Œ ìƒì„±í•  ìˆ˜ ìˆë‹¤.
             for (i = 0; i < aTableInfo->uniqueKeyCount; i++)
             {
                 sConstrType = aTableInfo->uniqueKeys[i].constraintType;
@@ -548,7 +548,7 @@ qdnForeignKey::validateForeignKeySpec( qcStatement      * aStatement,
                 }
                 else
                 {
-                    // LocalUnique ConstraintÀÎ °æ¿ì¿¡´Â FK¸¦ »ı¼ºÇÒ ¼ö ¾ø´Ù.
+                    // LocalUnique Constraintì¸ ê²½ìš°ì—ëŠ” FKë¥¼ ìƒì„±í•  ìˆ˜ ì—†ë‹¤.
                     // Nothing to do
 
                 }
@@ -595,7 +595,7 @@ qdnForeignKey::validateForeignKeySpec( qcStatement      * aStatement,
             IDE_TEST_RAISE(sMatchIdxExist == ID_FALSE, err_constraint_not_exist);
         }
 
-        // referencing column°ú referenced columnÀÇ °¹¼ö´Â µ¿ÀÏÇØ¾ß ÇÑ´Ù.
+        // referencing columnê³¼ referenced columnì˜ ê°¯ìˆ˜ëŠ” ë™ì¼í•´ì•¼ í•œë‹¤.
         for( sReferencedCol = sRefSpec->referencedColList,
                  sReferencedColCount = 0;
              sReferencedCol != NULL;
@@ -616,20 +616,20 @@ qdnForeignKey::validateForeignKeySpec( qcStatement      * aStatement,
             if( sParentConstraint->constraintColumns !=
                 sRefSpec->referencedColList )
             {
-                // create table·Î index¿Í foreign key¸¦ ÇÔ²² »ı¼ºÇÏ¸ç
-                // ÂüÁ¶ÇÒ ÄÃ·³À» ¸í½ÃÇÑ °æ¿ì¿¡ foreign key ÀçÁ¤·Ä
+                // create tableë¡œ indexì™€ foreign keyë¥¼ í•¨ê»˜ ìƒì„±í•˜ë©°
+                // ì°¸ì¡°í•  ì»¬ëŸ¼ì„ ëª…ì‹œí•œ ê²½ìš°ì— foreign key ì¬ì •ë ¬
                 IDE_TEST( reorderForeignKeySpec( sParentConstraint, aForeignKeyConstr ) );
             }
             else
             {
-                // create table·Î index¿Í foreign key¸¦ ÇÔ²² »ı¼ºÇÏ°Å³ª
-                // alter table·Î foreign key¸¦ Ãß°¡ÇÏÁö¸¸ ÂüÁ¶ µÉ
-                // ÄÃ·³À» ¸í½ÃÇÏÁö ¾ÊÀº °æ¿ì
+                // create tableë¡œ indexì™€ foreign keyë¥¼ í•¨ê»˜ ìƒì„±í•˜ê±°ë‚˜
+                // alter tableë¡œ foreign keyë¥¼ ì¶”ê°€í•˜ì§€ë§Œ ì°¸ì¡° ë 
+                // ì»¬ëŸ¼ì„ ëª…ì‹œí•˜ì§€ ì•Šì€ ê²½ìš°
             }
         }
         else
         {
-            // alter table·Î ÀÌ¹Ì Á¸ÀçÇÏ´Â index¿¡ foreign key »ı¼º
+            // alter tableë¡œ ì´ë¯¸ ì¡´ì¬í•˜ëŠ” indexì— foreign key ìƒì„±
             IDE_TEST( reorderForeignKeySpec( sIndexInfo, aForeignKeyConstr ) );
         }
 
@@ -644,7 +644,7 @@ qdnForeignKey::validateForeignKeySpec( qcStatement      * aStatement,
                             err_mismatched_column_count );
 
             // fix BUG-10931
-            // foreign key ÂüÁ¶½Ã °°Àº Å¸ÀÔ³¢¸®¸¸ °¡´É.
+            // foreign key ì°¸ì¡°ì‹œ ê°™ì€ íƒ€ì…ë¼ë¦¬ë§Œ ê°€ëŠ¥.
             if( ( sColumn->basicInfo->type.dataTypeId ==
                   sReferencedCol->basicInfo->type.dataTypeId ) &&
                 ( sColumn->basicInfo->type.languageId ==
@@ -680,8 +680,8 @@ qdnForeignKey::validateForeignKeySpec( qcStatement      * aStatement,
                  != IDE_SUCCESS);
 
         // PROJ-1407 Temporary Table
-        // temporary table¿¡´Â referencing & referenced foreign key constraint
-        // ¸ğµÎ »ı¼ºÇÒ ¼ö ¾ø´Ù.
+        // temporary tableì—ëŠ” referencing & referenced foreign key constraint
+        // ëª¨ë‘ ìƒì„±í•  ìˆ˜ ì—†ë‹¤.
         if ( aTableInfo == NULL )
         {
             IDE_TEST_RAISE( ( ( sParseTree->flag & QDT_CREATE_TEMPORARY_MASK )
@@ -706,15 +706,15 @@ qdnForeignKey::validateForeignKeySpec( qcStatement      * aStatement,
                   != IDE_SUCCESS );
 
         /* BUG-42881 
-         * CHECK_FK_IN_CREATE_REPLICATION_DISABLE °¡ 1·Î ¼³Á¤µÇ¾î ÀÖÀ¸¸é 
-         * Replication ´ë»ó Å×ÀÌºíÀÌ¾îµµ FK ¸¦ Ãß°¡ÇÏ°Å³ª »èÁ¦ÇÒ¼ö ÀÖ½À´Ï´Ù.
+         * CHECK_FK_IN_CREATE_REPLICATION_DISABLE ê°€ 1ë¡œ ì„¤ì •ë˜ì–´ ìˆìœ¼ë©´ 
+         * Replication ëŒ€ìƒ í…Œì´ë¸”ì´ì–´ë„ FK ë¥¼ ì¶”ê°€í•˜ê±°ë‚˜ ì‚­ì œí• ìˆ˜ ìˆìŠµë‹ˆë‹¤.
          */                     
         if ( QCU_CHECK_FK_IN_CREATE_REPLICATION_DISABLE == 0 )
         {
             // if referenced tables is replicated, the error 
             IDE_TEST_RAISE( sReferencedTableInfo->replicationCount > 0,
                             ERR_DDL_WITH_REPLICATED_TABLE );
-            //proj-1608:replicationCount°¡ 0ÀÏ ¶§ recovery count´Â Ç×»ó 0ÀÌ¾î¾ß ÇÔ
+            //proj-1608:replicationCountê°€ 0ì¼ ë•Œ recovery countëŠ” í•­ìƒ 0ì´ì–´ì•¼ í•¨
             IDE_DASSERT( sReferencedTableInfo->replicationRecoveryCount == 0 );
         }
         else
@@ -770,8 +770,8 @@ qdnForeignKey::validateForeignKeySpec( qcStatement      * aStatement,
                 //                    sColumnInfo->basicInfo);
 
                 // To Fix PR-10247
-                // À§¿Í °°Àº MacroÀÇ »ç¿ëÀº ÀÚ·á ±¸Á¶ÀÇ º¯°æ¿¡
-                // À¯¿¬ÇÏ°Ô ´ëÃ³ÇÒ ¼ö ¾ø´Ù.
+                // ìœ„ì™€ ê°™ì€ Macroì˜ ì‚¬ìš©ì€ ìë£Œ êµ¬ì¡°ì˜ ë³€ê²½ì—
+                // ìœ ì—°í•˜ê²Œ ëŒ€ì²˜í•  ìˆ˜ ì—†ë‹¤.
 
                 // fix BUG-33258
                 if( sColumn->basicInfo != sColumnInfo->basicInfo )
@@ -788,8 +788,8 @@ qdnForeignKey::validateForeignKeySpec( qcStatement      * aStatement,
         sColumn = sRefSpec->referencedColList;
 
         // BUG-17126
-        // Foreign Key Constraint´Â Unique Constraint³ª Primary Constraint°¡
-        // ÀÖÀ»¶§¸¸ »ı¼ºÇÒ ¼ö ÀÖ´Ù.
+        // Foreign Key ConstraintëŠ” Unique Constraintë‚˜ Primary Constraintê°€
+        // ìˆì„ë•Œë§Œ ìƒì„±í•  ìˆ˜ ìˆë‹¤.
         for (i = 0; i < sReferencedTableInfo->uniqueKeyCount; i++)
         {
             sConstrType = sReferencedTableInfo->uniqueKeys[i].constraintType;
@@ -815,7 +815,7 @@ qdnForeignKey::validateForeignKeySpec( qcStatement      * aStatement,
             }
             else
             {
-                // LocalUnique ConstraintÀÎ °æ¿ì¿¡´Â FK¸¦ »ı¼ºÇÒ ¼ö ¾ø´Ù.
+                // LocalUnique Constraintì¸ ê²½ìš°ì—ëŠ” FKë¥¼ ìƒì„±í•  ìˆ˜ ì—†ë‹¤.
                 // Nothing to do
             }
         }
@@ -823,7 +823,7 @@ qdnForeignKey::validateForeignKeySpec( qcStatement      * aStatement,
         IDE_TEST_RAISE(sMatchIdxExist == ID_FALSE, err_constraint_not_exist);
 
         // PROJ-1509
-        // referencing column°ú referenced columnÀÇ °¹¼ö´Â µ¿ÀÏÇØ¾ß ÇÑ´Ù.
+        // referencing columnê³¼ referenced columnì˜ ê°¯ìˆ˜ëŠ” ë™ì¼í•´ì•¼ í•œë‹¤.
         IDE_TEST_RAISE( sConstraintColCount != sRefSpec->referencedColCount,
                         err_mismatched_column_count );
 
@@ -839,7 +839,7 @@ qdnForeignKey::validateForeignKeySpec( qcStatement      * aStatement,
                  sColumnCount++)
         {
             // fix BUG-10931
-            // foreign key ÂüÁ¶½Ã °°Àº Å¸ÀÔ³¢¸®¸¸ °¡´É.
+            // foreign key ì°¸ì¡°ì‹œ ê°™ì€ íƒ€ì…ë¼ë¦¬ë§Œ ê°€ëŠ¥.
             if( ( sColumn->basicInfo->type.dataTypeId ==
                   sReferencedCol->basicInfo->type.dataTypeId ) &&
                 ( sColumn->basicInfo->type.languageId ==
@@ -895,12 +895,12 @@ qdnForeignKey::checkRef4AddConst( qcStatement      * aStatement,
  *
  * Description :
  *    To Fix PR-10385
- *    ÀÌ¹Ì »ı¼ºµÈ Table¿¡ ´ëÇÏ¿© Foreign Key Á¦¾à Á¶°ÇÀ» Ãß°¡ÇÒ ¶§,
- *    ±âÁ¸ÀÇ Data¿¡ ´ëÇÏ¿© Foreign Key °Ë»ç¸¦ ÇØ¾ß ÇÑ´Ù.
+ *    ì´ë¯¸ ìƒì„±ëœ Tableì— ëŒ€í•˜ì—¬ Foreign Key ì œì•½ ì¡°ê±´ì„ ì¶”ê°€í•  ë•Œ,
+ *    ê¸°ì¡´ì˜ Dataì— ëŒ€í•˜ì—¬ Foreign Key ê²€ì‚¬ë¥¼ í•´ì•¼ í•œë‹¤.
  *
  * Implementation :
- *    ÇöÀç TableÀÇ Record¸¦ ÀĞ¾î
- *    Parent Table¿¡ Á¸ÀçÇÏ´Â Áö¸¦ °Ë»çÇÑ´Ù.
+ *    í˜„ì¬ Tableì˜ Recordë¥¼ ì½ì–´
+ *    Parent Tableì— ì¡´ì¬í•˜ëŠ” ì§€ë¥¼ ê²€ì‚¬í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -908,22 +908,22 @@ qdnForeignKey::checkRef4AddConst( qcStatement      * aStatement,
 
     UInt              i;
 
-    // Á¦¾à Á¶°Ç °ü·Ã Á¤º¸¸¦ À§ÇÑ Áö¿ª º¯¼ö
+    // ì œì•½ ì¡°ê±´ ê´€ë ¨ ì •ë³´ë¥¼ ìœ„í•œ ì§€ì—­ ë³€ìˆ˜
     qdReferenceSpec * sRefSpec;
     qcmTableInfo    * sParentTableInfo;
     qcmIndex        * sParentIndexInfo;
 
-    // Á¦¾à Á¶°Ç °Ë»ç ¸ğµâ »ç¿ëÀ» À§ÇÑ Áö¿ªº¯¼ö
+    // ì œì•½ ì¡°ê±´ ê²€ì‚¬ ëª¨ë“ˆ ì‚¬ìš©ì„ ìœ„í•œ ì§€ì—­ë³€ìˆ˜
     qcmForeignKey     sForeignKey;
     qcmParentInfo     sParentRefInfo;
     qcmColumn       * sConstrColumn;
 
-    // Cursor¸¦ À§ÇÑ Áö¿ªº¯¼ö
+    // Cursorë¥¼ ìœ„í•œ ì§€ì—­ë³€ìˆ˜
     smiTableCursor      sReadCursor;
     smiCursorProperties sCursorProperty;
     idBool              sCursorOpen;
 
-    // Record °Ë»öÀ» À§ÇÑ Áö¿ª º¯¼ö
+    // Record ê²€ìƒ‰ì„ ìœ„í•œ ì§€ì—­ ë³€ìˆ˜
     UInt                sRowSize;
     const void *        sRow;
     const void *        sOrgRow = NULL;
@@ -943,11 +943,11 @@ qdnForeignKey::checkRef4AddConst( qcStatement      * aStatement,
     qmsIndexTableRef       sIndexTable;
     qcmIndex             * sIndexTableIndex;
 
-    /* PROJ-2464 hybrid partitioned table Áö¿ø */
+    /* PROJ-2464 hybrid partitioned table ì§€ì› */
     qcmTableInfo         * sDiskPartInfo    = NULL;
 
     //---------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //---------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -957,7 +957,7 @@ qdnForeignKey::checkRef4AddConst( qcStatement      * aStatement,
     IDE_DASSERT( aForeignSpec->referentialConstraintSpec != NULL );
 
     //---------------------------------------------
-    // ÃÊ±âÈ­
+    // ì´ˆê¸°í™”
     //---------------------------------------------
 
     sParseTree = (qdTableParseTree *)aStatement->myPlan->parseTree;    
@@ -969,7 +969,7 @@ qdnForeignKey::checkRef4AddConst( qcStatement      * aStatement,
     sCursorOpen = ID_FALSE;
 
     //---------------------------------------------
-    // Parent Table°ú IndexÀÇ Meta Cache Á¤º¸ È¹µæ
+    // Parent Tableê³¼ Indexì˜ Meta Cache ì •ë³´ íšë“
     //---------------------------------------------
 
     IDE_TEST( getParentTableAndIndex( aStatement,
@@ -994,7 +994,7 @@ qdnForeignKey::checkRef4AddConst( qcStatement      * aStatement,
                                                                   SMI_TABLE_LOCK_S )
                   != IDE_SUCCESS );
         
-        // key index¸¦ Ã£´Â´Ù.
+        // key indexë¥¼ ì°¾ëŠ”ë‹¤.
         IDE_TEST( qmsIndexTable::findKeyIndex( sIndexTable.tableInfo,
                                                & sIndexTableIndex )
                   != IDE_SUCCESS );
@@ -1008,11 +1008,11 @@ qdnForeignKey::checkRef4AddConst( qcStatement      * aStatement,
     }
 
     //---------------------------------------------
-    // ÄÚµå °øÀ¯¸¦ À§ÇÑ °¡»ó Meta Cache ±¸¼º
+    // ì½”ë“œ ê³µìœ ë¥¼ ìœ„í•œ ê°€ìƒ Meta Cache êµ¬ì„±
     //---------------------------------------------
 
     //----------------------------
-    // °¡»ó Foreign Key Cache ±¸¼º
+    // ê°€ìƒ Foreign Key Cache êµ¬ì„±
     //----------------------------
 
     idlOS::memset( & sForeignKey, 0x00, ID_SIZEOF( qcmForeignKey ) );
@@ -1033,7 +1033,7 @@ qdnForeignKey::checkRef4AddConst( qcStatement      * aStatement,
     sForeignKey.referencedIndexID = sRefSpec->referencedIndexID;
 
     //----------------------------
-    // °¡»ó Parent Cache ±¸¼º
+    // ê°€ìƒ Parent Cache êµ¬ì„±
     //----------------------------
 
     idlOS::memset( & sParentRefInfo, 0x00, ID_SIZEOF( qcmParentInfo ) );
@@ -1063,7 +1063,7 @@ qdnForeignKey::checkRef4AddConst( qcStatement      * aStatement,
                       SMI_TABLE_LOCK_S )
                   != IDE_SUCCESS );
 
-        /* PROJ-2464 hybrid partitioned table Áö¿ø */
+        /* PROJ-2464 hybrid partitioned table ì§€ì› */
         IDE_TEST( qcmPartition::makePartitionSummary( aStatement, sTableRef )
                   != IDE_SUCCESS );
     }
@@ -1089,21 +1089,21 @@ qdnForeignKey::checkRef4AddConst( qcStatement      * aStatement,
     }
 
     //---------------------------------------------
-    // Foreign Key Á¦¾à Á¶°Ç °Ë»ç
+    // Foreign Key ì œì•½ ì¡°ê±´ ê²€ì‚¬
     //---------------------------------------------
 
-    // ÇöÀç Table¿¡ Á¸ÀçÇÏ´Â Record¸¦ ÀĞ¾î
-    // Parent Table¿¡ Á¸ÀçÇÏ´Â Áö È®ÀÎÇÑ´Ù.
+    // í˜„ì¬ Tableì— ì¡´ì¬í•˜ëŠ” Recordë¥¼ ì½ì–´
+    // Parent Tableì— ì¡´ì¬í•˜ëŠ” ì§€ í™•ì¸í•œë‹¤.
 
     //----------------------------
-    // Ä¿¼­ ÃÊ±âÈ­
+    // ì»¤ì„œ ì´ˆê¸°í™”
     //----------------------------
 
     //----------------------------
-    // Record °ø°£ È®º¸
+    // Record ê³µê°„ í™•ë³´
     //----------------------------
 
-    /* PROJ-2464 hybrid partitioned table Áö¿ø */
+    /* PROJ-2464 hybrid partitioned table ì§€ì› */
     for ( sPartInfoNode = sPartInfoList;
           sPartInfoNode != NULL;
           sPartInfoNode = sPartInfoNode->next )
@@ -1121,16 +1121,16 @@ qdnForeignKey::checkRef4AddConst( qcStatement      * aStatement,
 
     if ( sDiskPartInfo != NULL )
     {
-        // Disk TableÀÎ °æ¿ì
-        // Record Read¸¦ À§ÇÑ °ø°£À» ÇÒ´çÇÑ´Ù.
-        // To Fix BUG-12977 : parentÀÇ rowsize°¡ ¾Æ´Ñ, ÀÚ½ÅÀÇ rowsize¸¦
-        //                    °¡Áö°í ¿Í¾ßÇÔ
+        // Disk Tableì¸ ê²½ìš°
+        // Record Readë¥¼ ìœ„í•œ ê³µê°„ì„ í• ë‹¹í•œë‹¤.
+        // To Fix BUG-12977 : parentì˜ rowsizeê°€ ì•„ë‹Œ, ìì‹ ì˜ rowsizeë¥¼
+        //                    ê°€ì§€ê³  ì™€ì•¼í•¨
         IDE_TEST( qdbCommon::getDiskRowSize( sDiskPartInfo,
                                              & sRowSize )
                   != IDE_SUCCESS );
 
         // To fix BUG-14820
-        // Disk-variable ÄÃ·³ÀÇ ridºñ±³¸¦ À§ÇØ ÃÊ±âÈ­ ÇØ¾ß ÇÔ.
+        // Disk-variable ì»¬ëŸ¼ì˜ ridë¹„êµë¥¼ ìœ„í•´ ì´ˆê¸°í™” í•´ì•¼ í•¨.
         IDU_LIMITPOINT("qdnForeignKey::checkRef4AddConst::malloc2");
         IDE_TEST( aStatement->qmxMem->cralloc( sRowSize,
                                                (void **) & sRow )
@@ -1139,7 +1139,7 @@ qdnForeignKey::checkRef4AddConst( qcStatement      * aStatement,
         sOrgRow = sRow;
 
         //--------------------------------------
-        // PROJ-1705 fetch column list ±¸¼º
+        // PROJ-1705 fetch column list êµ¬ì„±
         //--------------------------------------
 
         IDE_TEST( qdbCommon::makeFetchColumnList(
@@ -1151,7 +1151,7 @@ qdnForeignKey::checkRef4AddConst( qcStatement      * aStatement,
     }
     else
     {
-        // Memory TableÀÎ °æ¿ì
+        // Memory Tableì¸ ê²½ìš°
         // Nothing to do.
     }
 
@@ -1194,7 +1194,7 @@ qdnForeignKey::checkRef4AddConst( qcStatement      * aStatement,
         IDE_TEST(sReadCursor.beforeFirst() != IDE_SUCCESS);
 
         //----------------------------
-        // ¹İº¹ °Ë»ç
+        // ë°˜ë³µ ê²€ì‚¬
         //----------------------------
 
         IDE_TEST( sReadCursor.readRow( & sRow, & sRid, SMI_FIND_NEXT)
@@ -1203,10 +1203,10 @@ qdnForeignKey::checkRef4AddConst( qcStatement      * aStatement,
         while ( sRow != NULL )
         {
             //------------------------------
-            // Á¦¾à Á¶°Ç °Ë»ç
+            // ì œì•½ ì¡°ê±´ ê²€ì‚¬
             //------------------------------
 
-            // Memory Àç»ç¿ëÀ» À§ÇÏ¿© ÇöÀç À§Ä¡ ±â·Ï
+            // Memory ì¬ì‚¬ìš©ì„ ìœ„í•˜ì—¬ í˜„ì¬ ìœ„ì¹˜ ê¸°ë¡
             IDE_TEST( aStatement->qmxMem->getStatus(&sQmxMemStatus)
                       != IDE_SUCCESS);
 
@@ -1218,7 +1218,7 @@ qdnForeignKey::checkRef4AddConst( qcStatement      * aStatement,
                                             0 )
                       != IDE_SUCCESS);
 
-            // Memory Àç»ç¿ëÀ» À§ÇÑ Memory ÀÌµ¿
+            // Memory ì¬ì‚¬ìš©ì„ ìœ„í•œ Memory ì´ë™
             IDE_TEST( aStatement->qmxMem->setStatus(&sQmxMemStatus)
                       != IDE_SUCCESS);
 
@@ -1256,31 +1256,31 @@ qdnForeignKey::checkRef4ModConst( qcStatement      * aStatement,
  *
  * Description :
  *    PROJ-1874
- *    ÀÌ¹Ì »ı¼ºµÈ Foreign Key¿¡ ´ëÇÏ¿© Validation ¿©ºÎ¸¦ ¼öÁ¤ÇÒ ¶§,
- *    ±âÁ¸ÀÇ Data¿¡ ´ëÇÏ¿© Foreign Key °Ë»ç¸¦ ÇØ¾ß ÇÑ´Ù.
+ *    ì´ë¯¸ ìƒì„±ëœ Foreign Keyì— ëŒ€í•˜ì—¬ Validation ì—¬ë¶€ë¥¼ ìˆ˜ì •í•  ë•Œ,
+ *    ê¸°ì¡´ì˜ Dataì— ëŒ€í•˜ì—¬ Foreign Key ê²€ì‚¬ë¥¼ í•´ì•¼ í•œë‹¤.
  *
  * Implementation :
- *    ÇöÀç TableÀÇ Record¸¦ ÀĞ¾î
- *    Parent Table¿¡ Á¸ÀçÇÏ´Â Áö¸¦ °Ë»çÇÑ´Ù.
+ *    í˜„ì¬ Tableì˜ Recordë¥¼ ì½ì–´
+ *    Parent Tableì— ì¡´ì¬í•˜ëŠ” ì§€ë¥¼ ê²€ì‚¬í•œë‹¤.
  *
  ***********************************************************************/
 
     UInt              i;
 
-    // Á¦¾à Á¶°Ç °ü·Ã Á¤º¸¸¦ À§ÇÑ Áö¿ª º¯¼ö
+    // ì œì•½ ì¡°ê±´ ê´€ë ¨ ì •ë³´ë¥¼ ìœ„í•œ ì§€ì—­ ë³€ìˆ˜
     qcmTableInfo    * sParentTableInfo;
     qcmIndex        * sParentIndexInfo;
     qcmIndex        * sIndexInfo;
     
-    // Á¦¾à Á¶°Ç °Ë»ç ¸ğµâ »ç¿ëÀ» À§ÇÑ Áö¿ªº¯¼ö
+    // ì œì•½ ì¡°ê±´ ê²€ì‚¬ ëª¨ë“ˆ ì‚¬ìš©ì„ ìœ„í•œ ì§€ì—­ë³€ìˆ˜
     qcmParentInfo     sParentRefInfo;
 
-    // Cursor¸¦ À§ÇÑ Áö¿ªº¯¼ö
+    // Cursorë¥¼ ìœ„í•œ ì§€ì—­ë³€ìˆ˜
     smiTableCursor      sReadCursor;
     smiCursorProperties sCursorProperty;
     idBool              sCursorOpen;
 
-    // Record °Ë»öÀ» À§ÇÑ Áö¿ª º¯¼ö
+    // Record ê²€ìƒ‰ì„ ìœ„í•œ ì§€ì—­ ë³€ìˆ˜
     UInt                sRowSize;
     const void *        sRow;
     const void *        sOrgRow = NULL;
@@ -1303,11 +1303,11 @@ qdnForeignKey::checkRef4ModConst( qcStatement      * aStatement,
     qmsIndexTableRef       sIndexTable;
     qcmIndex             * sIndexTableIndex;
 
-    /* PROJ-2464 hybrid partitioned table Áö¿ø */
+    /* PROJ-2464 hybrid partitioned table ì§€ì› */
     qcmTableInfo         * sDiskPartInfo    = NULL;
 
     //---------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //---------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -1315,7 +1315,7 @@ qdnForeignKey::checkRef4ModConst( qcStatement      * aStatement,
     IDE_DASSERT( aForeignKey != NULL );
     
     //---------------------------------------------
-    // ÃÊ±âÈ­
+    // ì´ˆê¸°í™”
     //---------------------------------------------
 
     sParseTree = (qdTableParseTree *)aStatement->myPlan->parseTree;    
@@ -1326,7 +1326,7 @@ qdnForeignKey::checkRef4ModConst( qcStatement      * aStatement,
     sCursorOpen = ID_FALSE;
 
     //---------------------------------------------
-    // Parent Table°ú IndexÀÇ Meta Cache Á¤º¸ È¹µæ
+    // Parent Tableê³¼ Indexì˜ Meta Cache ì •ë³´ íšë“
     //---------------------------------------------
 
     IDE_TEST( qcm::getTableInfoByID( aStatement,
@@ -1337,7 +1337,7 @@ qdnForeignKey::checkRef4ModConst( qcStatement      * aStatement,
               != IDE_SUCCESS );
 
     // Parent Table Validate and Lock
-    // Foreign Key ¼öÁ¤ÀÇ Execute ´Ü°è¿¡¼­ È£ÃâÇÏ´Âµ¥, Parent TableÀ» ÀĞ±â¸¸ ÇÑ´Ù.
+    // Foreign Key ìˆ˜ì •ì˜ Execute ë‹¨ê³„ì—ì„œ í˜¸ì¶œí•˜ëŠ”ë°, Parent Tableì„ ì½ê¸°ë§Œ í•œë‹¤.
     IDE_TEST( qcm::validateAndLockTable( aStatement,
                                          sParentTableHandle,
                                          sParentTableSCN,
@@ -1347,8 +1347,8 @@ qdnForeignKey::checkRef4ModConst( qcStatement      * aStatement,
     sParentIndexInfo = NULL;
 
     // BUG-17126
-    // Unique Index°¡ ¾Æ´Ï¶ó Unique Constraint³ª Primary Constraint°¡
-    // ÀÖ¾î¾ß ÇÑ´Ù.
+    // Unique Indexê°€ ì•„ë‹ˆë¼ Unique Constraintë‚˜ Primary Constraintê°€
+    // ìˆì–´ì•¼ í•œë‹¤.
     for ( i = 0; i < sParentTableInfo->uniqueKeyCount; i++ )
     {
         sIndexInfo = sParentTableInfo->uniqueKeys[i].constraintIndex;
@@ -1360,7 +1360,7 @@ qdnForeignKey::checkRef4ModConst( qcStatement      * aStatement,
         }
         else
         {
-            // Á¦¾à Á¶°Ç Column°ú ºÎÇÕµÇÁö ¾Ê´Â IndexÀÓ
+            // ì œì•½ ì¡°ê±´ Columnê³¼ ë¶€í•©ë˜ì§€ ì•ŠëŠ” Indexì„
             // Go Go
         }
     }
@@ -1383,7 +1383,7 @@ qdnForeignKey::checkRef4ModConst( qcStatement      * aStatement,
                                                                   SMI_TABLE_LOCK_S )
                   != IDE_SUCCESS );
         
-        // key index¸¦ Ã£´Â´Ù.
+        // key indexë¥¼ ì°¾ëŠ”ë‹¤.
         IDE_TEST( qmsIndexTable::findKeyIndex( sIndexTable.tableInfo,
                                                & sIndexTableIndex )
                   != IDE_SUCCESS );
@@ -1397,7 +1397,7 @@ qdnForeignKey::checkRef4ModConst( qcStatement      * aStatement,
     }
 
     //----------------------------
-    // Parent Cache ±¸¼º
+    // Parent Cache êµ¬ì„±
     //----------------------------
 
     idlOS::memset( & sParentRefInfo, 0x00, ID_SIZEOF( qcmParentInfo ) );
@@ -1426,7 +1426,7 @@ qdnForeignKey::checkRef4ModConst( qcStatement      * aStatement,
                       SMI_TABLE_LOCK_S )
                   != IDE_SUCCESS );
 
-        /* PROJ-2464 hybrid partitioned table Áö¿ø */
+        /* PROJ-2464 hybrid partitioned table ì§€ì› */
         IDE_TEST( qcmPartition::makePartitionSummary( aStatement, sTableRef )
                   != IDE_SUCCESS );
     }
@@ -1452,15 +1452,15 @@ qdnForeignKey::checkRef4ModConst( qcStatement      * aStatement,
     }
 
     //=========================================================================
-    // Foreign Key Á¦¾à Á¶°Ç °Ë»ç
-    //  ; ÇöÀç Table¿¡ Á¸ÀçÇÏ´Â Record¸¦ ÀĞ¾î Parent Table¿¡ Á¸ÀçÇÏ´Â Áö È®ÀÎÇÑ´Ù.
+    // Foreign Key ì œì•½ ì¡°ê±´ ê²€ì‚¬
+    //  ; í˜„ì¬ Tableì— ì¡´ì¬í•˜ëŠ” Recordë¥¼ ì½ì–´ Parent Tableì— ì¡´ì¬í•˜ëŠ” ì§€ í™•ì¸í•œë‹¤.
     //=========================================================================
 
     //----------------------------
-    // Record °ø°£ È®º¸
+    // Record ê³µê°„ í™•ë³´
     //----------------------------
 
-    /* PROJ-2464 hybrid partitioned table Áö¿ø */
+    /* PROJ-2464 hybrid partitioned table ì§€ì› */
     for ( sPartInfoNode = sPartInfoList;
           sPartInfoNode != NULL;
           sPartInfoNode = sPartInfoNode->next )
@@ -1478,15 +1478,15 @@ qdnForeignKey::checkRef4ModConst( qcStatement      * aStatement,
 
     if ( sDiskPartInfo != NULL )
     {
-        // Disk TableÀÎ °æ¿ì
-        // Record Read¸¦ À§ÇÑ °ø°£À» ÇÒ´çÇÑ´Ù.
-        // To Fix BUG-12977 : parentÀÇ rowsize°¡ ¾Æ´Ñ, ÀÚ½ÅÀÇ rowsize¸¦ °¡Áö°í ¿Í¾ßÇÔ
+        // Disk Tableì¸ ê²½ìš°
+        // Record Readë¥¼ ìœ„í•œ ê³µê°„ì„ í• ë‹¹í•œë‹¤.
+        // To Fix BUG-12977 : parentì˜ rowsizeê°€ ì•„ë‹Œ, ìì‹ ì˜ rowsizeë¥¼ ê°€ì§€ê³  ì™€ì•¼í•¨
         IDE_TEST( qdbCommon::getDiskRowSize( sDiskPartInfo,
                                              & sRowSize )
                   != IDE_SUCCESS );
 
         // To fix BUG-14820
-        // Disk-variable ÄÃ·³ÀÇ ridºñ±³¸¦ À§ÇØ ÃÊ±âÈ­ ÇØ¾ß ÇÔ.
+        // Disk-variable ì»¬ëŸ¼ì˜ ridë¹„êµë¥¼ ìœ„í•´ ì´ˆê¸°í™” í•´ì•¼ í•¨.
         IDE_TEST( aStatement->qmxMem->cralloc( sRowSize,
                                                (void **) & sRow )
                   != IDE_SUCCESS );
@@ -1494,7 +1494,7 @@ qdnForeignKey::checkRef4ModConst( qcStatement      * aStatement,
         sOrgRow = sRow;
 
         //--------------------------------------
-        // PROJ-1705 fetch column list ±¸¼º
+        // PROJ-1705 fetch column list êµ¬ì„±
         //--------------------------------------
 
         IDE_TEST( qdbCommon::makeFetchColumnList(
@@ -1506,7 +1506,7 @@ qdnForeignKey::checkRef4ModConst( qcStatement      * aStatement,
     }
     else
     {
-        // Memory TableÀÎ °æ¿ì
+        // Memory Tableì¸ ê²½ìš°
         // Nothing to do.
     }
 
@@ -1519,7 +1519,7 @@ qdnForeignKey::checkRef4ModConst( qcStatement      * aStatement,
         sColumnsForRow = sPartInfo->columns;
 
         //----------------------------
-        // Ä¿¼­ ÃÊ±âÈ­
+        // ì»¤ì„œ ì´ˆê¸°í™”
         //----------------------------
         SMI_CURSOR_PROP_INIT_FOR_FULL_SCAN( &sCursorProperty, aStatement->mStatistics );
         
@@ -1552,7 +1552,7 @@ qdnForeignKey::checkRef4ModConst( qcStatement      * aStatement,
         IDE_TEST(sReadCursor.beforeFirst() != IDE_SUCCESS);
 
         //----------------------------
-        // ¹İº¹ °Ë»ç
+        // ë°˜ë³µ ê²€ì‚¬
         //----------------------------
 
         IDE_TEST( sReadCursor.readRow( & sRow, & sRid, SMI_FIND_NEXT)
@@ -1561,10 +1561,10 @@ qdnForeignKey::checkRef4ModConst( qcStatement      * aStatement,
         while ( sRow != NULL )
         {
             //------------------------------
-            // Á¦¾à Á¶°Ç °Ë»ç
+            // ì œì•½ ì¡°ê±´ ê²€ì‚¬
             //------------------------------
 
-            // Memory Àç»ç¿ëÀ» À§ÇÏ¿© ÇöÀç À§Ä¡ ±â·Ï
+            // Memory ì¬ì‚¬ìš©ì„ ìœ„í•˜ì—¬ í˜„ì¬ ìœ„ì¹˜ ê¸°ë¡
             IDE_TEST( aStatement->qmxMem->getStatus(&sQmxMemStatus)
                       != IDE_SUCCESS);
 
@@ -1576,7 +1576,7 @@ qdnForeignKey::checkRef4ModConst( qcStatement      * aStatement,
                                             0 )
                       != IDE_SUCCESS);
 
-            // Memory Àç»ç¿ëÀ» À§ÇÑ Memory ÀÌµ¿
+            // Memory ì¬ì‚¬ìš©ì„ ìœ„í•œ Memory ì´ë™
             IDE_TEST( aStatement->qmxMem->setStatus(&sQmxMemStatus)
                       != IDE_SUCCESS);
 
@@ -1618,12 +1618,12 @@ qdnForeignKey::checkParentRef( qcStatement   * aStatement,
 /***********************************************************************
  *
  * Description :
- *      foreign key °¡ °É·ÁÀÖ´Â ÄÃ·³ÀÌ º¯°æµÇ°Å³ª Ãß°¡µÉ ¶§, parent ¿¡
- *      ÇØ´ç °ªÀÌ Á¸ÀçÇÏ´ÂÁö °Ë»ç
+ *      foreign key ê°€ ê±¸ë ¤ìˆëŠ” ì»¬ëŸ¼ì´ ë³€ê²½ë˜ê±°ë‚˜ ì¶”ê°€ë  ë•Œ, parent ì—
+ *      í•´ë‹¹ ê°’ì´ ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬
  *
  * Implementation :
- *      1. º¯°æµÇ´Â ÄÃ·³ÀÌ foreign key ¸¦ ±¸¼ºÇÏ°í ÀÖ´Â ÄÃ·³ÀÌ¸é
- *      2. ÂüÁ¶ÇÏ´Â Å×ÀÌºí¿¡ ±× °ªÀÌ Á¸ÀçÇÏ°í ÀÖ´ÂÁö Ã¼Å©
+ *      1. ë³€ê²½ë˜ëŠ” ì»¬ëŸ¼ì´ foreign key ë¥¼ êµ¬ì„±í•˜ê³  ìˆëŠ” ì»¬ëŸ¼ì´ë©´
+ *      2. ì°¸ì¡°í•˜ëŠ” í…Œì´ë¸”ì— ê·¸ ê°’ì´ ì¡´ì¬í•˜ê³  ìˆëŠ”ì§€ ì²´í¬
  *
  ***********************************************************************/
 
@@ -1671,12 +1671,12 @@ IDE_RC qdnForeignKey::checkParentRef4Const( qcStatement   * aStatement,
 /***********************************************************************
  *
  * Description :
- *      foreign key °¡ °É·ÁÀÖ´Â ÄÃ·³ÀÌ º¯°æµÇ°Å³ª Ãß°¡µÉ ¶§, parent ¿¡
- *      ÇØ´ç °ªÀÌ Á¸ÀçÇÏ´ÂÁö °Ë»ç
+ *      foreign key ê°€ ê±¸ë ¤ìˆëŠ” ì»¬ëŸ¼ì´ ë³€ê²½ë˜ê±°ë‚˜ ì¶”ê°€ë  ë•Œ, parent ì—
+ *      í•´ë‹¹ ê°’ì´ ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬
  *
  * Implementation :
- *      1. º¯°æµÇ´Â ÄÃ·³ÀÌ foreign key ¸¦ ±¸¼ºÇÏ°í ÀÖ´Â ÄÃ·³ÀÌ¸é
- *      2. ÂüÁ¶ÇÏ´Â Å×ÀÌºí¿¡ ±× °ªÀÌ Á¸ÀçÇÏ°í ÀÖ´ÂÁö Ã¼Å©
+ *      1. ë³€ê²½ë˜ëŠ” ì»¬ëŸ¼ì´ foreign key ë¥¼ êµ¬ì„±í•˜ê³  ìˆëŠ” ì»¬ëŸ¼ì´ë©´
+ *      2. ì°¸ì¡°í•˜ëŠ” í…Œì´ë¸”ì— ê·¸ ê°’ì´ ì¡´ì¬í•˜ê³  ìˆëŠ”ì§€ ì²´í¬
  *
  ***********************************************************************/
 
@@ -1730,13 +1730,13 @@ qdnForeignKey::checkChildRefOnDelete( qcStatement     * aStatement,
 /***********************************************************************
  *
  * Description :
- *    »èÁ¦µÈ ·¹ÄÚµå¸¦ ÂüÁ¶ÇÏ°í ÀÖ´Â foreign key °¡ ÀÖ´ÂÁö °Ë»ç
+ *    ì‚­ì œëœ ë ˆì½”ë“œë¥¼ ì°¸ì¡°í•˜ê³  ìˆëŠ” foreign key ê°€ ìˆëŠ”ì§€ ê²€ì‚¬
  *
  * Implementation :
- *    searchForeignKey ÇÔ¼ö È£Ãâ
- *       child Å×ÀÌºí¿¡¼­ ±× °ªÀ» ÂüÁ¶ÇÏ°í ÀÖ´Â ·¹ÄÚµå°¡ ÀÖ´ÂÁö Ã¼Å©
- *       -> cascade°¡ ¾Æ´Ï°í ÂüÁ¶ÇÏ´Â ·¹ÄÚµå°¡ ÀÖ´Ù¸é ¿¡·¯ ¹ß»ı
- *       -> cascadeÀÌ¸é ÇØ´ç ·¹ÄÚµå delete
+ *    searchForeignKey í•¨ìˆ˜ í˜¸ì¶œ
+ *       child í…Œì´ë¸”ì—ì„œ ê·¸ ê°’ì„ ì°¸ì¡°í•˜ê³  ìˆëŠ” ë ˆì½”ë“œê°€ ìˆëŠ”ì§€ ì²´í¬
+ *       -> cascadeê°€ ì•„ë‹ˆê³  ì°¸ì¡°í•˜ëŠ” ë ˆì½”ë“œê°€ ìˆë‹¤ë©´ ì—ëŸ¬ ë°œìƒ
+ *       -> cascadeì´ë©´ í•´ë‹¹ ë ˆì½”ë“œ delete
  *
  ***********************************************************************/
 
@@ -1745,10 +1745,10 @@ qdnForeignKey::checkChildRefOnDelete( qcStatement     * aStatement,
     qcmRefChildInfo     * sChildInfo;
 
     //-------------------------------
-    // 1. ÃÖÃÊ ¼öÇà½Ã ID_TRUE
-    // 2. ON DELETE SET NULL ÀÌ¸ç UPDATE NULL ÀÌ ¼öÇà µÈ ÀÌÈÄ
-    //    grand child ¿¡ ·¹ÄÚµå Á¸Àç ¿©ºÎ Ã¼Å© ÇÏÁö À§ÇÔ.
-    // 3. grand child ¸¸ È®ÀÎ grand child nullÀÎ °æ¿ì for loop ¼öÇà µÇ¸é ¾ÊµÊ.
+    // 1. ìµœì´ˆ ìˆ˜í–‰ì‹œ ID_TRUE
+    // 2. ON DELETE SET NULL ì´ë©° UPDATE NULL ì´ ìˆ˜í–‰ ëœ ì´í›„
+    //    grand child ì— ë ˆì½”ë“œ ì¡´ì¬ ì—¬ë¶€ ì²´í¬ í•˜ì§€ ìœ„í•¨.
+    // 3. grand child ë§Œ í™•ì¸ grand child nullì¸ ê²½ìš° for loop ìˆ˜í–‰ ë˜ë©´ ì•Šë¨.
     // ex>
     //       T1 : I1 (1)
     //            ^
@@ -1756,8 +1756,8 @@ qdnForeignKey::checkChildRefOnDelete( qcStatement     * aStatement,
     //       T2 : I1 (1)
     //            ^
     //            |
-    //       T3 : I1 (NULL) ----> FOR LOOP ¼öÇà ID_FALSE
-    //            ^               update null ¼öÇà µÇ¾î¾ß ÇÏ³ª ¼öÇà µÇÁö ¸øÇÔ.
+    //       T3 : I1 (NULL) ----> FOR LOOP ìˆ˜í–‰ ID_FALSE
+    //            ^               update null ìˆ˜í–‰ ë˜ì–´ì•¼ í•˜ë‚˜ ìˆ˜í–‰ ë˜ì§€ ëª»í•¨.
     //            |
     //       T4 : I1 (1)
     //-------------------------------
@@ -1825,16 +1825,16 @@ qdnForeignKey::checkChildRefOnUpdate( qcStatement     * aStatement,
 /***********************************************************************
  *
  * Description :
- *  qmx::update ·ÎºÎÅÍ È£Ãâ, Å×ÀÌºí update ½Ã¿¡ ¿¬°áµÈ
- *  child Å×ÀÌºí¿¡¼­ ÂüÁ¶ÇÏ°í ÀÖ´Â °ªÀÌ º¯°æµÇ¾î ¾ø¾îÁöÁö ¾Ê´ÂÁö °Ë»çÇÔ
+ *  qmx::update ë¡œë¶€í„° í˜¸ì¶œ, í…Œì´ë¸” update ì‹œì— ì—°ê²°ëœ
+ *  child í…Œì´ë¸”ì—ì„œ ì°¸ì¡°í•˜ê³  ìˆëŠ” ê°’ì´ ë³€ê²½ë˜ì–´ ì—†ì–´ì§€ì§€ ì•ŠëŠ”ì§€ ê²€ì‚¬í•¨
  *
  * Implementation :
- *    1. º¯°æµÇ´Â ÄÃ·³ÀÌ reference µÇ°í ÀÖ´Â ÄÃ·³ÀÌ¸é
- *    2. searchSelf : parent Å×ÀÌºí¿¡¼­ º¯°æÀü °ªÀÌ º¯°æÈÄ¿¡ Á¸ÀçÇÒÁö?
- *       -> ¸¸¾à¿¡ Á¸ÀçÇÑ´Ù¸é searchForeignKey ´Â ÇÒ ÇÊ¿ä°¡ ¾øÀ½
- *    3. 2ÀÇ °á°ú¿¡¼­ Á¸ÀçÇÏÁö ¾Ê´Â´Ù¸é, searchForeignKey ÇÔ¼ö È£Ãâ
- *       child Å×ÀÌºí¿¡¼­ ±× °ªÀ» ÂüÁ¶ÇÏ°í ÀÖ´Â ·¹ÄÚµå°¡ ÀÖ´ÂÁö Ã¼Å©
- *       -> ÀÖ´Ù¸é ¿¡·¯ ¹ß»ı
+ *    1. ë³€ê²½ë˜ëŠ” ì»¬ëŸ¼ì´ reference ë˜ê³  ìˆëŠ” ì»¬ëŸ¼ì´ë©´
+ *    2. searchSelf : parent í…Œì´ë¸”ì—ì„œ ë³€ê²½ì „ ê°’ì´ ë³€ê²½í›„ì— ì¡´ì¬í• ì§€?
+ *       -> ë§Œì•½ì— ì¡´ì¬í•œë‹¤ë©´ searchForeignKey ëŠ” í•  í•„ìš”ê°€ ì—†ìŒ
+ *    3. 2ì˜ ê²°ê³¼ì—ì„œ ì¡´ì¬í•˜ì§€ ì•ŠëŠ”ë‹¤ë©´, searchForeignKey í•¨ìˆ˜ í˜¸ì¶œ
+ *       child í…Œì´ë¸”ì—ì„œ ê·¸ ê°’ì„ ì°¸ì¡°í•˜ê³  ìˆëŠ” ë ˆì½”ë“œê°€ ìˆëŠ”ì§€ ì²´í¬
+ *       -> ìˆë‹¤ë©´ ì—ëŸ¬ ë°œìƒ
  *
  ***********************************************************************/
 
@@ -1903,12 +1903,12 @@ qdnForeignKey::haveToOpenBeforeCursor( qcmRefChildInfo  * aChildInfo,
 /***********************************************************************
  *
  * Description :
- *  qmx::update, qmx::executeDelete ÇÔ¼ö¿¡¼­ È£Ãâ,
- *  »èÁ¦ÇÏ°Å³ª º¯°æÇÏ°íÀÚ ÇÏ´Â ÄÃ·³À» ÂüÁ¶ÇÏ°í ÀÖ´Â child °¡ ¾ø´ÂÁö °Ë»ç
+ *  qmx::update, qmx::executeDelete í•¨ìˆ˜ì—ì„œ í˜¸ì¶œ,
+ *  ì‚­ì œí•˜ê±°ë‚˜ ë³€ê²½í•˜ê³ ì í•˜ëŠ” ì»¬ëŸ¼ì„ ì°¸ì¡°í•˜ê³  ìˆëŠ” child ê°€ ì—†ëŠ”ì§€ ê²€ì‚¬
  *
  * Implementation :
- *    »èÁ¦ÇÏ°Å³ª º¯°æÇÏ°íÀÚ ÇÏ´Â ÄÃ·³À» ÂüÁ¶ÇÏ°í ÀÖ´Â child °¡ ÀÖÀ¸¸é
- *    ID_TRUE ¸¦ ¹İÈ¯, ±×·¸Áö ¾ÊÀ¸¸é ID_FALSE ¸¦ ¹İÈ¯
+ *    ì‚­ì œí•˜ê±°ë‚˜ ë³€ê²½í•˜ê³ ì í•˜ëŠ” ì»¬ëŸ¼ì„ ì°¸ì¡°í•˜ê³  ìˆëŠ” child ê°€ ìˆìœ¼ë©´
+ *    ID_TRUE ë¥¼ ë°˜í™˜, ê·¸ë ‡ì§€ ì•Šìœ¼ë©´ ID_FALSE ë¥¼ ë°˜í™˜
  *
  ***********************************************************************/
 
@@ -1949,10 +1949,10 @@ qdnForeignKey::haveToCheckParent( qcmTableInfo * aTableInfo,
 /***********************************************************************
  *
  * Description :
- *      º¯°æµÇ´Â ÄÃ·³ÀÌ foreign key ¸¦ ±¸¼ºÇÏ°í ÀÖ´Â ÄÃ·³ÀÎÁö °Ë»ç
+ *      ë³€ê²½ë˜ëŠ” ì»¬ëŸ¼ì´ foreign key ë¥¼ êµ¬ì„±í•˜ê³  ìˆëŠ” ì»¬ëŸ¼ì¸ì§€ ê²€ì‚¬
  *
  * Implementation :
- *      1. intersectColumn È£Ãâ
+ *      1. intersectColumn í˜¸ì¶œ
  *
  ***********************************************************************/
 
@@ -1986,13 +1986,13 @@ qdnForeignKey::getPrimaryKeyFromDefinition( qdTableParseTree * aParseTree,
 /***********************************************************************
  *
  * Description :
- *    Parse Tree ÀÇ qdConstraintSpec ¿¡¼­ primary key ¸¦ Ã£¾Æ¼­
- *    qdReferenceSpec ÀÇ ÄÃ·³¿¡ ºÎ¿©
+ *    Parse Tree ì˜ qdConstraintSpec ì—ì„œ primary key ë¥¼ ì°¾ì•„ì„œ
+ *    qdReferenceSpec ì˜ ì»¬ëŸ¼ì— ë¶€ì—¬
  *
  * Implementation :
- *    1. Parse Tree ÀÇ qdConstraintSpec ¿¡¼­ primary key Ã£±â
- *    2. aReferenceSpec ÀÇ ÄÃ·³¿¡ 1 ¿¡¼­ Ã£Àº primary key ÀÇ ÄÃ·³ ºÎ¿©
- *    3. ¾øÀ¸¸é ¿¡·¯
+ *    1. Parse Tree ì˜ qdConstraintSpec ì—ì„œ primary key ì°¾ê¸°
+ *    2. aReferenceSpec ì˜ ì»¬ëŸ¼ì— 1 ì—ì„œ ì°¾ì€ primary key ì˜ ì»¬ëŸ¼ ë¶€ì—¬
+ *    3. ì—†ìœ¼ë©´ ì—ëŸ¬
  *
  ***********************************************************************/
 
@@ -2041,11 +2041,11 @@ qdnForeignKey::getPrimaryKeyFromCache( iduVarMemList * aMem,
 /***********************************************************************
  *
  * Description :
- *    validateReferenceSpec ¿¡¼­ È£Ãâ, PK ¸¦ ±¸¼ºÇÏ°í ÀÖ´Â ÄÃ·³ ±¸ÇÏ±â
+ *    validateReferenceSpec ì—ì„œ í˜¸ì¶œ, PK ë¥¼ êµ¬ì„±í•˜ê³  ìˆëŠ” ì»¬ëŸ¼ êµ¬í•˜ê¸°
  *
  * Implementation :
- *    qcmTableInfo ÀÇ primaryKey ¸¦ ±¸¼ºÇÏ´Â ÄÃ·³À» qcmColumn ¸®½ºÆ®
- *    ÇüÅÂ·Î ¹İÈ¯ÇÑ´Ù.
+ *    qcmTableInfo ì˜ primaryKey ë¥¼ êµ¬ì„±í•˜ëŠ” ì»¬ëŸ¼ì„ qcmColumn ë¦¬ìŠ¤íŠ¸
+ *    í˜•íƒœë¡œ ë°˜í™˜í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -2103,9 +2103,9 @@ qdnForeignKey::getParentTableAndIndex( qcStatement     * aStatement,
  *
  * Description :
  *
- *    Foreign Key Á¦¾à Á¶°ÇÀ¸·Î ºÎÅÍ
- *    Parent TableÀÇ Meta Cache Á¤º¸¿Í
- *    Á¦¾à Á¶°Ç°ú °ü·ÃµÈ Index ÀÇ Meta Cache Á¤º¸¸¦ ÃßÃâÇÑ´Ù.
+ *    Foreign Key ì œì•½ ì¡°ê±´ìœ¼ë¡œ ë¶€í„°
+ *    Parent Tableì˜ Meta Cache ì •ë³´ì™€
+ *    ì œì•½ ì¡°ê±´ê³¼ ê´€ë ¨ëœ Index ì˜ Meta Cache ì •ë³´ë¥¼ ì¶”ì¶œí•œë‹¤.
  *
  * Implementation :
  *
@@ -2120,14 +2120,14 @@ qdnForeignKey::getParentTableAndIndex( qcStatement     * aStatement,
     qcmIndex        * sIndexInfo;
 
     //---------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //---------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aRefSpec != NULL );
 
     //---------------------------------------------
-    // Parent TableÀÇ Meta Cache Á¤º¸ È¹µæ
+    // Parent Tableì˜ Meta Cache ì •ë³´ íšë“
     //---------------------------------------------
 
     sParentTableInfo = NULL;
@@ -2135,7 +2135,7 @@ qdnForeignKey::getParentTableAndIndex( qcStatement     * aStatement,
     if ( aRefSpec->referencedTableID == UINT_MAX )
     {
         //-----------------------------------
-        // Self ReferenceÀÎ °æ¿ì
+        // Self Referenceì¸ ê²½ìš°
         //-----------------------------------
 
         sParentTableInfo = aChildTableInfo;
@@ -2143,10 +2143,10 @@ qdnForeignKey::getParentTableAndIndex( qcStatement     * aStatement,
     else
     {
         //-----------------------------------
-        // ´Ù¸¥ TableÀ» ÂüÁ¶ÇÏ´Â °æ¿ì
+        // ë‹¤ë¥¸ Tableì„ ì°¸ì¡°í•˜ëŠ” ê²½ìš°
         //-----------------------------------
 
-        // Foreign Key Ãß°¡ÀÇ Execute ´Ü°è¿¡¼­ È£ÃâÇÏ´Âµ¥, Parent TableÀ» ÀĞ±â¸¸ ÇÑ´Ù.
+        // Foreign Key ì¶”ê°€ì˜ Execute ë‹¨ê³„ì—ì„œ í˜¸ì¶œí•˜ëŠ”ë°, Parent Tableì„ ì½ê¸°ë§Œ í•œë‹¤.
         IDE_TEST( qcm::validateAndLockTable( aStatement,
                                              aRefSpec->referencedTableHandle,
                                              aRefSpec->referencedTableSCN,
@@ -2157,14 +2157,14 @@ qdnForeignKey::getParentTableAndIndex( qcStatement     * aStatement,
     }
 
     //---------------------------------------------
-    // Parent IndexÀÇ Meta Cache Á¤º¸ È¹µæ
+    // Parent Indexì˜ Meta Cache ì •ë³´ íšë“
     //---------------------------------------------
 
     sParentIndexInfo = NULL;
 
     // BUG-17126
-    // Unique Index°¡ ¾Æ´Ï¶ó Unique Constraint³ª Primary Constraint°¡
-    // ÀÖ¾î¾ß ÇÑ´Ù.
+    // Unique Indexê°€ ì•„ë‹ˆë¼ Unique Constraintë‚˜ Primary Constraintê°€
+    // ìˆì–´ì•¼ í•œë‹¤.
     for ( i = 0; i < sParentTableInfo->uniqueKeyCount; i++ )
     {
         sIndexInfo = sParentTableInfo->uniqueKeys[i].constraintIndex;
@@ -2176,14 +2176,14 @@ qdnForeignKey::getParentTableAndIndex( qcStatement     * aStatement,
                  NULL )
              == ID_TRUE)
         {
-            // Foreign Key Á¦¾à Á¶°Ç ÄÃ·³¿¡
-            // Á¤È®È÷ ºÎÇÕÇÏ´Â Index ÀÓ
+            // Foreign Key ì œì•½ ì¡°ê±´ ì»¬ëŸ¼ì—
+            // ì •í™•íˆ ë¶€í•©í•˜ëŠ” Index ì„
             sParentIndexInfo = sIndexInfo;
             break;
         }
         else
         {
-            // Á¦¾à Á¶°Ç Column°ú ºÎÇÕµÇÁö ¾Ê´Â IndexÀÓ
+            // ì œì•½ ì¡°ê±´ Columnê³¼ ë¶€í•©ë˜ì§€ ì•ŠëŠ” Indexì„
             // Go Go
         }
     }
@@ -2217,14 +2217,14 @@ IDE_RC qdnForeignKey::searchParentKey(
 /***********************************************************************
  *
  * Description :
- *  checkReferentialParent ·ÎºÎÅÍ È£Ãâ, Æ÷¸°Å°°¡ °É·ÁÀÖ´Â ÄÃ·³¿¡
- *  insert ÇÏ°Å³ª, update ÇÒ °æ¿ì ±× °ªÀÌ parent Å×ÀÌºí¿¡ Á¸ÀçÇÏ´ÂÁö °Ë»ç
- *  DDL(Foreign Key Ãß°¡/¼öÁ¤)°ú DML¿¡¼­ È£ÃâµÈ´Ù.
+ *  checkReferentialParent ë¡œë¶€í„° í˜¸ì¶œ, í¬ë¦°í‚¤ê°€ ê±¸ë ¤ìˆëŠ” ì»¬ëŸ¼ì—
+ *  insert í•˜ê±°ë‚˜, update í•  ê²½ìš° ê·¸ ê°’ì´ parent í…Œì´ë¸”ì— ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬
+ *  DDL(Foreign Key ì¶”ê°€/ìˆ˜ì •)ê³¼ DMLì—ì„œ í˜¸ì¶œëœë‹¤.
  *
  * Implementation :
- *    1. insert ¶Ç´Â update µÇ´Â °ªÀÌ ³Î °ªÀÎÁö °Ë»ç
- *    2. ³Î °ªÀÌ ¾Æ´Ï¸é, ±× °ªÀÌ parent Å×ÀÌºí¿¡ Á¸ÀçÇÏ´ÂÁö °Ë»ç,
- *       Á¸ÀçÇÏÁö ¾ÊÀ¸¸é ¿¡·¯ ¹ß»ı
+ *    1. insert ë˜ëŠ” update ë˜ëŠ” ê°’ì´ ë„ ê°’ì¸ì§€ ê²€ì‚¬
+ *    2. ë„ ê°’ì´ ì•„ë‹ˆë©´, ê·¸ ê°’ì´ parent í…Œì´ë¸”ì— ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬,
+ *       ì¡´ì¬í•˜ì§€ ì•Šìœ¼ë©´ ì—ëŸ¬ ë°œìƒ
  *
  ***********************************************************************/
 
@@ -2241,7 +2241,7 @@ IDE_RC qdnForeignKey::searchParentKey(
     idBool                  sHasNullValue = ID_FALSE;
     smiTableCursor          sCursor;
     smiCursorProperties     sCursorProperty;
-    scGRID                  sRid; // Disk TableÀ» À§ÇÑ Record IDentifier
+    scGRID                  sRid; // Disk Tableì„ ìœ„í•œ Record IDentifier
     idBool                  sIsCursorOpened = ID_FALSE;
 
     UInt                    sRowSize;
@@ -2295,7 +2295,7 @@ IDE_RC qdnForeignKey::searchParentKey(
                                                                       sLockMode )
                       != IDE_SUCCESS );
     
-            // parent tableÀ» index table·Î ±³Ã¼ÇÑ´Ù.
+            // parent tableì„ index tableë¡œ êµì²´í•œë‹¤.
             sParentTableInfo = aParentInfo->parentIndexTable->tableInfo;
             sParentIndex     = aParentInfo->parentIndexTableIndex;
         }
@@ -2316,7 +2316,7 @@ IDE_RC qdnForeignKey::searchParentKey(
     sCursor.initialize();
 
     //----------------------------------------------
-    // parent tableÀ» À§ÇÑ Cursor ±¸¼º
+    // parent tableì„ ìœ„í•œ Cursor êµ¬ì„±
     //----------------------------------------------
     
     IDU_LIMITPOINT("qdnForeignKey::searchParentKey::malloc1");
@@ -2442,35 +2442,35 @@ IDE_RC qdnForeignKey::searchParentKey(
 
         if ( QCM_TABLE_TYPE_IS_DISK( sSelectedTableInfo->tableFlag ) == ID_TRUE )
         {
-            // Disk TableÀÎ °æ¿ì
-            // Record Read¸¦ À§ÇÑ °ø°£À» ÇÒ´çÇÑ´Ù.
+            // Disk Tableì¸ ê²½ìš°
+            // Record Readë¥¼ ìœ„í•œ ê³µê°„ì„ í• ë‹¹í•œë‹¤.
             IDE_TEST( qdbCommon::getDiskRowSize( sSelectedTableInfo,
                                                  & sRowSize )
                       != IDE_SUCCESS );
 
             // To fix BUG-14820
-            // Disk-variable ÄÃ·³ÀÇ ridºñ±³¸¦ À§ÇØ ÃÊ±âÈ­ ÇØ¾ß ÇÔ.
+            // Disk-variable ì»¬ëŸ¼ì˜ ridë¹„êµë¥¼ ìœ„í•´ ì´ˆê¸°í™” í•´ì•¼ í•¨.
             IDU_LIMITPOINT("qdnForeignKey::searchParentKey::malloc2");
             IDE_TEST( aStatement->qmxMem->cralloc( sRowSize,
                                                    (void **) & sRow )
                       != IDE_SUCCESS );
 
             // PROJ-1509
-            // parent row¿¡ ´ëÇÑ ÂüÁ¶¹«°á¼º °Ë»ç¸¦ À§ÇØ
-            // select¸¸ ¼öÇàÇÏ°í
-            // selectµÈ rowÀÇ variable columnÀº Á¢±ÙÇÏÁö ¾Ê±â¶§¹®¿¡,
-            // variable columnÀ» ÀĞ¾î¿Ã value point¸¦ ¼³Á¤ÇÏ´Â °úÁ¤
-            // (smiColumn->valueÀÇ ¼³Á¤)Àº ÇÏÁö ¾Ê¾Æµµ µÊ.
+            // parent rowì— ëŒ€í•œ ì°¸ì¡°ë¬´ê²°ì„± ê²€ì‚¬ë¥¼ ìœ„í•´
+            // selectë§Œ ìˆ˜í–‰í•˜ê³ 
+            // selectëœ rowì˜ variable columnì€ ì ‘ê·¼í•˜ì§€ ì•Šê¸°ë•Œë¬¸ì—,
+            // variable columnì„ ì½ì–´ì˜¬ value pointë¥¼ ì„¤ì •í•˜ëŠ” ê³¼ì •
+            // (smiColumn->valueì˜ ì„¤ì •)ì€ í•˜ì§€ ì•Šì•„ë„ ë¨.
         }
         else
         {
-            // Memory TableÀÎ °æ¿ì
+            // Memory Tableì¸ ê²½ìš°
             // Nothing To Do
         }
 
         // PROJ-1872
-        // index°¡ ÀÖ´Â Ä®·³¿¡ meta range¸¦ ¾²°Ô µÇ¸ç
-        // disk index columnÀÇ compare´Â stored type°ú mt type °£ÀÇ ºñ±³ÀÌ´Ù.
+        // indexê°€ ìˆëŠ” ì¹¼ëŸ¼ì— meta rangeë¥¼ ì“°ê²Œ ë˜ë©°
+        // disk index columnì˜ compareëŠ” stored typeê³¼ mt type ê°„ì˜ ë¹„êµì´ë‹¤.
         if ( QCM_TABLE_TYPE_IS_DISK( sSelectedTableInfo->tableFlag ) == ID_TRUE )
         {
             sCompareType = MTD_COMPARE_STOREDVAL_MTDVAL;
@@ -2497,8 +2497,8 @@ IDE_RC qdnForeignKey::searchParentKey(
             }
 
             // To Fix PR-20839
-            // Key Range »ı¼º ½Ã
-            // Index Key ColumnÀÇ Order¸¦ °í·ÁÇÏ¿©¾ß ÇÔ.
+            // Key Range ìƒì„± ì‹œ
+            // Index Key Columnì˜ Orderë¥¼ ê³ ë ¤í•˜ì—¬ì•¼ í•¨.
             sIndexKeyOrder = sParentIndex->keyColsFlag[i] & SMI_COLUMN_ORDER_MASK;
 
             idlOS::memcpy( &(sKeyColumn[i]),
@@ -2506,11 +2506,11 @@ IDE_RC qdnForeignKey::searchParentKey(
                            ID_SIZEOF(mtcColumn) );
 
             // Bug-11178 fix, by kumdory
-            // aCheckedRow·ÎºÎÅÍ
-            // Á÷Á¢ offsetÀ» ´õÇØ¼­ value¸¦ ¾òÀ¸¸é ¾ÈµÊ.
-            // variable ÄÃ·³ÀÏ °æ¿ì´Â °ªÀ» ¾ò¾î¿Ã ¶§ ½ÇÆĞÇÔ.
-            // ¹İµå½Ã value¸¦ ¾ò±â À§ÇØ¼­´Â
-            // mtc::value¸¦ ÅëÇØ¼­ ¾ò¾î¾ß ÇÔ.
+            // aCheckedRowë¡œë¶€í„°
+            // ì§ì ‘ offsetì„ ë”í•´ì„œ valueë¥¼ ì–»ìœ¼ë©´ ì•ˆë¨.
+            // variable ì»¬ëŸ¼ì¼ ê²½ìš°ëŠ” ê°’ì„ ì–»ì–´ì˜¬ ë•Œ ì‹¤íŒ¨í•¨.
+            // ë°˜ë“œì‹œ valueë¥¼ ì–»ê¸° ìœ„í•´ì„œëŠ”
+            // mtc::valueë¥¼ í†µí•´ì„œ ì–»ì–´ì•¼ í•¨.
             qtc::setMetaRangeColumn(
                 &sRangeColumn[i],
                 &sKeyColumn[i],
@@ -2588,7 +2588,7 @@ IDE_RC qdnForeignKey::searchParentKey(
         // fix BUG-39754
         if( sLockRowType == 1 )
         {
-            // BUG-17940 parent key¿¡ lockÀ» Àâ¾Æ¾ß ÇÔ.
+            // BUG-17940 parent keyì— lockì„ ì¡ì•„ì•¼ í•¨.
             IDE_TEST(sCursor.lockRow( ) != IDE_SUCCESS);
         }
 
@@ -2634,18 +2634,18 @@ qdnForeignKey::searchForeignKey( qcStatement       * aStatement,
 /***********************************************************************
  *
  * Description :
- *    checkReferentialChildOnUpdate ·ÎºÎÅÍ È£Ãâ, Å×ÀÌºí update ½Ã¿¡
- *    º¯°æÇÑ °ªÀÌ child Å×ÀÌºí¿¡¼­ ÂüÁ¶ÇÏ°í ÀÖ¾ú´ø °ªÀÌ ¾Æ´ÑÁö °Ë»ç
+ *    checkReferentialChildOnUpdate ë¡œë¶€í„° í˜¸ì¶œ, í…Œì´ë¸” update ì‹œì—
+ *    ë³€ê²½í•œ ê°’ì´ child í…Œì´ë¸”ì—ì„œ ì°¸ì¡°í•˜ê³  ìˆì—ˆë˜ ê°’ì´ ì•„ë‹Œì§€ ê²€ì‚¬
  *
  * Implementation :
  *    1. deleteChildRowWithRow
- *       : delete cascadeÀÎ °æ¿ì,
- *         deleteµÇ±â ÀüÀÇ °ªÀÌ ³Î°ªÀÌ ¾Æ´Ï¸é,
- *         child Å×ÀÌºí¿¡ Á¸ÀçÇÏ´ÂÁö °Ë»çÇØ¼­ Á¸ÀçÇÏ¸é delete½ÃÅ´.
+ *       : delete cascadeì¸ ê²½ìš°,
+ *         deleteë˜ê¸° ì „ì˜ ê°’ì´ ë„ê°’ì´ ì•„ë‹ˆë©´,
+ *         child í…Œì´ë¸”ì— ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬í•´ì„œ ì¡´ì¬í•˜ë©´ deleteì‹œí‚´.
  *
  *    2. getChildRowWithRow
- *       : delete, update µÇ±â ÀüÀÇ °ªÀÌ ³Î°ªÀÌ ¾Æ´Ï¸é,
- *         child Å×ÀÌºí¿¡ Á¸ÀçÇÏ´ÂÁö °Ë»ç
+ *       : delete, update ë˜ê¸° ì „ì˜ ê°’ì´ ë„ê°’ì´ ì•„ë‹ˆë©´,
+ *         child í…Œì´ë¸”ì— ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬
  *
  ***********************************************************************/
 
@@ -2694,10 +2694,10 @@ qdnForeignKey::searchForeignKey( qcStatement       * aStatement,
         // PROJ-1509
 
         // BUG-29728
-        // ±âÁ¸ ¸ŞÅ¸°ªÀ» º¯°æÇÏÁö ¾Ê±â À§ÇØ DML flag¸¦ Á¦°ÅÇØ¼­
-        // sForeignKey->referenceRule¿¡ option Á¤º¸¸¸ µé¾î°¡ ÀÖ°í,
-        // QD_FOREIGN_DELETE_CASCADE¿¡ option Á¤º¸(µÚ¼¼ÀÚ¸®) °ª¸¸
-        // ºñ±³ÇÏ±â À§ÇØ MASK¸¦ »ç¿ëÇÑ´Ù.
+        // ê¸°ì¡´ ë©”íƒ€ê°’ì„ ë³€ê²½í•˜ì§€ ì•Šê¸° ìœ„í•´ DML flagë¥¼ ì œê±°í•´ì„œ
+        // sForeignKey->referenceRuleì— option ì •ë³´ë§Œ ë“¤ì–´ê°€ ìˆê³ ,
+        // QD_FOREIGN_DELETE_CASCADEì— option ì •ë³´(ë’¤ì„¸ìë¦¬) ê°’ë§Œ
+        // ë¹„êµí•˜ê¸° ìœ„í•´ MASKë¥¼ ì‚¬ìš©í•œë‹¤.
         
         // PROJ-2212 foreien key set null
         if( ( (sReferenceRule & QD_FOREIGN_OPTION_MASK)
@@ -2782,14 +2782,14 @@ qdnForeignKey::searchSelf( qcStatement   * aStatement,
 /***********************************************************************
  *
  * Description :
- *    checkReferentialChildOnUpdate ·ÎºÎÅÍ È£Ãâ, Å×ÀÌºí update ½Ã¿¡ ¿¬°áµÈ
- *    child Å×ÀÌºí¿¡¼­ ÂüÁ¶ÇÏ°í ÀÖ´Â °ªÀÌ º¯°æµÈ ÈÄ¿¡µµ °è¼Ó ±× Å×ÀÌºí¿¡
- *    °°Àº °ªÀÌ Á¸ÀçÇÏ´ÂÁö °Ë»çÇÔ
+ *    checkReferentialChildOnUpdate ë¡œë¶€í„° í˜¸ì¶œ, í…Œì´ë¸” update ì‹œì— ì—°ê²°ëœ
+ *    child í…Œì´ë¸”ì—ì„œ ì°¸ì¡°í•˜ê³  ìˆëŠ” ê°’ì´ ë³€ê²½ëœ í›„ì—ë„ ê³„ì† ê·¸ í…Œì´ë¸”ì—
+ *    ê°™ì€ ê°’ì´ ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬í•¨
  *
  * Implementation :
- *    1. update µÇ´Â °ªÀÌ ³Î °ªÀÎÁö °Ë»ç
- *    2. ³Î °ªÀÌ ¾Æ´Ï¸é, º¯°æµÇ±â ÀüÀÇ °ªÀÌ update ³¡³­ parent Å×ÀÌºí¿¡
- *       Á¸ÀçÇÏ´ÂÁö °Ë»ç? ¸¸¾à ÀÖ´Ù¸é searchForeignKey ´Â ÇÒ ÇÊ¿ä°¡ ¾øÀ½
+ *    1. update ë˜ëŠ” ê°’ì´ ë„ ê°’ì¸ì§€ ê²€ì‚¬
+ *    2. ë„ ê°’ì´ ì•„ë‹ˆë©´, ë³€ê²½ë˜ê¸° ì „ì˜ ê°’ì´ update ëë‚œ parent í…Œì´ë¸”ì—
+ *       ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬? ë§Œì•½ ìˆë‹¤ë©´ searchForeignKey ëŠ” í•  í•„ìš”ê°€ ì—†ìŒ
  *
  ***********************************************************************/
 
@@ -2804,7 +2804,7 @@ qdnForeignKey::searchSelf( qcStatement   * aStatement,
     idBool                  sHasNullValue = ID_FALSE;
     smiTableCursor          sCursor;
     smiCursorProperties     sCursorProperty;
-    scGRID                  sRid; // Disk TableÀ» À§ÇÑ Record IDentifier
+    scGRID                  sRid; // Disk Tableì„ ìœ„í•œ Record IDentifier
     idBool                  sIsCursorOpened = ID_FALSE;
 
     qcmTableInfo          * sTableInfo;
@@ -2831,7 +2831,7 @@ qdnForeignKey::searchSelf( qcStatement   * aStatement,
     sTableType = sTableInfo->tableFlag & SMI_TABLE_TYPE_MASK;
 
     //---------------------------------
-    // index table ±³Ã¼
+    // index table êµì²´
     //---------------------------------
     
     // PROJ-1502 PARTITIONED DISK TABLE
@@ -2840,8 +2840,8 @@ qdnForeignKey::searchSelf( qcStatement   * aStatement,
         // PROJ-1624 non-partitioned index
         if ( sSelfIndex->indexPartitionType == QCM_NONE_PARTITIONED_INDEX )
         {
-            // non-partitioned indexÀÎ °æ¿ì index table¸¸À¸·Î
-            // °°Àº °ªÀÌ Á¸ÀçÇÏ´Â Áö °Ë»çÇÑ´Ù.
+            // non-partitioned indexì¸ ê²½ìš° index tableë§Œìœ¼ë¡œ
+            // ê°™ì€ ê°’ì´ ì¡´ì¬í•˜ëŠ” ì§€ ê²€ì‚¬í•œë‹¤.
             
             IDE_TEST( qmsIndexTable::findIndexTableRefInList(
                           aTableRef->indexTableRef,
@@ -2849,10 +2849,10 @@ qdnForeignKey::searchSelf( qcStatement   * aStatement,
                           & sIndexTable )
                       != IDE_SUCCESS );
 
-            // tableInfo¸¦ ±³Ã¼ÇÑ´Ù.
+            // tableInfoë¥¼ êµì²´í•œë‹¤.
             sTableInfo = sIndexTable->tableInfo;
             
-            // key index¸¦ Ã£´Â´Ù.
+            // key indexë¥¼ ì°¾ëŠ”ë‹¤.
             IDE_TEST( qmsIndexTable::findKeyIndex( sIndexTable->tableInfo,
                                                    & sSelfIndex )
                       != IDE_SUCCESS );
@@ -2860,7 +2860,7 @@ qdnForeignKey::searchSelf( qcStatement   * aStatement,
         else
         {
             /* PROJ-2334 PMT
-             * memory partitionÀÎ °æ¿ì ÇØ´ç index¸¦ °¡Á®¿Í¾ß ÇÔ. */
+             * memory partitionì¸ ê²½ìš° í•´ë‹¹ indexë¥¼ ê°€ì ¸ì™€ì•¼ í•¨. */
             for ( i = 0; i < sTableInfo->indexCount; i++ )
             {
                 if ( aSelfIndex->indexId ==
@@ -2876,7 +2876,7 @@ qdnForeignKey::searchSelf( qcStatement   * aStatement,
                 }
             }
                 
-            // ¹İµå½Ã Á¸ÀçÇØ¾ß ÇÑ´Ù.
+            // ë°˜ë“œì‹œ ì¡´ì¬í•´ì•¼ í•œë‹¤.
             IDE_TEST_RAISE( sFound == ID_FALSE, ERR_NOT_EXIST_INDEX );
         }
     }
@@ -2886,14 +2886,14 @@ qdnForeignKey::searchSelf( qcStatement   * aStatement,
     }
     
     //---------------------------------
-    // Key Range Á¤º¸ÀÇ »ı¼º
+    // Key Range ì •ë³´ì˜ ìƒì„±
     //---------------------------------
     
     sKeyColumn = sSelfIndex->keyColumns;
 
     // PROJ-1872
-    // index°¡ ÀÖ´Â Ä®·³¿¡ meta range¸¦ ¾²°Ô µÇ¸ç
-    // disk index columnÀÇ compare´Â stored type°ú mt type °£ÀÇ ºñ±³ÀÌ´Ù.
+    // indexê°€ ìˆëŠ” ì¹¼ëŸ¼ì— meta rangeë¥¼ ì“°ê²Œ ë˜ë©°
+    // disk index columnì˜ compareëŠ” stored typeê³¼ mt type ê°„ì˜ ë¹„êµì´ë‹¤.
     if ( sTableType == SMI_TABLE_DISK )
     {
         sCompareType = MTD_COMPARE_STOREDVAL_MTDVAL;
@@ -2911,8 +2911,8 @@ qdnForeignKey::searchSelf( qcStatement   * aStatement,
             SMI_COLUMN_ID_MASK;
 
         // To Fix PR-20839
-        // Key Range »ı¼º ½Ã
-        // Index Key ColumnÀÇ Order¸¦ °í·ÁÇÏ¿©¾ß ÇÔ.
+        // Key Range ìƒì„± ì‹œ
+        // Index Key Columnì˜ Orderë¥¼ ê³ ë ¤í•˜ì—¬ì•¼ í•¨.
         sIndexKeyOrder =
             sSelfIndex->keyColsFlag[i] & SMI_COLUMN_ORDER_MASK;
 
@@ -2931,11 +2931,11 @@ qdnForeignKey::searchSelf( qcStatement   * aStatement,
         else
         {
             // Bug-10704 fix
-            // sConstraintColumn->basicInfoÀÇ °ªÀ» º¹»çÇÒ ÇÊ¿ä°¡ ¾øÀ½
+            // sConstraintColumn->basicInfoì˜ ê°’ì„ ë³µì‚¬í•  í•„ìš”ê°€ ì—†ìŒ
             // by kumdory, 2005-03-09
 
             // To Fix PR-10592
-            // Disk VarcharµîÀ» ±¸ºĞÇÒ ÇÊ¿ä°¡ ¾øÀ½
+            // Disk Varcharë“±ì„ êµ¬ë¶„í•  í•„ìš”ê°€ ì—†ìŒ
 
             sValue = mtc::value( sConstraintColumn,
                                  aCheckedRow,
@@ -2953,7 +2953,7 @@ qdnForeignKey::searchSelf( qcStatement   * aStatement,
     qtc::fixMetaRange(&sRange);
 
     //---------------------------------
-    // Reference Á¦¾à Á¶°Ç °Ë»ç
+    // Reference ì œì•½ ì¡°ê±´ ê²€ì‚¬
     //---------------------------------
 
     // if null valued column(s) exist(s), return ok. else search parent.
@@ -2971,17 +2971,17 @@ qdnForeignKey::searchSelf( qcStatement   * aStatement,
         if ( sTableType == SMI_TABLE_DISK )
         {
             //---------------------------------
-            // Row¸¦ À§ÇÑ °ø°£ ÇÒ´ç
+            // Rowë¥¼ ìœ„í•œ ê³µê°„ í• ë‹¹
             //---------------------------------
 
-            // Disk TableÀÎ °æ¿ì
-            // Record Read¸¦ À§ÇÑ °ø°£À» ÇÒ´çÇÑ´Ù.
+            // Disk Tableì¸ ê²½ìš°
+            // Record Readë¥¼ ìœ„í•œ ê³µê°„ì„ í• ë‹¹í•œë‹¤.
             IDE_TEST( qdbCommon::getDiskRowSize( sTableInfo,
                                                  & sRowSize )
                       != IDE_SUCCESS );
             
             // To fix BUG-14820
-            // Disk-variable ÄÃ·³ÀÇ ridºñ±³¸¦ À§ÇØ ÃÊ±âÈ­ ÇØ¾ß ÇÔ.
+            // Disk-variable ì»¬ëŸ¼ì˜ ridë¹„êµë¥¼ ìœ„í•´ ì´ˆê¸°í™” í•´ì•¼ í•¨.
             IDU_LIMITPOINT("qdnForeignKey::searchSelf::malloc");
             IDE_TEST( aStatement->qmxMem->cralloc( sRowSize,
                                                    (void **) & sRow )
@@ -2989,7 +2989,7 @@ qdnForeignKey::searchSelf( qcStatement   * aStatement,
 
             //---------------------------------
             // PROJ-1705
-            // fetch column list ÀÛ¼º
+            // fetch column list ì‘ì„±
             //---------------------------------
 
             IDE_TEST( qdbCommon::makeFetchColumnList4Index(
@@ -3007,7 +3007,7 @@ qdnForeignKey::searchSelf( qcStatement   * aStatement,
         }
 
         //---------------------------------
-        // ÇØ´ç RowÀÇ Á¸Àç ¿©ºÎ °Ë»ç
+        // í•´ë‹¹ Rowì˜ ì¡´ì¬ ì—¬ë¶€ ê²€ì‚¬
         //---------------------------------
 
         IDE_TEST(sCursor.open( QC_SMI_STMT( aStatement ),
@@ -3034,7 +3034,7 @@ qdnForeignKey::searchSelf( qcStatement   * aStatement,
     }
     else
     {
-        // Null Value°¡ Á¸ÀçÇÏ´Â °æ¿ì º°µµÀÇ °Ë»ç°¡ ÇÊ¿ä ¾øÀ½
+        // Null Valueê°€ ì¡´ì¬í•˜ëŠ” ê²½ìš° ë³„ë„ì˜ ê²€ì‚¬ê°€ í•„ìš” ì—†ìŒ
         // Nothing To Do
     }
 
@@ -3076,17 +3076,17 @@ qdnForeignKey::getChildRowWithRow( qcStatement       * aStatement,
 /***********************************************************************
  *
  * Description :
- *    searchForeignKey ·ÎºÎÅÍ È£Ãâ, Å×ÀÌºí update ½Ã¿¡
- *    º¯°æÇÑ °ªÀÌ child Å×ÀÌºí¿¡¼­ ÂüÁ¶ÇÏ°í ÀÖ¾ú´ø °ªÀÌ ¾Æ´ÑÁö °Ë»ç
+ *    searchForeignKey ë¡œë¶€í„° í˜¸ì¶œ, í…Œì´ë¸” update ì‹œì—
+ *    ë³€ê²½í•œ ê°’ì´ child í…Œì´ë¸”ì—ì„œ ì°¸ì¡°í•˜ê³  ìˆì—ˆë˜ ê°’ì´ ì•„ë‹Œì§€ ê²€ì‚¬
  *
  * Implementation :
  *    1. getChildRowWithRow
- *       : update µÇ±â ÀüÀÇ °ªÀÌ child Å×ÀÌºí¿¡ Á¸ÀçÇÏ´ÂÁö °Ë»ç
- *    PROJ-2212 Foreign key set null ¿¡¼­ ÇÔ¼ö »ç¿ë ¹üÀ§°¡ ³Ğ¾îÁü
- *    - on delete no action ÀÎ °æ¿ì child °¡ Á¸Àç ÇÏ´Â Áö Ã¼Å©.
- *    - on delete cascade ÀÎ °æ¿ì update statement
- *      »ç¿ë ÇÑ °æ¿ì child Á¸Àç ÇÏ´ÂÁö Ã¼Å©.
- *    - on delete set null ÀÎ °æ¿ì grand child °¡ Á¸Àç ÇÏ´ÂÁö Ã¼Å©.
+ *       : update ë˜ê¸° ì „ì˜ ê°’ì´ child í…Œì´ë¸”ì— ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬
+ *    PROJ-2212 Foreign key set null ì—ì„œ í•¨ìˆ˜ ì‚¬ìš© ë²”ìœ„ê°€ ë„“ì–´ì§
+ *    - on delete no action ì¸ ê²½ìš° child ê°€ ì¡´ì¬ í•˜ëŠ” ì§€ ì²´í¬.
+ *    - on delete cascade ì¸ ê²½ìš° update statement
+ *      ì‚¬ìš© í•œ ê²½ìš° child ì¡´ì¬ í•˜ëŠ”ì§€ ì²´í¬.
+ *    - on delete set null ì¸ ê²½ìš° grand child ê°€ ì¡´ì¬ í•˜ëŠ”ì§€ ì²´í¬.
  *
  ***********************************************************************/
 
@@ -3101,7 +3101,7 @@ qdnForeignKey::getChildRowWithRow( qcStatement       * aStatement,
     qmsIndexTableRef   * sIndexTable;
     qcmIndex           * sIndexTableIndex;
 
-    // child tableÀÇ scan method¸¦ °áÁ¤ÇÏ°í ÀûÀıÇÑ lockÀ» È¹µæÇÑ´Ù.
+    // child tableì˜ scan methodë¥¼ ê²°ì •í•˜ê³  ì ì ˆí•œ lockì„ íšë“í•œë‹¤.
     IDE_TEST( validateScanMethodAndLockTable( aStatement,
                                               aRefChildInfo,
                                               & sSelectedIndex,
@@ -3119,8 +3119,8 @@ qdnForeignKey::getChildRowWithRow( qcStatement       * aStatement,
         case QDN_FK_TABLE_FULL_SCAN:
         case QDN_FK_TABLE_INDEX_SCAN:
         {
-            // table full scanÀÎ °æ¿ì
-            // table index scanÀÎ °æ¿ì
+            // table full scanì¸ ê²½ìš°
+            // table index scanì¸ ê²½ìš°
             IDE_TEST( getChildRowWithRow4Table( aStatement,
                                                 sChildTableRef,
                                                 sChildTableInfo,
@@ -3138,8 +3138,8 @@ qdnForeignKey::getChildRowWithRow( qcStatement       * aStatement,
         case QDN_FK_PARTITION_FULL_SCAN:
         case QDN_FK_PARTITION_INDEX_SCAN:
         {
-            // table partition full scanÀÎ °æ¿ì
-            // table partition local index scanÀÎ °æ¿ì
+            // table partition full scanì¸ ê²½ìš°
+            // table partition local index scanì¸ ê²½ìš°
             IDE_TEST( getChildRowWithRow4Partition( aStatement,
                                                     sChildTableRef,
                                                     aRefChildInfo->foreignKey,
@@ -3154,20 +3154,20 @@ qdnForeignKey::getChildRowWithRow( qcStatement       * aStatement,
 
         case QDN_FK_PARTITION_ONLY_INDEX_TABLE_SCAN:
         {
-            // index table scanÀÎ °æ¿ì
+            // index table scanì¸ ê²½ìš°
             IDE_DASSERT( sIndexTable != NULL );
             
-            // key index¸¦ Ã£´Â´Ù.
+            // key indexë¥¼ ì°¾ëŠ”ë‹¤.
             IDE_TEST( qmsIndexTable::findKeyIndex( sIndexTable->tableInfo,
                                                    & sIndexTableIndex )
                       != IDE_SUCCESS );
 
-            // child¸¦ ±³Ã¼ÇÑ´Ù.
+            // childë¥¼ êµì²´í•œë‹¤.
             sChildTableInfo = sIndexTable->tableInfo;
             sSelectedIndex = sIndexTableIndex;
             
             IDE_TEST( getChildRowWithRow4Table( aStatement,
-                                                sChildTableRef, // BUGBUG sIndexTable->table º¯°æ
+                                                sChildTableRef, // BUGBUG sIndexTable->table ë³€ê²½
                                                 sChildTableInfo,
                                                 ID_TRUE,  // is indexTable
                                                 aRefChildInfo->foreignKey,
@@ -3182,7 +3182,7 @@ qdnForeignKey::getChildRowWithRow( qcStatement       * aStatement,
 
         case QDN_FK_PARTITION_INDEX_TABLE_SCAN:
         {
-            // index table scan + partition scanÀÎ °æ¿ì
+            // index table scan + partition scanì¸ ê²½ìš°
             IDE_TEST( getChildRowWithRow4IndexTable( aStatement,
                                                      sIndexTable,
                                                      sChildTableRef,
@@ -3222,11 +3222,11 @@ qdnForeignKey::deleteChildRowWithRow(
 /***********************************************************************
  *
  * Description :
- *    delete cascadeÀÇ child table ·¹ÄÚµå »èÁ¦
+ *    delete cascadeì˜ child table ë ˆì½”ë“œ ì‚­ì œ
  *
  * Implementation :
- *       : delete µÇ±â ÀüÀÇ °ªÀÌ ³Î°ªÀÌ ¾Æ´Ï¸é,
- *         child Å×ÀÌºí¿¡ Á¸ÀçÇÏ´Â ·¹ÄÚµå »èÁ¦
+ *       : delete ë˜ê¸° ì „ì˜ ê°’ì´ ë„ê°’ì´ ì•„ë‹ˆë©´,
+ *         child í…Œì´ë¸”ì— ì¡´ì¬í•˜ëŠ” ë ˆì½”ë“œ ì‚­ì œ
  *
  ***********************************************************************/
 
@@ -3240,7 +3240,7 @@ qdnForeignKey::deleteChildRowWithRow(
     qdnFKScanMethod      sScanMethod;
     qmsIndexTableRef   * sIndexTable;
 
-    // child tableÀÇ scan method¸¦ °áÁ¤ÇÏ°í ÀûÀıÇÑ lockÀ» È¹µæÇÑ´Ù.
+    // child tableì˜ scan methodë¥¼ ê²°ì •í•˜ê³  ì ì ˆí•œ lockì„ íšë“í•œë‹¤.
     IDE_TEST( validateScanMethodAndLockTableForDelete( aStatement,
                                                        aRefChildInfo,
                                                        & sSelectedIndex,
@@ -3258,8 +3258,8 @@ qdnForeignKey::deleteChildRowWithRow(
         case QDN_FK_TABLE_FULL_SCAN:
         case QDN_FK_TABLE_INDEX_SCAN:
         {
-            // table full scanÀÎ °æ¿ì
-            // table index scanÀÎ °æ¿ì
+            // table full scanì¸ ê²½ìš°
+            // table index scanì¸ ê²½ìš°
             IDE_TEST( deleteChildRowWithRow4Table( aStatement,
                                                    aChildConstraints,
                                                    sChildTableRef,
@@ -3277,8 +3277,8 @@ qdnForeignKey::deleteChildRowWithRow(
         case QDN_FK_PARTITION_FULL_SCAN:
         case QDN_FK_PARTITION_INDEX_SCAN:
         {
-            // table partition full scanÀÎ °æ¿ì
-            // table partition local index scanÀÎ °æ¿ì
+            // table partition full scanì¸ ê²½ìš°
+            // table partition local index scanì¸ ê²½ìš°
             IDE_TEST( deleteChildRowWithRow4Partition( aStatement,
                                                        aChildConstraints,
                                                        sChildTableRef,
@@ -3296,8 +3296,8 @@ qdnForeignKey::deleteChildRowWithRow(
         case QDN_FK_PARTITION_ONLY_INDEX_TABLE_SCAN:
         case QDN_FK_PARTITION_INDEX_TABLE_SCAN:
         {
-            // index table scanÀÎ °æ¿ì
-            // index table scan + partition scanÀÎ °æ¿ì
+            // index table scanì¸ ê²½ìš°
+            // index table scan + partition scanì¸ ê²½ìš°
             IDE_TEST( deleteChildRowWithRow4IndexTable( aStatement,
                                                         aChildConstraints,
                                                         sIndexTable,
@@ -3337,17 +3337,17 @@ qdnForeignKey::updateNullChildRowWithRow(
 /***********************************************************************
  *
  * Description : PROJ-2212 foreign key on delete set null
- *    delete on set nullÀÇ child table ·¹ÄÚµåÀÇ
+ *    delete on set nullì˜ child table ë ˆì½”ë“œì˜
  *    fk column NULL update / grand child check.
  *
- *    deleteChildRowWithRown ÇÔ¼ö¸¦ °¡Á® ¿ÔÀ¸¸ç  delete row ·çÆ¾À»
- *    update null º¯°æ.
- *    update after trigger Áö¿ø ÇÏÁö ¾ÊÀ½. update before trigger Áö¿ø.
+ *    deleteChildRowWithRown í•¨ìˆ˜ë¥¼ ê°€ì ¸ ì™”ìœ¼ë©°  delete row ë£¨í‹´ì„
+ *    update null ë³€ê²½.
+ *    update after trigger ì§€ì› í•˜ì§€ ì•ŠìŒ. update before trigger ì§€ì›.
  *
  * Implementation :
- *       1. delete µÇ±â ÀüÀÇ °ªÀÌ ³Î°ªÀÌ ¾Æ´Ï¸é,
- *          child Å×ÀÌºí¿¡ Á¸ÀçÇÏ´Â ·¹ÄÚµåÀÇ fk column NULL update.
- *       2. update before trigger ¼öÇà.
+ *       1. delete ë˜ê¸° ì „ì˜ ê°’ì´ ë„ê°’ì´ ì•„ë‹ˆë©´,
+ *          child í…Œì´ë¸”ì— ì¡´ì¬í•˜ëŠ” ë ˆì½”ë“œì˜ fk column NULL update.
+ *       2. update before trigger ìˆ˜í–‰.
  *       3. grand child check.
  *
  ***********************************************************************/
@@ -3376,7 +3376,7 @@ qdnForeignKey::updateNullChildRowWithRow(
     qdnFKScanMethod         sScanMethod;
     qmsIndexTableRef      * sIndexTable;
 
-    // child tableÀÇ scan method¸¦ °áÁ¤ÇÏ°í ÀûÀıÇÑ lockÀ» È¹µæÇÑ´Ù.
+    // child tableì˜ scan methodë¥¼ ê²°ì •í•˜ê³  ì ì ˆí•œ lockì„ íšë“í•œë‹¤.
     IDE_TEST( validateScanMethodAndLockTableForDelete( aStatement,
                                                        aRefChildInfo,
                                                        & sSelectedIndex,
@@ -3406,8 +3406,8 @@ qdnForeignKey::updateNullChildRowWithRow(
         case QDN_FK_TABLE_FULL_SCAN:
         case QDN_FK_TABLE_INDEX_SCAN:
         {
-            // table full scanÀÎ °æ¿ì
-            // table index scanÀÎ °æ¿ì
+            // table full scanì¸ ê²½ìš°
+            // table index scanì¸ ê²½ìš°
             IDE_TEST( updateNullChildRowWithRow4Table( aStatement,
                                                        aChildConstraints,
                                                        sChildTableRef,
@@ -3434,8 +3434,8 @@ qdnForeignKey::updateNullChildRowWithRow(
         case QDN_FK_PARTITION_FULL_SCAN:
         case QDN_FK_PARTITION_INDEX_SCAN:
         {
-            // table partition full scanÀÎ °æ¿ì
-            // table partition local index scanÀÎ °æ¿ì
+            // table partition full scanì¸ ê²½ìš°
+            // table partition local index scanì¸ ê²½ìš°
             IDE_TEST( updateNullChildRowWithRow4Partition( aStatement,
                                                            aChildConstraints,
                                                            sChildTableRef,
@@ -3461,8 +3461,8 @@ qdnForeignKey::updateNullChildRowWithRow(
         case QDN_FK_PARTITION_ONLY_INDEX_TABLE_SCAN:
         case QDN_FK_PARTITION_INDEX_TABLE_SCAN:
         {
-            // index table scanÀÎ °æ¿ì
-            // index table scan + partition scanÀÎ °æ¿ì
+            // index table scanì¸ ê²½ìš°
+            // index table scan + partition scanì¸ ê²½ìš°
             IDE_TEST( updateNullChildRowWithRow4IndexTable( aStatement,
                                                             aChildConstraints,
                                                             sIndexTable,
@@ -3509,23 +3509,23 @@ qdnForeignKey::getChildKeyRangeInfo( qcmTableInfo  * aChildTableInfo,
  *
  * Description :
  *    To Fix PR-10592
- *    Master Table¿¡ ´ëÇÑ UPDATE³ª DELETE ¹ß»ı½Ã
- *    ÇØ´ç RecordÀÇ Primary Key¸¦ ÂüÁ¶ÇÏ´Â Child TableÀÇ Record°¡
- *    Á¸ÀçÇÏ´Â Áö °Ë»çÇÏ±â À§ÇÑ Key Range ±¸¼º Á¤º¸¸¦ È¹µæÇÑ´Ù.
- *    »ç¿ë °¡´ÉÇÑ Index Á¤º¸¿Í Key Range·Î ±¸¼ºÇÒ ¼ö ÀÖ´Â Key ColumnÀÇ
- *    °³¼ö¸¦ ¸®ÅÏÇÑ´Ù.
+ *    Master Tableì— ëŒ€í•œ UPDATEë‚˜ DELETE ë°œìƒì‹œ
+ *    í•´ë‹¹ Recordì˜ Primary Keyë¥¼ ì°¸ì¡°í•˜ëŠ” Child Tableì˜ Recordê°€
+ *    ì¡´ì¬í•˜ëŠ” ì§€ ê²€ì‚¬í•˜ê¸° ìœ„í•œ Key Range êµ¬ì„± ì •ë³´ë¥¼ íšë“í•œë‹¤.
+ *    ì‚¬ìš© ê°€ëŠ¥í•œ Index ì •ë³´ì™€ Key Rangeë¡œ êµ¬ì„±í•  ìˆ˜ ìˆëŠ” Key Columnì˜
+ *    ê°œìˆ˜ë¥¼ ë¦¬í„´í•œë‹¤.
  *
  * Implementation :
  *
- *  Child Table¿¡ ´ëÇÑ °Ë»ö ½Ã index¸¦ »ç¿ëÇÒ ¼ö ÀÖ¾î¾ß ÇÑ´Ù.
- *    Optimizer Code¸¦ ÀÌ¿ëÇÔÀÌ ¹Ù¶÷Á÷ÇÏ³ª,
- *    SELECT ... FROM ... WHERE ... ÀÇ ±¸Á¶°¡ ¾Æ´Ï¾î¼­ ÀÌ¸¦ »ç¿ëÇÒ ¼ö ¾ø´Ù.
- *    µû¶ó¼­, ´ÙÀ½°ú °°Àº Á¦¾àÀ» µÎ°í ÀÎµ¦½º¸¦ »ç¿ëÇÒ ¼ö ÀÖµµ·Ï ÇÑ´Ù.
- *        - Access Method ¼±ÅÃ½Ã Cost ºñ±³¸¦ ÇÒ ¼ö ¾ø´Ù.
- *           : °¡Àå ¸¹Àº Key ColumnÀ» »ç¿ëÇÒ ¼ö ÀÖ´Â Index¸¦ »ç¿ëÇÑ´Ù.
- *        - qtcNode·Î ±¸¼ºµÇ¾î ÀÖÁö ¾Ê¾Æ Filter Ã³¸®°¡ ºÒ°¡´ÉÇÏ´Ù.
- *           : Key Range·Î ¼±ÅÃµÈ ColumnÀ» Á¦¿ÜÇÏ°í ¸ğµç ColumnÀ»
- *             Record¸¦ ÀĞÀº ÈÄ ÆÇ´ÜÇÏ¿©¾ß ÇÑ´Ù.
+ *  Child Tableì— ëŒ€í•œ ê²€ìƒ‰ ì‹œ indexë¥¼ ì‚¬ìš©í•  ìˆ˜ ìˆì–´ì•¼ í•œë‹¤.
+ *    Optimizer Codeë¥¼ ì´ìš©í•¨ì´ ë°”ëŒì§í•˜ë‚˜,
+ *    SELECT ... FROM ... WHERE ... ì˜ êµ¬ì¡°ê°€ ì•„ë‹ˆì–´ì„œ ì´ë¥¼ ì‚¬ìš©í•  ìˆ˜ ì—†ë‹¤.
+ *    ë”°ë¼ì„œ, ë‹¤ìŒê³¼ ê°™ì€ ì œì•½ì„ ë‘ê³  ì¸ë±ìŠ¤ë¥¼ ì‚¬ìš©í•  ìˆ˜ ìˆë„ë¡ í•œë‹¤.
+ *        - Access Method ì„ íƒì‹œ Cost ë¹„êµë¥¼ í•  ìˆ˜ ì—†ë‹¤.
+ *           : ê°€ì¥ ë§ì€ Key Columnì„ ì‚¬ìš©í•  ìˆ˜ ìˆëŠ” Indexë¥¼ ì‚¬ìš©í•œë‹¤.
+ *        - qtcNodeë¡œ êµ¬ì„±ë˜ì–´ ìˆì§€ ì•Šì•„ Filter ì²˜ë¦¬ê°€ ë¶ˆê°€ëŠ¥í•˜ë‹¤.
+ *           : Key Rangeë¡œ ì„ íƒëœ Columnì„ ì œì™¸í•˜ê³  ëª¨ë“  Columnì„
+ *             Recordë¥¼ ì½ì€ í›„ íŒë‹¨í•˜ì—¬ì•¼ í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -3540,7 +3540,7 @@ qdnForeignKey::getChildKeyRangeInfo( qcmTableInfo  * aChildTableInfo,
     UInt                sKeyCnt;
 
     //-----------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //-----------------------------------
 
     IDE_DASSERT( aChildTableInfo != NULL );
@@ -3549,7 +3549,7 @@ qdnForeignKey::getChildKeyRangeInfo( qcmTableInfo  * aChildTableInfo,
     IDE_DASSERT( aKeyColumnCnt != NULL );
 
     //-----------------------------------
-    // »ç¿ë °¡´ÉÇÑ IndexÀÇ °Ë»ö
+    // ì‚¬ìš© ê°€ëŠ¥í•œ Indexì˜ ê²€ìƒ‰
     //-----------------------------------
 
     sSelectedIndex = NULL;
@@ -3567,44 +3567,44 @@ qdnForeignKey::getChildKeyRangeInfo( qcmTableInfo  * aChildTableInfo,
             if ( aForeignKey->referencingColumn[j] ==
                  aChildTableInfo->indices[i].keyColumns[j].column.id )
             {
-                // Referencing Column°ú Key ColumnÀÌ µ¿ÀÏÇÑ °æ¿ìÀÓ.
+                // Referencing Columnê³¼ Key Columnì´ ë™ì¼í•œ ê²½ìš°ì„.
                 sKeyCnt++;
             }
             else
             {
-                // Referencing Column°ú Key ColumnÀÌ ´Ù¸§
+                // Referencing Columnê³¼ Key Columnì´ ë‹¤ë¦„
                 break;
             }
         }
 
         if ( sKeyCnt > sKeyRangeColumnCnt )
         {
-            // º¸´Ù ÁÁÀº Index¸¦ ¼±ÅÃÇÔ.
+            // ë³´ë‹¤ ì¢‹ì€ Indexë¥¼ ì„ íƒí•¨.
 
             sSelectedIndex = & aChildTableInfo->indices[i];
             sKeyRangeColumnCnt = sKeyCnt;
 
             if ( sKeyRangeColumnCnt == aForeignKey->constraintColumnCount )
             {
-                // ¸ğµç Referencing ColumnÀ» ¸¸Á·ÇÏ´Â Index¸¦ Ã£À½
+                // ëª¨ë“  Referencing Columnì„ ë§Œì¡±í•˜ëŠ” Indexë¥¼ ì°¾ìŒ
                 break;
             }
             else
             {
-                // ¾ÆÁ÷ ¸ğµç Referencing ColumnÀ» ¸¸Á·ÇÏ´Â
-                // Index¸¦ Ã£Áö ¸øÇÔ
+                // ì•„ì§ ëª¨ë“  Referencing Columnì„ ë§Œì¡±í•˜ëŠ”
+                // Indexë¥¼ ì°¾ì§€ ëª»í•¨
                 // Nothing To Do
             }
         }
         else
         {
-            // ±âÁ¸¿¡ ¼±ÅÃµÈ Index°¡ ´õ ÁÁÀº °æ¿ìÀÓ.
+            // ê¸°ì¡´ì— ì„ íƒëœ Indexê°€ ë” ì¢‹ì€ ê²½ìš°ì„.
             // Nothing To Do
         }
     }
 
     //-----------------------------------
-    // °¡Àå ÁÁÀº Index¿Í »ç¿ëÇÒ ¼ö ÀÖ´Â Key Column °³¼ö¸¦ ¸®ÅÏ
+    // ê°€ì¥ ì¢‹ì€ Indexì™€ ì‚¬ìš©í•  ìˆ˜ ìˆëŠ” Key Column ê°œìˆ˜ë¥¼ ë¦¬í„´
     //-----------------------------------
 
     if ( sSelectedIndex != NULL )
@@ -3634,8 +3634,8 @@ qdnForeignKey::validateScanMethodAndLockTable( qcStatement       * aStatement,
 /***********************************************************************
  *
  * Description :
- *    getChildRowWithRow ·ÎºÎÅÍ È£Ãâ, child table¿¡ is_lockÀ» È¸µæÇÏ°í
- *    foreign key scan method¸¦ °áÁ¤ÇÑ´Ù.
+ *    getChildRowWithRow ë¡œë¶€í„° í˜¸ì¶œ, child tableì— is_lockì„ íšŒë“í•˜ê³ 
+ *    foreign key scan methodë¥¼ ê²°ì •í•œë‹¤.
  *
  * Implementation :
  *
@@ -3661,8 +3661,8 @@ qdnForeignKey::validateScanMethodAndLockTable( qcStatement       * aStatement,
     
     //---------------------------------------
     // To Fix PR-10592
-    // Access Method ¼±ÅÃ
-    // Index ¿Í »ç¿ë °¡´ÉÇÑ key column °³¼ö¸¦ È¹µæ
+    // Access Method ì„ íƒ
+    // Index ì™€ ì‚¬ìš© ê°€ëŠ¥í•œ key column ê°œìˆ˜ë¥¼ íšë“
     //---------------------------------------
 
     IDE_TEST( getChildKeyRangeInfo( sChildTableInfo,
@@ -3685,7 +3685,7 @@ qdnForeignKey::validateScanMethodAndLockTable( qcStatement       * aStatement,
                               & sSelectedIndexTable )
                           != IDE_SUCCESS );
 
-                // index table¿¡ LOCK(IS)
+                // index tableì— LOCK(IS)
                 IDE_TEST( qmsIndexTable::validateAndLockOneIndexTableRef( aStatement,
                                                                           sSelectedIndexTable,
                                                                           SMI_TABLE_LOCK_IS )
@@ -3693,50 +3693,50 @@ qdnForeignKey::validateScanMethodAndLockTable( qcStatement       * aStatement,
                 
                 if ( sKeyRangeColumnCnt < aRefChildInfo->foreignKey->constraintColumnCount )
                 {
-                    // table partition¿¡ LOCK(IS)
+                    // table partitionì— LOCK(IS)
                     IDE_TEST( qcmPartition::validateAndLockPartitions(
                                   aStatement,
                                   sChildTableRef,
                                   SMI_TABLE_LOCK_IS )
                               != IDE_SUCCESS );
                     
-                    // non-partitioned index°¡ ¼±ÅÃµÇ¾úÁö¸¸ index table¸¸À¸·Î´Â ¸ğµÎ °Ë»çÇÒ ¼ö ¾ø°í
-                    // table scanÀÌ ÇÊ¿äÇÑ °æ¿ì
+                    // non-partitioned indexê°€ ì„ íƒë˜ì—ˆì§€ë§Œ index tableë§Œìœ¼ë¡œëŠ” ëª¨ë‘ ê²€ì‚¬í•  ìˆ˜ ì—†ê³ 
+                    // table scanì´ í•„ìš”í•œ ê²½ìš°
                     // ex) foreign key (i1,i2), index (i1)
-                    //     i1À¸·Î index´Â Å¸Áö¸¸ i2´Â table¿¡¼­ ¾ò¾î¾ß ÇÑ´Ù.
+                    //     i1ìœ¼ë¡œ indexëŠ” íƒ€ì§€ë§Œ i2ëŠ” tableì—ì„œ ì–»ì–´ì•¼ í•œë‹¤.
                     sScanMethod = QDN_FK_PARTITION_INDEX_TABLE_SCAN;
                 }
                 else
                 {
-                    // non-partitioned index°¡ ¼±ÅÃµÇ¾ú°í index table¸¸À¸·Îµµ °Ë»ç°¡ °¡´ÉÇÑ °æ¿ì
+                    // non-partitioned indexê°€ ì„ íƒë˜ì—ˆê³  index tableë§Œìœ¼ë¡œë„ ê²€ì‚¬ê°€ ê°€ëŠ¥í•œ ê²½ìš°
                     // ex) foreign key (i1,i2), index (i1,i2,i3)
-                    //     i1,i2¸ğµÎ index table¿¡¼­ °Ë»ç°¡´ÉÇÏ´Ù.
+                    //     i1,i2ëª¨ë‘ index tableì—ì„œ ê²€ì‚¬ê°€ëŠ¥í•˜ë‹¤.
                     sScanMethod = QDN_FK_PARTITION_ONLY_INDEX_TABLE_SCAN;
                 }
             }
             else
             {
-                // table partition¿¡ LOCK(IS)
+                // table partitionì— LOCK(IS)
                 IDE_TEST( qcmPartition::validateAndLockPartitions(
                               aStatement,
                               sChildTableRef,
                               SMI_TABLE_LOCK_IS )
                           != IDE_SUCCESS );
                 
-                // table partition local index scanÇÏ´Â °æ¿ì
+                // table partition local index scaní•˜ëŠ” ê²½ìš°
                 sScanMethod = QDN_FK_PARTITION_INDEX_SCAN;
             }
         }
         else
         {
-            // table partition¿¡ LOCK(IS)
+            // table partitionì— LOCK(IS)
             IDE_TEST( qcmPartition::validateAndLockPartitions(
                           aStatement,
                           sChildTableRef,
                           SMI_TABLE_LOCK_IS )
                       != IDE_SUCCESS );
             
-            // table partition full scanÇÏ´Â °æ¿ì
+            // table partition full scaní•˜ëŠ” ê²½ìš°
             sScanMethod = QDN_FK_PARTITION_FULL_SCAN;
         }
     }
@@ -3744,12 +3744,12 @@ qdnForeignKey::validateScanMethodAndLockTable( qcStatement       * aStatement,
     {
         if ( sSelectedIndex != NULL )
         {
-            // table index scanÇÏ´Â °æ¿ì
+            // table index scaní•˜ëŠ” ê²½ìš°
             sScanMethod = QDN_FK_TABLE_INDEX_SCAN;
         }
         else
         {
-            // table full scanÇÏ´Â °æ¿ì
+            // table full scaní•˜ëŠ” ê²½ìš°
             sScanMethod = QDN_FK_TABLE_FULL_SCAN;
         }
     }
@@ -3777,8 +3777,8 @@ qdnForeignKey::validateScanMethodAndLockTableForDelete( qcStatement       * aSta
 /***********************************************************************
  *
  * Description :
- *    deleteChildRowWithRow È¤Àº updateNullChildRowWithRow ·ÎºÎÅÍ È£Ãâ,
- *    child table¿¡ ix_lockÀ» È¸µæÇÏ°í foreign key scan method¸¦ °áÁ¤ÇÑ´Ù.
+ *    deleteChildRowWithRow í˜¹ì€ updateNullChildRowWithRow ë¡œë¶€í„° í˜¸ì¶œ,
+ *    child tableì— ix_lockì„ íšŒë“í•˜ê³  foreign key scan methodë¥¼ ê²°ì •í•œë‹¤.
  *
  * Implementation :
  *
@@ -3804,8 +3804,8 @@ qdnForeignKey::validateScanMethodAndLockTableForDelete( qcStatement       * aSta
     
     //---------------------------------------
     // To Fix PR-10592
-    // Access Method ¼±ÅÃ
-    // Index ¿Í »ç¿ë °¡´ÉÇÑ key column °³¼ö¸¦ È¹µæ
+    // Access Method ì„ íƒ
+    // Index ì™€ ì‚¬ìš© ê°€ëŠ¥í•œ key column ê°œìˆ˜ë¥¼ íšë“
     //---------------------------------------
 
     IDE_TEST( getChildKeyRangeInfo( sChildTableInfo,
@@ -3817,13 +3817,13 @@ qdnForeignKey::validateScanMethodAndLockTableForDelete( qcStatement       * aSta
     // PROJ-1502 PARTITIONED DISK TABLE
     if( sChildTableInfo->tablePartitionType == QCM_PARTITIONED_TABLE )
     {
-        // table partition¿¡ LOCK(IX)
+        // table partitionì— LOCK(IX)
         IDE_TEST( qcmPartition::validateAndLockPartitions( aStatement,
                                                            sChildTableRef,
                                                            SMI_TABLE_LOCK_IX )
                   != IDE_SUCCESS );
 
-        // index table¿¡ LOCK(IX)
+        // index tableì— LOCK(IX)
         IDE_TEST( qmsIndexTable::validateAndLockIndexTableRefList( aStatement,
                                                                    sChildTableRef->indexTableRef,
                                                                    SMI_TABLE_LOCK_IX )
@@ -3842,29 +3842,29 @@ qdnForeignKey::validateScanMethodAndLockTableForDelete( qcStatement       * aSta
 
                 if ( sKeyRangeColumnCnt < aRefChildInfo->foreignKey->constraintColumnCount )
                 {
-                    // non-partitioned index°¡ ¼±ÅÃµÇ¾úÁö¸¸ index table¸¸À¸·Î´Â ¸ğµÎ °Ë»çÇÒ ¼ö ¾ø°í
-                    // table scanÀÌ ÇÊ¿äÇÑ °æ¿ì
+                    // non-partitioned indexê°€ ì„ íƒë˜ì—ˆì§€ë§Œ index tableë§Œìœ¼ë¡œëŠ” ëª¨ë‘ ê²€ì‚¬í•  ìˆ˜ ì—†ê³ 
+                    // table scanì´ í•„ìš”í•œ ê²½ìš°
                     // ex) foreign key (i1,i2), index (i1)
-                    //     i1À¸·Î index´Â Å¸Áö¸¸ i2´Â table¿¡¼­ ¾ò¾î¾ß ÇÑ´Ù.
+                    //     i1ìœ¼ë¡œ indexëŠ” íƒ€ì§€ë§Œ i2ëŠ” tableì—ì„œ ì–»ì–´ì•¼ í•œë‹¤.
                     sScanMethod = QDN_FK_PARTITION_INDEX_TABLE_SCAN;
                 }
                 else
                 {
-                    // non-partitioned index°¡ ¼±ÅÃµÇ¾ú°í index table¸¸À¸·Îµµ °Ë»ç°¡ °¡´ÉÇÑ °æ¿ì
+                    // non-partitioned indexê°€ ì„ íƒë˜ì—ˆê³  index tableë§Œìœ¼ë¡œë„ ê²€ì‚¬ê°€ ê°€ëŠ¥í•œ ê²½ìš°
                     // ex) foreign key (i1,i2), index (i1,i2,i3)
-                    //     i1,i2¸ğµÎ index table¿¡¼­ °Ë»ç°¡´ÉÇÏ´Ù.
+                    //     i1,i2ëª¨ë‘ index tableì—ì„œ ê²€ì‚¬ê°€ëŠ¥í•˜ë‹¤.
                     sScanMethod = QDN_FK_PARTITION_ONLY_INDEX_TABLE_SCAN;
                 }
             }
             else
             {
-                // table partition local index scanÇÏ´Â °æ¿ì
+                // table partition local index scaní•˜ëŠ” ê²½ìš°
                 sScanMethod = QDN_FK_PARTITION_INDEX_SCAN;
             }
         }
         else
         {
-            // table partition full scanÇÏ´Â °æ¿ì
+            // table partition full scaní•˜ëŠ” ê²½ìš°
             sScanMethod = QDN_FK_PARTITION_FULL_SCAN;
         }
     }
@@ -3872,12 +3872,12 @@ qdnForeignKey::validateScanMethodAndLockTableForDelete( qcStatement       * aSta
     {
         if ( sSelectedIndex != NULL )
         {
-            // table index scanÇÏ´Â °æ¿ì
+            // table index scaní•˜ëŠ” ê²½ìš°
             sScanMethod = QDN_FK_TABLE_INDEX_SCAN;
         }
         else
         {
-            // table full scanÇÏ´Â °æ¿ì
+            // table full scaní•˜ëŠ” ê²½ìš°
             sScanMethod = QDN_FK_TABLE_FULL_SCAN;
         }
     }
@@ -3908,7 +3908,7 @@ IDE_RC qdnForeignKey::makeKeyRangeAndIndex( UInt                  aTableType,
 /***********************************************************************
  *
  * Description :
- *    child table scanÀÇ key range¸¦ ±¸¼ºÇÑ´Ù.
+ *    child table scanì˜ key rangeë¥¼ êµ¬ì„±í•œë‹¤.
  *
  * Implementation :
  *
@@ -3927,8 +3927,8 @@ IDE_RC qdnForeignKey::makeKeyRangeAndIndex( UInt                  aTableType,
                        ID_SIZEOF(qtcMetaRangeColumn) * aKeyRangeColumnCnt );
     
         // PROJ-1872
-        // index°¡ ÀÖ´Â Ä®·³¿¡ meta range¸¦ ¾²°Ô µÇ¸ç
-        // disk index columnÀÇ compare´Â stored type°ú mt type °£ÀÇ ºñ±³ÀÌ´Ù
+        // indexê°€ ìˆëŠ” ì¹¼ëŸ¼ì— meta rangeë¥¼ ì“°ê²Œ ë˜ë©°
+        // disk index columnì˜ compareëŠ” stored typeê³¼ mt type ê°„ì˜ ë¹„êµì´ë‹¤
         if ( aTableType == SMI_TABLE_DISK )
         {
             sCompareType = MTD_COMPARE_STOREDVAL_MTDVAL;
@@ -3981,7 +3981,7 @@ IDE_RC qdnForeignKey::changePartIndex( qcmTableInfo   * aPartitionInfo,
 /***********************************************************************
  *
  * Description :
- *    child table scanÀÇ key range¸¦ ±¸¼ºÇÑ´Ù.
+ *    child table scanì˜ key rangeë¥¼ êµ¬ì„±í•œë‹¤.
  *
  * Implementation :
  *
@@ -4027,7 +4027,7 @@ qdnForeignKey::getChildRowWithRow4Table( qcStatement    * aStatement,
 /***********************************************************************
  *
  * Description :
- *    tableÀ» À§ÇÑ getChildRowWithRow
+ *    tableì„ ìœ„í•œ getChildRowWithRow
  *
  * Implementation :
  *
@@ -4043,7 +4043,7 @@ qdnForeignKey::getChildRowWithRow4Table( qcStatement    * aStatement,
     idBool                sIsCursorOpened = ID_FALSE;
 
     // To Fix PR-10592
-    // Index¸¦ »ç¿ëÇÏ±â À§ÇÑ º¯¼öµé
+    // Indexë¥¼ ì‚¬ìš©í•˜ê¸° ìœ„í•œ ë³€ìˆ˜ë“¤
     qcmIndex            * sIndex;
     void                * sIndexHandle = NULL;
     smiRange            * sKeyRange = NULL;
@@ -4053,7 +4053,7 @@ qdnForeignKey::getChildRowWithRow4Table( qcStatement    * aStatement,
     mtcTuple            * sChildTuple;
 
     //---------------------------------------
-    // ÀúÀå ¸ÅÃ¼¿¡ µû¸¥ °ø°£ ÇÒ´ç
+    // ì €ì¥ ë§¤ì²´ì— ë”°ë¥¸ ê³µê°„ í• ë‹¹
     //---------------------------------------
 
     sChildTuple = &(QC_PRIVATE_TMPLATE(aStatement)->tmplate.rows[aChildTableRef->table]);
@@ -4062,14 +4062,14 @@ qdnForeignKey::getChildRowWithRow4Table( qcStatement    * aStatement,
 
     if ( sTableType == SMI_TABLE_DISK )
     {
-        // Disk TableÀÎ °æ¿ì
+        // Disk Tableì¸ ê²½ìš°
         IDE_TEST( qdbCommon::getDiskRowSize( aChildTableInfo,
                                              & sRowSize )
                   != IDE_SUCCESS );
         
-        // Record Read¸¦ À§ÇÑ °ø°£À» ÇÒ´çÇÑ´Ù.
+        // Record Readë¥¼ ìœ„í•œ ê³µê°„ì„ í• ë‹¹í•œë‹¤.
         // To fix BUG-14820
-        // Disk-variable ÄÃ·³ÀÇ ridºñ±³¸¦ À§ÇØ ÃÊ±âÈ­ ÇØ¾ß ÇÔ.
+        // Disk-variable ì»¬ëŸ¼ì˜ ridë¹„êµë¥¼ ìœ„í•´ ì´ˆê¸°í™” í•´ì•¼ í•¨.
         IDU_LIMITPOINT("qdnForeignKey::getChildRowWithRow::malloc");
         IDE_TEST( aStatement->qmxMem->cralloc( sRowSize,
                                                (void **) & sRow )
@@ -4077,12 +4077,12 @@ qdnForeignKey::getChildRowWithRow4Table( qcStatement    * aStatement,
     }
     else
     {
-        // Memory TableÀÎ °æ¿ì
+        // Memory Tableì¸ ê²½ìš°
         // Nothing to do.
     }
 
     //---------------------------------------
-    // PROJ-1705  fetch column list ±¸¼º
+    // PROJ-1705  fetch column list êµ¬ì„±
     //---------------------------------------
 
     if ( sTableType == SMI_TABLE_DISK )
@@ -4090,8 +4090,8 @@ qdnForeignKey::getChildRowWithRow4Table( qcStatement    * aStatement,
         if ( aIsIndexTable == ID_TRUE )
         {
             // PROJ-1624 non-partitioned index
-            // index table¿¡ ´ëÇØ fetch column list¸¦ ¸¸µé¶§´Â
-            // foreign key´Â ¹«½ÃÇÏ°í index·Î¸¸ »ı¼ºÇÑ´Ù.
+            // index tableì— ëŒ€í•´ fetch column listë¥¼ ë§Œë“¤ë•ŒëŠ”
+            // foreign keyëŠ” ë¬´ì‹œí•˜ê³  indexë¡œë§Œ ìƒì„±í•œë‹¤.
             IDE_TEST( qdbCommon::makeFetchColumnList4Index(
                           QC_PRIVATE_TMPLATE(aStatement),
                           aChildTableInfo,
@@ -4118,7 +4118,7 @@ qdnForeignKey::getChildRowWithRow4Table( qcStatement    * aStatement,
     }
     
     //---------------------------------------
-    // Index¹× Key Range »ı¼º
+    // Indexë° Key Range ìƒì„±
     //---------------------------------------
 
     IDE_TEST( makeKeyRangeAndIndex( sTableType,
@@ -4219,7 +4219,7 @@ qdnForeignKey::getChildRowWithRow4Partition( qcStatement    * aStatement,
 /***********************************************************************
  *
  * Description :
- *    partitioned tableÀ» À§ÇÑ getChildRowWithRow
+ *    partitioned tableì„ ìœ„í•œ getChildRowWithRow
  *
  * Implementation :
  *
@@ -4235,7 +4235,7 @@ qdnForeignKey::getChildRowWithRow4Partition( qcStatement    * aStatement,
     idBool                sIsCursorOpened = ID_FALSE;
 
     // To Fix PR-10592
-    // Index¸¦ »ç¿ëÇÏ±â À§ÇÑ º¯¼öµé
+    // Indexë¥¼ ì‚¬ìš©í•˜ê¸° ìœ„í•œ ë³€ìˆ˜ë“¤
     qcmIndex            * sIndex = NULL;
     void                * sIndexHandle = NULL;
     smiRange            * sKeyRange = NULL;
@@ -4252,7 +4252,7 @@ qdnForeignKey::getChildRowWithRow4Partition( qcStatement    * aStatement,
     mtcTuple            * sChildTuple;
 
     //---------------------------------------
-    // ÀúÀå ¸ÅÃ¼¿¡ µû¸¥ °ø°£ ÇÒ´ç
+    // ì €ì¥ ë§¤ì²´ì— ë”°ë¥¸ ê³µê°„ í• ë‹¹
     //---------------------------------------
 
     if ( aChildTableRef->partitionSummary->diskPartitionRef != NULL )
@@ -4261,9 +4261,9 @@ qdnForeignKey::getChildRowWithRow4Partition( qcStatement    * aStatement,
                                              & sRowSize )
                   != IDE_SUCCESS );
 
-        // Record Read¸¦ À§ÇÑ °ø°£À» ÇÒ´çÇÑ´Ù.
+        // Record Readë¥¼ ìœ„í•œ ê³µê°„ì„ í• ë‹¹í•œë‹¤.
         // To fix BUG-14820
-        // Disk-variable ÄÃ·³ÀÇ ridºñ±³¸¦ À§ÇØ ÃÊ±âÈ­ ÇØ¾ß ÇÔ.
+        // Disk-variable ì»¬ëŸ¼ì˜ ridë¹„êµë¥¼ ìœ„í•´ ì´ˆê¸°í™” í•´ì•¼ í•¨.
         IDU_LIMITPOINT("qdnForeignKey::getChildRowWithRow::malloc");
         IDE_TEST( aStatement->qmxMem->cralloc( sRowSize,
                                                (void **) & sRow )
@@ -4277,7 +4277,7 @@ qdnForeignKey::getChildRowWithRow4Partition( qcStatement    * aStatement,
     }
 
     //---------------------------------------
-    // PROJ-1705  fetch column list ±¸¼º
+    // PROJ-1705  fetch column list êµ¬ì„±
     //---------------------------------------
 
     if ( aChildTableRef->partitionSummary->diskPartitionRef != NULL )
@@ -4297,7 +4297,7 @@ qdnForeignKey::getChildRowWithRow4Partition( qcStatement    * aStatement,
     }
     
     //---------------------------------------
-    // Index¹× Key Range »ı¼º
+    // Indexë° Key Range ìƒì„±
     //---------------------------------------
 
     if ( aChildTableRef->partitionSummary->diskPartitionRef != NULL )
@@ -4381,7 +4381,7 @@ qdnForeignKey::getChildRowWithRow4Partition( qcStatement    * aStatement,
                                                 aStatement->mStatistics );
         }
         
-        /* PROJ-2464 hybrid partitioned table Áö¿ø */
+        /* PROJ-2464 hybrid partitioned table ì§€ì› */
         if ( QCM_TABLE_TYPE_IS_DISK( sSelectedPartitionRef->partitionInfo->tableFlag ) == ID_TRUE )
         {
             sCursorProperty.mFetchColumnList = sFetchColumnList;
@@ -4394,13 +4394,13 @@ qdnForeignKey::getChildRowWithRow4Partition( qcStatement    * aStatement,
         }
 
         //---------------------------------------
-        // Cursor ±¸Ãà
+        // Cursor êµ¬ì¶•
         //---------------------------------------
         
         sCursor.initialize();
 
         //---------------------------------------
-        // PROJ-1705  fetch column list ±¸¼º
+        // PROJ-1705  fetch column list êµ¬ì„±
         //---------------------------------------
 
         IDE_TEST( sCursor.open( QC_SMI_STMT(aStatement),
@@ -4474,7 +4474,7 @@ qdnForeignKey::getChildRowWithRow4IndexTable( qcStatement      * aStatement,
 /***********************************************************************
  *
  * Description :
- *    index tableÀ» À§ÇÑ getChildRowWithRow
+ *    index tableì„ ìœ„í•œ getChildRowWithRow
  *
  * Implementation :
  *
@@ -4500,7 +4500,7 @@ qdnForeignKey::getChildRowWithRow4IndexTable( qcStatement      * aStatement,
     mtcTuple            * sChildTuple;
     
     // To Fix PR-10592
-    // Index¸¦ »ç¿ëÇÏ±â À§ÇÑ º¯¼öµé
+    // Indexë¥¼ ì‚¬ìš©í•˜ê¸° ìœ„í•œ ë³€ìˆ˜ë“¤
     qcmIndex            * sIndex;
     void                * sIndexHandle = NULL;
     smiRange            * sKeyRange = NULL;
@@ -4528,7 +4528,7 @@ qdnForeignKey::getChildRowWithRow4IndexTable( qcStatement      * aStatement,
     sIndexTableInfo = aChildIndexTable->tableInfo;
     
     //---------------------------------------
-    // partitionRef index »ı¼º
+    // partitionRef index ìƒì„±
     //---------------------------------------
 
     IDE_TEST( qmsIndexTable::initializePartitionRefIndex(
@@ -4539,7 +4539,7 @@ qdnForeignKey::getChildRowWithRow4IndexTable( qcStatement      * aStatement,
               != IDE_SUCCESS );
     
     //---------------------------------------
-    // partition cursor¸¦ À§ÇÑ °ø°£ ÇÒ´ç
+    // partition cursorë¥¼ ìœ„í•œ ê³µê°„ í• ë‹¹
     //---------------------------------------
 
     IDE_TEST( aStatement->qmxMem->alloc(
@@ -4552,37 +4552,37 @@ qdnForeignKey::getChildRowWithRow4IndexTable( qcStatement      * aStatement,
                   (void **) & sPartCursorOpened )
               != IDE_SUCCESS );
 
-    // ÃÊ±âÈ­
+    // ì´ˆê¸°í™”
     for ( i = 0; i < aChildTableRef->partitionCount; i++ )
     {
         sPartCursorOpened[i] = ID_FALSE;
     }
     
     //---------------------------------------
-    // ÀúÀå ¸ÅÃ¼¿¡ µû¸¥ °ø°£ ÇÒ´ç
+    // ì €ì¥ ë§¤ì²´ì— ë”°ë¥¸ ê³µê°„ í• ë‹¹
     //---------------------------------------
 
-    // index table¿ë °ø°£ÇÒ´ç
+    // index tableìš© ê³µê°„í• ë‹¹
     IDE_TEST( qdbCommon::getDiskRowSize( sIndexTableInfo,
                                          & sIndexRowSize )
               != IDE_SUCCESS );
     
-    // Record Read¸¦ À§ÇÑ °ø°£À» ÇÒ´çÇÑ´Ù.
+    // Record Readë¥¼ ìœ„í•œ ê³µê°„ì„ í• ë‹¹í•œë‹¤.
     // To fix BUG-14820
-    // Disk-variable ÄÃ·³ÀÇ ridºñ±³¸¦ À§ÇØ ÃÊ±âÈ­ ÇØ¾ß ÇÔ.
+    // Disk-variable ì»¬ëŸ¼ì˜ ridë¹„êµë¥¼ ìœ„í•´ ì´ˆê¸°í™” í•´ì•¼ í•¨.
     IDU_LIMITPOINT("qdnForeignKey::getChildRowWithRow::malloc");
     IDE_TEST( aStatement->qmxMem->cralloc( sIndexRowSize,
                                            (void **) & sRow )
               != IDE_SUCCESS );
 
-    // partition¿ë °ø°£ÇÒ´ç
+    // partitionìš© ê³µê°„í• ë‹¹
     IDE_TEST( qdbCommon::getDiskRowSize( aChildTableInfo,
                                          & sRowSize )
               != IDE_SUCCESS );
     
-    // Record Read¸¦ À§ÇÑ °ø°£À» ÇÒ´çÇÑ´Ù.
+    // Record Readë¥¼ ìœ„í•œ ê³µê°„ì„ í• ë‹¹í•œë‹¤.
     // To fix BUG-14820
-    // Disk-variable ÄÃ·³ÀÇ ridºñ±³¸¦ À§ÇØ ÃÊ±âÈ­ ÇØ¾ß ÇÔ.
+    // Disk-variable ì»¬ëŸ¼ì˜ ridë¹„êµë¥¼ ìœ„í•´ ì´ˆê¸°í™” í•´ì•¼ í•¨.
     IDU_LIMITPOINT("qdnForeignKey::getChildRowWithRow::malloc");
     IDE_TEST( aStatement->qmxMem->cralloc( sRowSize,
                                            (void **) & sPartRow )
@@ -4590,7 +4590,7 @@ qdnForeignKey::getChildRowWithRow4IndexTable( qcStatement      * aStatement,
     sOrgPartRow = sPartRow;
 
     //---------------------------------------
-    // PROJ-1705  fetch column list ±¸¼º
+    // PROJ-1705  fetch column list êµ¬ì„±
     //---------------------------------------
 
     IDE_TEST( qdbCommon::makeFetchColumnList4ChildTable(
@@ -4602,8 +4602,8 @@ qdnForeignKey::getChildRowWithRow4IndexTable( qcStatement      * aStatement,
                   & sPartFetchColumnList )
               != IDE_SUCCESS );
 
-    // index table¿ë fetch column list ±¸¼º
-    // key, oid, rid ¸ğµÎ fetchÇÑ´Ù.
+    // index tableìš© fetch column list êµ¬ì„±
+    // key, oid, rid ëª¨ë‘ fetchí•œë‹¤.
     IDE_TEST( qdbCommon::makeFetchColumnList(
                   QC_PRIVATE_TMPLATE(aStatement),
                   sIndexTableInfo->columnCount,
@@ -4613,14 +4613,14 @@ qdnForeignKey::getChildRowWithRow4IndexTable( qcStatement      * aStatement,
               != IDE_SUCCESS );
     
     //---------------------------------------
-    // Index¹× Key Range »ı¼º
+    // Indexë° Key Range ìƒì„±
     //---------------------------------------
 
     IDE_TEST( qmsIndexTable::findKeyIndex( sIndexTableInfo,
                                            & sIndexTableIndex )
               != IDE_SUCCESS );
 
-    // index table¿ë key range ±¸¼º
+    // index tableìš© key range êµ¬ì„±
     IDE_TEST( makeKeyRangeAndIndex( sTableType,
                                     aKeyRangeColumnCnt,
                                     sIndexTableIndex,
@@ -4634,7 +4634,7 @@ qdnForeignKey::getChildRowWithRow4IndexTable( qcStatement      * aStatement,
               != IDE_SUCCESS );
 
     //---------------------------------------
-    // column ¼³Á¤
+    // column ì„¤ì •
     //---------------------------------------
     
     IDE_DASSERT( sIndexTableInfo->columnCount > 2 );
@@ -4697,7 +4697,7 @@ qdnForeignKey::getChildRowWithRow4IndexTable( qcStatement      * aStatement,
         sPartOID = *(smOID*) ((UChar*)sRow + sOIDColumn->basicInfo->column.offset);
         sRowGRID = *(scGRID*) ((UChar*)sRow + sRIDColumn->basicInfo->column.offset);
 
-        // partOID¸¦ Ã£´Â´Ù.
+        // partOIDë¥¼ ì°¾ëŠ”ë‹¤.
         IDE_TEST( qmsIndexTable::findPartitionRefIndex( & sPartIndexInfo,
                                                         sPartOID,
                                                         & sSelectedPartitionRef,
@@ -4737,7 +4737,7 @@ qdnForeignKey::getChildRowWithRow4IndexTable( qcStatement      * aStatement,
         IDE_TEST( sPartCursor[sPartOrder].readRowFromGRID( & sPartRow, sRowGRID )
                   != IDE_SUCCESS );
 
-        // ¹İµå½Ã Á¸ÀçÇØ¾ß ÇÑ´Ù.
+        // ë°˜ë“œì‹œ ì¡´ì¬í•´ì•¼ í•œë‹¤.
         IDE_TEST_RAISE( sPartRow == NULL, ERR_NO_ROW );
             
         IDE_TEST( checkChildRow( aForeignKey,
@@ -4822,8 +4822,8 @@ qdnForeignKey::checkChildRow( qcmForeignKey    * aForeignKey,
 /***********************************************************************
  *
  * Description :
- *    getChildRowWithRow ·ÎºÎÅÍ È£Ãâ, Å×ÀÌºí update ½Ã¿¡
- *    º¯°æÇÑ °ªÀÌ child Å×ÀÌºí¿¡¼­ ÂüÁ¶ÇÏ°í ÀÖ¾ú´ø °ªÀÌ ¾Æ´ÑÁö °Ë»ç
+ *    getChildRowWithRow ë¡œë¶€í„° í˜¸ì¶œ, í…Œì´ë¸” update ì‹œì—
+ *    ë³€ê²½í•œ ê°’ì´ child í…Œì´ë¸”ì—ì„œ ì°¸ì¡°í•˜ê³  ìˆì—ˆë˜ ê°’ì´ ì•„ë‹Œì§€ ê²€ì‚¬
  *
  * Implementation :
  *
@@ -4838,7 +4838,7 @@ qdnForeignKey::checkChildRow( qcmForeignKey    * aForeignKey,
     mtcColumn    * sColumnsForChildRow;
     mtcColumn    * sColumnsForCheckedRow;
     
-    // Key Range¿¡ Æ÷ÇÔµÇÁö ¾ÊÀº Column¿¡ ´ëÇÏ¿© µ¿ÀÏÇÑÁö¸¦ °Ë»çÇÑ´Ù.
+    // Key Rangeì— í¬í•¨ë˜ì§€ ì•Šì€ Columnì— ëŒ€í•˜ì—¬ ë™ì¼í•œì§€ë¥¼ ê²€ì‚¬í•œë‹¤.
     for ( i = aKeyRangeColumnCnt; i < aUniqueConstraint->keyColCount; i++ )
     {
         sColumnOrder      = aUniqueConstraint->keyColumns[i].column.id & SMI_COLUMN_ID_MASK;
@@ -4897,7 +4897,7 @@ qdnForeignKey::deleteChildRowWithRow4Table( qcStatement      * aStatement,
 /***********************************************************************
  *
  * Description :
- *    tableÀ» À§ÇÑ deleteChildRowWithRow
+ *    tableì„ ìœ„í•œ deleteChildRowWithRow
  *
  * Implementation :
  *
@@ -4919,7 +4919,7 @@ qdnForeignKey::deleteChildRowWithRow4Table( qcStatement      * aStatement,
     idBool                sIsCursorOpened = ID_FALSE;
 
     // To Fix PR-10592
-    // Index¸¦ »ç¿ëÇÏ±â À§ÇÑ º¯¼öµé
+    // Indexë¥¼ ì‚¬ìš©í•˜ê¸° ìœ„í•œ ë³€ìˆ˜ë“¤
     qcmIndex            * sIndex = NULL;
     void                * sIndexHandle = NULL;
     smiRange            * sKeyRange = NULL;
@@ -4929,7 +4929,7 @@ qdnForeignKey::deleteChildRowWithRow4Table( qcStatement      * aStatement,
     mtcTuple            * sChildTuple;
 
     //---------------------------------------
-    // ÀúÀå ¸ÅÃ¼¿¡ µû¸¥ °ø°£ ÇÒ´ç
+    // ì €ì¥ ë§¤ì²´ì— ë”°ë¥¸ ê³µê°„ í• ë‹¹
     //---------------------------------------
 
     sChildTuple = &(QC_PRIVATE_TMPLATE(aStatement)->tmplate.rows[aChildTableRef->table]);
@@ -4937,19 +4937,19 @@ qdnForeignKey::deleteChildRowWithRow4Table( qcStatement      * aStatement,
     sTableType = aChildTableInfo->tableFlag & SMI_TABLE_TYPE_MASK;
 
     //---------------------------------------
-    // Record Read¸¦ À§ÇÑ °ø°£ ÇÒ´çÀ» À§ÇÑ ·Î¿ì »çÀÌÁî °è»ê
-    // trigger¼öÇàÀ» À§ÇÑ °ø°£ ÇÒ´çÀ» À§ÇÑ ·Î¿ì »çÀÌÁî °è»ê
+    // Record Readë¥¼ ìœ„í•œ ê³µê°„ í• ë‹¹ì„ ìœ„í•œ ë¡œìš° ì‚¬ì´ì¦ˆ ê³„ì‚°
+    // triggerìˆ˜í–‰ì„ ìœ„í•œ ê³µê°„ í• ë‹¹ì„ ìœ„í•œ ë¡œìš° ì‚¬ì´ì¦ˆ ê³„ì‚°
     //---------------------------------------
     
     if ( sTableType == SMI_TABLE_DISK )
     {
-        // Disk TableÀÎ °æ¿ì
+        // Disk Tableì¸ ê²½ìš°
         IDE_TEST( qdbCommon::getDiskRowSize( aChildTableInfo,
                                              & sRowSize )
                   != IDE_SUCCESS );
         
         // To fix BUG-14820
-        // Disk-variable ÄÃ·³ÀÇ ridºñ±³¸¦ À§ÇØ ÃÊ±âÈ­ ÇØ¾ß ÇÔ.
+        // Disk-variable ì»¬ëŸ¼ì˜ ridë¹„êµë¥¼ ìœ„í•´ ì´ˆê¸°í™” í•´ì•¼ í•¨.
         IDU_LIMITPOINT("qdnForeignKey::deleteChildRowWithRow::malloc1");
         IDE_TEST( aStatement->qmxMem->cralloc( sRowSize,
                                                (void **) & sRow )
@@ -4959,8 +4959,8 @@ qdnForeignKey::deleteChildRowWithRow4Table( qcStatement      * aStatement,
     }
     else
     {
-        // Memory TableÀÎ °æ¿ì
-        // trigger¸¦ À§ÇØ rowsize¸¦ °è»êÇÑ´Ù.
+        // Memory Tableì¸ ê²½ìš°
+        // triggerë¥¼ ìœ„í•´ rowsizeë¥¼ ê³„ì‚°í•œë‹¤.
         IDE_TEST( qdbCommon::getMemoryRowSize( aChildTableInfo,
                                                & sMemoryFixRowSize,
                                                & sRowSize )
@@ -4968,12 +4968,12 @@ qdnForeignKey::deleteChildRowWithRow4Table( qcStatement      * aStatement,
     }
 
     //------------------------------------------
-    // delete row triggerÇÊ¿äÇÑÁö °Ë»ç
-    // Trigger Old Row ReferencingÀ» À§ÇÑ °ø°£ ÇÒ´ç
+    // delete row triggerí•„ìš”í•œì§€ ê²€ì‚¬
+    // Trigger Old Row Referencingì„ ìœ„í•œ ê³µê°„ í• ë‹¹
     //------------------------------------------
 
     // To fix BUG-12622
-    // before, after trigger¼øÀ¸·Î row°¡ ÇÊ¿äÇÑÁö °Ë»ç.
+    // before, after triggerìˆœìœ¼ë¡œ rowê°€ í•„ìš”í•œì§€ ê²€ì‚¬.
     IDE_TEST( qdnTrigger::needTriggerRow( aStatement,
                                           aChildTableInfo,
                                           QCM_TRIGGER_BEFORE,
@@ -5010,14 +5010,14 @@ qdnForeignKey::deleteChildRowWithRow4Table( qcStatement      * aStatement,
     }
     
     //---------------------------------------
-    // PROJ-1705  fetch column list ±¸¼º
-    // delete cascadeÀÎ °æ¿ì´Â,
-    // foreignKey °Ë»ç¸¦ À§ÇØ ¸ğµç child tableµéÀ» °Ë»çÇØ¾ß ÇÏ´Âµ¥,
-    // ÀÌ °æ¿ì,
-    // trigger ¶Ç´Â °Ë»çÇØ¾ßÇÏ´Â ¸ğµç child columnµé¿¡ ´ëÇÑ
-    // fetch columÀ» °¡·Á³»±â°¡ ½±Áö ¾Ê¾Æ
-    // child tableÀÇ ¸ğµç ÄÃ·³À» fetch column ´ë»óÀ¸·Î »ï´Â´Ù.
-    // °³¼±»çÇ×ÀÓ.
+    // PROJ-1705  fetch column list êµ¬ì„±
+    // delete cascadeì¸ ê²½ìš°ëŠ”,
+    // foreignKey ê²€ì‚¬ë¥¼ ìœ„í•´ ëª¨ë“  child tableë“¤ì„ ê²€ì‚¬í•´ì•¼ í•˜ëŠ”ë°,
+    // ì´ ê²½ìš°,
+    // trigger ë˜ëŠ” ê²€ì‚¬í•´ì•¼í•˜ëŠ” ëª¨ë“  child columnë“¤ì— ëŒ€í•œ
+    // fetch columì„ ê°€ë ¤ë‚´ê¸°ê°€ ì‰½ì§€ ì•Šì•„
+    // child tableì˜ ëª¨ë“  ì»¬ëŸ¼ì„ fetch column ëŒ€ìƒìœ¼ë¡œ ì‚¼ëŠ”ë‹¤.
+    // ê°œì„ ì‚¬í•­ì„.
     //---------------------------------------
 
     if ( sTableType == SMI_TABLE_DISK )
@@ -5036,7 +5036,7 @@ qdnForeignKey::deleteChildRowWithRow4Table( qcStatement      * aStatement,
     }
 
     //---------------------------------------
-    // Index¹× Key Range »ı¼º
+    // Indexë° Key Range ìƒì„±
     //---------------------------------------
 
     IDE_TEST( makeKeyRangeAndIndex( sTableType,
@@ -5124,19 +5124,19 @@ qdnForeignKey::deleteChildRowWithRow4Table( qcStatement      * aStatement,
     IDE_TEST( sCursor.close() != IDE_SUCCESS );
 
     //---------------------------------------
-    // deleteµÈ row¿¡ ´ëÇÑ child table cascade delete ¼öÇà.
+    // deleteëœ rowì— ëŒ€í•œ child table cascade delete ìˆ˜í–‰.
     //---------------------------------------
             
     //------------------------------------------
-    // DELETEµÈ ·Î¿ì °Ë»öÀ» À§ÇØ,
-    // °»½Å¿¬»êÀÌ ¼öÇàµÈ Ã¹¹øÂ° row ÀÌÀü À§Ä¡·Î cursor À§Ä¡ ¼³Á¤
+    // DELETEëœ ë¡œìš° ê²€ìƒ‰ì„ ìœ„í•´,
+    // ê°±ì‹ ì—°ì‚°ì´ ìˆ˜í–‰ëœ ì²«ë²ˆì§¸ row ì´ì „ ìœ„ì¹˜ë¡œ cursor ìœ„ì¹˜ ì„¤ì •
     //------------------------------------------
 
     IDE_TEST( sCursor.beforeFirstModified( SMI_FIND_MODIFIED_OLD )
               != IDE_SUCCESS );
 
     //------------------------------------------
-    // Referencing °Ë»ç¸¦ À§ÇØ »èÁ¦µÈ RowµéÀ» °Ë»ö
+    // Referencing ê²€ì‚¬ë¥¼ ìœ„í•´ ì‚­ì œëœ Rowë“¤ì„ ê²€ìƒ‰
     //------------------------------------------
             
     sOldRow     = sOrgRow;
@@ -5188,7 +5188,7 @@ qdnForeignKey::deleteChildRowWithRow4Partition( qcStatement      * aStatement,
 /***********************************************************************
  *
  * Description :
- *    partitioned tableÀ» À§ÇÑ deleteChildRowWithRow
+ *    partitioned tableì„ ìœ„í•œ deleteChildRowWithRow
  *
  * Implementation :
  *
@@ -5212,7 +5212,7 @@ qdnForeignKey::deleteChildRowWithRow4Partition( qcStatement      * aStatement,
     idBool                 sIsCursorOpened = ID_FALSE;
 
     // To Fix PR-10592
-    // Index¸¦ »ç¿ëÇÏ±â À§ÇÑ º¯¼öµé
+    // Indexë¥¼ ì‚¬ìš©í•˜ê¸° ìœ„í•œ ë³€ìˆ˜ë“¤
     qcmIndex             * sIndex = NULL;
     void                 * sIndexHandle = NULL;
     smiRange             * sKeyRange = NULL;
@@ -5236,11 +5236,11 @@ qdnForeignKey::deleteChildRowWithRow4Partition( qcStatement      * aStatement,
     sChildTuple = &(QC_PRIVATE_TMPLATE(aStatement)->tmplate.rows[aChildTableRef->table]);
     
     //---------------------------------------
-    // Record Read¸¦ À§ÇÑ °ø°£ ÇÒ´çÀ» À§ÇÑ ·Î¿ì »çÀÌÁî °è»ê
-    // trigger¼öÇàÀ» À§ÇÑ °ø°£ ÇÒ´çÀ» À§ÇÑ ·Î¿ì »çÀÌÁî °è»ê
+    // Record Readë¥¼ ìœ„í•œ ê³µê°„ í• ë‹¹ì„ ìœ„í•œ ë¡œìš° ì‚¬ì´ì¦ˆ ê³„ì‚°
+    // triggerìˆ˜í–‰ì„ ìœ„í•œ ê³µê°„ í• ë‹¹ì„ ìœ„í•œ ë¡œìš° ì‚¬ì´ì¦ˆ ê³„ì‚°
     //---------------------------------------
 
-    /* PROJ-2464 hybrid partitioned table Áö¿ø */
+    /* PROJ-2464 hybrid partitioned table ì§€ì› */
     if ( aChildTableRef->partitionSummary->diskPartitionRef != NULL )
     {
         IDE_TEST( qdbCommon::getDiskRowSize( aChildTableRef->partitionSummary->diskPartitionRef->partitionInfo,
@@ -5248,7 +5248,7 @@ qdnForeignKey::deleteChildRowWithRow4Partition( qcStatement      * aStatement,
                   != IDE_SUCCESS );
 
         // To fix BUG-14820
-        // Disk-variable ÄÃ·³ÀÇ ridºñ±³¸¦ À§ÇØ ÃÊ±âÈ­ ÇØ¾ß ÇÔ.
+        // Disk-variable ì»¬ëŸ¼ì˜ ridë¹„êµë¥¼ ìœ„í•´ ì´ˆê¸°í™” í•´ì•¼ í•¨.
         IDU_LIMITPOINT("qdnForeignKey::deleteChildRowWithRow::malloc1");
         IDE_TEST( aStatement->qmxMem->cralloc( sDiskRowSize,
                                                (void **) & sRow )
@@ -5262,8 +5262,8 @@ qdnForeignKey::deleteChildRowWithRow4Partition( qcStatement      * aStatement,
 
     if ( aChildTableRef->partitionSummary->memoryOrVolatilePartitionRef != NULL )
     {
-        // Memory TableÀÎ °æ¿ì
-        // trigger¸¦ À§ÇØ rowsize¸¦ °è»êÇÑ´Ù.
+        // Memory Tableì¸ ê²½ìš°
+        // triggerë¥¼ ìœ„í•´ rowsizeë¥¼ ê³„ì‚°í•œë‹¤.
         IDE_TEST( qdbCommon::getMemoryRowSize( aChildTableRef->partitionSummary->
                                                    memoryOrVolatilePartitionRef->partitionInfo,
                                                & sMemoryFixRowSize,
@@ -5276,12 +5276,12 @@ qdnForeignKey::deleteChildRowWithRow4Partition( qcStatement      * aStatement,
     }
 
     //------------------------------------------
-    // delete row triggerÇÊ¿äÇÑÁö °Ë»ç
-    // Trigger Old Row ReferencingÀ» À§ÇÑ °ø°£ ÇÒ´ç
+    // delete row triggerí•„ìš”í•œì§€ ê²€ì‚¬
+    // Trigger Old Row Referencingì„ ìœ„í•œ ê³µê°„ í• ë‹¹
     //------------------------------------------
 
     // To fix BUG-12622
-    // before, after trigger¼øÀ¸·Î row°¡ ÇÊ¿äÇÑÁö °Ë»ç.
+    // before, after triggerìˆœìœ¼ë¡œ rowê°€ í•„ìš”í•œì§€ ê²€ì‚¬.
     IDE_TEST( qdnTrigger::needTriggerRow( aStatement,
                                           aChildTableInfo,
                                           QCM_TRIGGER_BEFORE,
@@ -5309,7 +5309,7 @@ qdnForeignKey::deleteChildRowWithRow4Partition( qcStatement      * aStatement,
     {
         IDU_LIMITPOINT("qdnForeignKey::deleteChildRowWithRow::malloc2");
 
-        /* PROJ-2464 hybrid partitioned table Áö¿ø */
+        /* PROJ-2464 hybrid partitioned table ì§€ì› */
         if ( aChildTableRef->partitionSummary->diskPartitionRef != NULL )
         {
             IDE_TEST( aStatement->qmxMem->cralloc( sDiskRowSize,
@@ -5338,18 +5338,18 @@ qdnForeignKey::deleteChildRowWithRow4Partition( qcStatement      * aStatement,
     }
     
     //---------------------------------------
-    // PROJ-1705  fetch column list ±¸¼º
-    // delete cascadeÀÎ °æ¿ì´Â,
-    // foreignKey °Ë»ç¸¦ À§ÇØ ¸ğµç child tableµéÀ» °Ë»çÇØ¾ß ÇÏ´Âµ¥,
-    // ÀÌ °æ¿ì,
-    // trigger ¶Ç´Â °Ë»çÇØ¾ßÇÏ´Â ¸ğµç child columnµé¿¡ ´ëÇÑ
-    // fetch columÀ» °¡·Á³»±â°¡ ½±Áö ¾Ê¾Æ
-    // child tableÀÇ ¸ğµç ÄÃ·³À» fetch column ´ë»óÀ¸·Î »ï´Â´Ù.
-    // °³¼±»çÇ×ÀÓ.
+    // PROJ-1705  fetch column list êµ¬ì„±
+    // delete cascadeì¸ ê²½ìš°ëŠ”,
+    // foreignKey ê²€ì‚¬ë¥¼ ìœ„í•´ ëª¨ë“  child tableë“¤ì„ ê²€ì‚¬í•´ì•¼ í•˜ëŠ”ë°,
+    // ì´ ê²½ìš°,
+    // trigger ë˜ëŠ” ê²€ì‚¬í•´ì•¼í•˜ëŠ” ëª¨ë“  child columnë“¤ì— ëŒ€í•œ
+    // fetch columì„ ê°€ë ¤ë‚´ê¸°ê°€ ì‰½ì§€ ì•Šì•„
+    // child tableì˜ ëª¨ë“  ì»¬ëŸ¼ì„ fetch column ëŒ€ìƒìœ¼ë¡œ ì‚¼ëŠ”ë‹¤.
+    // ê°œì„ ì‚¬í•­ì„.
     //---------------------------------------
 
     //---------------------------------------
-    // Index¹× Key Range »ı¼º
+    // Indexë° Key Range ìƒì„±
     //---------------------------------------
 
     if ( aChildTableRef->partitionSummary->diskPartitionRef != NULL )
@@ -5411,7 +5411,7 @@ qdnForeignKey::deleteChildRowWithRow4Partition( qcStatement      * aStatement,
     }
 
     //---------------------------------------
-    // index table cursor »ı¼º
+    // index table cursor ìƒì„±
     //---------------------------------------
 
     if ( aChildTableRef->indexTableRef != NULL )
@@ -5463,10 +5463,10 @@ qdnForeignKey::deleteChildRowWithRow4Partition( qcStatement      * aStatement,
         }
         
         //---------------------------------------
-        // PROJ-1705  fetch column list ±¸¼º
+        // PROJ-1705  fetch column list êµ¬ì„±
         //---------------------------------------
 
-        /* PROJ-2464 hybrid partitioned table Áö¿ø */
+        /* PROJ-2464 hybrid partitioned table ì§€ì› */
         if ( QCM_TABLE_TYPE_IS_DISK( sSelectedPartitionRef->partitionInfo->tableFlag ) == ID_TRUE )
         {
             sCursorProperty.mFetchColumnList = sFetchColumnList;
@@ -5483,7 +5483,7 @@ qdnForeignKey::deleteChildRowWithRow4Partition( qcStatement      * aStatement,
         }
 
         //---------------------------------------
-        // Cursor ±¸Ãà
+        // Cursor êµ¬ì¶•
         //---------------------------------------
         
         sCursor.initialize();
@@ -5551,19 +5551,19 @@ qdnForeignKey::deleteChildRowWithRow4Partition( qcStatement      * aStatement,
         }
     
         //---------------------------------------
-        // deleteµÈ row¿¡ ´ëÇÑ child table cascade delete ¼öÇà.
+        // deleteëœ rowì— ëŒ€í•œ child table cascade delete ìˆ˜í–‰.
         //---------------------------------------
             
         //------------------------------------------
-        // DELETEµÈ ·Î¿ì °Ë»öÀ» À§ÇØ,
-        // °»½Å¿¬»êÀÌ ¼öÇàµÈ Ã¹¹øÂ° row ÀÌÀü À§Ä¡·Î cursor À§Ä¡ ¼³Á¤
+        // DELETEëœ ë¡œìš° ê²€ìƒ‰ì„ ìœ„í•´,
+        // ê°±ì‹ ì—°ì‚°ì´ ìˆ˜í–‰ëœ ì²«ë²ˆì§¸ row ì´ì „ ìœ„ì¹˜ë¡œ cursor ìœ„ì¹˜ ì„¤ì •
         //------------------------------------------
 
         IDE_TEST( sCursor.beforeFirstModified( SMI_FIND_MODIFIED_OLD )
                   != IDE_SUCCESS );
 
         //------------------------------------------
-        // Referencing °Ë»ç¸¦ À§ÇØ »èÁ¦µÈ RowµéÀ» °Ë»ö
+        // Referencing ê²€ì‚¬ë¥¼ ìœ„í•´ ì‚­ì œëœ Rowë“¤ì„ ê²€ìƒ‰
         //------------------------------------------
             
         sOldRow     = sOrgRow;
@@ -5628,7 +5628,7 @@ qdnForeignKey::deleteChildRowWithRow4IndexTable( qcStatement      * aStatement,
 /***********************************************************************
  *
  * Description :
- *    index tableÀ» À§ÇÑ deleteChildRowWithRow
+ *    index tableì„ ìœ„í•œ deleteChildRowWithRow
  *
  * Implementation :
  *
@@ -5658,7 +5658,7 @@ qdnForeignKey::deleteChildRowWithRow4IndexTable( qcStatement      * aStatement,
     mtcTuple             * sChildTuple;
     
     // To Fix PR-10592
-    // Index¸¦ »ç¿ëÇÏ±â À§ÇÑ º¯¼öµé
+    // Indexë¥¼ ì‚¬ìš©í•˜ê¸° ìœ„í•œ ë³€ìˆ˜ë“¤
     qcmIndex             * sIndex;
     void                 * sIndexHandle = NULL;
     smiRange             * sKeyRange = NULL;
@@ -5691,7 +5691,7 @@ qdnForeignKey::deleteChildRowWithRow4IndexTable( qcStatement      * aStatement,
     sIndexTableInfo = aChildIndexTable->tableInfo;
     
     //---------------------------------------
-    // partitionRef index »ı¼º
+    // partitionRef index ìƒì„±
     //---------------------------------------
 
     IDE_TEST( qmsIndexTable::initializePartitionRefIndex(
@@ -5702,7 +5702,7 @@ qdnForeignKey::deleteChildRowWithRow4IndexTable( qcStatement      * aStatement,
               != IDE_SUCCESS );
     
     //---------------------------------------
-    // partition cursor¸¦ À§ÇÑ °ø°£ ÇÒ´ç
+    // partition cursorë¥¼ ìœ„í•œ ê³µê°„ í• ë‹¹
     //---------------------------------------
 
     IDE_TEST( aStatement->qmxMem->alloc(
@@ -5715,37 +5715,37 @@ qdnForeignKey::deleteChildRowWithRow4IndexTable( qcStatement      * aStatement,
                   (void **) & sPartCursorStatus )
               != IDE_SUCCESS );
 
-    // ÃÊ±âÈ­
+    // ì´ˆê¸°í™”
     for ( i = 0; i < aChildTableRef->partitionCount; i++ )
     {
         sPartCursorStatus[i] = QDN_PART_CURSOR_ALLOCED;
     }
     
     //---------------------------------------
-    // ÀúÀå ¸ÅÃ¼¿¡ µû¸¥ °ø°£ ÇÒ´ç
+    // ì €ì¥ ë§¤ì²´ì— ë”°ë¥¸ ê³µê°„ í• ë‹¹
     //---------------------------------------
 
-    // index table¿ë °ø°£ÇÒ´ç
+    // index tableìš© ê³µê°„í• ë‹¹
     IDE_TEST( qdbCommon::getDiskRowSize( sIndexTableInfo,
                                          & sIndexRowSize )
               != IDE_SUCCESS );
     
-    // Record Read¸¦ À§ÇÑ °ø°£À» ÇÒ´çÇÑ´Ù.
+    // Record Readë¥¼ ìœ„í•œ ê³µê°„ì„ í• ë‹¹í•œë‹¤.
     // To fix BUG-14820
-    // Disk-variable ÄÃ·³ÀÇ ridºñ±³¸¦ À§ÇØ ÃÊ±âÈ­ ÇØ¾ß ÇÔ.
+    // Disk-variable ì»¬ëŸ¼ì˜ ridë¹„êµë¥¼ ìœ„í•´ ì´ˆê¸°í™” í•´ì•¼ í•¨.
     IDU_LIMITPOINT("qdnForeignKey::getChildRowWithRow::malloc");
     IDE_TEST( aStatement->qmxMem->cralloc( sIndexRowSize,
                                            (void **) & sRow )
               != IDE_SUCCESS );
 
-    // partition¿ë °ø°£ÇÒ´ç
+    // partitionìš© ê³µê°„í• ë‹¹
     IDE_TEST( qdbCommon::getDiskRowSize( aChildTableInfo,
                                          & sRowSize )
               != IDE_SUCCESS );
 
-    // Record Read¸¦ À§ÇÑ °ø°£À» ÇÒ´çÇÑ´Ù.
+    // Record Readë¥¼ ìœ„í•œ ê³µê°„ì„ í• ë‹¹í•œë‹¤.
     // To fix BUG-14820
-    // Disk-variable ÄÃ·³ÀÇ ridºñ±³¸¦ À§ÇØ ÃÊ±âÈ­ ÇØ¾ß ÇÔ.
+    // Disk-variable ì»¬ëŸ¼ì˜ ridë¹„êµë¥¼ ìœ„í•´ ì´ˆê¸°í™” í•´ì•¼ í•¨.
     IDU_LIMITPOINT("qdnForeignKey::getChildRowWithRow::malloc");
     IDE_TEST( aStatement->qmxMem->cralloc( sRowSize,
                                            (void **) & sPartRow )
@@ -5753,12 +5753,12 @@ qdnForeignKey::deleteChildRowWithRow4IndexTable( qcStatement      * aStatement,
     sOrgPartRow = sPartRow;
     
     //------------------------------------------
-    // delete row triggerÇÊ¿äÇÑÁö °Ë»ç
-    // Trigger Old Row ReferencingÀ» À§ÇÑ °ø°£ ÇÒ´ç
+    // delete row triggerí•„ìš”í•œì§€ ê²€ì‚¬
+    // Trigger Old Row Referencingì„ ìœ„í•œ ê³µê°„ í• ë‹¹
     //------------------------------------------
 
     // To fix BUG-12622
-    // before, after trigger¼øÀ¸·Î row°¡ ÇÊ¿äÇÑÁö °Ë»ç.
+    // before, after triggerìˆœìœ¼ë¡œ rowê°€ í•„ìš”í•œì§€ ê²€ì‚¬.
     IDE_TEST( qdnTrigger::needTriggerRow( aStatement,
                                           aChildTableInfo,
                                           QCM_TRIGGER_BEFORE,
@@ -5795,14 +5795,14 @@ qdnForeignKey::deleteChildRowWithRow4IndexTable( qcStatement      * aStatement,
     }
     
     //---------------------------------------
-    // PROJ-1705  fetch column list ±¸¼º
-    // delete cascadeÀÎ °æ¿ì´Â,
-    // foreignKey °Ë»ç¸¦ À§ÇØ ¸ğµç child tableµéÀ» °Ë»çÇØ¾ß ÇÏ´Âµ¥,
-    // ÀÌ °æ¿ì,
-    // trigger ¶Ç´Â °Ë»çÇØ¾ßÇÏ´Â ¸ğµç child columnµé¿¡ ´ëÇÑ
-    // fetch columÀ» °¡·Á³»±â°¡ ½±Áö ¾Ê¾Æ
-    // child tableÀÇ ¸ğµç ÄÃ·³À» fetch column ´ë»óÀ¸·Î »ï´Â´Ù.
-    // °³¼±»çÇ×ÀÓ.
+    // PROJ-1705  fetch column list êµ¬ì„±
+    // delete cascadeì¸ ê²½ìš°ëŠ”,
+    // foreignKey ê²€ì‚¬ë¥¼ ìœ„í•´ ëª¨ë“  child tableë“¤ì„ ê²€ì‚¬í•´ì•¼ í•˜ëŠ”ë°,
+    // ì´ ê²½ìš°,
+    // trigger ë˜ëŠ” ê²€ì‚¬í•´ì•¼í•˜ëŠ” ëª¨ë“  child columnë“¤ì— ëŒ€í•œ
+    // fetch columì„ ê°€ë ¤ë‚´ê¸°ê°€ ì‰½ì§€ ì•Šì•„
+    // child tableì˜ ëª¨ë“  ì»¬ëŸ¼ì„ fetch column ëŒ€ìƒìœ¼ë¡œ ì‚¼ëŠ”ë‹¤.
+    // ê°œì„ ì‚¬í•­ì„.
     //---------------------------------------
 
     IDE_TEST( qdbCommon::makeFetchColumnList(
@@ -5813,8 +5813,8 @@ qdnForeignKey::deleteChildRowWithRow4IndexTable( qcStatement      * aStatement,
                   & sPartFetchColumnList )
               != IDE_SUCCESS );
     
-    // index table¿ë fetch column list ±¸¼º
-    // key, oid, rid ¸ğµÎ fetchÇÑ´Ù.
+    // index tableìš© fetch column list êµ¬ì„±
+    // key, oid, rid ëª¨ë‘ fetchí•œë‹¤.
     IDE_TEST( qdbCommon::makeFetchColumnList(
                   QC_PRIVATE_TMPLATE(aStatement),
                   sIndexTableInfo->columnCount,
@@ -5824,14 +5824,14 @@ qdnForeignKey::deleteChildRowWithRow4IndexTable( qcStatement      * aStatement,
               != IDE_SUCCESS );
 
     //---------------------------------------
-    // Index¹× Key Range »ı¼º
+    // Indexë° Key Range ìƒì„±
     //---------------------------------------
 
     IDE_TEST( qmsIndexTable::findKeyIndex( sIndexTableInfo,
                                            & sIndexTableIndex )
               != IDE_SUCCESS );
 
-    // index table¿ë key range ±¸¼º
+    // index tableìš© key range êµ¬ì„±
     IDE_TEST( makeKeyRangeAndIndex( sTableType,
                                     aKeyRangeColumnCnt,
                                     sIndexTableIndex,
@@ -5845,7 +5845,7 @@ qdnForeignKey::deleteChildRowWithRow4IndexTable( qcStatement      * aStatement,
               != IDE_SUCCESS );
 
     //---------------------------------------
-    // index table cursor »ı¼º
+    // index table cursor ìƒì„±
     //---------------------------------------
 
     IDE_TEST( qmsIndexTable::initializeIndexTableCursors(
@@ -5859,7 +5859,7 @@ qdnForeignKey::deleteChildRowWithRow4IndexTable( qcStatement      * aStatement,
     sIndexTableCursor = & sIndexTableCursorInfo;
     
     //---------------------------------------
-    // column ¼³Á¤
+    // column ì„¤ì •
     //---------------------------------------
     
     IDE_DASSERT( sIndexTableInfo->columnCount > 2 );
@@ -5924,7 +5924,7 @@ qdnForeignKey::deleteChildRowWithRow4IndexTable( qcStatement      * aStatement,
         sPartOID = *(smOID*) ((UChar*)sRow + sOIDColumn->basicInfo->column.offset);
         sRowGRID = *(scGRID*) ((UChar*)sRow + sRIDColumn->basicInfo->column.offset);
 
-        // partOID¸¦ Ã£´Â´Ù.
+        // partOIDë¥¼ ì°¾ëŠ”ë‹¤.
         IDE_TEST( qmsIndexTable::findPartitionRefIndex( & sPartIndexInfo,
                                                         sPartOID,
                                                         & sSelectedPartitionRef,
@@ -5967,7 +5967,7 @@ qdnForeignKey::deleteChildRowWithRow4IndexTable( qcStatement      * aStatement,
         IDE_TEST( sPartCursor[sPartOrder].readRowFromGRID( & sPartRow, sRowGRID )
                   != IDE_SUCCESS );
 
-        // ¹İµå½Ã Á¸ÀçÇØ¾ß ÇÑ´Ù.
+        // ë°˜ë“œì‹œ ì¡´ì¬í•´ì•¼ í•œë‹¤.
         IDE_TEST_RAISE( sPartRow == NULL, ERR_NO_ROW );
         
         IDE_TEST( deleteChildRow( aStatement,
@@ -6016,7 +6016,7 @@ qdnForeignKey::deleteChildRowWithRow4IndexTable( qcStatement      * aStatement,
               != IDE_SUCCESS );
     
     //---------------------------------------
-    // deleteµÈ row¿¡ ´ëÇÑ child table cascade delete ¼öÇà.
+    // deleteëœ rowì— ëŒ€í•œ child table cascade delete ìˆ˜í–‰.
     //---------------------------------------
 
     for ( i = 0, sPartitionRef = aChildTableRef->partitionRef;
@@ -6030,15 +6030,15 @@ qdnForeignKey::deleteChildRowWithRow4IndexTable( qcStatement      * aStatement,
             sColumnsForRow = sSelectedTableInfo->columns;
             
             //------------------------------------------
-            // DELETEµÈ ·Î¿ì °Ë»öÀ» À§ÇØ,
-            // °»½Å¿¬»êÀÌ ¼öÇàµÈ Ã¹¹øÂ° row ÀÌÀü À§Ä¡·Î cursor À§Ä¡ ¼³Á¤
+            // DELETEëœ ë¡œìš° ê²€ìƒ‰ì„ ìœ„í•´,
+            // ê°±ì‹ ì—°ì‚°ì´ ìˆ˜í–‰ëœ ì²«ë²ˆì§¸ row ì´ì „ ìœ„ì¹˜ë¡œ cursor ìœ„ì¹˜ ì„¤ì •
             //------------------------------------------
 
             IDE_TEST( sPartCursor[i].beforeFirstModified( SMI_FIND_MODIFIED_OLD )
                       != IDE_SUCCESS );
 
             //------------------------------------------
-            // Referencing °Ë»ç¸¦ À§ÇØ »èÁ¦µÈ RowµéÀ» °Ë»ö
+            // Referencing ê²€ì‚¬ë¥¼ ìœ„í•´ ì‚­ì œëœ Rowë“¤ì„ ê²€ìƒ‰
             //------------------------------------------
             
             sOldRow     = sOrgPartRow;
@@ -6139,8 +6139,8 @@ qdnForeignKey::deleteChildRow( qcStatement          * aStatement,
 /***********************************************************************
  *
  * Description :
- *    deleteChildRowWithRow ·ÎºÎÅÍ È£Ãâ, delete cascadeÀÇ child table
- *    ·¹ÄÚµå »èÁ¦
+ *    deleteChildRowWithRow ë¡œë¶€í„° í˜¸ì¶œ, delete cascadeì˜ child table
+ *    ë ˆì½”ë“œ ì‚­ì œ
  *
  * Implementation :
  *
@@ -6166,7 +6166,7 @@ qdnForeignKey::deleteChildRow( qcStatement          * aStatement,
         sChildTuple = &( QC_PRIVATE_TMPLATE(aStatement)->tmplate.rows[aChildTableRef->table] );
     }
 
-    // Key Range¿¡ Æ÷ÇÔµÇÁö ¾ÊÀº Column¿¡ ´ëÇÏ¿© µ¿ÀÏÇÑÁö¸¦ °Ë»çÇÑ´Ù.
+    // Key Rangeì— í¬í•¨ë˜ì§€ ì•Šì€ Columnì— ëŒ€í•˜ì—¬ ë™ì¼í•œì§€ë¥¼ ê²€ì‚¬í•œë‹¤.
     for ( i = aKeyRangeColumnCnt; i < aUniqueConstraint->keyColCount; i++ )
     {
         sColumnOrder      = aUniqueConstraint->keyColumns[i].column.id & SMI_COLUMN_ID_MASK;
@@ -6216,7 +6216,7 @@ qdnForeignKey::deleteChildRow( qcStatement          * aStatement,
 
         if ( aChildTriggerRow != NULL )
         {
-            // OLD ROW REFERENCINGÀ» À§ÇÑ ÀúÀå
+            // OLD ROW REFERENCINGì„ ìœ„í•œ ì €ì¥
             idlOS::memcpy( aChildTriggerRow,
                            aChildRow,
                            aChildRowSize );
@@ -6227,7 +6227,7 @@ qdnForeignKey::deleteChildRow( qcStatement          * aStatement,
         }
 
         // To fix BUG-12622
-        // delete cascade½Ã before trigger È£Ãâ.
+        // delete cascadeì‹œ before trigger í˜¸ì¶œ.
         IDE_TEST( qdnTrigger::fireTrigger(
                       aStatement,
                       aStatement->qmxMem,
@@ -6247,10 +6247,10 @@ qdnForeignKey::deleteChildRow( qcStatement          * aStatement,
         // delete
         IDE_TEST( aChildCursor->deleteRow() != IDE_SUCCESS );
         
-        // index tableµµ »èÁ¦ÇÑ´Ù.
+        // index tableë„ ì‚­ì œí•œë‹¤.
         if ( aIndexTableCursor != NULL )
         {
-            // selected index table¿¡µµ ·¹ÄÚµå »èÁ¦
+            // selected index tableì—ë„ ë ˆì½”ë“œ ì‚­ì œ
             if ( aSelectedIndexTableCursor != NULL )
             {
                 IDE_TEST( aSelectedIndexTableCursor->deleteRow() != IDE_SUCCESS );
@@ -6260,7 +6260,7 @@ qdnForeignKey::deleteChildRow( qcStatement          * aStatement,
                 // Nothing to do.
             }
             
-            // ³ª¸ÓÁö index table¿¡µµ ·¹ÄÚµå »èÁ¦
+            // ë‚˜ë¨¸ì§€ index tableì—ë„ ë ˆì½”ë“œ ì‚­ì œ
             IDE_TEST( qmsIndexTable::deleteIndexTableCursors(
                           aStatement,
                           aIndexTableCursor,
@@ -6310,8 +6310,8 @@ qdnForeignKey::checkChild4DeleteChildRow( qcStatement      * aStatement,
 /***********************************************************************
  *
  * Description :
- *    deleteChildRowWithRow ·ÎºÎÅÍ È£Ãâ, delete cascadeÀÇ child table
- *    ·¹ÄÚµå »èÁ¦
+ *    deleteChildRowWithRow ë¡œë¶€í„° í˜¸ì¶œ, delete cascadeì˜ child table
+ *    ë ˆì½”ë“œ ì‚­ì œ
  *
  * Implementation :
  *
@@ -6378,8 +6378,8 @@ qdnForeignKey::updateNullChildRowWithRow4Table( qcStatement           * aStateme
 /***********************************************************************
  *
  * Description :
- *    updateNullChildRowWithRow ·ÎºÎÅÍ È£Ãâ, set nullÀÇ child table
- *    ·¹ÄÚµå ¾÷µ¥ÀÌÆ®
+ *    updateNullChildRowWithRow ë¡œë¶€í„° í˜¸ì¶œ, set nullì˜ child table
+ *    ë ˆì½”ë“œ ì—…ë°ì´íŠ¸
  *
  * Implementation :
  *
@@ -6402,7 +6402,7 @@ qdnForeignKey::updateNullChildRowWithRow4Table( qcStatement           * aStateme
     idBool                sIsCursorOpened = ID_FALSE;
 
     // To Fix PR-10592
-    // Index¸¦ »ç¿ëÇÏ±â À§ÇÑ º¯¼öµé
+    // Indexë¥¼ ì‚¬ìš©í•˜ê¸° ìœ„í•œ ë³€ìˆ˜ë“¤
     qcmIndex            * sIndex;
     void                * sIndexHandle = NULL;
     smiRange            * sKeyRange = NULL;
@@ -6410,7 +6410,7 @@ qdnForeignKey::updateNullChildRowWithRow4Table( qcStatement           * aStateme
     smiRange              sRange;
 
     // PROJ-2212 foreign key on delete set null
-    // hidden columnÀ¸·Î ÀÎÇØ 32 columnº¸´Ù Å¬ ¼ö ÀÖ´Ù.
+    // hidden columnìœ¼ë¡œ ì¸í•´ 32 columnë³´ë‹¤ í´ ìˆ˜ ìˆë‹¤.
     mtcColumn           * sUpdateColumn;
     smiValue            * sNullValues;
     void                * sDefaultExprRow;
@@ -6422,7 +6422,7 @@ qdnForeignKey::updateNullChildRowWithRow4Table( qcStatement           * aStateme
     mtcTuple           * sChildTuple;
 
     //---------------------------------------
-    // ÀúÀå ¸ÅÃ¼¿¡ µû¸¥ °ø°£ ÇÒ´ç
+    // ì €ì¥ ë§¤ì²´ì— ë”°ë¥¸ ê³µê°„ í• ë‹¹
     //---------------------------------------
 
     sChildTuple = &(QC_PRIVATE_TMPLATE(aStatement)->tmplate.rows[aChildTableRef->table]);
@@ -6430,19 +6430,19 @@ qdnForeignKey::updateNullChildRowWithRow4Table( qcStatement           * aStateme
     sTableType = aChildTableInfo->tableFlag & SMI_TABLE_TYPE_MASK;
 
     //---------------------------------------
-    // Record Read¸¦ À§ÇÑ °ø°£ ÇÒ´çÀ» À§ÇÑ ·Î¿ì »çÀÌÁî °è»ê
-    // trigger¼öÇàÀ» À§ÇÑ °ø°£ ÇÒ´çÀ» À§ÇÑ ·Î¿ì »çÀÌÁî °è»ê
+    // Record Readë¥¼ ìœ„í•œ ê³µê°„ í• ë‹¹ì„ ìœ„í•œ ë¡œìš° ì‚¬ì´ì¦ˆ ê³„ì‚°
+    // triggerìˆ˜í–‰ì„ ìœ„í•œ ê³µê°„ í• ë‹¹ì„ ìœ„í•œ ë¡œìš° ì‚¬ì´ì¦ˆ ê³„ì‚°
     //---------------------------------------
     
     if ( sTableType == SMI_TABLE_DISK )
     {
-        // Disk TableÀÎ °æ¿ì
+        // Disk Tableì¸ ê²½ìš°
         IDE_TEST( qdbCommon::getDiskRowSize( aChildTableInfo,
                                              & sRowSize )
                   != IDE_SUCCESS );
     
         // To fix BUG-14820
-        // Disk-variable ÄÃ·³ÀÇ ridºñ±³¸¦ À§ÇØ ÃÊ±âÈ­ ÇØ¾ß ÇÔ.
+        // Disk-variable ì»¬ëŸ¼ì˜ ridë¹„êµë¥¼ ìœ„í•´ ì´ˆê¸°í™” í•´ì•¼ í•¨.
         IDU_LIMITPOINT("qdnForeignKey::deleteChildRowWithRow::malloc1");
         IDE_TEST( aStatement->qmxMem->cralloc( sRowSize,
                                                (void **) & sRow )
@@ -6452,8 +6452,8 @@ qdnForeignKey::updateNullChildRowWithRow4Table( qcStatement           * aStateme
     }
     else
     {
-        // Memory TableÀÎ °æ¿ì
-        // trigger¸¦ À§ÇØ rowsize¸¦ °è»êÇÑ´Ù.
+        // Memory Tableì¸ ê²½ìš°
+        // triggerë¥¼ ìœ„í•´ rowsizeë¥¼ ê³„ì‚°í•œë‹¤.
         IDE_TEST( qdbCommon::getMemoryRowSize( aChildTableInfo,
                                                & sMemoryFixRowSize,
                                                & sRowSize )
@@ -6461,21 +6461,21 @@ qdnForeignKey::updateNullChildRowWithRow4Table( qcStatement           * aStateme
     }
 
     //------------------------------------------
-    // Default ExprÀÇ Row Buffer ±¸¼º
+    // Default Exprì˜ Row Buffer êµ¬ì„±
     //------------------------------------------
 
     if ( aDefaultExprColumns != NULL )
     {
         if ( sTableType == SMI_TABLE_DISK )
         {
-            // Disk TableÀÎ °æ¿ì
+            // Disk Tableì¸ ê²½ìš°
             IDE_TEST( aStatement->qmxMem->alloc( sRowSize,
                                                  (void **) & sDefaultExprRow )
                       != IDE_SUCCESS );
         }
         else
         {
-            // Memory TableÀÎ °æ¿ì
+            // Memory Tableì¸ ê²½ìš°
             IDE_TEST( aStatement->qmxMem->alloc(
                           QC_PRIVATE_TMPLATE(aStatement)->tmplate.rows[aDefaultTableRef->table].rowOffset,
                           (void **) & sDefaultExprRow )
@@ -6488,8 +6488,8 @@ qdnForeignKey::updateNullChildRowWithRow4Table( qcStatement           * aStateme
     }
 
     //------------------------------------------
-    // update row triggerÇÊ¿äÇÑÁö °Ë»ç
-    // Trigger Old Row ReferencingÀ» À§ÇÑ °ø°£ ÇÒ´ç
+    // update row triggerí•„ìš”í•œì§€ ê²€ì‚¬
+    // Trigger Old Row Referencingì„ ìœ„í•œ ê³µê°„ í• ë‹¹
     //------------------------------------------
 
     IDE_TEST( qdnTrigger::needTriggerRow( aStatement,
@@ -6526,14 +6526,14 @@ qdnForeignKey::updateNullChildRowWithRow4Table( qcStatement           * aStateme
     }
         
     //---------------------------------------
-    // PROJ-1705  fetch column list ±¸¼º
-    // delete cascadeÀÎ °æ¿ì´Â,
-    // foreignKey °Ë»ç¸¦ À§ÇØ ¸ğµç child tableµéÀ» °Ë»çÇØ¾ß ÇÏ´Âµ¥,
-    // ÀÌ °æ¿ì,
-    // trigger ¶Ç´Â °Ë»çÇØ¾ßÇÏ´Â ¸ğµç child columnµé¿¡ ´ëÇÑ
-    // fetch columÀ» °¡·Á³»±â°¡ ½±Áö ¾Ê¾Æ
-    // child tableÀÇ ¸ğµç ÄÃ·³À» fetch column ´ë»óÀ¸·Î »ï´Â´Ù.
-    // °³¼±»çÇ×ÀÓ.
+    // PROJ-1705  fetch column list êµ¬ì„±
+    // delete cascadeì¸ ê²½ìš°ëŠ”,
+    // foreignKey ê²€ì‚¬ë¥¼ ìœ„í•´ ëª¨ë“  child tableë“¤ì„ ê²€ì‚¬í•´ì•¼ í•˜ëŠ”ë°,
+    // ì´ ê²½ìš°,
+    // trigger ë˜ëŠ” ê²€ì‚¬í•´ì•¼í•˜ëŠ” ëª¨ë“  child columnë“¤ì— ëŒ€í•œ
+    // fetch columì„ ê°€ë ¤ë‚´ê¸°ê°€ ì‰½ì§€ ì•Šì•„
+    // child tableì˜ ëª¨ë“  ì»¬ëŸ¼ì„ fetch column ëŒ€ìƒìœ¼ë¡œ ì‚¼ëŠ”ë‹¤.
+    // ê°œì„ ì‚¬í•­ì„.
     //---------------------------------------
 
     if ( sTableType == SMI_TABLE_DISK )
@@ -6552,7 +6552,7 @@ qdnForeignKey::updateNullChildRowWithRow4Table( qcStatement           * aStateme
     }    
 
     //---------------------------------------
-    // Index¹× Key Range »ı¼º
+    // Indexë° Key Range ìƒì„±
     //---------------------------------------
 
     IDE_TEST( makeKeyRangeAndIndex( sTableType,
@@ -6568,7 +6568,7 @@ qdnForeignKey::updateNullChildRowWithRow4Table( qcStatement           * aStateme
               != IDE_SUCCESS );
         
     //---------------------------------------
-    // PROJ-2212  null value list ±¸¼º
+    // PROJ-2212  null value list êµ¬ì„±
     //---------------------------------------
 
     IDE_TEST( aStatement->qmxMem->alloc(
@@ -6578,7 +6578,7 @@ qdnForeignKey::updateNullChildRowWithRow4Table( qcStatement           * aStateme
     
     for ( i = 0; i < aUpdateColCount; i++ )
     {
-        // set null : update column Á¤º¸¸¦ »ı¼º(update ´ë»óÀÌ µÇ´Â column)
+        // set null : update column ì •ë³´ë¥¼ ìƒì„±(update ëŒ€ìƒì´ ë˜ëŠ” column)
         // ex> foreign key (i2,i3,i4)
         sUpdateColumn = aUpdateColumn[i].basicInfo;
         
@@ -6615,8 +6615,8 @@ qdnForeignKey::updateNullChildRowWithRow4Table( qcStatement           * aStateme
                 // PROJ-2264 Dictionary table
                 sDicTableHandle = smiGetTable( sUpdateColumn->column.mDictionaryTableOID );
 
-                // OID ´Â canonize°¡ ÇÊ¿ä¾ø´Ù.
-                // OID ´Â memory table ÀÌ¹Ç·Î mtd value ¿Í storing value °¡ µ¿ÀÏÇÏ´Ù.
+                // OID ëŠ” canonizeê°€ í•„ìš”ì—†ë‹¤.
+                // OID ëŠ” memory table ì´ë¯€ë¡œ mtd value ì™€ storing value ê°€ ë™ì¼í•˜ë‹¤.
                 sNullValues[i].value  = (const void *) & (SMI_MISC_TABLE_HEADER(sDicTableHandle)->mNullOID);
                 sNullValues[i].length = ID_SIZEOF(smOID);
             }
@@ -6626,7 +6626,7 @@ qdnForeignKey::updateNullChildRowWithRow4Table( qcStatement           * aStateme
     sColumnsForRow = aChildTableInfo->columns;
         
     //---------------------------------------
-    // PROJ-1705  fetch column list ±¸¼º
+    // PROJ-1705  fetch column list êµ¬ì„±
     //---------------------------------------
 
     if ( sIndex != NULL )
@@ -6757,17 +6757,17 @@ qdnForeignKey::updateNullChildRowWithRow4Table( qcStatement           * aStateme
 
     //---------------------------------------
     // PROJ-2212 foreign key on delete set null
-    // null updateµÈ  row¿¡ ¸¦ ÂüÁ¶ÇÏ´Â grand child table
-    // row Á¸Àç ¿©ºÎ Ã¼Å©.
+    // null updateëœ  rowì— ë¥¼ ì°¸ì¡°í•˜ëŠ” grand child table
+    // row ì¡´ì¬ ì—¬ë¶€ ì²´í¬.
     //
     // ex> delete from t1 where i1=1;
-    //   T1 : I1 -- t1 ÀÇ i1=1ÀÎ row »èÁ¦
+    //   T1 : I1 -- t1 ì˜ i1=1ì¸ row ì‚­ì œ
     //        ^
     //        |     
-    //   T2 : I1 -- À§ÀÇ updateRow() ¼öÇà i1=1ÀÎ columnÀ» null update
+    //   T2 : I1 -- ìœ„ì˜ updateRow() ìˆ˜í–‰ i1=1ì¸ columnì„ null update
     //        ^
     //        |
-    //   T3 : I1 -- i1=1 ÀÎ row Á¸Àç ¿©ºÎ °Ë»ç ( grand child table)
+    //   T3 : I1 -- i1=1 ì¸ row ì¡´ì¬ ì—¬ë¶€ ê²€ì‚¬ ( grand child table)
     //        ^
     //        |
     //   T4 : I1
@@ -6775,15 +6775,15 @@ qdnForeignKey::updateNullChildRowWithRow4Table( qcStatement           * aStateme
     //---------------------------------------
             
     //------------------------------------------
-    // updateµÈ ·Î¿ì °Ë»öÀ» À§ÇØ,
-    // °»½Å¿¬»êÀÌ ¼öÇàµÈ Ã¹¹øÂ° row ÀÌÀü À§Ä¡·Î cursor À§Ä¡ ¼³Á¤
+    // updateëœ ë¡œìš° ê²€ìƒ‰ì„ ìœ„í•´,
+    // ê°±ì‹ ì—°ì‚°ì´ ìˆ˜í–‰ëœ ì²«ë²ˆì§¸ row ì´ì „ ìœ„ì¹˜ë¡œ cursor ìœ„ì¹˜ ì„¤ì •
     //------------------------------------------
 
     IDE_TEST( sCursor.beforeFirstModified( SMI_FIND_MODIFIED_OLD )
               != IDE_SUCCESS );
 
     //------------------------------------------
-    // Referencing °Ë»ç¸¦ À§ÇØ »èÁ¦µÈ RowµéÀ» °Ë»ö
+    // Referencing ê²€ì‚¬ë¥¼ ìœ„í•´ ì‚­ì œëœ Rowë“¤ì„ ê²€ìƒ‰
     //------------------------------------------
             
     sOldRow     = sOrgRow;
@@ -6809,7 +6809,7 @@ qdnForeignKey::updateNullChildRowWithRow4Table( qcStatement           * aStateme
 
     IDE_EXCEPTION( ERR_NOT_ALLOW_NULL )
     {
-        /* BUG-45680 insert ¼öÇà½Ã not null column¿¡ ´ëÇÑ ¿¡·¯¸Ş½ÃÁö Á¤º¸¿¡ column Á¤º¸ Ãâ·Â. */
+        /* BUG-45680 insert ìˆ˜í–‰ì‹œ not null columnì— ëŒ€í•œ ì—ëŸ¬ë©”ì‹œì§€ ì •ë³´ì— column ì •ë³´ ì¶œë ¥. */
         IDE_SET( ideSetErrorCode( qpERR_ABORT_QMX_NOT_NULL_CONSTRAINT,
                                   "",
                                   "" ) );
@@ -6851,8 +6851,8 @@ qdnForeignKey::updateNullChildRowWithRow4Partition( qcStatement           * aSta
 /***********************************************************************
  *
  * Description :
- *    updateNullChildRowWithRow ·ÎºÎÅÍ È£Ãâ, set nullÀÇ child table
- *    ·¹ÄÚµå ¾÷µ¥ÀÌÆ®
+ *    updateNullChildRowWithRow ë¡œë¶€í„° í˜¸ì¶œ, set nullì˜ child table
+ *    ë ˆì½”ë“œ ì—…ë°ì´íŠ¸
  *
  * Implementation :
  *
@@ -6879,7 +6879,7 @@ qdnForeignKey::updateNullChildRowWithRow4Partition( qcStatement           * aSta
     idBool                 sIsCursorOpened  = ID_FALSE;
 
     // To Fix PR-10592
-    // Index¸¦ »ç¿ëÇÏ±â À§ÇÑ º¯¼öµé
+    // Indexë¥¼ ì‚¬ìš©í•˜ê¸° ìœ„í•œ ë³€ìˆ˜ë“¤
     qcmIndex             * sIndex = NULL;
     void                 * sIndexHandle = NULL;
     smiRange             * sKeyRange = NULL;
@@ -6926,10 +6926,10 @@ qdnForeignKey::updateNullChildRowWithRow4Partition( qcStatement           * aSta
     }
     
     //---------------------------------------
-    // Record Read¸¦ À§ÇÑ °ø°£ ÇÒ´çÀ» À§ÇÑ ·Î¿ì »çÀÌÁî °è»ê
-    // trigger¼öÇàÀ» À§ÇÑ °ø°£ ÇÒ´çÀ» À§ÇÑ ·Î¿ì »çÀÌÁî °è»ê
+    // Record Readë¥¼ ìœ„í•œ ê³µê°„ í• ë‹¹ì„ ìœ„í•œ ë¡œìš° ì‚¬ì´ì¦ˆ ê³„ì‚°
+    // triggerìˆ˜í–‰ì„ ìœ„í•œ ê³µê°„ í• ë‹¹ì„ ìœ„í•œ ë¡œìš° ì‚¬ì´ì¦ˆ ê³„ì‚°
     //---------------------------------------
-    /* PROJ-2464 hybrid partitioned table Áö¿ø */
+    /* PROJ-2464 hybrid partitioned table ì§€ì› */
     if ( aChildTableRef->partitionSummary->diskPartitionRef != NULL )
     {
         IDE_TEST( qdbCommon::getDiskRowSize( aChildTableRef->partitionSummary->diskPartitionRef->partitionInfo,
@@ -6937,7 +6937,7 @@ qdnForeignKey::updateNullChildRowWithRow4Partition( qcStatement           * aSta
                   != IDE_SUCCESS );
 
         // To fix BUG-14820
-        // Disk-variable ÄÃ·³ÀÇ ridºñ±³¸¦ À§ÇØ ÃÊ±âÈ­ ÇØ¾ß ÇÔ.
+        // Disk-variable ì»¬ëŸ¼ì˜ ridë¹„êµë¥¼ ìœ„í•´ ì´ˆê¸°í™” í•´ì•¼ í•¨.
         IDU_LIMITPOINT("qdnForeignKey::deleteChildRowWithRow::malloc1");
         IDE_TEST( aStatement->qmxMem->cralloc( sDiskRowSize,
                                                (void **) & sRow )
@@ -6951,8 +6951,8 @@ qdnForeignKey::updateNullChildRowWithRow4Partition( qcStatement           * aSta
 
     if ( aChildTableRef->partitionSummary->memoryOrVolatilePartitionRef != NULL )
     {
-        // Memory TableÀÎ °æ¿ì
-        // trigger¸¦ À§ÇØ rowsize¸¦ °è»êÇÑ´Ù.
+        // Memory Tableì¸ ê²½ìš°
+        // triggerë¥¼ ìœ„í•´ rowsizeë¥¼ ê³„ì‚°í•œë‹¤.
         IDE_TEST( qdbCommon::getMemoryRowSize( aChildTableRef->partitionSummary->
                                                    memoryOrVolatilePartitionRef->partitionInfo,
                                                & sMemoryFixRowSize,
@@ -6965,7 +6965,7 @@ qdnForeignKey::updateNullChildRowWithRow4Partition( qcStatement           * aSta
     }
 
     //------------------------------------------
-    // Default ExprÀÇ Row Buffer ±¸¼º
+    // Default Exprì˜ Row Buffer êµ¬ì„±
     //------------------------------------------
 
     if ( aDefaultExprColumns != NULL )
@@ -6996,8 +6996,8 @@ qdnForeignKey::updateNullChildRowWithRow4Partition( qcStatement           * aSta
     }
     
     //------------------------------------------
-    // update row triggerÇÊ¿äÇÑÁö °Ë»ç
-    // Trigger Old Row ReferencingÀ» À§ÇÑ °ø°£ ÇÒ´ç
+    // update row triggerí•„ìš”í•œì§€ ê²€ì‚¬
+    // Trigger Old Row Referencingì„ ìœ„í•œ ê³µê°„ í• ë‹¹
     //------------------------------------------
 
     IDE_TEST( qdnTrigger::needTriggerRow( aStatement,
@@ -7012,7 +7012,7 @@ qdnForeignKey::updateNullChildRowWithRow4Partition( qcStatement           * aSta
     {
         IDU_LIMITPOINT("qdnForeignKey::updateChildRowWithRow::malloc2");
 
-        /* PROJ-2464 hybrid partitioned table Áö¿ø */
+        /* PROJ-2464 hybrid partitioned table ì§€ì› */
         if ( aChildTableRef->partitionSummary->diskPartitionRef != NULL )
         {
             IDE_TEST( aStatement->qmxMem->alloc( sDiskRowSize,
@@ -7045,7 +7045,7 @@ qdnForeignKey::updateNullChildRowWithRow4Partition( qcStatement           * aSta
     {
         IDU_LIMITPOINT("qdnForeignKey::updateChildRowWithRow::malloc3");
 
-        /* PROJ-2464 hybrid partitioned table Áö¿ø */
+        /* PROJ-2464 hybrid partitioned table ì§€ì› */
         if ( aChildTableRef->partitionSummary->diskPartitionRef != NULL )
         {
             IDE_TEST( aStatement->qmxMem->alloc( sDiskRowSize,
@@ -7074,14 +7074,14 @@ qdnForeignKey::updateNullChildRowWithRow4Partition( qcStatement           * aSta
     }
         
     //---------------------------------------
-    // PROJ-1705  fetch column list ±¸¼º
-    // delete cascadeÀÎ °æ¿ì´Â,
-    // foreignKey °Ë»ç¸¦ À§ÇØ ¸ğµç child tableµéÀ» °Ë»çÇØ¾ß ÇÏ´Âµ¥,
-    // ÀÌ °æ¿ì,
-    // trigger ¶Ç´Â °Ë»çÇØ¾ßÇÏ´Â ¸ğµç child columnµé¿¡ ´ëÇÑ
-    // fetch columÀ» °¡·Á³»±â°¡ ½±Áö ¾Ê¾Æ
-    // child tableÀÇ ¸ğµç ÄÃ·³À» fetch column ´ë»óÀ¸·Î »ï´Â´Ù.
-    // °³¼±»çÇ×ÀÓ.
+    // PROJ-1705  fetch column list êµ¬ì„±
+    // delete cascadeì¸ ê²½ìš°ëŠ”,
+    // foreignKey ê²€ì‚¬ë¥¼ ìœ„í•´ ëª¨ë“  child tableë“¤ì„ ê²€ì‚¬í•´ì•¼ í•˜ëŠ”ë°,
+    // ì´ ê²½ìš°,
+    // trigger ë˜ëŠ” ê²€ì‚¬í•´ì•¼í•˜ëŠ” ëª¨ë“  child columnë“¤ì— ëŒ€í•œ
+    // fetch columì„ ê°€ë ¤ë‚´ê¸°ê°€ ì‰½ì§€ ì•Šì•„
+    // child tableì˜ ëª¨ë“  ì»¬ëŸ¼ì„ fetch column ëŒ€ìƒìœ¼ë¡œ ì‚¼ëŠ”ë‹¤.
+    // ê°œì„ ì‚¬í•­ì„.
     //---------------------------------------
 
     if ( aChildTableRef->partitionSummary->diskPartitionRef != NULL )
@@ -7100,7 +7100,7 @@ qdnForeignKey::updateNullChildRowWithRow4Partition( qcStatement           * aSta
     }
 
     //---------------------------------------
-    // Index¹× Key Range »ı¼º
+    // Indexë° Key Range ìƒì„±
     //---------------------------------------
 
     if ( aChildTableRef->partitionSummary->diskPartitionRef != NULL )
@@ -7154,7 +7154,7 @@ qdnForeignKey::updateNullChildRowWithRow4Partition( qcStatement           * aSta
     }
         
     //---------------------------------------
-    // PROJ-2212  update column list, null value list ÇÒ´ç
+    // PROJ-2212  update column list, null value list í• ë‹¹
     //---------------------------------------
 
     IDE_TEST( aStatement->qmxMem->alloc(
@@ -7168,12 +7168,12 @@ qdnForeignKey::updateNullChildRowWithRow4Partition( qcStatement           * aSta
               != IDE_SUCCESS );
 
     //------------------------------------------
-    // PROJ-2212  null value list ±¸¼º
+    // PROJ-2212  null value list êµ¬ì„±
     //------------------------------------------
 
     for ( i = 0; i < aUpdateColCount; i++ )
     {
-        // set null : update column Á¤º¸¸¦ »ı¼º(update ´ë»óÀÌ µÇ´Â column)
+        // set null : update column ì •ë³´ë¥¼ ìƒì„±(update ëŒ€ìƒì´ ë˜ëŠ” column)
         // ex> foreign key (i2,i3,i4)
         sColumnOrder = aUpdateColumn[i].basicInfo->column.id
             & SMI_COLUMN_ID_MASK;
@@ -7208,7 +7208,7 @@ qdnForeignKey::updateNullChildRowWithRow4Partition( qcStatement           * aSta
     }
 
     //---------------------------------------
-    // row movement¿ë insert values ±¸¼º
+    // row movementìš© insert values êµ¬ì„±
     //---------------------------------------
     
     IDE_TEST( aStatement->qmxMem->alloc(
@@ -7218,7 +7218,7 @@ qdnForeignKey::updateNullChildRowWithRow4Partition( qcStatement           * aSta
 
     if ( aUpdateRowMovement == QCM_CHILD_UPDATE_ROWMOVEMENT )
     {
-        // lob info ÃÊ±âÈ­
+        // lob info ì´ˆê¸°í™”
         if ( aChildTableInfo->lobColumnCount > 0 )
         {
             // PROJ-1362
@@ -7233,7 +7233,7 @@ qdnForeignKey::updateNullChildRowWithRow4Partition( qcStatement           * aSta
             // Nothing to do.
         }
         
-        // insert smiValues ÃÊ±âÈ­
+        // insert smiValues ì´ˆê¸°í™”
         IDE_TEST( aStatement->qmxMem->alloc(
                       ID_SIZEOF(smiValue) * aChildTableInfo->columnCount,
                       (void**)& sInsertValues )
@@ -7245,7 +7245,7 @@ qdnForeignKey::updateNullChildRowWithRow4Partition( qcStatement           * aSta
     }
 
     //---------------------------------------
-    // index table cursor »ı¼º
+    // index table cursor ìƒì„±
     //---------------------------------------
 
     if ( aChildTableRef->indexTableRef != NULL )
@@ -7273,7 +7273,7 @@ qdnForeignKey::updateNullChildRowWithRow4Partition( qcStatement           * aSta
 
     while( sSelectedPartitionRef != NULL )
     {
-        /* PROJ-2464 hybrid partitioned table Áö¿ø */
+        /* PROJ-2464 hybrid partitioned table ì§€ì› */
         sChildTuple = &(QC_PRIVATE_TMPLATE(aStatement)->tmplate.rows[sSelectedPartitionRef->table]);
 
         sSelectedTableInfo = sSelectedPartitionRef->partitionInfo;
@@ -7287,7 +7287,7 @@ qdnForeignKey::updateNullChildRowWithRow4Partition( qcStatement           * aSta
                   != IDE_SUCCESS );
 
         //---------------------------------------
-        // PROJ-1705  fetch column list ±¸¼º
+        // PROJ-1705  fetch column list êµ¬ì„±
         //---------------------------------------
 
         if ( sIndex != NULL )
@@ -7301,7 +7301,7 @@ qdnForeignKey::updateNullChildRowWithRow4Partition( qcStatement           * aSta
             SMI_CURSOR_PROP_INIT_FOR_FULL_SCAN( &sCursorProperty, aStatement->mStatistics );
         }
         
-        /* PROJ-2464 hybrid partitioned table Áö¿ø */
+        /* PROJ-2464 hybrid partitioned table ì§€ì› */
         if ( QCM_TABLE_TYPE_IS_DISK( sSelectedPartitionRef->partitionInfo->tableFlag ) == ID_TRUE )
         {
             sCursorProperty.mFetchColumnList = sFetchColumnList;
@@ -7314,12 +7314,12 @@ qdnForeignKey::updateNullChildRowWithRow4Partition( qcStatement           * aSta
         }
     
         //------------------------------------------
-        // PROJ-2212  update column list ±¸¼º
+        // PROJ-2212  update column list êµ¬ì„±
         //------------------------------------------
 
         for ( i = 0; i < aUpdateColCount; i++ )
         {
-            // set null : update column Á¤º¸¸¦ »ı¼º(update ´ë»óÀÌ µÇ´Â column)
+            // set null : update column ì •ë³´ë¥¼ ìƒì„±(update ëŒ€ìƒì´ ë˜ëŠ” column)
             // ex> foreign key (i2,i3,i4)
             sColumnOrder = aUpdateColumn[i].basicInfo->column.id
                 & SMI_COLUMN_ID_MASK;
@@ -7339,7 +7339,7 @@ qdnForeignKey::updateNullChildRowWithRow4Partition( qcStatement           * aSta
         }
         
         //---------------------------------------
-        // Cursor ±¸Ãà
+        // Cursor êµ¬ì¶•
         //---------------------------------------
         
         sCursor.initialize();
@@ -7463,17 +7463,17 @@ qdnForeignKey::updateNullChildRowWithRow4Partition( qcStatement           * aSta
     
         //---------------------------------------
         // PROJ-2212 foreign key on delete set null
-        // null updateµÈ  row¿¡ ¸¦ ÂüÁ¶ÇÏ´Â grand child table
-        // row Á¸Àç ¿©ºÎ Ã¼Å©.
+        // null updateëœ  rowì— ë¥¼ ì°¸ì¡°í•˜ëŠ” grand child table
+        // row ì¡´ì¬ ì—¬ë¶€ ì²´í¬.
         //
         // ex> delete from t1 where i1=1;
-        //   T1 : I1 -- t1 ÀÇ i1=1ÀÎ row »èÁ¦
+        //   T1 : I1 -- t1 ì˜ i1=1ì¸ row ì‚­ì œ
         //        ^
         //        |     
-        //   T2 : I1 -- À§ÀÇ updateRow() ¼öÇà i1=1ÀÎ columnÀ» null update
+        //   T2 : I1 -- ìœ„ì˜ updateRow() ìˆ˜í–‰ i1=1ì¸ columnì„ null update
         //        ^
         //        |
-        //   T3 : I1 -- i1=1 ÀÎ row Á¸Àç ¿©ºÎ °Ë»ç ( grand child table)
+        //   T3 : I1 -- i1=1 ì¸ row ì¡´ì¬ ì—¬ë¶€ ê²€ì‚¬ ( grand child table)
         //        ^
         //        |
         //   T4 : I1
@@ -7481,15 +7481,15 @@ qdnForeignKey::updateNullChildRowWithRow4Partition( qcStatement           * aSta
         //---------------------------------------
             
         //------------------------------------------
-        // updateµÈ ·Î¿ì °Ë»öÀ» À§ÇØ,
-        // °»½Å¿¬»êÀÌ ¼öÇàµÈ Ã¹¹øÂ° row ÀÌÀü À§Ä¡·Î cursor À§Ä¡ ¼³Á¤
+        // updateëœ ë¡œìš° ê²€ìƒ‰ì„ ìœ„í•´,
+        // ê°±ì‹ ì—°ì‚°ì´ ìˆ˜í–‰ëœ ì²«ë²ˆì§¸ row ì´ì „ ìœ„ì¹˜ë¡œ cursor ìœ„ì¹˜ ì„¤ì •
         //------------------------------------------
 
         IDE_TEST( sCursor.beforeFirstModified( SMI_FIND_MODIFIED_OLD )
                   != IDE_SUCCESS );
 
         //------------------------------------------
-        // Referencing °Ë»ç¸¦ À§ÇØ »èÁ¦µÈ RowµéÀ» °Ë»ö
+        // Referencing ê²€ì‚¬ë¥¼ ìœ„í•´ ì‚­ì œëœ Rowë“¤ì„ ê²€ìƒ‰
         //------------------------------------------
             
         sOldRow     = sOrgRow;
@@ -7518,7 +7518,7 @@ qdnForeignKey::updateNullChildRowWithRow4Partition( qcStatement           * aSta
 
     IDE_EXCEPTION( ERR_NOT_ALLOW_NULL )
     {
-        /* BUG-45680 insert ¼öÇà½Ã not null column¿¡ ´ëÇÑ ¿¡·¯¸Ş½ÃÁö Á¤º¸¿¡ column Á¤º¸ Ãâ·Â. */
+        /* BUG-45680 insert ìˆ˜í–‰ì‹œ not null columnì— ëŒ€í•œ ì—ëŸ¬ë©”ì‹œì§€ ì •ë³´ì— column ì •ë³´ ì¶œë ¥. */
         IDE_SET( ideSetErrorCode( qpERR_ABORT_QMX_NOT_NULL_CONSTRAINT,
                                   "",
                                   "" ) );
@@ -7570,8 +7570,8 @@ qdnForeignKey::updateNullChildRowWithRow4IndexTable( qcStatement           * aSt
 /***********************************************************************
  *
  * Description :
- *    updateNullChildRowWithRow ·ÎºÎÅÍ È£Ãâ, set nullÀÇ child table
- *    ·¹ÄÚµå ¾÷µ¥ÀÌÆ®
+ *    updateNullChildRowWithRow ë¡œë¶€í„° í˜¸ì¶œ, set nullì˜ child table
+ *    ë ˆì½”ë“œ ì—…ë°ì´íŠ¸
  *
  * Implementation :
  *
@@ -7603,7 +7603,7 @@ qdnForeignKey::updateNullChildRowWithRow4IndexTable( qcStatement           * aSt
     mtcTuple             * sChildTuple;
     
     // To Fix PR-10592
-    // Index¸¦ »ç¿ëÇÏ±â À§ÇÑ º¯¼öµé
+    // Indexë¥¼ ì‚¬ìš©í•˜ê¸° ìœ„í•œ ë³€ìˆ˜ë“¤
     qcmIndex             * sIndex;
     void                 * sIndexHandle = NULL;
     smiRange             * sKeyRange = NULL;
@@ -7660,7 +7660,7 @@ qdnForeignKey::updateNullChildRowWithRow4IndexTable( qcStatement           * aSt
     }
     
     //---------------------------------------
-    // partitionRef index »ı¼º
+    // partitionRef index ìƒì„±
     //---------------------------------------
 
     IDE_TEST( qmsIndexTable::initializePartitionRefIndex(
@@ -7671,7 +7671,7 @@ qdnForeignKey::updateNullChildRowWithRow4IndexTable( qcStatement           * aSt
               != IDE_SUCCESS );
     
     //---------------------------------------
-    // partition cursor¸¦ À§ÇÑ °ø°£ ÇÒ´ç
+    // partition cursorë¥¼ ìœ„í•œ ê³µê°„ í• ë‹¹
     //---------------------------------------
 
     IDE_TEST( aStatement->qmxMem->alloc(
@@ -7684,39 +7684,39 @@ qdnForeignKey::updateNullChildRowWithRow4IndexTable( qcStatement           * aSt
                   (void **) & sPartCursorStatus )
               != IDE_SUCCESS );
 
-    // ÃÊ±âÈ­
+    // ì´ˆê¸°í™”
     for ( i = 0; i < aChildTableRef->partitionCount; i++ )
     {
         sPartCursorStatus[i] = QDN_PART_CURSOR_ALLOCED;
     }
 
     //---------------------------------------
-    // Record Read¸¦ À§ÇÑ °ø°£ ÇÒ´çÀ» À§ÇÑ ·Î¿ì »çÀÌÁî °è»ê
-    // trigger¼öÇàÀ» À§ÇÑ °ø°£ ÇÒ´çÀ» À§ÇÑ ·Î¿ì »çÀÌÁî °è»ê
+    // Record Readë¥¼ ìœ„í•œ ê³µê°„ í• ë‹¹ì„ ìœ„í•œ ë¡œìš° ì‚¬ì´ì¦ˆ ê³„ì‚°
+    // triggerìˆ˜í–‰ì„ ìœ„í•œ ê³µê°„ í• ë‹¹ì„ ìœ„í•œ ë¡œìš° ì‚¬ì´ì¦ˆ ê³„ì‚°
     //---------------------------------------
     if ( sTableType == SMI_TABLE_DISK )
     {
-        // index table¿ë °ø°£ÇÒ´ç
+        // index tableìš© ê³µê°„í• ë‹¹
         IDE_TEST( qdbCommon::getDiskRowSize( sIndexTableInfo,
                                              & sIndexRowSize )
                   != IDE_SUCCESS );
     
-        // Record Read¸¦ À§ÇÑ °ø°£À» ÇÒ´çÇÑ´Ù.
+        // Record Readë¥¼ ìœ„í•œ ê³µê°„ì„ í• ë‹¹í•œë‹¤.
         // To fix BUG-14820
-        // Disk-variable ÄÃ·³ÀÇ ridºñ±³¸¦ À§ÇØ ÃÊ±âÈ­ ÇØ¾ß ÇÔ.
+        // Disk-variable ì»¬ëŸ¼ì˜ ridë¹„êµë¥¼ ìœ„í•´ ì´ˆê¸°í™” í•´ì•¼ í•¨.
         IDU_LIMITPOINT("qdnForeignKey::getChildRowWithRow::malloc");
         IDE_TEST( aStatement->qmxMem->cralloc( sIndexRowSize,
                                                (void **) & sRow )
                   != IDE_SUCCESS );
 
-        // partition¿ë °ø°£ÇÒ´ç
+        // partitionìš© ê³µê°„í• ë‹¹
         IDE_TEST( qdbCommon::getDiskRowSize( aChildTableInfo,
                                              & sRowSize )
                   != IDE_SUCCESS );
 
-        // Record Read¸¦ À§ÇÑ °ø°£À» ÇÒ´çÇÑ´Ù.
+        // Record Readë¥¼ ìœ„í•œ ê³µê°„ì„ í• ë‹¹í•œë‹¤.
         // To fix BUG-14820
-        // Disk-variable ÄÃ·³ÀÇ ridºñ±³¸¦ À§ÇØ ÃÊ±âÈ­ ÇØ¾ß ÇÔ.
+        // Disk-variable ì»¬ëŸ¼ì˜ ridë¹„êµë¥¼ ìœ„í•´ ì´ˆê¸°í™” í•´ì•¼ í•¨.
         IDU_LIMITPOINT("qdnForeignKey::getChildRowWithRow::malloc");
         IDE_TEST( aStatement->qmxMem->cralloc( sRowSize,
                                                (void **) & sPartRow )
@@ -7729,7 +7729,7 @@ qdnForeignKey::updateNullChildRowWithRow4IndexTable( qcStatement           * aSt
     }
     
     //------------------------------------------
-    // Default ExprÀÇ Row Buffer ±¸¼º
+    // Default Exprì˜ Row Buffer êµ¬ì„±
     //------------------------------------------
 
     if ( aDefaultExprColumns != NULL )
@@ -7744,8 +7744,8 @@ qdnForeignKey::updateNullChildRowWithRow4IndexTable( qcStatement           * aSt
     }
     
     //------------------------------------------
-    // update row triggerÇÊ¿äÇÑÁö °Ë»ç
-    // Trigger Old Row ReferencingÀ» À§ÇÑ °ø°£ ÇÒ´ç
+    // update row triggerí•„ìš”í•œì§€ ê²€ì‚¬
+    // Trigger Old Row Referencingì„ ìœ„í•œ ê³µê°„ í• ë‹¹
     //------------------------------------------
 
     IDE_TEST( qdnTrigger::needTriggerRow( aStatement,
@@ -7782,14 +7782,14 @@ qdnForeignKey::updateNullChildRowWithRow4IndexTable( qcStatement           * aSt
     }
         
     //---------------------------------------
-    // PROJ-1705  fetch column list ±¸¼º
-    // delete cascadeÀÎ °æ¿ì´Â,
-    // foreignKey °Ë»ç¸¦ À§ÇØ ¸ğµç child tableµéÀ» °Ë»çÇØ¾ß ÇÏ´Âµ¥,
-    // ÀÌ °æ¿ì,
-    // trigger ¶Ç´Â °Ë»çÇØ¾ßÇÏ´Â ¸ğµç child columnµé¿¡ ´ëÇÑ
-    // fetch columÀ» °¡·Á³»±â°¡ ½±Áö ¾Ê¾Æ
-    // child tableÀÇ ¸ğµç ÄÃ·³À» fetch column ´ë»óÀ¸·Î »ï´Â´Ù.
-    // °³¼±»çÇ×ÀÓ.
+    // PROJ-1705  fetch column list êµ¬ì„±
+    // delete cascadeì¸ ê²½ìš°ëŠ”,
+    // foreignKey ê²€ì‚¬ë¥¼ ìœ„í•´ ëª¨ë“  child tableë“¤ì„ ê²€ì‚¬í•´ì•¼ í•˜ëŠ”ë°,
+    // ì´ ê²½ìš°,
+    // trigger ë˜ëŠ” ê²€ì‚¬í•´ì•¼í•˜ëŠ” ëª¨ë“  child columnë“¤ì— ëŒ€í•œ
+    // fetch columì„ ê°€ë ¤ë‚´ê¸°ê°€ ì‰½ì§€ ì•Šì•„
+    // child tableì˜ ëª¨ë“  ì»¬ëŸ¼ì„ fetch column ëŒ€ìƒìœ¼ë¡œ ì‚¼ëŠ”ë‹¤.
+    // ê°œì„ ì‚¬í•­ì„.
     //---------------------------------------
 
     IDE_TEST( qdbCommon::makeFetchColumnList(
@@ -7800,8 +7800,8 @@ qdnForeignKey::updateNullChildRowWithRow4IndexTable( qcStatement           * aSt
                   & sPartFetchColumnList )
               != IDE_SUCCESS );
     
-    // index table¿ë fetch column list ±¸¼º
-    // key, oid, rid ¸ğµÎ fetchÇÑ´Ù.
+    // index tableìš© fetch column list êµ¬ì„±
+    // key, oid, rid ëª¨ë‘ fetchí•œë‹¤.
     IDE_TEST( qdbCommon::makeFetchColumnList(
                   QC_PRIVATE_TMPLATE(aStatement),
                   sIndexTableInfo->columnCount,
@@ -7811,14 +7811,14 @@ qdnForeignKey::updateNullChildRowWithRow4IndexTable( qcStatement           * aSt
               != IDE_SUCCESS );
 
     //---------------------------------------
-    // Index¹× Key Range »ı¼º
+    // Indexë° Key Range ìƒì„±
     //---------------------------------------
 
     IDE_TEST( qmsIndexTable::findKeyIndex( sIndexTableInfo,
                                            & sIndexTableIndex )
               != IDE_SUCCESS );
     
-    // index table¿ë key range ±¸¼º
+    // index tableìš© key range êµ¬ì„±
     IDE_TEST( makeKeyRangeAndIndex( sTableType,
                                     aKeyRangeColumnCnt,
                                     sIndexTableIndex,
@@ -7832,7 +7832,7 @@ qdnForeignKey::updateNullChildRowWithRow4IndexTable( qcStatement           * aSt
               != IDE_SUCCESS );
         
     //---------------------------------------
-    // PROJ-2212  null value list ±¸¼º
+    // PROJ-2212  null value list êµ¬ì„±
     //---------------------------------------
 
     IDE_TEST( aStatement->qmxMem->alloc(
@@ -7858,7 +7858,7 @@ qdnForeignKey::updateNullChildRowWithRow4IndexTable( qcStatement           * aSt
     }
     
     //---------------------------------------
-    // row movement¿ë insert values ±¸¼º
+    // row movementìš© insert values êµ¬ì„±
     //---------------------------------------
     
     IDE_TEST( aStatement->qmxMem->alloc(
@@ -7868,7 +7868,7 @@ qdnForeignKey::updateNullChildRowWithRow4IndexTable( qcStatement           * aSt
 
     if ( aUpdateRowMovement == QCM_CHILD_UPDATE_ROWMOVEMENT )
     {
-        // lob info ÃÊ±âÈ­
+        // lob info ì´ˆê¸°í™”
         if ( aChildTableInfo->lobColumnCount > 0 )
         {
             // PROJ-1362
@@ -7883,7 +7883,7 @@ qdnForeignKey::updateNullChildRowWithRow4IndexTable( qcStatement           * aSt
             // Nothing to do.
         }
         
-        // insert smiValues ÃÊ±âÈ­
+        // insert smiValues ì´ˆê¸°í™”
         IDE_TEST( aStatement->qmxMem->alloc(
                       ID_SIZEOF(smiValue) * aChildTableInfo->columnCount,
                       (void**)& sInsertValues )
@@ -7895,7 +7895,7 @@ qdnForeignKey::updateNullChildRowWithRow4IndexTable( qcStatement           * aSt
     }
 
     //---------------------------------------
-    // index table cursor »ı¼º
+    // index table cursor ìƒì„±
     //---------------------------------------
 
     if ( aUpdateRowMovement == QCM_CHILD_UPDATE_ROWMOVEMENT )
@@ -7934,7 +7934,7 @@ qdnForeignKey::updateNullChildRowWithRow4IndexTable( qcStatement           * aSt
     sIndexTableCursor = & sIndexTableCursorInfo;
     
     //---------------------------------------
-    // column ¼³Á¤
+    // column ì„¤ì •
     //---------------------------------------
     
     IDE_DASSERT( sIndexTableInfo->columnCount > 2 );
@@ -7974,7 +7974,7 @@ qdnForeignKey::updateNullChildRowWithRow4IndexTable( qcStatement           * aSt
 
     if ( aUpdateRowMovement == QCM_CHILD_UPDATE_ROWMOVEMENT )
     {
-        // updateÇÒ ÄÃ·³À» Ã£´Â´Ù.
+        // updateí•  ì»¬ëŸ¼ì„ ì°¾ëŠ”ë‹¤.
         IDE_TEST( qmsIndexTable::makeUpdateSmiColumnList( aUpdateColCount,
                                                           aUpdateColumnID,
                                                           aChildIndexTable,
@@ -7983,11 +7983,11 @@ qdnForeignKey::updateNullChildRowWithRow4IndexTable( qcStatement           * aSt
                                                           sIndexUpdateColumnList )
                   != IDE_SUCCESS );
 
-        // sIndexNullValues´Â updateNullChildRow½Ã »ı¼ºÇÑ´Ù.
+        // sIndexNullValuesëŠ” updateNullChildRowì‹œ ìƒì„±í•œë‹¤.
     }
     else
     {
-        // updateÇÒ ÄÃ·³À» Ã£´Â´Ù.
+        // updateí•  ì»¬ëŸ¼ì„ ì°¾ëŠ”ë‹¤.
         IDE_TEST( qmsIndexTable::makeUpdateSmiColumnList( aUpdateColCount,
                                                           aUpdateColumnID,
                                                           aChildIndexTable,
@@ -7996,7 +7996,7 @@ qdnForeignKey::updateNullChildRowWithRow4IndexTable( qcStatement           * aSt
                                                           sIndexUpdateColumnList )
                   != IDE_SUCCESS );
         
-        // updateÇÒ °ªÀ» ¼³Á¤ÇÑ´Ù.
+        // updateí•  ê°’ì„ ì„¤ì •í•œë‹¤.
         IDE_TEST( qmsIndexTable::makeUpdateSmiValue( aUpdateColCount,
                                                      aUpdateColumnID,
                                                      sNullValues,
@@ -8017,7 +8017,7 @@ qdnForeignKey::updateNullChildRowWithRow4IndexTable( qcStatement           * aSt
 
     if ( aUpdateRowMovement == QCM_CHILD_UPDATE_ROWMOVEMENT )
     {
-        // ¸ğµÎ ¿­¾îµĞ´Ù.
+        // ëª¨ë‘ ì—´ì–´ë‘”ë‹¤.
         for ( sPartOrder = 0, sSelectedPartitionRef = aChildTableRef->partitionRef;
               sSelectedPartitionRef != NULL;
               sPartOrder++, sSelectedPartitionRef = sSelectedPartitionRef->next )
@@ -8025,12 +8025,12 @@ qdnForeignKey::updateNullChildRowWithRow4IndexTable( qcStatement           * aSt
             sSelectedTableInfo = sSelectedPartitionRef->partitionInfo;
         
             //------------------------------------------
-            // PROJ-2212  update column list ±¸¼º
+            // PROJ-2212  update column list êµ¬ì„±
             //------------------------------------------
     
             for ( i = 0; i < aUpdateColCount; i++ )
             {
-                // set null : update column Á¤º¸¸¦ »ı¼º(update ´ë»óÀÌ µÇ´Â column)
+                // set null : update column ì •ë³´ë¥¼ ìƒì„±(update ëŒ€ìƒì´ ë˜ëŠ” column)
                 // ex> foreign key (i2,i3,i4)
                 sColumnOrder = aUpdateColumn[i].basicInfo->column.id & SMI_COLUMN_ID_MASK;
 
@@ -8085,7 +8085,7 @@ qdnForeignKey::updateNullChildRowWithRow4IndexTable( qcStatement           * aSt
     // open index table
     //---------------------------------------
     
-    // index table scanÀº updateÇÒ key¸¦ ¹İµå½Ã Æ÷ÇÔÇÑ´Ù.
+    // index table scanì€ updateí•  keyë¥¼ ë°˜ë“œì‹œ í¬í•¨í•œë‹¤.
     IDE_DASSERT( sIndexUpdateColumnCount > 0 );
     
     sCursor.initialize();
@@ -8115,7 +8115,7 @@ qdnForeignKey::updateNullChildRowWithRow4IndexTable( qcStatement           * aSt
         sPartOID = *(smOID*) ((UChar*)sRow + sOIDColumn->basicInfo->column.offset);
         sRowGRID = *(scGRID*) ((UChar*)sRow + sRIDColumn->basicInfo->column.offset);
 
-        // partOID¸¦ Ã£´Â´Ù.
+        // partOIDë¥¼ ì°¾ëŠ”ë‹¤.
         IDE_TEST( qmsIndexTable::findPartitionRefIndex( & sPartIndexInfo,
                                                         sPartOID,
                                                         & sSelectedPartitionRef,
@@ -8127,12 +8127,12 @@ qdnForeignKey::updateNullChildRowWithRow4IndexTable( qcStatement           * aSt
         sColumnsForRow = sSelectedTableInfo->columns;
         
         //------------------------------------------
-        // PROJ-2212  update column list ±¸¼º
+        // PROJ-2212  update column list êµ¬ì„±
         //------------------------------------------
     
         for ( i = 0; i < aUpdateColCount; i++ )
         {
-            // set null : update column Á¤º¸¸¦ »ı¼º(update ´ë»óÀÌ µÇ´Â column)
+            // set null : update column ì •ë³´ë¥¼ ìƒì„±(update ëŒ€ìƒì´ ë˜ëŠ” column)
             // ex> foreign key (i2,i3,i4)
             sColumnOrder = aUpdateColumn[i].basicInfo->column.id & SMI_COLUMN_ID_MASK;
 
@@ -8182,7 +8182,7 @@ qdnForeignKey::updateNullChildRowWithRow4IndexTable( qcStatement           * aSt
         IDE_TEST( sPartCursor[sPartOrder].readRowFromGRID( & sPartRow, sRowGRID )
                   != IDE_SUCCESS );
 
-        // ¹İµå½Ã Á¸ÀçÇØ¾ß ÇÑ´Ù.
+        // ë°˜ë“œì‹œ ì¡´ì¬í•´ì•¼ í•œë‹¤.
         IDE_TEST_RAISE( sPartRow == NULL, ERR_NO_ROW );
 
         /* PROJ-1090 Function-based Index */
@@ -8290,17 +8290,17 @@ qdnForeignKey::updateNullChildRowWithRow4IndexTable( qcStatement           * aSt
     
     //---------------------------------------
     // PROJ-2212 foreign key on delete set null
-    // null updateµÈ  row¿¡ ¸¦ ÂüÁ¶ÇÏ´Â grand child table
-    // row Á¸Àç ¿©ºÎ Ã¼Å©.
+    // null updateëœ  rowì— ë¥¼ ì°¸ì¡°í•˜ëŠ” grand child table
+    // row ì¡´ì¬ ì—¬ë¶€ ì²´í¬.
     //
     // ex> delete from t1 where i1=1;
-    //   T1 : I1 -- t1 ÀÇ i1=1ÀÎ row »èÁ¦
+    //   T1 : I1 -- t1 ì˜ i1=1ì¸ row ì‚­ì œ
     //        ^
     //        |     
-    //   T2 : I1 -- À§ÀÇ updateRow() ¼öÇà i1=1ÀÎ columnÀ» null update
+    //   T2 : I1 -- ìœ„ì˜ updateRow() ìˆ˜í–‰ i1=1ì¸ columnì„ null update
     //        ^
     //        |
-    //   T3 : I1 -- i1=1 ÀÎ row Á¸Àç ¿©ºÎ °Ë»ç ( grand child table)
+    //   T3 : I1 -- i1=1 ì¸ row ì¡´ì¬ ì—¬ë¶€ ê²€ì‚¬ ( grand child table)
     //        ^
     //        |
     //   T4 : I1
@@ -8318,15 +8318,15 @@ qdnForeignKey::updateNullChildRowWithRow4IndexTable( qcStatement           * aSt
             sColumnsForRow = sSelectedTableInfo->columns;
             
             //------------------------------------------
-            // updateµÈ ·Î¿ì °Ë»öÀ» À§ÇØ,
-            // °»½Å¿¬»êÀÌ ¼öÇàµÈ Ã¹¹øÂ° row ÀÌÀü À§Ä¡·Î cursor À§Ä¡ ¼³Á¤
+            // updateëœ ë¡œìš° ê²€ìƒ‰ì„ ìœ„í•´,
+            // ê°±ì‹ ì—°ì‚°ì´ ìˆ˜í–‰ëœ ì²«ë²ˆì§¸ row ì´ì „ ìœ„ì¹˜ë¡œ cursor ìœ„ì¹˜ ì„¤ì •
             //------------------------------------------
 
             IDE_TEST( sPartCursor[i].beforeFirstModified( SMI_FIND_MODIFIED_OLD )
                       != IDE_SUCCESS );
 
             //------------------------------------------
-            // Referencing °Ë»ç¸¦ À§ÇØ updateµÈ RowµéÀ» °Ë»ö
+            // Referencing ê²€ì‚¬ë¥¼ ìœ„í•´ updateëœ Rowë“¤ì„ ê²€ìƒ‰
             //------------------------------------------
             
             sOldRow     = sOrgPartRow;
@@ -8358,7 +8358,7 @@ qdnForeignKey::updateNullChildRowWithRow4IndexTable( qcStatement           * aSt
 
     IDE_EXCEPTION( ERR_NOT_ALLOW_NULL )
     {
-        /* BUG-45680 insert ¼öÇà½Ã not null column¿¡ ´ëÇÑ ¿¡·¯¸Ş½ÃÁö Á¤º¸¿¡ column Á¤º¸ Ãâ·Â. */
+        /* BUG-45680 insert ìˆ˜í–‰ì‹œ not null columnì— ëŒ€í•œ ì—ëŸ¬ë©”ì‹œì§€ ì •ë³´ì— column ì •ë³´ ì¶œë ¥. */
         IDE_SET( ideSetErrorCode( qpERR_ABORT_QMX_NOT_NULL_CONSTRAINT,
                                   "",
                                   "" ) );
@@ -8453,8 +8453,8 @@ qdnForeignKey::updateNullChildRow( qcStatement           * aStatement,
 /***********************************************************************
  *
  * Description :
- *    deleteChildRowWithRow ·ÎºÎÅÍ È£Ãâ, delete cascadeÀÇ child table
- *    ·¹ÄÚµå »èÁ¦
+ *    deleteChildRowWithRow ë¡œë¶€í„° í˜¸ì¶œ, delete cascadeì˜ child table
+ *    ë ˆì½”ë“œ ì‚­ì œ
  *
  * Implementation :
  *
@@ -8505,7 +8505,7 @@ qdnForeignKey::updateNullChildRow( qcStatement           * aStatement,
         sChildTuple = &( QC_PRIVATE_TMPLATE(aStatement)->tmplate.rows[aChildTableRef->table] );
     }
 
-    // Key Range¿¡ Æ÷ÇÔµÇÁö ¾ÊÀº Column¿¡ ´ëÇÏ¿© µ¿ÀÏÇÑÁö¸¦ °Ë»çÇÑ´Ù.
+    // Key Rangeì— í¬í•¨ë˜ì§€ ì•Šì€ Columnì— ëŒ€í•˜ì—¬ ë™ì¼í•œì§€ë¥¼ ê²€ì‚¬í•œë‹¤.
     for ( i = aKeyRangeColumnCnt; i < aUniqueConstraint->keyColCount; i++ )
     {
         sColumnOrder      = aUniqueConstraint->keyColumns[i].column.id & SMI_COLUMN_ID_MASK;
@@ -8553,7 +8553,7 @@ qdnForeignKey::updateNullChildRow( qcStatement           * aStatement,
             /* Nothing to do */
         }
 
-        /* PROJ-2464 hybrid partitioned table Áö¿ø */
+        /* PROJ-2464 hybrid partitioned table ì§€ì› */
         if ( QCM_TABLE_TYPE_IS_DISK( aChildTableInfo->tableFlag ) == ID_TRUE )
         {
             sChildTriggerOldRow     = aChildDiskTriggerOldRow;
@@ -8571,7 +8571,7 @@ qdnForeignKey::updateNullChildRow( qcStatement           * aStatement,
 
         if ( sChildTriggerOldRow != NULL )
         {
-            // OLD ROW REFERENCINGÀ» À§ÇÑ ÀúÀå
+            // OLD ROW REFERENCINGì„ ìœ„í•œ ì €ì¥
             idlOS::memcpy( sChildTriggerOldRow,
                            aChildRow,
                            sChildTriggerOldRowSize );
@@ -8581,7 +8581,7 @@ qdnForeignKey::updateNullChildRow( qcStatement           * aStatement,
             // Nothing To Do
         }
 
-        // BUG-35379 on delete set null½Ã row movement¸¦ °í·ÁÇØ¾ßÇÔ
+        // BUG-35379 on delete set nullì‹œ row movementë¥¼ ê³ ë ¤í•´ì•¼í•¨
         if( aChildTableRef->tableInfo->tablePartitionType == QCM_PARTITIONED_TABLE )
         {
             switch ( aUpdateRowMovement )
@@ -8589,7 +8589,7 @@ qdnForeignKey::updateNullChildRow( qcStatement           * aStatement,
                 case QCM_CHILD_UPDATE_CHECK_ROWMOVEMENT:
                 {
                     //------------------------------------------
-                    // check row movement updateÀÎ °æ¿ì
+                    // check row movement updateì¸ ê²½ìš°
                     //------------------------------------------
 
                     // BUG-37188
@@ -8613,12 +8613,12 @@ qdnForeignKey::updateNullChildRow( qcStatement           * aStatement,
                                   & sSelectedPartitionRef )
                               != IDE_SUCCESS );
 
-                    // µ¿ÀÏÇÑ partitionÀÌ ¾Æ´Ï¶ó¸é ¿¡·¯
+                    // ë™ì¼í•œ partitionì´ ì•„ë‹ˆë¼ë©´ ì—ëŸ¬
                     IDE_TEST_RAISE( sSelectedPartitionRef->partitionHandle !=
                                     aChildTableInfo->tableHandle,
                                     ERR_NO_ROW_MOVEMENT );
 
-                    /* PROJ-2464 hybrid partitioned table Áö¿ø */
+                    /* PROJ-2464 hybrid partitioned table ì§€ì› */
                     sSelectedPartitionTuple = &(QC_PRIVATE_TMPLATE(aStatement)->tmplate.rows
                                               [sSelectedPartitionRef->table]);
 
@@ -8630,7 +8630,7 @@ qdnForeignKey::updateNullChildRow( qcStatement           * aStatement,
                 case QCM_CHILD_UPDATE_ROWMOVEMENT:
                 {
                     //------------------------------------------
-                    // row movement updateÀÎ °æ¿ì
+                    // row movement updateì¸ ê²½ìš°
                     //------------------------------------------
 
                     if ( aInsertLobInfo != NULL )
@@ -8647,7 +8647,7 @@ qdnForeignKey::updateNullChildRow( qcStatement           * aStatement,
                     sChildTuple->row = (void *)aChildRow;
                     SC_COPY_GRID( aIndexGRID, sChildTuple->rid );
 
-                    // row movement¿ë smi value Á¤º¸ ±¸¼º
+                    // row movementìš© smi value ì •ë³´ êµ¬ì„±
                     IDE_TEST( qmx::makeSmiValueForRowMovement(
                                   aChildTableRef->tableInfo,
                                   aUpdateColumnList,
@@ -8684,7 +8684,7 @@ qdnForeignKey::updateNullChildRow( qcStatement           * aStatement,
                         // Nothing to do.
                     }
 
-                    /* PROJ-2464 hybrid partitioned table Áö¿ø */
+                    /* PROJ-2464 hybrid partitioned table ì§€ì› */
                     if ( QCM_TABLE_TYPE_IS_DISK( sSelectedPartitionRef->partitionInfo->tableFlag ) == ID_TRUE )
                     {
                         sChildTriggerNewRow     = aChildDiskTriggerNewRow;
@@ -8707,10 +8707,10 @@ qdnForeignKey::updateNullChildRow( qcStatement           * aStatement,
                 default:
                 {
                     //------------------------------------------
-                    // ÀÏ¹İ updateÀÎ °æ¿ì
+                    // ì¼ë°˜ updateì¸ ê²½ìš°
                     //------------------------------------------
 
-                    /* PROJ-2464 hybrid partitioned table Áö¿ø */
+                    /* PROJ-2464 hybrid partitioned table ì§€ì› */
                     sSelectedPartitionTuple = &(QC_PRIVATE_TMPLATE(aStatement)->tmplate.rows
                                               [aChildPartitionRef->table]);
 
@@ -8723,7 +8723,7 @@ qdnForeignKey::updateNullChildRow( qcStatement           * aStatement,
         else
         {
             //------------------------------------------
-            // ÀÏ¹İ updateÀÎ °æ¿ì
+            // ì¼ë°˜ updateì¸ ê²½ìš°
             //------------------------------------------
 
             sColumnsForNewRow = aColumnsForChildRow;
@@ -8732,14 +8732,14 @@ qdnForeignKey::updateNullChildRow( qcStatement           * aStatement,
         if ( sIsPartitionUpdate == ID_TRUE )
         {
             //------------------------------------------
-            // µ¿ÀÏ partitionÀÇ updateÀÎ °æ¿ì
+            // ë™ì¼ partitionì˜ updateì¸ ê²½ìš°
             //------------------------------------------
 
             if ( QCM_TABLE_TYPE_IS_DISK( aChildTableRef->tableInfo->tableFlag ) !=
                  QCM_TABLE_TYPE_IS_DISK( aChildTableInfo->tableFlag ) )
             {
-                /* PROJ-2464 hybrid partitioned table Áö¿ø
-                 * Partitioned TableÀ» ±âÁØÀ¸·Î ¸¸µç smiValue Array¸¦ Table Partition¿¡ ¸Â°Ô º¯È¯ÇÑ´Ù.
+                /* PROJ-2464 hybrid partitioned table ì§€ì›
+                 * Partitioned Tableì„ ê¸°ì¤€ìœ¼ë¡œ ë§Œë“  smiValue Arrayë¥¼ Table Partitionì— ë§ê²Œ ë³€í™˜í•œë‹¤.
                  */
                 IDE_TEST( qmx::makeSmiValueWithSmiValue( aChildTableRef->tableInfo,
                                                          aChildTableInfo,
@@ -8765,7 +8765,7 @@ qdnForeignKey::updateNullChildRow( qcStatement           * aStatement,
             if ( ( sChildTriggerNewRow != NULL ) ||
                  ( aChildCheckConstrList != NULL ) )
             {
-                // NEW ROWÀÇ È¹µæ
+                // NEW ROWì˜ íšë“
                 IDE_TEST( aChildCursor->getLastModifiedRow( & sChildTriggerNewRow,
                                                             sChildTriggerNewRowSize )
                           != IDE_SUCCESS );
@@ -8778,12 +8778,12 @@ qdnForeignKey::updateNullChildRow( qcStatement           * aStatement,
         else
         {
             //------------------------------------------
-            // row movement update, insert & deleteÀÎ °æ¿ì
+            // row movement update, insert & deleteì¸ ê²½ìš°
             //------------------------------------------
 
             if ( aPartIndexInfo != NULL )
             {
-                // partOID¸¦ Ã£´Â´Ù.
+                // partOIDë¥¼ ì°¾ëŠ”ë‹¤.
                 IDE_TEST( qmsIndexTable::findPartitionRefIndex( aPartIndexInfo,
                                                                 sPartOID,
                                                                 & sSelectedPartitionRef,
@@ -8799,8 +8799,8 @@ qdnForeignKey::updateNullChildRow( qcStatement           * aStatement,
                 
                 SMI_CURSOR_PROP_INIT_FOR_FULL_SCAN( & sCursorProperty, aStatement->mStatistics );
                 
-                /* PROJ-2464 hybrid partitioned table Áö¿ø
-                 *  smiTableCursor::getLastModifiedRow()·Î Disk Row¸¦ ¾òÀ¸·Á¸é, Fetch Column List°¡ ÇÊ¿äÇÏ´Ù.
+                /* PROJ-2464 hybrid partitioned table ì§€ì›
+                 *  smiTableCursor::getLastModifiedRow()ë¡œ Disk Rowë¥¼ ì–»ìœ¼ë ¤ë©´, Fetch Column Listê°€ í•„ìš”í•˜ë‹¤.
                  */
                 if ( QCM_TABLE_TYPE_IS_DISK( sSelectedPartitionRef->partitionInfo->tableFlag ) == ID_TRUE )
                 {
@@ -8833,8 +8833,8 @@ qdnForeignKey::updateNullChildRow( qcStatement           * aStatement,
             if ( QCM_TABLE_TYPE_IS_DISK( aChildTableRef->tableInfo->tableFlag ) !=
                  QCM_TABLE_TYPE_IS_DISK( sSelectedPartitionRef->partitionInfo->tableFlag ) )
             {
-                /* PROJ-2464 hybrid partitioned table Áö¿ø
-                 * Partitioned TableÀ» ±âÁØÀ¸·Î ¸¸µç smiValue Array¸¦ Table Partition¿¡ ¸Â°Ô º¯È¯ÇÑ´Ù.
+                /* PROJ-2464 hybrid partitioned table ì§€ì›
+                 * Partitioned Tableì„ ê¸°ì¤€ìœ¼ë¡œ ë§Œë“  smiValue Arrayë¥¼ Table Partitionì— ë§ê²Œ ë³€í™˜í•œë‹¤.
                  */
                 IDE_TEST( qmx::makeSmiValueWithSmiValue( aChildTableRef->tableInfo,
                                                          sSelectedPartitionRef->partitionInfo,
@@ -8857,9 +8857,9 @@ qdnForeignKey::updateNullChildRow( qcStatement           * aStatement,
                                                 & sInsertGRID )
                       != IDE_SUCCESS );
 
-            /* PROJ-2464 hybrid partitioned table Áö¿ø
-             *  Disk PartitionÀÎ °æ¿ì, Disk TypeÀÇ Lob ColumnÀÌ ÇÊ¿äÇÏ´Ù.
-             *  Memory/Volatile PartitionÀÇ °æ¿ì, ÇØ´ç PartitionÀÇ Lob ColumnÀÌ ÇÊ¿äÇÏ´Ù.
+            /* PROJ-2464 hybrid partitioned table ì§€ì›
+             *  Disk Partitionì¸ ê²½ìš°, Disk Typeì˜ Lob Columnì´ í•„ìš”í•˜ë‹¤.
+             *  Memory/Volatile Partitionì˜ ê²½ìš°, í•´ë‹¹ Partitionì˜ Lob Columnì´ í•„ìš”í•˜ë‹¤.
              */
             if ( ( QCM_TABLE_TYPE_IS_DISK( aChildTableRef->tableInfo->tableFlag ) !=
                    QCM_TABLE_TYPE_IS_DISK( sSelectedPartitionRef->partitionInfo->tableFlag ) ) ||
@@ -8884,7 +8884,7 @@ qdnForeignKey::updateNullChildRow( qcStatement           * aStatement,
             if ( ( sChildTriggerNewRow != NULL ) ||
                  ( aChildCheckConstrList != NULL ) )
             {
-                // NEW ROWÀÇ È¹µæ
+                // NEW ROWì˜ íšë“
                 IDE_TEST( sInsertCursor->getLastModifiedRow( & sChildTriggerNewRow,
                                                              sChildTriggerNewRowSize )
                           != IDE_SUCCESS );
@@ -8912,8 +8912,8 @@ qdnForeignKey::updateNullChildRow( qcStatement           * aStatement,
         if ( aUpdateRowMovement == QCM_CHILD_UPDATE_ROWMOVEMENT )
         {
             //------------------------------------------
-            // row movement enableÀÎ °æ¿ì
-            // index table update½Ã key¿Í ÇÔ²² oid, rid±îÁö updateÇÑ´Ù.
+            // row movement enableì¸ ê²½ìš°
+            // index table updateì‹œ keyì™€ í•¨ê»˜ oid, ridê¹Œì§€ updateí•œë‹¤.
             //------------------------------------------
             
             // update index table
@@ -8921,7 +8921,7 @@ qdnForeignKey::updateNullChildRow( qcStatement           * aStatement,
             {
                 if ( aSelectedIndexTableCursor != NULL )
                 {
-                    // selected index tableµµ update
+                    // selected index tableë„ update
                     IDE_TEST( qmsIndexTable::makeUpdateSmiValue(
                                   aUpdateColumnCount,
                                   aUpdateColumnID,
@@ -8943,7 +8943,7 @@ qdnForeignKey::updateNullChildRow( qcStatement           * aStatement,
                     // Nothing to do.
                 }
         
-                // ´Ù¸¥ index tableµµ update
+                // ë‹¤ë¥¸ index tableë„ update
                 IDE_TEST( qmsIndexTable::updateIndexTableCursors(
                               aStatement,
                               aIndexTableCursor,
@@ -8964,16 +8964,16 @@ qdnForeignKey::updateNullChildRow( qcStatement           * aStatement,
         else
         {
             //------------------------------------------
-            // row movement disableÀÎ °æ¿ì
-            // index table update½Ã key¸¸ updateÇÑ´Ù.
+            // row movement disableì¸ ê²½ìš°
+            // index table updateì‹œ keyë§Œ updateí•œë‹¤.
             //------------------------------------------
             
-            // index tableµµ update
+            // index tableë„ update
             if ( aIndexTableCursor != NULL )
             {
                 if ( aSelectedIndexTableCursor != NULL )
                 {
-                    // selected index tableµµ update
+                    // selected index tableë„ update
                     IDE_TEST( aSelectedIndexTableCursor->updateRow(
                                   aIndexNullValues )
                               != IDE_SUCCESS );
@@ -8983,7 +8983,7 @@ qdnForeignKey::updateNullChildRow( qcStatement           * aStatement,
                     // Nothing to do.
                 }
         
-                // ´Ù¸¥ index tableµµ update
+                // ë‹¤ë¥¸ index tableë„ update
                 IDE_TEST( qmsIndexTable::updateIndexTableCursors(
                               aStatement,
                               aIndexTableCursor,
@@ -9002,7 +9002,7 @@ qdnForeignKey::updateNullChildRow( qcStatement           * aStatement,
             }
         }
             
-        /* PROJ-2464 hybrid partitioned table Áö¿ø */
+        /* PROJ-2464 hybrid partitioned table ì§€ì› */
         if ( aChildTableRef->tableInfo->tablePartitionType == QCM_PARTITIONED_TABLE )
         {
             if ( aChildTableRef->partitionSummary->isHybridPartitionedTable == ID_TRUE )
@@ -9044,7 +9044,7 @@ qdnForeignKey::updateNullChildRow( qcStatement           * aStatement,
             // Nothing to do.
         }
 
-        // each row update before trigger Áö¿øÇÏÁö ¾ÊÀ½.
+        // each row update before trigger ì§€ì›í•˜ì§€ ì•ŠìŒ.
         IDE_TEST( qdnTrigger::fireTrigger(
                       aStatement,
                       aStatement->qmxMem,       // valuelist memory
@@ -9061,7 +9061,7 @@ qdnForeignKey::updateNullChildRow( qcStatement           * aStatement,
                       sColumnsForNewRow )       // NEW ROW column
                   != IDE_SUCCESS );
 
-        /* PROJ-2464 hybrid partitioned table Áö¿ø */
+        /* PROJ-2464 hybrid partitioned table ì§€ì› */
         if ( sNeedToRecoverTuple == ID_TRUE )
         {
             sNeedToRecoverTuple = ID_FALSE;
@@ -9094,7 +9094,7 @@ qdnForeignKey::updateNullChildRow( qcStatement           * aStatement,
         /* Nothing to do */
     }
 
-    /* PROJ-2464 hybrid partitioned table Áö¿ø */
+    /* PROJ-2464 hybrid partitioned table ì§€ì› */
     if ( sNeedToRecoverTuple == ID_TRUE )
     {
         qmx::copyMtcTupleForPartitionDML( sTableTuple, &sCopyTuple );
@@ -9118,8 +9118,8 @@ qdnForeignKey::checkChild4UpdateNullChildRow( qcStatement      * aStatement,
 /***********************************************************************
  *
  * Description :
- *    deleteChildRowWithRow ·ÎºÎÅÍ È£Ãâ, delete cascadeÀÇ child table
- *    ·¹ÄÚµå »èÁ¦
+ *    deleteChildRowWithRow ë¡œë¶€í„° í˜¸ì¶œ, delete cascadeì˜ child table
+ *    ë ˆì½”ë“œ ì‚­ì œ
  *
  * Implementation :
  *
@@ -9139,8 +9139,8 @@ qdnForeignKey::checkChild4UpdateNullChildRow( qcStatement      * aStatement,
         {
             //---------------------------------------
             // PROJ-2212 Foreign key set null
-            // self referenceÀÎ °æ¿ì ÇöÀç »èÁ¦ÇÑ ÄÃ·³À» °¡¸£Å°´Â
-            // foreign keyÀÎ °æ¿ì¸¸ Àç±ÍÈ£ÃâµÈ´Ù.
+            // self referenceì¸ ê²½ìš° í˜„ì¬ ì‚­ì œí•œ ì»¬ëŸ¼ì„ ê°€ë¥´í‚¤ëŠ”
+            // foreign keyì¸ ê²½ìš°ë§Œ ì¬ê·€í˜¸ì¶œëœë‹¤.
             //---------------------------------------
             sIsSkip = ID_FALSE;
                     
@@ -9148,7 +9148,7 @@ qdnForeignKey::checkChild4UpdateNullChildRow( qcStatement      * aStatement,
             {
                 sChildUniqueConstraint = sChildInfo->parentIndex;
 
-                // sChildUniqueConstraint°¡ aForeignKey¿¡ Æ÷ÇÔµÇÁö ¾ÊÀ¸¸é skip
+                // sChildUniqueConstraintê°€ aForeignKeyì— í¬í•¨ë˜ì§€ ì•Šìœ¼ë©´ skip
                 for ( i = 0; i < sChildUniqueConstraint->keyColCount; i++ )
                 {
                     sFound = ID_FALSE;

@@ -44,7 +44,7 @@ static IDE_RC answerLobGetSizeResult(cmiProtocolContext *aProtocolContext,
 
     IDE_EXCEPTION_END;
 
-    /* BUG-44124 ipcda ¸ğµå »ç¿ë Áß hang - iloader ÄÃ·³ÀÌ ¸¹Àº Å×ÀÌºí */
+    /* BUG-44124 ipcda ëª¨ë“œ ì‚¬ìš© ì¤‘ hang - iloader ì»¬ëŸ¼ì´ ë§ì€ í…Œì´ë¸” */
     if( (sWriteCheckState == CMI_WRITE_CHECK_ACTIVATED) && (cmiGetLinkImpl(aProtocolContext) == CMI_LINK_IMPL_IPCDA) )
     {
         IDE_SET(ideSetErrorCode(mmERR_ABORT_IPCDA_MESSAGE_TOO_LONG, CMB_BLOCK_DEFAULT_SIZE));
@@ -74,7 +74,7 @@ static IDE_RC answerLobCharLengthResult(cmiProtocolContext *aProtocolContext,
 
     IDE_EXCEPTION_END;
 
-    /* BUG-44124 ipcda ¸ğµå »ç¿ë Áß hang - iloader ÄÃ·³ÀÌ ¸¹Àº Å×ÀÌºí */
+    /* BUG-44124 ipcda ëª¨ë“œ ì‚¬ìš© ì¤‘ hang - iloader ì»¬ëŸ¼ì´ ë§ì€ í…Œì´ë¸” */
     if( (sWriteCheckState == CMI_WRITE_CHECK_ACTIVATED) && (cmiGetLinkImpl(aProtocolContext) == CMI_LINK_IMPL_IPCDA) )
     {
         IDE_SET(ideSetErrorCode(mmERR_ABORT_IPCDA_MESSAGE_TOO_LONG, CMB_BLOCK_DEFAULT_SIZE));
@@ -107,7 +107,7 @@ static IDE_RC answerLobGetResult(cmiProtocolContext *aProtocolContext,
 
     IDE_EXCEPTION_END;
 
-    /* BUG-44124 ipcda ¸ğµå »ç¿ë Áß hang - iloader ÄÃ·³ÀÌ ¸¹Àº Å×ÀÌºí */
+    /* BUG-44124 ipcda ëª¨ë“œ ì‚¬ìš© ì¤‘ hang - iloader ì»¬ëŸ¼ì´ ë§ì€ í…Œì´ë¸” */
     if( (sWriteCheckState == CMI_WRITE_CHECK_ACTIVATED) && (cmiGetLinkImpl(aProtocolContext) == CMI_LINK_IMPL_IPCDA) )
     {
         IDE_SET(ideSetErrorCode(mmERR_ABORT_IPCDA_MESSAGE_TOO_LONG, CMB_BLOCK_DEFAULT_SIZE));
@@ -144,7 +144,7 @@ static IDE_RC answerLobGetBytePosCharLenResult(
 
     IDE_EXCEPTION_END;
 
-    /* BUG-44124 ipcda ¸ğµå »ç¿ë Áß hang - iloader ÄÃ·³ÀÌ ¸¹Àº Å×ÀÌºí */
+    /* BUG-44124 ipcda ëª¨ë“œ ì‚¬ìš© ì¤‘ hang - iloader ì»¬ëŸ¼ì´ ë§ì€ í…Œì´ë¸” */
     if( (sWriteCheckState == CMI_WRITE_CHECK_ACTIVATED) && (cmiGetLinkImpl(aProtocolContext) == CMI_LINK_IMPL_IPCDA) )
     {
         IDE_SET(ideSetErrorCode(mmERR_ABORT_IPCDA_MESSAGE_TOO_LONG, CMB_BLOCK_DEFAULT_SIZE));
@@ -174,7 +174,7 @@ static IDE_RC answerLobBytePosResult(cmiProtocolContext *aProtocolContext,
 
     IDE_EXCEPTION_END;
 
-    /* BUG-44124 ipcda ¸ğµå »ç¿ë Áß hang - iloader ÄÃ·³ÀÌ ¸¹Àº Å×ÀÌºí */
+    /* BUG-44124 ipcda ëª¨ë“œ ì‚¬ìš© ì¤‘ hang - iloader ì»¬ëŸ¼ì´ ë§ì€ í…Œì´ë¸” */
     if( (sWriteCheckState == CMI_WRITE_CHECK_ACTIVATED) && (cmiGetLinkImpl(aProtocolContext) == CMI_LINK_IMPL_IPCDA) )
     {
         IDE_SET(ideSetErrorCode(mmERR_ABORT_IPCDA_MESSAGE_TOO_LONG, CMB_BLOCK_DEFAULT_SIZE));
@@ -200,7 +200,7 @@ static IDE_RC answerLobPutBeginResult(cmiProtocolContext *aProtocolContext)
 
     IDE_EXCEPTION_END;
 
-    /* BUG-44124 ipcda ¸ğµå »ç¿ë Áß hang - iloader ÄÃ·³ÀÌ ¸¹Àº Å×ÀÌºí */
+    /* BUG-44124 ipcda ëª¨ë“œ ì‚¬ìš© ì¤‘ hang - iloader ì»¬ëŸ¼ì´ ë§ì€ í…Œì´ë¸” */
     if( (sWriteCheckState == CMI_WRITE_CHECK_ACTIVATED) && (cmiGetLinkImpl(aProtocolContext) == CMI_LINK_IMPL_IPCDA) )
     {
         IDE_SET(ideSetErrorCode(mmERR_ABORT_IPCDA_MESSAGE_TOO_LONG, CMB_BLOCK_DEFAULT_SIZE));
@@ -226,7 +226,7 @@ static IDE_RC answerLobPutEndResult(cmiProtocolContext *aProtocolContext)
 
     IDE_EXCEPTION_END;
 
-    /* BUG-44124 ipcda ¸ğµå »ç¿ë Áß hang - iloader ÄÃ·³ÀÌ ¸¹Àº Å×ÀÌºí */
+    /* BUG-44124 ipcda ëª¨ë“œ ì‚¬ìš© ì¤‘ hang - iloader ì»¬ëŸ¼ì´ ë§ì€ í…Œì´ë¸” */
     if( (sWriteCheckState == CMI_WRITE_CHECK_ACTIVATED) && (cmiGetLinkImpl(aProtocolContext) == CMI_LINK_IMPL_IPCDA) )
     {
         IDE_SET(ideSetErrorCode(mmERR_ABORT_IPCDA_MESSAGE_TOO_LONG, CMB_BLOCK_DEFAULT_SIZE));
@@ -252,7 +252,7 @@ static IDE_RC answerLobFreeResult(cmiProtocolContext *aProtocolContext)
 
     IDE_EXCEPTION_END;
 
-    /* BUG-44124 ipcda ¸ğµå »ç¿ë Áß hang - iloader ÄÃ·³ÀÌ ¸¹Àº Å×ÀÌºí */
+    /* BUG-44124 ipcda ëª¨ë“œ ì‚¬ìš© ì¤‘ hang - iloader ì»¬ëŸ¼ì´ ë§ì€ í…Œì´ë¸” */
     if( (sWriteCheckState == CMI_WRITE_CHECK_ACTIVATED) && (cmiGetLinkImpl(aProtocolContext) == CMI_LINK_IMPL_IPCDA) )
     {
         IDE_SET(ideSetErrorCode(mmERR_ABORT_IPCDA_MESSAGE_TOO_LONG, CMB_BLOCK_DEFAULT_SIZE));
@@ -278,7 +278,7 @@ static IDE_RC answerLobFreeAllResult(cmiProtocolContext *aProtocolContext)
 
     IDE_EXCEPTION_END;
 
-    /* BUG-44124 ipcda ¸ğµå »ç¿ë Áß hang - iloader ÄÃ·³ÀÌ ¸¹Àº Å×ÀÌºí */
+    /* BUG-44124 ipcda ëª¨ë“œ ì‚¬ìš© ì¤‘ hang - iloader ì»¬ëŸ¼ì´ ë§ì€ í…Œì´ë¸” */
     if( (sWriteCheckState == CMI_WRITE_CHECK_ACTIVATED) && (cmiGetLinkImpl(aProtocolContext) == CMI_LINK_IMPL_IPCDA) )
     {
         IDE_SET(ideSetErrorCode(mmERR_ABORT_IPCDA_MESSAGE_TOO_LONG, CMB_BLOCK_DEFAULT_SIZE));
@@ -299,8 +299,8 @@ IDE_RC mmtServiceThread::lobGetSizeProtocol(cmiProtocolContext *aProtocolContext
 
     ULong       sLocatorID;
 
-    /* PROJ-2160 CM Å¸ÀÔÁ¦°Å
-       ¸ğµÎ ÀĞÀº ´ÙÀ½¿¡ ÇÁ·ÎÅäÄİÀ» Ã³¸®ÇØ¾ß ÇÑ´Ù. */
+    /* PROJ-2160 CM íƒ€ì…ì œê±°
+       ëª¨ë‘ ì½ì€ ë‹¤ìŒì— í”„ë¡œí† ì½œì„ ì²˜ë¦¬í•´ì•¼ í•œë‹¤. */
     CMI_RD8(aProtocolContext, &sLocatorID);
 
     IDE_CLEAR();
@@ -339,8 +339,8 @@ IDE_RC mmtServiceThread::lobCharLengthProtocol(cmiProtocolContext *aProtocolCont
 
     ULong       sLocatorID;
 
-    /* PROJ-2160 CM Å¸ÀÔÁ¦°Å
-       ¸ğµÎ ÀĞÀº ´ÙÀ½¿¡ ÇÁ·ÎÅäÄİÀ» Ã³¸®ÇØ¾ß ÇÑ´Ù. */
+    /* PROJ-2160 CM íƒ€ì…ì œê±°
+       ëª¨ë‘ ì½ì€ ë‹¤ìŒì— í”„ë¡œí† ì½œì„ ì²˜ë¦¬í•´ì•¼ í•œë‹¤. */
     CMI_RD8(aProtocolContext, &sLocatorID);
 
     IDE_CLEAR();
@@ -352,12 +352,12 @@ IDE_RC mmtServiceThread::lobCharLengthProtocol(cmiProtocolContext *aProtocolCont
     IDE_TEST(qciMisc::lobGetLength(sLocatorID, &sRemainLength) != IDE_SUCCESS);
 
     // fix BUG-22225
-    // CLOB µ¥ÀÌÅÍ°¡ ¾øÀ» °æ¿ì¿¡´Â (NULL or EMPTY)
-    // CLOBÀ» ÀĞÁö ¾Ê°í ¹Ù·Î 0À» ¹İÈ¯ÇÑ´Ù.
+    // CLOB ë°ì´í„°ê°€ ì—†ì„ ê²½ìš°ì—ëŠ” (NULL or EMPTY)
+    // CLOBì„ ì½ì§€ ì•Šê³  ë°”ë¡œ 0ì„ ë°˜í™˜í•œë‹¤.
     if (sRemainLength > 0)
     {
-        //fix BUG-27378 Code-Sonar UMR, failure µÉ¶§ return °ªÀ» ¹«½ÃÇÏ¸é
-        //sLanaguate°¡ unIntialize memory°¡ µÈ´Ù.
+        //fix BUG-27378 Code-Sonar UMR, failure ë ë•Œ return ê°’ì„ ë¬´ì‹œí•˜ë©´
+        //sLanaguateê°€ unIntialize memoryê°€ ëœë‹¤.
         IDE_TEST( qciMisc::getLanguage(smiGetDBCharSet(), &sLanguage) != IDE_SUCCESS);
 
         do
@@ -407,8 +407,8 @@ IDE_RC mmtServiceThread::lobGetProtocol(cmiProtocolContext *aProtocolContext,
     UInt        sOffset;
     UInt        sRemainSize;
 
-    /* PROJ-2160 CM Å¸ÀÔÁ¦°Å
-       ¸ğµÎ ÀĞÀº ´ÙÀ½¿¡ ÇÁ·ÎÅäÄİÀ» Ã³¸®ÇØ¾ß ÇÑ´Ù. */
+    /* PROJ-2160 CM íƒ€ì…ì œê±°
+       ëª¨ë‘ ì½ì€ ë‹¤ìŒì— í”„ë¡œí† ì½œì„ ì²˜ë¦¬í•´ì•¼ í•œë‹¤. */
     CMI_RD8(aProtocolContext, &sLocatorID);
     CMI_RD4(aProtocolContext, &sOffset);
     CMI_RD4(aProtocolContext, &sRemainSize);
@@ -423,8 +423,8 @@ IDE_RC mmtServiceThread::lobGetProtocol(cmiProtocolContext *aProtocolContext,
 
     /* BUG-32194 [sm-disk-collection] The server does not check LOB offset
      * and LOB amounts 
-     * mOffset, mSizeµîÀÇ °ªÀº ID_UINT_MAX (4GB)¸¦ ³Ñ¾î¼­¸é ¾ÈµÇ¸ç,
-     * µÎ °ªÀÇ ÇÕ ¿ª½Ã ID_UINT_MAX´Â ¹°·Ğ LobÀÇ Å©±â¸¦ ³Ñ¾î¼­µµ ¾ÈµÈ´Ù. */
+     * mOffset, mSizeë“±ì˜ ê°’ì€ ID_UINT_MAX (4GB)ë¥¼ ë„˜ì–´ì„œë©´ ì•ˆë˜ë©°,
+     * ë‘ ê°’ì˜ í•© ì—­ì‹œ ID_UINT_MAXëŠ” ë¬¼ë¡  Lobì˜ í¬ê¸°ë¥¼ ë„˜ì–´ì„œë„ ì•ˆëœë‹¤. */
     IDE_TEST_RAISE( ( ( (ULong) sOffset )
                     + ( (ULong) sRemainSize   ) )
                     > sLobSize , InvalidRange );
@@ -485,8 +485,8 @@ IDE_RC mmtServiceThread::lobGetBytePosCharLenProtocol(
     UInt        sOffset;
     UInt        sRemainCharCount;
 
-    /* PROJ-2160 CM Å¸ÀÔÁ¦°Å
-       ¸ğµÎ ÀĞÀº ´ÙÀ½¿¡ ÇÁ·ÎÅäÄİÀ» Ã³¸®ÇØ¾ß ÇÑ´Ù. */
+    /* PROJ-2160 CM íƒ€ì…ì œê±°
+       ëª¨ë‘ ì½ì€ ë‹¤ìŒì— í”„ë¡œí† ì½œì„ ì²˜ë¦¬í•´ì•¼ í•œë‹¤. */
     CMI_RD8(aProtocolContext, &sLocatorID);
     CMI_RD4(aProtocolContext, &sOffset);
     CMI_RD4(aProtocolContext, &sRemainCharCount);
@@ -499,15 +499,15 @@ IDE_RC mmtServiceThread::lobGetBytePosCharLenProtocol(
 
     IDE_TEST(qciMisc::lobGetLength(sLocatorID, &sLobLength) != IDE_SUCCESS);
 
-    //fix BUG-27378 Code-Sonar UMR, failure µÉ¶§ return °ªÀ» ¹«½ÃÇÏ¸é
-    //sLanaguate°¡ unIntialize memory°¡ µÈ´Ù.
+    //fix BUG-27378 Code-Sonar UMR, failure ë ë•Œ return ê°’ì„ ë¬´ì‹œí•˜ë©´
+    //sLanaguateê°€ unIntialize memoryê°€ ëœë‹¤.
     IDE_TEST( qciMisc::getLanguage(smiGetDBCharSet(), &sLanguage) != IDE_SUCCESS);
 
     do
     {
         // BUG-21509
-        // sRemainCharCount°¡ °ªÀÌ Å¬ °æ¿ì maxPrecision °ªÀÌ À½¼öÀÏ ¼öµµ ÀÖ´Ù.
-        // À½¼öÀÏ °æ¿ì sPieceSize´Â MMT_LOB_PIECE_SIZEÀÌ¸é µÈ´Ù.
+        // sRemainCharCountê°€ ê°’ì´ í´ ê²½ìš° maxPrecision ê°’ì´ ìŒìˆ˜ì¼ ìˆ˜ë„ ìˆë‹¤.
+        // ìŒìˆ˜ì¼ ê²½ìš° sPieceSizeëŠ” MMT_LOB_PIECE_SIZEì´ë©´ ëœë‹¤.
         sTempPrecision = sLanguage->maxPrecision(sRemainCharCount);
         if (sTempPrecision < 0)
         {
@@ -574,8 +574,8 @@ IDE_RC mmtServiceThread::lobGetCharPosCharLenProtocol(
     UInt        sReadOffset;
     UInt        sSize;
 
-    /* PROJ-2160 CM Å¸ÀÔÁ¦°Å
-       ¸ğµÎ ÀĞÀº ´ÙÀ½¿¡ ÇÁ·ÎÅäÄİÀ» Ã³¸®ÇØ¾ß ÇÑ´Ù. */
+    /* PROJ-2160 CM íƒ€ì…ì œê±°
+       ëª¨ë‘ ì½ì€ ë‹¤ìŒì— í”„ë¡œí† ì½œì„ ì²˜ë¦¬í•´ì•¼ í•œë‹¤. */
     CMI_RD8(aProtocolContext, &sLocatorID);
     CMI_RD4(aProtocolContext, &sReadOffset);
     CMI_RD4(aProtocolContext, &sSize);
@@ -588,13 +588,13 @@ IDE_RC mmtServiceThread::lobGetCharPosCharLenProtocol(
 
     IDE_TEST(qciMisc::lobGetLength(sLocatorID, &sLobLength) != IDE_SUCCESS);
 
-    //fix BUG-27378 Code-Sonar UMR, failure µÉ¶§ return °ªÀ» ¹«½ÃÇÏ¸é
-    //sLanaguate°¡ unIntialize memory°¡ µÈ´Ù.
+    //fix BUG-27378 Code-Sonar UMR, failure ë ë•Œ return ê°’ì„ ë¬´ì‹œí•˜ë©´
+    //sLanaguateê°€ unIntialize memoryê°€ ëœë‹¤.
     IDE_TEST( qciMisc::getLanguage(smiGetDBCharSet(), &sLanguage) != IDE_SUCCESS);
 
     if (sReadOffset > 0)
     {
-        // ÀĞÀ» À§Ä¡°¡ Ã³À½ÀÌ ¾Æ´Ñ °æ¿ì offset¸¸Å­ ¹®ÀÚ¸¦ skip ÇÑ´Ù.
+        // ì½ì„ ìœ„ì¹˜ê°€ ì²˜ìŒì´ ì•„ë‹Œ ê²½ìš° offsetë§Œí¼ ë¬¸ìë¥¼ skip í•œë‹¤.
 
         sOffset          = 0;
         sRemainCharCount = sReadOffset;
@@ -700,8 +700,8 @@ IDE_RC mmtServiceThread::lobBytePosProtocol(cmiProtocolContext *aProtocolContext
     ULong       sLocatorID;
     UInt        sCharOffset;
 
-    /* PROJ-2160 CM Å¸ÀÔÁ¦°Å
-       ¸ğµÎ ÀĞÀº ´ÙÀ½¿¡ ÇÁ·ÎÅäÄİÀ» Ã³¸®ÇØ¾ß ÇÑ´Ù. */
+    /* PROJ-2160 CM íƒ€ì…ì œê±°
+       ëª¨ë‘ ì½ì€ ë‹¤ìŒì— í”„ë¡œí† ì½œì„ ì²˜ë¦¬í•´ì•¼ í•œë‹¤. */
     CMI_RD8(aProtocolContext, &sLocatorID);
     CMI_RD4(aProtocolContext, &sCharOffset);
 
@@ -714,8 +714,8 @@ IDE_RC mmtServiceThread::lobBytePosProtocol(cmiProtocolContext *aProtocolContext
     sByteOffset = 0;
     if (sCharOffset > 0)
     {
-        //fix BUG-27378 Code-Sonar UMR, failure µÉ¶§ return °ªÀ» ¹«½ÃÇÏ¸é
-        //sLanaguate°¡ unIntialize memory°¡ µÈ´Ù.
+        //fix BUG-27378 Code-Sonar UMR, failure ë ë•Œ return ê°’ì„ ë¬´ì‹œí•˜ë©´
+        //sLanaguateê°€ unIntialize memoryê°€ ëœë‹¤.
         IDE_TEST( qciMisc::getLanguage(smiGetDBCharSet(), &sLanguage) != IDE_SUCCESS);
         sRemainCharCount = sCharOffset;
         do
@@ -776,8 +776,8 @@ IDE_RC mmtServiceThread::lobPutBeginProtocol(cmiProtocolContext *aProtocolContex
     UInt        sOffset;
     UInt        sSize;
 
-    /* PROJ-2160 CM Å¸ÀÔÁ¦°Å
-       ¸ğµÎ ÀĞÀº ´ÙÀ½¿¡ ÇÁ·ÎÅäÄİÀ» Ã³¸®ÇØ¾ß ÇÑ´Ù. */
+    /* PROJ-2160 CM íƒ€ì…ì œê±°
+       ëª¨ë‘ ì½ì€ ë‹¤ìŒì— í”„ë¡œí† ì½œì„ ì²˜ë¦¬í•´ì•¼ í•œë‹¤. */
     CMI_RD8(aProtocolContext, &sLocatorID);
     CMI_RD4(aProtocolContext, &sOffset);
     CMI_RD4(aProtocolContext, &sSize);
@@ -828,8 +828,8 @@ IDE_RC mmtServiceThread::lobPutProtocol(cmiProtocolContext *aProtocolContext,
     ULong       sLocatorID;
     UInt        sSize;
 
-    /* PROJ-2160 CM Å¸ÀÔÁ¦°Å
-       ¸ğµÎ ÀĞÀº ´ÙÀ½¿¡ ÇÁ·ÎÅäÄİÀ» Ã³¸®ÇØ¾ß ÇÑ´Ù. */
+    /* PROJ-2160 CM íƒ€ì…ì œê±°
+       ëª¨ë‘ ì½ì€ ë‹¤ìŒì— í”„ë¡œí† ì½œì„ ì²˜ë¦¬í•´ì•¼ í•œë‹¤. */
     CMI_RD8(aProtocolContext, &sLocatorID);
     CMI_RD4(aProtocolContext, &sSize);
 
@@ -883,8 +883,8 @@ IDE_RC mmtServiceThread::lobPutEndProtocol(cmiProtocolContext *aProtocolContext,
 
     ULong       sLocatorID;
 
-    /* PROJ-2160 CM Å¸ÀÔÁ¦°Å
-       ¸ğµÎ ÀĞÀº ´ÙÀ½¿¡ ÇÁ·ÎÅäÄİÀ» Ã³¸®ÇØ¾ß ÇÑ´Ù. */
+    /* PROJ-2160 CM íƒ€ì…ì œê±°
+       ëª¨ë‘ ì½ì€ ë‹¤ìŒì— í”„ë¡œí† ì½œì„ ì²˜ë¦¬í•´ì•¼ í•œë‹¤. */
     CMI_RD8(aProtocolContext, &sLocatorID);
 
     IDE_CLEAR();
@@ -929,8 +929,8 @@ IDE_RC mmtServiceThread::lobFreeProtocol(cmiProtocolContext *aProtocolContext,
 
     ULong             sLocatorID = 0;
 
-    /* PROJ-2160 CM Å¸ÀÔÁ¦°Å
-       ¸ğµÎ ÀĞÀº ´ÙÀ½¿¡ ÇÁ·ÎÅäÄİÀ» Ã³¸®ÇØ¾ß ÇÑ´Ù. */
+    /* PROJ-2160 CM íƒ€ì…ì œê±°
+       ëª¨ë‘ ì½ì€ ë‹¤ìŒì— í”„ë¡œí† ì½œì„ ì²˜ë¦¬í•´ì•¼ í•œë‹¤. */
     CMI_RD8(aProtocolContext, &sLocatorID);
 
     IDE_CLEAR();
@@ -984,8 +984,8 @@ IDE_RC mmtServiceThread::lobFreeAllProtocol(cmiProtocolContext *aProtocolContext
 
     ULong          sLocatorCount;
 
-    /* PROJ-2160 CM Å¸ÀÔÁ¦°Å
-       ¸ğµÎ ÀĞÀº ´ÙÀ½¿¡ ÇÁ·ÎÅäÄİÀ» Ã³¸®ÇØ¾ß ÇÑ´Ù. */
+    /* PROJ-2160 CM íƒ€ì…ì œê±°
+       ëª¨ë‘ ì½ì€ ë‹¤ìŒì— í”„ë¡œí† ì½œì„ ì²˜ë¦¬í•´ì•¼ í•œë‹¤. */
     CMI_RD8(aProtocolContext, &sLocatorCount);
 
     sOrgCursor = aProtocolContext->mReadBlock->mCursor;
@@ -1049,7 +1049,7 @@ static IDE_RC answerLobTrimResult(cmiProtocolContext *aProtocolContext)
 
     IDE_EXCEPTION_END;
 
-    /* BUG-44124 ipcda ¸ğµå »ç¿ë Áß hang - iloader ÄÃ·³ÀÌ ¸¹Àº Å×ÀÌºí */
+    /* BUG-44124 ipcda ëª¨ë“œ ì‚¬ìš© ì¤‘ hang - iloader ì»¬ëŸ¼ì´ ë§ì€ í…Œì´ë¸” */
     if( (sWriteCheckState == CMI_WRITE_CHECK_ACTIVATED) && (cmiGetLinkImpl(aProtocolContext) == CMI_LINK_IMPL_IPCDA) )
     {
         IDE_SET(ideSetErrorCode(mmERR_ABORT_IPCDA_MESSAGE_TOO_LONG, CMB_BLOCK_DEFAULT_SIZE));

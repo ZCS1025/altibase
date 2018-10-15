@@ -44,10 +44,10 @@
 #define META_CNT      (18)
 #define QUERY_LEN     (1024)
 #define STR_LEN       (50)
-//fix BUG-17481 aexport°¡ partion disk tableÀ» Áö¿øÇØ¾ß ÇÑ´Ù.
+//fix BUG-17481 aexportê°€ partion disk tableì„ ì§€ì›í•´ì•¼ í•œë‹¤.
 #define UTM_QUERY_LEN (2048)
 #define UTM_NAME_LEN  (128+20) /* BUG-39622: object max length(128) + alpha */
-/* PROJ-1107 Check Constraint Áö¿ø */
+/* PROJ-1107 Check Constraint ì§€ì› */
 #define UTM_CHECK_CONDITION_LEN (4000)
 /* PROJ-1090 Function-based Index */
 #define UTM_EXPRESSION_LEN      (4000)
@@ -71,7 +71,7 @@
 #define UTM_LIBRARY            (9)
 
 //BUG-22769
-#define UTM_PRIV_COUNT (10)   //»ç¿ëÀÚ °èÁ¤ »ı¼º½Ã ±âº»ÀûÀ¸·Î »ı¼ºµÇ´Â ±ÇÇÑÀÇ ¼ö
+#define UTM_PRIV_COUNT (10)   //ì‚¬ìš©ì ê³„ì • ìƒì„±ì‹œ ê¸°ë³¸ì ìœ¼ë¡œ ìƒì„±ë˜ëŠ” ê¶Œí•œì˜ ìˆ˜
 
 /* BUG-44595 */
 #define UTM_CREATE_PROCEDURE           (0)
@@ -141,9 +141,9 @@ typedef struct UserInfo
 
 /* BUG-17491 */
 /* 
- * server side ¿¡¼­ÀÇ partition method ¿¡ ´ëÇÑ Á¤º¸ : 
- * qp/src/include/qcmTableInfo.h ÀÇ qcmPartitionMethod ¿¡ µû¶ó
- * UTM_PARTITION_METHOD µéÀ» Á¤ÀÇÇÔ.
+ * server side ì—ì„œì˜ partition method ì— ëŒ€í•œ ì •ë³´ : 
+ * qp/src/include/qcmTableInfo.h ì˜ qcmPartitionMethod ì— ë”°ë¼
+ * UTM_PARTITION_METHOD ë“¤ì„ ì •ì˜í•¨.
  */
 typedef enum
 {

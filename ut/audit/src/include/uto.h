@@ -25,7 +25,7 @@
 #include <iduMemMgr.h>
 #include <utProperties.h>
 
-//TASK-4212     auditÅøÀÇ ´ë¿ë·® Ã³¸®½Ã °³¼±
+//TASK-4212     auditíˆ´ì˜ ëŒ€ìš©ëŸ‰ ì²˜ë¦¬ì‹œ ê°œì„ 
 #define MAX_FILE_NAME    512
 #define NUM_FILE_THR     2
 #define MAX_COLUMN_NAME  128+30
@@ -34,7 +34,7 @@
 // 1 Mb for file read buffer
 #define MAX_FILE_BUF     (10240)
 #define FILE_BUF_LIMIT   (10240*0.95)
-/* ÅäÅ«ÀÇ ÃÖ´ë ±æÀÌ = VARBIT ¹®ÀÚ¿­ Ç¥ÇöÀÇ ÃÖ´ë ±æÀÌ */
+/* í† í°ì˜ ìµœëŒ€ ê¸¸ì´ = VARBIT ë¬¸ìì—´ í‘œí˜„ì˜ ìµœëŒ€ ê¸¸ì´ */
 #define MAX_TOKEN_VALUE_LEN 131070
 
 typedef enum
@@ -52,7 +52,7 @@ typedef enum
     MOSO       // Master exist Slave exist
 } ps_t;
 
-/* TASK-4212: auditÅøÀÇ ´ë¿ë·® Ã³¸®½Ã °³¼± */
+/* TASK-4212: auditíˆ´ì˜ ëŒ€ìš©ëŸ‰ ì²˜ë¦¬ì‹œ ê°œì„  */
 typedef enum
 {
     T_INIT = 0,
@@ -90,7 +90,7 @@ diff_t
     SShort sqlType;  // SQL Type of columns
 } diff_t;
 
-/* TASK-4212: auditÅøÀÇ ´ë¿ë·® Ã³¸®½Ã °³¼± */
+/* TASK-4212: auditíˆ´ì˜ ëŒ€ìš©ëŸ‰ ì²˜ë¦¬ì‹œ ê°œì„  */
 typedef struct utaFileMArg
 {
     SChar *mFilename;
@@ -105,7 +105,7 @@ typedef struct utaFileInfo
     SChar     mName[MAX_FILE_NAME];
     SChar     mBuffer[MAX_FILE_BUF];
     SInt      mOffset;
-    // file·Î ºÎÅÍ ÀĞÀº size. (<=MAX_FILE_BUF)
+    // fileë¡œ ë¶€í„° ì½ì€ size. (<=MAX_FILE_BUF)
     SInt      mFence;
 } utaFileInfo;
 
@@ -207,8 +207,8 @@ private:
 class utScanner: public Object
 {
     pmode_t       mMode;  // Execution mode SYNC/DIFF/MOVE
-    //TASK-4212     auditÅøÀÇ ´ë¿ë·® Ã³¸®½Ã °³¼±
-    // utaFileModeWrite() ¿¡¼­ »ç¿ëÇÏ±âÀ§ÇØ staticÀ¸·Î º¯°æ.
+    //TASK-4212     auditíˆ´ì˜ ëŒ€ìš©ëŸ‰ ì²˜ë¦¬ì‹œ ê°œì„ 
+    // utaFileModeWrite() ì—ì„œ ì‚¬ìš©í•˜ê¸°ìœ„í•´ staticìœ¼ë¡œ ë³€ê²½.
     SChar *_error; // error pointer // BUG-43607 remove static
 
     dmlQuery  *  mSD;
@@ -233,37 +233,37 @@ class utScanner: public Object
     void     reset();
     IDE_RC exec(dmlQuery*);
 
-    /* TASK-4212: auditÅøÀÇ ´ë¿ë·® Ã³¸®½Ã °³¼± */
-    // property Á¤º¸ pointer.
+    /* TASK-4212: auditíˆ´ì˜ ëŒ€ìš©ëŸ‰ ì²˜ë¦¬ì‹œ ê°œì„  */
+    // property ì •ë³´ pointer.
     static    utProperties *mProp;
     bool      mIsFileMode;
 
-    // master node file °ü·Ãº¯¼öµé.
+    // master node file ê´€ë ¨ë³€ìˆ˜ë“¤.
     utaFileInfo mMasterFile;
-    // slave node file °ü·Ãº¯¼öµé.
+    // slave node file ê´€ë ¨ë³€ìˆ˜ë“¤.
     utaFileInfo mSlaveFile;
 
-    // ´ÙÀ½¿¡ ¿Ã csv tokenÀ» ÀúÀåÇØµÎ´Â º¯¼ö.
+    // ë‹¤ìŒì— ì˜¬ csv tokenì„ ì €ì¥í•´ë‘ëŠ” ë³€ìˆ˜.
     utaCSVTOKENTYPE      mCSVNextToken;
 
-    // fetchµÈ data¸¦ CSV formatting ÇÑµÚ ÆÄÀÏ¿¡ ½áÁØ´Ù.
+    // fetchëœ dataë¥¼ CSV formatting í•œë’¤ íŒŒì¼ì— ì¨ì¤€ë‹¤.
     static void *utaFileModeWrite( void *aFileName );
 
-    // CSV formatÀÇ ±¸ºĞÀÚ º¯¼öµé.
+    // CSV formatì˜ êµ¬ë¶„ì ë³€ìˆ˜ë“¤.
     static SChar mFieldTerm;
     static SChar mRowTerm;
     static SChar mEnclosing;
 
-    // ÀÏ¹İdata¸¦ CSV formatting ÇØÁÖ´Â ÇÔ¼ö.
+    // ì¼ë°˜dataë¥¼ CSV formatting í•´ì£¼ëŠ” í•¨ìˆ˜.
     static IDE_RC utaCSVWrite ( SChar *aValue, UInt aValueLen, FILE *aWriteFp );
-    // ÆÄÀÏ¹öÆÛ·Î ºÎÅÍ CSV °ü·Ã tokenÀ» ÇÏ³ª¾¿ ¾ò¾î¿À´Â ÇÔ¼ö.
+    // íŒŒì¼ë²„í¼ë¡œ ë¶€í„° CSV ê´€ë ¨ tokenì„ í•˜ë‚˜ì”© ì–»ì–´ì˜¤ëŠ” í•¨ìˆ˜.
 
     /* BUG-32569 The string with null character should be processed in Audit */
     utaCSVTOKENTYPE utaGetCSVTokenFromBuff( utaFileInfo *aFileInfo,
                                             SChar       *aTokenBuff,
                                             UInt         aTokenBuffLen,
                                             UInt        *aTokenValueLength );
-    // utaGetCSVTokenFromBuff ÇÔ¼ö¸¦ ¹İº¹ È£ÃâÇÏ¿© ÇÑ RowÀÇ Fieldµé¿¡ ´ëÇÑ data°ªÀ» ½êÆÃÇÑ´Ù.
+    // utaGetCSVTokenFromBuff í•¨ìˆ˜ë¥¼ ë°˜ë³µ í˜¸ì¶œí•˜ì—¬ í•œ Rowì˜ Fieldë“¤ì— ëŒ€í•œ dataê°’ì„ ì„íŒ…í•œë‹¤.
     Row *utaReadCSVRow( utaFileInfo *aFileInfo, Query *aQuery );
 
 public:
@@ -274,7 +274,7 @@ public:
                       SChar      * =NULL); // Error message buffer
     IDE_RC finalize();
 
-    /* TASK-4212: auditÅøÀÇ ´ë¿ë·® Ã³¸®½Ã °³¼± */
+    /* TASK-4212: auditíˆ´ì˜ ëŒ€ìš©ëŸ‰ ì²˜ë¦¬ì‹œ ê°œì„  */
     IDE_RC prepare(utProperties *aProp);
 
     IDE_RC execute(void);

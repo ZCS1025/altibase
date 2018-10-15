@@ -21,11 +21,11 @@
  * Description :
  *     PROJ(PROJection) Node
  *
- *     °ü°èÇü ¸ğµ¨¿¡¼­ projectionÀ» ¼öÇàÇÏ´Â Plan Node ÀÌ´Ù.
+ *     ê´€ê³„í˜• ëª¨ë¸ì—ì„œ projectionì„ ìˆ˜í–‰í•˜ëŠ” Plan Node ì´ë‹¤.
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  **********************************************************************/
 
@@ -47,7 +47,7 @@ qmnPROJ::init( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    PROJ ³ëµåÀÇ ÃÊ±âÈ­
+ *    PROJ ë…¸ë“œì˜ ì´ˆê¸°í™”
  *
  * Implementation :
  *
@@ -64,13 +64,13 @@ qmnPROJ::init( qcTemplate * aTemplate,
     sDataPlan->doIt = qmnPROJ::doItDefault;
 
     //------------------------------------------------
-    // ÃÖÃÊ ÃÊ±âÈ­ ¼öÇà ¿©ºÎ ÆÇ´Ü
+    // ìµœì´ˆ ì´ˆê¸°í™” ìˆ˜í–‰ ì—¬ë¶€ íŒë‹¨
     //------------------------------------------------
 
     if ( ( *sDataPlan->flag & QMND_PROJ_INIT_DONE_MASK )
          == QMND_PROJ_INIT_DONE_FALSE )
     {
-        // ÃÖÃÊ ÃÊ±âÈ­ ¼öÇà
+        // ìµœì´ˆ ì´ˆê¸°í™” ìˆ˜í–‰
         IDE_TEST( firstInit(aTemplate, sCodePlan, sDataPlan) != IDE_SUCCESS );
     }
     else
@@ -79,14 +79,14 @@ qmnPROJ::init( qcTemplate * aTemplate,
     }
 
     // To Fix PR-8836
-    // ÇÏÀ§ ³ëµå¿¡¼­ LEVEL ColumnÀ» ÂüÁ¶ÇÒ ¼ö ÀÖ±â ¶§¹®¿¡
-    // Child PlanÀ» ÃÊ±âÈ­ÇÏ±â Àü¿¡ LEVEL Pseudo ColumnÀ» ÃÊ±âÈ­ÇÏ¿©¾ß ÇÔ.
-    // LEVEL Pseudo ColumnÀÇ ÃÊ±âÈ­
+    // í•˜ìœ„ ë…¸ë“œì—ì„œ LEVEL Columnì„ ì°¸ì¡°í•  ìˆ˜ ìˆê¸° ë•Œë¬¸ì—
+    // Child Planì„ ì´ˆê¸°í™”í•˜ê¸° ì „ì— LEVEL Pseudo Columnì„ ì´ˆê¸°í™”í•˜ì—¬ì•¼ í•¨.
+    // LEVEL Pseudo Columnì˜ ì´ˆê¸°í™”
     IDE_TEST( initLevel( aTemplate, sCodePlan )
               != IDE_SUCCESS );
 
     //------------------------------------------------
-    // Child PlanÀÇ ÃÊ±âÈ­
+    // Child Planì˜ ì´ˆê¸°í™”
     //------------------------------------------------
 
     IDE_TEST( aPlan->left->init( aTemplate,
@@ -109,18 +109,18 @@ qmnPROJ::init( qcTemplate * aTemplate,
     }
 
     //------------------------------------------------
-    // °¡º¯ Data ÀÇ ÃÊ±âÈ­
+    // ê°€ë³€ Data ì˜ ì´ˆê¸°í™”
     //------------------------------------------------
 
-    // Limit ½ÃÀÛ °³¼öÀÇ ÃÊ±âÈ­
+    // Limit ì‹œì‘ ê°œìˆ˜ì˜ ì´ˆê¸°í™”
     sDataPlan->limitCurrent = 1;
 
-    // ÃÖÃÊ doIt()ÀÌ ¼öÇàµÇÁö ¾Ê¾ÒÀ½À» Ç¥±â
+    // ìµœì´ˆ doIt()ì´ ìˆ˜í–‰ë˜ì§€ ì•Šì•˜ìŒì„ í‘œê¸°
     *sDataPlan->flag &= ~QMND_PROJ_FIRST_DONE_MASK;
     *sDataPlan->flag |= QMND_PROJ_FIRST_DONE_FALSE;
 
     //------------------------------------------------
-    // ¼öÇà ÇÔ¼öÀÇ °áÁ¤
+    // ìˆ˜í–‰ í•¨ìˆ˜ì˜ ê²°ì •
     //------------------------------------------------
 
     IDE_TEST( setDoItFunction( sCodePlan, sDataPlan )
@@ -143,15 +143,15 @@ qmnPROJ::doIt( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    PROJ ÀÇ °íÀ¯ ±â´ÉÀ» ¼öÇàÇÑ´Ù.
+ *    PROJ ì˜ ê³ ìœ  ê¸°ëŠ¥ì„ ìˆ˜í–‰í•œë‹¤.
  *
  * Implementation :
- *    - Child PlanÀ» ¼öÇà
- *    - Record°¡ Á¸ÀçÇÏ´Â °æ¿ì
- *        - Sequence °ª ¼³Á¤
- *        - ÁöÁ¤µÈ ¼öÇà ÇÔ¼ö¸¦ ½ÇÇà
- *    - Record°¡ Á¸ÀçÇÏÁö ¾Ê´Â °æ¿ì
- *        - Indexable MIN-MAX¿¡ ´ëÇÑ Ã³¸®
+ *    - Child Planì„ ìˆ˜í–‰
+ *    - Recordê°€ ì¡´ì¬í•˜ëŠ” ê²½ìš°
+ *        - Sequence ê°’ ì„¤ì •
+ *        - ì§€ì •ëœ ìˆ˜í–‰ í•¨ìˆ˜ë¥¼ ì‹¤í–‰
+ *    - Recordê°€ ì¡´ì¬í•˜ì§€ ì•ŠëŠ” ê²½ìš°
+ *        - Indexable MIN-MAXì— ëŒ€í•œ ì²˜ë¦¬
  *
  ***********************************************************************/
 
@@ -163,21 +163,21 @@ qmnPROJ::doIt( qcTemplate * aTemplate,
         (qmndPROJ*) (aTemplate->tmplate.data + aPlan->offset);
 
     //-----------------------------------
-    // Child PlanÀ» ¼öÇàÇÔ
+    // Child Planì„ ìˆ˜í–‰í•¨
     //-----------------------------------
 
     // To fix PR-3921
     if ( sDataPlan->limitCurrent == sDataPlan->limitEnd )
     {
-        // ÁÖ¾îÁø Limit Á¶°Ç¿¡ ´Ù´Ù¸¥ °æ¿ì
+        // ì£¼ì–´ì§„ Limit ì¡°ê±´ì— ë‹¤ë‹¤ë¥¸ ê²½ìš°
         *aFlag = QMC_ROW_DATA_NONE;
         sDataPlan->limitCurrent = 1;
     }
     else
     {
         // To Fix PR-6907
-        // ¼öÇà µµÁß¿¡ Limit¿¡ ÀÇÇØ Á¾·áµÈ ÈÄ
-        // ´Ù½Ã ¼öÇàµÇ´Â °æ¿ì¶ó¸é ÃÊ±âÈ­¸¦ ´Ù½Ã ¼öÇàÇÏ¿©¾ß ÇÑ´Ù.
+        // ìˆ˜í–‰ ë„ì¤‘ì— Limitì— ì˜í•´ ì¢…ë£Œëœ í›„
+        // ë‹¤ì‹œ ìˆ˜í–‰ë˜ëŠ” ê²½ìš°ë¼ë©´ ì´ˆê¸°í™”ë¥¼ ë‹¤ì‹œ ìˆ˜í–‰í•˜ì—¬ì•¼ í•œë‹¤.
         if( sDataPlan->limitCurrent == 1 &&
             sDataPlan->limitEnd != 0 &&
             ( *sDataPlan->flag & QMND_PROJ_FIRST_DONE_MASK )
@@ -192,10 +192,10 @@ qmnPROJ::doIt( qcTemplate * aTemplate,
 
         /*
          * for loop clause
-         * ¸Å Ã¹ recordÀÇ doIt ½Ã¿¡¸¸ child¸¦ doItÇÑ´Ù.
-         * °á°úÀûÀ¸·Î loop clause ¿¡ ÀÇÇØ º¹Á¦µÇ´Â record´Â
-         * ¾Õ¼­ ¼öÇàµÈ µ¿ÀÏÇÑ childÀÇ ÀÇ doIt¿¡ ´ëÇÑ °á°ú¿¡ ´ëÇØ
-         * projection¸¸ º°µµ·Î ¼öÇàÇÏ´Â ÇüÅÂ°¡ µÈ´Ù.
+         * ë§¤ ì²« recordì˜ doIt ì‹œì—ë§Œ childë¥¼ doItí•œë‹¤.
+         * ê²°ê³¼ì ìœ¼ë¡œ loop clause ì— ì˜í•´ ë³µì œë˜ëŠ” recordëŠ”
+         * ì•ì„œ ìˆ˜í–‰ëœ ë™ì¼í•œ childì˜ ì˜ doItì— ëŒ€í•œ ê²°ê³¼ì— ëŒ€í•´
+         * projectionë§Œ ë³„ë„ë¡œ ìˆ˜í–‰í•˜ëŠ” í˜•íƒœê°€ ëœë‹¤.
          */
         if ( sDataPlan->loopCount > 0 )
         {
@@ -212,8 +212,8 @@ qmnPROJ::doIt( qcTemplate * aTemplate,
                 else
                 {
                     // PROJ-2462 ResultCache
-                    // Top Result Cache·Î »ç¿ëµÈ°æ¿ì VMTR·Î ºÎÅÍ
-                    // record ¸¦ ÇÏ³ª °¡Á®¿Â´Ù.
+                    // Top Result Cacheë¡œ ì‚¬ìš©ëœê²½ìš° VMTRë¡œ ë¶€í„°
+                    // record ë¥¼ í•˜ë‚˜ ê°€ì ¸ì˜¨ë‹¤.
                     IDE_TEST( doItVMTR( aTemplate, aPlan, aFlag )
                                         != IDE_SUCCESS );
                 }
@@ -232,27 +232,27 @@ qmnPROJ::doIt( qcTemplate * aTemplate,
     if ( ( *aFlag & QMC_ROW_DATA_MASK ) == QMC_ROW_DATA_EXIST )
     {
         //-----------------------------------
-        // ChildÀÇ °á°ú°¡ Á¸ÀçÇÏ´Â °æ¿ì
+        // Childì˜ ê²°ê³¼ê°€ ì¡´ì¬í•˜ëŠ” ê²½ìš°
         //-----------------------------------
 
         IDE_TEST( readSequence( aTemplate,
                                 sCodePlan,
                                 sDataPlan ) != IDE_SUCCESS );
 
-        // loop_level ¼³Á¤
+        // loop_level ì„¤ì •
         setLoopCurrent( aTemplate, aPlan );
         
-        // ÇÑ¹øÀº ¼öÇàµÇ¾úÀ½À» Ç¥½Ã
+        // í•œë²ˆì€ ìˆ˜í–‰ë˜ì—ˆìŒì„ í‘œì‹œ
         *sDataPlan->flag &= ~QMND_PROJ_FIRST_DONE_MASK;
         *sDataPlan->flag |= QMND_PROJ_FIRST_DONE_TRUE;
 
-        // PROJÀÇ ÁöÁ¤µÈ ÇÔ¼ö¸¦ ¼öÇàÇÔ.
+        // PROJì˜ ì§€ì •ëœ í•¨ìˆ˜ë¥¼ ìˆ˜í–‰í•¨.
         IDE_TEST( sDataPlan->doIt( aTemplate, aPlan, aFlag ) != IDE_SUCCESS );
     }
     else
     {
         //-----------------------------------
-        // ChildÀÇ °á°ú°¡ Á¸ÀçÇÏÁö ¾Ê´Â °æ¿ì
+        // Childì˜ ê²°ê³¼ê°€ ì¡´ì¬í•˜ì§€ ì•ŠëŠ” ê²½ìš°
         //-----------------------------------
 
         if ( ( ( sCodePlan->flag & QMNC_PROJ_MINMAX_MASK )
@@ -260,23 +260,23 @@ qmnPROJ::doIt( qcTemplate * aTemplate,
              ( (*sDataPlan->flag & QMND_PROJ_FIRST_DONE_MASK )
                == QMND_PROJ_FIRST_DONE_FALSE ) )
         {
-            // Indexable MIN-MAX ÃÖÀûÈ­°¡ Àû¿ëµÇ°í,
-            // Child·ÎºÎÅÍ ¾î¶°ÇÑ °á°úµµ ¾òÁö ¸øÇß´Ù¸é,
-            // NULL°ªÀ» ÁÖ¾î¾ß ÇÑ´Ù.
+            // Indexable MIN-MAX ìµœì í™”ê°€ ì ìš©ë˜ê³ ,
+            // Childë¡œë¶€í„° ì–´ë– í•œ ê²°ê³¼ë„ ì–»ì§€ ëª»í–ˆë‹¤ë©´,
+            // NULLê°’ì„ ì£¼ì–´ì•¼ í•œë‹¤.
 
-            // ÇÑ¹øÀº ¼öÇàµÇ¾úÀ½À» Ç¥½Ã
+            // í•œë²ˆì€ ìˆ˜í–‰ë˜ì—ˆìŒì„ í‘œì‹œ
             *sDataPlan->flag &= ~QMND_PROJ_FIRST_DONE_MASK;
             *sDataPlan->flag |= QMND_PROJ_FIRST_DONE_TRUE;
 
-            // Child¸¦ ¸ğµÎ Null Padding½ÃÅ´
+            // Childë¥¼ ëª¨ë‘ Null Paddingì‹œí‚´
             IDE_TEST( aPlan->left->padNull( aTemplate, aPlan->left )
                       != IDE_SUCCESS );
 
-            // PROJÀÇ ÁöÁ¤µÈ ÇÔ¼ö¸¦ ¼öÇàÇÔ.
+            // PROJì˜ ì§€ì •ëœ í•¨ìˆ˜ë¥¼ ìˆ˜í–‰í•¨.
             IDE_TEST( sDataPlan->doIt( aTemplate, aPlan, aFlag )
                       != IDE_SUCCESS );
 
-            // Data°¡ Á¸ÀçÇÔÀ» Ç¥½Ã
+            // Dataê°€ ì¡´ì¬í•¨ì„ í‘œì‹œ
             *aFlag &= ~QMC_ROW_DATA_MASK;
             *aFlag |= QMC_ROW_DATA_EXIST;
         }
@@ -305,14 +305,14 @@ qmnPROJ::padNull( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    PROJ ¿¡ ÇØ´çÇÏ´Â Null Row¸¦ È¹µæÇÑ´Ù.
- *    ÀÏ¹İÀûÀÎ °æ¿ì, Child Plan¿¡ ´ëÇÑ Null PaddingÀ¸·Î ÃæºĞÇÏÁö¸¸,
- *    Outer Column Reference°¡ Á¸ÀçÇÏ´Â °æ¿ì¿¡´Â ÀÌ¿¡ ´ëÇÑ Null PaddingÀ»
- *    º°µµ·Î ¼öÇàÇØ ÁÖ¾î¾ß ÇÑ´Ù.
+ *    PROJ ì— í•´ë‹¹í•˜ëŠ” Null Rowë¥¼ íšë“í•œë‹¤.
+ *    ì¼ë°˜ì ì¸ ê²½ìš°, Child Planì— ëŒ€í•œ Null Paddingìœ¼ë¡œ ì¶©ë¶„í•˜ì§€ë§Œ,
+ *    Outer Column Referenceê°€ ì¡´ì¬í•˜ëŠ” ê²½ìš°ì—ëŠ” ì´ì— ëŒ€í•œ Null Paddingì„
+ *    ë³„ë„ë¡œ ìˆ˜í–‰í•´ ì£¼ì–´ì•¼ í•œë‹¤.
  *
  * Implementation :
- *    Child Plan¿¡ ´ëÇÑ Null Padding ¾øÀÌ ÀÌ¹Ì ±¸¼ºÇÑ Null Row¸¦
- *    Stack¿¡ ±¸¼ºÇÏ¿© ÁØ´Ù.
+ *    Child Planì— ëŒ€í•œ Null Padding ì—†ì´ ì´ë¯¸ êµ¬ì„±í•œ Null Rowë¥¼
+ *    Stackì— êµ¬ì„±í•˜ì—¬ ì¤€ë‹¤.
  *
  ***********************************************************************/
 
@@ -327,11 +327,11 @@ qmnPROJ::padNull( qcTemplate * aTemplate,
     mtcStack * sStack;
     SInt       sRemain;
 
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     IDE_ASSERT( (sCodePlan->flag & QMNC_PROJ_TOP_MASK)
                 == QMNC_PROJ_TOP_FALSE );
 
-    // ÃÊ±âÈ­°¡ ¼öÇàµÇÁö ¾ÊÀº °æ¿ì ÃÊ±âÈ­¸¦ ¼öÇà
+    // ì´ˆê¸°í™”ê°€ ìˆ˜í–‰ë˜ì§€ ì•Šì€ ê²½ìš° ì´ˆê¸°í™”ë¥¼ ìˆ˜í–‰
     if ( ( aTemplate->planFlag[sCodePlan->planID] & QMND_PROJ_INIT_DONE_MASK )
          == QMND_PROJ_INIT_DONE_FALSE )
     {
@@ -345,24 +345,24 @@ qmnPROJ::padNull( qcTemplate * aTemplate,
     //fix BUG-17872
     if( sDataPlan->nullRow == NULL )
     {
-        // RowÀÇ ÃÖ´ë Size °è»ê
+        // Rowì˜ ìµœëŒ€ Size ê³„ì‚°
         IDE_TEST( getMaxRowSize( aTemplate,
                                  sCodePlan,
                                  &sDataPlan->rowSize ) != IDE_SUCCESS );
 
-        // Null PaddingÀ» À§ÇÑ Null Row »ı¼º
+        // Null Paddingì„ ìœ„í•œ Null Row ìƒì„±
         IDE_TEST( makeNullRow( aTemplate, sCodePlan, sDataPlan )
                   != IDE_SUCCESS );
     }
 
     // fix BUG-9283
-    // ÇÏÀ§ ³ëµåµé¿¡ ´ëÇÑ null padding ¼öÇà
-    // keyRange¸¦ ±¸¼ºÇÒ °æ¿ì, stack¿¡ ½×ÀÎ °ªÀÌ ¾Æ´Ñ
-    // value node Á¤º¸¸¦ ÂüÁ¶ÇÏ°Ô µÇ¹Ç·Î.
+    // í•˜ìœ„ ë…¸ë“œë“¤ì— ëŒ€í•œ null padding ìˆ˜í–‰
+    // keyRangeë¥¼ êµ¬ì„±í•  ê²½ìš°, stackì— ìŒ“ì¸ ê°’ì´ ì•„ë‹Œ
+    // value node ì •ë³´ë¥¼ ì°¸ì¡°í•˜ê²Œ ë˜ë¯€ë¡œ.
     IDE_TEST( aPlan->left->padNull( aTemplate, aPlan->left )
               != IDE_SUCCESS );
 
-    // ÀÌ¹Ì ±¸¼ºÇÑ Null Row¸¦ Stack¿¡ ±¸¼ºÇÑ´Ù.
+    // ì´ë¯¸ êµ¬ì„±í•œ Null Rowë¥¼ Stackì— êµ¬ì„±í•œë‹¤.
     for ( sStack  = aTemplate->tmplate.stack,
               sRemain = aTemplate->tmplate.stackRemain,
               i = 0;
@@ -400,7 +400,7 @@ qmnPROJ::printPlan( qcTemplate   * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    PROJ ³ëµåÀÇ ¼öÇà Á¤º¸¸¦ Ãâ·ÂÇÑ´Ù.
+ *    PROJ ë…¸ë“œì˜ ìˆ˜í–‰ ì •ë³´ë¥¼ ì¶œë ¥í•œë‹¤.
  *
  * Implementation :
  *
@@ -420,7 +420,7 @@ qmnPROJ::printPlan( qcTemplate   * aTemplate,
     qmcAttrDesc * sItrAttr;
 
     //------------------------------------------------------
-    // ½ÃÀÛ Á¤º¸ÀÇ Ãâ·Â
+    // ì‹œì‘ ì •ë³´ì˜ ì¶œë ¥
     //------------------------------------------------------
 
     for ( i = 0; i < aDepth; i++ )
@@ -430,7 +430,7 @@ qmnPROJ::printPlan( qcTemplate   * aTemplate,
     }
 
     //------------------------------------------------------
-    // PROJ Target Á¤º¸ÀÇ Ãâ·Â
+    // PROJ Target ì •ë³´ì˜ ì¶œë ¥
     //------------------------------------------------------
 
     IDE_TEST( printTargetInfo( aTemplate,
@@ -438,7 +438,7 @@ qmnPROJ::printPlan( qcTemplate   * aTemplate,
                                aString ) != IDE_SUCCESS );
 
     //----------------------------
-    // Cost Ãâ·Â
+    // Cost ì¶œë ¥
     //----------------------------
     qmn::printCost( aString,
                     sCodePlan->plan.qmgAllCost );
@@ -497,7 +497,7 @@ qmnPROJ::printPlan( qcTemplate   * aTemplate,
     }    
     
     //------------------------------------------------------
-    // Target ³»ºÎÀÇ Subquery Á¤º¸ Ãâ·Â
+    // Target ë‚´ë¶€ì˜ Subquery ì •ë³´ ì¶œë ¥
     //------------------------------------------------------
 
     for (sItrAttr = sCodePlan->plan.resultDesc;
@@ -512,7 +512,7 @@ qmnPROJ::printPlan( qcTemplate   * aTemplate,
     }
 
     //----------------------------
-    // Operatorº° °á°ú Á¤º¸ Ãâ·Â
+    // Operatorë³„ ê²°ê³¼ ì •ë³´ ì¶œë ¥
     //----------------------------
     if ( QCU_TRCLOG_RESULT_DESC == 1 )
     {
@@ -528,7 +528,7 @@ qmnPROJ::printPlan( qcTemplate   * aTemplate,
     }
 
     //------------------------------------------------------
-    // Child Plan Á¤º¸ÀÇ Ãâ·Â
+    // Child Plan ì •ë³´ì˜ ì¶œë ¥
     //------------------------------------------------------
 
     IDE_TEST( aPlan->left->printPlan( aTemplate,
@@ -555,7 +555,7 @@ qmnPROJ::doItDefault( qcTemplate * /* aTemplate */,
 /***********************************************************************
  *
  * Description :
- *    ÀÌ ÇÔ¼ö°¡ ¼öÇàµÇ¸é ¾ÈµÊ.
+ *    ì´ í•¨ìˆ˜ê°€ ìˆ˜í–‰ë˜ë©´ ì•ˆë¨.
  *
  * Implementation :
  *
@@ -579,10 +579,10 @@ qmnPROJ::doItProject( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    PROJ °¡ non-top projectionÀÏ ¶§ ´ÙÀ½ ÇÔ¼ö°¡ ¼öÇàµÈ´Ù.
+ *    PROJ ê°€ non-top projectionì¼ ë•Œ ë‹¤ìŒ í•¨ìˆ˜ê°€ ìˆ˜í–‰ëœë‹¤.
  *
  * Implementation :
- *    TargetÀ» ¸ğµÎ ¼öÇàÇÏ¸é¼­ Stack¿¡ ±× Á¤º¸°¡ ¼³Á¤µÇµµ·Ï ÇÑ´Ù.
+ *    Targetì„ ëª¨ë‘ ìˆ˜í–‰í•˜ë©´ì„œ Stackì— ê·¸ ì •ë³´ê°€ ì„¤ì •ë˜ë„ë¡ í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -595,7 +595,7 @@ qmnPROJ::doItProject( qcTemplate * aTemplate,
     qmcAttrDesc * sItrAttr;
     qtcNode     * sNode;
 
-    // Stack Á¤º¸ ÀúÀå
+    // Stack ì •ë³´ ì €ì¥
     sStack  = aTemplate->tmplate.stack;
     sRemain = aTemplate->tmplate.stackRemain;
 
@@ -607,17 +607,17 @@ qmnPROJ::doItProject( qcTemplate * aTemplate,
     {
         if ( ( sItrAttr->flag & QMC_ATTR_USELESS_RESULT_MASK ) != QMC_ATTR_USELESS_RESULT_TRUE )
         {
-            // ColumnÀÌ°Ç ExpressionÀÌ°Ç ´ÙÀ½ ÇÔ¼ö È£ÃâÀ» ÅëÇØ
-            // Stack¿¡ ColumnÁ¤º¸¿Í ValueÁ¤º¸¸¦ ¼³Á¤ÇÏ°Ô µÈ´Ù.
+            // Columnì´ê±´ Expressionì´ê±´ ë‹¤ìŒ í•¨ìˆ˜ í˜¸ì¶œì„ í†µí•´
+            // Stackì— Columnì •ë³´ì™€ Valueì •ë³´ë¥¼ ì„¤ì •í•˜ê²Œ ëœë‹¤.
             IDE_TEST( qtc::calculate( sItrAttr->expr, aTemplate )
                       != IDE_SUCCESS );
         }
         else
         {
             /* PROJ-2469 Optimize View Materialization
-             * »ç¿ëÇÏÁö ¾Ê´Â Column¿¡ ´ëÇØ¼­´Â calculate ÇÏÁö ¾Ê´Â´Ù.
-             * Subquery¿Í °°ÀÌ Indirect NodeÀÏ °æ¿ì, Argument¸¦ ¼øÈ¸ÇÏ¿©
-             * ½ÇÁ¦ ColumnÀÌ ÀÖ´Â Node¸¦ Ã£´Â´Ù.
+             * ì‚¬ìš©í•˜ì§€ ì•ŠëŠ” Columnì— ëŒ€í•´ì„œëŠ” calculate í•˜ì§€ ì•ŠëŠ”ë‹¤.
+             * Subqueryì™€ ê°™ì´ Indirect Nodeì¼ ê²½ìš°, Argumentë¥¼ ìˆœíšŒí•˜ì—¬
+             * ì‹¤ì œ Columnì´ ìˆëŠ” Nodeë¥¼ ì°¾ëŠ”ë‹¤.
              */
             for ( sNode = sItrAttr->expr;
                   ( sNode->node.lflag & MTC_NODE_INDIRECT_MASK ) == MTC_NODE_INDIRECT_TRUE;
@@ -626,13 +626,13 @@ qmnPROJ::doItProject( qcTemplate * aTemplate,
                 // Nothing to do.
             }
 
-            // stackÀÇ columnÀ» ÇØ´ç columnÀ¸·Î ÁöÁ¤ ÇØ ÁØ´Ù.
+            // stackì˜ columnì„ í•´ë‹¹ columnìœ¼ë¡œ ì§€ì • í•´ ì¤€ë‹¤.
             aTemplate->tmplate.stack->column = QTC_TMPL_COLUMN( aTemplate, sNode );
 
-            // stackÀÇ value¸¦ ÇØ´ç columnÀÇ staticNull·Î ÁöÁ¤ ÇØÁØ´Ù.
+            // stackì˜ valueë¥¼ í•´ë‹¹ columnì˜ staticNullë¡œ ì§€ì • í•´ì¤€ë‹¤.
             if ( aTemplate->tmplate.stack->column->module->staticNull == NULL )
             {
-                // list typeµî°ú °°ÀÌ staticNullÀÌ Á¤ÀÇµÇÁö ¾ÊÀº typeÀÎ °æ¿ì Calculate ÇÑ´Ù. */
+                // list typeë“±ê³¼ ê°™ì´ staticNullì´ ì •ì˜ë˜ì§€ ì•Šì€ typeì¸ ê²½ìš° Calculate í•œë‹¤. */
                 IDE_TEST( qtc::calculate( sItrAttr->expr, aTemplate )
                           != IDE_SUCCESS );
             }
@@ -644,7 +644,7 @@ qmnPROJ::doItProject( qcTemplate * aTemplate,
         }
     }
     
-    // StackÁ¤º¸ º¹¿ø
+    // Stackì •ë³´ ë³µì›
     aTemplate->tmplate.stack       = sStack;
     aTemplate->tmplate.stackRemain = sRemain;
 
@@ -668,14 +668,14 @@ qmnPROJ::doItTopProject( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    PROJ °¡ top projectionÀÏ ¶§ ´ÙÀ½ ÇÔ¼ö°¡ ¼öÇàµÈ´Ù.
+ *    PROJ ê°€ top projectionì¼ ë•Œ ë‹¤ìŒ í•¨ìˆ˜ê°€ ìˆ˜í–‰ëœë‹¤.
  *
  * Implementation :
- *    TargetÀ» ¸ğµÎ ¼öÇàÇÏ¸é¼­ ±× ½ÇÁ¦ Å©±â¸¦ ¾ò¾î Åë½Å ¹öÆÛ¸¦
- *    ÃÖ´ëÇÑ Àı¾àÇÏµµ·Ï ÇÑ´Ù.  ¿¹¸¦ µé¾î, Variable ColumnÀÇ
- *    ½ÇÁ¦ µ¥ÀÌÅ¸ÀÇ °ø°£ Å©±â¸¸Å­¸¸ ÀÌ¿ëÇÔÀ» °í·ÁÇÑ´Ù.
- *    Top ProjectionÀÇ ÃÖ»óÀ§ qtcNode´Â ¸ğµÎ Assign³ëµåÀÌ¸ç,
- *    ÇØ´ç Node ¼öÇà½Ã ÀÚ¿¬½º·´°Ô Åë½Å ¹öÆÛ¿¡ ±â·ÏµÈ´Ù.
+ *    Targetì„ ëª¨ë‘ ìˆ˜í–‰í•˜ë©´ì„œ ê·¸ ì‹¤ì œ í¬ê¸°ë¥¼ ì–»ì–´ í†µì‹  ë²„í¼ë¥¼
+ *    ìµœëŒ€í•œ ì ˆì•½í•˜ë„ë¡ í•œë‹¤.  ì˜ˆë¥¼ ë“¤ì–´, Variable Columnì˜
+ *    ì‹¤ì œ ë°ì´íƒ€ì˜ ê³µê°„ í¬ê¸°ë§Œí¼ë§Œ ì´ìš©í•¨ì„ ê³ ë ¤í•œë‹¤.
+ *    Top Projectionì˜ ìµœìƒìœ„ qtcNodeëŠ” ëª¨ë‘ Assignë…¸ë“œì´ë©°,
+ *    í•´ë‹¹ Node ìˆ˜í–‰ì‹œ ìì—°ìŠ¤ëŸ½ê²Œ í†µì‹  ë²„í¼ì— ê¸°ë¡ëœë‹¤.
  *
  ***********************************************************************/
 
@@ -701,11 +701,11 @@ qmnPROJ::doItTopProject( qcTemplate * aTemplate,
 
     sDataPlan->tupleOffset = 0;
 
-    // Stack Á¤º¸ ÀúÀå
+    // Stack ì •ë³´ ì €ì¥
     sStack  = aTemplate->tmplate.stack;
     sRemain = aTemplate->tmplate.stackRemain;
 
-    // °¢ Target¿¡ ´ëÇÑ Projection ¼öÇà
+    // ê° Targetì— ëŒ€í•œ Projection ìˆ˜í–‰
     for ( sItrAttr = sCodePlan->plan.resultDesc;
           sItrAttr != NULL;
           sItrAttr = sItrAttr->next,
@@ -713,35 +713,35 @@ qmnPROJ::doItTopProject( qcTemplate * aTemplate,
           aTemplate->tmplate.stackRemain-- )
     {
         //fix BUG-17713
-        //sNode´Â ´õÀÌ»ó Assign Node°¡ ¾Æ´Ï´Ù.
-        //Assign NodeÀÓÀ» °¡Á¤ÇÑ ÄÚµå´Â ¸ğµÎ Á¦°ÅÇÑ´Ù.
+        //sNodeëŠ” ë”ì´ìƒ Assign Nodeê°€ ì•„ë‹ˆë‹¤.
+        //Assign Nodeì„ì„ ê°€ì •í•œ ì½”ë“œëŠ” ëª¨ë‘ ì œê±°í•œë‹¤.
 
-        // Node¸¦ ¼öÇàÇÑ´Ù.
+        // Nodeë¥¼ ìˆ˜í–‰í•œë‹¤.
         IDE_TEST( qtc::calculate( sItrAttr->expr, aTemplate )
                   != IDE_SUCCESS );
 
         //fix BUG-17713
-        // sNode°¡ PASS ³ëµå ÀÌ¸é sNode->dstColumn->module->actualSize´Â NULL
-        // ÀÌ´Ù. µû¶ó¼­ ½ÇÁ¦ stack¿¡ ÀúÀåµÈ column, valueÀÇ °ªÀ» »ç¿ëÇÑ´Ù.
+        // sNodeê°€ PASS ë…¸ë“œ ì´ë©´ sNode->dstColumn->module->actualSizeëŠ” NULL
+        // ì´ë‹¤. ë”°ë¼ì„œ ì‹¤ì œ stackì— ì €ì¥ëœ column, valueì˜ ê°’ì„ ì‚¬ìš©í•œë‹¤.
         sColumn = aTemplate->tmplate.stack->column;
         sValue = (SChar *)aTemplate->tmplate.stack->value;
 
-        // ½ÇÁ¦ µ¥ÀÌÅÍÀÇ ±æÀÌ¸¸Å­¸¸ offsetÀ» °è»êÇÑ´Ù.
+        // ì‹¤ì œ ë°ì´í„°ì˜ ê¸¸ì´ë§Œí¼ë§Œ offsetì„ ê³„ì‚°í•œë‹¤.
         sDataPlan->tupleOffset +=
             sColumn->module->actualSize( sColumn,
                                          sValue );
 
         /* PROJ-2160
-           tupleOffsetÀº rowÀÇ »çÀÌÁî¸¦ ÀÇ¹ÌÇÑ´Ù.
-           LOB_LOCATOR_ID ÀÇ °æ¿ì size(4) + locator(8) ·Î Àü¼ÛµÇ¹Ç·Î
-           4¸¸Å­ ´õÇØÁÖ¾î¾ß ÇÑ´Ù. */
+           tupleOffsetì€ rowì˜ ì‚¬ì´ì¦ˆë¥¼ ì˜ë¯¸í•œë‹¤.
+           LOB_LOCATOR_ID ì˜ ê²½ìš° size(4) + locator(8) ë¡œ ì „ì†¡ë˜ë¯€ë¡œ
+           4ë§Œí¼ ë”í•´ì£¼ì–´ì•¼ í•œë‹¤. */
         if ( (sColumn->module->id == MTD_BLOB_LOCATOR_ID) ||
              (sColumn->module->id == MTD_CLOB_LOCATOR_ID) )
         {
             /* 
              * PROJ-2047 Strengthening LOB - LOBCACHE
              * 
-             * LOBSize(8)¿Í HasData(1)¸¦ ´õÇØÁÖ¾î¾ß ÇÑ´Ù.
+             * LOBSize(8)ì™€ HasData(1)ë¥¼ ë”í•´ì£¼ì–´ì•¼ í•œë‹¤.
              */
             sDataPlan->tupleOffset += ID_SIZEOF(ULong);
             sDataPlan->tupleOffset += ID_SIZEOF(UChar);
@@ -753,7 +753,7 @@ qmnPROJ::doItTopProject( qcTemplate * aTemplate,
                                          &sLobSize,
                                          &sIsNullLob );
 
-                /* ÀÓ°èÄ¡³»¿¡ ÇØ´çÇÏ¸é LOBData »çÀÌÁîµµ ´õÇØ ÁØ´Ù */
+                /* ì„ê³„ì¹˜ë‚´ì— í•´ë‹¹í•˜ë©´ LOBData ì‚¬ì´ì¦ˆë„ ë”í•´ ì¤€ë‹¤ */
                 if (sLobSize <= sLobCacheThreshold)
                 {
                     sDataPlan->tupleOffset += sLobSize;
@@ -774,7 +774,7 @@ qmnPROJ::doItTopProject( qcTemplate * aTemplate,
         }
     }
 
-    // StackÁ¤º¸ º¹¿ø
+    // Stackì •ë³´ ë³µì›
     aTemplate->tmplate.stack       = sStack;
     aTemplate->tmplate.stackRemain = sRemain;
 
@@ -799,9 +799,9 @@ qmnPROJ::doItWithLimit( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    Limit°ú ÇÔ²² »ç¿ëµÉ ¶§ È£ÃâµÇ´Â ÇÔ¼öÀÌ´Ù.
- *    doItProject(), doItTopProject()¿Í ÇÔ²² »ç¿ëµÇ¸ç,
- *    Limitation¿¡ ´ëÇÑ Ã³¸®¸¸ ´ã´çÇÑ´Ù.
+ *    Limitê³¼ í•¨ê»˜ ì‚¬ìš©ë  ë•Œ í˜¸ì¶œë˜ëŠ” í•¨ìˆ˜ì´ë‹¤.
+ *    doItProject(), doItTopProject()ì™€ í•¨ê»˜ ì‚¬ìš©ë˜ë©°,
+ *    Limitationì— ëŒ€í•œ ì²˜ë¦¬ë§Œ ë‹´ë‹¹í•œë‹¤.
  *
  * Implementation :
  *
@@ -818,8 +818,8 @@ qmnPROJ::doItWithLimit( qcTemplate * aTemplate,
           sDataPlan->limitCurrent < sDataPlan->limitStart;
           sDataPlan->limitCurrent++ )
     {
-        // Limitation ¹üÀ§¿¡ µéÁö ¾Ê´Â´Ù.
-        // µû¶ó¼­ Projection¾øÀÌ Child¸¦ ¼öÇàÇÏ±â¸¸ ÇÑ´Ù.
+        // Limitation ë²”ìœ„ì— ë“¤ì§€ ì•ŠëŠ”ë‹¤.
+        // ë”°ë¼ì„œ Projectionì—†ì´ Childë¥¼ ìˆ˜í–‰í•˜ê¸°ë§Œ í•œë‹¤.
         IDE_TEST( aPlan->left->doIt( aTemplate, aPlan->left, aFlag )
                   != IDE_SUCCESS );
 
@@ -832,19 +832,19 @@ qmnPROJ::doItWithLimit( qcTemplate * aTemplate,
     if ( sDataPlan->limitCurrent >= sDataPlan->limitStart &&
          sDataPlan->limitCurrent < sDataPlan->limitEnd )
     {
-        // Limitation ¹üÀ§ ¾È¿¡ ÀÖ´Â °æ¿ì
-        // ProjectionÀ» ¼öÇàÇÑ´Ù.
-        // doItProject() ¶Ç´Â doItTopProject() ÇÔ¼ö°¡ ¿¬°áµÇ¾î ÀÖ´Ù.
+        // Limitation ë²”ìœ„ ì•ˆì— ìˆëŠ” ê²½ìš°
+        // Projectionì„ ìˆ˜í–‰í•œë‹¤.
+        // doItProject() ë˜ëŠ” doItTopProject() í•¨ìˆ˜ê°€ ì—°ê²°ë˜ì–´ ìˆë‹¤.
         IDE_TEST( sDataPlan->limitExec( aTemplate,
                                         aPlan,
                                         aFlag ) != IDE_SUCCESS );
 
-        // Limit°ª Áõ°¡
+        // Limitê°’ ì¦ê°€
         sDataPlan->limitCurrent++;
     }
     else
     {
-        // Limitation ¹üÀ§¸¦ ¹ş¾î³­ °æ¿ì
+        // Limitation ë²”ìœ„ë¥¼ ë²—ì–´ë‚œ ê²½ìš°
         *aFlag = QMC_ROW_DATA_NONE;
     }
 
@@ -865,9 +865,9 @@ qmnPROJ::getRowSize( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    TargetÀ» ±¸¼ºÇÏ´Â ColumnµéÀÇ ÃÖ´ë Size¸¦ È¹µæÇÑ´Ù.
- *    Communication Buffer°¡ ÃæºĞÇÑÁö¸¦ È®ÀÎÇÏ±â À§ÇØ
- *    »ç¿ëÇÑ´Ù.
+ *    Targetì„ êµ¬ì„±í•˜ëŠ” Columnë“¤ì˜ ìµœëŒ€ Sizeë¥¼ íšë“í•œë‹¤.
+ *    Communication Bufferê°€ ì¶©ë¶„í•œì§€ë¥¼ í™•ì¸í•˜ê¸° ìœ„í•´
+ *    ì‚¬ìš©í•œë‹¤.
  *
  * Implementation :
  *
@@ -881,8 +881,8 @@ qmnPROJ::getRowSize( qcTemplate * aTemplate,
     //     (qmndPROJ*) (aTemplate->tmplate.data + aPlan->offset);
 
     // To Fix PR-7988
-    // Prepare ProtocolÀÎ °æ¿ì ::init()¾øÀÌ ÇØ´ç ÇÔ¼ö¸¦
-    // È£ÃâÇÏ°Ô µÈ´Ù.  µû¶ó¼­, Ç×»ó °è»êÇØ ÁÖ¾î¾ß ÇÑ´Ù.
+    // Prepare Protocolì¸ ê²½ìš° ::init()ì—†ì´ í•´ë‹¹ í•¨ìˆ˜ë¥¼
+    // í˜¸ì¶œí•˜ê²Œ ëœë‹¤.  ë”°ë¼ì„œ, í•­ìƒ ê³„ì‚°í•´ ì£¼ì–´ì•¼ í•œë‹¤.
     IDE_TEST( getMaxRowSize ( aTemplate, sCodePlan, aSize )
               != IDE_SUCCESS );
 
@@ -903,9 +903,9 @@ qmnPROJ::getCodeTargetPtr( qmnPlan    * aPlan,
 /***********************************************************************
  *
  * Description :
- *    Top ProjectionÀÏ °æ¿ì¿¡¸¸ »ç¿ëµÇ¸ç,
- *    MM ´Ü¿¡¼­
- *    ClientÀÇ Target ColumnÁ¤º¸¸¦ ±¸¼ºÇÏ±â À§ÇÏ¿© »ç¿ëÇÑ´Ù.
+ *    Top Projectionì¼ ê²½ìš°ì—ë§Œ ì‚¬ìš©ë˜ë©°,
+ *    MM ë‹¨ì—ì„œ
+ *    Clientì˜ Target Columnì •ë³´ë¥¼ êµ¬ì„±í•˜ê¸° ìœ„í•˜ì—¬ ì‚¬ìš©í•œë‹¤.
  *
  * Implementation :
  *
@@ -932,7 +932,7 @@ qmnPROJ::getActualSize( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    ÇÏ³ªÀÇ Target Row¿Ï·á ÈÄ ½ÇÁ¦ Ã³¸®ÇÑ Å©±â¸¦ È¹µæÇÑ´Ù.
+ *    í•˜ë‚˜ì˜ Target Rowì™„ë£Œ í›„ ì‹¤ì œ ì²˜ë¦¬í•œ í¬ê¸°ë¥¼ íšë“í•œë‹¤.
  *
  * Implementation :
  *
@@ -957,10 +957,10 @@ qmnPROJ::firstInit( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    PROJ nodeÀÇ Data ¿µ¿ªÀÇ ¸â¹ö¿¡ ´ëÇÑ ÃÊ±âÈ­¸¦ ¼öÇà
+ *    PROJ nodeì˜ Data ì˜ì—­ì˜ ë©¤ë²„ì— ëŒ€í•œ ì´ˆê¸°í™”ë¥¼ ìˆ˜í–‰
  *
  * Implementation :
- *    - Data ¿µ¿ªÀÇ ÁÖ¿ä ¸â¹ö¿¡ ´ëÇÑ ÃÊ±âÈ­¸¦ ¼öÇà
+ *    - Data ì˜ì—­ì˜ ì£¼ìš” ë©¤ë²„ì— ëŒ€í•œ ì´ˆê¸°í™”ë¥¼ ìˆ˜í–‰
  *
  ***********************************************************************/
 
@@ -968,32 +968,32 @@ qmnPROJ::firstInit( qcTemplate * aTemplate,
     UInt  sReserveCnt = 0;
 
     //--------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //--------------------------------
 
     IDE_ASSERT( aCodePlan->myTarget != NULL );
     IDE_ASSERT( aCodePlan->myTargetOffset > 0 );
 
     //--------------------------------
-    // PROJ °íÀ¯ Á¤º¸ÀÇ ÃÊ±âÈ­
+    // PROJ ê³ ìœ  ì •ë³´ì˜ ì´ˆê¸°í™”
     //--------------------------------
 
-    // Tuple SetÁ¤º¸ÀÇ ÃÊ±âÈ­
-    // Top ProjectionÀÏ °æ¿ì¿¡¸¸ À¯È¿ÇÏ¸ç,
-    // plan.myTupleÀº Åë½Å ¹öÆÛ³»ÀÇ ¸Ş¸ğ¸® ¿µ¿ªÀ» »ç¿ëÇÏ°Ô µÈ´Ù.
+    // Tuple Setì •ë³´ì˜ ì´ˆê¸°í™”
+    // Top Projectionì¼ ê²½ìš°ì—ë§Œ ìœ íš¨í•˜ë©°,
+    // plan.myTupleì€ í†µì‹  ë²„í¼ë‚´ì˜ ë©”ëª¨ë¦¬ ì˜ì—­ì„ ì‚¬ìš©í•˜ê²Œ ëœë‹¤.
     // ===>
     // PROJ-1461
-    // cm¿¡¼­´Â Åë½Å ¹öÆÛ³»ÀÇ ¸Ş¸ğ¸® ¿µ¿ªÀ» Á÷Á¢ »ç¿ëÇÒ ¼ö ¾øÀ¸¹Ç·Î,
-    // plan.myTuple¿¡ fetchµÈ µ¥ÀÌÅ¸¸¦ ÀúÀåÇÒ ¸Ş¸ğ¸® °ø°£À» ÇÒ´ç ¹Ş´Â´Ù.
-    // mm¿¡¼­ qci::fetchColumn½Ã ÇÏ³ªÀÇ ·¹ÄÚµå ÀüÃ¼¿¡ ´ëÇØ¼­
-    // µ¥ÀÌÅ¸¸¦ fetch ÇÏ´Â °ÍÀÌ ¾Æ´Ï¶ó,
-    // ÇÏ³ªÀÇ ÄÃ·³¿¡ ´ëÇØ¼­ fetchÇÏ±â¶§¹®¿¡,
-    // PROJ ³ëµå¿¡¼­ ·¹ÄÚµå ´ÜÀ§·Î µ¥ÀÌÅ¸¸¦ ÀúÀåÇÏ°í ÀÖ¾î¾ß ÇÑ´Ù.
+    // cmì—ì„œëŠ” í†µì‹  ë²„í¼ë‚´ì˜ ë©”ëª¨ë¦¬ ì˜ì—­ì„ ì§ì ‘ ì‚¬ìš©í•  ìˆ˜ ì—†ìœ¼ë¯€ë¡œ,
+    // plan.myTupleì— fetchëœ ë°ì´íƒ€ë¥¼ ì €ì¥í•  ë©”ëª¨ë¦¬ ê³µê°„ì„ í• ë‹¹ ë°›ëŠ”ë‹¤.
+    // mmì—ì„œ qci::fetchColumnì‹œ í•˜ë‚˜ì˜ ë ˆì½”ë“œ ì „ì²´ì— ëŒ€í•´ì„œ
+    // ë°ì´íƒ€ë¥¼ fetch í•˜ëŠ” ê²ƒì´ ì•„ë‹ˆë¼,
+    // í•˜ë‚˜ì˜ ì»¬ëŸ¼ì— ëŒ€í•´ì„œ fetchí•˜ê¸°ë•Œë¬¸ì—,
+    // PROJ ë…¸ë“œì—ì„œ ë ˆì½”ë“œ ë‹¨ìœ„ë¡œ ë°ì´íƒ€ë¥¼ ì €ì¥í•˜ê³  ìˆì–´ì•¼ í•œë‹¤.
     aDataPlan->plan.myTuple = & aTemplate->tmplate.
         rows[aCodePlan->myTarget->targetColumn->node.table];
 
     //--------------------------------
-    // Limitation °ü·Ã Á¤º¸ÀÇ ÃÊ±âÈ­
+    // Limitation ê´€ë ¨ ì •ë³´ì˜ ì´ˆê¸°í™”
     //--------------------------------
     if( aCodePlan->limit != NULL )
     {
@@ -1024,7 +1024,7 @@ qmnPROJ::firstInit( qcTemplate * aTemplate,
         aDataPlan->limitEnd = 0;
     }
 
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     if ( aDataPlan->limitEnd > 0 )
     {
         IDE_ASSERT( (aCodePlan->flag & QMNC_PROJ_LIMIT_MASK)
@@ -1032,7 +1032,7 @@ qmnPROJ::firstInit( qcTemplate * aTemplate,
     }
 
     //--------------------------------
-    // Loop °ü·Ã Á¤º¸ÀÇ ÃÊ±âÈ­
+    // Loop ê´€ë ¨ ì •ë³´ì˜ ì´ˆê¸°í™”
     //--------------------------------
     if ( aCodePlan->loopNode != NULL )
     {
@@ -1060,7 +1060,7 @@ qmnPROJ::firstInit( qcTemplate * aTemplate,
     }
         
     //---------------------------------
-    // Null Row °ü·Ã Á¤º¸ÀÇ ÃÊ±âÈ­
+    // Null Row ê´€ë ¨ ì •ë³´ì˜ ì´ˆê¸°í™”
     //---------------------------------
 
     aDataPlan->nullRow = NULL;
@@ -1100,7 +1100,7 @@ qmnPROJ::firstInit( qcTemplate * aTemplate,
     }
 
     //---------------------------------
-    // ÃÊ±âÈ­ ¿Ï·á¸¦ Ç¥±â
+    // ì´ˆê¸°í™” ì™„ë£Œë¥¼ í‘œê¸°
     //---------------------------------
 
     *aDataPlan->flag &= ~QMND_PROJ_INIT_DONE_MASK;
@@ -1130,7 +1130,7 @@ qmnPROJ::getMaxRowSize( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    Target RowÀÇ ÃÖ´ë Size¸¦ °è»êÇÑ´Ù.
+ *    Target Rowì˜ ìµœëŒ€ Sizeë¥¼ ê³„ì‚°í•œë‹¤.
  *
  * Implementation :
  *
@@ -1147,7 +1147,7 @@ qmnPROJ::getMaxRowSize( qcTemplate * aTemplate,
           sItrAttr != NULL;
           sItrAttr = sItrAttr->next )
     {
-        // ½ÇÁ¦ Target ColumnÀ» È¹µæ
+        // ì‹¤ì œ Target Columnì„ íšë“
         sNode = (qtcNode*)mtf::convertedNode(&sItrAttr->expr->node,
                                              &aTemplate->tmplate );
         sMtcColumn = QTC_TMPL_COLUMN(aTemplate, sNode);
@@ -1156,7 +1156,7 @@ qmnPROJ::getMaxRowSize( qcTemplate * aTemplate,
         sSize += sMtcColumn->column.size;
     }
 
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     IDE_ASSERT(sSize > 0);
 
     *aSize = sSize;
@@ -1172,18 +1172,18 @@ qmnPROJ::makeNullRow( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    SELECT ±¸¹® ¼öÇàÀÇ °á°ú°¡ ¾øÀ» °æ¿ì,
- *    Null PaddingÀ» È£ÃâÇÒ ¼ö ÀÖ´Ù.
- *    ÀÌ ¶§, SELECT target¿¡ Outer Column Reference°¡ Á¸ÀçÇÑ´Ù¸é,
- *    ÀÌ¿¡ ´ëÇÑ Null Value´Â PROJ ³ëµå¿¡¼­ Á¦°øÇÏ¿©¾ß ÇÑ´Ù.
+ *    SELECT êµ¬ë¬¸ ìˆ˜í–‰ì˜ ê²°ê³¼ê°€ ì—†ì„ ê²½ìš°,
+ *    Null Paddingì„ í˜¸ì¶œí•  ìˆ˜ ìˆë‹¤.
+ *    ì´ ë•Œ, SELECT targetì— Outer Column Referenceê°€ ì¡´ì¬í•œë‹¤ë©´,
+ *    ì´ì— ëŒ€í•œ Null ValueëŠ” PROJ ë…¸ë“œì—ì„œ ì œê³µí•˜ì—¬ì•¼ í•œë‹¤.
  *    Ex) UPDATE T1 SET i1 = ( SELECT T1.i2 FROM T2 LIMIT 1 );
  *                                    ^^^^^
  *
  * Implementation :
- *    ÃÖÃÊ ÇÑ ¹ø¸¸ ¼öÇàÇÑ´Ù.
- *    - Null Row¸¦ À§ÇÑ °ø°£ È®º¸
- *    - Null ColumnÀ» À§ÇÑ °ø°£ È®º¸
- *    - °¢ Null ColumnÀÇ Á¤º¸¸¦ ±¸¼ºÇÏ°í Null Value»ı¼º
+ *    ìµœì´ˆ í•œ ë²ˆë§Œ ìˆ˜í–‰í•œë‹¤.
+ *    - Null Rowë¥¼ ìœ„í•œ ê³µê°„ í™•ë³´
+ *    - Null Columnì„ ìœ„í•œ ê³µê°„ í™•ë³´
+ *    - ê° Null Columnì˜ ì •ë³´ë¥¼ êµ¬ì„±í•˜ê³  Null Valueìƒì„±
  ***********************************************************************/
 
 #define IDE_FN "qmnPROJ::makeNullRow"
@@ -1196,7 +1196,7 @@ qmnPROJ::makeNullRow( qcTemplate * aTemplate,
     qtcNode   * sNode;
     mtcColumn * sColumn;
 
-    // Null Row¸¦ À§ÇÑ °ø°£ È®º¸
+    // Null Rowë¥¼ ìœ„í•œ ê³µê°„ í™•ë³´
     IDU_FIT_POINT( "qmnPROJ::makeNullRow::cralloc::nullRow",
                     idERR_ABORT_InsufficientMemory );
 
@@ -1204,7 +1204,7 @@ qmnPROJ::makeNullRow( qcTemplate * aTemplate,
                                                 (void**) & aDataPlan->nullRow )
               != IDE_SUCCESS);
 
-    // Null ColumnÀ» À§ÇÑ °ø°£ È®º¸
+    // Null Columnì„ ìœ„í•œ ê³µê°„ í™•ë³´
     IDU_FIT_POINT( "qmnPROJ::makeNullRow::alloc::nullColumn",
                     idERR_ABORT_InsufficientMemory );
 
@@ -1217,40 +1217,40 @@ qmnPROJ::makeNullRow( qcTemplate * aTemplate,
           sTarget = sTarget->next, i++ )
     {
         //-------------------------------------------
-        // °¢ Null Column¿¡ ´ëÇÏ¿© Null Value¸¦ »ı¼º
+        // ê° Null Columnì— ëŒ€í•˜ì—¬ Null Valueë¥¼ ìƒì„±
         //-------------------------------------------
 
-        // ½ÇÁ¦ Target ColumnÁ¤º¸¸¦ È¹µæ
+        // ì‹¤ì œ Target Columnì •ë³´ë¥¼ íšë“
         sNode = (qtcNode*)mtf::convertedNode( & sTarget->targetColumn->node,
                                               & aTemplate->tmplate );
         sColumn = & aTemplate->tmplate.rows[sNode->node.table].
             columns[sNode->node.column];
 
-        // Column Á¤º¸ º¹»ç
-        // Variable ColumnÀÇ Null Value È¹µæÀ» À§ÇÏ¿©
-        // »õ·Î »ı¼ºÇÑ NULL ColumnÀ» ¸ğµÎ Fixed·Î ÁöÁ¤ÇÑ´Ù.
+        // Column ì •ë³´ ë³µì‚¬
+        // Variable Columnì˜ Null Value íšë“ì„ ìœ„í•˜ì—¬
+        // ìƒˆë¡œ ìƒì„±í•œ NULL Columnì„ ëª¨ë‘ Fixedë¡œ ì§€ì •í•œë‹¤.
         mtc::copyColumn( & aDataPlan->nullColumn[i],
                          sColumn );
         
         // BUG-38494
-        // Compressed Column ¿ª½Ã °ª ÀÚÃ¼°¡ ÀúÀåµÇ¹Ç·Î
-        // Compressed ¼Ó¼ºÀ» »èÁ¦ÇÑ´Ù
+        // Compressed Column ì—­ì‹œ ê°’ ìì²´ê°€ ì €ì¥ë˜ë¯€ë¡œ
+        // Compressed ì†ì„±ì„ ì‚­ì œí•œë‹¤
         aDataPlan->nullColumn[i].column.flag &= ~SMI_COLUMN_COMPRESSION_MASK;
         aDataPlan->nullColumn[i].column.flag |= SMI_COLUMN_COMPRESSION_FALSE;
 
-        // Null ColumnÀÌ offset Àç¼³Á¤
+        // Null Columnì´ offset ì¬ì„¤ì •
         sTupleOffset =
             idlOS::align( sTupleOffset, sColumn->module->align );
 
         aDataPlan->nullColumn[i].column.offset = sTupleOffset;
 
         // To Fix PR-8005
-        // Null Value »ı¼º
+        // Null Value ìƒì„±
         aDataPlan->nullColumn[i].module->null(
             & aDataPlan->nullColumn[i],
             (void*) ( (SChar*) aDataPlan->nullRow + sTupleOffset) );
 
-        // OffsetÁõ°¡
+        // Offsetì¦ê°€
         // fix BUG-31822
         sTupleOffset += sColumn->column.size;
     }
@@ -1271,10 +1271,10 @@ qmnPROJ::initLevel( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    LEVEL pseudo columnÀÇ °ª ÃÊ±âÈ­
+ *    LEVEL pseudo columnì˜ ê°’ ì´ˆê¸°í™”
  *
  * Implementation :
- *    LEVEL pseudo columnÀÌ Á¸ÀçÇÒ °æ¿ì ÀÌ °ªÀ» ÃÊ±âÈ­ÇÑ´Ù.
+ *    LEVEL pseudo columnì´ ì¡´ì¬í•  ê²½ìš° ì´ ê°’ì„ ì´ˆê¸°í™”í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -1310,8 +1310,8 @@ qmnPROJ::setDoItFunction( qmncPROJ   * aCodePlan,
 /***********************************************************************
  *
  * Description :
- *    Top ProjectionÀÇ ¿©ºÎ¿Í LimitÀÇ Á¸Àç ¿©ºÎ¿¡ µû¶ó
- *    ¼öÇà ÇÔ¼ö¸¦ °áÁ¤ÇÑ´Ù.
+ *    Top Projectionì˜ ì—¬ë¶€ì™€ Limitì˜ ì¡´ì¬ ì—¬ë¶€ì— ë”°ë¼
+ *    ìˆ˜í–‰ í•¨ìˆ˜ë¥¼ ê²°ì •í•œë‹¤.
  *
  * Implementation :
  *
@@ -1368,7 +1368,7 @@ qmnPROJ::readSequence( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    ÇÊ¿äÇÑ °æ¿ì, SequenceÀÇ next value°ªÀ» ¾ò´Â´Ù.
+ *    í•„ìš”í•œ ê²½ìš°, Sequenceì˜ next valueê°’ì„ ì–»ëŠ”ë‹¤.
  *
  * Implementation :
  *
@@ -1416,7 +1416,7 @@ void qmnPROJ::setLoopCurrent( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *     loop current °ªÀ» Áõ°¡½ÃÅ°°í loop level pseudo column °ªÀ» ¼³Á¤ÇÑ´Ù.
+ *     loop current ê°’ì„ ì¦ê°€ì‹œí‚¤ê³  loop level pseudo column ê°’ì„ ì„¤ì •í•œë‹¤.
  *
  * Implementation :
  *
@@ -1462,7 +1462,7 @@ qmnPROJ::printTargetInfo( qcTemplate   * aTemplate,
 /***********************************************************************
  *
  * Description :
- *     Target Á¤º¸¸¦ Ãâ·ÂÇÑ´Ù.
+ *     Target ì •ë³´ë¥¼ ì¶œë ¥í•œë‹¤.
  *
  * Implementation :
  *
@@ -1476,19 +1476,19 @@ qmnPROJ::printTargetInfo( qcTemplate   * aTemplate,
     qmsTarget * sNode;
 
     // To Fix PR-8271
-    // explain plan = only; ÀÎ °æ¿ì
-    // Data¿µ¿ªÀÇ Á¤º¸°¡ ¾øÀ½.  º°µµ·Î ´Ù½Ã °è»êÇÔ
+    // explain plan = only; ì¸ ê²½ìš°
+    // Dataì˜ì—­ì˜ ì •ë³´ê°€ ì—†ìŒ.  ë³„ë„ë¡œ ë‹¤ì‹œ ê³„ì‚°í•¨
     for ( sNode = aCodePlan->myTarget; sNode != NULL;
           sNode = sNode->next )
     {
         sCount++;
     }
 
-    // Data¿µ¿ªÀÇ Á¤º¸°¡ ¾øÀ» ¼ö ÀÖÀ½. º°µµ·Î ´Ù½Ã °è»êÇÔ
+    // Dataì˜ì—­ì˜ ì •ë³´ê°€ ì—†ì„ ìˆ˜ ìˆìŒ. ë³„ë„ë¡œ ë‹¤ì‹œ ê³„ì‚°í•¨
     IDE_TEST( getMaxRowSize( aTemplate, aCodePlan, & sRowSize )
               != IDE_SUCCESS );
 
-    // PROJ Á¤º¸ÀÇ Ãâ·Â
+    // PROJ ì •ë³´ì˜ ì¶œë ¥
     iduVarStringAppendFormat( aString,
                               "PROJECT ( COLUMN_COUNT: %"ID_UINT32_FMT", "
                               "TUPLE_SIZE: %"ID_UINT32_FMT,
@@ -1508,7 +1508,7 @@ UInt qmnPROJ::getTargetCount( qmnPlan    * aPlan )
 {
 /***********************************************************************
  *
- * Description : PROJ-1075 project nodeÀÇ target count¸¦ ¾ò´Â´Ù.
+ * Description : PROJ-1075 project nodeì˜ target countë¥¼ ì–»ëŠ”ë‹¤.
  *
  * Implementation :
  *
@@ -1572,8 +1572,8 @@ IDE_RC qmnPROJ::setTupleSet( qcTemplate * aTemplate,
     mtcColumn  * sVMTRColumn = NULL;
     UInt         i           = 0;
     
-    // PROJ-2362 memory temp ÀúÀå È¿À²¼º °³¼±
-    // VSCN tuple º¹¿ø
+    // PROJ-2362 memory temp ì €ì¥ íš¨ìœ¨ì„± ê°œì„ 
+    // VSCN tuple ë³µì›
     if ( aDataPlan->memSortRecord != NULL )
     {
         for ( sNode = aDataPlan->memSortRecord;

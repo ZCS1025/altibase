@@ -20,50 +20,50 @@
  *
  * Description :
  *
- * º» ÆÄÀÏÀº µð½ºÅ©°ü¸®ÀÚÀÇ datafile ³ëµå¿¡ ´ëÇÑ ±¸ÇöÆÄÀÏÀÌ´Ù.
+ * ë³¸ íŒŒì¼ì€ ë””ìŠ¤í¬ê´€ë¦¬ìžì˜ datafile ë…¸ë“œì— ëŒ€í•œ êµ¬í˜„íŒŒì¼ì´ë‹¤.
  *
- * # °³³ä
+ * # ê°œë…
  *
- * ÇÏ³ªÀÇ µ¥ÀÌÅ¸º£ÀÌ½º È­ÀÏ¿¡ ´ëÇÑ Á¤º¸¸¦ °ü¸®ÇÑ´Ù.
+ * í•˜ë‚˜ì˜ ë°ì´íƒ€ë² ì´ìŠ¤ í™”ì¼ì— ëŒ€í•œ ì •ë³´ë¥¼ ê´€ë¦¬í•œë‹¤.
  *
- * # µ¥ÀÌÅ¸º£ÀÌ½º È­ÀÏÀÇ Å©±â
- *     - Å×ÀÌºí ½ºÆäÀÌ½ºÀÇ Å©±â¸¦ ´Ã¸±¶§, 2°¡ÁöÀÇ ¹æ¹ýÀÌ ÀÖ´Ù.
- *       ÀÌ ¹æ¹ýÀº »ç¿ëÀÚ°¡ Å×ÀÌºí½ºÆäÀÌ½º¸¦ »ý¼ºÇÒ ¶§ ÁöÁ¤°¡´ÉÇÏ´Ù.
+ * # ë°ì´íƒ€ë² ì´ìŠ¤ í™”ì¼ì˜ í¬ê¸°
+ *     - í…Œì´ë¸” ìŠ¤íŽ˜ì´ìŠ¤ì˜ í¬ê¸°ë¥¼ ëŠ˜ë¦´ë•Œ, 2ê°€ì§€ì˜ ë°©ë²•ì´ ìžˆë‹¤.
+ *       ì´ ë°©ë²•ì€ ì‚¬ìš©ìžê°€ í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ë¥¼ ìƒì„±í•  ë•Œ ì§€ì •ê°€ëŠ¥í•˜ë‹¤.
  *
- *        1. È­ÀÏÀÇ Å©±â¸¦ ´Ã¸®±â
- *           - AUTOEXTEND ON NEXT SIZE¸¦
- *             Æ÷ÇÔÇÏ¸é °ø°£ÀÌ ¸ðÀÚ¶ö ¶§ SIZE ¸¸Å­ Ãß°¡µÈ´Ù.
- *        2. ¶Ç ÇÏ³ªÀÇ È­ÀÏÀ» Ãß°¡ÇÏ±â
- *           - AUTOEXTEND OFF¸¦
- *             Æ÷ÇÔÇÏ¸é ÀÚµ¿À¸·Î °ø°£À» ´Ã¸®Áö ¾Ê´Â´Ù. ´ë½Å »ç¿ëÀÚ°¡
- *             ¸í½ÃÀûÀ¸·Î ALTER TABLESPACE ±¸¹®À» ÀÌ¿ëÇÏ¿© °ø°£À» ´Ã¸± ¼ö
- *             ÀÖ´Ù.
- *     - system tablespaceÀÇ µ¥ÀÌÅ¸È­ÀÏÀÌ ÁöÁ¤µÈ Å©±â¸¦ ³ÑÀ»¶§ ±× È­ÀÏÀÇ
- *       Å©±â´Â ´õ ÀÌ»ó Áõ°¡ÇÒ ¼ö ¾ø´Ù. ÀÏºÎ ½Ã½ºÅÛ¿¡¼­´Â È­ÀÏÀÇ Å©±â°¡
- *       Æ¯Á¤ Å©±â(¿¹ 2G) ÀÌ»óÀÌ¸é, ¼º´ÉÀÌ ±Þ°ÝÈ÷ ¶³¾îÁú ¼ö ÀÖ´Ù.
- *       µû¶ó¼­ system tablespaceÀÇ °æ¿ì ÀÌ Å©±â ÀÌ»óÀ¸·Î È­ÀÏÀ» ´Ã¸®Áö
- *       ¾Ê°í, »õ·Î¿î È­ÀÏÀ» Ãß°¡ÇÑ´Ù.
- *     - ÀÌ °ªÀº altibase cofig file¿¡¼­ ¼³Á¤ °¡´ÉÇÏ´Ù.
- *     - »ç¿ëÀÚÀÇ tablespaceÀÇ µ¥ÀÌÅ¸È­ÀÏ¿¡ ´ëÇØ¼­´Â ÀÌ·¯ÇÑ Á¦ÇÑÀ» µÎÁö ¾ÊÀ¸¸ç,
- *       ÀÌ·± Çö»óÀÌ ÀÖÀ» °æ¿ì »ç¿ëÀÚ°¡ Ã³¸®ÇØ¾ß ÇÑ´Ù.
- *     - 4.1.1.1 Tablespace User Interface ¹®¼­¸¦ ÂüÁ¶
+ *        1. í™”ì¼ì˜ í¬ê¸°ë¥¼ ëŠ˜ë¦¬ê¸°
+ *           - AUTOEXTEND ON NEXT SIZEë¥¼
+ *             í¬í•¨í•˜ë©´ ê³µê°„ì´ ëª¨ìžëž„ ë•Œ SIZE ë§Œí¼ ì¶”ê°€ëœë‹¤.
+ *        2. ë˜ í•˜ë‚˜ì˜ í™”ì¼ì„ ì¶”ê°€í•˜ê¸°
+ *           - AUTOEXTEND OFFë¥¼
+ *             í¬í•¨í•˜ë©´ ìžë™ìœ¼ë¡œ ê³µê°„ì„ ëŠ˜ë¦¬ì§€ ì•ŠëŠ”ë‹¤. ëŒ€ì‹  ì‚¬ìš©ìžê°€
+ *             ëª…ì‹œì ìœ¼ë¡œ ALTER TABLESPACE êµ¬ë¬¸ì„ ì´ìš©í•˜ì—¬ ê³µê°„ì„ ëŠ˜ë¦´ ìˆ˜
+ *             ìžˆë‹¤.
+ *     - system tablespaceì˜ ë°ì´íƒ€í™”ì¼ì´ ì§€ì •ëœ í¬ê¸°ë¥¼ ë„˜ì„ë•Œ ê·¸ í™”ì¼ì˜
+ *       í¬ê¸°ëŠ” ë” ì´ìƒ ì¦ê°€í•  ìˆ˜ ì—†ë‹¤. ì¼ë¶€ ì‹œìŠ¤í…œì—ì„œëŠ” í™”ì¼ì˜ í¬ê¸°ê°€
+ *       íŠ¹ì • í¬ê¸°(ì˜ˆ 2G) ì´ìƒì´ë©´, ì„±ëŠ¥ì´ ê¸‰ê²©ížˆ ë–¨ì–´ì§ˆ ìˆ˜ ìžˆë‹¤.
+ *       ë”°ë¼ì„œ system tablespaceì˜ ê²½ìš° ì´ í¬ê¸° ì´ìƒìœ¼ë¡œ í™”ì¼ì„ ëŠ˜ë¦¬ì§€
+ *       ì•Šê³ , ìƒˆë¡œìš´ í™”ì¼ì„ ì¶”ê°€í•œë‹¤.
+ *     - ì´ ê°’ì€ altibase cofig fileì—ì„œ ì„¤ì • ê°€ëŠ¥í•˜ë‹¤.
+ *     - ì‚¬ìš©ìžì˜ tablespaceì˜ ë°ì´íƒ€í™”ì¼ì— ëŒ€í•´ì„œëŠ” ì´ëŸ¬í•œ ì œí•œì„ ë‘ì§€ ì•Šìœ¼ë©°,
+ *       ì´ëŸ° í˜„ìƒì´ ìžˆì„ ê²½ìš° ì‚¬ìš©ìžê°€ ì²˜ë¦¬í•´ì•¼ í•œë‹¤.
+ *     - 4.1.1.1 Tablespace User Interface ë¬¸ì„œë¥¼ ì°¸ì¡°
  *
- * # µ¥ÀÌÅ¸º£ÀÌ½º È­ÀÏÀÇ Naming
- *     - 4.1.1.1 Tablespace User Interface ¹®¼­¸¦ ÂüÁ¶
- *     - DatabaeÀÇ µ¥ÀÌÅ¸È­ÀÏ ±âº» ÀúÀå µð·ºÅä¸® ¾È¿¡
- *       "system, "undo", "temp"·Î ½ÃÀÛÇÏ´Â È­ÀÏ ÀÌ¸§ÀÌ ¿Ã ¼ö ¾ø´Ù.
+ * # ë°ì´íƒ€ë² ì´ìŠ¤ í™”ì¼ì˜ Naming
+ *     - 4.1.1.1 Tablespace User Interface ë¬¸ì„œë¥¼ ì°¸ì¡°
+ *     - Databaeì˜ ë°ì´íƒ€í™”ì¼ ê¸°ë³¸ ì €ìž¥ ë””ë ‰í† ë¦¬ ì•ˆì—
+ *       "system, "undo", "temp"ë¡œ ì‹œìž‘í•˜ëŠ” í™”ì¼ ì´ë¦„ì´ ì˜¬ ìˆ˜ ì—†ë‹¤.
  *
- * # µð·ºÅä¸®
- *     - µ¥ÀÌÅ¸ È­ÀÏÀÌ ÀúÀåµÇ´Â µð·ºÅä¸®´Â config È­ÀÏ¿¡ ÁöÁ¤µÈ´Ù.
- *     - SQL ¹®¿¡¼­ µ¥ÀÌÅ¸ È­ÀÏÀº ÀÌ¸§Àº »ó´ë°æ·Î È¤Àº Àý´ë °æ·Î·Î
- *       ÁöÁ¤µÉ ¼ö ÀÖ´Ù.
- *     - »ó´ë°æ·Î·Î ÁöÁ¤µÈ ÈÄ, Àý´ë°æ·Î·Î modify¸¦ ½ÃµµÇßÀ» ¶§,
- *       ÀÌ¸¦ verify ÇÒ ¼ö ÀÖ¾î¾ß ÇÑ´Ù. ÀÌ¸¦ À§ÇØ ¸ðµç °æ·Î¸¦
- *       Àý´ë °æ·Î·Î º¯°æÇÒ °ÍÀÌ´Ù.
- *     - µ¥ÀÌÅ¸È­ÀÏÀÇ ÀÌ¸§Àº °æ·Î+ÀÌ¸§ÀÌ´Ù.
- *     - Æ¯¼ö¹®ÀÚ°¡ µé¾î°¬´Â Áö È®ÀÎÇÏ´Â °úÁ¤ÀÌ ÇÊ¿äÇÏ´Ù.
- *     - ÀÌ¿¡ ´ëÇÑ ÄÚµå°¡ sddDiskMgr::makeValidDataFilePath¿¡¼­ ±¸ÇöµÇ¾î¾ß
- *       ÇÒ °ÍÀÓ.
+ * # ë””ë ‰í† ë¦¬
+ *     - ë°ì´íƒ€ í™”ì¼ì´ ì €ìž¥ë˜ëŠ” ë””ë ‰í† ë¦¬ëŠ” config í™”ì¼ì— ì§€ì •ëœë‹¤.
+ *     - SQL ë¬¸ì—ì„œ ë°ì´íƒ€ í™”ì¼ì€ ì´ë¦„ì€ ìƒëŒ€ê²½ë¡œ í˜¹ì€ ì ˆëŒ€ ê²½ë¡œë¡œ
+ *       ì§€ì •ë  ìˆ˜ ìžˆë‹¤.
+ *     - ìƒëŒ€ê²½ë¡œë¡œ ì§€ì •ëœ í›„, ì ˆëŒ€ê²½ë¡œë¡œ modifyë¥¼ ì‹œë„í–ˆì„ ë•Œ,
+ *       ì´ë¥¼ verify í•  ìˆ˜ ìžˆì–´ì•¼ í•œë‹¤. ì´ë¥¼ ìœ„í•´ ëª¨ë“  ê²½ë¡œë¥¼
+ *       ì ˆëŒ€ ê²½ë¡œë¡œ ë³€ê²½í•  ê²ƒì´ë‹¤.
+ *     - ë°ì´íƒ€í™”ì¼ì˜ ì´ë¦„ì€ ê²½ë¡œ+ì´ë¦„ì´ë‹¤.
+ *     - íŠ¹ìˆ˜ë¬¸ìžê°€ ë“¤ì–´ê°”ëŠ” ì§€ í™•ì¸í•˜ëŠ” ê³¼ì •ì´ í•„ìš”í•˜ë‹¤.
+ *     - ì´ì— ëŒ€í•œ ì½”ë“œê°€ sddDiskMgr::makeValidDataFilePathì—ì„œ êµ¬í˜„ë˜ì–´ì•¼
+ *       í•  ê²ƒìž„.
  **********************************************************************/
 
 #include <idu.h>
@@ -78,7 +78,7 @@
 #include <smriChangeTrackingMgr.h>
 
 /***********************************************************************
- * Description : datafile ³ëµå¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+ * Description : datafile ë…¸ë“œë¥¼ ì´ˆê¸°í™”í•œë‹¤.
  **********************************************************************/
 IDE_RC sddDataFile::initialize(scSpaceID         aTableSpaceID,
                                sddDataFileNode*  aDataFileNode,
@@ -97,7 +97,7 @@ IDE_RC sddDataFile::initialize(scSpaceID         aTableSpaceID,
     aDataFileNode->mID           = aDataFileAttr->mID;
     aDataFileNode->mState        = aDataFileAttr->mState;
 
-    /* datafile ³ëµåÀÇ ¿©·¯°¡Áö ¼Ó¼º ¼³Á¤ */
+    /* datafile ë…¸ë“œì˜ ì—¬ëŸ¬ê°€ì§€ ì†ì„± ì„¤ì • */
     aDataFileNode->mIsAutoExtend = aDataFileAttr->mIsAutoExtend;
     aDataFileNode->mCreateMode   = aDataFileAttr->mCreateMode;
     aDataFileNode->mInitSize     = aDataFileAttr->mInitSize;
@@ -114,8 +114,8 @@ IDE_RC sddDataFile::initialize(scSpaceID         aTableSpaceID,
              != IDE_SUCCESS);
     sState = 1;
 
-    // BUG-17415 autoextend offÀÏ °æ¿ì nextsize, maxsize´Â 0À» À¯ÁöÇÑ´Ù.
-    // smiDataFileAttrÀÇ nextsize, maxsize´Â ±×´ë·Î µÐ´Ù.
+    // BUG-17415 autoextend offì¼ ê²½ìš° nextsize, maxsizeëŠ” 0ì„ ìœ ì§€í•œë‹¤.
+    // smiDataFileAttrì˜ nextsize, maxsizeëŠ” ê·¸ëŒ€ë¡œ ë‘”ë‹¤.
     if (aDataFileNode->mIsAutoExtend == ID_TRUE)
     {
         aDataFileNode->mNextSize = aDataFileAttr->mNextSize;
@@ -138,7 +138,7 @@ IDE_RC sddDataFile::initialize(scSpaceID         aTableSpaceID,
                                         SMRI_CT_DATAFILE_DESC_INVALID_SLOT_IDX;
 
     /* ------------------------------------------------
-     * datafile Å©±â validation È®ÀÎ
+     * datafile í¬ê¸° validation í™•ì¸
      * ----------------------------------------------*/
     IDE_TEST_RAISE( aDataFileNode->mInitSize > aMaxDataFilePageCount,
                     error_invalid_filesize );
@@ -153,8 +153,8 @@ IDE_RC sddDataFile::initialize(scSpaceID         aTableSpaceID,
                     error_invalid_filesize );
 
     /* ------------------------------------------------
-     * path¿¡ ´ëÇÑ ¿µ¹®ÀÚ, ¼ýÀÚ¿Í '/'¸¸ Çã¿ëÇÏ¸ç,
-     * »ó´ë°æ·Î¸¦ Àý´ë°æ·Î º¯°æÇÏ¿© ÀúÀåÇÑ´Ù.
+     * pathì— ëŒ€í•œ ì˜ë¬¸ìž, ìˆ«ìžì™€ '/'ë§Œ í—ˆìš©í•˜ë©°,
+     * ìƒëŒ€ê²½ë¡œë¥¼ ì ˆëŒ€ê²½ë¡œ ë³€ê²½í•˜ì—¬ ì €ìž¥í•œë‹¤.
      * ----------------------------------------------*/
 
     if( aCheckPathValidate == ID_TRUE)
@@ -167,7 +167,7 @@ IDE_RC sddDataFile::initialize(scSpaceID         aTableSpaceID,
                   != IDE_SUCCESS );
     }
 
-    /* datafile ÀÌ¸§ */
+    /* datafile ì´ë¦„ */
     aDataFileNode->mName = NULL;
 
     /* TC/FIT/Limit/sm/sddDataFile_initialize_malloc.sql */
@@ -193,7 +193,7 @@ IDE_RC sddDataFile::initialize(scSpaceID         aTableSpaceID,
     IDE_TEST( aDataFileNode->mFile.setFileName(aDataFileNode->mName)
               != IDE_SUCCESS );
 
-    /* datafile LRU ¸®½ºÆ®ÀÇ NODE ¸®½ºÆ® ÃÊ±âÈ­ */
+    /* datafile LRU ë¦¬ìŠ¤íŠ¸ì˜ NODE ë¦¬ìŠ¤íŠ¸ ì´ˆê¸°í™” */
     SMU_LIST_INIT_NODE(&aDataFileNode->mNode4LRUList);
     aDataFileNode->mNode4LRUList.mData = (void*)(aDataFileNode);
 
@@ -240,7 +240,7 @@ IDE_RC sddDataFile::initialize(scSpaceID         aTableSpaceID,
 }
 
 /***********************************************************************
- * Description : datafile ³ëµå¸¦ ÇØÁ¦ÇÑ´Ù.
+ * Description : datafile ë…¸ë“œë¥¼ í•´ì œí•œë‹¤.
  **********************************************************************/
 IDE_RC sddDataFile::destroy( sddDataFileNode* aDataFileNode )
 {
@@ -263,8 +263,8 @@ IDE_RC sddDataFile::destroy( sddDataFileNode* aDataFileNode )
 }
 
 /***********************************************************************
- * Description : »õ·Î¿î datafileÀ» createÇÑ´Ù.
- datafile Layout´Â ´ÙÀ½°ú °°´Ù.
+ * Description : ìƒˆë¡œìš´ datafileì„ createí•œë‹¤.
+ datafile LayoutëŠ” ë‹¤ìŒê³¼ ê°™ë‹¤.
  ------------------------------------------------------------
 |  |             |               |               |           |
  ------------------------------------------------------------
@@ -282,13 +282,13 @@ IDE_RC sddDataFile::create( idvSQL          * aStatistics,
     IDE_DASSERT( aDataFileNode != NULL );
 
     /* ===========================================================
-     * [1] disk ·¹º§¿¡¼­ µ¿ÀÏÇÑ ÀÌ¸§À» °¡Áø ÆÄÀÏÀÌ Á¸ÀçÇÏ´ÂÁö °Ë»ç
+     * [1] disk ë ˆë²¨ì—ì„œ ë™ì¼í•œ ì´ë¦„ì„ ê°€ì§„ íŒŒì¼ì´ ì¡´ìž¬í•˜ëŠ”ì§€ ê²€ì‚¬
      * =========================================================== */
     IDE_TEST_RAISE( idf::access(aDataFileNode->mName, F_OK) == 0,
                     error_already_exist_datafile );
 
     /* ===========================================================
-     * [2] È­ÀÏ »ý¼º ¹× ¿ÀÇÂ
+     * [2] í™”ì¼ ìƒì„± ë° ì˜¤í”ˆ
      * =========================================================== */
     IDE_TEST( aDataFileNode->mFile.createUntilSuccess(
                 smLayerCallback::setEmergency )
@@ -299,9 +299,9 @@ IDE_RC sddDataFile::create( idvSQL          * aStatistics,
     sState = 2;
 
     /* ===========================================================
-     * [3] PRJ-1149, È­ÀÏÇì´õ ¾²±â.
+     * [3] PRJ-1149, í™”ì¼í—¤ë” ì“°ê¸°.
      * =========================================================== */
-    // BUG-17415 writing ´ÜÀ§ ¸¸Å­¾¿ ±â·ÏÇÔ.
+    // BUG-17415 writing ë‹¨ìœ„ ë§Œí¼ì”© ê¸°ë¡í•¨.
     IDE_TEST( writeNewPages(aStatistics, aDataFileNode) != IDE_SUCCESS );
 
     IDE_TEST( writeDBFileHdr( aStatistics,
@@ -310,7 +310,7 @@ IDE_RC sddDataFile::create( idvSQL          * aStatistics,
               != IDE_SUCCESS );
 
     /* ===========================================================
-     * [4] µ¥ÀÌÅ¸ È­ÀÏ sync ¹× close
+     * [4] ë°ì´íƒ€ í™”ì¼ sync ë° close
      * =========================================================== */
     sState = 0;
     IDE_TEST( close( aDataFileNode ) != IDE_SUCCESS );
@@ -369,24 +369,24 @@ IDE_RC sddDataFile::writeNewPages(idvSQL          *aStatistics,
 
     if (sUnitSize > aDataFileNode->mInitSize)
     {
-        // ±â·ÏÇÏ·Á´Â µ¥ÀÌÅÍÆÄÀÏÀÇ Å©±â°¡ ¾²±â ´ÜÀ§º¸´Ù ÀÛÀ¸¸é
-        // ¾²±â ´ÜÀ§´Â µ¥ÀÌÅÍÆÄÀÏ Å©±â°¡ µÈ´Ù.
+        // ê¸°ë¡í•˜ë ¤ëŠ” ë°ì´í„°íŒŒì¼ì˜ í¬ê¸°ê°€ ì“°ê¸° ë‹¨ìœ„ë³´ë‹¤ ìž‘ìœ¼ë©´
+        // ì“°ê¸° ë‹¨ìœ„ëŠ” ë°ì´í„°íŒŒì¼ í¬ê¸°ê°€ ëœë‹¤.
         sUnitSize = aDataFileNode->mInitSize;
     }
 
-    // ¹öÆÛ °ø°£À» ÇÒ´ç¹Þ´Â´Ù.
+    // ë²„í¼ ê³µê°„ì„ í• ë‹¹ë°›ëŠ”ë‹¤.
     IDE_TEST( iduFile::allocBuff4DirectIO( IDU_MEM_SM_SDD,
                                            sUnitSize * SD_PAGE_SIZE,
                                            (void**)&sBufferPtr,
                                            (void**)&sAlignedBuffer ) != IDE_SUCCESS );
     sAllocated = 1;
 
-    // ¹öÆÛ °ø°£À» ÃÊ±âÈ­ÇÑ´Ù.
-    //   1. ¸ÕÀú Ã¹¹øÂ° ÆäÀÌÁö¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+    // ë²„í¼ ê³µê°„ì„ ì´ˆê¸°í™”í•œë‹¤.
+    //   1. ë¨¼ì € ì²«ë²ˆì§¸ íŽ˜ì´ì§€ë¥¼ ì´ˆê¸°í™”í•œë‹¤.
     idlOS::memset(sAlignedBuffer, 0x00, SD_PAGE_SIZE);
     idlOS::memcpy(sAlignedBuffer, &(sddDiskMgr::mInitialCheckSum), ID_SIZEOF(UInt));
 
-    //   2. µÎ¹øÂ° ÆäÀÌÁöºÎÅÍ´Â Ã¹¹øÂ° ÆäÀÌÁö¸¦ º¹»çÇÑ´Ù.
+    //   2. ë‘ë²ˆì§¸ íŽ˜ì´ì§€ë¶€í„°ëŠ” ì²«ë²ˆì§¸ íŽ˜ì´ì§€ë¥¼ ë³µì‚¬í•œë‹¤.
     for (i = 1, sCurPos = sAlignedBuffer + SD_PAGE_SIZE;
          i < sUnitSize;
          i++, sCurPos += SD_PAGE_SIZE)
@@ -394,17 +394,17 @@ IDE_RC sddDataFile::writeNewPages(idvSQL          *aStatistics,
         idlOS::memcpy(sCurPos, sAlignedBuffer, SD_PAGE_SIZE);
     }
 
-    // µ¥ÀÌÅÍ ÆÄÀÏ¿¡ ¹öÆÛ¸¦ ±â·ÏÇÑ´Ù.
-    //   1. sUnitSize ´ÜÀ§·Î ±â·ÏÇÑ´Ù.
+    // ë°ì´í„° íŒŒì¼ì— ë²„í¼ë¥¼ ê¸°ë¡í•œë‹¤.
+    //   1. sUnitSize ë‹¨ìœ„ë¡œ ê¸°ë¡í•œë‹¤.
     for ( i = 0, sWriteOffset = SM_DBFILE_METAHDR_PAGE_OFFSET;
           i < aDataFileNode->mInitSize / sUnitSize;
           i++ )
     {
-        /* BUG-18138 Å×ÀÌºí½ºÆäÀÌ½º »ý¼ºÇÏ´Ù°¡ µð½ºÅ© Ç® »óÈ²ÀÌ µÇ¸é
-         * ÇØ´ç ¼¼¼ÇÀÌ Á¤¸®°¡ µÇÁö ¾Ê½À´Ï´Ù.
+        /* BUG-18138 í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ ìƒì„±í•˜ë‹¤ê°€ ë””ìŠ¤í¬ í’€ ìƒí™©ì´ ë˜ë©´
+         * í•´ë‹¹ ì„¸ì…˜ì´ ì •ë¦¬ê°€ ë˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
          *
-         * ÀÌÀü¿¡ Disk IO°¡ ¼º°øÇÒ¶§±îÁö ´ë±âÇØ¼­ ¹®Á¦°¡ »ý°å¾ú½À´Ï´Ù.
-         * ¹Ù·Î ¿¡·¯°¡ ¹ß»ýÇÏ¸é ¿¡·¯Ã³¸®ÇÏµµ·Ï ¼öÁ¤ÇÏ¿´½À´Ï´Ù. */
+         * ì´ì „ì— Disk IOê°€ ì„±ê³µí• ë•Œê¹Œì§€ ëŒ€ê¸°í•´ì„œ ë¬¸ì œê°€ ìƒê²¼ì—ˆìŠµë‹ˆë‹¤.
+         * ë°”ë¡œ ì—ëŸ¬ê°€ ë°œìƒí•˜ë©´ ì—ëŸ¬ì²˜ë¦¬í•˜ë„ë¡ ìˆ˜ì •í•˜ì˜€ìŠµë‹ˆë‹¤. */
         IDE_TEST( aDataFileNode->mFile.write(
                                       aStatistics,
                                       sWriteOffset,
@@ -418,12 +418,12 @@ IDE_RC sddDataFile::writeNewPages(idvSQL          *aStatistics,
 
         IDU_FIT_POINT( "1.BUG-12754@sddDataFile::writeNewPages" );
 
-        // BUG-12754 : session ¿¬°áÀÌ ²÷°å´ÂÁö °Ë»çÇÔ
+        // BUG-12754 : session ì—°ê²°ì´ ëŠê²¼ëŠ”ì§€ ê²€ì‚¬í•¨
         IDE_TEST(iduCheckSessionEvent(aStatistics) != IDE_SUCCESS);
     }
 
-    //   2. aDataFileNode->mInitSize - sUnitSize * i + 1 Å©±â¸¸Å­ ±â·ÏÇÑ´Ù.
-    //      ¿©±â¼­ 1Àº datafile headerÀÌ´Ù.
+    //   2. aDataFileNode->mInitSize - sUnitSize * i + 1 í¬ê¸°ë§Œí¼ ê¸°ë¡í•œë‹¤.
+    //      ì—¬ê¸°ì„œ 1ì€ datafile headerì´ë‹¤.
     IDE_TEST( aDataFileNode->mFile.write(
                          aStatistics,
                          sWriteOffset,
@@ -457,7 +457,7 @@ IDE_RC sddDataFile::writeNewPages(idvSQL          *aStatistics,
 }
 
 /***********************************************************************
- * Description : ÇØ´ç datafileÀ» reuseÇÑ´Ù.
+ * Description : í•´ë‹¹ datafileì„ reuseí•œë‹¤.
  **********************************************************************/
 IDE_RC sddDataFile::reuse( idvSQL          * aStatistics,
                            sddDataFileNode * aDataFileNode )
@@ -473,7 +473,7 @@ IDE_RC sddDataFile::reuse( idvSQL          * aStatistics,
     // must be fullpath
     IDE_TEST( aDataFileNode->mFile.setFileName(aDataFileNode->mName) != IDE_SUCCESS );
 
-    /* BUGBUG - ERROR MSG - datafileÀÌ Á¸ÀçÇÏ¸é reuse ±×·¸Áö ¾ÊÀ¸¸é »ý¼º */
+    /* BUGBUG - ERROR MSG - datafileì´ ì¡´ìž¬í•˜ë©´ reuse ê·¸ë ‡ì§€ ì•Šìœ¼ë©´ ìƒì„± */
     if (idf::access(aDataFileNode->mName, F_OK) == 0)
     {
         IDE_TEST( open( aDataFileNode ) != IDE_SUCCESS );
@@ -491,13 +491,13 @@ IDE_RC sddDataFile::reuse( idvSQL          * aStatistics,
         }
 
         /* ===========================================================
-         * µ¥ÀÌÅ¸ È­ÀÏÀÇ ½ÇÁ¦ Å©±â¸¸Å­ ÃÊ±âÈ­
+         * ë°ì´íƒ€ í™”ì¼ì˜ ì‹¤ì œ í¬ê¸°ë§Œí¼ ì´ˆê¸°í™”
          * =========================================================== */
-        // BUG-17415 writing ´ÜÀ§ ¸¸Å­¾¿ ±â·ÏÇÔ.
+        // BUG-17415 writing ë‹¨ìœ„ ë§Œí¼ì”© ê¸°ë¡í•¨.
         IDE_TEST( writeNewPages(aStatistics, aDataFileNode) != IDE_SUCCESS );
 
         /* ===========================================================
-         * PRJ-1149, È­ÀÏÇì´õ ¾²±â.
+         * PRJ-1149, í™”ì¼í—¤ë” ì“°ê¸°.
          * =========================================================== */
 
         IDE_TEST( writeDBFileHdr( aStatistics,
@@ -506,7 +506,7 @@ IDE_RC sddDataFile::reuse( idvSQL          * aStatistics,
                   != IDE_SUCCESS );
 
         /* ===========================================================
-         * µ¥ÀÌÅ¸ È­ÀÏ sync ¹× close
+         * ë°ì´íƒ€ í™”ì¼ sync ë° close
          * =========================================================== */
         sState = 0;
         IDE_TEST( close( aDataFileNode ) != IDE_SUCCESS );
@@ -531,11 +531,11 @@ IDE_RC sddDataFile::reuse( idvSQL          * aStatistics,
 }
 
 /***********************************************************************
- * Description : datafileÀ» extend ½ÃÅ²´Ù.
+ * Description : datafileì„ extend ì‹œí‚¨ë‹¤.
  *
- * aStatistics   - [IN] Åë°è Á¤º¸
+ * aStatistics   - [IN] í†µê³„ ì •ë³´
  * aDataFileNode - [IN] Datafile Node
- * aExtendSize   - [IN] È®ÀåÇÏ°íÀÚ ÇÏ´Â Å©±â·Î Page CountÀÌ´Ù.
+ * aExtendSize   - [IN] í™•ìž¥í•˜ê³ ìž í•˜ëŠ” í¬ê¸°ë¡œ Page Countì´ë‹¤.
  **********************************************************************/
 IDE_RC sddDataFile::extend( idvSQL          * aStatistics,
                             sddDataFileNode * aDataFileNode,
@@ -574,33 +574,33 @@ IDE_RC sddDataFile::extend( idvSQL          * aStatistics,
               != IDE_SUCCESS );
     sState = 1;
 
-    // ¹öÆÛ °ø°£À» ÃÊ±âÈ­ÇÑ´Ù.
-    //   1. ¸ÕÀú Ã¹¹øÂ° ÆäÀÌÁö¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+    // ë²„í¼ ê³µê°„ì„ ì´ˆê¸°í™”í•œë‹¤.
+    //   1. ë¨¼ì € ì²«ë²ˆì§¸ íŽ˜ì´ì§€ë¥¼ ì´ˆê¸°í™”í•œë‹¤.
     idlOS::memset(sAlignedBuffer, 0x00, SD_PAGE_SIZE);
     idlOS::memcpy(sAlignedBuffer, &(sddDiskMgr::mInitialCheckSum), ID_SIZEOF(UInt));
 
     sWriteOffset            = SDD_CALC_PAGEOFFSET(aDataFileNode->mCurrSize);
     sExtendWriteOffset4CT   = sWriteOffset;
 
-    //   2. µÎ¹øÂ° ÆäÀÌÁöºÎÅÍ´Â Ã¹¹øÂ° ÆäÀÌÁö¸¦ º¹»çÇÑ´Ù.
+    //   2. ë‘ë²ˆì§¸ íŽ˜ì´ì§€ë¶€í„°ëŠ” ì²«ë²ˆì§¸ íŽ˜ì´ì§€ë¥¼ ë³µì‚¬í•œë‹¤.
     for( i = SD_PAGE_SIZE; i < sWriteUnitSize; i += SD_PAGE_SIZE )
     {
         idlOS::memcpy( sAlignedBuffer + i, sAlignedBuffer, SD_PAGE_SIZE );
     }
 
-    // µ¥ÀÌÅÍ ÆÄÀÏ¿¡ ¹öÆÛ¸¦ ±â·ÏÇÑ´Ù.
-    //   1. sUnitSize ´ÜÀ§·Î ±â·ÏÇÑ´Ù.
+    // ë°ì´í„° íŒŒì¼ì— ë²„í¼ë¥¼ ê¸°ë¡í•œë‹¤.
+    //   1. sUnitSize ë‹¨ìœ„ë¡œ ê¸°ë¡í•œë‹¤.
     for ( i = 0;
           i < ( sExtendByte / sWriteUnitSize );
           i++ )
     {
         IDU_FIT_POINT( "1.BUG-12754@sddDataFile::extend" );
 
-        /* BUG-18138 Å×ÀÌºí½ºÆäÀÌ½º »ý¼ºÇÏ´Ù°¡ µð½ºÅ© Ç® »óÈ²ÀÌ µÇ¸é
-         * ÇØ´ç ¼¼¼ÇÀÌ Á¤¸®°¡ µÇÁö ¾Ê½À´Ï´Ù.
+        /* BUG-18138 í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ ìƒì„±í•˜ë‹¤ê°€ ë””ìŠ¤í¬ í’€ ìƒí™©ì´ ë˜ë©´
+         * í•´ë‹¹ ì„¸ì…˜ì´ ì •ë¦¬ê°€ ë˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
          *
-         * ÀÌÀü¿¡ Disk IO°¡ ¼º°øÇÒ¶§±îÁö ´ë±âÇØ¼­ ¹®Á¦°¡ »ý°å¾ú½À´Ï´Ù.
-         * ¹Ù·Î ¿¡·¯°¡ ¹ß»ýÇÏ¸é ¿¡·¯Ã³¸®ÇÏµµ·Ï ¼öÁ¤ÇÏ¿´½À´Ï´Ù. */
+         * ì´ì „ì— Disk IOê°€ ì„±ê³µí• ë•Œê¹Œì§€ ëŒ€ê¸°í•´ì„œ ë¬¸ì œê°€ ìƒê²¼ì—ˆìŠµë‹ˆë‹¤.
+         * ë°”ë¡œ ì—ëŸ¬ê°€ ë°œìƒí•˜ë©´ ì—ëŸ¬ì²˜ë¦¬í•˜ë„ë¡ ìˆ˜ì •í•˜ì˜€ìŠµë‹ˆë‹¤. */
         IDE_TEST( aDataFileNode->mFile.write(
                       aStatistics,
                       sWriteOffset,
@@ -612,7 +612,7 @@ IDE_RC sddDataFile::extend( idvSQL          * aStatistics,
 
         IDU_FIT_POINT( "1.BUG-18138@sddDataFile::extend" );
 
-        // BUG-12754 : session ¿¬°áÀÌ ²÷°å´ÂÁö °Ë»çÇÔ
+        // BUG-12754 : session ì—°ê²°ì´ ëŠê²¼ëŠ”ì§€ ê²€ì‚¬í•¨
         IDE_TEST(iduCheckSessionEvent(aStatistics) != IDE_SUCCESS);
     }
 
@@ -620,7 +620,7 @@ IDE_RC sddDataFile::extend( idvSQL          * aStatistics,
 
     if( sRestSize != 0 )
     {
-        //   2. sExtendByte - sUnitSize * i Å©±â¸¸Å­ ±â·ÏÇÑ´Ù.
+        //   2. sExtendByte - sUnitSize * i í¬ê¸°ë§Œí¼ ê¸°ë¡í•œë‹¤.
         IDE_TEST(aDataFileNode->mFile.write(
                      aStatistics,
                      sWriteOffset,
@@ -634,7 +634,7 @@ IDE_RC sddDataFile::extend( idvSQL          * aStatistics,
               != IDE_SUCCESS );
 
     // PROJ-2133 Incremental backup
-    // temptablespace ¿¡ ´ëÇØ¼­´Â change tracking ÇÒ ÇÊ¿ä°¡ ¾ø½À´Ï´Ù.
+    // temptablespace ì— ëŒ€í•´ì„œëŠ” change tracking í•  í•„ìš”ê°€ ì—†ìŠµë‹ˆë‹¤.
     if ( ( smLayerCallback::isCTMgrEnabled() == ID_TRUE ) &&
          ( sctTableSpaceMgr::isTempTableSpace( aDataFileNode->mSpaceID ) != ID_TRUE ) )
     {
@@ -693,11 +693,11 @@ IDE_RC sddDataFile::extend( idvSQL          * aStatistics,
 }
 
 /***********************************************************************
- * Description : ÇÏ³ªÀÇ datafileÀ» ¿ÀÇÂÇÑ´Ù.
+ * Description : í•˜ë‚˜ì˜ datafileì„ ì˜¤í”ˆí•œë‹¤.
  *
  * + 2nd. code design
- *   - datafileÀ» openÇÑ´Ù.
- *   - datafile ³ëµå¿¡ open ¸ðµå·Î ¼³Á¤
+ *   - datafileì„ opení•œë‹¤.
+ *   - datafile ë…¸ë“œì— open ëª¨ë“œë¡œ ì„¤ì •
  **********************************************************************/
 IDE_RC sddDataFile::open( sddDataFileNode* aDataFileNode )
 {
@@ -720,11 +720,11 @@ IDE_RC sddDataFile::open( sddDataFileNode* aDataFileNode )
 }
 
 /***********************************************************************
- * Description : datafileÀ» closeÇÑ´Ù.
+ * Description : datafileì„ closeí•œë‹¤.
  *
  * + 2nd. code design
- *   - datafileÀ» ´Ý´Â´Ù.
- *   - datafile ³ëµå¿¡ close ¸ðµå¸¦ ¼³Á¤ÇÑ´Ù.
+ *   - datafileì„ ë‹«ëŠ”ë‹¤.
+ *   - datafile ë…¸ë“œì— close ëª¨ë“œë¥¼ ì„¤ì •í•œë‹¤.
  **********************************************************************/
 IDE_RC sddDataFile::close( sddDataFileNode  *aDataFileNode )
 {
@@ -745,7 +745,7 @@ IDE_RC sddDataFile::close( sddDataFileNode  *aDataFileNode )
 }
 
 /***********************************************************************
- * Description : datafileÀ» Ãà¼ÒÇÑ´Ù.(truncate)
+ * Description : datafileì„ ì¶•ì†Œí•œë‹¤.(truncate)
  **********************************************************************/
 IDE_RC sddDataFile::truncate( sddDataFileNode*  aDataFileNode,
                               ULong             aNewDataFileSize )
@@ -787,7 +787,7 @@ IDE_RC sddDataFile::truncate( sddDataFileNode*  aDataFileNode,
 }
 
 /***********************************************************************
- * Description : datafileÀÇ pageoffsetºÎÅÍ readsize¸¸Å­ data ÆÇµ¶
+ * Description : datafileì˜ pageoffsetë¶€í„° readsizeë§Œí¼ data íŒë…
  **********************************************************************/
 IDE_RC sddDataFile::read( idvSQL         * aStatistics,
                           sddDataFileNode* aDataFileNode,
@@ -813,9 +813,9 @@ IDE_RC sddDataFile::read( idvSQL         * aStatistics,
 }
 
 /***********************************************************************
- * Description : datafileÀÇ pageoffsetºÎÅÍ writesize¸¸Å­ data ±â·Ï
- * size¸¸Å­ extendÇÏ´Â °æ¿ì¿¡ write page size´Â extendÀÇ Å©±âÀÇ
- * ¹è¼ö°¡ µÉ °ÍÀÌ´Ù.
+ * Description : datafileì˜ pageoffsetë¶€í„° writesizeë§Œí¼ data ê¸°ë¡
+ * sizeë§Œí¼ extendí•˜ëŠ” ê²½ìš°ì— write page sizeëŠ” extendì˜ í¬ê¸°ì˜
+ * ë°°ìˆ˜ê°€ ë  ê²ƒì´ë‹¤.
  **********************************************************************/
 IDE_RC sddDataFile::write( idvSQL         * aStatistics,
                            sddDataFileNode* aDataFileNode,
@@ -841,7 +841,7 @@ IDE_RC sddDataFile::write( idvSQL         * aStatistics,
 }
 
 /***********************************************************************
- * Description : datafileÀ» syncÇÑ´Ù.
+ * Description : datafileì„ syncí•œë‹¤.
  **********************************************************************/
 IDE_RC sddDataFile::sync( sddDataFileNode* aDataFileNode )
 {
@@ -861,7 +861,7 @@ IDE_RC sddDataFile::sync( sddDataFileNode* aDataFileNode )
 }
 
 /***********************************************************************
- * Description : ½ÇÁ¦ datafileÀÇ »èÁ¦´Â Æ®·£Àè¼Ç Ä¿¹Ô Á÷Àü¿¡ ¼öÇàµÊ.
+ * Description : ì‹¤ì œ datafileì˜ ì‚­ì œëŠ” íŠ¸ëžœìž­ì…˜ ì»¤ë°‹ ì§ì „ì— ìˆ˜í–‰ë¨.
  **********************************************************************/
 IDE_RC sddDataFile::addPendingOperation( void             *aTrans,
                                          sddDataFileNode  *aDataFileNode,
@@ -896,7 +896,7 @@ IDE_RC sddDataFile::addPendingOperation( void             *aTrans,
 }
 
 /***********************************************************************
- * Description : datafile¿¡ ´ëÇÑ I/O ÁØºñÀÛ¾÷ ¼öÇà
+ * Description : datafileì— ëŒ€í•œ I/O ì¤€ë¹„ìž‘ì—… ìˆ˜í–‰
  **********************************************************************/
 void sddDataFile::prepareIO( sddDataFileNode*  aDataFileNode )
 {
@@ -910,7 +910,7 @@ void sddDataFile::prepareIO( sddDataFileNode*  aDataFileNode )
 }
 
 /***********************************************************************
- * Description : datafile¿¡ ´ëÇÑ I/O ¸¶¹«¸® ÀÛ¾÷ ¼öÇà
+ * Description : datafileì— ëŒ€í•œ I/O ë§ˆë¬´ë¦¬ ìž‘ì—… ìˆ˜í–‰
  **********************************************************************/
 void sddDataFile::completeIO( sddDataFileNode*  aDataFileNode,
                               sddIOMode         aIOMode )
@@ -930,7 +930,7 @@ void sddDataFile::completeIO( sddDataFileNode*  aDataFileNode,
 }
 
 /***********************************************************************
- * Description : datafile ³ëµåÀÇ º¯°æ¿©ºÎ ¼³Á¤
+ * Description : datafile ë…¸ë“œì˜ ë³€ê²½ì—¬ë¶€ ì„¤ì •
  **********************************************************************/
 void sddDataFile::setModifiedFlag( sddDataFileNode* aDataFileNode,
                                    idBool           aModifiedFlag )
@@ -945,11 +945,11 @@ void sddDataFile::setModifiedFlag( sddDataFileNode* aDataFileNode,
 }
 
 /***********************************************************************
- * Description : datafile³ëµåÀÇ autoextend¸¦ ¸ðµå ¼³Á¤
- *               autoexnted on/off, next size, maxsize´Â ÀÌ ÇÔ¼ö¸¦
- *               ÅëÇØ¼­ ¹Ù²ã¾ß¸¸ ÇÑ´Ù.
- *               autoextend on/off¿¡ µû¶ó next size, maxsizeÀÇ
- *               consistentÇÑ °ªÀÌ ÀÖ´Ù.
+ * Description : datafileë…¸ë“œì˜ autoextendë¥¼ ëª¨ë“œ ì„¤ì •
+ *               autoexnted on/off, next size, maxsizeëŠ” ì´ í•¨ìˆ˜ë¥¼
+ *               í†µí•´ì„œ ë°”ê¿”ì•¼ë§Œ í•œë‹¤.
+ *               autoextend on/offì— ë”°ë¼ next size, maxsizeì˜
+ *               consistentí•œ ê°’ì´ ìžˆë‹¤.
  **********************************************************************/
 void sddDataFile::setAutoExtendProp( sddDataFileNode* aDataFileNode,
                                      idBool           aAutoExtendMode,
@@ -960,10 +960,10 @@ void sddDataFile::setAutoExtendProp( sddDataFileNode* aDataFileNode,
 
     if ( aAutoExtendMode == ID_FALSE )
     {
-        // autoextend offÀÏ °æ¿ì
-        // nextsize¿Í maxsize´Â ¸ðµÎ 0 ÀÌ¾î¾ß ÇÑ´Ù.
-        // »ç¿ëÀÚÀÇ ¿À·ù´Â ÄÚµå»ó ÀÖÀ» ¼ö ¾ø¾î¾ß ÇÏ¹Ç·Î
-        // assert·Î º¸ÀåÇÑ´Ù.
+        // autoextend offì¼ ê²½ìš°
+        // nextsizeì™€ maxsizeëŠ” ëª¨ë‘ 0 ì´ì–´ì•¼ í•œë‹¤.
+        // ì‚¬ìš©ìžì˜ ì˜¤ë¥˜ëŠ” ì½”ë“œìƒ ìžˆì„ ìˆ˜ ì—†ì–´ì•¼ í•˜ë¯€ë¡œ
+        // assertë¡œ ë³´ìž¥í•œë‹¤.
         IDE_ASSERT(aNextSize == 0);
         IDE_ASSERT(aMaxSize == 0);
     }
@@ -984,7 +984,7 @@ void sddDataFile::setAutoExtendProp( sddDataFileNode* aDataFileNode,
 }
 
 /***********************************************************************
- * Description : datafile ³ëµåÀÇ currsize¸¦ setÇÑ´Ù.
+ * Description : datafile ë…¸ë“œì˜ currsizeë¥¼ setí•œë‹¤.
  **********************************************************************/
 void sddDataFile::setCurrSize( sddDataFileNode*  aDataFileNode,
                                ULong             aSize )
@@ -1011,8 +1011,8 @@ void sddDataFile::setCurrSize( sddDataFileNode*  aDataFileNode,
 }
 
 /***********************************************************************
- * Description : datafile ³ëµåÀÇ initsize¸¦ setÇÑ´Ù.
- * truncateÇÒ ¶§¸¸ º¯ÇÑ´Ù.
+ * Description : datafile ë…¸ë“œì˜ initsizeë¥¼ setí•œë‹¤.
+ * truncateí•  ë•Œë§Œ ë³€í•œë‹¤.
  **********************************************************************/
 void sddDataFile::setInitSize( sddDataFileNode*  aDataFileNode,
                                ULong             aSize )
@@ -1036,12 +1036,12 @@ void sddDataFile::setInitSize( sddDataFileNode*  aDataFileNode,
 }
 
 /***********************************************************************
- * Description : datafile ³ëµåÀÇ »õ·Î¿î datafile ÀÌ¸§ ¼³Á¤
+ * Description : datafile ë…¸ë“œì˜ ìƒˆë¡œìš´ datafile ì´ë¦„ ì„¤ì •
  *
- * # ´Ü, MEDIA RECOVERY°úÁ¤¿¡¼­´Â »õ·Î¿î µ¥ÀÌÅ¸ ÆÄÀÏ»ý¼ºÀ» À§ÇÏ¿©,
- *   ±âÁ¸ ÆÄÀÏ ³ëµåÀÇ ÀÌ¸§¸¸ °»½ÅÇÑ´Ù.
- *   - alter database create datafile ¶Ç´Â
- *     alter database rename fileÀ» ¼öÇàÇÒ¶§ ºÒ¸².
+ * # ë‹¨, MEDIA RECOVERYê³¼ì •ì—ì„œëŠ” ìƒˆë¡œìš´ ë°ì´íƒ€ íŒŒì¼ìƒì„±ì„ ìœ„í•˜ì—¬,
+ *   ê¸°ì¡´ íŒŒì¼ ë…¸ë“œì˜ ì´ë¦„ë§Œ ê°±ì‹ í•œë‹¤.
+ *   - alter database create datafile ë˜ëŠ”
+ *     alter database rename fileì„ ìˆ˜í–‰í• ë•Œ ë¶ˆë¦¼.
  **********************************************************************/
 IDE_RC sddDataFile::setDataFileName( sddDataFileNode* aDataFileNode,
                                      SChar*           aNewName,
@@ -1083,8 +1083,8 @@ IDE_RC sddDataFile::setDataFileName( sddDataFileNode* aDataFileNode,
 
     /* BUG-31401 [sm-disk-recovery] When changing a Data file name, 
      *           does not refresh FD of DataFileNode.
-     * ÆÄÀÏÀ» ¿ÏÀüÈ÷ ´Ý¾Æ¾ßÁö¸¸, °ú°Å¿¡ »ç¿ëÇÏ´ø FD¸¦ ´ÝÀ» ¼ö ÀÖ½À´Ï´Ù.
-     * ±×·¸Áö ¾ÊÀ¸¸é, ¸®³×ÀÓ ÇßÀ½¿¡µµ °ú°ÅÀÇ ÆÄÀÏÀ» Á¢±ÙÇÕ´Ï´Ù. */
+     * íŒŒì¼ì„ ì™„ì „ížˆ ë‹«ì•„ì•¼ì§€ë§Œ, ê³¼ê±°ì— ì‚¬ìš©í•˜ë˜ FDë¥¼ ë‹«ì„ ìˆ˜ ìžˆìŠµë‹ˆë‹¤.
+     * ê·¸ë ‡ì§€ ì•Šìœ¼ë©´, ë¦¬ë„¤ìž„ í–ˆìŒì—ë„ ê³¼ê±°ì˜ íŒŒì¼ì„ ì ‘ê·¼í•©ë‹ˆë‹¤. */
     if( aDataFileNode->mIsOpened == ID_TRUE )
     {
         IDE_TEST( aDataFileNode->mFile.close() != IDE_SUCCESS );
@@ -1139,7 +1139,7 @@ IDE_RC sddDataFile::setDataFileName( sddDataFileNode* aDataFileNode,
                      ID_FALSE : ID_TRUE)) == IDE_SUCCESS );
 
             /* BUG-33353 
-             * ¿¹¿Ü»óÈ²¿¡¼­ ÇÒ´ç¹ÞÀº ¸Þ¸ð¸®¸¦ ÇØÁ¦ ÇÏÁö ¾Ê°í ÀÖ¾úÀ½. */
+             * ì˜ˆì™¸ìƒí™©ì—ì„œ í• ë‹¹ë°›ì€ ë©”ëª¨ë¦¬ë¥¼ í•´ì œ í•˜ì§€ ì•Šê³  ìžˆì—ˆìŒ. */
         case 1:
             (void)iduMemMgr::free( aDataFileNode->mName );
 
@@ -1150,13 +1150,13 @@ IDE_RC sddDataFile::setDataFileName( sddDataFileNode* aDataFileNode,
     return IDE_FAILURE;
 }
 /***********************************************************************
- *   µ¥ÀÌÅ¸ÆÄÀÏ HEADER¿¡ Ã¼Å©Æ÷ÀÎÆ® Á¤º¸¸¦ ±â·ÏÇÑ´Ù.
+ *   ë°ì´íƒ€íŒŒì¼ HEADERì— ì²´í¬í¬ì¸íŠ¸ ì •ë³´ë¥¼ ê¸°ë¡í•œë‹¤.
  *
- *  [IN] aDataFileNode  : DBF Node Æ÷ÀÎÆ®
- *  [IN] aRedoSN        : ¹Ìµð¾îº¹±¸¿¡ ÇÊ¿äÇÑ Disk Redo SN
- *  [IN] aDiskCreateLSN : ¹Ìµð¾îº¹±¸¿¡ ÇÊ¿äÇÑ Disk Create LSN
- *  [IN] aMustRedoToLSN : ¹Ìµð¾îº¹±¸¿¡ ÇÊ¿äÇÑ Must Redo To LSN
- *  [IN] aDataFileDescSlotID : change trackingÀ» À§ÇÑ CTÆÄÀÏÀÇ slotID
+ *  [IN] aDataFileNode  : DBF Node í¬ì¸íŠ¸
+ *  [IN] aRedoSN        : ë¯¸ë””ì–´ë³µêµ¬ì— í•„ìš”í•œ Disk Redo SN
+ *  [IN] aDiskCreateLSN : ë¯¸ë””ì–´ë³µêµ¬ì— í•„ìš”í•œ Disk Create LSN
+ *  [IN] aMustRedoToLSN : ë¯¸ë””ì–´ë³µêµ¬ì— í•„ìš”í•œ Must Redo To LSN
+ *  [IN] aDataFileDescSlotID : change trackingì„ ìœ„í•œ CTíŒŒì¼ì˜ slotID
  **********************************************************************/
 void sddDataFile::setDBFHdr( sddDataFileHdr*            aFileMetaHdr,
                              smLSN*                     aRedoLSN,
@@ -1195,14 +1195,14 @@ void sddDataFile::setDBFHdr( sddDataFileHdr*            aFileMetaHdr,
 }
 
 /***********************************************************************
- * Description : PRJ-1149  media recovery°¡ ÇÊ¿äÇÑÁö °Ë»ç
- * binary db versionÀÌ ºÒÀÏÄ¡ÇÏ°Å³ª create lsnÀÌ °ªÀÌ Àß¸øµÈ °æ¿ì
- * invalid fileÀÌ¸ç, oldest lstÀÌ ºÒÀÏÄ¡ÇÏ´Â °æ¿ì´Â media recovery°¡
- * ÇÊ¿äÇÑ °æ¿ì·Î ÆÇ´ÜÇÑ´Ù.
+ * Description : PRJ-1149  media recoveryê°€ í•„ìš”í•œì§€ ê²€ì‚¬
+ * binary db versionì´ ë¶ˆì¼ì¹˜í•˜ê±°ë‚˜ create lsnì´ ê°’ì´ ìž˜ëª»ëœ ê²½ìš°
+ * invalid fileì´ë©°, oldest lstì´ ë¶ˆì¼ì¹˜í•˜ëŠ” ê²½ìš°ëŠ” media recoveryê°€
+ * í•„ìš”í•œ ê²½ìš°ë¡œ íŒë‹¨í•œë‹¤.
  *
- *    aFileNode       - [IN]  Loganchor¿¡¼­ ÀÐÀº FileNode
- *    aDBFileHdr      - [IN]  DBFile¿¡¼­ ÀÐÀº DBFileHdr
- *    aIsMediaFailure - [OUT] MediaRecovery°¡ ÇÊ¿äÇÑÁö¸¦ ¹ÝÈ¯ÇÑ´Ù.
+ *    aFileNode       - [IN]  Loganchorì—ì„œ ì½ì€ FileNode
+ *    aDBFileHdr      - [IN]  DBFileì—ì„œ ì½ì€ DBFileHdr
+ *    aIsMediaFailure - [OUT] MediaRecoveryê°€ í•„ìš”í•œì§€ë¥¼ ë°˜í™˜í•œë‹¤.
  **********************************************************************/
 IDE_RC sddDataFile::checkValidationDBFHdr(
                          sddDataFileNode  * aFileNode,
@@ -1249,28 +1249,28 @@ IDE_RC sddDataFile::checkValidationDBFHdr(
     sCtlVer  = sDBFileHdrOfNode->mSmVersion & SM_CHECK_VERSION_MASK;
     sFileVer = aDBFileHdr->mSmVersion & SM_CHECK_VERSION_MASK;
 
-    // [1] SM VERSION È®ÀÎ
-    // µ¥ÀÌÅ¸ÆÄÀÏ°ú ¼­¹ö ¹ÙÀÌ³Ê¸®ÀÇ È£È¯¼ºÀ» °Ë»çÇÑ´Ù.
+    // [1] SM VERSION í™•ì¸
+    // ë°ì´íƒ€íŒŒì¼ê³¼ ì„œë²„ ë°”ì´ë„ˆë¦¬ì˜ í˜¸í™˜ì„±ì„ ê²€ì‚¬í•œë‹¤.
     IDE_TEST_RAISE(sDBVer != sCtlVer, err_invalid_hdr);
     IDE_TEST_RAISE(sDBVer != sFileVer, err_invalid_hdr);
 
-    // [2] CREATE SN È®ÀÎ
-    // µ¥ÀÌÅ¸ÆÄÀÏÀÇ Create SNÀº LoganchorÀÇ Create SN°ú µ¿ÀÏÇØ¾ßÇÑ´Ù.
-    // ´Ù¸£¸é ÆÄÀÏ¸í¸¸ µ¿ÀÏÇÑ ¿ÏÀüÈ÷ ´Ù¸¥ µ¥ÀÌÅ¸ÆÄÀÏÀÌ´Ù.
+    // [2] CREATE SN í™•ì¸
+    // ë°ì´íƒ€íŒŒì¼ì˜ Create SNì€ Loganchorì˜ Create SNê³¼ ë™ì¼í•´ì•¼í•œë‹¤.
+    // ë‹¤ë¥´ë©´ íŒŒì¼ëª…ë§Œ ë™ì¼í•œ ì™„ì „ížˆ ë‹¤ë¥¸ ë°ì´íƒ€íŒŒì¼ì´ë‹¤.
     // CREATE LSNN
     IDE_TEST_RAISE( smLayerCallback::isLSNEQ( &(sDBFileHdrOfNode->mCreateLSN),
                                               &(aDBFileHdr->mCreateLSN) )
                     != ID_TRUE, err_invalid_hdr );
 
-    // [3] Redo LSN È®ÀÎ
+    // [3] Redo LSN í™•ì¸
     if ( smLayerCallback::isLSNLTE(
                 &sDBFileHdrOfNode->mRedoLSN,
                 &aDBFileHdr->mRedoLSN) == ID_TRUE )
     {
-        // µ¥ÀÌÅ¸ ÆÄÀÏÀÇ REDO SNº¸´Ù LoganchorÀÇ Redo SNÀÌ ´õ ÀÛ°Å³ª
-        // °°¾Æ¾ß ÇÑ´Ù.
+        // ë°ì´íƒ€ íŒŒì¼ì˜ REDO SNë³´ë‹¤ Loganchorì˜ Redo SNì´ ë” ìž‘ê±°ë‚˜
+        // ê°™ì•„ì•¼ í•œë‹¤.
 
-        *aIsMediaFailure = ID_FALSE; // ¹Ìµð¾î º¹±¸ ºÒÇÊ¿ä
+        *aIsMediaFailure = ID_FALSE; // ë¯¸ë””ì–´ ë³µêµ¬ ë¶ˆí•„ìš”
 
 #ifdef DEBUG
         ideLog::log(SM_TRC_LOG_LEVEL_DISK,
@@ -1279,10 +1279,10 @@ IDE_RC sddDataFile::checkValidationDBFHdr(
     }
     else
     {
-        // µ¥ÀÌÅ¸ ÆÄÀÏÀÇ REDO SNº¸´Ù LoganchorÀÇ Redo SNÀÌ ´õ Å©¸é
-        // ¹Ìµð¾î º¹±¸°¡ ÇÊ¿äÇÏ´Ù.
+        // ë°ì´íƒ€ íŒŒì¼ì˜ REDO SNë³´ë‹¤ Loganchorì˜ Redo SNì´ ë” í¬ë©´
+        // ë¯¸ë””ì–´ ë³µêµ¬ê°€ í•„ìš”í•˜ë‹¤.
 
-        *aIsMediaFailure = ID_TRUE; // ¹Ìµð¾î º¹±¸ ÇÊ¿ä
+        *aIsMediaFailure = ID_TRUE; // ë¯¸ë””ì–´ ë³µêµ¬ í•„ìš”
 
 #ifdef DEBUG
         ideLog::log(SM_TRC_LOG_LEVEL_DISK,
@@ -1333,9 +1333,9 @@ IDE_RC sddDataFile::checkValidationDBFHdr(
 }
 
 /*
-   µ¥ÀÌÅ¸ÆÄÀÏ HEADERDÀÇ À¯È¿¼ºÀ» °Ë»çÇÑ´Ù.
+   ë°ì´íƒ€íŒŒì¼ HEADERDì˜ ìœ íš¨ì„±ì„ ê²€ì‚¬í•œë‹¤.
 
-   [IN] aDBFileHdr : sddDataFileHdr Å¸ÀÔÀÇ Æ÷ÀÎÅÍ
+   [IN] aDBFileHdr : sddDataFileHdr íƒ€ìž…ì˜ í¬ì¸í„°
 */
 IDE_RC sddDataFile::checkValuesOfDBFHdr(
                           sddDataFileHdr*  aDBFileHdr )
@@ -1344,7 +1344,7 @@ IDE_RC sddDataFile::checkValuesOfDBFHdr(
 
     IDE_DASSERT( aDBFileHdr != NULL );
 
-    // REDO LSN°ú CREATE LSNÀº 0ÀÌ°Å³ª ULONG_MAX °ªÀ» °¡Áú ¼ö ¾ø´Ù.
+    // REDO LSNê³¼ CREATE LSNì€ 0ì´ê±°ë‚˜ ULONG_MAX ê°’ì„ ê°€ì§ˆ ìˆ˜ ì—†ë‹¤.
     SM_LSN_INIT(sCmpLSN);
     IDE_TEST( smLayerCallback::isLSNEQ( &aDBFileHdr->mRedoLSN,
                                         &sCmpLSN ) == ID_TRUE );
@@ -1417,10 +1417,10 @@ void sddDataFile::getDataFileAttr( sddDataFileNode*   aDataFileNode,
 }
 
 /*
- * Disk Data File Header¸¦ ±â·ÏÇÑ´Ù.
+ * Disk Data File Headerë¥¼ ê¸°ë¡í•œë‹¤.
  *
  * aDataFileNode - [IN] Data file node
- * aDBFileHdr    - [IN] µð½ºÅ© µ¥ÀÌÅ¸ÆÄÀÏÀÇ ¸ÞÅ¸Çì´õ
+ * aDBFileHdr    - [IN] ë””ìŠ¤í¬ ë°ì´íƒ€íŒŒì¼ì˜ ë©”íƒ€í—¤ë”
  *
  */
 IDE_RC sddDataFile::writeDBFileHdr( idvSQL          * aStatistics,
@@ -1430,22 +1430,22 @@ IDE_RC sddDataFile::writeDBFileHdr( idvSQL          * aStatistics,
     SChar *sHeadPageBuffPtr = NULL;
     SChar *sHeadPageBuff = NULL;
 
-    /* fix BUG-17825 Data File Header±â·ÏÁß Process Failure½Ã
-     *               Startup¾ÈµÉ ¼ö ÀÖÀ½
+    /* fix BUG-17825 Data File Headerê¸°ë¡ì¤‘ Process Failureì‹œ
+     *               Startupì•ˆë  ìˆ˜ ìžˆìŒ
      *
-     * ¸ðµç ÆÄÀÏ½Ã½ºÅÛ¿¡¼­´Â Block( 512 Bytes )¿¡ ´ëÇÑ Atomic IO¸¦ ¼öÇàÇÑ´Ù.
-     * WriteÇÏ°íÀÚ ÇÏ´Â ÀÚ·á°¡ Block °æ°è¿¡ °É¸®Áö¸¸ ¾Ê´Â´Ù¸é ¾ÈÀüÇÏ°Ô ³»·Á°¡
-     * °Å³ª ¾Æ¿¹ ³»·Á°¡Áö ¾Ê±â ¶§¹®¿¡ ÀÚ·á°¡ ±úÁú°¡´É¼ºÀÌ ¾ø´Ù.
-     * sddDataFileHdr´Â µ¥ÀÌÅ¸ÆÄÀÏÀÇ 0 offset¿¡ ÀúÀåµÇ°í Å©±â°¡ 512¹ÙÀÌÆ® ÀÌÇÏ
-     * ÀÌ±â ¶§¹®¿¡  Block °æ°è¿¡ °ÉÃÄ¼­ Æ÷ÇÔµÇÁö ¾ÊÀ¸¹Ç·Î AtomicÇÏ°Ô
-     * Disk¿¡ ³»·Á°¥ ¼ö ÀÖ´Ù.
+     * ëª¨ë“  íŒŒì¼ì‹œìŠ¤í…œì—ì„œëŠ” Block( 512 Bytes )ì— ëŒ€í•œ Atomic IOë¥¼ ìˆ˜í–‰í•œë‹¤.
+     * Writeí•˜ê³ ìž í•˜ëŠ” ìžë£Œê°€ Block ê²½ê³„ì— ê±¸ë¦¬ì§€ë§Œ ì•ŠëŠ”ë‹¤ë©´ ì•ˆì „í•˜ê²Œ ë‚´ë ¤ê°€
+     * ê±°ë‚˜ ì•„ì˜ˆ ë‚´ë ¤ê°€ì§€ ì•Šê¸° ë•Œë¬¸ì— ìžë£Œê°€ ê¹¨ì§ˆê°€ëŠ¥ì„±ì´ ì—†ë‹¤.
+     * sddDataFileHdrëŠ” ë°ì´íƒ€íŒŒì¼ì˜ 0 offsetì— ì €ìž¥ë˜ê³  í¬ê¸°ê°€ 512ë°”ì´íŠ¸ ì´í•˜
+     * ì´ê¸° ë•Œë¬¸ì—  Block ê²½ê³„ì— ê±¸ì³ì„œ í¬í•¨ë˜ì§€ ì•Šìœ¼ë¯€ë¡œ Atomicí•˜ê²Œ
+     * Diskì— ë‚´ë ¤ê°ˆ ìˆ˜ ìžˆë‹¤.
      *
-     * ¸¸¾à 512 Bytes ³Ñ´Â´Ù¸é, Double Write Çü½ÄÀ¸·Î ¼öÁ¤µÇ¾î¾ß ÇÑ´Ù. */
+     * ë§Œì•½ 512 Bytes ë„˜ëŠ”ë‹¤ë©´, Double Write í˜•ì‹ìœ¼ë¡œ ìˆ˜ì •ë˜ì–´ì•¼ í•œë‹¤. */
     
     /* PROJ-2133 incremental backup
-     * ÆÄÀÏÇì´õ¿¡ backupinfo°¡ Ãß°¡µÊÀ¸·ÎÀÎÇØ 512bytes°¡ ³Ñ°Ô µÇ³ª ¹é¾÷ÆÄÀÏ¿¡¸¸
-     * Á¸ÀçÇÏ´Â Á¤º¸·Î ÀÏ¹ÝÀûÀÎ µ¥ÀÌÅÍÆÄÀÏ¿¡´Â »ç¿ëµÇÁö¾Ê´Â´Ù.
-     * µû¶ó¼­ backup infoÁ¤º¸ Å©±â¸¦ datafileHdr¿¡¼­ »©¼­ 512byte°¡ ³Ñ´ÂÁö °Ë»çÇÑ´Ù.
+     * íŒŒì¼í—¤ë”ì— backupinfoê°€ ì¶”ê°€ë¨ìœ¼ë¡œì¸í•´ 512bytesê°€ ë„˜ê²Œ ë˜ë‚˜ ë°±ì—…íŒŒì¼ì—ë§Œ
+     * ì¡´ìž¬í•˜ëŠ” ì •ë³´ë¡œ ì¼ë°˜ì ì¸ ë°ì´í„°íŒŒì¼ì—ëŠ” ì‚¬ìš©ë˜ì§€ì•ŠëŠ”ë‹¤.
+     * ë”°ë¼ì„œ backup infoì •ë³´ í¬ê¸°ë¥¼ datafileHdrì—ì„œ ë¹¼ì„œ 512byteê°€ ë„˜ëŠ”ì§€ ê²€ì‚¬í•œë‹¤.
      */
     IDE_ASSERT( (ID_SIZEOF( sddDataFileHdr ) - ID_SIZEOF( smriBISlot )) < 512 );
 
@@ -1493,10 +1493,10 @@ IDE_RC sddDataFile::writeDBFileHdr( idvSQL          * aStatistics,
 
 
 /***********************************************************************
- * ÀÓÀÇÀÇ DBFile¿¡ DiskDataFileHeader¸¦ ±â·ÏÇÑ´Ù.
+ * ìž„ì˜ì˜ DBFileì— DiskDataFileHeaderë¥¼ ê¸°ë¡í•œë‹¤.
  *
- * aBBFilePath - [IN] DB fileÀÇ °æ·Î
- * aDBFileHdr  - [IN] µð½ºÅ© µ¥ÀÌÅ¸ÆÄÀÏÀÇ ¸ÞÅ¸Çì´õ
+ * aBBFilePath - [IN] DB fileì˜ ê²½ë¡œ
+ * aDBFileHdr  - [IN] ë””ìŠ¤í¬ ë°ì´íƒ€íŒŒì¼ì˜ ë©”íƒ€í—¤ë”
  **********************************************************************/
 IDE_RC sddDataFile::writeDBFileHdrByPath( SChar           * aDBFilePath,
                                           sddDataFileHdr  * aDBFileHdr )
@@ -1542,7 +1542,7 @@ IDE_RC sddDataFile::writeDBFileHdrByPath( SChar           * aDBFilePath,
 
 #if 0 //not used
 /***********************************************************************
- * Description : datafile ³ëµåÀÇ Á¤º¸¸¦ Ãâ·Â
+ * Description : datafile ë…¸ë“œì˜ ì •ë³´ë¥¼ ì¶œë ¥
  **********************************************************************/
 IDE_RC sddDataFile::dumpDataFileNode( sddDataFileNode* aDataFileNode )
 {

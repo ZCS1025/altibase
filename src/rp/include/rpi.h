@@ -32,8 +32,8 @@
 #include <rpdCatalog.h>
 
 // PROJ-1726 performance view definition
-// rp/rpi/rpi.cpp ¿Í qp/qcm/qcmPerformanceView.cpp µÎ ±ºµ¥¿¡¼­
-// »ç¿ëµÇ¹Ç·Î ÇÑ ÄÚµå·Î °ü¸®ÇÏ±â À§ÇÏ¿© #define À¸·Î Á¤ÀÇÇÔ.
+// rp/rpi/rpi.cpp ì™€ qp/qcm/qcmPerformanceView.cpp ë‘ êµ°ë°ì—ì„œ
+// ì‚¬ìš©ë˜ë¯€ë¡œ í•œ ì½”ë“œë¡œ ê´€ë¦¬í•˜ê¸° ìœ„í•˜ì—¬ #define ìœ¼ë¡œ ì •ì˜í•¨.
 #define RP_PERFORMANCE_VIEWS \
     (SChar*)"CREATE VIEW V$REPEXEC "\
                 "( PORT, MAX_SENDER_COUNT, MAX_RECEIVER_COUNT ) "\
@@ -110,7 +110,7 @@
                 "REP_NAME, SYNC_TABLE, SYNC_PARTITION, SYNC_RECORD_COUNT, SYNC_SN "\
             "FROM X$REPSYNC ",\
 \
-    /* PROJ-1915 V$REPSENDER_TRANSTBL¿¡ start_flag Ãß°¡ */\
+    /* PROJ-1915 V$REPSENDER_TRANSTBLì— start_flag ì¶”ê°€ */\
     (SChar*)"CREATE VIEW V$REPSENDER_TRANSTBL "\
                 "( REP_NAME, "\
                 "START_FLAG, "\
@@ -264,7 +264,7 @@
                 "TABLE_OID, INSERT_LOG_COUNT, DELETE_LOG_COUNT, UPDATE_LOG_COUNT, LOB_LOG_COUNT "\
             "FROM X$REPSENDER_SENT_LOG_COUNT"\
 
-// ÁÖÀÇ : ¸¶Áö¸· performance view ¿¡´Â ',' ¸¦ »ı·«ÇÒ °Í!
+// ì£¼ì˜ : ë§ˆì§€ë§‰ performance view ì—ëŠ” ',' ë¥¼ ìƒëµí•  ê²ƒ!
 
 class rpi
 {
@@ -284,8 +284,8 @@ public:
     static IDE_RC   alterReplicationSetHost   ( void        * aQcStatement );
     static IDE_RC   dropReplication           ( void        * aQcStatement );
 
-    //BUG-22703 : Begin Statement¸¦ ¼öÇàÇÑ ÈÄ¿¡ HangÀÌ °É¸®Áö ¾Ê¾Æ¾ß ÇÕ´Ï´Ù.
-    // aStatistics  Åë°è Á¤º¸ ÆÄ¶ó¸ŞÅÍ¸¦ Ãß°¡ ÇÕ´Ï´Ù.
+    //BUG-22703 : Begin Statementë¥¼ ìˆ˜í–‰í•œ í›„ì— Hangì´ ê±¸ë¦¬ì§€ ì•Šì•„ì•¼ í•©ë‹ˆë‹¤.
+    // aStatistics  í†µê³„ ì •ë³´ íŒŒë¼ë©”í„°ë¥¼ ì¶”ê°€ í•©ë‹ˆë‹¤.
     //startSenderThread(), stopSenderThread(), resetReplication(), stopReceiverThreads()
     static IDE_RC   startSenderThread( smiStatement  * aSmiStmt,
                                        SChar         * aReplName,
@@ -314,7 +314,7 @@ public:
     static IDE_RC alterReplicationSetParallel( void * aQcStatement );
     static IDE_RC alterReplicationSetGrouping( void * aQcStatement );
 
-    // PROJ-1442 Replication Online Áß DDL Çã¿ë
+    // PROJ-1442 Replication Online ì¤‘ DDL í—ˆìš©
     static IDE_RC   stopReceiverThreads(smiStatement * aSmiStmt,
                                         smOID          aTableOID,
                                         idvSQL       * aStatistics);

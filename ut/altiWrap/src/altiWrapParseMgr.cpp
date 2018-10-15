@@ -75,16 +75,16 @@ IDE_RC altiWrapParseMgr::parseInternal( altiWrap         * aAltiWrap,
     s_altiWraplx.mLexer->mAltiWrap = aAltiWrap;
     s_altiWraplx.mAltiWrap         = aAltiWrap;
    
-    /* syntax error°¡ ¹ß»ıÇß´Ù´Â ÀÇ¹Ì´Â tokenization error ÀÌ°Å³ª,
-       pms statement°¡ ¾Æ´Ñ °ÍÀÌ´Ù.
-       ÀÌ·± °æ¿ì, input text¿¡¼­ ÀĞ¾î¼­ ÀúÀåÇØ³õÀº text¸¦ ±×´ë·Î
-       aAltiWrap->mEncryptedText¿¡ º¹»ç ÇØ ÁØ´Ù. 
-       ÀÌ´Â output file¿¡ input ³»¿ëÀÌ ÀúÀåµÇµµ·Ï ÇØÁÖ±â À§ÇÔÀÌ´Ù. */ 
+    /* syntax errorê°€ ë°œìƒí–ˆë‹¤ëŠ” ì˜ë¯¸ëŠ” tokenization error ì´ê±°ë‚˜,
+       pms statementê°€ ì•„ë‹Œ ê²ƒì´ë‹¤.
+       ì´ëŸ° ê²½ìš°, input textì—ì„œ ì½ì–´ì„œ ì €ì¥í•´ë†“ì€ textë¥¼ ê·¸ëŒ€ë¡œ
+       aAltiWrap->mEncryptedTextì— ë³µì‚¬ í•´ ì¤€ë‹¤. 
+       ì´ëŠ” output fileì— input ë‚´ìš©ì´ ì €ì¥ë˜ë„ë¡ í•´ì£¼ê¸° ìœ„í•¨ì´ë‹¤. */ 
     if ( altiWraplparse(&s_altiWraplx) != IDE_SUCCESS )
     {
         sPlainTextLen = aAltiWrap->mPlainText->mTextLen;
 
-        /* sPlainText¿¡ ´ëÇÑ free´Â altiWrapi::finalizeAltiWrap¿¡¼­ ÀÌ·ç¾îÁø´Ù. */
+        /* sPlainTextì— ëŒ€í•œ freeëŠ” altiWrapi::finalizeAltiWrapì—ì„œ ì´ë£¨ì–´ì§„ë‹¤. */
         sPlainText = (SChar *)idlOS::malloc( sPlainTextLen + 1 );
         IDE_TEST_RAISE( sPlainText == NULL, ERR_ALLOC_MEMORY );
         sState = 1;

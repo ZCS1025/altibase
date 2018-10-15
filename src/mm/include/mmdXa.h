@@ -78,10 +78,10 @@ public:
     static IDE_RC removeHeuristicXid( idvSQL    *aStatistics,   /* PROJ-2446 */
                                       SChar     *aXIDStr, 
                                       UInt       aXIDStrSize );
-    //fix BUG-26844 mmdXa::rollbackÀÌ Àå½Ã°£ ÁøÇàµÉ¶§ ¾î¶°ÇÑ XA callµµ ÁøÇàÇÒ¼ö ¾ø½À´Ï´Ù
-    //Bug Fix¸¦  mmdManager::checkXATimeOut¿¡µµ Àû¿ëÇØ¾ß ÇÕ´Ï´Ù.
-    /* BUG-27968 XA Fix/Unfix Scalability¸¦ Çâ»ó½ÃÄÑ¾ß ÇÕ´Ï´Ù.
-     fix(list-s-latch) , fixWithAdd(list-x-latch)·Î ºĞ¸®½ÃÄÑ fix º´¸ñÀ» ºĞ»ê½ÃÅµ´Ï´Ù. */
+    //fix BUG-26844 mmdXa::rollbackì´ ì¥ì‹œê°„ ì§„í–‰ë ë•Œ ì–´ë– í•œ XA callë„ ì§„í–‰í• ìˆ˜ ì—†ìŠµë‹ˆë‹¤
+    //Bug Fixë¥¼  mmdManager::checkXATimeOutì—ë„ ì ìš©í•´ì•¼ í•©ë‹ˆë‹¤.
+    /* BUG-27968 XA Fix/Unfix Scalabilityë¥¼ í–¥ìƒì‹œì¼œì•¼ í•©ë‹ˆë‹¤.
+     fix(list-s-latch) , fixWithAdd(list-x-latch)ë¡œ ë¶„ë¦¬ì‹œì¼œ fix ë³‘ëª©ì„ ë¶„ì‚°ì‹œí‚µë‹ˆë‹¤. */
     static IDE_RC fix(mmdXid **aXidObjPtr, ID_XID *aXIDPtr, mmdXaLogFlag aXaLogFlag);
     static IDE_RC fixWithAdd(mmdXaContext *aXaContext,mmdXid* aXidObj2Add, mmdXid **aFixedXidObjPtr, ID_XID *aXIDPtr, mmdXaLogFlag aXaLogFlag);
     static IDE_RC unFix(mmdXid *aXidObj, ID_XID *aXIDPtr, UInt aOptFlag);

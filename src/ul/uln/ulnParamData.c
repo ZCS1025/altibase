@@ -47,9 +47,9 @@
 ACI_RC ulnSFID_41(ulnFnContext *aFnContext)
 {
     /*
-     * BUGBUG : [3] [4] [5] ´Â ¾ÆÁ÷ ±¸ÇöÇÏÁö ¾Ê¾ÒÀ¸¹Ç·Î ÀÏ´Ü ¹«½ÃÇÏµµ·Ï ÇÑ´Ù.
-     *          [1] [2] ¸¦ ±¸ÇöÇØ¾ß ÇÑ´Ù.
-     *          ÀÏ´ÜÀº SQLExecute() ¸¦ Çß´Ù°í °¡Á¤ÇÑ´Ù. Áï, ¹«Á¶°Ç [2]
+     * BUGBUG : [3] [4] [5] ëŠ” ì•„ì§ êµ¬í˜„í•˜ì§€ ì•Šì•˜ìœ¼ë¯€ë¡œ ì¼ë‹¨ ë¬´ì‹œí•˜ë„ë¡ í•œë‹¤.
+     *          [1] [2] ë¥¼ êµ¬í˜„í•´ì•¼ í•œë‹¤.
+     *          ì¼ë‹¨ì€ SQLExecute() ë¥¼ í–ˆë‹¤ê³  ê°€ì •í•œë‹¤. ì¦‰, ë¬´ì¡°ê±´ [2]
      */
 
     if (aFnContext->mWhere == ULN_STATE_EXIT_POINT)
@@ -121,9 +121,9 @@ ACI_RC ulnSFID_42(ulnFnContext *aFnContext)
     ulnStmt *sStmt = aFnContext->mHandle.mStmt;
 
     /*
-     * BUGBUG : [3] [4] [5] ´Â ¾ÆÁ÷ ±¸ÇöÇÏÁö ¾Ê¾ÒÀ¸¹Ç·Î ÀÏ´Ü ¹«½ÃÇÏµµ·Ï ÇÑ´Ù.
-     *          [1] [2] ¸¦ ±¸ÇöÇØ¾ß ÇÑ´Ù.
-     *          ÀÏ´ÜÀº SQLExecute() ¸¦ Çß´Ù°í °¡Á¤ÇÑ´Ù. Áï, ¹«Á¶°Ç [2]
+     * BUGBUG : [3] [4] [5] ëŠ” ì•„ì§ êµ¬í˜„í•˜ì§€ ì•Šì•˜ìœ¼ë¯€ë¡œ ì¼ë‹¨ ë¬´ì‹œí•˜ë„ë¡ í•œë‹¤.
+     *          [1] [2] ë¥¼ êµ¬í˜„í•´ì•¼ í•œë‹¤.
+     *          ì¼ë‹¨ì€ SQLExecute() ë¥¼ í–ˆë‹¤ê³  ê°€ì •í•œë‹¤. ì¦‰, ë¬´ì¡°ê±´ [2]
      */
 
     if (aFnContext->mWhere == ULN_STATE_EXIT_POINT)
@@ -177,7 +177,7 @@ ACI_RC ulnSFID_42(ulnFnContext *aFnContext)
             }
 
             /*
-             * BUGBUG : [4] [5] [3] ¹ø Á¶°Ç °Ë»ç
+             * BUGBUG : [4] [5] [3] ë²ˆ ì¡°ê±´ ê²€ì‚¬
              */
         }
     }
@@ -197,15 +197,15 @@ static ACI_RC ulnParamDataReturnUserMarker(ulnFnContext *aFnContext, void **aVal
     acp_sint32_t         sActParamNum;
 
     /* PROJ-1789 Updatable Scrollable Cursor
-     * RowsetStmt·Î ÀÛ¾÷ÇÒ ¶§´Â KeysetStmtÀÇ BindCol Á¤º¸¸¦ ¾ò¾î¿Í¾ß ÇÑ´Ù. */
+     * RowsetStmtë¡œ ìž‘ì—…í•  ë•ŒëŠ” KeysetStmtì˜ BindCol ì •ë³´ë¥¼ ì–»ì–´ì™€ì•¼ í•œë‹¤. */
     if (sStmt->mParentStmt != NULL)
     {
         sStmt = sStmt->mParentStmt;
         ACE_DASSERT((ulnStmtGetNeedDataFuncID(sStmt) == ULN_FID_SETPOS) ||
                     (ulnStmtGetNeedDataFuncID(sStmt) == ULN_FID_BULKOPERATIONS));
 
-        /* SetPos, BulkOperations¸¦ È£ÃâÇØ¼­ NEED_DATA°¡ ¹ß»ýÇÑ °ÍÀÌ¹Ç·Î
-         * ColumnIgnoreFlags°¡ »ý¼ºµÇ°í ¿Ã¹Ù¸¥ °ªÀ¸·Î Ã¤¿öÁ³À½À» º¸ÀåÇÑ´Ù. */
+        /* SetPos, BulkOperationsë¥¼ í˜¸ì¶œí•´ì„œ NEED_DATAê°€ ë°œìƒí•œ ê²ƒì´ë¯€ë¡œ
+         * ColumnIgnoreFlagsê°€ ìƒì„±ë˜ê³  ì˜¬ë°”ë¥¸ ê°’ìœ¼ë¡œ ì±„ì›Œì¡ŒìŒì„ ë³´ìž¥í•œë‹¤. */
         sColumnIgnoreFlags = ulnStmtGetColumnIgnoreFlagsBuf(sStmt);
         ACI_TEST_RAISE(sColumnIgnoreFlags == NULL, LABEL_MEM_MAN_ERR);
 
@@ -235,7 +235,7 @@ static ACI_RC ulnParamDataReturnUserMarker(ulnFnContext *aFnContext, void **aVal
     else
     {
         /*
-        * execute ¸¦ ÇÏ°í ³ª¸é ÇöÀç Ã³¸®ÇÏ´Â row, param number °¡ ´Þ¶óÁú¼öµµ ÀÖ´Ù.
+        * execute ë¥¼ í•˜ê³  ë‚˜ë©´ í˜„ìž¬ ì²˜ë¦¬í•˜ëŠ” row, param number ê°€ ë‹¬ë¼ì§ˆìˆ˜ë„ ìžˆë‹¤.
         */
         sDescRecApp = ulnStmtGetApdRec(sStmt, sProcessingParamNumber);
         ACI_TEST_RAISE(sDescRecApp == NULL, LABEL_MEM_MAN_ERR);
@@ -244,7 +244,7 @@ static ACI_RC ulnParamDataReturnUserMarker(ulnFnContext *aFnContext, void **aVal
         ACI_TEST_RAISE(sDescRecImp == NULL, LABEL_MEM_MAN_ERR);
     }
 
-    /* BUG-26666 SQLParamData ¿¡¼­ 2¹øÂ° ÀÎÀÚÀÇ °ªÀ» Àß¸ø ³Ñ°ÜÁÖ°í ÀÖ½À´Ï´Ù. */
+    /* BUG-26666 SQLParamData ì—ì„œ 2ë²ˆì§¸ ì¸ìžì˜ ê°’ì„ ìž˜ëª» ë„˜ê²¨ì£¼ê³  ìžˆìŠµë‹ˆë‹¤. */
     *aValuePtr = sDescRecApp->mDataPtr;
 
     return ACI_SUCCESS;
@@ -306,7 +306,7 @@ ACI_RC ulnParamDataCore(ulnFnContext *aFnContext,
         }
         else
         {
-            /* BUG-44942 Fetch ÇÁ·ÎÅäÄÝÀ» °°ÀÌ Àü¼ÛÇØ¼­ Åë½Åºñ¿ë ÁÙÀÌ±â */
+            /* BUG-44942 Fetch í”„ë¡œí† ì½œì„ ê°™ì´ ì „ì†¡í•´ì„œ í†µì‹ ë¹„ìš© ì¤„ì´ê¸° */
             if ((ulnStmtHasResultSet(aStmt) == ACP_TRUE) ||
                 ((aStmt->mAttrDeferredPrepare == ULN_CONN_DEFERRED_PREPARE_ON) &&
                  (aStmt->mIsSelect == ACP_TRUE)))
@@ -349,14 +349,14 @@ ACI_RC ulnParamDataCore(ulnFnContext *aFnContext,
                 }
             }
 
-            // bug-21634 Result set À» ¼¼ÆÃÇØ¾ß ÇÕ´Ï´Ù.
+            // bug-21634 Result set ì„ ì„¸íŒ…í•´ì•¼ í•©ë‹ˆë‹¤.
             ulnStmtSetCurrentResult(aStmt, (ulnResult *)(aStmt->mResultList.mNext));
             ulnStmtSetCurrentResultRowNumber(aStmt, 1);
             ulnDiagSetRowCount(&aStmt->mObj.mDiagHeader, aStmt->mCurrentResult->mAffectedRowCount);
 
-            /* PROJ-2177: NEES DATA Ã³¸®°¡ ³¡³µÀ¸¹Ç·Î ÃÊ±âÈ­ */
-            /* BUG-32618: °è¼Ó NEED_DATA »óÅÂ´õ¶óµµ ¿¹¿Ü·Î ºüÁöÁö¾Ê°í ÀÌÂÊ ÄÚµå¸¦ Åº´Ù.
-             * RC°¡ SUCCESSÀÏ ¶§¸¸ ÃÊ±âÈ­ÇÏµµ·Ï ÇØ¾ßÇÑ´Ù. */
+            /* PROJ-2177: NEES DATA ì²˜ë¦¬ê°€ ëë‚¬ìœ¼ë¯€ë¡œ ì´ˆê¸°í™” */
+            /* BUG-32618: ê³„ì† NEED_DATA ìƒíƒœë”ë¼ë„ ì˜ˆì™¸ë¡œ ë¹ ì§€ì§€ì•Šê³  ì´ìª½ ì½”ë“œë¥¼ íƒ„ë‹¤.
+             * RCê°€ SUCCESSì¼ ë•Œë§Œ ì´ˆê¸°í™”í•˜ë„ë¡ í•´ì•¼í•œë‹¤. */
             if (ULN_FNCONTEXT_GET_RC(aFnContext) == SQL_SUCCESS)
             {
                 ulnStmtResetNeedDataFuncID(aStmt);
@@ -410,7 +410,7 @@ SQLRETURN ulnParamData(ulnStmt *aStmt, void **aValuePtr)
      */
 
     /* PROJ-1789 Updatable Scrollable Cursor
-     * SetPos, BulkOperations¿¡¼­ NEED_DATA°¡ ³µÀ¸¸é RowsetStmt·Î ÀÛ¾÷. */
+     * SetPos, BulkOperationsì—ì„œ NEED_DATAê°€ ë‚¬ìœ¼ë©´ RowsetStmtë¡œ ìž‘ì—…. */
     if ((ulnStmtGetNeedDataFuncID(aStmt) == ULN_FID_SETPOS)
      || (ulnStmtGetNeedDataFuncID(aStmt) == ULN_FID_BULKOPERATIONS))
     {
@@ -440,7 +440,7 @@ SQLRETURN ulnParamData(ulnStmt *aStmt, void **aValuePtr)
     if ((sDbc->mAttrPDODeferProtocols >= 1) &&
         (ULN_FNCONTEXT_GET_RC(&sFnContext) == SQL_NEED_DATA))
     {
-        /* BUG-45286 ParamDataIn Àü¼Û Áö¿¬ */
+        /* BUG-45286 ParamDataIn ì „ì†¡ ì§€ì—° */
     }
     else
     {

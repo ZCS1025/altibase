@@ -14,17 +14,17 @@
 #include <iduMemPool2.h>
 
 /*******************************************************************
- * Description: MemPool ListÃÊ±âÈ­
+ * Description: MemPool Listì´ˆê¸°í™”
  *
- *  aIndex           - [IN] iduMemPool2¸¦ ¸¸µç Client Index
- *  aName            - [IN] iduMemPool2ÀÇ ÀÌ¸§
+ *  aIndex           - [IN] iduMemPool2ë¥¼ ë§Œë“  Client Index
+ *  aName            - [IN] iduMemPool2ì˜ ì´ë¦„
  *  aChildCnt        - [IN] MemPool Cnt
- *  aBlockSize       - [IN] BlockÀÇ Å©±â
- *  aBlockCntInChunk - [IN] Chunk³»ÀÇ BlockÀÇ °¹¼ö
- *  aCacheSize       - [IN] MemPoolÀÌ ÀÌ Å©±âÀÇ ¸Ş¸ğ¸®¸¦ À¯Áö. ³ª¸ÓÁö
- *                          ¸Ş¸ğ¸®´Â OS¿¡°Ô ¹İÈ¯ÇÑ´Ù.
- *  aAlignSize       - [IN] "°¢ BlockÀÇ Å©±â"¿Í "BlockÀÇ ½ÃÀÛ ÁÖ¼Ò"
- *                          ÀÌ Å©±â·Î AlignµÈ´Ù.
+ *  aBlockSize       - [IN] Blockì˜ í¬ê¸°
+ *  aBlockCntInChunk - [IN] Chunkë‚´ì˜ Blockì˜ ê°¯ìˆ˜
+ *  aCacheSize       - [IN] MemPoolì´ ì´ í¬ê¸°ì˜ ë©”ëª¨ë¦¬ë¥¼ ìœ ì§€. ë‚˜ë¨¸ì§€
+ *                          ë©”ëª¨ë¦¬ëŠ” OSì—ê²Œ ë°˜í™˜í•œë‹¤.
+ *  aAlignSize       - [IN] "ê° Blockì˜ í¬ê¸°"ì™€ "Blockì˜ ì‹œì‘ ì£¼ì†Œ"
+ *                          ì´ í¬ê¸°ë¡œ Alignëœë‹¤.
  ********************************************************************/
 IDE_RC iduMemPool2::initialize( iduMemoryClientIndex aIndex,
                                 SChar               *aName,
@@ -41,8 +41,8 @@ IDE_RC iduMemPool2::initialize( iduMemoryClientIndex aIndex,
     IDE_ASSERT( aBlockSize != 0 );
     IDE_ASSERT( aAlignSize != 0 );
 
-    /* 1°³ ÀÌ»óÀÇ MemPool°¹¼ö¸¦ ¿øÇÏ°Ô µÇ¸é ÇöÀç MemPool¿ÜÀÇ ´Ù¸¥
-       MemPoolÀ» »ı¼ºÇÑ´Ù. */
+    /* 1ê°œ ì´ìƒì˜ MemPoolê°¯ìˆ˜ë¥¼ ì›í•˜ê²Œ ë˜ë©´ í˜„ì¬ MemPoolì™¸ì˜ ë‹¤ë¥¸
+       MemPoolì„ ìƒì„±í•œë‹¤. */
     IDE_TEST( init( aIndex,
                     aName,
                     aBlockSize,
@@ -79,8 +79,8 @@ IDE_RC iduMemPool2::initialize( iduMemoryClientIndex aIndex,
         }
     }
 
-    /* initÇÔ¼ö¿¡¼­ ÀÌ°ªÀ» 0À¸·Î ÃÊ±âÈ­ ÇÏ±â¶§¹®¿¡ ¹İµå½Ã
-       ÀÌÈÄ¿¡ ÀÌ°ªÀ» ÃÊ±âÈ­ ÇØ¾ßÇÔ */
+    /* inití•¨ìˆ˜ì—ì„œ ì´ê°’ì„ 0ìœ¼ë¡œ ì´ˆê¸°í™” í•˜ê¸°ë•Œë¬¸ì— ë°˜ë“œì‹œ
+       ì´í›„ì— ì´ê°’ì„ ì´ˆê¸°í™” í•´ì•¼í•¨ */
     mPoolCnt = aChildCnt;
 
     return IDE_SUCCESS;
@@ -91,8 +91,8 @@ IDE_RC iduMemPool2::initialize( iduMemoryClientIndex aIndex,
 }
 
 /*******************************************************************
- * Description: ÇÒ´çµÈ Chunk¸¦ iduMemMgr¿¡°Ô ¹İÈ¯ÇÏ°í ÇÒ´çµÈ Resource
- *              ¸¦ Á¤¸®ÇÑ´Ù.
+ * Description: í• ë‹¹ëœ Chunkë¥¼ iduMemMgrì—ê²Œ ë°˜í™˜í•˜ê³  í• ë‹¹ëœ Resource
+ *              ë¥¼ ì •ë¦¬í•œë‹¤.
 *******************************************************************/
 IDE_RC iduMemPool2::destroy()
 {
@@ -121,17 +121,17 @@ IDE_RC iduMemPool2::destroy()
 }
 
 /*******************************************************************
- * Description: Parent, ChildÀÇ ½ÇÁúÀûÀÎ ÃÊ±âÈ­ ÇÔ¼öÀÌ´Ù. °¢°¢ÀÇ
- *              Member¸¦ ÃÊ±âÈ­ ÇÑ´Ù.
+ * Description: Parent, Childì˜ ì‹¤ì§ˆì ì¸ ì´ˆê¸°í™” í•¨ìˆ˜ì´ë‹¤. ê°ê°ì˜
+ *              Memberë¥¼ ì´ˆê¸°í™” í•œë‹¤.
  *
- *  aIndex           - [IN] iduMemPool2¸¦ ¸¸µç Client Index
- *  aName            - [IN] iduMemPool2ÀÇ ÀÌ¸§
- *  aBlockSize       - [IN] BlockÀÇ Å©±â
- *  aBlockCntInChunk - [IN] Chunk³»ÀÇ BlockÀÇ °¹¼ö
- *  aCacheSize       - [IN] MemPoolÀÌ ÀÌ Å©±âÀÇ ¸Ş¸ğ¸®¸¦ À¯Áö. ³ª¸ÓÁö
- *                     ¸Ş¸ğ¸®´Â OS¿¡°Ô ¹İÈ¯ÇÑ´Ù.
- *  aAlignSize       - [IN] "°¢ BlockÀÇ Å©±â"¿Í "BlockÀÇ ½ÃÀÛ ÁÖ¼Ò"
- *                     ÀÌ Å©±â·Î AlignµÈ´Ù.
+ *  aIndex           - [IN] iduMemPool2ë¥¼ ë§Œë“  Client Index
+ *  aName            - [IN] iduMemPool2ì˜ ì´ë¦„
+ *  aBlockSize       - [IN] Blockì˜ í¬ê¸°
+ *  aBlockCntInChunk - [IN] Chunkë‚´ì˜ Blockì˜ ê°¯ìˆ˜
+ *  aCacheSize       - [IN] MemPoolì´ ì´ í¬ê¸°ì˜ ë©”ëª¨ë¦¬ë¥¼ ìœ ì§€. ë‚˜ë¨¸ì§€
+ *                     ë©”ëª¨ë¦¬ëŠ” OSì—ê²Œ ë°˜í™˜í•œë‹¤.
+ *  aAlignSize       - [IN] "ê° Blockì˜ í¬ê¸°"ì™€ "Blockì˜ ì‹œì‘ ì£¼ì†Œ"
+ *                     ì´ í¬ê¸°ë¡œ Alignëœë‹¤.
  *******************************************************************/
 IDE_RC iduMemPool2::init( iduMemoryClientIndex aIndex,
                           SChar               *aName,
@@ -147,7 +147,7 @@ IDE_RC iduMemPool2::init( iduMemoryClientIndex aIndex,
                                 IDU_MUTEX_KIND_NATIVE,
                                 IDV_WAIT_INDEX_NULL ) != IDE_SUCCESS );
 
-    /* UMRÀÌ »ı±â´Â °ÍÀ» ¹æÁö */
+    /* UMRì´ ìƒê¸°ëŠ” ê²ƒì„ ë°©ì§€ */
     mPoolCnt       = 0;
     mChunkCnt      = 0;
     mLeastBinIndex = RESET_LEAST_EMPTY_BIN;
@@ -184,7 +184,7 @@ IDE_RC iduMemPool2::init( iduMemoryClientIndex aIndex,
 }
 
 /*******************************************************************
- * Description: ÇöÀç ÇÒ´çµÈ ¸ğµç Chunk¸¦ OS¿¡ ¹İÈ¯ÇÑ´Ù.
+ * Description: í˜„ì¬ í• ë‹¹ëœ ëª¨ë“  Chunkë¥¼ OSì— ë°˜í™˜í•œë‹¤.
  *******************************************************************/
 IDE_RC iduMemPool2::dest()
 {
@@ -214,11 +214,11 @@ IDE_RC iduMemPool2::dest()
 }
 
 /*******************************************************************
- * Description: ¿©·¯°³ÀÇ MemPoolÁß¿¡¼­ ÇÏ³ª¸¦ °ñ¶ó¼­ ÇÒ´çÀ» ¿äÃ»ÇÑ´Ù.
- *              ÇÒ´ç½Ã ÇÏ³ªÀÇ BlockÀÌ ÇÒ´çµÈ´Ù.
+ * Description: ì—¬ëŸ¬ê°œì˜ MemPoolì¤‘ì—ì„œ í•˜ë‚˜ë¥¼ ê³¨ë¼ì„œ í• ë‹¹ì„ ìš”ì²­í•œë‹¤.
+ *              í• ë‹¹ì‹œ í•˜ë‚˜ì˜ Blockì´ í• ë‹¹ëœë‹¤.
  *
- * aMemHandle    - [OUT] ÇÒ´çµÈ MemoryÀÇ HandleÀÌ ¼³Á¤µÈ´Ù.
- * aAllocMemPtr  - [OUT] ÇÒ´çµÈ MemoryÀÇ ½ÃÀÛÁÖ¼Ò°¡ ¼³Á¤µÈ´Ù.
+ * aMemHandle    - [OUT] í• ë‹¹ëœ Memoryì˜ Handleì´ ì„¤ì •ëœë‹¤.
+ * aAllocMemPtr  - [OUT] í• ë‹¹ëœ Memoryì˜ ì‹œì‘ì£¼ì†Œê°€ ì„¤ì •ëœë‹¤.
  *******************************************************************/
 IDE_RC iduMemPool2::memAlloc( void **aMemHandle, void **aAllocMemPtr )
 {
@@ -249,10 +249,10 @@ IDE_RC iduMemPool2::memAlloc( void **aMemHandle, void **aAllocMemPtr )
 }
 
 /*******************************************************************
- * Description: ÇÏ³ªÀÇ BlockÇÒ´çÀ» ¿äÃ»ÇÑ´Ù.
+ * Description: í•˜ë‚˜ì˜ Blockí• ë‹¹ì„ ìš”ì²­í•œë‹¤.
  *
- * aMemHandle    - [OUT] ÇÒ´çµÈ MemoryÀÇ HandleÀÌ ¼³Á¤µÈ´Ù.
- * aAllocMemPtr  - [OUT] ÇÒ´çµÈ MemoryÀÇ ½ÃÀÛÁÖ¼Ò°¡ ¼³Á¤µÈ´Ù.
+ * aMemHandle    - [OUT] í• ë‹¹ëœ Memoryì˜ Handleì´ ì„¤ì •ëœë‹¤.
+ * aAllocMemPtr  - [OUT] í• ë‹¹ëœ Memoryì˜ ì‹œì‘ì£¼ì†Œê°€ ì„¤ì •ëœë‹¤.
  *******************************************************************/
 IDE_RC iduMemPool2::alloc( void **aMemHandle,
                            void **aAllocMemPtr )
@@ -279,7 +279,7 @@ IDE_RC iduMemPool2::alloc( void **aMemHandle,
 
     if( sFreeChunk->mNewAllocCnt != sFreeChunk->mTotalBlockCnt )
     {
-        /* ¾ÆÁ÷ ÇÑ¹øµµ AllocµÇÁö ¾ÊÀº Free Block ÀÌ Á¸Àç */
+        /* ì•„ì§ í•œë²ˆë„ Allocë˜ì§€ ì•Šì€ Free Block ì´ ì¡´ì¬ */
         sBlockPtr    = IDU_MEMPOOL2_NTH_BLOCK( sFreeChunk, sFreeChunk->mNewAllocCnt );
         sCurFreeInfo = IDU_MEMPOOL2_BLOCK_FREE_INFO( sFreeChunk, sFreeChunk->mNewAllocCnt );
 
@@ -291,7 +291,7 @@ IDE_RC iduMemPool2::alloc( void **aMemHandle,
     }
     else
     {
-        /* Free Chunk List¿¡¼­ BlockÀ» ÇÒ´çÇÑ´Ù. */
+        /* Free Chunk Listì—ì„œ Blockì„ í• ë‹¹í•œë‹¤. */
         IDE_ASSERT( sFreeChunk->mFstFreeInfo != NULL );
 
         sCurFreeInfo = sFreeChunk->mFstFreeInfo;
@@ -331,10 +331,10 @@ IDE_RC iduMemPool2::alloc( void **aMemHandle,
 }
 
 /*******************************************************************
- * Description: aMemHandleÀÌ °¡¸®Å°´Â BlockÀ» Chunk¿¡ FreeÇÑ´Ù.
+ * Description: aMemHandleì´ ê°€ë¦¬í‚¤ëŠ” Blockì„ Chunkì— Freeí•œë‹¤.
  *
- * aMemHandle - [IN] ÇÒ´çµÈ Memory Block¿¡ ´ëÇÑ HandleÀÌ´Ù. aMemHandleÀº
- *                   ½ÇÁ¦·Î iduMemPool2FreeInfo¿¡ ´ëÇÑ PointerÀÌ´Ù.
+ * aMemHandle - [IN] í• ë‹¹ëœ Memory Blockì— ëŒ€í•œ Handleì´ë‹¤. aMemHandleì€
+ *                   ì‹¤ì œë¡œ iduMemPool2FreeInfoì— ëŒ€í•œ Pointerì´ë‹¤.
 *******************************************************************/
 IDE_RC iduMemPool2::memFree( void *aMemHandle )
 {
@@ -381,12 +381,12 @@ IDE_RC iduMemPool2::memFree( void *aMemHandle )
 }
 
 /*******************************************************************
- * Description: Free BlockÀ» °¡Áö°í ÀÖ´Â ChunkÀ» Ã£¾Æ ÁØ´Ù. ÀÌ¶§
- *              ¿©·¯°³ÀÇ Free Chunk°¡ Á¸ÀçÇÑ´Ù¸é °¡Àå ÇÒ´çÀÌ ¸¹ÀÌ
- *              µÈ Chunk¸¦ ÁØ´Ù. ÀÌ·¸°Ô ÇÔÀ¸·Î½á ChunkÀÇ ¸ğµç Block
- *              ÀÌ FreeµÇ¾î OS¿¡ ÇØ´ç Chunk°¡ FreeµÉ È®À²À» ³ôÀÎ´Ù.
+ * Description: Free Blockì„ ê°€ì§€ê³  ìˆëŠ” Chunkì„ ì°¾ì•„ ì¤€ë‹¤. ì´ë•Œ
+ *              ì—¬ëŸ¬ê°œì˜ Free Chunkê°€ ì¡´ì¬í•œë‹¤ë©´ ê°€ì¥ í• ë‹¹ì´ ë§ì´
+ *              ëœ Chunkë¥¼ ì¤€ë‹¤. ì´ë ‡ê²Œ í•¨ìœ¼ë¡œì¨ Chunkì˜ ëª¨ë“  Block
+ *              ì´ Freeë˜ì–´ OSì— í•´ë‹¹ Chunkê°€ Freeë  í™•ìœ¨ì„ ë†’ì¸ë‹¤.
  *
- * aChunkPtr - [OUT] ÇÒ´çµÈ Chunk¿¡ ´ëÇÑ Pointer
+ * aChunkPtr - [OUT] í• ë‹¹ëœ Chunkì— ëŒ€í•œ Pointer
 *******************************************************************/
 IDE_RC iduMemPool2::findAvailableChunk( iduMemPool2ChunkHeader  **aChunkPtr )
 {
@@ -442,11 +442,11 @@ IDE_RC iduMemPool2::findAvailableChunk( iduMemPool2ChunkHeader  **aChunkPtr )
 }
 
 /*******************************************************************
- * Description: ÇöÀç MemPool¿¡ Free Block°¹¼ö°¡ Cache Block Countº¸´Ù
- *              ¸¹À¸¸é ¿ÏÀüÈ÷ ºó( Chunk³»ÀÇ ¸ğµç BlockÀÌ FreeµÈ) Chunk
- *              ¸¦ Free½ÃÅ²´Ù.
+ * Description: í˜„ì¬ MemPoolì— Free Blockê°¯ìˆ˜ê°€ Cache Block Countë³´ë‹¤
+ *              ë§ìœ¼ë©´ ì™„ì „íˆ ë¹ˆ( Chunkë‚´ì˜ ëª¨ë“  Blockì´ Freeëœ) Chunk
+ *              ë¥¼ Freeì‹œí‚¨ë‹¤.
  *
- * aChunk - [IN] FreeÇÒ Chunk Pointer
+ * aChunk - [IN] Freeí•  Chunk Pointer
 *******************************************************************/
 IDE_RC iduMemPool2::checkAndFreeChunk( iduMemPool2ChunkHeader *aChunk )
 {
@@ -474,9 +474,9 @@ IDE_RC iduMemPool2::checkAndFreeChunk( iduMemPool2ChunkHeader *aChunk )
 }
 
 /*******************************************************************
- * Description: °¡¿ë BlockÀ» °¡Áø Chunk¸¦ Ã£´Â´Ù. ÀÌ¶§ °¡±ŞÀû
- *              ¸¹ÀÌ ÇÒ´çÇÑ Chunk¸¦ ¸ÕÀú Ã£´Â´Ù. ÇöÀç Free BlockÀ» °¡
- *              Áø Chunk°¡ ¾ø´Ù¸é NULLÀ» ReturnÇÑ´Ù.
+ * Description: ê°€ìš© Blockì„ ê°€ì§„ Chunkë¥¼ ì°¾ëŠ”ë‹¤. ì´ë•Œ ê°€ê¸‰ì 
+ *              ë§ì´ í• ë‹¹í•œ Chunkë¥¼ ë¨¼ì € ì°¾ëŠ”ë‹¤. í˜„ì¬ Free Blockì„ ê°€
+ *              ì§„ Chunkê°€ ì—†ë‹¤ë©´ NULLì„ Returní•œë‹¤.
 *******************************************************************/
 iduMemPool2ChunkHeader* iduMemPool2::getFreeChunk()
 {
@@ -503,7 +503,7 @@ iduMemPool2ChunkHeader* iduMemPool2::getFreeChunk()
 }
 
 /*******************************************************************
- * Description: MemPoolÀÌ »ç¿ëÇÏ°í ÀÖ´Â MemoryÁ¤º¸¸¦ »Ñ·ÁÁØ´Ù.
+ * Description: MemPoolì´ ì‚¬ìš©í•˜ê³  ìˆëŠ” Memoryì •ë³´ë¥¼ ë¿Œë ¤ì¤€ë‹¤.
 *******************************************************************/
 void iduMemPool2::status()
 {
@@ -516,7 +516,7 @@ void iduMemPool2::status()
 }
 
 /*******************************************************************
- * Description: MemPoolÀÇ ³»ºÎÁ¤º¸¸¦ stdoutÀ¸·Î »Ñ·ÁÁØ´Ù.
+ * Description: MemPoolì˜ ë‚´ë¶€ì •ë³´ë¥¼ stdoutìœ¼ë¡œ ë¿Œë ¤ì¤€ë‹¤.
 *******************************************************************/
 void iduMemPool2::dumpMemPool4UnitTest()
 {
@@ -566,7 +566,7 @@ void iduMemPool2::dumpMemPool4UnitTest()
 }
 
 /*******************************************************************
- * Description: ChunkÀÇ Á¤º¸¸¦ stdout¿¡ »Ñ·ÁÁØ´Ù.
+ * Description: Chunkì˜ ì •ë³´ë¥¼ stdoutì— ë¿Œë ¤ì¤€ë‹¤.
 *******************************************************************/
 void iduMemPool2::dumpChunk4UnitTest( iduMemPool2ChunkHeader *aChunkHeader )
 {

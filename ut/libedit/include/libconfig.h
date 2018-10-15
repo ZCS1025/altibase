@@ -156,11 +156,11 @@
 /* Define to 1 if you have the <term.h> header file. */
 
 /* BUG-13782 A4-AT-W 160 Warnings 2006.4.6 modified by Shawn
- * terms.h ¸¦ include ÇÏÁö ¾Ê¾Æ¼­ tputs, tgoto, tgetent, tgetflag, µîÀÇ
- * ÇÔ¼ö°¡ implicit declaration warning ¿¡ °É¸³´Ï´Ù. HAVE_TERM_H ¸¦ »ç¿ëÇÏ´Â
- * °÷Àº ul ¿¡¼­µµ libedit ¹Û¿¡ ¾ø´Âµ¥´Ù°¡,
- * ÀÌ ÆÄÀÏ, libconfig.h ¸¦ Á÷Á¢ include ÇÏ´Â °Í ¶ÇÇÑ ul ¹Û¿¡ ¾ø´Â°í·Î
- * HAVE_TERM_H ¸¦ ÁÖ¼®Ç®°í 1 ·Î ¼¼ÆÃÇÕ´Ï´Ù.
+ * terms.h ë¥¼ include í•˜ì§€ ì•Šì•„ì„œ tputs, tgoto, tgetent, tgetflag, ë“±ì˜
+ * í•¨ìˆ˜ê°€ implicit declaration warning ì— ê±¸ë¦½ë‹ˆë‹¤. HAVE_TERM_H ë¥¼ ì‚¬ìš©í•˜ëŠ”
+ * ê³³ì€ ul ì—ì„œë„ libedit ë°–ì— ì—†ëŠ”ë°ë‹¤ê°€,
+ * ì´ íŒŒì¼, libconfig.h ë¥¼ ì§ì ‘ include í•˜ëŠ” ê²ƒ ë˜í•œ ul ë°–ì— ì—†ëŠ”ê³ ë¡œ
+ * HAVE_TERM_H ë¥¼ ì£¼ì„í’€ê³  1 ë¡œ ì„¸íŒ…í•©ë‹ˆë‹¤.
  */
 #define HAVE_TERM_H 1
 

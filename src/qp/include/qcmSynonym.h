@@ -27,7 +27,7 @@
 #include <qtc.h>
 
 /***********************************************************************
- * qcmSynonym::resolveObject¿¡¼­ »ç¿ëÇÒ °´Ã¼ÀÇ type Á¤ÀÇ
+ * qcmSynonym::resolveObjectì—ì„œ ì‚¬ìš©í•  ê°ì²´ì˜ type ì •ì˜
 ***********************************************************************/
 #define QCM_OBJECT_TYPE_TABLE                   (0)
 #define QCM_OBJECT_TYPE_SEQUENCE                (1)

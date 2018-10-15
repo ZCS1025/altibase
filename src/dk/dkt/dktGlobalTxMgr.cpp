@@ -32,18 +32,18 @@ dktNotifier dktGlobalTxMgr::mNotifier;
 UChar       dktGlobalTxMgr::mMacAddr[ACP_SYS_MAC_ADDR_LEN];
 UInt        dktGlobalTxMgr::mInitTime = 0;
 /************************************************************************
- * Description : Global transaction manager ¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+ * Description : Global transaction manager ë¥¼ ì´ˆê¸°í™”í•œë‹¤.
  *
  ************************************************************************/
 IDE_RC  dktGlobalTxMgr::initializeStatic()
 {
     mUniqueGlobalTxSeq = 0;
 
-    /* Global coordinator °´Ã¼ÀÇ °³¼ö¸¦ 0 À¸·Î ÃÊ±âÈ­ */
+    /* Global coordinator ê°ì²´ì˜ ê°œìˆ˜ë¥¼ 0 ìœ¼ë¡œ ì´ˆê¸°í™” */
     mActiveGlobalCoordinatorCnt = 0;
-    /* Global coordinator °´Ã¼µéÀÇ °ü¸®¸¦ À§ÇÑ list ÃÊ±âÈ­ */
+    /* Global coordinator ê°ì²´ë“¤ì˜ ê´€ë¦¬ë¥¼ ìœ„í•œ list ì´ˆê¸°í™” */
     IDU_LIST_INIT( &mGlobalCoordinatorList );
-    /* Mutex ÃÊ±âÈ­ */
+    /* Mutex ì´ˆê¸°í™” */
     IDE_TEST_RAISE( mDktMutex.initialize( (SChar *)"DKT_GLOBAL_TX_MANAGER_MUTEX", 
                                           IDU_MUTEX_KIND_POSIX, 
                                           IDV_WAIT_INDEX_NULL )
@@ -83,7 +83,7 @@ IDE_RC  dktGlobalTxMgr::initializeStatic()
 }
 
 /************************************************************************
- * Description : Global transaction manager ¸¦ Á¤¸®ÇÑ´Ù.
+ * Description : Global transaction manager ë¥¼ ì •ë¦¬í•œë‹¤.
  *
  ************************************************************************/
 IDE_RC  dktGlobalTxMgr::finalizeStatic()
@@ -111,11 +111,11 @@ IDE_RC  dktGlobalTxMgr::finalizeStatic()
 }
 
 /************************************************************************
- * Description : Global coordinator °´Ã¼¸¦ »ı¼ºÇÑ´Ù.
+ * Description : Global coordinator ê°ì²´ë¥¼ ìƒì„±í•œë‹¤.
  *
- *  aSession            - [IN] Global coordinator ¸¦ »ı¼ºÇÏ´Â ¼¼¼ÇÁ¤º¸
- *  aGlobalCoordinator  - [OUT] »ı¼ºµÈ global coordinator ¸¦ °¡¸®Å°´Â 
- *                              Æ÷ÀÎÅÍ
+ *  aSession            - [IN] Global coordinator ë¥¼ ìƒì„±í•˜ëŠ” ì„¸ì…˜ì •ë³´
+ *  aGlobalCoordinator  - [OUT] ìƒì„±ëœ global coordinator ë¥¼ ê°€ë¦¬í‚¤ëŠ” 
+ *                              í¬ì¸í„°
  ************************************************************************/
 IDE_RC  dktGlobalTxMgr::createGlobalCoordinator( dksDataSession        * aSession,
                                                  UInt                    aLocalTxId,
@@ -187,10 +187,10 @@ IDE_RC  dktGlobalTxMgr::createGlobalCoordinator( dksDataSession        * aSessio
 }
 
 /************************************************************************
- * Description : ÀÔ·Â¹ŞÀº global coordinator °´Ã¼¸¦ Á¦°ÅÇÑ´Ù.
+ * Description : ì…ë ¥ë°›ì€ global coordinator ê°ì²´ë¥¼ ì œê±°í•œë‹¤.
  *
- *  aGlobalCoordinator  - [IN] Á¦°ÅÇÒ global coordinator ¸¦ °¡¸®Å°´Â 
- *                             Æ÷ÀÎÅÍ
+ *  aGlobalCoordinator  - [IN] ì œê±°í•  global coordinator ë¥¼ ê°€ë¦¬í‚¤ëŠ” 
+ *                             í¬ì¸í„°
  *
  ************************************************************************/
 void  dktGlobalTxMgr::destroyGlobalCoordinator( dktGlobalCoordinator * aGlobalCoordinator )
@@ -199,8 +199,8 @@ void  dktGlobalTxMgr::destroyGlobalCoordinator( dktGlobalCoordinator * aGlobalCo
 
     IDE_ASSERT( aGlobalCoordinator != NULL );
 
-    /* PROJ-2569 notifier¿¡°Ô ÀÌ°üÇØ¾ßÇÏ¹Ç·Î,
-     *  ¸Ş¸ğ¸® ÇØÁ¦´Â commit/rollbackÀÌ ½ÇÇà ÈÄ ¼º°ø ¿©ºÎ¸¦ º¸°í ±×°÷¿¡¼­ ÇÑ´Ù. */
+    /* PROJ-2569 notifierì—ê²Œ ì´ê´€í•´ì•¼í•˜ë¯€ë¡œ,
+     *  ë©”ëª¨ë¦¬ í•´ì œëŠ” commit/rollbackì´ ì‹¤í–‰ í›„ ì„±ê³µ ì—¬ë¶€ë¥¼ ë³´ê³  ê·¸ê³³ì—ì„œ í•œë‹¤. */
     if ( aGlobalCoordinator->mDtxInfo != NULL  )
     {
        if (  aGlobalCoordinator->mDtxInfo->isEmpty() != ID_TRUE ) 
@@ -234,10 +234,10 @@ void  dktGlobalTxMgr::destroyGlobalCoordinator( dktGlobalCoordinator * aGlobalCo
 }
 
 /************************************************************************
- * Description : ÇöÀç DK ³»¿¡¼­ ¼öÇàµÇ°í ÀÖ´Â ¸ğµç ±Û·Î¹ú Æ®·£Àè¼ÇµéÀÇ 
- *               Á¤º¸¸¦ ¾ò¾î¿Â´Ù.
+ * Description : í˜„ì¬ DK ë‚´ì—ì„œ ìˆ˜í–‰ë˜ê³  ìˆëŠ” ëª¨ë“  ê¸€ë¡œë²Œ íŠ¸ëœì­ì…˜ë“¤ì˜ 
+ *               ì •ë³´ë¥¼ ì–»ì–´ì˜¨ë‹¤.
  *              
- *  aInfo       - [IN] ±Û·Î¹ú Æ®·£Àè¼ÇµéÀÇ Á¤º¸¸¦ ´ãÀ» ¹è¿­Æ÷ÀÎÅÍ
+ *  aInfo       - [IN] ê¸€ë¡œë²Œ íŠ¸ëœì­ì…˜ë“¤ì˜ ì •ë³´ë¥¼ ë‹´ì„ ë°°ì—´í¬ì¸í„°
  ************************************************************************/
 IDE_RC  dktGlobalTxMgr::getAllGlobalTransactonInfo( dktGlobalTxInfo ** aInfo, UInt * aGTxCnt )
 {
@@ -326,12 +326,12 @@ IDE_RC  dktGlobalTxMgr::getAllGlobalTransactonInfo( dktGlobalTxInfo ** aInfo, UI
 }
 
 /************************************************************************
- * Description : ÇöÀç DK ³»¿¡¼­ ¼öÇàµÇ°í ÀÖ´Â ¸ğµç ±Û·Î¹ú Æ®·£Àè¼ÇµéÀÇ 
- *               Á¤º¸¸¦ ¾ò¾î¿Â´Ù.
+ * Description : í˜„ì¬ DK ë‚´ì—ì„œ ìˆ˜í–‰ë˜ê³  ìˆëŠ” ëª¨ë“  ê¸€ë¡œë²Œ íŠ¸ëœì­ì…˜ë“¤ì˜ 
+ *               ì •ë³´ë¥¼ ì–»ì–´ì˜¨ë‹¤.
  *              
- *  aInfo       - [IN/OUT] ±Û·Î¹ú Æ®·£Àè¼ÇµéÀÇ Á¤º¸¸¦ ´ãÀ» ¹è¿­Æ÷ÀÎÅÍ
- *  aRTxCnt     - [IN] Caller °¡ ¿äÃ»ÇÑ ½ÃÁ¡¿¡ °áÁ¤µÈ remote transaction
- *                     °³¼ö¸¸Å­¸¸ Á¤º¸¸¦ °¡Á®¿À±â À§ÇÑ ÀÔ·Â°ª
+ *  aInfo       - [IN/OUT] ê¸€ë¡œë²Œ íŠ¸ëœì­ì…˜ë“¤ì˜ ì •ë³´ë¥¼ ë‹´ì„ ë°°ì—´í¬ì¸í„°
+ *  aRTxCnt     - [IN] Caller ê°€ ìš”ì²­í•œ ì‹œì ì— ê²°ì •ëœ remote transaction
+ *                     ê°œìˆ˜ë§Œí¼ë§Œ ì •ë³´ë¥¼ ê°€ì ¸ì˜¤ê¸° ìœ„í•œ ì…ë ¥ê°’
  *
  ************************************************************************/
 IDE_RC  dktGlobalTxMgr::getAllRemoteTransactonInfo( dktRemoteTxInfo ** aInfo,
@@ -426,12 +426,12 @@ IDE_RC  dktGlobalTxMgr::getAllRemoteTransactonInfo( dktRemoteTxInfo ** aInfo,
 }
 
 /************************************************************************
- * Description : ÇöÀç DK ³»¿¡¼­ ¼öÇàµÇ°í ÀÖ´Â ¸ğµç ±Û·Î¹ú Æ®·£Àè¼ÇµéÀÇ 
- *               Á¤º¸¸¦ ¾ò¾î¿Â´Ù.
+ * Description : í˜„ì¬ DK ë‚´ì—ì„œ ìˆ˜í–‰ë˜ê³  ìˆëŠ” ëª¨ë“  ê¸€ë¡œë²Œ íŠ¸ëœì­ì…˜ë“¤ì˜ 
+ *               ì •ë³´ë¥¼ ì–»ì–´ì˜¨ë‹¤.
  *              
- *  aInfo       - [IN/OUT] Remote statement µéÀÇ Á¤º¸¸¦ ´ãÀ» ¹è¿­Æ÷ÀÎÅÍ
- *  aStmtCnt    - [IN] Caller °¡ ¿äÃ»ÇÑ ½ÃÁ¡¿¡ °áÁ¤µÈ remote statement
- *                     °³¼ö¸¸Å­¸¸ Á¤º¸¸¦ °¡Á®¿À±â À§ÇÑ ÀÔ·Â°ª
+ *  aInfo       - [IN/OUT] Remote statement ë“¤ì˜ ì •ë³´ë¥¼ ë‹´ì„ ë°°ì—´í¬ì¸í„°
+ *  aStmtCnt    - [IN] Caller ê°€ ìš”ì²­í•œ ì‹œì ì— ê²°ì •ëœ remote statement
+ *                     ê°œìˆ˜ë§Œí¼ë§Œ ì •ë³´ë¥¼ ê°€ì ¸ì˜¤ê¸° ìœ„í•œ ì…ë ¥ê°’
  *
  ************************************************************************/
 IDE_RC  dktGlobalTxMgr::getAllRemoteStmtInfo( dktRemoteStmtInfo * aInfo,
@@ -490,10 +490,10 @@ IDE_RC  dktGlobalTxMgr::getAllRemoteStmtInfo( dktRemoteStmtInfo * aInfo,
 }
 
 /************************************************************************
- * Description : ÇöÀç DK ³»¿¡¼­ ¼öÇàµÇ°í ÀÖ´Â ¸ğµç remote transaction ÀÇ 
- *               °³¼ö¸¦ ±¸ÇÑ´Ù.
+ * Description : í˜„ì¬ DK ë‚´ì—ì„œ ìˆ˜í–‰ë˜ê³  ìˆëŠ” ëª¨ë“  remote transaction ì˜ 
+ *               ê°œìˆ˜ë¥¼ êµ¬í•œë‹¤.
  *              
- *  aCount       - [OUT] ¸ğµç remote transaction ÀÇ °³¼ö
+ *  aCount       - [OUT] ëª¨ë“  remote transaction ì˜ ê°œìˆ˜
  *
  ************************************************************************/
 IDE_RC  dktGlobalTxMgr::getAllRemoteTransactionCount( UInt  *aCount )
@@ -551,10 +551,10 @@ IDE_RC  dktGlobalTxMgr::getAllRemoteTransactionCountWithoutLock( UInt  *aCount )
 }
 
 /************************************************************************
- * Description : ÇöÀç DK ³»¿¡¼­ ¼öÇàµÇ°í ÀÖ´Â ¸ğµç remote statement ÀÇ 
- *               °³¼ö¸¦ ±¸ÇÑ´Ù.
+ * Description : í˜„ì¬ DK ë‚´ì—ì„œ ìˆ˜í–‰ë˜ê³  ìˆëŠ” ëª¨ë“  remote statement ì˜ 
+ *               ê°œìˆ˜ë¥¼ êµ¬í•œë‹¤.
  *              
- *  aCount       - [OUT] ¸ğµç remote statement ÀÇ °³¼ö
+ *  aCount       - [OUT] ëª¨ë“  remote statement ì˜ ê°œìˆ˜
  *
  ************************************************************************/
 IDE_RC  dktGlobalTxMgr::getAllRemoteStmtCount( UInt *aCount )
@@ -587,9 +587,9 @@ IDE_RC  dktGlobalTxMgr::getAllRemoteStmtCount( UInt *aCount )
 }
 
 /************************************************************************
- * Description : ÀÔ·Â¹ŞÀº global coordinator ¸¦ °ü¸®´ë»óÀ¸·Î Ãß°¡ÇÑ´Ù. 
+ * Description : ì…ë ¥ë°›ì€ global coordinator ë¥¼ ê´€ë¦¬ëŒ€ìƒìœ¼ë¡œ ì¶”ê°€í•œë‹¤. 
  *              
- *  aGlobalCoordinator  - [IN] List ¿¡ Ãß°¡ÇÒ global coordinator
+ *  aGlobalCoordinator  - [IN] List ì— ì¶”ê°€í•  global coordinator
  *
  ************************************************************************/
 IDE_RC  dktGlobalTxMgr::addGlobalCoordinatorToList(
@@ -621,11 +621,11 @@ void dktGlobalTxMgr::removeGlobalCoordinatorFromList( dktGlobalCoordinator * aGl
 }
 
 /************************************************************************
- * Description : Global transaction id ¸¦ ÀÔ·Â¹Ş¾Æ ÇØ´ç ±Û·Î¹ú Æ®·£Àè¼ÇÀ»
- *               °ü¸®ÇÏ´Â global coordinator ¸¦ list ¿¡¼­ Ã£¾Æ ¹İÈ¯ÇÑ´Ù.
+ * Description : Global transaction id ë¥¼ ì…ë ¥ë°›ì•„ í•´ë‹¹ ê¸€ë¡œë²Œ íŠ¸ëœì­ì…˜ì„
+ *               ê´€ë¦¬í•˜ëŠ” global coordinator ë¥¼ list ì—ì„œ ì°¾ì•„ ë°˜í™˜í•œë‹¤.
  *              
  *  aGTxId      - [IN] global transaction id
- *  aGlobalCrd  - [OUT] ÇØ´ç ±Û·Î¹ú Æ®·£Àè¼ÇÀ» °ü¸®ÇÏ´Â global coordinator
+ *  aGlobalCrd  - [OUT] í•´ë‹¹ ê¸€ë¡œë²Œ íŠ¸ëœì­ì…˜ì„ ê´€ë¦¬í•˜ëŠ” global coordinator
  *
  ************************************************************************/
 IDE_RC  dktGlobalTxMgr::findGlobalCoordinator( UInt                  aGlobalTxId,
@@ -674,11 +674,11 @@ IDE_RC  dktGlobalTxMgr::findGlobalCoordinator( UInt                  aGlobalTxId
 }
 
 /************************************************************************
- * Description : Linker data session id ¸¦ ÀÔ·Â¹Ş¾Æ ÇØ´ç session ¿¡ ¼ÓÇÑ 
- *               global coordinator ¸¦ list ¿¡¼­ Ã£¾Æ ¹İÈ¯ÇÑ´Ù.
+ * Description : Linker data session id ë¥¼ ì…ë ¥ë°›ì•„ í•´ë‹¹ session ì— ì†í•œ 
+ *               global coordinator ë¥¼ list ì—ì„œ ì°¾ì•„ ë°˜í™˜í•œë‹¤.
  *              
  *  aSessionId  - [IN] Linker data session id
- *  aGlobalCrd  - [OUT] ÇØ´ç ±Û·Î¹ú Æ®·£Àè¼ÇÀ» °ü¸®ÇÏ´Â global coordinator
+ *  aGlobalCrd  - [OUT] í•´ë‹¹ ê¸€ë¡œë²Œ íŠ¸ëœì­ì…˜ì„ ê´€ë¦¬í•˜ëŠ” global coordinator
  *
  ************************************************************************/
 IDE_RC  dktGlobalTxMgr::findGlobalCoordinatorWithSessionId( 

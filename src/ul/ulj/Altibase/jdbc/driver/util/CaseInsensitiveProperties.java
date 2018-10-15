@@ -22,7 +22,7 @@ import java.util.Map;
 import java.util.Properties;
 
 /**
- * key °ªÀ¸·Î ´ë¼Ò¹®ÀÚ¸¦ ±¸º°ÇÏÁö ¾Ê´Â <tt>Properties</tt> Å¬·¡½º.
+ * key ê°’ìœ¼ë¡œ ëŒ€ì†Œë¬¸ìë¥¼ êµ¬ë³„í•˜ì§€ ì•ŠëŠ” <tt>Properties</tt> í´ë˜ìŠ¤.
  */
 public class CaseInsensitiveProperties extends Properties
 {
@@ -45,7 +45,7 @@ public class CaseInsensitiveProperties extends Properties
         }
         else if (aProp != null)
         {
-            // key°¡ lowercase·Î µÇ¾îÀÖ´Â Properties »ı¼º
+            // keyê°€ lowercaseë¡œ ë˜ì–´ìˆëŠ” Properties ìƒì„±
             Properties sProp = createProperties();
             Enumeration sKeys = aProp.keys();
             while (sKeys.hasMoreElements())
@@ -117,10 +117,10 @@ public class CaseInsensitiveProperties extends Properties
     }
 
     /**
-     * Map¿¡ ÀÖ´Â °ª½ÖÀ» Preperty·Î Ãß°¡ÇÑ´Ù.
-     * ´Ü, MapÀÇ key °ªÀ¸·Î ¾òÀ» ¼ö ÀÖ´Â °ªÀÌ ÀÌ¹Ì ÀÖ´Ù¸é Ãß°¡ÇÏÁö ¾Ê´Â´Ù.
+     * Mapì— ìˆëŠ” ê°’ìŒì„ Prepertyë¡œ ì¶”ê°€í•œë‹¤.
+     * ë‹¨, Mapì˜ key ê°’ìœ¼ë¡œ ì–»ì„ ìˆ˜ ìˆëŠ” ê°’ì´ ì´ë¯¸ ìˆë‹¤ë©´ ì¶”ê°€í•˜ì§€ ì•ŠëŠ”ë‹¤.
      *
-     * @param aMap Ãß°¡ÇÒ °ª ½ÖÀ» °¡Áø °´Ã¼
+     * @param aMap ì¶”ê°€í•  ê°’ ìŒì„ ê°€ì§„ ê°ì²´
      */
     public synchronized void putAllExceptExist(Map aMap)
     {

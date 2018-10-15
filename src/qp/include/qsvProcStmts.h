@@ -178,7 +178,7 @@ public:
         qsRelatedObjects ** aObject);
 
     // PROJ-1446
-    // synonymÀ¸·Î ÂüÁ¶µÇ´Â PSMÀÇ ±â·Ï
+    // synonymìœ¼ë¡œ ì°¸ì¡°ë˜ëŠ” PSMì˜ ê¸°ë¡
     static IDE_RC makeProcSynonymList(
         qcStatement           * aStatement,
         struct qcmSynonymInfo * aSynonymInfo,
@@ -221,7 +221,7 @@ public:
 
     /* PROJ-2197 PSM Renewal
      * BUG-36988 Query Trans
-     * PSM º¯¼ö¸¦ qsUsingParam¿¡ Ãß°¡ÇÑ´Ù. */
+     * PSM ë³€ìˆ˜ë¥¼ qsUsingParamì— ì¶”ê°€í•œë‹¤. */
     static IDE_RC makeUsingParam( qsVariables  * aVariable,
                                   qtcNode      * aQtcColumn,
                                   mtcCallBack  * aCallBack);
@@ -288,13 +288,13 @@ private:
         qtcNode     * aBound);
 
     // PROJ-1359 Trigger
-    // Trigger Action Body·Î ÀûÇÕÇÑ StatementÀÎÁö °Ë»çÇÏ°í
-    // DML StatementÀÇ °æ¿ì Modify Table ¸ñ·ÏÀ» Ãß°¡ÇÑ´Ù.
+    // Trigger Action Bodyë¡œ ì í•©í•œ Statementì¸ì§€ ê²€ì‚¬í•˜ê³ 
+    // DML Statementì˜ ê²½ìš° Modify Table ëª©ë¡ì„ ì¶”ê°€í•œë‹¤.
     static IDE_RC checkTriggerActionBody( qcStatement * aStatement,
                                           qsProcStmts * aProcStmts );
 
-    // PROJ-1335 GOTO Áö¿ø
-    // labelÀ» parent stmt¿¡ ¿¬°áÇÑ´Ù.
+    // PROJ-1335 GOTO ì§€ì›
+    // labelì„ parent stmtì— ì—°ê²°í•œë‹¤.
     static IDE_RC setLabelToParentStmt( qcStatement * aStatement,
                                         qsProcStmts * aParentStmt,
                                         qsLabels    * aLabel );

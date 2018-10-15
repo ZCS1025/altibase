@@ -102,7 +102,7 @@ public:
         UInt         aReferencedTblID,
         UInt         aReferencedIndexID,
         UInt         aReferencedRule, // PROJ-1509
-        SChar       *aCheckCondition, /* PROJ-1107 Check Constraint Áö¿ø */
+        SChar       *aCheckCondition, /* PROJ-1107 Check Constraint ì§€ì› */
         idBool       aValidated ); // PROJ-1874
     
     static IDE_RC insertConstraintColumnIntoMeta(

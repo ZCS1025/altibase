@@ -20,8 +20,8 @@
 #include <cmtNumericClient.h>
 
 /*
- * ¼­¹öÀÇ ´º¸Þ¸¯ÀÌ ÃÖ´ë ½ÊÁø¼ö 38ÀÚ¸®±îÁö °¡´ÉÇÏ±â ¶§¹®¿¡,
- * Áï, precisionÀÇ max °¡ 38 ÀÌ¹Ç·Î 38·Î ÀâÀ½.
+ * ì„œë²„ì˜ ë‰´ë©”ë¦­ì´ ìµœëŒ€ ì‹­ì§„ìˆ˜ 38ìžë¦¬ê¹Œì§€ ê°€ëŠ¥í•˜ê¸° ë•Œë¬¸ì—,
+ * ì¦‰, precisionì˜ max ê°€ 38 ì´ë¯€ë¡œ 38ë¡œ ìž¡ìŒ.
  */
 #define ULNC_NUMERIC_ALLOCSIZE 38
 #define ULNC_DECIMAL_ALLOCSIZE 256
@@ -92,11 +92,11 @@ void   ulncSLongToSQLNUMERIC(acp_sint64_t aLongValue, SQL_NUMERIC_STRUCT *aNumer
 
 ACI_RC ulncNumericToNumeric(ulncNumeric *aDst, ulncNumeric *aSrc);
 
-/* PROJ-2160 CM Å¸ÀÔÁ¦°Å
-   MT Å¸ÀÔÀÇ numeric µ¥ÀÌÅ¸¸¦ CM Å¸ÀÔÀÇ numeric µ¥ÀÌÅ¸·Î º¯°æÇÑ´Ù.
-   CM Å¸ÀÔÀ¸·Î º¯°æÇÏ´Â ÀÌÀ¯´Â 2°¡Áö°¡ ÀÖ´Ù.
-   1. C Å¸ÀÔÀÇ numeric Àº CM Å¸ÀÔÀÇ numeric °ú À¯»çÇÔ
-   2. MT Å¸ÀÔÀÇ numericÀ» Á¶ÀÛÇÒ¼ö ÀÖ´Â ÇÔ¼ö°¡ UL¿¡ ¾øÀ½  */
+/* PROJ-2160 CM íƒ€ìž…ì œê±°
+   MT íƒ€ìž…ì˜ numeric ë°ì´íƒ€ë¥¼ CM íƒ€ìž…ì˜ numeric ë°ì´íƒ€ë¡œ ë³€ê²½í•œë‹¤.
+   CM íƒ€ìž…ìœ¼ë¡œ ë³€ê²½í•˜ëŠ” ì´ìœ ëŠ” 2ê°€ì§€ê°€ ìžˆë‹¤.
+   1. C íƒ€ìž…ì˜ numeric ì€ CM íƒ€ìž…ì˜ numeric ê³¼ ìœ ì‚¬í•¨
+   2. MT íƒ€ìž…ì˜ numericì„ ì¡°ìž‘í• ìˆ˜ ìžˆëŠ” í•¨ìˆ˜ê°€ ULì— ì—†ìŒ  */
 ACI_RC ulncMtNumericToCmNumeric(cmtNumeric *aCmNumeric, mtdNumericType *aData);
 
 typedef enum

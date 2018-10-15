@@ -20,7 +20,7 @@
  *
  * Description :
  *
- * º» ÆÄÀÏÀº ¹é¾÷ °ü¸®ÀÚ¿¡ ´ëÇÑ ±¸ÇöÆÄÀÏÀÌ´Ù.
+ * ë³¸ íŒŒì¼ì€ ë°±ì—… ê´€ë¦¬ìì— ëŒ€í•œ êµ¬í˜„íŒŒì¼ì´ë‹¤.
  *
  **********************************************************************/
 
@@ -50,7 +50,7 @@ SChar              smrBackupMgr::mLastBackupTagName[ SMI_MAX_BACKUP_TAG_NAME_LEN
 
 
 /***********************************************************************
- * Description : ¹é¾÷°ü¸®ÀÚ ÃÊ±âÈ­
+ * Description : ë°±ì—…ê´€ë¦¬ì ì´ˆê¸°í™”
  **********************************************************************/
 IDE_RC smrBackupMgr::initialize()
 {
@@ -63,11 +63,11 @@ IDE_RC smrBackupMgr::initialize()
 
     mOnlineBackupState = SMR_BACKUP_NONE;
 
-   // BACKUP ÁøÇàÁßÀÎ µğ½ºÅ© Å×ÀÌºí½ºÆäÀÌ½ºÀÇ °³¼ö
+   // BACKUP ì§„í–‰ì¤‘ì¸ ë””ìŠ¤í¬ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì˜ ê°œìˆ˜
     mBeginBackupDiskTBSCount = 0;
     mBeginBackupMemTBSCount  = 0;
 
-    // incremental backupÀ» ¼öÇàÇÏ±âÀü backupinfoÆÄÀÏÀÇ slot °³¼ö¸¦ ÀúÀå
+    // incremental backupì„ ìˆ˜í–‰í•˜ê¸°ì „ backupinfoíŒŒì¼ì˜ slot ê°œìˆ˜ë¥¼ ì €ì¥
     mBackupBISlotCnt = SMRI_BI_INVALID_SLOT_CNT;
     idlOS::memset( mLastBackupTagName, 0x00, SMI_MAX_BACKUP_TAG_NAME_LEN );
 
@@ -79,7 +79,7 @@ IDE_RC smrBackupMgr::initialize()
 }
 
 /***********************************************************************
- * Description : ¹é¾÷ °ü¸®ÀÚ ÇØÁ¦
+ * Description : ë°±ì—… ê´€ë¦¬ì í•´ì œ
  **********************************************************************/
 IDE_RC smrBackupMgr::destroy()
 {
@@ -94,9 +94,9 @@ IDE_RC smrBackupMgr::destroy()
 
 
 /*
-   ONLINE BACKUP ÇÃ·¡±×¿¡ ¼³Á¤ÇÏ°íÀÚ ÇÏ´Â »óÅÂ°ªÀ» ¼³Á¤ÇÑ´Ù.
+   ONLINE BACKUP í”Œë˜ê·¸ì— ì„¤ì •í•˜ê³ ì í•˜ëŠ” ìƒíƒœê°’ì„ ì„¤ì •í•œë‹¤.
 
-   [IN] aOR : ¼³Á¤ÇÏ°íÀÚÇÏ´Â »óÅÂ°ª
+   [IN] aOR : ì„¤ì •í•˜ê³ ìí•˜ëŠ” ìƒíƒœê°’
 */
 void smrBackupMgr::setOnlineBackupStatusOR( UInt  aOR )
 {
@@ -112,9 +112,9 @@ void smrBackupMgr::setOnlineBackupStatusOR( UInt  aOR )
 
 
 /*
-   ONLINE BACKUP ÇÃ·¡±×¿¡ ÇØÁ¦ÇÏ°íÀÚ ÇÏ´Â »óÅÂ°ªÀ» ÇØÀçÇÑ´Ù.
+   ONLINE BACKUP í”Œë˜ê·¸ì— í•´ì œí•˜ê³ ì í•˜ëŠ” ìƒíƒœê°’ì„ í•´ì¬í•œë‹¤.
 
-   [IN] aNOT : ÇØÁ¦ÇÏ°íÀÚÇÏ´Â »óÅÂ°ª
+   [IN] aNOT : í•´ì œí•˜ê³ ìí•˜ëŠ” ìƒíƒœê°’
 */
 void smrBackupMgr::setOnlineBackupStatusNOT( UInt aNOT )
 {
@@ -129,8 +129,8 @@ void smrBackupMgr::setOnlineBackupStatusNOT( UInt aNOT )
 }
 
 /***********************************************************************
- * Description : ÇØ´ç path¿¡¼­ memory db °ü·Ã ÆÄÀÏ Á¦°Å
- * destroydb, onlineBackupµî¿¡¼­ È£ÃâµÈ´Ù.
+ * Description : í•´ë‹¹ pathì—ì„œ memory db ê´€ë ¨ íŒŒì¼ ì œê±°
+ * destroydb, onlineBackupë“±ì—ì„œ í˜¸ì¶œëœë‹¤.
  **********************************************************************/
 IDE_RC smrBackupMgr::unlinkChkptImages( SChar* aPathName,
                                         SChar* aTBSName )
@@ -313,8 +313,8 @@ IDE_RC smrBackupMgr::unlinkChkptImages( SChar* aPathName,
 
 
 /***********************************************************************
- * Description : ÇØ´ç path¿¡¼­ disk db °ü·Ã ÆÄÀÏ Á¦°Å
- * destroydb, onlineBackupµî¿¡¼­ È£ÃâµÈ´Ù.
+ * Description : í•´ë‹¹ pathì—ì„œ disk db ê´€ë ¨ íŒŒì¼ ì œê±°
+ * destroydb, onlineBackupë“±ì—ì„œ í˜¸ì¶œëœë‹¤.
  **********************************************************************/
 IDE_RC smrBackupMgr::unlinkDataFile( SChar*  aDataFileName )
 {
@@ -339,8 +339,8 @@ IDE_RC smrBackupMgr::unlinkDataFile( SChar*  aDataFileName )
 
 
 /***********************************************************************
- * Description : ÇØ´ç path¿¡¼­ memory db °ü·Ã ÆÄÀÏ Á¦°Å
- * destroydb, onlineBackupµî¿¡¼­ È£ÃâµÈ´Ù.
+ * Description : í•´ë‹¹ pathì—ì„œ memory db ê´€ë ¨ íŒŒì¼ ì œê±°
+ * destroydb, onlineBackupë“±ì—ì„œ í˜¸ì¶œëœë‹¤.
  **********************************************************************/
 IDE_RC smrBackupMgr::unlinkAllLogFiles( SChar* aPathName )
 {
@@ -483,8 +483,8 @@ IDE_RC smrBackupMgr::unlinkAllLogFiles( SChar* aPathName )
 
 /***********************************************************************
  * Description : PROJ-2133 incremental backup 
- *               ÇØ´ç path¿¡¼­ change trackingÆÄÀÏ Á¦°Å
- *               destroydb ¿¡¼­ È£ÃâµÈ´Ù.
+ *               í•´ë‹¹ pathì—ì„œ change trackingíŒŒì¼ ì œê±°
+ *               destroydb ì—ì„œ í˜¸ì¶œëœë‹¤.
  **********************************************************************/
 IDE_RC smrBackupMgr::unlinkChangeTrackingFile( SChar * aChangeTrackingFileName )
 {
@@ -507,8 +507,8 @@ IDE_RC smrBackupMgr::unlinkChangeTrackingFile( SChar * aChangeTrackingFileName )
 
 /***********************************************************************
  * Description : PROJ-2133 incremental backup
- *               ÇØ´ç path¿¡¼­ backup infoÆÄÀÏ Á¦°Å
- *               destroydb ¿¡¼­ È£ÃâµÈ´Ù.
+ *               í•´ë‹¹ pathì—ì„œ backup infoíŒŒì¼ ì œê±°
+ *               destroydb ì—ì„œ í˜¸ì¶œëœë‹¤.
  **********************************************************************/
 IDE_RC smrBackupMgr::unlinkBackupInfoFile( SChar * aBackupInfoFileName )
 {
@@ -531,8 +531,8 @@ IDE_RC smrBackupMgr::unlinkBackupInfoFile( SChar * aBackupInfoFileName )
 
 /*********************************************************
  * Description:
- * LogAnchorÆÄÀÏÀ» destnation directroy¿¡ copyÇÑ´Ù.
- * A4, PRJ-1149°ü·Ã log anchor,  tablespace, database backup API
+ * LogAnchoríŒŒì¼ì„ destnation directroyì— copyí•œë‹¤.
+ * A4, PRJ-1149ê´€ë ¨ log anchor,  tablespace, database backup API
  *********************************************************/
 IDE_RC smrBackupMgr::backupLogAnchor( idvSQL* aStatistics,
                                       SChar * aDestFilePath )
@@ -542,7 +542,7 @@ IDE_RC smrBackupMgr::backupLogAnchor( idvSQL* aStatistics,
 
     IDE_DASSERT( aDestFilePath != NULL );
 
-    //log anchor °ü¸®ÀÚ È¹µæ
+    //log anchor ê´€ë¦¬ì íšë“
     sAnchorMgr = smrRecoveryMgr::getLogAnchorMgr();
 
     errno = 0;
@@ -568,7 +568,7 @@ IDE_RC smrBackupMgr::backupLogAnchor( idvSQL* aStatistics,
     {
         ideLog::log(SM_TRC_LOG_LEVEL_ABORT,
                     SM_TRC_MRECOVERY_BACKUP_ABORT);
-        //log anchor¿¡¼­ ·Î±× ÆÄÀÏ¿¬»ê°ü·Ã errorÄÚµå¸¦ settinÇÏ±â ¶§¹®¿¡ skip.
+        //log anchorì—ì„œ ë¡œê·¸ íŒŒì¼ì—°ì‚°ê´€ë ¨ errorì½”ë“œë¥¼ settiní•˜ê¸° ë•Œë¬¸ì— skip.
     }
     IDE_EXCEPTION_END;
 
@@ -577,8 +577,8 @@ IDE_RC smrBackupMgr::backupLogAnchor( idvSQL* aStatistics,
 
 /*********************************************************
  * Description:
- * - Å×ÀÌºí ½ºÆäÀÌ½º media Á¾·ù¿¡ µû¸¥ backupTableSpace¸¦
- *  ºĞ±â½ÃÅ²´Ù.
+ * - í…Œì´ë¸” ìŠ¤í˜ì´ìŠ¤ media ì¢…ë¥˜ì— ë”°ë¥¸ backupTableSpaceë¥¼
+ *  ë¶„ê¸°ì‹œí‚¨ë‹¤.
  * -> memory table space,
  * -> disk tables space.
  *********************************************************/
@@ -599,18 +599,18 @@ IDE_RC smrBackupMgr::backupTableSpace( idvSQL*   aStatistics,
     IDE_TEST_RAISE( sLocked == ID_FALSE, error_backup_going);
     sState = 1;
 
-    // alter database backup tablespace or database»Ó¸¸¾Æ´Ï¶ó,
-    // alter tablespace begin backup °æ·Î·Î ¿Ã¼ö ÀÖ±â ¶§¹®¿¡,
-    // ´ÙÀ½°ú °°ÀÌ °Ë»çÇÑ´Ù.
+    // alter database backup tablespace or databaseë¿ë§Œì•„ë‹ˆë¼,
+    // alter tablespace begin backup ê²½ë¡œë¡œ ì˜¬ìˆ˜ ìˆê¸° ë•Œë¬¸ì—,
+    // ë‹¤ìŒê³¼ ê°™ì´ ê²€ì‚¬í•œë‹¤.
     IDE_TEST_RAISE( mOnlineBackupState != SMR_BACKUP_NONE,
                     error_backup_going );
 
-    // Aging ¼öÇà°úÁ¤¿¡¼­ Çö Æ®·£Àè¼ÇÀ» °í·ÁÇÏÁö ¾Ê°í ¹öÀü¼öÁıÀÌ
-    // °¡´ÉÇÏ°Ô ÇÑ´Ù. (Âü°í) smxTransMgr::getMemoryMinSCN()
+    // Aging ìˆ˜í–‰ê³¼ì •ì—ì„œ í˜„ íŠ¸ëœì­ì…˜ì„ ê³ ë ¤í•˜ì§€ ì•Šê³  ë²„ì „ìˆ˜ì§‘ì´
+    // ê°€ëŠ¥í•˜ê²Œ í•œë‹¤. (ì°¸ê³ ) smxTransMgr::getMemoryMinSCN()
     smLayerCallback::updateSkipCheckSCN( aTrans, ID_TRUE );
     sState = 2;
 
-    // Ã¼Å©Æ÷ÀÎÆ®¸¦ ¹ß»ı½ÃÅ²´Ù.
+    // ì²´í¬í¬ì¸íŠ¸ë¥¼ ë°œìƒì‹œí‚¨ë‹¤.
     IDE_TEST( gSmrChkptThread.resumeAndWait( aStatistics )
               != IDE_SUCCESS );
 
@@ -645,14 +645,14 @@ IDE_RC smrBackupMgr::backupTableSpace( idvSQL*   aStatistics,
     else if( sctTableSpaceMgr::isVolatileTableSpace( aSpaceID ) == ID_TRUE )
     {
         // Nothing to do...
-        // volatile tablespace¿¡ ´ëÇØ¼­´Â ¹é¾÷À» Áö¿øÇÏÁö ¾Ê´Â´Ù.
+        // volatile tablespaceì— ëŒ€í•´ì„œëŠ” ë°±ì—…ì„ ì§€ì›í•˜ì§€ ì•ŠëŠ”ë‹¤.
     }
     else
     {
         IDE_ASSERT(0);
     }
 
-    // °­Á¦·Î ÇØ´ç ·Î±×ÆÄÀÏÀ» switch ÇÏ¿© archive ½ÃÅ²´Ù.
+    // ê°•ì œë¡œ í•´ë‹¹ ë¡œê·¸íŒŒì¼ì„ switch í•˜ì—¬ archive ì‹œí‚¨ë‹¤.
     IDE_TEST( smrLogMgr::switchLogFileByForce() != IDE_SUCCESS );
     sState = 1;
 
@@ -705,11 +705,11 @@ IDE_RC smrBackupMgr::backupTableSpace( idvSQL*   aStatistics,
 
 /*********************************************************
  * Description: smrBackup::backupMemoryTBS
- * memory table spaceÀÇ µ¥ÀÌÅ¸ ÆÄÀÏÀ» backup½ÃÅ²´Ù.
- *  1. check point¸¦ disable ½ÃÅ²´Ù.
- *  2. memory database fileµéÀ» copyÇÑ´Ù.
- *  3. alter tableµîÀ¸·Î ¹ß»ıÇÑ  Internal backup database File copy.
- *  4. check point¸¦ Àç°³ÇÑ´Ù.
+ * memory table spaceì˜ ë°ì´íƒ€ íŒŒì¼ì„ backupì‹œí‚¨ë‹¤.
+ *  1. check pointë¥¼ disable ì‹œí‚¨ë‹¤.
+ *  2. memory database fileë“¤ì„ copyí•œë‹¤.
+ *  3. alter tableë“±ìœ¼ë¡œ ë°œìƒí•œ  Internal backup database File copy.
+ *  4. check pointë¥¼ ì¬ê°œí•œë‹¤.
  **********************************************************/
 IDE_RC smrBackupMgr::backupMemoryTBS( idvSQL*      aStatistics,
                                       scSpaceID    aSpaceID,
@@ -731,15 +731,15 @@ IDE_RC smrBackupMgr::backupMemoryTBS( idvSQL*      aStatistics,
                  == ID_TRUE );
 
     /* ------------------------------------------------
-     * [1] disk table space backup »óÅÂ º¯°æ¹×
-     * Ã¹¹øÂ° µ¥ÀÌÅ¸ÆÄÀÏÀÇ »óÅÂ¸¦ backupÀ¸·Î º¯°æÇÑ´Ù.
+     * [1] disk table space backup ìƒíƒœ ë³€ê²½ë°
+     * ì²«ë²ˆì§¸ ë°ì´íƒ€íŒŒì¼ì˜ ìƒíƒœë¥¼ backupìœ¼ë¡œ ë³€ê²½í•œë‹¤.
      * ----------------------------------------------*/
     IDE_TEST( sctTableSpaceMgr::startTableSpaceBackup(
                   aSpaceID,
                   (sctTableSpaceNode**)&sSpaceNode) != IDE_SUCCESS );
     sState = 1;
 
-    // [2] memory database fileµéÀ» copyÇÑ´Ù.
+    // [2] memory database fileë“¤ì„ copyí•œë‹¤.
     sWhichDB = smmManager::getCurrentDB( (smmTBSNode*)sSpaceNode );
     sBackupPathLen = idlOS::strlen( aBackupDir );
 
@@ -753,9 +753,9 @@ IDE_RC smrBackupMgr::backupMemoryTBS( idvSQL*      aStatistics,
         idlOS::memset(sStrFullFileName, 0x00, SM_MAX_FILE_NAME);
 
         /* ------------------------------------------------
-         * BUG-11206¿Í °°ÀÌ source¿Í destinationÀÌ °°¾Æ¼­
-         * ¿øº» µ¥ÀÌÅ¸ ÆÄÀÏÀÌ À¯½ÇµÇ´Â °æ¿ì¸¦ ¸·±âÀ§ÇÏ¿©
-         * ´ÙÀ½°ú °°ÀÌ Á¤È®È÷ path¸¦ ±¸¼ºÇÔ.
+         * BUG-11206ì™€ ê°™ì´ sourceì™€ destinationì´ ê°™ì•„ì„œ
+         * ì›ë³¸ ë°ì´íƒ€ íŒŒì¼ì´ ìœ ì‹¤ë˜ëŠ” ê²½ìš°ë¥¼ ë§‰ê¸°ìœ„í•˜ì—¬
+         * ë‹¤ìŒê³¼ ê°™ì´ ì •í™•íˆ pathë¥¼ êµ¬ì„±í•¨.
          * ----------------------------------------------*/
         if( aBackupDir[sBackupPathLen - 1] == IDL_FILE_SEPARATOR )
         {
@@ -795,8 +795,8 @@ IDE_RC smrBackupMgr::backupMemoryTBS( idvSQL*      aStatistics,
                                       sDatabaseFile->getFileName())
                         == 0, error_self_copy);
 
-        /* BUG-18678: Memory/Disk DB FileÀ» /tmp¿¡ Online BackupÇÒ¶§ DiskÂÊ
-           BackupÀÌ ½ÇÆĞÇÕ´Ï´Ù.*/
+        /* BUG-18678: Memory/Disk DB Fileì„ /tmpì— Online Backupí• ë•Œ Diskìª½
+           Backupì´ ì‹¤íŒ¨í•©ë‹ˆë‹¤.*/
         if ( sDatabaseFile->copy( aStatistics,
                                   sStrFullFileName )
              != IDE_SUCCESS )
@@ -819,7 +819,7 @@ IDE_RC smrBackupMgr::backupMemoryTBS( idvSQL*      aStatistics,
     }
 
     /* ------------------------------------------------
-     * [2] alter tableµîÀ¸·Î ¹ß»ıÇÑ Backup Internal Database File
+     * [2] alter tableë“±ìœ¼ë¡œ ë°œìƒí•œ Backup Internal Database File
      * ----------------------------------------------*/
     errno = 0;
     if ( smLayerCallback::copyAllTableBackup( smLayerCallback::getBackupDir(),
@@ -897,7 +897,7 @@ IDE_RC smrBackupMgr::backupMemoryTBS( idvSQL*      aStatistics,
 
 /*********************************************************
  * Description:
- * disk table spaceÀÇ µ¥ÀÌÅ¸ ÆÄÀÏÀ» backup½ÃÅ²´Ù.
+ * disk table spaceì˜ ë°ì´íƒ€ íŒŒì¼ì„ backupì‹œí‚¨ë‹¤.
  **********************************************************/
 IDE_RC smrBackupMgr::backupDiskTBS( idvSQL*   aStatistics,
                                     scSpaceID aSpaceID,
@@ -918,18 +918,18 @@ IDE_RC smrBackupMgr::backupDiskTBS( idvSQL*   aStatistics,
                  == ID_TRUE );
 
     /* ------------------------------------------------
-     * [1] disk table space backup »óÅÂ º¯°æ¹×
-     * Ã¹¹øÂ° µ¥ÀÌÅ¸ÆÄÀÏÀÇ »óÅÂ¸¦ backupÀ¸·Î º¯°æÇÑ´Ù.
+     * [1] disk table space backup ìƒíƒœ ë³€ê²½ë°
+     * ì²«ë²ˆì§¸ ë°ì´íƒ€íŒŒì¼ì˜ ìƒíƒœë¥¼ backupìœ¼ë¡œ ë³€ê²½í•œë‹¤.
      * ----------------------------------------------*/
     IDE_TEST( sctTableSpaceMgr::startTableSpaceBackup(
                   aSpaceID,
                   (sctTableSpaceNode**)&sSpaceNode) != IDE_SUCCESS);
 
-    // Å×ÀÌºí½ºÆäÀÌ½º ¹é¾÷ÀÌ °¡´ÉÇÑ °æ¿ì
+    // í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ë°±ì—…ì´ ê°€ëŠ¥í•œ ê²½ìš°
     sState = 1;
 
     /* ------------------------------------------------
-     * Å×ÀÌºí ½ºÆäÀÌ½º  µ¥ÀÌÅ¸ ÆÄÀÏµé  copy.
+     * í…Œì´ë¸” ìŠ¤í˜ì´ìŠ¤  ë°ì´íƒ€ íŒŒì¼ë“¤  copy.
      * ----------------------------------------------*/
     for (i=0; i < sSpaceNode->mNewFileID ; i++ )
     {
@@ -959,9 +959,9 @@ IDE_RC smrBackupMgr::backupDiskTBS( idvSQL*   aStatistics,
         IDE_TEST_RAISE(sDataFileName == NULL,error_backupdir_file_path);
 
         /* ------------------------------------------------
-         * BUG-11206¿Í °°ÀÌ source¿Í destinationÀÌ °°¾Æ¼­
-         * ¿øº» µ¥ÀÌÅ¸ ÆÄÀÏÀÌ À¯½ÇµÇ´Â °æ¿ì¸¦ ¸·±âÀ§ÇÏ¿©
-         * ´ÙÀ½°ú °°ÀÌ Á¤È®È÷ path¸¦ ±¸¼ºÇÔ.
+         * BUG-11206ì™€ ê°™ì´ sourceì™€ destinationì´ ê°™ì•„ì„œ
+         * ì›ë³¸ ë°ì´íƒ€ íŒŒì¼ì´ ìœ ì‹¤ë˜ëŠ” ê²½ìš°ë¥¼ ë§‰ê¸°ìœ„í•˜ì—¬
+         * ë‹¤ìŒê³¼ ê°™ì´ ì •í™•íˆ pathë¥¼ êµ¬ì„±í•¨.
          * ----------------------------------------------*/
         sDataFileName = sDataFileName+1;
         sBackupPathLen = idlOS::strlen(aBackupDir);
@@ -999,7 +999,7 @@ IDE_RC smrBackupMgr::backupDiskTBS( idvSQL*   aStatistics,
                        error_self_copy);
 
         /* ------------------------------------------------
-         * [3] µ¥ÀÌÅ¸ ÆÄÀÏÀÇ »óÅÂ¸¦ backup beginÀ¸·Î º¯°æÇÑ´Ù.
+         * [3] ë°ì´íƒ€ íŒŒì¼ì˜ ìƒíƒœë¥¼ backup beginìœ¼ë¡œ ë³€ê²½í•œë‹¤.
          * ----------------------------------------------*/
 
         IDE_TEST(sddDiskMgr::updateDataFileState(aStatistics,
@@ -1032,8 +1032,8 @@ IDE_RC smrBackupMgr::backupDiskTBS( idvSQL*   aStatistics,
                        error_abort_backup);
 
         /* ------------------------------------------------
-         * [4] µ¥ÀÌÅ¸ ÆÄÀÏÀÇ ¹é¾÷ÀÌ ³¡³µ±â ¶§¹®¿¡, PIL hashÀÇ
-         * logg³»¿ëÀ» µ¥ÀÌÅ¸ ÆÄÀÏ¿¡ Àû¿ëÇÑ´Ù.
+         * [4] ë°ì´íƒ€ íŒŒì¼ì˜ ë°±ì—…ì´ ëë‚¬ê¸° ë•Œë¬¸ì—, PIL hashì˜
+         * loggë‚´ìš©ì„ ë°ì´íƒ€ íŒŒì¼ì— ì ìš©í•œë‹¤.
          * ----------------------------------------------*/
         sState = 1;
         IDE_TEST( sddDiskMgr::completeFileBackup(aStatistics,
@@ -1042,9 +1042,9 @@ IDE_RC smrBackupMgr::backupDiskTBS( idvSQL*   aStatistics,
     }
 
     /* ------------------------------------------------
-     * ¾ÕÀÇ sddDiskMgr:::completeFileBackup¿¡¼­  pageÀÇ
-     * image log°¡ µ¥ÀÌÅ¸ ÆÄÀÏ¿¡ ¹İ¿µµÇ¾ú±â¶§¹®¿¡,
-     * ´ÜÁö Å×ÀÌºí ½ºÆäÀÌ½º ÀÇ »óÅÂ¸¦ backup¿¡¼­ onlineÀ¸·Î º¯°æÇÑ´Ù.
+     * ì•ì˜ sddDiskMgr:::completeFileBackupì—ì„œ  pageì˜
+     * image logê°€ ë°ì´íƒ€ íŒŒì¼ì— ë°˜ì˜ë˜ì—ˆê¸°ë•Œë¬¸ì—,
+     * ë‹¨ì§€ í…Œì´ë¸” ìŠ¤í˜ì´ìŠ¤ ì˜ ìƒíƒœë¥¼ backupì—ì„œ onlineìœ¼ë¡œ ë³€ê²½í•œë‹¤.
      * ----------------------------------------------*/
     sState = 0;
     IDE_TEST( sctTableSpaceMgr::endTableSpaceBackup( aSpaceID )
@@ -1105,12 +1105,12 @@ IDE_RC smrBackupMgr::backupDiskTBS( idvSQL*   aStatistics,
 }
 
 /*********************************************************
- * Description : database ´ÜÀ§ ¹é¾÷
+ * Description : database ë‹¨ìœ„ ë°±ì—…
  *
- * - Database¿¡ ÀÖ´Â ¸ğµç Å×ÀÌºí ½ºÆäÀÌ½º¿¡ ´ëÇÏ¿©
- *  hot backupÀ» ¼öÇàÇÏ¿©, °¢ Å×ÀÌºí ½ºÆäÀÌ½ºÀÇ
- *  µ¥ÀÌÅ¸ ÆÄÀÏÀ» º¹»çÇÑ´Ù.
- * - log anchorÆÄÀÏµéÀ» º¹»çÇÑ´Ù.
+ * - Databaseì— ìˆëŠ” ëª¨ë“  í…Œì´ë¸” ìŠ¤í˜ì´ìŠ¤ì— ëŒ€í•˜ì—¬
+ *  hot backupì„ ìˆ˜í–‰í•˜ì—¬, ê° í…Œì´ë¸” ìŠ¤í˜ì´ìŠ¤ì˜
+ *  ë°ì´íƒ€ íŒŒì¼ì„ ë³µì‚¬í•œë‹¤.
+ * - log anchoríŒŒì¼ë“¤ì„ ë³µì‚¬í•œë‹¤.
  **********************************************************/
 IDE_RC smrBackupMgr::backupDatabase( idvSQL *  aStatistics,
                                      void   *  aTrans,
@@ -1125,7 +1125,7 @@ IDE_RC smrBackupMgr::backupDatabase( idvSQL *  aStatistics,
 
     ideLog::log(SM_TRC_LOG_LEVEL_MRECOV, SM_TRC_MRECOVERY_BACKUP_START2);
 
-    // BUG-29861 [WIN] Zero Length File NameÀ» Á¦´ë·Î °Ë»çÇÏÁö ¸øÇÕ´Ï´Ù.
+    // BUG-29861 [WIN] Zero Length File Nameì„ ì œëŒ€ë¡œ ê²€ì‚¬í•˜ì§€ ëª»í•©ë‹ˆë‹¤.
     IDE_TEST_RAISE( idlOS::strlen(aBackupDir) == 0, error_backupdir_path_null );
 
     IDE_TEST( mMtxOnlineBackupStatus.trylock( sLocked )
@@ -1134,35 +1134,35 @@ IDE_RC smrBackupMgr::backupDatabase( idvSQL *  aStatistics,
     IDE_TEST_RAISE( sLocked == ID_FALSE, error_backup_going );
     sState = 1;
 
-    // ALTER DATABASE BACKUP TABLESPACE OR DATABASE ±¸¹®°ú
-    // ALTER TABLESPACE .. BEGIN BACKUP ±¸¹® ¼öÇà½Ã ´ÙÀ½À» Ã¼Å©ÇÑ´Ù.
+    // ALTER DATABASE BACKUP TABLESPACE OR DATABASE êµ¬ë¬¸ê³¼
+    // ALTER TABLESPACE .. BEGIN BACKUP êµ¬ë¬¸ ìˆ˜í–‰ì‹œ ë‹¤ìŒì„ ì²´í¬í•œë‹¤.
     IDE_TEST_RAISE( mOnlineBackupState != SMR_BACKUP_NONE,
                     error_backup_going );
 
-    // Aging ¼öÇà°úÁ¤¿¡¼­ Çö Æ®·£Àè¼ÇÀ» °í·ÁÇÏÁö ¾Ê°í ¹öÀü¼öÁıÀÌ
-    // °¡´ÉÇÏ°Ô ÇÑ´Ù. (Âü°í) smxTransMgr::getMemoryMinSCN()
+    // Aging ìˆ˜í–‰ê³¼ì •ì—ì„œ í˜„ íŠ¸ëœì­ì…˜ì„ ê³ ë ¤í•˜ì§€ ì•Šê³  ë²„ì „ìˆ˜ì§‘ì´
+    // ê°€ëŠ¥í•˜ê²Œ í•œë‹¤. (ì°¸ê³ ) smxTransMgr::getMemoryMinSCN()
     smLayerCallback::updateSkipCheckSCN( aTrans, ID_TRUE );
     sState = 2;
 
-    // [1] Ã¼Å©Æ÷ÀÎÆ®¸¦ ¹ß»ı½ÃÅ²´Ù.
+    // [1] ì²´í¬í¬ì¸íŠ¸ë¥¼ ë°œìƒì‹œí‚¨ë‹¤.
     IDE_TEST( gSmrChkptThread.resumeAndWait( aStatistics )
               != IDE_SUCCESS );
 
-    // [2] BACKUP °ü¸®ÀÚÀÇ MEMORY TABLESPACEÀÇ ¹é¾÷»óÅÂ¸¦ ¼³Á¤ÇÑ´Ù.
+    // [2] BACKUP ê´€ë¦¬ìì˜ MEMORY TABLESPACEì˜ ë°±ì—…ìƒíƒœë¥¼ ì„¤ì •í•œë‹¤.
     setOnlineBackupStatusOR( SMR_BACKUP_MEMTBS );
     sRestoreState = 2;
 
     IDE_TEST( gSmrChkptThread.lock( aStatistics ) != IDE_SUCCESS );
     sState = 3;
 
-    // [3] °¢°¢ÀÇ MEMORY TABLESPACEÀÇ »óÅÂ¼³Á¤°ú ¹é¾÷À» ÁøÇàÇÑ´Ù.
-    // BUG-27204 Database ¹é¾÷ ½Ã session event checkµÇÁö ¾ÊÀ½
+    // [3] ê°ê°ì˜ MEMORY TABLESPACEì˜ ìƒíƒœì„¤ì •ê³¼ ë°±ì—…ì„ ì§„í–‰í•œë‹¤.
+    // BUG-27204 Database ë°±ì—… ì‹œ session event checkë˜ì§€ ì•ŠìŒ
     IDE_TEST( smmTBSMediaRecovery::backupAllMemoryTBS(
                              aStatistics,
                              aTrans,
                              aBackupDir ) != IDE_SUCCESS );
 
-    // [4] Loganchor ÆÄÀÏÀ» ¹é¾÷ÇÑ´Ù.
+    // [4] Loganchor íŒŒì¼ì„ ë°±ì—…í•œë‹¤.
     IDE_TEST( smrBackupMgr::backupLogAnchor( aStatistics,
                                              aBackupDir )
               != IDE_SUCCESS );
@@ -1170,15 +1170,15 @@ IDE_RC smrBackupMgr::backupDatabase( idvSQL *  aStatistics,
     sState = 2;
     IDE_TEST( gSmrChkptThread.unlock() != IDE_SUCCESS );
 
-    // [5] BACKUP °ü¸®ÀÚÀÇ MEMORY TABLESPACEÀÇ ¹é¾÷»óÅÂ¸¦ ÇØÁ¦ÇÑ´Ù.
+    // [5] BACKUP ê´€ë¦¬ìì˜ MEMORY TABLESPACEì˜ ë°±ì—…ìƒíƒœë¥¼ í•´ì œí•œë‹¤.
     setOnlineBackupStatusNOT( SMR_BACKUP_MEMTBS );
     sRestoreState = 0;
 
-    // [6] BACKUP °ü¸®ÀÚÀÇ DISK TABLESPACEÀÇ ¹é¾÷»óÅÂ¸¦ ¼³Á¤ÇÑ´Ù.
+    // [6] BACKUP ê´€ë¦¬ìì˜ DISK TABLESPACEì˜ ë°±ì—…ìƒíƒœë¥¼ ì„¤ì •í•œë‹¤.
     setOnlineBackupStatusOR( SMR_BACKUP_DISKTBS );
     sRestoreState = 1;
 
-    // [7] DISK TABLESPACEµéÀ» ¹é¾÷»óÅÂ¸¦ ¼³Á¤ÇÏ°í ¹é¾÷ÇÑ´Ù.
+    // [7] DISK TABLESPACEë“¤ì„ ë°±ì—…ìƒíƒœë¥¼ ì„¤ì •í•˜ê³  ë°±ì—…í•œë‹¤.
     IDE_TEST( sddDiskMgr::backupAllDiskTBS( aStatistics,
                                             aTrans,
                                             aBackupDir )
@@ -1187,7 +1187,7 @@ IDE_RC smrBackupMgr::backupDatabase( idvSQL *  aStatistics,
     setOnlineBackupStatusNOT( SMR_BACKUP_DISKTBS );
     sRestoreState = 0;
 
-    // [8] °­Á¦·Î ÇØ´ç ·Î±×ÆÄÀÏÀ» switch ÇÏ¿© archive ½ÃÅ²´Ù.
+    // [8] ê°•ì œë¡œ í•´ë‹¹ ë¡œê·¸íŒŒì¼ì„ switch í•˜ì—¬ archive ì‹œí‚¨ë‹¤.
     IDE_TEST( smrLogMgr::switchLogFileByForce() != IDE_SUCCESS);
     sState = 1;
 
@@ -1204,7 +1204,7 @@ IDE_RC smrBackupMgr::backupDatabase( idvSQL *  aStatistics,
     {
         IDE_SET(ideSetErrorCode(smERR_ABORT_BACKUP_GOING));
     }
-    // BUG-29861 [WIN] Zero Length File NameÀ» Á¦´ë·Î °Ë»çÇÏÁö ¸øÇÕ´Ï´Ù.
+    // BUG-29861 [WIN] Zero Length File Nameì„ ì œëŒ€ë¡œ ê²€ì‚¬í•˜ì§€ ëª»í•©ë‹ˆë‹¤.
     IDE_EXCEPTION( error_backupdir_path_null );
     {
         IDE_SET(ideSetErrorCode(smERR_ABORT_PathIsNullString,
@@ -1254,11 +1254,11 @@ IDE_RC smrBackupMgr::backupDatabase( idvSQL *  aStatistics,
 
 /*********************************************************
   function description: smrBackup::switchLogFile
-  - ¹é¾÷ÀÌ Á¾·áÇÑ ÈÄ¿¡ ÇöÀç ¿Â¶óÀÎ ·Î±×ÆÄÀÏÀ» archive log·Î
-   ¹é¾÷¹Şµµ·Ï ÇÑ´Ù.
-  - ÇöÀç alter database backup±¸¹®À¸·Î ¹é¾÷À» ¹Ş°í ÀÖ°Å³ª,
-    begin backup ÁßÀÌ¸é ¿¡·¯¸¦ ¿Ã¸°´Ù.
-    -> ÀÌ±¸¹®Àº ¹é¾÷ÀÌ ¿Ï·áµÈ»óÅÂ¿¡¼­ ¼öÇàÇÏ¿©¾ß ÇÑ´Ù.
+  - ë°±ì—…ì´ ì¢…ë£Œí•œ í›„ì— í˜„ì¬ ì˜¨ë¼ì¸ ë¡œê·¸íŒŒì¼ì„ archive logë¡œ
+   ë°±ì—…ë°›ë„ë¡ í•œë‹¤.
+  - í˜„ì¬ alter database backupêµ¬ë¬¸ìœ¼ë¡œ ë°±ì—…ì„ ë°›ê³  ìˆê±°ë‚˜,
+    begin backup ì¤‘ì´ë©´ ì—ëŸ¬ë¥¼ ì˜¬ë¦°ë‹¤.
+    -> ì´êµ¬ë¬¸ì€ ë°±ì—…ì´ ì™„ë£Œëœìƒíƒœì—ì„œ ìˆ˜í–‰í•˜ì—¬ì•¼ í•œë‹¤.
   *********************************************************/
 IDE_RC smrBackupMgr::swithLogFileByForces()
 {
@@ -1309,31 +1309,31 @@ IDE_RC smrBackupMgr::swithLogFileByForces()
 }
 
 /*
-   ALTER TABLESPACE ... BEGIN BACKUP ±â´É ¼öÇàÇÑ´Ù.
+   ALTER TABLESPACE ... BEGIN BACKUP ê¸°ëŠ¥ ìˆ˜í–‰í•œë‹¤.
 
-  ±â´É :
-  º£¸®Å¸½º¿Í °°ÀÌ BACKUP ¿¬µ¿À» À§ÇÏ¿© Ãß°¡µÈ ÇÔ¼öÀÌ¸ç, ÁÖ¾îÁø
-  Å×ÀÌºí½ºÆäÀÌ½ºÀÇ »óÅÂ¸¦ ¹é¾÷ ½ÃÀÛ(BACKUP_BEGIN)À¸·Î º¯°æÇÑ´Ù.
+  ê¸°ëŠ¥ :
+  ë² ë¦¬íƒ€ìŠ¤ì™€ ê°™ì´ BACKUP ì—°ë™ì„ ìœ„í•˜ì—¬ ì¶”ê°€ëœ í•¨ìˆ˜ì´ë©°, ì£¼ì–´ì§„
+  í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì˜ ìƒíƒœë¥¼ ë°±ì—… ì‹œì‘(BACKUP_BEGIN)ìœ¼ë¡œ ë³€ê²½í•œë‹¤.
 
-  PRJ-1548 User Memroy Tablespace °³³äµµÀÔ
+  PRJ-1548 User Memroy Tablespace ê°œë…ë„ì…
 
-  Å×ÀÌºí½ºÆäÀÌ½ºÀÇ Á¾·ù¿Í ¹é¾÷»óÅÂ¿¡ µû¶ó Ã¼Å©Æ÷ÀÎÆ® Å¸ÀÔÀÌ ´Ş¶óÁö°Å³ª
-  È°¼ºÈ­/ºñÈ°¼ºÈ­°¡ µÈ´Ù.
+  í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì˜ ì¢…ë¥˜ì™€ ë°±ì—…ìƒíƒœì— ë”°ë¼ ì²´í¬í¬ì¸íŠ¸ íƒ€ì…ì´ ë‹¬ë¼ì§€ê±°ë‚˜
+  í™œì„±í™”/ë¹„í™œì„±í™”ê°€ ëœë‹¤.
 
-  A. ¹é¾÷ÁøÇàÁßÀÌ ¸Ş¸ğ¸®Å×ÀÌºí½ºÆäÀÌ½º°¡ ¾øÀ» °æ¿ì
-  1. 1°³ÀÌ»óÀÇ µğ½ºÅ© Å×ÀÌºí½ºÆäÀÌ½º°¡ ¹é¾÷ÁøÇàÁßÀÎ °æ¿ì
-    => MRDB Ã¼Å©Æ÷ÀÎÆ®¸¸ ÁøÇàµÈ´Ù.
-  2. ¹é¾÷ÁßÀÎ µğ½ºÅ© Å×ÀÌºí½ºÆäÀÌ½º°¡ ¾ø´Â °æ¿ì
-    => BOTH Ã¼Å©Æ÷ÀÎÆ®°¡ ÁøÇàµÈ´Ù.
+  A. ë°±ì—…ì§„í–‰ì¤‘ì´ ë©”ëª¨ë¦¬í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ê°€ ì—†ì„ ê²½ìš°
+  1. 1ê°œì´ìƒì˜ ë””ìŠ¤í¬ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ê°€ ë°±ì—…ì§„í–‰ì¤‘ì¸ ê²½ìš°
+    => MRDB ì²´í¬í¬ì¸íŠ¸ë§Œ ì§„í–‰ëœë‹¤.
+  2. ë°±ì—…ì¤‘ì¸ ë””ìŠ¤í¬ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ê°€ ì—†ëŠ” ê²½ìš°
+    => BOTH ì²´í¬í¬ì¸íŠ¸ê°€ ì§„í–‰ëœë‹¤.
 
-  B. ¹é¾÷ÁøÇàÁßÀÌ ¸Ş¸ğ¸®Å×ÀÌºí½ºÆäÀÌ½º°¡ ÀÖ´Â °æ¿ì
-  1. 1°³ÀÌ»óÀÇ µğ½ºÅ© Å×ÀÌºí½ºÆäÀÌ½º°¡ ¹é¾÷ÁøÇàÁßÀÎ °æ¿ì
-    => Ã¼Å©Æ÷ÀÎÆ® ¾²·¹µå´Â ´ÙÀ½ ÁÖ±â±îÁö ´ë±âÇÑ´Ù.
-  2. ¹é¾÷ÁßÀÎ µğ½ºÅ© Å×ÀÌºí½ºÆäÀÌ½º°¡ ¾ø´Â °æ¿ì
-    =>: DRDB Ã¼Å©Æ÷ÀÎÆ®°¡ ÁøÇàµÈ´Ù.
+  B. ë°±ì—…ì§„í–‰ì¤‘ì´ ë©”ëª¨ë¦¬í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ê°€ ìˆëŠ” ê²½ìš°
+  1. 1ê°œì´ìƒì˜ ë””ìŠ¤í¬ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ê°€ ë°±ì—…ì§„í–‰ì¤‘ì¸ ê²½ìš°
+    => ì²´í¬í¬ì¸íŠ¸ ì“°ë ˆë“œëŠ” ë‹¤ìŒ ì£¼ê¸°ê¹Œì§€ ëŒ€ê¸°í•œë‹¤.
+  2. ë°±ì—…ì¤‘ì¸ ë””ìŠ¤í¬ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ê°€ ì—†ëŠ” ê²½ìš°
+    =>: DRDB ì²´í¬í¬ì¸íŠ¸ê°€ ì§„í–‰ëœë‹¤.
 
-  ÀÎÀÚ :
-  [IN] aSpaceID : BACKUP ÁøÇàÇÒ Å×ÀÌºí½ºÆäÀÌ½º ID
+  ì¸ì :
+  [IN] aSpaceID : BACKUP ì§„í–‰í•  í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ID
 
 */
 IDE_RC smrBackupMgr::beginBackupTBS( scSpaceID aSpaceID )
@@ -1356,8 +1356,8 @@ IDE_RC smrBackupMgr::beginBackupTBS( scSpaceID aSpaceID )
 
         IDE_TEST( beginBackupDiskTBS(aSpaceID) != IDE_SUCCESS );
 
-        // PRJ-1548 User Memory Tablespace °³³äµµÀÔ
-        // BACKUP ½ÃÀÛÇÑ Disk Tablespace °³¼ö¸¦ Ä«¿îÆ®ÇÑ´Ù.
+        // PRJ-1548 User Memory Tablespace ê°œë…ë„ì…
+        // BACKUP ì‹œì‘í•œ Disk Tablespace ê°œìˆ˜ë¥¼ ì¹´ìš´íŠ¸í•œë‹¤.
         mBeginBackupDiskTBSCount++;
     }
     else
@@ -1365,16 +1365,16 @@ IDE_RC smrBackupMgr::beginBackupTBS( scSpaceID aSpaceID )
         setOnlineBackupStatusOR( SMR_BACKUP_MEMTBS );
         sRestoreState = 2;
 
-        // [1] disk table space backup »óÅÂ º¯°æ¹×
-        // Ã¹¹øÂ° µ¥ÀÌÅ¸ÆÄÀÏÀÇ »óÅÂ¸¦ backupÀ¸·Î º¯°æÇÑ´Ù.
+        // [1] disk table space backup ìƒíƒœ ë³€ê²½ë°
+        // ì²«ë²ˆì§¸ ë°ì´íƒ€íŒŒì¼ì˜ ìƒíƒœë¥¼ backupìœ¼ë¡œ ë³€ê²½í•œë‹¤.
         IDE_TEST( sctTableSpaceMgr::startTableSpaceBackup(
                       aSpaceID,
                       (sctTableSpaceNode**)&sSpaceNode) != IDE_SUCCESS );
 
         IDE_ASSERT( sSpaceNode != NULL );
 
-        // PRJ-1548 User Memory Tablespace °³³äµµÀÔ
-        // BACKUP ½ÃÀÛÇÑ Memory Tablespace °³¼ö¸¦ Ä«¿îÆ®ÇÑ´Ù.
+        // PRJ-1548 User Memory Tablespace ê°œë…ë„ì…
+        // BACKUP ì‹œì‘í•œ Memory Tablespace ê°œìˆ˜ë¥¼ ì¹´ìš´íŠ¸í•œë‹¤.
         mBeginBackupMemTBSCount++;
     }
 
@@ -1399,8 +1399,8 @@ IDE_RC smrBackupMgr::beginBackupTBS( scSpaceID aSpaceID )
                 else
                 {
                     // BUG-21671
-                    // µ¿ÀÏ begin Äõ¸®¹®À» ÀçÂ÷ ³¯·ÈÀ» °æ¿ì
-                    // mOnlineBackupState¸¦ NOTÀ¸·Î ¼³Á¤ÇÏÁö ¾ÊÀ½
+                    // ë™ì¼ begin ì¿¼ë¦¬ë¬¸ì„ ì¬ì°¨ ë‚ ë ¸ì„ ê²½ìš°
+                    // mOnlineBackupStateë¥¼ NOTìœ¼ë¡œ ì„¤ì •í•˜ì§€ ì•ŠìŒ
                 }
                 break;
             }
@@ -1414,8 +1414,8 @@ IDE_RC smrBackupMgr::beginBackupTBS( scSpaceID aSpaceID )
                 else
                 {
                     // BUG-21671
-                    // µ¿ÀÏ begin Äõ¸®¹®À» ÀçÂ÷ ³¯·ÈÀ» °æ¿ì
-                    // mOnlineBackupState¸¦ NOTÀ¸·Î ¼³Á¤ÇÏÁö ¾ÊÀ½
+                    // ë™ì¼ begin ì¿¼ë¦¬ë¬¸ì„ ì¬ì°¨ ë‚ ë ¸ì„ ê²½ìš°
+                    // mOnlineBackupStateë¥¼ NOTìœ¼ë¡œ ì„¤ì •í•˜ì§€ ì•ŠìŒ
                 }
                 break;
             }
@@ -1435,11 +1435,11 @@ IDE_RC smrBackupMgr::beginBackupTBS( scSpaceID aSpaceID )
 
 
 /*
-  ALTER TABLESPACE ... BEGIN BACKUP ¼öÇà½Ã µğ½ºÅ©Å×ÀÌºí½ºÆäÀÌ½ºÀÇ
-  µ¥ÀÌÅ¸ÆÄÀÏÀÇ »óÅÂ¸¦ BEGIN_BACKUP »óÅÂ·Î º¯°æÇÑ´Ù.
+  ALTER TABLESPACE ... BEGIN BACKUP ìˆ˜í–‰ì‹œ ë””ìŠ¤í¬í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì˜
+  ë°ì´íƒ€íŒŒì¼ì˜ ìƒíƒœë¥¼ BEGIN_BACKUP ìƒíƒœë¡œ ë³€ê²½í•œë‹¤.
 
-  ÀÎÀÚ :
-  [IN] aSpaceID : BACKUP ÁøÇàÇÒ Å×ÀÌºí½ºÆäÀÌ½º ID
+  ì¸ì :
+  [IN] aSpaceID : BACKUP ì§„í–‰í•  í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ID
 */
 IDE_RC smrBackupMgr::beginBackupDiskTBS( scSpaceID aSpaceID )
 {
@@ -1448,8 +1448,8 @@ IDE_RC smrBackupMgr::beginBackupDiskTBS( scSpaceID aSpaceID )
     sddTableSpaceNode*    sSpaceNode;
     UInt                  i;
 
-    // [1] disk table space backup »óÅÂ º¯°æ¹×
-    // Ã¹¹øÂ° µ¥ÀÌÅ¸ÆÄÀÏÀÇ »óÅÂ¸¦ backupÀ¸·Î º¯°æÇÑ´Ù.
+    // [1] disk table space backup ìƒíƒœ ë³€ê²½ë°
+    // ì²«ë²ˆì§¸ ë°ì´íƒ€íŒŒì¼ì˜ ìƒíƒœë¥¼ backupìœ¼ë¡œ ë³€ê²½í•œë‹¤.
     IDE_TEST( sctTableSpaceMgr::startTableSpaceBackup(
                   aSpaceID,
                   (sctTableSpaceNode**)&sSpaceNode) != IDE_SUCCESS );
@@ -1480,7 +1480,7 @@ IDE_RC smrBackupMgr::beginBackupDiskTBS( scSpaceID aSpaceID )
 
         IDE_DASSERT( SMI_FILE_STATE_IS_ONLINE( sDataFileNode->mState ) );
 
-        // [2] µ¥ÀÌÅ¸ ÆÄÀÏÀÇ »óÅÂ¸¦ BACKUP »óÅÂ·Î º¯°æ
+        // [2] ë°ì´íƒ€ íŒŒì¼ì˜ ìƒíƒœë¥¼ BACKUP ìƒíƒœë¡œ ë³€ê²½
         IDE_TEST( sddDiskMgr::updateDataFileState(
                       NULL,  /* idvSQL* */
                       sDataFileNode,
@@ -1508,28 +1508,28 @@ IDE_RC smrBackupMgr::beginBackupDiskTBS( scSpaceID aSpaceID )
 
 
 /*
-  ALTER TABLESPACE ... END BACKUP ¼öÇà½Ã µğ½ºÅ©Å×ÀÌºí½ºÆäÀÌ½ºÀÇ
-  µ¥ÀÌÅ¸ÆÄÀÏÀÇ »óÅÂ¸¦ END_BACKUP »óÅÂ·Î º¯°æÇÑ´Ù.
+  ALTER TABLESPACE ... END BACKUP ìˆ˜í–‰ì‹œ ë””ìŠ¤í¬í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì˜
+  ë°ì´íƒ€íŒŒì¼ì˜ ìƒíƒœë¥¼ END_BACKUP ìƒíƒœë¡œ ë³€ê²½í•œë‹¤.
 
-  PRJ-1548 User Memroy Tablespace °³³äµµÀÔ
+  PRJ-1548 User Memroy Tablespace ê°œë…ë„ì…
 
-  Å×ÀÌºí½ºÆäÀÌ½ºÀÇ Á¾·ù¿Í ¹é¾÷»óÅÂ¿¡ µû¶ó Ã¼Å©Æ÷ÀÎÆ® Å¸ÀÔÀÌ ´Ş¶óÁö°Å³ª
-  È°¼ºÈ­/ºñÈ°¼ºÈ­°¡ µÈ´Ù.
+  í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì˜ ì¢…ë¥˜ì™€ ë°±ì—…ìƒíƒœì— ë”°ë¼ ì²´í¬í¬ì¸íŠ¸ íƒ€ì…ì´ ë‹¬ë¼ì§€ê±°ë‚˜
+  í™œì„±í™”/ë¹„í™œì„±í™”ê°€ ëœë‹¤.
 
-  A. ¹é¾÷ÁøÇàÁßÀÌ ¸Ş¸ğ¸®Å×ÀÌºí½ºÆäÀÌ½º°¡ ¾øÀ» °æ¿ì
-  1. 1°³ÀÌ»óÀÇ µğ½ºÅ© Å×ÀÌºí½ºÆäÀÌ½º°¡ ¹é¾÷ÁøÇàÁßÀÎ °æ¿ì
-    => MRDB Ã¼Å©Æ÷ÀÎÆ®¸¸ ÁøÇàµÈ´Ù.
-  2. ¹é¾÷ÁßÀÎ µğ½ºÅ© Å×ÀÌºí½ºÆäÀÌ½º°¡ ¾ø´Â °æ¿ì
-    => BOTH Ã¼Å©Æ÷ÀÎÆ®°¡ ÁøÇàµÈ´Ù.
+  A. ë°±ì—…ì§„í–‰ì¤‘ì´ ë©”ëª¨ë¦¬í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ê°€ ì—†ì„ ê²½ìš°
+  1. 1ê°œì´ìƒì˜ ë””ìŠ¤í¬ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ê°€ ë°±ì—…ì§„í–‰ì¤‘ì¸ ê²½ìš°
+    => MRDB ì²´í¬í¬ì¸íŠ¸ë§Œ ì§„í–‰ëœë‹¤.
+  2. ë°±ì—…ì¤‘ì¸ ë””ìŠ¤í¬ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ê°€ ì—†ëŠ” ê²½ìš°
+    => BOTH ì²´í¬í¬ì¸íŠ¸ê°€ ì§„í–‰ëœë‹¤.
 
-  B. ¹é¾÷ÁøÇàÁßÀÌ ¸Ş¸ğ¸®Å×ÀÌºí½ºÆäÀÌ½º°¡ ÀÖ´Â °æ¿ì
-  1. 1°³ÀÌ»óÀÇ µğ½ºÅ© Å×ÀÌºí½ºÆäÀÌ½º°¡ ¹é¾÷ÁøÇàÁßÀÎ °æ¿ì
-    => Ã¼Å©Æ÷ÀÎÆ® ¾²·¹µå´Â ´ÙÀ½ ÁÖ±â±îÁö ´ë±âÇÑ´Ù.
-  2. ¹é¾÷ÁßÀÎ µğ½ºÅ© Å×ÀÌºí½ºÆäÀÌ½º°¡ ¾ø´Â °æ¿ì
-    =>: DRDB Ã¼Å©Æ÷ÀÎÆ®°¡ ÁøÇàµÈ´Ù.
+  B. ë°±ì—…ì§„í–‰ì¤‘ì´ ë©”ëª¨ë¦¬í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ê°€ ìˆëŠ” ê²½ìš°
+  1. 1ê°œì´ìƒì˜ ë””ìŠ¤í¬ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ê°€ ë°±ì—…ì§„í–‰ì¤‘ì¸ ê²½ìš°
+    => ì²´í¬í¬ì¸íŠ¸ ì“°ë ˆë“œëŠ” ë‹¤ìŒ ì£¼ê¸°ê¹Œì§€ ëŒ€ê¸°í•œë‹¤.
+  2. ë°±ì—…ì¤‘ì¸ ë””ìŠ¤í¬ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ê°€ ì—†ëŠ” ê²½ìš°
+    =>: DRDB ì²´í¬í¬ì¸íŠ¸ê°€ ì§„í–‰ëœë‹¤.
 
-  ÀÎÀÚ :
-  [IN] aSpaceID : BACKUP Á¾·áÇÒ Å×ÀÌºí½ºÆäÀÌ½º ID
+  ì¸ì :
+  [IN] aSpaceID : BACKUP ì¢…ë£Œí•  í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ID
 */
 IDE_RC smrBackupMgr::endBackupTBS( scSpaceID aSpaceID )
 {
@@ -1547,17 +1547,17 @@ IDE_RC smrBackupMgr::endBackupTBS( scSpaceID aSpaceID )
 
     if ( sctTableSpaceMgr::isDiskTableSpace( aSpaceID ) == ID_TRUE )
     {
-        // ¹é¾÷ÁßÀÎ µğ½ºÅ© Å×ÀÌºí½ºÆäÀÌ½º°¡ ¾ø´Â°æ¿ì Exception Ã³¸®
+        // ë°±ì—…ì¤‘ì¸ ë””ìŠ¤í¬ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ê°€ ì—†ëŠ”ê²½ìš° Exception ì²˜ë¦¬
         IDE_TEST_RAISE( (mOnlineBackupState & SMR_BACKUP_DISKTBS)
                         != SMR_BACKUP_DISKTBS,
                         error_not_begin_backup);
 
-        // µğ½ºÅ© Å×ÀÌºí½ºÆäÀÌ½ºÀÇ ¹é¾÷¿Ï·á°úÁ¤À» ¼öÇàÇÑ´Ù.
+        // ë””ìŠ¤í¬ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì˜ ë°±ì—…ì™„ë£Œê³¼ì •ì„ ìˆ˜í–‰í•œë‹¤.
         IDE_TEST( sddDiskMgr::endBackupDiskTBS(
                       NULL,  /* idvSQL* */
                       aSpaceID ) != IDE_SUCCESS );
 
-        // Å×ÀÌºí½ºÆäÀÌ½ºÀÇ ¹é¾÷»óÅÂ¸¦ ÇØÁ¦ÇÏ°í, MIN PI ³ëµå¸¦ Á¦°ÅÇÑ´Ù.
+        // í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì˜ ë°±ì—…ìƒíƒœë¥¼ í•´ì œí•˜ê³ , MIN PI ë…¸ë“œë¥¼ ì œê±°í•œë‹¤.
         IDE_TEST( sctTableSpaceMgr::endTableSpaceBackup( aSpaceID )
                   != IDE_SUCCESS );
 
@@ -1570,12 +1570,12 @@ IDE_RC smrBackupMgr::endBackupTBS( scSpaceID aSpaceID )
     }
     else
     {
-        // ¹é¾÷ÁßÀÎ ¸Ş¸ğ¸® Å×ÀÌºí½ºÆäÀÌ½º°¡ ¾ø´Â°æ¿ì Exception Ã³¸®
+        // ë°±ì—…ì¤‘ì¸ ë©”ëª¨ë¦¬ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ê°€ ì—†ëŠ”ê²½ìš° Exception ì²˜ë¦¬
         IDE_TEST_RAISE((mOnlineBackupState & SMR_BACKUP_MEMTBS)
                        != SMR_BACKUP_MEMTBS,
                        error_not_begin_backup);
 
-        // Å×ÀÌºí½ºÆäÀÌ½ºÀÇ ¹é¾÷»óÅÂ¸¦ ÇØÁ¦ÇÑ´Ù.
+        // í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì˜ ë°±ì—…ìƒíƒœë¥¼ í•´ì œí•œë‹¤.
         IDE_TEST( sctTableSpaceMgr::endTableSpaceBackup( aSpaceID )
                   != IDE_SUCCESS );
 
@@ -1616,14 +1616,14 @@ IDE_RC smrBackupMgr::endBackupTBS( scSpaceID aSpaceID )
 }
 
 /*********************************************************************** 
- * Database ÀüÃ¼¸¦ Incremental BackupÇÑ´Ù.
+ * Database ì „ì²´ë¥¼ Incremental Backupí•œë‹¤.
  * PROJ-2133 Incremental backup
  *
  * aTrans       - [IN]  
- * aBackupDir   - [IN] incremental backup À§Ä¡ -- <ÇöÀç »ç¿ëµÇÁö¾Ê´Â ÀÎÀÚ>
- * aBackupLevel - [IN] ¼öÇàµÇ´Â incremental backup Level
- * aBackupType  - [IN] ¼öÇàµÇ´Â incremental backup type
- * aBackupTag   - [IN] ¼öÇàµÇ´Â incremental backup tag ÀÌ¸§
+ * aBackupDir   - [IN] incremental backup ìœ„ì¹˜ -- <í˜„ì¬ ì‚¬ìš©ë˜ì§€ì•ŠëŠ” ì¸ì>
+ * aBackupLevel - [IN] ìˆ˜í–‰ë˜ëŠ” incremental backup Level
+ * aBackupType  - [IN] ìˆ˜í–‰ë˜ëŠ” incremental backup type
+ * aBackupTag   - [IN] ìˆ˜í–‰ë˜ëŠ” incremental backup tag ì´ë¦„
  *
  **********************************************************************/
 IDE_RC smrBackupMgr::incrementalBackupDatabase(
@@ -1661,12 +1661,12 @@ IDE_RC smrBackupMgr::incrementalBackupDatabase(
     IDE_TEST_RAISE( sLocked == ID_FALSE, error_backup_going );
     sState = 1;
 
-    // ALTER DATABASE BACKUP TABLESPACE OR DATABASE ±¸¹®°ú
-    // ALTER TABLESPACE .. BEGIN BACKUP ±¸¹® ¼öÇà½Ã ´ÙÀ½À» Ã¼Å©ÇÑ´Ù.
+    // ALTER DATABASE BACKUP TABLESPACE OR DATABASE êµ¬ë¬¸ê³¼
+    // ALTER TABLESPACE .. BEGIN BACKUP êµ¬ë¬¸ ìˆ˜í–‰ì‹œ ë‹¤ìŒì„ ì²´í¬í•œë‹¤.
     IDE_TEST_RAISE( mOnlineBackupState != SMR_BACKUP_NONE,
                     error_backup_going );
 
-    /* aBackupDirÀÌ Á¸ÀçÇÏ´ÂÁö È®ÀÎÇÑ´Ù. Á¸ÀçÇÏÁö ¾Ê´Ù¸é µğ·ºÅä¸®¸¦ »ı¼ºÇÑ´Ù. */
+    /* aBackupDirì´ ì¡´ì¬í•˜ëŠ”ì§€ í™•ì¸í•œë‹¤. ì¡´ì¬í•˜ì§€ ì•Šë‹¤ë©´ ë””ë ‰í† ë¦¬ë¥¼ ìƒì„±í•œë‹¤. */
     IDE_TEST( setBackupInfoAndPath( aBackupDir, 
                                     aBackupLevel, 
                                     aBackupType, 
@@ -1678,16 +1678,16 @@ IDE_RC smrBackupMgr::incrementalBackupDatabase(
               != IDE_SUCCESS );
     sIsDirCreate = ID_TRUE;
 
-    // Aging ¼öÇà°úÁ¤¿¡¼­ Çö Æ®·£Àè¼ÇÀ» °í·ÁÇÏÁö ¾Ê°í ¹öÀü¼öÁıÀÌ
-    // °¡´ÉÇÏ°Ô ÇÑ´Ù. (Âü°í) smxTransMgr::getMemoryMinSCN()
+    // Aging ìˆ˜í–‰ê³¼ì •ì—ì„œ í˜„ íŠ¸ëœì­ì…˜ì„ ê³ ë ¤í•˜ì§€ ì•Šê³  ë²„ì „ìˆ˜ì§‘ì´
+    // ê°€ëŠ¥í•˜ê²Œ í•œë‹¤. (ì°¸ê³ ) smxTransMgr::getMemoryMinSCN()
     smLayerCallback::updateSkipCheckSCN( aTrans, ID_TRUE );
     sState = 2;
 
-    // [1] Ã¼Å©Æ÷ÀÎÆ®¸¦ ¹ß»ı½ÃÅ²´Ù.
+    // [1] ì²´í¬í¬ì¸íŠ¸ë¥¼ ë°œìƒì‹œí‚¨ë‹¤.
     IDE_TEST( gSmrChkptThread.resumeAndWait( aStatistics )
               != IDE_SUCCESS );
 
-    // [2] BACKUP °ü¸®ÀÚÀÇ MEMORY TABLESPACEÀÇ ¹é¾÷»óÅÂ¸¦ ¼³Á¤ÇÑ´Ù.
+    // [2] BACKUP ê´€ë¦¬ìì˜ MEMORY TABLESPACEì˜ ë°±ì—…ìƒíƒœë¥¼ ì„¤ì •í•œë‹¤.
     setOnlineBackupStatusOR( SMR_BACKUP_MEMTBS );
     sRestoreState = 2;
 
@@ -1698,7 +1698,7 @@ IDE_RC smrBackupMgr::incrementalBackupDatabase(
     mBackupBISlotCnt = sBIFileHdr->mBISlotCnt;
 
     /* BUG-37371
-     * level 0 ¹é¾÷ÀÌ Á¸ÀçÇÏÁö ¾Ê´Â°æ¿ì level 1 ¹é¾÷À» ½ÇÆĞÇÏµµ·Ï ÇÑ´Ù. */
+     * level 0 ë°±ì—…ì´ ì¡´ì¬í•˜ì§€ ì•ŠëŠ”ê²½ìš° level 1 ë°±ì—…ì„ ì‹¤íŒ¨í•˜ë„ë¡ í•œë‹¤. */
     IDE_TEST_RAISE( (mBackupBISlotCnt == 0) && 
                     (aBackupLevel == SMI_BACKUP_LEVEL_1),
                     there_is_no_level0_backup );
@@ -1707,10 +1707,10 @@ IDE_RC smrBackupMgr::incrementalBackupDatabase(
     sState = 4;
 
     /* 
-     * incremental backup ÀÌÈÄ archivingµÈ log fileµéÁß »èÁ¦ÇØµµ ¹«¹æÇÑ
-     * archive log file¹øÈ£¸¦ ±¸ÇÑ´Ù. logAnchor¿¡ ÀúÀåµÈ DiskRedoLSN°ú
-     * MemEndLSNÁß ÀÛÀº LSNÀ» ±¸ÇÏ°í, ±¸ÇÑ LSNÀÌ ¼ÓÇÑ log file ¹øÈ£
-     * º¸´Ù 1 ÀÛÀº logÆÄÀÏ±îÁö »èÁ¦ ÇÒ¼öÀÖ´Â archivelogfile·Î ¼³Á¤ÇÑ´Ù.
+     * incremental backup ì´í›„ archivingëœ log fileë“¤ì¤‘ ì‚­ì œí•´ë„ ë¬´ë°©í•œ
+     * archive log fileë²ˆí˜¸ë¥¼ êµ¬í•œë‹¤. logAnchorì— ì €ì¥ëœ DiskRedoLSNê³¼
+     * MemEndLSNì¤‘ ì‘ì€ LSNì„ êµ¬í•˜ê³ , êµ¬í•œ LSNì´ ì†í•œ log file ë²ˆí˜¸
+     * ë³´ë‹¤ 1 ì‘ì€ logíŒŒì¼ê¹Œì§€ ì‚­ì œ í• ìˆ˜ìˆëŠ” archivelogfileë¡œ ì„¤ì •í•œë‹¤.
      */
     sAnchorMgr = smrRecoveryMgr::getLogAnchorMgr();
 
@@ -1728,22 +1728,22 @@ IDE_RC smrBackupMgr::incrementalBackupDatabase(
     if ( sMemEndLSN.mFileNo != 0 )
     {
         /* 
-         * recovery½Ã ÇÊ¿äÇÑ logÆÄÀÏ ¹øÈ£º¸´Ù 1 ÀÛÀº logÆÄÀÏÀ» »èÁ¦ÇÒ¼ö
-         * ÀÖ´Â archivelogÆÄÀÏ·Î ¼³Á¤ÇÑ´Ù.
+         * recoveryì‹œ í•„ìš”í•œ logíŒŒì¼ ë²ˆí˜¸ë³´ë‹¤ 1 ì‘ì€ logíŒŒì¼ì„ ì‚­ì œí• ìˆ˜
+         * ìˆëŠ” archivelogíŒŒì¼ë¡œ ì„¤ì •í•œë‹¤.
          */
         sDeleteArchLogFileNo = sMemEndLSN.mFileNo - 1;
     }
     else
     {
         /* 
-         * logÆÄÀÏ ¹øÈ£°¡ 0ÀÌ¸é »èÁ¦ °¡´ÉÇÑ log fileÀÌ ¾øÀ½À¸·Î 
-         * ID_UINT_MAX·Î ¼³Á¤ÇÑ´Ù.
+         * logíŒŒì¼ ë²ˆí˜¸ê°€ 0ì´ë©´ ì‚­ì œ ê°€ëŠ¥í•œ log fileì´ ì—†ìŒìœ¼ë¡œ 
+         * ID_UINT_MAXë¡œ ì„¤ì •í•œë‹¤.
          */
         sDeleteArchLogFileNo = ID_UINT_MAX;
     }
 
-    // [3] °¢°¢ÀÇ MEMORY TABLESPACEÀÇ »óÅÂ¼³Á¤°ú ¹é¾÷À» ÁøÇàÇÑ´Ù.
-    // BUG-27204 Database ¹é¾÷ ½Ã session event checkµÇÁö ¾ÊÀ½
+    // [3] ê°ê°ì˜ MEMORY TABLESPACEì˜ ìƒíƒœì„¤ì •ê³¼ ë°±ì—…ì„ ì§„í–‰í•œë‹¤.
+    // BUG-27204 Database ë°±ì—… ì‹œ session event checkë˜ì§€ ì•ŠìŒ
     IDE_TEST( smmTBSMediaRecovery::incrementalBackupAllMemoryTBS(
                              aStatistics,
                              aTrans,
@@ -1760,7 +1760,7 @@ IDE_RC smrBackupMgr::incrementalBackupDatabase(
                                                     &sDeleteArchLogFileNo )
               != IDE_SUCCESS );
 
-    // [4] Loganchor ÆÄÀÏÀ» ¹é¾÷ÇÑ´Ù.
+    // [4] Loganchor íŒŒì¼ì„ ë°±ì—…í•œë‹¤.
     IDE_TEST( smrBackupMgr::backupLogAnchor( aStatistics,
                                              sIncrementalBackupPath )
               != IDE_SUCCESS );
@@ -1768,15 +1768,15 @@ IDE_RC smrBackupMgr::incrementalBackupDatabase(
     sState = 3;
     IDE_TEST( gSmrChkptThread.unlock() != IDE_SUCCESS );
 
-    // [5] BACKUP °ü¸®ÀÚÀÇ MEMORY TABLESPACEÀÇ ¹é¾÷»óÅÂ¸¦ ÇØÁ¦ÇÑ´Ù.
+    // [5] BACKUP ê´€ë¦¬ìì˜ MEMORY TABLESPACEì˜ ë°±ì—…ìƒíƒœë¥¼ í•´ì œí•œë‹¤.
     setOnlineBackupStatusNOT( SMR_BACKUP_MEMTBS );
     sRestoreState = 0;
 
-    // [6] BACKUP °ü¸®ÀÚÀÇ DISK TABLESPACEÀÇ ¹é¾÷»óÅÂ¸¦ ¼³Á¤ÇÑ´Ù.
+    // [6] BACKUP ê´€ë¦¬ìì˜ DISK TABLESPACEì˜ ë°±ì—…ìƒíƒœë¥¼ ì„¤ì •í•œë‹¤.
     setOnlineBackupStatusOR( SMR_BACKUP_DISKTBS );
     sRestoreState = 1;
 
-    // [7] DISK TABLESPACEµéÀ» ¹é¾÷»óÅÂ¸¦ ¼³Á¤ÇÏ°í ¹é¾÷ÇÑ´Ù.
+    // [7] DISK TABLESPACEë“¤ì„ ë°±ì—…ìƒíƒœë¥¼ ì„¤ì •í•˜ê³  ë°±ì—…í•œë‹¤.
     IDE_TEST( sddDiskMgr::incrementalBackupAllDiskTBS( aStatistics,
                                                        aTrans,
                                                        &sCommonBackupInfo,
@@ -1787,7 +1787,7 @@ IDE_RC smrBackupMgr::incrementalBackupDatabase(
                                               &sLastBackupLSN ) 
               != IDE_SUCCESS );
 
-    /* backup info ÆÄÀÏÀ» ¹é¾÷ÇÑ´Ù. */
+    /* backup info íŒŒì¼ì„ ë°±ì—…í•œë‹¤. */
     if( smriBackupInfoMgr::backup( sIncrementalBackupPath ) 
         != IDE_SUCCESS )
     {
@@ -1805,7 +1805,7 @@ IDE_RC smrBackupMgr::incrementalBackupDatabase(
     setOnlineBackupStatusNOT( SMR_BACKUP_DISKTBS );
     sRestoreState = 0;
 
-    // [8] °­Á¦·Î ÇØ´ç ·Î±×ÆÄÀÏÀ» switch ÇÏ¿© archive ½ÃÅ²´Ù.
+    // [8] ê°•ì œë¡œ í•´ë‹¹ ë¡œê·¸íŒŒì¼ì„ switch í•˜ì—¬ archive ì‹œí‚¨ë‹¤.
     IDE_TEST( smrLogMgr::switchLogFileByForce() != IDE_SUCCESS );
 
     sState = 1;
@@ -1900,15 +1900,15 @@ IDE_RC smrBackupMgr::incrementalBackupDatabase(
 }
 
 /*********************************************************************** 
- * ÇÑÅ×ÀÌºí ½ºÆäÀÌ½º¸¦ Incremental BackupÇÑ´Ù.
+ * í•œí…Œì´ë¸” ìŠ¤í˜ì´ìŠ¤ë¥¼ Incremental Backupí•œë‹¤.
  * PROJ-2133 Incremental backup
  *
  * aTrans       - [IN]  
- * aSpaceID     - [IN] ¹é¾÷ÇÏ·Á´Â Å×ÀÌºí ½ºÆäÀÌ½º ID
- * aBackupDir   - [IN] incremental backup À§Ä¡ --<ÇöÀç »ç¿ëµÇÁö ¾Ê´Â ÀÎÀÚ>
- * aBackupLevel - [IN] ¼öÇàµÇ´Â incremental backup Level
- * aBackupType  - [IN] ¼öÇàµÇ´Â incremental backup type
- * aBackupTag   - [IN] ¼öÇàµÇ´Â incremental backup tag
+ * aSpaceID     - [IN] ë°±ì—…í•˜ë ¤ëŠ” í…Œì´ë¸” ìŠ¤í˜ì´ìŠ¤ ID
+ * aBackupDir   - [IN] incremental backup ìœ„ì¹˜ --<í˜„ì¬ ì‚¬ìš©ë˜ì§€ ì•ŠëŠ” ì¸ì>
+ * aBackupLevel - [IN] ìˆ˜í–‰ë˜ëŠ” incremental backup Level
+ * aBackupType  - [IN] ìˆ˜í–‰ë˜ëŠ” incremental backup type
+ * aBackupTag   - [IN] ìˆ˜í–‰ë˜ëŠ” incremental backup tag
  *
  **********************************************************************/
 IDE_RC smrBackupMgr::incrementalBackupTableSpace( 
@@ -1947,13 +1947,13 @@ IDE_RC smrBackupMgr::incrementalBackupTableSpace(
     IDE_TEST_RAISE( sLocked == ID_FALSE, error_backup_going);
     sState = 1;
 
-    // alter database backup tablespace or database»Ó¸¸¾Æ´Ï¶ó,
-    // alter tablespace begin backup °æ·Î·Î ¿Ã¼ö ÀÖ±â ¶§¹®¿¡,
-    // ´ÙÀ½°ú °°ÀÌ °Ë»çÇÑ´Ù.
+    // alter database backup tablespace or databaseë¿ë§Œì•„ë‹ˆë¼,
+    // alter tablespace begin backup ê²½ë¡œë¡œ ì˜¬ìˆ˜ ìˆê¸° ë•Œë¬¸ì—,
+    // ë‹¤ìŒê³¼ ê°™ì´ ê²€ì‚¬í•œë‹¤.
     IDE_TEST_RAISE( mOnlineBackupState != SMR_BACKUP_NONE,
                     error_backup_going );
 
-    /* aBackupDirÀÌ Á¸ÀçÇÏ´ÂÁö È®ÀÎÇÑ´Ù. Á¸ÀçÇÏÁö ¾Ê´Ù¸é µğ·ºÅä¸®¸¦ »ı¼ºÇÑ´Ù. */
+    /* aBackupDirì´ ì¡´ì¬í•˜ëŠ”ì§€ í™•ì¸í•œë‹¤. ì¡´ì¬í•˜ì§€ ì•Šë‹¤ë©´ ë””ë ‰í† ë¦¬ë¥¼ ìƒì„±í•œë‹¤. */
     IDE_TEST( setBackupInfoAndPath( aBackupDir, 
                                     aBackupLevel, 
                                     aBackupType, 
@@ -1965,12 +1965,12 @@ IDE_RC smrBackupMgr::incrementalBackupTableSpace(
               != IDE_SUCCESS );
     sIsDirCreate = ID_TRUE;
 
-    // Aging ¼öÇà°úÁ¤¿¡¼­ Çö Æ®·£Àè¼ÇÀ» °í·ÁÇÏÁö ¾Ê°í ¹öÀü¼öÁıÀÌ
-    // °¡´ÉÇÏ°Ô ÇÑ´Ù. (Âü°í) smxTransMgr::getMemoryMinSCN()
+    // Aging ìˆ˜í–‰ê³¼ì •ì—ì„œ í˜„ íŠ¸ëœì­ì…˜ì„ ê³ ë ¤í•˜ì§€ ì•Šê³  ë²„ì „ìˆ˜ì§‘ì´
+    // ê°€ëŠ¥í•˜ê²Œ í•œë‹¤. (ì°¸ê³ ) smxTransMgr::getMemoryMinSCN()
     smLayerCallback::updateSkipCheckSCN( aTrans, ID_TRUE );
     sState = 2;
 
-    // Ã¼Å©Æ÷ÀÎÆ®¸¦ ¹ß»ı½ÃÅ²´Ù.
+    // ì²´í¬í¬ì¸íŠ¸ë¥¼ ë°œìƒì‹œí‚¨ë‹¤.
     IDE_TEST( gSmrChkptThread.resumeAndWait( aStatistics )
               != IDE_SUCCESS );
 
@@ -2020,7 +2020,7 @@ IDE_RC smrBackupMgr::incrementalBackupTableSpace(
     else if( sctTableSpaceMgr::isVolatileTableSpace( aSpaceID ) == ID_TRUE )
     {
         // Nothing to do...
-        // volatile tablespace¿¡ ´ëÇØ¼­´Â ¹é¾÷À» Áö¿øÇÏÁö ¾Ê´Â´Ù.
+        // volatile tablespaceì— ëŒ€í•´ì„œëŠ” ë°±ì—…ì„ ì§€ì›í•˜ì§€ ì•ŠëŠ”ë‹¤.
     }
     else
     {
@@ -2028,9 +2028,9 @@ IDE_RC smrBackupMgr::incrementalBackupTableSpace(
     }
 
 
-    /* backup´ë»óÀÌ tablespaceÀÎ°æ¿ì sDeleteArchLogFileNo Á¤º¸¸¦ °»½ÅÇÏÁö ¾Ê´Â´Ù.
-     * sDeleteArchLogFileNo Á¤º¸¸¦ °»½ÅÇÏ°í archivelog¸¦ »èÁ¦ÇÒ°æ¿ì ÀÌÀü¿¡ ¼öÇàµÈ 
-     * database backupÀÇ º¹±¸°¡ ºÒ°¡´ÉÇØ Áø´Ù.
+    /* backupëŒ€ìƒì´ tablespaceì¸ê²½ìš° sDeleteArchLogFileNo ì •ë³´ë¥¼ ê°±ì‹ í•˜ì§€ ì•ŠëŠ”ë‹¤.
+     * sDeleteArchLogFileNo ì •ë³´ë¥¼ ê°±ì‹ í•˜ê³  archivelogë¥¼ ì‚­ì œí• ê²½ìš° ì´ì „ì— ìˆ˜í–‰ëœ 
+     * database backupì˜ ë³µêµ¬ê°€ ë¶ˆê°€ëŠ¥í•´ ì§„ë‹¤.
      */
     (void)smrLogMgr::getLstLSN( &sLastBackupLSN );
     IDE_TEST( smrRecoveryMgr::updateBIFileAttrToLogAnchor( 
@@ -2045,7 +2045,7 @@ IDE_RC smrBackupMgr::incrementalBackupTableSpace(
                                               &sLastBackupLSN ) 
               != IDE_SUCCESS );
 
-    /* backup info ÆÄÀÏÀ» ¹é¾÷ÇÑ´Ù. */
+    /* backup info íŒŒì¼ì„ ë°±ì—…í•œë‹¤. */
     if( smriBackupInfoMgr::backup( sIncrementalBackupPath ) 
         != IDE_SUCCESS )
     {
@@ -2060,7 +2060,7 @@ IDE_RC smrBackupMgr::incrementalBackupTableSpace(
     sState = 2;
     IDE_TEST( smriBackupInfoMgr::unlock() != IDE_SUCCESS );
 
-    // °­Á¦·Î ÇØ´ç ·Î±×ÆÄÀÏÀ» switch ÇÏ¿© archive ½ÃÅ²´Ù.
+    // ê°•ì œë¡œ í•´ë‹¹ ë¡œê·¸íŒŒì¼ì„ switch í•˜ì—¬ archive ì‹œí‚¨ë‹¤.
     IDE_TEST( smrLogMgr::switchLogFileByForce() != IDE_SUCCESS );
     sState = 1;
 
@@ -2145,12 +2145,12 @@ IDE_RC smrBackupMgr::incrementalBackupTableSpace(
 
 
 /*********************************************************************** 
- * ¸Ş¸ğ¸® Å×ÀÌºí½ºÆäÀÌ½º¸¦ Incremental BackupÇÑ´Ù.
+ * ë©”ëª¨ë¦¬ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ë¥¼ Incremental Backupí•œë‹¤.
  * PROJ-2133 Incremental backup
  *
- * aSpaceID           - [IN] ¹é¾÷ÇÒ Å×ÀÌºí½ºÆäÀÌ½º ID
- * aBackupDir         - [IN] incremental backup À§Ä¡
- * aCommonBackupInfo  - [IN] backupinfo °øÅë Á¤º¸
+ * aSpaceID           - [IN] ë°±ì—…í•  í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ID
+ * aBackupDir         - [IN] incremental backup ìœ„ì¹˜
+ * aCommonBackupInfo  - [IN] backupinfo ê³µí†µ ì •ë³´
  *
  **********************************************************************/
 IDE_RC smrBackupMgr::incrementalBackupMemoryTBS( idvSQL     * aStatistics,
@@ -2178,15 +2178,15 @@ IDE_RC smrBackupMgr::incrementalBackupMemoryTBS( idvSQL     * aStatistics,
                  == ID_TRUE );
 
     /* ------------------------------------------------
-     * [1] disk table space backup »óÅÂ º¯°æ¹×
-     * Ã¹¹øÂ° µ¥ÀÌÅ¸ÆÄÀÏÀÇ »óÅÂ¸¦ backupÀ¸·Î º¯°æÇÑ´Ù.
+     * [1] disk table space backup ìƒíƒœ ë³€ê²½ë°
+     * ì²«ë²ˆì§¸ ë°ì´íƒ€íŒŒì¼ì˜ ìƒíƒœë¥¼ backupìœ¼ë¡œ ë³€ê²½í•œë‹¤.
      * ----------------------------------------------*/
     IDE_TEST( sctTableSpaceMgr::startTableSpaceBackup(
                   aSpaceID,
                   (sctTableSpaceNode**)&sSpaceNode) != IDE_SUCCESS );
     sState = 1;
 
-    // [2] memory database fileµéÀ» copyÇÑ´Ù.
+    // [2] memory database fileë“¤ì„ copyí•œë‹¤.
     sWhichDB = smmManager::getCurrentDB( (smmTBSNode*)sSpaceNode );
 
     idlOS::memcpy( &sBackupInfo, aCommonBackupInfo, ID_SIZEOF(smriBISlot) );
@@ -2200,7 +2200,7 @@ IDE_RC smrBackupMgr::incrementalBackupMemoryTBS( idvSQL     * aStatistics,
                         "%s%s-%"ID_UINT32_FMT"-%"ID_UINT32_FMT"_%s%s%s",
                         aBackupDir,
                         sSpaceNode->mHeader.mName,
-                        0, //incremental backupÆÄÀÏÀÇ pinpong¹øÈ£´Â 0À¸·Î ÅëÀÏÇÑ´Ù.
+                        0, //incremental backupíŒŒì¼ì˜ pinpongë²ˆí˜¸ëŠ” 0ìœ¼ë¡œ í†µì¼í•œë‹¤.
                         i,
                         SMRI_BI_BACKUP_TAG_PREFIX,
                         sBackupInfo.mBackupTag,
@@ -2237,17 +2237,17 @@ IDE_RC smrBackupMgr::incrementalBackupMemoryTBS( idvSQL     * aStatistics,
         sBackupInfo.mFileNo          = i;
         
 
-        /* changeTracking manager°¡ È°¼ºÈ­ µÈ°Í°ú °ü°è¾øÀÌ µ¥ÀÌÅÍÆÄÀÏ¿¡ ´ëÇÑ
-         * ÃßÀû½ÃÀÛÀº º°µµÀÇ Á¶°ÇÀ¸·Î ½ÃÀÛµÈ´Ù. µ¥ÀÌÅÍÆÄÀÏÀÌ Ãß°¡µÇ°í ÃÖ¼ÒÇÑ
-         * ÇÑ¹øÀÇ level 0¹é¾÷ÀÌ ¼öÇà µÇ¾î¾ßÁö¸¸ µ¥ÀÌÅÍÆÄÀÏ¿¡ ´ëÇÑÃßÀûÀÌ
-         * ¼öÇàµÈ´Ù.
+        /* changeTracking managerê°€ í™œì„±í™” ëœê²ƒê³¼ ê´€ê³„ì—†ì´ ë°ì´í„°íŒŒì¼ì— ëŒ€í•œ
+         * ì¶”ì ì‹œì‘ì€ ë³„ë„ì˜ ì¡°ê±´ìœ¼ë¡œ ì‹œì‘ëœë‹¤. ë°ì´í„°íŒŒì¼ì´ ì¶”ê°€ë˜ê³  ìµœì†Œí•œ
+         * í•œë²ˆì˜ level 0ë°±ì—…ì´ ìˆ˜í–‰ ë˜ì–´ì•¼ì§€ë§Œ ë°ì´í„°íŒŒì¼ì— ëŒ€í•œì¶”ì ì´
+         * ìˆ˜í–‰ëœë‹¤.
          */
         sTrackingState = (smriCTState)idCore::acpAtomicGet32( 
                                     &sDataFileDescSlot->mTrackingState );
 
-        /* incremental backupÀ» ¼öÇàÇÒ¼ö ÀÖ´Â Á¶°ÇÀÌ µÇ´ÂÁö È®ÀÎÇÑ´Ù.
-         * incremental backupÀ» ¼öÇàÁ¶°ÇÀ» ¸¸Á·ÇÏÁö ¸øÇÏ¸é full backupÀ¸·Î
-         * backupÇÑ´Ù.
+        /* incremental backupì„ ìˆ˜í–‰í• ìˆ˜ ìˆëŠ” ì¡°ê±´ì´ ë˜ëŠ”ì§€ í™•ì¸í•œë‹¤.
+         * incremental backupì„ ìˆ˜í–‰ì¡°ê±´ì„ ë§Œì¡±í•˜ì§€ ëª»í•˜ë©´ full backupìœ¼ë¡œ
+         * backupí•œë‹¤.
          */
         if( ( sTrackingState == SMRI_CT_TRACKING_ACTIVE ) &&
             ( sBackupInfo.mBackupLevel == SMI_BACKUP_LEVEL_1 ) )
@@ -2269,8 +2269,8 @@ IDE_RC smrBackupMgr::incrementalBackupMemoryTBS( idvSQL     * aStatistics,
         {
             sBackupInfo.mBackupType          |= SMI_BACKUP_TYPE_FULL;
 
-            /* full backupÀÌ ¼öÇàµÊÀ¸·Î ¸ğµç BmpExtListÀÇ BitmapÀ» 0À¸·Î
-             * ÃÊ±âÈ­ÇÑ´Ù. 
+            /* full backupì´ ìˆ˜í–‰ë¨ìœ¼ë¡œ ëª¨ë“  BmpExtListì˜ Bitmapì„ 0ìœ¼ë¡œ
+             * ì´ˆê¸°í™”í•œë‹¤. 
              */
             for( sBmpExtListIdx = 0; 
                  sBmpExtListIdx < SMRI_CT_DATAFILE_DESC_BMP_EXT_LIST_CNT; 
@@ -2285,8 +2285,8 @@ IDE_RC smrBackupMgr::incrementalBackupMemoryTBS( idvSQL     * aStatistics,
             (void)idCore::acpAtomicSet32( &sDataFileDescSlot->mTrackingState, 
                                           (acp_sint32_t)SMRI_CT_TRACKING_ACTIVE);
 
-            /* BUG-18678: Memory/Disk DB FileÀ» /tmp¿¡ Online BackupÇÒ¶§ DiskÂÊ
-               BackupÀÌ ½ÇÆĞÇÕ´Ï´Ù.*/
+            /* BUG-18678: Memory/Disk DB Fileì„ /tmpì— Online Backupí• ë•Œ Diskìª½
+               Backupì´ ì‹¤íŒ¨í•©ë‹ˆë‹¤.*/
             if ( sDatabaseFile->copy( aStatistics,
                                       sBackupInfo.mBackupFileName )
                  != IDE_SUCCESS )
@@ -2335,7 +2335,7 @@ IDE_RC smrBackupMgr::incrementalBackupMemoryTBS( idvSQL     * aStatistics,
     }
 
     /* ------------------------------------------------
-     * [2] alter tableµîÀ¸·Î ¹ß»ıÇÑ Backup Internal Database File
+     * [2] alter tableë“±ìœ¼ë¡œ ë°œìƒí•œ Backup Internal Database File
      * ----------------------------------------------*/
 
     
@@ -2410,12 +2410,12 @@ IDE_RC smrBackupMgr::incrementalBackupMemoryTBS( idvSQL     * aStatistics,
 }
 
 /*********************************************************************** 
- * µğ½ºÅ© Å×ÀÌºí½ºÆäÀÌ½º¸¦ Incremental BackupÇÑ´Ù.
+ * ë””ìŠ¤í¬ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ë¥¼ Incremental Backupí•œë‹¤.
  * PROJ-2133 Incremental backup
  *
- * aSpaceID           - [IN] ¹é¾÷ÇÒ Å×ÀÌºí½ºÆäÀÌ½º ID
- * aBackupDir         - [IN] incremental backup À§Ä¡
- * aCommonBackupInfo  - [IN] backupinfo °øÅë Á¤º¸
+ * aSpaceID           - [IN] ë°±ì—…í•  í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ID
+ * aBackupDir         - [IN] incremental backup ìœ„ì¹˜
+ * aCommonBackupInfo  - [IN] backupinfo ê³µí†µ ì •ë³´
  *
  **********************************************************************/
 IDE_RC smrBackupMgr::incrementalBackupDiskTBS( idvSQL     * aStatistics,
@@ -2442,20 +2442,20 @@ IDE_RC smrBackupMgr::incrementalBackupDiskTBS( idvSQL     * aStatistics,
                  == ID_TRUE );
 
     /* ------------------------------------------------
-     * [1] disk table space backup »óÅÂ º¯°æ¹×
-     * Ã¹¹øÂ° µ¥ÀÌÅ¸ÆÄÀÏÀÇ »óÅÂ¸¦ backupÀ¸·Î º¯°æÇÑ´Ù.
+     * [1] disk table space backup ìƒíƒœ ë³€ê²½ë°
+     * ì²«ë²ˆì§¸ ë°ì´íƒ€íŒŒì¼ì˜ ìƒíƒœë¥¼ backupìœ¼ë¡œ ë³€ê²½í•œë‹¤.
      * ----------------------------------------------*/
     IDE_TEST( sctTableSpaceMgr::startTableSpaceBackup(
                   aSpaceID,
                   (sctTableSpaceNode**)&sSpaceNode) != IDE_SUCCESS);
 
-    // Å×ÀÌºí½ºÆäÀÌ½º ¹é¾÷ÀÌ °¡´ÉÇÑ °æ¿ì
+    // í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ë°±ì—…ì´ ê°€ëŠ¥í•œ ê²½ìš°
     sState = 1;
 
     idlOS::memcpy( &sBackupInfo, aCommonBackupInfo, ID_SIZEOF(smriBISlot) );
 
     /* ------------------------------------------------
-     * Å×ÀÌºí ½ºÆäÀÌ½º  µ¥ÀÌÅ¸ ÆÄÀÏµé  copy.
+     * í…Œì´ë¸” ìŠ¤í˜ì´ìŠ¤  ë°ì´íƒ€ íŒŒì¼ë“¤  copy.
      * ----------------------------------------------*/
     for (i=0; i < sSpaceNode->mNewFileID ; i++ )
     {
@@ -2491,9 +2491,9 @@ IDE_RC smrBackupMgr::incrementalBackupDiskTBS( idvSQL     * aStatistics,
         IDE_TEST_RAISE(sDataFileName == NULL,error_backupdir_file_path);
 
         /* ------------------------------------------------
-         * BUG-11206¿Í °°ÀÌ source¿Í destinationÀÌ °°¾Æ¼­
-         * ¿øº» µ¥ÀÌÅ¸ ÆÄÀÏÀÌ À¯½ÇµÇ´Â °æ¿ì¸¦ ¸·±âÀ§ÇÏ¿©
-         * ´ÙÀ½°ú °°ÀÌ Á¤È®È÷ path¸¦ ±¸¼ºÇÔ.
+         * BUG-11206ì™€ ê°™ì´ sourceì™€ destinationì´ ê°™ì•„ì„œ
+         * ì›ë³¸ ë°ì´íƒ€ íŒŒì¼ì´ ìœ ì‹¤ë˜ëŠ” ê²½ìš°ë¥¼ ë§‰ê¸°ìœ„í•˜ì—¬
+         * ë‹¤ìŒê³¼ ê°™ì´ ì •í™•íˆ pathë¥¼ êµ¬ì„±í•¨.
          * ----------------------------------------------*/
         sDataFileName = sDataFileName+1;
 
@@ -2519,7 +2519,7 @@ IDE_RC smrBackupMgr::incrementalBackupDiskTBS( idvSQL     * aStatistics,
                        error_self_copy);
 
         /* ------------------------------------------------
-         * [3] µ¥ÀÌÅ¸ ÆÄÀÏÀÇ »óÅÂ¸¦ backup beginÀ¸·Î º¯°æÇÑ´Ù.
+         * [3] ë°ì´íƒ€ íŒŒì¼ì˜ ìƒíƒœë¥¼ backup beginìœ¼ë¡œ ë³€ê²½í•œë‹¤.
          * ----------------------------------------------*/
 
         IDE_TEST(sddDiskMgr::updateDataFileState(aStatistics,
@@ -2537,22 +2537,22 @@ IDE_RC smrBackupMgr::incrementalBackupDiskTBS( idvSQL     * aStatistics,
         sBackupInfo.mSpaceID         = aSpaceID;
         sBackupInfo.mFileID          = sDataFileNode->mID;
 
-        /* changeTracking manager°¡ È°¼ºÈ­ µÈ°Í°ú °ü°è¾øÀÌ µ¥ÀÌÅÍÆÄÀÏ¿¡ ´ëÇÑ
-         * ÃßÀû½ÃÀÛÀº º°µµÀÇ Á¶°ÇÀ¸·Î ½ÃÀÛµÈ´Ù. µ¥ÀÌÅÍÆÄÀÏÀÌ Ãß°¡µÇ°í ÃÖ¼ÒÇÑ
-         * ÇÑ¹øÀÇ level 0¹é¾÷ÀÌ ¼öÇà µÇ¾î¾ßÁö¸¸ µ¥ÀÌÅÍÆÄÀÏ¿¡ ´ëÇÑÃßÀûÀÌ
-         * ¼öÇàµÈ´Ù.
+        /* changeTracking managerê°€ í™œì„±í™” ëœê²ƒê³¼ ê´€ê³„ì—†ì´ ë°ì´í„°íŒŒì¼ì— ëŒ€í•œ
+         * ì¶”ì ì‹œì‘ì€ ë³„ë„ì˜ ì¡°ê±´ìœ¼ë¡œ ì‹œì‘ëœë‹¤. ë°ì´í„°íŒŒì¼ì´ ì¶”ê°€ë˜ê³  ìµœì†Œí•œ
+         * í•œë²ˆì˜ level 0ë°±ì—…ì´ ìˆ˜í–‰ ë˜ì–´ì•¼ì§€ë§Œ ë°ì´í„°íŒŒì¼ì— ëŒ€í•œì¶”ì ì´
+         * ìˆ˜í–‰ëœë‹¤.
          */
         sTrackingState = (smriCTState)idCore::acpAtomicGet32( 
                                     &sDataFileDescSlot->mTrackingState );
 
-        /* incremental backupÀ» ¼öÇàÇÒ¼ö ÀÖ´Â Á¶°ÇÀÌ µÇ´ÂÁö È®ÀÎÇÑ´Ù.
-         * incremental backupÀ» ¼öÇàÁ¶°ÇÀ» ¸¸Á·ÇÏÁö ¸øÇÏ¸é full backupÀ¸·Î
-         * backupÇÑ´Ù.
+        /* incremental backupì„ ìˆ˜í–‰í• ìˆ˜ ìˆëŠ” ì¡°ê±´ì´ ë˜ëŠ”ì§€ í™•ì¸í•œë‹¤.
+         * incremental backupì„ ìˆ˜í–‰ì¡°ê±´ì„ ë§Œì¡±í•˜ì§€ ëª»í•˜ë©´ full backupìœ¼ë¡œ
+         * backupí•œë‹¤.
          */
         if( ( sTrackingState == SMRI_CT_TRACKING_ACTIVE ) &&
             ( sBackupInfo.mBackupLevel == SMI_BACKUP_LEVEL_1 ) )
         {
-            /* incremental backup ¼öÇà */
+            /* incremental backup ìˆ˜í–‰ */
             if( sddDiskMgr::incrementalBackup( aStatistics, 
                                                sDataFileDescSlot,
                                                sDataFileNode,
@@ -2574,11 +2574,11 @@ IDE_RC smrBackupMgr::incrementalBackupDiskTBS( idvSQL     * aStatistics,
             /* 
              * BUG-40604 The bit count in a changeTracking`s bitmap is not same 
              * with that in a changeTracking`s datafile descriptor 
-             * SetBit ÇÔ¼ö¿ÍÀÇ µ¿½Ã¼º ¹®Á¦¸¦ ÇØ°áÇÏ±â À§ÇØ Bitmap extent¿¡X latch¸¦ Àâ´Â´Ù.
-             * µ¿½Ã¼º ¹®Á¦°¡ ¹ß»ıÇÒ ¼ö ÀÖ´Â, ÇöÀç ÃßÀûÁßÀÎ differrential bitmap listÀÇ 
-             * latch¸¸ È¹µæÇÏ¸é µÈ´Ù.
-             * cumulative bitmap µµ ÇöÀç ÃßÀûÁßÀÎ differrential bitmap listÀÇ 
-             * latch¿¡ ÀÇÇØ µ¿½Ã¼º º¸ÀåÀÌ °¡´ÉÇÏ´Ù.
+             * SetBit í•¨ìˆ˜ì™€ì˜ ë™ì‹œì„± ë¬¸ì œë¥¼ í•´ê²°í•˜ê¸° ìœ„í•´ Bitmap extentì—X latchë¥¼ ì¡ëŠ”ë‹¤.
+             * ë™ì‹œì„± ë¬¸ì œê°€ ë°œìƒí•  ìˆ˜ ìˆëŠ”, í˜„ì¬ ì¶”ì ì¤‘ì¸ differrential bitmap listì˜ 
+             * latchë§Œ íšë“í•˜ë©´ ëœë‹¤.
+             * cumulative bitmap ë„ í˜„ì¬ ì¶”ì ì¤‘ì¸ differrential bitmap listì˜ 
+             * latchì— ì˜í•´ ë™ì‹œì„± ë³´ì¥ì´ ê°€ëŠ¥í•˜ë‹¤.
              */
             sLockListID = sDataFileDescSlot->mCurTrackingListID;
             IDE_TEST( smriChangeTrackingMgr::lockBmpExtHdrLatchX( sDataFileDescSlot, 
@@ -2586,8 +2586,8 @@ IDE_RC smrBackupMgr::incrementalBackupDiskTBS( idvSQL     * aStatistics,
                     != IDE_SUCCESS );
             sState = 3;
             
-            /* full backupÀÌ ¼öÇàµÊÀ¸·Î ¸ğµç BmpExtListÀÇ BitmapÀ» 0À¸·Î
-             * ÃÊ±âÈ­ÇÑ´Ù. 
+            /* full backupì´ ìˆ˜í–‰ë¨ìœ¼ë¡œ ëª¨ë“  BmpExtListì˜ Bitmapì„ 0ìœ¼ë¡œ
+             * ì´ˆê¸°í™”í•œë‹¤. 
              */
             for( sBmpExtListIdx = 0; 
                  sBmpExtListIdx < SMRI_CT_DATAFILE_DESC_BMP_EXT_LIST_CNT; 
@@ -2607,7 +2607,7 @@ IDE_RC smrBackupMgr::incrementalBackupDiskTBS( idvSQL     * aStatistics,
             (void) idCore::acpAtomicSet32( &sDataFileDescSlot->mTrackingState, 
                                            (acp_sint32_t)SMRI_CT_TRACKING_ACTIVE );
             
-            /* Full backup ¼öÇà */
+            /* Full backup ìˆ˜í–‰ */
             if ( sddDiskMgr::copyDataFile( aStatistics,
                                            sDataFileNode,
                                            sBackupInfo.mBackupFileName )
@@ -2651,8 +2651,8 @@ IDE_RC smrBackupMgr::incrementalBackupDiskTBS( idvSQL     * aStatistics,
                        error_abort_backup);
 
         /* ------------------------------------------------
-         * [4] µ¥ÀÌÅ¸ ÆÄÀÏÀÇ ¹é¾÷ÀÌ ³¡³µ±â ¶§¹®¿¡, PIL hashÀÇ
-         * logg³»¿ëÀ» µ¥ÀÌÅ¸ ÆÄÀÏ¿¡ Àû¿ëÇÑ´Ù.
+         * [4] ë°ì´íƒ€ íŒŒì¼ì˜ ë°±ì—…ì´ ëë‚¬ê¸° ë•Œë¬¸ì—, PIL hashì˜
+         * loggë‚´ìš©ì„ ë°ì´íƒ€ íŒŒì¼ì— ì ìš©í•œë‹¤.
          * ----------------------------------------------*/
         sState = 1;
         IDE_TEST( sddDiskMgr::completeFileBackup(aStatistics,
@@ -2661,9 +2661,9 @@ IDE_RC smrBackupMgr::incrementalBackupDiskTBS( idvSQL     * aStatistics,
     }
 
     /* ------------------------------------------------
-     * ¾ÕÀÇ sddDiskMgr:::completeFileBackup¿¡¼­  pageÀÇ
-     * image log°¡ µ¥ÀÌÅ¸ ÆÄÀÏ¿¡ ¹İ¿µµÇ¾ú±â¶§¹®¿¡,
-     * ´ÜÁö Å×ÀÌºí ½ºÆäÀÌ½º ÀÇ »óÅÂ¸¦ backup¿¡¼­ onlineÀ¸·Î º¯°æÇÑ´Ù.
+     * ì•ì˜ sddDiskMgr:::completeFileBackupì—ì„œ  pageì˜
+     * image logê°€ ë°ì´íƒ€ íŒŒì¼ì— ë°˜ì˜ë˜ì—ˆê¸°ë•Œë¬¸ì—,
+     * ë‹¨ì§€ í…Œì´ë¸” ìŠ¤í˜ì´ìŠ¤ ì˜ ìƒíƒœë¥¼ backupì—ì„œ onlineìœ¼ë¡œ ë³€ê²½í•œë‹¤.
      * ----------------------------------------------*/
     sState = 0;
     IDE_TEST( sctTableSpaceMgr::endTableSpaceBackup( aSpaceID )
@@ -2725,17 +2725,17 @@ IDE_RC smrBackupMgr::incrementalBackupDiskTBS( idvSQL     * aStatistics,
 }
 
 /*********************************************************************** 
- * °øÅëµÈ backupinfo¸¦ ¼³Á¤ÇÏ°í incremental backupÆÄÀÏÀ» »ı¼ºÇÒ µğ·ºÅä¸®
- * ¸¦ ¼³Á¤ÇÑ´Ù.
+ * ê³µí†µëœ backupinfoë¥¼ ì„¤ì •í•˜ê³  incremental backupíŒŒì¼ì„ ìƒì„±í•  ë””ë ‰í† ë¦¬
+ * ë¥¼ ì„¤ì •í•œë‹¤.
  * PROJ-2133 Incremental backup
  *
- * aBackupDir               - [IN] backupÇÒ À§Ä¡
- * aBackupLevel             - [IN] ¼öÇàµÇ´Â backup Level
- * aBackupType              - [IN] ¼öÇàµÇ´Â backup Type
- * aBackupTarget            - [IN] backupÀ» ¼öÇàÇÒ ´ë»ó
- * aBackupTag               - [IN] backupÀ» ¼öÇàÇÒ tagÀÌ¸§
- * aCommonBackupInfo        - [IN/OUT] °øÅëµÈ ¹é¾÷ Á¤º¸
- * aIncrementalBackupPath   - [OUT] backupÇÒ À§Ä¡ 
+ * aBackupDir               - [IN] backupí•  ìœ„ì¹˜
+ * aBackupLevel             - [IN] ìˆ˜í–‰ë˜ëŠ” backup Level
+ * aBackupType              - [IN] ìˆ˜í–‰ë˜ëŠ” backup Type
+ * aBackupTarget            - [IN] backupì„ ìˆ˜í–‰í•  ëŒ€ìƒ
+ * aBackupTag               - [IN] backupì„ ìˆ˜í–‰í•  tagì´ë¦„
+ * aCommonBackupInfo        - [IN/OUT] ê³µí†µëœ ë°±ì—… ì •ë³´
+ * aIncrementalBackupPath   - [OUT] backupí•  ìœ„ì¹˜ 
 
  **********************************************************************/
 IDE_RC smrBackupMgr::setBackupInfoAndPath( 
@@ -2854,7 +2854,7 @@ IDE_RC smrBackupMgr::setBackupInfoAndPath(
                         error_incremental_backup_dir_already_exist );
 
         IDE_TEST_RAISE( idlOS::mkdir( aIncrementalBackupPath, 
-                        S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH ) != 0, // 755±ÇÇÑ
+                        S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH ) != 0, // 755ê¶Œí•œ
                         error_create_path );
     }
     else

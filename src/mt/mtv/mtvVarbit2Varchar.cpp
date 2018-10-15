@@ -141,7 +141,7 @@ IDE_RC mtvCalculate_Varbit2Varchar( mtcNode*,
                 sChr = ( ( sVarbit->value[sByteIndex] << sIterator) >> 7) & 0x1;
 
                 /*
-                * 00001111ÀÇ °æ¿ì ¾ÕÀÇ 0000µµ °°ÀÌ º¯È¯ÀÌ µÇ¾î¾ß ÇÑ´Ù. 
+                * 00001111ì˜ ê²½ìš° ì•ì˜ 0000ë„ ê°™ì´ ë³€í™˜ì´ ë˜ì–´ì•¼ í•œë‹¤. 
                 *
                 * insert into tab_bit values ( bit'11111111' );
                 * insert into tab_bit values ( bit'00001111' );

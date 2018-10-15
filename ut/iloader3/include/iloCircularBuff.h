@@ -20,8 +20,8 @@
 #include <iloApi.h>
 /*
  * PROJ-1714
- * Data Uploading½Ã, »ç¿ëÇÏ´Â ¿øÇü ¹öÆÛ Class ¼±¾ðºÎ
- * File¿¡¼­ ÀÐÀº µ¥ÀÌÅÍ¸¦ ¿øÇü ¹öÆÛ¿¡ ÀúÀåÇÏ°í, ÀúÀåµÈ µ¥ÀÌÅÍ¸¦ ÀÐÀ» ¼ö ÀÖ´Ù.
+ * Data Uploadingì‹œ, ì‚¬ìš©í•˜ëŠ” ì›í˜• ë²„í¼ Class ì„ ì–¸ë¶€
+ * Fileì—ì„œ ì½ì€ ë°ì´í„°ë¥¼ ì›í˜• ë²„í¼ì— ì €ìž¥í•˜ê³ , ì €ìž¥ëœ ë°ì´í„°ë¥¼ ì½ì„ ìˆ˜ ìžˆë‹¤.
  * Thread Safety~~
  */
  
@@ -32,26 +32,26 @@ public:
     virtual ~CCircularBuf();
 
 private:
-    SChar  *m_pCircularBuf;                         //µ¥ÀÌÅ¸ ÀúÀå ¹öÆÛ
-    SChar  *m_pStartBuf, *m_pCurrBuf, *m_pEndBuf;   //µ¥ÀÌÅ¸ ½ÃÀÛÀ§Ä¡, µ¥ÀÌÅ¸ ³¡À§Ä¡, ¹öÆÛ ³¡À§Ä¡
-    SInt    m_nBufSize, m_nDataSize;                //¹öÆÛ »çÀÌÁî, ¹öÆÛ¿¡ Á¸ÀçÇÏ´Â µ¥ÀÌÅ¸ »çÀÌÁî
-    iloBool  m_bEOF;                                 //FileÀÇ ´Ù ÀÐÀ½
+    SChar  *m_pCircularBuf;                         //ë°ì´íƒ€ ì €ìž¥ ë²„í¼
+    SChar  *m_pStartBuf, *m_pCurrBuf, *m_pEndBuf;   //ë°ì´íƒ€ ì‹œìž‘ìœ„ì¹˜, ë°ì´íƒ€ ëìœ„ì¹˜, ë²„í¼ ëìœ„ì¹˜
+    SInt    m_nBufSize, m_nDataSize;                //ë²„í¼ ì‚¬ì´ì¦ˆ, ë²„í¼ì— ì¡´ìž¬í•˜ëŠ” ë°ì´íƒ€ ì‚¬ì´ì¦ˆ
+    iloBool  m_bEOF;                                 //Fileì˜ ë‹¤ ì½ìŒ
     PDL_Time_Value mSleepTime;
 
 public:
-    void    Initialize( ALTIBASE_ILOADER_HANDLE aHandle );                           //¹öÆÛ ÃÊ±âÈ­
-    void    Finalize( ALTIBASE_ILOADER_HANDLE aHandle );                             //¹öÆÛ Free
+    void    Initialize( ALTIBASE_ILOADER_HANDLE aHandle );                           //ë²„í¼ ì´ˆê¸°í™”
+    void    Finalize( ALTIBASE_ILOADER_HANDLE aHandle );                             //ë²„í¼ Free
     SInt    WriteBuf( ALTIBASE_ILOADER_HANDLE aHandle ,
                       SChar* pBuf,
-                      SInt nSize);      //¹öÆÛ¿¡ µ¥ÀÌÅ¸ ÀúÀåÇÔ¼ö
-    SInt    ReadBuf( ALTIBASE_ILOADER_HANDLE aHandle, SChar* pBuf, SInt nSize);       //¹öÆÛ µ¥ÀÌÅ¸ ·ÎµåÇÔ¼ö(size¸¸Å­)
+                      SInt nSize);      //ë²„í¼ì— ë°ì´íƒ€ ì €ìž¥í•¨ìˆ˜
+    SInt    ReadBuf( ALTIBASE_ILOADER_HANDLE aHandle, SChar* pBuf, SInt nSize);       //ë²„í¼ ë°ì´íƒ€ ë¡œë“œí•¨ìˆ˜(sizeë§Œí¼)
     void    SetEOF( ALTIBASE_ILOADER_HANDLE aHandle, iloBool aValue);
     iloBool  GetEOF( ALTIBASE_ILOADER_HANDLE aHandle );
     
 private:
     SInt    ReadBufReal( ALTIBASE_ILOADER_HANDLE aHandle, SChar* pBuf, SInt nSize);
-    SInt    GetDataSize( ALTIBASE_ILOADER_HANDLE aHandle );                          //¹öÆÛ¿¡ Á¸ÀçÇÏ´Â Å©±â ¸®ÅÏ
-    SInt    GetBufSize( ALTIBASE_ILOADER_HANDLE aHandle );                           //¹öÆÛ¿¡ ÀúÀå°¡´ÉÇÑ Å©±â ¸®ÅÏ    
+    SInt    GetDataSize( ALTIBASE_ILOADER_HANDLE aHandle );                          //ë²„í¼ì— ì¡´ìž¬í•˜ëŠ” í¬ê¸° ë¦¬í„´
+    SInt    GetBufSize( ALTIBASE_ILOADER_HANDLE aHandle );                           //ë²„í¼ì— ì €ìž¥ê°€ëŠ¥í•œ í¬ê¸° ë¦¬í„´    
 };
 
 #endif  /* _O_ILO_CIRCULARBUFF_H */

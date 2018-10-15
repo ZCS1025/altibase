@@ -147,7 +147,7 @@ SQLRETURN getSynonymUser( SChar *aUserName,
 
         if ( gProgOption.mbExistDrop == ID_TRUE )
         {
-            // BUG-20943 drop ±¸¹®¿¡¼­ user °¡ ¸í½ÃµÇÁö ¾Ê¾Æ drop ÀÌ ½ÇÆĞÇÕ´Ï´Ù.
+            // BUG-20943 drop êµ¬ë¬¸ì—ì„œ user ê°€ ëª…ì‹œë˜ì§€ ì•Šì•„ drop ì´ ì‹¤íŒ¨í•©ë‹ˆë‹¤.
             idlOS::fprintf( aSynFp, "drop Synonym \"%s\".\"%s\";\n", aUserName, sSynonymName);
         }
 #ifdef DEBUG
@@ -232,7 +232,7 @@ SQLRETURN getSynonymAll( FILE *aSynFp )
     {
         IDE_TEST_RAISE( sRet != SQL_SUCCESS, user_error );
 
-        // BUG-25194 DROP ¿É¼ÇÀÌ OFF ÀÏ¶§ synonym À» Ãâ·ÂÇÏÁö ¾ÊÀ½
+        // BUG-25194 DROP ì˜µì…˜ì´ OFF ì¼ë•Œ synonym ì„ ì¶œë ¥í•˜ì§€ ì•ŠìŒ
         if (sUserNameInd != SQL_NULL_DATA)
         {
             idlOS::snprintf( sDdl,
@@ -249,7 +249,7 @@ SQLRETURN getSynonymAll( FILE *aSynFp )
 
             if ( gProgOption.mbExistDrop == ID_TRUE )
             {
-                // BUG-20943 drop ±¸¹®¿¡¼­ user °¡ ¸í½ÃµÇÁö ¾Ê¾Æ drop ÀÌ ½ÇÆĞÇÕ´Ï´Ù.
+                // BUG-20943 drop êµ¬ë¬¸ì—ì„œ user ê°€ ëª…ì‹œë˜ì§€ ì•Šì•„ drop ì´ ì‹¤íŒ¨í•©ë‹ˆë‹¤.
                 idlOS::fprintf( aSynFp, "drop Synonym \"%s\".\"%s\";\n", 
                                 sSchemaName, sSynonymName );
             }
@@ -502,7 +502,7 @@ SQLRETURN getSeqQuery( SChar *a_user,
 
         if ( gProgOption.mbExistDrop == ID_TRUE )
         {
-            // BUG-20943 drop ±¸¹®¿¡¼­ user °¡ ¸í½ÃµÇÁö ¾Ê¾Æ drop ÀÌ ½ÇÆĞÇÕ´Ï´Ù.
+            // BUG-20943 drop êµ¬ë¬¸ì—ì„œ user ê°€ ëª…ì‹œë˜ì§€ ì•Šì•„ drop ì´ ì‹¤íŒ¨í•©ë‹ˆë‹¤.
             idlOS::fprintf( aSeqFp, "drop sequence \"%s\".\"%s\";\n", 
                             s_user_name, s_seq_name);
         }
@@ -548,10 +548,10 @@ SQLRETURN getSeqQuery( SChar *a_user,
 #undef IDE_FN
 }
 
-/* ¾îµğ·Î °¡¾ß ÇÏ³ª? */
+/* ì–´ë””ë¡œ ê°€ì•¼ í•˜ë‚˜? */
 /* BUG-22708
  *
- * Directory °´Ã¼¸¦ ÃßÃâÇÔ..
+ * Directory ê°ì²´ë¥¼ ì¶”ì¶œí•¨..
  */
 SQLRETURN getDirectoryAll( FILE *aDirFp )
 {

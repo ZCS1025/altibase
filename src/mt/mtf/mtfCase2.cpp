@@ -54,7 +54,7 @@ static IDE_RC mtfCase2Estimate( mtcNode*     aNode,
 mtfModule mtfCase2 = {
     1|MTC_NODE_OPERATOR_FUNCTION|MTC_NODE_EAT_NULL_TRUE,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
+    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìê°€ ì•„ë‹˜)
     mtfCase2FunctionName,
     NULL,
     mtf::initializeDefault,
@@ -130,10 +130,10 @@ IDE_RC mtfCase2Estimate( mtcNode*     aNode,
         sModules[1] = &mtdFloat;
 
         // BUG-11695
-        // Case( expr1, result1, expr2, result2, ... )¿¡¼­
-        // result1, result2 µîÀÌ ¸ğµÎ double Å¸ÀÔÀÌ¸é 
-        // °á°ú Å¸ÀÔÀ» float ´ë½Å double·Î ÇÑ´Ù.
-        // performance view¿¡¼­ doubleÀ» »ç¿ëÇØ¾ß ÇÔ.
+        // Case( expr1, result1, expr2, result2, ... )ì—ì„œ
+        // result1, result2 ë“±ì´ ëª¨ë‘ double íƒ€ì…ì´ë©´ 
+        // ê²°ê³¼ íƒ€ì…ì„ float ëŒ€ì‹  doubleë¡œ í•œë‹¤.
+        // performance viewì—ì„œ doubleì„ ì‚¬ìš©í•´ì•¼ í•¨.
         for( sCount = 2; sCount <= sFence; sCount += 2 )
         {
             if( ( sDouble == ID_TRUE ) &&
@@ -174,9 +174,9 @@ IDE_RC mtfCase2Estimate( mtcNode*     aNode,
     else if( sGroups[MTD_GROUP_TEXT] != 0 )
     {
         /* BUG-34311 
-         * Case( expr1, result1, expr2, result2, ... )¿¡¼­
-         * result Áß ÇÏ³ª¶óµµ NVARCHAR,NCHAR Å¸ÀÔÀÎ °æ¿ì 
-         * °á°ú Å¸ÀÔÀ» NVARCHAR·Î ÇÑ´Ù. */
+         * Case( expr1, result1, expr2, result2, ... )ì—ì„œ
+         * result ì¤‘ í•˜ë‚˜ë¼ë„ NVARCHAR,NCHAR íƒ€ì…ì¸ ê²½ìš° 
+         * ê²°ê³¼ íƒ€ì…ì„ NVARCHARë¡œ í•œë‹¤. */
 
         for( sCount = 2 ; sCount <= sFence; sCount += 2 )
         {
@@ -254,7 +254,7 @@ IDE_RC mtfCase2Estimate( mtcNode*     aNode,
     }
 
     // BUG-23102
-    // mtcColumnÀ¸·Î ÃÊ±âÈ­ÇÑ´Ù.
+    // mtcColumnìœ¼ë¡œ ì´ˆê¸°í™”í•œë‹¤.
     mtc::initializeColumn( aStack[0].column, aStack[2].column );
     for( sCount = 4; sCount <= sFence; sCount += 2 )
     {
@@ -321,10 +321,10 @@ IDE_RC mtfCase2Calculate( mtcNode*     aNode,
                   != IDE_SUCCESS );
 
         /* BUG-44762 case when subquery
-         * Case when ¿¡ Subquery°¡ »ç¿ëµÉ °æ¿ì Ã¹¹øÂ° Calculate´Â ½ÇÁ¦
-         * subquery ¸¦ ¼öÇàÇÑ´Ù. ÀÌ¶§ aStack[1]Àº EauqlÀÌ°í aStack[2]´Â Subquery
-         * ÀÇ °á°ú¸¦ °¡Áö°í ÀÖ´Ù ÀÌ °á°ú¸¦ °¡Áö°í ÀÖ´Ù°¡ ´ÙÀ½ when calculate½Ã¿¡
-         * È°¿ëÇÑ´Ù.
+         * Case when ì— Subqueryê°€ ì‚¬ìš©ë  ê²½ìš° ì²«ë²ˆì§¸ CalculateëŠ” ì‹¤ì œ
+         * subquery ë¥¼ ìˆ˜í–‰í•œë‹¤. ì´ë•Œ aStack[1]ì€ Eauqlì´ê³  aStack[2]ëŠ” Subquery
+         * ì˜ ê²°ê³¼ë¥¼ ê°€ì§€ê³  ìˆë‹¤ ì´ ê²°ê³¼ë¥¼ ê°€ì§€ê³  ìˆë‹¤ê°€ ë‹¤ìŒ when calculateì‹œì—
+         * í™œìš©í•œë‹¤.
          */
         if ( sNode->arguments != NULL )
         {
@@ -395,8 +395,8 @@ IDE_RC mtfCase2Calculate( mtcNode*     aNode,
         }
 
         /* BUG-44762 case when subquery
-         * Conversion Node°¡ When ±¸¹®¸¶´Ù °¢°¢ ´Ş¸± ¼ö ÀÖ±â ¶§¹®¿¡
-         * ÃÖÁ¶ÀÇ Subquery °á°ú¸¦ °è¼Ó À¯ÁöÇØÁà¾ß¸¸ ÇÑ´Ù.
+         * Conversion Nodeê°€ When êµ¬ë¬¸ë§ˆë‹¤ ê°ê° ë‹¬ë¦´ ìˆ˜ ìˆê¸° ë•Œë¬¸ì—
+         * ìµœì¡°ì˜ Subquery ê²°ê³¼ë¥¼ ê³„ì† ìœ ì§€í•´ì¤˜ì•¼ë§Œ í•œë‹¤.
          */
         if ( sIsSubQuery == ID_TRUE )
         {

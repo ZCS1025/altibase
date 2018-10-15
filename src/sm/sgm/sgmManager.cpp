@@ -17,10 +17,10 @@
 /***********************************************************************
  * SGM Layer
  *
- *    SGM(Storage Global Memory)´Â SMM°ú SVMÀÇ »óÀ§ ¸ğµâ·Î¼­,
- *    SMM°ú SVMÀ» ÅëÇÕÇÏ´Â ¿ªÇÒÀ» ÇÑ´Ù.
- *    SC °è¿­Àº SM, SVÀÇ ÇÏÀ§ ¸ğµâÀÌ°í,
- *    SG °è¿­Àº SM, SV¸¦ ÅëÇÕÇÏ´Â »óÀ§ ¸ğµâÀÌ´Ù.
+ *    SGM(Storage Global Memory)ëŠ” SMMê³¼ SVMì˜ ìƒìœ„ ëª¨ë“ˆë¡œì„œ,
+ *    SMMê³¼ SVMì„ í†µí•©í•˜ëŠ” ì—­í• ì„ í•œë‹¤.
+ *    SC ê³„ì—´ì€ SM, SVì˜ í•˜ìœ„ ëª¨ë“ˆì´ê³ ,
+ *    SG ê³„ì—´ì€ SM, SVë¥¼ í†µí•©í•˜ëŠ” ìƒìœ„ ëª¨ë“ˆì´ë‹¤.
  *
  *    +-----------------------------------------------+
  *    |               SGM, SGP(?), SGC(?)             |
@@ -30,7 +30,7 @@
  *    |                 SCR, SCM, SCT                 |
  *    +-----------------------------------------------+
  *
- *    ** SGP, SGC´Â ÇöÀç ¾øÀ½
+ *    ** SGP, SGCëŠ” í˜„ì¬ ì—†ìŒ
  ***********************************************************************/
 //fix BUG-18251.
 #include <idl.h>
@@ -157,16 +157,16 @@ SChar* sgmManager::getCompressionVarColumn( SChar           * aRow,
             if ( ( sVCDesc->flag & SM_VCDESC_MODE_MASK )
                    == SM_VCDESC_MODE_OUT )
             {
-                /* Out Mode·Î ÀúÀåµÈ Row¸¦ ÀĞ¾ú°í µ¥ÀÌÅ¸°¡ ¹öÆÛ¿¡ º¹»çµÉ °æ¿ì
-                 * Ã¹ 8byte¿¡´Â ÇöÀç ¹öÆÛ¿¡ ÀÖ´Â µ¥ÀÌÅ¸°¡ DB¿¡ À§Ä¡ÇÑ RowÀÇ
-                 * ½ÃÀÛ Pointer°¡ ÀÖ´Ù.*/
+                /* Out Modeë¡œ ì €ì¥ëœ Rowë¥¼ ì½ì—ˆê³  ë°ì´íƒ€ê°€ ë²„í¼ì— ë³µì‚¬ë  ê²½ìš°
+                 * ì²« 8byteì—ëŠ” í˜„ì¬ ë²„í¼ì— ìˆëŠ” ë°ì´íƒ€ê°€ DBì— ìœ„ì¹˜í•œ Rowì˜
+                 * ì‹œì‘ Pointerê°€ ìˆë‹¤.*/
                 IDE_ASSERT( sVCDesc->length != 0 );
                 IDE_ASSERT( getOIDPtr( sSpaceID,
                                        sVCDesc->fstPieceOID,
                                        (void**)&sFstVarPiecePtr )
                         == IDE_SUCCESS );
 
-                /* ¹öÆÛ¿¡´Â ÀÌÀü¿¡ ÀĞÀº µ¥ÀÌÅ¸°¡ ÀúÀåµÇ¾î ÀÖ´Ù. */
+                /* ë²„í¼ì—ëŠ” ì´ì „ì— ì½ì€ ë°ì´íƒ€ê°€ ì €ì¥ë˜ì–´ ìˆë‹¤. */
                 if ( *((void**)( aColumn->value )) == sFstVarPiecePtr )
                 {
                     sIsSameColumn = ID_TRUE;
@@ -213,7 +213,7 @@ SChar* sgmManager::getCompressionVarColumn( SChar           * aRow,
             sCompColumn.flag     = aColumn->flag;
             sCompColumn.size     = aColumn->size;
             sCompColumn.colSpace = aColumn->colSpace;
-            sCompColumn.varOrder = 0; /* dictionary table ¿¡´Â ÇÏ³ªÀÇ column¸¸ ÀÖ´Ù */
+            sCompColumn.varOrder = 0; /* dictionary table ì—ëŠ” í•˜ë‚˜ì˜ columnë§Œ ìˆë‹¤ */
             sCompColumn.value    = NULL;
 
             sRet = getVarColumn( aRow,
@@ -222,7 +222,7 @@ SChar* sgmManager::getCompressionVarColumn( SChar           * aRow,
         }
         else
         {
-            // ¾ÆÁ÷ Áö¿øÇÏÁö ¾Ê´Â´Ù.
+            // ì•„ì§ ì§€ì›í•˜ì§€ ì•ŠëŠ”ë‹¤.
             IDE_ASSERT(0);
         }
 

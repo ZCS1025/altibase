@@ -87,7 +87,7 @@
     
 #define MAX_OUTPUT_CNT 100
 
-/* tablespace°¡ »èÁ¦ µÇ°Å³ª Á¸Àç ÇÏÁö ¾Ê´Â USER NAME ±¸ÇÏ¿© ¿¡·¯ Ãâ·Â */
+/* tablespaceê°€ ì‚­ì œ ë˜ê±°ë‚˜ ì¡´ì¬ í•˜ì§€ ì•ŠëŠ” USER NAME êµ¬í•˜ì—¬ ì—ëŸ¬ ì¶œë ¥ */
 void setErrNoExistTBSUser()
 {
 #define IDE_FN "setErrNoExistTBSUser()"
@@ -114,8 +114,8 @@ void setErrNoExistTBSUser()
                                 (SQLLEN)ID_SIZEOF( sUserName ),
                                 &sUserNameInd ) != SQL_SUCCESS, StmtError );
 
-    /* user°¡ ¸îÀÌ³ª ÀÖÀ»Áö ¾Ë ¼ö ¾øÀ¸¹Ç·Î, MAX_OUTPUT_CNT ±îÁö¸¸
-     * ¿¡·¯·Î Ãâ·ÂÇÑ´Ù. ´õ ÀÖÀ¸¸é ÁÙÀÓÇ¥(...)¸¦ ÀÌ¿ëÇØ ´õ ÀÖÀ½À» Ç¥½Ã. */
+    /* userê°€ ëª‡ì´ë‚˜ ìˆì„ì§€ ì•Œ ìˆ˜ ì—†ìœ¼ë¯€ë¡œ, MAX_OUTPUT_CNT ê¹Œì§€ë§Œ
+     * ì—ëŸ¬ë¡œ ì¶œë ¥í•œë‹¤. ë” ìˆìœ¼ë©´ ì¤„ì„í‘œ(...)ë¥¼ ì´ìš©í•´ ë” ìˆìŒì„ í‘œì‹œ. */
     for ( i = 0; i < MAX_OUTPUT_CNT; i++ )
     {
         sRet = SQLFetch( sStmt );
@@ -177,7 +177,7 @@ SInt getPrivNo( const SChar *aPrivName )
     SInt sPrivNo = UTM_NONE;
 
     /* BUG-22769
-     * »ç¿ëÀÚ °èÁ¤ »ı¼º½Ã ±âº»ÀûÀ¸·Î »ı¼ºµÇ´Â ±ÇÇÑÀº ¾Æ·¡ 8°¡ ÀÖ´Ù.
+     * ì‚¬ìš©ì ê³„ì • ìƒì„±ì‹œ ê¸°ë³¸ì ìœ¼ë¡œ ìƒì„±ë˜ëŠ” ê¶Œí•œì€ ì•„ë˜ 8ê°€ ìˆë‹¤.
      * 0. CREATE_PROCEDURE
      * 1. CREATE_SEQUENCE
      * 2. CREATE_SESSION
@@ -188,7 +188,7 @@ SInt getPrivNo( const SChar *aPrivName )
      * 7. CREATE_MATERIALIZED_VIEW
      * 8. CREATE_DATABASE_LINK
      * 9. CREATE_LIBRARY
-     * sDefaultPriv[] ÀÇ array ¹øÈ£´Â À§ÀÇ ¼ıÀÚ¸¦ »ç¿ëÇÑ´Ù.
+     * sDefaultPriv[] ì˜ array ë²ˆí˜¸ëŠ” ìœ„ì˜ ìˆ«ìë¥¼ ì‚¬ìš©í•œë‹¤.
      */
     if ( idlOS::strcmp( aPrivName, "CREATE PROCEDURE" ) == 0 )
     {
@@ -255,11 +255,11 @@ SQLRETURN getUserPrivileges( FILE  *aFp,
     //fix BUG-22905.
     UInt           i;
     //BUG-22769
-    idBool         sDefaultPriv[UTM_PRIV_COUNT];   //±ÇÇÑÀÌ revoke µÇ¾ú´ÂÁö¸¦ ÆÇ´ÜÇÏ±â À§ÇØ »ç¿ëµÈ´Ù.
+    idBool         sDefaultPriv[UTM_PRIV_COUNT];   //ê¶Œí•œì´ revoke ë˜ì—ˆëŠ”ì§€ë¥¼ íŒë‹¨í•˜ê¸° ìœ„í•´ ì‚¬ìš©ëœë‹¤.
     SChar          sPrivList[QUERY_LEN] = { '\0', };
     SInt           sPrivNo; /* BUG-44595 */
 
-    //FALSE·Î ¼¼ÆÃ...
+    //FALSEë¡œ ì„¸íŒ…...
     idlOS::memset(sDefaultPriv, 0x00, ID_SIZEOF(idBool) * UTM_PRIV_COUNT);
 
     IDE_TEST_RAISE(SQLAllocStmt(m_hdbc, &sPrivStmt) != SQL_SUCCESS,
@@ -289,7 +289,7 @@ SQLRETURN getUserPrivileges( FILE  *aFp,
 
     IDE_TEST(Execute(sPrivStmt) != SQL_SUCCESS);
     
-    //BUG-22769 revoke ½ÃÅ³ ±ÇÇÑ ÀúÀåÃÊ±âÈ­
+    //BUG-22769 revoke ì‹œí‚¬ ê¶Œí•œ ì €ì¥ì´ˆê¸°í™”
     idlOS::strcpy( m_revokeStr, "" );
     
     while ((sRet = SQLFetch(sPrivStmt)) != SQL_NO_DATA)
@@ -329,7 +329,7 @@ SQLRETURN getUserPrivileges( FILE  *aFp,
     if ( aIsRole != ID_TRUE )
     {
         // BUG-22769
-        // ±âº»ÀûÀ¸·Î »ı¼ºµÈ ±ÇÇÑÀÌ revoke µÇ¾úÀ» °æ¿ìÀÇ Ã³¸®
+        // ê¸°ë³¸ì ìœ¼ë¡œ ìƒì„±ëœ ê¶Œí•œì´ revoke ë˜ì—ˆì„ ê²½ìš°ì˜ ì²˜ë¦¬
         for ( i = 0; i < UTM_PRIV_COUNT; i++)
         {
             if ( sDefaultPriv[i] == ID_FALSE )
@@ -398,7 +398,7 @@ SQLRETURN getUserPrivileges( FILE  *aFp,
     }
     
     // BUG-22769
-    // ±ÇÇÑ Revoke
+    // ê¶Œí•œ Revoke
     if ( sAllFlag != ID_TRUE && idlOS::strlen( m_revokeStr ) > 0 )
     {
         m_revokeStr[ idlOS::strlen(m_revokeStr) - 2 ] = ' ';
@@ -428,14 +428,14 @@ SQLRETURN getUserPrivileges( FILE  *aFp,
 
 /* 
  * getUserQuery_user: 
- *   user mode¿¡¼­ user »ı¼º ±¸¹®À» exportÇÏ´Â ÇÔ¼ö.
+ *   user modeì—ì„œ user ìƒì„± êµ¬ë¬¸ì„ exportí•˜ëŠ” í•¨ìˆ˜.
  *
  * BUG-40469:
- *   user mode¿¡¼­ TABLESPACE ÇÁ·ÎÆÛÆ¼°¡ ONÀÎ °æ¿ì,
- *   tablespace »ı¼º ±¸¹®À» export ÇÏ´Â ±â´ÉÀÌ Ãß°¡µÊ.
+ *   user modeì—ì„œ TABLESPACE í”„ë¡œí¼í‹°ê°€ ONì¸ ê²½ìš°,
+ *   tablespace ìƒì„± êµ¬ë¬¸ì„ export í•˜ëŠ” ê¸°ëŠ¥ì´ ì¶”ê°€ë¨.
  *   ***
- *   export µÇ´Â Å×ÀÌºí½ºÆäÀÌ½º´Â »ç¿ëÀÚ ±âÁØ - Áï,
- *   »ç¿ëÀÚÀÇ default, temporary, access tablespace - ÀÌ´Ù.
+ *   export ë˜ëŠ” í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ëŠ” ì‚¬ìš©ì ê¸°ì¤€ - ì¦‰,
+ *   ì‚¬ìš©ìì˜ default, temporary, access tablespace - ì´ë‹¤.
  */
 SQLRETURN getUserQuery_user( FILE  *aUserFp,
                              SChar *a_user_name,
@@ -1018,8 +1018,8 @@ SQLRETURN getUserQuery( FILE  *aUserFp,
             else
             {
                 /* BUG-19012 */
-                // password ÀÔ·Â ¾øÀÌ enter ¸¦ ÀÔ·ÂÇÒ °æ¿ì
-                // default password ·Î¼­ user name ÀÌ µé¾î°¨.
+                // password ì…ë ¥ ì—†ì´ enter ë¥¼ ì…ë ¥í•  ê²½ìš°
+                // default password ë¡œì„œ user name ì´ ë“¤ì–´ê°.
                 idlOS::fprintf(stdout, "** input user %s's password"
                                "(default - same with USER_NAME): ",
                                s_user_name);

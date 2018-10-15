@@ -47,7 +47,7 @@ static IDE_RC stfDisjointEstimate(
 mtfModule stfDisjoint = {
     1|MTC_NODE_OPERATOR_EQUAL|MTC_NODE_COMPARISON_TRUE|MTC_NODE_FILTER_NEED|
         MTC_NODE_INDEX_ARGUMENT_BOTH|MTC_NODE_INDEX_JOINABLE_TRUE,
-    ~(MTC_NODE_INDEX_MASK), // BUG-15283: disjoint¥¬ ¿Œµ¶Ω∫∏¶ ≈∏∏È æ»µ .
+    ~(MTC_NODE_INDEX_MASK), // BUG-15283: disjointÎäî Ïù∏Îç±Ïä§Î•º ÌÉÄÎ©¥ ÏïàÎê®.
     1.0/2.0,  // TODO : default selectivity
     stfDisjointFunctionName,
     &stfIntersects,

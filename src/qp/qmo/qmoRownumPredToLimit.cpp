@@ -20,7 +20,7 @@
  *
  * Description : BUG-40355
  *     Rownum To Limit
- * rownum À» »ç¿ëÇÑ ÁúÀÇ¸¦ limit ¸¦ ÀÌ¿ëÇÒµµ·Ï º¯°æÇÑ´Ù.
+ * rownum ì„ ì‚¬ìš©í•œ ì§ˆì˜ë¥¼ limit ë¥¼ ì´ìš©í• ë„ë¡ ë³€ê²½í•œë‹¤.
  * select * from ( select rownum as r1 from t1 ) where r1 <= 50;
  *   -> select * from ( select rownum as r1 from t1 limit 50 );
  *
@@ -50,7 +50,7 @@ IDE_RC qmoRownumPredToLimit::rownumPredToLimitTransform( qcStatement   * aStatem
     IDU_FIT_POINT_FATAL( "qmoRownumPredToLimit::rownumPredToLimitTransform::__FT__" );
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_FT_ERROR( aStatement     != NULL );
@@ -79,7 +79,7 @@ IDE_RC qmoRownumPredToLimit::rownumPredToLimitTransform( qcStatement   * aStatem
     }
 
     //--------------------------------------
-    // Á¶°Ç °Ë»ç
+    // ì¡°ê±´ ê²€ì‚¬
     //--------------------------------------
 
     sCanTransform = isRownumPredToLimit( aStatement,
@@ -88,7 +88,7 @@ IDE_RC qmoRownumPredToLimit::rownumPredToLimitTransform( qcStatement   * aStatem
                                          &sPredPosition );
 
     //--------------------------------------
-    // Æ®·£½ºÆû ¼öÇà
+    // íŠ¸ëœìŠ¤í¼ ìˆ˜í–‰
     //--------------------------------------
 
     if ( sCanTransform == ID_TRUE )
@@ -249,7 +249,7 @@ idBool qmoRownumPredToLimit::isRownumPredToLimit( qcStatement  * aStatement,
     {
         if ( sViewParseTree->orderBy != NULL )
         {
-            // view ¾È¿¡ order by ÀÌ ¾ø¾î¾ß ÇÑ´Ù.
+            // view ì•ˆì— order by ì´ ì—†ì–´ì•¼ í•œë‹¤.
             sTrans = ID_FALSE;
         }
         else
@@ -259,7 +259,7 @@ idBool qmoRownumPredToLimit::isRownumPredToLimit( qcStatement  * aStatement,
 
         if ( sViewParseTree->limit != NULL )
         {
-            // view ¾È¿¡ limit ÀÌ ¾ø¾î¾ß ÇÑ´Ù.
+            // view ì•ˆì— limit ì´ ì—†ì–´ì•¼ í•œë‹¤.
             sTrans = ID_FALSE;
         }
         else
@@ -269,7 +269,7 @@ idBool qmoRownumPredToLimit::isRownumPredToLimit( qcStatement  * aStatement,
 
         if ( sViewParseTree->querySet->SFWGH->rownum == NULL )
         {
-            // view ¾È¿¡ rownum ÀÌ ÀÖ¾î¾ß ÇÑ´Ù.
+            // view ì•ˆì— rownum ì´ ìˆì–´ì•¼ í•œë‹¤.
             sTrans = ID_FALSE;
         }
         else
@@ -279,13 +279,13 @@ idBool qmoRownumPredToLimit::isRownumPredToLimit( qcStatement  * aStatement,
     }
     else
     {
-        // view ¾È¿¡ setÀıÀÌ ÀÖÀ»¶§´Â limitÀ» »ç¿ë ÇÒ ¼ö ¾ø´Ù.
+        // view ì•ˆì— setì ˆì´ ìˆì„ë•ŒëŠ” limitì„ ì‚¬ìš© í•  ìˆ˜ ì—†ë‹¤.
         sTrans = ID_FALSE;
     }
 
     if ( sTrans == ID_TRUE )
     {
-        // rownumÀº 1°³¸¸ Á¸ÀçÇØ¾ß ÇÑ´Ù.
+        // rownumì€ 1ê°œë§Œ ì¡´ì¬í•´ì•¼ í•œë‹¤.
         sFindCount = 0;
 
         for ( sTarget = sViewParseTree->querySet->target,
@@ -303,7 +303,7 @@ idBool qmoRownumPredToLimit::isRownumPredToLimit( qcStatement  * aStatement,
                 }
                 else
                 {
-                    // rownum¿¡ ¿¬»êÀÌ ÀÖ´Â °æ¿ì¿¡´Â ÇÏÁö ¾Ê´Â´Ù.
+                    // rownumì— ì—°ì‚°ì´ ìˆëŠ” ê²½ìš°ì—ëŠ” í•˜ì§€ ì•ŠëŠ”ë‹¤.
                     sTrans = ID_FALSE;
                     break;
                 }
@@ -330,7 +330,7 @@ idBool qmoRownumPredToLimit::isRownumPredToLimit( qcStatement  * aStatement,
 
     if ( sTrans == ID_TRUE )
     {
-        // where Àı¿¡¼­ 1°³¸¸ ÂüÁ¶ÇØ¾ß ÇÑ´Ù.
+        // where ì ˆì—ì„œ 1ê°œë§Œ ì°¸ì¡°í•´ì•¼ í•œë‹¤.
         sFindCount = 0;
 
         for ( sPredicate = aPredicate,
@@ -341,7 +341,7 @@ idBool qmoRownumPredToLimit::isRownumPredToLimit( qcStatement  * aStatement,
         {
             sNode = (mtcNode*)(sPredicate->node);
 
-            // ÃÖ»óÀ§ ³ëµå´Â OR ³ëµå¿©¾ß ÇÑ´Ù.
+            // ìµœìƒìœ„ ë…¸ë“œëŠ” OR ë…¸ë“œì—¬ì•¼ í•œë‹¤.
             if ( (sNode->lflag & MTC_NODE_OPERATOR_MASK) == MTC_NODE_OPERATOR_OR )
             {
                 sNode = sNode->arguments;
@@ -351,7 +351,7 @@ idBool qmoRownumPredToLimit::isRownumPredToLimit( qcStatement  * aStatement,
                 continue;
             }
 
-            // OR ¿¬»êÀº Áö¿øÇÏÁö ¾Ê´Â´Ù.
+            // OR ì—°ì‚°ì€ ì§€ì›í•˜ì§€ ì•ŠëŠ”ë‹¤.
             if ( sNode->next != NULL )
             {
                 continue;
@@ -361,7 +361,7 @@ idBool qmoRownumPredToLimit::isRownumPredToLimit( qcStatement  * aStatement,
                 // nothing to do.
             }
 
-            // bind º¯¼ö°¡ ¾ø¾î¾ß ÇÑ´Ù.
+            // bind ë³€ìˆ˜ê°€ ì—†ì–´ì•¼ í•œë‹¤.
             if ( (sNode->lflag & MTC_NODE_BIND_MASK) == MTC_NODE_BIND_EXIST )
             {
                 continue;
@@ -389,12 +389,12 @@ idBool qmoRownumPredToLimit::isRownumPredToLimit( qcStatement  * aStatement,
                 // nothing to do.
             }
 
-            // ´ÙÀ½ÀÇ ÇüÅÂ¸¸ Áö¿øÇÑ´Ù.
+            // ë‹¤ìŒì˜ í˜•íƒœë§Œ ì§€ì›í•œë‹¤.
             if ( (sNode->module == &mtfLessEqual) ||
                  (sNode->module == &mtfLessThan) )
             {
-                // rownum <= »ó¼ö;
-                // rownum < »ó¼ö;
+                // rownum <= ìƒìˆ˜;
+                // rownum < ìƒìˆ˜;
                 sColumn = QTC_STMT_COLUMN( aStatement, ((qtcNode*)(sNode->arguments->next)));
 
                 if ( (sNode->arguments->module == &qtc::columnModule) &&
@@ -414,8 +414,8 @@ idBool qmoRownumPredToLimit::isRownumPredToLimit( qcStatement  * aStatement,
             else if ( (sNode->module == &mtfGreaterEqual) ||
                       (sNode->module == &mtfGreaterThan) )
             {
-                // »ó¼ö >= rownum;
-                // »ó¼ö > rownum;
+                // ìƒìˆ˜ >= rownum;
+                // ìƒìˆ˜ > rownum;
                 sColumn = QTC_STMT_COLUMN( aStatement, ((qtcNode*)(sNode->arguments)));
 
                 if ( (sNode->arguments->next->module == &qtc::columnModule) &&
@@ -437,7 +437,7 @@ idBool qmoRownumPredToLimit::isRownumPredToLimit( qcStatement  * aStatement,
                 sColumn  = QTC_STMT_COLUMN( aStatement, ((qtcNode*)(sNode->arguments->next)));
                 sColumn2 = QTC_STMT_COLUMN( aStatement, ((qtcNode*)(sNode->arguments->next->next)));
 
-                // rownum between »ó¼ö and »ó¼ö
+                // rownum between ìƒìˆ˜ and ìƒìˆ˜
                 if ( (sNode->arguments->module == &qtc::columnModule) &&
                      (sNode->arguments->table  == sViewTpuleID) &&
                      (sNode->arguments->column == sRownumColumn) &&
@@ -517,7 +517,7 @@ IDE_RC qmoRownumPredToLimit::doRownumPredToLimit( qcStatement   * aStatement,
 
     if ( sChanged == ID_TRUE )
     {
-        // where Àı¿¡¼­ Á¦°ÅÇÑ´Ù.
+        // where ì ˆì—ì„œ ì œê±°í•œë‹¤.
         *sPrev = sPredicate->next;
     }
     else
@@ -544,14 +544,14 @@ idBool qmoRownumPredToLimit::isViewRownumToLimit( qcStatement  * aStatement,
     mtdBigintType  sValue;
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
     IDE_FT_ERROR( aStatement     != NULL );
     IDE_FT_ERROR( aQuerySet      != NULL );
     IDE_FT_ERROR( aViewTableRef  != NULL );
 
     //------------------------------------------
-    // Á¶°Ç °Ë»ç
+    // ì¡°ê±´ ê²€ì‚¬
     //------------------------------------------
     sNode = (mtcNode*)aQuerySet->SFWGH->where;
     sViewParseTree = (qmsParseTree*)(aViewTableRef->view->myPlan->parseTree);
@@ -604,11 +604,11 @@ idBool qmoRownumPredToLimit::isViewRownumToLimit( qcStatement  * aStatement,
             // nothing to do
         }
 
-        // ´ÙÀ½ÀÇ ÇüÅÂ¸¸ Áö¿øÇÑ´Ù.
+        // ë‹¤ìŒì˜ í˜•íƒœë§Œ ì§€ì›í•œë‹¤.
         if ( sNode->module == &mtfEqual )
         {
-            // rownum = »ó¼ö;
-            // »ó¼ö = rownum;
+            // rownum = ìƒìˆ˜;
+            // ìƒìˆ˜ = rownum;
             if ( (sNode->arguments->module == &qtc::columnModule) &&
                  (sNode->arguments->next->module == &qtc::valueModule) )
             {
@@ -648,8 +648,8 @@ idBool qmoRownumPredToLimit::isViewRownumToLimit( qcStatement  * aStatement,
         else if ( (sNode->module == &mtfLessEqual) ||
                   (sNode->module == &mtfLessThan) )
         {
-            // rownum <= »ó¼ö;
-            // rownum < »ó¼ö;
+            // rownum <= ìƒìˆ˜;
+            // rownum < ìƒìˆ˜;
             sColumn = QTC_STMT_COLUMN( aStatement, ((qtcNode*)(sNode->arguments->next)));
 
             if ( (sNode->arguments->module == &qtc::columnModule) &&
@@ -666,8 +666,8 @@ idBool qmoRownumPredToLimit::isViewRownumToLimit( qcStatement  * aStatement,
         else if ( (sNode->module == &mtfGreaterEqual) ||
                   (sNode->module == &mtfGreaterThan) )
         {
-            // »ó¼ö >= rownum;
-            // »ó¼ö > rownum;
+            // ìƒìˆ˜ >= rownum;
+            // ìƒìˆ˜ > rownum;
             sColumn = QTC_STMT_COLUMN( aStatement, ((qtcNode*)(sNode->arguments)));
 
             if ( (sNode->arguments->next->module == &qtc::columnModule) &&
@@ -686,7 +686,7 @@ idBool qmoRownumPredToLimit::isViewRownumToLimit( qcStatement  * aStatement,
             sColumn  = QTC_STMT_COLUMN( aStatement, ((qtcNode*)(sNode->arguments->next)));
             sColumn2 = QTC_STMT_COLUMN( aStatement, ((qtcNode*)(sNode->arguments->next->next)));
 
-            // rownum between »ó¼ö and »ó¼ö
+            // rownum between ìƒìˆ˜ and ìƒìˆ˜
             if ( (sNode->arguments->module == &qtc::columnModule) &&
                  (sNode->arguments->next->module == &qtc::valueModule) && 
                  (sNode->arguments->next->next->module == &qtc::valueModule) &&

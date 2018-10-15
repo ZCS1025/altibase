@@ -30,7 +30,7 @@
 mtlModule* gWcharModule  = NULL;
 
 // fix BUG-25172
-// ÇÑ±Û DSN ¹× ÇÑ±Û µ¥ÀÌÅÍ°¡ ¿Ã ¼ö ÀÖÀ¸¹Ç·Î ASCII ´ë½Å CLIENT NLS·Î Ä³¸¯ÅÍ¼ÂÀ» ¼³Á¤ÇÑ´Ù.
+// í•œê¸€ DSN ë° í•œê¸€ ë°ì´í„°ê°€ ì˜¬ ìˆ˜ ìžˆìœ¼ë¯€ë¡œ ASCII ëŒ€ì‹  CLIENT NLSë¡œ ìºë¦­í„°ì…‹ì„ ì„¤ì •í•œë‹¤.
 mtlModule* gClientModule = NULL;
 
 acp_sint32_t getWcharLength(SQLWCHAR* aWchar)
@@ -94,7 +94,7 @@ SQLRETURN SQL_API SQLAllocHandle(SQLSMALLINT HandleType,
         }
 
         // fix BUG-25172
-        // ÇÑ±Û DSN ¹× ÇÑ±Û µ¥ÀÌÅÍ°¡ ¿Ã ¼ö ÀÖÀ¸¹Ç·Î ASCII ´ë½Å CLIENT NLS·Î Ä³¸¯ÅÍ¼ÂÀ» ¼³Á¤ÇÑ´Ù.
+        // í•œê¸€ DSN ë° í•œê¸€ ë°ì´í„°ê°€ ì˜¬ ìˆ˜ ìžˆìœ¼ë¯€ë¡œ ASCII ëŒ€ì‹  CLIENT NLSë¡œ ìºë¦­í„°ì…‹ì„ ì„¤ì •í•œë‹¤.
         if (gClientModule == NULL)
         {
             if (acpEnvGet("ALTIBASE_NLS_USE", &sClientNLS) == ACP_RC_SUCCESS)
@@ -107,8 +107,8 @@ SQLRETURN SQL_API SQLAllocHandle(SQLSMALLINT HandleType,
                 }
             }
 
-            // È¯°æº¯¼öÀÇ ALTIBASE_NLS_USE°¡ ¾ø°Å³ª Àß¸øµÇ¾î ÀÖÀ» °æ¿ì
-            // ±âº»°ªÀÎ ASCII·Î ¼³Á¤ÇÏµµ·Ï ÇÑ´Ù.
+            // í™˜ê²½ë³€ìˆ˜ì˜ ALTIBASE_NLS_USEê°€ ì—†ê±°ë‚˜ ìž˜ëª»ë˜ì–´ ìžˆì„ ê²½ìš°
+            // ê¸°ë³¸ê°’ì¸ ASCIIë¡œ ì„¤ì •í•˜ë„ë¡ í•œë‹¤.
             if (sNeedASCII == ACP_TRUE)
             {
                 ACI_TEST(mtlModuleByName((const mtlModule **)&gClientModule,
@@ -168,7 +168,7 @@ SQLRETURN SQL_API SQLAllocEnv(SQLHENV *EnvironmentHandle)
     }
 
     // fix BUG-25172
-    // ÇÑ±Û DSN ¹× ÇÑ±Û µ¥ÀÌÅÍ°¡ ¿Ã ¼ö ÀÖÀ¸¹Ç·Î ASCII ´ë½Å CLIENT NLS·Î Ä³¸¯ÅÍ¼ÂÀ» ¼³Á¤ÇÑ´Ù.
+    // í•œê¸€ DSN ë° í•œê¸€ ë°ì´í„°ê°€ ì˜¬ ìˆ˜ ìžˆìœ¼ë¯€ë¡œ ASCII ëŒ€ì‹  CLIENT NLSë¡œ ìºë¦­í„°ì…‹ì„ ì„¤ì •í•œë‹¤.
     if (gClientModule == NULL)
     {
         if (acpEnvGet("ALTIBASE_NLS_USE", &sClientNLS) == ACP_RC_SUCCESS)
@@ -181,8 +181,8 @@ SQLRETURN SQL_API SQLAllocEnv(SQLHENV *EnvironmentHandle)
             }
         }
 
-        // È¯°æº¯¼öÀÇ ALTIBASE_NLS_USE°¡ ¾ø°Å³ª Àß¸øµÇ¾î ÀÖÀ» °æ¿ì
-        // ±âº»°ªÀÎ ASCII·Î ¼³Á¤ÇÏµµ·Ï ÇÑ´Ù.
+        // í™˜ê²½ë³€ìˆ˜ì˜ ALTIBASE_NLS_USEê°€ ì—†ê±°ë‚˜ ìž˜ëª»ë˜ì–´ ìžˆì„ ê²½ìš°
+        // ê¸°ë³¸ê°’ì¸ ASCIIë¡œ ì„¤ì •í•˜ë„ë¡ í•œë‹¤.
         if (sNeedASCII == ACP_TRUE)
         {
             ACI_TEST(mtlModuleByName((const mtlModule **)&gClientModule,
@@ -315,7 +315,7 @@ SQLRETURN  SQL_API SQLSetConnectAttr(SQLHDBC    ConnectionHandle,
                              (acp_sint32_t)StringLength);
 }
 
-// fix BUG-26703 ODBC À¯´ÏÄÚµå ÇÔ¼ö´Â À¯´Ð½º ODBC¿¡¼­´Â Á¦¿Ü
+// fix BUG-26703 ODBC ìœ ë‹ˆì½”ë“œ í•¨ìˆ˜ëŠ” ìœ ë‹‰ìŠ¤ ODBCì—ì„œëŠ” ì œì™¸
 #if !defined(ALTIBASE_ODBC)
 SQLRETURN  SQL_API SQLSetConnectAttrW(SQLHDBC    ConnectionHandle,
                                       SQLINTEGER Attribute,
@@ -437,7 +437,7 @@ SQLRETURN  SQL_API SQLGetConnectAttr(SQLHDBC     ConnectionHandle,
                              (acp_sint32_t *)StringLength);
 }
 
-// fix BUG-26703 ODBC À¯´ÏÄÚµå ÇÔ¼ö´Â À¯´Ð½º ODBC¿¡¼­´Â Á¦¿Ü
+// fix BUG-26703 ODBC ìœ ë‹ˆì½”ë“œ í•¨ìˆ˜ëŠ” ìœ ë‹‰ìŠ¤ ODBCì—ì„œëŠ” ì œì™¸
 #if !defined(ALTIBASE_ODBC)
 SQLRETURN  SQL_API SQLGetConnectAttrW(SQLHDBC     ConnectionHandle,
                                       SQLINTEGER  Attribute,
@@ -567,16 +567,16 @@ SQLRETURN  SQL_API SQLSetConnectOption(SQLHDBC      ConnectionHandle,
     ULN_TRACE(SQLSetConnectOption);
 
     /*
-     * MSDN ¿¡ µû¸£¸é, Option ÀÌ SQL_ATTR_QUIET_MODE ÀÏ ¶§ Value ¿¡´Â 64ºñÆ® °ªÀÌ
-     * ³Ñ¾î¿Â´Ù°í ÇÑ´Ù.
+     * MSDN ì— ë”°ë¥´ë©´, Option ì´ SQL_ATTR_QUIET_MODE ì¼ ë•Œ Value ì—ëŠ” 64ë¹„íŠ¸ ê°’ì´
+     * ë„˜ì–´ì˜¨ë‹¤ê³  í•œë‹¤.
      *
-     * ±× ¿Ü¿¡´Â ¾ð±ÞÀÌ ¾øÀ¸¹Ç·Î ±×³É 32 ºñÆ®·Î Ä³½ºÆÃÇØ¼­ ³Ñ±ä´Ù.
+     * ê·¸ ì™¸ì—ëŠ” ì–¸ê¸‰ì´ ì—†ìœ¼ë¯€ë¡œ ê·¸ëƒ¥ 32 ë¹„íŠ¸ë¡œ ìºìŠ¤íŒ…í•´ì„œ ë„˜ê¸´ë‹¤.
      */
 
     switch (Option)
     {
             /*
-             * 32bit value ¸¦ ¹Þ´Â attributes
+             * 32bit value ë¥¼ ë°›ëŠ” attributes
              */
         case ALTIBASE_MESSAGE_CALLBACK:
         case ALTIBASE_EXPLAIN_PLAN:
@@ -599,7 +599,7 @@ SQLRETURN  SQL_API SQLSetConnectOption(SQLHDBC      ConnectionHandle,
             break;
 
             /*
-             * string data ¸¦ ¹Þ´Â attributes
+             * string data ë¥¼ ë°›ëŠ” attributes
              */
         case ALTIBASE_DATE_FORMAT:
         case ALTIBASE_NLS_USE:
@@ -610,7 +610,7 @@ SQLRETURN  SQL_API SQLSetConnectOption(SQLHDBC      ConnectionHandle,
             break;
 
             /*
-             * ¾ÆÁ÷ ±¸Çö ¾ÈµÇ¾ú°Å³ª ´©¶ôµÈ °Íµé
+             * ì•„ì§ êµ¬í˜„ ì•ˆë˜ì—ˆê±°ë‚˜ ëˆ„ë½ëœ ê²ƒë“¤
              */
         case SQL_ATTR_ENLIST_IN_XA:
         case SQL_ATTR_ENLIST_IN_DTC:
@@ -631,7 +631,7 @@ SQLRETURN  SQL_API SQLSetConnectOption(SQLHDBC      ConnectionHandle,
     return sRet;
 }
 
-// fix BUG-26703 ODBC À¯´ÏÄÚµå ÇÔ¼ö´Â À¯´Ð½º ODBC¿¡¼­´Â Á¦¿Ü
+// fix BUG-26703 ODBC ìœ ë‹ˆì½”ë“œ í•¨ìˆ˜ëŠ” ìœ ë‹‰ìŠ¤ ODBCì—ì„œëŠ” ì œì™¸
 #if !defined(ALTIBASE_ODBC)
 SQLRETURN  SQL_API SQLSetConnectOptionW(SQLHDBC      ConnectionHandle,
                                         SQLUSMALLINT Option,
@@ -645,7 +645,7 @@ SQLRETURN  SQL_API SQLSetConnectOptionW(SQLHDBC      ConnectionHandle,
     acp_sint32_t  sState = 0;
 
     // BUGBUG
-    // SQLULENÀ» Æ÷ÀÎÅÍ·Î »ç¿ëÇÏ´Â °ÍÀº ¹®Á¦°¡ ÀÖ´Ù.
+    // SQLULENì„ í¬ì¸í„°ë¡œ ì‚¬ìš©í•˜ëŠ” ê²ƒì€ ë¬¸ì œê°€ ìžˆë‹¤.
     acp_ulong_t   sValue;
 
     ULN_TRACE(SQLSetConnectOptionW);
@@ -729,11 +729,11 @@ SQLRETURN  SQL_API SQLGetConnectOption(SQLHDBC      ConnectionHandle,
     ULN_TRACE(SQLGetConnectOption);
 
     /*
-     * Note : M$ ODBC ¿¡¼­´Â string ÀÌ³Ä, 32bit integer ³Ä¿¡ µû¶ó¼­ ±¸ºÐÇÏ¶ó°í ÇßÁö¸¸,
-     *        ¾îÂ÷ÇÇ, ³»ºÎ¿¡¼­´Â ±¸ºÐÇÏÁö ¾Ê±â ¶§¹®¿¡ ±×³É ÇÏ³ª·Î ¸ÅÇÎÇÑ´Ù
+     * Note : M$ ODBC ì—ì„œëŠ” string ì´ëƒ, 32bit integer ëƒì— ë”°ë¼ì„œ êµ¬ë¶„í•˜ë¼ê³  í–ˆì§€ë§Œ,
+     *        ì–´ì°¨í”¼, ë‚´ë¶€ì—ì„œëŠ” êµ¬ë¶„í•˜ì§€ ì•Šê¸° ë•Œë¬¸ì— ê·¸ëƒ¥ í•˜ë‚˜ë¡œ ë§¤í•‘í•œë‹¤
      *
-     * Note : Option ÀÌ SQL_ATTR_QUIET_MODE ÀÏ ¶§´Â 64ºñÆ® °ªÀÌ µÇ¾î¾ß ÇÏ´Âµ¥,
-     *        Áö¿ø ¾ÈÇÏ´Â ¼Ó¼ºÀÌ¹Ç·Î »ó°ü ¾ø´Ù.
+     * Note : Option ì´ SQL_ATTR_QUIET_MODE ì¼ ë•ŒëŠ” 64ë¹„íŠ¸ ê°’ì´ ë˜ì–´ì•¼ í•˜ëŠ”ë°,
+     *        ì§€ì› ì•ˆí•˜ëŠ” ì†ì„±ì´ë¯€ë¡œ ìƒê´€ ì—†ë‹¤.
      */
     return ulnGetConnectAttr((ulnDbc *)ConnectionHandle,
                              (acp_sint32_t)Option,
@@ -742,7 +742,7 @@ SQLRETURN  SQL_API SQLGetConnectOption(SQLHDBC      ConnectionHandle,
                              NULL);
 }
 
-// fix BUG-26703 ODBC À¯´ÏÄÚµå ÇÔ¼ö´Â À¯´Ð½º ODBC¿¡¼­´Â Á¦¿Ü
+// fix BUG-26703 ODBC ìœ ë‹ˆì½”ë“œ í•¨ìˆ˜ëŠ” ìœ ë‹‰ìŠ¤ ODBCì—ì„œëŠ” ì œì™¸
 #if !defined(ALTIBASE_ODBC)
 SQLRETURN  SQL_API SQLGetConnectOptionW(SQLHDBC      ConnectionHandle,
                                         SQLUSMALLINT Option,
@@ -839,7 +839,7 @@ SQLRETURN  SQL_API SQLSetStmtAttr(SQLHSTMT   StatementHandle,
                           (acp_sint32_t)StringLength);
 }
 
-// fix BUG-26703 ODBC À¯´ÏÄÚµå ÇÔ¼ö´Â À¯´Ð½º ODBC¿¡¼­´Â Á¦¿Ü
+// fix BUG-26703 ODBC ìœ ë‹ˆì½”ë“œ í•¨ìˆ˜ëŠ” ìœ ë‹‰ìŠ¤ ODBCì—ì„œëŠ” ì œì™¸
 #if !defined(ALTIBASE_ODBC)
 SQLRETURN  SQL_API SQLSetStmtAttrW(SQLHSTMT   StatementHandle,
                                    SQLINTEGER Attribute,
@@ -890,7 +890,7 @@ SQLRETURN  SQL_API SQLGetStmtAttr(SQLHSTMT    StatementHandle,
                           (acp_sint32_t *)StringLength);
 }
 
-// fix BUG-26703 ODBC À¯´ÏÄÚµå ÇÔ¼ö´Â À¯´Ð½º ODBC¿¡¼­´Â Á¦¿Ü
+// fix BUG-26703 ODBC ìœ ë‹ˆì½”ë“œ í•¨ìˆ˜ëŠ” ìœ ë‹‰ìŠ¤ ODBCì—ì„œëŠ” ì œì™¸
 #if !defined(ALTIBASE_ODBC)
 SQLRETURN  SQL_API SQLGetStmtAttrW(SQLHSTMT    StatementHandle,
                                    SQLINTEGER  Attribute,
@@ -951,7 +951,7 @@ SQLRETURN  SQL_API SQLSetStmtOption(SQLHSTMT     StatementHandle,
     switch (sOptionInternal)
     {
             /*
-             * 32bit value ¸¦ ¹Þ´Â attribute µé
+             * 32bit value ë¥¼ ë°›ëŠ” attribute ë“¤
              */
         case SQL_ATTR_APP_PARAM_DESC:
         case SQL_ATTR_APP_ROW_DESC:
@@ -977,8 +977,8 @@ SQLRETURN  SQL_API SQLSetStmtOption(SQLHSTMT     StatementHandle,
         case SQL_ATTR_ROWS_FETCHED_PTR:
 
             /*
-             * 64bit value °¡ SQLGetStmtOption ½Ã¿¡ ¸®ÅÏµÈ´Ù°í µÇ¾î ÀÖ´Â ¼Ó¼ºµé.
-             * Set ÇÒ ¶§¿¡´Â ±¸ºÐÇÒ ÇÊ¿ä°¡ ¾ø°Ú´Ù.
+             * 64bit value ê°€ SQLGetStmtOption ì‹œì— ë¦¬í„´ëœë‹¤ê³  ë˜ì–´ ìžˆëŠ” ì†ì„±ë“¤.
+             * Set í•  ë•Œì—ëŠ” êµ¬ë¶„í•  í•„ìš”ê°€ ì—†ê² ë‹¤.
              */
         case SQL_ATTR_MAX_ROWS:
         case SQL_ATTR_ROW_ARRAY_SIZE:
@@ -991,7 +991,7 @@ SQLRETURN  SQL_API SQLSetStmtOption(SQLHSTMT     StatementHandle,
             break;
 
             /*
-             * string À» ¹Þ´Â attribute µé
+             * string ì„ ë°›ëŠ” attribute ë“¤
              */
         case SQL_ATTR_METADATA_ID:
             return ulnSetStmtAttr((ulnStmt *)StatementHandle,
@@ -1002,7 +1002,7 @@ SQLRETURN  SQL_API SQLSetStmtOption(SQLHSTMT     StatementHandle,
 
         default:
             /*
-             * BUGBUG : µå¶óÀÌ¹ö defined Attributes. ±×¸®°í, À§¿¡¼­ Ä¿¹öÇÏÁö ¸øÇÑ ³ª¸ÓÁö.
+             * BUGBUG : ë“œë¼ì´ë²„ defined Attributes. ê·¸ë¦¬ê³ , ìœ„ì—ì„œ ì»¤ë²„í•˜ì§€ ëª»í•œ ë‚˜ë¨¸ì§€.
              */
             return ulnSetStmtAttr((ulnStmt *)StatementHandle,
                                   (acp_sint32_t)Option,
@@ -1019,8 +1019,8 @@ SQLRETURN  SQL_API SQLGetStmtOption(SQLHSTMT     StatementHandle,
     ULN_TRACE(SQLGetStmtOption);
 
     /*
-     * Note : M$ ODBC ¿¡¼­´Â string ÀÌ³Ä, 32bit integer ³Ä¿¡ µû¶ó¼­ ±¸ºÐÇÏ¶ó°í ÇßÁö¸¸,
-     *        ¾îÂ÷ÇÇ, ³»ºÎ¿¡¼­´Â ±¸ºÐÇÏÁö ¾Ê±â ¶§¹®¿¡ ±×³É ÇÏ³ª·Î ¸ÅÇÎÇÑ´Ù
+     * Note : M$ ODBC ì—ì„œëŠ” string ì´ëƒ, 32bit integer ëƒì— ë”°ë¼ì„œ êµ¬ë¶„í•˜ë¼ê³  í–ˆì§€ë§Œ,
+     *        ì–´ì°¨í”¼, ë‚´ë¶€ì—ì„œëŠ” êµ¬ë¶„í•˜ì§€ ì•Šê¸° ë•Œë¬¸ì— ê·¸ëƒ¥ í•˜ë‚˜ë¡œ ë§¤í•‘í•œë‹¤
      */
     return ulnGetStmtAttr((ulnStmt *)StatementHandle,
                           (acp_sint32_t)Option,
@@ -1089,7 +1089,7 @@ SQLRETURN  SQL_API SQLSetDescField(SQLHDESC    DescriptorHandle,
                            (acp_sint32_t)BufferLength);
 }
 
-// fix BUG-26703 ODBC À¯´ÏÄÚµå ÇÔ¼ö´Â À¯´Ð½º ODBC¿¡¼­´Â Á¦¿Ü
+// fix BUG-26703 ODBC ìœ ë‹ˆì½”ë“œ í•¨ìˆ˜ëŠ” ìœ ë‹‰ìŠ¤ ODBCì—ì„œëŠ” ì œì™¸
 #if !defined(ALTIBASE_ODBC)
 SQLRETURN  SQL_API SQLSetDescFieldW(SQLHDESC    DescriptorHandle,
                                     SQLSMALLINT RecNumber,
@@ -1231,7 +1231,7 @@ SQLRETURN SQL_API SQLGetDescRec(SQLHDESC     DescriptorHandle,
                          (acp_sint16_t *)Nullable);
 }
 
-// fix BUG-26703 ODBC À¯´ÏÄÚµå ÇÔ¼ö´Â À¯´Ð½º ODBC¿¡¼­´Â Á¦¿Ü
+// fix BUG-26703 ODBC ìœ ë‹ˆì½”ë“œ í•¨ìˆ˜ëŠ” ìœ ë‹‰ìŠ¤ ODBCì—ì„œëŠ” ì œì™¸
 #if !defined(ALTIBASE_ODBC)
 SQLRETURN SQL_API SQLGetDescRecW(SQLHDESC     DescriptorHandle,
                                  SQLSMALLINT  RecNumber,
@@ -1286,7 +1286,7 @@ SQLRETURN SQL_API SQLGetDescRecW(SQLHDESC     DescriptorHandle,
     if (Name != NULL)
     {
         // fix BUG-24693
-        // ÀÔ·Â¹ÞÀº ¹öÆÛ Å©±â¸¸Å­ º¯È¯À» ÇÑ´Ù.
+        // ìž…ë ¥ë°›ì€ ë²„í¼ í¬ê¸°ë§Œí¼ ë³€í™˜ì„ í•œë‹¤.
         ACI_TEST(acpMemAlloc((void**)&sTemp, BufferLength + 1) != ACP_RC_SUCCESS);
         acpCStrCpy(sTemp,
                    BufferLength + 1,
@@ -1343,7 +1343,7 @@ SQLRETURN SQL_API SQLGetDescField(SQLHDESC    DescriptorHandle,
                            (acp_sint32_t *)StringLengthPtr);
 }
 
-// fix BUG-26703 ODBC À¯´ÏÄÚµå ÇÔ¼ö´Â À¯´Ð½º ODBC¿¡¼­´Â Á¦¿Ü
+// fix BUG-26703 ODBC ìœ ë‹ˆì½”ë“œ í•¨ìˆ˜ëŠ” ìœ ë‹‰ìŠ¤ ODBCì—ì„œëŠ” ì œì™¸
 #if !defined(ALTIBASE_ODBC)
 SQLRETURN SQL_API SQLGetDescFieldW(SQLHDESC    DescriptorHandle,
                                    SQLSMALLINT RecNumber,
@@ -1401,8 +1401,8 @@ SQLRETURN SQL_API SQLGetDescFieldW(SQLHDESC    DescriptorHandle,
     }
 
     // fix BUG-24969
-    // À§ÀÇ ulnGetDescField() ÈÄ µ¥ÀÌÅÍ¿¡ º¯°æÀÌ ¾øÀ» °æ¿ì
-    // ¹®ÀÚ¿­ º¯È¯½Ã ¸Þ¸ð¸®¸¦ µ¤¾î ¾µ ¼ö ÀÖÀ½.
+    // ìœ„ì˜ ulnGetDescField() í›„ ë°ì´í„°ì— ë³€ê²½ì´ ì—†ì„ ê²½ìš°
+    // ë¬¸ìžì—´ ë³€í™˜ì‹œ ë©”ëª¨ë¦¬ë¥¼ ë®ì–´ ì“¸ ìˆ˜ ìžˆìŒ.
     if ((sRet == SQL_SUCCESS) || (sRet == SQL_SUCCESS_WITH_INFO))
     {
         switch(FieldIdentifier)
@@ -1480,7 +1480,7 @@ SQLRETURN SQL_API SQLGetDescFieldW(SQLHDESC    DescriptorHandle,
  */
 
 /*
- * Note : unix-odbc ÀÇ sqltypes.h ÀÇ SQLLEN ¿¡ ´ëÇÑ ³ëÆ®
+ * Note : unix-odbc ì˜ sqltypes.h ì˜ SQLLEN ì— ëŒ€í•œ ë…¸íŠ¸
  *
  *        I (Nick) have made these changes, to cope with the new 3.52 MS
  *        changes for 64 bit ODBC, but looking at MS's spec they havn't
@@ -1560,7 +1560,7 @@ SQLRETURN  SQL_API SQLSetParam(SQLHSTMT     StatementHandle,
     ULN_TRACE(SQLSetParam);
 
     /*
-     * BUGBUG : Á¦´ë·Î ¸ÅÇÎÇß³ª..;;
+     * BUGBUG : ì œëŒ€ë¡œ ë§¤í•‘í–ˆë‚˜..;;
      */
     return ulnBindParameter((ulnStmt *)StatementHandle,
                             (acp_uint16_t  )ParameterNumber,
@@ -1631,7 +1631,7 @@ SQLRETURN SQL_API SQLDescribeCol(SQLHSTMT      StatementHandle,
                           (acp_sint16_t *)Nullable);
 }
 
-// fix BUG-26703 ODBC À¯´ÏÄÚµå ÇÔ¼ö´Â À¯´Ð½º ODBC¿¡¼­´Â Á¦¿Ü
+// fix BUG-26703 ODBC ìœ ë‹ˆì½”ë“œ í•¨ìˆ˜ëŠ” ìœ ë‹‰ìŠ¤ ODBCì—ì„œëŠ” ì œì™¸
 #if !defined(ALTIBASE_ODBC)
 SQLRETURN SQL_API SQLDescribeColW(SQLHSTMT      StatementHandle,
                                   SQLUSMALLINT  ColumnNumber,
@@ -1682,7 +1682,7 @@ SQLRETURN SQL_API SQLDescribeColW(SQLHSTMT      StatementHandle,
     if (ColumnName != NULL)
     {
         // fix BUG-24694
-        // ÀÔ·Â¹ÞÀº ¹öÆÛ Å©±â¸¸Å­ º¯È¯À» ÇÑ´Ù.
+        // ìž…ë ¥ë°›ì€ ë²„í¼ í¬ê¸°ë§Œí¼ ë³€í™˜ì„ í•œë‹¤.
 
         ACI_TEST(acpMemAlloc((void**)&sTemp, BufferLength + 1) != ACP_RC_SUCCESS);
         acpCStrCpy(sTemp,
@@ -1794,7 +1794,7 @@ SQLRETURN  SQL_API SQLPrepare(SQLHSTMT   StatementHandle,
                       (acp_char_t *)NULL);
 }
 
-// fix BUG-26703 ODBC À¯´ÏÄÚµå ÇÔ¼ö´Â À¯´Ð½º ODBC¿¡¼­´Â Á¦¿Ü
+// fix BUG-26703 ODBC ìœ ë‹ˆì½”ë“œ í•¨ìˆ˜ëŠ” ìœ ë‹‰ìŠ¤ ODBCì—ì„œëŠ” ì œì™¸
 #if !defined(ALTIBASE_ODBC)
 SQLRETURN  SQL_API SQLPrepareW(SQLHSTMT   StatementHandle,
                                SQLWCHAR   *StatementText,
@@ -1823,9 +1823,9 @@ SQLRETURN  SQL_API SQLPrepareW(SQLHSTMT   StatementHandle,
         TextLength = TextLength * ACI_SIZEOF(ulWChar);
     }
 
-    // BUG-24831 À¯´ÏÄÚµå µå¶óÀÌ¹ö¿¡¼­ mtl::defaultModule() À» È£ÃâÇÏ¸é ¾ÈµË´Ï´Ù.
-    // ÀÌ°÷¿¡¼­ Å¬¶óÀÌ¾ðÆ® Ä³¸¯ÅÍ¼ÂÀ» ¾òÀ»¼ö ¾ø´Ù.
-    // ÀÎÀÚ·Î NULL À» ³Ñ°ÜÁÖ°í ÇÔ¼ö³»ºÎ¿¡¼­ ±¸ÇÏ´Â ¹æ½Ä
+    // BUG-24831 ìœ ë‹ˆì½”ë“œ ë“œë¼ì´ë²„ì—ì„œ mtl::defaultModule() ì„ í˜¸ì¶œí•˜ë©´ ì•ˆë©ë‹ˆë‹¤.
+    // ì´ê³³ì—ì„œ í´ë¼ì´ì–¸íŠ¸ ìºë¦­í„°ì…‹ì„ ì–»ì„ìˆ˜ ì—†ë‹¤.
+    // ì¸ìžë¡œ NULL ì„ ë„˜ê²¨ì£¼ê³  í•¨ìˆ˜ë‚´ë¶€ì—ì„œ êµ¬í•˜ëŠ” ë°©ì‹
 
     ACI_TEST(ulnCharSetConvert(&sCharSet,
                                NULL,
@@ -1868,7 +1868,7 @@ SQLRETURN  SQL_API SQLExecDirect(SQLHSTMT   StatementHandle,
                          (acp_sint32_t)TextLength);
 }
 
-// fix BUG-26703 ODBC À¯´ÏÄÚµå ÇÔ¼ö´Â À¯´Ð½º ODBC¿¡¼­´Â Á¦¿Ü
+// fix BUG-26703 ODBC ìœ ë‹ˆì½”ë“œ í•¨ìˆ˜ëŠ” ìœ ë‹‰ìŠ¤ ODBCì—ì„œëŠ” ì œì™¸
 #if !defined(ALTIBASE_ODBC)
 SQLRETURN  SQL_API SQLExecDirectW(SQLHSTMT   StatementHandle,
                                   SQLWCHAR  *StatementText,
@@ -1897,9 +1897,9 @@ SQLRETURN  SQL_API SQLExecDirectW(SQLHSTMT   StatementHandle,
         TextLength = TextLength * ACI_SIZEOF(ulWChar);
     }
 
-    // BUG-24831 À¯´ÏÄÚµå µå¶óÀÌ¹ö¿¡¼­ mtl::defaultModule() À» È£ÃâÇÏ¸é ¾ÈµË´Ï´Ù.
-    // ÀÌ°÷¿¡¼­ Å¬¶óÀÌ¾ðÆ® Ä³¸¯ÅÍ¼ÂÀ» ¾òÀ»¼ö ¾ø´Ù.
-    // ÀÎÀÚ·Î NULL À» ³Ñ°ÜÁÖ°í ÇÔ¼ö³»ºÎ¿¡¼­ ±¸ÇÏ´Â ¹æ½Ä
+    // BUG-24831 ìœ ë‹ˆì½”ë“œ ë“œë¼ì´ë²„ì—ì„œ mtl::defaultModule() ì„ í˜¸ì¶œí•˜ë©´ ì•ˆë©ë‹ˆë‹¤.
+    // ì´ê³³ì—ì„œ í´ë¼ì´ì–¸íŠ¸ ìºë¦­í„°ì…‹ì„ ì–»ì„ìˆ˜ ì—†ë‹¤.
+    // ì¸ìžë¡œ NULL ì„ ë„˜ê²¨ì£¼ê³  í•¨ìˆ˜ë‚´ë¶€ì—ì„œ êµ¬í•˜ëŠ” ë°©ì‹
     ACI_TEST(ulnCharSetConvert(&sCharSet,
                                NULL,
                                StatementHandle,
@@ -1952,7 +1952,7 @@ SQLRETURN  SQL_API SQLNativeSql(SQLHDBC     ConnectionHandle,
                         (acp_sint32_t *)  TextLength2Ptr);
 }
 
-// fix BUG-26703 ODBC À¯´ÏÄÚµå ÇÔ¼ö´Â À¯´Ð½º ODBC¿¡¼­´Â Á¦¿Ü
+// fix BUG-26703 ODBC ìœ ë‹ˆì½”ë“œ í•¨ìˆ˜ëŠ” ìœ ë‹‰ìŠ¤ ODBCì—ì„œëŠ” ì œì™¸
 #if !defined(ALTIBASE_ODBC)
 SQLRETURN  SQL_API SQLNativeSqlW(SQLHDBC     ConnectionHandle,
                                  SQLWCHAR   *InStatementText,
@@ -2005,9 +2005,9 @@ SQLRETURN  SQL_API SQLNativeSqlW(SQLHDBC     ConnectionHandle,
         }
     }
 
-    // BUG-24831 À¯´ÏÄÚµå µå¶óÀÌ¹ö¿¡¼­ mtl::defaultModule() À» È£ÃâÇÏ¸é ¾ÈµË´Ï´Ù.
-    // ÀÌ°÷¿¡¼­ Å¬¶óÀÌ¾ðÆ® Ä³¸¯ÅÍ¼ÂÀ» ¾òÀ»¼ö ¾ø´Ù.
-    // ÀÎÀÚ·Î NULL À» ³Ñ°ÜÁÖ°í ÇÔ¼ö³»ºÎ¿¡¼­ ±¸ÇÏ´Â ¹æ½Ä
+    // BUG-24831 ìœ ë‹ˆì½”ë“œ ë“œë¼ì´ë²„ì—ì„œ mtl::defaultModule() ì„ í˜¸ì¶œí•˜ë©´ ì•ˆë©ë‹ˆë‹¤.
+    // ì´ê³³ì—ì„œ í´ë¼ì´ì–¸íŠ¸ ìºë¦­í„°ì…‹ì„ ì–»ì„ìˆ˜ ì—†ë‹¤.
+    // ì¸ìžë¡œ NULL ì„ ë„˜ê²¨ì£¼ê³  í•¨ìˆ˜ë‚´ë¶€ì—ì„œ êµ¬í•˜ëŠ” ë°©ì‹
     ACI_TEST(ulnCharSetConvert(&sCharSetIn,
                                NULL,
                                ConnectionHandle,
@@ -2033,16 +2033,16 @@ SQLRETURN  SQL_API SQLNativeSqlW(SQLHDBC     ConnectionHandle,
     if (OutStatementText != NULL)
     {
         // fix BUG-24693
-        // ÀÔ·Â¹ÞÀº ¹öÆÛ Å©±â¸¸Å­ º¯È¯À» ÇÑ´Ù.
+        // ìž…ë ¥ë°›ì€ ë²„í¼ í¬ê¸°ë§Œí¼ ë³€í™˜ì„ í•œë‹¤.
         ACI_TEST(acpMemAlloc((void**)&sTemp, BufferLength + 1) != ACP_RC_SUCCESS);
         acpCStrCpy(sTemp,
                    BufferLength + 1,
                    (acp_char_t*)OutStatementText,
                    acpCStrLen((acp_char_t*)OutStatementText, ACP_SINT32_MAX));
 
-        // BUG-24831 À¯´ÏÄÚµå µå¶óÀÌ¹ö¿¡¼­ mtl::defaultModule() À» È£ÃâÇÏ¸é ¾ÈµË´Ï´Ù.
-        // ÀÌ°÷¿¡¼­ Å¬¶óÀÌ¾ðÆ® Ä³¸¯ÅÍ¼ÂÀ» ¾òÀ»¼ö ¾ø´Ù.
-        // ÀÎÀÚ·Î NULL À» ³Ñ°ÜÁÖ°í ÇÔ¼ö³»ºÎ¿¡¼­ ±¸ÇÏ´Â ¹æ½Ä
+        // BUG-24831 ìœ ë‹ˆì½”ë“œ ë“œë¼ì´ë²„ì—ì„œ mtl::defaultModule() ì„ í˜¸ì¶œí•˜ë©´ ì•ˆë©ë‹ˆë‹¤.
+        // ì´ê³³ì—ì„œ í´ë¼ì´ì–¸íŠ¸ ìºë¦­í„°ì…‹ì„ ì–»ì„ìˆ˜ ì—†ë‹¤.
+        // ì¸ìžë¡œ NULL ì„ ë„˜ê²¨ì£¼ê³  í•¨ìˆ˜ë‚´ë¶€ì—ì„œ êµ¬í•˜ëŠ” ë°©ì‹
         if (ulnCharSetConvertUseBuffer(&sCharSetOut,
                                        NULL,
                                        ConnectionHandle,
@@ -2152,8 +2152,8 @@ SQLRETURN SQL_API SQLExtendedFetch(SQLHSTMT       hstmt,
     ULN_TRACE(SQLExtendedFetch);
 
     /*
-     * Note : 64bit odbc ¿¡¼­ SQLROWSETSIZE ´Â SQLUINTEGER ÀÌ´Ù. Áï 32ºñÆ® Á¤¼öÀÌ´Ù.
-     *        ExtendedFetch ÀÇ 4¹øÂ° parameter ´Â 64ºñÆ®°¡ ¾Æ´Ï¶ó 32ºñÆ®ÀÌ´Ù.
+     * Note : 64bit odbc ì—ì„œ SQLROWSETSIZE ëŠ” SQLUINTEGER ì´ë‹¤. ì¦‰ 32ë¹„íŠ¸ ì •ìˆ˜ì´ë‹¤.
+     *        ExtendedFetch ì˜ 4ë²ˆì§¸ parameter ëŠ” 64ë¹„íŠ¸ê°€ ì•„ë‹ˆë¼ 32ë¹„íŠ¸ì´ë‹¤.
      */
 
     return ulnExtendedFetch((ulnStmt *)hstmt,
@@ -2225,7 +2225,7 @@ SQLRETURN  SQL_API SQLGetDiagField(SQLSMALLINT  HandleType,
                            (acp_sint16_t *)StringLength);
 }
 
-// fix BUG-26703 ODBC À¯´ÏÄÚµå ÇÔ¼ö´Â À¯´Ð½º ODBC¿¡¼­´Â Á¦¿Ü
+// fix BUG-26703 ODBC ìœ ë‹ˆì½”ë“œ í•¨ìˆ˜ëŠ” ìœ ë‹‰ìŠ¤ ODBCì—ì„œëŠ” ì œì™¸
 #if !defined(ALTIBASE_ODBC)
 SQLRETURN  SQL_API SQLGetDiagFieldW(SQLSMALLINT  HandleType,
                                     SQLHANDLE    Handle,
@@ -2378,7 +2378,7 @@ SQLRETURN  SQL_API SQLGetDiagRec(SQLSMALLINT  HandleType,
                          ACP_FALSE);
 }
 
-// fix BUG-26703 ODBC À¯´ÏÄÚµå ÇÔ¼ö´Â À¯´Ð½º ODBC¿¡¼­´Â Á¦¿Ü
+// fix BUG-26703 ODBC ìœ ë‹ˆì½”ë“œ í•¨ìˆ˜ëŠ” ìœ ë‹‰ìŠ¤ ODBCì—ì„œëŠ” ì œì™¸
 #if !defined(ALTIBASE_ODBC)
 SQLRETURN  SQL_API SQLGetDiagRecW(SQLSMALLINT  HandleType,
                                   SQLHANDLE    Handle,
@@ -2443,9 +2443,9 @@ SQLRETURN  SQL_API SQLGetDiagRecW(SQLSMALLINT  HandleType,
             break;
 
         case SQL_SUCCESS:
-            // BUG-22887 ¸Þ½ÃÁö ¹öÆÛ°¡ ¸ðÀÚ¸£¸é SQL_SUCCESS_WITH_INFO °¡ ¹ß»ýÇÑ´Ù.
+            // BUG-22887 ë©”ì‹œì§€ ë²„í¼ê°€ ëª¨ìžë¥´ë©´ SQL_SUCCESS_WITH_INFO ê°€ ë°œìƒí•œë‹¤.
         case SQL_SUCCESS_WITH_INFO:
-            // ASCII ¿Í WCHAR Àº ´ÙÀ½°ú °°ÀÌ Ã³¸®ÇØµµ ¹«¹æÇÏ´Ù.
+            // ASCII ì™€ WCHAR ì€ ë‹¤ìŒê³¼ ê°™ì´ ì²˜ë¦¬í•´ë„ ë¬´ë°©í•˜ë‹¤.
             if(Sqlstate != NULL)
             {
                 Sqlstate[0] = sSqlstate[0];
@@ -2569,7 +2569,7 @@ SQLRETURN  SQL_API SQLError(SQLHENV      EnvironmentHandle,
     return sRetCode;
 }
 
-// fix BUG-26703 ODBC À¯´ÏÄÚµå ÇÔ¼ö´Â À¯´Ð½º ODBC¿¡¼­´Â Á¦¿Ü
+// fix BUG-26703 ODBC ìœ ë‹ˆì½”ë“œ í•¨ìˆ˜ëŠ” ìœ ë‹‰ìŠ¤ ODBCì—ì„œëŠ” ì œì™¸
 #if !defined(ALTIBASE_ODBC)
 SQLRETURN  SQL_API SQLErrorW(SQLHENV      EnvironmentHandle,
                              SQLHDBC      ConnectionHandle,
@@ -2646,7 +2646,7 @@ SQLRETURN  SQL_API SQLErrorW(SQLHENV      EnvironmentHandle,
             break;
 
         case SQL_SUCCESS:
-            // BUG-22887 ¸Þ½ÃÁö ¹öÆÛ°¡ ¸ðÀÚ¸£¸é SQL_SUCCESS_WITH_INFO °¡ ¹ß»ýÇÑ´Ù.
+            // BUG-22887 ë©”ì‹œì§€ ë²„í¼ê°€ ëª¨ìžë¥´ë©´ SQL_SUCCESS_WITH_INFO ê°€ ë°œìƒí•œë‹¤.
         case SQL_SUCCESS_WITH_INFO:
             sRecNumber = ulnObjectGetSqlErrorRecordNumber(sHandle);
             ulnObjectSetSqlErrorRecordNumber(sHandle, sRecNumber + 1);
@@ -2745,7 +2745,7 @@ SQLRETURN  SQL_API SQLGetInfo(SQLHDBC        ConnectionHandle,
                       (acp_sint16_t *)StringLength);
 }
 
-// fix BUG-26703 ODBC À¯´ÏÄÚµå ÇÔ¼ö´Â À¯´Ð½º ODBC¿¡¼­´Â Á¦¿Ü
+// fix BUG-26703 ODBC ìœ ë‹ˆì½”ë“œ í•¨ìˆ˜ëŠ” ìœ ë‹‰ìŠ¤ ODBCì—ì„œëŠ” ì œì™¸
 #if !defined(ALTIBASE_ODBC)
 SQLRETURN  SQL_API SQLGetInfoW(SQLHDBC        ConnectionHandle,
                                SQLUSMALLINT   InfoType,
@@ -2900,7 +2900,7 @@ SQLRETURN  SQL_API SQLGetTypeInfo(SQLHSTMT StatementHandle, SQLSMALLINT DataType
     return ulnGetTypeInfo((ulnStmt *)StatementHandle, (acp_sint16_t)DataType);
 }
 
-// fix BUG-26703 ODBC À¯´ÏÄÚµå ÇÔ¼ö´Â À¯´Ð½º ODBC¿¡¼­´Â Á¦¿Ü
+// fix BUG-26703 ODBC ìœ ë‹ˆì½”ë“œ í•¨ìˆ˜ëŠ” ìœ ë‹‰ìŠ¤ ODBCì—ì„œëŠ” ì œì™¸
 #if !defined(ALTIBASE_ODBC)
 SQLRETURN  SQL_API SQLGetTypeInfoW(SQLHSTMT StatementHandle, SQLSMALLINT DataType)
 {
@@ -2937,7 +2937,7 @@ SQLRETURN SQL_API SQLTables(SQLHSTMT     StatementHandle,
                      (acp_sint16_t)NameLength4);
 }
 
-// fix BUG-26703 ODBC À¯´ÏÄÚµå ÇÔ¼ö´Â À¯´Ð½º ODBC¿¡¼­´Â Á¦¿Ü
+// fix BUG-26703 ODBC ìœ ë‹ˆì½”ë“œ í•¨ìˆ˜ëŠ” ìœ ë‹‰ìŠ¤ ODBCì—ì„œëŠ” ì œì™¸
 #if !defined(ALTIBASE_ODBC)
 SQLRETURN SQL_API SQLTablesW(SQLHSTMT     StatementHandle,
                             SQLWCHAR    *CatalogName,
@@ -3120,7 +3120,7 @@ SQLRETURN  SQL_API SQLColumns(SQLHSTMT       StatementHandle,
                       (acp_sint16_t)NameLength4);
 }
 
-// fix BUG-26703 ODBC À¯´ÏÄÚµå ÇÔ¼ö´Â À¯´Ð½º ODBC¿¡¼­´Â Á¦¿Ü
+// fix BUG-26703 ODBC ìœ ë‹ˆì½”ë“œ í•¨ìˆ˜ëŠ” ìœ ë‹‰ìŠ¤ ODBCì—ì„œëŠ” ì œì™¸
 #if !defined(ALTIBASE_ODBC)
 SQLRETURN  SQL_API SQLColumnsW(SQLHSTMT       StatementHandle,
                                SQLWCHAR      *CatalogName,
@@ -3305,7 +3305,7 @@ SQLRETURN  SQL_API SQLSpecialColumns(SQLHSTMT       StatementHandle,
                              (acp_uint16_t )Nullable);
 }
 
-// fix BUG-26703 ODBC À¯´ÏÄÚµå ÇÔ¼ö´Â À¯´Ð½º ODBC¿¡¼­´Â Á¦¿Ü
+// fix BUG-26703 ODBC ìœ ë‹ˆì½”ë“œ í•¨ìˆ˜ëŠ” ìœ ë‹‰ìŠ¤ ODBCì—ì„œëŠ” ì œì™¸
 #if !defined(ALTIBASE_ODBC)
 SQLRETURN  SQL_API SQLSpecialColumnsW(SQLHSTMT       StatementHandle,
                                       SQLUSMALLINT   IdentifierType,
@@ -3461,7 +3461,7 @@ SQLRETURN  SQL_API SQLStatistics(SQLHSTMT     StatementHandle,
                          (acp_uint16_t)Reserved);
 }
 
-// fix BUG-26703 ODBC À¯´ÏÄÚµå ÇÔ¼ö´Â À¯´Ð½º ODBC¿¡¼­´Â Á¦¿Ü
+// fix BUG-26703 ODBC ìœ ë‹ˆì½”ë“œ í•¨ìˆ˜ëŠ” ìœ ë‹‰ìŠ¤ ODBCì—ì„œëŠ” ì œì™¸
 #if !defined(ALTIBASE_ODBC)
 SQLRETURN  SQL_API SQLStatisticsW(SQLHSTMT     StatementHandle,
                                   SQLWCHAR    *CatalogName,
@@ -3616,7 +3616,7 @@ SQLRETURN SQL_API SQLProcedureColumns(SQLHSTMT       StatementHandle,
                                ACP_FALSE); // BUG-23209 orderByPos option
 }
 
-// fix BUG-26703 ODBC À¯´ÏÄÚµå ÇÔ¼ö´Â À¯´Ð½º ODBC¿¡¼­´Â Á¦¿Ü
+// fix BUG-26703 ODBC ìœ ë‹ˆì½”ë“œ í•¨ìˆ˜ëŠ” ìœ ë‹‰ìŠ¤ ODBCì—ì„œëŠ” ì œì™¸
 #if !defined(ALTIBASE_ODBC)
 SQLRETURN SQL_API SQLProcedureColumnsW(SQLHSTMT       StatementHandle,
                                        SQLWCHAR      *CatalogName,
@@ -3795,7 +3795,7 @@ SQLRETURN SQL_API SQLProcedures(SQLHSTMT     StatementHandle,
                          (acp_sint16_t )NameLength3);
 }
 
-// fix BUG-26703 ODBC À¯´ÏÄÚµå ÇÔ¼ö´Â À¯´Ð½º ODBC¿¡¼­´Â Á¦¿Ü
+// fix BUG-26703 ODBC ìœ ë‹ˆì½”ë“œ í•¨ìˆ˜ëŠ” ìœ ë‹‰ìŠ¤ ODBCì—ì„œëŠ” ì œì™¸
 #if !defined(ALTIBASE_ODBC)
 SQLRETURN SQL_API SQLProceduresW(SQLHSTMT     StatementHandle,
                                  SQLWCHAR    *CatalogName,
@@ -3953,7 +3953,7 @@ SQLRETURN SQL_API SQLForeignKeys(SQLHSTMT     StatementHandle,
                           (acp_sint16_t )NameLength6);
 }
 
-// fix BUG-26703 ODBC À¯´ÏÄÚµå ÇÔ¼ö´Â À¯´Ð½º ODBC¿¡¼­´Â Á¦¿Ü
+// fix BUG-26703 ODBC ìœ ë‹ˆì½”ë“œ í•¨ìˆ˜ëŠ” ìœ ë‹‰ìŠ¤ ODBCì—ì„œëŠ” ì œì™¸
 #if !defined(ALTIBASE_ODBC)
 SQLRETURN SQL_API SQLForeignKeysW(SQLHSTMT     StatementHandle,
                                   SQLWCHAR    *PKCatalogName,
@@ -4198,7 +4198,7 @@ SQLRETURN SQL_API SQLPrimaryKeys(SQLHSTMT     StatementHandle,
                           (acp_sint16_t )NameLength3);
 }
 
-// fix BUG-26703 ODBC À¯´ÏÄÚµå ÇÔ¼ö´Â À¯´Ð½º ODBC¿¡¼­´Â Á¦¿Ü
+// fix BUG-26703 ODBC ìœ ë‹ˆì½”ë“œ í•¨ìˆ˜ëŠ” ìœ ë‹‰ìŠ¤ ODBCì—ì„œëŠ” ì œì™¸
 #if !defined(ALTIBASE_ODBC)
 SQLRETURN SQL_API SQLPrimaryKeysW(SQLHSTMT     StatementHandle,
                                   SQLWCHAR    *CatalogName,
@@ -4344,7 +4344,7 @@ SQLRETURN SQL_API SQLTablePrivileges(SQLHSTMT     StatementHandle,
                               (acp_sint16_t )NameLength3);
 }
 
-// fix BUG-26703 ODBC À¯´ÏÄÚµå ÇÔ¼ö´Â À¯´Ð½º ODBC¿¡¼­´Â Á¦¿Ü
+// fix BUG-26703 ODBC ìœ ë‹ˆì½”ë“œ í•¨ìˆ˜ëŠ” ìœ ë‹‰ìŠ¤ ODBCì—ì„œëŠ” ì œì™¸
 #if !defined(ALTIBASE_ODBC)
 SQLRETURN SQL_API SQLTablePrivilegesW(SQLHSTMT     StatementHandle,
                                       SQLWCHAR    *CatalogName,
@@ -4482,7 +4482,7 @@ SQLRETURN  SQL_API SQLCancel(SQLHSTMT StatementHandle)
 
 /*
  * ====================================
- * BUGBUG : ±¸ÇöÇØ¾ß ÇÏ´Â ÇÔ¼öµé
+ * BUGBUG : êµ¬í˜„í•´ì•¼ í•˜ëŠ” í•¨ìˆ˜ë“¤
  * ====================================
  */
 
@@ -4519,7 +4519,7 @@ SQLSMALLINT ColAttributesMap(SQLUSMALLINT aFieldIdentifier)
         case SQL_COLUMN_UNSIGNED:
             sFieldIdentifier = SQL_DESC_UNSIGNED;
             break;
-        case SQL_COLUMN_MONEY:  /* BUGBUG : MSDN ¿¡ ¾È³ª¿È */
+        case SQL_COLUMN_MONEY:  /* BUGBUG : MSDN ì— ì•ˆë‚˜ì˜´ */
             sFieldIdentifier = SQL_DESC_FIXED_PREC_SCALE;
             break;
         case SQL_COLUMN_LABEL:
@@ -4569,7 +4569,7 @@ SQLRETURN  SQL_API SQLColAttribute(SQLHSTMT     StatementHandle,
     ULN_TRACE(SQLColAttribute);
 
     // fix BUG-30358
-    // SQLColAttributesÀÇ ¼Ó¼º°ªÀ» SQLColAttribute ¼Ó¼º°ªÀ¸·Î ¸ÊÇÎ
+    // SQLColAttributesì˜ ì†ì„±ê°’ì„ SQLColAttribute ì†ì„±ê°’ìœ¼ë¡œ ë§µí•‘
     FieldIdentifier = ColAttributesMap(FieldIdentifier);
 
     return ulnColAttribute((ulnStmt *)StatementHandle,
@@ -4581,7 +4581,7 @@ SQLRETURN  SQL_API SQLColAttribute(SQLHSTMT     StatementHandle,
                            (void *)   NumericAttribute);
 }
 
-// fix BUG-26703 ODBC À¯´ÏÄÚµå ÇÔ¼ö´Â À¯´Ð½º ODBC¿¡¼­´Â Á¦¿Ü
+// fix BUG-26703 ODBC ìœ ë‹ˆì½”ë“œ í•¨ìˆ˜ëŠ” ìœ ë‹‰ìŠ¤ ODBCì—ì„œëŠ” ì œì™¸
 #if !defined(ALTIBASE_ODBC)
 SQLRETURN  SQL_API SQLColAttributeW(SQLHSTMT     StatementHandle,
                                     SQLUSMALLINT ColumnNumber,
@@ -4635,7 +4635,7 @@ SQLRETURN  SQL_API SQLColAttributeW(SQLHSTMT     StatementHandle,
     ulnCharSetInitialize(&sCharSet);
 
     // fix BUG-30358
-    // SQLColAttributesÀÇ ¼Ó¼º°ªÀ» SQLColAttribute ¼Ó¼º°ªÀ¸·Î ¸ÊÇÎ
+    // SQLColAttributesì˜ ì†ì„±ê°’ì„ SQLColAttribute ì†ì„±ê°’ìœ¼ë¡œ ë§µí•‘
     FieldIdentifier = ColAttributesMap(FieldIdentifier);
 
     sRet = ulnColAttribute((ulnStmt *)StatementHandle,
@@ -4724,13 +4724,13 @@ SQLRETURN  SQL_API SQLColAttributeW(SQLHSTMT     StatementHandle,
  * Implementation:
  *
  *    // To Fix BUG-17521
- *    SQLAttributes() ÇÔ¼ö´Â SQLAttribute() ÇÔ¼ö¿¡ 1:1 ´ëÀÀµÈ´Ù.
+ *    SQLAttributes() í•¨ìˆ˜ëŠ” SQLAttribute() í•¨ìˆ˜ì— 1:1 ëŒ€ì‘ëœë‹¤.
  *
  *---------------------------------------------------------------*/
 
 // To Fix BUG-18286
-// SQLColAttributes() ÇÔ¼ö´Â SQLColAttribute() ¿Í µ¿ÀÏÇÏ³ª,
-// ÇÔ¼ö Prototype¿¡ ÀÖ¾î Platform ±¸º°ÀÌ ¾ø´Ù.
+// SQLColAttributes() í•¨ìˆ˜ëŠ” SQLColAttribute() ì™€ ë™ì¼í•˜ë‚˜,
+// í•¨ìˆ˜ Prototypeì— ìžˆì–´ Platform êµ¬ë³„ì´ ì—†ë‹¤.
 SQLRETURN SQL_API SQLColAttributes(SQLHSTMT     StatementHandle,
                                    SQLUSMALLINT ColumnNumber,
                                    SQLUSMALLINT FieldIdentifier,
@@ -4742,7 +4742,7 @@ SQLRETURN SQL_API SQLColAttributes(SQLHSTMT     StatementHandle,
     ULN_TRACE(SQLColAttributes);
 
     // fix BUG-30358
-    // SQLColAttributesÀÇ ¼Ó¼º°ªÀ» SQLColAttribute ¼Ó¼º°ªÀ¸·Î ¸ÊÇÎ
+    // SQLColAttributesì˜ ì†ì„±ê°’ì„ SQLColAttribute ì†ì„±ê°’ìœ¼ë¡œ ë§µí•‘
     FieldIdentifier = ColAttributesMap(FieldIdentifier);
 
     return ulnColAttribute((ulnStmt *)StatementHandle,
@@ -4754,7 +4754,7 @@ SQLRETURN SQL_API SQLColAttributes(SQLHSTMT     StatementHandle,
                            (void *)   NumericAttribute);
 }
 
-// fix BUG-26703 ODBC À¯´ÏÄÚµå ÇÔ¼ö´Â À¯´Ð½º ODBC¿¡¼­´Â Á¦¿Ü
+// fix BUG-26703 ODBC ìœ ë‹ˆì½”ë“œ í•¨ìˆ˜ëŠ” ìœ ë‹‰ìŠ¤ ODBCì—ì„œëŠ” ì œì™¸
 #if !defined(ALTIBASE_ODBC)
 SQLRETURN SQL_API SQLColAttributesW(SQLHSTMT     StatementHandle,
                                    SQLUSMALLINT ColumnNumber,
@@ -4774,7 +4774,7 @@ SQLRETURN SQL_API SQLColAttributesW(SQLHSTMT     StatementHandle,
     ulnCharSetInitialize(&sCharSet);
 
     // fix BUG-30358
-    // SQLColAttributesÀÇ ¼Ó¼º°ªÀ» SQLColAttribute ¼Ó¼º°ªÀ¸·Î ¸ÊÇÎ
+    // SQLColAttributesì˜ ì†ì„±ê°’ì„ SQLColAttribute ì†ì„±ê°’ìœ¼ë¡œ ë§µí•‘
     FieldIdentifier = ColAttributesMap(FieldIdentifier);
 
     sRet = ulnColAttribute((ulnStmt *)StatementHandle,
@@ -4876,12 +4876,12 @@ SQLRETURN  SQL_API SQLDataSources(SQLHENV        EnvironmentHandle,
     ACP_UNUSED(NameLength2);
 
     /*
-     * BUGBUG : ÇÔ¼ö ±¸Çö : old sqlcli ¿¡µµ ±×³É SQL_ERROR ¸®ÅÏÇÔ.
+     * BUGBUG : í•¨ìˆ˜ êµ¬í˜„ : old sqlcli ì—ë„ ê·¸ëƒ¥ SQL_ERROR ë¦¬í„´í•¨.
      */
     return SQL_ERROR;
 }
 
-// fix BUG-26703 ODBC À¯´ÏÄÚµå ÇÔ¼ö´Â À¯´Ð½º ODBC¿¡¼­´Â Á¦¿Ü
+// fix BUG-26703 ODBC ìœ ë‹ˆì½”ë“œ í•¨ìˆ˜ëŠ” ìœ ë‹‰ìŠ¤ ODBCì—ì„œëŠ” ì œì™¸
 #if !defined(ALTIBASE_ODBC)
 SQLRETURN  SQL_API SQLDataSourcesW(SQLHENV        EnvironmentHandle,
                                    SQLUSMALLINT   Direction,
@@ -4926,16 +4926,16 @@ SQLRETURN  SQL_API SQLDataSourcesW(SQLHENV        EnvironmentHandle,
     ACP_UNUSED(NameLength2);
 
     /*
-     * BUGBUG : ÇÔ¼ö ±¸Çö : old sqlcli ¿¡µµ ±×³É SQL_ERROR ¸®ÅÏÇÔ.
+     * BUGBUG : í•¨ìˆ˜ êµ¬í˜„ : old sqlcli ì—ë„ ê·¸ëƒ¥ SQL_ERROR ë¦¬í„´í•¨.
      */
     return SQL_ERROR;
 }
 #endif
 
 /*
- * Note : CursorName Àº Positioned update, delete ¸¦ »ç¿ëÇÒ ¶§¿¡¸¸ ÇÊ¿äÇÏ´Ù.
- *        ±×°ÍÀ» Áö¿øÇÏÁö ¾Ê´Â Áö±ÝÀº, ±¸ÇöÇÒ ÇÊ¿ä°¡ ¾øÀ¸³ª,
- *        Â÷ÈÄ¿¡ ±¸ÇöÀ» ÇØ¾ß ÇÑ´Ù.
+ * Note : CursorName ì€ Positioned update, delete ë¥¼ ì‚¬ìš©í•  ë•Œì—ë§Œ í•„ìš”í•˜ë‹¤.
+ *        ê·¸ê²ƒì„ ì§€ì›í•˜ì§€ ì•ŠëŠ” ì§€ê¸ˆì€, êµ¬í˜„í•  í•„ìš”ê°€ ì—†ìœ¼ë‚˜,
+ *        ì°¨í›„ì— êµ¬í˜„ì„ í•´ì•¼ í•œë‹¤.
  */
 SQLRETURN  SQL_API SQLSetCursorName(SQLHSTMT     StatementHandle,
                                     SQLCHAR     * CursorName,
@@ -4948,13 +4948,13 @@ SQLRETURN  SQL_API SQLSetCursorName(SQLHSTMT     StatementHandle,
     ACP_UNUSED(NameLength);
 
     /*
-     * BUGBUG : old sqlcli ¿¡ ÀÖ´Ù. ±¸ÇöÇÊ¿ä!
+     * BUGBUG : old sqlcli ì— ìžˆë‹¤. êµ¬í˜„í•„ìš”!
      */
 
     return SQL_ERROR;
 }
 
-// fix BUG-26703 ODBC À¯´ÏÄÚµå ÇÔ¼ö´Â À¯´Ð½º ODBC¿¡¼­´Â Á¦¿Ü
+// fix BUG-26703 ODBC ìœ ë‹ˆì½”ë“œ í•¨ìˆ˜ëŠ” ìœ ë‹‰ìŠ¤ ODBCì—ì„œëŠ” ì œì™¸
 #if !defined(ALTIBASE_ODBC)
 SQLRETURN  SQL_API SQLSetCursorNameW(SQLHSTMT     StatementHandle,
                                      SQLWCHAR    *CursorName,
@@ -4972,7 +4972,7 @@ SQLRETURN  SQL_API SQLSetCursorNameW(SQLHSTMT     StatementHandle,
     ACP_UNUSED(NameLength);
 
     /*
-     * BUGBUG : old sqlcli ¿¡ ÀÖ´Ù. ±¸ÇöÇÊ¿ä!
+     * BUGBUG : old sqlcli ì— ìžˆë‹¤. êµ¬í˜„í•„ìš”!
      */
 
     return SQL_ERROR;
@@ -4992,13 +4992,13 @@ SQLRETURN  SQL_API SQLGetCursorName(SQLHSTMT     StatementHandle,
     ACP_UNUSED(NameLength);
 
     /*
-     * BUGBUG : old sqlcli ¿¡ ÀÖ´Ù. ±¸ÇöÇÊ¿ä!
+     * BUGBUG : old sqlcli ì— ìžˆë‹¤. êµ¬í˜„í•„ìš”!
      */
 
     return SQL_ERROR;
 }
 
-// fix BUG-26703 ODBC À¯´ÏÄÚµå ÇÔ¼ö´Â À¯´Ð½º ODBC¿¡¼­´Â Á¦¿Ü
+// fix BUG-26703 ODBC ìœ ë‹ˆì½”ë“œ í•¨ìˆ˜ëŠ” ìœ ë‹‰ìŠ¤ ODBCì—ì„œëŠ” ì œì™¸
 #if !defined(ALTIBASE_ODBC)
 SQLRETURN  SQL_API SQLGetCursorNameW(SQLHSTMT     StatementHandle,
                                      SQLWCHAR    *CursorName,
@@ -5027,7 +5027,7 @@ SQLRETURN  SQL_API SQLGetCursorNameW(SQLHSTMT     StatementHandle,
     ACP_UNUSED(NameLength);
 
     /*
-     * BUGBUG : old sqlcli ¿¡ ÀÖ´Ù. ±¸ÇöÇÊ¿ä!
+     * BUGBUG : old sqlcli ì— ìžˆë‹¤. êµ¬í˜„í•„ìš”!
      */
 
     return SQL_ERROR;
@@ -5057,13 +5057,13 @@ SQLRETURN SQL_API SQLColumnPrivileges(SQLHSTMT     StatementHandle,
     ACP_UNUSED(NameLength4);
 
     /*
-     * BUGBUG : ±¸Çö ÇØ¾ß ÇÑ´Ù. ±×·¯³ª, old cli2 ¿¡µµ ¾ø¾úÀ¸¹Ç·Î ÀÏ´Ü ³Ñ¾î°¡ÀÚ.
+     * BUGBUG : êµ¬í˜„ í•´ì•¼ í•œë‹¤. ê·¸ëŸ¬ë‚˜, old cli2 ì—ë„ ì—†ì—ˆìœ¼ë¯€ë¡œ ì¼ë‹¨ ë„˜ì–´ê°€ìž.
      */
 
     return SQL_ERROR;
 }
 
-// fix BUG-26703 ODBC À¯´ÏÄÚµå ÇÔ¼ö´Â À¯´Ð½º ODBC¿¡¼­´Â Á¦¿Ü
+// fix BUG-26703 ODBC ìœ ë‹ˆì½”ë“œ í•¨ìˆ˜ëŠ” ìœ ë‹‰ìŠ¤ ODBCì—ì„œëŠ” ì œì™¸
 #if !defined(ALTIBASE_ODBC)
 SQLRETURN SQL_API SQLColumnPrivilegesW(SQLHSTMT     StatementHandle,
                                        SQLWCHAR   * CatalogName,
@@ -5102,7 +5102,7 @@ SQLRETURN SQL_API SQLColumnPrivilegesW(SQLHSTMT     StatementHandle,
     ACP_UNUSED(NameLength4);
 
     /*
-     * BUGBUG : ±¸Çö ÇØ¾ß ÇÑ´Ù. ±×·¯³ª, old cli2 ¿¡µµ ¾ø¾úÀ¸¹Ç·Î ÀÏ´Ü ³Ñ¾î°¡ÀÚ.
+     * BUGBUG : êµ¬í˜„ í•´ì•¼ í•œë‹¤. ê·¸ëŸ¬ë‚˜, old cli2 ì—ë„ ì—†ì—ˆìœ¼ë¯€ë¡œ ì¼ë‹¨ ë„˜ì–´ê°€ìž.
      */
 
     return SQL_ERROR;
@@ -5113,16 +5113,16 @@ SQLRETURN  SQL_API SQLDisconnect(SQLHDBC ConnectionHandle)
 {
     ULN_TRACE(SQLDisconnect);
     /*
-     * BUGBUG : ÀÌ°É ¿©±â´Ù µÖµµ µÉ·¡³ª -_-;;
+     * BUGBUG : ì´ê±¸ ì—¬ê¸°ë‹¤ ë‘¬ë„ ë ëž˜ë‚˜ -_-;;
      */
     return ulnDisconnect((ulnDbc *)ConnectionHandle);
 }
 
 #if (ODBCVER >= 0x0300)
 /*
- * Note : ÀÏ´Ü ¾Æ·¡ÀÇ Descriptor °ü·ÃµÈ ÇÔ¼öµéÀº ±ÞÇÏ°Ô ÇÊ¿äÇÑ °ÍÀÌ ¾Æ´Ï¹Ç·Î
- *        ÀÏ´Ü ±×³É µÎ°í, ÃµÃµÈ÷ ¸¸µéµµ·Ï ÇÏÀÚ.
- *        ¿ì¼±Àº ´çÀå ÇÊ¿äÇÑ SetDescField ¸¸ ÇÊ¿äÇÑ attribute ¿¡ ´ëÇØ¼­¸¸ ±¸ÇöÇØ µÎ¾úÀ½.
+ * Note : ì¼ë‹¨ ì•„ëž˜ì˜ Descriptor ê´€ë ¨ëœ í•¨ìˆ˜ë“¤ì€ ê¸‰í•˜ê²Œ í•„ìš”í•œ ê²ƒì´ ì•„ë‹ˆë¯€ë¡œ
+ *        ì¼ë‹¨ ê·¸ëƒ¥ ë‘ê³ , ì²œì²œížˆ ë§Œë“¤ë„ë¡ í•˜ìž.
+ *        ìš°ì„ ì€ ë‹¹ìž¥ í•„ìš”í•œ SetDescField ë§Œ í•„ìš”í•œ attribute ì— ëŒ€í•´ì„œë§Œ êµ¬í˜„í•´ ë‘ì—ˆìŒ.
  */
 SQLRETURN  SQL_API SQLCopyDesc(SQLHDESC SourceDescHandle,
                                SQLHDESC TargetDescHandle)
@@ -5133,7 +5133,7 @@ SQLRETURN  SQL_API SQLCopyDesc(SQLHDESC SourceDescHandle,
     ACP_UNUSED(TargetDescHandle);
 
     /*
-     * BUGBUG : ÇÔ¼ö±¸Çö
+     * BUGBUG : í•¨ìˆ˜êµ¬í˜„
      */
 
     return SQL_ERROR;
@@ -5164,7 +5164,7 @@ SQLRETURN  SQL_API SQLSetDescRec(SQLHDESC     DescriptorHandle,
     ACP_UNUSED(Indicator);
 
     /*
-     * BUGBUG : ÇÔ¼ö ±¸Çö
+     * BUGBUG : í•¨ìˆ˜ êµ¬í˜„
      */
 
     return SQL_ERROR;
@@ -5238,7 +5238,7 @@ SQLRETURN SQL_API SQLConnect(SQLHDBC      aConnectionHandle,
     return SQL_ERROR;
 }
 
-// fix BUG-26703 ODBC À¯´ÏÄÚµå ÇÔ¼ö´Â À¯´Ð½º ODBC¿¡¼­´Â Á¦¿Ü
+// fix BUG-26703 ODBC ìœ ë‹ˆì½”ë“œ í•¨ìˆ˜ëŠ” ìœ ë‹‰ìŠ¤ ODBCì—ì„œëŠ” ì œì™¸
 #if !defined(ALTIBASE_ODBC)
 SQLRETURN SQL_API SQLConnectW(SQLHDBC      aConnectionHandle,
                               SQLWCHAR    *aServerName,
@@ -5436,7 +5436,7 @@ SQLRETURN SQL_API SQLDriverConnect(SQLHDBC       hdbc,
     return SQL_ERROR;
 }
 
-// fix BUG-26703 ODBC À¯´ÏÄÚµå ÇÔ¼ö´Â À¯´Ð½º ODBC¿¡¼­´Â Á¦¿Ü
+// fix BUG-26703 ODBC ìœ ë‹ˆì½”ë“œ í•¨ìˆ˜ëŠ” ìœ ë‹‰ìŠ¤ ODBCì—ì„œëŠ” ì œì™¸
 #if !defined(ALTIBASE_ODBC)
 SQLRETURN SQL_API SQLDriverConnectW(SQLHDBC       hdbc,
                                     SQLHWND       hwnd,

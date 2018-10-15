@@ -65,7 +65,7 @@ static IDE_RC sdfSetValue( SChar          * aCondition,
 mtfModule sdfShardConditionModule = {
     4|MTC_NODE_OPERATOR_MISC|MTC_NODE_VARIABLE_TRUE|MTC_NODE_EAT_NULL_TRUE,
     ~0,
-    1.0,                    // default selectivity (ºñ±³ ¿¬»êÀÚ ¾Æ´Ô)
+    1.0,                    // default selectivity (ë¹„êµ ì—°ì‚°ì ì•„ë‹˜)
     sdfFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -105,7 +105,7 @@ IDE_RC sdfEstimate( mtcNode*     aNode,
                     MTC_NODE_QUANTIFIER_TRUE,
                     ERR_NOT_AGGREGATION );
 
-    // Ã¹¹øÂ° ÀÎÀÚ´Â ÄÃ·³ÀÌ¾î¾ß ÇÑ´Ù.
+    // ì²«ë²ˆì§¸ ì¸ìëŠ” ì»¬ëŸ¼ì´ì–´ì•¼ í•œë‹¤.
     //IDE_TEST_RAISE(
     //    ( ( aTemplate->rows[aNode->arguments->table].lflag & MTC_TUPLE_VIEW_MASK )
     //      == MTC_TUPLE_VIEW_TRUE ) ||
@@ -128,7 +128,7 @@ IDE_RC sdfEstimate( mtcNode*     aNode,
     }
     else if ( sArgCount == 3 )
     {
-        // µÎ¹øÂ° ÀÎÀÚµµ ÄÃ·³ÀÌ¾î¾ß ÇÑ´Ù.
+        // ë‘ë²ˆì§¸ ì¸ìë„ ì»¬ëŸ¼ì´ì–´ì•¼ í•œë‹¤.
         //IDE_TEST_RAISE(
         //    ( ( aTemplate->rows[aNode->arguments->next->table].lflag & MTC_TUPLE_VIEW_MASK )
         //      == MTC_TUPLE_VIEW_TRUE ) ||
@@ -193,7 +193,7 @@ IDE_RC sdfEstimate( mtcNode*     aNode,
 
     aTemplate->rows[aNode->table].execute[aNode->column] = sdfExecute;
 
-    /* BUG-44740 mtfRegExpression Àç»ç¿ëÀ» À§ÇØ Tuple Row¸¦ ÃÊ±âÈ­ÇÑ´Ù. */
+    /* BUG-44740 mtfRegExpression ì¬ì‚¬ìš©ì„ ìœ„í•´ Tuple Rowë¥¼ ì´ˆê¸°í™”í•œë‹¤. */
     aTemplate->rows[aNode->table].lflag &= ~MTC_TUPLE_ROW_MEMSET_MASK;
     aTemplate->rows[aNode->table].lflag |= MTC_TUPLE_ROW_MEMSET_TRUE;
 
@@ -482,7 +482,7 @@ IDE_RC sdfConvertObjectToAnalyzeInfo( SChar           * aCondition,
     SInt           sKeyCount = 0;  // not defined
     SChar        * sErrMsg   = (SChar*)"";
 
-    // ÃÊ±âÈ­
+    // ì´ˆê¸°í™”
     aAnalyzeInfo->mIsCanMerge       = ID_TRUE;
     aAnalyzeInfo->mSplitMethod      = SDI_SPLIT_NONE;
     aAnalyzeInfo->mKeyDataType      = aKeyModule->id;

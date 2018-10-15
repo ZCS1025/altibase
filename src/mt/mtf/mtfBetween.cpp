@@ -122,10 +122,10 @@ IDE_RC mtfBetweenEstimate( mtcNode*     aNode,
               != IDE_SUCCESS );
 
     // BUG-11177 fix
-    // i1 between a and b¿¡¼­
-    // a, b°¡ Ç×»ó i1 ÄÃ·³ÀÇ Å¸ÀÔÀ¸·Î º¯È¯µÇ¼­´Â ¾ÈµÈ´Ù.
-    // mtfÀÇ comparisonTableÀ» ÂüÁ¶ÇØ¼­
-    // i1, a, b°¡ ¼­·Î ºñ±³µÉ ¼ö ÀÖ´Â µ¿ÀÏµÈ Å¸ÀÔÀ» ±¸ÇØ¿Í¾ß ÇÑ´Ù.
+    // i1 between a and bì—ì„œ
+    // a, bê°€ í•­ìƒ i1 ì»¬ëŸ¼ì˜ íƒ€ìž…ìœ¼ë¡œ ë³€í™˜ë˜ì„œëŠ” ì•ˆëœë‹¤.
+    // mtfì˜ comparisonTableì„ ì°¸ì¡°í•´ì„œ
+    // i1, a, bê°€ ì„œë¡œ ë¹„êµë  ìˆ˜ ìžˆëŠ” ë™ì¼ëœ íƒ€ìž…ì„ êµ¬í•´ì™€ì•¼ í•œë‹¤.
     // by kumdory, 2005-04-15
     IDE_TEST( mtf::getComparisonModule( &sModules[0],
                                         aStack[1].column->module->no,
@@ -135,7 +135,7 @@ IDE_RC mtfBetweenEstimate( mtcNode*     aNode,
     IDE_TEST_RAISE( sModules[0] == NULL, ERR_CONVERSION_NOT_APPLICABLE );
 
     // To Fix BUG-15205
-    // È£È¯ °¡´ÉÇÑ ¿¬»êÀÚ Å¸ÀÔ ¿©ºÎ °Ë»ç
+    // í˜¸í™˜ ê°€ëŠ¥í•œ ì—°ì‚°ìž íƒ€ìž… ì—¬ë¶€ ê²€ì‚¬
     IDE_TEST_RAISE( mtf::isGreaterLessValidType( sModules[0] ) != ID_TRUE,
                     ERR_CONVERSION_NOT_APPLICABLE );
 
@@ -259,7 +259,7 @@ IDE_RC mtfBetweenExtractRange( mtcNode*      aNode,
         if ( aInfo->compValueType == MTD_COMPARE_FIXED_MTDVAL_FIXED_MTDVAL ||
              aInfo->compValueType == MTD_COMPARE_MTDVAL_MTDVAL )
         {
-            // mtd typeÀÇ column value¿¡ ´ëÇÑ range callback
+            // mtd typeì˜ column valueì— ëŒ€í•œ range callback
             aRange->minimum.callback     = mtk::rangeCallBackGT4Mtd;
             aRange->maximum.callback     = mtk::rangeCallBackLT4Mtd;
         }
@@ -269,7 +269,7 @@ IDE_RC mtfBetweenExtractRange( mtcNode*      aNode,
                  ( aInfo->compValueType == MTD_COMPARE_STOREDVAL_STOREDVAL ) )
             {
                 /* MTD_COMPARE_STOREDVAL_MTDVAL
-                   stored typeÀÇ column value¿¡ ´ëÇÑ range callback */
+                   stored typeì˜ column valueì— ëŒ€í•œ range callback */
                 aRange->minimum.callback     = mtk::rangeCallBackGT4Stored;
                 aRange->maximum.callback     = mtk::rangeCallBackLT4Stored;
             }
@@ -293,17 +293,17 @@ IDE_RC mtfBetweenExtractRange( mtcNode*      aNode,
     }
     else
     {
-        // BETWEENÀÇ °æ¿ì Key Filter¿¡ ´ëÇÑ º°µµÀÇ °í·Á°¡ ÇÊ¿ä ¾ø´Ù.
-        // Key Filter¸¦ À§ÇÑ ¼º´É Çâ»óÀ» À§ÇÑ º°µµÀÇ Á¶Ä¡°¡ ¾øÀ½.
+        // BETWEENì˜ ê²½ìš° Key Filterì— ëŒ€í•œ ë³„ë„ì˜ ê³ ë ¤ê°€ í•„ìš” ì—†ë‹¤.
+        // Key Filterë¥¼ ìœ„í•œ ì„±ëŠ¥ í–¥ìƒì„ ìœ„í•œ ë³„ë„ì˜ ì¡°ì¹˜ê°€ ì—†ìŒ.
 
         //---------------------------
-        // RangeCallBack ¼³Á¤
+        // RangeCallBack ì„¤ì •
         //---------------------------
         
         if ( aInfo->compValueType == MTD_COMPARE_FIXED_MTDVAL_FIXED_MTDVAL ||
              aInfo->compValueType == MTD_COMPARE_MTDVAL_MTDVAL )
         {
-            // mtd typeÀÇ column value¿¡ ´ëÇÑ range callback
+            // mtd typeì˜ column valueì— ëŒ€í•œ range callback
             aRange->minimum.callback     = mtk::rangeCallBackGE4Mtd;
             aRange->maximum.callback     = mtk::rangeCallBackLE4Mtd;
         }
@@ -313,7 +313,7 @@ IDE_RC mtfBetweenExtractRange( mtcNode*      aNode,
                  ( aInfo->compValueType == MTD_COMPARE_STOREDVAL_STOREDVAL ) )
             {
                 /* MTD_COMPARE_STOREDVAL_MTDVAL
-                   stored typeÀÇ column value¿¡ ´ëÇÑ range callback */
+                   stored typeì˜ column valueì— ëŒ€í•œ range callback */
                 aRange->minimum.callback     = mtk::rangeCallBackGE4Stored;
                 aRange->maximum.callback     = mtk::rangeCallBackLE4Stored;
             }
@@ -326,7 +326,7 @@ IDE_RC mtfBetweenExtractRange( mtcNode*      aNode,
         }
 
         //----------------------------------------------
-        // MinimumCallBack & MaximumCallBack Á¤º¸ ¼³Á¤
+        // MinimumCallBack & MaximumCallBack ì •ë³´ ì„¤ì •
         //----------------------------------------------
         
         sMinimumCallBack->columnIdx  =  aInfo->columnIdx;

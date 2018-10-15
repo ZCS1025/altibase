@@ -54,7 +54,7 @@ SQLRETURN ulnGetLob(ulnStmt      *aStmt,
     ULN_FLAG_UP(sNeedExit);
 
     sPtContext = &(aStmt->mParentDbc->mPtContext);
-    /* BUG-44125 [mm-cli] IPCDA ¸ðµå Å×½ºÆ® Áß hang - iloader CLOB */
+    /* BUG-44125 [mm-cli] IPCDA ëª¨ë“œ í…ŒìŠ¤íŠ¸ ì¤‘ hang - iloader CLOB */
     ACI_TEST_RAISE(cmiGetLinkImpl(&sPtContext->mCmiPtContext) == CMI_LINK_IMPL_IPCDA,
                    IPCDANotSupport);
     /*
@@ -96,7 +96,7 @@ SQLRETURN ulnGetLob(ulnStmt      *aStmt,
     }
 
     /*
-     * ulnLob ±¸Á¶Ã¼ ÃÊ±âÈ­
+     * ulnLob êµ¬ì¡°ì²´ ì´ˆê¸°í™”
      */
 
     ulnLobInitialize(&sLob, sMTYPE);                        /* ULN_LOB_ST_INITIALIZED */
@@ -104,7 +104,7 @@ SQLRETURN ulnGetLob(ulnStmt      *aStmt,
     sLob.mState = ULN_LOB_ST_OPENED;                        /* ULN_LOB_ST_OPENED */
 
     /*
-     * ulnLobBuffer ÃÊ±âÈ­ ¹× ÁØºñ
+     * ulnLobBuffer ì´ˆê¸°í™” ë° ì¤€ë¹„
      */
 
     ulnLobBufferInitialize(&sLobBuffer,
@@ -117,7 +117,7 @@ SQLRETURN ulnGetLob(ulnStmt      *aStmt,
     sLobBuffer.mOp->mPrepare(&sFnContext, &sLobBuffer);
 
     /*
-     * ¼­¹ö¿¡¼­ µ¥ÀÌÅÍ °¡Á®¿Í¼­ »ç¿ëÀÚ ¹öÆÛ¿¡ ¾²±â
+     * ì„œë²„ì—ì„œ ë°ì´í„° ê°€ì ¸ì™€ì„œ ì‚¬ìš©ìž ë²„í¼ì— ì“°ê¸°
      */
     //fix BUG-17722
     ACI_TEST(ulnInitializeProtocolContext(&sFnContext,
@@ -140,7 +140,7 @@ SQLRETURN ulnGetLob(ulnStmt      *aStmt,
                 != ACI_SUCCESS);
 
     /*
-     * °¡Á®¿Â µ¥ÀÌÅÍÀÇ ±æÀÌ ¹ÝÈ¯
+     * ê°€ì ¸ì˜¨ ë°ì´í„°ì˜ ê¸¸ì´ ë°˜í™˜
      */
 
     if (aLengthWritten != NULL)
@@ -174,7 +174,7 @@ SQLRETURN ulnGetLob(ulnStmt      *aStmt,
     }
 
     /*
-     * ulnLobBuffer Á¤¸®
+     * ulnLobBuffer ì •ë¦¬
      */
 
     sLobBuffer.mOp->mFinalize(&sFnContext, &sLobBuffer);

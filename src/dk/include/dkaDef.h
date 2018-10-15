@@ -68,10 +68,10 @@
 typedef enum
 {
     DKA_LINKER_STATUS_NON = 0,
-    DKA_LINKER_STATUS_ACTIVATED,    /* AltiLinker ÇÁ·Î¼¼½º¸¦ ¶ç¿î »óÅÂ */
-    DKA_LINKER_STATUS_READY,        /* Linker control session À» ¸ÎÀº »óÅÂ */
-    DKA_LINKER_STATUS_PROCESSING,   /* ÇÁ·ÎÅäÄİÀ» ¼öÇàÁßÀÎ »óÅÂ */
-    DKA_LINKER_STATUS_CLOSING       /* AltiLinker °¡ shutdown ÁßÀÎ »óÅÂ */
+    DKA_LINKER_STATUS_ACTIVATED,    /* AltiLinker í”„ë¡œì„¸ìŠ¤ë¥¼ ë„ìš´ ìƒíƒœ */
+    DKA_LINKER_STATUS_READY,        /* Linker control session ì„ ë§ºì€ ìƒíƒœ */
+    DKA_LINKER_STATUS_PROCESSING,   /* í”„ë¡œí† ì½œì„ ìˆ˜í–‰ì¤‘ì¸ ìƒíƒœ */
+    DKA_LINKER_STATUS_CLOSING       /* AltiLinker ê°€ shutdown ì¤‘ì¸ ìƒíƒœ */
 } dkaLinkerStatus;
 
 /* ------------------------------------------------
@@ -92,12 +92,12 @@ typedef enum
 /* Define AltiLinker process information for V$DBLINK_ALTILINKER_STATUS */
 typedef struct dkaLinkerProcInfo
 {
-    dkaLinkerStatus  mStatus;                /* AltiLinker ÀÇ ÇöÀç »óÅÂ */
+    dkaLinkerStatus  mStatus;                /* AltiLinker ì˜ í˜„ì¬ ìƒíƒœ */
     UInt             mLinkerSessionCnt;      /* All linker session count */
     UInt             mRemoteNodeSessionCnt;  /* All remote node session count */
-    UInt             mJvmMemMaxSize;         /* JVM memory ÀÇ ÃÖ´ë °¡¿ëÅ©±â (MB) */
-    SLong            mJvmMemUsage;           /* JVM memory ÇöÀç »ç¿ë·® (byte) */
-    SChar            mStartTime[DK_TIME_STR_LEN]; /* AltiLinker ÀÇ start time */
+    UInt             mJvmMemMaxSize;         /* JVM memory ì˜ ìµœëŒ€ ê°€ìš©í¬ê¸° (MB) */
+    SLong            mJvmMemUsage;           /* JVM memory í˜„ì¬ ì‚¬ìš©ëŸ‰ (byte) */
+    SChar            mStartTime[DK_TIME_STR_LEN]; /* AltiLinker ì˜ start time */
 } dkaLinkerProcInfo;
 
 /* Define target remote server information */

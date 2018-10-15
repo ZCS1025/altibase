@@ -19,10 +19,10 @@ OBJS = $(foreach src, $(SRCS),$(notdir $(src:.cpp=.$(OBJEXT))))
 
 BINS	= $(GENERRMSG)
 
-# �ҽ��ڵ忡 include �� �����ڵ� ȭ��
+# 소스코드에 include 될 에러코드 화일
 E_HEADER = idErrorCode.ih
 
-# �����ڵ� �޽��� ȭ��
+# 에러코드 메시지 화일
 
 all: ErrorFiles
 shobjs: 

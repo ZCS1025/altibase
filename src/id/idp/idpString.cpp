@@ -102,8 +102,8 @@ idpString::idpString(const SChar *aName,
     mInMaxLength = aMaxLength;
     mInDefault   = aDefault;
 
-    /*string typeÀº °ªÀÌ ¾ø´Â °æ¿ì ""À» ³Ñ±ä´Ù*/
-    //default·ÎºÎÅÍ ¿Â °ªÀ» Source Value¿¡ ³Ö´Â´Ù. 
+    /*string typeì€ ê°’ì´ ì—†ëŠ” ê²½ìš° ""ì„ ë„˜ê¸´ë‹¤*/
+    //defaultë¡œë¶€í„° ì˜¨ ê°’ì„ Source Valueì— ë„£ëŠ”ë‹¤. 
     mSrcValArr[IDP_VALUE_FROM_DEFAULT].mVal[0] = (void*)aDefault;
     mSrcValArr[IDP_VALUE_FROM_DEFAULT].mCount++;
 }
@@ -119,15 +119,15 @@ IDE_RC idpString::validateLength(void *aVal)
 
     sLength = (UInt)idlOS::strlen((SChar *)aVal);
 
-    // BUG-27276 [ID] String Å¸ÀÔÀÇ ÇÁ¶óÆÛÆ¼¿¡ ±æÀÌ Á¦ÇÑÀ» µÑ ¼ö ÀÖÀ¸¸é ÁÁ°Ú½À´Ï´Ù
-    // StringÀÇ °æ¿ì¿¡´Â Value ´ë½Å Length¸¦ °Ë»çÇÕ´Ï´Ù.
+    // BUG-27276 [ID] String íƒ€ì…ì˜ í”„ë¼í¼í‹°ì— ê¸¸ì´ ì œí•œì„ ë‘˜ ìˆ˜ ìˆìœ¼ë©´ ì¢‹ê² ìŠµë‹ˆë‹¤
+    // Stringì˜ ê²½ìš°ì—ëŠ” Value ëŒ€ì‹  Lengthë¥¼ ê²€ì‚¬í•©ë‹ˆë‹¤.
     IDE_TEST_RAISE((sLength < mInMinLength) || (sLength > mInMaxLength),
                    ERR_LENGTH);
 
     return IDE_SUCCESS;
 
-    // ¿©±â¼­´Â ¿¡·¯ ¹öÆÛ ¹× ¿¡·¯ÄÚµå¸¦ ¸ğµÎ ¼³Á¤ÇÑ´Ù.
-    // ¿Ö³ÄÇÏ¸é, ÀÌ ÇÔ¼ö´Â insert() »Ó ¾Æ´Ï¶ó, update()¿¡¼­µµ È£ÃâµÇ±â ¶§¹®ÀÌ´Ù.
+    // ì—¬ê¸°ì„œëŠ” ì—ëŸ¬ ë²„í¼ ë° ì—ëŸ¬ì½”ë“œë¥¼ ëª¨ë‘ ì„¤ì •í•œë‹¤.
+    // ì™œëƒí•˜ë©´, ì´ í•¨ìˆ˜ëŠ” insert() ë¿ ì•„ë‹ˆë¼, update()ì—ì„œë„ í˜¸ì¶œë˜ê¸° ë•Œë¬¸ì´ë‹¤.
     IDE_EXCEPTION(ERR_LENGTH);
     {
         idlOS::snprintf(mErrorBuf,
@@ -171,14 +171,14 @@ IDE_RC idpString::convertFromString(void *aString, void **aResult) // When Start
 {
     void  *sValue;
 
-    //if alphanumeric È®ÀÎ 
+    //if alphanumeric í™•ì¸ 
     if((mAttr & IDP_ATTR_SK_MASK) == IDP_ATTR_SK_ALNUM)
     {
         IDE_TEST_RAISE(isAlphanumericString((SChar*)aString) != ID_TRUE, 
                        err_data_validation);
     }
 
-    //if Ascii È®ÀÎ
+    //if Ascii í™•ì¸
     if((mAttr & IDP_ATTR_SK_MASK) == IDP_ATTR_SK_ASCII)
     {
         IDE_TEST_RAISE(isASCIIString((SChar*)aString) != ID_TRUE, err_data_validation);
@@ -210,10 +210,10 @@ IDE_RC idpString::convertFromString(void *aString, void **aResult) // When Start
 
 /**************************************************************************
  * Description :
- *    aSrc °ªÀ» º¹Á¦ÇÏ¿© aDst·Î ¹İÈ¯ÇÏ¸ç, aSrc¿¡ ?°¡ ÀÖ´Â °æ¿ì ALTIBASE_HOME/conf·Î
- *    º¯È¯ÇÏ¿© º¹Á¦ÇÑ´Ù.
- * aSrc      - [IN] º¹Á¦¸¦ À§ÇÑ Source ½ºÆ®¸µ
- * aDst      - [OUT] º¹Á¦µÈ ÈÄ ¹İÈ¯µÇ´Â ½ºÆ®¸µ °ªÀÇ Æ÷ÀÎÅÍ
+ *    aSrc ê°’ì„ ë³µì œí•˜ì—¬ aDstë¡œ ë°˜í™˜í•˜ë©°, aSrcì— ?ê°€ ìˆëŠ” ê²½ìš° ALTIBASE_HOME/confë¡œ
+ *    ë³€í™˜í•˜ì—¬ ë³µì œí•œë‹¤.
+ * aSrc      - [IN] ë³µì œë¥¼ ìœ„í•œ Source ìŠ¤íŠ¸ë§
+ * aDst      - [OUT] ë³µì œëœ í›„ ë°˜í™˜ë˜ëŠ” ìŠ¤íŠ¸ë§ ê°’ì˜ í¬ì¸í„°
  **************************************************************************/
 void idpString::cloneNExpandValues(SChar* aSrc, SChar** aDst)
 {
@@ -237,8 +237,8 @@ void idpString::cloneNExpandValues(SChar* aSrc, SChar** aDst)
         sHomeDir = idp::getHomeDir();
         sHomeLen = idlOS::strlen(sHomeDir);
 
-        // String ³»ºÎ¿¡ ?°¡ ÀÖÀ» °æ¿ì expansion ¼öÇà.
-        // ¸Ş¸ğ¸® Å©±â´Â expantion °¹¼ö + ¿ø·¡ÀÇ ½ºÆ®¸µ ÀÓ.
+        // String ë‚´ë¶€ì— ?ê°€ ìˆì„ ê²½ìš° expansion ìˆ˜í–‰.
+        // ë©”ëª¨ë¦¬ í¬ê¸°ëŠ” expantion ê°¯ìˆ˜ + ì›ë˜ì˜ ìŠ¤íŠ¸ë§ ì„.
 
         sMemSize = idlOS::strlen((SChar *)sSrc) +
             ( (idlOS::strlen(sHomeDir) + 1) * sQuestion) + 1;
@@ -273,12 +273,12 @@ void idpString::cloneNExpandValues(SChar* aSrc, SChar** aDst)
 
 /**************************************************************************
  * Description :
- *    aObj °´Ã¼¿Í µ¿ÀÏÇÑ Å¸ÀÔÀÇ °´Ã¼¸¦ »ı¼ºÇÏ¿© idpBase*·Î ¹İÈ¯ÇÑ´Ù. 
- *    º¹Á¦½Ã, aSID·Î µé¾î¿Â °ªÀ» SID·Î ¼³Á¤ÇÏ¸ç, "*"·Î ¼³Á¤µÈ °ª¸¸
- *    º¹Á¦ÇÏ°í ±× ¿ÜÀÇ °ªÀº null °ªÀ¸·Î ÃÊ±âÈ­ µÈ´Ù.  
- * aObj      - [IN] º¹Á¦¸¦ À§ÇÑ Source °´Ã¼
- * aSID      - [IN] º¹Á¦µÈ °´Ã¼¿¡ ºÎ¿©ÇÒ »õ·Î¿î SID
- * aCloneObj - [OUT] º¹Á¦µÈ ÈÄ ¹İÈ¯µÇ´Â °´Ã¼
+ *    aObj ê°ì²´ì™€ ë™ì¼í•œ íƒ€ì…ì˜ ê°ì²´ë¥¼ ìƒì„±í•˜ì—¬ idpBase*ë¡œ ë°˜í™˜í•œë‹¤. 
+ *    ë³µì œì‹œ, aSIDë¡œ ë“¤ì–´ì˜¨ ê°’ì„ SIDë¡œ ì„¤ì •í•˜ë©°, "*"ë¡œ ì„¤ì •ëœ ê°’ë§Œ
+ *    ë³µì œí•˜ê³  ê·¸ ì™¸ì˜ ê°’ì€ null ê°’ìœ¼ë¡œ ì´ˆê¸°í™” ëœë‹¤.  
+ * aObj      - [IN] ë³µì œë¥¼ ìœ„í•œ Source ê°ì²´
+ * aSID      - [IN] ë³µì œëœ ê°ì²´ì— ë¶€ì—¬í•  ìƒˆë¡œìš´ SID
+ * aCloneObj - [OUT] ë³µì œëœ í›„ ë°˜í™˜ë˜ëŠ” ê°ì²´
  **************************************************************************/
 IDE_RC idpString::clone(idpString* aObj, SChar* aSID, void** aCloneObj)
 {
@@ -300,7 +300,7 @@ IDE_RC idpString::clone(idpString* aObj, SChar* aSID, void** aCloneObj)
     
     sCloneObj->setSID(aSID);
     
-    /*"*"·Î ¼³Á¤µÈ ³»¿ë¸¸ º¹»çÇÑ´Ù.*/
+    /*"*"ë¡œ ì„¤ì •ëœ ë‚´ìš©ë§Œ ë³µì‚¬í•œë‹¤.*/
     sSrc = IDP_VALUE_FROM_SPFILE_BY_ASTERISK;
     for(sValNum = 0; sValNum < aObj->mSrcValArr[sSrc].mCount; sValNum++)
     {
@@ -338,7 +338,7 @@ void idpString::cloneValue(void* aSrc, void** aDst)
 
 /**************************************************************************
  * Description :
- *    aStr·Î µé¾î¿Â ¹®ÀÚ¿­ÀÌ ASCII·Î ±¸¼ºµÇ¾îÀÖ´ÂÁö °Ë»çÇÑ´Ù.
+ *    aStrë¡œ ë“¤ì–´ì˜¨ ë¬¸ìì—´ì´ ASCIIë¡œ êµ¬ì„±ë˜ì–´ìˆëŠ”ì§€ ê²€ì‚¬í•œë‹¤.
 **************************************************************************/
 idBool idpString::isASCIIString(SChar *aStr)
 {
@@ -348,8 +348,8 @@ idBool idpString::isASCIIString(SChar *aStr)
     
     for( i = 0; i < sLen; i++ )
     {
-        /*7bit Ascii 0x7F(01111111)ÀÇ notÀÎ 10000000°ú and¸¦ ÇßÀ» ¶§, 
-         *0ÀÌ ³ª¿Í¾ß Ascii °ªÀÌ¹Ç·Î, ÇÏ³ª¶óµµ 0ÀÌ ¾Æ´Ï¸é Ascii stringÀ¸·Î º¼ ¼ö ¾ø´Ù.*/
+        /*7bit Ascii 0x7F(01111111)ì˜ notì¸ 10000000ê³¼ andë¥¼ í–ˆì„ ë•Œ, 
+         *0ì´ ë‚˜ì™€ì•¼ Ascii ê°’ì´ë¯€ë¡œ, í•˜ë‚˜ë¼ë„ 0ì´ ì•„ë‹ˆë©´ Ascii stringìœ¼ë¡œ ë³¼ ìˆ˜ ì—†ë‹¤.*/
         if(((aStr[i]) & (~0x7F)) == 0)
         {
         }
@@ -364,7 +364,7 @@ idBool idpString::isASCIIString(SChar *aStr)
 
 /**************************************************************************
  * Description :
- *    aStr·Î µé¾î¿Â ¹®ÀÚ¿­ÀÌ Alphanumeric¹®ÀÚµé·Î ±¸¼ºµÇ¾îÀÖ´ÂÁö °Ë»çÇÑ´Ù.
+ *    aStrë¡œ ë“¤ì–´ì˜¨ ë¬¸ìì—´ì´ Alphanumericë¬¸ìë“¤ë¡œ êµ¬ì„±ë˜ì–´ìˆëŠ”ì§€ ê²€ì‚¬í•œë‹¤.
 **************************************************************************/
 idBool idpString::isAlphanumericString(SChar *aStr)
 {

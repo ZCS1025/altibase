@@ -2,7 +2,7 @@
 #
 
 #===============================================================
-# configure¿¡¼­ ÀÚµ¿ÀûÀ¸·Î ¼³Á¤µÊ
+# configureì—ì„œ ìžë™ì ìœ¼ë¡œ ì„¤ì •ë¨
 #===============================================================
 
 BISON_ENV_NEEDED=no # unix don't needed
@@ -48,7 +48,7 @@ added_optimizer_flag=@ADDED_OPTIMIZER_FLAG@
 #only for solaris CC 5.0 above..
 compat5=@COMPAT5@
 
-# ÄÄÆÄÀÏ·¯ Á¾·ù
+# ì»´íŒŒì¼ëŸ¬ ì¢…ë¥˜
 COMPILER_NAME=@COMPILER_NAME@
 GCC_VERSION_MAJOR=@GCC_VERSION_MAJOR@
 
@@ -69,13 +69,13 @@ ALTIBASE_LIMIT_CHECK=@ALTIBASE_LIMIT_CHECK@
 
 ALTIBASE_FIT_CHECK=@ALTIBASE_FIT_CHECK@
 
-# Task-1994 ÃÊ°í¼Ó CoverageÃøÁ¤¹æ¹ý °í¾È
+# Task-1994 ì´ˆê³ ì† Coverageì¸¡ì •ë°©ë²• ê³ ì•ˆ
 ALTIBASE_ENABLE_GCOV=@ALTIBASE_ENABLE_GCOV@
 
 # TASK-6198 Samsung Smart SSD
 ALTIBASE_ENABLE_SMARTSSD=@ALTIBASE_ENABLE_SMARTSSD@
 
-# ¿î¿µÃ¼Á¦ ¹öÁ¯ ¹øÈ£ 
+# ìš´ì˜ì²´ì œ ë²„ì ¼ ë²ˆí˜¸ 
 OS_TARGET=@OS_TARGET@
 OS_MAJORVER=@OS_MAJORVER@
 OS_MINORVER=@OS_MINORVER@

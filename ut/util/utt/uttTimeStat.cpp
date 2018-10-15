@@ -166,7 +166,7 @@ double uttTimeStat::median(UTTTimeClass tc, UTTTimeScale ts)
     }
 
     tmp_time = (double*) malloc(sizeof(double)*curr_size_);
-    IDE_ASSERT(tmp_time != NULL); // BUGBUG: 皋葛府啊 何练且锭狼 贸府 鞘夸
+    IDE_ASSERT(tmp_time != NULL); // BUGBUG: 氅旊毽皜 攵�臁表暊霑岇潣 觳橂Μ 頃勳殧
 
     for (inx = 0; inx < curr_size_; inx++)
     {

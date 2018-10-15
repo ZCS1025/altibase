@@ -114,7 +114,7 @@ IDE_RC idwPMMgr::initialize( iduShmProcType aProcType )
                          IDU_SHM_LATCH_SPIN_COUNT_DEFAULT,
                          &sCurProcInfo->mLatch );
 
-        /* °¢ Logical PID¿¡ ÇØ´çÇÏ´Â Semaphore¸¦ 1·Î ÃÊ±âÈ­ ÇÑ´Ù */
+        /* ê° Logical PIDì— í•´ë‹¹í•˜ëŠ” Semaphoreë¥¼ 1ë¡œ ì´ˆê¸°í™” í•œë‹¤ */
         IDE_TEST_RAISE( idlOS::semctl( sNewSemID, i, SETVAL, sArg ) != 0,
                         err_sema_set_value );
     }
@@ -311,8 +311,8 @@ IDE_RC idwPMMgr::registerProc( idvSQL            * aStatistics,
             }
             else
             {
-                // Available SlotÀÌ ¾øÀ¸¸é Logging SessionÀ» ²÷À¸¸é
-                // ºüÁ®³ª¿Í¾ß ÇÑ´Ù.
+                // Available Slotì´ ì—†ìœ¼ë©´ Logging Sessionì„ ëŠìœ¼ë©´
+                // ë¹ ì ¸ë‚˜ì™€ì•¼ í•œë‹¤.
                 IDE_TEST( iduCheckSessionEvent( aStatistics )
                           != IDE_SUCCESS );
 
@@ -470,7 +470,7 @@ IDE_RC idwPMMgr::allocThrInfo( idvSQL          * aStatistics,
     IDE_TEST( lockProcess( aStatistics, sProcInfo ) != IDE_SUCCESS );
     sState = 1;
 
-    // BUG-36090·Î ÀÎÇØ º¯°æ
+    // BUG-36090ë¡œ ì¸í•´ ë³€ê²½
     IDE_TEST( iduShmMgr::allocMemWithoutUndo( aStatistics,
                                               &sProcInfo->mMainTxInfo,
                                               IDU_MEM_ID_THREAD_INFO,
@@ -497,8 +497,8 @@ IDE_RC idwPMMgr::allocThrInfo( idvSQL          * aStatistics,
     sProcInfo->mThreadCnt++;
 
 
-    /* Thread Info´Â Process ºñÁ¤»ó Á¾·á½Ã WatchDog¿¡ ÀÇÇØ¼­ Free°¡ µÈ´Ù. ¶§¹®¿¡
-     * Proces InfoÀÇ ThrInfo List¿¡ ´ëÇÑ ¿¬°áÀÌ ¿Ï·áµÇ¸é Undo Log´Â ºÒÇÊ¿äÇÏ´Ù. */
+    /* Thread InfoëŠ” Process ë¹„ì •ìƒ ì¢…ë£Œì‹œ WatchDogì— ì˜í•´ì„œ Freeê°€ ëœë‹¤. ë•Œë¬¸ì—
+     * Proces Infoì˜ ThrInfo Listì— ëŒ€í•œ ì—°ê²°ì´ ì™„ë£Œë˜ë©´ Undo LogëŠ” ë¶ˆí•„ìš”í•˜ë‹¤. */
     IDE_TEST( idrLogMgr::commit( aStatistics, &sProcInfo->mMainTxInfo ) != IDE_SUCCESS );
 
     sState = 0;
@@ -521,8 +521,8 @@ IDE_RC idwPMMgr::allocThrInfo( idvSQL          * aStatistics,
                     == IDE_SUCCESS );
     }
 
-    /* Shared Memory ¿µ¿ª¿¡ ´ëÇÑ RecoveryÀÌ±â ¶§¹®¿¡ Undo´Â In-Memory Log
-     * ¸¦ ÀÌ¿ëÇÑ´Ù. */
+    /* Shared Memory ì˜ì—­ì— ëŒ€í•œ Recoveryì´ê¸° ë•Œë¬¸ì— UndoëŠ” In-Memory Log
+     * ë¥¼ ì´ìš©í•œë‹¤. */
 
     return IDE_FAILURE;
 }
@@ -536,8 +536,8 @@ IDE_RC idwPMMgr::freeThrInfo( idvSQL         * aStatistics,
     IDE_ASSERT( idrLogMgr::commit( aStatistics, aThrInfo )
                 == IDE_SUCCESS );
 
-    /* ProcessÀÇ ThreadµéÀÌ °øÀ¯ÇÏ´Â °ø°£ÀÌ´Ù. ¶§¹®¿¡ MainThreadÀÇ LogBuffer¸¦
-     * ÀÌ¿ëÇÏµµ·Ï ÇÑ´Ù. */
+    /* Processì˜ Threadë“¤ì´ ê³µìœ í•˜ëŠ” ê³µê°„ì´ë‹¤. ë•Œë¬¸ì— MainThreadì˜ LogBufferë¥¼
+     * ì´ìš©í•˜ë„ë¡ í•œë‹¤. */
     sProcInfo = idwPMMgr::getProcInfo( aThrInfo->mLPID );
 
     IDE_ASSERT( lockProcess( aStatistics, sProcInfo ) == IDE_SUCCESS );
@@ -561,8 +561,8 @@ IDE_RC idwPMMgr::freeThrInfo( idvSQL         * aStatistics,
                                     aThrInfo )
                 == IDE_SUCCESS );
 
-    /* Thread Info´Â Process ºñÁ¤»ó Á¾·á½Ã WatchDog¿¡ ÀÇÇØ¼­ Free°¡ µÈ´Ù. ¶§¹®¿¡
-     * Proces InfoÀÇ ThrInfo List¿¡ ´ëÇÑ ¿¬°áÀÌ ¿Ï·áµÇ¸é Undo Log´Â ºÒÇÊ¿äÇÏ´Ù. */
+    /* Thread InfoëŠ” Process ë¹„ì •ìƒ ì¢…ë£Œì‹œ WatchDogì— ì˜í•´ì„œ Freeê°€ ëœë‹¤. ë•Œë¬¸ì—
+     * Proces Infoì˜ ThrInfo Listì— ëŒ€í•œ ì—°ê²°ì´ ì™„ë£Œë˜ë©´ Undo LogëŠ” ë¶ˆí•„ìš”í•˜ë‹¤. */
     IDE_ASSERT( idrLogMgr::commit( aStatistics, &sProcInfo->mMainTxInfo )
                 == IDE_SUCCESS );
 
@@ -728,8 +728,8 @@ IDE_RC idwPMMgr::checkProcAliveByLPID( idLPID aLPID, idBool * aIsAlive )
             }
             else
             {
-                /* Process°¡ Á¾·áµÇ¾ú´Âµ¥ mState°¡ IDU_SHM_PROC_STATE_RUNÀÎ°ÍÀº
-                 * ºñÁ¤»ó Á¾·áµÇ¾ú´Ù´Â °ÍÀ» ÀÇ¹ÌÇÑ´Ù. */
+                /* Processê°€ ì¢…ë£Œë˜ì—ˆëŠ”ë° mStateê°€ IDU_SHM_PROC_STATE_RUNì¸ê²ƒì€
+                 * ë¹„ì •ìƒ ì¢…ë£Œë˜ì—ˆë‹¤ëŠ” ê²ƒì„ ì˜ë¯¸í•œë‹¤. */
                 IDE_TEST( tryAcquireSem4Proc( sPRTable, &sSemAcquired )
                           != IDE_SUCCESS );
 

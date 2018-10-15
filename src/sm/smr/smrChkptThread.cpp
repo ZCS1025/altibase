@@ -64,7 +64,7 @@ IDE_RC smrChkptThread::initialize()
 
     idvManager::initSession(&mOldSess, 0 /* unuse */, NULL /* unuse */);
 
-    // BUG-21155 : current sessionÀ» ÃÊ±âÈ­
+    // BUG-21155 : current sessionì„ ì´ˆê¸°í™”
     idvManager::initSession(&mCurrSess, 0 /* unuse */, NULL /* unuse */);
 
     idvManager::initSQL( &mStatistics,
@@ -127,9 +127,9 @@ IDE_RC smrChkptThread::destroy()
 
 
 /*
-    Checkpoint°¡ ¼öÇàµÇÁö ¾Êµµ·Ï ¸·´Â´Ù.
+    Checkpointê°€ ìˆ˜í–‰ë˜ì§€ ì•Šë„ë¡ ë§‰ëŠ”ë‹¤.
 
-    unblockCheckpoint¸¦ È£ÃâÇØ¾ß Checkpoint°¡ µ¿ÀÛÇÑ´Ù.
+    unblockCheckpointë¥¼ í˜¸ì¶œí•´ì•¼ Checkpointê°€ ë™ì‘í•œë‹¤.
  */
 IDE_RC smrChkptThread::blockCheckpoint()
 {
@@ -148,7 +148,7 @@ IDE_RC smrChkptThread::blockCheckpoint()
 
 
 /*
-    Checkpoint°¡ ´Ù½Ã ¼öÇàµÇµµ·Ï Checkpoint¸¦ UnblockÇÑ´Ù.
+    Checkpointê°€ ë‹¤ì‹œ ìˆ˜í–‰ë˜ë„ë¡ Checkpointë¥¼ Unblockí•œë‹¤.
  */
 IDE_RC smrChkptThread::unblockCheckpoint()
 {
@@ -185,7 +185,7 @@ void smrChkptThread::run()
                   != IDE_SUCCESS );
     }
 
-    // timewait ½Ã°£ ¼³Á¤
+    // timewait ì‹œê°„ ì„¤ì •
     sUntilTime = idlOS::time(NULL) + smuProperty::getChkptIntervalInSec();
 
     while(mFinish == ID_FALSE)
@@ -229,7 +229,7 @@ void smrChkptThread::run()
         if ( smuProperty::isRunCheckpointThread() == SMU_THREAD_OFF )
         {
             // To Fix PR-14783
-            // System ThreadÀÇ ÀÛ¾÷À» ¼öÇàÇÏÁö ¾Êµµ·Ï ÇÑ´Ù.
+            // System Threadì˜ ì‘ì—…ì„ ìˆ˜í–‰í•˜ì§€ ì•Šë„ë¡ í•œë‹¤.
             sUntilTime
                 = idlOS::time(NULL) + 
                   smuProperty::getChkptIntervalInSec();
@@ -248,16 +248,16 @@ void smrChkptThread::run()
         }
         else if ( mResume == ID_FALSE )
         {
-            // clear checkpoint intervalÀÇ °æ¿ìÀÌ¹Ç·Î timeÀ» reset ÇÑ´Ù.
+            // clear checkpoint intervalì˜ ê²½ìš°ì´ë¯€ë¡œ timeì„ reset í•œë‹¤.
             sUntilTime = idlOS::time(NULL) +
                 smuProperty::getChkptIntervalInSec();
 
             continue;
         }
 
-        // BUG-22060 ·Î ÀÎÇÏ¿© disk backupÁß¿¡ disk checkpoint »Ó¸¸
-        // ¾Æ´Ï¶ó memory checkpoint µµ ¹®Á¦°¡ µÉ ¼ö ÀÖ½À´Ï´Ù. ±×·¡¼­
-        // backupÁß¿¡´Â memory, disk ¾çÂÊ ¸ğµÎ checkpoint¸¦ ¸·½À´Ï´Ù.
+        // BUG-22060 ë¡œ ì¸í•˜ì—¬ disk backupì¤‘ì— disk checkpoint ë¿ë§Œ
+        // ì•„ë‹ˆë¼ memory checkpoint ë„ ë¬¸ì œê°€ ë  ìˆ˜ ìˆìŠµë‹ˆë‹¤. ê·¸ë˜ì„œ
+        // backupì¤‘ì—ëŠ” memory, disk ì–‘ìª½ ëª¨ë‘ checkpointë¥¼ ë§‰ìŠµë‹ˆë‹¤.
 
         if ( ((smrBackupMgr::getBackupState() & SMR_BACKUP_MEMTBS)
               == SMR_BACKUP_MEMTBS) ||
@@ -292,8 +292,8 @@ void smrChkptThread::run()
                                                           mChkptType )
                               != IDE_SUCCESS );
 
-                    // ¸Ş¸ğ¸® Ã¼Å©Æ÷ÀÎÆ® ¼öÇà½Ã¿¡¸¸ INTERVALÀ»
-                    // °»½ÅÇÏ¿© Àû¿ëÇÑ´Ù.
+                    // ë©”ëª¨ë¦¬ ì²´í¬í¬ì¸íŠ¸ ìˆ˜í–‰ì‹œì—ë§Œ INTERVALì„
+                    // ê°±ì‹ í•˜ì—¬ ì ìš©í•œë‹¤.
                     sUntilTime = idlOS::time(NULL)
                                  + smuProperty::getChkptIntervalInSec();
 

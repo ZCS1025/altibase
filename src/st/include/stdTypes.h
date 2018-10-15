@@ -18,7 +18,7 @@
 /***********************************************************************
  * $Id: stdTypes.h 18883 2006-11-14 01:48:40Z sabbra $
  *
- * Description: Geometry °´Ã¼ ÀÚ·á ±¸Á¶
+ * Description: Geometry ê°ì²´ ìžë£Œ êµ¬ì¡°
  **********************************************************************/
 
 #include <mtdTypes.h>
@@ -28,7 +28,7 @@
 
 //------------------------------------------------
 // PROJ-1586, BUG-15570
-// Client¿Í Server°¡ ÀÚ·á ±¸Á¶¸¦ °øÀ¯ÇÒ ¼ö ÀÖµµ·Ï ÇÔ.
+// Clientì™€ Serverê°€ ìžë£Œ êµ¬ì¡°ë¥¼ ê³µìœ í•  ìˆ˜ ìžˆë„ë¡ í•¨.
 //------------------------------------------------
 
 // Native Geometry Object Types
@@ -56,7 +56,7 @@ extern stdGeometryHeader    stdGeometryEmpty;
 #define STD_GEOCOLLECTION_NAME              "GEOMETRYCOLLECTION"
 #define STD_NULL_NAME                       "NULL"
 #define STD_EMPTY_NAME                      "EMPTY"
-/* BUG-44399 ST_RECTFROMTEXT(), ST_RECTFROMWKB()¸¦ Áö¿øÇØ¾ß ÇÕ´Ï´Ù. */
+/* BUG-44399 ST_RECTFROMTEXT(), ST_RECTFROMWKB()ë¥¼ ì§€ì›í•´ì•¼ í•©ë‹ˆë‹¤. */
 #define STD_RECTANGLE_NAME                  "RECTANGLE"
 
 
@@ -70,7 +70,7 @@ extern stdGeometryHeader    stdGeometryEmpty;
 #define STD_GEOCOLLECTION_NAME_LEN              (18)
 #define STD_NULL_NAME_LEN                       (4)
 #define STD_EMPTY_NAME_LEN                      (5)
-/* BUG-44399 ST_RECTFROMTEXT(), ST_RECTFROMWKB()¸¦ Áö¿øÇØ¾ß ÇÕ´Ï´Ù. */
+/* BUG-44399 ST_RECTFROMTEXT(), ST_RECTFROMWKB()ë¥¼ ì§€ì›í•´ì•¼ í•©ë‹ˆë‹¤. */
 #define STD_RECTANGLE_NAME_LEN                  (9)
 
 #define STD_GEOMETRY_ALIGN                  (ID_SIZEOF(SDouble))
@@ -237,14 +237,14 @@ enum GeoStatusTypes
 };
 
 //=======================================================
-// BUGBUG - »óÀ§ ÇÁ·ÎÁ§Æ®¿¡ ÀÇÇØ Á¦°ÅµÇ¾î¾ß ÇÔ.
+// BUGBUG - ìƒìœ„ í”„ë¡œì íŠ¸ì— ì˜í•´ ì œê±°ë˜ì–´ì•¼ í•¨.
 //=======================================================
 
-// PROJ-1583 BLOB °úÀÇ ÅëÇÕ
-// PROJ-1587 MTÀÇ °¡º¯±æÀÌ Ã³¸® ±â´É
+// PROJ-1583 BLOB ê³¼ì˜ í†µí•©
+// PROJ-1587 MTì˜ ê°€ë³€ê¸¸ì´ ì²˜ë¦¬ ê¸°ëŠ¥
 // To Fix BUG-15365
-// MAX ±æÀÌÀÇ °æ¿ì TypeÀÇ Á¦ÇÑÀÌ¸ç,
-// Page Á¦ÇÑ¿¡ ÀÇÇØ ÃÖ´ë Å©±â°¡ °áÁ¤µÉ ¼ö ÀÖ´Ù
+// MAX ê¸¸ì´ì˜ ê²½ìš° Typeì˜ ì œí•œì´ë©°,
+// Page ì œí•œì— ì˜í•´ ìµœëŒ€ í¬ê¸°ê°€ ê²°ì •ë  ìˆ˜ ìžˆë‹¤
 
 #define STD_GEOMETRY_PRECISION_DEFAULT (32000)
 
@@ -252,8 +252,8 @@ enum GeoStatusTypes
 //=======================================================
 // BUG-28821
 //=======================================================
-// STD_GEOMETRY_PRECISION_MINIMUMÀº ÇÏÀ§ °´Ã¼°¡ ¾ø´Â ¸ÖÆ¼ °´Ã¼¸¦ ÃÖ¼Ò Å©Å°·Î ÇÑ´Ù
-// ÀÌ·Î ÀÎÇØ  ( UInt(mNumObjects)+ SChar(padding[4]))ÀÇ Å©±â°¡ µÇ¾î 8ÀÌ µÈ´Ù.
+// STD_GEOMETRY_PRECISION_MINIMUMì€ í•˜ìœ„ ê°ì²´ê°€ ì—†ëŠ” ë©€í‹° ê°ì²´ë¥¼ ìµœì†Œ í¬í‚¤ë¡œ í•œë‹¤
+// ì´ë¡œ ì¸í•´  ( UInt(mNumObjects)+ SChar(padding[4]))ì˜ í¬ê¸°ê°€ ë˜ì–´ 8ì´ ëœë‹¤.
 
 #define STD_GEOMETRY_PRECISION_MINIMUM (8)                     // BUG-28821
 #define STD_GEOMETRY_PRECISION_MAXIMUM (104857600)             // 100M

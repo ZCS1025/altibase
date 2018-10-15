@@ -19,11 +19,11 @@
  * $Id: qsf.cpp 82186 2018-02-05 05:17:56Z lswhh $
  *
  * Description :
- *     ¿©±â¿¡´Â PSM¿¡¼­ »ç¿ëµÇ´Â extended ÇÔ¼ö°¡ Á¤ÀÇµÇ¾î ÀÖ´Ù.
+ *     ì—¬ê¸°ì—ëŠ” PSMì—ì„œ ì‚¬ìš©ë˜ëŠ” extended í•¨ìˆ˜ê°€ ì •ì˜ë˜ì–´ ìˆë‹¤.
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  **********************************************************************/
 #include <qsf.h>
@@ -47,7 +47,7 @@ extern mtfModule qsfUserIDModule;
 extern mtfModule qsfUserNameModule;
 
 // PROJ-1075
-// array type variableÀÇ member functions
+// array type variableì˜ member functions
 extern mtfModule qsfMCountModule;
 extern mtfModule qsfMDeleteModule;
 extern mtfModule qsfMExistsModule;
@@ -148,7 +148,7 @@ extern mtfModule qsfIsArrayBoundModule;
 extern mtfModule qsfIsFirstArrayBoundModule;
 extern mtfModule qsfIsLastArrayBoundModule;
 
-/* BUG-41307 User Lock Áö¿ø */
+/* BUG-41307 User Lock ì§€ì› */
 extern mtfModule qsfUserLockRequestModule;
 extern mtfModule qsfUserLockReleaseModule;
 
@@ -187,10 +187,10 @@ extern mtfModule qsfLastErrorPositionModule;
 extern mtfModule qsfFormatCallStackModule;
 extern mtfModule qsfFormatErrorBacktraceModule;
 
-/* BUG-43605 [mt] randomÇÔ¼öÀÇ seed ¼³Á¤À» session ´ÜÀ§·Î º¯°æÇØ¾ß ÇÕ´Ï´Ù. */
+/* BUG-43605 [mt] randomí•¨ìˆ˜ì˜ seed ì„¤ì •ì„ session ë‹¨ìœ„ë¡œ ë³€ê²½í•´ì•¼ í•©ë‹ˆë‹¤. */
 extern mtfModule qsfRandomModule;
 
-/* PROJ-2657 UTL_SMTP Áö¿ø */
+/* PROJ-2657 UTL_SMTP ì§€ì› */
 extern mtfModule qsfWriteRawValueModule;
 extern mtfModule qsfSendTextModule;
 extern mtfModule qsfRecvTextModule;
@@ -201,11 +201,11 @@ extern mtfModule qsfCheckConnectReplyModule;
 extern mtfModule qsfSetPrevMetaVerModule;
 //-------------------------------------------------------------------
 // [qsfExtFuncModules]
-// ¼­¹ö ±¸µ¿ ½Ã, MT¿¡¼­´Â mtfModule(¿¬»êÀÚ ¸ğµâ)¿¡ ´ëÇÑ ÃÊ±âÈ­¸¦
-// ¼öÇàÇÏ°Ô µÈ´Ù.  ÀÌ ¶§, ¼­¹ö ±¸µ¿°ú ÇÔ²² ÃÊ±âÈ­µÇ¾î¾ß ÇÏ´Â
-// ¿ÜºÎ ¿¬»êÀÚ ¸ğµâÀ» ¿©±â¿¡ µî·ÏÇÑ´Ù.
-// ¹°·Ğ, ¼­¹ö ±¸µ¿°ú ÇÔ²² ÃÊ±âÈ­°¡ ÇÊ¿äÇÏÁö ¾ÊÀº ¿¬»êÀÚ ¸ğµâÀº
-// ¿©±â¿¡ µî·ÏÇÒ ÇÊ¿ä°¡ ¾ø´Ù.
+// ì„œë²„ êµ¬ë™ ì‹œ, MTì—ì„œëŠ” mtfModule(ì—°ì‚°ì ëª¨ë“ˆ)ì— ëŒ€í•œ ì´ˆê¸°í™”ë¥¼
+// ìˆ˜í–‰í•˜ê²Œ ëœë‹¤.  ì´ ë•Œ, ì„œë²„ êµ¬ë™ê³¼ í•¨ê»˜ ì´ˆê¸°í™”ë˜ì–´ì•¼ í•˜ëŠ”
+// ì™¸ë¶€ ì—°ì‚°ì ëª¨ë“ˆì„ ì—¬ê¸°ì— ë“±ë¡í•œë‹¤.
+// ë¬¼ë¡ , ì„œë²„ êµ¬ë™ê³¼ í•¨ê»˜ ì´ˆê¸°í™”ê°€ í•„ìš”í•˜ì§€ ì•Šì€ ì—°ì‚°ì ëª¨ë“ˆì€
+// ì—¬ê¸°ì— ë“±ë¡í•  í•„ìš”ê°€ ì—†ë‹¤.
 //-------------------------------------------------------------------
 
 static SInt qsfCompareByName( const mtfNameIndex* aIndex1,
@@ -302,7 +302,7 @@ const mtfModule* qsf::extendedFunctionModules[] =
     &qsfIsConnectModule,
 // BUG-41311 table function
     &qsfTableFuncElementModule,
-/* BUG-41307 User Lock Áö¿ø */
+/* BUG-41307 User Lock ì§€ì› */
     &qsfUserLockRequestModule,
     &qsfUserLockReleaseModule,
 // BUG-41452 Array Binding Info.
@@ -338,9 +338,9 @@ const mtfModule* qsf::extendedFunctionModules[] =
     &qsfLastErrorPositionModule,
     &qsfFormatCallStackModule,
     &qsfFormatErrorBacktraceModule,
-    /* BUG-43605 [mt] randomÇÔ¼öÀÇ seed ¼³Á¤À» session ´ÜÀ§·Î º¯°æÇØ¾ß ÇÕ´Ï´Ù. */
+    /* BUG-43605 [mt] randomí•¨ìˆ˜ì˜ seed ì„¤ì •ì„ session ë‹¨ìœ„ë¡œ ë³€ê²½í•´ì•¼ í•©ë‹ˆë‹¤. */
     &qsfRandomModule,
-    /* PROJ-2657 UTL_SMTP Áö¿ø */
+    /* PROJ-2657 UTL_SMTP ì§€ì› */
     &qsfWriteRawValueModule,    
     &qsfSendTextModule,
     &qsfRecvTextModule, 
@@ -571,7 +571,7 @@ IDE_RC qsf::getArg( mtcStack   * aStack,
     if( sIsNull == ID_TRUE )
     {
         // BUG-40119
-        // OUT ¸ğµåÀÏ¶§´Â °ªÀ» ÀúÀåÇÒ¼ö ÀÖ´Â Æ÷ÀÎÅÍ¸¦ ¸®ÅÏÇØÁÖ¾î¾ß ÇÑ´Ù.
+        // OUT ëª¨ë“œì¼ë•ŒëŠ” ê°’ì„ ì €ì¥í• ìˆ˜ ìˆëŠ” í¬ì¸í„°ë¥¼ ë¦¬í„´í•´ì£¼ì–´ì•¼ í•œë‹¤.
         if ( aInOutType == QS_OUT )
         {
             *aRetPtr = (void*)aStack[ aIdx ].value;

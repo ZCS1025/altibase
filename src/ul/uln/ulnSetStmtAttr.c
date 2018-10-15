@@ -157,15 +157,15 @@ ACI_RC ulnStmtAttrCheckUnsupportedAttr(ulnFnContext *aContext, acp_sint32_t aAtt
     switch (aAttr)
     {
             /*
-             * SQLGetInfo() ÀÇ SQL_DYNAMIC_CURSOR_ATTRIBUTES2 ¿¡¼­
-             * SQL_ATTR_MAX_ROWS ¿Í °ü·ÃµÈ ¼Ó¼ºÀ» ¾ò¾îº¼ ¼ö ÀÖ´Ù. ±×·¯³ª ¾ËÆ¼º£ÀÌ½º¿¡¼­´Â
-             * Á¦´ë·Î Áö¿øÇÏÁö ¾Ê´Â´Ù.
+             * SQLGetInfo() ì˜ SQL_DYNAMIC_CURSOR_ATTRIBUTES2 ì—ì„œ
+             * SQL_ATTR_MAX_ROWS ì™€ ê´€ë ¨ëœ ì†ì„±ì„ ì–»ì–´ë³¼ ìˆ˜ ìˆë‹¤. ê·¸ëŸ¬ë‚˜ ì•Œí‹°ë² ì´ìŠ¤ì—ì„œëŠ”
+             * ì œëŒ€ë¡œ ì§€ì›í•˜ì§€ ì•ŠëŠ”ë‹¤.
              */
         case SQL_ATTR_MAX_ROWS:
 
             /*
              * Note:
-             * SQL_ATTR_MAX_LENGTH : Áö¿øÇÒ ¼ö´Â ÀÖÁö¸¸, Á» º¹ÀâÇÏ´Ù. ´ÙÀ½¿¡ ÇÏÀÚ.
+             * SQL_ATTR_MAX_LENGTH : ì§€ì›í•  ìˆ˜ëŠ” ìˆì§€ë§Œ, ì¢€ ë³µì¡í•˜ë‹¤. ë‹¤ìŒì— í•˜ì.
              */
         case SQL_ATTR_MAX_LENGTH:
 
@@ -177,8 +177,8 @@ ACI_RC ulnStmtAttrCheckUnsupportedAttr(ulnFnContext *aContext, acp_sint32_t aAtt
 
             /*
              * Note:
-             * SQL_ATTR_SIMULATE_CURSOR : Áö±İÀº positioned update/insert ¸¦ Áö¿øÇÏÁö ¾ÊÁö¸¸,
-             * ¾ÕÀ¸·Î Áö¿øÇÏ´Â ±â´ÉÀ» Ãß°¡ÇÒ ¶§¿¡´Â ¾Æ·¡ÀÇ µÎ°¡Áö Ã¼Å©·çÆ¾À» ¹İµå½Ã ³Ö¾î¾ß ÇÑ´Ù
+             * SQL_ATTR_SIMULATE_CURSOR : ì§€ê¸ˆì€ positioned update/insert ë¥¼ ì§€ì›í•˜ì§€ ì•Šì§€ë§Œ,
+             * ì•ìœ¼ë¡œ ì§€ì›í•˜ëŠ” ê¸°ëŠ¥ì„ ì¶”ê°€í•  ë•Œì—ëŠ” ì•„ë˜ì˜ ë‘ê°€ì§€ ì²´í¬ë£¨í‹´ì„ ë°˜ë“œì‹œ ë„£ì–´ì•¼ í•œë‹¤
              * ACI_TEST(ulnSetStmtAttrCheck24000(aContext) != ACI_SUCCESS);
              * ACI_TEST(ulnSetStmtAttrCheckHY011(aContext) != ACI_SUCCESS);
              */
@@ -462,7 +462,7 @@ ACI_RC ulnSetStmtAttrDoSensitivity(ulnFnContext *aFnContext, acp_uint32_t aValue
                          " SQL_ATTR_CURSOR_SENSITIVITY to SQL_SENSITIVE");
             }
 
-            /* SQL_SENSITIVE´Â keyset-driven¿¡¼­¸¸ Áö¿øÇÑ´Ù. */
+            /* SQL_SENSITIVEëŠ” keyset-drivenì—ì„œë§Œ ì§€ì›í•œë‹¤. */
             if (ulnStmtGetAttrCursorType(sStmt) != SQL_CURSOR_KEYSET_DRIVEN)
             {
                 ulnStmtSetAttrCursorType(sStmt, SQL_CURSOR_KEYSET_DRIVEN);
@@ -476,7 +476,7 @@ ACI_RC ulnSetStmtAttrDoSensitivity(ulnFnContext *aFnContext, acp_uint32_t aValue
 
         case SQL_UNSPECIFIED:
             /*
-             * SQL_UNSPECIFIED´Â Áö¿øÇÏÁö ¾Ê´Â´Ù.
+             * SQL_UNSPECIFIEDëŠ” ì§€ì›í•˜ì§€ ì•ŠëŠ”ë‹¤.
              * 01S02 : Option Value Changed
              */
             ACI_RAISE(LABEL_OPT_VALUE_CHANGED_NOT_SUPPORTED);
@@ -539,8 +539,8 @@ ACI_RC ulnSetStmtAttrDoCursorType(ulnFnContext *aFnContext, acp_uint32_t aValue)
                          " SQL_ATTR_CURSOR_TYPE to SQL_CURSOR_STATIC");
             }
 
-            /* Notes. ¿ø·¡´Â Concurrency¿¡ µû¶ó¼­ Sensitivity¸¦ ¹Ù²ã¾ß ÇÑ´Ù.
-             * ÇÏÁö¸¸, Static + Sensitive¸¦ Áö¿øÇÏÁö ¾ÊÀ¸¹Ç·Î Ç×»ó Insensitive·Î ¹Ù²Û´Ù. */
+            /* Notes. ì›ë˜ëŠ” Concurrencyì— ë”°ë¼ì„œ Sensitivityë¥¼ ë°”ê¿”ì•¼ í•œë‹¤.
+             * í•˜ì§€ë§Œ, Static + Sensitiveë¥¼ ì§€ì›í•˜ì§€ ì•Šìœ¼ë¯€ë¡œ í•­ìƒ Insensitiveë¡œ ë°”ê¾¼ë‹¤. */
             if (ulnStmtGetAttrCursorSensitivity(sStmt) != SQL_INSENSITIVE)
             {
                 ulnStmtSetAttrCursorSensitivity(sStmt, SQL_INSENSITIVE);
@@ -571,8 +571,8 @@ ACI_RC ulnSetStmtAttrDoCursorType(ulnFnContext *aFnContext, acp_uint32_t aValue)
                          " SQL_ATTR_CURSOR_TYPE to SQL_CURSOR_KEYSET_DRIVEN");
             }
 
-            /* Notes. ¿ø·¡´Â Concurrency¿¡ µû¶ó¼­ Sensitivity¸¦ ¹Ù²ã¾ß ÇÑ´Ù.
-             * ÇÏÁö¸¸, Keyset-Driven + Insensitive¸¦ Áö¿øÇÏÁö ¾ÊÀ¸¹Ç·Î Ç×»ó Sensitive·Î ¹Ù²Û´Ù. */
+            /* Notes. ì›ë˜ëŠ” Concurrencyì— ë”°ë¼ì„œ Sensitivityë¥¼ ë°”ê¿”ì•¼ í•œë‹¤.
+             * í•˜ì§€ë§Œ, Keyset-Driven + Insensitiveë¥¼ ì§€ì›í•˜ì§€ ì•Šìœ¼ë¯€ë¡œ í•­ìƒ Sensitiveë¡œ ë°”ê¾¼ë‹¤. */
             if (ulnStmtGetAttrCursorSensitivity(sStmt) != SQL_SENSITIVE)
             {
                 ulnStmtSetAttrCursorSensitivity(sStmt, SQL_SENSITIVE);
@@ -606,11 +606,11 @@ ACI_RC ulnSetStmtAttrDoCursorType(ulnFnContext *aFnContext, acp_uint32_t aValue)
 /*
  * ulnSetStmtAttr.
  *
- * SQLSetStmtAttr ¿¡ Á¤È®ÇÏ°Ô 1:1 ·Î ¸ÅÄ¡µÇ´Â ÇÔ¼ö.
+ * SQLSetStmtAttr ì— ì •í™•í•˜ê²Œ 1:1 ë¡œ ë§¤ì¹˜ë˜ëŠ” í•¨ìˆ˜.
  *
- * ÁÖÀÇ: aValuePtr Àº »óÈ²¿¡ µû¶ó¼­ 32(64)ºñÆ® Á¤¼öÇü /°ª/À¸·Îµµ ÇØ¼®ÇÒ ¼ö ÀÖ°í,
- *       /Æ÷ÀÎÅÍ/·Îµµ ÇØ¼®ÇÒ ¼ö ÀÖ´Ù.
- *       µû¶ó¼­ ÀÌ °ªÀÌ NULL ÀÎÁö¸¦ Ã¼Å©ÇÏ´Â °ÍÀº ÀÇ¹Ì°¡ ¾ø´Ù. -_-;;;
+ * ì£¼ì˜: aValuePtr ì€ ìƒí™©ì— ë”°ë¼ì„œ 32(64)ë¹„íŠ¸ ì •ìˆ˜í˜• /ê°’/ìœ¼ë¡œë„ í•´ì„í•  ìˆ˜ ìˆê³ ,
+ *       /í¬ì¸í„°/ë¡œë„ í•´ì„í•  ìˆ˜ ìˆë‹¤.
+ *       ë”°ë¼ì„œ ì´ ê°’ì´ NULL ì¸ì§€ë¥¼ ì²´í¬í•˜ëŠ” ê²ƒì€ ì˜ë¯¸ê°€ ì—†ë‹¤. -_-;;;
  *
  * Note : When the Attribute parameter has one of the following values,
  *        a 64-bit value is returned in *ValuePtr:
@@ -618,21 +618,21 @@ ACI_RC ulnSetStmtAttrDoCursorType(ulnFnContext *aFnContext, acp_uint32_t aValue)
  *          SQL_ATTR_APP_PARAM_DESC  --------+
  *          SQL_ATTR_APP_ROW_DESC            |
  *          SQL_ATTR_IMP_PARAM_DESC          |
- *          SQL_ATTR_IMP_ROW_DESC            +--> Æ÷ÀÎÅÍ Å¸ÀÔ. ½Å°æ¾²Áö ¾Ê¾Æµµ µÊ.
+ *          SQL_ATTR_IMP_ROW_DESC            +--> í¬ì¸í„° íƒ€ì…. ì‹ ê²½ì“°ì§€ ì•Šì•„ë„ ë¨.
  *          SQL_ATTR_PARAM_BIND_OFFSET_PTR   |
  *          SQL_ATTR_ROW_BIND_OFFSET_PTR     |
  *          SQL_ATTR_ROWS_FETCHED_PTR -------+
  *
- *          SQL_ATTR_MAX_LENGTH  : Áö¿øÇÏÁö ¾ÊÀ½
- *          SQL_ATTR_KEYSET_SIZE : Áö¿øÇÏÁö ¾ÊÀ½
- *          SQL_ATTR_MAX_ROWS    : Áö¿øÇÏÁö ¾ÊÀ½
+ *          SQL_ATTR_MAX_LENGTH  : ì§€ì›í•˜ì§€ ì•ŠìŒ
+ *          SQL_ATTR_KEYSET_SIZE : ì§€ì›í•˜ì§€ ì•ŠìŒ
+ *          SQL_ATTR_MAX_ROWS    : ì§€ì›í•˜ì§€ ì•ŠìŒ
  *
  *          SQL_ATTR_ROW_ARRAY_SIZE
  *          SQL_ATTR_ROW_NUMBER
  *
- * À§ÀÇ ¼Ó¼ºµé Áß ÇÏ³ª¸¦ ¼ÂÆÃÇÒ ¶§¿¡´Â aValuePtr ¿¡´Â 64 ºñÆ® °ªÀÌ ³Ñ¾î¿Â´Ù.
+ * ìœ„ì˜ ì†ì„±ë“¤ ì¤‘ í•˜ë‚˜ë¥¼ ì…‹íŒ…í•  ë•Œì—ëŠ” aValuePtr ì—ëŠ” 64 ë¹„íŠ¸ ê°’ì´ ë„˜ì–´ì˜¨ë‹¤.
  *
- * ÁÖÀÇ : 32 ºñÆ®·Î ÄÄÆÄÀÏ ÇÒ ¶§¿¡´Â 32ºñÆ® °ªÀÌ´Ù.
+ * ì£¼ì˜ : 32 ë¹„íŠ¸ë¡œ ì»´íŒŒì¼ í•  ë•Œì—ëŠ” 32ë¹„íŠ¸ ê°’ì´ë‹¤.
  */
 
 SQLRETURN ulnSetStmtAttr(ulnStmt      *aStmt,
@@ -682,10 +682,10 @@ SQLRETURN ulnSetStmtAttr(ulnStmt      *aStmt,
             break;
 
         /*
-         * Note: ¾Æ·¡ÀÇ ³× ¼Ó¼º (SQL_ATTR_CONCURRENCY, SQL_ATTR_CURSOR_SCROLLABLE,
-         *       SQL_ATTR_CURSOR_SENSITIVITY, SQL_ATTR_CURSOR_TYPE) Àº ÇÏ³ª¸¦ ¼Õ´ë¸é
-         *       ´Ù¸¥ °Íµµ consistency À¯Áö¸¦ À§ÇØ¼­ ÇÔ²² ¹Ù²î¾î Áà¾ß ÇÑ´Ù.
-         *       ÇÊ¿äÇÏ´Ù¸é ´Ù¸¥ ¼Ó¼ºµµ ¼Õ´î ¼ö ÀÖ´Ù. consistency À¯Áö¸¦ À§ÇØ¼­
+         * Note: ì•„ë˜ì˜ ë„¤ ì†ì„± (SQL_ATTR_CONCURRENCY, SQL_ATTR_CURSOR_SCROLLABLE,
+         *       SQL_ATTR_CURSOR_SENSITIVITY, SQL_ATTR_CURSOR_TYPE) ì€ í•˜ë‚˜ë¥¼ ì†ëŒ€ë©´
+         *       ë‹¤ë¥¸ ê²ƒë„ consistency ìœ ì§€ë¥¼ ìœ„í•´ì„œ í•¨ê»˜ ë°”ë€Œì–´ ì¤˜ì•¼ í•œë‹¤.
+         *       í•„ìš”í•˜ë‹¤ë©´ ë‹¤ë¥¸ ì†ì„±ë„ ì†ëŒˆ ìˆ˜ ìˆë‹¤. consistency ìœ ì§€ë¥¼ ìœ„í•´ì„œ
          *        -- refer to M$DN ODBC Cursor Characteristics and Cursor Type section
          */
         case SQL_ATTR_CONCURRENCY:
@@ -711,9 +711,9 @@ SQLRETURN ulnSetStmtAttr(ulnStmt      *aStmt,
         case SQL_ATTR_PARAM_BIND_OFFSET_PTR:
             ulnStmtSetAttrParamBindOffsetPtr(aStmt, (ulvULen *)aValuePtr);
             /*
-             * BUGBUG: ¾Æ·¡ÀÇ descriptor attribute ¸¦ °°ÀÌ ¼³Á¤ÇØ¾ß ÇÑ´Ù°í ÇÏ¸é¼­µµ,
-             *         Å¸ÀÔÀÌ °¢°¢ SQLINTEGER ¿Í SQL/U/INTEGER ·Î °¢°¢ ´Ù¸£´Ù -_-;;;
-             *         ¸ğµÎ´Ù acp_uint32_t ·Î ÅëÀÏÇÏÀÚ.
+             * BUGBUG: ì•„ë˜ì˜ descriptor attribute ë¥¼ ê°™ì´ ì„¤ì •í•´ì•¼ í•œë‹¤ê³  í•˜ë©´ì„œë„,
+             *         íƒ€ì…ì´ ê°ê° SQLINTEGER ì™€ SQL/U/INTEGER ë¡œ ê°ê° ë‹¤ë¥´ë‹¤ -_-;;;
+             *         ëª¨ë‘ë‹¤ acp_uint32_t ë¡œ í†µì¼í•˜ì.
              */
             break;
 
@@ -734,15 +734,15 @@ SQLRETURN ulnSetStmtAttr(ulnStmt      *aStmt,
             break;
 
         case SQL_ATTR_PARAMSET_SIZE:
-            //BUG-21253 ÇÑ¹ø¿¡ array insertÇÏ´Â ¾çÀ» Á¦ÇÑÇØ¾ß ÇÕ´Ï´Ù.
+            //BUG-21253 í•œë²ˆì— array insertí•˜ëŠ” ì–‘ì„ ì œí•œí•´ì•¼ í•©ë‹ˆë‹¤.
             ACI_TEST_RAISE( sValue > ACP_UINT16_MAX,
                             LABEL_EXCEEDING_ARRAY_SIZE_LIMIT );
             ulnStmtSetAttrParamsetSize(aStmt, sValue);
             break;
 
         case SQL_ATTR_QUERY_TIMEOUT:
-            /* BUGBUG: DataSource ÀÇ max/min timeout °ªÀ» ¾ò¾î¿Í¾ß ÇÑ´Ù.
-             *         ¹üÀ§°¡ ¹ş¾î³ª¸é 01S02 Option Val Changed ¸¦ ¸®ÅÏÇÑ´Ù. */
+            /* BUGBUG: DataSource ì˜ max/min timeout ê°’ì„ ì–»ì–´ì™€ì•¼ í•œë‹¤.
+             *         ë²”ìœ„ê°€ ë²—ì–´ë‚˜ë©´ 01S02 Option Val Changed ë¥¼ ë¦¬í„´í•œë‹¤. */
             ulnStmtSetAttrQueryTimeout(aStmt, sValue);
             break;
 
@@ -750,10 +750,10 @@ SQLRETURN ulnSetStmtAttr(ulnStmt      *aStmt,
             ACI_TEST_RAISE( sValue != SQL_RD_ON && sValue != SQL_RD_OFF,
                             LABEL_INVALID_ATTR_VALUE );
 
-            /* ÀÌ °ªÀ» RD_OFF ·Î ¼¼ÆÃÇÏ¸é, µ¥ÀÌÅÍ¸¦ ÆäÄ¡ÇÏÁö ¾Ê°í¼­, Ä¿¼­¸¸ ¿òÁ÷ÀÌ¶ó´Â
-             * ¶æÀÌ´Ù. ±×·±µ¥, ±×·¸°Ô ÇØ¼­ ½ºÅ©·ÑÇØ ¹ö¸®¸é, ½ºÅ©·Ñ ¹é ÇÒ ¼ö ¾ø´Ù.
-             * optional feature not supported ¸¦ ³»¾î Áà¾ß ÇÑ´Ù.
-             * BUGBUG : ¾Æ´Ï, option value changed ÀÎ°¡? */
+            /* ì´ ê°’ì„ RD_OFF ë¡œ ì„¸íŒ…í•˜ë©´, ë°ì´í„°ë¥¼ í˜ì¹˜í•˜ì§€ ì•Šê³ ì„œ, ì»¤ì„œë§Œ ì›€ì§ì´ë¼ëŠ”
+             * ëœ»ì´ë‹¤. ê·¸ëŸ°ë°, ê·¸ë ‡ê²Œ í•´ì„œ ìŠ¤í¬ë¡¤í•´ ë²„ë¦¬ë©´, ìŠ¤í¬ë¡¤ ë°± í•  ìˆ˜ ì—†ë‹¤.
+             * optional feature not supported ë¥¼ ë‚´ì–´ ì¤˜ì•¼ í•œë‹¤.
+             * BUGBUG : ì•„ë‹ˆ, option value changed ì¸ê°€? */
             if (sValue == SQL_RD_OFF)
             {
                 ulnError(&sFnContext, ulERR_IGNORE_OPTION_VALUE_CHANGED,
@@ -765,9 +765,9 @@ SQLRETURN ulnSetStmtAttr(ulnStmt      *aStmt,
             ulnStmtSetAttrRetrieveData(aStmt, sValue);
             break;
 
-        /* ExtendedFetch ¿¡¼­ ÀÌ ¼Ó¼ºÀ» »ç¿ëÇÏ¹Ç·Î Áı¾î³Ö¾ú´Ù. */
+        /* ExtendedFetch ì—ì„œ ì´ ì†ì„±ì„ ì‚¬ìš©í•˜ë¯€ë¡œ ì§‘ì–´ë„£ì—ˆë‹¤. */
         // fix BUG-20372
-        // BUG-17715 ¿øº¹
+        // BUG-17715 ì›ë³µ
         case SQL_ROWSET_SIZE:
             if (aStmt->mPrevRowSetSize == 0)
             {
@@ -777,9 +777,9 @@ SQLRETURN ulnSetStmtAttr(ulnStmt      *aStmt,
             break;
 
         // fix BUG-20372
-        // BUG-17715 ¿øº¹
+        // BUG-17715 ì›ë³µ
         case SQL_ATTR_ROW_ARRAY_SIZE:
-            // bug-35198: ÀÌÀüÀÇ fetch rowset size¸¦ ÇÑ¹ø´õ »ç¿ëÇØ¾ß ÇÔ
+            // bug-35198: ì´ì „ì˜ fetch rowset sizeë¥¼ í•œë²ˆë” ì‚¬ìš©í•´ì•¼ í•¨
             if (aStmt->mPrevRowSetSize == 0)
             {
                 aStmt->mPrevRowSetSize = ulnStmtGetAttrRowArraySize(aStmt);
@@ -789,9 +789,9 @@ SQLRETURN ulnSetStmtAttr(ulnStmt      *aStmt,
 
         case SQL_ATTR_ROW_BIND_OFFSET_PTR:
             ulnStmtSetAttrRowBindOffsetPtr(aStmt, (ulvULen *)aValuePtr);
-            /* BUGBUG: ¾Æ·¡ÀÇ descriptor attribute ¸¦ °°ÀÌ ¼³Á¤ÇØ¾ß ÇÑ´Ù°í ÇÏ¸é¼­µµ,
-             *         Å¸ÀÔÀÌ °¢°¢ SQLINTEGER ¿Í SQL/U/INTEGER ·Î °¢°¢ ´Ù¸£´Ù -_-;;;
-             *         ¸ğµÎ´Ù acp_uint32_t ·Î ÅëÀÏÇÏÀÚ. */
+            /* BUGBUG: ì•„ë˜ì˜ descriptor attribute ë¥¼ ê°™ì´ ì„¤ì •í•´ì•¼ í•œë‹¤ê³  í•˜ë©´ì„œë„,
+             *         íƒ€ì…ì´ ê°ê° SQLINTEGER ì™€ SQL/U/INTEGER ë¡œ ê°ê° ë‹¤ë¥´ë‹¤ -_-;;;
+             *         ëª¨ë‘ë‹¤ acp_uint32_t ë¡œ í†µì¼í•˜ì. */
             break;
 
         case SQL_ATTR_ROW_BIND_TYPE:
@@ -956,7 +956,7 @@ SQLRETURN ulnSetStmtAttr(ulnStmt      *aStmt,
             }
             break;
 
-        case SQL_ATTR_ROW_NUMBER:   /* ¼¼ÆÃÇÒ ¼ö ¾ø´Â ¼Ó¼ºÀÌ´Ù */
+        case SQL_ATTR_ROW_NUMBER:   /* ì„¸íŒ…í•  ìˆ˜ ì—†ëŠ” ì†ì„±ì´ë‹¤ */
         default:
             ACI_RAISE(LABEL_INVALID_ATTR);
             break;

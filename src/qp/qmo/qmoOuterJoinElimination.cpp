@@ -20,20 +20,20 @@
  *
  * Description : BUG-38339
  *     Outer Join Elimination
- * outer Á¶ÀÎÀÇ on ÀýÀÇ Á¶°ÇÀÌ °ÅÁþÀÏ¶§ ¸ðµÎ outer Å×ÀÌºíÀÇ °ªÀº null ÀÌ µÈ´Ù.
- * where ÀýÀÌ³ª inner Á¶ÀÎ ¿¡¼­ outer Á¶ÀÎ ÀÇ Å×ÀÌºíÀ» ÂüÁ¶ÇÑ´Ù¸é outer Á¶ÀÎ ¿¬»êÀ» ¼öÇàÇÒ ÇÊ¿ä°¡ ¾ø°Ô µÈ´Ù.
+ * outer ì¡°ì¸ì˜ on ì ˆì˜ ì¡°ê±´ì´ ê±°ì§“ì¼ë•Œ ëª¨ë‘ outer í…Œì´ë¸”ì˜ ê°’ì€ null ì´ ëœë‹¤.
+ * where ì ˆì´ë‚˜ inner ì¡°ì¸ ì—ì„œ outer ì¡°ì¸ ì˜ í…Œì´ë¸”ì„ ì°¸ì¡°í•œë‹¤ë©´ outer ì¡°ì¸ ì—°ì‚°ì„ ìˆ˜í–‰í•  í•„ìš”ê°€ ì—†ê²Œ ëœë‹¤.
  *
- * is null °ú °°ÀÌ predicate ¿¡¼­ null °ªÀ» ÇÊ¿äÇÒ¶§°¡ ÀÖ´Ù.
- * ¶ÇÇÑ or ¿¬»êÀÚ°¡ ÀÖÀ¸¸é outer Á¶ÀÎ ÀÇ Å×ÀÌºíÀ» ÂüÁ¶ÇÒ¼öµµ ÀÖ°í ¾ÈÇÒ¼öµµ ÀÖ±â ¶§¹®¿¡ °æ¿ì¿¡ µû¶ó¼­ °á°ú°¡ Æ²·ÁÁø´Ù.
+ * is null ê³¼ ê°™ì´ predicate ì—ì„œ null ê°’ì„ í•„ìš”í• ë•Œê°€ ìžˆë‹¤.
+ * ë˜í•œ or ì—°ì‚°ìžê°€ ìžˆìœ¼ë©´ outer ì¡°ì¸ ì˜ í…Œì´ë¸”ì„ ì°¸ì¡°í• ìˆ˜ë„ ìžˆê³  ì•ˆí• ìˆ˜ë„ ìžˆê¸° ë•Œë¬¸ì— ê²½ìš°ì— ë”°ë¼ì„œ ê²°ê³¼ê°€ í‹€ë ¤ì§„ë‹¤.
  *
  * Implementation :
- *     1.  from Àý Æ®¸®¸¦ ¼øÈ¸¸¦ ÇÏ¸é¼­ ´ÙÀ½°ú °°Àº ÀÛ¾÷À» ¼öÇàÇÑ´Ù.
- *     2.  where Àý°ú inner Á¶ÀÎÀÇ onÀýÀÇ µðÆæ´ø½Ã¸¦ ¸ðµÎ ¼öÁýÇÑ´Ù.
-       2.1 Oracle Style Join ÀÎ °æ¿ì¿¡´Â ¼öÁýÇÏÁö ¾Ê´Â´Ù.
- *     2.2 ¿¹¿Ü Á¶°ÇÀÎ °æ¿ì( is null µî )¿¡´Â ¼öÁýµÈ µðÆæ´ø½Ã¿¡¼­ Á¦°Å¸¦ ÇÑ´Ù.
- *     3.  left outer Á¶ÀÎÀÏ¶§´Â right ÀÇ µðÆæ´ø½Ã°¡ ¼öÁýµÈ µðÆæ´ø½Ã¿¡ Æ÷ÇÔµÇ´ÂÁö °Ë»çÇÑ´Ù.
- *     3.1 Æ÷ÇÔµÈ´Ù¸é inner join À¸·Î º¯°æÇÑ´Ù.
- *     3.2 inner join ÀÌ µÇ¾úÀ¸¹Ç·Î on ÀýÀÇ µðÆæ´ø½Ãµµ ¼öÁýÇÑ´Ù.
+ *     1.  from ì ˆ íŠ¸ë¦¬ë¥¼ ìˆœíšŒë¥¼ í•˜ë©´ì„œ ë‹¤ìŒê³¼ ê°™ì€ ìž‘ì—…ì„ ìˆ˜í–‰í•œë‹¤.
+ *     2.  where ì ˆê³¼ inner ì¡°ì¸ì˜ onì ˆì˜ ë””íŽœë˜ì‹œë¥¼ ëª¨ë‘ ìˆ˜ì§‘í•œë‹¤.
+       2.1 Oracle Style Join ì¸ ê²½ìš°ì—ëŠ” ìˆ˜ì§‘í•˜ì§€ ì•ŠëŠ”ë‹¤.
+ *     2.2 ì˜ˆì™¸ ì¡°ê±´ì¸ ê²½ìš°( is null ë“± )ì—ëŠ” ìˆ˜ì§‘ëœ ë””íŽœë˜ì‹œì—ì„œ ì œê±°ë¥¼ í•œë‹¤.
+ *     3.  left outer ì¡°ì¸ì¼ë•ŒëŠ” right ì˜ ë””íŽœë˜ì‹œê°€ ìˆ˜ì§‘ëœ ë””íŽœë˜ì‹œì— í¬í•¨ë˜ëŠ”ì§€ ê²€ì‚¬í•œë‹¤.
+ *     3.1 í¬í•¨ëœë‹¤ë©´ inner join ìœ¼ë¡œ ë³€ê²½í•œë‹¤.
+ *     3.2 inner join ì´ ë˜ì—ˆìœ¼ë¯€ë¡œ on ì ˆì˜ ë””íŽœë˜ì‹œë„ ìˆ˜ì§‘í•œë‹¤.
  *
  **********************************************************************/
 
@@ -51,14 +51,14 @@ qmoOuterJoinElimination::doTransform( qcStatement * aStatement,
     IDU_FIT_POINT_FATAL( "qmoOuterJoinElimination::doTransform::__FT__" );
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aQuerySet  != NULL );
 
     //------------------------------------------
-    // Outer Join Elimination ¼öÇà
+    // Outer Join Elimination ìˆ˜í–‰
     //------------------------------------------
 
     if ( QCU_OPTIMIZER_OUTERJOIN_ELIMINATION == 1 )
@@ -128,7 +128,7 @@ qmoOuterJoinElimination::doTransformQuerySet( qcStatement * aStatement,
     }
     else
     {
-        // SET ¿¬»êÀÎ °æ¿ì °¢ query block º° transformationÀ» ½Ãµµ ÇÑ´Ù.
+        // SET ì—°ì‚°ì¸ ê²½ìš° ê° query block ë³„ transformationì„ ì‹œë„ í•œë‹¤.
         IDE_TEST( doTransformQuerySet( aStatement,
                                        aQuerySet->left,
                                        aChanged )
@@ -189,7 +189,7 @@ qmoOuterJoinElimination::doTransformFrom( qcStatement * aStatement,
             aFrom->joinType = QMS_INNER_JOIN;
 
             // BUG-38375
-            // ´ÙÀ½ ÁúÀÇ¿¡¼­ ¸ðµÎ inner join À¸·Î º¯È¯ÀÌ °¡´ÉÇÏ´Ù.
+            // ë‹¤ìŒ ì§ˆì˜ì—ì„œ ëª¨ë‘ inner join ìœ¼ë¡œ ë³€í™˜ì´ ê°€ëŠ¥í•˜ë‹¤.
             // select * from t1 left outer join t2 on t1.i1=t2.i1
             //                  left outer join t3 on t2.i2=t3.i2
             //                  where t3.i3=1;
@@ -264,7 +264,7 @@ qmoOuterJoinElimination::addWhereDep( mtcNode   * aNode,
         }
         else
         {
-            // BUG-38375 Oracle Style Join ÀÎ °æ¿ì¿¡´Â ¼öÁýÇÏÁö ¾Ê´Â´Ù.
+            // BUG-38375 Oracle Style Join ì¸ ê²½ìš°ì—ëŠ” ìˆ˜ì§‘í•˜ì§€ ì•ŠëŠ”ë‹¤.
             if ( ( ((qtcNode*)sNode)->lflag  & QTC_NODE_JOIN_OPERATOR_MASK )
                  == QTC_NODE_JOIN_OPERATOR_EXIST )
             {
@@ -337,10 +337,10 @@ qmoOuterJoinElimination::removeDep( mtcNode     * aNode,
          sNode  != NULL;
          sNode   = sNode->next )
     {
-        // BUG-44692 subquery°¡ ÀÖÀ»¶§ OJE °¡ µ¿ÀÛÇÏ¸é ¾ÈµË´Ï´Ù.
-        // OJE ±â´ÉÀÌ Á¤»ó µ¿ÀÛÇÏ±â À§ÇØ¼­´Â °ªÀÌ null ÀÏ¶§ true °¡ ¸®ÅÏµÇ¸é ¾ÈµË´Ï´Ù.
-        // ¼­ºêÄõ¸®ÀÇ °æ¿ì ³»ºÎ ÁúÀÇ¿¡ µû¶ó¼­ true °¡ ¸®ÅÏµÉ¼ö ÀÖ½À´Ï´Ù.
-        // BUG-44781 anti join ÀÌ ÀÖÀ»¶§ OJE °¡ µ¿ÀÛÇÏ¸é ¾ÈµË´Ï´Ù.
+        // BUG-44692 subqueryê°€ ìžˆì„ë•Œ OJE ê°€ ë™ìž‘í•˜ë©´ ì•ˆë©ë‹ˆë‹¤.
+        // OJE ê¸°ëŠ¥ì´ ì •ìƒ ë™ìž‘í•˜ê¸° ìœ„í•´ì„œëŠ” ê°’ì´ null ì¼ë•Œ true ê°€ ë¦¬í„´ë˜ë©´ ì•ˆë©ë‹ˆë‹¤.
+        // ì„œë¸Œì¿¼ë¦¬ì˜ ê²½ìš° ë‚´ë¶€ ì§ˆì˜ì— ë”°ë¼ì„œ true ê°€ ë¦¬í„´ë ìˆ˜ ìžˆìŠµë‹ˆë‹¤.
+        // BUG-44781 anti join ì´ ìžˆì„ë•Œ OJE ê°€ ë™ìž‘í•˜ë©´ ì•ˆë©ë‹ˆë‹¤.
         if ( ((sNode->lflag & MTC_NODE_EAT_NULL_MASK) == MTC_NODE_EAT_NULL_TRUE) ||
              ((sNode->lflag & MTC_NODE_OPERATOR_MASK) == MTC_NODE_OPERATOR_OR) ||
              (((sNode->lflag & MTC_NODE_OPERATOR_MASK) == MTC_NODE_OPERATOR_SUBQUERY) && (QCU_OPTIMIZER_BUG_44692 == 1)) ||

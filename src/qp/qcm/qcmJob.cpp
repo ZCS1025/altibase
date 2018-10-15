@@ -38,15 +38,15 @@ const void * gQcmJobsIndex[QCM_MAX_META_INDICES];
  *
  * Description
  *
- *    ÇöÁ¦ ½Ã°£ÀÌ JOB À» ½ÇÇàÇÒ ½Ã°£ÀÎÁö¸¦ ÆÇ´ÜÇÑ´Ù.
- *    YEAR, ¿Í MONTH ¸¦ °è»êÇÏ´Â ¹æ½Ä°ú DAY, HOUR, MINUTEÀÇ °è»ê ¹æ½ÄÀÌ ´Ù¸£´Ù.
+ *    í˜„ì œ ì‹œê°„ì´ JOB ì„ ì‹¤í–‰í•  ì‹œê°„ì¸ì§€ë¥¼ íŒë‹¨í•œë‹¤.
+ *    YEAR, ì™€ MONTH ë¥¼ ê³„ì‚°í•˜ëŠ” ë°©ì‹ê³¼ DAY, HOUR, MINUTEì˜ ê³„ì‚° ë°©ì‹ì´ ë‹¤ë¥´ë‹¤.
  *
- *    YEAR ¿Í MONTH ´Â À±³âÀÌ¶óµçÁö, ´Ş¸¶´Ù ³¯Â¥°¡ ´Ù¸£¹Ç·Î ¸¶Áö¸· YEAR¿Í, MONTH¸¦ ±âÁØÀ¸·Î
- *    12¹øÀÇ Interval¸¸Å­ ±îÁö ÇØ´ç ½Ã°£À» Á¶»çÇØº»´Ù.
- *    Áï Month¸¦ ±âÁØÀ¸·Î ÇßÀ» ½Ã ÃÖ¼Ò 1³â¿¡ ÇÑ¹øÀº JobÀÌ µ¿ÀÛµÆÀ¸¸é ¼³Á¤µÈ µ¥·Î ½ÇÇàÇÒ °ÍÀÌ´Ù.
+ *    YEAR ì™€ MONTH ëŠ” ìœ¤ë…„ì´ë¼ë“ ì§€, ë‹¬ë§ˆë‹¤ ë‚ ì§œê°€ ë‹¤ë¥´ë¯€ë¡œ ë§ˆì§€ë§‰ YEARì™€, MONTHë¥¼ ê¸°ì¤€ìœ¼ë¡œ
+ *    12ë²ˆì˜ Intervalë§Œí¼ ê¹Œì§€ í•´ë‹¹ ì‹œê°„ì„ ì¡°ì‚¬í•´ë³¸ë‹¤.
+ *    ì¦‰ Monthë¥¼ ê¸°ì¤€ìœ¼ë¡œ í–ˆì„ ì‹œ ìµœì†Œ 1ë…„ì— í•œë²ˆì€ Jobì´ ë™ì‘ëìœ¼ë©´ ì„¤ì •ëœ ë°ë¡œ ì‹¤í–‰í•  ê²ƒì´ë‹¤.
  *
- *    DAY, HOUR, MINUTE ´Â ÇöÁ¦ ½Ã°£¿¡¼­ Ã³À½ ½Ã°£À» »« ÈÄ¿¡ Interval ¸¸Å­ÀÇ Mod¿¬»êÀ»
- *    ¼öÇàÇÏ´Â ¹æ½ÄÀ¸·Î ÇöÁ¦½Ã°£ÀÌ ½ÇÇàÇÒ ½Ã°£ÀÎÁö¸¦ ÆÇ´ÜÇÏ´Ù.
+ *    DAY, HOUR, MINUTE ëŠ” í˜„ì œ ì‹œê°„ì—ì„œ ì²˜ìŒ ì‹œê°„ì„ ëº€ í›„ì— Interval ë§Œí¼ì˜ Modì—°ì‚°ì„
+ *    ìˆ˜í–‰í•˜ëŠ” ë°©ì‹ìœ¼ë¡œ í˜„ì œì‹œê°„ì´ ì‹¤í–‰í•  ì‹œê°„ì¸ì§€ë¥¼ íŒë‹¨í•˜ë‹¤.
  */
 IDE_RC qcmJob::isReadyJob( mtdDateType * aStart,
                            mtdDateType * aCurrent,
@@ -96,7 +96,7 @@ IDE_RC qcmJob::isReadyJob( mtdDateType * aStart,
     {
         sLastDate = *aStart;
 
-        /* LAST DATE°¡ Á¸ÀçÇÒ °æ¿ì YEAR¿Í MONTH ¸¸ LAST DATE ·Î ¼³Á¤ÇÑ´Ù. */
+        /* LAST DATEê°€ ì¡´ì¬í•  ê²½ìš° YEARì™€ MONTH ë§Œ LAST DATE ë¡œ ì„¤ì •í•œë‹¤. */
         if ( MTD_DATE_IS_NULL( aLastExec ) != ID_TRUE )
         {
             sLastDate.year = aLastExec->year;
@@ -117,7 +117,7 @@ IDE_RC qcmJob::isReadyJob( mtdDateType * aStart,
             sNextInterval = aInterval;
         }
 
-        /* ¸¶Áö¸· ¼öÇà ³¯ÀÚ¿¡¼­ 12 ¹øÀÇ interval Å­ ÇØ´ç ³¯ÀÚ¿Í °°Àº Áö¸¦ ºñ±³ÇØº»´Ù. */
+        /* ë§ˆì§€ë§‰ ìˆ˜í–‰ ë‚ ìì—ì„œ 12 ë²ˆì˜ interval í¼ í•´ë‹¹ ë‚ ìì™€ ê°™ì€ ì§€ë¥¼ ë¹„êµí•´ë³¸ë‹¤. */
         for ( i = 1; i <= 12; i++ )
         {
 
@@ -184,11 +184,11 @@ IDE_RC qcmJob::isReadyJob( mtdDateType * aStart,
 /**
  * getExecuteJobItems
  *
- * ÇöÁ¦ ½Ã°£¿¡ ½ÇÇàÇÒ Job Item À» ¼öÁıÇÑ´Ù.
+ * í˜„ì œ ì‹œê°„ì— ì‹¤í–‰í•  Job Item ì„ ìˆ˜ì§‘í•œë‹¤.
  *
- *  aItems    - JOB IDÀÇ ¹è¿­
- *  aCount    - JOB ID ¼ö
- *  aMaxCount - ÇÑ¹ø¿¡ ½ÇÇàÇÒ ¼ö ÀÖ´Â Max Count
+ *  aItems    - JOB IDì˜ ë°°ì—´
+ *  aCount    - JOB ID ìˆ˜
+ *  aMaxCount - í•œë²ˆì— ì‹¤í–‰í•  ìˆ˜ ìˆëŠ” Max Count
  */
 IDE_RC qcmJob::getExecuteJobItems( smiStatement * aSmiStmt,
                                    SInt         * aItems,
@@ -326,7 +326,7 @@ IDE_RC qcmJob::getExecuteJobItems( smiStatement * aSmiStmt,
         sIsEnable  = (mtdCharType *)((UChar *)sRow + sIsEnableColumn->column.offset );
         sStart.min_sec_mic &= ~sMask;
 
-        /* Test½Ã TimingÀ¸·Î ÀÎÇØ °°¾ÆÁú ¼ö ÀÖÀ¸¹Ç·Î 10msÈÄ¿¡ ´Ù½Ã ÀĞ´Â´Ù. */
+        /* Testì‹œ Timingìœ¼ë¡œ ì¸í•´ ê°™ì•„ì§ˆ ìˆ˜ ìˆìœ¼ë¯€ë¡œ 10msí›„ì— ë‹¤ì‹œ ì½ëŠ”ë‹¤. */
         while ( mtdDateInterface::compare( sLastExec, &sCurrent ) == 0 )
         {
             sSleepTime.set( 0, 10000 );
@@ -347,8 +347,8 @@ IDE_RC qcmJob::getExecuteJobItems( smiStatement * aSmiStmt,
             sCurrent.min_sec_mic &= ~sMask;
         }
 
-        /* ÇöÁ¦ ½Ã°£ÀÌ Start ½Ã°£º¸´Ù µÚ¶ó¸é ´ÙÀ½ Row¸¦ ÀĞ´Â´Ù. */
-        // BUG-41317 IS_ENABLE columnÀÌ FALSE ¶ó¸é ½ÇÇàÇÏÁö ¾Ê´Â´Ù.
+        /* í˜„ì œ ì‹œê°„ì´ Start ì‹œê°„ë³´ë‹¤ ë’¤ë¼ë©´ ë‹¤ìŒ Rowë¥¼ ì½ëŠ”ë‹¤. */
+        // BUG-41317 IS_ENABLE columnì´ FALSE ë¼ë©´ ì‹¤í–‰í•˜ì§€ ì•ŠëŠ”ë‹¤.
         if ( ( sState == QCM_JOB_STATE_EXEC ) ||
              ( mtdDateInterface::compare( &sStart, &sCurrent ) > 0 ) ||
              ( sIsEnable->value[0] == 'F' ) )
@@ -367,7 +367,7 @@ IDE_RC qcmJob::getExecuteJobItems( smiStatement * aSmiStmt,
             sEnd              = *(mtdDateType*)((UChar *)sRow + sEndColumn->column.offset );
             sEnd.min_sec_mic &= ~sMask;
 
-            /* End Date °¡ ¼³Á¤µÇ¾îÀÖ´Ù¸é ÇöÁ¦ ½Ã°£ÀÌ End Date ÀÌÈÄ¶ó¸é ´ÙÀ½ Row¸¦ ÀĞ´Â´Ù. */
+            /* End Date ê°€ ì„¤ì •ë˜ì–´ìˆë‹¤ë©´ í˜„ì œ ì‹œê°„ì´ End Date ì´í›„ë¼ë©´ ë‹¤ìŒ Rowë¥¼ ì½ëŠ”ë‹¤. */
             if ( mtdDateInterface::compare( &sCurrent, &sEnd ) > 0 )
             {
                 IDE_TEST( sCursor.readRow( &sRow, &sRid, SMI_FIND_NEXT )
@@ -384,7 +384,7 @@ IDE_RC qcmJob::getExecuteJobItems( smiStatement * aSmiStmt,
             /* Nothing to do */
         }
 
-        /* ÇöÁ¦ ½Ã°£°ú Start ½Ã°£ÀÌ °°´Ù¸é JobÀ» ¼±ÅÃÇÑ´Ù. */
+        /* í˜„ì œ ì‹œê°„ê³¼ Start ì‹œê°„ì´ ê°™ë‹¤ë©´ Jobì„ ì„ íƒí•œë‹¤. */
         if ( mtdDateInterface::compare( &sCurrent, &sStart ) == 0 )
         {
             aItems[sCount] = sID;
@@ -460,13 +460,13 @@ IDE_RC qcmJob::getExecuteJobItems( smiStatement * aSmiStmt,
 /**
  * getJobInfo
  *
- *  JobID ¸¦ ÀÌ¿ëÇØ¼­ Meta¿¡¼­ Job ÀÇ Á¤º¸¸¦ ÃßÃâÇÑ´Ù.
+ *  JobID ë¥¼ ì´ìš©í•´ì„œ Metaì—ì„œ Job ì˜ ì •ë³´ë¥¼ ì¶”ì¶œí•œë‹¤.
  *
  *  aJobID     - Job ID
  *  aJobName   - Job Name
- *  aExecTxt   - ½ÇÇàÇÒ Procecure ±¸¹®
- *  aExecCount - ½ÇÇà È½¼ö
- *  aState     - Job State »óÅÂ
+ *  aExecTxt   - ì‹¤í–‰í•  Procecure êµ¬ë¬¸
+ *  aExecCount - ì‹¤í–‰ íšŸìˆ˜
+ *  aState     - Job State ìƒíƒœ
  */
 IDE_RC qcmJob::getJobInfo( smiStatement * aSmiStmt,
                            SInt           aJobID,
@@ -596,7 +596,7 @@ IDE_RC qcmJob::getJobInfo( smiStatement * aSmiStmt,
 /**
  * updateStateAndLastExecTime
  *
- *   Job À» ½ÇÇàÇÏ±â Àü¿¡ Job State¸¦ º¯°æÇÏ°í ¸¶Áö¸· ½ÇÇà ½Ã°£À» º¯°æÇÑ´Ù.
+ *   Job ì„ ì‹¤í–‰í•˜ê¸° ì „ì— Job Stateë¥¼ ë³€ê²½í•˜ê³  ë§ˆì§€ë§‰ ì‹¤í–‰ ì‹œê°„ì„ ë³€ê²½í•œë‹¤.
  */
 IDE_RC qcmJob::updateStateAndLastExecTime( smiStatement * aSmiStmt,
                                            SInt           aJobID )
@@ -673,9 +673,9 @@ IDE_RC qcmJob::updateStateAndLastExecTime( smiStatement * aSmiStmt,
 /**
  * updateExecuteResult
  *
- *  Meta¿¡ Job ÀÇ ½ÇÇà °á°ú¸¦ update ÇÑ´Ù.
+ *  Metaì— Job ì˜ ì‹¤í–‰ ê²°ê³¼ë¥¼ update í•œë‹¤.
  *
- *  Error °¡ ³µ´Ù¸é Error Code ¸¦ ¾÷µ¥ÀÌÆ® ÇÑ´Ù.
+ *  Error ê°€ ë‚¬ë‹¤ë©´ Error Code ë¥¼ ì—…ë°ì´íŠ¸ í•œë‹¤.
  */
 IDE_RC qcmJob::updateExecuteResult( smiStatement * aSmiStmt,
                                     SInt           aJobID,

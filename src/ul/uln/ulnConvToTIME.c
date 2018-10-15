@@ -54,12 +54,12 @@ ACI_RC ulncCHAR_TIME(ulnFnContext  *aFnContext,
         /*
          * 01s07
          *
-         * BUGBUG : fraction portion ÀÌ 0 ÀÎÁö±îÁö Ã¼Å©ÇØ¾ß ÇÏ³ª?
+         * BUGBUG : fraction portion ì´ 0 ì¸ì§€ê¹Œì§€ ì²´í¬í•´ì•¼ í•˜ë‚˜?
          *
-         * Altibase ÀÇ DATE Å¸ÀÔÀº »ç½Ç»ó SQL_TIMESTAMP Å¸ÀÔÀÌ´Ù.
-         * SQL_TIMESTAMP --> SQL_DATE º¯È¯½Ã¿¡
-         *      1. timestamp ÀÇ date ºÎºĞÀº ¹«½ÃµÈ´Ù.
-         *      2. timestamp ÀÇ time ºÎºĞÀÌ 0 ÀÌ ¾Æ´Ï¸é, 01S07 ¸®ÅÏÇÑ´Ù.
+         * Altibase ì˜ DATE íƒ€ì…ì€ ì‚¬ì‹¤ìƒ SQL_TIMESTAMP íƒ€ì…ì´ë‹¤.
+         * SQL_TIMESTAMP --> SQL_DATE ë³€í™˜ì‹œì—
+         *      1. timestamp ì˜ date ë¶€ë¶„ì€ ë¬´ì‹œëœë‹¤.
+         *      2. timestamp ì˜ time ë¶€ë¶„ì´ 0 ì´ ì•„ë‹ˆë©´, 01S07 ë¦¬í„´í•œë‹¤.
          */
         ulnErrorExtended(aFnContext,
                          aRowNumber,
@@ -123,10 +123,10 @@ ACI_RC ulncDATE_TIME(ulnFnContext  *aFnContext,
         /*
          * 01s07
          *
-         * Altibase ÀÇ DATE Å¸ÀÔÀº »ç½Ç»ó SQL_TIMESTAMP Å¸ÀÔÀÌ´Ù.
-         * SQL_TIMESTAMP --> SQL_TIME À¸·Î º¯È¯½Ã¿¡
-         *      1. timestamp ÀÇ date ºÎºĞÀº ¹«½ÃµÈ´Ù.
-         *      2. timestamp ÀÇ fractional ºÎºĞÀÌ 0 ÀÌ ¾Æ´Ï¸é, 01S07 ¸®ÅÏÇÑ´Ù.
+         * Altibase ì˜ DATE íƒ€ì…ì€ ì‚¬ì‹¤ìƒ SQL_TIMESTAMP íƒ€ì…ì´ë‹¤.
+         * SQL_TIMESTAMP --> SQL_TIME ìœ¼ë¡œ ë³€í™˜ì‹œì—
+         *      1. timestamp ì˜ date ë¶€ë¶„ì€ ë¬´ì‹œëœë‹¤.
+         *      2. timestamp ì˜ fractional ë¶€ë¶„ì´ 0 ì´ ì•„ë‹ˆë©´, 01S07 ë¦¬í„´í•œë‹¤.
          */
         ulnErrorExtended(aFnContext,
                          aRowNumber,
@@ -211,12 +211,12 @@ ACI_RC ulncNCHAR_TIME(ulnFnContext  *aFnContext,
         /*
          * 01s07
          *
-         * BUGBUG : fraction portion ÀÌ 0 ÀÎÁö±îÁö Ã¼Å©ÇØ¾ß ÇÏ³ª?
+         * BUGBUG : fraction portion ì´ 0 ì¸ì§€ê¹Œì§€ ì²´í¬í•´ì•¼ í•˜ë‚˜?
          *
-         * Altibase ÀÇ DATE Å¸ÀÔÀº »ç½Ç»ó SQL_TIMESTAMP Å¸ÀÔÀÌ´Ù.
-         * SQL_TIMESTAMP --> SQL_DATE º¯È¯½Ã¿¡
-         *      1. timestamp ÀÇ date ºÎºĞÀº ¹«½ÃµÈ´Ù.
-         *      2. timestamp ÀÇ time ºÎºĞÀÌ 0 ÀÌ ¾Æ´Ï¸é, 01S07 ¸®ÅÏÇÑ´Ù.
+         * Altibase ì˜ DATE íƒ€ì…ì€ ì‚¬ì‹¤ìƒ SQL_TIMESTAMP íƒ€ì…ì´ë‹¤.
+         * SQL_TIMESTAMP --> SQL_DATE ë³€í™˜ì‹œì—
+         *      1. timestamp ì˜ date ë¶€ë¶„ì€ ë¬´ì‹œëœë‹¤.
+         *      2. timestamp ì˜ time ë¶€ë¶„ì´ 0 ì´ ì•„ë‹ˆë©´, 01S07 ë¦¬í„´í•œë‹¤.
          */
         ulnErrorExtended(aFnContext,
                          aRowNumber,

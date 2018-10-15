@@ -186,7 +186,7 @@ extern "C" {
             sqlDate.minute   = ociDate->ts.mi;
             sqlDate.second   = ociDate->ts.ss;
 
-            // OCIDate¿¡´Â fractionÀÌ ¾ø´Ù
+            // OCIDateì—ëŠ” fractionì´ ì—†ë‹¤
             //sqlDate.fraction = ociDate->ts.fs;  // Oracle use nanosecond
         }
         else

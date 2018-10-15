@@ -19,11 +19,11 @@
  * $Id: qmgProjection.cpp 82075 2018-01-17 06:39:52Z jina.kim $
  *
  * Description :
- *     Projection Graph¸¦ À§ÇÑ ¼öÇà ÇÔ¼ö
+ *     Projection Graphë¥¼ ìœ„í•œ ìˆ˜í–‰ í•¨ìˆ˜
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  **********************************************************************/
 
@@ -45,12 +45,12 @@ qmgProjection::init( qcStatement * aStatement,
 {
 /***********************************************************************
  *
- * Description : qmgProjection GraphÀÇ ÃÊ±âÈ­
+ * Description : qmgProjection Graphì˜ ì´ˆê¸°í™”
  *
  * Implementation :
- *    (1) qmgProjectionÀ» À§ÇÑ °ø°£ ÇÒ´ç
- *    (2) graph( ¸ğµç Graph¸¦ À§ÇÑ °øÅë ÀÚ·á ±¸Á¶) ÃÊ±âÈ­
- *    (3) out ¼³Á¤
+ *    (1) qmgProjectionì„ ìœ„í•œ ê³µê°„ í• ë‹¹
+ *    (2) graph( ëª¨ë“  Graphë¥¼ ìœ„í•œ ê³µí†µ ìë£Œ êµ¬ì¡°) ì´ˆê¸°í™”
+ *    (3) out ì„¤ì •
  *
  ***********************************************************************/
 
@@ -61,7 +61,7 @@ qmgProjection::init( qcStatement * aStatement,
     IDU_FIT_POINT_FATAL( "qmgProjection::init::__FT__" );
 
     //---------------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //---------------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -69,15 +69,15 @@ qmgProjection::init( qcStatement * aStatement,
     IDE_DASSERT( aChildGraph != NULL );
 
     //---------------------------------------------------
-    // Projection Graph¸¦ À§ÇÑ ±âº» ÃÊ±âÈ­
+    // Projection Graphë¥¼ ìœ„í•œ ê¸°ë³¸ ì´ˆê¸°í™”
     //---------------------------------------------------
 
-    // qmgProjectionÀ» À§ÇÑ °ø°£ ÇÒ´ç
+    // qmgProjectionì„ ìœ„í•œ ê³µê°„ í• ë‹¹
     IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF( qmgPROJ ),
                                              (void**) &sMyGraph )
               != IDE_SUCCESS );
 
-    // Graph °øÅë Á¤º¸ÀÇ ÃÊ±âÈ­
+    // Graph ê³µí†µ ì •ë³´ì˜ ì´ˆê¸°í™”
     IDE_TEST( qmg::initGraph( & sMyGraph->graph ) != IDE_SUCCESS );
 
     sMyGraph->graph.type = QMG_PROJECTION;
@@ -102,7 +102,7 @@ qmgProjection::init( qcStatement * aStatement,
     sMyGraph->graph.makePlan = qmgProjection::makePlan;
     sMyGraph->graph.printGraph = qmgProjection::printGraph;
 
-    // Disk/Memory Á¤º¸ ¼³Á¤
+    // Disk/Memory ì •ë³´ ì„¤ì •
     for ( sQuerySet = aQuerySet;
           sQuerySet->left != NULL;
           sQuerySet = sQuerySet->left ) ;
@@ -110,7 +110,7 @@ qmgProjection::init( qcStatement * aStatement,
     switch(  sQuerySet->SFWGH->hints->interResultType )
     {
         case QMO_INTER_RESULT_TYPE_NOT_DEFINED :
-            // Áß°£ °á°ú Type Hint°¡ ¾ø´Â °æ¿ì, ÇÏÀ§ÀÇ TypeÀ» µû¸¥´Ù.
+            // ì¤‘ê°„ ê²°ê³¼ Type Hintê°€ ì—†ëŠ” ê²½ìš°, í•˜ìœ„ì˜ Typeì„ ë”°ë¥¸ë‹¤.
             if ( ( aChildGraph->flag & QMG_GRAPH_TYPE_MASK )
                  == QMG_GRAPH_TYPE_DISK )
             {
@@ -137,16 +137,16 @@ qmgProjection::init( qcStatement * aStatement,
     }
 
     //---------------------------------------------------
-    // Projection Graph ¸¸À» À§ÇÑ ÃÊ±âÈ­
+    // Projection Graph ë§Œì„ ìœ„í•œ ì´ˆê¸°í™”
     //---------------------------------------------------
 
     sParseTree = (qmsParseTree *)aStatement->myPlan->parseTree;
     // To Fix BUG-9060
-    // ÃÖ»óÀ§ projection¿¡¸¸ limitÀ» ¿¬°áÇØ¾ßÇÔ
-    // setÀÎ °æ¿ì, °¢ setÀÇ projection¿¡ limitÀÌ ¼³Á¤µÇ´Â ¹®Á¦°¡ ÀÖ¾úÀ½
+    // ìµœìƒìœ„ projectionì—ë§Œ limitì„ ì—°ê²°í•´ì•¼í•¨
+    // setì¸ ê²½ìš°, ê° setì˜ projectionì— limitì´ ì„¤ì •ë˜ëŠ” ë¬¸ì œê°€ ìˆì—ˆìŒ
     if ( sParseTree->querySet == aQuerySet )
     {
-        // ÃÖ»óÀ§ projection¿¡¸¸ limitÀ» ¿¬°á
+        // ìµœìƒìœ„ projectionì—ë§Œ limitì„ ì—°ê²°
         sMyGraph->limit = sParseTree->limit;
         sMyGraph->loopNode = sParseTree->loopNode;
     }
@@ -183,7 +183,7 @@ qmgProjection::init( qcStatement * aStatement,
     sMyGraph->storeNSearchPred = NULL;
     sMyGraph->hashBucketCnt = 0;
 
-    // out ¼³Á¤
+    // out ì„¤ì •
     *aGraph = (qmgGraph *)sMyGraph;
 
     return IDE_SUCCESS;
@@ -198,13 +198,13 @@ qmgProjection::optimize( qcStatement * aStatement, qmgGraph * aGraph )
 {
 /***********************************************************************
  *
- * Description : qmgProjectionÀÇ ÃÖÀûÈ­
+ * Description : qmgProjectionì˜ ìµœì í™”
  *
  * Implementation :
- *    (1) targetÀÇ Subquery Graph »ı¼º
- *    (2) Indexable MIN MAX TipÀÌ Àû¿ëµÈ °æ¿ì, limit 1À» ¼³Á¤ÇÑ´Ù.
- *    (3) SCAN Limit ÃÖÀûÈ­
- *    (4) °øÅë ºñ¿ë Á¤º¸ ¼³Á¤
+ *    (1) targetì˜ Subquery Graph ìƒì„±
+ *    (2) Indexable MIN MAX Tipì´ ì ìš©ëœ ê²½ìš°, limit 1ì„ ì„¤ì •í•œë‹¤.
+ *    (3) SCAN Limit ìµœì í™”
+ *    (4) ê³µí†µ ë¹„ìš© ì •ë³´ ì„¤ì •
  *    (5) Preserved Order
  *
  ***********************************************************************/
@@ -224,14 +224,14 @@ qmgProjection::optimize( qcStatement * aStatement, qmgGraph * aGraph )
     IDU_FIT_POINT_FATAL( "qmgProjection::optimize::__FT__" );
 
     //---------------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //---------------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aGraph != NULL );
 
     //---------------------------------------------------
-    // ±âº» ÃÊ±âÈ­
+    // ê¸°ë³¸ ì´ˆê¸°í™”
     //---------------------------------------------------
 
     sMyGraph = (qmgPROJ*) aGraph;
@@ -239,7 +239,7 @@ qmgProjection::optimize( qcStatement * aStatement, qmgGraph * aGraph )
     sRecordSize = 0;
 
     //---------------------------------------------------
-    // targetÀÇ Subquery Graph »ı¼º
+    // targetì˜ Subquery Graph ìƒì„±
     //---------------------------------------------------
 
     for ( sTarget = sMyGraph->target;
@@ -256,11 +256,11 @@ qmgProjection::optimize( qcStatement * aStatement, qmgGraph * aGraph )
         sMtcColumn = QTC_TMPL_COLUMN(QC_SHARED_TMPLATE(aStatement), sNode);
         sRecordSize += sMtcColumn->column.size;
     }
-    // BUG-36463 sRecordSize ´Â 0ÀÌ µÇ¾î¼­´Â ¾ÈµÈ´Ù.
+    // BUG-36463 sRecordSize ëŠ” 0ì´ ë˜ì–´ì„œëŠ” ì•ˆëœë‹¤.
     sRecordSize = IDL_MAX( sRecordSize, 1 );
 
     //---------------------------------------------------
-    // SCAN Limit ÃÖÀûÈ­
+    // SCAN Limit ìµœì í™”
     //---------------------------------------------------
 
     sIsScanLimit = ID_FALSE;
@@ -269,18 +269,18 @@ qmgProjection::optimize( qcStatement * aStatement, qmgGraph * aGraph )
         if ( sChildGraph->type == QMG_SELECTION )
         {
             //---------------------------------------------------
-            // ÇÏÀ§°¡ ÀÏ¹İ qmgSelectionÀÎ °æ¿ì
-            // Áï, Set, Order By, Group By, Aggregation, Distinct, JoinÀÌ
-            //  ¾ø´Â °æ¿ì
+            // í•˜ìœ„ê°€ ì¼ë°˜ qmgSelectionì¸ ê²½ìš°
+            // ì¦‰, Set, Order By, Group By, Aggregation, Distinct, Joinì´
+            //  ì—†ëŠ” ê²½ìš°
             //---------------------------------------------------
             if ( sChildGraph->myFrom->tableRef->view == NULL )
             {
-                // View °¡ ¾Æ´Ñ °æ¿ì, SCAN Limit Àû¿ë
+                // View ê°€ ì•„ë‹Œ ê²½ìš°, SCAN Limit ì ìš©
                 sNode = (qtcNode *)sChildGraph->myQuerySet->SFWGH->where;
 
                 if ( sNode != NULL )
                 {
-                    // where°¡ Á¸ÀçÇÏ´Â °æ¿ì, subquery Á¸Àç À¯¹« °Ë»ç
+                    // whereê°€ ì¡´ì¬í•˜ëŠ” ê²½ìš°, subquery ì¡´ì¬ ìœ ë¬´ ê²€ì‚¬
                     if ( ( sNode->lflag & QTC_NODE_SUBQUERY_MASK )
                          != QTC_NODE_SUBQUERY_EXIST )
                     {
@@ -293,7 +293,7 @@ qmgProjection::optimize( qcStatement * aStatement, qmgGraph * aGraph )
                 }
                 else
                 {
-                    // where°¡ Á¸ÀçÇÏÁö ¾Ê´Â °æ¿ì,SCAN Limit Àû¿ë
+                    // whereê°€ ì¡´ì¬í•˜ì§€ ì•ŠëŠ” ê²½ìš°,SCAN Limit ì ìš©
                     sIsScanLimit = ID_TRUE;
                 }
             }
@@ -304,8 +304,8 @@ qmgProjection::optimize( qcStatement * aStatement, qmgGraph * aGraph )
         }
         else
         {
-            // Set, Order By, Group By, Distinct, Aggregation, Join, View°¡
-            // ÀÖ´Â °æ¿ì :
+            // Set, Order By, Group By, Distinct, Aggregation, Join, Viewê°€
+            // ìˆëŠ” ê²½ìš° :
             // nothing to do
         }
     }
@@ -315,7 +315,7 @@ qmgProjection::optimize( qcStatement * aStatement, qmgGraph * aGraph )
     }
 
     //---------------------------------------------------
-    // SCAN Limit TipÀÌ Àû¿ëµÈ °æ¿ì
+    // SCAN Limit Tipì´ ì ìš©ëœ ê²½ìš°
     //---------------------------------------------------
 
     if ( sIsScanLimit == ID_TRUE )
@@ -329,10 +329,10 @@ qmgProjection::optimize( qcStatement * aStatement, qmgGraph * aGraph )
             != IDE_SUCCESS );
 
         // fix BUG-13482
-        // parse treeÀÇ limitÁ¤º¸¸¦ ÇöÀç °¡Áö¸ç,
-        // PROJ ³ëµå »ı¼º½Ã,
-        // ÇÏÀ§ SCAN ³ëµå¿¡¼­ SCAN Limit Àû¿ëÀÌ È®Á¤µÇ¸é,
-        // PROJ ³ëµåÀÇ limit start¸¦ 1·Î º¯°æÇÑ´Ù.
+        // parse treeì˜ limitì •ë³´ë¥¼ í˜„ì¬ ê°€ì§€ë©°,
+        // PROJ ë…¸ë“œ ìƒì„±ì‹œ,
+        // í•˜ìœ„ SCAN ë…¸ë“œì—ì„œ SCAN Limit ì ìš©ì´ í™•ì •ë˜ë©´,
+        // PROJ ë…¸ë“œì˜ limit startë¥¼ 1ë¡œ ë³€ê²½í•œë‹¤.
 
         qmsLimitI::setStart( sLimit,
                              qmsLimitI::getStart( sMyGraph->limit ) );
@@ -350,7 +350,7 @@ qmgProjection::optimize( qcStatement * aStatement, qmgGraph * aGraph )
     }
 
     //---------------------------------------------------
-    // Indexable Min Max TipÀÌ Àû¿ëµÈ °æ¿ì, Limit 1 ¼³Á¤
+    // Indexable Min Max Tipì´ ì ìš©ëœ ê²½ìš°, Limit 1 ì„¤ì •
     //---------------------------------------------------
 
     if ( ( sMyGraph->graph.flag & QMG_INDEXABLE_MIN_MAX_MASK )
@@ -371,7 +371,7 @@ qmgProjection::optimize( qcStatement * aStatement, qmgGraph * aGraph )
     }
 
     //---------------------------------------------------
-    // hash bucket count ¼³Á¤
+    // hash bucket count ì„¤ì •
     //---------------------------------------------------
 
     for ( sQuerySet = sMyGraph->graph.myQuerySet;
@@ -387,7 +387,7 @@ qmgProjection::optimize( qcStatement * aStatement, qmgGraph * aGraph )
         != IDE_SUCCESS );
 
     //---------------------------------------------------
-    // °øÅë ºñ¿ë Á¤º¸ ¼³Á¤
+    // ê³µí†µ ë¹„ìš© ì •ë³´ ì„¤ì •
     //---------------------------------------------------
 
     // recordSize
@@ -433,9 +433,9 @@ qmgProjection::optimize( qcStatement * aStatement, qmgGraph * aGraph )
 
     //---------------------------------------------------
     // Preserved Order
-    //    ÇÏÀ§ÀÇ Preserved Order°¡ Á¸ÀçÇÏ´Â °æ¿ì,
-    //    Preserved OrderÀÇ °¢ Ä®·³¿¡ ´ëÇÏ¿© ÇØ´ç Ä®·³ÀÌ
-    //    target¿¡ Á¸ÀçÇÒ °æ¿ì¿¡¸¸  Preserved Order°¡ Á¸Àç
+    //    í•˜ìœ„ì˜ Preserved Orderê°€ ì¡´ì¬í•˜ëŠ” ê²½ìš°,
+    //    Preserved Orderì˜ ê° ì¹¼ëŸ¼ì— ëŒ€í•˜ì—¬ í•´ë‹¹ ì¹¼ëŸ¼ì´
+    //    targetì— ì¡´ì¬í•  ê²½ìš°ì—ë§Œ  Preserved Orderê°€ ì¡´ì¬
     //---------------------------------------------------
 
     if ( sChildGraph->preservedOrder != NULL )
@@ -459,9 +459,9 @@ qmgProjection::optimize( qcStatement * aStatement, qmgGraph * aGraph )
 
         //---------------------------------------------------
         // BUG-32258
-        // limit ÀıÀÌ Á¸ÀçÇÏ°í,
-        // childÀÇ preserved order directionÀÌ not defined ÀÌ¸é
-        // directionÀ» ¼³Á¤ÇÏµµ·Ï ½ÃÅ²´Ù.
+        // limit ì ˆì´ ì¡´ì¬í•˜ê³ ,
+        // childì˜ preserved order directionì´ not defined ì´ë©´
+        // directionì„ ì„¤ì •í•˜ë„ë¡ ì‹œí‚¨ë‹¤.
         //---------------------------------------------------
 
         if ( sMyGraph->limit != NULL )
@@ -504,16 +504,16 @@ qmgProjection::makePlan( qcStatement * aStatement, const qmgGraph * aParent, qmg
 {
 /***********************************************************************
  *
- * Description : qmgProjectionÀ¸·Î ºÎÅÍ PlanÀ» »ı¼ºÇÑ´Ù.
+ * Description : qmgProjectionìœ¼ë¡œ ë¶€í„° Planì„ ìƒì„±í•œë‹¤.
  *
  * Implementation :
- *    - qmgProjectionÀ¸·Î »ı¼º°¡´ÉÇÑ Plan
+ *    - qmgProjectionìœ¼ë¡œ ìƒì„±ê°€ëŠ¥í•œ Plan
  *
- *        - Top ÀÎ °æ¿ì
+ *        - Top ì¸ ê²½ìš°
  *
  *           [PROJ]
  *
- *        - View Materialization ÀÌ Àû¿ëµÈ °æ¿ì
+ *        - View Materialization ì´ ì ìš©ëœ ê²½ìš°
  *
  *           [VMTR]
  *             |
@@ -521,34 +521,34 @@ qmgProjection::makePlan( qcStatement * aStatement, const qmgGraph * aParent, qmg
  *             |
  *           [PROJ]
  *
- *        - Transform NJ°¡ Àû¿ëµÈ °æ¿ì
+ *        - Transform NJê°€ ì ìš©ëœ ê²½ìš°
  *
  *           [PROJ]
  *
- *        - Store And Search ÃÖÀûÈ­°¡ Àû¿ëµÈ °æ¿ì
+ *        - Store And Search ìµœì í™”ê°€ ì ìš©ëœ ê²½ìš°
  *
- *           1.  Hash ÀúÀå ¹æ½ÄÀÎ °æ¿ì
+ *           1.  Hash ì €ì¥ ë°©ì‹ì¸ ê²½ìš°
  *
  *
  *               [PROJ]
  *                 |
- *               [HASH] : Filter°¡ Æ÷ÇÔµÊ, NOTNULLCHECK option Æ÷ÇÔ.
+ *               [HASH] : Filterê°€ í¬í•¨ë¨, NOTNULLCHECK option í¬í•¨.
  *                 |
  *               [VIEW]
  *                 |
  *               [PROJ]
  *
- *           2.  LMST ÀúÀå ¹æ½ÄÀÎ °æ¿ì
+ *           2.  LMST ì €ì¥ ë°©ì‹ì¸ ê²½ìš°
  *
  *               [PROJ]
  *                 |
- *               [LMST] : Filter°¡ Á¸ÀçÇÏÁö ¾ÊÀ½
+ *               [LMST] : Filterê°€ ì¡´ì¬í•˜ì§€ ì•ŠìŒ
  *                 |
  *               [VIEW]
  *                 |
  *               [PROJ]
  *
- *           3.  STORE OnlyÀÎ °æ¿ì
+ *           3.  STORE Onlyì¸ ê²½ìš°
  *
  *               [PROJ]
  *                 |
@@ -558,7 +558,7 @@ qmgProjection::makePlan( qcStatement * aStatement, const qmgGraph * aParent, qmg
  *                 |
  *               [PROJ]
  *
- *        - SUBQUERY IN KEYRANGE ÃÖÀûÈ­°¡ Àû¿ëµÈ °æ¿ì
+ *        - SUBQUERY IN KEYRANGE ìµœì í™”ê°€ ì ìš©ëœ ê²½ìš°
  *
  *               [PROJ]
  *                 |
@@ -568,11 +568,11 @@ qmgProjection::makePlan( qcStatement * aStatement, const qmgGraph * aParent, qmg
  *                 |
  *               [PROJ]
  *
- *        - SUBQUERY KEYRANGE ÃÖÀûÈ­°¡ Àû¿ëµÈ °æ¿ì
+ *        - SUBQUERY KEYRANGE ìµœì í™”ê°€ ì ìš©ëœ ê²½ìš°
  *
  *               [PROJ]
  *                 |
- *               [SORT] : ÀúÀå¸¸ ÇÔ.
+ *               [SORT] : ì €ì¥ë§Œ í•¨.
  *                 |
  *               [VIEW]
  *                 |
@@ -587,7 +587,7 @@ qmgProjection::makePlan( qcStatement * aStatement, const qmgGraph * aParent, qmg
     IDU_FIT_POINT_FATAL( "qmgProjection::makePlan::__FT__" );
 
     //---------------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //---------------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -596,7 +596,7 @@ qmgProjection::makePlan( qcStatement * aStatement, const qmgGraph * aParent, qmg
     sMyGraph = (qmgPROJ*) aGraph;
 
     //---------------------------
-    // Current CNFÀÇ µî·Ï
+    // Current CNFì˜ ë“±ë¡
     //---------------------------
 
     if ( sMyGraph->graph.myCNF != NULL )
@@ -621,23 +621,23 @@ qmgProjection::makePlan( qcStatement * aStatement, const qmgGraph * aParent, qmg
     else
     {
         /*
-         * QMG_PARALLEL_IMPOSSIBLE_MASK flag ´Â °íÄ¡Áö ¾Ê´Â´Ù.
-         * (»óÀ§¿¡¼­ setting ÇÑ°ÍÀ¸·Î ¾´´Ù)
-         * parent °¡ ¾ø´Ù°í Ç×»ó ÃÖ»óÀ§ÀÎ°Ç ¾Æ´Ï´Ù.
+         * QMG_PARALLEL_IMPOSSIBLE_MASK flag ëŠ” ê³ ì¹˜ì§€ ì•ŠëŠ”ë‹¤.
+         * (ìƒìœ„ì—ì„œ setting í•œê²ƒìœ¼ë¡œ ì“´ë‹¤)
+         * parent ê°€ ì—†ë‹¤ê³  í•­ìƒ ìµœìƒìœ„ì¸ê±´ ì•„ë‹ˆë‹¤.
          */
 
         /* BUG-38410
-         * ÃÖ»óÀ§ plan ÀÌ¹Ç·Î ±âº»°ªÀ» ¼¼ÆÃÇÑ´Ù.
+         * ìµœìƒìœ„ plan ì´ë¯€ë¡œ ê¸°ë³¸ê°’ì„ ì„¸íŒ…í•œë‹¤.
          */
         aGraph->flag &= ~QMG_PLAN_EXEC_REPEATED_MASK;
         aGraph->flag |= QMG_PLAN_EXEC_REPEATED_FALSE;
     }
 
     // BUG-38410
-    // SCAN parallel flag ¸¦ ÀÚ½Ä ³ëµå·Î ¹°·ÁÁØ´Ù.
+    // SCAN parallel flag ë¥¼ ìì‹ ë…¸ë“œë¡œ ë¬¼ë ¤ì¤€ë‹¤.
     aGraph->left->flag  |= (aGraph->flag & QMG_PLAN_EXEC_REPEATED_MASK);
 
-    // INDEXABLE Min-MaxÀÇ ¼³Á¤
+    // INDEXABLE Min-Maxì˜ ì„¤ì •
     if( (sMyGraph->graph.flag & QMG_INDEXABLE_MIN_MAX_MASK ) ==
         QMG_INDEXABLE_MIN_MAX_TRUE )
     {
@@ -653,8 +653,8 @@ qmgProjection::makePlan( qcStatement * aStatement, const qmgGraph * aParent, qmg
     if( (sMyGraph->graph.flag & QMG_PROJ_COMMUNICATION_TOP_PROJ_MASK) ==
         QMG_PROJ_COMMUNICATION_TOP_PROJ_TRUE )
     {
-        // PROJ-2462 Top result CacheÀÎ °æ¿ì ViewMTRÀ» »ı¼ºÈÄ¿¡
-        // ProjectionÀ» »ı¼ºµÈ´Ù.
+        // PROJ-2462 Top result Cacheì¸ ê²½ìš° ViewMTRì„ ìƒì„±í›„ì—
+        // Projectionì„ ìƒì„±ëœë‹¤.
         if ( ( sMyGraph->graph.flag & QMG_PROJ_TOP_RESULT_CACHE_MASK )
              == QMG_PROJ_TOP_RESULT_CACHE_TRUE )
         {
@@ -668,10 +668,10 @@ qmgProjection::makePlan( qcStatement * aStatement, const qmgGraph * aParent, qmg
             sPROJFlag &= ~QMO_MAKEPROJ_TOP_MASK;
             sPROJFlag |= QMO_MAKEPROJ_TOP_FALSE;
 
-            /* ViewMtrÀ» »ı¼ºÇÏµµ·Ï Mask ¼³Á¤ */
+            /* ViewMtrì„ ìƒì„±í•˜ë„ë¡ Mask ì„¤ì • */
             sMyGraph->graph.flag &= ~QMG_PROJ_VIEW_OPT_TIP_VMTR_MASK;
             sMyGraph->graph.flag |= QMG_PROJ_VIEW_OPT_TIP_VMTR_TRUE;
-            /* VMTR·Î ÀüÈ¯µÈ Project GraphÀÇ flag¿¡ Memory ¼³Á¤ */
+            /* VMTRë¡œ ì „í™˜ëœ Project Graphì˜ flagì— Memory ì„¤ì • */
             sMyGraph->graph.flag &= ~QMG_GRAPH_TYPE_MASK;
             sMyGraph->graph.flag |= QMG_GRAPH_TYPE_MEMORY;
 
@@ -702,7 +702,7 @@ qmgProjection::makePlan( qcStatement * aStatement, const qmgGraph * aParent, qmg
         else
         {
             //-----------------------------------------------------
-            // TopÀÎ °æ¿ì
+            // Topì¸ ê²½ìš°
             //-----------------------------------------------------
 
             sPROJFlag &= ~QMO_MAKEPROJ_TOP_MASK;
@@ -712,7 +712,7 @@ qmgProjection::makePlan( qcStatement * aStatement, const qmgGraph * aParent, qmg
             sPROJFlag |= QMO_MAKEPROJ_QUERYSET_TOP_TRUE;
 
             //----------------------------
-            // PROJÀÇ »ı¼º
+            // PROJì˜ ìƒì„±
             //----------------------------
 
             IDE_TEST( makePlan4Proj( aStatement,
@@ -723,7 +723,7 @@ qmgProjection::makePlan( qcStatement * aStatement, const qmgGraph * aParent, qmg
     else
     {
         //-----------------------------------------------------
-        // TopÀÌ ¾Æ´Ñ °æ¿ì
+        // Topì´ ì•„ë‹Œ ê²½ìš°
         //-----------------------------------------------------
 
         if( aParent != NULL )
@@ -735,11 +735,11 @@ qmgProjection::makePlan( qcStatement * aStatement, const qmgGraph * aParent, qmg
             sMyGraph->graph.myPlan = NULL;
         }
 
-        // non-TOP [PROJ] ÀÎ °æ¿ìÀÇ flag setting
+        // non-TOP [PROJ] ì¸ ê²½ìš°ì˜ flag setting
         sPROJFlag &= ~QMO_MAKEPROJ_TOP_MASK;
         sPROJFlag |= QMO_MAKEPROJ_TOP_FALSE;
 
-        // View MaterializationÀÌ Àû¿ë ¿©ºÎ
+        // View Materializationì´ ì ìš© ì—¬ë¶€
         if( ( ( sMyGraph->graph.flag & QMG_PROJ_VIEW_OPT_TIP_VMTR_MASK) ==
               QMG_PROJ_VIEW_OPT_TIP_VMTR_TRUE ) ||
             (  ( sMyGraph->graph.flag & QMG_PROJ_VIEW_OPT_TIP_CMTR_MASK) ==
@@ -751,23 +751,23 @@ qmgProjection::makePlan( qcStatement * aStatement, const qmgGraph * aParent, qmg
         else
         {
             //-----------------------------------------------------
-            // View Optimization TypeÀÌ View MaterializationÀÌ ¾Æ´Ñ°æ¿ì
+            // View Optimization Typeì´ View Materializationì´ ì•„ë‹Œê²½ìš°
             //-----------------------------------------------------
 
-            // Subquery TipÀÇ Àû¿ë
+            // Subquery Tipì˜ ì ìš©
             switch( sMyGraph->subqueryTipFlag & QMG_PROJ_SUBQUERY_TIP_MASK )
             {
                 case QMG_PROJ_SUBQUERY_TIP_NONE:
                     //-----------------------------------------------------
-                    // subquery tipÀÌ ¾ø´Â °æ¿ì
+                    // subquery tipì´ ì—†ëŠ” ê²½ìš°
                     //-----------------------------------------------------
                 case QMG_PROJ_SUBQUERY_TIP_TRANSFORMNJ:
                     //-----------------------------------------------------
-                    // Transform NJ°¡ Àû¿ëµÈ °æ¿ì
+                    // Transform NJê°€ ì ìš©ëœ ê²½ìš°
                     //-----------------------------------------------------
 
                     //----------------------------
-                    // [PROJ]ÀÇ »ı¼º
+                    // [PROJ]ì˜ ìƒì„±
                     //----------------------------
 
                     IDE_TEST( makePlan4Proj( aStatement,
@@ -778,7 +778,7 @@ qmgProjection::makePlan( qcStatement * aStatement, const qmgGraph * aParent, qmg
 
                 case QMG_PROJ_SUBQUERY_TIP_STORENSEARCH:
                     //-----------------------------------------------------
-                    // Store And Search ÃÖÀûÈ­°¡ Àû¿ëµÈ °æ¿ì
+                    // Store And Search ìµœì í™”ê°€ ì ìš©ëœ ê²½ìš°
                     //-----------------------------------------------------
 
                     IDE_TEST ( makePlan4StoreSearch( aStatement,
@@ -791,7 +791,7 @@ qmgProjection::makePlan( qcStatement * aStatement, const qmgGraph * aParent, qmg
                 case QMG_PROJ_SUBQUERY_TIP_IN_KEYRANGE:
 
                     //-----------------------------------------------------
-                    // Subquery IN Keyrange ÃÖÀûÈ­°¡ Àû¿ëµÈ °æ¿ì
+                    // Subquery IN Keyrange ìµœì í™”ê°€ ì ìš©ëœ ê²½ìš°
                     //-----------------------------------------------------
 
                     IDE_TEST ( makePlan4InKeyRange( aStatement,
@@ -804,7 +804,7 @@ qmgProjection::makePlan( qcStatement * aStatement, const qmgGraph * aParent, qmg
                 case QMG_PROJ_SUBQUERY_TIP_KEYRANGE:
 
                     //-----------------------------------------------------
-                    // Subquery Keyrange ÃÖÀûÈ­°¡ Àû¿ëµÈ °æ¿ì
+                    // Subquery Keyrange ìµœì í™”ê°€ ì ìš©ëœ ê²½ìš°
                     //-----------------------------------------------------
 
                     IDE_TEST ( makePlan4KeyRange( aStatement,
@@ -837,7 +837,7 @@ qmgProjection::printGraph( qcStatement  * aStatement,
 /***********************************************************************
  *
  * Description :
- *    Graph¸¦ ±¸¼ºÇÏ´Â °øÅë Á¤º¸¸¦ Ãâ·ÂÇÑ´Ù.
+ *    Graphë¥¼ êµ¬ì„±í•˜ëŠ” ê³µí†µ ì •ë³´ë¥¼ ì¶œë ¥í•œë‹¤.
  *
  *
  * Implementation :
@@ -849,7 +849,7 @@ qmgProjection::printGraph( qcStatement  * aStatement,
     IDU_FIT_POINT_FATAL( "qmgProjection::printGraph::__FT__" );
 
     //-----------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //-----------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -857,7 +857,7 @@ qmgProjection::printGraph( qcStatement  * aStatement,
     IDE_DASSERT( aString != NULL );
 
     //-----------------------------------
-    // GraphÀÇ ½ÃÀÛ Ãâ·Â
+    // Graphì˜ ì‹œì‘ ì¶œë ¥
     //-----------------------------------
 
     if ( aDepth == 0 )
@@ -872,7 +872,7 @@ qmgProjection::printGraph( qcStatement  * aStatement,
     }
 
     //-----------------------------------
-    // Graph °øÅë Á¤º¸ÀÇ Ãâ·Â
+    // Graph ê³µí†µ ì •ë³´ì˜ ì¶œë ¥
     //-----------------------------------
 
     IDE_TEST( qmg::printGraph( aStatement,
@@ -882,12 +882,12 @@ qmgProjection::printGraph( qcStatement  * aStatement,
               != IDE_SUCCESS );
 
     //-----------------------------------
-    // Graph °íÀ¯ Á¤º¸ÀÇ Ãâ·Â
+    // Graph ê³ ìœ  ì •ë³´ì˜ ì¶œë ¥
     //-----------------------------------
 
 
     //-----------------------------------
-    // Child Graph °íÀ¯ Á¤º¸ÀÇ Ãâ·Â
+    // Child Graph ê³ ìœ  ì •ë³´ì˜ ì¶œë ¥
     //-----------------------------------
 
     IDE_TEST( aGraph->left->printGraph( aStatement,
@@ -897,7 +897,7 @@ qmgProjection::printGraph( qcStatement  * aStatement,
               != IDE_SUCCESS );
 
     //-----------------------------------
-    // GraphÀÇ ¸¶Áö¸· Ãâ·Â
+    // Graphì˜ ë§ˆì§€ë§‰ ì¶œë ¥
     //-----------------------------------
 
     if ( aDepth == 0 )
@@ -927,19 +927,19 @@ qmgProjection::makePreservedOrder( qcStatement        * aStatement,
 {
 /***********************************************************************
  *
- * Description : qmgProjectionÀÇ preserved orderÀÇ »ı¼º
+ * Description : qmgProjectionì˜ preserved orderì˜ ìƒì„±
  *
  * Implementation :
  *
- *    (1) Preserved OrderÀÇ °¢ Ä®·³¿¡ ´ëÇÏ¿© ÇØ´ç Ä®·³ÀÌ target¿¡ Á¸ÀçÇÏ¸é
- *        preserved order Á¸Àç,
- *        ¼ø¼­´ë·Î preserved order¸¦ »ı¼ºÇÏ´Ù°¡ ÇÏ³ª¶óµµ ¸¸Á·ÇÏÁö ¾ÊÀ¸¸é Áß´Ü
+ *    (1) Preserved Orderì˜ ê° ì¹¼ëŸ¼ì— ëŒ€í•˜ì—¬ í•´ë‹¹ ì¹¼ëŸ¼ì´ targetì— ì¡´ì¬í•˜ë©´
+ *        preserved order ì¡´ì¬,
+ *        ìˆœì„œëŒ€ë¡œ preserved orderë¥¼ ìƒì„±í•˜ë‹¤ê°€ í•˜ë‚˜ë¼ë„ ë§Œì¡±í•˜ì§€ ì•Šìœ¼ë©´ ì¤‘ë‹¨
  *        ex ) target : i2, i1, i1 + i3
  *             child preserved order : i1, i2, i3
  *             my preserved order : i1, i2
  *
- *    (2) limit ÀıÀÌ Á¸ÀçÇÏ°í preserved orderÀÇ directionÀÌ not defined ÀÎ °æ¿ì,
- *        selectionÀÇ index »ı¼º ¹æÇâ¿¡ ¸Â°Ô directionÀ» ¼³Á¤ÇÏµµ·Ï ÇÑ´Ù.
+ *    (2) limit ì ˆì´ ì¡´ì¬í•˜ê³  preserved orderì˜ directionì´ not defined ì¸ ê²½ìš°,
+ *        selectionì˜ index ìƒì„± ë°©í–¥ì— ë§ê²Œ directionì„ ì„¤ì •í•˜ë„ë¡ í•œë‹¤.
  *        ( BUG-32258 ) 
  *        ex ) SELECT t1.i1
  *             FROM t1, ( SELECT i2 FROM t2 WHERE i1 > 0 limit 3 ) v1
@@ -957,14 +957,14 @@ qmgProjection::makePreservedOrder( qcStatement        * aStatement,
     IDU_FIT_POINT_FATAL( "qmgProjection::makePreservedOrder::__FT__" );
 
     //---------------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //---------------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aChildPreservedOrder != NULL );
 
     //---------------------------------------------------
-    // ±âº» ÃÊ±âÈ­
+    // ê¸°ë³¸ ì´ˆê¸°í™”
     //---------------------------------------------------
 
     sFirstPresOrder   = NULL;
@@ -972,7 +972,7 @@ qmgProjection::makePreservedOrder( qcStatement        * aStatement,
     sExistCol         = ID_FALSE;
 
     //---------------------------------------------------
-    // Child GraphÀÇ Preserved Order¸¦ ÀÌ¿ëÇÑ Order»ı¼º
+    // Child Graphì˜ Preserved Orderë¥¼ ì´ìš©í•œ Orderìƒì„±
     //---------------------------------------------------
 
     for ( sCur = aChildPreservedOrder; sCur != NULL; sCur = sCur->next )
@@ -980,7 +980,7 @@ qmgProjection::makePreservedOrder( qcStatement        * aStatement,
         sExistCol = ID_FALSE;
         for ( sTarget = aTarget; sTarget != NULL; sTarget = sTarget->next )
         {
-            // BUG-38193 targetÀÇ pass node ¸¦ °í·ÁÇØ¾ß ÇÕ´Ï´Ù.
+            // BUG-38193 targetì˜ pass node ë¥¼ ê³ ë ¤í•´ì•¼ í•©ë‹ˆë‹¤.
             if ( sTarget->targetColumn->node.module == &qtc::passModule )
             {
                 sTargetNode = (qtcNode*)(sTarget->targetColumn->node.arguments);
@@ -993,11 +993,11 @@ qmgProjection::makePreservedOrder( qcStatement        * aStatement,
             if ( QTC_IS_COLUMN( aStatement, sTargetNode )
                  == ID_TRUE )
             {
-                // target Ä®·³ÀÌ ¼ø¼öÇÑ Ä®·³ÀÎ °æ¿ì
+                // target ì¹¼ëŸ¼ì´ ìˆœìˆ˜í•œ ì¹¼ëŸ¼ì¸ ê²½ìš°
                 if ( ( sCur->table == sTargetNode->node.table) &&
                      ( sCur->column == sTargetNode->node.column ) )
                 {
-                    // µ¿ÀÏ Ä®·³ÀÎ °æ¿ì
+                    // ë™ì¼ ì¹¼ëŸ¼ì¸ ê²½ìš°
                     IDE_TEST(
                         QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF(qmgPreservedOrder ),
                                                        (void**)&sPreservedOrder )
@@ -1034,12 +1034,12 @@ qmgProjection::makePreservedOrder( qcStatement        * aStatement,
 
         if ( sExistCol == ID_FALSE )
         {
-            // preserved order »ı¼º Áß´Ü
+            // preserved order ìƒì„± ì¤‘ë‹¨
             break;
         }
         else
         {
-            // ´ÙÀ½ preserved order·Î °è¼Ó ÁøÇà
+            // ë‹¤ìŒ preserved orderë¡œ ê³„ì† ì§„í–‰
             // nothing to do
         }
     }
@@ -1066,12 +1066,12 @@ qmgProjection::makeChildPlan( qcStatement * aStatement,
               != IDE_SUCCESS);
 
     // fix BUG-13482
-    // SCAN Limit ÃÖÀûÈ­ Àû¿ë¿¡ µû¸¥ PROJ planÀÇ start value °áÁ¤À¯¹«
+    // SCAN Limit ìµœì í™” ì ìš©ì— ë”°ë¥¸ PROJ planì˜ start value ê²°ì •ìœ ë¬´
     if( aGraph->graph.left->type == QMG_SELECTION )
     {
-        // projection ÇÏÀ§°¡ SCANÀÌ°í,
-        // SCAN limit ÃÖÀûÈ­°¡ Àû¿ëµÈ °æ¿ìÀÌ¸é,
-        // PROJÀÇ limit start value¸¦ 1·Î Á¶Á¤ÇÑ´Ù.
+        // projection í•˜ìœ„ê°€ SCANì´ê³ ,
+        // SCAN limit ìµœì í™”ê°€ ì ìš©ëœ ê²½ìš°ì´ë©´,
+        // PROJì˜ limit start valueë¥¼ 1ë¡œ ì¡°ì •í•œë‹¤.
         if( ((qmgSELT*)(aGraph->graph.left))->limit != NULL )
         {
             qmsLimitI::setStartValue( aGraph->limit, 1 );
@@ -1087,7 +1087,7 @@ qmgProjection::makeChildPlan( qcStatement * aStatement,
     }
 
     //---------------------------------------------------
-    // Process »óÅÂ ¼³Á¤
+    // Process ìƒíƒœ ì„¤ì •
     //---------------------------------------------------
     aGraph->graph.myQuerySet->processPhase = QMS_MAKEPLAN_PROJECT;
 
@@ -1111,7 +1111,7 @@ qmgProjection::makePlan4Proj( qcStatement * aStatement,
     IDU_FIT_POINT_FATAL( "qmgProjection::makePlan4Proj::__FT__" );
 
     //----------------------------
-    // PROJÀÇ »ı¼º
+    // PROJì˜ ìƒì„±
     //----------------------------
     IDE_TEST( qmoOneNonPlan::initPROJ( aStatement ,
                                        aGraph->graph.myQuerySet ,
@@ -1120,10 +1120,10 @@ qmgProjection::makePlan4Proj( qcStatement * aStatement,
               != IDE_SUCCESS);
     aGraph->graph.myPlan = sPROJ;
 
-    // BUG-43493 delay operator¸¦ Ãß°¡ÇØ execution timeÀ» ÁÙÀÎ´Ù.
+    // BUG-43493 delay operatorë¥¼ ì¶”ê°€í•´ execution timeì„ ì¤„ì¸ë‹¤.
     if ( ( aPROJFlag & QMO_MAKEPROJ_TOP_MASK ) == QMO_MAKEPROJ_TOP_TRUE )
     {
-        // hint¸¦ »ç¿ëÇÏ´Â °æ¿ì ¸ğµç materialize°¡´ÉÇÑ operator¿¡ ´ëÇØ delay¸¦ »ı¼ºÇÑ´Ù.
+        // hintë¥¼ ì‚¬ìš©í•˜ëŠ” ê²½ìš° ëª¨ë“  materializeê°€ëŠ¥í•œ operatorì— ëŒ€í•´ delayë¥¼ ìƒì„±í•œë‹¤.
         if ( aGraph->graph.myQuerySet->SFWGH != NULL )
         {
             switch ( aGraph->graph.myQuerySet->SFWGH->hints->delayedExec )
@@ -1165,8 +1165,8 @@ qmgProjection::makePlan4Proj( qcStatement * aStatement,
                                                    aGraph->graph.myPlan ,
                                                    &sDLAY )
                           != IDE_SUCCESS );
-                // ¹Ì¸® ¿¬°áÇÏ¸é ¾Æ·¡ makeChildPlan½Ã parent°¡ QMN_PROJÀÌ ¾Æ´Ï¾î¼­
-                // ¿©·¯°¡Áö·Î ¿Àµ¿ÀÛÇÔ
+                // ë¯¸ë¦¬ ì—°ê²°í•˜ë©´ ì•„ë˜ makeChildPlanì‹œ parentê°€ QMN_PROJì´ ì•„ë‹ˆì–´ì„œ
+                // ì—¬ëŸ¬ê°€ì§€ë¡œ ì˜¤ë™ì‘í•¨
                 //aGraph->graph.myPlan = sDLAY;
             }
             else
@@ -1185,13 +1185,13 @@ qmgProjection::makePlan4Proj( qcStatement * aStatement,
     }
     
     //---------------------------
-    // ÇÏÀ§ PlanÀÇ »ı¼º
+    // í•˜ìœ„ Planì˜ ìƒì„±
     //---------------------------
 
     IDE_TEST( makeChildPlan( aStatement, aGraph ) != IDE_SUCCESS );
 
     //----------------------------
-    // PROJÀÇ »ı¼º
+    // PROJì˜ ìƒì„±
     //----------------------------
 
     if ( sDLAY != NULL )
@@ -1239,11 +1239,11 @@ qmgProjection::makePlan4ViewMtr( qcStatement    * aStatement,
 {
 /***********************************************************************
  *
- * Description : qmgProjectionÀ¸·Î ºÎÅÍ PlanÀ» »ı¼ºÇÑ´Ù.
+ * Description : qmgProjectionìœ¼ë¡œ ë¶€í„° Planì„ ìƒì„±í•œë‹¤.
  *
  * Implementation :
  *
- *        - View Materialization ÀÌ Àû¿ëµÈ °æ¿ì
+ *        - View Materialization ì´ ì ìš©ëœ ê²½ìš°
  *
  *           [VMTR]
  *             |
@@ -1262,17 +1262,17 @@ qmgProjection::makePlan4ViewMtr( qcStatement    * aStatement,
     IDU_FIT_POINT_FATAL( "qmgProjection::makePlan4ViewMtr::__FT__" );
 
     //---------------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //---------------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aGraph != NULL );
 
     //-----------------------------------------------------
-    // - View Optimization TypeÀÌ View MaterializationÀÎ °æ¿ì
-    //   [VMTR] - [VIEW] - [PROJ]ÀÇ »ı¼º
-    // - View Optimization TypeÀÌ ConnectBy MaterializationÀÎ °æ¿ì
-    //   [CMTR] - [VIEW] - [PROJ]ÀÇ »ı¼º
+    // - View Optimization Typeì´ View Materializationì¸ ê²½ìš°
+    //   [VMTR] - [VIEW] - [PROJ]ì˜ ìƒì„±
+    // - View Optimization Typeì´ ConnectBy Materializationì¸ ê²½ìš°
+    //   [CMTR] - [VIEW] - [PROJ]ì˜ ìƒì„±
     //-----------------------------------------------------
 
     if ( ( aGraph->graph.flag & QMG_PROJ_VIEW_OPT_TIP_CMTR_MASK ) ==
@@ -1309,13 +1309,13 @@ qmgProjection::makePlan4ViewMtr( qcStatement    * aStatement,
     aGraph->graph.myPlan = sPROJ;
 
     //---------------------------
-    // ÇÏÀ§ PlanÀÇ »ı¼º
+    // í•˜ìœ„ Planì˜ ìƒì„±
     //---------------------------
 
     IDE_TEST( makeChildPlan( aStatement, aGraph ) != IDE_SUCCESS );
 
     //----------------------------
-    // [PROJ]ÀÇ »ı¼º
+    // [PROJ]ì˜ ìƒì„±
     //----------------------------
 
     IDE_TEST( qmoOneNonPlan::makePROJ( aStatement ,
@@ -1331,7 +1331,7 @@ qmgProjection::makePlan4ViewMtr( qcStatement    * aStatement,
     qmg::setPlanInfo( aStatement, sPROJ, &(aGraph->graph) );
 
     //----------------------------
-    // [VIEW]ÀÇ »ı¼º
+    // [VIEW]ì˜ ìƒì„±
     //----------------------------
 
     sFlag = 0;
@@ -1350,7 +1350,7 @@ qmgProjection::makePlan4ViewMtr( qcStatement    * aStatement,
 
 
     //----------------------------
-    // [VMTR/CMTR]ÀÇ »ı¼º
+    // [VMTR/CMTR]ì˜ ìƒì„±
     //----------------------------
 
     sFlag = 0;
@@ -1367,8 +1367,8 @@ qmgProjection::makePlan4ViewMtr( qcStatement    * aStatement,
         sFlag |= QMO_MAKEVMTR_DISK_TEMP_TABLE;
     }
 
-    // BUG-44288 recursive with ±âÁØ Äõ¸®¿¡ TEMP_TBS_DISK + TOP QUERY¿¡ µ¿ÀÏÇÑ
-    // recursive query name join »ç¿ë µÇ´Â °æ¿ì
+    // BUG-44288 recursive with ê¸°ì¤€ ì¿¼ë¦¬ì— TEMP_TBS_DISK + TOP QUERYì— ë™ì¼í•œ
+    // recursive query name join ì‚¬ìš© ë˜ëŠ” ê²½ìš°
     if ( aGraph->graph.myQuerySet->setOp == QMS_UNION_ALL )
     {
         if ( ( ( aGraph->graph.myQuerySet->left->flag & QMV_QUERYSET_RECURSIVE_VIEW_MASK )
@@ -1443,34 +1443,34 @@ qmgProjection::makePlan4StoreSearch( qcStatement    * aStatement,
 {
 /***********************************************************************
  *
- * Description : qmgProjectionÀ¸·Î ºÎÅÍ PlanÀ» »ı¼ºÇÑ´Ù.
+ * Description : qmgProjectionìœ¼ë¡œ ë¶€í„° Planì„ ìƒì„±í•œë‹¤.
  *
  * Implementation :
  *
- *        - Store And Search ÃÖÀûÈ­°¡ Àû¿ëµÈ °æ¿ì
+ *        - Store And Search ìµœì í™”ê°€ ì ìš©ëœ ê²½ìš°
  *
- *           1.  Hash ÀúÀå ¹æ½ÄÀÎ °æ¿ì
+ *           1.  Hash ì €ì¥ ë°©ì‹ì¸ ê²½ìš°
  *
  *
  *               [PROJ]
  *                 |
- *               [HASH] : Filter°¡ Æ÷ÇÔµÊ, NOTNULLCHECK option Æ÷ÇÔ.
+ *               [HASH] : Filterê°€ í¬í•¨ë¨, NOTNULLCHECK option í¬í•¨.
  *                 |
  *               [VIEW]
  *                 |
  *               [PROJ]
  *
- *           2.  LMST ÀúÀå ¹æ½ÄÀÎ °æ¿ì
+ *           2.  LMST ì €ì¥ ë°©ì‹ì¸ ê²½ìš°
  *
  *               [PROJ]
  *                 |
- *               [LMST] : Filter°¡ Á¸ÀçÇÏÁö ¾ÊÀ½
+ *               [LMST] : Filterê°€ ì¡´ì¬í•˜ì§€ ì•ŠìŒ
  *                 |
  *               [VIEW]
  *                 |
  *               [PROJ]
  *
- *           3.  STORE OnlyÀÎ °æ¿ì
+ *           3.  STORE Onlyì¸ ê²½ìš°
  *
  *               [PROJ]
  *                 |
@@ -1493,14 +1493,14 @@ qmgProjection::makePlan4StoreSearch( qcStatement    * aStatement,
     IDU_FIT_POINT_FATAL( "qmgProjection::makePlan4StoreSearch::__FT__" );
 
     //---------------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //---------------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aGraph != NULL );
 
     //----------------------------
-    // Top-down »ı¼º
+    // Top-down ìƒì„±
     //----------------------------
 
     IDE_TEST( qmoOneNonPlan::initPROJ( aStatement,
@@ -1558,18 +1558,18 @@ qmgProjection::makePlan4StoreSearch( qcStatement    * aStatement,
     aGraph->graph.myPlan = sInnerPROJ;
 
     //---------------------------
-    // ÇÏÀ§ PlanÀÇ »ı¼º
+    // í•˜ìœ„ Planì˜ ìƒì„±
     //---------------------------
 
     IDE_TEST( makeChildPlan( aStatement, aGraph ) != IDE_SUCCESS );
 
     //----------------------------
-    // Bottom-up »ı¼º
+    // Bottom-up ìƒì„±
     //----------------------------
 
     //----------------------------
-    // [PROJ]ÀÇ »ı¼º
-    // limit¸¦ °í·ÁÇÑ´Ù.
+    // [PROJ]ì˜ ìƒì„±
+    // limitë¥¼ ê³ ë ¤í•œë‹¤.
     //----------------------------
 
     IDE_TEST( qmoOneNonPlan::makePROJ( aStatement ,
@@ -1585,7 +1585,7 @@ qmgProjection::makePlan4StoreSearch( qcStatement    * aStatement,
     qmg::setPlanInfo( aStatement, sInnerPROJ, &(aGraph->graph) );
 
     //----------------------------
-    // [VIEW]ÀÇ »ı¼º
+    // [VIEW]ì˜ ìƒì„±
     //----------------------------
 
     sFlag = 0;
@@ -1604,20 +1604,20 @@ qmgProjection::makePlan4StoreSearch( qcStatement    * aStatement,
 
 
     //-----------------------------------------------------
-    // ÀúÀå ¹æ½ÄÀÇ ¼±ÅÃ
+    // ì €ì¥ ë°©ì‹ì˜ ì„ íƒ
     //-----------------------------------------------------
     switch( aGraph->subqueryTipFlag & QMG_PROJ_SUBQUERY_STORENSEARCH_MASK )
     {
         case QMG_PROJ_SUBQUERY_STORENSEARCH_HASH:
 
             //-----------------------------
-            // Hash ÀúÀå ¹æ½ÄÀÎ °æ¿ì
+            // Hash ì €ì¥ ë°©ì‹ì¸ ê²½ìš°
             //-----------------------------
 
             if( aGraph->storeNSearchPred != NULL )
             {
                 // To Fix PR-8019
-                // Key Range »ı¼ºÀ» À§ÇØ¼­´Â DNFÇüÅÂ·Î º¯È¯ÇÏ¿©¾ß ÇÑ´Ù.
+                // Key Range ìƒì„±ì„ ìœ„í•´ì„œëŠ” DNFí˜•íƒœë¡œ ë³€í™˜í•˜ì—¬ì•¼ í•œë‹¤.
                 IDE_TEST(
                     qmoNormalForm::normalizeDNF( aStatement ,
                                                  aGraph->storeNSearchPred ,
@@ -1633,8 +1633,8 @@ qmgProjection::makePlan4StoreSearch( qcStatement    * aStatement,
             }
 
             //----------------------------
-            // [HASH]ÀÇ »ı¼º
-            // Temp TableÀÇ °³¼ö´Â 1°³
+            // [HASH]ì˜ ìƒì„±
+            // Temp Tableì˜ ê°œìˆ˜ëŠ” 1ê°œ
             //----------------------------
 
             sFlag = 0;
@@ -1642,12 +1642,12 @@ qmgProjection::makePlan4StoreSearch( qcStatement    * aStatement,
             sFlag |= QMO_MAKEHASH_STORE_AND_SEARCH;
 
             //----------------------------
-            // Temp TableÀÇ »ı¼º Á¾·ù °áÁ¤
-            // - Graph´Â Hint¿¡ µû¶ó Table Type (memory or disk) À» °®°í ÀÖ´Ù.
-            //   Plan ¿ª½Ã Table TypeÁ¤º¸¸¦ Æ÷ÇÔÇÏ°í ÀÖÀ¸¸ç,
-            //   ÀÌ´Â ÇÏÀ§ Á¤º¸¸¦ ORÇÏ¿© °¡Áö°Ô µÈ´Ù.
-            //   (disk°¡ ¿ì¼±¼øÀ§) µû¶ó¼­, ÀÌÁ¤º¸¿¡ GraphÀÇ
-            //   Á¤º¸¸¦ Ç¥ÇöÇØÁÖµµ·Ï ÇÑ´Ù.
+            // Temp Tableì˜ ìƒì„± ì¢…ë¥˜ ê²°ì •
+            // - GraphëŠ” Hintì— ë”°ë¼ Table Type (memory or disk) ì„ ê°–ê³  ìˆë‹¤.
+            //   Plan ì—­ì‹œ Table Typeì •ë³´ë¥¼ í¬í•¨í•˜ê³  ìˆìœ¼ë©°,
+            //   ì´ëŠ” í•˜ìœ„ ì •ë³´ë¥¼ ORí•˜ì—¬ ê°€ì§€ê²Œ ëœë‹¤.
+            //   (diskê°€ ìš°ì„ ìˆœìœ„) ë”°ë¼ì„œ, ì´ì •ë³´ì— Graphì˜
+            //   ì •ë³´ë¥¼ í‘œí˜„í•´ì£¼ë„ë¡ í•œë‹¤.
             //----------------------------
 
             if( ( aGraph->graph.flag & QMG_GRAPH_TYPE_MASK) ==
@@ -1662,7 +1662,7 @@ qmgProjection::makePlan4StoreSearch( qcStatement    * aStatement,
                 sFlag |= QMO_MAKEHASH_DISK_TEMP_TABLE;
             }
 
-            // Not null check¿¡ ´ëÇÑ flag
+            // Not null checkì— ëŒ€í•œ flag
             // fix BUG-8936
             if ( ( aGraph->subqueryTipFlag &
                    QMG_PROJ_SUBQUERY_HASH_NOTNULLCHECK_MASK) ==
@@ -1695,12 +1695,12 @@ qmgProjection::makePlan4StoreSearch( qcStatement    * aStatement,
 
         case QMG_PROJ_SUBQUERY_STORENSEARCH_LMST:
             //-----------------------------
-            // LMST ÀúÀå ¹æ½ÄÀÎ °æ¿ì
+            // LMST ì €ì¥ ë°©ì‹ì¸ ê²½ìš°
             //-----------------------------
 
             //----------------------------
-            // [LMST]ÀÇ »ı¼º
-            // limiRowCount´Â 2°¡ µÈ´Ù
+            // [LMST]ì˜ ìƒì„±
+            // limiRowCountëŠ” 2ê°€ ëœë‹¤
             //----------------------------
             sFlag = 0;
             sFlag &= ~QMO_MAKELMST_METHOD_MASK;
@@ -1720,19 +1720,19 @@ qmgProjection::makePlan4StoreSearch( qcStatement    * aStatement,
         case QMG_PROJ_SUBQUERY_STORENSEARCH_STOREONLY:
 
             //-----------------------------
-            // Store Only ÀúÀå ¹æ½ÄÀÎ °æ¿ì
-            // SORT³ëµåÀÇ »ı¼º
+            // Store Only ì €ì¥ ë°©ì‹ì¸ ê²½ìš°
+            // SORTë…¸ë“œì˜ ìƒì„±
             //-----------------------------
 
             //----------------------------
-            // [SORT]ÀÇ »ı¼º
+            // [SORT]ì˜ ìƒì„±
             //----------------------------
 
             sFlag = 0;
             sFlag &= ~QMO_MAKESORT_METHOD_MASK;
             sFlag |= QMO_MAKESORT_STORE_AND_SEARCH;
 
-            //Temp TableÀÇ »ı¼º Á¾·ù °áÁ¤
+            //Temp Tableì˜ ìƒì„± ì¢…ë¥˜ ê²°ì •
             if( ( aGraph->graph.flag & QMG_GRAPH_TYPE_MASK ) ==
                 QMG_GRAPH_TYPE_MEMORY )
             {
@@ -1764,7 +1764,7 @@ qmgProjection::makePlan4StoreSearch( qcStatement    * aStatement,
     }
 
     //----------------------------
-    // [PROJ]ÀÇ »ı¼º
+    // [PROJ]ì˜ ìƒì„±
     //----------------------------
 
     aPROJFlag &= ~QMO_MAKEPROJ_QUERYSET_TOP_MASK;
@@ -1796,11 +1796,11 @@ qmgProjection::makePlan4InKeyRange( qcStatement * aStatement,
 {
 /***********************************************************************
  *
- * Description : qmgProjectionÀ¸·Î ºÎÅÍ PlanÀ» »ı¼ºÇÑ´Ù.
+ * Description : qmgProjectionìœ¼ë¡œ ë¶€í„° Planì„ ìƒì„±í•œë‹¤.
  *
  * Implementation :
  *
- *        - SUBQUERY IN KEYRANGE ÃÖÀûÈ­°¡ Àû¿ëµÈ °æ¿ì
+ *        - SUBQUERY IN KEYRANGE ìµœì í™”ê°€ ì ìš©ëœ ê²½ìš°
  *
  *               [PROJ]
  *                 |
@@ -1821,14 +1821,14 @@ qmgProjection::makePlan4InKeyRange( qcStatement * aStatement,
     IDU_FIT_POINT_FATAL( "qmgProjection::makePlan4InKeyRange::__FT__" );
 
     //---------------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //---------------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aGraph != NULL );
 
     //----------------------------
-    // Top-down »ı¼º
+    // Top-down ìƒì„±
     //----------------------------
 
     IDE_TEST( qmoOneNonPlan::initPROJ( aStatement,
@@ -1857,22 +1857,22 @@ qmgProjection::makePlan4InKeyRange( qcStatement * aStatement,
     aGraph->graph.myPlan = sInnerPROJ;
 
     //---------------------------
-    // ÇÏÀ§ PlanÀÇ »ı¼º
+    // í•˜ìœ„ Planì˜ ìƒì„±
     //---------------------------
 
     IDE_TEST( makeChildPlan( aStatement, aGraph ) != IDE_SUCCESS );
 
     //----------------------------
-    // Bottom-up »ı¼º
+    // Bottom-up ìƒì„±
     //----------------------------
 
     //-----------------------------------------------------
-    // Subquery IN Keyrange ÃÖÀûÈ­°¡ Àû¿ëµÈ °æ¿ì
+    // Subquery IN Keyrange ìµœì í™”ê°€ ì ìš©ëœ ê²½ìš°
     // [PROJ] - [HSDS] - [VIEW] - [PROJ]
     //-----------------------------------------------------
 
     //----------------------------
-    // [PROJ]ÀÇ »ı¼º
+    // [PROJ]ì˜ ìƒì„±
     //----------------------------
 
     IDE_TEST( qmoOneNonPlan::makePROJ( aStatement,
@@ -1887,7 +1887,7 @@ qmgProjection::makePlan4InKeyRange( qcStatement * aStatement,
     qmg::setPlanInfo( aStatement, sInnerPROJ, &(aGraph->graph) );
 
     //----------------------------
-    // [VIEW]ÀÇ »ı¼º
+    // [VIEW]ì˜ ìƒì„±
     //----------------------------
     sFlag = 0;
     sFlag &= ~QMO_MAKEVIEW_FROM_MASK;
@@ -1904,14 +1904,14 @@ qmgProjection::makePlan4InKeyRange( qcStatement * aStatement,
     qmg::setPlanInfo( aStatement, sVIEW, &(aGraph->graph) );
 
     //----------------------------
-    // [HSDS]ÀÇ »ı¼º
+    // [HSDS]ì˜ ìƒì„±
     //----------------------------
 
     sFlag = 0;
     sFlag &= ~QMO_MAKEHSDS_METHOD_MASK;
     sFlag |= QMO_MAKEHSDS_IN_SUBQUERY_KEYRANGE;
 
-    //Temp TableÀÇ »ı¼º Á¾·ù °áÁ¤
+    //Temp Tableì˜ ìƒì„± ì¢…ë¥˜ ê²°ì •
     if( (aGraph->graph.flag & QMG_GRAPH_TYPE_MASK) ==
         QMG_GRAPH_TYPE_MEMORY )
     {
@@ -1935,7 +1935,7 @@ qmgProjection::makePlan4InKeyRange( qcStatement * aStatement,
     qmg::setPlanInfo( aStatement, sHSDS, &(aGraph->graph) );
 
     //----------------------------
-    // [PROJ]ÀÇ »ı¼º
+    // [PROJ]ì˜ ìƒì„±
     //----------------------------
 
     aPROJFlag &= ~QMO_MAKEPROJ_QUERYSET_TOP_MASK;
@@ -1968,15 +1968,15 @@ qmgProjection::makePlan4KeyRange( qcStatement * aStatement,
 {
 /***********************************************************************
  *
- * Description : qmgProjectionÀ¸·Î ºÎÅÍ PlanÀ» »ı¼ºÇÑ´Ù.
+ * Description : qmgProjectionìœ¼ë¡œ ë¶€í„° Planì„ ìƒì„±í•œë‹¤.
  *
  * Implementation :
  *
- *        - SUBQUERY KEYRANGE ÃÖÀûÈ­°¡ Àû¿ëµÈ °æ¿ì
+ *        - SUBQUERY KEYRANGE ìµœì í™”ê°€ ì ìš©ëœ ê²½ìš°
  *
  *               [PROJ]
  *                 |
- *               [SORT] : ÀúÀå¸¸ ÇÔ.
+ *               [SORT] : ì €ì¥ë§Œ í•¨.
  *                 |
  *               [VIEW]
  *                 |
@@ -1993,14 +1993,14 @@ qmgProjection::makePlan4KeyRange( qcStatement * aStatement,
     IDU_FIT_POINT_FATAL( "qmgProjection::makePlan4KeyRange::__FT__" );
 
     //---------------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //---------------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aGraph != NULL );
 
     //----------------------------
-    // Top-down »ı¼º
+    // Top-down ìƒì„±
     //----------------------------
 
     IDE_TEST( qmoOneNonPlan::initPROJ( aStatement,
@@ -2028,22 +2028,22 @@ qmgProjection::makePlan4KeyRange( qcStatement * aStatement,
     aGraph->graph.myPlan = sInnerPROJ;
 
     //---------------------------
-    // ÇÏÀ§ PlanÀÇ »ı¼º
+    // í•˜ìœ„ Planì˜ ìƒì„±
     //---------------------------
 
     IDE_TEST( makeChildPlan( aStatement, aGraph ) != IDE_SUCCESS );
 
     //----------------------------
-    // Bottom-up »ı¼º
+    // Bottom-up ìƒì„±
     //----------------------------
 
     //-----------------------------------------------------
-    // Subquery Keyrange ÃÖÀûÈ­°¡ Àû¿ëµÈ °æ¿ì
+    // Subquery Keyrange ìµœì í™”ê°€ ì ìš©ëœ ê²½ìš°
     // [PROJ] - [SORT] - [VIEW] - [PROJ]
     //-----------------------------------------------------
 
     //----------------------------
-    // [PROJ]ÀÇ »ı¼º
+    // [PROJ]ì˜ ìƒì„±
     //----------------------------
     IDE_TEST( qmoOneNonPlan::makePROJ( aStatement,
                                        aGraph->graph.myQuerySet,
@@ -2057,7 +2057,7 @@ qmgProjection::makePlan4KeyRange( qcStatement * aStatement,
     qmg::setPlanInfo( aStatement, sInnerPROJ, &(aGraph->graph) );
 
     //----------------------------
-    // [VIEW]ÀÇ »ı¼º
+    // [VIEW]ì˜ ìƒì„±
     //----------------------------
     sFlag = 0;
     sFlag &= ~QMO_MAKEVIEW_FROM_MASK;
@@ -2074,14 +2074,14 @@ qmgProjection::makePlan4KeyRange( qcStatement * aStatement,
     qmg::setPlanInfo( aStatement, sVIEW, &(aGraph->graph) );
 
     //----------------------------
-    // [SORT]ÀÇ »ı¼º
+    // [SORT]ì˜ ìƒì„±
     //----------------------------
 
     sFlag = 0;
     sFlag &= ~QMO_MAKESORT_METHOD_MASK;
     sFlag |= QMO_MAKESORT_STORE_AND_SEARCH;
 
-    //Temp TableÀÇ »ı¼º Á¾·ù °áÁ¤
+    //Temp Tableì˜ ìƒì„± ì¢…ë¥˜ ê²°ì •
     if( ( aGraph->graph.flag & QMG_GRAPH_TYPE_MASK) ==
         QMG_GRAPH_TYPE_MEMORY )
     {
@@ -2106,7 +2106,7 @@ qmgProjection::makePlan4KeyRange( qcStatement * aStatement,
     qmg::setPlanInfo( aStatement, sSORT, &(aGraph->graph) );
 
     //----------------------------
-    // [PROJ]ÀÇ »ı¼º
+    // [PROJ]ì˜ ìƒì„±
     //----------------------------
 
     aPROJFlag &= ~QMO_MAKEPROJ_QUERYSET_TOP_MASK;
@@ -2135,11 +2135,11 @@ qmgProjection::finalizePreservedOrder( qmgGraph * aGraph )
 {
 /***********************************************************************
  *
- *  Description : Projection graph´Â child graphÀÇ Preserved order¸¦ ±×´ë·Î µû¸¥´Ù.
- *                directionµµ child graphÀÇ °ÍÀ» º¹»çÇÑ´Ù.
+ *  Description : Projection graphëŠ” child graphì˜ Preserved orderë¥¼ ê·¸ëŒ€ë¡œ ë”°ë¥¸ë‹¤.
+ *                directionë„ child graphì˜ ê²ƒì„ ë³µì‚¬í•œë‹¤.
  *
  *  Implementation :
- *     Child graphÀÇ Preserved order directionÀ» º¹»çÇÑ´Ù.
+ *     Child graphì˜ Preserved order directionì„ ë³µì‚¬í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -2156,7 +2156,7 @@ qmgProjection::finalizePreservedOrder( qmgGraph * aGraph )
 
     if ( sIsSamePrevOrderWithChild == ID_TRUE )
     {
-        // Child graphÀÇ Preserved order directionÀ» º¹»çÇÑ´Ù.
+        // Child graphì˜ Preserved order directionì„ ë³µì‚¬í•œë‹¤.
         IDE_TEST( qmg::copyPreservedOrderDirection(
                       aGraph->preservedOrder,
                       aGraph->left->preservedOrder )
@@ -2164,8 +2164,8 @@ qmgProjection::finalizePreservedOrder( qmgGraph * aGraph )
     }
     else
     {
-        // ProjectionÀº preserved order¸¦ »ı¼ºÇÒ ¼ö ¾ø´Â graphÀÌ¹Ç·Î
-        // ÇÏÀ§¿Í preserved order°¡ ´Ù¸¦¼ö ¾ø´Ù.
+        // Projectionì€ preserved orderë¥¼ ìƒì„±í•  ìˆ˜ ì—†ëŠ” graphì´ë¯€ë¡œ
+        // í•˜ìœ„ì™€ preserved orderê°€ ë‹¤ë¥¼ìˆ˜ ì—†ë‹¤.
         IDE_DASSERT(0);
     }
 

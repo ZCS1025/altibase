@@ -146,10 +146,10 @@ acp_sint32_t aciConvConvertMbToWc4Cp932ext( void         * aSrc,
 /***********************************************************************
  *
  * Description :
- *     PROJ-2590 [±â´É¼º] CP932 database character set Áö¿ø
+ *     PROJ-2590 [ê¸°ëŠ¥ì„±] CP932 database character set ì§€ì›
  *
  * Implementation :
- *     1) CP932EXT ¿¡ Àü´Ş
+ *     1) CP932EXT ì— ì „ë‹¬
  *
  ***********************************************************************/
 
@@ -739,10 +739,10 @@ acp_sint32_t aciConvConvertWcToMb4Cp932ext( void         * aSrc,
 /***********************************************************************
  *
  * Description :
- *     PROJ-2590 [±â´É¼º] CP932 database character set Áö¿ø
+ *     PROJ-2590 [ê¸°ëŠ¥ì„±] CP932 database character set ì§€ì›
  *
  * Implementation :
- *     1) CP932EXT ÀÇ º¯È¯¹æ¾ÈÀ» Àû¿ë
+ *     1) CP932EXT ì˜ ë³€í™˜ë°©ì•ˆì„ ì ìš©
  *
  ***********************************************************************/
 

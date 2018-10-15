@@ -141,25 +141,25 @@ private:
 private:
     smcTableBackupFile mFile;   //Backup File
     UChar*             mRestoreBuffer; //buffer
-    ULong              mOffset; //ÀüÃ¼ÆÄÀÏ¿¡¼­ read, write offset
-    UInt               mRestoreBufferSize; //ÇÒ´çµÈ ¹öÆÛÀÇ Å©±â.
-    smcTableHeader    *mTableHeader; //BackupFile¿¡ ÀúÀåÇÒ, ÀúÀåµÈ
-                                     //Å×ÀÌºí Çì´õ
+    ULong              mOffset; //ì „ì²´íŒŒì¼ì—ì„œ read, write offset
+    UInt               mRestoreBufferSize; //í• ë‹¹ëœ ë²„í¼ì˜ í¬ê¸°.
+    smcTableHeader    *mTableHeader; //BackupFileì— ì €ì¥í• , ì €ì¥ëœ
+                                     //í…Œì´ë¸” í—¤ë”
     smiColumn        **mArrColumn;
 };
 
 /***********************************************************************
- * Description : File¿¡ µ¥ÀÌÅ¸¸¦ ±â·ÏÇÑ´Ù.
+ * Description : Fileì— ë°ì´íƒ€ë¥¼ ê¸°ë¡í•œë‹¤.
  *
- * aBuffer - [IN] ¹öÆÛÀÇ Å©±â.
- * aSize   - [IN] WriteÇÒ µ¥ÀÌÅ¸ÀÇ Å©±â.
+ * aBuffer - [IN] ë²„í¼ì˜ í¬ê¸°.
+ * aSize   - [IN] Writeí•  ë°ì´íƒ€ì˜ í¬ê¸°.
  ***********************************************************************/
 IDE_RC smiTableBackup::writeToBackupFile(void *aBuffer, UInt aSize)
 {
-    /* BUG-15751: NULL Row¸¦ ±â·ÏÇÏ´Ù ¼­¹ö»ç¸Á. ¿Ö³ÄÇÏ¸é VarcharÀÇ Null Value
-       ´Â ±æÀÌ°¡ 0ÀÌ¾î¼­ smcTableBackupFileÀÇ write¿¡¼­ ±æÀÌ°¡ 0ÀÌ»óÀÎ°ÍÀ»
-       CheckÇÏ°í ÀÖ¾î¼­ ±â·ÏÇÒ µ¥ÀÌÅ¸ÀÇ ±æÀÌ°¡ 0ÀÌ¸é IDE_ASSERT¿¡¼­ ¼­¹ö°¡
-       Á×½À´Ï´Ù.*/
+    /* BUG-15751: NULL Rowë¥¼ ê¸°ë¡í•˜ë‹¤ ì„œë²„ì‚¬ë§. ì™œëƒí•˜ë©´ Varcharì˜ Null Value
+       ëŠ” ê¸¸ì´ê°€ 0ì´ì–´ì„œ smcTableBackupFileì˜ writeì—ì„œ ê¸¸ì´ê°€ 0ì´ìƒì¸ê²ƒì„
+       Checkí•˜ê³  ìˆì–´ì„œ ê¸°ë¡í•  ë°ì´íƒ€ì˜ ê¸¸ì´ê°€ 0ì´ë©´ IDE_ASSERTì—ì„œ ì„œë²„ê°€
+       ì£½ìŠµë‹ˆë‹¤.*/
     if(aSize > 0 )
     {
         while (1)
@@ -182,8 +182,8 @@ IDE_RC smiTableBackup::writeToBackupFile(void *aBuffer, UInt aSize)
 }
 
 /***********************************************************************
- * Description : File¿¡ µ¥ÀÌÅ¸¸¦ ±â·ÏÇÏ±âÀ§ÇØ FileÀ» openÇÏ°í mOffsetÀ»
- *               ÃÊ±âÈ­ÇÑ´Ù.
+ * Description : Fileì— ë°ì´íƒ€ë¥¼ ê¸°ë¡í•˜ê¸°ìœ„í•´ Fileì„ opení•˜ê³  mOffsetì„
+ *               ì´ˆê¸°í™”í•œë‹¤.
  *
  * aIsWrite - [IN] write: ID_TRUE, read:ID_FALSE
  ***********************************************************************/
@@ -200,7 +200,7 @@ IDE_RC smiTableBackup::prepareAccessFile(idBool aIsWrite)
 }
 
 /***********************************************************************
- * Description : File close¸¦ ¼öÇàÇÑ´Ù.
+ * Description : File closeë¥¼ ìˆ˜í–‰í•œë‹¤.
  ***********************************************************************/
 IDE_RC smiTableBackup::finishAccessFile()
 {
@@ -214,16 +214,16 @@ IDE_RC smiTableBackup::finishAccessFile()
 }
 
 /***********************************************************************
- * Description : aBufferSizeÅ©±â¸¸Å­ÀÇ ¹öÆÛ¸¦ ÇÒ´çÇÑ´Ù.
+ * Description : aBufferSizeí¬ê¸°ë§Œí¼ì˜ ë²„í¼ë¥¼ í• ë‹¹í•œë‹¤.
  *
- * aBufferSize - [IN] ÇÒ´ç¹ŞÀ» ¹öÆÛÀÇ Å©±â.
+ * aBufferSize - [IN] í• ë‹¹ë°›ì„ ë²„í¼ì˜ í¬ê¸°.
  ***********************************************************************/
 IDE_RC smiTableBackup::initBuffer(UInt aBufferSize)
 {
     IDE_ASSERT(mRestoreBuffer == NULL);
 
     //BUG-25640
-    //Variable ¶Ç´Â Lob Ä®·³¸¸ Á¸ÀçÇÏ¸ç, °ªÀÌ NullÀÏ °æ¿ì, RowÀÇ Value¸¸ ÀúÀåÇÏ´Â mRestoreBuffer ¶ÇÇÑ NullÀÏ ¼ö ÀÖ´Ù.
+    //Variable ë˜ëŠ” Lob ì¹¼ëŸ¼ë§Œ ì¡´ì¬í•˜ë©°, ê°’ì´ Nullì¼ ê²½ìš°, Rowì˜ Valueë§Œ ì €ì¥í•˜ëŠ” mRestoreBuffer ë˜í•œ Nullì¼ ìˆ˜ ìˆë‹¤.
     if( aBufferSize != 0 )
     {
         IDE_TEST(iduMemMgr::calloc(IDU_MEM_SM_SMC,
@@ -242,13 +242,13 @@ IDE_RC smiTableBackup::initBuffer(UInt aBufferSize)
 }
 
 /***********************************************************************
- * Description : ÇÒ´ç¹ŞÀº Buffer¸¦ FreeÇÑ´Ù.
+ * Description : í• ë‹¹ë°›ì€ Bufferë¥¼ Freeí•œë‹¤.
  *
  ***********************************************************************/
 IDE_RC smiTableBackup::destBuffer()
 {
     //BUG-25640
-    //Variable ¶Ç´Â Lob Ä®·³¸¸ Á¸ÀçÇÏ¸ç, °ªÀÌ NullÀÏ °æ¿ì, RowÀÇ Value¸¸ ÀúÀåÇÏ´Â mRestoreBuffer ¶ÇÇÑ NullÀÏ ¼ö ÀÖ´Ù.
+    //Variable ë˜ëŠ” Lob ì¹¼ëŸ¼ë§Œ ì¡´ì¬í•˜ë©°, ê°’ì´ Nullì¼ ê²½ìš°, Rowì˜ Valueë§Œ ì €ì¥í•˜ëŠ” mRestoreBuffer ë˜í•œ Nullì¼ ìˆ˜ ìˆë‹¤.
     if( mRestoreBuffer != NULL )
     {
         IDE_TEST(iduMemMgr::free(mRestoreBuffer) != IDE_SUCCESS);

@@ -169,7 +169,7 @@ static IDE_RC startupTimer(idvResource *aRsc)
     IDE_TEST(aRsc->mTimerThread.start() != IDE_SUCCESS);
     IDE_TEST(aRsc->mTimerThread.waitToStart(0) != IDE_SUCCESS);
 
-    // mClockÀÌ ÃÊ±âÈ­µÉ¶§±îÁö ´ë±â
+    // mClockì´ ì´ˆê¸°í™”ë ë•Œê¹Œì§€ ëŒ€ê¸°
     aRsc->mTimerThread.waitServiceAvail();
     
     return IDE_SUCCESS;

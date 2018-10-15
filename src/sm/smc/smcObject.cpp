@@ -58,15 +58,15 @@ IDE_RC smcObject::createObject( void*              aTrans,
     SM_SET_SCN_INFINITE_AND_TID( &sInfiniteSCN, sTID );
     
     /* ---------------------------------------
-     * [1] Catalog Table¿¡ ´ëÇÏ¿© IX lock ¿äÃ»
+     * [1] Catalog Tableì— ëŒ€í•˜ì—¬ IX lock ìš”ì²­
      * --------------------------------------*/
     IDE_TEST( smLayerCallback::lockTableModeIX( aTrans,
                                                 SMC_TABLE_LOCK( SMC_CAT_TABLE ) )
               != IDE_SUCCESS );
 
     /* ------------------------------------------
-     * [2] »õ·Î¿î object¸¦ À§ÇÑ Table Header¿µ¿ªÀ»
-     * Catalog Table¿¡¼­ ÇÒ´ç¹Þ´Â´Ù.
+     * [2] ìƒˆë¡œìš´ objectë¥¼ ìœ„í•œ Table Headerì˜ì—­ì„
+     * Catalog Tableì—ì„œ í• ë‹¹ë°›ëŠ”ë‹¤.
      * ------------------------------------------*/
     IDE_TEST( smpFixedPageList::allocSlot( aTrans,
                                            SMI_ID_TABLESPACE_SYSTEM_MEMORY_DIC,
@@ -85,14 +85,14 @@ IDE_RC smcObject::createObject( void*              aTrans,
                            SMP_SLOT_GET_OFFSET( (smpSlotHeader*)sNewFixRowPtr ) );
     
     /* ----------------------------------------------------------------
-     * [3] »õ·Î¿î Object¸¦ À§ÇÑ Table Header¿µ¿ªÀ»
-     * Catalog Table¿¡¼­ ÇÒ´ç¹Þ¾ÒÀ¸¹Ç·Î, New Version List¿¡ Ãß°¡ÇÑ´Ù.
+     * [3] ìƒˆë¡œìš´ Objectë¥¼ ìœ„í•œ Table Headerì˜ì—­ì„
+     * Catalog Tableì—ì„œ í• ë‹¹ë°›ì•˜ìœ¼ë¯€ë¡œ, New Version Listì— ì¶”ê°€í•œë‹¤.
      * ----------------------------------------------------------------*/
     sHeaderPageID = SM_MAKE_PID(sFixOid);
     sState        = 1;
     sHeader       = (smcTableHeader*)(sNewFixRowPtr + ID_SIZEOF(smpSlotHeader));
 
-    /* »ç¿ëÇÏÁö ¾Ê´Â ¼Ó¼ºµé ÃÊ±âÈ­¸¸ ÇØÁØ´Ù. */
+    /* ì‚¬ìš©í•˜ì§€ ì•ŠëŠ” ì†ì„±ë“¤ ì´ˆê¸°í™”ë§Œ í•´ì¤€ë‹¤. */
     idlOS::memset( &sSegmentAttr, 0x00, ID_SIZEOF(smiSegAttr));
     idlOS::memset( &sSegmentStoAttr, 0x00, ID_SIZEOF(smiSegStorageAttr));
 
@@ -109,7 +109,7 @@ IDE_RC smcObject::createObject( void*              aTrans,
             SMI_TABLE_LOCK_ESCALATION_DISABLE;
     }
     
-    /* stack º¯¼ö¿¡ table header °ª ÃÊ±âÈ­ */
+    /* stack ë³€ìˆ˜ì— table header ê°’ ì´ˆê¸°í™” */
     IDE_TEST( smcTable::initTableHeader( aTrans,
                                          SMI_ID_TABLESPACE_SYSTEM_MEMORY_DATA,
                                          0,
@@ -127,7 +127,7 @@ IDE_RC smcObject::createObject( void*              aTrans,
                                          &sHeaderArg )
               != IDE_SUCCESS );
 
-    /* ½ÇÁ¦ table header °ªÀ» ¼³Á¤ */
+    /* ì‹¤ì œ table header ê°’ì„ ì„¤ì • */
     idlOS::memcpy( sHeader, &sHeaderArg, ID_SIZEOF(smcTableHeader));
 
     IDE_TEST( smcTable::initLockAndRuntimeItem( sHeader ) != IDE_SUCCESS);
@@ -140,7 +140,7 @@ IDE_RC smcObject::createObject( void*              aTrans,
               != IDE_SUCCESS );
 
     /* ----------------------------------------------------
-     * [4] »õ·Î¿î objectÀÇ Info Á¤º¸¸¦ À§ÇÏ¿© °ªÀ» ¼³Á¤ÇÑ´Ù.
+     * [4] ìƒˆë¡œìš´ objectì˜ Info ì •ë³´ë¥¼ ìœ„í•˜ì—¬ ê°’ì„ ì„¤ì •í•œë‹¤.
      * ----------------------------------------------------*/
     IDE_TEST( smcTable::setInfoAtTableHeader( aTrans,
                                               sHeader,
@@ -149,12 +149,12 @@ IDE_RC smcObject::createObject( void*              aTrans,
               != IDE_SUCCESS );
     
     /* ----------------------------------------------------------
-     * [5] »õ·Î¿î objectÀÇ temp Info Á¤º¸¸¦ À§ÇÏ¿© °ªÀ» ¼³Á¤ÇÑ´Ù.
+     * [5] ìƒˆë¡œìš´ objectì˜ temp Info ì •ë³´ë¥¼ ìœ„í•˜ì—¬ ê°’ì„ ì„¤ì •í•œë‹¤.
      * ---------------------------------------------------------*/
     sHeader->mRuntimeInfo = (void *)aTempInfo;
 
     /* -------------------------------------------------------------
-     * [6] »õ·Î¿î objectÀÇ header°¡ ³õÀÎ ÆäÀÌÁö¸¦ º¯°æÆäÀÌÁö·Î µî·Ï
+     * [6] ìƒˆë¡œìš´ objectì˜ headerê°€ ë†“ì¸ íŽ˜ì´ì§€ë¥¼ ë³€ê²½íŽ˜ì´ì§€ë¡œ ë“±ë¡
      * ------------------------------------------------------------*/
     IDE_TEST(smmDirtyPageMgr::insDirtyPage(SMI_ID_TABLESPACE_SYSTEM_MEMORY_DIC,
                                            sHeaderPageID)
@@ -188,7 +188,7 @@ void smcObject::getObjectInfo( smcTableHeader*  aTable,
     
     sVCDesc = &(aTable->mInfo);
 
-    /* Info´Â ¹«Á¶°Ç Out-Mode·Î ÀúÀå. */
+    /* InfoëŠ” ë¬´ì¡°ê±´ Out-Modeë¡œ ì €ìž¥. */
     if( sVCDesc->length != 0)
     {
         IDE_ASSERT( (sVCDesc->flag & SM_VCDESC_MODE_MASK)

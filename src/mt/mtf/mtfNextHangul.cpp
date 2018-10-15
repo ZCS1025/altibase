@@ -47,7 +47,7 @@ IDE_RC mtfNextHangulCalculate(mtcNode*     aNode,
 mtfModule mtfNextHangul = {
     1|MTC_NODE_OPERATOR_FUNCTION,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
+    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìê°€ ì•„ë‹˜)
     mtfNextHangulFunctionName,
     NULL,
     mtf::initializeDefault,

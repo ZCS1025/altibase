@@ -19,15 +19,15 @@
  * $Id: qsfMNext.cpp 82075 2018-01-17 06:39:52Z jina.kim $
  *
  * Description :
- *     PROJ-1075 array typeº¯¼öÀÇ member function FIRST
+ *     PROJ-1075 array typeë³€ìˆ˜ì˜ member function FIRST
  *
  * Syntax :
  *     arr_var.NEXT( index );
- *     RETURN INTEGER/VARCHAR  <= ÇØ´ç index ÀÇ ´ÙÀ½ index¸¦ ¹İÈ¯.
+ *     RETURN INTEGER/VARCHAR  <= í•´ë‹¹ index ì˜ ë‹¤ìŒ indexë¥¼ ë°˜í™˜.
  *
  * Implementation :
- *     1. ÇØ´ç index°ªÀÌ Á¸ÀçÇÏÁö ¾ÊÀ¸¸é NULL.
- *     2. ÇØ´ç index°ªÀÇ ´ÙÀ½À¸·Î Å« index°ªÀ» ¹İÈ¯.
+ *     1. í•´ë‹¹ indexê°’ì´ ì¡´ì¬í•˜ì§€ ì•Šìœ¼ë©´ NULL.
+ *     2. í•´ë‹¹ indexê°’ì˜ ë‹¤ìŒìœ¼ë¡œ í° indexê°’ì„ ë°˜í™˜.
  *
  **********************************************************************/
 
@@ -59,7 +59,7 @@ IDE_RC qsfMNextCalculate(mtcNode*     aNode,
 mtfModule qsfMNextModule = {
     1|MTC_NODE_OPERATOR_FUNCTION|MTC_NODE_VARIABLE_TRUE,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
+    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìê°€ ì•„ë‹˜)
     qsfMNextFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -86,20 +86,20 @@ IDE_RC qsfMNextEstimate( mtcNode*     aNode,
 {
 /***********************************************************************
  *
- * Description : PROJ-1075 nextÇÔ¼öÀÇ estimate
+ * Description : PROJ-1075 nextí•¨ìˆ˜ì˜ estimate
  *
  * Implementation :
- *            ±âº»ÀûÀÎ routineÀº ÀÏ¹İ qsf~ÇÔ¼öµé°ú °°À¸³ª,
- *            host variable bindingÀ» Çã¿ëÇÏÁö ¾Ê°í
- *            psm³»ºÎ¿¡¼­¸¸ »ç¿ëÀÌ °¡´ÉÇÏ´Ù.
+ *            ê¸°ë³¸ì ì¸ routineì€ ì¼ë°˜ qsf~í•¨ìˆ˜ë“¤ê³¼ ê°™ìœ¼ë‚˜,
+ *            host variable bindingì„ í—ˆìš©í•˜ì§€ ì•Šê³ 
+ *            psmë‚´ë¶€ì—ì„œë§Œ ì‚¬ìš©ì´ ê°€ëŠ¥í•˜ë‹¤.
  *
- *            ´ÙÀ½°ú °°Àº À¯ÇüÀ¸·Î µé¾î¿Ã ¼ö ÀÖ´Ù.
+ *            ë‹¤ìŒê³¼ ê°™ì€ ìœ í˜•ìœ¼ë¡œ ë“¤ì–´ì˜¬ ìˆ˜ ìˆë‹¤.
  *            (1) var_name.next(index)
  *            (2) label_name.var_name.next(index)
- *            var_nameÀº qtcNodeÀÇ tableName¿¡ ÇØ´çµÇ¹Ç·Î ¹«Á¶°Ç Á¸ÀçÇØ¾ß ÇÑ´Ù.
- *            qtcNode->userName, tableNameÀ» ÀÌ¿ëÇÏ¿© array type variableÀ» °Ë»ö.
- *            execute->calculateInfo¿¡ Ã£Àº º¯¼öÀÇ Á¤º¸¸¦ ¿¬°áÇÏ¿© ÁØ´Ù.
- *            index, return valueÀÇ À¯ÇüÀº ÇØ´ç º¯¼öÀÇ key column type°ú µ¿ÀÏÇÏ°Ô »ı¼º.
+ *            var_nameì€ qtcNodeì˜ tableNameì— í•´ë‹¹ë˜ë¯€ë¡œ ë¬´ì¡°ê±´ ì¡´ì¬í•´ì•¼ í•œë‹¤.
+ *            qtcNode->userName, tableNameì„ ì´ìš©í•˜ì—¬ array type variableì„ ê²€ìƒ‰.
+ *            execute->calculateInfoì— ì°¾ì€ ë³€ìˆ˜ì˜ ì •ë³´ë¥¼ ì—°ê²°í•˜ì—¬ ì¤€ë‹¤.
+ *            index, return valueì˜ ìœ í˜•ì€ í•´ë‹¹ ë³€ìˆ˜ì˜ key column typeê³¼ ë™ì¼í•˜ê²Œ ìƒì„±.
  *
  ***********************************************************************/
 
@@ -126,10 +126,10 @@ IDE_RC qsfMNextEstimate( mtcNode*     aNode,
 
     aStack[0].column = aTemplate->rows[aNode->table].columns + aNode->column;
 
-    // ÀûÇÕ¼º °Ë»ç. tableNameÀº ¹İµå½Ã Á¸ÀçÇØ¾ß ÇÔ.
+    // ì í•©ì„± ê²€ì‚¬. tableNameì€ ë°˜ë“œì‹œ ì¡´ì¬í•´ì•¼ í•¨.
     IDE_DASSERT( QC_IS_NULL_NAME(sNode->tableName) == ID_FALSE );
 
-    // array type º¯¼ö¸¦ °Ë»ö.
+    // array type ë³€ìˆ˜ë¥¼ ê²€ìƒ‰.
     IDE_TEST( qsvProcVar::searchArrayVar( sStatement,
                                           sNode,
                                           &sIsFound,
@@ -147,7 +147,7 @@ IDE_RC qsfMNextEstimate( mtcNode*     aNode,
     {
         aTemplate->rows[aNode->table].execute[aNode->column] = qsfExecute;
 
-        // º¯¼öÀÇ table, columnÁ¤º¸¸¦ execute->calculateInfo¿¡ ¿¬°áÇÑ´Ù.
+        // ë³€ìˆ˜ì˜ table, columnì •ë³´ë¥¼ execute->calculateInfoì— ì—°ê²°í•œë‹¤.
         IDU_FIT_POINT( "qsfMNext::qsfMNextEstimate::alloc::ColumnInfo" );
         IDE_TEST( aCallBack->alloc( aCallBack->info,
                                     ID_SIZEOF( qtcColumnInfo ),
@@ -160,7 +160,7 @@ IDE_RC qsfMNextEstimate( mtcNode*     aNode,
 
         aTemplate->rows[aNode->table].execute[aNode->column].calculateInfo = (void*)sColumnInfo;
 
-        // typeInfoÀÇ Ã¹¹øÂ° ÄÃ·³ÀÌ index columnÀÓ.
+        // typeInfoì˜ ì²«ë²ˆì§¸ ì»¬ëŸ¼ì´ index columnì„.
         sModule = sArrayVariable->typeInfo->columns->basicInfo->module;
 
         IDE_TEST( mtf::makeConversionNodes( aNode,
@@ -175,7 +175,7 @@ IDE_RC qsfMNextEstimate( mtcNode*     aNode,
 
         sArgumentCount = sKeyColumn->flag & MTC_COLUMN_ARGUMENT_COUNT_MASK;
 
-        // return°ªÀº keyColumnÀ» µû¶ó°¨.
+        // returnê°’ì€ keyColumnì„ ë”°ë¼ê°.
         IDE_TEST( mtc::initializeColumn( aStack[0].column,
                                          sKeyColumn->module,
                                          sArgumentCount,
@@ -215,13 +215,13 @@ IDE_RC qsfMNextCalculate(mtcNode*     aNode,
 {
 /***********************************************************************
  *
- * Description : PROJ-1075 nextÇÔ¼öÀÇ calculate
+ * Description : PROJ-1075 nextí•¨ìˆ˜ì˜ calculate
  *
  * Implementation :
- *          aInfo¿¡¼­ qsxArrayInfo¸¦ °¡Á®¿Í¼­
- *          searchNextÇÔ¼ö¸¦ È£ÃâÇÑ´Ù.
- *          ´Ü, next°¡ ´õÀÌ»ó ¾ø´Â °æ¿ì ¹× index°¡ nullÀÎ °æ¿ìµµ
- *          ¿¡·¯¸¦ ³»Áö ¾Ê°í Á¤Ã¥»ó NULL.
+ *          aInfoì—ì„œ qsxArrayInfoë¥¼ ê°€ì ¸ì™€ì„œ
+ *          searchNextí•¨ìˆ˜ë¥¼ í˜¸ì¶œí•œë‹¤.
+ *          ë‹¨, nextê°€ ë”ì´ìƒ ì—†ëŠ” ê²½ìš° ë° indexê°€ nullì¸ ê²½ìš°ë„
+ *          ì—ëŸ¬ë¥¼ ë‚´ì§€ ì•Šê³  ì •ì±…ìƒ NULL.
  *
  ***********************************************************************/    
 
@@ -243,8 +243,8 @@ IDE_RC qsfMNextCalculate(mtcNode*     aNode,
               != IDE_SUCCESS );
 
     /* BUG-38243
-       array method »ç¿ë ½Ã, ÇØ´ç array´Â ÇØ´ç aTemplateÀÌ ¾Æ´Ñ
-       ´Ù¸¥ template¿¡ Á¤º¸°¡ ÀÖÀ» ¼ö ÀÖ´Ù. */
+       array method ì‚¬ìš© ì‹œ, í•´ë‹¹ arrayëŠ” í•´ë‹¹ aTemplateì´ ì•„ë‹Œ
+       ë‹¤ë¥¸ templateì— ì •ë³´ê°€ ìˆì„ ìˆ˜ ìˆë‹¤. */
     if ( sColumnInfo->objectId == QS_EMPTY_OID )
     {
         sTemplateForArrayVar = aTemplate;
@@ -267,13 +267,13 @@ IDE_RC qsfMNextCalculate(mtcNode*     aNode,
     sArrayInfo = *((qsxArrayInfo ** )( (UChar*) sTemplateForArrayVar->rows[sColumnInfo->table].row
                                     + sArrayColumn->column.offset ));
 
-    // ÀûÇÕ¼º °Ë»ç.
+    // ì í•©ì„± ê²€ì‚¬.
     IDE_TEST_RAISE( sArrayInfo == NULL, ERR_INVALID_ARRAY );
 
     if( aStack[1].column->module->isNull( aStack[1].column,
                                           aStack[1].value ) == ID_TRUE )
     {
-        // index°¡ nullÀÎ °æ¿ìµµ error³»Áö ¾Ê°í NULL
+        // indexê°€ nullì¸ ê²½ìš°ë„ errorë‚´ì§€ ì•Šê³  NULL
         aStack[0].column->module->null( aStack[0].column,
                                         aStack[0].value );
     }
@@ -291,8 +291,8 @@ IDE_RC qsfMNextCalculate(mtcNode*     aNode,
             sActualSize = aStack[0].column->module->actualSize(
                 aStack[0].column,
                 sNextKey );
-            // module, precision, scale¸ğµÎ estimate½Ã µ¿ÀÏÇÏ°Ô ¸ÂÃç³õ¾ÒÀ¸¹Ç·Î
-            // actualSize¸¦ ±¸ÇÒ ¶§ aStack[0].column->moduleÀ» »ç¿ëÇÑ´Ù.
+            // module, precision, scaleëª¨ë‘ estimateì‹œ ë™ì¼í•˜ê²Œ ë§ì¶°ë†“ì•˜ìœ¼ë¯€ë¡œ
+            // actualSizeë¥¼ êµ¬í•  ë•Œ aStack[0].column->moduleì„ ì‚¬ìš©í•œë‹¤.
             idlOS::memcpy( aStack[0].value,
                            sNextKey,
                            sActualSize );

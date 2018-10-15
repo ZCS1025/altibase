@@ -52,7 +52,7 @@ static IDE_RC mtfNullifEstimate( mtcNode     * aNode,
 mtfModule mtfNullif = {
     1|MTC_NODE_OPERATOR_FUNCTION,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
+    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìžê°€ ì•„ë‹˜)
     mtfNullifFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -104,10 +104,10 @@ IDE_RC mtfNullifEstimate( mtcNode     * aNode,
     sModules[1] = aStack[1].column->module;
 
     // To fix BUG-15093
-    // numeric moduleÀÌ ¼±ÅÃµÈ °æ¿ì floatÀ¸·Î ¹Ù²Ù¾î¾ß ÇÔ.
+    // numeric moduleì´ ì„ íƒëœ ê²½ìš° floatìœ¼ë¡œ ë°”ê¾¸ì–´ì•¼ í•¨.
 
     // PROJ-2002 Column Security
-    // º¸¾È ÄÃ·³ÀÎ °æ¿ì ¿øº» ÄÃ·³À¸·Î ¹Ù²Û´Ù.
+    // ë³´ì•ˆ ì»¬ëŸ¼ì¸ ê²½ìš° ì›ë³¸ ì»¬ëŸ¼ìœ¼ë¡œ ë°”ê¾¼ë‹¤.
     if( sModules[0] == &mtdNull )
     {
         sModules[0] = &mtdVarchar;
@@ -186,7 +186,7 @@ IDE_RC mtfNullifEstimate( mtcNode     * aNode,
 /**
  *  Nullif ( expr1, expr 2 )
  *
- *    µÎ°³ÀÇ expressionÀ» ºñ±³ÇØ¼­ °°´Ù¸é NULLÀ» ¹ÝÈ¯ÇÏ°í, ´Ù¸£´Ù¸é Ã¹¹ø Â° °Í À» ¹ÝÈ¯ÇÑ´Ù.
+ *    ë‘ê°œì˜ expressionì„ ë¹„êµí•´ì„œ ê°™ë‹¤ë©´ NULLì„ ë°˜í™˜í•˜ê³ , ë‹¤ë¥´ë‹¤ë©´ ì²«ë²ˆ ì§¸ ê²ƒ ì„ ë°˜í™˜í•œë‹¤.
  *
  *    select nullif(10,10) from dual; -> NULL
  *    select nullif(10,9) from dual;  -> 10

@@ -81,7 +81,7 @@ static iduFixedTableColDesc gAgentProcColDesc[] =
 };
 
 // BUG-40819 Remove latch for managing external procedure agent list.
-// agentÀÇ »óÅÂ°¡ IDX_PROC_ALLOCÀÌ ¾Æ´Ñ °æ¿ì¿¡¸¸ buildRecord¸¦ È£ÃâÇÔ.
+// agentì˜ ìƒíƒœê°€ IDX_PROC_ALLOCì´ ì•„ë‹Œ ê²½ìš°ì—ë§Œ buildRecordë¥¼ í˜¸ì¶œí•¨.
 static IDE_RC buildRecordForAgentProc( idvSQL              *,
                                        void                *aHeader,
                                        void                * /* aDumpObj */,
@@ -101,7 +101,7 @@ static IDE_RC buildRecordForAgentProc( idvSQL              *,
 
     for ( i = 0; i < sListCount; i++ )
     {
-        // 1. agentÀÇ mStatem°¡ IDX_PROC_ALLOCÀÌ ¾Æ´ÑÁö °Ë»ç.
+        // 1. agentì˜ mStatemê°€ IDX_PROC_ALLOCì´ ì•„ë‹Œì§€ ê²€ì‚¬.
         if ( sAgentInfo->mState != IDX_PROC_ALLOC )
         {
             sAgentTempInfo.mSID           = sAgentInfo->mSID;
@@ -118,12 +118,12 @@ static IDE_RC buildRecordForAgentProc( idvSQL              *,
                             sSockFileNameLen );
             sAgentTempInfo.mSockFile[sSockFileNameLen] = '\0';
 
-            // 2. agentInfo¸¦ º¹»çÇÑ µÚ¿¡µµ »óÅÂ°¡ IDX_PROC_ALLOCÀÎÁö °Ë»ç.
-            //    2-1. mSID, mSockFileÀº º¯ÇÏÁö ¾Ê´Â °ªÀÌ´Ù.
-            //    2-2. no-latch ±¸Á¶¿©¼­ mPID, mCreated, mLastReceived,
-            //         mLastSent´Â ÀÏ½ÃÀûÀ¸·Î Â¦ÀÌ ¸ÂÁö ¾ÊÀ» ¼ö ÀÖ´Ù.
-            //    2-3. ¸Ş¸ğ¸®¸¦ ±Ü°Å³ª º¯¼ö¸¦ partial readÇÏ´Â
-            //         ±Ø´ÜÀûÀÎ »óÈ²Àº ¹ß»ıÇÏÁö ¾Ê´Â´Ù.
+            // 2. agentInfoë¥¼ ë³µì‚¬í•œ ë’¤ì—ë„ ìƒíƒœê°€ IDX_PROC_ALLOCì¸ì§€ ê²€ì‚¬.
+            //    2-1. mSID, mSockFileì€ ë³€í•˜ì§€ ì•ŠëŠ” ê°’ì´ë‹¤.
+            //    2-2. no-latch êµ¬ì¡°ì—¬ì„œ mPID, mCreated, mLastReceived,
+            //         mLastSentëŠ” ì¼ì‹œì ìœ¼ë¡œ ì§ì´ ë§ì§€ ì•Šì„ ìˆ˜ ìˆë‹¤.
+            //    2-3. ë©”ëª¨ë¦¬ë¥¼ ê¸ê±°ë‚˜ ë³€ìˆ˜ë¥¼ partial readí•˜ëŠ”
+            //         ê·¹ë‹¨ì ì¸ ìƒí™©ì€ ë°œìƒí•˜ì§€ ì•ŠëŠ”ë‹¤.
             if ( sAgentTempInfo.mState != IDX_PROC_ALLOC )
             {
                 IDE_TEST( iduFixedTable::buildRecord( aHeader,

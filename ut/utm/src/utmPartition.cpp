@@ -134,8 +134,8 @@
     " b.user_name='%s' and c.table_name='%s' "                          \
     " order by a.partition_id "
 
-//fix BUG-17481 aexport°¡ partion disk tableÀ» Áö¿øÇØ¾ß ÇÑ´Ù.
-// partion index typeÀ» ±¸ÇÑ´Ù.
+//fix BUG-17481 aexportê°€ partion disk tableì„ ì§€ì›í•´ì•¼ í•œë‹¤.
+// partion index typeì„ êµ¬í•œë‹¤.
 IDE_RC   getPartIndexType(SInt   aIndexID,
                           SInt   *aPartIndexType)
 {
@@ -205,7 +205,7 @@ IDE_RC   getPartIndexLocalUnique(SInt   aIndexID,
     IDE_TEST_RAISE(SQLExecDirect(sStmt, (SQLCHAR *)sQuery, SQL_NTS)
                    != SQL_SUCCESS, inx_error);
     
-    //fix BUG-17481 aexport°¡ partion disk tableÀ» Áö¿øÇØ¾ß ÇÑ´Ù.
+    //fix BUG-17481 aexportê°€ partion disk tableì„ ì§€ì›í•´ì•¼ í•œë‹¤.
     IDE_TEST_RAISE(
         SQLBindCol(sStmt, 1, SQL_C_CHAR, (SQLPOINTER)sIsLocalUnique,
                    2, &sIsLocalUniqueInd)
@@ -247,8 +247,8 @@ IDE_RC   getPartIndexLocalUnique(SInt   aIndexID,
     return IDE_FAILURE;    
 }
 
-//fix BUG-17481 aexport°¡ partion disk tableÀ» Áö¿øÇØ¾ß ÇÑ´Ù.
-// partion index item Á¤º¸¸¦ »ı¼ºÇÑ´Ù.
+//fix BUG-17481 aexportê°€ partion disk tableì„ ì§€ì›í•´ì•¼ í•œë‹¤.
+// partion index item ì •ë³´ë¥¼ ìƒì„±í•œë‹¤.
 IDE_RC genPartIndexItems( SInt    aIndexID,
                           SChar * aDdl,
                           SInt  * aDdlPos )
@@ -331,10 +331,10 @@ IDE_RC genPartIndexItems( SInt    aIndexID,
 }
 
 
-//fix BUG-24274 aexport¿¡¼­ LOB Tablespace¸¦ °í·ÁÇÏÁö ¾ÊÀ½.
+//fix BUG-24274 aexportì—ì„œ LOB Tablespaceë¥¼ ê³ ë ¤í•˜ì§€ ì•ŠìŒ.
 /*
 
-´ÙÀ½ ÁúÀÇ¸¦ ¼öÇàÇÏ¿©,
+ë‹¤ìŒ ì§ˆì˜ë¥¼ ìˆ˜í–‰í•˜ì—¬,
 
 SELECT B._COLUMN_NAME ,
        D.NAME
@@ -350,7 +350,7 @@ WHERE
   B.COLUMN_ID = C.COLUMN_ID AND 
   C.TBS_ID    = D.ID;
   
-´ÙÀ½°ú°°Àº ±¸¹®À» »ı¼ºÇÑ´Ù.
+ë‹¤ìŒê³¼ê°™ì€ êµ¬ë¬¸ì„ ìƒì„±í•œë‹¤.
 
 LOB (c1) store as (TABLESPACE BLOB_SPACE1)
 LOB (c2) store as (TABLESPACE BLOB_SPACE2);
@@ -374,8 +374,8 @@ IDE_RC genLobStorageClaues( SChar * aUser,
     IDE_TEST_RAISE(SQLAllocStmt(m_hdbc, &sStmt) != SQL_SUCCESS,
                    alloc_error);
 
-    // BUG-24762 aexport¿¡¼­ create table ½Ã ´Ù¸¥À¯ÀúÀÇ LOB store as ¿É¼ÇÀÌ »ğÀÔµÊ
-    // À¯Àú¸íµµ Ã¼Å©ÇÏµµ·Ï ¼öÁ¤ÇÔ ¶ÇÇÑ IS_DEFAULT_TBS °¡ F ÀÏ¶§¸¸ Ãâ·ÂÇÏµµ·Ï ÇÕ´Ï´Ù.
+    // BUG-24762 aexportì—ì„œ create table ì‹œ ë‹¤ë¥¸ìœ ì €ì˜ LOB store as ì˜µì…˜ì´ ì‚½ì…ë¨
+    // ìœ ì €ëª…ë„ ì²´í¬í•˜ë„ë¡ ìˆ˜ì •í•¨ ë˜í•œ IS_DEFAULT_TBS ê°€ F ì¼ë•Œë§Œ ì¶œë ¥í•˜ë„ë¡ í•©ë‹ˆë‹¤.
     idlOS::sprintf(sQuery, GET_LOBSTORAGE_QUERY, aTableName, aUser);
 
     IDE_TEST_RAISE(SQLExecDirect(sStmt, (SQLCHAR *)sQuery, SQL_NTS)
@@ -391,7 +391,7 @@ IDE_RC genLobStorageClaues( SChar * aUser,
                    UTM_NAME_LEN, &sTableSpaceNameInd)
         != SQL_SUCCESS, inx_error);    
 
-     /*´ÙÀ½°ú°°Àº ±¸¹®À» »ı¼ºÇÑ´Ù.
+     /*ë‹¤ìŒê³¼ê°™ì€ êµ¬ë¬¸ì„ ìƒì„±í•œë‹¤.
        LOB (c1) store as (TABLESPACE BLOB_SPACE1)
        LOB (c2) store as (TABLESPACE BLOB_SPACE2); */
     
@@ -432,9 +432,9 @@ IDE_RC genLobStorageClaues( SChar * aUser,
     return IDE_FAILURE;    
 }
 
-//fix BUG-24274 aexport¿¡¼­ LOB Tablespace¸¦ °í·ÁÇÏÁö ¾ÊÀ½.
+//fix BUG-24274 aexportì—ì„œ LOB Tablespaceë¥¼ ê³ ë ¤í•˜ì§€ ì•ŠìŒ.
 /*
-partition¿¡ ÀÖ´Â LOBÀ» °í·ÁÇÑ´Ù.
+partitionì— ìˆëŠ” LOBì„ ê³ ë ¤í•œë‹¤.
 
 SELECT A.COLUMN_NAME ,
        C.NAME
@@ -483,7 +483,7 @@ IDE_RC genPartitionLobStorageClaues( UInt    aTableID,
                    UTM_NAME_LEN, &sTableSpaceNameInd)
         != SQL_SUCCESS, inx_error);        
 
-     /*´ÙÀ½°ú°°Àº ±¸¹®À» »ı¼ºÇÑ´Ù.
+     /*ë‹¤ìŒê³¼ê°™ì€ êµ¬ë¬¸ì„ ìƒì„±í•œë‹¤.
        LOB (c1) store as (TABLESPACE BLOB_SPACE1)
        LOB (c2) store as (TABLESPACE BLOB_SPACE2); */
     
@@ -628,7 +628,7 @@ SQLRETURN getPartTablesInfo(SChar* aTableName,
     SQLHSTMT sPartTablesInfoStmt = SQL_NULL_HSTMT;
     SQLRETURN sRet;
 
-    // partition method ¾ò¾î¿À±â.
+    // partition method ì–»ì–´ì˜¤ê¸°.
     idlOS::sprintf( sQuery, GET_PARTMETHOD_QUERY, aTableName, aUserName);
 
     // allocate statement
@@ -713,7 +713,7 @@ SQLRETURN getPartitionKeyColumnStr(SChar* aTableName,
     SChar sColumnList[1024];
     idBool sIsFirstRow = ID_TRUE;
 
-    // partition key column ¾ò¾î¿À±â.
+    // partition key column ì–»ì–´ì˜¤ê¸°.
     idlOS::sprintf( sQuery, GET_PARTKEYCOLUMN_QUERY, aUserName, aTableName);
 
     // allocate statement
@@ -793,7 +793,7 @@ SQLRETURN getPartitionColumnStats ( SChar* aUserName,
     SQLHSTMT sStmt = SQL_NULL_HSTMT;
     SQLRETURN sRet;
 
-    // partition key column ¾ò¾î¿À±â.
+    // partition key column ì–»ì–´ì˜¤ê¸°.
     idlOS::sprintf( sQuery, GET_PARTKEYCOLUMN_QUERY, aUserName, aTableName);
 
     // allocate statement
@@ -862,7 +862,7 @@ SQLRETURN writePartitionElementsQuery( utmPartTables * aPartTablesInfo,
     SChar sPartitionMaxValue[4000+1];
     SChar sTableSpaceName[STR_LEN+1];
     SChar sPartitionAccess[STR_LEN + 1];    /* PROJ-2359 Table/Partition Access Option */
-    //fix BUG-24274 aexport¿¡¼­ LOB Tablespace¸¦ °í·ÁÇÏÁö ¾ÊÀ½. 
+    //fix BUG-24274 aexportì—ì„œ LOB Tablespaceë¥¼ ê³ ë ¤í•˜ì§€ ì•ŠìŒ. 
     UInt   sTableID     = 0;
     UInt   sPartitionID = 0;
 
@@ -896,7 +896,7 @@ SQLRETURN writePartitionElementsQuery( utmPartTables * aPartTablesInfo,
             break;
     }
 
-    //fix BUG-24274 aexport¿¡¼­ LOB Tablespace¸¦ °í·ÁÇÏÁö ¾ÊÀ½.
+    //fix BUG-24274 aexportì—ì„œ LOB Tablespaceë¥¼ ê³ ë ¤í•˜ì§€ ì•ŠìŒ.
     idlOS::sprintf( sQuery, GET_PARTTBS_QUERY, aUserName, aTableName);
 
     // allocate statement
@@ -907,7 +907,7 @@ SQLRETURN writePartitionElementsQuery( utmPartTables * aPartTablesInfo,
                    != SQL_SUCCESS, StmtError);
 
     // binding
-    //fix BUG-24274 aexport¿¡¼­ LOB Tablespace¸¦ °í·ÁÇÏÁö ¾ÊÀ½.
+    //fix BUG-24274 aexportì—ì„œ LOB Tablespaceë¥¼ ê³ ë ¤í•˜ì§€ ì•ŠìŒ.
     IDE_TEST_RAISE(SQLBindCol(sStmt, 1, SQL_C_SLONG,&sPartitionID , 0, NULL)
                    != SQL_SUCCESS, StmtError);
     
@@ -947,7 +947,7 @@ SQLRETURN writePartitionElementsQuery( utmPartTables * aPartTablesInfo,
             sDdlPos += idlOS::sprintf( aDdl + sDdlPos, ",\n" );
         }
 
-        // Range ÀÌ°í DEFAULT ÀÎ °æ¿ì : ¸¶Áö¸·¿¡ MAX_VALUE °¡ null.
+        // Range ì´ê³  DEFAULT ì¸ ê²½ìš° : ë§ˆì§€ë§‰ì— MAX_VALUE ê°€ null.
         switch (aPartTablesInfo->m_partitionMethod)
         {
             case UTM_PARTITION_METHOD_RANGE:
@@ -979,20 +979,20 @@ SQLRETURN writePartitionElementsQuery( utmPartTables * aPartTablesInfo,
                 break;
         }
 
-        // tablespace ÁöÁ¤½Ã ÇØ´ç ÁúÀÇ ½ºÆ®¸µ Ãß°¡.
-        // default tablespace ¸¦ ÀÌ¿ëÇÏ´Â °æ¿ì sTableSpaceName Àº null
+        // tablespace ì§€ì •ì‹œ í•´ë‹¹ ì§ˆì˜ ìŠ¤íŠ¸ë§ ì¶”ê°€.
+        // default tablespace ë¥¼ ì´ìš©í•˜ëŠ” ê²½ìš° sTableSpaceName ì€ null
         if (sTableSpaceNameInd != SQL_NULL_DATA)
         {
-            // tablespace °¡ assign µÈ °æ¿ì
+            // tablespace ê°€ assign ëœ ê²½ìš°
             sDdlPos += idlOS::sprintf( aDdl + sDdlPos, 
                                        " TABLESPACE \"%s\"",
                                        sTableSpaceName );
         }
         else
         {
-            // default tablespace ¸¦ »ç¿ëÇÏ´Â °æ¿ì. skip.
+            // default tablespace ë¥¼ ì‚¬ìš©í•˜ëŠ” ê²½ìš°. skip.
         }
-        //fix BUG-24274 aexport¿¡¼­ LOB Tablespace¸¦ °í·ÁÇÏÁö ¾ÊÀ½.
+        //fix BUG-24274 aexportì—ì„œ LOB Tablespaceë¥¼ ê³ ë ¤í•˜ì§€ ì•ŠìŒ.
         IDE_TEST( genPartitionLobStorageClaues( sTableID,
                                                 sPartitionID,
                                                 aDdl,
@@ -1083,13 +1083,13 @@ SQLRETURN writePartitionQuery( SChar  * aTableName,
 
     if (*aIsPartitioned == ID_FALSE)
     {
-        // partitioned table ÀÌ ¾Æ´Ï¹Ç·Î skip.
+        // partitioned table ì´ ì•„ë‹ˆë¯€ë¡œ skip.
     }
     else 
     {
-        // partitioned table ÀÎ °æ¿ì, °ü·Ã query ÀÇ Ãß°¡.
+        // partitioned table ì¸ ê²½ìš°, ê´€ë ¨ query ì˜ ì¶”ê°€.
 
-        // partition key column string ¾ò¾î¿À±â. 
+        // partition key column string ì–»ì–´ì˜¤ê¸°. 
         idlOS::memset(sPartitionKeyStr, 0, ID_SIZEOF(sPartitionKeyStr));
         sRet = getPartitionKeyColumnStr(
                                         aTableName,
@@ -1098,14 +1098,14 @@ SQLRETURN writePartitionQuery( SChar  * aTableName,
                                         1024);
         IDE_TEST(sRet != SQL_SUCCESS);
  
-        // partition method ¾ò¾î¿À±â °ü·Ã : system_.sys_part_tables ¸¦
+        // partition method ì–»ì–´ì˜¤ê¸° ê´€ë ¨ : system_.sys_part_tables ë¥¼
         // lookup.
         sRet = getPartTablesInfo(aTableName, aUserName, &sPartTableInfo);
         IDE_TEST(sRet != SQL_SUCCESS);
 
-        // partition query °ü·Ã
+        // partition query ê´€ë ¨
         sDdlPos = (*aRetPos);
-        // partition method ¿¡ µû¶ó¼­ Range, Hash, List
+        // partition method ì— ë”°ë¼ì„œ Range, Hash, List
         toPartitionMethodStr(&sPartTableInfo, sPartitionMethodName);
     
         sDdlPos += idlOS::sprintf( aDdl + sDdlPos, "\n" );
@@ -1116,8 +1116,8 @@ SQLRETURN writePartitionQuery( SChar  * aTableName,
     
         sDdlPos += idlOS::sprintf( aDdl + sDdlPos, " (\n" );
 
-        // partition µé lookup & ÁúÀÇ Ãß°¡.
-        // partition name, min, max ¾ò¾î¿À±â 
+        // partition ë“¤ lookup & ì§ˆì˜ ì¶”ê°€.
+        // partition name, min, max ì–»ì–´ì˜¤ê¸° 
         sRet = writePartitionElementsQuery( &sPartTableInfo, 
                                             aTableName,
                                             aUserName,
@@ -1128,7 +1128,7 @@ SQLRETURN writePartitionQuery( SChar  * aTableName,
 
         sDdlPos += idlOS::sprintf( aDdl + sDdlPos, " )" );
 
-        // row movement °ü·Ã Ãß°¡
+        // row movement ê´€ë ¨ ì¶”ê°€
         if (sPartTableInfo.m_isEnabledRowMovement == ID_TRUE)
         {
             // 'enable row movement'
@@ -1137,11 +1137,11 @@ SQLRETURN writePartitionQuery( SChar  * aTableName,
         }
         else
         {
-            // 'disable row movement' : default ÀÌ¹Ç·Î »ı·«. 
+            // 'disable row movement' : default ì´ë¯€ë¡œ ìƒëµ. 
         }
 
-        // last : sDdlPos ¼³Á¤. aDdl µÚ¿¡ Äõ¸®¹®À» °è¼Ó 
-        // append °¡´ÉÇÏ°Ô²û Àç¼³Á¤.
+        // last : sDdlPos ì„¤ì •. aDdl ë’¤ì— ì¿¼ë¦¬ë¬¸ì„ ê³„ì† 
+        // append ê°€ëŠ¥í•˜ê²Œë” ì¬ì„¤ì •.
         (*aRetPos) = sDdlPos;
    }
 

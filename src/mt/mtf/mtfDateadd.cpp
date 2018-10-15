@@ -50,7 +50,7 @@ static IDE_RC mtfDateaddEstimate( mtcNode*     aNode,
 mtfModule mtfDateadd = {
     1|MTC_NODE_OPERATOR_FUNCTION,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
+    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìžê°€ ì•„ë‹˜)
     mtfDateaddFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -136,8 +136,8 @@ IDE_RC mtfDateaddCalculate(  mtcNode*     aNode,
  * Implementation :
  *    aStack[0] :
  *    aStack[1] : date
- *    aStack[2] : Áõ°¡½ÃÅ³ ¼ö
- *    aStack[3] : Áõ°¡½ÃÅ³ date fmt
+ *    aStack[2] : ì¦ê°€ì‹œí‚¬ ìˆ˜
+ *    aStack[3] : ì¦ê°€ì‹œí‚¬ date fmt
  *
  ***********************************************************************/
 
@@ -287,7 +287,7 @@ IDE_RC mtfDateaddCalculate(  mtcNode*     aNode,
         else if( sLanguage->extractSet->matchSecond( sVarchar->value,
                                                      sVarchar->length ) == 0 )
         {
-            // ÃÊÀÏ °æ¿ì 68³â ÀÌ³»ÀÇ °ªÀ¸·Î ÇÑÁ¤ÇÑ´Ù.
+            // ì´ˆì¼ ê²½ìš° 68ë…„ ì´ë‚´ì˜ ê°’ìœ¼ë¡œ í•œì •í•œë‹¤.
             if ( sNumber > ID_LONG(2185574400) || 
                  sNumber < ID_LONG(-2185574400) )
             {
@@ -302,7 +302,7 @@ IDE_RC mtfDateaddCalculate(  mtcNode*     aNode,
         else if( sLanguage->extractSet->matchMicroSec( sVarchar->value,
                                                        sVarchar->length ) == 0 )
         {
-            // ¸¶ÀÌÅ©·Î ÃÊÀÏ °æ¿ì 30ÀÏ ÀÌ³»ÀÇ °ªÀ¸·Î ÇÑÁ¤ÇÑ´Ù.
+            // ë§ˆì´í¬ë¡œ ì´ˆì¼ ê²½ìš° 30ì¼ ì´ë‚´ì˜ ê°’ìœ¼ë¡œ í•œì •í•œë‹¤.
             if ( sNumber > ID_LONG(2592000000000) ||
                  sNumber < ID_LONG(-2592000000000) )
             {

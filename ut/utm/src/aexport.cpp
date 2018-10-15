@@ -68,10 +68,10 @@ int main(int argc, char** argv)
 
     show_copyright();
 
-    // BUG-26287: ¿É¼Ç Ã³¸®¹æ¹ı ÅëÀÏ
+    // BUG-26287: ì˜µì…˜ ì²˜ë¦¬ë°©ë²• í†µì¼
     gProgOption.ReadEnvironment();
 
-    // BUG-26287: ÀÖÀ¸¸é altibase.propertiesµµ ÂüÁ¶ (for server)
+    // BUG-26287: ìˆìœ¼ë©´ altibase.propertiesë„ ì°¸ì¡° (for server)
     gProgOption.ReadServerProperties();
 
     IDE_TEST(gProgOption.getProperties() != IDE_SUCCESS);
@@ -261,7 +261,7 @@ static IDE_RC createFile( SChar *aUserName)
                                   != SQL_SUCCESS, openError );
     }
     
-    /* import ¸¦ À§ÇÑ ½ÇÇà ½ºÅ©¸³Æ® »ı¼º run_is_*.sh */
+    /* import ë¥¼ ìœ„í•œ ì‹¤í–‰ ìŠ¤í¬ë¦½íŠ¸ ìƒì„± run_is_*.sh */
     IDE_TEST_RAISE( open_file( gProgOption.mScriptIsql, &gFileStream.mIsFp )
                                != SQL_SUCCESS, openError);
 
@@ -566,7 +566,7 @@ static IDE_RC doExport()
     SChar      sPasswd[50];
     SChar     *sObjName = NULL;
 
-    /* BUG-36593: like BUG-17563(iloader ¿¡¼­ Å«µû¿ÈÇ¥ ÀÌ¿ëÇÑ Naming Rule Á¦¾à Á¦°Å) */
+    /* BUG-36593: like BUG-17563(iloader ì—ì„œ í°ë”°ì˜´í‘œ ì´ìš©í•œ Naming Rule ì œì•½ ì œê±°) */
     idlOS::strcpy( sUserName, gProgOption.GetUserNameInSQL() );
     idlOS::strcpy( sPasswd, gProgOption.GetPassword() );
 
@@ -595,7 +595,7 @@ static IDE_RC doExport()
                                        != SQL_SUCCESS,
                                        table_error );
     
-        //BUG-22708 directoryÀÇ ¼ÒÀ¯ÀÚ´Â SYSÀÌ¹Ç·Î, ÀÌ °æ¿ì¿¡¸¸ Ã³¸®µÇ¾î¾ß ÇÔ..
+        //BUG-22708 directoryì˜ ì†Œìœ ìëŠ” SYSì´ë¯€ë¡œ, ì´ ê²½ìš°ì—ë§Œ ì²˜ë¦¬ë˜ì–´ì•¼ í•¨..
         IDE_TEST_RAISE( getDirectoryAll( gFileStream.mDirFp )
                                          != SQL_SUCCESS, table_error );
     }
@@ -931,7 +931,7 @@ static IDE_RC doMakeRunScript()
     idBool sNeedQuote4Pwd = ID_FALSE;
     idBool sNeedQuote4File   = ID_FALSE;
 
-    /* BUG-36593: like BUG-17563(iloader ¿¡¼­ Å«µû¿ÈÇ¥ ÀÌ¿ëÇÑ Naming Rule Á¦¾à Á¦°Å) */
+    /* BUG-36593: like BUG-17563(iloader ì—ì„œ í°ë”°ì˜´í‘œ ì´ìš©í•œ Naming Rule ì œì•½ ì œê±°) */
     idlOS::strcpy(sUserName, gProgOption.GetUserNameInSQL());
     idlOS::strcpy(sPasswd, gProgOption.GetPassword());
 

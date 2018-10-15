@@ -21,8 +21,8 @@
 
 /***********************************************************************
  * SYS_GUID() :
- * GUID( Globally Unique IDentifier )¸¦ »ı¼ºÇÏ°í,
- * 16 BYTE ÇüÅÂ·Î ¹İÈ¯ÇÑ´Ù.
+ * GUID( Globally Unique IDentifier )ë¥¼ ìƒì„±í•˜ê³ ,
+ * 16 BYTE í˜•íƒœë¡œ ë°˜í™˜í•œë‹¤.
  *
  * ex)
  * SELECT SYS_GUID() FROM DUAL;
@@ -58,7 +58,7 @@ static IDE_RC mtfSysGuidEstimate( mtcNode     * aNode,
 mtfModule mtfSysGuid = {
     1 | MTC_NODE_OPERATOR_FUNCTION | MTC_NODE_VARIABLE_TRUE,
     ~(MTC_NODE_INDEX_MASK),
-    1.0, // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
+    1.0, // default selectivity (ë¹„êµ ì—°ì‚°ìê°€ ì•„ë‹˜)
     mtfSysGuidFunctionName,
     NULL,
     mtf::initializeDefault,

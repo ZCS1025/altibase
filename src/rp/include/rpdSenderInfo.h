@@ -77,7 +77,7 @@ public:
 
     smSN   getLastProcessedSN();
     
-    /* BUG-26482 ´ë±â ÇÔ¼ö¸¦ CommitLog ±â·Ï ÀüÈÄ·Î ºĞ¸®ÇÏ¿© È£ÃâÇÕ´Ï´Ù. */
+    /* BUG-26482 ëŒ€ê¸° í•¨ìˆ˜ë¥¼ CommitLog ê¸°ë¡ ì „í›„ë¡œ ë¶„ë¦¬í•˜ì—¬ í˜¸ì¶œí•©ë‹ˆë‹¤. */
     idBool serviceWaitBeforeCommit( smSN aLastSN,
                                     UInt aTxReplMode,
                                     smTID aTransID,
@@ -103,7 +103,7 @@ public:
 
     idBool isActiveTrans(smTID aTID);
 
-    //BUG-22173 : V$REPSENDER act_repl_mode Ãß°¡
+    //BUG-22173 : V$REPSENDER act_repl_mode ì¶”ê°€
     inline idBool getIsExceedRepGap(){ return mIsExceedRepGap; }
 
     void                setSenderStatus(RP_SENDER_STATUS aStatus);
@@ -142,19 +142,19 @@ private:
     smSN calcurateCurrentGap( smSN aCurrentSN );
 
 private:
-    // PROJ-1541: sender, sender apply, service thread°¡ °øÀ¯ÇÏ´Â ÀÚ·á
-    // mMinWaitSN: ÇöÀç ´ë±â ÁßÀÎ service thread°¡ ´ë±â»óÅÂ¿¡¼­ ÇØÁ¦µÇ±â À§ÇØ
-    // ÇÊ¿ä·Î ÇÏ´Â ÃÖ¼Ò SN
+    // PROJ-1541: sender, sender apply, service threadê°€ ê³µìœ í•˜ëŠ” ìë£Œ
+    // mMinWaitSN: í˜„ì¬ ëŒ€ê¸° ì¤‘ì¸ service threadê°€ ëŒ€ê¸°ìƒíƒœì—ì„œ í•´ì œë˜ê¸° ìœ„í•´
+    // í•„ìš”ë¡œ í•˜ëŠ” ìµœì†Œ SN
 
-    //Sender,SenderApply,Service Thread°¡ °øÀ¯ÇÏ´Â ÀÚ·á±¸Á¶
-    //Service ThreadÀÇ Commit½Ã Wait¿©ºÎ¿Í °ü·ÃµÈ ÀÚ·á±¸Á¶
+    //Sender,SenderApply,Service Threadê°€ ê³µìœ í•˜ëŠ” ìë£Œêµ¬ì¡°
+    //Service Threadì˜ Commitì‹œ Waitì—¬ë¶€ì™€ ê´€ë ¨ëœ ìë£Œêµ¬ì¡°
     iduMutex            mServiceSNMtx;
     iduCond             mServiceWaitCV;
     smSN                mMinWaitSN; 
     smSN                mLastProcessedSN;
     smSN                mLastArrivedSN;
     
-    //TransactionÀÇ Commit¼º°ø ¿©ºÎ¿Í °ü·ÃµÈ ÀÚ·á±¸Á¶
+    //Transactionì˜ Commitì„±ê³µ ì—¬ë¶€ì™€ ê´€ë ¨ëœ ìë£Œêµ¬ì¡°
     iduMutex            mActTransTblMtx;
     rpdTransTbl        *mActiveTransTbl;
 
@@ -166,8 +166,8 @@ private:
 
     UInt                mTransTableSize;
 
-    //SenderÀÇ Á¤º¸¸¦ ´Ù¸¥ ½º·¹µåµé°ú °øÀ¯, Flush½Ã Service Thread¿Í °øÀ¯
-    //ÀÏ¹İÀûÀÎ »óÈ²¿¡¼­ SenderApply¿Í Sender°¡ °øÀ¯
+    //Senderì˜ ì •ë³´ë¥¼ ë‹¤ë¥¸ ìŠ¤ë ˆë“œë“¤ê³¼ ê³µìœ , Flushì‹œ Service Threadì™€ ê³µìœ 
+    //ì¼ë°˜ì ì¸ ìƒí™©ì—ì„œ SenderApplyì™€ Senderê°€ ê³µìœ 
     iduMutex            mSenderSNMtx;
     iduCond             mSenderWaitCV;
     smSN                mRestartSN;
@@ -176,12 +176,12 @@ private:
     SInt                mRole;
     idBool              mIsSenderSleep;
 
-    //mIsActive¸¦ updateÇÏ±â À§ÇØ¼­´Â ¸ğµç Mutex¸¦ È¹µæÇØ¾ßÇÔ(activate,deActivate)
+    //mIsActiveë¥¼ updateí•˜ê¸° ìœ„í•´ì„œëŠ” ëª¨ë“  Mutexë¥¼ íšë“í•´ì•¼í•¨(activate,deActivate)
     idBool              mIsActive;
 
-    idBool              mIsExceedRepGap;//BUG-22173 : V$REPSENDER act_repl_mode Ãß°¡
+    idBool              mIsExceedRepGap;//BUG-22173 : V$REPSENDER act_repl_mode ì¶”ê°€
 
-    // FailbackÀ» À§ÇØ ÇÊ¿äÇÑ µ¥ÀÌÅÍ
+    // Failbackì„ ìœ„í•´ í•„ìš”í•œ ë°ì´í„°
     RP_SENDER_STATUS    mSenderStatus;
     idBool              mIsPeerFailbackEnd;
     iduMutex            mSyncPKMtx;
@@ -191,10 +191,10 @@ private:
     UInt                mSyncPKListCurSize;
     idBool              mIsSyncPKPoolAllocated;
 
-    /* SYS_REPLICATIONS_ Meta Table°ú °°Àº »ı¸í ÁÖ±â¸¦ °¡Áø Replication Name */
+    /* SYS_REPLICATIONS_ Meta Tableê³¼ ê°™ì€ ìƒëª… ì£¼ê¸°ë¥¼ ê°€ì§„ Replication Name */
     iduMutex            mRepNameMtx;
     SChar               mRepName[QCI_MAX_NAME_LEN + 1];
-    /* PROJ-2184 sync¼º´É °³¼± */
+    /* PROJ-2184 syncì„±ëŠ¥ ê°œì„  */
     idBool               mIsRebuildIndex;
 
     UInt                mThroughput;

@@ -27,15 +27,15 @@ ACI_RC cmnDispatcherWaitLinkIPCDA(cmnLink      *aLink,
     /* bug-27250 free Buf list can be crushed when client killed */
     if (aDirection == CMN_DIRECTION_WR)
     {
-        /* receiver°¡ ¼Û½Å Çã¶ô ½ÅÈ£¸¦ ÁÙ¶§±îÁö ¹«ÇÑ ´ë±â
-         * cmiWriteBlock¿¡¼­ protocol end packet ¼Û½Å½Ã
-         * pending blockÀÌ ÀÖ´Â °æ¿ì ÀÌ ÄÚµå ¼öÇà */
+        /* receiverê°€ ì†¡ì‹  í—ˆë½ ì‹ í˜¸ë¥¼ ì¤„ë•Œê¹Œì§€ ë¬´í•œ ëŒ€ê¸°
+         * cmiWriteBlockì—ì„œ protocol end packet ì†¡ì‹ ì‹œ
+         * pending blockì´ ìˆëŠ” ê²½ìš° ì´ ì½”ë“œ ìˆ˜í–‰ */
         if (aTimeout == ACP_TIME_INFINITE)
         {
             /* client */
             sRet = cmnLinkPeerWaitSendClientIPCDA(aLink);
         }
-        /* cmiWriteBlock¿¡¼­ ¼Û½Å ´ë±â list¸¦ ³Ñ¾î¼± °æ¿ì ¼öÇà. */
+        /* cmiWriteBlockì—ì„œ ì†¡ì‹  ëŒ€ê¸° listë¥¼ ë„˜ì–´ì„  ê²½ìš° ìˆ˜í–‰. */
         else
         {
             acpSleepMsec(1); /* wait 1 msec */

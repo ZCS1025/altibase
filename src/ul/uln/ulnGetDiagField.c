@@ -71,15 +71,15 @@ static ACI_RC ulnGetDiagFieldCheckError(ulnObject    *aObject,
     ulnDiagIdentifierClass   sIdentifierClass;
 
     /*
-     * Æ÷ÀÎÅÍµéÀÌ NULL ÀÎÁö Ã¼Å©.
-     * ODBC ½ºÆå¿¡´Â Á¤ÇØÁ® ÀÖÁö ¾ÊÁö¸¸, NULL ÀÌ¸é ±×³É ¿¡·¯ ¸®ÅÏÇÏÀÚ.
+     * í¬ì¸í„°ë“¤ì´ NULL ì¸ì§€ ì²´í¬.
+     * ODBC ìŠ¤íŽ™ì—ëŠ” ì •í•´ì ¸ ìžˆì§€ ì•Šì§€ë§Œ, NULL ì´ë©´ ê·¸ëƒ¥ ì—ëŸ¬ ë¦¬í„´í•˜ìž.
      */
 
     ACI_TEST_RAISE(aDiagInfoPtr == NULL, Error);
 
     /*
-     * Object °¡ SQL_HANDLE_STMT ÀÌ°í, »óÅÂ°¡ S4 º¸´Ù ÀÛ°Å³ª S7 º¸´Ù Å©¸é ¿¡·¯
-     *  <-- State Transition Table ¿¡ ¸í½ÃµÊ.
+     * Object ê°€ SQL_HANDLE_STMT ì´ê³ , ìƒíƒœê°€ S4 ë³´ë‹¤ ìž‘ê±°ë‚˜ S7 ë³´ë‹¤ í¬ë©´ ì—ëŸ¬
+     *  <-- State Transition Table ì— ëª…ì‹œë¨.
      */
     if (aDiagIdentifier           == SQL_DIAG_ROW_COUNT &&
         ULN_OBJ_GET_TYPE(aObject) == ULN_OBJ_TYPE_STMT)
@@ -103,7 +103,7 @@ static ACI_RC ulnGetDiagFieldCheckError(ulnObject    *aObject,
     }
 
     /*
-     * aDiagIdentifier ÀÇ À¯È¿¼º °Ë»ç
+     * aDiagIdentifier ì˜ ìœ íš¨ì„± ê²€ì‚¬
      *
      * SQL_ERROR : The RecNumber argument was negative or 0 when DiagIdentifier indicated
      * a field from a diagnostic record. RecNumber is ignored for header fields.
@@ -141,10 +141,10 @@ static ACI_RC ulnGetDiagFieldCheckError(ulnObject    *aObject,
 }
 
 /*
- * Destination ÀÌ °¡¸®Å°´Â ¸Þ¸ð¸® ¿µ¿ª¿¡
- * Source °¡ °¡¸®Å°´Â ¸Þ¸ð¸® ¿µ¿ª¿¡ ÀÖ´Â ³»¿ëÀ» Ãâ·ÂÇÑ´Ù.
- * aBufferLength ´Â Destination ÀÇ Å©±âÀÌ¸ç,
- * aActualLength ´Â ½ÇÁ¦·Î Destination ¿¡ ¾²¿©Áú ¹®ÀÚ¿­ÀÇ Å©±â¸¦ ¸®ÅÏÇÒ Æ÷ÀÎÅÍÀÌ´Ù.
+ * Destination ì´ ê°€ë¦¬í‚¤ëŠ” ë©”ëª¨ë¦¬ ì˜ì—­ì—
+ * Source ê°€ ê°€ë¦¬í‚¤ëŠ” ë©”ëª¨ë¦¬ ì˜ì—­ì— ìžˆëŠ” ë‚´ìš©ì„ ì¶œë ¥í•œë‹¤.
+ * aBufferLength ëŠ” Destination ì˜ í¬ê¸°ì´ë©°,
+ * aActualLength ëŠ” ì‹¤ì œë¡œ Destination ì— ì“°ì—¬ì§ˆ ë¬¸ìžì—´ì˜ í¬ê¸°ë¥¼ ë¦¬í„´í•  í¬ì¸í„°ì´ë‹¤.
  */
 static ACI_RC ulnGetDiagFieldSetCharPtr(acp_char_t         *aDestination,
                                         const acp_char_t   *aSource,
@@ -157,7 +157,7 @@ static ACI_RC ulnGetDiagFieldSetCharPtr(acp_char_t         *aDestination,
     ACI_TEST(aDestination == NULL);
 
     /*
-     * char string À» ¿ä±¸ÇßÀ¸¸é¼­ buffer length ·Î 0 ÀÌ³ª À½¼ö¸¦ ÁÖ¸é SQL_ERORR ¸¦ ¸®ÅÏÇØ¾ß ÇÑ´Ù.
+     * char string ì„ ìš”êµ¬í–ˆìœ¼ë©´ì„œ buffer length ë¡œ 0 ì´ë‚˜ ìŒìˆ˜ë¥¼ ì£¼ë©´ SQL_ERORR ë¥¼ ë¦¬í„´í•´ì•¼ í•œë‹¤.
      */
     ACI_TEST(aBufferLength <= 0);
 
@@ -185,13 +185,13 @@ static ACI_RC ulnGetDiagFieldSetCharPtr(acp_char_t         *aDestination,
     }
 
     /*
-     * snprintf ´Â ¾²±â¸¦ ¼öÇàÇÒ ¹öÆÛÀÇ Å©±â¾È¿¡¼­
-     * ¹öÆÛ¿¡ ¾´ ¹®ÀÚ¿­Àº Ç×»ó \0 À¸·Î ³¡³ª´Â °ÍÀ» º¸ÀåÇÏ´Â ¹æ½ÄÀ¸·Î µ¿ÀÛÇÑ´Ù.
-     * ±×·¡¼­ ¾Æ·¡ÀÇ ¹®ÀåÀ» ¼öÇàÇÏ¸é,
+     * snprintf ëŠ” ì“°ê¸°ë¥¼ ìˆ˜í–‰í•  ë²„í¼ì˜ í¬ê¸°ì•ˆì—ì„œ
+     * ë²„í¼ì— ì“´ ë¬¸ìžì—´ì€ í•­ìƒ \0 ìœ¼ë¡œ ëë‚˜ëŠ” ê²ƒì„ ë³´ìž¥í•˜ëŠ” ë°©ì‹ìœ¼ë¡œ ë™ìž‘í•œë‹¤.
+     * ê·¸ëž˜ì„œ ì•„ëž˜ì˜ ë¬¸ìž¥ì„ ìˆ˜í–‰í•˜ë©´,
      *      snprintf(buffer, 4, "%s", "this");
-     * buffer ¿¡´Â
+     * buffer ì—ëŠ”
      *      t h i \0
-     * °¡ µé¾î°£´Ù.
+     * ê°€ ë“¤ì–´ê°„ë‹¤.
      */
     if (aSource != NULL)
     {
@@ -223,7 +223,7 @@ static SQLRETURN ulnGetDiagFieldReocrd(ulnObject    *aObject,
     ACI_TEST_RAISE(aRecNumber <= 0, LABEL_INVALID_RECORD_NO);
 
     /*
-     * Diagnostic Record ¸¦ °¡¸®Å°´Â Æ÷ÀÎÅÍ¸¦ ¾ò´Â´Ù.
+     * Diagnostic Record ë¥¼ ê°€ë¦¬í‚¤ëŠ” í¬ì¸í„°ë¥¼ ì–»ëŠ”ë‹¤.
      */
     ACI_TEST_RAISE(ulnGetDiagRecFromObject(aObject, &sDiagRecord, aRecNumber) != ACI_SUCCESS,
                    LABEL_NO_DATA);
@@ -367,7 +367,7 @@ SQLRETURN ulnGetDiagField(acp_sint16_t  aHandleType,
     sObject = aObject;
 
     /*
-     * ÇÚµé Å¸ÀÔ°ú °´Ã¼ÀÇ ½ÇÁ¦ Å¸ÀÔÀÌ ÀÏÄ¡ÇÏ´ÂÁö Ã¼Å©
+     * í•¸ë“¤ íƒ€ìž…ê³¼ ê°ì²´ì˜ ì‹¤ì œ íƒ€ìž…ì´ ì¼ì¹˜í•˜ëŠ”ì§€ ì²´í¬
      */
     switch (aHandleType)
     {
@@ -409,7 +409,7 @@ SQLRETURN ulnGetDiagField(acp_sint16_t  aHandleType,
      */
 
     /*
-     * ¿¡·¯ Ã¼Å·
+     * ì—ëŸ¬ ì²´í‚¹
      */
     ACI_TEST(ulnGetDiagFieldCheckError(sObject,
                                        aRecNumber,
@@ -420,7 +420,7 @@ SQLRETURN ulnGetDiagField(acp_sint16_t  aHandleType,
     sDiagHeader = ulnGetDiagHeaderFromObject(sObject);
 
     /*
-     * Note : 64ºñÆ® 0dbc ¿Í °ü·ÃÇÑ ÁÖÀÇ»çÇ× :
+     * Note : 64ë¹„íŠ¸ 0dbc ì™€ ê´€ë ¨í•œ ì£¼ì˜ì‚¬í•­ :
      *
      *        When the DiagIdentifier parameter has one of the following values,
      *        a 64-bit value is returned in *DiagInfoPtr:
@@ -433,11 +433,11 @@ SQLRETURN ulnGetDiagField(acp_sint16_t  aHandleType,
     switch (aDiagIdentifier)
     {
         /*
-         * Çì´õ ÇÊµåµé
+         * í—¤ë” í•„ë“œë“¤
          */
         case SQL_DIAG_CURSOR_ROW_COUNT: /* SQLLEN */
             /*
-             * BUGBUG : ±¸Çö¾ÈµÇ¾î ÀÖ´Ù. ±×³É 0 À» ¸®ÅÏÇÏÀÚ.
+             * BUGBUG : êµ¬í˜„ì•ˆë˜ì–´ ìžˆë‹¤. ê·¸ëƒ¥ 0 ì„ ë¦¬í„´í•˜ìž.
              */
             if (aDiagInfoPtr != NULL)
             {

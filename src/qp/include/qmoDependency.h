@@ -21,24 +21,24 @@
  * Description :
  *     Plan Dependency Manager
  *
- *     °¢ Plan Node »ı¼º ½Ã Plan °£ÀÇ °ü°è¸¦ °í·ÁÇÏ¿©,
- *     ÇØ´ç PlanÀÇ Dependency¸¦ ¼³Á¤ÇÏ´Â ÀıÂ÷¸¦ Á¦°øÇÑ´Ù.
- *     ¾Æ·¡¿Í °°ÀÌ ÃÑ 6´Ü°èÀÇ ÀıÂ÷¸¦ ÅëÇØ PlanÀÇ Depenendency°¡ °áÁ¤µÈ´Ù.
+ *     ê° Plan Node ìƒì„± ì‹œ Plan ê°„ì˜ ê´€ê³„ë¥¼ ê³ ë ¤í•˜ì—¬,
+ *     í•´ë‹¹ Planì˜ Dependencyë¥¼ ì„¤ì •í•˜ëŠ” ì ˆì°¨ë¥¼ ì œê³µí•œë‹¤.
+ *     ì•„ë˜ì™€ ê°™ì´ ì´ 6ë‹¨ê³„ì˜ ì ˆì°¨ë¥¼ í†µí•´ Planì˜ Depenendencyê°€ ê²°ì •ëœë‹¤.
  *
- *     - 1´Ü°è : Set Tuple ID
- *     - 2´Ü°è : Dependencies »ı¼º
- *     - 3´Ü°è : Table Map º¸Á¤
- *     - 4´Ü°è : Dependency °áÁ¤
- *     - 5´Ü°è : Dependency º¸Á¤
- *     - 6´Ü°è : Dependencies º¸Á¤
+ *     - 1ë‹¨ê³„ : Set Tuple ID
+ *     - 2ë‹¨ê³„ : Dependencies ìƒì„±
+ *     - 3ë‹¨ê³„ : Table Map ë³´ì •
+ *     - 4ë‹¨ê³„ : Dependency ê²°ì •
+ *     - 5ë‹¨ê³„ : Dependency ë³´ì •
+ *     - 6ë‹¨ê³„ : Dependencies ë³´ì •
  *
- *    ÁÖÀÇ)  °¢ Plan ³ëµå¿¡¼­ Subquery¸¦ Æ÷ÇÔÇÒ °æ¿ì,
- *           Subquery¿¡ ´ëÇÑ Plan Tree »ı¼ºÀº 2´Ü°è¿Í 3´Ü°è »çÀÌ¿¡¼­
- *           Ã³¸®µÇ¾î¾ß ÇÑ´Ù.
+ *    ì£¼ì˜)  ê° Plan ë…¸ë“œì—ì„œ Subqueryë¥¼ í¬í•¨í•  ê²½ìš°,
+ *           Subqueryì— ëŒ€í•œ Plan Tree ìƒì„±ì€ 2ë‹¨ê³„ì™€ 3ë‹¨ê³„ ì‚¬ì´ì—ì„œ
+ *           ì²˜ë¦¬ë˜ì–´ì•¼ í•œë‹¤.
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  **********************************************************************/
 
@@ -50,10 +50,10 @@
 #include <qmoCrtPathMgr.h>
 
 //---------------------------------------------------
-// Plan Dependency ¸¦ °ü¸®ÇÏ±â À§ÇÑ ÀÚ·á ±¸Á¶
+// Plan Dependency ë¥¼ ê´€ë¦¬í•˜ê¸° ìœ„í•œ ìë£Œ êµ¬ì¡°
 //---------------------------------------------------
 
-// Plan Node °¡ Ã³¸® ÇØ¾ß ÇÏ´Â dependency Á¾·ù
+// Plan Node ê°€ ì²˜ë¦¬ í•´ì•¼ í•˜ëŠ” dependency ì¢…ë¥˜
 #define QMO_DEPENDENCY_STEP1_SET_TABLE_MAP_MASK        (0x00000010) 
 #define QMO_DEPENDENCY_STEP1_SET_TABLE_MAP_TRUE        (0x00000000) 
 #define QMO_DEPENDENCY_STEP1_SET_TABLE_MAP_FALSE       (0x00000010) 
@@ -79,14 +79,14 @@
 #define QMO_DEPENDENCY_STEP2_SETNODE_TRUE              (0x00000200)
 
 //---------------------------------------------------
-// Plan Dependency ¸¦ °ü¸®ÇÏ±â À§ÇÑ ÇÔ¼ö
+// Plan Dependency ë¥¼ ê´€ë¦¬í•˜ê¸° ìœ„í•œ í•¨ìˆ˜
 //---------------------------------------------------
 
 class qmoDependency
 {
 public:
     
-    // ÇØ´ç PlanÀÇ Dependency, Dependencies, SubqueryÀÇ PlanÀ» »ı¼º
+    // í•´ë‹¹ Planì˜ Dependency, Dependencies, Subqueryì˜ Planì„ ìƒì„±
     static IDE_RC    setDependency( qcStatement * aStatement,
                                     qmsQuerySet * aQuerySet,
                                     qmnPlan     * aPlan,
@@ -98,34 +98,34 @@ public:
                                     UInt          aMtrCount,
                                     qmcMtrNode ** aMtrNode );
     
-    // Dependency ¼³Á¤ 1´Ü°è
+    // Dependency ì„¤ì • 1ë‹¨ê³„
     static IDE_RC    step1setTupleID( qcStatement * aStatement ,
                                       UShort        aTupleID );
     
-    // Dependency ¼³Á¤ 2´Ü°è
+    // Dependency ì„¤ì • 2ë‹¨ê³„
     static IDE_RC    step2makeDependencies( qmnPlan     * aPlan ,
                                             UInt          aDependencyFlag,
                                             UShort        aTupleID ,
                                             qcDepInfo   * aDependencies );
     
-    // Dependency ¼³Á¤ 3´Ü°è
+    // Dependency ì„¤ì • 3ë‹¨ê³„
     static IDE_RC    step3refineTableMap( qcStatement * aStatement ,
                                           qmnPlan     * aPlan ,
                                           qmsQuerySet * aQuerySet ,
                                           UShort        aTupleID );
 
-    // Dependency ¼³Á¤ 4-5´Ü°è
+    // Dependency ì„¤ì • 4-5ë‹¨ê³„
     static IDE_RC    step4decideDependency( qcStatement * aStatement ,
                                             qmnPlan     * aPlan ,
                                             qmsQuerySet * aQuerySet );
 
-    // Dependency ¼³Á¤ 6´Ü°è
+    // Dependency ì„¤ì • 6ë‹¨ê³„
     static IDE_RC    step6refineDependencies( qmnPlan     * aPlan ,
                                               qcDepInfo   * aDependencies );
     
 private:
 
-    // Join Order¿Í Dependencies·Î ºÎÅÍ °¡Àå ¿À¸¥ÂÊ order¸¦ Ã£±â
+    // Join Orderì™€ Dependenciesë¡œ ë¶€í„° ê°€ì¥ ì˜¤ë¥¸ìª½ orderë¥¼ ì°¾ê¸°
     static IDE_RC    findRightJoinOrder( qmsSFWGH   * aSFWGH ,
                                          qcDepInfo  * aInputDependencies ,
                                          qcDepInfo  * aOutputDependencies );

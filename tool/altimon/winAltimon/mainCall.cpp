@@ -51,7 +51,7 @@ void __fastcall TmainCallForm::Button1Click(TObject *Sender)
 	f1->Show();
 }
 //---------------------------------------------------------------------------
-// DSN LIST¸¦ °¡Á®¿À´Â ÇÔ¼ö
+// DSN LISTë¥¼ ê°€ì ¸ì˜¤ëŠ” í•¨ìˆ˜
 void __fastcall TmainCallForm::GetDsnList()
 {
     HKEY hKey, hKey2;
@@ -62,7 +62,7 @@ void __fastcall TmainCallForm::GetDsnList()
 	FILETIME file_time;
 	AnsiString x;
 
-	// MainRootKey¸¦ ¿¬´Ù.
+	// MainRootKeyë¥¼ ì—°ë‹¤.
 	wsprintf(sBuf , "Software\\ODBC\\ODBC.INI");
 	if (RegOpenKeyEx(HKEY_LOCAL_MACHINE,
 				  sBuf,
@@ -77,12 +77,12 @@ void __fastcall TmainCallForm::GetDsnList()
 	key_num = 0;
     DSNLIST->Clear();
 	
-	// EnumÀÌ ¿¡·¯°¡ ³¯¶§±îÁö ODBC.INI¸¦ µÚÁø´Ù.
+	// Enumì´ ì—ëŸ¬ê°€ ë‚ ë•Œê¹Œì§€ ODBC.INIë¥¼ ë’¤ì§„ë‹¤.
 	while (1)
 	{
 		subkey_length = 1024;
 		memset(subkey_name , 0x00, sizeof(subkey_name));
-		// ÀÌ ÇÔ¼ö¸¦ ÅëÇÏ¸é DSNLIST°¡ ³ª¿Â´Ù.
+		// ì´ í•¨ìˆ˜ë¥¼ í†µí•˜ë©´ DSNLISTê°€ ë‚˜ì˜¨ë‹¤.
 		if (RegEnumKeyEx( hKey,
 						  key_num,
 						  subkey_name,
@@ -96,7 +96,7 @@ void __fastcall TmainCallForm::GetDsnList()
 			break;
 		}
 
-		// DSN¸íÀ» °¡Áö°í ´Ù½Ã Key¸¦ ¿¬´Ù.
+		// DSNëª…ì„ ê°€ì§€ê³  ë‹¤ì‹œ Keyë¥¼ ì—°ë‹¤.
 		wsprintf(sBuf, "Software\\ODBC\\ODBC.INI\\%s", subkey_name);
 		if (RegOpenKeyEx(HKEY_LOCAL_MACHINE,
 						 sBuf,
@@ -108,7 +108,7 @@ void __fastcall TmainCallForm::GetDsnList()
 			break;
 		}
 
-		// ¿­¸° Key¿¡¼­ Dirver°¡ Altibase¿ëÀÎÁö È®ÀÎÇÑ´Ù.
+		// ì—´ë¦° Keyì—ì„œ Dirverê°€ Altibaseìš©ì¸ì§€ í™•ì¸í•œë‹¤.
 		length = 1024;
 		value_type = NULL;
 		memset(ByVal1 , 0x00, sizeof(ByVal1));
@@ -120,26 +120,26 @@ void __fastcall TmainCallForm::GetDsnList()
 							ByVal1,
 							&length) == 0)
 		{
-			// AltibaseDLLÀ» ¾²´Â³ğÀÌ³Ä?
+			// AltibaseDLLì„ ì“°ëŠ”ë†ˆì´ëƒ?
 		   AnsiString x = ByVal1;
 		   int c;
 
-		   // a4_CM451.dll ÀÌ´Ù.
+		   // a4_CM451.dll ì´ë‹¤.
 		   c = x.Pos("a4_");
 		   if (c != 0)
 		   {
-              // ListBox¿¡ µî·ÏÇÑ´Ù.
+              // ListBoxì— ë“±ë¡í•œë‹¤.
 			  DSNLIST->Items->Add(subkey_name) ;
 		   }
 		}
 
-		// ¾ÈÂÊ¿¡ ¿­Àº°Í¸¸ ´İ´Â´Ù.
+		// ì•ˆìª½ì— ì—´ì€ê²ƒë§Œ ë‹«ëŠ”ë‹¤.
 		RegCloseKey(hKey2);
 		key_num++;
 
 	}
 
-	// ÃÖÁ¾ Key´İ´Â´Ù.
+	// ìµœì¢… Keyë‹«ëŠ”ë‹¤.
 	RegCloseKey(hKey);
     
 }

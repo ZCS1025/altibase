@@ -589,7 +589,7 @@ IDE_RC dknLinkCheck( dknLink * aLink, idBool * aConnectedFlag )
 
         IDE_TEST( checkSocketRECV( &(aLink->mSocket), ACP_MSG_PEEK | ACP_MSG_NONBLOCK, &sIsClosed) != IDE_SUCCESS );
         
-// Windows CE¿¡¼­´Â MSG_PEEK ¿É¼ÊÀ» Áö¿øÇÏÁö ¾Ê´Â´Ù. (WSAEOPNOTSUPP)
+// Windows CEì—ì„œëŠ” MSG_PEEK ì˜µì…¥ì„ ì§€ì›í•˜ì§€ ì•ŠëŠ”ë‹¤. (WSAEOPNOTSUPP)
 #elif defined(ACP_MSG_PEEK) && !defined(VC_WINCE)
 
         IDE_TEST( checkSocketIOCTL( &(aLink->mSocket), &sIsClosed ) != IDE_SUCCESS );

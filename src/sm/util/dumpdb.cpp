@@ -19,8 +19,8 @@
  * $Id: dumpdb.cpp 42163 2011-09-27 07:14:10Z elcarim $
  *
  * dumpdb:
- * Database( DRDB DBFile, MRDB CheckpointImage, Loganchor, LogFile)µîÀ»
- * DumpÇÏ¿© ºĞ¼®ÇÏ°í Á¤º¸¸¦ Ãâ·ÂÇØÁÖ´Â µµ±¸ ÀÔ´Ï´Ù.
+ * Database( DRDB DBFile, MRDB CheckpointImage, Loganchor, LogFile)ë“±ì„
+ * Dumpí•˜ì—¬ ë¶„ì„í•˜ê³  ì •ë³´ë¥¼ ì¶œë ¥í•´ì£¼ëŠ” ë„êµ¬ ì…ë‹ˆë‹¤.
  **********************************************************************/
 
 #include <idl.h>
@@ -40,27 +40,27 @@
 #include <smmExpandChunk.h>
 #include <mmm.h>
 
-#define SMUTIL_TEMP_BUFFER_SIZE (65536) /* hexa ´ıÇÁ µîÀ» À§ÇÑ ¹öÆÛ Å©±â */
+#define SMUTIL_TEMP_BUFFER_SIZE (65536) /* hexa ë¤í”„ ë“±ì„ ìœ„í•œ ë²„í¼ í¬ê¸° */
 #define SMUTIL_ALL_SPACEID      (SC_MAX_SPACE_COUNT) /* Default */
 #define SMUTIL_ALL_TABLEOID     (SM_NULL_OID)        /* Default */
 
 typedef enum {
-    SMUTIL_JOB_NONE                = -1, /* JobÀ» ¼³Á¤ÇÏÁö ¾ÊÀº °æ¿ì */
-    SMUTIL_JOB_META                = 0,  /* MetaPage¸¦ DumpÇÕ´Ï´Ù. */
-    SMUTIL_JOB_TABLESPACE          = 1,  /* TablespaceÁ¤º¸¸¦ dumpÇÕ´Ï´Ù. */
-    SMUTIL_JOB_TABLESPACE_FLI      = 2,  /* FreeListInfo¸¦ º¸¿©Áİ´Ï´Ù. */
-    SMUTIL_JOB_TABLESPACE_FREEPAGE = 3,  /* FreePageList¸¦ Ãâ·ÂÇÕ´Ï´Ù. */
-    SMUTIL_JOB_TABLE               = 4,  /* Catalog or NormalTableÀ» Á¶È¸ */
-    SMUTIL_JOB_TABLE_ALLOCPAGE     = 5,  /* TableÀÌ °¡Áø Page ¸ñ·ÏÀÔ´Ï´Ù. */
-    SMUTIL_JOB_PAGE                = 6,  /* PageÇÏ³ª¸¦ DumpÇÕ´Ï´Ù. */
-    SMUTIL_JOB_INCREMENTAL_BACKUP  = 7,  /* incremental backup ÆÄÀÏÀÇ MetaPage¸¦ DumpÇÕ´Ï´Ù. */
+    SMUTIL_JOB_NONE                = -1, /* Jobì„ ì„¤ì •í•˜ì§€ ì•Šì€ ê²½ìš° */
+    SMUTIL_JOB_META                = 0,  /* MetaPageë¥¼ Dumpí•©ë‹ˆë‹¤. */
+    SMUTIL_JOB_TABLESPACE          = 1,  /* Tablespaceì •ë³´ë¥¼ dumpí•©ë‹ˆë‹¤. */
+    SMUTIL_JOB_TABLESPACE_FLI      = 2,  /* FreeListInfoë¥¼ ë³´ì—¬ì¤ë‹ˆë‹¤. */
+    SMUTIL_JOB_TABLESPACE_FREEPAGE = 3,  /* FreePageListë¥¼ ì¶œë ¥í•©ë‹ˆë‹¤. */
+    SMUTIL_JOB_TABLE               = 4,  /* Catalog or NormalTableì„ ì¡°íšŒ */
+    SMUTIL_JOB_TABLE_ALLOCPAGE     = 5,  /* Tableì´ ê°€ì§„ Page ëª©ë¡ì…ë‹ˆë‹¤. */
+    SMUTIL_JOB_PAGE                = 6,  /* Pageí•˜ë‚˜ë¥¼ Dumpí•©ë‹ˆë‹¤. */
+    SMUTIL_JOB_INCREMENTAL_BACKUP  = 7,  /* incremental backup íŒŒì¼ì˜ MetaPageë¥¼ Dumpí•©ë‹ˆë‹¤. */
     SMUTIL_JOB_MAX                 = 8
 } smuJob;
 
 /* Input Parameter */
-idBool              gDisplayHeader     = ID_TRUE;  /* Banner Ãâ·Â¿©ºÎ */
+idBool              gDisplayHeader     = ID_TRUE;  /* Banner ì¶œë ¥ì—¬ë¶€ */
 idBool              gInvalidArgs       = ID_FALSE;
-idBool              gDisplaySimple     = ID_TRUE;  /* Hexa,value°ª Ãâ·Â¿©ºÎ */
+idBool              gDisplaySimple     = ID_TRUE;  /* Hexa,valueê°’ ì¶œë ¥ì—¬ë¶€ */
 
 smuJob              gJob               = SMUTIL_JOB_NONE;
 UInt                gPingPong          = 0;
@@ -68,8 +68,8 @@ smOID               gOID               = SMUTIL_ALL_TABLEOID;
 scSpaceID           gSID               = SMUTIL_ALL_SPACEID ;
 scPageID            gPID               = 0 ;
 
-/* LogAnchor¿¡ ±â·ÏµÈ File ´ë½Å, ´Ù¸¥ CheckpointImage File¤·¸£ ÁöÁ¤ÇÏ´Â °æ¿ì
- * »ç¿ëµË´Ï´Ù. */
+/* LogAnchorì— ê¸°ë¡ëœ File ëŒ€ì‹ , ë‹¤ë¥¸ CheckpointImage Fileã…‡ë¥´ ì§€ì •í•˜ëŠ” ê²½ìš°
+ * ì‚¬ìš©ë©ë‹ˆë‹¤. */
 SChar             * gTargetFN          = NULL;
 SChar               gTBSName[ SM_MAX_FILE_NAME+1 ];
 
@@ -79,67 +79,67 @@ iduFile             gFile;
 iduMemPool          gPageMemPool;
 
 
-/* »ç¿ë¹ıÀ» Ãâ·ÂÇÕ´Ï´Ù. */
+/* ì‚¬ìš©ë²•ì„ ì¶œë ¥í•©ë‹ˆë‹¤. */
 void     usage();
-/* ÀÎÀÚ¸¦ ºĞ¼®ÇÕ´Ï´Ù. */
+/* ì¸ìë¥¼ ë¶„ì„í•©ë‹ˆë‹¤. */
 void     parseArgs( int    &aArgc, char **&aArgv );
-/* JobÀÎÀÚÀÇ ÀÔ·Â°ªÀ» ºĞ¼®ÇÕ´Ï´Ù. */
+/* Jobì¸ìì˜ ì…ë ¥ê°’ì„ ë¶„ì„í•©ë‹ˆë‹¤. */
 smuJob   parseJob( char * aStr );
 
-/* CheckpointImage FileÀ» ¸í½ÃÀûÀ¸·Î ¼³Á¤ÇßÀ» °æ¿ì, ±× ÀÌ¸§ÀÇ ±¸¼ºÀ» ºĞ¼®*/
+/* CheckpointImage Fileì„ ëª…ì‹œì ìœ¼ë¡œ ì„¤ì •í–ˆì„ ê²½ìš°, ê·¸ ì´ë¦„ì˜ êµ¬ì„±ì„ ë¶„ì„*/
 void parseDBFileName(SChar * aDBFileName,
                      SChar * aTBSName );
 
-/* Memory¸¦ ÀĞ¾î Hexa·Î Ãâ·ÂÇÕ´Ï´Ù. */
+/* Memoryë¥¼ ì½ì–´ Hexaë¡œ ì¶œë ¥í•©ë‹ˆë‹¤. */
 void     printMemToHexPtr( UChar * aMemPtr, UInt aSize );
 
-/* BIT, BYTE, NIBBLEµîÀ» DumpÇÕ´Ï´Ù. (MT¿¡ DumpÇÔ¼ö°¡ ¾ø½À´Ï´Ù. */
+/* BIT, BYTE, NIBBLEë“±ì„ Dumpí•©ë‹ˆë‹¤. (MTì— Dumpí•¨ìˆ˜ê°€ ì—†ìŠµë‹ˆë‹¤. */
 IDE_RC   encodeBinarySelf( const mtdModule  * aModule,
                            UInt               aLength,
                            void             * aValue );
-/* ColumnÀÇ °ªÀ» Ãâ·ÂÇÕ´Ï´Ù. */
+/* Columnì˜ ê°’ì„ ì¶œë ¥í•©ë‹ˆë‹¤. */
 IDE_RC printColumnValue( smOID      aTableOID,
                          UInt       aColumnID,
                          SChar    * aValue,
                          SInt       aPrintComma );
-/* ColumnµéÀ» ¸ğµÎ Ãâ·ÂÇÕ´Ï´Ù. */
+/* Columnë“¤ì„ ëª¨ë‘ ì¶œë ¥í•©ë‹ˆë‹¤. */
 IDE_RC printColumns( smOID         aTableOID,
                      UInt          aColumnCount,
                      SChar       * aValue );
-/* ColumnÀÇ Scheme¸¦ Ãâ·ÂÇÕ´Ï´Ù. */
+/* Columnì˜ Schemeë¥¼ ì¶œë ¥í•©ë‹ˆë‹¤. */
 void printColumnScheme( void * aTableHeader );
-/* TableHeader¸¦ Ãâ·ÂÇÕ´Ï´Ù. */
+/* TableHeaderë¥¼ ì¶œë ¥í•©ë‹ˆë‹¤. */
 void printTableHeader( void    * aTableHeader,
                        idBool    aDisplaySimple,
                        SChar   * aTempBuffer,
                        UInt      aTempBufferLength );
-/* PrintRecordÇßÀ»¶§, ±× °ªµéÀ» »ğÀÔÇÏ´Â ¿ëµµ·Î ¹Ù·Î »ç¿ëµÉ ¼ö ¾øÀ½À» ¾Ë¸² */
+/* PrintRecordí–ˆì„ë•Œ, ê·¸ ê°’ë“¤ì„ ì‚½ì…í•˜ëŠ” ìš©ë„ë¡œ ë°”ë¡œ ì‚¬ìš©ë  ìˆ˜ ì—†ìŒì„ ì•Œë¦¼ */
 void printWarning4Record();
-/* Record ÇÏ³ª¸¦ Value·Î DumpÇÕ´Ï´Ù. */
+/* Record í•˜ë‚˜ë¥¼ Valueë¡œ Dumpí•©ë‹ˆë‹¤. */
 void printRecord( smcTableHeader   * aTableHeader,
                   smpSlotHeader    * aSlotHeaderPtr,
                   SChar            * sTempBuffer,
                   UInt               sTempBufferLength );
 
-/* Dump¿ë PCH¸¦ ÃÊ±âÈ­ÇÏ°í ¸¶¹«¸®ÇÕ´Ï´Ù. */
+/* Dumpìš© PCHë¥¼ ì´ˆê¸°í™”í•˜ê³  ë§ˆë¬´ë¦¬í•©ë‹ˆë‹¤. */
 void initPCH();
 void finalizePCH();
 
-/* CheckpointImageFileÀ» ÀĞ±â À§ÇÑ DatabaseFile °´Ã¼¸¦ ÇÒ´ç/»èÁ¦ÇÕ´Ï´Ù. */
+/* CheckpointImageFileì„ ì½ê¸° ìœ„í•œ DatabaseFile ê°ì²´ë¥¼ í• ë‹¹/ì‚­ì œí•©ë‹ˆë‹¤. */
 IDE_RC allocDbf( scSpaceID         aSpaceID, 
                  scPageID          aPageID, 
                  smmDatabaseFile * aDB );
 IDE_RC destroyDbf( smmDatabaseFile *aDB );
 
-/* smmManager::getPersPagePtrÀÇ Callback ÇÔ¼öÀÔ´Ï´Ù. */
+/* smmManager::getPersPagePtrì˜ Callback í•¨ìˆ˜ì…ë‹ˆë‹¤. */
 IDE_RC getPersPagePtr( scSpaceID    aSpaceID, 
                        scPageID     aPageID, 
                        void      ** aPage );
 
-/* TablespaceÀÇ ±âÃÊÀûÀÎ Á¤º¸¿¡ ´ëÇØ ÃÊ±âÈ­ÇÕ´Ï´Ù. */
+/* Tablespaceì˜ ê¸°ì´ˆì ì¸ ì •ë³´ì— ëŒ€í•´ ì´ˆê¸°í™”í•©ë‹ˆë‹¤. */
 IDE_RC initAllMemTBS();
 
-/* Job¿¡ µû¶ó °¢Á¾ Á¤º¸¸¦ Ãâ·ÂÇÕ´Ï´Ù. */
+/* Jobì— ë”°ë¼ ê°ì¢… ì •ë³´ë¥¼ ì¶œë ¥í•©ë‹ˆë‹¤. */
 IDE_RC dumpMemBase( smmMemBase * aMemBase);
 IDE_RC dumpMemMeta( scSpaceID    aSpaceID, smmChkptImageHdr * aDfHdr );
 IDE_RC dumpMemFreePageList( smmTBSNode * aTBSNode );
@@ -331,8 +331,8 @@ IDE_RC encodeBinarySelf( const mtdModule  * aModule,
     
     switch( aModule->id )
     {
-        // Byte, Nibble ¸ğµÎ HexaÇüÅÂ·Î, Áï 16Áø¼ö·Î Ãâ·ÂÇÏ±â ??¹®¿¡
-        // µÑ´Ù 4Bit´ÜÀ§·Î ShiftµÇ¾î Ãâ·ÂÇÑ´Ù.
+        // Byte, Nibble ëª¨ë‘ Hexaí˜•íƒœë¡œ, ì¦‰ 16ì§„ìˆ˜ë¡œ ì¶œë ¥í•˜ê¸° ??ë¬¸ì—
+        // ë‘˜ë‹¤ 4Bitë‹¨ìœ„ë¡œ Shiftë˜ì–´ ì¶œë ¥í•œë‹¤.
     case MTD_NIBBLE_ID :
         sBitSize = 4;
         sMTLength = ((mtdNibbleType*)aValue)->length;
@@ -340,7 +340,7 @@ IDE_RC encodeBinarySelf( const mtdModule  * aModule,
     case MTD_BYTE_ID :
     case MTD_VARBYTE_ID :
         sBitSize = 4;
-        // 4bit¾¿ ÇÏ±â ¶§¹®¿¡, 8Bit´ÜÀ§ÀÎ Byte Length´Â *2
+        // 4bitì”© í•˜ê¸° ë•Œë¬¸ì—, 8Bitë‹¨ìœ„ì¸ Byte LengthëŠ” *2
         sMTLength = (((mtdByteType*)aValue)->length) * 2;
         break;
     case MTD_BIT_ID :
@@ -411,14 +411,14 @@ IDE_RC printColumnValue( smOID      aTableOID,
     idBool             sIsNull = ID_FALSE;
     IDE_RC             sReturn;
 
-    /* column Á¤º¸ ¹× MTD module È¹µæ */
+    /* column ì •ë³´ ë° MTD module íšë“ */
     IDE_TEST( smcTable::getTableHeaderFromOID( aTableOID, (void**)&sTableHeader ) != IDE_SUCCESS);
     sColumn = (mtcColumn*)smcTable::getColumn( (void*)sTableHeader, aColumnID );
     IDE_TEST( mtd::moduleById( &sModule, sColumn->type.dataTypeId )
                                != IDE_SUCCESS );
 
 
-    /* Variable ColumnÀÌ¸é */
+    /* Variable Columnì´ë©´ */
     if ( ( ( sColumn->column.flag & SMI_COLUMN_TYPE_MASK )
            == SMI_COLUMN_TYPE_VARIABLE ) ||
          ( ( sColumn->column.flag & SMI_COLUMN_TYPE_MASK )
@@ -576,18 +576,18 @@ void printColumnScheme( void * aTableHeader )
          i < smcTable::getColumnCount( aTableHeader ) ; 
          i ++)
     {
-        /* Module ¹× Column È¹µæ */
+        /* Module ë° Column íšë“ */
         sColumn = (mtcColumn*)smcTable::getColumn( 
             aTableHeader, i );
         IDE_ASSERT( mtd::moduleById( &sModule, 
                                      sColumn->type.dataTypeId )
                     == IDE_SUCCESS );
 
-        /* ColumnÀÇ ÀÌ¸§ Ãâ·Â */
+        /* Columnì˜ ì´ë¦„ ì¶œë ¥ */
         idlOS::printf( "%s",
                        sModule->names->string );
 
-        /* Precision, scale¿¡ ´ëÇÑ Á¤º¸¸¦ ºĞ·ùÇÏ¿© Ãâ·Â. */
+        /* Precision, scaleì— ëŒ€í•œ ì •ë³´ë¥¼ ë¶„ë¥˜í•˜ì—¬ ì¶œë ¥. */
         switch ( sModule->flag & MTD_CREATE_PARAM_MASK )
         {
         case MTD_CREATE_PARAM_NONE:                  /* ex) Integer */
@@ -628,7 +628,7 @@ void printColumnScheme( void * aTableHeader )
         }
         else
         {
-            /* ¸¶Áö¸· Ä®·³ÀÌ ¾Æ´Ï¸é , ·Î ±¸ºĞÇÔ */
+            /* ë§ˆì§€ë§‰ ì¹¼ëŸ¼ì´ ì•„ë‹ˆë©´ , ë¡œ êµ¬ë¶„í•¨ */
             if( i < smcTable::getColumnCount( aTableHeader ) - 1 )
             {
                 idlOS::printf(",");
@@ -650,7 +650,7 @@ void printTableHeader( void    * aTableHeader,
     smnIndexHeader * sIndexHeader;
     UInt             i;
 
-    /* TableHeader¸¦ ¹ÙÅÁÀ¸·Î TableHeaderÀÇ SlotHeader¸¦ Ã£´Â´Ù. */
+    /* TableHeaderë¥¼ ë°”íƒ•ìœ¼ë¡œ TableHeaderì˜ SlotHeaderë¥¼ ì°¾ëŠ”ë‹¤. */
     sSlotHeaderPtr = (smpSlotHeader*)
         (((UChar*)aTableHeader) - SMP_SLOT_HEADER_SIZE);
 
@@ -662,7 +662,7 @@ void printTableHeader( void    * aTableHeader,
                                        aTempBufferLength );
     idlOS::printf( "%s\n", aTempBuffer);
 
-    /* TableÀÌ°í, »ó¼¼È÷ Ãâ·ÂÇØ¾ß ÇÑ´Ù¸é */
+    /* Tableì´ê³ , ìƒì„¸íˆ ì¶œë ¥í•´ì•¼ í•œë‹¤ë©´ */
     if( ( aDisplaySimple == ID_FALSE ) &&
         ( smcTable::getTableType( sSlotHeaderPtr ) == 
           SMC_TABLE_NORMAL ) )
@@ -719,7 +719,7 @@ void printRecord( smcTableHeader   * aTableHeader,
 
     sScn = aSlotHeaderPtr->mCreateSCN;
 
-    /* Áö¿öÁø Value´Â DumpÇÏÁö ¾ÊÀ½ */
+    /* ì§€ì›Œì§„ ValueëŠ” Dumpí•˜ì§€ ì•ŠìŒ */
     if( ( ( SMP_SLOT_IS_DROP( aSlotHeaderPtr ) ) ||
           ( SM_SCN_IS_DELETED( sScn ) == ID_TRUE ) ) &&
         ( gDisplaySimple == ID_TRUE ) )
@@ -733,7 +733,7 @@ void printRecord( smcTableHeader   * aTableHeader,
 
     aTempBuffer[0] = '\0';
 
-    /* Catalog TableÀÏ °æ¿ì, Record°¡ ÀÏ¹İ Record°¡ ¾Æ´Ñ tableheaderÀÌ´Ù. */
+    /* Catalog Tableì¼ ê²½ìš°, Recordê°€ ì¼ë°˜ Recordê°€ ì•„ë‹Œ tableheaderì´ë‹¤. */
     if( aTableHeader == smmManager::m_catTableHeader )
     {
         if( gDisplaySimple == ID_TRUE )
@@ -762,7 +762,7 @@ void printRecord( smcTableHeader   * aTableHeader,
     }
     else
     {
-        /* ±×³É Record¸¦ Ãâ·ÂÇÑ´Ù */
+        /* ê·¸ëƒ¥ Recordë¥¼ ì¶œë ¥í•œë‹¤ */
         if( gDisplaySimple == ID_FALSE )
         {
             smpFixedPageList::dumpSlotHeaderByBuffer( aSlotHeaderPtr,
@@ -846,7 +846,7 @@ IDE_RC allocDbf( scSpaceID         aSpaceID,
 
     if ( aPageID != SM_SPECIAL_PID )
     {
-	    /* PID¸¦ ¹ÙÅÁÀ¸·Î, SplitµÈ ÆÄÀÏ Áß ¸î¹øÂ° ÆÄÀÏÀ» ÀĞÀ»Áö ¼±ÅÃ */
+	    /* PIDë¥¼ ë°”íƒ•ìœ¼ë¡œ, Splitëœ íŒŒì¼ ì¤‘ ëª‡ë²ˆì§¸ íŒŒì¼ì„ ì½ì„ì§€ ì„ íƒ */
 	    sFileNo = smmManager::getDbFileNo( sTBSNode, aPageID );
     }
     else
@@ -870,16 +870,16 @@ IDE_RC allocDbf( scSpaceID         aSpaceID,
     }
     else
     {
-        /* Æ¯Á¤ ÆÄÀÏÀ» °­Á¦·Î ¼³Á¤ÇßÀ» °æ¿ì, ±× ÆÄÀÏ·Î ÀÌ¸§ ¼³Á¤ÇÔ */
+        /* íŠ¹ì • íŒŒì¼ì„ ê°•ì œë¡œ ì„¤ì •í–ˆì„ ê²½ìš°, ê·¸ íŒŒì¼ë¡œ ì´ë¦„ ì„¤ì •í•¨ */
         idlOS::memset( sDBFileName, 0, ID_SIZEOF(sDBFileName) );
 	/* BUG-39169 [sm-util] The result of dumpdb and dumpla is different
 	 * with checkpoint image files's create SCN
-	 * ÁöÁ¤µÈ ÆÄÀÏ ÀÌ¸§À» sTBSNode, gPingPong, sFileNo·Î º¹¿øÇÏ·Á ÇÏ¿´À¸³ª
-	 * Database File Header Meta °ª¸¸À» ÀĞ¾î¿À´Â ·çÆ®¿¡¼­
-	 * aPageID °ªÀ» 0À¸·Î È£ÃâÇÏ¿© ÆÄÀÏ ÀÌ¸§À» º¹¿øÇÏÁö ¸øÇÏ´Â ¹®Á¦°¡ ¹ß»ıÇÔ
-	 * ÇØ´ç ·çÆ®¿¡¼­ PageID¸¦ SM_SPECIAL_PID¸¦ »ç¿ëÇÏ¿© È£ÃâÇÏ¿©
-	 * gTargetFNÀ» ÀÌ¿ëÇÏ¿© ÆÄÀÏÀÌ¸§À» º¹¿øÇÏÁö ¾Ê°í ±×³É »ç¿ëÇÏµµ·Ï ÇÔ
-	 * ±× ¿Ü ·çÆ¾¿¡¼­´Â ±âÁ¸ ·çÆ®¸¦ Å¸µµ·Ï ÇÔ */
+	 * ì§€ì •ëœ íŒŒì¼ ì´ë¦„ì„ sTBSNode, gPingPong, sFileNoë¡œ ë³µì›í•˜ë ¤ í•˜ì˜€ìœ¼ë‚˜
+	 * Database File Header Meta ê°’ë§Œì„ ì½ì–´ì˜¤ëŠ” ë£¨íŠ¸ì—ì„œ
+	 * aPageID ê°’ì„ 0ìœ¼ë¡œ í˜¸ì¶œí•˜ì—¬ íŒŒì¼ ì´ë¦„ì„ ë³µì›í•˜ì§€ ëª»í•˜ëŠ” ë¬¸ì œê°€ ë°œìƒí•¨
+	 * í•´ë‹¹ ë£¨íŠ¸ì—ì„œ PageIDë¥¼ SM_SPECIAL_PIDë¥¼ ì‚¬ìš©í•˜ì—¬ í˜¸ì¶œí•˜ì—¬
+	 * gTargetFNì„ ì´ìš©í•˜ì—¬ íŒŒì¼ì´ë¦„ì„ ë³µì›í•˜ì§€ ì•Šê³  ê·¸ëƒ¥ ì‚¬ìš©í•˜ë„ë¡ í•¨
+	 * ê·¸ ì™¸ ë£¨í‹´ì—ì„œëŠ” ê¸°ì¡´ ë£¨íŠ¸ë¥¼ íƒ€ë„ë¡ í•¨ */
 	if( aPageID != SM_SPECIAL_PID ) {
 		idlOS::snprintf( sDBFileName,
 				SM_MAX_FILE_NAME,
@@ -928,7 +928,7 @@ IDE_RC getPersPagePtr( scSpaceID    aSpaceID,
     smmDatabaseFile   sDb;
     smmTBSNode      * sTBSNode;
 
-    /* ÃÖÃÊÀÇ PCH Array »ı¼º */
+    /* ìµœì´ˆì˜ PCH Array ìƒì„± */
     if( gPCH[ aSpaceID ] == NULL )
     {
         IDE_TEST( iduMemMgr::calloc( IDU_MEM_SM_SMU,
@@ -944,7 +944,7 @@ IDE_RC getPersPagePtr( scSpaceID    aSpaceID,
         /* nothing to do ... */
     }
 
-    /* ÃÖÃÊÀÇ ÇØ´ç Page read */
+    /* ìµœì´ˆì˜ í•´ë‹¹ Page read */
     if( gPCH[ aSpaceID ][ aPageID ] == NULL )
     {
         IDE_TEST( gPageMemPool.alloc( (void**)&(gPCH[ aSpaceID ][ aPageID ]) )
@@ -1022,7 +1022,7 @@ IDE_RC dumpMemBase(smmMemBase * aMemBase)
                    SM_SCN_TO_LONG( aMemBase->mSystemSCN ),
                    aMemBase->mFreePageListCount );
 
-    // °¢°¢ÀÇ Free Page ListÀÇ Á¤º¸¸¦ Ãâ·ÂÇÑ´Ù.
+    // ê°ê°ì˜ Free Page Listì˜ ì •ë³´ë¥¼ ì¶œë ¥í•œë‹¤.
     for ( i=0; i< aMemBase->mFreePageListCount; i++ )
     {
         idlOS::printf( "     [%02"ID_UINT32_FMT"] "
@@ -1424,7 +1424,7 @@ void dumpTableRecord( smOID aOID )
     /* display scheme */
     if( sTableHeader == smmManager::m_catTableHeader ) 
     {
-        /* Catalog¸é, RecordµéÀÌ TableheaderÀÌ´Ù. */
+        /* Catalogë©´, Recordë“¤ì´ Tableheaderì´ë‹¤. */
         if( gDisplaySimple == ID_TRUE )
         {
             idlOS::printf(
@@ -1622,7 +1622,7 @@ void dumpMemPage( scSpaceID aSID, scPageID aPID )
                                             aPID,
                                             (void**)&sPagePtr )
                 == IDE_SUCCESS );
-    /* Fixµµ Varµµ ¾Æ´Ï¸é, Unformatted page */
+    /* Fixë„ Varë„ ì•„ë‹ˆë©´, Unformatted page */
     if( ( SMP_GET_PERS_PAGE_TYPE( sPagePtr ) != SMP_PAGETYPE_FIX ) &&
         ( SMP_GET_PERS_PAGE_TYPE( sPagePtr ) != SMP_PAGETYPE_VAR ) )
     {
@@ -1742,7 +1742,7 @@ void dumpDiskPage( scSpaceID aSID, scPageID aPID )
                                             &sPagePtr )
                 == IDE_SUCCESS );
 
-    /* page¸¦ Hexa code·Î dumpÇÏ¿© Ãâ·ÂÇÑ´Ù. */
+    /* pageë¥¼ Hexa codeë¡œ dumpí•˜ì—¬ ì¶œë ¥í•œë‹¤. */
     if( ideLog::ideMemToHexStr( (UChar*)sPagePtr, 
                                 SD_PAGE_SIZE,
                                 IDE_DUMP_FORMAT_NORMAL,
@@ -1757,7 +1757,7 @@ void dumpDiskPage( scSpaceID aSID, scPageID aPID )
         /* nothing to do ... */
     }
 
-    /* PhyPageHeader¸¦ dumpÇÏ¿© Ãâ·ÂÇÑ´Ù. */
+    /* PhyPageHeaderë¥¼ dumpí•˜ì—¬ ì¶œë ¥í•œë‹¤. */
     if( sdpPhyPage::dumpHdr( (UChar*) sPagePtr,
                              sTempBuf,
                              IDE_DUMP_DEST_LIMIT )
@@ -1893,7 +1893,7 @@ int main( int aArgc, char *aArgv[] )
      *************************************************************/
     parseArgs( aArgc, aArgv );
 
-    /* LogAnchor¿¡ ÀÖ´Â TBS°¡ ¾Æ´Ñ Æ¯Á¤ ÆÄÀÏÀ» Á÷Á¢ ¼³Á¤ÇÒ¶§ */
+    /* LogAnchorì— ìˆëŠ” TBSê°€ ì•„ë‹Œ íŠ¹ì • íŒŒì¼ì„ ì§ì ‘ ì„¤ì •í• ë•Œ */
     if( gTargetFN != NULL )
     {
         IDE_TEST_RAISE( idlOS::access( gTargetFN, F_OK) != 0,
@@ -1909,18 +1909,18 @@ int main( int aArgc, char *aArgv[] )
 
     IDE_TEST_RAISE( gInvalidArgs == ID_TRUE , err_invalid_arguments );
 
-    // Spatio-Temporal °ü·Ã DataType, Conversion, Function µî·Ï
+    // Spatio-Temporal ê´€ë ¨ DataType, Conversion, Function ë“±ë¡
     IDE_TEST( smiSmUtilInit( &mmm::mSmiGlobalCallBackList  ) != IDE_SUCCESS );
     IDE_TEST( sti::addExtMT_Module() != IDE_SUCCESS );
     IDE_TEST( mtc::initialize( NULL ) != IDE_SUCCESS );
 
     initPCH();
     smmManager::setCallback4Util( getPersPagePtr );
-    // mt °ü·Ã ÃÊ±âÈ­ Áß BLob, ClobÀÇ Converting°ú °ü·ÃÇØ ÀÇ¹Ì¾ø´Â
-    // ¿À·ù¸¦ ¸¸µé¾î ¿¡·¯ ¸Ş½ÃÁö¸¦ º¸±â ¾î·Æ°Ô ÇÑ´Ù.
-    //      - blob to int, blob to char µîÀÌ ¼±¾ğµÇ¾î ÀÖÁö ¾Ê¾Æ
-    //        ±×°ÍÀÌ ºÒ°¡´ÉÇÏ´Ù´Â ide¿À·ù°¡ ½×ÀÎ´Ù.
-    // µû¶ó¼­ ÀÌ ½ÃÁ¡¿¡¼­ ÃÊ±âÈ­ ÇØÁØ´Ù.
+    // mt ê´€ë ¨ ì´ˆê¸°í™” ì¤‘ BLob, Clobì˜ Convertingê³¼ ê´€ë ¨í•´ ì˜ë¯¸ì—†ëŠ”
+    // ì˜¤ë¥˜ë¥¼ ë§Œë“¤ì–´ ì—ëŸ¬ ë©”ì‹œì§€ë¥¼ ë³´ê¸° ì–´ë µê²Œ í•œë‹¤.
+    //      - blob to int, blob to char ë“±ì´ ì„ ì–¸ë˜ì–´ ìˆì§€ ì•Šì•„
+    //        ê·¸ê²ƒì´ ë¶ˆê°€ëŠ¥í•˜ë‹¤ëŠ” ideì˜¤ë¥˜ê°€ ìŒ“ì¸ë‹¤.
+    // ë”°ë¼ì„œ ì´ ì‹œì ì—ì„œ ì´ˆê¸°í™” í•´ì¤€ë‹¤.
     ideClearError();
 
     /*************************************************************
@@ -2041,12 +2041,12 @@ void dumpTablespace( scSpaceID aSID )
             }
             else
             {
-                /* ¸Ş¸ğ¸®¸¸ Ãë±ŞÇÔ */
+                /* ë©”ëª¨ë¦¬ë§Œ ì·¨ê¸‰í•¨ */
             }
         }
         else
         {
-            /* Ãâ·ÂÇÒ ÇÊ¿ä ¾øÀ½ */
+            /* ì¶œë ¥í•  í•„ìš” ì—†ìŒ */
         }
         sctTableSpaceMgr::getNextSpaceNode(sCurTBS, (void**)&sCurTBS );
     }
@@ -2057,7 +2057,7 @@ IDE_RC initAllMemTBS()
     smmTBSNode        * sTBSNode;
     void              * sPagePtr;
 
-    /* TargetÀ» ¼³Á¤ÇßÀ¸¸é, Æ¯Á¤ TBS¸¦ ´ë»óÀ¸·Î ¼³Á¤ÇÑ´Ù. */
+    /* Targetì„ ì„¤ì •í–ˆìœ¼ë©´, íŠ¹ì • TBSë¥¼ ëŒ€ìƒìœ¼ë¡œ ì„¤ì •í•œë‹¤. */
     if( gTargetFN != NULL )
     {
         IDE_TEST(sctTableSpaceMgr::findSpaceNodeByName(
@@ -2098,11 +2098,11 @@ IDE_RC initAllMemTBS()
 
 /*
     Parse DB File Name String
-    DB File ÀÌ¸§ÀÇ  Format : "TableSpaceName-PingPong-FileNo"
+    DB File ì´ë¦„ì˜  Format : "TableSpaceName-PingPong-FileNo"
 
-    [IN] aDBFileName - ParsingÇÒ DB FileÀÇ ÀÌ¸§
+    [IN] aDBFileName - Parsingí•  DB Fileì˜ ì´ë¦„
 
-    [OUT] aTBSName - DB FileÀÇ ÀÌ¸§
+    [OUT] aTBSName - DB Fileì˜ ì´ë¦„
  */
 void parseDBFileName(SChar * aDBFileName,
                      SChar * aTBSName )

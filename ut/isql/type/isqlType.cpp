@@ -126,7 +126,7 @@ SInt isqlType::AppendToBuffer( SChar *aBuf, SInt *aBufLen )
     aBuf[i] = '\0';
     *aBufLen = i;
 
-    return 0; // ¿©·¯ ¶óÀÎ¿¡ Ãâ·Â°¡´ÉÇÏ°Ô ÇÏ·Á¸é mCurrLenÀ» ¹İÈ¯ÇÏ¸é µÊ
+    return 0; // ì—¬ëŸ¬ ë¼ì¸ì— ì¶œë ¥ê°€ëŠ¥í•˜ê²Œ í•˜ë ¤ë©´ mCurrLenì„ ë°˜í™˜í•˜ë©´ ë¨
 }
 
 SInt isqlType::AppendAllToBuffer( SChar *aBuf )

@@ -60,7 +60,7 @@ public class AltibaseStatement implements Statement
 {
     static final int                 DEFAULT_CURSOR_HOLDABILITY = ResultSet.CLOSE_CURSORS_AT_COMMIT;
     static final int                 DEFAULT_UPDATE_COUNT = -1;
-    // BUG-42424 ColumnInfo¿¡¼­ BYTES_PER_CHAR¸¦ »ç¿ëÇÏ±â ¶§¹®¿¡ publicÀ¸·Î º¯°æ
+    // BUG-42424 ColumnInfoì—ì„œ BYTES_PER_CHARë¥¼ ì‚¬ìš©í•˜ê¸° ë•Œë¬¸ì— publicìœ¼ë¡œ ë³€ê²½
     public static final int          BYTES_PER_CHAR             = 2;
     private static final String      PING_SQL_PATTERN           = "/* PING */ SELECT 1";
 
@@ -82,7 +82,7 @@ public class AltibaseStatement implements Statement
     protected CmFetchResult          mFetchResult;
     protected int                    mStmtCID;
     protected boolean                mIsDeferred;        // BUG-42424 deferred prepare
-    protected List                   mDeferredRequests;  // BUG-42712 deferredµÈ µ¿ÀÛµéÀ» ÀúÀåÇÏ°Ô µÇ´Â ArrayList
+    protected List                   mDeferredRequests;  // BUG-42712 deferredëœ ë™ì‘ë“¤ì„ ì €ì¥í•˜ê²Œ ë˜ëŠ” ArrayList
     private String                   mQstr;
     private String                   mQstrForGeneratedKeys;
     private CmProtocolContextDirExec mContext;
@@ -165,7 +165,7 @@ public class AltibaseStatement implements Statement
     
     AltibaseStatement(AltibaseConnection aCon) throws SQLException
     {
-        // internal statement¸¦ À§ÇÑ »ı¼ºÀÚ.
+        // internal statementë¥¼ ìœ„í•œ ìƒì„±ì.
         this(aCon, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, DEFAULT_CURSOR_HOLDABILITY);
     }
 
@@ -203,7 +203,7 @@ public class AltibaseStatement implements Statement
         mTargetResultSetConcurrency = mResultSetConcurrency = aResultSetConcurrency;
         mResultSetHoldability = aResultSetHoldability;
 
-        // generated keys¸¦ À§ÇÑ ºó ResultSet
+        // generated keysë¥¼ ìœ„í•œ ë¹ˆ ResultSet
         IntegerColumn sColumn = ColumnFactory.createIntegerColumn();
         ColumnInfo sInfo = new ColumnInfo();
         sColumn.getDefaultColumnInfo(sInfo);
@@ -268,7 +268,7 @@ public class AltibaseStatement implements Statement
     
     protected void clearAllResults() throws SQLException
     {
-        // PROJ-2427 closeAllCursor ÇÁ·ÎÅäÄİÀ» º°µµ·Î º¸³»Áö ¾Ê°í execute, executeQuery¿¡¼­ ÇÑ²¨¹ø¿¡ º¸³½´Ù.
+        // PROJ-2427 closeAllCursor í”„ë¡œí† ì½œì„ ë³„ë„ë¡œ ë³´ë‚´ì§€ ì•Šê³  execute, executeQueryì—ì„œ í•œêº¼ë²ˆì— ë³´ë‚¸ë‹¤.
         mExecuteResultMgr.clear();
         mResultSetList.clear();
         mCurrentResultSet = null;
@@ -281,14 +281,14 @@ public class AltibaseStatement implements Statement
     }
 
     /**
-     * Generated Keys¸¦ ¾ò±âÀ§ÇÑ Äõ¸®¹®À» ¸¸µç´Ù.
+     * Generated Keysë¥¼ ì–»ê¸°ìœ„í•œ ì¿¼ë¦¬ë¬¸ì„ ë§Œë“ ë‹¤.
      * <p>
-     * column indexes¿Í column names´Â µ¿½Ã¿¡ »ç¿ëÇÏÁö ¾Ê´Â´Ù.
-     * ¸¸¾à, µÑÀ» ¸ğµÎ ³Ñ°å´Ù¸é column indexes¸¸ »ç¿ëÇÏ°í column names °ªÀº ¹«½ÃÇÑ´Ù.
+     * column indexesì™€ column namesëŠ” ë™ì‹œì— ì‚¬ìš©í•˜ì§€ ì•ŠëŠ”ë‹¤.
+     * ë§Œì•½, ë‘˜ì„ ëª¨ë‘ ë„˜ê²¼ë‹¤ë©´ column indexesë§Œ ì‚¬ìš©í•˜ê³  column names ê°’ì€ ë¬´ì‹œí•œë‹¤.
      * <p>
-     * ¸¸¾à ¿øº» Äõ¸®°¡ Generated Keys¸¦ ¾ò±â¿¡ ÀûÇÕÇÏÁö ¾Ê´Ù¸é, Á¶¿ëÈ÷ ³Ñ¾î°£´Ù.
+     * ë§Œì•½ ì›ë³¸ ì¿¼ë¦¬ê°€ Generated Keysë¥¼ ì–»ê¸°ì— ì í•©í•˜ì§€ ì•Šë‹¤ë©´, ì¡°ìš©íˆ ë„˜ì–´ê°„ë‹¤.
      * 
-     * @param aSql ¿øº» Äõ¸®¹®. ¹İµå½Ã INSERT ±¸¹®ÀÌ¾î¾ß ÇÑ´Ù.
+     * @param aSql ì›ë³¸ ì¿¼ë¦¬ë¬¸. ë°˜ë“œì‹œ INSERT êµ¬ë¬¸ì´ì–´ì•¼ í•œë‹¤.
      * @param aColumnIndexes an array of the indexes of the columns in the inserted row that should be made available for retrieval by a call to the method {@link #getGeneratedKeys()}
      * @param aColumnNames an array of the names of the columns in the inserted row that should be made available for retrieval by a call to the method {@link #getGeneratedKeys()}
      */
@@ -298,13 +298,13 @@ public class AltibaseStatement implements Statement
 
         if (AltiSqlProcessor.isInsertQuery(aSql) == false)
         {
-            return; // INSERT Äõ¸®¿©¾ß ÇÑ´Ù.
+            return; // INSERT ì¿¼ë¦¬ì—¬ì•¼ í•œë‹¤.
         }
 
         ArrayList sSeqs = AltiSqlProcessor.getAllSequences(aSql);
         if (sSeqs.size() == 0)
         {
-            // BUG-39571 ½ÃÄö½º°¡ ¾ø´Â °æ¿ì SQLExceptionÀ» ¹ß»ı½ÃÅ°Áö ¾Ê°í ±×³É ¸®ÅÏ½ÃÅ²´Ù.
+            // BUG-39571 ì‹œí€€ìŠ¤ê°€ ì—†ëŠ” ê²½ìš° SQLExceptionì„ ë°œìƒì‹œí‚¤ì§€ ì•Šê³  ê·¸ëƒ¥ ë¦¬í„´ì‹œí‚¨ë‹¤.
             return;
         }
 
@@ -328,11 +328,11 @@ public class AltibaseStatement implements Statement
     }
 
     /**
-     * Generated Keys¸¦ ¾ò±â À§ÇØ ÁØºñÇÑ Äõ¸®¹®ÀÌ ÀÖÀ¸¸é ¼öÇàÇÑ´Ù.
+     * Generated Keysë¥¼ ì–»ê¸° ìœ„í•´ ì¤€ë¹„í•œ ì¿¼ë¦¬ë¬¸ì´ ìˆìœ¼ë©´ ìˆ˜í–‰í•œë‹¤.
      * <p>
-     * °á°ú´Â {@link #getGeneratedKeys()}¸¦ ÅëÇØ ¾òÀ» ¼ö ÀÖ´Ù.
+     * ê²°ê³¼ëŠ” {@link #getGeneratedKeys()}ë¥¼ í†µí•´ ì–»ì„ ìˆ˜ ìˆë‹¤.
      * 
-     * @throws SQLException Äõ¸® ¼öÇà¿¡ ½ÇÆĞÇÑ °æ¿ì
+     * @throws SQLException ì¿¼ë¦¬ ìˆ˜í–‰ì— ì‹¤íŒ¨í•œ ê²½ìš°
      */
     void executeForGeneratedKeys() throws SQLException
     {
@@ -364,7 +364,7 @@ public class AltibaseStatement implements Statement
         {
             if (mExecuteResultMgr.size() == 0)
             {
-                // °á°ú°¡ ÇÏ³ªµµ ¾øÀ» °æ¿ì update count = 0À» ¼¼ÆÃÇÑ´Ù.
+                // ê²°ê³¼ê°€ í•˜ë‚˜ë„ ì—†ì„ ê²½ìš° update count = 0ì„ ì„¸íŒ…í•œë‹¤.
                 mExecuteResultMgr.add(new ExecuteResult(false,  0));
             }
         }
@@ -485,7 +485,7 @@ public class AltibaseStatement implements Statement
     }
 
     /**
-     * {@link Connection#close()}¸¦ À§ÇÑ »óÅÂ ÀüÀÌ(opened ==> closed)¿ë ¸Ş¼Òµå
+     * {@link Connection#close()}ë¥¼ ìœ„í•œ ìƒíƒœ ì „ì´(opened ==> closed)ìš© ë©”ì†Œë“œ
      */
     void closeForRelease()
     {
@@ -567,17 +567,17 @@ public class AltibaseStatement implements Statement
     }
 
     /*
-     * ÀÌ ¸Ş¼ÒµåÀÇ ¸®ÅÏ°ª¿¡ ´ëÇØ ½ºÆå°ú Á¶±İ ´Ù¸¥ ºÎºĞÀÌ ÀÖ´Ù.
-     * PSM°°Àº query¸¦ ½ÇÇàÇÏ¸é ¿©·¯°³ÀÇ result(ResultSetÀÏ ¼öµµÀÖ°í,
-     * update countÀÏ ¼öµµ ÀÖ´Ù)°¡ ¹ß»ıÇÒ ¼ö ÀÖ´Âµ¥,
-     * JDBC Spec¿¡´Â Ã¹¹øÂ° result°¡ ResultSetÀÌ ¾Æ´Ñ °æ¿ì
-     * ÀÌ ¸Ş¼ÒµåÀÇ ¸®ÅÏ°ªÀº false¶ó°í Á¤ÀÇÇÑ´Ù. 
-     * Áï Spec¿¡ µû¸£¸é, ÀÌ ¸Ş¼Òµå°¡ false¸¦ ¸®ÅÏÇÑ´Ù°í ÇØ¼­
-     * result¿¡ ResultSetÀÌ ¾ø´Ù°í º¸ÀåÇÒ ¼ö ¾ø´Ù.
-     * ÇÏÁö¸¸, ½ÇÁ¦ ±¸Çö¿¡¼­´Â ResultSetÀÌ ÀÖÀ¸¸é ¹İµå½Ã
-     * Ã¹¹øÂ° resultºÎÅÍ ResultSetÀÌ ³ª¿Àµµ·Ï ±¸ÇöÇß´Ù.
-     * µû¶ó¼­ ÀÌ ¸Ş¼Òµå°¡ false¸¦ ¸®ÅÏÇÑ´Ù´Â °ÍÀº
-     * ResultSetÀÌ result¿¡ Æ÷ÇÔµÇ¾î ÀÖÁö ¾Ê´Ù´Â °ÍÀ» º¸ÀåÇÑ´Ù. 
+     * ì´ ë©”ì†Œë“œì˜ ë¦¬í„´ê°’ì— ëŒ€í•´ ìŠ¤í™ê³¼ ì¡°ê¸ˆ ë‹¤ë¥¸ ë¶€ë¶„ì´ ìˆë‹¤.
+     * PSMê°™ì€ queryë¥¼ ì‹¤í–‰í•˜ë©´ ì—¬ëŸ¬ê°œì˜ result(ResultSetì¼ ìˆ˜ë„ìˆê³ ,
+     * update countì¼ ìˆ˜ë„ ìˆë‹¤)ê°€ ë°œìƒí•  ìˆ˜ ìˆëŠ”ë°,
+     * JDBC Specì—ëŠ” ì²«ë²ˆì§¸ resultê°€ ResultSetì´ ì•„ë‹Œ ê²½ìš°
+     * ì´ ë©”ì†Œë“œì˜ ë¦¬í„´ê°’ì€ falseë¼ê³  ì •ì˜í•œë‹¤. 
+     * ì¦‰ Specì— ë”°ë¥´ë©´, ì´ ë©”ì†Œë“œê°€ falseë¥¼ ë¦¬í„´í•œë‹¤ê³  í•´ì„œ
+     * resultì— ResultSetì´ ì—†ë‹¤ê³  ë³´ì¥í•  ìˆ˜ ì—†ë‹¤.
+     * í•˜ì§€ë§Œ, ì‹¤ì œ êµ¬í˜„ì—ì„œëŠ” ResultSetì´ ìˆìœ¼ë©´ ë°˜ë“œì‹œ
+     * ì²«ë²ˆì§¸ resultë¶€í„° ResultSetì´ ë‚˜ì˜¤ë„ë¡ êµ¬í˜„í–ˆë‹¤.
+     * ë”°ë¼ì„œ ì´ ë©”ì†Œë“œê°€ falseë¥¼ ë¦¬í„´í•œë‹¤ëŠ” ê²ƒì€
+     * ResultSetì´ resultì— í¬í•¨ë˜ì–´ ìˆì§€ ì•Šë‹¤ëŠ” ê²ƒì„ ë³´ì¥í•œë‹¤. 
      */
     public boolean execute(String aSql) throws SQLException
     {
@@ -593,7 +593,7 @@ public class AltibaseStatement implements Statement
         }        
         setSql(aSql);
 
-        // BUG-39149 ping sqlÀÏ °æ¿ì¿¡´Â ³»ºÎÀûÀ¸·Î ping¸Ş¼Òµå¸¦ È£ÃâÇÏ°í light-weight ResultSetÀ» ¸®ÅÏÇÑ´Ù.
+        // BUG-39149 ping sqlì¼ ê²½ìš°ì—ëŠ” ë‚´ë¶€ì ìœ¼ë¡œ pingë©”ì†Œë“œë¥¼ í˜¸ì¶œí•˜ê³  light-weight ResultSetì„ ë¦¬í„´í•œë‹¤.
         if (isPingSQL(aSql))
         {
             pingAndCreateLightweightResultSet(); 
@@ -603,7 +603,7 @@ public class AltibaseStatement implements Statement
         try
         {
             aSql = procDowngradeAndGetTargetSql(aSql);
-            // PROJ-2427 cursor¸¦ ´İ¾Æ¾ßÇÏ´Â Á¶°ÇÀ» ¸Å°³º¯¼ö·Î ³Ñ°ÜÁØ´Ù.
+            // PROJ-2427 cursorë¥¼ ë‹«ì•„ì•¼í•˜ëŠ” ì¡°ê±´ì„ ë§¤ê°œë³€ìˆ˜ë¡œ ë„˜ê²¨ì¤€ë‹¤.
             CmProtocol.directExecute(getProtocolContext(),
                                      mStmtCID,
                                      aSql,
@@ -648,7 +648,7 @@ public class AltibaseStatement implements Statement
         }
         finally
         {
-            // BUGBUG (2012-11-28) ½ºÆå¿¡¼­´Â executeBatch ÇßÀ»¶§ clearµÇ´Â°Ô ¸íÈ®ÇÏ°Ô ³ª¿ÀÁö ¾ÊÀº µí. oracle¿¡ µû¸¥´Ù.
+            // BUGBUG (2012-11-28) ìŠ¤í™ì—ì„œëŠ” executeBatch í–ˆì„ë•Œ clearë˜ëŠ”ê²Œ ëª…í™•í•˜ê²Œ ë‚˜ì˜¤ì§€ ì•Šì€ ë“¯. oracleì— ë”°ë¥¸ë‹¤.
             clearBatch();
         }
         try
@@ -684,7 +684,7 @@ public class AltibaseStatement implements Statement
         }
         setSql(aSql);
 
-        // BUG-39149 ping sqlÀÏ °æ¿ì¿¡´Â ³»ºÎÀûÀ¸·Î ping¸Ş¼Òµå¸¦ È£ÃâÇÏ°í light-weight ResultSetÀ» ¸®ÅÏÇÑ´Ù.
+        // BUG-39149 ping sqlì¼ ê²½ìš°ì—ëŠ” ë‚´ë¶€ì ìœ¼ë¡œ pingë©”ì†Œë“œë¥¼ í˜¸ì¶œí•˜ê³  light-weight ResultSetì„ ë¦¬í„´í•œë‹¤.
         if (isPingSQL(aSql))
         {
             pingAndCreateLightweightResultSet(); 
@@ -694,7 +694,7 @@ public class AltibaseStatement implements Statement
         try
         {
             aSql = procDowngradeAndGetTargetSql(aSql);
-            // PROJ-2427 cursor¸¦ ´İ¾Æ¾ß ÇÏ´Â Á¶°ÇÀ» °°ÀÌ ³Ñ°ÜÁØ´Ù.
+            // PROJ-2427 cursorë¥¼ ë‹«ì•„ì•¼ í•˜ëŠ” ì¡°ê±´ì„ ê°™ì´ ë„˜ê²¨ì¤€ë‹¤.
             CmProtocol.directExecuteAndFetch(getProtocolContext(),
                                              mStmtCID, 
                                              aSql,
@@ -716,7 +716,7 @@ public class AltibaseStatement implements Statement
     }
 
     /**
-     * BUG-39149 ³»ºÎÀûÀ¸·Î ping¸Ş¼Òµå¸¦ È£ÃâÇÑ ´ÙÀ½ Á¤»óÀûÀÏ °æ¿ì SELECT 1ÀÇ °á°ú¿¡ ÇØ´çÇÏ´Â row¸¦ ¼öµ¿À¸·Î »ı¼ºÇÑ ÈÄ ¹İÈ¯ÇÑ´Ù.
+     * BUG-39149 ë‚´ë¶€ì ìœ¼ë¡œ pingë©”ì†Œë“œë¥¼ í˜¸ì¶œí•œ ë‹¤ìŒ ì •ìƒì ì¼ ê²½ìš° SELECT 1ì˜ ê²°ê³¼ì— í•´ë‹¹í•˜ëŠ” rowë¥¼ ìˆ˜ë™ìœ¼ë¡œ ìƒì„±í•œ í›„ ë°˜í™˜í•œë‹¤.
      * @throws SQLException
      */
     private void pingAndCreateLightweightResultSet() throws SQLException
@@ -728,7 +728,7 @@ public class AltibaseStatement implements Statement
         aColumns.add(ColumnFactory.createSmallintColumn());
         ((Column)aColumns.get(0)).setValue(1);
         ColumnInfo sColumnInfo = new ColumnInfo();
-        // BUG-39149 select 1 Äõ¸®ÀÇ column meta Á¤º¸¸¦ ¼öµ¿À¸·Î ±¸¼ºÇØ ÁØ´Ù.
+        // BUG-39149 select 1 ì¿¼ë¦¬ì˜ column meta ì •ë³´ë¥¼ ìˆ˜ë™ìœ¼ë¡œ êµ¬ì„±í•´ ì¤€ë‹¤.
         sColumnInfo.setColumnInfo(Types.SMALLINT,                               // dataType
                                   0,                                            // language
                                   (byte)0,                                      // arguments
@@ -751,7 +751,7 @@ public class AltibaseStatement implements Statement
     }
 
     /**
-     * BUG-39149 sqlÀÌ validation check¿ë ping Äõ¸®ÀÎÁö Ã¼Å©ÇÑ´Ù.
+     * BUG-39149 sqlì´ validation checkìš© ping ì¿¼ë¦¬ì¸ì§€ ì²´í¬í•œë‹¤.
      * @param aSql
      * @return
      */
@@ -769,49 +769,49 @@ public class AltibaseStatement implements Statement
         return false;
     }
 
-    // BUGBUG (2012-11-06) Áö¿øÇÏ´Â °ÍÀÌ ½ºÆå¿¡¼­ ¼³¸íÇÏ´Â°Í°ú Á¶±İ ´Ù¸£´Ù.
-    // ½ºÆå¿¡¼­´Â AUTO_INCREMENT³ª ROWIDÃ³·³ ÀÚµ¿À¸·Î »ı¼ºµÇ´Â À¯ÀÏ°ªÀ» ¾òÀ» ¼ö ÀÖ´Â ¸Ş¼Òµå·Î ¼Ò°³ÇÑ´Ù.
-    // ±×·±µ¥, Altibase´Â AUTO_INCREMENT³ª ROWID¸¦ Á¦°øÇÏÁö ¾Ê°í,
-    // ¶Ç INSERTµÈ ROWÀÇ À¯ÀÏÇÑ ½Äº°ÀÚ¸¦ ¾òÀ» ¹æ¹ıµµ ¾øÀ¸¹Ç·Î,
-    // INSERT¿¡ »ç¿ëÇÑ SEQUENCEÀÇ °ª(CURRVAL)À» ¹İÈ¯ÇÑ´Ù.
+    // BUGBUG (2012-11-06) ì§€ì›í•˜ëŠ” ê²ƒì´ ìŠ¤í™ì—ì„œ ì„¤ëª…í•˜ëŠ”ê²ƒê³¼ ì¡°ê¸ˆ ë‹¤ë¥´ë‹¤.
+    // ìŠ¤í™ì—ì„œëŠ” AUTO_INCREMENTë‚˜ ROWIDì²˜ëŸ¼ ìë™ìœ¼ë¡œ ìƒì„±ë˜ëŠ” ìœ ì¼ê°’ì„ ì–»ì„ ìˆ˜ ìˆëŠ” ë©”ì†Œë“œë¡œ ì†Œê°œí•œë‹¤.
+    // ê·¸ëŸ°ë°, AltibaseëŠ” AUTO_INCREMENTë‚˜ ROWIDë¥¼ ì œê³µí•˜ì§€ ì•Šê³ ,
+    // ë˜ INSERTëœ ROWì˜ ìœ ì¼í•œ ì‹ë³„ìë¥¼ ì–»ì„ ë°©ë²•ë„ ì—†ìœ¼ë¯€ë¡œ,
+    // INSERTì— ì‚¬ìš©í•œ SEQUENCEì˜ ê°’(CURRVAL)ì„ ë°˜í™˜í•œë‹¤.
     public int executeUpdate(String aSql, int aAutoGeneratedKeys)
             throws SQLException
     {
         boolean sHasResult = execute(aSql, aAutoGeneratedKeys);        
-        // BUGBUG (2013-01-31) spec¿¡ µû¸£¸é ¿¹¿Ü¸¦ ´øÁ®¾ß ÇÑ´Ù. ±×·±µ¥, oracleÀº ¾È±×·±´Ù. ´õ·¯¿î oracle..
+        // BUGBUG (2013-01-31) specì— ë”°ë¥´ë©´ ì˜ˆì™¸ë¥¼ ë˜ì ¸ì•¼ í•œë‹¤. ê·¸ëŸ°ë°, oracleì€ ì•ˆê·¸ëŸ°ë‹¤. ë”ëŸ¬ìš´ oracle..
 //        Error.checkAndThrowSQLException(sHasResult, ErrorDef.SQL_RETURNS_RESULTSET, aSql);
         return mExecuteResultMgr.getFirst().mUpdatedCount;
     }
 
-    // BUGBUG (2012-11-06) ½ºÆå°ú ´Ù¸£´Ù.
-    // ½ºÆå ¼³¸í¿¡ µû¸£¸é column index´Â DB TABLE¿¡¼­ÀÇ ÄÃ·³ ¼ø¹øÀ» ÀÇ¹ÌÇÑ´Ù. (3rd, p955)
-    // ±×·¡¼­ ½ºÆå´ë·Î¶ó¸é INSERT Äõ¸®¹®¿¡ ¾ø´Â ÄÃ·³ÀÌ¶óµµ ÁöÁ¤ÇÒ ¼ö ÀÖ´Ù.
-    // ÇÏÁö¸¸, Altibase JDBC´Â »ç¿ëÇÑ SEQUENCE °ªÀ» ¹İÈ¯ÇÏ¹Ç·Î Å×ÀÌºí ÄÃ·³ÀÇ ¼ø¹øÀ» »ç¿ëÇÒ ¼ö ¾ø´Ù.
-    // ´ë½Å, SEQUENCE°¡ ³ª¿­µÈ ¼ø¹øÀ» »ç¿ëÇÑ´Ù. ÀÌ ¶§, SEQUENCE°¡ ¾Æ´Ñ °ÍÀº ¼ÀÇÏÁö ¾Ê´Â´Ù.
-    // ¿¹¸¦µé¾î, "INSERT INTO t1 VALUES (SEQ1.NEXTVAL, '1', SEQ2.NEXTVAL)"¿Í °°Àº INSERT¹®À» ¾µ ¶§,
-    // SEQ1.CURRVALÀ» ¾òÀ¸·Á¸é 1, SEQ2.CURRVALÀ» ¾òÀ¸·Á¸é 2¸¦ »ç¿ëÇØ¾ß ÇÑ´Ù.
+    // BUGBUG (2012-11-06) ìŠ¤í™ê³¼ ë‹¤ë¥´ë‹¤.
+    // ìŠ¤í™ ì„¤ëª…ì— ë”°ë¥´ë©´ column indexëŠ” DB TABLEì—ì„œì˜ ì»¬ëŸ¼ ìˆœë²ˆì„ ì˜ë¯¸í•œë‹¤. (3rd, p955)
+    // ê·¸ë˜ì„œ ìŠ¤í™ëŒ€ë¡œë¼ë©´ INSERT ì¿¼ë¦¬ë¬¸ì— ì—†ëŠ” ì»¬ëŸ¼ì´ë¼ë„ ì§€ì •í•  ìˆ˜ ìˆë‹¤.
+    // í•˜ì§€ë§Œ, Altibase JDBCëŠ” ì‚¬ìš©í•œ SEQUENCE ê°’ì„ ë°˜í™˜í•˜ë¯€ë¡œ í…Œì´ë¸” ì»¬ëŸ¼ì˜ ìˆœë²ˆì„ ì‚¬ìš©í•  ìˆ˜ ì—†ë‹¤.
+    // ëŒ€ì‹ , SEQUENCEê°€ ë‚˜ì—´ëœ ìˆœë²ˆì„ ì‚¬ìš©í•œë‹¤. ì´ ë•Œ, SEQUENCEê°€ ì•„ë‹Œ ê²ƒì€ ì…ˆí•˜ì§€ ì•ŠëŠ”ë‹¤.
+    // ì˜ˆë¥¼ë“¤ì–´, "INSERT INTO t1 VALUES (SEQ1.NEXTVAL, '1', SEQ2.NEXTVAL)"ì™€ ê°™ì€ INSERTë¬¸ì„ ì“¸ ë•Œ,
+    // SEQ1.CURRVALì„ ì–»ìœ¼ë ¤ë©´ 1, SEQ2.CURRVALì„ ì–»ìœ¼ë ¤ë©´ 2ë¥¼ ì‚¬ìš©í•´ì•¼ í•œë‹¤.
     public int executeUpdate(String aSql, int[] aColumnIndexes)
             throws SQLException
     {
         boolean sHasResult = execute(aSql, aColumnIndexes);
-        // BUGBUG (2013-01-31) spec¿¡ µû¸£¸é ¿¹¿Ü¸¦ ´øÁ®¾ß ÇÑ´Ù. ±×·±µ¥, oracleÀº ¾È±×·±´Ù. ´õ·¯¿î oracle..
+        // BUGBUG (2013-01-31) specì— ë”°ë¥´ë©´ ì˜ˆì™¸ë¥¼ ë˜ì ¸ì•¼ í•œë‹¤. ê·¸ëŸ°ë°, oracleì€ ì•ˆê·¸ëŸ°ë‹¤. ë”ëŸ¬ìš´ oracle..
 //        Error.checkAndThrowSQLException(sHasResult, ErrorDef.SQL_RETURNS_RESULTSET, aSql);
         return mExecuteResultMgr.getFirst().mUpdatedCount;
     }
 
-    // BUGBUG (2012-11-06) ½ºÆå°ú ´Ù¸£´Ù.
-    // ½ºÆå ¼³¸í¿¡ µû¸£¸é column nameÀº DB TABLE¿¡¼­ÀÇ ÄÃ·³ ÀÌ¸§À» ÀÇ¹ÌÇÑ´Ù. (3rd, p955)
-    // ±×·¡¼­ ½ºÆå´ë·Î¶ó¸é INSERT Äõ¸®¹®¿¡ ¾ø´Â ÄÃ·³ÀÌ¶óµµ ÁöÁ¤ÇÒ ¼ö ÀÖ´Ù.
-    // ÇÏÁö¸¸, Altibase JDBC´Â »ç¿ëÇÑ SEQUENCE °ªÀ» ¹İÈ¯ÇÏ¹Ç·Î Å×ÀÌºí ÄÃ·³ÀÇ ÀÌ¸§À» »ç¿ëÇÒ ¼ö ¾ø´Ù.
-    // ´ë½Å, INSERT ¹®¿¡ »ç¿ëÇÑ ÄÃ·³ ÀÌ¸§À» »ç¿ëÇÑ´Ù.
-    // ±×·¯¹Ç·Î, ÀÌ ¸Ş¼Òµå¸¦ »ç¿ëÇÏ±â À§ÇØ¼­´Â ¹İµå½Ã
-    // "INSERT INTO t1 (c1, c2) VALUES (SEQ1.NEXTVAL, '1')"Ã³·³
-    // ÄÃ·³ ÀÌ¸§À» ¸í½ÃÇÑ INSERT ¹®À» »ç¿ëÇØ¾ßÇÑ´Ù.
+    // BUGBUG (2012-11-06) ìŠ¤í™ê³¼ ë‹¤ë¥´ë‹¤.
+    // ìŠ¤í™ ì„¤ëª…ì— ë”°ë¥´ë©´ column nameì€ DB TABLEì—ì„œì˜ ì»¬ëŸ¼ ì´ë¦„ì„ ì˜ë¯¸í•œë‹¤. (3rd, p955)
+    // ê·¸ë˜ì„œ ìŠ¤í™ëŒ€ë¡œë¼ë©´ INSERT ì¿¼ë¦¬ë¬¸ì— ì—†ëŠ” ì»¬ëŸ¼ì´ë¼ë„ ì§€ì •í•  ìˆ˜ ìˆë‹¤.
+    // í•˜ì§€ë§Œ, Altibase JDBCëŠ” ì‚¬ìš©í•œ SEQUENCE ê°’ì„ ë°˜í™˜í•˜ë¯€ë¡œ í…Œì´ë¸” ì»¬ëŸ¼ì˜ ì´ë¦„ì„ ì‚¬ìš©í•  ìˆ˜ ì—†ë‹¤.
+    // ëŒ€ì‹ , INSERT ë¬¸ì— ì‚¬ìš©í•œ ì»¬ëŸ¼ ì´ë¦„ì„ ì‚¬ìš©í•œë‹¤.
+    // ê·¸ëŸ¬ë¯€ë¡œ, ì´ ë©”ì†Œë“œë¥¼ ì‚¬ìš©í•˜ê¸° ìœ„í•´ì„œëŠ” ë°˜ë“œì‹œ
+    // "INSERT INTO t1 (c1, c2) VALUES (SEQ1.NEXTVAL, '1')"ì²˜ëŸ¼
+    // ì»¬ëŸ¼ ì´ë¦„ì„ ëª…ì‹œí•œ INSERT ë¬¸ì„ ì‚¬ìš©í•´ì•¼í•œë‹¤.
     public int executeUpdate(String aSql, String[] aColumnNames)
             throws SQLException
     {
         boolean sHasResult = execute(aSql, aColumnNames);        
-        // BUGBUG (2013-01-31) spec¿¡ µû¸£¸é ¿¹¿Ü¸¦ ´øÁ®¾ß ÇÑ´Ù. ±×·±µ¥, oracleÀº ¾È±×·±´Ù. ´õ·¯¿î oracle..
+        // BUGBUG (2013-01-31) specì— ë”°ë¥´ë©´ ì˜ˆì™¸ë¥¼ ë˜ì ¸ì•¼ í•œë‹¤. ê·¸ëŸ°ë°, oracleì€ ì•ˆê·¸ëŸ°ë‹¤. ë”ëŸ¬ìš´ oracle..
 //        Error.checkAndThrowSQLException(sHasResult, ErrorDef.SQL_RETURNS_RESULTSET, aSql);
         return mExecuteResultMgr.getFirst().mUpdatedCount;
     }
@@ -819,7 +819,7 @@ public class AltibaseStatement implements Statement
     public int executeUpdate(String aSql) throws SQLException
     {
         boolean sHasResult = execute(aSql);        
-        // BUGBUG (2013-01-31) spec¿¡ µû¸£¸é ¿¹¿Ü¸¦ ´øÁ®¾ß ÇÑ´Ù. ±×·±µ¥, oracleÀº ¾È±×·±´Ù. ´õ·¯¿î oracle..
+        // BUGBUG (2013-01-31) specì— ë”°ë¥´ë©´ ì˜ˆì™¸ë¥¼ ë˜ì ¸ì•¼ í•œë‹¤. ê·¸ëŸ°ë°, oracleì€ ì•ˆê·¸ëŸ°ë‹¤. ë”ëŸ¬ìš´ oracle..
 //        Error.checkAndThrowSQLException(sHasResult, ErrorDef.SQL_RETURNS_RESULTSET, aSql);
         return mExecuteResultMgr.getFirst().mUpdatedCount;
     }
@@ -930,7 +930,7 @@ public class AltibaseStatement implements Statement
     {
         throwErrorForClosed();
 
-        // BUGBUG (!) ÀÏ´Ü ¹«½Ã. ¼­¹öÀÇ timeout ¼Ó¼ºÀº session ´ÜÀ§ÀÌ±â ¶§¹®.
+        // BUGBUG (!) ì¼ë‹¨ ë¬´ì‹œ. ì„œë²„ì˜ timeout ì†ì„±ì€ session ë‹¨ìœ„ì´ê¸° ë•Œë¬¸.
         return mQueryTimeout;
     }
 
@@ -999,8 +999,8 @@ public class AltibaseStatement implements Statement
         ExecuteResult sResult = (ExecuteResult)mExecuteResultMgr.get(mCurrentResultIndex);
         
         int sUpdateCount;
-        // BUG-38657 °á°ú°ªÀÌ ResultSetÀÌ°Å³ª ´õÀÌ»ó °á°ú°ªÀÌ ¾øÀ»¶§´Â -1À» ¸®ÅÏÇÏ°í 
-        // ±× ¿Ü¿¡´Â ¾÷µ¥ÀÌÆ® µÈ ·Î¿ì¼ö¸¦ ¸®ÅÏÇÑ´Ù.
+        // BUG-38657 ê²°ê³¼ê°’ì´ ResultSetì´ê±°ë‚˜ ë”ì´ìƒ ê²°ê³¼ê°’ì´ ì—†ì„ë•ŒëŠ” -1ì„ ë¦¬í„´í•˜ê³  
+        // ê·¸ ì™¸ì—ëŠ” ì—…ë°ì´íŠ¸ ëœ ë¡œìš°ìˆ˜ë¥¼ ë¦¬í„´í•œë‹¤.
         if (sResult.mHasResultSet)
         {
             sUpdateCount = DEFAULT_UPDATE_COUNT;
@@ -1009,8 +1009,8 @@ public class AltibaseStatement implements Statement
         {
             sUpdateCount = sResult.mUpdatedCount;
         }
-        // BUG-38657 getUpdateCount°¡ µÎ ¹ø ÀÌ»ó ½ÇÇàµÇ´Â °æ¿ì¿¡´Â -1À» ¸®ÅÏÇÏµµ·Ï ÇÑ´Ù. 
-        // ÀÌ ¸Ş¼Òµå´Â °á°ú´ç ÇÑ¹ø¸¸ ½ÇÇàµÇ¾î¾ß ÇÑ´Ù.
+        // BUG-38657 getUpdateCountê°€ ë‘ ë²ˆ ì´ìƒ ì‹¤í–‰ë˜ëŠ” ê²½ìš°ì—ëŠ” -1ì„ ë¦¬í„´í•˜ë„ë¡ í•œë‹¤. 
+        // ì´ ë©”ì†Œë“œëŠ” ê²°ê³¼ë‹¹ í•œë²ˆë§Œ ì‹¤í–‰ë˜ì–´ì•¼ í•œë‹¤.
         sResult.mUpdatedCount = DEFAULT_UPDATE_COUNT;
         
         return sUpdateCount;
@@ -1024,9 +1024,9 @@ public class AltibaseStatement implements Statement
     }
     
     /**
-     * Statement°¡ ´İÇû´ÂÁö È®ÀÎÇÑ´Ù. 
+     * Statementê°€ ë‹«í˜”ëŠ”ì§€ í™•ì¸í•œë‹¤. 
      * 
-     * @return close°¡ Àß ¼öÇàµÇ¾ú°Å³ª ÀÌ¹Ì ConnectionÀÌ closeµÇ¾úÀ¸¸é true, ¾Æ´Ï¸é false
+     * @return closeê°€ ì˜ ìˆ˜í–‰ë˜ì—ˆê±°ë‚˜ ì´ë¯¸ Connectionì´ closeë˜ì—ˆìœ¼ë©´ true, ì•„ë‹ˆë©´ false
      */
     public boolean isClosed() throws SQLException
 	{
@@ -1077,18 +1077,18 @@ public class AltibaseStatement implements Statement
     }
 
     /**
-     * Dynamic Array¿¡¼­ Çã¿ëÇÒ ¼ö ÀÖ´Â ÃÖ´ë ¹üÀ§·Î fetchSize¸¦ º¸Á¤ÇÑ´Ù.
+     * Dynamic Arrayì—ì„œ í—ˆìš©í•  ìˆ˜ ìˆëŠ” ìµœëŒ€ ë²”ìœ„ë¡œ fetchSizeë¥¼ ë³´ì •í•œë‹¤.
      * @param aRows fetchSize
      */
     protected int downgradeFetchSize(int aRows)
     {
         int sMaxFetchSize = getMaxFetchSize();
 
-        /* BUG-43263 aRows°¡ DynamicArray°¡ ¼ö¿ëÇÒ ¼ö ÀÖ´Â ¹üÀ§¸¦ ¹ş¾î³ª¸é Çã¿ëÇÒ ¼ö ÀÖ´Â ÃÖ´ë°ªÀ¸·Î °ªÀ» º¸Á¤ÇÑ´Ù. */
+        /* BUG-43263 aRowsê°€ DynamicArrayê°€ ìˆ˜ìš©í•  ìˆ˜ ìˆëŠ” ë²”ìœ„ë¥¼ ë²—ì–´ë‚˜ë©´ í—ˆìš©í•  ìˆ˜ ìˆëŠ” ìµœëŒ€ê°’ìœ¼ë¡œ ê°’ì„ ë³´ì •í•œë‹¤. */
         if (aRows > sMaxFetchSize)
         {
-            /* BUG-43263 Ã¹¹øÂ° chunkÀÇ 0¹øÂ° ÀÎµ¦½º´Â beforeFirst¸¦ À§ÇØ ºñ¿öµÎ°í loadcursor¿¡¼­ index¸¦ ¸ÕÀú Áõ°¡½ÃÅ°±â ¶§¹®¿¡ ½ÇÁ¦·Î
-               µé¾î°¥ ¼ö ÀÖ´Â ÃÖ´ë rows°ªÀº DynamicArrayÃÖ´ëÄ¡ - 2 ÀÌ´Ù. */
+            /* BUG-43263 ì²«ë²ˆì§¸ chunkì˜ 0ë²ˆì§¸ ì¸ë±ìŠ¤ëŠ” beforeFirstë¥¼ ìœ„í•´ ë¹„ì›Œë‘ê³  loadcursorì—ì„œ indexë¥¼ ë¨¼ì € ì¦ê°€ì‹œí‚¤ê¸° ë•Œë¬¸ì— ì‹¤ì œë¡œ
+               ë“¤ì–´ê°ˆ ìˆ˜ ìˆëŠ” ìµœëŒ€ rowsê°’ì€ DynamicArrayìµœëŒ€ì¹˜ - 2 ì´ë‹¤. */
             if (TraceFlag.TRACE_COMPILE && TraceFlag.TRACE_ENABLED)
             {
                 mLogger.log(Level.INFO, "Fetch size downgraded from {0} to {1} ",
@@ -1101,7 +1101,7 @@ public class AltibaseStatement implements Statement
     }
 
     /**
-     * ÃÖ´ë fetch size ¸¦ ¹İÈ¯ÇÑ´Ù.
+     * ìµœëŒ€ fetch size ë¥¼ ë°˜í™˜í•œë‹¤.
      */
     protected static int getMaxFetchSize()
     {
@@ -1147,15 +1147,15 @@ public class AltibaseStatement implements Statement
                                     String.valueOf(aSeconds));
         }
 
-        // BUGBUG (!) ÀÏ´Ü ¹«½Ã. ¼­¹öÀÇ timeout ¼Ó¼ºÀº session ´ÜÀ§ÀÌ±â ¶§¹®.
+        // BUGBUG (!) ì¼ë‹¨ ë¬´ì‹œ. ì„œë²„ì˜ timeout ì†ì„±ì€ session ë‹¨ìœ„ì´ê¸° ë•Œë¬¸.
         mQueryTimeout = aSeconds;
     }
 
     /**
-     * Plan text¸¦ ¾ò´Â´Ù.
+     * Plan textë¥¼ ì–»ëŠ”ë‹¤.
      *
      * @return Plan text
-     * @throws SQLException Plan text ¿äÃ»ÀÌ³ª °á°ú¸¦ ¾ò´Âµ¥ ½ÇÆĞÇßÀ» ¶§
+     * @throws SQLException Plan text ìš”ì²­ì´ë‚˜ ê²°ê³¼ë¥¼ ì–»ëŠ”ë° ì‹¤íŒ¨í–ˆì„ ë•Œ
      */
     public String getExplainPlan() throws SQLException
     {
@@ -1188,10 +1188,10 @@ public class AltibaseStatement implements Statement
     // #region Result Set Downgrade
 
     /**
-     * ResultSet ¼³Á¤ÀÌ KeySet drivenÀ» ¾²°Ô µÇ¾îÀÖ´ÂÁö È®ÀÎÇÑ´Ù.
+     * ResultSet ì„¤ì •ì´ KeySet drivenì„ ì“°ê²Œ ë˜ì–´ìˆëŠ”ì§€ í™•ì¸í•œë‹¤.
      *
-     * @return KeySet drivenÀ» ¾²´ÂÁö ¿©ºÎ
-     * @throws SQLException ResultSet ¼³Á¤À» È®ÀÎÇÏ´Âµ¥ ½ÇÆĞÇÑ °æ¿ì
+     * @return KeySet drivenì„ ì“°ëŠ”ì§€ ì—¬ë¶€
+     * @throws SQLException ResultSet ì„¤ì •ì„ í™•ì¸í•˜ëŠ”ë° ì‹¤íŒ¨í•œ ê²½ìš°
      */
     final boolean usingKeySetDriven() throws SQLException
     {
@@ -1200,19 +1200,19 @@ public class AltibaseStatement implements Statement
     }
 
     /**
-     * Ä¿¼­ ¼Ó¼ºÀ» Downgrade ÇÑ´Ù.
+     * ì»¤ì„œ ì†ì„±ì„ Downgrade í•œë‹¤.
      * <p>
-     * Downgrade RuleÀº ´ÙÀ½°ú °°´Ù:
+     * Downgrade Ruleì€ ë‹¤ìŒê³¼ ê°™ë‹¤:
      * <ul>
      * <li>ResultSetType : TYPE_SCROLL_SENSITIVE --> TYPE_SCROLL_INSENSITIVE --> TYPE_FORWARD_ONLY</li>
      * <li>ResultSetConcurrency : CONCUR_UPDATABLE --> CONCUR_READ_ONLY</li>
      * <ul>
      * <p>
-     * ÀÌ Áß TYPE_SCROLL_INSENSITIVE --> TYPE_FORWARD_ONLY´Â ½ÇÁ¦·Î´Â ÀÏ¾î³ªÁö ¾Ê´Â´Ù.
-     * ¿Ö³ÄÇÏ¸é TYPE_SCROLL_INSENSITIVEÀÌ TYPE_FORWARD_ONLYÀ» ±â¹İÀ¸·Î ÇÑ °ÍÀÌ¶ó,
-     * Äõ¸®¹® ÀÚÃ¼°¡ Àß¸øµÈ°Ô ¾Æ´Ï¶ó¸é ½ÇÆĞÇÒ ÀÏÀÌ ¾ø±â ¶§¹®ÀÌ´Ù.
+     * ì´ ì¤‘ TYPE_SCROLL_INSENSITIVE --> TYPE_FORWARD_ONLYëŠ” ì‹¤ì œë¡œëŠ” ì¼ì–´ë‚˜ì§€ ì•ŠëŠ”ë‹¤.
+     * ì™œëƒí•˜ë©´ TYPE_SCROLL_INSENSITIVEì´ TYPE_FORWARD_ONLYì„ ê¸°ë°˜ìœ¼ë¡œ í•œ ê²ƒì´ë¼,
+     * ì¿¼ë¦¬ë¬¸ ìì²´ê°€ ì˜ëª»ëœê²Œ ì•„ë‹ˆë¼ë©´ ì‹¤íŒ¨í•  ì¼ì´ ì—†ê¸° ë•Œë¬¸ì´ë‹¤.
      * <p>
-     * Downgrade´Â ResultSetType¿Í ResultSetConcurrency°¡ µ¿½Ã¿¡ ÀÏ¾î³­´Ù.
+     * DowngradeëŠ” ResultSetTypeì™€ ResultSetConcurrencyê°€ ë™ì‹œì— ì¼ì–´ë‚œë‹¤.
      */
     private final void downgradeTargetResultSetAttrs()
     {
@@ -1232,13 +1232,13 @@ public class AltibaseStatement implements Statement
     }
 
     /**
-     * Downgrade°¡ ÇÊ¿äÇÏ¸é Ã³¸®ÇÏ°í, ½ÇÁ¦ »ç¿ëÇÒ º¯È¯µÈ Äõ¸®¹®À» ¾ò´Â´Ù.
+     * Downgradeê°€ í•„ìš”í•˜ë©´ ì²˜ë¦¬í•˜ê³ , ì‹¤ì œ ì‚¬ìš©í•  ë³€í™˜ëœ ì¿¼ë¦¬ë¬¸ì„ ì–»ëŠ”ë‹¤.
      * <p>
-     * ¸¸¾à Downgrade³ª Äõ¸® º¯È¯ÀÌ ÇÊ¿ä ¾ø´Ù¸é Á¶¿ëÈ÷ ³Ñ¾î°¡°í ¿øº» Äõ¸®¹®À» ¹İÈ¯ÇÑ´Ù.
+     * ë§Œì•½ Downgradeë‚˜ ì¿¼ë¦¬ ë³€í™˜ì´ í•„ìš” ì—†ë‹¤ë©´ ì¡°ìš©íˆ ë„˜ì–´ê°€ê³  ì›ë³¸ ì¿¼ë¦¬ë¬¸ì„ ë°˜í™˜í•œë‹¤.
      * 
-     * @param aOrgQstr ¿øº» Äõ¸®¹®
-     * @return ½ÇÁ¦·Î »ç¿ëÇÒ Äõ¸®¹®
-     * @throws SQLException Downgrade ¿©ºÎ È®ÀÎ ¶Ç´Â Downgrade¿¡ ½ÇÆĞÇÑ °æ¿ì
+     * @param aOrgQstr ì›ë³¸ ì¿¼ë¦¬ë¬¸
+     * @return ì‹¤ì œë¡œ ì‚¬ìš©í•  ì¿¼ë¦¬ë¬¸
+     * @throws SQLException Downgrade ì—¬ë¶€ í™•ì¸ ë˜ëŠ” Downgradeì— ì‹¤íŒ¨í•œ ê²½ìš°
      */
     protected final String procDowngradeAndGetTargetSql(String aOrgQstr) throws SQLException
     {
@@ -1255,7 +1255,7 @@ public class AltibaseStatement implements Statement
         String sQstr = AltiSqlProcessor.makePRowIDAddedSql(aOrgQstr);
         if (sQstr != null)
         {
-            // BUG-42424 keyset driven¿¡¼­´Â prepare°á°ú¸¦ ¹Ù·Î ¹Ş¾Æ¿Í¾ß ÇÏ±â¶§¹®¿¡ deferred¸¦ false·Î º¸³½´Ù.
+            // BUG-42424 keyset drivenì—ì„œëŠ” prepareê²°ê³¼ë¥¼ ë°”ë¡œ ë°›ì•„ì™€ì•¼ í•˜ê¸°ë•Œë¬¸ì— deferredë¥¼ falseë¡œ ë³´ë‚¸ë‹¤.
             CmProtocol.prepare(getProtocolContext(),
                                mStmtCID,
                                sQstr,
@@ -1276,10 +1276,10 @@ public class AltibaseStatement implements Statement
         }
         else
         {
-            // sensitiveÀÏ ¶§´Â keyset¸¸ ½×°í µ¥ÀÌÅ¸´Â µû·Î °¡Á®¿Â´Ù.
+            // sensitiveì¼ ë•ŒëŠ” keysetë§Œ ìŒ“ê³  ë°ì´íƒ€ëŠ” ë”°ë¡œ ê°€ì ¸ì˜¨ë‹¤.
             if (mTargetResultSetType == ResultSet.TYPE_SCROLL_SENSITIVE)
             {
-                // getMetaData()¸¦ À§ÇØ ÄÃ·³ Á¤º¸¸¦ ¹é¾÷ÇØµĞ´Ù.
+                // getMetaData()ë¥¼ ìœ„í•´ ì»¬ëŸ¼ ì •ë³´ë¥¼ ë°±ì—…í•´ë‘”ë‹¤.
                 mPrepareResultColumns = sColumnInfoResult.getColumns();
 
                 HashMap sOrderByMap = new HashMap();
@@ -1293,7 +1293,7 @@ public class AltibaseStatement implements Statement
                 sQstr = AltiSqlProcessor.makeKeySetSql(aOrgQstr, sOrderByMap);
             }
         }
-        if (mIsDeferred)  // BUG-42712 deferred »óÅÂÀÏ¶§´Â ContextÀÇ Error¸¦ clearÇØÁØ´Ù.
+        if (mIsDeferred)  // BUG-42712 deferred ìƒíƒœì¼ë•ŒëŠ” Contextì˜ Errorë¥¼ clearí•´ì¤€ë‹¤.
         {
             getProtocolContext().clearError();
         }
@@ -1308,7 +1308,7 @@ public class AltibaseStatement implements Statement
             return false;
         }
 
-        // updatableÀÌ·Á¸é ´ÜÀÏ Å×ÀÌºí¿¡´ëÇÑ Äõ¸®¿©¾ßÇÏ°í ¸ğµç ÄÃ·³Àº Å×ÀÌºí ÄÃ·³ÀÌ¾î¾ß ÇÑ´Ù.
+        // updatableì´ë ¤ë©´ ë‹¨ì¼ í…Œì´ë¸”ì—ëŒ€í•œ ì¿¼ë¦¬ì—¬ì•¼í•˜ê³  ëª¨ë“  ì»¬ëŸ¼ì€ í…Œì´ë¸” ì»¬ëŸ¼ì´ì–´ì•¼ í•œë‹¤.
         ColumnInfo sColInfo = sColumns.get(0).getColumnInfo();
         if (StringUtils.isEmpty(sColInfo.getBaseColumnName()))
         {
@@ -1403,7 +1403,7 @@ public class AltibaseStatement implements Statement
         }
     }
     
-    // BUG-42424 AltibasePreparedStatement.getMetaData¿¡¼­µµ »ç¿ëµÇ±â ¶§¹®¿¡ default scope·Î º¯°æ
+    // BUG-42424 AltibasePreparedStatement.getMetaDataì—ì„œë„ ì‚¬ìš©ë˜ê¸° ë•Œë¬¸ì— default scopeë¡œ ë³€ê²½
     void throwErrorForStatementNotPrepared() throws SQLException
     {
         if (mPrepareResult == null)
@@ -1421,7 +1421,7 @@ public class AltibaseStatement implements Statement
     }
 
     /**
-     * ºñµ¿±âÀûÀ¸·Î fetch ¸¦ ¼öÇàÇÏ°í ÀÖ´Â statement ¿©ºÎÀÎÁö È®ÀÎÇÑ´Ù.
+     * ë¹„ë™ê¸°ì ìœ¼ë¡œ fetch ë¥¼ ìˆ˜í–‰í•˜ê³  ìˆëŠ” statement ì—¬ë¶€ì¸ì§€ í™•ì¸í•œë‹¤.
      */
     protected boolean isAsyncPrefetch()
     {
@@ -1429,7 +1429,7 @@ public class AltibaseStatement implements Statement
     }
 
     /**
-     * Internal statement »ı¼ºÇÑ´Ù.
+     * Internal statement ìƒì„±í•œë‹¤.
      */
     static protected AltibaseStatement createInternalStatement(AltibaseConnection sConnection) throws SQLException
     {
@@ -1440,7 +1440,7 @@ public class AltibaseStatement implements Statement
     }
 
     /**
-     * Internal statement ¿©ºÎ¸¦ È®ÀÎÇÏ´Ù.
+     * Internal statement ì—¬ë¶€ë¥¼ í™•ì¸í•˜ë‹¤.
      */
     protected boolean isInternalStatement()
     {
@@ -1448,7 +1448,7 @@ public class AltibaseStatement implements Statement
     }
 
     /**
-     * Semi-async prefetch µ¿ÀÛÀ» À§ÇÑ SemiAsyncPrefetch °´Ã¼¸¦ ¹İÈ¯ÇÑ´Ù.
+     * Semi-async prefetch ë™ì‘ì„ ìœ„í•œ SemiAsyncPrefetch ê°ì²´ë¥¼ ë°˜í™˜í•œë‹¤.
      */
     synchronized SemiAsyncPrefetch getSemiAsyncPrefetch()
     {
@@ -1456,7 +1456,7 @@ public class AltibaseStatement implements Statement
     }
 
     /**
-     * Semi-async prefetch µ¿ÀÛ ÁßÀÎ SemiAsyncPrefetch °´Ã¼¸¦ ¼³Á¤ÇÏ°í re-execute ½Ã Àç»ç¿ëÇÑ´Ù.
+     * Semi-async prefetch ë™ì‘ ì¤‘ì¸ SemiAsyncPrefetch ê°ì²´ë¥¼ ì„¤ì •í•˜ê³  re-execute ì‹œ ì¬ì‚¬ìš©í•œë‹¤.
      */
     synchronized void setSemiAsyncPrefetch(SemiAsyncPrefetch aSemiAsyncPrefetch)
     {
@@ -1464,7 +1464,7 @@ public class AltibaseStatement implements Statement
     }
 
     /**
-     * Trace logging ½Ã statement °£ ½Äº°À» À§ÇØ unique id ¸¦ ¹İÈ¯ÇÑ´Ù.
+     * Trace logging ì‹œ statement ê°„ ì‹ë³„ì„ ìœ„í•´ unique id ë¥¼ ë°˜í™˜í•œë‹¤.
      */
     String getTraceUniqueId()
     {

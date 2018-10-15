@@ -38,12 +38,12 @@ idxProc::initializeStatic()
 
     idxLocalSock::initializeStatic();
 
-    // session °³¼ö¸¸Å­ agent list¸¦ »ý¼ºÇÑ´Ù.
+    // session ê°œìˆ˜ë§Œí¼ agent listë¥¼ ìƒì„±í•œë‹¤.
     // BUG-40945 session id max = MAX_CLIENT
     //                          + JOB_THREAD_COUNT
     //                          + CONC_EXEC_DEGREE_MAX
     //                          + 1 (SYSDBA)
-    // session id´Â 1ºÎÅÍ ½ÃÀÛÇÏ±â ¶§¹®¿¡ Ãß°¡·Î 1À» ´õÇÑ´Ù.
+    // session idëŠ” 1ë¶€í„° ì‹œìž‘í•˜ê¸° ë•Œë¬¸ì— ì¶”ê°€ë¡œ 1ì„ ë”í•œë‹¤.
     sListCount = iduProperty::getMaxClient()
                  + iduProperty::getJobThreadCount()
                  + iduProperty::getConcExecDegreeMax()
@@ -113,12 +113,12 @@ idxProc::createAgentProcess( UInt            aSessionID,
 {
 /***********************************************************************
  *
- *  Description : Agent Process¸¦ »ý¼ºÇÏ°í, ¿¬°áÀ» ¸Î´Â´Ù.
+ *  Description : Agent Processë¥¼ ìƒì„±í•˜ê³ , ì—°ê²°ì„ ë§ºëŠ”ë‹¤.
  *
- *  - »ý¼º °úÁ¤¿¡¼­ ½ÇÆÐÇÏ¸é START FAILURE ¿¡·¯
- *  - ¿¬°á °úÁ¤¿¡¼­ ½ÇÆÐÇÏ¸é CONNECTION FAILURE ¿¡·¯
- *  - ¿¬°á ½Ã°£ ÃÊ°ú·Î ¿¬°áÀÌ ½ÇÆÐÇÏ¸é CONNECTION TIMEOUT ¿¡·¯
- *    (ÀÌ °æ¿ì, EXTPROC_AGENT_CONNECT_TIMEOUTÀ» Á¶Á¤ÇØ¾ß ÇÑ´Ù.)
+ *  - ìƒì„± ê³¼ì •ì—ì„œ ì‹¤íŒ¨í•˜ë©´ START FAILURE ì—ëŸ¬
+ *  - ì—°ê²° ê³¼ì •ì—ì„œ ì‹¤íŒ¨í•˜ë©´ CONNECTION FAILURE ì—ëŸ¬
+ *  - ì—°ê²° ì‹œê°„ ì´ˆê³¼ë¡œ ì—°ê²°ì´ ì‹¤íŒ¨í•˜ë©´ CONNECTION TIMEOUT ì—ëŸ¬
+ *    (ì´ ê²½ìš°, EXTPROC_AGENT_CONNECT_TIMEOUTì„ ì¡°ì •í•´ì•¼ í•œë‹¤.)
  *
  ***********************************************************************/
 
@@ -350,7 +350,7 @@ void idxProc::destroyAgentProcess( UInt aSessionID )
     }
     else
     {
-        /* Nothing to do. : ÇÁ·Î¼¼½º/Á¤º¸ ¸ðµÎ Á¸ÀçÇÏÁö ¾ÊÀ½ */
+        /* Nothing to do. : í”„ë¡œì„¸ìŠ¤/ì •ë³´ ëª¨ë‘ ì¡´ìž¬í•˜ì§€ ì•ŠìŒ */
     }
 }
 
@@ -360,15 +360,15 @@ IDE_RC idxProc::getAgentProcess( UInt            aSessionID,
 {
 /***********************************************************************
  *
- *  Description : Agent Process¸¦ ¹ÝÈ¯ÇÑ´Ù.
+ *  Description : Agent Processë¥¼ ë°˜í™˜í•œë‹¤.
  *
- *   - °Ë»öµÈ Agent Node°¡ Á¸ÀçÇÏÁö ¾ÊÀ¸¸é NULL
+ *   - ê²€ìƒ‰ëœ Agent Nodeê°€ ì¡´ìž¬í•˜ì§€ ì•Šìœ¼ë©´ NULL
  *     ( sIsFirstTime = TRUE )
  * 
- *   - °Ë»öµÈ Agent Node°¡ Á¸ÀçÇÏÁö¸¸, ÇÁ·Î¼¼½º°¡ Á¸ÀçÇÏÁö ¾ÊÀ¸¸é NULL
+ *   - ê²€ìƒ‰ëœ Agent Nodeê°€ ì¡´ìž¬í•˜ì§€ë§Œ, í”„ë¡œì„¸ìŠ¤ê°€ ì¡´ìž¬í•˜ì§€ ì•Šìœ¼ë©´ NULL
  *     ( sIsFirstTime = FALSE ) 
  *
- *   - °Ë»öµÈ Agent Node°¡ Á¸ÀçÇÏ°í, ÇÁ·Î¼¼½ºµµ Á¸ÀçÇÏ¸é ÇØ´ç Node ¹ÝÈ¯
+ *   - ê²€ìƒ‰ëœ Agent Nodeê°€ ì¡´ìž¬í•˜ê³ , í”„ë¡œì„¸ìŠ¤ë„ ì¡´ìž¬í•˜ë©´ í•´ë‹¹ Node ë°˜í™˜
  *
  ***********************************************************************/
 
@@ -379,15 +379,15 @@ IDE_RC idxProc::getAgentProcess( UInt            aSessionID,
 
     if( sNode->mState == IDX_PROC_ALLOC )
     {
-        /* ¸®½ºÆ®¿¡ Á¤º¸°¡ ¾ø´Ù¸é »õ·Î¿î ÇÁ·Î¼¼½º »ý¼º */
+        /* ë¦¬ìŠ¤íŠ¸ì— ì •ë³´ê°€ ì—†ë‹¤ë©´ ìƒˆë¡œìš´ í”„ë¡œì„¸ìŠ¤ ìƒì„± */
 
-        // Ã³À½ »ý¼ºÇØ¾ß ÇÔÀ» Ç¥½Ã
+        // ì²˜ìŒ ìƒì„±í•´ì•¼ í•¨ì„ í‘œì‹œ
         *aIsFirstTime = ID_TRUE;
         *aAgentProc   = NULL;
     }
     else
     {
-        /* ¸®½ºÆ®¿¡ Á¤º¸°¡ ÀÖ´Ù¸é ÇÁ·Î¼¼½º ¿¬°á È®ÀÎ */
+        /* ë¦¬ìŠ¤íŠ¸ì— ì •ë³´ê°€ ìžˆë‹¤ë©´ í”„ë¡œì„¸ìŠ¤ ì—°ê²° í™•ì¸ */
         IDE_TEST( idxLocalSock::ping( sNode->mPID,
                                       &sNode->mSocket,
                                       &sIsAlive ) != IDE_SUCCESS );
@@ -396,22 +396,22 @@ IDE_RC idxProc::getAgentProcess( UInt            aSessionID,
         {
             sNode->mState = IDX_PROC_ALLOC;
 
-            /* ÇÁ·Î¼¼½º´Â Á¸ÀçÇÏÁö ¾ÊÁö¸¸, ¸®½ºÆ®¿¡´Â Á¤º¸°¡ ³²¾ÆÀÖ´Â °æ¿ì */
+            /* í”„ë¡œì„¸ìŠ¤ëŠ” ì¡´ìž¬í•˜ì§€ ì•Šì§€ë§Œ, ë¦¬ìŠ¤íŠ¸ì—ëŠ” ì •ë³´ê°€ ë‚¨ì•„ìžˆëŠ” ê²½ìš° */
             // force-close
             IDE_TEST( idxLocalSock::close( &sNode->mSocket ) != IDE_SUCCESS );
 
             // free the agent node
             (void)idxLocalSock::finalizeSocket( &sNode->mSocket );
 
-            // Àç»ý¼ºÀÓÀ» Ç¥½Ã
+            // ìž¬ìƒì„±ìž„ì„ í‘œì‹œ
             *aIsFirstTime = ID_FALSE;
             *aAgentProc   = NULL;
         }
         else
         {
-            /* ÇÁ·Î¼¼½º°¡ Á¸ÀçÇÏ°í, °ü·Ã Á¤º¸µµ ÀÌ¹Ì ¸®½ºÆ®¿¡ ³²¾ÆÀÖ´Â °æ¿ì */
+            /* í”„ë¡œì„¸ìŠ¤ê°€ ì¡´ìž¬í•˜ê³ , ê´€ë ¨ ì •ë³´ë„ ì´ë¯¸ ë¦¬ìŠ¤íŠ¸ì— ë‚¨ì•„ìžˆëŠ” ê²½ìš° */
 
-            /* »ý¼ºÇÏ°Å³ª ¾òÀº ÇÁ·Î¼¼½º Á¤º¸¸¦ ¹ÝÈ¯ */
+            /* ìƒì„±í•˜ê±°ë‚˜ ì–»ì€ í”„ë¡œì„¸ìŠ¤ ì •ë³´ë¥¼ ë°˜í™˜ */
             *aAgentProc = sNode;
         }
     }
@@ -522,14 +522,14 @@ idxProc::packExtProcMsg( iduMemory      * aExeMem,
                     {
                         /* [ BUG-40219 ]
                          *
-                         * ´ÙÀ½ÀÇ °æ¿ì, aMsg->mParamInfos[i].mD.mPointer == NULL ÀÌ´Ù.
-                         * ¸ðµÎ, °ª ¿µ¿ªÀ» º¸³¾ ÇÊ¿ä°¡ ¾ø´Â °æ¿ìÀÌ´Ù.
+                         * ë‹¤ìŒì˜ ê²½ìš°, aMsg->mParamInfos[i].mD.mPointer == NULL ì´ë‹¤.
+                         * ëª¨ë‘, ê°’ ì˜ì—­ì„ ë³´ë‚¼ í•„ìš”ê°€ ì—†ëŠ” ê²½ìš°ì´ë‹¤.
                          *
-                         *  (1) IN Mode ÀÌ°í °ªÀÌ ¾øÀ» ¶§, HDB¿¡¼­ packing ÇÏ´Â °æ¿ì
-                         *  (2) IN Mode ÀÌ°í, Agent¿¡¼­ packing ÇÏ´Â °æ¿ì
+                         *  (1) IN Mode ì´ê³  ê°’ì´ ì—†ì„ ë•Œ, HDBì—ì„œ packing í•˜ëŠ” ê²½ìš°
+                         *  (2) IN Mode ì´ê³ , Agentì—ì„œ packing í•˜ëŠ” ê²½ìš°
                          *
-                         * ÀÌ °æ¿ì ¸Þ½ÃÁö ¹öÆÛ¿¡¼­ÀÇ °ª ¿µ¿ª Å©±â´Â, °¡Â¥ °ªÀÎ 1 ByteÀÌ´Ù.
-                         * ÀÌ ¿µ¿ªÀ» Null-terminating ÇÑ´Ù.
+                         * ì´ ê²½ìš° ë©”ì‹œì§€ ë²„í¼ì—ì„œì˜ ê°’ ì˜ì—­ í¬ê¸°ëŠ”, ê°€ì§œ ê°’ì¸ 1 Byteì´ë‹¤.
+                         * ì´ ì˜ì—­ì„ Null-terminating í•œë‹¤.
                          */
                         ((SChar*)sStructObj->mD.mPointer)[0] = '\0';
                     }
@@ -641,17 +641,17 @@ idxProc::unpackExtProcMsg( iduMemory      * aExeMem,
 
                         /* [ BUG-40195 ]
                          *
-                         * Unpacking °úÁ¤¿¡¼­ CHAR/LOB Value¸¦ ¹Þ±â À§ÇØ ´Ù½Ã ÇÒ´ç¹Þ´Â ºÎºÐÀ» »èÁ¦.
-                         * ´ë½Å, ¼ö½ÅµÈ ¸Þ½ÃÁö ¹öÆÛÀÇ CHAR/LOB Value ¿µ¿ªÀ» È£Ãâ °úÁ¤¿¡¼­ ±×´ë·Î »ç¿ëÇÑ´Ù.
-                         * ¼ö½ÅµÈ ¸Þ½ÃÁö ¹öÆÛ´Â È£Ãâ °úÁ¤¿¡¼­ ÇØÁ¦µÇÁö ¾Ê´Â´Ù.
+                         * Unpacking ê³¼ì •ì—ì„œ CHAR/LOB Valueë¥¼ ë°›ê¸° ìœ„í•´ ë‹¤ì‹œ í• ë‹¹ë°›ëŠ” ë¶€ë¶„ì„ ì‚­ì œ.
+                         * ëŒ€ì‹ , ìˆ˜ì‹ ëœ ë©”ì‹œì§€ ë²„í¼ì˜ CHAR/LOB Value ì˜ì—­ì„ í˜¸ì¶œ ê³¼ì •ì—ì„œ ê·¸ëŒ€ë¡œ ì‚¬ìš©í•œë‹¤.
+                         * ìˆ˜ì‹ ëœ ë©”ì‹œì§€ ë²„í¼ëŠ” í˜¸ì¶œ ê³¼ì •ì—ì„œ í•´ì œë˜ì§€ ì•ŠëŠ”ë‹¤.
                          *
                          * [ BUG-40219 ]
                          * 
-                         * Packing °úÁ¤¿¡¼­ Parameter Pointer°¡ NULLÀÎ Parameter°¡ Á¸ÀçÇÏ´õ¶óµµ,
-                         * ¸Þ½ÃÁö ¹öÆÛ¿¡´Â Pointer°¡ NULLÀÎ Parameter´Â ¾ø´Ù. (°¡Â¥ °ª 1 Byte)
+                         * Packing ê³¼ì •ì—ì„œ Parameter Pointerê°€ NULLì¸ Parameterê°€ ì¡´ìž¬í•˜ë”ë¼ë„,
+                         * ë©”ì‹œì§€ ë²„í¼ì—ëŠ” Pointerê°€ NULLì¸ ParameterëŠ” ì—†ë‹¤. (ê°€ì§œ ê°’ 1 Byte)
                          *
-                         * µû¶ó¼­, unpacking °úÁ¤¿¡¼­´Â ±¸º° ¾øÀÌ
-                         * ÁøÂ¥ °ª ¿µ¿ª ¶Ç´Â °¡Â¥ °ª 1 byte¸¦ Pointer°¡ °¡¸®Å°µµ·Ï ÇÑ´Ù.
+                         * ë”°ë¼ì„œ, unpacking ê³¼ì •ì—ì„œëŠ” êµ¬ë³„ ì—†ì´
+                         * ì§„ì§œ ê°’ ì˜ì—­ ë˜ëŠ” ê°€ì§œ ê°’ 1 byteë¥¼ Pointerê°€ ê°€ë¦¬í‚¤ë„ë¡ í•œë‹¤.
                          */
                         sRetStructArray[i].mD.mPointer = sDataPtr;
                     default:
@@ -738,7 +738,7 @@ IDE_EXCEPTION_CONT( RETRY_GET_AGENT );
 
     if ( sAgentProc == NULL )
     {
-        // createAgentProcess()´Â ³»ºÎ¿¡¼­ ¿¡·¯¸¦ ¹ÝÈ¯ÇÑ´Ù.
+        // createAgentProcess()ëŠ” ë‚´ë¶€ì—ì„œ ì—ëŸ¬ë¥¼ ë°˜í™˜í•œë‹¤.
         IDE_TEST( createAgentProcess( aSessionID,
                                       & sAgentProc, 
                                       aExeMem ) != IDE_SUCCESS );
@@ -768,7 +768,7 @@ IDE_EXCEPTION_CONT( RETRY_GET_AGENT );
     }
     else
     {
-        // ÀÌÀü¿¡ packingÇÑ message¸¦ Àç»ç¿ëÇÑ´Ù.
+        // ì´ì „ì— packingí•œ messageë¥¼ ìž¬ì‚¬ìš©í•œë‹¤.
     }
 
     sSock = sAgentProc->mSocket;
@@ -858,7 +858,7 @@ IDE_EXCEPTION_CONT( RETRY_GET_AGENT );
 
     copyParamInfo( &sRecvMsg->mReturnInfo, &aMsg->mReturnInfo );
 
-    /* »óÅÂ¸¦ STOPPED·Î º¯°æ */
+    /* ìƒíƒœë¥¼ STOPPEDë¡œ ë³€ê²½ */
     sAgentProc->mState = IDX_PROC_STOPPED;
 
     return IDE_SUCCESS;
@@ -890,7 +890,7 @@ IDE_EXCEPTION_CONT( RETRY_GET_AGENT );
         }
         else
         {
-            /* ¸Þ½ÃÁö º¯È¯ Áß ¿¡·¯ */
+            /* ë©”ì‹œì§€ ë³€í™˜ ì¤‘ ì—ëŸ¬ */
             IDE_SET( ideSetErrorCode( idERR_ABORT_IDX_CALL_PROCEDURE_FAILURE ) );
         }
     }
@@ -911,7 +911,7 @@ IDE_EXCEPTION_CONT( RETRY_GET_AGENT );
     }
     IDE_EXCEPTION_END;
 
-    /* »óÅÂ¸¦ FAILED·Î º¯°æ */
+    /* ìƒíƒœë¥¼ FAILEDë¡œ ë³€ê²½ */
     if ( sAgentProc != NULL )
     {
         sAgentProc->mState = IDX_PROC_FAILED;

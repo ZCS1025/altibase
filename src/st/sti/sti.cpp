@@ -92,8 +92,8 @@ sti::initSystemTables( void )
 }
 
 // Proj-2059 DB Upgrade
-// GeometryÅ¸ÀÔ È®ÀÎÀ» À§ÇØ Tool¿¡¼­ Insert°¡´ÉÇÑ TextÇüÅÂ·Î Ãâ·ÂÇÒ
-// ¼ö ÀÖ¾î¾ß ÇÕ´Ï´Ù.
+// Geometryíƒ€ì… í™•ì¸ì„ ìœ„í•´ Toolì—ì„œ Insertê°€ëŠ¥í•œ Textí˜•íƒœë¡œ ì¶œë ¥í• 
+// ìˆ˜ ìˆì–´ì•¼ í•©ë‹ˆë‹¤.
 
 IDE_RC sti::getTextFromGeometry(
     void*               aObj,

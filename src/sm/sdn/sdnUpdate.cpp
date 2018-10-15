@@ -20,7 +20,7 @@
  *
  * Description :
  *
- * º» ÆÄÀÏÀº index °ü·Ã redo ÇÔ¼ö¿¡ ´ëÇÑ ±¸ÇöÆÄÀÏÀÌ´Ù.
+ * ë³¸ íŒŒì¼ì€ index ê´€ë ¨ redo í•¨ìˆ˜ì— ëŒ€í•œ êµ¬í˜„íŒŒì¼ì´ë‹¤.
  *
  **********************************************************************/
 
@@ -113,11 +113,11 @@ IDE_RC sdnUpdate::redo_SDR_SDN_INSERT_INDEX_KEY( SChar       * aLogPtr,
 
 /***********************************************************************
  *
- * Description : SMR_DLT_REF_NTA ·Î±×·ÎºÎÅÍ RollbackContextEx ÆÇµ¶
+ * Description : SMR_DLT_REF_NTA ë¡œê·¸ë¡œë¶€í„° RollbackContextEx íŒë…
  *
- * aLogType [IN]  - ·Î±×Å¸ÀÔ
- * aLogPtr  [IN]  - SMR_DLT_REF_NTA ·Î±×ÀÇ RefOffset + ID_SIZEOF(sdrLogHdr)
- *                  ÇØ´çÇÏ´Â LogPtr
+ * aLogType [IN]  - ë¡œê·¸íƒ€ì…
+ * aLogPtr  [IN]  - SMR_DLT_REF_NTA ë¡œê·¸ì˜ RefOffset + ID_SIZEOF(sdrLogHdr)
+ *                  í•´ë‹¹í•˜ëŠ” LogPtr
  * aContext [OUT] - RollbackContext
  *
  **********************************************************************/
@@ -147,11 +147,11 @@ void sdnUpdate::getRollbackContextEx( sdrLogType              aLogType,
 
 /***********************************************************************
  *
- * Description : SMR_DLT_REF_NTA ·Î±×·ÎºÎÅÍ RollbackContext ÆÇµ¶
+ * Description : SMR_DLT_REF_NTA ë¡œê·¸ë¡œë¶€í„° RollbackContext íŒë…
  *
- * aLogType [IN]  - ·Î±×Å¸ÀÔ
- * aLogPtr  [IN]  - SMR_DLT_REF_NTA ·Î±×ÀÇ RefOffset + ID_SIZEOF(sdrLogHdr)
- *                  ÇØ´çÇÏ´Â LogPtr
+ * aLogType [IN]  - ë¡œê·¸íƒ€ì…
+ * aLogPtr  [IN]  - SMR_DLT_REF_NTA ë¡œê·¸ì˜ RefOffset + ID_SIZEOF(sdrLogHdr)
+ *                  í•´ë‹¹í•˜ëŠ” LogPtr
  * aContext [OUT] - RollbackContext
  *
  **********************************************************************/
@@ -184,14 +184,14 @@ void sdnUpdate::getRollbackContext( sdrLogType            aLogType,
 
 /***********************************************************************
  *
- * Description : SMR_DLT_REF_NTA ·Î±×·ÎºÎÅÍ ¹«°á¼º °ËÁõÇÒ ÀÎµ¦½º¸¦
- *               Æ®·£Àè¼ÇÀÇ VerfiyOIDList¿¡ Ãß°¡ÇÑ´Ù.
+ * Description : SMR_DLT_REF_NTA ë¡œê·¸ë¡œë¶€í„° ë¬´ê²°ì„± ê²€ì¦í•  ì¸ë±ìŠ¤ë¥¼
+ *               íŠ¸ëœì­ì…˜ì˜ VerfiyOIDListì— ì¶”ê°€í•œë‹¤.
  *
- * aTrans    [IN]  - Æ®·£Àè¼Ç
- * aLogPtr   [IN]  - SMR_DLT_REF_NTA ·Î±×ÀÇ RefOffset¿¡ ÇØ´çÇÏ´Â LogPtr
- * aTableOID [OUT] - ·Î±×·ÎºÎÅÍ ÆÇµ¶ÇÑ TableOID¸¦ ¹İÈ¯ÇÑ´Ù.
- * aIndexOID [OUT] - ·Î±×·ÎºÎÅÍ ÆÇµ¶ÇÑ IndexOID¸¦ ¹İÈ¯ÇÑ´Ù.
- * aSpaceID  [OUT] - ·Î±×·ÎºÎÅÍ ÆÇµ¶ÇÑ IndexÀÇ TableSpace ID¸¦ ¹İÈ¯ÇÑ´Ù.
+ * aTrans    [IN]  - íŠ¸ëœì­ì…˜
+ * aLogPtr   [IN]  - SMR_DLT_REF_NTA ë¡œê·¸ì˜ RefOffsetì— í•´ë‹¹í•˜ëŠ” LogPtr
+ * aTableOID [OUT] - ë¡œê·¸ë¡œë¶€í„° íŒë…í•œ TableOIDë¥¼ ë°˜í™˜í•œë‹¤.
+ * aIndexOID [OUT] - ë¡œê·¸ë¡œë¶€í„° íŒë…í•œ IndexOIDë¥¼ ë°˜í™˜í•œë‹¤.
+ * aSpaceID  [OUT] - ë¡œê·¸ë¡œë¶€í„° íŒë…í•œ Indexì˜ TableSpace IDë¥¼ ë°˜í™˜í•œë‹¤.
  *
  **********************************************************************/
 IDE_RC sdnUpdate::getIndexInfoToVerify( SChar     * aLogPtr,
@@ -1191,8 +1191,8 @@ IDE_RC sdnUpdate::redo_SDR_SDN_KEY_STAMPING( SChar       * aLogPtr,
     if ( sCTSlotNum == SDN_CTS_IN_KEY )
     {
         /* 
-         * CTS Slot NumÀÌ SDN_CTS_IN_KEY ÀÌ¸é,
-         * TBK STAMPINGÀ» ¼öÇàÇÑ´Ù. (BUG-44973)
+         * CTS Slot Numì´ SDN_CTS_IN_KEY ì´ë©´,
+         * TBK STAMPINGì„ ìˆ˜í–‰í•œë‹¤. (BUG-44973)
          */
         aLogPtr += SDNB_COLLENINFO_LIST_SIZE( sColLenInfoList );
 
@@ -1247,7 +1247,7 @@ IDE_RC sdnUpdate::redo_SDR_SDN_KEY_STAMPING( SChar       * aLogPtr,
     else
     {
         /* 
-         * TBT¿¡ ´ëÇÑ SOFT KEY STAMPINGÀ» ¼öÇàÇÑ´Ù.
+         * TBTì— ëŒ€í•œ SOFT KEY STAMPINGì„ ìˆ˜í–‰í•œë‹¤.
          */
         IDE_ERROR( aSize == ( ID_SIZEOF(UChar) + SDNB_COLLENINFO_LIST_SIZE(sColLenInfoList) ) );
 
@@ -1288,11 +1288,11 @@ IDE_RC sdnUpdate::redo_SDR_SDN_KEY_STAMPING( SChar       * aLogPtr,
                                                    ID_TRUE );
                 sNodeHdr->mTotalDeadKeySize += sKeyLen + ID_SIZEOF(sdpSlotEntry);
 
-                /* BUG- 30709 Disk Index¿¡ ChainingµÈ Dead KeyÀÇ CTS°¡ 
-                 * Chaining µÇÁö ¾ÊÀº DeadKeyÀÌ±â ¶§¹®¿¡ ºñÁ¤»ó Á¾·áÇÕ´Ï´Ù. 
+                /* BUG- 30709 Disk Indexì— Chainingëœ Dead Keyì˜ CTSê°€ 
+                 * Chaining ë˜ì§€ ì•Šì€ DeadKeyì´ê¸° ë•Œë¬¸ì— ë¹„ì •ìƒ ì¢…ë£Œí•©ë‹ˆë‹¤. 
                  *
-                 * DeadKey°¡ À¯È¿ÇÑ CreateCTS¸¦ bindÇÏ°í ÀÖ¾î¼­ »ı±ä ¹®Á¦
-                 * ÀÔ´Ï´Ù. DeadKey·Î ¸¸µé¶§ CreateCTSµµ ¹«ÇÑ´ë·Î ¹Ù²ãÁİ´Ï´Ù.*/
+                 * DeadKeyê°€ ìœ íš¨í•œ CreateCTSë¥¼ bindí•˜ê³  ìˆì–´ì„œ ìƒê¸´ ë¬¸ì œ
+                 * ì…ë‹ˆë‹¤. DeadKeyë¡œ ë§Œë“¤ë•Œ CreateCTSë„ ë¬´í•œëŒ€ë¡œ ë°”ê¿”ì¤ë‹ˆë‹¤.*/
                 SDNB_SET_CCTS_NO( sLeafKey, SDN_CTS_INFINITE );
                 SDNB_SET_LCTS_NO( sLeafKey, SDN_CTS_INFINITE );
                 SDNB_SET_STATE( sLeafKey, SDNB_KEY_DEAD );

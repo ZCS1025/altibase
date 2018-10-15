@@ -20,8 +20,8 @@
  *
  * Description
  *
- * Vol DB¿¡¼­ ÆäÀÌÁö °ü·Ã Á¤º¸¸¦ DumpÇÏ±â À§ÇÑ FixedTableÀ» »ı¼ºÇÔ.
- * D$VOL_DB_PAGE : Volatile Page¸¦ HexaÇü½ÄÀÇ Binary°ªÀ¸·Î Ãâ·ÂÇØÁÜ.
+ * Vol DBì—ì„œ í˜ì´ì§€ ê´€ë ¨ ì •ë³´ë¥¼ Dumpí•˜ê¸° ìœ„í•œ FixedTableì„ ìƒì„±í•¨.
+ * D$VOL_DB_PAGE : Volatile Pageë¥¼ Hexaí˜•ì‹ì˜ Binaryê°’ìœ¼ë¡œ ì¶œë ¥í•´ì¤Œ.
  *
  **********************************************************************/
 
@@ -97,7 +97,7 @@ static iduFixedTableColDesc gDumpVolDBPageColDesc[] =
 };
 
 // D$VOL_DB_PAGE
-// VOL PCH·ÎºÎÅÍ ÆäÀÌÁö¸¦ DumpÇÑ´Ù.
+// VOL PCHë¡œë¶€í„° í˜ì´ì§€ë¥¼ Dumpí•œë‹¤.
 IDE_RC svpFT::buildRecordVolDBPageDump(idvSQL              * /*aStatistics*/,
                                        void                *aHeader,
                                        void                *aDumpObj,
@@ -120,7 +120,7 @@ IDE_RC svpFT::buildRecordVolDBPageDump(idvSQL              * /*aStatistics*/,
     sSpaceID   = SC_MAKE_SPACE(*sGRID);
     sPageID    = SC_MAKE_PID(*sGRID);
 
-    // VOL_TABLESPACE°¡ ¸Â´ÂÁö °Ë»çÇÑ´Ù.
+    // VOL_TABLESPACEê°€ ë§ëŠ”ì§€ ê²€ì‚¬í•œë‹¤.
     IDE_ASSERT( sctTableSpaceMgr::isVolatileTableSpace( sSpaceID ) == ID_TRUE );
 
     IDE_TEST_RAISE( ( svmManager::isValidSpaceID( sSpaceID ) != ID_TRUE ) ||

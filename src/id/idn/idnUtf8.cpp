@@ -33,9 +33,9 @@ SInt convertMbToWc4Utf8( void    * aSrc,
  *      UTF8 ==> UTF16
  *
  * Implementation :
- *      surrogate ¹®ÀÚ´Â Áö¿øÇÏÁö ¾ÊÀ½.
- *      º¸Ãæ¹®ÀÚ´Â UTF16À¸·Î º¯È¯ÇÏÁö ¾Ê´Â´Ù.
- *      (3 byte UTF8±îÁö¸¸ º¯È¯ÇÏ¸é µÊ)
+ *      surrogate ë¬¸ìžëŠ” ì§€ì›í•˜ì§€ ì•ŠìŒ.
+ *      ë³´ì¶©ë¬¸ìžëŠ” UTF16ìœ¼ë¡œ ë³€í™˜í•˜ì§€ ì•ŠëŠ”ë‹¤.
+ *      (3 byte UTF8ê¹Œì§€ë§Œ ë³€í™˜í•˜ë©´ ë¨)
  *
  ***********************************************************************/
 
@@ -125,9 +125,9 @@ SInt convertWcToMb4Utf8( void    * aSrc,
  *      UTF8 <== UTF16
  *
  * Implementation :
- *      surrogate ¹®ÀÚ´Â Áö¿øÇÏÁö ¾ÊÀ½.
- *      º¸Ãæ¹®ÀÚ´Â UTF8À¸·Î º¯È¯ÇÏÁö ¾Ê´Â´Ù.
- *      (3 byte UTF8±îÁö¸¸ º¯È¯ÇÏ¸é µÊ)
+ *      surrogate ë¬¸ìžëŠ” ì§€ì›í•˜ì§€ ì•ŠìŒ.
+ *      ë³´ì¶©ë¬¸ìžëŠ” UTF8ìœ¼ë¡œ ë³€í™˜í•˜ì§€ ì•ŠëŠ”ë‹¤.
+ *      (3 byte UTF8ê¹Œì§€ë§Œ ë³€í™˜í•˜ë©´ ë¨)
  *
  ***********************************************************************/
 

@@ -52,18 +52,18 @@ SInt             aBufferLength )
     s_qcphx.mStmtText           = aBuffer;
     s_qcphx.mTextOffset         = aOffset;
 
-    // BUG-43566 hintÀÇ ½ÃÀÛÀ§Ä¡
+    // BUG-43566 hintì˜ ì‹œìž‘ìœ„ì¹˜
     s_qcphx.mPosition.stmtText  = aBuffer;
     s_qcphx.mPosition.offset    = aOffset;
     s_qcphx.mPosition.size      = QC_POS_EMPTY_SIZE;
 
     if (qcphparse(&s_qcphx) != IDE_SUCCESS)
     {
-        // BUG-43524 hint ±¸¹®ÀÌ ¿À·ù°¡ ³µÀ»¶§ ¾Ë¼ö ÀÖÀ¸¸é ÁÁ°Ú½À´Ï´Ù.
+        // BUG-43524 hint êµ¬ë¬¸ì´ ì˜¤ë¥˜ê°€ ë‚¬ì„ë•Œ ì•Œìˆ˜ ìžˆìœ¼ë©´ ì¢‹ê² ìŠµë‹ˆë‹¤.
         aStatement->myPlan->mPlanFlag  &= ~QC_PLAN_HINT_PARSE_MASK;
         aStatement->myPlan->mPlanFlag  |= QC_PLAN_HINT_PARSE_FAIL;
 
-        // BUG-43566 hint ±¸¹®ÀÌ ¿À·ù°¡ ³µÀ»¶§ À§Ä¡¸¦ ¾Ë¼ö ÀÖÀ¸¸é ÁÁ°Ú½À´Ï´Ù.
+        // BUG-43566 hint êµ¬ë¬¸ì´ ì˜¤ë¥˜ê°€ ë‚¬ì„ë•Œ ìœ„ì¹˜ë¥¼ ì•Œìˆ˜ ìžˆìœ¼ë©´ ì¢‹ê² ìŠµë‹ˆë‹¤.
         sOffset = aStatement->myPlan->mHintOffset;
 
         if ( (QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF(qcOffset),

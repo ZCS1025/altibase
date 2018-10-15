@@ -201,14 +201,14 @@ public abstract class SqlTestCase extends TestCase
     }
 
     /**
-     * ÁöÁ¤ÇÑ Å×ÀÌºíÀÇ ÄÃ·³À» °¡Á®¿Í¼­, Ã¹¹øÂ° RowÀÇ °ªÀÌ ±â´ë°ª°ú °°ÀºÁö °ËÁõÇÑ´Ù.
+     * ì§€ì •í•œ í…Œì´ë¸”ì˜ ì»¬ëŸ¼ì„ ê°€ì ¸ì™€ì„œ, ì²«ë²ˆì§¸ Rowì˜ ê°’ì´ ê¸°ëŒ€ê°’ê³¼ ê°™ì€ì§€ ê²€ì¦í•œë‹¤.
      * 
-     * @param aStmt Äõ¸®¸¦ ¼öÇàÇÒ Statement
-     * @param aExpectedValue ±â´ë°ª
-     * @param aColumnName °ªÀ» È®ÀÎÇÒ ÄÃ·³
-     * @param aTableName °ªÀ» °¡Á®¿Ã Å×ÀÌºí
-     * @throws SQLException Äõ¸®¿¡ ½ÇÆĞÇÑ °æ¿ì
-     * @throws AssertionFailedError °ªÀÌ ¾ø°Å³ª, ¾òÀº °ªÀÌ ±â´ë°ª°ú ´Ù¸¥ °æ¿ì
+     * @param aStmt ì¿¼ë¦¬ë¥¼ ìˆ˜í–‰í•  Statement
+     * @param aExpectedValue ê¸°ëŒ€ê°’
+     * @param aColumnName ê°’ì„ í™•ì¸í•  ì»¬ëŸ¼
+     * @param aTableName ê°’ì„ ê°€ì ¸ì˜¬ í…Œì´ë¸”
+     * @throws SQLException ì¿¼ë¦¬ì— ì‹¤íŒ¨í•œ ê²½ìš°
+     * @throws AssertionFailedError ê°’ì´ ì—†ê±°ë‚˜, ì–»ì€ ê°’ì´ ê¸°ëŒ€ê°’ê³¼ ë‹¤ë¥¸ ê²½ìš°
      */
     public static void assertExecuteScalar(Statement aStmt, String aExpectedValue, String aColumnName, String aTableName) throws SQLException
     {

@@ -57,7 +57,7 @@ IDE_RC qcc::validate(qcStatement * aStatement)
     if ( ( aStatement->myPlan->parseTree->stmtKind & QCI_STMT_MASK_MASK )
          == QCI_STMT_MASK_DML )
     {
-        // CHECK SEQUENCE ÀÏ °æ¿ì
+        // CHECK SEQUENCE ì¼ ê²½ìš°
         QC_SHARED_TMPLATE(aStatement)->smiStatementFlag |= SMI_STATEMENT_MEMORY_CURSOR;
     }
     else

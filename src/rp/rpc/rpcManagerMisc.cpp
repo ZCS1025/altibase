@@ -32,9 +32,9 @@
 
 /**********************************************************************
  *
- * BUG-6093 DB File Signature »ı¼º. smuMakeUniqueDBString()¸¦ º¹Á¦
+ * BUG-6093 DB File Signature ìƒì„±. smuMakeUniqueDBString()ë¥¼ ë³µì œ
  *
- * aUnique - [OUT] IDU_SYSTEM_INFO_LENGTH + 1 Å©±âÀÇ ¹öÆÛ
+ * aUnique - [OUT] IDU_SYSTEM_INFO_LENGTH + 1 í¬ê¸°ì˜ ë²„í¼
  *
  **********************************************************************/
 void rpcMakeUniqueDBString(SChar *aUnique)
@@ -67,7 +67,7 @@ void rpcMakeUniqueDBString(SChar *aUnique)
 
 /**********************************************************************
  *
- * BUG-31374 Implicit Savepoint ÀÌ¸§ÀÇ ¹è¿­À» »ı¼ºÇÑ´Ù.
+ * BUG-31374 Implicit Savepoint ì´ë¦„ì˜ ë°°ì—´ì„ ìƒì„±í•œë‹¤.
  *
  **********************************************************************/
 void rpcManager::makeImplSPNameArr()

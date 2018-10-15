@@ -57,8 +57,8 @@ IDE_RC stk::rangeCallBack( idBool     * aResult,
     mtdValueInfo       sValueInfo2;
     
 
-    // Fix BUG-15844 :  R-Tree³»ÀÇ Row¿Í ºñ±³ÇÏ·Á´Â ´ë»ó°´Ã¼°¡
-    //                  Null ¶Ç´Â EmptyÀÌ¸é ½ÇÀçºñ±³¸¦ ÇÏÁö¾Ê°í ID_FALSE·Î Ã³¸®ÇÑ´Ù.
+    // Fix BUG-15844 :  R-Treeë‚´ì˜ Rowì™€ ë¹„êµí•˜ë ¤ëŠ” ëŒ€ìƒê°ì²´ê°€
+    //                  Null ë˜ëŠ” Emptyì´ë©´ ì‹¤ì¬ë¹„êµë¥¼ í•˜ì§€ì•Šê³  ID_FALSEë¡œ ì²˜ë¦¬í•œë‹¤.
     sData  = (mtkRangeCallBack*)aData;
     sValue = (stdMBR*)sData->value;  // from key range.
 
@@ -132,13 +132,13 @@ IDE_RC stk::mergeAndRange( smiRange* aMerged,
         mtdDouble.null( NULL, &sMergedMBR.mMaxY );
     }
 
-    // »õ·Î¿î MBRÀ» »ç¿ëÇÏ´Â callbackÀ» »ı¼ºÇÑ´Ù.
+    // ìƒˆë¡œìš´ MBRì„ ì‚¬ìš©í•˜ëŠ” callbackì„ ìƒì„±í•œë‹¤.
     aMerged->prev = NULL;
     aMerged->next = NULL;
     aMerged->minimum = aRange1->minimum;
     aMerged->maximum = aRange1->maximum;
 
-    // »õ·Î¿î MBRÀ» aRange1ÀÇ value¿¡ º¹»çÇÑ´Ù.
+    // ìƒˆë¡œìš´ MBRì„ aRange1ì˜ valueì— ë³µì‚¬í•œë‹¤.
     sMaximumCallBack = (mtkRangeCallBack*)aMerged->maximum.data;
     *(stdMBR*)sMaximumCallBack->value = sMergedMBR;
     
@@ -200,8 +200,8 @@ IDE_RC stk::mergeOrRangeList( smiRange  * aMerged,
             {
                 if ( stdUtils::isMBRIntersects(sMBR1, sMBR2) == ID_TRUE )
                 {
-                    // µÑÁß ¾ÕÀÇ ³ëµå¶û ÇÕÄ£´Ù.
-                    // ÇÕÄ£ MBR °ªÀ» ¾ò´Â´Ù.
+                    // ë‘˜ì¤‘ ì•ì˜ ë…¸ë“œë‘ í•©ì¹œë‹¤.
+                    // í•©ì¹œ MBR ê°’ì„ ì–»ëŠ”ë‹¤.
                     stdUtils::mergeOrMBR( &sMergedMBR, sMBR1, sMBR2 );
 
                     if ( sStandard < sMerged )
@@ -217,8 +217,8 @@ IDE_RC stk::mergeOrRangeList( smiRange  * aMerged,
                     }
                     else
                     {
-                        //±âÁØÁ¡ÀÌ µÚ¸é
-                        //±âÁØÁ¡À» º¯°æ ½ÃÅ²´Ù.
+                        //ê¸°ì¤€ì ì´ ë’¤ë©´
+                        //ê¸°ì¤€ì ì„ ë³€ê²½ ì‹œí‚¨ë‹¤.
                         if ( sStandard->prev != NULL )
                         {
                             sStandard->prev->next = sStandard->next;
@@ -234,7 +234,7 @@ IDE_RC stk::mergeOrRangeList( smiRange  * aMerged,
                         sMBR1  = (stdMBR*)sData1->value;
                     }
 
-                    // StandardÀÇ MBR °ªÀ» º¯°æÇÑ´Ù.
+                    // Standardì˜ MBR ê°’ì„ ë³€ê²½í•œë‹¤.
                     *sMBR1 = sMergedMBR;
 
                     sMerged = aMerged;

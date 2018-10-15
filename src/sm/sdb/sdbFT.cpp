@@ -157,8 +157,8 @@ static IDE_RC buildRecordForBCBListStat(idvSQL              * /*aStatistics*/,
         if (sLastBCB != NULL)
         {
             /*
-             *  BUG-25614 [SD] X$BCB_LIST Á¶È¸½Ã µ¿½Ã¼º ¹®Á¦·Î 
-             *            NULL Pointer¸¦ ÂüÁ¶ÇÒ¼ö ÀÖ½À´Ï´Ù. 
+             *  BUG-25614 [SD] X$BCB_LIST ì¡°íšŒì‹œ ë™ì‹œì„± ë¬¸ì œë¡œ 
+             *            NULL Pointerë¥¼ ì°¸ì¡°í• ìˆ˜ ìˆìŠµë‹ˆë‹¤. 
              */
             sLastHotBCBListItem = SMU_LIST_GET_PREV(&sLastBCB->mBCBListItem);
             if( sLastHotBCBListItem != NULL)
@@ -902,7 +902,7 @@ static iduFixedTableColDesc gBufferPageInfoTableColDesc[] =
 
 /***********************************************************************
  * Description :
- *  fixed tableÀ» ¸¸µå´Â ÇÔ¼ö
+ *  fixed tableì„ ë§Œë“œëŠ” í•¨ìˆ˜
  ***********************************************************************/
 IDE_RC sdbFT::buildRecordForBufferPoolStat(
     idvSQL              * /*aStatistics*/,
@@ -922,7 +922,7 @@ IDE_RC sdbFT::buildRecordForBufferPoolStat(
 
 /***********************************************************************
  * Description :
- *  fixed tableÀ» ¸¸µå´Â ÇÔ¼ö
+ *  fixed tableì„ ë§Œë“œëŠ” í•¨ìˆ˜
  ***********************************************************************/
 IDE_RC sdbFT::buildRecordForBufferPageInfo(
     idvSQL              * /*aStatistics*/,
@@ -966,25 +966,25 @@ iduFixedTableDesc gBufferPageInfoTableDesc =
 
 typedef struct sdbFlushMgrStat
 {
-    /* flush list±æÀÌ°¡ ÀÌ ±æÀÌ ÀÌÇÏ¸é full flushÇÏÁö ¾Ê´Â´Ù. */
+    /* flush listê¸¸ì´ê°€ ì´ ê¸¸ì´ ì´í•˜ë©´ full flushí•˜ì§€ ì•ŠëŠ”ë‹¤. */
     UInt mLowFlushLength;
 
-    /* full flush ÇØ¾ß ÇÏ´Â flush list length */
+    /* full flush í•´ì•¼ í•˜ëŠ” flush list length */
     UInt mHighFlushLength;
 
-    /* full flushÇØ¾ß ÇÏ´Â prepare list length */
+    /* full flushí•´ì•¼ í•˜ëŠ” prepare list length */
     UInt mLowPrepareLength;
 
-    /* checkpoint flush È½¼ö */
+    /* checkpoint flush íšŸìˆ˜ */
     ULong mCheckpointFlushCount;
 
-    /* restart recovery½Ã redoÇÒ page count */
+    /* restart recoveryì‹œ redoí•  page count */
     ULong mFastStartIoTarget;
 
-    /* restart recovery½Ã redoÇÒ LogFile count */
+    /* restart recoveryì‹œ redoí•  LogFile count */
     UInt  mFastStartLogFileTarget;
 
-    /* ÇöÀç ¿äÃ»ÇÑ job °¹¼ö */
+    /* í˜„ì¬ ìš”ì²­í•œ job ê°¯ìˆ˜ */
     UInt mReqJobCount;
 } sdbFlushMgrStat;
 
@@ -1058,7 +1058,7 @@ static iduFixedTableColDesc gFlushMgrStatTableColDesc[] =
 
 /***********************************************************************
  * Description :
- *  X$FLUSH_MGRÀ» ¸¸µé±â À§ÇÑ ÇÔ¼ö
+ *  X$FLUSH_MGRì„ ë§Œë“¤ê¸° ìœ„í•œ í•¨ìˆ˜
  ***********************************************************************/
 static IDE_RC buildRecordForFlushMgrStat(idvSQL              * /*aStatistics*/,
                                          void                *aHeader,
@@ -1759,7 +1759,7 @@ iduFixedTableDesc gBufferBCBStatTableDesc =
 };
 
 /***********************************************
- *  frame dump¸¦ À§ÇÑ fixed table Á¤ÀÇ
+ *  frame dumpë¥¼ ìœ„í•œ fixed table ì •ì˜
  ***********************************************/
 
 #define SDB_FRAME_DUMP_UNIT_SIZE   SD_PAGE_SIZE

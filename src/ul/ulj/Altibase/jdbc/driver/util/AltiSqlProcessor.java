@@ -49,10 +49,10 @@ public class AltiSqlProcessor
     }
 
     /**
-     * Äõ¸®¹®À» ÆÄ½ÌÇØ SEQUENCE ÀÌ¸§°ú SEQUENCE°¡ »ç¿ëµÈ ÄÃ·³ÀÇ ÀÌ¸§À» ¾ò´Â´Ù.
+     * ì¿¼ë¦¬ë¬¸ì„ íŒŒì‹±í•´ SEQUENCE ì´ë¦„ê³¼ SEQUENCEê°€ ì‚¬ìš©ëœ ì»¬ëŸ¼ì˜ ì´ë¦„ì„ ì–»ëŠ”ë‹¤.
      * 
-     * @param aSql SEQUENCE Á¤º¸¸¦ ÆÄ½ÌÇÒ INSERT Äõ¸®¹®
-     * @return SEQUENCE Á¤º¸¸¦ ´ãÀº ¸®½ºÆ®
+     * @param aSql SEQUENCE ì •ë³´ë¥¼ íŒŒì‹±í•  INSERT ì¿¼ë¦¬ë¬¸
+     * @return SEQUENCE ì •ë³´ë¥¼ ë‹´ì€ ë¦¬ìŠ¤íŠ¸
      */
     public static ArrayList getAllSequences(String aSql)
     {
@@ -73,24 +73,24 @@ public class AltiSqlProcessor
         }
         catch (Exception e)
         {
-            // parsing error°¡ ¹ß»ıÇÏ¸é empty list¸¦ ¸®ÅÏÇÑ´Ù.
+            // parsing errorê°€ ë°œìƒí•˜ë©´ empty listë¥¼ ë¦¬í„´í•œë‹¤.
             sSeqInfos.clear();
         }
         return sSeqInfos;
     }
 
     /**
-     * INSERT Äõ¸®¹®¿¡¼­ ÄÃ·³ ¸ñ·ÏÀ» ¾ò´Â´Ù.
+     * INSERT ì¿¼ë¦¬ë¬¸ì—ì„œ ì»¬ëŸ¼ ëª©ë¡ì„ ì–»ëŠ”ë‹¤.
      * 
-     * @param aInsertSql INSERT Äõ¸®¹®
-     * @return ÄÃ·³ ¸ñ·Ï. INSERT Äõ¸®¹®¿¡ ÄÃ·³ ÀÌ¸§ ¸ñ·ÏÀÌ ¾ø´Ù¸é null
+     * @param aInsertSql INSERT ì¿¼ë¦¬ë¬¸
+     * @return ì»¬ëŸ¼ ëª©ë¡. INSERT ì¿¼ë¦¬ë¬¸ì— ì»¬ëŸ¼ ì´ë¦„ ëª©ë¡ì´ ì—†ë‹¤ë©´ null
      */
     private static String[] getColumnListOfInsert(String aInsertSql)
     {
         String sSql = aInsertSql.substring(0, aInsertSql.toUpperCase().indexOf(INTERNAL_SQL_VALUES));
         if (sSql.lastIndexOf("(") < 0)
         {
-            // SQL¿¡ column name list°¡ ¾ø´Â °æ¿ìÀÌ´Ù.
+            // SQLì— column name listê°€ ì—†ëŠ” ê²½ìš°ì´ë‹¤.
             return null;
         }
         sSql = sSql.substring(sSql.lastIndexOf("(") + 1, sSql.lastIndexOf(")")).trim();
@@ -103,10 +103,10 @@ public class AltiSqlProcessor
     }
 
     /**
-     * INSERT Äõ¸®¹®¿¡¼­ °ª ¸ñ·ÏÀ» ¾ò´Â´Ù.
+     * INSERT ì¿¼ë¦¬ë¬¸ì—ì„œ ê°’ ëª©ë¡ì„ ì–»ëŠ”ë‹¤.
      * 
-     * @param aInsertSql INSERT Äõ¸®¹®
-     * @return °ª ¸ñ·Ï
+     * @param aInsertSql INSERT ì¿¼ë¦¬ë¬¸
+     * @return ê°’ ëª©ë¡
      */
     private static String[] getValueListOfInsert(String aInsertSql)
     {
@@ -126,7 +126,7 @@ public class AltiSqlProcessor
         sIndex = aOrgSql.indexOf("{");
         if (sIndex < 0)
         {
-            // ¼º´ÉÀ» À§ÇØ °¡Àå¸ÕÀú {°¡ ÀÖ´ÂÁö °Ë»çÇØ ¾øÀ¸¸é ¹Ù·Î ¸®ÅÏÇÑ´Ù.
+            // ì„±ëŠ¥ì„ ìœ„í•´ ê°€ì¥ë¨¼ì € {ê°€ ìˆëŠ”ì§€ ê²€ì‚¬í•´ ì—†ìœ¼ë©´ ë°”ë¡œ ë¦¬í„´í•œë‹¤.
             return aOrgSql;
         }
 
@@ -150,7 +150,7 @@ public class AltiSqlProcessor
         }
         if (sQuatOpen)
         {
-            // '' ¾ÈÀÇ {ÀÌ±â ¶§¹®¿¡ ¹«½ÃÇÑ´Ù. ´ÙÀ½ {¸¦ Ã£¾Æ¶ó~
+            // '' ì•ˆì˜ {ì´ê¸° ë•Œë¬¸ì— ë¬´ì‹œí•œë‹¤. ë‹¤ìŒ {ë¥¼ ì°¾ì•„ë¼~
             aBraceIndex = aSql.indexOf("{", aBraceIndex + 1);
             if (aBraceIndex >= 0)
             {
@@ -178,7 +178,7 @@ public class AltiSqlProcessor
         {
             return aSql;
         }
-        String sExpr = convertToNative(aSql.substring(aBraceIndex + 1, sEndBraceIndex).trim()); // { }¾ÈÀÇ ¹®ÀÚ¿­À» ¶¼¿Â´Ù.
+        String sExpr = convertToNative(aSql.substring(aBraceIndex + 1, sEndBraceIndex).trim()); // { }ì•ˆì˜ ë¬¸ìì—´ì„ ë–¼ì˜¨ë‹¤.
         if (sExpr == null)
         {
             return aSql;
@@ -193,7 +193,7 @@ public class AltiSqlProcessor
 
     private static String convertToNative(String aExpr)
     {
-        // inputÀº { }¾ÈÀÇ ¹®ÀÚ¿­ÀÌ´Ù. {, }´Â »« °ÍÀÌ´Ù.
+        // inputì€ { }ì•ˆì˜ ë¬¸ìì—´ì´ë‹¤. {, }ëŠ” ëº€ ê²ƒì´ë‹¤.
 
         int sIndex = aExpr.indexOf(" ");
         if (sIndex < 0)
@@ -203,38 +203,38 @@ public class AltiSqlProcessor
         String sWord = aExpr.substring(0, sIndex);
         if (sWord.equalsIgnoreCase("escape"))
         {
-            // { escape ... } ±¸¹®Àº ±×´ë·Î ¸®ÅÏÇÏ¸é µÈ´Ù.
+            // { escape ... } êµ¬ë¬¸ì€ ê·¸ëŒ€ë¡œ ë¦¬í„´í•˜ë©´ ëœë‹¤.
             return aExpr;
         }
         else if (sWord.equalsIgnoreCase("fn"))
         {
-            // { fn ... } ±¸¹® ¿ª½Ã ...¸¦ ±×´ë·Î ¸®ÅÏÇÏ¸é µÈ´Ù.
+            // { fn ... } êµ¬ë¬¸ ì—­ì‹œ ...ë¥¼ ê·¸ëŒ€ë¡œ ë¦¬í„´í•˜ë©´ ëœë‹¤.
             return aExpr.substring(sIndex + 1, aExpr.length());
         }
         else if (sWord.equalsIgnoreCase("d"))
         {
-            // { d '2011-10-17' }´Â to_date('2011-10-17', 'yyyy-MM-dd') ÇüÅÂ·Î ¹Ù²Û´Ù.
+            // { d '2011-10-17' }ëŠ” to_date('2011-10-17', 'yyyy-MM-dd') í˜•íƒœë¡œ ë°”ê¾¼ë‹¤.
             return "to_date(" + aExpr.substring(sIndex + 1, aExpr.length()) + ", 'yyyy-MM-dd')";
         }
         else if (sWord.equalsIgnoreCase("t"))
         {
-            // { t '12:32:56' }´Â to_date('12:32:56', 'hh:mi:ss') ÇüÅÂ·Î ¹Ù²Û´Ù.
+            // { t '12:32:56' }ëŠ” to_date('12:32:56', 'hh:mi:ss') í˜•íƒœë¡œ ë°”ê¾¼ë‹¤.
             return "to_date(" + aExpr.substring(sIndex + 1, aExpr.length()) + ", 'hh24:mi:ss')";
         }
         else if (sWord.equalsIgnoreCase("ts"))
         {
-            // { ts '2011-10-17 12:32:56.123456' }Àº to_date('2011-10-17 12:32:56.123456', 'yyyy-MM-dd hh:mi:ss.ffffff')·Î ¹Ù²Û´Ù.
+            // { ts '2011-10-17 12:32:56.123456' }ì€ to_date('2011-10-17 12:32:56.123456', 'yyyy-MM-dd hh:mi:ss.ffffff')ë¡œ ë°”ê¾¼ë‹¤.
             if (aExpr.indexOf(".") > 0)
             {
-                // fractionÀÌ ÀÖ´Â °æ¿ì
+                // fractionì´ ìˆëŠ” ê²½ìš°
                 return "to_date(" + aExpr.substring(sIndex + 1, aExpr.length()) + ", 'yyyy-MM-dd hh24:mi:ss.ff6')";
             }
-            // fractionÀÌ ¾ø´Â °æ¿ì
+            // fractionì´ ì—†ëŠ” ê²½ìš°
             return "to_date(" + aExpr.substring(sIndex + 1, aExpr.length()) + ", 'yyyy-MM-dd hh24:mi:ss')";
         }
         else if (sWord.equalsIgnoreCase("call"))
         {
-            // { call procedure_name(...) }´Â exec procedure_name(...)·Î ¹Ù²Û´Ù.
+            // { call procedure_name(...) }ëŠ” exec procedure_name(...)ë¡œ ë°”ê¾¼ë‹¤.
             return "execute " + aExpr.substring(sIndex + 1, aExpr.length());
         }
         else if (sWord.startsWith("?"))
@@ -250,24 +250,24 @@ public class AltiSqlProcessor
                 ;
             if (sWord.substring(i).equalsIgnoreCase("call"))
             {
-                // { ? = call procedure_name(...) }´Â exec ? := procedure_name(...)·Î ¹Ù²Û´Ù.
+                // { ? = call procedure_name(...) }ëŠ” exec ? := procedure_name(...)ë¡œ ë°”ê¾¼ë‹¤.
                 return "execute ? := " + aExpr.substring(sIndex + 1, aExpr.length());
             }
-            // ?=call ¹®¹ıÀÌ ¾Æ´Ï¹Ç·Î ½ºÅµ
+            // ?=call ë¬¸ë²•ì´ ì•„ë‹ˆë¯€ë¡œ ìŠ¤í‚µ
         }
         else if (sWord.equalsIgnoreCase("oj"))
         {
-            // {oj table1 {left|right|full} outer join table2 on condition}´Â oj¸¦ »©°í ±×´ë·Î »ç¿ëÇÑ´Ù.
+            // {oj table1 {left|right|full} outer join table2 on condition}ëŠ” ojë¥¼ ë¹¼ê³  ê·¸ëŒ€ë¡œ ì‚¬ìš©í•œë‹¤.
             return aExpr.substring(sIndex + 1, aExpr.length());
         }
         return null;
     }
 
     /**
-     * Generated Keys¸¦ ¾ò±âÀ§ÇÑ Äõ¸®¹®À» ¸¸µç´Ù.
+     * Generated Keysë¥¼ ì–»ê¸°ìœ„í•œ ì¿¼ë¦¬ë¬¸ì„ ë§Œë“ ë‹¤.
      * 
-     * @param aSeqs SEQUENCE Á¤º¸¸¦ ´ãÀº ¸®½ºÆ®
-     * @return Generated Keys¸¦ ¾ò±âÀ§ÇÑ Äõ¸®¹®
+     * @param aSeqs SEQUENCE ì •ë³´ë¥¼ ë‹´ì€ ë¦¬ìŠ¤íŠ¸
+     * @return Generated Keysë¥¼ ì–»ê¸°ìœ„í•œ ì¿¼ë¦¬ë¬¸
      */
     public static String makeGenerateKeysSql(ArrayList aSeqs)
     {
@@ -286,11 +286,11 @@ public class AltiSqlProcessor
     }
 
     /**
-     * Generated Keys¸¦ ¾ò±âÀ§ÇÑ Äõ¸®¹®À» ¸¸µç´Ù.
+     * Generated Keysë¥¼ ì–»ê¸°ìœ„í•œ ì¿¼ë¦¬ë¬¸ì„ ë§Œë“ ë‹¤.
      * 
-     * @param aSeqs SEQUENCE Á¤º¸¸¦ ´ãÀº ¸®½ºÆ®
-     * @param aColIndexes °ªÀ» ¾òÀ» SEQUENCEÀÇ ¼ø¹ø(1 base)À» ´ãÀº ¹è¿­
-     * @return Generated Keys¸¦ ¾ò±âÀ§ÇÑ Äõ¸®¹®
+     * @param aSeqs SEQUENCE ì •ë³´ë¥¼ ë‹´ì€ ë¦¬ìŠ¤íŠ¸
+     * @param aColIndexes ê°’ì„ ì–»ì„ SEQUENCEì˜ ìˆœë²ˆ(1 base)ì„ ë‹´ì€ ë°°ì—´
+     * @return Generated Keysë¥¼ ì–»ê¸°ìœ„í•œ ì¿¼ë¦¬ë¬¸
      */
     public static String makeGenerateKeysSql(ArrayList aSeqs, int[] aColIndexes) throws SQLException
     {
@@ -333,11 +333,11 @@ public class AltiSqlProcessor
     }
 
     /**
-     * Generated Keys¸¦ ¾ò±âÀ§ÇÑ Äõ¸®¹®À» ¸¸µç´Ù.
+     * Generated Keysë¥¼ ì–»ê¸°ìœ„í•œ ì¿¼ë¦¬ë¬¸ì„ ë§Œë“ ë‹¤.
      * 
-     * @param aSeqs SEQUENCE Á¤º¸¸¦ ´ãÀº ¸®½ºÆ®
-     * @param aColNames °ªÀ» ¾òÀ» SEQUENCE°¡ »ç¿ëµÈ ÄÃ·³ ÀÌ¸§À» ´ãÀº ¹è¿­
-     * @return Generated Keys¸¦ ¾ò±âÀ§ÇÑ Äõ¸®¹®
+     * @param aSeqs SEQUENCE ì •ë³´ë¥¼ ë‹´ì€ ë¦¬ìŠ¤íŠ¸
+     * @param aColNames ê°’ì„ ì–»ì„ SEQUENCEê°€ ì‚¬ìš©ëœ ì»¬ëŸ¼ ì´ë¦„ì„ ë‹´ì€ ë°°ì—´
+     * @return Generated Keysë¥¼ ì–»ê¸°ìœ„í•œ ì¿¼ë¦¬ë¬¸
      */
     public static String makeGenerateKeysSql(ArrayList aSeqs, String[] aColNames) throws SQLException
     {
@@ -422,10 +422,10 @@ public class AltiSqlProcessor
     }
 
     /**
-     * FROM ½ÃÀÛ À§Ä¡¸¦ Ã£´Â´Ù.
+     * FROM ì‹œì‘ ìœ„ì¹˜ë¥¼ ì°¾ëŠ”ë‹¤.
      * 
-     * @param aSrcQstr ¿øº» Äõ¸®¹®
-     * @return FROM ÀıÀÌ ÀÖÀ¸¸é FROMÀÇ ½ÃÀÛ À§Ä¡(0 base), ¾Æ´Ï¸é -1
+     * @param aSrcQstr ì›ë³¸ ì¿¼ë¦¬ë¬¸
+     * @return FROM ì ˆì´ ìˆìœ¼ë©´ FROMì˜ ì‹œì‘ ìœ„ì¹˜(0 base), ì•„ë‹ˆë©´ -1
      */
     private static int indexOfFrom(String aSrcQstr) throws SQLException
     {
@@ -433,11 +433,11 @@ public class AltiSqlProcessor
     }
 
     /**
-     * FROM ½ÃÀÛ À§Ä¡¸¦ Ã£´Â´Ù.
+     * FROM ì‹œì‘ ìœ„ì¹˜ë¥¼ ì°¾ëŠ”ë‹¤.
      * 
-     * @param aSrcQstr ¿øº» Äõ¸®¹®
-     * @param aStartIdx °Ë»öÀ» ½ÃÀÛÇÒ index
-     * @return FROM ÀıÀÌ ÀÖÀ¸¸é FROMÀÇ ½ÃÀÛ À§Ä¡(0 base), ¾Æ´Ï¸é -1
+     * @param aSrcQstr ì›ë³¸ ì¿¼ë¦¬ë¬¸
+     * @param aStartIdx ê²€ìƒ‰ì„ ì‹œì‘í•  index
+     * @return FROM ì ˆì´ ìˆìœ¼ë©´ FROMì˜ ì‹œì‘ ìœ„ì¹˜(0 base), ì•„ë‹ˆë©´ -1
      */
     private static int indexOfFrom(String aSrcQstr, int aStartIdx) throws SQLException
     {
@@ -496,7 +496,7 @@ public class AltiSqlProcessor
 
                 case 'F':
                 case 'f':
-                    // {°ø¹é}FROM{°ø¹é} ÀÎÁö È®ÀÎ
+                    // {ê³µë°±}FROM{ê³µë°±} ì¸ì§€ í™•ì¸
                     if ((i == 0) || (i + 5 >= aSrcQstr.length()) || !isValidFromPrevChar(aSrcQstr.charAt(i - 1)))
                     {
                         break;
@@ -516,10 +516,10 @@ public class AltiSqlProcessor
     }
 
     /**
-     * FROM ´ÙÀ½¿¡ ³ª¿Ã ¼ö ÀÖ´Â ¹®ÀÚÀÎÁö È®ÀÎÇÑ´Ù.
+     * FROM ë‹¤ìŒì— ë‚˜ì˜¬ ìˆ˜ ìˆëŠ” ë¬¸ìì¸ì§€ í™•ì¸í•œë‹¤.
      * 
-     * @param aCh È®ÀÎÇÒ ¹®ÀÚ
-     * @return FROM ´ÙÀ½¿¡ ³ª¿Ã ¼ö ÀÖ´Â ¹®ÀÚÀÎÁö ¿©ºÎ
+     * @param aCh í™•ì¸í•  ë¬¸ì
+     * @return FROM ë‹¤ìŒì— ë‚˜ì˜¬ ìˆ˜ ìˆëŠ” ë¬¸ìì¸ì§€ ì—¬ë¶€
      */
     private static boolean isValidFromNextChar(char aCh)
     {
@@ -527,10 +527,10 @@ public class AltiSqlProcessor
     }
 
     /**
-     * FROM ¾Õ¿¡ ³ª¿Ã ¼ö ÀÖ´Â ¹®ÀÚÀÎÁö È®ÀÎÇÑ´Ù.
+     * FROM ì•ì— ë‚˜ì˜¬ ìˆ˜ ìˆëŠ” ë¬¸ìì¸ì§€ í™•ì¸í•œë‹¤.
      * 
-     * @param aCh È®ÀÎÇÒ ¹®ÀÚ
-     * @return FROM ¾Õ¿¡ ³ª¿Ã ¼ö ÀÖ´Â ¹®ÀÚÀÎÁö ¿©ºÎ
+     * @param aCh í™•ì¸í•  ë¬¸ì
+     * @return FROM ì•ì— ë‚˜ì˜¬ ìˆ˜ ìˆëŠ” ë¬¸ìì¸ì§€ ì—¬ë¶€
      */
     private static boolean isValidFromPrevChar(char aCh)
     {
@@ -538,10 +538,10 @@ public class AltiSqlProcessor
     }
 
     /**
-     * FROMÀÇ ³¡ À§Ä¡¸¦ Ã£´Â´Ù.
+     * FROMì˜ ë ìœ„ì¹˜ë¥¼ ì°¾ëŠ”ë‹¤.
      * 
-     * @param aSql ¿øº» Äõ¸®¹®
-     * @return FROM ÀıÀÌ ÀÖÀ¸¸é FROMÀÇ ³¡ À§Ä¡(0 base), ¾Æ´Ï¸é -1
+     * @param aSql ì›ë³¸ ì¿¼ë¦¬ë¬¸
+     * @return FROM ì ˆì´ ìˆìœ¼ë©´ FROMì˜ ë ìœ„ì¹˜(0 base), ì•„ë‹ˆë©´ -1
      * @throws SQLException 
      */
     private static int indexOfFromEnd(String aSql) throws SQLException
@@ -558,11 +558,11 @@ public class AltiSqlProcessor
     }
 
     /**
-     * FROMÀÇ ³¡ À§Ä¡¸¦ Ã£´Â´Ù.
+     * FROMì˜ ë ìœ„ì¹˜ë¥¼ ì°¾ëŠ”ë‹¤.
      * 
-     * @param aSql ¿øº» Äõ¸®¹®
-     * @param aIndexOfFrom FROMÀÇ ½ÃÀÛ À§Ä¡(0 base)
-     * @return FROMÀÇ ³¡ À§Ä¡(0 base)
+     * @param aSql ì›ë³¸ ì¿¼ë¦¬ë¬¸
+     * @param aIndexOfFrom FROMì˜ ì‹œì‘ ìœ„ì¹˜(0 base)
+     * @return FROMì˜ ë ìœ„ì¹˜(0 base)
      */
     private static int indexOfFromEnd(String aSql, int aIndexOfFrom)
     {
@@ -656,7 +656,7 @@ public class AltiSqlProcessor
         int sIdxFrom = indexOfFrom(aSql);
         int sIdxOrderList = indexOfOrderByList(aSql, sIdxFrom);
         StringBuffer sBuf = new StringBuffer(aSql.length());
-        // ´ÙÀ½ SQL¹®¿¡ ÀÇÇØ KEY_SET_ROWID_COLUMN_INDEX°¡ 1·Î °íÁ¤µÊ.
+        // ë‹¤ìŒ SQLë¬¸ì— ì˜í•´ KEY_SET_ROWID_COLUMN_INDEXê°€ 1ë¡œ ê³ ì •ë¨.
         sBuf.append("SELECT _PROWID ");
         if (sIdxOrderList == INDEX_NOT_FOUND || aOrderByMap == null || aOrderByMap.size() == 0)
         {
@@ -708,7 +708,7 @@ public class AltiSqlProcessor
                     int sStartIdx = i;
                     for (i++; i < aSql.length() && isSQLIdentifierPart(aSql.charAt(i)); i++)
                         ;
-                    // non-quoted identifier´Â UPPERCASE·Î
+                    // non-quoted identifierëŠ” UPPERCASEë¡œ
                     sOrderBy = aSql.substring(sStartIdx, i).toUpperCase();
                 }
                 else
@@ -716,7 +716,7 @@ public class AltiSqlProcessor
                     throw new AssertionError("Invalid query string");
                 }
                 String sColNameKey = sOrderBy;
-                // order by Àı¿¡´Â ¼ø¹ø, alias, column name ¿Ü ´Ù¸¥°Íµµ ¿Ã ¼ö ÀÖ´Ù.
+                // order by ì ˆì—ëŠ” ìˆœë²ˆ, alias, column name ì™¸ ë‹¤ë¥¸ê²ƒë„ ì˜¬ ìˆ˜ ìˆë‹¤.
                 String sBaseColumnName = (String)aOrderByMap.get(sColNameKey);
                 if (sBaseColumnName != null)
                 {
@@ -751,7 +751,7 @@ public class AltiSqlProcessor
                 {
                     break;
                 }
-                // ,°¡ ¾øÀ¸¸é ORDER BYÀıÀÌ ³¡³­ °Í
+                // ,ê°€ ì—†ìœ¼ë©´ ORDER BYì ˆì´ ëë‚œ ê²ƒ
                 if (aSql.charAt(i) != ',')
                 {
                     sBuf.append(aSql.substring(i));
@@ -850,7 +850,7 @@ public class AltiSqlProcessor
 
                 case 'O':
                 case 'o':
-                    // {°ø¹é}ORDER{°ø¹é}BY{°ø¹é} ÀÎÁö È®ÀÎ
+                    // {ê³µë°±}ORDER{ê³µë°±}BY{ê³µë°±} ì¸ì§€ í™•ì¸
                     if ((i == 0) || (i + 5 >= aSrcQstr.length()) || !isValidFromPrevChar(aSrcQstr.charAt(i - 1)))
                     {
                         break;
@@ -909,12 +909,12 @@ public class AltiSqlProcessor
     }
 
     /**
-     * _PROWID ÄÃ·³ÀÌ Ãß°¡µÈ Äõ¸®¹®À» ¾ò´Â´Ù.
+     * _PROWID ì»¬ëŸ¼ì´ ì¶”ê°€ëœ ì¿¼ë¦¬ë¬¸ì„ ì–»ëŠ”ë‹¤.
      * 
-     * @param aSql ¿øº» Äõ¸®¹®
-     * @return ´Ü¼ø SELECT¹®ÀÌ ¾Æ´Ï¸é null,
-     *         ÀÌ¹Ì _PROWID ÄÃ·³ÀÌ Ãß°¡µÇ¾îÀÖÀ¸¸é ¿øº» Äõ¸®¹®,
-     *         _PROWID ÄÃ·³ÀÌ Ãß°¡µÇÁö¾ÊÀº ´Ü¼ø SELECT ¹®ÀÌ¸é _PROWID ÄÃ·³ÀÌ Ãß°¡µÈ Äõ¸®¹®
+     * @param aSql ì›ë³¸ ì¿¼ë¦¬ë¬¸
+     * @return ë‹¨ìˆœ SELECTë¬¸ì´ ì•„ë‹ˆë©´ null,
+     *         ì´ë¯¸ _PROWID ì»¬ëŸ¼ì´ ì¶”ê°€ë˜ì–´ìˆìœ¼ë©´ ì›ë³¸ ì¿¼ë¦¬ë¬¸,
+     *         _PROWID ì»¬ëŸ¼ì´ ì¶”ê°€ë˜ì§€ì•Šì€ ë‹¨ìˆœ SELECT ë¬¸ì´ë©´ _PROWID ì»¬ëŸ¼ì´ ì¶”ê°€ëœ ì¿¼ë¦¬ë¬¸
      * @throws SQLException 
      */
     public static String makePRowIDAddedSql(String aSql) throws SQLException
@@ -922,7 +922,7 @@ public class AltiSqlProcessor
         int sIdxSelectB = indexOfSelect(aSql);
         if (sIdxSelectB == INDEX_NOT_FOUND)
         {
-            return null; // º¯È¯ÇÒ ¼ö ¾ø´Â Äõ¸®¹®ÀÎÁö ¿©ºÎ¸¦ È®ÀÎÇÏ±â À§ÇÔ
+            return null; // ë³€í™˜í•  ìˆ˜ ì—†ëŠ” ì¿¼ë¦¬ë¬¸ì¸ì§€ ì—¬ë¶€ë¥¼ í™•ì¸í•˜ê¸° ìœ„í•¨
         }
 
         if (aSql.indexOf(INTERNAL_SQL_PROWID) != INDEX_NOT_FOUND)
@@ -937,10 +937,10 @@ public class AltiSqlProcessor
     }
 
     /**
-     * SELECTÀÇ ½ÃÀÛ À§Ä¡¸¦ Ã£´Â´Ù.
+     * SELECTì˜ ì‹œì‘ ìœ„ì¹˜ë¥¼ ì°¾ëŠ”ë‹¤.
      * 
-     * @param aSql ¿øº» Äõ¸®¹®
-     * @return SELECT·Î ½ÃÀÛÇÏ¸é SELECTÀÇ ½ÃÀÛ À§Ä¡(0 base), ¾Æ´Ï¸é -1
+     * @param aSql ì›ë³¸ ì¿¼ë¦¬ë¬¸
+     * @return SELECTë¡œ ì‹œì‘í•˜ë©´ SELECTì˜ ì‹œì‘ ìœ„ì¹˜(0 base), ì•„ë‹ˆë©´ -1
      */
     private static int indexOfSelect(String aSql)
     {
@@ -953,10 +953,10 @@ public class AltiSqlProcessor
     }
 
     /**
-     * SELECT·Î ½ÃÀÛÇÏ´Â Äõ¸®ÀÎÁö È®ÀÎÇÑ´Ù.
+     * SELECTë¡œ ì‹œì‘í•˜ëŠ” ì¿¼ë¦¬ì¸ì§€ í™•ì¸í•œë‹¤.
      * 
-     * @param aSql È®ÀÎÇÒ Äõ¸®¹®
-     * @return SELECT·Î ½ÃÀÛÇÏ´ÂÁö ¿©ºÎ
+     * @param aSql í™•ì¸í•  ì¿¼ë¦¬ë¬¸
+     * @return SELECTë¡œ ì‹œì‘í•˜ëŠ”ì§€ ì—¬ë¶€
      */
     public static boolean isSelectQuery(String aSql)
     {
@@ -965,10 +965,10 @@ public class AltiSqlProcessor
     }
 
     /**
-     * INSERT·Î ½ÃÀÛÇÏ´Â Äõ¸®ÀÎÁö È®ÀÎÇÑ´Ù.
+     * INSERTë¡œ ì‹œì‘í•˜ëŠ” ì¿¼ë¦¬ì¸ì§€ í™•ì¸í•œë‹¤.
      * 
-     * @param aSql È®ÀÎÇÒ Äõ¸®¹®
-     * @return INSERT·Î ½ÃÀÛÇÏ´ÂÁö ¿©ºÎ
+     * @param aSql í™•ì¸í•  ì¿¼ë¦¬ë¬¸
+     * @return INSERTë¡œ ì‹œì‘í•˜ëŠ”ì§€ ì—¬ë¶€
      */
     public static boolean isInsertQuery(String aSql)
     {

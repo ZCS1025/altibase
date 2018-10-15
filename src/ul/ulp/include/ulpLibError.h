@@ -26,12 +26,12 @@
 #include <ulpLibMacro.h>
 
 /*************************
- * CLI ¸®ÅÏ °ª¿¡ µû¸¥ type±¸ºÐ.
- * TYPE1         = ¸®ÅÏ°ª { SQL_SUCCESS, SQL_ERROR, SQL_INVALID_HANDLE,
+ * CLI ë¦¬í„´ ê°’ì— ë”°ë¥¸ typeêµ¬ë¶„.
+ * TYPE1         = ë¦¬í„´ê°’ { SQL_SUCCESS, SQL_ERROR, SQL_INVALID_HANDLE,
  *                        SQL_SUCCESS_WITH_INFO, SQL_NO_DATA_FOUND }
- * TYPE1_EXECDML = TYPE1¿¡ Æ÷ÇÔµÇ¸ç SQLExecute³ª SQLExecDirect¸¦ ÀÌ¿ëÇØ DML query¸¦ ¼öÇà ÇÑ °æ¿ì.
- * TYPE2         = ¸®ÅÏ°ª { SQL_SUCCESS, SQL_ERROR, SQL_INVALID_HANDLE, SQL_SUCCESS_WITH_INFO }
- * TYPE3         = ¸®ÅÏ°ª { SQL_SUCCESS, SQL_ERROR, SQL_INVALID_HANDLE }
+ * TYPE1_EXECDML = TYPE1ì— í¬í•¨ë˜ë©° SQLExecuteë‚˜ SQLExecDirectë¥¼ ì´ìš©í•´ DML queryë¥¼ ìˆ˜í–‰ í•œ ê²½ìš°.
+ * TYPE2         = ë¦¬í„´ê°’ { SQL_SUCCESS, SQL_ERROR, SQL_INVALID_HANDLE, SQL_SUCCESS_WITH_INFO }
+ * TYPE3         = ë¦¬í„´ê°’ { SQL_SUCCESS, SQL_ERROR, SQL_INVALID_HANDLE }
  *************************/
 typedef enum
 {
@@ -41,9 +41,9 @@ typedef enum
     ERR_TYPE3
 } ulpLibErrType;
 
-/* ³»Àå SQL¹® ¼öÇà °á°úÁ¤º¸¸¦ ÀúÀåÇÏ´Â sqlca, sqlcode, sqlstate¸¦  *
- * ¸í½ÃÀûÀ¸·Î ÀÎÀÚ·Î ³Ñ°ÜÁØ °ªÀ¸·Î ¼³Á¤ ÇØÁÖ´Â ÇÔ¼ö.                 *
- * precompiler ³»ºÎ ¿¡·¯ ¼³Á¤ ´ã´ç.                             */
+/* ë‚´ìž¥ SQLë¬¸ ìˆ˜í–‰ ê²°ê³¼ì •ë³´ë¥¼ ì €ìž¥í•˜ëŠ” sqlca, sqlcode, sqlstateë¥¼  *
+ * ëª…ì‹œì ìœ¼ë¡œ ì¸ìžë¡œ ë„˜ê²¨ì¤€ ê°’ìœ¼ë¡œ ì„¤ì • í•´ì£¼ëŠ” í•¨ìˆ˜.                 *
+ * precompiler ë‚´ë¶€ ì—ëŸ¬ ì„¤ì • ë‹´ë‹¹.                             */
 void ulpSetErrorInfo4PCOMP( ulpSqlca          *aSqlca,
                             ulpSqlcode        *aSqlcode,
                             ulpSqlstate       *aSqlstate,
@@ -51,8 +51,8 @@ void ulpSetErrorInfo4PCOMP( ulpSqlca          *aSqlca,
                             acp_sint32_t       aErrCode,
                             const acp_char_t  *aErrState );
 
-/* ³»Àå SQL¹® ¼öÇà °á°úÁ¤º¸¸¦ ODEBC CLI ÇÔ¼ö¸¦ ÀÌ¿ëÇØ ¼³Á¤ ÇØÁÖ´Â ÇÔ¼ö. *
- * CLI¿¡¼­ ¹ß»ýÇÑ ¿¡·¯ ¼³Á¤ ´ã´ç.                                  */
+/* ë‚´ìž¥ SQLë¬¸ ìˆ˜í–‰ ê²°ê³¼ì •ë³´ë¥¼ ODEBC CLI í•¨ìˆ˜ë¥¼ ì´ìš©í•´ ì„¤ì • í•´ì£¼ëŠ” í•¨ìˆ˜. *
+ * CLIì—ì„œ ë°œìƒí•œ ì—ëŸ¬ ì„¤ì • ë‹´ë‹¹.                                  */
 ACI_RC ulpSetErrorInfo4CLI( ulpLibConnNode    *aConnNode,
                             SQLHSTMT           aHstmt,
                             const SQLRETURN    aSqlRes,

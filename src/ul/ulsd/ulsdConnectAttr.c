@@ -32,7 +32,7 @@ SQLRETURN ulsdSetConnectAttr(ulnDbc       *aMetaDbc,
 
     ulsdGetTouchedAllNodeList(sShard, sNodeArr, &sNodeCount);
 
-    /* BUG-45411 touchÇÑ data³ëµå¿¡¼­ ¸ÕÀú ¼öÇàÇÏ°í, ¸ğµÎ ¼º°øÇÏ¸é meta³ëµå¿¡¼­ ¼öÇàÇÑ´Ù. */
+    /* BUG-45411 touchí•œ dataë…¸ë“œì—ì„œ ë¨¼ì € ìˆ˜í–‰í•˜ê³ , ëª¨ë‘ ì„±ê³µí•˜ë©´ metaë…¸ë“œì—ì„œ ìˆ˜í–‰í•œë‹¤. */
     for ( i = 0; i < sNodeCount; i++ )
     {
         sNodeIndex = sNodeArr[i];
@@ -56,7 +56,7 @@ SQLRETURN ulsdSetConnectAttr(ulnDbc       *aMetaDbc,
                              aStringLength);
     ACI_TEST(sRet != ACI_SUCCESS);
 
-    /* shard tx option ¼³Á¤ */
+    /* shard tx option ì„¤ì • */
     if ( ulnGetConnAttrIDfromSQL_ATTR_ID(aAttribute) == ULN_CONN_ATTR_AUTOCOMMIT )
     {
         if ( aStringLength == ALTIBASE_SHARD_SINGLE_NODE_TRANSACTION )

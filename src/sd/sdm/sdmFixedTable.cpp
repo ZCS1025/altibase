@@ -148,7 +148,7 @@ IDE_RC sdmFixedTable::buildRecordForShardConnectionInfo(
             // link failure
             sConnectInfo4PV.mLinkFailure = sConnectInfo->mLinkFailure;
 
-            // link failure°¡ ¾Æ´Ñ°æ¿ì ÇöÀç ½ÃÁ¡¿¡¼­ ÇÑ¹ø ´õ °Ë»çÇÑ´Ù.
+            // link failureê°€ ì•„ë‹Œê²½ìš° í˜„ìž¬ ì‹œì ì—ì„œ í•œë²ˆ ë” ê²€ì‚¬í•œë‹¤.
             if ( sConnectInfo4PV.mLinkFailure == ID_FALSE )
             {
                 (void) sdl::checkDbcAlive( sConnectInfo->mDbc,

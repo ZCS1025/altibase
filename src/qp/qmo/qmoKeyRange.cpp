@@ -18,31 +18,31 @@
 /***********************************************************************
  * $Id: qmoKeyRange.cpp 82075 2018-01-17 06:39:52Z jina.kim $
  *
- * Description : Key Range »ı¼º±â
+ * Description : Key Range ìƒì„±ê¸°
  *
- *     < keyRange »ı¼ºÀıÂ÷ >
- *     1. DNF ÇüÅÂ·Î ³ëµå º¯È¯
- *     2. keyRangeÀÇ Å©±â ÃøÁ¤
- *     3. keyRange »ı¼ºÀ» À§ÇÑ ¸Ş¸ğ¸® ÁØºñ
- *     4. keyRange »ı¼º
+ *     < keyRange ìƒì„±ì ˆì°¨ >
+ *     1. DNF í˜•íƒœë¡œ ë…¸ë“œ ë³€í™˜
+ *     2. keyRangeì˜ í¬ê¸° ì¸¡ì •
+ *     3. keyRange ìƒì„±ì„ ìœ„í•œ ë©”ëª¨ë¦¬ ì¤€ë¹„
+ *     4. keyRange ìƒì„±
  *
- *     < keyRange »ı¼ºÀıÂ÷°¡ ¼öÇàµÇ´Â ½ÃÁ¡ >
+ *     < keyRange ìƒì„±ì ˆì°¨ê°€ ìˆ˜í–‰ë˜ëŠ” ì‹œì  >
  *    --------------------------------------------------------------
  *    |           | fixed keyRange         |   variable keyRange   |
  *    --------------------------------------------------------------
- *    | prepare   | 1.DNF ÇüÅÂ·Î ³ëµåº¯È¯  | 1.DNF ÇüÅÂ·Î ³ëµåº¯È¯ |
- *    | ´Ü°è      | 2.keyRange Å©±â ÃøÁ¤   |                       |
- *    |           | 3.¸Ş¸ğ¸®ÁØºñ           |                       |
- *    |           | 4.keyRange»ı¼º         |                       |
+ *    | prepare   | 1.DNF í˜•íƒœë¡œ ë…¸ë“œë³€í™˜  | 1.DNF í˜•íƒœë¡œ ë…¸ë“œë³€í™˜ |
+ *    | ë‹¨ê³„      | 2.keyRange í¬ê¸° ì¸¡ì •   |                       |
+ *    |           | 3.ë©”ëª¨ë¦¬ì¤€ë¹„           |                       |
+ *    |           | 4.keyRangeìƒì„±         |                       |
  *    |-------------------------------------------------------------
- *    | execution |                        | 2.keyRange Å©±â ÃøÁ¤  |
- *    | ´Ü°è      |                        | 3.¸Ş¸ğ¸®ÁØºñ          |
- *    |           |                        | 4.keyRange »ı¼º       |
+ *    | execution |                        | 2.keyRange í¬ê¸° ì¸¡ì •  |
+ *    | ë‹¨ê³„      |                        | 3.ë©”ëª¨ë¦¬ì¤€ë¹„          |
+ *    |           |                        | 4.keyRange ìƒì„±       |
  *    --------------------------------------------------------------
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  **********************************************************************/
 
@@ -64,11 +64,11 @@ qmoKeyRange::estimateKeyRange( qcTemplate  * aTemplate,
 {
 /***********************************************************************
  *
- * Description : Key RangeÀÇ Å©±â¸¦ ÃøÁ¤ÇÑ´Ù.
+ * Description : Key Rangeì˜ í¬ê¸°ë¥¼ ì¸¡ì •í•œë‹¤.
  *
- *   keyRangeÀÇ Å©±â =   (1) ºñ±³¿¬»êÀÚ¿¡ ´ëÇÑ ½ÇÁ¦ range size
- *                     + (2) and merge¿¡ ÇÊ¿äÇÑ ÃÖ´ë range size
- *                     + (3) or merge¿¡ ÇÊ¿äÇÑ ÃÖ´ë range size
+ *   keyRangeì˜ í¬ê¸° =   (1) ë¹„êµì—°ì‚°ìì— ëŒ€í•œ ì‹¤ì œ range size
+ *                     + (2) and mergeì— í•„ìš”í•œ ìµœëŒ€ range size
+ *                     + (3) or mergeì— í•„ìš”í•œ ìµœëŒ€ range size
  *
  * Implementation :
  *
@@ -83,7 +83,7 @@ qmoKeyRange::estimateKeyRange( qcTemplate  * aTemplate,
     IDU_FIT_POINT_FATAL( "qmoKeyRange::estimateKeyRange::__FT__" );
 
     //--------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //--------------------------------------
     IDE_DASSERT( aNode != NULL );
     IDE_DASSERT( aRangeSize != NULL );
@@ -92,16 +92,16 @@ qmoKeyRange::estimateKeyRange( qcTemplate  * aTemplate,
     // estimate size
     //--------------------------------------
 
-    // aNode´Â DNF·Î º¯È¯µÈ ÇüÅÂÀÇ ³ëµåÀÌ´Ù.
+    // aNodeëŠ” DNFë¡œ ë³€í™˜ëœ í˜•íƒœì˜ ë…¸ë“œì´ë‹¤.
 
     if( ( aNode->node.lflag &
           ( MTC_NODE_LOGICAL_CONDITION_MASK | MTC_NODE_OPERATOR_MASK ) )
         == ( MTC_NODE_LOGICAL_CONDITION_TRUE | MTC_NODE_OPERATOR_OR ) )
     {
-        // OR ³í¸® ¿¬»êÀÚ
+        // OR ë…¼ë¦¬ ì—°ì‚°ì
 
-        // OR ÇÏÀ§ ³ëµå¿¡ ´ëÇÑ size ¹×
-        // and merge¿Í or merge¿¡ ÇÊ¿äÇÑ ÃÖ´ë range count¸¦ ±¸ÇÑ´Ù.
+        // OR í•˜ìœ„ ë…¸ë“œì— ëŒ€í•œ size ë°
+        // and mergeì™€ or mergeì— í•„ìš”í•œ ìµœëŒ€ range countë¥¼ êµ¬í•œë‹¤.
 
         sNode = (qtcNode *)(aNode->node.arguments);
         sPrevRangeCount = 1;
@@ -115,7 +115,7 @@ qmoKeyRange::estimateKeyRange( qcTemplate  * aTemplate,
                                      &sRangeSize )
                       != IDE_SUCCESS );
 
-            // OR merge¸¦ À§ÇÑ ÃÖ´ë range °¹¼ö¸¦ ±¸ÇÑ´Ù.
+            // OR mergeë¥¼ ìœ„í•œ ìµœëŒ€ range ê°¯ìˆ˜ë¥¼ êµ¬í•œë‹¤.
             sPrevRangeCount = sPrevRangeCount + sCount;
             sRangeCount = sRangeCount + sPrevRangeCount;
 
@@ -127,11 +127,11 @@ qmoKeyRange::estimateKeyRange( qcTemplate  * aTemplate,
         // Nothing To Do
     }
 
-    // OR ÇÏÀ§ ³ëµå¿¡ ´ëÇÑ °è»êÀÌ ³¡³ª¸é, ÀüÃ¼ range size °è»ê
-    // (1) AND ³ëµå¿¡ ´ëÇÑ size °è»ê ( ºñ±³¿¬»êÀÚ + and merge ) +
-    // (2) OR  ³ëµå¿¡ ´ëÇÑ or merge¿¡ ´ëÇÑ size °è»ê            +
-    // (3) OR  ³ëµå¿¡ ´ëÇÑ or merge½Ã range list¸¦ qsortÇÏ±â À§ÇØ
-    //     ÀÚ·á±¸Á¶ ¹è¿­À» ¸¸µé±â À§ÇÑ size °è»ê
+    // OR í•˜ìœ„ ë…¸ë“œì— ëŒ€í•œ ê³„ì‚°ì´ ëë‚˜ë©´, ì „ì²´ range size ê³„ì‚°
+    // (1) AND ë…¸ë“œì— ëŒ€í•œ size ê³„ì‚° ( ë¹„êµì—°ì‚°ì + and merge ) +
+    // (2) OR  ë…¸ë“œì— ëŒ€í•œ or mergeì— ëŒ€í•œ size ê³„ì‚°            +
+    // (3) OR  ë…¸ë“œì— ëŒ€í•œ or mergeì‹œ range listë¥¼ qsortí•˜ê¸° ìœ„í•´
+    //     ìë£Œêµ¬ì¡° ë°°ì—´ì„ ë§Œë“¤ê¸° ìœ„í•œ size ê³„ì‚°
     //     (fix BUG-9378)
     sRangeSize =
         sRangeSize +
@@ -161,22 +161,22 @@ qmoKeyRange::makeKeyRange( qcTemplate  * aTemplate,
 {
 /***********************************************************************
  *
- * Description : Key Range¸¦ »ı¼ºÇÑ´Ù.
+ * Description : Key Rangeë¥¼ ìƒì„±í•œë‹¤.
  *
- *     Key Range¸¦ »ı¼ºÇÏ±â À§ÇÑ public interface.
+ *     Key Rangeë¥¼ ìƒì„±í•˜ê¸° ìœ„í•œ public interface.
  *
  * Implementation :
  *
- *     Key Range¿Í Key Filter¿¡ ´ëÇÑ range »ı¼ºÀÌ °ÅÀÇ µ¿ÀÏÇÏ¹Ç·Î,
- *     ³»ºÎÀûÀ¸·Î´Â makeRange()¶ó´Â µ¿ÀÏÇÔ¼ö¸¦ È£ÃâÇÑ´Ù.
- *     ÀÌ¶§, ÀÔ·ÂÀÎÀÚ·Î Key Range¿¡ ´ëÇÑ range¸¦ »ı¼ºÇÏ¶ó´Â Á¤º¸¸¦ ³Ñ±ä´Ù.
+ *     Key Rangeì™€ Key Filterì— ëŒ€í•œ range ìƒì„±ì´ ê±°ì˜ ë™ì¼í•˜ë¯€ë¡œ,
+ *     ë‚´ë¶€ì ìœ¼ë¡œëŠ” makeRange()ë¼ëŠ” ë™ì¼í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•œë‹¤.
+ *     ì´ë•Œ, ì…ë ¥ì¸ìë¡œ Key Rangeì— ëŒ€í•œ rangeë¥¼ ìƒì„±í•˜ë¼ëŠ” ì •ë³´ë¥¼ ë„˜ê¸´ë‹¤.
  *
  ***********************************************************************/
 
     IDU_FIT_POINT_FATAL( "qmoKeyRange::makeKeyRange::__FT__" );
 
     //--------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //--------------------------------------
     IDE_DASSERT( aNode != NULL );
     IDE_DASSERT( aKeyCount > 0 );
@@ -187,7 +187,7 @@ qmoKeyRange::makeKeyRange( qcTemplate  * aTemplate,
     IDE_DASSERT( aFilter != NULL );
 
     //--------------------------------------
-    // keyRange »ı¼º
+    // keyRange ìƒì„±
     //--------------------------------------
 
     IDE_TEST( makeRange( aTemplate,
@@ -221,25 +221,25 @@ qmoKeyRange::makeKeyFilter( qcTemplate  * aTemplate,
 {
 /***********************************************************************
  *
- * Description : Key Filter¸¦ »ı¼ºÇÑ´Ù.
+ * Description : Key Filterë¥¼ ìƒì„±í•œë‹¤.
  *
- *    Key Filter¸¦ »ı¼ºÇÏ±â À§ÇÑ public interface.
+ *    Key Filterë¥¼ ìƒì„±í•˜ê¸° ìœ„í•œ public interface.
  *
- *    Key Range»ı¼º°ú ´Ş¸® Key Column¿¡ ¿¬¼ÓµÈ ColumnÀÌ Á¸ÀçÇÒ ÇÊ¿ä°¡
- *    ¾ø´Ù.
+ *    Key Rangeìƒì„±ê³¼ ë‹¬ë¦¬ Key Columnì— ì—°ì†ëœ Columnì´ ì¡´ì¬í•  í•„ìš”ê°€
+ *    ì—†ë‹¤.
  *
  * Implementation :
  *
- *     Key Range¿Í Key Filter¿¡ ´ëÇÑ range »ı¼ºÀÌ °ÅÀÇ µ¿ÀÏÇÏ¹Ç·Î,
- *     ³»ºÎÀûÀ¸·Î´Â makeRange()¶ó´Â µ¿ÀÏÇÔ¼ö¸¦ È£ÃâÇÑ´Ù.
- *     ÀÌ¶§, ÀÔ·ÂÀÎÀÚ·Î Key Filter¿¡ ´ëÇÑ range¸¦ »ı¼ºÇÏ¶ó´Â Á¤º¸¸¦ ³Ñ±ä´Ù.
+ *     Key Rangeì™€ Key Filterì— ëŒ€í•œ range ìƒì„±ì´ ê±°ì˜ ë™ì¼í•˜ë¯€ë¡œ,
+ *     ë‚´ë¶€ì ìœ¼ë¡œëŠ” makeRange()ë¼ëŠ” ë™ì¼í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•œë‹¤.
+ *     ì´ë•Œ, ì…ë ¥ì¸ìë¡œ Key Filterì— ëŒ€í•œ rangeë¥¼ ìƒì„±í•˜ë¼ëŠ” ì •ë³´ë¥¼ ë„˜ê¸´ë‹¤.
  *
  ***********************************************************************/
 
     IDU_FIT_POINT_FATAL( "qmoKeyRange::makeKeyFilter::__FT__" );
 
     //--------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //--------------------------------------
 
     IDE_DASSERT( aNode != NULL );
@@ -251,7 +251,7 @@ qmoKeyRange::makeKeyFilter( qcTemplate  * aTemplate,
     IDE_DASSERT( aFilter != NULL );
 
     //--------------------------------------
-    // keyFilter »ı¼º
+    // keyFilter ìƒì„±
     //--------------------------------------
 
     IDE_TEST( makeRange( aTemplate,
@@ -281,23 +281,23 @@ qmoKeyRange::makeNotNullRange( void               * aPredicate,
 {
 /***********************************************************************
  *
- * Description : Indexable MIN, MAX Àû¿ëÀ» À§ÇÑ Not Null Range »ı¼º
+ * Description : Indexable MIN, MAX ì ìš©ì„ ìœ„í•œ Not Null Range ìƒì„±
  *
  *     < Indexable MIN, MAX >
  *
- *     MIN(), MAX() aggregationÀÇ °æ¿ì, ÇØ´ç column¿¡ ÀÎµ¦½º°¡ Á¸ÀçÇÑ´Ù¸é,
- *     ÀÎµ¦½º¸¦ »ç¿ëÇÏ¿© ÇÑ °Ç¸¸ fetchÇÔÀ¸·Î½á ¿øÇÏ´Â °á°ú¸¦ ¾òÀ» ¼ö ÀÖ´Ù.
- *     ¿¹) select min(i1) from t1; index on T1(i1)
+ *     MIN(), MAX() aggregationì˜ ê²½ìš°, í•´ë‹¹ columnì— ì¸ë±ìŠ¤ê°€ ì¡´ì¬í•œë‹¤ë©´,
+ *     ì¸ë±ìŠ¤ë¥¼ ì‚¬ìš©í•˜ì—¬ í•œ ê±´ë§Œ fetchí•¨ìœ¼ë¡œì¨ ì›í•˜ëŠ” ê²°ê³¼ë¥¼ ì–»ì„ ìˆ˜ ìˆë‹¤.
+ *     ì˜ˆ) select min(i1) from t1; index on T1(i1)
  *
- *     MAX()ÀÇ °æ¿ì, NULL value°¡ Á¸ÀçÇÏ¸é NULL value°¡ °¡Àå Å« °ªÀ¸·Î
- *     fetch µÇ¹Ç·Î, not null range¸¦ »ı¼ºÇØ¼­,
- *     NULL °ªÀº index scan´ë»ó¿¡¼­ Á¦¿ÜÇÑ´Ù.
+ *     MAX()ì˜ ê²½ìš°, NULL valueê°€ ì¡´ì¬í•˜ë©´ NULL valueê°€ ê°€ì¥ í° ê°’ìœ¼ë¡œ
+ *     fetch ë˜ë¯€ë¡œ, not null rangeë¥¼ ìƒì„±í•´ì„œ,
+ *     NULL ê°’ì€ index scanëŒ€ìƒì—ì„œ ì œì™¸í•œë‹¤.
  *
  * Implementation :
  *
- *     1. keyRange Àû¿ëÀ» À§ÇÑ size ±¸ÇÏ±â
- *     2. ¸Ş¸ğ¸® ÇÒ´ç¹Ş±â
- *     3. not null range ±¸¼º
+ *     1. keyRange ì ìš©ì„ ìœ„í•œ size êµ¬í•˜ê¸°
+ *     2. ë©”ëª¨ë¦¬ í• ë‹¹ë°›ê¸°
+ *     3. not null range êµ¬ì„±
  *
  ***********************************************************************/
 
@@ -306,21 +306,21 @@ qmoKeyRange::makeNotNullRange( void               * aPredicate,
     IDU_FIT_POINT_FATAL( "qmoKeyRange::makeNotNullRange::__FT__" );
 
     //--------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //--------------------------------------
 
     IDE_DASSERT( aKeyColumn != NULL );
     IDE_DASSERT( aRange     != NULL );
 
     //--------------------------------------
-    // indexable MIN/MAX Àû¿ëÀ» À§ÇÑ not null range »ı¼º
+    // indexable MIN/MAX ì ìš©ì„ ìœ„í•œ not null range ìƒì„±
     //--------------------------------------
 
-    // not null range »ı¼º
+    // not null range ìƒì„±
     sRangeInfo.column    = aKeyColumn;
     sRangeInfo.argument  =  0; // not used
     sRangeInfo.direction = MTD_COMPARE_ASCENDING; // not used
-    sRangeInfo.columnIdx = 0; //NotNullÀÏ °æ¿ì Ã¹¹øÂ° KeyColumnÀ» ´Ù·ë
+    sRangeInfo.columnIdx = 0; //NotNullì¼ ê²½ìš° ì²«ë²ˆì§¸ KeyColumnì„ ë‹¤ë£¸
 
     if ( ( aKeyColumn->column.flag & SMI_COLUMN_STORAGE_MASK )
              == SMI_COLUMN_STORAGE_DISK )
@@ -334,7 +334,7 @@ qmoKeyRange::makeNotNullRange( void               * aPredicate,
         {
             /*
              * PROJ-2433
-             * Direct Key Index¸¦ À§ÇÑ key compare ÇÔ¼ö type ¼¼ÆÃ
+             * Direct Key Indexë¥¼ ìœ„í•œ key compare í•¨ìˆ˜ type ì„¸íŒ…
              */
             if ( ( smiTable::getIndexInfo( ((qmnCursorPredicate *)aPredicate)->index->indexHandle ) &
                  SMI_INDEX_DIRECTKEY_MASK ) == SMI_INDEX_DIRECTKEY_TRUE )
@@ -355,7 +355,7 @@ qmoKeyRange::makeNotNullRange( void               * aPredicate,
 
             /*
              * PROJ-2433
-             * Direct Key Index¸¦ À§ÇÑ key compare ÇÔ¼ö type ¼¼ÆÃ
+             * Direct Key Indexë¥¼ ìœ„í•œ key compare í•¨ìˆ˜ type ì„¸íŒ…
              */
             if ( ( smiTable::getIndexInfo( ((qmnCursorPredicate *)aPredicate)->index->indexHandle ) &
                  SMI_INDEX_DIRECTKEY_MASK ) == SMI_INDEX_DIRECTKEY_TRUE )
@@ -391,17 +391,17 @@ qmoKeyRange::estimateRange( qcTemplate  * aTemplate,
 {
 /***********************************************************************
  *
- * Description : Key RangeÀÇ Å©±â¸¦ ÃøÁ¤ÇÑ´Ù.
+ * Description : Key Rangeì˜ í¬ê¸°ë¥¼ ì¸¡ì •í•œë‹¤.
  *
- *   keyRangeÀÇ Å©±â =   (1) ºñ±³¿¬»êÀÚ¿¡ ´ëÇÑ ½ÇÁ¦ range size
- *                     + (2) and merge¿¡ ÇÊ¿äÇÑ ÃÖ´ë range size
- *                     + (3) or merge¿¡ ÇÊ¿äÇÑ ÃÖ´ë range size
+ *   keyRangeì˜ í¬ê¸° =   (1) ë¹„êµì—°ì‚°ìì— ëŒ€í•œ ì‹¤ì œ range size
+ *                     + (2) and mergeì— í•„ìš”í•œ ìµœëŒ€ range size
+ *                     + (3) or mergeì— í•„ìš”í•œ ìµœëŒ€ range size
  *
  * Implementation :
  *
  ***********************************************************************/
 
-    UInt      sIsNotRangeCnt = 0; // !=, not between °¹¼ö
+    UInt      sIsNotRangeCnt = 0; // !=, not between ê°¯ìˆ˜
     UInt      sSize = 0;
     UInt      sPrevRangeCount;
     UInt      sCount;
@@ -411,7 +411,7 @@ qmoKeyRange::estimateRange( qcTemplate  * aTemplate,
     IDU_FIT_POINT_FATAL( "qmoKeyRange::estimateRange::__FT__" );
 
     //--------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //--------------------------------------
     IDE_DASSERT( aNode != NULL );
     IDE_DASSERT( aRangeCount != NULL );
@@ -421,13 +421,13 @@ qmoKeyRange::estimateRange( qcTemplate  * aTemplate,
     // estimate size
     //--------------------------------------
 
-    // aNode´Â DNF·Î º¯È¯µÈ ÇüÅÂÀÇ ³ëµåÀÌ´Ù.
+    // aNodeëŠ” DNFë¡œ ë³€í™˜ëœ í˜•íƒœì˜ ë…¸ë“œì´ë‹¤.
 
     if( ( aNode->node.lflag &
                ( MTC_NODE_LOGICAL_CONDITION_MASK | MTC_NODE_OPERATOR_MASK ) )
              == ( MTC_NODE_LOGICAL_CONDITION_TRUE | MTC_NODE_OPERATOR_AND ) )
     {
-        // AND ³í¸® ¿¬»êÀÚ
+        // AND ë…¼ë¦¬ ì—°ì‚°ì
 
         sNode = (qtcNode *)(aNode->node.arguments);
         sAndArgCnt++;
@@ -464,7 +464,7 @@ qmoKeyRange::estimateRange( qcTemplate  * aTemplate,
                 // fix BUG-12254
                 if( sCount > 1 )
                 {
-                    // !=, not betweenÀÎ °æ¿ì, ±× °¹¼ö¸¦ °è»ê
+                    // !=, not betweenì¸ ê²½ìš°, ê·¸ ê°¯ìˆ˜ë¥¼ ê³„ì‚°
                     sIsNotRangeCnt += 1;
                 }
                 else
@@ -477,26 +477,26 @@ qmoKeyRange::estimateRange( qcTemplate  * aTemplate,
 
             if( sIsNotRangeCnt > 0 )
             {
-                // range º¹»ç¸¦ À§ÇÑ
-                // smiRange, mtkRangeCallBack¿¡ ´ëÇÑ size °è»ê
-                // ÂüÁ¶ : qmoKeyRange::makeRange() ÇÔ¼ö
+                // range ë³µì‚¬ë¥¼ ìœ„í•œ
+                // smiRange, mtkRangeCallBackì— ëŒ€í•œ size ê³„ì‚°
+                // ì°¸ì¡° : qmoKeyRange::makeRange() í•¨ìˆ˜
                 IDE_TEST(  mtk::estimateRangeDefault( NULL,
                                                       NULL,
                                                       0,
                                                       & sSize )
                            != IDE_SUCCESS );
 
-                // Not range¿¡ ´ëÇÑ range ¹üÀ§´Â ÃÖ´ë notRangeCnt + 1 °¡ µÊ.
-                // ¿¹) i1 != 1 and i1 != 2 : range °¹¼ö 3°³
+                // Not rangeì— ëŒ€í•œ range ë²”ìœ„ëŠ” ìµœëŒ€ notRangeCnt + 1 ê°€ ë¨.
+                // ì˜ˆ) i1 != 1 and i1 != 2 : range ê°¯ìˆ˜ 3ê°œ
                 // --> i1 < 1 and 1 < i1 < 2 and i1 > 2
-                // (1) not range°¡ composite indexÀÇ »ç¿ë°¡´É ¸¶Áö¸·ÄÃ·³ÀÎ°æ¿ì,
-                //     ÀÌÀü ÄÃ·³±îÁöÀÇ composite range°¡ ÀÖÀ¸¹Ç·Î
-                //     °è»êµÈ not range °¹¼ö¸¸Å­ÀÇ Å©±â°¡ ÇÊ¿ä
+                // (1) not rangeê°€ composite indexì˜ ì‚¬ìš©ê°€ëŠ¥ ë§ˆì§€ë§‰ì»¬ëŸ¼ì¸ê²½ìš°,
+                //     ì´ì „ ì»¬ëŸ¼ê¹Œì§€ì˜ composite rangeê°€ ìˆìœ¼ë¯€ë¡œ
+                //     ê³„ì‚°ëœ not range ê°¯ìˆ˜ë§Œí¼ì˜ í¬ê¸°ê°€ í•„ìš”
                 sSize *= sIsNotRangeCnt;
 
-                // (2) range º¹»ç½Ã, range³»ÀÇ mtkRangeCallBack µµ º¹»ç
-                //     not range ÀÌÀü ÄÃ·³±îÁöÀÇ composite Ã³¸®µÈ
-                //     callBackÀ» ¸ğµÎ º¹»çÇØ¾ß ÇÔ.
+                // (2) range ë³µì‚¬ì‹œ, rangeë‚´ì˜ mtkRangeCallBack ë„ ë³µì‚¬
+                //     not range ì´ì „ ì»¬ëŸ¼ê¹Œì§€ì˜ composite ì²˜ë¦¬ëœ
+                //     callBackì„ ëª¨ë‘ ë³µì‚¬í•´ì•¼ í•¨.
                 (*aRangeSize) += sSize;
                 (*aRangeSize) +=
                     (sAndArgCnt-sIsNotRangeCnt) * 2 *
@@ -511,10 +511,10 @@ qmoKeyRange::estimateRange( qcTemplate  * aTemplate,
     }
     else
     {
-        // ºñ±³ ¿¬»êÀÚ
+        // ë¹„êµ ì—°ì‚°ì
 
-        // ºñ±³¿¬»êÀÚ¿¡ ´ëÇÑ size estimate
-        // BUG-42283 host variable predicate ¿¡ ´ëÇÑ estimateRange size ´Â 0 ÀÌ´Ù.
+        // ë¹„êµì—°ì‚°ìì— ëŒ€í•œ size estimate
+        // BUG-42283 host variable predicate ì— ëŒ€í•œ estimateRange size ëŠ” 0 ì´ë‹¤.
         // (ex) WHERE i1 = :a AND i2 = :a OR :b NOT LIKE 'a%'
         //                                   ^^^^^^^^^^^^^^^^
         if ( qtc::haveDependencies( &aNode->depInfo ) == ID_TRUE )
@@ -533,10 +533,10 @@ qmoKeyRange::estimateRange( qcTemplate  * aTemplate,
         }
 
         //--------------------------------------
-        // and merge size °è»êÀ» À§ÇÑ count °è»ê
-        // (1). !=, not between Àº count=2
-        // (2). inlist ´Â count=1000
-        // (3). 1,2¸¦ Á¦¿ÜÇÑ ³ª¸ÓÁö ºñ±³¿¬»êÀÚ´Â count=1
+        // and merge size ê³„ì‚°ì„ ìœ„í•œ count ê³„ì‚°
+        // (1). !=, not between ì€ count=2
+        // (2). inlist ëŠ” count=1000
+        // (3). 1,2ë¥¼ ì œì™¸í•œ ë‚˜ë¨¸ì§€ ë¹„êµì—°ì‚°ìëŠ” count=1
         //--------------------------------------
         if( ( ( aNode->node.lflag & MTC_NODE_OPERATOR_MASK )
               == MTC_NODE_OPERATOR_NOT_EQUAL )
@@ -584,14 +584,14 @@ qmoKeyRange::makeRange( qcTemplate  * aTemplate,
 {
 /***********************************************************************
  *
- * Description :  Key Range¸¦ »ı¼ºÇÑ´Ù.
+ * Description :  Key Rangeë¥¼ ìƒì„±í•œë‹¤.
  *
- *     keyRange¿Í keyFilter¿¡ ´ëÇÑ range »ı¼ºÀº °ÅÀÇ µ¿ÀÏÇÏ¸ç,
- *     Â÷ÀÌÁ¡Àº,
- *     (1) keyRange  : Key Column¿¡ ¿¬¼ÓµÈ ColumnÀÌ Á¸Àç
- *     (2) keyFilter : Key Column¿¡ ¿¬¼ÓµÈ ColumnÀÌ Á¸ÀçÇÒ ÇÊ¿ä°¡ ¾ø´Ù.
+ *     keyRangeì™€ keyFilterì— ëŒ€í•œ range ìƒì„±ì€ ê±°ì˜ ë™ì¼í•˜ë©°,
+ *     ì°¨ì´ì ì€,
+ *     (1) keyRange  : Key Columnì— ì—°ì†ëœ Columnì´ ì¡´ì¬
+ *     (2) keyFilter : Key Columnì— ì—°ì†ëœ Columnì´ ì¡´ì¬í•  í•„ìš”ê°€ ì—†ë‹¤.
  *
- *     ¿¹) index on T1(i1,i2,i3)
+ *     ì˜ˆ) index on T1(i1,i2,i3)
  *         . i1=1 and i2>1   : keyRange(O), keyFilter(O)
  *         . (i1,i3) = (1,1) : keyRange(X), keyFilter(O)
  *
@@ -624,8 +624,8 @@ qmoKeyRange::makeRange( qcTemplate  * aTemplate,
 
     //--------------------------------------
     // fix BUG-13939
-    // in subquery keyRange or subquery keyRange ¿¡ ´ëÇØ¼­´Â
-    // ¹Ì¸® subquery¸¦ ¼öÇàÇÑ´Ù.
+    // in subquery keyRange or subquery keyRange ì— ëŒ€í•´ì„œëŠ”
+    // ë¯¸ë¦¬ subqueryë¥¼ ìˆ˜í–‰í•œë‹¤.
     //--------------------------------------
 
     IDE_TEST( calculateSubqueryInRangeNode( aTemplate,
@@ -634,23 +634,23 @@ qmoKeyRange::makeRange( qcTemplate  * aTemplate,
               != IDE_SUCCESS );
 
     //------------------------------------------
-    // sIsExistsValues : In subquery KeyRangeÀÎ °æ¿ì,
-    //                   keyRange¸¦ ±¸¼ºÇÒ value°¡ ÀÖ´ÂÁöÀÇ Á¤º¸
+    // sIsExistsValues : In subquery KeyRangeì¸ ê²½ìš°,
+    //                   keyRangeë¥¼ êµ¬ì„±í•  valueê°€ ìˆëŠ”ì§€ì˜ ì •ë³´
     //------------------------------------------
     if( sIsExistsValue == ID_TRUE )
     {
         //--------------------------------------
-        // keyRange »ı¼º
+        // keyRange ìƒì„±
         //--------------------------------------
 
-        // ÀÎÀÚ·Î ³Ñ¾î¿Â aNode´Â ÃÖ»óÀ§°¡ OR ³ëµåÀÌ´Ù.
+        // ì¸ìë¡œ ë„˜ì–´ì˜¨ aNodeëŠ” ìµœìƒìœ„ê°€ OR ë…¸ë“œì´ë‹¤.
         for( sAndNode = (qtcNode *)(aNode->node.arguments);
              sAndNode != NULL;
              sAndNode = (qtcNode *)(sAndNode->node.next) )
         {
 
             //-------------------------------------
-            // °¢ AND ³ëµå¿¡ ´ëÇØ, ÀÎµ¦½º ÄÃ·³¼øÀ¸·Î range »ı¼º
+            // ê° AND ë…¸ë“œì— ëŒ€í•´, ì¸ë±ìŠ¤ ì»¬ëŸ¼ìˆœìœ¼ë¡œ range ìƒì„±
             //-------------------------------------
 
             sRange = NULL;
@@ -670,9 +670,9 @@ qmoKeyRange::makeRange( qcTemplate  * aTemplate,
                           != IDE_SUCCESS );
 
                 //----------------------------------
-                // ÇöÀç ÀÎµ¦½º ÄÃ·³À¸·Î ¸¸µé¾îÁø range°¡ ¾øÀ¸¸é,
-                // keyRangeÀÇ °æ¿ì, ´ÙÀ½ ÀÎµ¦½ºÄÃ·³¿¡ ´ëÇÑ range »ı¼º Áß´Ü,
-                // keyFilterÀÇ °æ¿ì, ´ÙÀ½ ÀÎµ¦½ºÄÃ·³¿¡ ´ëÇÑ range »ı¼º ½Ãµµ.
+                // í˜„ì¬ ì¸ë±ìŠ¤ ì»¬ëŸ¼ìœ¼ë¡œ ë§Œë“¤ì–´ì§„ rangeê°€ ì—†ìœ¼ë©´,
+                // keyRangeì˜ ê²½ìš°, ë‹¤ìŒ ì¸ë±ìŠ¤ì»¬ëŸ¼ì— ëŒ€í•œ range ìƒì„± ì¤‘ë‹¨,
+                // keyFilterì˜ ê²½ìš°, ë‹¤ìŒ ì¸ë±ìŠ¤ì»¬ëŸ¼ì— ëŒ€í•œ range ìƒì„± ì‹œë„.
                 //----------------------------------
 
                 if( sCurRange == NULL )
@@ -700,21 +700,21 @@ qmoKeyRange::makeRange( qcTemplate  * aTemplate,
                     // fix BUG-12254
                     if( sCurRange->next != NULL )
                     {
-                        // ¿¹: index on T1(i1, i2)
+                        // ì˜ˆ: index on T1(i1, i2)
                         //     i1=1 and i2 not between 0 and 1
-                        //     i1=1 and i2 != 1 ÀÎ °æ¿ì¿¡ ´ëÇÑ Ã³¸®
+                        //     i1=1 and i2 != 1 ì¸ ê²½ìš°ì— ëŒ€í•œ ì²˜ë¦¬
                         //
-                        //   i1 = 1 and i2 != 1 ¸¦ ¿¹·Î µé¸é,
+                        //   i1 = 1 and i2 != 1 ë¥¼ ì˜ˆë¡œ ë“¤ë©´,
                         //
-                        //   (1) i1 = 1 ¿¡ ´ëÇÑ range »ı¼º
-                        //   (2) i2 != 1 ¿¡ ´ëÇÑ range »ı¼º
-                        //      ==>  -¹«ÇÑ´ë < i2 < 1 OR 1 < i2 < +¹«ÇÑ´ë
-                        //   (3) (1)°ú (2)·Î composite range ±¸¼º
-                        //      ==> ( i1 = 1 and -¹«ÇÑ´ë < i2 < 1 )
-                        //       or ( i1 = 1 and 1 < i2 < +¹«ÇÑ´ë )
-                        //   (3)À» Ã³¸®ÇÏ±â À§ÇØ¼­
-                        //   i1 = 1 ¿¡ ´ëÇÑ range°¡ ÇÏ³ª ´õ ÇÊ¿äÇÏ¹Ç·Î,
-                        //   copyRange¿¡¼­ i1=1 range¸¦ º¹»çÇØ¼­ »ç¿ë.
+                        //   (1) i1 = 1 ì— ëŒ€í•œ range ìƒì„±
+                        //   (2) i2 != 1 ì— ëŒ€í•œ range ìƒì„±
+                        //      ==>  -ë¬´í•œëŒ€ < i2 < 1 OR 1 < i2 < +ë¬´í•œëŒ€
+                        //   (3) (1)ê³¼ (2)ë¡œ composite range êµ¬ì„±
+                        //      ==> ( i1 = 1 and -ë¬´í•œëŒ€ < i2 < 1 )
+                        //       or ( i1 = 1 and 1 < i2 < +ë¬´í•œëŒ€ )
+                        //   (3)ì„ ì²˜ë¦¬í•˜ê¸° ìœ„í•´ì„œ
+                        //   i1 = 1 ì— ëŒ€í•œ rangeê°€ í•˜ë‚˜ ë” í•„ìš”í•˜ë¯€ë¡œ,
+                        //   copyRangeì—ì„œ i1=1 rangeë¥¼ ë³µì‚¬í•´ì„œ ì‚¬ìš©.
 
                         sRange->prev = NULL;
                         sRange->next = NULL;
@@ -722,7 +722,7 @@ qmoKeyRange::makeRange( qcTemplate  * aTemplate,
                         sLastRange = sRange;
                         sLastCurRange = sCurRange;
 
-                        // Not Range °¹¼ö - 1 ¸¸Å­ range º¹»ç
+                        // Not Range ê°¯ìˆ˜ - 1 ë§Œí¼ range ë³µì‚¬
                         while( sLastCurRange->next != NULL )
                         {
                             IDE_TEST( copyRange ( sRange,
@@ -743,7 +743,7 @@ qmoKeyRange::makeRange( qcTemplate  * aTemplate,
                         sLastRange = sRange;
                         sLastCurRange = sCurRange;
 
-                        // °¢ range¿¡ composite range ±¸¼º
+                        // ê° rangeì— composite range êµ¬ì„±
                         while( ( sLastRange != NULL )
                                && ( sLastCurRange != NULL ) )
                         {
@@ -786,7 +786,7 @@ qmoKeyRange::makeRange( qcTemplate  * aTemplate,
                 // Nothing To Do
             }
 
-            // »ı¼ºµÈ rangeµéÀÇ ¿¬°á¸®½ºÆ®¸¦ ±¸¼º
+            // ìƒì„±ëœ rangeë“¤ì˜ ì—°ê²°ë¦¬ìŠ¤íŠ¸ë¥¼ êµ¬ì„±
             if( sRangeList == NULL )
             {
                 sRangeList = sCurRange;
@@ -808,19 +808,19 @@ qmoKeyRange::makeRange( qcTemplate  * aTemplate,
         if( sRangeList != NULL )
         {
             // fix BUG-9378
-            // KEY RANGE MERGE ¼º´É °³¼±
+            // KEY RANGE MERGE ì„±ëŠ¥ ê°œì„ 
 
-            // OR merge¸¦ À§ÇÑ range count¸¦ ±¸ÇÑ´Ù.
+            // OR mergeë¥¼ ìœ„í•œ range countë¥¼ êµ¬í•œë‹¤.
             for( sLastRangeList = sRangeList, sRangeCount = 0;
                  sLastRangeList != NULL;
                  sLastRangeList = sLastRangeList->next, sRangeCount++ ) ;
 
-            // OR³ëµå ÇÏÀ§¿¡ AND³ëµå°¡ 2°³ÀÌ»óÀÌ°í,
-            // mergeÇÒ range°¡ µÎ°³ ÀÌ»óÀÎ °æ¿ì¿¡ or merge¸¦ ¼öÇàÇÑ´Ù.
+            // ORë…¸ë“œ í•˜ìœ„ì— ANDë…¸ë“œê°€ 2ê°œì´ìƒì´ê³ ,
+            // mergeí•  rangeê°€ ë‘ê°œ ì´ìƒì¸ ê²½ìš°ì— or mergeë¥¼ ìˆ˜í–‰í•œë‹¤.
             if( ( aNode->node.arguments->next != NULL ) &&
                 ( sRangeCount > 1 ) )
             {
-                // smiRange pointer ¹è¿­À» À§ÇÑ °ø°£ È®º¸
+                // smiRange pointer ë°°ì—´ì„ ìœ„í•œ ê³µê°„ í™•ë³´
                 sSize = ID_SIZEOF(smiRange *) * sRangeCount;
 
                 sRangeListArray = (smiRange **)(sRangeStartPtr + sOffset );
@@ -835,7 +835,7 @@ qmoKeyRange::makeRange( qcTemplate  * aTemplate,
                     sRangeList = sRangeList->next;
                 }
 
-                // or merge¸¦ À§ÇÑ °ø°£ È®º¸
+                // or mergeë¥¼ ìœ„í•œ ê³µê°„ í™•ë³´
                 sSize =
                     idlOS::align8((UInt) ID_SIZEOF(smiRange)) * sRangeCount;
 
@@ -846,8 +846,8 @@ qmoKeyRange::makeRange( qcTemplate  * aTemplate,
 
                 // or merge
                 // BUG-28934
-                // data typeÀÇ Æ¯¼º¿¡ ¸Â°Ô key range¸¦ »ı¼ºÇÑ ÈÄ, ÀÌ¸¦ mergeÇÒ ¶§µµ
-                // key rangeÀÇ Æ¯¼º¿¡ ¸Â°Ô mergeÇÏ´Â ¹æ¹ıÀÌ ÇÊ¿äÇÏ´Ù.
+                // data typeì˜ íŠ¹ì„±ì— ë§ê²Œ key rangeë¥¼ ìƒì„±í•œ í›„, ì´ë¥¼ mergeí•  ë•Œë„
+                // key rangeì˜ íŠ¹ì„±ì— ë§ê²Œ mergeí•˜ëŠ” ë°©ë²•ì´ í•„ìš”í•˜ë‹¤.
                 IDE_TEST( aKeyColumn->module->mergeOrRangeList( sRange,
                                                                 sRangeListArray,
                                                                 sRangeCount )
@@ -897,19 +897,19 @@ qmoKeyRange::calculateSubqueryInRangeNode( qcTemplate   * aTemplate,
 {
 /***********************************************************************
  *
- * Description : Range¸¦ ±¸¼ºÇÒ ³ëµåÁß¿¡ subquery node¸¦ ¸ÕÀú ¼öÇàÇÑ´Ù.
+ * Description : Rangeë¥¼ êµ¬ì„±í•  ë…¸ë“œì¤‘ì— subquery nodeë¥¼ ë¨¼ì € ìˆ˜í–‰í•œë‹¤.
  *
  * Implementation :
  *
- * subquery keyRange¸¦ ¼öÇàÇÏ±â À§ÇÑ ³ëµå º¯È¯ÀÌ ¾Æ·¡¿Í °°ÀÌ ÀÌ·ç¾îÁø´Ù.
- * keyRange ±¸¼º½Ã¿¡´Â index column¼ø¼­·Î range¸¦ ±¸¼ºÇÏ°Ô µÇ´Âµ¥,
- * index Ã¹¹øÂ° ÄÃ·³¿¡ ´ëÇÑ range ±¸¼º½Ã,
- * ÀÌ¿¡ ´ëÀÀµÇ´Â subquery target columnÀÎ a1Àº
- * subquery°¡ ¼öÇàµÇ±âÀüÀÌ¾î¼­ ½ÇÁ¦ÀûÀÎ a1ÀÇ °ªÀ» ¾òÁö ¸øÇÏ°Ô µÈ´Ù.
- * ÀÌ·¯ÇÑ ¹®Á¦Á¡À» ÇØ°áÇÏ±â À§ÇØ,
- * range¸¦ ±¸¼ºÇÏ±â Àü¿¡ range node¸¦ ¸ğµÎ µÚÁ®¼­ subquery¸¦ ¸ÕÀú ½ÇÇàÇÑ´Ù.
+ * subquery keyRangeë¥¼ ìˆ˜í–‰í•˜ê¸° ìœ„í•œ ë…¸ë“œ ë³€í™˜ì´ ì•„ë˜ì™€ ê°™ì´ ì´ë£¨ì–´ì§„ë‹¤.
+ * keyRange êµ¬ì„±ì‹œì—ëŠ” index columnìˆœì„œë¡œ rangeë¥¼ êµ¬ì„±í•˜ê²Œ ë˜ëŠ”ë°,
+ * index ì²«ë²ˆì§¸ ì»¬ëŸ¼ì— ëŒ€í•œ range êµ¬ì„±ì‹œ,
+ * ì´ì— ëŒ€ì‘ë˜ëŠ” subquery target columnì¸ a1ì€
+ * subqueryê°€ ìˆ˜í–‰ë˜ê¸°ì „ì´ì–´ì„œ ì‹¤ì œì ì¸ a1ì˜ ê°’ì„ ì–»ì§€ ëª»í•˜ê²Œ ëœë‹¤.
+ * ì´ëŸ¬í•œ ë¬¸ì œì ì„ í•´ê²°í•˜ê¸° ìœ„í•´,
+ * rangeë¥¼ êµ¬ì„±í•˜ê¸° ì „ì— range nodeë¥¼ ëª¨ë‘ ë’¤ì ¸ì„œ subqueryë¥¼ ë¨¼ì € ì‹¤í–‰í•œë‹¤.
  *
- * ¿¹) index on( i1, i2 ) ÀÌ°í,
+ * ì˜ˆ) index on( i1, i2 ) ì´ê³ ,
  *
  * 1) where ( i2, i1 ) = ( select a2, a1 from ... )
  *
@@ -939,15 +939,15 @@ qmoKeyRange::calculateSubqueryInRangeNode( qcTemplate   * aTemplate,
     IDU_FIT_POINT_FATAL( "qmoKeyRange::calculateSubqueryInRangeNode::__FT__" );
 
     //--------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //--------------------------------------
 
     IDE_DASSERT( aNode != NULL );
 
     //--------------------------------------
     // fix BUG-13939
-    // in subquery keyRange or subquery keyRange ¿¡ ´ëÇØ¼­´Â
-    // ¹Ì¸® subquery¸¦ ¼öÇàÇÑ´Ù.
+    // in subquery keyRange or subquery keyRange ì— ëŒ€í•´ì„œëŠ”
+    // ë¯¸ë¦¬ subqueryë¥¼ ìˆ˜í–‰í•œë‹¤.
     //--------------------------------------
 
     for( sAndNode = (qtcNode *)(aNode->node.arguments);
@@ -1021,14 +1021,14 @@ qmoKeyRange::makeRange4AColumn( qcTemplate   * aTemplate,
 {
 /***********************************************************************
  *
- * Description : ÇÏ³ªÀÇ ÀÎµ¦½º ÄÃ·³¿¡ ´ëÇÑ range¸¦ »ı¼ºÇÑ´Ù.
+ * Description : í•˜ë‚˜ì˜ ì¸ë±ìŠ¤ ì»¬ëŸ¼ì— ëŒ€í•œ rangeë¥¼ ìƒì„±í•œë‹¤.
  *
  * Implementation :
  *
- *   ÀÎµ¦½ºÄÃ·³À» Æ÷ÇÔÇÏ´Â ¸ğµç ºñ±³¿¬»êÀÚ¿¡ ´ëÇÑ range¸¦ ¸¸µç´Ù.
+ *   ì¸ë±ìŠ¤ì»¬ëŸ¼ì„ í¬í•¨í•˜ëŠ” ëª¨ë“  ë¹„êµì—°ì‚°ìì— ëŒ€í•œ rangeë¥¼ ë§Œë“ ë‹¤.
  *
- *   ÀÎµ¦½º ÄÃ·³¿¡ ´ëÇÑ range°¡ ¿©·¯°³ÀÎ °æ¿ì, range ¹üÀ§¸¦ Á¶Á¤ÇÑ´Ù.
- *   ¿¹) i1>1 and i1<3 ÀÎ °æ¿ì, 1 < i1 < 3 À¸·Î range ¹üÀ§ Á¶Á¤.
+ *   ì¸ë±ìŠ¤ ì»¬ëŸ¼ì— ëŒ€í•œ rangeê°€ ì—¬ëŸ¬ê°œì¸ ê²½ìš°, range ë²”ìœ„ë¥¼ ì¡°ì •í•œë‹¤.
+ *   ì˜ˆ) i1>1 and i1<3 ì¸ ê²½ìš°, 1 < i1 < 3 ìœ¼ë¡œ range ë²”ìœ„ ì¡°ì •.
  *
  ***********************************************************************/
 
@@ -1050,21 +1050,21 @@ qmoKeyRange::makeRange4AColumn( qcTemplate   * aTemplate,
     IDU_FIT_POINT_FATAL( "qmoKeyRange::makeRange4AColumn::__FT__" );
 
     //--------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //--------------------------------------
 
     IDE_DASSERT( aOffset != NULL );
     IDE_DASSERT( aRangeStartPtr != NULL );
 
     //--------------------------------------
-    // range »ı¼º
+    // range ìƒì„±
     //--------------------------------------
 
     if( ( aNode->node.lflag &
           ( MTC_NODE_LOGICAL_CONDITION_MASK | MTC_NODE_OPERATOR_MASK ) )
         == ( MTC_NODE_LOGICAL_CONDITION_TRUE | MTC_NODE_OPERATOR_AND ) )
     {
-        // AND ³í¸® ¿¬»êÀÚ
+        // AND ë…¼ë¦¬ ì—°ì‚°ì
 
         sNode = (qtcNode *)(aNode->node.arguments);
 
@@ -1111,8 +1111,8 @@ qmoKeyRange::makeRange4AColumn( qcTemplate   * aTemplate,
                     *aOffset += sSize;
 
                     // BUG-28934
-                    // data typeÀÇ Æ¯¼º¿¡ ¸Â°Ô key range¸¦ »ı¼ºÇÑ ÈÄ, ÀÌ¸¦ mergeÇÒ ¶§µµ
-                    // key rangeÀÇ Æ¯¼º¿¡ ¸Â°Ô mergeÇÏ´Â ¹æ¹ıÀÌ ÇÊ¿äÇÏ´Ù.
+                    // data typeì˜ íŠ¹ì„±ì— ë§ê²Œ key rangeë¥¼ ìƒì„±í•œ í›„, ì´ë¥¼ mergeí•  ë•Œë„
+                    // key rangeì˜ íŠ¹ì„±ì— ë§ê²Œ mergeí•˜ëŠ” ë°©ë²•ì´ í•„ìš”í•˜ë‹¤.
                     IDE_TEST( aKeyColumn->module->mergeAndRange( sRange,
                                                                  sPrevRange,
                                                                  sCurRange )
@@ -1124,14 +1124,14 @@ qmoKeyRange::makeRange4AColumn( qcTemplate   * aTemplate,
 
             sNode = (qtcNode *)(sNode->node.next);
         } // end of while()
-    } // AND ³í¸®¿¬»êÀÚÀÇ Ã³¸®
+    } // AND ë…¼ë¦¬ì—°ì‚°ìì˜ ì²˜ë¦¬
     else
     {
-        // ºñ±³ ¿¬»êÀÚ
+        // ë¹„êµ ì—°ì‚°ì
 
         //------------------------------------------
-        // ºñ±³¿¬»êÀÚÀÇ indexArgumentÀÇ columnID¿Í index columnID°¡ °°°í,
-        // ÄÃ·³¿¡ conversionÀÌ ¹ß»ıÇÏÁö ¾Ê¾Ò´ÂÁö °Ë»ç.
+        // ë¹„êµì—°ì‚°ìì˜ indexArgumentì˜ columnIDì™€ index columnIDê°€ ê°™ê³ ,
+        // ì»¬ëŸ¼ì— conversionì´ ë°œìƒí•˜ì§€ ì•Šì•˜ëŠ”ì§€ ê²€ì‚¬.
         //------------------------------------------
 
         if( aNode->indexArgument == 0 )
@@ -1149,22 +1149,22 @@ qmoKeyRange::makeRange4AColumn( qcTemplate   * aTemplate,
         if ( sColumnNode->node.module == &qtc::passModule )
         {
             // To Fix PR-8700
-            // Sort JoinµîÀ» À§ÇÑ
-            // Pass NodeÀÇ °æ¿ì Indexable ¿©ºÎÀÇ ÆÇ´Ü½Ã¿¡´Â
-            // Conversion ¿©ºÎ¸¦ È®ÀÎÇÏÁö ¾Ê¾Æ¾ß ÇÏ´Â ¹İ¸é,
-            // Key Range »ı¼ºÀ» À§ÇØ¼­´Â Argument¸¦ ÀÌ¿ëÇÏ¿©¾ß ÇÑ´Ù.
+            // Sort Joinë“±ì„ ìœ„í•œ
+            // Pass Nodeì˜ ê²½ìš° Indexable ì—¬ë¶€ì˜ íŒë‹¨ì‹œì—ëŠ”
+            // Conversion ì—¬ë¶€ë¥¼ í™•ì¸í•˜ì§€ ì•Šì•„ì•¼ í•˜ëŠ” ë°˜ë©´,
+            // Key Range ìƒì„±ì„ ìœ„í•´ì„œëŠ” Argumentë¥¼ ì´ìš©í•˜ì—¬ì•¼ í•œë‹¤.
             sColumnNode = (qtcNode *)
                 mtf::convertedNode( (mtcNode *) sColumnNode,
                                     & aTemplate->tmplate );
             // fix BUG-12005
-            // Sort Join µîÀ» À§ÇÑ pass nodeÀÇ °æ¿ì
-            // mtkRangeInfo.isSameGroupType = ID_FALSE°¡ µÇ¾î¾ß ÇÔ.
+            // Sort Join ë“±ì„ ìœ„í•œ pass nodeì˜ ê²½ìš°
+            // mtkRangeInfo.isSameGroupType = ID_FALSEê°€ ë˜ì–´ì•¼ í•¨.
         }
         else
         {
             // fix BUG-12005
-            // sm¿¡ ³»·ÁÁÙ callbackÀ» ÁöÁ¤ÇØ ÁÖ±â À§ÇÑ Á¤º¸·Î
-            // mtkRangeInfo.isSameGroupType¿¡ ±× Á¤º¸¸¦ ÀúÀå
+            // smì— ë‚´ë ¤ì¤„ callbackì„ ì§€ì •í•´ ì£¼ê¸° ìœ„í•œ ì •ë³´ë¡œ
+            // mtkRangeInfo.isSameGroupTypeì— ê·¸ ì •ë³´ë¥¼ ì €ì¥
             sColumnConversion = (qtcNode *)
                 mtf::convertedNode( (mtcNode *) sColumnNode,
                                     & aTemplate->tmplate );
@@ -1173,8 +1173,8 @@ qmoKeyRange::makeRange4AColumn( qcTemplate   * aTemplate,
             {
                 // Nothing To
                 //
-                // ¿ÏÀüÈ÷ µ¿ÀÏÇÑ typeÀÌ¶ó º¯È¯ÀÌ ÇÊ¿ä ÇÏÁö ¾Ê´Ù.
-                // ÇÏÁö¸¸
+                // ì™„ì „íˆ ë™ì¼í•œ typeì´ë¼ ë³€í™˜ì´ í•„ìš” í•˜ì§€ ì•Šë‹¤.
+                // í•˜ì§€ë§Œ
                 // sIsSameGroupType = ID_FALSE;
             }
             else
@@ -1187,23 +1187,23 @@ qmoKeyRange::makeRange4AColumn( qcTemplate   * aTemplate,
              columns[sColumnNode->node.column].column.id
              == aKeyColumn->column.id )
         {
-            // value node¸¦ ¼öÇàÇØ¼­, value¸¦ ¾ò´Â´Ù.
+            // value nodeë¥¼ ìˆ˜í–‰í•´ì„œ, valueë¥¼ ì–»ëŠ”ë‹¤.
 
-            // (1) IS NULL, IS NOT NULLÀÏ °æ¿ì,
+            // (1) IS NULL, IS NOT NULLì¼ ê²½ìš°,
             //     sValueNode == NULL
-            // (2) BETWEEN, NOT BETWEENÀÏ °æ¿ì,
-            //     sValueNode¿Í sValueNode->nextÀÇ °ªÀ» ÀĞ¾î¾ß ÇÏ¸ç,
-            // (3) ±× ¹ÛÀÇ ºñ±³¿¬»êÀÚ´Â  sValueNodeÀÇ °ªÀ» ÀĞ¾î¾ß ÇÑ´Ù.
+            // (2) BETWEEN, NOT BETWEENì¼ ê²½ìš°,
+            //     sValueNodeì™€ sValueNode->nextì˜ ê°’ì„ ì½ì–´ì•¼ í•˜ë©°,
+            // (3) ê·¸ ë°–ì˜ ë¹„êµì—°ì‚°ìëŠ”  sValueNodeì˜ ê°’ì„ ì½ì–´ì•¼ í•œë‹¤.
             for( sNode = sValueNode;
                  sNode != NULL && sNode != sColumnNode;
                  sNode = (qtcNode *)(sNode->node.next) )
             {
                 // Bug-11320 fix
-                // Between, Not between »Ó¸¸ ¾Æ´Ï¶ó,
-                // Like ÇÔ¼öµµ ÀÎÀÚ°¡ 3°³ÀÏ ¼ö ÀÖ´Ù.
-                // µû¶ó¼­ sNode°¡ nullÀÌ ¾Æ´Ò¶§±îÁö
-                // ¸ğµÎ calculate ÇØÁà¾ß ÇÑ´Ù.
-                // calculateµÈ °ªÀÌ nullÀÌ¸é Áß´ÜÇÑ´Ù.
+                // Between, Not between ë¿ë§Œ ì•„ë‹ˆë¼,
+                // Like í•¨ìˆ˜ë„ ì¸ìê°€ 3ê°œì¼ ìˆ˜ ìˆë‹¤.
+                // ë”°ë¼ì„œ sNodeê°€ nullì´ ì•„ë‹ë•Œê¹Œì§€
+                // ëª¨ë‘ calculate í•´ì¤˜ì•¼ í•œë‹¤.
+                // calculateëœ ê°’ì´ nullì´ë©´ ì¤‘ë‹¨í•œë‹¤.
 
                 // fix BUG-13939
                 if( ( aNode->lflag & QTC_NODE_SUBQUERY_RANGE_MASK )
@@ -1211,8 +1211,8 @@ qmoKeyRange::makeRange4AColumn( qcTemplate   * aTemplate,
                 {
                     // Nothing To Do
 
-                    // ÀÌ¹Ì subquery¸¦ ¼öÇàÇßÀ¸¹Ç·Î,
-                    // calculate ÇÏÁö ¾Ê¾Æµµ µÊ.
+                    // ì´ë¯¸ subqueryë¥¼ ìˆ˜í–‰í–ˆìœ¼ë¯€ë¡œ,
+                    // calculate í•˜ì§€ ì•Šì•„ë„ ë¨.
                     sFixedValue = ID_FALSE;
                 }
                 else
@@ -1222,8 +1222,8 @@ qmoKeyRange::makeRange4AColumn( qcTemplate   * aTemplate,
                               != IDE_SUCCESS );
 
                     // BUG-43758
-                    // sFixedValue°¡ ID_TRUEÀÌ¸é MTD_COMPARE_FIXED_MTDVAL_FIXED_MTDVALÀ» ¼³Á¤ÇØ
-                    // compressed columnÀÇ value¸¦ Àß¸ø °¡Á®¿É´Ï´Ù.
+                    // sFixedValueê°€ ID_TRUEì´ë©´ MTD_COMPARE_FIXED_MTDVAL_FIXED_MTDVALì„ ì„¤ì •í•´
+                    // compressed columnì˜ valueë¥¼ ì˜ëª» ê°€ì ¸ì˜µë‹ˆë‹¤.
                     if ( ( ( aTemplate->tmplate.stack->column->column.flag
                              &SMI_COLUMN_TYPE_MASK )
                            != SMI_COLUMN_TYPE_FIXED ) ||
@@ -1275,10 +1275,10 @@ qmoKeyRange::makeRange4AColumn( qcTemplate   * aTemplate,
             sInfo.compValueType   = aCompareType;
             sInfo.columnIdx       = aColumnIdx;
 
-            // fixed fixedÀÎ °æ¿ì fixed compare¸¦ È£ÃâÇÏ¿© ¼º´ÉÀ» °³¼±ÇÑ´Ù.
+            // fixed fixedì¸ ê²½ìš° fixed compareë¥¼ í˜¸ì¶œí•˜ì—¬ ì„±ëŠ¥ì„ ê°œì„ í•œë‹¤.
             // BUG-43758
-            // aKeyColumnÀÌ compressed columnÀÎ °æ¿ì MTD_COMPARE_FIXED_MTDVAL_FIXED_MTDVALÀ» ¼³Á¤ÇÏ¸é
-            // compressed columnÀÇ value¸¦ Àß¸ø °¡Á®¿É´Ï´Ù.
+            // aKeyColumnì´ compressed columnì¸ ê²½ìš° MTD_COMPARE_FIXED_MTDVAL_FIXED_MTDVALì„ ì„¤ì •í•˜ë©´
+            // compressed columnì˜ valueë¥¼ ì˜ëª» ê°€ì ¸ì˜µë‹ˆë‹¤.
             if ( ( aCompareType == MTD_COMPARE_MTDVAL_MTDVAL ) &&
                  ( ( aKeyColumn->column.flag & SMI_COLUMN_TYPE_MASK )
                    == SMI_COLUMN_TYPE_FIXED ) &&
@@ -1324,14 +1324,14 @@ qmoKeyRange::getRangeCount( smiRange * aRange )
 {
 /***********************************************************************
  *
- * Description : rangeÀÇ count¸¦ ¾ò´Â´Ù.
+ * Description : rangeì˜ countë¥¼ ì–»ëŠ”ë‹¤.
  *
  * Implementation :
  *
  ***********************************************************************/
 
     //--------------------------------------
-    // count °è»ê
+    // count ê³„ì‚°
     //--------------------------------------
 
     UInt       sRangeCount = 0;
@@ -1355,7 +1355,7 @@ qmoKeyRange::getAndRangeCount( smiRange * aRange1,
 {
 /***********************************************************************
  *
- * Description : AND merge¸¦ À§ÇÑ range count¸¦ ¾ò´Â´Ù.
+ * Description : AND mergeë¥¼ ìœ„í•œ range countë¥¼ ì–»ëŠ”ë‹¤.
  *
  * Implementation :
  *
@@ -1365,7 +1365,7 @@ qmoKeyRange::getAndRangeCount( smiRange * aRange1,
 
 
     //--------------------------------------
-    // count °è»ê
+    // count ê³„ì‚°
     //--------------------------------------
 
     UInt   sRange1Count;
@@ -1404,7 +1404,7 @@ qmoKeyRange::copyRange( smiRange  * aRangeOrg,
     IDU_FIT_POINT_FATAL( "qmoKeyRange::copyRange::__FT__" );
 
     //--------------------------------------
-    // range º¹»ç
+    // range ë³µì‚¬
     //--------------------------------------
 
     IDE_TEST( mtk::estimateRangeDefault( NULL,
@@ -1505,10 +1505,10 @@ qmoKeyRange::makePartKeyRange(
 /***********************************************************************
  *
  *  Description : PROJ-1502 PARTITIONED DISK TABLE
- *                partition keyrange¸¦ »ı¼ºÇÑ´Ù.
+ *                partition keyrangeë¥¼ ìƒì„±í•œë‹¤.
  *
- *  Implementation : ±âÁ¸ÀÇ keyrange»ı¼º ·çÆ¾°ú µ¿ÀÏÇÏ´Ù.
- *                   filter°¡ ÇÊ¿ä¾øÀ¸¹Ç·Î, filter´Â ¹«½ÃÇÑ´Ù.
+ *  Implementation : ê¸°ì¡´ì˜ keyrangeìƒì„± ë£¨í‹´ê³¼ ë™ì¼í•˜ë‹¤.
+ *                   filterê°€ í•„ìš”ì—†ìœ¼ë¯€ë¡œ, filterëŠ” ë¬´ì‹œí•œë‹¤.
  *
  ***********************************************************************/
 

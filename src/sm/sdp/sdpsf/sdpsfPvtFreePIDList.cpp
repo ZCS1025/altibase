@@ -41,11 +41,11 @@ IDE_RC sdpsfPvtFreePIDList::destroy()
 }
 
 /***********************************************************************
- * Description : aPagePtrÀ» Private Page ListÀÇ Head¿¡ Ãß°¡ÇÑ´Ù.
+ * Description : aPagePtrì„ Private Page Listì˜ Headì— ì¶”ê°€í•œë‹¤.
  *
  * Caution:
- *  1. aSegHdr¿¡ XLatch°¡ °É·Á ÀÖ¾î¾ß ÇÑ´Ù.
- *  2. aPagePtr¿¡ XLatch°¡ °É·Á ÀÖ¾î¾ß ÇÑ´Ù.
+ *  1. aSegHdrì— XLatchê°€ ê±¸ë ¤ ìˆì–´ì•¼ í•œë‹¤.
+ *  2. aPagePtrì— XLatchê°€ ê±¸ë ¤ ìˆì–´ì•¼ í•œë‹¤.
  *
  * aSegHdr    - [IN] Segment Hdr
  * aPagePtr   - [IN] Page Ptr
@@ -83,22 +83,22 @@ IDE_RC sdpsfPvtFreePIDList::add2Head( sdrMtx             * aMtx,
 }
 
 /***********************************************************************
- * Description : Private Free Page ListÀÇ Ã¹¹øÂ° ÆäÀÌÁö¸¦ Á¦°ÅÇÑ´Ù.
+ * Description : Private Free Page Listì˜ ì²«ë²ˆì§¸ í˜ì´ì§€ë¥¼ ì œê±°í•œë‹¤.
  *
  * Caution:
- *  1. aSegHdr¿¡ XLatch°¡ °É·Á ÀÖ¾î¾ß ÇÑ´Ù.
- *  2. aPagePtr¿¡ XLatch°¡ °É·Á ÀÖ¾î¾ß ÇÑ´Ù.
+ *  1. aSegHdrì— XLatchê°€ ê±¸ë ¤ ìˆì–´ì•¼ í•œë‹¤.
+ *  2. aPagePtrì— XLatchê°€ ê±¸ë ¤ ìˆì–´ì•¼ í•œë‹¤.
  *
- * aStatistics    - [IN] Åë°èÁ¤º¸
- * aRmvMtx        - [IN] HeadÆäÀÌÁö¸¦ PageList¿¡¼­ Á¦°ÅÇÒ Mini Transaction Pointer
- * aMtx           - [IN] HeadÆäÀÌÁö¸¦ ¹öÆÛ¿¡ FixÇÏ°í Latch¸¦ È¹µæÇÏ´Â
+ * aStatistics    - [IN] í†µê³„ì •ë³´
+ * aRmvMtx        - [IN] Headí˜ì´ì§€ë¥¼ PageListì—ì„œ ì œê±°í•  Mini Transaction Pointer
+ * aMtx           - [IN] Headí˜ì´ì§€ë¥¼ ë²„í¼ì— Fixí•˜ê³  Latchë¥¼ íšë“í•˜ëŠ”
  *                       Mini Transaction Pointer
  * aSpaceID       - [IN] SpaceID
  * aSegHdr        - [IN] Segment Hdr
  * aPageType      - [IN] Page Type
  *
  * aAllocPID      - [OUT] Head Page ID 
- * aPagePtr       - [OUT] Head Page Pointer·Î¼­ ¸®ÅÏµÉ¶§ XLatch°¡ °É·ÁÀÖ´Ù
+ * aPagePtr       - [OUT] Head Page Pointerë¡œì„œ ë¦¬í„´ë ë•Œ XLatchê°€ ê±¸ë ¤ìˆë‹¤
  *
  ***********************************************************************/
 IDE_RC sdpsfPvtFreePIDList::removeAtHead( idvSQL             * aStatistics,
@@ -135,10 +135,10 @@ IDE_RC sdpsfPvtFreePIDList::removeAtHead( idvSQL             * aStatistics,
 
         IDE_ASSERT( sRmvPageID != SD_NULL_PID );
 
-        /* ¸®½ºÆ®¿¡¼­ Á¦°Å¿¬»êÀº sRmvMtx°¡ ÇÏÁö¸¸ Á¦°ÅµÈ ÆäÀÌÁö
-         * ¿¡ ´ëÇÑ create¿¬»êÀº »óÀ§ ÇÔ¼ö¿¡¼­ ³Ñ¾î¿Â aMtx°¡ ÇÏ°Ô
-         * ÇÏ¿© »óÀ§ ÇÔ¼ö¿¡¼­ ÇØ´ç ÆäÀÌÁö¿¡ ´ëÇØ¼­ º°µµÀÇ getÆäÀÌÁö°¡
-         * ¹ß»ıÇÏÁö ¾Êµµ·Ï ÇÑ´Ù. */
+        /* ë¦¬ìŠ¤íŠ¸ì—ì„œ ì œê±°ì—°ì‚°ì€ sRmvMtxê°€ í•˜ì§€ë§Œ ì œê±°ëœ í˜ì´ì§€
+         * ì— ëŒ€í•œ createì—°ì‚°ì€ ìƒìœ„ í•¨ìˆ˜ì—ì„œ ë„˜ì–´ì˜¨ aMtxê°€ í•˜ê²Œ
+         * í•˜ì—¬ ìƒìœ„ í•¨ìˆ˜ì—ì„œ í•´ë‹¹ í˜ì´ì§€ì— ëŒ€í•´ì„œ ë³„ë„ì˜ getí˜ì´ì§€ê°€
+         * ë°œìƒí•˜ì§€ ì•Šë„ë¡ í•œë‹¤. */
         IDE_TEST( sdbBufferMgr::getPageByPID( aStatistics,
                                               aSpaceID,
                                               sRmvPageID,
@@ -160,8 +160,8 @@ IDE_RC sdpsfPvtFreePIDList::removeAtHead( idvSQL             * aStatistics,
 
         sPageHdr = (sdpPhyPageHdr*)*aPagePtr;
 
-        /* sdpPhyPage::initialize¿¡¼­ Page List Node¸¦ ÃÊ±âÈ­ ÇÏ±â¶§¹®¿¡
-         * ¸ÕÀú PIDList¿¡¼­ Á¦°ÅÈÄ¿¡ Physical Page¸¦ ÃÊ±âÈ­ ÇØ¾ßÇÑ´Ù. */
+        /* sdpPhyPage::initializeì—ì„œ Page List Nodeë¥¼ ì´ˆê¸°í™” í•˜ê¸°ë•Œë¬¸ì—
+         * ë¨¼ì € PIDListì—ì„œ ì œê±°í›„ì— Physical Pageë¥¼ ì´ˆê¸°í™” í•´ì•¼í•œë‹¤. */
         IDE_TEST( sdpPhyPage::logAndInit( sPageHdr,
                                           sRmvPageID,
                                           NULL, /* Parent Info */
@@ -179,12 +179,12 @@ IDE_RC sdpsfPvtFreePIDList::removeAtHead( idvSQL             * aStatistics,
 
         sSegPagePtr = sdpPhyPage::getPageStartPtr( aSegHdr );
 
-        /* Segment Header Page¸¦ Dirty */
+        /* Segment Header Pageë¥¼ Dirty */
         IDE_TEST( sdrMiniTrans::setDirtyPage( aRmvMtx,
                                               sSegPagePtr )
                   != IDE_SUCCESS );
 
-        /* ¸®½ºÆ®¿¡¼­ Á¦°ÅµÈ Page¸¦ Dirty·Î µî·Ï */
+        /* ë¦¬ìŠ¤íŠ¸ì—ì„œ ì œê±°ëœ Pageë¥¼ Dirtyë¡œ ë“±ë¡ */
         IDE_TEST( sdrMiniTrans::setDirtyPage( aRmvMtx,
                                               *aPagePtr )
                   != IDE_SUCCESS );
@@ -203,7 +203,7 @@ IDE_RC sdpsfPvtFreePIDList::removeAtHead( idvSQL             * aStatistics,
 }
 
 /***********************************************************************
- * Description : Private Free Page ListÀÇ Ã¹¹øÂ° ÆäÀÌÁö¸¦ returnÇÑ´Ù.
+ * Description : Private Free Page Listì˜ ì²«ë²ˆì§¸ í˜ì´ì§€ë¥¼ returní•œë‹¤.
  *
  * aSegHdr - [IN] Segment Header
  ***********************************************************************/

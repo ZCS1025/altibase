@@ -28,7 +28,7 @@
  * ------------------------------------------------------------------
  * PROJ-1071 Parallel Query
  * ------------------------------------------------------------------
- * thread manager °ü·Ã interface
+ * thread manager ê´€ë ¨ interface
  *
  * - qmcThrObjCreate()
  * - qmcThrObjFinal()
@@ -75,10 +75,10 @@ static IDE_RC qmcThrObjCreateInternal(qmcThrMgr * aMgr,
 
 /*
  * ------------------------------------------------------------------
- * reserve cnt ¸¸Å­ thread info ÇÒ´ç ¹× ÃÊ±âÈ­
+ * reserve cnt ë§Œí¼ thread info í• ë‹¹ ë° ì´ˆê¸°í™”
  * called by top projection firstInit()
  *
- * thread »ı¼ºÀº ¿©±â¼­ ÇÏÁö ¾Ê°í qmcThrGet() ¿¡¼­ ÇÑ´Ù.
+ * thread ìƒì„±ì€ ì—¬ê¸°ì„œ í•˜ì§€ ì•Šê³  qmcThrGet() ì—ì„œ í•œë‹¤.
  * ------------------------------------------------------------------
  */
 IDE_RC qmcThrObjCreate(qmcThrMgr* aMgr, UInt aReserveCnt)
@@ -121,7 +121,7 @@ IDE_RC qmcThrObjCreate(qmcThrMgr* aMgr, UInt aReserveCnt)
 
 /*
  * ------------------------------------------------------------------
- * thread manager ¾È¿¡ ÀÖ´Â thread info ÇØÁ¦
+ * thread manager ì•ˆì— ìˆëŠ” thread info í•´ì œ
  * ------------------------------------------------------------------
  */
 IDE_RC qmcThrObjFinal(qmcThrMgr* aMgr)
@@ -166,10 +166,10 @@ IDE_RC qmcThrObjFinal(qmcThrMgr* aMgr)
 
 /*
  * ------------------------------------------------------------------
- * qmcThrGet() ÇÔ¼ö·ÎºÎÅÍ È£ÃâµÈ´Ù.
+ * qmcThrGet() í•¨ìˆ˜ë¡œë¶€í„° í˜¸ì¶œëœë‹¤.
  *
- * ½ÇÁ¦ thread »ı¼º
- * => qmcThrRun() ÇÔ¼ö°¡ »õ·Î¿î thread ·Î ½ÇÇàµÈ´Ù.
+ * ì‹¤ì œ thread ìƒì„±
+ * => qmcThrRun() í•¨ìˆ˜ê°€ ìƒˆë¡œìš´ thread ë¡œ ì‹¤í–‰ëœë‹¤.
  * ------------------------------------------------------------------
  */
 static IDE_RC qmcThrCreate(qmcThrObj* aThrObj)
@@ -251,8 +251,8 @@ static IDE_RC qmcThrJoinInternal(qmcThrObj* aThrObj)
 
 /*
  * ------------------------------------------------------------------
- * ÇöÀç thread manager °¡ °¡Áö°í ÀÖ´Â ¸ğµç thread ¸¦ Á¾·á
- * thrInfo ¸¦ free ÇÏÁö´Â ¾Ê´Â´Ù (cursor close ÀÌÈÄ¿¡ ÇØ¾ßÇÔ)
+ * í˜„ì¬ thread manager ê°€ ê°€ì§€ê³  ìˆëŠ” ëª¨ë“  thread ë¥¼ ì¢…ë£Œ
+ * thrInfo ë¥¼ free í•˜ì§€ëŠ” ì•ŠëŠ”ë‹¤ (cursor close ì´í›„ì— í•´ì•¼í•¨)
  * ------------------------------------------------------------------
  */
 IDE_RC qmcThrJoin(qmcThrMgr* aMgr)
@@ -291,11 +291,11 @@ IDE_RC qmcThrJoin(qmcThrMgr* aMgr)
 
 /*
  * ----------------------------------------------------------------------
- * PRLQ ÀÇ ¿äÃ»¿¡ ÀÇÇÏ¿© free thread ÇÏ³ª¸¦ PRLQ ¿¡ assign
- * qmnPRLQ::doItFirst() ·ÎºÎÅÍ È£ÃâµÊ
+ * PRLQ ì˜ ìš”ì²­ì— ì˜í•˜ì—¬ free thread í•˜ë‚˜ë¥¼ PRLQ ì— assign
+ * qmnPRLQ::doItFirst() ë¡œë¶€í„° í˜¸ì¶œë¨
  *
- * ¿©·¯°³ÀÇ PRLQ °¡ µ¿½Ã¿¡ thread ¸¦ ¿äÃ»ÇÏ´Â ÀÏÀº ¾ø´Ù.
- * ±×·± °æ¿ì°¡ »ı±ä´Ù¸é mutex lock ÀÌ ÇÊ¿äÇÔ
+ * ì—¬ëŸ¬ê°œì˜ PRLQ ê°€ ë™ì‹œì— thread ë¥¼ ìš”ì²­í•˜ëŠ” ì¼ì€ ì—†ë‹¤.
+ * ê·¸ëŸ° ê²½ìš°ê°€ ìƒê¸´ë‹¤ë©´ mutex lock ì´ í•„ìš”í•¨
  * ----------------------------------------------------------------------
  */
 IDE_RC qmcThrGet(qmcThrMgr  * aMgr,
@@ -319,7 +319,7 @@ IDE_RC qmcThrGet(qmcThrMgr  * aMgr,
         switch (sStatus)
         {
             case QMC_THR_STATUS_NONE:
-                /* thread »ç¿ëµÈÀû ¾øÀ½ => ÃÖÃÊ »ı¼º */
+                /* thread ì‚¬ìš©ëœì  ì—†ìŒ => ìµœì´ˆ ìƒì„± */
                 sThrObj->mPrivateArg  = aPrivateArg;
                 sThrObj->mStopFlag    = ID_FALSE;
                 sThrObj->mRun         = aFunc;
@@ -327,7 +327,7 @@ IDE_RC qmcThrGet(qmcThrMgr  * aMgr,
                 IDE_TEST(sRc != IDE_SUCCESS);
                 break;
             case QMC_THR_STATUS_WAIT:
-                /* free thread Àç»ç¿ë */
+                /* free thread ì¬ì‚¬ìš© */
                 sThrObj->mPrivateArg = aPrivateArg;
                 sThrObj->mStopFlag   = ID_FALSE;
                 sThrObj->mRun        = aFunc;
@@ -352,8 +352,8 @@ IDE_RC qmcThrGet(qmcThrMgr  * aMgr,
 
 /*
  * ------------------------------------------------------------------
- * thread ¹İ³³
- * use list -> free list ·Î ¿Å±è
+ * thread ë°˜ë‚©
+ * use list -> free list ë¡œ ì˜®ê¹€
  * ------------------------------------------------------------------
  */
 void qmcThrReturn(qmcThrMgr* aMgr, qmcThrObj* aThrObj)
@@ -366,11 +366,11 @@ void qmcThrReturn(qmcThrMgr* aMgr, qmcThrObj* aThrObj)
 
 /*
  * ------------------------------------------------------------------
- * cond_signal À» È£ÃâÇØ¼­ thread ¸¦ ±ú¿î´Ù.
+ * cond_signal ì„ í˜¸ì¶œí•´ì„œ thread ë¥¼ ê¹¨ìš´ë‹¤.
  *
- * thread status °¡ CREATED -> WAIT ·Î ¹Ù²î±â¸¦ ±â´Ù¸°´Ù.
- * thread °¡ ºñÁ¤»ó Á¾·á ÇÑ °æ¿ì (END) ´Â
- * signal À» º¸³¾ ¼ö ¾øÀ¸¹Ç·Î ID_FALSE ¸¦ return
+ * thread status ê°€ CREATED -> WAIT ë¡œ ë°”ë€Œê¸°ë¥¼ ê¸°ë‹¤ë¦°ë‹¤.
+ * thread ê°€ ë¹„ì •ìƒ ì¢…ë£Œ í•œ ê²½ìš° (END) ëŠ”
+ * signal ì„ ë³´ë‚¼ ìˆ˜ ì—†ìœ¼ë¯€ë¡œ ID_FALSE ë¥¼ return
  * ------------------------------------------------------------------
  */
 IDE_RC qmcThrWakeup(qmcThrObj* aThrObj, idBool* aIsSuccess)
@@ -401,8 +401,8 @@ IDE_RC qmcThrWakeup(qmcThrObj* aThrObj, idBool* aIsSuccess)
         else
         {
             /*
-             * RUN -> WAIT ·Î °¡´Â Áß
-             * CREATED -> WAIT ·Î °¡´Â Áß
+             * RUN -> WAIT ë¡œ ê°€ëŠ” ì¤‘
+             * CREATED -> WAIT ë¡œ ê°€ëŠ” ì¤‘
              *
              * wait for a while and try again
              */
@@ -461,8 +461,8 @@ IDE_RC qmcThrWakeupForJoin(qmcThrObj* aThrObj, idBool* aIsSuccess)
         else
         {
             /*
-             * RUN -> WAIT ·Î °¡´Â Áß
-             * CREATED -> WAIT ·Î °¡´Â Áß
+             * RUN -> WAIT ë¡œ ê°€ëŠ” ì¤‘
+             * CREATED -> WAIT ë¡œ ê°€ëŠ” ì¤‘
              *
              * wait for a while and try again
              */
@@ -516,8 +516,8 @@ IDE_RC qmcThrObj::initializeThread()
 
 /*
  * ----------------------------------------------------------------
- * create thread ÇÒ¶§ »ı¼ºµÇ´Â ±âº» thread ÇÔ¼ö
- * argument ¾È¿¡ run ÇÔ¼ö°¡ Á¸ÀçÇÏ°í ÃÖÁ¾ÀûÀ¸·Î run ÀÌ È£ÃâµÈ´Ù.
+ * create thread í• ë•Œ ìƒì„±ë˜ëŠ” ê¸°ë³¸ thread í•¨ìˆ˜
+ * argument ì•ˆì— run í•¨ìˆ˜ê°€ ì¡´ì¬í•˜ê³  ìµœì¢…ì ìœ¼ë¡œ run ì´ í˜¸ì¶œëœë‹¤.
  * ----------------------------------------------------------------
  */
 void qmcThrObj::run()
@@ -559,7 +559,7 @@ void qmcThrObj::run()
         }
 
         /*
-         * È£ÃâµÇ´Â ÇÔ¼ö:
+         * í˜¸ì¶œë˜ëŠ” í•¨ìˆ˜:
          * qmnPRLQ::runChildEnqueueMemory
          * qmnPRLQ::runChildEnqueueDisk
          *

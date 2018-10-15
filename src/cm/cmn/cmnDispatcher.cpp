@@ -121,7 +121,7 @@ idBool cmnDispatcherIsSupportedImpl(cmnDispatcherImpl aImpl)
 /**
  * cmnDispatcherInitialize
  *
- * SockType¿¡ µû¶ó Select, Poll, Epoll¿¡ ¸Â´Â ÇÔ¼ö¸¦ ¼³Á¤ÇÑ´Ù.
+ * SockTypeì— ë”°ë¼ Select, Poll, Epollì— ë§žëŠ” í•¨ìˆ˜ë¥¼ ì„¤ì •í•œë‹¤.
  */
 IDE_RC cmnDispatcherInitialize()
 {
@@ -152,7 +152,7 @@ IDE_RC cmnDispatcherInitialize()
 
             gCmnDispatcherAllocInfo[sImpl].mMap  = cmnDispatcherMapSOCKEpoll;
             gCmnDispatcherAllocInfo[sImpl].mSize = cmnDispatcherSizeSOCKEpoll;
-            /* È¿À²¼ºÀ» À§ÇØ Poll »ç¿ë */
+            /* íš¨ìœ¨ì„±ì„ ìœ„í•´ Poll ì‚¬ìš© */
             gCmnDispatcherWaitLink[sImpl]        = cmnDispatcherWaitLinkSOCKPoll;
             gCmnDispatcherCheckHandle            = cmnDispatcherCheckHandleSOCKPoll;
             break;
@@ -179,12 +179,12 @@ IDE_RC cmnDispatcherAlloc(cmnDispatcher **aDispatcher, cmnDispatcherImpl aImpl, 
     cmnDispatcherAllocInfo *sAllocInfo;
 
     /*
-     * Áö¿øÇÏ´Â ImplÀÎÁö °Ë»ç
+     * ì§€ì›í•˜ëŠ” Implì¸ì§€ ê²€ì‚¬
      */
     IDE_TEST_RAISE(cmnDispatcherIsSupportedImpl(aImpl) != ID_TRUE, UnsupportedDispatcherImpl);
 
     /*
-     * AllocInfo È¹µæ
+     * AllocInfo íšë“
      */
     sAllocInfo = &gCmnDispatcherAllocInfo[aImpl];
 
@@ -195,7 +195,7 @@ IDE_RC cmnDispatcherAlloc(cmnDispatcher **aDispatcher, cmnDispatcherImpl aImpl, 
                           InsufficientMemory );
 
     /*
-     * ¸Þ¸ð¸® ÇÒ´ç
+     * ë©”ëª¨ë¦¬ í• ë‹¹
      */
     IDE_TEST_RAISE(iduMemMgr::malloc(IDU_MEM_CMN,
                                      sAllocInfo->mSize(),
@@ -203,7 +203,7 @@ IDE_RC cmnDispatcherAlloc(cmnDispatcher **aDispatcher, cmnDispatcherImpl aImpl, 
                                      IDU_MEM_IMMEDIATE) != IDE_SUCCESS, InsufficientMemory );
 
     /*
-     * ¸â¹ö ÃÊ±âÈ­
+     * ë©¤ë²„ ì´ˆê¸°í™”
      */
     (*aDispatcher)->mImpl      = aImpl;
     (*aDispatcher)->mLinkCount = 0;
@@ -211,12 +211,12 @@ IDE_RC cmnDispatcherAlloc(cmnDispatcher **aDispatcher, cmnDispatcherImpl aImpl, 
     IDU_LIST_INIT(&(*aDispatcher)->mLinkList);
 
     /*
-     * ÇÔ¼ö Æ÷ÀÎÅÍ ¸ÅÇÎ
+     * í•¨ìˆ˜ í¬ì¸í„° ë§¤í•‘
      */
     IDE_TEST_RAISE(sAllocInfo->mMap(*aDispatcher) != IDE_SUCCESS, InitializeFail);
 
     /*
-     * ÃÊ±âÈ­
+     * ì´ˆê¸°í™”
      */
     IDE_TEST_RAISE((*aDispatcher)->mOp->mInitialize(*aDispatcher, aMaxLink) != IDE_SUCCESS, InitializeFail);
 
@@ -243,17 +243,17 @@ IDE_RC cmnDispatcherAlloc(cmnDispatcher **aDispatcher, cmnDispatcherImpl aImpl, 
 IDE_RC cmnDispatcherFree(cmnDispatcher *aDispatcher)
 {
     /*
-     * ¸ðµç Link »èÁ¦
+     * ëª¨ë“  Link ì‚­ì œ
      */
     IDE_TEST(cmnDispatcherRemoveAllLinks(aDispatcher) != IDE_SUCCESS);
 
     /*
-     * Á¤¸®
+     * ì •ë¦¬
      */
     IDE_TEST(aDispatcher->mOp->mFinalize(aDispatcher) != IDE_SUCCESS);
 
     /*
-     * ¸Þ¸ð¸® ÇØÁ¦
+     * ë©”ëª¨ë¦¬ í•´ì œ
      */
     IDE_TEST(iduMemMgr::free(aDispatcher) != IDE_SUCCESS);
 
@@ -265,7 +265,7 @@ IDE_RC cmnDispatcherFree(cmnDispatcher *aDispatcher)
 cmnDispatcherImpl cmnDispatcherImplForLinkImpl(cmnLinkImpl aLinkImpl)
 {
     /*
-     * Link Impl¿¡ µû¸¥ Dispatcher Impl ¹ÝÈ¯
+     * Link Implì— ë”°ë¥¸ Dispatcher Impl ë°˜í™˜
      */
     switch (aLinkImpl)
     {
@@ -290,7 +290,7 @@ cmnDispatcherImpl cmnDispatcherImplForLinkImpl(cmnLinkImpl aLinkImpl)
     }
 
     /*
-     * Á¸ÀçÇÏÁö ¾Ê´Â Link ImplÀÎ °æ¿ì
+     * ì¡´ìž¬í•˜ì§€ ì•ŠëŠ” Link Implì¸ ê²½ìš°
      */
     return CMN_DISPATCHER_IMPL_INVALID;
 }
@@ -300,18 +300,18 @@ IDE_RC cmnDispatcherWaitLink(cmnLink *aLink, cmiDirection aDirection, PDL_Time_V
     cmnDispatcherImpl sImpl;
 
     /*
-     * Dispatcher Impl È¹µæ
+     * Dispatcher Impl íšë“
      */
     sImpl = cmnDispatcherImplForLinkImpl(aLink->mImpl);
 
     /*
-     * Dispatcher Impl ¹üÀ§ °Ë»ç
+     * Dispatcher Impl ë²”ìœ„ ê²€ì‚¬
      */
     IDE_ASSERT(sImpl >= CMN_DISPATCHER_IMPL_BASE);
     IDE_ASSERT(sImpl <  CMN_DISPATCHER_IMPL_MAX);
 
     /*
-     * WaitLink ÇÔ¼ö È£Ãâ
+     * WaitLink í•¨ìˆ˜ í˜¸ì¶œ
      */
     IDE_TEST(gCmnDispatcherWaitLink[sImpl](aLink, aDirection, aTimeout) != IDE_SUCCESS);
 
@@ -320,7 +320,7 @@ IDE_RC cmnDispatcherWaitLink(cmnLink *aLink, cmiDirection aDirection, PDL_Time_V
     return IDE_FAILURE;
 }
 
-/* BUG-45240 - aHandle¿¡¼­ Read ÀÌº¥Æ® ¹ß»ý ¿©ºÎ È®ÀÎ */
+/* BUG-45240 - aHandleì—ì„œ Read ì´ë²¤íŠ¸ ë°œìƒ ì—¬ë¶€ í™•ì¸ */
 SInt cmnDispatcherCheckHandle(PDL_SOCKET aHandle, PDL_Time_Value *aTimeout)
 {
     return gCmnDispatcherCheckHandle(aHandle, aTimeout);
@@ -344,17 +344,17 @@ static void cmnDispatcherVerifyLinkList(cmnDispatcher *aDispatcher)
 IDE_RC cmnDispatcherAddLink(cmnDispatcher *aDispatcher, cmnLink *aLink)
 {
     /*
-     * ÀÌ¹Ì µî·ÏµÈ LinkÀÎÁö °Ë»ç
+     * ì´ë¯¸ ë“±ë¡ëœ Linkì¸ì§€ ê²€ì‚¬
      */
     IDE_TEST_RAISE(IDU_LIST_IS_EMPTY(&aLink->mDispatchListNode) != ID_TRUE, LinkAlreadyInDispatching);
 
     /*
-     * Link List¿¡ Ãß°¡
+     * Link Listì— ì¶”ê°€
      */
     IDU_LIST_ADD_LAST(&aDispatcher->mLinkList, &aLink->mDispatchListNode);
 
     /*
-     * Link Count Áõ°¡
+     * Link Count ì¦ê°€
      */
     aDispatcher->mLinkCount++;
 
@@ -376,17 +376,17 @@ IDE_RC cmnDispatcherAddLink(cmnDispatcher *aDispatcher, cmnLink *aLink)
 IDE_RC cmnDispatcherRemoveLink(cmnDispatcher *aDispatcher, cmnLink *aLink)
 {
     /*
-     * ³ëµå »èÁ¦
+     * ë…¸ë“œ ì‚­ì œ
      */
     IDU_LIST_REMOVE(&aLink->mDispatchListNode);
 
     /*
-     * ³ëµå ÃÊ±âÈ­
+     * ë…¸ë“œ ì´ˆê¸°í™”
      */
     IDU_LIST_INIT_OBJ(&aLink->mDispatchListNode, aLink);
 
     /*
-     * Link Count °¨¼Ò
+     * Link Count ê°ì†Œ
      */
     aDispatcher->mLinkCount--;
 
@@ -404,7 +404,7 @@ IDE_RC cmnDispatcherRemoveAllLinks(cmnDispatcher *aDispatcher)
     cmnLink     *sLink;
 
     /*
-     * Link List Á¤¸®
+     * Link List ì •ë¦¬
      */
     IDU_LIST_ITERATE_SAFE(&aDispatcher->mLinkList, sIterator, sNextNode)
     {

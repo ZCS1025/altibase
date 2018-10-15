@@ -118,15 +118,15 @@ idBool iddTRBTree::node::isLeftChild(void)
 }
 
 /**
- * Red-Black Tree¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+ * Red-Black Treeë¥¼ ì´ˆê¸°í™”í•œë‹¤.
  *
- * @param aIndex : ³»ºÎÀûÀ¸·Î »ç¿ëÇÒ ¸Ş¸ğ¸® ÇÒ´ç ÀÎµ¦½º
- * @param aKeyLength : Å° Å©±â(bytes)
- * @param aCompFunc : ºñ±³¿ë ÇÔ¼ö.
- *                    SInt(const void* aKey1, const void* aKey2) ÇüÅÂÀÌ¸ç
- *                    aKey1 >  aKey2ÀÌ¸é 1 ÀÌ»óÀ»,
- *                    aKey1 == aKey2ÀÌ¸é 0 À»
- *                    aKey1 < aKey2ÀÌ¸é -1 ÀÌÇÏ¸¦ ¸®ÅÏÇØ¾ß ÇÑ´Ù.
+ * @param aIndex : ë‚´ë¶€ì ìœ¼ë¡œ ì‚¬ìš©í•  ë©”ëª¨ë¦¬ í• ë‹¹ ì¸ë±ìŠ¤
+ * @param aKeyLength : í‚¤ í¬ê¸°(bytes)
+ * @param aCompFunc : ë¹„êµìš© í•¨ìˆ˜.
+ *                    SInt(const void* aKey1, const void* aKey2) í˜•íƒœì´ë©°
+ *                    aKey1 >  aKey2ì´ë©´ 1 ì´ìƒì„,
+ *                    aKey1 == aKey2ì´ë©´ 0 ì„
+ *                    aKey1 < aKey2ì´ë©´ -1 ì´í•˜ë¥¼ ë¦¬í„´í•´ì•¼ í•œë‹¤.
  * @return IDE_SUCCESS
  *         IDE_FAILURE
  */
@@ -148,8 +148,8 @@ IDE_RC iddTRBTree::initialize(const iduMemoryClientIndex    aIndex,
 }
 
 /**
- * clearÇÑ´Ù
- * Ãß°¡ destructor ÇàÀ§°¡ ÀÖÀ» ¼ö ÀÖÀ½
+ * clearí•œë‹¤
+ * ì¶”ê°€ destructor í–‰ìœ„ê°€ ìˆì„ ìˆ˜ ìˆìŒ
  * @return IDE_SUCCESS
  *         IDE_FAILURE
  */
@@ -160,12 +160,12 @@ IDE_RC iddTRBTree::destroy(void)
 }
 
 /**
- * Red-Black Æ®¸®¿¡ Å°/µ¥ÀÌÅÍ¸¦ Ãß°¡ÇÏ°í ºÒ±ÕÇüÀ» ÇØ¼ÒÇÑ´Ù
+ * Red-Black íŠ¸ë¦¬ì— í‚¤/ë°ì´í„°ë¥¼ ì¶”ê°€í•˜ê³  ë¶ˆê· í˜•ì„ í•´ì†Œí•œë‹¤
  *
- * @param aKey : Å°
- * @param aData : °ªÀ» Áö´Ï°í ÀÖ´Â Æ÷ÀÎÅÍ
+ * @param aKey : í‚¤
+ * @param aData : ê°’ì„ ì§€ë‹ˆê³  ìˆëŠ” í¬ì¸í„°
  * @return IDE_SUCCESS
- *         IDE_FAILURE Áßº¹ °ªÀÌ ÀÖ°Å³ª ¸Ş¸ğ¸® ÇÒ´ç¿¡ ½ÇÆĞÇßÀ» ¶§
+ *         IDE_FAILURE ì¤‘ë³µ ê°’ì´ ìˆê±°ë‚˜ ë©”ëª¨ë¦¬ í• ë‹¹ì— ì‹¤íŒ¨í–ˆì„ ë•Œ
  */
 IDE_RC iddTRBTree::insert(const void* aKey, void* aData)
 {
@@ -227,13 +227,13 @@ IDE_RC iddTRBTree::insert(const void* aKey, void* aData)
 }
 
 /**
- * Red-Black Æ®¸®¿¡¼­ Å°¸¦ °Ë»öÇÑ´Ù
- * °Ë»öµÈ Å°¿¡ ÇØ´çÇÏ´Â µ¥ÀÌÅÍ´Â aData¿¡ ÀúÀåµÈ´Ù
+ * Red-Black íŠ¸ë¦¬ì—ì„œ í‚¤ë¥¼ ê²€ìƒ‰í•œë‹¤
+ * ê²€ìƒ‰ëœ í‚¤ì— í•´ë‹¹í•˜ëŠ” ë°ì´í„°ëŠ” aDataì— ì €ì¥ëœë‹¤
  *
- * @param aKey : Å°
- * @param aData : °Ë»öµÈ °ªÀ» Áö´Ò Æ÷ÀÎÅÍ. °ªÀÌ ¾øÀ¸¸é NULLÀÌ ÀúÀåµÈ´Ù.
- * @return ID_TRUE  aKey¸¦ Ã£¾ÒÀ» ¶§
- *         ID_FALSE aKey¸¦ Ã£Áö ¸øÇßÀ» ¶§
+ * @param aKey : í‚¤
+ * @param aData : ê²€ìƒ‰ëœ ê°’ì„ ì§€ë‹ í¬ì¸í„°. ê°’ì´ ì—†ìœ¼ë©´ NULLì´ ì €ì¥ëœë‹¤.
+ * @return ID_TRUE  aKeyë¥¼ ì°¾ì•˜ì„ ë•Œ
+ *         ID_FALSE aKeyë¥¼ ì°¾ì§€ ëª»í–ˆì„ ë•Œ
  */
 idBool iddTRBTree::search(const void* aKey, void** aData)
 {
@@ -262,14 +262,14 @@ idBool iddTRBTree::search(const void* aKey, void** aData)
 }
 
 /**
- * Red-Black Tree¿¡¼­ aKey¿¡ ÇØ´çÇÏ´Â µ¥ÀÌÅÍ¸¦ aNewData·Î ´ëÃ¼ÇÑ´Ù
- * °ú°ÅÀÇ µ¥ÀÌÅÍ´Â aOldData¿¡ ½Ç·Á³ª¿Â´Ù
+ * Red-Black Treeì—ì„œ aKeyì— í•´ë‹¹í•˜ëŠ” ë°ì´í„°ë¥¼ aNewDataë¡œ ëŒ€ì²´í•œë‹¤
+ * ê³¼ê±°ì˜ ë°ì´í„°ëŠ” aOldDataì— ì‹¤ë ¤ë‚˜ì˜¨ë‹¤
  *
- * @param aKey : Å°
- * @param aNewData : »õ °ª
- * @param aOldData : °ú°Å µ¥ÀÌÅÍ¸¦ ÀúÀåÇÒ Æ÷ÀÎÅÍ. NULLÀÌ ¿Ã ¼ö ÀÖ´Ù.
- * @return IDE_SUCCESS °ªÀ» Ã£¾ÒÀ» ¶§
- *         IDE_FAILURE °ªÀÌ ¾øÀ» ¶§
+ * @param aKey : í‚¤
+ * @param aNewData : ìƒˆ ê°’
+ * @param aOldData : ê³¼ê±° ë°ì´í„°ë¥¼ ì €ì¥í•  í¬ì¸í„°. NULLì´ ì˜¬ ìˆ˜ ìˆë‹¤.
+ * @return IDE_SUCCESS ê°’ì„ ì°¾ì•˜ì„ ë•Œ
+ *         IDE_FAILURE ê°’ì´ ì—†ì„ ë•Œ
  */
 IDE_RC iddTRBTree::update(const void* aKey, void* aNewData, void** aOldData)
 {
@@ -294,13 +294,13 @@ IDE_RC iddTRBTree::update(const void* aKey, void* aNewData, void** aOldData)
 }
 
 /**
- * Red-Black Æ®¸®¿¡¼­ Å°/µ¥ÀÌÅÍ¸¦ »èÁ¦ÇÑ´Ù
- * »èÁ¦µÈ °ªÀº aData¿¡ ÀúÀåµÈ´Ù.
+ * Red-Black íŠ¸ë¦¬ì—ì„œ í‚¤/ë°ì´í„°ë¥¼ ì‚­ì œí•œë‹¤
+ * ì‚­ì œëœ ê°’ì€ aDataì— ì €ì¥ëœë‹¤.
  *
- * @param aKey : Å°
- * @param aData : »èÁ¦µÈ °ªÀ» Áö´Ò Æ÷ÀÎÅÍ. °ªÀÌ ¾øÀ¸¸é NULLÀÌ ÀúÀåµÈ´Ù.
+ * @param aKey : í‚¤
+ * @param aData : ì‚­ì œëœ ê°’ì„ ì§€ë‹ í¬ì¸í„°. ê°’ì´ ì—†ìœ¼ë©´ NULLì´ ì €ì¥ëœë‹¤.
  * @return IDE_SUCCESS
- *         IDE_FAILURE ¸Ş¸ğ¸® ÇØÁ¦¿¡ ½ÇÆĞÇßÀ» ¶§
+ *         IDE_FAILURE ë©”ëª¨ë¦¬ í•´ì œì— ì‹¤íŒ¨í–ˆì„ ë•Œ
  */
 IDE_RC iddTRBTree::remove(const void* aKey, void** aData)
 {
@@ -332,10 +332,10 @@ IDE_RC iddTRBTree::remove(const void* aKey, void** aData)
 }
 
 /**
- * Red-Black Æ®¸®¿¡¼­ ¸ğµç Å°/µ¥ÀÌÅÍ¸¦ »èÁ¦ÇÏ°í ¸Ş¸ğ¸®¸¦ ¹İÈ¯ÇÑ´Ù
+ * Red-Black íŠ¸ë¦¬ì—ì„œ ëª¨ë“  í‚¤/ë°ì´í„°ë¥¼ ì‚­ì œí•˜ê³  ë©”ëª¨ë¦¬ë¥¼ ë°˜í™˜í•œë‹¤
  *
  * @return IDE_SUCCESS
- *         IDE_FAILURE ¸Ş¸ğ¸® ÇØÁ¦¿¡ ½ÇÆĞÇßÀ» ¶§
+ *         IDE_FAILURE ë©”ëª¨ë¦¬ í•´ì œì— ì‹¤íŒ¨í–ˆì„ ë•Œ
  */
 IDE_RC iddTRBTree::clear(void)
 {
@@ -350,7 +350,7 @@ IDE_RC iddTRBTree::clear(void)
 }
 
 /**
- * Red-Black Æ®¸®ÀÇ Åë°èÁ¤º¸¸¦ ¸ğµÎ ÃÊ±âÈ­ÇÑ´Ù
+ * Red-Black íŠ¸ë¦¬ì˜ í†µê³„ì •ë³´ë¥¼ ëª¨ë‘ ì´ˆê¸°í™”í•œë‹¤
  */
 void iddTRBTree::clearStat(void)
 {
@@ -360,11 +360,11 @@ void iddTRBTree::clearStat(void)
 }
 
 /**
- * Red-Black Æ®¸®¿¡ »ç¿ëÇÒ »õ·Î¿î ³ëµå ÇÒ´ç
+ * Red-Black íŠ¸ë¦¬ì— ì‚¬ìš©í•  ìƒˆë¡œìš´ ë…¸ë“œ í• ë‹¹
  *
- * @param aNode : »õ ³ëµå Æ÷ÀÎÅÍ
+ * @param aNode : ìƒˆ ë…¸ë“œ í¬ì¸í„°
  * @return IDE_SUCCESS
- *         IDE_FAILURE ¸Ş¸ğ¸® ÇÒ´ç¿¡ ½ÇÆĞÇßÀ» ¶§
+ *         IDE_FAILURE ë©”ëª¨ë¦¬ í• ë‹¹ì— ì‹¤íŒ¨í–ˆì„ ë•Œ
  */
 IDE_RC iddTRBTree::allocNode(iddTRBTree::node** aNode)
 {
@@ -388,11 +388,11 @@ IDE_RC iddTRBTree::allocNode(iddTRBTree::node** aNode)
 }
 
 /**
- * ³ëµåÀÇ ¸Ş¸ğ¸®¸¦ ÇØÁ¦ÇÑ´Ù
+ * ë…¸ë“œì˜ ë©”ëª¨ë¦¬ë¥¼ í•´ì œí•œë‹¤
  *
- * @param aNode : ÇØÁ¦ÇÒ ³ëµå Æ÷ÀÎÅÍ
+ * @param aNode : í•´ì œí•  ë…¸ë“œ í¬ì¸í„°
  * @return IDE_SUCCESS
- *         IDE_FAILURE ¸Ş¸ğ¸® ÇØÁ¦¿¡ ½ÇÆĞÇßÀ» ¶§
+ *         IDE_FAILURE ë©”ëª¨ë¦¬ í•´ì œì— ì‹¤íŒ¨í–ˆì„ ë•Œ
  */
 IDE_RC iddTRBTree::freeNode(iddTRBTree::node* aNode)
 {
@@ -400,9 +400,9 @@ IDE_RC iddTRBTree::freeNode(iddTRBTree::node* aNode)
 }
 
 /**
- * Æ®¸®¿¡¼­ °¡Àå ÀÛÀº ³ëµå¸¦ Ã£´Â´Ù.
+ * íŠ¸ë¦¬ì—ì„œ ê°€ì¥ ì‘ì€ ë…¸ë“œë¥¼ ì°¾ëŠ”ë‹¤.
  *
- * @return ³ëµåÀÇ Æ÷ÀÎÅÍ. Æ®¸®°¡ ºñ¾îÀÖÀ¸¸é NULL
+ * @return ë…¸ë“œì˜ í¬ì¸í„°. íŠ¸ë¦¬ê°€ ë¹„ì–´ìˆìœ¼ë©´ NULL
  */
 iddTRBTree::node* iddTRBTree::findFirstNode(void) const
 {
@@ -419,15 +419,15 @@ iddTRBTree::node* iddTRBTree::findFirstNode(void) const
 }
 
 /**
- * Æ®¸®¿¡¼­ aIterº¸´Ù Å« °¡Àå ÀÛÀº ³ëµå¸¦ Ã£´Â´Ù
- * DEBUG ¸ğµå¿¡¼­´Â aIter°¡ ÇöÀç ÀÎ½ºÅÏ½º ¾È¿¡ ÀÖ´Â°¡
- * °Ë»öÇÏ¿© ¾øÀ¸¸é altibase_misc.log¿¡ ÇöÀç Æ®¸®¸¦
- * ´ıÇÁÇÏ°í ASSERTIONÇÑ´Ù
- * RELEASE ¸ğµå¿¡¼­´Â aIter°¡ ÇöÀç ÀÎ½ºÅÏ½º ¾È¿¡ ¾øÀ» ¶§ÀÇ Çàµ¿Àº
- * Á¤ÀÇµÇÁö ¾Ê¾Ò´Ù
+ * íŠ¸ë¦¬ì—ì„œ aIterë³´ë‹¤ í° ê°€ì¥ ì‘ì€ ë…¸ë“œë¥¼ ì°¾ëŠ”ë‹¤
+ * DEBUG ëª¨ë“œì—ì„œëŠ” aIterê°€ í˜„ì¬ ì¸ìŠ¤í„´ìŠ¤ ì•ˆì— ìˆëŠ”ê°€
+ * ê²€ìƒ‰í•˜ì—¬ ì—†ìœ¼ë©´ altibase_misc.logì— í˜„ì¬ íŠ¸ë¦¬ë¥¼
+ * ë¤í”„í•˜ê³  ASSERTIONí•œë‹¤
+ * RELEASE ëª¨ë“œì—ì„œëŠ” aIterê°€ í˜„ì¬ ì¸ìŠ¤í„´ìŠ¤ ì•ˆì— ì—†ì„ ë•Œì˜ í–‰ë™ì€
+ * ì •ì˜ë˜ì§€ ì•Šì•˜ë‹¤
  *
- * @param aIter : ³ëµå
- * @return ³ëµåÀÇ Æ÷ÀÎÅÍ. Æ®¸®°¡ ºñ¾îÀÖÀ¸¸é NULL
+ * @param aIter : ë…¸ë“œ
+ * @return ë…¸ë“œì˜ í¬ì¸í„°. íŠ¸ë¦¬ê°€ ë¹„ì–´ìˆìœ¼ë©´ NULL
  */
 iddTRBTree::node* iddTRBTree::findNextNode(iddTRBTree::node* aIter)
     const
@@ -484,15 +484,15 @@ iddTRBTree::node* iddTRBTree::findNextNode(iddTRBTree::node* aIter)
 }
 
 /**
- * Æ®¸® ³»ºÎ¿¡¼­ aKeyÀÇ À§Ä¡¸¦ Ã£´Â´Ù
+ * íŠ¸ë¦¬ ë‚´ë¶€ì—ì„œ aKeyì˜ ìœ„ì¹˜ë¥¼ ì°¾ëŠ”ë‹¤
  *
- * @param aKey : Å°
- * @param aFinder : Å½»ö¿ë ÇÔ¼öÀÚ.
- *                  µ¿½Ã¿¡ Å½»ö½Ã ¿ŞÂÊ/¿À¸¥ÂÊ ÀÌµ¿ È¸¼ö¸¦ ±â·ÏÇÑ´Ù.
- * @return ³ëµåÀÇ Æ÷ÀÎÅÍ. aKey¸¦ Ã£À¸¸é ÇØ´ç ³ëµåÀÇ Æ÷ÀÎÅÍ¸¦,
- *         Ã£Áö ¸øÇÏ¸é aKey¿Í °¡Àå °¡±î¿î Å°¸¦ Áö´Ñ ³ëµå¸¦ ¸®ÅÏÇÑ´Ù.
- *         insertÇÒ ¶§¶ó¸é ¸®ÅÏ°ªÀÌ »õ ³ëµåÀÇ ºÎ¸ğ°¡ µÈ´Ù.
- *         Æ®¸®°¡ ºñ¾îÀÖÀ¸¸é NULLÀ» ¸®ÅÏÇÑ´Ù.
+ * @param aKey : í‚¤
+ * @param aFinder : íƒìƒ‰ìš© í•¨ìˆ˜ì.
+ *                  ë™ì‹œì— íƒìƒ‰ì‹œ ì™¼ìª½/ì˜¤ë¥¸ìª½ ì´ë™ íšŒìˆ˜ë¥¼ ê¸°ë¡í•œë‹¤.
+ * @return ë…¸ë“œì˜ í¬ì¸í„°. aKeyë¥¼ ì°¾ìœ¼ë©´ í•´ë‹¹ ë…¸ë“œì˜ í¬ì¸í„°ë¥¼,
+ *         ì°¾ì§€ ëª»í•˜ë©´ aKeyì™€ ê°€ì¥ ê°€ê¹Œìš´ í‚¤ë¥¼ ì§€ë‹Œ ë…¸ë“œë¥¼ ë¦¬í„´í•œë‹¤.
+ *         insertí•  ë•Œë¼ë©´ ë¦¬í„´ê°’ì´ ìƒˆ ë…¸ë“œì˜ ë¶€ëª¨ê°€ ëœë‹¤.
+ *         íŠ¸ë¦¬ê°€ ë¹„ì–´ìˆìœ¼ë©´ NULLì„ ë¦¬í„´í•œë‹¤.
  */
 iddTRBTree::node* iddTRBTree::findPosition(const void*        aKey,
                                          iddTRBTree::finder& aFinder)
@@ -541,10 +541,10 @@ iddTRBTree::node* iddTRBTree::findPosition(const void*        aKey,
 }
 
 /**
- * aNodeÀÇ ºÎ¸ğ ³ëµåÀÇ ºÎ¸ğ ³ëµå¸¦ Ã£¾Æ³½´Ù
+ * aNodeì˜ ë¶€ëª¨ ë…¸ë“œì˜ ë¶€ëª¨ ë…¸ë“œë¥¼ ì°¾ì•„ë‚¸ë‹¤
  *
- * @param aNode : ³ëµå Æ÷ÀÎÅÍ
- * @return aNodeÀÇ ºÎ¸ğ ³ëµåÀÇ ºÎ¸ğ ³ëµå. ¾ø´Ù¸é NULLÀ» ¸®ÅÏÇÑ´Ù.
+ * @param aNode : ë…¸ë“œ í¬ì¸í„°
+ * @return aNodeì˜ ë¶€ëª¨ ë…¸ë“œì˜ ë¶€ëª¨ ë…¸ë“œ. ì—†ë‹¤ë©´ NULLì„ ë¦¬í„´í•œë‹¤.
  */
 iddTRBTree::node* iddTRBTree::getGrandParent(const iddTRBTree::node* aNode) const
 {
@@ -556,10 +556,10 @@ iddTRBTree::node* iddTRBTree::getGrandParent(const iddTRBTree::node* aNode) cons
 }
 
 /**
- * aNodeÀÇ ºÎ¸ğ ³ëµåÀÇ ÇüÁ¦ ³ëµå¸¦ Ã£¾Æ³½´Ù
+ * aNodeì˜ ë¶€ëª¨ ë…¸ë“œì˜ í˜•ì œ ë…¸ë“œë¥¼ ì°¾ì•„ë‚¸ë‹¤
  *
- * @param aNode : ³ëµå Æ÷ÀÎÅÍ
- * @return aNodeÀÇ ºÎ¸ğ ³ëµåÀÇ ÇüÁ¦ ³ëµå. ¾ø´Ù¸é NULLÀ» ¸®ÅÏÇÑ´Ù.
+ * @param aNode : ë…¸ë“œ í¬ì¸í„°
+ * @return aNodeì˜ ë¶€ëª¨ ë…¸ë“œì˜ í˜•ì œ ë…¸ë“œ. ì—†ë‹¤ë©´ NULLì„ ë¦¬í„´í•œë‹¤.
  */
 iddTRBTree::node* iddTRBTree::getUncle(const iddTRBTree::node* aNode) const
 {
@@ -591,10 +591,10 @@ iddTRBTree::node* iddTRBTree::getUncle(const iddTRBTree::node* aNode) const
 }
 
 /**
- * aNodeÀÇ ÇüÁ¦ ³ëµå¸¦ Ã£¾Æ³½´Ù
+ * aNodeì˜ í˜•ì œ ë…¸ë“œë¥¼ ì°¾ì•„ë‚¸ë‹¤
  *
- * @param aNode : ³ëµå Æ÷ÀÎÅÍ
- * @return aNodeÀÇ ÇüÁ¦ ³ëµå. ¾ø´Ù¸é NULLÀ» ¸®ÅÏÇÑ´Ù.
+ * @param aNode : ë…¸ë“œ í¬ì¸í„°
+ * @return aNodeì˜ í˜•ì œ ë…¸ë“œ. ì—†ë‹¤ë©´ NULLì„ ë¦¬í„´í•œë‹¤.
  */
 iddTRBTree::node* iddTRBTree::getSibling(const iddTRBTree::node* aNode) const
 {
@@ -615,12 +615,12 @@ iddTRBTree::node* iddTRBTree::getSibling(const iddTRBTree::node* aNode) const
 }
 
 /**
- * insert½Ã¿¡ »ı±ä ºÒ±ÕÇüÀ» ÇØ°áÇÑ´Ù : case 1
- * aNode°¡ root¶ó¸é BLACKÀ¸·Î ¼³Á¤ÇÏ°í ³¡
- * ¾Æ´Ï¸é case 2·Î ÁøÇà
- * Note : »õ·Î ÇÒ´ç¹Ş´Â ³ëµå´Â Ç×»ó REDÀÌ´Ù
+ * insertì‹œì— ìƒê¸´ ë¶ˆê· í˜•ì„ í•´ê²°í•œë‹¤ : case 1
+ * aNodeê°€ rootë¼ë©´ BLACKìœ¼ë¡œ ì„¤ì •í•˜ê³  ë
+ * ì•„ë‹ˆë©´ case 2ë¡œ ì§„í–‰
+ * Note : ìƒˆë¡œ í• ë‹¹ë°›ëŠ” ë…¸ë“œëŠ” í•­ìƒ REDì´ë‹¤
  *
- * @param aNode : ºÒ±ÕÇüÀ» ÇØ°áÇÒ ³ëµå Æ÷ÀÎÅÍ
+ * @param aNode : ë¶ˆê· í˜•ì„ í•´ê²°í•  ë…¸ë“œ í¬ì¸í„°
  */
 void iddTRBTree::adjustInsertCase1(iddTRBTree::node* aNode)
 {
@@ -636,11 +636,11 @@ void iddTRBTree::adjustInsertCase1(iddTRBTree::node* aNode)
 }
 
 /**
- * insert½Ã¿¡ »ı±ä ºÒ±ÕÇüÀ» ÇØ°áÇÑ´Ù : case 2
- * aNode°¡ BLACKÀÌ¶ó¸é Á¶Á¤ÇÒ ÇÊ¿ä°¡ ¾ø´Ù ³¡
- * ¾Æ´Ï¸é case 3·Î ÁøÇà
+ * insertì‹œì— ìƒê¸´ ë¶ˆê· í˜•ì„ í•´ê²°í•œë‹¤ : case 2
+ * aNodeê°€ BLACKì´ë¼ë©´ ì¡°ì •í•  í•„ìš”ê°€ ì—†ë‹¤ ë
+ * ì•„ë‹ˆë©´ case 3ë¡œ ì§„í–‰
  *
- * @param aNode : ºÒ±ÕÇüÀ» ÇØ°áÇÒ ³ëµå Æ÷ÀÎÅÍ
+ * @param aNode : ë¶ˆê· í˜•ì„ í•´ê²°í•  ë…¸ë“œ í¬ì¸í„°
  */
 void iddTRBTree::adjustInsertCase2(iddTRBTree::node* aNode)
 {
@@ -655,14 +655,14 @@ void iddTRBTree::adjustInsertCase2(iddTRBTree::node* aNode)
 }
 
 /**
- * insert½Ã¿¡ »ı±ä ºÒ±ÕÇüÀ» ÇØ°áÇÑ´Ù : case 3
- * ½Å±Ô ³ëµå NÀº »¡°£»öÀÌ´Ù
- * ºÎ¸ğ ³ëµå P¿Í »ïÃÌ ³ëµå U°¡ ¸ğµÎ REDÀÌ¸é
- * P¿Í U¸¦ ±î¸Ä°Ô Ä¥ÇÏ°í ÇÒ¾Æ¹öÁö ³ëµå GP¸¦ »¡°²°Ô Ä¥ÇÑ´Ù
- * ÀÌÈÄ GP¿¡ ´ëÇØ case 1ºÎÅÍ ´Ù½Ã ¼öÇàÇÑ´Ù
- * ±×·¸Áö ¾ÊÀ¸¸é case 4¸¦ ¼öÇàÇÑ´Ù
+ * insertì‹œì— ìƒê¸´ ë¶ˆê· í˜•ì„ í•´ê²°í•œë‹¤ : case 3
+ * ì‹ ê·œ ë…¸ë“œ Nì€ ë¹¨ê°„ìƒ‰ì´ë‹¤
+ * ë¶€ëª¨ ë…¸ë“œ Pì™€ ì‚¼ì´Œ ë…¸ë“œ Uê°€ ëª¨ë‘ REDì´ë©´
+ * Pì™€ Uë¥¼ ê¹Œë§£ê²Œ ì¹ í•˜ê³  í• ì•„ë²„ì§€ ë…¸ë“œ GPë¥¼ ë¹¨ê°›ê²Œ ì¹ í•œë‹¤
+ * ì´í›„ GPì— ëŒ€í•´ case 1ë¶€í„° ë‹¤ì‹œ ìˆ˜í–‰í•œë‹¤
+ * ê·¸ë ‡ì§€ ì•Šìœ¼ë©´ case 4ë¥¼ ìˆ˜í–‰í•œë‹¤
  *
- * @param aNode : ºÒ±ÕÇüÀ» ÇØ°áÇÒ ³ëµå Æ÷ÀÎÅÍ
+ * @param aNode : ë¶ˆê· í˜•ì„ í•´ê²°í•  ë…¸ë“œ í¬ì¸í„°
  */
 void iddTRBTree::adjustInsertCase3(iddTRBTree::node* aNode)
 {
@@ -687,12 +687,12 @@ void iddTRBTree::adjustInsertCase3(iddTRBTree::node* aNode)
 }
 
 /**
- * insert½Ã¿¡ »ı±ä ºÒ±ÕÇüÀ» ÇØ°áÇÑ´Ù : case 4
- * ½Å±Ô ³ëµå NÀº »¡°£»öÀÌ´Ù
- * ½Å±Ô ³ëµå NÀÇ ºÎ¸ğ ³ëµå P°¡ REDÀÌ°í »ïÃÌ ³ëµå U°¡ BLACKÀÏ ¶§
- * P¸¦ È¸Àü½ÃÄÑ PÀÇ À§Ä¡¿¡ NÀ» Áı¾î³Ö°í P¿¡ ´ëÇØ 5¹ø ÄÉÀÌ½º·Î ÁøÇàÇÑ´Ù
+ * insertì‹œì— ìƒê¸´ ë¶ˆê· í˜•ì„ í•´ê²°í•œë‹¤ : case 4
+ * ì‹ ê·œ ë…¸ë“œ Nì€ ë¹¨ê°„ìƒ‰ì´ë‹¤
+ * ì‹ ê·œ ë…¸ë“œ Nì˜ ë¶€ëª¨ ë…¸ë“œ Pê°€ REDì´ê³  ì‚¼ì´Œ ë…¸ë“œ Uê°€ BLACKì¼ ë•Œ
+ * Pë¥¼ íšŒì „ì‹œì¼œ Pì˜ ìœ„ì¹˜ì— Nì„ ì§‘ì–´ë„£ê³  Pì— ëŒ€í•´ 5ë²ˆ ì¼€ì´ìŠ¤ë¡œ ì§„í–‰í•œë‹¤
  *
- * @param aNode : ºÒ±ÕÇüÀ» ÇØ°áÇÒ ³ëµå Æ÷ÀÎÅÍ
+ * @param aNode : ë¶ˆê· í˜•ì„ í•´ê²°í•  ë…¸ë“œ í¬ì¸í„°
  */
 void iddTRBTree::adjustInsertCase4(iddTRBTree::node* aNode)
 {
@@ -721,18 +721,18 @@ void iddTRBTree::adjustInsertCase4(iddTRBTree::node* aNode)
 }
 
 /**
- * insert½Ã¿¡ »ı±ä ºÒ±ÕÇüÀ» ÇØ°áÇÑ´Ù : case 5
- * ½Å±Ô ³ëµå NÀº »¡°£»öÀÌ´Ù
- * NÀ» ±î¸Ä°Ô Ä¥ÇÏ°í ÇÒ¾Æ¹öÁö ³ëµå GP¸¦ »¡°²°Ô Ä¥ÇÑ´Ù
- * ÀÌÈÄ GP¸¦ È¸Àü½ÃÄÑ NÀÇ ºÎ¸ğ³ëµå P°¡
- * GP¿Í NÀÇ ºÎ¸ğ°¡ µÇ°Ô ÇÑ´Ù
- * ÀÌÁ¦ P´Â N, GP, P Áß À¯ÀÏÇÑ »¡°£»ö ³ëµåÀÌ´Ù
+ * insertì‹œì— ìƒê¸´ ë¶ˆê· í˜•ì„ í•´ê²°í•œë‹¤ : case 5
+ * ì‹ ê·œ ë…¸ë“œ Nì€ ë¹¨ê°„ìƒ‰ì´ë‹¤
+ * Nì„ ê¹Œë§£ê²Œ ì¹ í•˜ê³  í• ì•„ë²„ì§€ ë…¸ë“œ GPë¥¼ ë¹¨ê°›ê²Œ ì¹ í•œë‹¤
+ * ì´í›„ GPë¥¼ íšŒì „ì‹œì¼œ Nì˜ ë¶€ëª¨ë…¸ë“œ Pê°€
+ * GPì™€ Nì˜ ë¶€ëª¨ê°€ ë˜ê²Œ í•œë‹¤
+ * ì´ì œ PëŠ” N, GP, P ì¤‘ ìœ ì¼í•œ ë¹¨ê°„ìƒ‰ ë…¸ë“œì´ë‹¤
  * Before : GP(?)->P (?)->N (R)
  *               ->U (B)
  * After  :  P(B)->GP(R)->U (B)
  *               ->N (R)
  *
- * @param aNode : ºÒ±ÕÇüÀ» ÇØ°áÇÒ ³ëµå Æ÷ÀÎÅÍ
+ * @param aNode : ë¶ˆê· í˜•ì„ í•´ê²°í•  ë…¸ë“œ í¬ì¸í„°
  */
 void iddTRBTree::adjustInsertCase5(iddTRBTree::node* aNode)
 {
@@ -753,7 +753,7 @@ void iddTRBTree::adjustInsertCase5(iddTRBTree::node* aNode)
 }
 
 /**
- * aNode¸¦ Áß½ÉÀ¸·Î ¿ŞÂÊ È¸Àü
+ * aNodeë¥¼ ì¤‘ì‹¬ìœ¼ë¡œ ì™¼ìª½ íšŒì „
  */
 void iddTRBTree::rotateLeft(iddTRBTree::node* aNode)
 {
@@ -791,7 +791,7 @@ void iddTRBTree::rotateLeft(iddTRBTree::node* aNode)
 }
 
 /**
- * aNode¸¦ Áß½ÉÀ¸·Î ¿À¸¥ÂÊ È¸Àü
+ * aNodeë¥¼ ì¤‘ì‹¬ìœ¼ë¡œ ì˜¤ë¥¸ìª½ íšŒì „
  */
 void iddTRBTree::rotateRight(iddTRBTree::node* aNode)
 {
@@ -829,26 +829,26 @@ void iddTRBTree::rotateRight(iddTRBTree::node* aNode)
 }
 
 /**
- * aNode(D)¸¦ Æ®¸®¿¡¼­ ¶¼¾î³» ¸Ş¸ğ¸®¸¦ ÇØÁ¦ÇÏ°í ºÒ±ÕÇüÀ» ÇØ¼ÒÇÑ´Ù
- * 1 DÀÇ ÀÚ½Ä³ëµå°¡ ¸ğµÎ NULLÀÌ¶ó¸é
- * 1-1 D¸¦ ¶¼¾î³½´Ù
- * 1-2 T<-D ÇÏ°í 5
- * 2 DÀÇ ÀÚ½Ä³ëµå°¡ ÇÏ³ª¶ó¸é
- * 2-1 D¸¦ ¶¼¾î³»°í ÀÚ½Ä ³ëµå(C)·Î ´ëÃ¼ÇÑ´Ù
+ * aNode(D)ë¥¼ íŠ¸ë¦¬ì—ì„œ ë–¼ì–´ë‚´ ë©”ëª¨ë¦¬ë¥¼ í•´ì œí•˜ê³  ë¶ˆê· í˜•ì„ í•´ì†Œí•œë‹¤
+ * 1 Dì˜ ìì‹ë…¸ë“œê°€ ëª¨ë‘ NULLì´ë¼ë©´
+ * 1-1 Dë¥¼ ë–¼ì–´ë‚¸ë‹¤
+ * 1-2 T<-D í•˜ê³  5
+ * 2 Dì˜ ìì‹ë…¸ë“œê°€ í•˜ë‚˜ë¼ë©´
+ * 2-1 Dë¥¼ ë–¼ì–´ë‚´ê³  ìì‹ ë…¸ë“œ(C)ë¡œ ëŒ€ì²´í•œë‹¤
  * 2-2 A<-C, T<-D
- * 2-3 4 ¼öÇà
- * 3 DÀÇ ÀÚ½ÄÀÌ µÑÀÌ¶ó¸é DÀÇ successor S¸¦ Ã£¾Æ³½´Ù
- * 3-1 SÀÇ Key, Data¸¦ D¿¡ µ¤¾î¾´´Ù ÀÌ ¶§ DÀÇ »ö±òÀº ¹Ù²îÁö ¾Ê´Â´Ù
- * 3-2 SÀÇ ¿ŞÂÊ ÀÚ½ÄÀº Ç×»ó NULLÀÌ´Ù SÀÇ ¿À¸¥ÂÊ ÀÚ½Ä(C)À» S¿Í ´ëÃ¼ÇÑ´Ù(A)
+ * 2-3 4 ìˆ˜í–‰
+ * 3 Dì˜ ìì‹ì´ ë‘˜ì´ë¼ë©´ Dì˜ successor Së¥¼ ì°¾ì•„ë‚¸ë‹¤
+ * 3-1 Sì˜ Key, Dataë¥¼ Dì— ë®ì–´ì“´ë‹¤ ì´ ë•Œ Dì˜ ìƒ‰ê¹”ì€ ë°”ë€Œì§€ ì•ŠëŠ”ë‹¤
+ * 3-2 Sì˜ ì™¼ìª½ ìì‹ì€ í•­ìƒ NULLì´ë‹¤ Sì˜ ì˜¤ë¥¸ìª½ ìì‹(C)ì„ Sì™€ ëŒ€ì²´í•œë‹¤(A)
  * 3-3 A<-C, T<-S
- * 3-4 4 ¼öÇà
- * 4 A¿¡ ´ëÇØ ºÒ±ÕÇüÀ» ÇØ¼ÒÇÑ´Ù
- * 5 T¸¦ ÇØÁ¦ÇÑ´Ù
- * 6 ³¡
+ * 3-4 4 ìˆ˜í–‰
+ * 4 Aì— ëŒ€í•´ ë¶ˆê· í˜•ì„ í•´ì†Œí•œë‹¤
+ * 5 Të¥¼ í•´ì œí•œë‹¤
+ * 6 ë
  *
- * @param aNode : »èÁ¦ÇÒ ³ëµå.
+ * @param aNode : ì‚­ì œí•  ë…¸ë“œ.
  * @return IDE_SUCCESS
- *         IDE_FAILRE ¸Ş¸ğ¸® ÇØÁ¦ ½ÇÆĞ½Ã
+ *         IDE_FAILRE ë©”ëª¨ë¦¬ í•´ì œ ì‹¤íŒ¨ì‹œ
  */
 IDE_RC iddTRBTree::removeNode(iddTRBTree::node* aNode)
 {
@@ -918,17 +918,17 @@ IDE_RC iddTRBTree::removeNode(iddTRBTree::node* aNode)
 }
 
 /**
- * aNode¿Í ±× ÀÚ¼Õ ³ëµåÀÇ ¸Ş¸ğ¸®¸¦ ¸ğµÎ ÇØÁ¦ÇÑ´Ù
+ * aNodeì™€ ê·¸ ìì† ë…¸ë“œì˜ ë©”ëª¨ë¦¬ë¥¼ ëª¨ë‘ í•´ì œí•œë‹¤
  *
- * @param aNode : »èÁ¦ÇÒ ³ëµå.
+ * @param aNode : ì‚­ì œí•  ë…¸ë“œ.
  * @return IDE_SUCCESS
- *         IDE_FAILRE ¸Ş¸ğ¸® ÇØÁ¦ ½ÇÆĞ½Ã
+ *         IDE_FAILRE ë©”ëª¨ë¦¬ í•´ì œ ì‹¤íŒ¨ì‹œ
  */
 IDE_RC iddTRBTree::freeAllNodes(iddTRBTree::node* aNode)
 {
     if(aNode != NULL)
     {
-        /* BUGBUG iterationÀ¸·Î ¹Ù²Ü ¹æ¹ıÀ» »ı°¢ÇØº¼°Í */
+        /* BUGBUG iterationìœ¼ë¡œ ë°”ê¿€ ë°©ë²•ì„ ìƒê°í•´ë³¼ê²ƒ */
         IDE_TEST( freeAllNodes(aNode->mLeft) != IDE_SUCCESS );
         IDE_TEST( freeAllNodes(aNode->mRight) != IDE_SUCCESS );
         IDE_TEST( freeNode(aNode) != IDE_SUCCESS );
@@ -945,10 +945,10 @@ IDE_RC iddTRBTree::freeAllNodes(iddTRBTree::node* aNode)
 }
 
 /**
- * aOldNode¸¦ ¶¼¾î³»°í ±× À§Ä¡¿¡ aNewNode¸¦ ³Ö´Â´Ù
+ * aOldNodeë¥¼ ë–¼ì–´ë‚´ê³  ê·¸ ìœ„ì¹˜ì— aNewNodeë¥¼ ë„£ëŠ”ë‹¤
  *
- * @param aOldNode : »èÁ¦ÇÒ ³ëµå.
- * @param aNewNode : ½Å±Ô ³ëµå.
+ * @param aOldNode : ì‚­ì œí•  ë…¸ë“œ.
+ * @param aNewNode : ì‹ ê·œ ë…¸ë“œ.
  */
 void iddTRBTree::unlinkNode(const iddTRBTree::node* aOldNode,
                            iddTRBTree::node*       aNewNode)
@@ -1002,12 +1002,12 @@ void iddTRBTree::unlinkNode(const iddTRBTree::node* aOldNode,
 }
 
 /**
- * ³ëµå ´ëÃ¼
- * aSrcNodeÀÇ Key¿Í Data¸¦ aDestNode¿¡ µ¤¾î¾´´Ù
- * ÀÌ ¶§ aSrcNodeÀÇ »ö±òÀº µ¤¾î¾º¾îÁöÁö ¾Ê´Â´Ù
+ * ë…¸ë“œ ëŒ€ì²´
+ * aSrcNodeì˜ Keyì™€ Dataë¥¼ aDestNodeì— ë®ì–´ì“´ë‹¤
+ * ì´ ë•Œ aSrcNodeì˜ ìƒ‰ê¹”ì€ ë®ì–´ì”Œì–´ì§€ì§€ ì•ŠëŠ”ë‹¤
  *
- * @param aDestNode : ´ë»ó ³ëµå
- * @param aSrcNode : ¿øº» ³ëµå
+ * @param aDestNode : ëŒ€ìƒ ë…¸ë“œ
+ * @param aSrcNode : ì›ë³¸ ë…¸ë“œ
  */
 void iddTRBTree::replaceNode(iddTRBTree::node* aDestNode,
                             iddTRBTree::node* aSrcNode)
@@ -1020,11 +1020,11 @@ void iddTRBTree::replaceNode(iddTRBTree::node* aDestNode,
 }
 
 /**
- * ³ëµå¸¦ »èÁ¦ÇÑ ÈÄ ¹ß»ıÇÑ ºÒ±ÕÇüÀ» ÇØ¼ÒÇÑ´Ù : case 1
- * aNode°¡ ·çÆ®ÀÌ¸é ±×³É ±î¸Ä°Ô Ä¥ÇÏ°í ³¡
- * aNode°¡ ·çÆ®°¡ ¾Æ´Ï¸é case 2·Î ÁøÇàÇÑ´Ù.
+ * ë…¸ë“œë¥¼ ì‚­ì œí•œ í›„ ë°œìƒí•œ ë¶ˆê· í˜•ì„ í•´ì†Œí•œë‹¤ : case 1
+ * aNodeê°€ ë£¨íŠ¸ì´ë©´ ê·¸ëƒ¥ ê¹Œë§£ê²Œ ì¹ í•˜ê³  ë
+ * aNodeê°€ ë£¨íŠ¸ê°€ ì•„ë‹ˆë©´ case 2ë¡œ ì§„í–‰í•œë‹¤.
  *
- * @param aNode : ±ÕÇüÀ» ÀâÀ» ³ëµå.
+ * @param aNode : ê· í˜•ì„ ì¡ì„ ë…¸ë“œ.
  */
 void iddTRBTree::adjustRemove(iddTRBTree::node* aNode)
 {
@@ -1046,10 +1046,10 @@ void iddTRBTree::adjustRemove(iddTRBTree::node* aNode)
 }
 
 /**
- * ³ëµå¸¦ »èÁ¦ÇÑ ÈÄ ¹ß»ıÇÑ ºÒ±ÕÇüÀ» ÇØ¼ÒÇÑ´Ù : case 2
- * ÀÚ¼¼ÇÑ ¼³¸íÀº ¾Ë°í¸®Áò ±³°ú¼­¸¦ ÂüÁ¶ÇÏ¼¼¿ä
+ * ë…¸ë“œë¥¼ ì‚­ì œí•œ í›„ ë°œìƒí•œ ë¶ˆê· í˜•ì„ í•´ì†Œí•œë‹¤ : case 2
+ * ìì„¸í•œ ì„¤ëª…ì€ ì•Œê³ ë¦¬ì¦˜ êµê³¼ì„œë¥¼ ì°¸ì¡°í•˜ì„¸ìš”
  *
- * @param aNode : ±ÕÇüÀ» ÀâÀ» ³ëµå.
+ * @param aNode : ê· í˜•ì„ ì¡ì„ ë…¸ë“œ.
  */
 void iddTRBTree::adjustRemoveCases(iddTRBTree::node* aNode)
 {
@@ -1160,11 +1160,11 @@ void iddTRBTree::adjustRemoveCases(iddTRBTree::node* aNode)
 }
 
 /**
- * aNodeÀÇ successor¸¦ Ã£´Â´Ù
- * successor´Â aNodeÀÇ ¿À¸¥ÂÊ ÀÚ½ÄÀÇ °¡Àå ¿ŞÂÊ ÈÄ¼ÕÀÌ´Ù
+ * aNodeì˜ successorë¥¼ ì°¾ëŠ”ë‹¤
+ * successorëŠ” aNodeì˜ ì˜¤ë¥¸ìª½ ìì‹ì˜ ê°€ì¥ ì™¼ìª½ í›„ì†ì´ë‹¤
  *
- * @param aNode : Ã£À» ³ëµå
- * @return successor ³ëµå ¾øÀ¸¸é NULLÀ» ¸®ÅÏÇÑ´Ù
+ * @param aNode : ì°¾ì„ ë…¸ë“œ
+ * @return successor ë…¸ë“œ ì—†ìœ¼ë©´ NULLì„ ë¦¬í„´í•œë‹¤
  */
 iddTRBTree::node* iddTRBTree::findSuccessor(const iddTRBTree::node* aNode) const
 {
@@ -1249,9 +1249,9 @@ SInt iddTRBTree::validate() const
 #endif
 
 /**
- * ÇöÀç RBTree ÀÎ½ºÅÏ½ºÀÇ Åë°èÁ¤º¸ ¼öÁı
+ * í˜„ì¬ RBTree ì¸ìŠ¤í„´ìŠ¤ì˜ í†µê³„ì •ë³´ ìˆ˜ì§‘
  *
- * @param aStat : Åë°èÁ¤º¸ ¼öÁı¿ë ±¸Á¶Ã¼
+ * @param aStat : í†µê³„ì •ë³´ ìˆ˜ì§‘ìš© êµ¬ì¡°ì²´
  */
 void iddTRBTree::fillStat(iddRBHashStat* aStat)
 {
@@ -1263,18 +1263,18 @@ void iddTRBTree::fillStat(iddRBHashStat* aStat)
 }
 
 /**
- * µ¿½Ã¼º Á¦¾î ±â´ÉÀÌ ÀÖ´Â Red-Black Tree¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+ * ë™ì‹œì„± ì œì–´ ê¸°ëŠ¥ì´ ìˆëŠ” Red-Black Treeë¥¼ ì´ˆê¸°í™”í•œë‹¤.
  *
- * @param aIndex : ³»ºÎÀûÀ¸·Î »ç¿ëÇÒ ¸Ş¸ğ¸® ÇÒ´ç ÀÎµ¦½º
- * @param aKeyLength : Å° Å©±â(bytes)
- * @param aCompFunc : ºñ±³¿ë ÇÔ¼ö.
- *                    SInt(const void* aKey1, const void* aKey2) ÇüÅÂÀÌ¸ç
- *                    aKey1 >  aKey2ÀÌ¸é 1 ÀÌ»óÀ»,
- *                    aKey1 == aKey2ÀÌ¸é 0 À»
- *                    aKey1 < aKey2ÀÌ¸é -1 ÀÌÇÏ¸¦ ¸®ÅÏÇØ¾ß ÇÑ´Ù.
- * @param aUseLatch : ·¡Ä¡ »ç¿ë ¿©ºÎ(ID_TRUE by default)
- * @param aLatchType : ·¡Ä¡ Á¾·ù. ÁöÁ¤ÇÏÁö ¾ÊÀ¸¸é LATCH_TYPE
- *                     ÇÁ·ÎÆÛÆ¼¸¦ µû¸¥´Ù.
+ * @param aIndex : ë‚´ë¶€ì ìœ¼ë¡œ ì‚¬ìš©í•  ë©”ëª¨ë¦¬ í• ë‹¹ ì¸ë±ìŠ¤
+ * @param aKeyLength : í‚¤ í¬ê¸°(bytes)
+ * @param aCompFunc : ë¹„êµìš© í•¨ìˆ˜.
+ *                    SInt(const void* aKey1, const void* aKey2) í˜•íƒœì´ë©°
+ *                    aKey1 >  aKey2ì´ë©´ 1 ì´ìƒì„,
+ *                    aKey1 == aKey2ì´ë©´ 0 ì„
+ *                    aKey1 < aKey2ì´ë©´ -1 ì´í•˜ë¥¼ ë¦¬í„´í•´ì•¼ í•œë‹¤.
+ * @param aUseLatch : ë˜ì¹˜ ì‚¬ìš© ì—¬ë¶€(ID_TRUE by default)
+ * @param aLatchType : ë˜ì¹˜ ì¢…ë¥˜. ì§€ì •í•˜ì§€ ì•Šìœ¼ë©´ LATCH_TYPE
+ *                     í”„ë¡œí¼í‹°ë¥¼ ë”°ë¥¸ë‹¤.
  * @return IDE_SUCCESS
  *         IDE_FAILURE
  */
@@ -1312,7 +1312,7 @@ IDE_RC iddTRBLatchTree::initialize(const iduMemoryClientIndex    aIndex,
 }
 
 /**
- * °øÀ¯ ¶ô È¹µæ
+ * ê³µìœ  ë½ íšë“
  * @return IDE_SUCCESS
  *         IDE_FAILURE
  */
@@ -1330,7 +1330,7 @@ IDE_RC iddTRBLatchTree::lockRead(void)
 }
 
 /**
- * ¹èÁ¦ ¶ô È¹µæ
+ * ë°°ì œ ë½ íšë“
  * @return IDE_SUCCESS
  *         IDE_FAILURE
  */
@@ -1348,7 +1348,7 @@ IDE_RC iddTRBLatchTree::lockWrite(void)
 }
 
 /**
- * ¶ô ÇØÁ¦
+ * ë½ í•´ì œ
  * @return IDE_SUCCESS
  *         IDE_FAILURE
  */
@@ -1366,11 +1366,11 @@ IDE_RC iddTRBLatchTree::unlock(void)
 }
 
 /**
- * ¹èÁ¦ ¶ôÀ» È¹µæÇÏ°í Å°/µ¥ÀÌÅÍ¸¦ Ãß°¡ÇÑ´Ù
- * @param aKey : Å°
- * @param aData : °ªÀ» Áö´Ï°í ÀÖ´Â Æ÷ÀÎÅÍ
+ * ë°°ì œ ë½ì„ íšë“í•˜ê³  í‚¤/ë°ì´í„°ë¥¼ ì¶”ê°€í•œë‹¤
+ * @param aKey : í‚¤
+ * @param aData : ê°’ì„ ì§€ë‹ˆê³  ìˆëŠ” í¬ì¸í„°
  * @return IDE_SUCCESS
- *         IDE_FAILURE Áßº¹ °ªÀÌ ÀÖ°Å³ª ¶ô È¹µæ, ¸Ş¸ğ¸® ÇÒ´ç¿¡ ½ÇÆĞÇßÀ» ¶§
+ *         IDE_FAILURE ì¤‘ë³µ ê°’ì´ ìˆê±°ë‚˜ ë½ íšë“, ë©”ëª¨ë¦¬ í• ë‹¹ì— ì‹¤íŒ¨í–ˆì„ ë•Œ
  */
 IDE_RC iddTRBLatchTree::insert(const void* aKey, void* aData)
 {
@@ -1391,11 +1391,11 @@ IDE_RC iddTRBLatchTree::insert(const void* aKey, void* aData)
 }
 
 /**
- * °øÀ¯ ¶ôÀ» È¹µæÇÏ°í Å°/µ¥ÀÌÅÍ¸¦ °Ë»öÇÑ´Ù
- * @param aKey : Å°
- * @param aData : Ã£¾Æ³½ °ªÀ» ÀúÀåÇÒ Æ÷ÀÎÅÍ
+ * ê³µìœ  ë½ì„ íšë“í•˜ê³  í‚¤/ë°ì´í„°ë¥¼ ê²€ìƒ‰í•œë‹¤
+ * @param aKey : í‚¤
+ * @param aData : ì°¾ì•„ë‚¸ ê°’ì„ ì €ì¥í•  í¬ì¸í„°
  * @return IDE_SUCCESS
- *         IDE_FAILURE Áßº¹ °ªÀÌ ÀÖ°Å³ª ¶ô È¹µæ, ¸Ş¸ğ¸® ÇÒ´ç¿¡ ½ÇÆĞÇßÀ» ¶§
+ *         IDE_FAILURE ì¤‘ë³µ ê°’ì´ ìˆê±°ë‚˜ ë½ íšë“, ë©”ëª¨ë¦¬ í• ë‹¹ì— ì‹¤íŒ¨í–ˆì„ ë•Œ
  */
 IDE_RC iddTRBLatchTree::search(const void* aKey, void** aData)
 {
@@ -1410,14 +1410,14 @@ IDE_RC iddTRBLatchTree::search(const void* aKey, void** aData)
 }
 
 /**
- * ¹èÁ¦ ¶ôÀ» È¹µæÇÏ°í aKey¿¡ ÇØ´çÇÏ´Â µ¥ÀÌÅÍ¸¦ aNewData·Î ´ëÃ¼ÇÑ´Ù
- * °ú°ÅÀÇ µ¥ÀÌÅÍ´Â aOldData¿¡ ½Ç·Á³ª¿Â´Ù
+ * ë°°ì œ ë½ì„ íšë“í•˜ê³  aKeyì— í•´ë‹¹í•˜ëŠ” ë°ì´í„°ë¥¼ aNewDataë¡œ ëŒ€ì²´í•œë‹¤
+ * ê³¼ê±°ì˜ ë°ì´í„°ëŠ” aOldDataì— ì‹¤ë ¤ë‚˜ì˜¨ë‹¤
  *
- * @param aKey : Å°
- * @param aNewData : »õ °ª
- * @param aOldData : °ú°Å µ¥ÀÌÅÍ¸¦ ÀúÀåÇÒ Æ÷ÀÎÅÍ. NULLÀÌ ¿Ã ¼ö ÀÖ´Ù.
- * @return IDE_SUCCESS °ªÀ» Ã£¾ÒÀ» ¶§
- *         IDE_FAILURE °ªÀÌ ¾øÀ» ¶§
+ * @param aKey : í‚¤
+ * @param aNewData : ìƒˆ ê°’
+ * @param aOldData : ê³¼ê±° ë°ì´í„°ë¥¼ ì €ì¥í•  í¬ì¸í„°. NULLì´ ì˜¬ ìˆ˜ ìˆë‹¤.
+ * @return IDE_SUCCESS ê°’ì„ ì°¾ì•˜ì„ ë•Œ
+ *         IDE_FAILURE ê°’ì´ ì—†ì„ ë•Œ
  */
 IDE_RC iddTRBLatchTree::update(const void* aKey, void* aNewData, void** aOldData)
 {
@@ -1437,14 +1437,14 @@ IDE_RC iddTRBLatchTree::update(const void* aKey, void* aNewData, void** aOldData
 }
 
 /**
- * ¹èÁ¦ ¶ôÀ» È¹µæÇÏ°í aKey¿¡ ÇØ´çÇÏ´Â Å°/µ¥ÀÌÅÍ¸¦ Á¦°ÅÇÑ´Ù
- * °ú°ÅÀÇ µ¥ÀÌÅÍ´Â aOldData¿¡ ½Ç·Á³ª¿Â´Ù
+ * ë°°ì œ ë½ì„ íšë“í•˜ê³  aKeyì— í•´ë‹¹í•˜ëŠ” í‚¤/ë°ì´í„°ë¥¼ ì œê±°í•œë‹¤
+ * ê³¼ê±°ì˜ ë°ì´í„°ëŠ” aOldDataì— ì‹¤ë ¤ë‚˜ì˜¨ë‹¤
  *
- * @param aKey : Å°
- * @param aNewData : »õ °ª
- * @param aOldData : °ú°Å µ¥ÀÌÅÍ¸¦ ÀúÀåÇÒ Æ÷ÀÎÅÍ. NULLÀÌ ¿Ã ¼ö ÀÖ´Ù.
- * @return IDE_SUCCESS °ªÀ» Ã£¾ÒÀ» ¶§
- *         IDE_FAILURE °ªÀÌ ¾øÀ» ¶§
+ * @param aKey : í‚¤
+ * @param aNewData : ìƒˆ ê°’
+ * @param aOldData : ê³¼ê±° ë°ì´í„°ë¥¼ ì €ì¥í•  í¬ì¸í„°. NULLì´ ì˜¬ ìˆ˜ ìˆë‹¤.
+ * @return IDE_SUCCESS ê°’ì„ ì°¾ì•˜ì„ ë•Œ
+ *         IDE_FAILURE ê°’ì´ ì—†ì„ ë•Œ
  */
 IDE_RC iddTRBLatchTree::remove(const void* aKey, void** aData)
 {

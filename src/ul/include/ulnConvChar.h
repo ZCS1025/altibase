@@ -24,9 +24,9 @@ acp_uint32_t ulnConvDumpAsChar(acp_uint8_t  *aDstBuffer,
 
 #define ULN_CONV_BIGINT_BUFFER_MAX 24
 
-/* PROJ-2160 CM Å¸ÀÔÁ¦°Å
-   acpSnprintf ÀÇ Integer -> char ÀÇ Çüº¯È¯Àº ´À¸®´Ù.
-   º°µµÀÇ ÇÔ¼ö¸¦ ÀÛ¼ºÇÏ¿© Çüº¯È¯ ¼Óµµ¸¦ Çâ»ó½ÃÅ²´Ù. */
+/* PROJ-2160 CM íƒ€ìž…ì œê±°
+   acpSnprintf ì˜ Integer -> char ì˜ í˜•ë³€í™˜ì€ ëŠë¦¬ë‹¤.
+   ë³„ë„ì˜ í•¨ìˆ˜ë¥¼ ìž‘ì„±í•˜ì—¬ í˜•ë³€í™˜ ì†ë„ë¥¼ í–¥ìƒì‹œí‚¨ë‹¤. */
 ACP_INLINE acp_char_t* ulnItoA (acp_sint64_t aValue, acp_char_t *aBuffer)
 {
     acp_sint32_t  sNegative = 0;

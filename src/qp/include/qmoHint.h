@@ -20,11 +20,11 @@
  *
  * Description :
  *
- *    [Hints ¸¦ À§ÇÑ Á¤ÀÇ]
+ *    [Hints ë¥¼ ìœ„í•œ ì •ì˜]
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  ***********************************************************************/
 
@@ -32,10 +32,10 @@
 #define  _O_QMO_HINT_H_ 1
 
 //-------------------------------------------
-// [Hints : Optimization ±ÔÄ¢]
+// [Hints : Optimization ê·œì¹™]
 //     - COST
-//        : Hint°¡ ÁöÁ¤µÇÁö ¾Ê´Â °æ¿ì¿¡´Â
-//          Cost Based OptimizationÀ» ÁöÁ¤ÇÑ´Ù.
+//        : Hintê°€ ì§€ì •ë˜ì§€ ì•ŠëŠ” ê²½ìš°ì—ëŠ”
+//          Cost Based Optimizationì„ ì§€ì •í•œë‹¤.
 //     - RULE
 //-------------------------------------------
 
@@ -48,12 +48,12 @@ typedef enum qmoOptGoalType
 } qmoOptGoalType;
 
 //-------------------------------------------
-// [Hints : WHEREÀıÀÇ Normalization Form]
-//     - NNF : Hint°¡ ÁöÁ¤µÇÁö ¾ÊÀº °æ¿ì¿¡´Â
-//             Not Normal TypeÀ¸·Î Cost¸¦ ÅëÇÏ¿©
-//             CNF ¶Ç´Â DNF normal formÀ» °áÁ¤ÇÑ´Ù.
-//     - CNF : Conjunctive normal formÀ¸·Î Á¤±ÔÈ­
-//     - DNF : Disjunctive normal formÀ¸·Î Á¤±ÔÈ­
+// [Hints : WHEREì ˆì˜ Normalization Form]
+//     - NNF : Hintê°€ ì§€ì •ë˜ì§€ ì•Šì€ ê²½ìš°ì—ëŠ”
+//             Not Normal Typeìœ¼ë¡œ Costë¥¼ í†µí•˜ì—¬
+//             CNF ë˜ëŠ” DNF normal formì„ ê²°ì •í•œë‹¤.
+//     - CNF : Conjunctive normal formìœ¼ë¡œ ì •ê·œí™”
+//     - DNF : Disjunctive normal formìœ¼ë¡œ ì •ê·œí™”
 //-------------------------------------------
 
 typedef enum qmoNormalType
@@ -65,9 +65,9 @@ typedef enum qmoNormalType
 } qmosNormalType;
 
 //-------------------------------------------
-// [Hints : ÁúÀÇ ¼öÇà¹æ½Ä ÁöÁ¤]
-//      - TUPLESET : tuple set Ã³¸®¹æ½Ä
-//      - RECORD   : push projectionÀ» Àû¿ëÇÑ ·¹ÄÚµåÀúÀå¹æ½Ä
+// [Hints : ì§ˆì˜ ìˆ˜í–‰ë°©ì‹ ì§€ì •]
+//      - TUPLESET : tuple set ì²˜ë¦¬ë°©ì‹
+//      - RECORD   : push projectionì„ ì ìš©í•œ ë ˆì½”ë“œì €ì¥ë°©ì‹
 //-------------------------------------------
 
 typedef enum qmoMaterializeType
@@ -78,9 +78,9 @@ typedef enum qmoMaterializeType
 } qmoProcesType;
 
 //-------------------------------------------
-// [Hints : Join Order HintsÀÇ Á¾·ù]
-//      - OPTIMIZED : Join Order Hint°¡ ÁöÁ¤µÇÁö ¾ÊÀº °æ¿ì
-//      - ORDERED : Join Order Hint°¡ ÁöÁ¤µÈ °æ¿ì
+// [Hints : Join Order Hintsì˜ ì¢…ë¥˜]
+//      - OPTIMIZED : Join Order Hintê°€ ì§€ì •ë˜ì§€ ì•Šì€ ê²½ìš°
+//      - ORDERED : Join Order Hintê°€ ì§€ì •ëœ ê²½ìš°
 //-------------------------------------------
 
 typedef enum qmoJoinOrderType
@@ -90,10 +90,10 @@ typedef enum qmoJoinOrderType
 } qmoJoinOrderType;
 
 //-------------------------------------------
-// [Hints : Subquery unnesting hintÀÇ Á¾·ù]
-//      - UNDEFINED : Optimizer°¡ ÆÇ´Ü(ÇöÀç´Â Ç×»ó ¼öÇà)
-//      - UNNEST    : °¡´ÉÇÑ °æ¿ì Ç×»ó unnesting ¼öÇà
-//      - NO_UNNEST : Unnesting ¼öÇàÇÏÁö ¾ÊÀ½
+// [Hints : Subquery unnesting hintì˜ ì¢…ë¥˜]
+//      - UNDEFINED : Optimizerê°€ íŒë‹¨(í˜„ì¬ëŠ” í•­ìƒ ìˆ˜í–‰)
+//      - UNNEST    : ê°€ëŠ¥í•œ ê²½ìš° í•­ìƒ unnesting ìˆ˜í–‰
+//      - NO_UNNEST : Unnesting ìˆ˜í–‰í•˜ì§€ ì•ŠìŒ
 //-------------------------------------------
 
 typedef enum qmoSubqueryUnnestType
@@ -129,27 +129,27 @@ typedef enum qmoAntiJoinMethod
 } qmoAntiJoinMethod;
 
 //---------------------------------------------------------
-// [Hints : Join MethodÀÇ Á¾·ù]
+// [Hints : Join Methodì˜ ì¢…ë¥˜]
 //
-// »ç¿ëÀÚ Hint : »ç¿ëÀÚ°¡ ¸í½ÃÀûÀ¸·Î Join Method¸¦
-//               ÁöÁ¤ÇÒ ¼ö ÀÖ´Â Hint·Î ´ÙÀ½ ³×°¡Áö·Î ³ª´¶´Ù.
+// ì‚¬ìš©ì Hint : ì‚¬ìš©ìê°€ ëª…ì‹œì ìœ¼ë¡œ Join Methodë¥¼
+//               ì§€ì •í•  ìˆ˜ ìˆëŠ” Hintë¡œ ë‹¤ìŒ ë„¤ê°€ì§€ë¡œ ë‚˜ë‰œë‹¤.
 //    - Nested Loop Join
 //    - Hash-based Join
 //    - Sort-based Join
 //    - Merge Join
 //
-// ³»ºÎ Hint : ³»ºÎÀûÀ¸·Î ±â´ÉÀÌ Á¤»óÀûÀ¸·Î ¼öÇàÇÏ´ÂÁö, ¶Ç´Â
-//             ±â´É¿¡ µû¸¥ ¼º´É Â÷ÀÌ´Â ¾î¶°ÇÑÁö ¾Ë¾Æº¸±â À§ÇØ
-//             Ãß°¡ÇÑ HintÀÌ´Ù.
-//    - Nested Loop Join °è¿­ÀÇ ³»ºÎ Hint
+// ë‚´ë¶€ Hint : ë‚´ë¶€ì ìœ¼ë¡œ ê¸°ëŠ¥ì´ ì •ìƒì ìœ¼ë¡œ ìˆ˜í–‰í•˜ëŠ”ì§€, ë˜ëŠ”
+//             ê¸°ëŠ¥ì— ë”°ë¥¸ ì„±ëŠ¥ ì°¨ì´ëŠ” ì–´ë– í•œì§€ ì•Œì•„ë³´ê¸° ìœ„í•´
+//             ì¶”ê°€í•œ Hintì´ë‹¤.
+//    - Nested Loop Join ê³„ì—´ì˜ ë‚´ë¶€ Hint
 //      Full Nested Loop Join
 //      Full Store Nested Loop Join
 //      Index Nested Loop Jon
 //      Anti Outer Join
-//    - Sort-based Join °è¿­ÀÇ ³»ºÎ Hint
+//    - Sort-based Join ê³„ì—´ì˜ ë‚´ë¶€ Hint
 //      One Pass Sort Join
 //      Two Pass Sort Join
-//    - Hash-based Join °è¿­ÀÇ ³»ºÎ Hint
+//    - Hash-based Join ê³„ì—´ì˜ ë‚´ë¶€ Hint
 //      One Pass Hash Join
 //      Two Pass Hash Join
 //------------------------------------------------------------
@@ -157,7 +157,7 @@ typedef enum qmoAntiJoinMethod
 #define QMO_JOIN_METHOD_MASK                (0x0000FFFF)
 #define QMO_JOIN_METHOD_NONE                (0x00000000)
 
-// Nested Loop Join °è¿­ÀÇ Hints
+// Nested Loop Join ê³„ì—´ì˜ Hints
 // Nested Loop
 //    SQL: USE_NL( table_name, table_name )
 // Full Nested Loop Join :
@@ -177,7 +177,7 @@ typedef enum qmoAntiJoinMethod
 #define QMO_JOIN_METHOD_ANTI                (0x00000008)
 #define QMO_JOIN_METHOD_INVERSE_INDEX       (0x00000010)
 
-// Hash-based Join °è¿­ÀÇ Hints
+// Hash-based Join ê³„ì—´ì˜ Hints
 // Hash-based
 //    SQL: USE_HASH( table_name, table_name )
 // One Pass Hash Join :
@@ -191,7 +191,7 @@ typedef enum qmoAntiJoinMethod
 #define QMO_JOIN_METHOD_TWO_PASS_HASH       (0x00000040)
 #define QMO_JOIN_METHOD_INVERSE_HASH        (0x00000080)
 
-// Sort-based Join °è¿­ÀÇ Hints
+// Sort-based Join ê³„ì—´ì˜ Hints
 // Sort- based :
 //     SQL: USE_SORT( table_name, table_name )
 // One Pass Sort Join :
@@ -218,15 +218,15 @@ typedef enum qmoAntiJoinMethod
       | QMO_JOIN_METHOD_INVERSE_SORT )
 
 //-------------------------------------------
-// [Hints : Table Access ¹æ¹ı]
-// Å×ÀÌºí Á¢±Ù ¹æ¹ıÀ» °áÁ¤ÇÏ´Â Hint ÀÌ´Ù.
-//    - OPTIMIZED SCAN : Table Access Hint°¡ ÁÖ¾îÁöÁö ¾ÊÀº °æ¿ì,
-//                       optimizer°¡ Table Access Cost¿¡ µû¶ó ¼±ÅÃ
-//    - FULL SCAN : ÀÎµ¦½º »ç¿ë °¡´ÉÇÏ´õ¶ó°í Å×ÀÌºí ÀüÃ¼¸¦ °Ë»ö
-//    - INDEX     : ³ª¿­µÈ ÀÎµ¦½º·Î ÇØ´ç Å×ÀÌºí °Ë»ö
-//    - INDEX ASC : ³ª¿­µÈ ÀÎµ¦½º·Î ÇØ´ç Å×ÀÌºíÀ» ¿À¸§Â÷¼øÀ¸·Î¸¸ °Ë»ö
-//    - INDEX DESC: ³ª¿­µÈ ÀÎµ¦½º·Î ÇØ´ç Å×ÀÌºíÀ» ³»¸²Â÷¼øÀ¸·Î¸¸ °Ë»ö
-//    - NO INDEX  : °Ë»ö ½Ã¿¡ ³ª¿­µÈ ÀÎµ¦½º¸¦ »ç¿ëÇÏÁö ¾ÊÀ½
+// [Hints : Table Access ë°©ë²•]
+// í…Œì´ë¸” ì ‘ê·¼ ë°©ë²•ì„ ê²°ì •í•˜ëŠ” Hint ì´ë‹¤.
+//    - OPTIMIZED SCAN : Table Access Hintê°€ ì£¼ì–´ì§€ì§€ ì•Šì€ ê²½ìš°,
+//                       optimizerê°€ Table Access Costì— ë”°ë¼ ì„ íƒ
+//    - FULL SCAN : ì¸ë±ìŠ¤ ì‚¬ìš© ê°€ëŠ¥í•˜ë”ë¼ê³  í…Œì´ë¸” ì „ì²´ë¥¼ ê²€ìƒ‰
+//    - INDEX     : ë‚˜ì—´ëœ ì¸ë±ìŠ¤ë¡œ í•´ë‹¹ í…Œì´ë¸” ê²€ìƒ‰
+//    - INDEX ASC : ë‚˜ì—´ëœ ì¸ë±ìŠ¤ë¡œ í•´ë‹¹ í…Œì´ë¸”ì„ ì˜¤ë¦„ì°¨ìˆœìœ¼ë¡œë§Œ ê²€ìƒ‰
+//    - INDEX DESC: ë‚˜ì—´ëœ ì¸ë±ìŠ¤ë¡œ í•´ë‹¹ í…Œì´ë¸”ì„ ë‚´ë¦¼ì°¨ìˆœìœ¼ë¡œë§Œ ê²€ìƒ‰
+//    - NO INDEX  : ê²€ìƒ‰ ì‹œì— ë‚˜ì—´ëœ ì¸ë±ìŠ¤ë¥¼ ì‚¬ìš©í•˜ì§€ ì•ŠìŒ
 //-------------------------------------------
 
 typedef enum qmoTableAccessType
@@ -240,13 +240,13 @@ typedef enum qmoTableAccessType
 } qmoTableAccessType;
 
 //-------------------------------------------
-// [Hint : Áß°£ °á°úÀÇ Á¾·ù]
-// Áß°£ °á°ú°¡ »ı¼ºµÇ´Â °æ¿ì, Áß°£ °á°ú¸¦ disk temp table¿¡ ÀúÀåÇÒ Áö
-// memory temp table ¿¡ ÀúÀåÇÒ Áö °áÁ¤ÇÏ´Â Hint
-//    - NOT DEFIENED : Áß°£ °á°ú Hint°¡ ÁÖ¾îÁöÁö ¾ÊÀº °æ¿ì
-//    - MEMORY       : Áß°£ °á°ú°¡ »ı¼ºµÇ¸é, Memory Temp Table¿¡ ÀúÀå
+// [Hint : ì¤‘ê°„ ê²°ê³¼ì˜ ì¢…ë¥˜]
+// ì¤‘ê°„ ê²°ê³¼ê°€ ìƒì„±ë˜ëŠ” ê²½ìš°, ì¤‘ê°„ ê²°ê³¼ë¥¼ disk temp tableì— ì €ì¥í•  ì§€
+// memory temp table ì— ì €ì¥í•  ì§€ ê²°ì •í•˜ëŠ” Hint
+//    - NOT DEFIENED : ì¤‘ê°„ ê²°ê³¼ Hintê°€ ì£¼ì–´ì§€ì§€ ì•Šì€ ê²½ìš°
+//    - MEMORY       : ì¤‘ê°„ ê²°ê³¼ê°€ ìƒì„±ë˜ë©´, Memory Temp Tableì— ì €ì¥
 //        SQL : TEMP_TBS_MEMORY
-//    - DISK         : Áß°£ °á°ú°¡ »ı¼ºµÇ¸é, Disk Temp Table¿¡ ÀúÀå
+//    - DISK         : ì¤‘ê°„ ê²°ê³¼ê°€ ìƒì„±ë˜ë©´, Disk Temp Tableì— ì €ì¥
 //        SQL : TEMP_TBS_DISK
 //-------------------------------------------
 
@@ -258,13 +258,13 @@ typedef enum qmoInterResultType
 } qmoInterResultType;
 
 //-------------------------------------------
-// [Hint : Grouping Method Á¾·ù]
-// GroupingÀ» Sort-based·Î ¼öÇàÇÒ Áö, Hash-based·Î ¼öÇàÇÒ Áö¸¦
-// °áÁ¤ÇÒ ¼ö ÀÖ´Â ³»ºÎ Hint
-//    - NOT DEFINED : Hint°¡ ÁÖ¾îÁöÁö ¾ÊÀº °æ¿ì
-//    - HASH        : Hash-based·Î GroupingÀ» ¼öÇà
+// [Hint : Grouping Method ì¢…ë¥˜]
+// Groupingì„ Sort-basedë¡œ ìˆ˜í–‰í•  ì§€, Hash-basedë¡œ ìˆ˜í–‰í•  ì§€ë¥¼
+// ê²°ì •í•  ìˆ˜ ìˆëŠ” ë‚´ë¶€ Hint
+//    - NOT DEFINED : Hintê°€ ì£¼ì–´ì§€ì§€ ì•Šì€ ê²½ìš°
+//    - HASH        : Hash-basedë¡œ Groupingì„ ìˆ˜í–‰
 //        SQL : GROUP_HASH
-//    - SORT        : Sort-based·Î GroupingÀ» ¼öÇà
+//    - SORT        : Sort-basedë¡œ Groupingì„ ìˆ˜í–‰
 //        SQL : GROUP_SORT
 //-------------------------------------------
 
@@ -276,13 +276,13 @@ typedef enum qmoGroupMethodType
 }qmoGroupMethodType;
 
 //-------------------------------------------
-// [Hint : Distinction Á¾·ù]
-// DistinctionÀ» Sort-based·Î ¼öÇàÇÒ Áö, Hash-based·Î ¼öÇàÇÒ Áö¸¦
-// °áÁ¤ÇÒ ¼ö ÀÖ´Â ³»ºÎ Hint
-//    - NOT DEFINED : Hint°¡ ÁÖ¾îÁöÁö ¾ÊÀº °æ¿ì
-//    - HASH        : Hash-based·Î DistinctionÀ» ¼öÇà
+// [Hint : Distinction ì¢…ë¥˜]
+// Distinctionì„ Sort-basedë¡œ ìˆ˜í–‰í•  ì§€, Hash-basedë¡œ ìˆ˜í–‰í•  ì§€ë¥¼
+// ê²°ì •í•  ìˆ˜ ìˆëŠ” ë‚´ë¶€ Hint
+//    - NOT DEFINED : Hintê°€ ì£¼ì–´ì§€ì§€ ì•Šì€ ê²½ìš°
+//    - HASH        : Hash-basedë¡œ Distinctionì„ ìˆ˜í–‰
 //        SQL : DISTINCT_HASH
-//    - SORT        : Sort-based·Î DistinctionÀ» ¼öÇà
+//    - SORT        : Sort-basedë¡œ Distinctionì„ ìˆ˜í–‰
 //        SQL : DISTINCT_SORT
 //-------------------------------------------
 
@@ -294,13 +294,13 @@ typedef enum qmoDistinctMethodType
 }qmoDistinctMethodType;
 
 //-------------------------------------------
-// [Hint : View ÃÖÀûÈ­ Á¾·ù]
-// View ÃÖÀûÈ­¸¦ View MaterializationÀ¸·Î ¼öÇàÇÒ Áö,
-// Push SelectionÀ¸·Î ¼öÇàÇÒ Áö¸¦ °áÁ¤ÇÒ ¼ö ÀÖ´Â ³»ºÎ Hint
-//    - NOT DEFINED : Hint°¡ ÁÖ¾îÁöÁö ¾ÊÀº °æ¿ì
-//    - VMTR        : View Materialization ±â¹ıÀ¸·Î View ÃÖÀûÈ­
+// [Hint : View ìµœì í™” ì¢…ë¥˜]
+// View ìµœì í™”ë¥¼ View Materializationìœ¼ë¡œ ìˆ˜í–‰í•  ì§€,
+// Push Selectionìœ¼ë¡œ ìˆ˜í–‰í•  ì§€ë¥¼ ê²°ì •í•  ìˆ˜ ìˆëŠ” ë‚´ë¶€ Hint
+//    - NOT DEFINED : Hintê°€ ì£¼ì–´ì§€ì§€ ì•Šì€ ê²½ìš°
+//    - VMTR        : View Materialization ê¸°ë²•ìœ¼ë¡œ View ìµœì í™”
 //        SQL : NO_PUSH_SELECT_VIEW
-//    - PUSH        : Push Selection ±â¹ıÀ¸·Î View ÃÖÀûÈ­
+//    - PUSH        : Push Selection ê¸°ë²•ìœ¼ë¡œ View ìµœì í™”
 //        SQL : PUSH_SELECT_VIEW
 //-------------------------------------------
 
@@ -312,21 +312,21 @@ typedef enum qmoViewOptType
     QMO_VIEW_OPT_TYPE_FORCE_VMTR,
     QMO_VIEW_OPT_TYPE_CMTR,
     // BUG-38022
-    // view¸¦ ÇÑ¹ø¸¸ »ç¿ëÇØ¼­ ÀÌÈÄ »ç¿ë¿©ºÎ¿¡ µû¶ó VMTR·Î ¹Ù²ğ ¼ö ÀÖ´Â °æ¿ì
+    // viewë¥¼ í•œë²ˆë§Œ ì‚¬ìš©í•´ì„œ ì´í›„ ì‚¬ìš©ì—¬ë¶€ì— ë”°ë¼ VMTRë¡œ ë°”ë€” ìˆ˜ ìˆëŠ” ê²½ìš°
     QMO_VIEW_OPT_TYPE_POTENTIAL_VMTR
 } qmoViewOptType;
 
 //-------------------------------------------
 // PROJ-2206
-// [Hint : View ÃÖÀûÈ­ Á¾·ù]
+// [Hint : View ìµœì í™” ì¢…ë¥˜]
 // MATERIALIZE
 // NO_MATERIALIZE
 // ex)
 // select * from (select /*+ materialize */ * from t1);
 // select * from (select /*+ no_materialize */ * from t2);
 // select /*+ no_push_select_view(v1) */ * from (select /*+ materialize */ * from t1) v1;
-// no_push_select_view(view name), push_select_view(view name)°ú º°µµ·Î
-// ÁÖ¾îÁø query set¿¡ ¿µÇâÀ» ÁÖ´Â materialize, no_materialize hint¸¦ À§ÇÑ enum Å¸ÀÔÀÌ´Ù.
+// no_push_select_view(view name), push_select_view(view name)ê³¼ ë³„ë„ë¡œ
+// ì£¼ì–´ì§„ query setì— ì˜í–¥ì„ ì£¼ëŠ” materialize, no_materialize hintë¥¼ ìœ„í•œ enum íƒ€ì…ì´ë‹¤.
 //-------------------------------------------
 typedef enum qmoViewOptMtrType
 {
@@ -337,11 +337,11 @@ typedef enum qmoViewOptMtrType
 
 //-------------------------------------------
 // PROJ-1404
-// [Hints : Transitive Predicate Generation HintsÀÇ Á¾·ù]
-// Transitive PredicateÀ» »ı¼ºÇÒ Áö¸¦ °áÁ¤ÇÒ ¼ö ÀÖ´Â Hint
-//      - ENABLE  : Hint°¡ ÁÖ¾îÁöÁö ¾ÊÀº °æ¿ì
-//                  Transitive PredicateÀ» »ı¼º
-//      - DISABLE : Transitive PredicateÀ» »ı¼ºÇÏÁö ¾ÊÀ½
+// [Hints : Transitive Predicate Generation Hintsì˜ ì¢…ë¥˜]
+// Transitive Predicateì„ ìƒì„±í•  ì§€ë¥¼ ê²°ì •í•  ìˆ˜ ìˆëŠ” Hint
+//      - ENABLE  : Hintê°€ ì£¼ì–´ì§€ì§€ ì•Šì€ ê²½ìš°
+//                  Transitive Predicateì„ ìƒì„±
+//      - DISABLE : Transitive Predicateì„ ìƒì„±í•˜ì§€ ì•ŠìŒ
 //          SQL : NO_TRANSITIVE_PRED
 //-------------------------------------------
 

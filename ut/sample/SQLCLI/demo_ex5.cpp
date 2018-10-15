@@ -160,7 +160,7 @@ SQLRETURN execute_update(SQLHDBC dbc)
                           SQL_CHAR,        /* SQL data type of the parameter : char(8)*/
                           8,               /* size of the column or expression, precision */
                           0,               /* The decimal digits, scale */
-                          id,              /* A pointer to a buffer for the parameter¡¯s data */
+                          id,              /* A pointer to a buffer for the parameterâ€™s data */
                           sizeof(id),      /* Length of the ParameterValuePtr buffer in bytes */
                           &id_ind);        /* indicator */
     if (!SQL_SUCCEEDED(rc))
@@ -258,7 +258,7 @@ SQLRETURN execute_delete(SQLHDBC dbc)
                           SQL_CHAR,        /* SQL data type of the parameter : char(8)*/
                           8,               /* size of the column or expression, precision */
                           0,               /* The decimal digits, scale */
-                          id,              /* A pointer to a buffer for the parameter¡¯s data */
+                          id,              /* A pointer to a buffer for the parameterâ€™s data */
                           sizeof(id),      /* Length of the ParameterValuePtr buffer in bytes */
                           &id_ind);        /* indicator */
     if (!SQL_SUCCEEDED(rc))

@@ -21,17 +21,17 @@
  * Description :
  *     Non Critical Path Manager
  *
- *     Critical Path ÀÌ¿ÜÀÇ ºÎºĞ¿¡ ´ëÇÑ ÃÖÀûÈ­ ¹× ±×·¡ÇÁ¸¦ »ı¼ºÇÑ´Ù.
- *     Áï, ´ÙÀ½°ú °°Àº ºÎºĞ¿¡ ´ëÇÑ ±×·¡ÇÁ ÃÖÀûÈ­¸¦ ¼öÇàÇÑ´Ù.
+ *     Critical Path ì´ì™¸ì˜ ë¶€ë¶„ì— ëŒ€í•œ ìµœì í™” ë° ê·¸ë˜í”„ë¥¼ ìƒì„±í•œë‹¤.
+ *     ì¦‰, ë‹¤ìŒê³¼ ê°™ì€ ë¶€ë¶„ì— ëŒ€í•œ ê·¸ë˜í”„ ìµœì í™”ë¥¼ ìˆ˜í–‰í•œë‹¤.
  *         - Projection Graph
  *         - Set Graph
  *         - Sorting Graph
  *         - Distinction Graph
  *         - Grouping Graph
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  **********************************************************************/
 
@@ -44,13 +44,13 @@
 #include <qmoCrtPathMgr.h>
 
 //---------------------------------------------------
-// Non Critical Path¸¦ °ü¸®ÇÏ±â À§ÇÑ ÀÚ·á ±¸Á¶
+// Non Critical Pathë¥¼ ê´€ë¦¬í•˜ê¸° ìœ„í•œ ìë£Œ êµ¬ì¡°
 //---------------------------------------------------
 
 // qmoNonCrtPath.flag
 #define QMO_NONCRT_PATH_INITIALIZE      (0x00000000)
 
-// TOPÀÏ °æ¿ì Sorting, Projection GraphµîÀ» »ı¼º
+// TOPì¼ ê²½ìš° Sorting, Projection Graphë“±ì„ ìƒì„±
 #define QMO_NONCRT_PATH_TOP_MASK        (0x00000001)
 #define QMO_NONCRT_PATH_TOP_FALSE       (0x00000000)
 #define QMO_NONCRT_PATH_TOP_TRUE        (0x00000001)
@@ -59,10 +59,10 @@ typedef struct qmoNonCrtPath
 {
     UInt                flag;
     
-    qmgGraph          * myGraph;    // non critical path±îÁö Ã³¸®µÈ °á°úgraph
-    qmsQuerySet       * myQuerySet; // ÀÚ½ÅÀÇ qmsParseTree::querySetÀ» °¡¸®Å´
+    qmgGraph          * myGraph;    // non critical pathê¹Œì§€ ì²˜ë¦¬ëœ ê²°ê³¼graph
+    qmsQuerySet       * myQuerySet; // ìì‹ ì˜ qmsParseTree::querySetì„ ê°€ë¦¬í‚´
 
-    qmoCrtPath        * crtPath;    // critical path Á¤º¸
+    qmoCrtPath        * crtPath;    // critical path ì •ë³´
     
     qmoNonCrtPath     * left;
     qmoNonCrtPath     * right;
@@ -70,30 +70,30 @@ typedef struct qmoNonCrtPath
 } qmoNonCrtPath;
 
 //---------------------------------------------------
-// Non Critical Path¸¦ °ü¸® ÇÔ¼ö
+// Non Critical Pathë¥¼ ê´€ë¦¬ í•¨ìˆ˜
 //---------------------------------------------------
 
 class qmoNonCrtPathMgr 
 {
 public:
 
-    // Non Critical Path »ı¼º ¹× ÃÊ±âÈ­
+    // Non Critical Path ìƒì„± ë° ì´ˆê¸°í™”
     static IDE_RC    init( qcStatement    * aStatement,
                            qmsQuerySet    * aQuerySet,
                            idBool           aIsTop,
                            qmoNonCrtPath ** aNonCrtPath );
     
-    // Non Critical Path¿¡ ´ëÇÑ ÃÖÀûÈ­ ¹× Graph »ı¼º
+    // Non Critical Pathì— ëŒ€í•œ ìµœì í™” ë° Graph ìƒì„±
     static IDE_RC    optimize( qcStatement    * aStatement,
                                qmoNonCrtPath  * aNonCrtPath);
     
 private:
-    // Leaf Non Critical PathÀÇ ÃÖÀûÈ­
+    // Leaf Non Critical Pathì˜ ìµœì í™”
     static IDE_RC    optimizeLeaf( qcStatement   * aStatement,
                                    qmoNonCrtPath * aNonCrtPath );
     
 
-    // Non-Leaf Non Critical PathÀÇ ÃÖÀûÈ­
+    // Non-Leaf Non Critical Pathì˜ ìµœì í™”
     static IDE_RC    optimizeNonLeaf( qcStatement   * aStatement,
                                       qmoNonCrtPath * aNonCrtPath );
 

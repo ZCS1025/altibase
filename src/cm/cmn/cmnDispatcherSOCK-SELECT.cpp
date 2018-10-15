@@ -19,7 +19,7 @@
 /* 
  * BUG-38951 Support to choice a type of CM dispatcher on run-time
  *
- * ±¸Á¶Ã¼¿Í ÇÔ¼ö¸í¿¡ suffix 'Select'¸¦ Ãß°¡.
+ * êµ¬ì¡°ì²´ì™€ í•¨ìˆ˜ëª…ì— suffix 'Select'ë¥¼ ì¶”ê°€.
  */
 
 #if !defined(CM_DISABLE_TCP) || !defined(CM_DISABLE_UNIX)
@@ -39,12 +39,12 @@ IDE_RC cmnDispatcherInitializeSOCKSelect(cmnDispatcher *aDispatcher, UInt /*aMax
     cmnDispatcherSOCKSelect *sDispatcher = (cmnDispatcherSOCKSelect *)aDispatcher;
 
     /*
-     * ¸â¹ö ÃÊ±âÈ­
+     * ë©¤ë²„ ì´ˆê¸°í™”
      */
     sDispatcher->mMaxHandle  = PDL_INVALID_SOCKET;
 
     /*
-     * fdset ÃÊ±âÈ­
+     * fdset ì´ˆê¸°í™”
      */
     FD_ZERO(&sDispatcher->mFdSet);
 
@@ -63,17 +63,17 @@ IDE_RC cmnDispatcherAddLinkSOCKSelect(cmnDispatcher *aDispatcher, cmnLink *aLink
     PDL_SOCKET               sHandle;
 
     /*
-     * DispatcherÀÇ Link List¿¡ Ãß°¡
+     * Dispatcherì˜ Link Listì— ì¶”ê°€
      */
     IDE_TEST(cmnDispatcherAddLink(aDispatcher, aLink) != IDE_SUCCESS);
 
     /*
-     * LinkÀÇ socket È¹µæ
+     * Linkì˜ socket íšë“
      */
     IDE_TEST(aLink->mOp->mGetHandle(aLink, &sHandle) != IDE_SUCCESS);
 
     /*
-     * MaxHandle ¼¼ÆÃ
+     * MaxHandle ì„¸íŒ…
      */
     if ((sDispatcher->mMaxHandle == PDL_INVALID_SOCKET) ||
         (sDispatcher->mMaxHandle < sHandle))
@@ -82,7 +82,7 @@ IDE_RC cmnDispatcherAddLinkSOCKSelect(cmnDispatcher *aDispatcher, cmnLink *aLink
     }
 
     /*
-     * FdSet¿¡ socket ¼¼ÆÃ
+     * FdSetì— socket ì„¸íŒ…
      */
     FD_SET(sHandle, &sDispatcher->mFdSet);
 
@@ -97,22 +97,22 @@ IDE_RC cmnDispatcherRemoveLinkSOCKSelect(cmnDispatcher *aDispatcher, cmnLink *aL
     PDL_SOCKET               sHandle;
 
     /*
-     * LinkÀÇ socket È¹µæ
+     * Linkì˜ socket íšë“
      */
     IDE_TEST(aLink->mOp->mGetHandle(aLink, &sHandle) != IDE_SUCCESS);
 
     /*
-     * DispatcherÀÇ Link List¿¡¼­ »èÁ¦
+     * Dispatcherì˜ Link Listì—ì„œ ì‚­ì œ
      */
     IDE_TEST(cmnDispatcherRemoveLink(aDispatcher, aLink) != IDE_SUCCESS);
 
     /*
-     * FdSet¿¡¼­ socket »èÁ¦
+     * FdSetì—ì„œ socket ì‚­ì œ
      */
     FD_CLR(sHandle, &sDispatcher->mFdSet);
 
     /*
-     * MaxHandle °è»ê
+     * MaxHandle ê³„ì‚°
      */
     if (sDispatcher->mMaxHandle == sHandle)
     {
@@ -189,8 +189,8 @@ IDE_RC cmnDispatcherDetectSOCKSelect(cmnDispatcher  *aDispatcher,
         if ( sIsDedicatedMode == ID_FALSE )
         {
             /* TASK-4324  Applying lessons learned from CPBS-CAESE to altibase
-               fd set null, max handleÀ» 0À¸·Î ³Ñ°Ü¼­
-               select system call cost¸¦ Á¶±İÀÌ¶óµµ ¾Æ²¸µÎÀÚ.
+               fd set null, max handleì„ 0ìœ¼ë¡œ ë„˜ê²¨ì„œ
+               select system call costë¥¼ ì¡°ê¸ˆì´ë¼ë„ ì•„ê»´ë‘ì.
              */
             sResult = idlOS::select(0, NULL, NULL, NULL, aTimeout);
         }
@@ -217,7 +217,7 @@ IDE_RC cmnDispatcherDetectSOCKSelect(cmnDispatcher  *aDispatcher,
     IDE_TEST_RAISE(sResult < 0, SelectError);
 
     /*
-     * Ready Count ¼¼ÆÃ
+     * Ready Count ì„¸íŒ…
      */
     if (aReadyCount != NULL)
     {
@@ -225,19 +225,19 @@ IDE_RC cmnDispatcherDetectSOCKSelect(cmnDispatcher  *aDispatcher,
     }
     
     /*
-     * Ready Link °Ë»ö
+     * Ready Link ê²€ìƒ‰
      */
     IDU_LIST_ITERATE(&aDispatcher->mLinkList, sIterator)
     {
         sLink = (cmnLink *)sIterator->mObj;
 
         /*
-         * LinkÀÇ socketÀ» È¹µæ
+         * Linkì˜ socketì„ íšë“
          */
         IDE_TEST(sLink->mOp->mGetHandle(sLink, &sHandle) != IDE_SUCCESS);
 
         /*
-         * ready °Ë»ç
+         * ready ê²€ì‚¬
          */
         if (FD_ISSET(sHandle, &sDispatcher->mFdSet))
         {
@@ -278,7 +278,7 @@ struct cmnDispatcherOP gCmnDispatcherOpSOCKSelect =
 IDE_RC cmnDispatcherMapSOCKSelect(cmnDispatcher *aDispatcher)
 {
     /*
-     * ÇÔ¼ö Æ÷ÀÎÅÍ ¼¼ÆÃ
+     * í•¨ìˆ˜ í¬ì¸í„° ì„¸íŒ…
      */
     aDispatcher->mOp = &gCmnDispatcherOpSOCKSelect;
 
@@ -300,18 +300,18 @@ IDE_RC cmnDispatcherWaitLinkSOCKSelect(cmnLink *aLink,
     fd_set     sFdSet2;
 
     /*
-     * LinkÀÇ socket È¹µæ
+     * Linkì˜ socket íšë“
      */
     IDE_TEST(aLink->mOp->mGetHandle(aLink, &sHandle) != IDE_SUCCESS);
 
     /*
-     * fdset ¼¼ÆÃ
+     * fdset ì„¸íŒ…
      */
     FD_ZERO(&sFdSet);
     FD_SET(sHandle, &sFdSet);
 
     /*
-     * select ¼öÇà
+     * select ìˆ˜í–‰
      */
     switch (aDirection)
     {
@@ -355,11 +355,11 @@ SInt cmnDispatcherCheckHandleSOCKSelect(PDL_SOCKET      aHandle,
     SInt   sResult = -1;
     fd_set sFdSet;
 
-    /* fdset ¼¼ÆÃ */
+    /* fdset ì„¸íŒ… */
     FD_ZERO(&sFdSet);
     FD_SET(aHandle, &sFdSet);
 
-    /* select ¼öÇà */
+    /* select ìˆ˜í–‰ */
     sResult = idlOS::select(aHandle + 1, &sFdSet, NULL, NULL, aTimeout);
 
     return sResult;

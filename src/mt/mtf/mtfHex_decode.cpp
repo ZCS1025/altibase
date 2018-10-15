@@ -21,8 +21,8 @@
 
 /***********************************************************************
  * HEX_DECODE() : 
- * ÀÔ·Â¹ŞÀº hex stringÀ» µğÄÚµùÇÏ¿©
- * VARCHARÅ¸ÀÔÀÇ ¹®ÀÚ¿­À» ¹İÈ¯ÇÑ´Ù.
+ * ì…ë ¥ë°›ì€ hex stringì„ ë””ì½”ë”©í•˜ì—¬
+ * VARCHARíƒ€ì…ì˜ ë¬¸ìì—´ì„ ë°˜í™˜í•œë‹¤.
  *
  * ex) SELECT HEX_DECODE('616C746962617365') FROM DUAL;
  * HEX_DECODE('616C746962617365')
@@ -57,7 +57,7 @@ static IDE_RC mtfHex_decodeEstimate( mtcNode*     aNode,
 mtfModule mtfHex_decode = {
     1|MTC_NODE_OPERATOR_FUNCTION,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
+    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìê°€ ì•„ë‹˜)
     mtfHex_decodeFunctionName,
     NULL,
     mtf::initializeDefault,

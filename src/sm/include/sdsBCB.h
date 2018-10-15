@@ -36,26 +36,26 @@
 #include <sdbBCB.h> 
 
 /* --------------------------------------------------------------------
- * Æ¯Á¤ BCB°¡ ¾î¶°ÇÑ Á¶°ÇÀ» ¸¸Á·ÇÏ´ÂÁö ¿©ºÎ¸¦
- * °Ë»çÇÒ¶§ »ç¿ë
+ * íŠ¹ì • BCBê°€ ì–´ë– í•œ ì¡°ê±´ì„ ë§Œì¡±í•˜ëŠ”ì§€ ì—¬ë¶€ë¥¼
+ * ê²€ì‚¬í• ë•Œ ì‚¬ìš©
  * ----------------------------------------------------------------- */
 typedef idBool (*sdsFiltFunc)( void *aBCB, void *aFiltAgr );
 
 /* --------------------------------------------------------------------
- * BCBÀÇ »óÅÂ Á¤ÀÇ
+ * BCBì˜ ìƒíƒœ ì •ì˜
  * ----------------------------------------------------------------- */
 typedef enum
 {
-    SDS_SBCB_FREE = 0,  /*ÇöÀç »ç¿ëµÇÁö ¾Ê´Â »óÅÂ. hash¿¡¼­ Á¦°ÅµÇ¾î ÀÖ´Ù.*/
-    SDS_SBCB_CLEAN,     /* hash¿¡¼­ Á¢±Ù°¡´ÉÇÏ°í º¯°æµÈ ³»¿ë ¾øÀ½ 
-                         * µð½ºÅ© IO¾øÀÌ ±×³É replace°¡ °¡´ÉÇÏ´Ù. 
-                         * ÀÌÈÄ »óÅÂ°¡ CLEANÀ¸·Î ´Ù½Ã ³»·Á¿À¸é ¾²Áö ¾Ê´Â´Ù. */
-    SDS_SBCB_DIRTY,     /* hash¿¡¼­ Á¢±Ù°¡´ÉÇÏ°í º¯°æµÈ ³»¿ë ÀÖÀ½ . 
-                         * replaceÇÏ·Á¸é HDD¿¡ flush ÇØ¾ß ÇÑ´Ù. */
-    SDS_SBCB_INIOB,     /* flusher°¡ flush¸¦ À§ÇØ ÀÚ½ÅÀÇ ³»ºÎ ¹öÆÛ(IOB)¿¡ 
-                         * Çö BCB ³»¿ëÀ» ÀúÀåÇÑ »óÅÂ */
-    SDS_SBCB_OLD        /* IOB¿¡ ÀÖ´Âµ¥ ´ÙÀ½ ÆäÀÌÁö°¡ µé¾î¿Í¼­ Flusher°¡ 
-                           ÇØ´ç ÀÛ¾÷À» ¸¶¹«¸®ÈÄ Áö¿ö¾ß ÇÏ´Â »óÅÂ */
+    SDS_SBCB_FREE = 0,  /*í˜„ìž¬ ì‚¬ìš©ë˜ì§€ ì•ŠëŠ” ìƒíƒœ. hashì—ì„œ ì œê±°ë˜ì–´ ìžˆë‹¤.*/
+    SDS_SBCB_CLEAN,     /* hashì—ì„œ ì ‘ê·¼ê°€ëŠ¥í•˜ê³  ë³€ê²½ëœ ë‚´ìš© ì—†ìŒ 
+                         * ë””ìŠ¤í¬ IOì—†ì´ ê·¸ëƒ¥ replaceê°€ ê°€ëŠ¥í•˜ë‹¤. 
+                         * ì´í›„ ìƒíƒœê°€ CLEANìœ¼ë¡œ ë‹¤ì‹œ ë‚´ë ¤ì˜¤ë©´ ì“°ì§€ ì•ŠëŠ”ë‹¤. */
+    SDS_SBCB_DIRTY,     /* hashì—ì„œ ì ‘ê·¼ê°€ëŠ¥í•˜ê³  ë³€ê²½ëœ ë‚´ìš© ìžˆìŒ . 
+                         * replaceí•˜ë ¤ë©´ HDDì— flush í•´ì•¼ í•œë‹¤. */
+    SDS_SBCB_INIOB,     /* flusherê°€ flushë¥¼ ìœ„í•´ ìžì‹ ì˜ ë‚´ë¶€ ë²„í¼(IOB)ì— 
+                         * í˜„ BCB ë‚´ìš©ì„ ì €ìž¥í•œ ìƒíƒœ */
+    SDS_SBCB_OLD        /* IOBì— ìžˆëŠ”ë° ë‹¤ìŒ íŽ˜ì´ì§€ê°€ ë“¤ì–´ì™€ì„œ Flusherê°€ 
+                           í•´ë‹¹ ìž‘ì—…ì„ ë§ˆë¬´ë¦¬í›„ ì§€ì›Œì•¼ í•˜ëŠ” ìƒíƒœ */
 } sdsSBCBState;
 
 class sdsBCB
@@ -100,19 +100,19 @@ public:
 private:
 
 public:
-    /* °øÅë ºÎºÐ */
+    /* ê³µí†µ ë¶€ë¶„ */
     SD_BCB_PARAMETERS
-    /* SBCB °íÀ¯ ID */
+    /* SBCB ê³ ìœ  ID */
     ULong          mSBCBID;            
-    /* ÇØ´ç pageÀÇ »óÅÂ. Áï dirty / clean »óÅÂ */
+    /* í•´ë‹¹ pageì˜ ìƒíƒœ. ì¦‰ dirty / clean ìƒíƒœ */
     sdsSBCBState   mState;         
-    /* state¸¦ ÂüÁ¶,°»½ÅÇÒ¶§ È¹µæÇÑ´Ù */
+    /* stateë¥¼ ì°¸ì¡°,ê°±ì‹ í• ë•Œ íšë“í•œë‹¤ */
     iduMutex       mBCBMutex;     
-    /* ÀÐ±â¿Í Á¦°Å¿¬»êÀ» À§ÇÑ mutex */
+    /* ì½ê¸°ì™€ ì œê±°ì—°ì‚°ì„ ìœ„í•œ mutex */
     iduMutex       mReadIOMutex;     
-    /* ´ëÀÀÇÏ´Â BCB */
+    /* ëŒ€ì‘í•˜ëŠ” BCB */
     sdbBCB       * mBCB;           
-    /* Page°¡ Secondary¿¡ ¾²¿© Áú¶§ pageÀÇ LSN */
+    /* Pageê°€ Secondaryì— ì“°ì—¬ ì§ˆë•Œ pageì˜ LSN */
     smLSN          mPageLSN;
 
 private:

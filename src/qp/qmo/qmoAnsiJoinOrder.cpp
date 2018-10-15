@@ -21,16 +21,16 @@
  * Description :
  *     ANSI Join Ordering
  *
- *     BUG-34295 ANSI style Äõ¸®ÀÇ join ordering 
- *     ÀÏºÎ Á¦ÇÑµÈ Á¶°Ç¿¡¼­ ANSI style join ¿¡¼­ inner join À» ºÐ¸®ÇÏ¿©
- *     join order ¸¦ optimizer °¡ °áÁ¤ÇÏµµ·Ï ÇÑ´Ù.
+ *     BUG-34295 ANSI style ì¿¼ë¦¬ì˜ join ordering 
+ *     ì¼ë¶€ ì œí•œëœ ì¡°ê±´ì—ì„œ ANSI style join ì—ì„œ inner join ì„ ë¶„ë¦¬í•˜ì—¬
+ *     join order ë¥¼ optimizer ê°€ ê²°ì •í•˜ë„ë¡ í•œë‹¤.
  *
- *     TODO : ¸ðµç Á¶°Ç¿¡¼­ cost ¸¦ °í·ÁÇÏ¿© ¸ðµç join ÀÇ join order ¸¦
- *            °áÁ¤ÇÏµµ·Ï ÇØ¾ß ÇÑ´Ù.
+ *     TODO : ëª¨ë“  ì¡°ê±´ì—ì„œ cost ë¥¼ ê³ ë ¤í•˜ì—¬ ëª¨ë“  join ì˜ join order ë¥¼
+ *            ê²°ì •í•˜ë„ë¡ í•´ì•¼ í•œë‹¤.
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  **********************************************************************/
 
@@ -50,11 +50,11 @@ qmoAnsiJoinOrder::traverseFroms( qcStatement * aStatement,
 {
 /***********************************************************************
  *
- * Description : qmsFrom ¿¡¼­ outer join ÀÇ driven table
- *               (left outer join ÀÇ right) À» aFromTree ·Î,
- *               ±× ¿ÜÀÇ table À» aFromArr ·Î ºÐ·ùÇÏ´Â ÇÔ¼ö.
+ * Description : qmsFrom ì—ì„œ outer join ì˜ driven table
+ *               (left outer join ì˜ right) ì„ aFromTree ë¡œ,
+ *               ê·¸ ì™¸ì˜ table ì„ aFromArr ë¡œ ë¶„ë¥˜í•˜ëŠ” í•¨ìˆ˜.
  *  
- * ¿¹) select * from t1 left outer join t2 on t1.i1 = t2.i1
+ * ì˜ˆ) select * from t1 left outer join t2 on t1.i1 = t2.i1
  *                      inner join      t3 on t1.i1 = t3.i1
  *                      left outer join t4 on t1.i1 = t4.i1;
  *
@@ -74,31 +74,31 @@ qmoAnsiJoinOrder::traverseFroms( qcStatement * aStatement,
  *
  *    (aFromArr) :   t1 -> t3 
  *
- *    t1 Àº left outer join ÀÇ left ÀÌ¹Ç·Î aFromArr ·Î ºÐ·ùµÇÁö¸¸,
- *    aFromTree ¿¡¼­ Á¦¿ÜÇÒ °æ¿ì tree ±¸Á¶°¡ ¹«³ÊÁö°Ô µÇ¹Ç·Î À¯ÁöÇÑ´Ù.
- *    ÀÌ¶§¹®¿¡ t1 ÀÌ aFromTree ¿Í aFromArr ¾çÂÊ¿¡ Á¸ÀçÇÏ°Ô µÇ¾î ¸ð¼øÀÌ
- *    »ý±âÁö¸¸, graph »ý¼º ¹× optimize °¡ ¿Ï·áµÈ ÈÄ¿¡ t1 ´ë½Å 
- *    aFromArr ·Î »ý¼ºÇÑ graph (base graph) ·Î Ä¡È¯ÇÏ¿© ¹®Á¦¸¦ ÇØ°áÇÑ´Ù.
+ *    t1 ì€ left outer join ì˜ left ì´ë¯€ë¡œ aFromArr ë¡œ ë¶„ë¥˜ë˜ì§€ë§Œ,
+ *    aFromTree ì—ì„œ ì œì™¸í•  ê²½ìš° tree êµ¬ì¡°ê°€ ë¬´ë„ˆì§€ê²Œ ë˜ë¯€ë¡œ ìœ ì§€í•œë‹¤.
+ *    ì´ë•Œë¬¸ì— t1 ì´ aFromTree ì™€ aFromArr ì–‘ìª½ì— ì¡´ìž¬í•˜ê²Œ ë˜ì–´ ëª¨ìˆœì´
+ *    ìƒê¸°ì§€ë§Œ, graph ìƒì„± ë° optimize ê°€ ì™„ë£Œëœ í›„ì— t1 ëŒ€ì‹  
+ *    aFromArr ë¡œ ìƒì„±í•œ graph (base graph) ë¡œ ì¹˜í™˜í•˜ì—¬ ë¬¸ì œë¥¼ í•´ê²°í•œë‹¤.
  *
  *
  * Implemenation :
- *    qmsFrom ÀÇ tree °¡ ¿ÞÂÊÀ¸·Î Ä¡¿ìÄ£(skewed) ÇüÅÂ¶ó°í °¡Á¤ÇÏ°í Ã³¸®ÇÑ´Ù.
- *    Right outer join ÀÌ left outer join À¸·Î º¯ÇüµÇ´Â °æ¿ì ¿ÞÂÊÀ¸·Î
- *    Ä¡¿ìÄ£ ÇüÅÂ°¡ ¾Æ´Ò ¼ö ÀÖÁö¸¸, ±× °æ¿ì¿¡´Â ÀÌ ÇÔ¼ö°¡ È£ÃâµÇ¾î¼­´Â ¾ÈµÈ´Ù.
+ *    qmsFrom ì˜ tree ê°€ ì™¼ìª½ìœ¼ë¡œ ì¹˜ìš°ì¹œ(skewed) í˜•íƒœë¼ê³  ê°€ì •í•˜ê³  ì²˜ë¦¬í•œë‹¤.
+ *    Right outer join ì´ left outer join ìœ¼ë¡œ ë³€í˜•ë˜ëŠ” ê²½ìš° ì™¼ìª½ìœ¼ë¡œ
+ *    ì¹˜ìš°ì¹œ í˜•íƒœê°€ ì•„ë‹ ìˆ˜ ìžˆì§€ë§Œ, ê·¸ ê²½ìš°ì—ëŠ” ì´ í•¨ìˆ˜ê°€ í˜¸ì¶œë˜ì–´ì„œëŠ” ì•ˆëœë‹¤.
  *
- *    ÇöÀç qmsFrom ÀÌ ¾î´À Å¸ÀÔÀÎÁö º¸°í ÇÏÀ§ qmsFrom À» ºÐ·ùÇÏ°Å³ª
- *    Àç±ÍÀûÀ¸·Î È£ÃâÇÑ´Ù.
+ *    í˜„ìž¬ qmsFrom ì´ ì–´ëŠ íƒ€ìž…ì¸ì§€ ë³´ê³  í•˜ìœ„ qmsFrom ì„ ë¶„ë¥˜í•˜ê±°ë‚˜
+ *    ìž¬ê·€ì ìœ¼ë¡œ í˜¸ì¶œí•œë‹¤.
  *
  *      QMS_NO_JOIN (table) :
- *          left outer join ÀÇ left ÂÊ ÀÌ¸é¼­ ÀÏ¹Ý table ÀÎ °æ¿ìÀÌ´Ù.
- *          aFromArr °ú aFromTree ¾çÂÊ¿¡ º¹»çÇÑ´Ù.
+ *          left outer join ì˜ left ìª½ ì´ë©´ì„œ ì¼ë°˜ table ì¸ ê²½ìš°ì´ë‹¤.
+ *          aFromArr ê³¼ aFromTree ì–‘ìª½ì— ë³µì‚¬í•œë‹¤.
  *      QMS_INNER_JOIN :
- *          right ¿¡ ´Þ¸° table À» aFromArr ¿¡ º¹»çÇÑ´Ù.
- *          left ´Â Àç±ÍÈ£ÃâÇÏ¿© Ã³¸®ÇÑ´Ù.
+ *          right ì— ë‹¬ë¦° table ì„ aFromArr ì— ë³µì‚¬í•œë‹¤.
+ *          left ëŠ” ìž¬ê·€í˜¸ì¶œí•˜ì—¬ ì²˜ë¦¬í•œë‹¤.
  *      QMS_LEFT_OUTER_JOIN :
- *          ÇöÀç ³ëµå(left outer join)°ú right ¿¡ ´Þ¸° table À»
- *          aFromTree ¿¡ º¹»çÇÑ´Ù.
- *          left ´Â Àç±ÍÈ£ÃâÇÏ¿© Ã³¸®ÇÑ´Ù.
+ *          í˜„ìž¬ ë…¸ë“œ(left outer join)ê³¼ right ì— ë‹¬ë¦° table ì„
+ *          aFromTree ì— ë³µì‚¬í•œë‹¤.
+ *          left ëŠ” ìž¬ê·€í˜¸ì¶œí•˜ì—¬ ì²˜ë¦¬í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -140,8 +140,8 @@ qmoAnsiJoinOrder::traverseFroms( qcStatement * aStatement,
     else
     {
         // BUG-40028
-        // qmsFrom ÀÇ tree °¡ ¿ÞÂÊÀ¸·Î Ä¡¿ìÄ£(skewed)ÇüÅÂ°¡ ¾Æ´Ò ¶§´Â
-        // ANSI_JOIN_ORDERING ÇØ¼­´Â ¾ÈµÈ´Ù.
+        // qmsFrom ì˜ tree ê°€ ì™¼ìª½ìœ¼ë¡œ ì¹˜ìš°ì¹œ(skewed)í˜•íƒœê°€ ì•„ë‹ ë•ŒëŠ”
+        // ANSI_JOIN_ORDERING í•´ì„œëŠ” ì•ˆëœë‹¤.
         if ( aFrom->right->joinType != QMS_NO_JOIN )
         {
             *aMakeFail = ID_TRUE;
@@ -359,14 +359,14 @@ IDE_RC qmoAnsiJoinOrder::mergeOuterJoinGraph2myGraph( qmoCNF * aCNF )
 {
 /***********************************************************************
  *
- * Description : outerJoinGraph ¿Í myGraph ÀÇ º´ÇÕ
+ * Description : outerJoinGraph ì™€ myGraph ì˜ ë³‘í•©
  *
  * Implemenation :
  *    BUG-34295 Join ordering ANSI style query
- *    outerJoinGraph ´Â myGraph ¿Í´Â º°µµ·Î °ü¸®µÇ´Â outer join À» À§ÇÑ
- *    graph ÀÌ´Ù.
- *    ÀÌ ÇÔ¼ö´Â outerJoinGraph ÀÇ °¡Àå ÁÂÃø
- *    (left outer join ÀÇ ±âÁØÀÌ µÇ´Â À§Ä¡)¿¡ myGraph ¸¦ ¿¬°áÇÑ´Ù.
+ *    outerJoinGraph ëŠ” myGraph ì™€ëŠ” ë³„ë„ë¡œ ê´€ë¦¬ë˜ëŠ” outer join ì„ ìœ„í•œ
+ *    graph ì´ë‹¤.
+ *    ì´ í•¨ìˆ˜ëŠ” outerJoinGraph ì˜ ê°€ìž¥ ì¢Œì¸¡
+ *    (left outer join ì˜ ê¸°ì¤€ì´ ë˜ëŠ” ìœ„ì¹˜)ì— myGraph ë¥¼ ì—°ê²°í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -380,9 +380,9 @@ IDE_RC qmoAnsiJoinOrder::mergeOuterJoinGraph2myGraph( qmoCNF * aCNF )
 
     sIter = aCNF->outerJoinGraph;
 
-    // BUG-39877 OPTIMIZER_ANSI_JOIN_ORDERING ¿¡¼­ left, right °¡ ¹Ù²ð¼ö ÀÖÀ½
-    // ±âÁ¸ ¾Ë°í¸®ÁòÀÌ °¡Àå ¿ÞÂÊ¿¡ ÀÖ´Â ±×·¡ÇÁ¸¦ Ã£¾Æ¼­ º¯°æÇÏ´Â °ÍÀÌ¹Ç·Î
-    // selectedJoinMethod ÀÌ¿ëÇÏ¿© left¸¦ ÆÇ´ÜÇØ¾ß ÇÑ´Ù.
+    // BUG-39877 OPTIMIZER_ANSI_JOIN_ORDERING ì—ì„œ left, right ê°€ ë°”ë€”ìˆ˜ ìžˆìŒ
+    // ê¸°ì¡´ ì•Œê³ ë¦¬ì¦˜ì´ ê°€ìž¥ ì™¼ìª½ì— ìžˆëŠ” ê·¸ëž˜í”„ë¥¼ ì°¾ì•„ì„œ ë³€ê²½í•˜ëŠ” ê²ƒì´ë¯€ë¡œ
+    // selectedJoinMethod ì´ìš©í•˜ì—¬ leftë¥¼ íŒë‹¨í•´ì•¼ í•œë‹¤.
     while( sIter->left != NULL )
     {
         IDE_FT_ERROR_MSG( sIter->type == QMG_LEFT_OUTER_JOIN,
@@ -429,14 +429,14 @@ qmoAnsiJoinOrder::fixOuterJoinGraphPredicate( qcStatement * aStatement,
 /***********************************************************************
  *
  * Description : BUG-34295 Join ordering ANSI style query
- *    Where ÀýÀÇ predicate Áß outerJoinGraph ¿Í ¿¬°üµÈ
- *    one table predicate À» Ã£¾Æ ÀÌµ¿½ÃÅ²´Ù.
- *    outerJoinGraph ÀÇ one table predicate Àº baseGraph ¿Í
- *    dependency °¡ °ãÄ¡Áö ¾Ê¾Æ¼­ predicate ºÐ·ù °úÁ¤¿¡¼­
- *    constant predicate À¸·Î Àß¸ø ºÐ·ùµÈ´Ù.
- *    ÀÌ¸¦ ¹Ù·ÎÀâ±â À§ÇØ sCNF->constantPredicate ÀÇ predicate µé¿¡¼­
- *    outerJoinGraph ¿¡ °ü·ÃµÈ one table predicate µéÀ» Ã£¾Æ³»¾î
- *    outerJoinGraph ·Î ÀÌµ¿½ÃÅ²´Ù.
+ *    Where ì ˆì˜ predicate ì¤‘ outerJoinGraph ì™€ ì—°ê´€ëœ
+ *    one table predicate ì„ ì°¾ì•„ ì´ë™ì‹œí‚¨ë‹¤.
+ *    outerJoinGraph ì˜ one table predicate ì€ baseGraph ì™€
+ *    dependency ê°€ ê²¹ì¹˜ì§€ ì•Šì•„ì„œ predicate ë¶„ë¥˜ ê³¼ì •ì—ì„œ
+ *    constant predicate ìœ¼ë¡œ ìž˜ëª» ë¶„ë¥˜ëœë‹¤.
+ *    ì´ë¥¼ ë°”ë¡œìž¡ê¸° ìœ„í•´ sCNF->constantPredicate ì˜ predicate ë“¤ì—ì„œ
+ *    outerJoinGraph ì— ê´€ë ¨ëœ one table predicate ë“¤ì„ ì°¾ì•„ë‚´ì–´
+ *    outerJoinGraph ë¡œ ì´ë™ì‹œí‚¨ë‹¤.
  *
  * Implemenation :
  *
@@ -454,14 +454,14 @@ qmoAnsiJoinOrder::fixOuterJoinGraphPredicate( qcStatement * aStatement,
     IDU_FIT_POINT_FATAL( "qmoAnsiJoinOrder::fixOuterJoinGraphPredicate::__FT__" );
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aCNF != NULL );
 
     //------------------------------------------
-    // ±âº» ÃÊ±âÈ­
+    // ê¸°ë³¸ ì´ˆê¸°í™”
     //------------------------------------------
 
     sCNF               = aCNF;
@@ -479,8 +479,8 @@ qmoAnsiJoinOrder::fixOuterJoinGraphPredicate( qcStatement * aStatement,
                                                 & sIsOneTable )
                   != IDE_SUCCESS );
 
-        // Dependency °¡ ÇÏ³ªµµ ¾ø¾îµµ sIsOneTable ÀÌ ID_TRUE ·Î ³ª¿À¹Ç·Î
-        // dependency count °¡ 1 ÀÌ»óÀÌ¿©¾ß ÁøÂ¥ one table predicate ÀÌ´Ù.
+        // Dependency ê°€ í•˜ë‚˜ë„ ì—†ì–´ë„ sIsOneTable ì´ ID_TRUE ë¡œ ë‚˜ì˜¤ë¯€ë¡œ
+        // dependency count ê°€ 1 ì´ìƒì´ì—¬ì•¼ ì§„ì§œ one table predicate ì´ë‹¤.
         if( ( sIsOneTable == ID_TRUE ) &&
             ( sPred->node->depInfo.depCount > 0 ) )
         {
@@ -504,7 +504,7 @@ qmoAnsiJoinOrder::fixOuterJoinGraphPredicate( qcStatement * aStatement,
         }
     }
 
-    // constantPredicate ¿¡´Â ÁøÂ¥ constant predicate ¸¸ ³²´Â´Ù.
+    // constantPredicate ì—ëŠ” ì§„ì§œ constant predicate ë§Œ ë‚¨ëŠ”ë‹¤.
     sCNF->constantPredicate = sNewConstantPred;
 
     return IDE_SUCCESS;

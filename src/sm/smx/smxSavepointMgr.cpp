@@ -55,15 +55,15 @@ IDE_RC smxSavepointMgr::destroyStatic()
 void smxSavepointMgr::initialize(smxTrans * /*a_pTrans*/)
 {
 
-    /* Explicit Savepoint List¸¦ ÃÊ±âÈ­ ÇÑ´Ù. */
+    /* Explicit Savepoint Listë¥¼ ì´ˆê¸°í™” í•œë‹¤. */
     mExpSavepoint.mPrvSavepoint = &mExpSavepoint;
     mExpSavepoint.mNxtSavepoint = &mExpSavepoint;
 
-    /* Implicit Savepoint List¸¦ ÃÊ±âÈ­ ÇÑ´Ù. */
+    /* Implicit Savepoint Listë¥¼ ì´ˆê¸°í™” í•œë‹¤. */
     mImpSavepoint.mPrvSavepoint = &mImpSavepoint;
     mImpSavepoint.mNxtSavepoint = &mImpSavepoint;
 
-    /* setReplSavepoint¿¡¼­ ÂüÁ¶ÇÏ±â¶§¹®¿¡ ÃÊ±âÈ­ÇØ¾ß ÇÕ´Ï´Ù. */
+    /* setReplSavepointì—ì„œ ì°¸ì¡°í•˜ê¸°ë•Œë¬¸ì— ì´ˆê¸°í™”í•´ì•¼ í•©ë‹ˆë‹¤. */
     mImpSavepoint.mReplImpSvpStmtDepth = 0;
 
     mReservePsmSvp = ID_FALSE;
@@ -108,14 +108,14 @@ IDE_RC smxSavepointMgr::destroy()
 }
 
 /*************************************************************************
- * Description: aSavepointName¿¡ ÇØ´çÇÏ´Â Explicit Savepoint¸¦
- *              TransactionÀÇ Explicit Savepoint List¿¡¼­ Ã£´Â´Ù. ¸¸¾à
- *              aDoRemove°¡ ID_TRUEÀÌ¸é Savepoint List¿¡¼­ Á¦°ÅÇÑ´Ù.
- *              Ã£Àº Explicit Savepoint¸¦ ReturnÇÑ´Ù. ¾øÀ¸¸é NULL
+ * Description: aSavepointNameì— í•´ë‹¹í•˜ëŠ” Explicit Savepointë¥¼
+ *              Transactionì˜ Explicit Savepoint Listì—ì„œ ì°¾ëŠ”ë‹¤. ë§Œì•½
+ *              aDoRemoveê°€ ID_TRUEì´ë©´ Savepoint Listì—ì„œ ì œê±°í•œë‹¤.
+ *              ì°¾ì€ Explicit Savepointë¥¼ Returní•œë‹¤. ì—†ìœ¼ë©´ NULL
  *
- * aSavepointName - [IN] Savepoint ÀÌ¸§.
- * aDoRemove      - [IN] aSavepointName¿¡ ÇØ´çÇÏ´Â Savepoint¸¦ Explicit SVP
- *                       List¿¡¼­ Á¦°Å¸¦ ¿øÇÏ¸é ID_TRUE, ¾Æ´Ï¸é ID_FALSE
+ * aSavepointName - [IN] Savepoint ì´ë¦„.
+ * aDoRemove      - [IN] aSavepointNameì— í•´ë‹¹í•˜ëŠ” Savepointë¥¼ Explicit SVP
+ *                       Listì—ì„œ ì œê±°ë¥¼ ì›í•˜ë©´ ID_TRUE, ì•„ë‹ˆë©´ ID_FALSE
  * ***********************************************************************/
 smxSavepoint* smxSavepointMgr::findInExpSvpList(const SChar *aSavepointName,
                                                 idBool       aDoRemove)
@@ -131,7 +131,7 @@ smxSavepoint* smxSavepointMgr::findInExpSvpList(const SChar *aSavepointName,
         {
             if(aDoRemove == ID_TRUE)
             {
-                /* Explicit Savepoint List¿¡¼­ Á¦°ÅÇÑ´Ù. */
+                /* Explicit Savepoint Listì—ì„œ ì œê±°í•œë‹¤. */
                 removeFromLst(sPrvSavepoint);
             }
 
@@ -151,11 +151,11 @@ smxSavepoint* smxSavepointMgr::findInExpSvpList(const SChar *aSavepointName,
 }
 
 /*************************************************************************
- * Description: aStmtDepth¿¡ ÇØ´çÇÏ´Â Implicit Savepoint¸¦
- *              TransactionÀÇ Implicit Savepoint List¿¡¼­ Ã£´Â´Ù.
- *              Ã£Àº Implicit Savepoint¸¦ ReturnÇÑ´Ù. ¾øÀ¸¸é NULL
+ * Description: aStmtDepthì— í•´ë‹¹í•˜ëŠ” Implicit Savepointë¥¼
+ *              Transactionì˜ Implicit Savepoint Listì—ì„œ ì°¾ëŠ”ë‹¤.
+ *              ì°¾ì€ Implicit Savepointë¥¼ Returní•œë‹¤. ì—†ìœ¼ë©´ NULL
  *
- * aStmtDepth - [IN] Savepoint°¡ ¼³Á¤µÉ¶§ÀÇ StatementÀÇ Depth.
+ * aStmtDepth - [IN] Savepointê°€ ì„¤ì •ë ë•Œì˜ Statementì˜ Depth.
  * ***********************************************************************/
 smxSavepoint* smxSavepointMgr::findInImpSvpList(UInt aStmtDepth)
 {
@@ -184,7 +184,7 @@ smxSavepoint* smxSavepointMgr::findInImpSvpList(UInt aStmtDepth)
 }
 
 /*************************************************************************
- * Description: aStmtDepth Áß °¡Àå Å« °ªÀ» ¹İÈ¯ÇÑ´Ù.
+ * Description: aStmtDepth ì¤‘ ê°€ì¥ í° ê°’ì„ ë°˜í™˜í•œë‹¤.
  * ***********************************************************************/
 UInt smxSavepointMgr::getStmtDepthFromImpSvpList()
 {
@@ -235,7 +235,7 @@ IDE_RC smxSavepointMgr::setExpSavepoint(smxTrans     *aTrans,
     sSavepoint->mOIDNode      = aOIDNode;
     sSavepoint->mOffset       = aOIDNode->mOIDCnt;
     sSavepoint->mLockSequence = aLockSequence;
-    //PROJ-1608 recovery From Replication (recovery¸¦ À§ÇØ svp ·Î±× ±â·Ï)
+    //PROJ-1608 recovery From Replication (recoveryë¥¼ ìœ„í•´ svp ë¡œê·¸ ê¸°ë¡)
     if( (aTrans->mLogTypeFlag == SMR_LOG_TYPE_NORMAL) ||
         (aTrans->mLogTypeFlag == SMR_LOG_TYPE_REPL_RECOVERY) )
     {
@@ -279,16 +279,16 @@ void smxSavepointMgr::updateOIDList(smxTrans     *aTrans,
         {
             /*
               - BUG-14127
-              Savepoint·Î Partial Rollback½Ã ÇÑ¹ø Ã³¸®µÈ OIDÀÇ
-              Flag°ªÀÌ µÎ¹ø Ã³¸®µÇÁö ¾Êµµ·Ï Ã³¸®.
+              Savepointë¡œ Partial Rollbackì‹œ í•œë²ˆ ì²˜ë¦¬ëœ OIDì˜
+              Flagê°’ì´ ë‘ë²ˆ ì²˜ë¦¬ë˜ì§€ ì•Šë„ë¡ ì²˜ë¦¬.
             */
             if((sArrOIDList[i].mFlag & SM_OID_ACT_SAVEPOINT)
                == SM_OID_ACT_SAVEPOINT)
             {
                 /*
-                   SM_OID_ACT_SAVEPOINT°ªÀ» clear½ÃÅ²´Ù. ÀÌ´Â
-                   ´Ù½Ã ÇöÀç savepoint ÀÌÀüÀ¸·Î rollback½Ã ´Ù½Ã
-                   ÀÌ routineÀ¸·Î µé¾î¿À´Â °ÍÀ» ¹æÁöÇÏ±â À§ÇÔÀÌ´Ù.
+                   SM_OID_ACT_SAVEPOINTê°’ì„ clearì‹œí‚¨ë‹¤. ì´ëŠ”
+                   ë‹¤ì‹œ í˜„ì¬ savepoint ì´ì „ìœ¼ë¡œ rollbackì‹œ ë‹¤ì‹œ
+                   ì´ routineìœ¼ë¡œ ë“¤ì–´ì˜¤ëŠ” ê²ƒì„ ë°©ì§€í•˜ê¸° ìœ„í•¨ì´ë‹¤.
                 */
                 sArrOIDList[i].mFlag &=
                     smxOidSavePointMask[sArrOIDList[i].mFlag
@@ -307,9 +307,9 @@ void smxSavepointMgr::updateOIDList(smxTrans     *aTrans,
 
     /* BUG-32737 [sm-transation] The ager may ignore aging job that made
      * from the PSM failure.
-     * PSM AbortÀÏ¶§µµ AgingÇÒ ¼ö ÀÖµµ·Ï, setAgingFlag ÇÔ */
+     * PSM Abortì¼ë•Œë„ Agingí•  ìˆ˜ ìˆë„ë¡, setAgingFlag í•¨ */
     // To Fix BUG-14126
-    // Insert OID¸¸ ÀÖÀ» °æ¿ì, need AgingÀ» True·Î º¯°æÇØ¾ß  Ager¿¡ ´Ş¸²
+    // Insert OIDë§Œ ìˆì„ ê²½ìš°, need Agingì„ Trueë¡œ ë³€ê²½í•´ì•¼  Agerì— ë‹¬ë¦¼
     aTrans->mOIDList->setAgingFlag( ID_TRUE );
 
 }
@@ -327,10 +327,10 @@ IDE_RC smxSavepointMgr::abortToExpSavepoint(smxTrans    *aTrans,
     updateOIDList(aTrans, sCurSavepoint);
 
     // PROJ-1553 Replication self-deadlock
-    // abort to savepoint½Ã undoÀÛ¾÷À» ÇÏ±â Àü¿¡ abortToSavepoint log¸¦
-    // ¸ÕÀú Âïµµ·Ï ¹Ù²Û´Ù.
-    // abortToSavepoint log´Â replication¿¡¼­¸¸ »ç¿ëÇÏ±â ¶§¹®¿¡ ¹®Á¦°¡ ¾ø´Ù.
-    // PROJ-1608 recovery From Replication (recovery¸¦ À§ÇØ svp ·Î±× ±â·Ï)
+    // abort to savepointì‹œ undoì‘ì—…ì„ í•˜ê¸° ì „ì— abortToSavepoint logë¥¼
+    // ë¨¼ì € ì°ë„ë¡ ë°”ê¾¼ë‹¤.
+    // abortToSavepoint logëŠ” replicationì—ì„œë§Œ ì‚¬ìš©í•˜ê¸° ë•Œë¬¸ì— ë¬¸ì œê°€ ì—†ë‹¤.
+    // PROJ-1608 recovery From Replication (recoveryë¥¼ ìœ„í•´ svp ë¡œê·¸ ê¸°ë¡)
     if( (aTrans->mLogTypeFlag == SMR_LOG_TYPE_NORMAL) ||
         (aTrans->mLogTypeFlag == SMR_LOG_TYPE_REPL_RECOVERY) )
     {
@@ -346,14 +346,14 @@ IDE_RC smxSavepointMgr::abortToExpSavepoint(smxTrans    *aTrans,
              != IDE_SUCCESS);
 
     /* PROJ-1594 Volatile TBS */
-    /* Volatile TBS¿¡ ´ëÇØ¼­µµ undo¸¦ ¼öÇàÇÑ´Ù. */
+    /* Volatile TBSì— ëŒ€í•´ì„œë„ undoë¥¼ ìˆ˜í–‰í•œë‹¤. */
     IDE_TEST(svrRecoveryMgr::undoTrans( &aTrans->mVolatileLogEnv,
                                         sCurSavepoint->mVolatileLSN )
              != IDE_SUCCESS);
 
     // BUG-22576
-    // partial abortÇÏ±â Àü¿¡ private page list¸¦ table¿¡
-    // ´Ş¾Æ¾ß ÇÑ´Ù.
+    // partial abortí•˜ê¸° ì „ì— private page listë¥¼ tableì—
+    // ë‹¬ì•„ì•¼ í•œë‹¤.
     IDE_TEST(aTrans->addPrivatePageListToTableOnPartialAbort()
              != IDE_SUCCESS);
 
@@ -385,19 +385,19 @@ IDE_RC smxSavepointMgr::abortToExpSavepoint(smxTrans    *aTrans,
 }
 
 /*************************************************************************
- * Description: Implicit savepoint¸¦ ¼³Á¤ÇÕ´Ï´Ù. Explicit°ú ´Ş¸® Savepoint
- *              Á¤º¸¸¦ ÀúÀåÇÏ±â À§ÇØ º°µµÀÇ ¸Ş¸ğ¸®¸¦ ¼³Á¤ÇÏÁö ¾Ê°í
- *              Statement¿¡ ÀÖ´Â SavepointÁ¤º¸¸¦ ÀÌ¿ëÇÕ´Ï´Ù.
+ * Description: Implicit savepointë¥¼ ì„¤ì •í•©ë‹ˆë‹¤. Explicitê³¼ ë‹¬ë¦¬ Savepoint
+ *              ì •ë³´ë¥¼ ì €ì¥í•˜ê¸° ìœ„í•´ ë³„ë„ì˜ ë©”ëª¨ë¦¬ë¥¼ ì„¤ì •í•˜ì§€ ì•Šê³ 
+ *              Statementì— ìˆëŠ” Savepointì •ë³´ë¥¼ ì´ìš©í•©ë‹ˆë‹¤.
  *
- *              1: Savepoint¸¦ ÃÊ±âÈ­ ÇÑ´Ù.
- *              2: Implicit Savepoint List¿¡ Ãß°¡ÇÑ´Ù.
+ *              1: Savepointë¥¼ ì´ˆê¸°í™” í•œë‹¤.
+ *              2: Implicit Savepoint Listì— ì¶”ê°€í•œë‹¤.
  *
- * aSavepoint    - [IN] Savepoint°¡ ¼³Á¤µÉ¶§ÀÇ StatementÀÇ Depth.
+ * aSavepoint    - [IN] Savepointê°€ ì„¤ì •ë ë•Œì˜ Statementì˜ Depth.
  * aStmtDepth    - [IN] Statment Depth
- * aOIDNode      - [IN] Implicit Savepoint°¡ ½ÃÀÛ½ÃÀÇ OID ListÀÇ ¸¶Áö¸· Node
- * aLSN          - [IN] Implicit Savepoint°¡ ¼³Á¤µÉ¶§ TransactionÀÌ ±â·ÏÇÑ
- *                      ¸¶Áö¸· Log LSN
- * aLockSequence - [IN] TransctionÀÌ LockÀ» Àâ±â À§ÇØ ¸¶Áö¸·À¸·Î »ç¿ëÇÑ Lock
+ * aOIDNode      - [IN] Implicit Savepointê°€ ì‹œì‘ì‹œì˜ OID Listì˜ ë§ˆì§€ë§‰ Node
+ * aLSN          - [IN] Implicit Savepointê°€ ì„¤ì •ë ë•Œ Transactionì´ ê¸°ë¡í•œ
+ *                      ë§ˆì§€ë§‰ Log LSN
+ * aLockSequence - [IN] Transctionì´ Lockì„ ì¡ê¸° ìœ„í•´ ë§ˆì§€ë§‰ìœ¼ë¡œ ì‚¬ìš©í•œ Lock
  *                      Sequence
  * ***********************************************************************/
 IDE_RC smxSavepointMgr::setImpSavepoint( smxSavepoint ** aSavepoint,
@@ -411,9 +411,9 @@ IDE_RC smxSavepointMgr::setImpSavepoint( smxSavepoint ** aSavepoint,
 
     IDE_ASSERT( aSavepoint != NULL );
 
-    /* Implicit Savepoint´Â update statement°¡ begin½Ã ¼³Á¤µÇ°í
-     * End½Ã »èÁ¦µÈ´Ù. ¶§¹®¿¡ Áßº¹µÈ statment°¡ ¸®½ºÆ®¿¡ ÀÌ¹Ì
-     * Á¸ÀçÇÏ´Â °æ¿ì´Â ¾ø´Ù. */
+    /* Implicit SavepointëŠ” update statementê°€ beginì‹œ ì„¤ì •ë˜ê³ 
+     * Endì‹œ ì‚­ì œëœë‹¤. ë•Œë¬¸ì— ì¤‘ë³µëœ statmentê°€ ë¦¬ìŠ¤íŠ¸ì— ì´ë¯¸
+     * ì¡´ì¬í•˜ëŠ” ê²½ìš°ëŠ” ì—†ë‹¤. */
     IDE_DASSERT( findInImpSvpList( aStmtDepth ) == NULL );
 
     /* smxSavepointMgr_setImpSavepoint_alloc_NewSavepoint.tc */
@@ -425,8 +425,8 @@ IDE_RC smxSavepointMgr::setImpSavepoint( smxSavepoint ** aSavepoint,
     sNewSavepoint->mOffset        = aOIDNode->mOIDCnt;
     sNewSavepoint->mLockSequence  = aLockSequence;
 
-    /* BUG-17073: ÃÖ»óÀ§ Statement°¡ ¾Æ´Ñ Statment¿¡ ´ëÇØ¼­µµ
-     * Partial RollbackÀ» Áö¿øÇØ¾ß ÇÕ´Ï´Ù. */
+    /* BUG-17073: ìµœìƒìœ„ Statementê°€ ì•„ë‹Œ Statmentì— ëŒ€í•´ì„œë„
+     * Partial Rollbackì„ ì§€ì›í•´ì•¼ í•©ë‹ˆë‹¤. */
     sNewSavepoint->mStmtDepth   = aStmtDepth;
 
     sNewSavepoint->mReplImpSvpStmtDepth
@@ -447,19 +447,19 @@ IDE_RC smxSavepointMgr::setImpSavepoint( smxSavepoint ** aSavepoint,
 }
 
 /*************************************************************************
- * Description: Implicit Savepoint·Î±×°¡ ¼³Á¤µÈ ÀÌÈÄ Ã³À½À¸·Î Replication
- *              ´ë»ó ·Î±×(Sender°¡ º¸³»¾ß ÇÒ ·Î±×)°¡ ÇØ´ç TransactionÀÇ¿¡ÇØ
- *              ±â·ÏµÉ °æ¿ì È£ÃâµÈ´Ù. Implicit Savepoint¿¡ mReplImpSvpStmtDepth
- *              ¿¡ ÀÌÀü Implicit SavepointÁß °¡Àå Å« mReplImpSvpStmtDepth + 1À» ÇØ¼­
- *              ±â·ÏÇÑ´Ù. ±×¸®°í ÀÌÀü SavepointÀÇ mReplImpSvpStmtDepthÀÌ
- *              SMI_STATEMENT_DEPTH_NULLÀÌ¸é ÀÚ½ÅÀÇ mReplImpSvpStmtDepth°ú
- *              µ¿ÀÏÇÏ°Ô ¹Ù²Û´Ù. ÀÌÀüÀ¸·Î ÀÌµ¿ÇÏ¸é¼­ SMI_STATEMENT_DEPTH_NULL
- *              °¡ ¾Æ´Ò¶§±îÁö ¹İº¹ÇÑ´Ù.
+ * Description: Implicit Savepointë¡œê·¸ê°€ ì„¤ì •ëœ ì´í›„ ì²˜ìŒìœ¼ë¡œ Replication
+ *              ëŒ€ìƒ ë¡œê·¸(Senderê°€ ë³´ë‚´ì•¼ í•  ë¡œê·¸)ê°€ í•´ë‹¹ Transactionì˜ì—í•´
+ *              ê¸°ë¡ë  ê²½ìš° í˜¸ì¶œëœë‹¤. Implicit Savepointì— mReplImpSvpStmtDepth
+ *              ì— ì´ì „ Implicit Savepointì¤‘ ê°€ì¥ í° mReplImpSvpStmtDepth + 1ì„ í•´ì„œ
+ *              ê¸°ë¡í•œë‹¤. ê·¸ë¦¬ê³  ì´ì „ Savepointì˜ mReplImpSvpStmtDepthì´
+ *              SMI_STATEMENT_DEPTH_NULLì´ë©´ ìì‹ ì˜ mReplImpSvpStmtDepthê³¼
+ *              ë™ì¼í•˜ê²Œ ë°”ê¾¼ë‹¤. ì´ì „ìœ¼ë¡œ ì´ë™í•˜ë©´ì„œ SMI_STATEMENT_DEPTH_NULL
+ *              ê°€ ì•„ë‹ë•Œê¹Œì§€ ë°˜ë³µí•œë‹¤.
  *
- *              ÀÌ¿¡ ´ëÇÑ ÀÚ¼¼ÇÑ »çÇ×Àº smxDef.hÀÇ smxSavepoint¸¦ ÂüÁ¶ÇÏ½Ã±â ¹Ù¶ø´Ï´Ù.
+ *              ì´ì— ëŒ€í•œ ìì„¸í•œ ì‚¬í•­ì€ smxDef.hì˜ smxSavepointë¥¼ ì°¸ì¡°í•˜ì‹œê¸° ë°”ëë‹ˆë‹¤.
  *
- * aSavepoint   - [IN] Replication Log¸¦ ±â·ÏÇÑ StatementÀÇ Implicit Savepoint.
- *                     º¸Åë ÇöÀç TransactionÀÇ ¸¶Áö¸·À¸·Î ½ÃÀÛÇÑ Savepoint
+ * aSavepoint   - [IN] Replication Logë¥¼ ê¸°ë¡í•œ Statementì˜ Implicit Savepoint.
+ *                     ë³´í†µ í˜„ì¬ Transactionì˜ ë§ˆì§€ë§‰ìœ¼ë¡œ ì‹œì‘í•œ Savepoint
  * ***********************************************************************/
 void smxSavepointMgr::setReplSavepoint( smxSavepoint *aSavepoint )
 {
@@ -467,7 +467,7 @@ void smxSavepointMgr::setReplSavepoint( smxSavepoint *aSavepoint )
 
     sCurSavepoint = aSavepoint->mPrvSavepoint;
 
-    /* ÀÌÀü SVPÁß¿¡¼­ °¡Àå Å« mReplImpSvpStmtDepth¸¦ Ã£´Â´Ù. */
+    /* ì´ì „ SVPì¤‘ì—ì„œ ê°€ì¥ í° mReplImpSvpStmtDepthë¥¼ ì°¾ëŠ”ë‹¤. */
     while( sCurSavepoint != &mImpSavepoint )
     {
         if( sCurSavepoint->mReplImpSvpStmtDepth
@@ -496,9 +496,9 @@ void smxSavepointMgr::setReplSavepoint( smxSavepoint *aSavepoint )
 }
 
 /*************************************************************************
- * Description: Implicit Savepoint¸¦ Implicit Savepoint List¿¡¼­ Á¦°ÅÇÑ´Ù.
+ * Description: Implicit Savepointë¥¼ Implicit Savepoint Listì—ì„œ ì œê±°í•œë‹¤.
  *
- * aSavepoint   - [IN] Á¦°ÅÇÒ Implicit Savepoint.
+ * aSavepoint   - [IN] ì œê±°í•  Implicit Savepoint.
  * ***********************************************************************/
 IDE_RC smxSavepointMgr::unsetImpSavepoint( smxSavepoint* aSavepoint )
 {
@@ -512,10 +512,10 @@ IDE_RC smxSavepointMgr::unsetImpSavepoint( smxSavepoint* aSavepoint )
 }
 
 /*************************************************************************
- * Description: Implicit Savepoint±îÁö Partial RollbackÇÑ´Ù.
+ * Description: Implicit Savepointê¹Œì§€ Partial Rollbackí•œë‹¤.
  *
  * aTrans     - [IN] Transaction Pointer
- * aSavepoint - [IN] Partial RollbackÇÒ Implicit Savepoint
+ * aSavepoint - [IN] Partial Rollbackí•  Implicit Savepoint
  *************************************************************************/
 IDE_RC smxSavepointMgr::abortToImpSavepoint( smxTrans*     aTrans,
                                              smxSavepoint* aSavepoint )
@@ -525,21 +525,21 @@ IDE_RC smxSavepointMgr::abortToImpSavepoint( smxTrans*     aTrans,
 
     /*
        PROJ-1553 Replication self-deadlock
-       abort to savepoint½Ã undoÀÛ¾÷À» ÇÏ±â Àü¿¡ abortToSavepoint log¸¦
-       ¸ÕÀú Âïµµ·Ï ¹Ù²Û´Ù.
-       abortToSavepoint log´Â replication¿¡¼­¸¸ »ç¿ëÇÏ±â ¶§¹®¿¡ ¹®Á¦°¡ ¾ø´Ù.
+       abort to savepointì‹œ undoì‘ì—…ì„ í•˜ê¸° ì „ì— abortToSavepoint logë¥¼
+       ë¨¼ì € ì°ë„ë¡ ë°”ê¾¼ë‹¤.
+       abortToSavepoint logëŠ” replicationì—ì„œë§Œ ì‚¬ìš©í•˜ê¸° ë•Œë¬¸ì— ë¬¸ì œê°€ ì—†ë‹¤.
     */
-    //PROJ-1608 recovery From Replication (recovery¸¦ À§ÇØ svp ·Î±× ±â·Ï)
+    //PROJ-1608 recovery From Replication (recoveryë¥¼ ìœ„í•´ svp ë¡œê·¸ ê¸°ë¡)
     if( ( ( aTrans->mLogTypeFlag == SMR_LOG_TYPE_NORMAL ) ||
           ( aTrans->mLogTypeFlag == SMR_LOG_TYPE_REPL_RECOVERY ) ) &&
-        /* Replication Implicit SVP Log°¡ ±â·ÏµÈÀûÀÌ ÀÖ´Ù. */
+        /* Replication Implicit SVP Logê°€ ê¸°ë¡ëœì ì´ ìˆë‹¤. */
         ( aSavepoint->mReplImpSvpStmtDepth != SMI_STATEMENT_DEPTH_NULL ) ) // case 3.
     {
-        /* BUG-17073: ÃÖ»óÀ§ Statement°¡ ¾Æ´Ñ Statment¿¡ ´ëÇØ¼­µµ
-         * Partial RollbackÀ» Áö¿øÇØ¾ß ÇÕ´Ï´Ù.
+        /* BUG-17073: ìµœìƒìœ„ Statementê°€ ì•„ë‹Œ Statmentì— ëŒ€í•´ì„œë„
+         * Partial Rollbackì„ ì§€ì›í•´ì•¼ í•©ë‹ˆë‹¤.
 
            Implicit SVP Name: SMR_IMPLICIT_SVP_NAME +
-                              SavepointÀÇ mReplImpSvpStmtDepth°ª */
+                              Savepointì˜ mReplImpSvpStmtDepthê°’ */
         idlOS::snprintf( aSavepoint->mName,
                          SMX_MAX_SVPNAME_SIZE,
                         "%s%d",
@@ -558,14 +558,14 @@ IDE_RC smxSavepointMgr::abortToImpSavepoint( smxTrans*     aTrans,
               != IDE_SUCCESS );
 
     /* PROJ-1594 Volatile TBS */
-    /* Volatile TBS¿¡ ´ëÇØ¼­µµ undo¸¦ ¼öÇàÇÑ´Ù. */
+    /* Volatile TBSì— ëŒ€í•´ì„œë„ undoë¥¼ ìˆ˜í–‰í•œë‹¤. */
     IDE_TEST(svrRecoveryMgr::undoTrans(&aTrans->mVolatileLogEnv,
                                        aSavepoint->mVolatileLSN)
              != IDE_SUCCESS);
 
     // BUG-22576
-    // partial abortÇÏ±â Àü¿¡ private page list¸¦ table¿¡
-    // ´Ş¾Æ¾ß ÇÑ´Ù.
+    // partial abortí•˜ê¸° ì „ì— private page listë¥¼ tableì—
+    // ë‹¬ì•„ì•¼ í•œë‹¤.
     IDE_TEST(aTrans->addPrivatePageListToTableOnPartialAbort()
              != IDE_SUCCESS);
 
@@ -584,10 +584,10 @@ IDE_RC smxSavepointMgr::abortToImpSavepoint( smxTrans*     aTrans,
 }
 
 /***********************************************************************
- * Description : ÇöÀç Transaction¿¡¼­ ¸¶Áö¸·À¸·Î BeginÇÑ Normal Statment¿¡
- *               ReplicationÀ» À§ÇÑ Savepoint°¡ ¼³Á¤µÇ¾ú´ÂÁö CheckÇÏ°í
- *               ¼³Á¤ÀÌ ¾ÈµÇ¾î ÀÖ´Ù¸é ReplicationÀ» À§ÇØ¼­ Savepoint¸¦
- *               ¼³Á¤ÇÑ´Ù. ¼³Á¤µÇ¾î ÀÖÀ¸¸é ID_TRUE, else ID_FALSE
+ * Description : í˜„ì¬ Transactionì—ì„œ ë§ˆì§€ë§‰ìœ¼ë¡œ Beginí•œ Normal Statmentì—
+ *               Replicationì„ ìœ„í•œ Savepointê°€ ì„¤ì •ë˜ì—ˆëŠ”ì§€ Checkí•˜ê³ 
+ *               ì„¤ì •ì´ ì•ˆë˜ì–´ ìˆë‹¤ë©´ Replicationì„ ìœ„í•´ì„œ Savepointë¥¼
+ *               ì„¤ì •í•œë‹¤. ì„¤ì •ë˜ì–´ ìˆìœ¼ë©´ ID_TRUE, else ID_FALSE
  *
  ***********************************************************************/
 idBool smxSavepointMgr::checkAndSetImpSVP4Repl()
@@ -595,22 +595,22 @@ idBool smxSavepointMgr::checkAndSetImpSVP4Repl()
     smxSavepoint *sCurSavepoint;
     idBool        sSetImpSVP = ID_TRUE;
 
-    /* ¸¶Áö¸·À¸·Î BeginÇÑ Savepoint¸¦ Implicit Svp List¿¡¼­
-     * °¡Á®¿Â´Ù.*/
+    /* ë§ˆì§€ë§‰ìœ¼ë¡œ Beginí•œ Savepointë¥¼ Implicit Svp Listì—ì„œ
+     * ê°€ì ¸ì˜¨ë‹¤.*/
     sCurSavepoint = mImpSavepoint.mPrvSavepoint;
 
-    /* ¸¶Áö¸· Statment¸¸ÀÌ Update°¡ °¡´ÉÇÏ±â ¶§¹®¿¡ ¸¶Áö¸· Savepoint
-       ¸¦ Á¶»çÇÏ¸é µÈ´Ù */
+    /* ë§ˆì§€ë§‰ Statmentë§Œì´ Updateê°€ ê°€ëŠ¥í•˜ê¸° ë•Œë¬¸ì— ë§ˆì§€ë§‰ Savepoint
+       ë¥¼ ì¡°ì‚¬í•˜ë©´ ëœë‹¤ */
     IDE_ASSERT( sCurSavepoint != NULL );
 
     if( sCurSavepoint->mReplImpSvpStmtDepth == SMI_STATEMENT_DEPTH_NULL )
     {
-        /* ReplicationÀ» À§ÇØ¼­ Implicit SVP°¡ ¼³Á¤µÈ ÀûÀÌ ¾ø±â¶§¹®¿¡
+        /* Replicationì„ ìœ„í•´ì„œ Implicit SVPê°€ ì„¤ì •ëœ ì ì´ ì—†ê¸°ë•Œë¬¸ì—
          * ID_FALSE */
         sSetImpSVP = ID_FALSE;
 
-        /*  SMI_STATEMENT_DEPTH_NULLÀÌ ¾Æ´Ï¸é Implici SVPÀÌÈÄ·Î
-         *  Savepoint¸¦ ¼³Á¤ÇÑ °ÍÀÌ´Ù. */
+        /*  SMI_STATEMENT_DEPTH_NULLì´ ì•„ë‹ˆë©´ Implici SVPì´í›„ë¡œ
+         *  Savepointë¥¼ ì„¤ì •í•œ ê²ƒì´ë‹¤. */
         setReplSavepoint( sCurSavepoint );
     }
 
@@ -634,7 +634,7 @@ void smxSavepointMgr::reservePsmSvp( smxOIDNode  *aOIDNode,
 IDE_RC smxSavepointMgr::writePsmSvp( smxTrans* aTrans )
 {
     IDE_DASSERT( mReservePsmSvp == ID_TRUE );
-    //PROJ-1608 recovery From Replication (recovery¸¦ À§ÇØ svp ·Î±× ±â·Ï)
+    //PROJ-1608 recovery From Replication (recoveryë¥¼ ìœ„í•´ svp ë¡œê·¸ ê¸°ë¡)
     if( (aTrans->mLogTypeFlag == SMR_LOG_TYPE_NORMAL) ||
         (aTrans->mLogTypeFlag == SMR_LOG_TYPE_REPL_RECOVERY) )
     {
@@ -655,8 +655,8 @@ IDE_RC smxSavepointMgr::writePsmSvp( smxTrans* aTrans )
 
 IDE_RC smxSavepointMgr::abortToPsmSvp(smxTrans* aTrans)
 {
-    /* BUG-45106 reservePsmSvp¸¦ ¼öÇàÇÏÁö ¾Ê°í ÇØ´ç ÇÔ¼ö¿¡ µé¾î¿Ã °æ¿ì
-                 ¸®½ºÆ® Å½»ö Áß ¹«ÇÑ ·çÇÁ¸¦ µ¹¼ö ÀÖÀ¸¹Ç·Î ½ÇÆĞ Ã³¸® ÇØ¾ß ÇÑ´Ù. */
+    /* BUG-45106 reservePsmSvpë¥¼ ìˆ˜í–‰í•˜ì§€ ì•Šê³  í•´ë‹¹ í•¨ìˆ˜ì— ë“¤ì–´ì˜¬ ê²½ìš°
+                 ë¦¬ìŠ¤íŠ¸ íƒìƒ‰ ì¤‘ ë¬´í•œ ë£¨í”„ë¥¼ ëŒìˆ˜ ìˆìœ¼ë¯€ë¡œ ì‹¤íŒ¨ ì²˜ë¦¬ í•´ì•¼ í•œë‹¤. */
     if ( mPsmSavepoint.mOIDNode == NULL )
     {   
         ideLog::log( IDE_SM_0, "Invalid PsmSavepoint" );
@@ -670,10 +670,10 @@ IDE_RC smxSavepointMgr::abortToPsmSvp(smxTrans* aTrans)
     updateOIDList(aTrans, &mPsmSavepoint);
 
     // PROJ-1553 Replication self-deadlock
-    // abort to savepoint½Ã undoÀÛ¾÷À» ÇÏ±â Àü¿¡ abortToSavepoint log¸¦
-    // ¸ÕÀú Âïµµ·Ï ¹Ù²Û´Ù.
-    // abortToSavepoint log´Â replication¿¡¼­¸¸ »ç¿ëÇÏ±â ¶§¹®¿¡ ¹®Á¦°¡ ¾ø´Ù.
-    // PROJ-1608 recovery From Replication (recovery¸¦ À§ÇØ svp ·Î±× ±â·Ï)
+    // abort to savepointì‹œ undoì‘ì—…ì„ í•˜ê¸° ì „ì— abortToSavepoint logë¥¼
+    // ë¨¼ì € ì°ë„ë¡ ë°”ê¾¼ë‹¤.
+    // abortToSavepoint logëŠ” replicationì—ì„œë§Œ ì‚¬ìš©í•˜ê¸° ë•Œë¬¸ì— ë¬¸ì œê°€ ì—†ë‹¤.
+    // PROJ-1608 recovery From Replication (recoveryë¥¼ ìœ„í•´ svp ë¡œê·¸ ê¸°ë¡)
     if( ( (aTrans->mLogTypeFlag == SMR_LOG_TYPE_NORMAL) ||
           (aTrans->mLogTypeFlag == SMR_LOG_TYPE_REPL_RECOVERY) ) &&
         (mReservePsmSvp == ID_FALSE) )
@@ -690,14 +690,14 @@ IDE_RC smxSavepointMgr::abortToPsmSvp(smxTrans* aTrans)
              != IDE_SUCCESS);
 
     /* PROJ-1594 Volatile TBS */
-    /* Volatile TBS¿¡ ´ëÇØ¼­µµ undo¸¦ ¼öÇàÇÑ´Ù. */
+    /* Volatile TBSì— ëŒ€í•´ì„œë„ undoë¥¼ ìˆ˜í–‰í•œë‹¤. */
     IDE_TEST(svrRecoveryMgr::undoTrans(&aTrans->mVolatileLogEnv,
                                        mPsmSavepoint.mVolatileLSN)
              != IDE_SUCCESS);
 
     // BUG-22576
-    // partial abortÇÏ±â Àü¿¡ private page list¸¦ table¿¡
-    // ´Ş¾Æ¾ß ÇÑ´Ù.
+    // partial abortí•˜ê¸° ì „ì— private page listë¥¼ tableì—
+    // ë‹¬ì•„ì•¼ í•œë‹¤.
     IDE_TEST(aTrans->addPrivatePageListToTableOnPartialAbort()
              != IDE_SUCCESS);
 
@@ -714,10 +714,10 @@ IDE_RC smxSavepointMgr::abortToPsmSvp(smxTrans* aTrans)
 }
 
 /*************************************************************************
- * Description: Implicit Savepoint±îÁö ¸ğµç Å×ÀÌºí¿¡ ´ëÇØ IS¶ôÀ» ÇØÁ¦ÇÏ°í,
- *              temp tableÀÏ°æ¿ì´Â Æ¯º°È÷ IX¶ôµµ ÇØÁ¦ÇÑ´Ù.
+ * Description: Implicit Savepointê¹Œì§€ ëª¨ë“  í…Œì´ë¸”ì— ëŒ€í•´ ISë½ì„ í•´ì œí•˜ê³ ,
+ *              temp tableì¼ê²½ìš°ëŠ” íŠ¹ë³„íˆ IXë½ë„ í•´ì œí•œë‹¤.
  *
- * aTrans     - [IN] Savepoint±îÁö
+ * aTrans     - [IN] Savepointê¹Œì§€
  * aLockSlot  - [IN] Lock Slot Pointer
  * ***********************************************************************/
 IDE_RC smxSavepointMgr::unlockSeveralLock( smxTrans *aTrans,

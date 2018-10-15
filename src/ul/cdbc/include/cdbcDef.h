@@ -15,9 +15,9 @@
  */
 
 /**
- * °³º° ¹ÙÀÎµå Á¤º¸°¡ ¹Ù²¼À»¶§¸¸ ¹ÙÀÎµåÇÏ°Ô ÇÏ·Á¸é USE_CHECK_EACH_PARAM_CHANGED,
- * altibase_get_autocommit()À» »ç¿ëÇÏ·Á¸é SUPPORT_GET_AUTOCOMMIT,
- * µð¹ö±×¿ë ·Î±× ±â´ÉÀ» »ç¿ëÇÏ·Á¸é USE_CDBCLOG¸¦ define ÇÑ´Ù.
+ * ê°œë³„ ë°”ì¸ë“œ ì •ë³´ê°€ ë°”ê¼ˆì„ë•Œë§Œ ë°”ì¸ë“œí•˜ê²Œ í•˜ë ¤ë©´ USE_CHECK_EACH_PARAM_CHANGED,
+ * altibase_get_autocommit()ì„ ì‚¬ìš©í•˜ë ¤ë©´ SUPPORT_GET_AUTOCOMMIT,
+ * ë””ë²„ê·¸ìš© ë¡œê·¸ ê¸°ëŠ¥ì„ ì‚¬ìš©í•˜ë ¤ë©´ USE_CDBCLOGë¥¼ define í•œë‹¤.
  */
 
 #ifndef CDBC_DEF_H
@@ -31,14 +31,14 @@ ACP_EXTERN_C_BEGIN
 #define CDBC_INTERNAL               
 #define CDBC_EXPORT                 
 
-#define CDBC_NULLTERM_SIZE          2       /**< NULL-termÀÇ ÃÖ´ë Å©±â. UTF16 °í·Á */
+#define CDBC_NULLTERM_SIZE          2       /**< NULL-termì˜ ìµœëŒ€ í¬ê¸°. UTF16 ê³ ë ¤ */
 
-#define CDBC_DEFAULT_ARRAY_SIZE     1000    /**< store ÇÒ ¶§ »ç¿ëÇÒ array size */
+#define CDBC_DEFAULT_ARRAY_SIZE     1000    /**< store í•  ë•Œ ì‚¬ìš©í•  array size */
 
 #define CDBC_CLI_SUCCEEDED(aRC)     SQL_SUCCEEDED(aRC)
 #define CDBC_CLI_NOT_SUCCEEDED(aRC) (! CDBC_CLI_SUCCEEDED(aRC))
 
-/* DEBUG·Î ºôµå ÇÒ ¶§´Â Ç×»ó USE_CDBCLOG¸¦ ÄÒ´Ù */
+/* DEBUGë¡œ ë¹Œë“œ í•  ë•ŒëŠ” í•­ìƒ USE_CDBCLOGë¥¼ ì¼ ë‹¤ */
 #if defined(DEBUG) && !defined(USE_CDBCLOG)
     #define USE_CDBCLOG             ACP_TRUE
 #endif

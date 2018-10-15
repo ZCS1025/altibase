@@ -19,7 +19,7 @@
  *
  * $Id:$
  *
- * º» ÆÄÀÏÀº extent descriptor¿¡ ´ëÇÑ Çì´õ ÆÄÀÏÀÌ´Ù.
+ * ë³¸ íŒŒì¼ì€ extent descriptorì— ëŒ€í•œ í—¤ë” íŒŒì¼ì´ë‹¤.
  *
  **********************************************************************/
 
@@ -33,7 +33,7 @@
 class sdpsfExtent
 {
 public:
-    /* ext desc ÃÊ±âÈ­ */
+    /* ext desc ì´ˆê¸°í™” */
     static IDE_RC initialize();
 
     /* dummy function */
@@ -42,7 +42,7 @@ public:
 public:
     static inline void init( sdpsfExtDesc*  aExtDesc );
 
-    /* PID¸¦ ¼¼ÆÃÇÑ´Ù.(tablespace¿¡ extent¸¦ ºÙÀÏ¶§ »ç¿ë)*/
+    /* PIDë¥¼ ì„¸íŒ…í•œë‹¤.(tablespaceì— extentë¥¼ ë¶™ì¼ë•Œ ì‚¬ìš©)*/
     static inline IDE_RC setFirstPID( sdpsfExtDesc*  aExtDesc,
                                       scPageID     aPID,
                                       sdrMtx*      aMtx );
@@ -51,10 +51,10 @@ public:
                                   UInt           aFlag,
                                   sdrMtx*        aMtx );
 
-    /* ext descÀÇ first page ¹İÈ¯ */
+    /* ext descì˜ first page ë°˜í™˜ */
     static inline scPageID getFstPID( sdpsfExtDesc*  aExtDesc );
 
-    /* ext descÀÇ first page ¹İÈ¯ */
+    /* ext descì˜ first page ë°˜í™˜ */
     static inline UInt getFlag( sdpsfExtDesc*  aExtDesc );
 
     static inline scPageID getFstDataPID( sdpsfExtDesc*  aExtDesc );
@@ -75,7 +75,7 @@ inline void sdpsfExtent::init( sdpsfExtDesc*  aExtDesc )
 }
 
 /***********************************************************************
- * Description : Ext DescÀÇ First Page ID¸¦ ¼³Á¤ÇÑ´Ù.
+ * Description : Ext Descì˜ First Page IDë¥¼ ì„¤ì •í•œë‹¤.
  **********************************************************************/
 inline IDE_RC sdpsfExtent::setFirstPID( sdpsfExtDesc*  aExtDesc,
                                         scPageID       aPID,
@@ -91,7 +91,7 @@ inline IDE_RC sdpsfExtent::setFirstPID( sdpsfExtDesc*  aExtDesc,
 }
 
 /***********************************************************************
- * Description : Ext DescÀÇ Flag¸¦ ¼³Á¤ÇÑ´Ù.
+ * Description : Ext Descì˜ Flagë¥¼ ì„¤ì •í•œë‹¤.
  **********************************************************************/
 inline IDE_RC sdpsfExtent::setFlag( sdpsfExtDesc*  aExtDesc,
                                     UInt           aFlag,
@@ -107,7 +107,7 @@ inline IDE_RC sdpsfExtent::setFlag( sdpsfExtDesc*  aExtDesc,
 }
 
 /***********************************************************************
- * Description : Ext DescÀÇ Flag°ªÀ» ¸®ÅÏÇÑ´Ù.
+ * Description : Ext Descì˜ Flagê°’ì„ ë¦¬í„´í•œë‹¤.
  **********************************************************************/
 inline UInt sdpsfExtent::getFlag( sdpsfExtDesc*  aExtDesc )
 {
@@ -115,7 +115,7 @@ inline UInt sdpsfExtent::getFlag( sdpsfExtDesc*  aExtDesc )
 }
 
 /***********************************************************************
- * Description : Ext DescÀÇ First Page ID¸¦ ¹İÈ¯
+ * Description : Ext Descì˜ First Page IDë¥¼ ë°˜í™˜
  **********************************************************************/
 inline  scPageID sdpsfExtent::getFstPID( sdpsfExtDesc*  aExtDesc )
 {
@@ -130,7 +130,7 @@ inline scPageID sdpsfExtent::getFstDataPID( sdpsfExtDesc*  aExtDesc )
 
     if( SDP_SF_IS_FST_EXTDIRPAGE_AT_EXT( aExtDesc->mFlag ) )
     {
-        /* Ã¹¹øÂ° ÆäÀÌÁö°¡ Extent Directory Page·Î »ç¿ëµÇ¾ú½À´Ï´Ù. */
+        /* ì²«ë²ˆì§¸ í˜ì´ì§€ê°€ Extent Directory Pageë¡œ ì‚¬ìš©ë˜ì—ˆìŠµë‹ˆë‹¤. */
         sFstDataPID++;
     }
 

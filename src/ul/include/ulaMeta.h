@@ -23,12 +23,12 @@
 #define ULA_ROLE_ANALYSIS   (1)
 
 /* Replication Handshake Flags */
-// 1π¯ ∫Ò∆Æ : Endian bit : 0 - Big Endian, 1 - Little Endian
+// 1Î≤à ÎπÑÌä∏ : Endian bit : 0 - Big Endian, 1 - Little Endian
 #define ULA_LITTLE_ENDIAN                   (0x00000001)
 #define ULA_BIG_ENDIAN                      (0x00000000)
 #define ULA_ENDIAN_MASK                     (0x00000001)
 
-// 3π¯ ∫Ò∆Æ : Wakeup Peer Sender
+// 3Î≤à ÎπÑÌä∏ : Wakeup Peer Sender
 #define ULA_WAKEUP_PEER_SENDER_FLAG_SET     (0x00000004)
 #define ULA_WAKEUP_PEER_SENDER_FLAG_UNSET   (0x00000000)
 #define ULA_WAKEUP_PEER_SENDER_MASK         (0x00000004)
@@ -37,7 +37,7 @@
 
 
 /* PROJ-1090 Function-based Index
- *  Hidden Column¿Œ¡ˆ ø©∫Œ: QCM_COLUMN_HIDDEN_COLUMN_MASK ¬¸¡∂
+ *  Hidden ColumnÏù∏ÏßÄ Ïó¨Î∂Ä: QCM_COLUMN_HIDDEN_COLUMN_MASK Ï∞∏Ï°∞
  */
 #define ULN_QPFLAG_HIDDEN_COLUMN_MASK            (0x00002000)
 #define ULN_QPFLAG_HIDDEN_COLUMN_FALSE           (0x00000000)

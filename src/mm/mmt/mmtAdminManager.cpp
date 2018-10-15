@@ -32,8 +32,8 @@ IDE_RC mmtAdminManager::initialize()
                                IDU_MUTEX_KIND_POSIX,
                                IDV_WAIT_INDEX_NULL) != IDE_SUCCESS);
     // bug-24366: sendMsgService mutex invalid
-    // mutex°¡ ÃÊ±âÈ­ µÇ¾úÀ¸¹Ç·Î »ç¿ë°¡´ÉÇÑ »óÅÂ·Î ¼³Á¤.
-    // flag »ç¿ëÃ³: sendMsgService
+    // mutexê°€ ì´ˆê¸°í™” ë˜ì—ˆìœ¼ë¯€ë¡œ ì‚¬ìš©ê°€ëŠ¥í•œ ìƒíƒœë¡œ ì„¤ì •.
+    // flag ì‚¬ìš©ì²˜: sendMsgService
     mMutexEnable = ID_TRUE;
 
     return IDE_SUCCESS;
@@ -49,10 +49,10 @@ IDE_RC mmtAdminManager::finalize()
     if (mTask != NULL)
     {
         // proj_2160 cm_type removal
-        // server shutdown ÇÒ¶§, ºó ÆĞÅ¶ Àü¼ÛÀ» ÇØÁÖ¾î¾ßÇÔ
-        // ¸Ş½ÃÁö ÇÁ·ÎÅäÄİ Á¾·á ÇÃ·¡±× Àü¼ÛÇÏ¿© cmiRecv¿¡¼­ loop Å»Ãâ
-        // ¾È±×·¯¸é, isql¿¡¼­ link failure·Î ¹İÈ¯µÊ.
-        // cf) A5ÀÎ °æ¿ì mmcTask::finalize()¾È¿¡¼­ Ã³¸®µÊ
+        // server shutdown í• ë•Œ, ë¹ˆ íŒ¨í‚· ì „ì†¡ì„ í•´ì£¼ì–´ì•¼í•¨
+        // ë©”ì‹œì§€ í”„ë¡œí† ì½œ ì¢…ë£Œ í”Œë˜ê·¸ ì „ì†¡í•˜ì—¬ cmiRecvì—ì„œ loop íƒˆì¶œ
+        // ì•ˆê·¸ëŸ¬ë©´, isqlì—ì„œ link failureë¡œ ë°˜í™˜ë¨.
+        // cf) A5ì¸ ê²½ìš° mmcTask::finalize()ì•ˆì—ì„œ ì²˜ë¦¬ë¨
         sCtx = mTask->getProtocolContext();
         if (cmiGetPacketType(sCtx) != CMP_PACKET_TYPE_A5)
         {
@@ -81,8 +81,8 @@ IDE_RC mmtAdminManager::finalize()
     IDE_TEST(mMutex.destroy() != IDE_SUCCESS);
 
     // bug-24366: sendMsgService mutex invalid
-    // mutex°¡ destroy µÇ¾úÀ¸¹Ç·Î »ç¿ë ºÒ°¡´ÉÇÑ »óÅÂ·Î ¼³Á¤.
-    // flag »ç¿ëÃ³: sendMsgService
+    // mutexê°€ destroy ë˜ì—ˆìœ¼ë¯€ë¡œ ì‚¬ìš© ë¶ˆê°€ëŠ¥í•œ ìƒíƒœë¡œ ì„¤ì •.
+    // flag ì‚¬ìš©ì²˜: sendMsgService
     mMutexEnable = ID_FALSE;
 
     return IDE_SUCCESS;
@@ -132,35 +132,35 @@ IDE_RC mmtAdminManager::sendMsgService(const SChar *aMessage, SInt aCRFlag, idBo
     SChar               sStr[10]        = "\n";
 
     // bug-24366: sendMsgService mutex invalid.
-    // ¿¡·¯ ½Ã³ª¸®¿À:
-    // db shutdown ¸í·ÉÀ» ¹Ş°Ô µÇ¸é shutdown °úÁ¤À» Âß ¼öÇàÇÏ°í,
-    // mmPhaseActionShutdownCM ¿¡¼­ mmtAdminManager::finalize¸¦ È£ÃâÇÏ¿©
-    // mutex¸¦ destroyÇÏ°í, ÀÌÈÄ¿¡ cmiFinalize µî¿¡¼­
-    // ¿¡·¯°¡ ¹ß»ı(ex)semaphore del err)ÇÏ¸é mmm::executeInternalÀÇ
-    // ¿¹¿ÜÃ³¸® ºÎºĞ¿¡¼­ sendMsgService(IDE_CALLBACK_SEND_MSG())¸¦ È£ÃâÇÑ´Ù.
-    // sendMsgService¸¦ È£ÃâÇÏ´Â ÀÌÀ¯´Â ¿¡·¯¸Ş½ÃÁö¸¦ iSQL·Îµµ ¼Û½ÅÇÏ±â À§ÇÔ.
-    // ±×·¯¸é º» ÇÔ¼ö¿¡¼­ ÀÌ¹Ì destroy µÈ mutex¿¡ lockÀ» °É·Á°í ÇÏ¿© assert.
-    // Âü°í·Î À§ÀÇ mmtAdminManager::finalize¿¡¼­ ÀÌ¹Ì linkµµ ÇØÁ¦µÇ±â ¶§¹®¿¡
-    // »ç½Ç»ó cmÀ» ÅëÇØ isql·Î ¿¡·¯¸Ş½ÃÁö¸¦ ¼Û½ÅÇÒ ¼ö°¡ ¾ø´Ù.
-    // º¯°æÀü: mutex »óÅÂ¿Í °ü°è¾øÀÌ ¹«Á¶°Ç mutex.lock
-    // º¯°æÈÄ: mutex°¡ ÀÌ¹Ì destroy µÇ¾ú´Ù¸é, iSQL·Î ¸Ş½ÃÁö´Â ¼Û½ÅÇÏÁö ¸øÇÏ°í
-    // ¼­¹ö ¸Ş½ÃÁö ·Î±×¸¸ ³²±âµµ·Ï ÇÔ.
-    // cf) mmtAdminManager¿¡¼­ mutex lockÀ» »ç¿ëÇÏ´Âµ¥, ÇÊ¿ä¾ø¾î º¸ÀÎ´Ù.
-    //   (sysdba ¸ğµå´Â ÀüÃ¼ db¿¡¼­ ´ÜÀÏ session¸¸ °¡´ÉÇÏ¹Ç·Î ÇÊ¿ä¾øÁö ¾ÊÀ»±î?)
+    // ì—ëŸ¬ ì‹œë‚˜ë¦¬ì˜¤:
+    // db shutdown ëª…ë ¹ì„ ë°›ê²Œ ë˜ë©´ shutdown ê³¼ì •ì„ ì­‰ ìˆ˜í–‰í•˜ê³ ,
+    // mmPhaseActionShutdownCM ì—ì„œ mmtAdminManager::finalizeë¥¼ í˜¸ì¶œí•˜ì—¬
+    // mutexë¥¼ destroyí•˜ê³ , ì´í›„ì— cmiFinalize ë“±ì—ì„œ
+    // ì—ëŸ¬ê°€ ë°œìƒ(ex)semaphore del err)í•˜ë©´ mmm::executeInternalì˜
+    // ì˜ˆì™¸ì²˜ë¦¬ ë¶€ë¶„ì—ì„œ sendMsgService(IDE_CALLBACK_SEND_MSG())ë¥¼ í˜¸ì¶œí•œë‹¤.
+    // sendMsgServiceë¥¼ í˜¸ì¶œí•˜ëŠ” ì´ìœ ëŠ” ì—ëŸ¬ë©”ì‹œì§€ë¥¼ iSQLë¡œë„ ì†¡ì‹ í•˜ê¸° ìœ„í•¨.
+    // ê·¸ëŸ¬ë©´ ë³¸ í•¨ìˆ˜ì—ì„œ ì´ë¯¸ destroy ëœ mutexì— lockì„ ê±¸ë ¤ê³  í•˜ì—¬ assert.
+    // ì°¸ê³ ë¡œ ìœ„ì˜ mmtAdminManager::finalizeì—ì„œ ì´ë¯¸ linkë„ í•´ì œë˜ê¸° ë•Œë¬¸ì—
+    // ì‚¬ì‹¤ìƒ cmì„ í†µí•´ isqlë¡œ ì—ëŸ¬ë©”ì‹œì§€ë¥¼ ì†¡ì‹ í•  ìˆ˜ê°€ ì—†ë‹¤.
+    // ë³€ê²½ì „: mutex ìƒíƒœì™€ ê´€ê³„ì—†ì´ ë¬´ì¡°ê±´ mutex.lock
+    // ë³€ê²½í›„: mutexê°€ ì´ë¯¸ destroy ë˜ì—ˆë‹¤ë©´, iSQLë¡œ ë©”ì‹œì§€ëŠ” ì†¡ì‹ í•˜ì§€ ëª»í•˜ê³ 
+    // ì„œë²„ ë©”ì‹œì§€ ë¡œê·¸ë§Œ ë‚¨ê¸°ë„ë¡ í•¨.
+    // cf) mmtAdminManagerì—ì„œ mutex lockì„ ì‚¬ìš©í•˜ëŠ”ë°, í•„ìš”ì—†ì–´ ë³´ì¸ë‹¤.
+    //   (sysdba ëª¨ë“œëŠ” ì „ì²´ dbì—ì„œ ë‹¨ì¼ sessionë§Œ ê°€ëŠ¥í•˜ë¯€ë¡œ í•„ìš”ì—†ì§€ ì•Šì„ê¹Œ?)
     if (mMutexEnable == ID_TRUE)
     {
         IDE_ASSERT(mMutex.lock(NULL /* idvSQL* */) == IDE_SUCCESS);
 
-        sFlag = 1; // err½Ã¿¡ unlock ÀÌ ÇÊ¿äÇÔÀ» Ç¥½Ã
+        sFlag = 1; // errì‹œì— unlock ì´ í•„ìš”í•¨ì„ í‘œì‹œ
         if (mTask != NULL)
         {
             sProtocolContext = mTask->getProtocolContext();
 
-            sFlag = 2; // err½Ã¿¡ cm °ü·Ã Ã³¸®°¡ ÇÊ¿äÇÔÀ» Ç¥½Ã
+            sFlag = 2; // errì‹œì— cm ê´€ë ¨ ì²˜ë¦¬ê°€ í•„ìš”í•¨ì„ í‘œì‹œ
 
             if (cmiGetPacketType(sProtocolContext) != CMP_PACKET_TYPE_A5)
             {
-                /* BUG-44125 [mm-cli] IPCDA ¸ğµå Å×½ºÆ® Áß hang - iloader CLOB */
+                /* BUG-44125 [mm-cli] IPCDA ëª¨ë“œ í…ŒìŠ¤íŠ¸ ì¤‘ hang - iloader CLOB */
                 if( aCRFlag == 1)
                 {
                     sStrMessageLen += idlOS::strlen(sStr);
@@ -217,7 +217,7 @@ IDE_RC mmtAdminManager::sendMsgService(const SChar *aMessage, SInt aCRFlag, idBo
                 IDE_TEST(cmiFlushProtocol(sProtocolContext, ID_FALSE) != IDE_SUCCESS);
             }
         }
-        sFlag = 0; // unlockÀ» ¾ÈÇØµµ µÊÀ» Ç¥½Ã
+        sFlag = 0; // unlockì„ ì•ˆí•´ë„ ë¨ì„ í‘œì‹œ
         IDE_ASSERT(mMutex.unlock() == IDE_SUCCESS);
     }
 
@@ -234,7 +234,7 @@ IDE_RC mmtAdminManager::sendMsgService(const SChar *aMessage, SInt aCRFlag, idBo
     IDE_EXCEPTION_END;
     {
         // bug-24366: sendMsgService mutex invalid.
-        // flag°¡ 1 ÀÌ»óÀÌ¸é lock »óÅÂÀÌ¹Ç·Î unlockÀ» ÇØ¾ß ÇÑ´Ù.
+        // flagê°€ 1 ì´ìƒì´ë©´ lock ìƒíƒœì´ë¯€ë¡œ unlockì„ í•´ì•¼ í•œë‹¤.
         if (sFlag != 0)
         {
             IDE_ASSERT(mMutex.unlock() == IDE_SUCCESS);
@@ -244,8 +244,8 @@ IDE_RC mmtAdminManager::sendMsgService(const SChar *aMessage, SInt aCRFlag, idBo
             {
                 IDE_PUSH();
                 // bug-26983: codesonar: return value ignored
-                // void ³ª assert ·Î Ã³¸®ÇØ¾ß ÇÏ´Âµ¥ ¸Ş¸ğ¸® ÇØÁ¦ ¹×
-                // ÃÊ±âÈ­°¡ ½ÇÆĞÇÏ¸é ¾ÈµÇ¹Ç·Î assert·Î Ã³¸®ÇÏ±â·Î ÇÔ.
+                // void ë‚˜ assert ë¡œ ì²˜ë¦¬í•´ì•¼ í•˜ëŠ”ë° ë©”ëª¨ë¦¬ í•´ì œ ë°
+                // ì´ˆê¸°í™”ê°€ ì‹¤íŒ¨í•˜ë©´ ì•ˆë˜ë¯€ë¡œ assertë¡œ ì²˜ë¦¬í•˜ê¸°ë¡œ í•¨.
                 IDE_ASSERT(cmiFinalizeProtocol(&sProtocol) == IDE_SUCCESS);
                 IDE_POP();
             }
@@ -311,14 +311,14 @@ IDE_RC mmtAdminManager::sendNChar()
 
         if (cmiGetPacketType(sProtocolContext) != CMP_PACKET_TYPE_A5)
         {
-            //BUGBUG : ¸Å¹ø Àü¼ÛÇÏÁö ¸»°í NCHAR °ªÀÌ À¯È¿ÇÒ¶§¸¸ Àü¼ÛÇÏµµ·Ï º¯°æÇÒ °Í
+            //BUGBUG : ë§¤ë²ˆ ì „ì†¡í•˜ì§€ ë§ê³  NCHAR ê°’ì´ ìœ íš¨í• ë•Œë§Œ ì „ì†¡í•˜ë„ë¡ ë³€ê²½í•  ê²ƒ
 
             // CMP_DB_PROPERTY_NLS_CHARACTERSET
             sPropertyID = CMP_DB_PROPERTY_NLS_CHARACTERSET;
             sCharSet    = smiGetDBCharSet();
             sLen        = idlOS::strlen(sCharSet);
 
-            /* BUG-44125 [mm-cli] IPCDA ¸ğµå Å×½ºÆ® Áß hang - iloader CLOB */
+            /* BUG-44125 [mm-cli] IPCDA ëª¨ë“œ í…ŒìŠ¤íŠ¸ ì¤‘ hang - iloader CLOB */
             sNCharSet    = smiGetNationalCharSet();
             sNLen        = idlOS::strlen(sNCharSet);
 
@@ -384,8 +384,8 @@ IDE_RC mmtAdminManager::sendNChar()
         {
             IDE_PUSH();
             // bug-26983: codesonar: return value ignored
-            // void ³ª assert ·Î Ã³¸®ÇØ¾ß ÇÏ´Âµ¥ ¸Ş¸ğ¸® ÇØÁ¦ ¹×
-            // ÃÊ±âÈ­°¡ ½ÇÆĞÇÏ¸é ¾ÈµÇ¹Ç·Î assert·Î Ã³¸®ÇÏ±â·Î ÇÔ.
+            // void ë‚˜ assert ë¡œ ì²˜ë¦¬í•´ì•¼ í•˜ëŠ”ë° ë©”ëª¨ë¦¬ í•´ì œ ë°
+            // ì´ˆê¸°í™”ê°€ ì‹¤íŒ¨í•˜ë©´ ì•ˆë˜ë¯€ë¡œ assertë¡œ ì²˜ë¦¬í•˜ê¸°ë¡œ í•¨.
             IDE_ASSERT(cmiFinalizeProtocol(&sProtocol) == IDE_SUCCESS);
             IDE_POP();
         }

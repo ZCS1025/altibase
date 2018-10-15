@@ -48,7 +48,7 @@ SInt iloLogFile::OpenFile(SChar *szFileName)
     }
     else
     {
-        m_LogFp = ilo_fopen(szFileName, "wb");      //BUG-24511 ¸ðµç FopenÀº binary typeÀ¸·Î ¼³Á¤ÇØ¾ßÇÔ
+        m_LogFp = ilo_fopen(szFileName, "wb");      //BUG-24511 ëª¨ë“  Fopenì€ binary typeìœ¼ë¡œ ì„¤ì •í•´ì•¼í•¨
     }
     IDE_TEST( m_LogFp == NULL );
 
@@ -102,8 +102,8 @@ void iloLogFile::PrintLogMsg(const SChar *szMsg)
     return;
 }
 
-// BUG-21640 iloader¿¡¼­ ¿¡·¯¸Þ½ÃÁö¸¦ ¾Ë¾Æº¸±â ÆíÇÏ°Ô Ãâ·ÂÇÏ±â
-// ±âÁ¸ ¿¡·¯¸Þ½ÃÁö¿Í µ¿ÀÏÇÑ Çü½ÄÀ¸·Î Ãâ·ÂÇÏ´Â ÇÔ¼öÃß°¡
+// BUG-21640 iloaderì—ì„œ ì—ëŸ¬ë©”ì‹œì§€ë¥¼ ì•Œì•„ë³´ê¸° íŽ¸í•˜ê²Œ ì¶œë ¥í•˜ê¸°
+// ê¸°ì¡´ ì—ëŸ¬ë©”ì‹œì§€ì™€ ë™ì¼í•œ í˜•ì‹ìœ¼ë¡œ ì¶œë ¥í•˜ëŠ” í•¨ìˆ˜ì¶”ê°€
 void iloLogFile::PrintLogErr(uteErrorMgr *aMgr)
 {
     IDE_TEST(m_UseLogFile == SQL_FALSE);
@@ -137,7 +137,7 @@ void iloLogFile::setIsCSV ( SInt aIsCSV )
     mIsCSV = aIsCSV;
 }
 
-// BUG-21640 iloader¿¡¼­ ¿¡·¯¸Þ½ÃÁö¸¦ ¾Ë¾Æº¸±â ÆíÇÏ°Ô Ãâ·ÂÇÏ±â
+// BUG-21640 iloaderì—ì„œ ì—ëŸ¬ë©”ì‹œì§€ë¥¼ ì•Œì•„ë³´ê¸° íŽ¸í•˜ê²Œ ì¶œë ¥í•˜ê¸°
 SInt iloLogFile::PrintOneRecord( ALTIBASE_ILOADER_HANDLE  aHandle,
                                  iloTableInfo            *pTableInfo,
                                  SInt                     aReadRecCount,
@@ -188,7 +188,7 @@ SInt iloLogFile::PrintOneRecord( ALTIBASE_ILOADER_HANDLE  aHandle,
 
     if ( m_UseLogFile == SQL_TRUE )
     {
-        // log ÆÄÀÏ¿¡ rowcount ¸¦ Ãâ·ÂÇÑ´Ù.
+        // log íŒŒì¼ì— rowcount ë¥¼ ì¶œë ¥í•œë‹¤.
         idlOS::fprintf(m_LogFp, "Record %d : ", aReadRecCount);
     }
 
@@ -209,9 +209,9 @@ SInt iloLogFile::PrintOneRecord( ALTIBASE_ILOADER_HANDLE  aHandle,
             // TASK-2657
             //=======================================================
             // proj1778 nchar
-            // ±âÁ¸¿¡´Â csvÀÌ¸é fwrite¸¦ »ç¿ëÇÏ°í ¾Æ´Ï¸é fprintf(%s)¸¦ »ç¿ëÇß´Âµ¥ utf16
-            // nchar°¡ Ãß°¡µÇ¸é¼­ nullÁ¾·áÀÚ°¡ ¹®ÀÚ¾È¿¡ ÀÖÀ»¼ö ÀÖÀ¸¹Ç·Î fwrite·Î ÅëÀÏ½ÃÅ²´Ù
-            // mAttrFailLen[i] °¡ 0ÀÌ ¾Æ´Ï¶ó¸é read file½ÃÀÇ failed columnÀÌ µé¾îÀÖ´Ù´Â ¾ê±â
+            // ê¸°ì¡´ì—ëŠ” csvì´ë©´ fwriteë¥¼ ì‚¬ìš©í•˜ê³  ì•„ë‹ˆë©´ fprintf(%s)ë¥¼ ì‚¬ìš©í–ˆëŠ”ë° utf16
+            // ncharê°€ ì¶”ê°€ë˜ë©´ì„œ nullì¢…ë£Œìžê°€ ë¬¸ìžì•ˆì— ìžˆì„ìˆ˜ ìžˆìœ¼ë¯€ë¡œ fwriteë¡œ í†µì¼ì‹œí‚¨ë‹¤
+            // mAttrFailLen[i] ê°€ 0ì´ ì•„ë‹ˆë¼ë©´ read fileì‹œì˜ failed columnì´ ë“¤ì–´ìžˆë‹¤ëŠ” ì–˜ê¸°
             if (pTableInfo->mAttrFailLen[i] != 0)
             {
                 sDataPtr = pTableInfo->GetAttrFail( i );
@@ -223,7 +223,7 @@ SInt iloLogFile::PrintOneRecord( ALTIBASE_ILOADER_HANDLE  aHandle,
                 sDataLen = (SInt)(pTableInfo->mAttrInd[i][aArrayCount]);
             }
     
-            /* data file¿¡ °ø¹éÀÎ Ä®·³ÀÌ ÀÖ´Â °æ¿ì */ 
+            /* data fileì— ê³µë°±ì¸ ì¹¼ëŸ¼ì´ ìžˆëŠ” ê²½ìš° */ 
             if (( sHandle->mUseApi == SQL_TRUE ) &&
                     ( sHandle->mLogCallback != NULL ))      
             {
@@ -250,7 +250,7 @@ SInt iloLogFile::PrintOneRecord( ALTIBASE_ILOADER_HANDLE  aHandle,
 
                 if ( m_UseLogFile == SQL_TRUE )
                 {
-                    // BUG-28069: log, bad¿¡µµ csv Çü½ÄÀ¸·Î ±â·Ï
+                    // BUG-28069: log, badì—ë„ csv í˜•ì‹ìœ¼ë¡œ ê¸°ë¡
                     if ((mIsCSV == ID_TRUE) && (pTableInfo->mAttrFailLen[i] == 0))
                     {
                         IDE_TEST_RAISE( iloDataFile::csvWrite( sHandle, sDataPtr, sDataLen, m_LogFp )
@@ -282,7 +282,7 @@ SInt iloLogFile::PrintOneRecord( ALTIBASE_ILOADER_HANDLE  aHandle,
         case ISP_ATTR_VARBIT:
 
             // BUG - 18804
-            // mAttrFail¿¡ fail³­ ÇÊµå°¡ ÀÖ´ÂÁö È®ÀÎÇÑ ÈÄ ¾øÀ¸¸é mAttrCVal¿¡¼­ °¡Á®¿È.
+            // mAttrFailì— failë‚œ í•„ë“œê°€ ìžˆëŠ”ì§€ í™•ì¸í•œ í›„ ì—†ìœ¼ë©´ mAttrCValì—ì„œ ê°€ì ¸ì˜´.
             if (pTableInfo->mAttrFailLen[i] != 0)
             {
                 sDataPtr = pTableInfo->GetAttrFail( i );
@@ -353,9 +353,9 @@ SInt iloLogFile::PrintOneRecord( ALTIBASE_ILOADER_HANDLE  aHandle,
         if ( m_UseLogFile == SQL_TRUE )
         {
             /* TASK-2657 */
-            // BUG-24898 iloader ÆÄ½Ì¿¡·¯ »ó¼¼È­
-            // log ÆÄÀÏ¿¡ Ãâ·Â½Ã µ¥ÀÌÅ¸ Ãâ·ÂÈÄ ¹Ýµå½Ã ¿£ÅÍ°¡ µé¾î°¥¼ö ÀÖµµ·ÏÇÑ´Ù.
-            // rowterm Àº Ãâ·ÂÇÒ ÇÊ¿ä¾øÀÌ µ¥ÀÌÅ¸¸¦ Ãâ·ÂÈÄ ¸¶Áö¸·¿¡ ¿£ÅÍ¸¦ ³Ö´Â´Ù.
+            // BUG-24898 iloader íŒŒì‹±ì—ëŸ¬ ìƒì„¸í™”
+            // log íŒŒì¼ì— ì¶œë ¥ì‹œ ë°ì´íƒ€ ì¶œë ¥í›„ ë°˜ë“œì‹œ ì—”í„°ê°€ ë“¤ì–´ê°ˆìˆ˜ ìžˆë„ë¡í•œë‹¤.
+            // rowterm ì€ ì¶œë ¥í•  í•„ìš”ì—†ì´ ë°ì´íƒ€ë¥¼ ì¶œë ¥í›„ ë§ˆì§€ë§‰ì— ì—”í„°ë¥¼ ë„£ëŠ”ë‹¤.
             if( mIsCSV == ID_TRUE )
             {
                 if ( i != pTableInfo->GetAttrCount()-1 )

@@ -47,7 +47,7 @@ static IDE_RC mtfDecodeCountListEstimate( mtcNode*     aNode,
 mtfModule mtfDecodeCountList = {
     2|MTC_NODE_OPERATOR_AGGREGATION,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
+    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìê°€ ì•„ë‹˜)
     mtfDecodeCountListFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -112,15 +112,15 @@ typedef struct mtfDecodeCountListCalculateInfo
 
 typedef struct mtfDecodeCountListInfo
 {
-    // Ã¹¹øÂ° ÀÎÀÚ
+    // ì²«ë²ˆì§¸ ì¸ì
     mtcExecute     * sCountColumnExecute;
     mtcNode        * sCountColumnNode;
 
-    // µÎ¹øÂ° ÀÎÀÚ
+    // ë‘ë²ˆì§¸ ì¸ì
     mtcExecute     * sExprExecute;
     mtcNode        * sExprNode;
 
-    // return ÀÎÀÚ
+    // return ì¸ì
     mtcColumn      * sReturnColumn;
     void           * sReturnValue;
     mtcStack       * sReturnStack;
@@ -187,8 +187,8 @@ IDE_RC mtfDecodeCountListEstimate( mtcNode*     aNode,
     
     sFence = aNode->lflag & MTC_NODE_ARGUMENT_COUNT_MASK;
 
-    /* BUG-44109 pivot ±¸¹®ÀÇ transform ÇÔ¼öÀÎ list ¿ë decode ÇÔ¼ö¿¡¼­
-       Àß¸øµÈ ÀÎÀÚ °³¼ö¸¦ »ç¿ëÇÒ °æ¿ì ºñÁ¤»óÁ¾·áÇÕ´Ï´Ù.  */
+    /* BUG-44109 pivot êµ¬ë¬¸ì˜ transform í•¨ìˆ˜ì¸ list ìš© decode í•¨ìˆ˜ì—ì„œ
+       ì˜ëª»ëœ ì¸ì ê°œìˆ˜ë¥¼ ì‚¬ìš©í•  ê²½ìš° ë¹„ì •ìƒì¢…ë£Œí•©ë‹ˆë‹¤.  */
     IDE_TEST_RAISE( ( sFence != 1 ) && ( sFence != 3 ),
                     ERR_INVALID_FUNCTION_ARGUMENT );
 
@@ -247,11 +247,11 @@ IDE_RC mtfDecodeCountListEstimate( mtcNode*     aNode,
                 sListStack = (mtcStack*)aStack[3].value;
                 sListCount = aStack[3].column->precision;
 
-                /* BUG-40349 sListCount´Â 2ÀÌ»óÀÌ¾î¾ß ÇÑ´Ù. */
+                /* BUG-40349 sListCountëŠ” 2ì´ìƒì´ì–´ì•¼ í•œë‹¤. */
                 IDE_TEST_RAISE( sListCount < 2, ERR_LIST_COUNT );
 
-                // listÀÇ ¸ğµç element°¡ µ¿ÀÏÇÑ typeÀ¸·Î convertµÇ¾î¾ß ÇÏ¹Ç·Î
-                // listÀÇ Ã¹¹øÂ° element¿¡ ¸ÂÃá´Ù.
+                // listì˜ ëª¨ë“  elementê°€ ë™ì¼í•œ typeìœ¼ë¡œ convertë˜ì–´ì•¼ í•˜ë¯€ë¡œ
+                // listì˜ ì²«ë²ˆì§¸ elementì— ë§ì¶˜ë‹¤.
                 IDE_TEST_RAISE( sListStack[0].column->module == &mtdList,
                                 ERR_CONVERSION_NOT_APPLICABLE );
         
@@ -301,7 +301,7 @@ IDE_RC mtfDecodeCountListEstimate( mtcNode*     aNode,
             {
                 aTemplate->rows[aNode->table].execute[aNode->column] = mtfDecodeCountListExecute;
 
-                // Count °á°ú¸¦ ÀúÀåÇÔ
+                // Count ê²°ê³¼ë¥¼ ì €ì¥í•¨
                 IDE_TEST( mtc::initializeColumn( aStack[0].column,
                                                  & mtdBigint,
                                                  0,
@@ -309,7 +309,7 @@ IDE_RC mtfDecodeCountListEstimate( mtcNode*     aNode,
                                                  0 )
                           != IDE_SUCCESS );
         
-                // Count info Á¤º¸¸¦ mtdBinary¿¡ ÀúÀå
+                // Count info ì •ë³´ë¥¼ mtdBinaryì— ì €ì¥
                 sBinaryPrecision = ID_SIZEOF(mtfDecodeCountListInfo);
                 IDE_TEST( mtc::initializeColumn( aStack[0].column + 1,
                                                  & mtdBinary,
@@ -322,13 +322,13 @@ IDE_RC mtfDecodeCountListEstimate( mtcNode*     aNode,
             {
                 aTemplate->rows[aNode->table].execute[aNode->column] = mtfDecodeCountListExecute;
 
-                // Count °á°ú¸¦ ÀúÀåÇÒ ÄÃ·³Á¤º¸
+                // Count ê²°ê³¼ë¥¼ ì €ì¥í•  ì»¬ëŸ¼ì •ë³´
                 IDE_TEST( aCallBack->alloc( aCallBack->info,
                                             ID_SIZEOF(mtcColumn),
                                             (void**)&sMtcColumn )
                           != IDE_SUCCESS );
         
-                // Count °á°ú¸¦ ÀúÀåÇÔ
+                // Count ê²°ê³¼ë¥¼ ì €ì¥í•¨
                 IDE_TEST( mtc::initializeColumn( sMtcColumn,
                                                  & mtdBigint,
                                                  0,
@@ -336,7 +336,7 @@ IDE_RC mtfDecodeCountListEstimate( mtcNode*     aNode,
                                                  0 )
                           != IDE_SUCCESS );
         
-                // execution¿ë sListCount°³ÀÇ stack°ú bigint value¸¦ ÀúÀåÇÒ °ø°£À» ¼³Á¤ÇÑ´Ù.
+                // executionìš© sListCountê°œì˜ stackê³¼ bigint valueë¥¼ ì €ì¥í•  ê³µê°„ì„ ì„¤ì •í•œë‹¤.
                 IDE_TEST( mtc::initializeColumn( aStack[0].column,
                                                  & mtdList,
                                                  2,
@@ -344,13 +344,13 @@ IDE_RC mtfDecodeCountListEstimate( mtcNode*     aNode,
                                                  sMtcColumn->column.size * sListCount )
                           != IDE_SUCCESS );
 
-                // estimate¿ë sListCount°³ÀÇ stackÀ» »ı¼ºÇÑ´Ù.
+                // estimateìš© sListCountê°œì˜ stackì„ ìƒì„±í•œë‹¤.
                 IDE_TEST( aCallBack->alloc( aCallBack->info,
                                             ID_SIZEOF(mtcStack) * sListCount,
                                             (void**)&(aStack[0].value) )
                           != IDE_SUCCESS);
 
-                // list stackÀ» smiColumn.value¿¡ ±â·ÏÇØµĞ´Ù.
+                // list stackì„ smiColumn.valueì— ê¸°ë¡í•´ë‘”ë‹¤.
                 aStack[0].column->column.value = aStack[0].value;
 
                 sListStack = (mtcStack*)aStack[0].value;
@@ -360,7 +360,7 @@ IDE_RC mtfDecodeCountListEstimate( mtcNode*     aNode,
                     sListStack[sCount].value  = sMtcColumn->module->staticNull;
                 }
         
-                // Count info Á¤º¸¸¦ mtdBinary¿¡ ÀúÀå
+                // Count info ì •ë³´ë¥¼ mtdBinaryì— ì €ì¥
                 sBinaryPrecision = ID_SIZEOF(mtfDecodeCountListInfo);
                 IDE_TEST( mtc::initializeColumn( aStack[0].column + 1,
                                                  & mtdBinary,
@@ -416,7 +416,7 @@ IDE_RC mtfDecodeCountListEstimate( mtcNode*     aNode,
 
             if ( sIsConstValue == ID_TRUE )
             {
-                // mtfDecodeCountListCalculateInfo ÀúÀåÇÒ °ø°£À» ÇÒ´ç
+                // mtfDecodeCountListCalculateInfo ì €ì¥í•  ê³µê°„ì„ í• ë‹¹
                 IDE_TEST( aCallBack->alloc( aCallBack->info,
                                             ID_SIZEOF(mtfDecodeCountListCalculateInfo),
                                             (void**) & sCalculateInfo )
@@ -441,7 +441,7 @@ IDE_RC mtfDecodeCountListEstimate( mtcNode*     aNode,
 
                     sCalculateInfo->sSearchCount = 1;
                     
-                    // »ó¼ö tupleÀº ÀçÇÒ´çµÇ¹Ç·Î º¹»çÇØ¼­ ÀúÀåÇÑ´Ù.
+                    // ìƒìˆ˜ tupleì€ ì¬í• ë‹¹ë˜ë¯€ë¡œ ë³µì‚¬í•´ì„œ ì €ì¥í•œë‹¤.
                     mtc::copyColumn( sMtcColumn,
                                      &(aTemplate->rows[sNode->table].columns[sNode->column]) );
                     
@@ -474,11 +474,11 @@ IDE_RC mtfDecodeCountListEstimate( mtcNode*     aNode,
                           ( sCount < sCalculateInfo->sSearchCount ) && ( sNode != NULL );
                           sCount++, sNode = sNode->next, sMtcColumn++ )
                     {
-                        // ¸ğµÎ µ¿ÀÏ typeÀÌ¾î¾ß ÇÑ´Ù.
+                        // ëª¨ë‘ ë™ì¼ typeì´ì–´ì•¼ í•œë‹¤.
                         IDE_DASSERT( sListStack[0].column->module->no ==
                                      sListStack[sCount].column->module->no );
                         
-                        // »ó¼ö tupleÀº ÀçÇÒ´çµÇ¹Ç·Î º¹»çÇØ¼­ ÀúÀåÇÑ´Ù.
+                        // ìƒìˆ˜ tupleì€ ì¬í• ë‹¹ë˜ë¯€ë¡œ ë³µì‚¬í•´ì„œ ì €ì¥í•œë‹¤.
                         mtc::copyColumn( sMtcColumn,
                                          &(aTemplate->rows[sNode->table].columns[sNode->column]) );
                         
@@ -498,7 +498,7 @@ IDE_RC mtfDecodeCountListEstimate( mtcNode*     aNode,
                                   ID_SIZEOF(mtfDecodeCountSortedValue),
                                   compareDecodeCountSortedValue );
                 
-                    // Áßº¹ÀÌ ÀÖ¾î¼­´Â ¾ÈµÈ´Ù. (bsearch´Â ÇÑ°³¸¸ Ã£¾ÆÁØ´Ù.)
+                    // ì¤‘ë³µì´ ìˆì–´ì„œëŠ” ì•ˆëœë‹¤. (bsearchëŠ” í•œê°œë§Œ ì°¾ì•„ì¤€ë‹¤.)
                     for ( sCount = 1; sCount < sCalculateInfo->sSearchCount; sCount++ )
                     {
                         sValueInfo1.column = (const mtcColumn *)
@@ -542,7 +542,7 @@ IDE_RC mtfDecodeCountListEstimate( mtcNode*     aNode,
         
         aTemplate->rows[aNode->table].execute[aNode->column] = mtfDecodeCountListExecute;
 
-        // Count °á°ú¸¦ ÀúÀåÇÔ
+        // Count ê²°ê³¼ë¥¼ ì €ì¥í•¨
         IDE_TEST( mtc::initializeColumn( aStack[0].column,
                                          & mtdBigint,
                                          0,
@@ -550,7 +550,7 @@ IDE_RC mtfDecodeCountListEstimate( mtcNode*     aNode,
                                          0 )
                   != IDE_SUCCESS );
         
-        // Count info´Â ÇÊ¿ä¾ø´Ù.
+        // Count infoëŠ” í•„ìš”ì—†ë‹¤.
         IDE_TEST( mtc::initializeColumn( aStack[0].column + 1,
                                          & mtdBinary,
                                          1,
@@ -561,7 +561,7 @@ IDE_RC mtfDecodeCountListEstimate( mtcNode*     aNode,
 
     if ( sFence == 3 )
     {
-        // decode_Count_list(i1, i2, (1,2,3))°ú °°ÀÌ ¼¼¹øÂ° ÀÎÀÚ°¡ »ó¼öÀÎ °æ¿ì
+        // decode_Count_list(i1, i2, (1,2,3))ê³¼ ê°™ì´ ì„¸ë²ˆì§¸ ì¸ìê°€ ìƒìˆ˜ì¸ ê²½ìš°
         if ( sListCount > 1 )
         {
             sIsConstValue = ID_TRUE;
@@ -618,7 +618,7 @@ IDE_RC mtfDecodeCountListEstimate( mtcNode*     aNode,
             }
         }
             
-        // BUG-38070 undef typeÀ¸·Î re-estimateÇÏÁö ¾Ê´Â´Ù.
+        // BUG-38070 undef typeìœ¼ë¡œ re-estimateí•˜ì§€ ì•ŠëŠ”ë‹¤.
         if ( ( aTemplate->variableRow != ID_USHORT_MAX ) &&
              ( ( aNode->lflag & MTC_NODE_BIND_MASK ) == MTC_NODE_BIND_EXIST ) )
         {
@@ -696,12 +696,12 @@ IDE_RC mtfDecodeCountListInitialize( mtcNode*     aNode,
     IDE_TEST_RAISE( sInfo == NULL, ERR_LIST_INFO );
 
     //-----------------------------
-    // Count info ÃÊ±âÈ­
+    // Count info ì´ˆê¸°í™”
     //-----------------------------
 
     sArgNode[0] = aNode->arguments;
 
-    // Count column ¼³Á¤
+    // Count column ì„¤ì •
     sInfo->sCountColumnExecute = aTemplate->rows[sArgNode[0]->table].execute + sArgNode[0]->column;
     sInfo->sCountColumnNode    = sArgNode[0];
 
@@ -709,7 +709,7 @@ IDE_RC mtfDecodeCountListInitialize( mtcNode*     aNode,
     {
         sArgNode[1] = sArgNode[0]->next;
 
-        // expression column ¼³Á¤
+        // expression column ì„¤ì •
         sInfo->sExprExecute = aTemplate->rows[sArgNode[1]->table].execute + sArgNode[1]->column;
         sInfo->sExprNode    = sArgNode[1];
     }
@@ -718,7 +718,7 @@ IDE_RC mtfDecodeCountListInitialize( mtcNode*     aNode,
         // Nothing to do.
     }
     
-    // return column ¼³Á¤
+    // return column ì„¤ì •
     sInfo->sReturnColumn = aTemplate->rows[aNode->table].columns + aNode->column;
     sInfo->sReturnValue  = (void *)
         ((UChar*) aTemplate->rows[aNode->table].row + sInfo->sReturnColumn->column.offset);
@@ -733,9 +733,9 @@ IDE_RC mtfDecodeCountListInitialize( mtcNode*     aNode,
         sInfo->sReturnStack = (mtcStack*)sInfo->sReturnValue;
         sInfo->sReturnCount = sInfo->sReturnColumn->precision;
         
-        // stack ÃÊ±âÈ­
-        // (1) estimate¶§ »ı¼ºÇÑ column Á¤º¸·Î ÃÊ±âÈ­
-        // (2) value¸¦ ½ÇÁ¦ °ªÀ¸·Î ¼³Á¤
+        // stack ì´ˆê¸°í™”
+        // (1) estimateë•Œ ìƒì„±í•œ column ì •ë³´ë¡œ ì´ˆê¸°í™”
+        // (2) valueë¥¼ ì‹¤ì œ ê°’ìœ¼ë¡œ ì„¤ì •
         sTempStack = (mtcStack*) sInfo->sReturnColumn->column.value;
         sTempValue = (mtdBigintType*)
             ( (UChar*)sInfo->sReturnStack + ID_SIZEOF(mtcStack) * sInfo->sReturnCount );
@@ -753,7 +753,7 @@ IDE_RC mtfDecodeCountListInitialize( mtcNode*     aNode,
     }
     
     //-----------------------------
-    // Count °á°ú¸¦ ÃÊ±âÈ­
+    // Count ê²°ê³¼ë¥¼ ì´ˆê¸°í™”
     //-----------------------------
     
     if ( sInfo->sReturnStack == NULL )
@@ -821,10 +821,10 @@ IDE_RC mtfDecodeCountListAggregate( mtcNode*     aNode,
     {
         IDE_TEST_RAISE( aRemain < 1, ERR_STACK_OVERFLOW );
 
-        // ¼¼¹øÂ° ÀÎÀÚ´Â ¹İµå½Ã »ó¼ö¿©¾ß ÇÑ´Ù.
+        // ì„¸ë²ˆì§¸ ì¸ìëŠ” ë°˜ë“œì‹œ ìƒìˆ˜ì—¬ì•¼ í•œë‹¤.
         IDE_TEST_RAISE( sCalculateInfo == NULL, ERR_INVALID_FUNCTION_ARGUMENT );
         
-        // µÎ¹øÂ° ÀÎÀÚ
+        // ë‘ë²ˆì§¸ ì¸ì
         IDE_TEST( sInfo->sExprExecute->calculate( sInfo->sExprNode,
                                                   aStack,
                                                   aRemain,
@@ -842,7 +842,7 @@ IDE_RC mtfDecodeCountListAggregate( mtcNode*     aNode,
                       != IDE_SUCCESS );
         }
 
-        // decode ¿¬»ê¼öÇà
+        // decode ì—°ì‚°ìˆ˜í–‰
         sExprValue.column = aStack[0].column;
         sExprValue.value  = aStack[0].value;
         sExprValue.idx    = 0;
@@ -856,13 +856,13 @@ IDE_RC mtfDecodeCountListAggregate( mtcNode*     aNode,
     }
     else
     {
-        // null¸¸ ¾Æ´Ï¸é µÊ
+        // nullë§Œ ì•„ë‹ˆë©´ ë¨
         sFound = & sExprValue;
     }
 
     if ( sFound != NULL )
     {
-        // Ã¹¹øÂ° ÀÎÀÚ
+        // ì²«ë²ˆì§¸ ì¸ì
         IDE_TEST( sInfo->sCountColumnExecute->calculate( sInfo->sCountColumnNode,
                                                          aStack,
                                                          aRemain,

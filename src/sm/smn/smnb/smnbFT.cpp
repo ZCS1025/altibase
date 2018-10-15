@@ -21,7 +21,7 @@
  * Description
  *
  *   PROJ-1618
- *   Mem BTree Index ÀÇ DUMP¸¦ À§ÇÑ ÇÔ¼ö
+ *   Mem BTree Index ì˜ DUMPë¥¼ ìœ„í•œ í•¨ìˆ˜
  *
  **********************************************************************/
 
@@ -40,13 +40,13 @@
  * Description
  *
  *   D$MEM_INDEX_BTREE_STRUCTURE
- *   : MEMORY BTREE INDEXÀÇ Page Tree ±¸Á¶ Ãâ·Â
+ *   : MEMORY BTREE INDEXì˜ Page Tree êµ¬ì¡° ì¶œë ¥
  *
  *
  **********************************************************************/
 
 //------------------------------------------------------
-// D$MEM_INDEX_BTREE_STRUCTURE Dump TableÀÇ Column Description
+// D$MEM_INDEX_BTREE_STRUCTURE Dump Tableì˜ Column Description
 //------------------------------------------------------
 
 static iduFixedTableColDesc gDumpMemBTreeStructureColDesc[]=
@@ -102,7 +102,7 @@ static iduFixedTableColDesc gDumpMemBTreeStructureColDesc[]=
 };
 
 //------------------------------------------------------
-// D$MEM_INDEX_BTREE_STRUCTURE Dump TableÀÇ Table Description
+// D$MEM_INDEX_BTREE_STRUCTURE Dump Tableì˜ Table Description
 //------------------------------------------------------
 
 iduFixedTableDesc  gDumpMemBTreeStructureTableDesc =
@@ -118,7 +118,7 @@ iduFixedTableDesc  gDumpMemBTreeStructureTableDesc =
 };
 
 //------------------------------------------------------
-// D$VOL_INDEX_BTREE_STRUCTURE Dump TableÀÇ Column Description
+// D$VOL_INDEX_BTREE_STRUCTURE Dump Tableì˜ Column Description
 //------------------------------------------------------
 
 static iduFixedTableColDesc gDumpVolBTreeStructureColDesc[]=
@@ -174,7 +174,7 @@ static iduFixedTableColDesc gDumpVolBTreeStructureColDesc[]=
 };
 
 //------------------------------------------------------
-// D$VOL_INDEX_BTREE_STRUCTURE Dump TableÀÇ Table Description
+// D$VOL_INDEX_BTREE_STRUCTURE Dump Tableì˜ Table Description
 //------------------------------------------------------
 
 iduFixedTableDesc  gDumpVolBTreeStructureTableDesc =
@@ -190,7 +190,7 @@ iduFixedTableDesc  gDumpVolBTreeStructureTableDesc =
 };
 
 //------------------------------------------------------
-// D$MEM_INDEX_BTREE_STRUCTURE Dump TableÀÇ ·¹ÄÚµå Build
+// D$MEM_INDEX_BTREE_STRUCTURE Dump Tableì˜ ë ˆì½”ë“œ Build
 //------------------------------------------------------
 
 IDE_RC
@@ -224,7 +224,7 @@ smnbFT::buildRecordTreeStructure( idvSQL              * /*aStatistics*/,
     {
         /* BUG-32417 [sm-mem-index] The fixed table 'X$MEM_BTREE_HEADER'
          * doesn't consider that indices is disabled. 
-         * IndexRuntimeHeader°¡ ¾ø´Â °æ¿ì´Â Á¦¿ÜÇÑ´Ù. */
+         * IndexRuntimeHeaderê°€ ì—†ëŠ” ê²½ìš°ëŠ” ì œì™¸í•œë‹¤. */
     }
     else
     {
@@ -376,13 +376,13 @@ smnbFT::traverseBuildTreePage( void                * aHeader,
  * Description
  *
  *   D$MEM_INDEX_BTREE_KEY
- *   : MEMORY BTREE INDEXÀÇ KEY Ãâ·Â
+ *   : MEMORY BTREE INDEXì˜ KEY ì¶œë ¥
  *
  *
  **********************************************************************/
 
 //------------------------------------------------------
-// D$MEM_INDEX_BTREE_KEY Dump TableÀÇ Column Description
+// D$MEM_INDEX_BTREE_KEY Dump Tableì˜ Column Description
 //------------------------------------------------------
 
 static iduFixedTableColDesc gDumpMemBTreeKeyColDesc[]=
@@ -470,7 +470,7 @@ static iduFixedTableColDesc gDumpMemBTreeKeyColDesc[]=
 };
 
 //------------------------------------------------------
-// D$MEM_INDEX_BTREE_KEY Dump TableÀÇ Table Description
+// D$MEM_INDEX_BTREE_KEY Dump Tableì˜ Table Description
 //------------------------------------------------------
 
 iduFixedTableDesc  gDumpMemBTreeKeyTableDesc =
@@ -486,7 +486,7 @@ iduFixedTableDesc  gDumpMemBTreeKeyTableDesc =
 };
 
 //------------------------------------------------------
-// D$VOL_INDEX_BTREE_KEY Dump TableÀÇ Column Description
+// D$VOL_INDEX_BTREE_KEY Dump Tableì˜ Column Description
 //------------------------------------------------------
 
 static iduFixedTableColDesc gDumpVolBTreeKeyColDesc[]=
@@ -574,7 +574,7 @@ static iduFixedTableColDesc gDumpVolBTreeKeyColDesc[]=
 };
 
 //------------------------------------------------------
-// D$VOL_INDEX_BTREE_KEY Dump TableÀÇ Table Description
+// D$VOL_INDEX_BTREE_KEY Dump Tableì˜ Table Description
 //------------------------------------------------------
 
 iduFixedTableDesc  gDumpVolBTreeKeyTableDesc =
@@ -590,7 +590,7 @@ iduFixedTableDesc  gDumpVolBTreeKeyTableDesc =
 };
 
 //------------------------------------------------------
-// D$MEM_INDEX_BTREE_HEADER Dump TableÀÇ ·¹ÄÚµå Build
+// D$MEM_INDEX_BTREE_HEADER Dump Tableì˜ ë ˆì½”ë“œ Build
 //------------------------------------------------------
 
 IDE_RC smnbFT::buildRecordKey( idvSQL              * /*aStatistics*/,
@@ -624,7 +624,7 @@ IDE_RC smnbFT::buildRecordKey( idvSQL              * /*aStatistics*/,
     {
         /* BUG-32417 [sm-mem-index] The fixed table 'X$MEM_BTREE_HEADER'
          * doesn't consider that indices is disabled. 
-         * IndexRuntimeHeader°¡ ¾ø´Â °æ¿ì´Â Á¦¿ÜÇÑ´Ù. */
+         * IndexRuntimeHeaderê°€ ì—†ëŠ” ê²½ìš°ëŠ” ì œì™¸í•œë‹¤. */
     }
     else
     {
@@ -797,7 +797,7 @@ IDE_RC smnbFT::traverseBuildKey( void                * aHeader,
         }
         
         //------------------------------
-        // Columnº° Value String »ı¼º
+        // Columnë³„ Value String ìƒì„±
         //------------------------------
         
         for ( sKeyColumn = aIdxHdr->columns, j = 0;
@@ -876,7 +876,7 @@ IDE_RC smnbFT::traverseBuildKey( void                * aHeader,
 
 //======================================================================
 //  X$MEM_BTREE_HEADER
-//  memory indexÀÇ run-time header¸¦ º¸¿©ÁÖ´Â peformance view
+//  memory indexì˜ run-time headerë¥¼ ë³´ì—¬ì£¼ëŠ” peformance view
 //======================================================================
 IDE_RC smnbFT::buildRecordForMemBTreeHeader(idvSQL              * /*aStatistics*/,
                                             void                * aHeader,
@@ -904,7 +904,7 @@ IDE_RC smnbFT::buildRecordForMemBTreeHeader(idvSQL              * /*aStatistics*
 
 //======================================================================
 //  X$VOL_BTREE_HEADER
-//  volatile indexÀÇ run-time header¸¦ º¸¿©ÁÖ´Â peformance view
+//  volatile indexì˜ run-time headerë¥¼ ë³´ì—¬ì£¼ëŠ” peformance view
 //======================================================================
 IDE_RC smnbFT::buildRecordForVolBTreeHeader(idvSQL              * /*aStatistics*/,
                                             void                * aHeader,
@@ -919,7 +919,7 @@ IDE_RC smnbFT::buildRecordForVolBTreeHeader(idvSQL              * /*aStatistics*
 
 //======================================================================
 //  X$TEMP_BTREE_HEADER
-//  temporary indexÀÇ run-time header¸¦ º¸¿©ÁÖ´Â peformance view
+//  temporary indexì˜ run-time headerë¥¼ ë³´ì—¬ì£¼ëŠ” peformance view
 //======================================================================
 IDE_RC smnbFT::buildRecordForTempBTreeHeader(idvSQL              * /*aStatistics*/,
                                              void                * aHeader,
@@ -965,8 +965,8 @@ IDE_RC smnbFT::buildRecordForBTreeHeader( void                * aHeader,
     {
         /* BUG-32292 [sm-util] Self deadlock occur since fixed-table building
          * operation uses another transaction.
-         * NestedTransactionÀ» »ç¿ëÇÏ¸é Self-deadlock ¿ì·Á°¡ ÀÖ´Ù.
-         * µû¶ó¼­ id Memory ¿µ¿ªÀ¸·ÎºÎÅÍ Iterator¸¦ ¾ò¾î TransactionÀ» ¾ò¾î³½´Ù. */
+         * NestedTransactionì„ ì‚¬ìš©í•˜ë©´ Self-deadlock ìš°ë ¤ê°€ ìˆë‹¤.
+         * ë”°ë¼ì„œ id Memory ì˜ì—­ìœ¼ë¡œë¶€í„° Iteratorë¥¼ ì–»ì–´ Transactionì„ ì–»ì–´ë‚¸ë‹¤. */
         sTrans = ((smiIterator*)aMemory->getContext())->trans;
     }
 
@@ -982,7 +982,7 @@ IDE_RC smnbFT::buildRecordForBTreeHeader( void                * aHeader,
 
         if( SM_SCN_IS_INFINITE(sPtr->mCreateSCN) == ID_TRUE )
         {
-            /* BUG-14974: ¹«ÇÑ Loop¹ß»ı.*/
+            /* BUG-14974: ë¬´í•œ Loopë°œìƒ.*/
             sCurPtr = sNxtPtr;
             continue;
         }
@@ -997,8 +997,8 @@ IDE_RC smnbFT::buildRecordForBTreeHeader( void                * aHeader,
             continue;
         }
 
-        //lockÀ» Àâ¾ÒÁö¸¸ tableÀÌ dropµÈ °æ¿ì¿¡´Â skip;
-        // BUG-30867 Discard µÈ Tablespace¿¡ ¼ÓÇÑ Tableµµ SkipµÇ¾î¾ß ÇÔ
+        //lockì„ ì¡ì•˜ì§€ë§Œ tableì´ dropëœ ê²½ìš°ì—ëŠ” skip;
+        // BUG-30867 Discard ëœ Tablespaceì— ì†í•œ Tableë„ Skipë˜ì–´ì•¼ í•¨
         if(( smcTable::isDropedTable(sTableHeader) == ID_TRUE ) ||
            ( sctTableSpaceMgr::hasState( sTableHeader->mSpaceID,
                                          SCT_SS_INVALID_DISK_TBS ) == ID_TRUE ))
@@ -1011,7 +1011,7 @@ IDE_RC smnbFT::buildRecordForBTreeHeader( void                * aHeader,
 
         if( sIndexCnt != 0  )
         {
-            //DDL À» ¹æÁö.
+            //DDL ì„ ë°©ì§€.
             IDE_TEST( smLayerCallback::setImpSavepoint( sTrans, 
                                                         &sISavepoint,
                                                         sDummy )
@@ -1020,8 +1020,8 @@ IDE_RC smnbFT::buildRecordForBTreeHeader( void                * aHeader,
                                                         SMC_TABLE_LOCK( sTableHeader ) )
                       != IDE_SUCCESS );
 
-            //lockÀ» Àâ¾ÒÁö¸¸ tableÀÌ dropµÈ °æ¿ì¿¡´Â skip;
-            // BUG-30867 Discard µÈ Tablespace¿¡ ¼ÓÇÑ Tableµµ SkipµÇ¾î¾ß ÇÔ
+            //lockì„ ì¡ì•˜ì§€ë§Œ tableì´ dropëœ ê²½ìš°ì—ëŠ” skip;
+            // BUG-30867 Discard ëœ Tablespaceì— ì†í•œ Tableë„ Skipë˜ì–´ì•¼ í•¨
             if(( smcTable::isDropedTable(sTableHeader) == ID_TRUE ) ||
                ( sctTableSpaceMgr::hasState( sTableHeader->mSpaceID,
                                              SCT_SS_INVALID_DISK_TBS ) == ID_TRUE ))
@@ -1036,10 +1036,10 @@ IDE_RC smnbFT::buildRecordForBTreeHeader( void                * aHeader,
                 continue;
             }//if
 
-            // lockÀ» ´ë±âÇÏ´Â µ¿¾È index°¡ dropµÇ¾ú°Å³ª, »õ·Î¿î index°¡
-            // »ı¼ºµÇ¾úÀ» ¼ö ÀÖÀ¸¹Ç·Î Á¤È®ÇÑ index ¼ö¸¦ ´Ù½Ã ±¸ÇÑ´Ù.
-            // »Ó¸¸ ¾Æ´Ï¶ó, index cnt¸¦ Áõ°¡½ÃÅ² ÈÄ index¸¦ »ı¼ºÇÏ¹Ç·Î
-            // index°¡ ¿Ï·áµÇÁö ¸øÇÏ¸é index cnt°¡ °¨¼ÒÇÏ¹Ç·Î ´Ù½Ã ±¸ÇØ¾ß ÇÔ.
+            // lockì„ ëŒ€ê¸°í•˜ëŠ” ë™ì•ˆ indexê°€ dropë˜ì—ˆê±°ë‚˜, ìƒˆë¡œìš´ indexê°€
+            // ìƒì„±ë˜ì—ˆì„ ìˆ˜ ìˆìœ¼ë¯€ë¡œ ì •í™•í•œ index ìˆ˜ë¥¼ ë‹¤ì‹œ êµ¬í•œë‹¤.
+            // ë¿ë§Œ ì•„ë‹ˆë¼, index cntë¥¼ ì¦ê°€ì‹œí‚¨ í›„ indexë¥¼ ìƒì„±í•˜ë¯€ë¡œ
+            // indexê°€ ì™„ë£Œë˜ì§€ ëª»í•˜ë©´ index cntê°€ ê°ì†Œí•˜ë¯€ë¡œ ë‹¤ì‹œ êµ¬í•´ì•¼ í•¨.
             sIndexCnt = smcTable::getIndexCount(sTableHeader);
 
             for( i = 0; i < sIndexCnt; i++ )
@@ -1079,7 +1079,7 @@ IDE_RC smnbFT::buildRecordForBTreeHeader( void                * aHeader,
                           SMI_INDEX_UNIQUE_ENABLE ) ? 'T' : 'F';
                     sIndexHeader4PerfV.mUsedNodeCount = sIndexHeader->nodeCount;
 
-                    // BUG-18292 : V$MEM_BTREE_HEADER Á¤º¸ Ãß°¡
+                    // BUG-18292 : V$MEM_BTREE_HEADER ì •ë³´ ì¶”ê°€
                     sIndexHeader4PerfV.mPrepareNodeCount =
                         sIndexHeader->mNodePool.getFreeSlotCount();
 
@@ -1100,7 +1100,7 @@ IDE_RC smnbFT::buildRecordForBTreeHeader( void                * aHeader,
             IDE_TEST( smLayerCallback::unsetImpSavepoint( sTrans, 
                                                           sISavepoint )
                       != IDE_SUCCESS );
-        }// if ÀÎµ¦½º°¡ ÀÖÀ¸¸é
+        }// if ì¸ë±ìŠ¤ê°€ ìˆìœ¼ë©´
         sCurPtr = sNxtPtr;
     }// while
 
@@ -1322,7 +1322,7 @@ iduFixedTableDesc  gVolBTreeHeaderDesc=
 
 //======================================================================
 //  X$MEM_BTREE_STAT
-//  memory indexÀÇ run-time statistic informationÀ» À§ÇÑ peformance view
+//  memory indexì˜ run-time statistic informationì„ ìœ„í•œ peformance view
 //======================================================================
 IDE_RC smnbFT::buildRecordForMemBTreeStat(idvSQL              * /*aStatistics*/,
                                           void                * aHeader,
@@ -1350,7 +1350,7 @@ IDE_RC smnbFT::buildRecordForMemBTreeStat(idvSQL              * /*aStatistics*/,
 
 //======================================================================
 //  X$VOL_BTREE_STAT
-//  volatile indexÀÇ run-time statistic informationÀ» À§ÇÑ peformance view
+//  volatile indexì˜ run-time statistic informationì„ ìœ„í•œ peformance view
 //======================================================================
 IDE_RC smnbFT::buildRecordForVolBTreeStat(idvSQL              * /*aStatistics*/,
                                           void                * aHeader,
@@ -1365,7 +1365,7 @@ IDE_RC smnbFT::buildRecordForVolBTreeStat(idvSQL              * /*aStatistics*/,
 
 //======================================================================
 //  X$TEMP_BTREE_STAT
-//  temp indexÀÇ run-time statistic informationÀ» À§ÇÑ peformance view
+//  temp indexì˜ run-time statistic informationì„ ìœ„í•œ peformance view
 //======================================================================
 IDE_RC smnbFT::buildRecordForTempBTreeStat(idvSQL              * /*aStatistics*/,
                                            void                * aHeader,
@@ -1414,8 +1414,8 @@ IDE_RC smnbFT::buildRecordForBTreeStat(void                * aHeader,
     {
         /* BUG-32292 [sm-util] Self deadlock occur since fixed-table building
          * operation uses another transaction. 
-         * NestedTransactionÀ» »ç¿ëÇÏ¸é Self-deadlock ¿ì·Á°¡ ÀÖ´Ù.
-         * µû¶ó¼­ id Memory ¿µ¿ªÀ¸·ÎºÎÅÍ Iterator¸¦ ¾ò¾î TransactionÀ» ¾ò¾î³½´Ù. */
+         * NestedTransactionì„ ì‚¬ìš©í•˜ë©´ Self-deadlock ìš°ë ¤ê°€ ìˆë‹¤.
+         * ë”°ë¼ì„œ id Memory ì˜ì—­ìœ¼ë¡œë¶€í„° Iteratorë¥¼ ì–»ì–´ Transactionì„ ì–»ì–´ë‚¸ë‹¤. */
         sTrans = ((smiIterator*)aMemory->getContext())->trans;
     }
 
@@ -1431,7 +1431,7 @@ IDE_RC smnbFT::buildRecordForBTreeStat(void                * aHeader,
 
         if( SM_SCN_IS_INFINITE(sPtr->mCreateSCN) == ID_TRUE )
         {
-            /* BUG-14974: ¹«ÇÑ Loop¹ß»ı.*/
+            /* BUG-14974: ë¬´í•œ Loopë°œìƒ.*/
             sCurPtr = sNxtPtr;
             continue;
         }
@@ -1446,8 +1446,8 @@ IDE_RC smnbFT::buildRecordForBTreeStat(void                * aHeader,
             continue;
         }
 
-        //lockÀ» Àâ¾ÒÁö¸¸ tableÀÌ dropµÈ °æ¿ì¿¡´Â skip;
-        // BUG-30867 Discard µÈ Tablespace¿¡ ¼ÓÇÑ Tableµµ SkipµÇ¾î¾ß ÇÔ
+        //lockì„ ì¡ì•˜ì§€ë§Œ tableì´ dropëœ ê²½ìš°ì—ëŠ” skip;
+        // BUG-30867 Discard ëœ Tablespaceì— ì†í•œ Tableë„ Skipë˜ì–´ì•¼ í•¨
         if(( smcTable::isDropedTable(sTableHeader) == ID_TRUE ) ||
            ( sctTableSpaceMgr::hasState( sTableHeader->mSpaceID,
                                          SCT_SS_INVALID_DISK_TBS ) == ID_TRUE ))
@@ -1460,7 +1460,7 @@ IDE_RC smnbFT::buildRecordForBTreeStat(void                * aHeader,
 
         if( sIndexCnt != 0  )
         {
-            //DDL À» ¹æÁö.
+            //DDL ì„ ë°©ì§€.
             IDE_TEST( smLayerCallback::setImpSavepoint( sTrans, 
                                                         &sISavepoint,
                                                         sDummy )
@@ -1469,8 +1469,8 @@ IDE_RC smnbFT::buildRecordForBTreeStat(void                * aHeader,
                                                         SMC_TABLE_LOCK( sTableHeader ) )
                       != IDE_SUCCESS);
 
-            //lockÀ» Àâ¾ÒÁö¸¸ tableÀÌ dropµÈ °æ¿ì¿¡´Â skip;
-            // BUG-30867 Discard µÈ Tablespace¿¡ ¼ÓÇÑ Tableµµ SkipµÇ¾î¾ß ÇÔ
+            //lockì„ ì¡ì•˜ì§€ë§Œ tableì´ dropëœ ê²½ìš°ì—ëŠ” skip;
+            // BUG-30867 Discard ëœ Tablespaceì— ì†í•œ Tableë„ Skipë˜ì–´ì•¼ í•¨
             if(( smcTable::isDropedTable(sTableHeader) == ID_TRUE ) ||
                ( sctTableSpaceMgr::hasState( sTableHeader->mSpaceID,
                                              SCT_SS_INVALID_DISK_TBS ) == ID_TRUE ))
@@ -1485,18 +1485,18 @@ IDE_RC smnbFT::buildRecordForBTreeStat(void                * aHeader,
                 continue;
             }//if
 
-            // lockÀ» ´ë±âÇÏ´Â µ¿¾È index°¡ dropµÇ¾ú°Å³ª, »õ·Î¿î index°¡
-            // »ı¼ºµÇ¾úÀ» ¼ö ÀÖÀ¸¹Ç·Î Á¤È®ÇÑ index ¼ö¸¦ ´Ù½Ã ±¸ÇÑ´Ù.
-            // »Ó¸¸ ¾Æ´Ï¶ó, index cnt¸¦ Áõ°¡½ÃÅ² ÈÄ index¸¦ »ı¼ºÇÏ¹Ç·Î
-            // index°¡ ¿Ï·áµÇÁö ¸øÇÏ¸é index cnt°¡ °¨¼ÒÇÏ¹Ç·Î ´Ù½Ã ±¸ÇØ¾ß ÇÔ.
+            // lockì„ ëŒ€ê¸°í•˜ëŠ” ë™ì•ˆ indexê°€ dropë˜ì—ˆê±°ë‚˜, ìƒˆë¡œìš´ indexê°€
+            // ìƒì„±ë˜ì—ˆì„ ìˆ˜ ìˆìœ¼ë¯€ë¡œ ì •í™•í•œ index ìˆ˜ë¥¼ ë‹¤ì‹œ êµ¬í•œë‹¤.
+            // ë¿ë§Œ ì•„ë‹ˆë¼, index cntë¥¼ ì¦ê°€ì‹œí‚¨ í›„ indexë¥¼ ìƒì„±í•˜ë¯€ë¡œ
+            // indexê°€ ì™„ë£Œë˜ì§€ ëª»í•˜ë©´ index cntê°€ ê°ì†Œí•˜ë¯€ë¡œ ë‹¤ì‹œ êµ¬í•´ì•¼ í•¨.
             sIndexCnt = smcTable::getIndexCount(sTableHeader);
 
             for( i = 0; i < sIndexCnt; i++ )
             {
                 sIndexCursor = (smnIndexHeader*)smcTable::getTableIndex( sTableHeader, i );
 
-                // BUG-30867 Table¿¡ R Tree°¡ Æ÷ÇÔ µÇ¾úÀ» °æ¿ì FATAL¹ß»ı.
-                // B Tree¸¸ Ã³¸®ÇÏµµ·Ï ¼öÁ¤ÇÕ´Ï´Ù.
+                // BUG-30867 Tableì— R Treeê°€ í¬í•¨ ë˜ì—ˆì„ ê²½ìš° FATALë°œìƒ.
+                // B Treeë§Œ ì²˜ë¦¬í•˜ë„ë¡ ìˆ˜ì •í•©ë‹ˆë‹¤.
                 if( sIndexCursor->mType != SMI_BUILTIN_B_TREE_INDEXTYPE_ID )
                 {
                     continue;
@@ -1574,7 +1574,7 @@ IDE_RC smnbFT::buildRecordForBTreeStat(void                * aHeader,
             IDE_TEST( smLayerCallback::unsetImpSavepoint( sTrans, 
                                                           sISavepoint )
                       != IDE_SUCCESS );
-        }// if ÀÎµ¦½º°¡ ÀÖÀ¸¸é
+        }// if ì¸ë±ìŠ¤ê°€ ìˆìœ¼ë©´
         sCurPtr = sNxtPtr;
     }// while
 
@@ -1769,10 +1769,10 @@ iduFixedTableDesc  gMemBTreeStatDesc=
     NULL
 };
 
-// BUG-18122 : MEM_BTREE_NODEPOOL performance view Ãß°¡
+// BUG-18122 : MEM_BTREE_NODEPOOL performance view ì¶”ê°€
 //======================================================================
 //  X$MEM_BTREE_NODEPOOL
-//  memory indexÀÇ node poolÀ» º¸¿©ÁÖ´Â peformance view
+//  memory indexì˜ node poolì„ ë³´ì—¬ì£¼ëŠ” peformance view
 //======================================================================
 
 IDE_RC smnbFT::buildRecordForMemBTreeNodePool(idvSQL              * /*aStatistics*/,
@@ -1796,7 +1796,7 @@ IDE_RC smnbFT::buildRecordForMemBTreeNodePool(idvSQL              * /*aStatistic
     sIndexNodePool4PerfV.mTotalAllocReq  = smnbBTree::mSmnbNodePool.getTotalAllocReq();
     sIndexNodePool4PerfV.mTotalFreeReq   = smnbBTree::mSmnbNodePool.getTotalFreeReq();
 
-    // BUG-18292 : V$MEM_BTREE_HEADER Á¤º¸ Ãß°¡
+    // BUG-18292 : V$MEM_BTREE_HEADER ì •ë³´ ì¶”ê°€
     sIndexNodePool4PerfV.mFreeReqCount   =
         sFreeNodeList->mAddCnt - sFreeNodeList->mHandledCnt;
 

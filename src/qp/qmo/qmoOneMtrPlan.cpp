@@ -21,20 +21,20 @@
  * Description :
  *     Plan Generator
  *
- *     One-child Materialized PlanÀ» »ı¼ºÇÏ±â À§ÇÑ °ü¸®ÀÚÀÌ´Ù.
+ *     One-child Materialized Planì„ ìƒì„±í•˜ê¸° ìœ„í•œ ê´€ë¦¬ìì´ë‹¤.
  *
- *     ´ÙÀ½°ú °°Àº Plan NodeÀÇ »ı¼ºÀ» °ü¸®ÇÑ´Ù.
- *         - SORT ³ëµå
- *         - HASH ³ëµå
- *         - GRAG ³ëµå
- *         - HSDS ³ëµå
- *         - LMST ³ëµå
- *         - VMTR ³ëµå
- *         - WNST ³ëµå
+ *     ë‹¤ìŒê³¼ ê°™ì€ Plan Nodeì˜ ìƒì„±ì„ ê´€ë¦¬í•œë‹¤.
+ *         - SORT ë…¸ë“œ
+ *         - HASH ë…¸ë“œ
+ *         - GRAG ë…¸ë“œ
+ *         - HSDS ë…¸ë“œ
+ *         - LMST ë…¸ë“œ
+ *         - VMTR ë…¸ë“œ
+ *         - WNST ë…¸ë“œ
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  **********************************************************************/
 
@@ -54,7 +54,7 @@ extern mtfModule mtfLead;
 extern mtfModule mtfLeadIgnoreNulls;
 extern mtfModule mtfNtile;
 
-// ORDER BYÀı°ú °°ÀÌ sorting ´ë»ó columnÀÌ º°µµ·Î ÁöÁ¤µÇ¾îÀÖ´Â °æ¿ì
+// ORDER BYì ˆê³¼ ê°™ì´ sorting ëŒ€ìƒ columnì´ ë³„ë„ë¡œ ì§€ì •ë˜ì–´ìˆëŠ” ê²½ìš°
 IDE_RC
 qmoOneMtrPlan::initSORT( qcStatement     * aStatement ,
                          qmsQuerySet     * aQuerySet ,
@@ -65,30 +65,30 @@ qmoOneMtrPlan::initSORT( qcStatement     * aStatement ,
 {
 /***********************************************************************
  *
- * Description : SORT ³ëµå¸¦ »ı¼ºÇÑ´Ù.
+ * Description : SORT ë…¸ë“œë¥¼ ìƒì„±í•œë‹¤.
  *
  * Implementation :
- *     + ÃÊ±âÈ­ ÀÛ¾÷
- *         - qmncSORTÀÇ ÇÒ´ç ¹× ÃÊ±âÈ­
- *     + ¸ŞÀÎ ÀÛ¾÷
- *         - °Ë»ö ¹æ¹ı ¹× ÀúÀå ¹æ½Ä flag ¼¼ÆÃ
- *         - SORT³ëµåÀÇ ÄÃ·³ ±¸¼º
- *     + ¸¶¹«¸® ÀÛ¾÷
- *         - data ¿µ¿ªÀÇ Å©±â °è»ê
- *         - dependencyÀÇ Ã³¸®
- *         - subqueryÀÇ Ã³¸®
+ *     + ì´ˆê¸°í™” ì‘ì—…
+ *         - qmncSORTì˜ í• ë‹¹ ë° ì´ˆê¸°í™”
+ *     + ë©”ì¸ ì‘ì—…
+ *         - ê²€ìƒ‰ ë°©ë²• ë° ì €ì¥ ë°©ì‹ flag ì„¸íŒ…
+ *         - SORTë…¸ë“œì˜ ì»¬ëŸ¼ êµ¬ì„±
+ *     + ë§ˆë¬´ë¦¬ ì‘ì—…
+ *         - data ì˜ì—­ì˜ í¬ê¸° ê³„ì‚°
+ *         - dependencyì˜ ì²˜ë¦¬
+ *         - subqueryì˜ ì²˜ë¦¬
  *
  * TO DO
- *     - ÄÃ·³ÀÇ ±¸¼ºÀº ´ÙÀ½°ú °°ÀÌ 4°¡Áö·Î ÇÑ´Ù. ÀÌ¿¡µû¶ó ÀÎÅÍÆäÀÌ½º¸¦
- *       ±¸ºĞÇØÁÖµµ·Ï ÇÑ´Ù. (privateÀ¸·Î Ã³¸®)
- *         - ORDER BY·Î »ç¿ëµÇ´Â °æ¿ì (baseTable + orderbyÁ¤º¸)
- *         - ORDER BYÀÇ ¿¹¿Ü»óÈ² (ÇÏÀ§¿¡ GRAG , HSDSÀÏ°æ¿ì
- *                                ´Ü memory baseÀº ÀúÀåÇÑ´Ù.)
- *         - SORT-BASED GROUPING (baseTable + grouping Á¤º¸)
- *         - SORT-BASED DISTINCTION (baseTable + target Á¤º¸)
- *         - SORT-BASED JOIN (joinPredicate·Î ÄÃ·³±¸¼º)
- *         - SORT MERGE JOIN (joinPredicate·Î ÄÃ·³±¸¼º, sequential search)
- *         - STORE AND SEARCH (ÇÏÀ§ VIEWÀÇ Á¤º¸)
+ *     - ì»¬ëŸ¼ì˜ êµ¬ì„±ì€ ë‹¤ìŒê³¼ ê°™ì´ 4ê°€ì§€ë¡œ í•œë‹¤. ì´ì—ë”°ë¼ ì¸í„°í˜ì´ìŠ¤ë¥¼
+ *       êµ¬ë¶„í•´ì£¼ë„ë¡ í•œë‹¤. (privateìœ¼ë¡œ ì²˜ë¦¬)
+ *         - ORDER BYë¡œ ì‚¬ìš©ë˜ëŠ” ê²½ìš° (baseTable + orderbyì •ë³´)
+ *         - ORDER BYì˜ ì˜ˆì™¸ìƒí™© (í•˜ìœ„ì— GRAG , HSDSì¼ê²½ìš°
+ *                                ë‹¨ memory baseì€ ì €ì¥í•œë‹¤.)
+ *         - SORT-BASED GROUPING (baseTable + grouping ì •ë³´)
+ *         - SORT-BASED DISTINCTION (baseTable + target ì •ë³´)
+ *         - SORT-BASED JOIN (joinPredicateë¡œ ì»¬ëŸ¼êµ¬ì„±)
+ *         - SORT MERGE JOIN (joinPredicateë¡œ ì»¬ëŸ¼êµ¬ì„±, sequential search)
+ *         - STORE AND SEARCH (í•˜ìœ„ VIEWì˜ ì •ë³´)
  *
  ***********************************************************************/
 
@@ -104,16 +104,16 @@ qmoOneMtrPlan::initSORT( qcStatement     * aStatement ,
     IDU_FIT_POINT_FATAL( "qmoOneMtrPlan::initSORT::__FT__" );
 
     //----------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //----------------------------------
 
     IDE_DASSERT( aStatement != NULL );
 
     //-------------------------------------------------------------
-    // ÃÊ±âÈ­ ÀÛ¾÷
+    // ì´ˆê¸°í™” ì‘ì—…
     //-------------------------------------------------------------
 
-    //qmncSORTÀÇ ÇÒ´ç ¹× ÃÊ±âÈ­
+    //qmncSORTì˜ í• ë‹¹ ë° ì´ˆê¸°í™”
     IDE_TEST( QC_QMP_MEM( aStatement )->alloc( ID_SIZEOF(qmncSORT) ,
                                                (void **)& sSORT )
               != IDE_SUCCESS );
@@ -126,7 +126,7 @@ qmoOneMtrPlan::initSORT( qcStatement     * aStatement ,
                         sDataNodeOffset );
 
     //----------------------------------
-    // Flag Á¤º¸ ¼³Á¤
+    // Flag ì •ë³´ ì„¤ì •
     //----------------------------------
 
     sSORT->flag  = QMN_PLAN_FLAG_CLEAR;
@@ -138,16 +138,16 @@ qmoOneMtrPlan::initSORT( qcStatement     * aStatement ,
 
     *aPlan = (qmnPlan *)sSORT;
 
-    // Sorting keyÀÓÀ» Ç¥½ÃÇÑ´Ù.
+    // Sorting keyì„ì„ í‘œì‹œí•œë‹¤.
     sFlag &= ~QMC_ATTR_KEY_MASK;
     sFlag |= QMC_ATTR_KEY_TRUE;
 
-    // Order byÀıÀÇ attributeµéÀ» Ãß°¡ÇÑ´Ù.
+    // Order byì ˆì˜ attributeë“¤ì„ ì¶”ê°€í•œë‹¤.
     for ( sSortColumn = aOrderBy, sColumnCount = 0;
           sSortColumn != NULL;
           sSortColumn = sSortColumn->next, sColumnCount++ )
     {
-        // Sorting ¹æÇâÀ» Ç¥½ÃÇÑ´Ù.
+        // Sorting ë°©í–¥ì„ í‘œì‹œí•œë‹¤.
         if ( sSortColumn->isDESC == ID_FALSE )
         {
             sFlag &= ~QMC_ATTR_SORT_ORDER_MASK;
@@ -224,9 +224,9 @@ qmoOneMtrPlan::initSORT( qcStatement     * aStatement ,
           sItrAttr = sItrAttr->next )
     {
         /* BUG-37146 together with rollup order by the results are wrong.
-         * Value TempÀÇ »óÀ§¿¡ SortTemp°¡ ÀÖÀ» °æ¿ì ¸ğµç SortTemp´Â value temp¸¦
-         * ÂüÁ¶ÇØ¾ßÇÑ´Ù. µû¶ó¼­ »óÀ§ PlanÀÇ exressionÀ» ¸ğµÎ sort¿¡ Ãß°¡ÇÏ°í ÃßÈÄ
-         * pushResultDesc ÇÔ¼ö¿¡¼­ passNode¸¦ ¸¸µéµµ·Ï À¯µµÇÑ´Ù.
+         * Value Tempì˜ ìƒìœ„ì— SortTempê°€ ìˆì„ ê²½ìš° ëª¨ë“  SortTempëŠ” value tempë¥¼
+         * ì°¸ì¡°í•´ì•¼í•œë‹¤. ë”°ë¼ì„œ ìƒìœ„ Planì˜ exressionì„ ëª¨ë‘ sortì— ì¶”ê°€í•˜ê³  ì¶”í›„
+         * pushResultDesc í•¨ìˆ˜ì—ì„œ passNodeë¥¼ ë§Œë“¤ë„ë¡ ìœ ë„í•œë‹¤.
          */
         if ( ( aFlag & QMO_MAKESORT_VALUE_TEMP_MASK ) ==
                QMO_MAKESORT_VALUE_TEMP_TRUE )
@@ -257,7 +257,7 @@ qmoOneMtrPlan::initSORT( qcStatement     * aStatement ,
         if ( ( sItrAttr->expr->node.lflag & MTC_NODE_FUNCTION_CONNECT_BY_MASK )
                == MTC_NODE_FUNCTION_CONNECT_BY_TRUE )
         {
-            /* º¹»çÇØ¼­ ³ÖÁö ¾ÊÀ¸¸é »óÀ§ Parent °¡ ¹Ù²ğ¶§ Àß¸øµÈ TupleÀ» °¡¸£Å°°ÔµÈ´Ù */
+            /* ë³µì‚¬í•´ì„œ ë„£ì§€ ì•Šìœ¼ë©´ ìƒìœ„ Parent ê°€ ë°”ë€”ë•Œ ì˜ëª»ëœ Tupleì„ ê°€ë¥´í‚¤ê²Œëœë‹¤ */
             IDU_FIT_POINT( "qmoOneMtrPlan::initSORT::alloc::Node",
                             idERR_ABORT_InsufficientMemory );
 
@@ -281,7 +281,7 @@ qmoOneMtrPlan::initSORT( qcStatement     * aStatement ,
         }
     }
 
-    // ORDER BY Àı ¿Ü ÂüÁ¶µÇ´Â attributeµéÀ» Ãß°¡ÇÑ´Ù.
+    // ORDER BY ì ˆ ì™¸ ì°¸ì¡°ë˜ëŠ” attributeë“¤ì„ ì¶”ê°€í•œë‹¤.
     IDE_TEST( qmc::pushResultDesc( aStatement,
                                    aQuerySet,
                                    ( aParent->type == QMN_PROJ ? ID_TRUE : ID_FALSE ),
@@ -291,15 +291,15 @@ qmoOneMtrPlan::initSORT( qcStatement     * aStatement ,
 
     // BUG-36997
     // select distinct i1, i2+1 from t1 order by i1;
-    // distinct ¸¦ Ã³¸®ÇÒ¶§ i2+1 À» ¿¬»êÇØ¼­ ÀúÀåÇØ ³õ´Â´Ù.
-    // µû¶ó¼­ PASS ³ëµå¸¦ »ı¼ºÇØÁÖ¾î¾ß ÇÑ´Ù.
+    // distinct ë¥¼ ì²˜ë¦¬í• ë•Œ i2+1 ì„ ì—°ì‚°í•´ì„œ ì €ì¥í•´ ë†“ëŠ”ë‹¤.
+    // ë”°ë¼ì„œ PASS ë…¸ë“œë¥¼ ìƒì„±í•´ì£¼ì–´ì•¼ í•œë‹¤.
     IDE_TEST( qmc::makeReferenceResult( aStatement,
                                         ( aParent->type == QMN_PROJ ? ID_TRUE : ID_FALSE ),
                                         aParent->resultDesc,
                                         sSORT->plan.resultDesc )
               != IDE_SUCCESS );
 
-    // ORDER BYÀı¿¡¼­ ÂüÁ¶µÇ¾ú´Ù´Â flag¸¦ ´õ ÀÌ»ó ¹°·Á¹ŞÁö ¾Êµµ·Ï ÇØÁ¦ÇÑ´Ù.
+    // ORDER BYì ˆì—ì„œ ì°¸ì¡°ë˜ì—ˆë‹¤ëŠ” flagë¥¼ ë” ì´ìƒ ë¬¼ë ¤ë°›ì§€ ì•Šë„ë¡ í•´ì œí•œë‹¤.
     for( sItrAttr = sSORT->plan.resultDesc;
          sItrAttr != NULL;
          sItrAttr = sItrAttr->next )
@@ -323,7 +323,7 @@ qmoOneMtrPlan::initSORT( qcStatement     * aStatement ,
     return IDE_FAILURE;
 }
 
-// ´Ü¼øÈ÷ ÀÏ½ÃÀûÀÎ °á°úÀÇ ÀúÀåÀÌ³ª, grouping/distinction°ú °°ÀÌ ´ë»ó ÀüÃ¼¿¡ sortingÀÌ ÇÊ¿äÇÑ °æ¿ì
+// ë‹¨ìˆœíˆ ì¼ì‹œì ì¸ ê²°ê³¼ì˜ ì €ì¥ì´ë‚˜, grouping/distinctionê³¼ ê°™ì´ ëŒ€ìƒ ì „ì²´ì— sortingì´ í•„ìš”í•œ ê²½ìš°
 IDE_RC
 qmoOneMtrPlan::initSORT( qcStatement  * aStatement ,
                          qmsQuerySet  * aQuerySet,
@@ -336,16 +336,16 @@ qmoOneMtrPlan::initSORT( qcStatement  * aStatement ,
     IDU_FIT_POINT_FATAL( "qmoOneMtrPlan::initSORT::__FT__" );
 
     //----------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //----------------------------------
 
     IDE_DASSERT( aStatement != NULL );
 
     //-------------------------------------------------------------
-    // ÃÊ±âÈ­ ÀÛ¾÷
+    // ì´ˆê¸°í™” ì‘ì—…
     //-------------------------------------------------------------
 
-    //qmncSORTÀÇ ÇÒ´ç ¹× ÃÊ±âÈ­
+    //qmncSORTì˜ í• ë‹¹ ë° ì´ˆê¸°í™”
     IDE_TEST( QC_QMP_MEM( aStatement )->alloc( ID_SIZEOF( qmncSORT ),
                                                (void **)& sSORT )
               != IDE_SUCCESS );
@@ -358,7 +358,7 @@ qmoOneMtrPlan::initSORT( qcStatement  * aStatement ,
                         sDataNodeOffset );
 
     //----------------------------------
-    // Flag Á¤º¸ ¼³Á¤
+    // Flag ì •ë³´ ì„¤ì •
     //----------------------------------
 
     sSORT->flag  = QMN_PLAN_FLAG_CLEAR;
@@ -390,7 +390,7 @@ qmoOneMtrPlan::initSORT( qcStatement  * aStatement ,
     return IDE_FAILURE;
 }
 
-// Sort/merge joinÀ» À§ÇØ predicate¿¡ Æ÷ÇÔµÈ attribute·Î sortingÀÌ ÇÊ¿äÇÑ °æ¿ì
+// Sort/merge joinì„ ìœ„í•´ predicateì— í¬í•¨ëœ attributeë¡œ sortingì´ í•„ìš”í•œ ê²½ìš°
 IDE_RC
 qmoOneMtrPlan::initSORT( qcStatement  * aStatement ,
                          qmsQuerySet  * aQuerySet ,
@@ -406,16 +406,16 @@ qmoOneMtrPlan::initSORT( qcStatement  * aStatement ,
     IDU_FIT_POINT_FATAL( "qmoOneMtrPlan::initSORT::__FT__" );
 
     //----------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //----------------------------------
 
     IDE_DASSERT( aStatement != NULL );
 
     //-------------------------------------------------------------
-    // ÃÊ±âÈ­ ÀÛ¾÷
+    // ì´ˆê¸°í™” ì‘ì—…
     //-------------------------------------------------------------
 
-    //qmncSORTÀÇ ÇÒ´ç ¹× ÃÊ±âÈ­
+    //qmncSORTì˜ í• ë‹¹ ë° ì´ˆê¸°í™”
     IDE_TEST( QC_QMP_MEM( aStatement )->alloc( ID_SIZEOF( qmncSORT ),
                                                (void **)& sSORT )
               != IDE_SUCCESS );
@@ -428,7 +428,7 @@ qmoOneMtrPlan::initSORT( qcStatement  * aStatement ,
                         sDataNodeOffset );
 
     //----------------------------------
-    // Flag Á¤º¸ ¼³Á¤
+    // Flag ì •ë³´ ì„¤ì •
     //----------------------------------
 
     sSORT->flag  = QMN_PLAN_FLAG_CLEAR;
@@ -516,7 +516,7 @@ qmoOneMtrPlan::makeSORT( qcStatement       * aStatement ,
     IDU_FIT_POINT_FATAL( "qmoOneMtrPlan::makeSORT::__FT__" );
 
     //----------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //----------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -524,7 +524,7 @@ qmoOneMtrPlan::makeSORT( qcStatement       * aStatement ,
     IDE_DASSERT( aPlan != NULL );
 
     //-------------------------------------------------------------
-    // ÃÊ±âÈ­ ÀÛ¾÷
+    // ì´ˆê¸°í™” ì‘ì—…
     //-------------------------------------------------------------
 
     sMtcTemplate = & QC_SHARED_TMPLATE(aStatement)->tmplate;
@@ -539,18 +539,18 @@ qmoOneMtrPlan::makeSORT( qcStatement       * aStatement ,
     sSORT->plan.left = aChildPlan;
 
     //----------------------------------
-    // Flag Á¤º¸ ¼³Á¤
+    // Flag ì •ë³´ ì„¤ì •
     //----------------------------------
     sSORT->plan.flag = QMN_PLAN_FLAG_CLEAR;
 
     sSORT->myNode = NULL;
 
     //-------------------------------------------------------------
-    // ¸ŞÀÎ ÀÛ¾÷
+    // ë©”ì¸ ì‘ì—…
     //-------------------------------------------------------------
 
     //----------------------------------
-    // Æ©ÇÃÀÇ ÇÒ´ç
+    // íŠœí”Œì˜ í• ë‹¹
     //----------------------------------
     IDE_TEST( qtc::nextTable( & sTupleID,
                               aStatement,
@@ -560,8 +560,8 @@ qmoOneMtrPlan::makeSORT( qcStatement       * aStatement ,
               != IDE_SUCCESS );
 
     // To Fix PR-8493
-    // GROUP BY ÄÃ·³ÀÇ ´ëÃ¼ ¿©ºÎ¸¦ °áÁ¤ÇÏ±â À§ÇØ¼­´Â
-    // TupleÀÇ ÀúÀå ¸ÅÃ¼ Á¤º¸¸¦ ¹Ì¸® ±â·ÏÇÏ°í ÀÖ¾î¾ß ÇÑ´Ù.
+    // GROUP BY ì»¬ëŸ¼ì˜ ëŒ€ì²´ ì—¬ë¶€ë¥¼ ê²°ì •í•˜ê¸° ìœ„í•´ì„œëŠ”
+    // Tupleì˜ ì €ì¥ ë§¤ì²´ ì •ë³´ë¥¼ ë¯¸ë¦¬ ê¸°ë¡í•˜ê³  ìˆì–´ì•¼ í•œë‹¤.
     if( (aFlag & QMO_MAKESORT_TEMP_TABLE_MASK) ==
         QMO_MAKESORT_MEMORY_TEMP_TABLE )
     {
@@ -585,8 +585,8 @@ qmoOneMtrPlan::makeSORT( qcStatement       * aStatement ,
     }
 
     // To Fix BUG-7730
-    // Preserved Order°¡ º¸ÀåµÇ´Â °æ¿ì,
-    // Sorting ¾øÀÌ ÇÏÀ§¿¡¼­ ¿Ã¶ó¿À´Â ¼ø¼­´ë·Î ÀúÀåÇÏ±â À§ÇÔ
+    // Preserved Orderê°€ ë³´ì¥ë˜ëŠ” ê²½ìš°,
+    // Sorting ì—†ì´ í•˜ìœ„ì—ì„œ ì˜¬ë¼ì˜¤ëŠ” ìˆœì„œëŒ€ë¡œ ì €ì¥í•˜ê¸° ìœ„í•¨
     if ( ( aFlag & QMO_MAKESORT_PRESERVED_ORDER_MASK ) ==
          QMO_MAKESORT_PRESERVED_TRUE )
     {
@@ -612,10 +612,10 @@ qmoOneMtrPlan::makeSORT( qcStatement       * aStatement ,
               != IDE_SUCCESS );
 
     // BUGBUG
-    // PROJ-2179 Full store nested join½Ã ´ÙÀ½°ú °°Àº ±¸¹®ÀÇ °æ¿ì result descriptor°¡ ºñ¾îÀÖÀ» ¼ö ÀÖ´Ù.
+    // PROJ-2179 Full store nested joinì‹œ ë‹¤ìŒê³¼ ê°™ì€ êµ¬ë¬¸ì˜ ê²½ìš° result descriptorê°€ ë¹„ì–´ìˆì„ ìˆ˜ ìˆë‹¤.
     // SELECT r.a FROM r FULL OUTER JOIN s ON r.a > 1 AND s.a = 3;
-    // µû¶ó¼­ °¢ row¸¶´Ù 1·Î Ã¤¿öÁ®ÀÖ´Â temp tableÀ» »ı¼ºÇÑ´Ù.
-    // ¿øÄ¢ÀûÀ¸·Î ÀÌ °æ¿ì full stored nested joinÀ» ¼öÇàÇØ¼­´Â ¾ÈµÈ´Ù.
+    // ë”°ë¼ì„œ ê° rowë§ˆë‹¤ 1ë¡œ ì±„ì›Œì ¸ìˆëŠ” temp tableì„ ìƒì„±í•œë‹¤.
+    // ì›ì¹™ì ìœ¼ë¡œ ì´ ê²½ìš° full stored nested joinì„ ìˆ˜í–‰í•´ì„œëŠ” ì•ˆëœë‹¤.
     if( aPlan->resultDesc == NULL )
     {
         IDE_TEST( qmg::makeDummyMtrNode( aStatement,
@@ -633,7 +633,7 @@ qmoOneMtrPlan::makeSORT( qcStatement       * aStatement ,
         // Nothing to do.
     }
 
-    // Sorting key°¡ ¾Æ´Ñ °æ¿ì
+    // Sorting keyê°€ ì•„ë‹Œ ê²½ìš°
     IDE_TEST( makeNonKeyAttrsMtrNodes( aStatement,
                                        aQuerySet,
                                        sSORT->plan.resultDesc,
@@ -649,13 +649,13 @@ qmoOneMtrPlan::makeSORT( qcStatement       * aStatement ,
          sItrAttr != NULL;
          sItrAttr = sItrAttr->next )
     {
-        // Sorting key ÀÎ °æ¿ì
+        // Sorting key ì¸ ê²½ìš°
         if( ( sItrAttr->flag & QMC_ATTR_KEY_MASK ) == QMC_ATTR_KEY_TRUE )
         {
             sOrgTable  = sItrAttr->expr->node.table;
             sOrgColumn = sItrAttr->expr->node.column;
 
-            // SortingÀÌ ÇÊ¿äÇÔÀ» Ç¥½Ã
+            // Sortingì´ í•„ìš”í•¨ì„ í‘œì‹œ
             sSORT->flag &= ~QMNC_SORT_STORE_MASK;
             sSORT->flag |= QMNC_SORT_STORE_SORTING;
 
@@ -670,11 +670,11 @@ qmoOneMtrPlan::makeSORT( qcStatement       * aStatement ,
                                               & sNewMtrNode )
                       != IDE_SUCCESS );
 
-            // BUG-43088 setColumnLocate È£Ãâ À§Ä¡º¯°æÀ¸·Î ÀÎÇÑ
-            // TC/Server/qp4/Bugs/PR-13286/PR-13286.sql diff ¸¦ º¹±¸ÇÏ±â À§ÇØ
+            // BUG-43088 setColumnLocate í˜¸ì¶œ ìœ„ì¹˜ë³€ê²½ìœ¼ë¡œ ì¸í•œ
+            // TC/Server/qp4/Bugs/PR-13286/PR-13286.sql diff ë¥¼ ë³µêµ¬í•˜ê¸° ìœ„í•´
             // ex) SELECT /*+ USE_ONE_PASS_SORT( D2, D1 ) */ d1.i1 FROM D1, D2
             //      WHERE D1.I1 > D2.I1 AND D1.I1 < D2.I1 + 10;
-            //            ^^^^^ column locate º¯°æÀÌ ´©¶ô
+            //            ^^^^^ column locate ë³€ê²½ì´ ëˆ„ë½
             //   * sSORT->range
             //     AND
             //     |
@@ -683,10 +683,10 @@ qmoOneMtrPlan::makeSORT( qcStatement       * aStatement ,
             //     < ------------------- >
             //     | (1)                 | (2)
             //     d1.i1 - +             d1.i1 - d2.i1
-            //     (2,0)   |             (2,0)->(4,0) À¸·Î º¯°æ ´©¶ô
+            //     (2,0)   |             (2,0)->(4,0) ìœ¼ë¡œ ë³€ê²½ ëˆ„ë½
             //             d2.i1 - 10
-            // sSORT->range ¸¦ ¼øÈ¸ÇÏ¿© sItrAttr->expr ÀÇ ¿øº»°ú µ¿ÀÏÇÑ ³ëµå¸¦ Ã£¾Æ
-            // sNewMtrNode.dstNode Áï º¯°æµÈ °ª sItrAttr->expr(table,colomn)À¸·Î set
+            // sSORT->range ë¥¼ ìˆœíšŒí•˜ì—¬ sItrAttr->expr ì˜ ì›ë³¸ê³¼ ë™ì¼í•œ ë…¸ë“œë¥¼ ì°¾ì•„
+            // sNewMtrNode.dstNode ì¦‰ ë³€ê²½ëœ ê°’ sItrAttr->expr(table,colomn)ìœ¼ë¡œ set
             if ( sSORT->range != NULL )
             {
                 IDE_TEST( qmg::resetDupNodeToMtrNode( aStatement,
@@ -706,7 +706,7 @@ qmoOneMtrPlan::makeSORT( qcStatement       * aStatement ,
 
             // BUG-37993
             // qmgJoin::makePreservedOrder
-            // Merge JoinÀÇ °æ¿ì ASCENDING¸¸ÀÌ °¡´ÉÇÏ´Ù.
+            // Merge Joinì˜ ê²½ìš° ASCENDINGë§Œì´ ê°€ëŠ¥í•˜ë‹¤.
             if ( (aFlag & QMO_MAKESORT_METHOD_MASK) == QMO_MAKESORT_SORT_MERGE_JOIN )
             {
                 sNewMtrNode->flag &= ~QMC_MTR_SORT_ORDER_MASK;
@@ -748,7 +748,7 @@ qmoOneMtrPlan::makeSORT( qcStatement       * aStatement ,
                     sNewMtrNode->flag |= QMC_MTR_SORT_NULLS_ORDER_NONE;
                 }
 
-                // Preserved order ¼³Á¤
+                // Preserved order ì„¤ì •
                 if( aChildPreservedOrder != NULL )
                 {
                     IDE_TEST( qmg::setDirection4SortColumn( aChildPreservedOrder,
@@ -783,7 +783,7 @@ qmoOneMtrPlan::makeSORT( qcStatement       * aStatement ,
     sSORT->myNode = sFirstMtrNode;
 
     //----------------------------------
-    // Tuple columnÀÇ ÇÒ´ç
+    // Tuple columnì˜ í• ë‹¹
     //----------------------------------
     IDE_TEST( qtc::allocIntermediateTuple( aStatement,
                                            & QC_SHARED_TMPLATE( aStatement )->tmplate,
@@ -797,7 +797,7 @@ qmoOneMtrPlan::makeSORT( qcStatement       * aStatement ,
     sMtcTemplate->rows[sTupleID].lflag &= ~MTC_TUPLE_PLAN_MTR_MASK;
     sMtcTemplate->rows[sTupleID].lflag |= MTC_TUPLE_PLAN_MTR_TRUE;
 
-    //GRAPH¿¡¼­ ÁöÁ¤ÇÑ ÀúÀå¸ÅÃ¼¸¦ »ç¿ëÇÑ´Ù.
+    //GRAPHì—ì„œ ì§€ì •í•œ ì €ì¥ë§¤ì²´ë¥¼ ì‚¬ìš©í•œë‹¤.
     if( (aFlag & QMO_MAKESORT_TEMP_TABLE_MASK) ==
         QMO_MAKESORT_MEMORY_TEMP_TABLE )
     {
@@ -825,26 +825,26 @@ qmoOneMtrPlan::makeSORT( qcStatement       * aStatement ,
     }
 
     //----------------------------------
-    // mtcColumn , mtcExecute Á¤º¸ÀÇ ±¸Ãà
+    // mtcColumn , mtcExecute ì •ë³´ì˜ êµ¬ì¶•
     //----------------------------------
     IDE_TEST( qmg::copyMtcColumnExecute( aStatement ,
                                          sSORT->myNode )
               != IDE_SUCCESS );
 
     //-------------------------------------------------------------
-    // ¸¶¹«¸® ÀÛ¾÷
+    // ë§ˆë¬´ë¦¬ ì‘ì—…
     //-------------------------------------------------------------
 
     for( sNewMtrNode = sSORT->myNode , sColumnCount = 0 ;
          sNewMtrNode != NULL;
          sNewMtrNode = sNewMtrNode->next , sColumnCount++ ) ;
 
-    //data ¿µ¿ªÀÇ Å©±â °è»ê
+    //data ì˜ì—­ì˜ í¬ê¸° ê³„ì‚°
     QC_SHARED_TMPLATE(aStatement)->tmplate.dataSize = sDataNodeOffset +
         sColumnCount * idlOS::align8( ID_SIZEOF(qmdMtrNode) );
 
     //----------------------------------
-    //dependency Ã³¸® ¹× subquery Ã³¸®
+    //dependency ì²˜ë¦¬ ë° subquery ì²˜ë¦¬
     //----------------------------------
 
     sPredicate[0] = sSORT->range;
@@ -852,7 +852,7 @@ qmoOneMtrPlan::makeSORT( qcStatement       * aStatement ,
 
     //----------------------------------
     // PROJ-1437
-    // dependency ¼³Á¤Àü¿¡ predicateµéÀÇ À§Ä¡Á¤º¸ º¯°æ.
+    // dependency ì„¤ì •ì „ì— predicateë“¤ì˜ ìœ„ì¹˜ì •ë³´ ë³€ê²½.
     //----------------------------------
 
     IDE_TEST( qmg::changeColumnLocate( aStatement,
@@ -881,7 +881,7 @@ qmoOneMtrPlan::makeSORT( qcStatement       * aStatement ,
     sSORT->depTupleRowID = (UShort)sSORT->plan.dependency;
 
     //----------------------------------
-    // PROJ-1473 column locate ÁöÁ¤.
+    // PROJ-1473 column locate ì§€ì •.
     //----------------------------------
 
     IDE_TEST( qmg::setColumnLocate( aStatement,
@@ -889,7 +889,7 @@ qmoOneMtrPlan::makeSORT( qcStatement       * aStatement ,
               != IDE_SUCCESS );
 
     //----------------------------------
-    // PROJ-2179 calculate°¡ ÇÊ¿äÇÑ nodeµéÀÇ °á°ú À§Ä¡¸¦ ¼³Á¤
+    // PROJ-2179 calculateê°€ í•„ìš”í•œ nodeë“¤ì˜ ê²°ê³¼ ìœ„ì¹˜ë¥¼ ì„¤ì •
     //----------------------------------
 
     IDE_TEST( qmg::setCalcLocate( aStatement,
@@ -939,26 +939,26 @@ qmoOneMtrPlan::initHASH( qcStatement  * aStatement ,
 {
 /***********************************************************************
  *
- * Description : HASH ³ëµå¸¦ »ı¼ºÇÑ´Ù
+ * Description : HASH ë…¸ë“œë¥¼ ìƒì„±í•œë‹¤
  *
  * Implementation :
- *     + ÃÊ±âÈ­ ÀÛ¾÷
- *         - qmncHASHÀÇ ÇÒ´ç ¹× ÃÊ±âÈ­
- *     + ¸ŞÀÎ ÀÛ¾÷
- *         - °Ë»ö ¹æ¹ı ¹× CHECK_NOTNULL , DISTINCTÀÇ ¿©ºÎ flag ¼¼ÆÃ
- *         - HASH³ëµåÀÇ ÄÃ·³ ±¸¼º
- *     + ¸¶¹«¸® ÀÛ¾÷
- *         - data ¿µ¿ªÀÇ Å©±â °è»ê
- *         - dependencyÀÇ Ã³¸®
- *         - subqueryÀÇ Ã³¸®
+ *     + ì´ˆê¸°í™” ì‘ì—…
+ *         - qmncHASHì˜ í• ë‹¹ ë° ì´ˆê¸°í™”
+ *     + ë©”ì¸ ì‘ì—…
+ *         - ê²€ìƒ‰ ë°©ë²• ë° CHECK_NOTNULL , DISTINCTì˜ ì—¬ë¶€ flag ì„¸íŒ…
+ *         - HASHë…¸ë“œì˜ ì»¬ëŸ¼ êµ¬ì„±
+ *     + ë§ˆë¬´ë¦¬ ì‘ì—…
+ *         - data ì˜ì—­ì˜ í¬ê¸° ê³„ì‚°
+ *         - dependencyì˜ ì²˜ë¦¬
+ *         - subqueryì˜ ì²˜ë¦¬
  *
  * TO DO
- *     - ÄÃ·³ÀÇ ±¸¼ºÀº ´ÙÀ½°ú °°ÀÌ 2°¡Áö·Î ÇÑ´Ù. ÀÌ¿¡µû¶ó ÀÎÅÍÆäÀÌ½º¸¦
- *       ±¸ºĞÇØÁÖµµ·Ï ÇÑ´Ù. (privateÀ¸·Î Ã³¸®)
- *         - HASH-BASED JOIN (joinPredicate·Î ÄÃ·³±¸¼º)
- *         - STORE AND SEARCH (ÇÏÀ§ VIEWÀÇ Á¤º¸)
+ *     - ì»¬ëŸ¼ì˜ êµ¬ì„±ì€ ë‹¤ìŒê³¼ ê°™ì´ 2ê°€ì§€ë¡œ í•œë‹¤. ì´ì—ë”°ë¼ ì¸í„°í˜ì´ìŠ¤ë¥¼
+ *       êµ¬ë¶„í•´ì£¼ë„ë¡ í•œë‹¤. (privateìœ¼ë¡œ ì²˜ë¦¬)
+ *         - HASH-BASED JOIN (joinPredicateë¡œ ì»¬ëŸ¼êµ¬ì„±)
+ *         - STORE AND SEARCH (í•˜ìœ„ VIEWì˜ ì •ë³´)
  *
- *     - filter¿Í filterConst »ı¼º½Ã passNode»ı¼º¿¡ À¯ÀÇÇÑ´Ù.
+ *     - filterì™€ filterConst ìƒì„±ì‹œ passNodeìƒì„±ì— ìœ ì˜í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -968,16 +968,16 @@ qmoOneMtrPlan::initHASH( qcStatement  * aStatement ,
     IDU_FIT_POINT_FATAL( "qmoOneMtrPlan::initHASH::__FT__" );
 
     //----------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //----------------------------------
 
     IDE_DASSERT( aStatement != NULL );
 
     //-------------------------------------------------------------
-    // ÃÊ±âÈ­ ÀÛ¾÷
+    // ì´ˆê¸°í™” ì‘ì—…
     //-------------------------------------------------------------
 
-    //qmncHASHÀÇ ÇÒ´ç ¹× ÃÊ±âÈ­
+    //qmncHASHì˜ í• ë‹¹ ë° ì´ˆê¸°í™”
     IDE_TEST( QC_QMP_MEM( aStatement )->alloc( ID_SIZEOF( qmncHASH ),
                                                (void **)& sHASH )
               != IDE_SUCCESS );
@@ -990,7 +990,7 @@ qmoOneMtrPlan::initHASH( qcStatement  * aStatement ,
                         sDataNodeOffset );
 
     //----------------------------------
-    // Flag Á¤º¸ ¼³Á¤
+    // Flag ì •ë³´ ì„¤ì •
     //----------------------------------
 
     sHASH->flag  = QMN_PLAN_FLAG_CLEAR;
@@ -1055,7 +1055,7 @@ qmoOneMtrPlan::initHASH( qcStatement  * aStatement ,
     return IDE_FAILURE;
 }
 
-// Store and search ½Ã
+// Store and search ì‹œ
 IDE_RC
 qmoOneMtrPlan::initHASH( qcStatement  * aStatement ,
                          qmsQuerySet  * aQuerySet,
@@ -1069,16 +1069,16 @@ qmoOneMtrPlan::initHASH( qcStatement  * aStatement ,
     IDU_FIT_POINT_FATAL( "qmoOneMtrPlan::initHASH::__FT__" );
 
     //----------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //----------------------------------
 
     IDE_DASSERT( aStatement != NULL );
 
     //-------------------------------------------------------------
-    // ÃÊ±âÈ­ ÀÛ¾÷
+    // ì´ˆê¸°í™” ì‘ì—…
     //-------------------------------------------------------------
 
-    //qmncHASHÀÇ ÇÒ´ç ¹× ÃÊ±âÈ­
+    //qmncHASHì˜ í• ë‹¹ ë° ì´ˆê¸°í™”
     IDE_TEST( QC_QMP_MEM( aStatement )->alloc( ID_SIZEOF( qmncHASH ) ,
                                                (void **)& sHASH )
               != IDE_SUCCESS );
@@ -1091,7 +1091,7 @@ qmoOneMtrPlan::initHASH( qcStatement  * aStatement ,
                         sDataNodeOffset );
 
     //----------------------------------
-    // Flag Á¤º¸ ¼³Á¤
+    // Flag ì •ë³´ ì„¤ì •
     //----------------------------------
 
     sHASH->flag  = QMN_PLAN_FLAG_CLEAR;
@@ -1163,7 +1163,7 @@ qmoOneMtrPlan::makeHASH( qcStatement  * aStatement ,
     IDU_FIT_POINT_FATAL( "qmoOneMtrPlan::makeHASH::__FT__" );
 
     //----------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //----------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -1171,7 +1171,7 @@ qmoOneMtrPlan::makeHASH( qcStatement  * aStatement ,
     IDE_DASSERT( aPlan != NULL );
 
     //-------------------------------------------------------------
-    // ÃÊ±âÈ­ ÀÛ¾÷
+    // ì´ˆê¸°í™” ì‘ì—…
     //-------------------------------------------------------------
 
     sMtcTemplate = & QC_SHARED_TMPLATE(aStatement)->tmplate;
@@ -1185,19 +1185,19 @@ qmoOneMtrPlan::makeHASH( qcStatement  * aStatement ,
     sHASH->plan.left = aChildPlan;
 
     //----------------------------------
-    // Flag Á¤º¸ ¼³Á¤
+    // Flag ì •ë³´ ì„¤ì •
     //----------------------------------
     sHASH->plan.flag = QMN_PLAN_FLAG_CLEAR;
 
     //-------------------------------------------------------------
-    // ¸ŞÀÎ ÀÛ¾÷
+    // ë©”ì¸ ì‘ì—…
     //-------------------------------------------------------------
 
     sHASH->bucketCnt     = aBucketCount;
     sHASH->tempTableCnt  = aTempTableCount;
 
     //----------------------------------
-    // Æ©ÇÃÀÇ ÇÒ´ç
+    // íŠœí”Œì˜ í• ë‹¹
     //----------------------------------
     IDE_TEST( qtc::nextTable( & sTupleID,
                               aStatement,
@@ -1207,8 +1207,8 @@ qmoOneMtrPlan::makeHASH( qcStatement  * aStatement ,
               != IDE_SUCCESS );
 
     // To Fix PR-8493
-    // ÄÃ·³ÀÇ ´ëÃ¼ ¿©ºÎ¸¦ °áÁ¤ÇÏ±â À§ÇØ¼­´Â
-    // TupleÀÇ ÀúÀå ¸ÅÃ¼ Á¤º¸¸¦ ¹Ì¸® ±â·ÏÇÏ°í ÀÖ¾î¾ß ÇÑ´Ù.
+    // ì»¬ëŸ¼ì˜ ëŒ€ì²´ ì—¬ë¶€ë¥¼ ê²°ì •í•˜ê¸° ìœ„í•´ì„œëŠ”
+    // Tupleì˜ ì €ì¥ ë§¤ì²´ ì •ë³´ë¥¼ ë¯¸ë¦¬ ê¸°ë¡í•˜ê³  ìˆì–´ì•¼ í•œë‹¤.
     if( (aFlag & QMO_MAKEHASH_TEMP_TABLE_MASK) ==
         QMO_MAKEHASH_MEMORY_TEMP_TABLE )
     {
@@ -1238,9 +1238,9 @@ qmoOneMtrPlan::makeHASH( qcStatement  * aStatement ,
               != IDE_SUCCESS );
 
     /* PROJ-2385
-     * Inverse Index NL¿¡¼­ÀÇ Left Distinct HASH´Â
-     * Filtering µÈ ¸ğµç Attribute¸¦ Distinct Key·Î »ç¿ëÇØ¾ß ÇÑ´Ù.
-     * ±×·¸Áö ¾ÊÀ» °æ¿ì Distinct °á°ú°¡ ÁÙ¾îµé¾î JOIN ¿¬»ê °á°ú°¡ ÁÙ¾îµç´Ù. */
+     * Inverse Index NLì—ì„œì˜ Left Distinct HASHëŠ”
+     * Filtering ëœ ëª¨ë“  Attributeë¥¼ Distinct Keyë¡œ ì‚¬ìš©í•´ì•¼ í•œë‹¤.
+     * ê·¸ë ‡ì§€ ì•Šì„ ê²½ìš° Distinct ê²°ê³¼ê°€ ì¤„ì–´ë“¤ì–´ JOIN ì—°ì‚° ê²°ê³¼ê°€ ì¤„ì–´ë“ ë‹¤. */
     if ( aAllAttrToKey == ID_TRUE )
     {
         for ( sItrAttr = sHASH->plan.resultDesc;
@@ -1257,10 +1257,10 @@ qmoOneMtrPlan::makeHASH( qcStatement  * aStatement ,
     }
 
     //----------------------------------
-    // myNodeÀÇ ±¸¼º
+    // myNodeì˜ êµ¬ì„±
     //----------------------------------
 
-    // Hash key°¡ ¾Æ´Ñ °æ¿ì
+    // Hash keyê°€ ì•„ë‹Œ ê²½ìš°
     IDE_TEST( makeNonKeyAttrsMtrNodes( aStatement,
                                        aQuerySet,
                                        sHASH->plan.resultDesc,
@@ -1276,7 +1276,7 @@ qmoOneMtrPlan::makeHASH( qcStatement  * aStatement ,
          sItrAttr != NULL;
          sItrAttr = sItrAttr->next )
     {
-        // Hash keyÀÎ °æ¿ì
+        // Hash keyì¸ ê²½ìš°
         if( ( sItrAttr->flag & QMC_ATTR_KEY_MASK ) == QMC_ATTR_KEY_TRUE )
         {
             IDE_TEST( qmg::makeColumnMtrNode( aStatement,
@@ -1311,7 +1311,7 @@ qmoOneMtrPlan::makeHASH( qcStatement  * aStatement ,
     switch( aFlag & QMO_MAKEHASH_METHOD_MASK )
     {
         //----------------------------------
-        // Hash-based JOINÀ¸·Î »ç¿ëµÇ´Â °æ¿ì
+        // Hash-based JOINìœ¼ë¡œ ì‚¬ìš©ë˜ëŠ” ê²½ìš°
         //----------------------------------
         case QMO_MAKEHASH_HASH_BASED_JOIN:
         {
@@ -1320,7 +1320,7 @@ qmoOneMtrPlan::makeHASH( qcStatement  * aStatement ,
                 case QMO_MAKEHASH_POSITION_LEFT:
                 {
                     /* PROJ-2385
-                     * LEFT HASHÀÎ °æ¿ì, Hashing Method¸¦ ¼öÁ¤ÇÒ ÇÊ¿ä ¾ø´Ù.
+                     * LEFT HASHì¸ ê²½ìš°, Hashing Methodë¥¼ ìˆ˜ì •í•  í•„ìš” ì—†ë‹¤.
                      * - Inverse Index NL => STORE_DISTINCT
                      * - Two-Pass HASH    => STORE_HASHING
                      */ 
@@ -1334,11 +1334,11 @@ qmoOneMtrPlan::makeHASH( qcStatement  * aStatement ,
                 }
                 case QMO_MAKEHASH_POSITION_RIGHT:
                 {
-                    // RIGHT HASHÀÎ °æ¿ì, Hashing Method¸¦ STORE_HASHINGÀ¸·Î °íÁ¤
+                    // RIGHT HASHì¸ ê²½ìš°, Hashing Methodë¥¼ STORE_HASHINGìœ¼ë¡œ ê³ ì •
                     sHASH->flag &= ~QMNC_HASH_STORE_MASK;
                     sHASH->flag |= QMNC_HASH_STORE_HASHING;
 
-                    //°Ë»ö ¹æ½ÄÀÇ ¼±ÅÃ
+                    //ê²€ìƒ‰ ë°©ì‹ì˜ ì„ íƒ
                     sHASH->flag  &= ~QMNC_HASH_SEARCH_MASK;
                     sHASH->flag  |= QMNC_HASH_SEARCH_RANGE;
 
@@ -1369,10 +1369,10 @@ qmoOneMtrPlan::makeHASH( qcStatement  * aStatement ,
         case QMO_MAKEHASH_STORE_AND_SEARCH:
         {
             //----------------------------------
-            // Store and Search·Î »ç¿ëµÇ´Â °æ¿ì
+            // Store and Searchë¡œ ì‚¬ìš©ë˜ëŠ” ê²½ìš°
             //----------------------------------
 
-            //not null °Ë»ç ¿©ºÎ
+            //not null ê²€ì‚¬ ì—¬ë¶€
             if( (aFlag & QMO_MAKEHASH_NOTNULLCHECK_MASK ) ==
                 QMO_MAKEHASH_NOTNULLCHECK_TRUE )
             {
@@ -1385,7 +1385,7 @@ qmoOneMtrPlan::makeHASH( qcStatement  * aStatement ,
                 sHASH->flag  |= QMNC_HASH_NULL_CHECK_FALSE;
             }
 
-            //FilterÀÇ Àç±¸¼º
+            //Filterì˜ ì¬êµ¬ì„±
             IDE_TEST( makeFilterINSubquery( aStatement ,
                                             aQuerySet ,
                                             sTupleID,
@@ -1417,7 +1417,7 @@ qmoOneMtrPlan::makeHASH( qcStatement  * aStatement ,
     }
 
     //----------------------------------
-    // Tuple columnÀÇ ÇÒ´ç
+    // Tuple columnì˜ í• ë‹¹
     //----------------------------------
     IDE_TEST( qtc::allocIntermediateTuple( aStatement ,
                                            & QC_SHARED_TMPLATE( aStatement )->tmplate,
@@ -1431,7 +1431,7 @@ qmoOneMtrPlan::makeHASH( qcStatement  * aStatement ,
     sMtcTemplate->rows[sTupleID].lflag &= ~MTC_TUPLE_PLAN_MTR_MASK;
     sMtcTemplate->rows[sTupleID].lflag |= MTC_TUPLE_PLAN_MTR_TRUE;
 
-    //GRAPH¿¡¼­ ÁöÁ¤ÇÑ ÀúÀå¸ÅÃ¼¸¦ »ç¿ëÇÑ´Ù.
+    //GRAPHì—ì„œ ì§€ì •í•œ ì €ì¥ë§¤ì²´ë¥¼ ì‚¬ìš©í•œë‹¤.
     if( (aFlag & QMO_MAKEHASH_TEMP_TABLE_MASK) ==
         QMO_MAKEHASH_MEMORY_TEMP_TABLE )
     {
@@ -1459,14 +1459,14 @@ qmoOneMtrPlan::makeHASH( qcStatement  * aStatement ,
     }
 
     //----------------------------------
-    // mtcColumn , mtcExecute Á¤º¸ÀÇ ±¸Ãà
+    // mtcColumn , mtcExecute ì •ë³´ì˜ êµ¬ì¶•
     //----------------------------------
     IDE_TEST( qmg::copyMtcColumnExecute( aStatement ,
                                          sHASH->myNode )
               != IDE_SUCCESS );
 
     //----------------------------------
-    // PROJ-1473 column locate ÁöÁ¤.
+    // PROJ-1473 column locate ì§€ì •.
     //----------------------------------
 
     IDE_TEST( qmg::setColumnLocate( aStatement,
@@ -1474,7 +1474,7 @@ qmoOneMtrPlan::makeHASH( qcStatement  * aStatement ,
               != IDE_SUCCESS );
 
     //----------------------------------
-    // PROJ-2179 calculate°¡ ÇÊ¿äÇÑ nodeµéÀÇ °á°ú À§Ä¡¸¦ ¼³Á¤
+    // PROJ-2179 calculateê°€ í•„ìš”í•œ nodeë“¤ì˜ ê²°ê³¼ ìœ„ì¹˜ë¥¼ ì„¤ì •
     //----------------------------------
 
     IDE_TEST( qmg::setCalcLocate( aStatement,
@@ -1482,19 +1482,19 @@ qmoOneMtrPlan::makeHASH( qcStatement  * aStatement ,
               != IDE_SUCCESS );
 
     //-------------------------------------------------------------
-    // ¸¶¹«¸® ÀÛ¾÷
+    // ë§ˆë¬´ë¦¬ ì‘ì—…
     //-------------------------------------------------------------
 
     for (sNewMtrNode = sHASH->myNode , sColumnCount = 0 ;
          sNewMtrNode != NULL;
          sNewMtrNode = sNewMtrNode->next , sColumnCount++ ) ;
 
-    //data ¿µ¿ªÀÇ Å©±â °è»ê
+    //data ì˜ì—­ì˜ í¬ê¸° ê³„ì‚°
     QC_SHARED_TMPLATE(aStatement)->tmplate.dataSize = sDataNodeOffset +
         sColumnCount * idlOS::align8( ID_SIZEOF(qmdMtrNode) );
 
     //----------------------------------
-    //dependency Ã³¸® ¹× subquery Ã³¸®
+    //dependency ì²˜ë¦¬ ë° subquery ì²˜ë¦¬
     //----------------------------------
 
     sPredicate[0] = sHASH->filter;
@@ -1502,7 +1502,7 @@ qmoOneMtrPlan::makeHASH( qcStatement  * aStatement ,
 
     //----------------------------------
     // PROJ-1437
-    // dependency ¼³Á¤Àü¿¡ predicateµéÀÇ À§Ä¡Á¤º¸ º¯°æ.
+    // dependency ì„¤ì •ì „ì— predicateë“¤ì˜ ìœ„ì¹˜ì •ë³´ ë³€ê²½.
     //----------------------------------
 
     IDE_TEST( qmg::changeColumnLocate( aStatement,
@@ -1572,23 +1572,23 @@ qmoOneMtrPlan::initGRAG( qcStatement       * aStatement ,
 {
 /***********************************************************************
  *
- * Description : GRAG ³ëµå¸¦ »ı¼ºÇÑ´Ù.
+ * Description : GRAG ë…¸ë“œë¥¼ ìƒì„±í•œë‹¤.
  *
  * Implementation :
- *     + ÃÊ±âÈ­ ÀÛ¾÷
- *         - qmncGRAGÀÇ ÇÒ´ç ¹× ÃÊ±âÈ­
- *     + ¸ŞÀÎ ÀÛ¾÷
- *         - GRAG³ëµåÀÇ ÄÃ·³ ±¸¼º (aggregation + groupingÁ¤º¸)
- *     + ¸¶¹«¸® ÀÛ¾÷
- *         - data ¿µ¿ªÀÇ Å©±â °è»ê
- *         - dependencyÀÇ Ã³¸®
- *         - subqueryÀÇ Ã³¸®
+ *     + ì´ˆê¸°í™” ì‘ì—…
+ *         - qmncGRAGì˜ í• ë‹¹ ë° ì´ˆê¸°í™”
+ *     + ë©”ì¸ ì‘ì—…
+ *         - GRAGë…¸ë“œì˜ ì»¬ëŸ¼ êµ¬ì„± (aggregation + groupingì •ë³´)
+ *     + ë§ˆë¬´ë¦¬ ì‘ì—…
+ *         - data ì˜ì—­ì˜ í¬ê¸° ê³„ì‚°
+ *         - dependencyì˜ ì²˜ë¦¬
+ *         - subqueryì˜ ì²˜ë¦¬
  *
  * TO DO
- *     - aggregationÀº ¿¬»êÀÌÁö¸¸, stack¿¡ ´Ş¾ÆÁÖ±â¶§¹®¿¡ passNode¸¦
- *       »ı¼ºÇÏÁö ¾Ê´Â´Ù. ±×·¯³ª groupingÄÃ·³Àº passNode¸¦ »ı¼ºÇÏ°í
- *       ÀÌÁ¤º¸°¡ order by , having¿¡ ¾²ÀÏ¼ö ÀÖÀ¸¹Ç·Î srcNode¸¦ º¹»ç
- *       ÇÏ¿© ÄÃ·³À» ±¸¼ºÇÏ°í, passNode·Î ´ëÃ¼ ÇÑ´Ù.
+ *     - aggregationì€ ì—°ì‚°ì´ì§€ë§Œ, stackì— ë‹¬ì•„ì£¼ê¸°ë•Œë¬¸ì— passNodeë¥¼
+ *       ìƒì„±í•˜ì§€ ì•ŠëŠ”ë‹¤. ê·¸ëŸ¬ë‚˜ groupingì»¬ëŸ¼ì€ passNodeë¥¼ ìƒì„±í•˜ê³ 
+ *       ì´ì •ë³´ê°€ order by , havingì— ì“°ì¼ìˆ˜ ìˆìœ¼ë¯€ë¡œ srcNodeë¥¼ ë³µì‚¬
+ *       í•˜ì—¬ ì»¬ëŸ¼ì„ êµ¬ì„±í•˜ê³ , passNodeë¡œ ëŒ€ì²´ í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -1603,16 +1603,16 @@ qmoOneMtrPlan::initGRAG( qcStatement       * aStatement ,
     IDU_FIT_POINT_FATAL( "qmoOneMtrPlan::initGRAG::__FT__" );
 
     //----------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //----------------------------------
 
     IDE_DASSERT( aStatement != NULL );
 
     //-------------------------------------------------------------
-    // ÃÊ±âÈ­ ÀÛ¾÷
+    // ì´ˆê¸°í™” ì‘ì—…
     //-------------------------------------------------------------
 
-    //qmncGRAGÀÇ ÇÒ´ç ¹× ÃÊ±âÈ­
+    //qmncGRAGì˜ í• ë‹¹ ë° ì´ˆê¸°í™”
     IDU_FIT_POINT( "qmoOneMtrPlan::initGRAG::alloc::GRAG",
                     idERR_ABORT_InsufficientMemory );
 
@@ -1632,20 +1632,20 @@ qmoOneMtrPlan::initGRAG( qcStatement       * aStatement ,
     *aPlan = (qmnPlan *)sGRAG;
 
     // BUG-41565
-    // AGGR ÇÔ¼ö¿¡ ÄÁ¹öÁ¯ÀÌ ´Ş·ÁÀÖÀ¸¸é °á°ú°¡ Æ²·ÁÁı´Ï´Ù.
-    // »óÀ§ ÇÃ·£¿¡¼­ ÄÁ¹öÁ¯ÀÌ ÀÖÀ¸¸é qtcNode ¸¦ »õ·Î »ı¼ºÇÏ±â ¶§¹®¿¡
-    // »óÀ§ ÇÃ·£ÀÇ result desc ÀÇ °ÍÀ» Ãß°¡ÇØ ÁÖ¾î¾ß °°Àº qtcNode ¸¦ °øÀ¯ÇÒ¼ö ÀÖ´Ù.
+    // AGGR í•¨ìˆ˜ì— ì»¨ë²„ì ¼ì´ ë‹¬ë ¤ìˆìœ¼ë©´ ê²°ê³¼ê°€ í‹€ë ¤ì§‘ë‹ˆë‹¤.
+    // ìƒìœ„ í”Œëœì—ì„œ ì»¨ë²„ì ¼ì´ ìˆìœ¼ë©´ qtcNode ë¥¼ ìƒˆë¡œ ìƒì„±í•˜ê¸° ë•Œë¬¸ì—
+    // ìƒìœ„ í”Œëœì˜ result desc ì˜ ê²ƒì„ ì¶”ê°€í•´ ì£¼ì–´ì•¼ ê°™ì€ qtcNode ë¥¼ ê³µìœ í• ìˆ˜ ìˆë‹¤.
     if ( aParent->type != QMN_GRAG )
     {
-        // »óÀ§ ÇÃ·£ÀÌ GRAG ÀÌ¸é Ãß°¡ÇÏÁö ¾Ê´Â´Ù. Àß¸øµÈ AGGR À» Ãß°¡ÇÏ°ÔµÊ
-        // select max(count(i1)), sum(i1) from t1 group by i1; ÀÏ¶§
+        // ìƒìœ„ í”Œëœì´ GRAG ì´ë©´ ì¶”ê°€í•˜ì§€ ì•ŠëŠ”ë‹¤. ì˜ëª»ëœ AGGR ì„ ì¶”ê°€í•˜ê²Œë¨
+        // select max(count(i1)), sum(i1) from t1 group by i1; ì¼ë•Œ
         // GRAG1 -> max(count(i1)), sum(i1)
-        // GRAG2 -> count(i1) °¡ Ã³¸®µÈ´Ù.
+        // GRAG2 -> count(i1) ê°€ ì²˜ë¦¬ëœë‹¤.
         for( sResultDesc = aParent->resultDesc;
              sResultDesc != NULL;
              sResultDesc = sResultDesc->next )
         {
-            // BUG-43288 ¿ÜºÎÂüÁ¶ AGGR ÇÔ¼ö´Â Ãß°¡ÇÏÁö ¾Ê´Â´Ù.
+            // BUG-43288 ì™¸ë¶€ì°¸ì¡° AGGR í•¨ìˆ˜ëŠ” ì¶”ê°€í•˜ì§€ ì•ŠëŠ”ë‹¤.
             if ( ( qtc::haveDependencies( &aQuerySet->outerDepInfo ) == ID_TRUE ) &&
                  ( qtc::dependencyContains( &aQuerySet->outerDepInfo,
                                             &sResultDesc->expr->depInfo ) == ID_TRUE ) )
@@ -1707,7 +1707,7 @@ qmoOneMtrPlan::initGRAG( qcStatement       * aStatement ,
 
         while( sNode->node.module == &qtc::passModule )
         {
-            // Aggregate functionÀ» having/order byÀı¿¡ ÂüÁ¶ÇÏ´Â °æ¿ì pass node°¡ »ı¼ºµÈ´Ù.
+            // Aggregate functionì„ having/order byì ˆì— ì°¸ì¡°í•˜ëŠ” ê²½ìš° pass nodeê°€ ìƒì„±ëœë‹¤.
             sNode = (qtcNode *)sNode->node.arguments;
         }
 
@@ -1766,7 +1766,7 @@ qmoOneMtrPlan::makeGRAG( qcStatement      * aStatement ,
     IDU_FIT_POINT_FATAL( "qmoOneMtrPlan::makeGRAG::__FT__" );
 
     //----------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //----------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -1774,7 +1774,7 @@ qmoOneMtrPlan::makeGRAG( qcStatement      * aStatement ,
     IDE_DASSERT( aChildPlan != NULL );
 
     //-------------------------------------------------------------
-    // ÃÊ±âÈ­ ÀÛ¾÷
+    // ì´ˆê¸°í™” ì‘ì—…
     //-------------------------------------------------------------
 
     aPlan->offset = aStatement->myPlan->sTmplate->tmplate.dataSize;
@@ -1786,17 +1786,17 @@ qmoOneMtrPlan::makeGRAG( qcStatement      * aStatement ,
     sGRAG->plan.left = aChildPlan;
 
     //----------------------------------
-    // Flag Á¤º¸ ¼³Á¤
+    // Flag ì •ë³´ ì„¤ì •
     //----------------------------------
     sGRAG->flag      = QMN_PLAN_FLAG_CLEAR;
     sGRAG->plan.flag = QMN_PLAN_FLAG_CLEAR;
 
     //-------------------------------------------------------------
-    // ¸ŞÀÎ ÀÛ¾÷
+    // ë©”ì¸ ì‘ì—…
     //-------------------------------------------------------------
 
     //----------------------------------
-    // Æ©ÇÃÀÇ ÇÒ´ç
+    // íŠœí”Œì˜ í• ë‹¹
     //----------------------------------
     IDE_TEST( qtc::nextTable( & sTupleID,
                               aStatement,
@@ -1806,19 +1806,19 @@ qmoOneMtrPlan::makeGRAG( qcStatement      * aStatement ,
               != IDE_SUCCESS );
 
     // To Fix PR-8493
-    // GROUP BY ÄÃ·³ÀÇ ´ëÃ¼ ¿©ºÎ¸¦ °áÁ¤ÇÏ±â À§ÇØ¼­´Â
-    // TupleÀÇ ÀúÀå ¸ÅÃ¼ Á¤º¸¸¦ ¹Ì¸® ±â·ÏÇÏ°í ÀÖ¾î¾ß ÇÑ´Ù.
+    // GROUP BY ì»¬ëŸ¼ì˜ ëŒ€ì²´ ì—¬ë¶€ë¥¼ ê²°ì •í•˜ê¸° ìœ„í•´ì„œëŠ”
+    // Tupleì˜ ì €ì¥ ë§¤ì²´ ì •ë³´ë¥¼ ë¯¸ë¦¬ ê¸°ë¡í•˜ê³  ìˆì–´ì•¼ í•œë‹¤.
     if( (aFlag & QMO_MAKEGRAG_TEMP_TABLE_MASK) ==
         QMO_MAKEGRAG_MEMORY_TEMP_TABLE )
     {
         sMtcTemplate->rows[sTupleID].lflag      &= ~MTC_TUPLE_STORAGE_MASK;
         sMtcTemplate->rows[sTupleID].lflag      |= MTC_TUPLE_STORAGE_MEMORY;
 
-        // BUG-23689  group by°¡ ¾ø´Â aggregation ¼öÇà½Ã, ÀúÀåÄÃ·³Ã³¸® ¿À·ù
-        // ÁúÀÇ°¡ µğ½ºÅ©ÅÛÇÁÅ×ÀÌºí·Î Ã³¸®µÇ´øÁß,
-        // group by°¡ ¾ø´Â aggregation¿¡ ´ëÇÑ Ã³¸®½Ã ¿¹¿ÜÀûÀ¸·Î ¸Ş¸ğ¸®ÅÛÇÁÅ×ÀÌºí»ç¿ëÇÏ°í,
-        // »óÀ§³ëµå´Â ´Ù½Ã µğ½ºÅ©ÅÛÇÁÅ×ÀÌºí·Î Ã³¸®µÊ.
-        // ÀÌ °æ¿ì µğ½ºÅ©ÄÃ·³ÀÌ »óÀ§ ³ëµå·Î Àü´ŞµÉ ¼ö ÀÖµµ·Ï Ã³¸®ÇØ¾ß ÇÔ.
+        // BUG-23689  group byê°€ ì—†ëŠ” aggregation ìˆ˜í–‰ì‹œ, ì €ì¥ì»¬ëŸ¼ì²˜ë¦¬ ì˜¤ë¥˜
+        // ì§ˆì˜ê°€ ë””ìŠ¤í¬í…œí”„í…Œì´ë¸”ë¡œ ì²˜ë¦¬ë˜ë˜ì¤‘,
+        // group byê°€ ì—†ëŠ” aggregationì— ëŒ€í•œ ì²˜ë¦¬ì‹œ ì˜ˆì™¸ì ìœ¼ë¡œ ë©”ëª¨ë¦¬í…œí”„í…Œì´ë¸”ì‚¬ìš©í•˜ê³ ,
+        // ìƒìœ„ë…¸ë“œëŠ” ë‹¤ì‹œ ë””ìŠ¤í¬í…œí”„í…Œì´ë¸”ë¡œ ì²˜ë¦¬ë¨.
+        // ì´ ê²½ìš° ë””ìŠ¤í¬ì»¬ëŸ¼ì´ ìƒìœ„ ë…¸ë“œë¡œ ì „ë‹¬ë  ìˆ˜ ìˆë„ë¡ ì²˜ë¦¬í•´ì•¼ í•¨.
         if( aQuerySet->materializeType == QMO_MATERIALIZE_TYPE_VALUE )
         {
             if( ( ( aChildPlan->flag & QMN_PLAN_STORAGE_MASK )
@@ -1855,8 +1855,8 @@ qmoOneMtrPlan::makeGRAG( qcStatement      * aStatement ,
     }
 
     // PROJ-2444 parallel aggregation
-    // parallel aggregation Àº 2´Ü°è·Î ¼öÇàµÈ´Ù.
-    // ÀÌ¸¦ ±¸ºĞÇÏ´Â flag ¸¦ ¼³Á¤ÇÑ´Ù.
+    // parallel aggregation ì€ 2ë‹¨ê³„ë¡œ ìˆ˜í–‰ëœë‹¤.
+    // ì´ë¥¼ êµ¬ë¶„í•˜ëŠ” flag ë¥¼ ì„¤ì •í•œë‹¤.
     if ( (aFlag & QMO_MAKEGRAG_PARALLEL_STEP_MASK) ==
                   QMO_MAKEGRAG_PARALLEL_STEP_AGGR )
     {
@@ -1881,15 +1881,15 @@ qmoOneMtrPlan::makeGRAG( qcStatement      * aStatement ,
     }
 
     //----------------------------------
-    // myNodeÀÇ ±¸¼º
+    // myNodeì˜ êµ¬ì„±
     // - for aggregation
     //----------------------------------
     sGRAG->myNode = NULL;
 
     //----------------------------------
     // PROJ-1473
-    // aggrNode¿¡ ´ëÇÑ mtrNode ±¸¼ºÀü¿¡
-    // ÁúÀÇ¿¡ »ç¿ëµÈ ÄÃ·³¿¡ ´ëÇÑ ÀúÀå
+    // aggrNodeì— ëŒ€í•œ mtrNode êµ¬ì„±ì „ì—
+    // ì§ˆì˜ì— ì‚¬ìš©ëœ ì»¬ëŸ¼ì— ëŒ€í•œ ì €ì¥
     //----------------------------------
 
     sGRAG->baseTableCount = 0;
@@ -1898,7 +1898,7 @@ qmoOneMtrPlan::makeGRAG( qcStatement      * aStatement ,
          sItrAttr != NULL;
          sItrAttr = sItrAttr->next )
     {
-        // Grouping key°¡ ¾Æ´Ñ °æ¿ì(aggregation)
+        // Grouping keyê°€ ì•„ë‹Œ ê²½ìš°(aggregation)
         if( ( sItrAttr->flag & QMC_ATTR_KEY_MASK ) == QMC_ATTR_KEY_FALSE )
         {
             sAggrNodeCount++;
@@ -1916,8 +1916,8 @@ qmoOneMtrPlan::makeGRAG( qcStatement      * aStatement ,
             sNewMtrNode->flag &= ~QMC_MTR_TYPE_MASK;
             sNewMtrNode->flag |= QMC_MTR_TYPE_CALCULATE;
 
-            // PROJ-2362 memory temp ÀúÀå È¿À²¼º °³¼±
-            // group by¿¡´Â TEMP_VAR_TYPE¸¦ »ç¿ëÇÏÁö ¾Ê´Â´Ù.
+            // PROJ-2362 memory temp ì €ì¥ íš¨ìœ¨ì„± ê°œì„ 
+            // group byì—ëŠ” TEMP_VAR_TYPEë¥¼ ì‚¬ìš©í•˜ì§€ ì•ŠëŠ”ë‹¤.
             sNewMtrNode->flag &= ~QMC_MTR_TEMP_VAR_TYPE_ENABLE_MASK;
             sNewMtrNode->flag |= QMC_MTR_TEMP_VAR_TYPE_ENABLE_FALSE;
 
@@ -1938,7 +1938,7 @@ qmoOneMtrPlan::makeGRAG( qcStatement      * aStatement ,
          sItrAttr != NULL;
          sItrAttr = sItrAttr->next )
     {
-        // Grouping keyÀÎ °æ¿ì
+        // Grouping keyì¸ ê²½ìš°
         if( ( sItrAttr->flag & QMC_ATTR_KEY_MASK ) == QMC_ATTR_KEY_TRUE )
         {
             IDE_TEST( qmg::makeColumnMtrNode( aStatement,
@@ -1960,8 +1960,8 @@ qmoOneMtrPlan::makeGRAG( qcStatement      * aStatement ,
             sNewMtrNode->flag &= ~QMC_MTR_MTR_PLAN_MASK;
             sNewMtrNode->flag |= QMC_MTR_MTR_PLAN_TRUE;
 
-            // PROJ-2362 memory temp ÀúÀå È¿À²¼º °³¼±
-            // group by¿¡´Â TEMP_VAR_TYPE¸¦ »ç¿ëÇÏÁö ¾Ê´Â´Ù.
+            // PROJ-2362 memory temp ì €ì¥ íš¨ìœ¨ì„± ê°œì„ 
+            // group byì—ëŠ” TEMP_VAR_TYPEë¥¼ ì‚¬ìš©í•˜ì§€ ì•ŠëŠ”ë‹¤.
             sNewMtrNode->flag &= ~QMC_MTR_TEMP_VAR_TYPE_ENABLE_MASK;
             sNewMtrNode->flag |= QMC_MTR_TEMP_VAR_TYPE_ENABLE_FALSE;
 
@@ -1981,7 +1981,7 @@ qmoOneMtrPlan::makeGRAG( qcStatement      * aStatement ,
     sGRAG->myNode = sFirstMtrNode;
 
     //----------------------------------
-    // Tuple columnÀÇ ÇÒ´ç
+    // Tuple columnì˜ í• ë‹¹
     //----------------------------------
     IDE_TEST( qtc::allocIntermediateTuple( aStatement ,
                                            & QC_SHARED_TMPLATE( aStatement )->tmplate,
@@ -1995,7 +1995,7 @@ qmoOneMtrPlan::makeGRAG( qcStatement      * aStatement ,
     sMtcTemplate->rows[sTupleID].lflag &= ~MTC_TUPLE_PLAN_MTR_MASK;
     sMtcTemplate->rows[sTupleID].lflag |= MTC_TUPLE_PLAN_MTR_TRUE;
 
-    //GRAPH¿¡¼­ ÁöÁ¤ÇÑ ÀúÀå¸ÅÃ¼¸¦ »ç¿ëÇÑ´Ù.
+    //GRAPHì—ì„œ ì§€ì •í•œ ì €ì¥ë§¤ì²´ë¥¼ ì‚¬ìš©í•œë‹¤.
     if( (aFlag & QMO_MAKEGRAG_TEMP_TABLE_MASK) ==
         QMO_MAKEGRAG_MEMORY_TEMP_TABLE )
     {
@@ -2004,11 +2004,11 @@ qmoOneMtrPlan::makeGRAG( qcStatement      * aStatement ,
         sMtcTemplate->rows[sTupleID].lflag      &= ~MTC_TUPLE_STORAGE_MASK;
         sMtcTemplate->rows[sTupleID].lflag      |= MTC_TUPLE_STORAGE_MEMORY;
 
-        // BUG-23689  group by°¡ ¾ø´Â aggregation ¼öÇà½Ã, ÀúÀåÄÃ·³Ã³¸® ¿À·ù
-        // ÁúÀÇ°¡ µğ½ºÅ©ÅÛÇÁÅ×ÀÌºí·Î Ã³¸®µÇ´øÁß,
-        // group by°¡ ¾ø´Â aggregation¿¡ ´ëÇÑ Ã³¸®½Ã ¿¹¿ÜÀûÀ¸·Î ¸Ş¸ğ¸®ÅÛÇÁÅ×ÀÌºí»ç¿ëÇÏ°í,
-        // »óÀ§³ëµå´Â ´Ù½Ã µğ½ºÅ©ÅÛÇÁÅ×ÀÌºí·Î Ã³¸®µÊ.
-        // ÀÌ °æ¿ì µğ½ºÅ©ÄÃ·³ÀÌ »óÀ§ ³ëµå·Î Àü´ŞµÉ ¼ö ÀÖµµ·Ï Ã³¸®ÇØ¾ß ÇÔ.
+        // BUG-23689  group byê°€ ì—†ëŠ” aggregation ìˆ˜í–‰ì‹œ, ì €ì¥ì»¬ëŸ¼ì²˜ë¦¬ ì˜¤ë¥˜
+        // ì§ˆì˜ê°€ ë””ìŠ¤í¬í…œí”„í…Œì´ë¸”ë¡œ ì²˜ë¦¬ë˜ë˜ì¤‘,
+        // group byê°€ ì—†ëŠ” aggregationì— ëŒ€í•œ ì²˜ë¦¬ì‹œ ì˜ˆì™¸ì ìœ¼ë¡œ ë©”ëª¨ë¦¬í…œí”„í…Œì´ë¸”ì‚¬ìš©í•˜ê³ ,
+        // ìƒìœ„ë…¸ë“œëŠ” ë‹¤ì‹œ ë””ìŠ¤í¬í…œí”„í…Œì´ë¸”ë¡œ ì²˜ë¦¬ë¨.
+        // ì´ ê²½ìš° ë””ìŠ¤í¬ì»¬ëŸ¼ì´ ìƒìœ„ ë…¸ë“œë¡œ ì „ë‹¬ë  ìˆ˜ ìˆë„ë¡ ì²˜ë¦¬í•´ì•¼ í•¨.
         if( aQuerySet->materializeType == QMO_MATERIALIZE_TYPE_VALUE )
         {        
             if( ( ( aChildPlan->flag & QMN_PLAN_STORAGE_MASK )
@@ -2047,21 +2047,21 @@ qmoOneMtrPlan::makeGRAG( qcStatement      * aStatement ,
     }
 
     //----------------------------------
-    // mtcColumn , mtcExecute Á¤º¸ÀÇ ±¸Ãà
+    // mtcColumn , mtcExecute ì •ë³´ì˜ êµ¬ì¶•
     //----------------------------------
     IDE_TEST( qmg::copyMtcColumnExecute( aStatement ,
                                          sGRAG->myNode )
               != IDE_SUCCESS);
 
     // PROJ-2444 parallel aggregation
-    // qmg::setColumnLocate ÇÔ¼ö¿¡¼­ ÅÛÇÃ¸´ÀÇ columnLocate ¸¦ º¯°æÇÑ´Ù.
-    // GRAG ÇÃ·£À» ¿©·¯¹ø »ı¼ºÇÏ´Â °úÁ¤¿¡¼­
-    // º¯°æµÈ columnLocate¸¦ ÂüÁ¶ÇÏ¸é Àß¸øµÈ ÇÃ·£ÀÌ »ı¼ºµÈ´Ù.
+    // qmg::setColumnLocate í•¨ìˆ˜ì—ì„œ í…œí”Œë¦¿ì˜ columnLocate ë¥¼ ë³€ê²½í•œë‹¤.
+    // GRAG í”Œëœì„ ì—¬ëŸ¬ë²ˆ ìƒì„±í•˜ëŠ” ê³¼ì •ì—ì„œ
+    // ë³€ê²½ëœ columnLocateë¥¼ ì°¸ì¡°í•˜ë©´ ì˜ëª»ëœ í”Œëœì´ ìƒì„±ëœë‹¤.
     if ( (aFlag & QMO_MAKEGRAG_PARALLEL_STEP_MASK) !=
                   QMO_MAKEGRAG_PARALLEL_STEP_AGGR )
     {
         //----------------------------------
-        // PROJ-1473 column locate ÁöÁ¤.
+        // PROJ-1473 column locate ì§€ì •.
         //----------------------------------
 
         IDE_TEST( qmg::setColumnLocate( aStatement,
@@ -2074,7 +2074,7 @@ qmoOneMtrPlan::makeGRAG( qcStatement      * aStatement ,
     }
 
     //----------------------------------
-    // PROJ-2179 calculate°¡ ÇÊ¿äÇÑ nodeµéÀÇ °á°ú À§Ä¡¸¦ ¼³Á¤
+    // PROJ-2179 calculateê°€ í•„ìš”í•œ nodeë“¤ì˜ ê²°ê³¼ ìœ„ì¹˜ë¥¼ ì„¤ì •
     //----------------------------------
 
     IDE_TEST( qmg::setCalcLocate( aStatement,
@@ -2082,10 +2082,10 @@ qmoOneMtrPlan::makeGRAG( qcStatement      * aStatement ,
               != IDE_SUCCESS );
 
     //-------------------------------------------------------------
-    // ¸¶¹«¸® ÀÛ¾÷
+    // ë§ˆë¬´ë¦¬ ì‘ì—…
     //-------------------------------------------------------------
 
-    // ÀúÀå ColumnÀÇ data ¿µ¿ª ÁöÁ¤
+    // ì €ì¥ Columnì˜ data ì˜ì—­ ì§€ì •
     sGRAG->mtrNodeOffset = sDataNodeOffset;
 
     for( sNewMtrNode = sGRAG->myNode , sMtrNodeCount = 0 ;
@@ -2094,15 +2094,15 @@ qmoOneMtrPlan::makeGRAG( qcStatement      * aStatement ,
 
     sDataNodeOffset += sMtrNodeCount * idlOS::align8( ID_SIZEOF(qmdMtrNode) );
 
-    // Aggregation Column ÀÇ data ¿µ¿ª ÁöÁ¤
+    // Aggregation Column ì˜ data ì˜ì—­ ì§€ì •
     sGRAG->aggrNodeOffset = sDataNodeOffset;
 
-    // Data ¿µ¿ª Size Á¶Á¤
+    // Data ì˜ì—­ Size ì¡°ì •
     QC_SHARED_TMPLATE(aStatement)->tmplate.dataSize = sDataNodeOffset +
         sAggrNodeCount * idlOS::align8( ID_SIZEOF(qmdMtrNode) );
 
     //----------------------------------
-    //dependency Ã³¸® ¹× subquery Ã³¸®
+    //dependency ì²˜ë¦¬ ë° subquery ì²˜ë¦¬
     //----------------------------------
 
     sMtrNode[0]  = sGRAG->myNode;
@@ -2183,30 +2183,30 @@ qmoOneMtrPlan::initHSDS( qcStatement  * aStatement ,
 {
 /***********************************************************************
  *
- * Description : HSDS ³ëµå¸¦ »ı¼ºÇÑ´Ù.
+ * Description : HSDS ë…¸ë“œë¥¼ ìƒì„±í•œë‹¤.
  *
  * Implementation :
- *     + ÃÊ±âÈ­ ÀÛ¾÷
- *         - qmncHSDSÀÇ ÇÒ´ç ¹× ÃÊ±âÈ­
- *     + ¸ŞÀÎ ÀÛ¾÷
- *         - HSDS³ëµåÀÇ »ç¿ë±¸ºĞ
- *         - HSDS³ëµåÀÇ ÄÃ·³ ±¸¼º
- *     + ¸¶¹«¸® ÀÛ¾÷
- *         - data ¿µ¿ªÀÇ Å©±â °è»ê
- *         - dependencyÀÇ Ã³¸®
- *         - subqueryÀÇ Ã³¸®
+ *     + ì´ˆê¸°í™” ì‘ì—…
+ *         - qmncHSDSì˜ í• ë‹¹ ë° ì´ˆê¸°í™”
+ *     + ë©”ì¸ ì‘ì—…
+ *         - HSDSë…¸ë“œì˜ ì‚¬ìš©êµ¬ë¶„
+ *         - HSDSë…¸ë“œì˜ ì»¬ëŸ¼ êµ¬ì„±
+ *     + ë§ˆë¬´ë¦¬ ì‘ì—…
+ *         - data ì˜ì—­ì˜ í¬ê¸° ê³„ì‚°
+ *         - dependencyì˜ ì²˜ë¦¬
+ *         - subqueryì˜ ì²˜ë¦¬
  *
  * TO DO
- *     - HSDS³ëµåÀÇ ÄÃ·³Àº baseTableÀ» »ı¼ºÇÏÁö ¾Ê´Â´Ù.
- *     - ÄÃ·³ÀÇ ±¸¼ºÀº ´ÙÀ½°ú °°ÀÌ 3°¡Áö·Î ÇÑ´Ù. ÀÌ¿¡µû¶ó ÀÎÅÍÆäÀÌ½º¸¦
- *       ±¸ºĞÇØÁÖµµ·Ï ÇÑ´Ù. (privateÀ¸·Î Ã³¸®)
- *         - HASH-BASED DISTINCTION (targetÁ¤º¸ ÀÌ¿ë)
- *         - SET-UNIONÀ¸·Î ¾²ÀÌ´Â °æ¿ì (ÇÏÀ§ÀÇ VIEW³ëµå ÀÌ¿ë)
- *         - IN¿¬»êÀÚÀÇ SUBQUERY KEYRANGE (ÇÏÀ§ÀÇ VIEW³ëµå ÀÌ¿ë)
- *     - HSDS ¼³°è¹®¼­¿¡´Â ¹İ¿µµÇÁö ¾Ê¾ÒÁö¸¸, HASH-BASED DISTINCTIONÀ¸·Î
- *       ÀÌ¿ëµÉ ½Ã¿¡´Â targetÀÇ Á¤º¸¸¦ ÀÌ¿ëÇÏ°í³ª¼­´Â »ı¼ºµÈ dstNode ¶Ç´Â
- *       passNode¸¦ target¿¡ ´Ù½Ã ´Ş¾ÆÁÖ¾î¾ß »óÀ§ÀÇ SORT³ëµå µî¿¡¼­ ¹Ù·Î
- *       ÀÌ¿ëÀÌ °¡´ÉÇÏ´Ù.
+ *     - HSDSë…¸ë“œì˜ ì»¬ëŸ¼ì€ baseTableì„ ìƒì„±í•˜ì§€ ì•ŠëŠ”ë‹¤.
+ *     - ì»¬ëŸ¼ì˜ êµ¬ì„±ì€ ë‹¤ìŒê³¼ ê°™ì´ 3ê°€ì§€ë¡œ í•œë‹¤. ì´ì—ë”°ë¼ ì¸í„°í˜ì´ìŠ¤ë¥¼
+ *       êµ¬ë¶„í•´ì£¼ë„ë¡ í•œë‹¤. (privateìœ¼ë¡œ ì²˜ë¦¬)
+ *         - HASH-BASED DISTINCTION (targetì •ë³´ ì´ìš©)
+ *         - SET-UNIONìœ¼ë¡œ ì“°ì´ëŠ” ê²½ìš° (í•˜ìœ„ì˜ VIEWë…¸ë“œ ì´ìš©)
+ *         - INì—°ì‚°ìì˜ SUBQUERY KEYRANGE (í•˜ìœ„ì˜ VIEWë…¸ë“œ ì´ìš©)
+ *     - HSDS ì„¤ê³„ë¬¸ì„œì—ëŠ” ë°˜ì˜ë˜ì§€ ì•Šì•˜ì§€ë§Œ, HASH-BASED DISTINCTIONìœ¼ë¡œ
+ *       ì´ìš©ë  ì‹œì—ëŠ” targetì˜ ì •ë³´ë¥¼ ì´ìš©í•˜ê³ ë‚˜ì„œëŠ” ìƒì„±ëœ dstNode ë˜ëŠ”
+ *       passNodeë¥¼ targetì— ë‹¤ì‹œ ë‹¬ì•„ì£¼ì–´ì•¼ ìƒìœ„ì˜ SORTë…¸ë“œ ë“±ì—ì„œ ë°”ë¡œ
+ *       ì´ìš©ì´ ê°€ëŠ¥í•˜ë‹¤.
  *
  ***********************************************************************/
 
@@ -2220,16 +2220,16 @@ qmoOneMtrPlan::initHSDS( qcStatement  * aStatement ,
     IDU_FIT_POINT_FATAL( "qmoOneMtrPlan::initHSDS::__FT__" );
 
     //----------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //----------------------------------
 
     IDE_DASSERT( aStatement != NULL );
 
     //-------------------------------------------------------------
-    // ÃÊ±âÈ­ ÀÛ¾÷
+    // ì´ˆê¸°í™” ì‘ì—…
     //-------------------------------------------------------------
 
-    //qmncHSDSÀÇ ÇÒ´ç ¹× ÃÊ±âÈ­
+    //qmncHSDSì˜ í• ë‹¹ ë° ì´ˆê¸°í™”
     IDE_TEST( QC_QMP_MEM( aStatement )->alloc( ID_SIZEOF( qmncHSDS ),
                                                (void **)& sHSDS )
               != IDE_SUCCESS );
@@ -2254,7 +2254,7 @@ qmoOneMtrPlan::initHSDS( qcStatement  * aStatement ,
 
     if( aExplicitDistinct == ID_TRUE )
     {
-        // SELECT DISTINCTÀıÀ» »ç¿ëÇÑ °æ¿ì
+        // SELECT DISTINCTì ˆì„ ì‚¬ìš©í•œ ê²½ìš°
         for( sItrAttr = aParent->resultDesc;
              sItrAttr != NULL;
              sItrAttr = sItrAttr->next )
@@ -2286,7 +2286,7 @@ qmoOneMtrPlan::initHSDS( qcStatement  * aStatement ,
             }
         }
 
-        // DISTINCTÀı¿¡¼­ ÂüÁ¶µÇ¾ú´Ù´Â flag¸¦ ´õ ÀÌ»ó ¹°·Á¹ŞÁö ¾Êµµ·Ï ÇØÁ¦ÇÑ´Ù.
+        // DISTINCTì ˆì—ì„œ ì°¸ì¡°ë˜ì—ˆë‹¤ëŠ” flagë¥¼ ë” ì´ìƒ ë¬¼ë ¤ë°›ì§€ ì•Šë„ë¡ í•´ì œí•œë‹¤.
         for( sItrAttr = sHSDS->plan.resultDesc;
              sItrAttr != NULL;
              sItrAttr = sItrAttr->next )
@@ -2303,8 +2303,8 @@ qmoOneMtrPlan::initHSDS( qcStatement  * aStatement ,
     }
     else
     {
-        // IN-SUBQUERY KEYRANGE ¶Ç´Â UNIONÀı »ç¿ë½Ã
-        // ÇÏÀ§¿¡ VIEW°¡ Á¸ÀçÇÏ¹Ç·Î »óÀ§ PROJECTIONÀÇ °á°ú¸¦ º¹»çÇÑ´Ù.
+        // IN-SUBQUERY KEYRANGE ë˜ëŠ” UNIONì ˆ ì‚¬ìš©ì‹œ
+        // í•˜ìœ„ì— VIEWê°€ ì¡´ì¬í•˜ë¯€ë¡œ ìƒìœ„ PROJECTIONì˜ ê²°ê³¼ë¥¼ ë³µì‚¬í•œë‹¤.
         IDE_TEST( qmc::copyResultDesc( aStatement,
                                        aParent->resultDesc,
                                        & sHSDS->plan.resultDesc )
@@ -2355,7 +2355,7 @@ qmoOneMtrPlan::makeHSDS( qcStatement  * aStatement ,
     IDU_FIT_POINT_FATAL( "qmoOneMtrPlan::makeHSDS::__FT__" );
 
     //----------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //----------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -2363,7 +2363,7 @@ qmoOneMtrPlan::makeHSDS( qcStatement  * aStatement ,
     IDE_DASSERT( aChildPlan != NULL );
 
     //-------------------------------------------------------------
-    // ÃÊ±âÈ­ ÀÛ¾÷
+    // ì´ˆê¸°í™” ì‘ì—…
     //-------------------------------------------------------------
 
     sMtcTemplate = & QC_SHARED_TMPLATE(aStatement)->tmplate;
@@ -2377,20 +2377,20 @@ qmoOneMtrPlan::makeHSDS( qcStatement  * aStatement ,
     sHSDS->mtrNodeOffset = sDataNodeOffset;
 
     //----------------------------------
-    // Flag Á¤º¸ ¼³Á¤
+    // Flag ì •ë³´ ì„¤ì •
     //----------------------------------
     sHSDS->flag      = QMN_PLAN_FLAG_CLEAR;
     sHSDS->plan.flag = QMN_PLAN_FLAG_CLEAR;
 
     //-------------------------------------------------------------
-    // ¸ŞÀÎ ÀÛ¾÷
+    // ë©”ì¸ ì‘ì—…
     //-------------------------------------------------------------
 
     sHSDS->bucketCnt     = aBucketCount;
     sHSDS->myNode        = NULL;
 
     //----------------------------------
-    // Æ©ÇÃÀÇ ÇÒ´ç
+    // íŠœí”Œì˜ í• ë‹¹
     //----------------------------------
     IDE_TEST( qtc::nextTable( & sTupleID,
                               aStatement,
@@ -2400,8 +2400,8 @@ qmoOneMtrPlan::makeHSDS( qcStatement  * aStatement ,
               != IDE_SUCCESS );
 
     // To Fix PR-8493
-    // ÄÃ·³ÀÇ ´ëÃ¼ ¿©ºÎ¸¦ °áÁ¤ÇÏ±â À§ÇØ¼­´Â
-    // TupleÀÇ ÀúÀå ¸ÅÃ¼ Á¤º¸¸¦ ¹Ì¸® ±â·ÏÇÏ°í ÀÖ¾î¾ß ÇÑ´Ù.
+    // ì»¬ëŸ¼ì˜ ëŒ€ì²´ ì—¬ë¶€ë¥¼ ê²°ì •í•˜ê¸° ìœ„í•´ì„œëŠ”
+    // Tupleì˜ ì €ì¥ ë§¤ì²´ ì •ë³´ë¥¼ ë¯¸ë¦¬ ê¸°ë¡í•˜ê³  ìˆì–´ì•¼ í•œë‹¤.
     if( (aFlag & QMO_MAKEHSDS_TEMP_TABLE_MASK) ==
         QMO_MAKEHSDS_MEMORY_TEMP_TABLE )
     {
@@ -2427,7 +2427,7 @@ qmoOneMtrPlan::makeHSDS( qcStatement  * aStatement ,
     //bug-7405 fixed
     if( QC_SHARED_TMPLATE(aStatement)->stmt == aStatement )
     {
-        // ÃÖ»óÀ§ Query¿¡¼­ »ç¿ëµÇ´Â °æ¿ì
+        // ìµœìƒìœ„ Queryì—ì„œ ì‚¬ìš©ë˜ëŠ” ê²½ìš°
         sHSDS->flag  &= ~QMNC_HSDS_IN_TOP_MASK;
         sHSDS->flag  |= QMNC_HSDS_IN_TOP_TRUE;
 
@@ -2438,7 +2438,7 @@ qmoOneMtrPlan::makeHSDS( qcStatement  * aStatement ,
     }
     else
     {
-        // ÃÖ»óÀ§ Query°¡ ¾Æ´Ñ°æ¿ì
+        // ìµœìƒìœ„ Queryê°€ ì•„ë‹Œê²½ìš°
         sHSDS->flag  &= ~QMNC_HSDS_IN_TOP_MASK;
         sHSDS->flag  |= QMNC_HSDS_IN_TOP_FALSE;
 
@@ -2450,14 +2450,14 @@ qmoOneMtrPlan::makeHSDS( qcStatement  * aStatement ,
 
     //----------------------------------
     // PROJ-1473
-    // mtrNode ±¸¼ºÀü¿¡
-    // ÁúÀÇ¿¡ »ç¿ëµÈ ÄÃ·³¿¡ ´ëÇÑ ÀúÀå
+    // mtrNode êµ¬ì„±ì „ì—
+    // ì§ˆì˜ì— ì‚¬ìš©ëœ ì»¬ëŸ¼ì— ëŒ€í•œ ì €ì¥
     //----------------------------------
 
     //----------------------------------
     // 1473TODO
-    // ¸Ş¸ğ¸®Å×ÀÌºí¿¡ ´ëÇÑ º£ÀÌ½ºÅ×ÀÌºí»ı¼ºÁ¦°ÅÇÊ¿ä
-    // Áï, ÁúÀÇ¿¡ »ç¿ëµÈ ÄÃ·³Á¤º¸¸¸ ÀúÀå ÇÊ¿ä.
+    // ë©”ëª¨ë¦¬í…Œì´ë¸”ì— ëŒ€í•œ ë² ì´ìŠ¤í…Œì´ë¸”ìƒì„±ì œê±°í•„ìš”
+    // ì¦‰, ì§ˆì˜ì— ì‚¬ìš©ëœ ì»¬ëŸ¼ì •ë³´ë§Œ ì €ì¥ í•„ìš”.
     //----------------------------------
 
     sHSDS->baseTableCount = 0;
@@ -2496,7 +2496,7 @@ qmoOneMtrPlan::makeHSDS( qcStatement  * aStatement ,
     sHSDS->myNode = sFirstMtrNode;
 
     //----------------------------------
-    // Tuple columnÀÇ ÇÒ´ç
+    // Tuple columnì˜ í• ë‹¹
     //----------------------------------
     IDE_TEST( qtc::allocIntermediateTuple( aStatement,
                                            & QC_SHARED_TMPLATE( aStatement )->tmplate,
@@ -2510,7 +2510,7 @@ qmoOneMtrPlan::makeHSDS( qcStatement  * aStatement ,
     sMtcTemplate->rows[sTupleID].lflag &= ~MTC_TUPLE_PLAN_MTR_MASK;
     sMtcTemplate->rows[sTupleID].lflag |= MTC_TUPLE_PLAN_MTR_TRUE;
 
-    //GRAPH¿¡¼­ ÁöÁ¤ÇÑ ÀúÀå¸ÅÃ¼¸¦ »ç¿ëÇÑ´Ù.
+    //GRAPHì—ì„œ ì§€ì •í•œ ì €ì¥ë§¤ì²´ë¥¼ ì‚¬ìš©í•œë‹¤.
     if( (aFlag & QMO_MAKEHSDS_TEMP_TABLE_MASK) ==
         QMO_MAKEHSDS_MEMORY_TEMP_TABLE )
     {
@@ -2538,25 +2538,25 @@ qmoOneMtrPlan::makeHSDS( qcStatement  * aStatement ,
     }
 
     //----------------------------------
-    // mtcColumn , mtcExecute Á¤º¸ÀÇ ±¸Ãà
+    // mtcColumn , mtcExecute ì •ë³´ì˜ êµ¬ì¶•
     //----------------------------------
     IDE_TEST( qmg::copyMtcColumnExecute( aStatement ,
                                          sHSDS->myNode )
               != IDE_SUCCESS);
 
     //-------------------------------------------------------------
-    // ¸¶¹«¸® ÀÛ¾÷
+    // ë§ˆë¬´ë¦¬ ì‘ì—…
     //-------------------------------------------------------------
 
     for (sNewMtrNode = sHSDS->myNode , sColumnCount = 0 ;
          sNewMtrNode != NULL;
          sNewMtrNode = sNewMtrNode->next , sColumnCount++ ) ;
-    //data ¿µ¿ªÀÇ Å©±â °è»ê
+    //data ì˜ì—­ì˜ í¬ê¸° ê³„ì‚°
     QC_SHARED_TMPLATE(aStatement)->tmplate.dataSize = sDataNodeOffset +
         sColumnCount * idlOS::align8( ID_SIZEOF(qmdMtrNode) );
 
     //----------------------------------
-    //dependency Ã³¸® ¹× subquery Ã³¸®
+    //dependency ì²˜ë¦¬ ë° subquery ì²˜ë¦¬
     //----------------------------------
 
     sMtrNode[0]  = sHSDS->myNode;
@@ -2579,7 +2579,7 @@ qmoOneMtrPlan::makeHSDS( qcStatement  * aStatement ,
     sHSDS->depTupleRowID = (UShort)sHSDS->plan.dependency;
 
     //----------------------------------
-    // PROJ-1473 column locate ÁöÁ¤.
+    // PROJ-1473 column locate ì§€ì •.
     //----------------------------------
 
     IDE_TEST( qmg::setColumnLocate( aStatement,
@@ -2587,7 +2587,7 @@ qmoOneMtrPlan::makeHSDS( qcStatement  * aStatement ,
               != IDE_SUCCESS );
 
     //----------------------------------
-    // PROJ-2179 calculate°¡ ÇÊ¿äÇÑ nodeµéÀÇ °á°ú À§Ä¡¸¦ ¼³Á¤
+    // PROJ-2179 calculateê°€ í•„ìš”í•œ nodeë“¤ì˜ ê²°ê³¼ ìœ„ì¹˜ë¥¼ ì„¤ì •
     //----------------------------------
 
     IDE_TEST( qmg::setCalcLocate( aStatement,
@@ -2635,24 +2635,24 @@ qmoOneMtrPlan::initLMST( qcStatement    * aStatement ,
 {
 /***********************************************************************
  *
- * Description : LMST ³ëµå¸¦ »ı¼ºÇÑ´Ù.
+ * Description : LMST ë…¸ë“œë¥¼ ìƒì„±í•œë‹¤.
  *
  * Implementation :
- *     + ÃÊ±âÈ­ ÀÛ¾÷
- *         - qmncLMSTÀÇ ÇÒ´ç ¹× ÃÊ±âÈ­
- *     + ¸ŞÀÎ ÀÛ¾÷
- *         - LMST³ëµåÀÇ »ç¿ë±¸ºĞ
- *         - LMST³ëµåÀÇ ÄÃ·³ ±¸¼º
- *     + ¸¶¹«¸® ÀÛ¾÷
- *         - data ¿µ¿ªÀÇ Å©±â °è»ê
- *         - dependencyÀÇ Ã³¸®
- *         - subqueryÀÇ Ã³¸®
+ *     + ì´ˆê¸°í™” ì‘ì—…
+ *         - qmncLMSTì˜ í• ë‹¹ ë° ì´ˆê¸°í™”
+ *     + ë©”ì¸ ì‘ì—…
+ *         - LMSTë…¸ë“œì˜ ì‚¬ìš©êµ¬ë¶„
+ *         - LMSTë…¸ë“œì˜ ì»¬ëŸ¼ êµ¬ì„±
+ *     + ë§ˆë¬´ë¦¬ ì‘ì—…
+ *         - data ì˜ì—­ì˜ í¬ê¸° ê³„ì‚°
+ *         - dependencyì˜ ì²˜ë¦¬
+ *         - subqueryì˜ ì²˜ë¦¬
  *
  * TO DO
- *     - ÄÃ·³ÀÇ ±¸¼ºÀº ´ÙÀ½°ú °°ÀÌ 3°¡Áö·Î ÇÑ´Ù. ÀÌ¿¡µû¶ó ÀÎÅÍÆäÀÌ½º¸¦
- *       ±¸ºĞÇØÁÖµµ·Ï ÇÑ´Ù. (privateÀ¸·Î Ã³¸®)
- *         - LIMIT ORDER BY·Î ¾²ÀÌ´Â °æ¿ì (orderByÁ¤º¸ ÀÌ¿ë)
- *         - STORE AND SEARCH (ÇÏÀ§ VIEWÀÇ Á¤º¸)
+ *     - ì»¬ëŸ¼ì˜ êµ¬ì„±ì€ ë‹¤ìŒê³¼ ê°™ì´ 3ê°€ì§€ë¡œ í•œë‹¤. ì´ì—ë”°ë¼ ì¸í„°í˜ì´ìŠ¤ë¥¼
+ *       êµ¬ë¶„í•´ì£¼ë„ë¡ í•œë‹¤. (privateìœ¼ë¡œ ì²˜ë¦¬)
+ *         - LIMIT ORDER BYë¡œ ì“°ì´ëŠ” ê²½ìš° (orderByì •ë³´ ì´ìš©)
+ *         - STORE AND SEARCH (í•˜ìœ„ VIEWì˜ ì •ë³´)
  *
  ***********************************************************************/
 
@@ -2668,7 +2668,7 @@ qmoOneMtrPlan::initLMST( qcStatement    * aStatement ,
     IDU_FIT_POINT_FATAL( "qmoOneMtrPlan::initLMST::__FT__" );
 
     //----------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //----------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -2686,26 +2686,26 @@ qmoOneMtrPlan::initLMST( qcStatement    * aStatement ,
                         sDataNodeOffset );
 
     //----------------------------------
-    // Flag Á¤º¸ ¼³Á¤
+    // Flag ì •ë³´ ì„¤ì •
     //----------------------------------
     sLMST->flag      = QMN_PLAN_FLAG_CLEAR;
 
-    // SortingÀÌ ÇÊ¿äÇÔÀ» Ç¥½Ã
+    // Sortingì´ í•„ìš”í•¨ì„ í‘œì‹œ
     sLMST->flag &= ~QMNC_LMST_USE_MASK;
     sLMST->flag |= QMNC_LMST_USE_ORDERBY;
 
     *aPlan = (qmnPlan *)sLMST;
 
-    // Sorting keyÀÓÀ» Ç¥½ÃÇÑ´Ù.
+    // Sorting keyì„ì„ í‘œì‹œí•œë‹¤.
     sFlag &= ~QMC_ATTR_KEY_MASK;
     sFlag |= QMC_ATTR_KEY_TRUE;
 
-    // Order byÀıÀÇ attributeµéÀ» Ãß°¡ÇÑ´Ù.
+    // Order byì ˆì˜ attributeë“¤ì„ ì¶”ê°€í•œë‹¤.
     for( sSortColumn = aOrderBy, sColumnCount = 0;
          sSortColumn != NULL;
          sSortColumn = sSortColumn->next, sColumnCount++ )
     {
-        // Sorting ¹æÇâÀ» Ç¥½ÃÇÑ´Ù.
+        // Sorting ë°©í–¥ì„ í‘œì‹œí•œë‹¤.
         if( sSortColumn->isDESC == ID_FALSE )
         {
             sFlag &= ~QMC_ATTR_SORT_ORDER_MASK;
@@ -2777,15 +2777,15 @@ qmoOneMtrPlan::initLMST( qcStatement    * aStatement ,
         }
     }
 
-    // ORDER BY Àı ¿Ü ÂüÁ¶µÇ´Â attributeµéÀ» Ãß°¡ÇÑ´Ù.
+    // ORDER BY ì ˆ ì™¸ ì°¸ì¡°ë˜ëŠ” attributeë“¤ì„ ì¶”ê°€í•œë‹¤.
     for ( sItrAttr = aParent->resultDesc;
           sItrAttr != NULL;
           sItrAttr = sItrAttr->next )
     {
         /* BUG-37146 together with rollup order by the results are wrong.
-         * Value TempÀÇ »óÀ§¿¡ SortTemp°¡ ÀÖÀ» °æ¿ì ¸ğµç SortTemp´Â value temp¸¦
-         * ÂüÁ¶ÇØ¾ßÇÑ´Ù. µû¶ó¼­ »óÀ§ PlanÀÇ exressionÀ» ¸ğµÎ sort¿¡ Ãß°¡ÇÏ°í ÃßÈÄ
-         * pushResultDesc ÇÔ¼ö¿¡¼­ passNode¸¦ ¸¸µéµµ·Ï À¯µµÇÑ´Ù.
+         * Value Tempì˜ ìƒìœ„ì— SortTempê°€ ìˆì„ ê²½ìš° ëª¨ë“  SortTempëŠ” value tempë¥¼
+         * ì°¸ì¡°í•´ì•¼í•œë‹¤. ë”°ë¼ì„œ ìƒìœ„ Planì˜ exressionì„ ëª¨ë‘ sortì— ì¶”ê°€í•˜ê³  ì¶”í›„
+         * pushResultDesc í•¨ìˆ˜ì—ì„œ passNodeë¥¼ ë§Œë“¤ë„ë¡ ìœ ë„í•œë‹¤.
          */
         if ( ( aFlag & QMO_MAKESORT_VALUE_TEMP_MASK ) ==
              QMO_MAKESORT_VALUE_TEMP_TRUE )
@@ -2816,7 +2816,7 @@ qmoOneMtrPlan::initLMST( qcStatement    * aStatement ,
         if ( ( sItrAttr->expr->node.lflag & MTC_NODE_FUNCTION_CONNECT_BY_MASK )
              == MTC_NODE_FUNCTION_CONNECT_BY_TRUE )
         {
-            /* º¹»çÇØ¼­ ³ÖÁö ¾ÊÀ¸¸é »óÀ§ Parent °¡ ¹Ù²ğ¶§ Àß¸øµÈ TupleÀ» °¡¸£Å°°ÔµÈ´Ù */
+            /* ë³µì‚¬í•´ì„œ ë„£ì§€ ì•Šìœ¼ë©´ ìƒìœ„ Parent ê°€ ë°”ë€”ë•Œ ì˜ëª»ëœ Tupleì„ ê°€ë¥´í‚¤ê²Œëœë‹¤ */
             IDE_TEST( QC_QMP_MEM( aStatement )->alloc( ID_SIZEOF( qtcNode ),
                                                        (void**)&sNode )
                       != IDE_SUCCESS );
@@ -2846,15 +2846,15 @@ qmoOneMtrPlan::initLMST( qcStatement    * aStatement ,
 
     // BUG-36997
     // select distinct i1, i2+1 from t1 order by i1;
-    // distinct ¸¦ Ã³¸®ÇÒ¶§ i2+1 À» ¿¬»êÇØ¼­ ÀúÀåÇØ ³õ´Â´Ù.
-    // µû¶ó¼­ PASS ³ëµå¸¦ »ı¼ºÇØÁÖ¾î¾ß ÇÑ´Ù.
+    // distinct ë¥¼ ì²˜ë¦¬í• ë•Œ i2+1 ì„ ì—°ì‚°í•´ì„œ ì €ì¥í•´ ë†“ëŠ”ë‹¤.
+    // ë”°ë¼ì„œ PASS ë…¸ë“œë¥¼ ìƒì„±í•´ì£¼ì–´ì•¼ í•œë‹¤.
     IDE_TEST( qmc::makeReferenceResult( aStatement,
                                         ( aParent->type == QMN_PROJ ? ID_TRUE : ID_FALSE ),
                                         aParent->resultDesc,
                                         sLMST->plan.resultDesc )
               != IDE_SUCCESS );
 
-    // ORDER BYÀı¿¡¼­ ÂüÁ¶µÇ¾ú´Ù´Â flag¸¦ ´õ ÀÌ»ó ¹°·Á¹ŞÁö ¾Êµµ·Ï ÇØÁ¦ÇÑ´Ù.
+    // ORDER BYì ˆì—ì„œ ì°¸ì¡°ë˜ì—ˆë‹¤ëŠ” flagë¥¼ ë” ì´ìƒ ë¬¼ë ¤ë°›ì§€ ì•Šë„ë¡ í•´ì œí•œë‹¤.
     for ( sItrAttr  = sLMST->plan.resultDesc;
           sItrAttr != NULL;
           sItrAttr  = sItrAttr->next )
@@ -2891,7 +2891,7 @@ qmoOneMtrPlan::initLMST( qcStatement    * aStatement ,
     IDU_FIT_POINT_FATAL( "qmoOneMtrPlan::initLMST::__FT__" );
 
     //----------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //----------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -2908,7 +2908,7 @@ qmoOneMtrPlan::initLMST( qcStatement    * aStatement ,
                         sDataNodeOffset );
 
     //----------------------------------
-    // Flag Á¤º¸ ¼³Á¤
+    // Flag ì •ë³´ ì„¤ì •
     //----------------------------------
     sLMST->flag = QMN_PLAN_FLAG_CLEAR;
     sLMST->flag &= ~QMNC_LMST_USE_MASK;
@@ -2971,7 +2971,7 @@ qmoOneMtrPlan::makeLMST( qcStatement    * aStatement ,
     IDU_FIT_POINT_FATAL( "qmoOneMtrPlan::makeLMST::__FT__" );
 
     //----------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //----------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -2979,7 +2979,7 @@ qmoOneMtrPlan::makeLMST( qcStatement    * aStatement ,
     IDE_DASSERT( aChildPlan != NULL );
     IDE_DASSERT( aPlan != NULL );
 
-    //qmncLMSTÀÇ ÇÒ´ç ¹× ÃÊ±âÈ­
+    //qmncLMSTì˜ í• ë‹¹ ë° ì´ˆê¸°í™”
     sMtcTemplate = & QC_SHARED_TMPLATE(aStatement)->tmplate;
 
     aPlan->offset = aStatement->myPlan->sTmplate->tmplate.dataSize;
@@ -2991,18 +2991,18 @@ qmoOneMtrPlan::makeLMST( qcStatement    * aStatement ,
     sLMST->mtrNodeOffset = sDataNodeOffset;
 
     //----------------------------------
-    // Flag Á¤º¸ ¼³Á¤
+    // Flag ì •ë³´ ì„¤ì •
     //----------------------------------
     sLMST->plan.flag = QMN_PLAN_FLAG_CLEAR;
 
     //-------------------------------------------------------------
-    // ¸ŞÀÎ ÀÛ¾÷
+    // ë©”ì¸ ì‘ì—…
     //-------------------------------------------------------------
 
     sLMST->limitCnt      = aLimitRowCount;
 
     //----------------------------------
-    // Æ©ÇÃÀÇ ÇÒ´ç
+    // íŠœí”Œì˜ í• ë‹¹
     //----------------------------------
     IDE_TEST( qtc::nextTable( & sTupleID,
                               aStatement,
@@ -3038,7 +3038,7 @@ qmoOneMtrPlan::makeLMST( qcStatement    * aStatement ,
                                      &( aQuerySet->depInfo ) )
               != IDE_SUCCESS );
 
-    // Sorting key°¡ ¾Æ´Ñ °æ¿ì
+    // Sorting keyê°€ ì•„ë‹Œ ê²½ìš°
     IDE_TEST( makeNonKeyAttrsMtrNodes( aStatement,
                                        aQuerySet,
                                        sLMST->plan.resultDesc,
@@ -3050,8 +3050,8 @@ qmoOneMtrPlan::makeLMST( qcStatement    * aStatement ,
 
     sLMST->baseTableCount = sColumnCount;
 
-    // PROJ-2362 memory temp ÀúÀå È¿À²¼º °³¼±
-    // limit sort¿¡´Â TEMP_VAR_TYPE¸¦ »ç¿ëÇÏÁö ¾Ê´Â´Ù.
+    // PROJ-2362 memory temp ì €ì¥ íš¨ìœ¨ì„± ê°œì„ 
+    // limit sortì—ëŠ” TEMP_VAR_TYPEë¥¼ ì‚¬ìš©í•˜ì§€ ì•ŠëŠ”ë‹¤.
     for( sNewMtrNode = sFirstMtrNode;
          sNewMtrNode != NULL;
          sNewMtrNode = sNewMtrNode->next )
@@ -3064,7 +3064,7 @@ qmoOneMtrPlan::makeLMST( qcStatement    * aStatement ,
          sItrAttr != NULL;
          sItrAttr = sItrAttr->next )
     {
-        // Sorting key ÀÎ °æ¿ì
+        // Sorting key ì¸ ê²½ìš°
         if( ( sItrAttr->flag & QMC_ATTR_KEY_MASK ) == QMC_ATTR_KEY_TRUE )
         {
             IDE_TEST( qmg::makeColumnMtrNode( aStatement,
@@ -3080,8 +3080,8 @@ qmoOneMtrPlan::makeLMST( qcStatement    * aStatement ,
             sNewMtrNode->flag &= ~QMC_MTR_SORT_NEED_MASK;
             sNewMtrNode->flag |= QMC_MTR_SORT_NEED_TRUE;
 
-            // PROJ-2362 memory temp ÀúÀå È¿À²¼º °³¼±
-            // limit sort¿¡´Â TEMP_VAR_TYPE¸¦ »ç¿ëÇÏÁö ¾Ê´Â´Ù.
+            // PROJ-2362 memory temp ì €ì¥ íš¨ìœ¨ì„± ê°œì„ 
+            // limit sortì—ëŠ” TEMP_VAR_TYPEë¥¼ ì‚¬ìš©í•˜ì§€ ì•ŠëŠ”ë‹¤.
             sNewMtrNode->flag &= ~QMC_MTR_TEMP_VAR_TYPE_ENABLE_MASK;
             sNewMtrNode->flag |= QMC_MTR_TEMP_VAR_TYPE_ENABLE_FALSE;
 
@@ -3138,7 +3138,7 @@ qmoOneMtrPlan::makeLMST( qcStatement    * aStatement ,
     sLMST->myNode = sFirstMtrNode;
 
     //----------------------------------
-    // Tuple columnÀÇ ÇÒ´ç
+    // Tuple columnì˜ í• ë‹¹
     //----------------------------------
     IDE_TEST( qtc::allocIntermediateTuple( aStatement,
                                            & QC_SHARED_TMPLATE( aStatement )->tmplate,
@@ -3152,7 +3152,7 @@ qmoOneMtrPlan::makeLMST( qcStatement    * aStatement ,
     sMtcTemplate->rows[sTupleID].lflag &= ~MTC_TUPLE_PLAN_MTR_MASK;
     sMtcTemplate->rows[sTupleID].lflag |= MTC_TUPLE_PLAN_MTR_TRUE;
 
-    //LMST´Â memory·Î ÀúÀå¸ÅÃ¼¸¦ »ç¿ëÇÑ´Ù.
+    //LMSTëŠ” memoryë¡œ ì €ì¥ë§¤ì²´ë¥¼ ì‚¬ìš©í•œë‹¤.
     sMtcTemplate->rows[sTupleID].lflag      &= ~MTC_TUPLE_STORAGE_MASK;
     sMtcTemplate->rows[sTupleID].lflag      |= MTC_TUPLE_STORAGE_MEMORY;
     sLMST->plan.flag  &= ~QMN_PLAN_STORAGE_MASK;
@@ -3177,14 +3177,14 @@ qmoOneMtrPlan::makeLMST( qcStatement    * aStatement ,
     }
 
     //----------------------------------
-    // mtcColumn , mtcExecute Á¤º¸ÀÇ ±¸Ãà
+    // mtcColumn , mtcExecute ì •ë³´ì˜ êµ¬ì¶•
     //----------------------------------
     IDE_TEST( qmg::copyMtcColumnExecute( aStatement ,
                                          sLMST->myNode )
               != IDE_SUCCESS);
 
     //----------------------------------
-    // PROJ-1473 column locate ÁöÁ¤.
+    // PROJ-1473 column locate ì§€ì •.
     //----------------------------------
 
     IDE_TEST( qmg::setColumnLocate( aStatement,
@@ -3192,7 +3192,7 @@ qmoOneMtrPlan::makeLMST( qcStatement    * aStatement ,
               != IDE_SUCCESS );
 
     //----------------------------------
-    // PROJ-2179 calculate°¡ ÇÊ¿äÇÑ nodeµéÀÇ °á°ú À§Ä¡¸¦ ¼³Á¤
+    // PROJ-2179 calculateê°€ í•„ìš”í•œ nodeë“¤ì˜ ê²°ê³¼ ìœ„ì¹˜ë¥¼ ì„¤ì •
     //----------------------------------
 
     IDE_TEST( qmg::setCalcLocate( aStatement,
@@ -3200,7 +3200,7 @@ qmoOneMtrPlan::makeLMST( qcStatement    * aStatement ,
               != IDE_SUCCESS );
 
     //-------------------------------------------------------------
-    // ¸¶¹«¸® ÀÛ¾÷
+    // ë§ˆë¬´ë¦¬ ì‘ì—…
     //-------------------------------------------------------------
 
     for ( sNewMtrNode  = sLMST->myNode , sColumnCount = 0 ;
@@ -3211,7 +3211,7 @@ qmoOneMtrPlan::makeLMST( qcStatement    * aStatement ,
         sColumnCount * idlOS::align8( ID_SIZEOF(qmdMtrNode) );
 
     //----------------------------------
-    //dependency Ã³¸® ¹× subquery Ã³¸®
+    //dependency ì²˜ë¦¬ ë° subquery ì²˜ë¦¬
     //----------------------------------
 
     sMtrNode[0]  = sLMST->myNode;
@@ -3272,17 +3272,17 @@ qmoOneMtrPlan::initVMTR( qcStatement  * aStatement ,
 {
 /***********************************************************************
  *
- * Description : VMTR ³ëµå¸¦ »ı¼ºÇÑ´Ù
+ * Description : VMTR ë…¸ë“œë¥¼ ìƒì„±í•œë‹¤
  *
  * Implementation :
- *     + ÃÊ±âÈ­ ÀÛ¾÷
- *         - qmncVMTRÀÇ ÇÒ´ç ¹× ÃÊ±âÈ­
- *     + ¸ŞÀÎ ÀÛ¾÷
- *         - VMTR³ëµåÀÇ ÄÃ·³ ±¸¼º(ÇÏÀ§ VIEWÀÇ Á¤º¸)
- *     + ¸¶¹«¸® ÀÛ¾÷
- *         - data ¿µ¿ªÀÇ Å©±â °è»ê
- *         - dependencyÀÇ Ã³¸®
- *         - subqueryÀÇ Ã³¸®
+ *     + ì´ˆê¸°í™” ì‘ì—…
+ *         - qmncVMTRì˜ í• ë‹¹ ë° ì´ˆê¸°í™”
+ *     + ë©”ì¸ ì‘ì—…
+ *         - VMTRë…¸ë“œì˜ ì»¬ëŸ¼ êµ¬ì„±(í•˜ìœ„ VIEWì˜ ì •ë³´)
+ *     + ë§ˆë¬´ë¦¬ ì‘ì—…
+ *         - data ì˜ì—­ì˜ í¬ê¸° ê³„ì‚°
+ *         - dependencyì˜ ì²˜ë¦¬
+ *         - subqueryì˜ ì²˜ë¦¬
  *
  ***********************************************************************/
 
@@ -3292,16 +3292,16 @@ qmoOneMtrPlan::initVMTR( qcStatement  * aStatement ,
     IDU_FIT_POINT_FATAL( "qmoOneMtrPlan::initVMTR::__FT__" );
 
     //----------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //----------------------------------
 
     IDE_DASSERT( aStatement != NULL );
 
     //-------------------------------------------------------------
-    // ÃÊ±âÈ­ ÀÛ¾÷
+    // ì´ˆê¸°í™” ì‘ì—…
     //-------------------------------------------------------------
 
-    //qmncVMTRÀÇ ÇÒ´ç ¹× ÃÊ±âÈ­
+    //qmncVMTRì˜ í• ë‹¹ ë° ì´ˆê¸°í™”
     IDE_TEST( QC_QMP_MEM( aStatement )->alloc( ID_SIZEOF( qmncVMTR ),
                                                (void **)& sVMTR )
               != IDE_SUCCESS );
@@ -3321,7 +3321,7 @@ qmoOneMtrPlan::initVMTR( qcStatement  * aStatement ,
     if ( aParent != NULL )
     {
         /* PROJ-2462 Result Cache
-         * Top Result CacheÀÇ °æ¿ì VMTRÀÇ »óÀ§¿¡ Ç×»ó * ProjectionÀÌ »ı¼ºµÈ´Ù.
+         * Top Result Cacheì˜ ê²½ìš° VMTRì˜ ìƒìœ„ì— í•­ìƒ * Projectionì´ ìƒì„±ëœë‹¤.
          */
         if ( aParent->type == QMN_PROJ )
         {
@@ -3370,17 +3370,17 @@ qmoOneMtrPlan::makeVMTR( qcStatement  * aStatement ,
 {
 /***********************************************************************
  *
- * Description : VMTR ³ëµå¸¦ »ı¼ºÇÑ´Ù
+ * Description : VMTR ë…¸ë“œë¥¼ ìƒì„±í•œë‹¤
  *
  * Implementation :
- *     + ÃÊ±âÈ­ ÀÛ¾÷
- *         - qmncVMTRÀÇ ÇÒ´ç ¹× ÃÊ±âÈ­
- *     + ¸ŞÀÎ ÀÛ¾÷
- *         - VMTR³ëµåÀÇ ÄÃ·³ ±¸¼º(ÇÏÀ§ VIEWÀÇ Á¤º¸)
- *     + ¸¶¹«¸® ÀÛ¾÷
- *         - data ¿µ¿ªÀÇ Å©±â °è»ê
- *         - dependencyÀÇ Ã³¸®
- *         - subqueryÀÇ Ã³¸®
+ *     + ì´ˆê¸°í™” ì‘ì—…
+ *         - qmncVMTRì˜ í• ë‹¹ ë° ì´ˆê¸°í™”
+ *     + ë©”ì¸ ì‘ì—…
+ *         - VMTRë…¸ë“œì˜ ì»¬ëŸ¼ êµ¬ì„±(í•˜ìœ„ VIEWì˜ ì •ë³´)
+ *     + ë§ˆë¬´ë¦¬ ì‘ì—…
+ *         - data ì˜ì—­ì˜ í¬ê¸° ê³„ì‚°
+ *         - dependencyì˜ ì²˜ë¦¬
+ *         - subqueryì˜ ì²˜ë¦¬
  *
  ***********************************************************************/
 
@@ -3401,7 +3401,7 @@ qmoOneMtrPlan::makeVMTR( qcStatement  * aStatement ,
     IDU_FIT_POINT_FATAL( "qmoOneMtrPlan::makeVMTR::__FT__" );
 
     //----------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //----------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -3409,7 +3409,7 @@ qmoOneMtrPlan::makeVMTR( qcStatement  * aStatement ,
     IDE_DASSERT( aChildPlan->type == QMN_VIEW );
 
     //-------------------------------------------------------------
-    // ÃÊ±âÈ­ ÀÛ¾÷
+    // ì´ˆê¸°í™” ì‘ì—…
     //-------------------------------------------------------------
 
     sMtcTemplate = & QC_SHARED_TMPLATE(aStatement)->tmplate;
@@ -3423,19 +3423,19 @@ qmoOneMtrPlan::makeVMTR( qcStatement  * aStatement ,
     sVMTR->mtrNodeOffset = sDataNodeOffset;
 
     //----------------------------------
-    // Flag Á¤º¸ ¼³Á¤
+    // Flag ì •ë³´ ì„¤ì •
     //----------------------------------
     sVMTR->flag      = QMN_PLAN_FLAG_CLEAR;
     sVMTR->plan.flag = QMN_PLAN_FLAG_CLEAR;
 
     //-------------------------------------------------------------
-    // ¸ŞÀÎ ÀÛ¾÷
+    // ë©”ì¸ ì‘ì—…
     //-------------------------------------------------------------
 
     sVMTR->myNode    = NULL;
 
     //----------------------------------
-    // Æ©ÇÃÀÇ ÇÒ´ç
+    // íŠœí”Œì˜ í• ë‹¹
     //----------------------------------
 
     IDE_TEST( qtc::nextTable( & sTupleID,
@@ -3446,8 +3446,8 @@ qmoOneMtrPlan::makeVMTR( qcStatement  * aStatement ,
               != IDE_SUCCESS );
 
     // To Fix PR-8493
-    // ÄÃ·³ÀÇ ´ëÃ¼ ¿©ºÎ¸¦ °áÁ¤ÇÏ±â À§ÇØ¼­´Â
-    // TupleÀÇ ÀúÀå ¸ÅÃ¼ Á¤º¸¸¦ ¹Ì¸® ±â·ÏÇÏ°í ÀÖ¾î¾ß ÇÑ´Ù.
+    // ì»¬ëŸ¼ì˜ ëŒ€ì²´ ì—¬ë¶€ë¥¼ ê²°ì •í•˜ê¸° ìœ„í•´ì„œëŠ”
+    // Tupleì˜ ì €ì¥ ë§¤ì²´ ì •ë³´ë¥¼ ë¯¸ë¦¬ ê¸°ë¡í•˜ê³  ìˆì–´ì•¼ í•œë‹¤.
     if ( (aFlag & QMO_MAKEVMTR_TEMP_TABLE_MASK) ==
          QMO_MAKEVMTR_MEMORY_TEMP_TABLE )
     {
@@ -3490,13 +3490,13 @@ qmoOneMtrPlan::makeVMTR( qcStatement  * aStatement ,
         if ( ( sItrAttr->flag & QMC_ATTR_USELESS_RESULT_MASK ) == QMC_ATTR_USELESS_RESULT_TRUE )
         {
             // PROJ-2469 Optimize View Materialization
-            // »óÀ§¿¡¼­ »ç¿ëÇÏÁö ¾Ê´Â MtrNode¿¡ ´ëÇØ¼­ flagÇ¥½ÃÇÑ´Ù.
+            // ìƒìœ„ì—ì„œ ì‚¬ìš©í•˜ì§€ ì•ŠëŠ” MtrNodeì— ëŒ€í•´ì„œ flagí‘œì‹œí•œë‹¤.
             sNewMtrNode->flag &= ~QMC_MTR_TYPE_MASK;
             sNewMtrNode->flag |=  QMC_MTR_TYPE_USELESS_COLUMN;
         }
         else
         {
-            //VMTR¿¡¼­ »ı¼ºµÈ qmcMtrNodeÀÌ¹Ç·Î º¹»çÇÏµµ·Ï ÇÑ´Ù.
+            //VMTRì—ì„œ ìƒì„±ëœ qmcMtrNodeì´ë¯€ë¡œ ë³µì‚¬í•˜ë„ë¡ í•œë‹¤.
             sNewMtrNode->flag &= ~QMC_MTR_TYPE_MASK;
             sNewMtrNode->flag |= QMC_MTR_TYPE_COPY_VALUE;
         }
@@ -3505,7 +3505,7 @@ qmoOneMtrPlan::makeVMTR( qcStatement  * aStatement ,
         sNewMtrNode->flag &= ~QMC_MTR_CHANGE_COLUMN_LOCATE_MASK;
         sNewMtrNode->flag |= QMC_MTR_CHANGE_COLUMN_LOCATE_TRUE;
 
-        // »óÀ§¿¡¼­ temp tableÀÇ °ªÀ» ÂüÁ¶ÇÏµµ·Ï º¯°æµÈ À§Ä¡¸¦ ¼³Á¤ÇÑ´Ù.
+        // ìƒìœ„ì—ì„œ temp tableì˜ ê°’ì„ ì°¸ì¡°í•˜ë„ë¡ ë³€ê²½ëœ ìœ„ì¹˜ë¥¼ ì„¤ì •í•œë‹¤.
         sItrAttr->expr->node.table  = sNewMtrNode->dstNode->node.table;
         sItrAttr->expr->node.column = sNewMtrNode->dstNode->node.column;
 
@@ -3523,11 +3523,11 @@ qmoOneMtrPlan::makeVMTR( qcStatement  * aStatement ,
     }
 
     //-------------------------------------------------------------
-    // ¸¶¹«¸® ÀÛ¾÷
+    // ë§ˆë¬´ë¦¬ ì‘ì—…
     //-------------------------------------------------------------
 
     //----------------------------------
-    // Tuple columnÀÇ ÇÒ´ç
+    // Tuple columnì˜ í• ë‹¹
     //----------------------------------
     IDE_TEST( qtc::allocIntermediateTuple( aStatement,
                                            & QC_SHARED_TMPLATE(aStatement)->tmplate,
@@ -3541,7 +3541,7 @@ qmoOneMtrPlan::makeVMTR( qcStatement  * aStatement ,
     sMtcTemplate->rows[sTupleID].lflag &= ~MTC_TUPLE_PLAN_MTR_MASK;
     sMtcTemplate->rows[sTupleID].lflag |= MTC_TUPLE_PLAN_MTR_TRUE;
 
-    //GRAPH¿¡¼­ ÁöÁ¤ÇÑ ÀúÀå¸ÅÃ¼¸¦ »ç¿ëÇÑ´Ù.
+    //GRAPHì—ì„œ ì§€ì •í•œ ì €ì¥ë§¤ì²´ë¥¼ ì‚¬ìš©í•œë‹¤.
     if ( (aFlag & QMO_MAKEVMTR_TEMP_TABLE_MASK) ==
          QMO_MAKEVMTR_MEMORY_TEMP_TABLE )
     {
@@ -3559,26 +3559,26 @@ qmoOneMtrPlan::makeVMTR( qcStatement  * aStatement ,
     }
 
     //----------------------------------
-    // mtcColumn , mtcExecute Á¤º¸ÀÇ ±¸Ãà
+    // mtcColumn , mtcExecute ì •ë³´ì˜ êµ¬ì¶•
     //----------------------------------
     IDE_TEST( qmg::copyMtcColumnExecute( aStatement ,
                                          sVMTR->myNode )
               != IDE_SUCCESS);
 
     //----------------------------------
-    // PROJ-1473 column locate ÁöÁ¤.
+    // PROJ-1473 column locate ì§€ì •.
     //----------------------------------
 
     IDE_TEST( qmg::setColumnLocate( aStatement,
                                     sVMTR->myNode )
               != IDE_SUCCESS );
 
-    //data ¿µ¿ªÀÇ Å©±â °è»ê
+    //data ì˜ì—­ì˜ í¬ê¸° ê³„ì‚°
     QC_SHARED_TMPLATE(aStatement)->tmplate.dataSize = sDataNodeOffset +
         sColumnCount * idlOS::align8( ID_SIZEOF(qmdMtrNode) );
 
     //----------------------------------
-    //dependency Ã³¸® ¹× subquery Ã³¸®
+    //dependency ì²˜ë¦¬ ë° subquery ì²˜ë¦¬
     //----------------------------------
 
     sMtrNode[0]  = sVMTR->myNode;
@@ -3656,20 +3656,20 @@ qmoOneMtrPlan::initWNST( qcStatement        * aStatement,
 {
 /***********************************************************************
  *
- * Description : WNST ³ëµå¸¦ »ı¼ºÇÑ´Ù.
+ * Description : WNST ë…¸ë“œë¥¼ ìƒì„±í•œë‹¤.
  *
  * Implementation :
- *     + ÃÊ±âÈ­ ÀÛ¾÷
- *         - qmncWNSTÀÇ ÇÒ´ç ¹× ÃÊ±âÈ­
- *     + ¸ŞÀÎ ÀÛ¾÷
- *         - °Ë»ö ¹æ¹ı ¹× ÀúÀå ¹æ½Ä flag ¼¼ÆÃ
- *         - WNST³ëµåÀÇ ÄÃ·³ ±¸¼º
- *     + ¸¶¹«¸® ÀÛ¾÷
- *         - data ¿µ¿ªÀÇ Å©±â °è»ê
- *         - dependencyÀÇ Ã³¸®
- *         - subqueryÀÇ Ã³¸®
+ *     + ì´ˆê¸°í™” ì‘ì—…
+ *         - qmncWNSTì˜ í• ë‹¹ ë° ì´ˆê¸°í™”
+ *     + ë©”ì¸ ì‘ì—…
+ *         - ê²€ìƒ‰ ë°©ë²• ë° ì €ì¥ ë°©ì‹ flag ì„¸íŒ…
+ *         - WNSTë…¸ë“œì˜ ì»¬ëŸ¼ êµ¬ì„±
+ *     + ë§ˆë¬´ë¦¬ ì‘ì—…
+ *         - data ì˜ì—­ì˜ í¬ê¸° ê³„ì‚°
+ *         - dependencyì˜ ì²˜ë¦¬
+ *         - subqueryì˜ ì²˜ë¦¬
  *
- *    Graph¿¡¼­ ³Ñ°ÜÁÖ´Â analytic function list ptr array ÇüÅÂ
+ *    Graphì—ì„œ ë„˜ê²¨ì£¼ëŠ” analytic function list ptr array í˜•íƒœ
  *    ex ) SELECT i,
  *                sum(i1) over ( partition by i1 ),                 ==> a1
  *                sum(i2) over ( partition by i1,i2 ),              ==> a2
@@ -3703,7 +3703,7 @@ qmoOneMtrPlan::initWNST( qcStatement        * aStatement,
  *          |
  *        (a1)-(a2)-(a3)
  *
- * < ÀÌ ÇÔ¼ö ¼öÇà °á°ú·Î »ı±â´Â WNST plan >
+ * < ì´ í•¨ìˆ˜ ìˆ˜í–‰ ê²°ê³¼ë¡œ ìƒê¸°ëŠ” WNST plan >
  * +--------+
  * | WNST   |
  * +--------+
@@ -3766,16 +3766,16 @@ qmoOneMtrPlan::initWNST( qcStatement        * aStatement,
     IDU_FIT_POINT_FATAL( "qmoOneMtrPlan::initWNST::__FT__" );
 
     //----------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //----------------------------------
 
     IDE_DASSERT( aStatement != NULL );
 
     //-------------------------------------------------------------
-    // ÃÊ±âÈ­ ÀÛ¾÷
+    // ì´ˆê¸°í™” ì‘ì—…
     //-------------------------------------------------------------
 
-    //qmncWNSTÀÇ ÇÒ´ç ¹× ÃÊ±âÈ­
+    //qmncWNSTì˜ í• ë‹¹ ë° ì´ˆê¸°í™”
     IDE_TEST( QC_QMP_MEM(aStatement)->alloc(ID_SIZEOF(qmncWNST) ,
                                             (void **)&sWNST )
               != IDE_SUCCESS );
@@ -3790,14 +3790,14 @@ qmoOneMtrPlan::initWNST( qcStatement        * aStatement,
     sFlag &= ~QMC_ATTR_KEY_MASK;
     sFlag |= QMC_ATTR_KEY_TRUE;
 
-    // Over ÀıÀÇ attributeµéÀ» key attribute·Î Ãß°¡
+    // Over ì ˆì˜ attributeë“¤ì„ key attributeë¡œ ì¶”ê°€
     for ( i = 0; i < aSortKeyCount; i++ )
     {
-        // sorting key array¿¡¼­ i¹øÂ° sorting key´Â
-        // analytic function list pointer array¿¡¼­ i¹øÂ°¿¡ ÀÖ´Â
-        // anlaytic function listµéÀÇ sorting key ÀÌ¹Ç·Î
-        // ÀÌÁß¿¡¼­ µ¿ÀÏ key count¸¦ °¡Áö´Â partition by columnÀ» Ã£À¸¸é
-        // µÈ´Ù.
+        // sorting key arrayì—ì„œ ië²ˆì§¸ sorting keyëŠ”
+        // analytic function list pointer arrayì—ì„œ ië²ˆì§¸ì— ìˆëŠ”
+        // anlaytic function listë“¤ì˜ sorting key ì´ë¯€ë¡œ
+        // ì´ì¤‘ì—ì„œ ë™ì¼ key countë¥¼ ê°€ì§€ëŠ” partition by columnì„ ì°¾ìœ¼ë©´
+        // ëœë‹¤.
         for ( sAnalyticFunc = aAnalyticFuncListPtrArr[i];
               sAnalyticFunc != NULL;
               sAnalyticFunc = sAnalyticFunc->next )
@@ -3852,7 +3852,7 @@ qmoOneMtrPlan::initWNST( qcStatement        * aStatement,
                     }
                 }
 
-                // BUG-34966 OVERÀıÀÇ columnµé¿¡ pass node°¡ ¼³Á¤µÉ ¼ö ÀÖ´Ù.
+                // BUG-34966 OVERì ˆì˜ columnë“¤ì— pass nodeê°€ ì„¤ì •ë  ìˆ˜ ìˆë‹¤.
                 IDE_TEST( qmc::duplicateGroupExpression( aStatement,
                                                          (qtcNode*)sOverColumn->node )
                           != IDE_SUCCESS );
@@ -3877,7 +3877,7 @@ qmoOneMtrPlan::initWNST( qcStatement        * aStatement,
                     if ( ( sAnalyticArg->node.arguments != NULL ) ||
                          ( sAnalyticArg->node.next != NULL ) )
                     {
-                        /* ¼­·Î °°Àº Å×ÀÌºíÀÎÁö¸¦ Ã¼Å© */
+                        /* ì„œë¡œ ê°™ì€ í…Œì´ë¸”ì¸ì§€ë¥¼ ì²´í¬ */
                         if ( qtc::dependencyContains( &sAnalyticArg->depInfo,
                                                       &sOverColumn->node->depInfo )
                              == ID_TRUE )
@@ -3918,24 +3918,24 @@ qmoOneMtrPlan::initWNST( qcStatement        * aStatement,
     sFlag &= ~QMC_ATTR_ANALYTIC_FUNC_MASK;
     sFlag |= QMC_ATTR_ANALYTIC_FUNC_TRUE;
 
-    // Analytic functionÀ» attribute·Î Ãß°¡
+    // Analytic functionì„ attributeë¡œ ì¶”ê°€
     for( sAnalyticFunc = aQuerySet->analyticFuncList;
          sAnalyticFunc != NULL;
          sAnalyticFunc = sAnalyticFunc->next )
     {
         sNode = sAnalyticFunc->analyticFuncNode;
 
-        // Argumentµµ attribute·Î Ãß°¡ÇÑ´Ù.
+        // Argumentë„ attributeë¡œ ì¶”ê°€í•œë‹¤.
         if( sNode->node.arguments != NULL )
         {
             // PROJ-2527 WITHIN GROUP AGGR
-            // WITHIN GROUPÀÇ nodeµµ resultDescµî·Ï ÇØ¾ß ÇÑ´Ù.
+            // WITHIN GROUPì˜ nodeë„ resultDescë“±ë¡ í•´ì•¼ í•œë‹¤.
             for ( sArg = sNode->node.arguments;
                   sArg != NULL;
                   sArg = sArg->next )
             {
-                // BUG-34966 Argument°¡ GROUP BYÀıÀÇ columnÀÌ¸é¼­ ORDER BYÀı¿¡¼­µµ »ç¿ëµÈ °æ¿ì
-                //           argument¸¦ º°µµ·Î º¹»çÇÏ¿© analytic function¿¡¼­ ÂüÁ¶ÇÑ´Ù.
+                // BUG-34966 Argumentê°€ GROUP BYì ˆì˜ columnì´ë©´ì„œ ORDER BYì ˆì—ì„œë„ ì‚¬ìš©ëœ ê²½ìš°
+                //           argumentë¥¼ ë³„ë„ë¡œ ë³µì‚¬í•˜ì—¬ analytic functionì—ì„œ ì°¸ì¡°í•œë‹¤.
                 IDE_TEST( qmc::duplicateGroupExpression( aStatement,
                                                          (qtcNode*)sArg )
                           != IDE_SUCCESS );
@@ -3950,9 +3950,9 @@ qmoOneMtrPlan::initWNST( qcStatement        * aStatement,
                           != IDE_SUCCESS );
             }
 
-            // Aggregate functionÀÇ argument·Î pass node°¡ ¼³Á¤µÈ °æ¿ì fast executionÀ»
-            // ¼öÇàÇØ¼­´Â ¾ÈµÇ¹Ç·Î ´Ù½Ã estimationÇÑ´Ù.
-            // BUGBUG: SELECT clauseº¸´Ù GROUP BY clause¸¦ ¸ÕÀú validationÇØ¾ß ÇÑ´Ù.
+            // Aggregate functionì˜ argumentë¡œ pass nodeê°€ ì„¤ì •ëœ ê²½ìš° fast executionì„
+            // ìˆ˜í–‰í•´ì„œëŠ” ì•ˆë˜ë¯€ë¡œ ë‹¤ì‹œ estimationí•œë‹¤.
+            // BUGBUG: SELECT clauseë³´ë‹¤ GROUP BY clauseë¥¼ ë¨¼ì € validationí•´ì•¼ í•œë‹¤.
             IDE_TEST( qtc::estimateNodeWithArgument( aStatement,
                                                      (qtcNode*)sNode )
                       != IDE_SUCCESS );
@@ -3960,11 +3960,11 @@ qmoOneMtrPlan::initWNST( qcStatement        * aStatement,
         else
         {
             // Nothing to do.
-            // COUNT(*) ÀÇ °æ¿ì argument°¡ NULLÀÌ´Ù.
+            // COUNT(*) ì˜ ê²½ìš° argumentê°€ NULLì´ë‹¤.
         }
 
-        // BUG-44046 recursive withÀÌ¸é conversion node¸¦ À¯Áö ÇÑ´Ù.
-        // parent¿¡ conversion node°¡ ¿À´Â °æ¿ì°¡ ÀÖ´Ù.
+        // BUG-44046 recursive withì´ë©´ conversion nodeë¥¼ ìœ ì§€ í•œë‹¤.
+        // parentì— conversion nodeê°€ ì˜¤ëŠ” ê²½ìš°ê°€ ìˆë‹¤.
         if ( ( ( aQuerySet->flag & QMV_QUERYSET_RECURSIVE_VIEW_MASK )
                == QMV_QUERYSET_RECURSIVE_VIEW_LEFT ) ||
              ( ( aQuerySet->flag & QMV_QUERYSET_RECURSIVE_VIEW_MASK )
@@ -4107,13 +4107,13 @@ qmoOneMtrPlan::makeWNST( qcStatement          * aStatement,
     IDU_FIT_POINT_FATAL( "qmoOneMtrPlan::makeWNST::__FT__" );
 
     //----------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //----------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aChildPlan != NULL );
 
-    // ±âº» ÃÊ±âÈ­
+    // ê¸°ë³¸ ì´ˆê¸°í™”
     sMtcTemplate      = & QC_SHARED_TMPLATE(aStatement)->tmplate;
 
     sColumnCount      = 0;
@@ -4131,7 +4131,7 @@ qmoOneMtrPlan::makeWNST( qcStatement          * aStatement,
     sCurAnalResultFuncMtrNode = NULL;
 
     //-------------------------------------------------------------
-    // ÃÊ±âÈ­ ÀÛ¾÷
+    // ì´ˆê¸°í™” ì‘ì—…
     //-------------------------------------------------------------
 
     aPlan->offset = aStatement->myPlan->sTmplate->tmplate.dataSize;
@@ -4140,13 +4140,13 @@ qmoOneMtrPlan::makeWNST( qcStatement          * aStatement,
 
     sWNST->plan.left = aChildPlan;
 
-    // Flag Á¤º¸ ¼³Á¤
+    // Flag ì •ë³´ ì„¤ì •
     sWNST->flag      = QMN_PLAN_FLAG_CLEAR;
     sWNST->plan.flag = QMN_PLAN_FLAG_CLEAR;
 
     if ( aSortKeyCount == 0 )
     {
-        // sort key°¡ ¾ø´Â °æ¿ì, sorting ÇÒ ÇÊ¿ä¾øÀ½
+        // sort keyê°€ ì—†ëŠ” ê²½ìš°, sorting í•  í•„ìš”ì—†ìŒ
         sWNST->flag &= ~QMNC_WNST_STORE_MASK;
         sWNST->flag |= QMNC_WNST_STORE_ONLY;
     }
@@ -4193,21 +4193,21 @@ qmoOneMtrPlan::makeWNST( qcStatement          * aStatement,
     sWNST->sortKeyCnt = aSortKeyCount;
 
     //--------------------------
-    // wndNode »ı¼º ¹× ÃÊ±âÈ­
+    // wndNode ìƒì„± ë° ì´ˆê¸°í™”
     //--------------------------
     if ( aSortKeyCount == 0 )
     {
-        // Sort Key°¡ ¾øÀ¸¸é
-        // Analytic Function Ptr ArrayÀÇ 0¹øÂ° À§Ä¡¿¡
-        // ¸ğµç analytic functionµéÀÌ list·Î ¿¬°áµÇ¾î ÀÖÀ½
+        // Sort Keyê°€ ì—†ìœ¼ë©´
+        // Analytic Function Ptr Arrayì˜ 0ë²ˆì§¸ ìœ„ì¹˜ì—
+        // ëª¨ë“  analytic functionë“¤ì´ listë¡œ ì—°ê²°ë˜ì–´ ìˆìŒ
         sAnalFuncListPtrCount = 1;
     }
     else
     {
-        // Sort Key°¡ ÀÖÀ¸¸é
-        // Sort Key °³¼ö¸¸Å­ analytic function ptr array°¡ Á¸ÀçÇÏ°í
-        // Sort Key¿¡ ´ëÀÀµÇ´Â À§Ä¡¿¡ µ¿ÀÏ sort key¸¦ °¡Áö´Â
-        // analytic function listµéÀÇ pointer¸¦ °¡Áö°í ÀÖÀ½
+        // Sort Keyê°€ ìˆìœ¼ë©´
+        // Sort Key ê°œìˆ˜ë§Œí¼ analytic function ptr arrayê°€ ì¡´ì¬í•˜ê³ 
+        // Sort Keyì— ëŒ€ì‘ë˜ëŠ” ìœ„ì¹˜ì— ë™ì¼ sort keyë¥¼ ê°€ì§€ëŠ”
+        // analytic function listë“¤ì˜ pointerë¥¼ ê°€ì§€ê³  ìˆìŒ
         sAnalFuncListPtrCount = aSortKeyCount;
     }
 
@@ -4223,7 +4223,7 @@ qmoOneMtrPlan::makeWNST( qcStatement          * aStatement,
     sWNST->wndNode = sWndNodePtrArr;
 
     //--------------------------
-    // sortNode »ı¼º ¹× ÃÊ±âÈ­
+    // sortNode ìƒì„± ë° ì´ˆê¸°í™”
     //--------------------------
     IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ( ID_SIZEOF(qmcMtrNode*) *
                                                sAnalFuncListPtrCount ),
@@ -4236,11 +4236,11 @@ qmoOneMtrPlan::makeWNST( qcStatement          * aStatement,
     }
     sWNST->sortNode = sSortMtrNodePtrArr;
 
-    // overÀıÀÌ ºñ¾îÀÖ¾îµµ sort key count´Â 1ÀÌ µÈ´Ù.
+    // overì ˆì´ ë¹„ì–´ìˆì–´ë„ sort key countëŠ” 1ì´ ëœë‹¤.
     sWNST->sortKeyCnt = sAnalFuncListPtrCount;
 
     //-------------------------------------------------------------
-    // ¸ŞÀÎ ÀÛ¾÷
+    // ë©”ì¸ ì‘ì—…
     //-------------------------------------------------------------
 
     IDE_TEST( qmc::filterResultDesc( aStatement,
@@ -4250,11 +4250,11 @@ qmoOneMtrPlan::makeWNST( qcStatement          * aStatement,
               != IDE_SUCCESS );
 
     //----------------------------------
-    // Æ©ÇÃÀÇ ÇÒ´ç
+    // íŠœí”Œì˜ í• ë‹¹
     //----------------------------------
 
-    // Analytic Function Result¸¦ µµÃâÇÏ±â À§ÇÏ¿©
-    // ÇÊ¿äÇÑ Áß°£ °á°ú¸¦ ÀúÀåÇÏ±â À§ÇÑ tuple ÇÒ´ç ¹ŞÀ½
+    // Analytic Function Resultë¥¼ ë„ì¶œí•˜ê¸° ìœ„í•˜ì—¬
+    // í•„ìš”í•œ ì¤‘ê°„ ê²°ê³¼ë¥¼ ì €ì¥í•˜ê¸° ìœ„í•œ tuple í• ë‹¹ ë°›ìŒ
     IDE_TEST( qtc::nextTable( & sAggrTupleID,
                               aStatement,
                               NULL,
@@ -4262,7 +4262,7 @@ qmoOneMtrPlan::makeWNST( qcStatement          * aStatement,
                               MTC_COLUMN_NOTNULL_TRUE )
               != IDE_SUCCESS );
 
-    // temp tableÀ» À§ÇÑ tupleÀ» ÇÒ´ç¹ŞÀ½
+    // temp tableì„ ìœ„í•œ tupleì„ í• ë‹¹ë°›ìŒ
     IDE_TEST( qtc::nextTable(  &sTupleID ,
                                aStatement ,
                                NULL,
@@ -4271,7 +4271,7 @@ qmoOneMtrPlan::makeWNST( qcStatement          * aStatement,
               != IDE_SUCCESS );
 
     //----------------------------------
-    // TupleÀÇ ÀúÀå ¸ÅÃ¼ Á¤º¸ ¼³Á¤
+    // Tupleì˜ ì €ì¥ ë§¤ì²´ ì •ë³´ ì„¤ì •
     //----------------------------------
     if( (aFlag & QMO_MAKEWNST_TEMP_TABLE_MASK) ==
         QMO_MAKEWNST_MEMORY_TEMP_TABLE )
@@ -4316,7 +4316,7 @@ qmoOneMtrPlan::makeWNST( qcStatement          * aStatement,
         // Nothing To Do
     }
 
-    //GRAPH¿¡¼­ ÁöÁ¤ÇÑ ÀúÀå¸ÅÃ¼¸¦ »ç¿ëÇÑ´Ù.
+    //GRAPHì—ì„œ ì§€ì •í•œ ì €ì¥ë§¤ì²´ë¥¼ ì‚¬ìš©í•œë‹¤.
     if( (aFlag & QMO_MAKEWNST_TEMP_TABLE_MASK) ==
         QMO_MAKEWNST_MEMORY_TEMP_TABLE )
     {
@@ -4330,8 +4330,8 @@ qmoOneMtrPlan::makeWNST( qcStatement          * aStatement,
     }
 
     //----------------------------------
-    // myNode ±¸¼º
-    //     ¾Æ·¡¿Í °°ÀÌ ±¸¼ºµÈ´Ù.
+    // myNode êµ¬ì„±
+    //     ì•„ë˜ì™€ ê°™ì´ êµ¬ì„±ëœë‹¤.
     //     [Base Table] + [Columns] + [Analytic Function]
     //----------------------------------
 
@@ -4350,10 +4350,10 @@ qmoOneMtrPlan::makeWNST( qcStatement          * aStatement,
                     ERR_MTR_NODE_NOT_FOUND );
 
     //----------------------------------
-    // Temp Table¿¡ ´ëÇÑ Tuple columnÀÇ ÇÒ´ç
+    // Temp Tableì— ëŒ€í•œ Tuple columnì˜ í• ë‹¹
     //----------------------------------
 
-    // temp tableÀÇ tuple column ÇÒ´ç
+    // temp tableì˜ tuple column í• ë‹¹
     IDE_TEST( qtc::allocIntermediateTuple( aStatement,
                                            & QC_SHARED_TMPLATE( aStatement )->tmplate,
                                            sTupleID ,
@@ -4366,7 +4366,7 @@ qmoOneMtrPlan::makeWNST( qcStatement          * aStatement,
     sMtcTemplate->rows[sTupleID].lflag &= ~MTC_TUPLE_PLAN_MTR_MASK;
     sMtcTemplate->rows[sTupleID].lflag |= MTC_TUPLE_PLAN_MTR_TRUE;
 
-    //GRAPH¿¡¼­ ÁöÁ¤ÇÑ ÀúÀå¸ÅÃ¼¸¦ »ç¿ëÇÑ´Ù.
+    //GRAPHì—ì„œ ì§€ì •í•œ ì €ì¥ë§¤ì²´ë¥¼ ì‚¬ìš©í•œë‹¤.
     if( (aFlag & QMO_MAKEWNST_TEMP_TABLE_MASK) ==
         QMO_MAKEWNST_MEMORY_TEMP_TABLE )
     {
@@ -4399,7 +4399,7 @@ qmoOneMtrPlan::makeWNST( qcStatement          * aStatement,
               sCurAnalyticFunc != NULL ;
               sCurAnalyticFunc  = sCurAnalyticFunc->next)
          {
-             // analytic functionÀÇ argument
+             // analytic functionì˜ argument
              IDE_TEST( qmg::changeColumnLocate( aStatement,
                                                 aQuerySet,
                                                 (qtcNode*)sCurAnalyticFunc->analyticFuncNode->node.arguments,
@@ -4407,7 +4407,7 @@ qmoOneMtrPlan::makeWNST( qcStatement          * aStatement,
                                                 ID_TRUE ) // aNext
                        != IDE_SUCCESS );
 
-             // analytic functionÀÇ partition by columnµé
+             // analytic functionì˜ partition by columnë“¤
              for ( sOverColumn  =
                        sCurAnalyticFunc->analyticFuncNode->overClause->overColumn;
                    sOverColumn != NULL;
@@ -4423,18 +4423,18 @@ qmoOneMtrPlan::makeWNST( qcStatement          * aStatement,
          }
     }
 
-    // mtcColumn , mtcExecute Á¤º¸ÀÇ ±¸Ãà
+    // mtcColumn , mtcExecute ì •ë³´ì˜ êµ¬ì¶•
     IDE_TEST( qmg::copyMtcColumnExecute( aStatement ,
                                          sWNST->myNode )
               != IDE_SUCCESS);
 
-    // column locate ÁöÁ¤
+    // column locate ì§€ì •
     IDE_TEST( qmg::setColumnLocate( aStatement,
                                     sWNST->myNode )
               != IDE_SUCCESS );
 
     //----------------------------------
-    // wndNode, distNode, aggrNode, sortNode »ı¼º
+    // wndNode, distNode, aggrNode, sortNode ìƒì„±
     //----------------------------------
     sCurAnalResultFuncMtrNode = sFirstAnalResultFuncMtrNode;
 
@@ -4445,10 +4445,10 @@ qmoOneMtrPlan::makeWNST( qcStatement          * aStatement,
               sCurAnalyticFunc  = sCurAnalyticFunc->next)
         {
             //----------------------------------
-            // wndNode »ı¼º
+            // wndNode ìƒì„±
             //----------------------------------
 
-            // µ¿ÀÏ Partition By¸¦ °¡Áö´Â wndNode Á¸ÀçÇÏ´ÂÁö °Ë»ç
+            // ë™ì¼ Partition Byë¥¼ ê°€ì§€ëŠ” wndNode ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬
             sCurWndNode = NULL;
             IDE_TEST( existSameWndNode( aStatement,
                                         sTupleID,
@@ -4459,7 +4459,7 @@ qmoOneMtrPlan::makeWNST( qcStatement          * aStatement,
 
             if ( sCurWndNode == NULL )
             {
-                // Á¸ÀçÇÏÁö ¾ÊÀ» °æ¿ì, wndNode »ı¼º
+                // ì¡´ì¬í•˜ì§€ ì•Šì„ ê²½ìš°, wndNode ìƒì„±
                 IDE_TEST( makeWndNode( aStatement,
                                        sTupleID,
                                        sWNST->myNode,
@@ -4469,7 +4469,7 @@ qmoOneMtrPlan::makeWNST( qcStatement          * aStatement,
                           != IDE_SUCCESS );
                 sWndNodeCount++;
 
-                // »õ·Î¿î wndNode¸¦ sWNSTÀÇ wndNode¿¡ ¾Õ ºÎºĞ¿¡ ¿¬°á
+                // ìƒˆë¡œìš´ wndNodeë¥¼ sWNSTì˜ wndNodeì— ì• ë¶€ë¶„ì— ì—°ê²°
                 sCurWndNode->next = sWndNodePtrArr[i];
                 sWndNodePtrArr[i] = sCurWndNode;
             }
@@ -4478,7 +4478,7 @@ qmoOneMtrPlan::makeWNST( qcStatement          * aStatement,
                 // nothing to do
             }
 
-            // wndNode¿¡ aggrNode Ãß°¡
+            // wndNodeì— aggrNode ì¶”ê°€
             IDE_TEST( addAggrNodeToWndNode( aStatement,
                                             aQuerySet,
                                             sCurAnalyticFunc,
@@ -4489,13 +4489,13 @@ qmoOneMtrPlan::makeWNST( qcStatement          * aStatement,
                       != IDE_SUCCESS );
             sWndAggrNodeCount++;
 
-            // aggrNode¿¡ ´ëÇÏ¿© distinct °Ë»ç
-            // distinct node Ãß°¡
+            // aggrNodeì— ëŒ€í•˜ì—¬ distinct ê²€ì‚¬
+            // distinct node ì¶”ê°€
             if ( ( sCurAnalyticFunc->analyticFuncNode->node.lflag &
                    MTC_NODE_DISTINCT_MASK )
                  == MTC_NODE_DISTINCT_FALSE )
             {
-                // DistinctionÀÌ Á¸ÀçÇÏÁö ¾ÊÀ» °æ¿ì
+                // Distinctionì´ ì¡´ì¬í•˜ì§€ ì•Šì„ ê²½ìš°
                 sWndAggrNode->flag &= ~QMC_MTR_DIST_AGGR_MASK;
                 sWndAggrNode->flag |= QMC_MTR_DIST_AGGR_FALSE;
                 sWndAggrNode->myDist = NULL;
@@ -4506,12 +4506,12 @@ qmoOneMtrPlan::makeWNST( qcStatement          * aStatement,
                                 (sCurWndNode->execMethod != QMC_WND_EXEC_AGGR_UPDATE),
                                 ERR_INVALID_ORDERBY );
 
-                // DistinctionÀÌ Á¸ÀçÇÏ´Â °æ¿ì
+                // Distinctionì´ ì¡´ì¬í•˜ëŠ” ê²½ìš°
                 sWndAggrNode->flag &= ~QMC_MTR_DIST_AGGR_MASK;
                 sWndAggrNode->flag |= QMC_MTR_DIST_AGGR_TRUE;
 
                 //----------------------------------
-                // distNode »ı¼º
+                // distNode ìƒì„±
                 //----------------------------------
 
                 IDE_TEST( qmg::makeDistNode(aStatement,
@@ -4527,7 +4527,7 @@ qmoOneMtrPlan::makeWNST( qcStatement          * aStatement,
                           != IDE_SUCCESS );
             }
 
-            // wndNode¿¡ aggrResultNode Ãß°¡
+            // wndNodeì— aggrResultNode ì¶”ê°€
             IDE_TEST( addAggrResultNodeToWndNode( aStatement,
                                                   sCurAnalResultFuncMtrNode,
                                                   sCurWndNode )
@@ -4537,7 +4537,7 @@ qmoOneMtrPlan::makeWNST( qcStatement          * aStatement,
             sCurAnalResultFuncMtrNode = sCurAnalResultFuncMtrNode->next;
 
             //----------------------------------
-            // aggrNode »ı¼º
+            // aggrNode ìƒì„±
             //----------------------------------
 
             IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF( qmcMtrNode ),
@@ -4568,7 +4568,7 @@ qmoOneMtrPlan::makeWNST( qcStatement          * aStatement,
         }
 
         //----------------------------------
-        // sortNodeÀÇ »ı¼º
+        // sortNodeì˜ ìƒì„±
         //----------------------------------
 
         IDE_TEST( qmg::makeSortMtrNode( aStatement,
@@ -4582,29 +4582,29 @@ qmoOneMtrPlan::makeWNST( qcStatement          * aStatement,
     }
 
     //----------------------------------
-    // AggregationÀ» À§ÇØ ÇÒ´ç¹ŞÀº Tuple columnÀÇ ÇÒ´ç
+    // Aggregationì„ ìœ„í•´ í• ë‹¹ë°›ì€ Tuple columnì˜ í• ë‹¹
     //----------------------------------
 
-    // Analytic Function Result¸¦ µµÃâÇÏ±â À§ÇÏ¿©
-    // ÇÊ¿äÇÑ Áß°£ °á°ú¸¦ ÀúÀåÇÏ±â À§ÇÑ aggregationÀÇ tuple column ÇÒ´ç
+    // Analytic Function Resultë¥¼ ë„ì¶œí•˜ê¸° ìœ„í•˜ì—¬
+    // í•„ìš”í•œ ì¤‘ê°„ ê²°ê³¼ë¥¼ ì €ì¥í•˜ê¸° ìœ„í•œ aggregationì˜ tuple column í• ë‹¹
     IDE_TEST( qtc::allocIntermediateTuple( aStatement,
                                            & QC_SHARED_TMPLATE( aStatement )->tmplate,
                                            sAggrTupleID ,
                                            sAggrColumnCount )
               != IDE_SUCCESS);
 
-    // mtcColumn , mtcExecute Á¤º¸ÀÇ ±¸Ãà
+    // mtcColumn , mtcExecute ì •ë³´ì˜ êµ¬ì¶•
     IDE_TEST( qmg::copyMtcColumnExecute( aStatement ,
                                          sWNST->aggrNode )
               != IDE_SUCCESS);
 
-    // column locate ÁöÁ¤
+    // column locate ì§€ì •
     IDE_TEST( qmg::setColumnLocate( aStatement,
                                     sWNST->aggrNode )
               != IDE_SUCCESS );
 
     //----------------------------------
-    // PROJ-2179 calculate°¡ ÇÊ¿äÇÑ nodeµéÀÇ °á°ú À§Ä¡¸¦ ¼³Á¤
+    // PROJ-2179 calculateê°€ í•„ìš”í•œ nodeë“¤ì˜ ê²°ê³¼ ìœ„ì¹˜ë¥¼ ì„¤ì •
     //----------------------------------
 
     IDE_TEST( qmg::setCalcLocate( aStatement,
@@ -4612,17 +4612,17 @@ qmoOneMtrPlan::makeWNST( qcStatement          * aStatement,
               != IDE_SUCCESS );
 
     //-------------------------------------------------------------
-    // ¸¶¹«¸® ÀÛ¾÷
+    // ë§ˆë¬´ë¦¬ ì‘ì—…
     //-------------------------------------------------------------
 
     //----------------------------------
-    // Data Offset ¼³Á¤
+    // Data Offset ì„¤ì •
     //----------------------------------
 
-    // mtrNodeOffset ¼³Á¤
+    // mtrNodeOffset ì„¤ì •
     sWNST->mtrNodeOffset = sDataNodeOffset;
 
-    // ´ÙÀ½ ³ëµå°¡ ÀúÀåµÉ ½ÃÀÛ ÁöÁ¡
+    // ë‹¤ìŒ ë…¸ë“œê°€ ì €ì¥ë  ì‹œì‘ ì§€ì 
     sCurOffset = sDataNodeOffset +
         idlOS::align8(ID_SIZEOF(qmdMtrNode)) * sColumnCount;
 
@@ -4635,7 +4635,7 @@ qmoOneMtrPlan::makeWNST( qcStatement          * aStatement,
     sCurOffset += idlOS::align8(ID_SIZEOF(qmdAggrNode)) * sAggrNodeCount;
 
     // sortNodeOffset
-    // Pointer¸¦ À§ÇÑ °ø°£ + sort node¸¦ À§ÇÑ °ø°£
+    // Pointerë¥¼ ìœ„í•œ ê³µê°„ + sort nodeë¥¼ ìœ„í•œ ê³µê°„
     sWNST->sortNodeOffset = sCurOffset;
     sCurOffset +=
         ( idlOS::align8(ID_SIZEOF(qmdMtrNode*)) * sAnalFuncListPtrCount ) +
@@ -4666,11 +4666,11 @@ qmoOneMtrPlan::makeWNST( qcStatement          * aStatement,
             idlOS::align8(ID_SIZEOF(qmcdSortTemp)) * sAnalFuncListPtrCount;
     }
 
-    // data ¿µ¿ªÀÇ Å©±â °è»ê
+    // data ì˜ì—­ì˜ í¬ê¸° ê³„ì‚°
     QC_SHARED_TMPLATE(aStatement)->tmplate.dataSize = sCurOffset;
 
     //----------------------------------
-    // dependency Ã³¸® ¹× subquery Ã³¸®
+    // dependency ì²˜ë¦¬ ë° subquery ì²˜ë¦¬
     //----------------------------------
     sMtrNode[0] = sWNST->myNode;
 
@@ -4693,7 +4693,7 @@ qmoOneMtrPlan::makeWNST( qcStatement          * aStatement,
     sWNST->depTupleRowID = (UShort)sWNST->plan.dependency;
 
     //----------------------------------
-    // aggrNodeÀÇ dst¸¦ aggrResultNodeÀÇ src·Î º¯°æ
+    // aggrNodeì˜ dstë¥¼ aggrResultNodeì˜ srcë¡œ ë³€ê²½
     //----------------------------------
     sCurAnalResultFuncMtrNode = sFirstAnalResultFuncMtrNode;
     for ( sCurAggrNode = sWNST->aggrNode;
@@ -4708,9 +4708,9 @@ qmoOneMtrPlan::makeWNST( qcStatement          * aStatement,
     }
 
     //----------------------------------
-    // aggrResultNodeÀÇ dst¸¦ analytic function node¿¡ ÀúÀå
-    // ( temp table¿¡ ÀúÀåµÈ °ªÀ» target ¶Ç´Â order by¿¡¼­ ÀĞÀ»¼ö ÀÖ°Ô
-    //   ÇÏ±â À§ÇÔ )
+    // aggrResultNodeì˜ dstë¥¼ analytic function nodeì— ì €ì¥
+    // ( temp tableì— ì €ì¥ëœ ê°’ì„ target ë˜ëŠ” order byì—ì„œ ì½ì„ìˆ˜ ìˆê²Œ
+    //   í•˜ê¸° ìœ„í•¨ )
     //----------------------------------
 
     sCurAnalResultFuncMtrNode = sFirstAnalResultFuncMtrNode;
@@ -4724,13 +4724,13 @@ qmoOneMtrPlan::makeWNST( qcStatement          * aStatement,
              sNextNode = sCurAnalyticFunc->analyticFuncNode->node.next;
              sConversion = sCurAnalyticFunc->analyticFuncNode->node.conversion;
 
-             // aggrResultNodeÀÇ dst º¯°æ
+             // aggrResultNodeì˜ dst ë³€ê²½
              idlOS::memcpy( sCurAnalyticFunc->analyticFuncNode,
                             sCurAnalResultFuncMtrNode->dstNode,
                             ID_SIZEOF(qtcNode) );
 
-             // BUG-21912 : aggregation °á°ú¿¡ ´ëÇÑ conversionÀ»
-             //             ´Ù½Ã ¿¬°áÇØÁÖ¾î¾ß ÇÔ
+             // BUG-21912 : aggregation ê²°ê³¼ì— ëŒ€í•œ conversionì„
+             //             ë‹¤ì‹œ ì—°ê²°í•´ì£¼ì–´ì•¼ í•¨
              sCurAnalyticFunc->analyticFuncNode->node.conversion =
                  sConversion;
 
@@ -4791,13 +4791,13 @@ qmoOneMtrPlan::makeFilterINSubquery( qcStatement  * aStatement ,
 {
 /***********************************************************************
  *
- * Description : IN subquery¿¡¼­ ÇÊ¿äÇÑ filter¸¦ Àç±¸¼ºÇØÁØ´Ù.
+ * Description : IN subqueryì—ì„œ í•„ìš”í•œ filterë¥¼ ì¬êµ¬ì„±í•´ì¤€ë‹¤.
  *
  * Implementation :
- *     - INÀº  "="·Î
- *     - LIST´Â °¢°¢ element¿¡ ´ëÇØ¼­ "=" ¿¬»êÀ» ÃëÇØÁÖµµ·ÏÇÑ´Ù.
- *       ¸ğµç ¿¬»êÀº ´Ù½Ã AND·Î ¹­¿©¾ß ÇÑ´Ù.
- *     - passNode´Â targetÀ¸·Î ºÎÅÍ ¾Ë¾Æ³½´Ù. HASH³ëµå¿¡¼­ ¹Ì¸® ¼¼ÆÃ
+ *     - INì€  "="ë¡œ
+ *     - LISTëŠ” ê°ê° elementì— ëŒ€í•´ì„œ "=" ì—°ì‚°ì„ ì·¨í•´ì£¼ë„ë¡í•œë‹¤.
+ *       ëª¨ë“  ì—°ì‚°ì€ ë‹¤ì‹œ ANDë¡œ ë¬¶ì—¬ì•¼ í•œë‹¤.
+ *     - passNodeëŠ” targetìœ¼ë¡œ ë¶€í„° ì•Œì•„ë‚¸ë‹¤. HASHë…¸ë“œì—ì„œ ë¯¸ë¦¬ ì„¸íŒ…
  *
  * ex)
  *      IN                                     =
@@ -4831,7 +4831,7 @@ qmoOneMtrPlan::makeFilterINSubquery( qcStatement  * aStatement ,
     IDU_FIT_POINT_FATAL( "qmoOneMtrPlan::makeFilterINSubquery::__FT__" );
 
     //----------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //----------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -4840,7 +4840,7 @@ qmoOneMtrPlan::makeFilterINSubquery( qcStatement  * aStatement ,
     IDE_TEST_RAISE( aInFilter == NULL, ERR_EMPTY_FILTER );
 
     // To Fix PR-8109
-    // ¸ğµç Key Range´Â DNF·Î ±¸¼ºµÇ¾î ÀÖ¾î¾ß ÇÔ.
+    // ëª¨ë“  Key RangeëŠ” DNFë¡œ êµ¬ì„±ë˜ì–´ ìˆì–´ì•¼ í•¨.
     IDE_TEST_RAISE( ( aInFilter->node.lflag & MTC_NODE_OPERATOR_MASK )
                     != MTC_NODE_OPERATOR_OR,
                     ERR_INVALID_FILTER );
@@ -4860,42 +4860,42 @@ qmoOneMtrPlan::makeFilterINSubquery( qcStatement  * aStatement ,
               != IDE_SUCCESS );
 
     //----------------------------------
-    // FilterÀÇ Ã³¸®
-    // - IN , NOT INÀÇ ÇÏÀ§°¡ List¶ó¸é
-    //     - ¸®½ºÆ®ÀÇ °³¼ö¸¸Å­  , (= , !=)À» »ı¼ºÇÏ°í
-    //       passNode·Î ¿¬°áÇÑÈÄ , AND·Î ¹­¾îÁØ´Ù.
+    // Filterì˜ ì²˜ë¦¬
+    // - IN , NOT INì˜ í•˜ìœ„ê°€ Listë¼ë©´
+    //     - ë¦¬ìŠ¤íŠ¸ì˜ ê°œìˆ˜ë§Œí¼  , (= , !=)ì„ ìƒì„±í•˜ê³ 
+    //       passNodeë¡œ ì—°ê²°í•œí›„ , ANDë¡œ ë¬¶ì–´ì¤€ë‹¤.
     //
-    // - LIST°¡ ¾Æ´Ï¶ó¸é
-    //     - (= , !=)À» »ı¼ºÇÏ°í, passNode·Î ¿¬°á
+    // - LISTê°€ ì•„ë‹ˆë¼ë©´
+    //     - (= , !=)ì„ ìƒì„±í•˜ê³ , passNodeë¡œ ì—°ê²°
     //
-    // - passNode´Â HASH³ëµå¿¡¼­ »ı¼ºÈÄ Target¿¡ ¹Ì¸® ¼¼ÆÃ
+    // - passNodeëŠ” HASHë…¸ë“œì—ì„œ ìƒì„±í›„ Targetì— ë¯¸ë¦¬ ì„¸íŒ…
     //----------------------------------
 
     // To Fix PR-8109
-    // IN Node¸¦ Ã£´Â´Ù.
+    // IN Nodeë¥¼ ì°¾ëŠ”ë‹¤.
     IDE_FT_ASSERT( aInFilter->node.arguments != NULL );
 
     sStartNode   = (qtcNode *) aInFilter->node.arguments->arguments;
 
-    //¿¬»êÀÚ ³ëµåÀÇ argumnent°¡ LISTÀÎÁö ¾Æ´ÑÁö¸¦ ÆÇº°
+    //ì—°ì‚°ì ë…¸ë“œì˜ argumnentê°€ LISTì¸ì§€ ì•„ë‹Œì§€ë¥¼ íŒë³„
     sArgNode = (qtcNode*)sStartNode->node.arguments;
     if ( sArgNode->node.module == &mtfList )
     {
-        //ListÀÎ °æ¿ì
+        //Listì¸ ê²½ìš°
         sArgNode = (qtcNode*)sArgNode->node.arguments;
     }
     else
     {
-        //List°¡ ¾Æ´Ñ°æ¿ì
+        //Listê°€ ì•„ë‹Œê²½ìš°
         //nothing to do
     }
 
-    //Target¿¡ º¯°æÇØÁÖ¾î¾ß ÇÒ passNode°¡ ÀÖ±â ¶§¹®ÀÌ´Ù.
+    //Targetì— ë³€ê²½í•´ì£¼ì–´ì•¼ í•  passNodeê°€ ìˆê¸° ë•Œë¬¸ì´ë‹¤.
     for ( sTarget   = aQuerySet->target ;
           sArgNode != NULL && sTarget != NULL ;
           sArgNode  = (qtcNode*)sArgNode->node.next , sTarget = sTarget->next )
     {
-        // "=" operator¸¦ »ı¼ºÇØÁØ´Ù.
+        // "=" operatorë¥¼ ìƒì„±í•´ì¤€ë‹¤.
         SET_EMPTY_POSITION( sNullPosition );
         IDE_TEST( qtc::makeNode( aStatement ,
                                  sNewNode ,
@@ -4906,7 +4906,7 @@ qmoOneMtrPlan::makeFilterINSubquery( qcStatement  * aStatement ,
 
         sNewNode[0]->indexArgument = 1;
 
-        // Argument º¹»ç
+        // Argument ë³µì‚¬
         IDE_TEST( QC_QMP_MEM( aStatement )->alloc( ID_SIZEOF( qtcNode ),
                                                  (void **) & sArg1 )
                   != IDE_SUCCESS );
@@ -4917,7 +4917,7 @@ qmoOneMtrPlan::makeFilterINSubquery( qcStatement  * aStatement ,
                   != IDE_SUCCESS );
         idlOS::memcpy( sArg2, sTarget->targetColumn, ID_SIZEOF(qtcNode) );
 
-        // ¿¬°á °ü°è ±¸¼º
+        // ì—°ê²° ê´€ê³„ êµ¬ì„±
         sNewNode[0]->node.arguments = (mtcNode*)sArg1;
         sArg1->node.next = (mtcNode*) sArg2;
         sArg2->node.next = NULL;
@@ -4939,7 +4939,7 @@ qmoOneMtrPlan::makeFilterINSubquery( qcStatement  * aStatement ,
         }
     }
 
-    //1°³ ÀÌ»óÀÇ ¿¬»êÀÚ ³ëµå°¡ »ı¼ºµÉ¼öµµ ÀÖÀ¸¹Ç·Î AND·Î ¿¬°áÇØÁØ´Ù.
+    //1ê°œ ì´ìƒì˜ ì—°ì‚°ì ë…¸ë“œê°€ ìƒì„±ë ìˆ˜ë„ ìˆìœ¼ë¯€ë¡œ ANDë¡œ ì—°ê²°í•´ì¤€ë‹¤.
     SET_EMPTY_POSITION( sNullPosition );
     IDE_TEST( qtc::makeNode( aStatement,
                              sNewNode,
@@ -4955,7 +4955,7 @@ qmoOneMtrPlan::makeFilterINSubquery( qcStatement  * aStatement ,
               != IDE_SUCCESS );
 
     // To Fix PR-8109
-    // DNF·Î ±¸¼ºÇÏ±â À§ÇÏ¿© OR ³ëµå¸¦ »ı¼ºÇÏ¿© ¿¬°áÇÑ´Ù.
+    // DNFë¡œ êµ¬ì„±í•˜ê¸° ìœ„í•˜ì—¬ OR ë…¸ë“œë¥¼ ìƒì„±í•˜ì—¬ ì—°ê²°í•œë‹¤.
     sFirstNode = sNewNode[0];
     IDE_TEST( qtc::makeNode( aStatement,
                              sNewNode,
@@ -5000,13 +5000,13 @@ qmoOneMtrPlan::makeFilterConstFromPred( qcStatement  * aStatement ,
 {
 /***********************************************************************
  *
- * Description : ÁÖ¾îÁø filter·Î ºÎÅÍ filterConst¸¦ ±¸¼ºÇÑ´Ù.
+ * Description : ì£¼ì–´ì§„ filterë¡œ ë¶€í„° filterConstë¥¼ êµ¬ì„±í•œë‹¤.
  *
  * Implementation :
  *
  *   To Fix PR-8109
  *
- *   Join Key Range´Â ¾Æ·¡¿Í °°ÀÌ Ç×»ó DNF·Î ±¸¼ºµÈ´Ù.
+ *   Join Key RangeëŠ” ì•„ë˜ì™€ ê°™ì´ í•­ìƒ DNFë¡œ êµ¬ì„±ëœë‹¤.
  *
  *    OR
  *    |
@@ -5025,13 +5025,13 @@ qmoOneMtrPlan::makeFilterConstFromPred( qcStatement  * aStatement ,
     IDU_FIT_POINT_FATAL( "qmoOneMtrPlan::makeFilterConstFromPred::__FT__" );
 
     //----------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //----------------------------------
 
     IDE_TEST_RAISE( aFilter == NULL, ERR_EMPTY_FILTER );
 
     // To Fix PR-8109
-    // ¸ğµç Key Range´Â DNF·Î ±¸¼ºµÇ¾î ÀÖ¾î¾ß ÇÔ.
+    // ëª¨ë“  Key RangeëŠ” DNFë¡œ êµ¬ì„±ë˜ì–´ ìˆì–´ì•¼ í•¨.
 
     IDE_TEST_RAISE( ( aFilter->node.lflag & MTC_NODE_OPERATOR_MASK )
                     != MTC_NODE_OPERATOR_OR,
@@ -5044,13 +5044,13 @@ qmoOneMtrPlan::makeFilterConstFromPred( qcStatement  * aStatement ,
                     ERR_INVALID_FILTER );
 
     // To Fix PR-8242
-    // DNF·Î º¯ÇüµÈ Join Key Range´Â
-    // AND ³ëµå°¡ ÇÏ³ª¸¸ÀÌ Á¸ÀçÇÒ ¼ö ÀÖ´Ù.
+    // DNFë¡œ ë³€í˜•ëœ Join Key RangeëŠ”
+    // AND ë…¸ë“œê°€ í•˜ë‚˜ë§Œì´ ì¡´ì¬í•  ìˆ˜ ìˆë‹¤.
     IDE_TEST_RAISE( aFilter->node.arguments->next != NULL,
                     ERR_INVALID_FILTER );
 
     //----------------------------------
-    // AND ÇÏÀ§·ÎºÎÅÍ °¢ ¿¬»êÀÚ¿¡ ´ëÇÏ¿© ÄÃ·³ ±¸¼º
+    // AND í•˜ìœ„ë¡œë¶€í„° ê° ì—°ì‚°ìì— ëŒ€í•˜ì—¬ ì»¬ëŸ¼ êµ¬ì„±
     //----------------------------------
 
     for ( sOperatorNode  = (qtcNode *) aFilter->node.arguments->arguments;
@@ -5109,17 +5109,17 @@ qmoOneMtrPlan::makeFilterConstFromNode( qcStatement  * aStatement ,
 {
 /***********************************************************************
  *
- * Description : ÁÖ¾îÁø Operator ³ëµå·Î ºÎÅÍ ÄÃ·³À» Ã£¾Æ filterConst°¡ µÉ
- *               ³ëµå¸¦ º¹»çÇØ¼­ ÁØ´Ù
+ * Description : ì£¼ì–´ì§„ Operator ë…¸ë“œë¡œ ë¶€í„° ì»¬ëŸ¼ì„ ì°¾ì•„ filterConstê°€ ë 
+ *               ë…¸ë“œë¥¼ ë³µì‚¬í•´ì„œ ì¤€ë‹¤
  *
  * Implementation :
  *
- *     - indexArgument¿¡ ÇØ´çÇÏ´Â ³ëµå¸¦ ÀúÀåÇØ¾ß ÇÒ °æ¿ì
+ *     - indexArgumentì— í•´ë‹¹í•˜ëŠ” ë…¸ë“œë¥¼ ì €ì¥í•´ì•¼ í•  ê²½ìš°
  *
- *       = (indexArgument = 1ÀÎ°æ¿ì)
+ *       = (indexArgument = 1ì¸ê²½ìš°)
  *       |
  *       i1    -    i2
- *      (º¹»ç)
+ *      (ë³µì‚¬)
  *
  ***********************************************************************/
 
@@ -5128,7 +5128,7 @@ qmoOneMtrPlan::makeFilterConstFromNode( qcStatement  * aStatement ,
     IDU_FIT_POINT_FATAL( "qmoOneMtrPlan::makeFilterConstFromNode::__FT__" );
 
     //----------------------------------
-    // indexArgument¿¡ ÇØ´çÇÏÁö ¾Ê´Â ÄÃ·³À» ÀúÀåÇÑ´Ù
+    // indexArgumentì— í•´ë‹¹í•˜ì§€ ì•ŠëŠ” ì»¬ëŸ¼ì„ ì €ì¥í•œë‹¤
     //----------------------------------
     if( aOperatorNode->indexArgument == 0 )
     {
@@ -5140,14 +5140,14 @@ qmoOneMtrPlan::makeFilterConstFromNode( qcStatement  * aStatement ,
     }
 
     //----------------------------------
-    // sNode¿¡ ÇØ´ç ÇÏ´Â ÄÃ·³À» º¹»çÇØ¼­ »ç¿ëÇÑ´Ù.
+    // sNodeì— í•´ë‹¹ í•˜ëŠ” ì»¬ëŸ¼ì„ ë³µì‚¬í•´ì„œ ì‚¬ìš©í•œë‹¤.
     //----------------------------------
     IDE_TEST( STRUCT_ALLOC( QC_QMP_MEM( aStatement ),
                             qtcNode,
                             aNewNode )
               != IDE_SUCCESS);
 
-    // validation½Ã ¼³Á¤µÈ À§Ä¡Á¤º¸¸¦ ÂüÁ¶ÇØ¾ß ÇÒ »õ·Î¿î À§Ä¡Á¤º¸·Î º¯°æÇÑ´Ù.
+    // validationì‹œ ì„¤ì •ëœ ìœ„ì¹˜ì •ë³´ë¥¼ ì°¸ì¡°í•´ì•¼ í•  ìƒˆë¡œìš´ ìœ„ì¹˜ì •ë³´ë¡œ ë³€ê²½í•œë‹¤.
     IDE_TEST( qmg::changeColumnLocate( aStatement,
                                        aQuerySet,
                                        sNode,
@@ -5173,7 +5173,7 @@ qmoOneMtrPlan::existSameWndNode( qcStatement    * aStatement,
 {
 /***********************************************************************
  *
- * Description : partition by°¡ µ¿ÀÏÇÑ wnd node°¡ Á¸ÀçÇÏ´ÂÁö °Ë»ç
+ * Description : partition byê°€ ë™ì¼í•œ wnd nodeê°€ ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬
  *
  * Implementation :
  *
@@ -5191,12 +5191,12 @@ qmoOneMtrPlan::existSameWndNode( qcStatement    * aStatement,
 
     sWindow = aAnalticFuncNode->overClause->window;
 
-     // µ¿ÀÏ Partition By ColumnÀ» °¡Áö´Â Wnd Node¸¦ Ã£À½
+     // ë™ì¼ Partition By Columnì„ ê°€ì§€ëŠ” Wnd Nodeë¥¼ ì°¾ìŒ
     for ( sCurWndNode = aWndNode;
           sCurWndNode != NULL;
           sCurWndNode = sCurWndNode->next )
     {
-        /* PROJ-1804 Lag, Lead°ü·Ã Function Àº »õ·Î Ãß°¡ */
+        /* PROJ-1804 Lag, Leadê´€ë ¨ Function ì€ ìƒˆë¡œ ì¶”ê°€ */
         if ( ( aAnalticFuncNode->node.module == &mtfLag ) ||
              ( aAnalticFuncNode->node.module == &mtfLagIgnoreNulls ) ||
              ( aAnalticFuncNode->node.module == &mtfLead ) ||
@@ -5209,7 +5209,7 @@ qmoOneMtrPlan::existSameWndNode( qcStatement    * aStatement,
         {
             /* Nothing to do */
         }
-        /* PROJ-1805 window clause´Â ÀÏ´Ü ¹«Á¶°Ç »õ·Î Ãß°¡ */
+        /* PROJ-1805 window clauseëŠ” ì¼ë‹¨ ë¬´ì¡°ê±´ ìƒˆë¡œ ì¶”ê°€ */
         if ( sWindow != NULL )
         {
             break;
@@ -5226,7 +5226,7 @@ qmoOneMtrPlan::existSameWndNode( qcStatement    * aStatement,
               sCurOverColumnNode = sCurOverColumnNode->next,
                   sCurOverColumn = sCurOverColumn->next )
         {
-            // Ä®·³ÀÇ ÇöÀç (table, column) Á¤º¸¸¦ Ã£À½
+            // ì¹¼ëŸ¼ì˜ í˜„ì¬ (table, column) ì •ë³´ë¥¼ ì°¾ìŒ
             IDE_TEST( qmg::findColumnLocate( aStatement,
                                              aTupleID,
                                              sCurOverColumn->node->node.table,
@@ -5240,7 +5240,7 @@ qmoOneMtrPlan::existSameWndNode( qcStatement    * aStatement,
                  ( sCurOverColumnNode->srcNode->node.column == sColumn ) )
             {
                 // BUG-33663 Ranking Function
-                // partition by column³¢¸® ºñ±³ÇÏ°í order by ÄÃ·³³¢¸® ºñ±³ÇÑ´Ù.
+                // partition by columnë¼ë¦¬ ë¹„êµí•˜ê³  order by ì»¬ëŸ¼ë¼ë¦¬ ë¹„êµí•œë‹¤.
                 if ( (sCurOverColumnNode->flag & QMC_MTR_SORT_ORDER_FIXED_MASK)
                      == QMC_MTR_SORT_ORDER_FIXED_TRUE )
                 {
@@ -5253,7 +5253,7 @@ qmoOneMtrPlan::existSameWndNode( qcStatement    * aStatement,
                              ( (sCurOverColumn->flag & QTC_OVER_COLUMN_ORDER_MASK)
                                == QTC_OVER_COLUMN_ORDER_ASC ) )
                         {
-                            // µ¿ÀÏÇÑ °æ¿ì, ´ÙÀ½ Ä®·³µµ µ¿ÀÏÇÑÁö °è¼Ó °Ë»ç
+                            // ë™ì¼í•œ ê²½ìš°, ë‹¤ìŒ ì¹¼ëŸ¼ë„ ë™ì¼í•œì§€ ê³„ì† ê²€ì‚¬
                         }
                         else
                         {
@@ -5267,7 +5267,7 @@ qmoOneMtrPlan::existSameWndNode( qcStatement    * aStatement,
                              ( (sCurOverColumn->flag & QTC_OVER_COLUMN_ORDER_MASK)
                                == QTC_OVER_COLUMN_ORDER_DESC ) )
                         {
-                            // µ¿ÀÏÇÑ °æ¿ì, ´ÙÀ½ Ä®·³µµ µ¿ÀÏÇÑÁö °è¼Ó °Ë»ç
+                            // ë™ì¼í•œ ê²½ìš°, ë‹¤ìŒ ì¹¼ëŸ¼ë„ ë™ì¼í•œì§€ ê³„ì† ê²€ì‚¬
                         }
                         else
                         {
@@ -5286,7 +5286,7 @@ qmoOneMtrPlan::existSameWndNode( qcStatement    * aStatement,
                     if ( (sCurOverColumn->flag & QTC_OVER_COLUMN_MASK)
                          == QTC_OVER_COLUMN_NORMAL )
                     {
-                        // µ¿ÀÏÇÑ °æ¿ì, ´ÙÀ½ Ä®·³µµ µ¿ÀÏÇÑÁö °è¼Ó °Ë»ç
+                        // ë™ì¼í•œ ê²½ìš°, ë‹¤ìŒ ì¹¼ëŸ¼ë„ ë™ì¼í•œì§€ ê³„ì† ê²€ì‚¬
                     }
                     else
                     {
@@ -5338,12 +5338,12 @@ qmoOneMtrPlan::addAggrNodeToWndNode( qcStatement       * aStatement,
 {
 /***********************************************************************
  *
- * Description : wndNode¿¡ aggrNode¸¦ Ãß°¡ÇÔ
+ * Description : wndNodeì— aggrNodeë¥¼ ì¶”ê°€í•¨
  *
  * Implementation :
  *
  *    ex ) SELECT SUM(i1) OVER ( PARTITION BY i2 ) FROM t1;
- *         À§ ÁúÀÇÀÏ¶§ ¾Æ·¡ ±×¸²¿¡¼­ aggrNode¸¦ Ãß°¡ÇÏ´Â ÇÔ¼ö
+ *         ìœ„ ì§ˆì˜ì¼ë•Œ ì•„ë˜ ê·¸ë¦¼ì—ì„œ aggrNodeë¥¼ ì¶”ê°€í•˜ëŠ” í•¨ìˆ˜
  *
  *     myNode-->(baseTable/baseColumn)->(i1)->(i2)->(sum(i1))
  *
@@ -5366,18 +5366,18 @@ qmoOneMtrPlan::addAggrNodeToWndNode( qcStatement       * aStatement,
     IDU_FIT_POINT_FATAL( "qmoOneMtrPlan::addAggrNodeToWndNode::__FT__" );
 
     //----------------------------
-    // aggrNodeÀÇ src »ı¼º
+    // aggrNodeì˜ src ìƒì„±
     //----------------------------
 
     IDE_TEST( QC_QMP_MEM( aStatement )->alloc( ID_SIZEOF( qtcNode ),
                                                (void**)&( sSrcNode ) )
               != IDE_SUCCESS );
 
-    // analytic function Á¤º¸ º¹»ç
+    // analytic function ì •ë³´ ë³µì‚¬
     *(sSrcNode) = *(aAnalyticFunc->analyticFuncNode);
 
     //----------------------------
-    // aggrNode »ı¼º ¹× dst ±¸¼º
+    // aggrNode ìƒì„± ë° dst êµ¬ì„±
     //----------------------------
 
     sNewMtrNode = NULL;
@@ -5402,7 +5402,7 @@ qmoOneMtrPlan::addAggrNodeToWndNode( qcStatement       * aStatement,
               != IDE_SUCCESS );
 
     // PROJ-2179
-    // Aggregate functionÀÇ ÀÎÀÚµéÀÇ À§Ä¡°¡ ´õÀÌ»ó º¯°æµÇ¾î¼­´Â ¾ÈµÈ´Ù.
+    // Aggregate functionì˜ ì¸ìë“¤ì˜ ìœ„ì¹˜ê°€ ë”ì´ìƒ ë³€ê²½ë˜ì–´ì„œëŠ” ì•ˆëœë‹¤.
     for( sArgs = sSrcNode->node.arguments;
          sArgs != NULL;
          sArgs = sArgs->next )
@@ -5411,11 +5411,11 @@ qmoOneMtrPlan::addAggrNodeToWndNode( qcStatement       * aStatement,
         sArgs->lflag |= MTC_NODE_COLUMN_LOCATE_CHANGE_FALSE;
     }
 
-    // ¹«Á¶°Ç »ı¼ºµÇ¾î¾ß ÇÔ
+    // ë¬´ì¡°ê±´ ìƒì„±ë˜ì–´ì•¼ í•¨
     IDE_DASSERT( sNewMtrNode != NULL );
 
     //----------------------------
-    // ¿¬°á
+    // ì—°ê²°
     //----------------------------
 
     if ( aWndNode->aggrNode == NULL )
@@ -5447,16 +5447,16 @@ qmoOneMtrPlan::addAggrResultNodeToWndNode( qcStatement * aStatement,
 {
 /***********************************************************************
  *
- * Description : wndNode¿¡ resultAggrNode¸¦ Ãß°¡ÇÔ
+ * Description : wndNodeì— resultAggrNodeë¥¼ ì¶”ê°€í•¨
  *
  * Implementation :
  *
  *    ex ) SELECT SUM(i1) OVER ( PARTITION BY i2 ) FROM t1;
- *         À§ ÁúÀÇÀÏ¶§ ¾Æ·¡ ±×¸²¿¡¼­
- *         wndNodeÀÇ aggrResultNode¸¦ Ãß°¡ÇÏ´Â ÇÔ¼ö
- *         wndNodeÀÇ aggrResultNode´Â wndNodeÀÇ aggrNodeÀÇ °á°ú°¡
- *         ÃÖÁ¾ÀûÀ¸·Î ÀúÀåµÇ´Â °÷¿¡ ´ëÇÑ Á¤º¸ÀÌ¸ç
- *         myNodeÀÇ aggrResultNode¿Í µ¿ÀÏÇÏ´Ù.
+ *         ìœ„ ì§ˆì˜ì¼ë•Œ ì•„ë˜ ê·¸ë¦¼ì—ì„œ
+ *         wndNodeì˜ aggrResultNodeë¥¼ ì¶”ê°€í•˜ëŠ” í•¨ìˆ˜
+ *         wndNodeì˜ aggrResultNodeëŠ” wndNodeì˜ aggrNodeì˜ ê²°ê³¼ê°€
+ *         ìµœì¢…ì ìœ¼ë¡œ ì €ì¥ë˜ëŠ” ê³³ì— ëŒ€í•œ ì •ë³´ì´ë©°
+ *         myNodeì˜ aggrResultNodeì™€ ë™ì¼í•˜ë‹¤.
  *
  *     myNode-->(baseTable/baseColumn)->(i1)->(i2)->(sum(i1))
  *                                                     |
@@ -5465,7 +5465,7 @@ qmoOneMtrPlan::addAggrResultNodeToWndNode( qcStatement * aStatement,
  *               +---------------+                     |
  *               | overColumnNode|-->(i2)              |
  *               | aggrNode      |-->(sum(i1))         |
- *               | aggrResultNode|-->(sum(i1)) --------+ ¼­·Î µ¿ÀÏ
+ *               | aggrResultNode|-->(sum(i1)) --------+ ì„œë¡œ ë™ì¼
  *               | next          |
  *               +---------------+
  *
@@ -5476,12 +5476,12 @@ qmoOneMtrPlan::addAggrResultNodeToWndNode( qcStatement * aStatement,
 
     IDU_FIT_POINT_FATAL( "qmoOneMtrPlan::addAggrResultNodeToWndNode::__FT__" );
 
-    // materialize node »ı¼º
+    // materialize node ìƒì„±
     IDE_TEST( QC_QMP_MEM( aStatement )->alloc( ID_SIZEOF( qmcMtrNode ),
                                                (void**)& sNewMtrNode )
               != IDE_SUCCESS);
 
-    // result function node º¹»ç
+    // result function node ë³µì‚¬
     *sNewMtrNode = *aAnalResultFuncMtrNode;
     sNewMtrNode->next = NULL;
 
@@ -5514,11 +5514,11 @@ qmoOneMtrPlan::makeWndNode( qcStatement       * aStatement,
 {
 /***********************************************************************
  *
- * Description : wnd node¿¡ aggr node¸¦ Ãß°¡ÇÔ
+ * Description : wnd nodeì— aggr nodeë¥¼ ì¶”ê°€í•¨
  *
  * Implementation :
  *    ex ) SELECT SUM(i1) OVER ( PARTITION BY i2 ORDER BY i3 ) FROM t1;
- *         À§ ÁúÀÇÀÏ¶§ ¾Æ·¡ ±×¸²¿¡¼­ wndNode¸¦ »ı¼ºÇÏ´Â ÇÔ¼ö
+ *         ìœ„ ì§ˆì˜ì¼ë•Œ ì•„ë˜ ê·¸ë¦¼ì—ì„œ wndNodeë¥¼ ìƒì„±í•˜ëŠ” í•¨ìˆ˜
  *
  *     myNode-->(baseTable/baseColumn)->(i1)->(i2)->(i3 asc)-(sum(i1))
  *
@@ -5551,7 +5551,7 @@ qmoOneMtrPlan::makeWndNode( qcStatement       * aStatement,
 
     IDU_FIT_POINT_FATAL( "qmoOneMtrPlan::makeWndNode::__FT__" );
 
-    // ÃÊ±âÈ­
+    // ì´ˆê¸°í™”
     sSameMtrNode            = NULL;
     sFirstOverColumnNode    = NULL;
     sLastOverColumnNode     = NULL;
@@ -5560,7 +5560,7 @@ qmoOneMtrPlan::makeWndNode( qcStatement       * aStatement,
     sExecMethod             = QMC_WND_EXEC_NONE;
 
     //-----------------------------
-    // Wnd Node »ı¼º
+    // Wnd Node ìƒì„±
     //-----------------------------
 
     IDE_TEST( QC_QMP_MEM( aStatement )->alloc( ID_SIZEOF( qmcWndNode ),
@@ -5569,7 +5569,7 @@ qmoOneMtrPlan::makeWndNode( qcStatement       * aStatement,
 
     sWindow = aAnalticFuncNode->overClause->window;
     //-----------------------------
-    // overColumnNode »ı¼º
+    // overColumnNode ìƒì„±
     //-----------------------------
 
     for ( sCurOverColumn  = aAnalticFuncNode->overClause->overColumn;
@@ -5582,7 +5582,7 @@ qmoOneMtrPlan::makeWndNode( qcStatement       * aStatement,
                                                    (void**)& sNewMtrNode )
                   != IDE_SUCCESS);
 
-        // BUG-34966 Pass node ÀÏ ¼ö ÀÖÀ¸¹Ç·Î ½ÇÁ¦ °ªÀÇ À§Ä¡¸¦ ¼³Á¤ÇÑ´Ù.
+        // BUG-34966 Pass node ì¼ ìˆ˜ ìˆìœ¼ë¯€ë¡œ ì‹¤ì œ ê°’ì˜ ìœ„ì¹˜ë¥¼ ì„¤ì •í•œë‹¤.
         sNode = &sCurOverColumn->node->node;
 
         while( sNode->module == &qtc::passModule )
@@ -5590,7 +5590,7 @@ qmoOneMtrPlan::makeWndNode( qcStatement       * aStatement,
             sNode = sNode->arguments;
         }
 
-        // Ä®·³ÀÇ ÇöÀç (table, column) Á¤º¸¸¦ Ã£À½
+        // ì¹¼ëŸ¼ì˜ í˜„ì¬ (table, column) ì •ë³´ë¥¼ ì°¾ìŒ
         IDE_TEST( qmg::findColumnLocate( aStatement,
                                          aTupleID,
                                          sNode->table,
@@ -5613,10 +5613,10 @@ qmoOneMtrPlan::makeWndNode( qcStatement       * aStatement,
                 if ( (sCurMtrNode->flag & QMC_MTR_BASETABLE_MASK)
                      != QMC_MTR_BASETABLE_TRUE )
                 {
-                    // tableÀ» Ç¥ÇöÇÏ±â À§ÇÑ columnÀÌ ¾Æ´Ñ °æ¿ì
+                    // tableì„ í‘œí˜„í•˜ê¸° ìœ„í•œ columnì´ ì•„ë‹Œ ê²½ìš°
 
                     // BUG-33663 Ranking Function
-                    // mtr node°¡ partition columnÀÎÁö order columnÀÎÁö ±¸ºĞ
+                    // mtr nodeê°€ partition columnì¸ì§€ order columnì¸ì§€ êµ¬ë¶„
                     if ( (sCurOverColumn->flag & QTC_OVER_COLUMN_MASK)
                          == QTC_OVER_COLUMN_ORDER_BY )
                     {
@@ -5631,8 +5631,8 @@ qmoOneMtrPlan::makeWndNode( qcStatement       * aStatement,
                                  ( (sCurMtrNode->flag & QMC_MTR_SORT_ORDER_MASK)
                                    == QMC_MTR_SORT_ASCENDING ) )
                             {
-                                // BUG-42145 Nulls Option ÀÌ ´Ù¸¥ °æ¿ìµµ
-                                // Ã¼Å©ÇØ¾ßÇÑ´Ù.
+                                // BUG-42145 Nulls Option ì´ ë‹¤ë¥¸ ê²½ìš°ë„
+                                // ì²´í¬í•´ì•¼í•œë‹¤.
                                 if ( ( ( sCurOverColumn->flag & QTC_OVER_COLUMN_NULLS_ORDER_MASK )
                                        == QTC_OVER_COLUMN_NULLS_ORDER_NONE ) &&
                                      ( ( sCurMtrNode->flag & QMC_MTR_SORT_NULLS_ORDER_MASK )
@@ -5681,8 +5681,8 @@ qmoOneMtrPlan::makeWndNode( qcStatement       * aStatement,
                                  ( (sCurMtrNode->flag & QMC_MTR_SORT_ORDER_MASK)
                                    == QMC_MTR_SORT_DESCENDING ) )
                             {
-                                // BUG-42145 Nulls Option ÀÌ ´Ù¸¥ °æ¿ìµµ
-                                // Ã¼Å©ÇØ¾ßÇÑ´Ù.
+                                // BUG-42145 Nulls Option ì´ ë‹¤ë¥¸ ê²½ìš°ë„
+                                // ì²´í¬í•´ì•¼í•œë‹¤.
                                 if ( ( ( sCurOverColumn->flag & QTC_OVER_COLUMN_NULLS_ORDER_MASK )
                                        == QTC_OVER_COLUMN_NULLS_ORDER_NONE ) &&
                                      ( ( sCurMtrNode->flag & QMC_MTR_SORT_NULLS_ORDER_MASK )
@@ -5748,8 +5748,8 @@ qmoOneMtrPlan::makeWndNode( qcStatement       * aStatement,
                 }
                 else
                 {
-                    // tableÀ» Ç¥ÇöÇÏ±â À§ÇÑ columnÀÎ °æ¿ì
-                    // ´Ù¸¥ Ä®·³ÀÓ¿¡µµ ºÒ±¸ÇÏ°í °°À» ¼ö ÀÖÀ½
+                    // tableì„ í‘œí˜„í•˜ê¸° ìœ„í•œ columnì¸ ê²½ìš°
+                    // ë‹¤ë¥¸ ì¹¼ëŸ¼ì„ì—ë„ ë¶ˆêµ¬í•˜ê³  ê°™ì„ ìˆ˜ ìˆìŒ
                 }
             }
             else
@@ -5758,11 +5758,11 @@ qmoOneMtrPlan::makeWndNode( qcStatement       * aStatement,
             }
         }
 
-        // Analytic FunctionÀ» À§ÇÑ columnÀÇ materialize node´Â
-        // ÀÌ¹Ì qmg::makeColumn4Analytic()¿¡ ÀÇÇØ Ãß°¡µÊ
+        // Analytic Functionì„ ìœ„í•œ columnì˜ materialize nodeëŠ”
+        // ì´ë¯¸ qmg::makeColumn4Analytic()ì— ì˜í•´ ì¶”ê°€ë¨
         IDE_TEST_RAISE( sSameMtrNode == NULL, ERR_INVALID_NODE );
 
-        // mtr³ëµå º¹»ç
+        // mtrë…¸ë“œ ë³µì‚¬
         idlOS::memcpy( sNewMtrNode,
                        sSameMtrNode,
                        ID_SIZEOF(qmcMtrNode) );
@@ -5782,7 +5782,7 @@ qmoOneMtrPlan::makeWndNode( qcStatement       * aStatement,
     }
 
     // BUG-33663 Ranking Function
-    // window nodeÀÇ µ¿ÀÛ¹æ½ÄÀ» °áÁ¤ÇÑ´Ù.
+    // window nodeì˜ ë™ì‘ë°©ì‹ì„ ê²°ì •í•œë‹¤.
     if ( (sExistPartitionByColumn == ID_TRUE) && (sExistOrderByColumn == ID_TRUE) )
     {
         if ( sWindow == NULL )
@@ -5943,20 +5943,20 @@ qmoOneMtrPlan::makeMyNodeOfWNST( qcStatement      * aStatement,
 {
 /***********************************************************************
  *
- * Description : WNSTÀÇ myNode »ı¼º
+ * Description : WNSTì˜ myNode ìƒì„±
  *
  * Implementation :
- *     WNSTÀÇ myNode´Â temp table¿¡ ÀúÀåµÉ Ä®·³ Á¤º¸·Î½á
- *     ¾Æ·¡¿Í °°Àº Ä®·³ Á¤º¸µé·Î ±¸¼ºµÈ´Ù.
+ *     WNSTì˜ myNodeëŠ” temp tableì— ì €ì¥ë  ì¹¼ëŸ¼ ì •ë³´ë¡œì¨
+ *     ì•„ë˜ì™€ ê°™ì€ ì¹¼ëŸ¼ ì •ë³´ë“¤ë¡œ êµ¬ì„±ëœë‹¤.
  *
  *     [Base Table] + [Columns] + [Analytic Function]
  *
  *     < output >
- *         aMyNode        : WNST planÀÇ myNode(materialize node) ±¸¼º
- *         baseTableCount : myNodeÁß baseTableCount
- *         aColumnCount   : myNode ÀüÃ¼ Ä®·³ °³¼ö
- *         aFirstAnalResultFuncMtrNode : myNodeÀÇ analytic function
- *                                       result ÀúÀåµÉ Ä®·³µé Áß Ã¹¹øÂ°
+ *         aMyNode        : WNST planì˜ myNode(materialize node) êµ¬ì„±
+ *         baseTableCount : myNodeì¤‘ baseTableCount
+ *         aColumnCount   : myNode ì „ì²´ ì¹¼ëŸ¼ ê°œìˆ˜
+ *         aFirstAnalResultFuncMtrNode : myNodeì˜ analytic function
+ *                                       result ì €ì¥ë  ì¹¼ëŸ¼ë“¤ ì¤‘ ì²«ë²ˆì§¸
  *
  ***********************************************************************/
 
@@ -5973,24 +5973,24 @@ qmoOneMtrPlan::makeMyNodeOfWNST( qcStatement      * aStatement,
     IDU_FIT_POINT_FATAL( "qmoOneMtrPlan::makeMyNodeOfWNST::__FT__" );
 
     //----------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //----------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aQuerySet != NULL );
 
-    // ±âº» ÃÊ±âÈ­
+    // ê¸°ë³¸ ì´ˆê¸°í™”
     sFirstAnalResultFuncMtrNode = NULL;
     sMyNode = NULL;
 
     //-----------------------------------------------
-    // 1. Base Table »ı¼º
+    // 1. Base Table ìƒì„±
     //-----------------------------------------------
 
     sColumnCount = 0;
     sLastMtrNode = NULL;
 
-    // Sorting key°¡ ¾Æ´Ñ °æ¿ì
+    // Sorting keyê°€ ì•„ë‹Œ ê²½ìš°
     IDE_TEST( makeNonKeyAttrsMtrNodes( aStatement,
                                        aQuerySet,
                                        aPlan->resultDesc,
@@ -6003,17 +6003,17 @@ qmoOneMtrPlan::makeMyNodeOfWNST( qcStatement      * aStatement,
     aWNST->baseTableCount  = sColumnCount;
 
     //-----------------------------------------------
-    // 2. ColumnµéÀÇ »ı¼º
-    //    Analytic FunctionÀÇ argument column°ú
+    // 2. Columnë“¤ì˜ ìƒì„±
+    //    Analytic Functionì˜ argument columnê³¼
     //    Partition By column
-    //    ( myNode¸¦ º¸°í Áßº¹µÇ´Â Ä®·³ÀÌ ¾ø´Â °æ¿ì¿¡¸¸
-    //      last mtr nodeÀÇ next¿¡ ¿¬°áÇÑ´Ù. )
+    //    ( myNodeë¥¼ ë³´ê³  ì¤‘ë³µë˜ëŠ” ì¹¼ëŸ¼ì´ ì—†ëŠ” ê²½ìš°ì—ë§Œ
+    //      last mtr nodeì˜ nextì— ì—°ê²°í•œë‹¤. )
     //-----------------------------------------------
     for ( sItrAttr  = aPlan->resultDesc;
           sItrAttr != NULL;
           sItrAttr  = sItrAttr->next )
     {
-        // Sorting key ÀÎ °æ¿ì
+        // Sorting key ì¸ ê²½ìš°
         if ( ( sItrAttr->flag & QMC_ATTR_KEY_MASK ) == QMC_ATTR_KEY_TRUE )
         {
             IDE_TEST( qmg::makeColumnMtrNode( aStatement,
@@ -6092,8 +6092,8 @@ qmoOneMtrPlan::makeMyNodeOfWNST( qcStatement      * aStatement,
     }
 
     //-----------------------------------------------
-    // 3. Analytic Function °á°ú°¡ ÀúÀåµÉ Ä®·³À» »ı¼ºÇÏ¿©
-    //    myNode¿¡ ¿¬°á
+    // 3. Analytic Function ê²°ê³¼ê°€ ì €ì¥ë  ì¹¼ëŸ¼ì„ ìƒì„±í•˜ì—¬
+    //    myNodeì— ì—°ê²°
     //-----------------------------------------------
 
     for ( i = 0;
@@ -6353,9 +6353,9 @@ IDE_RC qmoOneMtrPlan::findPriorPredAndSortNode( qcStatement  * aStatement,
             }
 
             /*
-             * 1. sortNode´Â ÄÃ·³ÀÌ¾î¾ß ÇÑ´Ù.
-             * 2. ÄÃ·³¿¡ conversionÀÌ ¾ø¾î¾ß ÇÑ´Ù.
-             * 3. ÄÃ·³ dependency´Â from tableÀÌ¾î¾ß ÇÑ´Ù.
+             * 1. sortNodeëŠ” ì»¬ëŸ¼ì´ì–´ì•¼ í•œë‹¤.
+             * 2. ì»¬ëŸ¼ì— conversionì´ ì—†ì–´ì•¼ í•œë‹¤.
+             * 3. ì»¬ëŸ¼ dependencyëŠ” from tableì´ì–´ì•¼ í•œë‹¤.
              */
             if ( ( sCount == 1 ) &&
                  ( ( *aSortNode )->node.module == &qtc::columnModule ) &&
@@ -6421,7 +6421,7 @@ IDE_RC qmoOneMtrPlan::processStartWithPredicate( qcStatement * aStatement,
 
     IDU_FIT_POINT_FATAL( "qmoOneMtrPlan::processStartWithPredicate::__FT__" );
 
-    /* Start With Predicate ÀÇ Ã³¸® */
+    /* Start With Predicate ì˜ ì²˜ë¦¬ */
     IDE_TEST( qmoOneNonPlan::processPredicate( aStatement,
                                                aQuerySet,
                                                aStartWith->predicate,
@@ -6490,7 +6490,7 @@ IDE_RC qmoOneMtrPlan::processStartWithPredicate( qcStatement * aStatement,
 
     aCNBY->startWithNNF = aStartWith->nnfFilter;
 
-    /* Hierarchy¸¦ Ç×»ó inline view·Î ¸¸µé¾î »ç¿ëÇÏ±â ¶§¹®¿¡ lobFilter °¡ ³ª¿Ã¼ö ¾ø´Ù */
+    /* Hierarchyë¥¼ í•­ìƒ inline viewë¡œ ë§Œë“¤ì–´ ì‚¬ìš©í•˜ê¸° ë•Œë¬¸ì— lobFilter ê°€ ë‚˜ì˜¬ìˆ˜ ì—†ë‹¤ */
     IDE_TEST_RAISE ( sMethod.lobFilter != NULL, ERR_INTERNAL )
 
     return IDE_SUCCESS;
@@ -6507,21 +6507,21 @@ IDE_RC qmoOneMtrPlan::processStartWithPredicate( qcStatement * aStatement,
 }
 
 /**
- * Connect By ±¸¹®ÀÇ Predicate¸¦ Ã³¸®ÇÑ´Ù.
+ * Connect By êµ¬ë¬¸ì˜ Predicateë¥¼ ì²˜ë¦¬í•œë‹¤.
  *
- *  1. level Filter¸¦ Ã³¸®ÇÑ´Ù.
- *  2. processPredicate ¸¦ ÅëÇØ¼­ Filter¿Í ConstantFilter¸¦ ¾ò´Â´Ù.
- *     ³ª¸ÓÁö´Â »ç¿ëµÇÁö ¾Ê´Â´Ù.
- *  3. ConstantFilter¸¦ ÁöÁ¤ÇÑ´Ù.
- *  4. Filter°¡ ÀÖ´Ù¸é Prior °¡ 1°³ ºÙÀº ³ëµå¸¦ Ã£¾Æ Prior³ëµå¿Í Sort Node¸¦ ÁöÁ¤ÇÑ´Ù.
- *     ÀÌ¶§ KeryRange ³ëµåµµ º¹»çµÈ´Ù.
- *  5. makeCNBYMtrNode¸¦ ÅëÇØ baseMTR Áï CMTR MaterializeÀÇ SortNode¸¦ ÁöÁ¤ÇÑ´Ù.
- *     ÀÌ¸¦ ÅëÇØ¼­ baseMTRÀ» SortÇÏ°ÔµÈ´Ù. ÀÌ´Â ·¹º§ÀÌ 1ÀÎ Row¿¡ ´ëÇØ Order Siblgins By
- *     ¸¦ Áö¿øÇÏ±â À§ÇØ¼­ÀÌ´Ù.
- *  6. Prior°¡ 1°³ÀÎ ³ëµå¸¦ Ã£À¸¸é ÀÌ¸¦ ÅëÇØ KeyRange¸¦ »ı¼ºÇÏ°í µû·Î Sort Table¿¡
- *     ½×°ÔµÈ´Ù. ÀÌ¸¦ À§ÇØ TupleID¸¦ ÇÒ´ç ¹Ş´Â´Ù.
- *  7. Order Siblings by¸¦ À§ÇÑ Composite MtrNode »ı¼º
- *  8. CNFÀÇ ÇüÅÂÀÇ Prior SortNode¸¦ DNFÀÇ ÇüÅÂ·Î º¯È¯
+ *  1. level Filterë¥¼ ì²˜ë¦¬í•œë‹¤.
+ *  2. processPredicate ë¥¼ í†µí•´ì„œ Filterì™€ ConstantFilterë¥¼ ì–»ëŠ”ë‹¤.
+ *     ë‚˜ë¨¸ì§€ëŠ” ì‚¬ìš©ë˜ì§€ ì•ŠëŠ”ë‹¤.
+ *  3. ConstantFilterë¥¼ ì§€ì •í•œë‹¤.
+ *  4. Filterê°€ ìˆë‹¤ë©´ Prior ê°€ 1ê°œ ë¶™ì€ ë…¸ë“œë¥¼ ì°¾ì•„ Priorë…¸ë“œì™€ Sort Nodeë¥¼ ì§€ì •í•œë‹¤.
+ *     ì´ë•Œ KeryRange ë…¸ë“œë„ ë³µì‚¬ëœë‹¤.
+ *  5. makeCNBYMtrNodeë¥¼ í†µí•´ baseMTR ì¦‰ CMTR Materializeì˜ SortNodeë¥¼ ì§€ì •í•œë‹¤.
+ *     ì´ë¥¼ í†µí•´ì„œ baseMTRì„ Sortí•˜ê²Œëœë‹¤. ì´ëŠ” ë ˆë²¨ì´ 1ì¸ Rowì— ëŒ€í•´ Order Siblgins By
+ *     ë¥¼ ì§€ì›í•˜ê¸° ìœ„í•´ì„œì´ë‹¤.
+ *  6. Priorê°€ 1ê°œì¸ ë…¸ë“œë¥¼ ì°¾ìœ¼ë©´ ì´ë¥¼ í†µí•´ KeyRangeë¥¼ ìƒì„±í•˜ê³  ë”°ë¡œ Sort Tableì—
+ *     ìŒ“ê²Œëœë‹¤. ì´ë¥¼ ìœ„í•´ TupleIDë¥¼ í• ë‹¹ ë°›ëŠ”ë‹¤.
+ *  7. Order Siblings byë¥¼ ìœ„í•œ Composite MtrNode ìƒì„±
+ *  8. CNFì˜ í˜•íƒœì˜ Prior SortNodeë¥¼ DNFì˜ í˜•íƒœë¡œ ë³€í™˜
  *
  */
 IDE_RC qmoOneMtrPlan::processConnectByPredicate( qcStatement    * aStatement,
@@ -6555,7 +6555,7 @@ IDE_RC qmoOneMtrPlan::processConnectByPredicate( qcStatement    * aStatement,
     aCNBY->connectByFilter   = NULL;
     aCNBY->priorNode         = NULL;
 
-    /* 1. Level Filter ÀÇ Ã³¸® */
+    /* 1. Level Filter ì˜ ì²˜ë¦¬ */
     if ( aConnectBy->levelPredicate != NULL )
     {
         IDE_TEST( qmoPred::linkPredicate( aStatement,
@@ -6583,7 +6583,7 @@ IDE_RC qmoOneMtrPlan::processConnectByPredicate( qcStatement    * aStatement,
     }
 
     /* BUG-39434 The connect by need rownum pseudo column.
-     * 1-2 Rownum Filter ÀÇ Ã³¸®
+     * 1-2 Rownum Filter ì˜ ì²˜ë¦¬
      */
     if ( aConnectBy->connectByRownumPred != NULL )
     {
@@ -6612,8 +6612,8 @@ IDE_RC qmoOneMtrPlan::processConnectByPredicate( qcStatement    * aStatement,
     }
 
     /* PROJ-2641 Hierarchy Query Index
-     * Connectby predicate¿¡¼­ prior Node¸¦ Ã£¾Æ¼­
-     * Error°¡ ³ª´Â »óÈ²À» Ã¼Å©ÇØ¾ßÇÑ´Ù.
+     * Connectby predicateì—ì„œ prior Nodeë¥¼ ì°¾ì•„ì„œ
+     * Errorê°€ ë‚˜ëŠ” ìƒí™©ì„ ì²´í¬í•´ì•¼í•œë‹¤.
      */
     if ( aConnectBy->predicate != NULL )
     {
@@ -6622,8 +6622,8 @@ IDE_RC qmoOneMtrPlan::processConnectByPredicate( qcStatement    * aStatement,
                                     aConnectBy->predicate->node,
                                     & sPriorTmp )
                   != IDE_SUCCESS );
-        /* BUG-44759 processPredicaeÀ» ¼öÇàÇÏ±âÀü¿¡ priorNode
-         * °¡ ÀÖ¾î¾ßÇÑ´Ù.
+        /* BUG-44759 processPredicaeì„ ìˆ˜í–‰í•˜ê¸°ì „ì— priorNode
+         * ê°€ ìˆì–´ì•¼í•œë‹¤.
          */
         aCNBY->priorNode = (qtcNode *)sPriorTmp.node.next;
     }
@@ -6632,7 +6632,7 @@ IDE_RC qmoOneMtrPlan::processConnectByPredicate( qcStatement    * aStatement,
         /* Nothing to do */
     }
 
-    /* 2. Connect By Predicate ÀÇ Ã³¸® */
+    /* 2. Connect By Predicate ì˜ ì²˜ë¦¬ */
     IDE_TEST( qmoOneNonPlan::processPredicate( aStatement,
                                                aQuerySet,
                                                aConnectBy->predicate,
@@ -6656,7 +6656,7 @@ IDE_RC qmoOneMtrPlan::processConnectByPredicate( qcStatement    * aStatement,
                                                & sIsSubQuery )
               != IDE_SUCCESS );
 
-    /* 3. constantFilter ÁöÁ¤ */
+    /* 3. constantFilter ì§€ì • */
     if ( sMethod.constantFilter != NULL )
     {
         aCNBY->connectByConstant = sMethod.constantFilter;
@@ -6713,7 +6713,7 @@ IDE_RC qmoOneMtrPlan::processConnectByPredicate( qcStatement    * aStatement,
                                             & sFind )
                   != IDE_SUCCESS );
 
-        /* 5. baseSort Node ÁöÁ¤ */
+        /* 5. baseSort Node ì§€ì • */
         for ( sItrAttr  = aCNBY->plan.resultDesc;
               sItrAttr != NULL;
               sItrAttr  = sItrAttr->next )
@@ -6774,7 +6774,7 @@ IDE_RC qmoOneMtrPlan::processConnectByPredicate( qcStatement    * aStatement,
                                           sSortNode )
                       != IDE_SUCCESS );
 
-            /* CNF sPriorPredicate ¸¦ DNF ÇüÅÂ·Î º¯È¯ */
+            /* CNF sPriorPredicate ë¥¼ DNF í˜•íƒœë¡œ ë³€í™˜ */
             IDE_TEST( qmoNormalForm::normalizeDNF( aStatement,
                                                    sPriorPred,
                                                    & aCNBY->connectByKeyRange)
@@ -6785,7 +6785,7 @@ IDE_RC qmoOneMtrPlan::processConnectByPredicate( qcStatement    * aStatement,
             /* Nothing to do */
         }
 
-        /* fix BUG-19074 Host º¯¼ö¸¦ Æ÷ÇÔÇÑ Constant Expression ÀÇ ÃÖÀûÈ­ */
+        /* fix BUG-19074 Host ë³€ìˆ˜ë¥¼ í¬í•¨í•œ Constant Expression ì˜ ìµœì í™” */
         IDE_TEST( qtc::optimizeHostConstExpression( aStatement,
                                                     aCNBY->connectByFilter )
                   != IDE_SUCCESS );
@@ -6812,7 +6812,7 @@ IDE_RC qmoOneMtrPlan::processConnectByPredicate( qcStatement    * aStatement,
 
     sCurOffset = aCNBY->mtrNodeOffset;
 
-    // ´ÙÀ½ ³ëµå°¡ ÀúÀåµÉ ½ÃÀÛ ÁöÁ¡
+    // ë‹¤ìŒ ë…¸ë“œê°€ ì €ì¥ë  ì‹œì‘ ì§€ì 
     sCurOffset += idlOS::align8(ID_SIZEOF(qmdMtrNode)) * sColumnCount;
 
     sColumnCount = 0;
@@ -6827,7 +6827,7 @@ IDE_RC qmoOneMtrPlan::processConnectByPredicate( qcStatement    * aStatement,
     aCNBY->sortMTROffset = sCurOffset;
     sCurOffset += idlOS::align8(ID_SIZEOF(qmcdSortTemp));
 
-    //data ¿µ¿ªÀÇ Å©±â °è»ê
+    //data ì˜ì—­ì˜ í¬ê¸° ê³„ì‚°
     QC_SHARED_TMPLATE(aStatement)->tmplate.dataSize = sCurOffset;
 
     return IDE_SUCCESS;
@@ -6860,7 +6860,7 @@ IDE_RC qmoOneMtrPlan::makeSortNodeOfCNBY( qcStatement * aStatement,
 
     sMtcTemplate = &QC_SHARED_TMPLATE(aStatement)->tmplate;
 
-    /* 6. KeyRange¸¦ »ı¼ºÇØ¼­ SortÇÒ Æ©Ç® »ı¼º */
+    /* 6. KeyRangeë¥¼ ìƒì„±í•´ì„œ Sortí•  íŠœí’€ ìƒì„± */
 
     // BUG-36472 (table tuple->intermediate tuple)
     IDE_TEST( qtc::nextTable( & sSortID,
@@ -6872,7 +6872,7 @@ IDE_RC qmoOneMtrPlan::makeSortNodeOfCNBY( qcStatement * aStatement,
     sMtcTemplate->rows[sSortID].lflag &= ~MTC_TUPLE_STORAGE_MASK;
     sMtcTemplate->rows[sSortID].lflag |= MTC_TUPLE_STORAGE_MEMORY;
 
-    /* 7. Order Siblings by ³ëµå Ã³¸® */
+    /* 7. Order Siblings by ë…¸ë“œ ì²˜ë¦¬ */
     sFirstMtrNode = NULL;
     sLastMtrNode = NULL;
     sColumnCount = 0;
@@ -6887,8 +6887,8 @@ IDE_RC qmoOneMtrPlan::makeSortNodeOfCNBY( qcStatement * aStatement,
     if ( sAttr != NULL )
     {
         // PROJ-2179
-        // Sort node´Â materialize nodeÀÇ °¡Àå Ã³À½¿¡ Ç×»ó À§Ä¡ÇÏ¹Ç·Î
-        // ¸¸¾à siblings¿¡ Æ÷ÇÔµÈ °æ¿ì key flag¸¦ ÇØÁ¦ÇÑ´Ù.
+        // Sort nodeëŠ” materialize nodeì˜ ê°€ì¥ ì²˜ìŒì— í•­ìƒ ìœ„ì¹˜í•˜ë¯€ë¡œ
+        // ë§Œì•½ siblingsì— í¬í•¨ëœ ê²½ìš° key flagë¥¼ í•´ì œí•œë‹¤.
         sAttr->flag &= ~QMC_ATTR_KEY_MASK;
         sAttr->flag |= QMC_ATTR_KEY_FALSE;
     }
@@ -6997,7 +6997,7 @@ IDE_RC qmoOneMtrPlan::makeSortNodeOfCNBY( qcStatement * aStatement,
     aCNBY->sortNode = sFirstMtrNode;
 
     //----------------------------------
-    // Tuple columnÀÇ ÇÒ´ç
+    // Tuple columnì˜ í• ë‹¹
     //----------------------------------
 
     // BUG-36472 (table tuple->intermediate tuple)
@@ -7030,7 +7030,7 @@ IDE_RC qmoOneMtrPlan::makeSortNodeOfCNBY( qcStatement * aStatement,
 }
 
 /**
- * Pseduo ColumnÀÇ Tuple ID ¼¼ÆÃ.
+ * Pseduo Columnì˜ Tuple ID ì„¸íŒ….
  *
  */
 IDE_RC qmoOneMtrPlan::setPseudoColumnRowID( qtcNode * aNode, UShort * aRowID )
@@ -7043,7 +7043,7 @@ IDE_RC qmoOneMtrPlan::setPseudoColumnRowID( qtcNode * aNode, UShort * aRowID )
     {
         /*
          * BUG-17949
-         * Group By Level ÀÎ °æ¿ì SFWGH->level ¿¡ passNode°¡ ´Ş·ÁÀÖ´Ù.
+         * Group By Level ì¸ ê²½ìš° SFWGH->level ì— passNodeê°€ ë‹¬ë ¤ìˆë‹¤.
          */
         if ( sNode->node.module == &qtc::passModule )
         {
@@ -7067,13 +7067,13 @@ IDE_RC qmoOneMtrPlan::setPseudoColumnRowID( qtcNode * aNode, UShort * aRowID )
 /**
  * Make CNBY Plan
  *
- *  Hierarchy Äõ¸®¿¡¼­ »ç¿ëµÉ CNBY PlanÀ» »ı¼ºÇÑ´Ù.
- *  ÀÌ Plan¿¡¼­ StartWith¿Í ConnectBy¿Í Order Siblings By ±¸¹®À» ¸ğµÎ Ã³¸®ÇÑ´Ù.
+ *  Hierarchy ì¿¼ë¦¬ì—ì„œ ì‚¬ìš©ë  CNBY Planì„ ìƒì„±í•œë‹¤.
+ *  ì´ Planì—ì„œ StartWithì™€ ConnectByì™€ Order Siblings By êµ¬ë¬¸ì„ ëª¨ë‘ ì²˜ë¦¬í•œë‹¤.
  *
- *  ÇöÁ¦ CNBY PlanÀº View°¡ CMTR·Î MaterializeµÈ Data¸¦ °¡Áö°í Hierarhcy¸¦ Ã³¸®ÇÑ´Ù.
+ *  í˜„ì œ CNBY Planì€ Viewê°€ CMTRë¡œ Materializeëœ Dataë¥¼ ê°€ì§€ê³  Hierarhcyë¥¼ ì²˜ë¦¬í•œë‹¤.
  *
- *  ÇÑ°³ÀÇ TableÀÏ °æ¿ìµµ ÀÌ¸¦ View·Î Transformaion ÇØ¼­ Ã³¸®ÇÑ´Ù.
- *  ÀÌ´Â qmvHierTransform¿¡¼­ Ã³¸®ÇÑ´Ù.
+ *  í•œê°œì˜ Tableì¼ ê²½ìš°ë„ ì´ë¥¼ Viewë¡œ Transformaion í•´ì„œ ì²˜ë¦¬í•œë‹¤.
+ *  ì´ëŠ” qmvHierTransformì—ì„œ ì²˜ë¦¬í•œë‹¤.
  *        select * from t1 connect by prior id = pid;
  *    --> select * from (select * from t1 ) t1 connect by prior id = pid;
  */
@@ -7133,18 +7133,18 @@ IDE_RC qmoOneMtrPlan::initCNBY( qcStatement    * aStatement,
                   != IDE_SUCCESS );
     }
 
-    // START WITHÀı Ãß°¡
+    // START WITHì ˆ ì¶”ê°€
     IDE_TEST( qmc::appendPredicate( aStatement,
                                     aQuerySet,
                                     & sCNBY->plan.resultDesc,
                                     aLeafInfo[0].predicate )
               != IDE_SUCCESS );
 
-    // CONNECT BYÀı Ãß°¡
+    // CONNECT BYì ˆ ì¶”ê°€
     // PROJ-2469 Optimize View Materialization
-    // BUG FIX : aLeafInfo[0] -> aLeafInfo[1]·Î º¯°æ
-    //                           CONNECT BY ÀÇ PredicateÀ» µî·ÏÇÏÁö ¾Ê°í START WITH¸¸ µÎ ¹ø
-    //                           µî·ÏÇÏ°í ÀÖ¾úÀ½.
+    // BUG FIX : aLeafInfo[0] -> aLeafInfo[1]ë¡œ ë³€ê²½
+    //                           CONNECT BY ì˜ Predicateì„ ë“±ë¡í•˜ì§€ ì•Šê³  START WITHë§Œ ë‘ ë²ˆ
+    //                           ë“±ë¡í•˜ê³  ìˆì—ˆìŒ.
     IDE_TEST( qmc::appendPredicate( aStatement,
                                     aQuerySet,
                                     & sCNBY->plan.resultDesc,
@@ -7249,7 +7249,7 @@ IDE_RC qmoOneMtrPlan::makeCNBY( qcStatement    * aStatement,
     sCNBY->plan.flag        = QMN_PLAN_FLAG_CLEAR;
     sCNBY->plan.flag       |= (aChildPlan->flag & QMN_PLAN_STORAGE_MASK);
 
-    //loopÀ» Ã£À» °ÍÀÎÁö¿¡ ´ëÇÑ °áÁ¤
+    //loopì„ ì°¾ì„ ê²ƒì¸ì§€ì— ëŒ€í•œ ê²°ì •
     if( (aQuerySet->SFWGH->hierarchy->flag & QMS_HIERARCHY_IGNORE_LOOP_MASK) ==
          QMS_HIERARCHY_IGNORE_LOOP_TRUE )
     {
@@ -7274,14 +7274,14 @@ IDE_RC qmoOneMtrPlan::makeCNBY( qcStatement    * aStatement,
         sCNBY->baseRowID = sChildTupleID;
         sCNBY->mIndex     = NULL;
 
-        // Tuple.flagÀÇ ¼¼ÆÃ
+        // Tuple.flagì˜ ì„¸íŒ…
         sMtcTemplate->rows[sTupleID].lflag &= ~MTC_TUPLE_TYPE_MASK;
         sMtcTemplate->rows[sTupleID].lflag |= MTC_TUPLE_TYPE_TABLE;
 
         // To Fix PR-8385
-        // VSCNÀÌ »ı¼ºµÇ´Â °æ¿ì¿¡´Â in-line view¶ó ÇÏ´õ¶óµµ
-        // ÀÏ¹İÅ×ÀÌºí·Î Ã³¸®ÇÏ¿©¾ß ÇÑ´Ù. µû¶ó¼­ ÇÏÀ§¿¡ view¶ó°í ¼¼ÆÃµÈ°ÍÀ»
-        // false·Î ¼³Á¤ÇÑ´Ù.
+        // VSCNì´ ìƒì„±ë˜ëŠ” ê²½ìš°ì—ëŠ” in-line viewë¼ í•˜ë”ë¼ë„
+        // ì¼ë°˜í…Œì´ë¸”ë¡œ ì²˜ë¦¬í•˜ì—¬ì•¼ í•œë‹¤. ë”°ë¼ì„œ í•˜ìœ„ì— viewë¼ê³  ì„¸íŒ…ëœê²ƒì„
+        // falseë¡œ ì„¤ì •í•œë‹¤.
         sMtcTemplate->rows[sTupleID].lflag &= ~MTC_TUPLE_VIEW_MASK;
         sMtcTemplate->rows[sTupleID].lflag |=  MTC_TUPLE_VIEW_FALSE;
 
@@ -7343,8 +7343,8 @@ IDE_RC qmoOneMtrPlan::makeCNBY( qcStatement    * aStatement,
                   != IDE_SUCCESS );
     }
 
-    /* BUG-44382 clone tuple ¼º´É°³¼± */
-    // º¹»ç°¡ ÇÊ¿äÇÔ
+    /* BUG-44382 clone tuple ì„±ëŠ¥ê°œì„  */
+    // ë³µì‚¬ê°€ í•„ìš”í•¨
     qtc::setTupleColumnFlag( &(sMtcTemplate->rows[sPriorID]),
                              ID_TRUE,
                              ID_FALSE );
@@ -7403,7 +7403,7 @@ IDE_RC qmoOneMtrPlan::makeCNBY( qcStatement    * aStatement,
               != IDE_SUCCESS );
 
 
-    /* ¸¶¹«¸® ÀÛ¾÷1 */
+    /* ë§ˆë¬´ë¦¬ ì‘ì—…1 */
     sPredicate[0] = sCNBY->startWithConstant;
     sPredicate[1] = sCNBY->startWithFilter;
     sPredicate[2] = sCNBY->startWithSubquery;
@@ -7412,9 +7412,9 @@ IDE_RC qmoOneMtrPlan::makeCNBY( qcStatement    * aStatement,
     sPredicate[5] = sCNBY->connectByFilter;
     /* fix BUG-26770
      * connect by LEVEL+to_date(:D1,'YYYYMMDD') <= to_date(:D2,'YYYYMMDD')+1;
-     * ÁúÀÇ¼öÇà½Ã ¼­¹öºñÁ¤»óÁ¾·á
-     * level filter¿¡ ´ëÇÑ Ã³¸®°¡ ¾ø¾î,
-     * level filter¿¡ Æ÷ÇÑµÈ hostº¯¼ö¸¦ µî·ÏÇÏÁö ¸øÇØ bindParamInfo ¼³Á¤½Ã, ºñÁ¤»óÁ¾·áÇÔ.
+     * ì§ˆì˜ìˆ˜í–‰ì‹œ ì„œë²„ë¹„ì •ìƒì¢…ë£Œ
+     * level filterì— ëŒ€í•œ ì²˜ë¦¬ê°€ ì—†ì–´,
+     * level filterì— í¬í•œëœ hostë³€ìˆ˜ë¥¼ ë“±ë¡í•˜ì§€ ëª»í•´ bindParamInfo ì„¤ì •ì‹œ, ë¹„ì •ìƒì¢…ë£Œí•¨.
      */
     sPredicate[6] = sCNBY->levelFilter;
 
@@ -7436,7 +7436,7 @@ IDE_RC qmoOneMtrPlan::makeCNBY( qcStatement    * aStatement,
                   != IDE_SUCCESS );
     }
 
-    /* dependency Ã³¸® ¹× subqueryÀÇ Ã³¸® */
+    /* dependency ì²˜ë¦¬ ë° subqueryì˜ ì²˜ë¦¬ */
     IDE_TEST( qmoDependency::setDependency( aStatement ,
                                             aQuerySet ,
                                             & sCNBY->plan ,
@@ -7474,16 +7474,16 @@ IDE_RC qmoOneMtrPlan::initCMTR( qcStatement  * aStatement,
     IDU_FIT_POINT_FATAL( "qmoOneMtrPlan::initCMTR::__FT__" );
 
     //----------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //----------------------------------
 
     IDE_DASSERT( aStatement != NULL );
 
     //-------------------------------------------------------------
-    // ÃÊ±âÈ­ ÀÛ¾÷
+    // ì´ˆê¸°í™” ì‘ì—…
     //-------------------------------------------------------------
 
-    //qmncCMTRÀÇ ÇÒ´ç ¹× ÃÊ±âÈ­
+    //qmncCMTRì˜ í• ë‹¹ ë° ì´ˆê¸°í™”
     IDE_TEST( QC_QMP_MEM( aStatement )->alloc( ID_SIZEOF( qmncCMTR ),
                                                (void **)& sCMTR )
               != IDE_SUCCESS );
@@ -7520,10 +7520,10 @@ IDE_RC qmoOneMtrPlan::initCMTR( qcStatement  * aStatement,
 /**
  * make CMTR
  *
- *  CNBY PlanÀ» »óÀ§·Î µÎ°í ÇÏÀ§ ³ëµå¸¦ QMN_VIEW¸¸ Áö¿øÇÏ Plan³ëµå¸¦ »ı¼ºÇÑ´Ù.
- *  View ¿¡ ÇØ´çÇÏ´Â ¸ğµç µ¥ÀÌÅÍ¸¦ ÀÌ CMTR¿¡ ½×¾Æ³õ°í CNBY°¡ Ã³¸®ÇÑ´Ù.
+ *  CNBY Planì„ ìƒìœ„ë¡œ ë‘ê³  í•˜ìœ„ ë…¸ë“œë¥¼ QMN_VIEWë§Œ ì§€ì›í•˜ Planë…¸ë“œë¥¼ ìƒì„±í•œë‹¤.
+ *  View ì— í•´ë‹¹í•˜ëŠ” ëª¨ë“  ë°ì´í„°ë¥¼ ì´ CMTRì— ìŒ“ì•„ë†“ê³  CNBYê°€ ì²˜ë¦¬í•œë‹¤.
  *
- *  CMTRÀº Memory Temp Table¸¸ Áö¿øÇÑ´Ù.
+ *  CMTRì€ Memory Temp Tableë§Œ ì§€ì›í•œë‹¤.
  */
 IDE_RC qmoOneMtrPlan::makeCMTR( qcStatement  * aStatement,
                                 qmsQuerySet  * aQuerySet,
@@ -7595,13 +7595,13 @@ IDE_RC qmoOneMtrPlan::makeCMTR( qcStatement  * aStatement,
         if ( ( sItrAttr->flag & QMC_ATTR_USELESS_RESULT_MASK ) == QMC_ATTR_USELESS_RESULT_TRUE )
         {
             // PROJ-2469 Optimize View Materialization
-            // »óÀ§¿¡¼­ »ç¿ëµÇÁö ¾Ê´Â MtrNode¿¡ ´ëÇØ¼­ flag Ã³¸®ÇÑ´Ù.
+            // ìƒìœ„ì—ì„œ ì‚¬ìš©ë˜ì§€ ì•ŠëŠ” MtrNodeì— ëŒ€í•´ì„œ flag ì²˜ë¦¬í•œë‹¤.
             sNewMtrNode->flag &= ~QMC_MTR_TYPE_MASK;
             sNewMtrNode->flag |=  QMC_MTR_TYPE_USELESS_COLUMN;    
         }
         else
         {
-            //CMTR¿¡¼­ »ı¼ºµÈ qmcMtrNodeÀÌ¹Ç·Î º¹»çÇÏµµ·Ï ÇÑ´Ù.
+            //CMTRì—ì„œ ìƒì„±ëœ qmcMtrNodeì´ë¯€ë¡œ ë³µì‚¬í•˜ë„ë¡ í•œë‹¤.
             sNewMtrNode->flag &= ~QMC_MTR_TYPE_MASK;
             sNewMtrNode->flag |= QMC_MTR_TYPE_COPY_VALUE;
         }
@@ -7610,7 +7610,7 @@ IDE_RC qmoOneMtrPlan::makeCMTR( qcStatement  * aStatement,
         sNewMtrNode->flag &= ~QMC_MTR_CHANGE_COLUMN_LOCATE_MASK;
         sNewMtrNode->flag |= QMC_MTR_CHANGE_COLUMN_LOCATE_TRUE;
 
-        // »óÀ§¿¡¼­ temp tableÀÇ °ªÀ» ÂüÁ¶ÇÏµµ·Ï º¯°æµÈ À§Ä¡¸¦ ¼³Á¤ÇÑ´Ù.
+        // ìƒìœ„ì—ì„œ temp tableì˜ ê°’ì„ ì°¸ì¡°í•˜ë„ë¡ ë³€ê²½ëœ ìœ„ì¹˜ë¥¼ ì„¤ì •í•œë‹¤.
         sItrAttr->expr->node.table  = sNewMtrNode->dstNode->node.table;
         sItrAttr->expr->node.column = sNewMtrNode->dstNode->node.column;
 
@@ -7711,8 +7711,8 @@ qmoOneMtrPlan::makeNonKeyAttrsMtrNodes( qcStatement  * aStatement,
 /***********************************************************************
  *
  * Description :
- *    Result descriptor¿¡¼­ key°¡ ¾Æ´Ñ attributeµé¿¡ ´ëÇØ¼­¸¸
- *    materialize node¸¦ »ı¼ºÇÑ´Ù.
+ *    Result descriptorì—ì„œ keyê°€ ì•„ë‹Œ attributeë“¤ì— ëŒ€í•´ì„œë§Œ
+ *    materialize nodeë¥¼ ìƒì„±í•œë‹¤.
  *
  * Implementation :
  *
@@ -7749,7 +7749,7 @@ qmoOneMtrPlan::makeNonKeyAttrsMtrNodes( qcStatement  * aStatement,
 
             sFlag = sMtcTemplate->rows[sItrAttr->expr->node.table].lflag;
 
-            // src, dst°¡ ¸ğµÎ diskÀÎ °æ¿ì¿¡¸¸ value·Î materializationÀÌ °¡´ÉÇÏ´Ù.
+            // src, dstê°€ ëª¨ë‘ diskì¸ ê²½ìš°ì—ë§Œ valueë¡œ materializationì´ ê°€ëŠ¥í•˜ë‹¤.
             if( qmg::getMtrMethod( aStatement,
                                    sItrAttr->expr->node.table,
                                    aTupleID ) == ID_TRUE )
@@ -7766,9 +7766,9 @@ qmoOneMtrPlan::makeNonKeyAttrsMtrNodes( qcStatement  * aStatement,
             }
             else
             {
-                // Surrogate-key(RID ¶Ç´Â pointer)¸¦ º¹»çÇÑ´Ù.
+                // Surrogate-key(RID ë˜ëŠ” pointer)ë¥¼ ë³µì‚¬í•œë‹¤.
 
-                // ÀÌ¹Ì surrogate-key°¡ Ãß°¡µÇ¾îÀÖ´ÂÁö È®ÀÎÇÑ´Ù.
+                // ì´ë¯¸ surrogate-keyê°€ ì¶”ê°€ë˜ì–´ìˆëŠ”ì§€ í™•ì¸í•œë‹¤.
                 if( qmg::existBaseTable( *aFirstMtrNode,
                                          qmg::getBaseTableType( sFlag ),
                                          sItrAttr->expr->node.table )
@@ -7822,8 +7822,8 @@ qmoOneMtrPlan::appendJoinPredicate( qcStatement  * aStatement,
 /***********************************************************************
  *
  * Description :
- *    Sort/hash joinÀ» À§ÇØ join predicateÀ¸·ÎºÎÅÍ key¸¦ Ã£¾Æ
- *    materialize node¸¦ »ı¼ºÇÑ´Ù.
+ *    Sort/hash joinì„ ìœ„í•´ join predicateìœ¼ë¡œë¶€í„° keyë¥¼ ì°¾ì•„
+ *    materialize nodeë¥¼ ìƒì„±í•œë‹¤.
  *
  * Implementation :
  *
@@ -7856,7 +7856,7 @@ qmoOneMtrPlan::appendJoinPredicate( qcStatement  * aStatement,
         sAppendOption |= QMC_APPEND_ALLOW_DUP_FALSE;
     }
 
-    // aJoinPredicate´Â DNF·Î ±¸¼ºµÇ¾îÀÖÀ¸¹Ç·Î °¢°¢ÀÇ AND nodeµéÀ» ¼øÈ¸ÇÑ´Ù.
+    // aJoinPredicateëŠ” DNFë¡œ êµ¬ì„±ë˜ì–´ìˆìœ¼ë¯€ë¡œ ê°ê°ì˜ AND nodeë“¤ì„ ìˆœíšŒí•œë‹¤.
     for( sOperatorNode = (qtcNode *)aJoinPredicate->node.arguments->arguments;
          sOperatorNode != NULL;
          sOperatorNode = (qtcNode *)sOperatorNode->node.next )
@@ -7866,7 +7866,7 @@ qmoOneMtrPlan::appendJoinPredicate( qcStatement  * aStatement,
         if( aIsLeft == ID_FALSE )
         {
             //----------------------------------
-            // indexArgument¿¡ ÇØ´çÇÏ´Â ÄÃ·³À» ÀúÀåÇÒ °æ¿ì
+            // indexArgumentì— í•´ë‹¹í•˜ëŠ” ì»¬ëŸ¼ì„ ì €ì¥í•  ê²½ìš°
             //----------------------------------
 
             if( sOperatorNode->indexArgument == 0 )
@@ -7881,7 +7881,7 @@ qmoOneMtrPlan::appendJoinPredicate( qcStatement  * aStatement,
         else
         {
             //----------------------------------
-            // indexArgument¿¡ ÇØ´çÇÏÁö ¾Ê´Â ÄÃ·³À» ÀúÀåÇÒ °æ¿ì
+            // indexArgumentì— í•´ë‹¹í•˜ì§€ ì•ŠëŠ” ì»¬ëŸ¼ì„ ì €ì¥í•  ê²½ìš°
             //----------------------------------
 
             if ( sOperatorNode->indexArgument == 0 )
@@ -7946,8 +7946,8 @@ qmoOneMtrPlan::appendJoinColumn( qcStatement  * aStatement,
     {
         IDE_DASSERT( aColumnNode->node.module != &qtc::passModule );
 
-        // Join predicate¿¡ »ç¿ëµÈ expressionÀÇ °æ¿ì
-        // retrieve ½Ã expressionÀÌ Àç¼öÇàµÇÁö ¾Êµµ·Ï pass node¸¦ ¼³Á¤ÇÑ´Ù.
+        // Join predicateì— ì‚¬ìš©ëœ expressionì˜ ê²½ìš°
+        // retrieve ì‹œ expressionì´ ì¬ìˆ˜í–‰ë˜ì§€ ì•Šë„ë¡ pass nodeë¥¼ ì„¤ì •í•œë‹¤.
 
         IDE_TEST( QC_QMP_MEM( aStatement )->alloc( ID_SIZEOF( qtcNode ),
                                                    (void **)& sCopiedNode )
@@ -7989,14 +7989,14 @@ qmoOneMtrPlan::appendJoinColumn( qcStatement  * aStatement,
 /**
  * PROJ-1353 makeMemoryValeTemp
  *
- *  Rollup, Cube Plan´Â ±âÁ¸ Row¸¦ »óÀ§ Plan¿¡ ¿Ã·Á ÁÖ´Â °ÍÀÌ ¾Æ´Ï¶ó ±âÁ¸ Row°¡ Group¿¡
- *  µû¶ó NULLÀÌ µÈ ÄÃ·³ÀÌ Á¸ÀçÇÏ´Â »õ·Î¿î Row¶ó ÇÒ ¼ö ÀÖ´Ù.
- *  ÀÌ¶§ Memory TableÀÏ °æ¿ì¿¡´Â Ç×»ó Pointer ÇüÀ¸·Î °ªÀ» ½×°Ô µÇ´Â µ¥ ORDER BY ±¸¹®ÀÏ °æ¿ì
- *  »óÀ§¿¡ SORT PLANÀÌ »ı¼ºµÈ´Ù. ÀÌ SORT PlanÀÇ ÇÏÀ§¿¡ Rollup ÀÌ³ª CubeÀÌ Á¸Àç ÇÏ¸é ¸Ş¸ğ¸®
- *  ÀÏ °æ¿ì Pointer¸¦ ½×À¸·Á ÇÒÅÙµ¥ RollupÀÌ³ª Cube´Â »óÀ§ Plan¿¡¼­ ÂüÁ¶ÇÏ´Â ÇÏ³ªÀÇ Row¸¸
- *  Á¸Àç ÇÏ°Ô µÉ °æ¿ì ÀÌ makeValueTemp ÇÔ¼ö¸¦ ÅëÇØ STORE¿ë Sort Temp¸¦ »ı¼ºÇÏ°í
- *  RollupÀÌ³ª Cube¿¡¼­ »ı¼ºµÈ ROW¸¦ »õ·Î Ãß°¡ÇØ¼­ »óÀ§¿¡¼­ ÀÌ Row Pointer¸¦ ÂüÁ¶ ÇÒ ¼ö
- *  ÀÖµµ·Ï ÇØÁØ´Ù.
+ *  Rollup, Cube PlanëŠ” ê¸°ì¡´ Rowë¥¼ ìƒìœ„ Planì— ì˜¬ë ¤ ì£¼ëŠ” ê²ƒì´ ì•„ë‹ˆë¼ ê¸°ì¡´ Rowê°€ Groupì—
+ *  ë”°ë¼ NULLì´ ëœ ì»¬ëŸ¼ì´ ì¡´ì¬í•˜ëŠ” ìƒˆë¡œìš´ Rowë¼ í•  ìˆ˜ ìˆë‹¤.
+ *  ì´ë•Œ Memory Tableì¼ ê²½ìš°ì—ëŠ” í•­ìƒ Pointer í˜•ìœ¼ë¡œ ê°’ì„ ìŒ“ê²Œ ë˜ëŠ” ë° ORDER BY êµ¬ë¬¸ì¼ ê²½ìš°
+ *  ìƒìœ„ì— SORT PLANì´ ìƒì„±ëœë‹¤. ì´ SORT Planì˜ í•˜ìœ„ì— Rollup ì´ë‚˜ Cubeì´ ì¡´ì¬ í•˜ë©´ ë©”ëª¨ë¦¬
+ *  ì¼ ê²½ìš° Pointerë¥¼ ìŒ“ìœ¼ë ¤ í• í…ë° Rollupì´ë‚˜ CubeëŠ” ìƒìœ„ Planì—ì„œ ì°¸ì¡°í•˜ëŠ” í•˜ë‚˜ì˜ Rowë§Œ
+ *  ì¡´ì¬ í•˜ê²Œ ë  ê²½ìš° ì´ makeValueTemp í•¨ìˆ˜ë¥¼ í†µí•´ STOREìš© Sort Tempë¥¼ ìƒì„±í•˜ê³ 
+ *  Rollupì´ë‚˜ Cubeì—ì„œ ìƒì„±ëœ ROWë¥¼ ìƒˆë¡œ ì¶”ê°€í•´ì„œ ìƒìœ„ì—ì„œ ì´ Row Pointerë¥¼ ì°¸ì¡° í•  ìˆ˜
+ *  ìˆë„ë¡ í•´ì¤€ë‹¤.
  */
 IDE_RC qmoOneMtrPlan::makeValueTempMtrNode( qcStatement * aStatement,
                                             qmsQuerySet * aQuerySet,
@@ -8067,8 +8067,8 @@ IDE_RC qmoOneMtrPlan::makeValueTempMtrNode( qcStatement * aStatement,
             sNewMtrNode->flag &= ~QMC_MTR_TYPE_MASK;
             sNewMtrNode->flag |= QMC_MTR_TYPE_COPY_VALUE;
 
-            // PROJ-2362 memory temp ÀúÀå È¿À²¼º °³¼±
-            // disk temp¸¦ »ç¿ëÇÏ´Â °æ¿ì TEMP_VAR_TYPE¸¦ »ç¿ëÇÏÁö ¾Ê´Â´Ù.
+            // PROJ-2362 memory temp ì €ì¥ íš¨ìœ¨ì„± ê°œì„ 
+            // disk tempë¥¼ ì‚¬ìš©í•˜ëŠ” ê²½ìš° TEMP_VAR_TYPEë¥¼ ì‚¬ìš©í•˜ì§€ ì•ŠëŠ”ë‹¤.
             if ( ( aPlan->flag & QMN_PLAN_STORAGE_MASK )
                  == QMN_PLAN_STORAGE_DISK )
             {
@@ -8080,7 +8080,7 @@ IDE_RC qmoOneMtrPlan::makeValueTempMtrNode( qcStatement * aStatement,
                 // Nothing to do.
             }
 
-            // »óÀ§¿¡¼­ temp tableÀÇ °ªÀ» ÂüÁ¶ÇÏµµ·Ï º¯°æµÈ À§Ä¡¸¦ ¼³Á¤ÇÑ´Ù.
+            // ìƒìœ„ì—ì„œ temp tableì˜ ê°’ì„ ì°¸ì¡°í•˜ë„ë¡ ë³€ê²½ëœ ìœ„ì¹˜ë¥¼ ì„¤ì •í•œë‹¤.
             sItrAttr->expr->node.table  = sNewMtrNode->dstNode->node.table;
             sItrAttr->expr->node.column = sNewMtrNode->dstNode->node.column;
 
@@ -8125,8 +8125,8 @@ IDE_RC qmoOneMtrPlan::makeValueTempMtrNode( qcStatement * aStatement,
             sNewMtrNode->flag &= ~QMC_MTR_TYPE_MASK;
             sNewMtrNode->flag |= QMC_MTR_TYPE_COPY_VALUE;
 
-            // PROJ-2362 memory temp ÀúÀå È¿À²¼º °³¼±
-            // disk temp¸¦ »ç¿ëÇÏ´Â °æ¿ì TEMP_VAR_TYPE¸¦ »ç¿ëÇÏÁö ¾Ê´Â´Ù.
+            // PROJ-2362 memory temp ì €ì¥ íš¨ìœ¨ì„± ê°œì„ 
+            // disk tempë¥¼ ì‚¬ìš©í•˜ëŠ” ê²½ìš° TEMP_VAR_TYPEë¥¼ ì‚¬ìš©í•˜ì§€ ì•ŠëŠ”ë‹¤.
             if ( ( aPlan->flag & QMN_PLAN_STORAGE_MASK )
                  == QMN_PLAN_STORAGE_DISK )
             {
@@ -8138,7 +8138,7 @@ IDE_RC qmoOneMtrPlan::makeValueTempMtrNode( qcStatement * aStatement,
                 // Nothing to do.
             }
 
-            // »óÀ§¿¡¼­ temp tableÀÇ °ªÀ» ÂüÁ¶ÇÏµµ·Ï º¯°æµÈ À§Ä¡¸¦ ¼³Á¤ÇÑ´Ù.
+            // ìƒìœ„ì—ì„œ temp tableì˜ ê°’ì„ ì°¸ì¡°í•˜ë„ë¡ ë³€ê²½ëœ ìœ„ì¹˜ë¥¼ ì„¤ì •í•œë‹¤.
             sItrAttr->expr->node.table  = sNewMtrNode->dstNode->node.table;
             sItrAttr->expr->node.column = sNewMtrNode->dstNode->node.column;
 
@@ -8197,10 +8197,10 @@ IDE_RC qmoOneMtrPlan::makeValueTempMtrNode( qcStatement * aStatement,
 /**
  * PROJ-1353 initROLL
  *
- *  Rollup¿¡ Result Descript¸¦ Ãß°¡ÇÑ´Ù.
- *  GROUP BY ÄÃ·³À» ¸ÕÀú Ãß°¡ÇÏ°í Rollup ÄÃ·³À» Ãß°¡ÇØ¼­ ÇÏÀ§ Plan¿¡¼­ ÀÌ ¼ø¼­·Î sort µÉ ¼ö
- *   ÀÖµµ·Ï ÇÑ´Ù.
- *  Aggregation À» Ãß°¡ÇÑ´Ù.
+ *  Rollupì— Result Descriptë¥¼ ì¶”ê°€í•œë‹¤.
+ *  GROUP BY ì»¬ëŸ¼ì„ ë¨¼ì € ì¶”ê°€í•˜ê³  Rollup ì»¬ëŸ¼ì„ ì¶”ê°€í•´ì„œ í•˜ìœ„ Planì—ì„œ ì´ ìˆœì„œë¡œ sort ë  ìˆ˜
+ *   ìˆë„ë¡ í•œë‹¤.
+ *  Aggregation ì„ ì¶”ê°€í•œë‹¤.
  */
 IDE_RC qmoOneMtrPlan::initROLL( qcStatement      * aStatement,
                                 qmsQuerySet      * aQuerySet,
@@ -8332,7 +8332,7 @@ IDE_RC qmoOneMtrPlan::initROLL( qcStatement      * aStatement,
             sNode = ( qtcNode *)sNode->node.arguments;
         }
 
-        /* BUG-35193  Window function ÀÌ ¾Æ´Ñ aggregation ¸¸ Ã³¸®ÇØ¾ß ÇÑ´Ù. */
+        /* BUG-35193  Window function ì´ ì•„ë‹Œ aggregation ë§Œ ì²˜ë¦¬í•´ì•¼ í•œë‹¤. */
         if( ( QTC_IS_AGGREGATE( sNode ) == ID_TRUE ) &&
             ( sNode->overClause == NULL ) )
         {
@@ -8372,17 +8372,17 @@ IDE_RC qmoOneMtrPlan::initROLL( qcStatement      * aStatement,
 /**
  * PROJ-1353 makeROLL
  *
- *    qmnROLL PlanÀ» »ı¼ºÇÑ´Ù.
- *    Rollup ( ÄÃ·³ ) Àº ( n + 1 )°³ÀÇ ±×·ìÀ¸·Î ÀÌ·ç¾îÁ® ÀÖ´Ù.
- *    SortµÈ ÀÚ·áµéÀ» ÇÑ¹ø ÀĞ°í ºñ±³ÇÏ¹Ç·Î½á n+1 °³ÀÇ GroupÀ» Ã³¸®ÇÑ´Ù.
+ *    qmnROLL Planì„ ìƒì„±í•œë‹¤.
+ *    Rollup ( ì»¬ëŸ¼ ) ì€ ( n + 1 )ê°œì˜ ê·¸ë£¹ìœ¼ë¡œ ì´ë£¨ì–´ì ¸ ìˆë‹¤.
+ *    Sortëœ ìë£Œë“¤ì„ í•œë²ˆ ì½ê³  ë¹„êµí•˜ë¯€ë¡œì¨ n+1 ê°œì˜ Groupì„ ì²˜ë¦¬í•œë‹¤.
  *
- *  - ÇÏÀ§¿¡ SORT PlanÀÌ ¿À°Å³ª SCANÀÌ ¿Ã ¼ö ÀÖ´Ù.
- *  - ROLL PlanÀº 5°³ÀÇ Tuple°ú mtr Node°¡ Á¸Àç ÇÒ ¼ö ÀÖ´Ù.
- *  - mtrNode  - ÇÏÀ§ Plan¿¡¼­ ÀÚ·á¸¦ ÀĞ¾î Á¢±ÙÇÏ±â À§ÇÑ NODE
- *  - myNode   - »óÀ§ PLAN¿¡¼­ º¸´Â NODEÀÌ´Ù.
+ *  - í•˜ìœ„ì— SORT Planì´ ì˜¤ê±°ë‚˜ SCANì´ ì˜¬ ìˆ˜ ìˆë‹¤.
+ *  - ROLL Planì€ 5ê°œì˜ Tupleê³¼ mtr Nodeê°€ ì¡´ì¬ í•  ìˆ˜ ìˆë‹¤.
+ *  - mtrNode  - í•˜ìœ„ Planì—ì„œ ìë£Œë¥¼ ì½ì–´ ì ‘ê·¼í•˜ê¸° ìœ„í•œ NODE
+ *  - myNode   - ìƒìœ„ PLANì—ì„œ ë³´ëŠ” NODEì´ë‹¤.
  *  - aggrNode - aggregation MTR NODE
- *  - distNode - aggregation¿¡ distinct°¡ ÁöÁ¤µÉ ¶§ÀÇ NODE
- *  - ValueTempNode - value store¿ë TEMP NODE
+ *  - distNode - aggregationì— distinctê°€ ì§€ì •ë  ë•Œì˜ NODE
+ *  - ValueTempNode - value storeìš© TEMP NODE
  */
 IDE_RC qmoOneMtrPlan::makeROLL( qcStatement      * aStatement,
                                 qmsQuerySet      * aQuerySet,
@@ -8502,7 +8502,7 @@ IDE_RC qmoOneMtrPlan::makeROLL( qcStatement      * aStatement,
             if ( aQuerySet->SFWGH->hints->resultCacheType
                  != QMO_RESULT_CACHE_NO )
             {
-                // Result Cache¿¡¼­´Â Ç×»ó Value Temp¸¦ »ı¼ºÇÏµµ·Ï À¯µµÇÑ´Ù.
+                // Result Cacheì—ì„œëŠ” í•­ìƒ Value Tempë¥¼ ìƒì„±í•˜ë„ë¡ ìœ ë„í•œë‹¤.
                 aFlag &= ~QMO_MAKESORT_VALUE_TEMP_MASK;
                 aFlag |= QMO_MAKESORT_VALUE_TEMP_TRUE;
             }
@@ -8516,7 +8516,7 @@ IDE_RC qmoOneMtrPlan::makeROLL( qcStatement      * aStatement,
             if ( aQuerySet->SFWGH->hints->resultCacheType
                  == QMO_RESULT_CACHE )
             {
-                // Result Cache¿¡¼­´Â Ç×»ó Value Temp¸¦ »ı¼ºÇÏµµ·Ï À¯µµÇÑ´Ù.
+                // Result Cacheì—ì„œëŠ” í•­ìƒ Value Tempë¥¼ ìƒì„±í•˜ë„ë¡ ìœ ë„í•œë‹¤.
                 aFlag &= ~QMO_MAKESORT_VALUE_TEMP_MASK;
                 aFlag |= QMO_MAKESORT_VALUE_TEMP_TRUE;
             }
@@ -8625,8 +8625,8 @@ IDE_RC qmoOneMtrPlan::makeROLL( qcStatement      * aStatement,
             /* Nothing to do */
         }
 
-        /* Aggregate functionÀÌ ¾Æ´Ñ node°¡ Àü´ŞµÇ´Â °æ¿ì°¡ Á¸ÀçÇÑ´Ù.*/
-        /* BUG-35193  Window function ÀÌ ¾Æ´Ñ aggregation ¸¸ Ã³¸®ÇØ¾ß ÇÑ´Ù. */
+        /* Aggregate functionì´ ì•„ë‹Œ nodeê°€ ì „ë‹¬ë˜ëŠ” ê²½ìš°ê°€ ì¡´ì¬í•œë‹¤.*/
+        /* BUG-35193  Window function ì´ ì•„ë‹Œ aggregation ë§Œ ì²˜ë¦¬í•´ì•¼ í•œë‹¤. */
         if ( ( QTC_IS_AGGREGATE( sNode ) == ID_TRUE ) &&
              ( sNode->overClause == NULL ) )
         {
@@ -8701,7 +8701,7 @@ IDE_RC qmoOneMtrPlan::makeROLL( qcStatement      * aStatement,
     IDE_TEST( qmg::setCalcLocate( aStatement, sROLL->mtrNode )
               != IDE_SUCCESS );
 
-    /* Parital Rollup ÀÎ °æ¿ì RollupÀÌ ÄÃ·³ÀÇ À§Ä¡¸¦ ÁöÁ¤ÇÑ´Ù. */
+    /* Parital Rollup ì¸ ê²½ìš° Rollupì´ ì»¬ëŸ¼ì˜ ìœ„ì¹˜ë¥¼ ì§€ì •í•œë‹¤. */
     if ( sIsPartial == ID_TRUE )
     {
         sROLL->partialRollup = sRollupStart;
@@ -8749,15 +8749,15 @@ IDE_RC qmoOneMtrPlan::makeROLL( qcStatement      * aStatement,
     }
 
     /**
-     * Rollup¿¡¼­ »ç¿ëµÇ´Â GroupÀÇ ÄÃ·³ÀÇ NULL¿©ºÎ¸¦ Ç¥½ÃÇÑ´Ù.
-     * ¸¸¾à Rollup¿¡¼­ »ç¿ëµÈ ÄÃ·³ÀÌ 5 °³¶ó¸é ´ÙÀ½°ú °°ÀÌ Ç¥½ÃµÈ´Ù.
+     * Rollupì—ì„œ ì‚¬ìš©ë˜ëŠ” Groupì˜ ì»¬ëŸ¼ì˜ NULLì—¬ë¶€ë¥¼ í‘œì‹œí•œë‹¤.
+     * ë§Œì•½ Rollupì—ì„œ ì‚¬ìš©ëœ ì»¬ëŸ¼ì´ 5 ê°œë¼ë©´ ë‹¤ìŒê³¼ ê°™ì´ í‘œì‹œëœë‹¤.
      * ([0] 11111
      *  [1] 11110
      *  [2] 11100
      *  [3] 11000
      *  [4] 10000
      *  [5] 00000 )
-     *  RollupÀº n+1°³ÀÇ ±×·ìÀÌ »ı¼ºµÇ¹Ç·Î 6°³ÀÇ ¹è¿­À» °¡Áö°Ô µÈ´Ù.
+     *  Rollupì€ n+1ê°œì˜ ê·¸ë£¹ì´ ìƒì„±ë˜ë¯€ë¡œ 6ê°œì˜ ë°°ì—´ì„ ê°€ì§€ê²Œ ëœë‹¤.
      */
     IDE_TEST( QC_QMP_MEM(aStatement)->alloc( (ID_SIZEOF(UChar*) *
                                               (aRollupCount + 1)),
@@ -8828,7 +8828,7 @@ IDE_RC qmoOneMtrPlan::makeROLL( qcStatement      * aStatement,
             if ( ( aFlag & QMO_MAKESORT_VALUE_TEMP_MASK )
                  == QMO_MAKESORT_VALUE_TEMP_FALSE )
             {
-                // »óÀ§¿¡¼­ ÀÌ tableÀÇ °ªÀ» ÂüÁ¶ÇÏµµ·Ï º¯°æµÈ À§Ä¡¸¦ ¼³Á¤ÇÑ´Ù.
+                // ìƒìœ„ì—ì„œ ì´ tableì˜ ê°’ì„ ì°¸ì¡°í•˜ë„ë¡ ë³€ê²½ëœ ìœ„ì¹˜ë¥¼ ì„¤ì •í•œë‹¤.
                 sItrAttr->expr->node.table  = sNewMtrNode->dstNode->node.table;
                 sItrAttr->expr->node.column = sNewMtrNode->dstNode->node.column;
             }
@@ -8840,8 +8840,8 @@ IDE_RC qmoOneMtrPlan::makeROLL( qcStatement      * aStatement,
             sNewMtrNode->flag &= ~QMC_MTR_TYPE_MASK;
             sNewMtrNode->flag |= QMC_MTR_TYPE_COPY_VALUE;
 
-            // PROJ-2362 memory temp ÀúÀå È¿À²¼º °³¼±
-            // myNode´Â temp¸¦ ¸¸µéÁö ¾Ê´Â´Ù.
+            // PROJ-2362 memory temp ì €ì¥ íš¨ìœ¨ì„± ê°œì„ 
+            // myNodeëŠ” tempë¥¼ ë§Œë“¤ì§€ ì•ŠëŠ”ë‹¤.
             sNewMtrNode->flag &= ~QMC_MTR_TEMP_VAR_TYPE_ENABLE_MASK;
             sNewMtrNode->flag |= QMC_MTR_TEMP_VAR_TYPE_ENABLE_FALSE;
 
@@ -8883,7 +8883,7 @@ IDE_RC qmoOneMtrPlan::makeROLL( qcStatement      * aStatement,
     IDE_TEST( qmg::setCalcLocate( aStatement, sROLL->myNode )
               != IDE_SUCCESS );
 
-    /* AggrMTR Node ±¸¼º */
+    /* AggrMTR Node êµ¬ì„± */
     sROLL->aggrNodeCount = sAggrNodeCount;
 
     if ( sAggrNodeCount > 0 )
@@ -8923,7 +8923,7 @@ IDE_RC qmoOneMtrPlan::makeROLL( qcStatement      * aStatement,
                 if ( ( aFlag & QMO_MAKESORT_VALUE_TEMP_MASK )
                      == QMO_MAKESORT_VALUE_TEMP_FALSE )
                 {
-                    // »óÀ§¿¡¼­ ÀÌ tableÀÇ °ªÀ» ÂüÁ¶ÇÏµµ·Ï º¯°æµÈ À§Ä¡¸¦ ¼³Á¤ÇÑ´Ù.
+                    // ìƒìœ„ì—ì„œ ì´ tableì˜ ê°’ì„ ì°¸ì¡°í•˜ë„ë¡ ë³€ê²½ëœ ìœ„ì¹˜ë¥¼ ì„¤ì •í•œë‹¤.
                     sItrAttr->expr->node.table  = sNewMtrNode->dstNode->node.table;
                     sItrAttr->expr->node.column = sNewMtrNode->dstNode->node.column;
                 }
@@ -9013,7 +9013,7 @@ IDE_RC qmoOneMtrPlan::makeROLL( qcStatement      * aStatement,
         sROLL->distNodeCount = 0;
     }
 
-    /* momory value temp°¡ »ı¼ºµÉ ÇÊ¿ä°¡ ÀÖÀ»°æ¿ì ÀÌ¸¦ »ı¼ºÇÑ´Ù. */
+    /* momory value tempê°€ ìƒì„±ë  í•„ìš”ê°€ ìˆì„ê²½ìš° ì´ë¥¼ ìƒì„±í•œë‹¤. */
     if ( ( aFlag & QMO_MAKESORT_VALUE_TEMP_MASK )
          == QMO_MAKESORT_VALUE_TEMP_TRUE )
     {
@@ -9118,24 +9118,24 @@ IDE_RC qmoOneMtrPlan::makeROLL( qcStatement      * aStatement,
 /**
  * PROJ-1353 makeAggrArgumentsMtr
  *
- *   Aggregation¿ë MTR ³ëµå ¸¦ »ı¼ºÇÏ°í »ı¼ºµÈ ³ëµåÀÇ TupleID¸¦ º¯°æÇÑ´Ù.
- *   memoryÀÌ ÀÏ°æ¿ì´Â pointer¸¸
- *   ½×°Ô µÇ°í Aggregation¿¡¼­ »ç¿ëµÇ´Â Arguments´Â pointer¸¦ ¿øº¹ÇØ¼­ »ç¿ëÇÏ°Ô µÇ¹Ç·Î
- *   º° »ó°üÀÌ ¾ø°Ô µÈ´Ù.
- *   ÇÏÁö¸¸ DiskÀÏ °æ¿ì¿¡ value·Î ÀĞ¾îÁö°Ô µÇ´Âµ¥ ÀÌ¶§ ´ÙÀ½°ú °°Àº °æ¿ì°¡ ÀÖÀ» ¼ö ÀÖ´Ù.
+ *   Aggregationìš© MTR ë…¸ë“œ ë¥¼ ìƒì„±í•˜ê³  ìƒì„±ëœ ë…¸ë“œì˜ TupleIDë¥¼ ë³€ê²½í•œë‹¤.
+ *   memoryì´ ì¼ê²½ìš°ëŠ” pointerë§Œ
+ *   ìŒ“ê²Œ ë˜ê³  Aggregationì—ì„œ ì‚¬ìš©ë˜ëŠ” ArgumentsëŠ” pointerë¥¼ ì›ë³µí•´ì„œ ì‚¬ìš©í•˜ê²Œ ë˜ë¯€ë¡œ
+ *   ë³„ ìƒê´€ì´ ì—†ê²Œ ëœë‹¤.
+ *   í•˜ì§€ë§Œ Diskì¼ ê²½ìš°ì— valueë¡œ ì½ì–´ì§€ê²Œ ë˜ëŠ”ë° ì´ë•Œ ë‹¤ìŒê³¼ ê°™ì€ ê²½ìš°ê°€ ìˆì„ ìˆ˜ ìˆë‹¤.
  *
  *   | i1 | i2 | i3 |
- *   À§¿Í °°ÀÌ sortNode°¡ ±¸¼ºµÇ¸é myNode·Î setColumnLocate ·Î TupleID·Î
- *   º¯°æÇÏ¸é Aggr(i2)ÀÇ i2ÀÇ dstTuple ¿ª½Ã myNodeÀÇ TupleID·Î º¯°æµÈ´Ù.
- *   ±×·¸°Ô µÇ¸é myNodeÀÇ i2 ¾ğÁ¦µçÁö NULLÀÌ µÉ ¼ö µµ ÀÖ°í ¾ÊµÉ ¼ö µµ ÀÖ´Ù.
- *   ±×·±µ¥ AggrÀÇ ArguemntsÀÇ i2´Â Ç×»ó °ªÀ» °¡Áö°í ÀÖ¾î¾ß ÇÑ´Ù.
- *   µû¶ó¼­ À§¿Í °°Àº Disk Sort TempÀÇ °æ¿ì
- *   | i1 | i2 | i3 | i2 | ¿Í °°ÀÌ ±¸¼ºÇØ¼­ AggrÀÇ ArgumentsÀÇ i2´Â µŞÂÊÀÇ value
- *   ·Î ÁöÁ¤ ÇØÁØ´Ù. ±×·¡¼­ AggregaionÀÇ ArgumentsÀÇ TupleID¸¦ ¸ğµÎ »õ·Î »ı¼ºµÈ
- *   TupleID·Î ¹Ù²ãÁÖ´Â ÀÛ¾÷À» ÀÌ ÇÔ¼ö¿¡¼­ ÇÏ°Ô µÈ´Ù.
+ *   ìœ„ì™€ ê°™ì´ sortNodeê°€ êµ¬ì„±ë˜ë©´ myNodeë¡œ setColumnLocate ë¡œ TupleIDë¡œ
+ *   ë³€ê²½í•˜ë©´ Aggr(i2)ì˜ i2ì˜ dstTuple ì—­ì‹œ myNodeì˜ TupleIDë¡œ ë³€ê²½ëœë‹¤.
+ *   ê·¸ë ‡ê²Œ ë˜ë©´ myNodeì˜ i2 ì–¸ì œë“ ì§€ NULLì´ ë  ìˆ˜ ë„ ìˆê³  ì•Šë  ìˆ˜ ë„ ìˆë‹¤.
+ *   ê·¸ëŸ°ë° Aggrì˜ Arguemntsì˜ i2ëŠ” í•­ìƒ ê°’ì„ ê°€ì§€ê³  ìˆì–´ì•¼ í•œë‹¤.
+ *   ë”°ë¼ì„œ ìœ„ì™€ ê°™ì€ Disk Sort Tempì˜ ê²½ìš°
+ *   | i1 | i2 | i3 | i2 | ì™€ ê°™ì´ êµ¬ì„±í•´ì„œ Aggrì˜ Argumentsì˜ i2ëŠ” ë’·ìª½ì˜ value
+ *   ë¡œ ì§€ì • í•´ì¤€ë‹¤. ê·¸ë˜ì„œ Aggregaionì˜ Argumentsì˜ TupleIDë¥¼ ëª¨ë‘ ìƒˆë¡œ ìƒì„±ëœ
+ *   TupleIDë¡œ ë°”ê¿”ì£¼ëŠ” ì‘ì—…ì„ ì´ í•¨ìˆ˜ì—ì„œ í•˜ê²Œ ëœë‹¤.
  *
- *   ¶Ç no_push_projection ÀÎ°æ¿ì RID¸¦ ½×°Ô µÇ´Â µ¥ ÀÌ ¶§ Æ÷ÀÎÅÍ¸¦ ½×°Ô
- *   ÇØÁØ´Ù.
+ *   ë˜ no_push_projection ì¸ê²½ìš° RIDë¥¼ ìŒ“ê²Œ ë˜ëŠ” ë° ì´ ë•Œ í¬ì¸í„°ë¥¼ ìŒ“ê²Œ
+ *   í•´ì¤€ë‹¤.
  */
 IDE_RC qmoOneMtrPlan::makeAggrArgumentsMtrNode( qcStatement * aStatement,
                                                 qmsQuerySet * aQuerySet,
@@ -9201,8 +9201,8 @@ IDE_RC qmoOneMtrPlan::makeAggrArgumentsMtrNode( qcStatement * aStatement,
             else
             {
                 sFlag = sMtcTemplate->rows[aNode->table].lflag;
-                /* Surrogate-key(RID ¶Ç´Â pointer)¸¦ º¹»çÇÑ´Ù.
-                 * ÀÌ¹Ì surrogate-key°¡ Ãß°¡µÇ¾îÀÖ´ÂÁö È®ÀÎÇÑ´Ù.
+                /* Surrogate-key(RID ë˜ëŠ” pointer)ë¥¼ ë³µì‚¬í•œë‹¤.
+                 * ì´ë¯¸ surrogate-keyê°€ ì¶”ê°€ë˜ì–´ìˆëŠ”ì§€ í™•ì¸í•œë‹¤.
                  */
                 if( qmg::existBaseTable( (*aFirstMtrNode)->next,
                                          qmg::getBaseTableType( sFlag ),
@@ -9230,12 +9230,12 @@ IDE_RC qmoOneMtrPlan::makeAggrArgumentsMtrNode( qcStatement * aStatement,
     }
     else
     {
-        /* BUG-39611 support SYS_CONNECT_BY_PATHÀÇ expression arguments
-         * CONNECT BY  ±¸¹®Àº ROLLUPº¸´Ù ¸ÕÀú ½ÇÇàµÇ´Â ±¸¹®ÀÌ°í,
-         * SYS_CONNECT_BY_PATH¿Í °°Àº °æ¿ì CONNECT BY ±¸¹® ½ÇÇà½Ã °è»êµÇ¾î¾ßÇÏ±â
-         * ¶§¹®¿¡ ROLL UP¿¡¼­´Â ÀÌ¸¦ ½×¾Æ¼­ Ã³¸®ÇØ¾ßÇÑ´Ù. µû¶ó¼­ ¾Æ·¡¿Í °°Àº
-         * MTR NODE¸¦ ±¸¼ºÇØ ÁÖ¸é ROLLUP¿¡¼­´Â SYS_CONNECT_BY_PATHÀÇ °á°ú°¡
-         * ½×ÀÌ°í aggregation¿¡¼­´Â ÀÌ °á°ú¸¦ ÂüÁ¶ÇÏ¿© Calculate¸¦ ¼öÇàÇÑ´Ù.
+        /* BUG-39611 support SYS_CONNECT_BY_PATHì˜ expression arguments
+         * CONNECT BY  êµ¬ë¬¸ì€ ROLLUPë³´ë‹¤ ë¨¼ì € ì‹¤í–‰ë˜ëŠ” êµ¬ë¬¸ì´ê³ ,
+         * SYS_CONNECT_BY_PATHì™€ ê°™ì€ ê²½ìš° CONNECT BY êµ¬ë¬¸ ì‹¤í–‰ì‹œ ê³„ì‚°ë˜ì–´ì•¼í•˜ê¸°
+         * ë•Œë¬¸ì— ROLL UPì—ì„œëŠ” ì´ë¥¼ ìŒ“ì•„ì„œ ì²˜ë¦¬í•´ì•¼í•œë‹¤. ë”°ë¼ì„œ ì•„ë˜ì™€ ê°™ì€
+         * MTR NODEë¥¼ êµ¬ì„±í•´ ì£¼ë©´ ROLLUPì—ì„œëŠ” SYS_CONNECT_BY_PATHì˜ ê²°ê³¼ê°€
+         * ìŒ“ì´ê³  aggregationì—ì„œëŠ” ì´ ê²°ê³¼ë¥¼ ì°¸ì¡°í•˜ì—¬ Calculateë¥¼ ìˆ˜í–‰í•œë‹¤.
          */
         if ( ( aNode->lflag & MTC_NODE_FUNCTION_CONNECT_BY_MASK )
              == MTC_NODE_FUNCTION_CONNECT_BY_TRUE )
@@ -9257,7 +9257,7 @@ IDE_RC qmoOneMtrPlan::makeAggrArgumentsMtrNode( qcStatement * aStatement,
             sNewMtrNode->flag &= ~QMC_MTR_TYPE_MASK;
             sNewMtrNode->flag |= QMC_MTR_TYPE_CALCULATE_AND_COPY_VALUE;
 
-            /* BUG-39611 CONNECT_BY_FUNC°¡ ½×ÀÏ °ÍÀÌ¹Ç·Î valueModuel·Î ¼¼ÆÃÇÑ´Ù. */
+            /* BUG-39611 CONNECT_BY_FUNCê°€ ìŒ“ì¼ ê²ƒì´ë¯€ë¡œ valueModuelë¡œ ì„¸íŒ…í•œë‹¤. */
             sNewMtrNode->dstNode->node.module = &qtc::valueModule;
 
             sLastMtrNode->next = sNewMtrNode;
@@ -9314,9 +9314,9 @@ IDE_RC qmoOneMtrPlan::makeAggrArgumentsMtrNode( qcStatement * aStatement,
 /**
  * PROJ-1353 initCUBE
  *
- *  Cube¿¡ Result Descript¸¦ Ãß°¡ÇÑ´Ù.
- *  GROUP BY ÄÃ·³À» ¸ÕÀú Ãß°¡ÇÏ°í Cube ÄÃ·³À» Ãß°¡ÇÑ´Ù.
- *  Aggregation À» Ãß°¡ÇÑ´Ù.
+ *  Cubeì— Result Descriptë¥¼ ì¶”ê°€í•œë‹¤.
+ *  GROUP BY ì»¬ëŸ¼ì„ ë¨¼ì € ì¶”ê°€í•˜ê³  Cube ì»¬ëŸ¼ì„ ì¶”ê°€í•œë‹¤.
+ *  Aggregation ì„ ì¶”ê°€í•œë‹¤.
  */
 IDE_RC qmoOneMtrPlan::initCUBE( qcStatement      * aStatement,
                                 qmsQuerySet      * aQuerySet,
@@ -9451,7 +9451,7 @@ IDE_RC qmoOneMtrPlan::initCUBE( qcStatement      * aStatement,
             sNode = ( qtcNode *)sNode->node.arguments;
         }
 
-        /* BUG-35193  Window function ÀÌ ¾Æ´Ñ aggregation ¸¸ Ã³¸®ÇØ¾ß ÇÑ´Ù. */
+        /* BUG-35193  Window function ì´ ì•„ë‹Œ aggregation ë§Œ ì²˜ë¦¬í•´ì•¼ í•œë‹¤. */
         if ( ( QTC_IS_AGGREGATE( sNode ) == ID_TRUE ) &&
              ( sNode->overClause == NULL ) )
         {
@@ -9499,19 +9499,19 @@ IDE_RC qmoOneMtrPlan::initCUBE( qcStatement      * aStatement,
 /**
  * PROJ-1353 makeCUBE
  *
- *    CUBE PlanÀº ÇÏÀ§¿¡ memory TableÀÌ¸é pointer¸¦ ½×°í disk¸é value¸¦ Sort Temp¿¡
- *    ½×¾Æ¼­ Sort¸¦ ¿©·¯¹ø ¼öÇàÇÏ´Â Çü½ÄÀ¸·Î Cube¸¦ ¼öÇàÇÑ´Ù.
+ *    CUBE Planì€ í•˜ìœ„ì— memory Tableì´ë©´ pointerë¥¼ ìŒ“ê³  diskë©´ valueë¥¼ Sort Tempì—
+ *    ìŒ“ì•„ì„œ Sortë¥¼ ì—¬ëŸ¬ë²ˆ ìˆ˜í–‰í•˜ëŠ” í˜•ì‹ìœ¼ë¡œ Cubeë¥¼ ìˆ˜í–‰í•œë‹¤.
  *
- *    Cube( ÄÃ·³ ) Àº 2^n ¸¸Å­ÀÇ ±×·ì¼ö°¡ ³ª¿À°Ô µÈ´Ù. ÄÃ·³ÀÌ 10°³¸é 2ÀÇ 10½ÂÀÌ¹Ç·Î
- *    1024°³ÀÇ ±×·ìÀÌ Á¸Àç ÇÏ°Ô µÈ´Ù. ÃÖ´ë ÄÃ·³ °¹¼ö´Â 15°³·Î Á¦ÇÑÇÑ´Ù.
- *    Cube´Â ( 2^(n-1) )¸¸Å­ sort¸¦ ¼öÇàÇÏ°Ô µÈ´Ù.
+ *    Cube( ì»¬ëŸ¼ ) ì€ 2^n ë§Œí¼ì˜ ê·¸ë£¹ìˆ˜ê°€ ë‚˜ì˜¤ê²Œ ëœë‹¤. ì»¬ëŸ¼ì´ 10ê°œë©´ 2ì˜ 10ìŠ¹ì´ë¯€ë¡œ
+ *    1024ê°œì˜ ê·¸ë£¹ì´ ì¡´ì¬ í•˜ê²Œ ëœë‹¤. ìµœëŒ€ ì»¬ëŸ¼ ê°¯ìˆ˜ëŠ” 15ê°œë¡œ ì œí•œí•œë‹¤.
+ *    CubeëŠ” ( 2^(n-1) )ë§Œí¼ sortë¥¼ ìˆ˜í–‰í•˜ê²Œ ëœë‹¤.
  *
- *  - CUBE PlanÀº 5°³ÀÇ Tuple°ú mtr Node°¡ Á¸Àç ÇÒ ¼ö ÀÖ´Ù.
- *  - mtrNode  - Sort¿ëµµ·Î »ç¿ëµÈ´Ù.
- *  - myNode   - »óÀ§ PLAN¿¡¼­ º¸´Â NODEÀÌ´Ù.
+ *  - CUBE Planì€ 5ê°œì˜ Tupleê³¼ mtr Nodeê°€ ì¡´ì¬ í•  ìˆ˜ ìˆë‹¤.
+ *  - mtrNode  - Sortìš©ë„ë¡œ ì‚¬ìš©ëœë‹¤.
+ *  - myNode   - ìƒìœ„ PLANì—ì„œ ë³´ëŠ” NODEì´ë‹¤.
  *  - aggrNode - aggregation MTR NODE
- *  - distNode - aggregation¿¡ distinct°¡ ÁöÁ¤µÉ ¶§ÀÇ NODE
- *  - valueTempNode - value store¿ë TEMP NODE
+ *  - distNode - aggregationì— distinctê°€ ì§€ì •ë  ë•Œì˜ NODE
+ *  - valueTempNode - value storeìš© TEMP NODE
  */
 IDE_RC qmoOneMtrPlan::makeCUBE( qcStatement      * aStatement,
                                 qmsQuerySet      * aQuerySet,
@@ -9610,7 +9610,7 @@ IDE_RC qmoOneMtrPlan::makeCUBE( qcStatement      * aStatement,
             if ( aQuerySet->SFWGH->hints->resultCacheType
                  != QMO_RESULT_CACHE_NO )
             {
-                // Result Cache¿¡¼­´Â Ç×»ó Value Temp¸¦ »ı¼ºÇÏµµ·Ï À¯µµÇÑ´Ù.
+                // Result Cacheì—ì„œëŠ” í•­ìƒ Value Tempë¥¼ ìƒì„±í•˜ë„ë¡ ìœ ë„í•œë‹¤.
                 aFlag &= ~QMO_MAKESORT_VALUE_TEMP_MASK;
                 aFlag |= QMO_MAKESORT_VALUE_TEMP_TRUE;
             }
@@ -9624,7 +9624,7 @@ IDE_RC qmoOneMtrPlan::makeCUBE( qcStatement      * aStatement,
             if ( aQuerySet->SFWGH->hints->resultCacheType
                  == QMO_RESULT_CACHE )
             {
-                // Result Cache¿¡¼­´Â Ç×»ó Value Temp¸¦ »ı¼ºÇÏµµ·Ï À¯µµÇÑ´Ù.
+                // Result Cacheì—ì„œëŠ” í•­ìƒ Value Tempë¥¼ ìƒì„±í•˜ë„ë¡ ìœ ë„í•œë‹¤.
                 aFlag &= ~QMO_MAKESORT_VALUE_TEMP_MASK;
                 aFlag |= QMO_MAKESORT_VALUE_TEMP_TRUE;
             }
@@ -9733,8 +9733,8 @@ IDE_RC qmoOneMtrPlan::makeCUBE( qcStatement      * aStatement,
             /* Nothing to do */
         }
 
-        /* Aggregate functionÀÌ ¾Æ´Ñ node°¡ Àü´ŞµÇ´Â °æ¿ì°¡ Á¸ÀçÇÑ´Ù. */
-        /* BUG-35193  Window function ÀÌ ¾Æ´Ñ aggregation ¸¸ Ã³¸®ÇØ¾ß ÇÑ´Ù. */
+        /* Aggregate functionì´ ì•„ë‹Œ nodeê°€ ì „ë‹¬ë˜ëŠ” ê²½ìš°ê°€ ì¡´ì¬í•œë‹¤. */
+        /* BUG-35193  Window function ì´ ì•„ë‹Œ aggregation ë§Œ ì²˜ë¦¬í•´ì•¼ í•œë‹¤. */
         if ( ( QTC_IS_AGGREGATE( sNode ) == ID_TRUE ) &&
              ( sNode->overClause == NULL ) )
         {
@@ -9779,7 +9779,7 @@ IDE_RC qmoOneMtrPlan::makeCUBE( qcStatement      * aStatement,
         sCUBE->partialCube = -1;
     }
 
-    /* CubeÀÇ °¢ element°¡ ¸î°³ÀÇ ÄÃ·³À¸·Î ±¸¼ºµÇ¾îÀÖ´ÂÁö¸¦ ÀúÀåÇÑ´Ù. */
+    /* Cubeì˜ ê° elementê°€ ëª‡ê°œì˜ ì»¬ëŸ¼ìœ¼ë¡œ êµ¬ì„±ë˜ì–´ìˆëŠ”ì§€ë¥¼ ì €ì¥í•œë‹¤. */
     IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ( ID_SIZEOF( UShort ) * aCubeCount ),
                                              (void**) & sCUBE->elementCount )
               != IDE_SUCCESS );
@@ -9887,7 +9887,7 @@ IDE_RC qmoOneMtrPlan::makeCUBE( qcStatement      * aStatement,
             if ( ( aFlag & QMO_MAKESORT_VALUE_TEMP_MASK )
                  == QMO_MAKESORT_VALUE_TEMP_FALSE )
             {
-                // »óÀ§¿¡¼­ temp tableÀÇ °ªÀ» ÂüÁ¶ÇÏµµ·Ï º¯°æµÈ À§Ä¡¸¦ ¼³Á¤ÇÑ´Ù.
+                // ìƒìœ„ì—ì„œ temp tableì˜ ê°’ì„ ì°¸ì¡°í•˜ë„ë¡ ë³€ê²½ëœ ìœ„ì¹˜ë¥¼ ì„¤ì •í•œë‹¤.
                 sItrAttr->expr->node.table  = sNewMtrNode->dstNode->node.table;
                 sItrAttr->expr->node.column = sNewMtrNode->dstNode->node.column;
             }
@@ -9898,8 +9898,8 @@ IDE_RC qmoOneMtrPlan::makeCUBE( qcStatement      * aStatement,
             sNewMtrNode->flag &= ~QMC_MTR_TYPE_MASK;
             sNewMtrNode->flag |= QMC_MTR_TYPE_COPY_VALUE;
 
-            // PROJ-2362 memory temp ÀúÀå È¿À²¼º °³¼±
-            // myNode´Â temp¸¦ ¸¸µéÁö ¾Ê´Â´Ù.
+            // PROJ-2362 memory temp ì €ì¥ íš¨ìœ¨ì„± ê°œì„ 
+            // myNodeëŠ” tempë¥¼ ë§Œë“¤ì§€ ì•ŠëŠ”ë‹¤.
             sNewMtrNode->flag &= ~QMC_MTR_TEMP_VAR_TYPE_ENABLE_MASK;
             sNewMtrNode->flag |= QMC_MTR_TEMP_VAR_TYPE_ENABLE_FALSE;
 

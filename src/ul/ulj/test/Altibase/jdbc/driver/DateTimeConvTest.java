@@ -46,7 +46,7 @@ public class DateTimeConvTest extends AltibaseTestCase
 
     private static final String[][] EXPECTED_VALUES;
 
-    // OracleÀº getTimestamp()·Î ¾òÀ» °ª¿¡ nanosecond°¡ ¼³Á¤µÇ¾îÀÖÁö ¾Ê´Ù. ¿ÖÁö;
+    // Oracleì€ getTimestamp()ë¡œ ì–»ì„ ê°’ì— nanosecondê°€ ì„¤ì •ë˜ì–´ìˆì§€ ì•Šë‹¤. ì™œì§€;
     private static final String[][] EXPECTED_VALUES_FOR_ORACLE = {
         {"2134-12-23 00:00:00.0"     , "2134-12-23 00:00:00.0"     , "2134-12-23 12:34:56.0"     , "2134-12-23 12:34:56.0"     },
         {"2134-12-23 00:00:00.0"     , "2134-12-23 00:00:00.0"     , null                        , "2134-12-23 12:34:56.0"     },
@@ -54,8 +54,8 @@ public class DateTimeConvTest extends AltibaseTestCase
         {"2134-12-23 12:34:56.0"     , "2134-12-23 00:00:00.0"     , null                        , "2134-12-23 12:34:56.0"     },
     };
 
-    // Date, TimeÀº millisecond±îÁö¹Û¿¡ ¸ø´ã´Â´Ù. ±×·¡¼­ ÀÏºÎ´Â milllisecond ±îÁö¸¸ ³ª¿Â´Ù.
-    // Altibase´Â microsecond±îÁö¸¸ Áö¿øÇÏ¹Ç·Î ÃÖ´ë 6ÀÚ¸®±îÁö¸¸ Ç¥½ÃµÈ´Ù.
+    // Date, Timeì€ millisecondê¹Œì§€ë°–ì— ëª»ë‹´ëŠ”ë‹¤. ê·¸ë˜ì„œ ì¼ë¶€ëŠ” milllisecond ê¹Œì§€ë§Œ ë‚˜ì˜¨ë‹¤.
+    // AltibaseëŠ” microsecondê¹Œì§€ë§Œ ì§€ì›í•˜ë¯€ë¡œ ìµœëŒ€ 6ìë¦¬ê¹Œì§€ë§Œ í‘œì‹œëœë‹¤.
     private static final String[][] EXPECTED_VALUES_FOR_ALTIBASE = {
         {"2134-12-23 00:00:00.0"     , "2134-12-23 00:00:00.0"     , "2134-12-23 12:34:56.0"     , "2134-12-23 12:34:56.123456"},
         {"2134-12-23 00:00:00.0"     , "2134-12-23 00:00:00.0"     , null                        , "2134-12-23 12:34:56.123456"},
@@ -144,7 +144,7 @@ public class DateTimeConvTest extends AltibaseTestCase
         }
         catch (SQLException sEx)
         {
-            // DATE, TIMESTAMP¿¡ Time °ªÀ» ³Ö´Â°É Çã¿ëÇÏÁö ¾Ê´Â´Ù.
+            // DATE, TIMESTAMPì— Time ê°’ì„ ë„£ëŠ”ê±¸ í—ˆìš©í•˜ì§€ ì•ŠëŠ”ë‹¤.
             assertEquals(null, EXPECTED_VALUES[aTestType][TEST_VALUE_TIME]);
             assertEquals(ErrorDef.UNSUPPORTED_TYPE_CONVERSION, sEx.getErrorCode());
         }
@@ -164,7 +164,7 @@ public class DateTimeConvTest extends AltibaseTestCase
         sUpdStmt.close();
     }
 
-    // Timestamp °ªÀ» ¾ò¾î ¹®ÀÚ¿­·Î º¯È¯ÇÑ °ªÀÌ expected value¿Í °°ÀºÁö º»´Ù.
+    // Timestamp ê°’ì„ ì–»ì–´ ë¬¸ìì—´ë¡œ ë³€í™˜í•œ ê°’ì´ expected valueì™€ ê°™ì€ì§€ ë³¸ë‹¤.
     private void assertTimestamp(String aExpVal) throws SQLException
     {
         Statement sStmt = connection().createStatement();

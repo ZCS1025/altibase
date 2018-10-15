@@ -1,11 +1,11 @@
-SQLCLI »ùÇÃ ÇÁ·Î±×·¥Àº schema »ı¼º ÆÄÀÏ°ú Å×½ºÆ® ÇÁ·Î±×·¥ÀÇ pair ·Î ±¸¼ºµÇ¾î ÀÖ´Ù.
-ÇÁ·Î±×·¥ ½ÇÇàÀü¿¡ °°Àº ÀÌ¸§ÀÇ schema »ı¼º ÆÄÀÏ (...sql) À» isql »ó¿¡¼­ ½ÇÇàÇÏ¸é µÈ´Ù.
-¾Æ·¡ÀÇ ¸®½ºÆ®´Â °¢ ÇÁ·Î±×·¥¸í°ú ÇØ´ç ÇÁ·Î±×·¥¿¡¼­ »ç¿ëµÇ¾îÁö´Â API ¸¦ ³ª¿­ÇÏ°í ÀÖ´Ù.
-¸ğµç ÇÁ·Î±×·¥¿¡´Â È¯°æÇÚµé,¿¬°áÇÚµéÀÇ ÇÒ´ç(SQLAllocHandle)°ú DB ·ÎÀÇ ¿¬°á ºÎºĞ
-(SQLDriverConnect), ¿¬°É ÇØÁ¦(SQLDisconnect), ÇÚµé ÇØÁ¦(SQLFreeHandle),
-¿¡·¯ Áø´Ü ºÎºĞÀÌ Æ÷ÇÔµÇ¾î ÀÖ´Ù.
+SQLCLI ìƒ˜í”Œ í”„ë¡œê·¸ë¨ì€ schema ìƒì„± íŒŒì¼ê³¼ í…ŒìŠ¤íŠ¸ í”„ë¡œê·¸ë¨ì˜ pair ë¡œ êµ¬ì„±ë˜ì–´ ìˆë‹¤.
+í”„ë¡œê·¸ë¨ ì‹¤í–‰ì „ì— ê°™ì€ ì´ë¦„ì˜ schema ìƒì„± íŒŒì¼ (...sql) ì„ isql ìƒì—ì„œ ì‹¤í–‰í•˜ë©´ ëœë‹¤.
+ì•„ë˜ì˜ ë¦¬ìŠ¤íŠ¸ëŠ” ê° í”„ë¡œê·¸ë¨ëª…ê³¼ í•´ë‹¹ í”„ë¡œê·¸ë¨ì—ì„œ ì‚¬ìš©ë˜ì–´ì§€ëŠ” API ë¥¼ ë‚˜ì—´í•˜ê³  ìˆë‹¤.
+ëª¨ë“  í”„ë¡œê·¸ë¨ì—ëŠ” í™˜ê²½í•¸ë“¤,ì—°ê²°í•¸ë“¤ì˜ í• ë‹¹(SQLAllocHandle)ê³¼ DB ë¡œì˜ ì—°ê²° ë¶€ë¶„
+(SQLDriverConnect), ì—°ê±¸ í•´ì œ(SQLDisconnect), í•¸ë“¤ í•´ì œ(SQLFreeHandle),
+ì—ëŸ¬ ì§„ë‹¨ ë¶€ë¶„ì´ í¬í•¨ë˜ì–´ ìˆë‹¤.
 
-< QUERY ¼öÇà >
+< QUERY ìˆ˜í–‰ >
 1. demo_ex1 : SQLExecDirect, SQLNumResultCols, SQLDescribeCol, SQLBindCol, SQLFetch
 2. demo_ex2 : SQLPrepare, SQLBindParameter, SQLBindCol, SQLExecute, SQLFetch
 3. demo_ex3 : Array-BindCol SELECT (SQLSetStmtAttr, SQLBindCol, ... )
@@ -14,10 +14,10 @@ SQLCLI »ùÇÃ ÇÁ·Î±×·¥Àº schema »ı¼º ÆÄÀÏ°ú Å×½ºÆ® ÇÁ·Î±×·¥ÀÇ pair ·Î ±¸¼ºµÇ¾î ÀÖ´
 5. demo_ex5 : update (SQLPrapare, SQLBindParameter, SQLExecute, SQLRowCount)
 6. demo_ex6 : exec procedure : in, out binding (SQLPrapare, SQLBindParameter, SQLExecute)
 
-< Transaction ¼öÇà >
+< Transaction ìˆ˜í–‰ >
 1. demo_tran1 : SQLSetConnectAttr, SQLEndTran
 
-< Connection °Ë»ç >
+< Connection ê²€ì‚¬ >
 1. demo_dead : SQLGetConnectAttr
 
 < SELECT - UPDATE >
@@ -26,7 +26,7 @@ SQLCLI »ùÇÃ ÇÁ·Î±×·¥Àº schema »ı¼º ÆÄÀÏ°ú Å×½ºÆ® ÇÁ·Î±×·¥ÀÇ pair ·Î ±¸¼ºµÇ¾î ÀÖ´
 < Multi-Thread >
 1. demo_mt
 
-< meta °Ë»ö >
+< meta ê²€ìƒ‰ >
 1. demo_meta1 : SQLAllocHandle, SQLTables, SQLFreeHandle
 2. demo_meta2 : SQLColumns
 3. demo_meta3 : SQLPrimaryKeys
@@ -38,14 +38,14 @@ SQLCLI »ùÇÃ ÇÁ·Î±×·¥Àº schema »ı¼º ÆÄÀÏ°ú Å×½ºÆ® ÇÁ·Î±×·¥ÀÇ pair ·Î ±¸¼ºµÇ¾î ÀÖ´
 9. demo_meta9 : SQLForeignKeys
 10. demo_meta10 : SQLTablePrivileges
 
-< Information °Ë»ö >
+< Information ê²€ìƒ‰ >
 1. demo_info1 : SQLGetTypeInfo, SQLGetData
 
-< Explain Plan °Ë»ö >
+< Explain Plan ê²€ìƒ‰ >
 1. demo_plan : SQLGetStmtAttr
 
-< shared library »ç¿ë >
-1. demo_sl : demo_ex2 ¸¦ shared library¸¦ »ç¿ëÇØ ºôµå
+< shared library ì‚¬ìš© >
+1. demo_sl : demo_ex2 ë¥¼ shared libraryë¥¼ ì‚¬ìš©í•´ ë¹Œë“œ
 
 < SQLCPool API >
 1. demo_cpool : SQLCPool API 

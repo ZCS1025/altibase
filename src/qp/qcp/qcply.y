@@ -229,7 +229,7 @@ SInt qcpllineno( SChar * aStmtText, SInt aStmtTextLen, SInt aOffset );
 }
 
 // PROJ-2638
-// Àç±Í·Î parsingµÇ´Â rule(opt_limitµî)ÀÌ³ª semicolonÀ¸·Î ³¡³ª´Â ruleÀÇ ¸¶Áö¸· À§Ä¡¸¦ º¸Á¤ÇÒ ¶§
+// ì¬ê·€ë¡œ parsingë˜ëŠ” rule(opt_limitë“±)ì´ë‚˜ semicolonìœ¼ë¡œ ëë‚˜ëŠ” ruleì˜ ë§ˆì§€ë§‰ ìœ„ì¹˜ë¥¼ ë³´ì •í•  ë•Œ
 #define QCP_ADJUST_LAST_POSITION( _pos_ )                                   \
 {                                                                           \
     qcNamePosition  _endPos_;                                               \
@@ -237,7 +237,7 @@ SInt qcpllineno( SChar * aStmtText, SInt aStmtTextLen, SInt aOffset );
     (_pos_).size = _endPos_.offset + _endPos_.size - (_pos_).offset;        \
 }                                                                           \
 
-// opt_waitÀÌ³ª opt_for_updateµîÀ¸·Î ¹Ù·Î ³¡³ª´Â ruleÀÇ ¸¶Áö¸· À§Ä¡¸¦ º¸Á¤ÇÒ ¶§
+// opt_waitì´ë‚˜ opt_for_updateë“±ìœ¼ë¡œ ë°”ë¡œ ëë‚˜ëŠ” ruleì˜ ë§ˆì§€ë§‰ ìœ„ì¹˜ë¥¼ ë³´ì •í•  ë•Œ
 #define QCP_ADJUST_END_POSITION( _pos_ )                                    \
 {                                                                           \
     qcNamePosition  _endPos_;                                               \
@@ -379,7 +379,7 @@ extern mtfModule mtfVc2coll;
     qriParseTree *          replParseTree;
     qriReplHost *           replHost;
     qriReplItem *           replItem;
-    qriReplDirPath *        replDirPath;        /* BUG-31703 ´Ù¼öÀÇ ¿É¼Ç Áö¿ø */
+    qriReplDirPath *        replDirPath;        /* BUG-31703 ë‹¤ìˆ˜ì˜ ì˜µì…˜ ì§€ì› */
     qriReplApplierBuffer *  replApplierBuffer;
     qriReplOptions *        replOptions;        // PROJ-1915
     qriReplStartOption*     replStartOption;
@@ -489,9 +489,9 @@ extern mtfModule mtfVc2coll;
     qmsWhenThenList             * whenThenList;
 
     // TASK-2398 Log Compress
-    // Create/Alter Tablespace¸¦ ÅëÇØ ¼³Á¤ÇÒ Tablespace FlagÀÇ List
+    // Create/Alter Tablespaceë¥¼ í†µí•´ ì„¤ì •í•  Tablespace Flagì˜ List
     qdTBSAttrFlagList           * tbsAttrFlagList;
-    // Create/Alter TableÀ» ÅëÇØ ¼³Á¤ÇÒ Table FlagÀÇ List
+    // Create/Alter Tableì„ í†µí•´ ì„¤ì •í•  Table Flagì˜ List
     qdTableAttrFlagList         * tableAttrFlagList;
     qdTableRowMovement          * tableRowMovement;
     qdTableMaxRows              * tableMaxRows;
@@ -591,7 +591,7 @@ extern mtfModule mtfVc2coll;
     /* BUG-42764 Multi Row */
     qmmMultiRows                * multiRows;
 
-    /* BUG-42883 alter index parser °³¼± */
+    /* BUG-42883 alter index parser ê°œì„  */
     qdIndexTypeAndDirectKey       indexTypeAndDirectKey;
 
     // BUG-42989 Create trigger with enable/disable option.
@@ -609,13 +609,13 @@ extern mtfModule mtfVc2coll;
 
 //-------------------------------------------------------
 // To Fix PR-10566
-// [TOKEN Ãß°¡ ½Ã ÁÖÀÇ »çÇ×]
-//    TOKENÀ» Ãß°¡ÇÒ °æ¿ì, ÇØ´ç TokenÀÌ Column NameÀ¸·Î
-//    »ç¿ëµÉ ¼ö ÀÖÀ½À» À¯³äÇØ¾ß ÇÑ´Ù.
-// TOKEN Ãß°¡ ½Ã ´ÙÀ½ »çÇ×À» ¹İµå½Ã ÁØ¼öÇÏ¿©¾ß ÇÑ´Ù.
-//    - column_name RULE¿¡ TOKENÀ» columnÀ¸·Î »ç¿ëÇÒ ¼ö ÀÖµµ·Ï ÇÔ.
-//    - TC/Server/qp4/Bugs/PR-10566/ ¿¡ ÀûÀıÇÑ Test CaseÃß°¡
-//    - qcpUtil.cpp¿¡ reservedWordTables¿¡ TOKEN Ãß°¡ ÇØ¾ß ÇÕ´Ï´Ù.
+// [TOKEN ì¶”ê°€ ì‹œ ì£¼ì˜ ì‚¬í•­]
+//    TOKENì„ ì¶”ê°€í•  ê²½ìš°, í•´ë‹¹ Tokenì´ Column Nameìœ¼ë¡œ
+//    ì‚¬ìš©ë  ìˆ˜ ìˆìŒì„ ìœ ë…í•´ì•¼ í•œë‹¤.
+// TOKEN ì¶”ê°€ ì‹œ ë‹¤ìŒ ì‚¬í•­ì„ ë°˜ë“œì‹œ ì¤€ìˆ˜í•˜ì—¬ì•¼ í•œë‹¤.
+//    - column_name RULEì— TOKENì„ columnìœ¼ë¡œ ì‚¬ìš©í•  ìˆ˜ ìˆë„ë¡ í•¨.
+//    - TC/Server/qp4/Bugs/PR-10566/ ì— ì ì ˆí•œ Test Caseì¶”ê°€
+//    - qcpUtil.cppì— reservedWordTablesì— TOKEN ì¶”ê°€ í•´ì•¼ í•©ë‹ˆë‹¤.
 //-------------------------------------------------------
 
 %token E_ERROR
@@ -1484,7 +1484,7 @@ sql_stmt
           else
           {
               // PROJ-1362
-              // for update°¡ ÀÖ´Â °æ¿ì
+              // for updateê°€ ìˆëŠ” ê²½ìš°
               STATEMENT->myPlan->parseTree->stmtKind = QCI_STMT_SELECT_FOR_UPDATE;
           }
           // set size of select_statement
@@ -1553,7 +1553,7 @@ sql_stmt
           else
           {
               // PROJ-1362
-              // for update°¡ ÀÖ´Â °æ¿ì
+              // for updateê°€ ìˆëŠ” ê²½ìš°
               STATEMENT->myPlan->parseTree->stmtKind = QCI_STMT_SELECT_FOR_UPDATE;
           }
           // set size of select_statement
@@ -1577,7 +1577,7 @@ sql_stmt
           else
           {
               /* PROJ-2550 PSM Encryption
-                 encrypted text¿¡ ´ëÇÑ parsing ¶§´Â parser tree¸¦ ¸¸µéÁö ¾Ê´Â´Ù. */
+                 encrypted textì— ëŒ€í•œ parsing ë•ŒëŠ” parser treeë¥¼ ë§Œë“¤ì§€ ì•ŠëŠ”ë‹¤. */
 
               /* Nothing to do. */
           }
@@ -1593,7 +1593,7 @@ sql_stmt
           else
           {
               /* PROJ-2550 PSM Encryption
-                 encrypted text¿¡ ´ëÇÑ parsing ¶§´Â parser tree¸¦ ¸¸µéÁö ¾Ê´Â´Ù. */
+                 encrypted textì— ëŒ€í•œ parsing ë•ŒëŠ” parser treeë¥¼ ë§Œë“¤ì§€ ì•ŠëŠ”ë‹¤. */
 
               /* Nothing to do. */
           }
@@ -1609,7 +1609,7 @@ sql_stmt
           else
           {
               /* PROJ-2550 PSM Encryption
-                 encrypted text¿¡ ´ëÇÑ parsing ¶§´Â parser tree¸¦ ¸¸µéÁö ¾Ê´Â´Ù. */
+                 encrypted textì— ëŒ€í•œ parsing ë•ŒëŠ” parser treeë¥¼ ë§Œë“¤ì§€ ì•ŠëŠ”ë‹¤. */
 
               /* Nothing to do. */
           }
@@ -1626,7 +1626,7 @@ sql_stmt
           else
           {
               /* PROJ-2550 PSM Encryption
-                 encrypted text¿¡ ´ëÇÑ parsing ¶§´Â parser tree¸¦ ¸¸µéÁö ¾Ê´Â´Ù. */
+                 encrypted textì— ëŒ€í•œ parsing ë•ŒëŠ” parser treeë¥¼ ë§Œë“¤ì§€ ì•ŠëŠ”ë‹¤. */
 
               /* Nothing to do. */
           }
@@ -2014,8 +2014,8 @@ TI_IDENTIFIER
     ;
 
 // To Fix PR-10566
-// ÇØ´ç TOKENÀÌ Column NameÀ¸·Î »ç¿ëµÉ ¼ö ÀÖÀ¸¸ç,
-// ´ë¼Ò¹®ÀÚ¸¦ ±¸º°ÇÏÁö ¾Êµµ·Ï UPPER CASE·Î º¯°æÇÑ´Ù.
+// í•´ë‹¹ TOKENì´ Column Nameìœ¼ë¡œ ì‚¬ìš©ë  ìˆ˜ ìˆìœ¼ë©°,
+// ëŒ€ì†Œë¬¸ìë¥¼ êµ¬ë³„í•˜ì§€ ì•Šë„ë¡ UPPER CASEë¡œ ë³€ê²½í•œë‹¤.
 column_name
     : TI_IDENTIFIER
     | TR_AGER
@@ -2659,8 +2659,8 @@ column_name
       }
     ;
 
-// PROJ-1075 member built-in functionÀÇ °æ¿ì keyword¸¦ Çã¿ëÇÔ
-// associative array¿¡ Çã¿ëµÇ´Â member function
+// PROJ-1075 member built-in functionì˜ ê²½ìš° keywordë¥¼ í—ˆìš©í•¨
+// associative arrayì— í—ˆìš©ë˜ëŠ” member function
 // COUNT, DELETE, EXISTS, FIRST, LAST, NEXT, PRIOR
 memberfunc_name
     : TR_DELETE
@@ -2678,7 +2678,7 @@ memberfunc_name
     ;
 
 // BUG-15242
-// keywordÁö¸¸ functionÀ¸·Î »ç¿ëÇÒ ¼ö ÀÖÀ½
+// keywordì§€ë§Œ functionìœ¼ë¡œ ì‚¬ìš©í•  ìˆ˜ ìˆìŒ
 keyword_function_name
     : TR_UNION
       {
@@ -4339,7 +4339,7 @@ user_object_name
     ;
 
 // PROJ-1502 PARTITIONED DISK TABLE
-// ¼±Çà ÇÁ·ç´×À» À§ÇÑ ÆÄÆ¼¼Ç ÁöÁ¤
+// ì„ í–‰ í”„ë£¨ë‹ì„ ìœ„í•œ íŒŒí‹°ì…˜ ì§€ì •
 opt_partition_name
     : /* empty */
       {
@@ -4457,7 +4457,7 @@ create_user_statement
               sqlInfo.fini();
               YYABORT;
           }
-          // password Áßº¹ Ã¼Å©
+          // password ì¤‘ë³µ ì²´í¬
           if( $<userOptions>6->password != NULL )
           {
               IDE_SET(ideSetErrorCode(qpERR_ABORT_QCP_SYNTAX,""));
@@ -4510,7 +4510,7 @@ create_user_statement
           
           if( $<userOptions>6->passwOptions != NULL )
           {
-              /* password policy »ç¿ë */
+              /* password policy ì‚¬ìš© */
               $<userParseTree>$->passwLimitFlag = QD_PASSWORD_POLICY_ENABLE;
                   
               for (sLast = $<userOptions>6->passwOptions;
@@ -4641,7 +4641,7 @@ alter_user_statement
 
               if ( $<userOptions>3->passwOptions != NULL )
               {
-                  /* password policy »ç¿ë */
+                  /* password policy ì‚¬ìš© */
                   $<userParseTree>$->passwLimitFlag = QD_PASSWORD_POLICY_ENABLE;
               
                   for (sLast = $<userOptions>3->passwOptions;
@@ -4692,7 +4692,7 @@ alter_user_statement
                         
               if ($<userOptions>3->expLock == QD_EXPLICITILY_LOCK )
               {
-                  /* password policy »ç¿ëÇÏÁö ¾Ê°í ¸í½ÃÀû lock ÀÎ°æ¿ì */
+                  /* password policy ì‚¬ìš©í•˜ì§€ ì•Šê³  ëª…ì‹œì  lock ì¸ê²½ìš° */
                   $<userParseTree>$->accountLock = QD_ACCOUNT_LOCK;              
               }
               else
@@ -7619,7 +7619,7 @@ replication_statement
 
             SET_POSITION($<replParseTree>$->replName, $<position>3);
 
-            /* BUG-42852 STOP°ú FLUSH¸¦ DCL·Î º¯È¯ÇÕ´Ï´Ù. */
+            /* BUG-42852 STOPê³¼ FLUSHë¥¼ DCLë¡œ ë³€í™˜í•©ë‹ˆë‹¤. */
             $<replParseTree>$->common.stmtKind = QCI_STMT_ALT_REPLICATION_STOP;
 
             $<replParseTree>$->common.parse    = qcc::parse;
@@ -7781,7 +7781,7 @@ replication_statement
                        &($<replFlushOption>5),
                        ID_SIZEOF( rpFlushOption ) );
 
-        /* BUG-42852 STOP°ú FLUSH¸¦ DCL·Î º¯È¯ÇÕ´Ï´Ù. */
+        /* BUG-42852 STOPê³¼ FLUSHë¥¼ DCLë¡œ ë³€í™˜í•©ë‹ˆë‹¤. */
         $<replParseTree>$->common.stmtKind = QCI_STMT_ALT_REPLICATION_FLUSH;
 
         $<replParseTree>$->common.parse    = qcc::parse;
@@ -9278,7 +9278,7 @@ join_partitioning_clause
           UInt                   sDefPartCnt = 0;
 
           QCP_STRUCT_ALLOC( $<partTable>$, qdPartitionedTable );
-          // qdPartitionedTable ÃÊ±âÈ­
+          // qdPartitionedTable ì´ˆê¸°í™”
           QD_SET_INIT_PART_TABLE( $<partTable>$ );
 
           if( idlOS::strMatch( "RANGE",
@@ -9437,7 +9437,7 @@ join_table_attr
           }
 
           QCP_STRUCT_ALLOC( $<partAttr>$, qdPartitionAttribute );
-          // qdPartitionAttribute ÃÊ±âÈ­
+          // qdPartitionAttribute ì´ˆê¸°í™”
           QD_SET_INIT_PARTITION_ATTR( $<partAttr>$ );
 
           SET_POSITION( $<partAttr>$->oldTableName, $<position>2 );
@@ -9479,7 +9479,7 @@ join_table_attr
           }
 
           QCP_STRUCT_ALLOC( $<partAttr>$, qdPartitionAttribute );
-          // qdPartitionAttribute ÃÊ±âÈ­
+          // qdPartitionAttribute ì´ˆê¸°í™”
           QD_SET_INIT_PARTITION_ATTR( $<partAttr>$ );
 
           SET_POSITION( $<partAttr>$->oldTableName, $<position>2 );
@@ -9518,7 +9518,7 @@ join_table_attr
           }
 
           QCP_STRUCT_ALLOC( $<partAttr>$, qdPartitionAttribute );
-          // qdPartitionAttribute ÃÊ±âÈ­
+          // qdPartitionAttribute ì´ˆê¸°í™”
           QD_SET_INIT_PARTITION_ATTR( $<partAttr>$ );
 
           SET_POSITION( $<partAttr>$->oldTableName, $<position>2 );
@@ -10144,7 +10144,7 @@ alter_table_statement
                   YYABORT;
               }
               
-              /* PROJ-1107 Check Constraint Áö¿ø */
+              /* PROJ-1107 Check Constraint ì§€ì› */
               QCP_STRUCT_ALLOC( $<tableParseTree>$->from, qmsFrom );
               QCP_SET_INIT_QMS_FROM( $<tableParseTree>$->from );
 
@@ -10394,7 +10394,7 @@ alter_table_statement
           $<tableParseTree>$->lobAttr->storageAttr = $<lobStorageAttribute>13;
           $<tableParseTree>$->lobAttr->next = NULL;
 
-          // tablespace¸¦ ÁöÁ¤ÇÒ ¼ö ¾øÀ½
+          // tablespaceë¥¼ ì§€ì •í•  ìˆ˜ ì—†ìŒ
           if ($<tableParseTree>$->lobAttr->storageAttr != NULL)
           {
               for (sLast = $<tableParseTree>$->lobAttr->storageAttr;
@@ -10480,7 +10480,7 @@ alter_table_statement
           $<tableParseTree>$->lobAttr->storageAttr = $<lobStorageAttribute>10;
           $<tableParseTree>$->lobAttr->next = NULL;
 
-          // tablespace¸¦ ÁöÁ¤ÇÒ ¼ö ¾øÀ½
+          // tablespaceë¥¼ ì§€ì •í•  ìˆ˜ ì—†ìŒ
           if ($<tableParseTree>$->lobAttr->storageAttr != NULL)
           {
               for (sLast = $<tableParseTree>$->lobAttr->storageAttr;
@@ -10980,7 +10980,7 @@ alter_table_statement
                        $<userNObjName>3->objectName);
 
           QCP_STRUCT_ALLOC( $<tableParseTree>$->partTable, qdPartitionedTable );
-          // qdPartitionedTable ÃÊ±âÈ­
+          // qdPartitionedTable ì´ˆê¸°í™”
           QD_SET_INIT_PART_TABLE( $<tableParseTree>$->partTable );
           $<tableParseTree>$->partTable->partAttr = $<partAttr>4;
 
@@ -11072,7 +11072,7 @@ alter_table_statement
                   $<tableParseTree>$->common.execute  =
                                             qdbAlter::executeAccessPartition;
                   break;
-              case QD_ALTER_PARTITION: /* PROJ-2464 hybrid partitioned table Áö¿ø */
+              case QD_ALTER_PARTITION: /* PROJ-2464 hybrid partitioned table ì§€ì› */
                   // set function pointer
                   $<tableParseTree>$->common.parse    = qcc::parse;
                   $<tableParseTree>$->common.validate =
@@ -11122,10 +11122,10 @@ alter_table_statement
 
           SET_POSITION( $<tableParseTree>$->TBSName, $<position>6 );
 
-          /* Index Option ¼³Á¤*/
+          /* Index Option ì„¤ì •*/
           $<tableParseTree>$->indexTBSAttr = $<indexPartAttr>7;
 
-          /* Lob Storage Option ¼³Á¤*/
+          /* Lob Storage Option ì„¤ì •*/
           $<tableParseTree>$->lobAttr = $<lobAttribute>8;
 
           // BUG-21761
@@ -11248,7 +11248,7 @@ alter_table_statement
           $<tableParseTree>$->common.execute
               = qdbAlter::executeAlterTableOptions;
       }
-    // PROJ-1723 [MDW/INTEGRATOR] Altibase Plugin °³¹ß
+    // PROJ-1723 [MDW/INTEGRATOR] Altibase Plugin ê°œë°œ
     // TASK-5030
     // ALTER TABLE table_name ADD SUPPLEMENTAL LOG DATA ( ALL ) COLUMNS
     | TR_ALTER TR_TABLE user_object_name
@@ -11316,7 +11316,7 @@ alter_table_statement
           $<tableParseTree>$->common.execute  =
               qdbAlter::executeAlterTableSuppLogging;
       }
-    // PROJ-1723 [MDW/INTEGRATOR] Altibase Plugin °³¹ß
+    // PROJ-1723 [MDW/INTEGRATOR] Altibase Plugin ê°œë°œ
     // TASK-5030
     // ALTER TABLE table_name DROP SUPPLEMENTAL LOG DATA ( ALL ) COLUMNS
     | TR_ALTER TR_TABLE user_object_name
@@ -11551,7 +11551,7 @@ alter_table_statement
           QCP_STRUCT_ALLOC($<tableParseTree>$->partTable, qdPartitionedTable);
           QD_SET_INIT_PART_TABLE($<tableParseTree>$->partTable);
           
-          $<tableParseTree>$->altAllocExtSize = 1; // align µÇ¾î 1°³ÀÇ Extent°¡ ÇÒ´çµÈ´Ù.
+          $<tableParseTree>$->altAllocExtSize = 1; // align ë˜ì–´ 1ê°œì˜ Extentê°€ í• ë‹¹ëœë‹¤.
 
           // BUG-21761
           $<tableParseTree>$->ncharList = NCHARLIST;
@@ -12150,7 +12150,7 @@ modify_column_spec
                   $<tableElement>$.modifyColumns->flag |=
                       QCM_COLUMN_MODIFY_NULLABLE_NOTNULL;
 
-                  // not null constraint´Â validationÀ» ÇØ¾ßÇÔ
+                  // not null constraintëŠ” validationì„ í•´ì•¼í•¨
                   QCP_STRUCT_ALLOC( sConstr, qdConstraintSpec );
                   QD_SET_INIT_CONSTRAINT_SPEC( sConstr );
 
@@ -12188,7 +12188,7 @@ modify_column_spec
               YYABORT;
           }
 
-          // column name¸¸ ÀÖ´Â °æ¿ì ¿¡·¯
+          // column nameë§Œ ìˆëŠ” ê²½ìš° ì—ëŸ¬
           if (($<expression>2[0] == NULL) && ($<uIntVal>3 == 0))
           {
               sqlInfo.setSourceInfo(STATEMENT, & $<position>1 );
@@ -12249,7 +12249,7 @@ modify_column_spec
                   $<tableElement>$.modifyColumns->flag |=
                       QCM_COLUMN_MODIFY_NULLABLE_NOTNULL;
 
-                  // not null constraint´Â validationÀ» ÇØ¾ßÇÔ
+                  // not null constraintëŠ” validationì„ í•´ì•¼í•¨
                   QCP_STRUCT_ALLOC( sConstr, qdConstraintSpec );
                   QD_SET_INIT_CONSTRAINT_SPEC( sConstr );
 
@@ -12452,7 +12452,7 @@ alter_table_partitioning
 
           // alterPart
           QCP_STRUCT_ALLOC( $<partAttr>$->alterPart, qdAlterPartition );
-          // qdAlterPartition ÃÊ±âÈ­
+          // qdAlterPartition ì´ˆê¸°í™”
           QD_SET_INIT_ALTER_PART( $<partAttr>$->alterPart );
           $<partAttr>$->alterPart->alterType = QD_ADD_PARTITION;
 
@@ -12461,12 +12461,12 @@ alter_table_partitioning
     | TR_COALESCE TR_PARTITION
       {
           QCP_STRUCT_ALLOC( $<partAttr>$, qdPartitionAttribute );
-          // qdPartitionAttribute ÃÊ±âÈ­
+          // qdPartitionAttribute ì´ˆê¸°í™”
           QD_SET_INIT_PARTITION_ATTR( $<partAttr>$ );
 
           // alterPart
           QCP_STRUCT_ALLOC( $<partAttr>$->alterPart, qdAlterPartition );
-          // qdAlterPartition ÃÊ±âÈ­
+          // qdAlterPartition ì´ˆê¸°í™”
           QD_SET_INIT_ALTER_PART( $<partAttr>$->alterPart );
           $<partAttr>$->alterPart->alterType = QD_COALESCE_PARTITION;
       }
@@ -12487,14 +12487,14 @@ alter_table_partitioning
 
           QCP_STRUCT_ALLOC( $<partAttr>$, qdPartitionAttribute );
 
-          // qdPartitionAttribute ÃÊ±âÈ­
+          // qdPartitionAttribute ì´ˆê¸°í™”
           QD_SET_INIT_PARTITION_ATTR( $<partAttr>$ );
           // tablePartName
           SET_POSITION( $<partAttr>$->tablePartName, $<position>3 );
 
-          // alter partition Á¾·ù
+          // alter partition ì¢…ë¥˜
           QCP_STRUCT_ALLOC( $<partAttr>$->alterPart, qdAlterPartition );
-          // qdAlterPartition ÃÊ±âÈ­
+          // qdAlterPartition ì´ˆê¸°í™”
           QD_SET_INIT_ALTER_PART( $<partAttr>$->alterPart );
           $<partAttr>$->alterPart->alterType = QD_DROP_PARTITION;
       }
@@ -12536,14 +12536,14 @@ alter_table_partitioning
           // ----------
           QCP_STRUCT_ALLOC( $<partAttr>$, qdPartitionAttribute );
 
-          // qdPartitionAttribute ÃÊ±âÈ­
+          // qdPartitionAttribute ì´ˆê¸°í™”
           QD_SET_INIT_PARTITION_ATTR( $<partAttr>$ );
-          // SrcPart1ÀÇ tableName
+          // SrcPart1ì˜ tableName
           SET_POSITION( $<partAttr>$->tablePartName, $<position>3 );
 
-          // SrcPart1¿¡ ´ëÇÑ alterPart
+          // SrcPart1ì— ëŒ€í•œ alterPart
           QCP_STRUCT_ALLOC( $<partAttr>$->alterPart, qdAlterPartition );
-          // qdAlterPartition ÃÊ±âÈ­
+          // qdAlterPartition ì´ˆê¸°í™”
           QD_SET_INIT_ALTER_PART( $<partAttr>$->alterPart );
           $<partAttr>$->alterPart->alterType = QD_MERGE_PARTITION;
 
@@ -12552,14 +12552,14 @@ alter_table_partitioning
           // ----------
           QCP_STRUCT_ALLOC( $<partAttr>$->next, qdPartitionAttribute );
 
-          // qdPartitionAttribute ÃÊ±âÈ­
+          // qdPartitionAttribute ì´ˆê¸°í™”
           QD_SET_INIT_PARTITION_ATTR( $<partAttr>$->next );
-          // SrcPart2ÀÇ tableName
+          // SrcPart2ì˜ tableName
           SET_POSITION( $<partAttr>$->next->tablePartName, $<position>5 );
 
-          // SrcPart2¿¡ ´ëÇÑ alterPart
+          // SrcPart2ì— ëŒ€í•œ alterPart
           QCP_STRUCT_ALLOC( $<partAttr>$->next->alterPart, qdAlterPartition );
-          // qdAlterPartition ÃÊ±âÈ­
+          // qdAlterPartition ì´ˆê¸°í™”
           QD_SET_INIT_ALTER_PART( $<partAttr>$->next->alterPart );
           $<partAttr>$->next->alterPart->alterType = QD_MERGE_PARTITION;
 
@@ -12568,17 +12568,17 @@ alter_table_partitioning
           // ----------
           QCP_STRUCT_ALLOC( $<partAttr>$->next->next, qdPartitionAttribute );
 
-          // DstPart¿¡ ´ëÇÑ partition_spec
+          // DstPartì— ëŒ€í•œ partition_spec
           $<partAttr>$->next->next = $<partAttr>7;
 
-          // DstPart¿¡ ´ëÇÑ alterPart
+          // DstPartì— ëŒ€í•œ alterPart
           QCP_STRUCT_ALLOC( $<partAttr>$->next->next->alterPart,
                             qdAlterPartition );
-          // qdAlterPartition ÃÊ±âÈ­
+          // qdAlterPartition ì´ˆê¸°í™”
           QD_SET_INIT_ALTER_PART( $<partAttr>$->next->next->alterPart );
           $<partAttr>$->next->next->alterPart->alterType = QD_MERGE_PARTITION;
 
-          // DstPartÀÇ ÀÎµ¦½º ÆÄÆ¼¼Ç Á¤º¸
+          // DstPartì˜ ì¸ë±ìŠ¤ íŒŒí‹°ì…˜ ì •ë³´
           $<partAttr>$->next->next->alterPart->indexPartAttr = $<indexPartAttr>8;
       }
     | TO_RENAME TR_PARTITION TI_IDENTIFIER TR_TO TI_IDENTIFIER
@@ -12608,26 +12608,26 @@ alter_table_partitioning
           }
 
           QCP_STRUCT_ALLOC( $<partAttr>$, qdPartitionAttribute );
-          // qdPartitionAttribute ÃÊ±âÈ­
+          // qdPartitionAttribute ì´ˆê¸°í™”
           QD_SET_INIT_PARTITION_ATTR( $<partAttr>$ );
-          // OldPartÀÇ tableName
+          // OldPartì˜ tableName
           SET_POSITION( $<partAttr>$->tablePartName, $<position>3 );
 
-          // OldPart¿¡ ´ëÇÑ alterPart
+          // OldPartì— ëŒ€í•œ alterPart
           QCP_STRUCT_ALLOC( $<partAttr>$->alterPart, qdAlterPartition );
-          // qdAlterPartition ÃÊ±âÈ­
+          // qdAlterPartition ì´ˆê¸°í™”
           QD_SET_INIT_ALTER_PART( $<partAttr>$->alterPart );
           $<partAttr>$->alterPart->alterType = QD_RENAME_PARTITION;
 
           QCP_STRUCT_ALLOC( $<partAttr>$->next, qdPartitionAttribute );
-          // qdPartitionAttribute ÃÊ±âÈ­
+          // qdPartitionAttribute ì´ˆê¸°í™”
           QD_SET_INIT_PARTITION_ATTR( $<partAttr>$->next );
-          // NewPartÀÇ tableName
+          // NewPartì˜ tableName
           SET_POSITION( $<partAttr>$->next->tablePartName, $<position>5 );
 
-          // NewPart¿¡ ´ëÇÑ alterPart
+          // NewPartì— ëŒ€í•œ alterPart
           QCP_STRUCT_ALLOC( $<partAttr>$->next->alterPart, qdAlterPartition );
-          // qdAlterPartition ÃÊ±âÈ­
+          // qdAlterPartition ì´ˆê¸°í™”
           QD_SET_INIT_ALTER_PART( $<partAttr>$->next->alterPart );
           $<partAttr>$->next->alterPart->alterType = QD_RENAME_PARTITION;
       }
@@ -12694,17 +12694,17 @@ alter_table_partitioning
           // ----------
           QCP_STRUCT_ALLOC( $<partAttr>$, qdPartitionAttribute );
 
-          // qdPartitionAttribute ÃÊ±âÈ­
+          // qdPartitionAttribute ì´ˆê¸°í™”
           QD_SET_INIT_PARTITION_ATTR( $<partAttr>$ );
-          // SrcPartÀÇ tableName
+          // SrcPartì˜ tableName
           SET_POSITION( $<partAttr>$->tablePartName, $<position>3 );
 
-          // ÆÄÆ¼¼Ç ºĞÇÒ ±âÁØ
+          // íŒŒí‹°ì…˜ ë¶„í•  ê¸°ì¤€
           $<partAttr>$->partKeyCond = $<valueNode>6;
 
-          // SrcPart¿¡ ´ëÇÑ alterPart
+          // SrcPartì— ëŒ€í•œ alterPart
           QCP_STRUCT_ALLOC( $<partAttr>$->alterPart, qdAlterPartition );
-          // qdAlterPartition ÃÊ±âÈ­
+          // qdAlterPartition ì´ˆê¸°í™”
           QD_SET_INIT_ALTER_PART( $<partAttr>$->alterPart );
           $<partAttr>$->alterPart->alterType = QD_SPLIT_RANGE_PARTITION;
 
@@ -12714,16 +12714,16 @@ alter_table_partitioning
           QCP_STRUCT_ALLOC( $<partAttr>$->next, qdPartitionAttribute );
           QD_SET_INIT_PARTITION_ATTR( $<partAttr>$->next );
 
-          // DstPart1¿¡ ´ëÇÑ partition_spec
+          // DstPart1ì— ëŒ€í•œ partition_spec
           $<partAttr>$->next = $<partAttr>10;
 
-          // DstPart1¿¡ ´ëÇÑ alterPart
+          // DstPart1ì— ëŒ€í•œ alterPart
           QCP_STRUCT_ALLOC( $<partAttr>$->next->alterPart, qdAlterPartition );
-          // qdAlterPartition ÃÊ±âÈ­
+          // qdAlterPartition ì´ˆê¸°í™”
           QD_SET_INIT_ALTER_PART( $<partAttr>$->next->alterPart );
           $<partAttr>$->next->alterPart->alterType = QD_SPLIT_RANGE_PARTITION;
 
-          // DstPart1ÀÇ ÀÎµ¦½º ÆÄÆ¼¼Ç Á¤º¸
+          // DstPart1ì˜ ì¸ë±ìŠ¤ íŒŒí‹°ì…˜ ì •ë³´
           $<partAttr>$->next->alterPart->indexPartAttr = $<indexPartAttr>11;
 
           // ----------
@@ -12732,17 +12732,17 @@ alter_table_partitioning
           QCP_STRUCT_ALLOC( $<partAttr>$->next->next, qdPartitionAttribute );
           QD_SET_INIT_PARTITION_ATTR( $<partAttr>$->next->next );
 
-          // DstPart2¿¡ ´ëÇÑ partition_spec
+          // DstPart2ì— ëŒ€í•œ partition_spec
           $<partAttr>$->next->next = $<partAttr>13;
 
-          // DstPart2¿¡ ´ëÇÑ alterPart
+          // DstPart2ì— ëŒ€í•œ alterPart
           QCP_STRUCT_ALLOC( $<partAttr>$->next->next->alterPart,
                             qdAlterPartition );
-          // qdAlterPartition ÃÊ±âÈ­
+          // qdAlterPartition ì´ˆê¸°í™”
           QD_SET_INIT_ALTER_PART( $<partAttr>$->next->next->alterPart );
           $<partAttr>$->next->next->alterPart->alterType = QD_SPLIT_RANGE_PARTITION;
 
-          // DstPart2ÀÇ ÀÎµ¦½º ÆÄÆ¼¼Ç Á¤º¸
+          // DstPart2ì˜ ì¸ë±ìŠ¤ íŒŒí‹°ì…˜ ì •ë³´
           $<partAttr>$->next->next->alterPart->indexPartAttr = $<indexPartAttr>14;
       }
     | TR_SPLIT                 // 1
@@ -12779,17 +12779,17 @@ alter_table_partitioning
           // ----------
           QCP_STRUCT_ALLOC( $<partAttr>$, qdPartitionAttribute );
 
-          // qdPartitionAttribute ÃÊ±âÈ­
+          // qdPartitionAttribute ì´ˆê¸°í™”
           QD_SET_INIT_PARTITION_ATTR( $<partAttr>$ );
-          // SrcPartÀÇ tableName
+          // SrcPartì˜ tableName
           SET_POSITION( $<partAttr>$->tablePartName, $<position>3 );
 
-          // ÆÄÆ¼¼Ç ºĞÇÒ ±âÁØ
+          // íŒŒí‹°ì…˜ ë¶„í•  ê¸°ì¤€
           $<partAttr>$->partKeyCond = $<valueNode>6;
 
-          // SrcPart¿¡ ´ëÇÑ alterPart
+          // SrcPartì— ëŒ€í•œ alterPart
           QCP_STRUCT_ALLOC( $<partAttr>$->alterPart, qdAlterPartition );
-          // qdAlterPartition ÃÊ±âÈ­
+          // qdAlterPartition ì´ˆê¸°í™”
           QD_SET_INIT_ALTER_PART( $<partAttr>$->alterPart );
           $<partAttr>$->alterPart->alterType = QD_SPLIT_LIST_PARTITION;
 
@@ -12799,16 +12799,16 @@ alter_table_partitioning
           QCP_STRUCT_ALLOC( $<partAttr>$->next, qdPartitionAttribute );
           QD_SET_INIT_PARTITION_ATTR( $<partAttr>$->next );
 
-          // DstPart1¿¡ ´ëÇÑ partition_spec
+          // DstPart1ì— ëŒ€í•œ partition_spec
           $<partAttr>$->next = $<partAttr>10;
 
-          // DstPart1¿¡ ´ëÇÑ alterPart
+          // DstPart1ì— ëŒ€í•œ alterPart
           QCP_STRUCT_ALLOC( $<partAttr>$->next->alterPart, qdAlterPartition );
-          // qdAlterPartition ÃÊ±âÈ­
+          // qdAlterPartition ì´ˆê¸°í™”
           QD_SET_INIT_ALTER_PART( $<partAttr>$->next->alterPart );
           $<partAttr>$->next->alterPart->alterType = QD_SPLIT_RANGE_PARTITION;
 
-          // DstPart1ÀÇ ÀÎµ¦½º ÆÄÆ¼¼Ç Á¤º¸
+          // DstPart1ì˜ ì¸ë±ìŠ¤ íŒŒí‹°ì…˜ ì •ë³´
           $<partAttr>$->next->alterPart->indexPartAttr = $<indexPartAttr>11;
 
           // ----------
@@ -12817,17 +12817,17 @@ alter_table_partitioning
           QCP_STRUCT_ALLOC( $<partAttr>$->next->next, qdPartitionAttribute );
           QD_SET_INIT_PARTITION_ATTR( $<partAttr>$->next->next );
 
-          // DstPart2¿¡ ´ëÇÑ partition_spec
+          // DstPart2ì— ëŒ€í•œ partition_spec
           $<partAttr>$->next->next = $<partAttr>13;
 
-          // DstPart2¿¡ ´ëÇÑ alterPart
+          // DstPart2ì— ëŒ€í•œ alterPart
           QCP_STRUCT_ALLOC( $<partAttr>$->next->next->alterPart,
                             qdAlterPartition );
-          // qdAlterPartition ÃÊ±âÈ­
+          // qdAlterPartition ì´ˆê¸°í™”
           QD_SET_INIT_ALTER_PART( $<partAttr>$->next->next->alterPart );
           $<partAttr>$->next->next->alterPart->alterType = QD_SPLIT_RANGE_PARTITION;
 
-          // DstPart2ÀÇ ÀÎµ¦½º ÆÄÆ¼¼Ç Á¤º¸
+          // DstPart2ì˜ ì¸ë±ìŠ¤ íŒŒí‹°ì…˜ ì •ë³´
           $<partAttr>$->next->next->alterPart->indexPartAttr = $<indexPartAttr>14;
       }
     | TA_TRUNCATE TR_PARTITION TI_IDENTIFIER
@@ -12847,38 +12847,38 @@ alter_table_partitioning
 
           QCP_STRUCT_ALLOC( $<partAttr>$, qdPartitionAttribute );
 
-          // qdPartitionAttribute ÃÊ±âÈ­
+          // qdPartitionAttribute ì´ˆê¸°í™”
           QD_SET_INIT_PARTITION_ATTR( $<partAttr>$ );
           // tablePartName
           SET_POSITION( $<partAttr>$->tablePartName, $<position>3 );
 
-          // alter partition Á¾·ù
+          // alter partition ì¢…ë¥˜
           QCP_STRUCT_ALLOC( $<partAttr>$->alterPart, qdAlterPartition );
-          // qdAlterPartition ÃÊ±âÈ­
+          // qdAlterPartition ì´ˆê¸°í™”
           QD_SET_INIT_ALTER_PART( $<partAttr>$->alterPart );
           $<partAttr>$->alterPart->alterType = QD_TRUNCATE_PARTITION;
       }
     | TR_ENABLE TR_ROW TR_MOVEMENT
       {
           QCP_STRUCT_ALLOC( $<partAttr>$, qdPartitionAttribute );
-          // qdPartitionAttribute ÃÊ±âÈ­
+          // qdPartitionAttribute ì´ˆê¸°í™”
           QD_SET_INIT_PARTITION_ATTR( $<partAttr>$ );
 
-          // alter partition Á¾·ù
+          // alter partition ì¢…ë¥˜
           QCP_STRUCT_ALLOC( $<partAttr>$->alterPart, qdAlterPartition );
-          // qdAlterPartition ÃÊ±âÈ­
+          // qdAlterPartition ì´ˆê¸°í™”
           QD_SET_INIT_ALTER_PART( $<partAttr>$->alterPart );
           $<partAttr>$->alterPart->alterType = QD_ENABLE_ROW_MOVEMENT;
       }
     | TR_DISABLE TR_ROW TR_MOVEMENT
       {
           QCP_STRUCT_ALLOC( $<partAttr>$, qdPartitionAttribute );
-          // qdPartitionAttribute ÃÊ±âÈ­
+          // qdPartitionAttribute ì´ˆê¸°í™”
           QD_SET_INIT_PARTITION_ATTR( $<partAttr>$ );
 
-          // alter partition Á¾·ù
+          // alter partition ì¢…ë¥˜
           QCP_STRUCT_ALLOC( $<partAttr>$->alterPart, qdAlterPartition );
-          // qdAlterPartition ÃÊ±âÈ­
+          // qdAlterPartition ì´ˆê¸°í™”
           QD_SET_INIT_ALTER_PART( $<partAttr>$->alterPart );
           $<partAttr>$->alterPart->alterType = QD_DISABLE_ROW_MOVEMENT;
       }
@@ -12922,7 +12922,7 @@ alter_table_partitioning
               /* Nothing to do */
           }
 
-          /* Target Partition ¼³Á¤ */
+          /* Target Partition ì„¤ì • */
           QCP_STRUCT_ALLOC( $<partAttr>$, qdPartitionAttribute );
           QD_SET_INIT_PARTITION_ATTR( $<partAttr>$ );
           SET_POSITION( $<partAttr>$->tablePartName, $<position>3 );
@@ -12932,7 +12932,7 @@ alter_table_partitioning
           QD_SET_INIT_ALTER_PART( $<partAttr>$->alterPart );
           $<partAttr>$->alterPart->alterType = QD_ALTER_PARTITION;
 
-          /* Target Tablespace ¼³Á¤ */
+          /* Target Tablespace ì„¤ì • */
           QCP_STRUCT_ALLOC( $<partAttr>$->next, qdPartitionAttribute );
           QD_SET_INIT_PARTITION_ATTR( $<partAttr>$->next );
           SET_EMPTY_POSITION( $<partAttr>$->next->tablePartName );
@@ -12942,10 +12942,10 @@ alter_table_partitioning
           QD_SET_INIT_ALTER_PART( $<partAttr>$->next->alterPart );
           $<partAttr>$->next->alterPart->alterType = QD_ALTER_PARTITION;
 
-          /* Index Option ¼³Á¤*/
+          /* Index Option ì„¤ì •*/
           $<partAttr>$->next->alterPart->indexPartAttr = $<indexPartAttr>6;
 
-          /* Lob Storage Option ¼³Á¤*/
+          /* Lob Storage Option ì„¤ì •*/
           $<partAttr>$->next->lobAttr = $<lobAttribute>7;
       }
     ;
@@ -13043,7 +13043,7 @@ lob_storage_element
               YYABORT;
           }
 
-          /* Column ¼³Á¤ */
+          /* Column ì„¤ì • */
           QCP_STRUCT_ALLOC( $<lobAttribute>$->columns, qcmColumn );
           QCM_COLUMN_INIT( $<lobAttribute>$->columns );
 
@@ -13051,7 +13051,7 @@ lob_storage_element
           SET_EMPTY_POSITION( $<lobAttribute>$->columns->tableNamePos );
           SET_POSITION( $<lobAttribute>$->columns->namePos, $<position>1 );
 
-          /* Lob Tablesapce ¼³Á¤ */
+          /* Lob Tablesapce ì„¤ì • */
           QCP_STRUCT_ALLOC( $<lobAttribute>$->storageAttr, qdLobStorageAttribute );
           $<lobAttribute>$->storageAttr->type = QD_LOB_STORAGE_ATTR_TABLESPACE;
 
@@ -13088,7 +13088,7 @@ index_storage_list
                 sLast->next != NULL;
                 sLast = sLast->next )
           {
-              /* Index Attribute Áßº¹ °Ë»ç´Â qdbAlter::checkIndexPartattrlist¿¡¼­ ¼öÇàÇÑ´Ù.
+              /* Index Attribute ì¤‘ë³µ ê²€ì‚¬ëŠ” qdbAlter::checkIndexPartattrlistì—ì„œ ìˆ˜í–‰í•œë‹¤.
                * Nothing to do
                */
           }
@@ -13130,8 +13130,8 @@ index_storage_element
               YYABORT;
           }
 
-          /* Partitioned Index ¼³Á¤ */
-          /* Index Tablesapce ¼³Á¤ */
+          /* Partitioned Index ì„¤ì • */
+          /* Index Tablesapce ì„¤ì • */
           QCP_STRUCT_ALLOC( $<indexPartAttr>$, qdIndexPartitionAttribute );
           QD_SET_INIT_INDEX_PART_ATTR( $<indexPartAttr>$ );
 
@@ -13167,8 +13167,8 @@ index_part_attr_list
                 sLastPart->next != NULL;
                 sLastPart = sLastPart->next )
           {
-              /* Index AttributeÀÇ Áßº¹ °Ë»ç´Â qdbAlter::checkIndexPartAttrList¿¡¼­ ¼öÇà°í ÀÖ´Ù.
-               * µû¶ó¼­, Parser¿¡¼­ Áßº¹ °Ë»ç¸¦ ¼öÇàÇÏÁö ¾Ê´Â´Ù.
+              /* Index Attributeì˜ ì¤‘ë³µ ê²€ì‚¬ëŠ” qdbAlter::checkIndexPartAttrListì—ì„œ ìˆ˜í–‰ê³  ìˆë‹¤.
+               * ë”°ë¼ì„œ, Parserì—ì„œ ì¤‘ë³µ ê²€ì‚¬ë¥¼ ìˆ˜í–‰í•˜ì§€ ì•ŠëŠ”ë‹¤.
                * Nothing to do
                */
           }
@@ -13211,7 +13211,7 @@ index_part_attr
 
           QCP_STRUCT_ALLOC( $<indexPartAttr>$,
                             qdIndexPartitionAttribute );
-          // qdIndexPartitionAttribute ÃÊ±âÈ­
+          // qdIndexPartitionAttribute ì´ˆê¸°í™”
           QD_SET_INIT_INDEX_PART_ATTR( $<indexPartAttr>$ );
 
           SET_POSITION( $<indexPartAttr>$->partIndexName, $<position>1 );
@@ -13258,7 +13258,7 @@ index_part_attr
 
           QCP_STRUCT_ALLOC( $<indexPartAttr>$,
                             qdIndexPartitionAttribute );
-          // qdIndexPartitionAttribute ÃÊ±âÈ­
+          // qdIndexPartitionAttribute ì´ˆê¸°í™”
           QD_SET_INIT_INDEX_PART_ATTR( $<indexPartAttr>$ );
 
           SET_POSITION( $<indexPartAttr>$->partIndexName, $<position>1 );
@@ -13322,7 +13322,7 @@ alter_table_constraint_statement
 
           $<tableParseTree>$->constraints = $<constraintSpec>5;
 
-          /* PROJ-1107 Check Constraint Áö¿ø */
+          /* PROJ-1107 Check Constraint ì§€ì› */
           QCP_STRUCT_ALLOC( $<tableParseTree>$->from, qmsFrom );
           QCP_SET_INIT_QMS_FROM( $<tableParseTree>$->from );
 
@@ -13389,14 +13389,14 @@ alter_table_constraint_statement
           QD_SET_INIT_CONSTRAINT_SPEC( sOldConstraint );
           QD_SET_INIT_CONSTRAINT_SPEC( sNewConstraint );
 
-          // ÀÌ¸§¸¸ ÇÊ¿äÇÏ¹Ç·Î ÀÌ¸§ ¼¼ÆÃ.
+          // ì´ë¦„ë§Œ í•„ìš”í•˜ë¯€ë¡œ ì´ë¦„ ì„¸íŒ….
           SET_POSITION(sOldConstraint->constrName,
               $<position>6);
 
           SET_POSITION(sNewConstraint->constrName,
               $<position>8);
 
-          // old´Â ¾Õ¿¡, new´Â µÚ¿¡ ÀÖµµ·Ï ¿¬°áÇÑ´Ù.
+          // oldëŠ” ì•ì—, newëŠ” ë’¤ì— ìˆë„ë¡ ì—°ê²°í•œë‹¤.
           sOldConstraint->next = sNewConstraint;
 
           $<tableParseTree>$->constraints = sOldConstraint;
@@ -13666,8 +13666,8 @@ alter_index_statement
       }
     ;
 
-// BUG-42883 alter index parser °³¼±
-// nonquoted identifier·Î ½ÃÀÛÇÏ´Â alter index ±¸¹®À» ¸ğ¾Æ¼­ Ã³¸®ÇÑ´Ù.
+// BUG-42883 alter index parser ê°œì„ 
+// nonquoted identifierë¡œ ì‹œì‘í•˜ëŠ” alter index êµ¬ë¬¸ì„ ëª¨ì•„ì„œ ì²˜ë¦¬í•œë‹¤.
 alter_index_clause
     // PROJ-704 MVCC Renewal
     : TI_NONQUOTED_IDENTIFIER
@@ -13778,7 +13778,7 @@ alter_index_clause
               YYABORT;
           }
 
-          $<indexParseTree>$->altAllocExtSize = 1; // align µÇ¾î 1°³ÀÇ Extent°¡ ÇÒ´çµÈ´Ù.
+          $<indexParseTree>$->altAllocExtSize = 1; // align ë˜ì–´ 1ê°œì˜ Extentê°€ í• ë‹¹ëœë‹¤.
 
           $<indexParseTree>$->common.parse    = qcc::parse;
           $<indexParseTree>$->common.validate = qdx::validateAlterAllocExtent;
@@ -13978,16 +13978,16 @@ alter_index_clause
           $<indexParseTree>$->common.optimize = qcc::optimize;
           $<indexParseTree>$->common.execute  = qdx::executeAlterRename;
       }
-    // BUG-42883 alter index parser °³¼±
-    // ÀÇ¹Ì»ó setÀ» ¸í½ÃÇØ¾ßÇÏ³ª ÇÏÀ§È£È¯µµ·Ï setÀ» »ı·«ÇÒ ¼ö ÀÖ°ÔÇÑ´Ù.
+    // BUG-42883 alter index parser ê°œì„ 
+    // ì˜ë¯¸ìƒ setì„ ëª…ì‹œí•´ì•¼í•˜ë‚˜ í•˜ìœ„í˜¸í™˜ë„ë¡ setì„ ìƒëµí•  ìˆ˜ ìˆê²Œí•œë‹¤.
     | alter_index_set_clause
       {
           $<indexParseTree>$ = $<indexParseTree>1;
       }
     ;
 
-// BUG-42883 alter index parser °³¼±
-// nonquoted identifier·Î ½ÃÀÛÇÏ´Â alter index ±¸¹®À» ¸ğ¾Æ¼­ Ã³¸®ÇÑ´Ù.
+// BUG-42883 alter index parser ê°œì„ 
+// nonquoted identifierë¡œ ì‹œì‘í•˜ëŠ” alter index êµ¬ë¬¸ì„ ëª¨ì•„ì„œ ì²˜ë¦¬í•œë‹¤.
 alter_index_set_clause
     : TI_NONQUOTED_IDENTIFIER on_off_clause
       {
@@ -15310,7 +15310,7 @@ create_table_statement
                                         $<tableOptions>8->isRowmovement;
           }
 
-          // TableÀÇ Flag·Î ÀúÀåµÉ AttributeµéÀÇ List
+          // Tableì˜ Flagë¡œ ì €ì¥ë  Attributeë“¤ì˜ List
           $<tableParseTree>$->tableAttrFlagList
               = $<tableOptions>8->tableAttrFlagList;
 
@@ -15518,7 +15518,7 @@ create_table_statement
                                         $<tableOptions>8->isRowmovement;
           }
 
-          // TableÀÇ Flag·Î ÀúÀåµÉ AttributeµéÀÇ List
+          // Tableì˜ Flagë¡œ ì €ì¥ë  Attributeë“¤ì˜ List
           $<tableParseTree>$->tableAttrFlagList
               = $<tableOptions>8->tableAttrFlagList;
 
@@ -15718,7 +15718,7 @@ create_table_statement
                                         $<tableOptions>5->isRowmovement;
           }
 
-          // TableÀÇ Flag·Î ÀúÀåµÉ AttributeµéÀÇ List
+          // Tableì˜ Flagë¡œ ì €ì¥ë  Attributeë“¤ì˜ List
           $<tableParseTree>$->tableAttrFlagList
               = $<tableOptions>5->tableAttrFlagList;
 
@@ -15895,7 +15895,7 @@ table_options
 
           if ( $<partTable>2 != NULL )
           {
-              // Partitioned Table¿¡´Â MAXROW¸¦ ÁÙ ¼ö ¾øÀ½
+              // Partitioned Tableì—ëŠ” MAXROWë¥¼ ì¤„ ìˆ˜ ì—†ìŒ
               if ( $<tableMaxRows>4 != NULL )
               {
                   sqlInfo.setSourceInfo(STATEMENT, & $<tableMaxRows>4->namePosition );
@@ -15908,7 +15908,7 @@ table_options
           }
           else
           {
-              // Partioned TableÀÌ ¾Æ´Ñ °÷¿¡ Row Movement¸¦ ÁÙ ¼ö ¾øÀ½
+              // Partioned Tableì´ ì•„ë‹Œ ê³³ì— Row Movementë¥¼ ì¤„ ìˆ˜ ì—†ìŒ
 
               if ( $<tableRowMovement>3 != NULL )
               {
@@ -16194,11 +16194,11 @@ table_attr_list
    ;
 
 /*
-   Disk/Memory/Volatile/Temp ³×°¡Áö Å×ÀÌºí ¸ğµÎ¿¡
-   °øÅëÀûÀ¸·Î Àû¿ëµÇ´Â Attributeµé
+   Disk/Memory/Volatile/Temp ë„¤ê°€ì§€ í…Œì´ë¸” ëª¨ë‘ì—
+   ê³µí†µì ìœ¼ë¡œ ì ìš©ë˜ëŠ” Attributeë“¤
 
-   ¿©±â¿¡ ±â¼úÇÏ¸é Disk/Memory/Volatile/Temp TablespaceÀÇ
-   Create Table°ú Alter Table¿¡ ÀÚµ¿ Àû¿ëµÈ´Ù.
+   ì—¬ê¸°ì— ê¸°ìˆ í•˜ë©´ Disk/Memory/Volatile/Temp Tablespaceì˜
+   Create Tableê³¼ Alter Tableì— ìë™ ì ìš©ëœë‹¤.
  */
 table_attr_clause
    : table_log_compression_clause
@@ -16268,7 +16268,7 @@ table_partitioning_clause
           qcuSqlSourceInfo    sqlInfo;
 
           QCP_STRUCT_ALLOC( $<partTable>$, qdPartitionedTable );
-          // qdPartitionedTable ÃÊ±âÈ­
+          // qdPartitionedTable ì´ˆê¸°í™”
           QD_SET_INIT_PART_TABLE( $<partTable>$ );
 
           if( idlOS::strMatch( "RANGE",
@@ -16685,7 +16685,7 @@ opt_table_part_desc
     : tablespace_name_option opt_lob_attribute_list opt_record_access
       {
           QCP_STRUCT_ALLOC( $<partAttr>$, qdPartitionAttribute );
-          // qdPartitionAttribute ÃÊ±âÈ­
+          // qdPartitionAttribute ì´ˆê¸°í™”
           QD_SET_INIT_PARTITION_ATTR( $<partAttr>$ );
 
           if ( $<positionPtr>1 != NULL )
@@ -16772,8 +16772,8 @@ physical_attribute_option
              ( ( $<tablePhysicalAttr>1->pctUsed != NULL ) &&
                ( $<tablePhysicalAttr>2->pctUsed != NULL ) ) )
         {
-            // PCTFREE ¸¸ µÎ¹ø ¿À°Å³ª
-            // PCTUSED¸¸ µÎ¹ø ¿Â °æ¿ì
+            // PCTFREE ë§Œ ë‘ë²ˆ ì˜¤ê±°ë‚˜
+            // PCTUSEDë§Œ ë‘ë²ˆ ì˜¨ ê²½ìš°
             sqlInfo.setSourceInfo(STATEMENT,
                                   $<tablePhysicalAttr>$->freeUsedIdentPosition );
             sqlInfo.init(MEMORY);
@@ -16783,7 +16783,7 @@ physical_attribute_option
             YYABORT;
         }
 
-        // PCTFREE, PCTUSED ¼¼ÆÃ
+        // PCTFREE, PCTUSED ì„¸íŒ…
         if ( $<tablePhysicalAttr>1->pctFree == NULL )
         {
             $<tablePhysicalAttr>1->pctFree =
@@ -16884,7 +16884,7 @@ ttl_clause
             YYABORT;
         }
 
-        // INITTRANS¿Í MAXTRANS¸¦ ¸ğµÎ Ã¹¹øÂ° TTL¿¡ ¼¼ÆÃ
+        // INITTRANSì™€ MAXTRANSë¥¼ ëª¨ë‘ ì²«ë²ˆì§¸ TTLì— ì„¸íŒ…
         if ( $<ttl>1->initTrans == NULL )
         {
             $<ttl>1->initTrans =
@@ -17236,7 +17236,7 @@ partition_lob_attr
           qcuSqlSourceInfo    sqlInfo;
 
           QCP_STRUCT_ALLOC( $<partAttr>$, qdPartitionAttribute );
-          // qdPartitionAttribute ÃÊ±âÈ­
+          // qdPartitionAttribute ì´ˆê¸°í™”
           QD_SET_INIT_PARTITION_ATTR( $<partAttr>$ );
 
           // object name
@@ -18181,7 +18181,7 @@ column_def
           $<tableElement>$.columns->flag         = $<flag>3;
           $<tableElement>$.columns->inRowLength  = $<uIntVal>4;
 
-          /* parsing ´Ü°è°¡ ¾Æ´Ñ validation ´Ü°è¿¡¼­ ÇØÁÖ´Â°Ô ¿Ç´Ù.
+          /* parsing ë‹¨ê³„ê°€ ì•„ë‹Œ validation ë‹¨ê³„ì—ì„œ í•´ì£¼ëŠ”ê²Œ ì˜³ë‹¤.
           if( $<column>2->module != NULL )
           {
               QCP_TEST( $<column>2->module->change( $<column>2, $<flag>3 )
@@ -18257,13 +18257,13 @@ column_def
               }
 
               // make constraintColumns
-              if ( sConstr->constrType == QD_CHECK ) /* PROJ-1107 Check Constraint Áö¿ø */
+              if ( sConstr->constrType == QD_CHECK ) /* PROJ-1107 Check Constraint ì§€ì› */
               {
                   for ( sColumn = sConstr->constraintColumns;
                         sColumn != NULL;
                         sColumn = sColumn->next )
                   {
-                      /* Column Check Constraint¿¡´Â ´Ù¸¥ ColumnÀÇ NameÀ» »ç¿ëÇÒ ¼ö ¾ø´Ù. */
+                      /* Column Check Constraintì—ëŠ” ë‹¤ë¥¸ Columnì˜ Nameì„ ì‚¬ìš©í•  ìˆ˜ ì—†ë‹¤. */
                       if ( QC_IS_NAME_MATCHED( sColumn->namePos, $<tableElement>$.columns->namePos ) == ID_FALSE )
                       {
                           sqlInfo.setSourceInfo( STATEMENT, &(sColumn->namePos) );
@@ -18919,10 +18919,10 @@ constraint_state
 constraint_enable_state
     : TR_ENABLE
       {
-          // EnableÀº ParseµÇÁö¸¸ Ã³¸®´Â ÇÏÁö ¾Ê´Â´Ù.
+          // Enableì€ Parseë˜ì§€ë§Œ ì²˜ë¦¬ëŠ” í•˜ì§€ ì•ŠëŠ”ë‹¤.
       }
 /*
-// DIABLEÀº Çã¿ëÇÏÁö ¾Ê´Â´Ù.
+// DIABLEì€ í—ˆìš©í•˜ì§€ ì•ŠëŠ”ë‹¤.
     | TR_DISABLE
       {
           $<boolType>$ = ID_FALSE;
@@ -19185,17 +19185,17 @@ expression_opt_sort_mode_with_position
 
           sNode = $<expression>1[0];
 
-          /* qtc::makeColumn()¿¡¼­ ÁöÁ¤ÇÑ Ç×¸ñÀ¸·Î ColumnÀÎÁö È®ÀÎÇÑ´Ù. */
+          /* qtc::makeColumn()ì—ì„œ ì§€ì •í•œ í•­ëª©ìœ¼ë¡œ Columnì¸ì§€ í™•ì¸í•œë‹¤. */
           if ( (QC_IS_NULL_NAME( sNode->columnName ) == ID_FALSE) &&
                (sNode->node.module == &qtc::columnModule) )
           {
-              /* ColumnÀ¸·Î Ã³¸® */
+              /* Columnìœ¼ë¡œ ì²˜ë¦¬ */
               SET_POSITION( $<columnWithPosition>$->column->namePos, sNode->columnName );
 
           }
           else
           {
-              /* ExpressionÀÌ¹Ç·Î, Hidden ColumnÀ¸·Î Ã³¸® */
+              /* Expressionì´ë¯€ë¡œ, Hidden Columnìœ¼ë¡œ ì²˜ë¦¬ */
               $<columnWithPosition>$->column->flag &= ~QCM_COLUMN_HIDDEN_COLUMN_MASK;
               $<columnWithPosition>$->column->flag |= QCM_COLUMN_HIDDEN_COLUMN_TRUE;
 
@@ -19451,7 +19451,7 @@ table_column_commalist
                sLastColumn = sLastColumn->next)
           {
               // BUGBUG
-              // ¾Æ·¡ ¿¹Á¦ t2.i1°ú t1.i1Àº ´Ù¸£Áö¸¸ column name¸¸ °Ë»çÇÏ¿© dupÀ» Ã¼Å©ÇÑ´Ù.
+              // ì•„ë˜ ì˜ˆì œ t2.i1ê³¼ t1.i1ì€ ë‹¤ë¥´ì§€ë§Œ column nameë§Œ ê²€ì‚¬í•˜ì—¬ dupì„ ì²´í¬í•œë‹¤.
               // insert into t1(t2.i1, t1.i1) values (1,1)
               if (idlOS::strMatch(
                       QTEXT+sCurrColumn->namePos.offset, sCurrColumn->namePos.size,
@@ -19494,10 +19494,10 @@ references_specification
           $<referenceSpec>$->referencedColList = $<columnDef>3;
 
           // BUG-29728
-          // ÇöÀç Meta table¿¡ delete optionÀÌ cascade ¿©ºÎ¸¸ ÆÄ¾ÇÇØ¼­ 0,1·Î
-          // Ç¥½ÃÇØ ÁÖ´Âµ¥ ÀÌ¸¦ º¯°æ ½ÃÅ°Áö ¾Ê°í ¹ö±× ¼öÁ¤ÀÌ ÀÌ·ç¾îÁ®¼­
-          // ´Ù¸¥ ¿É¼ÇÀÇ »óÅÂ´Â Æ÷ÇÔÇÏÁö ¾Ê°í DML ºÎºĞÀ» Á¦°ÅÇÏ°í ¿É¼Ç
-          // ºÎºĞ¸¸, ³²°Ü¼­ °ªÀ» ³Ñ°ÜÁÖ¾î¼­ Delete option¸¸ ±¸ºĞÇÕ´Ï´Ù
+          // í˜„ì¬ Meta tableì— delete optionì´ cascade ì—¬ë¶€ë§Œ íŒŒì•…í•´ì„œ 0,1ë¡œ
+          // í‘œì‹œí•´ ì£¼ëŠ”ë° ì´ë¥¼ ë³€ê²½ ì‹œí‚¤ì§€ ì•Šê³  ë²„ê·¸ ìˆ˜ì •ì´ ì´ë£¨ì–´ì ¸ì„œ
+          // ë‹¤ë¥¸ ì˜µì…˜ì˜ ìƒíƒœëŠ” í¬í•¨í•˜ì§€ ì•Šê³  DML ë¶€ë¶„ì„ ì œê±°í•˜ê³  ì˜µì…˜
+          // ë¶€ë¶„ë§Œ, ë‚¨ê²¨ì„œ ê°’ì„ ë„˜ê²¨ì£¼ì–´ì„œ Delete optionë§Œ êµ¬ë¶„í•©ë‹ˆë‹¤
           $<referenceSpec>$->referenceRule = $<uIntVal>4 & QD_FOREIGN_OPTION_MASK;
       }
 ;
@@ -19514,8 +19514,8 @@ opt_reference_spec_list
         // BUG-36739
         $<uIntVal>$ = $<uIntVal>1;
 
-        // Áßº¹ Ç×¸ñ Ã¼Å©
-        // °°Àº Ç×º¹ Á¶°ÇÀÌ ¹İº¹ÇØ¼­ ³ª¿Â °æ¿ì
+        // ì¤‘ë³µ í•­ëª© ì²´í¬
+        // ê°™ì€ í•­ë³µ ì¡°ê±´ì´ ë°˜ë³µí•´ì„œ ë‚˜ì˜¨ ê²½ìš°
         if (( QD_FOREIGN_DML_MASK & ($<uIntVal>$ & $<uIntVal>2))
              == (QD_FOREIGN_DML_MASK & $<uIntVal>2))
         {
@@ -19647,7 +19647,7 @@ create_queue_statement
                                                 $<tableParseTree>$ )
                     != IDE_SUCCESS );
 
-          /* validateCreateTable ¿¡¼­ ¿¡·¯³ªÁö ¾Ê°Ô Ã³¸® */
+          /* validateCreateTable ì—ì„œ ì—ëŸ¬ë‚˜ì§€ ì•Šê²Œ ì²˜ë¦¬ */
           // INITTRANS
           $<tableParseTree>$->segAttr.mInitTrans =
               QD_INVALID_TRANS_VALUE;
@@ -19664,7 +19664,7 @@ create_queue_statement
               $<tableParseTree>$->maxrows = 0;
           }
           
-          /* PROJ-2464 hybrid partitioned table Áö¿ø
+          /* PROJ-2464 hybrid partitioned table ì§€ì›
            * Segment Storage Attribute list
            */
           $<tableParseTree>$->segStoAttr.mInitExtCnt =
@@ -19709,7 +19709,7 @@ create_queue_statement
           $<tableParseTree>$->flag &= ~QDQ_QUEUE_MASK;
           $<tableParseTree>$->flag |= QDQ_QUEUE_TRUE;
 
-          // column constraint´Â Áö¿øÇÏÁö ¾Ê´Â´Ù.
+          // column constraintëŠ” ì§€ì›í•˜ì§€ ì•ŠëŠ”ë‹¤.
           if ( $<tableElement>5.constraints != NULL )
           {
               IDE_SET(ideSetErrorCode(qpERR_ABORT_QCP_SYNTAX, ""));
@@ -19726,7 +19726,7 @@ create_queue_statement
                                                       $<tableParseTree>$ )
                     != IDE_SUCCESS );
           
-          /* validateCreateTable ¿¡¼­ ¿¡·¯³ªÁö ¾Ê°Ô Ã³¸® */
+          /* validateCreateTable ì—ì„œ ì—ëŸ¬ë‚˜ì§€ ì•Šê²Œ ì²˜ë¦¬ */
           // INITTRANS
           $<tableParseTree>$->segAttr.mInitTrans =
               QD_INVALID_TRANS_VALUE;
@@ -19743,7 +19743,7 @@ create_queue_statement
               $<tableParseTree>$->maxrows = 0;
           }
 
-          /* PROJ-2464 hybrid partitioned table Áö¿ø
+          /* PROJ-2464 hybrid partitioned table ì§€ì›
            * Segment Storage Attribute list
            */
           $<tableParseTree>$->segStoAttr.mInitExtCnt =
@@ -20224,8 +20224,8 @@ get_default_statement
           $<defaultParseTree>$->defaultValue = $<expression>2[0];
           $<defaultParseTree>$->lastNode = $<expression>2[1];
 // BUG-24087
-// ÇÁ·Î½ÃÁ®³»¿¡ ¾²ÀÎ insert ±¸¹®ÀÇ default valueÃ³¸®½Ã
-// SYSDATE columnID ¼³Á¤ÇÏ´Â °úÁ¤¿¡¼­ ºñÁ¤»óÁ¾·áÇÏ´Â °æ¿ì ÀÖÀ½.
+// í”„ë¡œì‹œì ¸ë‚´ì— ì“°ì¸ insert êµ¬ë¬¸ì˜ default valueì²˜ë¦¬ì‹œ
+// SYSDATE columnID ì„¤ì •í•˜ëŠ” ê³¼ì •ì—ì„œ ë¹„ì •ìƒì¢…ë£Œí•˜ëŠ” ê²½ìš° ìˆìŒ.
 
           $<defaultParseTree>$->common.parse    = qcc::parseError;
           $<defaultParseTree>$->common.validate = qcc::validate;
@@ -20266,8 +20266,8 @@ get_condition_statement
           $<defaultParseTree>$->defaultValue = $<expression>2[0];
           $<defaultParseTree>$->lastNode = $<expression>2[1];
 // BUG-24087
-// ÇÁ·Î½ÃÁ®³»¿¡ ¾²ÀÎ insert ±¸¹®ÀÇ default valueÃ³¸®½Ã
-// SYSDATE columnID ¼³Á¤ÇÏ´Â °úÁ¤¿¡¼­ ºñÁ¤»óÁ¾·áÇÏ´Â °æ¿ì ÀÖÀ½.
+// í”„ë¡œì‹œì ¸ë‚´ì— ì“°ì¸ insert êµ¬ë¬¸ì˜ default valueì²˜ë¦¬ì‹œ
+// SYSDATE columnID ì„¤ì •í•˜ëŠ” ê³¼ì •ì—ì„œ ë¹„ì •ìƒì¢…ë£Œí•˜ëŠ” ê²½ìš° ìˆìŒ.
 
           $<defaultParseTree>$->common.parse    = qcc::parseError;
           $<defaultParseTree>$->common.validate = qcc::validate;
@@ -20548,7 +20548,7 @@ delete_statement
       }
     ;
 
-// BUG-16455: delete ±¸¹® »ç¿ë½Ã from ±¸¹®ÀÌ ¾ø¾îµµ »ç¿ëµÉ¼ö ÀÖµµ·Ï
+// BUG-16455: delete êµ¬ë¬¸ ì‚¬ìš©ì‹œ from êµ¬ë¬¸ì´ ì—†ì–´ë„ ì‚¬ìš©ë ìˆ˜ ìˆë„ë¡
 opt_from
     : /* empty */
       {
@@ -20733,7 +20733,7 @@ dml_table_reference
             /* PROJ-1502 PARTITIONED DISK TABLE */
             $<tableRef>$->partitionRef = $<partitionRef>2;
 
-            // dml_table_referenceÀÇ positionÀ» °è»êÇÑ´Ù.
+            // dml_table_referenceì˜ positionì„ ê³„ì‚°í•œë‹¤.
             if ( QC_IS_NULL_NAME( $<userNObjName>1->userName ) != ID_TRUE )
             {
                 QCP_ADD_POSITION($<tableRef>$->position,
@@ -20810,7 +20810,7 @@ insert_statement
           
           $<insParseTree>$->valueIdx = QCP_GET_TEMPLATE_SMI_VALUE_INDEX();
 
-          /* PROJ-1107 Check Constraint Áö¿ø */
+          /* PROJ-1107 Check Constraint ì§€ì› */
           $<insParseTree>$->checkConstrList = NULL;
 
           /* PROJ-1090 Function-based Index */
@@ -20870,7 +20870,7 @@ insert_statement
           
           $<insParseTree>$->valueIdx = QCP_GET_TEMPLATE_SMI_VALUE_INDEX();
 
-          /* PROJ-1107 Check Constraint Áö¿ø */
+          /* PROJ-1107 Check Constraint ì§€ì› */
           $<insParseTree>$->checkConstrList = NULL;
 
           /* PROJ-1090 Function-based Index */
@@ -20953,7 +20953,7 @@ insert_statement
 
           $<insParseTree>$->valueIdx = QCP_GET_TEMPLATE_SMI_VALUE_INDEX();
 
-          /* PROJ-1107 Check Constraint Áö¿ø */
+          /* PROJ-1107 Check Constraint ì§€ì› */
           $<insParseTree>$->checkConstrList = NULL;
 
           /* PROJ-1090 Function-based Index */
@@ -21042,7 +21042,7 @@ insert_statement
 
           $<insParseTree>$->valueIdx = QCP_GET_TEMPLATE_SMI_VALUE_INDEX();
 
-          /* PROJ-1107 Check Constraint Áö¿ø */
+          /* PROJ-1107 Check Constraint ì§€ì› */
           $<insParseTree>$->checkConstrList = NULL;
 
           /* PROJ-1090 Function-based Index */
@@ -21126,7 +21126,7 @@ insert_statement
 
           $<insParseTree>$->valueIdx = QCP_GET_TEMPLATE_SMI_VALUE_INDEX();
 
-          /* PROJ-1107 Check Constraint Áö¿ø */
+          /* PROJ-1107 Check Constraint ì§€ì› */
           $<insParseTree>$->checkConstrList = NULL;
 
           /* PROJ-1090 Function-based Index */
@@ -21215,7 +21215,7 @@ insert_statement
 
           $<insParseTree>$->valueIdx = QCP_GET_TEMPLATE_SMI_VALUE_INDEX();
 
-          /* PROJ-1107 Check Constraint Áö¿ø */
+          /* PROJ-1107 Check Constraint ì§€ì› */
           $<insParseTree>$->checkConstrList = NULL;
 
           /* PROJ-1090 Function-based Index */
@@ -21256,8 +21256,8 @@ insert_statement
               }
           }
 
-          // hint º¹»ç
-          // append hint¸¸ »ç¿ëµÉ °ÍÀÌ¹Ç·Î qmsHintsÀÇ ¸â¹öÆ÷ÀÎÅÍ´Â º¹»çÇÏÁö ¾Ê´Â´Ù.
+          // hint ë³µì‚¬
+          // append hintë§Œ ì‚¬ìš©ë  ê²ƒì´ë¯€ë¡œ qmsHintsì˜ ë©¤ë²„í¬ì¸í„°ëŠ” ë³µì‚¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
           if ( $<hints>2 != NULL )
           {
               for ( sCurr = $<insParseTree>$; sCurr != NULL; sCurr = sCurr->next )
@@ -21352,7 +21352,7 @@ multi_insert_value
 
           $<insParseTree>$->valueIdx = QCP_GET_TEMPLATE_SMI_VALUE_INDEX();
           
-          /* PROJ-1107 Check Constraint Áö¿ø */
+          /* PROJ-1107 Check Constraint ì§€ì› */
           $<insParseTree>$->checkConstrList = NULL;
 
           /* PROJ-1090 Function-based Index */
@@ -21489,7 +21489,7 @@ update_statement
           // UPDATE LIMIT
           $<uptParseTree>$->limit = $<limit>9;
 
-          /* PROJ-1107 Check Constraint Áö¿ø */
+          /* PROJ-1107 Check Constraint ì§€ì› */
           $<uptParseTree>$->checkConstrList = NULL;
 
           /* PROJ-1090 Function-based Index */
@@ -21525,8 +21525,8 @@ enqueue_statement:
           $<insParseTree>$->flag |= QMM_QUEUE_TRUE;
           $<insParseTree>$->queueMsgIDSeq = NULL;
 
-          // PROJ-1566 : insert ±¸¹®¿¡¸¸ hint°¡ °¡´ÉÇÔ
-          // PROJ-1436 : enqueue ±¸¹®¿¡µµ hint°¡ °¡´ÉÇÔ
+          // PROJ-1566 : insert êµ¬ë¬¸ì—ë§Œ hintê°€ ê°€ëŠ¥í•¨
+          // PROJ-1436 : enqueue êµ¬ë¬¸ì—ë„ hintê°€ ê°€ëŠ¥í•¨
           $<insParseTree>$->hints = $<hints>2;
           
           /* set userName position */
@@ -21558,7 +21558,7 @@ enqueue_statement:
 
           $<insParseTree>$->valueIdx = QCP_GET_TEMPLATE_SMI_VALUE_INDEX();
 
-          /* PROJ-1107 Check Constraint Áö¿ø */
+          /* PROJ-1107 Check Constraint ì§€ì› */
           $<insParseTree>$->checkConstrList = NULL;
 
           /* PROJ-1090 Function-based Index */
@@ -22148,7 +22148,7 @@ move_statement
           SET_POSITION($<moveParseTree>$->targetTableRef->aliasName,
                        $<userNObjName>4->objectName);
 
-          // position ¼³Á¤
+          // position ì„¤ì •
           if ( QC_IS_NULL_NAME( $<userNObjName>4->userName ) == ID_TRUE )
           {
               SET_POSITION( $<moveParseTree>$->targetTableRef->position,
@@ -22203,7 +22203,7 @@ move_statement
 
           $<moveParseTree>$->valueIdx = QCP_GET_TEMPLATE_SMI_VALUE_INDEX();
 
-          /* PROJ-1107 Check Constraint Áö¿ø */
+          /* PROJ-1107 Check Constraint ì§€ì› */
           $<moveParseTree>$->checkConstrList = NULL;
 
           /* PROJ-1090 Function-based Index */
@@ -22346,7 +22346,7 @@ merge_statement
           SET_POSITION($<mergeParseTree>$->target->SFWGH->from->tableRef->aliasName,
                        $<position>6);
 
-          // position ¼³Á¤
+          // position ì„¤ì •
           if ( QC_IS_NULL_NAME( $<userNObjName>4->userName ) == ID_TRUE )
           {
               SET_POSITION( $<mergeParseTree>$->target->SFWGH->from->tableRef->position,
@@ -22393,7 +22393,7 @@ merge_statement
                ( $<mergeActions>11.insertParseTree == NULL ) &&
                ( $<mergeActions>11.insertNoRowsParseTree == NULL ) )
           {
-              // update³ª insert ÇÏ³ª´Â ÀÖ¾î¾ß ÇÑ´Ù.
+              // updateë‚˜ insert í•˜ë‚˜ëŠ” ìˆì–´ì•¼ í•œë‹¤.
               // syntax error
               IDE_SET(ideSetErrorCode(qpERR_ABORT_QCP_SYNTAX, ""));
               YYABORT;
@@ -22421,7 +22421,7 @@ merge_actions_list
           if ( ( $<mergeActions>2.updateParseTree != NULL ) &&
                ( $<mergeActions>$.updateParseTree != NULL ) )
           {
-              // µÎ¹øÀÌ»ó ¼±¾ğµÇ¸é ¾ÈµÈ´Ù.
+              // ë‘ë²ˆì´ìƒ ì„ ì–¸ë˜ë©´ ì•ˆëœë‹¤.
               // syntax error
               IDE_SET(ideSetErrorCode(qpERR_ABORT_QCP_SYNTAX, ""));
               YYABORT;
@@ -22430,7 +22430,7 @@ merge_actions_list
           if ( ( $<mergeActions>2.insertParseTree != NULL ) &&
                ( $<mergeActions>$.insertParseTree != NULL ) )
           {
-              // µÎ¹øÀÌ»ó ¼±¾ğµÇ¸é ¾ÈµÈ´Ù.
+              // ë‘ë²ˆì´ìƒ ì„ ì–¸ë˜ë©´ ì•ˆëœë‹¤.
               // syntax error
               IDE_SET(ideSetErrorCode(qpERR_ABORT_QCP_SYNTAX, ""));
               YYABORT;
@@ -22439,7 +22439,7 @@ merge_actions_list
           if ( ( $<mergeActions>2.insertNoRowsParseTree != NULL ) &&
                ( $<mergeActions>$.insertNoRowsParseTree != NULL ) )
           {
-              // µÎ¹øÀÌ»ó ¼±¾ğµÇ¸é ¾ÈµÈ´Ù.
+              // ë‘ë²ˆì´ìƒ ì„ ì–¸ë˜ë©´ ì•ˆëœë‹¤.
               // syntax error
               IDE_SET(ideSetErrorCode(qpERR_ABORT_QCP_SYNTAX, ""));
               YYABORT;
@@ -22475,7 +22475,7 @@ merge_actions
           
           if ( $<uIntVal>2 == 0 )
           {
-              // when matched, update¸¸ °¡´ÉÇÏ´Ù.
+              // when matched, updateë§Œ ê°€ëŠ¥í•˜ë‹¤.
               
               if ( $<mergeActions>$.updateParseTree == NULL )
               { // syntax error
@@ -22489,7 +22489,7 @@ merge_actions
           }
           else if ( $<uIntVal>2 == 1 )
           {
-              // when not matched, insert¸¸ °¡´ÉÇÏ´Ù.
+              // when not matched, insertë§Œ ê°€ëŠ¥í•˜ë‹¤.
               
               if ( $<mergeActions>$.insertParseTree == NULL )
               { // syntax error
@@ -22503,7 +22503,7 @@ merge_actions
           }
           else if ( $<uIntVal>2 == 2 )
           {
-              // when no rows, insert¸¸ °¡´ÉÇÏ´Ù.
+              // when no rows, insertë§Œ ê°€ëŠ¥í•˜ë‹¤.
               
               if ( $<mergeActions>$.insertParseTree == NULL )
               { // syntax error
@@ -22515,7 +22515,7 @@ merge_actions
                   YYABORT;
               }
 
-              // empty¿ë insert·Î º¯°æÇÑ´Ù.
+              // emptyìš© insertë¡œ ë³€ê²½í•œë‹¤.
               $<mergeActions>$.insertNoRowsParseTree = $<mergeActions>$.insertParseTree;
               $<mergeActions>$.insertParseTree = NULL;
           }
@@ -22620,7 +22620,7 @@ then_action
           /* etc */
           $<mergeActions>$.updateParseTree->returnInto = NULL;
 
-          /* PROJ-1107 Check Constraint Áö¿ø */
+          /* PROJ-1107 Check Constraint ì§€ì› */
           $<mergeActions>$.updateParseTree->checkConstrList = NULL;
 
           /* PROJ-1090 Function-based Index */
@@ -22667,7 +22667,7 @@ then_action
           $<mergeActions>$.insertParseTree->select = NULL;
           $<mergeActions>$.insertParseTree->valueIdx = QCP_GET_TEMPLATE_SMI_VALUE_INDEX();
 
-          /* PROJ-1107 Check Constraint Áö¿ø */
+          /* PROJ-1107 Check Constraint ì§€ì› */
           $<mergeActions>$.insertParseTree->checkConstrList = NULL;
 
           /* PROJ-1090 Function-based Index */
@@ -23312,7 +23312,7 @@ sel_from_table_single_reference
           $<from>$->tableRef->pivot = $<pivotOrUnpivot>5.pivot;
           $<from>$->tableRef->unpivot = $<pivotOrUnpivot>5.unpivot;
 
-          // position ¼³Á¤
+          // position ì„¤ì •
           QCP_ADD_POSITION( $<from>$->tableRef->position,
                             $<position>1,
                             $<position>3 );
@@ -23363,7 +23363,7 @@ sel_from_table_single_reference
           $<from>$->tableRef->pivot = $<pivotOrUnpivot>3.pivot;
           $<from>$->tableRef->unpivot = $<pivotOrUnpivot>3.unpivot;
 
-          // position ¼³Á¤
+          // position ì„¤ì •
           SET_POSITION( $<from>$->tableRef->position, $<position>1 );
           if ( $<partitionRef>2 != NULL )
           {
@@ -23408,7 +23408,7 @@ sel_from_table_single_reference
           $<from>$->tableRef->pivot  = $<pivotOrUnpivot>4.pivot;
           $<from>$->tableRef->unpivot  = $<pivotOrUnpivot>4.unpivot;
 
-          // position ¼³Á¤
+          // position ì„¤ì •
           QCP_ADD_POSITION( $<from>$->tableRef->position,
                             $<position>1,
                             $<position>3 );
@@ -23453,7 +23453,7 @@ sel_from_table_single_reference
           $<from>$->tableRef->flag &= ~QMS_TABLE_REF_LATERAL_VIEW_MASK;
           $<from>$->tableRef->flag |= QMS_TABLE_REF_LATERAL_VIEW_TRUE;
 
-          // position ¼³Á¤
+          // position ì„¤ì •
           QCP_ADD_POSITION( $<from>$->tableRef->position,
                             $<position>1,
                             $<position>4 );
@@ -23509,7 +23509,7 @@ sel_from_table_single_reference
           
           SET_POSITION($<from>$->tableRef->aliasName, $<position>7);
 
-          // position ¼³Á¤
+          // position ì„¤ì •
           QCP_ADD_POSITION( $<from>$->tableRef->position,
                             $<position>1,
                             $<position>6 );
@@ -23560,7 +23560,7 @@ sel_from_table_single_reference
           SET_POSITION( $<from>$->tableRef->aliasName, $<position>7 );
 #endif
 
-          // position ¼³Á¤
+          // position ì„¤ì •
           QCP_ADD_POSITION( $<from>$->tableRef->position,
                             $<position>1,
                             $<position>6 );
@@ -23610,7 +23610,7 @@ sel_from_table_single_reference
           SET_POSITION($<from>$->tableRef->aliasName,
                        $<position>4);
 
-          // position ¼³Á¤
+          // position ì„¤ì •
           QCP_ADD_POSITION( $<from>$->tableRef->position,
                             $<position>1,
                             $<position>3 );
@@ -23667,7 +23667,7 @@ sel_from_table_single_reference
               $<from>$->tableRef->view = sStatement;
           }
 
-          // position ¼³Á¤
+          // position ì„¤ì •
           QCP_ADD_POSITION( $<from>$->tableRef->position,
                             $<position>2,
                             $<position>4 );
@@ -23687,7 +23687,7 @@ sel_from_table_single_reference
           
           SET_POSITION($<from>$->tableRef->aliasName, $<position>5);
 
-          // position ¼³Á¤
+          // position ì„¤ì •
           QCP_ADD_POSITION( $<from>$->tableRef->position,
                             $<position>1,
                             $<position>4 );
@@ -23909,7 +23909,7 @@ pivot_clause
           $<pivot>$->columnNode = $<expression>4[0];
           $<pivot>$->valueNode  = $<expression>5[0];
 
-          // position ¼³Á¤
+          // position ì„¤ì •
           QCP_ADD_POSITION( $<pivot>$->position,
                             $<position>1,
                             $<position>6 );
@@ -24048,7 +24048,7 @@ pivot_in_item
           $<expression>$[0] = $<expression>1[0];
           $<expression>$[1] = $<expression>1[1];
 
-          // alias¸¦ userName¿¡ ±â·ÏÇÑ´Ù.
+          // aliasë¥¼ userNameì— ê¸°ë¡í•œë‹¤.
           SET_POSITION( $<expression>$[0]->userName,  $<position>2 );
       }
     ;
@@ -24063,7 +24063,7 @@ unpivot_clause
           $<unpivot>$->measureColName = $<unpivotColName>6;
           $<unpivot>$->inColInfo = $<unpivotInColInfo>7;
 
-          // position ¼³Á¤
+          // position ì„¤ì •
           QCP_ADD_POSITION( $<unpivot>$->position,
                             $<position>1,
                             $<position>8 );
@@ -24431,12 +24431,12 @@ constant_terminal_expression
    | TL_INTEGER
       {
           //----------------------------------------------------------
-          // Á¤¼öÇü ¸®ÅÍ·²ÀÇ °æ¿ì ±× ÇÑ°è ¹üÀ§¿¡ ºÎÇÕÇÏ´Â Data TypeÀ¸·Î
-          // »ı¼ºÇÏ¿© Index¸¦ »ç¿ëÇÒ ¼ö ÀÖ´Â °¡´É¼ºÀ» ³ôÀÌ°í,
-          // Á¤¼öÇü ¸®ÅÍ·²À» ¹«Á¶°Ç INTEGER·Î º¯È¯ÇÏ´Â °úÁ¤¿¡¼­
-          // »ı±â´Â ¿À·ù¸¦ Á¦°Å½ÃÅ²´Ù.
+          // ì •ìˆ˜í˜• ë¦¬í„°ëŸ´ì˜ ê²½ìš° ê·¸ í•œê³„ ë²”ìœ„ì— ë¶€í•©í•˜ëŠ” Data Typeìœ¼ë¡œ
+          // ìƒì„±í•˜ì—¬ Indexë¥¼ ì‚¬ìš©í•  ìˆ˜ ìˆëŠ” ê°€ëŠ¥ì„±ì„ ë†’ì´ê³ ,
+          // ì •ìˆ˜í˜• ë¦¬í„°ëŸ´ì„ ë¬´ì¡°ê±´ INTEGERë¡œ ë³€í™˜í•˜ëŠ” ê³¼ì •ì—ì„œ
+          // ìƒê¸°ëŠ” ì˜¤ë¥˜ë¥¼ ì œê±°ì‹œí‚¨ë‹¤.
           //----------------------------------------------------------
-          //   Type      |    ÃÖ´ë°ª              | º¸Àå Digit °³¼ö
+          //   Type      |    ìµœëŒ€ê°’              | ë³´ì¥ Digit ê°œìˆ˜
           //----------------------------------------------------------
           // SMALLINT    |                32767   |      < 5
           // INTEGER     |           2147483647   |      < 10
@@ -24455,7 +24455,7 @@ constant_terminal_expression
           else
           {
               // Nothing To Do
-              // Numeric TypeÀ¸·Î °áÁ¤µÊ
+              // Numeric Typeìœ¼ë¡œ ê²°ì •ë¨
           }
 
           if ( ( $<position>1.size < 5 ) ||
@@ -24547,18 +24547,18 @@ constant_terminal_expression
                     != IDE_SUCCESS );
       }
      // PROJ-1579 NCHAR
-    // ex) N'¾È'
+    // ex) N'ì•ˆ'
     | nchar_literal
       {
-          // terminal ÀÌÁö¸¸ replication statement¿¡¼­µµ
-          // °øÅëÀûÀ¸·Î »ç¿ëÇÏ¿© rule·Î Á¤ÀÇÇßÀ½.
+          // terminal ì´ì§€ë§Œ replication statementì—ì„œë„
+          // ê³µí†µì ìœ¼ë¡œ ì‚¬ìš©í•˜ì—¬ ruleë¡œ ì •ì˜í–ˆìŒ.
       }
     // PROJ-1579 NCHAR
     // ex) U'\C548'
     | unicode_literal
       {
-          // terminal ÀÌÁö¸¸ replication statement¿¡¼­µµ
-          // °øÅëÀûÀ¸·Î »ç¿ëÇÏ¿© rule·Î Á¤ÀÇÇßÀ½.
+          // terminal ì´ì§€ë§Œ replication statementì—ì„œë„
+          // ê³µí†µì ìœ¼ë¡œ ì‚¬ìš©í•˜ì—¬ ruleë¡œ ì •ì˜í–ˆìŒ.
       }
     | TL_TYPED_LITERAL
       {
@@ -24639,7 +24639,7 @@ dump_object_table
           $<from>$->tableRef->tableAccessHints = NULL;
           $<from>$->tableRef->flag             = 0;
 
-          // position ¼³Á¤
+          // position ì„¤ì •
           QCP_ADD_POSITION( $<from>$->tableRef->position,
                             $<position>1,
                             $<position>4 );
@@ -25258,7 +25258,7 @@ limit_values
 
           $<limit>$->start = $<limit>$->count;
           $<limit>$->count = $<limitValue>3;
-          $<limit>$->flag = 2;  // limit valueÀÇ °¹¼ö
+          $<limit>$->flag = 2;  // limit valueì˜ ê°¯ìˆ˜
       }
     | limit_value
       {
@@ -25266,7 +25266,7 @@ limit_values
           $<limit>$->start.constant = 1;
           $<limit>$->start.hostBindNode = NULL;
           $<limit>$->count = $<limitValue>1;
-          $<limit>$->flag  = 1;  // limit valueÀÇ °¹¼ö
+          $<limit>$->flag  = 1;  // limit valueì˜ ê°¯ìˆ˜
           SET_EMPTY_POSITION( $<limit>$->limitPos );
       }
     ;
@@ -25284,8 +25284,8 @@ limit_value
           $<limitValue>$.constant = sValue;
           $<limitValue>$.hostBindNode = NULL;
       }
-    // BUG-12557 limitÀıÀÇ È£½ºÆ® º¯¼ö »ç¿ë.
-    // :a µî°ú °°Àº È£½ºÆ® º¯¼ö ¹× procedure º¯¼ö¸¦ »ç¿ëÇÏ±â À§ÇØ È®ÀåÇÔ.
+    // BUG-12557 limitì ˆì˜ í˜¸ìŠ¤íŠ¸ ë³€ìˆ˜ ì‚¬ìš©.
+    // :a ë“±ê³¼ ê°™ì€ í˜¸ìŠ¤íŠ¸ ë³€ìˆ˜ ë° procedure ë³€ìˆ˜ë¥¼ ì‚¬ìš©í•˜ê¸° ìœ„í•´ í™•ì¥í•¨.
     | host_variable
       {
           qtcNode * sNode[2];
@@ -25567,7 +25567,7 @@ lock_table_statement
           $<lockParseTree>$->tableLockMode    = $<tableLockMode>5;
           $<lockParseTree>$->lockWaitMicroSec = $<uLongVal>7;
 
-          /* BUG-42853 LOCK TABLE¿¡ UNTIL NEXT DDL ±â´É Ãß°¡ */
+          /* BUG-42853 LOCK TABLEì— UNTIL NEXT DDL ê¸°ëŠ¥ ì¶”ê°€ */
           $<lockParseTree>$->untilNextDDL     = $<boolType>8;
 
           // function pointer
@@ -25682,7 +25682,7 @@ table_lock_mode
       }
     ;
 
-/* BUG-42853 LOCK TABLE¿¡ UNTIL NEXT DDL ±â´É Ãß°¡ */
+/* BUG-42853 LOCK TABLEì— UNTIL NEXT DDL ê¸°ëŠ¥ ì¶”ê°€ */
 opt_until_next_ddl_clause
     : /* empty */
       {
@@ -26823,12 +26823,12 @@ terminal_expression
     | TL_INTEGER
       {
           //----------------------------------------------------------
-          // Á¤¼öÇü ¸®ÅÍ·²ÀÇ °æ¿ì ±× ÇÑ°è ¹üÀ§¿¡ ºÎÇÕÇÏ´Â Data TypeÀ¸·Î
-          // »ı¼ºÇÏ¿© Index¸¦ »ç¿ëÇÒ ¼ö ÀÖ´Â °¡´É¼ºÀ» ³ôÀÌ°í,
-          // Á¤¼öÇü ¸®ÅÍ·²À» ¹«Á¶°Ç INTEGER·Î º¯È¯ÇÏ´Â °úÁ¤¿¡¼­
-          // »ı±â´Â ¿À·ù¸¦ Á¦°Å½ÃÅ²´Ù.
+          // ì •ìˆ˜í˜• ë¦¬í„°ëŸ´ì˜ ê²½ìš° ê·¸ í•œê³„ ë²”ìœ„ì— ë¶€í•©í•˜ëŠ” Data Typeìœ¼ë¡œ
+          // ìƒì„±í•˜ì—¬ Indexë¥¼ ì‚¬ìš©í•  ìˆ˜ ìˆëŠ” ê°€ëŠ¥ì„±ì„ ë†’ì´ê³ ,
+          // ì •ìˆ˜í˜• ë¦¬í„°ëŸ´ì„ ë¬´ì¡°ê±´ INTEGERë¡œ ë³€í™˜í•˜ëŠ” ê³¼ì •ì—ì„œ
+          // ìƒê¸°ëŠ” ì˜¤ë¥˜ë¥¼ ì œê±°ì‹œí‚¨ë‹¤.
           //----------------------------------------------------------
-          //   Type      |    ÃÖ´ë°ª              | º¸Àå Digit °³¼ö
+          //   Type      |    ìµœëŒ€ê°’              | ë³´ì¥ Digit ê°œìˆ˜
           //----------------------------------------------------------
           // SMALLINT    |                32767   |      < 5
           // INTEGER     |           2147483647   |      < 10
@@ -26847,7 +26847,7 @@ terminal_expression
           else
           {
               // Nothing To Do
-              // Numeric TypeÀ¸·Î °áÁ¤µÊ
+              // Numeric Typeìœ¼ë¡œ ê²°ì •ë¨
           }
 
           if ( ( $<position>1.size < 5 ) ||
@@ -26939,18 +26939,18 @@ terminal_expression
                     != IDE_SUCCESS );
       }
     // PROJ-1579 NCHAR
-    // ex) N'¾È'
+    // ex) N'ì•ˆ'
     | nchar_literal
       {
-          // terminal ÀÌÁö¸¸ replication statement¿¡¼­µµ
-          // °øÅëÀûÀ¸·Î »ç¿ëÇÏ¿© rule·Î Á¤ÀÇÇßÀ½.
+          // terminal ì´ì§€ë§Œ replication statementì—ì„œë„
+          // ê³µí†µì ìœ¼ë¡œ ì‚¬ìš©í•˜ì—¬ ruleë¡œ ì •ì˜í–ˆìŒ.
       }
     // PROJ-1579 NCHAR
     // ex) U'\C548'
     | unicode_literal
       {
-          // terminal ÀÌÁö¸¸ replication statement¿¡¼­µµ
-          // °øÅëÀûÀ¸·Î »ç¿ëÇÏ¿© rule·Î Á¤ÀÇÇßÀ½.
+          // terminal ì´ì§€ë§Œ replication statementì—ì„œë„
+          // ê³µí†µì ìœ¼ë¡œ ì‚¬ìš©í•˜ì—¬ ruleë¡œ ì •ì˜í–ˆìŒ.
       }
     | TL_TYPED_LITERAL
       {
@@ -27166,7 +27166,7 @@ terminal_expression
           }
       }
     // PROJ-1888 INSTEAD OF TRIGGER
-    // :newrow.i1°ú °°Àº trigger º¯¼ö¸¦ »ç¿ëÇÏ±â À§ÇØ È®ÀåÇÔ.
+    // :newrow.i1ê³¼ ê°™ì€ trigger ë³€ìˆ˜ë¥¼ ì‚¬ìš©í•˜ê¸° ìœ„í•´ í™•ì¥í•¨.
     | TI_HOSTVARIABLE TS_PERIOD column_name
       {
           qcuSqlSourceInfo    sqlInfo;
@@ -27419,10 +27419,10 @@ nchar_literal
 
           if( QCG_GET_SESSION_NCHAR_LITERAL_REPLACE(STATEMENT) == 1 )
           {
-              // ÇØ´ç DDL ¼öÇà ½Ã, ¸ŞÅ¸Å×ÀÌºí¿¡ ¹®ÀÚ¿­À» ÀÔ·ÂÇÒ °æ¿ì¿¡
-              // U Å¸ÀÔÀ¸·Î º¯°æÇØÁØ´Ù.
-              // º¯°æÇÏ±â À§ÇØ¼­ ÇöÀç N Å¸ÀÔÀÇ À§Ä¡ Á¤º¸¸¦
-              // qcNamePositionÀÇ ¸®½ºÆ® ÇüÅÂ·Î °®°í ÀÖ´Â´Ù.
+              // í•´ë‹¹ DDL ìˆ˜í–‰ ì‹œ, ë©”íƒ€í…Œì´ë¸”ì— ë¬¸ìì—´ì„ ì…ë ¥í•  ê²½ìš°ì—
+              // U íƒ€ì…ìœ¼ë¡œ ë³€ê²½í•´ì¤€ë‹¤.
+              // ë³€ê²½í•˜ê¸° ìœ„í•´ì„œ í˜„ì¬ N íƒ€ì…ì˜ ìœ„ì¹˜ ì •ë³´ë¥¼
+              // qcNamePositionì˜ ë¦¬ìŠ¤íŠ¸ í˜•íƒœë¡œ ê°–ê³  ìˆëŠ”ë‹¤.
 
               if( NCHARLIST != NULL )
               {
@@ -27435,9 +27435,9 @@ nchar_literal
                       if( (sNamePos.offset == $<position>1.offset) &&
                           (sNamePos.size == $<position>1.size) )
                       {
-                          // °°Àº stmt¸¦ ¿©·¯¹ø ÆÄ½ÌÇÏ´Â °æ¿ì°¡ ÀÖ´Ù.
+                          // ê°™ì€ stmtë¥¼ ì—¬ëŸ¬ë²ˆ íŒŒì‹±í•˜ëŠ” ê²½ìš°ê°€ ìˆë‹¤.
                           // ex) create procedure/function
-                          // ÀÌ ¶§, µÎ ¹øÂ° ÆÄ½ÌÀÇ °æ¿ì¿¡´Â ½ºÅµÇÑ´Ù.
+                          // ì´ ë•Œ, ë‘ ë²ˆì§¸ íŒŒì‹±ì˜ ê²½ìš°ì—ëŠ” ìŠ¤í‚µí•œë‹¤.
 
                           sIsFound = ID_TRUE;
                           break;
@@ -27561,8 +27561,8 @@ case_expression
                                    0 )
                     != IDE_SUCCESS );
 
-          // BUG-28223 CASE expr WHEN .. THEN .. ±¸¹®ÀÇ expr¿¡ subquery »ç¿ë½Ã ¿¡·¯¹ß»ı
-          // qtc::estimateInternal()ÇÔ¼öÀÇ ÁÖ¼® ÂüÁ¶.
+          // BUG-28223 CASE expr WHEN .. THEN .. êµ¬ë¬¸ì˜ exprì— subquery ì‚¬ìš©ì‹œ ì—ëŸ¬ë°œìƒ
+          // qtc::estimateInternal()í•¨ìˆ˜ì˜ ì£¼ì„ ì°¸ì¡°.
           $<expression>$[0]->node.lflag &= ~MTC_NODE_CASE_TYPE_MASK;
           $<expression>$[0]->node.lflag |= MTC_NODE_CASE_TYPE_SIMPLE;
 
@@ -27576,8 +27576,8 @@ case_expression
               sThenNode[0] = sEveryWT->thenNode;
               sThenNode[1] = NULL;
 
-              // sVariableNodeÀ» when ~ then ¸®½ºÆ®ÀÇ °³¼ö¸¸Å­
-              // º¹»çÇØ¼­ µû·Î Equal Node¸¦ ¸¸µé¾îÁà¾ß ÇÑ´Ù.
+              // sVariableNodeì„ when ~ then ë¦¬ìŠ¤íŠ¸ì˜ ê°œìˆ˜ë§Œí¼
+              // ë³µì‚¬í•´ì„œ ë”°ë¡œ Equal Nodeë¥¼ ë§Œë“¤ì–´ì¤˜ì•¼ í•œë‹¤.
               QCP_STRUCT_ALLOC( sVariableNode[0], qtcNode );
               QCP_STRUCT_ALLOC( sVariableNode[1], qtcNode );
 
@@ -27609,8 +27609,8 @@ case_expression
                                        (const UChar*)"=", 1 )
                         != IDE_SUCCESS );
 
-              // BUG-28223 CASE expr WHEN .. THEN .. ±¸¹®ÀÇ expr¿¡ subquery »ç¿ë½Ã ¿¡·¯¹ß»ı
-              // qtc::estimateInternal()ÇÔ¼öÀÇ ÁÖ¼® ÂüÁ¶.
+              // BUG-28223 CASE expr WHEN .. THEN .. êµ¬ë¬¸ì˜ exprì— subquery ì‚¬ìš©ì‹œ ì—ëŸ¬ë°œìƒ
+              // qtc::estimateInternal()í•¨ìˆ˜ì˜ ì£¼ì„ ì°¸ì¡°.
               if( i > 0 )
               {
                   sEqNode[0]->node.lflag &= ~MTC_NODE_CASE_EXPRESSION_MAKE_PASSNODE_MASK;
@@ -27813,19 +27813,19 @@ unified_invocation
         TS_OPENING_PARENTHESIS SP_param_notation_list TS_CLOSING_PARENTHESIS
       {
           /* tableName.columnName( list_expression )
-             * ¿¹
+             * ì˜ˆ
               - arrayName.EXISTS(3)
               - arrayName.DELETE(3)
               - arrayName.PRIOR(3)
-             (Âü°í) ´Ù¸¥ member function¿¡ ´ëÇÑ ±ÔÄ¢Àº
-                    SP_unified_invocation_of_FuncOrArray¿¡ ÀÖÀ½. */
+             (ì°¸ê³ ) ë‹¤ë¥¸ member functionì— ëŒ€í•œ ê·œì¹™ì€
+                    SP_unified_invocation_of_FuncOrArrayì— ìˆìŒ. */
           qcNamePosition sEmptyPos;
           SET_EMPTY_POSITION( sEmptyPos );
 
           $<expression>$[0] = $<expression>5[0];
           $<expression>$[1] = $<expression>5[1];
 
-          // PROJ-1075 member function module·Î change
+          // PROJ-1075 member function moduleë¡œ change
           QCP_TEST( qtc::changeNodeForMemberFunc( STATEMENT,
                                                   $<expression>$,
                                                   &($<position>1),
@@ -27841,10 +27841,10 @@ unified_invocation
         TS_OPENING_PARENTHESIS TS_CLOSING_PARENTHESIS
       {
           /* tableName.columnName()
-             * ¿¹
+             * ì˜ˆ
               - arrayName.DELETE()
-             (Âü°í) ´Ù¸¥ member function¿¡ ´ëÇÑ ±ÔÄ¢Àº
-                    SP_unified_invocation_of_FuncOrArray¿¡ ÀÖÀ½. */
+             (ì°¸ê³ ) ë‹¤ë¥¸ member functionì— ëŒ€í•œ ê·œì¹™ì€
+                    SP_unified_invocation_of_FuncOrArrayì— ìˆìŒ. */
           qcNamePosition sEmptyPos;
           SET_EMPTY_POSITION( sEmptyPos );
 
@@ -27864,7 +27864,7 @@ unified_invocation
       over_clause
       {
           /* BUG-42337 
-             user-defined function ÀÏ ¶§´Â over ÀıÀÌ ¿Ã ¼ö ¾ø´Ù. */
+             user-defined function ì¼ ë•ŒëŠ” over ì ˆì´ ì˜¬ ìˆ˜ ì—†ë‹¤. */
           idBool              sExist = ID_FALSE;
           const mtfModule   * sModule = NULL;
           qcuSqlSourceInfo    sqlInfo;
@@ -27890,7 +27890,7 @@ unified_invocation
           else
           {
               /* BUG-42337 
-                 user-defined function ÀÏ ¶§´Â keep or over ÀıÀÌ ¿Ã ¼ö ¾ø´Ù. */
+                 user-defined function ì¼ ë•ŒëŠ” keep or over ì ˆì´ ì˜¬ ìˆ˜ ì—†ë‹¤. */
               QCP_TEST( mtf::moduleByName( &sModule,
                                            &sExist,
                                            $<position>1.stmtText + $<position>1.offset,
@@ -27951,7 +27951,7 @@ unified_invocation
       over_clause
       {
           /* BUG-42337 
-             user-defined function ÀÏ ¶§´Â over ÀıÀÌ ¿Ã ¼ö ¾ø´Ù. */
+             user-defined function ì¼ ë•ŒëŠ” over ì ˆì´ ì˜¬ ìˆ˜ ì—†ë‹¤. */
           idBool              sExist = ID_FALSE;
           const mtfModule   * sModule = NULL;
           qcuSqlSourceInfo    sqlInfo;
@@ -27977,7 +27977,7 @@ unified_invocation
           else
           {
               /* BUG-42337 
-                 user-defined function ÀÏ ¶§´Â over ÀıÀÌ ¿Ã ¼ö ¾ø´Ù. */
+                 user-defined function ì¼ ë•ŒëŠ” over ì ˆì´ ì˜¬ ìˆ˜ ì—†ë‹¤. */
               QCP_TEST( mtf::moduleByName( &sModule,
                                            &sExist,
                                            $<position>1.stmtText + $<position>1.offset,
@@ -28038,7 +28038,7 @@ unified_invocation
       over_clause
       {
           /* BUG-42337
-             user-defined function ÀÏ ¶§´Â over ÀıÀÌ ¿Ã ¼ö ¾ø´Ù. */
+             user-defined function ì¼ ë•ŒëŠ” over ì ˆì´ ì˜¬ ìˆ˜ ì—†ë‹¤. */
           idBool              sExist = ID_FALSE;
           const mtfModule   * sModule = NULL;
           qcuSqlSourceInfo    sqlInfo;
@@ -28056,7 +28056,7 @@ unified_invocation
           else
           {
               /* BUG-42337
-                 user-defined function ÀÏ ¶§´Â over ÀıÀÌ ¿Ã ¼ö ¾ø´Ù. */
+                 user-defined function ì¼ ë•ŒëŠ” over ì ˆì´ ì˜¬ ìˆ˜ ì—†ë‹¤. */
               QCP_TEST( mtf::moduleByName( &sModule,
                                            &sExist,
                                            $<position>1.stmtText + $<position>1.offset,
@@ -28126,7 +28126,7 @@ unified_invocation
       over_clause
       {
           /* BUG-42337 
-             user-defined function ÀÏ ¶§´Â over ÀıÀÌ ¿Ã ¼ö ¾ø´Ù. */
+             user-defined function ì¼ ë•ŒëŠ” over ì ˆì´ ì˜¬ ìˆ˜ ì—†ë‹¤. */
           idBool              sExist = ID_FALSE;
           const mtfModule   * sModule = NULL;
           qcuSqlSourceInfo    sqlInfo;
@@ -28143,7 +28143,7 @@ unified_invocation
           else
           {
               /* BUG-42337
-                 user-defined function ÀÏ ¶§´Â over ÀıÀÌ ¿Ã ¼ö ¾ø´Ù. */
+                 user-defined function ì¼ ë•ŒëŠ” over ì ˆì´ ì˜¬ ìˆ˜ ì—†ë‹¤. */
               QCP_TEST( mtf::moduleByName( &sModule,
                                            &sExist,
                                            $<position>1.stmtText + $<position>1.offset,
@@ -28178,23 +28178,23 @@ unified_invocation
           // PROJ-1762
           $<expression>$[0]->overClause = $<overClause>6;
       }
-    // PROJ-1075 array typeÀÇ member functionÀÌ Ãß°¡µÇ¾î
-    // ´ÙÀ½°ú °°Àº À¯ÇüÀÌ »ı°Ü³².
+    // PROJ-1075 array typeì˜ member functionì´ ì¶”ê°€ë˜ì–´
+    // ë‹¤ìŒê³¼ ê°™ì€ ìœ í˜•ì´ ìƒê²¨ë‚¨.
     // user_name.table_name.column_name()
     // user_name.table_name.column_name( list_expression )
     | TI_IDENTIFIER TS_PERIOD TI_IDENTIFIER TS_PERIOD memberfunc_name
       TS_OPENING_PARENTHESIS SP_param_notation_list TS_CLOSING_PARENTHESIS
       {
           /* userName.tableName.columnName( list_expression )
-             * ¿¹
+             * ì˜ˆ
                 - labelName.arrayName.DELETE(3)
                                       EXISTS(3)
                                       PRIOR(3)
                 - pkgName.arrayName.DELETE(3)
                                     EXISTS(3)
                                     PRIOR(3)
-             (Âü°í) ´Ù¸¥ member function¿¡ ´ëÇÑ ±ÔÄ¢Àº
-                    SP_unified_invocation_of_FuncOrArray¿¡ ÀÖÀ½. */
+             (ì°¸ê³ ) ë‹¤ë¥¸ member functionì— ëŒ€í•œ ê·œì¹™ì€
+                    SP_unified_invocation_of_FuncOrArrayì— ìˆìŒ. */
           qcNamePosition sEmptyPos;
           SET_EMPTY_POSITION( sEmptyPos );
 
@@ -28217,11 +28217,11 @@ unified_invocation
       TS_OPENING_PARENTHESIS TS_CLOSING_PARENTHESIS
       {
           /* userName.tableName.columnName()
-             * ¿¹
+             * ì˜ˆ
                 - labelName.arrayName.DELETE()
                 - pkgName.arrayName.DELETE()
-             (Âü°í) ´Ù¸¥ member function¿¡ ´ëÇÑ ±ÔÄ¢Àº
-                    SP_unified_invocation_of_FuncOrArray¿¡ ÀÖÀ½. */
+             (ì°¸ê³ ) ë‹¤ë¥¸ member functionì— ëŒ€í•œ ê·œì¹™ì€
+                    SP_unified_invocation_of_FuncOrArrayì— ìˆìŒ. */
 
           qcNamePosition sEmptyPos;
           SET_EMPTY_POSITION( sEmptyPos );
@@ -28237,7 +28237,7 @@ unified_invocation
                     != IDE_SUCCESS );
       }
     // BUG-38243
-    // PROJ-1073¿¡¼­ package object°¡ Ãß°¡µÇ¾î, ¾Æ·¡¿Í °°Àº À¯Çü Ãß°¡µÊ.
+    // PROJ-1073ì—ì„œ package objectê°€ ì¶”ê°€ë˜ì–´, ì•„ë˜ì™€ ê°™ì€ ìœ í˜• ì¶”ê°€ë¨.
     // user_name.table_name.column_name.pkg_name()
     // user_name.table_name.column_name.pkg_name( list_expression )
     | TI_IDENTIFIER
@@ -28252,8 +28252,8 @@ unified_invocation
       TS_CLOSING_PARENTHESIS
       {
           /* user_name.table_name.column_name.pkg_name( list_expression )
-             * ¿¹
-                - arrayÀÇ member function
+             * ì˜ˆ
+                - arrayì˜ member function
                     userName.pkgName.arrayName.NEXT(3) */
 
           // BUG-17131
@@ -28283,8 +28283,8 @@ unified_invocation
       TS_CLOSING_PARENTHESIS
       {
           /* user_name.table_name.column_name.pkg_name( list_expression )
-             * ¿¹
-                - arrayÀÇ member function
+             * ì˜ˆ
+                - arrayì˜ member function
                     userName.pkgName.arrayName.EXISTS(3)
                                                DELETE(3)
                                                PRIOR(3) */
@@ -28315,8 +28315,8 @@ unified_invocation
       TS_CLOSING_PARENTHESIS
       {
           /* user_name.table_name.column_name.pkg_name( )
-             * pkgNameÀÇ Á¾·ù
-                - arrayÀÇ member function
+             * pkgNameì˜ ì¢…ë¥˜
+                - arrayì˜ member function
                     userName.pkgName.arrayName.COUNT()
                                                FIRST()
                                                LAST() */
@@ -28341,8 +28341,8 @@ unified_invocation
       TS_CLOSING_PARENTHESIS
       {
           /* user_name.table_name.column_name.pkg_name( )
-             * pkgNameÀÇ Á¾·ù
-                - arrayÀÇ member function
+             * pkgNameì˜ ì¢…ë¥˜
+                - arrayì˜ member function
                     userName.pkgName.arrayName.DELETE() */
           QCP_TEST( qtc::makeNodeForMemberFunc( STATEMENT,
                                                 $<expression>$,
@@ -28401,7 +28401,7 @@ unified_invocation
                                      &($<position>1), &($<position>6) )
                     != IDE_SUCCESS );
 
-          /* BUG-36429 LOB ColumnÀÎ °æ¿ì, LOB Value·Î º¯°æÇÑ´Ù. */
+          /* BUG-36429 LOB Columnì¸ ê²½ìš°, LOB Valueë¡œ ë³€ê²½í•œë‹¤. */
           if ( $<column>5->type.dataTypeId == MTD_BLOB_ID )
           {
               QCP_TEST( mtd::moduleByName( & sModule, (void *)"BLOB", 4 )
@@ -28431,7 +28431,7 @@ unified_invocation
               /* Nothing to do */
           }
 
-          // columnÁ¤º¸¸¦ ÀÌ¿ëÇÏ¿© qtcNode¸¦ »ı¼ºÇÑ´Ù.
+          // columnì •ë³´ë¥¼ ì´ìš©í•˜ì—¬ qtcNodeë¥¼ ìƒì„±í•œë‹¤.
           QCP_TEST( qtc::makeProcVariable( STATEMENT,
                                            sTypeNode,
                                            & sEmptyPos,
@@ -29352,8 +29352,8 @@ SP_param_notation_list
           QCP_TEST( qtc::addArgument( $<expression>$, $<expression>3 )
                     != IDE_SUCCESS );
 
-          // ½ÇÁ¦ Argument´Â 2°³°¡ ¾Æ´Ñ 1°³ÀÌ¹Ç·Î, 
-          // mtcNodeÀÇ MTC_NODE_ARGUMENT_COUNT °ªÀ» °¨¼Ò½ÃÅ²´Ù.
+          // ì‹¤ì œ ArgumentëŠ” 2ê°œê°€ ì•„ë‹Œ 1ê°œì´ë¯€ë¡œ, 
+          // mtcNodeì˜ MTC_NODE_ARGUMENT_COUNT ê°’ì„ ê°ì†Œì‹œí‚¨ë‹¤.
           $<expression>$[0]->node.lflag--;
 
           QCP_TEST( qtc::addArgument( $<expression>$, $<expression>5 )
@@ -29371,8 +29371,8 @@ SP_param_notation_list
           QCP_TEST( qtc::addArgument( $<expression>$, $<expression>1 )
                     != IDE_SUCCESS );
 
-          // ½ÇÁ¦ Argument´Â 2°³°¡ ¾Æ´Ñ 1°³ÀÌ¹Ç·Î, 
-          // mtcNodeÀÇ MTC_NODE_ARGUMENT_COUNT °ªÀ» °¨¼Ò½ÃÅ²´Ù.
+          // ì‹¤ì œ ArgumentëŠ” 2ê°œê°€ ì•„ë‹Œ 1ê°œì´ë¯€ë¡œ, 
+          // mtcNodeì˜ MTC_NODE_ARGUMENT_COUNT ê°’ì„ ê°ì†Œì‹œí‚¨ë‹¤.
           $<expression>$[0]->node.lflag--;
 
           QCP_TEST( qtc::addArgument( $<expression>$, $<expression>3 )
@@ -29630,7 +29630,7 @@ SP_create_or_replace_function_statement
           QC_SET_INIT_PARSE_TREE($<spParseTree>$, $<position>1);
           QS_PROC_PARSE_TREE_INIT($<spParseTree>$);
 
-          // PROJ-1075 object type °áÁ¤.
+          // PROJ-1075 object type ê²°ì •.
           $<spParseTree>$->objType = QS_FUNC;
 
           SET_POSITION( $<spParseTree>$->userNamePos,
@@ -29764,7 +29764,7 @@ SP_create_or_replace_function_statement
           QC_SET_INIT_PARSE_TREE($<spParseTree>$, $<position>1);
           QS_PROC_PARSE_TREE_INIT($<spParseTree>$);
 
-          // PROJ-1075 object type °áÁ¤.
+          // PROJ-1075 object type ê²°ì •.
           $<spParseTree>$->objType = QS_FUNC;
 
           SET_POSITION( $<spParseTree>$->userNamePos,
@@ -29911,7 +29911,7 @@ SP_create_or_replace_procedure_statement
           QC_SET_INIT_PARSE_TREE($<spParseTree>$, $<position>1);
           QS_PROC_PARSE_TREE_INIT($<spParseTree>$);
 
-          // PROJ-1075 object type °áÁ¤.
+          // PROJ-1075 object type ê²°ì •.
           $<spParseTree>$->objType = QS_PROC;
 
           SET_POSITION( $<spParseTree>$->userNamePos,
@@ -30017,7 +30017,7 @@ SP_create_or_replace_procedure_statement
           QC_SET_INIT_PARSE_TREE($<spParseTree>$, $<position>1);
           QS_PROC_PARSE_TREE_INIT($<spParseTree>$);
 
-          // PROJ-1075 object type °áÁ¤.
+          // PROJ-1075 object type ê²°ì •.
           $<spParseTree>$->objType = QS_PROC;
 
           SET_POSITION( $<spParseTree>$->userNamePos,
@@ -30375,7 +30375,7 @@ SP_create_or_replace_typeset_statement
           QC_SET_INIT_PARSE_TREE($<spParseTree>$, $<position>1);
           QS_PROC_PARSE_TREE_INIT($<spParseTree>$);
 
-          // PROJ-1075 object type °áÁ¤.
+          // PROJ-1075 object type ê²°ì •.
           $<spParseTree>$->objType = QS_TYPESET;
 
           SET_POSITION( $<spParseTree>$->userNamePos,
@@ -31082,21 +31082,21 @@ SP_unified_invocation_of_FuncOrArray
       over_clause             // [6] OVER opt         for analyticFunc
       {
 	  /* PROJ-2533
-             [2] ¿¡¼­ ºñ¾îÀÖ´Â qtcNode¸¦ »ı¼ºÇß±â ¶§¹®¿¡
-             argument Æ÷¸ä ( "()" or "[]" ) ¿¡ µû¶ó module°ú naming positionÀ» ¼³Á¤ÇØ¾ß ÇÑ´Ù.
+             [2] ì—ì„œ ë¹„ì–´ìˆëŠ” qtcNodeë¥¼ ìƒì„±í–ˆê¸° ë•Œë¬¸ì—
+             argument í¬ë©§ ( "()" or "[]" ) ì— ë”°ë¼ moduleê³¼ naming positionì„ ì„¤ì •í•´ì•¼ í•œë‹¤.
             
-              ( list ) Æ÷¸äÀÎ °æ¿ì :
-                * windowFunc => °¢°¢ÀÇ window function module
+              ( list ) í¬ë©§ì¸ ê²½ìš° :
+                * windowFunc => ê°ê°ì˜ window function module
                 * proc or func => spFunctionCallModule
                 * arrayName    => spFunctionCallModule
-               ¿¹1) arrVar(i1)
+               ì˜ˆ1) arrVar(i1)
                 position      ")"                "arrVar(i1)"
                 module        ( )     =>    ( spFunctionCallModule )
                                |                      |
                 args          "i1"                   "i1"
             
-              [ list ] Æ÷¸äÀÌ °æ¿ì : Ç×»ó array ÀÌ´Ù.
-               ¿¹2) arrVar[i1]
+              [ list ] í¬ë©§ì´ ê²½ìš° : í•­ìƒ array ì´ë‹¤.
+               ì˜ˆ2) arrVar[i1]
                 position      "]"             "arrVar[i1]"
                 module        ( )     =>    ( columnModule )
                                |                   |
@@ -31105,7 +31105,7 @@ SP_unified_invocation_of_FuncOrArray
           qcNamePosition      sEndPosition;
           qcuSqlSourceInfo    sqlInfo;
           /* BUG-42337
-             user-defined function ÀÏ ¶§´Â over ÀıÀÌ ¿Ã ¼ö ¾ø´Ù. */
+             user-defined function ì¼ ë•ŒëŠ” over ì ˆì´ ì˜¬ ìˆ˜ ì—†ë‹¤. */
           idBool              sExist = ID_FALSE;
           const mtfModule   * sModule = NULL;
           // PROJ-2533
@@ -31155,7 +31155,7 @@ SP_unified_invocation_of_FuncOrArray
           else
           {
               /* BUG-42337
-                 user-defined function ÀÏ ¶§´Â over ÀıÀÌ ¿Ã ¼ö ¾ø´Ù. */
+                 user-defined function ì¼ ë•ŒëŠ” over ì ˆì´ ì˜¬ ìˆ˜ ì—†ë‹¤. */
               QCP_TEST( mtf::moduleByName( &sModule,
                                            &sExist,
                                            $<position>1.stmtText +
@@ -31201,10 +31201,10 @@ SP_unified_invocation_of_FuncOrArray
           }
 
           // PROJ-2527 WIHIN GROUP AGGR
-          // within groupÀ» funcArguments·Î ¿¬°áÇÑ´Ù.
+          // within groupì„ funcArgumentsë¡œ ì—°ê²°í•œë‹¤.
           if ( $<withinGroup>3 != NULL )
           {
-              // PROJ-2533 Bracket ½ºÅ¸ÀÏÀÎ °æ¿ì within ÀıÀÌ ¿Ã ¼ö ¾ø´Ù.
+              // PROJ-2533 Bracket ìŠ¤íƒ€ì¼ì¸ ê²½ìš° within ì ˆì´ ì˜¬ ìˆ˜ ì—†ë‹¤.
               if ( ( sIsBracket == ID_TRUE ) ||
                    ( $<expression>$[0]->node.arguments == NULL ) )
               {
@@ -31241,7 +31241,7 @@ SP_unified_invocation_of_FuncOrArray
               if ( ( sIsBracket == ID_FALSE ) &&
                    ( $<expression>$[0]->node.arguments != NULL ) )
               {
-                  /* analytic functionÀÇ ignore nulls ÇÔ¼ö·Î º¯°æÇÑ´Ù. */
+                  /* analytic functionì˜ ignore nulls í•¨ìˆ˜ë¡œ ë³€ê²½í•œë‹¤. */
                   QCP_TEST( qtc::changeIgnoreNullsNode( $<expression>$[0],
                                                         &sChanged )
                             != IDE_SUCCESS );
@@ -31251,7 +31251,7 @@ SP_unified_invocation_of_FuncOrArray
                   // Nothing to do.
               }
 
-              // PROJ-2533 Bracket ½ºÅ¸ÀÏÀÎ °æ¿ì ignore nulls °¡ ¿Ã ¼ö ¾ø´Ù.
+              // PROJ-2533 Bracket ìŠ¤íƒ€ì¼ì¸ ê²½ìš° ignore nulls ê°€ ì˜¬ ìˆ˜ ì—†ë‹¤.
               if ( sChanged == ID_FALSE )
               {
                   sqlInfo.setSourceInfo( STATEMENT, $<positionPtr>4 );
@@ -31273,7 +31273,7 @@ SP_unified_invocation_of_FuncOrArray
 
           if ( $<keepAggr>5 != NULL )
           {
-              // PROJ-2533 Bracket ½ºÅ¸ÀÏÀÎ °æ¿ì within ÀıÀÌ ¿Ã ¼ö ¾ø´Ù.
+              // PROJ-2533 Bracket ìŠ¤íƒ€ì¼ì¸ ê²½ìš° within ì ˆì´ ì˜¬ ìˆ˜ ì—†ë‹¤.
               if ( ( sIsBracket == ID_TRUE ) ||
                    ( $<expression>$[0]->node.arguments == NULL ) )
               {
@@ -31314,18 +31314,18 @@ SP_unified_invocation_of_FuncOrArray
       SP_argument_list        // [4] arguments: (), ( list ), [ list ]
       {
           /* PROJ-2533
-             [4] ¿¡¼­ ºñ¾îÀÖ´Â qtcNode¸¦ »ı¼ºÇß±â ¶§¹®¿¡
-             argument Æ÷¸ä ( "()" or "[]" ) ¿¡ µû¶ó module°ú naming positionÀ» ¼³Á¤ÇØ¾ß ÇÑ´Ù.
+             [4] ì—ì„œ ë¹„ì–´ìˆëŠ” qtcNodeë¥¼ ìƒì„±í–ˆê¸° ë•Œë¬¸ì—
+             argument í¬ë©§ ( "()" or "[]" ) ì— ë”°ë¼ moduleê³¼ naming positionì„ ì„¤ì •í•´ì•¼ í•œë‹¤.
             
-              ( list ) Æ÷¸ä ÀÎ°æ¿ì : spFunctionCallModule
+              ( list ) í¬ë©§ ì¸ê²½ìš° : spFunctionCallModule
                 * arrName.memberFunc
                           (FIRST,LAST,COUNT,NEXT)
-                          (Âü°í) EXISTS, DELETE, PRIOR ¿¡ ´ëÇÑ °ÍÀº
-                                 unified_invocation ¿¡ Á¸ÀçÇÔ
+                          (ì°¸ê³ ) EXISTS, DELETE, PRIOR ì— ëŒ€í•œ ê²ƒì€
+                                 unified_invocation ì— ì¡´ì¬í•¨
                 * userName.proc/func or pkgName.proc/func
                 * labelName.arrName  or pkgName.arrName
             
-              [ list ] Æ÷¸äÀÎ °æ¿ì : Ç×»ó array
+              [ list ] í¬ë©§ì¸ ê²½ìš° : í•­ìƒ array
                 labelName.arrName  or pkgName.arrName     =>columnModule */
           qcNamePosition sEmptyPos;
           qcNamePosition sEndPosition;
@@ -31344,7 +31344,7 @@ SP_unified_invocation_of_FuncOrArray
           $<expression>$[0] = $<expression>4[0];
           $<expression>$[1] = $<expression>4[1];
 
-          // PROJ-1075 member function module·Î change
+          // PROJ-1075 member function moduleë¡œ change
           QCP_TEST( qtc::changeNodeForMemberFunc( STATEMENT,
                                                   $<expression>$,
                                                   &($<position>1),
@@ -31364,19 +31364,19 @@ SP_unified_invocation_of_FuncOrArray
       SP_argument_list         // [6] arguments: ( list ) or [ list ] or ()
       {
           /* PROJ-2533
-             [6] ¿¡¼­ ºñ¾îÀÖ´Â qtcNode¸¦ »ı¼ºÇß±â ¶§¹®¿¡
-             argument Æ÷¸ä ( "()" or "[]" ) ¿¡ µû¶ó
-             module°ú naming positionÀ» ¼³Á¤ÇØ¾ß ÇÑ´Ù.
+             [6] ì—ì„œ ë¹„ì–´ìˆëŠ” qtcNodeë¥¼ ìƒì„±í–ˆê¸° ë•Œë¬¸ì—
+             argument í¬ë©§ ( "()" or "[]" ) ì— ë”°ë¼
+             moduleê³¼ naming positionì„ ì„¤ì •í•´ì•¼ í•œë‹¤.
             
-              ( list ) Æ÷¸ä ÀÎ°æ¿ì : spFunctionCallModule
+              ( list ) í¬ë©§ ì¸ê²½ìš° : spFunctionCallModule
                 pkgName.arrName.memberFunc
                                (FIRST,LAST,COUNT,NEXT)
-                               (Âü°í) EXISTS, DELETE, PRIOR ¿¡ ´ëÇÑ ±ÔÄ¢Àº
-                                      unified_invocation ¿¡ ÀÖÀ½.
+                               (ì°¸ê³ ) EXISTS, DELETE, PRIOR ì— ëŒ€í•œ ê·œì¹™ì€
+                                      unified_invocation ì— ìˆìŒ.
                 userName.pkgName.proc/func
                 userName.pkgName.arrName
             
-              [ list ] Æ÷¸äÀÎ °æ¿ì : Ç×»ó array =>columnModule
+              [ list ] í¬ë©§ì¸ ê²½ìš° : í•­ìƒ array =>columnModule
                 labelName.arrName  or pkgName.arrName */
           qcNamePosition sEmptyPos;
           qcNamePosition sEndPosition;
@@ -31413,7 +31413,7 @@ SP_unified_invocation_of_FuncOrArray
       column_name              // [4] col_name
       {
           // PROJ-2533
-          //  ( list ) Æ÷¸ä, [ list ] Æ÷¸ä : Ç×»ó arrayÀÓ => columnModule
+          //  ( list ) í¬ë©§, [ list ] í¬ë©§ : í•­ìƒ arrayì„ => columnModule
           qcNamePosition sEmptyPos;
           SET_EMPTY_POSITION( sEmptyPos );
           $<expression>$[0] = $<expression>2[0];
@@ -31436,7 +31436,7 @@ SP_unified_invocation_of_FuncOrArray
       column_name              // [6] col_name
       {
           // PROJ-2533
-          //  ( list ) Æ÷¸ä, [ list ] Æ÷¸ä : Ç×»ó arrayÀÓ => columnModule
+          //  ( list ) í¬ë©§, [ list ] í¬ë©§ : í•­ìƒ arrayì„ => columnModule
           qcNamePosition sEmptyPos;
           SET_EMPTY_POSITION( sEmptyPos );
           $<expression>$[0] = $<expression>4[0];
@@ -31463,7 +31463,7 @@ SP_unified_invocation_of_FuncOrArray
       column_name              // [8] col_name
       {
           // PROJ-2533
-          //  ( list ) Æ÷¸ä, [ list ] Æ÷¸ä : Ç×»ó arrayÀÓ => columnModule
+          //  ( list ) í¬ë©§, [ list ] í¬ë©§ : í•­ìƒ arrayì„ => columnModule
           $<expression>$[0] = $<expression>6[0];
           $<expression>$[1] = $<expression>6[1];
 
@@ -31493,7 +31493,7 @@ SP_argument_list
 
           $<expression>$[0]->node.arguments = NULL;
 
-          // parenthesis¿Í end  postion ¼¼ÆÃ
+          // parenthesisì™€ end  postion ì„¸íŒ…
           SET_POSITION( $<expression>$[0]->position, $<position>2 );
       }
     | TS_OPENING_PARENTHESIS SP_param_notation_list TS_CLOSING_PARENTHESIS
@@ -31517,7 +31517,7 @@ SP_argument_list
               $<expression>$[1] = $<expression>2[1];
           }
 
-          // parenthesis¿Í end  postion ¼¼ÆÃ
+          // parenthesisì™€ end  postion ì„¸íŒ…
           SET_POSITION( $<expression>$[0]->position, $<position>3 );
 
     }
@@ -31541,7 +31541,7 @@ SP_argument_list
               $<expression>$[1] = $<expression>2[1];
           }
 
-          // parenthesis¿Í end  postion ¼¼ÆÃ
+          // parenthesisì™€ end  postion ì„¸íŒ…
           SET_POSITION( $<expression>$[0]->position, $<position>3 );
       }
     ;
@@ -31553,7 +31553,7 @@ SP_variable_name_ignore_hostvar
           $<expression>$[0] = $<expression>1[0];
           $<expression>$[1] = $<expression>1[1];
       }
-    // PROJ-1888¿¡¼­ Ãß°¡ÇÑ °Í°ú µ¿ÀÏÇÏ°Ô Ãß°¡ÇÔ.
+    // PROJ-1888ì—ì„œ ì¶”ê°€í•œ ê²ƒê³¼ ë™ì¼í•˜ê²Œ ì¶”ê°€í•¨.
     | TI_HOSTVARIABLE
       {
           qcuSqlSourceInfo    sqlInfo;
@@ -31602,7 +31602,7 @@ SP_variable_name_without_index
                     != IDE_SUCCESS );
       }
     // BUG-39212 Rows referenced by trigger should be used like host variable.
-    // PROJ-1888¿¡¼­ Ãß°¡ÇÑ °Í°ú µ¿ÀÏÇÏ°Ô Ãß°¡ÇÔ.
+    // PROJ-1888ì—ì„œ ì¶”ê°€í•œ ê²ƒê³¼ ë™ì¼í•˜ê²Œ ì¶”ê°€í•¨.
     | TI_HOSTVARIABLE TS_PERIOD column_name
       {
           qcuSqlSourceInfo    sqlInfo;
@@ -31879,11 +31879,11 @@ SP_data_type
           $<spDataType>$->type     = QS_PRIM_TYPE ;
           $<spDataType>$->typeNode = sTypeNode[0];
       }
-    | TI_IDENTIFIER // primitive type¶Ç´Â user defined type
+    | TI_IDENTIFIER // primitive typeë˜ëŠ” user defined type
       {
-          // mtdModule¿¡¼­ module name °Ë»ö
-          // Ã£À¸¸é primitive type
-          // ¸øÃ£À¸¸é user defined type
+          // mtdModuleì—ì„œ module name ê²€ìƒ‰
+          // ì°¾ìœ¼ë©´ primitive type
+          // ëª»ì°¾ìœ¼ë©´ user defined type
           const mtdModule * sModule;
           qcNamePosition    sEmptyPos;
           qtcNode         * sTypeNode[2];
@@ -31937,7 +31937,7 @@ SP_data_type
           TS_PERIOD // .[2]
       TI_IDENTIFIER // type_name[3]
       {
-          // ¹«Á¶°Ç udtÀÓ
+          // ë¬´ì¡°ê±´ udtì„
           QCP_STRUCT_ALLOC( $<spDataType>$, qspDataType );
 
           qtcNode * sTypeNode[2];
@@ -31960,7 +31960,7 @@ SP_data_type
           TS_PERIOD // .[4]
       TI_IDENTIFIER // type_name[5]
       {
-          // ¹«Á¶°Ç udtÀÓ
+          // ë¬´ì¡°ê±´ udtì„
           QCP_STRUCT_ALLOC( $<spDataType>$, qspDataType );
 
           qtcNode * sTypeNode[2];
@@ -31981,8 +31981,8 @@ SP_data_type
     ;
 
 // PROJ-1075
-// stored procedure³»¿¡¼­´Â udtµµ Çã¿ëÇÏ¹Ç·Î,
-// ¹İµå½Ã primitive typeÀÌ µÉ ±¸¹®¸¸ SP_rule_data_type¿¡ ¹­´Â´Ù.
+// stored procedureë‚´ì—ì„œëŠ” udtë„ í—ˆìš©í•˜ë¯€ë¡œ,
+// ë°˜ë“œì‹œ primitive typeì´ ë  êµ¬ë¬¸ë§Œ SP_rule_data_typeì— ë¬¶ëŠ”ë‹¤.
 SP_rule_data_type
     : TI_IDENTIFIER TS_OPENING_PARENTHESIS TL_INTEGER TS_CLOSING_PARENTHESIS
       {
@@ -32125,7 +32125,7 @@ SP_first_block
     ;
 
 // PROJ-1075
-// typeset block¿¡¼­´Â type declaration¸¸ °¡´É.
+// typeset blockì—ì„œëŠ” type declarationë§Œ ê°€ëŠ¥.
 SP_typeset_block
     : SP_type_declaration_list       // 1
       TR_END                         // 2
@@ -32486,7 +32486,7 @@ create_proc_or_func_statement
           QC_SET_INIT_PARSE_TREE($<spParseTree>$, $<position>1);
           QS_PROC_PARSE_TREE_INIT($<spParseTree>$);
 
-          // PROJ-1075 object type °áÁ¤.
+          // PROJ-1075 object type ê²°ì •.
           $<spParseTree>$->objType = QS_PROC;
 
           SET_EMPTY_POSITION($<spParseTree>$->userNamePos);
@@ -32592,7 +32592,7 @@ create_proc_or_func_statement
           QC_SET_INIT_PARSE_TREE($<spParseTree>$, $<position>1);
           QS_PROC_PARSE_TREE_INIT($<spParseTree>$);
 
-          // PROJ-1075 object type °áÁ¤.
+          // PROJ-1075 object type ê²°ì •.
           $<spParseTree>$->objType = QS_FUNC;
 
           SET_EMPTY_POSITION($<spParseTree>$->userNamePos);
@@ -32717,7 +32717,7 @@ create_proc_or_func_statement
           QC_SET_INIT_PARSE_TREE($<spParseTree>$, $<position>1);
           QS_PROC_PARSE_TREE_INIT($<spParseTree>$);
 
-          // PROJ-1075 object type °áÁ¤.
+          // PROJ-1075 object type ê²°ì •.
           $<spParseTree>$->objType = QS_FUNC;
 
           // set procedure_name
@@ -32815,7 +32815,7 @@ create_proc_or_func_statement
           QC_SET_INIT_PARSE_TREE($<spParseTree>$, $<position>1);
           QS_PROC_PARSE_TREE_INIT($<spParseTree>$);
 
-          // PROJ-1075 object type °áÁ¤.
+          // PROJ-1075 object type ê²°ì •.
           $<spParseTree>$->objType = QS_FUNC;
 
           // set procedure_name
@@ -33026,7 +33026,7 @@ SP_restrict_references_element
           $<pragmaRestrictReferencesOption>$->option = QS_PRAGMA_RESTRICT_REFERENCES_UNDEFINED;
           $<pragmaRestrictReferencesOption>$->next = NULL;
 
-          /* TI_NONQUOTED_IDENTIFIER´Â rnds/wnds Áß¿¡ ÇÏ³ª¿©¾ß ÇÑ´Ù. */
+          /* TI_NONQUOTED_IDENTIFIERëŠ” rnds/wnds ì¤‘ì— í•˜ë‚˜ì—¬ì•¼ í•œë‹¤. */
           if( idlOS::strMatch( "RNDS",
                                4,
                                QTEXT+$<position>1.offset,
@@ -33394,7 +33394,7 @@ SP_type_declaration
       TS_CLOSING_PARENTHESIS    // )[7]
       TS_SEMICOLON              // ;[8]
       {
-          // record type¿¡ ´ëÇÑ Á¤ÀÇ
+          // record typeì— ëŒ€í•œ ì •ì˜
 
           qcuSqlSourceInfo    sqlInfo;
 
@@ -33448,7 +33448,7 @@ SP_type_declaration
       SP_opt_index_by_clause   // index column[7]
       TS_SEMICOLON             // ;[10]
       {
-          // associative array type¿¡ ´ëÇÑ Á¤ÀÇ
+          // associative array typeì— ëŒ€í•œ ì •ì˜
 
           qcuSqlSourceInfo    sqlInfo;
           // type name
@@ -33467,7 +33467,7 @@ SP_type_declaration
                                       QS_TYPE,
                                       $<position>2 );
 
-          // index ÄÃ·³À» ¸Ç ¾Õ¿¡ À§Ä¡½ÃÅ²´Ù.
+          // index ì»¬ëŸ¼ì„ ë§¨ ì•ì— ìœ„ì¹˜ì‹œí‚¨ë‹¤.
           $<columnDef>7->next = $<columnDef>6;
           $<spTypeDefs>$->columns = $<columnDef>7;
           $<spTypeDefs>$->fields = NULL;                 // BUG-36772
@@ -33537,8 +33537,8 @@ SP_array_element
     : SP_rule_data_type
       {
           // PROJ-1075
-          // primitive data typeÀº mtcColumnÀ» ¹Ù·Î ±¸ÇÒ ¼ö ÀÖÀ½.
-          // userNamePos, tableNamePos, namePos´Â ¸ğµÎ empty position
+          // primitive data typeì€ mtcColumnì„ ë°”ë¡œ êµ¬í•  ìˆ˜ ìˆìŒ.
+          // userNamePos, tableNamePos, namePosëŠ” ëª¨ë‘ empty position
           QCP_STRUCT_ALLOC($<columnDef>$, qcmColumn);
           QCM_COLUMN_INIT( $<columnDef>$ );
 
@@ -33556,10 +33556,10 @@ SP_array_element
     | TI_IDENTIFIER
       {
           // PROJ-1075
-          // IDENTIFIER´Â primitive°¡ µÉ ¼öµµ ÀÖ°í
-          // udt°¡ µÉ ¼öµµ ÀÖÀ¸¹Ç·Î ÀÏ´Ü ¸ğµâÀ» °¡Á®¿Í º¸°í
-          // ½ÇÆĞÇÏ¸é udt·Î ÆÇº°.
-          // udtÀÎ °æ¿ì tableNamePos´Â empty, namePos´Â IDENTIFIER
+          // IDENTIFIERëŠ” primitiveê°€ ë  ìˆ˜ë„ ìˆê³ 
+          // udtê°€ ë  ìˆ˜ë„ ìˆìœ¼ë¯€ë¡œ ì¼ë‹¨ ëª¨ë“ˆì„ ê°€ì ¸ì™€ ë³´ê³ 
+          // ì‹¤íŒ¨í•˜ë©´ udtë¡œ íŒë³„.
+          // udtì¸ ê²½ìš° tableNamePosëŠ” empty, namePosëŠ” IDENTIFIER
           mtcColumn * sColumn;
           const mtdModule * sModule;
           QCP_STRUCT_ALLOC($<columnDef>$, qcmColumn);
@@ -33598,9 +33598,9 @@ SP_array_element
     | TI_IDENTIFIER TS_PERIOD TI_IDENTIFIER
       {
           // PROJ-1075
-          // IDENTIFIER . IDENTIFIER´Â ¹«Á¶°Ç udt.
-          // typeset¸¦ ÂüÁ¶ÇÏ´Â udtÀÓ.
-          // tableNamePos, namePosµÑ´Ù ¼³Á¤.
+          // IDENTIFIER . IDENTIFIERëŠ” ë¬´ì¡°ê±´ udt.
+          // typesetë¥¼ ì°¸ì¡°í•˜ëŠ” udtì„.
+          // tableNamePos, namePosë‘˜ë‹¤ ì„¤ì •.
           QCP_STRUCT_ALLOC($<columnDef>$, qcmColumn);
           QCM_COLUMN_INIT( $<columnDef>$ );
           $<columnDef>$->name[0] = 0;
@@ -33616,9 +33616,9 @@ SP_array_element
     | TI_IDENTIFIER TS_PERIOD TI_IDENTIFIER TS_PERIOD TI_IDENTIFIER
       {
           // PROJ-1075
-          // IDENTIFIER . IDENTIFIER . IDENTIFIER´Â ¹«Á¶°Ç udt.
-          // typeset¸¦ ÂüÁ¶ÇÏ´Â udtÀÓ.
-          // tableNamePos, namePosµÑ´Ù ¼³Á¤.
+          // IDENTIFIER . IDENTIFIER . IDENTIFIERëŠ” ë¬´ì¡°ê±´ udt.
+          // typesetë¥¼ ì°¸ì¡°í•˜ëŠ” udtì„.
+          // tableNamePos, namePosë‘˜ë‹¤ ì„¤ì •.
           QCP_STRUCT_ALLOC($<columnDef>$, qcmColumn);
           QCM_COLUMN_INIT( $<columnDef>$ );
           $<columnDef>$->name[0] = 0;
@@ -34065,7 +34065,7 @@ SP_sql_statement
           else
           {
               // PROJ-1362
-              // for update°¡ ÀÖ´Â °æ¿ì
+              // for updateê°€ ìˆëŠ” ê²½ìš°
               $<spSql>$->parseTree->stmtKind = QCI_STMT_SELECT_FOR_UPDATE;
           }
 
@@ -34278,7 +34278,7 @@ SP_opt_shard_select_or_with_select_statement
       }
     | shard_stmt_spec select_or_with_select_statement
       {
-          // parsing¿ëÀ¸·Î shard keyword¸¦ position¿¡ Ãß°¡ÇÏ±â¸¸ ÇÑ´Ù.
+          // parsingìš©ìœ¼ë¡œ shard keywordë¥¼ positionì— ì¶”ê°€í•˜ê¸°ë§Œ í•œë‹¤.
           QCP_ADD_POSITION( $<selectParseTree>2->common.stmtPos,
                             $<shardStmtSpec>1.position,
                             $<selectParseTree>2->common.stmtPos );
@@ -34294,7 +34294,7 @@ SP_opt_shard_insert_statement
       }
     | shard_stmt_spec insert_statement
       {
-          // parsing¿ëÀ¸·Î shard keyword¸¦ position¿¡ Ãß°¡ÇÏ±â¸¸ ÇÑ´Ù.
+          // parsingìš©ìœ¼ë¡œ shard keywordë¥¼ positionì— ì¶”ê°€í•˜ê¸°ë§Œ í•œë‹¤.
           QCP_ADD_POSITION( $<insParseTree>2->common.stmtPos,
                             $<shardStmtSpec>1.position,
                             $<insParseTree>2->common.stmtPos );
@@ -34310,7 +34310,7 @@ SP_opt_shard_update_statement
       }
     | shard_stmt_spec update_statement
       {
-          // parsing¿ëÀ¸·Î shard keyword¸¦ position¿¡ Ãß°¡ÇÏ±â¸¸ ÇÑ´Ù.
+          // parsingìš©ìœ¼ë¡œ shard keywordë¥¼ positionì— ì¶”ê°€í•˜ê¸°ë§Œ í•œë‹¤.
           QCP_ADD_POSITION( $<uptParseTree>2->common.stmtPos,
                             $<shardStmtSpec>1.position,
                             $<uptParseTree>2->common.stmtPos );
@@ -34326,7 +34326,7 @@ SP_opt_shard_delete_statement
       }
     | shard_stmt_spec delete_statement
       {
-          // parsing¿ëÀ¸·Î shard keyword¸¦ position¿¡ Ãß°¡ÇÏ±â¸¸ ÇÑ´Ù.
+          // parsingìš©ìœ¼ë¡œ shard keywordë¥¼ positionì— ì¶”ê°€í•˜ê¸°ë§Œ í•œë‹¤.
           QCP_ADD_POSITION( $<delParseTree>2->common.stmtPos,
                             $<shardStmtSpec>1.position,
                             $<delParseTree>2->common.stmtPos );
@@ -34342,7 +34342,7 @@ SP_opt_shard_invocation_statement
       }
     | shard_stmt_spec SP_invocation_statement
       {
-          // parsing¿ëÀ¸·Î shard keyword¸¦ position¿¡ Ãß°¡ÇÏ±â¸¸ ÇÑ´Ù.
+          // parsingìš©ìœ¼ë¡œ shard keywordë¥¼ positionì— ì¶”ê°€í•˜ê¸°ë§Œ í•œë‹¤.
           QCP_ADD_POSITION( $<spExecParseTree>2->common.stmtPos,
                             $<shardStmtSpec>1.position,
                             $<spExecParseTree>2->common.stmtPos );
@@ -34672,12 +34672,12 @@ SP_terminal_expression
     | TL_INTEGER
       {
           //----------------------------------------------------------
-          // Á¤¼öÇü ¸®ÅÍ·²ÀÇ °æ¿ì ±× ÇÑ°è ¹üÀ§¿¡ ºÎÇÕÇÏ´Â Data TypeÀ¸·Î
-          // »ı¼ºÇÏ¿© Index¸¦ »ç¿ëÇÒ ¼ö ÀÖ´Â °¡´É¼ºÀ» ³ôÀÌ°í,
-          // Á¤¼öÇü ¸®ÅÍ·²À» ¹«Á¶°Ç INTEGER·Î º¯È¯ÇÏ´Â °úÁ¤¿¡¼­
-          // »ı±â´Â ¿À·ù¸¦ Á¦°Å½ÃÅ²´Ù.
+          // ì •ìˆ˜í˜• ë¦¬í„°ëŸ´ì˜ ê²½ìš° ê·¸ í•œê³„ ë²”ìœ„ì— ë¶€í•©í•˜ëŠ” Data Typeìœ¼ë¡œ
+          // ìƒì„±í•˜ì—¬ Indexë¥¼ ì‚¬ìš©í•  ìˆ˜ ìˆëŠ” ê°€ëŠ¥ì„±ì„ ë†’ì´ê³ ,
+          // ì •ìˆ˜í˜• ë¦¬í„°ëŸ´ì„ ë¬´ì¡°ê±´ INTEGERë¡œ ë³€í™˜í•˜ëŠ” ê³¼ì •ì—ì„œ
+          // ìƒê¸°ëŠ” ì˜¤ë¥˜ë¥¼ ì œê±°ì‹œí‚¨ë‹¤.
           //----------------------------------------------------------
-          //   Type      |    ÃÖ´ë°ª              | º¸Àå Digit °³¼ö
+          //   Type      |    ìµœëŒ€ê°’              | ë³´ì¥ Digit ê°œìˆ˜
           //----------------------------------------------------------
           // SMALLINT    |                32767   |      < 5
           // INTEGER     |           2147483647   |      < 10
@@ -34696,7 +34696,7 @@ SP_terminal_expression
           else
           {
               // Nothing To Do
-              // Numeric TypeÀ¸·Î °áÁ¤µÊ
+              // Numeric Typeìœ¼ë¡œ ê²°ì •ë¨
           }
 
           if ( ( $<position>1.size < 5 ) ||
@@ -34788,18 +34788,18 @@ SP_terminal_expression
                     != IDE_SUCCESS );
       }
     // PROJ-1579 NCHAR
-    // ex) N'¾È'
+    // ex) N'ì•ˆ'
     | nchar_literal
       {
-          // terminal ÀÌÁö¸¸ replication statement¿¡¼­µµ
-          // °øÅëÀûÀ¸·Î »ç¿ëÇÏ¿© rule·Î Á¤ÀÇÇßÀ½.
+          // terminal ì´ì§€ë§Œ replication statementì—ì„œë„
+          // ê³µí†µì ìœ¼ë¡œ ì‚¬ìš©í•˜ì—¬ ruleë¡œ ì •ì˜í–ˆìŒ.
       }
     // PROJ-1579 NCHAR
     // ex) U'\C548'
     | unicode_literal
       {
-          // terminal ÀÌÁö¸¸ replication statement¿¡¼­µµ
-          // °øÅëÀûÀ¸·Î »ç¿ëÇÏ¿© rule·Î Á¤ÀÇÇßÀ½.
+          // terminal ì´ì§€ë§Œ replication statementì—ì„œë„
+          // ê³µí†µì ìœ¼ë¡œ ì‚¬ìš©í•˜ì—¬ ruleë¡œ ì •ì˜í–ˆìŒ.
       }
     | TL_TYPED_LITERAL
       {
@@ -35123,7 +35123,7 @@ SP_if_statement
               QCP_SET_INIT_PROC_PARSE_TREE( $<spIf>$->existsSql,
                                             sParseTree->common.stmtPos,
                                             $<position>5 );
-              // subquery size Á¶Á¤
+              // subquery size ì¡°ì •
               SET_POSITION( $<spIf>$->existsSql->common.pos, sSubQNode->columnName);
 
               $<spIf>$->existsSql->parseTree = (qcParseTree*)sParseTree;
@@ -35231,7 +35231,7 @@ SP_else_if
               QCP_SET_INIT_PROC_PARSE_TREE( $<spIf>$->existsSql,
                                             sParseTree->common.stmtPos,
                                             $<position>1 );
-              // subquery size Á¶Á¤
+              // subquery size ì¡°ì •
               SET_POSITION( $<spIf>$->existsSql->common.pos, sSubQNode->columnName);
 
               $<spIf>$->existsSql->parseTree = (qcParseTree*)sParseTree;
@@ -35429,7 +35429,7 @@ SP_case_when_condition
               QCP_SET_INIT_PROC_PARSE_TREE( $<spIf>$->existsSql,
                                             sParseTree->common.stmtPos,
                                             $<position>1 );
-              // subquery size Á¶Á¤
+              // subquery size ì¡°ì •
               SET_POSITION( $<spIf>$->existsSql->common.pos, sSubQNode->columnName);
 
               $<spIf>$->existsSql->parseTree = (qcParseTree*)sParseTree;
@@ -35632,7 +35632,7 @@ SP_for_loop_statement
       {
 /***********************************************************************
  *
- * Description : For Loop Statement ÀÇ »ı¼º
+ * Description : For Loop Statement ì˜ ìƒì„±
  *
  * sIsStepOkNode        sIsIntervalOkNode
  *   [<]                       [<=]
@@ -35645,7 +35645,7 @@ SP_for_loop_statement
  * sCounterVar - sLowerVar2 - sUpperVar2
  *
  * sNewCounterNode
- *    [+] REVERSE ÀÎ °æ¿ì´Â [-]
+ *    [+] REVERSE ì¸ ê²½ìš°ëŠ” [-]
  *     |
  * sCounterVar2 - sStepVar2
  *
@@ -38372,8 +38372,8 @@ drop_database_statement
     ;
 
 /*
-    ¸Ç Ã³À½ÀÇ ¼¼ °³ÀÇ RuleÀº ¸ğµÎ °°Àº Áßº¹ÄÚµåÀÌ´Ù.
-    ¾î´À ÇÑÂÊÀ» º¯°æÇÏ¸é ³ª¸ÓÁöµµ ÇÔ²² º¯°æÇØ¾ßÇÔ
+    ë§¨ ì²˜ìŒì˜ ì„¸ ê°œì˜ Ruleì€ ëª¨ë‘ ê°™ì€ ì¤‘ë³µì½”ë“œì´ë‹¤.
+    ì–´ëŠ í•œìª½ì„ ë³€ê²½í•˜ë©´ ë‚˜ë¨¸ì§€ë„ í•¨ê»˜ ë³€ê²½í•´ì•¼í•¨
 
     create tablespace ..
     create disk tablespace ..
@@ -38383,7 +38383,7 @@ drop_database_statement
 create_tablespace_statement
     // CREATE TABLESPACE tablespace_name
     //
-    // ÁÖÀÇ! ¿©±â¸¦ °íÄ¡¸é ´ÙÀ½°ú °°Àº ±¸¹®ÀÇ Áßº¹ÄÚµåµµ ÇÔ²² °íÃÄ¾ßÇÔ
+    // ì£¼ì˜! ì—¬ê¸°ë¥¼ ê³ ì¹˜ë©´ ë‹¤ìŒê³¼ ê°™ì€ êµ¬ë¬¸ì˜ ì¤‘ë³µì½”ë“œë„ í•¨ê»˜ ê³ ì³ì•¼í•¨
     //
     //   - CREATE DISK TABLESPACE tablespace_name
     //   - CREATE DISK DATA TABLESPACE tablespace_name
@@ -38395,7 +38395,7 @@ create_tablespace_statement
       {
 #if defined(ALTIBASE_PRODUCT_HDB)
           //---------------------------------------
-          // disk tablespace »ı¼º ±¸¹®
+          // disk tablespace ìƒì„± êµ¬ë¬¸
           // CREATE TABLESPACE tablespace_name DATAFILE ...
           //---------------------------------------
 
@@ -38506,7 +38506,7 @@ create_tablespace_statement
 
     // CREATE DISK TABLESPACE tablespace_name
     //
-    // ÁÖÀÇ! ¿©±â¸¦ °íÄ¡¸é ´ÙÀ½°ú °°Àº ±¸¹®ÀÇ Áßº¹ÄÚµåµµ ÇÔ²² °íÃÄ¾ßÇÔ
+    // ì£¼ì˜! ì—¬ê¸°ë¥¼ ê³ ì¹˜ë©´ ë‹¤ìŒê³¼ ê°™ì€ êµ¬ë¬¸ì˜ ì¤‘ë³µì½”ë“œë„ í•¨ê»˜ ê³ ì³ì•¼í•¨
     //
     //   - CREATE TABLESPACE tablespace_name
     //   - CREATE DISK DATA TABLESPACE tablespace_name
@@ -38628,7 +38628,7 @@ create_tablespace_statement
 
     // CREATE DISK DATA TABLESPACE tablespace_name
     //
-    // ÁÖÀÇ! ¿©±â¸¦ °íÄ¡¸é ´ÙÀ½°ú °°Àº ±¸¹®ÀÇ Áßº¹ÄÚµåµµ ÇÔ²² °íÃÄ¾ßÇÔ
+    // ì£¼ì˜! ì—¬ê¸°ë¥¼ ê³ ì¹˜ë©´ ë‹¤ìŒê³¼ ê°™ì€ êµ¬ë¬¸ì˜ ì¤‘ë³µì½”ë“œë„ í•¨ê»˜ ê³ ì³ì•¼í•¨
     //
     //   - CREATE TABLESPACE tablespace_name
     //   - CREATE DISK TABLESPACE tablespace_name
@@ -38918,9 +38918,9 @@ create_tablespace_statement
           YYABORT;
 #endif
       }
-    /* ÁÖÀÇ ! µ¿ÀÏ ÄÚµå°¡ Áßº¹µÇ¾î ÀÖÀ½
-               ¿©±â¸¦ °íÄ¡¸é ¹Ù·Î ¾Æ·¡ÀÇ CREATE MEMORY TABLESPACE±¸¹®µµ
-               ÇÔ²² °íÃÄÁà¾ß ÇÔ
+    /* ì£¼ì˜ ! ë™ì¼ ì½”ë“œê°€ ì¤‘ë³µë˜ì–´ ìˆìŒ
+               ì—¬ê¸°ë¥¼ ê³ ì¹˜ë©´ ë°”ë¡œ ì•„ë˜ì˜ CREATE MEMORY TABLESPACEêµ¬ë¬¸ë„
+               í•¨ê»˜ ê³ ì³ì¤˜ì•¼ í•¨
     */
     // CREATE MEMORY DATA TABLESPACE
     | TR_CREATE TI_NONQUOTED_IDENTIFIER TI_NONQUOTED_IDENTIFIER TA_TABLESPACE TI_IDENTIFIER
@@ -38932,7 +38932,7 @@ create_tablespace_statement
       tbs_property_list_option
       {
           //---------------------------------------
-          // PROJ-1548-M2 : memory data tablespacee »ı¼º ±¸¹®
+          // PROJ-1548-M2 : memory data tablespacee ìƒì„± êµ¬ë¬¸
           // CREATE MEMORY DATA TABLESPACE tablespace_name ...
           //---------------------------------------
 
@@ -39019,9 +39019,9 @@ create_tablespace_statement
               qdtCreate::executeMemoryTBS;
       }
 
-    /* ÁÖÀÇ ! µ¿ÀÏ ÄÚµå°¡ Áßº¹µÇ¾î ÀÖÀ½
-               ¿©±â¸¦ °íÄ¡¸é ¹Ù·Î À§ÀÇ CREATE MEMORY DATA TABLESPACE±¸¹®µµ
-               ÇÔ²² °íÃÄÁà¾ß ÇÔ
+    /* ì£¼ì˜ ! ë™ì¼ ì½”ë“œê°€ ì¤‘ë³µë˜ì–´ ìˆìŒ
+               ì—¬ê¸°ë¥¼ ê³ ì¹˜ë©´ ë°”ë¡œ ìœ„ì˜ CREATE MEMORY DATA TABLESPACEêµ¬ë¬¸ë„
+               í•¨ê»˜ ê³ ì³ì¤˜ì•¼ í•¨
     */
     // CREATE MEMORY TABLESPACE
     | TR_CREATE TI_NONQUOTED_IDENTIFIER TA_TABLESPACE TI_IDENTIFIER
@@ -39033,7 +39033,7 @@ create_tablespace_statement
       tbs_property_list_option
       {
           //---------------------------------------
-          // PROJ-1548-M2 : memory data tablespacee »ı¼º ±¸¹®
+          // PROJ-1548-M2 : memory data tablespacee ìƒì„± êµ¬ë¬¸
           // CREATE MEMORY DATA TABLESPACE tablespace_name ...
           //---------------------------------------
 
@@ -39214,7 +39214,7 @@ split_size_clause
 create_temp_tablespace_statement
     // CREATE TEMPORARY TABLESPACE tablespace_name
     //
-    // ÁÖÀÇ! ¿©±â¸¦ °íÄ¡¸é ´ÙÀ½°ú °°Àº ±¸¹®ÀÇ Áßº¹ÄÚµåµµ ÇÔ²² °íÃÄ¾ßÇÔ
+    // ì£¼ì˜! ì—¬ê¸°ë¥¼ ê³ ì¹˜ë©´ ë‹¤ìŒê³¼ ê°™ì€ êµ¬ë¬¸ì˜ ì¤‘ë³µì½”ë“œë„ í•¨ê»˜ ê³ ì³ì•¼í•¨
     //
     // - CREATE DISK TEMPORARY TABLESPACE tablespace_name
     //
@@ -39314,7 +39314,7 @@ create_temp_tablespace_statement
       }
     // CREATE DISK TEMPORARY TABLESPACE tablespace_name
     //
-    // ÁÖÀÇ! ¿©±â¸¦ °íÄ¡¸é ´ÙÀ½°ú °°Àº ±¸¹®ÀÇ Áßº¹ÄÚµåµµ ÇÔ²² °íÃÄ¾ßÇÔ
+    // ì£¼ì˜! ì—¬ê¸°ë¥¼ ê³ ì¹˜ë©´ ë‹¤ìŒê³¼ ê°™ì€ êµ¬ë¬¸ì˜ ì¤‘ë³µì½”ë“œë„ í•¨ê»˜ ê³ ì³ì•¼í•¨
     //
     // - CREATE TEMPORARY TABLESPACE tablespace_name
     //
@@ -40222,7 +40222,7 @@ alter_tablespace_ddl_statement
           qcuSqlSourceInfo    sqlInfo;
 
           // BUG-38826
-          // TASK-3837 ¹İ¿µÀü±îÁö syntax error Ã³¸®
+          // TASK-3837 ë°˜ì˜ì „ê¹Œì§€ syntax error ì²˜ë¦¬
           sqlInfo.setSourceInfo(STATEMENT, & $<position>5 );
           sqlInfo.init(MEMORY);
           IDE_SET(ideSetErrorCode(qpERR_ABORT_QCP_SYNTAX, sqlInfo.getErrMessage()));
@@ -40256,7 +40256,7 @@ alter_tablespace_ddl_statement
           QC_SET_INIT_PARSE_TREE($<alterTBSParseTree>$, $<position>1);
 
           // alloc smiTableSpaceAttr
-          // new nameµµ ÀúÀåÇØ¾ß ÇÏ¹Ç·Î 2°³ ÇÒ´ç
+          // new nameë„ ì €ì¥í•´ì•¼ í•˜ë¯€ë¡œ 2ê°œ í• ë‹¹
           QCP_TEST( MEMORY->alloc( ID_SIZEOF(smiTableSpaceAttr) * 2,
                                   (void**)&($<alterTBSParseTree>$->TBSAttr) )
                     != IDE_SUCCESS );
@@ -40313,10 +40313,10 @@ tbs_attr_list
    ;
 
 /*
-   Disk/Memory/Volatile/Temp ³×°¡Áö ¸ğµÎ¿¡ °øÅëÀûÀ¸·Î Àû¿ëµÇ´Â Attributeµé
+   Disk/Memory/Volatile/Temp ë„¤ê°€ì§€ ëª¨ë‘ì— ê³µí†µì ìœ¼ë¡œ ì ìš©ë˜ëŠ” Attributeë“¤
 
-   ¿©±â¿¡ ±â¼úÇÏ¸é Disk/Memory/Volatile/Temp TablespaceÀÇ
-   Create Tablespace¿Í Alter Tablespace¿¡ °øÅëÀûÀ¸·Î Àû¿ëµÈ´Ù.
+   ì—¬ê¸°ì— ê¸°ìˆ í•˜ë©´ Disk/Memory/Volatile/Temp Tablespaceì˜
+   Create Tablespaceì™€ Alter Tablespaceì— ê³µí†µì ìœ¼ë¡œ ì ìš©ëœë‹¤.
    Table space Attribute
  */
 tbs_attr_clause
@@ -41022,7 +41022,7 @@ opt_createTBS_options
             YYABORT;
         }
 
-        // PCTFREE/PCTUSED ¼¼ÆÃ
+        // PCTFREE/PCTUSED ì„¸íŒ…
         if ( $<createTBSOptions>1->extentSize == NULL )
         {
             $<createTBSOptions>1->extentSize =
@@ -41417,7 +41417,7 @@ create_trigger_statement
           mtcColumn        * sCursorColumn;
           qtcNode          * sCursorTypeNode[2];
 
-          // CREATE TRIGGER¸¦ À§ÇÑ Parse Tree ÃÊ±âÈ­
+          // CREATE TRIGGERë¥¼ ìœ„í•œ Parse Tree ì´ˆê¸°í™”
           QCP_STRUCT_ALLOC( $<spCreateTrigger>$,
                             qdnCreateTriggerParseTree );
           idlOS::memset( $<spCreateTrigger>$,
@@ -41426,33 +41426,33 @@ create_trigger_statement
           QC_SET_INIT_PARSE_TREE($<spCreateTrigger>$, $<position>1);
           QDN_CREATE_TRIGGER_PARSE_TREE_INIT($<spCreateTrigger>$);
 
-          // Trigger NameÀÇ ¼³Á¤
+          // Trigger Nameì˜ ì„¤ì •
           SET_POSITION( $<spCreateTrigger>$->triggerUserPos,
                         $<userNObjName>2->userName );
           SET_POSITION( $<spCreateTrigger>$->triggerNamePos,
                         $<userNObjName>2->objectName );
 
-          // Trigger EventÀÇ ¼³Á¤
+          // Trigger Eventì˜ ì„¤ì •
           idlOS::memcpy( & $<spCreateTrigger>$->triggerEvent,
                          $<spTriggerEvent>3,
                          ID_SIZEOF( qdnTriggerEvent ) );
 
-          // Subject Table NameÀÇ ¼³Á¤
+          // Subject Table Nameì˜ ì„¤ì •
           SET_POSITION( $<spCreateTrigger>$->userNamePos,
                         $<userNObjName>5->userName );
           SET_POSITION( $<spCreateTrigger>$->tableNamePos,
                         $<userNObjName>5->objectName );
 
 
-          // Referencing Á¤º¸ÀÇ ¼³Á¤
+          // Referencing ì •ë³´ì˜ ì„¤ì •
           $<spCreateTrigger>$->triggerReference = $<spTriggerReference>6;
 
-          // Action Information Á¤º¸ÀÇ ¼³Á¤
+          // Action Information ì •ë³´ì˜ ì„¤ì •
           idlOS::memcpy( & $<spCreateTrigger>$->actionCond,
                          & $<sTriggerActionCond>7,
                          ID_SIZEOF( qdnTriggerActionCond ) );
 
-          // Action Body Á¤º¸ÀÇ ¼³Á¤
+          // Action Body ì •ë³´ì˜ ì„¤ì •
           $<spCreateTrigger>$->actionBody.block = $<spBlock>8;
           $<spCreateTrigger>$->actionBody.objType = QS_TRIGGER;
           $<spCreateTrigger>$->actionBody.isDefiner = ID_TRUE;
@@ -41475,8 +41475,8 @@ create_trigger_statement
               sCursorTypeNode[0];
 
           /* PROJ-2197 PSM Renewal
-           * Trigger¿¡¼­ ¿À·ù ¹ß»ı½Ã trigger ÀÌ¸§À» Ãâ·ÂÇÏ±â À§ÇØ¼­
-           * trigger positionÀ» trigger actionBody¿¡ Ãß°¡ÇÑ´Ù. */
+           * Triggerì—ì„œ ì˜¤ë¥˜ ë°œìƒì‹œ trigger ì´ë¦„ì„ ì¶œë ¥í•˜ê¸° ìœ„í•´ì„œ
+           * trigger positionì„ trigger actionBodyì— ì¶”ê°€í•œë‹¤. */
           SET_POSITION( $<spCreateTrigger>$->actionBody.userNamePos,
                         $<spCreateTrigger>$->triggerUserPos );
           SET_POSITION( $<spCreateTrigger>$->actionBody.procNamePos,
@@ -41487,7 +41487,7 @@ create_trigger_statement
           // BUG-21761
           $<spCreateTrigger>$->ncharList = NCHARLIST;
 
-          // CRAETE TRIGGER¸¦ À§ÇÑ ÇÔ¼ö pointer ¼³Á¤
+          // CRAETE TRIGGERë¥¼ ìœ„í•œ í•¨ìˆ˜ pointer ì„¤ì •
           $<spCreateTrigger>$->common.parse    = qdnTrigger::parseCreate;
           if ( $<uIntVal>1 == 0 )
           {
@@ -41500,7 +41500,7 @@ create_trigger_statement
                   qdnTrigger::validateReplace;
           }
 
-          // recompile Á¤º¸¸¦ FALSE·Î ¼¼ÆÃ.
+          // recompile ì •ë³´ë¥¼ FALSEë¡œ ì„¸íŒ….
 
           $<spCreateTrigger>$->isRecompile = ID_FALSE;
 
@@ -41523,7 +41523,7 @@ create_or_replace_trigger_clause
 alter_trigger_statement
     : TR_ALTER TR_TRIGGER user_object_name alter_trigger_option
       {
-          // ALTER TRIGGER¸¦ À§ÇÑ Parse Tree ÃÊ±âÈ­
+          // ALTER TRIGGERë¥¼ ìœ„í•œ Parse Tree ì´ˆê¸°í™”
           QCP_STRUCT_ALLOC( $<spAlterTrigger>$,
                             qdnAlterTriggerParseTree );
           idlOS::memset( $<spAlterTrigger>$,
@@ -41532,16 +41532,16 @@ alter_trigger_statement
           QC_SET_INIT_PARSE_TREE( $<spAlterTrigger>$, $<position>1 );
           QDN_ALTER_TRIGGER_PARSE_TREE_INIT($<spAlterTrigger>$);
 
-          // Trigger NameÀÇ ¼³Á¤
+          // Trigger Nameì˜ ì„¤ì •
           SET_POSITION( $<spAlterTrigger>$->triggerUserPos,
                         $<userNObjName>3->userName );
           SET_POSITION( $<spAlterTrigger>$->triggerNamePos,
                         $<userNObjName>3->objectName );
 
-          // ALTER OptionÀÇ ¼³Á¤
+          // ALTER Optionì˜ ì„¤ì •
           $<spAlterTrigger>$->option = $<sTriggerAlterOption>4;
 
-          // ALTER TRIGGER¸¦ À§ÇÑ ÇÔ¼ö pointer ¼³Á¤
+          // ALTER TRIGGERë¥¼ ìœ„í•œ í•¨ìˆ˜ pointer ì„¤ì •
           $<spAlterTrigger>$->common.parse    = qdnTrigger::parseAlter;
           $<spAlterTrigger>$->common.validate = qdnTrigger::validateAlter;
           $<spAlterTrigger>$->common.optimize = qdnTrigger::optimizeAlter;
@@ -41552,7 +41552,7 @@ alter_trigger_statement
 drop_trigger_statement
     : TR_DROP TR_TRIGGER user_object_name
       {
-          // DROP TRIGGER¸¦ À§ÇÑ Parse Tree ÃÊ±âÈ­
+          // DROP TRIGGERë¥¼ ìœ„í•œ Parse Tree ì´ˆê¸°í™”
           QCP_STRUCT_ALLOC( $<spDropTrigger>$,
                             qdnDropTriggerParseTree );
           idlOS::memset( $<spDropTrigger>$,
@@ -41561,13 +41561,13 @@ drop_trigger_statement
           QC_SET_INIT_PARSE_TREE( $<spDropTrigger>$, $<position>1 );
           QDN_DROP_TRIGGER_PARSE_TREE_INIT($<spDropTrigger>$);
 
-          // Trigger NameÀÇ ¼³Á¤
+          // Trigger Nameì˜ ì„¤ì •
           SET_POSITION( $<spDropTrigger>$->triggerUserPos,
                         $<userNObjName>3->userName );
           SET_POSITION( $<spDropTrigger>$->triggerNamePos,
                         $<userNObjName>3->objectName );
 
-          // DROP TRIGGER¸¦ À§ÇÑ ÇÔ¼ö pointer ¼³Á¤
+          // DROP TRIGGERë¥¼ ìœ„í•œ í•¨ìˆ˜ pointer ì„¤ì •
           $<spDropTrigger>$->common.parse    = qdnTrigger::parseDrop;
           $<spDropTrigger>$->common.validate = qdnTrigger::validateDrop;
           $<spDropTrigger>$->common.optimize = qdnTrigger::optimizeDrop;
@@ -41585,8 +41585,8 @@ trigger_event_clause
       }
     ;
 
-// BUG-27835 ´ÙÁß trigger event¿¡ ´ëÇØ parsingÀº °¡´ÉÇÏ³ª ½ÇÁ¦ Ã³¸®´Â
-// ±¸ÇöµÇÁö ¾Ê¾ÒÀ¸¹Ç·Î ´ÙÁß trigger eventÀÇ parserµµ ÁÖ¼®Ã³¸® ÇÔ
+// BUG-27835 ë‹¤ì¤‘ trigger eventì— ëŒ€í•´ parsingì€ ê°€ëŠ¥í•˜ë‚˜ ì‹¤ì œ ì²˜ë¦¬ëŠ”
+// êµ¬í˜„ë˜ì§€ ì•Šì•˜ìœ¼ë¯€ë¡œ ë‹¤ì¤‘ trigger eventì˜ parserë„ ì£¼ì„ì²˜ë¦¬ í•¨
 trigger_event_type_list
     :/* trigger_event_type_list TR_OR TR_DELETE
       {
@@ -42306,7 +42306,7 @@ create_materialized_view_statement
                                         $<tableOptions>6->isRowmovement;
           }
 
-          /* TableÀÇ Flag·Î ÀúÀåµÉ AttributeµéÀÇ List */
+          /* Tableì˜ Flagë¡œ ì €ì¥ë  Attributeë“¤ì˜ List */
           $<tableParseTree>$->tableAttrFlagList
               = $<tableOptions>6->tableAttrFlagList;
 
@@ -42349,7 +42349,7 @@ mview_table_options
 
           if ( $<partTable>1 != NULL )
           {
-              // Partitioned Table¿¡´Â MAXROW¸¦ ÁÙ ¼ö ¾øÀ½
+              // Partitioned Tableì—ëŠ” MAXROWë¥¼ ì¤„ ìˆ˜ ì—†ìŒ
               if ( $<tableMaxRows>3 != NULL )
               {
                   sqlInfo.setSourceInfo(STATEMENT, & $<tableMaxRows>3->namePosition );
@@ -42362,7 +42362,7 @@ mview_table_options
           }
           else
           {
-              // Partioned TableÀÌ ¾Æ´Ñ °÷¿¡ Row Movement¸¦ ÁÙ ¼ö ¾øÀ½
+              // Partioned Tableì´ ì•„ë‹Œ ê³³ì— Row Movementë¥¼ ì¤„ ìˆ˜ ì—†ìŒ
 
               if ( $<tableRowMovement>2 != NULL )
               {
@@ -43572,7 +43572,7 @@ audit_statement
           UInt sOper = 0;
           UInt i;
           
-          // object auditing¿¡´Â DML¸¸ ¿Ã ¼ö ÀÖ´Ù.
+          // object auditingì—ëŠ” DMLë§Œ ì˜¬ ìˆ˜ ìˆë‹¤.
           for ( i = QCI_AUDIT_OPER_DCL; i < QCI_AUDIT_OPER_MAX; i++ )
           {
               if ( $<auditOperation>2->operation[i] > 0 )
@@ -43639,7 +43639,7 @@ audit_statement
           /* set logging option */
           if ( $<auditOperation>2->isAll == ID_TRUE )
           {
-              // object auditing¿¡´Â DML¸¸ ¿Ã ¼ö ÀÖ´Ù.
+              // object auditingì—ëŠ” DMLë§Œ ì˜¬ ìˆ˜ ìˆë‹¤.
               for ( i = 0; i < QCI_AUDIT_OPER_DCL; i++ )
               {
                   $<auditParseTree>$->operations->operation[i] = sOper;
@@ -43679,7 +43679,7 @@ audit_statement
               YYABORT;
           }
           
-          // DDL¿¡´Â logging mode¸¦ ¼³Á¤ÇÒ ¼ö ¾ø´Ù.
+          // DDLì—ëŠ” logging modeë¥¼ ì„¤ì •í•  ìˆ˜ ì—†ë‹¤.
           if ( ( ( $<auditOperation>2->operation[QCI_AUDIT_OPER_DDL] > 0 ) 
               || ( $<auditOperation>2->operation[QCI_AUDIT_OPER_CONNECT] > 0 ) 
               || ( $<auditOperation>2->operation[QCI_AUDIT_OPER_DISCONNECT] > 0 ) )
@@ -43769,7 +43769,7 @@ audit_statement
           UInt sOper = 0;
           UInt i;
 
-          // DDL, CONNECT, DISCONNECT ¿¡´Â logging mode¸¦ ¼³Á¤ÇÒ ¼ö ¾ø´Ù.
+          // DDL, CONNECT, DISCONNECT ì—ëŠ” logging modeë¥¼ ì„¤ì •í•  ìˆ˜ ì—†ë‹¤.
           if ( ( ( $<auditOperation>2->operation[QCI_AUDIT_OPER_DDL] > 0 ) 
               || ( $<auditOperation>2->operation[QCI_AUDIT_OPER_CONNECT] > 0 ) 
               || ( $<auditOperation>2->operation[QCI_AUDIT_OPER_DISCONNECT] > 0 ) )
@@ -44114,7 +44114,7 @@ noaudit_statement
           UInt sOper = 0;
           UInt i;
           
-          // object auditing¿¡´Â DML¸¸ ¿Ã ¼ö ÀÖ´Ù.
+          // object auditingì—ëŠ” DMLë§Œ ì˜¬ ìˆ˜ ìˆë‹¤.
           for ( i = QCI_AUDIT_OPER_DCL; i < QCI_AUDIT_OPER_MAX; i++ )
           {
               if ( $<auditOperation>2->operation[i] > 0 )
@@ -44509,12 +44509,12 @@ create_job_or_role_statement
               /* Nothing to do */
           }
 
-          /* º¹ÀâÇÑ expression ÀÌ¸é position Á¤º¸°¡ Àß¸ø µÉ ¼ö ÀÖ´Ù */
+          /* ë³µì¡í•œ expression ì´ë©´ position ì •ë³´ê°€ ì˜ëª» ë  ìˆ˜ ìˆë‹¤ */
           SET_POSITION(sJobParseTree->start, $<expression>7[0]->position);
 
           if ( $<expression>8[0] != NULL )
           {
-              /* º¹ÀâÇÑ expression ÀÌ¸é position Á¤º¸°¡ Àß¸ø µÉ ¼ö ÀÖ´Ù */
+              /* ë³µì¡í•œ expression ì´ë©´ position ì •ë³´ê°€ ì˜ëª» ë  ìˆ˜ ìˆë‹¤ */
                SET_POSITION(sJobParseTree->end, $<expression>8[0]->position);
           }
           else

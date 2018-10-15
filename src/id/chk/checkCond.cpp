@@ -187,7 +187,7 @@ int main()
     {
         idlOS::printf("[FIRST CHILD] pid=%d \n", childPID);
         childPID2 = idlOS::fork();
-        if ( childPID2 == 0) // mutex¸¦ Àâ°í Á¾·áÇÏ´Â thread
+        if ( childPID2 == 0) // mutexë¥¼ ìž¡ê³  ì¢…ë£Œí•˜ëŠ” thread
         {
 #ifdef CHILD_WAIT_HANG
             idlOS::sleep(3);

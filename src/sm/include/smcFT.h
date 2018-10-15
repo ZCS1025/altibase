@@ -57,8 +57,8 @@ private:
 
 public:
 
-    /* PROJ-1407 Temporary Table - Volatile table¿¡ »ç¿ëÇÏ±â À§ÇØ¼­
-     * publicÀ¸·Î À§Ä¡ÀÌµ¿ */
+    /* PROJ-1407 Temporary Table - Volatile tableì— ì‚¬ìš©í•˜ê¸° ìœ„í•´ì„œ
+     * publicìœ¼ë¡œ ìœ„ì¹˜ì´ë™ */
     static IDE_RC makeMemColValue24B( const smiColumn * aColumn,
                                       SChar           * aRowPtr,
                                       SChar           * aValue24B );

@@ -100,7 +100,7 @@ public:
     void   destroy();
 
     void   run();
-    void   stop();              // Á¾·á called by mmiMgr
+    void   stop();              // ì¢…ë£Œ called by mmiMgr
     static IDE_RC lock()     { return mMutex.lock(NULL /* idvSQL* */);   }
     static IDE_RC unlock()   { return mMutex.unlock(); }
 

@@ -32,7 +32,7 @@ typedef struct qsxCursorInfo
     vSLong            mRowCount;
 
     // mRowCountIsNull, mIsOpen, mIsNextRecordExist, mIsEndOfCursor, mIsSQLCursor, mIsNeedStmtFree
-    // ¸¦ mFlag·Î ÅëÇÕÇÔ.
+    // ë¥¼ mFlagë¡œ í†µí•©í•¨.
     //
     // * mIsSQLCursor 
     //    BUG-3756
@@ -40,12 +40,12 @@ typedef struct qsxCursorInfo
     //      ID_FALSE : USER DEFINED CURSOR
     // * mIsNeedStmtFree
     //    BUG-38767 
-    //      statement free°¡ ÇÊ¿äÇÑÁö ¿©ºÎ
+    //      statement freeê°€ í•„ìš”í•œì§€ ì—¬ë¶€
     // * mIsNextRecordExist
-    //    next row°¡ Á¸ÀçÇÏ´ÂÁö ¿©ºÎ
+    //    next rowê°€ ì¡´ìž¬í•˜ëŠ”ì§€ ì—¬ë¶€
     UInt              mFlag;
 
-    // BUG-44536 Affected row count°ú fetched row count¸¦ ºÐ¸®ÇÕ´Ï´Ù. 
+    // BUG-44536 Affected row countê³¼ fetched row countë¥¼ ë¶„ë¦¬í•©ë‹ˆë‹¤. 
     qciStmtType       mStmtType;
 
     // for tracking all cursors that is in use

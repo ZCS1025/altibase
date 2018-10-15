@@ -75,13 +75,13 @@ IDE_RC sdpUpdate::redo_SDR_SDP_BINARY( SChar       * aData,
     {
         IDE_ERROR( aPagePtr == sdpPhyPage::getPageStartPtr( aPagePtr));
         /*
-         * sdbFrameHdr¿¡ º¸¸é mBCBPtrÀÌ¶ó´Â member°¡ ÀÖ´Ù.  ÀÌ°ÍÀº Çö frame¿¡ ´ëÇÑ
-         * Á¤º¸¸¦ °¡Áö°í ÀÖ´Â sdbBCB¿¡ ´ëÇÑ Æ÷ÀÎÅÍÀÌ´Ù.  ÀÌ°ÍÀ» ÅëÇØ¼­ frame¿¡
-         * ´ëÇÑ BCB¸¦ ¾òÀ» ¼ö°¡ ÀÖ´Ù.
-         * ¾î¶°ÇÑ ÆäÀÌÁöÀÇ ÀüÃ¼ image¸¦ ·Î±ëÇÏ°í ÀÌ°ÍÀ» redoÇÑ´Ù°í ÇØº¸ÀÚ.
-         * ·Î±ëÇÒ ´ç½ÃÀÇ frame¿¡ ´ëÇÑ BCB¿Í redoÇÏ´Â ½ÃÁ¡¿¡¼­ frame¿¡´ëÇÑ
-         * BCB´Â ´Ù¸¥ °ªÀÌ´Ù. Áï, mBCBPtrÀº ·Î±ëµÇ¾î¼± ¾ÈµÇ´Â °ªÀÌ°í,
-         * ±×·¸±â ¶§¹®¿¡ ´ç¿¬È÷ redo°¡ µÇ¾î¼­µµ ¾ÈµÈ´Ù.
+         * sdbFrameHdrì— ë³´ë©´ mBCBPtrì´ë¼ëŠ” memberê°€ ìžˆë‹¤.  ì´ê²ƒì€ í˜„ frameì— ëŒ€í•œ
+         * ì •ë³´ë¥¼ ê°€ì§€ê³  ìžˆëŠ” sdbBCBì— ëŒ€í•œ í¬ì¸í„°ì´ë‹¤.  ì´ê²ƒì„ í†µí•´ì„œ frameì—
+         * ëŒ€í•œ BCBë¥¼ ì–»ì„ ìˆ˜ê°€ ìžˆë‹¤.
+         * ì–´ë– í•œ íŽ˜ì´ì§€ì˜ ì „ì²´ imageë¥¼ ë¡œê¹…í•˜ê³  ì´ê²ƒì„ redoí•œë‹¤ê³  í•´ë³´ìž.
+         * ë¡œê¹…í•  ë‹¹ì‹œì˜ frameì— ëŒ€í•œ BCBì™€ redoí•˜ëŠ” ì‹œì ì—ì„œ frameì—ëŒ€í•œ
+         * BCBëŠ” ë‹¤ë¥¸ ê°’ì´ë‹¤. ì¦‰, mBCBPtrì€ ë¡œê¹…ë˜ì–´ì„  ì•ˆë˜ëŠ” ê°’ì´ê³ ,
+         * ê·¸ë ‡ê¸° ë•Œë¬¸ì— ë‹¹ì—°ížˆ redoê°€ ë˜ì–´ì„œë„ ì•ˆëœë‹¤.
          * */
         idlOS::memcpy(aPagePtr + ID_SIZEOF(sdbFrameHdr),
                       aData + ID_SIZEOF(sdbFrameHdr),
@@ -102,8 +102,8 @@ IDE_RC sdpUpdate::redo_SDR_SDP_BINARY( SChar       * aData,
 
 /***********************************************************************
  * redo type: SDR_SDP_WRITE_PAGEIMG, SDR_SDP_DPATH_INS_PAGE
- *            Backup ÁßÀÌ³ª, Direct-Path INSERT·Î ¼öÇàµÈ
- *            Page ÀüÃ¼¿¡ ´ëÇÑ Image log redo
+ *            Backup ì¤‘ì´ë‚˜, Direct-Path INSERTë¡œ ìˆ˜í–‰ëœ
+ *            Page ì „ì²´ì— ëŒ€í•œ Image log redo
  ***********************************************************************/
 IDE_RC sdpUpdate::redo_SDR_SDP_WRITE_PAGEIMG( SChar       * aData,
                                               UInt          aLength,
@@ -118,13 +118,13 @@ IDE_RC sdpUpdate::redo_SDR_SDP_WRITE_PAGEIMG( SChar       * aData,
     IDE_ERROR( aPagePtr  == sdpPhyPage::getPageStartPtr(aPagePtr));
 
     /*
-     * sdbFrameHdr¿¡ º¸¸é mBCBPtrÀÌ¶ó´Â member°¡ ÀÖ´Ù.  ÀÌ°ÍÀº Çö frame¿¡ ´ëÇÑ
-     * Á¤º¸¸¦ °¡Áö°í ÀÖ´Â sdbBCB¿¡ ´ëÇÑ Æ÷ÀÎÅÍÀÌ´Ù.  ÀÌ°ÍÀ» ÅëÇØ¼­ frame¿¡
-     * ´ëÇÑ BCB¸¦ ¾òÀ» ¼ö°¡ ÀÖ´Ù.
-     * ¾î¶°ÇÑ ÆäÀÌÁöÀÇ ÀüÃ¼ image¸¦ ·Î±ëÇÏ°í ÀÌ°ÍÀ» redoÇÑ´Ù°í ÇØº¸ÀÚ.
-     * ·Î±ëÇÒ ´ç½ÃÀÇ frame¿¡ ´ëÇÑ BCB¿Í redoÇÏ´Â ½ÃÁ¡¿¡¼­ frame¿¡´ëÇÑ
-     * BCB´Â ´Ù¸¥ °ªÀÌ´Ù. Áï, mBCBPtrÀº ·Î±ëµÇ¾î¼± ¾ÈµÇ´Â °ªÀÌ°í,
-     * ±×·¸±â ¶§¹®¿¡ ´ç¿¬È÷ redo°¡ µÇ¾î¼­µµ ¾ÈµÈ´Ù.
+     * sdbFrameHdrì— ë³´ë©´ mBCBPtrì´ë¼ëŠ” memberê°€ ìžˆë‹¤.  ì´ê²ƒì€ í˜„ frameì— ëŒ€í•œ
+     * ì •ë³´ë¥¼ ê°€ì§€ê³  ìžˆëŠ” sdbBCBì— ëŒ€í•œ í¬ì¸í„°ì´ë‹¤.  ì´ê²ƒì„ í†µí•´ì„œ frameì—
+     * ëŒ€í•œ BCBë¥¼ ì–»ì„ ìˆ˜ê°€ ìžˆë‹¤.
+     * ì–´ë– í•œ íŽ˜ì´ì§€ì˜ ì „ì²´ imageë¥¼ ë¡œê¹…í•˜ê³  ì´ê²ƒì„ redoí•œë‹¤ê³  í•´ë³´ìž.
+     * ë¡œê¹…í•  ë‹¹ì‹œì˜ frameì— ëŒ€í•œ BCBì™€ redoí•˜ëŠ” ì‹œì ì—ì„œ frameì—ëŒ€í•œ
+     * BCBëŠ” ë‹¤ë¥¸ ê°’ì´ë‹¤. ì¦‰, mBCBPtrì€ ë¡œê¹…ë˜ì–´ì„  ì•ˆë˜ëŠ” ê°’ì´ê³ ,
+     * ê·¸ë ‡ê¸° ë•Œë¬¸ì— ë‹¹ì—°ížˆ redoê°€ ë˜ì–´ì„œë„ ì•ˆëœë‹¤.
      * */
     idlOS::memcpy( aPagePtr + ID_SIZEOF(sdbFrameHdr),
                    aData + ID_SIZEOF(sdbFrameHdr),
@@ -139,7 +139,7 @@ IDE_RC sdpUpdate::redo_SDR_SDP_WRITE_PAGEIMG( SChar       * aData,
 
 /***********************************************************************
  * redo type: SDR_SDP_PAGE_CONSISTENT
- *            PageÀÇ Consistent »óÅÂ¿¡ ´ëÇÑ log
+ *            Pageì˜ Consistent ìƒíƒœì— ëŒ€í•œ log
  ***********************************************************************/
 IDE_RC sdpUpdate::redo_SDR_SDP_PAGE_CONSISTENT( SChar       * aData,
                                                 UInt          aLength,
@@ -428,8 +428,8 @@ IDE_RC sdpUpdate::undo_SDR_OP_SDP_DPATH_ADD_SEGINFO(
     sDPathSegInfo = NULL;
 
     //-----------------------------------------------------------------------
-    // º» undo ÇÔ¼ö´Â Rollback ½Ã¿¡¸¸ »ç¿ëµÇ´Â ÇÔ¼ö·Î, Restart Recovery¿Í´Â
-    // °ü·ÃÀÌ ¾ø´Ù. µû¶ó¼­ Restart Recovery°¡ ¾Æ´Ò ¶§¸¸ ´ÙÀ½ ÄÚµå¸¦ ¼öÇàÇÑ´Ù.
+    // ë³¸ undo í•¨ìˆ˜ëŠ” Rollback ì‹œì—ë§Œ ì‚¬ìš©ë˜ëŠ” í•¨ìˆ˜ë¡œ, Restart Recoveryì™€ëŠ”
+    // ê´€ë ¨ì´ ì—†ë‹¤. ë”°ë¼ì„œ Restart Recoveryê°€ ì•„ë‹ ë•Œë§Œ ë‹¤ìŒ ì½”ë“œë¥¼ ìˆ˜í–‰í•œë‹¤.
     //-----------------------------------------------------------------------
     if ( smLayerCallback::isRestartRecoveryPhase() == ID_FALSE )
     {
@@ -452,8 +452,8 @@ IDE_RC sdpUpdate::undo_SDR_OP_SDP_DPATH_ADD_SEGINFO(
         sDPathSegInfo = (sdpDPathSegInfo*)sCurNode;
 
         //-----------------------------------------------------------------
-        // ·Î±ëµÈ DPathSegInfoÀÇ SeqNo¿Í ÇöÀç ¸Þ¸ð¸®¿¡ Á¸ÀçÇÏ´Â ¸¶Áö¸·
-        // DPathSegInfoÀÇ SeqNo°¡ ÀÏÄ¡ÇÏ´ÂÁö È®ÀÎÇÏ¿© RollbackÀ» ¼öÇàÇÑ´Ù.
+        // ë¡œê¹…ëœ DPathSegInfoì˜ SeqNoì™€ í˜„ìž¬ ë©”ëª¨ë¦¬ì— ì¡´ìž¬í•˜ëŠ” ë§ˆì§€ë§‰
+        // DPathSegInfoì˜ SeqNoê°€ ì¼ì¹˜í•˜ëŠ”ì§€ í™•ì¸í•˜ì—¬ Rollbackì„ ìˆ˜í–‰í•œë‹¤.
         //-----------------------------------------------------------------
         if( (sDPathSegInfo != NULL) && (sDPathSegInfo->mSeqNo == aSegInfoSeqNo) )
         {
@@ -466,12 +466,12 @@ IDE_RC sdpUpdate::undo_SDR_OP_SDP_DPATH_ADD_SEGINFO(
         else
         {
             //----------------------------------------------------------------
-            // ·Î±ëµÈ DPathSegInfoÀÇ SeqNo°¡ ¸Þ¸ð¸®¿¡ Á¸ÀçÇÏ´Â ¸¶Áö¸·
-            // DPathSegInfoÀÇ SeqNo¿Í ÀÏÄ¡ÇÏÁö ¾Ê´Â °æ¿ì.
+            // ë¡œê¹…ëœ DPathSegInfoì˜ SeqNoê°€ ë©”ëª¨ë¦¬ì— ì¡´ìž¬í•˜ëŠ” ë§ˆì§€ë§‰
+            // DPathSegInfoì˜ SeqNoì™€ ì¼ì¹˜í•˜ì§€ ì•ŠëŠ” ê²½ìš°.
             //
-            // ·Î±ëÀÌ ¿Ï·á µÇ¾ú´Ù¸é, ·Î±ëµÈ SeqNoÀÇ DPathSegInfoÀÌ ¸Þ¸ð¸®¿¡
-            // Á¸ÀçÇØ¾ß ÇÏ´Âµ¥, Á¸ÀçÇÏÁö ¾Ê´Â´Ù´Â °ÍÀº ¸Þ¸ð¸®¿¡ Á¤»óÀûÀÌÁö ¾ÊÀº
-            // º¯°æÀÌ ¹ß»ýÇß´Ù´Â ÀÇ¹ÌÀÌ¹Ç·Î ASSERT Ã³¸®ÇÑ´Ù.
+            // ë¡œê¹…ì´ ì™„ë£Œ ë˜ì—ˆë‹¤ë©´, ë¡œê¹…ëœ SeqNoì˜ DPathSegInfoì´ ë©”ëª¨ë¦¬ì—
+            // ì¡´ìž¬í•´ì•¼ í•˜ëŠ”ë°, ì¡´ìž¬í•˜ì§€ ì•ŠëŠ”ë‹¤ëŠ” ê²ƒì€ ë©”ëª¨ë¦¬ì— ì •ìƒì ì´ì§€ ì•Šì€
+            // ë³€ê²½ì´ ë°œìƒí–ˆë‹¤ëŠ” ì˜ë¯¸ì´ë¯€ë¡œ ASSERT ì²˜ë¦¬í•œë‹¤.
             //----------------------------------------------------------------
 
             ideLog::log( IDE_DUMP_0,
@@ -483,7 +483,7 @@ IDE_RC sdpUpdate::undo_SDR_OP_SDP_DPATH_ADD_SEGINFO(
     }
     else
     {
-        // Restart RecoveryÀÎ °æ¿ì, ¹«½ÃÇÑ´Ù.
+        // Restart Recoveryì¸ ê²½ìš°, ë¬´ì‹œí•œë‹¤.
     }
 
     return IDE_SUCCESS;

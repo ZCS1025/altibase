@@ -27,12 +27,12 @@ CDBC_INTERNAL SQLUINTEGER altibase_cli_failover_callback (
 
 
 /**
- * STF¸¦ À§ÇÑ ÄÝ¹é ÇÔ¼ö¸¦ µî·ÏÇÑ´Ù.
+ * STFë¥¼ ìœ„í•œ ì½œë°± í•¨ìˆ˜ë¥¼ ë“±ë¡í•œë‹¤.
  *
- * @param[in] aABConn       ¿¬°á ÇÚµé
- * @param[in] aCallbackFunc ÄÝ¹é ÇÔ¼ö
- * @param[in] aAppContext   ÄÝ¹é ÇÔ¼ö¿¡¼­ »ç¿ëÇÒ µ¥ÀÌÅ¸ÀÇ Æ÷ÀÎÅÍ
- * @return ¼º°øÇÏ¸é ALTIBASE_SUCCESS, ±×·¸Áö ¾ÊÀ¸¸é ALTIBASE_ERROR
+ * @param[in] aABConn       ì—°ê²° í•¸ë“¤
+ * @param[in] aCallbackFunc ì½œë°± í•¨ìˆ˜
+ * @param[in] aAppContext   ì½œë°± í•¨ìˆ˜ì—ì„œ ì‚¬ìš©í•  ë°ì´íƒ€ì˜ í¬ì¸í„°
+ * @return ì„±ê³µí•˜ë©´ ALTIBASE_SUCCESS, ê·¸ë ‡ì§€ ì•Šìœ¼ë©´ ALTIBASE_ERROR
  */
 CDBC_EXPORT
 ALTIBASE_RC altibase_set_failover_callback (
@@ -96,8 +96,8 @@ ALTIBASE_RC altibase_set_failover_callback (
 }
 
 /**
- * CLI¿¡ µî·ÏÇÏ±â À§ÇÑ ÄÝ¹é ÇÔ¼ö.
- * ´Ü¼øÈ÷ C/DBC¿¡ µî·ÏµÈ ÄÝ¹é ÇÔ¼ö¸¦ È£ÃâÇØÁÖ´Â ¿ªÇÒ¸¸ ´ã´çÇÑ´Ù.
+ * CLIì— ë“±ë¡í•˜ê¸° ìœ„í•œ ì½œë°± í•¨ìˆ˜.
+ * ë‹¨ìˆœížˆ C/DBCì— ë“±ë¡ëœ ì½œë°± í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•´ì£¼ëŠ” ì—­í• ë§Œ ë‹´ë‹¹í•œë‹¤.
  */
 CDBC_INTERNAL
 SQLUINTEGER altibase_cli_failover_callback (
@@ -127,10 +127,10 @@ SQLUINTEGER altibase_cli_failover_callback (
 }
 
 /**
- * failover¿¡ ¼º°øÇßÀ» ¶§ prepare, bind¸¦ ´Ù½Ã ÇØÁØ´Ù.
+ * failoverì— ì„±ê³µí–ˆì„ ë•Œ prepare, bindë¥¼ ë‹¤ì‹œ í•´ì¤€ë‹¤.
  *
- * @param[in] aABStmt ¸í·É¹® ÇÚµé
- * @return ¼º°øÇßÀ¸¸é ALTIBASE_SUCCESS, ±×·¸Áö ¾ÊÀ¸¸é ALTIBASE_ERROR
+ * @param[in] aABStmt ëª…ë ¹ë¬¸ í•¸ë“¤
+ * @return ì„±ê³µí–ˆìœ¼ë©´ ALTIBASE_SUCCESS, ê·¸ë ‡ì§€ ì•Šìœ¼ë©´ ALTIBASE_ERROR
  */
 CDBC_INTERNAL
 ALTIBASE_RC altibase_stmt_failover_postproc (cdbcABStmt *aABStmt)
@@ -148,13 +148,13 @@ ALTIBASE_RC altibase_stmt_failover_postproc (cdbcABStmt *aABStmt)
 
     CDBC_DASSERT(HSTMT_IS_VALID(aABStmt));
 
-    /* prepare ÇÒ ¶§ resetÇÏ¹Ç·Î ¹é¾÷ ÇØµÎ¾î¾ß ÇÑ´Ù. */
+    /* prepare í•  ë•Œ resetí•˜ë¯€ë¡œ ë°±ì—… í•´ë‘ì–´ì•¼ í•œë‹¤. */
     sBindParam = aABStmt->mBindParam;
     sBindResult = aABStmt->mBindResult;
     sArrayBindSize = aABStmt->mArrayBindSize;
     sArrayFetchSize = aABStmt->mArrayFetchSize;
 
-    /* ¼º°øÇßÀ» ¶§¸¦ À§ÇØ ¹é¾÷ */
+    /* ì„±ê³µí–ˆì„ ë•Œë¥¼ ìœ„í•´ ë°±ì—… */
     acpMemCpy(&sDiagRec, &(aABStmt->mDiagRec), ACI_SIZEOF(cdbcABDiagRec));
 
     (void) altibase_stmt_free_result(aABStmt);
@@ -189,7 +189,7 @@ ALTIBASE_RC altibase_stmt_failover_postproc (cdbcABStmt *aABStmt)
         CDBC_TEST(ALTIBASE_NOT_SUCCEEDED(sRC));
     }
 
-    /* ¿ø·¡ ¿¡·¯ ¸Þ½ÃÁö(failover success) º¹±¸ */
+    /* ì›ëž˜ ì—ëŸ¬ ë©”ì‹œì§€(failover success) ë³µêµ¬ */
     acpMemCpy(&(aABStmt->mDiagRec), &sDiagRec, ACI_SIZEOF(cdbcABDiagRec));
 
     CDBCLOG_OUT_VAL("%s", "ALTIBASE_SUCCESS");

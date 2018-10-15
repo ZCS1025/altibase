@@ -39,13 +39,13 @@ private:
       dequeue statement begin  ----------------- > execute .... 
                                           ^
                                           |
-                                        get queue stamp (sessionÀÇ queue stamp¿¡ ÀúÀå)
+                                        get queue stamp (sessionì˜ queue stampì— ì €ì¥)
                                         
-      dequeue statement begin°ú execute ¹Ù·Î Á÷Àü¿¡ queue itemÀÌ commitµÇ¾ú´Ù¸é,
-      dequeue execute½Ã¿¡  ÇØ´ç queue itemÀ» MVCC¶§¹®¿¡ º¼¼ö ¾ø¾î¼­ ´ë±â »óÅÂ·Î °£´Ù.
-      ±×¸®°í sessionÀÇ queue timestamp¿Í queue timestamp°ú °°¾Æ¼­  ´ÙÀ½ enqueue
-      event°¡ ¹ß»ıÇÒ¶§ ±îÁö  queue¿¡ µ¥ÀÌÅ¸°¡ ÀÖÀ½¿¡µµ ºÒ±¸ÇÏ°í dequeue¸¦ ÇÒ¼ö ¾ø´Ù .
-      ÀÌ¹®Á¦¸¦ ÇØ°á ÇÏ±â À§ÇÏ¿©  commitSCNÀ» µÎ¾ú´Ù.
+      dequeue statement beginê³¼ execute ë°”ë¡œ ì§ì „ì— queue itemì´ commitë˜ì—ˆë‹¤ë©´,
+      dequeue executeì‹œì—  í•´ë‹¹ queue itemì„ MVCCë•Œë¬¸ì— ë³¼ìˆ˜ ì—†ì–´ì„œ ëŒ€ê¸° ìƒíƒœë¡œ ê°„ë‹¤.
+      ê·¸ë¦¬ê³  sessionì˜ queue timestampì™€ queue timestampê³¼ ê°™ì•„ì„œ  ë‹¤ìŒ enqueue
+      eventê°€ ë°œìƒí• ë•Œ ê¹Œì§€  queueì— ë°ì´íƒ€ê°€ ìˆìŒì—ë„ ë¶ˆêµ¬í•˜ê³  dequeueë¥¼ í• ìˆ˜ ì—†ë‹¤ .
+      ì´ë¬¸ì œë¥¼ í•´ê²° í•˜ê¸° ìœ„í•˜ì—¬  commitSCNì„ ë‘ì—ˆë‹¤.
                                           
      */
     smSCN      mCommitSCN;
@@ -106,8 +106,8 @@ inline void mmqQueueInfo::setQueueDrop()
     mQueueDropFlag = ID_TRUE;
 }
 
-//PROJ-1677 DEQ call°¡ queue infoÀÇ lockÀ» ÀâÀº »óÅÂ¿¡¼­
-//º»  ÇÔ¼ö¸¦ È£ÃâÇÑ´Ù.
+//PROJ-1677 DEQ callê°€ queue infoì˜ lockì„ ì¡ì€ ìƒíƒœì—ì„œ
+//ë³¸  í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•œë‹¤.
 inline idBool mmqQueueInfo::isQueueReady4Session(smSCN* aSessionDEQViewSCN)
 {
     idBool sRetVal;

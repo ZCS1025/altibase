@@ -14,7 +14,7 @@
 
 
 /* ------------------------------------------------
- *  A4¸¦ À§ÇÑ Startup Flags
+ *  A4ë¥¼ ìœ„í•œ Startup Flags
  * ----------------------------------------------*/
 typedef enum
 {
@@ -31,7 +31,7 @@ typedef enum
 } iduStartupPhase;
 
 /* ----------------------------------------------------------------------------
- *  Fixed Table¿¡¼­ Á¦°øÇÏ´Â µ¥ÀÌÅ¸ Å¸ÀÔ ¹× Macros
+ *  Fixed Tableì—ì„œ ì œê³µí•˜ëŠ” ë°ì´íƒ€ íƒ€ì… ë° Macros
  * --------------------------------------------------------------------------*/
 
 typedef UShort iduFixedTableDataType;
@@ -72,7 +72,7 @@ typedef UShort iduFixedTableDataType;
 #define IDU_FT_SIZEOF_CHAR(s, m)  IDU_FT_SIZEOF(s, m)
 
 /* ----------------------------------------------------------------------------
- *  Fixed Table¿¡¼­ Á¦°øÇÏ´Â Struct
+ *  Fixed Tableì—ì„œ ì œê³µí•˜ëŠ” Struct
  * --------------------------------------------------------------------------*/
 class iduFixedTableMemory;
 struct idvSQL;
@@ -82,21 +82,21 @@ typedef IDE_RC (*iduFixedTableBuildFunc)( idvSQL              *aStatistics,
                                           void                *aDumpObj, // PROJ-1618
                                           iduFixedTableMemory *aMemory);
 
-// smnfÀÇ callback À» È£ÃâÇÏ¿©, ¹Ì¸® valid record ÀÎÁö °Ë»çÇÑ´Ù.
+// smnfì˜ callback ì„ í˜¸ì¶œí•˜ì—¬, ë¯¸ë¦¬ valid record ì¸ì§€ ê²€ì‚¬í•œë‹¤.
 typedef IDE_RC (*iduFixedTableFilterCallback)(idBool *aResult,
                                               void   *aIterator,
                                               void   *aRecord);
 /*
- *  DataTypeÀ» ¾Ë ¼ö ¾ø´Â °æ¿ì, Char Å¸ÀÔÀ¸·Î º¯°æÇÏ±â À§ÇÑ Callback
+ *  DataTypeì„ ì•Œ ìˆ˜ ì—†ëŠ” ê²½ìš°, Char íƒ€ì…ìœ¼ë¡œ ë³€ê²½í•˜ê¸° ìœ„í•œ Callback
  *
- *      aObj:       °´Ã¼ÀÇ Æ÷ÀÎÅÍ
- *      aObjOffset: °´Ã¼ ¸â¹öÀÇ Offset À§Ä¡ (½ÇÁ¦ ÀÌ À§Ä¡°¡ º¯È¯µÊ)
- *      aBuf:       ÄÃ·³ÀÌ ¸¸µé¾îÁú À§Ä¡
- *      aBufSize:   ´ë»ó ÄÃ·³ÀÇ ¸Ş¸ğ¸® ±æÀÌ
- *      aDataType : ´ë»ó µ¥ÀÌÅ¸ Å¸ÀÔ : varcharÀÇ °æ¿ì 0À¸·Î ³¡³ª°í,
- *                                     CharÀÇ °æ¿ì ' '·Î Ã¤¿ò.
- *      ¸®ÅÏ°ª : º¯°æµÈ ½ºÆ®¸µÀÇ Å©±â : CharÀÇ °æ¿ì ÇØ´ç Å¸ÀÔ±æÀÌÀÌ°í,
- *                                      VarcharÀÇ °æ¿ì º¯È¯µÈ µ¥ÀÌÅ¸ ±æÀÌÀÓ.
+ *      aObj:       ê°ì²´ì˜ í¬ì¸í„°
+ *      aObjOffset: ê°ì²´ ë©¤ë²„ì˜ Offset ìœ„ì¹˜ (ì‹¤ì œ ì´ ìœ„ì¹˜ê°€ ë³€í™˜ë¨)
+ *      aBuf:       ì»¬ëŸ¼ì´ ë§Œë“¤ì–´ì§ˆ ìœ„ì¹˜
+ *      aBufSize:   ëŒ€ìƒ ì»¬ëŸ¼ì˜ ë©”ëª¨ë¦¬ ê¸¸ì´
+ *      aDataType : ëŒ€ìƒ ë°ì´íƒ€ íƒ€ì… : varcharì˜ ê²½ìš° 0ìœ¼ë¡œ ëë‚˜ê³ ,
+ *                                     Charì˜ ê²½ìš° ' 'ë¡œ ì±„ì›€.
+ *      ë¦¬í„´ê°’ : ë³€ê²½ëœ ìŠ¤íŠ¸ë§ì˜ í¬ê¸° : Charì˜ ê²½ìš° í•´ë‹¹ íƒ€ì…ê¸¸ì´ì´ê³ ,
+ *                                      Varcharì˜ ê²½ìš° ë³€í™˜ëœ ë°ì´íƒ€ ê¸¸ì´ì„.
  *
  */
 typedef UInt   (*iduFixedTableConvertCallback)(void        *aBaseObj,
@@ -115,22 +115,22 @@ typedef IDE_RC (*iduFixedTableBuildRecord)(void                *aHeader,
 typedef struct iduFixedTableColDesc
 {
     SChar                       *mName;
-    //PR-14300  Fixed Table¿¡¼­ 64K°¡ ³Ñ´Â °´Ã¼ÀÇ ÇÊµå°ªÀ»
-    // ¾û¶×ÇÑ °ªÀ¸·Î Ãâ·ÂÇÏ´Â ¹®Á¦ ÇØ°á ; mOffsetÀ» UInt·Î º¯°æ
-    UInt                         mOffset; // Object¿¡¼­ÀÇ À§Ä¡
-    UInt                         mLength; // Object¿¡¼­ Â÷ÁöÇÏ´Â Å©±â
+    //PR-14300  Fixed Tableì—ì„œ 64Kê°€ ë„˜ëŠ” ê°ì²´ì˜ í•„ë“œê°’ì„
+    // ì—‰ëš±í•œ ê°’ìœ¼ë¡œ ì¶œë ¥í•˜ëŠ” ë¬¸ì œ í•´ê²° ; mOffsetì„ UIntë¡œ ë³€ê²½
+    UInt                         mOffset; // Objectì—ì„œì˜ ìœ„ì¹˜
+    UInt                         mLength; // Objectì—ì„œ ì°¨ì§€í•˜ëŠ” í¬ê¸°
     iduFixedTableDataType        mDataType;
     iduFixedTableConvertCallback mConvCallback;
 
     /*
-     * ¾Æ·¡´Â ½ÇÁ¦ Row·Î Ç¥ÇöµÉ ¶§ÀÇ Å©±â¿Í offsetÀ» Ç¥ÇöÇÑ´Ù.
-     * A3ÀÇ °æ¿ì, Desc·ÎºÎÅÍ  SQL·Î Ç¥ÇöÇÏ¿© Meta Table¿¡ µî·ÏÀ»
-     * ÇÏ±â ¶§¹®¿¡ ÀÚµ¿ÀûÀ¸·Î »ı¼ºÀÌ °¡´ÉÇßÁö¸¸,
-     * A4´Â Á÷Á¢ Schema¿¡ ´ëÇÑ °í·Á¸¦ ÇØ¾ß ÇÏ±â ¶§¹®¿¡
-     * ¾Æ·¡ÀÇ °ªÀÌ ÃÊ±âÈ­ °úÁ¤¿¡¼­ °áÁ¤µÇ¾î¾ß ÇÑ´Ù.
+     * ì•„ë˜ëŠ” ì‹¤ì œ Rowë¡œ í‘œí˜„ë  ë•Œì˜ í¬ê¸°ì™€ offsetì„ í‘œí˜„í•œë‹¤.
+     * A3ì˜ ê²½ìš°, Descë¡œë¶€í„°  SQLë¡œ í‘œí˜„í•˜ì—¬ Meta Tableì— ë“±ë¡ì„
+     * í•˜ê¸° ë•Œë¬¸ì— ìë™ì ìœ¼ë¡œ ìƒì„±ì´ ê°€ëŠ¥í–ˆì§€ë§Œ,
+     * A4ëŠ” ì§ì ‘ Schemaì— ëŒ€í•œ ê³ ë ¤ë¥¼ í•´ì•¼ í•˜ê¸° ë•Œë¬¸ì—
+     * ì•„ë˜ì˜ ê°’ì´ ì´ˆê¸°í™” ê³¼ì •ì—ì„œ ê²°ì •ë˜ì–´ì•¼ í•œë‹¤.
      */
-    UInt                    mColOffset; // Row ³»¿¡¼­ÀÇ À§Ä¡
-    UInt                    mColSize;   // Row ³»¿¡¼­ÀÇ Column Å©±â
+    UInt                    mColOffset; // Row ë‚´ì—ì„œì˜ ìœ„ì¹˜
+    UInt                    mColSize;   // Row ë‚´ì—ì„œì˜ Column í¬ê¸°
     SChar                  *mTableName; // Table Name
 
 } iduFixedTableColDesc;
@@ -146,13 +146,13 @@ typedef enum
 
 typedef struct iduFixedTableDesc
 {
-    SChar                   *mTableName;   // Fixed Table ÀÌ¸§
-    iduFixedTableBuildFunc   mBuildFunc;   // Record »ı¼º callback
-    iduFixedTableColDesc    *mColDesc;     // column Á¤º¸
-    iduStartupPhase          mEnablePhase; // ´Ù´Ü°è ¾ğÁ¦ºÎÅÍ »ç¿ë °¡´É?
-    UInt                     mSlotSize;    // RowÀÇ Å©±â : init ½Ã °è»êµÊ
-    UShort                   mColCount;    // ÃÑ ÄÃ·³ÀÇ °¹¼ö : init ½Ã °è»êµÊ
-    iduFtDescTransUse        mUseTrans;    // Transaction »ç¿ë ¿©ºÎ
+    SChar                   *mTableName;   // Fixed Table ì´ë¦„
+    iduFixedTableBuildFunc   mBuildFunc;   // Record ìƒì„± callback
+    iduFixedTableColDesc    *mColDesc;     // column ì •ë³´
+    iduStartupPhase          mEnablePhase; // ë‹¤ë‹¨ê³„ ì–¸ì œë¶€í„° ì‚¬ìš© ê°€ëŠ¥?
+    UInt                     mSlotSize;    // Rowì˜ í¬ê¸° : init ì‹œ ê³„ì‚°ë¨
+    UShort                   mColCount;    // ì´ ì»¬ëŸ¼ì˜ ê°¯ìˆ˜ : init ì‹œ ê³„ì‚°ë¨
+    iduFtDescTransUse        mUseTrans;    // Transaction ì‚¬ìš© ì—¬ë¶€
     iduFixedTableDesc       *mNext;
 } iduFixedTableDesc;
 

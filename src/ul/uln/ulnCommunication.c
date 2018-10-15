@@ -179,7 +179,7 @@ ACI_RC ulnWriteProtocol(ulnFnContext *aFnContext, ulnPtContext *aPtContext, cmiP
         aPtContext->mNeedReadProtocol += gUlnCmProtocolTable[aPacket->mOpID].mNeedResult;
 
         // bug-28259: ipc needs paramDataInResult
-        // paramDataIn ¿äÃ»¿¡ ´ëÇØ ipcÀÎ °æ¿ì¿¡¸¸ ¼­¹ö¿¡¼­ ÀÀ´äÀ» ÁÜ.
+        // paramDataIn ìš”ì²­ì— ëŒ€í•´ ipcì¸ ê²½ìš°ì—ë§Œ ì„œë²„ì—ì„œ ì‘ë‹µì„ ì¤Œ.
         if((sDbc->mConnType == ULN_CONNTYPE_IPC) &&
            (aPacket->mOpID == CMP_OP_DB_ParamDataIn))
         {
@@ -232,7 +232,7 @@ ACI_RC ulnWriteProtocol(ulnFnContext *aFnContext, ulnPtContext *aPtContext, cmiP
  * @param[in] aPtContext
  * @param[in] aTimeout
  *
- * ÁÖ¾îÁø protocol context ¿¡ ¼ö½ÅµÈ ÆÐÅ¶À» ÀÐ°í, ÇØ´çÇÏ´Â ÄÝ¹éÀ» È£ÃâÇÑ´Ù.
+ * ì£¼ì–´ì§„ protocol context ì— ìˆ˜ì‹ ëœ íŒ¨í‚·ì„ ì½ê³ , í•´ë‹¹í•˜ëŠ” ì½œë°±ì„ í˜¸ì¶œí•œë‹¤.
  */
 ACI_RC ulnReadProtocolIPCDA(ulnFnContext   *aFnContext,
                             ulnPtContext   *aPtContext,
@@ -247,12 +247,12 @@ ACI_RC ulnReadProtocolIPCDA(ulnFnContext   *aFnContext,
 
     ACI_TEST_RAISE(sDbc == NULL, LABEL_MEM_MAN_ERR);
     /*
-     * ¿¬°á ¾ÈµÇ¾î ÀÖÀ¸¸é Á¶¿ëÈ÷ ¸®ÅÏ
+     * ì—°ê²° ì•ˆë˜ì–´ ìžˆìœ¼ë©´ ì¡°ìš©ížˆ ë¦¬í„´
      */
     ACI_TEST_RAISE(ulnDbcIsConnected(sDbc) != ACP_TRUE, LABEL_CON_CLOSED);
 
     /*
-     * ReadProtocol ÇÒ ÇÊ¿ä ¾ø¾îµµ ±×³É Á¶¿ëÈ÷ ¸®ÅÏ
+     * ReadProtocol í•  í•„ìš” ì—†ì–´ë„ ê·¸ëƒ¥ ì¡°ìš©ížˆ ë¦¬í„´
      */
     ACI_TEST_RAISE( cmiRecvIPCDA( &(aPtContext->mCmiPtContext),
                                   aFnContext,
@@ -263,10 +263,10 @@ ACI_RC ulnReadProtocolIPCDA(ulnFnContext   *aFnContext,
     aPtContext->mNeedReadProtocol = 0;
 
     /*
-     * Note : ¼­¹ö¿¡¼­ ¿¡·¯°¡ Àü¼ÛµÇ¾î ¿Ã °æ¿ì, ErrorResult ÆÐÅ¶ÀÌ ¼ö½ÅµÈ´Ù.
-     *        ±×·¸Áö¸¸, cmiReadProtocolAndCallback() ÇÔ¼ö´Â ACI_SUCCESS ¸¦ ¸®ÅÏÇÑ´Ù.
-     *        ±×·¡¼­, Á÷Á¢ Function Context ÀÇ mSqlReturn °ªÀ» Ã¼Å©ÇØ¼­ ¼­¹ö·ÎºÎÅÍÀÇ
-     *        ¿¡·¯ Àü¼Û ¿©ºÎ¸¦ ÆÇ´ÜÇØ¾ß ÇÑ´Ù.
+     * Note : ì„œë²„ì—ì„œ ì—ëŸ¬ê°€ ì „ì†¡ë˜ì–´ ì˜¬ ê²½ìš°, ErrorResult íŒ¨í‚·ì´ ìˆ˜ì‹ ëœë‹¤.
+     *        ê·¸ë ‡ì§€ë§Œ, cmiReadProtocolAndCallback() í•¨ìˆ˜ëŠ” ACI_SUCCESS ë¥¼ ë¦¬í„´í•œë‹¤.
+     *        ê·¸ëž˜ì„œ, ì§ì ‘ Function Context ì˜ mSqlReturn ê°’ì„ ì²´í¬í•´ì„œ ì„œë²„ë¡œë¶€í„°ì˜
+     *        ì—ëŸ¬ ì „ì†¡ ì—¬ë¶€ë¥¼ íŒë‹¨í•´ì•¼ í•œë‹¤.
      */
     ACI_TEST(SQL_SUCCEEDED(ULN_FNCONTEXT_GET_RC(aFnContext)) == 0);
 
@@ -291,12 +291,12 @@ ACI_RC ulnReadProtocolIPCDA(ulnFnContext   *aFnContext,
         ulnErrorMgrSetCmError( sDbc, &sErrorMgr, aciGetErrorCode() );
         ulnErrHandleCmError(aFnContext, NULL); /* BUG-45713  */
         /*
-         * cm ÀÇ MARSHALL_ERROR µîÀÌ ¹ß»ýÇßÀ» °æ¿ì ¿©±â¼­ ¿¡·¯°¡ ¸®ÅÏµÇ°í,
-         * ÇÁ·ÎÅäÄÝÀ» read ÇÑ ulnFetch() µîÀÇ ÇÔ¼öÀÇ ACI_EXCEPTION() ·çÆ¾¿¡¼­
-         * ´Ù½ÃÇÑ¹ø flush / read ¸¦ ÇÏ°Ô µÇ´Âµ¥, ÀÌ¶§ ´Ù½ÃÇÑ¹ø read ¸¦ ÇÏ°Ô µÇ¹Ç·Î
-         * ¹«ÇÑ´ë±â¸¦ ÇÏ°Ô µÈ´Ù.
+         * cm ì˜ MARSHALL_ERROR ë“±ì´ ë°œìƒí–ˆì„ ê²½ìš° ì—¬ê¸°ì„œ ì—ëŸ¬ê°€ ë¦¬í„´ë˜ê³ ,
+         * í”„ë¡œí† ì½œì„ read í•œ ulnFetch() ë“±ì˜ í•¨ìˆ˜ì˜ ACI_EXCEPTION() ë£¨í‹´ì—ì„œ
+         * ë‹¤ì‹œí•œë²ˆ flush / read ë¥¼ í•˜ê²Œ ë˜ëŠ”ë°, ì´ë•Œ ë‹¤ì‹œí•œë²ˆ read ë¥¼ í•˜ê²Œ ë˜ë¯€ë¡œ
+         * ë¬´í•œëŒ€ê¸°ë¥¼ í•˜ê²Œ ëœë‹¤.
          *
-         * ÀÌ¸¦ ¹æÁöÇÏ±â À§ÇØ¼­ mNeedReadProtocol À» ACP_FALSE ·Î ¸¸µé¾î ÁØ´Ù.
+         * ì´ë¥¼ ë°©ì§€í•˜ê¸° ìœ„í•´ì„œ mNeedReadProtocol ì„ ACP_FALSE ë¡œ ë§Œë“¤ì–´ ì¤€ë‹¤.
          */
         aPtContext->mNeedReadProtocol = 0;
     }
@@ -307,8 +307,8 @@ ACI_RC ulnReadProtocolIPCDA(ulnFnContext   *aFnContext,
 }
 
 /*
- * BUGBUG : read ¿Í flush ´Â static À¸·Î Áý¾î ³Ö¾î¾ß ÇÑ´Ù.
- *          ÀÏ´ÜÀº ¸ðµÎ °íÄ¡±â ±ÍÂúÀ¸´Ï ±×´ë·Î µÎÀÚ.
+ * BUGBUG : read ì™€ flush ëŠ” static ìœ¼ë¡œ ì§‘ì–´ ë„£ì–´ì•¼ í•œë‹¤.
+ *          ì¼ë‹¨ì€ ëª¨ë‘ ê³ ì¹˜ê¸° ê·€ì°®ìœ¼ë‹ˆ ê·¸ëŒ€ë¡œ ë‘ìž.
  */
 
 /**
@@ -318,9 +318,9 @@ ACI_RC ulnReadProtocolIPCDA(ulnFnContext   *aFnContext,
  * @param[in] aPtContext
  * @param[in] aTimeout
  *
- * ÁÖ¾îÁø protocol context ¿¡ ¼ö½ÅµÈ ÆÐÅ¶À» ÀÐ°í, ÇØ´çÇÏ´Â ÄÝ¹éÀ» È£ÃâÇÑ´Ù.
- * ¸¸¾à, semi-async prefetch ¿¡ ÀÇÇØ ºñµ¿±âÀûÀ¸·Î fetch protocol À» ¿äÃ»ÇÏ¿´´Ù¸é,
- * fetch result ¸¦ ¸ÕÀú read ÇÑ´Ù.
+ * ì£¼ì–´ì§„ protocol context ì— ìˆ˜ì‹ ëœ íŒ¨í‚·ì„ ì½ê³ , í•´ë‹¹í•˜ëŠ” ì½œë°±ì„ í˜¸ì¶œí•œë‹¤.
+ * ë§Œì•½, semi-async prefetch ì— ì˜í•´ ë¹„ë™ê¸°ì ìœ¼ë¡œ fetch protocol ì„ ìš”ì²­í•˜ì˜€ë‹¤ë©´,
+ * fetch result ë¥¼ ë¨¼ì € read í•œë‹¤.
  */
 ACI_RC ulnReadProtocol(ulnFnContext   *aFnContext,
                        ulnPtContext   *aPtContext,
@@ -334,18 +334,18 @@ ACI_RC ulnReadProtocol(ulnFnContext   *aFnContext,
     ACI_TEST_RAISE(sDbc == NULL, LABEL_MEM_MAN_ERR);
 
     /*
-     * ¿¬°á ¾ÈµÇ¾î ÀÖÀ¸¸é Á¶¿ëÈ÷ ¸®ÅÏ
+     * ì—°ê²° ì•ˆë˜ì–´ ìžˆìœ¼ë©´ ì¡°ìš©ížˆ ë¦¬í„´
      */
     ACI_TEST_RAISE(ulnDbcIsConnected(sDbc) != ACP_TRUE, LABEL_CON_CLOSED);
 
     /*
-     * ReadProtocol ÇÒ ÇÊ¿ä ¾ø¾îµµ ±×³É Á¶¿ëÈ÷ ¸®ÅÏ
+     * ReadProtocol í•  í•„ìš” ì—†ì–´ë„ ê·¸ëƒ¥ ì¡°ìš©ížˆ ë¦¬í„´
      */
 
     if(aPtContext->mNeedReadProtocol > 0)
     {
         /*
-         * ÄÝ¹é È£Ãâ
+         * ì½œë°± í˜¸ì¶œ
          */
 
         /**
@@ -374,10 +374,10 @@ ACI_RC ulnReadProtocol(ulnFnContext   *aFnContext,
         aPtContext->mNeedReadProtocol = 0;
 
         /*
-         * Note : ¼­¹ö¿¡¼­ ¿¡·¯°¡ Àü¼ÛµÇ¾î ¿Ã °æ¿ì, ErrorResult ÆÐÅ¶ÀÌ ¼ö½ÅµÈ´Ù.
-         *        ±×·¸Áö¸¸, cmiReadProtocolAndCallback() ÇÔ¼ö´Â ACI_SUCCESS ¸¦ ¸®ÅÏÇÑ´Ù.
-         *        ±×·¡¼­, Á÷Á¢ Function Context ÀÇ mSqlReturn °ªÀ» Ã¼Å©ÇØ¼­ ¼­¹ö·ÎºÎÅÍÀÇ
-         *        ¿¡·¯ Àü¼Û ¿©ºÎ¸¦ ÆÇ´ÜÇØ¾ß ÇÑ´Ù.
+         * Note : ì„œë²„ì—ì„œ ì—ëŸ¬ê°€ ì „ì†¡ë˜ì–´ ì˜¬ ê²½ìš°, ErrorResult íŒ¨í‚·ì´ ìˆ˜ì‹ ëœë‹¤.
+         *        ê·¸ë ‡ì§€ë§Œ, cmiReadProtocolAndCallback() í•¨ìˆ˜ëŠ” ACI_SUCCESS ë¥¼ ë¦¬í„´í•œë‹¤.
+         *        ê·¸ëž˜ì„œ, ì§ì ‘ Function Context ì˜ mSqlReturn ê°’ì„ ì²´í¬í•´ì„œ ì„œë²„ë¡œë¶€í„°ì˜
+         *        ì—ëŸ¬ ì „ì†¡ ì—¬ë¶€ë¥¼ íŒë‹¨í•´ì•¼ í•œë‹¤.
          */
         ACI_TEST(SQL_SUCCEEDED(ULN_FNCONTEXT_GET_RC(aFnContext)) == 0);
     }
@@ -435,12 +435,12 @@ ACI_RC ulnReadProtocol(ulnFnContext   *aFnContext,
 #endif /* COMPILE_SHARDCLI */
 
         /*
-         * cm ÀÇ MARSHALL_ERROR µîÀÌ ¹ß»ýÇßÀ» °æ¿ì ¿©±â¼­ ¿¡·¯°¡ ¸®ÅÏµÇ°í,
-         * ÇÁ·ÎÅäÄÝÀ» read ÇÑ ulnFetch() µîÀÇ ÇÔ¼öÀÇ ACI_EXCEPTION() ·çÆ¾¿¡¼­
-         * ´Ù½ÃÇÑ¹ø flush / read ¸¦ ÇÏ°Ô µÇ´Âµ¥, ÀÌ¶§ ´Ù½ÃÇÑ¹ø read ¸¦ ÇÏ°Ô µÇ¹Ç·Î
-         * ¹«ÇÑ´ë±â¸¦ ÇÏ°Ô µÈ´Ù.
+         * cm ì˜ MARSHALL_ERROR ë“±ì´ ë°œìƒí–ˆì„ ê²½ìš° ì—¬ê¸°ì„œ ì—ëŸ¬ê°€ ë¦¬í„´ë˜ê³ ,
+         * í”„ë¡œí† ì½œì„ read í•œ ulnFetch() ë“±ì˜ í•¨ìˆ˜ì˜ ACI_EXCEPTION() ë£¨í‹´ì—ì„œ
+         * ë‹¤ì‹œí•œë²ˆ flush / read ë¥¼ í•˜ê²Œ ë˜ëŠ”ë°, ì´ë•Œ ë‹¤ì‹œí•œë²ˆ read ë¥¼ í•˜ê²Œ ë˜ë¯€ë¡œ
+         * ë¬´í•œëŒ€ê¸°ë¥¼ í•˜ê²Œ ëœë‹¤.
          *
-         * ÀÌ¸¦ ¹æÁöÇÏ±â À§ÇØ¼­ mNeedReadProtocol À» ACP_FALSE ·Î ¸¸µé¾î ÁØ´Ù.
+         * ì´ë¥¼ ë°©ì§€í•˜ê¸° ìœ„í•´ì„œ mNeedReadProtocol ì„ ACP_FALSE ë¡œ ë§Œë“¤ì–´ ì¤€ë‹¤.
          */
 
         aPtContext->mNeedReadProtocol = 0;
@@ -459,7 +459,7 @@ ACI_RC ulnReadProtocol(ulnFnContext   *aFnContext,
  * @param[in] aTimeout
  *
  * PROJ-2625 Semi-async Prefetch, Prefetch Auto-tuning
- * ÁÖ¾îÁø protocol context ¿¡ ¼ö½ÅµÈ ÆÐÅ¶À» ÀÐ°í, ÇØ´çÇÏ´Â ÄÝ¹éÀ» È£ÃâÇÑ´Ù.
+ * ì£¼ì–´ì§„ protocol context ì— ìˆ˜ì‹ ëœ íŒ¨í‚·ì„ ì½ê³ , í•´ë‹¹í•˜ëŠ” ì½œë°±ì„ í˜¸ì¶œí•œë‹¤.
  */
 ACI_RC ulnReadProtocolAsync(ulnFnContext   *aFnContext,
                             ulnPtContext   *aPtContext,
@@ -472,16 +472,16 @@ ACI_RC ulnReadProtocolAsync(ulnFnContext   *aFnContext,
     ACI_TEST_RAISE(sDbc == NULL, LABEL_MEM_MAN_ERR);
 
     /*
-     * ¿¬°á ¾ÈµÇ¾î ÀÖÀ¸¸é Á¶¿ëÈ÷ ¸®ÅÏ
+     * ì—°ê²° ì•ˆë˜ì–´ ìžˆìœ¼ë©´ ì¡°ìš©ížˆ ë¦¬í„´
      */
     ACI_TEST_RAISE(ulnDbcIsConnected(sDbc) != ACP_TRUE, LABEL_CON_CLOSED);
 
     /*
-     * ReadProtocol ÇÒ ÇÊ¿ä ¾ø¾îµµ ±×³É Á¶¿ëÈ÷ ¸®ÅÏ
+     * ReadProtocol í•  í•„ìš” ì—†ì–´ë„ ê·¸ëƒ¥ ì¡°ìš©ížˆ ë¦¬í„´
      */
 
     /*
-     * ÄÝ¹é È£Ãâ
+     * ì½œë°± í˜¸ì¶œ
      */
 
     ACI_TEST_RAISE( cmiRecv( &(aPtContext->mCmiPtContext),
@@ -490,10 +490,10 @@ ACI_RC ulnReadProtocolAsync(ulnFnContext   *aFnContext,
                     != ACI_SUCCESS, LABEL_CM_ERR);
 
     /*
-     * Note : ¼­¹ö¿¡¼­ ¿¡·¯°¡ Àü¼ÛµÇ¾î ¿Ã °æ¿ì, ErrorResult ÆÐÅ¶ÀÌ ¼ö½ÅµÈ´Ù.
-     *        ±×·¸Áö¸¸, cmiReadProtocolAndCallback() ÇÔ¼ö´Â ACI_SUCCESS ¸¦ ¸®ÅÏÇÑ´Ù.
-     *        ±×·¡¼­, Á÷Á¢ Function Context ÀÇ mSqlReturn °ªÀ» Ã¼Å©ÇØ¼­ ¼­¹ö·ÎºÎÅÍÀÇ
-     *        ¿¡·¯ Àü¼Û ¿©ºÎ¸¦ ÆÇ´ÜÇØ¾ß ÇÑ´Ù.
+     * Note : ì„œë²„ì—ì„œ ì—ëŸ¬ê°€ ì „ì†¡ë˜ì–´ ì˜¬ ê²½ìš°, ErrorResult íŒ¨í‚·ì´ ìˆ˜ì‹ ëœë‹¤.
+     *        ê·¸ë ‡ì§€ë§Œ, cmiReadProtocolAndCallback() í•¨ìˆ˜ëŠ” ACI_SUCCESS ë¥¼ ë¦¬í„´í•œë‹¤.
+     *        ê·¸ëž˜ì„œ, ì§ì ‘ Function Context ì˜ mSqlReturn ê°’ì„ ì²´í¬í•´ì„œ ì„œë²„ë¡œë¶€í„°ì˜
+     *        ì—ëŸ¬ ì „ì†¡ ì—¬ë¶€ë¥¼ íŒë‹¨í•´ì•¼ í•œë‹¤.
      */
     ACI_TEST(SQL_SUCCEEDED(ULN_FNCONTEXT_GET_RC(aFnContext)) == 0);
 
@@ -557,7 +557,7 @@ ACI_RC ulnReadProtocolAsync(ulnFnContext   *aFnContext,
  * @param[in] aFnContext
  * @param[in] aPtContext
  *
- * ÁÖ¾îÁø protocol context ¿¡ ¾²ÀÎ ÆÐÅ¶À» Àü¼ÛÇÑ´Ù.
+ * ì£¼ì–´ì§„ protocol context ì— ì“°ì¸ íŒ¨í‚·ì„ ì „ì†¡í•œë‹¤.
  */
 ACI_RC ulnFlushProtocol(ulnFnContext *aFnContext, ulnPtContext *aPtContext)
 {
@@ -671,7 +671,7 @@ ACI_RC ulnInitializeProtocolContext(ulnFnContext *aFnContext,
 }
 
 /*
- * BUG-45286 PDO¿¡¼­ ÇÁ·ÎÅäÄÝ Àü¼ÛÀ» Áö¿¬½ÃÅ°±â À§ÇØ ulnFinalizeProtocolContext()¸¦ Skip.
+ * BUG-45286 PDOì—ì„œ í”„ë¡œí† ì½œ ì „ì†¡ì„ ì§€ì—°ì‹œí‚¤ê¸° ìœ„í•´ ulnFinalizeProtocolContext()ë¥¼ Skip.
  *           ParamDataIn      (ulnParamData.c)
  *           DBFree with DROP (ulnFreeHandle.c)
  *           ParamInfoSetList (ulnExecute.c)
@@ -697,11 +697,11 @@ ACI_RC ulnFinalizeProtocolContext(ulnFnContext *aFnContext, ulnPtContext *aPtCon
     if(aPtContext->mNeedReadProtocol > 0)
     {
         /*
-         * Note : ReadProtocol ¿¡¼­ ¿¡·¯°¡ ³ªµµ finalize ÇØ¾ß ÇÑ´Ù.
-         *        ±× ¿¡·¯´Â
+         * Note : ReadProtocol ì—ì„œ ì—ëŸ¬ê°€ ë‚˜ë„ finalize í•´ì•¼ í•œë‹¤.
+         *        ê·¸ ì—ëŸ¬ëŠ”
          *          1. cm error
          *          2. sql error
-         *        ÀÇ µÎ°¡Áö °æ¿ì°¡ ÀÖ´Âµ¥ ¾îÂîµÇ¾úµç, finalize ÇØ¾ß ÇÑ´Ù.
+         *        ì˜ ë‘ê°€ì§€ ê²½ìš°ê°€ ìžˆëŠ”ë° ì–´ì°Œë˜ì—ˆë“ , finalize í•´ì•¼ í•œë‹¤.
          */
         if(ulnDbcIsConnected(sDbc) == ACP_TRUE)
         {
@@ -761,7 +761,7 @@ ACI_RC ulnWritePrepareREQ(ulnFnContext  *aFnContext,
 
     sStmt->mIsSimpleQuery = ACP_FALSE; /*PROJ-2616*/
    
-    /* BUG-44125 [mm-cli] IPCDA ¸ðµå Å×½ºÆ® Áß hang - iloader CLOB */
+    /* BUG-44125 [mm-cli] IPCDA ëª¨ë“œ í…ŒìŠ¤íŠ¸ ì¤‘ hang - iloader CLOB */
     CMI_WRITE_CHECK_WITH_IPCDA(sCtx, 10, 10 + aLength);
     sState = 1;
 
@@ -877,7 +877,7 @@ ACI_RC ulnWriteParamInfoSetListREQ(ulnFnContext *aFnContext,
 
     sPacket.mOpID = CMP_OP_DB_ParamInfoSetList;
 
-    /* BUG-44125 [mm-cli] IPCDA ¸ðµå Å×½ºÆ® Áß hang - iloader CLOB */
+    /* BUG-44125 [mm-cli] IPCDA ëª¨ë“œ í…ŒìŠ¤íŠ¸ ì¤‘ hang - iloader CLOB */
     CMI_WRITE_CHECK_WITH_IPCDA(sCtx, 7 + (aParamCount * 20), 7 + (aParamCount * 22));
     sState = 1;
 
@@ -904,13 +904,13 @@ ACI_RC ulnWriteParamInfoSetListREQ(ulnFnContext *aFnContext,
 
         /****************************************************************
          * PROJ-2616
-         * 1) IPCDA-SIMPLEQUERY¿¡¼­´Â »ç¿ëÀÚ µ¥ÀÌÅÍÀÇ CTYPEÀ» ¹Ù·Î ¹Þ¾Æ¼­,
-         * µ¥ÀÌÅÍ¿¡ MT Å¸ÀÔÀ¸·Î º¯È¯ÇÏ¿© ÀúÀåÇÑ´Ù. µû¶ó¼­, CTYPE¿¡ °üÇÑ
-         * Á¤º¸°¡ ÇÊ¿äÇÏ´Ù. ÀÌ°ÍÀ» À§ÇÏ¿© ulnWriteParamInfoSetListREQ¿¡¼­
-         * ÇØ´ç Á¤º¸¸¦ Àü¼ÛÇÑ´Ù.
+         * 1) IPCDA-SIMPLEQUERYì—ì„œëŠ” ì‚¬ìš©ìž ë°ì´í„°ì˜ CTYPEì„ ë°”ë¡œ ë°›ì•„ì„œ,
+         * ë°ì´í„°ì— MT íƒ€ìž…ìœ¼ë¡œ ë³€í™˜í•˜ì—¬ ì €ìž¥í•œë‹¤. ë”°ë¼ì„œ, CTYPEì— ê´€í•œ
+         * ì •ë³´ê°€ í•„ìš”í•˜ë‹¤. ì´ê²ƒì„ ìœ„í•˜ì—¬ ulnWriteParamInfoSetListREQì—ì„œ
+         * í•´ë‹¹ ì •ë³´ë¥¼ ì „ì†¡í•œë‹¤.
          *
-         * 2) FastExecute¿¡¼­ DATE¿Í °°Àº Å¸ÀÔÀ» »ç¿ëÀÚ ¹öÆÛ Å¸ÀÔ¿¡ ¸Â°Ô º¯È¯ÇÏ±â
-         * À§ÇÏ¿© ½ÇÁ¦ SQLCTYPEÀ» ¾Ë ÇÊ¿ä°¡ ÀÖ´Ù. À§ÀÇ CTYPEÀº ULNCTYPEÀÌ´Ù.
+         * 2) FastExecuteì—ì„œ DATEì™€ ê°™ì€ íƒ€ìž…ì„ ì‚¬ìš©ìž ë²„í¼ íƒ€ìž…ì— ë§žê²Œ ë³€í™˜í•˜ê¸°
+         * ìœ„í•˜ì—¬ ì‹¤ì œ SQLCTYPEì„ ì•Œ í•„ìš”ê°€ ìžˆë‹¤. ìœ„ì˜ CTYPEì€ ULNCTYPEì´ë‹¤.
          ****************************************************************/
         if (cmiGetLinkImpl(sCtx) == CMI_LINK_IMPL_IPCDA)
         {
@@ -952,7 +952,7 @@ ACI_RC ulnWriteParamDataInListREQForSimpleQuery(ulnFnContext *aFnContext,
     acp_uint16_t        sOrgWriteCursor = CMI_GET_CURSOR(sCtx);
     acp_uint8_t         sState          = 0;
 
-    /* BUG-44125 [mm-cli] IPCDA ¸ðµå Å×½ºÆ® Áß hang - iloader CLOB */
+    /* BUG-44125 [mm-cli] IPCDA ëª¨ë“œ í…ŒìŠ¤íŠ¸ ì¤‘ hang - iloader CLOB */
     CMI_WRITE_CHECK_WITH_IPCDA(sCtx, 22, 22 + 2 + (sStmt->mAttrArd->mDescRecCount * 2));
     sState = 1;
 
@@ -962,16 +962,16 @@ ACI_RC ulnWriteParamDataInListREQForSimpleQuery(ulnFnContext *aFnContext,
     CMI_WR4(sCtx, &sToRowNumber);
     CMI_WR1(sCtx, aExecuteOption);
 
-    /* ¾Æ·¡´Â µ¥ÀÌÅÍÀÇ ÀüÃ¼ Å©±â¸¦ ¾²´Â À§Ä¡ÀÌ´Ù.
-     * ÇöÀç ½ÃÁ¡¿¡¼­´Â µ¥ÀÌÅÍÀÇ Å©±â¸¦ ¾Ë ¼ö ¾ø±â ¶§¹®¿¡ sDataSizeCurPos¿¡ ÇöÀçÀÇ
-     * À§Ä¡¸¦ ±â¾ï ½ÃÅ°°í, ¾Æ·¡ÀÇ ulnParamProcess_IPCDA_DATAs¸¦ ½ÇÇà ÈÄ¿¡,
-     * ½ÇÁ¦ ROWÀÇ µ¥ÀÌÅÍ Å©±â¸¦ sDataSizeCurPos ÁöÁ¡¿¡ ±â·ÏÇÏ°Ô µÈ´Ù.
+    /* ì•„ëž˜ëŠ” ë°ì´í„°ì˜ ì „ì²´ í¬ê¸°ë¥¼ ì“°ëŠ” ìœ„ì¹˜ì´ë‹¤.
+     * í˜„ìž¬ ì‹œì ì—ì„œëŠ” ë°ì´í„°ì˜ í¬ê¸°ë¥¼ ì•Œ ìˆ˜ ì—†ê¸° ë•Œë¬¸ì— sDataSizeCurPosì— í˜„ìž¬ì˜
+     * ìœ„ì¹˜ë¥¼ ê¸°ì–µ ì‹œí‚¤ê³ , ì•„ëž˜ì˜ ulnParamProcess_IPCDA_DATAsë¥¼ ì‹¤í–‰ í›„ì—,
+     * ì‹¤ì œ ROWì˜ ë°ì´í„° í¬ê¸°ë¥¼ sDataSizeCurPos ì§€ì ì— ê¸°ë¡í•˜ê²Œ ëœë‹¤.
      */
     sDataSizeCurPos = sCtx->mWriteBlock->mCursor;
     sCtx->mWriteBlock->mCursor += 8;
 
-    /* SimpleQuery-Fetch¿¡¼­ ½ÇÁ¦ ÄÃ·³ÀÇ ¹ÙÀÎµå Á¤º¸¸¦ º¸°í µ¥ÀÌÅÍ¸¦
-     * µðÄÚµùÇÏ±â À§ÇØ¼­ ¾Æ·¡ÀÇ Á¤º¸°¡ ÇÊ¿äÇÏ´Ù.
+    /* SimpleQuery-Fetchì—ì„œ ì‹¤ì œ ì»¬ëŸ¼ì˜ ë°”ì¸ë“œ ì •ë³´ë¥¼ ë³´ê³  ë°ì´í„°ë¥¼
+     * ë””ì½”ë”©í•˜ê¸° ìœ„í•´ì„œ ì•„ëž˜ì˜ ì •ë³´ê°€ í•„ìš”í•˜ë‹¤.
      */
     CMI_NE_WR2(sCtx, &sStmt->mAttrArd->mDescRecCount);
     ACP_LIST_ITERATE(&sStmt->mAttrArd->mDescRecList, sIterator)
@@ -979,25 +979,25 @@ ACI_RC ulnWriteParamDataInListREQForSimpleQuery(ulnFnContext *aFnContext,
         CMI_NE_WR2(sCtx, &((ulnDescRec *)sIterator)->mIndex);
     }
 
-    /* »ç¿ëÀÚ ÀÔ·Â µ¥ÀÌÅÍÀÇ ±â·Ï */
+    /* ì‚¬ìš©ìž ìž…ë ¥ ë°ì´í„°ì˜ ê¸°ë¡ */
     ACI_TEST_RAISE(ulnParamProcess_IPCDA_DATAs(aFnContext,
                                                aPtContext,
                                                sFromRowNumber,
                                                &sDataSize) != ACI_SUCCESS,
                    err_param_process);
 
-    /* ulnParamProcess_IPCDA_DATAs¿¡¼­ ¹ÝÈ¯ µÈ sDataSize¸¦ sCursorCurPos¿¡ ±â·ÏÇÑ´Ù. */
+    /* ulnParamProcess_IPCDA_DATAsì—ì„œ ë°˜í™˜ ëœ sDataSizeë¥¼ sCursorCurPosì— ê¸°ë¡í•œë‹¤. */
     sCursorCurPos = sCtx->mWriteBlock->mCursor;
     sCtx->mWriteBlock->mCursor = sDataSizeCurPos;
     CMI_WR8(sCtx, &sDataSize);
-    /* ¿ø·¡ÀÇ µ¥ÀÌÅÍ CURSOR·Î º¹¿ø ½ÃÅ²´Ù. */
+    /* ì›ëž˜ì˜ ë°ì´í„° CURSORë¡œ ë³µì› ì‹œí‚¨ë‹¤. */
     sCtx->mWriteBlock->mCursor = sCursorCurPos;
 
     ACI_TEST(ulnWriteProtocol(aFnContext, aPtContext, NULL) != ACI_SUCCESS);
 
     return ACI_SUCCESS;
 
-    /* array ÀÌ¸é ¿¡·¯°Ç¸¸ skip ÇÏ°í ´ÙÀ½°Ç Ã³¸® */
+    /* array ì´ë©´ ì—ëŸ¬ê±´ë§Œ skip í•˜ê³  ë‹¤ìŒê±´ ì²˜ë¦¬ */
     ACI_EXCEPTION(err_param_process)
     {
         ulnStmtIncreaseParamsProcessedValue(sStmt);
@@ -1038,7 +1038,7 @@ ACI_RC ulnWriteParamDataInListREQ(ulnFnContext *aFnContext,
 
     sPacket.mOpID = CMP_OP_DB_ParamDataInListV2;
 
-    /* BUG-44125 [mm-cli] IPCDA ¸ðµå Å×½ºÆ® Áß hang - iloader CLOB */
+    /* BUG-44125 [mm-cli] IPCDA ëª¨ë“œ í…ŒìŠ¤íŠ¸ ì¤‘ hang - iloader CLOB */
     CMI_WRITE_CHECK_WITH_IPCDA(sCtx, 22, 22 + 2 + (sStmt->mAttrArd->mDescRecCount * 2) + sRowSize);
     sState = 1;
 
@@ -1051,12 +1051,12 @@ ACI_RC ulnWriteParamDataInListREQ(ulnFnContext *aFnContext,
 
     if (cmiGetLinkImpl(sCtx) == CMI_LINK_IMPL_IPCDA)
     {
-        /* SimpleQuery-Fetch¿¡¼­ ½ÇÁ¦ ÄÃ·³ÀÇ ¹ÙÀÎµå Á¤º¸¸¦ º¸°í µ¥ÀÌÅÍ¸¦
-         * µðÄÚµùÇÏ±â À§ÇØ¼­ ¾Æ·¡ÀÇ Á¤º¸°¡ ÇÊ¿äÇÏ´Ù.
+        /* SimpleQuery-Fetchì—ì„œ ì‹¤ì œ ì»¬ëŸ¼ì˜ ë°”ì¸ë“œ ì •ë³´ë¥¼ ë³´ê³  ë°ì´í„°ë¥¼
+         * ë””ì½”ë”©í•˜ê¸° ìœ„í•´ì„œ ì•„ëž˜ì˜ ì •ë³´ê°€ í•„ìš”í•˜ë‹¤.
          *
-         * - ¾Æ·¡ÀÇ Á¤º¸´Â Prepare¸¦ º¸³»°í ¹Ù·Î Execute¸¦ º¸³»´Â
-         * °æ¿ì¿¡ SimpleQueryÀÎÁö¸¦ ¾Ë ¼ö ¾ø±â ¶§¹®¿¡ IPCDAÀÎ °æ¿ì¿¡´Â
-         * ¹«Á¶°Ç ÀÌ Á¤º¸¸¦ º¸³»°Ô µÈ´Ù.
+         * - ì•„ëž˜ì˜ ì •ë³´ëŠ” Prepareë¥¼ ë³´ë‚´ê³  ë°”ë¡œ Executeë¥¼ ë³´ë‚´ëŠ”
+         * ê²½ìš°ì— SimpleQueryì¸ì§€ë¥¼ ì•Œ ìˆ˜ ì—†ê¸° ë•Œë¬¸ì— IPCDAì¸ ê²½ìš°ì—ëŠ”
+         * ë¬´ì¡°ê±´ ì´ ì •ë³´ë¥¼ ë³´ë‚´ê²Œ ëœë‹¤.
          */
         CMI_NE_WR2(sCtx, &sStmt->mAttrArd->mDescRecCount);
         ACP_LIST_ITERATE(&sStmt->mAttrArd->mDescRecList, sIterator)
@@ -1093,9 +1093,9 @@ ACI_RC ulnWriteParamDataInListREQ(ulnFnContext *aFnContext,
 }
 
 /*
- * aDescRecApd °¡ ¹¦»çÇÏ´Â Descriptor Record ÀÇ
- * aRow ¹øÂ° row ¿¡ ÇØ´çÇÏ´Â »ç¿ëÀÚ ¹ÙÀÎµå µ¥ÀÌÅÍ¸¦
- * BINDDATA IN REQ ¿¡ ½Ç¾î¼­ º¸³½´Ù.
+ * aDescRecApd ê°€ ë¬˜ì‚¬í•˜ëŠ” Descriptor Record ì˜
+ * aRow ë²ˆì§¸ row ì— í•´ë‹¹í•˜ëŠ” ì‚¬ìš©ìž ë°”ì¸ë“œ ë°ì´í„°ë¥¼
+ * BINDDATA IN REQ ì— ì‹¤ì–´ì„œ ë³´ë‚¸ë‹¤.
  */
 ACI_RC ulnWriteParamDataInREQ(ulnFnContext *aFnContext,
                               ulnPtContext *aPtContext,
@@ -1123,7 +1123,7 @@ ACI_RC ulnWriteParamDataInREQ(ulnFnContext *aFnContext,
 
     sPacket.mOpID = CMP_OP_DB_ParamDataIn;
 
-    /* BUG-44125 [mm-cli] IPCDA ¸ðµå Å×½ºÆ® Áß hang - iloader CLOB */
+    /* BUG-44125 [mm-cli] IPCDA ëª¨ë“œ í…ŒìŠ¤íŠ¸ ì¤‘ hang - iloader CLOB */
     CMI_WRITE_CHECK_WITH_IPCDA(sCtx, 11, 11 + sRowSize);
     sState = 1;
 
@@ -1133,25 +1133,25 @@ ACI_RC ulnWriteParamDataInREQ(ulnFnContext *aFnContext,
     CMI_WR4(sCtx, &sRowSize);
 
     /*
-     * »ç¿ëÀÚ°¡ ¹ÙÀÎµåÇÑ ¸Þ¸ð¸® ¿µ¿ª¿¡¼­ µ¥ÀÌÅÍ¸¦ °¡Á®¿Í¼­ ¾´´Ù.
+     * ì‚¬ìš©ìžê°€ ë°”ì¸ë“œí•œ ë©”ëª¨ë¦¬ ì˜ì—­ì—ì„œ ë°ì´í„°ë¥¼ ê°€ì ¸ì™€ì„œ ì“´ë‹¤.
      */
 
     /*
      * Note : BUG-16050
-     *        mm ¿¡¼­ bit Å¸ÀÔÀ» ¿ÞÂÊ¿¡¼­ ¿À¸¥ÂÊÀ¸·Î ÇÑºñÆ®¾¿ ÀÐ´Â´Ù.
-     *        Áï, 0xc0 À» precision 3 ÀÎ cmtBit ·Î ÇØ¼­ ¼­¹ö·Î ÁÖ°Ô µÇ¸é,
+     *        mm ì—ì„œ bit íƒ€ìž…ì„ ì™¼ìª½ì—ì„œ ì˜¤ë¥¸ìª½ìœ¼ë¡œ í•œë¹„íŠ¸ì”© ì½ëŠ”ë‹¤.
+     *        ì¦‰, 0xc0 ì„ precision 3 ì¸ cmtBit ë¡œ í•´ì„œ ì„œë²„ë¡œ ì£¼ê²Œ ë˜ë©´,
      *              1 1 0
-     *        ÀÇ ºñÆ® ¿­·Î ÀÎ½ÄÇÏ°Ô µÈ´Ù.
-     *        ±×·± ÀÌÀ¯·Î, ÀÏ¹ÝÀûÀÎ 1, Áï, 0x01 À» cmtBit ¿¡ ³Ö¾î¼­ ÁÖ¸é ºñÆ® 0 À¸·Î ÀÎ½ÄÇØ ¹ö¸°´Ù.
+     *        ì˜ ë¹„íŠ¸ ì—´ë¡œ ì¸ì‹í•˜ê²Œ ëœë‹¤.
+     *        ê·¸ëŸ° ì´ìœ ë¡œ, ì¼ë°˜ì ì¸ 1, ì¦‰, 0x01 ì„ cmtBit ì— ë„£ì–´ì„œ ì£¼ë©´ ë¹„íŠ¸ 0 ìœ¼ë¡œ ì¸ì‹í•´ ë²„ë¦°ë‹¤.
      *
-     *        ±×·¡¼­ ÇÒ ¼ö ¾øÀÌ ½ºÅÃ¿¡ sBitData ¸¦ ¸¸µé¾î¼­ °Å±â¿¡ 0 È¤Àº 1 À» Áý¾î³Ö¾î µÐ´Ù.
-     *        cmtVariable Àº µ¥ÀÌÅÍÀÇ Æ÷ÀÎÅÍ¸¸ °¡Áö°í ÀÖ°í, cmiWriteProtocol ½Ã¿¡
-     *        Æ÷ÀÎÅÍ°¡ °¡¸®Å°´Â ¸Þ¸ð¸®¸¦ ÀÐ¾î¼­ ÇÏ±â ¶§¹®¿¡ ulnDataWriteBufferToPacket() ÇÔ¼öÀÇ
-     *        ¾ÈÂÊ¿¡ sBitData ¸¦ µÑ ¼ö´Â ¾ø´Â ³ë¸©ÀÌ´Ù.
+     *        ê·¸ëž˜ì„œ í•  ìˆ˜ ì—†ì´ ìŠ¤íƒì— sBitData ë¥¼ ë§Œë“¤ì–´ì„œ ê±°ê¸°ì— 0 í˜¹ì€ 1 ì„ ì§‘ì–´ë„£ì–´ ë‘”ë‹¤.
+     *        cmtVariable ì€ ë°ì´í„°ì˜ í¬ì¸í„°ë§Œ ê°€ì§€ê³  ìžˆê³ , cmiWriteProtocol ì‹œì—
+     *        í¬ì¸í„°ê°€ ê°€ë¦¬í‚¤ëŠ” ë©”ëª¨ë¦¬ë¥¼ ì½ì–´ì„œ í•˜ê¸° ë•Œë¬¸ì— ulnDataWriteBufferToPacket() í•¨ìˆ˜ì˜
+     *        ì•ˆìª½ì— sBitData ë¥¼ ë‘˜ ìˆ˜ëŠ” ì—†ëŠ” ë…¸ë¦‡ì´ë‹¤.
      *
-     *        ¿©±â¼­ ½ºÅÃ º¯¼öÀÎ sBitData ¸¦ »ç¿ëÇØµµ µÇ´Â °ÍÀÌ, cmiWriteProtocol() ¿¡¼­
-     *        Æ÷ÀÎÅÍ°¡ °¡¸®Å°´Â ¸Þ¸ð¸®¸¦ º¹»çÇÏ±â ¶§¹®¿¡ ±× ÀÌÈÄ¿¡´Â ½ºÅÃº¯¼ö°¡ »ç¶óÁ®µµ
-     *        ¹®Á¦ ¾ø±â ¶§¹®¿¡ ½ºÅÃÀ» ½áµµ µÈ´Ù. ´Ü, ÀÌ ÇÔ¼ö¿¡¼­¸¸ ½á¾ß ÇÑ´Ù.
+     *        ì—¬ê¸°ì„œ ìŠ¤íƒ ë³€ìˆ˜ì¸ sBitData ë¥¼ ì‚¬ìš©í•´ë„ ë˜ëŠ” ê²ƒì´, cmiWriteProtocol() ì—ì„œ
+     *        í¬ì¸í„°ê°€ ê°€ë¦¬í‚¤ëŠ” ë©”ëª¨ë¦¬ë¥¼ ë³µì‚¬í•˜ê¸° ë•Œë¬¸ì— ê·¸ ì´í›„ì—ëŠ” ìŠ¤íƒë³€ìˆ˜ê°€ ì‚¬ë¼ì ¸ë„
+     *        ë¬¸ì œ ì—†ê¸° ë•Œë¬¸ì— ìŠ¤íƒì„ ì¨ë„ ëœë‹¤. ë‹¨, ì´ í•¨ìˆ˜ì—ì„œë§Œ ì¨ì•¼ í•œë‹¤.
      */
     if(ulnMetaGetCTYPE(aApdMeta) == ULN_CTYPE_BIT)
     {
@@ -1176,7 +1176,7 @@ ACI_RC ulnWriteParamDataInREQ(ulnFnContext *aFnContext,
               != ACI_SUCCESS );
 
     /*
-     * ÆÐÅ¶À» ¾´´Ù.
+     * íŒ¨í‚·ì„ ì“´ë‹¤.
      */
     ACI_TEST(ulnWriteProtocol(aFnContext, aPtContext, &sPacket) != ACI_SUCCESS);
 
@@ -1247,7 +1247,7 @@ ACI_RC ulnWriteFetchV2REQ(ulnFnContext *aFnContext,
 
     sPacket.mOpID = CMP_OP_DB_FetchV2;
 
-    /* BUG-44125 [mm-cli] IPCDA ¸ðµå Å×½ºÆ® Áß hang - iloader CLOB */
+    /* BUG-44125 [mm-cli] IPCDA ëª¨ë“œ í…ŒìŠ¤íŠ¸ ì¤‘ hang - iloader CLOB */
     CMI_WRITE_CHECK_WITH_IPCDA(sCtx, 23, 23 + 1);
     sState = 1;
 
@@ -1279,7 +1279,7 @@ ACI_RC ulnWriteFetchV2REQ(ulnFnContext *aFnContext,
  * ulnExecWriteExecuteREQ.
  *
  * @param[in] aOption
- *  ¾Æ·¡ÀÇ °ªµé Áß¿¡ ÇÏ³ª
+ *  ì•„ëž˜ì˜ ê°’ë“¤ ì¤‘ì— í•˜ë‚˜
  *      CMP_DB_EXECUTE_NOAMAL_EXECUTE
  *      CMP_DB_EXECUTE_ARRAY_EXECUTE
  *      CMP_DB_EXECUTE_ARRAY_BEGIN
@@ -1293,7 +1293,7 @@ ACI_RC ulnWriteExecuteREQ(ulnFnContext *aFnContext,
 {
     cmiProtocol         sPacket;
     cmiProtocolContext *sCtx             = &(aPtContext->mCmiPtContext);
-    acp_uint32_t        sRowNumber       = aRowNumber + 1; // 1 º£ÀÌ½ºÀÌ´Ù.
+    acp_uint32_t        sRowNumber       = aRowNumber + 1; // 1 ë² ì´ìŠ¤ì´ë‹¤.
     acp_uint16_t        sOrgWriteCursor  = CMI_GET_CURSOR(sCtx);
     acp_uint32_t        sOldReadProtocol = aPtContext->mNeedReadProtocol;
     ulnStmt            *sStmt            = aFnContext->mHandle.mStmt;
@@ -1302,7 +1302,7 @@ ACI_RC ulnWriteExecuteREQ(ulnFnContext *aFnContext,
 
     sPacket.mOpID = CMP_OP_DB_ExecuteV2;
 
-    /* BUG-44125 [mm-cli] IPCDA ¸ðµå Å×½ºÆ® Áß hang - iloader CLOB */
+    /* BUG-44125 [mm-cli] IPCDA ëª¨ë“œ í…ŒìŠ¤íŠ¸ ì¤‘ hang - iloader CLOB */
     CMI_WRITE_CHECK_WITH_IPCDA(sCtx, 10, 10 + 2 + (sStmt->mAttrArd->mDescRecCount * 2));
     sState = 1;
 
@@ -1312,12 +1312,12 @@ ACI_RC ulnWriteExecuteREQ(ulnFnContext *aFnContext,
     CMI_WR1(sCtx, aOption);
 
    /* PROJ-2616 
-    * SimpleQuery-Fetch¿¡¼­ ½ÇÁ¦ ÄÃ·³ÀÇ ¹ÙÀÎµå Á¤º¸¸¦ º¸°í µ¥ÀÌÅÍ¸¦
-     * µðÄÚµùÇÏ±â À§ÇØ¼­ ¾Æ·¡ÀÇ Á¤º¸°¡ ÇÊ¿äÇÏ´Ù.
+    * SimpleQuery-Fetchì—ì„œ ì‹¤ì œ ì»¬ëŸ¼ì˜ ë°”ì¸ë“œ ì •ë³´ë¥¼ ë³´ê³  ë°ì´í„°ë¥¼
+     * ë””ì½”ë”©í•˜ê¸° ìœ„í•´ì„œ ì•„ëž˜ì˜ ì •ë³´ê°€ í•„ìš”í•˜ë‹¤.
      *
-     * - ¾Æ·¡ÀÇ Á¤º¸´Â Prepare¸¦ º¸³»°í ¹Ù·Î Execute¸¦ º¸³»´Â
-     * °æ¿ì¿¡ SimpleQueryÀÎÁö¸¦ ¾Ë ¼ö ¾ø±â ¶§¹®¿¡ IPCDAÀÎ °æ¿ì¿¡´Â
-     * ¹«Á¶°Ç ÀÌ Á¤º¸¸¦ º¸³»°Ô µÈ´Ù.
+     * - ì•„ëž˜ì˜ ì •ë³´ëŠ” Prepareë¥¼ ë³´ë‚´ê³  ë°”ë¡œ Executeë¥¼ ë³´ë‚´ëŠ”
+     * ê²½ìš°ì— SimpleQueryì¸ì§€ë¥¼ ì•Œ ìˆ˜ ì—†ê¸° ë•Œë¬¸ì— IPCDAì¸ ê²½ìš°ì—ëŠ”
+     * ë¬´ì¡°ê±´ ì´ ì •ë³´ë¥¼ ë³´ë‚´ê²Œ ëœë‹¤.
      */
     if (cmiGetLinkImpl(sCtx) == CMI_LINK_IMPL_IPCDA)
     {
@@ -1549,7 +1549,7 @@ ACI_RC ulnWriteLobFreeREQ(ulnFnContext *aFnContext, ulnPtContext *aPtContext, ac
     }
 
     /*
-     * ÆÐÅ¶ Á¦ÀÛ
+     * íŒ¨í‚· ì œìž‘
      */
     ACI_TEST(ulnWriteProtocol(aFnContext, aPtContext, &sPacket) != ACI_SUCCESS);
 
@@ -1605,7 +1605,7 @@ ACI_RC ulnWriteLobFreeAllREQ(ulnFnContext *aFnContext,
     }
 
     /*
-     * ÆÐÅ¶ Á¦ÀÛ
+     * íŒ¨í‚· ì œìž‘
      */
     ACI_TEST(ulnWriteProtocol(aFnContext, aPtContext, &sPacket) != ACI_SUCCESS);
 
@@ -1688,7 +1688,7 @@ ACI_RC ulnWriteLobGetSizeREQ(ulnFnContext *aFnContext, ulnPtContext *aPtContext,
     CMI_WR8(sCtx, &aLocator);
     
     /*
-     * ÆÐÅ¶ ¾²±â
+     * íŒ¨í‚· ì“°ê¸°
      */
     ACI_TEST(ulnWriteProtocol(aFnContext, aPtContext, &sPacket) != ACI_SUCCESS);
 
@@ -1747,7 +1747,7 @@ ACI_RC ulnWriteLobTrimREQ(ulnFnContext *aFnContext,
 /*
  * ulnWritePropertySetV2REQ.
  *
- * protocol context ¿¡ Property Set Req ¸¦ ¾²±â¸¸ ÇÑ´Ù.
+ * protocol context ì— Property Set Req ë¥¼ ì“°ê¸°ë§Œ í•œë‹¤.
  */
 ACI_RC ulnWritePropertySetV2REQ(ulnFnContext  *aContext,
                                 ulnPtContext  *aPtContext,
@@ -1772,7 +1772,7 @@ ACI_RC ulnWritePropertySetV2REQ(ulnFnContext  *aContext,
     acp_uint32_t         sValueLen = 0;
 
     /*
-     * protocol ÃÊ±âÈ­
+     * protocol ì´ˆê¸°í™”
      */
     sPacket.mOpID = CMP_OP_DB_PropertySetV2;
 
@@ -1943,7 +1943,7 @@ ACI_RC ulnWritePropertySetV2REQ(ulnFnContext  *aContext,
     }
 
     /*
-     * ÆÐÅ¶ ¾²±â
+     * íŒ¨í‚· ì“°ê¸°
      */
     ACI_TEST(ulnWriteProtocol(aContext, aPtContext, &sPacket) != ACI_SUCCESS);
 
@@ -2026,7 +2026,7 @@ ACI_RC ulnSendConnectAttr(ulnFnContext  *aContext,
     if (ulnDbcIsConnected(sDbc) == ACP_TRUE)
     {
         /*
-         * protocol context ÃÊ±âÈ­.
+         * protocol context ì´ˆê¸°í™”.
          */
         //fix BUG-17722
         ACI_TEST(ulnInitializeProtocolContext(aContext,
@@ -2037,19 +2037,19 @@ ACI_RC ulnSendConnectAttr(ulnFnContext  *aContext,
         ULN_FLAG_UP(sNeedPtContextFin);
 
         /*
-         * ÀûÀýÇÑ ÆÐÅ¶À» ¸¸µé¾î¼­ protocol context ¿¡ ¾´´Ù.
+         * ì ì ˆí•œ íŒ¨í‚·ì„ ë§Œë“¤ì–´ì„œ protocol context ì— ì“´ë‹¤.
          */
         ACI_TEST(ulnWritePropertySetV2REQ(aContext,  &(sDbc->mPtContext),
                                           aCmPropertyID, aValuePtr)
                  != ACI_SUCCESS);
 
         /*
-         * ½ÇÁ¦ Àü¼Û
+         * ì‹¤ì œ ì „ì†¡
          */
         ACI_TEST(ulnFlushProtocol(aContext, &(sDbc->mPtContext) ) != ACI_SUCCESS);
 
         /*
-         * ÀÀ´ä ´ë±â
+         * ì‘ë‹µ ëŒ€ê¸°
          */
         sTimeout = acpTimeFrom(ulnDbcGetLoginTimeout(sDbc), 0);
 
@@ -2064,7 +2064,7 @@ ACI_RC ulnSendConnectAttr(ulnFnContext  *aContext,
         }
 
         /*
-         * protocol context Á¤¸®
+         * protocol context ì •ë¦¬
          */
         ULN_FLAG_DOWN(sNeedPtContextFin);
 
@@ -2137,7 +2137,7 @@ ACI_RC ulnWritePrepareByCIDREQ(ulnFnContext  *aFnContext,
 
     sStmt->mIsSimpleQuery = ACP_FALSE; /*PROJ-2616*/
 
-    /* BUG-44125 [mm-cli] IPCDA ¸ðµå Å×½ºÆ® Áß hang - iloader CLOB */
+    /* BUG-44125 [mm-cli] IPCDA ëª¨ë“œ í…ŒìŠ¤íŠ¸ ì¤‘ hang - iloader CLOB */
     CMI_WRITE_CHECK_WITH_IPCDA(sCtx, 10, 10 + sRowSize);
     sState = 1;
 

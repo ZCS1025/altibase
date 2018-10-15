@@ -19,12 +19,12 @@
  * $Id: qmoJoinMethod.h 82075 2018-01-17 06:39:52Z jina.kim $
  *
  * Description :
- *    Join Cost¸¦ ±¸ÇÏ¿© ´Ù¾çÇÑ Join Methodµé Áß¿¡¼­ °¡Àå cost °¡ ÁÁÀº
- *    Join Method¸¦ ¼±ÅÃÇÑ´Ù.
+ *    Join Costë¥¼ êµ¬í•˜ì—¬ ë‹¤ì–‘í•œ Join Methodë“¤ ì¤‘ì—ì„œ ê°€ì¥ cost ê°€ ì¢‹ì€
+ *    Join Methodë¥¼ ì„ íƒí•œë‹¤.
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  **********************************************************************/
 
@@ -38,29 +38,29 @@
 #include <qmoSelectivity.h>
 
 /***********************************************************************
- * [qmoJoinMethodCostÀÇ flagÀ» À§ÇÑ »ó¼ö]
+ * [qmoJoinMethodCostì˜ flagì„ ìœ„í•œ ìƒìˆ˜]
  ***********************************************************************/
 
 // qmoJoinMethodCost.flag
 #define QMO_JOIN_METHOD_FLAG_CLEAR             (0x00000000)
 
-// Join Method Type : qmoHintÀÇ QMO_JOIN_METHOD_MASK ¿Í µ¿ÀÏ
+// Join Method Type : qmoHintì˜ QMO_JOIN_METHOD_MASK ì™€ ë™ì¼
 
 // qmoJoinMethodCost.flag
-// Feasibility : ÇØ´ç Join Method ½ÇÇà °¡´É¼º
+// Feasibility : í•´ë‹¹ Join Method ì‹¤í–‰ ê°€ëŠ¥ì„±
 #define QMO_JOIN_METHOD_FEASIBILITY_MASK       (0x00010000)
 #define QMO_JOIN_METHOD_FEASIBILITY_FALSE      (0x00010000)
 #define QMO_JOIN_METHOD_FEASIBILITY_TRUE       (0x00000000)
 
 // qmoJoinMethodCost.flag
-// Join Direction : Left->Right ¶Ç´Â Right->Left
+// Join Direction : Left->Right ë˜ëŠ” Right->Left
 #define QMO_JOIN_METHOD_DIRECTION_MASK         (0x00020000)
 #define QMO_JOIN_METHOD_DIRECTION_LEFTRIGHT    (0x00000000)
 #define QMO_JOIN_METHOD_DIRECTION_RIGHTLEFT    (0x00020000)
 
 // qmoJoinMethodCost.flag
-// DISK/MEMORY : ÇÏÀ§ ³ëµå »ı¼º½Ã diskÀÎÁö, memoryÀÎÁö¿¡ ´ëÇÑ Á¤º¸
-// Two-Pass Sort/Hash JoinÀ» À§ÇÑ Temp TableÀÇ Á¾·ù
+// DISK/MEMORY : í•˜ìœ„ ë…¸ë“œ ìƒì„±ì‹œ diskì¸ì§€, memoryì¸ì§€ì— ëŒ€í•œ ì •ë³´
+// Two-Pass Sort/Hash Joinì„ ìœ„í•œ Temp Tableì˜ ì¢…ë¥˜
 #define QMO_JOIN_METHOD_LEFT_STORAGE_MASK         (0x00040000)
 #define QMO_JOIN_METHOD_LEFT_STORAGE_DISK         (0x00000000)
 #define QMO_JOIN_METHOD_LEFT_STORAGE_MEMORY       (0x00040000)
@@ -71,29 +71,29 @@
 #define QMO_JOIN_METHOD_RIGHT_STORAGE_MEMORY      (0x00080000)
 
 // qmoJoinMethodCost.flag
-// left preserved order¸¦ »ç¿ë
+// left preserved orderë¥¼ ì‚¬ìš©
 #define QMO_JOIN_METHOD_USE_LEFT_PRES_ORDER_MASK        (0x00100000)
 #define QMO_JOIN_METHOD_USE_LEFT_PRES_ORDER_FALSE       (0x00000000)
 #define QMO_JOIN_METHOD_USE_LEFT_PRES_ORDER_TRUE        (0x00100000)
 
 // qmoJoinMethodCost.flag
-// right preserved order¸¦ »ç¿ë
+// right preserved orderë¥¼ ì‚¬ìš©
 #define QMO_JOIN_METHOD_USE_RIGHT_PRES_ORDER_MASK        (0x00200000)
 #define QMO_JOIN_METHOD_USE_RIGHT_PRES_ORDER_FALSE       (0x00000000)
 #define QMO_JOIN_METHOD_USE_RIGHT_PRES_ORDER_TRUE        (0x00200000)
 
 // qmoJoinMethodCost.flag
-// SORT ¶Ç´Â MERGE JOIN ¼öÇà½Ã Left NodeÀÇ Á¾·ù °áÁ¤
-// NONE       : Left Node¸¦ »ı¼ºÇÏÁö ¸»°Í.
-// STORE      : Left Node·Î SORT³ëµå¸¦ »ı¼ºÇÏ°í SortingÀº ÇÏÁö ¾ÊÀ½
-// SORTING    : Left Node·Î SORT³ëµå¸¦ »ı¼ºÇÏ°í Sorting Option
+// SORT ë˜ëŠ” MERGE JOIN ìˆ˜í–‰ì‹œ Left Nodeì˜ ì¢…ë¥˜ ê²°ì •
+// NONE       : Left Nodeë¥¼ ìƒì„±í•˜ì§€ ë§ê²ƒ.
+// STORE      : Left Nodeë¡œ SORTë…¸ë“œë¥¼ ìƒì„±í•˜ê³  Sortingì€ í•˜ì§€ ì•ŠìŒ
+// SORTING    : Left Nodeë¡œ SORTë…¸ë“œë¥¼ ìƒì„±í•˜ê³  Sorting Option
 #define QMO_JOIN_LEFT_NODE_MASK           (0x00C00000)
 #define QMO_JOIN_LEFT_NODE_NONE           (0x00000000)
 #define QMO_JOIN_LEFT_NODE_STORE          (0x00400000)
 #define QMO_JOIN_LEFT_NODE_SORTING        (0x00800000)
 
 // qmoJoinMethodCost.flag
-// SORT ¶Ç´Â MERGE JOIN ¼öÇà½Ã Right NodeÀÇ Á¾·ù °áÁ¤
+// SORT ë˜ëŠ” MERGE JOIN ìˆ˜í–‰ì‹œ Right Nodeì˜ ì¢…ë¥˜ ê²°ì •
 #define QMO_JOIN_RIGHT_NODE_MASK           (0x03000000)
 #define QMO_JOIN_RIGHT_NODE_NONE           (0x00000000)
 #define QMO_JOIN_RIGHT_NODE_STORE          (0x01000000)
@@ -111,7 +111,7 @@
 #define QMO_JOIN_ANTI_TRUE                 (0x08000000)
 
 // To Fix PR-11212
-// Index Merge Join ¿©ºÎÀÇ ÆÇ´ÜÀ» À§ÇÑ MASK
+// Index Merge Join ì—¬ë¶€ì˜ íŒë‹¨ì„ ìœ„í•œ MASK
 #define QMO_JOIN_INDEX_MERGE_MASK       ( QMO_JOIN_METHOD_MASK |        \
                                           QMO_JOIN_LEFT_NODE_MASK |     \
                                           QMO_JOIN_RIGHT_NODE_MASK )
@@ -141,7 +141,7 @@
 #define QMO_JOIN_DISABLE_MERGE    (0x00000008)
 
 //---------------------------------------------------
-// join ¼öÇà ¹æÇâ¿¡ °üÇÑ Á¤º¸
+// join ìˆ˜í–‰ ë°©í–¥ì— ê´€í•œ ì •ë³´
 //---------------------------------------------------
 typedef enum
 {
@@ -152,59 +152,59 @@ typedef enum
 
 //---------------------------------------------------------------------
 // PROJ-2418 
-// Join¿¡¼­, ÇÑ Child Graph°¡ ´Ù¸¥ Child·Î ¿ÜºÎ ÂüÁ¶ÇÏ´ÂÁö ¿©ºÎ
+// Joinì—ì„œ, í•œ Child Graphê°€ ë‹¤ë¥¸ Childë¡œ ì™¸ë¶€ ì°¸ì¡°í•˜ëŠ”ì§€ ì—¬ë¶€
 //---------------------------------------------------------------------
 typedef enum
 {
-    QMO_JOIN_LATERAL_NONE = 0,   // ÇÑ Graph°¡ ´Ù¸¥ ÂÊÀ» ÂüÁ¶ÇÏÁö ¾ÊÀ½ 
-    QMO_JOIN_LATERAL_LEFT,       // ¿ŞÂÊ Graph°¡ Lateral View, ¿À¸¥ÂÊÀ» ÂüÁ¶
-    QMO_JOIN_LATERAL_RIGHT       // ¿À¸¥ÂÊ Graph°¡ Lateral View, ¿ŞÂÊÀ» ÂüÁ¶
+    QMO_JOIN_LATERAL_NONE = 0,   // í•œ Graphê°€ ë‹¤ë¥¸ ìª½ì„ ì°¸ì¡°í•˜ì§€ ì•ŠìŒ 
+    QMO_JOIN_LATERAL_LEFT,       // ì™¼ìª½ Graphê°€ Lateral View, ì˜¤ë¥¸ìª½ì„ ì°¸ì¡°
+    QMO_JOIN_LATERAL_RIGHT       // ì˜¤ë¥¸ìª½ Graphê°€ Lateral View, ì™¼ìª½ì„ ì°¸ì¡°
 } qmoJoinLateralDirection;
 
 //---------------------------------------
-// Index Nested Loop Join °è»ê½Ã, ÀÔ·ÂÀÎÀÚ·Î ¹ŞÀ» ÀÚ·á±¸Á¶ Á¤ÀÇ.
+// Index Nested Loop Join ê³„ì‚°ì‹œ, ì…ë ¥ì¸ìë¡œ ë°›ì„ ìë£Œêµ¬ì¡° ì •ì˜.
 //---------------------------------------
 typedef struct qmoJoinIndexNL
 {
-    // selectivity¸¦ °è»êÇÏ±âÀ§ÇÑ indexÁ¤º¸
+    // selectivityë¥¼ ê³„ì‚°í•˜ê¸°ìœ„í•œ indexì •ë³´
     qcmIndex         * index;
 
     //-----------------------------------------------
-    // [predicate Á¤º¸]
-    // aPredicate      : join predicateÀÇ ¿¬°á¸®½ºÆ®
-    // aRightChildPred : join index È°¿ëÀÇ ÃÖÀûÈ­ Àû¿ëÀ» À§ÇÑ
-    //                   right child graphÀÇ predicate Á¤º¸
+    // [predicate ì •ë³´]
+    // aPredicate      : join predicateì˜ ì—°ê²°ë¦¬ìŠ¤íŠ¸
+    // aRightChildPred : join index í™œìš©ì˜ ìµœì í™” ì ìš©ì„ ìœ„í•œ
+    //                   right child graphì˜ predicate ì •ë³´
     //-----------------------------------------------
     qmoPredicate     * predicate;
     qmoPredicate     * rightChildPred;
 
-    // right child graphÀÇ dependencies Á¤º¸
+    // right child graphì˜ dependencies ì •ë³´
     qcDepInfo        * rightDepInfo;
-    // Åë°èÁ¤º¸ ÀÚ·á±¸Á¶
+    // í†µê³„ì •ë³´ ìë£Œêµ¬ì¡°
     qmoStatistics    * rightStatiscalData;
 
-    // left->right or right->leftÀÇ join ¼öÇà¹æÇâ.
+    // left->right or right->leftì˜ join ìˆ˜í–‰ë°©í–¥.
     qmoJoinDirection   direction;
 
 } qmoJoinIndexNL;
 
 //---------------------------------------
-// Anti Outer Join °è»ê½Ã, ÀÔ·ÂÀÎÀÚ·Î ¹ŞÀ» ÀÚ·á±¸Á¶ Á¤ÀÇ.
+// Anti Outer Join ê³„ì‚°ì‹œ, ì…ë ¥ì¸ìë¡œ ë°›ì„ ìë£Œêµ¬ì¡° ì •ì˜.
 //---------------------------------------
 typedef struct qmoJoinAntiOuter
 {
-    // selectivity¸¦ °è»êÇÏ±âÀ§ÇÑ indexÁ¤º¸ (right graph index)
+    // selectivityë¥¼ ê³„ì‚°í•˜ê¸°ìœ„í•œ indexì •ë³´ (right graph index)
     qcmIndex         * index;
 
-    // join predicateÀÇ ¿¬°á¸®½ºÆ®
+    // join predicateì˜ ì—°ê²°ë¦¬ìŠ¤íŠ¸
     qmoPredicate     * predicate;
 
-    // right child graphÀÇ dependencies Á¤º¸
+    // right child graphì˜ dependencies ì •ë³´
     qcDepInfo        * rightDepInfo;
 
     //-----------------------------------------------
-    // left graphÀÇ ÀÎµ¦½º Á¤º¸
-    // predicate ÇÏÀ§ÀÇ ¸ğµçÄÃ·³¿¡ ÀÎµ¦½º°¡ Á¸ÀçÇÏ´ÂÁö¸¦ °Ë»çÇÏ±â À§ÇÑ Á¤º¸
+    // left graphì˜ ì¸ë±ìŠ¤ ì •ë³´
+    // predicate í•˜ìœ„ì˜ ëª¨ë“ ì»¬ëŸ¼ì— ì¸ë±ìŠ¤ê°€ ì¡´ì¬í•˜ëŠ”ì§€ë¥¼ ê²€ì‚¬í•˜ê¸° ìœ„í•œ ì •ë³´
     //-----------------------------------------------
     UInt               leftIndexCnt;
     qmoIdxCardInfo   * leftIndexInfo;
@@ -212,7 +212,7 @@ typedef struct qmoJoinAntiOuter
 } qmoJoinAntiOuter;
 
 //----------------------------------------------------
-// Join GraphÀÇ LeftÀÎÁö RightÀÎÁöÀÇ ±¸ºĞ
+// Join Graphì˜ Leftì¸ì§€ Rightì¸ì§€ì˜ êµ¬ë¶„
 //----------------------------------------------------
 typedef enum
 {
@@ -221,22 +221,22 @@ typedef enum
 } qmoJoinChild;
 
 /***********************************************************************
- * [Join Method Cost ¸¦ ±¸ÇÏ±â À§ÇÑ ÀÚ·á ±¸Á¶]
+ * [Join Method Cost ë¥¼ êµ¬í•˜ê¸° ìœ„í•œ ìë£Œ êµ¬ì¡°]
  ***********************************************************************/
 
 //----------------------------------------------------
-// qmoJoinMethodCost ÀÚ·á ±¸Á¶
+// qmoJoinMethodCost ìë£Œ êµ¬ì¡°
 //----------------------------------------------------
 typedef struct qmoJoinMethodCost
 {
-    // Join Method Type, Feasibility, Join Direction, ÇÏÀ§ DISK/MEMORY Á¤º¸
+    // Join Method Type, Feasibility, Join Direction, í•˜ìœ„ DISK/MEMORY ì •ë³´
     UInt            flag;
     SDouble         selectivity;
     SDouble         firstRowsFactor;
-    qmoPredInfo   * joinPredicate;    // joinable Predicate Á¤º¸
+    qmoPredInfo   * joinPredicate;    // joinable Predicate ì •ë³´
 
     //---------------------------------------------
-    // ºñ¿ë Á¤º¸
+    // ë¹„ìš© ì •ë³´
     //---------------------------------------------
 
     SDouble         accessCost;
@@ -245,30 +245,30 @@ typedef struct qmoJoinMethodCost
 
 
     //---------------------------------------------
-    // Index Á¤º¸ : selectivity °è»ê ½Ã¿¡ ÇÊ¿äÇÔ
-    //    - Index Nested Loop Join, Anti Outer JoinÀÏ °æ¿ì¿¡¸¸ »ç¿ë
-    //    - ±× ¿ÜÀÇ °æ¿ì¿¡´Â NULL °ªÀ» °¡Áø´Ù.
+    // Index ì •ë³´ : selectivity ê³„ì‚° ì‹œì— í•„ìš”í•¨
+    //    - Index Nested Loop Join, Anti Outer Joinì¼ ê²½ìš°ì—ë§Œ ì‚¬ìš©
+    //    - ê·¸ ì™¸ì˜ ê²½ìš°ì—ëŠ” NULL ê°’ì„ ê°€ì§„ë‹¤.
     //---------------------------------------------
 
     qmoIdxCardInfo  * rightIdxInfo;
     qmoIdxCardInfo  * leftIdxInfo;
 
-    // two pass hash join hint¿¡ temp table °³¼ö°¡ Á¸ÀçÇÏ´Â °æ¿ì¿¡¸¸ ¼³Á¤
+    // two pass hash join hintì— temp table ê°œìˆ˜ê°€ ì¡´ì¬í•˜ëŠ” ê²½ìš°ì—ë§Œ ì„¤ì •
     UInt            hashTmpTblCntHint;
 
 } qmoJoinMethodCost;
 
 //---------------------------------------------------
-// Join Method ÀÚ·á ±¸Á¶
+// Join Method ìë£Œ êµ¬ì¡°
 //
 //    - flag : QMO_JOIN_METHOD_NL
 //             QMO_JOIN_METHOD_HASH
 //             QMO_JOIN_METHOD_SORT
 //             QMO_JOIN_METHOD_MERGE
-//    - selectedJoinMethod : ÇØ´ç joinMethodCost Áß
-//             °¡Àå cost°¡ ÁÁÀº JoinMethodCost
-//    - joinMethodCnt : ÇØ´ç Join Method °³¼ö
-//    - joinMethodCost : joinMethod¿Í ±×ÀÇ cost
+//    - selectedJoinMethod : í•´ë‹¹ joinMethodCost ì¤‘
+//             ê°€ì¥ costê°€ ì¢‹ì€ JoinMethodCost
+//    - joinMethodCnt : í•´ë‹¹ Join Method ê°œìˆ˜
+//    - joinMethodCost : joinMethodì™€ ê·¸ì˜ cost
 //
 //---------------------------------------------------
 typedef struct qmoJoinMethod
@@ -276,11 +276,11 @@ typedef struct qmoJoinMethod
     UInt                flag;
 
     //---------------------------------------------
-    // ¼±ÅÃµÈ Join Method
-    //    - selectedJoinMethod : °¡Àå cost°¡ ÁÁÀº join method
-    //    - hintJoinMethod : Join Method Hint¿¡¼­ table order±îÁö ¸¸Á·ÇÏ´Â
+    // ì„ íƒëœ Join Method
+    //    - selectedJoinMethod : ê°€ì¥ costê°€ ì¢‹ì€ join method
+    //    - hintJoinMethod : Join Method Hintì—ì„œ table orderê¹Œì§€ ë§Œì¡±í•˜ëŠ”
     //                       Join Method
-    //    - hintJoinMethod2 : Join Method Hint¿¡¼­ Method¸¸ ¸¸Á·ÇÏ´Â
+    //    - hintJoinMethod2 : Join Method Hintì—ì„œ Methodë§Œ ë§Œì¡±í•˜ëŠ”
     //                        Join Method
     //---------------------------------------------
 
@@ -294,14 +294,14 @@ typedef struct qmoJoinMethod
 
 
 //---------------------------------------------------
-// Join Method¸¦ °ü¸®ÇÏ´Â ÇÔ¼ö
+// Join Methodë¥¼ ê´€ë¦¬í•˜ëŠ” í•¨ìˆ˜
 //---------------------------------------------------
 
 class qmoJoinMethodMgr
 {
 public:
 
-    // Join Method ÀÚ·á ±¸Á¶ÀÇ ÃÊ±âÈ­
+    // Join Method ìë£Œ êµ¬ì¡°ì˜ ì´ˆê¸°í™”
     static IDE_RC init( qcStatement    * aStatement,
                         qmgGraph       * aGraph,
                         SDouble          aFirstRowsFactor,
@@ -309,19 +309,19 @@ public:
                         UInt             aJoinMethodType,
                         qmoJoinMethod  * aJoinMethod );
 
-    // Join Method ¼±ÅÃ
+    // Join Method ì„ íƒ
     static IDE_RC getBestJoinMethodCost( qcStatement   * aStatement,
                                          qmgGraph      * aGraph,
                                          qmoPredicate  * aJoinPredicate,
                                          qmoJoinMethod * aJoinMethod );
 
-    // GraphÀÇ °øÅë Á¤º¸¸¦ Ãâ·ÂÇÔ.
+    // Graphì˜ ê³µí†µ ì •ë³´ë¥¼ ì¶œë ¥í•¨.
     static IDE_RC     printJoinMethod( qmoJoinMethod * aMethod,
                                        ULong           aDepth,
                                        iduVarString  * aString );
 
 private:
-    // Join MethodÀÇ Cost °è»ê
+    // Join Methodì˜ Cost ê³„ì‚°
     static IDE_RC getJoinCost( qcStatement       * aStatement,
                                qmoJoinMethodCost * aMethod,
                                qmoPredicate      * aJoinPredicate,
@@ -329,84 +329,84 @@ private:
                                qmgGraph          * aRight);
 
 
-    // Full Nested Loop JoinÀÇ Cost °è»ê
+    // Full Nested Loop Joinì˜ Cost ê³„ì‚°
     static IDE_RC getFullNestedLoop( qcStatement       * aStatement,
                                      qmoJoinMethodCost * aMethod,
                                      qmoPredicate      * aJoinPredicate,
                                      qmgGraph          * aLeft,
                                      qmgGraph          * aRight);
 
-    // Full Store Nested Loop JoinÀÇ Cost °è»ê
+    // Full Store Nested Loop Joinì˜ Cost ê³„ì‚°
     static IDE_RC getFullStoreNestedLoop( qcStatement       * aStatement,
                                           qmoJoinMethodCost * aMethod,
                                           qmoPredicate      * aJoinPredicate,
                                           qmgGraph          * aLeft,
                                           qmgGraph          * aRight);
 
-    // Index Nested Loop JoinÀÇ Cost °è»ê
+    // Index Nested Loop Joinì˜ Cost ê³„ì‚°
     static IDE_RC getIndexNestedLoop( qcStatement       * aStatement,
                                       qmoJoinMethodCost * aMethod,
                                       qmoPredicate      * aJoinPredicate,
                                       qmgGraph          * aLeft,
                                       qmgGraph          * aRight);
 
-    // Anti Outer JoinÀÇ Cost °è»ê
+    // Anti Outer Joinì˜ Cost ê³„ì‚°
     static IDE_RC getAntiOuter( qcStatement       * aStatement,
                                 qmoJoinMethodCost * aMethod,
                                 qmoPredicate      * aJoinPredicate,
                                 qmgGraph          * aLeft,
                                 qmgGraph          * aRight);
 
-    // One Pass Sort JoinÀÇ Cost °è»ê
+    // One Pass Sort Joinì˜ Cost ê³„ì‚°
     static IDE_RC getOnePassSort( qcStatement       * aStatement,
                                   qmoJoinMethodCost * aMethod,
                                   qmoPredicate      * aJoinPredicate,
                                   qmgGraph          * aLeft,
                                   qmgGraph          * aRight);
 
-    // Two Pass Sort JoinÀÇ Cost °è»ê
+    // Two Pass Sort Joinì˜ Cost ê³„ì‚°
     static IDE_RC getTwoPassSort( qcStatement       * aStatement,
                                   qmoJoinMethodCost * aMethod,
                                   qmoPredicate      * aJoinPredicate,
                                   qmgGraph          * aLeft,
                                   qmgGraph          * aRight);
 
-    // Inverse Sort JoinÀÇ Cost °è»ê
+    // Inverse Sort Joinì˜ Cost ê³„ì‚°
     static IDE_RC getInverseSort( qcStatement       * aStatement,
                                   qmoJoinMethodCost * aMethod,
                                   qmoPredicate      * aJoinPredicate,
                                   qmgGraph          * aLeft,
                                   qmgGraph          * aRight);
 
-    // One Pass Hash JoinÀÇ Cost °è»ê
+    // One Pass Hash Joinì˜ Cost ê³„ì‚°
     static IDE_RC getOnePassHash( qcStatement       * aStatement,
                                   qmoJoinMethodCost * aMethod,
                                   qmoPredicate      * aJoinPredicate,
                                   qmgGraph          * aLeft,
                                   qmgGraph          * aRight);
 
-    // Two Pass Hash JoinÀÇ Cost °è»ê
+    // Two Pass Hash Joinì˜ Cost ê³„ì‚°
     static IDE_RC getTwoPassHash( qcStatement       * aStatement,
                                   qmoJoinMethodCost * aMethod,
                                   qmoPredicate      * aJoinPredicate,
                                   qmgGraph          * aLeft,
                                   qmgGraph          * aRight);
 
-    // Inverse Hash JoinÀÇ Cost °è»ê
+    // Inverse Hash Joinì˜ Cost ê³„ì‚°
     static IDE_RC getInverseHash( qcStatement       * aStatement,
                                   qmoJoinMethodCost * aMethod,
                                   qmoPredicate      * aJoinPredicate,
                                   qmgGraph          * aLeft,
                                   qmgGraph          * aRight);
 
-    // Merge JoinÀÇ Cost °è»ê
+    // Merge Joinì˜ Cost ê³„ì‚°
     static IDE_RC getMerge( qcStatement       * aStatement,
                             qmoJoinMethodCost * aMethod,
                             qmoPredicate      * aJoinPredicate,
                             qmgGraph          * aLeft,
                             qmgGraph          * aRight);
 
-    // Nested Loop Join Method CostÀÇ ÃÊ±âÈ­
+    // Nested Loop Join Method Costì˜ ì´ˆê¸°í™”
     static IDE_RC initJoinMethodCost4NL( qcStatement             * aStatement,
                                          qmgGraph                * aGraph,
                                          qmoPredicate            * aJoinPredicate,
@@ -414,7 +414,7 @@ private:
                                          qmoJoinMethodCost      ** aMethod,
                                          UInt                    * aMethodCnt );
 
-    // Hash Join Method CostÀÇ ÃÊ±âÈ­
+    // Hash Join Method Costì˜ ì´ˆê¸°í™”
     static IDE_RC initJoinMethodCost4Hash( qcStatement             * aStatement,
                                            qmgGraph                * aGraph,
                                            qmoPredicate            * aJoinPredicate,
@@ -422,7 +422,7 @@ private:
                                            qmoJoinMethodCost      ** aMethod,
                                            UInt                    * aMethodCnt );
 
-    // Sort Join Method CostÀÇ ÃÊ±âÈ­
+    // Sort Join Method Costì˜ ì´ˆê¸°í™”
     static IDE_RC initJoinMethodCost4Sort( qcStatement             * aStatement,
                                            qmgGraph                * aGraph,
                                            qmoPredicate            * aJoinPredicate,
@@ -431,7 +431,7 @@ private:
                                            UInt                    * aMethodCnt );
 
 
-    // Merget JoinÀÇ Join Method CostÀÇ ÃÊ±âÈ­
+    // Merget Joinì˜ Join Method Costì˜ ì´ˆê¸°í™”
     static IDE_RC initJoinMethodCost4Merge(qcStatement             * aStatement,
                                            qmgGraph                * aGraph,
                                            qmoPredicate            * aJoinPredicate,
@@ -439,20 +439,20 @@ private:
                                            qmoJoinMethodCost      ** aMethod,
                                            UInt                    * aMethodCnt );
 
-    // Join Method Cost¿¡  Join Method Type°ú direction Á¤º¸¸¦ ¼³Á¤ÇÏ´Â ÇÔ¼ö
+    // Join Method Costì—  Join Method Typeê³¼ direction ì •ë³´ë¥¼ ì„¤ì •í•˜ëŠ” í•¨ìˆ˜
     static IDE_RC setFlagInfo( qmoJoinMethodCost * aJoinMethodCost,
                                UInt                aFirstTypeFlag,
                                UInt                aJoinMethodCnt,
                                idBool              aIsLeftOuter );
 
-    // merge join¿¡¼­ preserved order »ç¿ë °¡´É ¿©ºÎ¸¦ ¾Ë¾Æ³¿
+    // merge joinì—ì„œ preserved order ì‚¬ìš© ê°€ëŠ¥ ì—¬ë¶€ë¥¼ ì•Œì•„ëƒ„
     static IDE_RC usablePreservedOrder4Merge( qcStatement    * aStatement,
                                               qmoPredInfo    * aJoinPred,
                                               qmgGraph       * aGraph,
                                               qmoAccessMethod ** aAccessMethod,
                                               idBool         * aUsable );
 
-    // Join Method Hint¿¡ ¸Â´Â qmoJoinMethodCost¸¦ Ã£À½
+    // Join Method Hintì— ë§ëŠ” qmoJoinMethodCostë¥¼ ì°¾ìŒ
     static IDE_RC setJoinMethodHint( qmoJoinMethod      * aJoinMethod,
                                      qmsJoinMethodHints * aJoinMethodHints,
                                      qmgGraph           * aGraph,
@@ -460,38 +460,38 @@ private:
                                      qmoJoinMethodCost ** aSameTableOrder,
                                      qmoJoinMethodCost ** aDiffTableOrder );
 
-    // Sort JoinµîÀ» À§ÇÏ¿© Preserved Order¸¦ »ç¿ë °¡´ÉÇÑÁö °Ë»ç
+    // Sort Joinë“±ì„ ìœ„í•˜ì—¬ Preserved Orderë¥¼ ì‚¬ìš© ê°€ëŠ¥í•œì§€ ê²€ì‚¬
     static IDE_RC canUsePreservedOrder( qcStatement       * aStatement,
                                         qmoJoinMethodCost * aJoinMethodCost,
                                         qmgGraph          * aGraph,
                                         qmoJoinChild        aChildPosition,
                                         idBool            * aUsable );
 
-    // full nested loop, full store nested loop joinÀÇ »ç¿ë¿©ºÎ °Ë»ç
+    // full nested loop, full store nested loop joinì˜ ì‚¬ìš©ì—¬ë¶€ ê²€ì‚¬
     static IDE_RC usableJoinMethodFullNL( qmgGraph     * aGraph,
                                           qmoPredicate * aJoinPredicate,
                                           idBool       * aIsUsable );
 
-    // push_pred hints¿¡ µû¸¥ join order º¯°æ
+    // push_pred hintsì— ë”°ë¥¸ join order ë³€ê²½
     static IDE_RC forcePushPredHint( qmgGraph      * aGraph,
                                      qmoJoinMethod * aJoinMethod );
 
 
     // PROJ-2582 recursive with
-    // recursive view¿¡ µû¸¥ join order º¯°æ
+    // recursive viewì— ë”°ë¥¸ join order ë³€ê²½
     static IDE_RC forceJoinOrder4RecursiveView( qmgGraph      * aGraph,
                                                 qmoJoinMethod * aJoinMethod );
 
     /* PROJ-2242 */
 
-    // Nested loop join °ü·ÃÇÑ qmoPredInfo list È¹µæ
+    // Nested loop join ê´€ë ¨í•œ qmoPredInfo list íšë“
     static IDE_RC setJoinPredInfo4NL( qcStatement         * aStatement,
                                       qmoPredicate        * aJoinPredicate,
                                       qmoIdxCardInfo      * aRightIndexInfo,
                                       qmgGraph            * aRightGraph,
                                       qmoJoinMethodCost   * aMethodCost );
 
-    // Anti outer °ü·ÃÇÑ qmoPredInfo list È¹µæ
+    // Anti outer ê´€ë ¨í•œ qmoPredInfo list íšë“
     static IDE_RC setJoinPredInfo4AntiOuter( qcStatement       * aStatement,
                                              qmoPredicate      * aJoinPredicate,
                                              qmoIdxCardInfo    * aRightIndexInfo,
@@ -499,28 +499,28 @@ private:
                                              qmgGraph          * aLeftGraph,
                                              qmoJoinMethodCost * aMethodCost );
 
-    // Hash join °ü·ÃÇÑ qmoPredInfo list È¹µæ
+    // Hash join ê´€ë ¨í•œ qmoPredInfo list íšë“
     static IDE_RC setJoinPredInfo4Hash( qcStatement       * aStatement,
                                         qmoPredicate      * aJoinPredicate,
                                         qmoJoinMethodCost * aMethodCost );
 
-    // Sort join °ü·ÃÇÑ qmoPredInfo list È¹µæ
+    // Sort join ê´€ë ¨í•œ qmoPredInfo list íšë“
     static IDE_RC setJoinPredInfo4Sort( qcStatement       * aStatement,
                                         qmoPredicate      * aJoinPredicate,
                                         qcDepInfo         * aRightDepInfo,
                                         qmoJoinMethodCost * aMethodCost );
 
-    // Merge join °ü·ÃÇÑ qmoPredInfo È¹µæ (one predicate)
+    // Merge join ê´€ë ¨í•œ qmoPredInfo íšë“ (one predicate)
     static IDE_RC setJoinPredInfo4Merge( qcStatement         * aStatement,
                                          qmoPredicate        * aJoinPredicate,
                                          qmoJoinMethodCost   * aMethodCost );
 
-    // Index nested loop join °ü·ÃÇÑ qmoPredInfo list ¹İÈ¯
+    // Index nested loop join ê´€ë ¨í•œ qmoPredInfo list ë°˜í™˜
     static IDE_RC getIndexNLPredInfo( qcStatement      * aStatement,
                                       qmoJoinIndexNL   * aIndexNLInfo,
                                       qmoPredInfo     ** aJoinPredInfo );
 
-    // Anti outer °¡´ÉÇÑ qmoPredInfo list ¹İÈ¯
+    // Anti outer ê°€ëŠ¥í•œ qmoPredInfo list ë°˜í™˜
     static IDE_RC getAntiOuterPredInfo( qcStatement      * aStatement,
                                         UInt               aMethodCount,
                                         qmoAccessMethod  * aAccessMethod,
@@ -528,8 +528,8 @@ private:
                                         qmoPredInfo     ** aJoinPredInfo,
                                         qmoIdxCardInfo  ** aLeftIdxInfo );
 
-    // Anti outer °¡´ÉÇÑ qmoPredicate °ËÁõ ÈÄ ¹İÈ¯
-    // cost °¡ °¡Àå ÁÁÀº left qmoAccessMethod[].method ¹İÈ¯
+    // Anti outer ê°€ëŠ¥í•œ qmoPredicate ê²€ì¦ í›„ ë°˜í™˜
+    // cost ê°€ ê°€ì¥ ì¢‹ì€ left qmoAccessMethod[].method ë°˜í™˜
     static IDE_RC getAntiOuterPred( qcStatement      * aStatement,
                                     UInt               aKeyColCnt,
                                     UInt               aMethodCount,
@@ -538,22 +538,22 @@ private:
                                     qmoPredicate    ** aAntiOuterPred,
                                     qmoIdxCardInfo  ** aSelectedLeftIdxInfo );
 
-    // getIndexNLPredInfo, getAntiOuterPredInfo ¼öÇà½Ã
-    // ÇÊ¿äÇÑ ÀÓ½ÃÁ¤º¸ ¼³Á¤ ( columnID, indexArgument )
+    // getIndexNLPredInfo, getAntiOuterPredInfo ìˆ˜í–‰ì‹œ
+    // í•„ìš”í•œ ì„ì‹œì •ë³´ ì„¤ì • ( columnID, indexArgument )
     static IDE_RC setTempInfo( qcStatement  * aStatement,
                                qmoPredicate * aPredicate,
                                qcDepInfo    * aRightDepInfo,
                                UInt           aDirection );
 
-    // setJoinPredInfo4Sort ¼öÇà½Ã,
-    // ÇöÀç sort column°ú µ¿ÀÏÇÑ ÄÃ·³ÀÌ Á¸ÀçÇÏ´ÂÁö °Ë»ç
+    // setJoinPredInfo4Sort ìˆ˜í–‰ì‹œ,
+    // í˜„ì¬ sort columnê³¼ ë™ì¼í•œ ì»¬ëŸ¼ì´ ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬
     static IDE_RC findEqualSortColumn( qcStatement  * aStatement,
                                        qmoPredicate * aPredicate,
                                        qcDepInfo    * aRightDepInfo,
                                        qtcNode      * aSortColumn,
                                        qmoPredInfo  * aPredInfo );
     // BUG-42429
-    // index_NL Á¶ÀÎ½Ã index cost ¸¦ ´Ù½Ã °è»ê ÇÏ´Â ÇÔ¼ö
+    // index_NL ì¡°ì¸ì‹œ index cost ë¥¼ ë‹¤ì‹œ ê³„ì‚° í•˜ëŠ” í•¨ìˆ˜
     static void adjustIndexCost( qcStatement     * aStatement,
                                  qmgGraph        * aRight,
                                  qmoIdxCardInfo  * aIndexCardInfo,
@@ -562,7 +562,7 @@ private:
                                  SDouble         * aDiskCost );
 
     // PROJ-2418 
-    // Join GraphÀÇ Lateral Position ¹İÈ¯
+    // Join Graphì˜ Lateral Position ë°˜í™˜
     static IDE_RC getJoinLateralDirection( qmgGraph                * aJoinGraph,
                                            qmoJoinLateralDirection * aLateralDirection );
 };

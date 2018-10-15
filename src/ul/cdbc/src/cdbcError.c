@@ -17,8 +17,8 @@
 #include <cdbc.h>
 #include <stdarg.h>
 
-/* BUGBUG (2014-11-28) handleÀÌ À¯È¿ÇÏÁö ¾ÊÀ»¶§µµ ¿¡·¯ Á¤º¸¸¦ ÁÖ±âÀ§ÇÑ °ÍÀ¸·Î
- * ¿¡·¯ ¸Ş½ÃÁö°¡ ¹Ù²î¸é ¿©±âµµ ¹Ù²ãÁÖ´Â°Ô ÁÁ´Ù. */
+/* BUGBUG (2014-11-28) handleì´ ìœ íš¨í•˜ì§€ ì•Šì„ë•Œë„ ì—ëŸ¬ ì •ë³´ë¥¼ ì£¼ê¸°ìœ„í•œ ê²ƒìœ¼ë¡œ
+ * ì—ëŸ¬ ë©”ì‹œì§€ê°€ ë°”ë€Œë©´ ì—¬ê¸°ë„ ë°”ê¿”ì£¼ëŠ”ê²Œ ì¢‹ë‹¤. */
 #define INVALID_HANDLE_ERRCODE  ACI_E_ERROR_CODE(ulERR_ABORT_INVALID_HANDLE)
 #define INVALID_HANDLE_ERRMSG   "Invalid Handle."
 #define INVALID_HANDLE_SQLSTATE "IH"
@@ -46,9 +46,9 @@ static aci_client_error_factory_t *gCdbcClientFactory[] =
 };
 
 /**
- * ¿¡·¯ Á¤º¸¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+ * ì—ëŸ¬ ì •ë³´ë¥¼ ì´ˆê¸°í™”í•œë‹¤.
  *
- * @param[in,out] aDiagRec ÃÊ±âÈ­ÇÒ ¿¡·¯ Á¤º¸ ±¸Á¶Ã¼
+ * @param[in,out] aDiagRec ì´ˆê¸°í™”í•  ì—ëŸ¬ ì •ë³´ êµ¬ì¡°ì²´
  */
 CDBC_INTERNAL
 void altibase_init_errinfo (cdbcABDiagRec *aDiagRec)
@@ -76,11 +76,11 @@ void altibase_init_errinfo (cdbcABDiagRec *aDiagRec)
 }
 
 /**
- * ¿¡·¯ Á¤º¸¸¦ ¼³Á¤ÇÑ´Ù.
+ * ì—ëŸ¬ ì •ë³´ë¥¼ ì„¤ì •í•œë‹¤.
  *
- * @param[in,out] aDiagRec ÃÊ±âÈ­ÇÒ ¿¡·¯ Á¤º¸ ±¸Á¶Ã¼
- * @param[in] aErrorCode ¼³Á¤ÇÒ ¿¡·¯ Á¤º¸ÀÇ ¿¡·¯ ÄÚµå
- * @param[in] aArgs ¿¡·¯ ¸Ş½ÃÁö¸¦ ¿Ï¼ºÇÏ´Âµ¥ »ç¿ëµÇ´Â °ª
+ * @param[in,out] aDiagRec ì´ˆê¸°í™”í•  ì—ëŸ¬ ì •ë³´ êµ¬ì¡°ì²´
+ * @param[in] aErrorCode ì„¤ì •í•  ì—ëŸ¬ ì •ë³´ì˜ ì—ëŸ¬ ì½”ë“œ
+ * @param[in] aArgs ì—ëŸ¬ ë©”ì‹œì§€ë¥¼ ì™„ì„±í•˜ëŠ”ë° ì‚¬ìš©ë˜ëŠ” ê°’
  */
 CDBC_INTERNAL
 void altibase_set_errinfo_v (cdbcABDiagRec *aDiagRec, acp_uint32_t aErrorCode, va_list aArgs)
@@ -112,11 +112,11 @@ void altibase_set_errinfo_v (cdbcABDiagRec *aDiagRec, acp_uint32_t aErrorCode, v
 }
 
 /**
- * ¿¡·¯ Á¤º¸¸¦ ¼³Á¤ÇÑ´Ù.
+ * ì—ëŸ¬ ì •ë³´ë¥¼ ì„¤ì •í•œë‹¤.
  *
- * @param[in,out] aDiagRec ÃÊ±âÈ­ÇÒ ¿¡·¯ Á¤º¸ ±¸Á¶Ã¼
- * @param[in] aErrorCode ¼³Á¤ÇÒ ¿¡·¯ Á¤º¸ÀÇ ¿¡·¯ ÄÚµå
- * @param[in] ... ¿¡·¯ ¸Ş½ÃÁö¸¦ ¿Ï¼ºÇÏ´Âµ¥ »ç¿ëµÇ´Â °ª
+ * @param[in,out] aDiagRec ì´ˆê¸°í™”í•  ì—ëŸ¬ ì •ë³´ êµ¬ì¡°ì²´
+ * @param[in] aErrorCode ì„¤ì •í•  ì—ëŸ¬ ì •ë³´ì˜ ì—ëŸ¬ ì½”ë“œ
+ * @param[in] ... ì—ëŸ¬ ë©”ì‹œì§€ë¥¼ ì™„ì„±í•˜ëŠ”ë° ì‚¬ìš©ë˜ëŠ” ê°’
  */
 CDBC_INTERNAL
 void altibase_set_errinfo (cdbcABDiagRec *aDiagRec, acp_uint32_t aErrorCode, ...)
@@ -139,12 +139,12 @@ void altibase_set_errinfo (cdbcABDiagRec *aDiagRec, acp_uint32_t aErrorCode, ...
 }
 
 /**
- * ³»ºÎ ¿¡·¯¸¦ °¡Á®¿Í ¿¡·¯ Á¤º¸¸¦ ¼³Á¤ÇÑ´Ù.
+ * ë‚´ë¶€ ì—ëŸ¬ë¥¼ ê°€ì ¸ì™€ ì—ëŸ¬ ì •ë³´ë¥¼ ì„¤ì •í•œë‹¤.
  *
- * @param[in,out] aDiagRec ¿¡·¯ Á¤º¸¸¦ ´ãÀ» ±¸Á¶Ã¼
- * @param[in] aHandleType ³»ºÎ ÇÚµé À¯Çü
- * @param[in] aHandle ³»ºÎ ÇÚµé
- * @return ¼º°øÇÏ¸é ALTIBASE_SUCCESS, ±×·¸Áö ¾ÊÀ¸¸é ALTIBASE_ERROR
+ * @param[in,out] aDiagRec ì—ëŸ¬ ì •ë³´ë¥¼ ë‹´ì„ êµ¬ì¡°ì²´
+ * @param[in] aHandleType ë‚´ë¶€ í•¸ë“¤ ìœ í˜•
+ * @param[in] aHandle ë‚´ë¶€ í•¸ë“¤
+ * @return ì„±ê³µí•˜ë©´ ALTIBASE_SUCCESS, ê·¸ë ‡ì§€ ì•Šìœ¼ë©´ ALTIBASE_ERROR
  */
 CDBC_INTERNAL
 void altibase_set_errinfo_by_sqlhandle (cdbcABDiagRec *aDiagRec,
@@ -194,10 +194,10 @@ void altibase_set_errinfo_by_sqlhandle (cdbcABDiagRec *aDiagRec,
 }
 
 /**
- * ¿¡·¯ ¹øÈ£¸¦ ¾ò´Â´Ù.
+ * ì—ëŸ¬ ë²ˆí˜¸ë¥¼ ì–»ëŠ”ë‹¤.
  *
- * @param[in] aABConn ¿¬°á ÇÚµé
- * @return ¿¡·¯ ¹øÈ£. ¿¡·¯°¡ ¾ø°Å³ª ½ÇÆĞÇÏ¸é 0.
+ * @param[in] aABConn ì—°ê²° í•¸ë“¤
+ * @return ì—ëŸ¬ ë²ˆí˜¸. ì—ëŸ¬ê°€ ì—†ê±°ë‚˜ ì‹¤íŒ¨í•˜ë©´ 0.
  */
 CDBC_EXPORT
 acp_uint32_t altibase_errno (ALTIBASE aABConn)
@@ -224,10 +224,10 @@ acp_uint32_t altibase_errno (ALTIBASE aABConn)
 }
 
 /**
- * ¿¡·¯ ¹øÈ£¸¦ ¾ò´Â´Ù.
+ * ì—ëŸ¬ ë²ˆí˜¸ë¥¼ ì–»ëŠ”ë‹¤.
  *
- * @param[in] aABStmt ¸í·É¹® ÇÚµé
- * @return ¿¡·¯ ¹øÈ£. ¿¡·¯°¡ ¾ø°Å³ª ½ÇÆĞÇÏ¸é 0.
+ * @param[in] aABStmt ëª…ë ¹ë¬¸ í•¸ë“¤
+ * @return ì—ëŸ¬ ë²ˆí˜¸. ì—ëŸ¬ê°€ ì—†ê±°ë‚˜ ì‹¤íŒ¨í•˜ë©´ 0.
  */
 CDBC_EXPORT
 acp_uint32_t altibase_stmt_errno (ALTIBASE_STMT aABStmt)
@@ -254,10 +254,10 @@ acp_uint32_t altibase_stmt_errno (ALTIBASE_STMT aABStmt)
 }
 
 /**
- * ¿¡·¯ ¹øÈ£¸¦ ¾ò´Â´Ù.
+ * ì—ëŸ¬ ë²ˆí˜¸ë¥¼ ì–»ëŠ”ë‹¤.
  *
- * @param[in] aABRes °á°ú ÇÚµé
- * @return ¿¡·¯ ¹øÈ£. ¿¡·¯°¡ ¾ø°Å³ª ½ÇÆĞÇÏ¸é 0.
+ * @param[in] aABRes ê²°ê³¼ í•¸ë“¤
+ * @return ì—ëŸ¬ ë²ˆí˜¸. ì—ëŸ¬ê°€ ì—†ê±°ë‚˜ ì‹¤íŒ¨í•˜ë©´ 0.
  */
 CDBC_INTERNAL
 acp_uint32_t altibase_result_errno (ALTIBASE_RES aABRes)
@@ -286,10 +286,10 @@ acp_uint32_t altibase_result_errno (ALTIBASE_RES aABRes)
 }
 
 /**
- * ¿¡·¯ ¸Ş½ÃÁö¸¦ ¾ò´Â´Ù.
+ * ì—ëŸ¬ ë©”ì‹œì§€ë¥¼ ì–»ëŠ”ë‹¤.
  *
- * @param[in] aABConn ¿¬°á ÇÚµé
- * @return ¿¡·¯ ¸Ş½ÃÁö. ¿¡·¯°¡ ¾øÀ¸¸é ºó ¹®ÀÚ¿­, ½ÇÆĞÇÏ¸é NULL
+ * @param[in] aABConn ì—°ê²° í•¸ë“¤
+ * @return ì—ëŸ¬ ë©”ì‹œì§€. ì—ëŸ¬ê°€ ì—†ìœ¼ë©´ ë¹ˆ ë¬¸ìì—´, ì‹¤íŒ¨í•˜ë©´ NULL
  */
 CDBC_EXPORT
 const acp_char_t * altibase_error (ALTIBASE aABConn)
@@ -316,10 +316,10 @@ const acp_char_t * altibase_error (ALTIBASE aABConn)
 }
 
 /**
- * ¿¡·¯ ¸Ş½ÃÁö¸¦ ¾ò´Â´Ù.
+ * ì—ëŸ¬ ë©”ì‹œì§€ë¥¼ ì–»ëŠ”ë‹¤.
  *
- * @param[in] aABStmt ¸í·É¹® ÇÚµé
- * @return ¿¡·¯ ¸Ş½ÃÁö. ¿¡·¯°¡ ¾øÀ¸¸é ºó ¹®ÀÚ¿­, ½ÇÆĞÇÏ¸é NULL
+ * @param[in] aABStmt ëª…ë ¹ë¬¸ í•¸ë“¤
+ * @return ì—ëŸ¬ ë©”ì‹œì§€. ì—ëŸ¬ê°€ ì—†ìœ¼ë©´ ë¹ˆ ë¬¸ìì—´, ì‹¤íŒ¨í•˜ë©´ NULL
  */
 CDBC_EXPORT
 const acp_char_t * altibase_stmt_error (ALTIBASE_STMT aABStmt)
@@ -346,10 +346,10 @@ const acp_char_t * altibase_stmt_error (ALTIBASE_STMT aABStmt)
 }
 
 /**
- * SQLSTATE¸¦ ¾ò´Â´Ù.
+ * SQLSTATEë¥¼ ì–»ëŠ”ë‹¤.
  *
- * @param[in] aABConn ¿¬°á ÇÚµé
- * @return SQLSTATE °ª. ¿¡·¯°¡ ¾øÀ¸¸é "00000", ½ÇÆĞÇÏ¸é NULL.
+ * @param[in] aABConn ì—°ê²° í•¸ë“¤
+ * @return SQLSTATE ê°’. ì—ëŸ¬ê°€ ì—†ìœ¼ë©´ "00000", ì‹¤íŒ¨í•˜ë©´ NULL.
  */
 CDBC_EXPORT
 const acp_char_t * altibase_sqlstate (ALTIBASE aABConn)
@@ -376,10 +376,10 @@ const acp_char_t * altibase_sqlstate (ALTIBASE aABConn)
 }
 
 /**
- * SQLSTATE¸¦ ¾ò´Â´Ù.
+ * SQLSTATEë¥¼ ì–»ëŠ”ë‹¤.
  *
- * @param[in] aABStmt ¸í·É¹® ÇÚµé
- * @return SQLSTATE °ª. ¿¡·¯°¡ ¾øÀ¸¸é "00000", ½ÇÆĞÇÏ¸é NULL.
+ * @param[in] aABStmt ëª…ë ¹ë¬¸ í•¸ë“¤
+ * @return SQLSTATE ê°’. ì—ëŸ¬ê°€ ì—†ìœ¼ë©´ "00000", ì‹¤íŒ¨í•˜ë©´ NULL.
  */
 CDBC_EXPORT
 const acp_char_t * altibase_stmt_sqlstate (ALTIBASE_STMT aABStmt)

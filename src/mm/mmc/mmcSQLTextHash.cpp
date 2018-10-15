@@ -85,7 +85,7 @@ void  mmcSQLTextHash::initBucket(mmcSQLTextHashBucket* aBucket)
     aBucket->mNextParentPCOId =0;;
 }
 
-// ÇÏ³ªÀÇ bucket chain¼±»ó¿¡ ÀÖ´Â parent PCOsµéÀ»  ÇìÀçÇÑ´Ù.
+// í•˜ë‚˜ì˜ bucket chainì„ ìƒì— ìˆëŠ” parent PCOsë“¤ì„  í—¤ì¬í•œë‹¤.
 void  mmcSQLTextHash::freeBucketChain(iduList*  aChain)
 {
 
@@ -146,10 +146,10 @@ void  mmcSQLTextHash::searchParentPCO(idvSQL         *aStatistics,
     IDE_ASSERT(aBucket < mBucketCnt);
     sChain = &(mBucketTable[aBucket].mChain);
     //fix BUG-27367 Code-Sonar UMR
-    // listÀÇ ¸¶Áö¸·
+    // listì˜ ë§ˆì§€ë§‰
     *aInsertAfterNode = sChain->mPrev;
     *aFoundedParentPCO = (mmcParentPCO*) NULL;
-    // bucket ÀÇ chainÀº hash key value·Î sortingµÇ¾î ÀÖ´Ù.
+    // bucket ì˜ chainì€ hash key valueë¡œ sortingë˜ì–´ ìˆë‹¤.
     if(aHashKeyValue <= mBucketTable[aBucket]. mMaxHashKeyVal)
     {   
         IDU_LIST_ITERATE(sChain,sIterator)   
@@ -163,10 +163,10 @@ void  mmcSQLTextHash::searchParentPCO(idvSQL         *aStatistics,
             }
             else
             {
-                //aHashKeyValue <= Parent PCOÀÇ HashKeyValue
+                //aHashKeyValue <= Parent PCOì˜ HashKeyValue
                 if(aHashKeyValue < sParentPCOHashKeyVal)
                 {
-                    //´õÀÌ»ó Ã£À» ÇÊ¿ä¾ø´Ù.
+                    //ë”ì´ìƒ ì°¾ì„ í•„ìš”ì—†ë‹¤.
                     break;
                 }
                 else
@@ -189,7 +189,7 @@ void  mmcSQLTextHash::searchParentPCO(idvSQL         *aStatistics,
     }
 }
 
-//parent PCO add½Ã max hash value update
+//parent PCO addì‹œ max hash value update
 void mmcSQLTextHash::tryUpdateBucketMaxHashVal(UInt        aBucket,
                                                iduListNode *aNode,
                                                vULong      aHashKeyVal)
@@ -200,7 +200,7 @@ void mmcSQLTextHash::tryUpdateBucketMaxHashVal(UInt        aBucket,
         mBucketTable[aBucket].mMaxHashKeyVal = aHashKeyVal;
     }
 }
-//parent PCO remove½Ã max hash value update
+//parent PCO removeì‹œ max hash value update
 void mmcSQLTextHash::tryUpdateBucketMaxHashVal(UInt        aBucket,
                                                iduListNode *aNode)
 {
@@ -212,12 +212,12 @@ void mmcSQLTextHash::tryUpdateBucketMaxHashVal(UInt        aBucket,
     {
         if(mBucketTable[aBucket].mChain.mNext == aNode)
         {
-            //bucket¿¡ ÇÑ°³¸¸ ³²¾Æ ÀÖ°í°ğ 0ÀÌ µÉ ¿î¸í.
+            //bucketì— í•œê°œë§Œ ë‚¨ì•„ ìˆê³ ê³§ 0ì´ ë  ìš´ëª….
             mBucketTable[aBucket].mMaxHashKeyVal = 0;
         }//if
         else
         {
-            //ÀÌÀü³ëµåÀÇ hash °ªÀ¸·Î update.
+            //ì´ì „ë…¸ë“œì˜ hash ê°’ìœ¼ë¡œ update.
             sParentPCO = (mmcParentPCO*)aNode->mPrev->mObj;
             mBucketTable[aBucket].mMaxHashKeyVal = sParentPCO->getHashKeyValue();
         }

@@ -114,18 +114,18 @@ void rpnComm::finalize()
 // Name:          isConnected
 //
 // Return Value:
-//   - ID_TRUE  : ¼¼¼ÇÀÌ Alive »óÅÂÀÓ
-//   - ID_FALSE : ¼¼¼ÇÀÌ Alive »óÅÂ°¡ ¾Æ´Ô
+//   - ID_TRUE  : ì„¸ì…˜ì´ Alive ìƒíƒœì„
+//   - ID_FALSE : ì„¸ì…˜ì´ Alive ìƒíƒœê°€ ì•„ë‹˜
 //
 // Argument:
-//   [IN]  aLink   : ÆÇ´ÜÇÒ Link
+//   [IN]  aLink   : íŒë‹¨í•  Link
 //
 // Called By:
 //
 // Description:
-//   link°¡ ÇöÀç ¿¬°á »óÅÂÀÎÁö¸¦ ÆÇ´Ü. ¿©±â¼­ Alive¶õ link°¡
-//   ¿ø°İÀ¸·Î Connect µÇ¾î ÀÖ°í, ¾ğÁ¦µç Åë½ÅÀÌ °¡´ÉÇÑ »óÅÂ¸¦ ÀÇ¹ÌÇÔ
-//   µû¶ó¼­, Connect ÀÌÀüÀÌ³ª, Disconnect »óÅÂ³ª ¸ğµÎ Not Alive°¡ µÊ
+//   linkê°€ í˜„ì¬ ì—°ê²° ìƒíƒœì¸ì§€ë¥¼ íŒë‹¨. ì—¬ê¸°ì„œ Aliveë€ linkê°€
+//   ì›ê²©ìœ¼ë¡œ Connect ë˜ì–´ ìˆê³ , ì–¸ì œë“  í†µì‹ ì´ ê°€ëŠ¥í•œ ìƒíƒœë¥¼ ì˜ë¯¸í•¨
+//   ë”°ë¼ì„œ, Connect ì´ì „ì´ë‚˜, Disconnect ìƒíƒœë‚˜ ëª¨ë‘ Not Aliveê°€ ë¨
 //
 //===================================================================
 idBool rpnComm::isConnected( cmiLink * aLink )
@@ -185,15 +185,15 @@ IDE_RC rpnComm::sendVersion( void               * aHBTResource,
 }
 
 /*
- * ÀÌÁßÈ­ ÇÁ·ÎÅäÄİ ¹öÀü Á¤º¸¸¦ Á¦ÀÏ ¸ÕÀú ÁÖ°í ¹Ş´Â´Ù.
+ * ì´ì¤‘í™” í”„ë¡œí† ì½œ ë²„ì „ ì •ë³´ë¥¼ ì œì¼ ë¨¼ì € ì£¼ê³  ë°›ëŠ”ë‹¤.
  *
- * ±×·¯³ª HDB V6ÀÇ °æ¿ì¿¡´Â ÀÌÁßÈ­ ÇÁ·ÎÅäÄİ ÀÌÀü¿¡ CMÀÇ Base
- * ProtocolÀÇ handshake °úÁ¤À» °ÅÄ£´Ù. readCmBlock()¿¡¼­ »ç¿ëÇÏ´Â
- * cmiRecv() ÇÔ¼ö¿¡¼­ ÀÌ °úÁ¤À» Ã³¸® ÈÄ, cmiReadProtocol()À» »ç¿ëÇÒ ¼ö
- * ÀÖ°Ô ÁØºñ°¡ µÈ´Ù.
+ * ê·¸ëŸ¬ë‚˜ HDB V6ì˜ ê²½ìš°ì—ëŠ” ì´ì¤‘í™” í”„ë¡œí† ì½œ ì´ì „ì— CMì˜ Base
+ * Protocolì˜ handshake ê³¼ì •ì„ ê±°ì¹œë‹¤. readCmBlock()ì—ì„œ ì‚¬ìš©í•˜ëŠ”
+ * cmiRecv() í•¨ìˆ˜ì—ì„œ ì´ ê³¼ì •ì„ ì²˜ë¦¬ í›„, cmiReadProtocol()ì„ ì‚¬ìš©í•  ìˆ˜
+ * ìˆê²Œ ì¤€ë¹„ê°€ ëœë‹¤.
  *
- * ÀÌ ÈÄ¿¡´Â ÆĞÅ¶ Å¸ÀÔ¿¡ µû¶ó¼­ cmiRecv(), cmiReadProtocol()À» »ç¿ëÇØ¾ß
- * ÇÑ´Ù.
+ * ì´ í›„ì—ëŠ” íŒ¨í‚· íƒ€ì…ì— ë”°ë¼ì„œ cmiRecv(), cmiReadProtocol()ì„ ì‚¬ìš©í•´ì•¼
+ * í•œë‹¤.
  */
 IDE_RC rpnComm::recvVersion( cmiProtocolContext * aProtocolContext,
                              rpdVersion         * aReplVersion,
@@ -210,7 +210,7 @@ IDE_RC rpnComm::recvVersion( cmiProtocolContext * aProtocolContext,
             break;
             
         case CMP_PACKET_TYPE_A7:
-        case CMP_PACKET_TYPE_UNKNOWN: /* ÀĞ±â Àü */
+        case CMP_PACKET_TYPE_UNKNOWN: /* ì½ê¸° ì „ */
             IDE_TEST( readCmBlock( aProtocolContext,
                                    NULL /* ExitFlag */,
                                    NULL /* TimeoutFlag */,
@@ -1547,7 +1547,7 @@ IDE_RC rpnComm::sendAck( cmiProtocolContext * aProtocolContext,
     return IDE_FAILURE;
 }
 
-/* recvAck´Â readBlock¸¦ »ç¿ëÇÏ¹Ç·Î senderÀÇ writeBlock°ú °ãÄ¡Ä¡ ¾Ê´Â´Ù. µ¿½Ã¼º ¹®Á¦ ¾øÀ½ */
+/* recvAckëŠ” readBlockë¥¼ ì‚¬ìš©í•˜ë¯€ë¡œ senderì˜ writeBlockê³¼ ê²¹ì¹˜ì¹˜ ì•ŠëŠ”ë‹¤. ë™ì‹œì„± ë¬¸ì œ ì—†ìŒ */
 IDE_RC rpnComm::recvAck( iduMemAllocator    * /*aAllocator*/,
                          cmiProtocolContext * aProtocolContext,
                          idBool             * aExitFlag,
@@ -2556,7 +2556,7 @@ IDE_RC rpnComm::sendCmBlock( void                * aHBTResource,
         }
 
         /*
-         *  Protocol ÀÇ ³¡ÀÌ¸é ¸ø º¸³½ ÆĞÅ¶µéÀ» ¸ğµÎ´Ù Àü¼Û
+         *  Protocol ì˜ ëì´ë©´ ëª» ë³´ë‚¸ íŒ¨í‚·ë“¤ì„ ëª¨ë‘ë‹¤ ì „ì†¡
          */
         if ( aIsEnd == ID_TRUE )
         {

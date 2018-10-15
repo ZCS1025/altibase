@@ -17,7 +17,7 @@
 /*****************************************************************************
  * $Id: checkEnv.cpp 80575 2017-07-21 07:06:35Z yoonhee.kim $
  *
- * DESC : configureµÈ ³»¿ëÀÌ ½ÇÁ¦ RUNTIME °á°ú¿¡ ¹®Á¦¸¦ ¹ÌÄ¡Áö ¾Ê´ÂÁö °Ë»ç.
+ * DESC : configureëœ ë‚´ìš©ì´ ì‹¤ì œ RUNTIME ê²°ê³¼ì— ë¬¸ì œë¥¼ ë¯¸ì¹˜ì§€ ì•ŠëŠ”ì§€ ê²€ì‚¬.
  *        by gamestar 2000/8/30
  *
  ****************************************************************************/
@@ -221,7 +221,7 @@ void checkEndianConversion()
 
 void checkToUpper()
 {
-    SChar *s1 = (SChar*)"°¡³ª´Ù¶ó¸¶¹Ù»ç";
+    SChar *s1 = (SChar*)"ê°€ë‚˜ë‹¤ë¼ë§ˆë°”ì‚¬";
     SChar  c1;
     SChar  c2;
     SInt   i;
@@ -269,7 +269,7 @@ void checkFdSet()
     fd_set  myset;
 
     CurMaxHandle = idlVA::max_handles();
-    (void)idlVA::set_handle_limit(); // ÃÖ´ë·Î ¿Ã¸²
+    (void)idlVA::set_handle_limit(); // ìµœëŒ€ë¡œ ì˜¬ë¦¼
     MaxHandle = idlVA::max_handles();
 
     ACT_CHECK_DESC( MaxHandle <= FD_SETSIZE, ( "MaxHandle(%"ID_INT32_FMT") > FD_SETSIZE(%"ID_INT32_FMT").", MaxHandle, FD_SETSIZE ) );
@@ -407,8 +407,8 @@ void checkGetSCN()
     ACT_CHECK_DESC( sSCN1 == sSCN2, ( "GetSCN error [sSCN1:%"ID_UINT64_FMT"][sSCN2:%"ID_UINT64_FMT"]", sSCN1, sSCN2 ) );
 }
 
-// struct ¸â¹ö¸¸ ÀÖ´Â °Í°ú struct ¸â¹ö¿Í inline ÇÔ¼ö°¡ °°ÀÌ ÀÖÀ»¶§
-// struct°¡ Disk¿¡ ÀúÀåµÉ °æ¿ì ÇÔ¼ö°¡ ÀúÀåµÇÁö ¾Ê´Â °ÍÀ» º¸ÀåÇÏ±â À§ÇÑ Å×½ºÆ®
+// struct ë©¤ë²„ë§Œ ìˆëŠ” ê²ƒê³¼ struct ë©¤ë²„ì™€ inline í•¨ìˆ˜ê°€ ê°™ì´ ìˆì„ë•Œ
+// structê°€ Diskì— ì €ì¥ë  ê²½ìš° í•¨ìˆ˜ê°€ ì €ì¥ë˜ì§€ ì•ŠëŠ” ê²ƒì„ ë³´ì¥í•˜ê¸° ìœ„í•œ í…ŒìŠ¤íŠ¸
 void checkSizeOfStructWithFunction()
 {
     struct A

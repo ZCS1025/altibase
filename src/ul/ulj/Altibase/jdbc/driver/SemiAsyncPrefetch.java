@@ -26,7 +26,7 @@ import Altibase.jdbc.driver.logging.TraceFlag;
 import Altibase.jdbc.driver.util.AltibaseProperties;
 
 /**
- * ºñµ¿±â fetch ¹æ½Ä Áß ÇÏ³ª·Î¼­, TCP kernel buffer À» ÀÌ¿ëÇØ double buffering ÇÏ´Â semi-async prefetch ¹æ½Ä.
+ * ë¹„ë™ê¸° fetch ë°©ì‹ ì¤‘ í•˜ë‚˜ë¡œì„œ, TCP kernel buffer ì„ ì´ìš©í•´ double buffering í•˜ëŠ” semi-async prefetch ë°©ì‹.
  * (PROJ-2625 Semi-async Prefetch, Prefetch Auto-tuning)
  */
 class SemiAsyncPrefetch
@@ -63,7 +63,7 @@ class SemiAsyncPrefetch
                 }
                 catch (Exception e)
                 {
-                    // Trace logging ¿ëµµ·Î socket file descriptor ¸¦ ±¸ÇÏ±â ¶§¹®¿¡ ¿¹¿Ü ¹ß»ıÇÏ¿©µµ ¹«½ÃÇÔ.
+                    // Trace logging ìš©ë„ë¡œ socket file descriptor ë¥¼ êµ¬í•˜ê¸° ë•Œë¬¸ì— ì˜ˆì™¸ ë°œìƒí•˜ì—¬ë„ ë¬´ì‹œí•¨.
                     mAsyncLogger.log(Level.WARNING, mStatement.getTraceUniqueId() + e);
                 }
             }
@@ -77,7 +77,7 @@ class SemiAsyncPrefetch
             }
             catch (Exception e)
             {
-                // SemiAsyncPrefetchAutoTuner °´Ã¼ »ı¼º½Ã ¿¹¿Ü ¹ß»ıÇÏ¸é auto-tuning ±â´ÉÀ» OFF ½ÃÅ°°í ¿¹¿Ü ¹«½ÃÇÔ.
+                // SemiAsyncPrefetchAutoTuner ê°ì²´ ìƒì„±ì‹œ ì˜ˆì™¸ ë°œìƒí•˜ë©´ auto-tuning ê¸°ëŠ¥ì„ OFF ì‹œí‚¤ê³  ì˜ˆì™¸ ë¬´ì‹œí•¨.
 
                 if (TraceFlag.TRACE_COMPILE && TraceFlag.TRACE_ENABLED)
                 {
@@ -88,8 +88,8 @@ class SemiAsyncPrefetch
     }
 
     /**
-     * ºñµ¿±â prefetch ÇÏ°íÀÚ ÇÏ´Â ´ÙÀ½ result set À» ¼³Á¤ÇÑ´Ù.
-     * e.g.) µÑ ÀÌ»óÀÇ result set °®´Â ÇÁ·Î½ÃÁ® ¼öÇà, close cursor ÀÌÈÄ execute Àç¼öÇà
+     * ë¹„ë™ê¸° prefetch í•˜ê³ ì í•˜ëŠ” ë‹¤ìŒ result set ì„ ì„¤ì •í•œë‹¤.
+     * e.g.) ë‘˜ ì´ìƒì˜ result set ê°–ëŠ” í”„ë¡œì‹œì ¸ ìˆ˜í–‰, close cursor ì´í›„ execute ì¬ìˆ˜í–‰
      */
     void nextResultSet(AltibaseForwardOnlyResultSet aResultSet)
     {
@@ -102,7 +102,7 @@ class SemiAsyncPrefetch
     }
 
     /**
-     * ºñµ¿±â fetch ÇÁ·ÎÅäÄİÀ» ¼Û½ÅÇÏ¿´´ÂÁö ¿©ºÎ¸¦ È®ÀÎÇÑ´Ù.
+     * ë¹„ë™ê¸° fetch í”„ë¡œí† ì½œì„ ì†¡ì‹ í•˜ì˜€ëŠ”ì§€ ì—¬ë¶€ë¥¼ í™•ì¸í•œë‹¤.
      */
     boolean isAsyncSentFetch()
     {
@@ -110,7 +110,7 @@ class SemiAsyncPrefetch
     }
 
     /**
-     * Auto-tuning ¼³Á¤ ¿©ºÎ¸¦ È®ÀÎÇÑ´Ù.
+     * Auto-tuning ì„¤ì • ì—¬ë¶€ë¥¼ í™•ì¸í•œë‹¤.
      */
     boolean isAutoTuning()
     {
@@ -118,7 +118,7 @@ class SemiAsyncPrefetch
     }
 
     /**
-     * Auto-tuning À» µ¿ÀÛÇÒ ¼ö ÀÖ´ÂÁö ¿©ºÎ¸¦ È®ÀÎÇÑ´Ù. ¸¸¾à, auto-tuning µµÁß ½ÇÆĞÇÑ´Ù¸é ´Ù½Ã cursor ¸¦ open ÇÏ±â Àü±îÁö OFF µÈ´Ù.
+     * Auto-tuning ì„ ë™ì‘í•  ìˆ˜ ìˆëŠ”ì§€ ì—¬ë¶€ë¥¼ í™•ì¸í•œë‹¤. ë§Œì•½, auto-tuning ë„ì¤‘ ì‹¤íŒ¨í•œë‹¤ë©´ ë‹¤ì‹œ cursor ë¥¼ open í•˜ê¸° ì „ê¹Œì§€ OFF ëœë‹¤.
      */
     boolean canAutoTuning()
     {
@@ -131,7 +131,7 @@ class SemiAsyncPrefetch
     }
 
     /**
-     * Auto-tuning ÀÌ µ¿ÀÛµÉ °æ¿ì SemiAsyncPrefetchAutoTuner °´Ã¼¸¦ ¹İÈ¯ÇÑ´Ù.
+     * Auto-tuning ì´ ë™ì‘ë  ê²½ìš° SemiAsyncPrefetchAutoTuner ê°ì²´ë¥¼ ë°˜í™˜í•œë‹¤.
      */
     SemiAsyncPrefetchAutoTuner getAutoTuner()
     {
@@ -139,7 +139,7 @@ class SemiAsyncPrefetch
     }
 
     /**
-     * Auto-tuning ±â´ÉÀ» µ¿ÀÛÇÒ ¼ö ÀÖ´ÂÁö °Ë»çÇÏ¿© JNI ext. module À» load ½ÃÅ²´Ù.
+     * Auto-tuning ê¸°ëŠ¥ì„ ë™ì‘í•  ìˆ˜ ìˆëŠ”ì§€ ê²€ì‚¬í•˜ì—¬ JNI ext. module ì„ load ì‹œí‚¨ë‹¤.
      */
     private boolean checkAutoTuning()
     {
@@ -153,7 +153,7 @@ class SemiAsyncPrefetch
     }
 
     /**
-     * JNI ext. module À» load ½ÃÅ²´Ù.
+     * JNI ext. module ì„ load ì‹œí‚¨ë‹¤.
      */
     private boolean checkJniExtModule()
     {
@@ -194,7 +194,7 @@ class SemiAsyncPrefetch
     }
 
     /**
-     * Heuristic ÇÑ semi-async prefetch µ¿ÀÛ¿¡ ´ëÇØ trace logging ÇÑ´Ù.
+     * Heuristic í•œ semi-async prefetch ë™ì‘ì— ëŒ€í•´ trace logging í•œë‹¤.
      */
     void logStatHeuristic()
     {

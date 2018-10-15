@@ -102,15 +102,15 @@ static cmnLinkAllocInfo gCmnLinkAllocInfoClient[CMN_LINK_IMPL_MAX][CMN_LINK_TYPE
 static acp_uint32_t gCmnLinkFeatureClient[CMN_LINK_IMPL_MAX][CMN_LINK_TYPE_MAX] =
 {
     // bug-19279 remote sysdba enable + sys can kill session
-    // ÀÌ °ªÀÌ »ç¿ëµÇ´Â ºÎºÐ:
+    // ì´ ê°’ì´ ì‚¬ìš©ë˜ëŠ” ë¶€ë¶„:
     // mmtServiceThread::connectProtocol -> mmcTask::authenticate()
-    // À§ÀÇ ÇÔ¼ö¿¡¼­ client°¡ sysdba·Î Á¢¼ÓÇÑ °æ¿ì ¼­¹ö taskÀÇ link°¡
-    // CMN_LINK_FEATURE_SYSDBA Æ¯¼ºÀ» °¡Á®¾ß¸¸ Á¢¼ÓÀÌ Çã¿ëµÈ´Ù.
-    // º¯°æ ³»¿ë:
-    // task »ý¼º½Ã ±âÁ¸¿¡´Â tcp linkÀÇ °æ¿ì sysdbaÆ¯¼ºÀÌ ¾ø¾ú´Âµ¥
-    // ¿ø°Ý sysdba  Á¢¼ÓÀ» Çã¿ëÇÏ±â À§ÇØ ¸ðµç tcp link¿¡ ´ëÇØ
-    // sysdbaÆ¯¼ºÀ» ºÎ¿©ÇÑ´Ù
-    // => °á±¹ ¼­¹ö taskÀÇ link¿¡ ´ëÇÑ sysdba Æ¯¼º ÇÊµå°¡ ¹«ÀÇ¹ÌÇØ Áø´Ù.
+    // ìœ„ì˜ í•¨ìˆ˜ì—ì„œ clientê°€ sysdbaë¡œ ì ‘ì†í•œ ê²½ìš° ì„œë²„ taskì˜ linkê°€
+    // CMN_LINK_FEATURE_SYSDBA íŠ¹ì„±ì„ ê°€ì ¸ì•¼ë§Œ ì ‘ì†ì´ í—ˆìš©ëœë‹¤.
+    // ë³€ê²½ ë‚´ìš©:
+    // task ìƒì„±ì‹œ ê¸°ì¡´ì—ëŠ” tcp linkì˜ ê²½ìš° sysdbaíŠ¹ì„±ì´ ì—†ì—ˆëŠ”ë°
+    // ì›ê²© sysdba  ì ‘ì†ì„ í—ˆìš©í•˜ê¸° ìœ„í•´ ëª¨ë“  tcp linkì— ëŒ€í•´
+    // sysdbaíŠ¹ì„±ì„ ë¶€ì—¬í•œë‹¤
+    // => ê²°êµ­ ì„œë²„ taskì˜ linkì— ëŒ€í•œ sysdba íŠ¹ì„± í•„ë“œê°€ ë¬´ì˜ë¯¸í•´ ì§„ë‹¤.
     // listen,   server,    client
 
     /* DUMMY */
@@ -166,12 +166,12 @@ ACI_RC cmnLinkAlloc(cmnLink **aLink, cmnLinkType aType, cmnLinkImpl aImpl)
     cmnLink          *sLink = NULL;
 
     /*
-     * Áö¿øÇÏ´Â ImplÀÎÁö °Ë»ç
+     * ì§€ì›í•˜ëŠ” Implì¸ì§€ ê²€ì‚¬
      */
     ACI_TEST_RAISE(cmnLinkIsSupportedImpl(aImpl) != ACP_TRUE, UnsupportedLinkImpl);
 
     /*
-     * AllocInfo È¹µæ
+     * AllocInfo íšë“
      */
     sAllocInfo = &gCmnLinkAllocInfoClient[sImpl][aType];
 
@@ -179,12 +179,12 @@ ACI_RC cmnLinkAlloc(cmnLink **aLink, cmnLinkType aType, cmnLinkImpl aImpl)
     ACE_ASSERT(sAllocInfo->mSize != NULL);
 
     /*
-     * ¸Þ¸ð¸® ÇÒ´ç
+     * ë©”ëª¨ë¦¬ í• ë‹¹
      */
     ACI_TEST(acpMemAlloc((void **)&sLink, sAllocInfo->mSize()) != ACP_RC_SUCCESS);
 
     /*
-     * ¸â¹ö ÃÊ±âÈ­
+     * ë©¤ë²„ ì´ˆê¸°í™”
      */
     sLink->mType    = aType;
     sLink->mImpl    = aImpl;
@@ -196,12 +196,12 @@ ACI_RC cmnLinkAlloc(cmnLink **aLink, cmnLinkType aType, cmnLinkImpl aImpl)
     acpListInitObj(&sLink->mReadyListNode, sLink);
 
     /*
-     * ÇÔ¼ö Æ÷ÀÎÅÍ ¸ÅÇÎ
+     * í•¨ìˆ˜ í¬ì¸í„° ë§¤í•‘
      */
     ACI_TEST_RAISE(sAllocInfo->mMap(sLink) != ACI_SUCCESS, InitializeFail);
 
     /*
-     * ÃÊ±âÈ­
+     * ì´ˆê¸°í™”
      */
     ACI_TEST_RAISE(sLink->mOp->mInitialize(sLink) != ACI_SUCCESS, InitializeFail);
 
@@ -225,17 +225,17 @@ ACI_RC cmnLinkAlloc(cmnLink **aLink, cmnLinkType aType, cmnLinkImpl aImpl)
 ACI_RC cmnLinkFree(cmnLink *aLink)
 {
     /*
-     * Dispatcher¿¡ µî·ÏµÇ¾î ÀÖ´Â LinkÀÎÁö °Ë»ç
+     * Dispatcherì— ë“±ë¡ë˜ì–´ ìžˆëŠ” Linkì¸ì§€ ê²€ì‚¬
      */
     ACE_ASSERT(acpListIsEmpty(&aLink->mDispatchListNode) == ACP_TRUE);
 
     /*
-     * Á¤¸®
+     * ì •ë¦¬
      */
     ACI_TEST(aLink->mOp->mFinalize(aLink) != ACI_SUCCESS);
 
     /*
-     * ¸Þ¸ð¸® ÇØÁ¦
+     * ë©”ëª¨ë¦¬ í•´ì œ
      */
     acpMemFree(aLink);
 

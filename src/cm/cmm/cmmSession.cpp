@@ -18,11 +18,11 @@
 
 
 /*
- * cmmSession ∞¥√º∏¶ ∞¸∏Æ«œ¥¬ ±∏¡∂
+ * cmmSession Í∞ùÏ≤¥Î•º Í¥ÄÎ¶¨ÌïòÎäî Íµ¨Ï°∞
  *
- * Slot      : cmmSession ∞¥√º ∆˜¿Œ≈ÕøÕ Next Free SessionID∏¶ ∞°¡ˆ¥¬ ±∏¡∂√º
- * Page      : SessionSlot¿ª CMM_SESSION_ID_SLOT_MAX∞≥∏∏≈≠ ∞°¡ˆ¥¬ ∏ﬁ∏∏Æ ∫Ì∑∞
- * PageTable : SessionPage∏¶ CMM_SESSION_ID_PAGE_MAX∞≥∏∏≈≠ ∞°¡ˆ¥¬ ∏ﬁ∏∏Æ ∫Ì∑∞
+ * Slot      : cmmSession Í∞ùÏ≤¥ Ìè¨Ïù∏ÌÑ∞ÏôÄ Next Free SessionIDÎ•º Í∞ÄÏßÄÎäî Íµ¨Ï°∞Ï≤¥
+ * Page      : SessionSlotÏùÑ CMM_SESSION_ID_SLOT_MAXÍ∞úÎßåÌÅº Í∞ÄÏßÄÎäî Î©îÎ™®Î¶¨ Î∏îÎü≠
+ * PageTable : SessionPageÎ•º CMM_SESSION_ID_PAGE_MAXÍ∞úÎßåÌÅº Í∞ÄÏßÄÎäî Î©îÎ™®Î¶¨ Î∏îÎü≠
  *
  *   +------+      +------+------+----
  *   | Page | ---> | Slot | Slot |
@@ -80,7 +80,7 @@ static cmmSessionPageTable gPageTable;
 static IDE_RC cmmSessionAllocPage(cmmSessionPage *aPage)
 {
     /*
-     * Pageø° Slot Array∞° «“¥Áµ«æÓ ¿÷¡ˆ æ ¿∏∏È «“¥Á«œ∞Ì √ ±‚»≠
+     * PageÏóê Slot ArrayÍ∞Ä Ìï†ÎãπÎêòÏñ¥ ÏûàÏßÄ ÏïäÏúºÎ©¥ Ìï†ÎãπÌïòÍ≥† Ï¥àÍ∏∞Ìôî
      */
 
     if (aPage->mSlot == NULL)
@@ -90,7 +90,7 @@ static IDE_RC cmmSessionAllocPage(cmmSessionPage *aPage)
         IDU_FIT_POINT_RAISE( "cmmSession::cmmSessionAllocPage::malloc::Slot",
                               InsufficientMemory );
         /*
-         * Slot Array «“¥Á
+         * Slot Array Ìï†Îãπ
          */
 
         IDE_TEST_RAISE(iduMemMgr::malloc(IDU_MEM_CMM,
@@ -99,7 +99,7 @@ static IDE_RC cmmSessionAllocPage(cmmSessionPage *aPage)
                                          IDU_MEM_IMMEDIATE) != IDE_SUCCESS, InsufficientMemory );
 
         /*
-         * ∞¢ Slot √ ±‚»≠
+         * Í∞Å Slot Ï¥àÍ∏∞Ìôî
          */
 
         for (sSlotID = 0; sSlotID < CMM_SESSION_ID_SLOT_MAX; sSlotID++)
@@ -110,7 +110,7 @@ static IDE_RC cmmSessionAllocPage(cmmSessionPage *aPage)
         }
 
         /*
-         * Page¿« Slot º”º∫∞™ √ ±‚»≠
+         * PageÏùò Slot ÏÜçÏÑ±Í∞í Ï¥àÍ∏∞Ìôî
          */
 
         aPage->mSlotUseCount    = 0;
@@ -130,7 +130,7 @@ static IDE_RC cmmSessionAllocPage(cmmSessionPage *aPage)
 static IDE_RC cmmSessionFreePage(cmmSessionPage *aPage)
 {
     /*
-     * Pageø° Slot¿Ã «œ≥™µµ ªÁøÎµ«∞Ì ¿÷¡ˆ æ ¿∏∏È Slot Array∏¶ «ÿ¡¶
+     * PageÏóê SlotÏù¥ ÌïòÎÇòÎèÑ ÏÇ¨Ïö©ÎêòÍ≥† ÏûàÏßÄ ÏïäÏúºÎ©¥ Slot ArrayÎ•º Ìï¥Ï†ú
      */
 
     if ((aPage->mPageID != 0) && (aPage->mSlot != NULL) && (aPage->mSlotUseCount == 0))
@@ -152,19 +152,19 @@ static IDE_RC cmmSessionFindSlot(cmmSessionPage **aPage, cmmSessionSlot **aSlot,
     UShort sSlotID = CMM_SESSION_ID_SLOT(aSessionID);
 
     /*
-     * Page ∞Àªˆ
+     * Page Í≤ÄÏÉâ
      */
 
     *aPage = &(gPageTable.mPage[sPageID]);
 
     /*
-     * Pageø° Slot Array∞° «“¥Áµ«æÓ ¿÷¥¬¡ˆ ∞ÀªÁ
+     * PageÏóê Slot ArrayÍ∞Ä Ìï†ÎãπÎêòÏñ¥ ÏûàÎäîÏßÄ Í≤ÄÏÇ¨
      */
 
     IDE_TEST((*aPage)->mSlot == NULL);
 
     /*
-     * Slot ∞Àªˆ
+     * Slot Í≤ÄÏÉâ
      */
 
     *aSlot = &((*aPage)->mSlot[sSlotID]);
@@ -181,12 +181,12 @@ IDE_RC cmmSessionInitializeStatic()
     UShort     sPageID;
 
     /*
-     * cmmSession¿« mSessionID ∏‚πˆ ≈©±‚∞° CMM_SESSION_ID_SIZE_BITøÕ ¿œƒ°«œ¥¬¡ˆ ∞ÀªÁ
+     * cmmSessionÏùò mSessionID Î©§Î≤Ñ ÌÅ¨Í∏∞Í∞Ä CMM_SESSION_ID_SIZE_BITÏôÄ ÏùºÏπòÌïòÎäîÏßÄ Í≤ÄÏÇ¨
      */
     IDE_ASSERT((ID_SIZEOF(sSession.mSessionID) * 8) == CMM_SESSION_ID_SIZE_BIT);
 
     /*
-     * PageTable √ ±‚»≠
+     * PageTable Ï¥àÍ∏∞Ìôî
      */
 
     gPageTable.mFirstFreePageID = 0;
@@ -196,7 +196,7 @@ IDE_RC cmmSessionInitializeStatic()
                                           IDV_WAIT_INDEX_NULL ) != IDE_SUCCESS);
 
     /*
-     * ∞¢ Page √ ±‚»≠
+     * Í∞Å Page Ï¥àÍ∏∞Ìôî
      */
 
     for (sPageID = 0; sPageID < CMM_SESSION_ID_PAGE_MAX; sPageID++)
@@ -209,13 +209,13 @@ IDE_RC cmmSessionInitializeStatic()
     }
 
     /*
-     * √ππ¯¬∞ Page πÃ∏Æ «“¥Á
+     * Ï≤´Î≤àÏß∏ Page ÎØ∏Î¶¨ Ìï†Îãπ
      */
 
     IDE_TEST(cmmSessionAllocPage(&(gPageTable.mPage[0])) != IDE_SUCCESS);
 
     /*
-     * SessionID = 0 ø°¥¬ Session¿ª «“¥Á«“ ºˆ æ¯¿Ω
+     * SessionID = 0 ÏóêÎäî SessionÏùÑ Ìï†ÎãπÌï† Ïàò ÏóÜÏùå
      */
 
     gPageTable.mPage[0].mSlotUseCount    = 1;
@@ -235,7 +235,7 @@ IDE_RC cmmSessionFinalizeStatic()
     UShort sPageID;
 
     /*
-     * PageµÈ¿« Slot Array ∏ﬁ∏∏Æ∏¶ «ÿ¡¶
+     * PageÎì§Ïùò Slot Array Î©îÎ™®Î¶¨Î•º Ìï¥Ï†ú
      */
 
     for (sPageID = 0; sPageID < CMM_SESSION_ID_PAGE_MAX; sPageID++)
@@ -252,7 +252,7 @@ IDE_RC cmmSessionFinalizeStatic()
     }
 
     /*
-     * PageTable «ÿ¡¶
+     * PageTable Ìï¥Ï†ú
      */
 
     gPageTable.mFirstFreePageID = 0;
@@ -275,59 +275,59 @@ IDE_RC cmmSessionAdd(cmmSession *aSession)
                 == IDE_SUCCESS );
 
     /*
-     * «“¥Á∞°¥…«— Page∞° æ¯¿∏∏È Ω«∆–
+     * Ìï†ÎãπÍ∞ÄÎä•Ìïú PageÍ∞Ä ÏóÜÏúºÎ©¥ Ïã§Ìå®
      */
 
     IDE_TEST_RAISE(gPageTable.mFirstFreePageID == CMM_SESSION_ID_PAGE_MAX, SessionLimitReach);
 
     /*
-     * «“¥Á∞°¥…«— Page ∞Àªˆ
+     * Ìï†ÎãπÍ∞ÄÎä•Ìïú Page Í≤ÄÏÉâ
      */
 
     sPageID = gPageTable.mFirstFreePageID;
     sPage   = &(gPageTable.mPage[sPageID]);
 
     /*
-     * Page ∏ﬁ∏∏Æ «“¥Á
+     * Page Î©îÎ™®Î¶¨ Ìï†Îãπ
      */
 
     IDE_TEST(cmmSessionAllocPage(sPage) != IDE_SUCCESS);
 
     /*
-     * Page≥ª¿« ∫Û Slot ∞Àªˆ
+     * PageÎÇ¥Ïùò Îπà Slot Í≤ÄÏÉâ
      */
 
     sSlotID = sPage->mFirstFreeSlotID;
     sSlot   = &(sPage->mSlot[sSlotID]);
 
     /*
-     * Slot¿Ã ∫ÒæÓ¿÷¥¬¡ˆ »Æ¿Œ
+     * SlotÏù¥ ÎπÑÏñ¥ÏûàÎäîÏßÄ ÌôïÏù∏
      */
 
     IDE_ASSERT(sSlot->mSession == NULL);
 
     /*
-     * Session √ﬂ∞°
+     * Session Ï∂îÍ∞Ä
      */
 
     sSlot->mSession      = aSession;
     aSession->mSessionID = CMM_SESSION_ID(sPageID, sSlotID);
 
     /*
-     * UsedSlotCount ¡ı∞°
+     * UsedSlotCount Ï¶ùÍ∞Ä
      */
 
     sPage->mSlotUseCount++;
 
     /*
-     * FreeSlot List ∞ªΩ≈
+     * FreeSlot List Í∞±Ïã†
      */
 
     sPage->mFirstFreeSlotID = sSlot->mNextFreeSlotID;
     sSlot->mNextFreeSlotID  = CMM_SESSION_ID_SLOT_MAX;
 
     /*
-     * Page∞° full¿Ã∏È FreePage List ∞ªΩ≈
+     * PageÍ∞Ä fullÏù¥Î©¥ FreePage List Í∞±Ïã†
      */
 
     if (sPage->mFirstFreeSlotID == CMM_SESSION_ID_SLOT_MAX)
@@ -371,7 +371,7 @@ IDE_RC cmmSessionRemove(cmmSession *aSession)
                == IDE_SUCCESS);
 
     /*
-     * Page π◊ Slot ∞Àªˆ
+     * Page Î∞è Slot Í≤ÄÏÉâ
      */
 
     IDE_TEST_RAISE(cmmSessionFindSlot(&sPage, &sSlot, aSession->mSessionID) != IDE_SUCCESS, SessionNotFound);
@@ -380,33 +380,33 @@ IDE_RC cmmSessionRemove(cmmSession *aSession)
     sSlotID = sSlot->mSlotID;
 
     /*
-     * Slotø° ¿˙¿Âµ» Session¿Ã ¿œƒ°«œ¥¬¡ˆ ∞ÀªÁ
+     * SlotÏóê Ï†ÄÏû•Îêú SessionÏù¥ ÏùºÏπòÌïòÎäîÏßÄ Í≤ÄÏÇ¨
      */
 
     IDE_TEST_RAISE(sSlot->mSession != aSession, InvalidSession);
 
     /*
-     * Session ªË¡¶
+     * Session ÏÇ≠Ï†ú
      */
 
     sSlot->mSession      = NULL;
     aSession->mSessionID = 0;
 
     /*
-     * UsedSlotCount ∞®º“
+     * UsedSlotCount Í∞êÏÜå
      */
 
     sPage->mSlotUseCount--;
 
     /*
-     * FreeSlot List ∞ªΩ≈
+     * FreeSlot List Í∞±Ïã†
      */
 
     sSlot->mNextFreeSlotID  = sPage->mFirstFreeSlotID;
     sPage->mFirstFreeSlotID = sSlotID;
 
     /*
-     * Page∞° full¿Ãæ˙¿∏∏È FreePage List ∞ªΩ≈
+     * PageÍ∞Ä fullÏù¥ÏóàÏúºÎ©¥ FreePage List Í∞±Ïã†
      */
 
     if (sPage->mSlotUseCount == (CMM_SESSION_ID_SLOT_MAX - 1))
@@ -415,7 +415,7 @@ IDE_RC cmmSessionRemove(cmmSession *aSession)
         gPageTable.mFirstFreePageID = sPageID;
 
         /*
-         * Next FreePage∞° empty¿Ã∏È Page ∏ﬁ∏∏Æ «ÿ¡¶
+         * Next FreePageÍ∞Ä emptyÏù¥Î©¥ Page Î©îÎ™®Î¶¨ Ìï¥Ï†ú
          */
 
         if (gPageTable.mPage[sPage->mNextFreePageID].mSlotUseCount == 0)
@@ -425,7 +425,7 @@ IDE_RC cmmSessionRemove(cmmSession *aSession)
     }
 
     /*
-     * Page∞° empty¿Ã∞Ì First FreePage∞° æ∆¥œ∏È Page ∏ﬁ∏∏Æ «ÿ¡¶
+     * PageÍ∞Ä emptyÏù¥Í≥† First FreePageÍ∞Ä ÏïÑÎãàÎ©¥ Page Î©îÎ™®Î¶¨ Ìï¥Ï†ú
      */
 
     if ((sPageID != 0) && (sPage->mSlotUseCount == 0) && (gPageTable.mFirstFreePageID != sPageID))
@@ -469,19 +469,19 @@ IDE_RC cmmSessionFind(cmmSession **aSession, UShort aSessionID)
     IDE_ASSERT(gPageTable.mMutex.lock(NULL /* idvSQL* */) == IDE_SUCCESS);
 
     /*
-     * Page π◊ Slot ∞Àªˆ
+     * Page Î∞è Slot Í≤ÄÏÉâ
      */
 
     IDE_TEST(cmmSessionFindSlot(&sPage, &sSlot, aSessionID) != IDE_SUCCESS);
 
     /*
-     * Slotø° Session¿Ã ¡∏¿Á«œ¥¬¡ˆ ∞ÀªÁ
+     * SlotÏóê SessionÏù¥ Ï°¥Ïû¨ÌïòÎäîÏßÄ Í≤ÄÏÇ¨
      */
 
     IDE_TEST(sSlot->mSession == NULL);
 
     /*
-     * Slot¿« Session¿ª µπ∑¡¡‹
+     * SlotÏùò SessionÏùÑ ÎèåÎ†§Ï§å
      */
 
     *aSession = sSlot->mSession;

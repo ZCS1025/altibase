@@ -43,11 +43,11 @@ IDE_RC rprSNMapMgr::initialize( const SChar * aRepName,
 
     IDU_LIST_INIT(&mSNMap);
 
-    /* pool ÃÊ±âÈ­
-     * ¼­¹ö°¡ µ¿ÀÛÁß¿¡ ¸Ş¸ğ¸® ÇÒ´çÀº receiver¸¸ ¼öÇàÇÏ¸ç, ÇØÁ¦µµ receiver°¡ ÇÑ´Ù.
-     * ¼­¹ö°¡ ½ÃÀÛÇÏ°Å³ª, Á¾·áÇÒ ¶§¿¡´Â executor°¡ ÇÒ´ç ÇØÁ¦¸¦ ÇÑ´Ù.
-     * Áï ¸Ş¸ğ¸® ÇÒ´ç ÇØÁ¦´Â Æ¯Á¤ ½ÃÁ¡¿¡ ÇÏ³ªÀÇ ½º·¹µå°¡ ´ã´çÇÏ¹Ç·Î,
-     * mutex¸¦ »ç¿ëÇÒ ÇÊ¿ä°¡ ¾ø´Ù.
+    /* pool ì´ˆê¸°í™”
+     * ì„œë²„ê°€ ë™ì‘ì¤‘ì— ë©”ëª¨ë¦¬ í• ë‹¹ì€ receiverë§Œ ìˆ˜í–‰í•˜ë©°, í•´ì œë„ receiverê°€ í•œë‹¤.
+     * ì„œë²„ê°€ ì‹œì‘í•˜ê±°ë‚˜, ì¢…ë£Œí•  ë•Œì—ëŠ” executorê°€ í• ë‹¹ í•´ì œë¥¼ í•œë‹¤.
+     * ì¦‰ ë©”ëª¨ë¦¬ í• ë‹¹ í•´ì œëŠ” íŠ¹ì • ì‹œì ì— í•˜ë‚˜ì˜ ìŠ¤ë ˆë“œê°€ ë‹´ë‹¹í•˜ë¯€ë¡œ,
+     * mutexë¥¼ ì‚¬ìš©í•  í•„ìš”ê°€ ì—†ë‹¤.
      */
     idlOS::snprintf(sName, IDU_MUTEX_NAME_LEN, "RP_%s_SN_MAP_POOL", aRepName);
 
@@ -78,9 +78,9 @@ IDE_RC rprSNMapMgr::initialize( const SChar * aRepName,
 
     return IDE_FAILURE;
 }
-/* replicated TxÀÇ begin SN ¼ø¼­´ë·Î Á¤·ÄµÊ,
- * insertNewTx°¡ È£ÃâµÉ ¶§ µé¾î¿À´Â master begin SNÀÌ ¼ø¼­´ë·Î µé¾î¿ÀÁö
- * ¾Ê±â ¶§¹®¿¡ master begin SNÀº Á¤·ÄµÇÁö ¾ÊÀ½
+/* replicated Txì˜ begin SN ìˆœì„œëŒ€ë¡œ ì •ë ¬ë¨,
+ * insertNewTxê°€ í˜¸ì¶œë  ë•Œ ë“¤ì–´ì˜¤ëŠ” master begin SNì´ ìˆœì„œëŒ€ë¡œ ë“¤ì–´ì˜¤ì§€
+ * ì•Šê¸° ë•Œë¬¸ì— master begin SNì€ ì •ë ¬ë˜ì§€ ì•ŠìŒ
  */
 IDE_RC rprSNMapMgr::insertNewTx(smSN aMasterBeginSN, rprSNMapEntry **aNewEntry)
 {
@@ -167,11 +167,11 @@ void rprSNMapMgr::deleteTxByReplicatedCommitSN(smSN    aReplicatedCommitSN,
     return;
 }
 
-/* Local¿¡¼­ µğ½ºÅ©¿¡ flushµÈ ½ÃÁ¡ÀÇ SN°ú ´ëÀÀµÇ´Â Remote SNÀ» ±¸ÇÔ
- * ÇÔ¼ö ³»¿¡¼­ ÇÏ´Â ÀÛ¾÷Àº ¼¼ °¡ÁöÀÓ
- * 1. Local¿¡¼­ µğ½ºÅ©¿¡ flushµÈ ½ÃÁ¡ÀÇ SN°ú ´ëÀÀµÇ´Â Remote SNÀ» ¹İÈ¯ 
- * 2. SN MapÀÇ ÃÖ¼Ò SNÀ» ±¸ÇÏ¿© ¼³Á¤ ÇÔ
- * 3. local°ú remote¿¡¼­ ¸ğµÎ µğ½ºÅ©¿¡ flushµÈ ¿£Æ®¸®¸¦ »èÁ¦ ÇÔ
+/* Localì—ì„œ ë””ìŠ¤í¬ì— flushëœ ì‹œì ì˜ SNê³¼ ëŒ€ì‘ë˜ëŠ” Remote SNì„ êµ¬í•¨
+ * í•¨ìˆ˜ ë‚´ì—ì„œ í•˜ëŠ” ì‘ì—…ì€ ì„¸ ê°€ì§€ì„
+ * 1. Localì—ì„œ ë””ìŠ¤í¬ì— flushëœ ì‹œì ì˜ SNê³¼ ëŒ€ì‘ë˜ëŠ” Remote SNì„ ë°˜í™˜ 
+ * 2. SN Mapì˜ ìµœì†Œ SNì„ êµ¬í•˜ì—¬ ì„¤ì • í•¨
+ * 3. localê³¼ remoteì—ì„œ ëª¨ë‘ ë””ìŠ¤í¬ì— flushëœ ì—”íŠ¸ë¦¬ë¥¼ ì‚­ì œ í•¨
  *                         sn map structure
  *                  master                 replicated
  *  tx1|tx1'  begin sn | commit sn | begin sn | commit sn
@@ -195,29 +195,29 @@ void rprSNMapMgr::getLocalFlushedRemoteSN(smSN  aLocalFlushSN,
             {
                 sEntry = (rprSNMapEntry*)sNode->mObj;
 
-                /* 1.Ã³À½ ¿£Æ®¸® º¸´Ù FlushµÈ SNÀÌ ÀÛÀº°æ¿ì
-                 *   ¾Æ¹«°Íµµ FlushµÇÁö ¾Ê¾ÒÀ¸¹Ç·Î sLFRSNÀº SM_SN_NULLÀ» ¹İÈ¯
-                 * 2.Ã³À½ ¿£Æ®¸®°¡ ¾Æ´Ñ °æ¿ì
-                 *   ÀÌÀü commit sn°ú ÇöÀç begin sn»çÀÌ¿¡ sLFRSNÀÌ ÀÖÀ¸¹Ç·Î
-                 *   ÀÌÀü commit snÀ» sLFRSNÀ¸·Î ¹İÈ¯
+                /* 1.ì²˜ìŒ ì—”íŠ¸ë¦¬ ë³´ë‹¤ Flushëœ SNì´ ì‘ì€ê²½ìš°
+                 *   ì•„ë¬´ê²ƒë„ Flushë˜ì§€ ì•Šì•˜ìœ¼ë¯€ë¡œ sLFRSNì€ SM_SN_NULLì„ ë°˜í™˜
+                 * 2.ì²˜ìŒ ì—”íŠ¸ë¦¬ê°€ ì•„ë‹Œ ê²½ìš°
+                 *   ì´ì „ commit snê³¼ í˜„ì¬ begin snì‚¬ì´ì— sLFRSNì´ ìˆìœ¼ë¯€ë¡œ
+                 *   ì´ì „ commit snì„ sLFRSNìœ¼ë¡œ ë°˜í™˜
                  */
                 if(aLocalFlushSN < sEntry->mReplicatedBeginSN)
                 {
                     break;
                 }
 
-                //replicated beginº¸´Ù´Â Å©°Å³ª °°°í, commitº¸´Ù´Â ÀÛÀ½. masterÀÇ begin snÀ¸·Î ¼³Á¤
+                //replicated beginë³´ë‹¤ëŠ” í¬ê±°ë‚˜ ê°™ê³ , commitë³´ë‹¤ëŠ” ì‘ìŒ. masterì˜ begin snìœ¼ë¡œ ì„¤ì •
                 if(aLocalFlushSN < sEntry->mReplicatedCommitSN)
                 {
                     sLFRSN = sEntry->mMasterBeginSN;
                     break;
                 }
 
-                //replicated commitº¸´Ù Å©°Å³ª °°À½. masterÀÇ commit snÀ¸·Î ¼³Á¤ ÈÄ, ´ÙÀ½ ¿£Æ®¸® È®ÀÎ
-                //local¿¡¼­´Â flushµÇ¾úÀ½
+                //replicated commitë³´ë‹¤ í¬ê±°ë‚˜ ê°™ìŒ. masterì˜ commit snìœ¼ë¡œ ì„¤ì • í›„, ë‹¤ìŒ ì—”íŠ¸ë¦¬ í™•ì¸
+                //localì—ì„œëŠ” flushë˜ì—ˆìŒ
                 sLFRSN = sEntry->mMasterCommitSN;
-                //¾ÆÁ÷ aLocalFlushSNº¸´Ù Å« °ªÀÌ ³ª¿ÀÁö ¾Ê¾ÒÀ¸¹Ç·Î, ´ÙÀ½ ³ëµå¸¦ È®ÀÎÇØ¾ß ÇÔ
-                //remote¿¡¼­ flushµÇ¾úÀ¸¹Ç·Î Á¦°Å (¸ğµÎ flushµÇ¾úÀ½)
+                //ì•„ì§ aLocalFlushSNë³´ë‹¤ í° ê°’ì´ ë‚˜ì˜¤ì§€ ì•Šì•˜ìœ¼ë¯€ë¡œ, ë‹¤ìŒ ë…¸ë“œë¥¼ í™•ì¸í•´ì•¼ í•¨
+                //remoteì—ì„œ flushë˜ì—ˆìœ¼ë¯€ë¡œ ì œê±° (ëª¨ë‘ flushë˜ì—ˆìŒ)
                 if(aRemoteFlushSN != SM_SN_NULL)
                 {
                     if ( ( aRemoteFlushSN >= sEntry->mMasterCommitSN ) &&
@@ -240,10 +240,10 @@ void rprSNMapMgr::getLocalFlushedRemoteSN(smSN  aLocalFlushSN,
         {
             /*
              * BUG-41331
-             * SN Mapping tableÀÌ ºñ¾îÀÖ´Ù´Â °ÍÀº
-             * 1. Replication Log°¡ ´Ù Ã³¸®µÇ¾ú´Ù´Â °Í°ú
-             * 2. Active¿Í Standby°¡ Replication µ¥ÀÌÅÍ°¡ °°´Ù´Â
-             * À» ¶æÇÏ¹Ç·Î Aciver serverÀÇ restartSNÀ» LocalFlushRemoteSNÀ» ¼³Á¤ÇÑ´Ù.
+             * SN Mapping tableì´ ë¹„ì–´ìˆë‹¤ëŠ” ê²ƒì€
+             * 1. Replication Logê°€ ë‹¤ ì²˜ë¦¬ë˜ì—ˆë‹¤ëŠ” ê²ƒê³¼
+             * 2. Activeì™€ Standbyê°€ Replication ë°ì´í„°ê°€ ê°™ë‹¤ëŠ”
+             * ì„ ëœ»í•˜ë¯€ë¡œ Aciver serverì˜ restartSNì„ LocalFlushRemoteSNì„ ì„¤ì •í•œë‹¤.
              */
             sLFRSN = aRestartSN;
         }
@@ -254,9 +254,9 @@ void rprSNMapMgr::getLocalFlushedRemoteSN(smSN  aLocalFlushSN,
     return;
 }
 
-/* Recoery Sender°¡ ·Î±×¸¦ ÀĞÀº ÈÄ ÇØ´ç Æ®·£Àè¼ÇÀÌ RecoveryÇØ¾ßÇÏ´ÂÁö È®ÀÎ ÇÔ
- * SN MapÀº replicated txÀÇ begin snÀ¸·Î Á¤·ÄµÇ¾îÀÖÀ¸¹Ç·Î, aBeginLogSN
- * º¸´Ù Å« °ªÀÌ ³ª¿À¸é scanÀ» Áß´Ü ÇÏ°í recovery°¡ ºÒÇÊ¿äÇÑ Æ®·£Àè¼ÇÀ¸·Î ÆÇ´Ü ÇÔ
+/* Recoery Senderê°€ ë¡œê·¸ë¥¼ ì½ì€ í›„ í•´ë‹¹ íŠ¸ëœì­ì…˜ì´ Recoveryí•´ì•¼í•˜ëŠ”ì§€ í™•ì¸ í•¨
+ * SN Mapì€ replicated txì˜ begin snìœ¼ë¡œ ì •ë ¬ë˜ì–´ìˆìœ¼ë¯€ë¡œ, aBeginLogSN
+ * ë³´ë‹¤ í° ê°’ì´ ë‚˜ì˜¤ë©´ scanì„ ì¤‘ë‹¨ í•˜ê³  recoveryê°€ ë¶ˆí•„ìš”í•œ íŠ¸ëœì­ì…˜ìœ¼ë¡œ íŒë‹¨ í•¨
  */
 idBool rprSNMapMgr::needRecoveryTx(smSN aBeginLogSN)
 {
@@ -269,7 +269,7 @@ idBool rprSNMapMgr::needRecoveryTx(smSN aBeginLogSN)
         {
             sEntry = (rprSNMapEntry*)sNode->mObj;
             if(sEntry->mReplicatedBeginSN == aBeginLogSN)
-            { //Recovery ÇØ¾ß ÇÔ
+            { //Recovery í•´ì•¼ í•¨
                 return ID_TRUE;
             }
             if(sEntry->mReplicatedBeginSN > aBeginLogSN)
@@ -278,7 +278,7 @@ idBool rprSNMapMgr::needRecoveryTx(smSN aBeginLogSN)
             }
         }
     }
-    //°Ë»ö ½ÇÆĞ
+    //ê²€ìƒ‰ ì‹¤íŒ¨
     return ID_FALSE;
 }
 

@@ -260,7 +260,7 @@ SQLRETURN ulnExecDirect(ulnStmt *aStmt, acp_char_t *aStatementText, acp_sint32_t
               != ACI_SUCCESS );
 
     /* PROJ-2177 User Interface - Cancel
-     * ÀÌÈÄ¿¡ DataAtExec¸¦ °Ë»çÇØ NEED DATA¸¦ ¼³Á¤ÇÏ¹Ç·Î ¼º°øÇßÀ»¶§¸¦ À§ÇØ ÃÊ±âÈ­ÇØµÐ´Ù. */
+     * ì´í›„ì— DataAtExecë¥¼ ê²€ì‚¬í•´ NEED DATAë¥¼ ì„¤ì •í•˜ë¯€ë¡œ ì„±ê³µí–ˆì„ë•Œë¥¼ ìœ„í•´ ì´ˆê¸°í™”í•´ë‘”ë‹¤. */
     ulnStmtResetNeedDataFuncID(aStmt);
 
     ulnDescSetRowsProcessedPtrValue(aStmt->mAttrIpd, 0);
@@ -270,12 +270,12 @@ SQLRETURN ulnExecDirect(ulnStmt *aStmt, acp_char_t *aStatementText, acp_sint32_t
               != ACI_SUCCESS );
 
     /*
-     * Note : SELECT ¼º´ÉÀ» ³ôÀÌ±â À§ÇØ¼­ prepare -> execute -> fetch ¸¦ ÇÑ¹ø¿¡ Àü¼Û
-     * Note : Direct Execution ÀÏ ¶§¿¡´Â column count ¸¦ ¸ð¸£¹Ç·Î ¹«Á¶°Ç fetch
+     * Note : SELECT ì„±ëŠ¥ì„ ë†’ì´ê¸° ìœ„í•´ì„œ prepare -> execute -> fetch ë¥¼ í•œë²ˆì— ì „ì†¡
+     * Note : Direct Execution ì¼ ë•Œì—ëŠ” column count ë¥¼ ëª¨ë¥´ë¯€ë¡œ ë¬´ì¡°ê±´ fetch
      */
 
     // fix BUG-17715
-    // RecordCount¸¦ Prefetch RowÅ©±â¸¸Å­ ¼³Á¤ÇØ ·¹ÄÚµå¸¦ ¹Þ¾Æ¿Â´Ù.
+    // RecordCountë¥¼ Prefetch Rowí¬ê¸°ë§Œí¼ ì„¤ì •í•´ ë ˆì½”ë“œë¥¼ ë°›ì•„ì˜¨ë‹¤.
     ACI_TEST( ulnFetchRequestFetch(&sFnContext,
                                    &(aStmt->mParentDbc->mPtContext),
                                    ulnStmtGetAttrPrefetchRows(aStmt),

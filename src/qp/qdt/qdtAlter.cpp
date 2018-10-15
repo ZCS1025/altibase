@@ -29,43 +29,43 @@
 #include <qdpRole.h>
 
 /*
-    Disk Data tablespace, Disk Temp Tablespace¿ë ALTER±¸¹®¿¡ ´ëÇÑ
-    SMÀÇ Tablespace TypeÁ¶È¸
+    Disk Data tablespace, Disk Temp Tablespaceìš© ALTERêµ¬ë¬¸ì— ëŒ€í•œ
+    SMì˜ Tablespace Typeì¡°íšŒ
 
-    [IN] aQueryTBSType - SQL Parsing½Ã ¼³Á¤µÈ Tablespace type
-    [IN] aStorageTBSType - SM¿¡ ÀúÀåµÈ ½ÇÁ¦ Tablespace type
+    [IN] aQueryTBSType - SQL Parsingì‹œ ì„¤ì •ëœ Tablespace type
+    [IN] aStorageTBSType - SMì— ì €ì¥ëœ ì‹¤ì œ Tablespace type
  */
 IDE_RC qdtAlter::isDiskTBSType(smiTableSpaceType aQueryTBSType,
                                smiTableSpaceType aStorageTBSType )
 {
     // PROJ-1548 User Memory Tablespace
     //
-    // Memory Tablespace¿¡ Disk Tablespace¿ë ALTER±¸¹®ÀÌ µé¾î¿À¸é ¿¡·¯
+    // Memory Tablespaceì— Disk Tablespaceìš© ALTERêµ¬ë¬¸ì´ ë“¤ì–´ì˜¤ë©´ ì—ëŸ¬
     if ( ( aStorageTBSType != SMI_DISK_SYSTEM_DATA ) &&
          ( aStorageTBSType != SMI_DISK_SYSTEM_UNDO ) &&
          ( aStorageTBSType != SMI_DISK_SYSTEM_TEMP ) &&
          ( aStorageTBSType != SMI_DISK_USER_DATA )   &&
          ( aStorageTBSType != SMI_DISK_USER_TEMP ) )
     {
-        // SMÀÇ ½ÇÁ¦ Tablespace TypeÀÌ Disk Tablespace°¡ ¾Æ´Ï¸é ¿¡·¯
+        // SMì˜ ì‹¤ì œ Tablespace Typeì´ Disk Tablespaceê°€ ì•„ë‹ˆë©´ ì—ëŸ¬
         IDE_RAISE( ERR_INVALID_ALTER_ON_DISK_TBS );
     }
 
     //-----------------------------------------------------
     // To Fix BUG-10414
-    // add ´ë»ó fileÀÌ ÀúÀåµÉ table spaceÀÇ Á¤´ç¼º °Ë»ç
-    // ( data fileÀº data table space¿¡
-    //   temp fileÀº temp table space¿¡ add ÇØ¾ß ÇÔ )
+    // add ëŒ€ìƒ fileì´ ì €ì¥ë  table spaceì˜ ì •ë‹¹ì„± ê²€ì‚¬
+    // ( data fileì€ data table spaceì—
+    //   temp fileì€ temp table spaceì— add í•´ì•¼ í•¨ )
     // 
-    // Parsing ´Ü°è
-    //    : ¾î¶² file( data file / temp file )À» add ÇÒ °ÍÀÎ°¡¿¡ µû¶ó
-    //      table space type ¼³Á¤ 
-    //      < parsing °úÁ¤¿¡¼­ ¼³Á¤µÇ´Â table space Á¾·ù >
-    //        SMI_DISK_USER_DATA : data fileÀ» add ÇÏ·Á°í ÇÒ °æ¿ì 
-    //        SMI_DISK_USER_TEMP : temp fileÀ» add ÇÏ·Á°í ÇÒ °æ¿ì
-    // Validation ´Ü°è
-    //    : addÇÒ fileÀÌ ÀúÀåµÉ table space °ø°£ÀÇ Á¤´ç¼º °Ë»ç ¼öÇà
-    //      < qcmTablespace::getTBSAttrByName()¿¡¼­ ¾ò¾î¿À´Â table space Á¾·ù >
+    // Parsing ë‹¨ê³„
+    //    : ì–´ë–¤ file( data file / temp file )ì„ add í•  ê²ƒì¸ê°€ì— ë”°ë¼
+    //      table space type ì„¤ì • 
+    //      < parsing ê³¼ì •ì—ì„œ ì„¤ì •ë˜ëŠ” table space ì¢…ë¥˜ >
+    //        SMI_DISK_USER_DATA : data fileì„ add í•˜ë ¤ê³  í•  ê²½ìš° 
+    //        SMI_DISK_USER_TEMP : temp fileì„ add í•˜ë ¤ê³  í•  ê²½ìš°
+    // Validation ë‹¨ê³„
+    //    : addí•  fileì´ ì €ì¥ë  table space ê³µê°„ì˜ ì •ë‹¹ì„± ê²€ì‚¬ ìˆ˜í–‰
+    //      < qcmTablespace::getTBSAttrByName()ì—ì„œ ì–»ì–´ì˜¤ëŠ” table space ì¢…ë¥˜ >
     //        SMI_MEMORY_SYSTEM_DICTIONARY
     //        SMI_MEMORY_SYSTEM_DATA,            
     //        SMI_MEMORY_USER_DATA,
@@ -86,7 +86,7 @@ IDE_RC qdtAlter::isDiskTBSType(smiTableSpaceType aQueryTBSType,
     //-----------------------------------------------------
     if ( aQueryTBSType == SMI_DISK_USER_DATA )
     {
-        // Data FileÀ» Add ÇÏ·Á°í ÇÏ´Â °æ¿ì
+        // Data Fileì„ Add í•˜ë ¤ê³  í•˜ëŠ” ê²½ìš°
         if ( (aStorageTBSType == SMI_DISK_SYSTEM_DATA) ||
              (aStorageTBSType == SMI_DISK_USER_DATA) ||
              (aStorageTBSType == SMI_DISK_SYSTEM_UNDO) )
@@ -95,13 +95,13 @@ IDE_RC qdtAlter::isDiskTBSType(smiTableSpaceType aQueryTBSType,
         }
         else
         {
-            // Data FileÀ» add ÇÒ ¼ö ¾ø´Â TableSpace ÀÓ
+            // Data Fileì„ add í•  ìˆ˜ ì—†ëŠ” TableSpace ì„
             IDE_RAISE(ERR_MISMATCH_TBS_TYPE);
         }
     }
     else
     {
-        // Temp FileÀ» Add ÇÏ·Á°í ÇÏ´Â °æ¿ì
+        // Temp Fileì„ Add í•˜ë ¤ê³  í•˜ëŠ” ê²½ìš°
         if ( (aStorageTBSType == SMI_DISK_SYSTEM_TEMP) ||
              (aStorageTBSType == SMI_DISK_USER_TEMP) )
         {
@@ -109,7 +109,7 @@ IDE_RC qdtAlter::isDiskTBSType(smiTableSpaceType aQueryTBSType,
         }
         else
         {
-            // Temp FileÀ» add ÇÒ ¼ö ¾ø´Â TableSpaceÀÓ. 
+            // Temp Fileì„ add í•  ìˆ˜ ì—†ëŠ” TableSpaceì„. 
             IDE_RAISE(ERR_MISMATCH_TBS_TYPE);
         }
     }
@@ -131,22 +131,22 @@ IDE_RC qdtAlter::isDiskTBSType(smiTableSpaceType aQueryTBSType,
 
 
 /*
-    Memory data tablespace¿ë ALTER±¸¹®¿¡ ´ëÇÑ
-    SMÀÇ Tablespace TypeÁ¶È¸
+    Memory data tablespaceìš© ALTERêµ¬ë¬¸ì— ëŒ€í•œ
+    SMì˜ Tablespace Typeì¡°íšŒ
 
-    [IN] aQueryTBSType - SQL Parsing½Ã ¼³Á¤µÈ Tablespace type
-    [IN] aStorageTBSType - SM¿¡ ÀúÀåµÈ ½ÇÁ¦ Tablespace type
+    [IN] aQueryTBSType - SQL Parsingì‹œ ì„¤ì •ëœ Tablespace type
+    [IN] aStorageTBSType - SMì— ì €ì¥ëœ ì‹¤ì œ Tablespace type
  */
 IDE_RC qdtAlter::isMemTBSType(smiTableSpaceType aTBSType)
 {
     // PROJ-1548 User Memory Tablespace
     //
-    // Disk Tablespace¿¡ Memory Tablespace¿ë ALTER±¸¹®ÀÌ µé¾î¿À¸é ¿¡·¯
+    // Disk Tablespaceì— Memory Tablespaceìš© ALTERêµ¬ë¬¸ì´ ë“¤ì–´ì˜¤ë©´ ì—ëŸ¬
     if ( ( aTBSType != SMI_MEMORY_USER_DATA )         &&
          ( aTBSType != SMI_MEMORY_SYSTEM_DICTIONARY ) &&
          ( aTBSType != SMI_MEMORY_SYSTEM_DATA ) )
     {
-        // SMÀÇ ½ÇÁ¦ Tablespace TypeÀÌ Disk TablespaceÀÌ¸é ¿¡·¯ 
+        // SMì˜ ì‹¤ì œ Tablespace Typeì´ Disk Tablespaceì´ë©´ ì—ëŸ¬ 
         IDE_RAISE( ERR_INVALID_ALTER_ON_MEM_TBS );
     }
 
@@ -166,12 +166,12 @@ IDE_RC qdtAlter::validateAddFile(qcStatement * aStatement)
 /***********************************************************************
  *
  * Description :
- *    ALTER TABLESPACE ... ADD ...FILE ÀÇ validation ¼öÇà
+ *    ALTER TABLESPACE ... ADD ...FILE ì˜ validation ìˆ˜í–‰
  *
  * Implementation :
- *    1. ±ÇÇÑ °Ë»ç qdpPrivilege::checkDDLAlterTableSpacePriv()
- *    2. Å×ÀÌºí½ºÆäÀÌ½º ÀÌ¸§ Á¸Àç À¯¹« °Ë»ç
- *    3. file specification validation ÇÔ¼ö È£Ãâ (CREATE TABLESPCE ¿Í µ¿ÀÏ)
+ *    1. ê¶Œí•œ ê²€ì‚¬ qdpPrivilege::checkDDLAlterTableSpacePriv()
+ *    2. í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ì´ë¦„ ì¡´ì¬ ìœ ë¬´ ê²€ì‚¬
+ *    3. file specification validation í•¨ìˆ˜ í˜¸ì¶œ (CREATE TABLESPCE ì™€ ë™ì¼)
  *
  ***********************************************************************/
 
@@ -189,13 +189,13 @@ IDE_RC qdtAlter::validateAddFile(qcStatement * aStatement)
 
     sParseTree = (qdAlterTBSParseTree *)aStatement->myPlan->parseTree;
 
-    // ±ÇÇÑ °Ë»ç
+    // ê¶Œí•œ ê²€ì‚¬
     IDE_TEST( qdpRole::checkDDLAlterTableSpacePriv(
                   aStatement,
                   QCG_GET_SESSION_USER_ID( aStatement ) )
               != IDE_SUCCESS );
 
-    // µ¿ÀÏÇÑ tablespace nameÀÌ Á¸ÀçÇÏ´ÂÁö °Ë»ç 
+    // ë™ì¼í•œ tablespace nameì´ ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬ 
     IDE_TEST ( qcmTablespace::getTBSAttrByName(
         aStatement,
         sParseTree->TBSAttr->mName,
@@ -203,24 +203,24 @@ IDE_RC qdtAlter::validateAddFile(qcStatement * aStatement)
         & sTBSAttr ) != IDE_SUCCESS );
 
     // To Fix BUG-10414
-    // add ´ë»ó fileÀÌ ÀúÀåµÉ table spaceÀÇ Á¤´ç¼º °Ë»ç
-    // Parse´Ü°è¿¡¼­´Â USER_DATE È¤Àº USER_TEMP µÑÁß ÇÏ³ª·Î ¼¼ÆÃÇÔ
-    // isDiskTBSType()Àº USER_DATA È¤Àº USER_TEMPÁß ÇÏ³ª¸¸ ¹ŞÀ½.
-    // µû¶ó¼­ ¾ÆÁ÷ Á¤È®ÇÑ Å¸ÀÔÀ» ¼¼ÆÃÇÏ¸é ¾ÈµÊ
+    // add ëŒ€ìƒ fileì´ ì €ì¥ë  table spaceì˜ ì •ë‹¹ì„± ê²€ì‚¬
+    // Parseë‹¨ê³„ì—ì„œëŠ” USER_DATE í˜¹ì€ USER_TEMP ë‘˜ì¤‘ í•˜ë‚˜ë¡œ ì„¸íŒ…í•¨
+    // isDiskTBSType()ì€ USER_DATA í˜¹ì€ USER_TEMPì¤‘ í•˜ë‚˜ë§Œ ë°›ìŒ.
+    // ë”°ë¼ì„œ ì•„ì§ ì •í™•í•œ íƒ€ì…ì„ ì„¸íŒ…í•˜ë©´ ì•ˆë¨
     IDE_TEST( isDiskTBSType(  sParseTree->TBSAttr->mType,
                               sTBSAttr.mType )
               != IDE_SUCCESS );
 
-    // ¿ä±â¼­ ºÎÅÍ Á¤È®ÇÑ TBS Å¸ÀÔ ¼¼ÆÃÇÏ¿©¾ß ÇÔ
+    // ìš”ê¸°ì„œ ë¶€í„° ì •í™•í•œ TBS íƒ€ì… ì„¸íŒ…í•˜ì—¬ì•¼ í•¨
     sParseTree->TBSAttr->mID = sTBSAttr.mID;
     sParseTree->TBSAttr->mType = sTBSAttr.mType;
 
     // To Fix PR-10780
-    // Extent SizeÀÇ °è»ê
+    // Extent Sizeì˜ ê³„ì‚°
     sExtentSize = (ULong) sTBSAttr.mDiskAttr.mExtPageCount *
         smiGetPageSize(sParseTree->TBSAttr->mType);
 
-    // datafileÀÇ Å©±â ¼³Á¤ ¹× auto extendÀı Á¤´ç¼º °Ë»ç  
+    // datafileì˜ í¬ê¸° ì„¤ì • ë° auto extendì ˆ ì •ë‹¹ì„± ê²€ì‚¬  
     IDE_TEST( qdtCommon::validateFilesSpec( aStatement,
                                             sParseTree->TBSAttr->mType,
                                             sParseTree->diskFilesSpec,
@@ -239,7 +239,7 @@ IDE_RC qdtAlter::validateAddFile(qcStatement * aStatement)
                                              SMI_TBS_DISK)
                   != IDE_SUCCESS );
 
-        // Data File NameÀÌ Á¸ÀçÇÏ´Â Áö °Ë»ç
+        // Data File Nameì´ ì¡´ì¬í•˜ëŠ” ì§€ ê²€ì‚¬
         IDE_TEST( qcmTablespace::existDataFileInDB( sFileName,
                                                     idlOS::strlen(sFileName),
                                                     & sFileExist )
@@ -248,15 +248,15 @@ IDE_RC qdtAlter::validateAddFile(qcStatement * aStatement)
         if ( sFileExist == ID_TRUE )
         {
             //------------------------------------------
-            // Á¸ÀçÇÏ´Â File NameÀÓ.
+            // ì¡´ì¬í•˜ëŠ” File Nameì„.
             //------------------------------------------
 
-            // REUSE optionÀÏ °æ¿ì
-            // ÀÚ½ÅÀÇ TBS¿¡ Á¸ÀçÇÏ´Â fileÀÌ¶ó¸é »ç¿ëÇÒ ¼ö ÀÖ´Ù.
+            // REUSE optionì¼ ê²½ìš°
+            // ìì‹ ì˜ TBSì— ì¡´ì¬í•˜ëŠ” fileì´ë¼ë©´ ì‚¬ìš©í•  ìˆ˜ ìˆë‹¤.
             if ( sFileAttr->mCreateMode == SMI_DATAFILE_REUSE )
             {
-                // ÀÚ½ÅÀÇ TBS¿¡ Á¸ÀçÇÏ´Â File NameÀÏ °æ¿ì
-                // REUSE ÀÌ¹Ç·Î »ç¿ëÇÒ ¼ö ÀÖ´Ù.
+                // ìì‹ ì˜ TBSì— ì¡´ì¬í•˜ëŠ” File Nameì¼ ê²½ìš°
+                // REUSE ì´ë¯€ë¡œ ì‚¬ìš©í•  ìˆ˜ ìˆë‹¤.
                 IDE_TEST ( qcmTablespace::existDataFileInTBS(
                     sTBSAttr.mID,
                     sFileName,
@@ -268,13 +268,13 @@ IDE_RC qdtAlter::validateAddFile(qcStatement * aStatement)
             }
             else
             {
-                // ÀÌ¹Ì Á¸ÀçÇÏ´Â FileÀÓ
+                // ì´ë¯¸ ì¡´ì¬í•˜ëŠ” Fileì„
                 IDE_RAISE( ERR_EXIST_FILE );
             }
         }
         else
         {
-            // Á¸ÀçÇÏÁö ¾Ê´Â File NameÀÓ.
+            // ì¡´ì¬í•˜ì§€ ì•ŠëŠ” File Nameì„.
             // Nothing To Do
         }
     }
@@ -300,14 +300,14 @@ IDE_RC qdtAlter::validateRenameOrDropFile(qcStatement * aStatement)
 /***********************************************************************
  *
  * Description :
- *    ALTER TABLESPACE ... RENAME/DROP ...FILE ÀÇ validation ¼öÇà
+ *    ALTER TABLESPACE ... RENAME/DROP ...FILE ì˜ validation ìˆ˜í–‰
  *
  * Implementation :
- *    1. ±ÇÇÑ °Ë»ç qdpPrivilege::checkDDLAlterTableSpacePriv()
- *    2. Å×ÀÌºí½ºÆäÀÌ½º ÀÌ¸§ Á¸Àç À¯¹« °Ë»ç
- *    3. ±¸¹®¿¡ DATAFILE ·Î ¸í½ÃÇÑ °æ¿ì temporary tablespace ÀÌ¸é ¿À·ù
- *       ±¸¹®¿¡ TEMPFILE ·Î ¸í½ÃÇÑ °æ¿ì data tablespace ÀÌ¸é ¿À·ù
- *    4. file ÀÌ Á¸ÀçÇÏ´ÂÁö Ã¼Å©
+ *    1. ê¶Œí•œ ê²€ì‚¬ qdpPrivilege::checkDDLAlterTableSpacePriv()
+ *    2. í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ì´ë¦„ ì¡´ì¬ ìœ ë¬´ ê²€ì‚¬
+ *    3. êµ¬ë¬¸ì— DATAFILE ë¡œ ëª…ì‹œí•œ ê²½ìš° temporary tablespace ì´ë©´ ì˜¤ë¥˜
+ *       êµ¬ë¬¸ì— TEMPFILE ë¡œ ëª…ì‹œí•œ ê²½ìš° data tablespace ì´ë©´ ì˜¤ë¥˜
+ *    4. file ì´ ì¡´ì¬í•˜ëŠ”ì§€ ì²´í¬
  *
  ***********************************************************************/
 
@@ -323,7 +323,7 @@ IDE_RC qdtAlter::validateRenameOrDropFile(qcStatement * aStatement)
 
     sParseTree = (qdAlterTBSParseTree *)aStatement->myPlan->parseTree;
 
-    // ±ÇÇÑ °Ë»ç
+    // ê¶Œí•œ ê²€ì‚¬
     IDE_TEST( qdpRole::checkDDLAlterTableSpacePriv(
                   aStatement,
                   QCG_GET_SESSION_USER_ID( aStatement ) )
@@ -336,7 +336,7 @@ IDE_RC qdtAlter::validateRenameOrDropFile(qcStatement * aStatement)
                   &sTBSAttr) != IDE_SUCCESS );
 
     // To Fix BUG-10414
-    // add ´ë»ó fileÀÌ ÀúÀåµÉ table spaceÀÇ Á¤´ç¼º °Ë»ç
+    // add ëŒ€ìƒ fileì´ ì €ì¥ë  table spaceì˜ ì •ë‹¹ì„± ê²€ì‚¬
     IDE_TEST( isDiskTBSType(  sParseTree->TBSAttr->mType,
                               sTBSAttr.mType )
               != IDE_SUCCESS );
@@ -385,15 +385,15 @@ IDE_RC qdtAlter::validateModifyFile(qcStatement * aStatement)
 /***********************************************************************
  *
  * Description :
- *    ALTER TABLESPACE ... ALTER ...FILE  ÀÇ validation ¼öÇà
+ *    ALTER TABLESPACE ... ALTER ...FILE  ì˜ validation ìˆ˜í–‰
  *
  * Implementation :
- *    1. ±ÇÇÑ °Ë»ç qdpPrivilege::checkDDLAlterTableSpacePriv()
- *    2. Å×ÀÌºí½ºÆäÀÌ½º ÀÌ¸§ Á¸Àç À¯¹« °Ë»ç
- *    3. ±¸¹®¿¡ DATAFILE ·Î ¸í½ÃÇÑ °æ¿ì temporary tablespace ÀÌ¸é ¿À·ù
- *       ±¸¹®¿¡ TEMPFILE ·Î ¸í½ÃÇÑ °æ¿ì data tablespace ÀÌ¸é ¿À·ù
- *    4. file ÀÌ Á¸ÀçÇÏ´ÂÁö Ã¼Å©
- *    5. autoextend clause validation Àº CREATE TABLESPACE ¹®°ú µ¿ÀÏ
+ *    1. ê¶Œí•œ ê²€ì‚¬ qdpPrivilege::checkDDLAlterTableSpacePriv()
+ *    2. í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ì´ë¦„ ì¡´ì¬ ìœ ë¬´ ê²€ì‚¬
+ *    3. êµ¬ë¬¸ì— DATAFILE ë¡œ ëª…ì‹œí•œ ê²½ìš° temporary tablespace ì´ë©´ ì˜¤ë¥˜
+ *       êµ¬ë¬¸ì— TEMPFILE ë¡œ ëª…ì‹œí•œ ê²½ìš° data tablespace ì´ë©´ ì˜¤ë¥˜
+ *    4. file ì´ ì¡´ì¬í•˜ëŠ”ì§€ ì²´í¬
+ *    5. autoextend clause validation ì€ CREATE TABLESPACE ë¬¸ê³¼ ë™ì¼
  *
  ***********************************************************************/
 
@@ -409,7 +409,7 @@ IDE_RC qdtAlter::validateModifyFile(qcStatement * aStatement)
 
     sParseTree = (qdAlterTBSParseTree *)aStatement->myPlan->parseTree;
 
-    // ±ÇÇÑ °Ë»ç
+    // ê¶Œí•œ ê²€ì‚¬
     IDE_TEST( qdpRole::checkDDLAlterTableSpacePriv(
                   aStatement,
                   QCG_GET_SESSION_USER_ID( aStatement ) )
@@ -422,15 +422,15 @@ IDE_RC qdtAlter::validateModifyFile(qcStatement * aStatement)
         & sTBSAttr ) != IDE_SUCCESS );
 
     // To Fix BUG-10414
-    // add ´ë»ó fileÀÌ ÀúÀåµÉ table spaceÀÇ Á¤´ç¼º °Ë»ç
-    // Parse´Ü°è¿¡¼­´Â USER_DATE È¤Àº USER_TEMP µÑÁß ÇÏ³ª·Î ¼¼ÆÃÇÔ
-    // isDiskTBSType()Àº USER_DATA È¤Àº USER_TEMPÁß ÇÏ³ª¸¸ ¹ŞÀ½.
-    // µû¶ó¼­ ¾ÆÁ÷ Á¤È®ÇÑ Å¸ÀÔÀ» ¼¼ÆÃÇÏ¸é ¾ÈµÊ
+    // add ëŒ€ìƒ fileì´ ì €ì¥ë  table spaceì˜ ì •ë‹¹ì„± ê²€ì‚¬
+    // Parseë‹¨ê³„ì—ì„œëŠ” USER_DATE í˜¹ì€ USER_TEMP ë‘˜ì¤‘ í•˜ë‚˜ë¡œ ì„¸íŒ…í•¨
+    // isDiskTBSType()ì€ USER_DATA í˜¹ì€ USER_TEMPì¤‘ í•˜ë‚˜ë§Œ ë°›ìŒ.
+    // ë”°ë¼ì„œ ì•„ì§ ì •í™•í•œ íƒ€ì…ì„ ì„¸íŒ…í•˜ë©´ ì•ˆë¨
     IDE_TEST( isDiskTBSType(  sParseTree->TBSAttr->mType,
                               sTBSAttr.mType )
               != IDE_SUCCESS );
 
-    // ¿ä±â¼­ ºÎÅÍ Á¤È®ÇÑ TBS Å¸ÀÔ ¼¼ÆÃÇÏ¿©¾ß ÇÔ
+    // ìš”ê¸°ì„œ ë¶€í„° ì •í™•í•œ TBS íƒ€ì… ì„¸íŒ…í•˜ì—¬ì•¼ í•¨
     sParseTree->TBSAttr->mID = sTBSAttr.mID;
     sParseTree->TBSAttr->mType = sTBSAttr.mType;
 
@@ -458,7 +458,7 @@ IDE_RC qdtAlter::validateModifyFile(qcStatement * aStatement)
     IDE_TEST_RAISE( sExist == ID_FALSE, ERR_NOT_EXIST_FILE );
 
     // To Fix PR-10780
-    // Extent SizeÀÇ °è»ê
+    // Extent Sizeì˜ ê³„ì‚°
     sExtentSize = (ULong) sTBSAttr.mDiskAttr.mExtPageCount *
         smiGetPageSize(sParseTree->TBSAttr->mType);
 
@@ -487,12 +487,12 @@ IDE_RC qdtAlter::validateTBSOnlineOrOffline(qcStatement * aStatement)
 /***********************************************************************
  *
  * Description :
- *    ALTER TABLESPACE ... ONLINE/OFFLINE ÀÇ execution ¼öÇà
+ *    ALTER TABLESPACE ... ONLINE/OFFLINE ì˜ execution ìˆ˜í–‰
  *
  * Implementation :
- *    1. ±ÇÇÑ °Ë»ç qdpPrivilege::checkDDLAlterTableSpacePriv()
- *    2. Å×ÀÌºí½ºÆäÀÌ½º ÀÌ¸§ Á¸Àç À¯¹« °Ë»ç
- *    3. Alter Online / Offline°¡´ÉÇÑ Å×ÀÌºí ½ºÆäÀÌ½ºÀÎÁö È®ÀÎ
+ *    1. ê¶Œí•œ ê²€ì‚¬ qdpPrivilege::checkDDLAlterTableSpacePriv()
+ *    2. í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ì´ë¦„ ì¡´ì¬ ìœ ë¬´ ê²€ì‚¬
+ *    3. Alter Online / Offlineê°€ëŠ¥í•œ í…Œì´ë¸” ìŠ¤í˜ì´ìŠ¤ì¸ì§€ í™•ì¸
  *
  ***********************************************************************/
 
@@ -502,7 +502,7 @@ IDE_RC qdtAlter::validateTBSOnlineOrOffline(qcStatement * aStatement)
 
     sParseTree = (qdAlterTBSParseTree *)aStatement->myPlan->parseTree;
 
-    // ±ÇÇÑ °Ë»ç
+    // ê¶Œí•œ ê²€ì‚¬
     IDE_TEST( qdpRole::checkDDLAlterTableSpacePriv(
                   aStatement,
                   QCG_GET_SESSION_USER_ID( aStatement ) )
@@ -527,10 +527,10 @@ IDE_RC qdtAlter::validateTBSOnlineOrOffline(qcStatement * aStatement)
                     ERR_CANNOT_ONOFFLINE );
 
     // PROJ-1567
-    // TBS¿¡ ÀÖ´Â Å×ÀÌºí ¶Ç´Â ÆÄÆ¼¼Ç¿¡ ÀÌÁßÈ­°¡ °É·ÁÀÖÀ» °æ¿ì
-    // TBS¸¦ Online ¶Ç´Â OfflineÀ¸·Î º¯°æÇÒ ¼ö ¾ø´Ù.
+    // TBSì— ìˆëŠ” í…Œì´ë¸” ë˜ëŠ” íŒŒí‹°ì…˜ì— ì´ì¤‘í™”ê°€ ê±¸ë ¤ìˆì„ ê²½ìš°
+    // TBSë¥¼ Online ë˜ëŠ” Offlineìœ¼ë¡œ ë³€ê²½í•  ìˆ˜ ì—†ë‹¤.
 
-    // ³í-ÆÄÆ¼¼Çµå Å×ÀÌºí, ÆÄÆ¼¼Çµå Å×ÀÌºí
+    // ë…¼-íŒŒí‹°ì…˜ë“œ í…Œì´ë¸”, íŒŒí‹°ì…˜ë“œ í…Œì´ë¸”
     IDE_TEST( qcmTablespace::findTableInfoListInTBS(
                 aStatement,
                 sTBSAttr.mID,
@@ -544,7 +544,7 @@ IDE_RC qdtAlter::validateTBSOnlineOrOffline(qcStatement * aStatement)
         // if specified tables is replicated, the error
         IDE_TEST_RAISE(sTableInfoList->tableInfo->replicationCount > 0,
                        ERR_DDL_WITH_REPLICATED_TABLE);
-        //proj-1608:replicationCount°¡ 0ÀÏ ¶§ recovery count´Â Ç×»ó 0ÀÌ¾î¾ß ÇÔ
+        //proj-1608:replicationCountê°€ 0ì¼ ë•Œ recovery countëŠ” í•­ìƒ 0ì´ì–´ì•¼ í•¨
         IDE_DASSERT(sTableInfoList->tableInfo->replicationRecoveryCount == 0);
     }
 
@@ -571,10 +571,10 @@ IDE_RC qdtAlter::executeTBSOnlineOrOffline(qcStatement * aStatement)
 /***********************************************************************
  *
  * Description :
- *    ALTER TABLESPACE ... ONLINE/OFFLINE ÀÇ execution ¼öÇà
+ *    ALTER TABLESPACE ... ONLINE/OFFLINE ì˜ execution ìˆ˜í–‰
  *
  * Implementation :
- *    1. smiTableSpace::setStatus() ÇÔ¼ö È£Ãâ
+ *    1. smiTableSpace::setStatus() í•¨ìˆ˜ í˜¸ì¶œ
  *
  ***********************************************************************/
 
@@ -585,9 +585,9 @@ IDE_RC qdtAlter::executeTBSOnlineOrOffline(qcStatement * aStatement)
     sParseTree = (qdAlterTBSParseTree *)aStatement->myPlan->parseTree;
 
     /*
-        ÀÌ ¾È¿¡¼­ Tablespace¿¡ X¶ô È¹µæÈÄ
-        Drop/DiscardµÇ¾ú´ÂÁö Ã¼Å©ÇÑ´Ù.
-        QP¿¡¼­´Â Execute Á÷Àü¿¡ ÀÌ·¯ÇÑ »çÇ×À» º°µµ Ã¼Å©ÇÒ ÇÊ¿ä ¾ø´Ù.
+        ì´ ì•ˆì—ì„œ Tablespaceì— Xë½ íšë“í›„
+        Drop/Discardë˜ì—ˆëŠ”ì§€ ì²´í¬í•œë‹¤.
+        QPì—ì„œëŠ” Execute ì§ì „ì— ì´ëŸ¬í•œ ì‚¬í•­ì„ ë³„ë„ ì²´í¬í•  í•„ìš” ì—†ë‹¤.
      */
     IDE_TEST( smiTableSpace::alterStatus(
                                  aStatement->mStatistics,
@@ -610,10 +610,10 @@ IDE_RC qdtAlter::executeAddFile(qcStatement * aStatement)
 /***********************************************************************
  *
  * Description :
- *    ALTER TABLESPACE ... ADD ...FILE ÀÇ execution ¼öÇà
+ *    ALTER TABLESPACE ... ADD ...FILE ì˜ execution ìˆ˜í–‰
  *
  * Implementation :
- *    1. smiTableSpace::addDataFile() ÇÔ¼ö È£Ãâ
+ *    1. smiTableSpace::addDataFile() í•¨ìˆ˜ í˜¸ì¶œ
  *
  ***********************************************************************/
 
@@ -628,11 +628,11 @@ IDE_RC qdtAlter::executeAddFile(qcStatement * aStatement)
 
     //------------------------------------------------------------------
     // To Fix BUG-10498
-    // SM¿¡ ³»·ÁÁÙ add ÇÒ datafileµéÀÇ attribute Á¤º¸µéÀ» »ı¼ºÇÑ´Ù.
-    // ( Parse Tree¿¡¼­ °ü¸®ÇÏ´Â data file attribute ±¸Á¶¿Í
-    //   SM¿¡¼­ ¿ä±¸ÇÏ´Â data file attribute ±¸Á¶°¡ ¸ÂÁö ¾Ê±â ¶§¹®¿¡ )
+    // SMì— ë‚´ë ¤ì¤„ add í•  datafileë“¤ì˜ attribute ì •ë³´ë“¤ì„ ìƒì„±í•œë‹¤.
+    // ( Parse Treeì—ì„œ ê´€ë¦¬í•˜ëŠ” data file attribute êµ¬ì¡°ì™€
+    //   SMì—ì„œ ìš”êµ¬í•˜ëŠ” data file attribute êµ¬ì¡°ê°€ ë§ì§€ ì•Šê¸° ë•Œë¬¸ì— )
     //
-    // < Parse Tree¿¡¼­ °ü¸®ÇÏ´Â attribute Á¤º¸ ±¸Á¶ >
+    // < Parse Treeì—ì„œ ê´€ë¦¬í•˜ëŠ” attribute ì •ë³´ êµ¬ì¡° >
     // ----------------------
     // | qdAlterTBSParseTree|
     // ----------------------   ------------------
@@ -651,8 +651,8 @@ IDE_RC qdtAlter::executeAddFile(qcStatement * aStatement)
     //                          |  next          |    |  ...            |
     //                          -----------------     ------------------
     //
-    // < SM Interface¿¡¼­ ¿ä±¸ÇÏ´Â attribute Á¤º¸ ±¸Á¶ >
-    // (smiDataFileAttr*)ÀÇ ¹è¿­
+    // < SM Interfaceì—ì„œ ìš”êµ¬í•˜ëŠ” attribute ì •ë³´ êµ¬ì¡° >
+    // (smiDataFileAttr*)ì˜ ë°°ì—´
     //------------------------------------------------------------------
     
     IDU_FIT_POINT( "qdtAlter::executeAddFile::alloc::sDataFileAttr",
@@ -693,10 +693,10 @@ IDE_RC qdtAlter::executeRenameFile(qcStatement * aStatement)
 /***********************************************************************
  *
  * Description :
- *    ALTER TABLESPACE ... RENAME ...FILE ÀÇ execution ¼öÇà
+ *    ALTER TABLESPACE ... RENAME ...FILE ì˜ execution ìˆ˜í–‰
  *
  * Implementation :
- *    1. smiTableSpace::renameDataFile() ÇÔ¼ö È£Ãâ
+ *    1. smiTableSpace::renameDataFile() í•¨ìˆ˜ í˜¸ì¶œ
  *
  ***********************************************************************/
 
@@ -724,7 +724,7 @@ IDE_RC qdtAlter::executeRenameFile(qcStatement * aStatement)
         &sTBSAttr) != IDE_SUCCESS );
 
     // To Fix BUG-10414
-    // add ´ë»ó fileÀÌ ÀúÀåµÉ table spaceÀÇ Á¤´ç¼º °Ë»ç
+    // add ëŒ€ìƒ fileì´ ì €ì¥ë  table spaceì˜ ì •ë‹¹ì„± ê²€ì‚¬
     IDE_TEST( isDiskTBSType(  sParseTree->TBSAttr->mType,
                               sTBSAttr.mType )
               != IDE_SUCCESS );
@@ -824,11 +824,11 @@ IDE_RC qdtAlter::executeModifyFileAutoExtend(qcStatement * aStatement)
 /***********************************************************************
  *
  * Description :
- *    ALTER TABLESPACE ... ALTER ...FILE AUTOEXTEND ... ÀÇ execution ¼öÇà
+ *    ALTER TABLESPACE ... ALTER ...FILE AUTOEXTEND ... ì˜ execution ìˆ˜í–‰
  *
  * Implementation :
- *    1. º¯°æ ¼Ó¼º¿¡ µû¸¥ smiTableSpace ÇÔ¼ö È£Ãâ
- *      1.1 autoextend ¼Ó¼º º¯°æ½Ã
+ *    1. ë³€ê²½ ì†ì„±ì— ë”°ë¥¸ smiTableSpace í•¨ìˆ˜ í˜¸ì¶œ
+ *      1.1 autoextend ì†ì„± ë³€ê²½ì‹œ
  *          smiTableSpace::alterDataFileAutoExtend
  *
  ***********************************************************************/
@@ -882,11 +882,11 @@ IDE_RC qdtAlter::executeModifyFileSize(qcStatement * aStatement)
 /***********************************************************************
  *
  * Description :
- *    ALTER TABLESPACE ... ALTER ...FILE AUTOEXTEND ... ÀÇ execution ¼öÇà
+ *    ALTER TABLESPACE ... ALTER ...FILE AUTOEXTEND ... ì˜ execution ìˆ˜í–‰
  *
  * Implementation :
- *    1. º¯°æ ¼Ó¼º¿¡ µû¸¥ smiTableSpace ÇÔ¼ö È£Ãâ
- *      1.2 SIZE ¼Ó¼º º¯°æ½Ã
+ *    1. ë³€ê²½ ì†ì„±ì— ë”°ë¥¸ smiTableSpace í•¨ìˆ˜ í˜¸ì¶œ
+ *      1.2 SIZE ì†ì„± ë³€ê²½ì‹œ
  *          smiTableSpace::resizeDataFile
  *
  ***********************************************************************/
@@ -943,11 +943,11 @@ IDE_RC qdtAlter::executeModifyFileOnOffLine(qcStatement * aStatement)
 /***********************************************************************
  *
  * Description : PROJ-1548-M3-1
- *    ALTER TABLESPACE ... ALTER ...FILE AUTOEXTEND ... ÀÇ execution ¼öÇà
+ *    ALTER TABLESPACE ... ALTER ...FILE AUTOEXTEND ... ì˜ execution ìˆ˜í–‰
  *
  * Implementation :
- *    1. º¯°æ ¼Ó¼º¿¡ µû¸¥ smiTableSpace ÇÔ¼ö È£Ãâ
- *      1.3 FILE ÀÇ ONLINE/OFFLINE ¼Ó¼º º¯°æ½Ã
+ *    1. ë³€ê²½ ì†ì„±ì— ë”°ë¥¸ smiTableSpace í•¨ìˆ˜ í˜¸ì¶œ
+ *      1.3 FILE ì˜ ONLINE/OFFLINE ì†ì„± ë³€ê²½ì‹œ
  *          smiTableSpace::alterDataFileOnLineMode
  *
  ***********************************************************************/
@@ -971,7 +971,7 @@ IDE_RC qdtAlter::executeModifyFileOnOffLine(qcStatement * aStatement)
                   & sTBSAttr ) != IDE_SUCCESS );
 
     // To Fix BUG-10414
-    // add ´ë»ó fileÀÌ ÀúÀåµÉ table spaceÀÇ Á¤´ç¼º °Ë»ç
+    // add ëŒ€ìƒ fileì´ ì €ì¥ë  table spaceì˜ ì •ë‹¹ì„± ê²€ì‚¬
     IDE_TEST( isDiskTBSType(  sParseTree->TBSAttr->mType,
                               sTBSAttr.mType )
               != IDE_SUCCESS );
@@ -999,7 +999,7 @@ IDE_RC qdtAlter::executeModifyFileOnOffLine(qcStatement * aStatement)
     IDE_TEST_RAISE( sExist == ID_FALSE, ERR_NOT_EXIST_FILE );
 
     // To Fix PR-10780
-    // Extent SizeÀÇ °è»ê
+    // Extent Sizeì˜ ê³„ì‚°
 
     sParseTree->TBSAttr->mID = sTBSAttr.mID;
     sParseTree->TBSAttr->mType = sTBSAttr.mType;
@@ -1040,10 +1040,10 @@ IDE_RC qdtAlter::executeDropFile(qcStatement * aStatement)
 /***********************************************************************
  *
  * Description :
- *    ALTER TABLESPACE ... DROP ...FILE ÀÇ execution ¼öÇà
+ *    ALTER TABLESPACE ... DROP ...FILE ì˜ execution ìˆ˜í–‰
  *
  * Implementation :
- *    1. smiTableSpace::removeDataFile() ÇÔ¼ö È£Ãâ
+ *    1. smiTableSpace::removeDataFile() í•¨ìˆ˜ í˜¸ì¶œ
  *
  ***********************************************************************/
 
@@ -1112,7 +1112,7 @@ IDE_RC qdtAlter::executeTBSBackup( qcStatement * aStatement )
 /***********************************************************************
  *
  * Description : To fix BUG-11952
- *    ALTER TABLESPACE [tbs_name] [BEGIN|END] BACKUP ÀÇ execution ¼öÇà
+ *    ALTER TABLESPACE [tbs_name] [BEGIN|END] BACKUP ì˜ execution ìˆ˜í–‰
  *
  * Implementation :
  *
@@ -1126,7 +1126,7 @@ IDE_RC qdtAlter::executeTBSBackup( qcStatement * aStatement )
 
     sParseTree = (qdAlterTBSParseTree *)aStatement->myPlan->parseTree;
 
-    // check privileges (sysdba¸¸ °¡´É)
+    // check privileges (sysdbaë§Œ ê°€ëŠ¥)
     IDE_TEST_RAISE( QCG_GET_SESSION_USER_IS_SYSDBA(aStatement) != ID_TRUE,
                     ERR_NO_GRANT_SYSDBA );
     
@@ -1136,12 +1136,12 @@ IDE_RC qdtAlter::executeTBSBackup( qcStatement * aStatement )
                   sParseTree->TBSAttr->mNameLength,
                   &sTBSAttr) != IDE_SUCCESS );
 
-    // TODO: sm interface¸¦ »ç¿ëÇÏ¿© ±¸ÇöÇØ¾ß ÇÔ
+    // TODO: sm interfaceë¥¼ ì‚¬ìš©í•˜ì—¬ êµ¬í˜„í•´ì•¼ í•¨
     switch( sParseTree->backupState )
     {
         case QD_TBS_BACKUP_BEGIN:
         {
-            // code Ãß°¡
+            // code ì¶”ê°€
             IDE_TEST(smiBackup::beginBackupTBS( sTBSAttr.mID )
                      != IDE_SUCCESS);
             break;
@@ -1149,7 +1149,7 @@ IDE_RC qdtAlter::executeTBSBackup( qcStatement * aStatement )
         }
         case QD_TBS_BACKUP_END:    
         {
-            // code Ãß°¡
+            // code ì¶”ê°€
             IDE_TEST(smiBackup::endBackupTBS( sTBSAttr.mID )
                      != IDE_SUCCESS);
             break;
@@ -1180,17 +1180,17 @@ IDE_RC qdtAlter::executeAlterMemoryTBSChkptPath( qcStatement * aStatement )
  *
  * Description : PROJ-1548-M3-1
  *    ALTER TABLESPACE TBSNAME ADD/RENAME/DROP CHECKPOINT PATH ...
- *    ¸¦ ½ÇÇà
+ *    ë¥¼ ì‹¤í–‰
  *
- * µé¾î¿Ã ¼ö ÀÖ´Â ¹®Àå Á¾·ù:
+ * ë“¤ì–´ì˜¬ ìˆ˜ ìˆëŠ” ë¬¸ì¥ ì¢…ë¥˜:
  *    - ALTER TABLESPACE TBSNAME ADD CHECKPOINT PATH '/path/to/dir';
  *    - ALTER TABLESPACE TBSNAME RENAME CHECKPOINT PATH
  *         '/path/to/old' to '/path/to/new';
  *    - ALTER TABLESPACE TBSNAME DROP CHECKPOINT PATH '/path/to/dir';
  *
  * Implementation :
- *   (1) TablespaceÀÌ¸§ => Tablespace IDÁ¶È¸, Á¸ÀçÇÏ´Â TablespaceÀÎÁö Ã¼Å©
- *   (2) ADD/RENAME/DROP CHECKPOINT PATH ¼öÇà 
+ *   (1) Tablespaceì´ë¦„ => Tablespace IDì¡°íšŒ, ì¡´ì¬í•˜ëŠ” Tablespaceì¸ì§€ ì²´í¬
+ *   (2) ADD/RENAME/DROP CHECKPOINT PATH ìˆ˜í–‰ 
  *
  ***********************************************************************/
 
@@ -1206,22 +1206,22 @@ IDE_RC qdtAlter::executeAlterMemoryTBSChkptPath( qcStatement * aStatement )
     sParseTree        = (qdAlterTBSParseTree *)aStatement->myPlan->parseTree;
     sAlterCPathClause = sParseTree->memAlterChkptPath;
 
-    // tablespace name Á¸Àç À¯¹« °Ë»ç 
+    // tablespace name ì¡´ì¬ ìœ ë¬´ ê²€ì‚¬ 
     IDE_TEST( qcmTablespace::getTBSAttrByName(
         aStatement,
         sParseTree->TBSAttr->mName,
         sParseTree->TBSAttr->mNameLength,
         & sTBSAttr ) != IDE_SUCCESS );
 
-    // ALTERÇÏ·Á´Â Tablespace°¡ Memory TablespaceÀÎÁö °Ë»ç 
+    // ALTERí•˜ë ¤ëŠ” Tablespaceê°€ Memory Tablespaceì¸ì§€ ê²€ì‚¬ 
     IDE_TEST( isMemTBSType( sTBSAttr.mType )
               != IDE_SUCCESS );
     
-    // Tablespace typeÀ» Á¤ÇÑ´Ù.
+    // Tablespace typeì„ ì •í•œë‹¤.
     sParseTree->TBSAttr->mID = sTBSAttr.mID;
     sParseTree->TBSAttr->mType = sTBSAttr.mType;
 
-    // ADD/RENAME/DROP CHECKPOINT PATH ¼öÇà 
+    // ADD/RENAME/DROP CHECKPOINT PATH ìˆ˜í–‰ 
     sSpaceID = sParseTree->TBSAttr->mID ;
 
     sFromChkptPathAttr = sAlterCPathClause->fromChkptPathAttr;
@@ -1229,21 +1229,21 @@ IDE_RC qdtAlter::executeAlterMemoryTBSChkptPath( qcStatement * aStatement )
 
     sFromChkptPath = sFromChkptPathAttr->mChkptPath; 
 
-    // Memory TBS´Â getAbsPathÀÇ ÀÎÀÚ¸¦ IN/OUTÀ¸·Î »ç¿ëÇÏ±â À§ÇØ
-    // µ¿ÀÏÇÑ ÁÖ¼Ò¸¦ IN/OUTÀ¸·Î °¢°¢ ³Ñ°ÜÁØ´Ù.
+    // Memory TBSëŠ” getAbsPathì˜ ì¸ìë¥¼ IN/OUTìœ¼ë¡œ ì‚¬ìš©í•˜ê¸° ìœ„í•´
+    // ë™ì¼í•œ ì£¼ì†Œë¥¼ IN/OUTìœ¼ë¡œ ê°ê° ë„˜ê²¨ì¤€ë‹¤.
     IDE_TEST( smiTableSpace::getAbsPath( sFromChkptPath,
                                          sFromChkptPath,
                                          SMI_TBS_MEMORY )
               != IDE_SUCCESS );
 
     // BUG-29812
-    // Memory TBSÀÇ Checkpoint Path¸¦ Àı´ë°æ·Î·Î º¯È¯ÇÑ´Ù.
+    // Memory TBSì˜ Checkpoint Pathë¥¼ ì ˆëŒ€ê²½ë¡œë¡œ ë³€í™˜í•œë‹¤.
     if( sToChkptPathAttr != NULL )
     {
         sToChkptPath = sToChkptPathAttr->mChkptPath; 
 
-        // Memory TBS´Â getAbsPathÀÇ ÀÎÀÚ¸¦ IN/OUTÀ¸·Î »ç¿ëÇÏ±â À§ÇØ
-        // µ¿ÀÏÇÑ ÁÖ¼Ò¸¦ IN/OUTÀ¸·Î °¢°¢ ³Ñ°ÜÁØ´Ù.
+        // Memory TBSëŠ” getAbsPathì˜ ì¸ìë¥¼ IN/OUTìœ¼ë¡œ ì‚¬ìš©í•˜ê¸° ìœ„í•´
+        // ë™ì¼í•œ ì£¼ì†Œë¥¼ IN/OUTìœ¼ë¡œ ê°ê° ë„˜ê²¨ì¤€ë‹¤.
         IDE_TEST( smiTableSpace::getAbsPath( sToChkptPath,
                                              sToChkptPath,
                                              SMI_TBS_MEMORY )
@@ -1289,11 +1289,11 @@ IDE_RC qdtAlter::executeAlterTBSDiscard( qcStatement * aStatement )
 /***********************************************************************
  *
  * Description : PROJ-1548-M5-2
- *    ALTER TABLESPACE TBSNAME DISCARD ¸¦ ½ÇÇà
+ *    ALTER TABLESPACE TBSNAME DISCARD ë¥¼ ì‹¤í–‰
  *
  * Implementation :
- *   (1) TablespaceÀÌ¸§ => Tablespace IDÁ¶È¸, Á¸ÀçÇÏ´Â TablespaceÀÎÁö Ã¼Å©
- *   (2) ALTER TABLESPACE TBSNAME DISCARD ¼öÇà
+ *   (1) Tablespaceì´ë¦„ => Tablespace IDì¡°íšŒ, ì¡´ì¬í•˜ëŠ” Tablespaceì¸ì§€ ì²´í¬
+ *   (2) ALTER TABLESPACE TBSNAME DISCARD ìˆ˜í–‰
  *
  ***********************************************************************/
 
@@ -1302,7 +1302,7 @@ IDE_RC qdtAlter::executeAlterTBSDiscard( qcStatement * aStatement )
 
     sParseTree        = (qdAlterTBSParseTree *)aStatement->myPlan->parseTree;
 
-    // tablespace name Á¸Àç À¯¹« °Ë»ç 
+    // tablespace name ì¡´ì¬ ìœ ë¬´ ê²€ì‚¬ 
     IDE_TEST( qcmTablespace::getTBSAttrByName(
                   aStatement,
                   sParseTree->TBSAttr->mName,
@@ -1316,7 +1316,7 @@ IDE_RC qdtAlter::executeAlterTBSDiscard( qcStatement * aStatement )
     
     sParseTree->TBSAttr->mID = sTBSAttr.mID;
 
-    // ALTER TABLESPACE DISCARD ¼öÇà 
+    // ALTER TABLESPACE DISCARD ìˆ˜í–‰ 
     IDE_TEST( smiTableSpace::alterDiscard( sParseTree->TBSAttr->mID )
               != IDE_SUCCESS );
     
@@ -1336,17 +1336,17 @@ IDE_RC qdtAlter::validateAlterMemVolTBSAutoExtend(qcStatement * aStatement)
 /***********************************************************************
  *
  * Description : PROJ-1548-M3-2
- *    ALTER TABLESPACE TBSNAME AUTOEXTEND ... ÀÇ validation ¼öÇà
+ *    ALTER TABLESPACE TBSNAME AUTOEXTEND ... ì˜ validation ìˆ˜í–‰
  *
  * Implementation :
- *    (1) alter tablespace ±ÇÇÑÀÌ ÀÖ´ÂÁö °Ë»ç
- *    (2) µ¿ÀÏÇÑ tablespace name Á¸Àç À¯¹« °Ë»ç
- *    ** ¿ø·¡ ÀÌ ÇÔ¼ö´Â memory TBS¿¡ ´ëÇØ¼­¸¸ °í·ÁµÇ¾úÀ¸³ª,
- *       volatile TBS¿¡ ´ëÇØ¼­µµ °í·ÁµÇ¾î¾ß ÇÏ±â ¶§¹®¿¡
- *       ÇÔ¼ö ÀÌ¸§µµ MemVol...·Î ¹Ù²Ù¾ú´Ù.
- *       ÆÄ½Ì ´Ü°è¿¡¼­´Â memory TBSÀÎÁö volatile TBSÀÎÁö ¾Ë ¼ö ¾øÀ¸¸ç
- *       validation ´Ü°èÀÎ º» ÇÔ¼ö¿¡¼­ tbs ID·Î Å¸ÀÔÀ» ¾ò¾î¿Í¼­
- *       validation check¸¦ ¼öÇàÇÑ´Ù. 
+ *    (1) alter tablespace ê¶Œí•œì´ ìˆëŠ”ì§€ ê²€ì‚¬
+ *    (2) ë™ì¼í•œ tablespace name ì¡´ì¬ ìœ ë¬´ ê²€ì‚¬
+ *    ** ì›ë˜ ì´ í•¨ìˆ˜ëŠ” memory TBSì— ëŒ€í•´ì„œë§Œ ê³ ë ¤ë˜ì—ˆìœ¼ë‚˜,
+ *       volatile TBSì— ëŒ€í•´ì„œë„ ê³ ë ¤ë˜ì–´ì•¼ í•˜ê¸° ë•Œë¬¸ì—
+ *       í•¨ìˆ˜ ì´ë¦„ë„ MemVol...ë¡œ ë°”ê¾¸ì—ˆë‹¤.
+ *       íŒŒì‹± ë‹¨ê³„ì—ì„œëŠ” memory TBSì¸ì§€ volatile TBSì¸ì§€ ì•Œ ìˆ˜ ì—†ìœ¼ë©°
+ *       validation ë‹¨ê³„ì¸ ë³¸ í•¨ìˆ˜ì—ì„œ tbs IDë¡œ íƒ€ì…ì„ ì–»ì–´ì™€ì„œ
+ *       validation checkë¥¼ ìˆ˜í–‰í•œë‹¤. 
  ***********************************************************************/
 
     qdAlterTBSParseTree   * sParseTree;
@@ -1354,13 +1354,13 @@ IDE_RC qdtAlter::validateAlterMemVolTBSAutoExtend(qcStatement * aStatement)
 
     sParseTree = (qdAlterTBSParseTree *)aStatement->myPlan->parseTree;
 
-    // ±ÇÇÑ °Ë»ç
+    // ê¶Œí•œ ê²€ì‚¬
     IDE_TEST( qdpRole::checkDDLAlterTableSpacePriv(
                   aStatement,
                   QCG_GET_SESSION_USER_ID( aStatement ) )
               != IDE_SUCCESS );
 
-    // µ¿ÀÏÇÑ tablespace name Á¸Àç À¯¹« °Ë»ç 
+    // ë™ì¼í•œ tablespace name ì¡´ì¬ ìœ ë¬´ ê²€ì‚¬ 
     IDE_TEST( qcmTablespace::getTBSAttrByName(
                   aStatement,
                   sParseTree->TBSAttr->mName,
@@ -1401,9 +1401,9 @@ IDE_RC qdtAlter::executeAlterMemVolTBSAutoExtend( qcStatement * aStatement )
 /***********************************************************************
  *
  * Description : PROJ-1548-M3-2
- *    ALTER TABLESPACE TBSNAME AUTOEXTEND ... À» ½ÇÇà
+ *    ALTER TABLESPACE TBSNAME AUTOEXTEND ... ì„ ì‹¤í–‰
  *
- * µé¾î¿Ã ¼ö ÀÖ´Â ¹®Àå Á¾·ù:
+ * ë“¤ì–´ì˜¬ ìˆ˜ ìˆëŠ” ë¬¸ì¥ ì¢…ë¥˜:
  *    - ALTER TABLESPACE TBSNAME AUTOEXTEND OFF
  *    - ALTER TABLESPACE TBSNAME AUTOEXTEND ON NEXT 10M
  *    - ALTER TABLESPACE TBSNAME AUTOEXTEND ON MAXSIZE 10M/UNLIMITTED
@@ -1453,15 +1453,15 @@ IDE_RC qdtAlter::executeAlterMemVolTBSAutoExtend( qcStatement * aStatement )
 /***********************************************************************
  *
  * Description :
- *   TablespaceÀÇ Attribute Flag ¼³Á¤¿¡ ´ëÇÑ ValidationÇÔ¼ö
+ *   Tablespaceì˜ Attribute Flag ì„¤ì •ì— ëŒ€í•œ Validationí•¨ìˆ˜
  *
- * => ¸ğµç Tablespace¿¡ °øÅëÀûÀ¸·Î ¼öÇàµÈ´Ù.
+ * => ëª¨ë“  Tablespaceì— ê³µí†µì ìœ¼ë¡œ ìˆ˜í–‰ëœë‹¤.
  *  
  * EX> Alter Tablespace MyTBS Alter LOG_COMPRESS ON;
  *
  * Implementation :
- *    (1) alter tablespace ±ÇÇÑÀÌ ÀÖ´ÂÁö °Ë»ç
- *    (2) µ¿ÀÏÇÑ tablespace name Á¸Àç À¯¹« °Ë»ç
+ *    (1) alter tablespace ê¶Œí•œì´ ìˆëŠ”ì§€ ê²€ì‚¬
+ *    (2) ë™ì¼í•œ tablespace name ì¡´ì¬ ìœ ë¬´ ê²€ì‚¬
  ***********************************************************************/
 IDE_RC qdtAlter::validateAlterTBSAttrFlag(qcStatement * aStatement)
 {
@@ -1471,13 +1471,13 @@ IDE_RC qdtAlter::validateAlterTBSAttrFlag(qcStatement * aStatement)
 
     sParseTree = (qdAlterTBSParseTree *)aStatement->myPlan->parseTree;
 
-    // ±ÇÇÑ °Ë»ç
+    // ê¶Œí•œ ê²€ì‚¬
     IDE_TEST( qdpRole::checkDDLAlterTableSpacePriv(
                   aStatement,
                   QCG_GET_SESSION_USER_ID( aStatement ) )
               != IDE_SUCCESS );
 
-    // µ¿ÀÏÇÑ tablespace name Á¸Àç À¯¹« °Ë»ç 
+    // ë™ì¼í•œ tablespace name ì¡´ì¬ ìœ ë¬´ ê²€ì‚¬ 
     IDE_TEST( qcmTablespace::getTBSAttrByName(
                   aStatement,
                   sParseTree->TBSAttr->mName,
@@ -1500,9 +1500,9 @@ IDE_RC qdtAlter::validateAlterTBSAttrFlag(qcStatement * aStatement)
 /***********************************************************************
  *
  * Description :
- *    TablespaceÀÇ Attribute Flag ¼³Á¤¿¡ ´ëÇÑ ½ÇÇàÇÔ¼ö
+ *    Tablespaceì˜ Attribute Flag ì„¤ì •ì— ëŒ€í•œ ì‹¤í–‰í•¨ìˆ˜
  *
- * => ¸ğµç Tablespace¿¡ °øÅëÀûÀ¸·Î ¼öÇàµÈ´Ù.
+ * => ëª¨ë“  Tablespaceì— ê³µí†µì ìœ¼ë¡œ ìˆ˜í–‰ëœë‹¤.
  *
  * EX> Alter Tablespace MyTBS Alter LOG_COMPRESS ON;
  * 
@@ -1533,12 +1533,12 @@ IDE_RC qdtAlter::executeAlterTBSAttrFlag( qcStatement * aStatement )
 /***********************************************************************
  *
  * Description :
- *    Tablespace Rename¿¡ ´ëÇÑ validation
+ *    Tablespace Renameì— ëŒ€í•œ validation
  *
  * EX> ALTER TABLESPACE MyTBS RENAME TO YourTBS;
  *
- *    ÇöÀç´Â ¿©±â¼­ ¾Æ¹«°Íµµ ÇÒ °ÍÀÌ ¾ø°í ¸ğµç °Ë»ç¸¦ execution½Ã¿¡ ÇÑ´Ù.
- *    ³ªÁß¿¡ ¹Ù²ğ ¼öµµ ÀÖÀ¸¹Ç·Î ÇÔ¼ö´Â ³²°ÜµÒ.
+ *    í˜„ì¬ëŠ” ì—¬ê¸°ì„œ ì•„ë¬´ê²ƒë„ í•  ê²ƒì´ ì—†ê³  ëª¨ë“  ê²€ì‚¬ë¥¼ executionì‹œì— í•œë‹¤.
+ *    ë‚˜ì¤‘ì— ë°”ë€” ìˆ˜ë„ ìˆìœ¼ë¯€ë¡œ í•¨ìˆ˜ëŠ” ë‚¨ê²¨ë‘ .
  ***********************************************************************/
 IDE_RC qdtAlter::validateAlterTBSRename( qcStatement * /* aStatement */ )
 {
@@ -1548,15 +1548,15 @@ IDE_RC qdtAlter::validateAlterTBSRename( qcStatement * /* aStatement */ )
 /***********************************************************************
  *
  * Description :
- *    Tablespace Rename¿¡ ´ëÇÑ execution
+ *    Tablespace Renameì— ëŒ€í•œ execution
  *
  * EX> ALTER TABLESPACE MyTBS RENAME TO YourTBS;
  *
  * <<CHECKLIST>>
- * 1.tablespaceÁ¸ÀçÇÏ´ÂÁö
- * 2.system tablespaceÀÎÁö(system tablespaceÀÌ¸é rename ºÒ°¡´É)
- * 3.onlineÀÎÁö(onlineÀÌ ¾Æ´Ï¸é rename ºÒ°¡´É. sm¿¡¼­ Ã¼Å©)
- * 4.Áßº¹ÀÌ¸§Ã¼Å©(ÀÌ°Ç sm¿¡¼­ Ã¼Å©°¡ µÇ¾î¾ß ÇÔ)
+ * 1.tablespaceì¡´ì¬í•˜ëŠ”ì§€
+ * 2.system tablespaceì¸ì§€(system tablespaceì´ë©´ rename ë¶ˆê°€ëŠ¥)
+ * 3.onlineì¸ì§€(onlineì´ ì•„ë‹ˆë©´ rename ë¶ˆê°€ëŠ¥. smì—ì„œ ì²´í¬)
+ * 4.ì¤‘ë³µì´ë¦„ì²´í¬(ì´ê±´ smì—ì„œ ì²´í¬ê°€ ë˜ì–´ì•¼ í•¨)
  ***********************************************************************/
 IDE_RC qdtAlter::executeAlterTBSRename( qcStatement * aStatement )
 {
@@ -1565,49 +1565,49 @@ IDE_RC qdtAlter::executeAlterTBSRename( qcStatement * aStatement )
 
     sParseTree = (qdAlterTBSParseTree *)aStatement->myPlan->parseTree;
 
-    // ±ÇÇÑ °Ë»ç
+    // ê¶Œí•œ ê²€ì‚¬
     IDE_TEST( qdpRole::checkDDLAlterTableSpacePriv(
                   aStatement,
                   QCG_GET_SESSION_USER_ID( aStatement ) )
               != IDE_SUCCESS );
 
-    // tablespaceÁ¸ÀçÇØ¾ß ÇÔ.
+    // tablespaceì¡´ì¬í•´ì•¼ í•¨.
     IDE_TEST( qcmTablespace::getTBSAttrByName(
                   aStatement,
                   sParseTree->TBSAttr[0].mName,
                   sParseTree->TBSAttr[0].mNameLength,
                   & sTBSAttr ) != IDE_SUCCESS );
 
-    // system tablespaceÀÎÁö °Ë»ç.
+    // system tablespaceì¸ì§€ ê²€ì‚¬.
     IDE_TEST_RAISE( smiTableSpace::isSystemTableSpace( sTBSAttr.mID )
                     == ID_TRUE,
                     ERR_SYS_TBS );
 
-    /* To Fix BUG-17292 [PROJ-1548] Tablespace DDL½Ã Tablespace¿¡ X¶ô Àâ´Â´Ù
-     * Tablespace¿¡ LockÀ» ÀâÁö ¾Ê°í Tablespace¾ÈÀÇ TableÀ» Á¶È¸ÇÏ°Ô µÇ¸é
-     * ±× »çÀÌ¿¡ »õ·Î¿î TableÀÌ »ı°Ü³¯ ¼ö ÀÖ´Ù.
-     * ÀÌ·¯ÇÑ ¹®Á¦¸¦ ¹Ì¿¬¿¡ ¹æÁöÇÏ±â À§ÇØ
-     * Tablespace¿¡ X LockÀ» ¸ÕÀú Àâ°í Tablespace Validation/ExecutionÀ» ¼öÇà */
+    /* To Fix BUG-17292 [PROJ-1548] Tablespace DDLì‹œ Tablespaceì— Xë½ ì¡ëŠ”ë‹¤
+     * Tablespaceì— Lockì„ ì¡ì§€ ì•Šê³  Tablespaceì•ˆì˜ Tableì„ ì¡°íšŒí•˜ê²Œ ë˜ë©´
+     * ê·¸ ì‚¬ì´ì— ìƒˆë¡œìš´ Tableì´ ìƒê²¨ë‚  ìˆ˜ ìˆë‹¤.
+     * ì´ëŸ¬í•œ ë¬¸ì œë¥¼ ë¯¸ì—°ì— ë°©ì§€í•˜ê¸° ìœ„í•´
+     * Tablespaceì— X Lockì„ ë¨¼ì € ì¡ê³  Tablespace Validation/Executionì„ ìˆ˜í–‰ */
     IDE_TEST( smiValidateAndLockTBS(
                   QC_SMI_STMT( aStatement ),
                   sTBSAttr.mID,
                   SMI_TBS_LOCK_EXCLUSIVE,
-                  SMI_TBSLV_DDL_DML, // TBS Validation ¿É¼Ç
+                  SMI_TBSLV_DDL_DML, // TBS Validation ì˜µì…˜
                   ((smiGetDDLLockTimeOut() == -1) ?
                    ID_ULONG_MAX :
                    smiGetDDLLockTimeOut()*1000000) )
                   != IDE_SUCCESS );
 
     
-    // sm¿¡¼­ ÇØ¾ß ÇÒ °ÍÀ¸·Î º¸ÀÌ´Â °Í.
-    // onlineÀÎÁö offlineÀÎÁö(onlineÀÌ¾î¾ß¸¸ ÇÔ)
-    // ¹Ù²Ü ÀÌ¸§ÀÌ ÀÌ¹Ì Á¸ÀçÇÏ´ÂÁö
-    // => atomicÇÏ°Ô tablespace ÀÌ¸§ÀÌ ¹Ù²î¾î¾ß ÇÏ¹Ç·Î QP¿¡¼­ Ã¼Å©ÇÏ±â ¾î·Á¿ò
+    // smì—ì„œ í•´ì•¼ í•  ê²ƒìœ¼ë¡œ ë³´ì´ëŠ” ê²ƒ.
+    // onlineì¸ì§€ offlineì¸ì§€(onlineì´ì–´ì•¼ë§Œ í•¨)
+    // ë°”ê¿€ ì´ë¦„ì´ ì´ë¯¸ ì¡´ì¬í•˜ëŠ”ì§€
+    // => atomicí•˜ê²Œ tablespace ì´ë¦„ì´ ë°”ë€Œì–´ì•¼ í•˜ë¯€ë¡œ QPì—ì„œ ì²´í¬í•˜ê¸° ì–´ë ¤ì›€
     
     /////////////////////////////////////////////////
-    // ¿©±â¿¡¼­ sm ÀÎÅÍÆäÀÌ½º¸¦ È£ÃâÇØ¾ß ÇÔ.
-    // Error½Ã Áßº¹ÀÌ¸§À¸·Î ÀÎÇÑ ¿¡·¯ÀÎÁö offline¿¡·¯ÀÎÁö
-    // ´Ù¸¥ ÀÌÀ¯·Î ÀÎÇÑ ¿¡·¯ÀÎÁö ±¸ºĞÇÊ¿ä.
+    // ì—¬ê¸°ì—ì„œ sm ì¸í„°í˜ì´ìŠ¤ë¥¼ í˜¸ì¶œí•´ì•¼ í•¨.
+    // Errorì‹œ ì¤‘ë³µì´ë¦„ìœ¼ë¡œ ì¸í•œ ì—ëŸ¬ì¸ì§€ offlineì—ëŸ¬ì¸ì§€
+    // ë‹¤ë¥¸ ì´ìœ ë¡œ ì¸í•œ ì—ëŸ¬ì¸ì§€ êµ¬ë¶„í•„ìš”.
     /////////////////////////////////////////////////
     
     return IDE_SUCCESS;

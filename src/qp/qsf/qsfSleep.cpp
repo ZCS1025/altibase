@@ -45,7 +45,7 @@ static IDE_RC qsfEstimate( mtcNode*     aNode,
 mtfModule qsfSleepModule = {
     1|MTC_NODE_OPERATOR_MISC,
     ~0,
-    1.0,                    // default selectivity (ºñ±³ ¿¬»êÀÚ ¾Æ´Ô)
+    1.0,                    // default selectivity (ë¹„êµ ì—°ì‚°ìž ì•„ë‹˜)
     qsfFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -142,8 +142,8 @@ IDE_RC qsfCalculate_SpSleep(
     SInt            i;
 
     IDU_FIT_POINT( "qsfSleep::qsfCalculate_SpSleep" );
-    // PSM ³»¿¡¼­¸¸ È£ÃâÀÌ °¡´ÉÇÔ
-    // Trigger¿¡¼­´Â È£ÃâµÇ¾î¼­´Â ¾ÈµÊ
+    // PSM ë‚´ì—ì„œë§Œ í˜¸ì¶œì´ ê°€ëŠ¥í•¨
+    // Triggerì—ì„œëŠ” í˜¸ì¶œë˜ì–´ì„œëŠ” ì•ˆë¨
     IDE_TEST_RAISE( ( (QC_SMI_STMT(sStatement))->isDummy() == ID_FALSE ) &&
                     ( QC_SMI_STMT_SESSION_IS_JOB( sStatement ) == ID_FALSE ),
                     err_sleep_not_allowed );

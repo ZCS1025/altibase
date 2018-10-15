@@ -20,11 +20,11 @@
 #include <hbp.h>
 
 
-/* string ÀÇ delimiter¸¦ »ç¿ëÇÏ¿© ÇÏ³ªÀÇ tokenÀ» ¹ñ´Â ÇÔ¼ö
+/* string ì˜ delimiterë¥¼ ì‚¬ìš©í•˜ì—¬ í•˜ë‚˜ì˜ tokenì„ ë±‰ëŠ” í•¨ìˆ˜
  *
- * aSrcStr (input) - HBP_setting_file¿¡¼­ ÀĞ¾î¿Â string ( \n Æ÷ÇÔ )
- * aOffset (output) - ´ÙÀ½ tokenÀ» °¡Á®¿Ã À§Ä¡ 
- * aDstStr (output) - tokenÀÌÀúÀåµÇ´Â °÷
+ * aSrcStr (input) - HBP_setting_fileì—ì„œ ì½ì–´ì˜¨ string ( \n í¬í•¨ )
+ * aOffset (output) - ë‹¤ìŒ tokenì„ ê°€ì ¸ì˜¬ ìœ„ì¹˜ 
+ * aDstStr (output) - tokenì´ì €ì¥ë˜ëŠ” ê³³
  */
 acp_sint32_t hbpGetToken( acp_char_t       *aSrcStr,
                           acp_sint32_t      aSrcLength,
@@ -32,10 +32,10 @@ acp_sint32_t hbpGetToken( acp_char_t       *aSrcStr,
                           acp_char_t      *aDstStr );
 
 
-/* aHBPInfo¿¡ ÀĞ¾î¿Â host ÆÄ½ÌÇØ¼­ ³Ö´Â ÇÔ¼ö
+/* aHBPInfoì— ì½ì–´ì˜¨ host íŒŒì‹±í•´ì„œ ë„£ëŠ” í•¨ìˆ˜
  * 
- * aStr (input) - HBP_setting_file¿¡¼­ ÀĞ¾î¿Â string ( \n Æ÷ÇÔ )
- * aHBPInfo (output) - ÀÌ Array¿¡ setting Á¤º¸¸¦ ³Ö´Â´Ù.
+ * aStr (input) - HBP_setting_fileì—ì„œ ì½ì–´ì˜¨ string ( \n í¬í•¨ )
+ * aHBPInfo (output) - ì´ Arrayì— setting ì •ë³´ë¥¼ ë„£ëŠ”ë‹¤.
  */
 ACI_RC hbpAddHostToHBPInfo( acp_char_t* aStr, HBPInfo* aHBPInfo );
 
@@ -48,29 +48,29 @@ ACI_RC hbpParseUserInfo( acp_char_t *aLine,
                          acp_char_t *aPassWord );
 
 /* does aString read from setting file have information?
- * aStr (input) - HBP_setting_file¿¡¼­ ÀĞ¾î¿Â string ( \n Æ÷ÇÔ )
+ * aStr (input) - HBP_setting_fileì—ì„œ ì½ì–´ì˜¨ string ( \n í¬í•¨ )
  */
 acp_bool_t hbpIsInformationLine( acp_char_t* aStr );
 
-/* HBP_setting_file¿¡¼­ status¸¦ »Ì¾Æ StatusArray¿¡ ³Ö´Â ÇÔ¼ö
+/* HBP_setting_fileì—ì„œ statusë¥¼ ë½‘ì•„ StatusArrayì— ë„£ëŠ” í•¨ìˆ˜
  *
- * aFilePtr   (input)     - status ÆÄÀÏ Æ÷ÀÎÅÍ¸¦ ³Ñ°ÜÁØ´Ù. 
+ * aFilePtr   (input)     - status íŒŒì¼ í¬ì¸í„°ë¥¼ ë„˜ê²¨ì¤€ë‹¤. 
  * aCount     (output)     - status count+ 1 (column..)
- * aInfoArray (output)    - HBP Á¤º¸¸¦ ´ã°íÀÖ´Â Array.
+ * aInfoArray (output)    - HBP ì •ë³´ë¥¼ ë‹´ê³ ìˆëŠ” Array.
  */
 ACI_RC hbpSetHBPInfoArray( acp_std_file_t   *aFilePtr,
                            HBPInfo          *aInfoArray,
                            acp_sint32_t     *aCount );
-/* HBP_setting_file¿¡¼­ status¸¦ »Ì¾Æ print
+/* HBP_setting_fileì—ì„œ statusë¥¼ ë½‘ì•„ print
  *
- * aFilePtr   (input)     - status ÆÄÀÏ Æ÷ÀÎÅÍ¸¦ ³Ñ°ÜÁØ´Ù.
+ * aFilePtr   (input)     - status íŒŒì¼ í¬ì¸í„°ë¥¼ ë„˜ê²¨ì¤€ë‹¤.
  * aCount     (input)     - status count+1 (column..)
  * */
 void hbpPrintInfo( HBPInfo* aInfoArray, acp_sint32_t aCount );
 
 /* read File and initialize HBPInfo
  *
- * aHBPInfo       (output)    - HBP Á¤º¸¸¦ ´ã°íÀÖ´Â Array.
+ * aHBPInfo       (output)    - HBP ì •ë³´ë¥¼ ë‹´ê³ ìˆëŠ” Array.
  * aCount         (output)    - status count+ 1 (column..)
  */
 ACI_RC hbpInitializeHBPInfo( HBPInfo *aHBPInfo, acp_sint32_t *aCount );

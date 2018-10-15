@@ -44,7 +44,7 @@ mtfModule mtfNot = {
     1|MTC_NODE_OPERATOR_NOT|MTC_NODE_LOGICAL_CONDITION_TRUE|
         MTC_NODE_PRINT_FMT_PREFIX_SP,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (∫Ò±≥ ø¨ªÍ¿⁄∞° æ∆¥‘)
+    1.0,  // default selectivity (ÎπÑÍµê Ïó∞ÏÇ∞ÏûêÍ∞Ä ÏïÑÎãò)
     mtfNotFunctionName,
     NULL,
     mtf::initializeDefault,

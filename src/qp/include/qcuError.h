@@ -25,7 +25,7 @@
 #include <ideErrorMgr.h>
 #include <idErrorCode.h>
 
-/* QP¿ë ¿¡·¯ ÄÚµå */
+/* QPìš© ì—ëŸ¬ ì½”ë“œ */
 enum QPERR_CODE
 {
 #include <qcuErrorCode.ih>

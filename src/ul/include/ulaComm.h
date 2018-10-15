@@ -32,7 +32,7 @@
 /* mColumnID in cmpArgRPMetaReplCol */
 #define ULA_META_COLUMN_ID_MASK         (0x000003FF)
 
-/* Implicit Savepoint ª˝º∫ ¡§∫∏ */
+/* Implicit Savepoint ÏÉùÏÑ± Ï†ïÎ≥¥ */
 #define ULA_IMPLICIT_SVP_NAME           (acp_char_t *)"$$IMPLICIT"
 #define ULA_IMPLICIT_SVP_NAME_SIZE      (10)
 #define ULA_STATEMENT_DEPTH_NULL        (0)
@@ -121,7 +121,7 @@ ACI_RC ulaCommRecvXLog( cmiProtocolContext * aProtocolContext,
                         acp_uint32_t         aTimeoutSec,
                         ulaErrorMgr        * aOutErrorMgr );
 
-// PROJ-1663 : BEGIN ∆–≈∂ πÃªÁøÎ
+// PROJ-1663 : BEGIN Ìå®ÌÇ∑ ÎØ∏ÏÇ¨Ïö©
 ACI_RC ulaCommRecvTrBegin(acp_bool_t         *aExitFlag,
                           cmiProtocolContext *aProtocolContext,
                           ulaXLog            *aOutXLog,

@@ -156,7 +156,7 @@ public class CursorCombinationTest extends AltibaseTestCase
             rs.updateRow();
         }
         rs.close();
-        sStmt.close(); // BUG-44466 statement¸¦ CONCUR_UPDATABLE·Î ¿­¾ú±â¶§¹®¿¡ close¸¦ ÇÏÁö ¾ÊÀ¸¸é tearDown¿¡¼­ several statements still open ¿¡·¯°¡ ¹ß»ıÇÑ´Ù.
+        sStmt.close(); // BUG-44466 statementë¥¼ CONCUR_UPDATABLEë¡œ ì—´ì—ˆê¸°ë•Œë¬¸ì— closeë¥¼ í•˜ì§€ ì•Šìœ¼ë©´ tearDownì—ì„œ several statements still open ì—ëŸ¬ê°€ ë°œìƒí•œë‹¤.
         connection().commit();
 
         // With refresh

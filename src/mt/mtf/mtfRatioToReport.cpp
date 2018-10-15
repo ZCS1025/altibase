@@ -53,7 +53,7 @@ static IDE_RC mtfRatioToReportEstimate( mtcNode     * aNode,
 mtfModule mtfRatioToReport = {
     3|MTC_NODE_OPERATOR_AGGREGATION | MTC_NODE_FUNCTION_ANALYTIC_TRUE,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
+    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìžê°€ ì•„ë‹˜)
     mtfRatioToReportFunctionName,
     NULL,
     mtfRatioToReportInitialize,
@@ -220,7 +220,7 @@ IDE_RC mtfRatioToReportEstimateFloat( mtcNode     * aNode,
                                      0 )
               != IDE_SUCCESS );
 
-    // Sum °á°ú°¡ NullÀÎÁö ¾Æ´ÑÁö ÀúÀåÇÔ
+    // Sum ê²°ê³¼ê°€ Nullì¸ì§€ ì•„ë‹Œì§€ ì €ìž¥í•¨
     IDE_TEST( mtc::initializeColumn( aStack[0].column + 1,
                                      &mtdBoolean,
                                      0,
@@ -320,7 +320,7 @@ IDE_RC mtfRatioToReportAggregateFloat( mtcNode     * aNode,
         sFloatArgument = (mtdNumericType*)aStack[0].value;
 
         // BUG-42171 The sum window function's value is wrong with nulls first
-        // ÀÌÀü dataµµ NullÀÏ ¼ö ÀÖÀ¸¹Ç·Î NULLÀÏ°æ¿ì µé¾î¿Â Data·Î ´ëÄ¡½ÃÅ²´Ù.
+        // ì´ì „ dataë„ Nullì¼ ìˆ˜ ìžˆìœ¼ë¯€ë¡œ NULLì¼ê²½ìš° ë“¤ì–´ì˜¨ Dataë¡œ ëŒ€ì¹˜ì‹œí‚¨ë‹¤.
         if ( sColumn->module->isNull( sColumn,
                                       sFloatSum ) != ID_TRUE )
         {
@@ -502,8 +502,8 @@ static const mtcExecute mtfRatioToReportExecuteDouble = {
     mtk::extractRangeNA
 };
 
-// ÃÖÀûÀÇ sumÀ» ¼öÇàÇÏ´Â
-// aggregate ÇÔ¼ö¸¦ Æ÷ÇÔÇÏ°í ÀÖ´Â execute
+// ìµœì ì˜ sumì„ ìˆ˜í–‰í•˜ëŠ”
+// aggregate í•¨ìˆ˜ë¥¼ í¬í•¨í•˜ê³  ìžˆëŠ” execute
 static const mtcExecute mtfRatioToReportExecuteDoubleFast = {
     mtfRatioToReportInitializeDouble,
     mtfRatioToReportAggregateDoubleFast,
@@ -539,19 +539,19 @@ IDE_RC mtfRatioToReportEstimateDouble( mtcNode     * aNode,
 
     aTemplate->rows[aNode->table].execute[aNode->column] = mtfRatioToReportExecuteDouble;
 
-    // ÃÖÀûÈ­µÈ aggregate ÇÔ¼ö
+    // ìµœì í™”ëœ aggregate í•¨ìˆ˜
     sArgModule = aNode->arguments->module;
 
-    // mtf::initializeTemplate¿¡¼­ °¢ subModule¿¡ ´ëÇØ
-    // estimateBound¸¦ È£ÃâÇÏ´Âµ¥ ÀÌ¶§¿¡´Â node¿¡ moduleÀÌ
-    // ¾È´Þ·ÁÀÖ±â ¶§¹®¿¡ NULL Ã¼Å©¸¦ ÇØ¾ß ÇÑ´Ù.
+    // mtf::initializeTemplateì—ì„œ ê° subModuleì— ëŒ€í•´
+    // estimateBoundë¥¼ í˜¸ì¶œí•˜ëŠ”ë° ì´ë•Œì—ëŠ” nodeì— moduleì´
+    // ì•ˆë‹¬ë ¤ìžˆê¸° ë•Œë¬¸ì— NULL ì²´í¬ë¥¼ í•´ì•¼ í•œë‹¤.
     if ( sArgModule != NULL )
     {
-        // sum(i1) Ã³·³ i1°¡ ´ÜÀÏ ÄÃ·³ÀÌ°í conversionµÇÁö ¾Ê´Â´Ù¸é
-        // ÃÖÀûÈ­µÈ executionÀ» ´Þ¾ÆÁØ´Ù.
+        // sum(i1) ì²˜ëŸ¼ i1ê°€ ë‹¨ì¼ ì»¬ëŸ¼ì´ê³  conversionë˜ì§€ ì•ŠëŠ”ë‹¤ë©´
+        // ìµœì í™”ëœ executionì„ ë‹¬ì•„ì¤€ë‹¤.
 
         // BUG-19856
-        // view ÄÃ·³ÀÎ °æ¿ì ÃÖÀûÈ­µÈ executionÀ» ´ÞÁö¾Ê´Â´Ù.
+        // view ì»¬ëŸ¼ì¸ ê²½ìš° ìµœì í™”ëœ executionì„ ë‹¬ì§€ì•ŠëŠ”ë‹¤.
         if ( ( ( aTemplate->rows[aNode->arguments->table].lflag
                  & MTC_TUPLE_VIEW_MASK )
                == MTC_TUPLE_VIEW_FALSE ) &&
@@ -582,7 +582,7 @@ IDE_RC mtfRatioToReportEstimateDouble( mtcNode     * aNode,
                                      0 )
               != IDE_SUCCESS );
 
-    // Sum °á°ú°¡ NullÀÎÁö ¾Æ´ÑÁö ÀúÀåÇÔ
+    // Sum ê²°ê³¼ê°€ Nullì¸ì§€ ì•„ë‹Œì§€ ì €ìž¥í•¨
     IDE_TEST( mtc::initializeColumn( aStack[0].column + 1,
                                      &mtdBoolean,
                                      0,
@@ -659,17 +659,17 @@ IDE_RC mtfRatioToReportAggregateDouble( mtcNode     * aNode,
         /* Nothing to do */
     }
 
-    // mtdDouble.isNull() ¸¦ È£ÃâÇÏ´Â ´ë½Å
-    // Á÷Á¢ null °Ë»ç¸¦ ÇÑ´Ù.
-    // aStack->valueÀÇ µ¥ÀÌÅÍ Å¸ÀÔÀ» ¹Ì¸® ¾Ë±â ¶§¹®¿¡
-    // Á÷Á¢ null °Ë»ç¸¦ ÇÏ´Âµ¥ ¼öÇà ¼Óµµ¸¦ À§ÇØ¼­ÀÌ´Ù.
+    // mtdDouble.isNull() ë¥¼ í˜¸ì¶œí•˜ëŠ” ëŒ€ì‹ 
+    // ì§ì ‘ null ê²€ì‚¬ë¥¼ í•œë‹¤.
+    // aStack->valueì˜ ë°ì´í„° íƒ€ìž…ì„ ë¯¸ë¦¬ ì•Œê¸° ë•Œë¬¸ì—
+    // ì§ì ‘ null ê²€ì‚¬ë¥¼ í•˜ëŠ”ë° ìˆ˜í–‰ ì†ë„ë¥¼ ìœ„í•´ì„œì´ë‹¤.
     if ( ( *(ULong*)(aStack->value) & MTD_DOUBLE_EXPONENT_MASK )
          != MTD_DOUBLE_EXPONENT_MASK )
     {
         sColumn = aTemplate->rows[aNode->table].columns + aNode->column;
 
         // BUG-42171 The sum window function's value is wrong with nulls first
-        // ÀÌÀü dataµµ NullÀÏ ¼ö ÀÖÀ¸¹Ç·Î NULLÀÏ°æ¿ì µé¾î¿Â Data·Î ´ëÄ¡½ÃÅ²´Ù.
+        // ì´ì „ dataë„ Nullì¼ ìˆ˜ ìžˆìœ¼ë¯€ë¡œ NULLì¼ê²½ìš° ë“¤ì–´ì˜¨ Dataë¡œ ëŒ€ì¹˜ì‹œí‚¨ë‹¤.
         if ( ( *(ULong*)((UChar*)aTemplate->rows[aNode->table].row +
                          sColumn->column.offset ) & MTD_DOUBLE_EXPONENT_MASK )
              != MTD_DOUBLE_EXPONENT_MASK )
@@ -793,10 +793,10 @@ IDE_RC mtfRatioToReportAggregateDoubleFast( mtcNode     * aSumNode,
                                          aTemplate->rows[sArgumentNode->table].row,
                                          MTD_OFFSET_USE );
 
-    // mtdDouble.isNull() ¸¦ È£ÃâÇÏ´Â ´ë½Å
-    // Á÷Á¢ null °Ë»ç¸¦ ÇÑ´Ù.
-    // aStack->valueÀÇ µ¥ÀÌÅÍ Å¸ÀÔÀ» ¹Ì¸® ¾Ë±â ¶§¹®¿¡
-    // Á÷Á¢ null °Ë»ç¸¦ ÇÏ´Âµ¥ ¼öÇà ¼Óµµ¸¦ À§ÇØ¼­ÀÌ´Ù.
+    // mtdDouble.isNull() ë¥¼ í˜¸ì¶œí•˜ëŠ” ëŒ€ì‹ 
+    // ì§ì ‘ null ê²€ì‚¬ë¥¼ í•œë‹¤.
+    // aStack->valueì˜ ë°ì´í„° íƒ€ìž…ì„ ë¯¸ë¦¬ ì•Œê¸° ë•Œë¬¸ì—
+    // ì§ì ‘ null ê²€ì‚¬ë¥¼ í•˜ëŠ”ë° ìˆ˜í–‰ ì†ë„ë¥¼ ìœ„í•´ì„œì´ë‹¤.
     if ( ( *(ULong*)(aStack->value) & MTD_DOUBLE_EXPONENT_MASK )
          != MTD_DOUBLE_EXPONENT_MASK )
     {
@@ -804,7 +804,7 @@ IDE_RC mtfRatioToReportAggregateDoubleFast( mtcNode     * aSumNode,
             + aSumNode->column;
 
         // BUG-42171 The sum window function's value is wrong with nulls first
-        // ÀÌÀü dataµµ NullÀÏ ¼ö ÀÖÀ¸¹Ç·Î NULLÀÏ°æ¿ì µé¾î¿Â Data·Î ´ëÄ¡½ÃÅ²´Ù.
+        // ì´ì „ dataë„ Nullì¼ ìˆ˜ ìžˆìœ¼ë¯€ë¡œ NULLì¼ê²½ìš° ë“¤ì–´ì˜¨ Dataë¡œ ëŒ€ì¹˜ì‹œí‚¨ë‹¤.
         if ( ( *(ULong *)((UChar*)aTemplate->rows[aSumNode->table].row +
                            sSumColumn->column.offset ) & MTD_DOUBLE_EXPONENT_MASK )
              != MTD_DOUBLE_EXPONENT_MASK )

@@ -168,19 +168,19 @@ typedef union iduShmBlockFooter
 #define IDU_SHM_GET_BLOCK_HEADER_PTR( aAddr )           \
     ( ((aAddr) == IDU_SHM_NULL_ADDR) ? NULL : IDU_SHM_GET_ADDR_PTR((aAddr)-IDU_SHM_ALLOC_BLOCK_HEADER_SIZE) )
 
-/* iduShmBlockHeaderÀÇ mSize ÇÏÀ§ 2Bit´Â °¢°¢
- * # 1¹øÂ° Bit: ÇØ´ç BlockÀÇ Free or Used À¯¹«
- * # 2¹øÂ° Bit: ÇØ´ç BlockÀÇ ÀÌÀü BlockÀÇ Free or Used À¯¹« */
+/* iduShmBlockHeaderì˜ mSize í•˜ìœ„ 2BitëŠ” ê°ê°
+ * # 1ë²ˆì§¸ Bit: í•´ë‹¹ Blockì˜ Free or Used ìœ ë¬´
+ * # 2ë²ˆì§¸ Bit: í•´ë‹¹ Blockì˜ ì´ì „ Blockì˜ Free or Used ìœ ë¬´ */
 #define IDU_SHM_BLOCK_SIZE_FREE_BIT      (0x00000001)
 #define IDU_SHM_BLOCK_SIZE_PREV_FREE_BIT (0x00000002)
 
-/* iduShmBlockHeaderÀÇ mSizeÀÇ ÇÏÀ§ 2Bit¸¦ »« ³ª¸ÓÁö °ªÀ¸·Î ºÎÅÍ
- * ½ÇÁ¦ BlockÀÇ Size°ªÀ» °¡Á®¿Â´Ù. */
+/* iduShmBlockHeaderì˜ mSizeì˜ í•˜ìœ„ 2Bitë¥¼ ëº€ ë‚˜ë¨¸ì§€ ê°’ìœ¼ë¡œ ë¶€í„°
+ * ì‹¤ì œ Blockì˜ Sizeê°’ì„ ê°€ì ¸ì˜¨ë‹¤. */
 #define IDU_SHM_GET_BLOCK_SIZE(aBlock)                                  \
     (((iduShmBlockHeader*)(aBlock))->mSize &                            \
      ~( IDU_SHM_BLOCK_SIZE_FREE_BIT | IDU_SHM_BLOCK_SIZE_PREV_FREE_BIT ))
 
-/* iduShmBlockHeaderÀÇ mSize¿¡ BlockÀÇ Å©±â¸¦ ¼³Á¤ÇÑ´Ù. */
+/* iduShmBlockHeaderì˜ mSizeì— Blockì˜ í¬ê¸°ë¥¼ ì„¤ì •í•œë‹¤. */
 #define IDU_SHM_SET_BLOCK_SIZE(aBlock, aSize)                                          \
 do                                                                                     \
 {                                                                                      \
@@ -189,46 +189,46 @@ do                                                                              
         (sOldSize & (IDU_SHM_BLOCK_SIZE_FREE_BIT | IDU_SHM_BLOCK_SIZE_PREV_FREE_BIT)); \
 }while(0)
 
-/* °¢ Free Block ListÀÇ BlockµéÀº Null BlockÀ» ¸¶Áö¸·À¸·Î °¡¸®Å°°í ÀÖ´Ù.
- * Null BlockÀÇ Å©±â´Â 0ÀÌ´Ù. */
+/* ê° Free Block Listì˜ Blockë“¤ì€ Null Blockì„ ë§ˆì§€ë§‰ìœ¼ë¡œ ê°€ë¦¬í‚¤ê³  ìˆë‹¤.
+ * Null Blockì˜ í¬ê¸°ëŠ” 0ì´ë‹¤. */
 #define IDU_SHM_IS_BLOCK_LAST(aBlock)         (IDU_SHM_GET_BLOCK_SIZE(aBlock) == 0)
 
-/* Shared Memory BlockÀÌ ÇÒ´ç½Ã MetaÁ¤º¸¸¦ À§ÇØ »ç¿ëµÇ´Â Memory Å©±â */
+/* Shared Memory Blockì´ í• ë‹¹ì‹œ Metaì •ë³´ë¥¼ ìœ„í•´ ì‚¬ìš©ë˜ëŠ” Memory í¬ê¸° */
 #define IDU_SHM_BLOCK_OVERHEAD                (ID_SIZEOF(UInt)     /*mSize*/   + \
                                                ID_SIZEOF(UInt)     /*Align*/   + \
                                                ID_SIZEOF(idShmAddr)/*mAddrSelf*/ + \
                                                ID_SIZEOF(iduShmBlockFooter))
-/* BlockÀÇ ½ÃÀÛ Offset */
+/* Blockì˜ ì‹œì‘ Offset */
 #define IDU_SHM_BLOCK_START_OFFSET            (offsetof(iduShmBlockHeader, mAddrSelf) + ID_SIZEOF(idShmAddr))
 
-/* Shared Memory BlockÀÇ ÃÖ¼Ò Å©±â */
+/* Shared Memory Blockì˜ ìµœì†Œ í¬ê¸° */
 #define IDU_SHM_BLOCK_SIZE_MIN                (ID_SIZEOF(iduShmBlockHeader) - ID_SIZEOF(idShmAddr) \
                                                + ID_SIZEOF(iduShmBlockFooter))
-/* Shared Memory BlockÀÇ ÃÖ´ë Å©±â */
+/* Shared Memory Blockì˜ ìµœëŒ€ í¬ê¸° */
 #define IDU_SHM_BLOCK_SIZE_MAX                (1 << IDU_SHM_FST_LVL_INDEX_MAX)
 
-/* ¸ğµç Shared Memory Chunk°¡ °¡Áö´Â Header */
+/* ëª¨ë“  Shared Memory Chunkê°€ ê°€ì§€ëŠ” Header */
 typedef struct iduShmHeader
 {
-    /* Altibase°¡ »ı¼ºÇÑ ChunkÀÎÁö¸¦ ±¸ºĞÇÏ±â À§ÇØ »ı¼º */
+    /* Altibaseê°€ ìƒì„±í•œ Chunkì¸ì§€ë¥¼ êµ¬ë¶„í•˜ê¸° ìœ„í•´ ìƒì„± */
     SChar             mSigniture[128];
     /* Segment ID */
     UInt              mSegID;
-    /* SegmentÀÇ Å©±â */
+    /* Segmentì˜ í¬ê¸° */
     UInt              mSize;
-    /* Segment¿¡ ÇÒ´çµÈ Shared Memory Key */
+    /* Segmentì— í• ë‹¹ëœ Shared Memory Key */
     key_t             mShmKey;
-    /* SegmentÀÇ »óÅÂ */
+    /* Segmentì˜ ìƒíƒœ */
     iduShmState       mState;
-    /* SegmentÀÇ Á¾·ù */
+    /* Segmentì˜ ì¢…ë¥˜ */
     UInt              mType;
-    /* Segment¸¦ »ı¼ºÇÑ XDB Daemon Process°¡ StarupµÈ ½Ã°£ */
+    /* Segmentë¥¼ ìƒì„±í•œ XDB Daemon Processê°€ Starupëœ ì‹œê°„ */
     struct timeval    mStartUpTime;
 
-    /* Segment°¡ »ı¼ºµÈ ½Ã°£ */
+    /* Segmentê°€ ìƒì„±ëœ ì‹œê°„ */
     struct timeval    mCreateTime;
 
-    /* Shared Memory¸¦ »ı¼ºÇÑ BinaryÀÇ Version */
+    /* Shared Memoryë¥¼ ìƒì„±í•œ Binaryì˜ Version */
     SChar             mVersion[24];
     UInt              mVersionID;
 } iduShmHeader;
@@ -236,33 +236,33 @@ typedef struct iduShmHeader
 #define IDU_SHM_DATA_SEG_OVERHEAD  ( IDU_SHM_BLOCK_START_OFFSET + IDU_SHM_BLOCK_OVERHEAD * 2 + \
                                      alignUp( ID_SIZEOF(iduShmHeader), IDU_SHM_ALIGN_SIZE ) )
 
-/* ÇöÀç System¿¡ ÇÒ´çµÈ SegmentÀÇ Á¤º¸·Î Shared Memory¿¡ ÀúÀåµÇ¾î ÀÖ´Ù. */
+/* í˜„ì¬ Systemì— í• ë‹¹ëœ Segmentì˜ ì •ë³´ë¡œ Shared Memoryì— ì €ì¥ë˜ì–´ ìˆë‹¤. */
 typedef struct iduStShmSegInfo
 {
-    /* Shared Memory SegmentÀÇ Shared Memory Key */
+    /* Shared Memory Segmentì˜ Shared Memory Key */
     key_t           mShmKey;
-    /* SegmentÀÇ Å©±â */
+    /* Segmentì˜ í¬ê¸° */
     UInt            mSize;
 } iduStShmSegInfo;
 
-/* Shared MemoryÀÇ Åë°è Á¤º¸ */
+/* Shared Memoryì˜ í†µê³„ ì •ë³´ */
 typedef struct iduShmStatistics
 {
-    /* ÃÑ Å©±â(Byte) */
+    /* ì´ í¬ê¸°(Byte) */
     UInt      mTotalSize;
-    /* ÇöÀç ÇÒ´çµÈ Memory Å©±â(Byte) */
+    /* í˜„ì¬ í• ë‹¹ëœ Memory í¬ê¸°(Byte) */
     UInt      mAllocSize;
-    /* Free»óÅÂÀÎ Memory Å©±â(Byte) */
+    /* Freeìƒíƒœì¸ Memory í¬ê¸°(Byte) */
     UInt      mFreeSize;
 
-    /* Free»óÅÂÀÇ BlockÀÇ °¹¼ö */
+    /* Freeìƒíƒœì˜ Blockì˜ ê°¯ìˆ˜ */
     UInt      mFreeBlkCnt;
-    /* ÇÒ´çµÈ BlockÀÇ °¹¼ö */
+    /* í• ë‹¹ëœ Blockì˜ ê°¯ìˆ˜ */
     UInt      mAllocBlkCnt;
 
-    /* Memory Allocation RequestÀÇ ÃÑÈ½¼ö */
+    /* Memory Allocation Requestì˜ ì´íšŸìˆ˜ */
     ULong     mAllocReqCnt;
-    /* Memory Free RequestÀÇ ÃÑÈ½¼ö */
+    /* Memory Free Requestì˜ ì´íšŸìˆ˜ */
     ULong     mFreeReqCnt;
 } iduShmStatistics;
 
@@ -304,7 +304,7 @@ typedef enum iduShmMetaBlockType
     IDU_SHM_META_DK_PROPERTIES_BLOCK,
     IDU_SHM_META_QP_PROPERTIES_BLOCK,
     IDU_SHM_META_MT_PROPERTIES_BLOCK,
- // persistent shared memory¸¦ ÀÌ¿ëÇÏ´Â meta blockµé..
+ // persistent shared memoryë¥¼ ì´ìš©í•˜ëŠ” meta blockë“¤..
     IDU_SHM_META_SM_CATALOGCACHE_BLOCK,
     IDU_SHM_META_TBSMGR_BLOCK,
     IDU_SHM_META_SM_LOB_BLOCK,
@@ -385,10 +385,10 @@ typedef struct iduShmTxInfo
     UInt                mFlag;
     iduShmListNode      mNode;
 
-    // ShmTx¿¡ PendingOperation ¼öÇàÀ» À§ÇÑ List
+    // ShmTxì— PendingOperation ìˆ˜í–‰ì„ ìœ„í•œ List
     iduShmListNode      mPendingOpList;
-    /* PendingOperationÀÇ Á¦°Å¸¦ À§ÇÑ FreeList·Î Node¸¦ removeÇÏ¸é
-     * ÀÌ List¿¡ ¸Å´Ş·È´Ù°¡ free ¶Ç´Â commit ½ÃÁ¡½Ã Á¦°ÅµÈ´Ù. */
+    /* PendingOperationì˜ ì œê±°ë¥¼ ìœ„í•œ FreeListë¡œ Nodeë¥¼ removeí•˜ë©´
+     * ì´ Listì— ë§¤ë‹¬ë ¸ë‹¤ê°€ free ë˜ëŠ” commit ì‹œì ì‹œ ì œê±°ëœë‹¤. */
     iduShmListNode      mPendingOpFreeList;
     idLPID              mLPID;
     idGblThrID          mThrID;
@@ -438,49 +438,49 @@ typedef struct iduShmProcMgrInfo
     iduShmProcInfo  mPRTable[IDU_MAX_PROCESS_COUNT];
 } iduShmProcMgrInfo;
 
-/* System SegmentÀÇ Header */
+/* System Segmentì˜ Header */
 typedef struct iduShmSSegment
 {
     /* Segment Header */
     iduShmHeader         mHeader;
 
-    /* Æ¯Á¤ Á¤º¸¸¦ °¡Áö°í ÀÖ´Â Meta BlockÀÇ ShmAddrÀÇ Array */
+    /* íŠ¹ì • ì •ë³´ë¥¼ ê°€ì§€ê³  ìˆëŠ” Meta Blockì˜ ShmAddrì˜ Array */
     idShmAddr            mArrMetaBlockAddr[IDU_SHM_META_MAX_COUNT];
 
-    /* Shared Memory Åë°è Á¤º¸ */
+    /* Shared Memory í†µê³„ ì •ë³´ */
     iduShmStatistics     mStatistics;
 
-    /* BlockÇÒ´ç½Ã Àâ°ÔµÇ´Â LatchÀÌ´Ù. */
+    /* Blockí• ë‹¹ì‹œ ì¡ê²Œë˜ëŠ” Latchì´ë‹¤. */
     iduShmLatch          mLatch4AllocBlk;
 
-    /* First Level Bitmap: °¢ Bit´Â ÇØ´ç ¿­¿¡ Free BlockÀÌ ÀÖ°í ¾ø°í¸¦ ³ªÅ¸³½´Ù. */
+    /* First Level Bitmap: ê° BitëŠ” í•´ë‹¹ ì—´ì— Free Blockì´ ìˆê³  ì—†ê³ ë¥¼ ë‚˜íƒ€ë‚¸ë‹¤. */
     UInt                 mFstLvlBitmap;
 
-    /* Second Level Bitmap: 2Â÷¿ø Bit ¹è¿­ÀÇ Bit´Â MappingµÇ´Â mFBMatrix¿¡ ¹è¿­ÀÇ
-     * Slot¿¡ Free BlockÀÌ ÀÖ´ÂÁö ¾ø´ÂÁö¸¦ ³ªÅ¸³½´Ù. */
+    /* Second Level Bitmap: 2ì°¨ì› Bit ë°°ì—´ì˜ BitëŠ” Mappingë˜ëŠ” mFBMatrixì— ë°°ì—´ì˜
+     * Slotì— Free Blockì´ ìˆëŠ”ì§€ ì—†ëŠ”ì§€ë¥¼ ë‚˜íƒ€ë‚¸ë‹¤. */
     UInt                 mSndLvlBitmap[IDU_SHM_SND_LVL_INDEX_COUNT];
-    /* Free Block Matrix: Free Block Linked List¸¦ °¡Áö°í ÀÖ´Ù. */
+    /* Free Block Matrix: Free Block Linked Listë¥¼ ê°€ì§€ê³  ìˆë‹¤. */
     idShmAddr            mFBMatrix[IDU_SHM_FST_LVL_INDEX_COUNT][IDU_SHM_SND_LVL_INDEX_COUNT];
 
-    /* First Level Bitmap: °¢ Bit´Â ÇØ´ç ¿­¿¡ Free BlockÀÌ ÀÖ°í ¾ø°í¸¦ ³ªÅ¸³½´Ù. */
+    /* First Level Bitmap: ê° BitëŠ” í•´ë‹¹ ì—´ì— Free Blockì´ ìˆê³  ì—†ê³ ë¥¼ ë‚˜íƒ€ë‚¸ë‹¤. */
     UInt                 mPersFstLvlBitmap;
 
-    /* Second Level Bitmap: 2Â÷¿ø Bit ¹è¿­ÀÇ Bit´Â MappingµÇ´Â mFBMatrix¿¡ ¹è¿­ÀÇ
-     * Slot¿¡ Free BlockÀÌ ÀÖ´ÂÁö ¾ø´ÂÁö¸¦ ³ªÅ¸³½´Ù. */
+    /* Second Level Bitmap: 2ì°¨ì› Bit ë°°ì—´ì˜ BitëŠ” Mappingë˜ëŠ” mFBMatrixì— ë°°ì—´ì˜
+     * Slotì— Free Blockì´ ìˆëŠ”ì§€ ì—†ëŠ”ì§€ë¥¼ ë‚˜íƒ€ë‚¸ë‹¤. */
     UInt                 mPersSndLvlBitmap[IDU_SHM_SND_LVL_INDEX_COUNT];
-    /* Free Block Matrix: Free Block Linked List¸¦ °¡Áö°í ÀÖ´Ù. */
+    /* Free Block Matrix: Free Block Linked Listë¥¼ ê°€ì§€ê³  ìˆë‹¤. */
     idShmAddr            mPersFBMatrix[IDU_SHM_FST_LVL_INDEX_COUNT][IDU_SHM_SND_LVL_INDEX_COUNT];
 
-    /* DaemonÀÌ Shm¿¡ AttachÇÏ·Á¸é, Á¤»óÀûÀ¸·Î ShutdownµÇ¾ú¾î¾ß ÇÔ. */
+    /* Daemonì´ Shmì— Attachí•˜ë ¤ë©´, ì •ìƒì ìœ¼ë¡œ Shutdownë˜ì—ˆì–´ì•¼ í•¨. */
     idBool               mIsNormalShutdown;
 
     /* Segment Size */
     UInt                 mSegSize;
-    /* ÃÖ´ë SegmentÀÇ °¹¼ö */
+    /* ìµœëŒ€ Segmentì˜ ê°¯ìˆ˜ */
     ULong                mMaxSegCount;
-    /* ÇöÀç SegmentÀÇ °¹¼ö */
+    /* í˜„ì¬ Segmentì˜ ê°¯ìˆ˜ */
     ULong                mSegCount;
-    /* ´ÙÀ½À¸·Î ÇÒ´çµÉ Shared Memory Key */
+    /* ë‹¤ìŒìœ¼ë¡œ í• ë‹¹ë  Shared Memory Key */
     key_t                mNxtShmKey;
 
     /* BUG-40895 Cannot destroy the shared memory segments which is created as other user */
@@ -488,15 +488,15 @@ typedef struct iduShmSSegment
 
     iduShmBlockHeader    mNullBlock;
 
-    /* Process Á¤º¸°¡ ÇÒ´çµÇ¾î¾ß¸¸ Shared Memory ManagerÁ¢±ÙÀÌ °¡´ÉÇÏ±â¶§¹®¿¡
-     * System Segment¿¡ ¹Ì¸® ³Ö¾îµĞ´Ù. */
+    /* Process ì •ë³´ê°€ í• ë‹¹ë˜ì–´ì•¼ë§Œ Shared Memory Managerì ‘ê·¼ì´ ê°€ëŠ¥í•˜ê¸°ë•Œë¬¸ì—
+     * System Segmentì— ë¯¸ë¦¬ ë„£ì–´ë‘”ë‹¤. */
     iduShmProcMgrInfo    mProcMgrInfo;
 
-    /* »õ·Î¿î SegmentÇÒ´çµÈ Àâ°ÔµÇ´Â LatchÀÌ´Ù. */
+    /* ìƒˆë¡œìš´ Segmentí• ë‹¹ëœ ì¡ê²Œë˜ëŠ” Latchì´ë‹¤. */
     iduShmLatch          mLatch4AllocSeg;
-    /* ArrSegInfo¿¡¼­ Ã¹¹øÂ° Free SlotÀÇ Index */
+    /* ArrSegInfoì—ì„œ ì²«ë²ˆì§¸ Free Slotì˜ Index */
     ULong                mFstFreeSegInfoIdx;
-    /* System Segment°¡ Ã³À½ »ı¼ºµÉ¶§ Segment Info Array°¡ »ı¼ºµÈ´Ù. */
+    /* System Segmentê°€ ì²˜ìŒ ìƒì„±ë ë•Œ Segment Info Arrayê°€ ìƒì„±ëœë‹¤. */
     iduStShmSegInfo      mArrSegInfo[1];
 } iduShmSSegment;
 

@@ -46,7 +46,7 @@ SInt iloLoad::GetTableTree( ALTIBASE_ILOADER_HANDLE aHandle )
         idlOS::strcpy( sHandle->mParser.mDateForm, idlOS::getenv(ENV_ILO_DATEFORM) );
     }
 
-    // BUG-24355: -silent ¿É¼ÇÀ» ¾ÈÁØ °æ¿ì¿¡¸¸ Ãâ·Â
+    // BUG-24355: -silent ì˜µì…˜ì„ ì•ˆì¤€ ê²½ìš°ì—ë§Œ ì¶œë ¥
     if (( sHandle->mProgOption->m_bExist_Silent != SQL_TRUE) &&
             ( sHandle->mUseApi != SQL_TRUE ))
     {
@@ -89,8 +89,8 @@ SInt iloLoad::GetTableTree( ALTIBASE_ILOADER_HANDLE aHandle )
     {
         if ( m_LogFile.OpenFile(m_pProgOption->m_LogFile) == SQL_TRUE )
         {
-            // BUG-21640 iloader¿¡¼­ ¿¡·¯¸Þ½ÃÁö¸¦ ¾Ë¾Æº¸±â ÆíÇÏ°Ô Ãâ·ÂÇÏ±â
-            // ±âÁ¸ ¿¡·¯¸Þ½ÃÁö¿Í µ¿ÀÏÇÑ Çü½ÄÀ¸·Î Ãâ·ÂÇÏ´Â ÇÔ¼öÃß°¡
+            // BUG-21640 iloaderì—ì„œ ì—ëŸ¬ë©”ì‹œì§€ë¥¼ ì•Œì•„ë³´ê¸° íŽ¸í•˜ê²Œ ì¶œë ¥í•˜ê¸°
+            // ê¸°ì¡´ ì—ëŸ¬ë©”ì‹œì§€ì™€ ë™ì¼í•œ í˜•ì‹ìœ¼ë¡œ ì¶œë ¥í•˜ëŠ” í•¨ìˆ˜ì¶”ê°€
             m_LogFile.PrintLogErr( sHandle->mErrorMgr);
             m_LogFile.CloseFile();
         }
@@ -126,23 +126,23 @@ SInt iloLoad::GetTableInfo( ALTIBASE_ILOADER_HANDLE  aHandle)
     }
 
     //BUG-24294 
-    //-Direct ¿É¼Ç »ç¿ë½Ã -array °ª ¼³Á¤µÇÁö ¾Ê¾ÒÀ» °æ¿ì ÃÖ´ë°ªÀ¸·Î ¼¼ÆÃ
+    //-Direct ì˜µì…˜ ì‚¬ìš©ì‹œ -array ê°’ ì„¤ì •ë˜ì§€ ì•Šì•˜ì„ ê²½ìš° ìµœëŒ€ê°’ìœ¼ë¡œ ì„¸íŒ…
     if( (m_pProgOption->m_bExist_direct == SQL_TRUE) &&
         (m_pProgOption->m_bExist_array  == SQL_FALSE) )
     {
-        // ulnSetStmtAttr.cpp¿¡¼­ SQL_ATTR_PARAMSET_SIZEÀÇ MAX´Â 
-        // ID_USHORT_MAX·Î ÁöÁ¤ÇÏ°í ÀÖÀ½
+        // ulnSetStmtAttr.cppì—ì„œ SQL_ATTR_PARAMSET_SIZEì˜ MAXëŠ” 
+        // ID_USHORT_MAXë¡œ ì§€ì •í•˜ê³  ìžˆìŒ
         m_pProgOption->m_ArrayCount = ID_USHORT_MAX - 1;    
     }        
     
     /* PROJ-1714
-     * TABLE °´Ã¼ »ý¼º
-     * Parallel UploadingÀ» À§ÇÏ¿© Upload¿¡ ÇÊ¿äÇÑ TableInfo °´Ã¼¸¦ 
-     * Parallel ¿É¼Ç¿¡ Á¤ÇÑ ¼ö¸¸Å­ »ý¼ºÇÑ´Ù.
+     * TABLE ê°ì²´ ìƒì„±
+     * Parallel Uploadingì„ ìœ„í•˜ì—¬ Uploadì— í•„ìš”í•œ TableInfo ê°ì²´ë¥¼ 
+     * Parallel ì˜µì…˜ì— ì •í•œ ìˆ˜ë§Œí¼ ìƒì„±í•œë‹¤.
      */
     m_pTableInfo = new iloTableInfo[m_pProgOption->m_ParallelCount];
 
-    //ÃÖ¼ÒÇÑ ÇÏ³ªÀÇ TableInfo °´Ã¼°¡ »ý¼ºµÇ¹Ç·Î, Ã¹¹øÂ° °´Ã¼¸¦ »ç¿ëÇÑ´Ù.
+    //ìµœì†Œí•œ í•˜ë‚˜ì˜ TableInfo ê°ì²´ê°€ ìƒì„±ë˜ë¯€ë¡œ, ì²«ë²ˆì§¸ ê°ì²´ë¥¼ ì‚¬ìš©í•œë‹¤.
     for ( i = 0; i < m_pProgOption->m_ParallelCount; i++ )
     {
         sTableInfo = &m_pTableInfo[i];
@@ -150,16 +150,16 @@ SInt iloLoad::GetTableInfo( ALTIBASE_ILOADER_HANDLE  aHandle)
                                            m_TableTree.GetTreeRoot() )
                  != SQL_TRUE);
 
-        /* LOB ÄÃ·³À» °¡Áø ·¹ÄÚµåÀÇ INSERT Äõ¸®°¡ ¼º°øÇÑ ÈÄ
-         * LOB ÄÃ·³°ªÀ» ÆÄÀÏ·ÎºÎÅÍ ¼­¹ö·Î Àü¼ÛÇÏ´ø µµÁß ¿À·ù°¡ ¹ß»ýÇß´Ù°í ÇÏÀÚ.
-         * ÀÌ ¶§ m_ArrayCount ¶Ç´Â m_CommitUnit°¡ 1ÀÌ ¾Æ´Ò °æ¿ì
-         * ¿À·ù°¡ ¹ß»ýÇÑ ·¹ÄÚµå¸¸ ·Ñ¹éÇÏ´Â °ÍÀÌ ºÒ°¡´ÉÇÏ´Ù.
-         * µû¶ó¼­, LOB ÄÃ·³ÀÌ Á¸ÀçÇÒ °æ¿ì
-         * m_ArrayCount¿Í m_CommitUnitÀº ¹«Á¶°Ç 1·Î ÇÑ´Ù. */
+        /* LOB ì»¬ëŸ¼ì„ ê°€ì§„ ë ˆì½”ë“œì˜ INSERT ì¿¼ë¦¬ê°€ ì„±ê³µí•œ í›„
+         * LOB ì»¬ëŸ¼ê°’ì„ íŒŒì¼ë¡œë¶€í„° ì„œë²„ë¡œ ì „ì†¡í•˜ë˜ ë„ì¤‘ ì˜¤ë¥˜ê°€ ë°œìƒí–ˆë‹¤ê³  í•˜ìž.
+         * ì´ ë•Œ m_ArrayCount ë˜ëŠ” m_CommitUnitê°€ 1ì´ ì•„ë‹ ê²½ìš°
+         * ì˜¤ë¥˜ê°€ ë°œìƒí•œ ë ˆì½”ë“œë§Œ ë¡¤ë°±í•˜ëŠ” ê²ƒì´ ë¶ˆê°€ëŠ¥í•˜ë‹¤.
+         * ë”°ë¼ì„œ, LOB ì»¬ëŸ¼ì´ ì¡´ìž¬í•  ê²½ìš°
+         * m_ArrayCountì™€ m_CommitUnitì€ ë¬´ì¡°ê±´ 1ë¡œ í•œë‹¤. */
         // PROJ-1518 Atomic Array Insert
-        // À§¿Í µ¿ÀÏÇÑ ÀÌÀ¯·Î LOB ÄÃ·³À» °¡Áø ·¹ÄÚµå ÀÇ °æ¿ì Atomic À» »ç¿ëÇÒ¼ö ¾ø´Ù.
-        // PROJ-1714 Parallel iLoader À§¿Í µ¿ÀÏÇÔ.
-        // PROJ-1760 Direct-Path Upload ´Â LOB ColumnÀ» Áö¿øÇÏÁö ¾Ê´Â´Ù.
+        // ìœ„ì™€ ë™ì¼í•œ ì´ìœ ë¡œ LOB ì»¬ëŸ¼ì„ ê°€ì§„ ë ˆì½”ë“œ ì˜ ê²½ìš° Atomic ì„ ì‚¬ìš©í• ìˆ˜ ì—†ë‹¤.
+        // PROJ-1714 Parallel iLoader ìœ„ì™€ ë™ì¼í•¨.
+        // PROJ-1760 Direct-Path Upload ëŠ” LOB Columnì„ ì§€ì›í•˜ì§€ ì•ŠëŠ”ë‹¤.
         if ( IsLOBColExist( sHandle, sTableInfo ) == ILO_TRUE )
         {
             m_pProgOption->m_ArrayCount      = 1;
@@ -214,7 +214,7 @@ SInt iloLoad::LoadwithPrepare( ALTIBASE_ILOADER_HANDLE aHandle )
         FileOpenDone, ExecDone, VarDone, ConnSQLApi
     } sState = NoDone;
 
-    IDE_TEST(GetTableTree(sHandle) != SQL_TRUE);  // ¿¡·¯ÇØÁ¦ ¸øÇÏ´Â ºÎºÐ.
+    IDE_TEST(GetTableTree(sHandle) != SQL_TRUE);  // ì—ëŸ¬í•´ì œ ëª»í•˜ëŠ” ë¶€ë¶„.
     sState = GetTableTreeDone;
 
     IDE_TEST(GetTableInfo( sHandle ) != SQL_TRUE);
@@ -324,8 +324,8 @@ SInt iloLoad::MakePrepareSQLStatement( ALTIBASE_ILOADER_HANDLE  aHandle,
     {
         /* 
          * PROJ-1760
-         * -direct ¿É¼ÇÀÌ ÀÖÀ» °æ¿ì, DPath Upload HINT¸¦ °®´Â Query¸¦ »ý¼ºÇÑ´Ù.
-         * -ioParallel ¿É¼ÇÀÌ ÀÖÀ» °æ¿ì, Parallel DPath Upload HINT¸¦ °®´Â Query¸¦ »ý¼ºÇÑ´Ù.
+         * -direct ì˜µì…˜ì´ ìžˆì„ ê²½ìš°, DPath Upload HINTë¥¼ ê°–ëŠ” Queryë¥¼ ìƒì„±í•œë‹¤.
+         * -ioParallel ì˜µì…˜ì´ ìžˆì„ ê²½ìš°, Parallel DPath Upload HINTë¥¼ ê°–ëŠ” Queryë¥¼ ìƒì„±í•œë‹¤.
          */
         
         if ( m_pProgOption->m_bExist_direct == SQL_TRUE)
@@ -492,8 +492,8 @@ SInt iloLoad::MakePrepareSQLStatement( ALTIBASE_ILOADER_HANDLE  aHandle,
         }        
         else
         {
-            // BUG-26485 iloader ¿¡ trim ±â´ÉÀ» Ãß°¡ÇØ¾ß ÇÕ´Ï´Ù.
-            // mAttrDateFormat ¿¡ »ç¿ëÀÚ°¡ ÀÔ·ÂÇÑ ÇÔ¼öµéÀÌ µé¾î¿É´Ï´Ù.
+            // BUG-26485 iloader ì— trim ê¸°ëŠ¥ì„ ì¶”ê°€í•´ì•¼ í•©ë‹ˆë‹¤.
+            // mAttrDateFormat ì— ì‚¬ìš©ìžê°€ ìž…ë ¥í•œ í•¨ìˆ˜ë“¤ì´ ë“¤ì–´ì˜µë‹ˆë‹¤.
             if( aTableInfo->mAttrDateFormat[i] != NULL )
             {
                 idlOS::sprintf(tmpBuffer, "%s,", aTableInfo->mAttrDateFormat[i]);
@@ -507,8 +507,8 @@ SInt iloLoad::MakePrepareSQLStatement( ALTIBASE_ILOADER_HANDLE  aHandle,
     }
     m_pISPApi->replaceTerminalChar( ')');
 
-    // BUG-25010 iloader -mode TRUNCATE Áö¿ø
-    // ¼öÇàµÇ´Â Äõ¸®¸¦ º¼¼ö ÀÖ°Ô ÇÑ´Ù.
+    // BUG-25010 iloader -mode TRUNCATE ì§€ì›
+    // ìˆ˜í–‰ë˜ëŠ” ì¿¼ë¦¬ë¥¼ ë³¼ìˆ˜ ìžˆê²Œ í•œë‹¤.
     if (m_pProgOption->m_bDisplayQuery == ILO_TRUE)
     {
         idlOS::printf("UpLoad QueryStr[%s]\n", m_pISPApi->getSqlStatement());
@@ -537,8 +537,8 @@ SInt iloLoad::ExecuteDeleteStmt( ALTIBASE_ILOADER_HANDLE  aHandle,
     
     IDE_TEST(m_pISPApi->appendQueryString(sTmpQuery) == SQL_FALSE);
 
-    // BUG-25010 iloader -mode TRUNCATE Áö¿ø
-    // ¼öÇàµÇ´Â Äõ¸®¸¦ º¼¼ö ÀÖ°Ô ÇÑ´Ù.
+    // BUG-25010 iloader -mode TRUNCATE ì§€ì›
+    // ìˆ˜í–‰ë˜ëŠ” ì¿¼ë¦¬ë¥¼ ë³¼ìˆ˜ ìžˆê²Œ í•œë‹¤.
     if (m_pProgOption->m_bDisplayQuery == ILO_TRUE)
     {
         idlOS::printf("DELETE QueryStr[%s]\n", sTmpQuery);
@@ -557,7 +557,7 @@ SInt iloLoad::ExecuteDeleteStmt( ALTIBASE_ILOADER_HANDLE  aHandle,
 
     return SQL_FALSE;
 }
-// BUG-25010 iloader -mode TRUNCATE Áö¿ø
+// BUG-25010 iloader -mode TRUNCATE ì§€ì›
 SInt iloLoad::ExecuteTruncateStmt( ALTIBASE_ILOADER_HANDLE aHandle,
                                    iloTableInfo           *aTableInfo )
 {
@@ -590,10 +590,10 @@ SInt iloLoad::ExecuteTruncateStmt( ALTIBASE_ILOADER_HANDLE aHandle,
 
 /*
  * PROJ-1760
- * Parallel Direct-Path Insert Query¸¦ ½ÇÇàÇÏ±â Àü¿¡ Query ½ÇÇà
- * Upload¸¦ ½ÇÇàÇÏ´Â Session¿¡¼­ ½ÇÇàÇØ¾ß¸¸ ÇÑ´Ù.
- * -Parallel OptionÀ» »ç¿ëÇÒ °æ¿ì¿¡´Â ¼³Á¤ÇÑ ¼ö¸¸Å­ SessionÀÌ »ý¼ºµÇ¹Ç·Î
- * °¢ Session¸¶´Ù ½ÇÇàÇÏµµ·Ï ÇØ¾ß ÇÔ
+ * Parallel Direct-Path Insert Queryë¥¼ ì‹¤í–‰í•˜ê¸° ì „ì— Query ì‹¤í–‰
+ * Uploadë¥¼ ì‹¤í–‰í•˜ëŠ” Sessionì—ì„œ ì‹¤í–‰í•´ì•¼ë§Œ í•œë‹¤.
+ * -Parallel Optionì„ ì‚¬ìš©í•  ê²½ìš°ì—ëŠ” ì„¤ì •í•œ ìˆ˜ë§Œí¼ Sessionì´ ìƒì„±ë˜ë¯€ë¡œ
+ * ê° Sessionë§ˆë‹¤ ì‹¤í–‰í•˜ë„ë¡ í•´ì•¼ í•¨
  * SQL> Alter Session Set PARALLEL_DML_MODE = 1;
  */
 SInt iloLoad::ExecuteParallelStmt( ALTIBASE_ILOADER_HANDLE  aHandle,
@@ -620,27 +620,27 @@ SInt iloLoad::ExecuteParallelStmt( ALTIBASE_ILOADER_HANDLE  aHandle,
 }
 
 /* PROJ-1760 Parallel Direct-Path Upload
- * Upload¸¦ ÁøÇàÇÏ·Á°í ÇÏ´Â TableÀÇ Logging Mode¸¦ ¾ò¾î¿Â´Ù.
- * m_TableLogStatusÀÇ °ªÀº ¾Æ·¡¿Í °°´Ù.
- * Logging ModeÀÏ °æ¿ì¿¡´Â SQL_TRUE
- * NoLogging ModeÀÏ °æ¿ì¿¡´Â SQL_FALSE
- * NoLogging ModeÀÏ °æ¿ì¿¡´Â Upload°¡ ³¡³­ ÈÄ¿¡ 
- * 'Alter table XXX logging' QueryÀÇ ½ÇÇàÀÌ ÇÊ¿ä°¡ ¾ø´Ù.
+ * Uploadë¥¼ ì§„í–‰í•˜ë ¤ê³  í•˜ëŠ” Tableì˜ Logging Modeë¥¼ ì–»ì–´ì˜¨ë‹¤.
+ * m_TableLogStatusì˜ ê°’ì€ ì•„ëž˜ì™€ ê°™ë‹¤.
+ * Logging Modeì¼ ê²½ìš°ì—ëŠ” SQL_TRUE
+ * NoLogging Modeì¼ ê²½ìš°ì—ëŠ” SQL_FALSE
+ * NoLogging Modeì¼ ê²½ìš°ì—ëŠ” Uploadê°€ ëë‚œ í›„ì— 
+ * 'Alter table XXX logging' Queryì˜ ì‹¤í–‰ì´ í•„ìš”ê°€ ì—†ë‹¤.
  */
 SInt iloLoad::GetLoggingMode(iloTableInfo * /*aTableInfo*/)
 {
     //BUG-BUG~
-    // ÇöÀç TableÀÇ Logging Mode¸¦ ¾ò¾î¿Ã ¼ö ÀÖ´Â ¹æ¹ýÀÌ ¾øÀ¸¹Ç·Î ÇØ´ç ±â´ÉÀ» ¿Ï·áÇÑ ÈÄ¿¡
-    // µð¹ö±ë ÇØ¾ß ÇÑ´Ù.
+    // í˜„ìž¬ Tableì˜ Logging Modeë¥¼ ì–»ì–´ì˜¬ ìˆ˜ ìžˆëŠ” ë°©ë²•ì´ ì—†ìœ¼ë¯€ë¡œ í•´ë‹¹ ê¸°ëŠ¥ì„ ì™„ë£Œí•œ í›„ì—
+    // ë””ë²„ê¹… í•´ì•¼ í•œë‹¤.
     m_TableLogStatus = SQL_TRUE;
     return SQL_TRUE;
 }
 
 /* PROJ-1760
- * Direct-Path Upload½Ã¿¡ No Logging Mode·Î µ¿ÀÛÇÒ °æ¿ì¿¡
- * 'Alter table XXX nologging' Query¸¦ ½ÇÇàÇØ Áà¾ß ÇÑ´Ù.
- * aIsLog°¡ SQL_TRUEÀÏ °æ¿ì¿¡´Â nologging Mode·Î º¯°æ
- * aIsLog°¡ SQL_FALSEÀÏ °æ¿ì¿¡´Â logging Mode·Î º¯°æ
+ * Direct-Path Uploadì‹œì— No Logging Modeë¡œ ë™ìž‘í•  ê²½ìš°ì—
+ * 'Alter table XXX nologging' Queryë¥¼ ì‹¤í–‰í•´ ì¤˜ì•¼ í•œë‹¤.
+ * aIsLogê°€ SQL_TRUEì¼ ê²½ìš°ì—ëŠ” nologging Modeë¡œ ë³€ê²½
+ * aIsLogê°€ SQL_FALSEì¼ ê²½ìš°ì—ëŠ” logging Modeë¡œ ë³€ê²½
  */
 SInt iloLoad::ExecuteAlterStmt( ALTIBASE_ILOADER_HANDLE  aHandle,
                                 iloTableInfo            *aTableInfo, 
@@ -651,11 +651,11 @@ SInt iloLoad::ExecuteAlterStmt( ALTIBASE_ILOADER_HANDLE  aHandle,
 
     iloaderHandle *sHandle = (iloaderHandle *) aHandle;
     
-    if( aIsLog == SQL_TRUE )    //No-Logging Mode·Î º¯°æÇØ¾ß ÇÒ °æ¿ì
+    if( aIsLog == SQL_TRUE )    //No-Logging Modeë¡œ ë³€ê²½í•´ì•¼ í•  ê²½ìš°
     {
         idlOS::sprintf(sTmpQuery ,SQL_HEADER"ALTER TABLE %s NOLOGGING", aTableInfo->GetTableName());
     }
-    else                        //Logging Mode·Î º¯°æÇØ¾ßÇÒ °æ¿ì
+    else                        //Logging Modeë¡œ ë³€ê²½í•´ì•¼í•  ê²½ìš°
     {
         idlOS::sprintf(sTmpQuery ,SQL_HEADER"ALTER TABLE %s LOGGING", aTableInfo->GetTableName());
     }
@@ -992,7 +992,7 @@ IDE_RC iloLoad::reallocFileToken( ALTIBASE_ILOADER_HANDLE  aHandle,
 /**
  * IsLOBColExist.
  *
- * ·ÎµåµÉ ÄÃ·³ Áß LOB ÄÃ·³ÀÌ Á¸ÀçÇÏ´ÂÁö °Ë»çÇÑ´Ù.
+ * ë¡œë“œë  ì»¬ëŸ¼ ì¤‘ LOB ì»¬ëŸ¼ì´ ì¡´ìž¬í•˜ëŠ”ì§€ ê²€ì‚¬í•œë‹¤.
  */
 iloBool iloLoad::IsLOBColExist( ALTIBASE_ILOADER_HANDLE  aHandle, 
                                 iloTableInfo            *aTableInfo)
@@ -1026,7 +1026,7 @@ iloBool iloLoad::IsLOBColExist( ALTIBASE_ILOADER_HANDLE  aHandle,
 
 
 /* PROJ-1714
- * ReadFileToBuff()¸¦ Thread·Î »ç¿ëÇÏ±â À§ÇØ¼­ È£ÃâµÇ´Â ÇÔ¼ö
+ * ReadFileToBuff()ë¥¼ Threadë¡œ ì‚¬ìš©í•˜ê¸° ìœ„í•´ì„œ í˜¸ì¶œë˜ëŠ” í•¨ìˆ˜
  */
 
 void* iloLoad::ReadFileToBuff_ThreadRun(void *arg)
@@ -1039,7 +1039,7 @@ void* iloLoad::ReadFileToBuff_ThreadRun(void *arg)
 
 
 /* PROJ-1714
- * InsertFromBuff()¸¦ Thread·Î »ç¿ëÇÏ±â À§ÇØ¼­ È£ÃâµÇ´Â ÇÔ¼ö
+ * InsertFromBuff()ë¥¼ Threadë¡œ ì‚¬ìš©í•˜ê¸° ìœ„í•´ì„œ í˜¸ì¶œë˜ëŠ” í•¨ìˆ˜
  */
 
 void* iloLoad::InsertFromBuff_ThreadRun(void *arg)
@@ -1052,7 +1052,7 @@ void* iloLoad::InsertFromBuff_ThreadRun(void *arg)
 
 
 /* PROJ-1714
- * File¿¡¼­ ÀÐÀº ³»¿ëÀ» ¿øÇü ¹öÆÛ¿¡ ÀÔ·ÂÇÏµµ·Ï ÇÑ´Ù
+ * Fileì—ì„œ ì½ì€ ë‚´ìš©ì„ ì›í˜• ë²„í¼ì— ìž…ë ¥í•˜ë„ë¡ í•œë‹¤
  */
 
 void iloLoad::ReadFileToBuff( ALTIBASE_ILOADER_HANDLE aHandle )
@@ -1063,7 +1063,7 @@ void iloLoad::ReadFileToBuff( ALTIBASE_ILOADER_HANDLE aHandle )
 
     iloaderHandle *sHandle = (iloaderHandle *) aHandle;
 
-    // BUG-18803 readsize ¿É¼Ç Ãß°¡
+    // BUG-18803 readsize ì˜µì…˜ ì¶”ê°€
     sReadTmp = (SChar*)idlOS::malloc((m_pProgOption->mReadSzie) * 2 );
     IDE_TEST_RAISE(sReadTmp == NULL, NO_MEMORY);
     sLOBColExist = IsLOBColExist( sHandle, &m_pTableInfo[0] );
@@ -1071,13 +1071,13 @@ void iloLoad::ReadFileToBuff( ALTIBASE_ILOADER_HANDLE aHandle )
     while(1)
     {
         /* PROJ-1714
-         * LOB ColumnÀÌ Á¸ÀçÇÒ °æ¿ì, LOB Data¸¦ LoadÇÏ´Â Áß¿¡ DatafileÀ» ÀÐÀ¸¸é ¾ÈµÊ..
+         * LOB Columnì´ ì¡´ìž¬í•  ê²½ìš°, LOB Dataë¥¼ Loadí•˜ëŠ” ì¤‘ì— Datafileì„ ì½ìœ¼ë©´ ì•ˆë¨..
          */
         if( sLOBColExist == ILO_TRUE )
         {    
             iloMutexLock( sHandle, &(sHandle->mParallel.mLoadLOBMutex) );
         }
-        // BUG-18803 readsize ¿É¼Ç Ãß°¡
+        // BUG-18803 readsize ì˜µì…˜ ì¶”ê°€
         sReadResult = m_DataFile.ReadFromFile((m_pProgOption->mReadSzie), sReadTmp);
         
         if( sLOBColExist == ILO_TRUE )
@@ -1085,7 +1085,7 @@ void iloLoad::ReadFileToBuff( ALTIBASE_ILOADER_HANDLE aHandle )
              iloMutexUnLock( sHandle, &(sHandle->mParallel.mLoadLOBMutex) );
         }   
              
-        if( sReadResult == 0 ) //EOF ÀÏ °æ¿ì...
+        if( sReadResult == 0 ) //EOF ì¼ ê²½ìš°...
         {
             m_DataFile.SetEOF( sHandle, ILO_TRUE);
             break;
@@ -1094,25 +1094,25 @@ void iloLoad::ReadFileToBuff( ALTIBASE_ILOADER_HANDLE aHandle )
         (void)m_DataFile.WriteDataToCBuff( sHandle, sReadTmp, sReadResult);
         
         /* BUG-24211
-         * -L ¿É¼ÇÀ¸·Î µ¥ÀÌÅÍ ÀÔ·ÂÀ» ¸í½ÃÀûÀ¸·Î ÁöÁ¤ÇÑ °æ¿ì, FileRead Thread°¡ °è¼Ó´ë±â ÇÏÁö ¾Êµµ·Ï 
-         * LoadÇÏ´Â ThreadÀÇ °³¼ö°¡ 0ÀÌ µÉ °æ¿ì Á¾·áÇÏµµ·Ï ÇÑ´Ù.
+         * -L ì˜µì…˜ìœ¼ë¡œ ë°ì´í„° ìž…ë ¥ì„ ëª…ì‹œì ìœ¼ë¡œ ì§€ì •í•œ ê²½ìš°, FileRead Threadê°€ ê³„ì†ëŒ€ê¸° í•˜ì§€ ì•Šë„ë¡ 
+         * Loadí•˜ëŠ” Threadì˜ ê°œìˆ˜ê°€ 0ì´ ë  ê²½ìš° ì¢…ë£Œí•˜ë„ë¡ í•œë‹¤.
          */
         if( sHandle->mParallel.mLoadThrNum == 0)
         {
             // BUG-24816 iloader Hang
-            // ¾ÈÀüÇÏ°Ô EOF ¸¦ ¼¼ÆÃÇØ ¹ö¸°´Ù.
+            // ì•ˆì „í•˜ê²Œ EOF ë¥¼ ì„¸íŒ…í•´ ë²„ë¦°ë‹¤.
             m_DataFile.SetEOF( sHandle, ILO_TRUE );
             break;
         }
     }
-    // BUG-18803 readsize ¿É¼Ç Ãß°¡
+    // BUG-18803 readsize ì˜µì…˜ ì¶”ê°€
     idlOS::free(sReadTmp);
     sReadTmp = NULL;
     return;
 
     IDE_EXCEPTION(NO_MEMORY); 
     {
-        // insert ¾²·¹µå°¡ Á¾·áÇÒ¼ö ÀÖ°Ô EOF ¸¦ ¼³Á¤ÇÑ´Ù.
+        // insert ì“°ë ˆë“œê°€ ì¢…ë£Œí• ìˆ˜ ìžˆê²Œ EOF ë¥¼ ì„¤ì •í•œë‹¤.
         if(sReadTmp == NULL)
         {
             m_DataFile.SetEOF( sHandle, ILO_TRUE );
@@ -1131,7 +1131,7 @@ void iloLoad::ReadFileToBuff( ALTIBASE_ILOADER_HANDLE aHandle )
 }
 
 /* PROJ-1714
- * ¿øÇü ¹öÆÛ¸¦ ÀÐ°í, ParsingÈÄ¿¡ Table¿¡ INSERT ÇÑ´Ù.
+ * ì›í˜• ë²„í¼ë¥¼ ì½ê³ , Parsingí›„ì— Tableì— INSERT í•œë‹¤.
  */
 void iloLoad::InsertFromBuff( ALTIBASE_ILOADER_HANDLE aHandle )
 {
@@ -1160,8 +1160,8 @@ void iloLoad::InsertFromBuff( ALTIBASE_ILOADER_HANDLE aHandle )
         
         if ( sHandle->mProgOption->mGetTotalRowCount != ILO_TRUE )
         {
-            // BUG-24879 errors ¿É¼Ç Áö¿ø
-            // 1°³ÀÇ ¾²·¹µå°¡ Á¶°Ç¿¡ °É·ÈÀ»¶§ ³ª¸ÓÁö ¾²·¹µåµµ Á¾·á½ÃÅ²´Ù.
+            // BUG-24879 errors ì˜µì…˜ ì§€ì›
+            // 1ê°œì˜ ì“°ë ˆë“œê°€ ì¡°ê±´ì— ê±¸ë ¸ì„ë•Œ ë‚˜ë¨¸ì§€ ì“°ë ˆë“œë„ ì¢…ë£Œì‹œí‚¨ë‹¤.
             if(m_pProgOption->m_ErrorCount > 0)
             {
                 // not use (m_pProgOption->m_bExist_errors == SQL_TRUE) here.
@@ -1187,8 +1187,8 @@ void iloLoad::InsertFromBuff( ALTIBASE_ILOADER_HANDLE aHandle )
         {
             sData.mTotal++;
 
-            //ÁøÇà »óÈ² Ç¥½Ã
-            // BUG-27938: Áß°£¿¡ continue, break¸¦ ÇÏ´Â °æ¿ì°¡ ÀÖÀ¸¹Ç·Î ¿©±â¼­ Âï¾îÁà¾ßÇÑ´Ù.
+            //ì§„í–‰ ìƒí™© í‘œì‹œ
+            // BUG-27938: ì¤‘ê°„ì— continue, breakë¥¼ í•˜ëŠ” ê²½ìš°ê°€ ìžˆìœ¼ë¯€ë¡œ ì—¬ê¸°ì„œ ì°ì–´ì¤˜ì•¼í•œë‹¤.
             if ( sHandle->mUseApi != SQL_TRUE )
             {
                 sLoadCount = (mLoadCount += 1);
@@ -1207,8 +1207,8 @@ void iloLoad::InsertFromBuff( ALTIBASE_ILOADER_HANDLE aHandle )
                 continue;
             }
 
-            // BUG-24890 error °¡ ¹ß»ýÇÏ¸é sRealCount¸¦ Áõ°¡ÇÏ¸é ¾ÈµÈ´Ù.
-            // sRealCount ´Â array ÀÇ °¹¼öÀÌ´Ù. µû¶ó¼­ Àß¸øµÈ ¸Þ¸ð¸®¸¦ ÀÐ°ÔµÈ´Ù.
+            // BUG-24890 error ê°€ ë°œìƒí•˜ë©´ sRealCountë¥¼ ì¦ê°€í•˜ë©´ ì•ˆëœë‹¤.
+            // sRealCount ëŠ” array ì˜ ê°¯ìˆ˜ì´ë‹¤. ë”°ë¼ì„œ ìž˜ëª»ëœ ë©”ëª¨ë¦¬ë¥¼ ì½ê²Œëœë‹¤.
             sData.mRealCount++;
 
             if (( sHandle->mUseApi == SQL_TRUE ) && 
@@ -1244,9 +1244,9 @@ void iloLoad::InsertFromBuff( ALTIBASE_ILOADER_HANDLE aHandle )
 
             BREAK_OR_CONTINUE;
 
-            /* Execute()°¡ ¼öÇàµÇ¸é,
-             * Lob ÄÃ·³Àº outbind¿¡ ÀÇÇØ lOB locator¸¸ ¾ò¾îÁø »óÅÂÀÌ°í,
-             * ½ÇÁ¦ µ¥ÀÌÅÍ°¡ ·ÎµåµÈ »óÅÂ´Â ¾Æ´Ï´Ù. */
+            /* Execute()ê°€ ìˆ˜í–‰ë˜ë©´,
+             * Lob ì»¬ëŸ¼ì€ outbindì— ì˜í•´ lOB locatorë§Œ ì–»ì–´ì§„ ìƒíƒœì´ê³ ,
+             * ì‹¤ì œ ë°ì´í„°ê°€ ë¡œë“œëœ ìƒíƒœëŠ” ì•„ë‹ˆë‹¤. */
             (void)ExecuteInsertLOB(&sData);
 
             BREAK_OR_CONTINUE;
@@ -1263,7 +1263,7 @@ void iloLoad::InsertFromBuff( ALTIBASE_ILOADER_HANDLE aHandle )
 
         IDE_EXCEPTION_CONT(COMMIT_CODE);
 
-        //Commit Ã³¸®
+        //Commit ì²˜ë¦¬
         if ((m_pProgOption->m_CommitUnit >= 1) &&
             ((sData.mLoad % (m_pProgOption->m_CommitUnit * sData.mArrayCount)) == 0))
         {
@@ -1295,7 +1295,7 @@ void iloLoad::InsertFromBuff( ALTIBASE_ILOADER_HANDLE aHandle )
         (void)Commit4Dryrun(&sData);
     }
 
-    //Thread Á¾·áÈÄ Ã³¸®... 
+    //Thread ì¢…ë£Œí›„ ì²˜ë¦¬... 
     (void)FiniContextData(&sData);
 
     return;
@@ -1376,7 +1376,7 @@ void iloLoad::PrintProgress( ALTIBASE_ILOADER_HANDLE aHandle,
     if ((aLoadCount % 5000) == 0)
     {
        /* BUG-32114 aexport must support the import/export of partition tables.
-        * ILOADER IN/OUT TABLE NAMEÀÌ PARTITION ÀÏ°æ¿ì PARTITION NAMEÀ¸·Î º¯°æ */
+        * ILOADER IN/OUT TABLE NAMEì´ PARTITION ì¼ê²½ìš° PARTITION NAMEìœ¼ë¡œ ë³€ê²½ */
         if( sHandle->mProgOption->mPartition == ILO_TRUE )
         {
             idlOS::printf("\n%d record load(%s / %s)\n\n", 

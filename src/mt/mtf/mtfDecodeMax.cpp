@@ -50,7 +50,7 @@ static IDE_RC mtfDecodeMaxEstimate( mtcNode*     aNode,
 mtfModule mtfDecodeMax = {
     2|MTC_NODE_OPERATOR_AGGREGATION,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
+    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìžê°€ ì•„ë‹˜)
     mtfDecodeMaxFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -95,19 +95,19 @@ static const mtcExecute mtfDecodeMaxExecute = {
 
 typedef struct mtfDecodeMaxInfo
 {
-    // Ã¹¹øÂ° ÀÎÀÚ
+    // ì²«ë²ˆì§¸ ì¸ìž
     mtcExecute   * sMaxColumnExecute;
     mtcNode      * sMaxColumnNode;
 
-    // µÎ¹øÂ° ÀÎÀÚ
+    // ë‘ë²ˆì§¸ ì¸ìž
     mtcExecute   * sExprExecute;
     mtcNode      * sExprNode;
 
-    // ¼¼¹øÂ° ÀÎÀÚ
+    // ì„¸ë²ˆì§¸ ì¸ìž
     mtcExecute   * sSearchExecute;
     mtcNode      * sSearchNode;
 
-    // return ÀÎÀÚ
+    // return ì¸ìž
     mtcColumn    * sReturnColumn;
     void         * sReturnValue;
 
@@ -132,12 +132,12 @@ IDE_RC mtfDecodeMaxEstimate( mtcNode*     aNode,
 
     sFence = aNode->lflag & MTC_NODE_ARGUMENT_COUNT_MASK;
 
-    // 1 È¤Àº 3°³ÀÇ ÀÎÀÚ
+    // 1 í˜¹ì€ 3ê°œì˜ ì¸ìž
     IDE_TEST_RAISE( (sFence != 1) && (sFence != 3),
                     ERR_INVALID_FUNCTION_ARGUMENT );
 
     // PROJ-2002 Column Security
-    // minÇÔ¼ö¿Í °°´Ù.
+    // miní•¨ìˆ˜ì™€ ê°™ë‹¤.
     aNode->baseTable = aNode->arguments->baseTable;
     aNode->baseColumn = aNode->arguments->baseColumn;
 
@@ -230,12 +230,12 @@ IDE_RC mtfDecodeMaxEstimate( mtcNode*     aNode,
 
     aTemplate->rows[aNode->table].execute[aNode->column] = mtfDecodeMaxExecute;
 
-    // max °á°ú¸¦ ÀúÀåÇÔ
+    // max ê²°ê³¼ë¥¼ ì €ìž¥í•¨
     // BUG-23102
-    // mtcColumnÀ¸·Î ÃÊ±âÈ­ÇÑ´Ù.
+    // mtcColumnìœ¼ë¡œ ì´ˆê¸°í™”í•œë‹¤.
     mtc::initializeColumn( aStack[0].column, aStack[1].column );
 
-    // max info Á¤º¸¸¦ mtdBinary¿¡ ÀúÀå
+    // max info ì •ë³´ë¥¼ mtdBinaryì— ì €ìž¥
     sBinaryPrecision = ID_SIZEOF(mtfDecodeMaxInfo);
 
     IDE_TEST( mtc::initializeColumn( aStack[0].column + 1,
@@ -285,11 +285,11 @@ IDE_RC mtfDecodeMaxInitialize( mtcNode*     aNode,
     sInfo = (mtfDecodeMaxInfo*)(sValue->mValue);
 
     //-----------------------------
-    // max info ÃÊ±âÈ­
+    // max info ì´ˆê¸°í™”
     //-----------------------------
     sArgNode[0] = aNode->arguments;
 
-    // max column ¼³Á¤
+    // max column ì„¤ì •
     sInfo->sMaxColumnExecute = aTemplate->rows[sArgNode[0]->table].execute + sArgNode[0]->column;
     sInfo->sMaxColumnNode    = sArgNode[0];
 
@@ -298,11 +298,11 @@ IDE_RC mtfDecodeMaxInitialize( mtcNode*     aNode,
         sArgNode[1] = sArgNode[0]->next;
         sArgNode[2] = sArgNode[1]->next;
 
-        // expression column ¼³Á¤
+        // expression column ì„¤ì •
         sInfo->sExprExecute = aTemplate->rows[sArgNode[1]->table].execute + sArgNode[1]->column;
         sInfo->sExprNode    = sArgNode[1];
 
-        // search value ¼³Á¤
+        // search value ì„¤ì •
         sInfo->sSearchExecute = aTemplate->rows[sArgNode[2]->table].execute + sArgNode[2]->column;
         sInfo->sSearchNode    = sArgNode[2];
     }
@@ -315,13 +315,13 @@ IDE_RC mtfDecodeMaxInitialize( mtcNode*     aNode,
         sInfo->sSearchNode    = NULL;
     }
 
-    // return column ¼³Á¤
+    // return column ì„¤ì •
     sInfo->sReturnColumn = aTemplate->rows[aNode->table].columns + aNode->column;
     sInfo->sReturnValue  = (void *)
         ((UChar*) aTemplate->rows[aNode->table].row + sInfo->sReturnColumn->column.offset);
 
     //-----------------------------
-    // max °á°ú¸¦ ÃÊ±âÈ­
+    // max ê²°ê³¼ë¥¼ ì´ˆê¸°í™”
     //-----------------------------
 
     sInfo->sReturnColumn->module->null( sInfo->sReturnColumn,
@@ -363,7 +363,7 @@ IDE_RC mtfDecodeMaxAggregate( mtcNode*     aNode,
     {
         IDE_TEST_RAISE( aRemain < 2, ERR_STACK_OVERFLOW );
 
-        // µÎ¹øÂ° ÀÎÀÚ
+        // ë‘ë²ˆì§¸ ì¸ìž
         IDE_TEST( sInfo->sExprExecute->calculate( sInfo->sExprNode,
                                                   aStack,
                                                   aRemain,
@@ -381,7 +381,7 @@ IDE_RC mtfDecodeMaxAggregate( mtcNode*     aNode,
                       != IDE_SUCCESS );
         }
 
-        // ¼¼¹øÂ° ÀÎÀÚ
+        // ì„¸ë²ˆì§¸ ì¸ìž
         IDE_TEST( sInfo->sSearchExecute->calculate( sInfo->sSearchNode,
                                                     aStack + 1,
                                                     aRemain - 1,
@@ -399,7 +399,7 @@ IDE_RC mtfDecodeMaxAggregate( mtcNode*     aNode,
                       != IDE_SUCCESS );
         }
 
-        // decode ¿¬»ê¼öÇà
+        // decode ì—°ì‚°ìˆ˜í–‰
         if ( aStack[0].column->module != &mtdList )
         {
             IDE_DASSERT( aStack[0].column->module == aStack[1].column->module );
@@ -422,7 +422,7 @@ IDE_RC mtfDecodeMaxAggregate( mtcNode*     aNode,
                 sValueInfo2.value  = aStack[1].value;
                 sValueInfo2.flag   = MTD_OFFSET_USELESS;
 
-                // µÎ¹øÂ° ÀÎÀÚ¿Í ¼¼¹øÂ° ÀÎÀÚÀÇ ºñ±³
+                // ë‘ë²ˆì§¸ ì¸ìžì™€ ì„¸ë²ˆì§¸ ì¸ìžì˜ ë¹„êµ
                 sCompare = sModule->logicalCompare[MTD_COMPARE_ASCENDING]( &sValueInfo1,
                                                                            &sValueInfo2 );
             }
@@ -475,7 +475,7 @@ IDE_RC mtfDecodeMaxAggregate( mtcNode*     aNode,
 
     if ( sCompare == 0 )
     {
-        // Ã¹¹øÂ° ÀÎÀÚ
+        // ì²«ë²ˆì§¸ ì¸ìž
         IDE_TEST( sInfo->sMaxColumnExecute->calculate( sInfo->sMaxColumnNode,
                                                        aStack,
                                                        aRemain,
@@ -486,7 +486,7 @@ IDE_RC mtfDecodeMaxAggregate( mtcNode*     aNode,
         IDE_DASSERT( sInfo->sMaxColumnNode->conversion == NULL );
         sModule = aStack[0].column->module;
 
-        // NULLÀ» ºñ±³ ´ë»ó¿¡¼­ Á¦¿ÜÇÏ±â À§ÇÏ¿© Descending Key Compare¸¦ »ç¿ëÇÔ.
+        // NULLì„ ë¹„êµ ëŒ€ìƒì—ì„œ ì œì™¸í•˜ê¸° ìœ„í•˜ì—¬ Descending Key Compareë¥¼ ì‚¬ìš©í•¨.
         sValueInfo1.column = sInfo->sReturnColumn;
         sValueInfo1.value  = sInfo->sReturnValue;
         sValueInfo1.flag   = MTD_OFFSET_USELESS;

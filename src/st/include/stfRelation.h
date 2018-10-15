@@ -19,7 +19,7 @@
  * $Id: stfRelation.h 18883 2006-11-14 01:48:40Z sabbra $
  *
  * Description:
- * Geometry °´Ã¼¿Í Geometry °´Ã¼°£ÀÇ °ü°è ÇÔ¼ö
+ * Geometry ê°ì²´ì™€ Geometry ê°ì²´ê°„ì˜ ê´€ê³„ í•¨ìˆ˜
  **********************************************************************/
 
 #ifndef _O_STF_RELATION_H_
@@ -31,7 +31,7 @@
 
 //==============================================================
 // BUG-16952
-// Angle»ó¿¡¼­ÀÇ Á¡ÀÇ À§Ä¡
+// Angleìƒì—ì„œì˜ ì ì˜ ìœ„ì¹˜
 //
 //                 Am
 //       1         |                               1
@@ -58,8 +58,8 @@ class stfRelation
 {
 public:
     /* Calculate MBR ******************************************************/
-    /* ¿¬»ê °á°ú°¡ TRUEÀÏ °æ¿ì 1, ±×·¸Áö ¾ÊÀ» °æ¿ì 0À» ¸®ÅÏ
-       ÀÎµ¦½ºÀÇ Compare¸¦ À§ÇÏ¿©
+    /* ì—°ì‚° ê²°ê³¼ê°€ TRUEì¼ ê²½ìš° 1, ê·¸ë ‡ì§€ ì•Šì„ ê²½ìš° 0ì„ ë¦¬í„´
+       ì¸ë±ìŠ¤ì˜ Compareë¥¼ ìœ„í•˜ì—¬
     */
     
     static SInt isMBRIntersects( mtdValueInfo * aValueInfo1,
@@ -169,8 +169,8 @@ public:
                                  UInt&               aPatternCnt );
 
     /* Calculate Relation *************************************************/
-    // relate¸¦ È£Ãâ ÇÏ±â Àü¿¡ 2D¿Í 3D¿¡ ´ëÇÑ ÇÊÅÍ¸µÀÌ ³¡³ª¹Ç·Î
-    // relate Æã¼Ç ÇÏºÎ¿¡¼­ ¼öÇàµÇ´Â Æã¼ÇµéÀº Â÷¿ø¿¡ ´ëÇØ ºñ±³ÇÒ ÇÊ¿ä ¾ø´Ù.
+    // relateë¥¼ í˜¸ì¶œ í•˜ê¸° ì „ì— 2Dì™€ 3Dì— ëŒ€í•œ í•„í„°ë§ì´ ëë‚˜ë¯€ë¡œ
+    // relate í‘ì…˜ í•˜ë¶€ì—ì„œ ìˆ˜í–‰ë˜ëŠ” í‘ì…˜ë“¤ì€ ì°¨ì›ì— ëŒ€í•´ ë¹„êµí•  í•„ìš” ì—†ë‹¤.
     static IDE_RC relate( iduMemory*             aQmxMem,
                           const stdGeometryType* aObj1,
                           const stdGeometryType* aObj2,
@@ -615,7 +615,7 @@ public:
                            const stdGeoCollection2DType*    aObj2 );
 
     // BUG-17010
-    // Line Segment¿Í Ring SegmentÀÇ ¿øÇÏ´Â °ü°è°¡ Á¸ÀçÇÏ´Â Áö °Ë»ç
+    // Line Segmentì™€ Ring Segmentì˜ ì›í•˜ëŠ” ê´€ê³„ê°€ ì¡´ì¬í•˜ëŠ” ì§€ ê²€ì‚¬
     static idBool hasRelLineSegRingSeg( idBool      aIsExtRing,
                                         idBool      aIsCCWiseRing,
                                         stdPoint2D* aRingPrevPt,
@@ -626,7 +626,7 @@ public:
                                         stfAnglePos aWantPos );
 
     // BUG-16952
-    // Á¡ÀÌ °¢ÀÇ ¾î´À À§Ä¡¿¡ Á¸ÀçÇÏ´ÂÁö¸¦ ÆÇ´Ü
+    // ì ì´ ê°ì˜ ì–´ëŠ ìœ„ì¹˜ì— ì¡´ì¬í•˜ëŠ”ì§€ë¥¼ íŒë‹¨
     static stfAnglePos wherePointInAngle( stdPoint2D * aAnglePrevPt,
                                           stdPoint2D * aAngleMiddPt,
                                           stdPoint2D * aAngleNextPt,

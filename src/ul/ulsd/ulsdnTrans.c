@@ -48,8 +48,8 @@ ACI_RC ulsdCallbackShardPrepareResult(cmiProtocolContext *aProtocolContext,
     }
     ACI_EXCEPTION_END;
 
-    /* CM ƒ›πÈ «‘ºˆ¥¬ communication error∞° æ∆¥— «— ACI_SUCCESS∏¶ π›»Ø«ÿæﬂ «—¥Ÿ.
-     * ƒ›πÈ ø°∑Ø¥¬ function contextø° º≥¡§µ» ∞™¿∏∑Œ ∆«¥‹«—¥Ÿ. */
+    /* CM ÏΩúÎ∞± Ìï®ÏàòÎäî communication errorÍ∞Ä ÏïÑÎãå Ìïú ACI_SUCCESSÎ•º Î∞òÌôòÌï¥Ïïº ÌïúÎã§.
+     * ÏΩúÎ∞± ÏóêÎü¨Îäî function contextÏóê ÏÑ§Ï†ïÎêú Í∞íÏúºÎ°ú ÌåêÎã®ÌïúÎã§. */
     return ACI_SUCCESS;
 }
 
@@ -185,7 +185,7 @@ ACI_RC ulsdShardPrepareTranMain(ulnFnContext    *aFnContext,
     if ((aDbc->mAttrAutoCommit == SQL_AUTOCOMMIT_OFF) && (aDbc->mIsConnected == ACP_TRUE))
     {
         /*
-         * protocol context √ ±‚»≠
+         * protocol context Ï¥àÍ∏∞Ìôî
          */
         // fix BUG-17722
         ACI_TEST(ulnInitializeProtocolContext(aFnContext,
@@ -195,7 +195,7 @@ ACI_RC ulsdShardPrepareTranMain(ulnFnContext    *aFnContext,
         ULN_FLAG_UP(sNeedFinPtContext);
 
         /*
-         * ∆–≈∂ æ≤±‚
+         * Ìå®ÌÇ∑ Ïì∞Í∏∞
          */
         ACI_TEST(ulsdShardPrepareRequest(aFnContext,
                                          &(aDbc->mPtContext),
@@ -204,7 +204,7 @@ ACI_RC ulsdShardPrepareTranMain(ulnFnContext    *aFnContext,
                  != ACI_SUCCESS);
 
         /*
-         * ∆–≈∂ ¿¸º€
+         * Ìå®ÌÇ∑ Ï†ÑÏÜ°
          */
         ACI_TEST(ulnFlushProtocol(aFnContext,&(aDbc->mPtContext)) != ACI_SUCCESS);
 
@@ -233,7 +233,7 @@ ACI_RC ulsdShardPrepareTranMain(ulnFnContext    *aFnContext,
         /* 
          * PROJ-2047 Strengthening LOB - LOBCACHE
          *
-         * Stmt List¿« LOB Cache∏¶ ¡¶∞≈«œ¿⁄.
+         * Stmt ListÏùò LOB CacheÎ•º Ï†úÍ±∞ÌïòÏûê.
          */
         ACP_LIST_ITERATE(&(aDbc->mStmtList), sIterator)
         {
@@ -242,7 +242,7 @@ ACI_RC ulsdShardPrepareTranMain(ulnFnContext    *aFnContext,
         }
 
         /*
-         * Protocol Context ¡§∏Æ
+         * Protocol Context Ï†ïÎ¶¨
          */
         ULN_FLAG_DOWN(sNeedFinPtContext);
         // fix BUG-17722
@@ -285,7 +285,7 @@ SQLRETURN ulsdShardPrepareTran(ulnDbc       *aDbc,
     ACI_TEST_RAISE(aDbc->mXaEnlist == ACP_TRUE, LABEL_XA_COMMIT_ERROR);
 
     /*
-     * Prepare Transaction ∏ﬁ¿Œ ∑Á∆æ
+     * Prepare Transaction Î©îÏù∏ Î£®Ìã¥
      */
     ACI_TEST(ulsdShardPrepareTranMain(&sFnContext,
                                       aDbc,
@@ -371,7 +371,7 @@ ACI_RC ulsdShardEndPendingTranMain(ulnFnContext     *aFnContext,
     if ((aDbc->mAttrAutoCommit == SQL_AUTOCOMMIT_OFF) && (aDbc->mIsConnected == ACP_TRUE))
     {
         /*
-         * protocol context √ ±‚»≠
+         * protocol context Ï¥àÍ∏∞Ìôî
          */
         // fix BUG-17722
         ACI_TEST(ulnInitializeProtocolContext(aFnContext,
@@ -381,7 +381,7 @@ ACI_RC ulsdShardEndPendingTranMain(ulnFnContext     *aFnContext,
         ULN_FLAG_UP(sNeedFinPtContext);
 
         /*
-         * ∆–≈∂ æ≤±‚
+         * Ìå®ÌÇ∑ Ïì∞Í∏∞
          */
         ACI_TEST(ulsdShardEndPendingTxRequest(aFnContext,
                                               &(aDbc->mPtContext),
@@ -391,7 +391,7 @@ ACI_RC ulsdShardEndPendingTranMain(ulnFnContext     *aFnContext,
                  != ACI_SUCCESS);
 
         /*
-         * ∆–≈∂ ¿¸º€
+         * Ìå®ÌÇ∑ Ï†ÑÏÜ°
          */
         ACI_TEST(ulnFlushProtocol(aFnContext,&(aDbc->mPtContext)) != ACI_SUCCESS);
 
@@ -420,7 +420,7 @@ ACI_RC ulsdShardEndPendingTranMain(ulnFnContext     *aFnContext,
         /* 
          * PROJ-2047 Strengthening LOB - LOBCACHE
          *
-         * Stmt List¿« LOB Cache∏¶ ¡¶∞≈«œ¿⁄.
+         * Stmt ListÏùò LOB CacheÎ•º Ï†úÍ±∞ÌïòÏûê.
          */
         ACP_LIST_ITERATE(&(aDbc->mStmtList), sIterator)
         {
@@ -429,7 +429,7 @@ ACI_RC ulsdShardEndPendingTranMain(ulnFnContext     *aFnContext,
         }
 
         /*
-         * Protocol Context ¡§∏Æ
+         * Protocol Context Ï†ïÎ¶¨
          */
         ULN_FLAG_DOWN(sNeedFinPtContext);
         // fix BUG-17722
@@ -490,7 +490,7 @@ SQLRETURN ulsdShardEndPendingTran(ulnDbc       *aDbc,
     ACI_TEST(ulsdEndPendingTxCheckArgs(&sFnContext, aOp) != ACI_SUCCESS);
 
     /*
-     * Prepare Transaction ∏ﬁ¿Œ ∑Á∆æ
+     * Prepare Transaction Î©îÏù∏ Î£®Ìã¥
      */
     ACI_TEST(ulsdShardEndPendingTranMain(&sFnContext,
                                          aDbc,

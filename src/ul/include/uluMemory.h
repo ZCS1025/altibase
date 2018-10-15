@@ -63,34 +63,34 @@ typedef struct uluChunkPoolOpSet
 
 struct uluChunkPool
 {
-    acp_list_t         mFreeChunkList;     /* Free Chunk µéÀÇ ¸®½ºÆ® */
+    acp_list_t         mFreeChunkList;     /* Free Chunk ë“¤ì˜ ë¦¬ìŠ¤íŠ¸ */
 
-    acp_list_t         mFreeBigChunkList;  /* default chunk size º¸´Ù Å« Å©±âÀÇ ¸Ş¸ğ¸®¸¦ °¡Áö´Â
-                                              Ã»Å©µéÀÇ free list */
+    acp_list_t         mFreeBigChunkList;  /* default chunk size ë³´ë‹¤ í° í¬ê¸°ì˜ ë©”ëª¨ë¦¬ë¥¼ ê°€ì§€ëŠ”
+                                              ì²­í¬ë“¤ì˜ free list */
 
-    acp_list_t         mMemoryList;        /* ÀÌ Ã»Å© Ç®ÀÇ ÀÎ½ºÅÏ½º¿¡¼­ Ã»Å©¸¦ ÇÒ´ç ¹Ş¾Æ
-                                             »ç¿ëÇÏ°í ÀÖ´Â uluMemory µéÀÇ ¸®½ºÆ® */
+    acp_list_t         mMemoryList;        /* ì´ ì²­í¬ í’€ì˜ ì¸ìŠ¤í„´ìŠ¤ì—ì„œ ì²­í¬ë¥¼ í• ë‹¹ ë°›ì•„
+                                             ì‚¬ìš©í•˜ê³  ìˆëŠ” uluMemory ë“¤ì˜ ë¦¬ìŠ¤íŠ¸ */
 
-    acp_uint32_t       mMemoryCnt;         /* ÀÌ Ã»Å© Ç®À» ¼Ò½º·Î »ï´Â uluMemoryÀÇ °¹¼ö */
-    acp_uint32_t       mFreeChunkCnt;      /* Free Chunk ÀÇ °¹¼ö */
-    acp_uint32_t       mFreeBigChunkCnt;   /* Free Big Chunk ÀÇ °¹¼ö */
-    acp_uint32_t       mMinChunkCnt;       /* ÃÖ¼Ò·Î À¯ÁöÇÒ free chunk ÀÇ °¹¼ö */
+    acp_uint32_t       mMemoryCnt;         /* ì´ ì²­í¬ í’€ì„ ì†ŒìŠ¤ë¡œ ì‚¼ëŠ” uluMemoryì˜ ê°¯ìˆ˜ */
+    acp_uint32_t       mFreeChunkCnt;      /* Free Chunk ì˜ ê°¯ìˆ˜ */
+    acp_uint32_t       mFreeBigChunkCnt;   /* Free Big Chunk ì˜ ê°¯ìˆ˜ */
+    acp_uint32_t       mMinChunkCnt;       /* ìµœì†Œë¡œ ìœ ì§€í•  free chunk ì˜ ê°¯ìˆ˜ */
 
-    acp_uint32_t       mDefaultChunkSize;  /* ÇÏ³ªÀÇ Ã»Å©ÀÇ µğÆúÆ® Å©±â  */
+    acp_uint32_t       mDefaultChunkSize;  /* í•˜ë‚˜ì˜ ì²­í¬ì˜ ë””í´íŠ¸ í¬ê¸°  */
     acp_uint32_t       mActualSizeOfDefaultSingleChunk;
 
-    acp_uint32_t       mNumberOfSP;        /* ÀÌ Ã»Å© Ç®¿¡ ÀÖ´Â Ã»Å©µéÀÌ °¡Áö´Â ¼¼ÀÌºê Æ÷ÀÎÆ®ÀÇ °¹¼ö.
-                                              Ã»Å©ÀÇ mSavepoints[] ¹è¿­Àº
-                                              0 ºÎÅÍ mNumberOfSP+1 ±îÁöÀÇ ¿ø¼Ò¸¦ °¡Áø´Ù.
-                                              ¸¶Áö¸· °ÍÀº current offset. */
+    acp_uint32_t       mNumberOfSP;        /* ì´ ì²­í¬ í’€ì— ìˆëŠ” ì²­í¬ë“¤ì´ ê°€ì§€ëŠ” ì„¸ì´ë¸Œ í¬ì¸íŠ¸ì˜ ê°¯ìˆ˜.
+                                              ì²­í¬ì˜ mSavepoints[] ë°°ì—´ì€
+                                              0 ë¶€í„° mNumberOfSP+1 ê¹Œì§€ì˜ ì›ì†Œë¥¼ ê°€ì§„ë‹¤.
+                                              ë§ˆì§€ë§‰ ê²ƒì€ current offset. */
 
     uluChunkPoolOpSet *mOp;
 };
 
 /*
- * °¢Á¾ »çÀÌÁîÀÇ Á¤ÀÇ
+ * ê°ì¢… ì‚¬ì´ì¦ˆì˜ ì •ì˜
  *
- * (Ã»Å©Ç® »ı¼º½Ã ¼¼ÆÃ,°íÁ¤)             (¸Ş¸ğ¸® ÇÒ´ç/ÇØÁ¦½Ã ¸¶´Ù °»½Å)
+ * (ì²­í¬í’€ ìƒì„±ì‹œ ì„¸íŒ…,ê³ ì •)             (ë©”ëª¨ë¦¬ í• ë‹¹/í•´ì œì‹œ ë§ˆë‹¤ ê°±ì‹ )
  *  uluChunk.mChunkSize ---------+           uluChunk.mFreeMemSize
  *                               |                            |
  *                         |_____v____________________________|________|
@@ -103,7 +103,7 @@ struct uluChunkPool
  *                                     |_______________________________|
  *                                          |
  *  uluMemory.mMaxAllocatableSize ----------+
- *  (uluMemory »ı¼º½Ã ¼¼ÆÃ.°íÁ¤)
+ *  (uluMemory ìƒì„±ì‹œ ì„¸íŒ….ê³ ì •)
  *
  * =====================================
  * The Location Of uluMemory in a Chunk
@@ -122,10 +122,10 @@ struct uluChunkPool
  *                   +---------------------+
  *          mBuffer + mSavepoints[0]
  *
- * À§¿Í °°Àº ¸ğ¾ç»õ¸¦ °¡Áö´Â Ã»Å©´Â uluMemory ¸¦ Create ÇÏ¸é¼­ ÃÖÃÊ·Î Ã»Å© Ç®·ÎºÎÅÍ
- * ÇÒ´ç¹Ş´Â Ã»Å© »ÓÀÌ´Ù.
+ * ìœ„ì™€ ê°™ì€ ëª¨ì–‘ìƒˆë¥¼ ê°€ì§€ëŠ” ì²­í¬ëŠ” uluMemory ë¥¼ Create í•˜ë©´ì„œ ìµœì´ˆë¡œ ì²­í¬ í’€ë¡œë¶€í„°
+ * í• ë‹¹ë°›ëŠ” ì²­í¬ ë¿ì´ë‹¤.
  *
- * ´Ù¸¥ Ã»Å©´Â ¾Æ·¡¿Í °°Àº ¸ğ¾ç»õ¸¦ °¡Áö°Ô µÈ´Ù :
+ * ë‹¤ë¥¸ ì²­í¬ëŠ” ì•„ë˜ì™€ ê°™ì€ ëª¨ì–‘ìƒˆë¥¼ ê°€ì§€ê²Œ ëœë‹¤ :
  *
  *             +---------------+
  *             |               |
@@ -170,23 +170,23 @@ typedef struct uluMemoryOpSet
 
 struct uluMemory
 {
-    acp_list_node_t   mList;              /* °°Àº chunk Pool ÀÇ uluMemory ÀÇ ¸®½ºÆ® */
-    uluChunkPool     *mChunkPool;         /* uluMemory °¡ ¸Ş¸ğ¸®¸¦ °¡Áö°í ¿Ã ChunkPool */
-    acp_list_t        mChunkList;         /* uluMemory °¡ ¼ÒÀ¯ÇÏ°í ÀÖ´Â ChunkÀÇ ¸®½ºÆ® */
+    acp_list_node_t   mList;              /* ê°™ì€ chunk Pool ì˜ uluMemory ì˜ ë¦¬ìŠ¤íŠ¸ */
+    uluChunkPool     *mChunkPool;         /* uluMemory ê°€ ë©”ëª¨ë¦¬ë¥¼ ê°€ì§€ê³  ì˜¬ ChunkPool */
+    acp_list_t        mChunkList;         /* uluMemory ê°€ ì†Œìœ í•˜ê³  ìˆëŠ” Chunkì˜ ë¦¬ìŠ¤íŠ¸ */
 
-    acp_uint32_t      mCurrentSPIndex;    /* ¸¶Áö¸·À¸·Î Mark ÇÑ SP ÀÇ ÀÎµ¦½º.
-                                             Ã³À½ ¸Ş¸ğ¸®°¡ »ı¼ºµÇ¸é 0 ÀÌ´Ù.
-                                             Ã³À½ ¸Ş¸ğ¸® »ı¼ºµÇ¾úÀ» ¶§ ¸¶Å·µÈ 0 ¹ø SP ÀÎµ¦½º¿¡´Â
-                                             uluMemoryÀÇ »çÀÌÁî°¡ µé¾î°£´Ù.
-                                             0 ¹ø ÀÎµ¦½º´Â uluMemory °¡ µé¾îÀÖ´Â initial chunk¸¦
-                                             ½Ç¼ö·Î ¹İ³³ÇÏ´Â °ÍÀ» ¸·±â À§ÇØ reserve µÇ¾î ÀÖ´Ù. */
+    acp_uint32_t      mCurrentSPIndex;    /* ë§ˆì§€ë§‰ìœ¼ë¡œ Mark í•œ SP ì˜ ì¸ë±ìŠ¤.
+                                             ì²˜ìŒ ë©”ëª¨ë¦¬ê°€ ìƒì„±ë˜ë©´ 0 ì´ë‹¤.
+                                             ì²˜ìŒ ë©”ëª¨ë¦¬ ìƒì„±ë˜ì—ˆì„ ë•Œ ë§ˆí‚¹ëœ 0 ë²ˆ SP ì¸ë±ìŠ¤ì—ëŠ”
+                                             uluMemoryì˜ ì‚¬ì´ì¦ˆê°€ ë“¤ì–´ê°„ë‹¤.
+                                             0 ë²ˆ ì¸ë±ìŠ¤ëŠ” uluMemory ê°€ ë“¤ì–´ìˆëŠ” initial chunkë¥¼
+                                             ì‹¤ìˆ˜ë¡œ ë°˜ë‚©í•˜ëŠ” ê²ƒì„ ë§‰ê¸° ìœ„í•´ reserve ë˜ì–´ ìˆë‹¤. */
 
-    acp_uint32_t      mAllocCount;        /* Åë°èÁ¤º¸¸¦ À§ÇÑ ÇÊµå : ¾²ÀÏ°÷Àº ¾ø´Âµ¥, ±×³É ±Ã±İÇØ¼­ */
+    acp_uint32_t      mAllocCount;        /* í†µê³„ì •ë³´ë¥¼ ìœ„í•œ í•„ë“œ : ì“°ì¼ê³³ì€ ì—†ëŠ”ë°, ê·¸ëƒ¥ ê¶ê¸ˆí•´ì„œ */
     acp_uint32_t      mFreeCount;
 
     acp_uint32_t      mMaxAllocatableSize;
 
-    acp_list_node_t **mSPArray;           /* direct alloc ÀÏ ¶§¸¸ »ç¿ëÇÑ´Ù */
+    acp_list_node_t **mSPArray;           /* direct alloc ì¼ ë•Œë§Œ ì‚¬ìš©í•œë‹¤ */
 
     uluMemoryOpSet   *mOp;
 

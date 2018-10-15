@@ -29,7 +29,7 @@
 #include <svmTBSAlterAutoExtend.h>
 
 /*
-  »ı¼ºÀÚ (¾Æ¹«°Íµµ ¾ÈÇÔ)
+  ìƒì„±ì (ì•„ë¬´ê²ƒë„ ì•ˆí•¨)
 */
 svmTBSCreate::svmTBSCreate()
 {
@@ -37,24 +37,24 @@ svmTBSCreate::svmTBSCreate()
 }
 
 /*
-     Tablespace Attribute¸¦ ÃÊ±âÈ­ ÇÑ´Ù.
+     Tablespace Attributeë¥¼ ì´ˆê¸°í™” í•œë‹¤.
 
-     [IN] aTBSAttr        - ÃÊ±âÈ­ µÉ Tablespace Attribute
-     [IN] aName           - Tablespace°¡ »ı¼ºµÉ DatabaseÀÇ ÀÌ¸§
-     [IN] aType           - Tablespace Á¾·ù
+     [IN] aTBSAttr        - ì´ˆê¸°í™” ë  Tablespace Attribute
+     [IN] aName           - Tablespaceê°€ ìƒì„±ë  Databaseì˜ ì´ë¦„
+     [IN] aType           - Tablespace ì¢…ë¥˜
                             User||System, Memory, Data || Temp
-     [IN] aAttrFlag       - TablespaceÀÇ ¼Ó¼º Flag
-     [IN] aInitSize       - TablespaceÀÇ ÃÊ±âÅ©±â
-     [IN] aState          - TablespaceÀÇ »óÅÂ
+     [IN] aAttrFlag       - Tablespaceì˜ ì†ì„± Flag
+     [IN] aInitSize       - Tablespaceì˜ ì´ˆê¸°í¬ê¸°
+     [IN] aState          - Tablespaceì˜ ìƒíƒœ
 
-     [ ¾Ë°í¸®Áò ]
-       (010) ±âº» ÇÊµå ÃÊ±âÈ­
-       (020) mSplitFilePageCount ÃÊ±âÈ­
-       (030) mInitPageCount ÃÊ±âÈ­
+     [ ì•Œê³ ë¦¬ì¦˜ ]
+       (010) ê¸°ë³¸ í•„ë“œ ì´ˆê¸°í™”
+       (020) mSplitFilePageCount ì´ˆê¸°í™”
+       (030) mInitPageCount ì´ˆê¸°í™”
 
-     [ ¿¡·¯Ã³¸® ]
-       (e-010) aSplitFileSize °¡ Expand ChunkÅ©±âÀÇ ¹è¼ö°¡ ¾Æ´Ï¸é ¿¡·¯
-       (e-020) aInitSize °¡ Expand ChunkÅ©±âÀÇ ¹è¼ö°¡ ¾Æ´Ï¸é ¿¡·¯
+     [ ì—ëŸ¬ì²˜ë¦¬ ]
+       (e-010) aSplitFileSize ê°€ Expand Chunkí¬ê¸°ì˜ ë°°ìˆ˜ê°€ ì•„ë‹ˆë©´ ì—ëŸ¬
+       (e-020) aInitSize ê°€ Expand Chunkí¬ê¸°ì˜ ë°°ìˆ˜ê°€ ì•„ë‹ˆë©´ ì—ëŸ¬
 
 */
 IDE_RC svmTBSCreate::initializeTBSAttr( smiTableSpaceAttr    * aTBSAttr,
@@ -71,8 +71,8 @@ IDE_RC svmTBSCreate::initializeTBSAttr( smiTableSpaceAttr    * aTBSAttr,
 
     IDE_ASSERT( sChunkSize > 0 );
 
-    // Volatile TablespaceÀÇ °æ¿ì Log Compression»ç¿ëÇÏ°Ú´Ù°í ÇÏ¸é
-    // ¿¡·¯¸¦ ¹ß»ı
+    // Volatile Tablespaceì˜ ê²½ìš° Log Compressionì‚¬ìš©í•˜ê² ë‹¤ê³  í•˜ë©´
+    // ì—ëŸ¬ë¥¼ ë°œìƒ
     IDE_TEST_RAISE( (aAttrFlag & SMI_TBS_ATTR_LOG_COMPRESS_MASK)
                     == SMI_TBS_ATTR_LOG_COMPRESS_TRUE,
                     err_volatile_log_compress );
@@ -86,15 +86,15 @@ IDE_RC svmTBSCreate::initializeTBSAttr( smiTableSpaceAttr    * aTBSAttr,
     idlOS::strncpy( aTBSAttr->mName, aName, SMI_MAX_TABLESPACE_NAME_LEN );
     aTBSAttr->mName[SMI_MAX_TABLESPACE_NAME_LEN] = '\0';
 
-    // BUGBUG-1548 Refactoring mNameÀÌ '\0'À¸·Î ³¡³ª´Â ¹®ÀÚ¿­ÀÌ¹Ç·Î
-    //             mNameLength´Â ÇÊ¿ä°¡ ¾ø´Ù. Á¦°ÅÇÒ°Í.
+    // BUGBUG-1548 Refactoring mNameì´ '\0'ìœ¼ë¡œ ëë‚˜ëŠ” ë¬¸ìì—´ì´ë¯€ë¡œ
+    //             mNameLengthëŠ” í•„ìš”ê°€ ì—†ë‹¤. ì œê±°í• ê²ƒ.
     aTBSAttr->mNameLength = idlOS::strlen( aName );
     aTBSAttr->mTBSStateOnLA      = aState;
 
-    // »ç¿ëÀÚ°¡ TablespaceÃÊ±â Å©±â¸¦ ÁöÁ¤ÇÏÁö ¾ÊÀº °æ¿ì
+    // ì‚¬ìš©ìê°€ Tablespaceì´ˆê¸° í¬ê¸°ë¥¼ ì§€ì •í•˜ì§€ ì•Šì€ ê²½ìš°
     if ( aInitSize == 0 )
     {
-        // ÃÖ¼Ò È®Àå´ÜÀ§ÀÎ ChunkÅ©±â¸¸Å­ »ı¼º
+        // ìµœì†Œ í™•ì¥ë‹¨ìœ„ì¸ Chunkí¬ê¸°ë§Œí¼ ìƒì„±
         aInitSize = sChunkSize;
     }
 
@@ -113,7 +113,7 @@ IDE_RC svmTBSCreate::initializeTBSAttr( smiTableSpaceAttr    * aTBSAttr,
     IDE_EXCEPTION( error_tbs_init_size_not_aligned_to_chunk_size );
     {
         IDE_SET(ideSetErrorCode(smERR_ABORT_TBSInitSizeNotAlignedToChunkSize,
-                                // KB ´ÜÀ§ÀÇ Expand Chunk Page Å©±â
+                                // KB ë‹¨ìœ„ì˜ Expand Chunk Page í¬ê¸°
                                 ( sChunkSize / 1024 )));
     }
     IDE_EXCEPTION_END;
@@ -122,20 +122,20 @@ IDE_RC svmTBSCreate::initializeTBSAttr( smiTableSpaceAttr    * aTBSAttr,
 }
 
 /*
-     »ç¿ëÀÚ ¸Ş¸ğ¸® Tablespace¸¦ »ı¼ºÇÑ´Ù.
-     [IN] aTrans          - Tablespace¸¦ »ı¼ºÇÏ·Á´Â Transaction
-     [IN] aDBName         - Tablespace°¡ »ı¼ºµÉ DatabaseÀÇ ÀÌ¸§
-     [IN] aType           - Tablespace Á¾·ù
+     ì‚¬ìš©ì ë©”ëª¨ë¦¬ Tablespaceë¥¼ ìƒì„±í•œë‹¤.
+     [IN] aTrans          - Tablespaceë¥¼ ìƒì„±í•˜ë ¤ëŠ” Transaction
+     [IN] aDBName         - Tablespaceê°€ ìƒì„±ë  Databaseì˜ ì´ë¦„
+     [IN] aType           - Tablespace ì¢…ë¥˜
                             User||System, Memory, Data || Temp
-     [IN] aAttrFlag       - TablespaceÀÇ ¼Ó¼º Flag
-     [IN] aName           - TablespaceÀÇ ÀÌ¸§
-     [IN] aInitSize       - TablespaceÀÇ ÃÊ±âÅ©±â
-                            Meta Page(0¹ø Page)´Â Æ÷ÇÔÇÏÁö ¾Ê´Â Å©±âÀÌ´Ù.
-     [IN] aIsAutoExtend   - TablespaceÀÇ ÀÚµ¿È®Àå ¿©ºÎ
-     [IN] aNextSize       - TablespaceÀÇ ÀÚµ¿È®Àå Å©±â
-     [IN] aMaxSize        - TablespaceÀÇ ÃÖ´ëÅ©±â
-     [IN] aState          - TablespaceÀÇ »óÅÂ
-     [OUT] aTBSID         - »ı¼ºÇÑ TablespaceÀÇ ID
+     [IN] aAttrFlag       - Tablespaceì˜ ì†ì„± Flag
+     [IN] aName           - Tablespaceì˜ ì´ë¦„
+     [IN] aInitSize       - Tablespaceì˜ ì´ˆê¸°í¬ê¸°
+                            Meta Page(0ë²ˆ Page)ëŠ” í¬í•¨í•˜ì§€ ì•ŠëŠ” í¬ê¸°ì´ë‹¤.
+     [IN] aIsAutoExtend   - Tablespaceì˜ ìë™í™•ì¥ ì—¬ë¶€
+     [IN] aNextSize       - Tablespaceì˜ ìë™í™•ì¥ í¬ê¸°
+     [IN] aMaxSize        - Tablespaceì˜ ìµœëŒ€í¬ê¸°
+     [IN] aState          - Tablespaceì˜ ìƒíƒœ
+     [OUT] aTBSID         - ìƒì„±í•œ Tablespaceì˜ ID
  */
 IDE_RC svmTBSCreate::createTBS( void                 * aTrans,
                                  SChar                * aDBName,
@@ -156,11 +156,11 @@ IDE_RC svmTBSCreate::createTBS( void                 * aTrans,
     IDE_DASSERT( aTrans != NULL );
     IDE_DASSERT( aDBName != NULL );
     IDE_DASSERT( aTBSName != NULL );
-    // aChkptPathList´Â »ç¿ëÀÚ°¡ ÁöÁ¤ÇÏÁö ¾ÊÀº °æ¿ì NULLÀÌ´Ù.
-    // aSplitFileSize´Â »ç¿ëÀÚ°¡ ÁöÁ¤ÇÏÁö ¾ÊÀº °æ¿ì 0ÀÌ´Ù.
-    // aInitSize´Â »ç¿ëÀÚ°¡ ÁöÁ¤ÇÏÁö ¾ÊÀº °æ¿ì 0ÀÌ´Ù.
-    // aNextSize´Â »ç¿ëÀÚ°¡ ÁöÁ¤ÇÏÁö ¾ÊÀº °æ¿ì 0ÀÌ´Ù.
-    // aMaxSize´Â »ç¿ëÀÚ°¡ ÁöÁ¤ÇÏÁö ¾ÊÀº °æ¿ì 0ÀÌ´Ù.
+    // aChkptPathListëŠ” ì‚¬ìš©ìê°€ ì§€ì •í•˜ì§€ ì•Šì€ ê²½ìš° NULLì´ë‹¤.
+    // aSplitFileSizeëŠ” ì‚¬ìš©ìê°€ ì§€ì •í•˜ì§€ ì•Šì€ ê²½ìš° 0ì´ë‹¤.
+    // aInitSizeëŠ” ì‚¬ìš©ìê°€ ì§€ì •í•˜ì§€ ì•Šì€ ê²½ìš° 0ì´ë‹¤.
+    // aNextSizeëŠ” ì‚¬ìš©ìê°€ ì§€ì •í•˜ì§€ ì•Šì€ ê²½ìš° 0ì´ë‹¤.
+    // aMaxSizeëŠ” ì‚¬ìš©ìê°€ ì§€ì •í•˜ì§€ ì•Šì€ ê²½ìš° 0ì´ë‹¤.
 
     IDE_TEST( initializeTBSAttr( &sTBSAttr,
                                  aType,
@@ -169,9 +169,9 @@ IDE_RC svmTBSCreate::createTBS( void                 * aTrans,
                                  aInitSize,
                                  aState) != IDE_SUCCESS );
 
-    // BUGBUG-1548-M3 mInitPageCount¸¸Å­ TBS»ı¼º½Ã MEM_MAX_DB_SIZE¾È³Ñ¾î¼­´ÂÁö Ã¼Å©
-    // BUGBUG-1548-M3 mNextPageCount°¡ EXPAND_CHUNK_PAGE_COUNTÀÇ ¹è¼öÀÎÁö Ã¼Å©
-    // BUGBUG-1548-M3 mIsAutoExtend¿¡ µû¶ó Ã»Å© ÀÚµ¿È®Àå¿©ºÎ °áÁ¤ÇÏ±â
+    // BUGBUG-1548-M3 mInitPageCountë§Œí¼ TBSìƒì„±ì‹œ MEM_MAX_DB_SIZEì•ˆë„˜ì–´ì„œëŠ”ì§€ ì²´í¬
+    // BUGBUG-1548-M3 mNextPageCountê°€ EXPAND_CHUNK_PAGE_COUNTì˜ ë°°ìˆ˜ì¸ì§€ ì²´í¬
+    // BUGBUG-1548-M3 mIsAutoExtendì— ë”°ë¼ ì²­í¬ ìë™í™•ì¥ì—¬ë¶€ ê²°ì •í•˜ê¸°
 
     IDE_TEST( createTableSpaceInternal(aTrans,
                                        aDBName,
@@ -201,105 +201,105 @@ IDE_RC svmTBSCreate::createTBS( void                 * aTrans,
 
 
 /*
-   ¸Ş¸ğ¸® Tablespace¸¦ »ı¼ºÇÑ´Ù.
+   ë©”ëª¨ë¦¬ Tablespaceë¥¼ ìƒì„±í•œë‹¤.
 
-   aTrans              [IN] Tablespace¸¦ »ı¼ºÇÏ·Á´Â Transaction
-   aDBName             [IN] Tablespace°¡ ¼ÓÇÏ´Â DatabaseÀÇ ÀÌ¸§
-   aTBSAttr            [IN] »ı¼ºÇÏ·Á´Â TablespaceÀÇ ÀÌ¸§
-   aChkptPathAttrList  [IN] Checkpoint Path AttributeÀÇ List
-   aCreatedTBSNode     [OUT] »ı¼ºÇÑ TablespaceÀÇ Node
+   aTrans              [IN] Tablespaceë¥¼ ìƒì„±í•˜ë ¤ëŠ” Transaction
+   aDBName             [IN] Tablespaceê°€ ì†í•˜ëŠ” Databaseì˜ ì´ë¦„
+   aTBSAttr            [IN] ìƒì„±í•˜ë ¤ëŠ” Tablespaceì˜ ì´ë¦„
+   aChkptPathAttrList  [IN] Checkpoint Path Attributeì˜ List
+   aCreatedTBSNode     [OUT] ìƒì„±í•œ Tablespaceì˜ Node
 
 [ PROJ-1548 User Memory Tablespace ]
 
-Create Tablespace ÀüÃ¼ ¾Ë°í¸®Áò =============================================
+Create Tablespace ì „ì²´ ì•Œê³ ë¦¬ì¦˜ =============================================
 
-* Tablespace Attribute, Checkpoint Path¿¡ ´ëÇÑ
-  Restart Recovery´Â Disk Tablespace¿Í ±âº»ÀûÀ¸·Î µ¿ÀÏÇÏ°Ô Ã³¸®ÇÑ´Ù.
-  ( CommitÀü¿¡ Log Anchor¿¡ FlushÇØµÎ°í
-    Redo½Ã¿¡ »óÅÂ º¯°æÀ» ¼öÇàÇÏ´Â Pending¿¬»ê¸¸ ´Ş¾ÆÁØ´Ù. )
+* Tablespace Attribute, Checkpoint Pathì— ëŒ€í•œ
+  Restart RecoveryëŠ” Disk Tablespaceì™€ ê¸°ë³¸ì ìœ¼ë¡œ ë™ì¼í•˜ê²Œ ì²˜ë¦¬í•œë‹¤.
+  ( Commitì „ì— Log Anchorì— Flushí•´ë‘ê³ 
+    Redoì‹œì— ìƒíƒœ ë³€ê²½ì„ ìˆ˜í–‰í•˜ëŠ” Pendingì—°ì‚°ë§Œ ë‹¬ì•„ì¤€ë‹¤. )
 
-(010) Tablespace IDÇÒ´ç
+(010) Tablespace IDí• ë‹¹
 
-(015) ·Î±ë½Ç½Ã => CREATE_TBS
+(015) ë¡œê¹…ì‹¤ì‹œ => CREATE_TBS
 
 (020) allocate TBSNode
-(030) Lock TBSNode                 // CreateÁßÀÎ TBS¿¡ DML/DDLÀ» ¸·À½
-(050) TBS List¿¡ TBSNode¸¦ Ãß°¡
+(030) Lock TBSNode                 // Createì¤‘ì¸ TBSì— DML/DDLì„ ë§‰ìŒ
+(050) TBS Listì— TBSNodeë¥¼ ì¶”ê°€
 
-(060) Checkpoint Path NodeµéÀ» »ı¼º
-(070) TBSNode¿Í °ü·ÃµÈ ¸ğµç ¸®¼Ò½º ÃÊ±âÈ­
-(080) create Checkpoint Image Files (init size¸¸Å­)
+(060) Checkpoint Path Nodeë“¤ì„ ìƒì„±
+(070) TBSNodeì™€ ê´€ë ¨ëœ ëª¨ë“  ë¦¬ì†ŒìŠ¤ ì´ˆê¸°í™”
+(080) create Checkpoint Image Files (init sizeë§Œí¼)
 
-BUGBUG-1548 °°Àº ÀÌ¸§ÀÇ Checkpoint ImageÆÄÀÏ Á¸Àç½Ã ¿¡·¯Ã³¸®
-=> Forward Processing½Ã, Restart Redo½Ã·Î ±¸ºĞÇÏ¿© °í·Á
+BUGBUG-1548 ê°™ì€ ì´ë¦„ì˜ Checkpoint ImageíŒŒì¼ ì¡´ì¬ì‹œ ì—ëŸ¬ì²˜ë¦¬
+=> Forward Processingì‹œ, Restart Redoì‹œë¡œ êµ¬ë¶„í•˜ì—¬ ê³ ë ¤
 
 (090) initialize PCHArray
 (100) initialize Membase on Page 0
 (110) alloc ExpandChunks
 
-(120) flush Page 0 to Checkpoint Image (ÁÖ5)
+(120) flush Page 0 to Checkpoint Image (ì£¼5)
 
-(130) Log Anchor Flush   // Commit ·Î±×¸¸ ±â·ÏµÇ°í PendingÃ³¸® ¾ÈµÉ °æ¿ì
-                         // ´ëºñÇÏ¿© Log Anchor¿¡
-                         // CREATEÁßÀÎ Tablespace¸¦ Flush
+(130) Log Anchor Flush   // Commit ë¡œê·¸ë§Œ ê¸°ë¡ë˜ê³  Pendingì²˜ë¦¬ ì•ˆë  ê²½ìš°
+                         // ëŒ€ë¹„í•˜ì—¬ Log Anchorì—
+                         // CREATEì¤‘ì¸ Tablespaceë¥¼ Flush
 
-(140) Commit Pendingµî·Ï
+(140) Commit Pendingë“±ë¡
 
 
 - commit : (pending)
-           (c-010) Status := Online(ÁÖ2)
-           (c-020) flush TBSNode (ÁÖ3)
-           <commit ¿Ï·á>
+           (c-010) Status := Online(ì£¼2)
+           (c-020) flush TBSNode (ì£¼3)
+           <commit ì™„ë£Œ>
 
-- Restart Redo½Ã Commit Pending => Forward Processing½Ã¿Í ¸¶Âù°¡Áö·Î Ã³¸®
+- Restart Redoì‹œ Commit Pending => Forward Processingì‹œì™€ ë§ˆì°¬ê°€ì§€ë¡œ ì²˜ë¦¬
 
-- CREATE_TBS ¿¡ ´ëÇÑ REDO :
-  - ¾Æ¹«·± Ã³¸®µµ ÇÏÁö ¾ÊÀ½
-  - ÀÌÀ¯ : Create Tablespace½Ã Commit PendingÀ¸·Î Tablespace°ü·Ã Á¤º¸¸¦
-           ¸ğµÎ Log Anchor¿¡ FlushÇß±â ¶§¹®
+- CREATE_TBS ì— ëŒ€í•œ REDO :
+  - ì•„ë¬´ëŸ° ì²˜ë¦¬ë„ í•˜ì§€ ì•ŠìŒ
+  - ì´ìœ  : Create Tablespaceì‹œ Commit Pendingìœ¼ë¡œ Tablespaceê´€ë ¨ ì •ë³´ë¥¼
+           ëª¨ë‘ Log Anchorì— Flushí–ˆê¸° ë•Œë¬¸
 
-- CREATE_TBS ¿¡ ´ëÇÑ UNDO :
-  - Forward ProcessingÁß Abort¹ß»ı½Ã È£Ãâ
-  - Restart Undo½Ã È£Ãâ
-  - ¾Ë°í¸®Áò
-           (a-010) (·Î±ë½Ç½Ã-CLR-CREATETBS-ABORT)
-           (a-010) TBSID ¿¡ ÇØ´çÇÏ´Â TBSNode¸¦ Ã£À½
-           if ( TBSNode == NULL ) // TBSNode°¡ ¾øÀ½
-             // Do Nothing ( Create ¿¡ ´ëÇÑ Undo·Î ¾Æ¹«°Íµµ ÇÒ ÇÊ¿ä ¾øÀ½ )
-           else // TBSNode°¡ Á¸Àç
+- CREATE_TBS ì— ëŒ€í•œ UNDO :
+  - Forward Processingì¤‘ Abortë°œìƒì‹œ í˜¸ì¶œ
+  - Restart Undoì‹œ í˜¸ì¶œ
+  - ì•Œê³ ë¦¬ì¦˜
+           (a-010) (ë¡œê¹…ì‹¤ì‹œ-CLR-CREATETBS-ABORT)
+           (a-010) TBSID ì— í•´ë‹¹í•˜ëŠ” TBSNodeë¥¼ ì°¾ìŒ
+           if ( TBSNode == NULL ) // TBSNodeê°€ ì—†ìŒ
+             // Do Nothing ( Create ì— ëŒ€í•œ Undoë¡œ ì•„ë¬´ê²ƒë„ í•  í•„ìš” ì—†ìŒ )
+           else // TBSNodeê°€ ì¡´ì¬
              (a-020) latch TBSNode.SyncMutex
-             (a-030)   Status := DROPPED       // TBSNode»óÅÂ¸¦ DROPPED·Î ¼³Á¤
-             (a-040) unlatch TBSNode.SyncMutex  // ÀÌÈÄ·Î´Â Checkpoint¸¦ ¾ÈÇÔ
+             (a-030)   Status := DROPPED       // TBSNodeìƒíƒœë¥¼ DROPPEDë¡œ ì„¤ì •
+             (a-040) unlatch TBSNode.SyncMutex  // ì´í›„ë¡œëŠ” Checkpointë¥¼ ì•ˆí•¨
              (a-050) close all Checkpoint Image Files
              (a-060) delete Checkpoint Image Files
-             (a-070) LockÁ¤º¸ Á¦¿ÜÇÑ ¸ğµç °´Ã¼ ÆÄ±«, ¸Ş¸ğ¸® ¹İ³³ (ÁÖ4)
+             (a-070) Lockì •ë³´ ì œì™¸í•œ ëª¨ë“  ê°ì²´ íŒŒê´´, ë©”ëª¨ë¦¬ ë°˜ë‚© (ì£¼4)
              (a-080) flush TBSNode
            fi
-           <abort ¿Ï·á>
+           <abort ì™„ë£Œ>
 
-- CLR-CREATETBS-ABORT¿¡ ´ëÇÑ REDO :
-  - ¸Ş¸ğ¸®³ª ÆÄÀÏÀÌ Á¸ÀçÇÏ´Â °æ¿ì¿¡¸¸ ¸Ş¸ğ¸® ¹İ³³, ÆÄÀÏ»èÁ¦ ½Ç½Ã
-    - ÀÌÀ¯ : ÀÌ¹Ì CLR¿¡ ÇØ´çÇÏ´Â ³»¿ëÀÌ REDOµÇ¾úÀ» ¼ö ÀÖ±â ¶§¹®.
-           if ( TBSNode Á¸Àç )
+- CLR-CREATETBS-ABORTì— ëŒ€í•œ REDO :
+  - ë©”ëª¨ë¦¬ë‚˜ íŒŒì¼ì´ ì¡´ì¬í•˜ëŠ” ê²½ìš°ì—ë§Œ ë©”ëª¨ë¦¬ ë°˜ë‚©, íŒŒì¼ì‚­ì œ ì‹¤ì‹œ
+    - ì´ìœ  : ì´ë¯¸ CLRì— í•´ë‹¹í•˜ëŠ” ë‚´ìš©ì´ REDOë˜ì—ˆì„ ìˆ˜ ìˆê¸° ë•Œë¬¸.
+           if ( TBSNode ì¡´ì¬ )
               (clr-010) Status := DROPPED
-              (clr-020) LockÁ¤º¸ Á¦¿ÜÇÑ ¸ğµç °´Ã¼ ÆÄ±«, ¸Ş¸ğ¸® ¹İ³³ (ÁÖ4)
-              (clr-030) TBS¿Í °ü·ÃµÈ ÆÄÀÏÀÌ ÀÖÀ¸¸é Á¦°Å
+              (clr-020) Lockì •ë³´ ì œì™¸í•œ ëª¨ë“  ê°ì²´ íŒŒê´´, ë©”ëª¨ë¦¬ ë°˜ë‚© (ì£¼4)
+              (clr-030) TBSì™€ ê´€ë ¨ëœ íŒŒì¼ì´ ìˆìœ¼ë©´ ì œê±°
            else
-              // Tablespace Node°¡ List¿¡¼­ Á¦°ÅµÈ °æ¿ìÀÌ¸ç,
-              // ¾Æ¹«°Íµµ ÇÒ ÇÊ¿ä ¾ø´Ù
+              // Tablespace Nodeê°€ Listì—ì„œ ì œê±°ëœ ê²½ìš°ì´ë©°,
+              // ì•„ë¬´ê²ƒë„ í•  í•„ìš” ì—†ë‹¤
            fi
 
 - checkpoint :
-  - CreatingÁßÀÎ TBS¿¡ ´ëÇØ¼­ Checkpoint¸¦ Çã¿ëÇÑ´Ù.
-      => (080)¿¡¼­ Checkpoint ImageÆÄÀÏ ¸ÕÀú »ı¼ºÇÏ°í
-         (100), (110)¿¡¼­ Dirty Page Ãß°¡ÇÏ±â ¶§¹®¿¡
-         Checkpoint°¡ ¹ß»ıÇÏ¿© Dirty Page FlushµÇ¾îµµ ¹®Á¦°¡ ¾ø´Ù.
-         ´Ü, UNDOµµÁß Checkpoint Image¸¦ Áö¿ì±â Àü¿¡
-         Sync Mutex¸¦ Àâ¾Æ¼­ Checkpoint¿ÍÀÇ °æÇÕÀ» ¸·´Â´Ù.
+  - Creatingì¤‘ì¸ TBSì— ëŒ€í•´ì„œ Checkpointë¥¼ í—ˆìš©í•œë‹¤.
+      => (080)ì—ì„œ Checkpoint ImageíŒŒì¼ ë¨¼ì € ìƒì„±í•˜ê³ 
+         (100), (110)ì—ì„œ Dirty Page ì¶”ê°€í•˜ê¸° ë•Œë¬¸ì—
+         Checkpointê°€ ë°œìƒí•˜ì—¬ Dirty Page Flushë˜ì–´ë„ ë¬¸ì œê°€ ì—†ë‹¤.
+         ë‹¨, UNDOë„ì¤‘ Checkpoint Imageë¥¼ ì§€ìš°ê¸° ì „ì—
+         Sync Mutexë¥¼ ì¡ì•„ì„œ Checkpointì™€ì˜ ê²½í•©ì„ ë§‰ëŠ”ë‹¤.
 
-  - DropµÈ, È¤Àº Create Tablespace°¡ UNDOµÇ¾î DROP»óÅÂ·Î µÈ
-    Tablespace¿¡ ´ëÇØ Checkpoint¸¦ ¼öÇàÇÏÁö ¾Ê´Â´Ù.
-      => CheckpointÀü¿¡ TBSNodeÀÇ SyncMutex¸¦ Àâ°í »óÅÂ°Ë»ç ½Ç½Ã
+  - Dropëœ, í˜¹ì€ Create Tablespaceê°€ UNDOë˜ì–´ DROPìƒíƒœë¡œ ëœ
+    Tablespaceì— ëŒ€í•´ Checkpointë¥¼ ìˆ˜í–‰í•˜ì§€ ì•ŠëŠ”ë‹¤.
+      => Checkpointì „ì— TBSNodeì˜ SyncMutexë¥¼ ì¡ê³  ìƒíƒœê²€ì‚¬ ì‹¤ì‹œ
            latch TBSNode.SyncMutex
               if ( TBSNode.Status & DROPPED )
               {
@@ -307,45 +307,45 @@ BUGBUG-1548 °°Àº ÀÌ¸§ÀÇ Checkpoint ImageÆÄÀÏ Á¸Àç½Ã ¿¡·¯Ã³¸®
               }
               else
               {
-                 Checkpoint(Dirty Page Flush) ½Ç½Ã
+                 Checkpoint(Dirty Page Flush) ì‹¤ì‹œ
               }
            unlatch TBSNode.SyncMutex
 
 
-- (ÁÖ1) : TBS¿¡ X¶ôÀ» Àâ¾Æ¼­ TBS»ı¼ºÇÏ´Â TX°¡ COMMITÇÏ±â Àü¿¡
-         ¾Æ¹«µµ TBS¿¡ Á¢±ÙÇÏÁö ¸øÇÏµµ·Ï ¸·¾ÆÁØ´Ù.
+- (ì£¼1) : TBSì— Xë½ì„ ì¡ì•„ì„œ TBSìƒì„±í•˜ëŠ” TXê°€ COMMITí•˜ê¸° ì „ì—
+         ì•„ë¬´ë„ TBSì— ì ‘ê·¼í•˜ì§€ ëª»í•˜ë„ë¡ ë§‰ì•„ì¤€ë‹¤.
 
-- (ÁÖ2) : TBSNodeÀÇ Status¸¦ Creating¿¡¼­ OnlineÀ¸·Î º¯°æÇØÁØ´Ù.
+- (ì£¼2) : TBSNodeì˜ Statusë¥¼ Creatingì—ì„œ Onlineìœ¼ë¡œ ë³€ê²½í•´ì¤€ë‹¤.
 
-- (ÁÖ3) : Commit PendingÀ¸·Î Log Anchor°¡ FlushµÇ°í ³ª¼­
-          TransctionÀÇ CommitÀÌ ¿Ï·áµÈ´Ù.
-          ÀÌÈÄ
-          TBSNode¸¦ commitÀÌÀü¿¡ Log Anchor¿¡ ¹Ù·Î FlushÇØµµ ¹«°üÇÏ´Ù.
-          ´Ü, ÀÌ ¶§ abort½Ã TBSNode¸¦ Log Anchor¿¡¼­ Áö¿öÁÖ´Â Ãß°¡ÀÛ¾÷ÀÌ ÇÊ¿äÇÏ´Ù.
-- (ÁÖ4) : ÇØ´ç TBSNodeÀÇ LockÀ» ´ë±âÇÏ´Â ´Ù¸¥ Tx°¡ ÀÖÀ» ¼ö ÀÖ±â ¶§¹®¿¡,
-          TBSNodeÀÚÃ¼¸¦ TBS List¿¡¼­ Á¦°ÅÇÒ ¼ö ¾ø´Ù.
-          ((°¡)Create Tablespace TBS1ÀÌ CommitµÇ±â Àü¿¡
-           (³ª)Create Table In TBS1ÀÌ µé¾î¿Â °æ¿ì,
-           (³ª)´Â TBS1ÀÇ LockÀ» ´ë±âÇÑ´Ù. )
+- (ì£¼3) : Commit Pendingìœ¼ë¡œ Log Anchorê°€ Flushë˜ê³  ë‚˜ì„œ
+          Transctionì˜ Commitì´ ì™„ë£Œëœë‹¤.
+          ì´í›„
+          TBSNodeë¥¼ commitì´ì „ì— Log Anchorì— ë°”ë¡œ Flushí•´ë„ ë¬´ê´€í•˜ë‹¤.
+          ë‹¨, ì´ ë•Œ abortì‹œ TBSNodeë¥¼ Log Anchorì—ì„œ ì§€ì›Œì£¼ëŠ” ì¶”ê°€ì‘ì—…ì´ í•„ìš”í•˜ë‹¤.
+- (ì£¼4) : í•´ë‹¹ TBSNodeì˜ Lockì„ ëŒ€ê¸°í•˜ëŠ” ë‹¤ë¥¸ Txê°€ ìˆì„ ìˆ˜ ìˆê¸° ë•Œë¬¸ì—,
+          TBSNodeìì²´ë¥¼ TBS Listì—ì„œ ì œê±°í•  ìˆ˜ ì—†ë‹¤.
+          ((ê°€)Create Tablespace TBS1ì´ Commitë˜ê¸° ì „ì—
+           (ë‚˜)Create Table In TBS1ì´ ë“¤ì–´ì˜¨ ê²½ìš°,
+           (ë‚˜)ëŠ” TBS1ì˜ Lockì„ ëŒ€ê¸°í•œë‹¤. )
 
-- (ÁÖ5) : Membase°¡ µé¾îÀÖ´Â 0¹ø Page´Â Restart RecoveryÀÌÀüÀÎ,
-          Prepare/Restore DB½Ã¿¡ ÀĞ¾îµé¿©¼­ ¸î °³ÀÇ FileÀ»
-          RestoreÇÒ Áö¸¦ °áÁ¤ÇÏ°Ô µÈ´Ù.
-          Restrart Redo°¡ µÇÁö ¾ÊÀº »óÅÂ¿¡¼­µµ ÀÌ °ªÀÌ
-          Create Tablespace´ç½ÃÀÇ °ªÀÓÀ» º¸ÀåÇÏ±â À§ÇØ
-          0¹ø Page¸¦ FlushÇÑ´Ù.
+- (ì£¼5) : Membaseê°€ ë“¤ì–´ìˆëŠ” 0ë²ˆ PageëŠ” Restart Recoveryì´ì „ì¸,
+          Prepare/Restore DBì‹œì— ì½ì–´ë“¤ì—¬ì„œ ëª‡ ê°œì˜ Fileì„
+          Restoreí•  ì§€ë¥¼ ê²°ì •í•˜ê²Œ ëœë‹¤.
+          Restrart Redoê°€ ë˜ì§€ ì•Šì€ ìƒíƒœì—ì„œë„ ì´ ê°’ì´
+          Create Tablespaceë‹¹ì‹œì˜ ê°’ì„ì„ ë³´ì¥í•˜ê¸° ìœ„í•´
+          0ë²ˆ Pageë¥¼ Flushí•œë‹¤.
 
-          BUGBUG-ÁÖ¼®´õ±â¼ú
+          BUGBUG-ì£¼ì„ë”ê¸°ìˆ 
 
-- Latch°£ DeadlockÈ¸ÇÇ¸¦ À§ÇÑ LatchÀâ´Â ¼ø¼­
+- Latchê°„ DeadlockíšŒí”¼ë¥¼ ìœ„í•œ Latchì¡ëŠ” ìˆœì„œ
 
     1. sctTableSpaceMgr::lock()           // TBS LIST
     2. sctTableSpaceMgr::latchSyncMutex() // TBS NODE
     3. svmPCH.mPageMemMutex.lock()        // PAGE
 
-- Lock°ú Latch°£ÀÇ DeadlockÈ¸ÇÇ¸¦ À§ÇÑ Lock/LatchÀâ´Â ¼ø¼­
-    1. Lock¸¦  ¸ÕÀú Àâ´Â´Ù.
-    2. Latch¸¦ ³ªÁß¿¡ Àâ´Â´Ù.
+- Lockê³¼ Latchê°„ì˜ DeadlockíšŒí”¼ë¥¼ ìœ„í•œ Lock/Latchì¡ëŠ” ìˆœì„œ
+    1. Lockë¥¼  ë¨¼ì € ì¡ëŠ”ë‹¤.
+    2. Latchë¥¼ ë‚˜ì¤‘ì— ì¡ëŠ”ë‹¤.
 
 */
 IDE_RC svmTBSCreate::createTableSpaceInternal(
@@ -367,7 +367,7 @@ IDE_RC svmTBSCreate::createTableSpaceInternal(
                    too_long_tbsname);
 
     ///////////////////////////////////////////////////////////////
-    // (010) Tablespace IDÇÒ´ç
+    // (010) Tablespace IDí• ë‹¹
     IDE_TEST( sctTableSpaceMgr::lockForCrtTBS() != IDE_SUCCESS );
     sIsCreateLatched = ID_TRUE;
 
@@ -379,7 +379,7 @@ IDE_RC svmTBSCreate::createTableSpaceInternal(
 
 
     ///////////////////////////////////////////////////////////////
-    // (015) ·Î±ë½Ç½Ã => CREATE_TBS
+    // (015) ë¡œê¹…ì‹¤ì‹œ => CREATE_TBS
     IDE_TEST( smLayerCallback::writeVolatileTBSCreate( NULL, /* idvSQL */
                                                        aTrans,
                                                        aTBSAttr->mID )
@@ -387,28 +387,28 @@ IDE_RC svmTBSCreate::createTableSpaceInternal(
 
     ///////////////////////////////////////////////////////////////
     // (020) allocate TBSNode
-    // (030) Lock TBSNode             // DML/DDL°ú CreateÁßÀÎ TBS°£ÀÇ °æÇÕ
-    // (040) Latch TBSNode.SyncMutex // Checkpoint¿Í CreateÁßÀÎ TBS°£ÀÇ °æÇÕ
-    // (050) TBS List¿¡ TBSNode¸¦ Ãß°¡
+    // (030) Lock TBSNode             // DML/DDLê³¼ Createì¤‘ì¸ TBSê°„ì˜ ê²½í•©
+    // (040) Latch TBSNode.SyncMutex // Checkpointì™€ Createì¤‘ì¸ TBSê°„ì˜ ê²½í•©
+    // (050) TBS Listì— TBSNodeë¥¼ ì¶”ê°€
 
-    // createAndLockTBSNode¿¡¼­
-    // TBSNode->mTBSAttr.mState °¡ CREATING | ONLINE ÀÌ µÇµµ·Ï ÇÑ´Ù.
-    // Commit½Ã PendingÀ¸·Î CREATINGÀ» »©ÁÖ°í,
-    // Abort½Ã writeVolatileTBSLog¿¡ ´ëÇÑ UNDO·Î »óÅÂ¸¦ DROPPED·Î ¼³Á¤ÇÑ´Ù.
+    // createAndLockTBSNodeì—ì„œ
+    // TBSNode->mTBSAttr.mState ê°€ CREATING | ONLINE ì´ ë˜ë„ë¡ í•œë‹¤.
+    // Commitì‹œ Pendingìœ¼ë¡œ CREATINGì„ ë¹¼ì£¼ê³ ,
+    // Abortì‹œ writeVolatileTBSLogì— ëŒ€í•œ UNDOë¡œ ìƒíƒœë¥¼ DROPPEDë¡œ ì„¤ì •í•œë‹¤.
 
-    // createAndLockTBSNode¿¡¼­ TBSNode.mState¿¡ TBSAttr.mTBSStateOnLA¸¦ º¹»ç
+    // createAndLockTBSNodeì—ì„œ TBSNode.mStateì— TBSAttr.mTBSStateOnLAë¥¼ ë³µì‚¬
     //
     //
-    // - Volatile TablespaceÀÇ °æ¿ì
-    //   SMI_TBS_INCONSISTENT»óÅÂ°¡ ÇÊ¿äÇÏÁö ¾Ê´Ù.
-    //   - ÀÌÀ¯ : Membase, Checkpoint ImageÆÄÀÏ ¸ğµÎ ¾øÀ½
-    //   -         Tablespace°¡ »ı¼ºµÇ´Â µµÁß¿¡
-    //             ÀÏ½ÃÀûÀ¸·Î INCONSISTENTÇÑ »óÅÂ°¡ µÇ´Â ÀÏÀÌ ¾øÀ½
+    // - Volatile Tablespaceì˜ ê²½ìš°
+    //   SMI_TBS_INCONSISTENTìƒíƒœê°€ í•„ìš”í•˜ì§€ ì•Šë‹¤.
+    //   - ì´ìœ  : Membase, Checkpoint ImageíŒŒì¼ ëª¨ë‘ ì—†ìŒ
+    //   -         Tablespaceê°€ ìƒì„±ë˜ëŠ” ë„ì¤‘ì—
+    //             ì¼ì‹œì ìœ¼ë¡œ INCONSISTENTí•œ ìƒíƒœê°€ ë˜ëŠ” ì¼ì´ ì—†ìŒ
     aTBSAttr->mTBSStateOnLA = SMI_TBS_CREATING | SMI_TBS_ONLINE;
 
-    // Tablespace Node¸¦ »ı¼ºÇÏ¿© TBS Node List¿¡ Ãß°¡ÇÑ´Ù.
-    // - TBSNode¿¡ °èÃş LockÀ» X·Î Àâ´Â´Ù. ( ÀÏ¹İ DML,DDL°ú °æÇÕ )
-    // - Sync Mutex¿¡ Latch¸¦ È¹µæÇÑ´Ù. ( Checkpoint¿Í °æÇÕ )
+    // Tablespace Nodeë¥¼ ìƒì„±í•˜ì—¬ TBS Node Listì— ì¶”ê°€í•œë‹¤.
+    // - TBSNodeì— ê³„ì¸µ Lockì„ Xë¡œ ì¡ëŠ”ë‹¤. ( ì¼ë°˜ DML,DDLê³¼ ê²½í•© )
+    // - Sync Mutexì— Latchë¥¼ íšë“í•œë‹¤. ( Checkpointì™€ ê²½í•© )
     IDE_TEST( createAndLockTBSNode(aTrans,
                                    aTBSAttr)
               != IDE_SUCCESS );
@@ -428,16 +428,16 @@ IDE_RC svmTBSCreate::createTableSpaceInternal(
     ///////////////////////////////////////////////////////////////
     // (110) Log Anchor Flush
     //
-    // Commit ·Î±×¸¸ ±â·ÏµÇ°í PendingÃ³¸® ¾ÈµÉ °æ¿ì¿¡ ´ëºñÇÏ¿©
-    // Log Anchor¿¡ CREATEÁßÀÎ Tablespace¸¦ Flush
+    // Commit ë¡œê·¸ë§Œ ê¸°ë¡ë˜ê³  Pendingì²˜ë¦¬ ì•ˆë  ê²½ìš°ì— ëŒ€ë¹„í•˜ì—¬
+    // Log Anchorì— CREATEì¤‘ì¸ Tablespaceë¥¼ Flush
     IDE_TEST( svmTBSCreate::flushTBSNode(sNewTBSNode) != IDE_SUCCESS );
 
     ///////////////////////////////////////////////////////////////
-    // (120) Commit Pendingµî·Ï
+    // (120) Commit Pendingë“±ë¡
     IDE_TEST( sctTableSpaceMgr::addPendingOperation(
                   aTrans,
                   sNewTBSNode->mHeader.mID,
-                  ID_TRUE, /* commit½Ã¿¡ µ¿ÀÛ */
+                  ID_TRUE, /* commitì‹œì— ë™ì‘ */
                   SCT_POP_CREATE_TBS,
                   & sPendingOp)
               != IDE_SUCCESS );
@@ -462,24 +462,24 @@ IDE_RC svmTBSCreate::createTableSpaceInternal(
         IDE_ASSERT( sctTableSpaceMgr::unlockForCrtTBS() == IDE_SUCCESS );
     }
 
-    // (030)¿¡¼­ È¹µæÇÑ Tablespace X LockÀº UNDO¿Ï·áÈÄ ÀÚµ¿À¸·Î Ç®°ÔµÈ´Ù
-    // ¿©±â¼­ º°µµ Ã³¸®ÇÒ ÇÊ¿ä ¾øÀ½
+    // (030)ì—ì„œ íšë“í•œ Tablespace X Lockì€ UNDOì™„ë£Œí›„ ìë™ìœ¼ë¡œ í’€ê²Œëœë‹¤
+    // ì—¬ê¸°ì„œ ë³„ë„ ì²˜ë¦¬í•  í•„ìš” ì—†ìŒ
 
     IDE_POP();
 
     return IDE_FAILURE;
 }
 /*
-   Tablespace¸¦ CreateÇÑ Tx°¡ CommitµÇ¾úÀ» ¶§ ºÒ¸®´Â PendingÇÔ¼ö
+   Tablespaceë¥¼ Createí•œ Txê°€ Commitë˜ì—ˆì„ ë•Œ ë¶ˆë¦¬ëŠ” Pendingí•¨ìˆ˜
 
-   [ ¾Ë°í¸®Áò ]
+   [ ì•Œê³ ë¦¬ì¦˜ ]
      (010) latch TableSpace Manager
-     (020) TBSNode.State ¿¡¼­ CREATING»óÅÂ Á¦°Å
-     (030) TBSNode¸¦ Log Anchor¿¡ Flush
+     (020) TBSNode.State ì—ì„œ CREATINGìƒíƒœ ì œê±°
+     (030) TBSNodeë¥¼ Log Anchorì— Flush
      (040) unlatch TableSpace Manager
-   [ Âü°í ]
-     Commit PendingÇÔ¼ö´Â ½ÇÆĞÇØ¼­´Â ¾ÈµÇ±â ¶§¹®¿¡
-     ºü¸¥ ¿¡·¯ Detect¸¦ À§ÇØ IDE_ASSERT·Î ¿¡·¯Ã³¸®¸¦ ½Ç½ÃÇÏ¿´´Ù.
+   [ ì°¸ê³  ]
+     Commit Pendingí•¨ìˆ˜ëŠ” ì‹¤íŒ¨í•´ì„œëŠ” ì•ˆë˜ê¸° ë•Œë¬¸ì—
+     ë¹ ë¥¸ ì—ëŸ¬ Detectë¥¼ ìœ„í•´ IDE_ASSERTë¡œ ì—ëŸ¬ì²˜ë¦¬ë¥¼ ì‹¤ì‹œí•˜ì˜€ë‹¤.
  */
 
 IDE_RC svmTBSCreate::createTableSpacePending( idvSQL*             aStatistics,
@@ -490,20 +490,20 @@ IDE_RC svmTBSCreate::createTableSpacePending( idvSQL*             aStatistics,
 
     /////////////////////////////////////////////////////////////////////
     // (010) latch TableSpace Manager
-    //       ´Ù¸¥ Tablespace°¡ º¯°æµÇ´Â °ÍÀ» BlockÇÏ±â À§ÇÔ
-    //       ÇÑ¹ø¿¡ ÇÏ³ªÀÇ Tablespace¸¸ º¯°æ/FlushÇÑ´Ù.
+    //       ë‹¤ë¥¸ Tablespaceê°€ ë³€ê²½ë˜ëŠ” ê²ƒì„ Blockí•˜ê¸° ìœ„í•¨
+    //       í•œë²ˆì— í•˜ë‚˜ì˜ Tablespaceë§Œ ë³€ê²½/Flushí•œë‹¤.
 
     IDE_ASSERT( sctTableSpaceMgr::lock( aStatistics ) == IDE_SUCCESS );
 
     ///////////////////////////////////////////////////////////////
-    // (020) TBSNode.State ¿¡¼­ CREATING»óÅÂ Á¦°Å
+    // (020) TBSNode.State ì—ì„œ CREATINGìƒíƒœ ì œê±°
 
     IDE_ASSERT( SMI_TBS_IS_ONLINE(aSpaceNode->mState) );
     IDE_ASSERT( SMI_TBS_IS_CREATING(aSpaceNode->mState) );
     aSpaceNode->mState &= ~SMI_TBS_CREATING;
 
     ///////////////////////////////////////////////////////////////
-    // (030) TBSNode¸¦ Log Anchor¿¡ Flush
+    // (030) TBSNodeë¥¼ Log Anchorì— Flush
     if ( smLayerCallback::isRestart() != ID_TRUE )
     {
         IDE_ASSERT( smLayerCallback::updateTBSNodeAndFlush( aSpaceNode )
@@ -511,7 +511,7 @@ IDE_RC svmTBSCreate::createTableSpacePending( idvSQL*             aStatistics,
     }
     else
     {
-        // ¼­¹ö±¸µ¿½Ã¿¡´Â RECOVERY ÀÌÈÄ¿¡ ÇÑ¹ø¸¸ Loganchor °»½ÅÇÑ´Ù.
+        // ì„œë²„êµ¬ë™ì‹œì—ëŠ” RECOVERY ì´í›„ì— í•œë²ˆë§Œ Loganchor ê°±ì‹ í•œë‹¤.
     }
 
     /////////////////////////////////////////////////////////////////////
@@ -524,18 +524,18 @@ IDE_RC svmTBSCreate::createTableSpacePending( idvSQL*             aStatistics,
 
 
 /*
-    svmTBSNode¸¦ »ı¼ºÇÏ¿© sctTableSpaceMgr¿¡ µî·ÏÇÑ´Ù.
+    svmTBSNodeë¥¼ ìƒì„±í•˜ì—¬ sctTableSpaceMgrì— ë“±ë¡í•œë‹¤.
 
-    [ Lock / Latch°£ÀÇ deadlock È¸ÇÇ ]
-    - LockÀ» ¸ÕÀú Àâ°í Latch¸¦ ³ªÁß¿¡ Àâ¾Æ¼­ DeadlockÀ» È¸ÇÇÇÑ´Ù.
-    - ÀÌ ÇÔ¼ö°¡ ºÒ¸®±â Àü¿¡ latch°¡ ÀâÈù »óÅÂ¿©¼­´Â ¾ÈµÈ´Ù.
+    [ Lock / Latchê°„ì˜ deadlock íšŒí”¼ ]
+    - Lockì„ ë¨¼ì € ì¡ê³  Latchë¥¼ ë‚˜ì¤‘ì— ì¡ì•„ì„œ Deadlockì„ íšŒí”¼í•œë‹¤.
+    - ì´ í•¨ìˆ˜ê°€ ë¶ˆë¦¬ê¸° ì „ì— latchê°€ ì¡íŒ ìƒíƒœì—¬ì„œëŠ” ì•ˆëœë‹¤.
 
 
-    [IN] aTBSAttr    - »ı¼ºÇÒ Tablespace NodeÀÇ ¼Ó¼º
-    [IN] aOp         - Tablespace Node»ı¼º½ÃÀÇ Option
-    [IN] aIsOnCreate - create tablespace ¿¬»êÀÇ °æ¿ì ID_TRUE
-    [IN] aTrans      - Tablespace ¿¡ °èÃş LockÀ» Àâ°íÀÚ ÇÏ´Â °æ¿ì
-                       LockÀ» ÀâÀ» Transaction
+    [IN] aTBSAttr    - ìƒì„±í•  Tablespace Nodeì˜ ì†ì„±
+    [IN] aOp         - Tablespace Nodeìƒì„±ì‹œì˜ Option
+    [IN] aIsOnCreate - create tablespace ì—°ì‚°ì˜ ê²½ìš° ID_TRUE
+    [IN] aTrans      - Tablespace ì— ê³„ì¸µ Lockì„ ì¡ê³ ì í•˜ëŠ” ê²½ìš°
+                       Lockì„ ì¡ì„ Transaction
 */
 IDE_RC svmTBSCreate::createAndLockTBSNode(void              *aTrans,
                                            smiTableSpaceAttr *aTBSAttr)
@@ -549,18 +549,18 @@ IDE_RC svmTBSCreate::createAndLockTBSNode(void              *aTrans,
     IDE_DASSERT( aTBSAttr != NULL );
     IDE_DASSERT( aTBSAttr->mAttrType == SMI_TBS_ATTR );
 
-    // sTBSNode¸¦ ÃÊ±âÈ­ ÇÑ´Ù.
+    // sTBSNodeë¥¼ ì´ˆê¸°í™” í•œë‹¤.
     IDE_TEST(svmManager::allocTBSNode(&sTBSNode, aTBSAttr)
              != IDE_SUCCESS);
 
     sStage = 1;
 
-    // Volatile Tablespace¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+    // Volatile Tablespaceë¥¼ ì´ˆê¸°í™”í•œë‹¤.
     IDE_TEST(svmManager::initTBS(sTBSNode) != IDE_SUCCESS);
 
     sStage = 2;
 
-    // LockÈ¹µæ½Ã Lock SlotÀ» sLockHier->mTBSNodeSlot¿¡ ³Ñ°ÜÁØ´Ù.
+    // Lockíšë“ì‹œ Lock Slotì„ sLockHier->mTBSNodeSlotì— ë„˜ê²¨ì¤€ë‹¤.
     IDE_TEST( sctTableSpaceMgr::lockTBSNode(
                   aTrans,
                   & sTBSNode->mHeader,
@@ -576,8 +576,8 @@ IDE_RC svmTBSCreate::createAndLockTBSNode(void              *aTrans,
     IDE_TEST( sctTableSpaceMgr::lock(NULL /* idvSQL* */) != IDE_SUCCESS );
     sIsLocked = ID_TRUE;
 
-    /* µ¿ÀÏÇÑ tablespace¸íÀÌ Á¸ÀçÇÏ´ÂÁö °Ë»çÇÑ´Ù. */
-    // BUG-26695 TBS Node°¡ ¾ø´Â°ÍÀÌ Á¤»óÀÌ¹Ç·Î ¾øÀ» °æ¿ì ¿À·ù ¸Ş½ÃÁö¸¦ ¹İÈ¯ÇÏÁö ¾Êµµ·Ï ¼öÁ¤
+    /* ë™ì¼í•œ tablespaceëª…ì´ ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬í•œë‹¤. */
+    // BUG-26695 TBS Nodeê°€ ì—†ëŠ”ê²ƒì´ ì •ìƒì´ë¯€ë¡œ ì—†ì„ ê²½ìš° ì˜¤ë¥˜ ë©”ì‹œì§€ë¥¼ ë°˜í™˜í•˜ì§€ ì•Šë„ë¡ ìˆ˜ì •
     IDE_TEST_RAISE( sctTableSpaceMgr::checkExistSpaceNodeByName( sTBSNode->mHeader.mName )
               == ID_TRUE, err_already_exist_tablespace_name );
 
@@ -614,8 +614,8 @@ IDE_RC svmTBSCreate::createAndLockTBSNode(void              *aTrans,
 
         case 2: 
             /* BUG-39806 Valgrind Warning
-             * - svmTBSDrop::dropTableSpacePending() ÀÇ Ã³¸®¸¦ À§ÇØ¼­, ¸ÕÀú °Ë»ç
-             *   ÇÏ°í svmManager::finiTBS()¸¦ È£ÃâÇÕ´Ï´Ù.
+             * - svmTBSDrop::dropTableSpacePending() ì˜ ì²˜ë¦¬ë¥¼ ìœ„í•´ì„œ, ë¨¼ì € ê²€ì‚¬
+             *   í•˜ê³  svmManager::finiTBS()ë¥¼ í˜¸ì¶œí•©ë‹ˆë‹¤.
              */
             if ( ( sTBSNode->mHeader.mState & SMI_TBS_DROPPED )
                  != SMI_TBS_DROPPED )
@@ -624,7 +624,7 @@ IDE_RC svmTBSCreate::createAndLockTBSNode(void              *aTrans,
             }
             else
             {
-                // DropµÈ TBS´Â  ÀÌ¹Ì ÀÚ¿øÀÌ ÇØÁ¦µÇ¾î ÀÖ´Ù.
+                // Dropëœ TBSëŠ”  ì´ë¯¸ ìì›ì´ í•´ì œë˜ì–´ ìˆë‹¤.
             }
         case 1:
             IDE_ASSERT(svmManager::destroyTBSNode(sTBSNode) == IDE_SUCCESS);
@@ -643,9 +643,9 @@ IDE_RC svmTBSCreate::createAndLockTBSNode(void              *aTrans,
 }
 
 /*
-    Tablespace Node¸¦ Log Anchor¿¡ flushÇÑ´Ù.
+    Tablespace Nodeë¥¼ Log Anchorì— flushí•œë‹¤.
 
-    [IN] aTBSNode - FlushÇÏ·Á´Â Tablespace Node
+    [IN] aTBSNode - Flushí•˜ë ¤ëŠ” Tablespace Node
  */
 IDE_RC svmTBSCreate::flushTBSNode(svmTBSNode * aTBSNode)
 {

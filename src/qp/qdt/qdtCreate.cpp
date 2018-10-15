@@ -34,14 +34,14 @@ IDE_RC qdtCreate::validateDiskDataTBS(qcStatement * aStatement)
 /***********************************************************************
  *
  * Description :
- *    CREATE TABLESPACE ... ÀÇ validation ¼öÇà
+ *    CREATE TABLESPACE ... ì˜ validation ìˆ˜í–‰
  *
  * Implementation :
- *    1. ±ÇÇÑ °Ë»ç
+ *    1. ê¶Œí•œ ê²€ì‚¬
  *       qdbPrivilege::checkDDLCreateTableSpacePriv()
- *    2. ¸í½ÃÇÑ Å×ÀÌºí½ºÅ×ÀÌ½º¸íÀÌ µ¥ÀÌÅÍº£ÀÌ½º ³»¿¡ ÀÌ¹Ì Á¸ÀçÇÏ´ÂÁö
- *       ¸ÞÅ¸ °Ë»ö
- *    3. file specification validation ÇÔ¼ö È£Ãâ
+ *    2. ëª…ì‹œí•œ í…Œì´ë¸”ìŠ¤í…Œì´ìŠ¤ëª…ì´ ë°ì´í„°ë² ì´ìŠ¤ ë‚´ì— ì´ë¯¸ ì¡´ìž¬í•˜ëŠ”ì§€
+ *       ë©”íƒ€ ê²€ìƒ‰
+ *    3. file specification validation í•¨ìˆ˜ í˜¸ì¶œ
  *    4. extent size validation
  *
  ***********************************************************************/
@@ -60,13 +60,13 @@ IDE_RC qdtCreate::validateDiskDataTBS(qcStatement * aStatement)
     
     sParseTree = (qdCreateTBSParseTree *)aStatement->myPlan->parseTree;
 
-    // ±ÇÇÑ °Ë»ç
+    // ê¶Œí•œ ê²€ì‚¬
     IDE_TEST( qdpRole::checkDDLCreateTableSpacePriv(
                   aStatement,
                   QCG_GET_SESSION_USER_ID( aStatement ) )
               != IDE_SUCCESS );
  
-    // µ¿ÀÏÇÑ tablespace nameÀÌ Á¸ÀçÇÏ´ÂÁö °Ë»ç
+    // ë™ì¼í•œ tablespace nameì´ ì¡´ìž¬í•˜ëŠ”ì§€ ê²€ì‚¬
     IDE_TEST_RAISE( qcmTablespace::getTBSAttrByName(
                         aStatement,
                         sParseTree->TBSAttr->mName,
@@ -74,16 +74,16 @@ IDE_RC qdtCreate::validateDiskDataTBS(qcStatement * aStatement)
                         & sTBSAttr) == IDE_SUCCESS, ERR_DUP_TBS_NAME );
 
     // PROJ-1579 NCHAR
-    // TBS ÀÌ¸§À¸·Î ASCII ÀÌ¿ÜÀÇ ¹®ÀÚ°¡ ¿Ã ¼ö ¾ø´Ù.
-    // CONTROL ´Ü°è¿¡¼­ DB CHARSETÀ» ¸ð¸£±â ¶§¹®¿¡
-    // ASCII ÀÌ¿ÜÀÇ ¹®ÀÚ¸¦ Ã³¸®ÇÒ ¼ö ¾ø±â ¶§¹®ÀÌ´Ù.
+    // TBS ì´ë¦„ìœ¼ë¡œ ASCII ì´ì™¸ì˜ ë¬¸ìžê°€ ì˜¬ ìˆ˜ ì—†ë‹¤.
+    // CONTROL ë‹¨ê³„ì—ì„œ DB CHARSETì„ ëª¨ë¥´ê¸° ë•Œë¬¸ì—
+    // ASCII ì´ì™¸ì˜ ë¬¸ìžë¥¼ ì²˜ë¦¬í•  ìˆ˜ ì—†ê¸° ë•Œë¬¸ì´ë‹¤.
     for( i = 0; i < sParseTree->TBSAttr->mNameLength; i++ )
     {
         IDE_TEST_RAISE( IDN_IS_ASCII(sParseTree->TBSAttr->mName[i]) == 0, 
                         ERR_NON_ASCII_TBS_NAME );
     }
 
-    // extent size °Ë»ç ¹× ¼³Á¤
+    // extent size ê²€ì‚¬ ë° ì„¤ì •
     if ( sParseTree->extentSize == ID_UINT_MAX )
     {
         sParseTree->extentSize =
@@ -129,7 +129,7 @@ IDE_RC qdtCreate::validateDiskDataTBS(qcStatement * aStatement)
 
     QC_SHARED_TMPLATE(aStatement)->smiStatementFlag = SMI_STATEMENT_ALL_CURSOR;
 
-    // TablespaceÀÇ Attribute Flag °è»ê
+    // Tablespaceì˜ Attribute Flag ê³„ì‚°
     IDE_TEST( calculateTBSAttrFlag( aStatement,
                                     sParseTree ) != IDE_SUCCESS );
     
@@ -163,14 +163,14 @@ IDE_RC qdtCreate::validateDiskTemporaryTBS(qcStatement * aStatement)
 /***********************************************************************
  *
  * Description :
- *    CREATE TEMPORARY TABLESPACE ... ÀÇ validation ¼öÇà
+ *    CREATE TEMPORARY TABLESPACE ... ì˜ validation ìˆ˜í–‰
  *
  * Implementation :
- *    1. ±ÇÇÑ °Ë»ç
+ *    1. ê¶Œí•œ ê²€ì‚¬
  *       qdbPrivilege::checkDDLCreateTableSpacePriv()
- *    2. ¸í½ÃÇÑ Å×ÀÌºí½ºÅ×ÀÌ½º¸íÀÌ µ¥ÀÌÅÍº£ÀÌ½º ³»¿¡ ÀÌ¹Ì Á¸ÀçÇÏ´ÂÁö
- *       ¸ÞÅ¸ °Ë»ö
- *    3. file specification validation ÇÔ¼ö È£Ãâ
+ *    2. ëª…ì‹œí•œ í…Œì´ë¸”ìŠ¤í…Œì´ìŠ¤ëª…ì´ ë°ì´í„°ë² ì´ìŠ¤ ë‚´ì— ì´ë¯¸ ì¡´ìž¬í•˜ëŠ”ì§€
+ *       ë©”íƒ€ ê²€ìƒ‰
+ *    3. file specification validation í•¨ìˆ˜ í˜¸ì¶œ
  *    4. extent size validation
  *
  ***********************************************************************/
@@ -189,7 +189,7 @@ IDE_RC qdtCreate::validateDiskTemporaryTBS(qcStatement * aStatement)
     
     sParseTree = (qdCreateTBSParseTree *)aStatement->myPlan->parseTree;
 
-    // ±ÇÇÑ °Ë»ç
+    // ê¶Œí•œ ê²€ì‚¬
     IDE_TEST( qdpRole::checkDDLCreateTableSpacePriv(
                   aStatement,
                   QCG_GET_SESSION_USER_ID( aStatement ) )
@@ -202,9 +202,9 @@ IDE_RC qdtCreate::validateDiskTemporaryTBS(qcStatement * aStatement)
                         &sTBSAttr) == IDE_SUCCESS, ERR_DUP_TBS_NAME );
 
     // PROJ-1579 NCHAR
-    // TBS ÀÌ¸§À¸·Î ASCII ÀÌ¿ÜÀÇ ¹®ÀÚ°¡ ¿Ã ¼ö ¾ø´Ù.
-    // CONTROL ´Ü°è¿¡¼­ DB CHARSETÀ» ¸ð¸£±â ¶§¹®¿¡
-    // ASCII ÀÌ¿ÜÀÇ ¹®ÀÚ¸¦ Ã³¸®ÇÒ ¼ö ¾ø±â ¶§¹®ÀÌ´Ù.
+    // TBS ì´ë¦„ìœ¼ë¡œ ASCII ì´ì™¸ì˜ ë¬¸ìžê°€ ì˜¬ ìˆ˜ ì—†ë‹¤.
+    // CONTROL ë‹¨ê³„ì—ì„œ DB CHARSETì„ ëª¨ë¥´ê¸° ë•Œë¬¸ì—
+    // ASCII ì´ì™¸ì˜ ë¬¸ìžë¥¼ ì²˜ë¦¬í•  ìˆ˜ ì—†ê¸° ë•Œë¬¸ì´ë‹¤.
     for( i = 0; i < sParseTree->TBSAttr->mNameLength; i++ )
     {
         IDE_TEST_RAISE( IDN_IS_ASCII(sParseTree->TBSAttr->mName[i]) == 0,
@@ -256,7 +256,7 @@ IDE_RC qdtCreate::validateDiskTemporaryTBS(qcStatement * aStatement)
     
     QC_SHARED_TMPLATE(aStatement)->smiStatementFlag = SMI_STATEMENT_ALL_CURSOR;
 
-    // TablespaceÀÇ Attribute Flag °è»ê
+    // Tablespaceì˜ Attribute Flag ê³„ì‚°
     IDE_TEST( calculateTBSAttrFlag( aStatement,
                                     sParseTree ) != IDE_SUCCESS );
     
@@ -290,14 +290,14 @@ IDE_RC qdtCreate::validateMemoryTBS(qcStatement * aStatement)
 /***********************************************************************
  *
  * Description :
- *    CREATE TABLESPACE ...memory clauseÀÇ validation ¼öÇà
+ *    CREATE TABLESPACE ...memory clauseì˜ validation ìˆ˜í–‰
  *
  * Implementation :
- *    (1) create tablespace ±ÇÇÑÀÌ ÀÖ´ÂÁö °Ë»ç
- *    (2) tablespace name Áßº¹ °Ë»ç
- *    (3) checkpoint path Áßº¹ °Ë»ç
- *    (4) auto extend Á¤º¸ ¼³Á¤
- *    (5) attribute validation ½Ç½Ã
+ *    (1) create tablespace ê¶Œí•œì´ ìžˆëŠ”ì§€ ê²€ì‚¬
+ *    (2) tablespace name ì¤‘ë³µ ê²€ì‚¬
+ *    (3) checkpoint path ì¤‘ë³µ ê²€ì‚¬
+ *    (4) auto extend ì •ë³´ ì„¤ì •
+ *    (5) attribute validation ì‹¤ì‹œ
  *
  ***********************************************************************/
 
@@ -322,7 +322,7 @@ IDE_RC qdtCreate::validateMemoryTBS(qcStatement * aStatement)
     }
 #endif
 
-    // ±ÇÇÑ °Ë»ç
+    // ê¶Œí•œ ê²€ì‚¬
     IDE_TEST( qdpRole::checkDDLCreateTableSpacePriv(
                   aStatement,
                   QCG_GET_SESSION_USER_ID( aStatement ) )
@@ -330,8 +330,8 @@ IDE_RC qdtCreate::validateMemoryTBS(qcStatement * aStatement)
 
     sTBSNameLen = idlOS::strlen( sParseTree->memTBSName );
 
-    // tablespace name Áßº¹ °Ë»ç
-    // µ¿ÀÏÇÑ tablespace nameÀÌ Á¸ÀçÇÏ´ÂÁö °Ë»ç
+    // tablespace name ì¤‘ë³µ ê²€ì‚¬
+    // ë™ì¼í•œ tablespace nameì´ ì¡´ìž¬í•˜ëŠ”ì§€ ê²€ì‚¬
     IDE_TEST_RAISE( qcmTablespace::getTBSAttrByName(
                         aStatement,
                         sParseTree->memTBSName,
@@ -339,9 +339,9 @@ IDE_RC qdtCreate::validateMemoryTBS(qcStatement * aStatement)
                         & sTBSAttr) == IDE_SUCCESS, ERR_DUP_TBS_NAME );
 
     // PROJ-1579 NCHAR
-    // TBS ÀÌ¸§À¸·Î ASCII ÀÌ¿ÜÀÇ ¹®ÀÚ°¡ ¿Ã ¼ö ¾ø´Ù.
-    // CONTROL ´Ü°è¿¡¼­ DB CHARSETÀ» ¸ð¸£±â ¶§¹®¿¡
-    // ASCII ÀÌ¿ÜÀÇ ¹®ÀÚ¸¦ Ã³¸®ÇÒ ¼ö ¾ø±â ¶§¹®ÀÌ´Ù.
+    // TBS ì´ë¦„ìœ¼ë¡œ ASCII ì´ì™¸ì˜ ë¬¸ìžê°€ ì˜¬ ìˆ˜ ì—†ë‹¤.
+    // CONTROL ë‹¨ê³„ì—ì„œ DB CHARSETì„ ëª¨ë¥´ê¸° ë•Œë¬¸ì—
+    // ASCII ì´ì™¸ì˜ ë¬¸ìžë¥¼ ì²˜ë¦¬í•  ìˆ˜ ì—†ê¸° ë•Œë¬¸ì´ë‹¤.
     for( i = 0; i < sTBSNameLen; i++ )
     {
         IDE_TEST_RAISE( IDN_IS_ASCII(sParseTree->memTBSName[i]) == 0,
@@ -353,10 +353,10 @@ IDE_RC qdtCreate::validateMemoryTBS(qcStatement * aStatement)
           sCurChkptPath = sCurChkptPath->mNext )
     {
         // BUG-29812
-        // Memory TBSÀÇ Checkpoint Path¸¦ Àý´ë°æ·Î·Î º¯È¯ÇÑ´Ù.
+        // Memory TBSì˜ Checkpoint Pathë¥¼ ì ˆëŒ€ê²½ë¡œë¡œ ë³€í™˜í•œë‹¤.
         //
-        // Memory TBS´Â getAbsPathÀÇ ÀÎÀÚ¸¦ IN/OUTÀ¸·Î »ç¿ëÇÏ±â À§ÇØ
-        // µ¿ÀÏÇÑ ÁÖ¼Ò¸¦ IN/OUTÀ¸·Î °¢°¢ ³Ñ°ÜÁØ´Ù.
+        // Memory TBSëŠ” getAbsPathì˜ ì¸ìžë¥¼ IN/OUTìœ¼ë¡œ ì‚¬ìš©í•˜ê¸° ìœ„í•´
+        // ë™ì¼í•œ ì£¼ì†Œë¥¼ IN/OUTìœ¼ë¡œ ê°ê° ë„˜ê²¨ì¤€ë‹¤.
         IDE_TEST( smiTableSpace::getAbsPath(
                     sCurChkptPath->mCPathAttr.mChkptPath,
                     sCurChkptPath->mCPathAttr.mChkptPath,
@@ -364,8 +364,8 @@ IDE_RC qdtCreate::validateMemoryTBS(qcStatement * aStatement)
                   != IDE_SUCCESS );
     }
 
-    // BUGBUG-1548-M2 SM¿¡¼­ QP°¡ ³Ñ°ÜÁØ Checkpoint Path»ç¿ëÇÏ´ÂÁö Ã¼Å©.
-    // checkpoint path Á¤º¸ ¼³Á¤
+    // BUGBUG-1548-M2 SMì—ì„œ QPê°€ ë„˜ê²¨ì¤€ Checkpoint Pathì‚¬ìš©í•˜ëŠ”ì§€ ì²´í¬.
+    // checkpoint path ì •ë³´ ì„¤ì •
     for ( sCurChkptPath = sParseTree->memChkptPathList;
           sCurChkptPath != NULL;
           sCurChkptPath = sCurChkptPath->mNext )
@@ -380,7 +380,7 @@ IDE_RC qdtCreate::validateMemoryTBS(qcStatement * aStatement)
                                   sCompareChkptPath->mCPathAttr.mChkptPath,
                                   idlOS::strlen( sCompareChkptPath->mCPathAttr.mChkptPath ) ) == 0 )
             {
-                // Áßº¹ ¿¡·¯ ¹ÝÈ¯
+                // ì¤‘ë³µ ì—ëŸ¬ ë°˜í™˜
                 IDE_RAISE( ERR_DUP_CHECKPOINT_PATH );
             }
         }
@@ -388,7 +388,7 @@ IDE_RC qdtCreate::validateMemoryTBS(qcStatement * aStatement)
     
     QC_SHARED_TMPLATE(aStatement)->smiStatementFlag = SMI_STATEMENT_ALL_CURSOR;
 
-    // TablespaceÀÇ Attribute Flag °è»ê
+    // Tablespaceì˜ Attribute Flag ê³„ì‚°
     IDE_TEST( calculateTBSAttrFlag( aStatement,
                                     sParseTree ) != IDE_SUCCESS );
     
@@ -423,13 +423,13 @@ IDE_RC qdtCreate::validateVolatileTBS(qcStatement * aStatement)
 /***********************************************************************
  *
  * Description :
- *    CREATE TABLESPACE ...volatile clauseÀÇ validation ¼öÇà
+ *    CREATE TABLESPACE ...volatile clauseì˜ validation ìˆ˜í–‰
  *
  * Implementation :
- *    (1) create tablespace ±ÇÇÑÀÌ ÀÖ´ÂÁö °Ë»ç
- *    (2) tablespace name Áßº¹ °Ë»ç
- *    (3) auto extend Á¤º¸ ¼³Á¤
- *    (4) attribute validation ½Ç½Ã
+ *    (1) create tablespace ê¶Œí•œì´ ìžˆëŠ”ì§€ ê²€ì‚¬
+ *    (2) tablespace name ì¤‘ë³µ ê²€ì‚¬
+ *    (3) auto extend ì •ë³´ ì„¤ì •
+ *    (4) attribute validation ì‹¤ì‹œ
  *
  ***********************************************************************/
     qdCreateTBSParseTree  * sParseTree;
@@ -439,7 +439,7 @@ IDE_RC qdtCreate::validateVolatileTBS(qcStatement * aStatement)
     
     sParseTree = (qdCreateTBSParseTree *)aStatement->myPlan->parseTree;
 
-    // ±ÇÇÑ °Ë»ç
+    // ê¶Œí•œ ê²€ì‚¬
     IDE_TEST( qdpRole::checkDDLCreateTableSpacePriv(
                   aStatement,
                   QCG_GET_SESSION_USER_ID( aStatement ) )
@@ -447,8 +447,8 @@ IDE_RC qdtCreate::validateVolatileTBS(qcStatement * aStatement)
 
     sTBSNameLen = idlOS::strlen( sParseTree->memTBSName );
 
-    // tablespace name Áßº¹ °Ë»ç
-    // µ¿ÀÏÇÑ tablespace nameÀÌ Á¸ÀçÇÏ´ÂÁö °Ë»ç
+    // tablespace name ì¤‘ë³µ ê²€ì‚¬
+    // ë™ì¼í•œ tablespace nameì´ ì¡´ìž¬í•˜ëŠ”ì§€ ê²€ì‚¬
     IDE_TEST_RAISE( qcmTablespace::getTBSAttrByName(
                         aStatement,
                         sParseTree->memTBSName,
@@ -456,9 +456,9 @@ IDE_RC qdtCreate::validateVolatileTBS(qcStatement * aStatement)
                         & sTBSAttr) == IDE_SUCCESS, ERR_DUP_TBS_NAME );
 
     // PROJ-1579 NCHAR
-    // TBS ÀÌ¸§À¸·Î ASCII ÀÌ¿ÜÀÇ ¹®ÀÚ°¡ ¿Ã ¼ö ¾ø´Ù.
-    // CONTROL ´Ü°è¿¡¼­ DB CHARSETÀ» ¸ð¸£±â ¶§¹®¿¡
-    // ASCII ÀÌ¿ÜÀÇ ¹®ÀÚ¸¦ Ã³¸®ÇÒ ¼ö ¾ø±â ¶§¹®ÀÌ´Ù.
+    // TBS ì´ë¦„ìœ¼ë¡œ ASCII ì´ì™¸ì˜ ë¬¸ìžê°€ ì˜¬ ìˆ˜ ì—†ë‹¤.
+    // CONTROL ë‹¨ê³„ì—ì„œ DB CHARSETì„ ëª¨ë¥´ê¸° ë•Œë¬¸ì—
+    // ASCII ì´ì™¸ì˜ ë¬¸ìžë¥¼ ì²˜ë¦¬í•  ìˆ˜ ì—†ê¸° ë•Œë¬¸ì´ë‹¤.
     for( i = 0; i < sTBSNameLen; i++ )
     {
         IDE_TEST_RAISE( IDN_IS_ASCII(sParseTree->memTBSName[i]) == 0,
@@ -467,16 +467,16 @@ IDE_RC qdtCreate::validateVolatileTBS(qcStatement * aStatement)
 
     QC_SHARED_TMPLATE(aStatement)->smiStatementFlag = SMI_STATEMENT_ALL_CURSOR;
 
-    // UNCOMPRESSED/COMPRESSED LOGGING ±¸¹® »ç¿ë½Ã ¿¡·¯ 
+    // UNCOMPRESSED/COMPRESSED LOGGING êµ¬ë¬¸ ì‚¬ìš©ì‹œ ì—ëŸ¬ 
     IDE_TEST( checkError4CreateVolatileTBS( sParseTree )
               != IDE_SUCCESS );
     
-    // TablespaceÀÇ Attribute Flag °è»ê
+    // Tablespaceì˜ Attribute Flag ê³„ì‚°
     IDE_TEST( calculateTBSAttrFlag( aStatement,
                                     sParseTree ) != IDE_SUCCESS );
 
-    // Volatile TablespaceÀÇ °æ¿ì
-    // Log ¾ÐÃà ÇÏÁö ¾Êµµ·Ï ±âº»°ª ¼³Á¤ 
+    // Volatile Tablespaceì˜ ê²½ìš°
+    // Log ì••ì¶• í•˜ì§€ ì•Šë„ë¡ ê¸°ë³¸ê°’ ì„¤ì • 
     sParseTree->attrFlag &= ~SMI_TBS_ATTR_LOG_COMPRESS_MASK;
     sParseTree->attrFlag |= SMI_TBS_ATTR_LOG_COMPRESS_FALSE;
     
@@ -496,13 +496,13 @@ IDE_RC qdtCreate::validateVolatileTBS(qcStatement * aStatement)
 }
 
 
-/* Volatile Tablespace»ý¼ºÁß ¼öÇàÇÏ´Â ¿¡·¯Ã³¸®
+/* Volatile Tablespaceìƒì„±ì¤‘ ìˆ˜í–‰í•˜ëŠ” ì—ëŸ¬ì²˜ë¦¬
 
-   => Volatile TablespaceÀÇ °æ¿ì Log CompressionÁö¿øÇÏÁö ¾Ê´Â´Ù.
-      Create Volatile Tablespace±¸¹®¿¡ COMPRESSED LOGGING
-      ÀýÀ» »ç¿ëÇÑ °æ¿ì ¿¡·¯
+   => Volatile Tablespaceì˜ ê²½ìš° Log Compressionì§€ì›í•˜ì§€ ì•ŠëŠ”ë‹¤.
+      Create Volatile Tablespaceêµ¬ë¬¸ì— COMPRESSED LOGGING
+      ì ˆì„ ì‚¬ìš©í•œ ê²½ìš° ì—ëŸ¬
 
-   [IN] aAttrFlagList - Tablespace Attribute FlagÀÇ List
+   [IN] aAttrFlagList - Tablespace Attribute Flagì˜ List
 */
 IDE_RC qdtCreate::checkError4CreateVolatileTBS(
                       qdCreateTBSParseTree  * aCreateTBS )
@@ -535,11 +535,11 @@ IDE_RC qdtCreate::checkError4CreateVolatileTBS(
 }
 
 
-/*  TablespaceÀÇ Attribute Flag List·ÎºÎÅÍ
-    32bit Flag°ªÀ» °è»ê
+/*  Tablespaceì˜ Attribute Flag Listë¡œë¶€í„°
+    32bit Flagê°’ì„ ê³„ì‚°
 
-    [IN] qcStatement - ¼öÇàÁßÀÎ Statement
-    [IN] aCreateTBS - Create TablespaceÀÇ Parse Tree
+    [IN] qcStatement - ìˆ˜í–‰ì¤‘ì¸ Statement
+    [IN] aCreateTBS - Create Tablespaceì˜ Parse Tree
  */
 IDE_RC qdtCreate::calculateTBSAttrFlag( qcStatement          * aStatement,
                                         qdCreateTBSParseTree * aCreateTBS )
@@ -557,13 +557,13 @@ IDE_RC qdtCreate::calculateTBSAttrFlag( qcStatement          * aStatement,
     }
     else
     {
-        // Tablespace Attribute List°¡ ÁöÁ¤µÇÁö ¾ÊÀº °æ¿ì 
-        // ±âº»°ªÀ¸·Î ¼³Á¤
+        // Tablespace Attribute Listê°€ ì§€ì •ë˜ì§€ ì•Šì€ ê²½ìš° 
+        // ê¸°ë³¸ê°’ìœ¼ë¡œ ì„¤ì •
         //
-        // Tablespace Attribute°ªÀº ±âº»°ªÀ¸·Î »ç¿ëµÉ °ª¿¡ ´ëÇØ
-        // Bit 0¸¦ »ç¿ëÇÏµµ·Ï ±¸¼ºµÈ´Ù.
+        // Tablespace Attributeê°’ì€ ê¸°ë³¸ê°’ìœ¼ë¡œ ì‚¬ìš©ë  ê°’ì— ëŒ€í•´
+        // Bit 0ë¥¼ ì‚¬ìš©í•˜ë„ë¡ êµ¬ì„±ëœë‹¤.
         //
-        // ±×·¯¹Ç·Î, AttrFlag¸¦ 0À¸·Î ¼³Á¤ÇÏ¸é ±×°ÍÀÌ ¹Ù·Î ±âº»°ªÀÌ µÈ´Ù
+        // ê·¸ëŸ¬ë¯€ë¡œ, AttrFlagë¥¼ 0ìœ¼ë¡œ ì„¤ì •í•˜ë©´ ê·¸ê²ƒì´ ë°”ë¡œ ê¸°ë³¸ê°’ì´ ëœë‹¤
         aCreateTBS->attrFlag = 0;
     }
     
@@ -576,15 +576,15 @@ IDE_RC qdtCreate::calculateTBSAttrFlag( qcStatement          * aStatement,
 
 
 /*
-  ÇöÀç Á¢¼ÓÇÑ »ç¿ëÀÚ¿¡°Ô Æ¯Á¤ Tablespace ·ÎÀÇ Á¢±Ù±ÇÇÑÀ» ÁØ´Ù.
+  í˜„ìž¬ ì ‘ì†í•œ ì‚¬ìš©ìžì—ê²Œ íŠ¹ì • Tablespace ë¡œì˜ ì ‘ê·¼ê¶Œí•œì„ ì¤€ë‹¤.
 
-  [IN] aStatement - ÇöÀç ¼öÇàÁßÀÎ Statement
+  [IN] aStatement - í˜„ìž¬ ìˆ˜í–‰ì¤‘ì¸ Statement
   [IN] aTBSID     - Tablespace ID
 
   To Fix PR-10589
-  TABLESPACE »ý¼º ±ÇÇÑÀÌ ÀÖ´Â ÀÏ¹Ý À¯Àú°¡
-  Tablespace¸¦ »ý¼ºÇÒ °æ¿ì ÇØ´ç Tablespace¿¡ ´ëÇÑ Á¢±Ù ±ÇÇÑÀº
-  ÀÚµ¿ÀûÀ¸·Î ºÎ¿©ÇØ¾ß ÇÑ´Ù.
+  TABLESPACE ìƒì„± ê¶Œí•œì´ ìžˆëŠ” ì¼ë°˜ ìœ ì €ê°€
+  Tablespaceë¥¼ ìƒì„±í•  ê²½ìš° í•´ë‹¹ Tablespaceì— ëŒ€í•œ ì ‘ê·¼ ê¶Œí•œì€
+  ìžë™ì ìœ¼ë¡œ ë¶€ì—¬í•´ì•¼ í•œë‹¤.
 */
 
 IDE_RC qdtCreate::grantTBSAccess(qcStatement * aStatement,
@@ -597,7 +597,7 @@ IDE_RC qdtCreate::grantTBSAccess(qcStatement * aStatement,
          &&
          (QCG_GET_SESSION_USER_ID(aStatement) != QC_SYSTEM_USER_ID) )
     {
-        // ÀÏ¹Ý À¯ÀúÀÎ °æ¿ì
+        // ì¼ë°˜ ìœ ì €ì¸ ê²½ìš°
         IDU_FIT_POINT( "qdtCreate::grantTBSAccess::alloc::sSqlStr",
                         idERR_ABORT_InsufficientMemory );
 
@@ -623,7 +623,7 @@ IDE_RC qdtCreate::grantTBSAccess(qcStatement * aStatement,
     }
     else
     {
-        // ½Ã½ºÅÛ À¯ÀúÀÎ °æ¿ì
+        // ì‹œìŠ¤í…œ ìœ ì €ì¸ ê²½ìš°
         // Nothing To Do
     }
 
@@ -643,11 +643,11 @@ IDE_RC qdtCreate::executeDiskDataTBS(qcStatement * aStatement)
 /***********************************************************************
  *
  * Description :
- *    CREATE TABLESPACE ... ÀÇ execution ¼öÇà
+ *    CREATE TABLESPACE ... ì˜ execution ìˆ˜í–‰
  *
  * Implementation :
- *    1. smiTableSpace::create() ÇÔ¼ö ÆÄ¶ó¹ÌÅÍ °ª ±¸ÇÏ±â
- *    2. È£Ãâ smiTableSpace::create
+ *    1. smiTableSpace::create() í•¨ìˆ˜ íŒŒë¼ë¯¸í„° ê°’ êµ¬í•˜ê¸°
+ *    2. í˜¸ì¶œ smiTableSpace::create
  *
  ***********************************************************************/
 
@@ -668,7 +668,7 @@ IDE_RC qdtCreate::executeDiskDataTBS(qcStatement * aStatement)
     sExtPageCnt =
         (UInt) idlOS::floor( ( ID_ULTODB(sParseTree->extentSize) /
                                ID_ULTODB(smiGetPageSize(SMI_DISK_USER_DATA)) )
-                             + 0.5 ); // ¹Ý¿Ã¸²
+                             + 0.5 ); // ë°˜ì˜¬ë¦¼
     sExtPageCnt = ( sExtPageCnt < 1 ) ? 1 : sExtPageCnt;
 
     IDU_FIT_POINT( "qdtCreate::executeDiskDataTBS::alloc::sDataFileAttrList",
@@ -687,8 +687,8 @@ IDE_RC qdtCreate::executeDiskDataTBS(qcStatement * aStatement)
         sDataFileAttrList[i++] = sFilesSpec->fileAttr;
     }
 
-    // Disk TablespaceÀÇ °æ¿ì TablespaceÀÇ Attribute Flag¸¦
-    // smiTableSpaceAttr ±¸Á¶Ã¼¸¦ ÅëÇÏ¿© ³Ñ±ä´Ù.
+    // Disk Tablespaceì˜ ê²½ìš° Tablespaceì˜ Attribute Flagë¥¼
+    // smiTableSpaceAttr êµ¬ì¡°ì²´ë¥¼ í†µí•˜ì—¬ ë„˜ê¸´ë‹¤.
     sTBSAttr->mAttrFlag = sParseTree->attrFlag;
 
     sTBSAttr->mDiskAttr.mSegMgmtType 
@@ -697,7 +697,7 @@ IDE_RC qdtCreate::executeDiskDataTBS(qcStatement * aStatement)
     sTBSAttr->mDiskAttr.mExtMgmtType 
               = sParseTree->extMgmtType;
     
-    // tablespace »ý¼º 
+    // tablespace ìƒì„± 
     IDE_TEST( smiTableSpace::createDiskTBS(
                   aStatement->mStatistics,
                   (QC_SMI_STMT( aStatement ))->getTrans(),
@@ -707,7 +707,7 @@ IDE_RC qdtCreate::executeDiskDataTBS(qcStatement * aStatement)
                   sExtPageCnt,
                   sParseTree->extentSize) != IDE_SUCCESS );
 
-    // »ç¿ëÀÚ°¡ »ý¼ºÇÑ tablespace·ÎÀÇ Á¢±Ù±ÇÇÑÀ» ºÎ¿©
+    // ì‚¬ìš©ìžê°€ ìƒì„±í•œ tablespaceë¡œì˜ ì ‘ê·¼ê¶Œí•œì„ ë¶€ì—¬
     IDE_TEST( grantTBSAccess( aStatement, sTBSAttr->mID ) != IDE_SUCCESS );
 
     return IDE_SUCCESS;
@@ -733,7 +733,7 @@ IDE_RC qdtCreate::executeMemoryTBS(qcStatement * aStatement)
 
     sParseTree = (qdCreateTBSParseTree *)aStatement->myPlan->parseTree;
 
-    // memory tablespace »ý¼º
+    // memory tablespace ìƒì„±
     IDE_TEST( smiTableSpace::createMemoryTBS(
                   (QC_SMI_STMT( aStatement ))->getTrans(),
                   sParseTree->memTBSName,
@@ -749,7 +749,7 @@ IDE_RC qdtCreate::executeMemoryTBS(qcStatement * aStatement)
               != IDE_SUCCESS );
 
 
-    // »ç¿ëÀÚ°¡ »ý¼ºÇÑ tablespace·ÎÀÇ Á¢±Ù±ÇÇÑÀ» ºÎ¿©
+    // ì‚¬ìš©ìžê°€ ìƒì„±í•œ tablespaceë¡œì˜ ì ‘ê·¼ê¶Œí•œì„ ë¶€ì—¬
     IDE_TEST( grantTBSAccess( aStatement, sCreatedTBSID ) != IDE_SUCCESS );
 
     return IDE_SUCCESS;
@@ -774,7 +774,7 @@ IDE_RC qdtCreate::executeVolatileTBS(qcStatement * aStatement)
 
     sParseTree = (qdCreateTBSParseTree *)aStatement->myPlan->parseTree;
 
-    // memory tablespace »ý¼º
+    // memory tablespace ìƒì„±
     IDE_TEST( smiTableSpace::createVolatileTBS(
                   (QC_SMI_STMT( aStatement ))->getTrans(),
                   sParseTree->memTBSName,
@@ -783,13 +783,13 @@ IDE_RC qdtCreate::executeVolatileTBS(qcStatement * aStatement)
                   sParseTree->memIsAutoExtend,
                   sParseTree->memNextSize,
                   sParseTree->memMaxSize,
-                  // BUGBUG-1548 »ç¿ëÀÚ°¡ ÁöÁ¤ÇÑ ONLINE/OFFLINEÀ¸·Î º¯°æ
+                  // BUGBUG-1548 ì‚¬ìš©ìžê°€ ì§€ì •í•œ ONLINE/OFFLINEìœ¼ë¡œ ë³€ê²½
                   SMI_TBS_ONLINE,
                   & sCreatedTBSID )
               != IDE_SUCCESS );
 
 
-    // »ç¿ëÀÚ°¡ »ý¼ºÇÑ tablespace·ÎÀÇ Á¢±Ù±ÇÇÑÀ» ºÎ¿©
+    // ì‚¬ìš©ìžê°€ ìƒì„±í•œ tablespaceë¡œì˜ ì ‘ê·¼ê¶Œí•œì„ ë¶€ì—¬
     IDE_TEST( grantTBSAccess( aStatement, sCreatedTBSID ) != IDE_SUCCESS );
 
     return IDE_SUCCESS;
@@ -804,11 +804,11 @@ IDE_RC qdtCreate::executeDiskTemporaryTBS(qcStatement * aStatement)
 /***********************************************************************
  *
  * Description :
- *    CREATE TEMPORARY TABLESPACE ... ÀÇ execution ¼öÇà
+ *    CREATE TEMPORARY TABLESPACE ... ì˜ execution ìˆ˜í–‰
  *
  * Implementation :
- *    1. smiTableSpace::create() ÇÔ¼ö ÆÄ¶ó¹ÌÅÍ °ª ±¸ÇÏ±â
- *    2. È£Ãâ smiTableSpace::create
+ *    1. smiTableSpace::create() í•¨ìˆ˜ íŒŒë¼ë¯¸í„° ê°’ êµ¬í•˜ê¸°
+ *    2. í˜¸ì¶œ smiTableSpace::create
  *
  ***********************************************************************/
 
@@ -830,7 +830,7 @@ IDE_RC qdtCreate::executeDiskTemporaryTBS(qcStatement * aStatement)
     sExtPageCnt = (UInt)
         idlOS::floor( ( ID_ULTODB(sParseTree->extentSize) /
                         ID_ULTODB(smiGetPageSize(SMI_DISK_USER_DATA)) )
-                      + 0.5 ); // ¹Ý¿Ã¸²
+                      + 0.5 ); // ë°˜ì˜¬ë¦¼
     sExtPageCnt = ( sExtPageCnt < 1 ) ? 1 : sExtPageCnt;
 
     IDU_FIT_POINT( "qdtCreate::executeDiskTemporaryTBS::alloc::sDataFileAttrList",
@@ -849,8 +849,8 @@ IDE_RC qdtCreate::executeDiskTemporaryTBS(qcStatement * aStatement)
         sDataFileAttrList[i++] = sFilesSpec->fileAttr;
     }
 
-    // Disk TablespaceÀÇ °æ¿ì TablespaceÀÇ Attribute Flag¸¦
-    // smiTableSpaceAttr ±¸Á¶Ã¼¸¦ ÅëÇÏ¿© ³Ñ±ä´Ù.
+    // Disk Tablespaceì˜ ê²½ìš° Tablespaceì˜ Attribute Flagë¥¼
+    // smiTableSpaceAttr êµ¬ì¡°ì²´ë¥¼ í†µí•˜ì—¬ ë„˜ê¸´ë‹¤.
     sTBSAttr->mAttrFlag = sParseTree->attrFlag;
     sTBSAttr->mDiskAttr.mSegMgmtType = sParseTree->segMgmtType;
     sTBSAttr->mDiskAttr.mExtMgmtType
@@ -865,7 +865,7 @@ IDE_RC qdtCreate::executeDiskTemporaryTBS(qcStatement * aStatement)
                   sExtPageCnt,
                   sParseTree->extentSize) != IDE_SUCCESS );
 
-    // »ç¿ëÀÚ°¡ »ý¼ºÇÑ tablespace·ÎÀÇ Á¢±Ù±ÇÇÑÀ» ºÎ¿©
+    // ì‚¬ìš©ìžê°€ ìƒì„±í•œ tablespaceë¡œì˜ ì ‘ê·¼ê¶Œí•œì„ ë¶€ì—¬
     IDE_TEST( grantTBSAccess( aStatement, sTBSAttr->mID ) != IDE_SUCCESS );
 
     return IDE_SUCCESS;

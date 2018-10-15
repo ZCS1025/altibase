@@ -3,18 +3,18 @@
 # CVS Info : $Id: sparc_solaris_cc.mk 74060 2016-01-11 06:57:34Z gyeongsuk.eom $
 #
 
-# Àü´ŞµÇ´Â ¿ÜºÎ º¯¼öµé
+# ì „ë‹¬ë˜ëŠ” ì™¸ë¶€ ë³€ìˆ˜ë“¤
 
-# ID_DIR      : ID µğ·ºÅä¸®
-# ID_ACE_ROOT : ¶óÀÌºê·¯¸® ÆĞ½º
-# compile64   : ÄÄÆÄÀÏ È¯°æ
-# compat5     : CC 5.0 À¸·Î?
+# ID_DIR      : ID ë””ë ‰í† ë¦¬
+# ID_ACE_ROOT : ë¼ì´ë¸ŒëŸ¬ë¦¬ íŒ¨ìŠ¤
+# compile64   : ì»´íŒŒì¼ í™˜ê²½
+# compat5     : CC 5.0 ìœ¼ë¡œ?
 # compat4     :
 
-# BUILD_MODEÀÇ Á¾·ù
-#   debug		: Debug ¸ğµå
+# BUILD_MODEì˜ ì¢…ë¥˜
+#   debug		: Debug ëª¨ë“œ
 #   prerelease      	: -DDEBUG(x) -g (o)
-#   release		: release ¹öÁ¯, ½ÇÁ¦ product¿¡ ÇØ´ç
+#   release		: release ë²„ì ¼, ì‹¤ì œ productì— í•´ë‹¹
 ifndef	BUILD_MODE
 	@echo "ERROR BUILD_MODE!!!!"
 	@exit
@@ -41,16 +41,16 @@ QUANTIFY	= quantify
 PURECOV		= purecov  -max_threads=512 -follow-child-processes
 PURIFYCOV   = $(PURIFY) $(PURECOV)
 
-# readline library ¼³Á¤
+# readline library ì„¤ì •
 ifeq "$(USE_READLINE)" "1"
   READLINE_INCLUDES = -I/usr/local/include/readline
   READLINE_LIBRARY =  -lreadline -ltermcap
 endif # use readline library
 
 # LIBS_SHIP added : 20030811
-# shared object¸¦ °í°´ÀÌ »ç¿ëÇÏ±â À§ÇØ ¿ø·¡ÀÇ static ¿É¼ÇÀ»
-# »ç¿ëÇÏ¸é, runtime¿¡·¯°¡ ¹ß»ıÇÑ´Ù. ÀÌ¸¦ ¹æÁöÇÏ±â À§ÇØ
-# Å¬¶óÀÌ¾ğÆ®¿ë ¸µÅ© ¿É¼ÇÀ» º°µµ·Î ¸¸µé¾î, cli.script¿¡¼­ »ç¿ëÇÏµµ·Ï ÇÔ.
+# shared objectë¥¼ ê³ ê°ì´ ì‚¬ìš©í•˜ê¸° ìœ„í•´ ì›ë˜ì˜ static ì˜µì…˜ì„
+# ì‚¬ìš©í•˜ë©´, runtimeì—ëŸ¬ê°€ ë°œìƒí•œë‹¤. ì´ë¥¼ ë°©ì§€í•˜ê¸° ìœ„í•´
+# í´ë¼ì´ì–¸íŠ¸ìš© ë§í¬ ì˜µì…˜ì„ ë³„ë„ë¡œ ë§Œë“¤ì–´, cli.scriptì—ì„œ ì‚¬ìš©í•˜ë„ë¡ í•¨.
 
 ifeq "$(OS_MAJORVER).$(OS_MINORVER)" "2.5"
 ifeq ($(compile64),1) # 64bit
@@ -90,9 +90,9 @@ ifeq ($(sb),1)
   SOURCE_BROWSER = -xsb
 endif
 
-# µ¿Àû ÄÄÆÄÀÏ ¿É¼Ç ¼±¾ğ
+# ë™ì  ì»´íŒŒì¼ ì˜µì…˜ ì„ ì–¸
 #
-# compile mode ÀÇ Á¾·ù
+# compile mode ì˜ ì¢…ë¥˜
 #	compat4		:
 #       compat5		:
 #	compile64	:
@@ -134,22 +134,22 @@ endif	# release
 endif   # prerelease
 endif	# debug
 
-#64bit ÄÄÆÄÀÏ ¸ğµå
+#64bit ì»´íŒŒì¼ ëª¨ë“œ
 ifeq ($(compile64),1)
   LFLAGS += -mt -xarch=v9 $(CLASSIC_LIB) $(LIB64_DIRS)
 else
-#32ºñÆ® compat5 ¸ğµå
+#32ë¹„íŠ¸ compat5 ëª¨ë“œ
 ifeq ($(compat5),1)
   LFLAGS += -mt $(CLASSIC_LIB) $(LIB32_DIRS)
 else
-#32ºñÆ® compat4 ¸ğµå
+#32ë¹„íŠ¸ compat4 ëª¨ë“œ
   LFLAGS += -mt -compat=4
 endif # 64 bit + compat=5
 endif # 64 bit mode
 
 
 
-# LINK MODE Á¾·ù
+# LINK MODE ì¢…ë¥˜
 #	purify		: purify version
 #	quantify	: quantify version
 #	purecov		: purecov version

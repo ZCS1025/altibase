@@ -16,7 +16,7 @@
 
 /***********************************************************************
  *
- * Spatio-Temporal ³»ºÎ ÇÔ¼ö
+ * Spatio-Temporal ë‚´ë¶€ í•¨ìˆ˜
  *
  ***********************************************************************/
 
@@ -74,7 +74,7 @@ ACI_RC readWKB_Header( ulsHandle       *aHandle,
         sValue[2]     = sIntermediate;
     }
 
-    *aOffset += 5; /*WKB_INT32_SIZE(4) + uchar(1) WKB °íÁ¤ »çÀÌÁî*/
+    *aOffset += 5; /*WKB_INT32_SIZE(4) + uchar(1) WKB ê³ ì • ì‚¬ì´ì¦ˆ*/
 
     return ACI_SUCCESS;
 
@@ -188,7 +188,7 @@ acp_sint32_t ulsM_IsGeometry2DType( stdGeoTypes aType )
  *
  * Description:
  *
- *   Point °´Ã¼ÀÇ Å©±â¸¦ ±¸ÇÑ´Ù.
+ *   Point ê°ì²´ì˜ í¬ê¸°ë¥¼ êµ¬í•œë‹¤.
  *
  * Implementation:
  *
@@ -203,7 +203,7 @@ ulsGetPoint2DSize( ulsHandle          * aHandle,
     /* Parameter Validation*/
     /*------------------------------*/
 
-    /* BUG-28414 : warnning Á¦°Å */
+    /* BUG-28414 : warnning ì œê±° */
     ACE_ASSERT( aHandle != NULL );
     ACE_ASSERT( aSize   != NULL );
 
@@ -224,7 +224,7 @@ ulsGetPoint2DSize( ulsHandle          * aHandle,
  *
  * Description:
  *
- *   LineString °´Ã¼ÀÇ Å©±â¸¦ ±¸ÇÑ´Ù.
+ *   LineString ê°ì²´ì˜ í¬ê¸°ë¥¼ êµ¬í•œë‹¤.
  *
  * Implementation:
  *
@@ -237,7 +237,7 @@ ACI_RC ulsGetLineString2DSize( ulsHandle              * aHandle,
     /* Parameter Validation*/
     /*------------------------------*/
 
-    /* BUG-28414 : warnning Á¦°Å */
+    /* BUG-28414 : warnning ì œê±° */
     ACE_ASSERT( aHandle != NULL );
     ACE_ASSERT( aSize   != NULL );
 
@@ -259,7 +259,7 @@ ACI_RC ulsGetLineString2DSize( ulsHandle              * aHandle,
  *
  * Description:
  *
- *   LinearRing °´Ã¼ÀÇ Å©±â¸¦ ±¸ÇÑ´Ù.
+ *   LinearRing ê°ì²´ì˜ í¬ê¸°ë¥¼ êµ¬í•œë‹¤.
  *
  * Implementation:
  *
@@ -273,7 +273,7 @@ ACI_RC ulsGetLinearRing2DSize( ulsHandle              * aHandle,
     /* Parameter Validation*/
     /*------------------------------*/
 
-    /* BUG-28414 : warnning Á¦°Å */
+    /* BUG-28414 : warnning ì œê±° */
     ACE_ASSERT( aHandle != NULL );
     ACE_ASSERT( aSize   != NULL );
 
@@ -295,7 +295,7 @@ ACI_RC ulsGetLinearRing2DSize( ulsHandle              * aHandle,
  *
  * Description:
  *
- *   Polygon °´Ã¼ÀÇ Å©±â¸¦ ±¸ÇÑ´Ù.
+ *   Polygon ê°ì²´ì˜ í¬ê¸°ë¥¼ êµ¬í•œë‹¤.
  *
  * Implementation:
  *
@@ -344,7 +344,7 @@ ACI_RC ulsGetPolygon2DSize(    ulsHandle              * aHandle,
  *
  * Description:
  *
- *   PolygonÀÇ Ã¹¹øÂ°RingÀÇ Pointer¸¦ ¾ò¾î¿Â´Ù.
+ *   Polygonì˜ ì²«ë²ˆì§¸Ringì˜ Pointerë¥¼ ì–»ì–´ì˜¨ë‹¤.
  *
  * Implementation:
  *
@@ -358,7 +358,7 @@ ulsSeekFirstRing2D( ulsHandle                * aHandle,
     /* Parameter Validation*/
     /*------------------------------*/
 
-    /* BUG-28414 : warnning Á¦°Å */
+    /* BUG-28414 : warnning ì œê±° */
     ACE_ASSERT( aHandle   != NULL );
     ACE_ASSERT( aPolygon  != NULL );
     ACE_ASSERT( aRing     != NULL );
@@ -378,7 +378,7 @@ ulsSeekFirstRing2D( ulsHandle                * aHandle,
  *
  * Description:
  *
- *   PolygonÀÇ ±âÁØRing ÀÇ ´ÙÀ½¹ø Ring Pointer¸¦ ¾ò¾î¿Â´Ù.
+ *   Polygonì˜ ê¸°ì¤€Ring ì˜ ë‹¤ìŒë²ˆ Ring Pointerë¥¼ ì–»ì–´ì˜¨ë‹¤.
  *
  * Implementation:
  *
@@ -417,7 +417,7 @@ ulsSeekNextRing2D( ulsHandle                 * aHandle,
  *
  * Description:
  *
- *   MultiGeometryÀÇ Ã³À½ Geometry Pointer¸¦ ¾ò¾î¿Â´Ù.
+ *   MultiGeometryì˜ ì²˜ìŒ Geometry Pointerë¥¼ ì–»ì–´ì˜¨ë‹¤.
  *
  * Implementation:
  *
@@ -430,7 +430,7 @@ ACI_RC ulsSeekFirstGeometry(   ulsHandle              * aHandle,
     /* Parameter Validation*/
     /*------------------------------*/
 
-    /* BUG-28414 : warnning Á¦°Å */
+    /* BUG-28414 : warnning ì œê±° */
     ACE_ASSERT( aHandle        != NULL );
     ACE_ASSERT( aGeometry      != NULL );
     ACE_ASSERT( aFirstGeometry != NULL );
@@ -450,7 +450,7 @@ ACI_RC ulsSeekFirstGeometry(   ulsHandle              * aHandle,
  *
  * Description:
  *
- *   MultiGeometryÀÇ ±âÁØ GeometryÀÇ ´ÙÀ½¹ø Geometry Pointer¸¦ ¾ò¾î¿Â´Ù.
+ *   MultiGeometryì˜ ê¸°ì¤€ Geometryì˜ ë‹¤ìŒë²ˆ Geometry Pointerë¥¼ ì–»ì–´ì˜¨ë‹¤.
  *
  * Implementation:
  *
@@ -484,11 +484,11 @@ ACI_RC ulsSeekNextGeometry(    ulsHandle              * aHandle,
 
 /***********************************************************************
  * Description: BUG-28091
- * WKB(Well Known Binary)¸¦ ÀĞ¾îµé¿© Å©±â¸¦ ±¸ÇÑ´Ù.
- * WKB¿¡´Â 3Â÷¿ø µ¥ÀÌÅÍ°¡ Á¸ÀçÇÏÁö ¾Ê´Â´Ù.
- * ulsHandle *aHandle(In): ¿¡·¯µîÀ» ±â·Ï ÇÏ´Â µîÀÇ È¯°æ¿¡ ´ëÇÑ ÇÚµéÀÌ´Ù.
- * acp_uint8_t **aPtr(InOut): ÀĞ¾îµéÀÏ WKB ¹öÆÛ À§Ä¡, ÀĞÀº ´ÙÀ½ ±× ¸¸Å­ Áõ°¡ÇÑ´Ù.
- * acp_uint8_t * aFence(In): WKB ¹öÆÛÀÇ Fence
+ * WKB(Well Known Binary)ë¥¼ ì½ì–´ë“¤ì—¬ í¬ê¸°ë¥¼ êµ¬í•œë‹¤.
+ * WKBì—ëŠ” 3ì°¨ì› ë°ì´í„°ê°€ ì¡´ì¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
+ * ulsHandle *aHandle(In): ì—ëŸ¬ë“±ì„ ê¸°ë¡ í•˜ëŠ” ë“±ì˜ í™˜ê²½ì— ëŒ€í•œ í•¸ë“¤ì´ë‹¤.
+ * acp_uint8_t **aPtr(InOut): ì½ì–´ë“¤ì¼ WKB ë²„í¼ ìœ„ì¹˜, ì½ì€ ë‹¤ìŒ ê·¸ ë§Œí¼ ì¦ê°€í•œë‹¤.
+ * acp_uint8_t * aFence(In): WKB ë²„í¼ì˜ Fence
  * acp_uint32_t  * aSize(Out):  Size
  **********************************************************************/
 ACSRETURN
@@ -528,11 +528,11 @@ ulsGetPointSizeFromWKB( ulsHandle    * aHandle,
 
 /***********************************************************************
  * Description: BUG-28091
- * WKB(Well Known Binary)¸¦ ÀĞ¾îµé¿© Å©±â¸¦ ±¸ÇÑ´Ù.
- * WKB¿¡´Â 3Â÷¿ø µ¥ÀÌÅÍ°¡ Á¸ÀçÇÏÁö ¾Ê´Â´Ù.
- * ulsHandle *aHandle(In): ¿¡·¯µîÀ» ±â·Ï ÇÏ´Â µîÀÇ È¯°æ¿¡ ´ëÇÑ ÇÚµéÀÌ´Ù.
- * acp_uint8_t **aPtr(InOut): ÀĞ¾îµéÀÏ WKB ¹öÆÛ À§Ä¡, ÀĞÀº ´ÙÀ½ ±× ¸¸Å­ Áõ°¡ÇÑ´Ù.
- * acp_uint8_t * aFence(In): WKB ¹öÆÛÀÇ Fence
+ * WKB(Well Known Binary)ë¥¼ ì½ì–´ë“¤ì—¬ í¬ê¸°ë¥¼ êµ¬í•œë‹¤.
+ * WKBì—ëŠ” 3ì°¨ì› ë°ì´í„°ê°€ ì¡´ì¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
+ * ulsHandle *aHandle(In): ì—ëŸ¬ë“±ì„ ê¸°ë¡ í•˜ëŠ” ë“±ì˜ í™˜ê²½ì— ëŒ€í•œ í•¸ë“¤ì´ë‹¤.
+ * acp_uint8_t **aPtr(InOut): ì½ì–´ë“¤ì¼ WKB ë²„í¼ ìœ„ì¹˜, ì½ì€ ë‹¤ìŒ ê·¸ ë§Œí¼ ì¦ê°€í•œë‹¤.
+ * acp_uint8_t * aFence(In): WKB ë²„í¼ì˜ Fence
  * acp_uint32_t  * aSize(Out):  Size
  **********************************************************************/
 ACSRETURN
@@ -590,11 +590,11 @@ ulsGetLineStringSizeFromWKB( ulsHandle    * aHandle,
 }
 /***********************************************************************
  * Description: BUG-28091
- * WKB(Well Known Binary)¸¦ ÀĞ¾îµé¿© Å©±â¸¦ ±¸ÇÑ´Ù.
- * WKB¿¡´Â 3Â÷¿ø µ¥ÀÌÅÍ°¡ Á¸ÀçÇÏÁö ¾Ê´Â´Ù.
- * ulsHandle *aHandle(In): ¿¡·¯µîÀ» ±â·Ï ÇÏ´Â µîÀÇ È¯°æ¿¡ ´ëÇÑ ÇÚµéÀÌ´Ù.
- * acp_uint8_t **aPtr(InOut): ÀĞ¾îµéÀÏ WKB ¹öÆÛ À§Ä¡, ÀĞÀº ´ÙÀ½ ±× ¸¸Å­ Áõ°¡ÇÑ´Ù.
- * acp_uint8_t * aFence(In): WKB ¹öÆÛÀÇ Fence
+ * WKB(Well Known Binary)ë¥¼ ì½ì–´ë“¤ì—¬ í¬ê¸°ë¥¼ êµ¬í•œë‹¤.
+ * WKBì—ëŠ” 3ì°¨ì› ë°ì´í„°ê°€ ì¡´ì¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
+ * ulsHandle *aHandle(In): ì—ëŸ¬ë“±ì„ ê¸°ë¡ í•˜ëŠ” ë“±ì˜ í™˜ê²½ì— ëŒ€í•œ í•¸ë“¤ì´ë‹¤.
+ * acp_uint8_t **aPtr(InOut): ì½ì–´ë“¤ì¼ WKB ë²„í¼ ìœ„ì¹˜, ì½ì€ ë‹¤ìŒ ê·¸ ë§Œí¼ ì¦ê°€í•œë‹¤.
+ * acp_uint8_t * aFence(In): WKB ë²„í¼ì˜ Fence
  * acp_uint32_t  * aSize(Out):  Size
  **********************************************************************/
 ACSRETURN
@@ -675,11 +675,11 @@ ulsGetPolygonSizeFromWKB( ulsHandle    * aHandle,
 
 /***********************************************************************
  * Description: BUG-28091
- * WKB(Well Known Binary)¸¦ ÀĞ¾îµé¿© Å©±â¸¦ ±¸ÇÑ´Ù.
- * WKB¿¡´Â 3Â÷¿ø µ¥ÀÌÅÍ°¡ Á¸ÀçÇÏÁö ¾Ê´Â´Ù.
- * ulsHandle *aHandle(In): ¿¡·¯µîÀ» ±â·Ï ÇÏ´Â µîÀÇ È¯°æ¿¡ ´ëÇÑ ÇÚµéÀÌ´Ù.
- * acp_uint8_t **aPtr(InOut): ÀĞ¾îµéÀÏ WKB ¹öÆÛ À§Ä¡, ÀĞÀº ´ÙÀ½ ±× ¸¸Å­ Áõ°¡ÇÑ´Ù.
- * acp_uint8_t * aFence(In): WKB ¹öÆÛÀÇ Fence
+ * WKB(Well Known Binary)ë¥¼ ì½ì–´ë“¤ì—¬ í¬ê¸°ë¥¼ êµ¬í•œë‹¤.
+ * WKBì—ëŠ” 3ì°¨ì› ë°ì´í„°ê°€ ì¡´ì¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
+ * ulsHandle *aHandle(In): ì—ëŸ¬ë“±ì„ ê¸°ë¡ í•˜ëŠ” ë“±ì˜ í™˜ê²½ì— ëŒ€í•œ í•¸ë“¤ì´ë‹¤.
+ * acp_uint8_t **aPtr(InOut): ì½ì–´ë“¤ì¼ WKB ë²„í¼ ìœ„ì¹˜, ì½ì€ ë‹¤ìŒ ê·¸ ë§Œí¼ ì¦ê°€í•œë‹¤.
+ * acp_uint8_t * aFence(In): WKB ë²„í¼ì˜ Fence
  * acp_uint32_t  * aSize(Out):  Size
  **********************************************************************/
 ACSRETURN
@@ -738,11 +738,11 @@ ulsGetMultiPointSizeFromWKB( ulsHandle    * aHandle,
 
 /***********************************************************************
  * Description:BUG-28091
- * WKB(Well Known Binary)¸¦ ÀĞ¾îµé¿© Å©±â¸¦ ±¸ÇÑ´Ù.
- * WKB¿¡´Â 3Â÷¿ø µ¥ÀÌÅÍ°¡ Á¸ÀçÇÏÁö ¾Ê´Â´Ù.
- * ulsHandle *aHandle(In): ¿¡·¯µîÀ» ±â·Ï ÇÏ´Â µîÀÇ È¯°æ¿¡ ´ëÇÑ ÇÚµéÀÌ´Ù.
- * acp_uint8_t **aPtr(InOut): ÀĞ¾îµéÀÏ WKB ¹öÆÛ À§Ä¡, ÀĞÀº ´ÙÀ½ ±× ¸¸Å­ Áõ°¡ÇÑ´Ù.
- * acp_uint8_t * aFence(In): WKB ¹öÆÛÀÇ Fence
+ * WKB(Well Known Binary)ë¥¼ ì½ì–´ë“¤ì—¬ í¬ê¸°ë¥¼ êµ¬í•œë‹¤.
+ * WKBì—ëŠ” 3ì°¨ì› ë°ì´í„°ê°€ ì¡´ì¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
+ * ulsHandle *aHandle(In): ì—ëŸ¬ë“±ì„ ê¸°ë¡ í•˜ëŠ” ë“±ì˜ í™˜ê²½ì— ëŒ€í•œ í•¸ë“¤ì´ë‹¤.
+ * acp_uint8_t **aPtr(InOut): ì½ì–´ë“¤ì¼ WKB ë²„í¼ ìœ„ì¹˜, ì½ì€ ë‹¤ìŒ ê·¸ ë§Œí¼ ì¦ê°€í•œë‹¤.
+ * acp_uint8_t * aFence(In): WKB ë²„í¼ì˜ Fence
  * acp_uint32_t  * aSize(Out):  Size
  **********************************************************************/
 ACSRETURN
@@ -834,11 +834,11 @@ ulsGetMultiLineStringSizeFromWKB( ulsHandle    * aHandle,
 
 /***********************************************************************
  * Description:BUG-28091
- * WKB(Well Known Binary)¸¦ ÀĞ¾îµé¿© Å©±â¸¦ ±¸ÇÑ´Ù.
- * WKB¿¡´Â 3Â÷¿ø µ¥ÀÌÅÍ°¡ Á¸ÀçÇÏÁö ¾Ê´Â´Ù.
- * ulsHandle *aHandle(In): ¿¡·¯µîÀ» ±â·Ï ÇÏ´Â µîÀÇ È¯°æ¿¡ ´ëÇÑ ÇÚµéÀÌ´Ù.
- * acp_uint8_t **aPtr(InOut): ÀĞ¾îµéÀÏ WKB ¹öÆÛ À§Ä¡, ÀĞÀº ´ÙÀ½ ±× ¸¸Å­ Áõ°¡ÇÑ´Ù.
- * acp_uint8_t * aFence(In): WKB ¹öÆÛÀÇ Fence
+ * WKB(Well Known Binary)ë¥¼ ì½ì–´ë“¤ì—¬ í¬ê¸°ë¥¼ êµ¬í•œë‹¤.
+ * WKBì—ëŠ” 3ì°¨ì› ë°ì´í„°ê°€ ì¡´ì¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
+ * ulsHandle *aHandle(In): ì—ëŸ¬ë“±ì„ ê¸°ë¡ í•˜ëŠ” ë“±ì˜ í™˜ê²½ì— ëŒ€í•œ í•¸ë“¤ì´ë‹¤.
+ * acp_uint8_t **aPtr(InOut): ì½ì–´ë“¤ì¼ WKB ë²„í¼ ìœ„ì¹˜, ì½ì€ ë‹¤ìŒ ê·¸ ë§Œí¼ ì¦ê°€í•œë‹¤.
+ * acp_uint8_t * aFence(In): WKB ë²„í¼ì˜ Fence
  * acp_uint32_t  * aSize(Out):  Size
  **********************************************************************/
 ACSRETURN
@@ -929,11 +929,11 @@ ulsGetMultiPolygonSizeFromWKB( ulsHandle    * aHandle,
 
 /***********************************************************************
  * Description:BUG-28091
- * WKB(Well Known Binary)¸¦ ÀĞ¾îµé¿© Å©±â¸¦ ±¸ÇÑ´Ù.
- * WKB¿¡´Â 3Â÷¿ø µ¥ÀÌÅÍ°¡ Á¸ÀçÇÏÁö ¾Ê´Â´Ù.
- * ulsHandle *aHandle(In): ¿¡·¯µîÀ» ±â·Ï ÇÏ´Â µîÀÇ È¯°æ¿¡ ´ëÇÑ ÇÚµéÀÌ´Ù.
- * acp_uint8_t **aPtr(InOut): ÀĞ¾îµéÀÏ WKB ¹öÆÛ À§Ä¡, ÀĞÀº ´ÙÀ½ ±× ¸¸Å­ Áõ°¡ÇÑ´Ù.
- * acp_uint8_t * aFence(In): WKB ¹öÆÛÀÇ Fence
+ * WKB(Well Known Binary)ë¥¼ ì½ì–´ë“¤ì—¬ í¬ê¸°ë¥¼ êµ¬í•œë‹¤.
+ * WKBì—ëŠ” 3ì°¨ì› ë°ì´í„°ê°€ ì¡´ì¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
+ * ulsHandle *aHandle(In): ì—ëŸ¬ë“±ì„ ê¸°ë¡ í•˜ëŠ” ë“±ì˜ í™˜ê²½ì— ëŒ€í•œ í•¸ë“¤ì´ë‹¤.
+ * acp_uint8_t **aPtr(InOut): ì½ì–´ë“¤ì¼ WKB ë²„í¼ ìœ„ì¹˜, ì½ì€ ë‹¤ìŒ ê·¸ ë§Œí¼ ì¦ê°€í•œë‹¤.
+ * acp_uint8_t * aFence(In): WKB ë²„í¼ì˜ Fence
  * acp_uint32_t  * aSize(Out):  Size
  **********************************************************************/
 ACSRETURN

@@ -36,14 +36,14 @@ typedef struct ulpLibOption
 
 extern ulpLibOption gUlpLibOption;
 
-/* BUG-43429 unsafe_null¿É¼ÇÀ» stmt ¿É¼ÇÀ¸·Î º¯°æ */
+/* BUG-43429 unsafe_nullì˜µì…˜ì„ stmt ì˜µì…˜ìœ¼ë¡œ ë³€ê²½ */
 typedef enum
 {
     /* Set when command-line option -n used */
     ULP_OPT_NOT_NULL_PAD = 0,
     /* Set when command-line option -unsafe_null used */
     ULP_OPT_UNSAFE_NULL,
-    /* Set when command-line option stmtcache={on|off} used (ÇöÀç Á¸ÀçÇÏÁö ¾ÊÀ½.)*/
+    /* Set when command-line option stmtcache={on|off} used (í˜„ì¬ ì¡´ì¬í•˜ì§€ ì•ŠìŒ.)*/
     ULP_OPT_STMT_CACHE
 } ulpStmtOptionFlag;
 

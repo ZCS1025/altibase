@@ -1,6 +1,6 @@
 include $(dir $(word $(words $(MAKEFILE_LIST)),$(MAKEFILE_LIST)))/../../env.mk
 
-# UTIL¿ë ºÎ°¡¿É¼Ç Ã³¸®
+# UTILìš© ë¶€ê°€ì˜µì…˜ ì²˜ë¦¬
 
 UL_DIR_JDBC      = $(UL_DIR)/ulj
 

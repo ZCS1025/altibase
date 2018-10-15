@@ -55,8 +55,8 @@ static ACI_RC ulsdDescribeColCheckArgs(ulnFnContext *aFnContext,
     ACI_EXCEPTION(LABEL_INVALID_DESC_INDEX)
     {
         /*
-         * 07009 : BOOKMARK Áö¿ø¾ÈÇÏ´Âµ¥ column number ¿¡ 0 À» ÁØ´Ù°Å³ª
-         *         result column º¸´Ù Å« index ¸¦ ÁáÀ» ¶§ ¹ß»ı
+         * 07009 : BOOKMARK ì§€ì›ì•ˆí•˜ëŠ”ë° column number ì— 0 ì„ ì¤€ë‹¤ê±°ë‚˜
+         *         result column ë³´ë‹¤ í° index ë¥¼ ì¤¬ì„ ë•Œ ë°œìƒ
          */
         ulnError(aFnContext, ulERR_ABORT_INVALID_DESCRIPTOR_INDEX, aColumnNumber);
     }
@@ -64,8 +64,8 @@ static ACI_RC ulsdDescribeColCheckArgs(ulnFnContext *aFnContext,
     ACI_EXCEPTION(LABEL_NO_RESULT_SET)
     {
         /*
-         * 07005 : result set À» »ı¼º ¾ÈÇÏ´Â statement °¡ ½ÇÇàµÇ¾î¼­
-         *         result set ÀÌ ¾ø´Âµ¥ SQLDescribeCol() À» È£ÃâÇÏ¿´´Ù.
+         * 07005 : result set ì„ ìƒì„± ì•ˆí•˜ëŠ” statement ê°€ ì‹¤í–‰ë˜ì–´ì„œ
+         *         result set ì´ ì—†ëŠ”ë° SQLDescribeCol() ì„ í˜¸ì¶œí•˜ì˜€ë‹¤.
          */
         ulnError(aFnContext, ulERR_ABORT_STMT_HAVE_NO_RESULT_SET);
     }

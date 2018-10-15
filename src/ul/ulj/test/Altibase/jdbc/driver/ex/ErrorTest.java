@@ -7,7 +7,7 @@ import java.sql.SQLException;
 import java.sql.SQLWarning;
 
 /**
- * PROJ-2427 Error.java ¸®ÆÑÅä¸µ ÈÄ CheckAndXXX ¸Ş¼ÒµåµéÀÌ Á¤»óÀûÀ¸·Î %s ¹®ÀÚ¸¦ Ä¡È¯ÇÏ´ÂÁö °ËÁõÇÑ´Ù.
+ * PROJ-2427 Error.java ë¦¬íŒ©í† ë§ í›„ CheckAndXXX ë©”ì†Œë“œë“¤ì´ ì •ìƒì ìœ¼ë¡œ %s ë¬¸ìë¥¼ ì¹˜í™˜í•˜ëŠ”ì§€ ê²€ì¦í•œë‹¤.
  * @author yjpark
  *
  */

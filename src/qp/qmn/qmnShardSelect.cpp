@@ -20,9 +20,9 @@
  *
  * Description : SDSE(SharD SElect) Node
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  **********************************************************************/
 
@@ -39,9 +39,9 @@ IDE_RC qmnSDSE::init( qcTemplate * aTemplate,
 {
 /***********************************************************************
  *
- * Description : SDSE ³ëµåÀÇ ÃÊ±âÈ­
+ * Description : SDSE ë…¸ë“œì˜ ì´ˆê¸°í™”
  *
- * Implementation : ÃÖÃÊ ÃÊ±âÈ­°¡ µÇÁö ¾ÊÀº °æ¿ì ÃÖÃÊ ÃÊ±âÈ­ ¼öÇà
+ * Implementation : ìµœì´ˆ ì´ˆê¸°í™”ê°€ ë˜ì§€ ì•Šì€ ê²½ìš° ìµœì´ˆ ì´ˆê¸°í™” ìˆ˜í–‰
  *
  ***********************************************************************/
 
@@ -51,14 +51,14 @@ IDE_RC qmnSDSE::init( qcTemplate * aTemplate,
     idBool          sJudge = ID_TRUE;
 
     //-------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //-------------------------------
 
     IDE_DASSERT( aTemplate != NULL );
     IDE_DASSERT( aPlan     != NULL );
 
     //-------------------------------
-    // ±âº» ÃÊ±âÈ­
+    // ê¸°ë³¸ ì´ˆê¸°í™”
     //-------------------------------
 
     sCodePlan = (qmncSDSE*)aPlan;
@@ -76,7 +76,7 @@ IDE_RC qmnSDSE::init( qcTemplate * aTemplate,
     }
 
     //-------------------------------
-    // Àç¼öÇàÀ» À§ÇÑ ÃÊ±âÈ­
+    // ìž¬ìˆ˜í–‰ì„ ìœ„í•œ ì´ˆê¸°í™”
     //-------------------------------
 
     sClientInfo = aTemplate->stmt->session->mQPSpecific.mClientInfo;
@@ -84,7 +84,7 @@ IDE_RC qmnSDSE::init( qcTemplate * aTemplate,
     sdi::closeDataNode( sClientInfo, sDataPlan->mDataInfo );
 
     //-------------------------------
-    // doItÇÔ¼ö °áÁ¤À» À§ÇÑ Constant filter ÀÇ judgement
+    // doItí•¨ìˆ˜ ê²°ì •ì„ ìœ„í•œ Constant filter ì˜ judgement
     //-------------------------------
     if ( sCodePlan->constantFilter != NULL )
     {
@@ -101,7 +101,7 @@ IDE_RC qmnSDSE::init( qcTemplate * aTemplate,
     if ( sJudge == ID_TRUE )
     {
         //------------------------------------------------
-        // ¼öÇà ÇÔ¼ö °áÁ¤
+        // ìˆ˜í–‰ í•¨ìˆ˜ ê²°ì •
         //------------------------------------------------
         sDataPlan->doIt = qmnSDSE::doItFirst;
         *sDataPlan->flag &= ~QMND_SDSE_ALL_FALSE_MASK;
@@ -127,7 +127,7 @@ IDE_RC qmnSDSE::firstInit( qcTemplate * aTemplate,
 {
 /***********************************************************************
  *
- * Description : Data ¿µ¿ª¿¡ ´ëÇÑ ÇÒ´ç
+ * Description : Data ì˜ì—­ì— ëŒ€í•œ í• ë‹¹
  *
  * Implementation :
  *
@@ -139,7 +139,7 @@ IDE_RC qmnSDSE::firstInit( qcTemplate * aTemplate,
     UShort             sTupleID;
     UInt               i;
 
-    // Tuple À§Ä¡ÀÇ °áÁ¤
+    // Tuple ìœ„ì¹˜ì˜ ê²°ì •
     sTupleID = aCodePlan->tupleRowID;
     aDataPlan->plan.myTuple = &aTemplate->tmplate.rows[sTupleID];
 
@@ -152,10 +152,10 @@ IDE_RC qmnSDSE::firstInit( qcTemplate * aTemplate,
     aDataPlan->mScanDoneCount = 0;
 
     //-------------------------------
-    // ¼öÇà³ëµå ÃÊ±âÈ­
+    // ìˆ˜í–‰ë…¸ë“œ ì´ˆê¸°í™”
     //-------------------------------
 
-    // shard linker °Ë»ç & ÃÊ±âÈ­
+    // shard linker ê²€ì‚¬ & ì´ˆê¸°í™”
     IDE_TEST( sdi::checkShardLinker( aTemplate->stmt ) != IDE_SUCCESS );
 
     IDE_TEST_RAISE( aTemplate->shardExecData.execInfo == NULL,
@@ -165,7 +165,7 @@ IDE_RC qmnSDSE::firstInit( qcTemplate * aTemplate,
         + aCodePlan->shardDataIndex;
 
     //-------------------------------
-    // shard ¼öÇàÀ» À§ÇÑ ÁØºñ
+    // shard ìˆ˜í–‰ì„ ìœ„í•œ ì¤€ë¹„
     //-------------------------------
 
     sClientInfo = aTemplate->stmt->session->mQPSpecific.mClientInfo;
@@ -174,13 +174,13 @@ IDE_RC qmnSDSE::firstInit( qcTemplate * aTemplate,
     {
         idlOS::memset( &sDataNodeArg, 0x00, ID_SIZEOF(sdiDataNode) );
 
-        // data¸¦ ¾ò¾î¿À±â À§ÇÑ(tupleÀ» À§ÇÑ) buffer °ø°£ ÇÒ´ç
+        // dataë¥¼ ì–»ì–´ì˜¤ê¸° ìœ„í•œ(tupleì„ ìœ„í•œ) buffer ê³µê°„ í• ë‹¹
         sDataNodeArg.mColumnCount  = aDataPlan->plan.myTuple->columnCount;
         sDataNodeArg.mBufferLength = aDataPlan->plan.myTuple->rowOffset;
         for ( i = 0; i < SDI_NODE_MAX_COUNT; i++ )
         {
             sDataNodeArg.mBuffer[i] = (void*)( aTemplate->shardExecData.data + aCodePlan->mBuffer[i] );
-            // ÃÊ±âÈ­
+            // ì´ˆê¸°í™”
             idlOS::memset( sDataNodeArg.mBuffer[i], 0x00, sDataNodeArg.mBufferLength );
         }
         sDataNodeArg.mOffset = (UInt*)( aTemplate->shardExecData.data + aCodePlan->mOffset );
@@ -310,21 +310,21 @@ IDE_RC qmnSDSE::doItAllFalse( qcTemplate * aTemplate,
 {
 /***********************************************************************
  *
- * Description : Constant Filter °Ë»çÈÄ¿¡ °áÁ¤µÇ´Â ÇÔ¼ö·Î Àý´ë ¸¸Á·ÇÏ´Â
- *               Record°¡ Á¸ÀçÇÏÁö ¾Ê´Â´Ù.
+ * Description : Constant Filter ê²€ì‚¬í›„ì— ê²°ì •ë˜ëŠ” í•¨ìˆ˜ë¡œ ì ˆëŒ€ ë§Œì¡±í•˜ëŠ”
+ *               Recordê°€ ì¡´ìž¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
  *
- * Implementation : Ç×»ó record ¾øÀ½À» ¸®ÅÏÇÑ´Ù.
+ * Implementation : í•­ìƒ record ì—†ìŒì„ ë¦¬í„´í•œë‹¤.
  *
  ***********************************************************************/
 
     qmncSDSE * sCodePlan = (qmncSDSE*)aPlan;
     qmndSDSE * sDataPlan = (qmndSDSE*)(aTemplate->tmplate.data + aPlan->offset);
 
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     IDE_DASSERT( sCodePlan->constantFilter != NULL );
     IDE_DASSERT( ( *sDataPlan->flag & QMND_SDSE_ALL_FALSE_MASK ) == QMND_SDSE_ALL_FALSE_TRUE );
 
-    // µ¥ÀÌÅÍ ¾øÀ½À» Setting
+    // ë°ì´í„° ì—†ìŒì„ Setting
     *aFlag &= ~QMC_ROW_DATA_MASK;
     *aFlag |= QMC_ROW_DATA_NONE;
 
@@ -337,13 +337,13 @@ IDE_RC qmnSDSE::doItFirst( qcTemplate * aTemplate,
 {
 /***********************************************************************
  *
- * Description : data ¿µ¿ª¿¡ ´ëÇÑ ÃÊ±âÈ­¸¦ ¼öÇàÇÏ°í
- *               data ¸¦ °¡Á®¿À±â À§ÇÑ ÇÔ¼ö¸¦ È£ÃâÇÑ´Ù.
+ * Description : data ì˜ì—­ì— ëŒ€í•œ ì´ˆê¸°í™”ë¥¼ ìˆ˜í–‰í•˜ê³ 
+ *               data ë¥¼ ê°€ì ¸ì˜¤ê¸° ìœ„í•œ í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•œë‹¤.
  *
  * Implementation :
  *              - allocStmt
  *              - prepare
- *              - bindCol (PROJ-2638 ¿¡¼­´Â Á¦¿Ü)
+ *              - bindCol (PROJ-2638 ì—ì„œëŠ” ì œì™¸)
  *              - execute
  *
  ***********************************************************************/
@@ -352,15 +352,15 @@ IDE_RC qmnSDSE::doItFirst( qcTemplate * aTemplate,
     qmndSDSE       * sDataPlan = (qmndSDSE *)(aTemplate->tmplate.data + aPlan->offset);
     sdiClientInfo  * sClientInfo = aTemplate->stmt->session->mQPSpecific.mClientInfo;
 
-    // ºñÁ¤»ó Á¾·á °Ë»ç
+    // ë¹„ì •ìƒ ì¢…ë£Œ ê²€ì‚¬
     IDE_TEST( iduCheckSessionEvent( aTemplate->stmt->mStatistics ) != IDE_SUCCESS );
 
-    // DataPlan ÃÊ±âÈ­
+    // DataPlan ì´ˆê¸°í™”
     sDataPlan->mCurrScanNode  = 0;
     sDataPlan->mScanDoneCount = 0;
 
     //-------------------------------
-    // ¼öÇà³ëµå °áÁ¤
+    // ìˆ˜í–‰ë…¸ë“œ ê²°ì •
     //-------------------------------
 
     IDE_TEST( sdi::decideShardDataInfo(
@@ -373,7 +373,7 @@ IDE_RC qmnSDSE::doItFirst( qcTemplate * aTemplate,
               != IDE_SUCCESS );
 
     //-------------------------------
-    // ¼öÇà
+    // ìˆ˜í–‰
     //-------------------------------
 
     IDE_TEST( sdi::executeSelect( aTemplate->stmt,
@@ -396,14 +396,14 @@ IDE_RC qmnSDSE::doItNext( qcTemplate * aTemplate,
 {
 /***********************************************************************
  *
- * Description : data ¸¦ °¡Á®¿À´Â ÇÔ¼ö¸¦ ¼öÇàÇÑ´Ù.
+ * Description : data ë¥¼ ê°€ì ¸ì˜¤ëŠ” í•¨ìˆ˜ë¥¼ ìˆ˜í–‰í•œë‹¤.
  *
- *    Æ¯Á¤ data node ÀÇ buffer °¡ ¸ÕÀú ºñ°ÔµÉ °æ¿ì¸¦ °¨¾ÈÇÏ¿©,
- *    data node ¸¦ ÇÑ ¹ø¾¿ µ¹¾Æ°¡¸é¼­ ¼öÇàÇÑ´Ù.
+ *    íŠ¹ì • data node ì˜ buffer ê°€ ë¨¼ì € ë¹„ê²Œë  ê²½ìš°ë¥¼ ê°ì•ˆí•˜ì—¬,
+ *    data node ë¥¼ í•œ ë²ˆì”© ëŒì•„ê°€ë©´ì„œ ìˆ˜í–‰í•œë‹¤.
  *
- *    °á°ú°¡ ¾ø´Â data node Àº °Ç³Ê¶Ù¸ç,
- *    ¸ðµç data node ÀÇ doIt °á°ú°¡ QMC_ROW_DATA_NONE(no rows)ÀÌ
- *    µÉ ¶§ ±îÁö ¼öÇàÇÑ´Ù.
+ *    ê²°ê³¼ê°€ ì—†ëŠ” data node ì€ ê±´ë„ˆë›°ë©°,
+ *    ëª¨ë“  data node ì˜ doIt ê²°ê³¼ê°€ QMC_ROW_DATA_NONE(no rows)ì´
+ *    ë  ë•Œ ê¹Œì§€ ìˆ˜í–‰í•œë‹¤.
  *
  * Implementation :
  *              - fetch
@@ -424,8 +424,8 @@ IDE_RC qmnSDSE::doItNext( qcTemplate * aTemplate,
     {
         if ( sDataPlan->mCurrScanNode == sClientInfo->mCount )
         {
-            // ÀÌÀü doItÀÌ ¸¶Áö¸· data node ¿¡¼­ ¼öÇà µÇ¾ú´Ù¸é,
-            // Ã¹¹øÂ° data node ºÎÅÍ ´Ù½Ã doItÇÏµµ·Ï ÇÑ´Ù.
+            // ì´ì „ doItì´ ë§ˆì§€ë§‰ data node ì—ì„œ ìˆ˜í–‰ ë˜ì—ˆë‹¤ë©´,
+            // ì²«ë²ˆì§¸ data node ë¶€í„° ë‹¤ì‹œ doItí•˜ë„ë¡ í•œë‹¤.
             sDataPlan->mCurrScanNode = 0;
         }
         else
@@ -436,7 +436,7 @@ IDE_RC qmnSDSE::doItNext( qcTemplate * aTemplate,
         sConnectInfo = &(sClientInfo->mConnectInfo[sDataPlan->mCurrScanNode]);
         sDataNode = &(sDataPlan->mDataInfo->mNodes[sDataPlan->mCurrScanNode]);
 
-        // ÀÌÀü doItÀÇ °á°ú°¡ ¾ø¾ú´ø data node ´Â skipÇÑ´Ù.
+        // ì´ì „ doItì˜ ê²°ê³¼ê°€ ì—†ì—ˆë˜ data node ëŠ” skipí•œë‹¤.
         if ( sDataNode->mState == SDI_NODE_STATE_EXECUTED )
         {
             sJudge = ID_FALSE;
@@ -447,7 +447,7 @@ IDE_RC qmnSDSE::doItNext( qcTemplate * aTemplate,
                 IDE_TEST( sdi::fetch( sConnectInfo, sDataNode, &sExist )
                           != IDE_SUCCESS );
 
-                // Àß¸øµÈ µ¥ÀÌÅÍ°¡ fetchµÇ´Â °æ¿ì¸¦ ¹æ¾îÇÑ´Ù.
+                // ìž˜ëª»ëœ ë°ì´í„°ê°€ fetchë˜ëŠ” ê²½ìš°ë¥¼ ë°©ì–´í•œë‹¤.
                 sColumn = sDataPlan->plan.myTuple->columns;
                 for ( i = 0; i < sDataPlan->plan.myTuple->columnCount; i++, sColumn++ )
                 {
@@ -460,7 +460,7 @@ IDE_RC qmnSDSE::doItNext( qcTemplate * aTemplate,
                 }
 
                 //------------------------------
-                // Data Á¸Àç ¿©ºÎ¿¡ µû¸¥ Ã³¸®
+                // Data ì¡´ìž¬ ì—¬ë¶€ì— ë”°ë¥¸ ì²˜ë¦¬
                 //------------------------------
 
                 if ( sExist == ID_TRUE )
@@ -605,7 +605,7 @@ IDE_RC qmnSDSE::padNull( qcTemplate * aTemplate,
     if ( ( aTemplate->planFlag[sCodePlan->planID] & QMND_SDSE_INIT_DONE_MASK )
          == QMND_SDSE_INIT_DONE_FALSE )
     {
-        // ÃÊ±âÈ­ µÇÁö ¾ÊÀº °æ¿ì ÃÊ±âÈ­ ¼öÇà
+        // ì´ˆê¸°í™” ë˜ì§€ ì•Šì€ ê²½ìš° ì´ˆê¸°í™” ìˆ˜í–‰
         IDE_TEST( aPlan->init( aTemplate, aPlan ) != IDE_SUCCESS );
     }
     else
@@ -616,28 +616,28 @@ IDE_RC qmnSDSE::padNull( qcTemplate * aTemplate,
     if ( ( sCodePlan->plan.flag & QMN_PLAN_STORAGE_MASK ) == QMN_PLAN_STORAGE_DISK )
     {
         //-----------------------------------
-        // Disk TableÀÎ °æ¿ì
+        // Disk Tableì¸ ê²½ìš°
         //-----------------------------------
 
-        // Record ÀúÀåÀ» À§ÇÑ °ø°£Àº ÇÏ³ª¸¸ Á¸ÀçÇÏ¸ç,
-        // ÀÌ¿¡ ´ëÇÑ pointer´Â Ç×»ó À¯ÁöµÇ¾î¾ß ÇÑ´Ù.
+        // Record ì €ìž¥ì„ ìœ„í•œ ê³µê°„ì€ í•˜ë‚˜ë§Œ ì¡´ìž¬í•˜ë©°,
+        // ì´ì— ëŒ€í•œ pointerëŠ” í•­ìƒ ìœ ì§€ë˜ì–´ì•¼ í•œë‹¤.
 
         if ( sDataPlan->nullRow == NULL )
         {
             //-----------------------------------
-            // Null Row¸¦ °¡Á®¿Â ÀûÀÌ ¾ø´Â °æ¿ì
+            // Null Rowë¥¼ ê°€ì ¸ì˜¨ ì ì´ ì—†ëŠ” ê²½ìš°
             //-----------------------------------
 
-            // ÀûÇÕ¼º °Ë»ç
+            // ì í•©ì„± ê²€ì‚¬
             IDE_DASSERT( sDataPlan->plan.myTuple->rowOffset > 0 );
 
-            // Null Row¸¦ À§ÇÑ °ø°£ ÇÒ´ç
+            // Null Rowë¥¼ ìœ„í•œ ê³µê°„ í• ë‹¹
             IDE_TEST( aTemplate->stmt->qmxMem->cralloc( sDataPlan->plan.myTuple->rowOffset,
                                                         (void**) &sDataPlan->nullRow )
                       != IDE_SUCCESS );
 
             // PROJ-1705
-            // µð½ºÅ©Å×ÀÌºíÀÇ null row´Â qp¿¡¼­ »ý¼º/ÀúÀåÇØµÎ°í »ç¿ëÇÑ´Ù.
+            // ë””ìŠ¤í¬í…Œì´ë¸”ì˜ null rowëŠ” qpì—ì„œ ìƒì„±/ì €ìž¥í•´ë‘ê³  ì‚¬ìš©í•œë‹¤.
             IDE_TEST( qmn::makeNullRow( sDataPlan->plan.myTuple,
                                         sDataPlan->nullRow )
                       != IDE_SUCCESS );
@@ -646,16 +646,16 @@ IDE_RC qmnSDSE::padNull( qcTemplate * aTemplate,
         }
         else
         {
-            // ÀÌ¹Ì Null Row¸¦ °¡Á®¿ÔÀ½.
+            // ì´ë¯¸ Null Rowë¥¼ ê°€ì ¸ì™”ìŒ.
             // Nothing to do.
         }
 
-        // Null Row º¹»ç
+        // Null Row ë³µì‚¬
         idlOS::memcpy( sDataPlan->plan.myTuple->row,
                        sDataPlan->nullRow,
                        sDataPlan->plan.myTuple->rowOffset );
 
-        // Null RIDÀÇ º¹»ç
+        // Null RIDì˜ ë³µì‚¬
         idlOS::memcpy( &sDataPlan->plan.myTuple->rid,
                        &sDataPlan->nullRID,
                        ID_SIZEOF(scGRID) );
@@ -663,9 +663,9 @@ IDE_RC qmnSDSE::padNull( qcTemplate * aTemplate,
     else
     {
         //-----------------------------------
-        // Memory TableÀÎ °æ¿ì
+        // Memory Tableì¸ ê²½ìš°
         //-----------------------------------
-        // data node ÀÇ tupleÀº Ç×»ó disk tupleÀÌ´Ù.
+        // data node ì˜ tupleì€ í•­ìƒ disk tupleì´ë‹¤.
         IDE_DASSERT( 1 );
     }
 
@@ -686,7 +686,7 @@ IDE_RC qmnSDSE::printPlan( qcTemplate   * aTemplate,
 {
 /***********************************************************************
  *
- * Description : SDSE ³ëµåÀÇ ¼öÇà Á¤º¸¸¦ Ãâ·ÂÇÑ´Ù.
+ * Description : SDSE ë…¸ë“œì˜ ìˆ˜í–‰ ì •ë³´ë¥¼ ì¶œë ¥í•œë‹¤.
  *
  * Implementation :
  *
@@ -699,7 +699,7 @@ IDE_RC qmnSDSE::printPlan( qcTemplate   * aTemplate,
     sDataPlan->flag = & aTemplate->planFlag[sCodePlan->planID];
 
     //----------------------------
-    // SDSE ³ëµå Ç¥½Ã
+    // SDSE ë…¸ë“œ í‘œì‹œ
     //----------------------------
     if ( QCU_TRCLOG_DETAIL_MTRNODE == 1 )
     {
@@ -715,11 +715,11 @@ IDE_RC qmnSDSE::printPlan( qcTemplate   * aTemplate,
     }
 
     //----------------------------
-    // Predicate Á¤º¸ÀÇ »ó¼¼ Ãâ·Â
+    // Predicate ì •ë³´ì˜ ìƒì„¸ ì¶œë ¥
     //----------------------------
     if ( QCG_GET_SESSION_TRCLOG_DETAIL_PREDICATE( aTemplate->stmt ) == 1 )
     {
-        // Normal Filter Ãâ·Â
+        // Normal Filter ì¶œë ¥
         if ( sCodePlan->filter != NULL )
         {
             qmn::printSpaceDepth( aString, aDepth );
@@ -785,7 +785,7 @@ IDE_RC qmnSDSE::printPlan( qcTemplate   * aTemplate,
 
         if ( sClientInfo != NULL )
         {
-            // ¼öÇàÁ¤º¸ Ãâ·Â
+            // ìˆ˜í–‰ì •ë³´ ì¶œë ¥
             IDE_DASSERT( QMND_SDSE_INIT_DONE_TRUE == QMND_SDEX_INIT_DONE_TRUE );
 
             IDE_TEST( qmnSDEX::printDataInfo( aTemplate,
@@ -808,10 +808,10 @@ IDE_RC qmnSDSE::printPlan( qcTemplate   * aTemplate,
     }
 
     //----------------------------
-    // Subquery Á¤º¸ÀÇ Ãâ·Â.
+    // Subquery ì •ë³´ì˜ ì¶œë ¥.
     //----------------------------
-    // subquery´Â constant filter, nnf filter, subquery filter¿¡¸¸ ÀÖ´Ù.
-    // Constant FilterÀÇ Subquery Á¤º¸ Ãâ·Â
+    // subqueryëŠ” constant filter, nnf filter, subquery filterì—ë§Œ ìžˆë‹¤.
+    // Constant Filterì˜ Subquery ì •ë³´ ì¶œë ¥
     if ( sCodePlan->constantFilter != NULL )
     {
         IDE_TEST( qmn::printSubqueryPlan( aTemplate,
@@ -826,7 +826,7 @@ IDE_RC qmnSDSE::printPlan( qcTemplate   * aTemplate,
         // Nothing to do.
     }
 
-    // Subquery FilterÀÇ Subquery Á¤º¸ Ãâ·Â
+    // Subquery Filterì˜ Subquery ì •ë³´ ì¶œë ¥
     if ( sCodePlan->subqueryFilter != NULL )
     {
         IDE_TEST( qmn::printSubqueryPlan( aTemplate,
@@ -841,7 +841,7 @@ IDE_RC qmnSDSE::printPlan( qcTemplate   * aTemplate,
         // Nothing to do.
     }
 
-    // NNF FilterÀÇ Subquery Á¤º¸ Ãâ·Â
+    // NNF Filterì˜ Subquery ì •ë³´ ì¶œë ¥
     if ( sCodePlan->nnfFilter != NULL )
     {
         IDE_TEST( qmn::printSubqueryPlan( aTemplate,
@@ -857,7 +857,7 @@ IDE_RC qmnSDSE::printPlan( qcTemplate   * aTemplate,
     }
 
     //----------------------------
-    // Operatorº° °á°ú Á¤º¸ Ãâ·Â
+    // Operatorë³„ ê²°ê³¼ ì •ë³´ ì¶œë ¥
     //----------------------------
     if ( QCU_TRCLOG_RESULT_DESC == 1 )
     {

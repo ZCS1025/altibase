@@ -49,7 +49,7 @@ static IDE_RC sdfEstimate( mtcNode*        aNode,
 mtfModule sdfExecImmediateModule = {
     1|MTC_NODE_OPERATOR_MISC|MTC_NODE_VARIABLE_TRUE,
     ~0,
-    1.0,                    // default selectivity (∫Ò±≥ ø¨ªÍ¿⁄ æ∆¥‘)
+    1.0,                    // default selectivity (ÎπÑÍµê Ïó∞ÏÇ∞Ïûê ÏïÑÎãò)
     sdfFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -199,7 +199,7 @@ IDE_RC sdfCalculate_ExecImmediate( mtcNode*     aNode,
         // Execute
         //---------------------------------
 
-        // shard linker ∞ÀªÁ & √ ±‚»≠
+        // shard linker Í≤ÄÏÇ¨ & Ï¥àÍ∏∞Ìôî
         IDE_TEST( sdi::checkShardLinker( sStatement ) != IDE_SUCCESS );
 
         IDE_TEST( sdi::shardExecDirect( sStatement,

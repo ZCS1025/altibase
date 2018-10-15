@@ -431,7 +431,7 @@ IDE_RC smcTableBackupFile::write(ULong  aWhere,
                                                    smLayerCallback::setEmergency )
                           != IDE_SUCCESS );
 
-                /* »õ·Î¿î ÆÄÀÏ Å©±â¸¦ Á¤ÇÑ´Ù. */
+                /* ìƒˆë¡œìš´ íŒŒì¼ í¬ê¸°ë¥¼ ì •í•œë‹¤. */
                 sFileSize = aWhere + aSize;
                 mFileSize = mFileSize < sFileSize ? sFileSize : mFileSize;
 

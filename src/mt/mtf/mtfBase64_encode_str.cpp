@@ -21,8 +21,8 @@
 
 /***********************************************************************
  * BASE64_ENCODE_STR() : 
- * �Է¹��� Hexstring�� BASE64 ���ڵ��Ͽ�
- * VARCHARŸ���� ���ڿ��� ��ȯ�Ѵ�.
+ * 입력받은 Hexstring을 BASE64 인코딩하여
+ * VARCHAR타입의 문자열을 반환한다.
  *
  * ex) SELECT BASE64_ENCODE_STR('AA') FROM DUAL;
  * BASE64_ENCODE_STR('AA') 
@@ -40,7 +40,7 @@
 #include <mtv.h>
 #include <mtl.h>
 
-/* ���� 4����Ʈ�� ����ϹǷ�, ��ҹ��ڴ� �������� �ʴ´�. */
+/* 하위 4바이트만 사용하므로, 대소문자는 구분하지 않는다. */
 #define HexToHalfByte(hex) \
     ( ( ('0' <= (hex) ) && ( (hex) <= '9') ) ?  \
       ( (hex) - '0' )                           \
@@ -84,7 +84,7 @@ static IDE_RC mtfBase64_encodeEstimate( mtcNode*     aNode,
 mtfModule mtfBase64_encode_str = {
     2|MTC_NODE_OPERATOR_FUNCTION,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (�� �����ڰ� �ƴ�)
+    1.0,  // default selectivity (비교 연산자가 아님)
     mtfBase64_encodeFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -279,7 +279,7 @@ IDE_RC mtfBase64_encodeEstimate( mtcNode*     aNode,
 
     aTemplate->rows[aNode->table].execute[aNode->column] = mtfExecute;
 
-    /* BUG-44791 BASE64_ENCODE_STR, BASE64_DECODE_STR �Լ����� �߸��� ����� ����մϴ�. */
+    /* BUG-44791 BASE64_ENCODE_STR, BASE64_DECODE_STR 함수에서 잘못된 결과로 계산합니다. */
     sBufferSize = aStack[1].column->precision / 2;
     sPrecision  = ( ( sBufferSize - 1 ) / 3 + 1 ) * 4;
 
@@ -335,7 +335,7 @@ IDE_RC mtfBase64_encodeCalculate( mtcNode*     aNode,
     {
         sResult   = (mtdCharType*) aStack[0].value;
 
-        /* BUG-44791 BASE64_ENCODE_STR, BASE64_DECODE_STR �Լ����� �߸��� ����� ����մϴ�. */
+        /* BUG-44791 BASE64_ENCODE_STR, BASE64_DECODE_STR 함수에서 잘못된 결과로 계산합니다. */
         sColumn = aTemplate->rows[aNode->table].columns + aNode->column;
         sBuffer = (mtdCharType*)((UChar*)aTemplate->rows[aNode->table].row
                                  + sColumn[1].column.offset);

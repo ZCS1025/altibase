@@ -79,17 +79,17 @@ public:
     static IDE_RC    reset(void     *aStatement);
     
 
-    //parent PCO´Â plan cache¿¡ ÀÖÁö¸¸
-    //environment°¡ ¸Â´Â child PCO°¡ ¾ø´Â °æ¿ì¿¡
-    //child PCOÀÇ Áßº¹»ı¼ºÀ» ¸·±âÀ§ÇÑ ÇÔ¼ö.
+    //parent PCOëŠ” plan cacheì— ìˆì§€ë§Œ
+    //environmentê°€ ë§ëŠ” child PCOê°€ ì—†ëŠ” ê²½ìš°ì—
+    //child PCOì˜ ì¤‘ë³µìƒì„±ì„ ë§‰ê¸°ìœ„í•œ í•¨ìˆ˜.
     static IDE_RC preventDupPlan(idvSQL* aStatistics,
                                  mmcParentPCO          *aParentPCO,
                                  mmcPCB                *aSafeGuardPCB,
                                  mmcPCB                **aNewPCB,
                                  mmcPCOLatchState *aPCOLatchState);
-    //environement°¡ ¸Â´Â child PCO°¡ ÀÖÁö¸¸,
-    //planÀÌ validÇÏÁö ¾Ê¾Æ,»õ·Î¿î child PCOÀÇ
-    //Áßº¹»ı¼ºÀ» ¸·±âÀ§ÇÑ ÇÔ¼ö.
+    //environementê°€ ë§ëŠ” child PCOê°€ ìˆì§€ë§Œ,
+    //planì´ validí•˜ì§€ ì•Šì•„,ìƒˆë¡œìš´ child PCOì˜
+    //ì¤‘ë³µìƒì„±ì„ ë§‰ê¸°ìœ„í•œ í•¨ìˆ˜.
     static IDE_RC preventDupPlan(idvSQL                 *aStatistics,
                                  mmcStatement           *aStatement,
                                  mmcParentPCO           *aParentPCO,
@@ -172,7 +172,7 @@ private:
     static const SChar  *const       mCacheAbleText[];
 };
 
-// BUG-23098 planÀÌ º¸¿´´Ù ¾Èº¸¿´´Ù ÇÕ´Ï´Ù.
+// BUG-23098 planì´ ë³´ì˜€ë‹¤ ì•ˆë³´ì˜€ë‹¤ í•©ë‹ˆë‹¤.
 inline idBool mmcPlanCache::isEnable(mmcSession *aSession,
                                      idBool      aIsCalledByPSM)
 {

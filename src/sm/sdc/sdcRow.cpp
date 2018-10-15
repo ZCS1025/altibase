@@ -27,9 +27,9 @@
 #include <smxTrans.h>
 
 /*
- *   *** DML Log ±¸Á¶ ***
+ *   *** DML Log êµ¬ì¡° ***
  *
- * DML Log´Â 5°³ÀÇ °èÃş(layer)À¸·Î ±¸¼ºµÇ¾î ÀÖ´Ù.
+ * DML LogëŠ” 5ê°œì˜ ê³„ì¸µ(layer)ìœ¼ë¡œ êµ¬ì„±ë˜ì–´ ìˆë‹¤.
  *
  * ------------------------------------         --
  * | 1. Log Header Layer               |         |
@@ -43,9 +43,9 @@
  * | 5. RP Info Layer(only RP)         |         |
  * ------------------------------------         --
  *
- * (1) - undo page¿¡ ±â·ÏÇÏ´Â ¹üÀ§
+ * (1) - undo pageì— ê¸°ë¡í•˜ëŠ” ë²”ìœ„
  *
- * (2) - log file¿¡ ±â·ÏÇÏ´Â ¹üÀ§
+ * (2) - log fileì— ê¸°ë¡í•˜ëŠ” ë²”ìœ„
  *
  *
  *
@@ -312,15 +312,15 @@
 
 /***********************************************************************
  *
- * Description : Å×ÀÌºí ÆäÀÌÁö¿¡ ·¡Ä¡¸¦ È¹µæÇÏ¸é¼­ CTS¸¦ ÇÒ´çÇÏ±âµµ ÇÑ´Ù.
+ * Description : í…Œì´ë¸” í˜ì´ì§€ì— ë˜ì¹˜ë¥¼ íšë“í•˜ë©´ì„œ CTSë¥¼ í• ë‹¹í•˜ê¸°ë„ í•œë‹¤.
  *
- * aStatistics   - [IN]  Åë°èÁ¤º¸
- * aMtx          - [IN]  ¹Ì´Ï Æ®·£Àè¼Ç Æ÷ÀÎÅÍ
- * aSpaceID      - [IN]  Å×ÀÌºí½ºÆäÀÌ½º ID
- * aRowSID       - [IN]  RowÀÇ SlotID
- * aPageReadMode - [IN]  ÆäÀÌÁö ÀĞ±â¸ğµå (Single or Multiple)
- * aTargetRow    - [OUT] RowPieceÀÇ Æ÷ÀÎÅÍ
- * aCTSlotIdx    - [OUT] ÇÒ´ç¹ŞÀº CTS ¼ø¹ø
+ * aStatistics   - [IN]  í†µê³„ì •ë³´
+ * aMtx          - [IN]  ë¯¸ë‹ˆ íŠ¸ëœì­ì…˜ í¬ì¸í„°
+ * aSpaceID      - [IN]  í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ID
+ * aRowSID       - [IN]  Rowì˜ SlotID
+ * aPageReadMode - [IN]  í˜ì´ì§€ ì½ê¸°ëª¨ë“œ (Single or Multiple)
+ * aTargetRow    - [OUT] RowPieceì˜ í¬ì¸í„°
+ * aCTSlotIdx    - [OUT] í• ë‹¹ë°›ì€ CTS ìˆœë²ˆ
  *
  **********************************************************************/
 IDE_RC sdcRow::prepareUpdatePageByPID( idvSQL           * aStatistics,
@@ -351,7 +351,7 @@ IDE_RC sdcRow::prepareUpdatePageByPID( idvSQL           * aStatistics,
                                           &sDummy,
                                           NULL ) != IDE_SUCCESS );
 
-    /* PROJ-2162 Inconsistent page ¹ß°ß */
+    /* PROJ-2162 Inconsistent page ë°œê²¬ */
     IDE_TEST_RAISE( sdpPhyPage::isConsistentPage( sPagePtr ) == ID_FALSE,
                     ERR_INCONSISTENT_PAGE );
 
@@ -390,15 +390,15 @@ IDE_RC sdcRow::prepareUpdatePageByPID( idvSQL           * aStatistics,
 
 /***********************************************************************
  *
- * Description : Å×ÀÌºí ÆäÀÌÁö¿¡ ·¡Ä¡¸¦ È¹µæÇÏ¸é¼­ CTS¸¦ ÇÒ´çÇÏ±âµµ ÇÑ´Ù.
+ * Description : í…Œì´ë¸” í˜ì´ì§€ì— ë˜ì¹˜ë¥¼ íšë“í•˜ë©´ì„œ CTSë¥¼ í• ë‹¹í•˜ê¸°ë„ í•œë‹¤.
  *
- * aStatistics   - [IN]  Åë°èÁ¤º¸
- * aMtx          - [IN]  ¹Ì´Ï Æ®·£Àè¼Ç Æ÷ÀÎÅÍ
- * aSpaceID      - [IN]  Å×ÀÌºí½ºÆäÀÌ½º ID
- * aRowSID       - [IN]  RowÀÇ SlotID
- * aPageReadMode - [IN]  ÆäÀÌÁö ÀĞ±â¸ğµå (Single or Multiple)
- * aTargetRow    - [OUT] RowPieceÀÇ Æ÷ÀÎÅÍ
- * aCTSlotIdx    - [OUT] ÇÒ´ç¹ŞÀº CTS ¼ø¹ø
+ * aStatistics   - [IN]  í†µê³„ì •ë³´
+ * aMtx          - [IN]  ë¯¸ë‹ˆ íŠ¸ëœì­ì…˜ í¬ì¸í„°
+ * aSpaceID      - [IN]  í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ID
+ * aRowSID       - [IN]  Rowì˜ SlotID
+ * aPageReadMode - [IN]  í˜ì´ì§€ ì½ê¸°ëª¨ë“œ (Single or Multiple)
+ * aTargetRow    - [OUT] RowPieceì˜ í¬ì¸í„°
+ * aCTSlotIdx    - [OUT] í• ë‹¹ë°›ì€ CTS ìˆœë²ˆ
  *
  **********************************************************************/
 IDE_RC sdcRow::prepareUpdatePageBySID( idvSQL           * aStatistics,
@@ -446,7 +446,7 @@ IDE_RC sdcRow::prepareUpdatePageBySID( idvSQL           * aStatistics,
 /***********************************************************************
  *
  * Description :
- *  ÇÏ³ªÀÇ row¸¦ data page¿¡ ÀúÀåÇÑ´Ù.
+ *  í•˜ë‚˜ì˜ rowë¥¼ data pageì— ì €ì¥í•œë‹¤.
  *
  **********************************************************************/
 IDE_RC sdcRow::insert(
@@ -493,11 +493,11 @@ IDE_RC sdcRow::insert(
         sIsUndoLogging = ID_FALSE;
     }
 
-    /* BUG-21866: Disk Table¿¡ Insert½Ã Insert Undo Reco¸¦ ±â·ÏÇÏÁö ¸»ÀÚ.
+    /* BUG-21866: Disk Tableì— Insertì‹œ Insert Undo Recoë¥¼ ê¸°ë¡í•˜ì§€ ë§ì.
      *
-     * ID_FALSEÀÌ¸é Insert½Ã Undo RecÀ» ±â·ÏÇÏÁö ¾Ê´Â´Ù. Triger³ª Foreign Key
-     * °¡ ¾ø´Â °æ¿ì´Â Insert Undo RecÀÌ ºÒÇÊ¿äÇÏ´Ù. ÀÌÁ¤º¸¸¦ ¾ò±â À§ÇØ
-     * gSmiGlobalCallBackList.checkNeedUndoRecordÀ» »ç¿ëÇÑ´Ù.
+     * ID_FALSEì´ë©´ Insertì‹œ Undo Recì„ ê¸°ë¡í•˜ì§€ ì•ŠëŠ”ë‹¤. Trigerë‚˜ Foreign Key
+     * ê°€ ì—†ëŠ” ê²½ìš°ëŠ” Insert Undo Recì´ ë¶ˆí•„ìš”í•˜ë‹¤. ì´ì •ë³´ë¥¼ ì–»ê¸° ìœ„í•´
+     * gSmiGlobalCallBackList.checkNeedUndoRecordì„ ì‚¬ìš©í•œë‹¤.
      * */
     if ( SM_INSERT_NEED_INSERT_UNDOREC_IS_OK(aFlag) )
     {
@@ -512,7 +512,7 @@ IDE_RC sdcRow::insert(
     sTotalColCount = smLayerCallback::getColumnCount( aTableHeader );
     IDE_ASSERT( sTotalColCount > 0 );
 
-    /* qp°¡ ³Ñ°ÜÁØ valuelistÀÇ À¯È¿¼ºÀ» Ã¼Å©ÇÑ´Ù. */
+    /* qpê°€ ë„˜ê²¨ì¤€ valuelistì˜ ìœ íš¨ì„±ì„ ì²´í¬í•œë‹¤. */
     IDE_DASSERT( validateSmiValue( aValueList,
                                    sTotalColCount)
                  == ID_TRUE );
@@ -529,8 +529,8 @@ IDE_RC sdcRow::insert(
         /* do nothing */
     }
 
-    /* insert ¿¬»êÀ» ¼öÇàÇÏ±â Àü¿¡,
-     * sdcRowPieceInsertInfo ÀÚ·á±¸Á¶¸¦ ÃÊ±âÈ­ ÇÑ´Ù. */
+    /* insert ì—°ì‚°ì„ ìˆ˜í–‰í•˜ê¸° ì „ì—,
+     * sdcRowPieceInsertInfo ìë£Œêµ¬ì¡°ë¥¼ ì´ˆê¸°í™” í•œë‹¤. */
     makeInsertInfo( aTableHeader,
                     aValueList,
                     sTotalColCount,
@@ -541,7 +541,7 @@ IDE_RC sdcRow::insert(
                                      0 /* aFstColumnSeq */ )
                  == ID_TRUE );
 
-    /* trailing nullÀÇ °¹¼ö¸¦ °è»êÇÑ´Ù. */
+    /* trailing nullì˜ ê°¯ìˆ˜ë¥¼ ê³„ì‚°í•œë‹¤. */
     sTrailingNullCount = getTrailingNullCount(&sInsertInfo,
                                               sTotalColCount);
     IDE_ASSERT_MSG( sTotalColCount >= sTrailingNullCount,
@@ -552,19 +552,19 @@ IDE_RC sdcRow::insert(
                     sTotalColCount,
                     sTrailingNullCount );
 
-    /* insert½Ã¿¡ trailing nullÀ» ÀúÀåÇÏÁö ¾Ê´Â´Ù.
-     * ±×·¡¼­ sTotalColCount¿¡¼­ trailing nullÀÇ °¹¼ö¸¦ »«´Ù. */
+    /* insertì‹œì— trailing nullì„ ì €ì¥í•˜ì§€ ì•ŠëŠ”ë‹¤.
+     * ê·¸ë˜ì„œ sTotalColCountì—ì„œ trailing nullì˜ ê°¯ìˆ˜ë¥¼ ëº€ë‹¤. */
     sTotalColCount    -= sTrailingNullCount;
 
     if ( sTotalColCount == 0 )
     {
-        /* NULL ROWÀÎ °æ¿ì(¸ğµç columnÀÇ °ªÀÌ NULLÀÎ ROW)
-         * row header¸¸ Á¸ÀçÇÏ´Â row¸¦ insertÇÑ´Ù.
-         * analyzeRowForInsert()¸¦ ÇÒ ÇÊ¿ä°¡ ¾ø´Ù. */
+        /* NULL ROWì¸ ê²½ìš°(ëª¨ë“  columnì˜ ê°’ì´ NULLì¸ ROW)
+         * row headerë§Œ ì¡´ì¬í•˜ëŠ” rowë¥¼ insertí•œë‹¤.
+         * analyzeRowForInsert()ë¥¼ í•  í•„ìš”ê°€ ì—†ë‹¤. */
         SDC_INIT_INSERT_INFO(&sInsertInfo);
 
-        /* NULL ROWÀÇ °æ¿ì´Â row header¸¸ Á¸ÀçÇÏ¹Ç·Î
-         * row header size°¡ rowpiece size ÀÌ´Ù. */
+        /* NULL ROWì˜ ê²½ìš°ëŠ” row headerë§Œ ì¡´ì¬í•˜ë¯€ë¡œ
+         * row header sizeê°€ rowpiece size ì´ë‹¤. */
         sInsertInfo.mRowPieceSize = SDC_ROWHDR_SIZE;
 
         sRowFlag = SDC_ROWHDR_FLAG_NULLROW;
@@ -592,18 +592,18 @@ IDE_RC sdcRow::insert(
     }
     else
     {
-        /* NULL ROW°¡ ¾Æ´Ñ °æ¿ì */
+        /* NULL ROWê°€ ì•„ë‹Œ ê²½ìš° */
 
-        /* column dataµéÀ» ÀúÀåÇÒ¶§´Â µÚ¿¡¼­ºÎÅÍ Ã¤¿ö¼­ ÀúÀåÇÑ´Ù.
+        /* column dataë“¤ì„ ì €ì¥í• ë•ŒëŠ” ë’¤ì—ì„œë¶€í„° ì±„ì›Œì„œ ì €ì¥í•œë‹¤.
          *
-         * ÀÌÀ¯
-         * 1. rowpiece writeÇÒ¶§,
-         *    next rowpiece link Á¤º¸¸¦ ¾Ë¾Æ¾ß ÇÏ¹Ç·Î,
-         *    µÚÂÊ column dataºÎÅÍ ¸ÕÀú ÀúÀåÇØ¾ß ÇÑ´Ù.
+         * ì´ìœ 
+         * 1. rowpiece writeí• ë•Œ,
+         *    next rowpiece link ì •ë³´ë¥¼ ì•Œì•„ì•¼ í•˜ë¯€ë¡œ,
+         *    ë’¤ìª½ column dataë¶€í„° ë¨¼ì € ì €ì¥í•´ì•¼ í•œë‹¤.
          *
-         * 2. µÚÂÊºÎÅÍ ²Ë²Ë Ã¤¿ö¼­ ÀúÀåÇÏ¸é
-         *    first page¿¡ ¿©À¯°ø°£ÀÌ ¸¹¾ÆÁú °¡´É¼ºÀÌ ³ô°í,
-         *    ±×·¯¸é update½Ã¿¡ row migration ¹ß»ı°¡´É¼ºÀÌ ³·¾ÆÁø´Ù.
+         * 2. ë’¤ìª½ë¶€í„° ê½‰ê½‰ ì±„ì›Œì„œ ì €ì¥í•˜ë©´
+         *    first pageì— ì—¬ìœ ê³µê°„ì´ ë§ì•„ì§ˆ ê°€ëŠ¥ì„±ì´ ë†’ê³ ,
+         *    ê·¸ëŸ¬ë©´ updateì‹œì— row migration ë°œìƒê°€ëŠ¥ì„±ì´ ë‚®ì•„ì§„ë‹¤.
          * */
         sCurrColSeq = sTotalColCount  - 1;
         sCurrOffset = getColDataSize2Store( &sInsertInfo,
@@ -740,7 +740,7 @@ IDE_RC sdcRow::insert(
 
 /***********************************************************************
  *
- * Description : ÆäÀÌÁö¿¡ rowpiece¸¦ ÀúÀåÇÑ´Ù.
+ * Description : í˜ì´ì§€ì— rowpieceë¥¼ ì €ì¥í•œë‹¤.
  *
  *
  **********************************************************************/
@@ -797,8 +797,8 @@ IDE_RC sdcRow::insertRowPiece(
     sDLogAttr |= ( aReplicate == ID_TRUE ?
                    SM_DLOG_ATTR_REPLICATE : SM_DLOG_ATTR_NORMAL );
 
-    /* INSERT¿¡ ´ëÇÑ Undo°¡ ÇÊ¿ä¾ø°í, Undo½Ã Segment¸¦ DropÇÑ´Ù.
-     * ¿¹·Î´Â ÆÄÆ¼¼Ç ADD°¡ ÀÖ´Ù. */
+    /* INSERTì— ëŒ€í•œ Undoê°€ í•„ìš”ì—†ê³ , Undoì‹œ Segmentë¥¼ Dropí•œë‹¤.
+     * ì˜ˆë¡œëŠ” íŒŒí‹°ì…˜ ADDê°€ ìˆë‹¤. */
     if ( aIsUndoLogging == ID_TRUE )
     {
         sDLogAttr |= SM_DLOG_ATTR_UNDOABLE;
@@ -832,22 +832,22 @@ IDE_RC sdcRow::insertRowPiece(
     else
     {
         /*
-         * BUG-28060 [SD] updateÁß row migrationÀÌ³ª change row piece¿¬»êÀÌ ¹ß»ıÇÒ¶§
-         * ÆäÀÌÁö°¡ ºñÁ¤»óÀûÀ¸·Î ´Ã¾î³¯ ¼ö ÀÖÀ½.
+         * BUG-28060 [SD] updateì¤‘ row migrationì´ë‚˜ change row pieceì—°ì‚°ì´ ë°œìƒí• ë•Œ
+         * í˜ì´ì§€ê°€ ë¹„ì •ìƒì ìœ¼ë¡œ ëŠ˜ì–´ë‚  ìˆ˜ ìˆìŒ.
          *
-         * Insert4Update¿¬»ê°úÁ¤Áß¿¡ HeadRowPiece¿¡¼­ ¹ß»ıÇÒ ¼ö ÀÖ´Â
-         * Row Migration ¿¬»ê°ú ±×¿Ü RowPiece¿¡¼­ ¹ß»ıÇÒ ¼ö ÀÖ´Â chage
-         * Row Piece ¿¬»ê¿¡¼­ insertRowPiece ¹ß»ı½Ã ÇÑÆäÀÌÁö ºĞ·®ÀÇ ÄÃ·³°ªÀÌ
-         * ³²Áö ¾Ê¾Æµµ ¹«Á¶°Ç ÆäÀÌÁö¸¦ ÇÒ´çÇÏ°Ô ÇÏ¸é ¾ÈµÇ°í Àû´çÇÑ °¡¿ë°ø°£À» °¡Áø
-         * ÆäÀÌÁö¸¦ Å½»öÇØ¼­ insert4Upt ¿¬»êÀ» ¼öÇàÇØ¾ßÇÑ´Ù.
+         * Insert4Updateì—°ì‚°ê³¼ì •ì¤‘ì— HeadRowPieceì—ì„œ ë°œìƒí•  ìˆ˜ ìˆëŠ”
+         * Row Migration ì—°ì‚°ê³¼ ê·¸ì™¸ RowPieceì—ì„œ ë°œìƒí•  ìˆ˜ ìˆëŠ” chage
+         * Row Piece ì—°ì‚°ì—ì„œ insertRowPiece ë°œìƒì‹œ í•œí˜ì´ì§€ ë¶„ëŸ‰ì˜ ì»¬ëŸ¼ê°’ì´
+         * ë‚¨ì§€ ì•Šì•„ë„ ë¬´ì¡°ê±´ í˜ì´ì§€ë¥¼ í• ë‹¹í•˜ê²Œ í•˜ë©´ ì•ˆë˜ê³  ì ë‹¹í•œ ê°€ìš©ê³µê°„ì„ ê°€ì§„
+         * í˜ì´ì§€ë¥¼ íƒìƒ‰í•´ì„œ insert4Upt ì—°ì‚°ì„ ìˆ˜í–‰í•´ì•¼í•œë‹¤.
          */
         sAllocNewPage = sdpPageList::needAllocNewPage( sEntry,
                                                        aInsertInfo->mRowPieceSize );
 
-        /* insert rowpiece for updateÀÇ °æ¿ì  */
-        /* updateÀÇ °æ¿ì, DML log¸¦ ¸ğµÎ ±â·ÏÇÑ ÈÄ¿¡
-         * replicationÀ» À§ÇØ PK Log¸¦ ±â·ÏÇÑ´Ù.
-         * ±×·¯¹Ç·Î PK LogÀÇ conttypeÀÌ SMR_CT_END°¡ µÈ´Ù.
+        /* insert rowpiece for updateì˜ ê²½ìš°  */
+        /* updateì˜ ê²½ìš°, DML logë¥¼ ëª¨ë‘ ê¸°ë¡í•œ í›„ì—
+         * replicationì„ ìœ„í•´ PK Logë¥¼ ê¸°ë¡í•œë‹¤.
+         * ê·¸ëŸ¬ë¯€ë¡œ PK Logì˜ conttypeì´ SMR_CT_ENDê°€ ëœë‹¤.
          */
         sContType = SMR_CT_CONTINUE;
     }
@@ -876,7 +876,7 @@ IDE_RC sdcRow::insertRowPiece(
                   &sFreePagePtr,
                   &sNewCTSlotIdx ) != IDE_SUCCESS );
 
-    /* PROJ-2162 Inconsistent page ¹ß°ß */
+    /* PROJ-2162 Inconsistent page ë°œê²¬ */
     IDE_TEST_RAISE( sdpPhyPage::isConsistentPage( sFreePagePtr ) == ID_FALSE,
                     ERR_INCONSISTENT_PAGE );
 
@@ -887,7 +887,7 @@ IDE_RC sdcRow::insertRowPiece(
               != IDE_SUCCESS );
 
     /* BUG-32091 [sm_collection] add TableOID in PageHeader
-     * Page¿¡ ±â·ÏµÈ TableOID¿Í À§·ÎºÎÅÍ ³»·Á¿Â TableOID¸¦ ºñ±³ÇÏ¿© °ËÁõÇÔ */
+     * Pageì— ê¸°ë¡ëœ TableOIDì™€ ìœ„ë¡œë¶€í„° ë‚´ë ¤ì˜¨ TableOIDë¥¼ ë¹„êµí•˜ì—¬ ê²€ì¦í•¨ */
     IDE_ASSERT( sdpPhyPage::getTableOID( (UChar*) 
                                          sdpPhyPage::getHdr( sAllocSlotPtr ) )
                 == smLayerCallback::getTableOID( aTableHeader ) );
@@ -901,9 +901,9 @@ IDE_RC sdcRow::insertRowPiece(
 
     if ( aIsNeedUndoRec == ID_TRUE )
     {
-        /* BUG-24906 DMLÁß UndoRec ±â·ÏÇÏ´Ù UNDOTBS °ø°£ºÎÁ·ÇÏ¸é ¼­¹ö»ç¸Á !!
-         * ¿©±â¼­ ¿¹¿Ü»óÈ²ÀÌ ¹ß»ıÇÏ¸é µ¥ÀÌÅ¸ÆäÀÌÁö¿¡ ½½·ÔÇÒ´çÇÑ °ÍÀ» ¹«È¿È­½ÃÄÑ¾ßÇÑ´Ù. */
-        /* insert rowpiece ¿¬»ê¿¡ ´ëÇÑ undo record¸¦ ÀÛ¼ºÇÑ´Ù. */
+        /* BUG-24906 DMLì¤‘ UndoRec ê¸°ë¡í•˜ë‹¤ UNDOTBS ê³µê°„ë¶€ì¡±í•˜ë©´ ì„œë²„ì‚¬ë§ !!
+         * ì—¬ê¸°ì„œ ì˜ˆì™¸ìƒí™©ì´ ë°œìƒí•˜ë©´ ë°ì´íƒ€í˜ì´ì§€ì— ìŠ¬ë¡¯í• ë‹¹í•œ ê²ƒì„ ë¬´íš¨í™”ì‹œì¼œì•¼í•œë‹¤. */
+        /* insert rowpiece ì—°ì‚°ì— ëŒ€í•œ undo recordë¥¼ ì‘ì„±í•œë‹¤. */
         sUDSegPtr = smxTrans::getUDSegPtr( (smxTrans*)aTrans );
         IDE_TEST( sUDSegPtr->addInsertRowPieceUndoRec(
                                            aStatistics,
@@ -917,8 +917,8 @@ IDE_RC sdcRow::insertRowPiece(
 
     sState = 2;
 
-    /* ÆäÀÌÁöÀÇ °¡¿ë°ø°£ÀÌ º¯°æµÇ¾úÀ¸¹Ç·Î
-     * ÆäÀÌÁöÀÇ »óÅÂ¸¦ Àç¼³Á¤ÇÑ´Ù. */
+    /* í˜ì´ì§€ì˜ ê°€ìš©ê³µê°„ì´ ë³€ê²½ë˜ì—ˆìœ¼ë¯€ë¡œ
+     * í˜ì´ì§€ì˜ ìƒíƒœë¥¼ ì¬ì„¤ì •í•œë‹¤. */
     IDE_TEST( sdpPageList::updatePageState( aStatistics,
                                             sTableSpaceID,
                                             sEntry,
@@ -928,7 +928,7 @@ IDE_RC sdcRow::insertRowPiece(
 
     sFstDskViewSCN = smxTrans::getFstDskViewSCN(aTrans);
 
-    /* sdcRowHdrInfo ÀÚ·á±¸Á¶¿¡ row header Á¤º¸¸¦ ¼³Á¤ÇÑ´Ù. */
+    /* sdcRowHdrInfo ìë£Œêµ¬ì¡°ì— row header ì •ë³´ë¥¼ ì„¤ì •í•œë‹¤. */
     SDC_INIT_ROWHDR_INFO( &sRowHdrInfo,
                           sNewCTSlotIdx,
                           *aCSInfiniteSCN,
@@ -937,7 +937,7 @@ IDE_RC sdcRow::insertRowPiece(
                           aRowFlag,
                           sFstDskViewSCN );
 
-    /* ÇÒ´ç¹ŞÀº slot¿¡ rowpiece Á¤º¸¸¦ writeÇÑ´Ù. */
+    /* í• ë‹¹ë°›ì€ slotì— rowpiece ì •ë³´ë¥¼ writeí•œë‹¤. */
     writeRowPiece4IRP( sAllocSlotPtr,
                        &sRowHdrInfo,
                        aInsertInfo,
@@ -954,7 +954,7 @@ IDE_RC sdcRow::insertRowPiece(
 
     sdrMiniTrans::setRefOffset(&sMtx, sTableOID);
 
-    /* insert rowpiece ¿¬»êÀÇ redo undo log¸¦ ÀÛ¼ºÇÑ´Ù. */
+    /* insert rowpiece ì—°ì‚°ì˜ redo undo logë¥¼ ì‘ì„±í•œë‹¤. */
     IDE_TEST( writeInsertRowPieceRedoUndoLog( sAllocSlotPtr,
                                               sAllocSlotGRID,
                                               &sMtx,
@@ -980,7 +980,7 @@ IDE_RC sdcRow::insertRowPiece(
     IDU_FIT_POINT( "1.BUG-19122@sdcRow::insertRowPiece" );
 
     sState = 0;
-    /* Insert ¿¬»êÀ» ¼öÇàÇÑ Mini TransactionÀ» CommitÇÑ´Ù */
+    /* Insert ì—°ì‚°ì„ ìˆ˜í–‰í•œ Mini Transactionì„ Commití•œë‹¤ */
     IDE_TEST( sdrMiniTrans::commit( &sMtx, sContType )
               != IDE_SUCCESS );
 
@@ -1024,10 +1024,10 @@ IDE_RC sdcRow::insertRowPiece(
     switch ( sState )
     {
         case 2:
-            /* BUG-24906 DMLÁß UndoRec ±â·ÏÇÏ´Ù UNDOTBS °ø°£ºÎÁ·ÇÏ¸é ¼­¹ö»ç¸Á !!
-             * ¿©±â¼­ Mtx Rollback½Ã Assertion ¹ß»ıÇÏµµ·Ï µÇ¾î ÀÖÀ½.
-             * ¿Ö³ÄÇÏ¸é BIND_CTS Logical ·Î±×Å¸ÀÔ¿¡ ÀÇÇØ¼­ ÆäÀÌÁö°¡ ÀÌ¹Ì º¯°æµÇ¾ú°í,
-             * ÀÌ¸¦ º¹¿øÇÒ ¼ö ¾ø±â ¶§¹®ÀÌ´Ù.
+            /* BUG-24906 DMLì¤‘ UndoRec ê¸°ë¡í•˜ë‹¤ UNDOTBS ê³µê°„ë¶€ì¡±í•˜ë©´ ì„œë²„ì‚¬ë§ !!
+             * ì—¬ê¸°ì„œ Mtx Rollbackì‹œ Assertion ë°œìƒí•˜ë„ë¡ ë˜ì–´ ìˆìŒ.
+             * ì™œëƒí•˜ë©´ BIND_CTS Logical ë¡œê·¸íƒ€ì…ì— ì˜í•´ì„œ í˜ì´ì§€ê°€ ì´ë¯¸ ë³€ê²½ë˜ì—ˆê³ ,
+             * ì´ë¥¼ ë³µì›í•  ìˆ˜ ì—†ê¸° ë•Œë¬¸ì´ë‹¤.
              */
             IDE_ASSERT( sdrMiniTrans::rollback(&sMtx) == IDE_SUCCESS );
             break;
@@ -1046,7 +1046,7 @@ IDE_RC sdcRow::insertRowPiece(
             /* BUGBUG
              * BUG-32666     [sm-disk-collection] The failure of DRDB Insert
              * makes a unlogged slot.
-             * À§ ¹ö±×°¡ ¼öÁ¤µÈ ÈÄ¿¡ RollbackÀ¸·Î º¯°æÇØ¾ß ÇÑ´Ù. */
+             * ìœ„ ë²„ê·¸ê°€ ìˆ˜ì •ëœ í›„ì— Rollbackìœ¼ë¡œ ë³€ê²½í•´ì•¼ í•œë‹¤. */
             IDE_ASSERT( sdrMiniTrans::commit(&sMtx) == IDE_SUCCESS );
 
         default:
@@ -1059,15 +1059,15 @@ IDE_RC sdcRow::insertRowPiece(
 
 
 /*******************************************************************************
- * Description : Direct-Path INSERT ¹æ½ÄÀ¸·Î aValueList¸¦ Insert ÇÑ´Ù.
+ * Description : Direct-Path INSERT ë°©ì‹ìœ¼ë¡œ aValueListë¥¼ Insert í•œë‹¤.
  *
  * Parameters :
- *      aStatistics     - [IN] Åë°è
- *      aTrans          - [IN] Insert¸¦ ¼öÇàÇÏ´Â TX
- *      aDPathSegInfo   - [IN] Direct-Path INSERT¸¦ À§ÇÑ ÀÚ·á±¸Á¶
- *      aTableHeader    - [IN] InsertÇÒ TableÀÇ Header
+ *      aStatistics     - [IN] í†µê³„
+ *      aTrans          - [IN] Insertë¥¼ ìˆ˜í–‰í•˜ëŠ” TX
+ *      aDPathSegInfo   - [IN] Direct-Path INSERTë¥¼ ìœ„í•œ ìë£Œêµ¬ì¡°
+ *      aTableHeader    - [IN] Insertí•  Tableì˜ Header
  *      aCSInfiniteSCN  - [IN]
- *      aValueList      - [IN] InsertÇÒ Valueµé
+ *      aValueList      - [IN] Insertí•  Valueë“¤
  *      aRowGRID        - [OUT]
  ******************************************************************************/
 IDE_RC sdcRow::insertAppend( idvSQL            * aStatistics,
@@ -1112,8 +1112,8 @@ IDE_RC sdcRow::insertAppend( idvSQL            * aStatistics,
 
     sDPathSegInfo = (sdpDPathSegInfo*)aDPathSegInfo;
    
-    /* insert ¿¬»êÀ» ¼öÇàÇÏ±â Àü¿¡,
-     * sdcRowPieceInsertInfo ÀÚ·á±¸Á¶¸¦ ÃÊ±âÈ­ ÇÑ´Ù. */
+    /* insert ì—°ì‚°ì„ ìˆ˜í–‰í•˜ê¸° ì „ì—,
+     * sdcRowPieceInsertInfo ìë£Œêµ¬ì¡°ë¥¼ ì´ˆê¸°í™” í•œë‹¤. */
     makeInsertInfo( aTableHeader,
                     aValueList,
                     sTotalColCount,
@@ -1124,7 +1124,7 @@ IDE_RC sdcRow::insertAppend( idvSQL            * aStatistics,
                                      0 /* aFstColumnSeq */ )
                  == ID_TRUE );
 
-    /* trailing nullÀÇ °¹¼ö¸¦ °è»êÇÑ´Ù. */
+    /* trailing nullì˜ ê°¯ìˆ˜ë¥¼ ê³„ì‚°í•œë‹¤. */
     sTrailingNullCount = getTrailingNullCount(&sInsertInfo,
                                               sTotalColCount);
     IDE_ASSERT_MSG( sTotalColCount >= sTrailingNullCount,
@@ -1135,19 +1135,19 @@ IDE_RC sdcRow::insertAppend( idvSQL            * aStatistics,
                     sTotalColCount,
                     sTrailingNullCount );
 
-    /* insert½Ã¿¡ trailing nullÀ» ÀúÀåÇÏÁö ¾Ê´Â´Ù.
-     * ±×·¡¼­ sTotalColCount¿¡¼­ trailing nullÀÇ °¹¼ö¸¦ »«´Ù. */
+    /* insertì‹œì— trailing nullì„ ì €ì¥í•˜ì§€ ì•ŠëŠ”ë‹¤.
+     * ê·¸ë˜ì„œ sTotalColCountì—ì„œ trailing nullì˜ ê°¯ìˆ˜ë¥¼ ëº€ë‹¤. */
     sTotalColCount    -= sTrailingNullCount;
 
     if ( sTotalColCount == 0 )
     {
-        /* NULL ROWÀÎ °æ¿ì(¸ğµç columnÀÇ °ªÀÌ NULLÀÎ ROW)
-         * row header¸¸ Á¸ÀçÇÏ´Â row¸¦ insertÇÑ´Ù.
-         * analyzeRowForInsert()¸¦ ÇÒ ÇÊ¿ä°¡ ¾ø´Ù. */
+        /* NULL ROWì¸ ê²½ìš°(ëª¨ë“  columnì˜ ê°’ì´ NULLì¸ ROW)
+         * row headerë§Œ ì¡´ì¬í•˜ëŠ” rowë¥¼ insertí•œë‹¤.
+         * analyzeRowForInsert()ë¥¼ í•  í•„ìš”ê°€ ì—†ë‹¤. */
         SDC_INIT_INSERT_INFO(&sInsertInfo);
 
-        /* NULL ROWÀÇ °æ¿ì´Â row header¸¸ Á¸ÀçÇÏ¹Ç·Î
-         * row header size°¡ rowpiece size ÀÌ´Ù. */
+        /* NULL ROWì˜ ê²½ìš°ëŠ” row headerë§Œ ì¡´ì¬í•˜ë¯€ë¡œ
+         * row header sizeê°€ rowpiece size ì´ë‹¤. */
         sInsertInfo.mRowPieceSize = SDC_ROWHDR_SIZE;
 
         sRowFlag = SDC_ROWHDR_FLAG_NULLROW;
@@ -1167,18 +1167,18 @@ IDE_RC sdcRow::insertAppend( idvSQL            * aStatistics,
     }
     else
     {
-        /* NULL ROW°¡ ¾Æ´Ñ °æ¿ì */
+        /* NULL ROWê°€ ì•„ë‹Œ ê²½ìš° */
 
-        /* column dataµéÀ» ÀúÀåÇÒ¶§´Â µÚ¿¡¼­ºÎÅÍ Ã¤¿ö¼­ ÀúÀåÇÑ´Ù.
+        /* column dataë“¤ì„ ì €ì¥í• ë•ŒëŠ” ë’¤ì—ì„œë¶€í„° ì±„ì›Œì„œ ì €ì¥í•œë‹¤.
          *
-         * ÀÌÀ¯
-         * 1. rowpiece writeÇÒ¶§,
-         *    next rowpiece link Á¤º¸¸¦ ¾Ë¾Æ¾ß ÇÏ¹Ç·Î,
-         *    µÚÂÊ column dataºÎÅÍ ¸ÕÀú ÀúÀåÇØ¾ß ÇÑ´Ù.
+         * ì´ìœ 
+         * 1. rowpiece writeí• ë•Œ,
+         *    next rowpiece link ì •ë³´ë¥¼ ì•Œì•„ì•¼ í•˜ë¯€ë¡œ,
+         *    ë’¤ìª½ column dataë¶€í„° ë¨¼ì € ì €ì¥í•´ì•¼ í•œë‹¤.
          *
-         * 2. µÚÂÊºÎÅÍ ²Ë²Ë Ã¤¿ö¼­ ÀúÀåÇÏ¸é
-         *    first page¿¡ ¿©À¯°ø°£ÀÌ ¸¹¾ÆÁú °¡´É¼ºÀÌ ³ô°í,
-         *    ±×·¯¸é update½Ã¿¡ row migration ¹ß»ı°¡´É¼ºÀÌ ³·¾ÆÁø´Ù.
+         * 2. ë’¤ìª½ë¶€í„° ê½‰ê½‰ ì±„ì›Œì„œ ì €ì¥í•˜ë©´
+         *    first pageì— ì—¬ìœ ê³µê°„ì´ ë§ì•„ì§ˆ ê°€ëŠ¥ì„±ì´ ë†’ê³ ,
+         *    ê·¸ëŸ¬ë©´ updateì‹œì— row migration ë°œìƒê°€ëŠ¥ì„±ì´ ë‚®ì•„ì§„ë‹¤.
          * */
         sCurrColSeq = sTotalColCount  - 1;
         sCurrOffset = getColDataSize2Store( &sInsertInfo,
@@ -1250,7 +1250,7 @@ IDE_RC sdcRow::insertAppend( idvSQL            * aStatistics,
 
 
 /*******************************************************************************
- * Description : Append ¹æ½ÄÀ¸·Î InsertRowPiece¸¦ ¼öÇàÇÑ´Ù.
+ * Description : Append ë°©ì‹ìœ¼ë¡œ InsertRowPieceë¥¼ ìˆ˜í–‰í•œë‹¤.
  ******************************************************************************/
 IDE_RC sdcRow::insertRowPiece4Append(
                             idvSQL                      *aStatistics,
@@ -1332,7 +1332,7 @@ IDE_RC sdcRow::insertRowPiece4Append(
               != IDE_SUCCESS );
 
     /* BUG-32091 [sm_collection] add TableOID in PageHeader
-     * Page¿¡ ±â·ÏµÈ TableOID¿Í À§·ÎºÎÅÍ ³»·Á¿Â TableOID¸¦ ºñ±³ÇÏ¿© °ËÁõÇÔ */
+     * Pageì— ê¸°ë¡ëœ TableOIDì™€ ìœ„ë¡œë¶€í„° ë‚´ë ¤ì˜¨ TableOIDë¥¼ ë¹„êµí•˜ì—¬ ê²€ì¦í•¨ */
     IDE_ASSERT( sdpPhyPage::getTableOID( (UChar*) 
                                          sdpPhyPage::getHdr( sAllocSlotPtr ) )
         == smLayerCallback::getTableOID( aTableHeader ) );
@@ -1349,7 +1349,7 @@ IDE_RC sdcRow::insertRowPiece4Append(
                           aRowFlag,
                           sFstDskViewSCN );
 
-    /* ÇÒ´ç¹ŞÀº slot¿¡ rowpiece Á¤º¸¸¦ writeÇÑ´Ù. */
+    /* í• ë‹¹ë°›ì€ slotì— rowpiece ì •ë³´ë¥¼ writeí•œë‹¤. */
     writeRowPiece4IRP( sAllocSlotPtr,
                        &sRowHdrInfo,
                        aInsertInfo,
@@ -1484,7 +1484,7 @@ IDE_RC sdcRow::writeInsertRowPieceRedoUndoLog(
 /***********************************************************************
  *
  * Description :
- *  delete rowpiece undo¿¡ ´ëÇÑ CLRÀ» ±â·ÏÇÏ´Â ÇÔ¼öÀÌ´Ù.
+ *  delete rowpiece undoì— ëŒ€í•œ CLRì„ ê¸°ë¡í•˜ëŠ” í•¨ìˆ˜ì´ë‹¤.
  *
  **********************************************************************/
 IDE_RC sdcRow::writeDeleteRowPieceCLR( UChar     *aSlotPtr,
@@ -1500,8 +1500,8 @@ IDE_RC sdcRow::writeDeleteRowPieceCLR( UChar     *aSlotPtr,
     IDE_ASSERT( SC_GRID_IS_NULL(aSlotGRID) == ID_FALSE );
 
     /* BUG-23989
-     * [TSM] delete rollback¿¡ ´ëÇÑ
-     * restart redo°¡ Á¤»óÀûÀ¸·Î ¼öÇàµÇÁö ¾Ê½À´Ï´Ù. */
+     * [TSM] delete rollbackì— ëŒ€í•œ
+     * restart redoê°€ ì •ìƒì ìœ¼ë¡œ ìˆ˜í–‰ë˜ì§€ ì•ŠìŠµë‹ˆë‹¤. */
     sLogType = SDR_SDC_INSERT_ROW_PIECE_FOR_DELETEUNDO;
 
     sRowPieceSize = getRowPieceSize(aSlotPtr);
@@ -1625,10 +1625,10 @@ IDE_RC sdcRow::isUpdatedRowPieceBySameStmt( idvSQL            * aStatistics,
         IDE_DASSERT( isHeadRowPiece(sUpdateSlot) == ID_TRUE );
 #endif
 
-    /* old row header info¸¦ ±¸ÇÑ´Ù. */
+    /* old row header infoë¥¼ êµ¬í•œë‹¤. */
     getRowHdrInfo( sUpdateSlot, &sOldRowHdrInfo );
 
-    // head rowpiece°¡ ¾Æ´Ï¸é ¾ÈµÈ´Ù
+    // head rowpieceê°€ ì•„ë‹ˆë©´ ì•ˆëœë‹¤
     IDE_TEST( SDC_IS_HEAD_ROWPIECE(sOldRowHdrInfo.mRowFlag) == ID_FALSE );
 
     IDE_TEST( canUpdateRowPieceInternal(
@@ -1672,7 +1672,7 @@ IDE_RC sdcRow::isUpdatedRowPieceBySameStmt( idvSQL            * aStatistics,
 /***********************************************************************
  *
  * Description :
- *  ÇÏ³ªÀÇ row¿¡ ´ëÇØ update ¿¬»êÀ» ¼öÇàÇÑ´Ù.
+ *  í•˜ë‚˜ì˜ rowì— ëŒ€í•´ update ì—°ì‚°ì„ ìˆ˜í–‰í•œë‹¤.
  *
  **********************************************************************/
 IDE_RC sdcRow::update(
@@ -1724,7 +1724,7 @@ IDE_RC sdcRow::update(
     sPrevRowPieceSID = SD_NULL_SID;
     sNextRowPieceSID = SD_NULL_SID;
 
-    /* update¸¦ ¼öÇàÇÏ±â Àü¿¡ update »óÅÂÁ¤º¸¸¦ ÃÊ±âÈ­ÇÑ´Ù. */
+    /* updateë¥¼ ìˆ˜í–‰í•˜ê¸° ì „ì— update ìƒíƒœì •ë³´ë¥¼ ì´ˆê¸°í™”í•œë‹¤. */
     initRowUpdateStatus( aColumnList, &sUpdateStatus );
 
     IDE_DASSERT( validateSmiValue( aValueList,
@@ -1738,8 +1738,8 @@ IDE_RC sdcRow::update(
                                                  aTrans );
 
     /*
-     * aValueModeList°¡ NULLÀÌ ¾Æ´Ñ °æ¿ì´Â finishWrite¿¡¼­ Lob ÄÃ·³À» updateÇÏ´Â °æ¿ìÀÌ´Ù.
-     * out-mode value·Î update ÇÏ´Â ·Î±×´Â replication¿¡ º¸³»Áö ¾Êµµ·Ï ¸·´Â´Ù.
+     * aValueModeListê°€ NULLì´ ì•„ë‹Œ ê²½ìš°ëŠ” finishWriteì—ì„œ Lob ì»¬ëŸ¼ì„ updateí•˜ëŠ” ê²½ìš°ì´ë‹¤.
+     * out-mode valueë¡œ update í•˜ëŠ” ë¡œê·¸ëŠ” replicationì— ë³´ë‚´ì§€ ì•Šë„ë¡ ë§‰ëŠ”ë‹¤.
      */
     
     if ( aValueModeList != NULL )
@@ -1761,9 +1761,9 @@ IDE_RC sdcRow::update(
         {
             /* do nothing */
         }
-        /* replicationÀÌ °É¸° °æ¿ì
-         * pk log¸¦ ±â·ÏÇØ¾ß ÇÏ¹Ç·Î
-         * sdcPKInfo ÀÚ·á±¸Á¶¸¦ ÃÊ±âÈ­ÇÑ´Ù. */
+        /* replicationì´ ê±¸ë¦° ê²½ìš°
+         * pk logë¥¼ ê¸°ë¡í•´ì•¼ í•˜ë¯€ë¡œ
+         * sdcPKInfo ìë£Œêµ¬ì¡°ë¥¼ ì´ˆê¸°í™”í•œë‹¤. */
         makePKInfo( aTableHeader, &sPKInfo );
     }
 
@@ -1812,17 +1812,17 @@ IDE_RC sdcRow::update(
 
         if ( sLstInsertRowPieceSID != SD_NULL_SID )
         {
-            /* splitÀÌ ¹ß»ıÇÏ¿© »õ·Î¿î rowpiece°¡ Ãß°¡µÈ °æ¿ì,
-             * Á¦ÀÏ ³¡¿¡ Ãß°¡µÈ rowpiece°¡
-             * next rowpieceÀÇ prev rowpiece°¡ µÈ´Ù.*/
+            /* splitì´ ë°œìƒí•˜ì—¬ ìƒˆë¡œìš´ rowpieceê°€ ì¶”ê°€ëœ ê²½ìš°,
+             * ì œì¼ ëì— ì¶”ê°€ëœ rowpieceê°€
+             * next rowpieceì˜ prev rowpieceê°€ ëœë‹¤.*/
             sPrevRowPieceSID = sLstInsertRowPieceSID;
         }
         else
         {
             if ( sIsRowPieceDeletedByItSelf == ID_TRUE )
             {
-                /* rowpiece°¡ ½º½º·Î »èÁ¦µÈ °æ¿ì,
-                 * sPrevRowPieceSID´Â º¯ÇÏÁö ¾Ê´Â´Ù. */
+                /* rowpieceê°€ ìŠ¤ìŠ¤ë¡œ ì‚­ì œëœ ê²½ìš°,
+                 * sPrevRowPieceSIDëŠ” ë³€í•˜ì§€ ì•ŠëŠ”ë‹¤. */
             }
             else
             {
@@ -1832,12 +1832,12 @@ IDE_RC sdcRow::update(
         sCurrRowPieceSID = sNextRowPieceSID;
     }
 
-    // Á¤»óÀûÀ¸·Î updateµÇ¾ú´Ù¸é savepoint´Â ÀÌ¹Ì unsetµÇ¾îÀÖ´Ù.
+    // ì •ìƒì ìœ¼ë¡œ updateë˜ì—ˆë‹¤ë©´ savepointëŠ” ì´ë¯¸ unsetë˜ì–´ìˆë‹¤.
     IDE_ASSERT( sRetryInfo.mISavepoint == NULL );
 
     if ( sReplicate == ID_TRUE)
     {
-        /* replicationÀÌ °É¸° °æ¿ì pk log¸¦ ±â·ÏÇÑ´Ù. */
+        /* replicationì´ ê±¸ë¦° ê²½ìš° pk logë¥¼ ê¸°ë¡í•œë‹¤. */
         IDE_TEST( writePKLog( aStatistics,
                               aTrans,
                               aTableHeader,
@@ -1852,7 +1852,7 @@ IDE_RC sdcRow::update(
 
     if ( sRetryInfo.mISavepoint != NULL )
     {
-        // ¿¹¿Ü »óÈ²¿¡¼­ savepoint°¡ ¾ÆÁ÷ setµÇ¾î ÀÖÀ» ¼ö ÀÖ´Ù.
+        // ì˜ˆì™¸ ìƒí™©ì—ì„œ savepointê°€ ì•„ì§ setë˜ì–´ ìˆì„ ìˆ˜ ìˆë‹¤.
         IDE_ASSERT( smxTrans::unsetImpSavepoint4LayerCall( aTrans,
                                                            sRetryInfo.mISavepoint )
                     == IDE_SUCCESS );
@@ -1988,14 +1988,14 @@ reentry :
     }
 #endif
 
-    /* old row header info¸¦ ±¸ÇÑ´Ù. */
+    /* old row header infoë¥¼ êµ¬í•œë‹¤. */
     getRowHdrInfo( sUpdateSlot, &sOldRowHdrInfo );
 
     /* BUG-32278 The previous flag is set incorrectly in row flag when
      * a rowpiece is overflowed.
      *
-     * ¹ö±×·Î ÀÎÇØ row flag¿¡ P flag°¡ Àß¸ø ¹ÚÇô ÀÖ´Â »óÅÂÀÏ ¼ö ÀÖ´Ù.
-     * ÀÌ °æ¿ì flag °ªÀ» ÀçÁ¶Á¤ ÇØÁØ´Ù. */
+     * ë²„ê·¸ë¡œ ì¸í•´ row flagì— P flagê°€ ì˜ëª» ë°•í˜€ ìˆëŠ” ìƒíƒœì¼ ìˆ˜ ìˆë‹¤.
+     * ì´ ê²½ìš° flag ê°’ì„ ì¬ì¡°ì • í•´ì¤€ë‹¤. */
     if ( (*aNextRowPieceSID != SD_NULL_SID) && (sRetryCnt == 1) )
     {
         IDE_ASSERT( aUpdateStatus->mPrevRowPieceRowFlag
@@ -2012,8 +2012,8 @@ reentry :
     {
         sIsUptLobByAPI = ( aValueModeList != NULL ) ? ID_TRUE : ID_FALSE;
 
-        /* head rowpieceÀÇ °æ¿ì,
-         * update ¿¬»êÀ» ¼öÇàÇÒ ¼ö ÀÖ´ÂÁö °Ë»çÇØ¾ß ÇÑ´Ù. */
+        /* head rowpieceì˜ ê²½ìš°,
+         * update ì—°ì‚°ì„ ìˆ˜í–‰í•  ìˆ˜ ìˆëŠ”ì§€ ê²€ì‚¬í•´ì•¼ í•œë‹¤. */
         sRecordLockWaitInfo.mRecordLockWaitFlag = SMI_RECORD_LOCKWAIT;
 
         IDE_TEST( canUpdateRowPiece( aStatistics,
@@ -2030,8 +2030,8 @@ reentry :
                                      &sRecordLockWaitInfo,
                                      &sNewCTSlotIdx,
                                      /* BUG-31359
-                                      * Wait°ªÀÌ ¾øÀ¸¸é ±âÁ¸°ú °°ÀÌ
-                                      * ID_ULONG_MAX ¸¸Å­ ±â´Ù¸®°Ô ÇÑ´Ù. */
+                                      * Waitê°’ì´ ì—†ìœ¼ë©´ ê¸°ì¡´ê³¼ ê°™ì´
+                                      * ID_ULONG_MAX ë§Œí¼ ê¸°ë‹¤ë¦¬ê²Œ í•œë‹¤. */
                                      ID_ULONG_MAX )
                   != IDE_SUCCESS );
 
@@ -2054,12 +2054,12 @@ reentry :
                   != IDE_SUCCESS );
     }
 
-    // Row StampingÀÌ ¼öÇàµÇ¾úÀ½À» º¸ÀåÇÑ ÈÄ¿¡ ´Ù½Ã OldRowHdrInfo¸¦ ¾ò´Â´Ù.
+    // Row Stampingì´ ìˆ˜í–‰ë˜ì—ˆìŒì„ ë³´ì¥í•œ í›„ì— ë‹¤ì‹œ OldRowHdrInfoë¥¼ ì–»ëŠ”ë‹¤.
     getRowHdrInfo( sUpdateSlot, &sOldRowHdrInfo );
 
     /* BUG-30911 - [5.3.7] 2 rows can be selected during executing index scan
      *             on unique index. 
-     * deleteRowPiece() ÂüÁ¶. */
+     * deleteRowPiece() ì°¸ì¡°. */
     if ( SM_SCN_IS_DELETED(sOldRowHdrInfo.mInfiniteSCN) == ID_TRUE )
     {
         IDE_TEST( releaseLatchForAlreadyModify( &sMtx,
@@ -2071,7 +2071,7 @@ reentry :
 
     if ( ( sUptState == SDC_UPTSTATE_REBUILD_ALREADY_MODIFIED ) ||
          ( ( aRetryInfo->mIsAlreadyModified == ID_TRUE ) &&
-         ( sRetryCnt == 1 ) ) ) // ÇÔ¼ö ³»ÀÇ retry ½Ã¿¡´Â ´Ù½Ã È®ÀÎ ÇÒ ÇÊ¿ä¾ø´Ù.
+         ( sRetryCnt == 1 ) ) ) // í•¨ìˆ˜ ë‚´ì˜ retry ì‹œì—ëŠ” ë‹¤ì‹œ í™•ì¸ í•  í•„ìš”ì—†ë‹¤.
     {
         if ( aRetryInfo->mRetryInfo != NULL )
         {
@@ -2096,10 +2096,10 @@ reentry :
 
     sNextRowPieceSID = getNextRowPieceSID(sUpdateSlot);
 
-    /* update ¿¬»êÀ» ¼öÇàÇÏ±â Àü¿¡ supplement job info¸¦ ÃÊ±âÈ­ÇÑ´Ù. */
+    /* update ì—°ì‚°ì„ ìˆ˜í–‰í•˜ê¸° ì „ì— supplement job infoë¥¼ ì´ˆê¸°í™”í•œë‹¤. */
     SDC_INIT_SUPPLEMENT_JOB_INFO(sSupplementJobInfo);
 
-    /* update ¿¬»êÀ» ¼öÇàÇÏ±â Àü¿¡ update info¸¦ ÃÊ±âÈ­ÇÑ´Ù. */
+    /* update ì—°ì‚°ì„ ìˆ˜í–‰í•˜ê¸° ì „ì— update infoë¥¼ ì´ˆê¸°í™”í•œë‹¤. */
     IDE_TEST( makeUpdateInfo( sUpdateSlot,
                               aColList,
                               aValueList,
@@ -2120,8 +2120,8 @@ reentry :
                           sOldRowHdrInfo.mRowFlag,
                           sFstDskViewSCN );
 
-    /* old row header info¿Í new row header info¸¦
-     * update info ÀÚ·á±¸Á¶¿¡ ¸Å´Ü´Ù. */
+    /* old row header infoì™€ new row header infoë¥¼
+     * update info ìë£Œêµ¬ì¡°ì— ë§¤ë‹¨ë‹¤. */
     sUpdateInfo.mOldRowHdrInfo = &sOldRowHdrInfo;
     sUpdateInfo.mNewRowHdrInfo = &sNewRowHdrInfo;
 
@@ -2135,8 +2135,8 @@ reentry :
               != IDE_SUCCESS );
 
     /*
-     * SQL·Î Full Update°¡ ¹ß»ıÇÏ´Â °æ¿ì ÀÌÀü LOB À» Á¦°ÅÇØ ÁÖ¾î¾ß ÇÑ´Ù.
-     * API·Î È£ÃâµÈ °æ¿ì´Â API°¡ Á¦°ÅÇØ ÁÖ¹Ç·Î º°µµ Á¦°Å ÀÛ¾÷ÀÌ ÇÊ¿ä ¾ø´Ù.
+     * SQLë¡œ Full Updateê°€ ë°œìƒí•˜ëŠ” ê²½ìš° ì´ì „ LOB ì„ ì œê±°í•´ ì£¼ì–´ì•¼ í•œë‹¤.
+     * APIë¡œ í˜¸ì¶œëœ ê²½ìš°ëŠ” APIê°€ ì œê±°í•´ ì£¼ë¯€ë¡œ ë³„ë„ ì œê±° ì‘ì—…ì´ í•„ìš” ì—†ë‹¤.
      */
     if ( (sUpdateInfo.mUptBfrLobDescCnt > 0) &&
          (sUpdateInfo.mIsUptLobByAPI != ID_TRUE) )
@@ -2147,9 +2147,9 @@ reentry :
     
     if ( aReplicate == ID_TRUE )
     {
-        /* replicationÀÌ °É¸° °æ¿ì,
-         * rowpiece³»¿¡ pk column Á¤º¸°¡ ÀÖ´ÂÁö¸¦ Ã£¾Æ¼­,
-         * pk column Á¤º¸¸¦ º¹»çÇÑ´Ù. */
+        /* replicationì´ ê±¸ë¦° ê²½ìš°,
+         * rowpieceë‚´ì— pk column ì •ë³´ê°€ ìˆëŠ”ì§€ë¥¼ ì°¾ì•„ì„œ,
+         * pk column ì •ë³´ë¥¼ ë³µì‚¬í•œë‹¤. */
         IDE_ASSERT( aPKInfo != NULL );
         if ( sIsCopyPKInfo != ID_TRUE )
         {
@@ -2168,21 +2168,21 @@ reentry :
 
     if ( sUpdateInfo.mIsDeleteFstColumnPiece == ID_TRUE )
     {
-        /* rowpiece³»ÀÇ Ã¹¹øÂ° ÄÃ·³À» updateÇØ¾ß ÇÏ´Âµ¥,
-         * Ã¹¹øÂ° ÄÃ·³ÀÌ prev rowpiece·ÎºÎÅÍ ÀÌ¾îÁø °æ¿ì,
-         * delete first column piece ¿¬»êÀ» ¼öÇàÇØ¾ß ÇÑ´Ù. */
+        /* rowpieceë‚´ì˜ ì²«ë²ˆì§¸ ì»¬ëŸ¼ì„ updateí•´ì•¼ í•˜ëŠ”ë°,
+         * ì²«ë²ˆì§¸ ì»¬ëŸ¼ì´ prev rowpieceë¡œë¶€í„° ì´ì–´ì§„ ê²½ìš°,
+         * delete first column piece ì—°ì‚°ì„ ìˆ˜í–‰í•´ì•¼ í•œë‹¤. */
 
-        /* ¿©·¯ rowpiece¿¡ ³ª´©¾î ÀúÀåµÈ ÄÃ·³ÀÌ updateµÇ´Â °æ¿ì,
-         * ±× ÄÃ·³ÀÇ first piece¸¦ ÀúÀåÇÏ°í ÀÖ´Â rowpiece¿¡¼­
-         * update ¼öÇàÀ» ´ã´çÇÏ¹Ç·Î, ³ª¸ÓÁö rowpiece¿¡¼­´Â
-         * ÇØ´ç column piece¸¦ Á¦°ÅÇØ¾ß ÇÑ´Ù. */
+        /* ì—¬ëŸ¬ rowpieceì— ë‚˜ëˆ„ì–´ ì €ì¥ëœ ì»¬ëŸ¼ì´ updateë˜ëŠ” ê²½ìš°,
+         * ê·¸ ì»¬ëŸ¼ì˜ first pieceë¥¼ ì €ì¥í•˜ê³  ìˆëŠ” rowpieceì—ì„œ
+         * update ìˆ˜í–‰ì„ ë‹´ë‹¹í•˜ë¯€ë¡œ, ë‚˜ë¨¸ì§€ rowpieceì—ì„œëŠ”
+         * í•´ë‹¹ column pieceë¥¼ ì œê±°í•´ì•¼ í•œë‹¤. */
 
         if ( ( sOldRowHdrInfo.mColCount == 1 ) &&
              ( sUpdateInfo.mIsTrailingNullUpdate == ID_FALSE ) )
         {
-            /* rowpiece³»ÀÇ ÄÃ·³°¹¼ö°¡ 1°³ÀÌ°í,
-             * trailing null update°¡ ¹ß»ıÇÏÁö ¾Ê¾ÒÀ¸¸é
-             * rowpiece ÀüÃ¼¸¦ remove ÇÑ´Ù. */
+            /* rowpieceë‚´ì˜ ì»¬ëŸ¼ê°¯ìˆ˜ê°€ 1ê°œì´ê³ ,
+             * trailing null updateê°€ ë°œìƒí•˜ì§€ ì•Šì•˜ìœ¼ë©´
+             * rowpiece ì „ì²´ë¥¼ remove í•œë‹¤. */
             IDE_TEST( removeRowPiece4Upt( aStatistics,
                                           aTableHeader,
                                           &sMtx,
@@ -2202,9 +2202,9 @@ reentry :
                 aUpdateStatus->mFstColumnSeq++;
             }
 
-            /* rowpiece¸¦ removeÇÏ°Ô µÇ¸é
-             * previous rowpieceÀÇ linkÁ¤º¸¸¦ º¯°æÇØ ÁÖ¾î¾ß ÇÏ¹Ç·Î
-             * supplement jobÀ» µî·ÏÇÑ´Ù. */
+            /* rowpieceë¥¼ removeí•˜ê²Œ ë˜ë©´
+             * previous rowpieceì˜ linkì •ë³´ë¥¼ ë³€ê²½í•´ ì£¼ì–´ì•¼ í•˜ë¯€ë¡œ
+             * supplement jobì„ ë“±ë¡í•œë‹¤. */
             SDC_ADD_SUPPLEMENT_JOB( &sSupplementJobInfo,
                                     SDC_SUPPLEMENT_JOB_CHANGE_ROWPIECE_LINK );
 
@@ -2214,7 +2214,7 @@ reentry :
         }
         else
         {
-            /* rowpiece¿¡¼­ Ã¹¹øÂ° column piece¸¸ Á¦°ÅÇÑ´Ù. */
+            /* rowpieceì—ì„œ ì²«ë²ˆì§¸ column pieceë§Œ ì œê±°í•œë‹¤. */
             IDE_TEST( deleteFstColumnPiece( aStatistics,
                                             aTrans,
                                             aTableHeader,
@@ -2232,12 +2232,12 @@ reentry :
             aUpdateStatus->mFstColumnSeq++;
 
             sState = 0;
-            /* Update ¿¬»êÀ» ¼öÇàÇÑ Mini TransactionÀ» CommitÇÑ´Ù */
+            /* Update ì—°ì‚°ì„ ìˆ˜í–‰í•œ Mini Transactionì„ Commití•œë‹¤ */
             IDE_TEST( sdrMiniTrans::commit( &sMtx, SMR_CT_CONTINUE )
                       != IDE_SUCCESS );
 
-            /* delete first column piece ¿¬»êÀ» ¼öÇàÇÑ ÈÄ,
-             * update rowpiece ¿¬»êÀ» ´Ù½Ã ¼öÇàÇÑ´Ù. */
+            /* delete first column piece ì—°ì‚°ì„ ìˆ˜í–‰í•œ í›„,
+             * update rowpiece ì—°ì‚°ì„ ë‹¤ì‹œ ìˆ˜í–‰í•œë‹¤. */
             goto reentry;
         }
     }
@@ -2245,9 +2245,9 @@ reentry :
 
     if ( sUpdateInfo.mIsTrailingNullUpdate == ID_TRUE )
     {
-        /* trailing null update°¡ Á¸ÀçÇÏ´Â °æ¿ì */
+        /* trailing null updateê°€ ì¡´ì¬í•˜ëŠ” ê²½ìš° */
 
-        /* trailing null update Ã³¸®´Â last rowpiece¿¡¼­¸¸ Ã³¸®ÇØ¾ß ÇÑ´Ù. */
+        /* trailing null update ì²˜ë¦¬ëŠ” last rowpieceì—ì„œë§Œ ì²˜ë¦¬í•´ì•¼ í•œë‹¤. */
         if (SDC_IS_LAST_ROWPIECE(sOldRowHdrInfo.mRowFlag) == ID_FALSE )
         {
             ideLog::log( IDE_ERR_0,
@@ -2341,12 +2341,12 @@ reentry :
     if ( ( sUpdateInfo.mUptAftInModeColCnt == 0 ) &&
          ( sUpdateInfo.mUptAftLobDescCnt == 0 ) )
     {
-        // Head Row Piece¶ó¸é Lock Row¸¦ Àâ´Â´Ù.
-        // ÇÏÁö¸¸, LOB API UpdateÀÏ °æ¿ì ÀÌ¹Ì ÀâÇô ÀÖ´Ù.
+        // Head Row Pieceë¼ë©´ Lock Rowë¥¼ ì¡ëŠ”ë‹¤.
+        // í•˜ì§€ë§Œ, LOB API Updateì¼ ê²½ìš° ì´ë¯¸ ì¡í˜€ ìˆë‹¤.
         if ( ( SDC_IS_HEAD_ROWPIECE(sOldRowHdrInfo.mRowFlag) == ID_TRUE ) &&
              ( sUpdateInfo.mIsUptLobByAPI != ID_TRUE ))
         {
-            // head rowpiece¿¡ implicit lockÀ» °Ç´Ù.
+            // head rowpieceì— implicit lockì„ ê±´ë‹¤.
             IDE_TEST( lockRow( aStatistics,
                                &sMtx,
                                &sStartInfo,
@@ -2384,7 +2384,7 @@ reentry :
                   != IDE_SUCCESS );
     }
 
-    /* update ÁøÇà»óÅÂ Á¤º¸¸¦ °»½ÅÇÑ´Ù. */
+    /* update ì§„í–‰ìƒíƒœ ì •ë³´ë¥¼ ê°±ì‹ í•œë‹¤. */
     resetRowUpdateStatus( &sOldRowHdrInfo,
                           &sUpdateInfo,
                           aUpdateStatus );
@@ -2393,7 +2393,7 @@ reentry :
     IDE_EXCEPTION_CONT(cont_update_end);
 
     sState = 0;
-    /* Update ¿¬»êÀ» ¼öÇàÇÑ Mini TransactionÀ» CommitÇÑ´Ù */
+    /* Update ì—°ì‚°ì„ ìˆ˜í–‰í•œ Mini Transactionì„ Commití•œë‹¤ */
     IDE_TEST( sdrMiniTrans::commit( &sMtx, SMR_CT_CONTINUE )
               != IDE_SUCCESS );
 
@@ -2435,7 +2435,7 @@ reentry :
     }
     IDE_EXCEPTION( invalid_invisible_myupdateversion )
     {
-        // ÀÌ·± °æ¿ì´Â ¾ø¾î¾ß ÇÑ´Ù.
+        // ì´ëŸ° ê²½ìš°ëŠ” ì—†ì–´ì•¼ í•œë‹¤.
         ideLog::log( IDE_ERR_0,
                      "SpaceID: %"ID_UINT32_FMT", "
                      "TableOID: %"ID_vULONG_FMT", "
@@ -2545,12 +2545,12 @@ IDE_RC sdcRow::doUpdate( idvSQL                      *aStatistics,
     IDE_ASSERT( SC_GRID_IS_NULL(aSlotGRID) == ID_FALSE );
 
     /*
-     * << Update½Ã Self-Aging ¼öÇà >>
+     * << Updateì‹œ Self-Aging ìˆ˜í–‰ >>
      *
-     * Self-AgingÀº Update½Ã¸¶´Ù ¹ß»ıÇÏ´Â °ÍÀÌ ¾Æ´Ï´Ù. ÆäÀÌÁöÀÇ AVFS°¡ ÇöÀç
-     * NewRowPieceSize¸¦ ÇÒ´çÇÏÁö ¸øÇÒ¸¸Å­ ÀÛÀ»¶§ Self-AgingÀ» ½ÃµµÇØº»´Ù.
-     * Self-AgingÀ¸·Î ÀÎÇØ AVFS°¡ Á» ´õ È®º¸µÉ ¼öµµ ÀÖ±â¶§¹®¿¡ ¿©·¯ÆäÀÌÁö¿¡
-     * ÀúÀåµÉ NewRowPiece°¡ ÇÑÆäÀÌÁö¿¡¼­ ¹Ù·Î ÀúÀåÀÌ °¡´ÉÇÒ ¼öµµ ÀÖ±â ¶§¹®ÀÌ´Ù.
+     * Self-Agingì€ Updateì‹œë§ˆë‹¤ ë°œìƒí•˜ëŠ” ê²ƒì´ ì•„ë‹ˆë‹¤. í˜ì´ì§€ì˜ AVFSê°€ í˜„ì¬
+     * NewRowPieceSizeë¥¼ í• ë‹¹í•˜ì§€ ëª»í• ë§Œí¼ ì‘ì„ë•Œ Self-Agingì„ ì‹œë„í•´ë³¸ë‹¤.
+     * Self-Agingìœ¼ë¡œ ì¸í•´ AVFSê°€ ì¢€ ë” í™•ë³´ë  ìˆ˜ë„ ìˆê¸°ë•Œë¬¸ì— ì—¬ëŸ¬í˜ì´ì§€ì—
+     * ì €ì¥ë  NewRowPieceê°€ í•œí˜ì´ì§€ì—ì„œ ë°”ë¡œ ì €ì¥ì´ ê°€ëŠ¥í•  ìˆ˜ë„ ìˆê¸° ë•Œë¬¸ì´ë‹¤.
      */
     if ( sdpPhyPage::canAllocSlot( sdpPhyPage::getHdr(aSlotPtr),
                                    aUpdateInfo->mNewRowPieceSize,
@@ -2614,8 +2614,8 @@ IDE_RC sdcRow::doUpdate( idvSQL                      *aStatistics,
         }
 
         /*
-         * SQL·Î Full Update°¡ ¹ß»ıÇÏ´Â °æ¿ì ÀÌÀü LOBÀ» º°µµ·Î ½áÁÖ¾î¾ß ÇÑ´Ù.
-         * API·Î È£ÃâµÈ °æ¿ì´Â API°¡ ½áÁÖ¹Ç·Î º°µµ ½áÁÖ´Â ÀÛ¾÷ÀÌ ÇÊ¿ä ¾ø´Ù.
+         * SQLë¡œ Full Updateê°€ ë°œìƒí•˜ëŠ” ê²½ìš° ì´ì „ LOBì„ ë³„ë„ë¡œ ì¨ì£¼ì–´ì•¼ í•œë‹¤.
+         * APIë¡œ í˜¸ì¶œëœ ê²½ìš°ëŠ” APIê°€ ì¨ì£¼ë¯€ë¡œ ë³„ë„ ì¨ì£¼ëŠ” ì‘ì—…ì´ í•„ìš” ì—†ë‹¤.
          */
         if ( (aUpdateInfo->mUptAftLobDescCnt > 0) &&
              (aUpdateInfo->mIsUptLobByAPI != ID_TRUE) )
@@ -2637,7 +2637,7 @@ IDE_RC sdcRow::doUpdate( idvSQL                      *aStatistics,
 /***********************************************************************
  *
  * Description :
- *  supplement job¿¡´Â µÎ°¡Áö Á¾·ù°¡ ÀÖ´Ù.
+ *  supplement jobì—ëŠ” ë‘ê°€ì§€ ì¢…ë¥˜ê°€ ìˆë‹¤.
  *  1. lob update
  *  2. change rowpiece link
  *
@@ -2749,8 +2749,8 @@ IDE_RC sdcRow::doSupplementJob( idvSQL                            *aStatistics,
                   != IDE_SUCCESS );
     }
 
-    // Update ColumnÀÌ ÀÌÀü¿¡ LOB DescriptorÀÌ¾ú´ø °æ¿ì
-    // Old LOB Page¸¦ Á¦°ÅÇÑ´Ù.
+    // Update Columnì´ ì´ì „ì— LOB Descriptorì´ì—ˆë˜ ê²½ìš°
+    // Old LOB Pageë¥¼ ì œê±°í•œë‹¤.
     if ( ( aSupplementJobInfo->mJobType & SDC_SUPPLEMENT_JOB_REMOVE_OLD_OUT_MODE_LOB )
          == SDC_SUPPLEMENT_JOB_REMOVE_OLD_OUT_MODE_LOB )
     {
@@ -2796,7 +2796,7 @@ IDE_RC sdcRow::doSupplementJob( idvSQL                            *aStatistics,
 /***********************************************************************
  *
  * Description :
- *  update »óÅÂÁ¤º¸¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+ *  update ìƒíƒœì •ë³´ë¥¼ ì´ˆê¸°í™”í•œë‹¤.
  *
  **********************************************************************/
 void sdcRow::initRowUpdateStatus( const smiColumnList     *aColumnList,
@@ -2862,22 +2862,22 @@ void sdcRow::resetRowUpdateStatus( const sdcRowHdrInfo          *aRowHdrInfo,
     // reset mUpdateDoneColCount
     if ( SM_IS_FLAG_ON( sRowFlag, SDC_ROWHDR_N_FLAG ) == ID_TRUE )
     {
-        /* mColumnÀÇ °ªÀ» º¸°í update ÄÃ·³ÀÎÁö ¿©ºÎ¸¦ ÆÇ´ÜÇÑ´Ù.
-         * mColumn == NULL : update ÄÃ·³ X
-         * mColumn != NULL : update ÄÃ·³ O */
+        /* mColumnì˜ ê°’ì„ ë³´ê³  update ì»¬ëŸ¼ì¸ì§€ ì—¬ë¶€ë¥¼ íŒë‹¨í•œë‹¤.
+         * mColumn == NULL : update ì»¬ëŸ¼ X
+         * mColumn != NULL : update ì»¬ëŸ¼ O */
         if ( SDC_IS_UPDATE_COLUMN( sLstColumnInfo->mColumn ) == ID_FALSE )
         {
-            /* last columnÀÌ update ÄÃ·³ÀÌ ¾Æ´Ñ °æ¿ì */
+            /* last columnì´ update ì»¬ëŸ¼ì´ ì•„ë‹Œ ê²½ìš° */
             aUpdateStatus->mUpdateDoneColCount +=
                 aUpdateInfo->mUptAftInModeColCnt;
         }
         else
         {
-            /* last columnÀÌ update ÄÃ·³ÀÎ °æ¿ì */
+            /* last columnì´ update ì»¬ëŸ¼ì¸ ê²½ìš° */
             
             /*
-             * ¿¬°áµÈ ´ÙÀ½ row piece¿¡¼­ ÇØ´ç ÄÃ·³ÀÌ »èÁ¦µÈ °æ¿ì
-             * mUpdateDoneColCount°¡ Áõ°¡µÇ¹Ç·Î ¿©±â¼­´Â -1 ÇØÁØ´Ù.
+             * ì—°ê²°ëœ ë‹¤ìŒ row pieceì—ì„œ í•´ë‹¹ ì»¬ëŸ¼ì´ ì‚­ì œëœ ê²½ìš°
+             * mUpdateDoneColCountê°€ ì¦ê°€ë˜ë¯€ë¡œ ì—¬ê¸°ì„œëŠ” -1 í•´ì¤€ë‹¤.
              */
             aUpdateStatus->mUpdateDoneColCount +=
                 (aUpdateInfo->mUptAftInModeColCnt - 1);
@@ -3066,7 +3066,7 @@ IDE_RC sdcRow::updateInplace( idvSQL                      *aStatistics,
                                               aReplicate,
                                               &sUndoSID) != IDE_SUCCESS )
     {
-        /* Undo °ø°£ºÎÁ·À¸·Î ½ÇÆĞÇÑ °æ¿ì. MtxUndo ¹«½ÃÇØµµ µÊ  */
+        /* Undo ê³µê°„ë¶€ì¡±ìœ¼ë¡œ ì‹¤íŒ¨í•œ ê²½ìš°. MtxUndo ë¬´ì‹œí•´ë„ ë¨  */
         sdrMiniTrans::setIgnoreMtxUndo( aMtx );
         IDE_TEST( 1 );
     }
@@ -3133,17 +3133,17 @@ IDE_RC sdcRow::updateInplace( idvSQL                      *aStatistics,
                         sColumnInfo->mOldValueInfo.mValue.length,
                         sColLen );
 
-        // 1. Update ColumnÀÌ ¾Æ´Ñ °æ¿ì
+        // 1. Update Columnì´ ì•„ë‹Œ ê²½ìš°
         if ( SDC_IS_UPDATE_COLUMN( sColumnInfo->mColumn ) == ID_FALSE )
         {
             sColPiecePtr += sColLen;
             continue;
         }
 
-        // 2. Update ÀÌÀü°ú ÀÌÈÄ°¡ NULLÀÎ °æ¿ì
+        // 2. Update ì´ì „ê³¼ ì´í›„ê°€ NULLì¸ ê²½ìš°
         if ( SDC_IS_NULL(&(sColumnInfo->mNewValueInfo.mValue)) == ID_TRUE )
         {
-            /* NULL value¸¦ ´Ù½Ã NULL·Î update ÇÏ´Â °æ¿ì,
+            /* NULL valueë¥¼ ë‹¤ì‹œ NULLë¡œ update í•˜ëŠ” ê²½ìš°,
              * nothing to do */
             if ( SDC_IS_NULL(&sColumnInfo->mOldValueInfo.mValue) == ID_FALSE )
             {
@@ -3170,7 +3170,7 @@ IDE_RC sdcRow::updateInplace( idvSQL                      *aStatistics,
             continue;
         }
 
-        // 3. Update ÀÌÀü°ú ÀÌÈÄ°¡ EmptyÀÎ °æ¿ì
+        // 3. Update ì´ì „ê³¼ ì´í›„ê°€ Emptyì¸ ê²½ìš°
         if ( SDC_IS_EMPTY(&(sColumnInfo->mNewValueInfo.mValue)) == ID_TRUE )
         {
             if ( (SDC_IS_EMPTY(&(sColumnInfo->mOldValueInfo.mValue)) == ID_FALSE) ||
@@ -3224,8 +3224,8 @@ IDE_RC sdcRow::updateInplace( idvSQL                      *aStatistics,
 
         // 4. Update
 
-        /* update inplace ¿¬»êÀ» ¼öÇàÇÏ·Á¸é,
-         * update ÄÃ·³ÀÇ Å©±â°¡ º¯ÇØ¼­´Â ¾ÈµÈ´Ù.(old size == new size) */
+        /* update inplace ì—°ì‚°ì„ ìˆ˜í–‰í•˜ë ¤ë©´,
+         * update ì»¬ëŸ¼ì˜ í¬ê¸°ê°€ ë³€í•´ì„œëŠ” ì•ˆëœë‹¤.(old size == new size) */
         IDE_ASSERT_MSG( sColumnInfo->mOldValueInfo.mValue.length ==
                         sColumnInfo->mNewValueInfo.mValue.length,
                         "Table OID        : %"ID_vULONG_FMT"\n"
@@ -3235,7 +3235,7 @@ IDE_RC sdcRow::updateInplace( idvSQL                      *aStatistics,
                         sColumnInfo->mOldValueInfo.mValue.length,
                         sColumnInfo->mNewValueInfo.mValue.length );
 
-        /* new value¸¦ writeÇÑ´Ù. */
+        /* new valueë¥¼ writeí•œë‹¤. */
         ID_WRITE_AND_MOVE_DEST( sColPiecePtr,
                                 (UChar*)sColumnInfo->mNewValueInfo.mValue.value,
                                 sColumnInfo->mNewValueInfo.mValue.length );
@@ -3260,12 +3260,12 @@ IDE_RC sdcRow::updateInplace( idvSQL                      *aStatistics,
                                               aMtx )
               != IDE_SUCCESS );
     /*
-     * ÇØ´ç Æ®·£Àè¼Ç°ú °ü°è¾ø´Â Row Piece¸¦ UpdateÇÏ´Â °æ¿ì¿¡´Â
-     * RowPieceÀÇ CTSlotIdx°¡ Row TimeStampingÀÌ Ã³¸®µÇ¾î
-     * SDP_CTS_IDX_NULL·Î ÃÊ±âÈ­µÇ¾î ÀÖ´Ù.
-     * ÀÌ¶§¸¸ Bind CTS¸¦ ¼öÇàÇÏ¿© RefCnt¸¦ Áõ°¡½ÃÅ²´Ù.
-     * RefCnt´Â µ¿ÀÏÇÑ Row PieceÀÇ Áßº¹ °»½Å ÀÛ¾÷¿¡¼­´Â
-     * ÃÖÃÊ ÇÑ¹ø¸¸ Áõ°¡ÇÑ´Ù.
+     * í•´ë‹¹ íŠ¸ëœì­ì…˜ê³¼ ê´€ê³„ì—†ëŠ” Row Pieceë¥¼ Updateí•˜ëŠ” ê²½ìš°ì—ëŠ”
+     * RowPieceì˜ CTSlotIdxê°€ Row TimeStampingì´ ì²˜ë¦¬ë˜ì–´
+     * SDP_CTS_IDX_NULLë¡œ ì´ˆê¸°í™”ë˜ì–´ ìˆë‹¤.
+     * ì´ë•Œë§Œ Bind CTSë¥¼ ìˆ˜í–‰í•˜ì—¬ RefCntë¥¼ ì¦ê°€ì‹œí‚¨ë‹¤.
+     * RefCntëŠ” ë™ì¼í•œ Row Pieceì˜ ì¤‘ë³µ ê°±ì‹  ì‘ì—…ì—ì„œëŠ”
+     * ìµœì´ˆ í•œë²ˆë§Œ ì¦ê°€í•œë‹¤.
      */
     IDE_TEST( sdcTableCTL::bind(
                      aMtx,
@@ -3383,7 +3383,7 @@ IDE_RC sdcRow::updateOutplace( idvSQL                      *aStatistics,
                                               aReplicate,
                                               &sUndoSID) != IDE_SUCCESS )
     {
-        /* Undo °ø°£ºÎÁ·À¸·Î ½ÇÆĞÇÑ °æ¿ì. MtxUndo ¹«½ÃÇØµµ µÊ  */
+        /* Undo ê³µê°„ë¶€ì¡±ìœ¼ë¡œ ì‹¤íŒ¨í•œ ê²½ìš°. MtxUndo ë¬´ì‹œí•´ë„ ë¨  */
         sdrMiniTrans::setIgnoreMtxUndo( aMtx );
         IDE_TEST( 1 );
     }
@@ -3398,7 +3398,7 @@ IDE_RC sdcRow::updateOutplace( idvSQL                      *aStatistics,
     IDE_ASSERT( sNewSlotPtr != NULL );
 
     /* BUG-32091 [sm_collection] add TableOID in PageHeader
-     * Page¿¡ ±â·ÏµÈ TableOID¿Í À§·ÎºÎÅÍ ³»·Á¿Â TableOID¸¦ ºñ±³ÇÏ¿© °ËÁõÇÔ */
+     * Pageì— ê¸°ë¡ëœ TableOIDì™€ ìœ„ë¡œë¶€í„° ë‚´ë ¤ì˜¨ TableOIDë¥¼ ë¹„êµí•˜ì—¬ ê²€ì¦í•¨ */
     IDE_ASSERT( sdpPhyPage::getTableOID( (UChar*)sdpPhyPage::getHdr( sNewSlotPtr ) )
                 == smLayerCallback::getTableOID( aTableHeader ) );
 
@@ -3408,8 +3408,8 @@ IDE_RC sdcRow::updateOutplace( idvSQL                      *aStatistics,
 
     if ( sFSCreditSize != 0 )
     {
-        // reallocSlotÀ» ÇÑÀÌÈÄ¿¡, Segment¿¡ ´ëÇÑ °¡¿ëµµ
-        // º¯°æ¿¬»êÀ» ¼öÇàÇÑ´Ù.
+        // reallocSlotì„ í•œì´í›„ì—, Segmentì— ëŒ€í•œ ê°€ìš©ë„
+        // ë³€ê²½ì—°ì‚°ì„ ìˆ˜í–‰í•œë‹¤.
         IDE_TEST( sdpPageList::updatePageState(
                       aStatistics,
                       sTableSpaceID,
@@ -3473,7 +3473,7 @@ IDE_RC sdcRow::updateOutplace( idvSQL                      *aStatistics,
 
 /***********************************************************************
  *
- * Description : Update Row Piece(Inplace, Outplace)ÀÇ Undo Record¸¦ ±¸¼º
+ * Description : Update Row Piece(Inplace, Outplace)ì˜ Undo Recordë¥¼ êµ¬ì„±
  *
  *   SDC_UNDO_UPDATE_ROW_PIECE
  *   -----------------------------------------------------------------------------------
@@ -3550,9 +3550,9 @@ UChar* sdcRow::writeUpdateRowPieceUndoRecRedoLog(
     sWritePtr = aWritePtr;
 
     /*
-     * ###   FSC ÇÃ·¡±×   ###
+     * ###   FSC í”Œë˜ê·¸   ###
      *
-     * FSC ÇÃ·¡±× ¼³Á¤¹æ¹ı¿¡ ´ëÇÑ ÀÚ¼¼ÇÑ ¼³¸íÀº sdcRow.hÀÇ ÁÖ¼®À» Âü°íÇÏ¶ó
+     * FSC í”Œë˜ê·¸ ì„¤ì •ë°©ë²•ì— ëŒ€í•œ ìì„¸í•œ ì„¤ëª…ì€ sdcRow.hì˜ ì£¼ì„ì„ ì°¸ê³ í•˜ë¼
      *
      * redo     : SDC_UPDATE_LOG_FLAG_RESERVE_FREESPACE_CREDIT_TRUE
      * undo     : SDC_UPDATE_LOG_FLAG_RESERVE_FREESPACE_CREDIT_FALSE
@@ -3642,7 +3642,7 @@ UChar* sdcRow::writeUpdateRowPieceUndoRecRedoLog(
 
 /***********************************************************************
  *
- * Description : Update Row PieceÀÇ Redo, Undo Log
+ * Description : Update Row Pieceì˜ Redo, Undo Log
  *
  *   SDR_SDC_UPDATE_ROW_PIECE
  *   -----------------------------------------------------------------------------------
@@ -3736,9 +3736,9 @@ IDE_RC sdcRow::writeUpdateRowPieceRedoUndoLog(
              != IDE_SUCCESS);
 
     /*
-     * ###   FSC ÇÃ·¡±×   ###
+     * ###   FSC í”Œë˜ê·¸   ###
      *
-     * FSC ÇÃ·¡±× ¼³Á¤¹æ¹ı¿¡ ´ëÇÑ ÀÚ¼¼ÇÑ ¼³¸íÀº sdcRow.hÀÇ ÁÖ¼®À» Âü°íÇÏ¶ó
+     * FSC í”Œë˜ê·¸ ì„¤ì •ë°©ë²•ì— ëŒ€í•œ ìì„¸í•œ ì„¤ëª…ì€ sdcRow.hì˜ ì£¼ì„ì„ ì°¸ê³ í•˜ë¼
      *
      * redo     : SDC_UPDATE_LOG_FLAG_RESERVE_FREESPACE_CREDIT_TRUE
      * undo     : SDC_UPDATE_LOG_FLAG_RESERVE_FREESPACE_CREDIT_FALSE
@@ -3850,10 +3850,10 @@ IDE_RC sdcRow::writeUpdateRowPieceRedoUndoLog(
 /***********************************************************************
  *
  * Description :
- *  update rowpiece undo¿¡ ´ëÇÑ CLRÀ» ±â·ÏÇÏ´Â ÇÔ¼öÀÌ´Ù.
- *  UPDATE_ROW_PIECE ·Î±×´Â redo, undo ·Î±×ÀÇ ±¸Á¶°¡ °°±â ¶§¹®¿¡
- *  undo record¿¡¼­ undo info layerÀÇ ³»¿ë¸¸ »©¼­,
- *  clr redo log¸¦ ÀÛ¼ºÇÏ¸é µÈ´Ù.
+ *  update rowpiece undoì— ëŒ€í•œ CLRì„ ê¸°ë¡í•˜ëŠ” í•¨ìˆ˜ì´ë‹¤.
+ *  UPDATE_ROW_PIECE ë¡œê·¸ëŠ” redo, undo ë¡œê·¸ì˜ êµ¬ì¡°ê°€ ê°™ê¸° ë•Œë¬¸ì—
+ *  undo recordì—ì„œ undo info layerì˜ ë‚´ìš©ë§Œ ë¹¼ì„œ,
+ *  clr redo logë¥¼ ì‘ì„±í•˜ë©´ ëœë‹¤.
  *
  **********************************************************************/
 IDE_RC sdcRow::writeUpdateRowPieceCLR( const UChar   *aUndoRecHdr,
@@ -3877,7 +3877,7 @@ IDE_RC sdcRow::writeUpdateRowPieceCLR( const UChar   *aUndoRecHdr,
                           sSlotDirPtr,
                           SD_MAKE_SLOTNUM( aUndoSID ) );
 
-    /* undo info layerÀÇ Å©±â¸¦ »«´Ù. */
+    /* undo info layerì˜ í¬ê¸°ë¥¼ ëº€ë‹¤. */
     sLogSize     = sUndoRecSize -
                    SDC_UNDOREC_HDR_SIZE -
                    ID_SIZEOF(scGRID);
@@ -3908,8 +3908,8 @@ IDE_RC sdcRow::writeUpdateRowPieceCLR( const UChar   *aUndoRecHdr,
 /***********************************************************************
  *
  * Description :
- *  update inplace rowpiece ¿¬»ê¿¡ ´ëÇÑ redo or undo¸¦ ¼öÇàÇÏ´Â ÇÔ¼öÀÌ´Ù.
- *  UPDATE_ROW_PIECE ·Î±×´Â redo, undo ·Î±×ÀÇ ±¸Á¶°¡ °°´Ù.
+ *  update inplace rowpiece ì—°ì‚°ì— ëŒ€í•œ redo or undoë¥¼ ìˆ˜í–‰í•˜ëŠ” í•¨ìˆ˜ì´ë‹¤.
+ *  UPDATE_ROW_PIECE ë¡œê·¸ëŠ” redo, undo ë¡œê·¸ì˜ êµ¬ì¡°ê°€ ê°™ë‹¤.
  *
  **********************************************************************/ 
 IDE_RC sdcRow::redo_undo_UPDATE_INPLACE_ROW_PIECE( 
@@ -3966,7 +3966,7 @@ IDE_RC sdcRow::redo_undo_UPDATE_INPLACE_ROW_PIECE(
     {
         IDE_TEST( sdcTableCTL::unbind(
                             aMtx,
-                            sSlotPtr,          /* UndoµÇ±âÀü RowPiecePtr */
+                            sSlotPtr,          /* Undoë˜ê¸°ì „ RowPiecePtr */
                             *(UChar*)sSlotPtr, /* aCTSlotIdxBfrUndo */
                             *(UChar*)sLogPtr,  /* aCTSlotIdxAftUndo */
                             0,                 /* aFSCreditSize */
@@ -3985,7 +3985,7 @@ IDE_RC sdcRow::redo_undo_UPDATE_INPLACE_ROW_PIECE(
     {
         if ( SDC_CD_ISSET( sColSeq, &sColDescSet ) == ID_TRUE )
         {
-            /* update columnÀÎ °æ¿ì */
+            /* update columnì¸ ê²½ìš° */
 
             sLength = getColPieceLen(sLogPtr);
 
@@ -4000,8 +4000,8 @@ IDE_RC sdcRow::redo_undo_UPDATE_INPLACE_ROW_PIECE(
         }
         else
         {
-            /* update columnÀÌ ¾Æ´Ñ °æ¿ì,
-             * next columnÀ¸·Î ÀÌµ¿ÇÑ´Ù. */
+            /* update columnì´ ì•„ë‹Œ ê²½ìš°,
+             * next columnìœ¼ë¡œ ì´ë™í•œë‹¤. */
             sSlotPtr = getNxtColPiece(sSlotPtr);
         }
     }
@@ -4040,8 +4040,8 @@ IDE_RC sdcRow::redo_undo_UPDATE_INPLACE_ROW_PIECE(
 /***********************************************************************
  *
  * Description :
- *  update outplace rowpiece ¿¬»ê¿¡ ´ëÇÑ redo or undo¸¦ ¼öÇàÇÏ´Â ÇÔ¼öÀÌ´Ù.
- *  UPDATE_ROW_PIECE ·Î±×´Â redo, undo ·Î±×ÀÇ ±¸Á¶°¡ °°´Ù.
+ *  update outplace rowpiece ì—°ì‚°ì— ëŒ€í•œ redo or undoë¥¼ ìˆ˜í–‰í•˜ëŠ” í•¨ìˆ˜ì´ë‹¤.
+ *  UPDATE_ROW_PIECE ë¡œê·¸ëŠ” redo, undo ë¡œê·¸ì˜ êµ¬ì¡°ê°€ ê°™ë‹¤.
  *
  **********************************************************************/
 IDE_RC sdcRow::redo_undo_UPDATE_OUTPLACE_ROW_PIECE(
@@ -4081,9 +4081,9 @@ IDE_RC sdcRow::redo_undo_UPDATE_OUTPLACE_ROW_PIECE(
     SDC_GET_ROWHDR_FIELD(sOldSlotPtr, SDC_ROWHDR_COLCOUNT, &sColCount);
     SDC_GET_ROWHDR_1B_FIELD(sOldSlotPtr, SDC_ROWHDR_FLAG, sRowFlag);
 
-    /* reallocSlot()À» ÇÏ´Â µµÁß¿¡
-     * compact page ¿¬»êÀÌ ¹ß»ıÇÒ ¼ö ÀÖ±â ¶§¹®¿¡
-     * old slot image¸¦ temp buffer¿¡ º¹»çÇØ¾ß ÇÑ´Ù. */
+    /* reallocSlot()ì„ í•˜ëŠ” ë„ì¤‘ì—
+     * compact page ì—°ì‚°ì´ ë°œìƒí•  ìˆ˜ ìˆê¸° ë•Œë¬¸ì—
+     * old slot imageë¥¼ temp bufferì— ë³µì‚¬í•´ì•¼ í•œë‹¤. */
     sOldSlotImagePtr = sOldSlotImage;
     idlOS::memcpy( sOldSlotImagePtr,
                    sOldSlotPtr,
@@ -4115,9 +4115,9 @@ IDE_RC sdcRow::redo_undo_UPDATE_OUTPLACE_ROW_PIECE(
 
     if ( aOper4RowPiece == SDC_MVCC_MAKE_VALROW )
     {
-        /* MVCC¸¦ À§ÇØ undo¸¦ ¼öÇàÇÏ´Â °æ¿ì,
-         * reallocSlot()À» ÇÏ¸é ¾ÈµÇ°í,
-         * ÀÎÀÚ·Î ³Ñ¾î¿Â temp buffer pointer¸¦ »ç¿ëÇØ¾ß ÇÑ´Ù. */
+        /* MVCCë¥¼ ìœ„í•´ undoë¥¼ ìˆ˜í–‰í•˜ëŠ” ê²½ìš°,
+         * reallocSlot()ì„ í•˜ë©´ ì•ˆë˜ê³ ,
+         * ì¸ìë¡œ ë„˜ì–´ì˜¨ temp buffer pointerë¥¼ ì‚¬ìš©í•´ì•¼ í•œë‹¤. */
         IDE_ERROR( aRowBuf4MVCC != NULL );
         sNewSlotPtr = aRowBuf4MVCC;
     }
@@ -4134,7 +4134,7 @@ IDE_RC sdcRow::redo_undo_UPDATE_OUTPLACE_ROW_PIECE(
                                           sOldRowPieceSize );
 
             IDE_TEST( sdcTableCTL::unbind( aMtx,
-                                           sOldSlotPtr, /* UndoµÇ±âÀü RowPiecePtr */
+                                           sOldSlotPtr, /* Undoë˜ê¸°ì „ RowPiecePtr */
                                            *(UChar*)sOldSlotPtr,
                                            *(UChar*)sLogPtr,
                                            *aFSCreditSize,
@@ -4143,29 +4143,29 @@ IDE_RC sdcRow::redo_undo_UPDATE_OUTPLACE_ROW_PIECE(
         }
 
         /*
-         * ###   FSC ÇÃ·¡±×   ###
+         * ###   FSC í”Œë˜ê·¸   ###
          *
-         * DML ¿¬»êÁß¿¡´Â ´ç¿¬È÷ FSC¸¦ reserve ÇØ¾ß ÇÑ´Ù.
-         * ±×·¯¸é redo³ª undo½Ã¿¡´Â ¾î¶»°Ô ÇØ¾ß ÇÏ³ª?
+         * DML ì—°ì‚°ì¤‘ì—ëŠ” ë‹¹ì—°íˆ FSCë¥¼ reserve í•´ì•¼ í•œë‹¤.
+         * ê·¸ëŸ¬ë©´ redoë‚˜ undoì‹œì—ëŠ” ì–´ë–»ê²Œ í•´ì•¼ í•˜ë‚˜?
          *
-         * redo´Â DML ¿¬»êÀ» ´Ù½Ã ¼öÇàÇÏ´Â °ÍÀÌ¹Ç·Î,
-         * DML ¿¬»êÇÒ¶§¿Í µ¿ÀÏÇÏ°Ô FSC¸¦ reserve ÇØ¾ß ÇÑ´Ù.
+         * redoëŠ” DML ì—°ì‚°ì„ ë‹¤ì‹œ ìˆ˜í–‰í•˜ëŠ” ê²ƒì´ë¯€ë¡œ,
+         * DML ì—°ì‚°í• ë•Œì™€ ë™ì¼í•˜ê²Œ FSCë¥¼ reserve í•´ì•¼ í•œë‹¤.
          *
-         * ¹İ¸é undo½Ã¿¡´Â FSC¸¦ reserveÇÏ¸é ¾ÈµÈ´Ù.
-         * ¿Ö³ªÇÏ¸é FSC´Â DML ¿¬»êÀ» undo½ÃÅ³¶§¸¦ ´ëºñÇØ¼­
-         * °ø°£À» ¿¹¾àÇØµÎ´Â °ÍÀÌ¹Ç·Î,
-         * undo½Ã¿¡´Â ÀÌÀü¿¡ reserveÇØµĞ FSC¸¦
-         * ÆäÀÌÁö¿¡ µÇµ¹·Á(restore)ÁÖ¾î¾ß ÇÏ°í,
-         * undo½Ã¿¡ ¶Ç ´Ù½Ã FSC¸¦ reserveÇÏ·Á°í ÇØ¼­´Â ¾ÈµÈ´Ù.
+         * ë°˜ë©´ undoì‹œì—ëŠ” FSCë¥¼ reserveí•˜ë©´ ì•ˆëœë‹¤.
+         * ì™œë‚˜í•˜ë©´ FSCëŠ” DML ì—°ì‚°ì„ undoì‹œí‚¬ë•Œë¥¼ ëŒ€ë¹„í•´ì„œ
+         * ê³µê°„ì„ ì˜ˆì•½í•´ë‘ëŠ” ê²ƒì´ë¯€ë¡œ,
+         * undoì‹œì—ëŠ” ì´ì „ì— reserveí•´ë‘” FSCë¥¼
+         * í˜ì´ì§€ì— ë˜ëŒë ¤(restore)ì£¼ì–´ì•¼ í•˜ê³ ,
+         * undoì‹œì— ë˜ ë‹¤ì‹œ FSCë¥¼ reserveí•˜ë ¤ê³  í•´ì„œëŠ” ì•ˆëœë‹¤.
          *
-         * clrÀº undo¿¡ ´ëÇÑ redoÀÌ¹Ç·Î undo¶§¿Í µ¿ÀÏÇÏ°Ô
-         * FSC¸¦ reserveÇÏ¸é ¾ÈµÈ´Ù.
+         * clrì€ undoì— ëŒ€í•œ redoì´ë¯€ë¡œ undoë•Œì™€ ë™ì¼í•˜ê²Œ
+         * FSCë¥¼ reserveí•˜ë©´ ì•ˆëœë‹¤.
          *
-         * ÀÌ ¼¼°¡Áö °æ¿ì¸¦ ±¸ºĞÇÏ¿©
-         * FSC reserve Ã³¸®¸¦ ÇØ¾ß ÇÏ´Âµ¥,
-         * ³ª(upinel9)´Â ·Î±×¸¦ ±â·ÏÇÒ¶§ FSC reserve ¿©ºÎ¸¦ ÇÃ·¡±×·Î ³²°Ü¼­,
-         * redo³ª undo½Ã¿¡´Â ÀÌ ÇÃ·¡±×¸¸ º¸°í
-         * reallocSlot()À» ÇÏµµ·Ï ¼³°èÇÏ¿´´Ù.
+         * ì´ ì„¸ê°€ì§€ ê²½ìš°ë¥¼ êµ¬ë¶„í•˜ì—¬
+         * FSC reserve ì²˜ë¦¬ë¥¼ í•´ì•¼ í•˜ëŠ”ë°,
+         * ë‚˜(upinel9)ëŠ” ë¡œê·¸ë¥¼ ê¸°ë¡í• ë•Œ FSC reserve ì—¬ë¶€ë¥¼ í”Œë˜ê·¸ë¡œ ë‚¨ê²¨ì„œ,
+         * redoë‚˜ undoì‹œì—ëŠ” ì´ í”Œë˜ê·¸ë§Œ ë³´ê³ 
+         * reallocSlot()ì„ í•˜ë„ë¡ ì„¤ê³„í•˜ì˜€ë‹¤.
          *
          * redo     : SDC_UPDATE_LOG_FLAG_RESERVE_FREESPACE_CREDIT_TRUE
          * undo     : SDC_UPDATE_LOG_FLAG_RESERVE_FREESPACE_CREDIT_FALSE
@@ -4218,8 +4218,8 @@ IDE_RC sdcRow::redo_undo_UPDATE_OUTPLACE_ROW_PIECE(
     {
         if ( SDC_CD_ISSET( sColSeq, &sColDescSet ) == ID_TRUE )
         {
-            /* update columnÀÎ °æ¿ì,
-             * logÀÇ column value¸¦ new slot¿¡ ±â·ÏÇÑ´Ù. */
+            /* update columnì¸ ê²½ìš°,
+             * logì˜ column valueë¥¼ new slotì— ê¸°ë¡í•œë‹¤. */
             sLength = getColPieceLen(sLogPtr);
 
             ID_WRITE_AND_MOVE_BOTH( sWritePtr,
@@ -4229,8 +4229,8 @@ IDE_RC sdcRow::redo_undo_UPDATE_OUTPLACE_ROW_PIECE(
         }
         else
         {
-            /* update columnÀÌ ¾Æ´Ñ °æ¿ì,
-             * old slotÀÇ column value¸¦ new slot¿¡ ±â·ÏÇÑ´Ù. */
+            /* update columnì´ ì•„ë‹Œ ê²½ìš°,
+             * old slotì˜ column valueë¥¼ new slotì— ê¸°ë¡í•œë‹¤. */
             sLength = getColPieceLen(sOldSlotImagePtr);
 
             ID_WRITE_AND_MOVE_DEST( sWritePtr,
@@ -4275,20 +4275,20 @@ IDE_RC sdcRow::redo_undo_UPDATE_OUTPLACE_ROW_PIECE(
  *
  * Description :
  *
- *  ###   overwrite rowpiece ¿¬»êÀÌ ¹ß»ıÇÏ´Â °æ¿ì   ###
- *   1. overflow ¹ß»ı
+ *  ###   overwrite rowpiece ì—°ì‚°ì´ ë°œìƒí•˜ëŠ” ê²½ìš°   ###
+ *   1. overflow ë°œìƒ
  *   2. trailing null update
  *
  *
- *  ###   overwrite rowpiece ¿¬»ê  VS  update rowpiece ¿¬»ê   ###
+ *  ###   overwrite rowpiece ì—°ì‚°  VS  update rowpiece ì—°ì‚°   ###
  *
- *  overwrite rowpiece ¿¬»ê
- *   . rowpieceÀÇ ±¸Á¶°¡ º¯ÇÒ ¼ö ÀÖ´Ù.(column count, row flag)
- *   . logging½Ã rowpiece ÀüÃ¼¸¦ ·Î±ëÇÑ´Ù.
+ *  overwrite rowpiece ì—°ì‚°
+ *   . rowpieceì˜ êµ¬ì¡°ê°€ ë³€í•  ìˆ˜ ìˆë‹¤.(column count, row flag)
+ *   . loggingì‹œ rowpiece ì „ì²´ë¥¼ ë¡œê¹…í•œë‹¤.
  *
- *  update rowpiece ¿¬»ê
- *   . rowpieceÀÇ ±¸Á¶°¡ º¯ÇÏÁö ¾Ê´Â´Ù.(column count, row flag)
- *   . logging½Ã updateµÈ column Á¤º¸¸¸ ·Î±ëÇÑ´Ù.
+ *  update rowpiece ì—°ì‚°
+ *   . rowpieceì˜ êµ¬ì¡°ê°€ ë³€í•˜ì§€ ì•ŠëŠ”ë‹¤.(column count, row flag)
+ *   . loggingì‹œ updateëœ column ì •ë³´ë§Œ ë¡œê¹…í•œë‹¤.
  *
  **********************************************************************/
 IDE_RC sdcRow::overwriteRowPiece(
@@ -4338,7 +4338,7 @@ IDE_RC sdcRow::overwriteRowPiece(
                                                  aReplicate,
                                                  &sUndoSID ) != IDE_SUCCESS )
     {
-        /* Undo °ø°£ºÎÁ·À¸·Î ½ÇÆĞÇÑ °æ¿ì. MtxUndo ¹«½ÃÇØµµ µÊ  */
+        /* Undo ê³µê°„ë¶€ì¡±ìœ¼ë¡œ ì‹¤íŒ¨í•œ ê²½ìš°. MtxUndo ë¬´ì‹œí•´ë„ ë¨  */
         sdrMiniTrans::setIgnoreMtxUndo( aMtx );
         IDE_TEST( 1 );
     }
@@ -4351,7 +4351,7 @@ IDE_RC sdcRow::overwriteRowPiece(
               != IDE_SUCCESS );
 
     /* BUG-32091 [sm_collection] add TableOID in PageHeader
-     * Page¿¡ ±â·ÏµÈ TableOID¿Í À§·ÎºÎÅÍ ³»·Á¿Â TableOID¸¦ ºñ±³ÇÏ¿© °ËÁõÇÔ */
+     * Pageì— ê¸°ë¡ëœ TableOIDì™€ ìœ„ë¡œë¶€í„° ë‚´ë ¤ì˜¨ TableOIDë¥¼ ë¹„êµí•˜ì—¬ ê²€ì¦í•¨ */
     IDE_ASSERT( sdpPhyPage::getTableOID( (UChar*)
                                          sdpPhyPage::getHdr( sNewSlotPtr ) )
                 == sTableOID );
@@ -4365,8 +4365,8 @@ IDE_RC sdcRow::overwriteRowPiece(
 
     if ( sFSCreditSize != 0 )
     {
-        // reallocSlotÀ» ÇÑÀÌÈÄ¿¡, Segment¿¡ ´ëÇÑ °¡¿ëµµ
-        // º¯°æ¿¬»êÀ» ¼öÇàÇÑ´Ù.
+        // reallocSlotì„ í•œì´í›„ì—, Segmentì— ëŒ€í•œ ê°€ìš©ë„
+        // ë³€ê²½ì—°ì‚°ì„ ìˆ˜í–‰í•œë‹¤.
         IDE_TEST( sdpPageList::updatePageState( aStatistics,
                                                 sTableSpaceID,
                                                 sEntry,
@@ -4453,9 +4453,9 @@ UChar* sdcRow::writeOverwriteRowPieceUndoRecRedoLog( UChar                      
     IDE_ASSERT( aOverwriteInfo != NULL );
 
     /*
-     * ###   FSC ÇÃ·¡±×   ###
+     * ###   FSC í”Œë˜ê·¸   ###
      *
-     * FSC ÇÃ·¡±× ¼³Á¤¹æ¹ı¿¡ ´ëÇÑ ÀÚ¼¼ÇÑ ¼³¸íÀº sdcRow.hÀÇ ÁÖ¼®À» Âü°íÇÏ¶ó
+     * FSC í”Œë˜ê·¸ ì„¤ì •ë°©ë²•ì— ëŒ€í•œ ìì„¸í•œ ì„¤ëª…ì€ sdcRow.hì˜ ì£¼ì„ì„ ì°¸ê³ í•˜ë¼
      *
      * redo     : SDC_UPDATE_LOG_FLAG_RESERVE_FREESPACE_CREDIT_TRUE
      * undo     : SDC_UPDATE_LOG_FLAG_RESERVE_FREESPACE_CREDIT_FALSE
@@ -4552,9 +4552,9 @@ IDE_RC sdcRow::writeOverwriteRowPieceRedoUndoLog(
              != IDE_SUCCESS);
 
     /*
-     * ###   FSC ÇÃ·¡±×   ###
+     * ###   FSC í”Œë˜ê·¸   ###
      *
-     * FSC ÇÃ·¡±× ¼³Á¤¹æ¹ı¿¡ ´ëÇÑ ÀÚ¼¼ÇÑ ¼³¸íÀº sdcRow.hÀÇ ÁÖ¼®À» Âü°íÇÏ¶ó
+     * FSC í”Œë˜ê·¸ ì„¤ì •ë°©ë²•ì— ëŒ€í•œ ìì„¸í•œ ì„¤ëª…ì€ sdcRow.hì˜ ì£¼ì„ì„ ì°¸ê³ í•˜ë¼
      *
      * redo     : SDC_UPDATE_LOG_FLAG_RESERVE_FREESPACE_CREDIT_TRUE
      * undo     : SDC_UPDATE_LOG_FLAG_RESERVE_FREESPACE_CREDIT_FALSE
@@ -4601,10 +4601,10 @@ IDE_RC sdcRow::writeOverwriteRowPieceRedoUndoLog(
 /***********************************************************************
  *
  * Description :
- *  overwrite rowpiece undo¿¡ ´ëÇÑ CLRÀ» ±â·ÏÇÏ´Â ÇÔ¼öÀÌ´Ù.
- *  OVERWRITE_ROW_PIECE ·Î±×´Â redo, undo ·Î±×ÀÇ ±¸Á¶°¡ °°±â ¶§¹®¿¡
- *  undo record¿¡¼­ undo info layerÀÇ ³»¿ë¸¸ »©¼­,
- *  clr redo log¸¦ ÀÛ¼ºÇÏ¸é µÈ´Ù.
+ *  overwrite rowpiece undoì— ëŒ€í•œ CLRì„ ê¸°ë¡í•˜ëŠ” í•¨ìˆ˜ì´ë‹¤.
+ *  OVERWRITE_ROW_PIECE ë¡œê·¸ëŠ” redo, undo ë¡œê·¸ì˜ êµ¬ì¡°ê°€ ê°™ê¸° ë•Œë¬¸ì—
+ *  undo recordì—ì„œ undo info layerì˜ ë‚´ìš©ë§Œ ë¹¼ì„œ,
+ *  clr redo logë¥¼ ì‘ì„±í•˜ë©´ ëœë‹¤.
  *
  **********************************************************************/
 IDE_RC sdcRow::writeOverwriteRowPieceCLR( const UChar    * aUndoRecHdr,
@@ -4623,7 +4623,7 @@ IDE_RC sdcRow::writeOverwriteRowPieceCLR( const UChar    * aUndoRecHdr,
 
     sLogType = SDR_SDC_OVERWRITE_ROW_PIECE;
 
-    /* undo info layerÀÇ Å©±â¸¦ »«´Ù. */
+    /* undo info layerì˜ í¬ê¸°ë¥¼ ëº€ë‹¤. */
     sSlotDirStartPtr = sdpPhyPage::getSlotDirStartPtr(
                                       (UChar*)aUndoRecHdr );
 
@@ -4657,8 +4657,8 @@ IDE_RC sdcRow::writeOverwriteRowPieceCLR( const UChar    * aUndoRecHdr,
 /***********************************************************************
  *
  * Description :
- *  overwrite rowpiece ¿¬»ê¿¡ ´ëÇÑ redo or undo¸¦ ¼öÇàÇÏ´Â ÇÔ¼öÀÌ´Ù.
- *  OVERWRITE_ROW_PIECE ·Î±×´Â redo, undo ·Î±×ÀÇ ±¸Á¶°¡ °°´Ù.
+ *  overwrite rowpiece ì—°ì‚°ì— ëŒ€í•œ redo or undoë¥¼ ìˆ˜í–‰í•˜ëŠ” í•¨ìˆ˜ì´ë‹¤.
+ *  OVERWRITE_ROW_PIECE ë¡œê·¸ëŠ” redo, undo ë¡œê·¸ì˜ êµ¬ì¡°ê°€ ê°™ë‹¤.
  *
  **********************************************************************/
 IDE_RC sdcRow::redo_undo_OVERWRITE_ROW_PIECE(
@@ -4719,9 +4719,9 @@ IDE_RC sdcRow::redo_undo_OVERWRITE_ROW_PIECE(
 
     if ( aOper4RowPiece == SDC_MVCC_MAKE_VALROW )
     {
-        /* MVCC¸¦ À§ÇØ undo¸¦ ¼öÇàÇÏ´Â °æ¿ì,
-         * reallocSlot()À» ÇÏ¸é ¾ÈµÇ°í,
-         * ÀÎÀÚ·Î ³Ñ¾î¿Â temp buffer pointer¸¦ »ç¿ëÇØ¾ß ÇÑ´Ù. */
+        /* MVCCë¥¼ ìœ„í•´ undoë¥¼ ìˆ˜í–‰í•˜ëŠ” ê²½ìš°,
+         * reallocSlot()ì„ í•˜ë©´ ì•ˆë˜ê³ ,
+         * ì¸ìë¡œ ë„˜ì–´ì˜¨ temp buffer pointerë¥¼ ì‚¬ìš©í•´ì•¼ í•œë‹¤. */
         IDE_ERROR( aRowBuf4MVCC != NULL );
         sNewSlotPtr = aRowBuf4MVCC;
     }
@@ -4737,7 +4737,7 @@ IDE_RC sdcRow::redo_undo_OVERWRITE_ROW_PIECE(
 
             IDE_TEST( sdcTableCTL::unbind(
                           aMtx,
-                          sOldSlotPtr,         /* UndoµÇ±âÀü RowPiecePtr */
+                          sOldSlotPtr,         /* Undoë˜ê¸°ì „ RowPiecePtr */
                           *(UChar*)sOldSlotPtr,/* aCTSlotIdxBfrUndo */
                           *(UChar*)sLogPtr,    /* aCTSlotIdxAftUndo */
                           *aFSCreditSize,
@@ -4746,29 +4746,29 @@ IDE_RC sdcRow::redo_undo_OVERWRITE_ROW_PIECE(
         }
 
         /*
-         * ###   FSC ÇÃ·¡±×   ###
+         * ###   FSC í”Œë˜ê·¸   ###
          *
-         * DML ¿¬»êÁß¿¡´Â ´ç¿¬È÷ FSC¸¦ reserve ÇØ¾ß ÇÑ´Ù.
-         * ±×·¯¸é redo³ª undo½Ã¿¡´Â ¾î¶»°Ô ÇØ¾ß ÇÏ³ª?
+         * DML ì—°ì‚°ì¤‘ì—ëŠ” ë‹¹ì—°íˆ FSCë¥¼ reserve í•´ì•¼ í•œë‹¤.
+         * ê·¸ëŸ¬ë©´ redoë‚˜ undoì‹œì—ëŠ” ì–´ë–»ê²Œ í•´ì•¼ í•˜ë‚˜?
          *
-         * redo´Â DML ¿¬»êÀ» ´Ù½Ã ¼öÇàÇÏ´Â °ÍÀÌ¹Ç·Î,
-         * DML ¿¬»êÇÒ¶§¿Í µ¿ÀÏÇÏ°Ô FSC¸¦ reserve ÇØ¾ß ÇÑ´Ù.
+         * redoëŠ” DML ì—°ì‚°ì„ ë‹¤ì‹œ ìˆ˜í–‰í•˜ëŠ” ê²ƒì´ë¯€ë¡œ,
+         * DML ì—°ì‚°í• ë•Œì™€ ë™ì¼í•˜ê²Œ FSCë¥¼ reserve í•´ì•¼ í•œë‹¤.
          *
-         * ¹İ¸é undo½Ã¿¡´Â FSC¸¦ reserveÇÏ¸é ¾ÈµÈ´Ù.
-         * ¿Ö³ªÇÏ¸é FSC´Â DML ¿¬»êÀ» undo½ÃÅ³¶§¸¦ ´ëºñÇØ¼­
-         * °ø°£À» ¿¹¾àÇØµÎ´Â °ÍÀÌ¹Ç·Î,
-         * undo½Ã¿¡´Â ÀÌÀü¿¡ reserveÇØµĞ FSC¸¦
-         * ÆäÀÌÁö¿¡ µÇµ¹·Á(restore)ÁÖ¾î¾ß ÇÏ°í,
-         * undo½Ã¿¡ ¶Ç ´Ù½Ã FSC¸¦ reserveÇÏ·Á°í ÇØ¼­´Â ¾ÈµÈ´Ù.
+         * ë°˜ë©´ undoì‹œì—ëŠ” FSCë¥¼ reserveí•˜ë©´ ì•ˆëœë‹¤.
+         * ì™œë‚˜í•˜ë©´ FSCëŠ” DML ì—°ì‚°ì„ undoì‹œí‚¬ë•Œë¥¼ ëŒ€ë¹„í•´ì„œ
+         * ê³µê°„ì„ ì˜ˆì•½í•´ë‘ëŠ” ê²ƒì´ë¯€ë¡œ,
+         * undoì‹œì—ëŠ” ì´ì „ì— reserveí•´ë‘” FSCë¥¼
+         * í˜ì´ì§€ì— ë˜ëŒë ¤(restore)ì£¼ì–´ì•¼ í•˜ê³ ,
+         * undoì‹œì— ë˜ ë‹¤ì‹œ FSCë¥¼ reserveí•˜ë ¤ê³  í•´ì„œëŠ” ì•ˆëœë‹¤.
          *
-         * clrÀº undo¿¡ ´ëÇÑ redoÀÌ¹Ç·Î undo¶§¿Í µ¿ÀÏÇÏ°Ô
-         * FSC¸¦ reserveÇÏ¸é ¾ÈµÈ´Ù.
+         * clrì€ undoì— ëŒ€í•œ redoì´ë¯€ë¡œ undoë•Œì™€ ë™ì¼í•˜ê²Œ
+         * FSCë¥¼ reserveí•˜ë©´ ì•ˆëœë‹¤.
          *
-         * ÀÌ ¼¼°¡Áö °æ¿ì¸¦ ±¸ºĞÇÏ¿©
-         * FSC reserve Ã³¸®¸¦ ÇØ¾ß ÇÏ´Âµ¥,
-         * ³ª(upinel9)´Â ·Î±×¸¦ ±â·ÏÇÒ¶§ FSC reserve ¿©ºÎ¸¦ ÇÃ·¡±×·Î ³²°Ü¼­,
-         * redo³ª undo½Ã¿¡´Â ÀÌ ÇÃ·¡±×¸¸ º¸°í
-         * reallocSlot()À» ÇÏµµ·Ï ¼³°èÇÏ¿´´Ù.
+         * ì´ ì„¸ê°€ì§€ ê²½ìš°ë¥¼ êµ¬ë¶„í•˜ì—¬
+         * FSC reserve ì²˜ë¦¬ë¥¼ í•´ì•¼ í•˜ëŠ”ë°,
+         * ë‚˜(upinel9)ëŠ” ë¡œê·¸ë¥¼ ê¸°ë¡í• ë•Œ FSC reserve ì—¬ë¶€ë¥¼ í”Œë˜ê·¸ë¡œ ë‚¨ê²¨ì„œ,
+         * redoë‚˜ undoì‹œì—ëŠ” ì´ í”Œë˜ê·¸ë§Œ ë³´ê³ 
+         * reallocSlot()ì„ í•˜ë„ë¡ ì„¤ê³„í•˜ì˜€ë‹¤.
          *
          * redo     : SDC_UPDATE_LOG_FLAG_RESERVE_FREESPACE_CREDIT_TRUE
          * undo     : SDC_UPDATE_LOG_FLAG_RESERVE_FREESPACE_CREDIT_FALSE
@@ -4871,16 +4871,16 @@ IDE_RC sdcRow::processOverflowData( idvSQL                      *aStatistics,
                                      aFstColumnSeq )
                  == ID_TRUE );
 
-    /* column dataµéÀ» ÀúÀåÇÒ¶§´Â µÚ¿¡¼­ºÎÅÍ Ã¤¿ö¼­ ÀúÀåÇÑ´Ù.
+    /* column dataë“¤ì„ ì €ì¥í• ë•ŒëŠ” ë’¤ì—ì„œë¶€í„° ì±„ì›Œì„œ ì €ì¥í•œë‹¤.
      *
-     * ÀÌÀ¯
-     * 1. rowpiece writeÇÒ¶§,
-     *    next rowpiece link Á¤º¸¸¦ ¾Ë¾Æ¾ß ÇÏ¹Ç·Î,
-     *    µÚÂÊ column dataºÎÅÍ ¸ÕÀú ÀúÀåÇØ¾ß ÇÑ´Ù.
+     * ì´ìœ 
+     * 1. rowpiece writeí• ë•Œ,
+     *    next rowpiece link ì •ë³´ë¥¼ ì•Œì•„ì•¼ í•˜ë¯€ë¡œ,
+     *    ë’¤ìª½ column dataë¶€í„° ë¨¼ì € ì €ì¥í•´ì•¼ í•œë‹¤.
      *
-     * 2. µÚÂÊºÎÅÍ ²Ë²Ë Ã¤¿ö¼­ ÀúÀåÇÏ¸é
-     *    first page¿¡ ¿©À¯°ø°£ÀÌ ¸¹¾ÆÁú °¡´É¼ºÀÌ ³ô°í,
-     *    ±×·¯¸é update½Ã¿¡ row migration ¹ß»ı°¡´É¼ºÀÌ ³·¾ÆÁø´Ù.
+     * 2. ë’¤ìª½ë¶€í„° ê½‰ê½‰ ì±„ì›Œì„œ ì €ì¥í•˜ë©´
+     *    first pageì— ì—¬ìœ ê³µê°„ì´ ë§ì•„ì§ˆ ê°€ëŠ¥ì„±ì´ ë†’ê³ ,
+     *    ê·¸ëŸ¬ë©´ updateì‹œì— row migration ë°œìƒê°€ëŠ¥ì„±ì´ ë‚®ì•„ì§„ë‹¤.
      * */
     sCurrColSeq = sColCount - 1;
     sCurrOffset = getColDataSize2Store( &sInsertInfo,
@@ -4899,8 +4899,8 @@ IDE_RC sdcRow::processOverflowData( idvSQL                      *aStatistics,
         if ( SDC_IS_FIRST_PIECE_IN_INSERTINFO(&sInsertInfo)
              == ID_TRUE )
         {
-            /* overflow dataÁß¿¡¼­ first piece´Â ±âÁ¸ rowpiece°¡
-             * ÀúÀåµÇ¾î ÀÖ´Â ÆäÀÌÁö¿¡¼­ Ã³¸®ÇØ¾ß ÇÏ¹Ç·Î break ÇÑ´Ù. */
+            /* overflow dataì¤‘ì—ì„œ first pieceëŠ” ê¸°ì¡´ rowpieceê°€
+             * ì €ì¥ë˜ì–´ ìˆëŠ” í˜ì´ì§€ì—ì„œ ì²˜ë¦¬í•´ì•¼ í•˜ë¯€ë¡œ break í•œë‹¤. */
             break;
         }
 
@@ -4927,9 +4927,9 @@ IDE_RC sdcRow::processOverflowData( idvSQL                      *aStatistics,
                              &sInsertRowPieceSID )
              != IDE_SUCCESS )
         {
-            /* InsertRowpiece ¿¡¼­ ½ÇÆĞÇÏ¸é, Undo, ¶Ç´Â DataPage °ø°£ºÎÁ·.
-             * ¾È¿¡¼­ ÀüºÎ ¿¹¿ÜÃ³¸® ÇØÁÖ±â ¶§¹®¿¡, ¿©±â¼­´Â MtxUndo¸¸
-             * Ã³¸®ÇØÁÜ */
+            /* InsertRowpiece ì—ì„œ ì‹¤íŒ¨í•˜ë©´, Undo, ë˜ëŠ” DataPage ê³µê°„ë¶€ì¡±.
+             * ì•ˆì—ì„œ ì „ë¶€ ì˜ˆì™¸ì²˜ë¦¬ í•´ì£¼ê¸° ë•Œë¬¸ì—, ì—¬ê¸°ì„œëŠ” MtxUndoë§Œ
+             * ì²˜ë¦¬í•´ì¤Œ */
             sdrMiniTrans::setIgnoreMtxUndo( aMtx );
             IDE_TEST( 1 );
         }
@@ -4937,11 +4937,11 @@ IDE_RC sdcRow::processOverflowData( idvSQL                      *aStatistics,
         /* 
          * BUG-37529 [sm-disk-collection] [DRDB] The change row piece logic
          * generates invalid undo record.
-         * updateÀÌÀü rowPiece°¡ Á¸ÀçÇÏ´Â page¿¡ overflowData¸¦ insertÇÏ´Â°ÍÀº
-         * page self agingÀÌ ¹ß»ıÇß´Ù´Â ÀÇ¹ÌÀÌ´Ù.
-         * page self agingÀÌÈÄ compactPage°¡ ¼öÇàµÇ¸é updateÀÌÀü rowPieceÀÇ À§Ä¡°¡
-         * ¿È°ÜÁø´Ù. ÀÌ·ÎÀÎÇØ ÀÎÀÚ·Î Àü´Ş¹ŞÀº aSlotPtrÀº ´õÀÌ»ó À¯È¿ÇÑ slotÀÇ
-         * À§Ä¡¸¦ °¡¸®Å°Áö ¸øÇÔÀ¸·Î GSID¸¦ ÀÌ¿ëÇØ slotÀÇ À§Ä¡¸¦ ´Ù½Ã±¸ÇÑ´Ù.
+         * updateì´ì „ rowPieceê°€ ì¡´ì¬í•˜ëŠ” pageì— overflowDataë¥¼ insertí•˜ëŠ”ê²ƒì€
+         * page self agingì´ ë°œìƒí–ˆë‹¤ëŠ” ì˜ë¯¸ì´ë‹¤.
+         * page self agingì´í›„ compactPageê°€ ìˆ˜í–‰ë˜ë©´ updateì´ì „ rowPieceì˜ ìœ„ì¹˜ê°€
+         * ì˜´ê²¨ì§„ë‹¤. ì´ë¡œì¸í•´ ì¸ìë¡œ ì „ë‹¬ë°›ì€ aSlotPtrì€ ë”ì´ìƒ ìœ íš¨í•œ slotì˜
+         * ìœ„ì¹˜ë¥¼ ê°€ë¦¬í‚¤ì§€ ëª»í•¨ìœ¼ë¡œ GSIDë¥¼ ì´ìš©í•´ slotì˜ ìœ„ì¹˜ë¥¼ ë‹¤ì‹œêµ¬í•œë‹¤.
          */
         if ( SD_MAKE_PID(sInsertRowPieceSID) == SC_MAKE_PID( aSlotGRID ) )
         {
@@ -4950,11 +4950,11 @@ IDE_RC sdcRow::processOverflowData( idvSQL                      *aStatistics,
 
         if ( sInsertInfo.mStartColOffset == 0 )
         {
-            /* BUG-27199 Update Row½Ã, calcRowFlag4Update ÇÔ¼ö¿¡¼­ Àß¸øµÈ Ä®·³À»
-             * ¹ÙÅÁÀ¸·Î Chaining ¿©ºÎ¸¦ ÆÇ´ÜÇÏ°í ÀÖ½À´Ï´Ù.
-             * Ä®·³µéÀÌ insertRowPiece¸¦ ÅëÇØ µÚÂÊºÎÅÍ Â÷·Ê´ë·Î ±â·ÏµÊ¿¡ µû¶ó,
-             * ¿©ºĞ Ä®·³ÀÇ ¸¶Áö¸· Ä®·³ÀÌ ChainingµÅ¾ú´ÂÁö¸¦ ÆÇ´ÜÇÏ´Â NFlag°¡
-             * º¯°æµÇ¾î¾ß ÇÕ´Ï´Ù.*/
+            /* BUG-27199 Update Rowì‹œ, calcRowFlag4Update í•¨ìˆ˜ì—ì„œ ì˜ëª»ëœ ì¹¼ëŸ¼ì„
+             * ë°”íƒ•ìœ¼ë¡œ Chaining ì—¬ë¶€ë¥¼ íŒë‹¨í•˜ê³  ìˆìŠµë‹ˆë‹¤.
+             * ì¹¼ëŸ¼ë“¤ì´ insertRowPieceë¥¼ í†µí•´ ë’¤ìª½ë¶€í„° ì°¨ë¡€ëŒ€ë¡œ ê¸°ë¡ë¨ì— ë”°ë¼,
+             * ì—¬ë¶„ ì¹¼ëŸ¼ì˜ ë§ˆì§€ë§‰ ì¹¼ëŸ¼ì´ Chainingë¼ì—ˆëŠ”ì§€ë¥¼ íŒë‹¨í•˜ëŠ” NFlagê°€
+             * ë³€ê²½ë˜ì–´ì•¼ í•©ë‹ˆë‹¤.*/
             SM_SET_FLAG_OFF( sNewRowHdrInfo->mRowFlag, SDC_ROWHDR_N_FLAG ); 
             sCurrColSeq = sInsertInfo.mStartColSeq - 1;
             sCurrOffset = getColDataSize2Store( &sInsertInfo,
@@ -4962,8 +4962,8 @@ IDE_RC sdcRow::processOverflowData( idvSQL                      *aStatistics,
         }
         else
         {
-            /* BUG-27199 Update Row½Ã, calcRowFlag4Update ÇÔ¼ö¿¡¼­ Àß¸øµÈ Ä®·³À»
-             * ¹ÙÅÁÀ¸·Î Chaining ¿©ºÎ¸¦ ÆÇ´ÜÇÏ°í ÀÖ½À´Ï´Ù.  */
+            /* BUG-27199 Update Rowì‹œ, calcRowFlag4Update í•¨ìˆ˜ì—ì„œ ì˜ëª»ëœ ì¹¼ëŸ¼ì„
+             * ë°”íƒ•ìœ¼ë¡œ Chaining ì—¬ë¶€ë¥¼ íŒë‹¨í•˜ê³  ìˆìŠµë‹ˆë‹¤.  */
             SM_SET_FLAG_ON( sNewRowHdrInfo->mRowFlag, SDC_ROWHDR_N_FLAG ); 
             sCurrColSeq = sInsertInfo.mStartColSeq;
             sCurrOffset = sInsertInfo.mStartColOffset;
@@ -4978,8 +4978,8 @@ IDE_RC sdcRow::processOverflowData( idvSQL                      *aStatistics,
         sNextRowFlag     = sRowFlag;
     }
 
-    /* overflow dataÀÇ µŞºÎºĞÀ» »õ ÆäÀÌÁö¿¡ ÀúÀåÇÏ´Ù°¡,
-     * ³²Àº µ¥ÀÌÅÍ¸¦ ±âÁ¸ ÆäÀÌÁö¿¡¼­ Ã³¸®ÇÑ´Ù. */
+    /* overflow dataì˜ ë’·ë¶€ë¶„ì„ ìƒˆ í˜ì´ì§€ì— ì €ì¥í•˜ë‹¤ê°€,
+     * ë‚¨ì€ ë°ì´í„°ë¥¼ ê¸°ì¡´ í˜ì´ì§€ì—ì„œ ì²˜ë¦¬í•œë‹¤. */
 
     IDE_TEST( processRemainData( aStatistics,
                                  aTrans,
@@ -5091,7 +5091,7 @@ IDE_RC sdcRow::processOverflowData( idvSQL                      *aStatistics,
 /***********************************************************************
  *
  * Description :
- *  split ÈÄ¿¡ ³²¾Æ ÀÖ´Â µ¥ÀÌÅÍ¸¦ Ã³¸®ÇÑ´Ù.
+ *  split í›„ì— ë‚¨ì•„ ìˆëŠ” ë°ì´í„°ë¥¼ ì²˜ë¦¬í•œë‹¤.
  *
  **********************************************************************/
 IDE_RC sdcRow::processRemainData( idvSQL                      *aStatistics,
@@ -5128,8 +5128,8 @@ IDE_RC sdcRow::processRemainData( idvSQL                      *aStatistics,
 
     if ( canReallocSlot( aSlotPtr, aInsertInfo->mRowPieceSize ) == ID_TRUE )
     {
-        /* remain data¸¦ ±âÁ¸ ÆäÀÌÁö¿¡¼­ Ã³¸®ÇÒ ¼ö ÀÖÀ¸¸é
-         * overwrite rowpiece ¿¬»êÀ» ¼öÇàÇÑ´Ù. */
+        /* remain dataë¥¼ ê¸°ì¡´ í˜ì´ì§€ì—ì„œ ì²˜ë¦¬í•  ìˆ˜ ìˆìœ¼ë©´
+         * overwrite rowpiece ì—°ì‚°ì„ ìˆ˜í–‰í•œë‹¤. */
         makeOverwriteInfo( aInsertInfo,
                            aUpdateInfo,
                            aNextRowPieceSID,
@@ -5147,8 +5147,8 @@ IDE_RC sdcRow::processRemainData( idvSQL                      *aStatistics,
                   != IDE_SUCCESS );
 
         /*
-         * SQL·Î Full Update°¡ ¹ß»ıÇÏ´Â °æ¿ì ÀÌÀü LOBÀ» º°µµ·Î ½áÁÖ¾î¾ß ÇÑ´Ù.
-         * API·Î È£ÃâµÈ °æ¿ì´Â API°¡ ½áÁÖ¹Ç·Î º°µµ ½áÁÖ´Â ÀÛ¾÷ÀÌ ÇÊ¿ä ¾ø´Ù.
+         * SQLë¡œ Full Updateê°€ ë°œìƒí•˜ëŠ” ê²½ìš° ì´ì „ LOBì„ ë³„ë„ë¡œ ì¨ì£¼ì–´ì•¼ í•œë‹¤.
+         * APIë¡œ í˜¸ì¶œëœ ê²½ìš°ëŠ” APIê°€ ì¨ì£¼ë¯€ë¡œ ë³„ë„ ì¨ì£¼ëŠ” ì‘ì—…ì´ í•„ìš” ì—†ë‹¤.
          */
         if ( (aOverwriteInfo->mUptAftLobDescCnt > 0) &&
              (aOverwriteInfo->mIsUptLobByAPI != ID_TRUE) )
@@ -5159,12 +5159,12 @@ IDE_RC sdcRow::processRemainData( idvSQL                      *aStatistics,
     }
     else
     {
-        /* remain data¸¦ ±âÁ¸ ÆäÀÌÁö¿¡¼­ Ã³¸®ÇÒ ¼ö ¾ø´Â °æ¿ì */
+        /* remain dataë¥¼ ê¸°ì¡´ í˜ì´ì§€ì—ì„œ ì²˜ë¦¬í•  ìˆ˜ ì—†ëŠ” ê²½ìš° */
 
         if ( SDC_IS_HEAD_ROWPIECE(sRowFlag) == ID_TRUE )
         {
-            /* head rowpieceÀÇ °æ¿ì,
-             * migrate rowpiece data ¿¬»êÀ» ¼öÇàÇÑ´Ù. */
+            /* head rowpieceì˜ ê²½ìš°,
+             * migrate rowpiece data ì—°ì‚°ì„ ìˆ˜í–‰í•œë‹¤. */
             IDE_TEST( migrateRowPieceData( aStatistics,
                                            aTrans,
                                            aTableInfoPtr,
@@ -5184,8 +5184,8 @@ IDE_RC sdcRow::processRemainData( idvSQL                      *aStatistics,
         }
         else
         {
-            /* head rowpiece°¡ ¾Æ´Ï¸é,
-             * change rowpiece ¿¬»êÀ» ¼öÇàÇÑ´Ù. */
+            /* head rowpieceê°€ ì•„ë‹ˆë©´,
+             * change rowpiece ì—°ì‚°ì„ ìˆ˜í–‰í•œë‹¤. */
             IDE_TEST( changeRowPiece( aStatistics,
                                       aTrans,
                                       aTableInfoPtr,
@@ -5216,7 +5216,7 @@ IDE_RC sdcRow::processRemainData( idvSQL                      *aStatistics,
 /***********************************************************************
  *
  * Description :
- *  change rowpiece ¿¬»ê = insert rowpiece ¿¬»ê + remove rowpiece ¿¬»ê
+ *  change rowpiece ì—°ì‚° = insert rowpiece ì—°ì‚° + remove rowpiece ì—°ì‚°
  *
  **********************************************************************/
 IDE_RC sdcRow::changeRowPiece( idvSQL                      *aStatistics,
@@ -5280,11 +5280,11 @@ IDE_RC sdcRow::changeRowPiece( idvSQL                      *aStatistics,
     /* 
      * BUG-37529 [sm-disk-collection] [DRDB] The change row piece logic
      * generates invalid undo record.
-     * updateÀÌÀü rowPiece°¡ Á¸ÀçÇÏ´Â page¿¡ overflowData¸¦ insertÇÏ´Â°ÍÀº
-     * page self agingÀÌ ¹ß»ıÇß´Ù´Â ÀÇ¹ÌÀÌ´Ù.
-     * page self agingÀÌÈÄ compactPage°¡ ¼öÇàµÇ¸é updateÀÌÀü rowPieceÀÇ À§Ä¡°¡
-     * ¿È°ÜÁø´Ù. ÀÌ·ÎÀÎÇØ ÀÎÀÚ·Î Àü´Ş¹ŞÀº aSlotPtrÀº ´õÀÌ»ó À¯È¿ÇÑ slotÀÇ
-     * À§Ä¡¸¦ °¡¸®Å°Áö ¸øÇÔÀ¸·Î GSID¸¦ ÀÌ¿ëÇØ slotÀÇ À§Ä¡¸¦ ´Ù½Ã±¸ÇÑ´Ù.
+     * updateì´ì „ rowPieceê°€ ì¡´ì¬í•˜ëŠ” pageì— overflowDataë¥¼ insertí•˜ëŠ”ê²ƒì€
+     * page self agingì´ ë°œìƒí–ˆë‹¤ëŠ” ì˜ë¯¸ì´ë‹¤.
+     * page self agingì´í›„ compactPageê°€ ìˆ˜í–‰ë˜ë©´ updateì´ì „ rowPieceì˜ ìœ„ì¹˜ê°€
+     * ì˜´ê²¨ì§„ë‹¤. ì´ë¡œì¸í•´ ì¸ìë¡œ ì „ë‹¬ë°›ì€ aSlotPtrì€ ë”ì´ìƒ ìœ íš¨í•œ slotì˜
+     * ìœ„ì¹˜ë¥¼ ê°€ë¦¬í‚¤ì§€ ëª»í•¨ìœ¼ë¡œ GSIDë¥¼ ì´ìš©í•´ slotì˜ ìœ„ì¹˜ë¥¼ ë‹¤ì‹œêµ¬í•œë‹¤.
      */
     if ( SD_MAKE_PID(sInsertRowPieceSID) == SC_MAKE_PID( aSlotGRID ) )
     {
@@ -5300,9 +5300,9 @@ IDE_RC sdcRow::changeRowPiece( idvSQL                      *aStatistics,
                   aUpdateInfo,
                   aReplicate ) != IDE_SUCCESS );
 
-    /* rowpiece°¡ removeµÇ¾î¼­
-     * previous rowpieceÀÇ linkÁ¤º¸¸¦ º¯°æÇØ ÁÖ¾î¾ß ÇÏ¹Ç·Î
-     * supplement job¸¦ µî·ÏÇÑ´Ù. */
+    /* rowpieceê°€ removeë˜ì–´ì„œ
+     * previous rowpieceì˜ linkì •ë³´ë¥¼ ë³€ê²½í•´ ì£¼ì–´ì•¼ í•˜ë¯€ë¡œ
+     * supplement jobë¥¼ ë“±ë¡í•œë‹¤. */
     SDC_ADD_SUPPLEMENT_JOB( aSupplementJobInfo,
                             SDC_SUPPLEMENT_JOB_CHANGE_ROWPIECE_LINK );
 
@@ -5373,7 +5373,7 @@ IDE_RC sdcRow::changeRowPiece( idvSQL                      *aStatistics,
 /***********************************************************************
  *
  * Description :
- *  migrate rowpiece data ¿¬»ê = insert rowpiece ¿¬»ê + overwrite rowpiece ¿¬»ê
+ *  migrate rowpiece data ì—°ì‚° = insert rowpiece ì—°ì‚° + overwrite rowpiece ì—°ì‚°
  *
  **********************************************************************/
 IDE_RC sdcRow::migrateRowPieceData( idvSQL                      *aStatistics,
@@ -5439,18 +5439,18 @@ IDE_RC sdcRow::migrateRowPieceData( idvSQL                      *aStatistics,
     /* 
      * BUG-37529 [sm-disk-collection] [DRDB] The change row piece logic
      * generates invalid undo record.
-     * updateÀÌÀü rowPiece°¡ Á¸ÀçÇÏ´Â page¿¡ overflowData¸¦ insertÇÏ´Â°ÍÀº
-     * page self agingÀÌ ¹ß»ıÇß´Ù´Â ÀÇ¹ÌÀÌ´Ù.
-     * page self agingÀÌÈÄ compactPage°¡ ¼öÇàµÇ¸é updateÀÌÀü rowPieceÀÇ À§Ä¡°¡
-     * ¿È°ÜÁø´Ù. ÀÌ·ÎÀÎÇØ ÀÎÀÚ·Î Àü´Ş¹ŞÀº aSlotPtrÀº ´õÀÌ»ó À¯È¿ÇÑ slotÀÇ
-     * À§Ä¡¸¦ °¡¸®Å°Áö ¸øÇÔÀ¸·Î GSID¸¦ ÀÌ¿ëÇØ slotÀÇ À§Ä¡¸¦ ´Ù½Ã±¸ÇÑ´Ù.
+     * updateì´ì „ rowPieceê°€ ì¡´ì¬í•˜ëŠ” pageì— overflowDataë¥¼ insertí•˜ëŠ”ê²ƒì€
+     * page self agingì´ ë°œìƒí–ˆë‹¤ëŠ” ì˜ë¯¸ì´ë‹¤.
+     * page self agingì´í›„ compactPageê°€ ìˆ˜í–‰ë˜ë©´ updateì´ì „ rowPieceì˜ ìœ„ì¹˜ê°€
+     * ì˜´ê²¨ì§„ë‹¤. ì´ë¡œì¸í•´ ì¸ìë¡œ ì „ë‹¬ë°›ì€ aSlotPtrì€ ë”ì´ìƒ ìœ íš¨í•œ slotì˜
+     * ìœ„ì¹˜ë¥¼ ê°€ë¦¬í‚¤ì§€ ëª»í•¨ìœ¼ë¡œ GSIDë¥¼ ì´ìš©í•´ slotì˜ ìœ„ì¹˜ë¥¼ ë‹¤ì‹œêµ¬í•œë‹¤.
      */
     if ( SD_MAKE_PID(sInsertRowPieceSID) == SC_MAKE_PID( aSlotGRID ) )
     {
         IDE_ERROR( getSlotPtr( aMtx, aSlotGRID, &aSlotPtr ) == IDE_SUCCESS );
     }
 
-    /* rowpiece¿¡¼­ row header¸¸ ³²±â°í row data¸¦ ¸ğµÎ Á¦°ÅÇÑ´Ù. */
+    /* rowpieceì—ì„œ row headerë§Œ ë‚¨ê¸°ê³  row dataë¥¼ ëª¨ë‘ ì œê±°í•œë‹¤. */
     IDE_TEST( truncateRowPieceData( aStatistics,
                                     aTableHeader,
                                     aMtx,
@@ -5538,7 +5538,7 @@ IDE_RC sdcRow::migrateRowPieceData( idvSQL                      *aStatistics,
 /***********************************************************************
  *
  * Description :
- *  rowpiece¿¡¼­ row header¸¸ ³²±â°í row data¸¦ ¸ğµÎ Á¦°ÅÇÑ´Ù.
+ *  rowpieceì—ì„œ row headerë§Œ ë‚¨ê¸°ê³  row dataë¥¼ ëª¨ë‘ ì œê±°í•œë‹¤.
  *
  **********************************************************************/
 IDE_RC sdcRow::truncateRowPieceData( idvSQL                         *aStatistics,
@@ -5612,7 +5612,7 @@ IDE_RC sdcRow::truncateRowPieceData( idvSQL                         *aStatistics
 /***********************************************************************
  *
  * Description :
- *  rowpiece¿¡¼­ next link Á¤º¸¸¦ ¼öÁ¤ÇÏ°Å³ª Á¦°ÅÇÑ´Ù.
+ *  rowpieceì—ì„œ next link ì •ë³´ë¥¼ ìˆ˜ì •í•˜ê±°ë‚˜ ì œê±°í•œë‹¤.
  *
  **********************************************************************/
 IDE_RC sdcRow::changeRowPieceLink(
@@ -5683,7 +5683,7 @@ IDE_RC sdcRow::changeRowPieceLink(
     getRowHdrInfo( sSlotPtr, &sOldRowHdrInfo );
 
     /* SDC_IS_LAST_ROWPIECE(sOldRowHdrInfo.mRowFlag) == ID_TRUE
-     * last rowpiece¿¡ next link º¯°æ¿¬»êÀÌ ¹ß»ıÇÒ ¼ö´Â ¾ø´Ù. */
+     * last rowpieceì— next link ë³€ê²½ì—°ì‚°ì´ ë°œìƒí•  ìˆ˜ëŠ” ì—†ë‹¤. */
     if ( ( SM_SCN_IS_DELETED(sOldRowHdrInfo.mInfiniteSCN) == ID_TRUE ) ||
          ( SDC_IS_LAST_ROWPIECE(sOldRowHdrInfo.mRowFlag) == ID_TRUE ) )
     {
@@ -5716,7 +5716,7 @@ IDE_RC sdcRow::changeRowPieceLink(
                             &sUndoSID)
         != IDE_SUCCESS )
     {
-        /* Undo °ø°£ºÎÁ·À¸·Î ½ÇÆĞÇÑ °æ¿ì. MtxUndo ¹«½ÃÇØµµ µÊ
+        /* Undo ê³µê°„ë¶€ì¡±ìœ¼ë¡œ ì‹¤íŒ¨í•œ ê²½ìš°. MtxUndo ë¬´ì‹œí•´ë„ ë¨
          * */
         sdrMiniTrans::setIgnoreMtxUndo( &sMtx );
         IDE_TEST( 1 );
@@ -5742,11 +5742,11 @@ IDE_RC sdcRow::changeRowPieceLink(
 
     if ( aNextRowPieceSID == SD_NULL_SID )
     {
-        /* next link Á¤º¸¸¦ Á¦°ÅÇÏ´Â °æ¿ì */
+        /* next link ì •ë³´ë¥¼ ì œê±°í•˜ëŠ” ê²½ìš° */
 
-        /* last rowpiece°¡ delete first column piece ¿¬»êÀ¸·Î ÀÎÇØ
-         * ½º½º·Î removeµÇ´Â °æ¿ì, prev rowpiece´Â next link Á¤º¸¸¦ Á¦°ÅÇÏ°í
-         * L flag¸¦ ¹°·Á¹Ş¾Æ¾ß ÇÑ´Ù. */
+        /* last rowpieceê°€ delete first column piece ì—°ì‚°ìœ¼ë¡œ ì¸í•´
+         * ìŠ¤ìŠ¤ë¡œ removeë˜ëŠ” ê²½ìš°, prev rowpieceëŠ” next link ì •ë³´ë¥¼ ì œê±°í•˜ê³ 
+         * L flagë¥¼ ë¬¼ë ¤ë°›ì•„ì•¼ í•œë‹¤. */
         SM_SET_FLAG_ON(sNewRowHdrInfo.mRowFlag, SDC_ROWHDR_L_FLAG);
 
         IDE_TEST( truncateNextLink( aSlotSID,
@@ -5775,7 +5775,7 @@ IDE_RC sdcRow::changeRowPieceLink(
                       ID_FALSE ) /* aIncDeleteRowCnt */
                   != IDE_SUCCESS );
 
-        // reallocSlotÀ» ÇÑÀÌÈÄ¿¡, Segment¿¡ ´ëÇÑ °¡¿ëµµ º¯°æ¿¬»êÀ» ¼öÇàÇÑ´Ù.
+        // reallocSlotì„ í•œì´í›„ì—, Segmentì— ëŒ€í•œ ê°€ìš©ë„ ë³€ê²½ì—°ì‚°ì„ ìˆ˜í–‰í•œë‹¤.
         IDE_TEST( sdpPageList::updatePageState(
                       aStatistics,
                       sTableSpaceID,
@@ -5786,7 +5786,7 @@ IDE_RC sdcRow::changeRowPieceLink(
     }
     else
     {
-        /* next link Á¤º¸¸¦ ¼öÁ¤ÇÏ´Â °æ¿ì */
+        /* next link ì •ë³´ë¥¼ ìˆ˜ì •í•˜ëŠ” ê²½ìš° */
 
         sWritePtr = sSlotPtr;
 
@@ -5849,7 +5849,7 @@ IDE_RC sdcRow::changeRowPieceLink(
 /***********************************************************************
  *
  * Description :
- *  rowpiece¿¡¼­ next link Á¤º¸¸¦ Á¦°ÅÇÑ´Ù.
+ *  rowpieceì—ì„œ next link ì •ë³´ë¥¼ ì œê±°í•œë‹¤.
  *
  **********************************************************************/
 IDE_RC sdcRow::truncateNextLink( sdSID                   aSlotSID,
@@ -5871,7 +5871,7 @@ IDE_RC sdcRow::truncateNextLink( sdSID                   aSlotSID,
     sRowPieceBodySize = getRowPieceBodySize(aOldSlotPtr);
     sDataAreaPtr      = getDataArea(aOldSlotPtr);
 
-    /* rowpiece body¸¸ temp buffer¿¡ º¹»çÇØµĞ´Ù. */
+    /* rowpiece bodyë§Œ temp bufferì— ë³µì‚¬í•´ë‘”ë‹¤. */
     idlOS::memcpy( sOldRowPieceBodyImage,
                    sDataAreaPtr,
                    sRowPieceBodySize );
@@ -5891,9 +5891,9 @@ IDE_RC sdcRow::truncateNextLink( sdSID                   aSlotSID,
     sWritePtr = writeRowHdr( sWritePtr,
                              aNewRowHdrInfo );
 
-    /* rowpiece header¸¦ ±â·ÏÇÑ ÈÄ¿¡,
-     * next link Á¤º¸¸¦ ±â·ÏÇÏÁö ¾Ê°í,
-     * rowpiece body¸¦ ±â·ÏÇÑ´Ù. */
+    /* rowpiece headerë¥¼ ê¸°ë¡í•œ í›„ì—,
+     * next link ì •ë³´ë¥¼ ê¸°ë¡í•˜ì§€ ì•Šê³ ,
+     * rowpiece bodyë¥¼ ê¸°ë¡í•œë‹¤. */
     idlOS::memcpy( sWritePtr,
                    sOldRowPieceBodyImage,
                    sRowPieceBodySize );
@@ -5968,9 +5968,9 @@ IDE_RC sdcRow::writeChangeRowPieceLinkRedoUndoLog(
                   sLogType ) != IDE_SUCCESS);
 
     /*
-     * ###   FSC ÇÃ·¡±×   ###
+     * ###   FSC í”Œë˜ê·¸   ###
      *
-     * FSC ÇÃ·¡±× ¼³Á¤¹æ¹ı¿¡ ´ëÇÑ ÀÚ¼¼ÇÑ ¼³¸íÀº sdcRow.hÀÇ ÁÖ¼®À» Âü°íÇÏ¶ó
+     * FSC í”Œë˜ê·¸ ì„¤ì •ë°©ë²•ì— ëŒ€í•œ ìì„¸í•œ ì„¤ëª…ì€ sdcRow.hì˜ ì£¼ì„ì„ ì°¸ê³ í•˜ë¼
      *
      * redo     : SDC_UPDATE_LOG_FLAG_RESERVE_FREESPACE_CREDIT_TRUE
      * undo     : SDC_UPDATE_LOG_FLAG_RESERVE_FREESPACE_CREDIT_FALSE
@@ -5986,13 +5986,13 @@ IDE_RC sdcRow::writeChangeRowPieceLinkRedoUndoLog(
 
     if ( aNextRowPieceSID == SD_NULL_SID )
     {
-        /* next link Á¤º¸¸¦ Á¦°ÅÇÏ´Â °æ¿ì */
+        /* next link ì •ë³´ë¥¼ ì œê±°í•˜ëŠ” ê²½ìš° */
         IDE_ASSERT( SDC_IS_LAST_ROWPIECE(sRowFlag) == ID_TRUE );
         sChangeSize = -((SShort)SDC_EXTRASIZE_FOR_CHAINING);
     }
     else
     {
-        /* next link Á¤º¸¸¦ ¼öÁ¤ÇÏ´Â °æ¿ì */
+        /* next link ì •ë³´ë¥¼ ìˆ˜ì •í•˜ëŠ” ê²½ìš° */
         IDE_ASSERT( SDC_IS_LAST_ROWPIECE(sRowFlag) == ID_FALSE );
         sChangeSize = 0;
     }
@@ -6032,10 +6032,10 @@ IDE_RC sdcRow::writeChangeRowPieceLinkRedoUndoLog(
 /***********************************************************************
  *
  * Description :
- *  change rowpiece link undo¿¡ ´ëÇÑ CLRÀ» ±â·ÏÇÏ´Â ÇÔ¼öÀÌ´Ù.
- *  CHANGE_ROW_PIECE_LINK ·Î±×´Â redo, undo ·Î±×ÀÇ ±¸Á¶°¡ °°±â ¶§¹®¿¡
- *  undo record¿¡¼­ undo info layerÀÇ ³»¿ë¸¸ »©¼­,
- *  clr redo log¸¦ ÀÛ¼ºÇÏ¸é µÈ´Ù.
+ *  change rowpiece link undoì— ëŒ€í•œ CLRì„ ê¸°ë¡í•˜ëŠ” í•¨ìˆ˜ì´ë‹¤.
+ *  CHANGE_ROW_PIECE_LINK ë¡œê·¸ëŠ” redo, undo ë¡œê·¸ì˜ êµ¬ì¡°ê°€ ê°™ê¸° ë•Œë¬¸ì—
+ *  undo recordì—ì„œ undo info layerì˜ ë‚´ìš©ë§Œ ë¹¼ì„œ,
+ *  clr redo logë¥¼ ì‘ì„±í•˜ë©´ ëœë‹¤.
  *
  **********************************************************************/
 IDE_RC sdcRow::writeChangeRowPieceLinkCLR(
@@ -6058,7 +6058,7 @@ IDE_RC sdcRow::writeChangeRowPieceLinkCLR(
     sSlotDirStartPtr = sdpPhyPage::getSlotDirStartPtr(
                                       (UChar*)aUndoRecHdr);
 
-    /* undo info layerÀÇ Å©±â¸¦ »«´Ù. */
+    /* undo info layerì˜ í¬ê¸°ë¥¼ ëº€ë‹¤. */
     sLogSize = sdcUndoSegment::getUndoRecSize(
                       sSlotDirStartPtr,
                       SD_MAKE_SLOTNUM(aUndoSID) );
@@ -6125,9 +6125,9 @@ IDE_RC sdcRow::undo_CHANGE_ROW_PIECE_LINK(
     sOldRowPieceSize = getRowPieceSize(sOldSlotPtr);
     SDC_GET_ROWHDR_FIELD(sOldSlotPtr, SDC_ROWHDR_COLCOUNT, &sColCount);
 
-    /* reallocSlot()À» ÇÏ´Â µµÁß¿¡
-     * compact page ¿¬»êÀÌ ¹ß»ıÇÒ ¼ö ÀÖ±â ¶§¹®¿¡
-     * old slot image¸¦ temp buffer¿¡ º¹»çÇØ¾ß ÇÑ´Ù. */
+    /* reallocSlot()ì„ í•˜ëŠ” ë„ì¤‘ì—
+     * compact page ì—°ì‚°ì´ ë°œìƒí•  ìˆ˜ ìˆê¸° ë•Œë¬¸ì—
+     * old slot imageë¥¼ temp bufferì— ë³µì‚¬í•´ì•¼ í•œë‹¤. */
     sOldSlotImagePtr = sOldSlotImage;
     idlOS::memcpy( sOldSlotImagePtr,
                    sOldSlotPtr,
@@ -6142,8 +6142,8 @@ IDE_RC sdcRow::undo_CHANGE_ROW_PIECE_LINK(
     if ( (sChangeSize != 0) &&
          (sChangeSize != SDC_EXTRASIZE_FOR_CHAINING) )
     {
-        // BUG-28807 Case-23941 sdcRow::undo_CHANGE_ROW_PIECE_LINK ¿¡¼­ÀÇ
-        //           ASSERT¿¡ ´ëÇÑ µğ¹ö±ë ÄÚµå Ãß°¡
+        // BUG-28807 Case-23941 sdcRow::undo_CHANGE_ROW_PIECE_LINK ì—ì„œì˜
+        //           ASSERTì— ëŒ€í•œ ë””ë²„ê¹… ì½”ë“œ ì¶”ê°€
 
         sUndoPageStartPtr = sdpPhyPage::getPageStartPtr( sLogPtr );
 
@@ -6155,7 +6155,7 @@ IDE_RC sdcRow::undo_CHANGE_ROW_PIECE_LINK(
                      "Row Column Count   : %"ID_UINT32_FMT"\n",
                      sChangeSize,
                      SDC_EXTRASIZE_FOR_CHAINING,
-                     sLogPtr - sUndoPageStartPtr, // LogPtrÀÇ Page ³»¿¡¼­ÀÇ Offset
+                     sLogPtr - sUndoPageStartPtr, // LogPtrì˜ Page ë‚´ì—ì„œì˜ Offset
                      sOldRowPieceSize,
                      sColCount );
 
@@ -6189,9 +6189,9 @@ IDE_RC sdcRow::undo_CHANGE_ROW_PIECE_LINK(
 
     if ( aOper4RowPiece == SDC_MVCC_MAKE_VALROW )
     {
-        /* MVCC¸¦ À§ÇØ undo¸¦ ¼öÇàÇÏ´Â °æ¿ì,
-         * reallocSlot()À» ÇÏ¸é ¾ÈµÇ°í,
-         * ÀÎÀÚ·Î ³Ñ¾î¿Â temp buffer pointer¸¦ »ç¿ëÇØ¾ß ÇÑ´Ù. */
+        /* MVCCë¥¼ ìœ„í•´ undoë¥¼ ìˆ˜í–‰í•˜ëŠ” ê²½ìš°,
+         * reallocSlot()ì„ í•˜ë©´ ì•ˆë˜ê³ ,
+         * ì¸ìë¡œ ë„˜ì–´ì˜¨ temp buffer pointerë¥¼ ì‚¬ìš©í•´ì•¼ í•œë‹¤. */
         IDE_ERROR( aRowBuf4MVCC != NULL );
         sNewSlotPtr = aRowBuf4MVCC;
     }
@@ -6207,7 +6207,7 @@ IDE_RC sdcRow::undo_CHANGE_ROW_PIECE_LINK(
 
             IDE_TEST( sdcTableCTL::unbind(
                           aMtx,
-                          sOldSlotPtr,         /* UndoµÇ±âÀü RowPiecePtr */
+                          sOldSlotPtr,         /* Undoë˜ê¸°ì „ RowPiecePtr */
                           *(UChar*)sOldSlotPtr,/* aCTSlotIdxBfrUndo */
                           *(UChar*)sLogPtr,    /* aCTSlotIdxAftUndo */
                           *aFSCreditSize,
@@ -6460,28 +6460,28 @@ UShort sdcRow::calcDeleteFstColumnPieceLogSize(
  *   | [column count(2)], [ {column seq(2),column id(4), column total len(4)} ... ]
  *   -----------------------------------------------------------------------------------
  *
- *   SDR_SDC_UPDATE_ROW_PIECE ·Î±×ÀÇ Row Image Layer¿¡´Â updateµÈ column Á¤º¸¸¸ ±â·ÏµÈ´Ù.
- *   Row Image Layer¿¡ ±â·ÏµÈ column Á¤º¸¸¦ °¡Áö°í redo¸¦ ÇÏ·Á¸é,
- *   ÀÌ ÄÃ·³µéÀÇ local sequence(sequence in rowpiece)¸¦ ¾Ë¾Æ¾ß ÇÏ´Âµ¥,
- *   ÀÌ·± Á¤º¸¸¦ Update Info Layer¿¡ column desc setÀ¸·Î ±â·ÏÇÑ´Ù.
+ *   SDR_SDC_UPDATE_ROW_PIECE ë¡œê·¸ì˜ Row Image Layerì—ëŠ” updateëœ column ì •ë³´ë§Œ ê¸°ë¡ëœë‹¤.
+ *   Row Image Layerì— ê¸°ë¡ëœ column ì •ë³´ë¥¼ ê°€ì§€ê³  redoë¥¼ í•˜ë ¤ë©´,
+ *   ì´ ì»¬ëŸ¼ë“¤ì˜ local sequence(sequence in rowpiece)ë¥¼ ì•Œì•„ì•¼ í•˜ëŠ”ë°,
+ *   ì´ëŸ° ì •ë³´ë¥¼ Update Info Layerì— column desc setìœ¼ë¡œ ê¸°ë¡í•œë‹¤.
  *
- *   column desc setÀº unixÀÇ file desc set¿Í °ÅÀÇ À¯»çÇÏ´Ù.
- *   column desc setÀº 1bit´ç ÇÏ³ªÀÇ ÄÃ·³À» Ç¥ÇöÇÏ´Âµ¥,
- *   update ÄÃ·³ÀÎ °æ¿ì ÇØ´ç ºñÆ®¸¦ 1·Î ¼³Á¤ÇÏ°í,
- *   update ÄÃ·³ÀÌ ¾Æ´Ï¸é ÇØ´ç ºñÆ®¸¦ 0À¸·Î ¼³Á¤ÇÑ´Ù.
+ *   column desc setì€ unixì˜ file desc setì™€ ê±°ì˜ ìœ ì‚¬í•˜ë‹¤.
+ *   column desc setì€ 1bitë‹¹ í•˜ë‚˜ì˜ ì»¬ëŸ¼ì„ í‘œí˜„í•˜ëŠ”ë°,
+ *   update ì»¬ëŸ¼ì¸ ê²½ìš° í•´ë‹¹ ë¹„íŠ¸ë¥¼ 1ë¡œ ì„¤ì •í•˜ê³ ,
+ *   update ì»¬ëŸ¼ì´ ì•„ë‹ˆë©´ í•´ë‹¹ ë¹„íŠ¸ë¥¼ 0ìœ¼ë¡œ ì„¤ì •í•œë‹¤.
  *
- *   ¿¹¸¦ µé¾î ÇÏ³ªÀÇ rowpiece¿¡ 8°³ÀÇ ÄÃ·³ÀÌ ÀúÀåµÇ¾î ÀÖ´Âµ¥,
- *   ÀÌ Áß¿¡¼­ 3,5¹ø ÄÃ·³¸¸ updateµÇ´Â °æ¿ì,
- *   column desc setÀº 00010100°¡ µÈ´Ù.
+ *   ì˜ˆë¥¼ ë“¤ì–´ í•˜ë‚˜ì˜ rowpieceì— 8ê°œì˜ ì»¬ëŸ¼ì´ ì €ì¥ë˜ì–´ ìˆëŠ”ë°,
+ *   ì´ ì¤‘ì—ì„œ 3,5ë²ˆ ì»¬ëŸ¼ë§Œ updateë˜ëŠ” ê²½ìš°,
+ *   column desc setì€ 00010100ê°€ ëœë‹¤.
  *
- *   column desc setÀÌ unixÀÇ file desc set°¡ ´Ù¸¥Á¡ÀÌ ÇÑ°¡Áö ÀÖ´Ù.
- *   unixÀÇ file desc setÀº 128byte °íÁ¤Å©±âÀÌÁö¸¸,
- *   column desc setÀº rowpiece¿¡ ÀúÀåµÈ ÄÃ·³ÀÇ °¹¼ö¿¡ µû¶ó
- *   Å©±â°¡ °¡º¯ÀûÀÌ´Ù.(1byte ~ 128byte)
+ *   column desc setì´ unixì˜ file desc setê°€ ë‹¤ë¥¸ì ì´ í•œê°€ì§€ ìˆë‹¤.
+ *   unixì˜ file desc setì€ 128byte ê³ ì •í¬ê¸°ì´ì§€ë§Œ,
+ *   column desc setì€ rowpieceì— ì €ì¥ëœ ì»¬ëŸ¼ì˜ ê°¯ìˆ˜ì— ë”°ë¼
+ *   í¬ê¸°ê°€ ê°€ë³€ì ì´ë‹¤.(1byte ~ 128byte)
  *
- *   ÄÃ·³ÀÇ °¹¼ö°¡ 8°³ ÀÌÇÏÀÌ¸é column desc setÀÌ 1byteÀÌ°í,
- *   ÄÃ·³ÀÇ °¹¼ö°¡ 8~16°³ »çÀÌÀÌ¸é column desc setÀÌ 2byteÀÌ°í,
- *   ÄÃ·³ÀÇ °¹¼ö°¡ 1016~1024°³ »çÀÌÀÌ¸é column desc setÀÌ 128byteÀÌ´Ù.
+ *   ì»¬ëŸ¼ì˜ ê°¯ìˆ˜ê°€ 8ê°œ ì´í•˜ì´ë©´ column desc setì´ 1byteì´ê³ ,
+ *   ì»¬ëŸ¼ì˜ ê°¯ìˆ˜ê°€ 8~16ê°œ ì‚¬ì´ì´ë©´ column desc setì´ 2byteì´ê³ ,
+ *   ì»¬ëŸ¼ì˜ ê°¯ìˆ˜ê°€ 1016~1024ê°œ ì‚¬ì´ì´ë©´ column desc setì´ 128byteì´ë‹¤.
  *
  **********************************************************************/
 void sdcRow::calcColumnDescSet( const sdcRowPieceUpdateInfo *aUpdateInfo,
@@ -6495,7 +6495,7 @@ void sdcRow::calcColumnDescSet( const sdcRowPieceUpdateInfo *aUpdateInfo,
     IDE_ASSERT( aColDescSet != NULL );
     IDE_ASSERT( aColCount    > 0    );
 
-    /* column desc set ÃÊ±âÈ­ */
+    /* column desc set ì´ˆê¸°í™” */
     SDC_CD_ZERO(aColDescSet);
 
     for ( sColSeqInRowPiece = 0 ;
@@ -6506,7 +6506,7 @@ void sdcRow::calcColumnDescSet( const sdcRowPieceUpdateInfo *aUpdateInfo,
 
         if ( SDC_IS_UPDATE_COLUMN( sColumnInfo->mColumn ) == ID_TRUE )
         {
-            /* update ÄÃ·³ÀÎ °æ¿ì ÇØ´ç bit¸¦ 1·Î ¼³Á¤ÇÑ´Ù. */
+            /* update ì»¬ëŸ¼ì¸ ê²½ìš° í•´ë‹¹ bitë¥¼ 1ë¡œ ì„¤ì •í•œë‹¤. */
             SDC_CD_SET(sColSeqInRowPiece, aColDescSet);
         }
     }
@@ -6517,12 +6517,12 @@ void sdcRow::calcColumnDescSet( const sdcRowPieceUpdateInfo *aUpdateInfo,
  *
  * Description :
  *
- *   column desc setÀº rowpiece¿¡ ÀúÀåµÈ ÄÃ·³ÀÇ °¹¼ö¿¡ µû¶ó
- *   Å©±â°¡ °¡º¯ÀûÀÌ´Ù.(1byte ~ 128byte)
+ *   column desc setì€ rowpieceì— ì €ì¥ëœ ì»¬ëŸ¼ì˜ ê°¯ìˆ˜ì— ë”°ë¼
+ *   í¬ê¸°ê°€ ê°€ë³€ì ì´ë‹¤.(1byte ~ 128byte)
  *
- *   ÄÃ·³ÀÇ °¹¼ö°¡ 8°³ ÀÌÇÏÀÌ¸é column desc setÀÌ 1byteÀÌ°í,
- *   ÄÃ·³ÀÇ °¹¼ö°¡ 8~16°³ »çÀÌÀÌ¸é column desc setÀÌ 2byteÀÌ°í,
- *   ÄÃ·³ÀÇ °¹¼ö°¡ 1016~1024°³ »çÀÌÀÌ¸é column desc setÀÌ 128byteÀÌ´Ù.
+ *   ì»¬ëŸ¼ì˜ ê°¯ìˆ˜ê°€ 8ê°œ ì´í•˜ì´ë©´ column desc setì´ 1byteì´ê³ ,
+ *   ì»¬ëŸ¼ì˜ ê°¯ìˆ˜ê°€ 8~16ê°œ ì‚¬ì´ì´ë©´ column desc setì´ 2byteì´ê³ ,
+ *   ì»¬ëŸ¼ì˜ ê°¯ìˆ˜ê°€ 1016~1024ê°œ ì‚¬ì´ì´ë©´ column desc setì´ 128byteì´ë‹¤.
  *
  **********************************************************************/
 UChar sdcRow::calcColumnDescSetSize( UShort    aColCount )
@@ -6617,9 +6617,9 @@ UShort sdcRow::calcUpdateRowPieceLogSize4RP(
     {
         sColumnInfo = aUpdateInfo->mColInfoList + sColSeqInRowPiece;
 
-        // BUG-31134 Insert Undo Record¿¡ Ãß°¡µÇ´Â RP Info´Â
-        //           Before Image¸¦ ±âÁØÀ¸·Î ÀÛ¼ºµÇ¾î¾ß ÇÕ´Ï´Ù.
-        // In Mode È®ÀÎ ½Ã Undo Rec Log ÀÌ¸é Old Value ¸¦ È®ÀÎÇÏµµ·Ï ¼öÁ¤
+        // BUG-31134 Insert Undo Recordì— ì¶”ê°€ë˜ëŠ” RP InfoëŠ”
+        //           Before Imageë¥¼ ê¸°ì¤€ìœ¼ë¡œ ì‘ì„±ë˜ì–´ì•¼ í•©ë‹ˆë‹¤.
+        // In Mode í™•ì¸ ì‹œ Undo Rec Log ì´ë©´ Old Value ë¥¼ í™•ì¸í•˜ë„ë¡ ìˆ˜ì •
         if ( SDC_IS_IN_MODE_UPDATE_COLUMN( sColumnInfo,
                                            aIsUndoRec ) == ID_TRUE )
         {
@@ -6672,9 +6672,9 @@ UShort sdcRow::calcOverwriteRowPieceLogSize4RP(
     {
         sColumnInfo = aOverwriteInfo->mColInfoList + sColSeqInRowPiece;
 
-        // BUG-31134 Insert Undo Record¿¡ Ãß°¡µÇ´Â RP Info´Â
-        //           Before Image¸¦ ±âÁØÀ¸·Î ÀÛ¼ºµÇ¾î¾ß ÇÕ´Ï´Ù.
-        // In Mode È®ÀÎ ½Ã Undo Rec Log ÀÌ¸é Old Value ¸¦ È®ÀÎÇÏµµ·Ï ¼öÁ¤
+        // BUG-31134 Insert Undo Recordì— ì¶”ê°€ë˜ëŠ” RP InfoëŠ”
+        //           Before Imageë¥¼ ê¸°ì¤€ìœ¼ë¡œ ì‘ì„±ë˜ì–´ì•¼ í•©ë‹ˆë‹¤.
+        // In Mode í™•ì¸ ì‹œ Undo Rec Log ì´ë©´ Old Value ë¥¼ í™•ì¸í•˜ë„ë¡ ìˆ˜ì •
         if ( SDC_IS_IN_MODE_UPDATE_COLUMN( sColumnInfo,
                                            aIsUndoRec ) == ID_TRUE )
         {
@@ -6726,13 +6726,13 @@ UShort sdcRow::calcDeleteRowPieceLogSize4RP(
 /***********************************************************************
  *
  * Description :
- *  ¿©·¯ rowpiece¿¡ ³ª´©¾î ÀúÀåµÈ ÄÃ·³ÀÌ updateµÇ´Â °æ¿ì,
- *  ±× ÄÃ·³ÀÇ first piece¸¦ ÀúÀåÇÏ°í ÀÖ´Â rowpiece¿¡¼­
- *  update ¼öÇàÀ» ´ã´çÇÏ¹Ç·Î, ³ª¸ÓÁö rowpiece¿¡¼­´Â
- *  ÇØ´ç column piece¸¦ Á¦°ÅÇØ¾ß ÇÑ´Ù.
+ *  ì—¬ëŸ¬ rowpieceì— ë‚˜ëˆ„ì–´ ì €ì¥ëœ ì»¬ëŸ¼ì´ updateë˜ëŠ” ê²½ìš°,
+ *  ê·¸ ì»¬ëŸ¼ì˜ first pieceë¥¼ ì €ì¥í•˜ê³  ìˆëŠ” rowpieceì—ì„œ
+ *  update ìˆ˜í–‰ì„ ë‹´ë‹¹í•˜ë¯€ë¡œ, ë‚˜ë¨¸ì§€ rowpieceì—ì„œëŠ”
+ *  í•´ë‹¹ column pieceë¥¼ ì œê±°í•´ì•¼ í•œë‹¤.
  *
- *  ÀÌ ÇÔ¼ö´Â rowpiece¿¡¼­ Ã¹¹øÂ° column piece¸¦
- *  Á¦°ÅÇÏ´Â ¿¬»êÀ» ¼öÇàÇÑ´Ù.
+ *  ì´ í•¨ìˆ˜ëŠ” rowpieceì—ì„œ ì²«ë²ˆì§¸ column pieceë¥¼
+ *  ì œê±°í•˜ëŠ” ì—°ì‚°ì„ ìˆ˜í–‰í•œë‹¤.
  *
  **********************************************************************/
 IDE_RC sdcRow::deleteFstColumnPiece(
@@ -6779,7 +6779,7 @@ IDE_RC sdcRow::deleteFstColumnPiece(
     sColCount      = sOldRowHdrInfo->mColCount;
     sRowFlag       = sOldRowHdrInfo->mRowFlag;
 
-    /* head rowpiece¿¡ delete first column piece ¿¬»êÀÌ ¹ß»ıÇÒ ¼ö ¾ø´Ù. */
+    /* head rowpieceì— delete first column piece ì—°ì‚°ì´ ë°œìƒí•  ìˆ˜ ì—†ë‹¤. */
     IDE_ASSERT( SDC_IS_HEAD_ROWPIECE(sRowFlag) == ID_FALSE );
     IDE_ASSERT( SM_IS_FLAG_ON( sRowFlag, SDC_ROWHDR_F_FLAG )
                 == ID_FALSE );
@@ -6810,7 +6810,7 @@ IDE_RC sdcRow::deleteFstColumnPiece(
                                                     aReplicate,
                                                     &sUndoSID ) != IDE_SUCCESS )
     {
-        /* Undo °ø°£ºÎÁ·À¸·Î ½ÇÆĞÇÑ °æ¿ì. MtxUndo ¹«½ÃÇØµµ µÊ */
+        /* Undo ê³µê°„ë¶€ì¡±ìœ¼ë¡œ ì‹¤íŒ¨í•œ ê²½ìš°. MtxUndo ë¬´ì‹œí•´ë„ ë¨ */
         sdrMiniTrans::setIgnoreMtxUndo( aMtx );
         IDE_TEST( 1 );
     }
@@ -6824,7 +6824,7 @@ IDE_RC sdcRow::deleteFstColumnPiece(
 
 
     /* BUG-32091 [sm_collection] add TableOID in PageHeader
-     * Page¿¡ ±â·ÏµÈ TableOID¿Í À§·ÎºÎÅÍ ³»·Á¿Â TableOID¸¦ ºñ±³ÇÏ¿© °ËÁõÇÔ */
+     * Pageì— ê¸°ë¡ëœ TableOIDì™€ ìœ„ë¡œë¶€í„° ë‚´ë ¤ì˜¨ TableOIDë¥¼ ë¹„êµí•˜ì—¬ ê²€ì¦í•¨ */
     IDE_ASSERT( sdpPhyPage::getTableOID( (UChar*)sdpPhyPage::getHdr( sNewSlotPtr ) )
                 == smLayerCallback::getTableOID( aTableHeader ) );
 
@@ -6862,16 +6862,16 @@ IDE_RC sdcRow::deleteFstColumnPiece(
 
     sNewRowFlag = aUpdateInfo->mNewRowHdrInfo->mRowFlag;
 
-    /* Ã¹¹øÂ° column piece¸¦ Á¦°ÅÇÏ°Ô µÇ¸é,
-     * µÎ¹øÀç column piece°¡ Ã¹¹øÀç column piece°¡ µÇ´Âµ¥,
-     * µÎ¹øÂ° column piece´Â prev rowpiece¿Í ³ª´©¾î ÀúÀåµÈ °Ô ¾Æ´Ï¹Ç·Î,
-     * P flag¸¦ off ½ÃÅ²´Ù. */
+    /* ì²«ë²ˆì§¸ column pieceë¥¼ ì œê±°í•˜ê²Œ ë˜ë©´,
+     * ë‘ë²ˆì¬ column pieceê°€ ì²«ë²ˆì¬ column pieceê°€ ë˜ëŠ”ë°,
+     * ë‘ë²ˆì§¸ column pieceëŠ” prev rowpieceì™€ ë‚˜ëˆ„ì–´ ì €ì¥ëœ ê²Œ ì•„ë‹ˆë¯€ë¡œ,
+     * P flagë¥¼ off ì‹œí‚¨ë‹¤. */
     SM_SET_FLAG_OFF( sNewRowFlag, SDC_ROWHDR_P_FLAG );
 
     sFstDskViewSCN = smxTrans::getFstDskViewSCN(aTrans);
 
-    /* first column piece°¡ Á¦°ÅµÇ¹Ç·Î,
-     * column count¸¦ ÇÏ³ª °¨¼Ò½ÃÅ²´Ù. */
+    /* first column pieceê°€ ì œê±°ë˜ë¯€ë¡œ,
+     * column countë¥¼ í•˜ë‚˜ ê°ì†Œì‹œí‚¨ë‹¤. */
     SDC_INIT_ROWHDR_INFO( &sNewRowHdrInfo,
                           aUpdateInfo->mNewRowHdrInfo->mCTSlotIdx,
                           *aCSInfiniteSCN,
@@ -6883,15 +6883,15 @@ IDE_RC sdcRow::deleteFstColumnPiece(
     sWritePtr = sNewSlotPtr;
     sWritePtr = writeRowHdr( sWritePtr, &sNewRowHdrInfo );
 
-    /* ÀÌÀü RowPiece¿¡ NextLink Á¤º¸°¡ ÀÖ¾ú´Ù¸é ±×´ë·Î ±â·ÏÇÑ´Ù.
-     * º¯°æÀÌ ÇÊ¿äÇÏ´Ù¸é ÀÌÈÄ¿¡ SupplementJobInfo·Î Ã³¸®°¡ µÈ´Ù. */
+    /* ì´ì „ RowPieceì— NextLink ì •ë³´ê°€ ìˆì—ˆë‹¤ë©´ ê·¸ëŒ€ë¡œ ê¸°ë¡í•œë‹¤.
+     * ë³€ê²½ì´ í•„ìš”í•˜ë‹¤ë©´ ì´í›„ì— SupplementJobInfoë¡œ ì²˜ë¦¬ê°€ ëœë‹¤. */
     if ( aNextRowPieceSID != SD_NULL_SID )
     {
         sWritePtr = writeNextLink( sWritePtr, aNextRowPieceSID );
     }
 
-    /* first column piece¸¦ Á¦°ÅÇØ¾ß ÇÏ¹Ç·Î
-     * loop¸¦ 1ºÎÅÍ ½ÃÀÛÇÑ´Ù. */
+    /* first column pieceë¥¼ ì œê±°í•´ì•¼ í•˜ë¯€ë¡œ
+     * loopë¥¼ 1ë¶€í„° ì‹œì‘í•œë‹¤. */
     for ( sColSeqInRowPiece = 1 ;
           sColSeqInRowPiece < sColCount;
           sColSeqInRowPiece++ )
@@ -6945,7 +6945,7 @@ IDE_RC sdcRow::deleteFstColumnPiece(
 
 /***********************************************************************
  *
- * Description : UndoRecord¸¦ ±â·ÏÇÑ´Ù.
+ * Description : UndoRecordë¥¼ ê¸°ë¡í•œë‹¤.
  *
  *   SDC_UNDO_DELETE_FIRST_COLUMN_PIECE
  *   -----------------------------------------------------------------------------------
@@ -6981,9 +6981,9 @@ UChar* sdcRow::writeDeleteFstColumnPieceRedoLog(
     sFstColumnInfo = aUpdateInfo->mColInfoList;
 
     /*
-     * ###   FSC ÇÃ·¡±×   ###
+     * ###   FSC í”Œë˜ê·¸   ###
      *
-     * FSC ÇÃ·¡±× ¼³Á¤¹æ¹ı¿¡ ´ëÇÑ ÀÚ¼¼ÇÑ ¼³¸íÀº sdcRow.hÀÇ ÁÖ¼®À» Âü°íÇÏ¶ó
+     * FSC í”Œë˜ê·¸ ì„¤ì •ë°©ë²•ì— ëŒ€í•œ ìì„¸í•œ ì„¤ëª…ì€ sdcRow.hì˜ ì£¼ì„ì„ ì°¸ê³ í•˜ë¼
      *
      * redo     : SDC_UPDATE_LOG_FLAG_RESERVE_FREESPACE_CREDIT_TRUE
      * undo     : SDC_UPDATE_LOG_FLAG_RESERVE_FREESPACE_CREDIT_FALSE
@@ -7016,7 +7016,7 @@ UChar* sdcRow::writeDeleteFstColumnPieceRedoLog(
 
 /***********************************************************************
  *
- * Description : RowPiece¿¡ ´ëÇÑ RedoUndo ·Î±×¸¦ ±â·ÏÇÑ´Ù.
+ * Description : RowPieceì— ëŒ€í•œ RedoUndo ë¡œê·¸ë¥¼ ê¸°ë¡í•œë‹¤.
  *
  *   SDR_SDC_DELETE_FIRST_COLUMN_PIECE
  *   -----------------------------------------------------------------------------------
@@ -7066,9 +7066,9 @@ IDE_RC sdcRow::writeDeleteFstColumnPieceRedoUndoLog(
     sFstColumnInfo = aUpdateInfo->mColInfoList;
 
     /*
-     * ###   FSC ÇÃ·¡±×   ###
+     * ###   FSC í”Œë˜ê·¸   ###
      *
-     * FSC ÇÃ·¡±× ¼³Á¤¹æ¹ı¿¡ ´ëÇÑ ÀÚ¼¼ÇÑ ¼³¸íÀº sdcRow.hÀÇ ÁÖ¼®À» Âü°íÇÏ¶ó
+     * FSC í”Œë˜ê·¸ ì„¤ì •ë°©ë²•ì— ëŒ€í•œ ìì„¸í•œ ì„¤ëª…ì€ sdcRow.hì˜ ì£¼ì„ì„ ì°¸ê³ í•˜ë¼
      *
      * redo     : SDC_UPDATE_LOG_FLAG_RESERVE_FREESPACE_CREDIT_TRUE
      * undo     : SDC_UPDATE_LOG_FLAG_RESERVE_FREESPACE_CREDIT_FALSE
@@ -7106,9 +7106,9 @@ IDE_RC sdcRow::writeDeleteFstColumnPieceRedoUndoLog(
 /***********************************************************************
  *
  * Description :
- *  delete first column piece undo¿¡ ´ëÇÑ CLRÀ» ±â·ÏÇÏ´Â ÇÔ¼öÀÌ´Ù.
- *  undo record¿¡ ÀúÀåµÈ ³»¿ëÀ»
- *  ADD_FIRST_COLUMN_PIECE ·Î±× Å¸ÀÔÀ¸·Î ·Î±×¿¡ ±â·ÏÇÑ´Ù.
+ *  delete first column piece undoì— ëŒ€í•œ CLRì„ ê¸°ë¡í•˜ëŠ” í•¨ìˆ˜ì´ë‹¤.
+ *  undo recordì— ì €ì¥ëœ ë‚´ìš©ì„
+ *  ADD_FIRST_COLUMN_PIECE ë¡œê·¸ íƒ€ì…ìœ¼ë¡œ ë¡œê·¸ì— ê¸°ë¡í•œë‹¤.
  *
  *   SDR_SDC_ADD_FIRST_COLUMN_PIECE
  *   -----------------------------------------------------------------------------------
@@ -7144,7 +7144,7 @@ IDE_RC sdcRow::writeDeleteFstColumnPieceCLR(
     sSlotDirStartPtr =
         sdpPhyPage::getSlotDirStartPtr((UChar*)aUndoRecHdr);
 
-    /* undo info layerÀÇ Å©±â¸¦ »«´Ù. */
+    /* undo info layerì˜ í¬ê¸°ë¥¼ ëº€ë‹¤. */
     sLogSize = sdcUndoSegment::getUndoRecSize(
                       sSlotDirStartPtr,
                       SD_MAKE_SLOTNUM( aUndoSID ) );
@@ -7211,9 +7211,9 @@ IDE_RC sdcRow::undo_DELETE_FIRST_COLUMN_PIECE(
     SDC_GET_ROWHDR_FIELD(sOldSlotPtr, SDC_ROWHDR_COLCOUNT, &sColCount);
     SDC_GET_ROWHDR_1B_FIELD(sOldSlotPtr, SDC_ROWHDR_FLAG,   sRowFlag);
 
-    /* reallocSlot()À» ÇÏ´Â µµÁß¿¡
-     * compact page ¿¬»êÀÌ ¹ß»ıÇÒ ¼ö ÀÖ±â ¶§¹®¿¡
-     * old slot image¸¦ temp buffer¿¡ º¹»çÇØ¾ß ÇÑ´Ù. */
+    /* reallocSlot()ì„ í•˜ëŠ” ë„ì¤‘ì—
+     * compact page ì—°ì‚°ì´ ë°œìƒí•  ìˆ˜ ìˆê¸° ë•Œë¬¸ì—
+     * old slot imageë¥¼ temp bufferì— ë³µì‚¬í•´ì•¼ í•œë‹¤. */
     sOldSlotImagePtr = sOldSlotImage;
     idlOS::memcpy( sOldSlotImagePtr,
                    sOldSlotPtr,
@@ -7227,9 +7227,9 @@ IDE_RC sdcRow::undo_DELETE_FIRST_COLUMN_PIECE(
 
     if ( aOper4RowPiece == SDC_MVCC_MAKE_VALROW )
     {
-        /* MVCC¸¦ À§ÇØ undo¸¦ ¼öÇàÇÏ´Â °æ¿ì,
-         * reallocSlot()À» ÇÏ¸é ¾ÈµÇ°í,
-         * ÀÎÀÚ·Î ³Ñ¾î¿Â temp buffer pointer¸¦ »ç¿ëÇØ¾ß ÇÑ´Ù. */
+        /* MVCCë¥¼ ìœ„í•´ undoë¥¼ ìˆ˜í–‰í•˜ëŠ” ê²½ìš°,
+         * reallocSlot()ì„ í•˜ë©´ ì•ˆë˜ê³ ,
+         * ì¸ìë¡œ ë„˜ì–´ì˜¨ temp buffer pointerë¥¼ ì‚¬ìš©í•´ì•¼ í•œë‹¤. */
         IDE_ERROR( aRowBuf4MVCC != NULL );
         sNewSlotPtr = aRowBuf4MVCC;
     }
@@ -7245,7 +7245,7 @@ IDE_RC sdcRow::undo_DELETE_FIRST_COLUMN_PIECE(
 
             IDE_TEST( sdcTableCTL::unbind(
                           aMtx,
-                          sOldSlotPtr,         /* UndoµÇ±âÀü RowPiecePtr */
+                          sOldSlotPtr,         /* Undoë˜ê¸°ì „ RowPiecePtr */
                           *(UChar*)sOldSlotPtr,/* aCTSlotIdxBfrUndo */
                           *(UChar*)sLogPtr,    /* aCTSlotIdxAftUndo */
                           sFSCreditSize,
@@ -7254,29 +7254,29 @@ IDE_RC sdcRow::undo_DELETE_FIRST_COLUMN_PIECE(
         }
 
         /*
-         * ###   FSC ÇÃ·¡±×   ###
+         * ###   FSC í”Œë˜ê·¸   ###
          *
-         * DML ¿¬»êÁß¿¡´Â ´ç¿¬È÷ FSC¸¦ reserve ÇØ¾ß ÇÑ´Ù.
-         * ±×·¯¸é redo³ª undo½Ã¿¡´Â ¾î¶»°Ô ÇØ¾ß ÇÏ³ª?
+         * DML ì—°ì‚°ì¤‘ì—ëŠ” ë‹¹ì—°íˆ FSCë¥¼ reserve í•´ì•¼ í•œë‹¤.
+         * ê·¸ëŸ¬ë©´ redoë‚˜ undoì‹œì—ëŠ” ì–´ë–»ê²Œ í•´ì•¼ í•˜ë‚˜?
          *
-         * redo´Â DML ¿¬»êÀ» ´Ù½Ã ¼öÇàÇÏ´Â °ÍÀÌ¹Ç·Î,
-         * DML ¿¬»êÇÒ¶§¿Í µ¿ÀÏÇÏ°Ô FSC¸¦ reserve ÇØ¾ß ÇÑ´Ù.
+         * redoëŠ” DML ì—°ì‚°ì„ ë‹¤ì‹œ ìˆ˜í–‰í•˜ëŠ” ê²ƒì´ë¯€ë¡œ,
+         * DML ì—°ì‚°í• ë•Œì™€ ë™ì¼í•˜ê²Œ FSCë¥¼ reserve í•´ì•¼ í•œë‹¤.
          *
-         * ¹İ¸é undo½Ã¿¡´Â FSC¸¦ reserveÇÏ¸é ¾ÈµÈ´Ù.
-         * ¿Ö³ªÇÏ¸é FSC´Â DML ¿¬»êÀ» undo½ÃÅ³¶§¸¦ ´ëºñÇØ¼­
-         * °ø°£À» ¿¹¾àÇØµÎ´Â °ÍÀÌ¹Ç·Î,
-         * undo½Ã¿¡´Â ÀÌÀü¿¡ reserveÇØµĞ FSC¸¦
-         * ÆäÀÌÁö¿¡ µÇµ¹·Á(restore)ÁÖ¾î¾ß ÇÏ°í,
-         * undo½Ã¿¡ ¶Ç ´Ù½Ã FSC¸¦ reserveÇÏ·Á°í ÇØ¼­´Â ¾ÈµÈ´Ù.
+         * ë°˜ë©´ undoì‹œì—ëŠ” FSCë¥¼ reserveí•˜ë©´ ì•ˆëœë‹¤.
+         * ì™œë‚˜í•˜ë©´ FSCëŠ” DML ì—°ì‚°ì„ undoì‹œí‚¬ë•Œë¥¼ ëŒ€ë¹„í•´ì„œ
+         * ê³µê°„ì„ ì˜ˆì•½í•´ë‘ëŠ” ê²ƒì´ë¯€ë¡œ,
+         * undoì‹œì—ëŠ” ì´ì „ì— reserveí•´ë‘” FSCë¥¼
+         * í˜ì´ì§€ì— ë˜ëŒë ¤(restore)ì£¼ì–´ì•¼ í•˜ê³ ,
+         * undoì‹œì— ë˜ ë‹¤ì‹œ FSCë¥¼ reserveí•˜ë ¤ê³  í•´ì„œëŠ” ì•ˆëœë‹¤.
          *
-         * clrÀº undo¿¡ ´ëÇÑ redoÀÌ¹Ç·Î undo¶§¿Í µ¿ÀÏÇÏ°Ô
-         * FSC¸¦ reserveÇÏ¸é ¾ÈµÈ´Ù.
+         * clrì€ undoì— ëŒ€í•œ redoì´ë¯€ë¡œ undoë•Œì™€ ë™ì¼í•˜ê²Œ
+         * FSCë¥¼ reserveí•˜ë©´ ì•ˆëœë‹¤.
          *
-         * ÀÌ ¼¼°¡Áö °æ¿ì¸¦ ±¸ºĞÇÏ¿©
-         * FSC reserve Ã³¸®¸¦ ÇØ¾ß ÇÏ´Âµ¥,
-         * ³ª(upinel9)´Â ·Î±×¸¦ ±â·ÏÇÒ¶§ FSC reserve ¿©ºÎ¸¦ ÇÃ·¡±×·Î ³²°Ü¼­,
-         * redo³ª undo½Ã¿¡´Â ÀÌ ÇÃ·¡±×¸¸ º¸°í
-         * reallocSlot()À» ÇÏµµ·Ï ¼³°èÇÏ¿´´Ù.
+         * ì´ ì„¸ê°€ì§€ ê²½ìš°ë¥¼ êµ¬ë¶„í•˜ì—¬
+         * FSC reserve ì²˜ë¦¬ë¥¼ í•´ì•¼ í•˜ëŠ”ë°,
+         * ë‚˜(upinel9)ëŠ” ë¡œê·¸ë¥¼ ê¸°ë¡í• ë•Œ FSC reserve ì—¬ë¶€ë¥¼ í”Œë˜ê·¸ë¡œ ë‚¨ê²¨ì„œ,
+         * redoë‚˜ undoì‹œì—ëŠ” ì´ í”Œë˜ê·¸ë§Œ ë³´ê³ 
+         * reallocSlot()ì„ í•˜ë„ë¡ ì„¤ê³„í•˜ì˜€ë‹¤.
          *
          * redo     : SDC_UPDATE_LOG_FLAG_RESERVE_FREESPACE_CREDIT_TRUE
          * undo     : SDC_UPDATE_LOG_FLAG_RESERVE_FREESPACE_CREDIT_FALSE
@@ -7393,16 +7393,16 @@ IDE_RC sdcRow::writeUpdateRowPieceLog4RP(
 
     sColCount = aUpdateInfo->mNewRowHdrInfo->mColCount;
     
-    // BUG-31134 Insert Undo Record¿¡ Ãß°¡µÇ´Â RP Info´Â
-    //           Before Image¸¦ ±âÁØÀ¸·Î ÀÛ¼ºµÇ¾î¾ß ÇÕ´Ï´Ù.
+    // BUG-31134 Insert Undo Recordì— ì¶”ê°€ë˜ëŠ” RP InfoëŠ”
+    //           Before Imageë¥¼ ê¸°ì¤€ìœ¼ë¡œ ì‘ì„±ë˜ì–´ì•¼ í•©ë‹ˆë‹¤.
     if ( aIsUndoRec == ID_TRUE )
     {
-        // ÀÌÀü¿¡ In Mode¿´´ø Update ColumnÀÇ ¼ö
+        // ì´ì „ì— In Modeì˜€ë˜ Update Columnì˜ ìˆ˜
         sUptInModeColCnt = aUpdateInfo->mUptBfrInModeColCnt;
     }
     else
     {
-        // In Mode·Î UpdateÇÏ·Á´Â ColumnÀÇ ¼ö
+        // In Modeë¡œ Updateí•˜ë ¤ëŠ” Columnì˜ ìˆ˜
         sUptInModeColCnt = aUpdateInfo->mUptAftInModeColCnt;
     }
     
@@ -7418,9 +7418,9 @@ IDE_RC sdcRow::writeUpdateRowPieceLog4RP(
     {
         sColumnInfo = aUpdateInfo->mColInfoList + sColSeqInRowPiece;
 
-        // BUG-31134 Insert Undo Record¿¡ Ãß°¡µÇ´Â RP Info´Â
-        //           Before Image¸¦ ±âÁØÀ¸·Î ÀÛ¼ºµÇ¾î¾ß ÇÕ´Ï´Ù.
-        // In Mode È®ÀÎ ½Ã Undo Rec Log ÀÌ¸é Old Value ¸¦ È®ÀÎÇÏµµ·Ï ¼öÁ¤
+        // BUG-31134 Insert Undo Recordì— ì¶”ê°€ë˜ëŠ” RP InfoëŠ”
+        //           Before Imageë¥¼ ê¸°ì¤€ìœ¼ë¡œ ì‘ì„±ë˜ì–´ì•¼ í•©ë‹ˆë‹¤.
+        // In Mode í™•ì¸ ì‹œ Undo Rec Log ì´ë©´ Old Value ë¥¼ í™•ì¸í•˜ë„ë¡ ìˆ˜ì •
         if ( SDC_IS_IN_MODE_UPDATE_COLUMN( sColumnInfo,
                                            aIsUndoRec ) == ID_TRUE )
         {
@@ -7448,9 +7448,9 @@ IDE_RC sdcRow::writeUpdateRowPieceLog4RP(
         }
     }
 
-    // BUG-31134 Insert Undo Record¿¡ Ãß°¡µÇ´Â RP Info´Â
-    //           Before Image¸¦ ±âÁØÀ¸·Î ÀÛ¼ºµÇ¾î¾ß ÇÕ´Ï´Ù.
-    // ·Î±×¸¦ ¸ğµÎ ±â·Ï ÇÏ¿´´ÂÁö È®ÀÎ
+    // BUG-31134 Insert Undo Recordì— ì¶”ê°€ë˜ëŠ” RP InfoëŠ”
+    //           Before Imageë¥¼ ê¸°ì¤€ìœ¼ë¡œ ì‘ì„±ë˜ì–´ì•¼ í•©ë‹ˆë‹¤.
+    // ë¡œê·¸ë¥¼ ëª¨ë‘ ê¸°ë¡ í•˜ì˜€ëŠ”ì§€ í™•ì¸
     IDE_ASSERT_MSG( sUptInModeColCnt == sWriteCount,
                     "UptInModeColCount: %"ID_UINT32_FMT", "
                     "sWriteCount: %"ID_UINT32_FMT", "
@@ -7519,9 +7519,9 @@ IDE_RC sdcRow::writeOverwriteRowPieceLog4RP(
     {
         sColumnInfo = aOverwriteInfo->mColInfoList + sColSeqInRowPiece;
 
-        // BUG-31134 Insert Undo Record¿¡ Ãß°¡µÇ´Â RP Info´Â
-        //           Before Image¸¦ ±âÁØÀ¸·Î ÀÛ¼ºµÇ¾î¾ß ÇÕ´Ï´Ù.
-        // In Mode È®ÀÎ ½Ã Undo Rec Log ÀÌ¸é Old Value ¸¦ È®ÀÎÇÏµµ·Ï ¼öÁ¤
+        // BUG-31134 Insert Undo Recordì— ì¶”ê°€ë˜ëŠ” RP InfoëŠ”
+        //           Before Imageë¥¼ ê¸°ì¤€ìœ¼ë¡œ ì‘ì„±ë˜ì–´ì•¼ í•©ë‹ˆë‹¤.
+        // In Mode í™•ì¸ ì‹œ Undo Rec Log ì´ë©´ Old Value ë¥¼ í™•ì¸í•˜ë„ë¡ ìˆ˜ì •
         if ( SDC_IS_IN_MODE_UPDATE_COLUMN( sColumnInfo,
                                            aIsUndoRec ) == ID_TRUE )
         {
@@ -7553,12 +7553,12 @@ IDE_RC sdcRow::writeOverwriteRowPieceLog4RP(
 
     if ( aIsUndoRec == ID_TRUE )
     {
-        /* trailing nullÀÌ updateµÈ °æ¿ì,
-         * undo log¿¡ Ãß°¡ÀûÀÎ Á¤º¸¸¦ ±â·ÏÇÏ¿©
-         * replicationÀÌ ÀÌ¸¦ ÆÄ¾ÇÇÒ ¼ö ÀÖµµ·Ï ÇÑ´Ù.
-         * trailing null update ÄÃ·³ÀÇ °¹¼ö¸¸Å­
-         * column seq °ªÀ¸·Î ID_USHORT_MAX, column id °ªÀ¸·Î ID_UINT_MAX¸¦ ±â·ÏÇÏ±â·Î
-         * RPÆÀ°ú ÇùÀÇÇÏ¿´´Ù. */
+        /* trailing nullì´ updateëœ ê²½ìš°,
+         * undo logì— ì¶”ê°€ì ì¸ ì •ë³´ë¥¼ ê¸°ë¡í•˜ì—¬
+         * replicationì´ ì´ë¥¼ íŒŒì•…í•  ìˆ˜ ìˆë„ë¡ í•œë‹¤.
+         * trailing null update ì»¬ëŸ¼ì˜ ê°¯ìˆ˜ë§Œí¼
+         * column seq ê°’ìœ¼ë¡œ ID_USHORT_MAX, column id ê°’ìœ¼ë¡œ ID_UINT_MAXë¥¼ ê¸°ë¡í•˜ê¸°ë¡œ
+         * RPíŒ€ê³¼ í˜‘ì˜í•˜ì˜€ë‹¤. */
         sColSeqInTrailingNull = (UShort)ID_USHORT_MAX;
         sColumnId             = (UInt)ID_UINT_MAX;
         sTrailingNullUptCount = aOverwriteInfo->mTrailingNullUptCount;
@@ -7567,9 +7567,9 @@ IDE_RC sdcRow::writeOverwriteRowPieceLog4RP(
         {
             sColumnInfo = aOverwriteInfo->mColInfoList + sColSeqInRowPiece;
 
-            // BUG-31134 Insert Undo Record¿¡ Ãß°¡µÇ´Â RP Info´Â
-            //           Before Image¸¦ ±âÁØÀ¸·Î ÀÛ¼ºµÇ¾î¾ß ÇÕ´Ï´Ù.
-            // Trailing Null ColumnÀº ¸ğµÎ In Mode Update ColumnÀÌ´Ù.
+            // BUG-31134 Insert Undo Recordì— ì¶”ê°€ë˜ëŠ” RP InfoëŠ”
+            //           Before Imageë¥¼ ê¸°ì¤€ìœ¼ë¡œ ì‘ì„±ë˜ì–´ì•¼ í•©ë‹ˆë‹¤.
+            // Trailing Null Columnì€ ëª¨ë‘ In Mode Update Columnì´ë‹¤.
             IDE_ASSERT( SDC_IS_IN_MODE_COLUMN( sColumnInfo->mOldValueInfo ) == ID_TRUE );
             IDE_ASSERT( SDC_IS_UPDATE_COLUMN( sColumnInfo->mColumn ) == ID_TRUE );
 
@@ -7731,12 +7731,12 @@ IDE_RC sdcRow::writeDeleteRowPieceLog4RP(
 
     while( sTrailingNullUptCount != 0 )
     {
-        /* trailing nullÀÌ updateµÈ °æ¿ì,
-         * undo log¿¡ Ãß°¡ÀûÀÎ Á¤º¸¸¦ ±â·ÏÇÏ¿©
-         * replicationÀÌ ÀÌ¸¦ ÆÄ¾ÇÇÒ ¼ö ÀÖµµ·Ï ÇÑ´Ù.
-         * trailing null update ÄÃ·³ÀÇ °¹¼ö¸¸Å­
-         * column seq °ªÀ¸·Î ID_USHORT_MAX, column id °ªÀ¸·Î ID_UINT_MAX¸¦ ±â·ÏÇÏ±â·Î
-         * RPÆÀ°ú ÇùÀÇÇÏ¿´´Ù. */
+        /* trailing nullì´ updateëœ ê²½ìš°,
+         * undo logì— ì¶”ê°€ì ì¸ ì •ë³´ë¥¼ ê¸°ë¡í•˜ì—¬
+         * replicationì´ ì´ë¥¼ íŒŒì•…í•  ìˆ˜ ìˆë„ë¡ í•œë‹¤.
+         * trailing null update ì»¬ëŸ¼ì˜ ê°¯ìˆ˜ë§Œí¼
+         * column seq ê°’ìœ¼ë¡œ ID_USHORT_MAX, column id ê°’ìœ¼ë¡œ ID_UINT_MAXë¥¼ ê¸°ë¡í•˜ê¸°ë¡œ
+         * RPíŒ€ê³¼ í˜‘ì˜í•˜ì˜€ë‹¤. */
 
 
         IDE_TEST( sdrMiniTrans::write(aMtx,
@@ -7800,8 +7800,8 @@ IDE_RC sdcRow::writeInsertRowPieceLog4RP( const sdcRowPieceInsertInfo *aInsertIn
 
     if ( aInsertInfo->mIsInsert4Upt != ID_TRUE )
     {
-        /* insertÀÇ °æ¿ì,
-         * ¸ğµç ÄÃ·³ÀÇ Á¤º¸¸¦ ±â·ÏÇÑ´Ù.(lob Desc Á¦¿Ü) */
+        /* insertì˜ ê²½ìš°,
+         * ëª¨ë“  ì»¬ëŸ¼ì˜ ì •ë³´ë¥¼ ê¸°ë¡í•œë‹¤.(lob Desc ì œì™¸) */
         sInModeColCnt =
             aInsertInfo->mColCount - aInsertInfo->mLobDescCnt;
         
@@ -7812,9 +7812,9 @@ IDE_RC sdcRow::writeInsertRowPieceLog4RP( const sdcRowPieceInsertInfo *aInsertIn
     }
     else
     {
-        /* updateÀÇ °æ¿ì,
-         * updateµÈ ÄÃ·³ÀÇ Á¤º¸¸¸À» ±â·ÏÇÑ´Ù.(LOB Desc Á¦¿Ü)
-         * replicationÀÌ update ÄÃ·³ÀÇ Á¤º¸¸¸À» ÃßÃâÇØ¾ß ÇÏ±â ¶§¹®ÀÌ´Ù. */
+        /* updateì˜ ê²½ìš°,
+         * updateëœ ì»¬ëŸ¼ì˜ ì •ë³´ë§Œì„ ê¸°ë¡í•œë‹¤.(LOB Desc ì œì™¸)
+         * replicationì´ update ì»¬ëŸ¼ì˜ ì •ë³´ë§Œì„ ì¶”ì¶œí•´ì•¼ í•˜ê¸° ë•Œë¬¸ì´ë‹¤. */
         sUptInModeColCnt = 0;
 
         for ( sCurrColSeq = aInsertInfo->mStartColSeq;
@@ -7942,9 +7942,9 @@ IDE_RC sdcRow::remove( idvSQL                * aStatistics,
             /* do nothing */
         }
 
-        /* replicationÀÌ °É¸° °æ¿ì
-         * pk log¸¦ ±â·ÏÇØ¾ß ÇÏ¹Ç·Î
-         * sdcPKInfo ÀÚ·á±¸Á¶¸¦ ÃÊ±âÈ­ÇÑ´Ù. */
+        /* replicationì´ ê±¸ë¦° ê²½ìš°
+         * pk logë¥¼ ê¸°ë¡í•´ì•¼ í•˜ë¯€ë¡œ
+         * sdcPKInfo ìë£Œêµ¬ì¡°ë¥¼ ì´ˆê¸°í™”í•œë‹¤. */
         makePKInfo( aTableHeader, &sPKInfo );
     }
 
@@ -7994,7 +7994,7 @@ IDE_RC sdcRow::remove( idvSQL                * aStatistics,
                         sPKInfo.mTotalPKColCount,
                         sPKInfo.mCopyDonePKColCount );
 
-        /* replicationÀÌ °É¸° °æ¿ì pk log¸¦ ±â·ÏÇÑ´Ù. */
+        /* replicationì´ ê±¸ë¦° ê²½ìš° pk logë¥¼ ê¸°ë¡í•œë‹¤. */
         IDE_TEST( writePKLog( aStatistics,
                               aTrans,
                               aTableHeader,
@@ -8011,7 +8011,7 @@ IDE_RC sdcRow::remove( idvSQL                * aStatistics,
 
     if ( sRetryInfo.mISavepoint != NULL )
     {
-        // ¿¹¿Ü »óÈ²¿¡¼­ savepoint°¡ ¾ÆÁ÷ setµÇ¾î ÀÖÀ» ¼ö ÀÖ´Ù.
+        // ì˜ˆì™¸ ìƒí™©ì—ì„œ savepointê°€ ì•„ì§ setë˜ì–´ ìˆì„ ìˆ˜ ìˆë‹¤.
         IDE_ASSERT( smxTrans::unsetImpSavepoint4LayerCall( aTrans,
                                                            sRetryInfo.mISavepoint )
                     == IDE_SUCCESS );
@@ -8026,22 +8026,22 @@ IDE_RC sdcRow::remove( idvSQL                * aStatistics,
 /***********************************************************************
  *
  * Description :
- *  rowpiece³»¿¡ Á¸ÀçÇÏ´Â ¸ğµç lob column¿¡ ´ëÇØ removeLobÀ» ÇÑ´Ù.
- *  ±×¸®°í rowpiece¿¡¼­ body¸¦ Á¦°ÅÇÏ°í header¸¸ ³²±ä´Ù.
- *  ¾ËÆ¼º£ÀÌ½º´Â record base mvccÀÌ±â ¶§¹®¿¡ row°¡ deleteµÇ´õ¶óµµ
- *  agingµÇ±â Àü±îÁö row header¸¦ ³²°ÜµÎ¾î¾ß ÇÑ´Ù.
+ *  rowpieceë‚´ì— ì¡´ì¬í•˜ëŠ” ëª¨ë“  lob columnì— ëŒ€í•´ removeLobì„ í•œë‹¤.
+ *  ê·¸ë¦¬ê³  rowpieceì—ì„œ bodyë¥¼ ì œê±°í•˜ê³  headerë§Œ ë‚¨ê¸´ë‹¤.
+ *  ì•Œí‹°ë² ì´ìŠ¤ëŠ” record base mvccì´ê¸° ë•Œë¬¸ì— rowê°€ deleteë˜ë”ë¼ë„
+ *  agingë˜ê¸° ì „ê¹Œì§€ row headerë¥¼ ë‚¨ê²¨ë‘ì–´ì•¼ í•œë‹¤.
  *
- *  aStatistics         - [IN] Åë°èÁ¤º¸
- *  aTrans              - [IN] Æ®·£Àè¼Ç Á¤º¸
- *  aTableHeader        - [IN] Å×ÀÌºí Çì´õ
+ *  aStatistics         - [IN] í†µê³„ì •ë³´
+ *  aTrans              - [IN] íŠ¸ëœì­ì…˜ ì •ë³´
+ *  aTableHeader        - [IN] í…Œì´ë¸” í—¤ë”
  *  aSlotSID            - [IN] slot sid
  *  aStmtSCN            - [IN] stmt scn
  *  aCSInfiniteSCN      - [IN] cursor infinite scn
- *  aRetryInfo          - [IN] retry ¿©ºÎ¸¦ ÆÇ´ÜÇÏ±âÀ§ÇÑ Á¤º¸
+ *  aRetryInfo          - [IN] retry ì—¬ë¶€ë¥¼ íŒë‹¨í•˜ê¸°ìœ„í•œ ì •ë³´
  *  aRecordLockWaitInfo - [IN]
- *  aReplicate          - [IN] replication ¿©ºÎ
+ *  aReplicate          - [IN] replication ì—¬ë¶€
  *  aPKInfo             - [IN/OUT]
- *  aFstColumnSeq       - [IN/OUT] rowpiece¿¡¼­ Ã¹¹øÂ° column pieceÀÇ
+ *  aFstColumnSeq       - [IN/OUT] rowpieceì—ì„œ ì²«ë²ˆì§¸ column pieceì˜
  *                                 global sequence number.
  *  aSkipFlag           - [OUT]
  *  aNextRowPieceSID    - [OUT] next rowpiece sid
@@ -8141,8 +8141,8 @@ IDE_RC sdcRow::removeRowPiece( idvSQL                *aStatistics,
 
     if ( SDC_IS_HEAD_ROWPIECE(sOldRowHdrInfo.mRowFlag) == ID_TRUE )
     {
-        /* head rowpieceÀÇ °æ¿ì,
-         * remove ¿¬»êÀ» ¼öÇàÇÒ ¼ö ÀÖ´ÂÁö °Ë»çÇØ¾ß ÇÑ´Ù. */
+        /* head rowpieceì˜ ê²½ìš°,
+         * remove ì—°ì‚°ì„ ìˆ˜í–‰í•  ìˆ˜ ìˆëŠ”ì§€ ê²€ì‚¬í•´ì•¼ í•œë‹¤. */
         IDE_TEST( canUpdateRowPiece( aStatistics,
                                      &sMtx,
                                      &sSP,
@@ -8157,12 +8157,12 @@ IDE_RC sdcRow::removeRowPiece( idvSQL                *aStatistics,
                                      aRecordLockWaitInfo,
                                      &sNewCTSlotIdx,
                                      /* BUG-31359
-                                      * Wait°ªÀÌ ¾øÀ¸¸é ±âÁ¸°ú °°ÀÌ
-                                      * ID_ULONG_MAX ¸¸Å­ ±â´Ù¸®°Ô ÇÑ´Ù. */
+                                      * Waitê°’ì´ ì—†ìœ¼ë©´ ê¸°ì¡´ê³¼ ê°™ì´
+                                      * ID_ULONG_MAX ë§Œí¼ ê¸°ë‹¤ë¦¬ê²Œ í•œë‹¤. */
                                      ID_ULONG_MAX )
                   != IDE_SUCCESS );
 
-        /* BUGBUG DeadÄÚµå·Î º¸ÀÓ */
+        /* BUGBUG Deadì½”ë“œë¡œ ë³´ì„ */
         //PROJ-1677
         if ( aRecordLockWaitInfo->mRecordLockWaitStatus  == SMI_ESCAPE_RECORD_LOCKWAIT )
         {
@@ -8183,20 +8183,20 @@ IDE_RC sdcRow::removeRowPiece( idvSQL                *aStatistics,
                   != IDE_SUCCESS );
     }
 
-    // Row StampingÀÌ ¼öÇàµÇ¾úÀ½À» º¸ÀåÇÑ ÈÄ¿¡ ´Ù½Ã RowHdrInfo¸¦ ¾ò´Â´Ù.
+    // Row Stampingì´ ìˆ˜í–‰ë˜ì—ˆìŒì„ ë³´ì¥í•œ í›„ì— ë‹¤ì‹œ RowHdrInfoë¥¼ ì–»ëŠ”ë‹¤.
     getRowHdrInfo( sDeleteSlot, &sOldRowHdrInfo );
 
     /* BUG-30911 - [5.3.7] 2 rows can be selected during executing index scan
      *             on unique index. 
-     * smmDatabase::getCommitSCN()¿¡¼­ TransÀÇ CommitSCNÀÌ LstSystemSCNº¸´Ù
-     * ³ªÁß¿¡ ¼³Á¤µÇµµ·Ï ¼öÁ¤ÇÏ¿´´Ù.
-     * µû¶ó¼­ T1ÀÌ row A¸¦ »èÁ¦ÇÏ°í commit ÇÏ¿´À»¶§ SystemSCNÀº Áõ°¡ÇßÁö¸¸
-     * T1 TransÀÇ CommitSCNÀº ¼³Á¤µÇÁö ¾ÊÀ» ¼ö ÀÖ°í,
-     * ÀÌ¶§ ¶Ç ´Ù¸¥ Trans T2°¡ µ¿ÀÏ row A¸¦ »èÁ¦ÇÏ°íÀÚ ÇÒ ¶§, T1ÀÌ »èÁ¦Çß´ø
-     * Index Key´Â visible »óÅÂ·Î ÆÇ´ÜÇÏ¿© row A¸¦ »èÁ¦ÇÏ·¯ º» ÇÔ¼ö¿¡ µé¾î¿À°Ô
-     * µÈ´Ù.
-     * ¸¸¾à T2°¡ row stampingÀ» ¼öÇàÇÏ±â Àü¿¡ T1ÀÌ CommitSCNÀ» ¼³Á¤ÇÏ°Ô µÇ¸é
-     * ¿©±â¼­ ÇØ´ç Row¿¡ Deleted ÇÃ·¡±×°¡ ¼³Á¤µÈ°ÍÀ» º¸°ÔµÈ´Ù. */
+     * smmDatabase::getCommitSCN()ì—ì„œ Transì˜ CommitSCNì´ LstSystemSCNë³´ë‹¤
+     * ë‚˜ì¤‘ì— ì„¤ì •ë˜ë„ë¡ ìˆ˜ì •í•˜ì˜€ë‹¤.
+     * ë”°ë¼ì„œ T1ì´ row Aë¥¼ ì‚­ì œí•˜ê³  commit í•˜ì˜€ì„ë•Œ SystemSCNì€ ì¦ê°€í–ˆì§€ë§Œ
+     * T1 Transì˜ CommitSCNì€ ì„¤ì •ë˜ì§€ ì•Šì„ ìˆ˜ ìˆê³ ,
+     * ì´ë•Œ ë˜ ë‹¤ë¥¸ Trans T2ê°€ ë™ì¼ row Aë¥¼ ì‚­ì œí•˜ê³ ì í•  ë•Œ, T1ì´ ì‚­ì œí–ˆë˜
+     * Index KeyëŠ” visible ìƒíƒœë¡œ íŒë‹¨í•˜ì—¬ row Aë¥¼ ì‚­ì œí•˜ëŸ¬ ë³¸ í•¨ìˆ˜ì— ë“¤ì–´ì˜¤ê²Œ
+     * ëœë‹¤.
+     * ë§Œì•½ T2ê°€ row stampingì„ ìˆ˜í–‰í•˜ê¸° ì „ì— T1ì´ CommitSCNì„ ì„¤ì •í•˜ê²Œ ë˜ë©´
+     * ì—¬ê¸°ì„œ í•´ë‹¹ Rowì— Deleted í”Œë˜ê·¸ê°€ ì„¤ì •ëœê²ƒì„ ë³´ê²Œëœë‹¤. */
     if ( SM_SCN_IS_DELETED(sOldRowHdrInfo.mInfiniteSCN) == ID_TRUE )
     {
         IDE_TEST( releaseLatchForAlreadyModify( &sMtx,
@@ -8271,8 +8271,8 @@ IDE_RC sdcRow::removeRowPiece( idvSQL                *aStatistics,
     }
 
     /* BUG-24331
-     * [5.3.1] lob column À» °¡Áø row°¡ deleteµÇ¾îµµ
-     * lob¿¡ ´ëÇÑ free¸¦ ¼öÇàÇÏÁö ¾ÊÀ½. */
+     * [5.3.1] lob column ì„ ê°€ì§„ rowê°€ deleteë˜ì–´ë„
+     * lobì— ëŒ€í•œ freeë¥¼ ìˆ˜í–‰í•˜ì§€ ì•ŠìŒ. */
     if ( sLobColCountInTable > 0 )
     {
         IDE_TEST( analyzeRowForLobRemove( aTableHeader,
@@ -8302,7 +8302,7 @@ IDE_RC sdcRow::removeRowPiece( idvSQL                *aStatistics,
                                         &sUpdateInfo4PKLog, /* aUpdateInfo */
                                         &sUndoSID ) != IDE_SUCCESS )
         {
-            /* Undo °ø°£ºÎÁ·À¸·Î ½ÇÆĞÇÑ °æ¿ì. MtxUndo ¹«½ÃÇØµµ µÊ */
+            /* Undo ê³µê°„ë¶€ì¡±ìœ¼ë¡œ ì‹¤íŒ¨í•œ ê²½ìš°. MtxUndo ë¬´ì‹œí•´ë„ ë¨ */
             sdrMiniTrans::setIgnoreMtxUndo( &sMtx );
             IDE_TEST( 1 );
         }
@@ -8320,7 +8320,7 @@ IDE_RC sdcRow::removeRowPiece( idvSQL                *aStatistics,
                                         NULL,     /* aUpdateInfo */
                                         &sUndoSID ) != IDE_SUCCESS )
         {
-            /* Undo °ø°£ºÎÁ·À¸·Î ½ÇÆĞÇÑ °æ¿ì. MtxUndo ¹«½ÃÇØµµ µÊ */
+            /* Undo ê³µê°„ë¶€ì¡±ìœ¼ë¡œ ì‹¤íŒ¨í•œ ê²½ìš°. MtxUndo ë¬´ì‹œí•´ë„ ë¨ */
             sdrMiniTrans::setIgnoreMtxUndo( &sMtx );
             IDE_TEST( 1 );
         }
@@ -8356,7 +8356,7 @@ IDE_RC sdcRow::removeRowPiece( idvSQL                *aStatistics,
     IDE_ASSERT( sNewDeleteSlot != NULL );
 
     /* BUG-32091 [sm_collection] add TableOID in PageHeader
-     * Page¿¡ ±â·ÏµÈ TableOID¿Í À§·ÎºÎÅÍ ³»·Á¿Â TableOID¸¦ ºñ±³ÇÏ¿© °ËÁõÇÔ */
+     * Pageì— ê¸°ë¡ëœ TableOIDì™€ ìœ„ë¡œë¶€í„° ë‚´ë ¤ì˜¨ TableOIDë¥¼ ë¹„êµí•˜ì—¬ ê²€ì¦í•¨ */
     IDE_ASSERT( sdpPhyPage::getTableOID( (UChar*)sdpPhyPage::getHdr( sNewDeleteSlot ) )
                 == smLayerCallback::getTableOID( aTableHeader ) );
 
@@ -8364,19 +8364,19 @@ IDE_RC sdcRow::removeRowPiece( idvSQL                *aStatistics,
         smcTable::getDiskPageListEntry(aTableHeader);
     IDE_ASSERT( sEntry != NULL );
 
-    /* BUG-25762 Disk Page¿¡¼­ Delete ¿¬»êÀÌ ¹ß»ıÇÒ¶§ Page °¡¿ë°ø°£
-     *           ¿¡ ´ëÇÑ »óÅÂ¸¦ º¯°æÇÏÁö ¾Ê´Â °æ¿ì°¡ ÀÖÀ½.
+    /* BUG-25762 Disk Pageì—ì„œ Delete ì—°ì‚°ì´ ë°œìƒí• ë•Œ Page ê°€ìš©ê³µê°„
+     *           ì— ëŒ€í•œ ìƒíƒœë¥¼ ë³€ê²½í•˜ì§€ ì•ŠëŠ” ê²½ìš°ê°€ ìˆìŒ.
      *
-     * ÃÖ¼Ò Rowpiece Size ÀÌÇÏÀÎ °æ¿ì¿¡´Â Delete ½Ã¿¡µµ
-     * Rowpiece Çì´õ¸¦ ³²°ÜµÎ±â ¶§¹®¿¡ ÆäÀÌÁö¿¡¼­ Â÷ÁöÇÏ´Â Å©±â°¡ ¾îÂ÷ÇÇ
-     * ÃÖ¼Ò Rowpice ¸¸Å­À» Â÷ÁöÇÏ±â ¶§¹®¿¡ ÆäÀÌÁöÀÇ °¡¿ë°ø°£Å©±â´Â º¯ÇÏÁö
-     * ¾ÊÁö¸¸, Delete ¿¬»êÀº °ø°£À» FreeÇÏ´Â ¿¬»êÀÌ¹Ç·Î ÀÌÈÄ¿¡ AgingÀÌ µÉ¼ö
-     * ÀÖµµ·Ï °¡¿ë°ø°£ »óÅÂ¸¦ º¯°æ½ÃµµÇÏ¿©¾ß ÇÑ´Ù.
-     * ( °¡¿ë°ø°£À» Å½»öÇÏ´Â ´Ù¸¥ Æ®·£Àè¼ÇÀÌ º¼¼ö ÀÖµµ·Ï ÇØ¾ßÇÑ´Ù )
+     * ìµœì†Œ Rowpiece Size ì´í•˜ì¸ ê²½ìš°ì—ëŠ” Delete ì‹œì—ë„
+     * Rowpiece í—¤ë”ë¥¼ ë‚¨ê²¨ë‘ê¸° ë•Œë¬¸ì— í˜ì´ì§€ì—ì„œ ì°¨ì§€í•˜ëŠ” í¬ê¸°ê°€ ì–´ì°¨í”¼
+     * ìµœì†Œ Rowpice ë§Œí¼ì„ ì°¨ì§€í•˜ê¸° ë•Œë¬¸ì— í˜ì´ì§€ì˜ ê°€ìš©ê³µê°„í¬ê¸°ëŠ” ë³€í•˜ì§€
+     * ì•Šì§€ë§Œ, Delete ì—°ì‚°ì€ ê³µê°„ì„ Freeí•˜ëŠ” ì—°ì‚°ì´ë¯€ë¡œ ì´í›„ì— Agingì´ ë ìˆ˜
+     * ìˆë„ë¡ ê°€ìš©ê³µê°„ ìƒíƒœë¥¼ ë³€ê²½ì‹œë„í•˜ì—¬ì•¼ í•œë‹¤.
+     * ( ê°€ìš©ê³µê°„ì„ íƒìƒ‰í•˜ëŠ” ë‹¤ë¥¸ íŠ¸ëœì­ì…˜ì´ ë³¼ìˆ˜ ìˆë„ë¡ í•´ì•¼í•œë‹¤ )
      *
-     * ÆäÀÌÁöÀÇ °¡¿ë°ø°£ »óÅÂº¯°æ ¿¬»êÀº DeleteµÈ RowPiece¸¦ °í·ÁÇÏ¿©
-     * AgingÇÒ °¡¿ë°ø°£ Å©±â¸¦ °í·ÁÇÏ±â ¶§¹®¿¡ PageÀÇ °¡¿ë°ø°£ »óÅÂ°¡ º¯°æµÉ
-     * ¼ö ÀÖ´Ù. */
+     * í˜ì´ì§€ì˜ ê°€ìš©ê³µê°„ ìƒíƒœë³€ê²½ ì—°ì‚°ì€ Deleteëœ RowPieceë¥¼ ê³ ë ¤í•˜ì—¬
+     * Agingí•  ê°€ìš©ê³µê°„ í¬ê¸°ë¥¼ ê³ ë ¤í•˜ê¸° ë•Œë¬¸ì— Pageì˜ ê°€ìš©ê³µê°„ ìƒíƒœê°€ ë³€ê²½ë 
+     * ìˆ˜ ìˆë‹¤. */
     IDE_TEST( sdpPageList::updatePageState(
                                 aStatistics,
                                 sTableSpaceID,
@@ -8431,8 +8431,8 @@ IDE_RC sdcRow::removeRowPiece( idvSQL                *aStatistics,
     IDE_TEST( sdrMiniTrans::commit(&sMtx, sContType ) != IDE_SUCCESS );
 
     /* BUG-24331
-     * [5.3.1] lob column À» °¡Áø row°¡ deleteµÇ¾îµµ
-     * lob¿¡ ´ëÇÑ free¸¦ ¼öÇàÇÏÁö ¾ÊÀ½. */
+     * [5.3.1] lob column ì„ ê°€ì§„ rowê°€ deleteë˜ì–´ë„
+     * lobì— ëŒ€í•œ freeë¥¼ ìˆ˜í–‰í•˜ì§€ ì•ŠìŒ. */
     if ( sLobInfo.mLobDescCnt > 0 )
     {
         IDE_TEST( removeAllLobCols( aStatistics,
@@ -8491,7 +8491,7 @@ IDE_RC sdcRow::removeRowPiece( idvSQL                *aStatistics,
 /***********************************************************************
  *
  * Description :
- *  remove rowpiece for update ¿¬»êÀ» ¼öÇàÇÑ´Ù.
+ *  remove rowpiece for update ì—°ì‚°ì„ ìˆ˜í–‰í•œë‹¤.
  *
  **********************************************************************/
 IDE_RC sdcRow::removeRowPiece4Upt( idvSQL                         *aStatistics,
@@ -8547,7 +8547,7 @@ IDE_RC sdcRow::removeRowPiece4Upt( idvSQL                         *aStatistics,
                                               &sUndoSID ) 
         != IDE_SUCCESS )
     {
-        /* Undo °ø°£ºÎÁ·À¸·Î ½ÇÆĞÇÑ °æ¿ì. MtxUndo ¹«½ÃÇØµµ µÊ */
+        /* Undo ê³µê°„ë¶€ì¡±ìœ¼ë¡œ ì‹¤íŒ¨í•œ ê²½ìš°. MtxUndo ë¬´ì‹œí•´ë„ ë¨ */
         sdrMiniTrans::setIgnoreMtxUndo( aMtx );
         IDE_TEST( 1 );
     }
@@ -8556,7 +8556,7 @@ IDE_RC sdcRow::removeRowPiece4Upt( idvSQL                         *aStatistics,
     sOldRowPieceSize = getRowPieceSize( sDeleteSlot );
     sNewRowPieceSize = SDC_ROWHDR_SIZE;
 
-    /* ExtraSize CtsInfo°¡ Ãß°¡µÇ¸é À½¼ö°¡ µÉ¼ö ÀÖ´Ù. */
+    /* ExtraSize CtsInfoê°€ ì¶”ê°€ë˜ë©´ ìŒìˆ˜ê°€ ë ìˆ˜ ìˆë‹¤. */
     sChangeSize = sOldRowPieceSize - sNewRowPieceSize;
 
     IDE_TEST( reallocSlot( sSlotSID,
@@ -8567,7 +8567,7 @@ IDE_RC sdcRow::removeRowPiece4Upt( idvSQL                         *aStatistics,
               != IDE_SUCCESS );
 
     /* BUG-32091 [sm_collection] add TableOID in PageHeader
-     * Page¿¡ ±â·ÏµÈ TableOID¿Í À§·ÎºÎÅÍ ³»·Á¿Â TableOID¸¦ ºñ±³ÇÏ¿© °ËÁõÇÔ */
+     * Pageì— ê¸°ë¡ëœ TableOIDì™€ ìœ„ë¡œë¶€í„° ë‚´ë ¤ì˜¨ TableOIDë¥¼ ë¹„êµí•˜ì—¬ ê²€ì¦í•¨ */
     IDE_ASSERT( sdpPhyPage::getTableOID( (UChar*)sdpPhyPage::getHdr( sNewSlotPtr ) )
                 == smLayerCallback::getTableOID( aTableHeader ) );
 
@@ -8718,9 +8718,9 @@ IDE_RC sdcRow::writeDeleteRowPieceRedoUndoLog( UChar           *aSlotPtr,
 /***********************************************************************
  *
  * Description :
- *  replicationÀÌ °É¸° °æ¿ì,
- *  DML ·Î±×(update or delete)¸¦ ¸ğµÎ ±â·ÏÇÑ ÈÄ PK Log¸¦ ±â·ÏÇÑ´Ù.
- *  receiver¿¡¼­ DMLÀ» ¼öÇàÇÒ target row¸¦ Ã£À¸·Á¸é pk Á¤º¸°¡ ÇÊ¿äÇÏ±â ¶§¹®ÀÌ´Ù.
+ *  replicationì´ ê±¸ë¦° ê²½ìš°,
+ *  DML ë¡œê·¸(update or delete)ë¥¼ ëª¨ë‘ ê¸°ë¡í•œ í›„ PK Logë¥¼ ê¸°ë¡í•œë‹¤.
+ *  receiverì—ì„œ DMLì„ ìˆ˜í–‰í•  target rowë¥¼ ì°¾ìœ¼ë ¤ë©´ pk ì •ë³´ê°€ í•„ìš”í•˜ê¸° ë•Œë¬¸ì´ë‹¤.
  *
  *   SDR_SDC_PK_LOG
  *   -------------------------------------------------------------------
@@ -8767,8 +8767,8 @@ IDE_RC sdcRow::writePKLog( idvSQL             *aStatistics,
     sLogSize    = calcPKLogSize(aPKInfo);
 
     sPKColCount = aPKInfo->mTotalPKColCount;
-    /* pk log¿¡¼­ pk size filed´Â pk info size¿¡
-     * Æ÷ÇÔµÇÁö ¾Ê±â ¶§¹®¿¡ sLogSize¿¡¼­ 2byte¸¦ »«´Ù. */
+    /* pk logì—ì„œ pk size filedëŠ” pk info sizeì—
+     * í¬í•¨ë˜ì§€ ì•Šê¸° ë•Œë¬¸ì— sLogSizeì—ì„œ 2byteë¥¼ ëº€ë‹¤. */
     sPKInfoSize = sLogSize - (2);
 
     sdrMiniTrans::setRefOffset( &sMtx,
@@ -8809,9 +8809,9 @@ IDE_RC sdcRow::writePKLog( idvSQL             *aStatistics,
                                     sInOutMode ) != IDE_SUCCESS );
     }
 
-    /* pk log´Â DML log¸¦ ¸ğµÎ ±â·ÏÇÑ ÈÄ,
-     * Á¦ÀÏ ¸¶Áö¸·¿¡ ±â·ÏÇÏ±â ¶§¹®¿¡
-     * conttypeÀÌ SMR_CT_ENDÀÌ´Ù. */
+    /* pk logëŠ” DML logë¥¼ ëª¨ë‘ ê¸°ë¡í•œ í›„,
+     * ì œì¼ ë§ˆì§€ë§‰ì— ê¸°ë¡í•˜ê¸° ë•Œë¬¸ì—
+     * conttypeì´ SMR_CT_ENDì´ë‹¤. */
     sState = 0;
     IDE_TEST( sdrMiniTrans::commit( &sMtx, SMR_CT_END )
               != IDE_SUCCESS );
@@ -8868,30 +8868,30 @@ UShort sdcRow::calcPKLogSize( const sdcPKInfo    *aPKInfo )
 /***********************************************************************
  *
  * Description :
- *  head rowpieceºÎÅÍ ½ÃÀÛÇØ¼­ fetch ÀÛ¾÷À» ¿Ï·áÇÒ¶§±îÁö next rowpiece¸¦ °è¼Ó µû¶ó°¡¸é¼­
- *  fetchÇØ¾ßÇÒ column value¸¦ dest buffer¿¡ º¹»çÇÑ´Ù.
+ *  head rowpieceë¶€í„° ì‹œì‘í•´ì„œ fetch ì‘ì—…ì„ ì™„ë£Œí• ë•Œê¹Œì§€ next rowpieceë¥¼ ê³„ì† ë”°ë¼ê°€ë©´ì„œ
+ *  fetchí•´ì•¼í•  column valueë¥¼ dest bufferì— ë³µì‚¬í•œë‹¤.
  *
- *  aStatistics          - [IN]  Åë°èÁ¤º¸
- *  aMtx                 - [IN]  mini Æ®·£Àè¼Ç
+ *  aStatistics          - [IN]  í†µê³„ì •ë³´
+ *  aMtx                 - [IN]  mini íŠ¸ëœì­ì…˜
  *  aSP                  - [IN]  save point
- *  aTrans               - [IN]  Æ®·£Àè¼Ç Á¤º¸
+ *  aTrans               - [IN]  íŠ¸ëœì­ì…˜ ì •ë³´
  *  aTableSpaceID        - [IN]  tablespace id
  *  aSlotPtr             - [IN]  slot pointer
- *  aIsPersSlot          - [IN]  PersistentÇÑ slot ¿©ºÎ, Row Cache·ÎºÎÅÍ
- *                               ÀĞ¾î¿Â °æ¿ì¿¡ ID_FALSE·Î ¼³Á¤µÊ
+ *  aIsPersSlot          - [IN]  Persistentí•œ slot ì—¬ë¶€, Row Cacheë¡œë¶€í„°
+ *                               ì½ì–´ì˜¨ ê²½ìš°ì— ID_FALSEë¡œ ì„¤ì •ë¨
  *  aPageReadMode        - [IN]  page read mode(SPR or MPR)
  *  aFetchColumnList     - [IN]  fetch column list
- *  aFetchVersion        - [IN]  ÃÖ½Å ¹öÀü fetchÇÒÁö ¿©ºÎ¸¦ ¸í½ÃÀûÀ¸·Î ÁöÁ¤
+ *  aFetchVersion        - [IN]  ìµœì‹  ë²„ì „ fetchí• ì§€ ì—¬ë¶€ë¥¼ ëª…ì‹œì ìœ¼ë¡œ ì§€ì •
  *  aMyTSSlotSID         - [IN]  TSSlot's SID
  *  aMyStmtSCN           - [IN]  stmt scn
  *  aInfiniteSCN         - [IN]  infinite scn
- *  aIndexInfo4Fetch     - [IN]  fetchÇÏ¸é¼­ vrow¸¦ ¸¸µå´Â °æ¿ì,
- *                               ÀÌ ÀÎÀÚ·Î ÇÊ¿äÇÑ Á¤º¸¸¦ ³Ñ±ä´Ù.(only for index)
- *  aLobInfo4Fetch       - [IN]  lob descriptor Á¤º¸¸¦ fetchÇÏ·Á°í ÇÒ¶§
- *                               ÀÌ ÀÎÀÚ·Î ÇÊ¿äÇÑ Á¤º¸¸¦ ³Ñ±ä´Ù.(only for lob)
+ *  aIndexInfo4Fetch     - [IN]  fetchí•˜ë©´ì„œ vrowë¥¼ ë§Œë“œëŠ” ê²½ìš°,
+ *                               ì´ ì¸ìë¡œ í•„ìš”í•œ ì •ë³´ë¥¼ ë„˜ê¸´ë‹¤.(only for index)
+ *  aLobInfo4Fetch       - [IN]  lob descriptor ì •ë³´ë¥¼ fetchí•˜ë ¤ê³  í• ë•Œ
+ *                               ì´ ì¸ìë¡œ í•„ìš”í•œ ì •ë³´ë¥¼ ë„˜ê¸´ë‹¤.(only for lob)
  *  aDestRowBuf          - [OUT] dest buffer
- *  aIsRowDeleted        - [OUT] row¿¡ delete mark°¡ ¼³Á¤µÇ¾î ÀÖ´ÂÁö ¿©ºÎ
- *  aIsPageLatchReleased - [OUT] fetchÁß¿¡ page latch°¡ Ç®·È´ÂÁö ¿©ºÎ
+ *  aIsRowDeleted        - [OUT] rowì— delete markê°€ ì„¤ì •ë˜ì–´ ìˆëŠ”ì§€ ì—¬ë¶€
+ *  aIsPageLatchReleased - [OUT] fetchì¤‘ì— page latchê°€ í’€ë ¸ëŠ”ì§€ ì—¬ë¶€
  *
  **********************************************************************/
 IDE_RC sdcRow::fetch( idvSQL                      *aStatistics,
@@ -8927,7 +8927,7 @@ IDE_RC sdcRow::fetch( idvSQL                      *aStatistics,
     IDE_ERROR( aIsRowDeleted        != NULL );
     IDE_ERROR( aIsPageLatchReleased != NULL );
 
-    /* head rowpieceºÎÅÍ fetch¸¦ ½ÃÀÛÇØ¾ß ÇÑ´Ù. */
+    /* head rowpieceë¶€í„° fetchë¥¼ ì‹œì‘í•´ì•¼ í•œë‹¤. */
     IDE_DASSERT( isHeadRowPiece(aSlotPtr) == ID_TRUE );
 
     IDE_DASSERT( validateSmiFetchColumnList( aFetchColumnList )
@@ -8939,7 +8939,7 @@ IDE_RC sdcRow::fetch( idvSQL                      *aStatistics,
     sNextRowPieceSID = SD_NULL_SID;
     sCurrSlotPtr     = aSlotPtr;
 
-    /* fetch¸¦ ¼öÇàÇÏ±â Àü¿¡ fetch »óÅÂÁ¤º¸¸¦ ÃÊ±âÈ­ÇÑ´Ù. */
+    /* fetchë¥¼ ìˆ˜í–‰í•˜ê¸° ì „ì— fetch ìƒíƒœì •ë³´ë¥¼ ì´ˆê¸°í™”í•œë‹¤. */
     initRowFetchStatus( aFetchColumnList, &sFetchStatus );
 
     IDE_TEST( fetchRowPiece( aStatistics,
@@ -8968,15 +8968,15 @@ IDE_RC sdcRow::fetch( idvSQL                      *aStatistics,
                     fetch_end );
 
     /* BUG-23319
-     * [SD] ÀÎµ¦½º Scan½Ã sdcRow::fetch ÇÔ¼ö¿¡¼­ Deadlock ¹ß»ı°¡´É¼ºÀÌ ÀÖÀ½. */
-    /* row fetch¸¦ ÇÏ´ÂÁß¿¡ next rowpiece·Î ÀÌµ¿ÇØ¾ß ÇÏ´Â °æ¿ì,
-     * ±âÁ¸ pageÀÇ latch¸¦ Ç®Áö ¾ÊÀ¸¸é deadlock ¹ß»ı°¡´É¼ºÀÌ ÀÖ´Ù.
-     * ±×·¡¼­ page latch¸¦ Ç¬ ´ÙÀ½ next rowpiece·Î ÀÌµ¿ÇÏ´Âµ¥,
-     * »óÀ§ ÇÔ¼ö¿¡¼­´Â page latch¸¦ Ç®¾ú´ÂÁö ¿©ºÎ¸¦ output parameter·Î È®ÀÎÇÏ°í
-     * »óÈ²¿¡ µû¶ó ÀûÀıÇÑ Ã³¸®¸¦ ÇØ¾ß ÇÑ´Ù. */
+     * [SD] ì¸ë±ìŠ¤ Scanì‹œ sdcRow::fetch í•¨ìˆ˜ì—ì„œ Deadlock ë°œìƒê°€ëŠ¥ì„±ì´ ìˆìŒ. */
+    /* row fetchë¥¼ í•˜ëŠ”ì¤‘ì— next rowpieceë¡œ ì´ë™í•´ì•¼ í•˜ëŠ” ê²½ìš°,
+     * ê¸°ì¡´ pageì˜ latchë¥¼ í’€ì§€ ì•Šìœ¼ë©´ deadlock ë°œìƒê°€ëŠ¥ì„±ì´ ìˆë‹¤.
+     * ê·¸ë˜ì„œ page latchë¥¼ í‘¼ ë‹¤ìŒ next rowpieceë¡œ ì´ë™í•˜ëŠ”ë°,
+     * ìƒìœ„ í•¨ìˆ˜ì—ì„œëŠ” page latchë¥¼ í’€ì—ˆëŠ”ì§€ ì—¬ë¶€ë¥¼ output parameterë¡œ í™•ì¸í•˜ê³ 
+     * ìƒí™©ì— ë”°ë¼ ì ì ˆí•œ ì²˜ë¦¬ë¥¼ í•´ì•¼ í•œë‹¤. */
 
-    /* BUG-26647 Disk row cache - caching µÈ ÆäÀÌÁö´Â latch¸¦ ÀâÁö ¾Ê°í µé¾î
-     * ¿À±â ¶§¹®¿¡ latch¸¦ Ç®¾îÁÖÁö ¾Ê¾Æµµ µÈ´Ù. */
+    /* BUG-26647 Disk row cache - caching ëœ í˜ì´ì§€ëŠ” latchë¥¼ ì¡ì§€ ì•Šê³  ë“¤ì–´
+     * ì˜¤ê¸° ë•Œë¬¸ì— latchë¥¼ í’€ì–´ì£¼ì§€ ì•Šì•„ë„ ëœë‹¤. */
     if ( ( sNextRowPieceSID != SD_NULL_SID ) &&
          ( aIsPersSlot == ID_TRUE ) )
     {
@@ -9056,10 +9056,10 @@ IDE_RC sdcRow::fetch( idvSQL                      *aStatistics,
             {
                 /*
                  * BUG-42420
-                 * SMI_FETCH_VERSION_LAST¿¡¼­´Â
-                 * 1st row splitÀÇ version°ú 2,3,n..th row splitÀÇ versionÀÌ ´Ù¸¦ ¼öÀÖ´Ù.
-                 * (Áï, 1st row splitÀÌ delete°¡ ¾Æ´Ï¾îµµ, ´Ù¸¥ row splitµéÀº delete »óÅÂÀÏ¼öÀÖ´Ù.)
-                 * Á¤»óÁ¾·á ÇÑ´Ù.
+                 * SMI_FETCH_VERSION_LASTì—ì„œëŠ”
+                 * 1st row splitì˜ versionê³¼ 2,3,n..th row splitì˜ versionì´ ë‹¤ë¥¼ ìˆ˜ìˆë‹¤.
+                 * (ì¦‰, 1st row splitì´ deleteê°€ ì•„ë‹ˆì–´ë„, ë‹¤ë¥¸ row splitë“¤ì€ delete ìƒíƒœì¼ìˆ˜ìˆë‹¤.)
+                 * ì •ìƒì¢…ë£Œ í•œë‹¤.
                  */
 
                 *aIsRowDeleted = ID_TRUE;
@@ -9107,7 +9107,7 @@ IDE_RC sdcRow::fetch( idvSQL                      *aStatistics,
     if ( sFetchStatus.mTotalFetchColCount >
          sFetchStatus.mFetchDoneColCount )
     {
-        /* trailing null value¸¦ fetchÇÏ·Á´Â °æ¿ì */
+        /* trailing null valueë¥¼ fetchí•˜ë ¤ëŠ” ê²½ìš° */
         IDE_TEST( doFetchTrailingNull( aFetchColumnList,
                                        aIndexInfo4Fetch,
                                        aLobInfo4Fetch,
@@ -9158,27 +9158,27 @@ IDE_RC sdcRow::fetch( idvSQL                      *aStatistics,
 
 /***********************************************************************
  * Description :
- *  ÀÚ½ÅÀÌ ÀĞ¾î¾ßÇÒ ¹öÀüÀ» ±¸ÇÏ°í, rowpiece¿¡ fetchÇØ¾ßÇÒ ÄÃ·³Á¤º¸°¡ ÀÖ´ÂÁö
- *  ºĞ¼®ÇÑ ÈÄ, fetch ÀÛ¾÷À» ¼öÇàÇÑ´Ù.
+ *  ìì‹ ì´ ì½ì–´ì•¼í•  ë²„ì „ì„ êµ¬í•˜ê³ , rowpieceì— fetchí•´ì•¼í•  ì»¬ëŸ¼ì •ë³´ê°€ ìˆëŠ”ì§€
+ *  ë¶„ì„í•œ í›„, fetch ì‘ì—…ì„ ìˆ˜í–‰í•œë‹¤.
  *
- *  aStatistics         - [IN]  Åë°èÁ¤º¸
- *  aTrans              - [IN]  Æ®·£Àè¼Ç Á¤º¸
+ *  aStatistics         - [IN]  í†µê³„ì •ë³´
+ *  aTrans              - [IN]  íŠ¸ëœì­ì…˜ ì •ë³´
  *  aCurrSlotPtr        - [IN]  slot pointer
- *  aIsPersSlot         - [IN]  PersistentÇÑ slot ¿©ºÎ, Row Cache·ÎºÎÅÍ
- *                              ÀĞ¾î¿Â °æ¿ì¿¡ ID_FALSE·Î ¼³Á¤µÊ
+ *  aIsPersSlot         - [IN]  Persistentí•œ slot ì—¬ë¶€, Row Cacheë¡œë¶€í„°
+ *                              ì½ì–´ì˜¨ ê²½ìš°ì— ID_FALSEë¡œ ì„¤ì •ë¨
  *  aFetchColumnList    - [IN]  fetch column list
- *  aFetchVersion       - [IN]  ÃÖ½Å ¹öÀü fetchÇÒÁö ¿©ºÎ¸¦ ¸í½ÃÀûÀ¸·Î ÁöÁ¤
+ *  aFetchVersion       - [IN]  ìµœì‹  ë²„ì „ fetchí• ì§€ ì—¬ë¶€ë¥¼ ëª…ì‹œì ìœ¼ë¡œ ì§€ì •
  *  aMyTSSlotSID        - [IN]  TSS's SID
  *  aPageReadMode       - [IN]  page read mode(SPR or MPR)
  *  aMyStmtSCN          - [IN]  stmt scn
  *  aInfiniteSCN        - [IN]  infinite scn
- *  aIndexInfo4Fetch    - [IN]  fetchÇÏ¸é¼­ vrow¸¦ ¸¸µå´Â °æ¿ì,
- *                              ÀÌ ÀÎÀÚ·Î ÇÊ¿äÇÑ Á¤º¸¸¦ ³Ñ±ä´Ù.(only for index)
- *  aLobInfo4Fetch      - [IN]  lob descriptor Á¤º¸¸¦ fetchÇÏ·Á°í ÇÒ¶§
- *                              ÀÌ ÀÎÀÚ·Î ÇÊ¿äÇÑ Á¤º¸¸¦ ³Ñ±ä´Ù.(only for lob)
- *  aFetchStatus        - [IN/OUT] fetch ÁøÇà»óÅÂ Á¤º¸
+ *  aIndexInfo4Fetch    - [IN]  fetchí•˜ë©´ì„œ vrowë¥¼ ë§Œë“œëŠ” ê²½ìš°,
+ *                              ì´ ì¸ìë¡œ í•„ìš”í•œ ì •ë³´ë¥¼ ë„˜ê¸´ë‹¤.(only for index)
+ *  aLobInfo4Fetch      - [IN]  lob descriptor ì •ë³´ë¥¼ fetchí•˜ë ¤ê³  í• ë•Œ
+ *                              ì´ ì¸ìë¡œ í•„ìš”í•œ ì •ë³´ë¥¼ ë„˜ê¸´ë‹¤.(only for lob)
+ *  aFetchStatus        - [IN/OUT] fetch ì§„í–‰ìƒíƒœ ì •ë³´
  *  aDestRowBuf         - [OUT] dest buffer
- *  aIsRowDeleted       - [OUT] row piece¿¡ delete mark°¡ ¼³Á¤µÇ¾î ÀÖ´ÂÁö ¿©ºÎ
+ *  aIsRowDeleted       - [OUT] row pieceì— delete markê°€ ì„¤ì •ë˜ì–´ ìˆëŠ”ì§€ ì—¬ë¶€
  *  aNextRowPieceSID    - [OUT] next rowpiece sid
  **********************************************************************/
 IDE_RC sdcRow::fetchRowPiece( idvSQL                      *aStatistics,
@@ -9237,23 +9237,23 @@ IDE_RC sdcRow::fetchRowPiece( idvSQL                      *aStatistics,
                   != IDE_SUCCESS );
 
         /*  BUG-24216
-         *  [SD-¼º´É°³¼±] makeOldVersion() ÇÒ¶§±îÁö
-         *  rowpiece º¹»çÇÏ´Â ¿¬»êÀ» delay ½ÃÅ²´Ù. */
+         *  [SD-ì„±ëŠ¥ê°œì„ ] makeOldVersion() í• ë•Œê¹Œì§€
+         *  rowpiece ë³µì‚¬í•˜ëŠ” ì—°ì‚°ì„ delay ì‹œí‚¨ë‹¤. */
         if ( sDoMakeOldVersion == ID_TRUE )
         {
-            /* old versionÀ» ÀĞ´Â °æ¿ì,
-             * sTmpBuffer¿¡ old versionÀÌ ¸¸µé¾îÁ® ÀÖÀ¸¹Ç·Î
-             * ÀÌ¸¦ ÀÌ¿ëÇØ¾ß ÇÑ´Ù. */
+            /* old versionì„ ì½ëŠ” ê²½ìš°,
+             * sTmpBufferì— old versionì´ ë§Œë“¤ì–´ì ¸ ìˆìœ¼ë¯€ë¡œ
+             * ì´ë¥¼ ì´ìš©í•´ì•¼ í•œë‹¤. */
             sSlotPtr = sTmpBuffer;
         }
         else
         {
-            /* old versionÀ» ÀĞÁö ¾Ê´Â °æ¿ì(ÃÖ½Å ¹öÀüÀ» ÀĞ´Â °æ¿ì)
-             * sTmpBuffer¿¡ ÃÖ½Å ¹öÀüÀÌ º¹»çµÇ¾î ÀÖÁö ¾Ê´Ù.
-             * (ÃÖ½Å ¹öÀüÀ» ÀĞ´Â °æ¿ì memcpyÇÏ´Â ºñ¿ëÀ» ÁÙ¿©¼­
-             * ¼º´ÉÀ» °³¼±½ÃÄÑ·Á ÇÏ¿´±â ¶§¹®¿¡
-             * sTmpBuffer¿¡ ÃÖ½Å ¹öÀüÀ» º¹»çÇÏÁö ¾Ê´Â´Ù.)
-             * ±×·¡¼­ ÀÎÀÚ·Î ³Ñ¾î¿Â slot pointer¸¦ ÀÌ¿ëÇØ¾ß ÇÑ´Ù. */
+            /* old versionì„ ì½ì§€ ì•ŠëŠ” ê²½ìš°(ìµœì‹  ë²„ì „ì„ ì½ëŠ” ê²½ìš°)
+             * sTmpBufferì— ìµœì‹  ë²„ì „ì´ ë³µì‚¬ë˜ì–´ ìˆì§€ ì•Šë‹¤.
+             * (ìµœì‹  ë²„ì „ì„ ì½ëŠ” ê²½ìš° memcpyí•˜ëŠ” ë¹„ìš©ì„ ì¤„ì—¬ì„œ
+             * ì„±ëŠ¥ì„ ê°œì„ ì‹œì¼œë ¤ í•˜ì˜€ê¸° ë•Œë¬¸ì—
+             * sTmpBufferì— ìµœì‹  ë²„ì „ì„ ë³µì‚¬í•˜ì§€ ì•ŠëŠ”ë‹¤.)
+             * ê·¸ë˜ì„œ ì¸ìë¡œ ë„˜ì–´ì˜¨ slot pointerë¥¼ ì´ìš©í•´ì•¼ í•œë‹¤. */
             sSlotPtr = aCurrSlotPtr;
         }
     }
@@ -9264,13 +9264,13 @@ IDE_RC sdcRow::fetchRowPiece( idvSQL                      *aStatistics,
     IDE_TEST_CONT( SM_SCN_IS_DELETED(sRowHdrInfo.mInfiniteSCN) == ID_TRUE,
                     skip_deleted_rowpiece );
 
-    /* fetch ÇÒ columnÀÌ ¾øÀ¸¸é ÇÒ ÀÏÀÌ ¾ø´Ù. */
+    /* fetch í•  columnì´ ì—†ìœ¼ë©´ í•  ì¼ì´ ì—†ë‹¤. */
     IDE_TEST_CONT( aFetchColumnList == NULL, skip_no_fetch_column );
 
     if ( SDC_IS_HEAD_ONLY_ROWPIECE(sRowHdrInfo.mRowFlag) == ID_TRUE )
     {
-        /* row migrationÀÌ ¹ß»ıÇÏ¿©
-         * row header¸¸ Á¸ÀçÇÏ´Â rowpieceÀÎ °æ¿ì */
+        /* row migrationì´ ë°œìƒí•˜ì—¬
+         * row headerë§Œ ì¡´ì¬í•˜ëŠ” rowpieceì¸ ê²½ìš° */
         if ( sRowHdrInfo.mColCount != 0 )
         {
             ideLog::logMem( IDE_DUMP_0,
@@ -9292,7 +9292,7 @@ IDE_RC sdcRow::fetchRowPiece( idvSQL                      *aStatistics,
 
     if ( sRowHdrInfo.mColCount == 0 )
     {
-        /* NULL ROWÀÎ °æ¿ì(¸ğµç columnÀÇ °ªÀÌ NULLÀÎ ROW) */
+        /* NULL ROWì¸ ê²½ìš°(ëª¨ë“  columnì˜ ê°’ì´ NULLì¸ ROW) */
         if ( ( sRowHdrInfo.mRowFlag != SDC_ROWHDR_FLAG_NULLROW ) ||
              ( getRowPieceSize(sSlotPtr) != SDC_ROWHDR_SIZE ) )
         {
@@ -9328,7 +9328,7 @@ IDE_RC sdcRow::fetchRowPiece( idvSQL                      *aStatistics,
                            &sLstFetchedColumn ) 
                   != IDE_SUCCESS );
 
-        /* fetch ÁøÇà»óÅÂ Á¤º¸¸¦ °»½ÅÇÑ´Ù. */
+        /* fetch ì§„í–‰ìƒíƒœ ì •ë³´ë¥¼ ê°±ì‹ í•œë‹¤. */
         resetRowFetchStatus( &sRowHdrInfo,
                              sFetchColCount,
                              sLstFetchedColumn,
@@ -9414,9 +9414,9 @@ IDE_RC sdcRow::doFetch( UChar               * aColPiecePtr,
     sCurVarColumnIdx     = aRowTemplate->mColTemplate[sFstColumnSeq].mVariableColIdx;
     sMaxColSeqInRowPiece = aRowHdrInfo->mColCount - 1;
 
-    /* fetchÇÏ·Á´Â ÄÃ·³ÀÌ prev rowpiece¿¡¼­ ÀÌ¾îÁø °æ¿ì,
-     * offsetÀ» °è»êÇØ¼­ callback ÇÔ¼ö¸¦ È£ÃâÇØ¾ß ÇÑ´Ù.
-     * ÀÌ¿¡ ´ëÇÑ °ËÁõ ÄÚµå ÀÌ´Ù.*/
+    /* fetchí•˜ë ¤ëŠ” ì»¬ëŸ¼ì´ prev rowpieceì—ì„œ ì´ì–´ì§„ ê²½ìš°,
+     * offsetì„ ê³„ì‚°í•´ì„œ callback í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•´ì•¼ í•œë‹¤.
+     * ì´ì— ëŒ€í•œ ê²€ì¦ ì½”ë“œ ì´ë‹¤.*/
     IDE_ASSERT( (sCopyOffset == 0) ||
                 ((sCopyOffset       != 0) && 
                  (sIsPrevFlag       == ID_TRUE) && 
@@ -9425,8 +9425,8 @@ IDE_RC sdcRow::doFetch( UChar               * aColPiecePtr,
     sColTemplate          = &aRowTemplate->mColTemplate[ sFstColumnSeq ];
     sFstColumnStartOffset = sColTemplate->mColStartOffset;
 
-    /* notnullÀÌ ¾Æ´Ï°Å³ª variable columnÀÌ ¾Æ´Ñ columnÀÌ slpitµÈ °æ¿ì¿¡ ´ëÇÑ Ã³¸®
-     * row piece´ÜÀ§ offset º¸Á¤ */
+    /* notnullì´ ì•„ë‹ˆê±°ë‚˜ variable columnì´ ì•„ë‹Œ columnì´ slpitëœ ê²½ìš°ì— ëŒ€í•œ ì²˜ë¦¬
+     * row pieceë‹¨ìœ„ offset ë³´ì • */
     if ( (sColTemplate->mStoredSize != SMC_UNDEFINED_COLUMN_LEN) && 
          (sIsPrevFlag == ID_TRUE) )
     {
@@ -9437,19 +9437,19 @@ IDE_RC sdcRow::doFetch( UChar               * aColPiecePtr,
             sColTemplate   = &aRowTemplate->mColTemplate[ sFstColumnSeq + 1 ];
             IDE_DASSERT( sFstsColumnLen <= sColTemplate->mColStartOffset );
 
-             /* row piece³»ÀÇ µÎ¹øÂ° mColStartOffset¿¡¼­ Ã¹¹øÂ° columnÀÇ ±æÀÌ¸¦ »«´Ù.
-              * ÀÌ´Â fetchÇÏ·Á´Â columnÀÇ ÀÌÀü row piece¿¡ non variable columnÀÌ ÀÇ
-              * ±æÀÌ¸¦ ±¸ÇÏ±â À§ÇÔÀÌ´Ù.
-              * ÀÌÈÄ ÀÌ °ªÀ» aColPiecePtr(row piece³»ÀÇ column data½ÃÀÛ À§Ä¡)
-              * ¿¡¼­ »©ÁØ´Ù.(sAdjustedColStartPtr)
-              * ÀÌÈÄ fetchÇÒ¶§ fetch´ë»ó columnÀÇ mColStartOffsetÀ» ´õÇØ offset º¸Á¤À» ÇÑ´Ù.*/
+             /* row pieceë‚´ì˜ ë‘ë²ˆì§¸ mColStartOffsetì—ì„œ ì²«ë²ˆì§¸ columnì˜ ê¸¸ì´ë¥¼ ëº€ë‹¤.
+              * ì´ëŠ” fetchí•˜ë ¤ëŠ” columnì˜ ì´ì „ row pieceì— non variable columnì´ ì˜
+              * ê¸¸ì´ë¥¼ êµ¬í•˜ê¸° ìœ„í•¨ì´ë‹¤.
+              * ì´í›„ ì´ ê°’ì„ aColPiecePtr(row pieceë‚´ì˜ column dataì‹œì‘ ìœ„ì¹˜)
+              * ì—ì„œ ë¹¼ì¤€ë‹¤.(sAdjustedColStartPtr)
+              * ì´í›„ fetchí• ë•Œ fetchëŒ€ìƒ columnì˜ mColStartOffsetì„ ë”í•´ offset ë³´ì •ì„ í•œë‹¤.*/
             sAdjustOffet = sColTemplate->mColStartOffset - sFstsColumnLen;
         }
         else
         {
-            /* row pieceÀÇ Ã¹¹øÂ° column sequence + 1 ÀÌ rowÀÇ ÀüÃ¼ column¼ö¿Í °°´Ù¸é
-             * ÇØ´ç columnÀÇ sColSeqInRowPiece´Â Ç×»ó 0 ÀÌ´Ù
-             * row°¡ slplitµÇ¾î rowÀÇ ¸¶Áö¸· column¸¸ ´Ù¸¥ ÆäÀÌÁö¿¡ ÀúÀåµÈ °æ¿ì*/
+            /* row pieceì˜ ì²«ë²ˆì§¸ column sequence + 1 ì´ rowì˜ ì „ì²´ columnìˆ˜ì™€ ê°™ë‹¤ë©´
+             * í•´ë‹¹ columnì˜ sColSeqInRowPieceëŠ” í•­ìƒ 0 ì´ë‹¤
+             * rowê°€ slplitë˜ì–´ rowì˜ ë§ˆì§€ë§‰ columnë§Œ ë‹¤ë¥¸ í˜ì´ì§€ì— ì €ì¥ëœ ê²½ìš°*/
             IDE_ASSERT( (sFstColumnSeq + 1) == aRowTemplate->mTotalColCount );
             IDE_ASSERT( sColSeqInRowPiece == 0 );
         }
@@ -9476,35 +9476,35 @@ IDE_RC sdcRow::doFetch( UChar               * aColPiecePtr,
         sColSeqInRowPiece    = sCurFetchColumnSeq - sFstColumnSeq;
         sAdjustedColStartPtr = aColPiecePtr - sAdjustOffet4RowPiece;
 
-        /* ÇöÁ¦ row piece¿¡¼­ fetchÇÒ columnÀº ´õÀÌ»ó ¾ø´Ù. */
+        /* í˜„ì œ row pieceì—ì„œ fetchí•  columnì€ ë”ì´ìƒ ì—†ë‹¤. */
         if ( sMaxColSeqInRowPiece < sColSeqInRowPiece )
         {
             break;
         }
 
-        /* notnullÀÌ ¾Æ´Ñ column°ú variable columnÀÇ ½ÇÁ¦ ±æÀÌ¸¦ ±¸ÇØ
-         * fetchÇÏ·Á´Â columÀÇ offsetÀ» ±¸ÇÑ´Ù.
-         * variable column´ÜÀ§ offset º¸Á¤*/
+        /* notnullì´ ì•„ë‹Œ columnê³¼ variable columnì˜ ì‹¤ì œ ê¸¸ì´ë¥¼ êµ¬í•´
+         * fetchí•˜ë ¤ëŠ” columì˜ offsetì„ êµ¬í•œë‹¤.
+         * variable columnë‹¨ìœ„ offset ë³´ì •*/
         if ( aRowTemplate->mVariableColCount != 0 )
         {
             for ( ; sCurVarColumnIdx < sFetchColTemplate->mVariableColIdx; sCurVarColumnIdx++ )
             {
-                /* aRowTemplate->mVariableColOffsetÀº ºĞ¼®ÇÏ·Á´Â variable colum¾Õ¿¡ Á¸ÀçÇÏ´Â
-                 * non variable columnµéÀÇ ±æÀÌ¸¦ ³ªÅ¸³½´Ù.
-                 * ÀÌ´Â ºĞ¼®ÇÏ·Á´Â non variable columnÀÇ ½ÇÁ¦ offsetÀ» ±¸ÇÏ±â À§ÇØ »ç¿ëµÈ´Ù.
-                 * ´©ÀûµÇ¾î ÀúÀåµÇ´Â °ªÀÌ ¾Æ´Ï±â ¶§¹®¿¡
-                 * ¸Å¹ø ÇØ´çÇÏ´Â column¿¡ ¸Â´Â °ªÀ» ´õÇØ columnÀÇ À§Ä¡¸¦ ±¸ÇØ¾ß ÇÑ´Ù. */
+                /* aRowTemplate->mVariableColOffsetì€ ë¶„ì„í•˜ë ¤ëŠ” variable columì•ì— ì¡´ì¬í•˜ëŠ”
+                 * non variable columnë“¤ì˜ ê¸¸ì´ë¥¼ ë‚˜íƒ€ë‚¸ë‹¤.
+                 * ì´ëŠ” ë¶„ì„í•˜ë ¤ëŠ” non variable columnì˜ ì‹¤ì œ offsetì„ êµ¬í•˜ê¸° ìœ„í•´ ì‚¬ìš©ëœë‹¤.
+                 * ëˆ„ì ë˜ì–´ ì €ì¥ë˜ëŠ” ê°’ì´ ì•„ë‹ˆê¸° ë•Œë¬¸ì—
+                 * ë§¤ë²ˆ í•´ë‹¹í•˜ëŠ” columnì— ë§ëŠ” ê°’ì„ ë”í•´ columnì˜ ìœ„ì¹˜ë¥¼ êµ¬í•´ì•¼ í•œë‹¤. */
                 sColStartPtr = sAdjustedColStartPtr 
                                + aRowTemplate->mVariableColOffset[ sCurVarColumnIdx ] 
-                               + sCumulativeAdjustOffset; /* ´©Àû °è»êµÈ variable columnµéÀÇ ±æÀÌ */
+                               + sCumulativeAdjustOffset; /* ëˆ„ì  ê³„ì‚°ëœ variable columnë“¤ì˜ ê¸¸ì´ */
 
                 sCumulativeAdjustOffset += getColumnStoredLen( sColStartPtr );
             }
         }
 
-        /* rowPieceÀÇ Ã¹¹øÂ° column°ú ¸¶Áö¸· columnÀº
-         * splitµÇ¾î ÀÖÀ» ¼ö ÀÖ±â ¶§¹®¿¡ rowTemplateÀÇ
-         * Á¤º¸¸¦ ÀÌ¿ëÇÏÁö ¾Ê°í column Á¤º¸¸¦ °¡Á®¿Â´Ù*/
+        /* rowPieceì˜ ì²«ë²ˆì§¸ columnê³¼ ë§ˆì§€ë§‰ columnì€
+         * splitë˜ì–´ ìˆì„ ìˆ˜ ìˆê¸° ë•Œë¬¸ì— rowTemplateì˜
+         * ì •ë³´ë¥¼ ì´ìš©í•˜ì§€ ì•Šê³  column ì •ë³´ë¥¼ ê°€ì ¸ì˜¨ë‹¤*/
         if ( (sFetchColTemplate->mStoredSize != SMC_UNDEFINED_COLUMN_LEN) &&
              (sCopyOffset == 0) && 
              (sColSeqInRowPiece != sMaxColSeqInRowPiece) )
@@ -9516,7 +9516,7 @@ IDE_RC sdcRow::doFetch( UChar               * aColPiecePtr,
             sIsVariableColumn = ID_TRUE;
         }
 
-        /* fetchÇÏ·Á´Â columnÀÇ Á¤º¸¸¦ °¡Á®¿Â´Ù. */
+        /* fetchí•˜ë ¤ëŠ” columnì˜ ì •ë³´ë¥¼ ê°€ì ¸ì˜¨ë‹¤. */
         getColumnValue( sAdjustedColStartPtr,
                         sCumulativeAdjustOffset,
                         sIsVariableColumn,
@@ -9538,11 +9538,11 @@ IDE_RC sdcRow::doFetch( UChar               * aColPiecePtr,
             IDE_TEST_RAISE( sFetchColumnValue.mValue.length > sFetchColumn->size, 
                             error_disk_column_size );
  
-            /* µ¥ÀÌÅÍ¸¦ ÀúÀåÇÒ¶§, MT datatype formatÀ¸·Î ÀúÀåÇÏÁö ¾Ê°í
-             * raw value¸¸ ÀúÀåÇÑ´Ù.(ÀúÀå °ø°£À» ÁÙÀÌ±â À§ÇØ¼­ÀÌ´Ù.)
-             * ±×·¡¼­ ÀúÀåµÈ data¸¦ QP¿¡°Ô º¸³»ÁÙ ¶§,
-             * memcpy¸¦ ÇÏ¸é ¾ÈµÇ°í, QP°¡ ³»·ÁÁØ callback ÇÔ¼ö¸¦ È£ÃâÇØ¾ß ÇÑ´Ù.
-             * ÀÌ callback ÇÔ¼ö¿¡¼­ raw value¸¦ MT datatype formatÀ¸·Î º¯È¯ÇÑ´Ù. */
+            /* ë°ì´í„°ë¥¼ ì €ì¥í• ë•Œ, MT datatype formatìœ¼ë¡œ ì €ì¥í•˜ì§€ ì•Šê³ 
+             * raw valueë§Œ ì €ì¥í•œë‹¤.(ì €ì¥ ê³µê°„ì„ ì¤„ì´ê¸° ìœ„í•´ì„œì´ë‹¤.)
+             * ê·¸ë˜ì„œ ì €ì¥ëœ dataë¥¼ QPì—ê²Œ ë³´ë‚´ì¤„ ë•Œ,
+             * memcpyë¥¼ í•˜ë©´ ì•ˆë˜ê³ , QPê°€ ë‚´ë ¤ì¤€ callback í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•´ì•¼ í•œë‹¤.
+             * ì´ callback í•¨ìˆ˜ì—ì„œ raw valueë¥¼ MT datatype formatìœ¼ë¡œ ë³€í™˜í•œë‹¤. */
              /* BUG-31582 [sm-disk-collection] When an fetch error occurs
               * in DRDB, output the information. */
             if ( ((smiCopyDiskColumnValueFunc)sCurrFetchCol->copyDiskColumn)( 
@@ -9567,12 +9567,12 @@ IDE_RC sdcRow::doFetch( UChar               * aColPiecePtr,
         }
         else
         {
-            /* lob columnÀº index¸¦ ¸¸µé¼ö ¾ø´Ù. */
+            /* lob columnì€ indexë¥¼ ë§Œë“¤ìˆ˜ ì—†ë‹¤. */
             IDE_DASSERT( SDC_IS_LOB_COLUMN( sFetchColumn ) == ID_FALSE );
 
             /* special fetch for index */
-            /* index¿¡¼­ ³»·ÁÁØ callback ÇÔ¼ö¸¦ È£ÃâÇÏ¿©
-             * index°¡ ¿øÇÏ´Â formatÀÇ ÄÃ·³Á¤º¸¸¦ ¸¸µç´Ù. */
+            /* indexì—ì„œ ë‚´ë ¤ì¤€ callback í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•˜ì—¬
+             * indexê°€ ì›í•˜ëŠ” formatì˜ ì»¬ëŸ¼ì •ë³´ë¥¼ ë§Œë“ ë‹¤. */
             IDE_TEST( aIndexInfo4Fetch->mCallbackFunc4Index(
                                                  sFetchColumn,
                                                  sCopyOffset,
@@ -9716,7 +9716,7 @@ void sdcRow::dumpErrorCopyDiskColumn( UChar           * aColPiecePtr,
                     (UChar*)aFetchColumnValue->mValue.value,
                     aFetchColumnValue->mValue.length );
      
-    //UndoRecord·ÎºÎÅÍ ±¸¼ºµÈ °æ¿ì°¡ ¾Æ´Ï¸é, Page¸¦ DumpÇÔ
+    //UndoRecordë¡œë¶€í„° êµ¬ì„±ëœ ê²½ìš°ê°€ ì•„ë‹ˆë©´, Pageë¥¼ Dumpí•¨
     if ( aUndoSID == SD_NULL_SID )
     {
         (void)sdpPhyPage::tracePage( IDE_ERR_0,
@@ -9742,10 +9742,10 @@ void sdcRow::makeLobColumnInfo( sdcLobInfo4Fetch * aLobInfo4Fetch,
     sLobValue.value  = aLobDesc;
     sLobValue.length = ID_SIZEOF(sdcLobDesc);
 
-    // aLobInfo4Fetch °¡ NULLÀÎ °æ¿ì´Â QP¿¡¼­ Fetch¸¦ È£ÃâÇÑ °æ¿ìÀÌ´Ù.
-    // QP´Â In Mode LobÀÏ¶§¿¡µµ Lob Descriptor¸¦ ¾ò¾î¾ß ÇÑ´Ù.
-    // ±×·¯¹Ç·Î In Mode Lob ÀÏ °æ¿ì ´õ¹Ì LOB Descriptor¸¦
-    // ±¸¼ºÇÏ¿© ³Ñ±ä´Ù.
+    // aLobInfo4Fetch ê°€ NULLì¸ ê²½ìš°ëŠ” QPì—ì„œ Fetchë¥¼ í˜¸ì¶œí•œ ê²½ìš°ì´ë‹¤.
+    // QPëŠ” In Mode Lobì¼ë•Œì—ë„ Lob Descriptorë¥¼ ì–»ì–´ì•¼ í•œë‹¤.
+    // ê·¸ëŸ¬ë¯€ë¡œ In Mode Lob ì¼ ê²½ìš° ë”ë¯¸ LOB Descriptorë¥¼
+    // êµ¬ì„±í•˜ì—¬ ë„˜ê¸´ë‹¤.
     if ( aLobInfo4Fetch == NULL )
     {
         if ( aFetchColumnValue->mInOutMode == SDC_COLUMN_IN_MODE )
@@ -9775,9 +9775,9 @@ void sdcRow::makeLobColumnInfo( sdcLobInfo4Fetch * aLobInfo4Fetch,
     }
     else
     {
-        // aLobInfo4Fetch °¡ NULLÀÌ ¾Æ´Ñ °æ¿ì´Â
-        // sdcLob¿¡¼­ fetch¸¦ È£ÃâÇÑ °æ¿ìÀÌ´Ù. InOut
-        // Mode¸¦ ±¸ºĞÇÏÁö ¾Ê°í Column Data¸¦ ³Ñ±ä´Ù.
+        // aLobInfo4Fetch ê°€ NULLì´ ì•„ë‹Œ ê²½ìš°ëŠ”
+        // sdcLobì—ì„œ fetchë¥¼ í˜¸ì¶œí•œ ê²½ìš°ì´ë‹¤. InOut
+        // Modeë¥¼ êµ¬ë¶„í•˜ì§€ ì•Šê³  Column Dataë¥¼ ë„˜ê¸´ë‹¤.
         aLobInfo4Fetch->mInOutMode = aFetchColumnValue->mInOutMode;
     }
 }
@@ -9785,14 +9785,14 @@ void sdcRow::makeLobColumnInfo( sdcLobInfo4Fetch * aLobInfo4Fetch,
 /***********************************************************************
  *
  * Description :
- *  trailing nullÀÌ Á¸ÀçÇÏ´Â °æ¿ì,
- *  NULL value¸¦ dest buf¿¡ º¹»çÇØÁØ´Ù.
+ *  trailing nullì´ ì¡´ì¬í•˜ëŠ” ê²½ìš°,
+ *  NULL valueë¥¼ dest bufì— ë³µì‚¬í•´ì¤€ë‹¤.
  *
  *  aFetchColumnList    - [IN]     fetch column list
- *  aIndexInfo4Fetch    - [IN]     fetchÇÏ¸é¼­ vrow¸¦ ¸¸µå´Â °æ¿ì,
- *                                 ÀÌ ÀÚ·á±¸Á¶¿¡ ÇÊ¿äÇÑ Á¤º¸µéÀ» ³Ñ±ä´Ù.
- *                                 normal fetchÀÇ °æ¿ì´Â NULLÀÌ´Ù.
- *  aFetchStatus        - [IN/OUT] fetch ÁøÇà»óÅÂ Á¤º¸
+ *  aIndexInfo4Fetch    - [IN]     fetchí•˜ë©´ì„œ vrowë¥¼ ë§Œë“œëŠ” ê²½ìš°,
+ *                                 ì´ ìë£Œêµ¬ì¡°ì— í•„ìš”í•œ ì •ë³´ë“¤ì„ ë„˜ê¸´ë‹¤.
+ *                                 normal fetchì˜ ê²½ìš°ëŠ” NULLì´ë‹¤.
+ *  aFetchStatus        - [IN/OUT] fetch ì§„í–‰ìƒíƒœ ì •ë³´
  *  aDestRowBuf         - [OUT]    dest buf
  *
  **********************************************************************/
@@ -9825,8 +9825,8 @@ IDE_RC sdcRow::doFetchTrailingNull( const smiFetchColumnList * aFetchColumnList,
     sFetchColumnList = aFetchColumnList;
 
     /* BUG-23371
-     * smiFetchColumnList°¡ list·Î »ı¼ºµÇ¾úÀ½¿¡µµ
-     * fetch column½Ã ¼­¹ö »ç¸ÁÇÏ´Â °æ¿ì°¡ ÀÖ½À´Ï´Ù. */
+     * smiFetchColumnListê°€ listë¡œ ìƒì„±ë˜ì—ˆìŒì—ë„
+     * fetch columnì‹œ ì„œë²„ ì‚¬ë§í•˜ëŠ” ê²½ìš°ê°€ ìˆìŠµë‹ˆë‹¤. */
     for(sLoop = 0; sLoop < aFetchStatus->mFetchDoneColCount; sLoop++)
     {
         sFetchColumnList = sFetchColumnList->next;
@@ -9856,12 +9856,12 @@ IDE_RC sdcRow::doFetchTrailingNull( const smiFetchColumnList * aFetchColumnList,
             }
             else
             {
-                /* dictionary compressed columnÀÌ TrailingNull¿¡ Æ÷ÇÔµÇ¾îÀÖ´Ù¸é
-                 * ÇØ´ç columnÀÇ null °ªÀÌ ÀúÀåµÇ¾îÀÖ´Â dictionary tableÀÇ ÇØ´ç OID¸¦
-                 * fetch ÇØ¾ß ÇÑ´Ù.
-                 * alter table t1 add column c20 °ú °°ÀÌ add columnÀ¸·Î
-                 * dictionary compressed column ÀÌ Ãß°¡ µÈ°æ¿ì ÇØ´ç columnÀÌ
-                 * TrailingNull¿¡ Æ÷ÇÔ µÈ´Ù. */
+                /* dictionary compressed columnì´ TrailingNullì— í¬í•¨ë˜ì–´ìˆë‹¤ë©´
+                 * í•´ë‹¹ columnì˜ null ê°’ì´ ì €ì¥ë˜ì–´ìˆëŠ” dictionary tableì˜ í•´ë‹¹ OIDë¥¼
+                 * fetch í•´ì•¼ í•œë‹¤.
+                 * alter table t1 add column c20 ê³¼ ê°™ì´ add columnìœ¼ë¡œ
+                 * dictionary compressed column ì´ ì¶”ê°€ ëœê²½ìš° í•´ë‹¹ columnì´
+                 * TrailingNullì— í¬í•¨ ëœë‹¤. */
                 IDE_TEST( smcTable::getTableHeaderFromOID( 
                             sCurrFetchCol->column->mDictionaryTableOID,
                             (void**)&sDicTable ) != IDE_SUCCESS );
@@ -9880,22 +9880,22 @@ IDE_RC sdcRow::doFetchTrailingNull( const smiFetchColumnList * aFetchColumnList,
 
                 sLobDesc.mLobDescFlag = SDC_LOB_DESC_NULL_TRUE;
                 
-                // QP ¿¡¼­ LOB Desc¸¦ ¾ò±âÀ§ÇØ È£ÃâÇÑ °æ¿ì
+                // QP ì—ì„œ LOB Descë¥¼ ì–»ê¸°ìœ„í•´ í˜¸ì¶œí•œ ê²½ìš°
                 sDummyValue = &sDummyLobValue;
             }
             else
             {
-                // sm ¿¡¼­ LOB Column Piece¸¦ ¾ò±â À§ÇØ È£ÃâÇÑ°æ¿ì
+                // sm ì—ì„œ LOB Column Pieceë¥¼ ì–»ê¸° ìœ„í•´ í˜¸ì¶œí•œê²½ìš°
                 sDummyValue                = &sDummyNullValue;
                 aLobInfo4Fetch->mInOutMode = SDC_COLUMN_IN_MODE;
             }
         }
 
         /* BUG-23911
-         * Index¸¦ À§ÇÑ Row Fetch°úÁ¤¿¡¼­ Trailing Null¿¡ ´ëÇÑ °í·Á°¡ ¾ÈµÇ¾ú½À´Ï´Ù. */
-        /* trailing null value¸¦ fetchÇÏ´Â °æ¿ì¿¡µµ,
-         * [normal fetch] or [special fetch for index] ÀÎÁö¸¦
-         * ±¸ºĞÇÏ¿© Ã³¸®ÇÑ´Ù. */
+         * Indexë¥¼ ìœ„í•œ Row Fetchê³¼ì •ì—ì„œ Trailing Nullì— ëŒ€í•œ ê³ ë ¤ê°€ ì•ˆë˜ì—ˆìŠµë‹ˆë‹¤. */
+        /* trailing null valueë¥¼ fetchí•˜ëŠ” ê²½ìš°ì—ë„,
+         * [normal fetch] or [special fetch for index] ì¸ì§€ë¥¼
+         * êµ¬ë¶„í•˜ì—¬ ì²˜ë¦¬í•œë‹¤. */
         if ( aIndexInfo4Fetch == NULL )
         {
             /* normal fetch */
@@ -10043,17 +10043,17 @@ void sdcRow::resetRowFetchStatus( const sdcRowHdrInfo * aRowHdrInfo,
     if ( SM_IS_FLAG_ON( sRowFlag, SDC_ROWHDR_N_FLAG )
          == ID_TRUE )
     {
-        /* mColumnÀÇ °ªÀ» º¸°í fetch ÄÃ·³ÀÎÁö ¿©ºÎ¸¦ ÆÇ´ÜÇÑ´Ù.
-         * mColumn == NULL : fetch ÄÃ·³ X
-         * mColumn != NULL : fetch ÄÃ·³ O */
+        /* mColumnì˜ ê°’ì„ ë³´ê³  fetch ì»¬ëŸ¼ì¸ì§€ ì—¬ë¶€ë¥¼ íŒë‹¨í•œë‹¤.
+         * mColumn == NULL : fetch ì»¬ëŸ¼ X
+         * mColumn != NULL : fetch ì»¬ëŸ¼ O */
         if ( sIsSpltLstColumn == ID_FALSE )
         {
-            /* last columnÀÌ fetch ÄÃ·³ÀÌ ¾Æ´Ñ °æ¿ì */
+            /* last columnì´ fetch ì»¬ëŸ¼ì´ ì•„ë‹Œ ê²½ìš° */
             aFetchStatus->mFetchDoneColCount += aFetchColumnCnt;
         }
         else
         {
-            /* last columnÀÌ fetch ÄÃ·³ÀÎ °æ¿ì */
+            /* last columnì´ fetch ì»¬ëŸ¼ì¸ ê²½ìš° */
             aFetchStatus->mFetchDoneColCount += (aFetchColumnCnt - 1);
         }
     }
@@ -10066,25 +10066,25 @@ void sdcRow::resetRowFetchStatus( const sdcRowHdrInfo * aRowHdrInfo,
 
 /***********************************************************************
  * FUNCTION DESCRIPTION : sdcRecord::lockRecord( )
- *   !!!º» ÇÔ¼ö´Â Repeatable Read³ª Select-For-Update½Ã¿¡¸¸ È£ÃâµÈ´Ù.!!!
- *   º» ÇÔ¼ö´Â Æ¯Á¤ Record¿¡ dummy update¸¦ ¼öÇàÇÏ¿© Record Level
- *   LockÀ» ±¸ÇöÇÑ´Ù.
- *   º» ÇÔ¼ö¿¡ÀÇÇØ ±âÁ¸ÀÇ Row HeaderÀÇ TID¿Í BeginSCNÀº ÇöÀç StmtÀÇ
- *   °ÍÀ¸·Î º¯°æµÇ¸ç Row ÀÚÃ¼ÀÇ ³»¿ëÀº º¯°æÇÏÁö ¾Ê´Â´Ù.
- *   º» ÇÔ¼ö¿¡ÀÇÇØ »ı¼ºµÈ Undo Log Record´Â Update column count°¡ 0ÀÎ
- *   Á¡À» Á¦¿ÜÇÏ¸é ±âÁ¸ÀÇ Update undo log¿Í µ¿ÀÏÇÏ´Ù.
- *   º» ÇÔ¼ö´Â isUpdatable()ÇÔ¼ö¸¦ Åë°úÇÑ ÈÄ¿¡ È£ÃâÇÏ¿©¾ß ÇÑ´Ù.
+ *   !!!ë³¸ í•¨ìˆ˜ëŠ” Repeatable Readë‚˜ Select-For-Updateì‹œì—ë§Œ í˜¸ì¶œëœë‹¤.!!!
+ *   ë³¸ í•¨ìˆ˜ëŠ” íŠ¹ì • Recordì— dummy updateë¥¼ ìˆ˜í–‰í•˜ì—¬ Record Level
+ *   Lockì„ êµ¬í˜„í•œë‹¤.
+ *   ë³¸ í•¨ìˆ˜ì—ì˜í•´ ê¸°ì¡´ì˜ Row Headerì˜ TIDì™€ BeginSCNì€ í˜„ì¬ Stmtì˜
+ *   ê²ƒìœ¼ë¡œ ë³€ê²½ë˜ë©° Row ìì²´ì˜ ë‚´ìš©ì€ ë³€ê²½í•˜ì§€ ì•ŠëŠ”ë‹¤.
+ *   ë³¸ í•¨ìˆ˜ì—ì˜í•´ ìƒì„±ëœ Undo Log RecordëŠ” Update column countê°€ 0ì¸
+ *   ì ì„ ì œì™¸í•˜ë©´ ê¸°ì¡´ì˜ Update undo logì™€ ë™ì¼í•˜ë‹¤.
+ *   ë³¸ í•¨ìˆ˜ëŠ” isUpdatable()í•¨ìˆ˜ë¥¼ í†µê³¼í•œ í›„ì— í˜¸ì¶œí•˜ì—¬ì•¼ í•œë‹¤.
  *
- * »õ·Î¿î undo log slotÀ» ÇÒ´ç¹Ş´Â´Ù.
- * undo log record¿¡ »õ undo no¸¦ ÇÒ´çÇÑ´Ù.
- * undo log record¿¡ log typeÀ» UPDATE typeÀ¸·Î ÇÑ´Ù.
- * undo log record¿¡ column count ¸¦ 0À¸·Î ÇÑ´Ù.
- * undo log record¿¡ aCurRecPtr->TID, aCurRecPtr->beginSCN,
- *     aCurRecPtr->rollPtrÀ» ¼¼ÆÃÇÑ´Ù.
+ * ìƒˆë¡œìš´ undo log slotì„ í• ë‹¹ë°›ëŠ”ë‹¤.
+ * undo log recordì— ìƒˆ undo noë¥¼ í• ë‹¹í•œë‹¤.
+ * undo log recordì— log typeì„ UPDATE typeìœ¼ë¡œ í•œë‹¤.
+ * undo log recordì— column count ë¥¼ 0ìœ¼ë¡œ í•œë‹¤.
+ * undo log recordì— aCurRecPtr->TID, aCurRecPtr->beginSCN,
+ *     aCurRecPtr->rollPtrì„ ì„¸íŒ…í•œë‹¤.
  *
- * aCurRecPtr->TID¸¦ aMyTssSlotÀ¸·Î ¼¼ÆÃÇÑ´Ù.
- * aCurRecPtr->beginSCNÀ» aMyStmtSCNÀ¸·Î ¼¼ÆÃÇÑ´Ù.
- * aCurRecPtr->rollPtrÀ» ÇÒ´ç ¹ŞÀº undo recordÀÇ RID·Î ¼¼ÆÃÇÑ´Ù.
+ * aCurRecPtr->TIDë¥¼ aMyTssSlotìœ¼ë¡œ ì„¸íŒ…í•œë‹¤.
+ * aCurRecPtr->beginSCNì„ aMyStmtSCNìœ¼ë¡œ ì„¸íŒ…í•œë‹¤.
+ * aCurRecPtr->rollPtrì„ í• ë‹¹ ë°›ì€ undo recordì˜ RIDë¡œ ì„¸íŒ…í•œë‹¤.
  **********************************************************************/
 IDE_RC sdcRow::lock( idvSQL       *aStatistics,
                      UChar        *aSlotPtr,
@@ -10114,8 +10114,8 @@ IDE_RC sdcRow::lock( idvSQL       *aStatistics,
     sMyTSSlotSID     = smxTrans::getTSSlotSID( aMtx->mTrans );
 
     // BUG-15074
-    // °°Àº tx°¡ lock record¸¦ µÎ¹ø È£ÃâÇÒ ¶§ µÎ°³ÀÇ lock record°¡
-    // »ı¼ºµÇ´Â °ÍÀ» ¹æÁöÇÏ±â À§ÇØ ÀÌ¹Ì lockÀÌ ÀÖ´ÂÁö °Ë»çÇÑ´Ù.
+    // ê°™ì€ txê°€ lock recordë¥¼ ë‘ë²ˆ í˜¸ì¶œí•  ë•Œ ë‘ê°œì˜ lock recordê°€
+    // ìƒì„±ë˜ëŠ” ê²ƒì„ ë°©ì§€í•˜ê¸° ìœ„í•´ ì´ë¯¸ lockì´ ìˆëŠ”ì§€ ê²€ì‚¬í•œë‹¤.
     IDE_TEST( isAlreadyMyLockExistOnRow(
                        &sMyTSSlotSID,
                        &sMyFstDskViewSCN,
@@ -10160,23 +10160,23 @@ IDE_RC sdcRow::lock( idvSQL       *aStatistics,
 /***********************************************************************
  *
  * Description :
- *  row level lock¿¡´Â µÎ°¡Áö Á¾·ù°¡ ÀÖ´Ù.
+ *  row level lockì—ëŠ” ë‘ê°€ì§€ ì¢…ë¥˜ê°€ ìˆë‹¤.
  *  1. explicit lock
  *   -> select for update, repeatable read
  *
  *  2. implicit lock
- *   -> update½Ã¿¡ head rowpiece¿¡ updateÇÒ ÄÃ·³ÀÌ ÇÏ³ªµµ ¾ø´Â °æ¿ì,
- *      MVCC¸¦ À§ÇØ¼­ head rowpiece¿¡ implicit lockÀ» °Ç´Ù.
+ *   -> updateì‹œì— head rowpieceì— updateí•  ì»¬ëŸ¼ì´ í•˜ë‚˜ë„ ì—†ëŠ” ê²½ìš°,
+ *      MVCCë¥¼ ìœ„í•´ì„œ head rowpieceì— implicit lockì„ ê±´ë‹¤.
  *
- * aStatistics        - [IN] Åë°èÁ¤º¸
- * aMtx               - [IN] Mtx Æ÷ÀÎÅÍ
+ * aStatistics        - [IN] í†µê³„ì •ë³´
+ * aMtx               - [IN] Mtx í¬ì¸í„°
  * aStartInfo         - [IN] Mtx StartInfo
- * aCSInfiniteSCN     - [IN] Cursor Infinite SCN Æ÷ÀÎÅÍ
+ * aCSInfiniteSCN     - [IN] Cursor Infinite SCN í¬ì¸í„°
  * aTableOID          - [IN] Table OID
- * aSlotPtr           - [IN] Row Slot Æ÷ÀÎÅÍ
- * aCTSlotIdxBfrLock  - [IN] Lock Row ÇÏ±âÀüÀÇ RowÀÇ CTSlotIdx
- * aCTSLotIdxAftLock  - [IN] Lock Row ÇÑÈÄÀÇ RowÀÇ CTSlotIdx
- * aIsExplicitLock    - [IN] Implicit/Explicit Lock ¿©ºÎ
+ * aSlotPtr           - [IN] Row Slot í¬ì¸í„°
+ * aCTSlotIdxBfrLock  - [IN] Lock Row í•˜ê¸°ì „ì˜ Rowì˜ CTSlotIdx
+ * aCTSLotIdxAftLock  - [IN] Lock Row í•œí›„ì˜ Rowì˜ CTSlotIdx
+ * aIsExplicitLock    - [IN] Implicit/Explicit Lock ì—¬ë¶€
  *
  **********************************************************************/
 IDE_RC sdcRow::lockRow( idvSQL                      *aStatistics,
@@ -10222,7 +10222,7 @@ IDE_RC sdcRow::lockRow( idvSQL                      *aStatistics,
                                        aIsExplicitLock,
                                        &sUndoSID ) != IDE_SUCCESS )
     {
-        /* Undo °ø°£ºÎÁ·À¸·Î ½ÇÆĞÇÑ °æ¿ì. MtxUndo ¹«½ÃÇØµµ µÊ */
+        /* Undo ê³µê°„ë¶€ì¡±ìœ¼ë¡œ ì‹¤íŒ¨í•œ ê²½ìš°. MtxUndo ë¬´ì‹œí•´ë„ ë¨ */
         sdrMiniTrans::setIgnoreMtxUndo( aMtx );
         IDE_TEST( 1 );
     }
@@ -10233,8 +10233,8 @@ IDE_RC sdcRow::lockRow( idvSQL                      *aStatistics,
 
     if ( aIsExplicitLock == ID_TRUE )
     {
-        /* Explicit LockÀº RowHdr¿¡ LockBit¸¸ ¼³Á¤ÇÏ°í,
-         * CommitSCNÀº º¯°æÇÏÁö ¾Ê´Â´Ù. */
+        /* Explicit Lockì€ RowHdrì— LockBitë§Œ ì„¤ì •í•˜ê³ ,
+         * CommitSCNì€ ë³€ê²½í•˜ì§€ ì•ŠëŠ”ë‹¤. */
         SDC_SET_CTS_LOCK_BIT( sNewCTSlotIdx );
         SM_SET_SCN( &sNewRowCommitSCN, aCSInfiniteSCN );
     }
@@ -10353,10 +10353,10 @@ IDE_RC sdcRow::writeLockRowRedoUndoLog( UChar     *aSlotPtr,
 /***********************************************************************
  *
  * Description :
- *  lock row undo¿¡ ´ëÇÑ CLRÀ» ±â·ÏÇÏ´Â ÇÔ¼öÀÌ´Ù.
- *  LOCK_ROW ·Î±×´Â redo, undo ·Î±×ÀÇ ±¸Á¶°¡ °°±â ¶§¹®¿¡
- *  undo record¿¡¼­ undo info layerÀÇ ³»¿ë¸¸ »©¼­,
- *  clr redo log¸¦ ÀÛ¼ºÇÏ¸é µÈ´Ù.
+ *  lock row undoì— ëŒ€í•œ CLRì„ ê¸°ë¡í•˜ëŠ” í•¨ìˆ˜ì´ë‹¤.
+ *  LOCK_ROW ë¡œê·¸ëŠ” redo, undo ë¡œê·¸ì˜ êµ¬ì¡°ê°€ ê°™ê¸° ë•Œë¬¸ì—
+ *  undo recordì—ì„œ undo info layerì˜ ë‚´ìš©ë§Œ ë¹¼ì„œ,
+ *  clr redo logë¥¼ ì‘ì„±í•˜ë©´ ëœë‹¤.
  *
  **********************************************************************/
 IDE_RC sdcRow::writeLockRowCLR( const UChar     *aUndoRecHdr,
@@ -10377,7 +10377,7 @@ IDE_RC sdcRow::writeLockRowCLR( const UChar     *aUndoRecHdr,
     sSlotDirStartPtr = sdpPhyPage::getSlotDirStartPtr( 
                                       (UChar*)aUndoRecHdr );
 
-    /* undo info layerÀÇ Å©±â¸¦ »«´Ù. */
+    /* undo info layerì˜ í¬ê¸°ë¥¼ ëº€ë‹¤. */
     sLogSize = sdcUndoSegment::getUndoRecSize( 
                                sSlotDirStartPtr,
                                SD_MAKE_SLOTNUM( aUndoSID ) );
@@ -10408,8 +10408,8 @@ IDE_RC sdcRow::writeLockRowCLR( const UChar     *aUndoRecHdr,
 /***********************************************************************
  *
  * Description :
- *  lock row ¿¬»ê¿¡ ´ëÇÑ redo or undo¸¦ ¼öÇàÇÏ´Â ÇÔ¼öÀÌ´Ù.
- *  LOCK_ROW ·Î±×´Â redo, undo ·Î±×ÀÇ ±¸Á¶°¡ °°´Ù.
+ *  lock row ì—°ì‚°ì— ëŒ€í•œ redo or undoë¥¼ ìˆ˜í–‰í•˜ëŠ” í•¨ìˆ˜ì´ë‹¤.
+ *  LOCK_ROW ë¡œê·¸ëŠ” redo, undo ë¡œê·¸ì˜ êµ¬ì¡°ê°€ ê°™ë‹¤.
  *
  **********************************************************************/
 IDE_RC sdcRow::redo_undo_LOCK_ROW( sdrMtx              *aMtx,
@@ -10451,32 +10451,32 @@ IDE_RC sdcRow::redo_undo_LOCK_ROW( sdrMtx              *aMtx,
 
 /***********************************************************************
  *
- * Description : ³» Æ®·£Àè¼ÇÀÌ °»½ÅÁßÀÎ RowPiece ¿©ºÎ ¹İÈ¯
+ * Description : ë‚´ íŠ¸ëœì­ì…˜ì´ ê°±ì‹ ì¤‘ì¸ RowPiece ì—¬ë¶€ ë°˜í™˜
  *
- * << ÀÚ½ÅÀÌ °»½ÅÁßÀÎ RowÀÎÁö È®ÀÎÇÏ´Â ¹æ¹ı >>
+ * << ìì‹ ì´ ê°±ì‹ ì¤‘ì¸ Rowì¸ì§€ í™•ì¸í•˜ëŠ” ë°©ë²• >>
  *
- * ¼­·Î´Ù¸¥ Æ®·£Àè¼ÇÀÌ TSS RID°¡ µ¿ÀÏÇÒ ¼ø ÀÖ¾îµµ TxBSCNÀÌ µ¿ÀÏÇÒ¼ö ¾øÀ¸¸ç,
- * ¶ÇÇÑ, TxBSCNÀÌ µ¿ÀÏÇØµµ TSS RID°¡ µ¿ÀÏÇÒ¼ö ¾ø´Ù.
- * ¿Ö³ÄÇÏ¸é, µ¿ÀÏÇÑ FstDskViewSCNÀ» °¡Áø Æ®·£Àè¼Ç°£¿¡´Â TSS SlotÀÇ Àç»ç¿ëÀÌ
- * ºÒ°¡´ÉÇÑµ¥, TSS ¼¼±×¸ÕÆ®ÀÇ ExtDirÀÌ Àç»ç¿ëµÇÁö ¸øÇÏ±â ¶§¹®ÀÌ´Ù.
- *
- *
- * << Legacy TransactionÀÌ commit Àü¿¡ updateÇÑ row´Â ID_FALSE ¸®ÅÏ >>
- *
- * Legacy TransactionÀÇ °æ¿ì, commit ÇÏ±â Àü¿¡ updateÇÑ row¸¦ commit ÈÄ¿¡
- * FAC·Î ´Ù½Ã Á¢±ÙÇÏ´Â °æ¿ì°¡ »ı±ä´Ù. Legacy transactionÀº commit ÈÄ ÀÚ½ÅÀ»
- * ÃÊ±âÈ­ ÇÏ¸é¼­ mTXSegEntry¸¦ NULL·Î ÃÊ±âÈ­ ÇÏ±â ¶§¹®¿¡ TSSlotSID°¡ NULLÀÌ´Ù.
- * µû¶ó¼­ commit ÀÌÈÄ¿¡ ÇØ´ç row¸¦ Á¢±ÙÇØ¼­ º» ÇÔ¼ö, isMyTransUpdating()À»
- * È£ÃâÇÏ´õ¶óµµ, ÀÚ½ÅÀÇ TSSlotSID°¡ NULLÀÌ±â ¶§¹®¿¡ ID_FALSE¸¦ ¸®ÅÏÇÑ´Ù.
- *
- * ÀÚ½ÅÀÌ commit ÇÏ±â ÀÌÀü¿¡ °»½ÅÇß´ø rowÀÎÁö ¿©ºÎ¸¦ ÆÇ´ÜÇÏ±â À§ÇØ¼­´Â
- * sdcRow::isMyLegacyTransUpdated() ÇÔ¼ö¸¦ »ç¿ëÇØ¾ß ÇÑ´Ù.
+ * ì„œë¡œë‹¤ë¥¸ íŠ¸ëœì­ì…˜ì´ TSS RIDê°€ ë™ì¼í•  ìˆœ ìˆì–´ë„ TxBSCNì´ ë™ì¼í• ìˆ˜ ì—†ìœ¼ë©°,
+ * ë˜í•œ, TxBSCNì´ ë™ì¼í•´ë„ TSS RIDê°€ ë™ì¼í• ìˆ˜ ì—†ë‹¤.
+ * ì™œëƒí•˜ë©´, ë™ì¼í•œ FstDskViewSCNì„ ê°€ì§„ íŠ¸ëœì­ì…˜ê°„ì—ëŠ” TSS Slotì˜ ì¬ì‚¬ìš©ì´
+ * ë¶ˆê°€ëŠ¥í•œë°, TSS ì„¸ê·¸ë¨¼íŠ¸ì˜ ExtDirì´ ì¬ì‚¬ìš©ë˜ì§€ ëª»í•˜ê¸° ë•Œë¬¸ì´ë‹¤.
  *
  *
- * aPagePtr         - [IN] ÆäÀÌÁö Ptr
+ * << Legacy Transactionì´ commit ì „ì— updateí•œ rowëŠ” ID_FALSE ë¦¬í„´ >>
+ *
+ * Legacy Transactionì˜ ê²½ìš°, commit í•˜ê¸° ì „ì— updateí•œ rowë¥¼ commit í›„ì—
+ * FACë¡œ ë‹¤ì‹œ ì ‘ê·¼í•˜ëŠ” ê²½ìš°ê°€ ìƒê¸´ë‹¤. Legacy transactionì€ commit í›„ ìì‹ ì„
+ * ì´ˆê¸°í™” í•˜ë©´ì„œ mTXSegEntryë¥¼ NULLë¡œ ì´ˆê¸°í™” í•˜ê¸° ë•Œë¬¸ì— TSSlotSIDê°€ NULLì´ë‹¤.
+ * ë”°ë¼ì„œ commit ì´í›„ì— í•´ë‹¹ rowë¥¼ ì ‘ê·¼í•´ì„œ ë³¸ í•¨ìˆ˜, isMyTransUpdating()ì„
+ * í˜¸ì¶œí•˜ë”ë¼ë„, ìì‹ ì˜ TSSlotSIDê°€ NULLì´ê¸° ë•Œë¬¸ì— ID_FALSEë¥¼ ë¦¬í„´í•œë‹¤.
+ *
+ * ìì‹ ì´ commit í•˜ê¸° ì´ì „ì— ê°±ì‹ í–ˆë˜ rowì¸ì§€ ì—¬ë¶€ë¥¼ íŒë‹¨í•˜ê¸° ìœ„í•´ì„œëŠ”
+ * sdcRow::isMyLegacyTransUpdated() í•¨ìˆ˜ë¥¼ ì‚¬ìš©í•´ì•¼ í•œë‹¤.
+ *
+ *
+ * aPagePtr         - [IN] í˜ì´ì§€ Ptr
  * aSlotPtr         - [IN] RowPiece Slot Ptr
- * aMyFstDskViewSCN - [IN] Æ®·£Àè¼ÇÀÇ Ã¹¹øÂ° Disk StmtÀÇ ViewSCN
- * aMyTSSlotSID     - [IN] Æ®·£Àè¼ÇÀÇ TSSlot SID
+ * aMyFstDskViewSCN - [IN] íŠ¸ëœì­ì…˜ì˜ ì²«ë²ˆì§¸ Disk Stmtì˜ ViewSCN
+ * aMyTSSlotSID     - [IN] íŠ¸ëœì­ì…˜ì˜ TSSlot SID
  *
  ***********************************************************************/
 idBool sdcRow::isMyTransUpdating( UChar    * aPagePtr,
@@ -10506,8 +10506,8 @@ idBool sdcRow::isMyTransUpdating( UChar    * aPagePtr,
 
     sCTSlotIdx = SDC_UNMASK_CTSLOTIDX( sCTSlotIdx );
 
-    /* TASK-6105 IDE_TEST_RAISEÀÇ µ¿ÀÛ ºñ¿ëÀÌ Å©±â ¶§¹®¿¡ if¹®¿¡¼­
-     * ¹Ù·Î return ÇÑ´Ù. */
+    /* TASK-6105 IDE_TEST_RAISEì˜ ë™ì‘ ë¹„ìš©ì´ í¬ê¸° ë•Œë¬¸ì— ifë¬¸ì—ì„œ
+     * ë°”ë¡œ return í•œë‹¤. */
     if ( sCTSlotIdx == SDP_CTS_IDX_UNLK )
     {
         SM_SET_SCN( aFstDskViewSCN, &sFstDskViewSCN );
@@ -10566,23 +10566,23 @@ idBool sdcRow::isMyTransUpdating( UChar    * aPagePtr,
 
 
 /***********************************************************************
- * Description : Legacy Cursor°¡ ¼ÓÇÑ transactionÀÌ °»½Å ÈÄ Ä¿¹ÔÇÑ RowPiece
- *              ¿©ºÎ ¹İÈ¯
+ * Description : Legacy Cursorê°€ ì†í•œ transactionì´ ê°±ì‹  í›„ ì»¤ë°‹í•œ RowPiece
+ *              ì—¬ë¶€ ë°˜í™˜
  *
- *  Legacy CursorÀÇ InfiniteSCNÀÇ TID°¡ row pieceÀÇ InfiniteSCNÀÇ TID¿Í
- * ÀÏÄ¡ÇÏ¸é ÀÏ´Ü LegacyTrans°¡ update & commit ÇßÀ» °¡´É¼ºÀÌ ÀÖ´Ù. ±×·¯³ª
- * TID´Â Àç»ç¿ë µÉ ¼ö ÀÖÀ¸¹Ç·Î, LegacyTransMgr¿¡ ÇØ´ç TID·Î LegacyTransÀÇ
- * CommitSCNÀ» ¹Ş¾Æ¿Í¼­ ÇÑ¹ø ´õ È®ÀÎÇÑ´Ù.
- *  ¸¸¾à ´ë»ó row piece°¡ data page¿¡ ¼ÓÇØ ÀÖ´Ù¸é CTS¸¦ ÅëÇØ row pieceÀÇ
- * CommitSCNÀ» È¹µæÇÏ°í, undo page¿¡ ¼ÓÇØ ÀÖ´Ù¸é undo record·ÎºÎÅÍ row pieceÀÇ
- * CommitSCNÀ» ¾òÀ» ¼ö ÀÖ´Ù. ÀÌ·¸°Ô ¾òÀº row pieceÀÇ CommitSCNÀ» LegacyTransÀÇ
- * CommitSCN°ú ºñ±³ÇÏ¿© ÀÏÄ¡ÇÏ¸é ÃÖÁ¾ÀûÀ¸·Î ´ë»ó row piece¸¦ update & commit ÇÑ
- * °ÍÀÌ ÇöÀç ´ë»ó row piece¸¦ ÀĞÀ¸·Á ÇÏ´Â Legacy CursorÀÎÁö È®ÀÎÇÒ ¼ö ÀÖ´Ù.
+ *  Legacy Cursorì˜ InfiniteSCNì˜ TIDê°€ row pieceì˜ InfiniteSCNì˜ TIDì™€
+ * ì¼ì¹˜í•˜ë©´ ì¼ë‹¨ LegacyTransê°€ update & commit í–ˆì„ ê°€ëŠ¥ì„±ì´ ìˆë‹¤. ê·¸ëŸ¬ë‚˜
+ * TIDëŠ” ì¬ì‚¬ìš© ë  ìˆ˜ ìˆìœ¼ë¯€ë¡œ, LegacyTransMgrì— í•´ë‹¹ TIDë¡œ LegacyTransì˜
+ * CommitSCNì„ ë°›ì•„ì™€ì„œ í•œë²ˆ ë” í™•ì¸í•œë‹¤.
+ *  ë§Œì•½ ëŒ€ìƒ row pieceê°€ data pageì— ì†í•´ ìˆë‹¤ë©´ CTSë¥¼ í†µí•´ row pieceì˜
+ * CommitSCNì„ íšë“í•˜ê³ , undo pageì— ì†í•´ ìˆë‹¤ë©´ undo recordë¡œë¶€í„° row pieceì˜
+ * CommitSCNì„ ì–»ì„ ìˆ˜ ìˆë‹¤. ì´ë ‡ê²Œ ì–»ì€ row pieceì˜ CommitSCNì„ LegacyTransì˜
+ * CommitSCNê³¼ ë¹„êµí•˜ì—¬ ì¼ì¹˜í•˜ë©´ ìµœì¢…ì ìœ¼ë¡œ ëŒ€ìƒ row pieceë¥¼ update & commit í•œ
+ * ê²ƒì´ í˜„ì¬ ëŒ€ìƒ row pieceë¥¼ ì½ìœ¼ë ¤ í•˜ëŠ” Legacy Cursorì¸ì§€ í™•ì¸í•  ìˆ˜ ìˆë‹¤.
  *
- * aTrans           - [IN] Á¶È¸¸¦ ¿äÃ»ÇÏ´Â Æ®·£Àè¼ÇÀÇ Æ÷ÀÎÅÍ
- * aLegacyCSInfSCN  - [IN] Legacy CursorÀÇ InfiniteSCN
- * aRowInfSCN       - [IN] È®ÀÎ ´ë»ó recordÀÇ InfiniteSCN
- * aRowCommitSCN    - [IN] È®ÀÎ ´ë»ó recordÀÇ CommitSCN
+ * aTrans           - [IN] ì¡°íšŒë¥¼ ìš”ì²­í•˜ëŠ” íŠ¸ëœì­ì…˜ì˜ í¬ì¸í„°
+ * aLegacyCSInfSCN  - [IN] Legacy Cursorì˜ InfiniteSCN
+ * aRowInfSCN       - [IN] í™•ì¸ ëŒ€ìƒ recordì˜ InfiniteSCN
+ * aRowCommitSCN    - [IN] í™•ì¸ ëŒ€ìƒ recordì˜ CommitSCN
  ***********************************************************************/
 idBool sdcRow::isMyLegacyTransUpdated( void   * aTrans,
                                        smSCN    aLegacyCSInfSCN,
@@ -10618,9 +10618,9 @@ idBool sdcRow::isMyLegacyTransUpdated( void   * aTrans,
 
 /***********************************************************************
  * Description :
- *     slot¿¡ ÀÌ¹Ì ³» lock record°¡ ÀÖ°Å³ª È¤Àº update ÁßÀÌ¶ó¸é
- *     lock record¸¦ »ı¼ºÇÒ ÇÊ¿ä¾ø´Ù.
- *     ÀÌ ÇÔ¼ö´Â lockRecord()¸¦ È£ÃâÇÏ±â Àü¿¡ ºÒ·ÁÁø´Ù.
+ *     slotì— ì´ë¯¸ ë‚´ lock recordê°€ ìˆê±°ë‚˜ í˜¹ì€ update ì¤‘ì´ë¼ë©´
+ *     lock recordë¥¼ ìƒì„±í•  í•„ìš”ì—†ë‹¤.
+ *     ì´ í•¨ìˆ˜ëŠ” lockRecord()ë¥¼ í˜¸ì¶œí•˜ê¸° ì „ì— ë¶ˆë ¤ì§„ë‹¤.
  ***********************************************************************/
 IDE_RC sdcRow::isAlreadyMyLockExistOnRow( sdSID     * aMyTSSlotSID,
                                           smSCN     * aMyFstDskViewSCN,
@@ -10660,7 +10660,7 @@ IDE_RC sdcRow::isAlreadyMyLockExistOnRow( sdSID     * aMyTSSlotSID,
 /***********************************************************************
  *
  * Description :
- *  insert rowpiece ¿¬»ê½Ã¿¡, rowpiece Á¤º¸¸¦ slot¿¡ ±â·ÏÇÑ´Ù.
+ *  insert rowpiece ì—°ì‚°ì‹œì—, rowpiece ì •ë³´ë¥¼ slotì— ê¸°ë¡í•œë‹¤.
  *
  **********************************************************************/
 UChar* sdcRow::writeRowPiece4IRP( UChar                       *aWritePtr,
@@ -10677,7 +10677,7 @@ UChar* sdcRow::writeRowPiece4IRP( UChar                       *aWritePtr,
 
     sWritePtr = aWritePtr;
 
-    /* row header Á¤º¸¸¦ write ÇÑ´Ù. */
+    /* row header ì •ë³´ë¥¼ write í•œë‹¤. */
     sWritePtr = writeRowHdr(sWritePtr, aRowHdrInfo);
 
     if ( aInsertInfo->mColCount == 0 )
@@ -10703,7 +10703,7 @@ UChar* sdcRow::writeRowPiece4IRP( UChar                       *aWritePtr,
             IDE_ASSERT( 0 );
         }
 
-        /* NULL ROWÀÎ °æ¿ì row header¸¸ ±â·ÏÇÏ°í skip ÇÑ´Ù. */
+        /* NULL ROWì¸ ê²½ìš° row headerë§Œ ê¸°ë¡í•˜ê³  skip í•œë‹¤. */
         IDE_CONT( skip_null_row );
     }
 
@@ -10730,7 +10730,7 @@ UChar* sdcRow::writeRowPiece4IRP( UChar                       *aWritePtr,
 /***********************************************************************
  *
  * Description :
- *  update rowpiece ¿¬»ê½Ã¿¡, rowpiece Á¤º¸¸¦ slot¿¡ ±â·ÏÇÑ´Ù.
+ *  update rowpiece ì—°ì‚°ì‹œì—, rowpiece ì •ë³´ë¥¼ slotì— ê¸°ë¡í•œë‹¤.
  *
  **********************************************************************/
 UChar* sdcRow::writeRowPiece4URP( UChar                       *aWritePtr,
@@ -10764,7 +10764,7 @@ UChar* sdcRow::writeRowPiece4URP( UChar                       *aWritePtr,
 
         if ( SDC_IS_UPDATE_COLUMN( sColumnInfo->mColumn ) == ID_TRUE )
         {
-            /* update ÄÃ·³ÀÎ °æ¿ì, new value¸¦ ±â·ÏÇÑ´Ù. */
+            /* update ì»¬ëŸ¼ì¸ ê²½ìš°, new valueë¥¼ ê¸°ë¡í•œë‹¤. */
             sWritePtr = writeColPiece( sWritePtr,
                                        (UChar*)sColumnInfo->mNewValueInfo.mValue.value,
                                        sColumnInfo->mNewValueInfo.mValue.length,
@@ -10772,7 +10772,7 @@ UChar* sdcRow::writeRowPiece4URP( UChar                       *aWritePtr,
         }
         else
         {
-            /* update ÄÃ·³ÀÌ ¾Æ´Ï¸é, old value¸¦ ±â·ÏÇÑ´Ù. */
+            /* update ì»¬ëŸ¼ì´ ì•„ë‹ˆë©´, old valueë¥¼ ê¸°ë¡í•œë‹¤. */
             sWritePtr = writeColPiece( sWritePtr,
                                        (UChar*)sColumnInfo->mOldValueInfo.mValue.value,
                                        sColumnInfo->mOldValueInfo.mValue.length,
@@ -10787,7 +10787,7 @@ UChar* sdcRow::writeRowPiece4URP( UChar                       *aWritePtr,
 /***********************************************************************
  *
  * Description :
- *  overwrite rowpiece ¿¬»ê½Ã¿¡, rowpiece Á¤º¸¸¦ slot¿¡ ±â·ÏÇÑ´Ù.
+ *  overwrite rowpiece ì—°ì‚°ì‹œì—, rowpiece ì •ë³´ë¥¼ slotì— ê¸°ë¡í•œë‹¤.
  *
  **********************************************************************/
 UChar* sdcRow::writeRowPiece4ORP(
@@ -10816,8 +10816,8 @@ UChar* sdcRow::writeRowPiece4ORP(
 
     if ( SDC_IS_HEAD_ONLY_ROWPIECE(aRowHdrInfo->mRowFlag) == ID_TRUE )
     {
-        /* row migrationÀÌ ¹ß»ıÇÑ °æ¿ì,
-         * row header¸¸ ±â·ÏÇÏ°í skipÇÑ´Ù. */
+        /* row migrationì´ ë°œìƒí•œ ê²½ìš°,
+         * row headerë§Œ ê¸°ë¡í•˜ê³  skipí•œë‹¤. */
         if ( aRowHdrInfo->mColCount != 0 )
         {
             ideLog::logMem( IDE_DUMP_0,
@@ -10835,7 +10835,7 @@ UChar* sdcRow::writeRowPiece4ORP(
         IDE_CONT( skip_head_only_rowpiece );
     }
 
-    /* last columnÀÇ ÀÌÀü column±îÁö¸¸ loop¸¦ µ·´Ù. */
+    /* last columnì˜ ì´ì „ columnê¹Œì§€ë§Œ loopë¥¼ ëˆë‹¤. */
     for ( sColSeqInRowPiece = 0 ;
           sColSeqInRowPiece < sColCount - 1;
           sColSeqInRowPiece++ )
@@ -10844,7 +10844,7 @@ UChar* sdcRow::writeRowPiece4ORP(
 
         if ( SDC_IS_UPDATE_COLUMN( sColumnInfo->mColumn ) == ID_TRUE )
         {
-            /* update ÄÃ·³ÀÎ °æ¿ì, new value¸¦ ±â·ÏÇÑ´Ù. */
+            /* update ì»¬ëŸ¼ì¸ ê²½ìš°, new valueë¥¼ ê¸°ë¡í•œë‹¤. */
             sWritePtr = writeColPiece( sWritePtr,
                                        (UChar*)sColumnInfo->mNewValueInfo.mValue.value,
                                        sColumnInfo->mNewValueInfo.mValue.length,
@@ -10852,7 +10852,7 @@ UChar* sdcRow::writeRowPiece4ORP(
         }
         else
         {
-            /* update ÄÃ·³ÀÌ ¾Æ´Ï¸é, old value¸¦ ±â·ÏÇÑ´Ù. */
+            /* update ì»¬ëŸ¼ì´ ì•„ë‹ˆë©´, old valueë¥¼ ê¸°ë¡í•œë‹¤. */
             sWritePtr = writeColPiece( sWritePtr,
                                        (UChar*)sColumnInfo->mOldValueInfo.mValue.value,
                                        sColumnInfo->mOldValueInfo.mValue.length,
@@ -10860,14 +10860,14 @@ UChar* sdcRow::writeRowPiece4ORP(
         }
     }
 
-    /* overwrite rowpiece ¿¬»êÀÇ °æ¿ì
-     * splitÀÌ ¹ß»ıÇßÀ» ¼ö ÀÖ±â ¶§¹®¿¡, last columnÀ» ÀúÀåÇÒ¶§
-     * Àß·ÁÁø Å©±â(mLstColumnOverwriteSize)¸¸Å­¸¸ ÀúÀåÇØ¾ß ÇÑ´Ù. */
+    /* overwrite rowpiece ì—°ì‚°ì˜ ê²½ìš°
+     * splitì´ ë°œìƒí–ˆì„ ìˆ˜ ìˆê¸° ë•Œë¬¸ì—, last columnì„ ì €ì¥í• ë•Œ
+     * ì˜ë ¤ì§„ í¬ê¸°(mLstColumnOverwriteSize)ë§Œí¼ë§Œ ì €ì¥í•´ì•¼ í•œë‹¤. */
     sColumnInfo = aOverwriteInfo->mColInfoList + (sColCount - 1);
 
     if ( SDC_IS_UPDATE_COLUMN( sColumnInfo->mColumn ) == ID_TRUE )
     {
-        /* update ÄÃ·³ÀÎ °æ¿ì, new value¸¦ ±â·ÏÇÑ´Ù. */
+        /* update ì»¬ëŸ¼ì¸ ê²½ìš°, new valueë¥¼ ê¸°ë¡í•œë‹¤. */
         sWritePtr = writeColPiece( sWritePtr,
                                    (UChar*)sColumnInfo->mNewValueInfo.mValue.value,
                                    aOverwriteInfo->mLstColumnOverwriteSize,
@@ -10875,7 +10875,7 @@ UChar* sdcRow::writeRowPiece4ORP(
     }
     else
     {
-        /* update ÄÃ·³ÀÌ ¾Æ´Ï¸é, old value¸¦ ±â·ÏÇÑ´Ù. */
+        /* update ì»¬ëŸ¼ì´ ì•„ë‹ˆë©´, old valueë¥¼ ê¸°ë¡í•œë‹¤. */
         sWritePtr = writeColPiece( sWritePtr,
                                    (UChar*)sColumnInfo->mOldValueInfo.mValue.value,
                                    aOverwriteInfo->mLstColumnOverwriteSize,
@@ -10933,7 +10933,7 @@ UChar* sdcRow::writeRowHdr( UChar                *aWritePtr,
 
 /***********************************************************************
  *
- * Description : RowPieceÀÇ Çì´õ¿µ¿ª¿¡ È®ÀåÁ¤º¸(°»½ÅÆ®·£Àè¼Ç)¸¦ ±â·ÏÇÑ´Ù.
+ * Description : RowPieceì˜ í—¤ë”ì˜ì—­ì— í™•ì¥ì •ë³´(ê°±ì‹ íŠ¸ëœì­ì…˜)ë¥¼ ê¸°ë¡í•œë‹¤.
  *
  *
  **********************************************************************/
@@ -11059,12 +11059,12 @@ UChar* sdcRow::writeColPiece4Ins( UChar                       *aWritePtr,
  *  (3)           [column length(1)] [column data]
  *
  *
- *  (1) column »çÀÌ¿¡ Á¸ÀçÇÏ´Â NULL °ªÀº 0xFF·Î Ç¥ÇöÇÑ´Ù.
- *  (2) column length°¡ 250byteº¸´Ù Å©´Ù¸é
- *      Ã³À½ 1byte´Â 0xFEÀÌ°í, ³ª¸ÓÁö 2byte´Â
- *      column lengthÀÌ´Ù.
- *  (3) column length°¡ 250byteº¸´Ù ÀÛÀ¸¸é
- *      Ã³À½ 1byte´Â column lengthÀÌ´Ù.
+ *  (1) column ì‚¬ì´ì— ì¡´ì¬í•˜ëŠ” NULL ê°’ì€ 0xFFë¡œ í‘œí˜„í•œë‹¤.
+ *  (2) column lengthê°€ 250byteë³´ë‹¤ í¬ë‹¤ë©´
+ *      ì²˜ìŒ 1byteëŠ” 0xFEì´ê³ , ë‚˜ë¨¸ì§€ 2byteëŠ”
+ *      column lengthì´ë‹¤.
+ *  (3) column lengthê°€ 250byteë³´ë‹¤ ì‘ìœ¼ë©´
+ *      ì²˜ìŒ 1byteëŠ” column lengthì´ë‹¤.
  *
  **********************************************************************/
 UChar* sdcRow::writeColPiece( UChar             *aWritePtr,
@@ -11149,13 +11149,13 @@ UChar* sdcRow::writeColPiece( UChar             *aWritePtr,
  *  (3)           [column length(1)] [column data]
  *
  *
- *  (1) column »çÀÌ¿¡ Á¸ÀçÇÏ´Â NULL °ªÀº 0xFF·Î Ç¥ÇöÇÑ´Ù.
- *  (2) column length°¡ 250byteº¸´Ù Å©´Ù¸é
- *      Ã³À½ 1byte´Â 0xFEÀÌ°í, ³ª¸ÓÁö 2byte´Â
- *      column lengthÀÌ´Ù.
- *  (3) column length°¡ 250byteº¸´Ù ÀÛÀ¸¸é
- *      Ã³À½ 1byte´Â column lengthÀÌ´Ù.
- *  (4) Out Mode LOB ColumnÀÌ¸é Empty Lob Desc¸¦ ±â·ÏÇÑ´Ù.
+ *  (1) column ì‚¬ì´ì— ì¡´ì¬í•˜ëŠ” NULL ê°’ì€ 0xFFë¡œ í‘œí˜„í•œë‹¤.
+ *  (2) column lengthê°€ 250byteë³´ë‹¤ í¬ë‹¤ë©´
+ *      ì²˜ìŒ 1byteëŠ” 0xFEì´ê³ , ë‚˜ë¨¸ì§€ 2byteëŠ”
+ *      column lengthì´ë‹¤.
+ *  (3) column lengthê°€ 250byteë³´ë‹¤ ì‘ìœ¼ë©´
+ *      ì²˜ìŒ 1byteëŠ” column lengthì´ë‹¤.
+ *  (4) Out Mode LOB Columnì´ë©´ Empty Lob Descë¥¼ ê¸°ë¡í•œë‹¤.
  *
  **********************************************************************/
 IDE_RC sdcRow::writeColPieceLog( sdrMtx            *aMtx,
@@ -11245,8 +11245,8 @@ IDE_RC sdcRow::writeColPieceLog( sdrMtx            *aMtx,
 /***********************************************************************
  *
  * Description :
- *  insert into¸¦ ºĞ¼®ÇÏ°í rowpieceÀÇ Å©±â¸¦ °è»êÇÏ¸é¼­
- *  rowÀÇ ¾î¶² ºÎºĞÀ» ¾ó¸¶³ª ÀúÀåÇÒÁö¸¦ °áÁ¤ÇÑ´Ù.
+ *  insert intoë¥¼ ë¶„ì„í•˜ê³  rowpieceì˜ í¬ê¸°ë¥¼ ê³„ì‚°í•˜ë©´ì„œ
+ *  rowì˜ ì–´ë–¤ ë¶€ë¶„ì„ ì–¼ë§ˆë‚˜ ì €ì¥í• ì§€ë¥¼ ê²°ì •í•œë‹¤.
  *
  **********************************************************************/
 IDE_RC sdcRow::analyzeRowForInsert( sdpPageListEntry      * aPageEntry,
@@ -11312,7 +11312,7 @@ IDE_RC sdcRow::analyzeRowForInsert( sdpPageListEntry      * aPageEntry,
              ( (UInt)sCurrRowPieceSize +
                (UInt)SDC_GET_COLPIECE_SIZE(sColDataSize) ) )
         {
-            /* column data¸¦ ¸ğµÎ ÀúÀåÇÒ ¼ö ÀÖ´Â °æ¿ì */
+            /* column dataë¥¼ ëª¨ë‘ ì €ì¥í•  ìˆ˜ ìˆëŠ” ê²½ìš° */
 
             sCurrRowPieceSize += SDC_GET_COLPIECE_SIZE(sColDataSize);
             sColDataSize = 0;
@@ -11325,7 +11325,7 @@ IDE_RC sdcRow::analyzeRowForInsert( sdpPageListEntry      * aPageEntry,
                 sLobDescCnt++;
             }
 
-            /* ´ÙÀ½ Ã³¸®ÇÒ columnÀ¸·Î ÀÌµ¿ */
+            /* ë‹¤ìŒ ì²˜ë¦¬í•  columnìœ¼ë¡œ ì´ë™ */
             if ( sColSeq == 0)
             {
                 break;
@@ -11339,13 +11339,13 @@ IDE_RC sdcRow::analyzeRowForInsert( sdpPageListEntry      * aPageEntry,
         }
         else
         {
-            /* column data¸¦ ¸ğµÎ ÀúÀåÇÒ ¼ö ¾ø´Â °æ¿ì
-             * (³ª´©¾î ÀúÀåÇÏµç°¡, ¾Æ´Ô ´Ù¸¥ ÆäÀÌÁö¿¡ ÀúÀåÇÏµç°¡ ÇØ¾ßÇÔ) */
+            /* column dataë¥¼ ëª¨ë‘ ì €ì¥í•  ìˆ˜ ì—†ëŠ” ê²½ìš°
+             * (ë‚˜ëˆ„ì–´ ì €ì¥í•˜ë“ ê°€, ì•„ë‹˜ ë‹¤ë¥¸ í˜ì´ì§€ì— ì €ì¥í•˜ë“ ê°€ í•´ì•¼í•¨) */
 
             if ( isDivisibleColumn( sColumnInfo )  == ID_TRUE )
             {
-                /* ¿©·¯ rowpiece¿¡ ³ª´©¾î ÀúÀåÇÒ ¼ö ÀÖ´Â
-                 * ÄÃ·³ÀÎ °æ¿ì ex) char, varchar */
+                /* ì—¬ëŸ¬ rowpieceì— ë‚˜ëˆ„ì–´ ì €ì¥í•  ìˆ˜ ìˆëŠ”
+                 * ì»¬ëŸ¼ì¸ ê²½ìš° ex) char, varchar */
 
                 sStoreSize = sMaxRowPieceSize
                              - sCurrRowPieceSize
@@ -11353,7 +11353,7 @@ IDE_RC sdcRow::analyzeRowForInsert( sdpPageListEntry      * aPageEntry,
 
                 if ( (SShort)sStoreSize >= (SShort)sMinColPieceSize )
                 {
-                    /* column data¸¦ ³ª´©¾î ÀúÀåÇÑ´Ù. */
+                    /* column dataë¥¼ ë‚˜ëˆ„ì–´ ì €ì¥í•œë‹¤. */
 
                     sCurrRowPieceSize += SDC_GET_COLPIECE_SIZE(sStoreSize);
                     sColDataSize -= sStoreSize;
@@ -11362,17 +11362,17 @@ IDE_RC sdcRow::analyzeRowForInsert( sdpPageListEntry      * aPageEntry,
                 }
                 else
                 {
-                    /* ÀúÀåÇÒ size°¡ min colpiece sizeº¸´Ù ÀÛÀº °æ¿ì,
-                     * column data¸¦ ³ª´©¾î ÀúÀåÇÏÁö ¾Ê´Â´Ù.
-                     * ´Ù¸¥ ÆäÀÌÁö¿¡ ÀúÀåÇÑ´Ù. */
+                    /* ì €ì¥í•  sizeê°€ min colpiece sizeë³´ë‹¤ ì‘ì€ ê²½ìš°,
+                     * column dataë¥¼ ë‚˜ëˆ„ì–´ ì €ì¥í•˜ì§€ ì•ŠëŠ”ë‹¤.
+                     * ë‹¤ë¥¸ í˜ì´ì§€ì— ì €ì¥í•œë‹¤. */
                 }
             }
             else
             {
-                /* ¿©·¯ rowpiece¿¡ ³ª´©¾î ÀúÀåÇÒ ¼ö ¾ø´Â
-                 * ÄÃ·³ÀÎ °æ¿ì ex) ¼ıÀÚÇü µ¥ÀÌÅÍÅ¸ÀÔ */
+                /* ì—¬ëŸ¬ rowpieceì— ë‚˜ëˆ„ì–´ ì €ì¥í•  ìˆ˜ ì—†ëŠ”
+                 * ì»¬ëŸ¼ì¸ ê²½ìš° ex) ìˆ«ìí˜• ë°ì´í„°íƒ€ì… */
 
-                /* column data¸¦ ´Ù¸¥ ÆäÀÌÁö¿¡ ÀúÀåÇØ¾ß ÇÑ´Ù. */
+                /* column dataë¥¼ ë‹¤ë¥¸ í˜ì´ì§€ì— ì €ì¥í•´ì•¼ í•œë‹¤. */
             }
             break;
         }
@@ -11427,28 +11427,28 @@ IDE_RC sdcRow::analyzeRowForUpdate( UChar                  *aSlotPtr,
     IDE_ASSERT( aValueList  != NULL );
     IDE_ASSERT( aUpdateInfo != NULL );
 
-    /* updateÇØ¾ßÇÏ´Â ÄÃ·³À» Ã£´Â °úÁ¤À» ÁøÇàÇÏ¸é¼­
-     * new rowpiece sizeµµ °°ÀÌ °è»êÇÑ´Ù.
-     * ·ÎÁ÷ÀÌ Á¶±İ º¹ÀâÇØÁöÁö¸¸ for loop ÇÏ³ª¸¦ ÁÙÀÌ±â À§ÇØ¼­ÀÌ´Ù. */
+    /* updateí•´ì•¼í•˜ëŠ” ì»¬ëŸ¼ì„ ì°¾ëŠ” ê³¼ì •ì„ ì§„í–‰í•˜ë©´ì„œ
+     * new rowpiece sizeë„ ê°™ì´ ê³„ì‚°í•œë‹¤.
+     * ë¡œì§ì´ ì¡°ê¸ˆ ë³µì¡í•´ì§€ì§€ë§Œ for loop í•˜ë‚˜ë¥¼ ì¤„ì´ê¸° ìœ„í•´ì„œì´ë‹¤. */
     sNewRowPieceSize += SDC_ROWHDR_SIZE;
 
     SDC_GET_ROWHDR_1B_FIELD(aSlotPtr, SDC_ROWHDR_FLAG, sOldRowFlag);
 
-    /* ÇÊ¿äÇÑ Extra Size¸¦ °è»êÇÑ´Ù */
+    /* í•„ìš”í•œ Extra Sizeë¥¼ ê³„ì‚°í•œë‹¤ */
     if ( SDC_IS_LAST_ROWPIECE(sOldRowFlag) == ID_FALSE )
     {
         sNewRowPieceSize += SDC_EXTRASIZE_FOR_CHAINING;
     }
 
-    /* row piece¿¡ ÀúÀåµÈ ÄÃ·³µé°ú
-     * update column list¸¦ ºñ±³ÇÏ¸é¼­
-     * update¸¦ ¼öÇàÇØ¾ß ÇÏ´Â ÄÃ·³À» Ã£´Â´Ù.
-     * ÀÌ¶§ ¾çÂÊ ¸®½ºÆ®´Â column sequence ¼øÀ¸·Î
-     * Á¤·ÄµÇ¾î ÀÖ±â ¶§¹®¿¡, merge join ¹æ½ÄÀ¸·Î ºñ±³¸¦ ÇÑ´Ù.
-     * nested loop ¹æ½ÄÀ» »ç¿ëÇÏÁö ¾Ê´Â´Ù.
+    /* row pieceì— ì €ì¥ëœ ì»¬ëŸ¼ë“¤ê³¼
+     * update column listë¥¼ ë¹„êµí•˜ë©´ì„œ
+     * updateë¥¼ ìˆ˜í–‰í•´ì•¼ í•˜ëŠ” ì»¬ëŸ¼ì„ ì°¾ëŠ”ë‹¤.
+     * ì´ë•Œ ì–‘ìª½ ë¦¬ìŠ¤íŠ¸ëŠ” column sequence ìˆœìœ¼ë¡œ
+     * ì •ë ¬ë˜ì–´ ìˆê¸° ë•Œë¬¸ì—, merge join ë°©ì‹ìœ¼ë¡œ ë¹„êµë¥¼ í•œë‹¤.
+     * nested loop ë°©ì‹ì„ ì‚¬ìš©í•˜ì§€ ì•ŠëŠ”ë‹¤.
      * */
 
-    /* ÀÌ for loop´Â row piece³»ÀÇ ¸ğµç ÄÃ·³À» ¼øÈ¸ÇÑ´Ù. */
+    /* ì´ for loopëŠ” row pieceë‚´ì˜ ëª¨ë“  ì»¬ëŸ¼ì„ ìˆœíšŒí•œë‹¤. */
     for ( sColSeqInRowPiece = 0 ;
           sColSeqInRowPiece < sColCount;
           sColSeqInRowPiece++ )
@@ -11460,18 +11460,18 @@ IDE_RC sdcRow::analyzeRowForUpdate( UChar                  *aSlotPtr,
             /* FIT/ART/sm/Projects/PROJ-2118/update/update.ts */
             IDU_FIT_POINT( "1.PROJ-2118@sdcRow::analyzeRowForUpdate" );
 
-            /* updateÇØ¾ßÇÏ´Â ÄÃ·³À» Ã£Àº °æ¿ì */
+            /* updateí•´ì•¼í•˜ëŠ” ì»¬ëŸ¼ì„ ì°¾ì€ ê²½ìš° */
             if ( (sColSeqInRowPiece == 0) &&
                  (SM_IS_FLAG_ON(sOldRowFlag, SDC_ROWHDR_P_FLAG) == ID_TRUE) )
             {
-                /* rowpiece³»ÀÇ Ã¹¹øÂ° ÄÃ·³À» updateÇØ¾ß ÇÏ´Âµ¥,
-                 * Ã¹¹øÂ° ÄÃ·³ÀÌ prev rowpiece·ÎºÎÅÍ ÀÌ¾îÁø °æ¿ì,
-                 * delete first column piece ¿¬»êÀ» ¼öÇàÇØ¾ß ÇÑ´Ù. */
+                /* rowpieceë‚´ì˜ ì²«ë²ˆì§¸ ì»¬ëŸ¼ì„ updateí•´ì•¼ í•˜ëŠ”ë°,
+                 * ì²«ë²ˆì§¸ ì»¬ëŸ¼ì´ prev rowpieceë¡œë¶€í„° ì´ì–´ì§„ ê²½ìš°,
+                 * delete first column piece ì—°ì‚°ì„ ìˆ˜í–‰í•´ì•¼ í•œë‹¤. */
 
-                /* ¿©·¯ rowpiece¿¡ ³ª´©¾î ÀúÀåµÈ ÄÃ·³ÀÌ updateµÇ´Â °æ¿ì,
-                 * ±× ÄÃ·³ÀÇ first piece¸¦ ÀúÀåÇÏ°í ÀÖ´Â rowpiece¿¡¼­
-                 * update ¼öÇàÀ» ´ã´çÇÏ¹Ç·Î, ³ª¸ÓÁö rowpiece¿¡¼­´Â
-                 * ÇØ´ç column piece¸¦ Á¦°ÅÇØ¾ß ÇÑ´Ù. */
+                /* ì—¬ëŸ¬ rowpieceì— ë‚˜ëˆ„ì–´ ì €ì¥ëœ ì»¬ëŸ¼ì´ updateë˜ëŠ” ê²½ìš°,
+                 * ê·¸ ì»¬ëŸ¼ì˜ first pieceë¥¼ ì €ì¥í•˜ê³  ìˆëŠ” rowpieceì—ì„œ
+                 * update ìˆ˜í–‰ì„ ë‹´ë‹¹í•˜ë¯€ë¡œ, ë‚˜ë¨¸ì§€ rowpieceì—ì„œëŠ”
+                 * í•´ë‹¹ column pieceë¥¼ ì œê±°í•´ì•¼ í•œë‹¤. */
                 IDE_ASSERT( SDC_IS_IN_MODE_COLUMN( sColumnInfo->mOldValueInfo ) == ID_TRUE );
                 
                 sDeleteFstColumnPiece = ID_TRUE;
@@ -11483,12 +11483,12 @@ IDE_RC sdcRow::analyzeRowForUpdate( UChar                  *aSlotPtr,
 
             if ( SDC_IS_IN_MODE_COLUMN(sColumnInfo->mNewValueInfo) == ID_TRUE )
             {
-                /* ÀÏ¹İ columnÀ» updateÇÏ´Â °æ¿ì */
+                /* ì¼ë°˜ columnì„ updateí•˜ëŠ” ê²½ìš° */
                 sUptAftInModeColCnt++;
             }
             else
             {
-                /* lob columnÀ» updateÇÏ´Â °æ¿ì */
+                /* lob columnì„ updateí•˜ëŠ” ê²½ìš° */
                 sUptAftLobDescCnt++;
 
                 IDE_ERROR( sColumnInfo->mNewValueInfo.mValue.length
@@ -11501,7 +11501,7 @@ IDE_RC sdcRow::analyzeRowForUpdate( UChar                  *aSlotPtr,
             if ( sColumnInfo->mOldValueInfo.mValue.length !=
                  sColumnInfo->mNewValueInfo.mValue.length )
             {
-                /* ÄÃ·³ÀÇ Å©±â°¡ º¯ÇÏ¸é update inplace ¿¬»êÀ» ¼öÇàÇÒ ¼ö ¾ø´Ù. */
+                /* ì»¬ëŸ¼ì˜ í¬ê¸°ê°€ ë³€í•˜ë©´ update inplace ì—°ì‚°ì„ ìˆ˜í–‰í•  ìˆ˜ ì—†ë‹¤. */
                 sUpdateInplace = ID_FALSE;
             }
             else
@@ -11529,15 +11529,15 @@ IDE_RC sdcRow::analyzeRowForUpdate( UChar                  *aSlotPtr,
                 if ( (sColSeqInRowPiece == sColCount-1) &&
                      (SM_IS_FLAG_ON(sOldRowFlag, SDC_ROWHDR_N_FLAG) == ID_TRUE) )
                 {
-                    /* rowpiece³»ÀÇ ¸¶Áö¸· ÄÃ·³À» updateÇØ¾ß ÇÏ´Âµ¥,
-                     * ¸¶Áö¸· ÄÃ·³ÀÌ next rowpiece¿¡ °è¼Ó ÀÌ¾îÁö´Â °æ¿ì,
-                     * update inplace ¿¬»êÀ» ¼öÇàÇÒ ¼ö ¾ø´Ù. */
+                    /* rowpieceë‚´ì˜ ë§ˆì§€ë§‰ ì»¬ëŸ¼ì„ updateí•´ì•¼ í•˜ëŠ”ë°,
+                     * ë§ˆì§€ë§‰ ì»¬ëŸ¼ì´ next rowpieceì— ê³„ì† ì´ì–´ì§€ëŠ” ê²½ìš°,
+                     * update inplace ì—°ì‚°ì„ ìˆ˜í–‰í•  ìˆ˜ ì—†ë‹¤. */
                     sUpdateInplace = ID_FALSE;
                 }
                 else
                 {
-                    // In Out Mode°¡ ´Ù¸£¸é Prefix¸¦ ´Ù½Ã ±â·ÏÇØ¾ß
-                    // ÇÏ¹Ç·Î InPlace·Î updateÇÒ ¼ö ¾ø´Ù.
+                    // In Out Modeê°€ ë‹¤ë¥´ë©´ Prefixë¥¼ ë‹¤ì‹œ ê¸°ë¡í•´ì•¼
+                    // í•˜ë¯€ë¡œ InPlaceë¡œ updateí•  ìˆ˜ ì—†ë‹¤.
                     if ( sColumnInfo->mOldValueInfo.mInOutMode !=
                          sColumnInfo->mNewValueInfo.mInOutMode )
                     {
@@ -11552,15 +11552,15 @@ IDE_RC sdcRow::analyzeRowForUpdate( UChar                  *aSlotPtr,
             }
             else
             {
-                /* PROJ-1862 ÀÌÀü¿¡ LOB Descriptor¿´´ø ColumnÀÌ
-                 * UpdateµÇ¸é ÀÌÀü LOB Object¸¦ Á¦°ÅÇÏ±â À§ÇØ
-                 * Old LOB DescriptorÀÇ ¼ö¸¦ È®ÀÎÇØµĞ´Ù. */
+                /* PROJ-1862 ì´ì „ì— LOB Descriptorì˜€ë˜ Columnì´
+                 * Updateë˜ë©´ ì´ì „ LOB Objectë¥¼ ì œê±°í•˜ê¸° ìœ„í•´
+                 * Old LOB Descriptorì˜ ìˆ˜ë¥¼ í™•ì¸í•´ë‘”ë‹¤. */
                 sUptBfrLobDescCnt++;
             }
         }
         else
         {
-            /* updateÇØ¾ß ÇÏ´Â ÄÃ·³ÀÌ ¾Æ´Ñ °æ¿ì */
+            /* updateí•´ì•¼ í•˜ëŠ” ì»¬ëŸ¼ì´ ì•„ë‹Œ ê²½ìš° */
             sNewRowPieceSize +=
                 SDC_GET_COLPIECE_SIZE(sColumnInfo->mOldValueInfo.mValue.length);
         }
@@ -11568,7 +11568,7 @@ IDE_RC sdcRow::analyzeRowForUpdate( UChar                  *aSlotPtr,
 
     if ( sDeleteFstColumnPiece == ID_TRUE )
     {
-        /* delete first column piece ¿¬»êÀ» ¼öÇàÇØ¾ß ÇÏ´Â °æ¿ì */
+        /* delete first column piece ì—°ì‚°ì„ ìˆ˜í–‰í•´ì•¼ í•˜ëŠ” ê²½ìš° */
         aUpdateInfo->mUptAftInModeColCnt       = 0;
         aUpdateInfo->mUptBfrInModeColCnt       = 1;
         aUpdateInfo->mUptAftLobDescCnt         = 0;
@@ -11591,8 +11591,8 @@ IDE_RC sdcRow::analyzeRowForUpdate( UChar                  *aSlotPtr,
     aUpdateInfo->mIsTrailingNullUpdate = ID_FALSE;
     if ( SDC_IS_LAST_ROWPIECE(sOldRowFlag) == ID_TRUE )
     {
-        /* last rowpieceÀÇ °æ¿ì,
-         * trailing nullÀÌ updateµÇ´ÂÁö¸¦ Ã¼Å©ÇØ¾ß ÇÑ´Ù. */
+        /* last rowpieceì˜ ê²½ìš°,
+         * trailing nullì´ updateë˜ëŠ”ì§€ë¥¼ ì²´í¬í•´ì•¼ í•œë‹¤. */
         if ( aLstUptColumnSeq > (aFstColumnSeq + sColCount - 1) )
         {
             aUpdateInfo->mIsTrailingNullUpdate = ID_TRUE;
@@ -11609,15 +11609,15 @@ IDE_RC sdcRow::analyzeRowForUpdate( UChar                  *aSlotPtr,
 /***********************************************************************
  *
  * Description :
- *  rowpiece³»¿¡ Á¸ÀçÇÏ´Â lob column Á¤º¸¸¦ ºĞ¼®ÇÏ¿©,
- *  sdcLobInfoInRowPiece¸¦ ¸¸µç´Ù.
+ *  rowpieceë‚´ì— ì¡´ì¬í•˜ëŠ” lob column ì •ë³´ë¥¼ ë¶„ì„í•˜ì—¬,
+ *  sdcLobInfoInRowPieceë¥¼ ë§Œë“ ë‹¤.
  *
- *  aTableHeader   - [IN]  Å×ÀÌºí Çì´õ
+ *  aTableHeader   - [IN]  í…Œì´ë¸” í—¤ë”
  *  aSlotPtr       - [IN]  slot pointer
- *  aFstColumnSeq  - [IN]  rowpiece¿¡¼­ Ã¹¹øÂ° column pieceÀÇ
+ *  aFstColumnSeq  - [IN]  rowpieceì—ì„œ ì²«ë²ˆì§¸ column pieceì˜
  *                         global sequence number
  *  aColCount      - [IN]  column count in rowpiece
- *  aLobInfo       - [OUT] lob column Á¤º¸¸¦ ÀúÀåÇÏ´Â ÀÚ·á±¸Á¶
+ *  aLobInfo       - [OUT] lob column ì •ë³´ë¥¼ ì €ì¥í•˜ëŠ” ìë£Œêµ¬ì¡°
  *
  **********************************************************************/
 IDE_RC sdcRow::analyzeRowForLobRemove( void                 * aTableHeader,
@@ -11678,7 +11678,7 @@ IDE_RC sdcRow::analyzeRowForLobRemove( void                 * aTableHeader,
             IDE_ASSERT( 0 );
         }
 
-        // LOB ColumnÀÎÁö È®ÀÎ
+        // LOB Columnì¸ì§€ í™•ì¸
         sColumnSeq  = aFstColumnSeq + sColumnSeqInRowPiece;
         sColumn     = smLayerCallback::getColumn( aTableHeader, sColumnSeq );
 
@@ -11707,10 +11707,10 @@ IDE_RC sdcRow::analyzeRowForLobRemove( void                 * aTableHeader,
             IDE_ASSERT( 0 );
         }
 
-        // LOB Remove Info¿¡ ±â·Ï
+        // LOB Remove Infoì— ê¸°ë¡
         sColumnInfo = aLobInfo->mColInfoList + sLobColCount;
         sColumnInfo->mColumn  = sColumn;
-        // BUG-25638 [SD] sdcRow::analyzeRowForLobRemove¿¡¼­ Lob Offset Á¶Á¤À» Àß¸øÇÏ°í ÀÖ½À´Ï´Ù.
+        // BUG-25638 [SD] sdcRow::analyzeRowForLobRemoveì—ì„œ Lob Offset ì¡°ì •ì„ ì˜ëª»í•˜ê³  ìˆìŠµë‹ˆë‹¤.
         sColumnInfo->mLobDesc =
             (sdcLobDesc*)(aLobInfo->mSpace4CopyLobDesc + sOffset);
 
@@ -11732,14 +11732,14 @@ IDE_RC sdcRow::analyzeRowForLobRemove( void                 * aTableHeader,
 /***********************************************************************
  *
  * Description : TASK-5030
- *      Full XLOG¸¦ À§ÇØ analyzeRowForUpdate()¿Í À¯»çÇÑ ¿ªÇÒÀÇ
- *      ÇÔ¼ö¸¦ ÀÛ¼ºÇÑ´Ù.
+ *      Full XLOGë¥¼ ìœ„í•´ analyzeRowForUpdate()ì™€ ìœ ì‚¬í•œ ì—­í• ì˜
+ *      í•¨ìˆ˜ë¥¼ ì‘ì„±í•œë‹¤.
  *
  * aTableHeader  - [IN] table header
- * aColCount     - [IN] row piece ³»ÀÇ column count
- * aFstColumnSeq - [IN] row pieceÀÇ Ã¹ columnÀÌ ÀüÃ¼¿¡¼­ ¸î¹øÂ°
- *                      columnÀÎÁö
- * aUpdateInfo   - [OUT] FXLog¸¦ À§ÇÑ Á¤º¸¸¦ ÀúÀå
+ * aColCount     - [IN] row piece ë‚´ì˜ column count
+ * aFstColumnSeq - [IN] row pieceì˜ ì²« columnì´ ì „ì²´ì—ì„œ ëª‡ë²ˆì§¸
+ *                      columnì¸ì§€
+ * aUpdateInfo   - [OUT] FXLogë¥¼ ìœ„í•œ ì •ë³´ë¥¼ ì €ì¥
  **********************************************************************/
 IDE_RC sdcRow::analyzeRowForDelete4RP( void                  * aTableHeader,
                                        UShort                  aColCount,
@@ -11757,19 +11757,19 @@ IDE_RC sdcRow::analyzeRowForDelete4RP( void                  * aTableHeader,
 
     IDE_ASSERT( aUpdateInfo != NULL );
 
-    /* ÀÌ for loop´Â row piece³»ÀÇ ¸ğµç ÄÃ·³À» ¼øÈ¸ÇÑ´Ù. */
+    /* ì´ for loopëŠ” row pieceë‚´ì˜ ëª¨ë“  ì»¬ëŸ¼ì„ ìˆœíšŒí•œë‹¤. */
     for ( sColSeqInRowPiece = 0 ;
           sColSeqInRowPiece < sColCount;
           sColSeqInRowPiece++ )
     {
         sColumnInfo = aUpdateInfo->mColInfoList + sColSeqInRowPiece;
-        /* columnÀÇ row sequence¸¦ ±¸ÇÑ´Ù. */
+        /* columnì˜ row sequenceë¥¼ êµ¬í•œë‹¤. */
         sColumnSeq  = aFstColumnSeq + sColSeqInRowPiece;
 
         sFind = ID_FALSE;
 
-        /* column list´Â Á¤·ÄµÇ¾î ÀÖÀ¸¹Ç·Î sort merge join°ú ºñ½ÁÇÏ°Ô ¼øÈ¸ÇÏ¸é µÈ´Ù */
-        for ( /*Áö³ª°£ sColumnIndex¸¦ ´Ù½Ã Ã£À» ÇÊ¿ä ¾øÀ½ */ ;
+        /* column listëŠ” ì •ë ¬ë˜ì–´ ìˆìœ¼ë¯€ë¡œ sort merge joinê³¼ ë¹„ìŠ·í•˜ê²Œ ìˆœíšŒí•˜ë©´ ëœë‹¤ */
+        for ( /*ì§€ë‚˜ê°„ sColumnIndexë¥¼ ë‹¤ì‹œ ì°¾ì„ í•„ìš” ì—†ìŒ */ ;
               sColumnIndex < smLayerCallback::getColumnCount( aTableHeader ) ;
               sColumnIndex++ )
         {
@@ -11784,8 +11784,8 @@ IDE_RC sdcRow::analyzeRowForDelete4RP( void                  * aTableHeader,
 
         if ( sFind == ID_TRUE )
         {
-            /* smiColumn Á¤º¸¸¦ ¼³Á¤ÇÑ´Ù. */
-            sColumnInfo->mColumn = (const smiColumn*)sUptCol; // °ª ¼ÂÆÃ
+            /* smiColumn ì •ë³´ë¥¼ ì„¤ì •í•œë‹¤. */
+            sColumnInfo->mColumn = (const smiColumn*)sUptCol; // ê°’ ì…‹íŒ…
 
             if ( SDC_IS_IN_MODE_COLUMN(sColumnInfo->mOldValueInfo) == ID_TRUE )
             {
@@ -11812,7 +11812,7 @@ IDE_RC sdcRow::analyzeRowForDelete4RP( void                  * aTableHeader,
 /***********************************************************************
  *
  * Description :
- *  insert info¿¡ trailing nullÀÌ ¸î°³ ÀÖ´ÂÁö¸¦ °è»êÇÏ´Â ÇÔ¼öÀÌ´Ù.
+ *  insert infoì— trailing nullì´ ëª‡ê°œ ìˆëŠ”ì§€ë¥¼ ê³„ì‚°í•˜ëŠ” í•¨ìˆ˜ì´ë‹¤.
  *
  **********************************************************************/
 UShort sdcRow::getTrailingNullCount(
@@ -11827,21 +11827,21 @@ UShort sdcRow::getTrailingNullCount(
 
     sTrailingNullCount = 0;
 
-    /* trailing null count¸¦ °è»êÇÏ±â À§ÇØ
-     * ¿ª¹æÇâ(reverse order)À¸·Î loop¸¦ µ·´Ù. */
+    /* trailing null countë¥¼ ê³„ì‚°í•˜ê¸° ìœ„í•´
+     * ì—­ë°©í–¥(reverse order)ìœ¼ë¡œ loopë¥¼ ëˆë‹¤. */
     for ( sColSeq = aTotalColCount-1;
           sColSeq >= 0;
           sColSeq -- )
     {
         sColumnInfo = aInsertInfo->mColInfoList + sColSeq;
-        /* null valueÀÎÁö Ã¼Å© */
+        /* null valueì¸ì§€ ì²´í¬ */
         if ( SDC_IS_NULL(&(sColumnInfo->mValueInfo.mValue)) != ID_TRUE )
         {
             break;
         }
 
         // PROJ-1864 Disk In Mode LOB
-        // Lob DescÀÇ Value°¡ NullÀÏ ¸® ¾ø´Ù.
+        // Lob Descì˜ Valueê°€ Nullì¼ ë¦¬ ì—†ë‹¤.
         IDE_ASSERT( SDC_IS_IN_MODE_COLUMN( sColumnInfo->mValueInfo ) == ID_TRUE );
 
         sTrailingNullCount++;
@@ -11876,7 +11876,7 @@ UInt sdcRow::getColDataSize2Store( const sdcRowPieceInsertInfo  *aInsertInfo,
 /***********************************************************************
  *
  * Description :
- *  ÀÎÀÚ·Î ¹ŞÀº ÄÃ·³ÀÌ ¿©·¯°³ÀÇ rowpiece¿¡ ³ª´©¾î ÀúÀåÇÒ ¼ö ÀÖ´Â ÄÃ·³ÀÎÁö¸¦ °Ë»çÇÑ´Ù.
+ *  ì¸ìë¡œ ë°›ì€ ì»¬ëŸ¼ì´ ì—¬ëŸ¬ê°œì˜ rowpieceì— ë‚˜ëˆ„ì–´ ì €ì¥í•  ìˆ˜ ìˆëŠ” ì»¬ëŸ¼ì¸ì§€ë¥¼ ê²€ì‚¬í•œë‹¤.
  *
  **********************************************************************/
 idBool sdcRow::isDivisibleColumn(const sdcColumnInfo4Insert    *aColumnInfo)
@@ -11885,7 +11885,7 @@ idBool sdcRow::isDivisibleColumn(const sdcColumnInfo4Insert    *aColumnInfo)
 
     IDE_ASSERT( aColumnInfo != NULL );
 
-    /* lob columnÀÎÁö Ã¼Å© */
+    /* lob columnì¸ì§€ ì²´í¬ */
     if ( SDC_IS_LOB_COLUMN( aColumnInfo->mColumn ) == ID_TRUE )
     {
         if ( SDC_IS_IN_MODE_COLUMN( aColumnInfo->mValueInfo ) == ID_TRUE )
@@ -11899,7 +11899,7 @@ idBool sdcRow::isDivisibleColumn(const sdcColumnInfo4Insert    *aColumnInfo)
     }
     else
     {
-        /* divisible flag Ã¼Å© */
+        /* divisible flag ì²´í¬ */
         if ( ( aColumnInfo->mColumn->flag & SMI_COLUMN_DATA_STORE_DIVISIBLE_MASK)
              == SMI_COLUMN_DATA_STORE_DIVISIBLE_FALSE )
         {
@@ -11955,7 +11955,7 @@ sdSID sdcRow::getNextRowPieceSID( const UChar    *aSlotPtr )
 /***********************************************************************
  *
  * Description :
- *  sdcRowPieceInsertInfo ÀÚ·á±¸Á¶¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+ *  sdcRowPieceInsertInfo ìë£Œêµ¬ì¡°ë¥¼ ì´ˆê¸°í™”í•œë‹¤.
  *
  **********************************************************************/
 void sdcRow::makeInsertInfo( void                   *aTableHeader,
@@ -11970,18 +11970,18 @@ void sdcRow::makeInsertInfo( void                   *aTableHeader,
     IDE_ASSERT( aValueList   != NULL );
     IDE_ASSERT( aInsertInfo  != NULL );
 
-    /* ÀÚ·á±¸Á¶ ÃÊ±âÈ­ */
+    /* ìë£Œêµ¬ì¡° ì´ˆê¸°í™” */
     SDC_INIT_INSERT_INFO(aInsertInfo);
 
     for ( sColSeq = 0; sColSeq < aTotalColCount; sColSeq++ )
     {
         sColumnInfo = aInsertInfo->mColInfoList + sColSeq;
 
-        /* table header¸¦ ÀÌ¿ëÇÏ¿© ÄÃ·³Á¤º¸¸¦ ¾ò¾î¿Â´Ù. */
+        /* table headerë¥¼ ì´ìš©í•˜ì—¬ ì»¬ëŸ¼ì •ë³´ë¥¼ ì–»ì–´ì˜¨ë‹¤. */
         sColumnInfo->mColumn
             = smLayerCallback::getColumn( aTableHeader, sColSeq );
 
-        /* ÄÃ·³ÀÇ °ªÀ» ¼³Á¤ÇÑ´Ù. */
+        /* ì»¬ëŸ¼ì˜ ê°’ì„ ì„¤ì •í•œë‹¤. */
         sColumnInfo->mValueInfo.mValue = *(aValueList + sColSeq);
 
         sColumnInfo->mIsUptCol = ID_FALSE;
@@ -12073,20 +12073,20 @@ IDE_RC sdcRow::makeUpdateInfo( UChar                  * aSlotPtr,
 
         if ( (sColLen == 0) && (sColVal == NULL) )
         {
-            /* NULL columnÀÇ °æ¿ì */
+            /* NULL columnì˜ ê²½ìš° */
             sColumnInfo->mOldValueInfo.mValue.length = 0;
             sColumnInfo->mOldValueInfo.mValue.value  = NULL;
             sColumnInfo->mOldValueInfo.mInOutMode    = SDC_COLUMN_IN_MODE;
         }
         else
         {
-            /* old column length ¼³Á¤ */
+            /* old column length ì„¤ì • */
             sColumnInfo->mOldValueInfo.mValue.length = sColLen;
             sColumnInfo->mOldValueInfo.mValue.value =
                 aUpdateInfo->mSpace4CopyOldValue + sOffset;
             sColumnInfo->mOldValueInfo.mInOutMode = sInOutMode;
 
-            /* old column value º¹»ç */
+            /* old column value ë³µì‚¬ */
             if ( sColLen > 0 )
             {
                 idlOS::memcpy( (void*)sColumnInfo->mOldValueInfo.mValue.value,
@@ -12094,7 +12094,7 @@ IDE_RC sdcRow::makeUpdateInfo( UChar                  * aSlotPtr,
                                sColLen );
             }
 
-            /* offset ÀçÁ¶Á¤ */
+            /* offset ì¬ì¡°ì • */
             sOffset += sColLen;
         }
 
@@ -12127,7 +12127,7 @@ IDE_RC sdcRow::makeUpdateInfo( UChar                  * aSlotPtr,
                                     sUptCol->offset,
                                     sUptVal->length );
 
-                /* smiColumn, smiValue, IsLobDesc Á¤º¸¸¦ ¼³Á¤ÇÑ´Ù. */
+                /* smiColumn, smiValue, IsLobDesc ì •ë³´ë¥¼ ì„¤ì •í•œë‹¤. */
                 sColumnInfo->mColumn = (const smiColumn*)sUptCol;
                 
                 sColumnInfo->mNewValueInfo.mValue = *sUptVal;
@@ -12161,15 +12161,15 @@ IDE_RC sdcRow::makeUpdateInfo( UChar                  * aSlotPtr,
                 break;
             }
 
-            /* update columnÀÇ sequence°¡ row piece columnÀÇ
-             * sequenceº¸´Ù Å©¸é list¸¦ ÀÌµ¿ÇÏ¸é ¾ÈµÇ¹Ç·Î break ÇÑ´Ù. */
+            /* update columnì˜ sequenceê°€ row piece columnì˜
+             * sequenceë³´ë‹¤ í¬ë©´ listë¥¼ ì´ë™í•˜ë©´ ì•ˆë˜ë¯€ë¡œ break í•œë‹¤. */
             if ( SDC_GET_COLUMN_SEQ(sUptCol) > sColumnSeq )
             {
                 break;
             }
 
-            /* update column list¿Í update value list´Â ÇÑ ½Ö(pair)ÀÌ¹Ç·Î,
-             * list¸¦ ÀÌµ¿½ÃÅ³¶§µµ °°ÀÌ ÀÌµ¿½ÃÄÑ ÁÖ¾î¾ß ÇÑ´Ù. */
+            /* update column listì™€ update value listëŠ” í•œ ìŒ(pair)ì´ë¯€ë¡œ,
+             * listë¥¼ ì´ë™ì‹œí‚¬ë•Œë„ ê°™ì´ ì´ë™ì‹œì¼œ ì£¼ì–´ì•¼ í•œë‹¤. */
             sUptColList = sUptColList->next;
             sUptVal++;
             
@@ -12180,7 +12180,7 @@ IDE_RC sdcRow::makeUpdateInfo( UChar                  * aSlotPtr,
         }
 
         /*
-         * 3. next column piece·Î ÀÌµ¿
+         * 3. next column pieceë¡œ ì´ë™
          */
         
         sColPiecePtr += sColLen;
@@ -12210,14 +12210,14 @@ IDE_RC sdcRow::makeUpdateInfo( UChar                  * aSlotPtr,
 }
 
 /***********************************************************************
- * Description : Retry InfoÀÇ Statement retry column list¿Í
- *               Row retry column list¸¦ È®ÀÎÇØ¼­
- *               ¸¸¾à retry »óÈ²ÀÌ¸é ¿À·ù¸¦ ¹İÈ¯ÇÑ´Ù
+ * Description : Retry Infoì˜ Statement retry column listì™€
+ *               Row retry column listë¥¼ í™•ì¸í•´ì„œ
+ *               ë§Œì•½ retry ìƒí™©ì´ë©´ ì˜¤ë¥˜ë¥¼ ë°˜í™˜í•œë‹¤
  *
- *  aTrans         - [IN]  Æ®·£Àè¼Ç Á¤º¸
- *  aMtx           - [IN] Mtx Æ÷ÀÎÅÍ
- *  aMtxSavePoint  - [IN] Mtx¿¡ ´ëÇÑ Savepoint
- *  aRowSlotPtr    - [IN] È®ÀÎ ÇÒ rowÀÇ pointer
+ *  aTrans         - [IN]  íŠ¸ëœì­ì…˜ ì •ë³´
+ *  aMtx           - [IN] Mtx í¬ì¸í„°
+ *  aMtxSavePoint  - [IN] Mtxì— ëŒ€í•œ Savepoint
+ *  aRowSlotPtr    - [IN] í™•ì¸ í•  rowì˜ pointer
  *  aRowFlag       - [IN] row flag
  *  aRetryInfo     - [IN] retry info
  *  aColCount      - [IN] column count in row piece
@@ -12232,7 +12232,7 @@ IDE_RC sdcRow::checkRetry( void         * aTrans,
 {
     IDE_ASSERT( aRetryInfo->mRetryInfo != NULL );
 
-    // LOB °Ë»ç ÀÓ½ÃÄÚµå, ±¸Çö½Ã Á¦°Å
+    // LOB ê²€ì‚¬ ì„ì‹œì½”ë“œ, êµ¬í˜„ì‹œ ì œê±°
     if ( SDC_IS_HEAD_ROWPIECE( aRowFlag ) == ID_TRUE )
     {
         IDE_TEST_RAISE( existLOBCol( aRetryInfo ) == ID_TRUE,
@@ -12241,7 +12241,7 @@ IDE_RC sdcRow::checkRetry( void         * aTrans,
 
     if ( aColCount > 0 )
     {
-        // Statement Retry Á¶°Ç °Ë»ç
+        // Statement Retry ì¡°ê±´ ê²€ì‚¬
         IDE_TEST_RAISE(( ( aRetryInfo->mStmtRetryColLst.mCurColumn != NULL ) &&
                          ( isSameColumnValue( aRowSlotPtr,
                                               aRowFlag,
@@ -12250,7 +12250,7 @@ IDE_RC sdcRow::checkRetry( void         * aTrans,
                                               aColCount ) == ID_FALSE ) ),
                        REBUILD_ALREADY_MODIFIED );
 
-        // Row Retry Á¶°Ç °Ë»ç
+        // Row Retry ì¡°ê±´ ê²€ì‚¬
         if ( ( aRetryInfo->mRowRetryColLst.mCurColumn != NULL ) &&
              ( isSameColumnValue( aRowSlotPtr,
                                   aRowFlag,
@@ -12270,7 +12270,7 @@ IDE_RC sdcRow::checkRetry( void         * aTrans,
 
     }
 
-    // ¾ÆÁ÷ °Ë»ç ÇÒ ³»¿ëÀÌ ³²¾ÆÀÖ´ÂÁö È®ÀÎÇÑ´Ù
+    // ì•„ì§ ê²€ì‚¬ í•  ë‚´ìš©ì´ ë‚¨ì•„ìˆëŠ”ì§€ í™•ì¸í•œë‹¤
     if ( SDC_NEED_RETRY_CHECK( aRetryInfo ) )
     {
         aRetryInfo->mIsAlreadyModified = ID_TRUE;
@@ -12286,8 +12286,8 @@ IDE_RC sdcRow::checkRetry( void         * aTrans,
 
         if ( SDC_IS_HEAD_ROWPIECE( aRowFlag ) == ID_TRUE )
         {
-            // Head row piece ÀÌ°í ¾ÆÁ÷ °Ë»çÇÒ ³»¿ëÀÌ ÀÖÀ¸¸é,
-            // imp save point¸¦ ±â·ÏÇÑ´Ù
+            // Head row piece ì´ê³  ì•„ì§ ê²€ì‚¬í•  ë‚´ìš©ì´ ìˆìœ¼ë©´,
+            // imp save pointë¥¼ ê¸°ë¡í•œë‹¤
             IDE_TEST( smxTrans::setImpSavepoint4Retry( aTrans,
                                                        &(aRetryInfo->mISavepoint) )
                       != IDE_SUCCESS );
@@ -12339,13 +12339,13 @@ IDE_RC sdcRow::checkRetry( void         * aTrans,
 }
 
 /***********************************************************************
- * Description : updateÇÏ°í ³²Àº row pieceµé¿¡ ´ëÇØ¼­
- *               retry ¿©ºÎ¸¦ È®ÀÎÇÑ´Ù.
+ * Description : updateí•˜ê³  ë‚¨ì€ row pieceë“¤ì— ëŒ€í•´ì„œ
+ *               retry ì—¬ë¶€ë¥¼ í™•ì¸í•œë‹¤.
  *
- *   aStatistics    - [IN] Åë°èÁ¤º¸
- *   aTrans         - [IN] Æ®·£Àè¼Ç Á¤º¸
+ *   aStatistics    - [IN] í†µê³„ì •ë³´
+ *   aTrans         - [IN] íŠ¸ëœì­ì…˜ ì •ë³´
  *   aSpaceID       - [IN] Tablespace ID
- *   aRowPieceSID   - [IN] °Ë»çÇØ¾ß ÇÒ Row pieceÀÇ SID
+ *   aRowPieceSID   - [IN] ê²€ì‚¬í•´ì•¼ í•  Row pieceì˜ SID
  *   aRetryInfo     - [IN] retry info
  **********************************************************************/
 IDE_RC sdcRow::checkRetryRemainedRowPiece( idvSQL         * aStatistics,
@@ -12365,7 +12365,7 @@ IDE_RC sdcRow::checkRetryRemainedRowPiece( idvSQL         * aStatistics,
     {
         if ( aRetryInfo->mIsAlreadyModified == ID_FALSE )
         {
-            // QP¿¡¼­ ³»·ÁÁØ column list¸¦ ¸ğµÎ °Ë»çÇÏ¿´´Ù
+            // QPì—ì„œ ë‚´ë ¤ì¤€ column listë¥¼ ëª¨ë‘ ê²€ì‚¬í•˜ì˜€ë‹¤
             break;
         }
 
@@ -12392,8 +12392,8 @@ IDE_RC sdcRow::checkRetryRemainedRowPiece( idvSQL         * aStatistics,
 
         aRowPieceSID = getNextRowPieceSID( sCurSlotPtr );
 
-        /* update¿¡¼­ È£ÃâµÈ´Ù. lock row°¡ ÀâÇô ÀÖÀ¸¹Ç·Î
-         * latch¸¦ Ç®¾îµµ Next SID´Â º¸ÀåµÈ´Ù. */
+        /* updateì—ì„œ í˜¸ì¶œëœë‹¤. lock rowê°€ ì¡í˜€ ìˆìœ¼ë¯€ë¡œ
+         * latchë¥¼ í’€ì–´ë„ Next SIDëŠ” ë³´ì¥ëœë‹¤. */
         sState = 0;
         IDE_TEST( sdbBufferMgr::releasePage( aStatistics,
                                              sCurSlotPtr )
@@ -12415,9 +12415,9 @@ IDE_RC sdcRow::checkRetryRemainedRowPiece( idvSQL         * aStatistics,
 }
 
 /***********************************************************************
- * Description : Retry InfoÀÇ columnÁß¿¡ LOBÀÌ ÀÖ´ÂÁö¸¦ °Ë»ç.
- *               DML skip Retry¿¡¼­ Disk LOB À» Áö¿øÇÏ¸é
- *               º» ÇÔ¼ö¸¦ Á¦°ÅÇØ¾ß ÇÑ´Ù.
+ * Description : Retry Infoì˜ columnì¤‘ì— LOBì´ ìˆëŠ”ì§€ë¥¼ ê²€ì‚¬.
+ *               DML skip Retryì—ì„œ Disk LOB ì„ ì§€ì›í•˜ë©´
+ *               ë³¸ í•¨ìˆ˜ë¥¼ ì œê±°í•´ì•¼ í•œë‹¤.
  **********************************************************************/
 idBool sdcRow::existLOBCol( sdcRetryInfo  * aRetryInfo )
 {
@@ -12428,7 +12428,7 @@ idBool sdcRow::existLOBCol( sdcRetryInfo  * aRetryInfo )
           ( sChkColList != NULL ) && ( sIsRetryByLOB == ID_FALSE );
           sChkColList = sChkColList->next )
     {
-        // whereÀı¿¡ LOB ColumnÀÌ ÀÖ´Â °æ¿ì ÀÏ´ÜÁ¦¿Ü
+        // whereì ˆì— LOB Columnì´ ìˆëŠ” ê²½ìš° ì¼ë‹¨ì œì™¸
         if ( SDC_IS_LOB_COLUMN( sChkColList->column ) == ID_TRUE )
         {
             sIsRetryByLOB = ID_TRUE;
@@ -12439,7 +12439,7 @@ idBool sdcRow::existLOBCol( sdcRetryInfo  * aRetryInfo )
           ( sChkColList != NULL ) && ( sIsRetryByLOB == ID_FALSE );
           sChkColList = sChkColList->next )
     {
-        // setÀı¿¡ LOB ColumnÀÌ ÀÖ´Â °æ¿ì ÀÏ´ÜÁ¦¿Ü
+        // setì ˆì— LOB Columnì´ ìˆëŠ” ê²½ìš° ì¼ë‹¨ì œì™¸
         if ( SDC_IS_LOB_COLUMN( sChkColList->column ) == ID_TRUE )
         {
             sIsRetryByLOB = ID_TRUE;
@@ -12450,10 +12450,10 @@ idBool sdcRow::existLOBCol( sdcRetryInfo  * aRetryInfo )
 }
 
 /***********************************************************************
- * Description : Retry InfoÀÇ column list¿Í value list¸¦ ¹Ş¾Æ¼­
- *               °ªÀÌ °°ÀºÁö À¯¹«¸¦ È®ÀÎÇÑ´Ù.
+ * Description : Retry Infoì˜ column listì™€ value listë¥¼ ë°›ì•„ì„œ
+ *               ê°’ì´ ê°™ì€ì§€ ìœ ë¬´ë¥¼ í™•ì¸í•œë‹¤.
  *
- *  aRowSlotPtr  - [IN] È®ÀÎ ÇÒ rowÀÇ pointer
+ *  aRowSlotPtr  - [IN] í™•ì¸ í•  rowì˜ pointer
  *  aRowFlag     - [IN] row flag
  *  aRetryInfo   - [IN] retry info
  *  aFstColSeq   - [IN] first column seq in row piece
@@ -12477,8 +12477,8 @@ idBool sdcRow::isSameColumnValue( UChar               * aSlotPtr,
     sdcColInOutMode       sInOutMode;
     idBool                sIsSameColumnValue = ID_TRUE;
 
-    // value list¸¦ ±âÁØÀ¸·Î »ï¾Æ¾ß ÇÑ´Ù
-    // comp cursorÀÇ °æ¿ì delete ÇÒ ¶§ ¿¡µµ set column list°¡ ÀÖÀ» ¼ö ÀÖ´Ù.
+    // value listë¥¼ ê¸°ì¤€ìœ¼ë¡œ ì‚¼ì•„ì•¼ í•œë‹¤
+    // comp cursorì˜ ê²½ìš° delete í•  ë•Œ ì—ë„ set column listê°€ ìˆì„ ìˆ˜ ìˆë‹¤.
     IDE_ASSERT( aSlotPtr                 != NULL );
     IDE_ASSERT( aCompColumns             != NULL );
     IDE_ASSERT( aCompColumns->mCurColumn != NULL );
@@ -12491,9 +12491,9 @@ idBool sdcRow::isSameColumnValue( UChar               * aSlotPtr,
 
     if ( sOffset > 0 )
     {
-        /* sOffset °ªÀÌ ¼³Á¤µÇ¾î ÀÖÀ¸¸é
-         * 1. first column seq °¡ °°°í
-         * 2. prev flag°¡ ¼³Á¤µÇ¾î ÀÖ¾î¾ß ÇÑ´Ù.
+        /* sOffset ê°’ì´ ì„¤ì •ë˜ì–´ ìˆìœ¼ë©´
+         * 1. first column seq ê°€ ê°™ê³ 
+         * 2. prev flagê°€ ì„¤ì •ë˜ì–´ ìˆì–´ì•¼ í•œë‹¤.
          * */
         if ( ( sColSeq != aFstColSeq ) ||
              ( SM_IS_FLAG_ON( aRowFlag, SDC_ROWHDR_P_FLAG ) == ID_FALSE ))
@@ -12504,8 +12504,8 @@ idBool sdcRow::isSameColumnValue( UChar               * aSlotPtr,
         }
     }
 
-    // ÇöÀçÀÇ row piece¿¡ °Ë»çÇÏ´Â columnÀÌ ¾ø´Â °æ¿ì
-    // Áï °Ë»ç ±¸°£¿¡ ¾ÆÁ÷ µµ´ŞÇÏÁö ¸øÇÑ°æ¿ì
+    // í˜„ì¬ì˜ row pieceì— ê²€ì‚¬í•˜ëŠ” columnì´ ì—†ëŠ” ê²½ìš°
+    // ì¦‰ ê²€ì‚¬ êµ¬ê°„ì— ì•„ì§ ë„ë‹¬í•˜ì§€ ëª»í•œê²½ìš°
     IDE_TEST_CONT( ( aFstColSeq + aColCount ) <= sColSeq ,
                     SKIP_CHECK );
 
@@ -12514,17 +12514,17 @@ idBool sdcRow::isSameColumnValue( UChar               * aSlotPtr,
                                 &sColVal,
                                 &sInOutMode );
 
-    /* roop¿¡¼­ Á¤»óÀûÀ¸·Î Å»ÃâÇÏ´Â Á¶°Ç
-     * 1. qp¿¡¼­ ³»·ÁÁØ column listÀÇ column seq°¡ row pieceÀÇ ¸¶Áö¸·
-     *    column seq¸¦ ³Ñ¾î°£ °æ¿ì, ´ÙÀ½ row piece¸¦ È®ÀÎÇÑ´Ù.
-     * 2. qp¿¡¼­ ³»·ÁÁØ column list°¡ nullÀÎ °æ¿ì, ¸ğµÎ °Ë»çÇÏ¿´´Ù.
-     * 3. ´ÙÀ½ row piece·Î ÀÌ¾îÁø column value¸¦ ¹ß°ßÇÑ °æ¿ì
+    /* roopì—ì„œ ì •ìƒì ìœ¼ë¡œ íƒˆì¶œí•˜ëŠ” ì¡°ê±´
+     * 1. qpì—ì„œ ë‚´ë ¤ì¤€ column listì˜ column seqê°€ row pieceì˜ ë§ˆì§€ë§‰
+     *    column seqë¥¼ ë„˜ì–´ê°„ ê²½ìš°, ë‹¤ìŒ row pieceë¥¼ í™•ì¸í•œë‹¤.
+     * 2. qpì—ì„œ ë‚´ë ¤ì¤€ column listê°€ nullì¸ ê²½ìš°, ëª¨ë‘ ê²€ì‚¬í•˜ì˜€ë‹¤.
+     * 3. ë‹¤ìŒ row pieceë¡œ ì´ì–´ì§„ column valueë¥¼ ë°œê²¬í•œ ê²½ìš°
      */
     sChkVal = aCompColumns->mCurValue;
 
     while( ( aFstColSeq + aColCount ) > sColSeq )
     {
-        /* RowÀÇ column valueÀÇ Å©±â°¡ QP¿¡¼­ ³»·ÁÁØ °ª º¸´Ù Å©´Ù */
+        /* Rowì˜ column valueì˜ í¬ê¸°ê°€ QPì—ì„œ ë‚´ë ¤ì¤€ ê°’ ë³´ë‹¤ í¬ë‹¤ */
         while( ( sColSeqInRowPiece + aFstColSeq ) < sColSeq )
         {
             sColPiecePtr += sColLen;
@@ -12537,7 +12537,7 @@ idBool sdcRow::isSameColumnValue( UChar               * aSlotPtr,
 
         if ( ( sColLen + sOffset ) > sChkVal->length )
         {
-            /* RowÀÇ column valueÀÇ Å©±â°¡ QP¿¡¼­ ³»·ÁÁØ °ª º¸´Ù Å©´Ù */
+            /* Rowì˜ column valueì˜ í¬ê¸°ê°€ QPì—ì„œ ë‚´ë ¤ì¤€ ê°’ ë³´ë‹¤ í¬ë‹¤ */
             sIsSameColumnValue = ID_FALSE;
             break;
         }
@@ -12555,13 +12555,13 @@ idBool sdcRow::isSameColumnValue( UChar               * aSlotPtr,
             if ( ( ( aFstColSeq + aColCount - 1 ) == sColSeq ) &&
                  ( SM_IS_FLAG_ON( aRowFlag, SDC_ROWHDR_N_FLAG ) == ID_TRUE ) )
             {
-                // ¸¶Áö¸· columnÀÌ°í next row piece°¡ ÀÖ´Â °æ¿ì
-                // Àç¼³Á¤
+                // ë§ˆì§€ë§‰ columnì´ê³  next row pieceê°€ ìˆëŠ” ê²½ìš°
+                // ì¬ì„¤ì •
                 aCompColumns->mCurOffset = sOffset + sColLen;
             }
             else
             {
-                // ¸¶Áö¸· columnÀÌ ¾Æ´Ñ °æ¿ì ±æÀÌ°¡ ´Ù¸¥°ÍÀÌ´Ù.
+                // ë§ˆì§€ë§‰ columnì´ ì•„ë‹Œ ê²½ìš° ê¸¸ì´ê°€ ë‹¤ë¥¸ê²ƒì´ë‹¤.
                 sIsSameColumnValue = ID_FALSE;
             }
 
@@ -12571,22 +12571,22 @@ idBool sdcRow::isSameColumnValue( UChar               * aSlotPtr,
         if ( ( ( aFstColSeq + aColCount - 1 ) == sColSeq ) &&
              ( SM_IS_FLAG_ON( aRowFlag, SDC_ROWHDR_N_FLAG ) == ID_TRUE ) )
         {
-            // ±æÀÌ°¡ µü ¸Â°Ô ¶³¾îÁ³´Âµ¥ next°¡ ÀÖ´Â °æ¿ì
-            // size°¡ ´Ù¸¥°ÍÀÌ´Ù.
+            // ê¸¸ì´ê°€ ë”± ë§ê²Œ ë–¨ì–´ì¡ŒëŠ”ë° nextê°€ ìˆëŠ” ê²½ìš°
+            // sizeê°€ ë‹¤ë¥¸ê²ƒì´ë‹¤.
             sIsSameColumnValue = ID_FALSE;
             break;
         }
 
         aCompColumns->mCurOffset = 0;
 
-        /* next column piece·Î ÀÌµ¿ */
+        /* next column pieceë¡œ ì´ë™ */
         sChkVal++;
         sOffset = 0;
         sChkColList = sChkColList->next;
 
         if ( sChkColList == NULL )
         {
-            /* QP¿¡¼­ ³»·Á ÁØ Column list¸¦ ¸ğµÎ °Ë»çÇÏ¿´´Ù */
+            /* QPì—ì„œ ë‚´ë ¤ ì¤€ Column listë¥¼ ëª¨ë‘ ê²€ì‚¬í•˜ì˜€ë‹¤ */
             break;
         }
 
@@ -12606,8 +12606,8 @@ idBool sdcRow::isSameColumnValue( UChar               * aSlotPtr,
 /***********************************************************************
  *
  * Description :
- *  update½Ã¿¡ insert rowpiece for update ¿¬»êÀ» ÇÏ±â À§ÇØ¼­
- *  sdcRowPieceUpdateInfo·ÎºÎÅÍ sdcRowPieceInsertInfo¸¦ ¸¸µå´Â ÇÔ¼öÀÌ´Ù.
+ *  updateì‹œì— insert rowpiece for update ì—°ì‚°ì„ í•˜ê¸° ìœ„í•´ì„œ
+ *  sdcRowPieceUpdateInfoë¡œë¶€í„° sdcRowPieceInsertInfoë¥¼ ë§Œë“œëŠ” í•¨ìˆ˜ì´ë‹¤.
  *
  **********************************************************************/
 void sdcRow::makeInsertInfoFromUptInfo( void                         *aTableHeader,
@@ -12632,12 +12632,12 @@ void sdcRow::makeInsertInfoFromUptInfo( void                         *aTableHead
         sColInfo4Upt = aUpdateInfo->mColInfoList + sColSeqInRowPiece;
         sColInfo4Ins = aInsertInfo->mColInfoList + sColSeqInRowPiece;
 
-        /* mColumnÀÇ °ªÀ» º¸°í update ÄÃ·³ÀÎÁö ¿©ºÎ¸¦ ÆÇ´ÜÇÑ´Ù.
-         * mColumn == NULL : update ÄÃ·³ X
-         * mColumn != NULL : update ÄÃ·³ O */
+        /* mColumnì˜ ê°’ì„ ë³´ê³  update ì»¬ëŸ¼ì¸ì§€ ì—¬ë¶€ë¥¼ íŒë‹¨í•œë‹¤.
+         * mColumn == NULL : update ì»¬ëŸ¼ X
+         * mColumn != NULL : update ì»¬ëŸ¼ O */
         if ( SDC_IS_UPDATE_COLUMN( sColInfo4Upt->mColumn ) == ID_TRUE )
         {
-            /* update ÄÃ·³ÀÎ °æ¿ì */
+            /* update ì»¬ëŸ¼ì¸ ê²½ìš° */
             sColInfo4Ins->mColumn =
                 (const smiColumn*)sColInfo4Upt->mColumn;
 
@@ -12651,7 +12651,7 @@ void sdcRow::makeInsertInfoFromUptInfo( void                         *aTableHead
         }
         else
         {
-            /* update ÄÃ·³ÀÌ ¾Æ´Ñ °æ¿ì */
+            /* update ì»¬ëŸ¼ì´ ì•„ë‹Œ ê²½ìš° */
             sColumnSeq = aFstColumnSeq + sColSeqInRowPiece;
 
             sColInfo4Ins->mColumn =
@@ -12740,7 +12740,7 @@ void sdcRow::makeOverwriteInfo( const sdcRowPieceInsertInfo    *aInsertInfo,
 /***********************************************************************
  *
  * Description :
- *  pk Á¤º¸¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+ *  pk ì •ë³´ë¥¼ ì´ˆê¸°í™”í•œë‹¤.
  *
  **********************************************************************/
 void sdcRow::makePKInfo( void         *aTableHeader,
@@ -12757,7 +12757,7 @@ void sdcRow::makePKInfo( void         *aTableHeader,
     IDE_ASSERT( aTableHeader != NULL );
     IDE_ASSERT( aPKInfo      != NULL );
 
-    /* 0¹øÂ° index°¡ PK indexÀÌ´Ù. */
+    /* 0ë²ˆì§¸ indexê°€ PK indexì´ë‹¤. */
     sIndexHeader = (void*)smLayerCallback::getTableIndex( aTableHeader, 0 );
 
     sColCount = smLayerCallback::getColumnCountOfIndexHeader( sIndexHeader );
@@ -12788,8 +12788,8 @@ void sdcRow::makePKInfo( void         *aTableHeader,
 /***********************************************************************
  *
  * Description :
- *  rowpiece³»¿¡ pk columnÀÌ ÀÖ´ÂÁö¸¦ Ã£°í,
- *  ÀÖÀ» °æ¿ì pk column Á¤º¸¸¦ sdcPKInfo¿¡ º¹»çÇÑ´Ù.
+ *  rowpieceë‚´ì— pk columnì´ ìˆëŠ”ì§€ë¥¼ ì°¾ê³ ,
+ *  ìˆì„ ê²½ìš° pk column ì •ë³´ë¥¼ sdcPKInfoì— ë³µì‚¬í•œë‹¤.
  *
  **********************************************************************/
 void sdcRow::copyPKInfo( const UChar                   *aSlotPtr,
@@ -12823,7 +12823,7 @@ void sdcRow::copyPKInfo( const UChar                   *aSlotPtr,
     sPKColCount   = aPKInfo->mTotalPKColCount;
     sFstColumnSeq = aPKInfo->mFstColumnSeq;
 
-    /* ÀÌ for loop´Â row piece³»ÀÇ ¸ğµç ÄÃ·³À» ¼øÈ¸ÇÑ´Ù. */
+    /* ì´ for loopëŠ” row pieceë‚´ì˜ ëª¨ë“  ì»¬ëŸ¼ì„ ìˆœíšŒí•œë‹¤. */
     for ( sColSeqInRowPiece = 0 ;
           sColSeqInRowPiece < aColCount;
           sColSeqInRowPiece++ )
@@ -12858,7 +12858,7 @@ void sdcRow::copyPKInfo( const UChar                   *aSlotPtr,
 
         if ( sFind == ID_TRUE )
         {
-            /* pk columnÀ» Ã£Àº °æ¿ì */
+            /* pk columnì„ ì°¾ì€ ê²½ìš° */
             if ( sColumnInfo4PK->mColumn->size < 
                              (sColumnInfo4PK->mValue.length +
                                   sColumnInfo4Upt->mOldValueInfo.mValue.length) )
@@ -12888,7 +12888,7 @@ void sdcRow::copyPKInfo( const UChar                   *aSlotPtr,
                 (UChar*)sColumnInfo4PK->mValue.value +
                 sColumnInfo4PK->mValue.length;
 
-            /* pk column value º¹»ç */
+            /* pk column value ë³µì‚¬ */
             idlOS::memcpy( sWritePtr,
                            sColumnInfo4Upt->mOldValueInfo.mValue.value,
                            sColumnInfo4Upt->mOldValueInfo.mValue.length );
@@ -12926,7 +12926,7 @@ void sdcRow::copyPKInfo( const UChar                   *aSlotPtr,
 /***********************************************************************
  *
  * Description :
- *  sdcRowPieceUpdateInfo¿¡ trailing null update column Á¤º¸¸¦ Ãß°¡ÇÑ´Ù.
+ *  sdcRowPieceUpdateInfoì— trailing null update column ì •ë³´ë¥¼ ì¶”ê°€í•œë‹¤.
  *
  **********************************************************************/
 IDE_RC sdcRow::makeTrailingNullUpdateInfo(
@@ -12965,21 +12965,21 @@ IDE_RC sdcRow::makeTrailingNullUpdateInfo(
     sUptVal     = aValueList;
     sUptValMode = aValueModeList;
 
-    /* Ã¹¹øÂ° trailing null column sequence´Â
-     * ÆäÀÌÁö¿¡ ÀúÀåµÈ ¸¶Áö¸· column sequence + 1 ÀÌ´Ù. */
+    /* ì²«ë²ˆì§¸ trailing null column sequenceëŠ”
+     * í˜ì´ì§€ì— ì €ì¥ëœ ë§ˆì§€ë§‰ column sequence + 1 ì´ë‹¤. */
     sColumnSeqInRowPiece = sColCount;
     sColumnSeq           = aFstColumnSeq + sColumnSeqInRowPiece;
 
     while( SDC_GET_COLUMN_SEQ(sUptColList->column) < sColumnSeq )
     {
-        /* trailing null update columnÀÌ ³ª¿Ã¶§±îÁö
-         * update column list¸¦ ÀÌµ¿½ÃÅ²´Ù. */
+        /* trailing null update columnì´ ë‚˜ì˜¬ë•Œê¹Œì§€
+         * update column listë¥¼ ì´ë™ì‹œí‚¨ë‹¤. */
         IDE_ASSERT( sUptColList->next != NULL );
 
         sUptColList = sUptColList->next;
         sUptVal++;
     }
-    /* ¹İµå½Ã trailing null update columnÀÌ Á¸ÀçÇØ¾ß ÇÑ´Ù. */
+    /* ë°˜ë“œì‹œ trailing null update columnì´ ì¡´ì¬í•´ì•¼ í•œë‹¤. */
     IDE_ASSERT( sUptColList != NULL );
 
     while(sUptColList != NULL)
@@ -12990,20 +12990,20 @@ IDE_RC sdcRow::makeTrailingNullUpdateInfo(
 
         sColumnInfo = aUpdateInfo->mColInfoList + sColumnSeqInRowPiece;
 
-        /* old value´Â ´ç¿¬È÷ NULLÀÌ´Ù. */
+        /* old valueëŠ” ë‹¹ì—°íˆ NULLì´ë‹¤. */
         sColumnInfo->mOldValueInfo.mValue.length = 0;
         sColumnInfo->mOldValueInfo.mValue.value  = NULL;
         sColumnInfo->mOldValueInfo.mInOutMode    = SDC_COLUMN_IN_MODE;
 
         if ( SDC_GET_COLUMN_SEQ(sUptColList->column) == sColumnSeq )
         {
-            /* trailing null update ÄÃ·³À» Ã£Àº °æ¿ì */
+            /* trailing null update ì»¬ëŸ¼ì„ ì°¾ì€ ê²½ìš° */
             sColumnInfo->mColumn = (const smiColumn*)sUptColList->column;
             sColumnInfo->mNewValueInfo.mValue = *sUptVal;
             sColumnInfo->mNewValueInfo.mInOutMode = SDC_COLUMN_IN_MODE;
             /* BUG-44082 [PROJ-2506] Insure++ Warning
-             * - ÃÊ±âÈ­°¡ ÇÊ¿äÇÕ´Ï´Ù.
-             * - sdcRow::makeUpdateInfo()¸¦ ÂüÁ¶ÇÏ¿´½À´Ï´Ù.(sdcRow.cpp:12156)
+             * - ì´ˆê¸°í™”ê°€ í•„ìš”í•©ë‹ˆë‹¤.
+             * - sdcRow::makeUpdateInfo()ë¥¼ ì°¸ì¡°í•˜ì˜€ìŠµë‹ˆë‹¤.(sdcRow.cpp:12156)
              */
             sColumnInfo->mNewValueInfo.mOutValue.value  = NULL;
             sColumnInfo->mNewValueInfo.mOutValue.length = 0;
@@ -13042,16 +13042,16 @@ IDE_RC sdcRow::makeTrailingNullUpdateInfo(
         }
         else
         {
-            /* ´Ù¸¥ trailing null columnÀÌ updateµÊÀ¸·Î ÀÎÇØ¼­,
-             * µ¢´Ş¾Æ 1byte NULL(0xFF)·Î ÀúÀåµÇ°Ô µÈ °æ¿ì.
+            /* ë‹¤ë¥¸ trailing null columnì´ updateë¨ìœ¼ë¡œ ì¸í•´ì„œ,
+             * ë©ë‹¬ì•„ 1byte NULL(0xFF)ë¡œ ì €ì¥ë˜ê²Œ ëœ ê²½ìš°.
              *
              * ex)
-             *  t1 Å×ÀÌºí¿¡ ´Ù¼¸°³ÀÇ ÄÃ·³(c1, c2, c3, c4, c5)ÀÌ ÀÖ´Ù.
-             *  insert¶§´Â c1, c2¸¸ ÀúÀåÇÏ°í ³ª¸ÓÁö´Â ¸ğµÎ trailing nullÀÌ¾ú´Ù.
-             *  ÀÌ¶§ c4 trailing null columnÀ» updateÇÏ°Ô µÇ¸é,
-             *  c4 ÀÌÀüÀÇ c3 ÄÃ·³µµ ÀÌÁ¦ trailing nullÀÌ ¾Æ´Ï°Ô µÇ¹Ç·Î
-             *  1byte NULL(0xFF)·Î ÀúÀåµÈ´Ù.
-             *  ÇÏÁö¸¸ c4 µÚÀÇ c5 ÄÃ·³Àº ¿©ÀüÈ÷ trailing nullÀÌ´Ù.
+             *  t1 í…Œì´ë¸”ì— ë‹¤ì„¯ê°œì˜ ì»¬ëŸ¼(c1, c2, c3, c4, c5)ì´ ìˆë‹¤.
+             *  insertë•ŒëŠ” c1, c2ë§Œ ì €ì¥í•˜ê³  ë‚˜ë¨¸ì§€ëŠ” ëª¨ë‘ trailing nullì´ì—ˆë‹¤.
+             *  ì´ë•Œ c4 trailing null columnì„ updateí•˜ê²Œ ë˜ë©´,
+             *  c4 ì´ì „ì˜ c3 ì»¬ëŸ¼ë„ ì´ì œ trailing nullì´ ì•„ë‹ˆê²Œ ë˜ë¯€ë¡œ
+             *  1byte NULL(0xFF)ë¡œ ì €ì¥ëœë‹¤.
+             *  í•˜ì§€ë§Œ c4 ë’¤ì˜ c5 ì»¬ëŸ¼ì€ ì—¬ì „íˆ trailing nullì´ë‹¤.
              */
             sColumnInfo->mColumn =
                 (smiColumn*)smLayerCallback::getColumn( aTableHeader,
@@ -13076,8 +13076,8 @@ IDE_RC sdcRow::makeTrailingNullUpdateInfo(
         }
         else
         {
-            // PROJ-1862 In-Mode LOB À¸·Î ÀÎÇÏ¿© LOB Columnµµ ÀÌÀü¿¡
-            // Trailing NULL, ÀÌÈÄ¿¡ Out Mode ÀÏ ¼ö ÀÖ½À´Ï´Ù.
+            // PROJ-1862 In-Mode LOB ìœ¼ë¡œ ì¸í•˜ì—¬ LOB Columnë„ ì´ì „ì—
+            // Trailing NULL, ì´í›„ì— Out Mode ì¼ ìˆ˜ ìˆìŠµë‹ˆë‹¤.
             aUpdateInfo->mUptAftLobDescCnt++;
 
             IDE_ERROR( sColumnInfo->mNewValueInfo.mValue.length
@@ -13089,15 +13089,15 @@ IDE_RC sdcRow::makeTrailingNullUpdateInfo(
 
         aRowHdrInfo->mColCount++;
 
-        /* ´ÙÀ½ ÄÃ·³À» Ã³¸®ÇÏ±â À§ÇØ
-         * column sequence Áõ°¡½ÃÅ´ */
+        /* ë‹¤ìŒ ì»¬ëŸ¼ì„ ì²˜ë¦¬í•˜ê¸° ìœ„í•´
+         * column sequence ì¦ê°€ì‹œí‚´ */
         sColumnSeqInRowPiece++;
         sColumnSeq++;
 
         if ( sFind == ID_TRUE )
         {
-            /* trailing null update ÄÃ·³À» Ã£Àº °æ¿ì,
-             * list¸¦ next·Î ÀÌµ¿ÇÑ´Ù. */
+            /* trailing null update ì»¬ëŸ¼ì„ ì°¾ì€ ê²½ìš°,
+             * listë¥¼ nextë¡œ ì´ë™í•œë‹¤. */
             sUptColList = sUptColList->next;
             sUptVal++;
         }
@@ -13174,10 +13174,10 @@ IDE_RC sdcRow::makeTrailingNullUpdateInfo(
 /***********************************************************************
  *
  * Description :
- *  rowpieceÀÇ Å©±â¸¦ °è»êÇÏ´Â ÇÔ¼öÀÌ´Ù.
- *  rowpiece size¸¦ µû·Î ÀúÀåÇÏÁö ¾Ê±â ¶§¹®¿¡,
- *  ÇÊ¿ä½Ã rowpieceÀÇ Å©±â¸¦ °è»êÇØ¾ß ÇÑ´Ù.
- *  (rowpieceÀÇ size¸¦ ¾Ë¾Æ¾ß ÇÏ´Â °æ¿ì´Â ¸¹Áö ¾Ê´Ù.)
+ *  rowpieceì˜ í¬ê¸°ë¥¼ ê³„ì‚°í•˜ëŠ” í•¨ìˆ˜ì´ë‹¤.
+ *  rowpiece sizeë¥¼ ë”°ë¡œ ì €ì¥í•˜ì§€ ì•Šê¸° ë•Œë¬¸ì—,
+ *  í•„ìš”ì‹œ rowpieceì˜ í¬ê¸°ë¥¼ ê³„ì‚°í•´ì•¼ í•œë‹¤.
+ *  (rowpieceì˜ sizeë¥¼ ì•Œì•„ì•¼ í•˜ëŠ” ê²½ìš°ëŠ” ë§ì§€ ì•Šë‹¤.)
  *
  **********************************************************************/
 UShort sdcRow::getRowPieceSize( const UChar    *aSlotPtr )
@@ -13274,7 +13274,7 @@ UShort sdcRow::getRowPieceBodySize( const UChar    *aSlotPtr )
 /***********************************************************************
  *
  * Description :
- *  minimum rowpiece size¸¦ ¹İÈ¯ÇÑ´Ù.
+ *  minimum rowpiece sizeë¥¼ ë°˜í™˜í•œë‹¤.
  *
  **********************************************************************/
 UShort sdcRow::getMinRowPieceSize()
@@ -13366,7 +13366,7 @@ UChar* sdcRow::getNxtColPiece( const UChar    *aColPtr )
 /***********************************************************************
  * Description : getColPieceLen
  *
- *   aColPtr - [IN] ±æÀÌ¸¦ È®ÀÎÇÒ Column PieceÀÇ Ptr
+ *   aColPtr - [IN] ê¸¸ì´ë¥¼ í™•ì¸í•  Column Pieceì˜ Ptr
  **********************************************************************/
 UInt sdcRow::getColPieceLen( const UChar    *aColPtr )
 {
@@ -13384,9 +13384,9 @@ UInt sdcRow::getColPieceLen( const UChar    *aColPtr )
 /***********************************************************************
  *
  * Description :
- *  insert rowpiece ¿¬»êÀ» ¼öÇàÇÏ±â Àü¿¡, rowpieceÀÇ flag¸¦ °è»êÇÏ´Â ÇÔ¼öÀÌ´Ù.
- *  insert DML ¼öÇà½Ã¿¡¸¸ ÀÌ ÇÔ¼ö¸¦ È£ÃâÇÏ°í, update DML ¼öÇà½Ã¿¡´Â
- *  calcRowFlag4Update() ÇÔ¼ö¸¦ È£ÃâÇØ¾ß ÇÑ´Ù.
+ *  insert rowpiece ì—°ì‚°ì„ ìˆ˜í–‰í•˜ê¸° ì „ì—, rowpieceì˜ flagë¥¼ ê³„ì‚°í•˜ëŠ” í•¨ìˆ˜ì´ë‹¤.
+ *  insert DML ìˆ˜í–‰ì‹œì—ë§Œ ì´ í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•˜ê³ , update DML ìˆ˜í–‰ì‹œì—ëŠ”
+ *  calcRowFlag4Update() í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•´ì•¼ í•œë‹¤.
  *
  **********************************************************************/
 UChar sdcRow::calcRowFlag4Insert( const sdcRowPieceInsertInfo  *aInsertInfo,
@@ -13399,8 +13399,8 @@ UChar sdcRow::calcRowFlag4Insert( const sdcRowPieceInsertInfo  *aInsertInfo,
     IDE_ASSERT( aInsertInfo != NULL );
     IDE_ASSERT( aInsertInfo->mIsInsert4Upt == ID_FALSE );
 
-    /* ¸ğµç flag¸¦ ¼³Á¤ÇÑ »óÅÂ¿¡¼­, Á¶°ÇÀ» Ã¼Å©ÇÏ¸é¼­
-     * flag¸¦ ÇÏ³ª¾¿ off ½ÃÅ²´Ù. */
+    /* ëª¨ë“  flagë¥¼ ì„¤ì •í•œ ìƒíƒœì—ì„œ, ì¡°ê±´ì„ ì²´í¬í•˜ë©´ì„œ
+     * flagë¥¼ í•˜ë‚˜ì”© off ì‹œí‚¨ë‹¤. */
     sRowFlag = SDC_ROWHDR_FLAG_ALL;
 
     if ( SDC_IS_FIRST_PIECE_IN_INSERTINFO(aInsertInfo) != ID_TRUE )
@@ -13411,8 +13411,8 @@ UChar sdcRow::calcRowFlag4Insert( const sdcRowPieceInsertInfo  *aInsertInfo,
     
     if ( aNextRowPieceSID != SD_NULL_SID )
     {
-        /* next rowpiece°¡ Á¸ÀçÇÏ¸é
-         * L flag¸¦ off ÇÑ´Ù. */
+        /* next rowpieceê°€ ì¡´ì¬í•˜ë©´
+         * L flagë¥¼ off í•œë‹¤. */
         SM_SET_FLAG_OFF(sRowFlag, SDC_ROWHDR_L_FLAG);
     }
 
@@ -13438,16 +13438,16 @@ UChar sdcRow::calcRowFlag4Insert( const sdcRowPieceInsertInfo  *aInsertInfo,
             IDE_ASSERT( 0 );
         }
 
-         /* lob desc´Â ³ª´©¾î ÀúÀåÇÏÁö ¾ÊÀ¸¹Ç·Î
-          * P flag¸¦ off ÇÑ´Ù. */
+         /* lob descëŠ” ë‚˜ëˆ„ì–´ ì €ì¥í•˜ì§€ ì•Šìœ¼ë¯€ë¡œ
+          * P flagë¥¼ off í•œë‹¤. */
         SM_SET_FLAG_OFF(sRowFlag, SDC_ROWHDR_P_FLAG);
     }
     else
     {
         if ( aInsertInfo->mStartColOffset == 0 )
         {
-            /* column valueÀÇ Ã³À½ºÎÅÍ ÀúÀåÇÏ´Â °æ¿ì
-             * P flag¸¦ off ÇÑ´Ù. */
+            /* column valueì˜ ì²˜ìŒë¶€í„° ì €ì¥í•˜ëŠ” ê²½ìš°
+             * P flagë¥¼ off í•œë‹¤. */
             SM_SET_FLAG_OFF(sRowFlag, SDC_ROWHDR_P_FLAG);
         }
     }
@@ -13475,8 +13475,8 @@ UChar sdcRow::calcRowFlag4Insert( const sdcRowPieceInsertInfo  *aInsertInfo,
         }
 
 
-        /* lob desc´Â ³ª´©¾î ÀúÀåÇÏÁö ¾ÊÀ¸¹Ç·Î
-         * N flag¸¦ off ÇÑ´Ù. */
+        /* lob descëŠ” ë‚˜ëˆ„ì–´ ì €ì¥í•˜ì§€ ì•Šìœ¼ë¯€ë¡œ
+         * N flagë¥¼ off í•œë‹¤. */
         SM_SET_FLAG_OFF(sRowFlag, SDC_ROWHDR_N_FLAG);
     }
     else
@@ -13484,8 +13484,8 @@ UChar sdcRow::calcRowFlag4Insert( const sdcRowPieceInsertInfo  *aInsertInfo,
         if ( aInsertInfo->mEndColOffset ==
             sLstColumnInfo->mValueInfo.mValue.length )
         {
-            /* column valueÀÇ ¸¶Áö¸· ºÎºĞ±îÁö ÀúÀåÇÏ´Â °æ¿ì,
-             * N flag¸¦ off ÇÑ´Ù. */
+            /* column valueì˜ ë§ˆì§€ë§‰ ë¶€ë¶„ê¹Œì§€ ì €ì¥í•˜ëŠ” ê²½ìš°,
+             * N flagë¥¼ off í•œë‹¤. */
             SM_SET_FLAG_OFF(sRowFlag, SDC_ROWHDR_N_FLAG);
         }
     }
@@ -13497,9 +13497,9 @@ UChar sdcRow::calcRowFlag4Insert( const sdcRowPieceInsertInfo  *aInsertInfo,
 /***********************************************************************
  *
  * Description :
- *  insert rowpiece ¿¬»êÀ» ¼öÇàÇÏ±â Àü¿¡, rowpieceÀÇ flag¸¦ °è»êÇÏ´Â ÇÔ¼öÀÌ´Ù.
- *  update DML ¼öÇà½Ã¿¡¸¸ ÀÌ ÇÔ¼ö¸¦ È£ÃâÇÏ°í, insert DML ¼öÇà½Ã¿¡´Â
- *  calcRowFlag4Insert() ÇÔ¼ö¸¦ È£ÃâÇØ¾ß ÇÑ´Ù.
+ *  insert rowpiece ì—°ì‚°ì„ ìˆ˜í–‰í•˜ê¸° ì „ì—, rowpieceì˜ flagë¥¼ ê³„ì‚°í•˜ëŠ” í•¨ìˆ˜ì´ë‹¤.
+ *  update DML ìˆ˜í–‰ì‹œì—ë§Œ ì´ í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•˜ê³ , insert DML ìˆ˜í–‰ì‹œì—ëŠ”
+ *  calcRowFlag4Insert() í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•´ì•¼ í•œë‹¤.
  *
  **********************************************************************/
 UChar sdcRow::calcRowFlag4Update( UChar                         aInheritRowFlag,
@@ -13513,9 +13513,9 @@ UChar sdcRow::calcRowFlag4Update( UChar                         aInheritRowFlag,
     IDE_ASSERT( aInsertInfo != NULL );
     IDE_ASSERT( aInsertInfo->mIsInsert4Upt == ID_TRUE );
 
-    /* rowpieceÀÇ old rowflag¸¦ ¹°·Á¹ŞÀº ´ÙÀ½,
-     * HFL flag´Â Á¶°ÇÀ» Ã¼Å©ÇÏ¸é¼­ off ½ÃÅ°°í,
-     * PN flag´Â Á¶°ÇÀ» Ã¼Å©ÇÏ¸é¼­ on or off ½ÃÅ²´Ù. */
+    /* rowpieceì˜ old rowflagë¥¼ ë¬¼ë ¤ë°›ì€ ë‹¤ìŒ,
+     * HFL flagëŠ” ì¡°ê±´ì„ ì²´í¬í•˜ë©´ì„œ off ì‹œí‚¤ê³ ,
+     * PN flagëŠ” ì¡°ê±´ì„ ì²´í¬í•˜ë©´ì„œ on or off ì‹œí‚¨ë‹¤. */
     sRowFlag = aInheritRowFlag;
 
     if ( SDC_IS_FIRST_PIECE_IN_INSERTINFO(aInsertInfo) != ID_TRUE )
@@ -13526,8 +13526,8 @@ UChar sdcRow::calcRowFlag4Update( UChar                         aInheritRowFlag,
     
     if ( aNextRowPieceSID != SD_NULL_SID )
     {
-        /* next rowpiece°¡ Á¸ÀçÇÏ¸é
-         * L flag¸¦ off ÇÑ´Ù. */
+        /* next rowpieceê°€ ì¡´ì¬í•˜ë©´
+         * L flagë¥¼ off í•œë‹¤. */
         SM_SET_FLAG_OFF(sRowFlag, SDC_ROWHDR_L_FLAG);
     }
 
@@ -13554,8 +13554,8 @@ UChar sdcRow::calcRowFlag4Update( UChar                         aInheritRowFlag,
         }
 
 
-         /* lob desc´Â ³ª´©¾î ÀúÀåÇÏÁö ¾ÊÀ¸¹Ç·Î
-          * P flag¸¦ off ÇÑ´Ù. */
+         /* lob descëŠ” ë‚˜ëˆ„ì–´ ì €ì¥í•˜ì§€ ì•Šìœ¼ë¯€ë¡œ
+          * P flagë¥¼ off í•œë‹¤. */
         SM_SET_FLAG_OFF(sRowFlag, SDC_ROWHDR_P_FLAG);
     }
     else
@@ -13564,16 +13564,16 @@ UChar sdcRow::calcRowFlag4Update( UChar                         aInheritRowFlag,
         {
             if ( aInsertInfo->mStartColOffset == 0 )
             {
-                /* Ã¹¹øÂ° columnÀÌ update columnÀÎµ¥,
-                 * ÇØ´ç rowpiece¿¡¼­ column valueÀÇ
-                 * Ã¹ºÎºĞºÎÅÍ ÀúÀåÇÏ´Â °æ¿ì P flag¸¦ off ÇÑ´Ù. */
+                /* ì²«ë²ˆì§¸ columnì´ update columnì¸ë°,
+                 * í•´ë‹¹ rowpieceì—ì„œ column valueì˜
+                 * ì²«ë¶€ë¶„ë¶€í„° ì €ì¥í•˜ëŠ” ê²½ìš° P flagë¥¼ off í•œë‹¤. */
                 SM_SET_FLAG_OFF(sRowFlag, SDC_ROWHDR_P_FLAG);
             }
             else
             {
-                /* Ã¹¹øÂ° columnÀÌ update columnÀÎµ¥,
-                 * ÇØ´ç rowpiece¿¡¼­ column valueÀÇ
-                 * Áß°£ºÎºĞºÎÅÍ ÀúÀåÇÏ´Â °æ¿ì P flag¸¦ on ÇÑ´Ù. */
+                /* ì²«ë²ˆì§¸ columnì´ update columnì¸ë°,
+                 * í•´ë‹¹ rowpieceì—ì„œ column valueì˜
+                 * ì¤‘ê°„ë¶€ë¶„ë¶€í„° ì €ì¥í•˜ëŠ” ê²½ìš° P flagë¥¼ on í•œë‹¤. */
                 SM_SET_FLAG_ON(sRowFlag, SDC_ROWHDR_P_FLAG);
             }
         }
@@ -13585,9 +13585,9 @@ UChar sdcRow::calcRowFlag4Update( UChar                         aInheritRowFlag,
                  * BUG-32278 The previous flag is set incorrectly in row flag when
                  * a rowpiece is overflowed.
                  *
-                 * Ã¹¹øÂ° ÄÃ·³ÀÇ °æ¿ì¿¡¸¸ »ó¼Ó ¹ŞÀº P flag¸¦ ±×·¡·Î »ç¿ëÇÑ´Ù.
-                 * »ó¼Ó ¹ŞÀº flag´Â Ã¹¹øÂ° ÄÃ·³¿¡ ´ëÇÑ Á¤º¸ÀÌ±â ¶§¹®ÀÌ´Ù.
-                 * ±× ¿Ü ÄÃ·³Àº ³ª´©¾î P flag¸¦ offÇÑ´Ù.
+                 * ì²«ë²ˆì§¸ ì»¬ëŸ¼ì˜ ê²½ìš°ì—ë§Œ ìƒì† ë°›ì€ P flagë¥¼ ê·¸ë˜ë¡œ ì‚¬ìš©í•œë‹¤.
+                 * ìƒì† ë°›ì€ flagëŠ” ì²«ë²ˆì§¸ ì»¬ëŸ¼ì— ëŒ€í•œ ì •ë³´ì´ê¸° ë•Œë¬¸ì´ë‹¤.
+                 * ê·¸ ì™¸ ì»¬ëŸ¼ì€ ë‚˜ëˆ„ì–´ P flagë¥¼ offí•œë‹¤.
                  */
                 if ( aInsertInfo->mStartColSeq != 0 )
                 {
@@ -13596,11 +13596,11 @@ UChar sdcRow::calcRowFlag4Update( UChar                         aInheritRowFlag,
             }
             else
             {
-                /* Ã¹¹øÂ° columnÀÌ update columnÀÌ ¾Æ´ÏÁö¸¸,
-                 * splitÀ» Ã³¸®ÇÏ´Â °úÁ¤¿¡¼­
-                 * column piece°¡ ³ª´©¾îÁ®¼­
-                 * column pieceÀÇ Áß°£ºÎºĞºÎÅÍ ÀúÀåÇÏ°Ô µÇ¾ú´Ù¸é
-                 * P flag¸¦ on ÇÑ´Ù. */
+                /* ì²«ë²ˆì§¸ columnì´ update columnì´ ì•„ë‹ˆì§€ë§Œ,
+                 * splitì„ ì²˜ë¦¬í•˜ëŠ” ê³¼ì •ì—ì„œ
+                 * column pieceê°€ ë‚˜ëˆ„ì–´ì ¸ì„œ
+                 * column pieceì˜ ì¤‘ê°„ë¶€ë¶„ë¶€í„° ì €ì¥í•˜ê²Œ ë˜ì—ˆë‹¤ë©´
+                 * P flagë¥¼ on í•œë‹¤. */
                 SM_SET_FLAG_ON(sRowFlag, SDC_ROWHDR_P_FLAG);
             }
         }
@@ -13629,8 +13629,8 @@ UChar sdcRow::calcRowFlag4Update( UChar                         aInheritRowFlag,
         }
 
 
-        /* lob desc´Â ³ª´©¾î ÀúÀåÇÏÁö ¾ÊÀ¸¹Ç·Î
-         * N flag¸¦ off ÇÑ´Ù. */
+        /* lob descëŠ” ë‚˜ëˆ„ì–´ ì €ì¥í•˜ì§€ ì•Šìœ¼ë¯€ë¡œ
+         * N flagë¥¼ off í•œë‹¤. */
         SM_SET_FLAG_OFF(sRowFlag, SDC_ROWHDR_N_FLAG);
     }
     else
@@ -13640,16 +13640,16 @@ UChar sdcRow::calcRowFlag4Update( UChar                         aInheritRowFlag,
             if ( aInsertInfo->mEndColOffset ==
                  sLstColumnInfo->mValueInfo.mValue.length )
             {
-                /* ¸¶Áö¸· columnÀÌ update columnÀÎµ¥,
-                 * ÇØ´ç rowpiece¿¡¼­ column valueÀÇ
-                 * ¸¶Áö¸· ºÎºĞ±îÁö ÀúÀåÇÏ´Â °æ¿ì, N flag¸¦ off ÇÑ´Ù. */
+                /* ë§ˆì§€ë§‰ columnì´ update columnì¸ë°,
+                 * í•´ë‹¹ rowpieceì—ì„œ column valueì˜
+                 * ë§ˆì§€ë§‰ ë¶€ë¶„ê¹Œì§€ ì €ì¥í•˜ëŠ” ê²½ìš°, N flagë¥¼ off í•œë‹¤. */
                 SM_SET_FLAG_OFF(sRowFlag, SDC_ROWHDR_N_FLAG);
             }
             else
             {
-                /* ¸¶Áö¸· columnÀÌ update columnÀÎµ¥,
-                 * ÇØ´ç rowpiece¿¡¼­ column valueÀÇ
-                 * Áß°£ ºÎºĞ±îÁö¸¸ ÀúÀåÇÏ´Â °æ¿ì, N flag¸¦ on ÇÑ´Ù. */
+                /* ë§ˆì§€ë§‰ columnì´ update columnì¸ë°,
+                 * í•´ë‹¹ rowpieceì—ì„œ column valueì˜
+                 * ì¤‘ê°„ ë¶€ë¶„ê¹Œì§€ë§Œ ì €ì¥í•˜ëŠ” ê²½ìš°, N flagë¥¼ on í•œë‹¤. */
                 SM_SET_FLAG_ON(sRowFlag, SDC_ROWHDR_N_FLAG);
             }
         }
@@ -13658,20 +13658,20 @@ UChar sdcRow::calcRowFlag4Update( UChar                         aInheritRowFlag,
             if ( aInsertInfo->mEndColOffset ==
                  sLstColumnInfo->mValueInfo.mValue.length )
             {
-                /* ¸¶Áö¸· columnÀÌ update columnÀÌ ¾Æ´Ï¸é,
-                 * ÇØ´ç rowpiece¿¡¼­ column pieceÀÇ
-                 * ¸¶Áö¸· ºÎºĞ±îÁö ÀúÀåÇÏ´õ¶óµµ
-                 * N flag¸¦ off ½ÃÅ°Áö ¾Ê´Â´Ù.
-                 * next rowpiece¿¡ µ¿ÀÏÇÑ columnÀÇ piece°¡
-                 * ÀÖÀ»¼öµµ ÀÖ°í ¾øÀ»¼öµµ ÀÖ±â ¶§¹®ÀÌ´Ù. */
+                /* ë§ˆì§€ë§‰ columnì´ update columnì´ ì•„ë‹ˆë©´,
+                 * í•´ë‹¹ rowpieceì—ì„œ column pieceì˜
+                 * ë§ˆì§€ë§‰ ë¶€ë¶„ê¹Œì§€ ì €ì¥í•˜ë”ë¼ë„
+                 * N flagë¥¼ off ì‹œí‚¤ì§€ ì•ŠëŠ”ë‹¤.
+                 * next rowpieceì— ë™ì¼í•œ columnì˜ pieceê°€
+                 * ìˆì„ìˆ˜ë„ ìˆê³  ì—†ì„ìˆ˜ë„ ìˆê¸° ë•Œë¬¸ì´ë‹¤. */
             }
             else
             {
-                /* ¸¶Áö¸· columnÀÌ update columnÀÌ ¾Æ´ÏÁö¸¸,
-                 * splitÀ» Ã³¸®ÇÏ´Â °úÁ¤¿¡¼­
-                 * column piece°¡ ³ª´©¾îÁ®¼­
-                 * column pieceÀÇ Áß°£ºÎºĞ±îÁö¸¸ ÀúÀåÇÏ°Ô µÇ¾ú´Ù¸é
-                 * N flag¸¦ on ÇÑ´Ù. */
+                /* ë§ˆì§€ë§‰ columnì´ update columnì´ ì•„ë‹ˆì§€ë§Œ,
+                 * splitì„ ì²˜ë¦¬í•˜ëŠ” ê³¼ì •ì—ì„œ
+                 * column pieceê°€ ë‚˜ëˆ„ì–´ì ¸ì„œ
+                 * column pieceì˜ ì¤‘ê°„ë¶€ë¶„ê¹Œì§€ë§Œ ì €ì¥í•˜ê²Œ ë˜ì—ˆë‹¤ë©´
+                 * N flagë¥¼ on í•œë‹¤. */
                 SM_SET_FLAG_ON(sRowFlag, SDC_ROWHDR_N_FLAG);
             }
         }
@@ -13684,10 +13684,10 @@ UChar sdcRow::calcRowFlag4Update( UChar                         aInheritRowFlag,
 /***********************************************************************
  *
  * Description :
- *  ÆäÀÌÁö³»¿¡¼­ slotÀ» ÀçÇÒ´çÇÒ ¼ö ÀÖ´ÂÁö¸¦ °Ë»çÇÏ´Â ÇÔ¼öÀÌ´Ù.
+ *  í˜ì´ì§€ë‚´ì—ì„œ slotì„ ì¬í• ë‹¹í•  ìˆ˜ ìˆëŠ”ì§€ë¥¼ ê²€ì‚¬í•˜ëŠ” í•¨ìˆ˜ì´ë‹¤.
  *
  *  aSlotPtr     - [IN] slot pointer
- *  aNewSlotSize - [IN] ÀçÇÒ´çÇÏ·Á´Â slotÀÇ Å©±â
+ *  aNewSlotSize - [IN] ì¬í• ë‹¹í•˜ë ¤ëŠ” slotì˜ í¬ê¸°
  *
  **********************************************************************/
 idBool sdcRow::canReallocSlot( UChar    *aSlotPtr,
@@ -13711,17 +13711,17 @@ idBool sdcRow::canReallocSlot( UChar    *aSlotPtr,
     sOldSlotSize = getRowPieceSize( aSlotPtr );
 
     /* BUG-25395
-     * [SD] alloc slot, free slot½Ã¿¡
-     * row chainingÀ» À§ÇÑ °ø°£(6byte)¸¦ °è»êÇØ¾ß ÇÕ´Ï´Ù. */
+     * [SD] alloc slot, free slotì‹œì—
+     * row chainingì„ ìœ„í•œ ê³µê°„(6byte)ë¥¼ ê³„ì‚°í•´ì•¼ í•©ë‹ˆë‹¤. */
     if ( sOldSlotSize < SDC_MIN_ROWPIECE_SIZE )
     {
-        /* slotÀÇ Å©±â°¡ minimum rowpiece sizeº¸´Ù ÀÛÀ» °æ¿ì,
-         * row migrationÀÌ ¹ß»ıÇßÀ»¶§ ÆäÀÌÁö¿¡ °¡¿ë°ø°£ÀÌ ºÎÁ·ÇÏ¸é
-         * slot ÀçÇÒ´ç¿¡ ½ÇÆĞÇÏ¿© ¼­¹ö°¡ »ç¸ÁÇÑ´Ù.
-         * ±×·¡¼­ ÀÌ·± °æ¿ì¿¡ ´ëºñÇÏ¿©
-         * alloc slot½Ã¿¡
-         * (min rowpiece size - slot size)¸¸Å­ÀÇ °ø°£À»
-         * Ãß°¡·Î ´õ È®º¸ÇØ µÎ¾ú´Ù.
+        /* slotì˜ í¬ê¸°ê°€ minimum rowpiece sizeë³´ë‹¤ ì‘ì„ ê²½ìš°,
+         * row migrationì´ ë°œìƒí–ˆì„ë•Œ í˜ì´ì§€ì— ê°€ìš©ê³µê°„ì´ ë¶€ì¡±í•˜ë©´
+         * slot ì¬í• ë‹¹ì— ì‹¤íŒ¨í•˜ì—¬ ì„œë²„ê°€ ì‚¬ë§í•œë‹¤.
+         * ê·¸ë˜ì„œ ì´ëŸ° ê²½ìš°ì— ëŒ€ë¹„í•˜ì—¬
+         * alloc slotì‹œì—
+         * (min rowpiece size - slot size)ë§Œí¼ì˜ ê³µê°„ì„
+         * ì¶”ê°€ë¡œ ë” í™•ë³´í•´ ë‘ì—ˆë‹¤.
          */
         sReserveSize4Chaining = SDC_MIN_ROWPIECE_SIZE - sOldSlotSize;
     }
@@ -13752,15 +13752,15 @@ idBool sdcRow::canReallocSlot( UChar    *aSlotPtr,
  *  reallocSlot = freeSlot + allocSlot
  *
  *  FSC(Free Space Credit)
- *  : update ¿¬»êÀ¸·Î ÀÎÇØ slotÀÇ Å©±â°¡ ÁÙ¾îµç °æ¿ì,
- *    ÆäÀÌÁöÀÇ °¡¿ë°ø°£Àº ´Ã¾î³ª°Ô µÈ´Ù.
- *    ¸¸¾à ÀÌ °ø°£À» Æ®·£Àè¼ÇÀÌ COMMIT(or ROLLBACK)µÇ±â Àü¿¡
- *    ÆäÀÌÁö¿¡ ¹İ³³ÇÏ°Ô µÇ¸é ´Ù¸¥ Æ®·£Àè¼ÇÀÌ ÀÌ °ø°£À» »ç¿ëÇØ¹ö·Á¼­
- *    ROLLBACK ¿¬»êÀÌ ºÒ°¡´ÉÇÏ°Ô µÉ ¼ö ÀÖ´Ù.
+ *  : update ì—°ì‚°ìœ¼ë¡œ ì¸í•´ slotì˜ í¬ê¸°ê°€ ì¤„ì–´ë“  ê²½ìš°,
+ *    í˜ì´ì§€ì˜ ê°€ìš©ê³µê°„ì€ ëŠ˜ì–´ë‚˜ê²Œ ëœë‹¤.
+ *    ë§Œì•½ ì´ ê³µê°„ì„ íŠ¸ëœì­ì…˜ì´ COMMIT(or ROLLBACK)ë˜ê¸° ì „ì—
+ *    í˜ì´ì§€ì— ë°˜ë‚©í•˜ê²Œ ë˜ë©´ ë‹¤ë¥¸ íŠ¸ëœì­ì…˜ì´ ì´ ê³µê°„ì„ ì‚¬ìš©í•´ë²„ë ¤ì„œ
+ *    ROLLBACK ì—°ì‚°ì´ ë¶ˆê°€ëŠ¥í•˜ê²Œ ë  ìˆ˜ ìˆë‹¤.
  *
- *    ±×·¡¼­ Æ®·£Àè¼ÇÀÌ COMMIT(or ROLLBACK)µÇ±â Àü±îÁö´Â
- *    ÀÌ °ø°£À» ÆäÀÌÁö¿¡ ¹İ³³ÇÏÁö ¾Ê°í, ROLLBACKÀ» À§ÇØ reserveÇØ µÎ´Âµ¥
- *    ÀÌ °ø°£À» FSC(Free Space Credit)¶ó°í ÇÑ´Ù.
+ *    ê·¸ë˜ì„œ íŠ¸ëœì­ì…˜ì´ COMMIT(or ROLLBACK)ë˜ê¸° ì „ê¹Œì§€ëŠ”
+ *    ì´ ê³µê°„ì„ í˜ì´ì§€ì— ë°˜ë‚©í•˜ì§€ ì•Šê³ , ROLLBACKì„ ìœ„í•´ reserveí•´ ë‘ëŠ”ë°
+ *    ì´ ê³µê°„ì„ FSC(Free Space Credit)ë¼ê³  í•œë‹¤.
  *
  *    EX)
  *     TOFS : 1000 byte, AVSP : 1000 byte
@@ -13794,8 +13794,8 @@ IDE_RC sdcRow::reallocSlot( sdSID           aSlotSID,
     sOldSlotSize = getRowPieceSize( aOldSlotPtr );
     if ( sOldSlotSize == aNewSlotSize )
     {
-        /* slot sizeÀÇ º¯È­°¡ ¾øÀ» °æ¿ì,
-         * ±âÁ¸ slotÀ» Àç»ç¿ëÇÑ´Ù. */
+        /* slot sizeì˜ ë³€í™”ê°€ ì—†ì„ ê²½ìš°,
+         * ê¸°ì¡´ slotì„ ì¬ì‚¬ìš©í•œë‹¤. */
         sNewSlotPtr = aOldSlotPtr;
         IDE_CONT(skip_realloc);
     }
@@ -13852,8 +13852,8 @@ IDE_RC sdcRow::reallocSlot( sdSID           aSlotSID,
     {
         if ( sOldSlotSize > aNewSlotSize )
         {
-            /* update·Î ÀÎÇØ slotÀÇ Å©±â°¡ ÁÙ¾îµå´Â °æ¿ì¿¡¸¸
-             * FSC¸¦ reserveÇÑ´Ù. */
+            /* updateë¡œ ì¸í•´ slotì˜ í¬ê¸°ê°€ ì¤„ì–´ë“œëŠ” ê²½ìš°ì—ë§Œ
+             * FSCë¥¼ reserveí•œë‹¤. */
             sFSCredit = calcFSCreditSize( sOldSlotSize, aNewSlotSize );
 
             sAvailableFreeSize =
@@ -13880,18 +13880,18 @@ IDE_RC sdcRow::reallocSlot( sdSID           aSlotSID,
 
             sAvailableFreeSize -= sFSCredit;
 
-            /* available size¸¦ FSC Å©±â¸¸Å­ »©¼­
-             * ´Ù¸¥ Æ®·£Àè¼ÇÀÌ ÀÌ °ø°£À» »ç¿ëÇÏÁö ¸øÇÏ°Ô ÇÑ´Ù. */
+            /* available sizeë¥¼ FSC í¬ê¸°ë§Œí¼ ë¹¼ì„œ
+             * ë‹¤ë¥¸ íŠ¸ëœì­ì…˜ì´ ì´ ê³µê°„ì„ ì‚¬ìš©í•˜ì§€ ëª»í•˜ê²Œ í•œë‹¤. */
             sdpPhyPage::setAvailableFreeSize( sPhyPageHdr,
                                               sAvailableFreeSize );
         }
         else
         {
-            /* update·Î ÀÎÇØ slotÀÇ Å©±â°¡ ´Ã¾î³­ °æ¿ì¿¡´Â
-             * FSC¸¦ reserveÇÒ ÇÊ¿ä°¡ ¾ø´Ù.
-             * ¿Ö³ÄÇÏ¸é old slot size°¡ new slot sizeº¸´Ù ÀÛÀ¸¹Ç·Î
-             * rollback½Ã¿¡ old slot size¸¸Å­ÀÇ °ø°£À»
-             * Ç×»ó È®º¸ÇÒ ¼ö ÀÖ±â ¶§¹®ÀÌ´Ù. */
+            /* updateë¡œ ì¸í•´ slotì˜ í¬ê¸°ê°€ ëŠ˜ì–´ë‚œ ê²½ìš°ì—ëŠ”
+             * FSCë¥¼ reserveí•  í•„ìš”ê°€ ì—†ë‹¤.
+             * ì™œëƒí•˜ë©´ old slot sizeê°€ new slot sizeë³´ë‹¤ ì‘ìœ¼ë¯€ë¡œ
+             * rollbackì‹œì— old slot sizeë§Œí¼ì˜ ê³µê°„ì„
+             * í•­ìƒ í™•ë³´í•  ìˆ˜ ìˆê¸° ë•Œë¬¸ì´ë‹¤. */
         }
     }
 
@@ -13910,7 +13910,7 @@ IDE_RC sdcRow::reallocSlot( sdSID           aSlotSID,
 /***********************************************************************
  *
  * Description :
- *  FSC(Free Space Credit) Å©±â¸¦ °è»êÇÑ´Ù.
+ *  FSC(Free Space Credit) í¬ê¸°ë¥¼ ê³„ì‚°í•œë‹¤.
  *
  *  aOldRowPieceSize - [IN] old rowpiece size
  *  aNewRowPieceSize - [IN] new rowpiece size
@@ -13939,7 +13939,7 @@ SShort sdcRow::calcFSCreditSize( UShort    aOldRowPieceSize,
 /***********************************************************************
  *
  * Description :
- * record headerÀÇ delete ¿©ºÎ¸¦ ¸®ÅÏÇÑ´Ù.
+ * record headerì˜ delete ì—¬ë¶€ë¥¼ ë¦¬í„´í•œë‹¤.
  *
  * Implementation :
  *
@@ -13986,11 +13986,11 @@ idBool sdcRow::isHeadRowPiece( const UChar    *aSlotPtr )
 
 /***********************************************************************
  *
- * Description : RowPiece·ÎºÎÅÍ Á¤º¸¸¦ ÃßÃâÇÑ´Ù.
+ * Description : RowPieceë¡œë¶€í„° ì •ë³´ë¥¼ ì¶”ì¶œí•œë‹¤.
  *
  *
- * aSlotPtr    - [IN]  Slot Æ÷ÀÎÅÍ
- * aRowHdrInfo - [OUT] RowHdr Á¤º¸¿¡ ´ëÇÑ ÀÚ·á±¸Á¶ Æ÷ÀÎÅÍ
+ * aSlotPtr    - [IN]  Slot í¬ì¸í„°
+ * aRowHdrInfo - [OUT] RowHdr ì •ë³´ì— ëŒ€í•œ ìë£Œêµ¬ì¡° í¬ì¸í„°
  *
  **********************************************************************/
 void sdcRow::getRowHdrInfo( const UChar      *aSlotPtr,
@@ -14027,11 +14027,11 @@ void sdcRow::getRowHdrInfo( const UChar      *aSlotPtr,
 
 /***********************************************************************
  *
- * Description : RowPiece·ÎºÎÅÍ È®Àå Á¤º¸¸¦ ÃßÃâÇÑ´Ù.
+ * Description : RowPieceë¡œë¶€í„° í™•ì¥ ì •ë³´ë¥¼ ì¶”ì¶œí•œë‹¤.
  *
  *
- * aSlotPtr    - [IN]  Slot Æ÷ÀÎÅÍ
- * aRowHdrInfo - [OUT] RowHdr È®ÀåÁ¤º¸¿¡ ´ëÇÑ ÀÚ·á±¸Á¶ Æ÷ÀÎÅÍ
+ * aSlotPtr    - [IN]  Slot í¬ì¸í„°
+ * aRowHdrInfo - [OUT] RowHdr í™•ì¥ì •ë³´ì— ëŒ€í•œ ìë£Œêµ¬ì¡° í¬ì¸í„°
  *
  **********************************************************************/
 void sdcRow::getRowHdrExInfo( const UChar      *aSlotPtr,
@@ -14084,11 +14084,11 @@ void sdcRow::getRowUndoSID( const UChar    *aSlotPtr,
 
 #ifdef DEBUG
 /*******************************************************************************
- * Description : aValueListÀÇ value µé¿¡ ¿À·ù°¡ ¾ø´ÂÁö °ËÁõÇÑ´Ù.
+ * Description : aValueListì˜ value ë“¤ì— ì˜¤ë¥˜ê°€ ì—†ëŠ”ì§€ ê²€ì¦í•œë‹¤.
  *
  * Parameters :
- *      aValueList  - [IN] °ËÁõÇÒ smiValue ¸®½ºÆ®
- *      aCount      - [IN] aValueList¿¡ µé¾îÀÖ´Â valueÀÇ °³¼ö
+ *      aValueList  - [IN] ê²€ì¦í•  smiValue ë¦¬ìŠ¤íŠ¸
+ *      aCount      - [IN] aValueListì— ë“¤ì–´ìˆëŠ” valueì˜ ê°œìˆ˜
  ******************************************************************************/
 idBool sdcRow::validateSmiValue( const smiValue  *aValueList,
                                  UInt             aCount )
@@ -14144,10 +14144,10 @@ idBool sdcRow::validateSmiColumnList(
 
     while(sColumnList != NULL)
     {
-        /* column list´Â
-         * column id ¿À¸§Â÷¼øÀ¸·Î
-         * Á¤·ÄµÇ¾î ÀÖ¾î¾ß ÇÑ´Ù.
-         * (analyzeRowForUpdate() ÂüÁ¶) */
+        /* column listëŠ”
+         * column id ì˜¤ë¦„ì°¨ìˆœìœ¼ë¡œ
+         * ì •ë ¬ë˜ì–´ ìˆì–´ì•¼ í•œë‹¤.
+         * (analyzeRowForUpdate() ì°¸ì¡°) */
         IDE_ASSERT_MSG( sColumnList->column->id > sPrevColumnID,
                         "prev Column ID: %"ID_UINT32_FMT"\n"
                         "Curr Column ID: %"ID_UINT32_FMT"\n",
@@ -14195,10 +14195,10 @@ idBool sdcRow::validateSmiFetchColumnList(
                          sFetchColumnList->column->id,
                          sPrevColumnID );
 
-            /* fetch column list´Â
-             * column id ¿À¸§Â÷¼øÀ¸·Î
-             * Á¤·ÄµÇ¾î ÀÖ¾î¾ß ÇÑ´Ù.
-             * (analyzeRowForFetch() ÂüÁ¶) */
+            /* fetch column listëŠ”
+             * column id ì˜¤ë¦„ì°¨ìˆœìœ¼ë¡œ
+             * ì •ë ¬ë˜ì–´ ìˆì–´ì•¼ í•œë‹¤.
+             * (analyzeRowForFetch() ì°¸ì¡°) */
             IDE_ASSERT(0);
         }
 
@@ -14217,7 +14217,7 @@ idBool sdcRow::validateSmiFetchColumnList(
  *    BUG-32278 The previous flag is set incorrectly in row flag when
  *    a rowpiece is overflowed.
  *
- *    ¿¬°áµÈ µÎ rowpieceÀÇ rowflag¸¦ °ËÁõÇÑ´Ù.
+ *    ì—°ê²°ëœ ë‘ rowpieceì˜ rowflagë¥¼ ê²€ì¦í•œë‹¤.
  *    
  **********************************************************************/
 idBool sdcRow::validateRowFlag( UChar aRowFlag, UChar aNextRowFlag )
@@ -14313,7 +14313,7 @@ idBool sdcRow::validateRowFlag( UChar aRowFlag, UChar aNextRowFlag )
  *    BUG-32278 The previous flag is set incorrectly in row flag when
  *    a rowpiece is overflowed.
  *
- *    aRowFlag °ªÀ» ±â¹İÀ¸·Î aNextRowFlag°¡ À¯È¿ÇÑÁö °ËÁõÇÑ´Ù.
+ *    aRowFlag ê°’ì„ ê¸°ë°˜ìœ¼ë¡œ aNextRowFlagê°€ ìœ íš¨í•œì§€ ê²€ì¦í•œë‹¤.
  *    
  **********************************************************************/
 idBool sdcRow::validateRowFlagForward( UChar aRowFlag, UChar aNextRowFlag )
@@ -14390,7 +14390,7 @@ idBool sdcRow::validateRowFlagForward( UChar aRowFlag, UChar aNextRowFlag )
  *    BUG-32278 The previous flag is set incorrectly in row flag when
  *    a rowpiece is overflowed.
  *
- *    aNextRowFlag °ªÀ» ±â¹İÀ¸·Î aRowFlag°¡ À¯È¿ÇÑÁö °ËÁõÇÑ´Ù.
+ *    aNextRowFlag ê°’ì„ ê¸°ë°˜ìœ¼ë¡œ aRowFlagê°€ ìœ íš¨í•œì§€ ê²€ì¦í•œë‹¤.
  *    
  **********************************************************************/
 idBool sdcRow::validateRowFlagBackward( UChar aRowFlag, UChar aNextRowFlag )
@@ -14568,20 +14568,20 @@ idBool sdcRow::validateInsertInfo( sdcRowPieceInsertInfo    * aInsertInfo,
 
 /***********************************************************************
  *
- * Description : ÃÖ½Å Row ¹öÀüÀÌ ÀÚ½Å °»½ÅÇÒ ¼ö ÀÖ´ÂÁö ±¸Ã¼ÀûÀÎ ÆÇ´Ü
+ * Description : ìµœì‹  Row ë²„ì „ì´ ìì‹  ê°±ì‹ í•  ìˆ˜ ìˆëŠ”ì§€ êµ¬ì²´ì ì¸ íŒë‹¨
  *
- * aStatitics          - [IN] Åë°èÁ¤º¸
- * aMtx                - [IN] Mtx Æ÷ÀÎÅÍ
- * aMtxSavePoint       - [IN] Mtx¿¡ ´ëÇÑ Savepoint
- * aSpaceID            - [IN] Å×ÀÌºí½ºÆäÀÌ½º ID
- * aSlotSID            - [IN] Target Row¿¡ ´ëÇÑ Slot ID
+ * aStatitics          - [IN] í†µê³„ì •ë³´
+ * aMtx                - [IN] Mtx í¬ì¸í„°
+ * aMtxSavePoint       - [IN] Mtxì— ëŒ€í•œ Savepoint
+ * aSpaceID            - [IN] í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ID
+ * aSlotSID            - [IN] Target Rowì— ëŒ€í•œ Slot ID
  * aPageReadMode       - [IN] page read mode(SPR or MPR)
- * aStmtSCN            - [IN] StatmentÀÇ SCN ( ViewSCN )
- * aCSInfiniteSCN      - [IN] CursorÀÇ InfiniteSCN
- * aTargetRow          - [IN/OUT] Target RowÀÇ Æ÷ÀÎÅÍ
- * aUptState           - [OUT] °»½Å ÆÇ´Ü¿¡ ´ëÇÑ ±¸Ã¼ÀûÀÎ »óÅÂ°ª
- * aRecordLockWaitInfo - [IN] Queue¸¦ À§ÇÑ Wait Á¤Ã¥ Á¤º¸
- * aCTSlotIdx          - [IN/OUT] ÇÒ´çÇÑ CTSlot ¹øÈ£
+ * aStmtSCN            - [IN] Statmentì˜ SCN ( ViewSCN )
+ * aCSInfiniteSCN      - [IN] Cursorì˜ InfiniteSCN
+ * aTargetRow          - [IN/OUT] Target Rowì˜ í¬ì¸í„°
+ * aUptState           - [OUT] ê°±ì‹  íŒë‹¨ì— ëŒ€í•œ êµ¬ì²´ì ì¸ ìƒíƒœê°’
+ * aRecordLockWaitInfo - [IN] Queueë¥¼ ìœ„í•œ Wait ì •ì±… ì •ë³´
+ * aCTSlotIdx          - [IN/OUT] í• ë‹¹í•œ CTSlot ë²ˆí˜¸
  *
  **********************************************************************/
 IDE_RC sdcRow::canUpdateRowPiece( idvSQL                 * aStatistics,
@@ -14688,10 +14688,10 @@ IDE_RC sdcRow::canUpdateRowPiece( idvSQL                 * aStatistics,
                                * SELECT ... FOR UPDATE NOWAIT command on disk table
                                * waits for commit of a transaction on other session.
                                *
-                               * Wait TimeÀ» ±âÁ¸ÀÇ ID_ULONG_MAX ´ë½Å Cursor property
-                               * ¿¡¼­ ¾ò¾î ¿Â °ªÀ» »ç¿ëÇÏµµ·Ï º¯°æÇÑ´Ù.
-                               * Cursor Property¿¡¼­ ¾òÁö ¸øÇÏ¸é ID_ULONG_MAX°¡
-                               * ¿Ã ¼ö ÀÖ´Ù. */
+                               * Wait Timeì„ ê¸°ì¡´ì˜ ID_ULONG_MAX ëŒ€ì‹  Cursor property
+                               * ì—ì„œ ì–»ì–´ ì˜¨ ê°’ì„ ì‚¬ìš©í•˜ë„ë¡ ë³€ê²½í•œë‹¤.
+                               * Cursor Propertyì—ì„œ ì–»ì§€ ëª»í•˜ë©´ ID_ULONG_MAXê°€
+                               * ì˜¬ ìˆ˜ ìˆë‹¤. */
                               aLockWaitMicroSec ) != IDE_SUCCESS );
 
         sWeState = 0;
@@ -14700,9 +14700,9 @@ IDE_RC sdcRow::canUpdateRowPiece( idvSQL                 * aStatistics,
 
         /* 
          * BUG-37274 repeatable read from disk table is incorrect behavior. 
-         * À§ÀÇ waitLockForTransÇÔ¼ö¿¡¼­ ´Ù¸¥ tx¿¡ÀÇÇØ insertµÈ row¸¦
-         * ÀĞ±âÀ§ÇØ ´ë±âÇÏ´Â Áß¿¡ ÇØ´ç row¸¦ insertÇÑ tx°¡ rollbackµÇ¸é slotÀÌ
-         * unused»óÅÂ·Î ¹Ù²î°Ô µÈ´Ù. ÀÌ¸¦ °¨ÁöÇÏ±â À§ÇÑ logicÀÌ Ãß°¡µÊ.
+         * ìœ„ì˜ waitLockForTransí•¨ìˆ˜ì—ì„œ ë‹¤ë¥¸ txì—ì˜í•´ insertëœ rowë¥¼
+         * ì½ê¸°ìœ„í•´ ëŒ€ê¸°í•˜ëŠ” ì¤‘ì— í•´ë‹¹ rowë¥¼ insertí•œ txê°€ rollbackë˜ë©´ slotì´
+         * unusedìƒíƒœë¡œ ë°”ë€Œê²Œ ëœë‹¤. ì´ë¥¼ ê°ì§€í•˜ê¸° ìœ„í•œ logicì´ ì¶”ê°€ë¨.
          */
         sPageID  = SD_MAKE_PID(aSlotSID);
 
@@ -14766,17 +14766,17 @@ IDE_RC sdcRow::canUpdateRowPiece( idvSQL                 * aStatistics,
 
 /***********************************************************************
  *
- * Description : ÃÖ½Å Row ¹öÀüÀÌ ÀÚ½Å °»½ÅÇÒ ¼ö ÀÖ´ÂÁö ±¸Ã¼ÀûÀÎ ÆÇ´Ü
+ * Description : ìµœì‹  Row ë²„ì „ì´ ìì‹  ê°±ì‹ í•  ìˆ˜ ìˆëŠ”ì§€ êµ¬ì²´ì ì¸ íŒë‹¨
  *
- * aStatitics          - [IN] Åë°èÁ¤º¸
- * aStartInfo          - [IN] Mtx ½ÃÀÛ Á¤º¸
- * aTargetRow          - [IN/OUT] Target RowÀÇ Æ÷ÀÎÅÍ
- * aMyTSSlotSID        - [IN] ÀÚ½ÅÀÇ TSSlot SID
+ * aStatitics          - [IN] í†µê³„ì •ë³´
+ * aStartInfo          - [IN] Mtx ì‹œì‘ ì •ë³´
+ * aTargetRow          - [IN/OUT] Target Rowì˜ í¬ì¸í„°
+ * aMyTSSlotSID        - [IN] ìì‹ ì˜ TSSlot SID
  * aPageReadMode       - [IN] page read mode(SPR or MPR)
- * aStmtSCN            - [IN] StatmentÀÇ SCN ( ViewSCN )
- * aCSInfiniteSCN      - [IN] CursorÀÇ InfiniteSCN
- * aUptState           - [OUT] °»½Å ÆÇ´Ü¿¡ ´ëÇÑ ±¸Ã¼ÀûÀÎ »óÅÂ°ª
- * aWaitTransID        - [OUT] ´ë±âÇÏ´Â °æ¿ì ´ë±âÇØ¾ßÇÒ ´ë»ó Æ®·£Àè¼ÇÀÇ ID
+ * aStmtSCN            - [IN] Statmentì˜ SCN ( ViewSCN )
+ * aCSInfiniteSCN      - [IN] Cursorì˜ InfiniteSCN
+ * aUptState           - [OUT] ê°±ì‹  íŒë‹¨ì— ëŒ€í•œ êµ¬ì²´ì ì¸ ìƒíƒœê°’
+ * aWaitTransID        - [OUT] ëŒ€ê¸°í•˜ëŠ” ê²½ìš° ëŒ€ê¸°í•´ì•¼í•  ëŒ€ìƒ íŠ¸ëœì­ì…˜ì˜ ID
  *
  **********************************************************************/
 IDE_RC sdcRow::canUpdateRowPieceInternal( idvSQL            * aStatistics,
@@ -14853,11 +14853,11 @@ IDE_RC sdcRow::canUpdateRowPieceInternal( idvSQL            * aStatistics,
 
         if ( SDC_CTS_SCN_IS_COMMITTED(sFSCNOrCSCN) )
         {
-            /* To Fix BUG-23648 Data ÆäÀÌÁöÀÇ RTS »óÅÂÀÇ CTS¿¡ ´ëÇØ¼­
-             *                  Row StampingÀÌ ¹ß»ıÇÏ¿© Redo½Ã FATAL ¹ß»ı!!
+            /* To Fix BUG-23648 Data í˜ì´ì§€ì˜ RTS ìƒíƒœì˜ CTSì— ëŒ€í•´ì„œ
+             *                  Row Stampingì´ ë°œìƒí•˜ì—¬ Redoì‹œ FATAL ë°œìƒ!!
              *
-             * sdnbBTree::checkUniqueness¿¡¼­ µé¾î¿À´Â °æ¿ì
-             * S-latch °¡ È¹µæ µÇ¾î ÀÖ±â ¶§¹®¿¡ X-latch·Î Á¶Á¤ÇØÁØ´Ù. */
+             * sdnbBTree::checkUniquenessì—ì„œ ë“¤ì–´ì˜¤ëŠ” ê²½ìš°
+             * S-latch ê°€ íšë“ ë˜ì–´ ìˆê¸° ë•Œë¬¸ì— X-latchë¡œ ì¡°ì •í•´ì¤€ë‹¤. */
 
             sdbBufferMgr::tryEscalateLatchPage( aStatistics,
                                                 sPagePtr,
@@ -14866,7 +14866,7 @@ IDE_RC sdcRow::canUpdateRowPieceInternal( idvSQL            * aStatistics,
 
             if ( sTrySuccess == ID_TRUE )
             {
-                // CTS »óÅÂº¯°æ 'T' -> 'R'
+                // CTS ìƒíƒœë³€ê²½ 'T' -> 'R'
                 IDE_TEST( sdcTableCTL::logAndRunRowStamping( &sMtx,
                                                              sCTSlotIdx,
                                                              sObjPtr,
@@ -14947,10 +14947,10 @@ IDE_RC sdcRow::canUpdateRowPieceInternal( idvSQL            * aStatistics,
             {
                 if ( aIsUptLobByAPI == ID_TRUE )
                 {
-                    // 1. API ¿¡ ÀÇÇÑ LOB UpdateÀÏ °æ¿ì SCNÀÌ °°À» ¼ö ÀÖ´Ù.
-                    // 2. Replication¿¡ ÀÇÇÑ Lob API UpdateÀÇ °æ¿ì
-                    //    ¿ÀÈ÷·Á Row SCNÀÌ ´õ Å¬¼öµµ ÀÖ´Ù.
-                    //    Lock Bit°¡ ÀâÇô ÀÖÀ¸¹Ç·Î ¹«½ÃÇÑ´Ù.
+                    // 1. API ì— ì˜í•œ LOB Updateì¼ ê²½ìš° SCNì´ ê°™ì„ ìˆ˜ ìˆë‹¤.
+                    // 2. Replicationì— ì˜í•œ Lob API Updateì˜ ê²½ìš°
+                    //    ì˜¤íˆë ¤ Row SCNì´ ë” í´ìˆ˜ë„ ìˆë‹¤.
+                    //    Lock Bitê°€ ì¡í˜€ ìˆìœ¼ë¯€ë¡œ ë¬´ì‹œí•œë‹¤.
                     IDE_ASSERT( (SM_SCN_IS_EQ(aCSInfiniteSCN, &sRowInfSCN)) ||
                                 (smxTrans::getLogTypeFlagOfTrans(
                                                             aStartInfo->mTrans)
@@ -14987,11 +14987,11 @@ IDE_RC sdcRow::canUpdateRowPieceInternal( idvSQL            * aStatistics,
 }
 
 /***********************************************************************
- * Description : Already modified ¿¹¿Ü Ã³¸® ÇÔ¼ö
- *               ¹«Á¶°Ç IDE_FAILURE °¡ ¸®ÅÏµÈ´Ù.
+ * Description : Already modified ì˜ˆì™¸ ì²˜ë¦¬ í•¨ìˆ˜
+ *               ë¬´ì¡°ê±´ IDE_FAILURE ê°€ ë¦¬í„´ëœë‹¤.
  *
- *    aMtx           - [IN] Mtx Æ÷ÀÎÅÍ
- *    aMtxSavePoint  - [IN] Mtx¿¡ ´ëÇÑ Savepoint
+ *    aMtx           - [IN] Mtx í¬ì¸í„°
+ *    aMtxSavePoint  - [IN] Mtxì— ëŒ€í•œ Savepoint
  *
  **********************************************************************/
 IDE_RC sdcRow::releaseLatchForAlreadyModify( sdrMtx       * aMtx,
@@ -15020,28 +15020,28 @@ IDE_RC sdcRow::releaseLatchForAlreadyModify( sdrMtx       * aMtx,
 /***********************************************************************
  *
  * Description :
- *  MVCC Á¤º¸¸¦ °Ë»çÇÏ¸é¼­ ÀÚ½ÅÀÌ ÀĞ¾î¾ßÇÒ row¸¦ Ã£À»¶§±îÁö
- *  old versionÀ» ¸¸µç´Ù.
+ *  MVCC ì •ë³´ë¥¼ ê²€ì‚¬í•˜ë©´ì„œ ìì‹ ì´ ì½ì–´ì•¼í•  rowë¥¼ ì°¾ì„ë•Œê¹Œì§€
+ *  old versionì„ ë§Œë“ ë‹¤.
  *
- *  aStatistics        - [IN]  Åë°èÁ¤º¸
- *  aTargetRow         - [IN]  ¹öÀü °Ë»ç¸¦ ÇÒ row
- *  aIsPersRow         - [IN]  PersistentÇÑ slot ¿©ºÎ, Row Cache·ÎºÎÅÍ
- *                             ÀĞ¾î¿Â °æ¿ì¿¡ ID_FALSE·Î ¼³Á¤µÊ
- *  aFetchVersion      - [IN]  ¾î¶² ¹öÀüÀÇ row¸¦ ÀĞÀ» Áö¸¦ °áÁ¤
+ *  aStatistics        - [IN]  í†µê³„ì •ë³´
+ *  aTargetRow         - [IN]  ë²„ì „ ê²€ì‚¬ë¥¼ í•  row
+ *  aIsPersRow         - [IN]  Persistentí•œ slot ì—¬ë¶€, Row Cacheë¡œë¶€í„°
+ *                             ì½ì–´ì˜¨ ê²½ìš°ì— ID_FALSEë¡œ ì„¤ì •ë¨
+ *  aFetchVersion      - [IN]  ì–´ë–¤ ë²„ì „ì˜ rowë¥¼ ì½ì„ ì§€ë¥¼ ê²°ì •
  *  aMyTSSlotSID       - [IN]  TSS's SID
  *  aPageReadMode      - [IN]  page read mode(SPR or MPR)
  *  aMyViewSCN         - [IN]  cursor view scn
  *  aCSInfiniteSCN     - [IN]  cursor infinite scn
- *  aTrans             - [IN]  Æ®·£Àè¼Ç Á¤º¸
- *  aLobInfo4Fetch     - [IN]  lob descriptor Á¤º¸¸¦ fetchÇÏ·Á°í ÇÒ¶§
- *                             ÀÌ ÀÎÀÚ·Î ÇÊ¿äÇÑ Á¤º¸¸¦ ³Ñ±ä´Ù.(only for lob)
- *  aDoMakeOldVersion  - [OUT] old versionÀ» »ı¼ºÇÏ¿´´ÂÁö ¿©ºÎ
- *  aUndoSID           - [OUT] old versionÀ¸·ÎºÎÅÍ Row¸¦ °¡Á®¿Ô´ÂÁö ¿©ºÎ
+ *  aTrans             - [IN]  íŠ¸ëœì­ì…˜ ì •ë³´
+ *  aLobInfo4Fetch     - [IN]  lob descriptor ì •ë³´ë¥¼ fetchí•˜ë ¤ê³  í• ë•Œ
+ *                             ì´ ì¸ìë¡œ í•„ìš”í•œ ì •ë³´ë¥¼ ë„˜ê¸´ë‹¤.(only for lob)
+ *  aDoMakeOldVersion  - [OUT] old versionì„ ìƒì„±í•˜ì˜€ëŠ”ì§€ ì—¬ë¶€
+ *  aUndoSID           - [OUT] old versionìœ¼ë¡œë¶€í„° Rowë¥¼ ê°€ì ¸ì™”ëŠ”ì§€ ì—¬ë¶€
  *  aRowBuf            - [OUT] dest buffer.
- *                             ÀÌ ¹öÆÛ¿¡ old versionÀ» »ı¼ºÇÑ´Ù.
- *                             ÃÖ½Å ¹öÀüÀÇ °æ¿ì memcpyÇÏ´Â ºñ¿ëÀ»
- *                             ÁÙ¿©¼­ ¼º´ÉÀ» °³¼±½ÃÄÑ·Á ÇÏ¿´±â ¶§¹®¿¡
- *                             ÃÖ½Å ¹öÀüÀº º¹»çÇÏÁö ¾Ê´Â´Ù.
+ *                             ì´ ë²„í¼ì— old versionì„ ìƒì„±í•œë‹¤.
+ *                             ìµœì‹  ë²„ì „ì˜ ê²½ìš° memcpyí•˜ëŠ” ë¹„ìš©ì„
+ *                             ì¤„ì—¬ì„œ ì„±ëŠ¥ì„ ê°œì„ ì‹œì¼œë ¤ í•˜ì˜€ê¸° ë•Œë¬¸ì—
+ *                             ìµœì‹  ë²„ì „ì€ ë³µì‚¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
  *
  **********************************************************************/
 IDE_RC sdcRow::getValidVersion( idvSQL              *aStatistics,
@@ -15097,8 +15097,8 @@ IDE_RC sdcRow::getValidVersion( idvSQL              *aStatistics,
     SDC_GET_ROWHDR_1B_FIELD( aTargetRow, SDC_ROWHDR_CTSLOTIDX, sCTSlotIdx );
     sCTSlotIdx = SDC_UNMASK_CTSLOTIDX(sCTSlotIdx);
 
-    /* TASK-6105 CTSÀÇ »óÅÂ°¡ SDP_CTS_IDX_UNLKÀÏ°æ¿ì row header¿¡¼­ commit SCNÀ»
-     * °¡Á®¿Í¾ß ÇÑ´Ù. */
+    /* TASK-6105 CTSì˜ ìƒíƒœê°€ SDP_CTS_IDX_UNLKì¼ê²½ìš° row headerì—ì„œ commit SCNì„
+     * ê°€ì ¸ì™€ì•¼ í•œë‹¤. */
     if ( sCTSlotIdx == SDP_CTS_IDX_UNLK )
     {
         IDE_ASSERT( SM_SCN_IS_INIT(sRowCSCN) == ID_TRUE );
@@ -15107,9 +15107,9 @@ IDE_RC sdcRow::getValidVersion( idvSQL              *aStatistics,
 
     SDC_GET_ROWHDR_FIELD( sTargetRow, SDC_ROWHDR_INFINITESCN, &sRowInfSCN );
 
-    /* TASK-6105 À§ ÄÚµå¿¡¼­ sRowCSCNÀ» °¡Á®¿ÔÀ½À¸·Î commit SCNÀÎÁö È®ÀÎÇÏ°í
-     * commit SCNÀÌ ¾Æ´Ñ°æ¿ì commitSCNÀ» ±¸ÇÑ´Ù. */
-    /* stampingÀÌ ÇÊ¿äÇÑ ÄÉÀÌ½ºÀÎ °æ¿ì ¹Ì¸® stamping ¼öÇà */
+    /* TASK-6105 ìœ„ ì½”ë“œì—ì„œ sRowCSCNì„ ê°€ì ¸ì™”ìŒìœ¼ë¡œ commit SCNì¸ì§€ í™•ì¸í•˜ê³ 
+     * commit SCNì´ ì•„ë‹Œê²½ìš° commitSCNì„ êµ¬í•œë‹¤. */
+    /* stampingì´ í•„ìš”í•œ ì¼€ì´ìŠ¤ì¸ ê²½ìš° ë¯¸ë¦¬ stamping ìˆ˜í–‰ */
     if ( (sIsMyTrans == ID_FALSE) && (SDC_CTS_SCN_IS_NOT_COMMITTED(sRowCSCN)) ) 
     {
         sdcTableCTL::getChangedTransInfo( sTargetRow,
@@ -15118,8 +15118,8 @@ IDE_RC sdcRow::getValidVersion( idvSQL              *aStatistics,
                                           &sFSCreditSize,
                                           &sRowCSCN );
 
-        /* BUG-26647 - Caching ÇÑ ÆäÀÌÁö¿¡ ´ëÇØ¼­´Â StampingÀ»
-            * ¼öÇàÇÏÁö ¾Ê°í CommitSCN¸¸ È®ÀÎÇÑ´Ù. */
+        /* BUG-26647 - Caching í•œ í˜ì´ì§€ì— ëŒ€í•´ì„œëŠ” Stampingì„
+            * ìˆ˜í–‰í•˜ì§€ ì•Šê³  CommitSCNë§Œ í™•ì¸í•œë‹¤. */
         if ( aIsPersSlot == ID_TRUE )
         {
             IDE_TEST( sdcTableCTL::runDelayedStamping( aStatistics,
@@ -15184,12 +15184,12 @@ IDE_RC sdcRow::getValidVersion( idvSQL              *aStatistics,
                 {
                     /* lobdesc fetch(READ_WRITE MODE) */
 
-                    /* lob partial update¸¦ ¼öÇàÇÑ ÈÄ,
-                     * ÀÚ½ÅÀÌ updateÇÑ versionÀ» ÀĞÀ¸·Á¸é
-                     * cursor infinite scn°ú row scnÀÌ °°Àº °æ¿ìµµ
-                     * º¼ ¼ö ÀÖ¾î¾ß ÇÑ´Ù.
-                     * ±×·¡¼­ lob cursor°¡ READ_WRITE MODE·Î ¿­¸° °æ¿ì,
-                     * infinite scn ºñ±³ÇÒ¶§ GT°¡ ¾Æ´Ñ GE·Î ºñ±³ÇÑ´Ù. */
+                    /* lob partial updateë¥¼ ìˆ˜í–‰í•œ í›„,
+                     * ìì‹ ì´ updateí•œ versionì„ ì½ìœ¼ë ¤ë©´
+                     * cursor infinite scnê³¼ row scnì´ ê°™ì€ ê²½ìš°ë„
+                     * ë³¼ ìˆ˜ ìˆì–´ì•¼ í•œë‹¤.
+                     * ê·¸ë˜ì„œ lob cursorê°€ READ_WRITE MODEë¡œ ì—´ë¦° ê²½ìš°,
+                     * infinite scn ë¹„êµí• ë•Œ GTê°€ ì•„ë‹Œ GEë¡œ ë¹„êµí•œë‹¤. */
                     if ( SM_SCN_IS_GE( aCSInfiniteSCN, &sRowInfSCN ) )
                     {
                         break; // It's a valid version
@@ -15217,14 +15217,14 @@ IDE_RC sdcRow::getValidVersion( idvSQL              *aStatistics,
             }
         }
 
-        /* undo record¸¦ Ã£¾Æº»´Ù. */
+        /* undo recordë¥¼ ì°¾ì•„ë³¸ë‹¤. */
         while( ID_TRUE )
         {
             getRowUndoSID( sTargetRow, &sCurrUndoSID );
 
             /*  BUG-24216
-             *  [SD-¼º´É°³¼±] makeOldVersion() ÇÒ¶§±îÁö
-             *  rowpiece º¹»çÇÏ´Â ¿¬»êÀ» delay ½ÃÅ²´Ù. */
+             *  [SD-ì„±ëŠ¥ê°œì„ ] makeOldVersion() í• ë•Œê¹Œì§€
+             *  rowpiece ë³µì‚¬í•˜ëŠ” ì—°ì‚°ì„ delay ì‹œí‚¨ë‹¤. */
             if ( sDoMakeOldVersion == ID_FALSE )
             {
                 idlOS::memcpy( aRowBuf,
@@ -15296,8 +15296,8 @@ IDE_RC sdcRow::getValidVersion( idvSQL              *aStatistics,
         if ( ( aFetchVersion == SMI_FETCH_VERSION_LASTPREV ) &&
              ( sIsMyTrans    == ID_FALSE ) )
         {
-            /* ³»°¡ »ı¼ºÇÑ undp record ±îÁö¸¸ È®ÀÎÇÑ´Ù
-             * delete index key¿¡¼­ »ç¿ë */
+            /* ë‚´ê°€ ìƒì„±í•œ undp record ê¹Œì§€ë§Œ í™•ì¸í•œë‹¤
+             * delete index keyì—ì„œ ì‚¬ìš© */
             break;
         }
 
@@ -15319,7 +15319,7 @@ IDE_RC sdcRow::getValidVersion( idvSQL              *aStatistics,
 
 /***********************************************************************
  * Description :
- * undo record·ÎºÎÅÍ old versionÀ» ¸¸µç´Ù.
+ * undo recordë¡œë¶€í„° old versionì„ ë§Œë“ ë‹¤.
  **********************************************************************/
 IDE_RC sdcRow::makeOldVersionWithFix( idvSQL         *aStatistics,
                                       sdSID           aUndoSID,
@@ -15386,14 +15386,14 @@ IDE_RC sdcRow::makeOldVersionWithFix( idvSQL         *aStatistics,
 
 /***********************************************************************
  * Description :
- * undo record·ÎºÎÅÍ old versionÀ» ¸¸µç´Ù.
- * dest buffer¿¡ copyÇÑ´Ù.
+ * undo recordë¡œë¶€í„° old versionì„ ë§Œë“ ë‹¤.
+ * dest bufferì— copyí•œë‹¤.
  *
- * - insert ÇÑ ·¹ÄÚµåÀÏ °æ¿ì
- *   undo segment¿¡´Â insert·Î±× ³²´Â´Ù.
- *   ÇöÀç ·¹ÄÚµå¿¡ delete bitÀ» setÇØ¼­ ¸®ÅÏÇØ¾ß ÇÑ´Ù.
- * - delete, update ÇÑ ·¹ÄÚµåÀÏ °æ¿ì
- *   ÇöÀç ·¹ÄÚµå header¸¦ ±âÁ¸ record header·Î ¹Ù²Ù¾î¾ß ÇÑ´Ù.
+ * - insert í•œ ë ˆì½”ë“œì¼ ê²½ìš°
+ *   undo segmentì—ëŠ” insertë¡œê·¸ ë‚¨ëŠ”ë‹¤.
+ *   í˜„ì¬ ë ˆì½”ë“œì— delete bitì„ setí•´ì„œ ë¦¬í„´í•´ì•¼ í•œë‹¤.
+ * - delete, update í•œ ë ˆì½”ë“œì¼ ê²½ìš°
+ *   í˜„ì¬ ë ˆì½”ë“œ headerë¥¼ ê¸°ì¡´ record headerë¡œ ë°”ê¾¸ì–´ì•¼ í•œë‹¤.
  **********************************************************************/
 IDE_RC sdcRow::makeOldVersion( UChar         * aUndoRecHdr,
                                smOID           aTableOID,
@@ -15412,7 +15412,7 @@ IDE_RC sdcRow::makeOldVersion( UChar         * aUndoRecHdr,
 
     if ( aUndoRecHdr == NULL )
     {
-        // InsertÀÇ °æ¿ì¸¸ aUndoRecHdr °¡ NULL·Î µé¾î¿È.
+        // Insertì˜ ê²½ìš°ë§Œ aUndoRecHdr ê°€ NULLë¡œ ë“¤ì–´ì˜´.
         SDC_GET_ROWHDR_FIELD( aDestSlotPtr,
                               SDC_ROWHDR_INFINITESCN,
                               &sInfiniteSCN );
@@ -15569,7 +15569,7 @@ IDE_RC sdcRow::free( idvSQL            *aStatistics,
 
     sdrMiniTrans::makeStartInfo( aMtx, &sStartInfo );
 
-    /* FreeÇÒ Row°¡ ÀÖ´Â Page¿¡ ´ëÇØ¼­ XLatch¸¦ Àâ´Â´Ù. */
+    /* Freeí•  Rowê°€ ìˆëŠ” Pageì— ëŒ€í•´ì„œ XLatchë¥¼ ì¡ëŠ”ë‹¤. */
     IDE_TEST( sdbBufferMgr::getPageByGRID( aStatistics,
                                            aSlotGRID,
                                            SDB_X_LATCH,
@@ -15597,16 +15597,16 @@ IDE_RC sdcRow::free( idvSQL            *aStatistics,
 }
 
 /***********************************************************************
- * Description : lob  page¿¡  lobÀ» writeÇÑ´Ù.
- *               °¢ write½Ã SDR_SDP_LOB_WRITE_PIECE log¸¦ writeÇÑ´Ù.
+ * Description : lob  pageì—  lobì„ writeí•œë‹¤.
+ *               ê° writeì‹œ SDR_SDP_LOB_WRITE_PIECE logë¥¼ writeí•œë‹¤.
  *
  * Implementation :
  *
- *   aStatistics  - [IN] Åë°è ÀÚ·á
+ *   aStatistics  - [IN] í†µê³„ ìë£Œ
  *   aTrans       - [IN] Transaction
  *   aTableHeader - [IN] Table Header
  *   aInsertInfo  - [IN] Insert Info
- *   aRowGRID     - [IN] RowÀÇ GRID
+ *   aRowGRID     - [IN] Rowì˜ GRID
  **********************************************************************/
 IDE_RC sdcRow::writeAllLobCols( idvSQL                      * aStatistics,
                                 void                        * aTrans,
@@ -15703,7 +15703,7 @@ IDE_RC sdcRow::writeAllLobCols( idvSQL                      * aStatistics,
 
         if ( sLobDescCnt == aInsertInfo->mLobDescCnt )
         {
-            // Lob Desc Cnt¸¸Å­ ¹İ¿µÇßÀ¸¸é ºüÁ®³ª¿Â´Ù.
+            // Lob Desc Cntë§Œí¼ ë°˜ì˜í–ˆìœ¼ë©´ ë¹ ì ¸ë‚˜ì˜¨ë‹¤.
             break;
         }
     }
@@ -15716,13 +15716,13 @@ IDE_RC sdcRow::writeAllLobCols( idvSQL                      * aStatistics,
 }
 
 /***********************************************************************
- * Description : Insert For Update¿¡¼­ lobÀ» update ½ÃÅ²´Ù.
+ * Description : Insert For Updateì—ì„œ lobì„ update ì‹œí‚¨ë‹¤.
  *
- *   aStatistics    - [IN] Åë°è ÀÚ·á
+ *   aStatistics    - [IN] í†µê³„ ìë£Œ
  *   aTrans         - [IN] Transaction
  *   aTableHeader   - [IN] Table Header
  *   aInsertInfo    - [IN] Insert Info
- *   aRowGRID       - [IN] RowÀÇ GRID
+ *   aRowGRID       - [IN] Rowì˜ GRID
  **********************************************************************/
 IDE_RC sdcRow::updateAllLobCols( idvSQL                      * aStatistics,
                                  sdrMtxStartInfo             * aStartInfo,
@@ -15804,7 +15804,7 @@ IDE_RC sdcRow::updateAllLobCols( idvSQL                      * aStatistics,
         
         if ( sLobDescCnt == aInsertInfo->mLobDescCnt )
         {
-            // Lob Desc Cnt¸¸Å­ ¹İ¿µÇßÀ¸¸é ºüÁ®³ª¿Â´Ù.
+            // Lob Desc Cntë§Œí¼ ë°˜ì˜í–ˆìœ¼ë©´ ë¹ ì ¸ë‚˜ì˜¨ë‹¤.
             break;
         }
     }
@@ -15817,14 +15817,14 @@ IDE_RC sdcRow::updateAllLobCols( idvSQL                      * aStatistics,
 }
 
 /***********************************************************************
- * Description : Update Row Piece¿¡¼­ lobÀ» update ½ÃÅ²´Ù.
+ * Description : Update Row Pieceì—ì„œ lobì„ update ì‹œí‚¨ë‹¤.
  *
- *   aStatistics  - [IN] Åë°è ÀÚ·á
+ *   aStatistics  - [IN] í†µê³„ ìë£Œ
  *   aTrans       - [IN] Transaction
  *   aTableHeader - [IN] Table Header
  *   aUpdateInfo  - [IN] Update Info
- *   aColCount    - [IN] ColumnÀÇ Count
- *   aRowGRID     - [IN] RowÀÇ GRID
+ *   aColCount    - [IN] Columnì˜ Count
+ *   aRowGRID     - [IN] Rowì˜ GRID
  **********************************************************************/
 IDE_RC sdcRow::updateAllLobCols( idvSQL                      * aStatistics,
                                  sdrMtxStartInfo             * aStartInfo,
@@ -15855,9 +15855,9 @@ IDE_RC sdcRow::updateAllLobCols( idvSQL                      * aStatistics,
     {
         sColumnInfo = aUpdateInfo->mColInfoList + sColSeqInRowPiece;
 
-        /* mColumnÀÇ °ªÀ» º¸°í update ÄÃ·³ÀÎÁö ¿©ºÎ¸¦ ÆÇ´ÜÇÑ´Ù.
-         * mColumn == NULL : update ÄÃ·³ X
-         * mColumn != NULL : update ÄÃ·³ O */
+        /* mColumnì˜ ê°’ì„ ë³´ê³  update ì»¬ëŸ¼ì¸ì§€ ì—¬ë¶€ë¥¼ íŒë‹¨í•œë‹¤.
+         * mColumn == NULL : update ì»¬ëŸ¼ X
+         * mColumn != NULL : update ì»¬ëŸ¼ O */
         if ( SDC_IS_UPDATE_COLUMN( sColumnInfo->mColumn ) == ID_FALSE )
         {
             continue;
@@ -15907,7 +15907,7 @@ IDE_RC sdcRow::updateAllLobCols( idvSQL                      * aStatistics,
         
         if ( sLobDescCnt == aUpdateInfo->mUptAftLobDescCnt )
         {
-            // Lob Desc Cnt¸¸Å­ ¹İ¿µÇßÀ¸¸é ºüÁ®³ª¿Â´Ù.
+            // Lob Desc Cntë§Œí¼ ë°˜ì˜í–ˆìœ¼ë©´ ë¹ ì ¸ë‚˜ì˜¨ë‹¤.
             break;
         }
     }
@@ -15920,14 +15920,14 @@ IDE_RC sdcRow::updateAllLobCols( idvSQL                      * aStatistics,
 }
 
 /***********************************************************************
- * Description : Overwrite Row Piece¿¡¼­ lobÀ» update ½ÃÅ²´Ù.
+ * Description : Overwrite Row Pieceì—ì„œ lobì„ update ì‹œí‚¨ë‹¤.
  *
- *   aStatistics     - [IN] Åë°è ÀÚ·á
+ *   aStatistics     - [IN] í†µê³„ ìë£Œ
  *   aTrans          - [IN] Transaction
  *   aTableHeader    - [IN] Table Header
  *   aOverwriteInfo  - [IN] Overwrite Info
- *   aColCount       - [IN] ColumnÀÇ Count
- *   aRowGRID        - [IN] RowÀÇ GRID
+ *   aColCount       - [IN] Columnì˜ Count
+ *   aRowGRID        - [IN] Rowì˜ GRID
  **********************************************************************/
 IDE_RC sdcRow::updateAllLobCols( idvSQL                         * aStatistics,
                                  sdrMtxStartInfo                * aStartInfo,
@@ -15956,9 +15956,9 @@ IDE_RC sdcRow::updateAllLobCols( idvSQL                         * aStatistics,
     {
         sColumnInfo = aOverwriteInfo->mColInfoList + sColSeqInRowPiece;
 
-        /* mColumnÀÇ °ªÀ» º¸°í update ÄÃ·³ÀÎÁö ¿©ºÎ¸¦ ÆÇ´ÜÇÑ´Ù.
-         * mColumn == NULL : update ÄÃ·³ X
-         * mColumn != NULL : update ÄÃ·³ O */
+        /* mColumnì˜ ê°’ì„ ë³´ê³  update ì»¬ëŸ¼ì¸ì§€ ì—¬ë¶€ë¥¼ íŒë‹¨í•œë‹¤.
+         * mColumn == NULL : update ì»¬ëŸ¼ X
+         * mColumn != NULL : update ì»¬ëŸ¼ O */
         if ( SDC_IS_UPDATE_COLUMN( sColumnInfo->mColumn ) == ID_FALSE )
         {
             continue;
@@ -16015,11 +16015,11 @@ IDE_RC sdcRow::updateAllLobCols( idvSQL                         * aStatistics,
 /***********************************************************************
  *
  * Description :
- *  lob dataµéÀ» remove ÇÑ´Ù.(lob pageµéÀ» old lob page list·Î ¿Å±ä´Ù.)
+ *  lob dataë“¤ì„ remove í•œë‹¤.(lob pageë“¤ì„ old lob page listë¡œ ì˜®ê¸´ë‹¤.)
  *
- *  aStatistics    - [IN] Åë°èÁ¤º¸
- *  aTrans         - [IN] Æ®·£Àè¼Ç Á¤º¸
- *  aLobInfo       - [IN] lob column Á¤º¸¸¦ ÀúÀåÇÏ´Â ÀÚ·á±¸Á¶
+ *  aStatistics    - [IN] í†µê³„ì •ë³´
+ *  aTrans         - [IN] íŠ¸ëœì­ì…˜ ì •ë³´
+ *  aLobInfo       - [IN] lob column ì •ë³´ë¥¼ ì €ì¥í•˜ëŠ” ìë£Œêµ¬ì¡°
  *
  **********************************************************************/
 IDE_RC sdcRow::removeAllLobCols( idvSQL                         *aStatistics,
@@ -16055,10 +16055,10 @@ IDE_RC sdcRow::removeAllLobCols( idvSQL                         *aStatistics,
 
 /***********************************************************************
   * Description :
- *  lob dataµéÀ» remove ÇÑ´Ù.(lob pageµéÀ» old lob page list·Î ¿Å±ä´Ù.)
+ *  lob dataë“¤ì„ remove í•œë‹¤.(lob pageë“¤ì„ old lob page listë¡œ ì˜®ê¸´ë‹¤.)
  *
- *  aStatistics    - [IN] Åë°èÁ¤º¸
- *  aTrans         - [IN] Æ®·£Àè¼Ç Á¤º¸
+ *  aStatistics    - [IN] í†µê³„ì •ë³´
+ *  aTrans         - [IN] íŠ¸ëœì­ì…˜ ì •ë³´
  *  aUpdateInfo    - [IN] Update Info
   **********************************************************************/
 IDE_RC sdcRow::removeOldLobPage4Upt( idvSQL                       *aStatistics,
@@ -16118,14 +16118,14 @@ IDE_RC sdcRow::removeOldLobPage4Upt( idvSQL                       *aStatistics,
 }
 
 /***********************************************************************
- * Description : Lob Descriptor°¡ Æ÷ÇÔµÈ Page¿¡ X Latch¸¦ Àâ°í
- *               Lob Desc ¸¦ ÀĞ¾î¿Â´Ù. Latch¸¦ À¯ÁöÇÑ´Ù.
+ * Description : Lob Descriptorê°€ í¬í•¨ëœ Pageì— X Latchë¥¼ ì¡ê³ 
+ *               Lob Desc ë¥¼ ì½ì–´ì˜¨ë‹¤. Latchë¥¼ ìœ ì§€í•œë‹¤.
  *
- *   aStatistics - [IN]  Åë°èÁ¤º¸
- *   aLobViewEnv - [IN]  ÀÚ½ÅÀÌ ºÁ¾ßÇÒ LOB¿¡´ëÇÑ Á¤º¸
+ *   aStatistics - [IN]  í†µê³„ì •ë³´
+ *   aLobViewEnv - [IN]  ìì‹ ì´ ë´ì•¼í•  LOBì—ëŒ€í•œ ì •ë³´
  *   aMtx        - [IN]  Mini Transaction
  *   aRow        - [IN]
- *   aLobDesc    - [OUT] ÀĞÀº Lob Descriptor
+ *   aLobDesc    - [OUT] ì½ì€ Lob Descriptor
  *   aLobColSeqInRowPiece - [OUT]  XXX
  *   aCTSlotIdx  - [OUT] CTS Slot Index
  **********************************************************************/
@@ -16233,11 +16233,11 @@ void sdcRow::getLobDescInRowPiece( UChar    * aRow,
 }
 
 /***********************************************************************
- * Description : insert SQL ±¸¹®À¸·Î lob¿¡ value¸¦ insertÇÏ´Â ÇÔ¼öÀÌ´Ù.
+ * Description : insert SQL êµ¬ë¬¸ìœ¼ë¡œ lobì— valueë¥¼ insertí•˜ëŠ” í•¨ìˆ˜ì´ë‹¤.
  *  1. prepare4 append
  *  2. write.
  *
- *     aStatistics  -[IN] Åë°èÀÚ·á
+ *     aStatistics  -[IN] í†µê³„ìë£Œ
  *     aTrans       -[IN] Transaction Object
  *     aTableHeader -[IN] Table Header
  *     aRowGRID     -[IN] Row GRID
@@ -16379,10 +16379,10 @@ IDE_RC sdcRow::updateLobDesc( idvSQL        * aStatistics,
 /***********************************************************************
  *
  * Description :
- *  lob cursor open½Ã¿¡, replicationÀ» À§ÇØ
- *  lob cursor open ·Î±×¿¡ pk Á¤º¸¸¦ °°ÀÌ ±â·ÏÇÑ´Ù.
- *  ÀÌ¶§ lobÀÌ row·ÎºÎÅÍ pk Á¤º¸¸¦ ¾ò¾î¿À±â À§ÇØ
- *  ÀÌ ÇÔ¼ö¸¦ È£ÃâÇÑ´Ù.
+ *  lob cursor openì‹œì—, replicationì„ ìœ„í•´
+ *  lob cursor open ë¡œê·¸ì— pk ì •ë³´ë¥¼ ê°™ì´ ê¸°ë¡í•œë‹¤.
+ *  ì´ë•Œ lobì´ rowë¡œë¶€í„° pk ì •ë³´ë¥¼ ì–»ì–´ì˜¤ê¸° ìœ„í•´
+ *  ì´ í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•œë‹¤.
  *
  **********************************************************************/
 IDE_RC sdcRow::getPKInfo( idvSQL              *aStatistics,
@@ -16608,12 +16608,12 @@ IDE_RC sdcRow::getPKInfoInRowPiece( UChar               *aSlotPtr,
     return IDE_FAILURE;
 }
 
-/* TASK-4007 [SM]PBT¸¦ À§ÇÑ ±â´É Ãß°¡
- * Page¿¡¼­ Row¸¦ DumpÇÏ¿© ¹İÈ¯ÇÑ´Ù.
+/* TASK-4007 [SM]PBTë¥¼ ìœ„í•œ ê¸°ëŠ¥ ì¶”ê°€
+ * Pageì—ì„œ Rowë¥¼ Dumpí•˜ì—¬ ë°˜í™˜í•œë‹¤.
  *
- * BUG-28379 [SD] sdnbBTree::dumpNodeHdr( UChar *aPage ) ³»¿¡¼­
- * local ArrayÀÇ ptr¸¦ ¹İÈ¯ÇÏ°í ÀÖ½À´Ï´Ù.
- * Local Array´ë½Å OutBuf¸¦ ¹Ş¾Æ ¸®ÅÏÇÏµµ·Ï ¼öÁ¤ÇÕ´Ï´Ù. */
+ * BUG-28379 [SD] sdnbBTree::dumpNodeHdr( UChar *aPage ) ë‚´ì—ì„œ
+ * local Arrayì˜ ptrë¥¼ ë°˜í™˜í•˜ê³  ìˆìŠµë‹ˆë‹¤.
+ * Local ArrayëŒ€ì‹  OutBufë¥¼ ë°›ì•„ ë¦¬í„´í•˜ë„ë¡ ìˆ˜ì •í•©ë‹ˆë‹¤. */
 
 IDE_RC sdcRow::dump( UChar *aPage ,
                      SChar *aOutBuf ,

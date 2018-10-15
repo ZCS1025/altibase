@@ -53,7 +53,7 @@ typedef struct tb_test1
 
 char *gTblName = NULL;
 
-/* Fail-Over°¡ SuccessµÇ¾î ÀÖ´ÂÁö ¿©ºÎ¸¦ ÆÇ´ÜÇÏ´Â ÇÔ¼ö. */
+/* Fail-Overê°€ Successë˜ì–´ ìˆëŠ”ì§€ ì—¬ë¶€ë¥¼ íŒë‹¨í•˜ëŠ” í•¨ìˆ˜. */
 static int  isFailOverErrorEvent(SQLHSTMT aStmt)
 {
     SQLRETURN   sRc;
@@ -518,7 +518,7 @@ int bindParametersForInsert( SQLHSTMT  * aStmt,
                                    SQL_INTEGER, /* SQL data type of the parameter : char(8)*/
                                    0,           /* size of the column or expression, precision */
                                    0,        /* The decimal digits, scale */
-                                   &aRcd->c1, /* A pointer to a buffer for the parameter¡¯s data */
+                                   &aRcd->c1, /* A pointer to a buffer for the parameterâ€™s data */
                                    0,        /* For all fixed size C data type, this argument is ignored */
                                    NULL );      /* indicator */
         TEST( !SQL_SUCCEEDED( sSQLRC ), "[FAIL] SQLBindParameter 1" );
@@ -653,7 +653,7 @@ int bindColumnsForSelect( SQLHSTMT  * aStmt,
         sSQLRC= SQLBindCol( aStmt[i],
                             1,           /* Column number, starting at 1 */
                             SQL_C_LONG, /* C data type of the parameter */
-                            &aRcd->c1,   /* A pointer to a buffer for the parameter¡¯s data */
+                            &aRcd->c1,   /* A pointer to a buffer for the parameterâ€™s data */
                             sizeof(aRcd->c1), /* Length of the buffer in bytes */
                             &aInd[0] );   /* indicator */
         TEST( !SQL_SUCCEEDED( sSQLRC ), "[FAIL] SQLBindCol 1" );
@@ -762,10 +762,10 @@ int dbInsert( SQLHDBC * aDbc )
     sRC = bindParametersForInsert( sStmt, &sRcd, sInd ); 
     TEST( sRC != SUCCESS, "[FAIL] bindParameters" );
 
-    /* Session Fail-Over°¡ ¹ß»ıÇÏ¸é SQLPrepareºÎÅÍ ´Ù½Ã ÇØ¾ß ÇÕ´Ï´Ù
-       ¾Õ¿¡¼­ ¼öÇàÇß´ø Bind´Â ´Ù½Ã ÇÏÁö ¾Ê¾Æµµ µË´Ï´Ù
-       SQLDirectExecute°æ¿ì´Â SQLPrepare°¡ ÇÊ¿äÇÏÁö ¾Ê°í,
-       ´Ù½Ã SQLDirectExecute¸¦ ¼öÇàÇÏ¸é µË´Ï´Ù
+    /* Session Fail-Overê°€ ë°œìƒí•˜ë©´ SQLPrepareë¶€í„° ë‹¤ì‹œ í•´ì•¼ í•©ë‹ˆë‹¤
+       ì•ì—ì„œ ìˆ˜í–‰í–ˆë˜ BindëŠ” ë‹¤ì‹œ í•˜ì§€ ì•Šì•„ë„ ë©ë‹ˆë‹¤
+       SQLDirectExecuteê²½ìš°ëŠ” SQLPrepareê°€ í•„ìš”í•˜ì§€ ì•Šê³ ,
+       ë‹¤ì‹œ SQLDirectExecuteë¥¼ ìˆ˜í–‰í•˜ë©´ ë©ë‹ˆë‹¤
      */
 
     sprintf( sQuery,
@@ -919,7 +919,7 @@ int dbSelect( SQLHDBC  * aDbc )
                                    SQL_INTEGER, /* SQL data type of the parameter : char(8)*/
                                    0,           /* size of the column or expression, precision */
                                    0,        /* The decimal digits, scale */
-                                   &sRangeMin, /* A pointer to a buffer for the parameter¡¯s data */
+                                   &sRangeMin, /* A pointer to a buffer for the parameterâ€™s data */
                                    0,        /* For all fixed size C data type, this argument is ignored */
                                    NULL );      /* indicator */
         TEST( !SQL_SUCCEEDED( sSQLRC ), "[FAIL] SQLBindParameter 1" );
@@ -931,16 +931,16 @@ int dbSelect( SQLHDBC  * aDbc )
                                    SQL_INTEGER, /* SQL data type of the parameter : char(8)*/
                                    0,           /* size of the column or expression, precision */
                                    0,        /* The decimal digits, scale */
-                                   &sRangeMax, /* A pointer to a buffer for the parameter¡¯s data */
+                                   &sRangeMax, /* A pointer to a buffer for the parameterâ€™s data */
                                    0,        /* For all fixed size C data type, this argument is ignored */
                                    NULL );      /* indicator */
         TEST( !SQL_SUCCEEDED( sSQLRC ), "[FAIL] SQLBindParameter 2" );
     }
 
-    /* Session Fail-Over°¡ ¹ß»ıÇÏ¸é SQLPrepareºÎÅÍ ´Ù½Ã ÇØ¾ß ÇÕ´Ï´Ù
-       ¾Õ¿¡¼­ ¼öÇàÇß´ø Bind´Â ´Ù½Ã ÇÏÁö ¾Ê¾Æµµ µË´Ï´Ù
-       SQLDirectExecute°æ¿ì´Â SQLPrepare°¡ ÇÊ¿äÇÏÁö ¾Ê°í,
-       ´Ù½Ã SQLDirectExecute¸¦ ¼öÇàÇÏ¸é µË´Ï´Ù
+    /* Session Fail-Overê°€ ë°œìƒí•˜ë©´ SQLPrepareë¶€í„° ë‹¤ì‹œ í•´ì•¼ í•©ë‹ˆë‹¤
+       ì•ì—ì„œ ìˆ˜í–‰í–ˆë˜ BindëŠ” ë‹¤ì‹œ í•˜ì§€ ì•Šì•„ë„ ë©ë‹ˆë‹¤
+       SQLDirectExecuteê²½ìš°ëŠ” SQLPrepareê°€ í•„ìš”í•˜ì§€ ì•Šê³ ,
+       ë‹¤ì‹œ SQLDirectExecuteë¥¼ ìˆ˜í–‰í•˜ë©´ ë©ë‹ˆë‹¤
      */
 
     for( i = 0 ; i < MAX_PARTITION_CNT ; i++ )
@@ -1005,7 +1005,7 @@ label_retry:
             {
                 if( isFailOverErrorEvent( sStmt[i] ) == 1 )
                 {
-                    /* FetchÁß¿¡ FailOver°¡ ¹ß»ıÇÏ¸é SQLCloseCursor¸¦ ÇØÁÖ¿©¾ß ÇÕ´Ï´Ù.*/ 
+                    /* Fetchì¤‘ì— FailOverê°€ ë°œìƒí•˜ë©´ SQLCloseCursorë¥¼ í•´ì£¼ì—¬ì•¼ í•©ë‹ˆë‹¤.*/ 
                     SQLCloseCursor( sStmt[i] );
                     goto label_retry;
                 }
@@ -1076,16 +1076,16 @@ int dbUpdate( SQLHDBC * aDbc )
                                    SQL_INTEGER, /* SQL data type of the parameter : char(8)*/
                                    0,           /* size of the column or expression, precision */
                                    0,        /* The decimal digits, scale */
-                                   &sKeyValue, /* A pointer to a buffer for the parameter¡¯s data */
+                                   &sKeyValue, /* A pointer to a buffer for the parameterâ€™s data */
                                    0,        /* For all fixed size C data type, this argument is ignored */
                                    &sIndC1 );      /* indicator */
         TEST( !SQL_SUCCEEDED( sSQLRC ), "[FAIL] SQLBindParameter 1" );
     }
 
-    /* Session Fail-Over°¡ ¹ß»ıÇÏ¸é SQLPrepareºÎÅÍ ´Ù½Ã ÇØ¾ß ÇÕ´Ï´Ù
-       ¾Õ¿¡¼­ ¼öÇàÇß´ø Bind´Â ´Ù½Ã ÇÏÁö ¾Ê¾Æµµ µË´Ï´Ù
-       SQLDirectExecute°æ¿ì´Â SQLPrepare°¡ ÇÊ¿äÇÏÁö ¾Ê°í,
-       ´Ù½Ã SQLDirectExecute¸¦ ¼öÇàÇÏ¸é µË´Ï´Ù
+    /* Session Fail-Overê°€ ë°œìƒí•˜ë©´ SQLPrepareë¶€í„° ë‹¤ì‹œ í•´ì•¼ í•©ë‹ˆë‹¤
+       ì•ì—ì„œ ìˆ˜í–‰í–ˆë˜ BindëŠ” ë‹¤ì‹œ í•˜ì§€ ì•Šì•„ë„ ë©ë‹ˆë‹¤
+       SQLDirectExecuteê²½ìš°ëŠ” SQLPrepareê°€ í•„ìš”í•˜ì§€ ì•Šê³ ,
+       ë‹¤ì‹œ SQLDirectExecuteë¥¼ ìˆ˜í–‰í•˜ë©´ ë©ë‹ˆë‹¤
      */
 
     for( i = 0 ; i < MAX_PARTITION_CNT ; i++ )
@@ -1200,16 +1200,16 @@ int dbDelete( SQLHDBC * aDbc )
                                    SQL_INTEGER, /* SQL data type of the parameter : char(8)*/
                                    0,           /* size of the column or expression, precision */
                                    0,        /* The decimal digits, scale */
-                                   &sKeyValue, /* A pointer to a buffer for the parameter¡¯s data */
+                                   &sKeyValue, /* A pointer to a buffer for the parameterâ€™s data */
                                    0,        /* For all fixed size C data type, this argument is ignored */
                                    &sIndC1 );      /* indicator */
         TEST( !SQL_SUCCEEDED( sSQLRC ), "[FAIL] SQLBindParameter 1" );
     }
 
-    /* Session Fail-Over°¡ ¹ß»ıÇÏ¸é SQLPrepareºÎÅÍ ´Ù½Ã ÇØ¾ß ÇÕ´Ï´Ù
-       ¾Õ¿¡¼­ ¼öÇàÇß´ø Bind´Â ´Ù½Ã ÇÏÁö ¾Ê¾Æµµ µË´Ï´Ù
-       SQLDirectExecute°æ¿ì´Â SQLPrepare°¡ ÇÊ¿äÇÏÁö ¾Ê°í,
-       ´Ù½Ã SQLDirectExecute¸¦ ¼öÇàÇÏ¸é µË´Ï´Ù
+    /* Session Fail-Overê°€ ë°œìƒí•˜ë©´ SQLPrepareë¶€í„° ë‹¤ì‹œ í•´ì•¼ í•©ë‹ˆë‹¤
+       ì•ì—ì„œ ìˆ˜í–‰í–ˆë˜ BindëŠ” ë‹¤ì‹œ í•˜ì§€ ì•Šì•„ë„ ë©ë‹ˆë‹¤
+       SQLDirectExecuteê²½ìš°ëŠ” SQLPrepareê°€ í•„ìš”í•˜ì§€ ì•Šê³ ,
+       ë‹¤ì‹œ SQLDirectExecuteë¥¼ ìˆ˜í–‰í•˜ë©´ ë©ë‹ˆë‹¤
      */
 
     for( i = 0 ; i < MAX_PARTITION_CNT ; i++ )

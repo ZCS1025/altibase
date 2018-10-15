@@ -92,7 +92,7 @@ void smrUpdate::initialize()
     gSmrUndoFunction[SMR_SMC_TABLEHEADER_SET_INSERTLIMIT]
         = smLayerCallback::redo_undo_SMC_TABLEHEADER_SET_INSERTLIMIT;
 
-    // BUG-26695 DPath Insert°¡ ½ÇÆĞÇÏ¿´À» °æ¿ì Log°¡ Undo µÇ¾î¾ß ÇÔ
+    // BUG-26695 DPath Insertê°€ ì‹¤íŒ¨í•˜ì˜€ì„ ê²½ìš° Logê°€ Undo ë˜ì–´ì•¼ í•¨
     gSmrUndoFunction[ SMR_SMC_TABLEHEADER_SET_INCONSISTENCY ]
         = smLayerCallback::undo_SMC_TABLEHEADER_SET_INCONSISTENCY;
 
@@ -231,7 +231,7 @@ void smrUpdate::initialize()
         = smLayerCallback::redo_SMC_SET_CREATE_SCN;
 
     // PRJ-1548 User Memory Tablespace
-    // ¸Ş¸ğ¸® Å×ÀÌºí½ºÆäÀÌ½º UPDATE ·Î±×¿¡ ´ëÇÑ Redo/Undo ÇÔ¼ö Vector ¸ñ·Ï
+    // ë©”ëª¨ë¦¬ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ UPDATE ë¡œê·¸ì— ëŒ€í•œ Redo/Undo í•¨ìˆ˜ Vector ëª©ë¡
 
     gSmrTBSUptRedoFunction[SCT_UPDATE_MRDB_CREATE_TBS]
         = smmUpdate::redo_SMM_UPDATE_MRDB_CREATE_TBS;
@@ -263,7 +263,7 @@ void smrUpdate::initialize()
     gSmrTBSUptUndoFunction[SCT_UPDATE_MRDB_ALTER_TBS_OFFLINE]
         = smLayerCallback::undo_SCT_UPDATE_MRDB_ALTER_TBS_OFFLINE;
 
-    // µğ½ºÅ© Å×ÀÌºí½ºÆäÀÌ½º UPDATE ·Î±×¿¡ ´ëÇÑ Redo/Undo ÇÔ¼ö Vector ¸ñ·Ï
+    // ë””ìŠ¤í¬ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ UPDATE ë¡œê·¸ì— ëŒ€í•œ Redo/Undo í•¨ìˆ˜ Vector ëª©ë¡
     gSmrTBSUptRedoFunction[SCT_UPDATE_DRDB_CREATE_TBS]
         = sddUpdate::redo_SCT_UPDATE_DRDB_CREATE_TBS;
     gSmrTBSUptRedoFunction[SCT_UPDATE_DRDB_DROP_TBS]
@@ -317,7 +317,7 @@ void smrUpdate::initialize()
         = sddUpdate::undo_SCT_UPDATE_DRDB_ALTER_DBF_OFFLINE;
 
     /* PROJ-1594 Volatile TBS */
-    /* Volatile TBS¿¡ ´ëÇÑ update ·Î±×ÀÇ redo, undo function */
+    /* Volatile TBSì— ëŒ€í•œ update ë¡œê·¸ì˜ redo, undo function */
     gSmrTBSUptRedoFunction[SCT_UPDATE_VRDB_CREATE_TBS]
         = svmUpdate::redo_SCT_UPDATE_VRDB_CREATE_TBS;
     gSmrTBSUptUndoFunction[SCT_UPDATE_VRDB_CREATE_TBS]
@@ -333,7 +333,7 @@ void smrUpdate::initialize()
     gSmrTBSUptUndoFunction[SCT_UPDATE_VRDB_ALTER_AUTOEXTEND]
         = svmUpdate::undo_SCT_UPDATE_VRDB_ALTER_AUTOEXTEND;
 
-    /* Disk, Memory, Volatile ¸ğµÎ¿¡ Àû¿ëµÇ´Â REDO/UNDOÇÔ¼ö ¼¼ÆÃ */
+    /* Disk, Memory, Volatile ëª¨ë‘ì— ì ìš©ë˜ëŠ” REDO/UNDOí•¨ìˆ˜ ì„¸íŒ… */
     gSmrTBSUptRedoFunction[SCT_UPDATE_COMMON_ALTER_ATTR_FLAG]
         = sctTBSUpdate::redo_SCT_UPDATE_ALTER_ATTR_FLAG;
     gSmrTBSUptUndoFunction[SCT_UPDATE_COMMON_ALTER_ATTR_FLAG]
@@ -343,24 +343,24 @@ void smrUpdate::initialize()
 }
 
 /***********************************************************************
- * Description : UpdateLog¸¦ Transaction Log Buffer¿¡ ±¸¼ºÇÑÈÄ¿¡
- *               SM Log Buffer¿¡ ·Î±×¸¦ ±â·ÏÇÑ´Ù.
+ * Description : UpdateLogë¥¼ Transaction Log Bufferì— êµ¬ì„±í•œí›„ì—
+ *               SM Log Bufferì— ë¡œê·¸ë¥¼ ê¸°ë¡í•œë‹¤.
  *
  * aTrans           - [IN] Transaction Pointer
  * aUpdateLogType   - [IN] Update Log Type.
  * aGRID            - [IN] GRID
- * aData            - [IN] smrUpdateLogÀÇ mData¿µ¿ª¿¡ ¼³Á¤µÉ °ª
- * aBfrImgCnt       - [IN] Befor Image°¹¼ö
+ * aData            - [IN] smrUpdateLogì˜ mDataì˜ì—­ì— ì„¤ì •ë  ê°’
+ * aBfrImgCnt       - [IN] Befor Imageê°¯ìˆ˜
  * aBfrImage        - [IN] Befor Image
- * aAftImgCnt       - [IN] After Image°¹¼ö
+ * aAftImgCnt       - [IN] After Imageê°¯ìˆ˜
  * aAftImage        - [IN] After Image
  *
- * aWrittenLogLSN   - [OUT] ±â·ÏµÈ ·Î±×ÀÇ LSN
+ * aWrittenLogLSN   - [OUT] ê¸°ë¡ëœ ë¡œê·¸ì˜ LSN
  *
  * Related Issue!!
- *  BUG-14778: TXÀÇ Log Buffer¸¦ ÀÎÅÍÆäÀÌ½º·Î »ç¿ëÇØ¾ß ÇÕ´Ï´Ù.
- *   - ¸ğµç ÄÚµå¸¦ °íÄ¡±â°¡ Èûµé¾î¼­ ÇÏ³ªÀÇ Update·Î±× ±â·ÏÇÔ¼ö¸¦
- *     ¸¸µé°í TxÀÇ Lob Buffer ÀÎÅÍÆäÀÌ½º¸¦ »ç¿ëÇÏµµ·Ï ÇÏ¿´½À´Ï´Ù.
+ *  BUG-14778: TXì˜ Log Bufferë¥¼ ì¸í„°í˜ì´ìŠ¤ë¡œ ì‚¬ìš©í•´ì•¼ í•©ë‹ˆë‹¤.
+ *   - ëª¨ë“  ì½”ë“œë¥¼ ê³ ì¹˜ê¸°ê°€ í˜ë“¤ì–´ì„œ í•˜ë‚˜ì˜ Updateë¡œê·¸ ê¸°ë¡í•¨ìˆ˜ë¥¼
+ *     ë§Œë“¤ê³  Txì˜ Lob Buffer ì¸í„°í˜ì´ìŠ¤ë¥¼ ì‚¬ìš©í•˜ë„ë¡ í•˜ì˜€ìŠµë‹ˆë‹¤.
  *
  **********************************************************************/
 IDE_RC smrUpdate::writeUpdateLog( idvSQL*           aStatistics,
@@ -385,12 +385,12 @@ IDE_RC smrUpdate::writeUpdateLog( idvSQL*           aStatistics,
 
     static smrLogType sLogType = SMR_LT_UPDATE;
 
-    /* Transction Log Buffer¸¦ ÃÊ±âÈ­ ÇÑ´Ù. */
+    /* Transction Log Bufferë¥¼ ì´ˆê¸°í™” í•œë‹¤. */
     smLayerCallback::initLogBuffer( aTrans );
 
     sOffset = SMR_LOGREC_SIZE(smrUpdateLog);
 
-    /* Before Image¸¦ ·Î±× ¹öÆÛ¿¡ ±â·Ï */
+    /* Before Imageë¥¼ ë¡œê·¸ ë²„í¼ì— ê¸°ë¡ */
     sBImgSize = 0;
     for( i = 0; i < aBfrImgCnt ; i++ )
     {
@@ -411,7 +411,7 @@ IDE_RC smrUpdate::writeUpdateLog( idvSQL*           aStatistics,
         aBfrImage++;
     }
 
-    /* After Image¸¦ ·Î±× ¹öÆÛ¿¡ ±â·Ï */
+    /* After Imageë¥¼ ë¡œê·¸ ë²„í¼ì— ê¸°ë¡ */
     sAImgSize = 0;
     for( i = 0; i < aAftImgCnt ; i++ )
     {
@@ -433,7 +433,7 @@ IDE_RC smrUpdate::writeUpdateLog( idvSQL*           aStatistics,
         aAftImage++;
     }
 
-    /* LogTail ±â·Ï */
+    /* LogTail ê¸°ë¡ */
     IDE_TEST( smLayerCallback::writeLogToBufferAtOffset(
                   aTrans,
                   &sLogType,
@@ -441,7 +441,7 @@ IDE_RC smrUpdate::writeUpdateLog( idvSQL*           aStatistics,
                   ID_SIZEOF(smrLogTail) )
               != IDE_SUCCESS );
 
-    /* Æ®·£Àè¼Ç Á¤º¸ ¾ò±â */
+    /* íŠ¸ëœì­ì…˜ ì •ë³´ ì–»ê¸° */
     (void)smLayerCallback::getTransInfo( aTrans,
                                          &sLogBuffer,
                                          &sTransID,
@@ -450,7 +450,7 @@ IDE_RC smrUpdate::writeUpdateLog( idvSQL*           aStatistics,
     sSize = sBImgSize + sAImgSize + SMR_LOGREC_SIZE( smrUpdateLog )
         + ID_SIZEOF(smrLogTail);
 
-    /* Stackº¯¼ö¿¡ ÀÖ´Â Headerº¯¼ö ÃÊ±âÈ­ */
+    /* Stackë³€ìˆ˜ì— ìˆëŠ” Headerë³€ìˆ˜ ì´ˆê¸°í™” */
     smrUpdate::setUpdateLogHead( (smrUpdateLog*)sLogBuffer,
                                  sTransID,
                                  sLogTypeFlag,
@@ -480,16 +480,16 @@ IDE_RC smrUpdate::writeUpdateLog( idvSQL*           aStatistics,
 
 
 /***********************************************************************
- * Description : UpdateLog¸¦ StackÀÇ Log Buffer¿¡ ±¸¼ºÇÑÈÄ¿¡
- *               SM Log Buffer¿¡ ·Î±×¸¦ ±â·ÏÇÑ´Ù.
- *               ÀÌ´Â ¹«Á¶°ÇÀûÀÎ Redo¸¦ À§ÇØ ±â·ÏµÇ´Â
- *               Dummy TransactionÀ¸·Î ±â·ÏµÈ´Ù. 
+ * Description : UpdateLogë¥¼ Stackì˜ Log Bufferì— êµ¬ì„±í•œí›„ì—
+ *               SM Log Bufferì— ë¡œê·¸ë¥¼ ê¸°ë¡í•œë‹¤.
+ *               ì´ëŠ” ë¬´ì¡°ê±´ì ì¸ Redoë¥¼ ìœ„í•´ ê¸°ë¡ë˜ëŠ”
+ *               Dummy Transactionìœ¼ë¡œ ê¸°ë¡ëœë‹¤. 
  *
- *               ¶ÇÇÑ ÀÌ´Â ¹İµå½Ã ÇÏ³ªÀÇ 4ByteÂ¥¸® After Image¸¸ ¿Í¾ß ÇÑ´Ù.
+ *               ë˜í•œ ì´ëŠ” ë°˜ë“œì‹œ í•˜ë‚˜ì˜ 4Byteì§œë¦¬ After Imageë§Œ ì™€ì•¼ í•œë‹¤.
  *
  * aUpdateLogType   - [IN] Update Log Type.
  * aGRID            - [IN] GRID
- * aData            - [IN] smrUpdateLogÀÇ mData¿µ¿ª¿¡ ¼³Á¤µÉ °ª
+ * aData            - [IN] smrUpdateLogì˜ mDataì˜ì—­ì— ì„¤ì •ë  ê°’
  * aAftImage        - [IN] After Image
  *
  **********************************************************************/
@@ -733,8 +733,8 @@ IDE_RC smrUpdate::allocPersListAtMembase(idvSQL*      aStatistics,
 
 /* Update type:  SMR_SMM_MEMBASE_ALLOC_EXPAND_CHUNK
 
-   smmManager::allocNewExpandChunkÀÇ Logical Redo¸¦ À§ÇØ
-   Membase ÀÏºÎ ¸â¹öÀÇ Before ÀÌ¹ÌÁö¸¦ ÀúÀåÇÑ´Ù.
+   smmManager::allocNewExpandChunkì˜ Logical Redoë¥¼ ìœ„í•´
+   Membase ì¼ë¶€ ë©¤ë²„ì˜ Before ì´ë¯¸ì§€ë¥¼ ì €ì¥í•œë‹¤.
 
    before  image: aBeforeMembase->m_alloc_pers_page_count
                  aBeforeMembase->mCurrentExpandChunkCnt
@@ -745,20 +745,20 @@ IDE_RC smrUpdate::allocPersListAtMembase(idvSQL*      aStatistics,
                  [
                       aBeforeMembase-> mFreePageLists[i].mFirstFreePageID
                       aBeforeMembase-> mFreePageLists[i].mFreePageCount
-                 ] ( aBeforeMembase->mFreePageListCount ¸¸Å­ )
+                 ] ( aBeforeMembase->mFreePageListCount ë§Œí¼ )
                  aExpandPageListID
                  aAfterChunkFirstPID
                  aAfterChunkLastPID
 
-   ÀÌ ÇÔ¼ö¿¡¼­ ±â·ÏµÇ´Â ¸ğµç ÇÊµå¸¦ vULongÅ¸ÀÔÀ¸·Î ÅëÀÏÇÏ¿©
-   ·Î±× ±â·Ï½Ã ¹ö½º¿À·ù¹ß»ıÀ» ¸·¾Ò´Ù.
-   * 32ºñÆ®¿¡¼­´Â 4¹ÙÀÌÆ® integer ¿©·¯°³·Î ±â·ÏµÇ¹Ç·Î
-     ¹ö½º¿À·ù°¡ ¹ß»ıÇÏÁö ¾Ê´Â´Ù.
-   * 64ºñÆ®¿¡¼­´Â 8¹ÙÀÌÆ® integer ¿©·¯°³·Î ±â·ÏµÇ¹Ç·Î
-     ¹ö½º¿À·ù°¡ ¹ß»ıÇÏÁö ¾Ê´Â´Ù.
+   ì´ í•¨ìˆ˜ì—ì„œ ê¸°ë¡ë˜ëŠ” ëª¨ë“  í•„ë“œë¥¼ vULongíƒ€ì…ìœ¼ë¡œ í†µì¼í•˜ì—¬
+   ë¡œê·¸ ê¸°ë¡ì‹œ ë²„ìŠ¤ì˜¤ë¥˜ë°œìƒì„ ë§‰ì•˜ë‹¤.
+   * 32ë¹„íŠ¸ì—ì„œëŠ” 4ë°”ì´íŠ¸ integer ì—¬ëŸ¬ê°œë¡œ ê¸°ë¡ë˜ë¯€ë¡œ
+     ë²„ìŠ¤ì˜¤ë¥˜ê°€ ë°œìƒí•˜ì§€ ì•ŠëŠ”ë‹¤.
+   * 64ë¹„íŠ¸ì—ì„œëŠ” 8ë°”ì´íŠ¸ integer ì—¬ëŸ¬ê°œë¡œ ê¸°ë¡ë˜ë¯€ë¡œ
+     ë²„ìŠ¤ì˜¤ë¥˜ê°€ ë°œìƒí•˜ì§€ ì•ŠëŠ”ë‹¤.
 
-     aExpandPageListID : È®ÀåµÈ ChunkÀÇ Page°¡ ¸Å´Ş¸± Page ListÀÇ ID
-                         UINT_MAXÀÏ °æ¿ì ¸ğµç Page List¿¡ °ñ°í·ç ºĞ¹èµÈ´Ù
+     aExpandPageListID : í™•ì¥ëœ Chunkì˜ Pageê°€ ë§¤ë‹¬ë¦´ Page Listì˜ ID
+                         UINT_MAXì¼ ê²½ìš° ëª¨ë“  Page Listì— ê³¨ê³ ë£¨ ë¶„ë°°ëœë‹¤
  */
 #define SMR_ALLOC_EXPAND_CHUNK_MAX_AFTER_IMG_COUNT (SM_MAX_PAGELIST_COUNT * 2 + 9)
 
@@ -832,7 +832,7 @@ IDE_RC smrUpdate::allocExpandChunkAtMembase(
     sAftImgInfo[j].mSize   = ID_SIZEOF( scPageID );
     j++;
 
-    /* Stack¿¡ ÇÒ´çµÈ º¯¼ö ¿µ¿ªÀ» ³Ñ¾î¼­´ÂÁö °Ë»çÇÑ´Ù. */
+    /* Stackì— í• ë‹¹ëœ ë³€ìˆ˜ ì˜ì—­ì„ ë„˜ì–´ì„œëŠ”ì§€ ê²€ì‚¬í•œë‹¤. */
     IDE_ERROR_MSG( j < SMR_ALLOC_EXPAND_CHUNK_MAX_AFTER_IMG_COUNT + 1,
                    "sImageCount : %"ID_UINT32_FMT,
                    j);
@@ -1202,7 +1202,7 @@ IDE_RC smrUpdate::updateAllAtTableHead(idvSQL*               aStatistics,
     ULong            sTableMaxRow;
     UInt             sTableParallelDegree;
 
-    // Å×ÀÌºí Çì´õ Á¤º¸ ¾ò±â
+    // í…Œì´ë¸” í—¤ë” ì •ë³´ ì–»ê¸°
     (void)smLayerCallback::getTableHeaderInfo( aTable,
                                                &sPageID,
                                                &sOffset,
@@ -1282,8 +1282,8 @@ IDE_RC smrUpdate::updateAllocInfoAtTableHead(idvSQL*  aStatistics,
     scPageID         sHeadPageID;
     scPageID         sTailPageID;
 
-    // PagelistEntry Á¤º¸ ¾ò±â
-    // ·Î±ëÀ» À§ÇÑ ½ÇÁ¦ ÀÛ¾÷½Ã ListÀÇ LockÀ» Àâ°í ÀÖÀ½.
+    // PagelistEntry ì •ë³´ ì–»ê¸°
+    // ë¡œê¹…ì„ ìœ„í•œ ì‹¤ì œ ì‘ì—…ì‹œ Listì˜ Lockì„ ì¡ê³  ìˆìŒ.
     smLayerCallback::getAllocPageListInfo( aAllocPageList,
                                            &sPageCount,
                                            &sHeadPageID,
@@ -1339,7 +1339,7 @@ IDE_RC smrUpdate::updateFlagAtTableHead(idvSQL* aStatistics,
     scOffset         sOffset;
     UInt             sTableFlag;
 
-    // Å×ÀÌºí Çì´õÀÇ mFlag ¾ò±â
+    // í…Œì´ë¸” í—¤ë”ì˜ mFlag ì–»ê¸°
     (void)smLayerCallback::getTableHeaderFlag( aTable,
                                                &sPageID,
                                                &sOffset,
@@ -1437,7 +1437,7 @@ IDE_RC smrUpdate::updateSegStoAttrAtTableHead(idvSQL            * aStatistics,
     scOffset         sOffset;
     UInt             sTableFlag;
 
-    // Å×ÀÌºí Çì´õÀÇ mFlag ¾ò±â
+    // í…Œì´ë¸” í—¤ë”ì˜ mFlag ì–»ê¸°
     (void)smLayerCallback::getTableHeaderFlag( aTable,
                                                &sPageID,
                                                &sOffset,
@@ -1485,7 +1485,7 @@ IDE_RC smrUpdate::updateInsLimitAtTableHead(idvSQL            * aStatistics,
     scOffset         sOffset;
     UInt             sTableFlag;
 
-    // Å×ÀÌºí Çì´õÀÇ mFlag ¾ò±â
+    // í…Œì´ë¸” í—¤ë”ì˜ mFlag ì–»ê¸°
     (void)smLayerCallback::getTableHeaderFlag( aTable,
                                                &sPageID,
                                                &sOffset,
@@ -1522,25 +1522,25 @@ IDE_RC smrUpdate::updateInsLimitAtTableHead(idvSQL            * aStatistics,
  * PROJ-2162 RestartRiskReduction
  *
  * Description:
- *      ÇØ´ç TableÀ» InconsistentÇÏ´Ù°í LoggingÇÑ´Ù.
+ *      í•´ë‹¹ Tableì„ Inconsistentí•˜ë‹¤ê³  Loggingí•œë‹¤.
  *
  * Usecase:
  *      1) No-logging DML
- *         NoLogging DPathInsert µîÀ» ¼öÇàÇßÀ»¶§, ÇØ´ç ¿µ¿ªÀº Flush·Î Dur-
- *         ability¸¦ º¸Àå¹Ş´Â´Ù. µû¶ó¼­ ±× ÀÌÀüºÎÅÍ RecoveryÇÏ´Â MediaRec-
- *         overy µîÀÇ °æ¿ì, RestoreÇÑ DBImage¿¡µµ µ¥ÀÌÅÍ°¡ ¾ø°í Log¿¡µµ ¾ø
- *         ±â ¶§¹®¿¡, TableÀº InvalidÇØÁø´Ù.
- *          µû¶ó¼­ MediaRecovery½Ã¿¡¸¸ µ¿ÀÛÇÏ´Â Redo¸¦ ¼öÇàÇÑ´Ù.
+ *         NoLogging DPathInsert ë“±ì„ ìˆ˜í–‰í–ˆì„ë•Œ, í•´ë‹¹ ì˜ì—­ì€ Flushë¡œ Dur-
+ *         abilityë¥¼ ë³´ì¥ë°›ëŠ”ë‹¤. ë”°ë¼ì„œ ê·¸ ì´ì „ë¶€í„° Recoveryí•˜ëŠ” MediaRec-
+ *         overy ë“±ì˜ ê²½ìš°, Restoreí•œ DBImageì—ë„ ë°ì´í„°ê°€ ì—†ê³  Logì—ë„ ì—†
+ *         ê¸° ë•Œë¬¸ì—, Tableì€ Invalidí•´ì§„ë‹¤.
+ *          ë”°ë¼ì„œ MediaRecoveryì‹œì—ë§Œ ë™ì‘í•˜ëŠ” Redoë¥¼ ìˆ˜í–‰í•œë‹¤.
  *      2) Detect table inconsistency.
- *         Table¿¡ InconsistentÇÔÀ» ¹ß°ßÇßÀ»¶§ÀÌ´Ù. ÀÌ¶§´Â ´Ù¸¥ Trans-
- *         actionÀÌ °Çµå¸®´Â ¿À·ù¸¦ ¸·±â À§ÇØ, TableÀ» InconsistentÇÔÀ»
- *         ¼³Á¤ÇÑ´Ù.
- *          µû¶ó¼­ Restart/Media recovery ¾ğÁ¦µç Ç×»ó Redo¸¦ ¼öÇàÇÑ´Ù.
+ *         Tableì— Inconsistentí•¨ì„ ë°œê²¬í–ˆì„ë•Œì´ë‹¤. ì´ë•ŒëŠ” ë‹¤ë¥¸ Trans-
+ *         actionì´ ê±´ë“œë¦¬ëŠ” ì˜¤ë¥˜ë¥¼ ë§‰ê¸° ìœ„í•´, Tableì„ Inconsistentí•¨ì„
+ *         ì„¤ì •í•œë‹¤.
+ *          ë”°ë¼ì„œ Restart/Media recovery ì–¸ì œë“  í•­ìƒ Redoë¥¼ ìˆ˜í–‰í•œë‹¤.
  *
- * aStatistics       - [IN] Åë°èÁ¤º¸
- * aTrans            - [IN] Log¸¦ ³²±â´Â Transaction
- * aTable            - [IN] InconsistentÇÏ´Ù°í ¼³Á¤ÇÒ Å×ÀÌºí
- * aForMediaRecovery - [IN] MediaRecovery½Ã¿¡¸¸ ¼öÇàÇÒ °ÍÀÎ°¡?
+ * aStatistics       - [IN] í†µê³„ì •ë³´
+ * aTrans            - [IN] Logë¥¼ ë‚¨ê¸°ëŠ” Transaction
+ * aTable            - [IN] Inconsistentí•˜ë‹¤ê³  ì„¤ì •í•  í…Œì´ë¸”
+ * aForMediaRecovery - [IN] MediaRecoveryì‹œì—ë§Œ ìˆ˜í–‰í•  ê²ƒì¸ê°€?
  *
  *************************************************************************/
 /* Update type: SMR_SMC_TABLEHEADER_SET_INCONSISTENCY        */
@@ -1552,7 +1552,7 @@ IDE_RC smrUpdate::setInconsistencyAtTableHead( void   * aTable,
     scOffset           sOffset;
     idBool             sOldFlag;
 
-    // Å×ÀÌºí Çì´õÀÇ mFlag À§Ä¡ ¾ò±â
+    // í…Œì´ë¸” í—¤ë”ì˜ mFlag ìœ„ì¹˜ ì–»ê¸°
     (void)smLayerCallback::getTableIsConsistent( aTable,
                                                  &sPageID,
                                                  &sOffset,
@@ -1708,8 +1708,8 @@ IDE_RC smrUpdate::setPersPageInconsistency(scSpaceID    aSpaceID,
     scGRID           sGRID;
     smpPageType      sAfterPageType;
 
-    /* ÀÌÀü¿¡ Inconsistent Çß°Ç ConsistentÇß°Ç »ó°ü¾øÀÌ ¹«Á¶°Ç Inconsistent
-     * Flag¸¦ ¼³Á¤ÇÔ */
+    /* ì´ì „ì— Inconsistent í–ˆê±´ Consistentí–ˆê±´ ìƒê´€ì—†ì´ ë¬´ì¡°ê±´ Inconsistent
+     * Flagë¥¼ ì„¤ì •í•¨ */
     sAfterPageType = ( aBeforePageType & ~SMP_PAGEINCONSISTENCY_MASK )
         | SMP_PAGEINCONSISTENCY_TRUE;
 
@@ -2189,7 +2189,7 @@ IDE_RC smrUpdate::updateTableSegPIDAtTableHead(idvSQL*      aStatistics,
 
     scPageID         sSegPID;
 
-    /* Before img : segment rid ¿Í meta page id Á¤º¸ ¾ò±â */
+    /* Before img : segment rid ì™€ meta page id ì •ë³´ ì–»ê¸° */
     (void)smLayerCallback::getDiskPageEntryInfo( aPageListEntry,
                                                  &sSegPID );
 
@@ -2257,13 +2257,13 @@ IDE_RC smrUpdate::writeNTAForExtendDBF( idvSQL*  aStatistics,
 
 
 /*
-    Memory Tablespace Create¿¡ ´ëÇÑ ·Î±ë
+    Memory Tablespace Createì— ëŒ€í•œ ë¡œê¹…
 
-    [IN] aTrans      - ·Î±ëÇÏ·Á´Â Transaction °´Ã¼
-    [IN] aSpaceID    - CreateÇÏ·Á´Â TablespaceÀÇ ID
+    [IN] aTrans      - ë¡œê¹…í•˜ë ¤ëŠ” Transaction ê°ì²´
+    [IN] aSpaceID    - Createí•˜ë ¤ëŠ” Tablespaceì˜ ID
 
-// BUGBUG-1548-M3 Media Recovery¸¦ À§ÇØ TBS»ı¼º½ÃÀÇ LSNÀ»
-//                Log Anchor¹× Checkpoint Image File¿¡ ±â·ÏÇØ¾ßÇÔ.
+// BUGBUG-1548-M3 Media Recoveryë¥¼ ìœ„í•´ TBSìƒì„±ì‹œì˜ LSNì„
+//                Log Anchorë° Checkpoint Image Fileì— ê¸°ë¡í•´ì•¼í•¨.
  */
 IDE_RC smrUpdate::writeMemoryTBSCreate( idvSQL                * aStatistics,
                                         void                  * aTrans,
@@ -2279,10 +2279,10 @@ IDE_RC smrUpdate::writeMemoryTBSCreate( idvSQL                * aStatistics,
 
     IDE_ERROR( aTrans     != NULL );
 
-    /* ¿©±â µé¾î¿À´Â Tablespace´Â Ç×»ó Memory Tablespace¿©¾ß ÇÑ´Ù.
-     * ±×·¯³ª, CREATE TablespaceÀÇ °æ¿ì aSpaceID¿¡ ÇØ´çÇÏ´Â TBSNode°¡
-     * ¾ÆÁ÷ ¾ø´Â »óÅÂ¿¡¼­ ÀÌ ÇÔ¼ö¸¦ ÀÌ¿ëÇÏ¿© ·Î±ëÇÑ´Ù.
-     *  => ¿©±â¿¡¼­ Memory TablespaceÀÎÁö ¿©ºÎ¸¦ °Ë»çÇØ¼­´Â ¾ÈµÊ */
+    /* ì—¬ê¸° ë“¤ì–´ì˜¤ëŠ” TablespaceëŠ” í•­ìƒ Memory Tablespaceì—¬ì•¼ í•œë‹¤.
+     * ê·¸ëŸ¬ë‚˜, CREATE Tablespaceì˜ ê²½ìš° aSpaceIDì— í•´ë‹¹í•˜ëŠ” TBSNodeê°€
+     * ì•„ì§ ì—†ëŠ” ìƒíƒœì—ì„œ ì´ í•¨ìˆ˜ë¥¼ ì´ìš©í•˜ì—¬ ë¡œê¹…í•œë‹¤.
+     *  => ì—¬ê¸°ì—ì„œ Memory Tablespaceì¸ì§€ ì—¬ë¶€ë¥¼ ê²€ì‚¬í•´ì„œëŠ” ì•ˆë¨ */
     IDE_TEST( smuDynArray::initialize(&sBuffer) != IDE_SUCCESS );
     sState = 1;
 
@@ -2296,12 +2296,12 @@ IDE_RC smrUpdate::writeMemoryTBSCreate( idvSQL                * aStatistics,
 
     if( aChkptPathAttrList == NULL )
     {
-        // ÀÔ·ÂÇÑ check point path°¡ ¾ø¾î, ±âº»°ªÀ» »ç¿ëÇÒ ¶§
+        // ì…ë ¥í•œ check point pathê°€ ì—†ì–´, ê¸°ë³¸ê°’ì„ ì‚¬ìš©í•  ë•Œ
         sChkptPathCount = 0;
     }
     else
     {
-        // ÀÔ·ÂÇÑ check point path °¡ ÀÖÀ» ¶§
+        // ì…ë ¥í•œ check point path ê°€ ìˆì„ ë•Œ
         sChkptPathCount = 0;
         sCPAttrList     = aChkptPathAttrList;
 
@@ -2328,7 +2328,7 @@ IDE_RC smrUpdate::writeMemoryTBSCreate( idvSQL                * aStatistics,
             sAImgSize += ID_SIZEOF(smiChkptPathAttrList);
 
             /* BUG-38621
-             * Àı´ë°æ·Î¸¦ »ó´ë°æ·Î·Î */
+             * ì ˆëŒ€ê²½ë¡œë¥¼ ìƒëŒ€ê²½ë¡œë¡œ */
             if ( smuProperty::getRELPathInLog() == ID_TRUE )
             {
                 IDE_TEST( sctTableSpaceMgr::makeRELPath( sCPAttrList->mCPathAttr.mChkptPath,
@@ -2385,18 +2385,18 @@ IDE_RC smrUpdate::writeMemoryTBSCreate( idvSQL                * aStatistics,
 
 
 /*
-    Memory Tablespace DB File »ı¼º¿¡ ´ëÇÑ ·Î±ë
+    Memory Tablespace DB File ìƒì„±ì— ëŒ€í•œ ë¡œê¹…
 
-    Create TablespaceÀÇ  Undo½Ã DB FileÀ» Áö¿ì±â À§ÇÑ ¸ñÀûÀÌ¹Ç·Î
-    Create TablespaceµµÁß »ı¼ºµÇ´Â DB File¿¡ ´ëÇØ¼­¸¸ ·Î±ëÇÑ´Ù.
+    Create Tablespaceì˜  Undoì‹œ DB Fileì„ ì§€ìš°ê¸° ìœ„í•œ ëª©ì ì´ë¯€ë¡œ
+    Create Tablespaceë„ì¤‘ ìƒì„±ë˜ëŠ” DB Fileì— ëŒ€í•´ì„œë§Œ ë¡œê¹…í•œë‹¤.
 
-    [IN] aTrans      - ·Î±ëÇÏ·Á´Â Transaction °´Ã¼
-    [IN] aSpaceID    - CreateÇÏ·Á´Â TablespaceÀÇ ID
+    [IN] aTrans      - ë¡œê¹…í•˜ë ¤ëŠ” Transaction ê°ì²´
+    [IN] aSpaceID    - Createí•˜ë ¤ëŠ” Tablespaceì˜ ID
     [IN] aPingPongNo - Ping Pong Number
     [IN] aDBFileNo   - DB File Number
 
-    [·Î±× ±¸Á¶]
-    Before Image ±â·Ï ----------------------------------------
+    [ë¡œê·¸ êµ¬ì¡°]
+    Before Image ê¸°ë¡ ----------------------------------------
       UInt - Ping Pong Number
       UInt - DB File Number
  */
@@ -2413,11 +2413,11 @@ IDE_RC smrUpdate::writeMemoryDBFileCreate( idvSQL*             aStatistics,
 
     IDE_ERROR( aTrans     != NULL );
 
-    // ¿©±â µé¾î¿À´Â Tablespace´Â Ç×»ó Memory Tablespace¿©¾ß ÇÑ´Ù.
-    // ±×·¯³ª,
-    // CREATE TablespaceÀÇ °æ¿ì aSpaceID¿¡ ÇØ´çÇÏ´Â TBSNode°¡
-    // ¾ÆÁ÷ ¾ø´Â »óÅÂ¿¡¼­ ÀÌ ÇÔ¼ö¸¦ ÀÌ¿ëÇÏ¿© ·Î±ëÇÑ´Ù.
-    // => ¿©±â¿¡¼­ Memory TablespaceÀÎÁö ¿©ºÎ¸¦ °Ë»çÇØ¼­´Â ¾ÈµÊ
+    // ì—¬ê¸° ë“¤ì–´ì˜¤ëŠ” TablespaceëŠ” í•­ìƒ Memory Tablespaceì—¬ì•¼ í•œë‹¤.
+    // ê·¸ëŸ¬ë‚˜,
+    // CREATE Tablespaceì˜ ê²½ìš° aSpaceIDì— í•´ë‹¹í•˜ëŠ” TBSNodeê°€
+    // ì•„ì§ ì—†ëŠ” ìƒíƒœì—ì„œ ì´ í•¨ìˆ˜ë¥¼ ì´ìš©í•˜ì—¬ ë¡œê¹…í•œë‹¤.
+    // => ì—¬ê¸°ì—ì„œ Memory Tablespaceì¸ì§€ ì—¬ë¶€ë¥¼ ê²€ì‚¬í•´ì„œëŠ” ì•ˆë¨
 
     IDE_TEST( smuDynArray::initialize(&sBuffer) != IDE_SUCCESS );
     sState = 1;
@@ -2426,7 +2426,7 @@ IDE_RC smrUpdate::writeMemoryDBFileCreate( idvSQL*             aStatistics,
     sBImgSize = ID_SIZEOF(aPingPongNo) + ID_SIZEOF(aDBFileNo);
 
     /*
-      Before Image ±â·Ï ----------------------------------------
+      Before Image ê¸°ë¡ ----------------------------------------
       UInt - Ping Pong Number
       UInt - DB File Number
     */
@@ -2475,14 +2475,14 @@ IDE_RC smrUpdate::writeMemoryDBFileCreate( idvSQL*             aStatistics,
 
 
 /*
-    Memory Tablespace Drop¿¡ ´ëÇÑ ·Î±ë
+    Memory Tablespace Dropì— ëŒ€í•œ ë¡œê¹…
 
-    [IN] aTrans      - ·Î±ëÇÏ·Á´Â Transaction °´Ã¼
-    [IN] aSpaceID    - DropÇÏ·Á´Â TablespaceÀÇ ID
-    [IN] aTouchMode  - Drop½Ã Checkpoint Image File±îÁö »èÁ¦ÇÒÁö ¿©ºÎ
+    [IN] aTrans      - ë¡œê¹…í•˜ë ¤ëŠ” Transaction ê°ì²´
+    [IN] aSpaceID    - Dropí•˜ë ¤ëŠ” Tablespaceì˜ ID
+    [IN] aTouchMode  - Dropì‹œ Checkpoint Image Fileê¹Œì§€ ì‚­ì œí• ì§€ ì—¬ë¶€
 
-    [·Î±× ±¸Á¶]
-    After Image ±â·Ï ----------------------------------------
+    [ë¡œê·¸ êµ¬ì¡°]
+    After Image ê¸°ë¡ ----------------------------------------
        smiTouchMode  aTouchMode
 
 */
@@ -2498,7 +2498,7 @@ IDE_RC smrUpdate::writeMemoryTBSDrop( idvSQL*             aStatistics,
 
     IDE_ERROR( aTrans != NULL );
 
-    // ¿©±â µé¾î¿À´Â Tablespace´Â Ç×»ó Memory Tablespace¿©¾ß ÇÑ´Ù.
+    // ì—¬ê¸° ë“¤ì–´ì˜¤ëŠ” TablespaceëŠ” í•­ìƒ Memory Tablespaceì—¬ì•¼ í•œë‹¤.
     IDE_ERROR( sctTableSpaceMgr::isMemTableSpace( aSpaceID )
                == ID_TRUE );
 
@@ -2509,7 +2509,7 @@ IDE_RC smrUpdate::writeMemoryTBSDrop( idvSQL*             aStatistics,
     sBImgSize = 0;
 
     //////////////////////////////////////////////////////////////
-    // After Image ±â·Ï ----------------------------------------
+    // After Image ê¸°ë¡ ----------------------------------------
     //   smiTouchMode  aTouchMode
     IDE_TEST( smuDynArray::store(&sBuffer,
                                  (void*)(&(aTouchMode)),
@@ -2550,10 +2550,10 @@ IDE_RC smrUpdate::writeMemoryTBSDrop( idvSQL*             aStatistics,
 }
 
 /*
-    Volatile Tablespace Create ¹× Drop¿¡ ´ëÇÑ ·Î±ë
+    Volatile Tablespace Create ë° Dropì— ëŒ€í•œ ë¡œê¹…
 
-    [IN] aTrans      - ·Î±ëÇÏ·Á´Â Transaction °´Ã¼
-    [IN] aSpaceID    - DropÇÏ·Á´Â TablespaceÀÇ ID
+    [IN] aTrans      - ë¡œê¹…í•˜ë ¤ëŠ” Transaction ê°ì²´
+    [IN] aSpaceID    - Dropí•˜ë ¤ëŠ” Tablespaceì˜ ID
 */
 IDE_RC smrUpdate::writeVolatileTBSCreate( idvSQL*           aStatistics,
                                           void*             aTrans,
@@ -2566,10 +2566,10 @@ IDE_RC smrUpdate::writeVolatileTBSCreate( idvSQL*           aStatistics,
 
     IDE_ERROR( aTrans != NULL );
 
-    // ¿©±â µé¾î¿À´Â Tablespace´Â Ç×»ó Volatile Tablespace¿©¾ß ÇÑ´Ù.
-    // CREATE TablespaceÀÇ °æ¿ì aSpaceID¿¡ ÇØ´çÇÏ´Â TBSNode°¡
-    // ¾ÆÁ÷ ¾ø´Â »óÅÂ¿¡¼­ ÀÌ ÇÔ¼ö¸¦ ÀÌ¿ëÇÏ¿© ·Î±ëÇÑ´Ù.
-    // => ¿©±â¿¡¼­ Volatile TablespaceÀÎÁö ¿©ºÎ¸¦ °Ë»çÇØ¼­´Â ¾ÈµÊ
+    // ì—¬ê¸° ë“¤ì–´ì˜¤ëŠ” TablespaceëŠ” í•­ìƒ Volatile Tablespaceì—¬ì•¼ í•œë‹¤.
+    // CREATE Tablespaceì˜ ê²½ìš° aSpaceIDì— í•´ë‹¹í•˜ëŠ” TBSNodeê°€
+    // ì•„ì§ ì—†ëŠ” ìƒíƒœì—ì„œ ì´ í•¨ìˆ˜ë¥¼ ì´ìš©í•˜ì—¬ ë¡œê¹…í•œë‹¤.
+    // => ì—¬ê¸°ì—ì„œ Volatile Tablespaceì¸ì§€ ì—¬ë¶€ë¥¼ ê²€ì‚¬í•´ì„œëŠ” ì•ˆë¨
 
     IDE_TEST( smuDynArray::initialize(&sBuffer) != IDE_SUCCESS );
     sState = 1;
@@ -2611,13 +2611,13 @@ IDE_RC smrUpdate::writeVolatileTBSCreate( idvSQL*           aStatistics,
 }
 
 /*
-    Volatile Tablespace Drop¿¡ ´ëÇÑ ·Î±ë
+    Volatile Tablespace Dropì— ëŒ€í•œ ë¡œê¹…
 
-    [IN] aTrans      - ·Î±ëÇÏ·Á´Â Transaction °´Ã¼
-    [IN] aSpaceID    - DropÇÏ·Á´Â TablespaceÀÇ ID
+    [IN] aTrans      - ë¡œê¹…í•˜ë ¤ëŠ” Transaction ê°ì²´
+    [IN] aSpaceID    - Dropí•˜ë ¤ëŠ” Tablespaceì˜ ID
 
-    [·Î±× ±¸Á¶]
-    After Image ±â·Ï ----------------------------------------
+    [ë¡œê·¸ êµ¬ì¡°]
+    After Image ê¸°ë¡ ----------------------------------------
        smiTouchMode  aTouchMode
 
 */
@@ -2632,7 +2632,7 @@ IDE_RC smrUpdate::writeVolatileTBSDrop( idvSQL*           aStatistics,
 
     IDE_ERROR( aTrans     != NULL );
 
-    // ¿©±â µé¾î¿À´Â Tablespace´Â Ç×»ó Volatile Tablespace¿©¾ß ÇÑ´Ù.
+    // ì—¬ê¸° ë“¤ì–´ì˜¤ëŠ” TablespaceëŠ” í•­ìƒ Volatile Tablespaceì—¬ì•¼ í•œë‹¤.
     IDE_ERROR( sctTableSpaceMgr::isVolatileTableSpace( aSpaceID )
                  == ID_TRUE );
 
@@ -2676,18 +2676,18 @@ IDE_RC smrUpdate::writeVolatileTBSDrop( idvSQL*           aStatistics,
 }
 
 /*
-    Memory Tablespace ÀÇ ALTER AUTO EXTEND ... ¿¡ ´ëÇÑ ·Î±ë
+    Memory Tablespace ì˜ ALTER AUTO EXTEND ... ì— ëŒ€í•œ ë¡œê¹…
 
-    [IN] aTrans          - ·Î±ëÇÏ·Á´Â Transaction °´Ã¼
-    [IN] sSpaceID        - ALTERÇÒ TablespaceÀÇ ID
-    [IN] aBIsAutoExtend  - Before Image : AutoExtend ¿©ºÎ
+    [IN] aTrans          - ë¡œê¹…í•˜ë ¤ëŠ” Transaction ê°ì²´
+    [IN] sSpaceID        - ALTERí•  Tablespaceì˜ ID
+    [IN] aBIsAutoExtend  - Before Image : AutoExtend ì—¬ë¶€
     [IN] aBNextPageCount - Before Image : Next Page Count
     [IN] aBMaxPageCount  - Before Image : Max Page Count
-    [IN] aAIsAutoExtend  - After Image : AutoExtend ¿©ºÎ
+    [IN] aAIsAutoExtend  - After Image : AutoExtend ì—¬ë¶€
     [IN] aANextPageCount - After Image : Next Page Count
     [IN] aAMaxPageCount  - After Image : Max Page Count
 
-    [ ·Î±× ±¸Á¶ ]
+    [ ë¡œê·¸ êµ¬ì¡° ]
     Before Image  --------------------------------------------
       idBool              aBIsAutoExtend
       scPageID            aBNextPageCount
@@ -2716,7 +2716,7 @@ IDE_RC smrUpdate::writeMemoryTBSAlterAutoExtend(
 
     IDE_ERROR( aTrans     != NULL );
 
-    // ¿©±â µé¾î¿À´Â Tablespace´Â Ç×»ó Memory Tablespace¿©¾ß ÇÑ´Ù.
+    // ì—¬ê¸° ë“¤ì–´ì˜¤ëŠ” TablespaceëŠ” í•­ìƒ Memory Tablespaceì—¬ì•¼ í•œë‹¤.
     IDE_ERROR( sctTableSpaceMgr::isMemTableSpace( aSpaceID )
                == ID_TRUE );
 
@@ -2734,7 +2734,7 @@ IDE_RC smrUpdate::writeMemoryTBSAlterAutoExtend(
                 ID_SIZEOF(aBMaxPageCount)  ;
 
     //////////////////////////////////////////////////////////////
-    // Before Image ±â·Ï ----------------------------------------
+    // Before Image ê¸°ë¡ ----------------------------------------
     //   idBool              aBIsAutoExtend
     //   scPageID            aBNextPageCount
     //   scPageID            aBMaxPageCount
@@ -2755,7 +2755,7 @@ IDE_RC smrUpdate::writeMemoryTBSAlterAutoExtend(
               != IDE_SUCCESS );
 
     //////////////////////////////////////////////////////////////
-    // After Image ±â·Ï ----------------------------------------
+    // After Image ê¸°ë¡ ----------------------------------------
     //   idBool              aAIsAutoExtend
     //   scPageID            aANextPageCount
     //   scPageID            aAMaxPageCount
@@ -2810,7 +2810,7 @@ IDE_RC smrUpdate::writeMemoryTBSAlterAutoExtend(
 }
 
 /* PROJ-1594 Volatile TBS */
-/* writeMemoryTBSAlterAutoExtend¿Í µ¿ÀÏÇÑ ÇÔ¼öÀÓ */
+/* writeMemoryTBSAlterAutoExtendì™€ ë™ì¼í•œ í•¨ìˆ˜ì„ */
 IDE_RC smrUpdate::writeVolatileTBSAlterAutoExtend(
                       idvSQL*             aStatistics,
                       void*               aTrans,
@@ -2829,7 +2829,7 @@ IDE_RC smrUpdate::writeVolatileTBSAlterAutoExtend(
 
     IDE_ERROR( aTrans     != NULL );
 
-    // ¿©±â µé¾î¿À´Â Tablespace´Â Ç×»ó Volatile Tablespace¿©¾ß ÇÑ´Ù.
+    // ì—¬ê¸° ë“¤ì–´ì˜¤ëŠ” TablespaceëŠ” í•­ìƒ Volatile Tablespaceì—¬ì•¼ í•œë‹¤.
     IDE_ERROR( sctTableSpaceMgr::isVolatileTableSpace( aSpaceID )
                == ID_TRUE );
 
@@ -2847,7 +2847,7 @@ IDE_RC smrUpdate::writeVolatileTBSAlterAutoExtend(
                 ID_SIZEOF(aBMaxPageCount)  ;
 
     //////////////////////////////////////////////////////////////
-    // Before Image ±â·Ï ----------------------------------------
+    // Before Image ê¸°ë¡ ----------------------------------------
     //   idBool              aBIsAutoExtend
     //   scPageID            aBNextPageCount
     //   scPageID            aBMaxPageCount
@@ -2868,7 +2868,7 @@ IDE_RC smrUpdate::writeVolatileTBSAlterAutoExtend(
               != IDE_SUCCESS );
 
     //////////////////////////////////////////////////////////////
-    // After Image ±â·Ï ----------------------------------------
+    // After Image ê¸°ë¡ ----------------------------------------
     //   idBool              aAIsAutoExtend
     //   scPageID            aANextPageCount
     //   scPageID            aAMaxPageCount
@@ -2923,15 +2923,15 @@ IDE_RC smrUpdate::writeVolatileTBSAlterAutoExtend(
 }
 
 /*
-    Tablespace Attribute FlagÀÇ º¯°æ¿¡ ´ëÇÑ ·Î±ë
+    Tablespace Attribute Flagì˜ ë³€ê²½ì— ëŒ€í•œ ë¡œê¹…
     (Ex> ALTER Tablespace Log Compress ON/OFF )
 
-    [IN] aTrans          - ·Î±ëÇÏ·Á´Â Transaction °´Ã¼
-    [IN] aSpaceID        - ALTERÇÒ TablespaceÀÇ ID
-    [IN] aBeforeAttrFlag - Before Image : TablespaceÀÇ Attribute Flag
-    [IN] aAfterAttrFlag - Before Image : TablespaceÀÇ Attribute Flag
+    [IN] aTrans          - ë¡œê¹…í•˜ë ¤ëŠ” Transaction ê°ì²´
+    [IN] aSpaceID        - ALTERí•  Tablespaceì˜ ID
+    [IN] aBeforeAttrFlag - Before Image : Tablespaceì˜ Attribute Flag
+    [IN] aAfterAttrFlag - Before Image : Tablespaceì˜ Attribute Flag
 
-    [ ·Î±× ±¸Á¶ ]
+    [ ë¡œê·¸ êµ¬ì¡° ]
     Before Image  --------------------------------------------
       UInt                aBeforeAttrFlag
     After Image   --------------------------------------------
@@ -2961,7 +2961,7 @@ IDE_RC smrUpdate::writeTBSAlterAttrFlag(
 
 
     //////////////////////////////////////////////////////////////
-    // Before Image ±â·Ï ----------------------------------------
+    // Before Image ê¸°ë¡ ----------------------------------------
     //   UInt                aBeforeAttrFlag
     IDE_TEST( smuDynArray::store(&sBuffer,
                                  (void*)(&(aBeforeAttrFlag)),
@@ -2969,7 +2969,7 @@ IDE_RC smrUpdate::writeTBSAlterAttrFlag(
               != IDE_SUCCESS );
 
     //////////////////////////////////////////////////////////////
-    // After Image ±â·Ï ----------------------------------------
+    // After Image ê¸°ë¡ ----------------------------------------
     //   UInt                aAfterAttrFlag
     IDE_TEST( smuDynArray::store(&sBuffer,
                                  (void*)(&(aAfterAttrFlag)),
@@ -3012,15 +3012,15 @@ IDE_RC smrUpdate::writeTBSAlterAttrFlag(
 
 
 /*
-    Tablespace ÀÇ ALTER ONLINE/OFFLINE ... ¿¡ ´ëÇÑ ·Î±ë
+    Tablespace ì˜ ALTER ONLINE/OFFLINE ... ì— ëŒ€í•œ ë¡œê¹…
 
-    [IN] aTrans          - ·Î±ëÇÏ·Á´Â Transaction °´Ã¼
-    [IN] aSpaceID        - ALTERÇÒ TablespaceÀÇ ID
-    [IN] aUpdateType     - Alter Tablespace OnlineÀÎÁö OfflineÀÎÁö ¿©ºÎ
-    [IN] aBState         - Before Image : TablespaceÀÇ State
-    [IN] aAState         - After Image : TablespaceÀÇ State
+    [IN] aTrans          - ë¡œê¹…í•˜ë ¤ëŠ” Transaction ê°ì²´
+    [IN] aSpaceID        - ALTERí•  Tablespaceì˜ ID
+    [IN] aUpdateType     - Alter Tablespace Onlineì¸ì§€ Offlineì¸ì§€ ì—¬ë¶€
+    [IN] aBState         - Before Image : Tablespaceì˜ State
+    [IN] aAState         - After Image : Tablespaceì˜ State
 
-    [ ·Î±× ±¸Á¶ ]
+    [ ë¡œê·¸ êµ¬ì¡° ]
     Before Image  --------------------------------------------
       UInt                aBState
     After Image   --------------------------------------------
@@ -3054,7 +3054,7 @@ IDE_RC smrUpdate::writeTBSAlterOnOff(
 
 
     //////////////////////////////////////////////////////////////
-    // Before Image ±â·Ï ----------------------------------------
+    // Before Image ê¸°ë¡ ----------------------------------------
     //   UInt                aBState
     IDE_TEST( smuDynArray::store(&sBuffer,
                                  (void*)(&(aBState)),
@@ -3062,7 +3062,7 @@ IDE_RC smrUpdate::writeTBSAlterOnOff(
               != IDE_SUCCESS );
 
     //////////////////////////////////////////////////////////////
-    // After Image ±â·Ï ----------------------------------------
+    // After Image ê¸°ë¡ ----------------------------------------
     //   UInt                aAState
     IDE_TEST( smuDynArray::store(&sBuffer,
                                  (void*)(&(aAState)),
@@ -3105,16 +3105,16 @@ IDE_RC smrUpdate::writeTBSAlterOnOff(
 
 
 /*
-    Disk DataFileÀÇ ALTER ONLINE/OFFLINE ... ¿¡ ´ëÇÑ ·Î±ë
+    Disk DataFileì˜ ALTER ONLINE/OFFLINE ... ì— ëŒ€í•œ ë¡œê¹…
 
-    [IN] aTrans          - ·Î±ëÇÏ·Á´Â Transaction °´Ã¼
-    [IN] aSpaceID        - TablespaceÀÇ ID
-    [IN] aFileID         - ALTERÇÒ DBFÀÇ ID
-    [IN] aUpdateType     - Alter Tablespace OnlineÀÎÁö OfflineÀÎÁö ¿©ºÎ
-    [IN] aBState         - Before Image : TablespaceÀÇ State
-    [IN] aAState         - After Image : TablespaceÀÇ State
+    [IN] aTrans          - ë¡œê¹…í•˜ë ¤ëŠ” Transaction ê°ì²´
+    [IN] aSpaceID        - Tablespaceì˜ ID
+    [IN] aFileID         - ALTERí•  DBFì˜ ID
+    [IN] aUpdateType     - Alter Tablespace Onlineì¸ì§€ Offlineì¸ì§€ ì—¬ë¶€
+    [IN] aBState         - Before Image : Tablespaceì˜ State
+    [IN] aAState         - After Image : Tablespaceì˜ State
 
-    [ ·Î±× ±¸Á¶ ]
+    [ ë¡œê·¸ êµ¬ì¡° ]
     Before Image  --------------------------------------------
       UInt                aBState
     After Image   --------------------------------------------
@@ -3145,7 +3145,7 @@ IDE_RC smrUpdate::writeDiskDBFAlterOnOff(
     sBImgSize = ID_SIZEOF(aAState);
 
     //////////////////////////////////////////////////////////////
-    // Before Image ±â·Ï ----------------------------------------
+    // Before Image ê¸°ë¡ ----------------------------------------
     //   UInt                aBState
     IDE_TEST( smuDynArray::store(&sBuffer,
                                  (void*)(&(aBState)),
@@ -3153,7 +3153,7 @@ IDE_RC smrUpdate::writeDiskDBFAlterOnOff(
               != IDE_SUCCESS );
 
     //////////////////////////////////////////////////////////////
-    // After Image ±â·Ï ----------------------------------------
+    // After Image ê¸°ë¡ ----------------------------------------
     //   UInt                aAState
     IDE_TEST( smuDynArray::store(&sBuffer,
                                  (void*)(&(aAState)),
@@ -3196,7 +3196,7 @@ IDE_RC smrUpdate::writeDiskDBFAlterOnOff(
 
 
 /***********************************************************************
- * DESCRIPTION : Disk TBS »ı¼º, Á¦°Å¿¡ ´ëÇÑ ·Î±ë
+ * DESCRIPTION : Disk TBS ìƒì„±, ì œê±°ì— ëŒ€í•œ ë¡œê¹…
  ***********************************************************************/
 IDE_RC smrUpdate::writeDiskTBSCreateDrop( idvSQL              * aStatistics,
                                           void                * aTrans,
@@ -3220,7 +3220,7 @@ IDE_RC smrUpdate::writeDiskTBSCreateDrop( idvSQL              * aStatistics,
     {
         case SCT_UPDATE_DRDB_CREATE_TBS :
             {
-                /* aTableSpaceAttr¸¦ After·Î ÀúÀå */
+                /* aTableSpaceAttrë¥¼ Afterë¡œ ì €ì¥ */
                 IDE_TEST( smuDynArray::store(&sBuffer,
                                              (void *)aTableSpaceAttr,
                                              ID_SIZEOF(smiTableSpaceAttr) )
@@ -3309,7 +3309,7 @@ IDE_RC smrUpdate::writeLogCreateDBF(idvSQL            * aStatistics,
     sAImgSize += ID_SIZEOF(smiTouchMode);
 
     /* BUG-38621
-     * Àı´ë°æ·Î¸¦ »ó´ë°æ·Î·Î */
+     * ì ˆëŒ€ê²½ë¡œë¥¼ ìƒëŒ€ê²½ë¡œë¡œ */
     if ( smuProperty::getRELPathInLog() == ID_TRUE )
     {
         IDE_TEST( sctTableSpaceMgr::makeRELPath( aFileAttr->mName,
@@ -3627,24 +3627,24 @@ IDE_RC smrUpdate::writeLogSetAutoExtDBF(idvSQL*           aStatistics,
 
 /***********************************************************************
  *
- * Description : Prepare Æ®·£Àè¼ÇÀÌ »ç¿ëÇÏ´ø Æ®·£Àè¼Ç ¼¼±×¸ÕÆ® Á¤º¸ º¹¿ø
+ * Description : Prepare íŠ¸ëœì­ì…˜ì´ ì‚¬ìš©í•˜ë˜ íŠ¸ëœì­ì…˜ ì„¸ê·¸ë¨¼íŠ¸ ì •ë³´ ë³µì›
  *
- * Æ®·£Àè¼Ç ¼¼±×¸ÕÆ®ÀÇ Á¤º¸´Â ¿ø·¡ Volatile Æ¯¼ºÀ» °¡Áö¹Ç·Î ¼­¹ö Àç±¸µ¿½Ã¿¡´Â
- * ÃÊ±âÈ­µÇ´Â °ÍÀÌ ÀÏ¹İÀûÀÌÁö¸¸, ¸¸¾à Prepare Æ®·£Àè¼ÇÀÌ Á¸ÀçÇÏ´Â °æ¿ì¿¡´Â
- * »ç¿ëÇÏ´ø ±×´ë·Î º¹¿øÇØÁÖ¾î¾ß ÇÏ±â ¶§¹®¿¡ ·Î±ëÀ» ¼öÇàÇÑ´Ù.
+ * íŠ¸ëœì­ì…˜ ì„¸ê·¸ë¨¼íŠ¸ì˜ ì •ë³´ëŠ” ì›ë˜ Volatile íŠ¹ì„±ì„ ê°€ì§€ë¯€ë¡œ ì„œë²„ ì¬êµ¬ë™ì‹œì—ëŠ”
+ * ì´ˆê¸°í™”ë˜ëŠ” ê²ƒì´ ì¼ë°˜ì ì´ì§€ë§Œ, ë§Œì•½ Prepare íŠ¸ëœì­ì…˜ì´ ì¡´ì¬í•˜ëŠ” ê²½ìš°ì—ëŠ”
+ * ì‚¬ìš©í•˜ë˜ ê·¸ëŒ€ë¡œ ë³µì›í•´ì£¼ì–´ì•¼ í•˜ê¸° ë•Œë¬¸ì— ë¡œê¹…ì„ ìˆ˜í–‰í•œë‹¤.
  *
- * aStatistics         - [IN] Åë°èÁ¤º¸
- * aTrans              - [IN] Æ®·£Àè¼Ç Æ÷ÀÎÅÍ
- * aXID                - [IN] In-Doubt Æ®·£Àè¼Ç ID
- * aLogBuffer          - [IN] Æ®·£Àè¼Ç LogBuffer Æ÷ÀÎÅÍ
- * aTXSegEntryIdx      - [IN] Æ®·£Àè¼Ç Segment Entry ID
- * aExtRID4TSS         - [IN] TSS¸¦ ÇÒ´çÇÑ Extent RID
- * aFstPIDOfLstExt4TSS - [IN] TSS¸¦ ÇÒ´çÇÑ ExtentÀÇ Ã¹¹øÂ° PID
- * aFstExtRID4UDS      - [IN] UDS¿¡¼­ Æ®·£Àè¼ÇÀÌ »ç¿ëÇÑ Ã¹¹øÂ° Extent RID
- * aLstExtRID4UDS      - [IN] UDS¿¡¼­ Æ®·£Àè¼ÇÀÌ »ç¿ëÇÑ ¸¶Áö¸· Extent RID
- * aFstPIDOfLstExt4UDS - [IN] UDS¸¦ ÇÒ´çÇÑ ExtentÀÇ Ã¹¹øÂ° PID
- * aFstUndoPID         - [IN] Æ®·£Àè¼ÇÀÌ »ç¿ëÇÑ Ã¹¹øÂ° Undo PID
- * aLstUndoPID         - [IN] Æ®·£Àè¼ÇÀÌ »ç¿ëÇÑ ¸¶Áö¸· Undo PID
+ * aStatistics         - [IN] í†µê³„ì •ë³´
+ * aTrans              - [IN] íŠ¸ëœì­ì…˜ í¬ì¸í„°
+ * aXID                - [IN] In-Doubt íŠ¸ëœì­ì…˜ ID
+ * aLogBuffer          - [IN] íŠ¸ëœì­ì…˜ LogBuffer í¬ì¸í„°
+ * aTXSegEntryIdx      - [IN] íŠ¸ëœì­ì…˜ Segment Entry ID
+ * aExtRID4TSS         - [IN] TSSë¥¼ í• ë‹¹í•œ Extent RID
+ * aFstPIDOfLstExt4TSS - [IN] TSSë¥¼ í• ë‹¹í•œ Extentì˜ ì²«ë²ˆì§¸ PID
+ * aFstExtRID4UDS      - [IN] UDSì—ì„œ íŠ¸ëœì­ì…˜ì´ ì‚¬ìš©í•œ ì²«ë²ˆì§¸ Extent RID
+ * aLstExtRID4UDS      - [IN] UDSì—ì„œ íŠ¸ëœì­ì…˜ì´ ì‚¬ìš©í•œ ë§ˆì§€ë§‰ Extent RID
+ * aFstPIDOfLstExt4UDS - [IN] UDSë¥¼ í• ë‹¹í•œ Extentì˜ ì²«ë²ˆì§¸ PID
+ * aFstUndoPID         - [IN] íŠ¸ëœì­ì…˜ì´ ì‚¬ìš©í•œ ì²«ë²ˆì§¸ Undo PID
+ * aLstUndoPID         - [IN] íŠ¸ëœì­ì…˜ì´ ì‚¬ìš©í•œ ë§ˆì§€ë§‰ Undo PID
  *
  ***********************************************************************/
 IDE_RC smrUpdate::writeXaSegsLog( idvSQL      * aStatistics,

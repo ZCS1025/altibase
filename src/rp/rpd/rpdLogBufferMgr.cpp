@@ -33,7 +33,7 @@ IDE_RC rpdLogBufferMgr::initialize(UInt aSize, UInt aMaxSenderCnt)
     mEndPtr       = mBufSize - 1;
     mWrotePtr     = mEndPtr;
     mWritePtr     = getWritePtr(mWrotePtr);
-    /*¾Æ¹«°Íµµ ¾²¿©ÀÖÁö ¾Ê´Ù¸é mWrotePtr°ú mMinReadPtrÀÌ °°À½*/
+    /*ì•„ë¬´ê²ƒë„ ì“°ì—¬ìˆì§€ ì•Šë‹¤ë©´ mWrotePtrê³¼ mMinReadPtrì´ ê°™ìŒ*/
     mMinReadPtr   = mWrotePtr;
 
     mMinSN     = SM_SN_NULL;
@@ -165,15 +165,15 @@ IDE_RC rpdLogBufferMgr::copyToRPLogBuf(idvSQL * aStatistics,
         RP_OPTIMIZE_TIME_BEGIN(aStatistics, IDV_OPTM_INDEX_RP_S_COPY_LOG_TO_REPLBUFFER)
     }
 
-   /* Service Thread°¡ º¹»çÇÒ °ø°£ÀÌ ºÎÁ·ÇÑ °æ¿ì¿¡ mWritableFlag¸¦
-    * RP_OFF·Î SetÇÏ¸ç ÀÌ ¶§¿¡´Â º¹»ç¸¦ ÇÒ ¼ö ¾ø´Ù.
-    * ±×·¸Áö ¾Ê°í ONÀÎ °æ¿ì º¹»ç¸¦ ½ÃµµÇÑ´Ù
-    * mWritableFlag´Â Service Thread¸¸ÀÌ °»½ÅÇÏ±â ¶§¹®¿¡
-    * LockÀ» ÀâÁö¾Ê°í È®ÀÎÇÒ ¼ö ÀÖ´Ù.
-    * (Service Threadµé °£ÀÇ µ¿±âÈ­´Â Log File Lock¿¡¼­ ÁöÄÑÁø´Ù)*/
+   /* Service Threadê°€ ë³µì‚¬í•  ê³µê°„ì´ ë¶€ì¡±í•œ ê²½ìš°ì— mWritableFlagë¥¼
+    * RP_OFFë¡œ Setí•˜ë©° ì´ ë•Œì—ëŠ” ë³µì‚¬ë¥¼ í•  ìˆ˜ ì—†ë‹¤.
+    * ê·¸ë ‡ì§€ ì•Šê³  ONì¸ ê²½ìš° ë³µì‚¬ë¥¼ ì‹œë„í•œë‹¤
+    * mWritableFlagëŠ” Service Threadë§Œì´ ê°±ì‹ í•˜ê¸° ë•Œë¬¸ì—
+    * Lockì„ ì¡ì§€ì•Šê³  í™•ì¸í•  ìˆ˜ ìˆë‹¤.
+    * (Service Threadë“¤ ê°„ì˜ ë™ê¸°í™”ëŠ” Log File Lockì—ì„œ ì§€ì¼œì§„ë‹¤)*/
     if(mWritableFlag == RP_OFF)
     {
-        /*ÀÌ °æ¿ì Accessing Info List Count¸¸ È®ÀÎÇÏ¿© ´Ù½Ã ONÀ¸·Î º¯°æ °¡´ÉÇÑÁö È®ÀÎ¸¸ ÇÑ´Ù.*/
+        /*ì´ ê²½ìš° Accessing Info List Countë§Œ í™•ì¸í•˜ì—¬ ë‹¤ì‹œ ONìœ¼ë¡œ ë³€ê²½ ê°€ëŠ¥í•œì§€ í™•ì¸ë§Œ í•œë‹¤.*/
         IDE_ASSERT(mBufInfoMutex.lock(NULL /* idvSQL* */) == IDE_SUCCESS);
         if(mAccessInfoCnt == 0)
         {
@@ -201,13 +201,13 @@ IDE_RC rpdLogBufferMgr::copyToRPLogBuf(idvSQL * aStatistics,
         smiLogRec::getLogHdr(aLogPtr, &sLogHead);
         sTmpSN = smiLogRec::getSNFromLogHdr(&sLogHead);
 
-        // PROJ-1705 ÆÄ¶ó¸ŞÅÍ Ãß°¡
+        // PROJ-1705 íŒŒë¼ë©”í„° ì¶”ê°€
         sLog.initialize(NULL,
                         NULL,
                         RPU_REPLICATION_POOL_ELEMENT_SIZE);
 
-       /* ReplicationÀÌ ÇÊ¿ä·ÎÇÏ´Â ·Î±×ÀÎÁö È®ÀÎÇÏ°í ÇÊ¿ä·ÎÇÏ´Â
-        * ·Î±×ÀÎ °æ¿ì RP Log Buf¿¡ copyÇÑ´Ù.*/
+       /* Replicationì´ í•„ìš”ë¡œí•˜ëŠ” ë¡œê·¸ì¸ì§€ í™•ì¸í•˜ê³  í•„ìš”ë¡œí•˜ëŠ”
+        * ë¡œê·¸ì¸ ê²½ìš° RP Log Bufì— copyí•œë‹¤.*/
         if ( sLog.needReplicationByType( &sLogHead,
                                          aLogPtr,
                                          &aLSN ) == ID_TRUE )
@@ -217,30 +217,30 @@ IDE_RC rpdLogBufferMgr::copyToRPLogBuf(idvSQL * aStatistics,
             /*if not enough space, write buffer end Log */
             if((mWritePtr + aSize + mBufferEndLogSize) > mBufSize)
             {
-                /*mWrotePtrÀ» mEndPtr·Î ¸¸µç´Ù*/
+                /*mWrotePtrì„ mEndPtrë¡œ ë§Œë“ ë‹¤*/
                 IDE_TEST(writeBufferEndLogToRPBuf() != IDE_SUCCESS);
             }
 
-            /* writeÇÒ ¸Ş¸ğ¸®°¡ Sender°¡ ÀĞÀº ¸¶Áö¸· ÁÖ¼Ò¸¦ overwriteÇÑ´Ù.
+            /* writeí•  ë©”ëª¨ë¦¬ê°€ Senderê°€ ì½ì€ ë§ˆì§€ë§‰ ì£¼ì†Œë¥¼ overwriteí•œë‹¤.
              * sWritePtr <= mMinReadPtr < sWritePtr + aSize */
             if((mWritePtr <= mMinReadPtr) &&
                (mMinReadPtr < mWritePtr + aSize))
             {
-                updateMinReadPtr();                  //mMinReadPtr¸¦ ´Ù½Ã °è»ê
+                updateMinReadPtr();                  //mMinReadPtrë¥¼ ë‹¤ì‹œ ê³„ì‚°
                 if((mWritePtr <= mMinReadPtr) &&
-                   (mMinReadPtr < mWritePtr + aSize))//´õÀÌ»ó º¹»çÇÒ °ø°£ÀÌ ¾øÀ½
+                   (mMinReadPtr < mWritePtr + aSize))//ë”ì´ìƒ ë³µì‚¬í•  ê³µê°„ì´ ì—†ìŒ
                 {
                     IDE_RAISE(ERR_NO_SPACE);
                 }
             }
-            /*Log¸¦ Buf¿¡ CopyÇÑ´Ù.*/
+            /*Logë¥¼ Bufì— Copyí•œë‹¤.*/
             sCopyStartPtr = (SChar*)(mBasePtr + mWritePtr);
             idlOS::memcpy(sCopyStartPtr, aLogPtr, aSize);
 
-            /* BUG-22098 Buffer¿¡ º¹»çÇÑ ÈÄ¿¡ mWrotePtr¸¦ °»½ÅÇØ¾ß ÇÑ´Ù. */
+            /* BUG-22098 Bufferì— ë³µì‚¬í•œ í›„ì— mWrotePtrë¥¼ ê°±ì‹ í•´ì•¼ í•œë‹¤. */
             IDL_MEM_BARRIER;
 
-            /*sWirtePtrµµ Æ÷ÇÔÇÏ±â ¶§¹®¿¡ aSize -1À» ÇÔ*/
+            /*sWirtePtrë„ í¬í•¨í•˜ê¸° ë•Œë¬¸ì— aSize -1ì„ í•¨*/
             sWrotePtr = mWritePtr + (aSize - 1);
         }
         else
@@ -257,7 +257,7 @@ IDE_RC rpdLogBufferMgr::copyToRPLogBuf(idvSQL * aStatistics,
             mMinSN = sTmpSN;
         }
         mMaxSN = sTmpSN;
-        SM_GET_LSN(mMaxLSN, aLSN);//ÇöÀç ·Î±×ÀÇ aLSNÀÇ °ªÀ» mMaxLSN¿¡ copy
+        SM_GET_LSN(mMaxLSN, aLSN);//í˜„ì¬ ë¡œê·¸ì˜ aLSNì˜ ê°’ì„ mMaxLSNì— copy
         mWritableFlag = RP_ON;
         IDE_ASSERT(mBufInfoMutex.unlock() == IDE_SUCCESS);
         mWritePtr = getWritePtr(mWrotePtr);
@@ -299,38 +299,38 @@ IDE_RC rpdLogBufferMgr::copyToRPLogBuf(idvSQL * aStatistics,
     return IDE_FAILURE;
 }
 
-/*sender°¡ ÀĞ°í ÀÖ´Â ¸Ş¸ğ¸® ¶§¹®¿¡ WriteÇÏÁö ¸øÇÏ¸é
- *IDE_FAILURE¸¦ ¹İÈ¯ÇÑ´Ù
+/*senderê°€ ì½ê³  ìˆëŠ” ë©”ëª¨ë¦¬ ë•Œë¬¸ì— Writeí•˜ì§€ ëª»í•˜ë©´
+ *IDE_FAILUREë¥¼ ë°˜í™˜í•œë‹¤
  */
 IDE_RC rpdLogBufferMgr::writeBufferEndLogToRPBuf()
 {
     SChar* sWriteStartPtr = NULL;
     UInt   sRemainBufSize = mEndPtr - mWrotePtr;
-    /* writeÇÒ ¸Ş¸ğ¸®°¡ Sender°¡ ÀĞ°í ÀÖ´Â ÁÖ¼Ò¸¦ overwriteÇÑ´Ù.
+    /* writeí•  ë©”ëª¨ë¦¬ê°€ Senderê°€ ì½ê³  ìˆëŠ” ì£¼ì†Œë¥¼ overwriteí•œë‹¤.
      * mWritePtr <= mMinReadPtr <= mEndPtr
      */
 
     if((mWritePtr <= mMinReadPtr) && (mMinReadPtr <= mEndPtr))
     {
-        updateMinReadPtr(); //cacheµÇ¾îÀÖ´Â Á¤º¸ÀÌ¹Ç·Î ´Ù½Ã °è»ê
+        updateMinReadPtr(); //cacheë˜ì–´ìˆëŠ” ì •ë³´ì´ë¯€ë¡œ ë‹¤ì‹œ ê³„ì‚°
 
         if((mWritePtr <= mMinReadPtr) && (mMinReadPtr <= mEndPtr))
         {
-            IDE_RAISE(ERR_NO_SPACE); //¸Ş¸ğ¸®°¡ ºÎÁ·ÇÔ
+            IDE_RAISE(ERR_NO_SPACE); //ë©”ëª¨ë¦¬ê°€ ë¶€ì¡±í•¨
         }
     }
-    //¾Æ¹«·Î±×µµ ¾È¾²¿©Áø »óÅÂ¿¡¼­ buffer end°¡ ¾²ÀÏ ¼ö ¾øÀ½
+    //ì•„ë¬´ë¡œê·¸ë„ ì•ˆì“°ì—¬ì§„ ìƒíƒœì—ì„œ buffer endê°€ ì“°ì¼ ìˆ˜ ì—†ìŒ
     IDE_DASSERT(mMaxSN != SM_SN_NULL);
 
-    /*write: buffer end log´Â Á¤»óÀûÀÎ ·Î±×°¡ ¾Æ´Ï°í RP Buf¿¡¼­ ÀÓ½Ã·Î ¸¸µç °ÍÀÌ´Ù.
-     *ÀÌ ·Î±×´Â ¹öÆÛ ¸¶Áö¸·¿¡ ¾²¿©Áö¸ç µû·Î SNÀ» °®Áö ¾ÊÀ¸¹Ç·Î °¡Àå ÃÖ±Ù¿¡ Ã³¸®µÈ SNÀ» SetÇÑ´Ù.
-     *ÀÌ SNÀº min ptr update½Ã »ç¿ëÇÑ´Ù.*/
+    /*write: buffer end logëŠ” ì •ìƒì ì¸ ë¡œê·¸ê°€ ì•„ë‹ˆê³  RP Bufì—ì„œ ì„ì‹œë¡œ ë§Œë“  ê²ƒì´ë‹¤.
+     *ì´ ë¡œê·¸ëŠ” ë²„í¼ ë§ˆì§€ë§‰ì— ì“°ì—¬ì§€ë©° ë”°ë¡œ SNì„ ê°–ì§€ ì•Šìœ¼ë¯€ë¡œ ê°€ì¥ ìµœê·¼ì— ì²˜ë¦¬ëœ SNì„ Setí•œë‹¤.
+     *ì´ SNì€ min ptr updateì‹œ ì‚¬ìš©í•œë‹¤.*/
     smiLogRec::setSNOfDummyLog(&mBufferEndLog, mMaxSN);
     smiLogRec::setLogSizeOfDummyLog(&mBufferEndLog, sRemainBufSize);
     sWriteStartPtr = (SChar*)(mBasePtr + mWritePtr);
     idlOS::memcpy(sWriteStartPtr, &mBufferEndLog, mBufferEndLogSize);
 
-    /* BUG-32475 Buffer¿¡ º¹»çÇÑ ÈÄ¿¡ mWrotePtr¸¦ °»½ÅÇØ¾ß ÇÑ´Ù. */
+    /* BUG-32475 Bufferì— ë³µì‚¬í•œ í›„ì— mWrotePtrë¥¼ ê°±ì‹ í•´ì•¼ í•œë‹¤. */
     IDL_MEM_BARRIER;
 
     IDE_ASSERT(mBufInfoMutex.lock(NULL /* idvSQL* */) == IDE_SUCCESS);
@@ -362,25 +362,25 @@ void rpdLogBufferMgr::updateMinReadPtr()
     smiLogHdr sLogHead;
 
     IDE_DASSERT(mAccessInfoCnt <= mMaxSenderCnt);
-    /*Sender°¡ µé¾î¿Ã ¼ö ¾øµµ·Ï mutex¸¦ Àâ¾Æ¾ßÇÔ*/
+    /*Senderê°€ ë“¤ì–´ì˜¬ ìˆ˜ ì—†ë„ë¡ mutexë¥¼ ì¡ì•„ì•¼í•¨*/
     IDE_ASSERT(mBufInfoMutex.lock(NULL /* idvSQL* */) == IDE_SUCCESS);
 
     if(mAccessInfoCnt == 0)
     {
-        //ÇöÀç ¸®½ºÆ®¸¦ º¯°æÁßÀÎ Sender°¡ ¾øÀ¸¹Ç·Î ¹Ù·Î ¸®ÅÏÇÔ
+        //í˜„ì¬ ë¦¬ìŠ¤íŠ¸ë¥¼ ë³€ê²½ì¤‘ì¸ Senderê°€ ì—†ìœ¼ë¯€ë¡œ ë°”ë¡œ ë¦¬í„´í•¨
         IDE_ASSERT(mBufInfoMutex.unlock() == IDE_SUCCESS);
         return;
     }
     /**************************************************************************
-     *                               |-----writeÇØ¾ßÇÏ´Â °÷-------|
+     *                               |-----writeí•´ì•¼í•˜ëŠ” ê³³-------|
      *     Sender1                                    Sender2
      * |---Readptr----------------WritePtr------------ReadPtr------------| Buf
      **************************************************************************/
-    /*writePtr¿¡¼­ °¡Àå °Å¸®°¡ °¡±î¿î readptr(ÃÖ¼Ò read ptr) ±¸ÇÏ±â*/
+    /*writePtrì—ì„œ ê°€ì¥ ê±°ë¦¬ê°€ ê°€ê¹Œìš´ readptr(ìµœì†Œ read ptr) êµ¬í•˜ê¸°*/
     for(sIdx = 0; (sCnt < mAccessInfoCnt) && (sIdx < mMaxSenderCnt); sIdx++)
     {
-        /*sender´Â ·Î±×¸¦ ÀĞ´Â Áß¿¡ read ptrÀ» RP_BUF_NULL_PTR·Î ¸¸µé ¼ö ¾ø°í,
-         *Buf¸¦ µé¾î¿Ã¶§ Æ¯Á¤°ªÀ¸·Î ¼¼ÆÃÇÏ°í ³ª°¥ ¶§ RP_BUF_NULL_PTR·Î ÃÊ±âÈ­ ÇÑ´Ù.*/
+        /*senderëŠ” ë¡œê·¸ë¥¼ ì½ëŠ” ì¤‘ì— read ptrì„ RP_BUF_NULL_PTRë¡œ ë§Œë“¤ ìˆ˜ ì—†ê³ ,
+         *Bufë¥¼ ë“¤ì–´ì˜¬ë•Œ íŠ¹ì •ê°’ìœ¼ë¡œ ì„¸íŒ…í•˜ê³  ë‚˜ê°ˆ ë•Œ RP_BUF_NULL_PTRë¡œ ì´ˆê¸°í™” í•œë‹¤.*/
         sReadPtr = mAccessInfoList[sIdx].mReadPtr;
         if( sReadPtr != RP_BUF_NULL_PTR )
         {
@@ -402,13 +402,13 @@ void rpdLogBufferMgr::updateMinReadPtr()
             }
         }
     }
-    if(sMinReadPtr != mMinReadPtr) //º¯°æÇÒ ÇÊ¿ä ¾øÀ½
+    if(sMinReadPtr != mMinReadPtr) //ë³€ê²½í•  í•„ìš” ì—†ìŒ
     {
-        if(sMinReadPtr == mWrotePtr)//¹öÆÛ°¡ ºñ¾îÀÖ´Â »óÅÂÀÓ
+        if(sMinReadPtr == mWrotePtr)//ë²„í¼ê°€ ë¹„ì–´ìˆëŠ” ìƒíƒœì„
         {
             sMinSN = SM_SN_NULL;
         }
-        else //ÃÖ¼Ò SNÀ» ¹öÆÛ¿¡¼­ ±¸ÇÔ
+        else //ìµœì†Œ SNì„ ë²„í¼ì—ì„œ êµ¬í•¨
         {
             sLogPtr = mBasePtr + getReadPtr(sMinReadPtr);
             smiLogRec::getLogHdr(sLogPtr, &sLogHead);
@@ -418,7 +418,7 @@ void rpdLogBufferMgr::updateMinReadPtr()
                 {
                     sMinSN = SM_SN_NULL;
                 }
-                else /* ¹öÆÛÀÇ ¸¶Áö¸·¿¡ µµ´ŞÇÑ °æ¿ì, ¹öÆÛÀÇ Ã³À½¿¡ ´ÙÀ½ ·Î±×°¡ ÀÖ´Ù. */
+                else /* ë²„í¼ì˜ ë§ˆì§€ë§‰ì— ë„ë‹¬í•œ ê²½ìš°, ë²„í¼ì˜ ì²˜ìŒì— ë‹¤ìŒ ë¡œê·¸ê°€ ìˆë‹¤. */
                 {
                     sLogPtr = mBasePtr;
                     smiLogRec::getLogHdr(sLogPtr, &sLogHead);
@@ -466,16 +466,16 @@ void rpdLogBufferMgr::updateMinReadPtr()
 }
 
 /***********************************************************************
- * ¹öÆÛ¿¡¼­ ·Î±×¸¦ ¹İÈ¯ÇÑ´Ù. call by sender
- * Sender°¡ ¹öÆÛ¸ğµå·Î ÀĞ°í ÀÕ´Â °æ¿ì¿¡ Sender ID¸¦ ÀÌ¿ëÇØ ·Î±×¸¦ ¹İÈ¯ÇÑ´Ù.
- * [IN]  aSndrID: È£ÃâÇÏ´Â SenderÀÇ ID(AccessInfoListÀÇ Index)
- * [OUT] aLogHead: °Ë»öµÈ ·Î±×ÀÇ alignµÈ ·Î±× head
- * [OUT] aSN: °Ë»öµÈ ·Î±×ÀÇ SN, È¤Àº °Ë»öµÈ ·Î±×°¡ ¾ø´Â °æ¿ì °¡Àå ÃÖ±Ù SN
- *            ¾Æ¹«°Íµµ ¸ø ÀĞÀº °æ¿ì SM_SN_NULLÀ» ¹İÈ¯
- * [OUT] aLSN: ¸¶Áö¸· ·Î±×ÀÇ LSN, aIsLeave°¡ TRUEÀÎ °æ¿ì ¸¶Áö¸· ·Î±×ÀÇ LSN
- *             ±×·¸Áö ¾ÊÀº °æ¿ì  INIT LSNÀ» °¡Áü
- * [OUT] aIsLeave: ´õ ÀÌ»ó ÀĞÀ» ·Î±×°¡ ¾ø°í, ¸ğµå¸¦ ÀüÈ¯ÇØ¾ß ÇÏ´Â °æ¿ì ID_TRUE
- * RETURN VALUE : °Ë»öµÈ ·Î±×ÀÇ Æ÷ÀÎÅÍ, ¾ø´Â °æ¿ì NULL
+ * ë²„í¼ì—ì„œ ë¡œê·¸ë¥¼ ë°˜í™˜í•œë‹¤. call by sender
+ * Senderê°€ ë²„í¼ëª¨ë“œë¡œ ì½ê³  ì‡ëŠ” ê²½ìš°ì— Sender IDë¥¼ ì´ìš©í•´ ë¡œê·¸ë¥¼ ë°˜í™˜í•œë‹¤.
+ * [IN]  aSndrID: í˜¸ì¶œí•˜ëŠ” Senderì˜ ID(AccessInfoListì˜ Index)
+ * [OUT] aLogHead: ê²€ìƒ‰ëœ ë¡œê·¸ì˜ alignëœ ë¡œê·¸ head
+ * [OUT] aSN: ê²€ìƒ‰ëœ ë¡œê·¸ì˜ SN, í˜¹ì€ ê²€ìƒ‰ëœ ë¡œê·¸ê°€ ì—†ëŠ” ê²½ìš° ê°€ì¥ ìµœê·¼ SN
+ *            ì•„ë¬´ê²ƒë„ ëª» ì½ì€ ê²½ìš° SM_SN_NULLì„ ë°˜í™˜
+ * [OUT] aLSN: ë§ˆì§€ë§‰ ë¡œê·¸ì˜ LSN, aIsLeaveê°€ TRUEì¸ ê²½ìš° ë§ˆì§€ë§‰ ë¡œê·¸ì˜ LSN
+ *             ê·¸ë ‡ì§€ ì•Šì€ ê²½ìš°  INIT LSNì„ ê°€ì§
+ * [OUT] aIsLeave: ë” ì´ìƒ ì½ì„ ë¡œê·¸ê°€ ì—†ê³ , ëª¨ë“œë¥¼ ì „í™˜í•´ì•¼ í•˜ëŠ” ê²½ìš° ID_TRUE
+ * RETURN VALUE : ê²€ìƒ‰ëœ ë¡œê·¸ì˜ í¬ì¸í„°, ì—†ëŠ” ê²½ìš° NULL
  ************************************************************************/
 IDE_RC rpdLogBufferMgr::readFromRPLogBuf(UInt       aSndrID,
                                         smiLogHdr* aLogHead,
@@ -484,11 +484,11 @@ IDE_RC rpdLogBufferMgr::readFromRPLogBuf(UInt       aSndrID,
                                         smLSN*     aLSN,
                                         idBool*    aIsLeave)
 {
-    /*wrotePtr¿Í °°Àº ÁÖ¼Ò ±îÁö ÀĞÀ¸¸é ´Ù ÀĞ´Â °ÍÀÓ
-     *¸¸¾à ´Ù ÀĞ¾ú´Ù°í È®ÀÎµÇ°í OFFÀÌ¸é ¹öÆÛ ¸ğµå¸¦ ³ª°¨*/
+    /*wrotePtrì™€ ê°™ì€ ì£¼ì†Œ ê¹Œì§€ ì½ìœ¼ë©´ ë‹¤ ì½ëŠ” ê²ƒì„
+     *ë§Œì•½ ë‹¤ ì½ì—ˆë‹¤ê³  í™•ì¸ë˜ê³  OFFì´ë©´ ë²„í¼ ëª¨ë“œë¥¼ ë‚˜ê°*/
     SChar*  sLogPtr = NULL;
 
-    /*Áö±İ±îÁö ÀĞÀº ¸¶Áö¸· ptr*/
+    /*ì§€ê¸ˆê¹Œì§€ ì½ì€ ë§ˆì§€ë§‰ ptr*/
     UInt sNextPtr = RP_BUF_NULL_PTR;
     UInt sNewReadPtr = RP_BUF_NULL_PTR;
 
@@ -500,18 +500,18 @@ IDE_RC rpdLogBufferMgr::readFromRPLogBuf(UInt       aSndrID,
 
     sNextPtr = mAccessInfoList[aSndrID].mNextPtr;
 
-    if(mWrotePtr == sNextPtr) /*¹öÆÛ ³»¿ëÀ» ¸ğµÎ ´Ù ÀĞ¾úÀ½*/
+    if(mWrotePtr == sNextPtr) /*ë²„í¼ ë‚´ìš©ì„ ëª¨ë‘ ë‹¤ ì½ì—ˆìŒ*/
     {
-        /*RP_OFFÀÎ °æ¿ì ³ª°¡¾ßÇÔ*/
+        /*RP_OFFì¸ ê²½ìš° ë‚˜ê°€ì•¼í•¨*/
         if(mWritableFlag == RP_OFF)
         {
             IDE_ASSERT(mBufInfoMutex.lock(NULL /* idvSQL* */) == IDE_SUCCESS);
-            /* mWrotePtr == sReadPtr°¡ ¾Æ´Ñ °æ¿ì service°¡ writeÇßÁö¸¸,
-             * Ã³À½ if(mWrotePtr == sReadPtr)¿¡¼­ lockÀ» ÀâÁö ¾Ê°í
-             * mWrotePtr¸¦ ÀĞ¾î¼­ ÀÌÀü °ªÀ» ÀĞ¾ú±â ¶§¹®¿¡ ¿©±â·Î
-             * µé¾î¿Ã ¼ö ÀÖ´Ù. ±×·¡¼­ ´Ù½Ã ÇÑ¹ø È®ÀÎÇÏ°í ¸¸¾à
-             * ´Ù¸£´Ù¸é ´Ù½Ã ½ÃµµÇÒ ¼ö ÀÖµµ·Ï *aSNÀ» SM_SN_NULL·Î
-             * ¼¼ÆÃÇÏ¿© ÁØ´Ù*/
+            /* mWrotePtr == sReadPtrê°€ ì•„ë‹Œ ê²½ìš° serviceê°€ writeí–ˆì§€ë§Œ,
+             * ì²˜ìŒ if(mWrotePtr == sReadPtr)ì—ì„œ lockì„ ì¡ì§€ ì•Šê³ 
+             * mWrotePtrë¥¼ ì½ì–´ì„œ ì´ì „ ê°’ì„ ì½ì—ˆê¸° ë•Œë¬¸ì— ì—¬ê¸°ë¡œ
+             * ë“¤ì–´ì˜¬ ìˆ˜ ìˆë‹¤. ê·¸ë˜ì„œ ë‹¤ì‹œ í•œë²ˆ í™•ì¸í•˜ê³  ë§Œì•½
+             * ë‹¤ë¥´ë‹¤ë©´ ë‹¤ì‹œ ì‹œë„í•  ìˆ˜ ìˆë„ë¡ *aSNì„ SM_SN_NULLë¡œ
+             * ì„¸íŒ…í•˜ì—¬ ì¤€ë‹¤*/
             if((mWrotePtr == sNextPtr) && (mWritableFlag == RP_OFF))
             {
                 *aSN = mMaxSN;
@@ -520,7 +520,7 @@ IDE_RC rpdLogBufferMgr::readFromRPLogBuf(UInt       aSndrID,
             }
             IDE_ASSERT(mBufInfoMutex.unlock() == IDE_SUCCESS);
         }
-        else /*RP_ONÀÎ °æ¿ì »õ·Î »ı¼ºµÈ ·Î±×°¡ ¾ø´Â »óÈ²ÀÓ*/
+        else /*RP_ONì¸ ê²½ìš° ìƒˆë¡œ ìƒì„±ëœ ë¡œê·¸ê°€ ì—†ëŠ” ìƒí™©ì„*/
         {
             IDE_ASSERT(mBufInfoMutex.lock(NULL /* idvSQL* */) == IDE_SUCCESS);
 
@@ -533,7 +533,7 @@ IDE_RC rpdLogBufferMgr::readFromRPLogBuf(UInt       aSndrID,
             mAccessInfoList[aSndrID].mReadPtr = mAccessInfoList[aSndrID].mNextPtr;
         }
     }
-    else /*ÀĞ¾î¾ß ÇÏ´Â ptr°¡ ÀÖÀ½*/
+    else /*ì½ì–´ì•¼ í•˜ëŠ” ptrê°€ ìˆìŒ*/
     {
         IDL_MEM_BARRIER;
         sNewReadPtr = getReadPtr(sNextPtr);
@@ -546,7 +546,7 @@ IDE_RC rpdLogBufferMgr::readFromRPLogBuf(UInt       aSndrID,
             smiLogRec::getLogSizeFromLogHdr(aLogHead) - 1;
         mAccessInfoList[aSndrID].mReadPtr = sNextPtr;
 
-        /* BUG-32633 Buffer End ·Î±×¸¦ °Ç³Ê ¶Ú´Ù. (ÃÖ´ë 1È¸ ¼öÇà) */
+        /* BUG-32633 Buffer End ë¡œê·¸ë¥¼ ê±´ë„ˆ ë›´ë‹¤. (ìµœëŒ€ 1íšŒ ìˆ˜í–‰) */
         if ( isBufferEndLog( aLogHead ) == ID_TRUE )
         {
             IDE_TEST( readFromRPLogBuf( aSndrID,
@@ -579,15 +579,15 @@ void rpdLogBufferMgr::getSN(smSN* aMinSN, smSN* aMaxSN)
 }
 
 /***********************************************************************
- * buffer¸ğµå·Î ÁøÀÔ °¡´ÉÇÑÁö Å×½ºÆ® ÇÏ°í ¸ğµå¸¦ º¯°æÇÑ´Ù. call by sender
- * ÁøÀÔ °¡´ÉÇÑ °æ¿ì¿¡ AccessInfoList¿¡¼­ ºó ½½·ÔÀ» Ã£¾Æ ÇØ´ç ½½·ÔÀÇ
- * index¹øÈ£¸¦ ID·Î ¹İÈ¯ÇØ ÁØ´Ù.
- * [IN]     aNeedSN: Sender°¡ ÇÊ¿ä·ÎÇÏ´Â ·Î±×ÀÇ SN
- * [IN/OUT] aMinSN/aMaxSN: Sender°¡ ¾Ë°íÀÖ´Â(Ä³½¬µÈ) ¹öÆÛÀÇ ÃÖ¼Ò/ÃÖ´ë SNÀ» ³Ñ°ÜÁÖ¸é
- *                  ÇÊ¿äÇÑ °æ¿ì ½ÇÁ¦·Î ¹öÆÛ°¡ °®°íÀÖ´Â ÃÖ¼Ò/ÃÖ´ë SNÀ» ´Ù½Ã ³Ñ°ÜÁØ´Ù.
- * [OUT] aSndrID : ÁøÀÔÀÌ ¼º°øÇÑ °æ¿ì Sender¿¡°Ô µ¹·ÁÁÖ´Â ¹öÆÛ¿¡¼­ÀÇ ID
- *                 ÁøÀÔÀÌ ½ÇÆĞÇÑ °æ¿ì RP_BUF_NULL_ID¸¦ ¹İÈ¯ÇÑ´Ù.
- * [OUT] aIsEnter: ÁøÀÔÀÌ ¼º°øÇÑ °æ¿ì ID_TRUE, ±×·¸Áö ¾ÊÀ¸¸é ID_FALSE
+ * bufferëª¨ë“œë¡œ ì§„ì… ê°€ëŠ¥í•œì§€ í…ŒìŠ¤íŠ¸ í•˜ê³  ëª¨ë“œë¥¼ ë³€ê²½í•œë‹¤. call by sender
+ * ì§„ì… ê°€ëŠ¥í•œ ê²½ìš°ì— AccessInfoListì—ì„œ ë¹ˆ ìŠ¬ë¡¯ì„ ì°¾ì•„ í•´ë‹¹ ìŠ¬ë¡¯ì˜
+ * indexë²ˆí˜¸ë¥¼ IDë¡œ ë°˜í™˜í•´ ì¤€ë‹¤.
+ * [IN]     aNeedSN: Senderê°€ í•„ìš”ë¡œí•˜ëŠ” ë¡œê·¸ì˜ SN
+ * [IN/OUT] aMinSN/aMaxSN: Senderê°€ ì•Œê³ ìˆëŠ”(ìºì‰¬ëœ) ë²„í¼ì˜ ìµœì†Œ/ìµœëŒ€ SNì„ ë„˜ê²¨ì£¼ë©´
+ *                  í•„ìš”í•œ ê²½ìš° ì‹¤ì œë¡œ ë²„í¼ê°€ ê°–ê³ ìˆëŠ” ìµœì†Œ/ìµœëŒ€ SNì„ ë‹¤ì‹œ ë„˜ê²¨ì¤€ë‹¤.
+ * [OUT] aSndrID : ì§„ì…ì´ ì„±ê³µí•œ ê²½ìš° Senderì—ê²Œ ëŒë ¤ì£¼ëŠ” ë²„í¼ì—ì„œì˜ ID
+ *                 ì§„ì…ì´ ì‹¤íŒ¨í•œ ê²½ìš° RP_BUF_NULL_IDë¥¼ ë°˜í™˜í•œë‹¤.
+ * [OUT] aIsEnter: ì§„ì…ì´ ì„±ê³µí•œ ê²½ìš° ID_TRUE, ê·¸ë ‡ì§€ ì•Šìœ¼ë©´ ID_FALSE
  ************************************************************************/
 idBool rpdLogBufferMgr::tryEnter(smSN    aNeedSN,
                                  smSN*   aMinSN,
@@ -616,7 +616,7 @@ idBool rpdLogBufferMgr::tryEnter(smSN    aNeedSN,
                 *aMaxSN = mMaxSN;
                 if((mMinSN <= aNeedSN) && (aNeedSN <= mMaxSN))
                 {
-                    //ÁøÀÔ °¡´ÉÇÔ
+                    //ì§„ì… ê°€ëŠ¥í•¨
                     for(sSndrID = 0; sSndrID < mMaxSenderCnt; sSndrID++)
                     {
                         if(mAccessInfoList[sSndrID].mReadPtr == RP_BUF_NULL_PTR)

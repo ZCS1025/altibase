@@ -23,11 +23,11 @@
 #include <iduCompression.h>
 #include <smrCompResPool.h>
 
-/* °´Ã¼ ÃÊ±âÈ­
-   [IN] aPoolName - ¸®¼Ò½º Ç®ÀÇ ÀÌ¸§ 
-   [IN] aInitialResourceCount - ÃÊ±â ¸®¼Ò½º °¹¼ö
-   [IN] aMinimumResourceCount - ÃÖ¼Ò ¸®¼Ò½º °¹¼ö
-   [IN] aGarbageCollectionSecond - ¸®¼Ò½º°¡ ¸î ÃÊ ÀÌ»ó »ç¿ëµÇÁö ¾ÊÀ» °æ¿ì Garbage CollectionÇÒÁö?
+/* ê°ì²´ ì´ˆê¸°í™”
+   [IN] aPoolName - ë¦¬ì†ŒìŠ¤ í’€ì˜ ì´ë¦„ 
+   [IN] aInitialResourceCount - ì´ˆê¸° ë¦¬ì†ŒìŠ¤ ê°¯ìˆ˜
+   [IN] aMinimumResourceCount - ìµœì†Œ ë¦¬ì†ŒìŠ¤ ê°¯ìˆ˜
+   [IN] aGarbageCollectionSecond - ë¦¬ì†ŒìŠ¤ê°€ ëª‡ ì´ˆ ì´ìƒ ì‚¬ìš©ë˜ì§€ ì•Šì„ ê²½ìš° Garbage Collectioní• ì§€?
  */
 IDE_RC smrCompResPool::initialize( SChar * aPoolName,
                                    UInt    aInitialResourceCount,    
@@ -54,11 +54,11 @@ IDE_RC smrCompResPool::initialize( SChar * aPoolName,
 
     mMinimumResourceCount = aMinimumResourceCount;
     
-    // ½Ã°£ ÃøÁ¤ÀÌ Micro´ÜÀ§·Î ÀÌ·ç¾îÁö¹Ç·Î,
-    // Garbage CollectionÇÒ ±âÁØ½Ã°£À» MicroÃÊ·Î ¹Ì¸® º¯È¯ÇØµĞ´Ù.
+    // ì‹œê°„ ì¸¡ì •ì´ Microë‹¨ìœ„ë¡œ ì´ë£¨ì–´ì§€ë¯€ë¡œ,
+    // Garbage Collectioní•  ê¸°ì¤€ì‹œê°„ì„ Microì´ˆë¡œ ë¯¸ë¦¬ ë³€í™˜í•´ë‘”ë‹¤.
     mGarbageCollectionMicro = aGarbageCollectionSecond * 1000000;
 
-    // Overflow¹ß»ı ¿©ºÎ °Ë»ç 
+    // Overflowë°œìƒ ì—¬ë¶€ ê²€ì‚¬ 
     IDE_ASSERT( mGarbageCollectionMicro > aGarbageCollectionSecond );
     
     return IDE_SUCCESS;
@@ -69,7 +69,7 @@ IDE_RC smrCompResPool::initialize( SChar * aPoolName,
 }
 
 
-/* °´Ã¼ ÆÄ±« */
+/* ê°ì²´ íŒŒê´´ */
 IDE_RC smrCompResPool::destroy()
 {
     IDE_TEST( destroyAllCompRes() != IDE_SUCCESS );
@@ -86,10 +86,10 @@ IDE_RC smrCompResPool::destroy()
 }
 
 
-/* ·Î±× ¾ĞÃàÀ» À§ÇÑ Resource ¸¦ ¾ò´Â´Ù
+/* ë¡œê·¸ ì••ì¶•ì„ ìœ„í•œ Resource ë¥¼ ì–»ëŠ”ë‹¤
 
    
-   [IN] aCompRes - ÇÒ´çÇÑ ·Î±× ¾ĞÃà Resource
+   [IN] aCompRes - í• ë‹¹í•œ ë¡œê·¸ ì••ì¶• Resource
  */
 IDE_RC smrCompResPool::allocCompRes( smrCompRes ** aCompRes )
 {
@@ -98,20 +98,20 @@ IDE_RC smrCompResPool::allocCompRes( smrCompRes ** aCompRes )
     smrCompRes * sCompRes = NULL;
     
 
-    // 1. ÀçÈ°¿ë List¿¡¼­ Ã£´Â´Ù
-    //      CPU Cache Hit¸¦ ³ôÀÌ±â À§ÇØ,
-    //      ListÀÇ °°ÀºÀ§Ä¡(Head)¿¡¼­ Remove, AddÇÑ´Ù.
+    // 1. ì¬í™œìš© Listì—ì„œ ì°¾ëŠ”ë‹¤
+    //      CPU Cache Hitë¥¼ ë†’ì´ê¸° ìœ„í•´,
+    //      Listì˜ ê°™ì€ìœ„ì¹˜(Head)ì—ì„œ Remove, Addí•œë‹¤.
     IDE_TEST( mCompResList.removeFromHead( (void**) & sCompRes )
               != IDE_SUCCESS );
     
     
-    // 2. ÀçÈ°¿ë List¿¡ ¾ø´Â °æ¿ì Á÷Á¢ ÇÒ´ç
+    // 2. ì¬í™œìš© Listì— ì—†ëŠ” ê²½ìš° ì§ì ‘ í• ë‹¹
     if ( sCompRes == NULL )
     {
         IDE_TEST( createCompRes( & sCompRes ) != IDE_SUCCESS );
     }
 
-    // 3. »ç¿ëµÈ ½Ã°¢ ±â·Ï
+    // 3. ì‚¬ìš©ëœ ì‹œê° ê¸°ë¡
     IDE_ASSERT( IDV_TIME_AVAILABLE() == ID_TRUE );
     IDV_TIME_GET( & sCompRes->mLastUsedTime );
     
@@ -124,24 +124,24 @@ IDE_RC smrCompResPool::allocCompRes( smrCompRes ** aCompRes )
     return IDE_FAILURE;
 }
 
-/* ·Î±× ¾ĞÃàÀ» À§ÇÑ Resource ¸¦ ¹İ³³
+/* ë¡œê·¸ ì••ì¶•ì„ ìœ„í•œ Resource ë¥¼ ë°˜ë‚©
    
-   [IN] aCompRes - ¹İ³³ÇÒ ·Î±× ¾ĞÃà Resource
+   [IN] aCompRes - ë°˜ë‚©í•  ë¡œê·¸ ì••ì¶• Resource
 */
 IDE_RC smrCompResPool::freeCompRes( smrCompRes * aCompRes )
 {
     IDE_DASSERT( aCompRes != NULL );
 
-    // CPU Cache Hit¸¦ ³ôÀÌ±â À§ÇØ,
-    // ListÀÇ °°ÀºÀ§Ä¡(Head)¿¡¼­ Remove, AddÇÑ´Ù.
+    // CPU Cache Hitë¥¼ ë†’ì´ê¸° ìœ„í•´,
+    // Listì˜ ê°™ì€ìœ„ì¹˜(Head)ì—ì„œ Remove, Addí•œë‹¤.
     IDE_TEST( mCompResList.addToHead( aCompRes ) != IDE_SUCCESS );
 
-    // °¡Àå ¿À·¡ Àü¿¡ »ç¿ëµÈ ¸®¼Ò½ºÀÇ »ç¿ë½Ã°¢°ú ÇöÀç½Ã°¢ÀÇ Â÷ÀÌ°¡
-    // Æ¯Á¤ ½Ã°£À» ¹ş¾î³ª¸é Pool¿¡¼­ Á¦°Å.
+    // ê°€ì¥ ì˜¤ë˜ ì „ì— ì‚¬ìš©ëœ ë¦¬ì†ŒìŠ¤ì˜ ì‚¬ìš©ì‹œê°ê³¼ í˜„ì¬ì‹œê°ì˜ ì°¨ì´ê°€
+    // íŠ¹ì • ì‹œê°„ì„ ë²—ì–´ë‚˜ë©´ Poolì—ì„œ ì œê±°.
     //
-    // FreeÇÒ ¶§¸¶´Ù ÇÏ³ª¾¿¸¸ °¡ºñÁö Äİ·ºÆ® ÇÑ´Ù.
-    // ½Ã½ºÅÛ¿¡ °©ÀÚ±â ºÎÇÏ¸¦ ÁÖÁö ¾Ê°í
-    // °¡ºñÁö Äİ·ºÆ® ÇÏ´Â ºÎÇÏ¸¦ ºĞ»ê½ÃÅ°±â À§ÇÔ
+    // Freeí•  ë•Œë§ˆë‹¤ í•˜ë‚˜ì”©ë§Œ ê°€ë¹„ì§€ ì½œë ‰íŠ¸ í•œë‹¤.
+    // ì‹œìŠ¤í…œì— ê°‘ìê¸° ë¶€í•˜ë¥¼ ì£¼ì§€ ì•Šê³ 
+    // ê°€ë¹„ì§€ ì½œë ‰íŠ¸ í•˜ëŠ” ë¶€í•˜ë¥¼ ë¶„ì‚°ì‹œí‚¤ê¸° ìœ„í•¨
 
     IDE_TEST( garbageCollectOldestRes() != IDE_SUCCESS );
     
@@ -153,11 +153,11 @@ IDE_RC smrCompResPool::freeCompRes( smrCompRes * aCompRes )
 }
 
 /*
-    ¸®¼Ò½º Ç® ³»¿¡¼­ÀÇ °¡Àå ¿À·¡µÈ ¸®¼Ò½º ÇÏ³ª¿¡ ´ëÇØ
-    Garbage CollectionÀ» ½Ç½ÃÇÑ´Ù.
+    ë¦¬ì†ŒìŠ¤ í’€ ë‚´ì—ì„œì˜ ê°€ì¥ ì˜¤ë˜ëœ ë¦¬ì†ŒìŠ¤ í•˜ë‚˜ì— ëŒ€í•´
+    Garbage Collectionì„ ì‹¤ì‹œí•œë‹¤.
     
-    - °¡Àå ¿À·¡ Àü¿¡ »ç¿ëµÈ ¸®¼Ò½º (ListÀÇ Tail¿¡ ¸Å´Ş¸° Element)°¡
-      Æ¯Á¤ ½Ã°£µ¿¾È »ç¿ëµÇÁö ¾ÊÀº °æ¿ì Garbage Collection½Ç½Ã
+    - ê°€ì¥ ì˜¤ë˜ ì „ì— ì‚¬ìš©ëœ ë¦¬ì†ŒìŠ¤ (Listì˜ Tailì— ë§¤ë‹¬ë¦° Element)ê°€
+      íŠ¹ì • ì‹œê°„ë™ì•ˆ ì‚¬ìš©ë˜ì§€ ì•Šì€ ê²½ìš° Garbage Collectionì‹¤ì‹œ
  */
 IDE_RC smrCompResPool::garbageCollectOldestRes()
 {
@@ -169,13 +169,13 @@ IDE_RC smrCompResPool::garbageCollectOldestRes()
               != IDE_SUCCESS );
     if ( sGarbageRes != NULL )
     {
-        // Garbage collection ¼öÇà!
+        // Garbage collection ìˆ˜í–‰!
         IDE_TEST( destroyCompRes( sGarbageRes )
                   != IDE_SUCCESS );
     }
     else
     {
-        // Garbage CollectionÇÒ ¸®¼Ò½º°¡ ¾ø´Ù.
+        // Garbage Collectioní•  ë¦¬ì†ŒìŠ¤ê°€ ì—†ë‹¤.
     }
     
     return IDE_SUCCESS;
@@ -188,9 +188,9 @@ IDE_RC smrCompResPool::garbageCollectOldestRes()
     
         
 
-/* ·Î±× ¾ĞÃàÀ» À§ÇÑ Resource ¸¦ »ı¼ºÇÑ´Ù
+/* ë¡œê·¸ ì••ì¶•ì„ ìœ„í•œ Resource ë¥¼ ìƒì„±í•œë‹¤
 
-   [IN] aCompRes - ·Î±× ¾ĞÃà Resource
+   [IN] aCompRes - ë¡œê·¸ ì••ì¶• Resource
  */
 IDE_RC smrCompResPool::createCompRes( smrCompRes ** aCompRes )
 {
@@ -198,20 +198,20 @@ IDE_RC smrCompResPool::createCompRes( smrCompRes ** aCompRes )
 
     smrCompRes * sCompRes;
 
-    // ¸®¼Ò½º ±¸Á¶Ã¼ ÇÒ´ç
+    // ë¦¬ì†ŒìŠ¤ êµ¬ì¡°ì²´ í• ë‹¹
     /* smrCompResPool_createCompRes_alloc_CompRes.tc */
     IDU_FIT_POINT("smrCompResPool::createCompRes::alloc::CompRes");
     IDE_TEST( mCompResMemPool.alloc( (void**) & sCompRes ) != IDE_SUCCESS );
 
-    // ·Î±× ¾ĞÃàÇØÁ¦ ¹öÆÛ ÇÚµéÀÇ ÃÊ±âÈ­
+    // ë¡œê·¸ ì••ì¶•í•´ì œ ë²„í¼ í•¸ë“¤ì˜ ì´ˆê¸°í™”
     IDE_TEST( sCompRes->mDecompBufferHandle.initialize( IDU_MEM_SM_SMR )
               != IDE_SUCCESS );
     
-    // ·Î±× ¾ĞÃà¹öÆÛ ÇÚµéÀÇ ÃÊ±âÈ­
+    // ë¡œê·¸ ì••ì¶•ë²„í¼ í•¸ë“¤ì˜ ì´ˆê¸°í™”
     IDE_TEST( sCompRes->mCompBufferHandle.initialize( IDU_MEM_SM_SMR )
               != IDE_SUCCESS );
     
-    /* BUG-14830: UMR¹ß»ıÀ» ¾ø¾Ö±â À§ÇØ ¾ĞÃà ÀÛ¾÷ °ø°£ÀÇ ÃÊ±âÈ­¸¦ ¼öÇà*/
+    /* BUG-14830: UMRë°œìƒì„ ì—†ì• ê¸° ìœ„í•´ ì••ì¶• ì‘ì—… ê³µê°„ì˜ ì´ˆê¸°í™”ë¥¼ ìˆ˜í–‰*/
     idlOS::memset( sCompRes->mCompWorkMem, 0, IDU_COMPRESSION_WORK_SIZE);
 
     *aCompRes = sCompRes ;
@@ -224,18 +224,18 @@ IDE_RC smrCompResPool::createCompRes( smrCompRes ** aCompRes )
 }
 
 
-/* ·Î±× ¾ĞÃàÀ» À§ÇÑ Resource ¸¦ ÆÄ±«ÇÑ´Ù
+/* ë¡œê·¸ ì••ì¶•ì„ ìœ„í•œ Resource ë¥¼ íŒŒê´´í•œë‹¤
 
-   [IN] aCompRes - ·Î±× ¾ĞÃà Resource
+   [IN] aCompRes - ë¡œê·¸ ì••ì¶• Resource
  */
 IDE_RC smrCompResPool::destroyCompRes( smrCompRes * aCompRes )
 {
     IDE_DASSERT( aCompRes != NULL );
 
-    // ·Î±× ¾ĞÃàÇØÁ¦ ÇÚµéÀÇ ÆÄ±«
+    // ë¡œê·¸ ì••ì¶•í•´ì œ í•¸ë“¤ì˜ íŒŒê´´
     IDE_TEST( aCompRes->mDecompBufferHandle.destroy() != IDE_SUCCESS );
     
-    // ·Î±× ¾ĞÃà¹öÆÛ ÇÚµéÀÇ ÆÄ±«
+    // ë¡œê·¸ ì••ì¶•ë²„í¼ í•¸ë“¤ì˜ íŒŒê´´
     IDE_TEST( aCompRes->mCompBufferHandle.destroy() != IDE_SUCCESS );
 
     IDE_TEST( mCompResMemPool.memfree( aCompRes ) != IDE_SUCCESS );
@@ -248,9 +248,9 @@ IDE_RC smrCompResPool::destroyCompRes( smrCompRes * aCompRes )
 }
 
 
-/* ÀÌ PoolÀÌ »ı¼ºÇÑ ¸ğµç ¾ĞÃà Resource ¸¦ ÆÄ±«ÇÑ´Ù
+/* ì´ Poolì´ ìƒì„±í•œ ëª¨ë“  ì••ì¶• Resource ë¥¼ íŒŒê´´í•œë‹¤
 
-   [IN] aCompRes - ·Î±× ¾ĞÃà Resource
+   [IN] aCompRes - ë¡œê·¸ ì••ì¶• Resource
 
  */
 IDE_RC smrCompResPool::destroyAllCompRes()
@@ -264,7 +264,7 @@ IDE_RC smrCompResPool::destroyAllCompRes()
         IDE_TEST( mCompResList.removeFromHead( (void**) & sCompRes )
                   != IDE_SUCCESS );
 
-        if ( sCompRes == NULL ) // ´õ ÀÌ»ó List Node°¡ ¾ø´Â °æ¿ì 
+        if ( sCompRes == NULL ) // ë” ì´ìƒ List Nodeê°€ ì—†ëŠ” ê²½ìš° 
         {
             break;
         }

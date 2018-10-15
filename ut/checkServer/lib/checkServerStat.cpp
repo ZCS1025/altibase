@@ -25,17 +25,17 @@
 
 
 /**
- * ÆÄÀÏ unlink()¸¦ ÇÏÁö ¾Ê´Â flock_destroy()
+ * íŒŒì¼ unlink()ë¥¼ í•˜ì§€ ì•ŠëŠ” flock_destroy()
  *
- * idlOS::flock_destroy()¿¡ unlink()°¡ ÀÖ¾î¼­ ÆÄÀÏÀ» Áö¿ö¹ö¸®´Â ¹®Á¦°¡ ÀÖ´Ù.
- * ¶ôÀ» À§ÇÑ ÆÄÀÏÀ» ¼­¹ö¿Í °øÀ¯ÇÏ¸ç,
- * altibase.properties ÆÄÀÏ·Î ¶ôÀ» ÀâÀ¸¹Ç·Î
- * ÆÄÀÏ¶ôÀ» ¾µ¶§´Â unlink()¸¦ ÇÏÁö ¸»¾Æ¾ß ÇÑ´Ù.
+ * idlOS::flock_destroy()ì— unlink()ê°€ ìˆì–´ì„œ íŒŒì¼ì„ ì§€ì›Œë²„ë¦¬ëŠ” ë¬¸ì œê°€ ìˆë‹¤.
+ * ë½ì„ ìœ„í•œ íŒŒì¼ì„ ì„œë²„ì™€ ê³µìœ í•˜ë©°,
+ * altibase.properties íŒŒì¼ë¡œ ë½ì„ ì¡ìœ¼ë¯€ë¡œ
+ * íŒŒì¼ë½ì„ ì“¸ë•ŒëŠ” unlink()ë¥¼ í•˜ì§€ ë§ì•„ì•¼ í•œë‹¤.
  * 
- * ±×·¸´Ù°í flock_destroy()¸¦ ¾ÈÇÏ¸é
- * flock_init()¿¡¼­ strdup()¸¦ ÅëÇØ malloc() Çß´ø°Í ¶§¹®¿¡ mem-leakÀÌ »ı±ä´Ù.
+ * ê·¸ë ‡ë‹¤ê³  flock_destroy()ë¥¼ ì•ˆí•˜ë©´
+ * flock_init()ì—ì„œ strdup()ë¥¼ í†µí•´ malloc() í–ˆë˜ê²ƒ ë•Œë¬¸ì— mem-leakì´ ìƒê¸´ë‹¤.
  * 
- * pd¸¦ °íÄ¡¸é ´Ù¸¥ ÄÚµå¿¡ ¿µÇâÀÌ °¥ ¼ö ÀÖÀ¸¹Ç·Î º¹»çÇØ¿Í¼­ unlink()¸¦ »« °Í.
+ * pdë¥¼ ê³ ì¹˜ë©´ ë‹¤ë¥¸ ì½”ë“œì— ì˜í–¥ì´ ê°ˆ ìˆ˜ ìˆìœ¼ë¯€ë¡œ ë³µì‚¬í•´ì™€ì„œ unlink()ë¥¼ ëº€ ê²ƒ.
  */
 PDL_INLINE int
 safe_flock_destroy (PDL_OS::pdl_flock_t *lock)
@@ -205,18 +205,18 @@ IDE_RC CheckServerStat::checkServerRunning(idBool *aRunningFlag)
     sPortNo = mmuProperty::getPortNo();
 
     /* ---------------------------
-     *  [1] Server Running °Ë»ç : FileLock
+     *  [1] Server Running ê²€ì‚¬ : FileLock
      * --------------------------*/
 
     if (idlOS::flock_trywrlock(&mLockFile) == 0)
     {
         /* --------------------------------------------------------
-         *  [2] Server Running °Ë»ç : Port Bind
+         *  [2] Server Running ê²€ì‚¬ : Port Bind
          *
-         *      [1] °úÁ¤¿¡¼­ LockÀÌ ÀâÇû´õ¶óµµ
-         *          LockFileÀ» »èÁ¦Çß±â ¶§¹®¿¡ ¾ò¾îÁø Æ²¸°
-         *          °ªÀÏ ¼ö ÀÖ´Ù. µû¶ó¼­, ÇØ´ç Æ÷Æ®¸¦ BindÇØ¼­
-         *          Á¤¸»·Î ½ÇÇàÁßÀÌ ¾Æ´ÑÁö ´Ù½Ã Àç°Ë»ç ÇÑ´Ù.
+         *      [1] ê³¼ì •ì—ì„œ Lockì´ ì¡í˜”ë”ë¼ë„
+         *          LockFileì„ ì‚­ì œí–ˆê¸° ë•Œë¬¸ì— ì–»ì–´ì§„ í‹€ë¦°
+         *          ê°’ì¼ ìˆ˜ ìˆë‹¤. ë”°ë¼ì„œ, í•´ë‹¹ í¬íŠ¸ë¥¼ Bindí•´ì„œ
+         *          ì •ë§ë¡œ ì‹¤í–‰ì¤‘ì´ ì•„ë‹Œì§€ ë‹¤ì‹œ ì¬ê²€ì‚¬ í•œë‹¤.
          * ------------------------------------------------------*/
 
         idlOS::memset(&servaddr, 0, sizeof(servaddr));

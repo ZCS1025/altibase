@@ -64,8 +64,8 @@ public:
 
     static void   initTransLockList(SInt aSlot);
 
-    /* BUG-28752 lock table ... in row share mode ±¸¹®ÀÌ ¸ÔÈ÷Áö ¾Ê½À´Ï´Ù.
-     * implicit/explicit lockÀ» ±¸ºĞÇÏ¿© °Ì´Ï´Ù. */ 
+    /* BUG-28752 lock table ... in row share mode êµ¬ë¬¸ì´ ë¨¹íˆì§€ ì•ŠìŠµë‹ˆë‹¤.
+     * implicit/explicit lockì„ êµ¬ë¶„í•˜ì—¬ ê²ë‹ˆë‹¤. */ 
     static inline IDE_RC lockTable(SInt          aSlot, 
                                    smlLockItem  *aLockItem, 
                                    smlLockMode   aLockMode,
@@ -84,9 +84,9 @@ public:
 public:
 
     // PRJ-1548
-    // Å×ÀÌºí½ºÆäÀÌ½º¿¡ ´ëÇÑ Àá±İ¿äÃ»½Ã DML,DDL¿¡ µû¶ó¼­
-    // Lock Wait ½Ã°£À» ÀÎÀÚ·Î ³»·ÁÁÙ ¼ö ÀÖ¾î¾ß ÇÏ¹Ç·Î
-    // ÀÎÀÚ¸¦ Ãß°¡ÇÏ¿´´Ù.
+    // í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì— ëŒ€í•œ ì ê¸ˆìš”ì²­ì‹œ DML,DDLì— ë”°ë¼ì„œ
+    // Lock Wait ì‹œê°„ì„ ì¸ìë¡œ ë‚´ë ¤ì¤„ ìˆ˜ ìˆì–´ì•¼ í•˜ë¯€ë¡œ
+    // ì¸ìë¥¼ ì¶”ê°€í•˜ì˜€ë‹¤.
     static IDE_RC lockItem( void       * aTrans,
                             void       * aLockItem,
                             idBool       aIsIntent,
@@ -177,7 +177,7 @@ public:
                                                          idBool *aIsLock );
     /* BUG-33048 [sm_transaction] The Mutex of LockItem can not be the Native
      * mutex.
-     * LockItemÀ¸·Î NativeMutexÀ» »ç¿ëÇÒ ¼ö ÀÖµµ·Ï ¼öÁ¤ÇÔ */
+     * LockItemìœ¼ë¡œ NativeMutexì„ ì‚¬ìš©í•  ìˆ˜ ìˆë„ë¡ ìˆ˜ì •í•¨ */
     static     iduMutex   * getMutexOfLockItem(void *aLockItem);
     static     void         lockTableByPreparedLog(void* aTrans, 
                                                    SChar* aLog, 
@@ -187,8 +187,8 @@ public:
     static   void decTblLockModeAndTryUpdate(smlLockItemMutex*, smlLockMode);
     static   void incTblLockModeAndUpdate(smlLockItemMutex*, smlLockMode);
     
-    /* BUG-28752 lock table ... in row share mode ±¸¹®ÀÌ ¸ÔÈ÷Áö ¾Ê½À´Ï´Ù.
-     * implicit/explicit lockÀ» ±¸ºĞÇÏ¿© °Ì´Ï´Ù. */ 
+    /* BUG-28752 lock table ... in row share mode êµ¬ë¬¸ì´ ë¨¹íˆì§€ ì•ŠìŠµë‹ˆë‹¤.
+     * implicit/explicit lockì„ êµ¬ë¶„í•˜ì—¬ ê²ë‹ˆë‹¤. */ 
     static IDE_RC allocLockNodeAndInit(SInt           aSlot,
                                        smlLockMode    aLockMode,
                                        smlLockItem  * aLockItem,
@@ -225,18 +225,18 @@ public:
                                            smlLockMode  aNewMode = SML_NLOCK);
 
     // PRJ-1548 User Memory Tablespace
-    // smlLockMode°¡ S, IS°¡ ¾Æ´Ñ °æ¿ì TRUE¸¦ ¹İÈ¯ÇÑ´Ù.
+    // smlLockModeê°€ S, ISê°€ ì•„ë‹Œ ê²½ìš° TRUEë¥¼ ë°˜í™˜í•œë‹¤.
     static idBool isNotISorS( smlLockMode    aLockMode );
 
 //For Member
     static idBool              mCompatibleTBL[SML_NUMLOCKTYPES]
     [SML_NUMLOCKTYPES];
-    // »õ·Î grantµÈ lock°ú tableÀÇ ´ëÇ¥¶ôÀ» °¡Áö°í,
-    // tableÀÇ »õ·Î¿î ´ëÇ¥¶ôÀ» °áÁ¤ÇÒ¶§ »ç¿ëÇÑ´Ù.
+    // ìƒˆë¡œ grantëœ lockê³¼ tableì˜ ëŒ€í‘œë½ì„ ê°€ì§€ê³ ,
+    // tableì˜ ìƒˆë¡œìš´ ëŒ€í‘œë½ì„ ê²°ì •í• ë•Œ ì‚¬ìš©í•œë‹¤.
     static smlLockMode         mConversionTBL[SML_NUMLOCKTYPES]
     [SML_NUMLOCKTYPES];
-    // table lockÀ» unlockÇÒ¶§ ,tableÀÇ ´ëÇ¥¶ôÀ» °áÁ¤ÇÏ±â
-    // À§ÇÏ¿© ¹Ì¸® °è»êÇØ ³õÀº lock mode °áÁ¤ ¹è¿­ÀÓ.
+    // table lockì„ unlockí• ë•Œ ,tableì˜ ëŒ€í‘œë½ì„ ê²°ì •í•˜ê¸°
+    // ìœ„í•˜ì—¬ ë¯¸ë¦¬ ê³„ì‚°í•´ ë†“ì€ lock mode ê²°ì • ë°°ì—´ì„.
     static smlLockMode         mDecisionTBL[64];
     static SInt                mLockModeToMask[SML_NUMLOCKTYPES];
 
@@ -434,7 +434,7 @@ inline  IDE_RC smlLockMgr::lockWakeupFunc()
 }
 
 // PRJ-1548 User Memory Tablespace
-// smlLockMode°¡ S, IS°¡ ¾Æ´Ñ °æ¿ì TRUE¸¦ ¹İÈ¯ÇÑ´Ù.
+// smlLockModeê°€ S, ISê°€ ì•„ë‹Œ ê²½ìš° TRUEë¥¼ ë°˜í™˜í•œë‹¤.
 inline idBool smlLockMgr::isNotISorS(smlLockMode aLockMode)
 {
     if ( (aLockMode == SML_ISLOCK) || (aLockMode == SML_SLOCK) )
@@ -471,9 +471,9 @@ inline IDE_RC smlLockMgr::freeLockNode(smlLockNode*  aLockNode)
 
 /*********************************************************
   function description: findLockNode
-  Æ®·£Àè¼ÇÀÌ ÀÌÀü statement¿¡ ÀÇÇÏ¿©,
-  ÇöÀç  table A¿¡ ´ëÇÏ¿© lockÀ» Àâ°í ÀÖ´Â
-  lock node  ¸¦ Ã£´Â´Ù.
+  íŠ¸ëœì­ì…˜ì´ ì´ì „ statementì— ì˜í•˜ì—¬,
+  í˜„ì¬  table Aì— ëŒ€í•˜ì—¬ lockì„ ì¡ê³  ìˆëŠ”
+  lock node  ë¥¼ ì°¾ëŠ”ë‹¤.
 ***********************************************************/
 inline smlLockNode * smlLockMgr::findLockNode( smlLockItem * aLockItem, SInt aSlot )
 {
@@ -496,9 +496,9 @@ inline smlLockNode * smlLockMgr::findLockNode( smlLockItem * aLockItem, SInt aSl
 
 /*********************************************************
   function description: addLockSlot
-  transation lock slot list¿¡ insertÇÏ¸ç,
-  lock nodeÃß°¡ ´ë½Å, node¾È¿¡ lock slotÀ» ÀÌ¿ëÇÏ·ÁÇÒ¶§
-  ºÒ¸°´Ù.
+  transation lock slot listì— insertí•˜ë©°,
+  lock nodeì¶”ê°€ ëŒ€ì‹ , nodeì•ˆì— lock slotì„ ì´ìš©í•˜ë ¤í• ë•Œ
+  ë¶ˆë¦°ë‹¤.
 ***********************************************************/
 inline void smlLockMgr::addLockSlot( smlLockSlot * aLockSlot, SInt aSlot )
 {
@@ -511,11 +511,11 @@ inline void smlLockMgr::addLockSlot( smlLockSlot * aLockSlot, SInt aSlot )
     aLockSlot->mNxtLockSlot = sTransLockSlotHdr;
     aLockSlot->mPrvLockSlot = sTransLockSlotHdr->mPrvLockSlot;
 
-    /* BUG-15906: non-autocommit¸ğµå¿¡¼­ Select¿Ï·áÈÄ IS_LOCKÀÌ ÇØÁ¦µÇ¸é
-     * ÁÁ°Ú½À´Ï´Ù. Statement½ÃÀÛ½Ã TransactionÀÇ ¸¶Áö¸· Lock SlotÀÇ
-     * Lock Sequence Number¸¦ ÀúÀåÇØ µÎ°í Statement End½Ã¿¡ TransactionÀÇ
-     * Lock Slot List¸¦ ¿ªÀ¸·Î °¡¸é¼­ ÀúÀåÇØµĞ Lock Sequence Numberº¸´Ù
-     * ÇØ´ç Lock SlotÀÇ Lock Sequence Number°¡ ÀÛ°Å³ª °°À»¶§±îÁö LockÀ» ÇØÁ¦ÇÑ´Ù.
+    /* BUG-15906: non-autocommitëª¨ë“œì—ì„œ Selectì™„ë£Œí›„ IS_LOCKì´ í•´ì œë˜ë©´
+     * ì¢‹ê² ìŠµë‹ˆë‹¤. Statementì‹œì‘ì‹œ Transactionì˜ ë§ˆì§€ë§‰ Lock Slotì˜
+     * Lock Sequence Numberë¥¼ ì €ì¥í•´ ë‘ê³  Statement Endì‹œì— Transactionì˜
+     * Lock Slot Listë¥¼ ì—­ìœ¼ë¡œ ê°€ë©´ì„œ ì €ì¥í•´ë‘” Lock Sequence Numberë³´ë‹¤
+     * í•´ë‹¹ Lock Slotì˜ Lock Sequence Numberê°€ ì‘ê±°ë‚˜ ê°™ì„ë•Œê¹Œì§€ Lockì„ í•´ì œí•œë‹¤.
      */
     IDE_ASSERT( sTransLockSlotHdr->mPrvLockSlot->mLockSequence !=
                 ID_ULONG_MAX );
@@ -530,8 +530,8 @@ inline void smlLockMgr::addLockSlot( smlLockSlot * aLockSlot, SInt aSlot )
 
 /*********************************************************
   function description: removeLockSlot
-  transactionÀÇ slotid¿¡
-  ÇØ´çÇÏ´Â lock slot list¿¡¼­ lock slotÀ»  Á¦°ÅÇÑ´Ù.
+  transactionì˜ slotidì—
+  í•´ë‹¹í•˜ëŠ” lock slot listì—ì„œ lock slotì„  ì œê±°í•œë‹¤.
 ***********************************************************/
 inline void smlLockMgr::removeLockSlot( smlLockSlot * aLockSlot )
 {

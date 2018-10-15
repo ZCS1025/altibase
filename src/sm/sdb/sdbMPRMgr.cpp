@@ -62,16 +62,16 @@ IDE_RC sdbMPRMgr::destroyStatic()
 
 /****************************************************************
  * Description :
- * Multi Page Read Manager¸¦ ÃÊ±âÈ­ÇÕ´Ï´Ù. MPRÀ» ¼öÇàÇÏ·Á´Â Segment
- * ÀÇ Extent ÆäÀÌÁö°¹¼ö°¡ DB_FILE_MULTIPAGE_READ_COUNTÀ¸·Î AlignµÇ¾î
- * ÀÖÁö¾ÊÀ¸¸é SBR( Single Block Read )À» ÇÏ°Ô µË´Ï´Ù. ¸¸¾à Å©´Ù¸é
- * DB_FILE_MULTIPAGE_READ_COUNT°ªÀ¸·Î MPRÀ» ÇÏ°Ô µË´Ï´Ù.
+ * Multi Page Read Managerë¥¼ ì´ˆê¸°í™”í•©ë‹ˆë‹¤. MPRì„ ìˆ˜í–‰í•˜ë ¤ëŠ” Segment
+ * ì˜ Extent í˜ì´ì§€ê°¯ìˆ˜ê°€ DB_FILE_MULTIPAGE_READ_COUNTìœ¼ë¡œ Alignë˜ì–´
+ * ìˆì§€ì•Šìœ¼ë©´ SBR( Single Block Read )ì„ í•˜ê²Œ ë©ë‹ˆë‹¤. ë§Œì•½ í¬ë‹¤ë©´
+ * DB_FILE_MULTIPAGE_READ_COUNTê°’ìœ¼ë¡œ MPRì„ í•˜ê²Œ ë©ë‹ˆë‹¤.
  *
- * aStatistics - [IN] Åë°è Á¤º¸
+ * aStatistics - [IN] í†µê³„ ì •ë³´
  * aSpaceID    - [IN] SpaceID
  * aSegPID     - [IN] Segment PID
- * aFilter     - [IN] ÀĞÀ» ExtentÀÎÁö ÆÇ´ÜÇÏ±â À§ÇÑ Filter
- *                    NullÀÏ °æ¿ì ´Ù ÀĞÀ½
+ * aFilter     - [IN] ì½ì„ Extentì¸ì§€ íŒë‹¨í•˜ê¸° ìœ„í•œ Filter
+ *                    Nullì¼ ê²½ìš° ë‹¤ ì½ìŒ
  ****************************************************************/
 IDE_RC sdbMPRMgr::initialize( idvSQL           * aStatistics,
                               scSpaceID          aSpaceID,
@@ -121,8 +121,8 @@ IDE_RC sdbMPRMgr::initialize( idvSQL           * aStatistics,
     sDBFileMRCnt  = smuProperty::getDBFileMutiReadCnt();
     sPageCntInExt = mSegInfo.mPageCntInExt;
 
-    /* SegmentÀÇ Extent³»ÀÇ ÆäÀÌÁö °¹¼ö°¡ DB_FILE_MULTIPAGE_READ_COUNT
-     * ·Î AlignÀÌ µÇÁö ¾Ê°Å³ª Å©´Ù¸é Single Blcok Read¸¦ ÇÑ´Ù. */
+    /* Segmentì˜ Extentë‚´ì˜ í˜ì´ì§€ ê°¯ìˆ˜ê°€ DB_FILE_MULTIPAGE_READ_COUNT
+     * ë¡œ Alignì´ ë˜ì§€ ì•Šê±°ë‚˜ í¬ë‹¤ë©´ Single Blcok Readë¥¼ í•œë‹¤. */
     if( sDBFileMRCnt >= sPageCntInExt )
     {
         mMPRCnt = sPageCntInExt;
@@ -137,17 +137,17 @@ IDE_RC sdbMPRMgr::initialize( idvSQL           * aStatistics,
         }
     }
 
-    /* Buffer Size°¡ ³Ê¹«ÀÛÀ¸¸é SPRÀ» ÇÑ´Ù. */
+    /* Buffer Sizeê°€ ë„ˆë¬´ì‘ìœ¼ë©´ SPRì„ í•œë‹¤. */
     if( mBufferPool->getPoolSize() < mMPRCnt * 100 )
     {
         mMPRCnt = 1;
     }
 
-    /* ¸ğµç Segment´Â »ı¼º½Ã ÇÑ°³ÀÌ»óÀÇ Extent¸¦ °¡Áø´Ù. */
+    /* ëª¨ë“  SegmentëŠ” ìƒì„±ì‹œ í•œê°œì´ìƒì˜ Extentë¥¼ ê°€ì§„ë‹¤. */
     IDE_ASSERT( mSegInfo.mFstExtRID != SD_NULL_RID );
 
     /* BUG-33720 */
-    /* Small TableÀÇ °æ¿ì¿£´Â ÀĞÀº ÆäÀÌÁöµéÀ» LRU ListÀÇ ¾Õ¿¡ ³Ö´Â´Ù. */
+    /* Small Tableì˜ ê²½ìš°ì—”ëŠ” ì½ì€ í˜ì´ì§€ë“¤ì„ LRU Listì˜ ì•ì— ë„£ëŠ”ë‹¤. */
     sSmallTblThreshold = smuProperty::getSmallTblThreshold();
     if( mSegInfo.mFmtPageCnt <= sSmallTblThreshold )
     {
@@ -157,8 +157,8 @@ IDE_RC sdbMPRMgr::initialize( idvSQL           * aStatistics,
     {
         mIsCachePage = ID_FALSE;
 
-        /* sSmallTblThreshold°¡ ID_UINT_MAXÀÏ°æ¿ì MPR·Î ÀĞÀº ÆäÀÌÁöµéÀ» ¹«Á¶°Ç
-         * ¹öÆÛ¿¡ cachingÇÑ´Ù.
+        /* sSmallTblThresholdê°€ ID_UINT_MAXì¼ê²½ìš° MPRë¡œ ì½ì€ í˜ì´ì§€ë“¤ì„ ë¬´ì¡°ê±´
+         * ë²„í¼ì— cachingí•œë‹¤.
          */
         if( sSmallTblThreshold == ID_UINT_MAX )
         {
@@ -177,7 +177,7 @@ IDE_RC sdbMPRMgr::initialize( idvSQL           * aStatistics,
 
 /****************************************************************
  * Description :
- *  MPR¿¡ »ç¿ëÇÏ´Â MPRKey¸¦ Á¤¸®ÇÑ´Ù.
+ *  MPRì— ì‚¬ìš©í•˜ëŠ” MPRKeyë¥¼ ì •ë¦¬í•œë‹¤.
  ****************************************************************/
 IDE_RC sdbMPRMgr::destroy()
 {
@@ -203,7 +203,7 @@ IDE_RC sdbMPRMgr::destroy()
 
 /****************************************************************
  * Description :
- *  MPR¿¡ »ç¿ëÇÏ´Â MPRKey¿Í IO Buffer¸¦ ÇÒ´çÇÑ´Ù.
+ *  MPRì— ì‚¬ìš©í•˜ëŠ” MPRKeyì™€ IO Bufferë¥¼ í• ë‹¹í•œë‹¤.
  ****************************************************************/
 IDE_RC sdbMPRMgr::initMPRKey()
 {
@@ -224,8 +224,8 @@ IDE_RC sdbMPRMgr::initMPRKey()
 
 /****************************************************************
  * Description :
- *  MPR¿¡ »ç¿ëÇÏ´Â MPRKey¸¦ destroyÇÑ´Ù. ÇÒ´çµÈ IO Buffer¸¦
- *  FreeÇÑ´Ù.
+ *  MPRì— ì‚¬ìš©í•˜ëŠ” MPRKeyë¥¼ destroyí•œë‹¤. í• ë‹¹ëœ IO Bufferë¥¼
+ *  Freeí•œë‹¤.
  ****************************************************************/
 IDE_RC sdbMPRMgr::destMPRKey()
 {
@@ -239,11 +239,11 @@ IDE_RC sdbMPRMgr::destMPRKey()
         mBufferPool->cleanUpKey( mStatistics, &mMPRKey, mIsCachePage );
     }
 
-    /* BUG-22294: Buffer MissÈ¯°æ¿¡¼­ HangÀÎ °ÍÃ³·³ º¸ÀÔ´Ï´Ù.
+    /* BUG-22294: Buffer Missí™˜ê²½ì—ì„œ Hangì¸ ê²ƒì²˜ëŸ¼ ë³´ì…ë‹ˆë‹¤.
      *
-     * removeAllBCBÇÏ±âÀü¿¡ cleanUpKey¸¦ ¸ÕÀúÇØ¾ßÇÔ. ¸ÕÀúÇØ¾ßÁö¸¸
-     * FreeLst¿¡ ¹İÈ¯µÇ°í removeAllBCB½Ã¿¡´Â FreeList°¹¼ö¸¦ °¡Á®¿Í¼­
-     * Free¸¦ ÇÏ±â¶§¹®ÀÔ´Ï´Ù.
+     * removeAllBCBí•˜ê¸°ì „ì— cleanUpKeyë¥¼ ë¨¼ì €í•´ì•¼í•¨. ë¨¼ì €í•´ì•¼ì§€ë§Œ
+     * FreeLstì— ë°˜í™˜ë˜ê³  removeAllBCBì‹œì—ëŠ” FreeListê°¯ìˆ˜ë¥¼ ê°€ì ¸ì™€ì„œ
+     * Freeë¥¼ í•˜ê¸°ë•Œë¬¸ì…ë‹ˆë‹¤.
      * */
     mMPRKey.removeAllBCB( &sFirstBCB, &sLastBCB, &sBCBCount );
 
@@ -266,8 +266,8 @@ IDE_RC sdbMPRMgr::destMPRKey()
 
 /****************************************************************
  * Description :
- * Ã¹¹øÂ° ÆäÀÌÁö ¹Ù·ÎÀü À§Ä¡·Î MPRKeyÀÇ Index¸¦ À§Ä¡½ÃÅ²´Ù.
- * ÀÌ ÇÔ¼öÈÄ¿¡ getNxtPage¸¦ ÇÏ°ÔµÇ¸é Ã¹¹øÂ° ÆäÀÌÁö°¡ GetÇÏ°Ô µÈ´Ù.
+ * ì²«ë²ˆì§¸ í˜ì´ì§€ ë°”ë¡œì „ ìœ„ì¹˜ë¡œ MPRKeyì˜ Indexë¥¼ ìœ„ì¹˜ì‹œí‚¨ë‹¤.
+ * ì´ í•¨ìˆ˜í›„ì— getNxtPageë¥¼ í•˜ê²Œë˜ë©´ ì²«ë²ˆì§¸ í˜ì´ì§€ê°€ Getí•˜ê²Œ ëœë‹¤.
  ****************************************************************/
 IDE_RC sdbMPRMgr::beforeFst()
 {
@@ -288,7 +288,7 @@ IDE_RC sdbMPRMgr::beforeFst()
                                        &mCurExtInfo )
               != IDE_SUCCESS );
 
-    /* SegmentÀÇ Ã¹¹øÂ° PIDÀÇ SeqNo´Â 0ÀÌ´Ù. */
+    /* Segmentì˜ ì²«ë²ˆì§¸ PIDì˜ SeqNoëŠ” 0ì´ë‹¤. */
     sMPRCnt = getMPRCnt( mCurExtRID, mCurExtInfo.mFstPID );
 
     IDE_TEST( mBufferPool->fetchPagesByMPR(
@@ -312,28 +312,28 @@ IDE_RC sdbMPRMgr::beforeFst()
 
 /****************************************************************
  * Description :
- * Filtering ¹× Parallel ScanÀ» µ¿½Ã¿¡ Áö¿øÇÏ±â À§ÇØ,
- * ExtentSequence¸¦ ¹ÙÅÁÀ¸·Î ÀĞÀ» ExtentÀÎÁö ¾Æ´ÑÁö¸¦ Filtering ÇÑ´Ù.
+ * Filtering ë° Parallel Scanì„ ë™ì‹œì— ì§€ì›í•˜ê¸° ìœ„í•´,
+ * ExtentSequenceë¥¼ ë°”íƒ•ìœ¼ë¡œ ì½ì„ Extentì¸ì§€ ì•„ë‹Œì§€ë¥¼ Filtering í•œë‹¤.
  *
- * - Sampling ´ë»ó ¼±Á¤ ¹ı 
- * Sampling Percentage°¡ P¶ó ÇßÀ»¶§, ´©ÀûµÇ´Â °ª C¸¦ µÎ°í C¿¡ P¸¦
- * ´õÇßÀ»¶§ 1À» ³Ñ¾î°¡´Â °æ¿ì¿¡ Sampling ÇÏ´Â °ÍÀ¸·Î ÇÑ´Ù.
+ * - Sampling ëŒ€ìƒ ì„ ì • ë²• 
+ * Sampling Percentageê°€ Pë¼ í–ˆì„ë•Œ, ëˆ„ì ë˜ëŠ” ê°’ Cë¥¼ ë‘ê³  Cì— Pë¥¼
+ * ë”í–ˆì„ë•Œ 1ì„ ë„˜ì–´ê°€ëŠ” ê²½ìš°ì— Sampling í•˜ëŠ” ê²ƒìœ¼ë¡œ í•œë‹¤.
  *
- * ¿¹)
+ * ì˜ˆ)
  * P=1, C=0
- * Ã¹¹øÂ° ÆäÀÌÁö C+=P  C=>0.25
- * µÎ¹øÂ° ÆäÀÌÁö C+=P  C=>0.50
- * ¼¼¹øÂ° ÆäÀÌÁö C+=P  C=>0.75
- * ³×¹øÂ° ÆäÀÌÁö C+=P  C=>1(Sampling!)  C--; C=>0
- * ´Ù¼¸¹øÂ° ÆäÀÌÁö C+=P  C=>0.25
- * ¿©¼¸¹øÂ° ÆäÀÌÁö C+=P  C=>0.50
- * ÀÏ°ö¹øÂ° ÆäÀÌÁö C+=P  C=>0.75
- * ¿©´ü¹øÂ° ÆäÀÌÁö C+=P  C=>1(Sampling!)  C--; C=>0 
+ * ì²«ë²ˆì§¸ í˜ì´ì§€ C+=P  C=>0.25
+ * ë‘ë²ˆì§¸ í˜ì´ì§€ C+=P  C=>0.50
+ * ì„¸ë²ˆì§¸ í˜ì´ì§€ C+=P  C=>0.75
+ * ë„¤ë²ˆì§¸ í˜ì´ì§€ C+=P  C=>1(Sampling!)  C--; C=>0
+ * ë‹¤ì„¯ë²ˆì§¸ í˜ì´ì§€ C+=P  C=>0.25
+ * ì—¬ì„¯ë²ˆì§¸ í˜ì´ì§€ C+=P  C=>0.50
+ * ì¼ê³±ë²ˆì§¸ í˜ì´ì§€ C+=P  C=>0.75
+ * ì—¬ëŸë²ˆì§¸ í˜ì´ì§€ C+=P  C=>1(Sampling!)  C--; C=>0 
  *
- * aExtReq      - [IN] ExtentÀÇ Sequence¹øÈ£
+ * aExtReq      - [IN] Extentì˜ Sequenceë²ˆí˜¸
  * aFilterData  - [IN] ThreadID & ThreadCnt & SamplingData
  *
- * RETURN       - [OUT] ÀĞÀ»Áö ¿©ºÎ
+ * RETURN       - [OUT] ì½ì„ì§€ ì—¬ë¶€
  ****************************************************************/
 idBool sdbMPRMgr::filter4SamplingAndPScan( ULong   aExtSeq,
                                            void  * aFilterData )
@@ -359,13 +359,13 @@ idBool sdbMPRMgr::filter4SamplingAndPScan( ULong   aExtSeq,
 
 /****************************************************************
  * Description :
- * Parallel ScanÀ» À§ÇØ ExtentSequence¸¦ ModularÇÏ¿© ³»°¡ ÀĞÀ»
- * ExtentÀÎÁö ¾Æ´ÑÁö¸¦ Filtering ÇÑ´Ù.
+ * Parallel Scanì„ ìœ„í•´ ExtentSequenceë¥¼ Modularí•˜ì—¬ ë‚´ê°€ ì½ì„
+ * Extentì¸ì§€ ì•„ë‹Œì§€ë¥¼ Filtering í•œë‹¤.
  *
- * aExtReq     - [IN] ExtentÀÇ Sequence¹øÈ£
+ * aExtReq     - [IN] Extentì˜ Sequenceë²ˆí˜¸
  * aFilterData - [IN] ThreadID & ThreadCnt
  *
- * RETURN      - [OUT] ÀĞÀ»Áö ¿©ºÎ
+ * RETURN      - [OUT] ì½ì„ì§€ ì—¬ë¶€
  ****************************************************************/
 idBool sdbMPRMgr::filter4PScan( ULong   aExtSeq,
                                 void  * aFilterData )
@@ -389,10 +389,10 @@ idBool sdbMPRMgr::filter4PScan( ULong   aExtSeq,
 
 /****************************************************************
  * Description :
- * Scan½Ã mCurPageIDÀÇ ´ÙÀ½ Page¿¡ ´ëÇÑ PID¿Í Pointer¸¦ Ã£¾ÆÁØ´Ù.
- * ÀĞÀ»Áö ¿©ºÎ´Â Filter·Î ÆÇ´ÜÇÑ´Ù.
+ * Scanì‹œ mCurPageIDì˜ ë‹¤ìŒ Pageì— ëŒ€í•œ PIDì™€ Pointerë¥¼ ì°¾ì•„ì¤€ë‹¤.
+ * ì½ì„ì§€ ì—¬ë¶€ëŠ” Filterë¡œ íŒë‹¨í•œë‹¤.
  *
- * aFilterData - [IN] Filter¿¡¼­ ¾²ÀÏ Âü°í°ª
+ * aFilterData - [IN] Filterì—ì„œ ì“°ì¼ ì°¸ê³ ê°’
  * aPageID     - [OUT] Next PID
  ****************************************************************/
 IDE_RC sdbMPRMgr::getNxtPageID( void           * aFilterData,
@@ -425,7 +425,7 @@ IDE_RC sdbMPRMgr::getNxtPageID( void           * aFilterData,
         if( mFilter == NULL )
         {
             IDE_ERROR( aFilterData == NULL );
-            break; /* Filtering ¾ÈÇÏ¸é ÀüºÎ OK */
+            break; /* Filtering ì•ˆí•˜ë©´ ì „ë¶€ OK */
         }
         else
         {
@@ -436,7 +436,7 @@ IDE_RC sdbMPRMgr::getNxtPageID( void           * aFilterData,
             }
             else
             {
-                /*Filter¿¡ Åë°ú ¸øÇÔ */
+                /*Filterì— í†µê³¼ ëª»í•¨ */
             }
         }
 
@@ -454,7 +454,7 @@ IDE_RC sdbMPRMgr::getNxtPageID( void           * aFilterData,
     IDE_EXCEPTION_CONT( cont_no_more_page );
 
     /* BUG-33719 [sm-disk-resource] set full scan hint for TMS. 
-     * NoSampling SerialScanÀÎ °æ¿ì, Fullscan¿ë Hint¸¦ ¼³Á¤ÇØ¾ß ÇÔ */
+     * NoSampling SerialScanì¸ ê²½ìš°, Fullscanìš© Hintë¥¼ ì„¤ì •í•´ì•¼ í•¨ */
     if( aFilterData == NULL )
     {
         mFoundLstAllocPage = ID_TRUE;
@@ -472,16 +472,16 @@ IDE_RC sdbMPRMgr::getNxtPageID( void           * aFilterData,
 
 /****************************************************************
  * Description:
- *  MPR Å°¸¦ ÀÌ¿ëÇÏ¿© fixPage¸¦ ÇÑ´Ù.
+ *  MPR í‚¤ë¥¼ ì´ìš©í•˜ì—¬ fixPageë¥¼ í•œë‹¤.
  *
- *  ÀÌ¹Ì fixCount¸¦ ¿Ã·Á ³õ¾Ò±â ¶§¹®¿¡, ¹İµå½Ã ÇØ½Ã(¹öÆÛ)¿¡ Á¸ÀçÇÔÀ»
- *  º¸Àå ÇÒ ¼ö ÀÖ´Ù.  ±×·¸±â ¶§¹®¿¡ ¿©±â¼± º°µµÀÇ fix¸¦ ÇÏÁö ¾Ê°í,
- *  ÇØ½Ãµµ Á¢±ÙÇÏÁö ¾Ê´Â´Ù. ¶ÇÇÑ touch Countµµ Áõ°¡ ½ÃÅ°Áö ¾Ê´Â´Ù.
+ *  ì´ë¯¸ fixCountë¥¼ ì˜¬ë ¤ ë†“ì•˜ê¸° ë•Œë¬¸ì—, ë°˜ë“œì‹œ í•´ì‹œ(ë²„í¼)ì— ì¡´ì¬í•¨ì„
+ *  ë³´ì¥ í•  ìˆ˜ ìˆë‹¤.  ê·¸ë ‡ê¸° ë•Œë¬¸ì— ì—¬ê¸°ì„  ë³„ë„ì˜ fixë¥¼ í•˜ì§€ ì•Šê³ ,
+ *  í•´ì‹œë„ ì ‘ê·¼í•˜ì§€ ì•ŠëŠ”ë‹¤. ë˜í•œ touch Countë„ ì¦ê°€ ì‹œí‚¤ì§€ ì•ŠëŠ”ë‹¤.
  *
- *  getPageÀÎÅÍÆäÀÌ½º¸¦ º¸¸é ¾Ë°ÚÁö¸¸, ÀÓÀÇÀÇ ÆäÀÌÁö¿¡ ´ëÇØ¼­ Á¢±ÙÇÏ´Â
- *  °ÍÀÌ ¾Æ´Ï°í, ¸®ÅÏµÉ BCB°¡ Á¤ÇØÁ® ÀÖ´Ù.
+ *  getPageì¸í„°í˜ì´ìŠ¤ë¥¼ ë³´ë©´ ì•Œê² ì§€ë§Œ, ì„ì˜ì˜ í˜ì´ì§€ì— ëŒ€í•´ì„œ ì ‘ê·¼í•˜ëŠ”
+ *  ê²ƒì´ ì•„ë‹ˆê³ , ë¦¬í„´ë  BCBê°€ ì •í•´ì ¸ ìˆë‹¤.
  *
- *  aExtRID     - [IN] aPage°¡ ÀÖ´Â Extent RID
+ *  aExtRID     - [IN] aPageê°€ ìˆëŠ” Extent RID
  *  aPageID     - [IN] PageID
  ****************************************************************/
 IDE_RC sdbMPRMgr::fixPage( sdRID            aExtRID,
@@ -496,7 +496,7 @@ IDE_RC sdbMPRMgr::fixPage( sdRID            aExtRID,
 
     sPrvExtRID = mCurExtRID;
 
-    /* MPR·Î ReadÇÑ ÆäÀÌÁöÁß ¾ÆÁ÷ ÀĞÁö ¾ÊÀº ÆäÀÌÁö°¡ ÀÖ´ÂÁö Á¶»çÇÑ´Ù. */
+    /* MPRë¡œ Readí•œ í˜ì´ì§€ì¤‘ ì•„ì§ ì½ì§€ ì•Šì€ í˜ì´ì§€ê°€ ìˆëŠ”ì§€ ì¡°ì‚¬í•œë‹¤. */
     while(1)
     {
         if( mMPRKey.hasNextPage() == ID_TRUE )
@@ -508,20 +508,20 @@ IDE_RC sdbMPRMgr::fixPage( sdRID            aExtRID,
         }
         else
         {
-            /* »õ·Î¿î ÆäÀÌÁö¸¦ Disk¿¡¼­ ÀĞ¾î¿Í¾ß ÇÑ´Ù. */
+            /* ìƒˆë¡œìš´ í˜ì´ì§€ë¥¼ Diskì—ì„œ ì½ì–´ì™€ì•¼ í•œë‹¤. */
             IDE_ASSERT( aExtRID != SD_NULL_RID );
 
-            /* mCurPageID´Â ÀÌÀü¿¡ ÀĞ¾ú´ø Extent¿¡ Á¸ÀçÇÏÁö ¾Ê´Â´Ù.
-             * ´ÙÀ½ Extent·Î ÀÌµ¿ ÇÑ´Ù. */
+            /* mCurPageIDëŠ” ì´ì „ì— ì½ì—ˆë˜ Extentì— ì¡´ì¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
+             * ë‹¤ìŒ Extentë¡œ ì´ë™ í•œë‹¤. */
             if( aExtRID != sPrvExtRID )
             {
-                /* BUG-29450 - DB_FILE_MULTIPAGE_READ_COUNT°¡ Extent´ç ÆäÀÌÁö
-                 *             °³¼öº¸´Ù Å©°Å³ª alignÀÌ ¸ÂÁö ¾Ê´Â °æ¿ì
-                 *             FullScan½Ã Hang °É¸± ¼ö ÀÖ´Ù.
+                /* BUG-29450 - DB_FILE_MULTIPAGE_READ_COUNTê°€ Extentë‹¹ í˜ì´ì§€
+                 *             ê°œìˆ˜ë³´ë‹¤ í¬ê±°ë‚˜ alignì´ ë§ì§€ ì•ŠëŠ” ê²½ìš°
+                 *             FullScanì‹œ Hang ê±¸ë¦´ ìˆ˜ ìˆë‹¤.
                  *
-                 * MPRÀÇ MPRCnt´Â Extent´ç ÆäÀÌÁö °³¼ö¿¡ align µÇ¾î ÀÖ±â ¶§¹®¿¡
+                 * MPRì˜ MPRCntëŠ” Extentë‹¹ í˜ì´ì§€ ê°œìˆ˜ì— align ë˜ì–´ ìˆê¸° ë•Œë¬¸ì—
                  * sFstReadPID = mCurExtInfo.mFstDataPID;
-                 * ¿Í °°ÀÌ Ã¹¹øÂ° µ¥ÀÌÅÍ ÆäÀÌÁö·Î ¼³Á¤ÇÏ¸é ¾ÈµÈ´Ù. */
+                 * ì™€ ê°™ì´ ì²«ë²ˆì§¸ ë°ì´í„° í˜ì´ì§€ë¡œ ì„¤ì •í•˜ë©´ ì•ˆëœë‹¤. */
                 sFstReadPID = mCurExtInfo.mFstPID;
                 sPrvExtRID  = aExtRID;
             }
@@ -531,13 +531,13 @@ IDE_RC sdbMPRMgr::fixPage( sdRID            aExtRID,
 
                 IDE_ASSERT( sBCB != NULL );
 
-                /* °°Àº ExtentÀÇ ´ÙÀ½ÆäÀÌÁö ÀÌ¹Ç·Î +1 ÇÑ °ªÀÌ ´ÙÀ½¿¡
-                 * ÀĞ¾î¾ß ÇÒ Page ID */
+                /* ê°™ì€ Extentì˜ ë‹¤ìŒí˜ì´ì§€ ì´ë¯€ë¡œ +1 í•œ ê°’ì´ ë‹¤ìŒì—
+                 * ì½ì–´ì•¼ í•  Page ID */
                 sFstReadPID = sBCB->mPageID + 1;
             }
 
-            /* ¸¶Áö¸· Extent¸¦ ÀĞÀ»¶§´Â HWM±îÁö¸¸ ÀĞ¾î¾ß ÇÏ±â¶§¹®¿¡
-             * MPR Count¸¦ Á¶Á¤ÇØ¾ß ÇÑ´Ù. */
+            /* ë§ˆì§€ë§‰ Extentë¥¼ ì½ì„ë•ŒëŠ” HWMê¹Œì§€ë§Œ ì½ì–´ì•¼ í•˜ê¸°ë•Œë¬¸ì—
+             * MPR Countë¥¼ ì¡°ì •í•´ì•¼ í•œë‹¤. */
             sMPRCnt = getMPRCnt( aExtRID, sFstReadPID );
 
             mIsFetchPage = ID_FALSE;
@@ -564,7 +564,7 @@ IDE_RC sdbMPRMgr::fixPage( sdRID            aExtRID,
         {
             IDE_ASSERT( sBCB->mFrame != NULL );
 
-            /* BUG-29005 FullScan ¼º´É °³¼± */
+            /* BUG-29005 FullScan ì„±ëŠ¥ ê°œì„  */
             sPageHdr  = sdpPhyPage::getHdr( sBCB->mFrame );
             sPageType = sdpPhyPage::getPageType( sPageHdr );
 
@@ -592,7 +592,7 @@ IDE_RC sdbMPRMgr::fixPage( sdRID            aExtRID,
 
 /****************************************************************
  * Description:
- *  MPRÀÌ ÇöÀç °¡¸®Å°°í ÀÖ´Â pageÀÇ pointer¸¦ ¸®ÅÏÇÑ´Ù.
+ *  MPRì´ í˜„ì¬ ê°€ë¦¬í‚¤ê³  ìˆëŠ” pageì˜ pointerë¥¼ ë¦¬í„´í•œë‹¤.
  *
  ****************************************************************/
 UChar* sdbMPRMgr::getCurPagePtr()
@@ -605,8 +605,8 @@ UChar* sdbMPRMgr::getCurPagePtr()
 
 /****************************************************************
  * Description:
- *  MPR Count¸¦ ±¸ÇÑ´Ù. ¸¶Áö¸· Extent¸¦ ÀĞÀ»¶§´Â HWM±îÁö¸¸ ÀĞ¾î¾ß
- *  ÇÏ±â¶§¹®¿¡ MPR Count¸¦ Á¶Á¤ÇØ¾ß ÇÑ´Ù
+ *  MPR Countë¥¼ êµ¬í•œë‹¤. ë§ˆì§€ë§‰ Extentë¥¼ ì½ì„ë•ŒëŠ” HWMê¹Œì§€ë§Œ ì½ì–´ì•¼
+ *  í•˜ê¸°ë•Œë¬¸ì— MPR Countë¥¼ ì¡°ì •í•´ì•¼ í•œë‹¤
  *
  * aPagePtr - [IN] Page Pointer
  ****************************************************************/
@@ -617,12 +617,12 @@ UInt sdbMPRMgr::getMPRCnt( sdRID aCurReadExtRID, scPageID aFstReadPID )
 
     sMPRCnt = mMPRCnt;
 
-    /* BUG-29005 FullScan ¼º´É °³¼± */
+    /* BUG-29005 FullScan ì„±ëŠ¥ ê°œì„  */
     if ( mSegCacheInfo.mUseLstAllocPageHint == ID_TRUE )
     {
         sState = 1;
         
-        /* ¸¶Áö¸· ÇÒ´çµÈ ÆäÀÌÁö¸¦ Æ÷ÇÔÇÑ Extent¸¦ readÇÏ´Â °æ¿ì */
+        /* ë§ˆì§€ë§‰ í• ë‹¹ëœ í˜ì´ì§€ë¥¼ í¬í•¨í•œ Extentë¥¼ readí•˜ëŠ” ê²½ìš° */
         if ( (mCurExtInfo.mFstPID <= mSegCacheInfo.mLstAllocPID) &&
              (mCurExtInfo.mLstPID >= mSegCacheInfo.mLstAllocPID) )
         {

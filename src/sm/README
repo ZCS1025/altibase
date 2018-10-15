@@ -1,17 +1,17 @@
 #########################################################################
-# TASK-3649 SM architecture layer¸¦ °í·ÁÇÑ prefix rule convention Á¤¸³  # 
-# TASK-4011 [SM-memory] ¸Ş¸ğ¸® ÀúÀå °ü¸®ÀÚ ¿ª·® Çâ»ó                    #
+# TASK-3649 SM architecture layerë¥¼ ê³ ë ¤í•œ prefix rule convention ì •ë¦½  # 
+# TASK-4011 [SM-memory] ë©”ëª¨ë¦¬ ì €ì¥ ê´€ë¦¬ì ì—­ëŸ‰ í–¥ìƒ                    #
 #                                                                       #
-# ¾Æ·¡ Á¤¸®ÇÑ ³»¿ëÀº Task, Project ÁøÇà¿¡ µû¶ó¼­ º¯°æµÉ ¼ö ÀÖ½À´Ï´Ù.    #
-# µû¶ó¼­ Âü°íÀÚ·á·Î¸¸ »ç¿ëÇÏ½Ã±â ¹Ù¶ø´Ï´Ù.                              #
+# ì•„ë˜ ì •ë¦¬í•œ ë‚´ìš©ì€ Task, Project ì§„í–‰ì— ë”°ë¼ì„œ ë³€ê²½ë  ìˆ˜ ìˆìŠµë‹ˆë‹¤.    #
+# ë”°ë¼ì„œ ì°¸ê³ ìë£Œë¡œë§Œ ì‚¬ìš©í•˜ì‹œê¸° ë°”ëë‹ˆë‹¤.                              #
 #########################################################################
 
 ####################################
-#        Layer Prefix ¼³¸í         #
+#        Layer Prefix ì„¤ëª…         #
 ####################################
 
 Interface
-    smi : QP, RP, LK, MM¿¡¼­ È£ÃâÇÏ´Â ÀÎÅÍÆäÀÌ½º  
+    smi : QP, RP, LK, MMì—ì„œ í˜¸ì¶œí•˜ëŠ” ì¸í„°í˜ì´ìŠ¤  
 
 Application 
     sma : GC, Refine Module  
@@ -26,8 +26,8 @@ Index
     svn : Volatile index, sequential access  
 
 Record 
-    smc : Memory record(lob Æ÷ÇÔ), Catalog table, Table, Object, Sequence »ı¼º  
-    sdc : Disk row(lob Æ÷ÇÔ), Disk temp row, Direct Path Insert  
+    smc : Memory record(lob í¬í•¨), Catalog table, Table, Object, Sequence ìƒì„±  
+    sdc : Disk row(lob í¬í•¨), Disk temp row, Direct Path Insert  
     svc : Volatile record  
 
 Extractor
@@ -54,11 +54,11 @@ Resource
     sds : Secondary Buffer Manager
 
 Common
-    scc : Common meta layer(smcTableHeader¸¦ ¾×¼¼½ºÇÏ±â À§ÇÑ ÀÎÅÍÆäÀÌ½º)  
+    scc : Common meta layer(smcTableHeaderë¥¼ ì•¡ì„¸ìŠ¤í•˜ê¸° ìœ„í•œ ì¸í„°í˜ì´ìŠ¤)  
 
 Utilities
     smt : Multi thread utility  
-    smu : Property, SM Utilities(Queue, Hash, List µî)
+    smu : Property, SM Utilities(Queue, Hash, List ë“±)
     util : Dump Tools
 
 #########################################
@@ -74,14 +74,14 @@ WP : WorkareaPage
 #   Storage Management Architecture     # 
 #########################################
 
-Interface Layer     (i)     »óÀ§ QP¸ğµâ¿¡ ÀÇÇØ È£Ãâ  
-Application Layer   (a)     SM ÀÀ¿ë Thread(GC, Refine)  
-Transaction Layer   (x,l)   Transaction°ú Lock Manager  
-Index Layer         (n)     °¢Á¾ Ä¿¼­ ¹× ÀÎµ¦½º  
-Record Layer        (c)     Logical Á¤º¸¸¦ ´ã°í ÀÖ´Â Record ±¸Á¶  
-Extractor Layer     (e)     Data¸¦ ÃßÃâÇÏ´Â ±â´É
+Interface Layer     (i)     ìƒìœ„ QPëª¨ë“ˆì— ì˜í•´ í˜¸ì¶œ  
+Application Layer   (a)     SM ì‘ìš© Thread(GC, Refine)  
+Transaction Layer   (x,l)   Transactionê³¼ Lock Manager  
+Index Layer         (n)     ê°ì¢… ì»¤ì„œ ë° ì¸ë±ìŠ¤  
+Record Layer        (c)     Logical ì •ë³´ë¥¼ ë‹´ê³  ìˆëŠ” Record êµ¬ì¡°  
+Extractor Layer     (e)     Dataë¥¼ ì¶”ì¶œí•˜ëŠ” ê¸°ëŠ¥
 Page Layer          (p)     Physical Page Structure, Extent, Segment  
-Recovery Layer      (r)     Logging, Restart Recovery °ü·Ã  
+Recovery Layer      (r)     Logging, Restart Recovery ê´€ë ¨  
 Resource Layer      (m)     Memory/Buffer Mgr/Disk Mgr  
 
 
@@ -91,12 +91,12 @@ Resource Layer      (m)     Memory/Buffer Mgr/Disk Mgr
 
 s(x)(x)
 
-Ã¹¹øÂ° x´Â
+ì²«ë²ˆì§¸ xëŠ”
             m(memory)
             d(disk)
             v(volatile)
             c(common)
 
-µÎ¹øÂ° x´Â
-            °¢ Storage Management Architecture
+ë‘ë²ˆì§¸ xëŠ”
+            ê° Storage Management Architecture
 

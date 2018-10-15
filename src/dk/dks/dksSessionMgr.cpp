@@ -37,21 +37,21 @@ iduList          dksSessionMgr::mDataSessionList;
 iduMutex         dksSessionMgr::mDksMutex;
 
 /************************************************************************
- * Description : DK session manager ¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+ * Description : DK session manager ë¥¼ ì´ˆê¸°í™”í•œë‹¤.
  *
  ************************************************************************/
 IDE_RC  dksSessionMgr::initializeStatic()
 {
     mDataSessionCnt = 0;
 
-    /* Linker control session ÃÊ±âÈ­ */
+    /* Linker control session ì´ˆê¸°í™” */
     IDE_TEST( initCtrlSession() != IDE_SUCCESS );
     IDE_TEST( initNotifyDataSession() != IDE_SUCCESS );
 
-    /* Linker data session list ÃÊ±âÈ­ */
+    /* Linker data session list ì´ˆê¸°í™” */
     IDU_LIST_INIT( &mDataSessionList );
 
-    /* Linker data session list ¸¦ À§ÇÑ mutex ÃÊ±âÈ­ */
+    /* Linker data session list ë¥¼ ìœ„í•œ mutex ì´ˆê¸°í™” */
     IDE_TEST_RAISE( mDksMutex.initialize( (SChar *)"DKS_DATA_SESSION_LIST_MUTEX",
                                           IDU_MUTEX_KIND_POSIX,
                                           IDV_WAIT_INDEX_NULL )
@@ -69,7 +69,7 @@ IDE_RC  dksSessionMgr::initializeStatic()
 }
 
 /************************************************************************
- * Description : Session manager ÀÇ linker control session À» ÃÊ±âÈ­ ÇÑ´Ù.
+ * Description : Session manager ì˜ linker control session ì„ ì´ˆê¸°í™” í•œë‹¤.
  *
  ************************************************************************/
 IDE_RC  dksSessionMgr::initCtrlSession()
@@ -143,7 +143,7 @@ IDE_RC  dksSessionMgr::initNotifyDataSession()
 }
 
 /************************************************************************
- * Description : DK session manager ¸¦ Á¤¸®ÇÑ´Ù.
+ * Description : DK session manager ë¥¼ ì •ë¦¬í•œë‹¤.
  *
  ************************************************************************/
 IDE_RC  dksSessionMgr::finalizeStatic()
@@ -196,11 +196,11 @@ IDE_RC  dksSessionMgr::finalizeStatic()
 }
 
 /************************************************************************
- * Description : Linker data session À» ÇÏ³ª »ı¼ºÇÏ°í ÃÊ±âÈ­ÇÏ¿© session
- *               manager ÀÇ data session list ¿¡ Ãß°¡ÇØÁØ´Ù.
+ * Description : Linker data session ì„ í•˜ë‚˜ ìƒì„±í•˜ê³  ì´ˆê¸°í™”í•˜ì—¬ session
+ *               manager ì˜ data session list ì— ì¶”ê°€í•´ì¤€ë‹¤.
  *
- *  aSessionId      - [IN] »ı¼ºÇÏ·Á´Â linker data session ¿¡°Ô ºÎ¿©ÇÒ id
- *  aDataSession    - [OUT] »ı¼ºÇÑ linker data session
+ *  aSessionId      - [IN] ìƒì„±í•˜ë ¤ëŠ” linker data session ì—ê²Œ ë¶€ì—¬í•  id
+ *  aDataSession    - [OUT] ìƒì„±í•œ linker data session
  *
  ************************************************************************/
 IDE_RC  dksSessionMgr::createDataSession( UInt             aSessionId,
@@ -285,10 +285,10 @@ IDE_RC  dksSessionMgr::createDataSession( UInt             aSessionId,
 }
 
 /************************************************************************
- * Description : ÀÔ·Â¹ŞÀº data session °ú 1:1 ¿¬°áÀ» ¼öÇàÇÒ AltiLinker Ãø
- *               data session À» ÇÏ³ª »ı¼ºÇÑ´Ù.
+ * Description : ì…ë ¥ë°›ì€ data session ê³¼ 1:1 ì—°ê²°ì„ ìˆ˜í–‰í•  AltiLinker ì¸¡
+ *               data session ì„ í•˜ë‚˜ ìƒì„±í•œë‹¤.
  *
- *  aDataSession    - [IN] »ı¼ºÇÒ linker data session
+ *  aDataSession    - [IN] ìƒì„±í•  linker data session
  *
  ************************************************************************/
 IDE_RC  dksSessionMgr::createLinkerDataSession( dksDataSession  *aDataSession )
@@ -307,13 +307,13 @@ IDE_RC  dksSessionMgr::createLinkerDataSession( dksDataSession  *aDataSession )
 
     /*
      *  BUG-39226
-     *  altilinker ¿¡¼­ CreateLinkerDataSession À» ¹Ş¾ÒÀ¸¸é
-     *  Á¤»óÀûÀÌµç ºñÁ¤»óÀûÀÌµç Ã³¸®°¡ µÇ¾ú´Ù¶ó°í °£ÁÖ ÇÑ´Ù.
-     *  Result À» ¸ø ¹Ş¾Ò´Ù¶ó°í ÇØ¼­ altilinker ¿¡¼­ DataSession ÀÌ
-     *  »ı¼ºµÇÁö ¾Ê¾Ò´Ù¶ó°í ¿©±æ¼ö´Â ¾ø´Ù.
-     *  ±×¸®°í ¸¸¾à Send Socket Buffer ¿¡¸¸ ¾²¿©Áö°í altilinker ¿¡°Ô Àü´Ş ¾ÈµÇ¾ú´Ù
-     *  ÇÏ´õ¶óµµ destroyDataSession OP °¡ Àü´Ş µÇµµ µ¿ÀÛ¿¡´Â ¹®Á¦°¡ ¾ø´Ù.
-     *  ´Ù¸¸ altilinker ¿¡ DataSession ¾ø´Ù´Â ¿À·ù ¸Ş½ÃÁö°¡ ÇÑÁÙ Ãß°¡µÉ »ÓÀÌ´Ù.
+     *  altilinker ì—ì„œ CreateLinkerDataSession ì„ ë°›ì•˜ìœ¼ë©´
+     *  ì •ìƒì ì´ë“  ë¹„ì •ìƒì ì´ë“  ì²˜ë¦¬ê°€ ë˜ì—ˆë‹¤ë¼ê³  ê°„ì£¼ í•œë‹¤.
+     *  Result ì„ ëª» ë°›ì•˜ë‹¤ë¼ê³  í•´ì„œ altilinker ì—ì„œ DataSession ì´
+     *  ìƒì„±ë˜ì§€ ì•Šì•˜ë‹¤ë¼ê³  ì—¬ê¸¸ìˆ˜ëŠ” ì—†ë‹¤.
+     *  ê·¸ë¦¬ê³  ë§Œì•½ Send Socket Buffer ì—ë§Œ ì“°ì—¬ì§€ê³  altilinker ì—ê²Œ ì „ë‹¬ ì•ˆë˜ì—ˆë‹¤
+     *  í•˜ë”ë¼ë„ destroyDataSession OP ê°€ ì „ë‹¬ ë˜ë„ ë™ì‘ì—ëŠ” ë¬¸ì œê°€ ì—†ë‹¤.
+     *  ë‹¤ë§Œ altilinker ì— DataSession ì—†ë‹¤ëŠ” ì˜¤ë¥˜ ë©”ì‹œì§€ê°€ í•œì¤„ ì¶”ê°€ë  ë¿ì´ë‹¤.
      */
     aDataSession->mSession.mLinkerDataSessionIsCreated = ID_TRUE;
 
@@ -382,11 +382,11 @@ IDE_RC  dksSessionMgr::createLinkerDataSession( dksDataSession  *aDataSession )
 }
 
 /************************************************************************
- * Description : Linker data session À» session manager ÀÇ data session
- *               list ·ÎºÎÅÍ Á¦°ÅÇÏ°í ÇØ´ç session °ú °ü·ÃµÈ ¸ğµç ÀÚ¿øÀ»
- *               ¹İ³³ÇÑ´Ù.
+ * Description : Linker data session ì„ session manager ì˜ data session
+ *               list ë¡œë¶€í„° ì œê±°í•˜ê³  í•´ë‹¹ session ê³¼ ê´€ë ¨ëœ ëª¨ë“  ìì›ì„
+ *               ë°˜ë‚©í•œë‹¤.
  *
- *  aSession    - [IN] Á¦°ÅÇÒ linker data session
+ *  aSession    - [IN] ì œê±°í•  linker data session
  *
  ************************************************************************/
 IDE_RC  dksSessionMgr::destroyDataSession( dksDataSession  *aSession )
@@ -432,12 +432,12 @@ IDE_RC  dksSessionMgr::destroyDataSession( dksDataSession  *aSession )
 }
 
 /************************************************************************
- * Description : ÀÔ·Â¹ŞÀº DK linker session À» À§ÇØ AltiLinker ÇÁ·Î¼¼½º¿Í
- *               connection À» ½ÃµµÇÑ´Ù.
+ * Description : ì…ë ¥ë°›ì€ DK linker session ì„ ìœ„í•´ AltiLinker í”„ë¡œì„¸ìŠ¤ì™€
+ *               connection ì„ ì‹œë„í•œë‹¤.
  *
- *  aPort       - [IN] ¿¬°áÇÒ port ¹øÈ£, AltiLinker process´Â local ¿¡
- *                     À§Ä¡ÇÏ¹Ç·Î port ¹øÈ£¸¸ ÁÖ¸éµÈ´Ù.
- *  aDksSession - [OUT] connection À» À§ÇØ ÃÊ±âÈ­ ÇØÁÙ ±¸Á¶Ã¼
+ *  aPort       - [IN] ì—°ê²°í•  port ë²ˆí˜¸, AltiLinker processëŠ” local ì—
+ *                     ìœ„ì¹˜í•˜ë¯€ë¡œ port ë²ˆí˜¸ë§Œ ì£¼ë©´ëœë‹¤.
+ *  aDksSession - [OUT] connection ì„ ìœ„í•´ ì´ˆê¸°í™” í•´ì¤„ êµ¬ì¡°ì²´
  *
  ************************************************************************/
 IDE_RC  dksSessionMgr::connect( dksSession   *aDksSession )
@@ -615,11 +615,11 @@ IDE_RC dksSessionMgr::connectControlSession( UShort aPortNo )
 }
 
 /************************************************************************
- * Description : DK linker session ÀÌ ¸Î°íÀÖ´Â AltiLinker ÇÁ·Î¼¼½º¿ÍÀÇ
- *               ¿¬°áÀ» Á¾·áÇÑ´Ù.
+ * Description : DK linker session ì´ ë§ºê³ ìˆëŠ” AltiLinker í”„ë¡œì„¸ìŠ¤ì™€ì˜
+ *               ì—°ê²°ì„ ì¢…ë£Œí•œë‹¤.
  *
- *  aDksSession - [IN] disconnect ÇÒ linker session ÀÇ cm session Á¤º¸
- *  aIsReuse    - [IN] cm link ¸¦ Àç»ç¿ëÇÒ °æ¿ì ID_TRUE, ¾Æ´Ï¸é ID_FALSE
+ *  aDksSession - [IN] disconnect í•  linker session ì˜ cm session ì •ë³´
+ *  aIsReuse    - [IN] cm link ë¥¼ ì¬ì‚¬ìš©í•  ê²½ìš° ID_TRUE, ì•„ë‹ˆë©´ ID_FALSE
  *
  ************************************************************************/
 IDE_RC  dksSessionMgr::disconnect( dksSession *aDksSession, idBool aIsReuse )
@@ -718,11 +718,11 @@ IDE_RC dksSessionMgr::disconnectControlSession( void )
 }
 
 /************************************************************************
- * Description : DK linker session ÀÇ ¿¬°áÀÌ ²÷¾îÁ³´ÂÁö Ã¼Å©ÇÑ´Ù.
+ * Description : DK linker session ì˜ ì—°ê²°ì´ ëŠì–´ì¡ŒëŠ”ì§€ ì²´í¬í•œë‹¤.
  *
- *  aDksSession     - [IN] Ã¼Å©ÇÒ linker session ÀÇ cm ¿¬°áÁ¤º¸
- *  aIsConnected    - [OUT] ¿¬°áÀÌ »ì¾ÆÀÖ´ÂÁö ¿©ºÎ·Î ID_TRUE ÀÎ °æ¿ì,
- *                          ¿¬°áÀÌ »ì¾ÆÀÖÀ½À» ÀÇ¹ÌÇÑ´Ù.
+ *  aDksSession     - [IN] ì²´í¬í•  linker session ì˜ cm ì—°ê²°ì •ë³´
+ *  aIsConnected    - [OUT] ì—°ê²°ì´ ì‚´ì•„ìˆëŠ”ì§€ ì—¬ë¶€ë¡œ ID_TRUE ì¸ ê²½ìš°,
+ *                          ì—°ê²°ì´ ì‚´ì•„ìˆìŒì„ ì˜ë¯¸í•œë‹¤.
  *
  ************************************************************************/
 IDE_RC  dksSessionMgr::checkConnection( dksSession  *aDksSession,
@@ -738,15 +738,15 @@ IDE_RC  dksSessionMgr::checkConnection( dksSession  *aDksSession,
 }
 
 /************************************************************************
- * Description : AltiLinker process ·Î ÇÏ¿©±İ linker control session À»
- *               »ı¼ºÇÏ°í ÇØ´ç ¼¼¼ÇÀ¸·Î connection À» ¸Îµµ·Ï protocol
- *               operation À» ¼öÇàÇÑ´Ù. ÀÌ operation ÀÌ ¼º°øÀûÀ¸·Î
- *               ¼öÇàµÇ°í ³ª¸é Altilinker ¿Í altibase server °£ Åë½ÅÀÌ
- *               È°¼ºÈ­µÇ¾î ADLP ÇÁ·ÎÅäÄİ¿¡ ÀÇÇÑ database link Åë½ÅÀÌ
- *               °¡´ÉÇØÁø´Ù.
+ * Description : AltiLinker process ë¡œ í•˜ì—¬ê¸ˆ linker control session ì„
+ *               ìƒì„±í•˜ê³  í•´ë‹¹ ì„¸ì…˜ìœ¼ë¡œ connection ì„ ë§ºë„ë¡ protocol
+ *               operation ì„ ìˆ˜í–‰í•œë‹¤. ì´ operation ì´ ì„±ê³µì ìœ¼ë¡œ
+ *               ìˆ˜í–‰ë˜ê³  ë‚˜ë©´ Altilinker ì™€ altibase server ê°„ í†µì‹ ì´
+ *               í™œì„±í™”ë˜ì–´ ADLP í”„ë¡œí† ì½œì— ì˜í•œ database link í†µì‹ ì´
+ *               ê°€ëŠ¥í•´ì§„ë‹¤.
  *
- *  aSession    - [IN] AltiLinker ÇÁ·Î¼¼½º¿Í ¿¬°áÀ» ¸Î±â À§ÇÑ cm link ¸¦
- *                     °®°í ÀÖ´Â dk ÂÊ linker control session ÀÌ °®´Â
+ *  aSession    - [IN] AltiLinker í”„ë¡œì„¸ìŠ¤ì™€ ì—°ê²°ì„ ë§ºê¸° ìœ„í•œ cm link ë¥¼
+ *                     ê°–ê³  ìˆëŠ” dk ìª½ linker control session ì´ ê°–ëŠ”
  *                     dksSession
  *
  ************************************************************************/
@@ -806,8 +806,8 @@ IDE_RC  dksSessionMgr::createCtrlSessionProtocol( dksSession   *aSession )
 }
 
 /************************************************************************
- * Description : DK linker control session ÀÌ AltiLinker ÇÁ·Î¼¼½º¿Í
- *               ¸Î°íÀÖ´Â ¿¬°áÀ» Á¾·áÇÏ°í ÇØ´ç ¼¼¼ÇÀÇ ÀÚ¿øÀ» ¹İÈ¯ÇÑ´Ù.
+ * Description : DK linker control session ì´ AltiLinker í”„ë¡œì„¸ìŠ¤ì™€
+ *               ë§ºê³ ìˆëŠ” ì—°ê²°ì„ ì¢…ë£Œí•˜ê³  í•´ë‹¹ ì„¸ì…˜ì˜ ìì›ì„ ë°˜í™˜í•œë‹¤.
  *
  *  BUG-37312 : AltiLinker shutdown delay
  *
@@ -863,17 +863,17 @@ IDE_RC dksSessionMgr::closeCtrlSession( void )
 }
 
 /************************************************************************
- * Description : AltiDK linker data session ÀÌ AltiLinker ÇÁ·Î¼¼½º¿Í
- *               ¸Î°íÀÖ´Â ¿¬°áÀ» Á¾·áÇÑ´Ù.
+ * Description : AltiDK linker data session ì´ AltiLinker í”„ë¡œì„¸ìŠ¤ì™€
+ *               ë§ºê³ ìˆëŠ” ì—°ê²°ì„ ì¢…ë£Œí•œë‹¤.
  *
- *  aSession     - [IN] close ÇÏ·Á´Â linker data session
+ *  aSession     - [IN] close í•˜ë ¤ëŠ” linker data session
  *
- *  1 Linker Data Session ÀÌ Á¸ÀçÇÑ´Ù¸é,
- *     1) ¾ËÆ¼¸µÄ¿¿¡ ¿¬°á
- *     2) ¸ğµç Linker Data SessionÀ» closeÇÏ¶ó°í Àü¼Û
- *     3) ¾ËÆ¼¸µÄ¿¿ÍÀÇ ¿¬°á Á¾·á
- *  2. Á¸ÀçÇÏÁö ¾Ê´Â´Ù¸é do nothing
- *  3. Á¾·á
+ *  1 Linker Data Session ì´ ì¡´ì¬í•œë‹¤ë©´,
+ *     1) ì•Œí‹°ë§ì»¤ì— ì—°ê²°
+ *     2) ëª¨ë“  Linker Data Sessionì„ closeí•˜ë¼ê³  ì „ì†¡
+ *     3) ì•Œí‹°ë§ì»¤ì™€ì˜ ì—°ê²° ì¢…ë£Œ
+ *  2. ì¡´ì¬í•˜ì§€ ì•ŠëŠ”ë‹¤ë©´ do nothing
+ *  3. ì¢…ë£Œ
  *
  ************************************************************************/
 IDE_RC  dksSessionMgr::closeDataSession( dksDataSession *aSession )
@@ -950,9 +950,9 @@ IDE_RC  dksSessionMgr::closeDataSession( dksDataSession *aSession )
 }
 
 /************************************************************************
- * Description : DK ¿¡ Á¸ÀçÇÏ´Â ¸ğµç linker data session ¿¡ ´ëÇØ
- *               AltiLinker ÇÁ·Î¼¼½º¿Í ¸Î°íÀÖ´Â ¿¬°áÀ» Á¾·áÇÏ°í
- *               ÇØ´ç ¼¼¼ÇÀÇ ÀÚ¿øÀ» ¹İÈ¯ÇÑ´Ù.
+ * Description : DK ì— ì¡´ì¬í•˜ëŠ” ëª¨ë“  linker data session ì— ëŒ€í•´
+ *               AltiLinker í”„ë¡œì„¸ìŠ¤ì™€ ë§ºê³ ìˆëŠ” ì—°ê²°ì„ ì¢…ë£Œí•˜ê³ 
+ *               í•´ë‹¹ ì„¸ì…˜ì˜ ìì›ì„ ë°˜í™˜í•œë‹¤.
  *
  ************************************************************************/
 IDE_RC  dksSessionMgr::closeAllDataSessions()
@@ -992,13 +992,13 @@ IDE_RC  dksSessionMgr::closeAllDataSessions()
 }
 
 /************************************************************************
- * Description : DK ¿¡ Á¸ÀçÇÏ´Â ¸ğµç linker data session ¿¡ ´ëÇØ
- *               AltiLinker ÇÁ·Î¼¼½º¿Í ¸Î°íÀÖ´Â ¿¬°áÀ» Á¾·áÇÏ°í
- *               ÇØ´ç ¼¼¼ÇÀÇ ÀÚ¿øÀ» ¹İÈ¯ÇÑ´Ù.
+ * Description : DK ì— ì¡´ì¬í•˜ëŠ” ëª¨ë“  linker data session ì— ëŒ€í•´
+ *               AltiLinker í”„ë¡œì„¸ìŠ¤ì™€ ë§ºê³ ìˆëŠ” ì—°ê²°ì„ ì¢…ë£Œí•˜ê³ 
+ *               í•´ë‹¹ ì„¸ì…˜ì˜ ìì›ì„ ë°˜í™˜í•œë‹¤.
  *
- *  aSession     - [IN] close ÇÏ·Á´Â linker data session
- *  aDblinkName  - [IN] close ÇÏ·Á´Â linker data session ÀÌ »ç¿ëÇÏ°í ÀÖ´Â
- *                      database link ÀÌ¸§
+ *  aSession     - [IN] close í•˜ë ¤ëŠ” linker data session
+ *  aDblinkName  - [IN] close í•˜ë ¤ëŠ” linker data session ì´ ì‚¬ìš©í•˜ê³  ìˆëŠ”
+ *                      database link ì´ë¦„
  *
  ************************************************************************/
 IDE_RC  dksSessionMgr::closeRemoteNodeSession( idvSQL           *aStatistics,
@@ -1097,10 +1097,10 @@ IDE_RC  dksSessionMgr::closeRemoteNodeSession( idvSQL           *aStatistics,
 }
 
 /************************************************************************
- * Description : Performance view ¸¦ À§ÇÑ ¸ğµç linker session µéÀÇ Á¤º¸¸¦
- *               ¾ò¾î³½´Ù.
+ * Description : Performance view ë¥¼ ìœ„í•œ ëª¨ë“  linker session ë“¤ì˜ ì •ë³´ë¥¼
+ *               ì–»ì–´ë‚¸ë‹¤.
  *
- *  aInfo       - [OUT] linker session Á¤º¸µéÀ» ´ã°í ÀÖ´Â ±¸Á¶Ã¼¹è¿­
+ *  aInfo       - [OUT] linker session ì •ë³´ë“¤ì„ ë‹´ê³  ìˆëŠ” êµ¬ì¡°ì²´ë°°ì—´
  *
  ************************************************************************/
 IDE_RC  dksSessionMgr::getLinkerSessionInfo( dksLinkerSessionInfo ** aInfo, UInt * aSessionCnt )
@@ -1192,10 +1192,10 @@ IDE_RC  dksSessionMgr::getLinkerSessionInfo( dksLinkerSessionInfo ** aInfo, UInt
 }
 
 /************************************************************************
- * Description : Performance view ¸¦ À§ÇÑ linker control session Á¤º¸¸¦
- *               ¾ò¾î³½´Ù.
+ * Description : Performance view ë¥¼ ìœ„í•œ linker control session ì •ë³´ë¥¼
+ *               ì–»ì–´ë‚¸ë‹¤.
  *
- *  aInfo       - [OUT] linker control session Á¤º¸¸¦ ´ã°í ÀÖ´Â ±¸Á¶Ã¼
+ *  aInfo       - [OUT] linker control session ì •ë³´ë¥¼ ë‹´ê³  ìˆëŠ” êµ¬ì¡°ì²´
  *
  ************************************************************************/
 IDE_RC  dksSessionMgr::getLinkerCtrlSessionInfo( dksCtrlSessionInfo *aInfo )
@@ -1212,11 +1212,11 @@ IDE_RC  dksSessionMgr::getLinkerCtrlSessionInfo( dksCtrlSessionInfo *aInfo )
 }
 
 /************************************************************************
- * Description : Performance view ¸¦ À§ÇÑ linker data session Á¤º¸¸¦
- *               ¾ò¾î³½´Ù.
+ * Description : Performance view ë¥¼ ìœ„í•œ linker data session ì •ë³´ë¥¼
+ *               ì–»ì–´ë‚¸ë‹¤.
  *
- * aInfo       - [OUT] linker data session µéÀÇ Á¤º¸¸¦ ´ã°í ÀÖ´Â ±¸Á¶Ã¼
- *                     ¹è¿­
+ * aInfo       - [OUT] linker data session ë“¤ì˜ ì •ë³´ë¥¼ ë‹´ê³  ìˆëŠ” êµ¬ì¡°ì²´
+ *                     ë°°ì—´
  *
  ************************************************************************/
 IDE_RC  dksSessionMgr::getLinkerDataSessionInfo( dksDataSessionInfo ** aInfo, UInt * aSessionCnt )
@@ -1310,8 +1310,8 @@ IDE_RC  dksSessionMgr::getLinkerDataSessionInfo( dksDataSessionInfo ** aInfo, UI
 }
 
 /************************************************************************
- * Description : ¼¼¼Ç°ü¸®ÀÚ°¡ °ü¸®ÇÏ´Â linker data session list ¿¡
- *               lock À» È¹µæÇÑ´Ù.
+ * Description : ì„¸ì…˜ê´€ë¦¬ìê°€ ê´€ë¦¬í•˜ëŠ” linker data session list ì—
+ *               lock ì„ íšë“í•œë‹¤.
  *
  ************************************************************************/
 IDE_RC  dksSessionMgr::lock()
@@ -1322,8 +1322,8 @@ IDE_RC  dksSessionMgr::lock()
 }
 
 /************************************************************************
- * Description : ¼¼¼Ç°ü¸®ÀÚ°¡ °ü¸®ÇÏ´Â linker data session list ¿¡
- *               ÀâÀº lock À» release ÇÑ´Ù.
+ * Description : ì„¸ì…˜ê´€ë¦¬ìê°€ ê´€ë¦¬í•˜ëŠ” linker data session list ì—
+ *               ì¡ì€ lock ì„ release í•œë‹¤.
  *
  ************************************************************************/
 IDE_RC  dksSessionMgr::unlock()
@@ -1334,12 +1334,12 @@ IDE_RC  dksSessionMgr::unlock()
 }
 
 /************************************************************************
- * Description : ¼¼¼Ç°ü¸®ÀÚ°¡ °ü¸®ÇÏ´Â linker data session list ¿¡
- *               ÀâÀº lock À» release ÇÑ´Ù.
+ * Description : ì„¸ì…˜ê´€ë¦¬ìê°€ ê´€ë¦¬í•˜ëŠ” linker data session list ì—
+ *               ì¡ì€ lock ì„ release í•œë‹¤.
  *
- *  aSessionId  - [IN] linker data session ÀÇ id
- *  aSession    - [OUT] cm link ¸¦ »ç¿ëÇÏ±â À§ÇØ linker data session ÀÌ
- *                      °®°í ÀÖ´Â dksSession
+ *  aSessionId  - [IN] linker data session ì˜ id
+ *  aSession    - [OUT] cm link ë¥¼ ì‚¬ìš©í•˜ê¸° ìœ„í•´ linker data session ì´
+ *                      ê°–ê³  ìˆëŠ” dksSession
  *
  ************************************************************************/
 IDE_RC  dksSessionMgr::getDataDksSession( UInt  aSessionId, dksSession **aSession )

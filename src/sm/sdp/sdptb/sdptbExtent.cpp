@@ -17,7 +17,7 @@
 /***********************************************************************
  * $Id: sdptbExtent.cpp 27228 2008-07-23 17:36:52Z newdaily $
  *
- * TBS¿¡¼­ extent¸¦ ÇÒ´çÇÏ°í ÇØÁ¦ÇÏ´Â ·çÆ¾¿¡ °ü·ÃµÈ ÇÔ¼öµéÀÌ´Ù.
+ * TBSì—ì„œ extentë¥¼ í• ë‹¹í•˜ê³  í•´ì œí•˜ëŠ” ë£¨í‹´ì— ê´€ë ¨ëœ í•¨ìˆ˜ë“¤ì´ë‹¤.
  **********************************************************************/
 #include <sdp.h>
 #include <sdptb.h>
@@ -28,15 +28,15 @@
 
 /***********************************************************************
  * Description:
- *   [INTERFACE] tablespace·ÎºÎÅÍ extent¸¦ ÇÒ´ç¹Ş´Â´Ù.
+ *   [INTERFACE] tablespaceë¡œë¶€í„° extentë¥¼ í• ë‹¹ë°›ëŠ”ë‹¤.
  *
  *
- * aStatistics - [IN] Åë°èÁ¤º¸
+ * aStatistics - [IN] í†µê³„ì •ë³´
  * aStartInfo  - [IN] Mini Transaction Start Info
  * aSpaceID    - [IN] TableSpace ID
- * aOrgNrExts  - [IN] ÇÒ´çÀ» ¿äÃ»ÇÒ Extent °¹¼ö
+ * aOrgNrExts  - [IN] í• ë‹¹ì„ ìš”ì²­í•  Extent ê°¯ìˆ˜
  *
- * aExtSlot    - [OUT] ÇÒ´çµÈ Extent Desc Array Ptr
+ * aExtSlot    - [OUT] í• ë‹¹ëœ Extent Desc Array Ptr
  ***********************************************************************/
 IDE_RC sdptbExtent::allocExts( idvSQL          * aStatistics,
                                sdrMtxStartInfo * aStartInfo,
@@ -44,19 +44,19 @@ IDE_RC sdptbExtent::allocExts( idvSQL          * aStatistics,
                                UInt              aOrgNrExts,
                                sdpExtDesc      * aExtSlot )
 {
-    UInt                sNrExts; //ÇÒ´çÇØ¾ßÇÏ´Â extÀÇ °¹¼ö¸¦ °ü¸®ÇÑ´Ù.
+    UInt                sNrExts; //í• ë‹¹í•´ì•¼í•˜ëŠ” extì˜ ê°¯ìˆ˜ë¥¼ ê´€ë¦¬í•œë‹¤.
     sdptbSpaceCache   * sSpaceCache;
     sdFileID            sFID = SD_MAKE_FID(SD_NULL_PID);
     UInt                sNrDone;
     sddTableSpaceNode * sTBSNode;
-    UInt                sNeededPageCnt; //ÆÄÀÏÈ®Àå½Ã ¿äÃ»ÇÒ ÆäÀÌÁö °¹¼ö
+    UInt                sNeededPageCnt; //íŒŒì¼í™•ì¥ì‹œ ìš”ì²­í•  í˜ì´ì§€ ê°¯ìˆ˜
     UInt                i;
     idBool              sIsEmpty;
-    scPageID            sExtFstPID[4]; // ÃÖ´ë 4°³±îÁö ÇÑ¹ø¿¡ ÇÒ´ç¹ŞÀ»¼ö ÀÖ´Ù.
+    scPageID            sExtFstPID[4]; // ìµœëŒ€ 4ê°œê¹Œì§€ í•œë²ˆì— í• ë‹¹ë°›ì„ìˆ˜ ìˆë‹¤.
     scPageID          * sCurExtFstPIDPtr;
 
     IDE_ASSERT( aStartInfo != NULL );
-    IDE_ASSERT( aOrgNrExts == 1 ); // segment¿¡¼­ È£ÃâµÉ¶§ 1¸¸ ³Ñ°ÜÁØ´Ù.
+    IDE_ASSERT( aOrgNrExts == 1 ); // segmentì—ì„œ í˜¸ì¶œë ë•Œ 1ë§Œ ë„˜ê²¨ì¤€ë‹¤.
 
     IDE_DASSERT_MSG( sctTableSpaceMgr::isDiskTableSpace( aSpaceID ) == ID_TRUE,
                      "Fatal error during alloc extent (Tablespace ID : %"ID_UINT32_FMT") ",
@@ -77,12 +77,12 @@ IDE_RC sdptbExtent::allocExts( idvSQL          * aStatistics,
     sNrExts          = aOrgNrExts;
     sCurExtFstPIDPtr = sExtFstPID;
 
-    /* BUG-24730: DropµÈ Temp SegmentÀÇ Extent´Â ºü¸£°Ô Àç»ç¿ë µÇ¾î¾ß
-     *            ÇÕ´Ï´Ù.
+    /* BUG-24730: Dropëœ Temp Segmentì˜ ExtentëŠ” ë¹ ë¥´ê²Œ ì¬ì‚¬ìš© ë˜ì–´ì•¼
+     *            í•©ë‹ˆë‹¤.
      *
-     * Temp Segment´Â ÀÚÁÖ Drop, CreateµÇ°í Bitmap TablespaceÆ¯¼º»ó
-     * Extent¸¦ FreeÇÏ°í ´Ù½Ã ÇÒ´ç½Ã FreeµÈ Extent°¡ ¹Ù·Î ÇÒ´çµÇ´Â °ÍÀÌ
-     * ¾Æ´Ï´Ù. ¿¹¸¦ µé¸é TBS¿¡ Free Extent°¡ < 1, 2, 3 >ÀÌ ÀÖ´Ù°í ÇÏÀÚ
+     * Temp SegmentëŠ” ìì£¼ Drop, Createë˜ê³  Bitmap TablespaceíŠ¹ì„±ìƒ
+     * Extentë¥¼ Freeí•˜ê³  ë‹¤ì‹œ í• ë‹¹ì‹œ Freeëœ Extentê°€ ë°”ë¡œ í• ë‹¹ë˜ëŠ” ê²ƒì´
+     * ì•„ë‹ˆë‹¤. ì˜ˆë¥¼ ë“¤ë©´ TBSì— Free Extentê°€ < 1, 2, 3 >ì´ ìˆë‹¤ê³  í•˜ì
      *
      *  1. alloc Extent = alloc:1, free extent< 2, 3 >
      *  2. free  Extent = free extent< 1, 2, 3 >
@@ -90,10 +90,10 @@ IDE_RC sdptbExtent::allocExts( idvSQL          * aStatistics,
      *  4. free  Extent = free extent< 1, 2, 3 >
      *  5. alloc Extent = alloc:3, free extent< 1, 2 >
      *
-     * Bitmap TBS´Â ExtentÇÒ´ç½Ã ÀÌÀü¿¡ ÇÒ´çµÈ Extent°¡ FreeµÇ¾ú´ÙÇÏ´õ
-     * ¶óµµ ÇÒ´ç½Ã¿¡´Â FileÀÇ ³¡ ºÎºĞÀ¸·Î free extent¸¦ Ã£´Â´Ù. File
-     * ³¡±îÁö Free Extent¸¦ ¸ğµÎ Ã£¾Ò´Ù¸é ´Ù½Ã Ã³À½ºÎÅÍ free extent¸¦
-     * Ã£´Â´Ù.
+     * Bitmap TBSëŠ” Extentí• ë‹¹ì‹œ ì´ì „ì— í• ë‹¹ëœ Extentê°€ Freeë˜ì—ˆë‹¤í•˜ë”
+     * ë¼ë„ í• ë‹¹ì‹œì—ëŠ” Fileì˜ ë ë¶€ë¶„ìœ¼ë¡œ free extentë¥¼ ì°¾ëŠ”ë‹¤. File
+     * ëê¹Œì§€ Free Extentë¥¼ ëª¨ë‘ ì°¾ì•˜ë‹¤ë©´ ë‹¤ì‹œ ì²˜ìŒë¶€í„° free extentë¥¼
+     * ì°¾ëŠ”ë‹¤.
      */
     if( sctTableSpaceMgr::isTempTableSpace( aSpaceID ) == ID_TRUE )
     {
@@ -147,25 +147,25 @@ IDE_RC sdptbExtent::allocExts( idvSQL          * aStatistics,
                                                sNeededPageCnt )
                        != IDE_SUCCESS  );
 
-            //ÆÄÀÏÈ®Àå¿¡ ¼º°øÇß´Ù¸é,  ´Ù½Ã ·çÇÁ¸¦ µ¹¸é¼­ ÇÒ´çÀ» ÇÑ´Ù.
+            //íŒŒì¼í™•ì¥ì— ì„±ê³µí–ˆë‹¤ë©´,  ë‹¤ì‹œ ë£¨í”„ë¥¼ ëŒë©´ì„œ í• ë‹¹ì„ í•œë‹¤.
 
-            /* [Âü°í]
-             * ¿©±â±îÁö ¿Ô´Ù´Â°ÍÀº ÆÄÀÏÈ®Àå¿¡ ¼º°øÇß´Ù´Â ¶æÀÌ´Ù.
-             * ¸¸¾à È®Àå°¡´ÉÇÑ ÆÄÀÏÀÌ ¾ø´Â ÀÌÀ¯µîÀ¸·Î È®Àå¿¡ ½ÇÆĞÇß´Ù¸é
-             * autoExtDatafileonDemand¾È¿¡¼­ ¸ğµÎ Ã³¸®µÈ´Ù.
+            /* [ì°¸ê³ ]
+             * ì—¬ê¸°ê¹Œì§€ ì™”ë‹¤ëŠ”ê²ƒì€ íŒŒì¼í™•ì¥ì— ì„±ê³µí–ˆë‹¤ëŠ” ëœ»ì´ë‹¤.
+             * ë§Œì•½ í™•ì¥ê°€ëŠ¥í•œ íŒŒì¼ì´ ì—†ëŠ” ì´ìœ ë“±ìœ¼ë¡œ í™•ì¥ì— ì‹¤íŒ¨í–ˆë‹¤ë©´
+             * autoExtDatafileonDemandì•ˆì—ì„œ ëª¨ë‘ ì²˜ë¦¬ëœë‹¤.
              */
 
             continue;
         }
 
-        // ÁÖÀÇ!
-        // cacheÀÇ Á¤º¸¸¦ º¸°í ÆÄÀÏ¿¡ µé¾î°¡´Â°ÍÀÌ¹Ç·Î sNrDoneÀÌ 1ÀÏ¼öµµ ÀÖ´Ù.
-        // cache´Â dirty read ÇÏ¹Ç·Î.....
+        // ì£¼ì˜!
+        // cacheì˜ ì •ë³´ë¥¼ ë³´ê³  íŒŒì¼ì— ë“¤ì–´ê°€ëŠ”ê²ƒì´ë¯€ë¡œ sNrDoneì´ 1ì¼ìˆ˜ë„ ìˆë‹¤.
+        // cacheëŠ” dirty read í•˜ë¯€ë¡œ.....
         // IDE_ASSERT( sNrDone == 1 );
 
     }//while
 
-    //¿¡·¯°¡ ¹ß»ıÇÏÁö ¾Ê¾Ò´Ù¸é  sNrExts°¡ 0ÀÌ µÉ°ÍÀÌ´Ù.(0ÀÌ Á¤»ó»óÈ²)
+    //ì—ëŸ¬ê°€ ë°œìƒí•˜ì§€ ì•Šì•˜ë‹¤ë©´  sNrExtsê°€ 0ì´ ë ê²ƒì´ë‹¤.(0ì´ ì •ìƒìƒí™©)
     IDE_ERROR_MSG( sNrExts == 0,
                    "Error occurred while new extents alloc"
                    "(Tablespace ID : %"ID_UINT32_FMT", "
@@ -173,7 +173,7 @@ IDE_RC sdptbExtent::allocExts( idvSQL          * aStatistics,
                    aSpaceID,
                    sNrExts );
 
-    //ÇÒ´ç¹ŞÀº extentÀÇ Ã¹¹øÂ° PID¸¦ ÀÎÀÚ·Î¹ŞÀº aExtSlot¿¡ ÀúÀåÇÑ´Ù.
+    //í• ë‹¹ë°›ì€ extentì˜ ì²«ë²ˆì§¸ PIDë¥¼ ì¸ìë¡œë°›ì€ aExtSlotì— ì €ì¥í•œë‹¤.
     for( i=0 ; i < aOrgNrExts ; i++ )
     {
         aExtSlot[i].mExtFstPID = sExtFstPID[i];
@@ -190,13 +190,13 @@ IDE_RC sdptbExtent::allocExts( idvSQL          * aStatistics,
 
 /***********************************************************************
  * Description:
- *   GG ¾È¿¡¼­ extent¸¦ ÇÒ´ç¹Ş´Â´Ù.
+ *   GG ì•ˆì—ì„œ extentë¥¼ í• ë‹¹ë°›ëŠ”ë‹¤.
  *
- * aStatistics - [IN] Åë°èÁ¤º¸
+ * aStatistics - [IN] í†µê³„ì •ë³´
  * aStartInfo  - [IN] Mini Transaction Start Info
- * aNrExts     - [IN] ÇÒ´çÀ» ¿äÃ»ÇÒ Extent °¹¼ö
- * aExtFstPID  - [OUT] ÇÒ´çÇÑ extentÀÇ Ã¹¹øÂ° pid array
- * aNrDone     - [OUT] ÇÒ´çµÈ Extent ¼ö
+ * aNrExts     - [IN] í• ë‹¹ì„ ìš”ì²­í•  Extent ê°¯ìˆ˜
+ * aExtFstPID  - [OUT] í• ë‹¹í•œ extentì˜ ì²«ë²ˆì§¸ pid array
+ * aNrDone     - [OUT] í• ë‹¹ëœ Extent ìˆ˜
  ***********************************************************************/
 IDE_RC sdptbExtent::tryAllocExtsInGG( idvSQL             * aStatistics,
                                       sdrMtxStartInfo    * aStartInfo,
@@ -211,15 +211,15 @@ IDE_RC sdptbExtent::tryAllocExtsInGG( idvSQL             * aStatistics,
     scPageID    sGGPID;
     scPageID    sLGHdrPID;
     idBool      sDummy;
-    UInt        sLGID;  //ÇÒ´çÀ» °í·ÁÇÒ  LGID
+    UInt        sLGID;  //í• ë‹¹ì„ ê³ ë ¤í•   LGID
     sdptbGGHdr* sGGHdrPtr;
-    UInt        sAllocLGIdx;  //»ç¿ëÁßÀÎ LG index
+    UInt        sAllocLGIdx;  //ì‚¬ìš©ì¤‘ì¸ LG index
     UChar     * sPagePtr;
-    idBool      sSwitching;//ÀÓ½Ãº¯¼ö
+    idBool      sSwitching;//ì„ì‹œë³€ìˆ˜
     UInt        sFreeInLG;
     sdrMtx      sMtx;
     smLSN       sOpNTA;
-    ULong       sData[5]; //extent°¹¼ö ,4°³ÀÇ PID±îÁö ÀúÀåÇÒ °ø°£À» ¸¸µç´Ù.
+    ULong       sData[5]; //extentê°¯ìˆ˜ ,4ê°œì˜ PIDê¹Œì§€ ì €ì¥í•  ê³µê°„ì„ ë§Œë“ ë‹¤.
     UInt        sBitIdx;
     UInt        sState      = 0;
     UInt        sNrDoneInLG = 0;
@@ -228,7 +228,7 @@ IDE_RC sdptbExtent::tryAllocExtsInGG( idvSQL             * aStatistics,
     IDE_ASSERT( aCache      != NULL );
     IDE_ASSERT( aExtFstPID  != NULL );
     IDE_ASSERT( aNrDone     != NULL );
-    IDE_ASSERT( aNrExts   == 1 ); // segment¿¡¼­ È£ÃâµÉ¶§ 1¸¸ ³Ñ°ÜÁØ´Ù.
+    IDE_ASSERT( aNrExts   == 1 ); // segmentì—ì„œ í˜¸ì¶œë ë•Œ 1ë§Œ ë„˜ê²¨ì¤€ë‹¤.
 
     sSpaceID = aCache->mCommon.mSpaceID;
     sGGPID   = SDPTB_GET_GGHDR_PID_BY_FID( aFID );
@@ -247,7 +247,7 @@ IDE_RC sdptbExtent::tryAllocExtsInGG( idvSQL             * aStatistics,
     }
     else
     {
-        /* Temporary Table »ı¼º½Ã¿¡´Â Æ®·£Àè¼ÇÀÌ NULLÀÌ ³»·Á¿Ã ¼ö ÀÖ´Ù. */
+        /* Temporary Table ìƒì„±ì‹œì—ëŠ” íŠ¸ëœì­ì…˜ì´ NULLì´ ë‚´ë ¤ì˜¬ ìˆ˜ ìˆë‹¤. */
     }
 
     IDE_TEST(sdbBufferMgr::getPageByPID( aStatistics,
@@ -265,14 +265,14 @@ IDE_RC sdptbExtent::tryAllocExtsInGG( idvSQL             * aStatistics,
     sGGHdrPtr   = sdptbGroup::getGGHdr( sPagePtr );
     sAllocLGIdx = sdptbGroup::getAllocLGIdx(sGGHdrPtr);
     /*
-     * ÇÒ´çÀ» ½ÃµµÇÒ  LG¸¦ Ã£´Â´Ù
+     * í• ë‹¹ì„ ì‹œë„í•   LGë¥¼ ì°¾ëŠ”ë‹¤
      *
-     * ÇöÀç LG°¹¼ö¸¸Å­À» ´ë»óÀ¸·Î °Ë»öÇØ¾ßÇÑ´Ù.
+     * í˜„ì¬ LGê°¯ìˆ˜ë§Œí¼ì„ ëŒ€ìƒìœ¼ë¡œ ê²€ìƒ‰í•´ì•¼í•œë‹¤.
      */
     sdptbBit::findBit( sGGHdrPtr->mLGFreeness[sAllocLGIdx].mBits,
                        sGGHdrPtr->mLGCnt,
                        &sLGID );
-    //¾Æ·¡ µÎ°¡Áö Á¶°ÇÁß ÇÏ³ª°¡  ¾Æ´Ï¶ó¸é ¿¡·¯ÀÓ.
+    //ì•„ë˜ ë‘ê°€ì§€ ì¡°ê±´ì¤‘ í•˜ë‚˜ê°€  ì•„ë‹ˆë¼ë©´ ì—ëŸ¬ì„.
     IDE_ERROR_MSG( (sLGID < sGGHdrPtr->mLGCnt) ||
                    (sLGID ==  SDPTB_BIT_NOT_FOUND),
                    "Error occurred while new extents find" 
@@ -285,8 +285,8 @@ IDE_RC sdptbExtent::tryAllocExtsInGG( idvSQL             * aStatistics,
                    sLGID,
                    sGGHdrPtr->mLGCnt );
 
-    //ÀÏ´Ü ÇØ´ç LG¿¡¼­ ÇÏ³ªÀÇ ext¸¦ ÇÒ´çÇÑ´Ù.
-    if( sLGID < sGGHdrPtr->mLGCnt ) //free°¡ ÀÖ´Â LG¸¦ Ã£¾Ò´Ù.
+    //ì¼ë‹¨ í•´ë‹¹ LGì—ì„œ í•˜ë‚˜ì˜ extë¥¼ í• ë‹¹í•œë‹¤.
+    if( sLGID < sGGHdrPtr->mLGCnt ) //freeê°€ ìˆëŠ” LGë¥¼ ì°¾ì•˜ë‹¤.
     {
         sLGHdrPID = SDPTB_LG_HDR_PID_FROM_LGID( aFID,
                                                 sLGID,
@@ -298,15 +298,15 @@ IDE_RC sdptbExtent::tryAllocExtsInGG( idvSQL             * aStatistics,
                                  aCache,
                                  sGGHdrPtr,
                                  sLGHdrPID,
-                                 aNrExts, //ÇÒ´ç¿äÃ»°¹¼ö
-                                 aExtFstPID,   //ÇÒ´çÇÑ extentÀÇ Ã¹¹øÂ° pid array
-                                 &sNrDoneInLG, //½ÇÁ¦ ÇÒ´çÇÑ °¹¼ö
-                                 &sFreeInLG )  //free extent ¼ö
+                                 aNrExts, //í• ë‹¹ìš”ì²­ê°¯ìˆ˜
+                                 aExtFstPID,   //í• ë‹¹í•œ extentì˜ ì²«ë²ˆì§¸ pid array
+                                 &sNrDoneInLG, //ì‹¤ì œ í• ë‹¹í•œ ê°¯ìˆ˜
+                                 &sFreeInLG )  //free extent ìˆ˜
           != IDE_SUCCESS );
 
        /*
-        * LG¿¡ free°¡ ÀÖ´Ù´Â Á¤º¸¸¦ mLGFreeness¿¡¼­ ÀĞ°í µé¾î¿ÔÀ¸¹Ç·Î
-        * ÇÏ³ª¶óµµ ÇÒ´çÇØ¾ß¸¸ÇÑ´Ù. ¾Æ´Ï¶ó¸é Ä¡¸íÀû¹ö±×
+        * LGì— freeê°€ ìˆë‹¤ëŠ” ì •ë³´ë¥¼ mLGFreenessì—ì„œ ì½ê³  ë“¤ì–´ì™”ìœ¼ë¯€ë¡œ
+        * í•˜ë‚˜ë¼ë„ í• ë‹¹í•´ì•¼ë§Œí•œë‹¤. ì•„ë‹ˆë¼ë©´ ì¹˜ëª…ì ë²„ê·¸
         */
         IDE_ERROR_MSG( sNrDoneInLG != 0,
                        "Error occurred while new extents find"
@@ -321,8 +321,8 @@ IDE_RC sdptbExtent::tryAllocExtsInGG( idvSQL             * aStatistics,
        if( sFreeInLG == 0 )
        {
            /*
-            * extent¸¦ Áö±İ ÇÒ´çÇÑ´ÙÀ½ ¿äÃ»ÇÑ LG¿¡ free°¡ ¾ø´Ù¸é
-            *  LGFreenessºñÆ®¸¦ ²¨¾ß¸¸ ÇÑ´Ù.!
+            * extentë¥¼ ì§€ê¸ˆ í• ë‹¹í•œë‹¤ìŒ ìš”ì²­í•œ LGì— freeê°€ ì—†ë‹¤ë©´
+            *  LGFreenessë¹„íŠ¸ë¥¼ êº¼ì•¼ë§Œ í•œë‹¤.!
             */
 
            sBitIdx = SDPTB_GET_LGID_BY_PID( sLGHdrPID,
@@ -331,15 +331,15 @@ IDE_RC sdptbExtent::tryAllocExtsInGG( idvSQL             * aStatistics,
            IDE_TEST( sdptbGroup::logAndSetLGFNBitsOfGG( &sMtx,
                                                         sGGHdrPtr,
                                                         sBitIdx,
-                                                        0 ) //ºñÆ®¸¦0À¸·Î ¼¼Æ®
+                                                        0 ) //ë¹„íŠ¸ë¥¼0ìœ¼ë¡œ ì„¸íŠ¸
                      != IDE_SUCCESS );
        }
     }
     else
     {
-        /*  !( sLGID <  sGGHdrPtr->mLGCnt)ÀÎ°æ¿ì´Â
-         *  sLGID°¡ SDPTB_BIT_NOT_FOUND ÀÎ °æ¿ì¹Û¿¡ ¾ø¾î¾ßÇÑ´Ù.
-         *  ¾Æ´Ï¸é Ä¡¸íÀû ¿¡·¯.
+        /*  !( sLGID <  sGGHdrPtr->mLGCnt)ì¸ê²½ìš°ëŠ”
+         *  sLGIDê°€ SDPTB_BIT_NOT_FOUND ì¸ ê²½ìš°ë°–ì— ì—†ì–´ì•¼í•œë‹¤.
+         *  ì•„ë‹ˆë©´ ì¹˜ëª…ì  ì—ëŸ¬.
          */
         IDE_ERROR_MSG( sLGID == SDPTB_BIT_NOT_FOUND,
                        "Error occurred while new extents find"
@@ -351,18 +351,18 @@ IDE_RC sdptbExtent::tryAllocExtsInGG( idvSQL             * aStatistics,
                        sLGID );
 
         /*
-         * space cache´Â ¶ôÀ» ÀâÁö ¾ÊÀ¸¹Ç·Î space cache Á¤º¸¸¦ º¸°í
-         * GG¿¡ µé¾î¿ÔÀ»¶§ ´Ù¸¥ Tx°¡ ³ª¸ÓÁö exts¸¦ ÇÒ´çÇÑ ÈÄÀÏ°æ¿ì
-         * ÀÌ°÷À¸·Î µé¾î¿Ã¼ö°¡ ÀÖ´Ù.
+         * space cacheëŠ” ë½ì„ ì¡ì§€ ì•Šìœ¼ë¯€ë¡œ space cache ì •ë³´ë¥¼ ë³´ê³ 
+         * GGì— ë“¤ì–´ì™”ì„ë•Œ ë‹¤ë¥¸ Txê°€ ë‚˜ë¨¸ì§€ extsë¥¼ í• ë‹¹í•œ í›„ì¼ê²½ìš°
+         * ì´ê³³ìœ¼ë¡œ ë“¤ì–´ì˜¬ìˆ˜ê°€ ìˆë‹¤.
          */
 
 
-        //ÀÌ GG¿¡ free°¡ ÀÖ´Â LG°¡ ¾ø¾î¼­ ¿©±âµé¾î¿ÔÀ¸¹Ç·Î NTAÇÊ¿ä¾ø´Ù.
+        //ì´ GGì— freeê°€ ìˆëŠ” LGê°€ ì—†ì–´ì„œ ì—¬ê¸°ë“¤ì–´ì™”ìœ¼ë¯€ë¡œ NTAí•„ìš”ì—†ë‹¤.
         IDE_CONT( return_anyway );
     }
 
-    //4°³ÀÌÇÏ¿©¾ßÇÔ(sdpst¿Í °ü·ÃµÇ¾îÀÖ´Ù)
-    //setNTAÇÏ±âÀü¿¡ Ã¼Å©.
+    //4ê°œì´í•˜ì—¬ì•¼í•¨(sdpstì™€ ê´€ë ¨ë˜ì–´ìˆë‹¤)
+    //setNTAí•˜ê¸°ì „ì— ì²´í¬.
     IDE_ERROR_MSG( (0 < sNrDoneInLG) && (sNrDoneInLG<= 4), 
                    "Error occurred while new extents find"
                    "(Tablespace ID : %"ID_UINT32_FMT", "
@@ -373,15 +373,15 @@ IDE_RC sdptbExtent::tryAllocExtsInGG( idvSQL             * aStatistics,
                    sNrDoneInLG );
 
     /*
-     * sData[0] ~  sData[3] : ÇÒ´çÇÑ extentÀÇ Ã¹¹øÂ° pid°ªµé
+     * sData[0] ~  sData[3] : í• ë‹¹í•œ extentì˜ ì²«ë²ˆì§¸ pidê°’ë“¤
      */
     for(i=0; i < sNrDoneInLG ; i++)
     {
         sData[i] = (ULong)aExtFstPID[i];
     }
 
-    // Undo µÉ¼ö ÀÖµµ·Ï OP NTA Ã³¸®ÇÑ´Ù.
-    // TBS¿¡¼­ extent¸¦ ÇØÁ¦ÇÏ´Âµ¥ ÇÊ¿äÇÑ Á¤º¸¸¦ Àü´ŞÇÑ´Ù.
+    // Undo ë ìˆ˜ ìˆë„ë¡ OP NTA ì²˜ë¦¬í•œë‹¤.
+    // TBSì—ì„œ extentë¥¼ í•´ì œí•˜ëŠ”ë° í•„ìš”í•œ ì •ë³´ë¥¼ ì „ë‹¬í•œë‹¤.
     sdrMiniTrans::setNTA( &sMtx,
                           sSpaceID,
                           SDR_OP_SDPTB_ALLOCATE_AN_EXTENT_FROM_TBS,
@@ -391,7 +391,7 @@ IDE_RC sdptbExtent::tryAllocExtsInGG( idvSQL             * aStatistics,
 
     IDE_EXCEPTION_CONT( return_anyway );
 
-    //switchingÀ» ½ÃµµÇØº»´Ù.
+    //switchingì„ ì‹œë„í•´ë³¸ë‹¤.
     IDE_TEST( trySwitch( &sMtx,
                          sGGHdrPtr,
                          &sSwitching,
@@ -415,14 +415,14 @@ IDE_RC sdptbExtent::tryAllocExtsInGG( idvSQL             * aStatistics,
 
 /***********************************************************************
  * Description:
- *   LG ¾È¿¡¼­ extent¸¦ ÇÒ´ç¹Ş´Â´Ù.
+ *   LG ì•ˆì—ì„œ extentë¥¼ í• ë‹¹ë°›ëŠ”ë‹¤.
  *
- * aStatistics - [IN] Åë°èÁ¤º¸
+ * aStatistics - [IN] í†µê³„ì •ë³´
  * aStartInfo  - [IN] Mini Transaction Start Info
- * aOrgNrExts  - [IN] ÇÒ´çÀ» ¿äÃ»ÇÒ Extent °¹¼ö
- * aExtFstPID  - [OUT] ÇÒ´çÇÑ extentÀÇ Ã¹¹øÂ° pid array
- * aNrDone     - [OUT] ÇÒ´çµÈ Extent ¼ö
- * aFreeInLG   - [OUT] free Extent ¼ö
+ * aOrgNrExts  - [IN] í• ë‹¹ì„ ìš”ì²­í•  Extent ê°¯ìˆ˜
+ * aExtFstPID  - [OUT] í• ë‹¹í•œ extentì˜ ì²«ë²ˆì§¸ pid array
+ * aNrDone     - [OUT] í• ë‹¹ëœ Extent ìˆ˜
+ * aFreeInLG   - [OUT] free Extent ìˆ˜
  ***********************************************************************/
 IDE_RC sdptbExtent::allocExtsInLG( idvSQL                  * aStatistics,
                                    sdrMtx                  * aMtx,
@@ -437,7 +437,7 @@ IDE_RC sdptbExtent::allocExtsInLG( idvSQL                  * aStatistics,
     idBool       sDummy;
     sdptbLGHdr * sLGHdrPtr;
     UInt         sBitIdx;
-    UInt         sNrExts = aOrgNrExts; //¿äÃ»ÇÑ°¹¼ö
+    UInt         sNrExts = aOrgNrExts; //ìš”ì²­í•œê°¯ìˆ˜
     UChar      * sPagePtr;
     scPageID     sLastPID;
 
@@ -447,7 +447,7 @@ IDE_RC sdptbExtent::allocExtsInLG( idvSQL                  * aStatistics,
     IDE_ASSERT( aExtFstPID  != NULL );
     IDE_ASSERT( aNrDone     != NULL );
     IDE_ASSERT( aFreeInLG   != NULL );
-    IDE_ASSERT( aOrgNrExts  == 1 ); // segment¿¡¼­ È£ÃâµÉ¶§ 1¸¸ ³Ñ°ÜÁØ´Ù.
+    IDE_ASSERT( aOrgNrExts  == 1 ); // segmentì—ì„œ í˜¸ì¶œë ë•Œ 1ë§Œ ë„˜ê²¨ì¤€ë‹¤.
 
     IDE_TEST(sdbBufferMgr::getPageByPID( aStatistics,
                                          aSpaceCache->mCommon.mSpaceID,
@@ -463,9 +463,9 @@ IDE_RC sdptbExtent::allocExtsInLG( idvSQL                  * aStatistics,
 
     sLGHdrPtr = sdptbGroup::getLGHdr( sPagePtr );
 
-    // ½É°¢ÇÑ ¿¡·¯»óÈ²!
-    // ÀÌ¹Ì GG¿¡¼­ freeÀÎ LG¸¦ Ã£¾Æ¼­ µé¾î¿ÔÀ¸¹Ç·Î.. Á¤»óÀûÀÎ»óÈ²¿¡¼­´Â
-    // mFree°¡ 0ÀÏ¼ö°¡ ¾ø´Ù.
+    // ì‹¬ê°í•œ ì—ëŸ¬ìƒí™©!
+    // ì´ë¯¸ GGì—ì„œ freeì¸ LGë¥¼ ì°¾ì•„ì„œ ë“¤ì–´ì™”ìœ¼ë¯€ë¡œ.. ì •ìƒì ì¸ìƒí™©ì—ì„œëŠ”
+    // mFreeê°€ 0ì¼ìˆ˜ê°€ ì—†ë‹¤.
     IDE_ERROR_MSG( sLGHdrPtr->mFree > 0,
                    "Error occurred while new extents alloc"
                    "(Tablespace ID : %"ID_UINT32_FMT", "
@@ -488,14 +488,14 @@ IDE_RC sdptbExtent::allocExtsInLG( idvSQL                  * aStatistics,
 
     while( ( sNrExts > 0 ) && ( sLGHdrPtr->mFree > 0 ) )
     {
-        //LG¿¡¼­ ÇöÀç »ç¿ëÁßÀÎ mValidBits°¹¼ö ¸¸Å­À» °Ë»öÇØ¾ßÇÑ´Ù.
+        //LGì—ì„œ í˜„ì¬ ì‚¬ìš©ì¤‘ì¸ mValidBitsê°¯ìˆ˜ ë§Œí¼ì„ ê²€ìƒ‰í•´ì•¼í•œë‹¤.
         sdptbBit::findZeroBitFromHint( sLGHdrPtr->mBitmap,
                                        sLGHdrPtr->mValidBits,
                                        sLGHdrPtr->mHint,
                                        &sBitIdx);
 
-        //ÇØ´ç LG¿¡ free°¡ ÀÖ´Â°ÍÀ» º¸°í¼­ µé¾î¿ÔÀ¸¹Ç·Î
-        //ÀÌ°Ô °ÅÁşÀÌµÈ´Ù¸é ½É°¢ÇÑ ¿¡·¯»óÈ²ÀÌ´Ù.
+        //í•´ë‹¹ LGì— freeê°€ ìˆëŠ”ê²ƒì„ ë³´ê³ ì„œ ë“¤ì–´ì™”ìœ¼ë¯€ë¡œ
+        //ì´ê²Œ ê±°ì§“ì´ëœë‹¤ë©´ ì‹¬ê°í•œ ì—ëŸ¬ìƒí™©ì´ë‹¤.
         IDE_ERROR_MSG( sBitIdx < sLGHdrPtr->mValidBits,
                        "Error occurred while new extents alloc"
                        "(Tablespace ID : %"ID_UINT32_FMT", "
@@ -507,14 +507,14 @@ IDE_RC sdptbExtent::allocExtsInLG( idvSQL                  * aStatistics,
                        sBitIdx,
                        sLGHdrPtr->mValidBits );
 
-        if( sBitIdx < sLGHdrPtr->mValidBits ) //ÀÎµ¦½º°ªÀÌ À¯È¿
+        if( sBitIdx < sLGHdrPtr->mValidBits ) //ì¸ë±ìŠ¤ê°’ì´ ìœ íš¨
         {
             allocByBitmapIndex( sLGHdrPtr,
                                 sBitIdx );
 
             sNrExts--;
 
-            //mFree, mBitmapÀ» ¸ğµÎ Ã³¸®ÇÔ
+            //mFree, mBitmapì„ ëª¨ë‘ ì²˜ë¦¬í•¨
             IDE_TEST( sdrMiniTrans::writeLogRec( aMtx,
                                                  (UChar*)sLGHdrPtr,
                                                  &sBitIdx,
@@ -527,17 +527,17 @@ IDE_RC sdptbExtent::allocExtsInLG( idvSQL                  * aStatistics,
                                                             -1 )
                       != IDE_SUCCESS );
 
-            //extentÀÇ Ã¹¹øÂ° PID°ªÀ» ¾ò´Â´Ù.
+            //extentì˜ ì²«ë²ˆì§¸ PIDê°’ì„ ì–»ëŠ”ë‹¤.
             *aExtFstPID = sLGHdrPtr->mStartPID +
                          aSpaceCache->mCommon.mPagesPerExt*sBitIdx;
 
-            //ÇöÀç extentÀÇ ¸¶Áö¸· pid¸¦ ±¸ÇÑ´Ù.
+            //í˜„ì¬ extentì˜ ë§ˆì§€ë§‰ pidë¥¼ êµ¬í•œë‹¤.
             sLastPID = SDPTB_LAST_PID_OF_EXTENT(
                                          *aExtFstPID ,
                                          aSpaceCache->mCommon.mPagesPerExt );
 
-            //ÇöÀç ÇÒ´çµÈ extentÀÇ ¸¶Áö¸· page id °¡ Áö±İ ¼³Á¤µÈ °ªº¸´Ù Å©´Ù¸é
-            //HWMÀ» º¯°æÇÑ´Ù.
+            //í˜„ì¬ í• ë‹¹ëœ extentì˜ ë§ˆì§€ë§‰ page id ê°€ ì§€ê¸ˆ ì„¤ì •ëœ ê°’ë³´ë‹¤ í¬ë‹¤ë©´
+            //HWMì„ ë³€ê²½í•œë‹¤.
             if( aGGPtr->mHWM < sLastPID )
             {
                 IDE_TEST( sdptbGroup::logAndSetHWMOfGG( aMtx,
@@ -564,7 +564,7 @@ IDE_RC sdptbExtent::allocExtsInLG( idvSQL                  * aStatistics,
 
 /***********************************************************************
  * Description:
- * ÇÒ´çÀ» ½ÃµµÇÒ¼öÀÖ´Â À¯¿ëÇÑ FID¸¦ ¾ò´Â´Ù.
+ * í• ë‹¹ì„ ì‹œë„í• ìˆ˜ìˆëŠ” ìœ ìš©í•œ FIDë¥¼ ì–»ëŠ”ë‹¤.
  ***********************************************************************/
 IDE_RC sdptbExtent::getAvailFID( sdptbSpaceCache   * aCache,
                                  sdFileID          * aFID)
@@ -572,7 +572,7 @@ IDE_RC sdptbExtent::getAvailFID( sdptbSpaceCache   * aCache,
     UInt sIdx;
 
     sdptbBit::findBitFromHintRotate( (void *)aCache->mFreenessOfGGs,
-                                     aCache->mMaxGGID+1,   //°Ë»ö´ë»óºñÆ®¼ö
+                                     aCache->mMaxGGID+1,   //ê²€ìƒ‰ëŒ€ìƒë¹„íŠ¸ìˆ˜
                                      aCache->mGGIDHint,
                                      &sIdx );
 
@@ -590,15 +590,15 @@ IDE_RC sdptbExtent::getAvailFID( sdptbSpaceCache   * aCache,
         *aFID = sIdx;
 
         /*
-         * MaxGGIDÀÇ GG¿¡ Ç×»ó free extent°¡ ÀÖ´Â°ÍÀº ¾Æ´Ï´Ù
+         * MaxGGIDì˜ GGì— í•­ìƒ free extentê°€ ìˆëŠ”ê²ƒì€ ì•„ë‹ˆë‹¤
          *
-         * ¿¹¸¦µé¾î,
-         *   MaxGGID°¡ 5ÀÏ¶§
-         *   ´ÙÀ½°ú °°Àº ºñÆ®¿­ÀÌ mFreenessOfGGs¿¡ ÀúÀåµÇ¾úÀ» ¼ö ÀÖ´Ù.
+         * ì˜ˆë¥¼ë“¤ì–´,
+         *   MaxGGIDê°€ 5ì¼ë•Œ
+         *   ë‹¤ìŒê³¼ ê°™ì€ ë¹„íŠ¸ì—´ì´ mFreenessOfGGsì— ì €ì¥ë˜ì—ˆì„ ìˆ˜ ìˆë‹¤.
          *
          *   11000
          *
-         * ±×·¯¹Ç·Î if( sIdx >=  aCache->mMaxGGID )  ·ÎÇØ¾ßÇÑ´Ù.
+         * ê·¸ëŸ¬ë¯€ë¡œ if( sIdx >=  aCache->mMaxGGID )  ë¡œí•´ì•¼í•œë‹¤.
          */
         if( sIdx >=  aCache->mMaxGGID )
         {
@@ -624,8 +624,8 @@ IDE_RC sdptbExtent::getAvailFID( sdptbSpaceCache   * aCache,
 
 /***********************************************************************
  * Description:
- *   deallcation LG hdr¿¡ free°¡ ÀÖ´Ù¸é switchingÀ» ÇÑ´Ù.
- *   switching À» Çß´Ù¸é aSwitching = ID_TRUE °¡ µÈ´Ù.
+ *   deallcation LG hdrì— freeê°€ ìˆë‹¤ë©´ switchingì„ í•œë‹¤.
+ *   switching ì„ í–ˆë‹¤ë©´ aSwitching = ID_TRUE ê°€ ëœë‹¤.
  ***********************************************************************/
 IDE_RC sdptbExtent::trySwitch( sdrMtx                 * aMtx,
                                sdptbGGHdr             * aGGHdrPtr,
@@ -648,7 +648,7 @@ IDE_RC sdptbExtent::trySwitch( sdrMtx                 * aMtx,
     sOldFNPtr = &aGGHdrPtr->mLGFreeness[sOldLGType];
     sNewFNPtr = &aGGHdrPtr->mLGFreeness[sNewLGType];
 
-    //switchingÁ¶°Ç.
+    //switchingì¡°ê±´.
     if( (sOldFNPtr->mFreeExts == 0) && (sNewFNPtr->mFreeExts > 0) )
     {
         *aSwitching = ID_TRUE;
@@ -665,8 +665,8 @@ IDE_RC sdptbExtent::trySwitch( sdrMtx                 * aMtx,
     {
         *aSwitching = ID_FALSE;
 
-        //switching¿¡ ½ÇÆĞÇß´Ù¸é,
-        //±âÁ¸ÀÇ free extents¸¦ º¸°í 0ÀÏ¶§ cacheÀÇ freenessºñÆ®¸¦ ²¨¾ßÇÑ´Ù.
+        //switchingì— ì‹¤íŒ¨í–ˆë‹¤ë©´,
+        //ê¸°ì¡´ì˜ free extentsë¥¼ ë³´ê³  0ì¼ë•Œ cacheì˜ freenessë¹„íŠ¸ë¥¼ êº¼ì•¼í•œë‹¤.
         if( sOldFNPtr->mFreeExts == 0 )
         {
             sdptbBit::clearBit( (void*)aCache->mFreenessOfGGs,
@@ -684,7 +684,7 @@ IDE_RC sdptbExtent::trySwitch( sdrMtx                 * aMtx,
 
 /***********************************************************************
  * Description:
- *   on demand ·Î datafileÀ» auto extend ÇÑ´Ù.
+ *   on demand ë¡œ datafileì„ auto extend í•œë‹¤.
  ***********************************************************************/
 IDE_RC sdptbExtent::autoExtDatafileOnDemand( idvSQL           *  aStatistics,
                                              UInt                aSpaceID,
@@ -697,8 +697,8 @@ IDE_RC sdptbExtent::autoExtDatafileOnDemand( idvSQL           *  aStatistics,
     UInt            sState=0;
 
     /*
-     * allocExt¿¡¼­ ¾îÂ÷ÇÇ extentÀÇ Å©±âÀÇ ¹è¼ö·Î ÀÌ °ªÀ» ³Ñ°ÜÁÖ±â ¶§¹®¿¡
-     * ÀÌ·²°æ¿ì´Â ¾øÀ»°ÍÀÌ´Ù. È®½ÇÈ÷ ÇÏ±âÀ§ÇØ assert
+     * allocExtì—ì„œ ì–´ì°¨í”¼ extentì˜ í¬ê¸°ì˜ ë°°ìˆ˜ë¡œ ì´ ê°’ì„ ë„˜ê²¨ì£¼ê¸° ë•Œë¬¸ì—
+     * ì´ëŸ´ê²½ìš°ëŠ” ì—†ì„ê²ƒì´ë‹¤. í™•ì‹¤íˆ í•˜ê¸°ìœ„í•´ assert
      */
     IDE_ASSERT( aCache         != NULL );
     IDE_ASSERT( aNeededPageCnt >= aCache->mCommon.mPagesPerExt );
@@ -709,7 +709,7 @@ IDE_RC sdptbExtent::autoExtDatafileOnDemand( idvSQL           *  aStatistics,
     }
     else
     {
-        // Temproary TablespaceÀÎ °æ¿ì
+        // Temproary Tablespaceì¸ ê²½ìš°
         sStartInfo.mLogMode = SDR_MTX_NOLOGGING;
     }
     sStartInfo.mTrans = aTransForMtx;
@@ -749,12 +749,12 @@ IDE_RC sdptbExtent::autoExtDatafileOnDemand( idvSQL           *  aStatistics,
     return IDE_FAILURE;
 }
 
-/* BUG-24730 [SD] DropµÈ Temp SegmentÀÇ Extent´Â ºü¸£°Ô Àç»ç¿ëµÇ¾î¾ß ÇÕ
- * ´Ï´Ù.
- * TempSegment¸¦ SpaceCash·Î ¹İÈ¯ÇÏ´Â ÀÛ¾÷Àº Mini-TransactionÀÇ Commit
- * ÀÛ¾÷ÀÌ ¸¶¹«¸®µÇ´Â ½ÃÁ¡¿¡ È£ÃâµÇ¾î¾ß ÇÕ´Ï´Ù. º» ÇÔ¼ö´Â CommitÀÛ¾÷
- * ¸¶¹«¸® ½Ã¿¡ Mini-TransactionÀ¸·ÎºÎÅÍ È£ÃâµÇ¾î, cache¿¡ µ¹·ÁÁÖ´Â
- * ÀÛ¾÷µéÀ» ¼öÇàÇØÁİ´Ï´Ù. */
+/* BUG-24730 [SD] Dropëœ Temp Segmentì˜ ExtentëŠ” ë¹ ë¥´ê²Œ ì¬ì‚¬ìš©ë˜ì–´ì•¼ í•©
+ * ë‹ˆë‹¤.
+ * TempSegmentë¥¼ SpaceCashë¡œ ë°˜í™˜í•˜ëŠ” ì‘ì—…ì€ Mini-Transactionì˜ Commit
+ * ì‘ì—…ì´ ë§ˆë¬´ë¦¬ë˜ëŠ” ì‹œì ì— í˜¸ì¶œë˜ì–´ì•¼ í•©ë‹ˆë‹¤. ë³¸ í•¨ìˆ˜ëŠ” Commitì‘ì—…
+ * ë§ˆë¬´ë¦¬ ì‹œì— Mini-Transactionìœ¼ë¡œë¶€í„° í˜¸ì¶œë˜ì–´, cacheì— ëŒë ¤ì£¼ëŠ”
+ * ì‘ì—…ë“¤ì„ ìˆ˜í–‰í•´ì¤ë‹ˆë‹¤. */
 IDE_RC sdptbExtent::pushFreeExtToSpaceCache( void * aData )
 {
     sdptbFreeExtID  * sFreeExtID = (sdptbFreeExtID *)aData;
@@ -762,8 +762,8 @@ IDE_RC sdptbExtent::pushFreeExtToSpaceCache( void * aData )
 
     IDE_ASSERT( aData != NULL );
 
-    /* Mini-Transaction Commit ½ÇÆĞ´Â ASSERT ÀÌ¹Ç·Î ¿¹¿ÜÃ³¸® ¾ÈÇÔ*/
-    // Temp Segment¸¸ ÀçÈ°¿ëµÈ´Ù.
+    /* Mini-Transaction Commit ì‹¤íŒ¨ëŠ” ASSERT ì´ë¯€ë¡œ ì˜ˆì™¸ì²˜ë¦¬ ì•ˆí•¨*/
+    // Temp Segmentë§Œ ì¬í™œìš©ëœë‹¤.
     IDE_ASSERT_MSG( sctTableSpaceMgr::isTempTableSpace( sFreeExtID->mSpaceID ) == ID_TRUE,
                    "Error occurred during drop Temp Table "
                    "(Tablespace ID : %"ID_UINT32_FMT", "
@@ -796,10 +796,10 @@ IDE_RC sdptbExtent::pushFreeExtToSpaceCache( void * aData )
 
 /***********************************************************************
  * Description:
- *   ÇÏ³ªÀÇ exts¸¦ TBS¿¡ ¹İ³³ÇÑ´Ù.
- *   NTAÃ³¸®½Ã »ç¿ëµÊ.
+ *   í•˜ë‚˜ì˜ extsë¥¼ TBSì— ë°˜ë‚©í•œë‹¤.
+ *   NTAì²˜ë¦¬ì‹œ ì‚¬ìš©ë¨.
  *
- * aNrDone          - [OUT] free¿¡ ¼º°øÇÑ extÀÇ °¹¼ö
+ * aNrDone          - [OUT] freeì— ì„±ê³µí•œ extì˜ ê°¯ìˆ˜
  ***********************************************************************/
 IDE_RC sdptbExtent::freeExt( idvSQL           *  aStatistics,
                              sdrMtx           *  aMtx,
@@ -841,13 +841,13 @@ IDE_RC sdptbExtent::freeExt( idvSQL           *  aStatistics,
         IDU_FIT_POINT_RAISE( "sdptbExtent::freeExt::calloc", 
                              insufficient_memory );
 
-        /* BUG-24730 [SD] DropµÈ Temp SegmentÀÇ Extent´Â ºü¸£°Ô Àç»ç¿ëµÇ¾î¾ß ÇÕ
-         * ´Ï´Ù.
-         * TempSegment¸¦ SpaceCash·Î ¹İÈ¯ÇÏ´Â ÀÛ¾÷Àº Mini-TransactionÀÇ Commit
-         * ÀÛ¾÷ÀÌ ¸¶¹«¸®µÇ´Â ½ÃÁ¡¿¡ È£ÃâµÇ¾î¾ß ÇÕ´Ï´Ù.
-         * µû¶ó¼­ mtxÀÇ PendingJobÀ¸·Î ´Ş¾ÆµÓ´Ï´Ù.*/
+        /* BUG-24730 [SD] Dropëœ Temp Segmentì˜ ExtentëŠ” ë¹ ë¥´ê²Œ ì¬ì‚¬ìš©ë˜ì–´ì•¼ í•©
+         * ë‹ˆë‹¤.
+         * TempSegmentë¥¼ SpaceCashë¡œ ë°˜í™˜í•˜ëŠ” ì‘ì—…ì€ Mini-Transactionì˜ Commit
+         * ì‘ì—…ì´ ë§ˆë¬´ë¦¬ë˜ëŠ” ì‹œì ì— í˜¸ì¶œë˜ì–´ì•¼ í•©ë‹ˆë‹¤.
+         * ë”°ë¼ì„œ mtxì˜ PendingJobìœ¼ë¡œ ë‹¬ì•„ë‘¡ë‹ˆë‹¤.*/
 
-        // callocµÈ buffer´Â mtx destroy½Ã¿¡ Nodeµé°ú ÇÔ²² freeµË´Ï´Ù.
+        // callocëœ bufferëŠ” mtx destroyì‹œì— Nodeë“¤ê³¼ í•¨ê»˜ freeë©ë‹ˆë‹¤.
         IDE_TEST_RAISE( iduMemMgr::calloc( IDU_MEM_SM_SDP, 
                                            1,
                                            ID_SIZEOF(sdptbFreeExtID),
@@ -891,15 +891,15 @@ IDE_RC sdptbExtent::freeExt( idvSQL           *  aStatistics,
 
     IDE_PUSH();
 
-    /* BUG-24730 [SD] DropµÈ Temp SegmentÀÇ Extent´Â ºü¸£°Ô Àç»ç¿ëµÇ¾î¾ß ÇÕ
-     * ´Ï´Ù.
-     * PendingJobÀÌ ¸®½ºÆ®¿¡ Á¦´ë·Î ¸Å´Ş·Á¾ß¸¸ allcµÈ Data°¡ Á¦´ë·Î FreeµË
-     * ´Ï´Ù. µû¶ó¼­ ±× ÀÌÀü¿¡´Â ¿©±â¼­ FreeÇØ Áİ´Ï´Ù. */
+    /* BUG-24730 [SD] Dropëœ Temp Segmentì˜ ExtentëŠ” ë¹ ë¥´ê²Œ ì¬ì‚¬ìš©ë˜ì–´ì•¼ í•©
+     * ë‹ˆë‹¤.
+     * PendingJobì´ ë¦¬ìŠ¤íŠ¸ì— ì œëŒ€ë¡œ ë§¤ë‹¬ë ¤ì•¼ë§Œ allcëœ Dataê°€ ì œëŒ€ë¡œ Freeë©
+     * ë‹ˆë‹¤. ë”°ë¼ì„œ ê·¸ ì´ì „ì—ëŠ” ì—¬ê¸°ì„œ Freeí•´ ì¤ë‹ˆë‹¤. */
     if( sState == 1 )
     {
         /*
-         * BUG-29901 [SM]sdrMiniTrans::addPendingJob¿¡¼­ callocÀÌ ÇÒ´ç½ÇÆĞÇÏ¸é
-         *           ¼­¹ö°¡ »ç¸ÁÇÕ´Ï´Ù.
+         * BUG-29901 [SM]sdrMiniTrans::addPendingJobì—ì„œ callocì´ í• ë‹¹ì‹¤íŒ¨í•˜ë©´
+         *           ì„œë²„ê°€ ì‚¬ë§í•©ë‹ˆë‹¤.
          */
         IDE_ASSERT( iduMemMgr::free( sFreeExtID ) == IDE_SUCCESS );  
     }
@@ -910,10 +910,10 @@ IDE_RC sdptbExtent::freeExt( idvSQL           *  aStatistics,
 
 /***********************************************************************
  * Description:
- *  extentµéÀ» TBS¿¡ ¹İ³³ÇÑ´Ù.  NTAÃ³¸®½Ã »ç¿ëµÈ´Ù.
- *  freeÇÒ ¸ğµç extent´Â °°Àº LG¿¡ ÀÖ´Ù.(setNTA¸¦ ±×·¸°Ô ÂïÀ½)
+ *  extentë“¤ì„ TBSì— ë°˜ë‚©í•œë‹¤.  NTAì²˜ë¦¬ì‹œ ì‚¬ìš©ëœë‹¤.
+ *  freeí•  ëª¨ë“  extentëŠ” ê°™ì€ LGì— ìˆë‹¤.(setNTAë¥¼ ê·¸ë ‡ê²Œ ì°ìŒ)
  *
- *  aNrDone          - [OUT] free¿¡ ¼º°øÇÑ extÀÇ °¹¼ö
+ *  aNrDone          - [OUT] freeì— ì„±ê³µí•œ extì˜ ê°¯ìˆ˜
  ***********************************************************************/
 IDE_RC sdptbExtent::freeExts( idvSQL           *  aStatistics,
                               sdrMtx           *  aMtx,
@@ -922,7 +922,7 @@ IDE_RC sdptbExtent::freeExts( idvSQL           *  aStatistics,
                               UInt                aArrElements)
 {
     UInt                   sLGID;
-    sdptbSortExtSlot       sExtSlot[4]; //allocExt¿¡¼­ ÃÖ´ë extent 4°³ÇÒ´çÇÏ¹Ç·Î.
+    sdptbSortExtSlot       sExtSlot[4]; //allocExtì—ì„œ ìµœëŒ€ extent 4ê°œí• ë‹¹í•˜ë¯€ë¡œ.
     UInt                   sDummy;
     UInt                   sNrDone;
     UInt                   i;
@@ -936,13 +936,13 @@ IDE_RC sdptbExtent::freeExts( idvSQL           *  aStatistics,
     IDE_ASSERT( sSpaceCache != NULL );
 
     /*
-     * ÇÏ³ªÀÇ LG¿¡ ÀÖ´Â extentµé¿¡ ´ëÇØ¼­¸¸ NTA°¡ ÂïÈù´Ù.
-     * ±×·¯¹Ç·Î, freeÇÒ ¸ğµç extentµéÀº °°Àº LG¿¡ ÀÖ´Ù.
+     * í•˜ë‚˜ì˜ LGì— ìˆëŠ” extentë“¤ì— ëŒ€í•´ì„œë§Œ NTAê°€ ì°íŒë‹¤.
+     * ê·¸ëŸ¬ë¯€ë¡œ, freeí•  ëª¨ë“  extentë“¤ì€ ê°™ì€ LGì— ìˆë‹¤.
      */
     sLGID = SDPTB_GET_LGID_BY_PID( *aExtFstPIDs,
                                    sSpaceCache->mCommon.mPagesPerExt );
 
-    //º» ÇÔ¼ö´Â NTA Undo½Ã¿¡¸¸ È£ÃâµÇ¸ç, TempTablespace´Â UndoµÅÁö ¾Ê´Â´Ù.
+    //ë³¸ í•¨ìˆ˜ëŠ” NTA Undoì‹œì—ë§Œ í˜¸ì¶œë˜ë©°, TempTablespaceëŠ” Undoë¼ì§€ ì•ŠëŠ”ë‹¤.
     IDE_ASSERT( sctTableSpaceMgr::isTempTableSpace( aSpaceID ) != ID_TRUE );
 
     for( i=0 ; i < aArrElements ; i++ )
@@ -964,7 +964,7 @@ IDE_RC sdptbExtent::freeExts( idvSQL           *  aStatistics,
               != IDE_SUCCESS );
 
     // BUG-27329 CodeSonar::Uninitialized Variable (2)
-    //¿äÃ»ÇÑ ¸ğµç extent¸¦ ÇØÁ¦ÇØ¾ßÇÑ´Ù.
+    //ìš”ì²­í•œ ëª¨ë“  extentë¥¼ í•´ì œí•´ì•¼í•œë‹¤.
     IDE_ASSERT( sNrDone == aArrElements );
 
     return IDE_SUCCESS;
@@ -976,14 +976,14 @@ IDE_RC sdptbExtent::freeExts( idvSQL           *  aStatistics,
 
 /***********************************************************************
  * Description:
- *   [INTERFACE] free extents¸¦ LG¿¡ ¹İ³³ÇÑ´Ù.
+ *   [INTERFACE] free extentsë¥¼ LGì— ë°˜ë‚©í•œë‹¤.
  *
- * aSortedExts  - [IN] sdptbSortExtSlot¸¦ ¿ä¼Ò·Î °®´Â ¹è¿­ÀÇ ½ÃÀÛÁÖ¼Ò
- * sNrElement   - [IN] À­ ¹è¿­ÀÇ ¿ä¼ÒÀÇ °¹¼ö
- *                     (segment¿¡¼­ ³Ñ°ÜÁÖ´Â aSortedExts¿Í
- *                     sNrElementÀÇ °ªÀº ÀÌÇÔ¼ö ¾È¿¡¼­ º¯ÇÏÁö ¾Ê´Â´Ù.)
- * aEndIdx      - [OUT] free¿¡ ¼º°øÇÑ ¸¶Áö¸· index
- * aNrDone      - [OUT] free¿¡ ¼º°øÇÑ extÀÇ °¹¼ö
+ * aSortedExts  - [IN] sdptbSortExtSlotë¥¼ ìš”ì†Œë¡œ ê°–ëŠ” ë°°ì—´ì˜ ì‹œì‘ì£¼ì†Œ
+ * sNrElement   - [IN] ìœ— ë°°ì—´ì˜ ìš”ì†Œì˜ ê°¯ìˆ˜
+ *                     (segmentì—ì„œ ë„˜ê²¨ì£¼ëŠ” aSortedExtsì™€
+ *                     sNrElementì˜ ê°’ì€ ì´í•¨ìˆ˜ ì•ˆì—ì„œ ë³€í•˜ì§€ ì•ŠëŠ”ë‹¤.)
+ * aEndIdx      - [OUT] freeì— ì„±ê³µí•œ ë§ˆì§€ë§‰ index
+ * aNrDone      - [OUT] freeì— ì„±ê³µí•œ extì˜ ê°¯ìˆ˜
  ***********************************************************************/
 IDE_RC sdptbExtent::freeExtsInLG( idvSQL           *  aStatistics,
                                   sdrMtx           *  aMtx,
@@ -1003,7 +1003,7 @@ IDE_RC sdptbExtent::freeExtsInLG( idvSQL           *  aStatistics,
     sdFileID              sFID;
     UInt                  sLGID;
     UInt                  sStartFPID;
-    UInt                  sExtentIDInLG; //LGÀÇ mBitmap¿¡ ¼¼Æ®ÇÒ¶§ »ç¿ë
+    UInt                  sExtentIDInLG; //LGì˜ mBitmapì— ì„¸íŠ¸í• ë•Œ ì‚¬ìš©
     UChar             *   sPagePtr;
     idBool                sSwitching;
     ULong                 sTemp;
@@ -1014,7 +1014,7 @@ IDE_RC sdptbExtent::freeExtsInLG( idvSQL           *  aStatistics,
     IDE_ASSERT( aNrDone != NULL );
 
     sCache  = (sdptbSpaceCache*)sddDiskMgr::getSpaceCache( aSpaceID );
-    /* writeCommitLog ÀÌÈÄ / undo ÀÛ¾÷ÀÌ¹Ç·Î ¿¹¿ÜÃ³¸® ÇÏÁö ¾Ê´Â´Ù. */
+    /* writeCommitLog ì´í›„ / undo ì‘ì—…ì´ë¯€ë¡œ ì˜ˆì™¸ì²˜ë¦¬ í•˜ì§€ ì•ŠëŠ”ë‹¤. */
     IDE_ASSERT_MSG( sCache != NULL,
                    "Tablespace cache not found (ID : %"ID_UINT32_FMT")",
                    aSpaceID );
@@ -1049,7 +1049,7 @@ IDE_RC sdptbExtent::freeExtsInLG( idvSQL           *  aStatistics,
 
     sStartFPID = SDPTB_EXTENT_START_FPID_FROM_LGID(sLGID, sGGHdrPtr->mPagesPerExt);
 
-    //ÇØ´ç LGÀÇ dealloc page¿¡¼­ extµéÀ» ÇØÁ¦ÇÑ´Ù.
+    //í•´ë‹¹ LGì˜ dealloc pageì—ì„œ extë“¤ì„ í•´ì œí•œë‹¤.
     IDE_TEST(sdbBufferMgr::getPageByPID(
                                  aStatistics,
                                  aSpaceID,
@@ -1066,7 +1066,7 @@ IDE_RC sdptbExtent::freeExtsInLG( idvSQL           *  aStatistics,
     sLGHdrPtr = sdptbGroup::getLGHdr( sPagePtr);
 
     ////////////////////////////////////////////////////////
-    // µ¿ÀÏÇÑ LG¿¡ ÀÖ´Â ¸ğµç extent¸¦ ÇÑ²¨¹ø¿¡ ÇØÁ¦ÇÑ´Ù.
+    // ë™ì¼í•œ LGì— ìˆëŠ” ëª¨ë“  extentë¥¼ í•œêº¼ë²ˆì— í•´ì œí•œë‹¤.
     ////////////////////////////////////////////////////////
     while( (sFID == SD_MAKE_FID( aSortedExts[i].mExtFstPID) )
            && ( sLGID == aSortedExts[i].mLocalGroupID ) )
@@ -1078,7 +1078,7 @@ IDE_RC sdptbExtent::freeExtsInLG( idvSQL           *  aStatistics,
         freeByBitmapIndex( sLGHdrPtr,
                            sExtentIDInLG );
 
-        //LG hdrÀÇ mFree, mBitmap ¿¡´ëÇÑ ·Î±ë³²±è
+        //LG hdrì˜ mFree, mBitmap ì—ëŒ€í•œ ë¡œê¹…ë‚¨ê¹€
         IDE_TEST( sdrMiniTrans::writeLogRec( aMtx,
                                              (UChar*)sLGHdrPtr,
                                              &sExtentIDInLG,
@@ -1089,7 +1089,7 @@ IDE_RC sdptbExtent::freeExtsInLG( idvSQL           *  aStatistics,
         sDeallocLGType = sdptbGroup::getDeallocLGIdx(sGGHdrPtr);
 
         /*
-         * GG hdrÀÇ mFreeExts , mBits ¿¡´ëÇÑ ·Î±ëÀ» ³²±ä´Ù.
+         * GG hdrì˜ mFreeExts , mBits ì—ëŒ€í•œ ë¡œê¹…ì„ ë‚¨ê¸´ë‹¤.
          */
         IDE_TEST( sdptbGroup::logAndModifyFreeExtsOfGGByLGType( aMtx,
                                                                 sGGHdrPtr,
@@ -1098,7 +1098,7 @@ IDE_RC sdptbExtent::freeExtsInLG( idvSQL           *  aStatistics,
                   != IDE_SUCCESS );
 
 
-        //dealloc LG¿¡ ÇØ´çºñÆ®°¡ ²¨Á®ÀÖÀ»¶§¸¸ ·Î±ë
+        //dealloc LGì— í•´ë‹¹ë¹„íŠ¸ê°€ êº¼ì ¸ìˆì„ë•Œë§Œ ë¡œê¹…
         if( sdptbBit::getBit( sGGHdrPtr->mLGFreeness[sDeallocLGType].mBits,
                               sLGID) == SDPTB_BIT_OFF)
         {
@@ -1148,7 +1148,7 @@ IDE_RC sdptbExtent::freeExtsInLG( idvSQL           *  aStatistics,
                     i );
 
     /*
-     * switchingÀ» °í·ÁÇÑ´Ù.
+     * switchingì„ ê³ ë ¤í•œë‹¤.
      */
     IDE_TEST( trySwitch( aMtx,
                          sGGHdrPtr,
@@ -1159,8 +1159,8 @@ IDE_RC sdptbExtent::freeExtsInLG( idvSQL           *  aStatistics,
     *aNrDone = i - aBeginIndex;
 
     /*
-     * end index´Â ÇØÁ¦°¡ ¿Ï.·á.µÈ ¸¶Áö¸· ÀÎµ¦½º ¹øÈ£ÀÌ´Ù
-     * ±×·¯¹Ç·Î i°ªÀ» °¨¼Ò½ÃÅ²ÈÄ ´ëÀÔÇØ¾ßÇÑ´Ù.
+     * end indexëŠ” í•´ì œê°€ ì™„.ë£Œ.ëœ ë§ˆì§€ë§‰ ì¸ë±ìŠ¤ ë²ˆí˜¸ì´ë‹¤
+     * ê·¸ëŸ¬ë¯€ë¡œ iê°’ì„ ê°ì†Œì‹œí‚¨í›„ ëŒ€ì…í•´ì•¼í•œë‹¤.
      */
     *aEndIndex = --i;
 
@@ -1182,10 +1182,10 @@ void sdptbExtent::allocByBitmapIndex( sdptbLGHdr * aLGHdr,
 
     sdptbBit::setBit( aLGHdr->mBitmap, aIndex);
 
-    IDE_ASSERT( aLGHdr->mFree > 0 ); // free extent°¡ ³²¾Æ ÀÖ¾î¾ß ÇÒ´ç °¡´É
+    IDE_ASSERT( aLGHdr->mFree > 0 ); // free extentê°€ ë‚¨ì•„ ìˆì–´ì•¼ í• ë‹¹ ê°€ëŠ¥
     aLGHdr->mFree-- ;
 
-    // Hint Á¤º¸¸¦ ¼¼Æ®ÇÑ´Ù.
+    // Hint ì •ë³´ë¥¼ ì„¸íŠ¸í•œë‹¤.
     aLGHdr->mHint = aIndex + 1;
 }
 
@@ -1210,7 +1210,7 @@ void sdptbExtent::freeByBitmapIndex( sdptbLGHdr * aLGHdr,
 
 /***********************************************************************
  *
- * Description : Undo TBSÀÇ Free ExtDir ÆäÀÌÁö¸¦ ÇÒ´çÇÑ´Ù.
+ * Description : Undo TBSì˜ Free ExtDir í˜ì´ì§€ë¥¼ í• ë‹¹í•œë‹¤.
  *
  ***********************************************************************/
 IDE_RC sdptbExtent::tryAllocExtDir( idvSQL            * aStatistics,
@@ -1262,8 +1262,8 @@ IDE_RC sdptbExtent::tryAllocExtDir( idvSQL            * aStatistics,
                     CONT_NOT_FOUND_FREE_EXTDIR_ONLYFIX );
 
     /*
-     * BUG-25708 [5.3.1] UndoTBS¿¡ Free ExtDirPage List°¡ °¡¿ëÇØµµ Race
-     *           ¹ß»ıÇÏ¸é Á¶±İ¾¿ HWM°¡ Áõ°¡µÉ ¼ö ÀÖÀ½.
+     * BUG-25708 [5.3.1] UndoTBSì— Free ExtDirPage Listê°€ ê°€ìš©í•´ë„ Race
+     *           ë°œìƒí•˜ë©´ ì¡°ê¸ˆì”© HWMê°€ ì¦ê°€ë  ìˆ˜ ìˆìŒ.
      */
      sdbBufferMgr::latchPage( aStatistics,
                               sPagePtr,
@@ -1367,7 +1367,7 @@ IDE_RC sdptbExtent::tryAllocExtDir( idvSQL            * aStatistics,
 
 /***********************************************************************
  *
- * Description : ExtDir ÆäÀÌÁö¸¦ ÇØÁ¦ÇÑ´Ù.
+ * Description : ExtDir í˜ì´ì§€ë¥¼ í•´ì œí•œë‹¤.
  *
  ***********************************************************************/
 IDE_RC sdptbExtent::freeExtDir( idvSQL            * aStatistics,
@@ -1436,14 +1436,14 @@ IDE_RC sdptbExtent::freeExtDir( idvSQL            * aStatistics,
 
 /******************************************************************************
  * Description :
- *  space id¿Í page id¸¦ ÀÔ·Â¹Ş¾Æ¼­
- *  page °¡ ¼ÓÇÑ extent°¡ free »óÅÂÀÎÁö °Ë»ç ÇÑ´Ù.
- *  ÇÊ¿äÇÏ´Ù¸é ÇØ´ç extentÀÇ fst pid¿Í lst pid¸¦ ¹İÈ¯ÇÒ ¼ö ÀÖ´Ù.
+ *  space idì™€ page idë¥¼ ì…ë ¥ë°›ì•„ì„œ
+ *  page ê°€ ì†í•œ extentê°€ free ìƒíƒœì¸ì§€ ê²€ì‚¬ í•œë‹¤.
+ *  í•„ìš”í•˜ë‹¤ë©´ í•´ë‹¹ extentì˜ fst pidì™€ lst pidë¥¼ ë°˜í™˜í•  ìˆ˜ ìˆë‹¤.
  *
- * aStatistics - [IN]  Åë°èÁ¤º¸
- * aSpaceID    - [IN]  È®ÀÎÇÏ°íÀÚ ÇÏ´Â pageÀÇ space id
- * aPageID     - [IN]  È®ÀÎÇÏ°íÀÚ ÇÏ´Â pageÀÇ page id
- * aIsFreeExt  - [OUT] page°¡ ¼ÓÇÑ extentÀÇ free ¿©ºÎ¸¦ ¹İÈ¯ÇÑ´Ù.
+ * aStatistics - [IN]  í†µê³„ì •ë³´
+ * aSpaceID    - [IN]  í™•ì¸í•˜ê³ ì í•˜ëŠ” pageì˜ space id
+ * aPageID     - [IN]  í™•ì¸í•˜ê³ ì í•˜ëŠ” pageì˜ page id
+ * aIsFreeExt  - [OUT] pageê°€ ì†í•œ extentì˜ free ì—¬ë¶€ë¥¼ ë°˜í™˜í•œë‹¤.
  ******************************************************************************/
 IDE_RC sdptbExtent::isFreeExtPage( idvSQL      * aStatistics,
                                    scSpaceID     aSpaceID,
@@ -1469,8 +1469,8 @@ IDE_RC sdptbExtent::isFreeExtPage( idvSQL      * aStatistics,
     IDE_ASSERT( aIsFreeExt != NULL );
 
     /* BUG-27608 CodeSonar::Division By Zero (3)
-     * Tablespace°¡ DropµÈ °æ¿ì Page »ç¿ëÇÏÁö ¾ÊÀ¸¹Ç·Î,
-     * Corrupt Page¾îµµ ¹«½Ã ÇÒ ¼ö ÀÖÀ½
+     * Tablespaceê°€ Dropëœ ê²½ìš° Page ì‚¬ìš©í•˜ì§€ ì•Šìœ¼ë¯€ë¡œ,
+     * Corrupt Pageì–´ë„ ë¬´ì‹œ í•  ìˆ˜ ìˆìŒ
      */
     if( sctTableSpaceMgr::hasState( aSpaceID, SCT_SS_INVALID_DISK_TBS ) == ID_TRUE )
     {
@@ -1487,8 +1487,8 @@ IDE_RC sdptbExtent::isFreeExtPage( idvSQL      * aStatistics,
     IDE_ASSERT( 0 < sPagesPerExt );
 
     //------------------------------------------
-    // GG Hdr PID¿Í LG Hdr PID¸¦ ±¸ÇØ¼­
-    // ¹ŞÀº aPageID°¡ GG,LG HdrÀÎÁö È®ÀÎÇÑ´Ù.
+    // GG Hdr PIDì™€ LG Hdr PIDë¥¼ êµ¬í•´ì„œ
+    // ë°›ì€ aPageIDê°€ GG,LG Hdrì¸ì§€ í™•ì¸í•œë‹¤.
     //------------------------------------------
 
     sGGPID = SDPTB_GET_GGHDR_PID_BY_FID( SD_MAKE_FID( aPageID ) );
@@ -1520,8 +1520,8 @@ IDE_RC sdptbExtent::isFreeExtPage( idvSQL      * aStatistics,
 
     IDE_TEST_RAISE( aPageID == sLGPID , fail_read_lg );
 
-    // alloc Group Header pid¸¦ ÀÌ¿ëÇØ¼­
-    // dealloc Group HeaderÀÇ pid¸¦ °è»êÇÑ´Ù.
+    // alloc Group Header pidë¥¼ ì´ìš©í•´ì„œ
+    // dealloc Group Headerì˜ pidë¥¼ ê³„ì‚°í•œë‹¤.
     sLGPID = sLGPID + ( sdptbGroup::getAllocLGIdx( sGGHdr ) * (-2) + 1 ) ;
 
     IDE_TEST_RAISE( aPageID == sLGPID , fail_read_lg );
@@ -1529,15 +1529,15 @@ IDE_RC sdptbExtent::isFreeExtPage( idvSQL      * aStatistics,
     sExtFstPID = SDPTB_GET_EXTENT_PID_BY_PID( aPageID, sPagesPerExt );
 
     //------------------------------------------
-    // Hdr¸¦ ÀĞ¾î¼­ page°¡ ¼ÓÇÑ extent°¡ freeÀÎÁö È®ÀÎÇÑ´Ù.
+    // Hdrë¥¼ ì½ì–´ì„œ pageê°€ ì†í•œ extentê°€ freeì¸ì§€ í™•ì¸í•œë‹¤.
     //------------------------------------------
 
-    // extent´Â HWMÀÌ³»¿¡ ÀÖ¾î¾ß ÇÑ´Ù. LGID´Â LGCntº¸´Ù Å¬¼ö ¾ø´Ù.
-    // Á¶°ÇÀ» ¸¸Á·ÇÏÁö ¾ÊÀ¸¸é ¾ÆÁ÷ ÇÒ´çµÈ ÀûÀÌ ¾ø´Â extentÀÌ´Ù.
+    // extentëŠ” HWMì´ë‚´ì— ìˆì–´ì•¼ í•œë‹¤. LGIDëŠ” LGCntë³´ë‹¤ í´ìˆ˜ ì—†ë‹¤.
+    // ì¡°ê±´ì„ ë§Œì¡±í•˜ì§€ ì•Šìœ¼ë©´ ì•„ì§ í• ë‹¹ëœ ì ì´ ì—†ëŠ” extentì´ë‹¤.
     if( ( sGGHdr->mHWM >= sExtFstPID ) && ( sGGHdr->mLGCnt > sLGID ) )
     {
-        // ÇÒ´ç µÈ ÀûÀÌ ÀÖ´Â extentÀÌ´Ù.
-        // dealloc LG HdrÀÇ bitmapÀ» È®ÀÎÇØ¼­ free°¡ µÇ¾ú´ÂÁö È®ÀÎÇÑ´Ù.
+        // í• ë‹¹ ëœ ì ì´ ìˆëŠ” extentì´ë‹¤.
+        // dealloc LG Hdrì˜ bitmapì„ í™•ì¸í•´ì„œ freeê°€ ë˜ì—ˆëŠ”ì§€ í™•ì¸í•œë‹¤.
 
         IDE_TEST_RAISE( sdbBufferMgr::getPageByPID( aStatistics,
                                                     aSpaceID,
@@ -1555,7 +1555,7 @@ IDE_RC sdptbExtent::isFreeExtPage( idvSQL      * aStatistics,
 
         sLGHdr = sdptbGroup::getLGHdr( sLGHdrPagePtr );
 
-        // bit¸¦ È®ÀÎÇÏ¿© extentÀÇ free¿©ºÎ¸¦ ¾Ë¾Æ³½´Ù.
+        // bitë¥¼ í™•ì¸í•˜ì—¬ extentì˜ freeì—¬ë¶€ë¥¼ ì•Œì•„ë‚¸ë‹¤.
 
         sExtentIdx  = SDPTB_EXTENT_IDX_AT_LG_BY_PID( sExtFstPID, sPagesPerExt );
 
@@ -1571,7 +1571,7 @@ IDE_RC sdptbExtent::isFreeExtPage( idvSQL      * aStatistics,
     }
     else
     {
-        // ÇÒ´çµÈ ÀûÀÌ ¾ø´Â extentÀÌ¹Ç·Î Free ÀÌ´Ù.
+        // í• ë‹¹ëœ ì ì´ ì—†ëŠ” extentì´ë¯€ë¡œ Free ì´ë‹¤.
         *aIsFreeExt = ID_TRUE;
     }
 
@@ -1585,7 +1585,7 @@ IDE_RC sdptbExtent::isFreeExtPage( idvSQL      * aStatistics,
 
     return IDE_SUCCESS;
 
-    // GG,LG Hdr°¡ corrupted pageÀÎ °æ¿ì
+    // GG,LG Hdrê°€ corrupted pageì¸ ê²½ìš°
     IDE_EXCEPTION( fail_read_gg );
     {
         sctTableSpaceMgr::getTBSAttrByID( aSpaceID, &sTBSAttr );

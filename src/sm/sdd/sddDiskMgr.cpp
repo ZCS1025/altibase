@@ -20,28 +20,28 @@
  *
  * Description :
  *
- * º» ÆÄÀÏÀº µð½ºÅ©°ü¸®ÀÚ¿¡ ´ëÇÑ ±¸ÇöÆÄÀÏÀÌ´Ù.
+ * ë³¸ íŒŒì¼ì€ ë””ìŠ¤í¬ê´€ë¦¬ìžì— ëŒ€í•œ êµ¬í˜„íŒŒì¼ì´ë‹¤.
  *
- * µð½ºÅ©°ü¸®ÀÚ´Â ¹öÆÛ°ü¸®ÀÚ¿Í ÇÔ²² resource layer¿¡ ¼ÓÇÑ´Ù. ´ëºÎºÐ
- * ¹öÆÛ°ü¸®ÀÚ°¡ µð½ºÅ©°ü¸®ÀÚ¸¦ È£ÃâÇÏ¸ç, I/O ¿Ï·á½Ã¿¡´Â ¹öÆÛ °ü¸®ÀÚ¿¡°Ô
- * ¿Ï·á »ç½ÇÀ» ¾Ë·ÁÁÙ ÇÊ¿ä°¡ ÀÖ´Ù.
+ * ë””ìŠ¤í¬ê´€ë¦¬ìžëŠ” ë²„í¼ê´€ë¦¬ìžì™€ í•¨ê»˜ resource layerì— ì†í•œë‹¤. ëŒ€ë¶€ë¶„
+ * ë²„í¼ê´€ë¦¬ìžê°€ ë””ìŠ¤í¬ê´€ë¦¬ìžë¥¼ í˜¸ì¶œí•˜ë©°, I/O ì™„ë£Œì‹œì—ëŠ” ë²„í¼ ê´€ë¦¬ìžì—ê²Œ
+ * ì™„ë£Œ ì‚¬ì‹¤ì„ ì•Œë ¤ì¤„ í•„ìš”ê°€ ìžˆë‹¤.
  *
- * # °³³ä
+ * # ê°œë…
  *
- * Å×ÀÌºí½ºÆäÀÌ½º Á¤º¸, °¢ Å×ÀÌºí½ºÆäÀÌ½ºÀÇ µ¥ÀÌÅ¸ È­ÀÏ¿¡ ´ëÇÑ Á¤º¸,
- * µ¥ÀÌÅ¸ È­ÀÏÀÌ I/O¿¡ °ü·ÃµÈ Á¤º¸¸¦ °ü¸®ÇÑ´Ù.
+ * í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ ì •ë³´, ê° í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ì˜ ë°ì´íƒ€ í™”ì¼ì— ëŒ€í•œ ì •ë³´,
+ * ë°ì´íƒ€ í™”ì¼ì´ I/Oì— ê´€ë ¨ëœ ì •ë³´ë¥¼ ê´€ë¦¬í•œë‹¤.
  *
- * # ±¸¼º¿ä¼Ò
+ * # êµ¬ì„±ìš”ì†Œ
  *
  * 1. sddDiskMgr
- *   tablespaceÀÇ hash¿Í °¢Á¾ ¸®½ºÆ®¸¦ À¯ÁöÇÏ¸ç, ÀüÃ¼ I/O¿¡ ´ëÇÑ
- *   Á¤º¸¸¦ °ü¸®ÇÑ´Ù.
+ *   tablespaceì˜ hashì™€ ê°ì¢… ë¦¬ìŠ¤íŠ¸ë¥¼ ìœ ì§€í•˜ë©°, ì „ì²´ I/Oì— ëŒ€í•œ
+ *   ì •ë³´ë¥¼ ê´€ë¦¬í•œë‹¤.
  *
  * 2. sddTableSpaceNode
- *   tablespace ³ëµå¿¡ °ü·ÃµÈ Á¤º¸¸¦ °ü¸®ÇÑ´Ù.
+ *   tablespace ë…¸ë“œì— ê´€ë ¨ëœ ì •ë³´ë¥¼ ê´€ë¦¬í•œë‹¤.
  *
  * 3. sddDataFileNode
- *   ÇÏ³ªÀÇ datafile ³ëµå¿¡ ´ëÇÑ Á¤º¸¸¦ °ü¸®ÇÑ´Ù.
+ *   í•˜ë‚˜ì˜ datafile ë…¸ë“œì— ëŒ€í•œ ì •ë³´ë¥¼ ê´€ë¦¬í•œë‹¤.
  *
  * - sddDiskMgr
  *                 ____________
@@ -60,30 +60,30 @@
  *  |_________________| |________________|  |_______________|
  *
  *  - sddDataFileNode LRU-list
- * ÃÖ´ë ¿­ ¼ö ÀÖ´Â datafileÀÇ °³¼ö°¡ Á¤ÇØÁ® ÀÖÀ¸¹Ç·Î, ¿ÀÇÂµÈ datafileÀÇ
- * ¸®½ºÆ®¸¦ LRU·Î À¯ÁöÇÑ´Ù. ¸®½ºÆ®ÀÇ ¸¶Áö¸·ÀÌ °¡Àå ¿À·¡Àü¿¡ ¿ÀÇÂµÈ
- * datafileÀÌ´Ù.
+ * ìµœëŒ€ ì—´ ìˆ˜ ìžˆëŠ” datafileì˜ ê°œìˆ˜ê°€ ì •í•´ì ¸ ìžˆìœ¼ë¯€ë¡œ, ì˜¤í”ˆëœ datafileì˜
+ * ë¦¬ìŠ¤íŠ¸ë¥¼ LRUë¡œ ìœ ì§€í•œë‹¤. ë¦¬ìŠ¤íŠ¸ì˜ ë§ˆì§€ë§‰ì´ ê°€ìž¥ ì˜¤ëž˜ì „ì— ì˜¤í”ˆëœ
+ * datafileì´ë‹¤.
  *
  *  - sddTableSpaceNode List
- * ÇöÀç µ¥ÀÌÅ¸º£ÀÌ½º¿¡¼­ »ç¿ëÁßÀÎ ¸ðµç Å×ÀÌºí½ºÆäÀÌ½º¿¡ ´ëÇÑ ¸®½ºÆ®ÀÌ´Ù.
- * ½Ã½ºÅÛ Å×ÀÌºí½ºÆäÀÌ½º, À¯Àú Å×ÀÌºí½ºÆäÀÌ½º¸¦ Æ÷ÇÔÇÑ´Ù.
+ * í˜„ìž¬ ë°ì´íƒ€ë² ì´ìŠ¤ì—ì„œ ì‚¬ìš©ì¤‘ì¸ ëª¨ë“  í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ì— ëŒ€í•œ ë¦¬ìŠ¤íŠ¸ì´ë‹¤.
+ * ì‹œìŠ¤í…œ í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤, ìœ ì € í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ë¥¼ í¬í•¨í•œë‹¤.
  *
  *  - sddTableSpaceNode Hash
- * ¸ðµç tablespace¸¦ Á¢±ÙÇÏ±â À§ÇÑ ÇØ½¬±¸Á¶
+ * ëª¨ë“  tablespaceë¥¼ ì ‘ê·¼í•˜ê¸° ìœ„í•œ í•´ì‰¬êµ¬ì¡°
  *
- * # µð½ºÅ©°ü¸®ÀÚÀÇ Mutex
+ * # ë””ìŠ¤í¬ê´€ë¦¬ìžì˜ Mutex
  *
- * µð½ºÅ©°ü¸®ÀÚÀÇ mutex¸¦ °¡Áö¸ç list¿Í hash¿¡ ´ëÇÑ Á¢±ÙÀ» º¸È£ÇÑ´Ù.
- * tablespace´Â mutex¸¦ °¡ÁöÁö ¾Ê´Â´Ù.
+ * ë””ìŠ¤í¬ê´€ë¦¬ìžì˜ mutexë¥¼ ê°€ì§€ë©° listì™€ hashì— ëŒ€í•œ ì ‘ê·¼ì„ ë³´í˜¸í•œë‹¤.
+ * tablespaceëŠ” mutexë¥¼ ê°€ì§€ì§€ ì•ŠëŠ”ë‹¤.
  *
- * # °³¼± °¡´É »çÇ×
- * sddTableSpaceNode¿Í sddDataFileNode¿¡ mutex¸¦ µÎ¾î sddDiskMgrÀÇ
- * contentionÀ» ÁÙÀÎ´Ù.(??)
+ * # ê°œì„  ê°€ëŠ¥ ì‚¬í•­
+ * sddTableSpaceNodeì™€ sddDataFileNodeì— mutexë¥¼ ë‘ì–´ sddDiskMgrì˜
+ * contentionì„ ì¤„ì¸ë‹¤.(??)
  *
- * # °ü·Ã property
+ * # ê´€ë ¨ property
  *
- * - SMU_MAX_OPEN_FILE_COUNT  : ÃÖ´ë ¿ÀÇÂÇÒ ¼ö ÀÖ´Â file °³¼ö
- * - SMU_OPEN_DATAFILE_WAIT_INTERVAL : fileÀ» ¿ÀÇÂÇÏ±â À§ÇØ ´ë±âÇÏ´Â ½Ã°£
+ * - SMU_MAX_OPEN_FILE_COUNT  : ìµœëŒ€ ì˜¤í”ˆí•  ìˆ˜ ìžˆëŠ” file ê°œìˆ˜
+ * - SMU_OPEN_DATAFILE_WAIT_INTERVAL : fileì„ ì˜¤í”ˆí•˜ê¸° ìœ„í•´ ëŒ€ê¸°í•˜ëŠ” ì‹œê°„
  *
  **********************************************************************/
 
@@ -98,23 +98,23 @@
 #include <smriChangeTrackingMgr.h>
 #include <smriBackupInfoMgr.h>
 
-smuList        sddDiskMgr::mOpenFileLRUList;  // datafile ³ëµåÀÇ LRU ¸®½ºÆ®
-UInt           sddDiskMgr::mOpenFileLRUCount; // ¿ÀÇÂµÈ datafile ³ëµå °³¼ö
-UInt           sddDiskMgr::mMaxDataFilePageCount;  // ¸ðµç datafileÀÇ maxsize
-iduCond        sddDiskMgr::mOpenFileCV;       // datafile ¿ÀÇÂ´ë±â CV
-iduCond        sddDiskMgr::mBackupCV;        // Backup ´ë±â  CV
-UInt           sddDiskMgr::mWaitThr4Open;     // datafile ¿ÀÇÂ´ë±â thread °³¼ö
-PDL_Time_Value sddDiskMgr::mTimeValue;        // ´ë±â½Ã°£
-UInt           sddDiskMgr::mCurrChangeTrackingThreadCnt; // change trackingÀ» ¼öÇàÁßÀÎ threadÀÇ ¼ö
+smuList        sddDiskMgr::mOpenFileLRUList;  // datafile ë…¸ë“œì˜ LRU ë¦¬ìŠ¤íŠ¸
+UInt           sddDiskMgr::mOpenFileLRUCount; // ì˜¤í”ˆëœ datafile ë…¸ë“œ ê°œìˆ˜
+UInt           sddDiskMgr::mMaxDataFilePageCount;  // ëª¨ë“  datafileì˜ maxsize
+iduCond        sddDiskMgr::mOpenFileCV;       // datafile ì˜¤í”ˆëŒ€ê¸° CV
+iduCond        sddDiskMgr::mBackupCV;        // Backup ëŒ€ê¸°  CV
+UInt           sddDiskMgr::mWaitThr4Open;     // datafile ì˜¤í”ˆëŒ€ê¸° thread ê°œìˆ˜
+PDL_Time_Value sddDiskMgr::mTimeValue;        // ëŒ€ê¸°ì‹œê°„
+UInt           sddDiskMgr::mCurrChangeTrackingThreadCnt; // change trackingì„ ìˆ˜í–‰ì¤‘ì¸ threadì˜ ìˆ˜
 
-// ÃÖÃÊ page write½Ã¿¡ ÀúÀåµÇ´Â checksum
+// ìµœì´ˆ page writeì‹œì— ì €ìž¥ë˜ëŠ” checksum
 UInt           sddDiskMgr::mInitialCheckSum;
 
 idBool         sddDiskMgr::mEnableWriteToOfflineDBF;
 
 sddReadPageFunc sddDiskMgr::sddReadPageFuncs[SMI_ONLINE_OFFLINE_MAX] =
 {
-    // µ¥ÀÌÅ¸ÆÄÀÏ¿¡¼­ page  read.
+    // ë°ì´íƒ€íŒŒì¼ì—ì„œ page  read.
     NULL,
     sddDiskMgr::readOfflineDataFile,  // OFFINE
     sddDiskMgr::readPageFromDataFile  // FILE_ONLINE, ONLINE|CREATING, ONLINE|DROPPED
@@ -128,20 +128,20 @@ sddWritePageFunc sddDiskMgr::sddWritePageFuncs[SMI_ONLINE_OFFLINE_MAX] =
 };
 
 /***********************************************************************
- * Description : µð½ºÅ©°ü¸®ÀÚ ÃÊ±âÈ­
+ * Description : ë””ìŠ¤í¬ê´€ë¦¬ìž ì´ˆê¸°í™”
  *
- * ½Ã½ºÅÛ startup½Ã¿¡ È£ÃâµÇ¾î, µð½ºÅ©°ü¸®ÀÚ¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+ * ì‹œìŠ¤í…œ startupì‹œì— í˜¸ì¶œë˜ì–´, ë””ìŠ¤í¬ê´€ë¦¬ìžë¥¼ ì´ˆê¸°í™”í•œë‹¤.
  *
 ( * + 2nd. code design
- *   - µð½ºÅ©°ü¸®ÀÚÀÇ mutex »ý¼º ¹× ÃÊ±âÈ­
- *   - tablespace ³ëµå¸¦ À§ÇÑ HASH¸¦ »ý¼º
- *   - tablespace ¸®½ºÆ® ¹× tablespace ³ëµå °³¼ö ÃÊ±âÈ­ÇÑ´Ù.
- *   - datafile LRU ¸®½ºÆ® ¹× LRU datafile ³ëµå °³¼ö ÃÊ±âÈ­ÇÑ´Ù.
- *   - max open datafileÀ» ¼³Á¤ÇÑ´Ù.
- *   - max system datafile size¸¦ ¼³Á¤ÇÑ´Ù.
- *   - next tablespace ID¸¦ ÃÊ±âÈ­ÇÑ´Ù.
- *   - open datafile CV¸¦ ÃÊ±âÈ­ÇÑ´Ù.
- *   - open datafile¸¦ À§ÇÑ ´ë±âÇÃ·¡±×¸¦ ID_FALSE¸¦ ÇÑ´Ù.
+ *   - ë””ìŠ¤í¬ê´€ë¦¬ìžì˜ mutex ìƒì„± ë° ì´ˆê¸°í™”
+ *   - tablespace ë…¸ë“œë¥¼ ìœ„í•œ HASHë¥¼ ìƒì„±
+ *   - tablespace ë¦¬ìŠ¤íŠ¸ ë° tablespace ë…¸ë“œ ê°œìˆ˜ ì´ˆê¸°í™”í•œë‹¤.
+ *   - datafile LRU ë¦¬ìŠ¤íŠ¸ ë° LRU datafile ë…¸ë“œ ê°œìˆ˜ ì´ˆê¸°í™”í•œë‹¤.
+ *   - max open datafileì„ ì„¤ì •í•œë‹¤.
+ *   - max system datafile sizeë¥¼ ì„¤ì •í•œë‹¤.
+ *   - next tablespace IDë¥¼ ì´ˆê¸°í™”í•œë‹¤.
+ *   - open datafile CVë¥¼ ì´ˆê¸°í™”í•œë‹¤.
+ *   - open datafileë¥¼ ìœ„í•œ ëŒ€ê¸°í”Œëž˜ê·¸ë¥¼ ID_FALSEë¥¼ í•œë‹¤.
  **********************************************************************/
 IDE_RC sddDiskMgr::initialize( UInt  aMaxFilePageCnt )
 {
@@ -152,7 +152,7 @@ IDE_RC sddDiskMgr::initialize( UInt  aMaxFilePageCnt )
 
     mMaxDataFilePageCount   = aMaxFilePageCnt;
 
-    /* ¿ÀÇÂµÈ datafile ³ëµåÀÇ BASE ¸®½ºÆ® ¹× °³¼ö */
+    /* ì˜¤í”ˆëœ datafile ë…¸ë“œì˜ BASE ë¦¬ìŠ¤íŠ¸ ë° ê°œìˆ˜ */
     SMU_LIST_INIT_BASE(&mOpenFileLRUList);
     mOpenFileLRUCount = 0;
     IDE_TEST_RAISE(mOpenFileCV.initialize((SChar *)"DISK_MGR_OPEN_COND") != IDE_SUCCESS, error_cond_init);
@@ -184,7 +184,7 @@ IDE_RC sddDiskMgr::initialize( UInt  aMaxFilePageCnt )
 }
 
 
-/* Space Cache ¼³Á¤ */
+/* Space Cache ì„¤ì • */
 void  sddDiskMgr::setSpaceCache( scSpaceID  aSpaceID,
                                  void     * aSpaceCache )
 {
@@ -199,7 +199,7 @@ void  sddDiskMgr::setSpaceCache( scSpaceID  aSpaceID,
     return;
 }
 
-/* Space Cache ¹ÝÈ¯ */
+/* Space Cache ë°˜í™˜ */
 void * sddDiskMgr::getSpaceCache( scSpaceID  aSpaceID )
 {
     sddTableSpaceNode*  sSpaceNode;
@@ -216,25 +216,25 @@ void * sddDiskMgr::getSpaceCache( scSpaceID  aSpaceID )
 
 
 /***********************************************************************
- * Description : µð½ºÅ©°ü¸®ÀÚ ÇØÁ¦
+ * Description : ë””ìŠ¤í¬ê´€ë¦¬ìž í•´ì œ
  *
- * ½Ã½ºÅÛ shutdown½Ã¿¡ È£ÃâµÇ¾î, µð½ºÅ©°ü¸®ÀÚ¸¦ ÇØÁ¦ÇÑ´Ù.
+ * ì‹œìŠ¤í…œ shutdownì‹œì— í˜¸ì¶œë˜ì–´, ë””ìŠ¤í¬ê´€ë¦¬ìžë¥¼ í•´ì œí•œë‹¤.
  *
  * + 2nd. code design
- *   - µð½ºÅ©°ü¸®ÀÚÀÇ mutex È¹µæ
- *   - while( ¿ÀÇÂµÈ datafile ³ëµå LRU ¸®½ºÆ®ÀÇ ¸ðµç datafile ³ëµå¿¡ ´ëÇØ )
+ *   - ë””ìŠ¤í¬ê´€ë¦¬ìžì˜ mutex íšë“
+ *   - while( ì˜¤í”ˆëœ datafile ë…¸ë“œ LRU ë¦¬ìŠ¤íŠ¸ì˜ ëª¨ë“  datafile ë…¸ë“œì— ëŒ€í•´ )
  *     {
- *         datafileÀ» close ÇÑ´Ù. -> closeDataFile
+ *         datafileì„ close í•œë‹¤. -> closeDataFile
  *     }
- *   - while( ¸ðµç tablespace¿¡ ´ëÇÏ¿© )
+ *   - while( ëª¨ë“  tablespaceì— ëŒ€í•˜ì—¬ )
  *     {
- *       °¢ tablespace¸¦ destroyÇÑ´Ù -> sddTableSpace::destroy(³ëµå¸¸)
- *       Å×ÀÌºí ½ºÆäÀÌ½º ¸Þ¸ð¸®¸¦ ÇØÁ¦ÇÑ´Ù.
+ *       ê° tablespaceë¥¼ destroyí•œë‹¤ -> sddTableSpace::destroy(ë…¸ë“œë§Œ)
+ *       í…Œì´ë¸” ìŠ¤íŽ˜ì´ìŠ¤ ë©”ëª¨ë¦¬ë¥¼ í•´ì œí•œë‹¤.
  *     }
- *   - µð½ºÅ©°ü¸®ÀÚ mutex ÇØÁ¦
- *   - open datafile CV¸¦ destroyÇÑ´Ù.
- *   - µð½ºÅ©°ü¸®ÀÚÀÇ mutex¸¦ destroyÇÑ´Ù.
- *   - tablespace ³ëµå¸¦ À§ÇÑ hash¸¦ destroyÇÑ´Ù.
+ *   - ë””ìŠ¤í¬ê´€ë¦¬ìž mutex í•´ì œ
+ *   - open datafile CVë¥¼ destroyí•œë‹¤.
+ *   - ë””ìŠ¤í¬ê´€ë¦¬ìžì˜ mutexë¥¼ destroyí•œë‹¤.
+ *   - tablespace ë…¸ë“œë¥¼ ìœ„í•œ hashë¥¼ destroyí•œë‹¤.
  **********************************************************************/
 IDE_RC sddDiskMgr::destroy()
 {
@@ -248,7 +248,7 @@ IDE_RC sddDiskMgr::destroy()
     sState = 1;
 
     /* ------------------------------------------------
-     * LRU ¸®½ºÆ®¸¦ ¼øÈ¸ÇÏ¸é¼­ ¿ÀÇÂµÈ datafileµéÀ» ¸ðµÎ ´Ý´Â´Ù.
+     * LRU ë¦¬ìŠ¤íŠ¸ë¥¼ ìˆœíšŒí•˜ë©´ì„œ ì˜¤í”ˆëœ datafileë“¤ì„ ëª¨ë‘ ë‹«ëŠ”ë‹¤.
      * ----------------------------------------------*/
     sBaseNode = &mOpenFileLRUList;
 
@@ -288,16 +288,16 @@ IDE_RC sddDiskMgr::destroy()
 
 
 /***********************************************************************
- * Description : offlineµÈ ÆÄÀÏ¿¡ ´ëÇØ¼­ write ¿äÃ»¿¡ ´ëÇÑ ¿¡·¯
+ * Description : offlineëœ íŒŒì¼ì— ëŒ€í•´ì„œ write ìš”ì²­ì— ëŒ€í•œ ì—ëŸ¬
  *
- * aStatistics - [IN] Åë°è Á¤º¸
+ * aStatistics - [IN] í†µê³„ ì •ë³´
  * aFileNode   - [IN] FileNode
- * aFstPID     - [IN] Ã¹¹øÂ° PageID
+ * aFstPID     - [IN] ì²«ë²ˆì§¸ PageID
  * aPageCnt    - [IN] Write Page Count
- * aBuffer     - [IN] Page³»¿ëÀ» °¡Áø Buffer
+ * aBuffer     - [IN] Pageë‚´ìš©ì„ ê°€ì§„ Buffer
  * aRecvLSN    - [IN] Recovery LSN
  *
- * aState      - [OUT] sctTableSpaceMgr::lock()¿¡ ´ëÇÑ Á¤º¸¸¦ °¡Áö°í ÀÖ´Ù.
+ * aState      - [OUT] sctTableSpaceMgr::lock()ì— ëŒ€í•œ ì •ë³´ë¥¼ ê°€ì§€ê³  ìžˆë‹¤.
  **********************************************************************/
 IDE_RC sddDiskMgr::writeOfflineDataFile( idvSQL          * aStatistics,
                                          sddDataFileNode * aFileNode,
@@ -307,29 +307,29 @@ IDE_RC sddDiskMgr::writeOfflineDataFile( idvSQL          * aStatistics,
                                          UInt            * aState )
 {
 
-    // BUG-17158 offline Disk Tablespace¿¡ Á¢±Ù°¡´É¿©ºÎ¸¦ ÆÇ´ÜÇÑ´Ù.
+    // BUG-17158 offline Disk Tablespaceì— ì ‘ê·¼ê°€ëŠ¥ì—¬ë¶€ë¥¼ íŒë‹¨í•œë‹¤.
 
-    // Restart Recovery ¶Ç´Â Media Recovery ½Ã¿¡´Â
-    // Offline TBS¿¡ ´ëÇØ write°¡ ¹ß»ýÇÒ ¼ö ÀÖ´Ù.
+    // Restart Recovery ë˜ëŠ” Media Recovery ì‹œì—ëŠ”
+    // Offline TBSì— ëŒ€í•´ writeê°€ ë°œìƒí•  ìˆ˜ ìžˆë‹¤.
 
-    // ´ÙÀ½ °úÁ¤¿¡¼­ Á¢±ÙÀÌ °¡´ÉÇÏ´Ù.
+    // ë‹¤ìŒ ê³¼ì •ì—ì„œ ì ‘ê·¼ì´ ê°€ëŠ¥í•˜ë‹¤.
     // 1) Media Recovery  (open/read/write)
-    // : Loganchor¿¡´Â Offline »óÅÂÀÌÁö¸¸,
-    //   backup º»µéÀº Online »óÅÂÀÎ °æ¿ì º¹±¸´Â ÇØ¾ßÇÑ´Ù.
+    // : Loganchorì—ëŠ” Offline ìƒíƒœì´ì§€ë§Œ,
+    //   backup ë³¸ë“¤ì€ Online ìƒíƒœì¸ ê²½ìš° ë³µêµ¬ëŠ” í•´ì•¼í•œë‹¤.
 
     // 2) RestartRecovery (open/read/write)
-    // : Loganchor¿¡ Online »óÅÂÀÌÁö¸¸,
-    //   RedoÇÏ´Ù°¡ ÃÖÁ¾ÀûÀ¸·Î´Â Offline»óÅÂ·Î µÇ´Â °æ¿ì
+    // : Loganchorì— Online ìƒíƒœì´ì§€ë§Œ,
+    //   Redoí•˜ë‹¤ê°€ ìµœì¢…ì ìœ¼ë¡œëŠ” Offlineìƒíƒœë¡œ ë˜ëŠ” ê²½ìš°
 
-    // 3) checkpoint½Ã Write DBF Hdr (Open/Write)
+    // 3) checkpointì‹œ Write DBF Hdr (Open/Write)
 
-    // 4) identify ½Ã read DBF Hdr (Open/Read)
+    // 4) identify ì‹œ read DBF Hdr (Open/Read)
 
     if ( isEnableWriteToOfflineDBF() == ID_TRUE )
     {
 
-        // restart °úÁ¤ÀÌ°Å³ª Media Recovery ÀÎ ¼öÇà ÁßÀÎ °æ¿ì
-        // µ¥ÀÌÅ¸ÆÄÀÏ¿¡ Á¢±ÙÀÌ °¡´ÉÇØ¾ß ÇÑ´Ù.
+        // restart ê³¼ì •ì´ê±°ë‚˜ Media Recovery ì¸ ìˆ˜í–‰ ì¤‘ì¸ ê²½ìš°
+        // ë°ì´íƒ€íŒŒì¼ì— ì ‘ê·¼ì´ ê°€ëŠ¥í•´ì•¼ í•œë‹¤.
         IDE_TEST( writePage2DataFile( aStatistics,
                                       aFileNode,
                                       aFstPID,
@@ -340,7 +340,7 @@ IDE_RC sddDiskMgr::writeOfflineDataFile( idvSQL          * aStatistics,
     }
     else
     {
-        // ¿î¿µÁß¿¡´Â Abort Ã³¸®µÇ¾î¾ß ÇÑ´Ù.
+        // ìš´ì˜ì¤‘ì—ëŠ” Abort ì²˜ë¦¬ë˜ì–´ì•¼ í•œë‹¤.
         IDE_RAISE( err_access_to_offline_datafile );
     }
 
@@ -358,8 +358,8 @@ IDE_RC sddDiskMgr::writeOfflineDataFile( idvSQL          * aStatistics,
 
 
 /***********************************************************************
- * Description : offlineµÈ ÆÄÀÏ¿¡ ´ëÇØ¼­ read ¿äÃ»½Ã Read¸¦ Çã¿ëÇÑ´Ù.
- * Write´Â »óÈ²¿¡µû¶ó Çã¿ë/ºÒ°¡¸¦ ÇÏ´õ¶óµµ Read¸¦ ±»ÀÌ ¸·À» ÇÊ¿ä¼ºÀº ¾ø´Ù.
+ * Description : offlineëœ íŒŒì¼ì— ëŒ€í•´ì„œ read ìš”ì²­ì‹œ Readë¥¼ í—ˆìš©í•œë‹¤.
+ * WriteëŠ” ìƒí™©ì—ë”°ë¼ í—ˆìš©/ë¶ˆê°€ë¥¼ í•˜ë”ë¼ë„ Readë¥¼ êµ³ì´ ë§‰ì„ í•„ìš”ì„±ì€ ì—†ë‹¤.
  **********************************************************************/
 IDE_RC sddDiskMgr::readOfflineDataFile(idvSQL*          aStatistics,
                                        sddDataFileNode* aFileNode,
@@ -368,13 +368,13 @@ IDE_RC sddDiskMgr::readOfflineDataFile(idvSQL*          aStatistics,
                                        UChar*           aBuffer,
                                        UInt*            aState )
 {
-    // read °¡ ¹ß»ýÇÒ ¼ö ÀÖ´Â Case
+    // read ê°€ ë°œìƒí•  ìˆ˜ ìžˆëŠ” Case
     // 1. Media Recovery
     // 2. Recovery From DWBuffer
     // 3. Restart
     // 4. identify DBF Hdr
-    // 5. Offline TBS-> Online TBS·Î º¯°æÇÏ´Â °æ¿ì
-    //    Table Meta ¿Í Index Hdr Rebuild
+    // 5. Offline TBS-> Online TBSë¡œ ë³€ê²½í•˜ëŠ” ê²½ìš°
+    //    Table Meta ì™€ Index Hdr Rebuild
 
     IDE_TEST( readPageFromDataFile( aStatistics,
                                     aFileNode,
@@ -392,15 +392,15 @@ IDE_RC sddDiskMgr::readOfflineDataFile(idvSQL*          aStatistics,
 }
 
 /*
- * TBSÀÇ ÀÚ·á±¸Á¶¸¦ ÂüÁ¶ÇÏ¿© µ¿ÀÏÇÑ ÆÄÀÏ¸íÀÌ Á¸ÀçÇÏ´ÂÁö¸¦ ¾Ë¾Æ³½´Ù.
- * BUG-18044¸¦ fixÇÏ±âÀ§ÇÏ¿© ÀÛ¼ºµÇ¾îÁ³´Ù.
+ * TBSì˜ ìžë£Œêµ¬ì¡°ë¥¼ ì°¸ì¡°í•˜ì—¬ ë™ì¼í•œ íŒŒì¼ëª…ì´ ì¡´ìž¬í•˜ëŠ”ì§€ë¥¼ ì•Œì•„ë‚¸ë‹¤.
+ * BUG-18044ë¥¼ fixí•˜ê¸°ìœ„í•˜ì—¬ ìž‘ì„±ë˜ì–´ì¡Œë‹¤.
  *
  * [IN]aSpaceNode         : Space Node
- * [IN]aDataFileAttr      : TBS¿¡ Ãß°¡ÇÒ ÆÄÀÏµé¿¡ ´ëÇÑ Á¤º¸¸¦ ÀúÀåÇÏ°íÀÖÀ½.
- * [IN]aDataFileAttrCount : aDataFileAttrÀÇ ¿ä¼Ò°¹¼ö
- * [OUT]aExistFileName    : TBS¿¡ µ¿ÀÏÇÑ ÆÄÀÏ¸íÀÌ Á¸ÀçÇÑ´Ù¸é ±× ÆÄÀÏ¸í ¸®ÅÏÇÔ.
- *                          (¿¡·¯¸Þ½ÃÁö Ãâ·Â¿ëÀ¸·Î »ç¿ëµÊ)
- * [OUT]aNameExist        : µ¿ÀÏÇÑ ÆÄÀÏ¸íÀÌ Á¸ÀçÇÏ´Â°¡?
+ * [IN]aDataFileAttr      : TBSì— ì¶”ê°€í•  íŒŒì¼ë“¤ì— ëŒ€í•œ ì •ë³´ë¥¼ ì €ìž¥í•˜ê³ ìžˆìŒ.
+ * [IN]aDataFileAttrCount : aDataFileAttrì˜ ìš”ì†Œê°¯ìˆ˜
+ * [OUT]aExistFileName    : TBSì— ë™ì¼í•œ íŒŒì¼ëª…ì´ ì¡´ìž¬í•œë‹¤ë©´ ê·¸ íŒŒì¼ëª… ë¦¬í„´í•¨.
+ *                          (ì—ëŸ¬ë©”ì‹œì§€ ì¶œë ¥ìš©ìœ¼ë¡œ ì‚¬ìš©ë¨)
+ * [OUT]aNameExist        : ë™ì¼í•œ íŒŒì¼ëª…ì´ ì¡´ìž¬í•˜ëŠ”ê°€?
  *
  */
 IDE_RC sddDiskMgr::validateDataFileName(
@@ -450,7 +450,7 @@ IDE_RC sddDiskMgr::validateDataFileName(
             }
 
             /*
-             * µ¿ÀÏÇÑ ÆÄÀÏ¸íÀÌ TBS¿¡ Á¸ÀçÇÏ´ÂÁö °Ë»ç
+             * ë™ì¼í•œ íŒŒì¼ëª…ì´ TBSì— ì¡´ìž¬í•˜ëŠ”ì§€ ê²€ì‚¬
              */
             if (idlOS::strcmp(sFileNode->mName, sNewFileName) == 0)
             {
@@ -469,30 +469,30 @@ IDE_RC sddDiskMgr::validateDataFileName(
 }
 
 /***********************************************************************
- * Description : tablespace »ý¼º ¹× ÃÊ±âÈ­ (³ëµåÆ÷ÇÔ)
+ * Description : tablespace ìƒì„± ë° ì´ˆê¸°í™” (ë…¸ë“œí¬í•¨)
  *
- * µð½ºÅ©°ü¸®ÀÚ¿¡ »õ·Î¿î tabespace ³ëµå¸¦ ¸¸µé°í ÃÊ±âÈ­ ÇÑ´Ù.
- * ÇØ´ç ³ëµå¿¡ datafile ³ëµå ¹× ½ÇÁ¦ datafile¸¦ »ý¼ºÇÑ´Ù.
+ * ë””ìŠ¤í¬ê´€ë¦¬ìžì— ìƒˆë¡œìš´ tabespace ë…¸ë“œë¥¼ ë§Œë“¤ê³  ì´ˆê¸°í™” í•œë‹¤.
+ * í•´ë‹¹ ë…¸ë“œì— datafile ë…¸ë“œ ë° ì‹¤ì œ datafileë¥¼ ìƒì„±í•œë‹¤.
  *
- * CREATE TABLESPACE ±¸¹®ÀÌ ½ÇÇàµÉ ¶§ sdpTableSpace::create¿¡¼­
- * È£ÃâµÇ¾î meta (0/1/2¹ø) page ÃÊ±âÈ­ µîÀ» ¼öÇàÇÒ °ÍÀÌ´Ù.
+ * CREATE TABLESPACE êµ¬ë¬¸ì´ ì‹¤í–‰ë  ë•Œ sdpTableSpace::createì—ì„œ
+ * í˜¸ì¶œë˜ì–´ meta (0/1/2ë²ˆ) page ì´ˆê¸°í™” ë“±ì„ ìˆ˜í–‰í•  ê²ƒì´ë‹¤.
  *
- * [!!] µð½ºÅ©°ü¸®ÀÚ mutex ÇØÁ¦ÇÏ±â Àü¿¡ ·Î±×¾ÞÄ¿¸¦ FLUSH ÇÑ´Ù.
+ * [!!] ë””ìŠ¤í¬ê´€ë¦¬ìž mutex í•´ì œí•˜ê¸° ì „ì— ë¡œê·¸ì•µì»¤ë¥¼ FLUSH í•œë‹¤.
  *
- * tablespace ID°¡ Àç»ç¿ëµÇ¾ú´ÂÁö ¿©ºÎ¸¦ ¾Ë±â À§ÇØ¼­´Â
- * create ½ÃÁ¡ÀÇ system SCNÀ» tablespace¿¡ ÀúÀåÇÒ ÇÊ¿ä°¡ ÀÖ´Ù.
+ * tablespace IDê°€ ìž¬ì‚¬ìš©ë˜ì—ˆëŠ”ì§€ ì—¬ë¶€ë¥¼ ì•Œê¸° ìœ„í•´ì„œëŠ”
+ * create ì‹œì ì˜ system SCNì„ tablespaceì— ì €ìž¥í•  í•„ìš”ê°€ ìžˆë‹¤.
  *
  * + 2nd. code design
- *   - tablespace ³ëµå¸¦ À§ÇÑ ¸Þ¸ð¸®¸¦ ÇÒ´çÇÑ´Ù.
- *   - tablespace ³ëµå¸¦ ÃÊ±âÈ­ÇÑ´Ù. -> sddTableSpace::initialize
- *   - µð½ºÅ©°ü¸®ÀÚ mutex È¹µæ
- *   - tablespace ID¸¦ ÇÒ´çÇÏ°í, ¼Ó¼º¿¡ ¼³Á¤ÇÑ´Ù.
- *   - tablespace ³ëµå¿¡ datafileÀÇ ³ëµå¸¦ ¸¸µé°í, ½ÇÁ¦ datafileÀ»
- *     createÇÑ´Ù. -> sddTableSpace::createDataFiles
- *   - HASH¿¡ Ãß°¡ÇÑ´Ù.
- *   - tablespace ³ëµå¸¦ tablespace ¸®½ºÆ®¿¡ Ãß°¡ÇÑ´Ù.
- *   - ·Î±×¾ÞÄ¿ FLUSH -> smrLogMgr::updateLogAnchorForTableSpace
- *   - µð½ºÅ©°ü¸®ÀÚ mutex ÇØÁ¦
+ *   - tablespace ë…¸ë“œë¥¼ ìœ„í•œ ë©”ëª¨ë¦¬ë¥¼ í• ë‹¹í•œë‹¤.
+ *   - tablespace ë…¸ë“œë¥¼ ì´ˆê¸°í™”í•œë‹¤. -> sddTableSpace::initialize
+ *   - ë””ìŠ¤í¬ê´€ë¦¬ìž mutex íšë“
+ *   - tablespace IDë¥¼ í• ë‹¹í•˜ê³ , ì†ì„±ì— ì„¤ì •í•œë‹¤.
+ *   - tablespace ë…¸ë“œì— datafileì˜ ë…¸ë“œë¥¼ ë§Œë“¤ê³ , ì‹¤ì œ datafileì„
+ *     createí•œë‹¤. -> sddTableSpace::createDataFiles
+ *   - HASHì— ì¶”ê°€í•œë‹¤.
+ *   - tablespace ë…¸ë“œë¥¼ tablespace ë¦¬ìŠ¤íŠ¸ì— ì¶”ê°€í•œë‹¤.
+ *   - ë¡œê·¸ì•µì»¤ FLUSH -> smrLogMgr::updateLogAnchorForTableSpace
+ *   - ë””ìŠ¤í¬ê´€ë¦¬ìž mutex í•´ì œ
  **********************************************************************/
 IDE_RC sddDiskMgr::createTableSpace( idvSQL             * aStatistics,
                                      void               * aTrans,
@@ -525,7 +525,7 @@ IDE_RC sddDiskMgr::createTableSpace( idvSQL             * aStatistics,
     sAllocState       = 0;
     sSpaceNode        = NULL;
 
-    /* tbsÀÇ dbf »ý¼º°£ÀÇ mutex È¹µæ */
+    /* tbsì˜ dbf ìƒì„±ê°„ì˜ mutex íšë“ */
     IDE_TEST( sctTableSpaceMgr::lockForCrtTBS() != IDE_SUCCESS );
     sStateTbs = 1;
 
@@ -589,12 +589,12 @@ IDE_RC sddDiskMgr::createTableSpace( idvSQL             * aStatistics,
     IDU_FIT_POINT_RAISE( "2.PROJ-1548@sddDiskMgr::createTableSpace", err_ART );
 
     // PROJ-2133 incremental backup
-    // DataFileDescSlotÀÌ ÇÒ´çµÇ¾î checkpoint°¡ ¹ß»ýÇÏ¸é CTBody°¡ flushµÇ¾î
-    // ÆÄÀÏ¿¡ ¹Ý¿µµÈ´Ù. ÇÏÁö¸¸ loganchor¿¡ DataFileDescSlotID°¡ ÀúÀåµÇ±â Àü¿¡
-    // ¼­¹ö°¡ Á×´Â´Ù¸é ÇÒ´çµÈ DataFileDescSlotÀº »ç¿ëÇÒ¼ö ¾ø°ÔµÈ´Ù.
+    // DataFileDescSlotì´ í• ë‹¹ë˜ì–´ checkpointê°€ ë°œìƒí•˜ë©´ CTBodyê°€ flushë˜ì–´
+    // íŒŒì¼ì— ë°˜ì˜ëœë‹¤. í•˜ì§€ë§Œ loganchorì— DataFileDescSlotIDê°€ ì €ìž¥ë˜ê¸° ì „ì—
+    // ì„œë²„ê°€ ì£½ëŠ”ë‹¤ë©´ í• ë‹¹ëœ DataFileDescSlotì€ ì‚¬ìš©í• ìˆ˜ ì—†ê²Œëœë‹¤.
     //
-    // Áï, logAnchor¿¡ DataFileDescSlotID°¡ ÀúÀåµÇ±â Àü±îÁö CTBody°¡ flush µÇ¸é
-    // ¾ÈµÈ´Ù.
+    // ì¦‰, logAnchorì— DataFileDescSlotIDê°€ ì €ìž¥ë˜ê¸° ì „ê¹Œì§€ CTBodyê°€ flush ë˜ë©´
+    // ì•ˆëœë‹¤.
     if ( smLayerCallback::isCTMgrEnabled() == ID_TRUE )
     {
         IDE_TEST( smLayerCallback::blockCheckpoint() != IDE_SUCCESS ); 
@@ -624,7 +624,7 @@ IDE_RC sddDiskMgr::createTableSpace( idvSQL             * aStatistics,
         IDE_TEST( sddDataFile::addPendingOperation(
                                               aTrans,
                                               sFileNode,
-                                              ID_TRUE, /* commit½Ã¿¡ µ¿ÀÛ */
+                                              ID_TRUE, /* commitì‹œì— ë™ìž‘ */
                                               SCT_POP_CREATE_DBF,
                                               &sPendingOp )
                   != IDE_SUCCESS );
@@ -634,24 +634,24 @@ IDE_RC sddDiskMgr::createTableSpace( idvSQL             * aStatistics,
         IDU_FIT_POINT_RAISE( "4.PROJ-1548@sddDiskMgr::createTableSpace", err_ART );
 
         // PRJ-1548 User Memory Tablespace
-        // TBS Node¿¡ X Àá±ÝÀ» È¹µæÇÏ±â ¶§¹®¿¡ DBF Node¿¡ X Àá±ÝÀ»
-        // È¹µæÇÒ ÇÊ¿ä°¡ ¾ø´Ù.
+        // TBS Nodeì— X ìž ê¸ˆì„ íšë“í•˜ê¸° ë•Œë¬¸ì— DBF Nodeì— X ìž ê¸ˆì„
+        // íšë“í•  í•„ìš”ê°€ ì—†ë‹¤.
     }
 
     // PRJ-1548 User Memory Tablespace
-    // ½Ã½ºÅÛ Å×ÀÌºí½ºÆäÀÌ½ºÀÇ °æ¿ì Å×ÀÌºí½ºÆäÀÌ½º ³ëµå¿¡
-    // Àá±ÝÀ» È¹µæÇÒ ÇÊ¿ä°¡ ¾ø´Ù.
+    // ì‹œìŠ¤í…œ í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ì˜ ê²½ìš° í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ ë…¸ë“œì—
+    // ìž ê¸ˆì„ íšë“í•  í•„ìš”ê°€ ì—†ë‹¤.
 
     if ( sctTableSpaceMgr::isSystemTableSpace( sSpaceNode->mHeader.mID )
          != ID_TRUE )
     {
-        // addTableSpaceNodeÇÏ°Ô µÇ¸é ´Ù¸¥ ¿¬»êÀÌ TBS Node¸¦ ¸ÕÀú º¸±â ¶§¹®ÀÌ°í
-        // »ý¼ºÁßÀÎ TBS ¿¡ ´ëÇØ¼­ ¸ÕÀú Àá±ÝÀ» È¹µæÇÒ ¼ö ÀÖ°Ô µÈ´Ù.
-        // ÀÌ¸¦ ¹æÁöÇÏ±â À§ÇØ¼­ TBS List¿¡ Ãß°¡µÇ±â Àü¿¡ ¸ÕÀú Àá±ÝÀ» È¹µæÇÑ´Ù.
-        // ÀÌ¿Í ÇÔ²², CREATE ÁßÀÎ TBS Node´Â °Ë»öÀÌ ¾ÈµÇµµ·Ï Ã³¸®ÇÒ ÇÊ¿ä°¡ ÀÖ´Ù.
-        // mutex¿Í 2PL°£ÀÇ lock coupling ½Ã¿¡ deadlockÀÌ ¹ß»ýÇÒ¼ö ÀÖ´Ù.
-        // ±×·¯³ª, ¿¹¿ÜÀûÀ¸·Î »õ·Ó°Ô »ý¼ºµÇ´Â °´Ã¼¿ÍÀÇ couplingÀº
-        // deadlockÀ» ¹ß»ý½ÃÅ°Áö ¾Ê´Â´Ù.
+        // addTableSpaceNodeí•˜ê²Œ ë˜ë©´ ë‹¤ë¥¸ ì—°ì‚°ì´ TBS Nodeë¥¼ ë¨¼ì € ë³´ê¸° ë•Œë¬¸ì´ê³ 
+        // ìƒì„±ì¤‘ì¸ TBS ì— ëŒ€í•´ì„œ ë¨¼ì € ìž ê¸ˆì„ íšë“í•  ìˆ˜ ìžˆê²Œ ëœë‹¤.
+        // ì´ë¥¼ ë°©ì§€í•˜ê¸° ìœ„í•´ì„œ TBS Listì— ì¶”ê°€ë˜ê¸° ì „ì— ë¨¼ì € ìž ê¸ˆì„ íšë“í•œë‹¤.
+        // ì´ì™€ í•¨ê»˜, CREATE ì¤‘ì¸ TBS NodeëŠ” ê²€ìƒ‰ì´ ì•ˆë˜ë„ë¡ ì²˜ë¦¬í•  í•„ìš”ê°€ ìžˆë‹¤.
+        // mutexì™€ 2PLê°„ì˜ lock coupling ì‹œì— deadlockì´ ë°œìƒí• ìˆ˜ ìžˆë‹¤.
+        // ê·¸ëŸ¬ë‚˜, ì˜ˆì™¸ì ìœ¼ë¡œ ìƒˆë¡­ê²Œ ìƒì„±ë˜ëŠ” ê°ì²´ì™€ì˜ couplingì€
+        // deadlockì„ ë°œìƒì‹œí‚¤ì§€ ì•ŠëŠ”ë‹¤.
 
         IDE_TEST( smLayerCallback::lockItem(
                          aTrans,
@@ -664,37 +664,37 @@ IDE_RC sddDiskMgr::createTableSpace( idvSQL             * aStatistics,
                   != IDE_SUCCESS );
     }
 
-    /* µð½ºÅ©°ü¸®ÀÚ mutex È¹µæ */
+    /* ë””ìŠ¤í¬ê´€ë¦¬ìž mutex íšë“ */
     IDE_TEST( sctTableSpaceMgr::lock( aStatistics )
               != IDE_SUCCESS );
     sState  = 1;
 
-    /* µ¿ÀÏÇÑ tablespace¸íÀÌ Á¸ÀçÇÏ´ÂÁö °Ë»çÇÑ´Ù. */
-    // BUG-26695 TBS Node°¡ ¾ø´Â°ÍÀÌ Á¤»óÀÌ¹Ç·Î ¾øÀ» °æ¿ì ¿À·ù ¸Þ½ÃÁö¸¦ ¹ÝÈ¯ÇÏÁö ¾Êµµ·Ï ¼öÁ¤
+    /* ë™ì¼í•œ tablespaceëª…ì´ ì¡´ìž¬í•˜ëŠ”ì§€ ê²€ì‚¬í•œë‹¤. */
+    // BUG-26695 TBS Nodeê°€ ì—†ëŠ”ê²ƒì´ ì •ìƒì´ë¯€ë¡œ ì—†ì„ ê²½ìš° ì˜¤ë¥˜ ë©”ì‹œì§€ë¥¼ ë°˜í™˜í•˜ì§€ ì•Šë„ë¡ ìˆ˜ì •
     IDE_TEST_RAISE( sctTableSpaceMgr::checkExistSpaceNodeByName(
                                           sSpaceNode->mHeader.mName ) == ID_TRUE,
                     err_already_exist_tablespace_name );
 
 
-    /* To Fix BUG-23701 [SD] Create Disk Tablespace½Ã SpaceNodeÀÇ »óÅÂ°ªÀ»
-     * ¼³Á¤ÇÏ¿© mSpaceNodeArr ¿¡ Ãß°¡ÇÏ¿©¾ß ÇÔ. */
+    /* To Fix BUG-23701 [SD] Create Disk Tablespaceì‹œ SpaceNodeì˜ ìƒíƒœê°’ì„
+     * ì„¤ì •í•˜ì—¬ mSpaceNodeArr ì— ì¶”ê°€í•˜ì—¬ì•¼ í•¨. */
     sSpaceNode->mHeader.mState = SMI_TBS_CREATING | SMI_TBS_ONLINE;
 
-    // TBS List¿¡ Ãß°¡ÇÏ¸é¼­ TBS Count Áõ°¡½ÃÅ´
+    // TBS Listì— ì¶”ê°€í•˜ë©´ì„œ TBS Count ì¦ê°€ì‹œí‚´
     sctTableSpaceMgr::addTableSpaceNode( (sctTableSpaceNode*) sSpaceNode );
     sAllocState = 4;
 
     sState = 0;
     IDE_TEST( sctTableSpaceMgr::unlock() != IDE_SUCCESS );
 
-    /* tablespace »ý¼º°£ÀÇ mutex ÇØÁ¦ */
+    /* tablespace ìƒì„±ê°„ì˜ mutex í•´ì œ */
     sStateTbs = 0;
     IDE_TEST( sctTableSpaceMgr::unlockForCrtTBS() != IDE_SUCCESS );
 
     IDE_TEST( sctTableSpaceMgr::addPendingOperation(
                                     aTrans,
                                     sSpaceNode->mHeader.mID,
-                                    ID_TRUE, /* commit½Ã¿¡ µ¿ÀÛ */
+                                    ID_TRUE, /* commitì‹œì— ë™ìž‘ */
                                     SCT_POP_CREATE_TBS)
               != IDE_SUCCESS );
 
@@ -703,7 +703,7 @@ IDE_RC sddDiskMgr::createTableSpace( idvSQL             * aStatistics,
     IDU_FIT_POINT_RAISE( "5.PROJ-1548@sddDiskMgr::createTableSpace", err_ART );
 
     // PRJ-1548 User Memory Tablespace
-    // »õ·Î¿î TBS Node¿Í DBF NodeµéÀ» Loganchor¿¡ Ãß°¡ÇÑ´Ù.
+    // ìƒˆë¡œìš´ TBS Nodeì™€ DBF Nodeë“¤ì„ Loganchorì— ì¶”ê°€í•œë‹¤.
     IDE_ASSERT( smLayerCallback::addTBSNodeAndFlush( (sctTableSpaceNode*)sSpaceNode )
                 == IDE_SUCCESS );
 
@@ -718,7 +718,7 @@ IDE_RC sddDiskMgr::createTableSpace( idvSQL             * aStatistics,
         IDE_ASSERT( sFileNode != NULL );
 
         // BUGBUG
-        // »õ·Î¿î DBF NodeµéÀ» Loganchor¿¡ Ãß°¡ÇÑ´Ù.
+        // ìƒˆë¡œìš´ DBF Nodeë“¤ì„ Loganchorì— ì¶”ê°€í•œë‹¤.
         IDE_ASSERT( smLayerCallback::addDBFNodeAndFlush( sSpaceNode,
                                                          sFileNode )
                     == IDE_SUCCESS );
@@ -767,16 +767,16 @@ IDE_RC sddDiskMgr::createTableSpace( idvSQL             * aStatistics,
         IDE_ASSERT( smLayerCallback::unblockCheckpoint() == IDE_SUCCESS );
     }
 
-    /* TablespaceÀÌ¸§ÀÌ ÀÌ¹Ì ÀÖ°Å³ª µ¥ÀÌÅÍ ÆÄÀÏÀÌ ÀÌ¹Ì ÀÖ°Å³ª
-       È¤Àº ´Ù¸¥ ÀÌÀ¯¿¡ ÀÇÇØ ExceptionÀÌ ¹ß»ýÇÏ¸é
-       sAllocStateÀÇ »óÅÂº°·Î ÀÚ¿ø ÇØÁ¦ Ã³¸®¸¦ ÇØÁà¾ß ÇÑ´Ù.
+    /* Tablespaceì´ë¦„ì´ ì´ë¯¸ ìžˆê±°ë‚˜ ë°ì´í„° íŒŒì¼ì´ ì´ë¯¸ ìžˆê±°ë‚˜
+       í˜¹ì€ ë‹¤ë¥¸ ì´ìœ ì— ì˜í•´ Exceptionì´ ë°œìƒí•˜ë©´
+       sAllocStateì˜ ìƒíƒœë³„ë¡œ ìžì› í•´ì œ ì²˜ë¦¬ë¥¼ í•´ì¤˜ì•¼ í•œë‹¤.
        BUG-18176 */
 
     switch (sAllocState)
     {
         case 3:
-            /* sAllocState°¡ 3ÀÌ¶ó¸é createDataFiles() È£Ãâ ÀÌÈÄÀÌ±â ¶§¹®¿¡
-               µ¥ÀÌÅÍ ÆÄÀÏºÎÅÍ ¸ðµÎ Á¦°ÅÇØ¾ß ÇÑ´Ù. */
+            /* sAllocStateê°€ 3ì´ë¼ë©´ createDataFiles() í˜¸ì¶œ ì´í›„ì´ê¸° ë•Œë¬¸ì—
+               ë°ì´í„° íŒŒì¼ë¶€í„° ëª¨ë‘ ì œê±°í•´ì•¼ í•œë‹¤. */
             IDE_ASSERT(sddTableSpace::removeAllDataFiles(NULL,  /* idvSQL* */
                                                          NULL,  /* void *  */
                                                          sSpaceNode,
@@ -785,8 +785,8 @@ IDE_RC sddDiskMgr::createTableSpace( idvSQL             * aStatistics,
                        == IDE_SUCCESS);
 
         case 2:
-            /* sAllocState°¡ 2¶ó¸é sSpaceNode¿¡ ´ëÇØ initializeµÈ »óÅÂÀÌ±â ¶§¹®¿¡
-               destory()¸¦ È£ÃâÇØ¼­ ÀÚ¿øÀ» ÇØÁ¦ÇØ¾ß ÇÑ´Ù. */
+            /* sAllocStateê°€ 2ë¼ë©´ sSpaceNodeì— ëŒ€í•´ initializeëœ ìƒíƒœì´ê¸° ë•Œë¬¸ì—
+               destory()ë¥¼ í˜¸ì¶œí•´ì„œ ìžì›ì„ í•´ì œí•´ì•¼ í•œë‹¤. */
             IDE_ASSERT(sddTableSpace::destroy(sSpaceNode) == IDE_SUCCESS);
 
         case 1:
@@ -794,8 +794,8 @@ IDE_RC sddDiskMgr::createTableSpace( idvSQL             * aStatistics,
             break;
 
         default:
-            /* sAllocState°¡ 4ÀÌ¸é sSpaceNode¸¦ Ãß°¡ÇÑ »óÅÂÀÌ±â ¶§¹®¿¡
-               undo½Ã ¸ðµÎ ÇØÁ¦°¡ µÇ¹Ç·Î ¿©±â¼­ ÇØÁÖÁö ¾Ê´Â´Ù. */
+            /* sAllocStateê°€ 4ì´ë©´ sSpaceNodeë¥¼ ì¶”ê°€í•œ ìƒíƒœì´ê¸° ë•Œë¬¸ì—
+               undoì‹œ ëª¨ë‘ í•´ì œê°€ ë˜ë¯€ë¡œ ì—¬ê¸°ì„œ í•´ì£¼ì§€ ì•ŠëŠ”ë‹¤. */
             break;
     }
 
@@ -803,18 +803,18 @@ IDE_RC sddDiskMgr::createTableSpace( idvSQL             * aStatistics,
 }
 
 /***********************************************************************
- * Description : tablespace »ý¼º ¹× ÃÊ±âÈ­
+ * Description : tablespace ìƒì„± ë° ì´ˆê¸°í™”
  *  PROJ-1923 ALTIBASE HDB Disaster Recovery
  *
- * µð½ºÅ©°ü¸®ÀÚ¿¡ »õ·Î¿î tablespace ³ëµå¸¦ ¸¸µé°í ÃÊ±âÈ­ ÇÑ´Ù.
+ * ë””ìŠ¤í¬ê´€ë¦¬ìžì— ìƒˆë¡œìš´ tablespace ë…¸ë“œë¥¼ ë§Œë“¤ê³  ì´ˆê¸°í™” í•œë‹¤.
  *
- * CREATE TABLESPACE ±¸¹®ÀÌ ½ÇÇàµÉ ¶§ sdpTableSpace::create¿¡¼­
- * È£ÃâµÇ¾î meta (0/1/2¹ø) page ÃÊ±âÈ­ µîÀ» ¼öÇàÇÒ °ÍÀÌ´Ù.
+ * CREATE TABLESPACE êµ¬ë¬¸ì´ ì‹¤í–‰ë  ë•Œ sdpTableSpace::createì—ì„œ
+ * í˜¸ì¶œë˜ì–´ meta (0/1/2ë²ˆ) page ì´ˆê¸°í™” ë“±ì„ ìˆ˜í–‰í•  ê²ƒì´ë‹¤.
  *
- * [!!] µð½ºÅ©°ü¸®ÀÚ mutex ÇØÁ¦ÇÏ±â Àü¿¡ ·Î±×¾ÞÄ¿¸¦ FLUSH ÇÑ´Ù.
+ * [!!] ë””ìŠ¤í¬ê´€ë¦¬ìž mutex í•´ì œí•˜ê¸° ì „ì— ë¡œê·¸ì•µì»¤ë¥¼ FLUSH í•œë‹¤.
  *
- * tablespace ID°¡ Àç»ç¿ëµÇ¾ú´ÂÁö ¿©ºÎ¸¦ ¾Ë±â À§ÇØ¼­´Â
- * create ½ÃÁ¡ÀÇ system SCNÀ» tablespace¿¡ ÀúÀåÇÒ ÇÊ¿ä°¡ ÀÖ´Ù.
+ * tablespace IDê°€ ìž¬ì‚¬ìš©ë˜ì—ˆëŠ”ì§€ ì—¬ë¶€ë¥¼ ì•Œê¸° ìœ„í•´ì„œëŠ”
+ * create ì‹œì ì˜ system SCNì„ tablespaceì— ì €ìž¥í•  í•„ìš”ê°€ ìžˆë‹¤.
  *
  **********************************************************************/
 IDE_RC sddDiskMgr::createTableSpace4Redo( void               * aTrans,
@@ -840,7 +840,7 @@ IDE_RC sddDiskMgr::createTableSpace4Redo( void               * aTrans,
     //PRJ-1149
     aTableSpaceAttr->mDiskAttr.mNewFileID = 0;
 
-    /* ÇöÀçÀÇ mNewTableSpaceID¸¦ °¡Á®¿Í ·Î±×ÀÇ °ª°ú °ËÁõÇØ º¸°í ½ÇÁ¦·Î »ç¿ë ÇÔ */
+    /* í˜„ìž¬ì˜ mNewTableSpaceIDë¥¼ ê°€ì ¸ì™€ ë¡œê·¸ì˜ ê°’ê³¼ ê²€ì¦í•´ ë³´ê³  ì‹¤ì œë¡œ ì‚¬ìš© í•¨ */
     sNewSpaceID = sctTableSpaceMgr::getNewTableSpaceID();
 
     IDE_TEST( sNewSpaceID != aTableSpaceAttr->mID );
@@ -852,28 +852,28 @@ IDE_RC sddDiskMgr::createTableSpace4Redo( void               * aTrans,
               != IDE_SUCCESS );
     sAllocState = 2;
 
-    /* µ¿ÀÏÇÑ tablespace¸íÀÌ Á¸ÀçÇÏ´ÂÁö °Ë»çÇÑ´Ù. */
-    // BUG-26695 TBS Node°¡ ¾ø´Â°ÍÀÌ Á¤»óÀÌ¹Ç·Î ¾øÀ» °æ¿ì
-    // ¿À·ù ¸Þ½ÃÁö¸¦ ¹ÝÈ¯ÇÏÁö ¾Êµµ·Ï ¼öÁ¤
+    /* ë™ì¼í•œ tablespaceëª…ì´ ì¡´ìž¬í•˜ëŠ”ì§€ ê²€ì‚¬í•œë‹¤. */
+    // BUG-26695 TBS Nodeê°€ ì—†ëŠ”ê²ƒì´ ì •ìƒì´ë¯€ë¡œ ì—†ì„ ê²½ìš°
+    // ì˜¤ë¥˜ ë©”ì‹œì§€ë¥¼ ë°˜í™˜í•˜ì§€ ì•Šë„ë¡ ìˆ˜ì •
     IDE_TEST_RAISE( sctTableSpaceMgr::checkExistSpaceNodeByName( sSpaceNode->mHeader.mName ) == ID_TRUE, 
                     err_already_exist_tablespace_name );
 
-    /* To Fix BUG-23701 [SD] Create Disk Tablespace½Ã SpaceNodeÀÇ »óÅÂ°ªÀ»
-     * ¼³Á¤ÇÏ¿© mSpaceNodeArr ¿¡ Ãß°¡ÇÏ¿©¾ß ÇÔ. */
+    /* To Fix BUG-23701 [SD] Create Disk Tablespaceì‹œ SpaceNodeì˜ ìƒíƒœê°’ì„
+     * ì„¤ì •í•˜ì—¬ mSpaceNodeArr ì— ì¶”ê°€í•˜ì—¬ì•¼ í•¨. */
     sSpaceNode->mHeader.mState = SMI_TBS_CREATING | SMI_TBS_ONLINE;
 
-    /* TBS List¿¡ Ãß°¡ÇÏ¸é¼­ TBS Count Áõ°¡½ÃÅ´ */
+    /* TBS Listì— ì¶”ê°€í•˜ë©´ì„œ TBS Count ì¦ê°€ì‹œí‚´ */
     sctTableSpaceMgr::addTableSpaceNode( (sctTableSpaceNode *) sSpaceNode );
     sAllocState = 3;
 
     IDE_TEST( sctTableSpaceMgr::addPendingOperation( aTrans,
                                                      sSpaceNode->mHeader.mID, 
-                                                     ID_TRUE, // commit½Ã¿¡ µ¿ÀÛ
+                                                     ID_TRUE, // commitì‹œì— ë™ìž‘
                                                      SCT_POP_CREATE_TBS)
               != IDE_SUCCESS );
 
     // PRJ-1548 User Memory Tablespace
-    // »õ·Î¿î TBS Node¿Í DBF NodeµéÀ» Loganchor¿¡ Ãß°¡ÇÑ´Ù.
+    // ìƒˆë¡œìš´ TBS Nodeì™€ DBF Nodeë“¤ì„ Loganchorì— ì¶”ê°€í•œë‹¤.
     IDE_ASSERT( smLayerCallback::addTBSNodeAndFlush( (sctTableSpaceNode *)sSpaceNode )
                 == IDE_SUCCESS );
 
@@ -890,8 +890,8 @@ IDE_RC sddDiskMgr::createTableSpace4Redo( void               * aTrans,
     switch (sAllocState)
     {
         case 2:
-            /* sAllocState°¡ 2¶ó¸é sSpaceNode¿¡ ´ëÇØ initializeµÈ »óÅÂÀÌ±â ¶§¹®¿¡
-             * destory()¸¦ È£ÃâÇØ¼­ ÀÚ¿øÀ» ÇØÁ¦ÇØ¾ß ÇÑ´Ù. */
+            /* sAllocStateê°€ 2ë¼ë©´ sSpaceNodeì— ëŒ€í•´ initializeëœ ìƒíƒœì´ê¸° ë•Œë¬¸ì—
+             * destory()ë¥¼ í˜¸ì¶œí•´ì„œ ìžì›ì„ í•´ì œí•´ì•¼ í•œë‹¤. */
             IDE_ASSERT(sddTableSpace::destroy(sSpaceNode) == IDE_SUCCESS);
 
         case 1:
@@ -899,8 +899,8 @@ IDE_RC sddDiskMgr::createTableSpace4Redo( void               * aTrans,
             break;
 
         default:
-            /* sAllocState°¡ 3ÀÌ¸é sSpaceNode¸¦ Ãß°¡ÇÑ »óÅÂÀÌ±â ¶§¹®¿¡
-             * undo½Ã ¸ðµÎ ÇØÁ¦°¡ µÇ¹Ç·Î ¿©±â¼­ ÇØÁÖÁö ¾Ê´Â´Ù. */
+            /* sAllocStateê°€ 3ì´ë©´ sSpaceNodeë¥¼ ì¶”ê°€í•œ ìƒíƒœì´ê¸° ë•Œë¬¸ì—
+             * undoì‹œ ëª¨ë‘ í•´ì œê°€ ë˜ë¯€ë¡œ ì—¬ê¸°ì„œ í•´ì£¼ì§€ ì•ŠëŠ”ë‹¤. */
             break;
     }
 
@@ -908,10 +908,10 @@ IDE_RC sddDiskMgr::createTableSpace4Redo( void               * aTrans,
 }
 
 /***********************************************************************
- * Description : DBF »ý¼º ¹× ÃÊ±âÈ­
+ * Description : DBF ìƒì„± ë° ì´ˆê¸°í™”
  *  PROJ-1923 ALTIBASE HDB Disaster Recovery
  *
- * µð½ºÅ©°ü¸®ÀÚ¿¡¼­ ÇØ´ç TBS¿¡ datafile ³ëµå ¹× ½ÇÁ¦ datafile¸¦ »ý¼ºÇÑ´Ù.
+ * ë””ìŠ¤í¬ê´€ë¦¬ìžì—ì„œ í•´ë‹¹ TBSì— datafile ë…¸ë“œ ë° ì‹¤ì œ datafileë¥¼ ìƒì„±í•œë‹¤.
  *
  **********************************************************************/
 IDE_RC sddDiskMgr::createDataFile4Redo( void              * aTrans,
@@ -939,7 +939,7 @@ IDE_RC sddDiskMgr::createDataFile4Redo( void              * aTrans,
     IDE_DASSERT( aDataFileAttr != NULL );
 
     /* ===================================
-     * [1] dummy tablespace »ý¼º ¹× ÃÊ±âÈ­
+     * [1] dummy tablespace ìƒì„± ë° ì´ˆê¸°í™”
      * =================================== */
     IDE_TEST( sctTableSpaceMgr::findSpaceNodeBySpaceID( aSpaceID,
                                                         (void**)&sSpaceNode)
@@ -950,7 +950,7 @@ IDE_RC sddDiskMgr::createDataFile4Redo( void              * aTrans,
     IDE_TEST( validateDataFileName( sSpaceNode,
                                     &aDataFileAttr,
                                     1, // aDataFileAttrCount
-                                    &sExistFileName, //¿¡·¯¸Þ½ÃÁö Ãâ·Â¿ë
+                                    &sExistFileName, //ì—ëŸ¬ë©”ì‹œì§€ ì¶œë ¥ìš©
                                     &sNameExist ) != IDE_SUCCESS);
 
     IDE_TEST_RAISE( sNameExist == ID_TRUE,
@@ -960,9 +960,9 @@ IDE_RC sddDiskMgr::createDataFile4Redo( void              * aTrans,
     IDE_TEST_RAISE( SMI_TBS_IS_BACKUP(sSpaceNode->mHeader.mState),
                     error_forbidden_op_while_backup);
 
-    // ÇöÀçÀÇ mNewFileID¸¦ ¹é¾÷ÇÑ ÈÄ 1 Áõ°¡ ½ÃÅ²´Ù.
-    // ÀÌÀ¯´Â, DBF »ý¼º ÈÄ¿¡ ¹é¾÷ÇÑ mNewFieID¿¡¼­ºÎÅÍ
-    // +1 ÇÑ ÇöÀçÀÇ mNewFileID±îÁö ÈÄÃ³¸® ÇÑ´Ù.
+    // í˜„ìž¬ì˜ mNewFileIDë¥¼ ë°±ì—…í•œ í›„ 1 ì¦ê°€ ì‹œí‚¨ë‹¤.
+    // ì´ìœ ëŠ”, DBF ìƒì„± í›„ì— ë°±ì—…í•œ mNewFieIDì—ì„œë¶€í„°
+    // +1 í•œ í˜„ìž¬ì˜ mNewFileIDê¹Œì§€ í›„ì²˜ë¦¬ í•œë‹¤.
     sNewFileIDSave          = sSpaceNode->mNewFileID ;
     sSpaceNode->mNewFileID += 1; // aDataFileAttrCount;
 
@@ -977,27 +977,27 @@ IDE_RC sddDiskMgr::createDataFile4Redo( void              * aTrans,
     sDummySpaceNode.mNewFileID = sSpaceNode->mNewFileID - 1; //aDataFileAttrCount;
 
     /* PROJ-2133 incremental backup
-     * DataFileDescSlotÀÌ ÇÒ´çµÇ¾î checkpoint°¡ ¹ß»ýÇÏ¸é CTBody°¡ flushµÇ¾î
-     * ÆÄÀÏ¿¡ ¹Ý¿µµÈ´Ù. ÇÏÁö¸¸ loganchor¿¡ DataFileDescSlotID°¡ ÀúÀåµÇ±â Àü¿¡
-     * ¼­¹ö°¡ Á×´Â´Ù¸é ÇÒ´çµÈ DataFileDescSlotÀº »ç¿ëÇÒ¼ö ¾ø°ÔµÈ´Ù.
+     * DataFileDescSlotì´ í• ë‹¹ë˜ì–´ checkpointê°€ ë°œìƒí•˜ë©´ CTBodyê°€ flushë˜ì–´
+     * íŒŒì¼ì— ë°˜ì˜ëœë‹¤. í•˜ì§€ë§Œ loganchorì— DataFileDescSlotIDê°€ ì €ìž¥ë˜ê¸° ì „ì—
+     * ì„œë²„ê°€ ì£½ëŠ”ë‹¤ë©´ í• ë‹¹ëœ DataFileDescSlotì€ ì‚¬ìš©í• ìˆ˜ ì—†ê²Œëœë‹¤.
      *
-     * Áï, logAnchor¿¡ DataFileDescSlotID°¡ ÀúÀåµÇ±â Àü±îÁö CTBody°¡ flush µÇ¸é
-     * ¾ÈµÈ´Ù. */
+     * ì¦‰, logAnchorì— DataFileDescSlotIDê°€ ì €ìž¥ë˜ê¸° ì „ê¹Œì§€ CTBodyê°€ flush ë˜ë©´
+     * ì•ˆëœë‹¤. */
     if ( smLayerCallback::isCTMgrEnabled() == ID_TRUE )
     {
         IDE_TEST( smLayerCallback::blockCheckpoint() != IDE_SUCCESS );
         sChkptBlockState = 1;
     }
 
-    // µ¿ÀÏ ÆÄÀÏ ÀÌ¸§ÀÌ ÀÖ´ÂÁö °Ë»çÇÑ´Ù.
-    // ÀÖ´Ù¸é Áö¿ì°í Àç»ý¼º ÇÑ´Ù.
-    // ¿Ö³ÄÇÏ¸é Log Anchor¿¡´Â ±â·ÏÀÌ ¾ÈµÈ »óÅÂ·Î redo¸¦ ½ÃÀÛÇÏ¿´À¸¹Ç·Î,
-    // ±âÁ¸ÀÇ DBF´Â ¹ÏÀ» ¼ö ¾ø´Â ÆÄÀÏÀÌ´Ù.
+    // ë™ì¼ íŒŒì¼ ì´ë¦„ì´ ìžˆëŠ”ì§€ ê²€ì‚¬í•œë‹¤.
+    // ìžˆë‹¤ë©´ ì§€ìš°ê³  ìž¬ìƒì„± í•œë‹¤.
+    // ì™œëƒí•˜ë©´ Log Anchorì—ëŠ” ê¸°ë¡ì´ ì•ˆëœ ìƒíƒœë¡œ redoë¥¼ ì‹œìž‘í•˜ì˜€ìœ¼ë¯€ë¡œ,
+    // ê¸°ì¡´ì˜ DBFëŠ” ë¯¿ì„ ìˆ˜ ì—†ëŠ” íŒŒì¼ì´ë‹¤.
     IDE_TEST( existDataFile( aDataFileAttr->mName, &sFileExist ) != IDE_SUCCESS );
 
     if( sFileExist == ID_TRUE )
     {
-        // log Anchor¿¡ ÆÄÀÏ ³ëµå´Â ¾ø´Â »óÈ²¿¡¼­ ³Ñ¾î ¿ÔÀ¸¹Ç·Î, ÆÄÀÏ¸¸ ÀÖÀ½
+        // log Anchorì— íŒŒì¼ ë…¸ë“œëŠ” ì—†ëŠ” ìƒí™©ì—ì„œ ë„˜ì–´ ì™”ìœ¼ë¯€ë¡œ, íŒŒì¼ë§Œ ìžˆìŒ
         idlOS::strncpy( (SChar *)sValidName,
                         aDataFileAttr->mName,
                         SM_MAX_FILE_NAME );
@@ -1009,7 +1009,7 @@ IDE_RC sddDiskMgr::createDataFile4Redo( void              * aTrans,
                                                       SMI_TBS_DISK )
                   != IDE_SUCCESS );
 
-        // ÆÄÀÏ »èÁ¦
+        // íŒŒì¼ ì‚­ì œ
         rc = idf::unlink(sValidName);
 
         IDE_TEST_RAISE( rc != 0 , err_file_unlink );
@@ -1020,7 +1020,7 @@ IDE_RC sddDiskMgr::createDataFile4Redo( void              * aTrans,
     }
 
     /* ===================================
-     * [2] ¹°¸®Àû µ¥ÀÌÅ¸ È­ÀÏ »ý¼º
+     * [2] ë¬¼ë¦¬ì  ë°ì´íƒ€ í™”ì¼ ìƒì„±
      * =================================== */
     IDE_TEST( sddTableSpace::createDataFile4Redo( NULL,
                                                   aTrans,
@@ -1045,16 +1045,16 @@ IDE_RC sddDiskMgr::createDataFile4Redo( void              * aTrans,
     IDE_DASSERT( sSpaceNode->mHeader.mID == aSpaceID );
 
     /* ====================================================================
-     * [3] µ¥ÀÌÅ¸ È­ÀÏµéÀ» ÀÚ½ÅÀÌ ¼ÓÇÑ Å×ÀÌºí ½ºÆäÀÌ½ºÀÇ È­ÀÏ ¸®½ºÆ®¿¡ µî·Ï
+     * [3] ë°ì´íƒ€ í™”ì¼ë“¤ì„ ìžì‹ ì´ ì†í•œ í…Œì´ë¸” ìŠ¤íŽ˜ì´ìŠ¤ì˜ í™”ì¼ ë¦¬ìŠ¤íŠ¸ì— ë“±ë¡
      * ==================================================================== */
 
     // fix BUG-16116 [PROJ-1548] sddDiskMgr::createDataFiles()
-    // ¿¡·¯½Ã DBF Node¿¡ ´ëÇÑ Memory ÇØÁ¦
-    // ´ÙÀ½ For loop ¾È¿¡¼­ EXCEPTIONÀÌ ¹ß»ýÇÏ°Ô µÇ¸é DBF Node
-    // ¸Þ¸ð¸® ÇØÁ¦¿¡ ´ëÇÑ ¹®Á¦°¡ ÀÖÀ¸¹Ç·Î exception ¹ß»ýÄÚµå´Â
-    // ÄÚµùÇÏÁö ¾Ê´Â´Ù.
-    // ÀÌ ÀÌÈÄ¿¡ ExceptionÀÌ ¹ß»ýÇÑ´Ù¸é, Æ®·£Àè¼Ç rollback¿¡ ÀÇÇØ¼­
-    // ÀÚµ¿À¸·Î ÇØÁ¦µÉ °ÍÀÌ´Ù.
+    // ì—ëŸ¬ì‹œ DBF Nodeì— ëŒ€í•œ Memory í•´ì œ
+    // ë‹¤ìŒ For loop ì•ˆì—ì„œ EXCEPTIONì´ ë°œìƒí•˜ê²Œ ë˜ë©´ DBF Node
+    // ë©”ëª¨ë¦¬ í•´ì œì— ëŒ€í•œ ë¬¸ì œê°€ ìžˆìœ¼ë¯€ë¡œ exception ë°œìƒì½”ë“œëŠ”
+    // ì½”ë”©í•˜ì§€ ì•ŠëŠ”ë‹¤.
+    // ì´ ì´í›„ì— Exceptionì´ ë°œìƒí•œë‹¤ë©´, íŠ¸ëžœìž­ì…˜ rollbackì— ì˜í•´ì„œ
+    // ìžë™ìœ¼ë¡œ í•´ì œë  ê²ƒì´ë‹¤.
 
     for( i = sNewFileIDSave ; i < sSpaceNode->mNewFileID ; i++ )
     {
@@ -1076,16 +1076,16 @@ IDE_RC sddDiskMgr::createDataFile4Redo( void              * aTrans,
 
         IDE_TEST( sddDataFile::addPendingOperation( aTrans,
                                                     sFileNode,
-                                                    ID_TRUE, /* commit½Ã¿¡ µ¿ÀÛ */
+                                                    ID_TRUE, /* commitì‹œì— ë™ìž‘ */
                                                     SCT_POP_CREATE_DBF,
                                                     &sPendingOp )
                   != IDE_SUCCESS );
 
         sPendingOp->mTouchMode = SMI_EACH_BYMODE; // aTouchMode;
 
-        /* [4] ·Î±× ¾ÞÄ¿ º¯°æ
-         * ½Ã½ºÅÛ °¡µ¿½Ã ·Î±× ¾ÞÄ¿ÀÇ ³»¿ëÀ» ÀÌ¿ëÇÏ¿© µ¥ÀÌÅ¸ È­ÀÏ ¸®½ºÆ®¸¦ ±¸¼ºÇÏ¸ç,
-         * ÀÌ °æ¿ì¿¡´Â ·Î±× ¾ÞÄ¿¸¦ Àçº¯°æÇÏÁö ¾Ê´Â´Ù. */
+        /* [4] ë¡œê·¸ ì•µì»¤ ë³€ê²½
+         * ì‹œìŠ¤í…œ ê°€ë™ì‹œ ë¡œê·¸ ì•µì»¤ì˜ ë‚´ìš©ì„ ì´ìš©í•˜ì—¬ ë°ì´íƒ€ í™”ì¼ ë¦¬ìŠ¤íŠ¸ë¥¼ êµ¬ì„±í•˜ë©°,
+         * ì´ ê²½ìš°ì—ëŠ” ë¡œê·¸ ì•µì»¤ë¥¼ ìž¬ë³€ê²½í•˜ì§€ ì•ŠëŠ”ë‹¤. */
         IDE_ASSERT( smLayerCallback::addDBFNodeAndFlush( sSpaceNode,
                                                          sFileNode )
                     == IDE_SUCCESS );
@@ -1101,7 +1101,7 @@ IDE_RC sddDiskMgr::createDataFile4Redo( void              * aTrans,
     IDE_TEST( sddTableSpace::destroy( &sDummySpaceNode ) != IDE_SUCCESS );
 
     // PRJ-1548 User Memory Tablespace
-    // »õ·Î¿î TBS Node¿Í DBF NodeµéÀ» Loganchor¿¡ Ãß°¡ÇÑ´Ù.
+    // ìƒˆë¡œìš´ TBS Nodeì™€ DBF Nodeë“¤ì„ Loganchorì— ì¶”ê°€í•œë‹¤.
     IDE_ASSERT( smLayerCallback::updateTBSNodeAndFlush( (sctTableSpaceNode *)sSpaceNode )
                 == IDE_SUCCESS );
 
@@ -1135,23 +1135,23 @@ IDE_RC sddDiskMgr::createDataFile4Redo( void              * aTrans,
 }
 
 /***********************************************************************
- * Description : ·Î±×¾ÞÄ¿¿¡ ÀÇÇÑ tablespace ³ëµå »ý¼º ¹× ÃÊ±âÈ­
+ * Description : ë¡œê·¸ì•µì»¤ì— ì˜í•œ tablespace ë…¸ë“œ ìƒì„± ë° ì´ˆê¸°í™”
  *
- * ·Î±×¾ÞÄ¿¿¡ ÀúÀåµÈ tablespace Á¤º¸¸¦ ÀÌ¿ëÇÏ¿© µð½ºÅ©°ü¸®ÀÚ¿¡ ÇÏ³ªÀÇ
- * tabespace ³ëµå¸¦ »ý¼ºÇÏ°í ÃÊ±âÈ­ÇÑ´Ù. ·Î±×¾ÞÄ¿ °ü¸®ÀÚ ÃÊ±âÈ­½Ã¿¡ È£ÃâµÇ¾î
- * tablespace ³ëµå¸¸ »ý¼ºÇÏ¿© HASH ¹× tablespace ³ëµå ¸®½ºÆ®¿¡ Ãß°¡ÇÏÁö¸¸,
- * ½ÇÁ¦ È­ÀÏÀº createÇÏÁö ¾Ê´Â´Ù.
+ * ë¡œê·¸ì•µì»¤ì— ì €ìž¥ëœ tablespace ì •ë³´ë¥¼ ì´ìš©í•˜ì—¬ ë””ìŠ¤í¬ê´€ë¦¬ìžì— í•˜ë‚˜ì˜
+ * tabespace ë…¸ë“œë¥¼ ìƒì„±í•˜ê³  ì´ˆê¸°í™”í•œë‹¤. ë¡œê·¸ì•µì»¤ ê´€ë¦¬ìž ì´ˆê¸°í™”ì‹œì— í˜¸ì¶œë˜ì–´
+ * tablespace ë…¸ë“œë§Œ ìƒì„±í•˜ì—¬ HASH ë° tablespace ë…¸ë“œ ë¦¬ìŠ¤íŠ¸ì— ì¶”ê°€í•˜ì§€ë§Œ,
+ * ì‹¤ì œ í™”ì¼ì€ createí•˜ì§€ ì•ŠëŠ”ë‹¤.
  *
  * + 2nd. code design
- *   - tablespace ³ëµå¸¦ À§ÇÑ ¸Þ¸ð¸®¸¦ ÇÒ´çÇÑ´Ù.
- *   - tablespace ³ëµå¸¦ ÃÊ±âÈ­ÇÑ´Ù. -> sddTableSpace::initialize
- *   - µð½ºÅ©°ü¸®ÀÚÀÇ mutex È¹µæ
- *   - µð½ºÅ©°ü¸®ÀÚÀÇ HASH¿¡ Ãß°¡ÇÑ´Ù.
- *   - tablespace ³ëµå ¸®½ºÆ®¿¡ Ãß°¡ÇÑ´Ù.
- *   - tablespace ³ëµå Áß space ID°¡ °¡Àå Å« ID¸¦ ±¸ÇØ¼­
- *     SMU_MAX_TABLESPACE_ID¿Í ºñ±³ÇÏ¿© mNewTableSpaceID¸¦
- *     ¼³Á¤ÇÑ´Ù.
- *   - µð½ºÅ©°ü¸®ÀÚÀÇ mutex ÇØÁ¦
+ *   - tablespace ë…¸ë“œë¥¼ ìœ„í•œ ë©”ëª¨ë¦¬ë¥¼ í• ë‹¹í•œë‹¤.
+ *   - tablespace ë…¸ë“œë¥¼ ì´ˆê¸°í™”í•œë‹¤. -> sddTableSpace::initialize
+ *   - ë””ìŠ¤í¬ê´€ë¦¬ìžì˜ mutex íšë“
+ *   - ë””ìŠ¤í¬ê´€ë¦¬ìžì˜ HASHì— ì¶”ê°€í•œë‹¤.
+ *   - tablespace ë…¸ë“œ ë¦¬ìŠ¤íŠ¸ì— ì¶”ê°€í•œë‹¤.
+ *   - tablespace ë…¸ë“œ ì¤‘ space IDê°€ ê°€ìž¥ í° IDë¥¼ êµ¬í•´ì„œ
+ *     SMU_MAX_TABLESPACE_IDì™€ ë¹„êµí•˜ì—¬ mNewTableSpaceIDë¥¼
+ *     ì„¤ì •í•œë‹¤.
+ *   - ë””ìŠ¤í¬ê´€ë¦¬ìžì˜ mutex í•´ì œ
  **********************************************************************/
 IDE_RC sddDiskMgr::loadTableSpaceNode( idvSQL*            aStatistics,
                                        smiTableSpaceAttr* aTableSpaceAttr,
@@ -1197,7 +1197,7 @@ IDE_RC sddDiskMgr::loadTableSpaceNode( idvSQL*            aStatistics,
 
     switch ( sState )
     {
-        case 2: // tablespace ³ëµå ¹è¿­¿¡¼­ Á¦°Å
+        case 2: // tablespace ë…¸ë“œ ë°°ì—´ì—ì„œ ì œê±°
             IDE_ASSERT( iduMemMgr::free( sSpaceNode ) == IDE_SUCCESS );
             IDE_ASSERT( sctTableSpaceMgr::unlock() == IDE_SUCCESS );
             break;
@@ -1213,30 +1213,30 @@ IDE_RC sddDiskMgr::loadTableSpaceNode( idvSQL*            aStatistics,
 }
 
 /***********************************************************************
- * Description :  tablespace Á¦°Å (³ëµå Á¦°Å¸¸ È¤Àº ³ëµå ¹× ÆÄÀÏ Á¦°Å)
+ * Description :  tablespace ì œê±° (ë…¸ë“œ ì œê±°ë§Œ í˜¹ì€ ë…¸ë“œ ë° íŒŒì¼ ì œê±°)
  *
- * tablespace¸¦ Á¦°ÅÇÏ¸ç, drop ¸ðµå¿¡ µû¶ó¼­ datafile±îÁö Á¦°ÅÇÒ ¼öµµ ÀÖ´Ù.
+ * tablespaceë¥¼ ì œê±°í•˜ë©°, drop ëª¨ë“œì— ë”°ë¼ì„œ datafileê¹Œì§€ ì œê±°í•  ìˆ˜ë„ ìžˆë‹¤.
  *
- * - DDL¹®ÀÎ DROP TABLESPACEÀÇ ¼öÇà½Ã È£ÃâµÈ´Ù. ÀÌ´Â ÇØ´ç tablespace°¡
- *   OFFLINEÀÌ¾î¾ß¸¸ °¡´ÉÇÏ´Ù.
- * - OFFLINE ¸ðµå·Î tablespace°¡ ¹Ù²ð ¶§, ÀÌ¹Ì datafileÀº close µÇ¾î ÀÖ´Ù.
- * - ÀÌ ÇÔ¼ö´Â SDP ´Ü¿¡¼­ È£ÃâµÇ¸ç, ÀÌ ÀÛ¾÷ÈÄ ·Î±×¾ÞÄ¿ FLUSH ÀÛ¾÷ÀÌ ¼öÇàµÈ´Ù.
- *   ÀÌ ÀÛ¾÷À» À§ÇØ ¿ÀÇÂ datafile LRU ¸®½ºÆ®¿¡ ´ëÇÑ HASH¸¦ µû·Î µÎÁö´Â ¾Ê´Â´Ù.
+ * - DDLë¬¸ì¸ DROP TABLESPACEì˜ ìˆ˜í–‰ì‹œ í˜¸ì¶œëœë‹¤. ì´ëŠ” í•´ë‹¹ tablespaceê°€
+ *   OFFLINEì´ì–´ì•¼ë§Œ ê°€ëŠ¥í•˜ë‹¤.
+ * - OFFLINE ëª¨ë“œë¡œ tablespaceê°€ ë°”ë€” ë•Œ, ì´ë¯¸ datafileì€ close ë˜ì–´ ìžˆë‹¤.
+ * - ì´ í•¨ìˆ˜ëŠ” SDP ë‹¨ì—ì„œ í˜¸ì¶œë˜ë©°, ì´ ìž‘ì—…í›„ ë¡œê·¸ì•µì»¤ FLUSH ìž‘ì—…ì´ ìˆ˜í–‰ëœë‹¤.
+ *   ì´ ìž‘ì—…ì„ ìœ„í•´ ì˜¤í”ˆ datafile LRU ë¦¬ìŠ¤íŠ¸ì— ëŒ€í•œ HASHë¥¼ ë”°ë¡œ ë‘ì§€ëŠ” ì•ŠëŠ”ë‹¤.
  *
  * + 2nd. code design
- *   - µð½ºÅ©°ü¸®ÀÚ mutex È¹µæÇÑ´Ù.
- *   - HASH¿¡¼­ tablespace ³ëµå¸¦ Ã£´Â´Ù.
- *   - if( °Ë»öÇÑ tablespace ³ëµå°¡ ONLINEÀÌ¸é )
+ *   - ë””ìŠ¤í¬ê´€ë¦¬ìž mutex íšë“í•œë‹¤.
+ *   - HASHì—ì„œ tablespace ë…¸ë“œë¥¼ ì°¾ëŠ”ë‹¤.
+ *   - if( ê²€ìƒ‰í•œ tablespace ë…¸ë“œê°€ ONLINEì´ë©´ )
  *     {
- *        µð½ºÅ©°ü¸®ÀÚ mutex ÇØÁ¦;
+ *        ë””ìŠ¤í¬ê´€ë¦¬ìž mutex í•´ì œ;
  *        return fail;
  *     }
- *   - tablespace ³ëµå¸¦ ¸®½ºÆ®¿¡¼­ Á¦°ÅÇÑ´Ù.
- *   - tablespace ³ëµå¸¦ HASH¿¡¼­ Á¦°ÅÇÑ´Ù.
- *   - ·Î±×¾ÞÄ¿ FLUSH -> smrLogMgr::updateLogAnchorForTableSpace
- *   - µð½ºÅ©°ü¸®ÀÚ mutex ÇØÁ¦ÇÑ´Ù.
- *   - tablespace ³ëµå¸¦ destroy ÇÑ´Ù -> sddTableSpace::destroy(aMode)
- *   - tablespace ³ëµåÀÇ ¸Þ¸ð¸®¸¦ ÇØÁ¦ÇÑ´Ù.
+ *   - tablespace ë…¸ë“œë¥¼ ë¦¬ìŠ¤íŠ¸ì—ì„œ ì œê±°í•œë‹¤.
+ *   - tablespace ë…¸ë“œë¥¼ HASHì—ì„œ ì œê±°í•œë‹¤.
+ *   - ë¡œê·¸ì•µì»¤ FLUSH -> smrLogMgr::updateLogAnchorForTableSpace
+ *   - ë””ìŠ¤í¬ê´€ë¦¬ìž mutex í•´ì œí•œë‹¤.
+ *   - tablespace ë…¸ë“œë¥¼ destroy í•œë‹¤ -> sddTableSpace::destroy(aMode)
+ *   - tablespace ë…¸ë“œì˜ ë©”ëª¨ë¦¬ë¥¼ í•´ì œí•œë‹¤.
  **********************************************************************/
 IDE_RC sddDiskMgr::removeTableSpace( idvSQL            *aStatistics,
                                      void*              aTrans,
@@ -1262,11 +1262,11 @@ IDE_RC sddDiskMgr::removeTableSpace( idvSQL            *aStatistics,
 
     IDE_ASSERT( sSpaceNode->mHeader.mID == aTableSpaceID );
 
-    // backup ÁßÀÎ Å×ÀÌºí ½ºÆäÀÌ½º´Â drop ÇÒ¼ö ¾ø´Ù
+    // backup ì¤‘ì¸ í…Œì´ë¸” ìŠ¤íŽ˜ì´ìŠ¤ëŠ” drop í• ìˆ˜ ì—†ë‹¤
     IDE_TEST_RAISE( SMI_TBS_IS_BACKUP(sSpaceNode->mHeader.mState), 
                     error_forbidden_op_while_backup );
 
-    // dbf Á¦°Å´Â commit ÀÌÈÄ½ÃÁ¡À¸·Î tx°¡ Á÷Á¢ unlinkÇÏµµ·Ï Ã³¸®ÇÑ´Ù.
+    // dbf ì œê±°ëŠ” commit ì´í›„ì‹œì ìœ¼ë¡œ txê°€ ì§ì ‘ unlinkí•˜ë„ë¡ ì²˜ë¦¬í•œë‹¤.
     // SMR_DLT_FILEOPER : SCT_UPDATE_DRDB_DROP_DBF
     // before image : tablespace attribute
     IDE_TEST( sddTableSpace::removeAllDataFiles(aStatistics,
@@ -1289,9 +1289,9 @@ IDE_RC sddDiskMgr::removeTableSpace( idvSQL            *aStatistics,
 
     /* ------------------------------------------------
      * !! CHECK RECOVERY POINT
-     * case) dbf node¸¸ Á¦°ÅµÇ°í, anchor´Â flush¾ÈµÈ °æ¿ì
-     * redo½Ã tbs node  Á¦°ÅÇÏ°í, undo½Ã before tbs image·Î
-     * ´Ù½Ã »ý¼ºÇÑ´Ù.
+     * case) dbf nodeë§Œ ì œê±°ë˜ê³ , anchorëŠ” flushì•ˆëœ ê²½ìš°
+     * redoì‹œ tbs node  ì œê±°í•˜ê³ , undoì‹œ before tbs imageë¡œ
+     * ë‹¤ì‹œ ìƒì„±í•œë‹¤.
      * ----------------------------------------------*/
     IDU_FIT_POINT( "1.PROJ-1552@sddDiskMgr::removeTableSpace" );
 
@@ -1300,17 +1300,17 @@ IDE_RC sddDiskMgr::removeTableSpace( idvSQL            *aStatistics,
     IDE_TEST( sctTableSpaceMgr::addPendingOperation(
                                                 aTrans,
                                                 sSpaceNode->mHeader.mID,
-                                                ID_TRUE, /* commit½Ã¿¡ µ¿ÀÛ */
+                                                ID_TRUE, /* commitì‹œì— ë™ìž‘ */
                                                 SCT_POP_DROP_TBS,
                                                 &sPendingOp )
               != IDE_SUCCESS );
 
-    /* BUG-29941 - SDP ¸ðµâ¿¡ ¸Þ¸ð¸® ´©¼ö°¡ Á¸ÀçÇÕ´Ï´Ù.
-     * Commit Pending ¿¬»ê ¼öÇàÁß Space Cache¿¡ ÇÒ´çµÈ ¸Þ¸ð¸®¸¦ ÇØÁ¦ÇÏµµ·Ï
-     * PendingOpFuncÀ» µî·ÏÇÑ´Ù. */
+    /* BUG-29941 - SDP ëª¨ë“ˆì— ë©”ëª¨ë¦¬ ëˆ„ìˆ˜ê°€ ì¡´ìž¬í•©ë‹ˆë‹¤.
+     * Commit Pending ì—°ì‚° ìˆ˜í–‰ì¤‘ Space Cacheì— í• ë‹¹ëœ ë©”ëª¨ë¦¬ë¥¼ í•´ì œí•˜ë„ë¡
+     * PendingOpFuncì„ ë“±ë¡í•œë‹¤. */
     sPendingOp->mPendingOpFunc = smLayerCallback::freeSpaceCacheCommitPending;
 
-    // DROP TABLESPACE Áß°£¿¡´Â ·Î±×¾ÞÄ¿ ÇÃ·¯½¬¸¦ ÇÏÁö ¾Ê´Â´Ù.
+    // DROP TABLESPACE ì¤‘ê°„ì—ëŠ” ë¡œê·¸ì•µì»¤ í”ŒëŸ¬ì‰¬ë¥¼ í•˜ì§€ ì•ŠëŠ”ë‹¤.
     sState = 0;
     IDE_TEST( sctTableSpaceMgr::unlock() != IDE_SUCCESS );
 
@@ -1337,21 +1337,21 @@ IDE_RC sddDiskMgr::removeTableSpace( idvSQL            *aStatistics,
 
 
 /***********************************************************************
- * Description : page ÆÇµ¶ (1)
+ * Description : page íŒë… (1)
  *
- * ÇØ´ç tablespaceÀÇ ÇØ´ç page¸¦ disk·ÎºÎÅÍ READ ÇÑ´Ù.
+ * í•´ë‹¹ tablespaceì˜ í•´ë‹¹ pageë¥¼ diskë¡œë¶€í„° READ í•œë‹¤.
  *
  * - 2nd. code design
- *   + µð½ºÅ©°ü¸®ÀÚ mutex È¹µæ
- *   + µð½ºÅ©°ü¸®ÀÚÀÇ HASH¿¡¼­ tablespace ³ëµå¸¦ Ã£´Â´Ù.
- *   + ÇØ´ç page°¡ Æ÷ÇÔµÈ datafile ³ëµå¸¦ Ã£´Â´Ù
+ *   + ë””ìŠ¤í¬ê´€ë¦¬ìž mutex íšë“
+ *   + ë””ìŠ¤í¬ê´€ë¦¬ìžì˜ HASHì—ì„œ tablespace ë…¸ë“œë¥¼ ì°¾ëŠ”ë‹¤.
+ *   + í•´ë‹¹ pageê°€ í¬í•¨ëœ datafile ë…¸ë“œë¥¼ ì°¾ëŠ”ë‹¤
  *     -> sddTableSpace::getDataFileNodeByPageID
- *   + Read I/O¸¦ ÁØºñÇÑ´Ù. -> prepareIO
- *   + µð½ºÅ©°ü¸®ÀÚ mutex ÇØÁ¦
- *   + Read I/O¸¦ ¼öÇàÇÑ´Ù.-> sddDataFile::read
- *   + µð½ºÅ©°ü¸®ÀÚ mutex È¹µæ
- *   + Read I/O ¿Ï·á¸¦ ¼öÇàÇÑ´Ù. -> completeIO
- *   + µð½ºÅ©°ü¸®ÀÚ mutex ÇØÁ¦
+ *   + Read I/Oë¥¼ ì¤€ë¹„í•œë‹¤. -> prepareIO
+ *   + ë””ìŠ¤í¬ê´€ë¦¬ìž mutex í•´ì œ
+ *   + Read I/Oë¥¼ ìˆ˜í–‰í•œë‹¤.-> sddDataFile::read
+ *   + ë””ìŠ¤í¬ê´€ë¦¬ìž mutex íšë“
+ *   + Read I/O ì™„ë£Œë¥¼ ìˆ˜í–‰í•œë‹¤. -> completeIO
+ *   + ë””ìŠ¤í¬ê´€ë¦¬ìž mutex í•´ì œ
  **********************************************************************/
 IDE_RC sddDiskMgr::read( idvSQL     * aStatistics,
                          scSpaceID    aTableSpaceID,
@@ -1391,10 +1391,10 @@ IDE_RC sddDiskMgr::read( idvSQL     * aStatistics,
     //PRJ-1149.
     *aDataFileID =  sFileNode->mID;
 
-    /* fix BUG-17456 Disk Tablespace onlineÀÌÈÄ update ¹ß»ý½Ã index ¹«ÇÑ·çÇÁ
+    /* fix BUG-17456 Disk Tablespace onlineì´í›„ update ë°œìƒì‹œ index ë¬´í•œë£¨í”„
      *
-     * ¿î¿µÁßÀÇ offlineµÇ¾ú´Ù onlineµÈ TBSÀÇ Index Page¸¦ À§ÇØ¼­ TBS Node¿¡
-     * ÀúÀåµÇ¾î ÀÖ´Â OnlineTBSLSN4Idx ¾ò¾î¼­ ¿Ã·ÁÁØ´Ù.  */
+     * ìš´ì˜ì¤‘ì˜ offlineë˜ì—ˆë‹¤ onlineëœ TBSì˜ Index Pageë¥¼ ìœ„í•´ì„œ TBS Nodeì—
+     * ì €ìž¥ë˜ì–´ ìžˆëŠ” OnlineTBSLSN4Idx ì–»ì–´ì„œ ì˜¬ë ¤ì¤€ë‹¤.  */
     *aOnlineTBSLSN4Idx = sddTableSpace::getOnlineTBSLSN4Idx( sSpaceNode );
 
     sFileState = sFileNode->mState & SMI_ONLINE_OFFLINE_MASK;
@@ -1427,20 +1427,20 @@ IDE_RC sddDiskMgr::read( idvSQL     * aStatistics,
 }
 
 /***********************************************************************
- * Description : aFileNode°¡ °¡¸®Å°´Â ÆÄÀÏ¿¡¼­ aPageID¸¦ ÀÐ´Â´Ù.
+ * Description : aFileNodeê°€ ê°€ë¦¬í‚¤ëŠ” íŒŒì¼ì—ì„œ aPageIDë¥¼ ì½ëŠ”ë‹¤.
  *
- * PRJ-1149°ü·Ã
- * µ¥ÀÌÅ¸ ÆÄÀÏÀÌ backup¾Æ´Ñ Á¤»ó »óÅÂÀÏ¶§ µ¥ÀÌÅ¸ ÆÄÀÏ·ÎºÎÅÍ
- * page¸¦ ÀÐ¾î¿Â´Ù.
+ * PRJ-1149ê´€ë ¨
+ * ë°ì´íƒ€ íŒŒì¼ì´ backupì•„ë‹Œ ì •ìƒ ìƒíƒœì¼ë•Œ ë°ì´íƒ€ íŒŒì¼ë¡œë¶€í„°
+ * pageë¥¼ ì½ì–´ì˜¨ë‹¤.
  *
- * aStatistics - [IN] Åë°èÁ¤º¸
- * aFileNode   - [IN] ÆÄÀÏ³ëµå
+ * aStatistics - [IN] í†µê³„ì •ë³´
+ * aFileNode   - [IN] íŒŒì¼ë…¸ë“œ
  * aSpaceID    - [IN] TableSpaceID
  * aPageID     - [IN] PageID
  * aPageCnt    - [IN] Page Count
- * aBuffer     - [IN] Page³»¿ëÀÌ µé¾îÀÖ´Â Buffer
+ * aBuffer     - [IN] Pageë‚´ìš©ì´ ë“¤ì–´ìžˆëŠ” Buffer
  *
- * aState      - [OUT] sctTableSpaceMgr::lockÀÌ ÀâÇôÀÖÀ¸¸é 1, Ç®·ÈÀ¸¸é 0
+ * aState      - [OUT] sctTableSpaceMgr::lockì´ ìž¡í˜€ìžˆìœ¼ë©´ 1, í’€ë ¸ìœ¼ë©´ 0
  **********************************************************************/
 IDE_RC  sddDiskMgr::readPageFromDataFile( idvSQL*            aStatistics,
                                           sddDataFileNode*   aFileNode,
@@ -1469,7 +1469,7 @@ IDE_RC  sddDiskMgr::readPageFromDataFile( idvSQL*            aStatistics,
 
     sPreparedIO = ID_FALSE;
     IDE_TEST( completeIO(aFileNode, SDD_IO_READ) != IDE_SUCCESS );
-    // È£ÃâÇÏ´Â ÇÔ¼ö¿¡¼­ mMutex¸¦ Ç¬´Ù.
+    // í˜¸ì¶œí•˜ëŠ” í•¨ìˆ˜ì—ì„œ mMutexë¥¼ í‘¼ë‹¤.
 
     return IDE_SUCCESS;
 
@@ -1500,35 +1500,35 @@ IDE_RC  sddDiskMgr::readPageFromDataFile( idvSQL*            aStatistics,
                     == IDE_SUCCESS );
     }
 
-    //È£ÃâÇÏ´Â ÂÊ¿¡¼­ exceptionÃ³¸®¸¦ ÇÔ.
+    //í˜¸ì¶œí•˜ëŠ” ìª½ì—ì„œ exceptionì²˜ë¦¬ë¥¼ í•¨.
     return IDE_FAILURE;
 }
 
 /***********************************************************************
- * Description : page ÆÇµ¶ (2)
+ * Description : page íŒë… (2)
  *
- * ÇØ´ç tablespaceÀÇ ÇØ´ç pageºÎÅÍ pagecount¸¸Å­ disk·ÎºÎÅÍ READ ÇÑ´Ù.
+ * í•´ë‹¹ tablespaceì˜ í•´ë‹¹ pageë¶€í„° pagecountë§Œí¼ diskë¡œë¶€í„° READ í•œë‹¤.
  *
  * - 2nd. code design
- *   + µð½ºÅ©°ü¸®ÀÚ mutex È¹µæ
- *   + µð½ºÅ©°ü¸®ÀÚÀÇ HASH¿¡¼­ tablespace ³ëµå¸¦ Ã£´Â´Ù.
- *   + frompid ºÎÅÍ topid±îÁö ¸ðµÎ ÀÐ¾îµéÀÏ¶§±îÁö ·çÇÁ¸¦ µ·´Ù.
- *     + ÇØ´ç page°¡ Æ÷ÇÔµÈ datafile ³ëµå¸¦ Ã£´Â´Ù
+ *   + ë””ìŠ¤í¬ê´€ë¦¬ìž mutex íšë“
+ *   + ë””ìŠ¤í¬ê´€ë¦¬ìžì˜ HASHì—ì„œ tablespace ë…¸ë“œë¥¼ ì°¾ëŠ”ë‹¤.
+ *   + frompid ë¶€í„° topidê¹Œì§€ ëª¨ë‘ ì½ì–´ë“¤ì¼ë•Œê¹Œì§€ ë£¨í”„ë¥¼ ëˆë‹¤.
+ *     + í•´ë‹¹ pageê°€ í¬í•¨ëœ datafile ë…¸ë“œë¥¼ ì°¾ëŠ”ë‹¤
  *        -> sddTableSpace::getDataFileNodeByPageID
- *     + Read I/O¸¦ ÁØºñÇÑ´Ù. -> prepareIO
- *     + µð½ºÅ©°ü¸®ÀÚ mutex ÇØÁ¦
- *     + Read I/O¸¦ ¼öÇàÇÑ´Ù.-> sddDataFile::read
- *     + µð½ºÅ©°ü¸®ÀÚÀÇ mutex È¹µæÇÑ´Ù.
- *     + Read I/O ¿Ï·á¸¦ ¼öÇàÇÑ´Ù. -> completeIO
- *   + µð½ºÅ©°ü¸®ÀÚÀÇ mutex ÇØÁ¦ÇÑ´Ù.
+ *     + Read I/Oë¥¼ ì¤€ë¹„í•œë‹¤. -> prepareIO
+ *     + ë””ìŠ¤í¬ê´€ë¦¬ìž mutex í•´ì œ
+ *     + Read I/Oë¥¼ ìˆ˜í–‰í•œë‹¤.-> sddDataFile::read
+ *     + ë””ìŠ¤í¬ê´€ë¦¬ìžì˜ mutex íšë“í•œë‹¤.
+ *     + Read I/O ì™„ë£Œë¥¼ ìˆ˜í–‰í•œë‹¤. -> completeIO
+ *   + ë””ìŠ¤í¬ê´€ë¦¬ìžì˜ mutex í•´ì œí•œë‹¤.
  *
- * aStatistics - [IN] Åë°èÁ¤º¸
- * aFileNode   - [IN] ÆÄÀÏ³ëµå
+ * aStatistics - [IN] í†µê³„ì •ë³´
+ * aFileNode   - [IN] íŒŒì¼ë…¸ë“œ
  * aSpaceID    - [IN] TableSpaceID
  * aFstPageID  - [IN] PageID
- * aBuffer     - [IN] Page³»¿ëÀÌ µé¾îÀÖ´Â Buffer
+ * aBuffer     - [IN] Pageë‚´ìš©ì´ ë“¤ì–´ìžˆëŠ” Buffer
  *
- * aState      - [OUT] sctTableSpaceMgr::lockÀÌ ÀâÇôÀÖÀ¸¸é 1, Ç®·ÈÀ¸¸é 0
+ * aState      - [OUT] sctTableSpaceMgr::lockì´ ìž¡í˜€ìžˆìœ¼ë©´ 1, í’€ë ¸ìœ¼ë©´ 0
  **********************************************************************/
 IDE_RC sddDiskMgr::read( idvSQL*       aStatistics,
                          scSpaceID     aTableSpaceID,
@@ -1592,21 +1592,21 @@ IDE_RC sddDiskMgr::read( idvSQL*       aStatistics,
 }
 
 /***********************************************************************
- * Description : page ±â·Ï (1)
+ * Description : page ê¸°ë¡ (1)
  *
- * ÇØ´ç tablespaceÀÇ ÇØ´ç page¸¦ disk¿¡ WRITE ÇÑ´Ù.
+ * í•´ë‹¹ tablespaceì˜ í•´ë‹¹ pageë¥¼ diskì— WRITE í•œë‹¤.
  *
  * - 2nd. code design
- *   + µð½ºÅ©°ü¸®ÀÚ mutex È¹µæ
- *   + µð½ºÅ©°ü¸®ÀÚÀÇ HASH¿¡¼­ tablespace ³ëµå¸¦ Ã£´Â´Ù.
- *   + ÇØ´ç page°¡ Æ÷ÇÔµÈ datafile ³ëµå¸¦ Ã£´Â´Ù
+ *   + ë””ìŠ¤í¬ê´€ë¦¬ìž mutex íšë“
+ *   + ë””ìŠ¤í¬ê´€ë¦¬ìžì˜ HASHì—ì„œ tablespace ë…¸ë“œë¥¼ ì°¾ëŠ”ë‹¤.
+ *   + í•´ë‹¹ pageê°€ í¬í•¨ëœ datafile ë…¸ë“œë¥¼ ì°¾ëŠ”ë‹¤
  *     -> sddTableSpace::getDataFileNodeByPageID
- *   + Write I/O¸¦ ÁØºñÇÑ´Ù. -> prepareIO
- *   + µð½ºÅ©°ü¸®ÀÚ mutex ÇØÁ¦
- *   + Write I/O¸¦ ¼öÇàÇÑ´Ù.-> sddDataFile::write
- *   + µð½ºÅ©°ü¸®ÀÚ mutex È¹µæ
- *   + Write I/O ¿Ï·á¸¦ ¼öÇàÇÑ´Ù. -> completeIO
- *   + µð½ºÅ©°ü¸®ÀÚ mutex ÇØÁ¦
+ *   + Write I/Oë¥¼ ì¤€ë¹„í•œë‹¤. -> prepareIO
+ *   + ë””ìŠ¤í¬ê´€ë¦¬ìž mutex í•´ì œ
+ *   + Write I/Oë¥¼ ìˆ˜í–‰í•œë‹¤.-> sddDataFile::write
+ *   + ë””ìŠ¤í¬ê´€ë¦¬ìž mutex íšë“
+ *   + Write I/O ì™„ë£Œë¥¼ ìˆ˜í–‰í•œë‹¤. -> completeIO
+ *   + ë””ìŠ¤í¬ê´€ë¦¬ìž mutex í•´ì œ
  **********************************************************************/
 IDE_RC sddDiskMgr::write(idvSQL*    aStatistics,
                          scSpaceID  aTableSpaceID,
@@ -1653,14 +1653,14 @@ IDE_RC sddDiskMgr::write(idvSQL*    aStatistics,
 
     /* 
      * PROJ-2133 incremental backup
-     * changeTrackingÀº ÆäÀÌÁö¸¦ µ¥ÀÌÅÍÆÄÀÏ¿¡ writeÇÑ ÈÄ¿¡ ¼öÇàµÇ¾ß¸¸ ÇÑ´Ù.
-     * ±×·¸Áö ¾ÊÀ» °æ¿ì, changeTrackingÇÔ¼ö ³»¿¡¼­ DataFileDescSlotÀÇ tracking»óÅÂ°¡
-     * deactive¿¡¼­ active·Î ¹Ù²ä°æ¿ì flushµÇ´Â ÆäÀÌÁö¿¡ ´ëÇÑ changeTrackingÀÌ
-     * ¼öÇàµÇÁö ¾ÊÀ» ¼ö ÀÖ´Ù.
+     * changeTrackingì€ íŽ˜ì´ì§€ë¥¼ ë°ì´í„°íŒŒì¼ì— writeí•œ í›„ì— ìˆ˜í–‰ë˜ì•¼ë§Œ í•œë‹¤.
+     * ê·¸ë ‡ì§€ ì•Šì„ ê²½ìš°, changeTrackingí•¨ìˆ˜ ë‚´ì—ì„œ DataFileDescSlotì˜ trackingìƒíƒœê°€
+     * deactiveì—ì„œ activeë¡œ ë°”ê¿œê²½ìš° flushë˜ëŠ” íŽ˜ì´ì§€ì— ëŒ€í•œ changeTrackingì´
+     * ìˆ˜í–‰ë˜ì§€ ì•Šì„ ìˆ˜ ìžˆë‹¤.
      *
-     * Áï, changeTrackingÀº ÆäÀÌÁö¸¦ µ¥ÀÌÅÍÆÄÀÏ¿¡ writeÇÑ ÈÄ ¼öÇàÇÔÀ¸·ÎÀÎÇØ,
-     * DataFileDescslotÀÇ »óÅÂ°¡ deactive¿¡¼­ active¹Ù²î´Â°æ¿ì ÇØ´ç ÆäÀÌÁöÀÇ
-     * º¯°æ »çÇ×Àº level0 ¹é¾÷¿¡ Æ÷ÇÔµÈ´Ù.
+     * ì¦‰, changeTrackingì€ íŽ˜ì´ì§€ë¥¼ ë°ì´í„°íŒŒì¼ì— writeí•œ í›„ ìˆ˜í–‰í•¨ìœ¼ë¡œì¸í•´,
+     * DataFileDescslotì˜ ìƒíƒœê°€ deactiveì—ì„œ activeë°”ë€ŒëŠ”ê²½ìš° í•´ë‹¹ íŽ˜ì´ì§€ì˜
+     * ë³€ê²½ ì‚¬í•­ì€ level0 ë°±ì—…ì— í¬í•¨ëœë‹¤.
      */
     if ( ( smLayerCallback::isCTMgrEnabled() == ID_TRUE ) &&
          ( sctTableSpaceMgr::isTempTableSpace( aTableSpaceID ) != ID_TRUE ) )
@@ -1732,19 +1732,19 @@ IDE_RC  sddDiskMgr::writePageNA( idvSQL*          /* aStatistics */,
 
 /***********************************************************************
  * Description :
- * aFstPID ~ aFstPID + aPageCnt ±îÁöÀÇ ÆäÀÌÁö¸¦ aFileNode°¡ °¡¸®Å°´Â ÆÄÀÏ
- * ¿¡ ±â·ÏÇÑ´Ù.
+ * aFstPID ~ aFstPID + aPageCnt ê¹Œì§€ì˜ íŽ˜ì´ì§€ë¥¼ aFileNodeê°€ ê°€ë¦¬í‚¤ëŠ” íŒŒì¼
+ * ì— ê¸°ë¡í•œë‹¤.
  *
- * PRJ-1149°ü·Ã
- * µ¥ÀÌÅ¸ ÆÄÀÏÀÌ backupÀÌ ¾Æ´Ñ Á¤»ó»óÅÂÀÏ¶§
- * µ¥ÀÌÅ¸ÆÄÀÏ¿¡ dirty page¸¦ writeÇÑ´Ù.
+ * PRJ-1149ê´€ë ¨
+ * ë°ì´íƒ€ íŒŒì¼ì´ backupì´ ì•„ë‹Œ ì •ìƒìƒíƒœì¼ë•Œ
+ * ë°ì´íƒ€íŒŒì¼ì— dirty pageë¥¼ writeí•œë‹¤.
  *
- * aStatistics - [IN] Åë°è Á¤º¸
+ * aStatistics - [IN] í†µê³„ ì •ë³´
  * aFileNode   - [IN] FileNode
- * aFstPID     - [IN] Ã¹¹øÂ° PageID
+ * aFstPID     - [IN] ì²«ë²ˆì§¸ PageID
  * aPageCnt    - [IN] Write Page Count
- * aBuffer     - [IN] Page³»¿ëÀ» °¡Áø Buffer
- * aState      - [OUT] sctTableSpaceMgr::lock()¿¡ ´ëÇÑ Á¤º¸¸¦ °¡Áö°í ÀÖ´Ù.
+ * aBuffer     - [IN] Pageë‚´ìš©ì„ ê°€ì§„ Buffer
+ * aState      - [OUT] sctTableSpaceMgr::lock()ì— ëŒ€í•œ ì •ë³´ë¥¼ ê°€ì§€ê³  ìžˆë‹¤.
  **********************************************************************/
 IDE_RC sddDiskMgr::writePage2DataFile(idvSQL           *  aStatistics,
                                       sddDataFileNode  *  aFileNode,
@@ -1778,7 +1778,7 @@ IDE_RC sddDiskMgr::writePage2DataFile(idvSQL           *  aStatistics,
     sPreparedIO = ID_FALSE;
     IDE_TEST( completeIO(aFileNode, SDD_IO_WRITE) != IDE_SUCCESS );
 
-    //È£ÃâÇÏ´Â ÇÔ¼ö¿¡¼­ mMutex¸¦ Ç¬´Ù.
+    //í˜¸ì¶œí•˜ëŠ” í•¨ìˆ˜ì—ì„œ mMutexë¥¼ í‘¼ë‹¤.
 
     return IDE_SUCCESS;
 
@@ -1808,18 +1808,18 @@ IDE_RC sddDiskMgr::writePage2DataFile(idvSQL           *  aStatistics,
                     == IDE_SUCCESS );
     }
 
-    //È£ÃâÇÏ´Â ÂÊ¿¡¼­ exceptionÃ³¸®¸¦ ÇÔ.
+    //í˜¸ì¶œí•˜ëŠ” ìª½ì—ì„œ exceptionì²˜ë¦¬ë¥¼ í•¨.
     return IDE_FAILURE;
 
 }
 
 /***********************************************************************
  * Description : sddDiskMgr::abortBackupTableSpace
- * PRJ-1149°ü·Ã
- * server shutdown½Ã¿¡ ÇÏ³ªÀÇ DISK tablespace¶óµµ
- * backup begin µÇ¾î ÀÖ´Â °æ¿ì(end backupÀ» È£ÃâÇÏÁö ¾ÊÀº°æ¿ì)
- * page image ·Î±×¸¦ ¸ðµÎ µ¥ÀÌÅ¸º£ÀÌ½º¿¡ ¹Ý¿µÇÏ¿©¾ß ÇÏ°í,
- * tablespace »óÅÂ¸¦ onlineÀ¸·Î º¯°æÇØÁÖ¾î¾ß ÇÑ´Ù.
+ * PRJ-1149ê´€ë ¨
+ * server shutdownì‹œì— í•˜ë‚˜ì˜ DISK tablespaceë¼ë„
+ * backup begin ë˜ì–´ ìžˆëŠ” ê²½ìš°(end backupì„ í˜¸ì¶œí•˜ì§€ ì•Šì€ê²½ìš°)
+ * page image ë¡œê·¸ë¥¼ ëª¨ë‘ ë°ì´íƒ€ë² ì´ìŠ¤ì— ë°˜ì˜í•˜ì—¬ì•¼ í•˜ê³ ,
+ * tablespace ìƒíƒœë¥¼ onlineìœ¼ë¡œ ë³€ê²½í•´ì£¼ì–´ì•¼ í•œë‹¤.
  **********************************************************************/
 IDE_RC sddDiskMgr::abortBackupAllTableSpace( idvSQL*  aStatistics )
 {
@@ -1861,8 +1861,8 @@ IDE_RC sddDiskMgr::abortBackupAllTableSpace( idvSQL*  aStatistics )
 
 /***********************************************************************
  * Description : sddDiskMgr::abortBackupTableSpace
- * veritas ¿¬µ¿ °ü·Ã alter tablespace begin backup¿¡¼­
- * abort¸¦ Ã³¸®ÇÔ.
+ * veritas ì—°ë™ ê´€ë ¨ alter tablespace begin backupì—ì„œ
+ * abortë¥¼ ì²˜ë¦¬í•¨.
  **********************************************************************/
 IDE_RC sddDiskMgr::abortBackupTableSpace( idvSQL            * aStatistics,
                                           sddTableSpaceNode * aSpaceNode )
@@ -1918,7 +1918,7 @@ IDE_RC sddDiskMgr::abortBackupTableSpace( idvSQL            * aStatistics,
 
 /***********************************************************************
  * Description : sddDiskMgr::unsetTBSBackupState
- * PRJ-1149°ü·Ã --> TASK-1842
+ * PRJ-1149ê´€ë ¨ --> TASK-1842
  **********************************************************************/
 void sddDiskMgr::unsetTBSBackupState( idvSQL*            aStatistics,
                                       sddTableSpaceNode* aSpaceNode )
@@ -1963,11 +1963,11 @@ void sddDiskMgr::unsetTBSBackupState( idvSQL*            aStatistics,
 
 /***********************************************************************
  * Description : sddDiskMgr::completeFileBackup
- * - µ¥ÀÌÅ¸ ÆÄÀÏ backup(Áï copy)ÀÌ Á¾·áµÊ¿¡µû¶ó. DataFileNodeÀÇ »óÅÂ¸¦
- * º¯°æÇÑ´Ù.
+ * - ë°ì´íƒ€ íŒŒì¼ backup(ì¦‰ copy)ì´ ì¢…ë£Œë¨ì—ë”°ë¼. DataFileNodeì˜ ìƒíƒœë¥¼
+ * ë³€ê²½í•œë‹¤.
  *
- *   aStatistics      - [IN] Åë°èÁ¤º¸
- *   aDataFileNode    - [IN] ¹æ±Ý backupÇÑ DBFileÀÇ DataFileNode
+ *   aStatistics      - [IN] í†µê³„ì •ë³´
+ *   aDataFileNode    - [IN] ë°©ê¸ˆ backupí•œ DBFileì˜ DataFileNode
  **********************************************************************/
 IDE_RC sddDiskMgr::completeFileBackup(idvSQL*            aStatistics,
                                       sddDataFileNode*   aDataFileNode)
@@ -1984,8 +1984,8 @@ IDE_RC sddDiskMgr::completeFileBackup(idvSQL*            aStatistics,
     aDataFileNode->mState &= ~SMI_FILE_BACKUP;
 
     // fix BUG-11337.
-    // µ¥ÀÌÅ¸ ÆÄÀÏÀÌ  ¹é¾÷ÁßÀÌ¸é , ÆÄÀÏ extend, truncateÇÏ´Â Æ®·£Àè¼ÇÀÌ
-    //  ´ë±âÇÏ°í ÀÖÀ¸´Ï±î , ±ú¿î´Ù.
+    // ë°ì´íƒ€ íŒŒì¼ì´  ë°±ì—…ì¤‘ì´ë©´ , íŒŒì¼ extend, truncateí•˜ëŠ” íŠ¸ëžœìž­ì…˜ì´
+    //  ëŒ€ê¸°í•˜ê³  ìžˆìœ¼ë‹ˆê¹Œ , ê¹¨ìš´ë‹¤.
     IDE_TEST_RAISE(mBackupCV.broadcast() != IDE_SUCCESS, error_cond_signal);
 
     IDE_TEST (sctTableSpaceMgr::unlock() != IDE_SUCCESS);
@@ -2009,8 +2009,8 @@ IDE_RC sddDiskMgr::completeFileBackup(idvSQL*            aStatistics,
 
 /***********************************************************************
  * Description : sddDiskMgr::updateDataFileState
- * PRJ-1149°ü·Ã
- - µ¥ÀÌÅ¸ ÆÄÀÏ ³ëµåÀÇ »óÅÂ¸¦ º¯°æÇÑ´Ù.
+ * PRJ-1149ê´€ë ¨
+ - ë°ì´íƒ€ íŒŒì¼ ë…¸ë“œì˜ ìƒíƒœë¥¼ ë³€ê²½í•œë‹¤.
   : online-> backup begin
 
  **********************************************************************/
@@ -2076,7 +2076,7 @@ retry:
 }
 
 /*
-  Å×ÀÌºí½ºÆäÀÌ½ºÀÇ DBF ³ëµåµéÀÇ ¹é¾÷¿Ï·áÀÛ¾÷À» ¼öÇàÇÑ´Ù.
+  í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ì˜ DBF ë…¸ë“œë“¤ì˜ ë°±ì—…ì™„ë£Œìž‘ì—…ì„ ìˆ˜í–‰í•œë‹¤.
 
 
 */
@@ -2103,8 +2103,8 @@ IDE_RC sddDiskMgr::endBackupDiskTBS(idvSQL*      aStatistics,
     IDE_TEST_RAISE( sSpaceNode == NULL, error_not_found_tablespace_node );
     IDE_ASSERT( sSpaceNode->mHeader.mID == aSpaceID );
 
-    // alter tablespace  backup begin A¸¦ ÇÏ°í³ª¼­,
-    // alter tablespace  backup end B¸¦ ÇÏ´Â °æ¿ì¸¦ ¸·±âÀ§ÇÔÀÌ´Ù.
+    // alter tablespace  backup begin Aë¥¼ í•˜ê³ ë‚˜ì„œ,
+    // alter tablespace  backup end Bë¥¼ í•˜ëŠ” ê²½ìš°ë¥¼ ë§‰ê¸°ìœ„í•¨ì´ë‹¤.
     IDE_TEST_RAISE( (sSpaceNode->mHeader.mState & SMI_TBS_BACKUP)
                     != SMI_TBS_BACKUP,
                     error_not_begin_backup);
@@ -2112,11 +2112,11 @@ IDE_RC sddDiskMgr::endBackupDiskTBS(idvSQL*      aStatistics,
     sLockedMgr = ID_FALSE;
     IDE_TEST( sctTableSpaceMgr::unlock() != IDE_SUCCESS );
 
-    //Å×ÀÌºí ½ºÆäÀÌ½º°¡ backup»óÅÂÀÌ±â¶§¹®¿¡
-    // µ¥ÀÌÅ¸ ÆÄÀÏ ¹è¿­Àº ±×´ë·Î À¯Áö µÈ´Ù.
+    //í…Œì´ë¸” ìŠ¤íŽ˜ì´ìŠ¤ê°€ backupìƒíƒœì´ê¸°ë•Œë¬¸ì—
+    // ë°ì´íƒ€ íŒŒì¼ ë°°ì—´ì€ ê·¸ëŒ€ë¡œ ìœ ì§€ ëœë‹¤.
     /* ------------------------------------------------
-     * Å×ÀÌºí ½ºÆäÀÌ½ºÀÇ µ¥ÀÌÅ¸ ÆÄÀÏ¿¡¼­
-     * page image logging¹Ý¿µ.
+     * í…Œì´ë¸” ìŠ¤íŽ˜ì´ìŠ¤ì˜ ë°ì´íƒ€ íŒŒì¼ì—ì„œ
+     * page image loggingë°˜ì˜.
      * ----------------------------------------------*/
 
     for (i=0; i < sSpaceNode->mNewFileID ; i++ )
@@ -2163,28 +2163,28 @@ IDE_RC sddDiskMgr::endBackupDiskTBS(idvSQL*      aStatistics,
 }
 
 /***********************************************************************
- * Description : page ±â·Ï (2)
+ * Description : page ê¸°ë¡ (2)
  *
- * ÇØ´ç tablespaceÀÇ ÇØ´ç pageºÎÅÍ pagecount¸¸Å­ disk·ÎºÎÅÍ write ÇÑ´Ù.
+ * í•´ë‹¹ tablespaceì˜ í•´ë‹¹ pageë¶€í„° pagecountë§Œí¼ diskë¡œë¶€í„° write í•œë‹¤.
  *
  * - 2nd. code design
- *   + µð½ºÅ©°ü¸®ÀÚ mutex È¹µæ
- *   + µð½ºÅ©°ü¸®ÀÚÀÇ HASH¿¡¼­ tablespace ³ëµå¸¦ Ã£´Â´Ù.
- *   + frompid ºÎÅÍ topid±îÁö ¸ðµÎ ±â·ÏÇÒ¶§±îÁö ·çÇÁ¸¦ µ·´Ù.
- *     + ÇØ´ç page°¡ Æ÷ÇÔµÈ datafile ³ëµå¸¦ Ã£´Â´Ù
+ *   + ë””ìŠ¤í¬ê´€ë¦¬ìž mutex íšë“
+ *   + ë””ìŠ¤í¬ê´€ë¦¬ìžì˜ HASHì—ì„œ tablespace ë…¸ë“œë¥¼ ì°¾ëŠ”ë‹¤.
+ *   + frompid ë¶€í„° topidê¹Œì§€ ëª¨ë‘ ê¸°ë¡í• ë•Œê¹Œì§€ ë£¨í”„ë¥¼ ëˆë‹¤.
+ *     + í•´ë‹¹ pageê°€ í¬í•¨ëœ datafile ë…¸ë“œë¥¼ ì°¾ëŠ”ë‹¤
  *        -> sddTableSpace::getDataFileNodeByPageID
- *     + Write I/O¸¦ ÁØºñÇÑ´Ù. -> prepareIO
- *     + µð½ºÅ©°ü¸®ÀÚ mutex ÇØÁ¦
- *     + Write I/O¸¦ ¼öÇàÇÑ´Ù.-> sddDataFile::write
- *     + µð½ºÅ©°ü¸®ÀÚÀÇ mutex È¹µæÇÑ´Ù.
- *     + Write I/O ¿Ï·á¸¦ ¼öÇàÇÑ´Ù. -> completeIO
- *   + µð½ºÅ©°ü¸®ÀÚÀÇ mutex ÇØÁ¦ÇÑ´Ù.
+ *     + Write I/Oë¥¼ ì¤€ë¹„í•œë‹¤. -> prepareIO
+ *     + ë””ìŠ¤í¬ê´€ë¦¬ìž mutex í•´ì œ
+ *     + Write I/Oë¥¼ ìˆ˜í–‰í•œë‹¤.-> sddDataFile::write
+ *     + ë””ìŠ¤í¬ê´€ë¦¬ìžì˜ mutex íšë“í•œë‹¤.
+ *     + Write I/O ì™„ë£Œë¥¼ ìˆ˜í–‰í•œë‹¤. -> completeIO
+ *   + ë””ìŠ¤í¬ê´€ë¦¬ìžì˜ mutex í•´ì œí•œë‹¤.
  *
- * aStatistics   - [IN] Åë°èÁ¤º¸
+ * aStatistics   - [IN] í†µê³„ì •ë³´
  * aTableSpaceID - [IN] TableSpaceID
  * aFstPID       - [IN] First PID
- * aPageCount    - [IN] WriteÇÒ Page Count
- * aBuffer       - [IN] WriteÇÒ Page ³»¿ëÀÌ µé¾îÀÖ´Â Buffer
+ * aPageCount    - [IN] Writeí•  Page Count
+ * aBuffer       - [IN] Writeí•  Page ë‚´ìš©ì´ ë“¤ì–´ìžˆëŠ” Buffer
  **********************************************************************/
 IDE_RC sddDiskMgr::write4DPath( idvSQL      * aStatistics,
                                 scSpaceID     aTableSpaceID,
@@ -2240,38 +2240,38 @@ IDE_RC sddDiskMgr::write4DPath( idvSQL      * aStatistics,
 }
 
 /***********************************************************************
- * Description : datafile¿¡ ´ëÇÑ I/O¸¦ ÇÏ±â Àü¿¡ ÇØ´ç datafile ³ëµå ¿ÀÇÂ
+ * Description : datafileì— ëŒ€í•œ I/Oë¥¼ í•˜ê¸° ì „ì— í•´ë‹¹ datafile ë…¸ë“œ ì˜¤í”ˆ
  *
- * read, write Àü¿¡ ÇÊ¿äÇÑ Á¤º¸¸¦ ¼öÁ¤ÇÑ´Ù. ÀÌ ÇÔ¼ö°¡ È£ÃâµÇ±âÀü¿¡´Â
- * µð½ºÅ©°ü¸®ÀÚÀÇ mutex¸¦ È¹µæÇÑ »óÅÂÀÌ¾î¾ß ÇÑ´Ù.
+ * read, write ì „ì— í•„ìš”í•œ ì •ë³´ë¥¼ ìˆ˜ì •í•œë‹¤. ì´ í•¨ìˆ˜ê°€ í˜¸ì¶œë˜ê¸°ì „ì—ëŠ”
+ * ë””ìŠ¤í¬ê´€ë¦¬ìžì˜ mutexë¥¼ íšë“í•œ ìƒíƒœì´ì–´ì•¼ í•œë‹¤.
  *
  * + 2nd. code design
  *      -----------------------------------------
- *   - if ( datafile ³ëµåÀÇ »óÅÂ°¡ ´ÝÈù »óÅÂ¶ó¸é )
+ *   - if ( datafile ë…¸ë“œì˜ ìƒíƒœê°€ ë‹«ížŒ ìƒíƒœë¼ë©´ )
  *     {
- *         while( ½Ã½ºÅÛ max open È­ÀÏ¿¡ µµ´ÞÇÑ °æ¿ì  )
+ *         while( ì‹œìŠ¤í…œ max open í™”ì¼ì— ë„ë‹¬í•œ ê²½ìš°  )
  *         {
- *             LRU¿¡¼­ victimÀ» Ã£´Â´Ù. -> findVictim
- *             if( Ã£¾Ò´Ù )
+ *             LRUì—ì„œ victimì„ ì°¾ëŠ”ë‹¤. -> findVictim
+ *             if( ì°¾ì•˜ë‹¤ )
  *             {
- *                 Ã£Àº È­ÀÏÀ» closeÇÑ´Ù. -> closeDataFile
+ *                 ì°¾ì€ í™”ì¼ì„ closeí•œë‹¤. -> closeDataFile
  *                 break;
  *             }
  *             else
  *             {
- *                 ÇöÀç ¿ÀÇÂ ´ë±âÁßÀÎ°Ô ÀÖÀ½À» Ç¥½ÃÇÑ´Ù.
- *                 µð½ºÅ©°ü¸®ÀÚ mutex ÇØÁ¦ÇÑ´Ù.
- *                 CV¿¡ ´ëÇÏ¿© ´ë±âÇÑ´Ù.
- *                 µð½ºÅ©°ü¸®ÀÚ mutex È¹µæÇÑ´Ù.
- *                 ÇöÀç ¿ÀÇÂ ´ë±âÁßÀÎ°Ô ¾øÀ½À» Ç¥½ÃÇÑ´Ù.
+ *                 í˜„ìž¬ ì˜¤í”ˆ ëŒ€ê¸°ì¤‘ì¸ê²Œ ìžˆìŒì„ í‘œì‹œí•œë‹¤.
+ *                 ë””ìŠ¤í¬ê´€ë¦¬ìž mutex í•´ì œí•œë‹¤.
+ *                 CVì— ëŒ€í•˜ì—¬ ëŒ€ê¸°í•œë‹¤.
+ *                 ë””ìŠ¤í¬ê´€ë¦¬ìž mutex íšë“í•œë‹¤.
+ *                 í˜„ìž¬ ì˜¤í”ˆ ëŒ€ê¸°ì¤‘ì¸ê²Œ ì—†ìŒì„ í‘œì‹œí•œë‹¤.
  *                 continue;
  *             }
  *         }
- *         datafileÀ» ¿ÀÇÂÇÑ´Ù.->openDataFile
+ *         datafileì„ ì˜¤í”ˆí•œë‹¤.->openDataFile
 
  *     }
- *   - I/O ¼öÇàÀ» À§ÇØ datafile ³ëµåÀÇ Á¤º¸µé¸¦ Àç¼³Á¤ÇÑ´Ù.
- *     IO ¼öÇà count Áõ°¡ ¹× datafile ¿ÀÇÂ¿©ºÎ ¼³Á¤
+ *   - I/O ìˆ˜í–‰ì„ ìœ„í•´ datafile ë…¸ë“œì˜ ì •ë³´ë“¤ë¥¼ ìž¬ì„¤ì •í•œë‹¤.
+ *     IO ìˆ˜í–‰ count ì¦ê°€ ë° datafile ì˜¤í”ˆì—¬ë¶€ ì„¤ì •
  *     -> sddDataFile::prepareIO
  **********************************************************************/
 IDE_RC sddDiskMgr::prepareIO( sddDataFileNode*   aDataFileNode )
@@ -2282,8 +2282,8 @@ IDE_RC sddDiskMgr::prepareIO( sddDataFileNode*   aDataFileNode )
     IDE_DASSERT( aDataFileNode != NULL );
 
     // BUG-17158
-    // Offline TBS¿¡ ´ëÇØ¼­ Prepare IO¸¦ ¸·Áö ¾Ê´Â´Ù.
-    // ¿Ö³ÄÇÏ¸é Read¿Í Write¸¦ »óÈ²¿¡ µû¶ó Çã¿ëÇØ¾ß ÇÏ±â ¶§¹®ÀÌ´Ù.
+    // Offline TBSì— ëŒ€í•´ì„œ Prepare IOë¥¼ ë§‰ì§€ ì•ŠëŠ”ë‹¤.
+    // ì™œëƒí•˜ë©´ Readì™€ Writeë¥¼ ìƒí™©ì— ë”°ë¼ í—ˆìš©í•´ì•¼ í•˜ê¸° ë•Œë¬¸ì´ë‹¤.
 
     if (aDataFileNode->mIsOpened != ID_TRUE)
     {
@@ -2329,22 +2329,22 @@ IDE_RC sddDiskMgr::prepareIO( sddDataFileNode*   aDataFileNode )
 }
 
 /***********************************************************************
- * Description : datafile¿¡ ´ëÇÑ I/O ¿Ï·áÈÄ datafile ³ëµå ¼³Á¤
+ * Description : datafileì— ëŒ€í•œ I/O ì™„ë£Œí›„ datafile ë…¸ë“œ ì„¤ì •
  *
- * I/O ¿Ï·áÈÄ datafile ³ëµå Á¤º¸µéÀ» Àç¼³Á¤ÇÑ´Ù.¹Ýµå½Ã µð½ºÅ©°ü¸®ÀÚÀÇ
- * mutex¸¦ È¹µæÇÑ ÈÄ¿¡ È£ÃâµÇ¾î¾ß ÇÑ´Ù.
+ * I/O ì™„ë£Œí›„ datafile ë…¸ë“œ ì •ë³´ë“¤ì„ ìž¬ì„¤ì •í•œë‹¤.ë°˜ë“œì‹œ ë””ìŠ¤í¬ê´€ë¦¬ìžì˜
+ * mutexë¥¼ íšë“í•œ í›„ì— í˜¸ì¶œë˜ì–´ì•¼ í•œë‹¤.
  *
  * + 2nd. code design
- *   - I/O ¿Ï·áÈÄ datafile ³ëµå Á¤º¸¸¦ Àç¼³Á¤ÇÑ´Ù. ->sddDataFile::completeIO
- *   - if( datafile¿¡ I/O ÁßÀÌ ¾Æ´Ï°í, ´Ù¸¥ ½º·¹µå°¡ ¿ÀÇÂÀ» ´ë±âÇÏ°í ÀÖ´Â ÁßÀÌ¸é )
+ *   - I/O ì™„ë£Œí›„ datafile ë…¸ë“œ ì •ë³´ë¥¼ ìž¬ì„¤ì •í•œë‹¤. ->sddDataFile::completeIO
+ *   - if( datafileì— I/O ì¤‘ì´ ì•„ë‹ˆê³ , ë‹¤ë¥¸ ìŠ¤ë ˆë“œê°€ ì˜¤í”ˆì„ ëŒ€ê¸°í•˜ê³  ìžˆëŠ” ì¤‘ì´ë©´ )
  *     {
- *        datafile ³ëµå¸¦ datafile LRU ¸®½ºÆ®ÀÇ ¸Ç ³¡À¸·Î ÀÌµ¿ÇÑ´Ù.
- *        µð½ºÅ©°ü¸®ÀÚÀÇ CV¿¡ ´ëÇÏ¿© signalÀ» ºê·ÎµåÄ³½ºÆÃÇØ¼­
- *        closeDataFileÀ» ÇÒ ¼ö ÀÖµµ·Ï ÇÑ´Ù.
+ *        datafile ë…¸ë“œë¥¼ datafile LRU ë¦¬ìŠ¤íŠ¸ì˜ ë§¨ ëìœ¼ë¡œ ì´ë™í•œë‹¤.
+ *        ë””ìŠ¤í¬ê´€ë¦¬ìžì˜ CVì— ëŒ€í•˜ì—¬ signalì„ ë¸Œë¡œë“œìºìŠ¤íŒ…í•´ì„œ
+ *        closeDataFileì„ í•  ìˆ˜ ìžˆë„ë¡ í•œë‹¤.
  *     }
  *     else
  *     {
- *        datafile ³ëµå¸¦ datafile LRU ¸®½ºÆ®ÀÇ ¸Ç ¾ÕÀ¸·Î ÀÌµ¿ÇÑ´Ù.
+ *        datafile ë…¸ë“œë¥¼ datafile LRU ë¦¬ìŠ¤íŠ¸ì˜ ë§¨ ì•žìœ¼ë¡œ ì´ë™í•œë‹¤.
  *     }
  **********************************************************************/
 IDE_RC sddDiskMgr::completeIO( sddDataFileNode* aDataFileNode,
@@ -2383,9 +2383,9 @@ IDE_RC sddDiskMgr::completeIO( sddDataFileNode* aDataFileNode,
 }
 
 /*
-  Å×ÀÌºí½ºÆäÀÌ½ºÀÇ DirtyµÈ µ¥ÀÌÅ¸ÆÄÀÏÀ» SyncÇÑ´Ù. (WRAPPER-FUNCTION)
+  í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ì˜ Dirtyëœ ë°ì´íƒ€íŒŒì¼ì„ Syncí•œë‹¤. (WRAPPER-FUNCTION)
 
-  [IN] aSpaceID : SyncÇÒ µð½ºÅ© Å×ÀÌºí½ºÆäÀÌ½º ID
+  [IN] aSpaceID : Syncí•  ë””ìŠ¤í¬ í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ ID
 */
 IDE_RC sddDiskMgr::syncTBSInNormal( idvSQL *   aStatistics,
                                     scSpaceID  aSpaceID )
@@ -2423,10 +2423,10 @@ IDE_RC sddDiskMgr::syncTBSInNormal( idvSQL *   aStatistics,
 }
 
 /***********************************************************************
- * Å×ÀÌºí½ºÆäÀÌ½ºÀÇ µ¥ÀÌÅ¸ÆÄÀÏ ¸ÞÅ¸Çì´õ¿¡ Ã¼Å©Æ÷ÀÎÆ®Á¤º¸¸¦ °»½ÅÇÑ´Ù.
- * º» ÇÔ¼ö¿¡ È£ÃâµÇ±âÀü¿¡ TBS Mgr Latch´Â È¹µæµÈ »óÅÂÀÌ´Ù.
+ * í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ì˜ ë°ì´íƒ€íŒŒì¼ ë©”íƒ€í—¤ë”ì— ì²´í¬í¬ì¸íŠ¸ì •ë³´ë¥¼ ê°±ì‹ í•œë‹¤.
+ * ë³¸ í•¨ìˆ˜ì— í˜¸ì¶œë˜ê¸°ì „ì— TBS Mgr LatchëŠ” íšë“ëœ ìƒíƒœì´ë‹¤.
  *
- *   aSpaceNode - [IN] SyncÇÒ TBS Node
+ *   aSpaceNode - [IN] Syncí•  TBS Node
  *   aActionArg - [IN] NULL
  **********************************************************************/
 IDE_RC sddDiskMgr::doActUpdateAllDBFHdrInChkpt(
@@ -2452,7 +2452,7 @@ IDE_RC sddDiskMgr::doActUpdateAllDBFHdrInChkpt(
              (sctTableSpaceMgr::isTempTableSpace(
                                 aSpaceNode->mID ) == ID_TRUE) )
         {
-            // µð½ºÅ©Å×ÀÌºí½ºÆäÀÌ½º°¡ ¾Æ´Ñ°æ¿ì °»½ÅÇÏÁö ¾ÊÀ½.
+            // ë””ìŠ¤í¬í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ê°€ ì•„ë‹Œê²½ìš° ê°±ì‹ í•˜ì§€ ì•ŠìŒ.
             break;
         }
 
@@ -2460,8 +2460,8 @@ IDE_RC sddDiskMgr::doActUpdateAllDBFHdrInChkpt(
                                          SCT_SS_SKIP_UPDATE_DBFHDR )
              == ID_TRUE )
         {
-            // ¸Þ¸ð¸®Å×ÀÌºí½ºÆäÀÌ½º°¡ DROPPED/DISCARDED °æ¿ì
-            // °»½ÅÇÏÁö ¾ÊÀ½.
+            // ë©”ëª¨ë¦¬í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ê°€ DROPPED/DISCARDED ê²½ìš°
+            // ê°±ì‹ í•˜ì§€ ì•ŠìŒ.
             break;
         }
 
@@ -2477,17 +2477,17 @@ IDE_RC sddDiskMgr::doActUpdateAllDBFHdrInChkpt(
             }
 
             // PRJ-1548 User Memory Tablespace
-            // Æ®·£Àè¼Ç Pending ¿¬»ê¿¡¼­ DBF Node°¡ DROPPED·Î ¼³Á¤µÈ ÈÄ¿¡
-            // TBS List Latch¸¦ ÇØÁ¦ÇÏ¸é,
-            // DBF Sync¿¡¼­ DBF NodeÀÇ »óÅÂ¸¦ È®ÀÎÇÏ¿© sync¸¦ ¹«½ÃÇÏµµ·Ï
-            // Ã³¸®ÇÒ ¼ö ÀÖ´Ù.
+            // íŠ¸ëžœìž­ì…˜ Pending ì—°ì‚°ì—ì„œ DBF Nodeê°€ DROPPEDë¡œ ì„¤ì •ëœ í›„ì—
+            // TBS List Latchë¥¼ í•´ì œí•˜ë©´,
+            // DBF Syncì—ì„œ DBF Nodeì˜ ìƒíƒœë¥¼ í™•ì¸í•˜ì—¬ syncë¥¼ ë¬´ì‹œí•˜ë„ë¡
+            // ì²˜ë¦¬í•  ìˆ˜ ìžˆë‹¤.
             if( SMI_FILE_STATE_IS_DROPPED( sFileNode->mState ) )
             {
                 continue;
             }
 
-            // syncÇÒ dbf ³ëµå¿¡ checkpoint Á¤º¸ ¼³Á¤
-            // DiskCreateLSNÀº ¼³Á¤ÇÒ ÇÊ¿ä¾ø´Ù.
+            // syncí•  dbf ë…¸ë“œì— checkpoint ì •ë³´ ì„¤ì •
+            // DiskCreateLSNì€ ì„¤ì •í•  í•„ìš”ì—†ë‹¤.
             sddDataFile::setDBFHdr(
                             &(sFileNode->mDBFileHdr),
                             sctTableSpaceMgr::getDiskRedoLSN(),
@@ -2511,11 +2511,11 @@ IDE_RC sddDiskMgr::doActUpdateAllDBFHdrInChkpt(
 
 
 /*
-  µð½ºÅ© Å×ÀÌºí½ºÆäÀÌ½º ³ëµåµéÀÇ ¸ðµç DirtyµÈ µ¥ÀÌÅ¸ÆÄÀÏ ³ëµåµéÀ» Sync
-  ÇÏ°Å³ª, Ã¼Å©Æ÷ÀÎÆ® ¿¬»êÁß¿¡ µð½ºÅ© µ¥ÀÌÅ¸ÆÄÀÏÀÇ ¸ÞÅ¸Çì´õ¿¡ Ã¼Å©Æ÷ÀÎÆ®
-  Á¤º¸¸¦ °»½ÅÇÑ´Ù.
+  ë””ìŠ¤í¬ í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ ë…¸ë“œë“¤ì˜ ëª¨ë“  Dirtyëœ ë°ì´íƒ€íŒŒì¼ ë…¸ë“œë“¤ì„ Sync
+  í•˜ê±°ë‚˜, ì²´í¬í¬ì¸íŠ¸ ì—°ì‚°ì¤‘ì— ë””ìŠ¤í¬ ë°ì´íƒ€íŒŒì¼ì˜ ë©”íƒ€í—¤ë”ì— ì²´í¬í¬ì¸íŠ¸
+  ì •ë³´ë¥¼ ê°±ì‹ í•œë‹¤.
 
-  [IN] aSyncType : ¿î¿µÁßÀÌ°Å³ª Ã¼Å©Æ÷ÀÎÆ®¿¬»ê¿¡ µû¸¥ SyncÅ¸ÀÔ
+  [IN] aSyncType : ìš´ì˜ì¤‘ì´ê±°ë‚˜ ì²´í¬í¬ì¸íŠ¸ì—°ì‚°ì— ë”°ë¥¸ Syncíƒ€ìž…
 
 */
 IDE_RC sddDiskMgr::syncAllTBS( idvSQL  *   aStatistics,
@@ -2548,8 +2548,8 @@ IDE_RC sddDiskMgr::syncAllTBS( idvSQL  *   aStatistics,
 }
 
 /*
-  ¼­¹ö±¸µ¿½Ã¿¡ ¸ðµç µð½ºÅ© Å×ÀÌºí½ºÆäÀÌ½ºÀÇ DBFileµéÀÇ
-  ¹Ìµð¾î º¹±¸ ÇÊ¿ä ¿©ºÎ¸¦ Ã¼Å©ÇÑ´Ù.
+  ì„œë²„êµ¬ë™ì‹œì— ëª¨ë“  ë””ìŠ¤í¬ í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ì˜ DBFileë“¤ì˜
+  ë¯¸ë””ì–´ ë³µêµ¬ í•„ìš” ì—¬ë¶€ë¥¼ ì²´í¬í•œë‹¤.
 */
 IDE_RC sddDiskMgr::identifyDBFilesOfAllTBS( idvSQL *    aStatistics,
                                             idBool      aIsOnCheckPoint )
@@ -2561,7 +2561,7 @@ IDE_RC sddDiskMgr::identifyDBFilesOfAllTBS( idvSQL *    aStatistics,
 
     if ( aIsOnCheckPoint == ID_FALSE )
     {
-        // ¼­¹ö±¸µ¿½Ã
+        // ì„œë²„êµ¬ë™ì‹œ
         IDE_TEST( sctTableSpaceMgr::doAction4EachTBS(
                       aStatistics,
                       doActIdentifyAllDBFiles,
@@ -2576,9 +2576,9 @@ IDE_RC sddDiskMgr::identifyDBFilesOfAllTBS( idvSQL *    aStatistics,
     }
     else
     {
-        // Ã¼Å©Æ÷ÀÎÆ®°úÁ¤¿¡¼­ ·±Å¸ÀÓÇì´õ°¡ ÆÄÀÏ¿¡
-        // Á¦´ë·Î ±â·ÏÀÌ µÇ¾ú´ÂÁö µ¥ÀÌÅ¸ÆÄÀÏÀ» ´Ù½Ã ÀÐ¾î¼­
-        // °ËÁõÇÑ´Ù.
+        // ì²´í¬í¬ì¸íŠ¸ê³¼ì •ì—ì„œ ëŸ°íƒ€ìž„í—¤ë”ê°€ íŒŒì¼ì—
+        // ì œëŒ€ë¡œ ê¸°ë¡ì´ ë˜ì—ˆëŠ”ì§€ ë°ì´íƒ€íŒŒì¼ì„ ë‹¤ì‹œ ì½ì–´ì„œ
+        // ê²€ì¦í•œë‹¤.
         IDE_TEST( sctTableSpaceMgr::doAction4EachTBS(
                       aStatistics,
                       doActIdentifyAllDBFiles,
@@ -2606,30 +2606,30 @@ IDE_RC sddDiskMgr::identifyDBFilesOfAllTBS( idvSQL *    aStatistics,
 
 
 /***********************************************************************
- * Description : datafile »ý¼º (³ëµå »ý¼º Æ÷ÇÔ) ¶Ç´Â ·Î±×¾ÞÄ¿¿¡
- *               ÀÇÇÑ datafile ³ëµå »ý¼º
+ * Description : datafile ìƒì„± (ë…¸ë“œ ìƒì„± í¬í•¨) ë˜ëŠ” ë¡œê·¸ì•µì»¤ì—
+ *               ì˜í•œ datafile ë…¸ë“œ ìƒì„±
  *
- * - NOMAL ¸ðµå : ÇÏ³ªÀÇ datafileÀ» create, open ÈÄ, tablespace ³ëµåÀÇ
- * datafile ¸®½ºÆ®¿¡ Ãß°¡ÇÑ´Ù. ´Ü, datafileÀ» createÇÒ ¶§´Â È­ÀÏÀ»
- * ¿ÀÇÂÇÏÁö ¾ÊÀ» °ÍÀÌ´Ù.
- * - FILE ¸ðµå : ÇÏ³ªÀÇ datafile ³ëµå¸¦ tablespace ³ëµå¿¡ Ãß°¡ÇÏ°í,
- * datafileÀ» ½ÇÁ¦ createÇÏÁö´Â ¾Ê´Â´Ù. ·Î±×¾ÞÄ¿¿¡ ÀúÀåµÈ datafile ³ëµå
- *  Á¤º¸¸¦ ÃÊ±âÈ­ÇÒ¶§ È£ÃâµÇ¸ç, datafile ³ëµå Ãß°¡ÈÄ¿¡ fileÀ» ¿ÀÇÂÇÏÁö ¾Ê´Â´Ù.
+ * - NOMAL ëª¨ë“œ : í•˜ë‚˜ì˜ datafileì„ create, open í›„, tablespace ë…¸ë“œì˜
+ * datafile ë¦¬ìŠ¤íŠ¸ì— ì¶”ê°€í•œë‹¤. ë‹¨, datafileì„ createí•  ë•ŒëŠ” í™”ì¼ì„
+ * ì˜¤í”ˆí•˜ì§€ ì•Šì„ ê²ƒì´ë‹¤.
+ * - FILE ëª¨ë“œ : í•˜ë‚˜ì˜ datafile ë…¸ë“œë¥¼ tablespace ë…¸ë“œì— ì¶”ê°€í•˜ê³ ,
+ * datafileì„ ì‹¤ì œ createí•˜ì§€ëŠ” ì•ŠëŠ”ë‹¤. ë¡œê·¸ì•µì»¤ì— ì €ìž¥ëœ datafile ë…¸ë“œ
+ *  ì •ë³´ë¥¼ ì´ˆê¸°í™”í• ë•Œ í˜¸ì¶œë˜ë©°, datafile ë…¸ë“œ ì¶”ê°€í›„ì— fileì„ ì˜¤í”ˆí•˜ì§€ ì•ŠëŠ”ë‹¤.
  *
  * + 2nd. code design
- *   - ÀÓ½ÃÀûÀÎ dummy tablespace ³ëµå¸¦ ¼±¾ðÇÏ°í ÃÊ±âÈ­ÇÑ´Ù.
- *   - dummy tablespace ³ëµå¿¡ datafileµéÀ» »ý¼ºÇÏ°í ¸®½ºÆ®¸¦ ±¸¼ºÇÑ´Ù.
+ *   - ìž„ì‹œì ì¸ dummy tablespace ë…¸ë“œë¥¼ ì„ ì–¸í•˜ê³  ì´ˆê¸°í™”í•œë‹¤.
+ *   - dummy tablespace ë…¸ë“œì— datafileë“¤ì„ ìƒì„±í•˜ê³  ë¦¬ìŠ¤íŠ¸ë¥¼ êµ¬ì„±í•œë‹¤.
  *     -> sddTableSpace::createDataFiles
- *   - µð½ºÅ©°ü¸®ÀÚÀÇ mutex È¹µæÇÑ´Ù.
- *   - HASH¿¡¼­ ÇØ´ç tablespace ³ëµå¸¦ Ã£´Â´Ù.
- *   - dummy tablespace ³ëµåÀÇ datafile ³ëµå ¸®½ºÆ®¸¦
- *     ½ÇÁ¦ tablespace ³ëµåÀÇ datafile ³ëµå ¸®½ºÆ®¿¡ Ãß°¡ÇÑ´Ù.
+ *   - ë””ìŠ¤í¬ê´€ë¦¬ìžì˜ mutex íšë“í•œë‹¤.
+ *   - HASHì—ì„œ í•´ë‹¹ tablespace ë…¸ë“œë¥¼ ì°¾ëŠ”ë‹¤.
+ *   - dummy tablespace ë…¸ë“œì˜ datafile ë…¸ë“œ ë¦¬ìŠ¤íŠ¸ë¥¼
+ *     ì‹¤ì œ tablespace ë…¸ë“œì˜ datafile ë…¸ë“œ ë¦¬ìŠ¤íŠ¸ì— ì¶”ê°€í•œë‹¤.
  *     ->sddTableSpace::addDataFileNode
  *   - if ( aMode != SMI_EACH_BYMODE )
  *     {
- *        ·Î±×¾ÞÄ¿ FLUSH
+ *        ë¡œê·¸ì•µì»¤ FLUSH
  *     }
- *   - µð½ºÅ©°ü¸®ÀÚÀÇ mutex ÇØÁ¦ÇÑ´Ù.
+ *   - ë””ìŠ¤í¬ê´€ë¦¬ìžì˜ mutex í•´ì œí•œë‹¤.
  **********************************************************************/
 IDE_RC sddDiskMgr::createDataFiles( idvSQL           * aStatistics,
                                     void             * aTrans,
@@ -2665,7 +2665,7 @@ IDE_RC sddDiskMgr::createDataFiles( idvSQL           * aStatistics,
     sTBSState = 1;
 
     /* ===================================
-     * [1] dummy tablespace »ý¼º ¹× ÃÊ±âÈ­
+     * [1] dummy tablespace ìƒì„± ë° ì´ˆê¸°í™”
      * =================================== */
 
     IDE_TEST( sctTableSpaceMgr::lock( aStatistics ) != IDE_SUCCESS);
@@ -2680,13 +2680,13 @@ IDE_RC sddDiskMgr::createDataFiles( idvSQL           * aStatistics,
     /*
      * BUG-18044
      *
-     * µ¿ÀÏÇÑ µ¥ÀÌÅÍÆÄÀÏ¸íÀÌ µ¿ÀÏÇÑ disk tbs¿¡ addÇÏ´Â°ÍÀÌ
-     * ¼º°øÇÏ´Â ¹®Á¦
+     * ë™ì¼í•œ ë°ì´í„°íŒŒì¼ëª…ì´ ë™ì¼í•œ disk tbsì— addí•˜ëŠ”ê²ƒì´
+     * ì„±ê³µí•˜ëŠ” ë¬¸ì œ
      */
     IDE_TEST( validateDataFileName( sSpaceNode,
                                     aDataFileAttr,
                                     aDataFileAttrCount,
-                                    &sExistFileName,//¿¡·¯¸Þ½ÃÁö Ãâ·Â¿ë
+                                    &sExistFileName,//ì—ëŸ¬ë©”ì‹œì§€ ì¶œë ¥ìš©
                                     &sNameExist ) != IDE_SUCCESS);
 
     IDE_TEST_RAISE( sNameExist == ID_TRUE,
@@ -2696,7 +2696,7 @@ IDE_RC sddDiskMgr::createDataFiles( idvSQL           * aStatistics,
     IDE_TEST_RAISE( SMI_TBS_IS_BACKUP(sSpaceNode->mHeader.mState),
                    error_forbidden_op_while_backup);
 
-    // »õ·Î¿î ÆÄÀÏµéÀ» ¸¸µé¼ö ÀÖ´ÂÁö Ã¼Å©ÇÑ´Ù.
+    // ìƒˆë¡œìš´ íŒŒì¼ë“¤ì„ ë§Œë“¤ìˆ˜ ìžˆëŠ”ì§€ ì²´í¬í•œë‹¤.
     if((sSpaceNode->mNewFileID + aDataFileAttrCount) >= SD_MAX_FID_COUNT )
     {
         IDE_RAISE( error_can_not_add_datafile_node );
@@ -2720,12 +2720,12 @@ IDE_RC sddDiskMgr::createDataFiles( idvSQL           * aStatistics,
     sDummySpaceNode.mNewFileID = sSpaceNode->mNewFileID - aDataFileAttrCount;
 
     // PROJ-2133 incremental backup
-    // DataFileDescSlotÀÌ ÇÒ´çµÇ¾î checkpoint°¡ ¹ß»ýÇÏ¸é CTBody°¡ flushµÇ¾î
-    // ÆÄÀÏ¿¡ ¹Ý¿µµÈ´Ù. ÇÏÁö¸¸ loganchor¿¡ DataFileDescSlotID°¡ ÀúÀåµÇ±â Àü¿¡
-    // ¼­¹ö°¡ Á×´Â´Ù¸é ÇÒ´çµÈ DataFileDescSlotÀº »ç¿ëÇÒ¼ö ¾ø°ÔµÈ´Ù.
+    // DataFileDescSlotì´ í• ë‹¹ë˜ì–´ checkpointê°€ ë°œìƒí•˜ë©´ CTBodyê°€ flushë˜ì–´
+    // íŒŒì¼ì— ë°˜ì˜ëœë‹¤. í•˜ì§€ë§Œ loganchorì— DataFileDescSlotIDê°€ ì €ìž¥ë˜ê¸° ì „ì—
+    // ì„œë²„ê°€ ì£½ëŠ”ë‹¤ë©´ í• ë‹¹ëœ DataFileDescSlotì€ ì‚¬ìš©í• ìˆ˜ ì—†ê²Œëœë‹¤.
     //
-    // Áï, logAnchor¿¡ DataFileDescSlotID°¡ ÀúÀåµÇ±â Àü±îÁö CTBody°¡ flush µÇ¸é
-    // ¾ÈµÈ´Ù.
+    // ì¦‰, logAnchorì— DataFileDescSlotIDê°€ ì €ìž¥ë˜ê¸° ì „ê¹Œì§€ CTBodyê°€ flush ë˜ë©´
+    // ì•ˆëœë‹¤.
     if ( smLayerCallback::isCTMgrEnabled() == ID_TRUE )
     {
         IDE_TEST( smLayerCallback::blockCheckpoint() != IDE_SUCCESS ); 
@@ -2733,7 +2733,7 @@ IDE_RC sddDiskMgr::createDataFiles( idvSQL           * aStatistics,
     }
 
     /* ===================================
-     * [2] ¹°¸®Àû µ¥ÀÌÅ¸ È­ÀÏ »ý¼º
+     * [2] ë¬¼ë¦¬ì  ë°ì´íƒ€ í™”ì¼ ìƒì„±
      * =================================== */
     IDE_TEST( sddTableSpace::createDataFiles( aStatistics,
                                               aTrans,
@@ -2761,16 +2761,16 @@ IDE_RC sddDiskMgr::createDataFiles( idvSQL           * aStatistics,
     IDE_DASSERT( sSpaceNode->mHeader.mID == aTableSpaceID );
 
     /* ====================================================================
-     * [3] µ¥ÀÌÅ¸ È­ÀÏµéÀ» ÀÚ½ÅÀÌ ¼ÓÇÑ Å×ÀÌºí ½ºÆäÀÌ½ºÀÇ È­ÀÏ ¸®½ºÆ®¿¡ µî·Ï
+     * [3] ë°ì´íƒ€ í™”ì¼ë“¤ì„ ìžì‹ ì´ ì†í•œ í…Œì´ë¸” ìŠ¤íŽ˜ì´ìŠ¤ì˜ í™”ì¼ ë¦¬ìŠ¤íŠ¸ì— ë“±ë¡
      * ==================================================================== */
 
     // fix BUG-16116 [PROJ-1548] sddDiskMgr::createDataFiles()
-    // ¿¡·¯½Ã DBF Node¿¡ ´ëÇÑ Memory ÇØÁ¦
-    // ´ÙÀ½ For loop ¾È¿¡¼­ EXCEPTIONÀÌ ¹ß»ýÇÏ°Ô µÇ¸é DBF Node
-    // ¸Þ¸ð¸® ÇØÁ¦¿¡ ´ëÇÑ ¹®Á¦°¡ ÀÖÀ¸¹Ç·Î exception ¹ß»ýÄÚµå´Â
-    // ÄÚµùÇÏÁö ¾Ê´Â´Ù.
-    // ÀÌ ÀÌÈÄ¿¡ ExceptionÀÌ ¹ß»ýÇÑ´Ù¸é, Æ®·£Àè¼Ç rollback¿¡ ÀÇÇØ¼­
-    // ÀÚµ¿À¸·Î ÇØÁ¦µÉ °ÍÀÌ´Ù.
+    // ì—ëŸ¬ì‹œ DBF Nodeì— ëŒ€í•œ Memory í•´ì œ
+    // ë‹¤ìŒ For loop ì•ˆì—ì„œ EXCEPTIONì´ ë°œìƒí•˜ê²Œ ë˜ë©´ DBF Node
+    // ë©”ëª¨ë¦¬ í•´ì œì— ëŒ€í•œ ë¬¸ì œê°€ ìžˆìœ¼ë¯€ë¡œ exception ë°œìƒì½”ë“œëŠ”
+    // ì½”ë”©í•˜ì§€ ì•ŠëŠ”ë‹¤.
+    // ì´ ì´í›„ì— Exceptionì´ ë°œìƒí•œë‹¤ë©´, íŠ¸ëžœìž­ì…˜ rollbackì— ì˜í•´ì„œ
+    // ìžë™ìœ¼ë¡œ í•´ì œë  ê²ƒì´ë‹¤.
 
     for (i = sNewFileIDSave; i < sSpaceNode->mNewFileID ; i++ )
     {
@@ -2793,7 +2793,7 @@ IDE_RC sddDiskMgr::createDataFiles( idvSQL           * aStatistics,
         IDE_TEST( sddDataFile::addPendingOperation(
                     aTrans,
                     sFileNode,
-                    ID_TRUE, /* commit½Ã¿¡ µ¿ÀÛ */
+                    ID_TRUE, /* commitì‹œì— ë™ìž‘ */
                     SCT_POP_CREATE_DBF,
                     &sPendingOp )
                 != IDE_SUCCESS );
@@ -2801,10 +2801,10 @@ IDE_RC sddDiskMgr::createDataFiles( idvSQL           * aStatistics,
         sPendingOp->mTouchMode = aTouchMode;
 
         /*
-          [4] ·Î±× ¾ÞÄ¿ º¯°æ
-              ½Ã½ºÅÛ °¡µ¿½Ã ·Î±× ¾ÞÄ¿ÀÇ ³»¿ëÀ» ÀÌ¿ëÇÏ¿©
-              µ¥ÀÌÅ¸ È­ÀÏ ¸®½ºÆ®¸¦ ±¸¼ºÇÏ¸ç,
-              ÀÌ °æ¿ì¿¡´Â ·Î±× ¾ÞÄ¿¸¦ Àçº¯°æÇÏÁö ¾Ê´Â´Ù.
+          [4] ë¡œê·¸ ì•µì»¤ ë³€ê²½
+              ì‹œìŠ¤í…œ ê°€ë™ì‹œ ë¡œê·¸ ì•µì»¤ì˜ ë‚´ìš©ì„ ì´ìš©í•˜ì—¬
+              ë°ì´íƒ€ í™”ì¼ ë¦¬ìŠ¤íŠ¸ë¥¼ êµ¬ì„±í•˜ë©°,
+              ì´ ê²½ìš°ì—ëŠ” ë¡œê·¸ ì•µì»¤ë¥¼ ìž¬ë³€ê²½í•˜ì§€ ì•ŠëŠ”ë‹¤.
         */
         if ( aTouchMode != SMI_ALL_NOTOUCH )
         {
@@ -2883,7 +2883,7 @@ IDE_RC sddDiskMgr::createDataFiles( idvSQL           * aStatistics,
 }
 
 /***********************************************************************
- * Description : ·Î±×¾ÞÄ¿·ÎºÎÅÍ datafile ³ëµå »ý¼º
+ * Description : ë¡œê·¸ì•µì»¤ë¡œë¶€í„° datafile ë…¸ë“œ ìƒì„±
  **********************************************************************/
 IDE_RC sddDiskMgr::loadDataFileNode( idvSQL          * aStatistics,
                                      smiDataFileAttr * aDataFileAttr,
@@ -2908,7 +2908,7 @@ IDE_RC sddDiskMgr::loadDataFileNode( idvSQL          * aStatistics,
     IDE_DASSERT( sSpaceNode->mHeader.mID == aDataFileAttr->mSpaceID );
 
     /* ===================================
-     * [2] µ¥ÀÌÅ¸ È­ÀÏ ³ëµå »ý¼º
+     * [2] ë°ì´íƒ€ í™”ì¼ ë…¸ë“œ ìƒì„±
      * =================================== */
     IDE_TEST( sddTableSpace::createDataFiles( aStatistics, // statistics
                                               NULL, // transaction
@@ -2919,13 +2919,13 @@ IDE_RC sddDiskMgr::loadDataFileNode( idvSQL          * aStatistics,
                                               mMaxDataFilePageCount )
               != IDE_SUCCESS );
 
-    // ÇÒ´çµÈ DBF ³ëµå¸¦ °Ë»öÇÑ´Ù.
+    // í• ë‹¹ëœ DBF ë…¸ë“œë¥¼ ê²€ìƒ‰í•œë‹¤.
     IDE_TEST( sddTableSpace::getDataFileNodeByID(
                                 sSpaceNode,
                                 aDataFileAttr->mID,
                                 &sFileNode ) != IDE_SUCCESS );
 
-    // Loganchor ¿ÀÇÁ¼ÂÀ» ¼³Á¤ÇÑ´Ù.
+    // Loganchor ì˜¤í”„ì…‹ì„ ì„¤ì •í•œë‹¤.
     sFileNode->mAnchorOffset = aAnchorOffset;
 
     sState = 0;
@@ -2946,17 +2946,17 @@ IDE_RC sddDiskMgr::loadDataFileNode( idvSQL          * aStatistics,
 }
 
 /***********************************************************************
- * Description : datafile ¿­±â ¹× LRU ¸®½ºÆ®¿¡ datafile ³ëµå Ãß°¡
+ * Description : datafile ì—´ê¸° ë° LRU ë¦¬ìŠ¤íŠ¸ì— datafile ë…¸ë“œ ì¶”ê°€
  *
- * ÇØ´ç datafile ³ëµåÀÇ fileÀ» openÇÑ´Ù. ÀÌ ÇÔ¼ö¸¦ È£ÃâÇÒ¶§´Â
- * µð½ºÅ©°ü¸®ÀÚÀÇ mutex¸¦ È¹µæÇÑ »óÅÂÀÌ¾î¾ß ÇÑ´Ù.
+ * í•´ë‹¹ datafile ë…¸ë“œì˜ fileì„ opení•œë‹¤. ì´ í•¨ìˆ˜ë¥¼ í˜¸ì¶œí• ë•ŒëŠ”
+ * ë””ìŠ¤í¬ê´€ë¦¬ìžì˜ mutexë¥¼ íšë“í•œ ìƒíƒœì´ì–´ì•¼ í•œë‹¤.
  *
  * + 2nd. code design
- *   - if ( datafileÀÌ ¿ÀÇÂµÇÁö ¾ÊÀº °æ¿ì )
+ *   - if ( datafileì´ ì˜¤í”ˆë˜ì§€ ì•Šì€ ê²½ìš° )
  *     {
- *        ¿ÀÇÂÇÏ°íÀÚ Çß´ø datafileÀ» openÇÑ´Ù. -> sddDataFile::open
- *        ¿ÀÇÂµÈ datafile LRU ¸®½ºÆ®ÀÇ HEAD¿¡ ÇØ´ç datafile ³ëµå¸¦ Ãß°¡ÇÑ´Ù.
- *        ÇöÀç ¿ÀÇÂµÈ datafile °³¼ö¸¦ Àç¼³Á¤ÇÑ´Ù.
+ *        ì˜¤í”ˆí•˜ê³ ìž í–ˆë˜ datafileì„ opení•œë‹¤. -> sddDataFile::open
+ *        ì˜¤í”ˆëœ datafile LRU ë¦¬ìŠ¤íŠ¸ì˜ HEADì— í•´ë‹¹ datafile ë…¸ë“œë¥¼ ì¶”ê°€í•œë‹¤.
+ *        í˜„ìž¬ ì˜¤í”ˆëœ datafile ê°œìˆ˜ë¥¼ ìž¬ì„¤ì •í•œë‹¤.
  *     }
  **********************************************************************/
 IDE_RC sddDiskMgr::openDataFile( sddDataFileNode*  aDataFileNode )
@@ -2979,16 +2979,16 @@ IDE_RC sddDiskMgr::openDataFile( sddDataFileNode*  aDataFileNode )
 }
 
 /***********************************************************************
- * Description : datafile ´Ý±â ¹× LRU ¸®½ºÆ®·ÎºÎÅÍ datafile ³ëµå Á¦°Å
+ * Description : datafile ë‹«ê¸° ë° LRU ë¦¬ìŠ¤íŠ¸ë¡œë¶€í„° datafile ë…¸ë“œ ì œê±°
  *
- * µð½ºÅ©°ü¸®ÀÚÀÇ mutex¸¦ È¹µæÇÑ »óÅÂ¿¡¼­ È£ÃâµÇ¾î, ÇÏ³ªÀÇ datafile¸¦ closeÇÑ´Ù.
+ * ë””ìŠ¤í¬ê´€ë¦¬ìžì˜ mutexë¥¼ íšë“í•œ ìƒíƒœì—ì„œ í˜¸ì¶œë˜ì–´, í•˜ë‚˜ì˜ datafileë¥¼ closeí•œë‹¤.
  *
  * + 2nd. code design
- *   - if ( datafileÀÌ ¿ÀÇÂ»óÅÂ¶ó¸é )
+ *   - if ( datafileì´ ì˜¤í”ˆìƒíƒœë¼ë©´ )
  *     {
- *        datafile¸¦ closeÇÑ´Ù. -> sddDataFile::close
- *        ÇØ´ç datafile ³ëµå¸¦ datafile LRU ¸®½ºÆ®¿¡¼­ Á¦°ÅÇÑ´Ù.
- *        ÇöÀç ¿ÀÇÂµÈ datafile ³ëµå °³¼ö Àç¼³Á¤
+ *        datafileë¥¼ closeí•œë‹¤. -> sddDataFile::close
+ *        í•´ë‹¹ datafile ë…¸ë“œë¥¼ datafile LRU ë¦¬ìŠ¤íŠ¸ì—ì„œ ì œê±°í•œë‹¤.
+ *        í˜„ìž¬ ì˜¤í”ˆëœ datafile ë…¸ë“œ ê°œìˆ˜ ìž¬ì„¤ì •
  *     }
  **********************************************************************/
 IDE_RC sddDiskMgr::closeDataFile( sddDataFileNode* aDataFileNode )
@@ -3013,21 +3013,21 @@ IDE_RC sddDiskMgr::closeDataFile( sddDataFileNode* aDataFileNode )
 }
 
 /***********************************************************************
- * Description : ¸ðµå¿¡ µû¶ó datafile Á¦°Å ( ³ëµå Á¦°Å Æ÷ÇÔ )
+ * Description : ëª¨ë“œì— ë”°ë¼ datafile ì œê±° ( ë…¸ë“œ ì œê±° í¬í•¨ )
  *
- * DDLÀÎ alter tablespace add datafile ¶Ç´Â drop datafileÀÇ ¿¬»êÀ» ¼öÇàÇÒ
- * ¶§ È£ÃâµÈ´Ù.
+ * DDLì¸ alter tablespace add datafile ë˜ëŠ” drop datafileì˜ ì—°ì‚°ì„ ìˆ˜í–‰í• 
+ * ë•Œ í˜¸ì¶œëœë‹¤.
  *
- * - SMI_ALL_NOTOUCH ¸ðµå : ÇØ´ç datafile ³ëµå¸¸ Á¦°ÅÇÑ´Ù.
- * - SMI_ALL_TOUCH ¸ðµå : ÇØ´ç datafile ³ëµå ¹× ½ÇÁ¦ datafileÀ» »èÁ¦ÇÑ´Ù.
+ * - SMI_ALL_NOTOUCH ëª¨ë“œ : í•´ë‹¹ datafile ë…¸ë“œë§Œ ì œê±°í•œë‹¤.
+ * - SMI_ALL_TOUCH ëª¨ë“œ : í•´ë‹¹ datafile ë…¸ë“œ ë° ì‹¤ì œ datafileì„ ì‚­ì œí•œë‹¤.
  *
  * + 2nd. code design
- *   - µð½ºÅ©°ü¸®ÀÚ mutex È¹µæ
- *   - HASH¿¡¼­ ÇØ´ç tablespace ³ëµå¸¦ Ã£´Â´Ù. ¸øÃ£Àº °æ¿ì ¿¡·¯¸¦ ¸®ÅÏÇÑ´Ù.
+ *   - ë””ìŠ¤í¬ê´€ë¦¬ìž mutex íšë“
+ *   - HASHì—ì„œ í•´ë‹¹ tablespace ë…¸ë“œë¥¼ ì°¾ëŠ”ë‹¤. ëª»ì°¾ì€ ê²½ìš° ì—ëŸ¬ë¥¼ ë¦¬í„´í•œë‹¤.
  *
- *   - tablespace ³ëµåÀÇ datafile ¸®½ºÆ®¿¡¼­ ÇØ´ç datafileÀ» Á¦°ÅÇÑ´Ù.
- *   - ·Î±×¾ÞÄ¿ FLUSH
- *   - µð½ºÅ©°ü¸®ÀÚÀÇ mutex ÇØÁ¦ÇÑ´Ù.
+ *   - tablespace ë…¸ë“œì˜ datafile ë¦¬ìŠ¤íŠ¸ì—ì„œ í•´ë‹¹ datafileì„ ì œê±°í•œë‹¤.
+ *   - ë¡œê·¸ì•µì»¤ FLUSH
+ *   - ë””ìŠ¤í¬ê´€ë¦¬ìžì˜ mutex í•´ì œí•œë‹¤.
  **********************************************************************/
 IDE_RC sddDiskMgr::removeDataFileFEBT( idvSQL             * aStatistics,
                                        void               * aTrans,
@@ -3056,10 +3056,10 @@ IDE_RC sddDiskMgr::removeDataFileFEBT( idvSQL             * aStatistics,
     IDE_TEST( sctTableSpaceMgr::unlock() != IDE_SUCCESS );
 
     // PROJ-1548
-    // µ¥ÀÌÅ¸ÆÄÀÏ ³ëµå¿¡ ´ëÇÑ DROP ¿¬»êÀÌ TBS Node (X) -> TBS META PAGE¿¡ (S)
-    // Àá±ÝÀ» È¹µæÇÏ±â ¶§¹®¿¡ DROP DBF ¿¬»ê°ú µ¿½Ã¿¡ ¼öÇàµÉ ¼ö ¾ø´Ù.
-    // ´ÙÀ½°ú °°Àº Á¶°ÇÀ» Ã¼Å©ÇØº¸¾Æ¾ß ÇÑ´Ù.
-    // DBF Node°¡ DROPPED »óÅÂ¶ó¸é Exception Ã³¸®ÇÑ´Ù.
+    // ë°ì´íƒ€íŒŒì¼ ë…¸ë“œì— ëŒ€í•œ DROP ì—°ì‚°ì´ TBS Node (X) -> TBS META PAGEì— (S)
+    // ìž ê¸ˆì„ íšë“í•˜ê¸° ë•Œë¬¸ì— DROP DBF ì—°ì‚°ê³¼ ë™ì‹œì— ìˆ˜í–‰ë  ìˆ˜ ì—†ë‹¤.
+    // ë‹¤ìŒê³¼ ê°™ì€ ì¡°ê±´ì„ ì²´í¬í•´ë³´ì•„ì•¼ í•œë‹¤.
+    // DBF Nodeê°€ DROPPED ìƒíƒœë¼ë©´ Exception ì²˜ë¦¬í•œë‹¤.
     IDE_TEST_RAISE( SMI_FILE_STATE_IS_DROPPED( aFileNode->mState ),
                     error_not_found_datafile_node );
 
@@ -3067,9 +3067,9 @@ IDE_RC sddDiskMgr::removeDataFileFEBT( idvSQL             * aStatistics,
     sState = 1;
 
     /* ==================================================
-     * ¹°¸®Àû µ¥ÀÌÅ¸ È­ÀÏ »èÁ¦
-     * removeDataFileÀº on/offline¿¡ »ó°ü¾øÀÌ usedpagelimitÀ»
-     * Æ÷ÇÔÇÑ ³ëµåÀÇ ÀÌÈÄ ³ëµå¿¡¼­¸¸ °¡´ÉÇØ¾ßÇÑ´Ù.
+     * ë¬¼ë¦¬ì  ë°ì´íƒ€ í™”ì¼ ì‚­ì œ
+     * removeDataFileì€ on/offlineì— ìƒê´€ì—†ì´ usedpagelimitì„
+     * í¬í•¨í•œ ë…¸ë“œì˜ ì´í›„ ë…¸ë“œì—ì„œë§Œ ê°€ëŠ¥í•´ì•¼í•œë‹¤.
      * ================================================== */
     IDE_TEST( sddTableSpace::removeDataFile(aStatistics,
                                             aTrans,
@@ -3082,7 +3082,7 @@ IDE_RC sddDiskMgr::removeDataFileFEBT( idvSQL             * aStatistics,
     IDE_ASSERT( sddTableSpace::getTotalPageCount(aSpaceNode) > 0 );
 
     // PROJ-1548
-    // DROP DBF Áß°£¿¡´Â Loganchor¸¦ ÇÃ·¯½¬ÇÏÁö ¾Ê´Â´Ù.
+    // DROP DBF ì¤‘ê°„ì—ëŠ” Loganchorë¥¼ í”ŒëŸ¬ì‰¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
 
     sState = 0;
     IDE_TEST( sctTableSpaceMgr::unlock() != IDE_SUCCESS );
@@ -3112,10 +3112,10 @@ IDE_RC sddDiskMgr::removeDataFileFEBT( idvSQL             * aStatistics,
 /******************************************************************************
  * PRJ-1548 User Memory Tablespace
  *
- * DROP DBF ¿¡ ´ëÇÑ Pending ¿¬»êÀ» ¼öÇàÇÑ´Ù.
+ * DROP DBF ì— ëŒ€í•œ Pending ì—°ì‚°ì„ ìˆ˜í–‰í•œë‹¤.
  *
  * [IN] aSpaceNode : TBS Node
- * [IN] aPendingOp : Pending ±¸Á¶Ã¼
+ * [IN] aPendingOp : Pending êµ¬ì¡°ì²´
  *****************************************************************************/
 IDE_RC sddDiskMgr::removeFilePending(
                             idvSQL            * aStatistics,
@@ -3135,25 +3135,25 @@ IDE_RC sddDiskMgr::removeFilePending(
     sFileNode  = (sddDataFileNode *)aPendingOp->mPendingOpParam;
 
     /* PRJ-1548 User Memory Tablespace
-     * DBF NodeÀÇ »óÅÂ°¡ ÆÄÀÏ»èÁ¦º¸´Ù loganchor¿¡ ¼±¹Ý¿µµÇ´Â °ÍÀº ´ÙÀ½À» º¸ÀåÇÑ´Ù.
+     * DBF Nodeì˜ ìƒíƒœê°€ íŒŒì¼ì‚­ì œë³´ë‹¤ loganchorì— ì„ ë°˜ì˜ë˜ëŠ” ê²ƒì€ ë‹¤ìŒì„ ë³´ìž¥í•œë‹¤.
      *
-     * " loganchor¿¡ DROPPED »óÅÂÀÎ °æ¿ì´Â ¹Ýµå½Ã ÆÄÀÏÀÌ Á¸ÀçÇÏÁö ¾Ê´Â´Ù "
+     * " loganchorì— DROPPED ìƒíƒœì¸ ê²½ìš°ëŠ” ë°˜ë“œì‹œ íŒŒì¼ì´ ì¡´ìž¬í•˜ì§€ ì•ŠëŠ”ë‹¤ "
      *
-     * RESTART RECOVERY¸¦ ¼öÇØÇÏ´Â °æ¿ì¿¡ COMMIT PENDING ¿¬»êÀ» Áö¿øÇØ¼­
-     * ONLINE | DROPPING ¿¡ ÀÖ´Â ¿Ï·áµÈ Æ®·£Àè¼ÇÀÌ ÀÖ¾úÀ» °æ¿ì¿¡ -> DROPPED·Î
-     * Ã³¸®ÇØÁÖ¾î¾ß ÇÏ¸ç, ÆÄÀÏµµ Á¸ÀçÇÑ´Ù¸é ÇÔ²² »èÁ¦ÇØ¾ßÇÑ´Ù.
-     * ÇÏÁö¸¸, DROPPED »óÅÂ´Â loganchor¿¡ ÀúÀåµÇÁö ¾Ê±â¶§¹®¿¡
-     * ¼­¹ö±¸µ¿½Ã ÃÊ±âÈ­µÇÁö ¾ÊÀ¸¸ç, ÀÌ¿Í °ü·ÃµÈ ·Î±×µéÀº ¸ðµÎ ¹«½ÃµÇÁö¸¸,
-     * DROP ¿¬»ê¿¡ ´ëÇÑ pending¿¬»êÀ» ¼öÇàÇÏ±â À§ÇØ pending ¿¬»ê Ã³¸®¸¦ ÇÏ¿©¾ß
-     * ÇÑ´Ù. */
+     * RESTART RECOVERYë¥¼ ìˆ˜í•´í•˜ëŠ” ê²½ìš°ì— COMMIT PENDING ì—°ì‚°ì„ ì§€ì›í•´ì„œ
+     * ONLINE | DROPPING ì— ìžˆëŠ” ì™„ë£Œëœ íŠ¸ëžœìž­ì…˜ì´ ìžˆì—ˆì„ ê²½ìš°ì— -> DROPPEDë¡œ
+     * ì²˜ë¦¬í•´ì£¼ì–´ì•¼ í•˜ë©°, íŒŒì¼ë„ ì¡´ìž¬í•œë‹¤ë©´ í•¨ê»˜ ì‚­ì œí•´ì•¼í•œë‹¤.
+     * í•˜ì§€ë§Œ, DROPPED ìƒíƒœëŠ” loganchorì— ì €ìž¥ë˜ì§€ ì•Šê¸°ë•Œë¬¸ì—
+     * ì„œë²„êµ¬ë™ì‹œ ì´ˆê¸°í™”ë˜ì§€ ì•Šìœ¼ë©°, ì´ì™€ ê´€ë ¨ëœ ë¡œê·¸ë“¤ì€ ëª¨ë‘ ë¬´ì‹œë˜ì§€ë§Œ,
+     * DROP ì—°ì‚°ì— ëŒ€í•œ pendingì—°ì‚°ì„ ìˆ˜í–‰í•˜ê¸° ìœ„í•´ pending ì—°ì‚° ì²˜ë¦¬ë¥¼ í•˜ì—¬ì•¼
+     * í•œë‹¤. */
 
-    /* DROP TBS Node½Ã¿¡ TBS Node¿¡ X Àá±ÝÀ» È¹µæÇÏ±â ¶§¹®¿¡ ÆÄÀÏ
-     * Á¢±ÙÀ» ÇÒ¼ö ¾ø´Â »óÅÂÀÌ°í, ÇØ´ç ÆÄÀÏµéÀ» closeÇÏ°í buffer »ó¿¡¼­ °ü·Ã page¸¦
-     * ¸ðµÎ ¹«È¿È­½ÃÅ°±â ¶§¹®¿¡ ÆÄÀÏÀÌ openµÇ¾î ÀÖÀ» ¼ö´Â ¾øÁö¸¸,
-     * sync checkpoint ¹ß»ýÀ¸·Î ÀÎÇØ openÀÌ µÇ¾î ÀÖÀ» ¼ö ÀÖ´Ù */
+    /* DROP TBS Nodeì‹œì— TBS Nodeì— X ìž ê¸ˆì„ íšë“í•˜ê¸° ë•Œë¬¸ì— íŒŒì¼
+     * ì ‘ê·¼ì„ í• ìˆ˜ ì—†ëŠ” ìƒíƒœì´ê³ , í•´ë‹¹ íŒŒì¼ë“¤ì„ closeí•˜ê³  buffer ìƒì—ì„œ ê´€ë ¨ pageë¥¼
+     * ëª¨ë‘ ë¬´íš¨í™”ì‹œí‚¤ê¸° ë•Œë¬¸ì— íŒŒì¼ì´ openë˜ì–´ ìžˆì„ ìˆ˜ëŠ” ì—†ì§€ë§Œ,
+     * sync checkpoint ë°œìƒìœ¼ë¡œ ì¸í•´ openì´ ë˜ì–´ ìžˆì„ ìˆ˜ ìžˆë‹¤ */
 
-    /* fix BUG-13125 DROP TABLESPACE½Ã¿¡ °ü·Ã ÆäÀÌÁöµéÀ» Invalid½ÃÄÑ¾ß ÇÑ´Ù.
-     * ¹öÆÛ»ó¿¡ ÀûÀçµÈ °ü·Ã ÆäÀÌÁö¸¦ ¹«È¿È­ ½ÃÅ²´Ù. */
+    /* fix BUG-13125 DROP TABLESPACEì‹œì— ê´€ë ¨ íŽ˜ì´ì§€ë“¤ì„ Invalidì‹œì¼œì•¼ í•œë‹¤.
+     * ë²„í¼ìƒì— ì ìž¬ëœ ê´€ë ¨ íŽ˜ì´ì§€ë¥¼ ë¬´íš¨í™” ì‹œí‚¨ë‹¤. */
     IDE_TEST( getPageRangeInFileByID( aStatistics,
                                       sFileNode->mSpaceID,
                                       sFileNode->mID,
@@ -3174,14 +3174,14 @@ IDE_RC sddDiskMgr::removeFilePending(
                   sLstPID )
               != IDE_SUCCESS );
 
-    /* BUG-24129: Pending¿¬»êÀ¸·Î File»èÁ¦ ¿¬»êÀ» ¿Ï·áÈÄ Buffer Flusher°¡ IOB
-     *            ¿¡ º¹»çµÈ »èÁ¦µÈ FileÀÇ Page¸¦ ³»¸®´Â °æ¿ì ¹ß»ý
+    /* BUG-24129: Pendingì—°ì‚°ìœ¼ë¡œ Fileì‚­ì œ ì—°ì‚°ì„ ì™„ë£Œí›„ Buffer Flusherê°€ IOB
+     *            ì— ë³µì‚¬ëœ ì‚­ì œëœ Fileì˜ Pageë¥¼ ë‚´ë¦¬ëŠ” ê²½ìš° ë°œìƒ
      *
-     * File »èÁ¦ Pending¿¬»ê½Ã BufferPool¿¡ ÀÖ´Â File¿¡ °ü·ÃµÈ ¸ðµç ÆäÀÌÁö¸¦
-     * Buffer¿¡¼­ Á¦°ÅÇÏÁö¸¸ FlusherÀÇ IOB¿¡ ÀÌ¹Ì º¹»çµÈ BCB´Â Á¦°ÅÇÏÁö ¸øÇÑ´Ù.
-     * ÇÏ¿© BufferPool¿¡¼­ File¿¡ °ü·ÃµÈ ¸ðµç ÆäÀÌÁö¸¦ Á¦°ÅÈÄ Flusher¿¡ º¹»çµÈ
-     * BCB°¡ Á¸ÀçÇÒÁöµµ ¸ð¸£±â¶§¹®¿¡ Flusher°¡ ÀÛ¾÷ÁßÀÎ FlushÀÛ¾÷ÀÌ ÇÑ¹ø Á¾·á
-     * µÉ¶§±îÁö ¿©±â¼­ ´ë±âÇÑ´Ù. */
+     * File ì‚­ì œ Pendingì—°ì‚°ì‹œ BufferPoolì— ìžˆëŠ” Fileì— ê´€ë ¨ëœ ëª¨ë“  íŽ˜ì´ì§€ë¥¼
+     * Bufferì—ì„œ ì œê±°í•˜ì§€ë§Œ Flusherì˜ IOBì— ì´ë¯¸ ë³µì‚¬ëœ BCBëŠ” ì œê±°í•˜ì§€ ëª»í•œë‹¤.
+     * í•˜ì—¬ BufferPoolì—ì„œ Fileì— ê´€ë ¨ëœ ëª¨ë“  íŽ˜ì´ì§€ë¥¼ ì œê±°í›„ Flusherì— ë³µì‚¬ëœ
+     * BCBê°€ ì¡´ìž¬í• ì§€ë„ ëª¨ë¥´ê¸°ë•Œë¬¸ì— Flusherê°€ ìž‘ì—…ì¤‘ì¸ Flushìž‘ì—…ì´ í•œë²ˆ ì¢…ë£Œ
+     * ë ë•Œê¹Œì§€ ì—¬ê¸°ì„œ ëŒ€ê¸°í•œë‹¤. */
     smLayerCallback::wait4AllFlusher2Do1JobDoneInSBuffer();
 
     smLayerCallback::wait4AllFlusher2Do1JobDone();
@@ -3196,16 +3196,16 @@ retry:
         sState = 0;
         IDE_TEST( sctTableSpaceMgr::unlock() != IDE_SUCCESS );
 
-        /* checkpoint sync ¿¬»êÁßÀÌ¹Ç·Î ´ë±âÇÏ´Ù Àç½Ãµµ ÇÑ´Ù. */
+        /* checkpoint sync ì—°ì‚°ì¤‘ì´ë¯€ë¡œ ëŒ€ê¸°í•˜ë‹¤ ìž¬ì‹œë„ í•œë‹¤. */
         idlOS::sleep(1);
 
         goto retry;
     }
     else
     {
-        /* DROP commitÁßÀÎ ¿¬»ê¿¡ ´ëÇØ¼­ »ý°¢ÇÒ ¼ö ÀÖ´Â »óÈ²Àº
-         * checkpoint sync ¿¬»êÀ¸·Î¸¸ ÆÄÀÏÀÌ ¿ÀÇÂµÉ¼ö ÀÖ´Ù.
-         * checkpoint sync ¿¬»êÁßÀÌ ¾Æ´Ï¹Ç·Î CLOSE ÇÑ´Ù. */
+        /* DROP commitì¤‘ì¸ ì—°ì‚°ì— ëŒ€í•´ì„œ ìƒê°í•  ìˆ˜ ìžˆëŠ” ìƒí™©ì€
+         * checkpoint sync ì—°ì‚°ìœ¼ë¡œë§Œ íŒŒì¼ì´ ì˜¤í”ˆë ìˆ˜ ìžˆë‹¤.
+         * checkpoint sync ì—°ì‚°ì¤‘ì´ ì•„ë‹ˆë¯€ë¡œ CLOSE í•œë‹¤. */
     }
 
     IDE_TEST( closeDataFile( sFileNode ) != IDE_SUCCESS );
@@ -3215,10 +3215,10 @@ retry:
     sState = 0;
     IDE_ASSERT( sctTableSpaceMgr::unlock() == IDE_SUCCESS );
 
-    /* BUG-24086: [SD] Restart½Ã¿¡µµ FileÀÌ³ª TBS¿¡ ´ëÇÑ »óÅÂ°¡ ¹Ù²î¾úÀ» °æ¿ì
-     * LogAnchor¿¡ »óÅÂ¸¦ ¹Ý¿µÇØ¾ß ÇÑ´Ù.
+    /* BUG-24086: [SD] Restartì‹œì—ë„ Fileì´ë‚˜ TBSì— ëŒ€í•œ ìƒíƒœê°€ ë°”ë€Œì—ˆì„ ê²½ìš°
+     * LogAnchorì— ìƒíƒœë¥¼ ë°˜ì˜í•´ì•¼ í•œë‹¤.
      *
-     * Restart Recovery½Ã¿¡´Â updateDBFNodeAndFlushÇÏÁö ¾Ê´ø°ÍÀ» ÇÏµµ·Ï º¯°æ.
+     * Restart Recoveryì‹œì—ëŠ” updateDBFNodeAndFlushí•˜ì§€ ì•Šë˜ê²ƒì„ í•˜ë„ë¡ ë³€ê²½.
      * */
     if ( sFileNode->mAnchorOffset != SCT_UNSAVED_ATTRIBUTE_OFFSET )
     {
@@ -3286,29 +3286,29 @@ retry:
     {
         if( sFileNode->mAnchorOffset != SCT_UNSAVED_ATTRIBUTE_OFFSET )
         {
-            /* logAnchor¿¡ DataFileDescSlotID°¡ ÀúÀåµÈ »óÈ² Ã³¸® */
+            /* logAnchorì— DataFileDescSlotIDê°€ ì €ìž¥ëœ ìƒí™© ì²˜ë¦¬ */
             IDE_TEST( smLayerCallback::getDataFileDescSlotIDFromLogAncho4DBF(
                             sFileNode->mAnchorOffset,
                             &sDataFileDescSlotID )
                       != IDE_SUCCESS );
 
-            /* DataFileDescSlotÀÌ ÀÌ¹Ì ÇÒ´çÇØÁ¦ µÈ°æ¿ì */
+            /* DataFileDescSlotì´ ì´ë¯¸ í• ë‹¹í•´ì œ ëœê²½ìš° */
             IDE_TEST_CONT( smriChangeTrackingMgr::isAllocDataFileDescSlotID( 
                             &sDataFileDescSlotID ) != ID_TRUE,
                       already_dealloc_datafiledesc_slot );
  
-            /* DataFileDescSlotÀÌ ÀÌ¹Ì ÇÒ´çÇØÁ¦ µÇ¾úÀ¸³ª loganchor¿¡´Â
-             * DataFileDescSlotID°¡ ³²¾ÆÀÖ´Â°æ¿ì È®ÀÎ */
+            /* DataFileDescSlotì´ ì´ë¯¸ í• ë‹¹í•´ì œ ë˜ì—ˆìœ¼ë‚˜ loganchorì—ëŠ”
+             * DataFileDescSlotIDê°€ ë‚¨ì•„ìžˆëŠ”ê²½ìš° í™•ì¸ */
             IDE_TEST_CONT( smriChangeTrackingMgr::isValidDataFileDescSlot4Disk(
                             sFileNode, &sDataFileDescSlotID ) != ID_TRUE,
                             already_reuse_datafiledesc_slot); 
         }
         else
         {
-            /* logAnchor¿¡ DataFileDescSlotID°¡ ÀúÀåµÇÁö ¾ÊÀº»óÈ² Ã³¸®
-             * ¼­¹ö ºñÁ¤»óÁ¾·á°¡ ¾Æ´Ñ rollback½ÃÁ¡¿¡¸¸ ÇØ´çµÇ´Â »óÈ²ÀÌ´Ù. */
+            /* logAnchorì— DataFileDescSlotIDê°€ ì €ìž¥ë˜ì§€ ì•Šì€ìƒí™© ì²˜ë¦¬
+             * ì„œë²„ ë¹„ì •ìƒì¢…ë£Œê°€ ì•„ë‹Œ rollbackì‹œì ì—ë§Œ í•´ë‹¹ë˜ëŠ” ìƒí™©ì´ë‹¤. */
 
-            /* DataFileDescSlotÀÌ ÀÌ¹Ì ÇÒ´çÇØÁ¦ µÈ°æ¿ì */
+            /* DataFileDescSlotì´ ì´ë¯¸ í• ë‹¹í•´ì œ ëœê²½ìš° */
             IDE_TEST_CONT( smriChangeTrackingMgr::isAllocDataFileDescSlotID(
                                 &sFileNode->mDBFileHdr.mDataFileDescSlotID )
                           != ID_TRUE,
@@ -3365,7 +3365,7 @@ retry:
 /******************************************************************************
  *  - PROJ-1671 Bitmap-based Tablespace And Segment Space Management
  *
- *  NextSize¸¸Å­ ´Ã¸±¼öÀÖ´Â À¯È¿ÇÑ ÆÄÀÏÀ» Ã£´Â´Ù.
+ *  NextSizeë§Œí¼ ëŠ˜ë¦´ìˆ˜ìžˆëŠ” ìœ íš¨í•œ íŒŒì¼ì„ ì°¾ëŠ”ë‹¤.
  *  [IN ]
  *  [OUT]  sFileNode
  *****************************************************************************/
@@ -3382,7 +3382,7 @@ void sddDiskMgr::getExtendableSmallestFileNode( sddTableSpaceNode  * aSpaceNode,
     IDE_ASSERT( aSpaceNode != NULL );
     IDE_ASSERT( aFileNode != NULL );
 
-    //XXX5 sort »ç¿ë
+    //XXX5 sort ì‚¬ìš©
     for (i=0; i < aSpaceNode->mNewFileID ; i++ )
     {
         sFileNodeTemp = aSpaceNode->mFileNodeArr[i] ;
@@ -3400,8 +3400,8 @@ void sddDiskMgr::getExtendableSmallestFileNode( sddTableSpaceNode  * aSpaceNode,
         if(sFileNodeTemp->mIsAutoExtend == ID_TRUE)
         {
             /*
-             * currÅ©±â°¡ °¡ÀåÀÛÀº ÆÄÀÏÁß next¸¦ ´õÇßÀ»¶§  max¸¦ ³ÑÁö ¾Ê´Â ÆÄÀÏ
-             * À» Ã£´Â´Ù.
+             * currí¬ê¸°ê°€ ê°€ìž¥ìž‘ì€ íŒŒì¼ì¤‘ nextë¥¼ ë”í–ˆì„ë•Œ  maxë¥¼ ë„˜ì§€ ì•ŠëŠ” íŒŒì¼
+             * ì„ ì°¾ëŠ”ë‹¤.
              */
             sTempSize = sFileNodeTemp->mCurrSize ;
 
@@ -3424,7 +3424,7 @@ void sddDiskMgr::getExtendableSmallestFileNode( sddTableSpaceNode  * aSpaceNode,
 
 
 /*
- *  - sdptb¸¦ À§ÇÑ extendDataFileÀÌ´Ù.
+ *  - sdptbë¥¼ ìœ„í•œ extendDataFileì´ë‹¤.
  *
  *
  *  - PROJ-1671 Bitmap-based Tablespace And Segment Space Management
@@ -3467,36 +3467,36 @@ IDE_RC sddDiskMgr::extendDataFileFEBT(
 
     sTryAutoExtend = ID_TRUE;
 
-    // TBS Meta ÆäÀÌÁö¿¡ XÀá±ÝÀ» È¹µæÇÏ¿´±â ¶§¹®¿¡ TBS Latch¸¦
-    // ÇØÁ¦ÇØµµ »ó°ü¾ø´Ù.
+    // TBS Meta íŽ˜ì´ì§€ì— Xìž ê¸ˆì„ íšë“í•˜ì˜€ê¸° ë•Œë¬¸ì— TBS Latchë¥¼
+    // í•´ì œí•´ë„ ìƒê´€ì—†ë‹¤.
     sState = 0;
     IDE_TEST( sctTableSpaceMgr::unlock() != IDE_SUCCESS );
 
     // PRJ-1548 User Memory Tablespace
-    // DDLÀÌ ¸ðµÎ TBS Node¿¡ (X) Àá±ÝÀ» È¹µæÇÏ±â ¶§¹®¿¡, DML°ú °æÇÕÇÒ ¼ö ¾ø´Ù.
-    // ¿¹¸¦µé¾î, ADD DATAFILE°ú DROP DATAFILE, RESIZE DATAFILE°ú °°Àº ¿¬»ê°ú
-    // ÀÚµ¿È®Àå¿¬»êÀÌ µ¿½Ã¿¡ ¹ß»ýÇÒ ¼ö ¾ø´Ù.
-    // ´Ü, Backup ¿¬»êÀº DML°ú µ¿½Ã¿¡ ¹ß»ýÇÒ ¼ö ÀÖ´Ù.
+    // DDLì´ ëª¨ë‘ TBS Nodeì— (X) ìž ê¸ˆì„ íšë“í•˜ê¸° ë•Œë¬¸ì—, DMLê³¼ ê²½í•©í•  ìˆ˜ ì—†ë‹¤.
+    // ì˜ˆë¥¼ë“¤ì–´, ADD DATAFILEê³¼ DROP DATAFILE, RESIZE DATAFILEê³¼ ê°™ì€ ì—°ì‚°ê³¼
+    // ìžë™í™•ìž¥ì—°ì‚°ì´ ë™ì‹œì— ë°œìƒí•  ìˆ˜ ì—†ë‹¤.
+    // ë‹¨, Backup ì—°ì‚°ì€ DMLê³¼ ë™ì‹œì— ë°œìƒí•  ìˆ˜ ìžˆë‹¤.
 
     IDU_FIT_POINT( "1.PROJ-1548@sddDiskMgr::extendDataFileFEBT" );
 
-    // autoextend ÇÒ datafile ³ëµå°¡ Á¸ÀçÇÏ¸é
+    // autoextend í•  datafile ë…¸ë“œê°€ ì¡´ìž¬í•˜ë©´
     if ( sTryAutoExtend == ID_TRUE )
     {
         IDE_TEST( sctTableSpaceMgr::lock( aStatistics ) != IDE_SUCCESS );
         sState = 1;
 
         /* BUG-32218
-         * wait4BackupFileEnd() °¡ µ¥ÀÌÅÍ ÆÄÀÏÀÇ ¹é¾÷ÀÌ ³¡³¯¶§±îÁö
-         * ¹«ÇÑ ´ë±â */
+         * wait4BackupFileEnd() ê°€ ë°ì´í„° íŒŒì¼ì˜ ë°±ì—…ì´ ëë‚ ë•Œê¹Œì§€
+         * ë¬´í•œ ëŒ€ê¸° */
         // fix BUG-11337.
-        // µ¥ÀÌÅ¸ ÆÄÀÏÀÌ ¹é¾÷ÁßÀÌ¸é ¿Ï·áÇÒ¶§±îÁö ´ë±â ÇÑ´Ù.
+        // ë°ì´íƒ€ íŒŒì¼ì´ ë°±ì—…ì¤‘ì´ë©´ ì™„ë£Œí• ë•Œê¹Œì§€ ëŒ€ê¸° í•œë‹¤.
         while ( SMI_FILE_STATE_IS_BACKUP( aFileNode->mState ) )
         {
             sddDiskMgr::wait4BackupFileEnd();
         }
 
-        /* È®Àå½ÃÅ³ file node´Â ¹Ýµå½Ã autoextend on ¸ðµåÀÌ¾î¾ß ÇÑ´Ù. */
+        /* í™•ìž¥ì‹œí‚¬ file nodeëŠ” ë°˜ë“œì‹œ autoextend on ëª¨ë“œì´ì–´ì•¼ í•œë‹¤. */
         IDE_DASSERT(aFileNode->mIsAutoExtend == ID_TRUE);
 
         if ((aFileNode->mCurrSize + aFileNode->mNextSize)
@@ -3518,7 +3518,7 @@ IDE_RC sddDiskMgr::extendDataFileFEBT(
         if (aTrans != NULL)
         {
             // PRJ-1548 User Memory Tablespace
-            // ÇöÀç »ç¿ëÁßÀÎ DBF Node´Â DROPPED »óÅÂÀÏ¼ö ¾ø´Ù.
+            // í˜„ìž¬ ì‚¬ìš©ì¤‘ì¸ DBF NodeëŠ” DROPPED ìƒíƒœì¼ìˆ˜ ì—†ë‹¤.
             IDE_ASSERT( SMI_FILE_STATE_IS_NOT_DROPPED( aFileNode->mState ) );
 
             sLsnNTA = smLayerCallback::getLstUndoNxtLSN( aTrans );
@@ -3534,10 +3534,10 @@ IDE_RC sddDiskMgr::extendDataFileFEBT(
             sTransStatus = 1;
 
             // BUG-17465
-            // autoextend mode°¡ ¹Ù²î¸é ·Î±ëÀ» ÇØ¾ß ÇÑ´Ù.
+            // autoextend modeê°€ ë°”ë€Œë©´ ë¡œê¹…ì„ í•´ì•¼ í•œë‹¤.
             /*
-             * BUG-22571 ÆÄÀÏÀÇ Å©±â°¡ Ä¿Áú¼ö¾ø´Â »óÈ²¿¡¼­µµ v$datafilesÀÇ autoextend mode°ªÀÌ
-             *           onÀÎ °æ¿ì°¡ ÀÖ½À´Ï´Ù.
+             * BUG-22571 íŒŒì¼ì˜ í¬ê¸°ê°€ ì»¤ì§ˆìˆ˜ì—†ëŠ” ìƒí™©ì—ì„œë„ v$datafilesì˜ autoextend modeê°’ì´
+             *           onì¸ ê²½ìš°ê°€ ìžˆìŠµë‹ˆë‹¤.
              */
             if ( (aFileNode->mCurrSize + sExtendSize + aFileNode->mNextSize) > 
                     aFileNode->mMaxSize )
@@ -3569,7 +3569,7 @@ IDE_RC sddDiskMgr::extendDataFileFEBT(
             sddDataFile::setAutoExtendProp(aFileNode, ID_FALSE, 0, 0);
         }
 
-        /* ³ëµå Á¤º¸ Àç¼³Á¤ */
+        /* ë…¸ë“œ ì •ë³´ ìž¬ì„¤ì • */
         sSpaceNode->mTotalPageCount += sExtendSize;
 
         sPreparedIO = 0;
@@ -3580,11 +3580,11 @@ IDE_RC sddDiskMgr::extendDataFileFEBT(
     }
     else
     {
-        // °ø°£ÀÌ ÃæºÐÇÏ¹Ç·Î Nothing to do ..
+        // ê³µê°„ì´ ì¶©ë¶„í•˜ë¯€ë¡œ Nothing to do ..
     }
 
     // PRJ-1548 User Memory Tablespace
-    // ÀÚµ¿È®Àå ¼öÇàÇÏ¿´´Ù¸é NTA ·Î±ë°ú DBF Node¿¡ Àá±ÝÀ» ÇØÁ¦ÇÑ´Ù.
+    // ìžë™í™•ìž¥ ìˆ˜í–‰í•˜ì˜€ë‹¤ë©´ NTA ë¡œê¹…ê³¼ DBF Nodeì— ìž ê¸ˆì„ í•´ì œí•œë‹¤.
     if ( sTryAutoExtend == ID_TRUE )
     {
         IDU_FIT_POINT( "2.PROJ-1552@sddDiskMgr::extendDataFileFEBT" );
@@ -3608,7 +3608,7 @@ IDE_RC sddDiskMgr::extendDataFileFEBT(
     }
     else
     {
-        // ÀÚµ¿È®ÀåÀÌ ÇÊ¿ä¾ø´Â °æ¿ì Nothing To Do..
+        // ìžë™í™•ìž¥ì´ í•„ìš”ì—†ëŠ” ê²½ìš° Nothing To Do..
     }
 
     return IDE_SUCCESS;
@@ -3617,7 +3617,7 @@ IDE_RC sddDiskMgr::extendDataFileFEBT(
 
     if ( sPreparedIO != 0 )
     {
-        if ( sState == 0 )  // TBS Latch È¹µæÀÌ ÇÊ¿äÇÑ°æ¿ì
+        if ( sState == 0 )  // TBS Latch íšë“ì´ í•„ìš”í•œê²½ìš°
         {
             IDE_ASSERT( sctTableSpaceMgr::lock( aStatistics )
                         == IDE_SUCCESS );
@@ -3646,46 +3646,46 @@ IDE_RC sddDiskMgr::extendDataFileFEBT(
 }
 
 /***********************************************************************
- * Description : tablespaceÀÇ datafile Å©±â resize
+ * Description : tablespaceì˜ datafile í¬ê¸° resize
  *
- * datafileÀÇ resize º¯°æ ¿¬»êÀÇ ¼öÇà¿¡ ÀÇÇØ datafileÀÇ Å©±â¸¦ Ãà¼ÒÇÏ°Å³ª
- * È®ÀåÇÑ´Ù.
+ * datafileì˜ resize ë³€ê²½ ì—°ì‚°ì˜ ìˆ˜í–‰ì— ì˜í•´ datafileì˜ í¬ê¸°ë¥¼ ì¶•ì†Œí•˜ê±°ë‚˜
+ * í™•ìž¥í•œë‹¤.
  *
- * next size´Â extentÀÇ Å©±âÀÇ ¹è¼ö°¡ µÉ °ÍÀÌ´Ù. ÀÌ ÀÛ¾÷Àº write°¡ ³¡³¯¶§±îÁö ´Ù¸¥
- * ½º·¹µå°¡ Á¢±ÙÇÒ¼ö ¾øµµ·Ï mutex¸¦ Àâ´Â´Ù. ±×·¸Áö ¾ÊÀ¸¸é ¿©·¯°³°¡ ÇÑ²¨¹ø¿¡ È­ÀÏÀ»
- * È®ÀåÇÏ·Á´Â ½Ãµµ¸¦ ÇÒ ¼ö°¡ ÀÖ´Ù.
+ * next sizeëŠ” extentì˜ í¬ê¸°ì˜ ë°°ìˆ˜ê°€ ë  ê²ƒì´ë‹¤. ì´ ìž‘ì—…ì€ writeê°€ ëë‚ ë•Œê¹Œì§€ ë‹¤ë¥¸
+ * ìŠ¤ë ˆë“œê°€ ì ‘ê·¼í• ìˆ˜ ì—†ë„ë¡ mutexë¥¼ ìž¡ëŠ”ë‹¤. ê·¸ë ‡ì§€ ì•Šìœ¼ë©´ ì—¬ëŸ¬ê°œê°€ í•œêº¼ë²ˆì— í™”ì¼ì„
+ * í™•ìž¥í•˜ë ¤ëŠ” ì‹œë„ë¥¼ í•  ìˆ˜ê°€ ìžˆë‹¤.
  *
  * + 2nd. code design
- *   - µð½ºÅ©°ü¸®ÀÚÀÇ mutex È¹µæÇÑ´Ù.
+ *   - ë””ìŠ¤í¬ê´€ë¦¬ìžì˜ mutex íšë“í•œë‹¤.
  *   * while
- *   * µð½ºÅ©°ü¸®ÀÚÀÇ HASH¿¡¼­ tablespace ³ëµå¸¦ Ã£´Â´Ù.
- *   * PID¸¦ ¾Ë¸é ÆÄÀÏÀ» ¾òÀ»¼öÀÖ´Ù.
- *     if( datafile ³ëµå°¡ ÀÌ¹Ì ¿øÇÏ´Â Å©±â ÀÌ»óÀÌ´Ù. )
+ *   * ë””ìŠ¤í¬ê´€ë¦¬ìžì˜ HASHì—ì„œ tablespace ë…¸ë“œë¥¼ ì°¾ëŠ”ë‹¤.
+ *   * PIDë¥¼ ì•Œë©´ íŒŒì¼ì„ ì–»ì„ìˆ˜ìžˆë‹¤.
+ *     if( datafile ë…¸ë“œê°€ ì´ë¯¸ ì›í•˜ëŠ” í¬ê¸° ì´ìƒì´ë‹¤. )
  *     {
- *         µð½ºÅ©°ü¸®ÀÚÀÇ mutex ÇØÁ¦ÇÑ´Ù.
+ *         ë””ìŠ¤í¬ê´€ë¦¬ìžì˜ mutex í•´ì œí•œë‹¤.
  *         return fail;
  *     }
- *     datafile ³ëµå°¡ onlineÀÌ¸é, datafile ³ëµåÀÇ max»çÀÌÁî¿¡
- *     Á¦ÇÑÀ» ¹Þ°í, offlineÀÌ¸é mMaxDataFileSize¿¡ Á¦ÇÑÀ» ¹Þ´Â´Ù.
- *     ´ÙÀ½ current size ¸¦ ±¸ÇÑ´Ù.
- *     È®Àå size¸¦ ±¸ÇÑ´Ù.
- *   - write I/O¸¦ ÁØºñÇÑ´Ù. -> prepareIO
- *   - SD_PAGE_SIZEÀÇ null buffer¸¦ »ý¼ºÇÑ´Ù.
- *   - datafile Å©±â¸¦ È®ÀåÅ©±â¸¸Å­ ·çÇÁ¸¦ µ¹¸é¼­ SD_PAGE_SIZE
- *     ´ÜÀ§·Î ´Ã¸°´Ù. -> write
- *   - datafile ³ëµå¸¦ syncÇÑ´Ù.
- *   - datafile ³ëµåÀÇ Á¤º¸ Àç¼³Á¤ -> sddDataFile::setSize
- *   - tablespace ³ëµåÀÇ Å©±â¸¦ Àç¼³Á¤
- *   - ·Î±×¾ÞÄ¿ FLUSH
- *   - I/O ÀÛ¾÷À» ¿Ï·áÇÑ´Ù. -> completeIO
- *   - µð½ºÅ©°ü¸®ÀÚÀÇ mutex ÇØÁ¦ÇÑ´Ù.
+ *     datafile ë…¸ë“œê°€ onlineì´ë©´, datafile ë…¸ë“œì˜ maxì‚¬ì´ì¦ˆì—
+ *     ì œí•œì„ ë°›ê³ , offlineì´ë©´ mMaxDataFileSizeì— ì œí•œì„ ë°›ëŠ”ë‹¤.
+ *     ë‹¤ìŒ current size ë¥¼ êµ¬í•œë‹¤.
+ *     í™•ìž¥ sizeë¥¼ êµ¬í•œë‹¤.
+ *   - write I/Oë¥¼ ì¤€ë¹„í•œë‹¤. -> prepareIO
+ *   - SD_PAGE_SIZEì˜ null bufferë¥¼ ìƒì„±í•œë‹¤.
+ *   - datafile í¬ê¸°ë¥¼ í™•ìž¥í¬ê¸°ë§Œí¼ ë£¨í”„ë¥¼ ëŒë©´ì„œ SD_PAGE_SIZE
+ *     ë‹¨ìœ„ë¡œ ëŠ˜ë¦°ë‹¤. -> write
+ *   - datafile ë…¸ë“œë¥¼ syncí•œë‹¤.
+ *   - datafile ë…¸ë“œì˜ ì •ë³´ ìž¬ì„¤ì • -> sddDataFile::setSize
+ *   - tablespace ë…¸ë“œì˜ í¬ê¸°ë¥¼ ìž¬ì„¤ì •
+ *   - ë¡œê·¸ì•µì»¤ FLUSH
+ *   - I/O ìž‘ì—…ì„ ì™„ë£Œí•œë‹¤. -> completeIO
+ *   - ë””ìŠ¤í¬ê´€ë¦¬ìžì˜ mutex í•´ì œí•œë‹¤.
  **********************************************************************/
 
 IDE_RC sddDiskMgr::alterResizeFEBT(
                    idvSQL          * aStatistics,
                    void             * aTrans,
                    scSpaceID          aTableSpaceID,
-                   SChar            * aDataFileName, /*ÀÌ¹Ì validÇÔ*/
+                   SChar            * aDataFileName, /*ì´ë¯¸ validí•¨*/
                    scPageID           aHWM,
                    ULong              aSizeWanted,
                    sddDataFileNode  * aFileNode)
@@ -3698,7 +3698,7 @@ IDE_RC sddDiskMgr::alterResizeFEBT(
     SLong              sResizePageSize;
     sctPendingOp      *sPendingOp;
 
-    //ÇöÀç ÆÄÀÏÀÇ Å©±â´Â aFileNode->mCurrSize ·Î ¾Ë¼öÀÖ´Ù.
+    //í˜„ìž¬ íŒŒì¼ì˜ í¬ê¸°ëŠ” aFileNode->mCurrSize ë¡œ ì•Œìˆ˜ìžˆë‹¤.
 
     IDE_ASSERT( aTrans        != NULL );
     IDE_ASSERT( aDataFileName != NULL );
@@ -3716,58 +3716,58 @@ IDE_RC sddDiskMgr::alterResizeFEBT(
               != IDE_SUCCESS );
     sState = 1;
 
-    /* resize´Â ÇöÀç È­ÀÏÀÇ Å©±â¿Í ¿ä±¸ÇÏ´Â Å©±â°¡ ´Ù¸¥ °æ¿ì¿¡¸¸ ¼öÇàµÈ´Ù.*/
+    /* resizeëŠ” í˜„ìž¬ í™”ì¼ì˜ í¬ê¸°ì™€ ìš”êµ¬í•˜ëŠ” í¬ê¸°ê°€ ë‹¤ë¥¸ ê²½ìš°ì—ë§Œ ìˆ˜í–‰ëœë‹¤.*/
     if( aFileNode->mCurrSize != aSizeWanted )
     {
         /* BUG-32218
-         * wait4BackupFileEnd() °¡ µ¥ÀÌÅÍ ÆÄÀÏÀÇ ¹é¾÷ÀÌ ³¡³¯¶§±îÁö
-         * ¹«ÇÑ ´ë±â */
+         * wait4BackupFileEnd() ê°€ ë°ì´í„° íŒŒì¼ì˜ ë°±ì—…ì´ ëë‚ ë•Œê¹Œì§€
+         * ë¬´í•œ ëŒ€ê¸° */
         // fix BUG-11337.
-        // µ¥ÀÌÅ¸ ÆÄÀÏÀÌ ¹é¾÷ÁßÀÌ¸é ¿Ï·áÇÒ¶§±îÁö ´ë±â ÇÑ´Ù.
+        // ë°ì´íƒ€ íŒŒì¼ì´ ë°±ì—…ì¤‘ì´ë©´ ì™„ë£Œí• ë•Œê¹Œì§€ ëŒ€ê¸° í•œë‹¤.
         while( SMI_FILE_STATE_IS_BACKUP( aFileNode->mState ) )
         {
             wait4BackupFileEnd();
         }
 
         // PRJ-1548 User Memory Tablespace
-        // DBF Node¿¡ ´ëÇØ ResizeÇÏ·Á¸é TBS¿¡ (X) Àá±ÝÀÌ È¹µæµÇ¾î ÀÖ´Ù.
-        // µ¥ÀÌÅ¸ÆÄÀÏ ³ëµå¿¡ ´ëÇÑ DROP ¿¬»êÀÌ TBS Node¿¡ (X) ->TBS META PAGE¿¡ (S)
-        // Àá±ÝÀ» È¹µæÇÏ±â ¶§¹®¿¡ RESIZE ¿¬»ê°ú µ¿½Ã¿¡ ¼öÇàµÉ ¼ö ¾ø´Ù.
-        // °°Àº Á¶°ÇÀ» Ã¼Å©ÇØº¸¾Æ¾ß ÇÑ´Ù.
-        // DBF Node°¡ DROPPED »óÅÂ¶ó¸é Exception Ã³¸®ÇÑ´Ù.
+        // DBF Nodeì— ëŒ€í•´ Resizeí•˜ë ¤ë©´ TBSì— (X) ìž ê¸ˆì´ íšë“ë˜ì–´ ìžˆë‹¤.
+        // ë°ì´íƒ€íŒŒì¼ ë…¸ë“œì— ëŒ€í•œ DROP ì—°ì‚°ì´ TBS Nodeì— (X) ->TBS META PAGEì— (S)
+        // ìž ê¸ˆì„ íšë“í•˜ê¸° ë•Œë¬¸ì— RESIZE ì—°ì‚°ê³¼ ë™ì‹œì— ìˆ˜í–‰ë  ìˆ˜ ì—†ë‹¤.
+        // ê°™ì€ ì¡°ê±´ì„ ì²´í¬í•´ë³´ì•„ì•¼ í•œë‹¤.
+        // DBF Nodeê°€ DROPPED ìƒíƒœë¼ë©´ Exception ì²˜ë¦¬í•œë‹¤.
         IDE_TEST_RAISE( SMI_FILE_STATE_IS_DROPPED( aFileNode->mState ),
                         error_not_found_datafile_node );
 
         /*
-         * ¸¸¾à HWMº¸´Ù ´õ ÀÛÀº Å©±â·ÎÀÇ Ãà¼Ò¸¦ ¿äÃ»ÇÑ´Ù¸é ¿¡·¯Ã³¸®ÇØ¾ßÇÑ´Ù.
-         * ÀÌ ÇÔ¼öÀÇ ¾ÕºÎºÐ¿¡¼­ ¸ÕÀú Ã³¸®¸¦ ÇÏ±â ¶§¹®¿¡ ¿©±â¼­´Â assertÇÑ´Ù.
+         * ë§Œì•½ HWMë³´ë‹¤ ë” ìž‘ì€ í¬ê¸°ë¡œì˜ ì¶•ì†Œë¥¼ ìš”ì²­í•œë‹¤ë©´ ì—ëŸ¬ì²˜ë¦¬í•´ì•¼í•œë‹¤.
+         * ì´ í•¨ìˆ˜ì˜ ì•žë¶€ë¶„ì—ì„œ ë¨¼ì € ì²˜ë¦¬ë¥¼ í•˜ê¸° ë•Œë¬¸ì— ì—¬ê¸°ì„œëŠ” assertí•œë‹¤.
          */
         IDE_ASSERT( aSizeWanted > SD_MAKE_FPID( aHWM ) );
 
         /* ==================================================
-         * È­ÀÏ È®ÀåÀÇ °æ¿ì ¿¡·¯ Ã¼Å©
-         * È­ÀÏ È®ÀåÀ¸·Î ÀÎÇØ È­ÀÏÀÇ ÃÖ´ë Å©±â¿¡ µµ´ÞÇÏ´Â °æ¿ì
-         * auto extend mode¸¦ off·Î ¼³Á¤ÇÔ
+         * í™”ì¼ í™•ìž¥ì˜ ê²½ìš° ì—ëŸ¬ ì²´í¬
+         * í™”ì¼ í™•ìž¥ìœ¼ë¡œ ì¸í•´ í™”ì¼ì˜ ìµœëŒ€ í¬ê¸°ì— ë„ë‹¬í•˜ëŠ” ê²½ìš°
+         * auto extend modeë¥¼ offë¡œ ì„¤ì •í•¨
          * =================================================== */
 
-        // BUG-17415 autoextend onÀÏ °æ¿ì¿¡¸¸ maxsize¸¦ Ã¼Å©ÇÑ´Ù.
+        // BUG-17415 autoextend onì¼ ê²½ìš°ì—ë§Œ maxsizeë¥¼ ì²´í¬í•œë‹¤.
         if (aFileNode->mIsAutoExtend == ID_TRUE)
         {
             IDE_ASSERT( aFileNode->mMaxSize <= mMaxDataFilePageCount );
 
-            // BUG-29566 µ¥ÀÌÅÍ ÆÄÀÏÀÇ Å©±â¸¦ 32G ¸¦ ÃÊ°úÇÏ¿© ÁöÁ¤ÇØµµ
-            //           ¿¡·¯¸¦ Ãâ·ÂÇÏÁö ¾Ê½À´Ï´Ù.
-            // Max Size°¡ ÀÌ¹Ì °ËÁõµÇ¾î ÀÖ´Â °ªÀÌ¹Ç·Î Autoextend on¿¡¼­´Â
-            // Max Sizeº¸´Ù ÀÛÀºÁö¸¸ °Ë»çÇÏ¸é µÈ´Ù.
+            // BUG-29566 ë°ì´í„° íŒŒì¼ì˜ í¬ê¸°ë¥¼ 32G ë¥¼ ì´ˆê³¼í•˜ì—¬ ì§€ì •í•´ë„
+            //           ì—ëŸ¬ë¥¼ ì¶œë ¥í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
+            // Max Sizeê°€ ì´ë¯¸ ê²€ì¦ë˜ì–´ ìžˆëŠ” ê°’ì´ë¯€ë¡œ Autoextend onì—ì„œëŠ”
+            // Max Sizeë³´ë‹¤ ìž‘ì€ì§€ë§Œ ê²€ì‚¬í•˜ë©´ ëœë‹¤.
             IDE_TEST_RAISE( aSizeWanted > aFileNode->mMaxSize,
                             error_invalid_extend_filesize_maxsize );
         }
 
-        // ¿äÃ»ÇÑ File Size°¡ Maximum File Size¸¦ ³Ñ´ÂÁö ºñ±³ÇÑ´Ù..
-        // Autoextend off ½Ã¿¡´Â ºñ±³ÇÒ Max Size°¡ ¾øÀ¸¹Ç·Î Á÷Á¢ºñ±³ÇØ¾ßÇÑ´Ù.
+        // ìš”ì²­í•œ File Sizeê°€ Maximum File Sizeë¥¼ ë„˜ëŠ”ì§€ ë¹„êµí•œë‹¤..
+        // Autoextend off ì‹œì—ëŠ” ë¹„êµí•  Max Sizeê°€ ì—†ìœ¼ë¯€ë¡œ ì§ì ‘ë¹„êµí•´ì•¼í•œë‹¤.
         if( mMaxDataFilePageCount < SD_MAX_FPID_COUNT )
         {
-            // Os Limit ÀÌ 32GÀÌÇÏÀÎ °æ¿ì
+            // Os Limit ì´ 32Gì´í•˜ì¸ ê²½ìš°
             IDE_TEST_RAISE( aSizeWanted > mMaxDataFilePageCount,
                             error_invalid_extend_filesize_oslimit );
         }
@@ -3778,18 +3778,18 @@ IDE_RC sddDiskMgr::alterResizeFEBT(
         }
 
         /* ------------------------------------------------
-         * ¿øÇÏ´Â page °³¼ö°¡ datafile ³ëµåÀÇ currsizeº¸´Ù
-         * Å« °æ¿ì´Â È®ÀåÀ» ÇÏ°í, ±×·¸Áö ¾ÊÀº °æ¿ì´Â Ãà¼Ò¸¦
-         * ÇÑ´Ù. Ãà¼ÒÇÒ °æ¿ì init sizeµµ ÇÔ²² º¯ÇÑ´Ù.
+         * ì›í•˜ëŠ” page ê°œìˆ˜ê°€ datafile ë…¸ë“œì˜ currsizeë³´ë‹¤
+         * í° ê²½ìš°ëŠ” í™•ìž¥ì„ í•˜ê³ , ê·¸ë ‡ì§€ ì•Šì€ ê²½ìš°ëŠ” ì¶•ì†Œë¥¼
+         * í•œë‹¤. ì¶•ì†Œí•  ê²½ìš° init sizeë„ í•¨ê»˜ ë³€í•œë‹¤.
          * ----------------------------------------------*/
-        /* t: È®Àå, f: Ãà¼Ò */
+        /* t: í™•ìž¥, f: ì¶•ì†Œ */
 
-        if (aSizeWanted > aFileNode->mCurrSize) //È®Àå
+        if (aSizeWanted > aFileNode->mCurrSize) //í™•ìž¥
         {
            sExtendSize = aSizeWanted - aFileNode->mCurrSize;
            sExtendFlag = ID_TRUE;
         }
-        else                                    //Ãà¼Ò
+        else                                    //ì¶•ì†Œ
         {
            sExtendSize = aFileNode->mCurrSize - aSizeWanted;
            sExtendFlag = ID_FALSE;
@@ -3798,8 +3798,8 @@ IDE_RC sddDiskMgr::alterResizeFEBT(
         IDE_ASSERT( sExtendSize != 0 );
 
         /* ------------------------------------------------
-         * À§¿¡¼­ °è»êµÈ datafile Å©±â¸¦ Âü°íÇÏ¿© Ãà¼Ò ¶Ç´Â
-         * È®Àå Ã³¸®ÇÑ´Ù.
+         * ìœ„ì—ì„œ ê³„ì‚°ëœ datafile í¬ê¸°ë¥¼ ì°¸ê³ í•˜ì—¬ ì¶•ì†Œ ë˜ëŠ”
+         * í™•ìž¥ ì²˜ë¦¬í•œë‹¤.
          * ----------------------------------------------*/
         IDE_TEST( prepareIO(aFileNode) != IDE_SUCCESS );
         sPreparedIO = 1;
@@ -3807,7 +3807,7 @@ IDE_RC sddDiskMgr::alterResizeFEBT(
         sState = 0;
         IDE_TEST( sctTableSpaceMgr::unlock() != IDE_SUCCESS );
 
-        if (sExtendFlag == ID_TRUE) // È®Àå
+        if (sExtendFlag == ID_TRUE) // í™•ìž¥
         {
             if ( aTrans != NULL )
             {
@@ -3821,8 +3821,8 @@ IDE_RC sddDiskMgr::alterResizeFEBT(
 
             }
 
-            // ÇöÀç Resize ÁøÇàÇÏ´Â ÆÄÀÏ¿¡ ´ëÇØ¼­ CREATING »óÅÂ¸¦
-            // Oring ÇØÁÖ°í PendingÀ¸·Î Ã³¸®ÇÑ´Ù.
+            // í˜„ìž¬ Resize ì§„í–‰í•˜ëŠ” íŒŒì¼ì— ëŒ€í•´ì„œ CREATING ìƒíƒœë¥¼
+            // Oring í•´ì£¼ê³  Pendingìœ¼ë¡œ ì²˜ë¦¬í•œë‹¤.
             aFileNode->mState |= SMI_FILE_RESIZING;
 
             sResizePageSize = sExtendSize;
@@ -3830,7 +3830,7 @@ IDE_RC sddDiskMgr::alterResizeFEBT(
             IDE_TEST( sddDataFile::addPendingOperation(
                           aTrans,
                           aFileNode,
-                          ID_TRUE, /* commit½Ã¿¡ µ¿ÀÛ */
+                          ID_TRUE, /* commitì‹œì— ë™ìž‘ */
                           SCT_POP_ALTER_DBF_RESIZE,
                           &sPendingOp ) != IDE_SUCCESS );
 
@@ -3840,8 +3840,8 @@ IDE_RC sddDiskMgr::alterResizeFEBT(
                       != IDE_SUCCESS );
 
             // BUG-17465
-            // maxsize¿¡ µµ´ÞÇÏ¸é autoextend mode°¡ on¿¡¼­ off·Î ¹Ù²î´Âµ¥
-            // ÀÌ¿¡ ´ëÇØ ·Î±ëÇØ¾ß ÇÑ´Ù.
+            // maxsizeì— ë„ë‹¬í•˜ë©´ autoextend modeê°€ onì—ì„œ offë¡œ ë°”ë€ŒëŠ”ë°
+            // ì´ì— ëŒ€í•´ ë¡œê¹…í•´ì•¼ í•œë‹¤.
             if ( (aFileNode->mIsAutoExtend == ID_TRUE) &&
                  ((aFileNode->mCurrSize + sExtendSize + aFileNode->mNextSize) > 
                      aFileNode->mMaxSize) )
@@ -3858,7 +3858,7 @@ IDE_RC sddDiskMgr::alterResizeFEBT(
 
             }
         }
-        else // Ãà¼Ò
+        else // ì¶•ì†Œ
         {
             if ( aTrans != NULL )
             {
@@ -3874,17 +3874,17 @@ IDE_RC sddDiskMgr::alterResizeFEBT(
 
             }
 
-            // ÇöÀç Resize ÁøÇàÇÏ´Â ÆÄÀÏ¿¡ ´ëÇØ¼­ CREATING »óÅÂ¸¦
-            // Oring ÇØÁÖ°í PendingÀ¸·Î Ã³¸®ÇÑ´Ù.
+            // í˜„ìž¬ Resize ì§„í–‰í•˜ëŠ” íŒŒì¼ì— ëŒ€í•´ì„œ CREATING ìƒíƒœë¥¼
+            // Oring í•´ì£¼ê³  Pendingìœ¼ë¡œ ì²˜ë¦¬í•œë‹¤.
             aFileNode->mState |= SMI_FILE_RESIZING;
 
-            // ½ÇÁ¦ Resizing ÆäÀÌÁö °³¼ö¸¦ ÀúÀåÇÑ´Ù. (Runtime Á¤º¸)
+            // ì‹¤ì œ Resizing íŽ˜ì´ì§€ ê°œìˆ˜ë¥¼ ì €ìž¥í•œë‹¤. (Runtime ì •ë³´)
             sResizePageSize = -sExtendSize;
 
             IDE_TEST( sddDataFile::addPendingOperation(
                           aTrans,
                           aFileNode,
-                          ID_TRUE, /* commit½Ã¿¡ µ¿ÀÛ */
+                          ID_TRUE, /* commitì‹œì— ë™ìž‘ */
                           SCT_POP_ALTER_DBF_RESIZE,
                           &sPendingOp ) != IDE_SUCCESS );
 
@@ -3897,8 +3897,8 @@ IDE_RC sddDiskMgr::alterResizeFEBT(
         IDE_TEST( sctTableSpaceMgr::lock( aStatistics ) != IDE_SUCCESS );
         sState = 1;
 
-        /* ³ëµå Á¤º¸ Àç¼³Á¤ */
-        if (sExtendFlag == ID_TRUE) //È®Àå
+        /* ë…¸ë“œ ì •ë³´ ìž¬ì„¤ì • */
+        if (sExtendFlag == ID_TRUE) //í™•ìž¥
         {
             sddDataFile::setCurrSize(
                          aFileNode,
@@ -3917,7 +3917,7 @@ IDE_RC sddDiskMgr::alterResizeFEBT(
         }
         else
         {
-            // Shrink ¿¬»êÀº PendingÀ¸·Î Ã³¸®µÈ´Ù.
+            // Shrink ì—°ì‚°ì€ Pendingìœ¼ë¡œ ì²˜ë¦¬ëœë‹¤.
         }
 
         sPreparedIO = 0;
@@ -3970,7 +3970,7 @@ IDE_RC sddDiskMgr::alterResizeFEBT(
 
     if ( sPreparedIO != 0 )
     {
-        if ( sState == 0 )  // TBS Latch È¹µæÀÌ ÇÊ¿äÇÑ°æ¿ì
+        if ( sState == 0 )  // TBS Latch íšë“ì´ í•„ìš”í•œê²½ìš°
         {
             IDE_ASSERT( sctTableSpaceMgr::lock( aStatistics )
                         == IDE_SUCCESS );
@@ -3989,7 +3989,7 @@ IDE_RC sddDiskMgr::alterResizeFEBT(
 
 }
 
-// ¹é¾÷ µ¥ÀÌÅ¸ ÆÄÀÏ¿¬»êÀÌ Á¾·áµÉ¶§±îÁö ±â´Ù¸°´Ù.
+// ë°±ì—… ë°ì´íƒ€ íŒŒì¼ì—°ì‚°ì´ ì¢…ë£Œë ë•Œê¹Œì§€ ê¸°ë‹¤ë¦°ë‹¤.
 void sddDiskMgr::wait4BackupFileEnd()
 {
     PDL_Time_Value      sTimeValue;
@@ -4012,18 +4012,18 @@ void sddDiskMgr::wait4BackupFileEnd()
 }
 
 /***********************************************************************
- * Description : ¿ÀÇÂµÈ datafile¿¡¼­ »ç¿ëÇÏÁö ¾Ê´Â datafileÀ» °Ë»ö
+ * Description : ì˜¤í”ˆëœ datafileì—ì„œ ì‚¬ìš©í•˜ì§€ ì•ŠëŠ” datafileì„ ê²€ìƒ‰
  *
- * µð½ºÅ©°ü¸®ÀÚÀÇ datafile LRU ¸®½ºÆ® ³¡¿¡¼­ºÎÅÍ close °¡´ÉÇÑ datafile
- * ³ëµå¸¦ Ã£´Â´Ù. close °¡´ÉÇÑ datafile ³ëµå´Â I/O count°¡ 0ÀÌ´Ù.
- * µð½ºÅ©°ü¸®ÀÚÀÇ mutex¸¦ È¹µæÇÑ »óÅÂ¿¡¼­ È£ÃâµÇ¾î¾ß ÇÑ´Ù.
+ * ë””ìŠ¤í¬ê´€ë¦¬ìžì˜ datafile LRU ë¦¬ìŠ¤íŠ¸ ëì—ì„œë¶€í„° close ê°€ëŠ¥í•œ datafile
+ * ë…¸ë“œë¥¼ ì°¾ëŠ”ë‹¤. close ê°€ëŠ¥í•œ datafile ë…¸ë“œëŠ” I/O countê°€ 0ì´ë‹¤.
+ * ë””ìŠ¤í¬ê´€ë¦¬ìžì˜ mutexë¥¼ íšë“í•œ ìƒíƒœì—ì„œ í˜¸ì¶œë˜ì–´ì•¼ í•œë‹¤.
  *
  * + 2nd. code design
- *   - ¿ÀÇÂµÈ datafile LRU ¸®½ºÆ®ÀÇ ¸¶Áö¸· datafile ³ëµå¸¦ ±¸ÇÑ´Ù.
- *   - while( LRUÀÇ ³¡¿¡¼­ ºÎÅÍ °Ë»ö )
+ *   - ì˜¤í”ˆëœ datafile LRU ë¦¬ìŠ¤íŠ¸ì˜ ë§ˆì§€ë§‰ datafile ë…¸ë“œë¥¼ êµ¬í•œë‹¤.
+ *   - while( LRUì˜ ëì—ì„œ ë¶€í„° ê²€ìƒ‰ )
  *     {
- *         if( close °¡´ÉÇÏ´Ù¸é )
- *             return datafile ³ëµå;
+ *         if( close ê°€ëŠ¥í•˜ë‹¤ë©´ )
+ *             return datafile ë…¸ë“œ;
  *     }
  *   - return NULL
  **********************************************************************/
@@ -4054,23 +4054,23 @@ sddDataFileNode* sddDiskMgr::findVictim()
 }
 
 /***********************************************************************
- * Description : datafile ³ëµåÀÇ autoextend ¼Ó¼º º¯°æ
+ * Description : datafile ë…¸ë“œì˜ autoextend ì†ì„± ë³€ê²½
  *
  * fix BUG-15387
- * µ¥ÀÌÅ¸ÆÄÀÏ »ç¿ë»óÅÂ°¡ NotUsed/Used/InUsed°¡ ÀÖÀ» ¼ö ÀÖ´Âµ¥
- * Used »óÅÂ¸¸ ¾Æ´Ñ µ¥ÀÌÅ¸ÆÄÀÏ¿¡ ´ëÇØ¼­´Â °¢°¢ autoextend ¸ðµå¸¦
- * On/Off ÇÒ ¼ö ÀÖ´Ù.
+ * ë°ì´íƒ€íŒŒì¼ ì‚¬ìš©ìƒíƒœê°€ NotUsed/Used/InUsedê°€ ìžˆì„ ìˆ˜ ìžˆëŠ”ë°
+ * Used ìƒíƒœë§Œ ì•„ë‹Œ ë°ì´íƒ€íŒŒì¼ì— ëŒ€í•´ì„œëŠ” ê°ê° autoextend ëª¨ë“œë¥¼
+ * On/Off í•  ìˆ˜ ìžˆë‹¤.
  *
- * [ ÀÎÀÚ ]
+ * [ ì¸ìž ]
  *
- * [IN]  aTrans          - Æ®·£Àè¼Ç °´Ã¼
- * [IN]  aTableSpaceID   - ÇØ´ç Tablespace ID
- * [IN]  aDataFileName   - µ¥ÀÌÅ¸ÆÄÀÏ °æ·Î
- * [IN]  aAutoExtendMode - º¯°æÇÏ°íÀÚÇÏ´Â Autoextend ¸ðµå ( On/Off )
+ * [IN]  aTrans          - íŠ¸ëžœìž­ì…˜ ê°ì²´
+ * [IN]  aTableSpaceID   - í•´ë‹¹ Tablespace ID
+ * [IN]  aDataFileName   - ë°ì´íƒ€íŒŒì¼ ê²½ë¡œ
+ * [IN]  aAutoExtendMode - ë³€ê²½í•˜ê³ ìží•˜ëŠ” Autoextend ëª¨ë“œ ( On/Off )
  * [IN]  aHWM            - high water mark
- * [IN]  aNextSize       - Autoextend On ½Ã Next Size  ( page size )
- * [IN]  aMaxSize        - Autoextend On ½Ã Max Size   ( page size )
- * [OUT] aValidDataFileName - µ¥ÀÌÅ¸ÆÄÀÏ Àý´ë°æ·Î
+ * [IN]  aNextSize       - Autoextend On ì‹œ Next Size  ( page size )
+ * [IN]  aMaxSize        - Autoextend On ì‹œ Max Size   ( page size )
+ * [OUT] aValidDataFileName - ë°ì´íƒ€íŒŒì¼ ì ˆëŒ€ê²½ë¡œ
 
  **********************************************************************/
 IDE_RC sddDiskMgr::alterAutoExtendFEBT(
@@ -4096,12 +4096,12 @@ IDE_RC sddDiskMgr::alterAutoExtendFEBT(
 
 
     /*
-     * ¼Ó¼º º¯°æÀÌ °¡´ÉÇÑ °æ¿ìÀÎÁö¸¦ °Ë»çÇÑ´Ù
+     * ì†ì„± ë³€ê²½ì´ ê°€ëŠ¥í•œ ê²½ìš°ì¸ì§€ë¥¼ ê²€ì‚¬í•œë‹¤
      *
-     *     1. autoextend onÀ¸·Î º¯°æÇÒ °æ¿ì maxsize´Â currsizeº¸´Ù
-     *        Ä¿¾ß ÇÑ´Ù.
-     *     2. autoextend onÀ¸·Î º¯°æÇÒ °æ¿ì maxsize´Â OS file limit
-     *        º¸´Ù ÀÛ¾Æ¾ß ÇÑ´Ù.
+     *     1. autoextend onìœ¼ë¡œ ë³€ê²½í•  ê²½ìš° maxsizeëŠ” currsizeë³´ë‹¤
+     *        ì»¤ì•¼ í•œë‹¤.
+     *     2. autoextend onìœ¼ë¡œ ë³€ê²½í•  ê²½ìš° maxsizeëŠ” OS file limit
+     *        ë³´ë‹¤ ìž‘ì•„ì•¼ í•œë‹¤.
      */
 
     /* Check maxsize validation */
@@ -4116,11 +4116,11 @@ IDE_RC sddDiskMgr::alterAutoExtendFEBT(
     IDE_TEST( sctTableSpaceMgr::unlock() != IDE_SUCCESS );
 
     /* ------------------------------------------------
-     * 1. ·Î±ë
+     * 1. ë¡œê¹…
      * ----------------------------------------------*/
     // To Fix BUG-13924
 
-    // autoextend offÀÏ °æ¿ì nextsize, maxsize´Â 0ÀÌ µÈ´Ù.
+    // autoextend offì¼ ê²½ìš° nextsize, maxsizeëŠ” 0ì´ ëœë‹¤.
     if (aAutoExtendMode == ID_FALSE)
     {
         aNextSize = 0;
@@ -4130,10 +4130,10 @@ IDE_RC sddDiskMgr::alterAutoExtendFEBT(
     if ( aTrans != NULL )
     {
         // PROJ-1548
-        // µ¥ÀÌÅ¸ÆÄÀÏ ³ëµå¿¡ ´ëÇÑ DROP ¿¬»êÀÌ TBS Node¿¡ (X) Àá±ÝÀ» È¹µæÇÏ°í ÀÖ´Ù.
-        // ±×·¸±â¶§¹®¿¡ AUTOEXTEND MODE ¿¬»êÀÌ µ¿½Ã¿¡ ¼öÇàµÉ ¼ö ¾ø´Ù.
-        // ´ÙÀ½°ú °°Àº Á¶°ÇÀ» Ã¼Å©ÇØº¸¾Æ¾ß ÇÑ´Ù.
-        // DBF Node°¡ DROPPED »óÅÂ¶ó¸é Exception Ã³¸®ÇÑ´Ù.
+        // ë°ì´íƒ€íŒŒì¼ ë…¸ë“œì— ëŒ€í•œ DROP ì—°ì‚°ì´ TBS Nodeì— (X) ìž ê¸ˆì„ íšë“í•˜ê³  ìžˆë‹¤.
+        // ê·¸ë ‡ê¸°ë•Œë¬¸ì— AUTOEXTEND MODE ì—°ì‚°ì´ ë™ì‹œì— ìˆ˜í–‰ë  ìˆ˜ ì—†ë‹¤.
+        // ë‹¤ìŒê³¼ ê°™ì€ ì¡°ê±´ì„ ì²´í¬í•´ë³´ì•„ì•¼ í•œë‹¤.
+        // DBF Nodeê°€ DROPPED ìƒíƒœë¼ë©´ Exception ì²˜ë¦¬í•œë‹¤.
         IDE_TEST_RAISE( SMI_FILE_STATE_IS_DROPPED( aFileNode->mState ),
                         error_not_found_datafile_node );
 
@@ -4153,7 +4153,7 @@ IDE_RC sddDiskMgr::alterAutoExtendFEBT(
     sState = 1;
 
     /* -------------------------------------------------------
-     * 2. °Ë»öµÈ datafile ³ëµåÀÇ autoextend ¸ðµå¸¦ º¯°æÇÑ´Ù.
+     * 2. ê²€ìƒ‰ëœ datafile ë…¸ë“œì˜ autoextend ëª¨ë“œë¥¼ ë³€ê²½í•œë‹¤.
      * ----------------------------------------------------- */
     sddDataFile::setAutoExtendProp(aFileNode,
                                    aAutoExtendMode,
@@ -4164,7 +4164,7 @@ IDE_RC sddDiskMgr::alterAutoExtendFEBT(
     IDE_TEST( sctTableSpaceMgr::unlock() != IDE_SUCCESS );
 
     /* -------------------------------------------------------
-     * 3. ·Î±× ¾ÞÄ¿¸¦ ÇÃ·¯½¬ÇÑ´Ù.
+     * 3. ë¡œê·¸ ì•µì»¤ë¥¼ í”ŒëŸ¬ì‰¬í•œë‹¤.
      * ----------------------------------------------------- */
     IDU_FIT_POINT( "2.PROJ-1552@sddDiskMgr::alterAutoExtendFEBT" );
 
@@ -4203,9 +4203,9 @@ IDE_RC sddDiskMgr::alterAutoExtendFEBT(
 
 }
 /***********************************************************************
- * Description :  datafile ³ëµåÀÇ datafile ¸í ¼Ó¼º º¯°æ
- * BUG-10474¿¡ ÀÇÇØ¼­ datafile renameÀº startup control ´Ü°è¿¡¼­
- * tablespace°¡ offlinÀÎ°æ¿ì¿¡¸¸ °¡´ÉÇÏ´Ù.
+ * Description :  datafile ë…¸ë“œì˜ datafile ëª… ì†ì„± ë³€ê²½
+ * BUG-10474ì— ì˜í•´ì„œ datafile renameì€ startup control ë‹¨ê³„ì—ì„œ
+ * tablespaceê°€ offlinì¸ê²½ìš°ì—ë§Œ ê°€ëŠ¥í•˜ë‹¤.
  **********************************************************************/
 IDE_RC sddDiskMgr::alterDataFileName( idvSQL*     aStatistics,
                                       scSpaceID   aTableSpaceID,
@@ -4272,9 +4272,9 @@ IDE_RC sddDiskMgr::alterDataFileName( idvSQL*     aStatistics,
     /* ------------------------------------------------
      * disable recovery check point
      * "alterDataFileName#before update loganchor"
-     * startup control °úÁ¤¿¡¼­¸¸ ¼öÇàµÇ´Â commandÀÌ±â
-     * ¶§¹®¿¡ recovery ´ë»óÀÌ ¾Æ´Õ´Ï´Ù. loganchor¿¡ ¹Ý¿µÀÌ
-     * µÇ°í crash°¡ µÇ¾ú´Ù¸é ¹Ý¿µÀÌ µÈ°ÍÀÔ´Ï´Ù.
+     * startup control ê³¼ì •ì—ì„œë§Œ ìˆ˜í–‰ë˜ëŠ” commandì´ê¸°
+     * ë•Œë¬¸ì— recovery ëŒ€ìƒì´ ì•„ë‹™ë‹ˆë‹¤. loganchorì— ë°˜ì˜ì´
+     * ë˜ê³  crashê°€ ë˜ì—ˆë‹¤ë©´ ë°˜ì˜ì´ ëœê²ƒìž…ë‹ˆë‹¤.
      * ----------------------------------------------*/
 
     /* loganchor flush */
@@ -4295,7 +4295,7 @@ IDE_RC sddDiskMgr::alterDataFileName( idvSQL*     aStatistics,
 }
 
 /**********************************************************************
- * Description : ÇØ´ç tablespace ³ëµåÀÇ total page °³¼ö¸¦ ¹ÝÈ¯
+ * Description : í•´ë‹¹ tablespace ë…¸ë“œì˜ total page ê°œìˆ˜ë¥¼ ë°˜í™˜
  **********************************************************************/
 IDE_RC sddDiskMgr::getTotalPageCountOfTBS( idvSQL  *  aStatistics,
                                            scSpaceID  aTableSpaceID,
@@ -4340,7 +4340,7 @@ IDE_RC sddDiskMgr::getTotalPageCountOfTBS( idvSQL  *  aStatistics,
 }
 
 /**********************************************************************
- *  fix BUG-13646 tablespaceÀÇ page count¿Í extentÅ©±â¸¦ ¾ò´Â´Ù.
+ *  fix BUG-13646 tablespaceì˜ page countì™€ extentí¬ê¸°ë¥¼ ì–»ëŠ”ë‹¤.
  **********************************************************************/
 IDE_RC sddDiskMgr::getExtentAnTotalPageCnt( idvSQL  *  aStatistics,
                                             scSpaceID  aTableSpaceID,
@@ -4426,7 +4426,7 @@ IDE_RC sddDiskMgr::existDataFile( idvSQL*   aStatistics,
 
     IDE_ASSERT( sSpaceNode->mHeader.mID == aID );
 
-    /* »óÀ§¸ðµâ¿¡¼­ aExist¸¦ º¸°í Á÷Á¢ ¿¡·¯¸¦ ¼³Á¤ÇÒ¼ö ÀÖµµ·Ï ÇØ¾ßÇÑ´Ù. */
+    /* ìƒìœ„ëª¨ë“ˆì—ì„œ aExistë¥¼ ë³´ê³  ì§ì ‘ ì—ëŸ¬ë¥¼ ì„¤ì •í• ìˆ˜ ìžˆë„ë¡ í•´ì•¼í•œë‹¤. */
     (void)sddTableSpace::getDataFileNodeByName( sSpaceNode,
                                                 sValidName,
                                                 &sFileNode );
@@ -4493,25 +4493,25 @@ IDE_RC sddDiskMgr::existDataFile( SChar   * aName,
 }
 
 /*
-  Å×ÀÌºí½ºÆäÀÌ½º¿Í µ¥ÀÌÅ¸ÆÄÀÏÀÇ
-  »èÁ¦·Î ÀÎÇÑ ÆäÀÌÁöÀÇ À¯È¿¼º ¿©ºÎ¸¦ ¹ÝÈ¯ÇÑ´Ù.
+  í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ì™€ ë°ì´íƒ€íŒŒì¼ì˜
+  ì‚­ì œë¡œ ì¸í•œ íŽ˜ì´ì§€ì˜ ìœ íš¨ì„± ì—¬ë¶€ë¥¼ ë°˜í™˜í•œë‹¤.
 
-   drop tablespaceÀÇ ¿¬»êÃ³¸®°¡ µ¥ÀÌÅ¸ÆÄÀÏÀ» ¸ÕÀú DROPPED ÇÏ°í
-   Å×ÀÌºí½ºÆäÀÌ½º°¡ ³ªÁß¿¡ DROPPED°¡ µÇ±â ¶§¹®¿¡ (º¹±¸¾Ë°í¸®Áò)
-   Ä¿¹Ô PENDING ¿¬»ê ¼ø¼­¿¡ µû¶ó Æ®·£Àè¼ÇÀÌ Ä¿¹ÔµÇ´õ¶óµµ
-   ÇÏÀ§ºÎÅÍ Ã¼Å©ÇØ¾ßÇÏ´Â °æ¿ì°¡ Á¸ÀçÇÑ´Ù.
+   drop tablespaceì˜ ì—°ì‚°ì²˜ë¦¬ê°€ ë°ì´íƒ€íŒŒì¼ì„ ë¨¼ì € DROPPED í•˜ê³ 
+   í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ê°€ ë‚˜ì¤‘ì— DROPPEDê°€ ë˜ê¸° ë•Œë¬¸ì— (ë³µêµ¬ì•Œê³ ë¦¬ì¦˜)
+   ì»¤ë°‹ PENDING ì—°ì‚° ìˆœì„œì— ë”°ë¼ íŠ¸ëžœìž­ì…˜ì´ ì»¤ë°‹ë˜ë”ë¼ë„
+   í•˜ìœ„ë¶€í„° ì²´í¬í•´ì•¼í•˜ëŠ” ê²½ìš°ê°€ ì¡´ìž¬í•œë‹¤.
 
-   DELETE ¾²·¹µå°¡ Index/Table ¼¼±×¸ÕÆ® PENDING ¿¬»ê¿¡¼­ µ¥ÀÌÅ¸ÆÄÀÏµµ
-   Ã¼Å©ÇÏµµ·Ï ÇÏ¿© DROPPEDÀÌ µÈ°æ¿ì ¹«½ÃÇÏµµ·Ï ÇØ¾ßÇÑ´Ù.
+   DELETE ì“°ë ˆë“œê°€ Index/Table ì„¸ê·¸ë¨¼íŠ¸ PENDING ì—°ì‚°ì—ì„œ ë°ì´íƒ€íŒŒì¼ë„
+   ì²´í¬í•˜ë„ë¡ í•˜ì—¬ DROPPEDì´ ëœê²½ìš° ë¬´ì‹œí•˜ë„ë¡ í•´ì•¼í•œë‹¤.
 
-   [IN] aTableSpaceID  -  °Ë»çÇÒ Å×ÀÌºí½ºÆäÀÌ½º ID
-   [IN] aPageID        -  °Ë»çÇÒ ÆäÀÌÁö ID
-   [IN] aIsValid        - À¯È¿ÇÑ ÆäÀÌÁøÀÎÁö ¿©ºÎ
+   [IN] aTableSpaceID  -  ê²€ì‚¬í•  í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ ID
+   [IN] aPageID        -  ê²€ì‚¬í•  íŽ˜ì´ì§€ ID
+   [IN] aIsValid        - ìœ íš¨í•œ íŽ˜ì´ì§„ì¸ì§€ ì—¬ë¶€
 
-   [ Âü°í ]
-   Disk Aging ½Ã¿¡ Table/Index¿¡ ´ëÇÑ Free Segment ¸¦ ÇØ¾ßÇÒ Áö ¿©ºÎ¸¦
-   ÆÇ´ÜÇÒ ¶§ È£ÃâµÇ´Âµ¥, Latch¸¦ Àâ°í ÆÇ´ÜÇÏ±â ¶§¹®¿¡
-   Áï, DDL¿¡ ´ëÇÑ Aging Ã³¸®ÀÌ±â ¶§¹®¿¡ ºó¹øÇÏ°Ô È£ÃâµÇÁö´Â ¾Ê´Â´Ù.
+   [ ì°¸ê³  ]
+   Disk Aging ì‹œì— Table/Indexì— ëŒ€í•œ Free Segment ë¥¼ í•´ì•¼í•  ì§€ ì—¬ë¶€ë¥¼
+   íŒë‹¨í•  ë•Œ í˜¸ì¶œë˜ëŠ”ë°, Latchë¥¼ ìž¡ê³  íŒë‹¨í•˜ê¸° ë•Œë¬¸ì—
+   ì¦‰, DDLì— ëŒ€í•œ Aging ì²˜ë¦¬ì´ê¸° ë•Œë¬¸ì— ë¹ˆë²ˆí•˜ê²Œ í˜¸ì¶œë˜ì§€ëŠ” ì•ŠëŠ”ë‹¤.
 
    [ Call by ]
    smcTable::rebuildDRDBIndexHeader
@@ -4540,14 +4540,14 @@ IDE_RC sddDiskMgr::isValidPageID( idvSQL*    aStatistics,
               != IDE_SUCCESS );
     sState = 1;
 
-    // drop µÈ TBS´Â NULL·Ñ ¹ÝÈ¯µÈ´Ù.
+    // drop ëœ TBSëŠ” NULLë¡¤ ë°˜í™˜ëœë‹¤.
     sctTableSpaceMgr::findSpaceNodeWithoutException( aTableSpaceID,
                                                      (void**)&sSpaceNode);
 
     if( sSpaceNode != NULL )
     {
         // fix BUG-17159
-        // dropped/discarded tbs¿¡ ´ëÇØ¼­ invalidÇÏ´Ù¶ó°í ÆÇ´ÜÇÑ´Ù.
+        // dropped/discarded tbsì— ëŒ€í•´ì„œ invalidí•˜ë‹¤ë¼ê³  íŒë‹¨í•œë‹¤.
         if ( sctTableSpaceMgr::hasState(
                                &sSpaceNode->mHeader,
                                SCT_SS_INVALID_DISK_TBS) == ID_FALSE )
@@ -4566,7 +4566,7 @@ IDE_RC sddDiskMgr::isValidPageID( idvSQL*    aStatistics,
         }
         else
         {
-            // Dropped, Discard µÈ TBS´Â Valid ÇÏÁö ¾Ê´Ù.
+            // Dropped, Discard ëœ TBSëŠ” Valid í•˜ì§€ ì•Šë‹¤.
         }
     }
 
@@ -4586,7 +4586,7 @@ IDE_RC sddDiskMgr::isValidPageID( idvSQL*    aStatistics,
 }
 #if 0 //not used
 /***********************************************************************
- * Description : µð½ºÅ©°ü¸®ÀÚÀÇ tablespace ³ëµå¸¦ Ãâ·Â
+ * Description : ë””ìŠ¤í¬ê´€ë¦¬ìžì˜ tablespace ë…¸ë“œë¥¼ ì¶œë ¥
  ***********************************************************************/
 IDE_RC sddDiskMgr::dumpTableSpaceNode( scSpaceID aTableSpaceID )
 {
@@ -4630,7 +4630,7 @@ IDE_RC sddDiskMgr::dumpTableSpaceNode( scSpaceID aTableSpaceID )
 
 #if 0 //not used
 /***********************************************************************
- * Description : µð½ºÅ©°ü¸®ÀÚÀÇ ¿ÀÇÂ datafile LRU ¸®½ºÆ®¸¦ Ãâ·Â
+ * Description : ë””ìŠ¤í¬ê´€ë¦¬ìžì˜ ì˜¤í”ˆ datafile LRU ë¦¬ìŠ¤íŠ¸ë¥¼ ì¶œë ¥
  ***********************************************************************/
 IDE_RC sddDiskMgr::dumpOpenDataFileLRUList()
 {
@@ -4677,7 +4677,7 @@ IDE_RC sddDiskMgr::dumpOpenDataFileLRUList()
 // For Unit TestCase
 
 /***********************************************************************
- * Description : ÇØ´ç datafile ³ëµå¸¦ °Ë»öÇÏ¿© datafileÀ» ¿ÀÇÂÇÑ´Ù.
+ * Description : í•´ë‹¹ datafile ë…¸ë“œë¥¼ ê²€ìƒ‰í•˜ì—¬ datafileì„ ì˜¤í”ˆí•œë‹¤.
  ***********************************************************************/
 IDE_RC sddDiskMgr::openDataFile( idvSQL *  aStatistics,
                                  scSpaceID aTableSpaceID,
@@ -4716,7 +4716,7 @@ IDE_RC sddDiskMgr::openDataFile( idvSQL *  aStatistics,
 }
 
 /***********************************************************************
- * Description : ÇØ´ç datafile ³ëµå¸¦ °Ë»öÇÏ¿© datafileÀ» closeÇÑ´Ù.
+ * Description : í•´ë‹¹ datafile ë…¸ë“œë¥¼ ê²€ìƒ‰í•˜ì—¬ datafileì„ closeí•œë‹¤.
  ***********************************************************************/
 IDE_RC sddDiskMgr::closeDataFile(scSpaceID aTableSpaceID,
                                  scPageID  aPageID)
@@ -4747,7 +4747,7 @@ IDE_RC sddDiskMgr::closeDataFile(scSpaceID aTableSpaceID,
 }
 
 /***********************************************************************
- * Description : completeIO¸¦ ÇÏ¿©,max open´ë±â»óÅÂ¿¡¼­ victimÀÌ µÇµµ·Ï ÇÑ´Ù.
+ * Description : completeIOë¥¼ í•˜ì—¬,max openëŒ€ê¸°ìƒíƒœì—ì„œ victimì´ ë˜ë„ë¡ í•œë‹¤.
  ***********************************************************************/
 IDE_RC sddDiskMgr::completeIO( idvSQL*   aStatistics,
                                scSpaceID aTableSpaceID,
@@ -4793,7 +4793,7 @@ IDE_RC sddDiskMgr::completeIO( idvSQL*   aStatistics,
 }
 
 /***********************************************************************
- * Description : ÆäÀÌÁöID¿¡ ÇØ´çÇÏ´Â data file ID·Î º¯È¯ÇÏ´Â ÇÔ¼ö
+ * Description : íŽ˜ì´ì§€IDì— í•´ë‹¹í•˜ëŠ” data file IDë¡œ ë³€í™˜í•˜ëŠ” í•¨ìˆ˜
  ***********************************************************************/
 IDE_RC  sddDiskMgr::getDataFileIDByPageID( idvSQL *         aStatistics,
                                            scSpaceID        aSpaceID,
@@ -4845,11 +4845,11 @@ IDE_RC  sddDiskMgr::getDataFileIDByPageID( idvSQL *         aStatistics,
 }
 
 /*
-  PRJ-1149,  ÁÖ¾îÁø µ¥ÀÌÅ¸ ÆÄÀÏÀÇ Çì´õ¸¦ ÀÐ´Â´Ù.
+  PRJ-1149,  ì£¼ì–´ì§„ ë°ì´íƒ€ íŒŒì¼ì˜ í—¤ë”ë¥¼ ì½ëŠ”ë‹¤.
 
-  [IN]  aFileNode       - µ¥ÀÌÅ¸ÆÄÀÏ ³ëµå
-  [OUT] aDBFileHdr      - µ¥ÀÌÅ¸ÆÄÀÏ·ÎºÎÅÍ ÆÇµ¶µÈ ÆÄÀÏ¸ÞÅ¸Çì´õ Á¤º¸¸¦ ÀúÀåÇÒ ¹öÆÛ
-  [OUT] aIsMediaFailure - ¸ÞÅ¸Á¤º¸¸¦ È®ÀÎÇÑ ÈÄ º¹±¸ÇÊ¿ä¿©ºÎ ¹ÝÈ¯
+  [IN]  aFileNode       - ë°ì´íƒ€íŒŒì¼ ë…¸ë“œ
+  [OUT] aDBFileHdr      - ë°ì´íƒ€íŒŒì¼ë¡œë¶€í„° íŒë…ëœ íŒŒì¼ë©”íƒ€í—¤ë” ì •ë³´ë¥¼ ì €ìž¥í•  ë²„í¼
+  [OUT] aIsMediaFailure - ë©”íƒ€ì •ë³´ë¥¼ í™•ì¸í•œ í›„ ë³µêµ¬í•„ìš”ì—¬ë¶€ ë°˜í™˜
 */
 IDE_RC sddDiskMgr::checkValidationDBFHdr(
                        idvSQL           * aStatistics,
@@ -4866,8 +4866,8 @@ IDE_RC sddDiskMgr::checkValidationDBFHdr(
                           aDBFileHdr )
               != IDE_SUCCESS );
 
-    // Loganchor¿Í ÆÄÀÏ·ÎºÎÅÍ ÆÇµ¶µÈ ÆÄÀÏ¸ÞÅ¸Çì´õÁ¤º¸¸¦ ºñ±³ÇÏ¿©
-    // ¹Ìµð¾îº¹±¸ÀÇ ÇÊ¿ä¿©ºÎ¸¦ ¹ÝÈ¯ÇÑ´Ù.
+    // Loganchorì™€ íŒŒì¼ë¡œë¶€í„° íŒë…ëœ íŒŒì¼ë©”íƒ€í—¤ë”ì •ë³´ë¥¼ ë¹„êµí•˜ì—¬
+    // ë¯¸ë””ì–´ë³µêµ¬ì˜ í•„ìš”ì—¬ë¶€ë¥¼ ë°˜í™˜í•œë‹¤.
     IDE_TEST(sddDataFile::checkValidationDBFHdr( aFileNode,
                                                  aDBFileHdr,
                                                  aIsMediaFailure )
@@ -4882,10 +4882,10 @@ IDE_RC sddDiskMgr::checkValidationDBFHdr(
 
 
 /***********************************************************************
- * Description : PROJ-1867  ÁÖ¾îÁø DB FileÀÇ DBFileHdr¸¦ ÀÐ´Â´Ù.
+ * Description : PROJ-1867  ì£¼ì–´ì§„ DB Fileì˜ DBFileHdrë¥¼ ì½ëŠ”ë‹¤.
  *
- * [IN]  aFileNode       - µ¥ÀÌÅ¸ÆÄÀÏ ³ëµå
- * [OUT] aDBFileHdr      - µ¥ÀÌÅ¸ÆÄÀÏ·ÎºÎÅÍ ÆÇµ¶µÈ ÆÄÀÏ¸ÞÅ¸Çì´õ Á¤º¸¸¦ ÀúÀåÇÒ ¹öÆÛ
+ * [IN]  aFileNode       - ë°ì´íƒ€íŒŒì¼ ë…¸ë“œ
+ * [OUT] aDBFileHdr      - ë°ì´íƒ€íŒŒì¼ë¡œë¶€í„° íŒë…ëœ íŒŒì¼ë©”íƒ€í—¤ë” ì •ë³´ë¥¼ ì €ìž¥í•  ë²„í¼
  * ********************************************************************/
 IDE_RC sddDiskMgr::readDBFHdr( idvSQL           * aStatistics,
                                sddDataFileNode  * aFileNode,
@@ -4899,8 +4899,8 @@ IDE_RC sddDiskMgr::readDBFHdr( idvSQL           * aStatistics,
     IDE_TEST( prepareIO( aFileNode ) != IDE_SUCCESS );
     sPreparedIO = ID_TRUE;
 
-    /* File¿¡ ´ëÇÑ IO´Â Ç×»ó DirectIO¸¦ °í·ÁÇØ¼­ Buffer, Size, OffsetÀ»
-     * DirectIO Page Å©±â·Î Align½ÃÅ²´Ù. */
+    /* Fileì— ëŒ€í•œ IOëŠ” í•­ìƒ DirectIOë¥¼ ê³ ë ¤í•´ì„œ Buffer, Size, Offsetì„
+     * DirectIO Page í¬ê¸°ë¡œ Alignì‹œí‚¨ë‹¤. */
     IDE_TEST( aFileNode->mFile.read( aStatistics,
                                      SM_DBFILE_METAHDR_PAGE_OFFSET,
                                      aFileNode->mAlignedPageBuff,
@@ -4939,9 +4939,9 @@ IDE_RC sddDiskMgr::readDBFHdr( idvSQL           * aStatistics,
 }
 
 /***********************************************************************
- * Description : µ¥ÀÌÅ¸ ÆÄÀÏ ÇØ´õ °»½Å.
- * PRJ-1149,  ÁÖ¾îÁø µ¥ÀÌÅ¸ ÆÄÀÏ ³ëµåÀÇ Çì´õ¸¦ ÀÌ¿ëÇÏ¿©
- * µ¥ÀÌÅ¸ ÆÄÀÏ °»½ÅÀ» ÇÑ´Ù.
+ * Description : ë°ì´íƒ€ íŒŒì¼ í•´ë” ê°±ì‹ .
+ * PRJ-1149,  ì£¼ì–´ì§„ ë°ì´íƒ€ íŒŒì¼ ë…¸ë“œì˜ í—¤ë”ë¥¼ ì´ìš©í•˜ì—¬
+ * ë°ì´íƒ€ íŒŒì¼ ê°±ì‹ ì„ í•œë‹¤.
  **********************************************************************/
 IDE_RC sddDiskMgr::writeDBFHdr( idvSQL         * aStatistics,
                                 sddDataFileNode* aDataFileNode )
@@ -4955,8 +4955,8 @@ IDE_RC sddDiskMgr::writeDBFHdr( idvSQL         * aStatistics,
                  == IDE_SUCCESS );
 
     // BUG-17158
-    // offline TBS¶óµµ DBF Hdr´Â Checkpoint½Ã °»½ÅÇÒ ¼ö ÀÖ°Ô
-    // ÇÏ±â À§ÇØ ¼³Á¤ÇÑ´Ù.
+    // offline TBSë¼ë„ DBF HdrëŠ” Checkpointì‹œ ê°±ì‹ í•  ìˆ˜ ìžˆê²Œ
+    // í•˜ê¸° ìœ„í•´ ì„¤ì •í•œë‹¤.
     mEnableWriteToOfflineDBF = ID_TRUE;
 
     IDE_TEST( prepareIO( aDataFileNode ) != IDE_SUCCESS );
@@ -5019,7 +5019,7 @@ IDE_RC sddDiskMgr::writeDBFHdr( idvSQL         * aStatistics,
 }
 
 /***********************************************************************
- * Description : µ¥ÀÌÅ¸ ÆÄÀÏ º¹»ç
+ * Description : ë°ì´íƒ€ íŒŒì¼ ë³µì‚¬
  **********************************************************************/
 IDE_RC sddDiskMgr::copyDataFile(idvSQL*          aStatistics,
                                 sddDataFileNode* aDataFileNode,
@@ -5034,10 +5034,10 @@ IDE_RC sddDiskMgr::copyDataFile(idvSQL*          aStatistics,
     IDE_DASSERT( aBackupFilePath != NULL );
 
     /* BUG-41031
-     * ÆÄÀÏÀÇ »óÅÂ°¡ SMI_FILE_CREATING, SMI_FILE_RESIZING, SMI_FILE_DROPPINGÀÏ °æ¿ì ¹é¾÷ ¼öÇà ½Ã¿¡ ´ë±â¸¦ ÇÏ°Ô µÈ´Ù.
-     * ±×·¯³ª ÆÄÀÏ È®Àå°ú backup°£¿¡ µ¿½Ã¼º Á¦¾î°¡ lockÀÌ ¾Æ´Ñ »óÅÂ°ªÀ¸·Î¸¸ ÆÄ¾ÇÇÏ±â ¶§¹®¿¡
-     * ¹é¾÷ÀÌ ÁøÇàµÇ´Â Áß¿¡ ´Ù½Ã »óÅÂ °ªÀÌ SMI_FILE_CREATING, SMI_FILE_RESIZING, SMI_FILE_DROPPING »óÅÂ·Î º¯°æµÉ ¼ö ÀÖ´Ù.
-     * ±×·¯¹Ç·Î ¸¸¾à »óÅÂ °ªÀÌ ´Ù½Ã ¹Ù²ï »óÅÂ¿¡¼­ µ¥ÀÌÅÍ ÆÄÀÏÀ» º¹»çÇÒ °æ¿ì trace log¸¦ Âïµµ·Ï ÇÑ´Ù. */
+     * íŒŒì¼ì˜ ìƒíƒœê°€ SMI_FILE_CREATING, SMI_FILE_RESIZING, SMI_FILE_DROPPINGì¼ ê²½ìš° ë°±ì—… ìˆ˜í–‰ ì‹œì— ëŒ€ê¸°ë¥¼ í•˜ê²Œ ëœë‹¤.
+     * ê·¸ëŸ¬ë‚˜ íŒŒì¼ í™•ìž¥ê³¼ backupê°„ì— ë™ì‹œì„± ì œì–´ê°€ lockì´ ì•„ë‹Œ ìƒíƒœê°’ìœ¼ë¡œë§Œ íŒŒì•…í•˜ê¸° ë•Œë¬¸ì—
+     * ë°±ì—…ì´ ì§„í–‰ë˜ëŠ” ì¤‘ì— ë‹¤ì‹œ ìƒíƒœ ê°’ì´ SMI_FILE_CREATING, SMI_FILE_RESIZING, SMI_FILE_DROPPING ìƒíƒœë¡œ ë³€ê²½ë  ìˆ˜ ìžˆë‹¤.
+     * ê·¸ëŸ¬ë¯€ë¡œ ë§Œì•½ ìƒíƒœ ê°’ì´ ë‹¤ì‹œ ë°”ë€ ìƒíƒœì—ì„œ ë°ì´í„° íŒŒì¼ì„ ë³µì‚¬í•  ê²½ìš° trace logë¥¼ ì°ë„ë¡ í•œë‹¤. */
     if ( SMI_FILE_STATE_IS_DROPPED ( aDataFileNode->mState ) ||
          SMI_FILE_STATE_IS_CREATING( aDataFileNode->mState ) ||
          SMI_FILE_STATE_IS_RESIZING( aDataFileNode->mState ) ||
@@ -5086,7 +5086,7 @@ IDE_RC sddDiskMgr::copyDataFile(idvSQL*          aStatistics,
     sPrepareIO = ID_FALSE;
     IDE_TEST( completeIO(aDataFileNode, SDD_IO_READ) != IDE_SUCCESS );
 
-    // backupÇÑ DBFileÀÇ DataFileHeaderÀÇ MustRedoToLSNÀ» °»½ÅÇÑ´Ù.
+    // backupí•œ DBFileì˜ DataFileHeaderì˜ MustRedoToLSNì„ ê°±ì‹ í•œë‹¤.
 
     (void)smLayerCallback::getLstLSN( &sMustRedoToLSN );
 
@@ -5140,7 +5140,7 @@ IDE_RC sddDiskMgr::copyDataFile(idvSQL*          aStatistics,
 
 }
 /***********************************************************************
- * Description : µ¥ÀÌÅ¸ ÆÄÀÏ incremental backup
+ * Description : ë°ì´íƒ€ íŒŒì¼ incremental backup
  * PROJ-2133
  **********************************************************************/
 IDE_RC sddDiskMgr::incrementalBackup(idvSQL                 * aStatistics,
@@ -5194,7 +5194,7 @@ IDE_RC sddDiskMgr::incrementalBackup(idvSQL                 * aStatistics,
     IDE_TEST_RAISE( sctTableSpaceMgr::unlock() != IDE_SUCCESS,
                     error_mutex_unlock);
 
-    /* Incremental backupÀ» ¼öÇàÇÑ´Ù.*/
+    /* Incremental backupì„ ìˆ˜í–‰í•œë‹¤.*/
     IDE_TEST( smriChangeTrackingMgr::performIncrementalBackup( 
                                                    aDataFileDescSlot,
                                                    sSrcFile,
@@ -5214,8 +5214,8 @@ IDE_RC sddDiskMgr::incrementalBackup(idvSQL                 * aStatistics,
     IDE_TEST( completeIO(aDataFileNode, SDD_IO_READ) != IDE_SUCCESS );
 
     /* 
-     * »ý¼ºµÈ ÆÄÀÏÀÇ Å©±â¿Í º¹»çµÈ IBChunkÀÇ °³¼ö¸¦ ºñ±³ÇØ backupµÈ Å©±â°¡
-     * µ¿ÀÏÇÑÁö È®ÀÎÇÑ´Ù
+     * ìƒì„±ëœ íŒŒì¼ì˜ í¬ê¸°ì™€ ë³µì‚¬ëœ IBChunkì˜ ê°œìˆ˜ë¥¼ ë¹„êµí•´ backupëœ í¬ê¸°ê°€
+     * ë™ì¼í•œì§€ í™•ì¸í•œë‹¤
      */
     IDE_TEST( sDestFile.getFileSize( &sBackupFileSize ) != IDE_SUCCESS );
 
@@ -5224,9 +5224,9 @@ IDE_RC sddDiskMgr::incrementalBackup(idvSQL                 * aStatistics,
     sBackupSize = (ULong)aBackupInfo->mIBChunkCNT * sIBChunkSizeInByte;
 
     /* 
-     * ÆÄÀÏÀÇ È®ÀåÀÌ³ª Ãà¼Ò°¡ IBChunkÀÇ Å©±â¸¸Å­ ÀÌ·çÁöÁö ¾ÊÀ»¼ö ÀÖ±â¶§¹®¿¡
-     * ½ÇÁ¦ ¹é¾÷µÈ ÆÄÀÏÀÇ Å©±â´Â mIBChunkCNTÀÇ ¹è¼ö°¡ ¾Æ´Ò¼ö ÀÖ´Ù.
-     * ÆÄÀÏÀÇ Å©±â°¡ mIBChunkCNTÀÇ ¹è¼ö°¡ µÇµµ·Ï Á¶Á¤ÇØÁØ´Ù.
+     * íŒŒì¼ì˜ í™•ìž¥ì´ë‚˜ ì¶•ì†Œê°€ IBChunkì˜ í¬ê¸°ë§Œí¼ ì´ë£¨ì§€ì§€ ì•Šì„ìˆ˜ ìžˆê¸°ë•Œë¬¸ì—
+     * ì‹¤ì œ ë°±ì—…ëœ íŒŒì¼ì˜ í¬ê¸°ëŠ” mIBChunkCNTì˜ ë°°ìˆ˜ê°€ ì•„ë‹ìˆ˜ ìžˆë‹¤.
+     * íŒŒì¼ì˜ í¬ê¸°ê°€ mIBChunkCNTì˜ ë°°ìˆ˜ê°€ ë˜ë„ë¡ ì¡°ì •í•´ì¤€ë‹¤.
      */
     if( sBackupFileSize > SM_DBFILE_METAHDR_PAGE_SIZE )
     {
@@ -5244,7 +5244,7 @@ IDE_RC sddDiskMgr::incrementalBackup(idvSQL                 * aStatistics,
 
     IDE_ASSERT( sBackupFileSize == sBackupSize );
 
-    // backupÇÑ DBFileÀÇ DataFileHeaderÀÇ MustRedoToLSNÀ» °»½ÅÇÑ´Ù.
+    // backupí•œ DBFileì˜ DataFileHeaderì˜ MustRedoToLSNì„ ê°±ì‹ í•œë‹¤.
     (void)smLayerCallback::getLstLSN( &sMustRedoToLSN );
 
     sDBFileHdr = aDataFileNode->mDBFileHdr;
@@ -5315,12 +5315,12 @@ IDE_RC sddDiskMgr::incrementalBackup(idvSQL                 * aStatistics,
 /*
   PRJ-1548 User Memory Tablespace
 
-  ¼­¹ö±¸µ¿½Ã º¹±¸ÀÌÈÄ¿¡ ¸ðµç Å×ÀÌºí½ºÆäÀÌ½ºÀÇ
-  DataFileCount¿Í TotalPageCount¸¦ °è»êÇÏ¿© ¼³Á¤ÇÑ´Ù.
+  ì„œë²„êµ¬ë™ì‹œ ë³µêµ¬ì´í›„ì— ëª¨ë“  í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ì˜
+  DataFileCountì™€ TotalPageCountë¥¼ ê³„ì‚°í•˜ì—¬ ì„¤ì •í•œë‹¤.
 
-  º» ÇÁ·ÎÁ§Æ®ºÎÅÍ sddTableSpaceNodeÀÇ mDataFileCount¿Í
-  mTotalPageCount´Â RUNTIME Á¤º¸·Î Ãë±ÞÇÏ¹Ç·Î
-  ¼­¹ö±¸µ¿½Ã º¹±¸ÀÌÈÄ¿¡ Á¤º¸¸¦ º¸Á¤ÇØÁÖ¾î¾ß ÇÑ´Ù.
+  ë³¸ í”„ë¡œì íŠ¸ë¶€í„° sddTableSpaceNodeì˜ mDataFileCountì™€
+  mTotalPageCountëŠ” RUNTIME ì •ë³´ë¡œ ì·¨ê¸‰í•˜ë¯€ë¡œ
+  ì„œë²„êµ¬ë™ì‹œ ë³µêµ¬ì´í›„ì— ì •ë³´ë¥¼ ë³´ì •í•´ì£¼ì–´ì•¼ í•œë‹¤.
 */
 IDE_RC sddDiskMgr::calculateFileSizeOfAllTBS( idvSQL*  aStatistics )
 {
@@ -5341,10 +5341,10 @@ IDE_RC sddDiskMgr::calculateFileSizeOfAllTBS( idvSQL*  aStatistics )
 /*
   PRJ-1548 User Memory Tablespace
 
-  µð½ºÅ© Å×ÀÌºí½ºÆäÀÌ½º¸¦ ¸ðµÎ ¹é¾÷ÇÑ´Ù.
+  ë””ìŠ¤í¬ í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ë¥¼ ëª¨ë‘ ë°±ì—…í•œë‹¤.
 
-  [IN] aTrans : Æ®·£Àè¼Ç
-  [IN] aBackupDir : ¹é¾÷ Dest. µð·ºÅä¸®
+  [IN] aTrans : íŠ¸ëžœìž­ì…˜
+  [IN] aBackupDir : ë°±ì—… Dest. ë””ë ‰í† ë¦¬
 */
 IDE_RC sddDiskMgr::backupAllDiskTBS( idvSQL    * aStatistics,
                                      void      * aTrans,
@@ -5376,10 +5376,10 @@ IDE_RC sddDiskMgr::backupAllDiskTBS( idvSQL    * aStatistics,
 /*
   PROJ-2133 increemntal backup
 
-  µð½ºÅ© Å×ÀÌºí½ºÆäÀÌ½º¸¦ ¸ðµÎ ¹é¾÷ÇÑ´Ù.
+  ë””ìŠ¤í¬ í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ë¥¼ ëª¨ë‘ ë°±ì—…í•œë‹¤.
 
-  [IN] aTrans : Æ®·£Àè¼Ç
-  [IN] aBackupDir : ¹é¾÷ Dest. µð·ºÅä¸®
+  [IN] aTrans : íŠ¸ëžœìž­ì…˜
+  [IN] aBackupDir : ë°±ì—… Dest. ë””ë ‰í† ë¦¬
 */
 IDE_RC sddDiskMgr::incrementalBackupAllDiskTBS( idvSQL     * aStatistics,
                                                 void       * aTrans,
@@ -5410,10 +5410,10 @@ IDE_RC sddDiskMgr::incrementalBackupAllDiskTBS( idvSQL     * aStatistics,
 }
 
 /*
-  Å×ÀÌºí½ºÆäÀÌ½ºÀÇ DirtyµÈ µ¥ÀÌÅ¸ÆÄÀÏÀ» SyncÇÑ´Ù.
-  º» ÇÔ¼ö¿¡ È£ÃâµÇ±âÀü¿¡ TBS Mgr Latch´Â È¹µæµÈ »óÅÂÀÌ´Ù.
+  í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ì˜ Dirtyëœ ë°ì´íƒ€íŒŒì¼ì„ Syncí•œë‹¤.
+  ë³¸ í•¨ìˆ˜ì— í˜¸ì¶œë˜ê¸°ì „ì— TBS Mgr LatchëŠ” íšë“ëœ ìƒíƒœì´ë‹¤.
 
-  [IN] aSpaceNode : °ËÁõÇÒ TBS Node
+  [IN] aSpaceNode : ê²€ì¦í•  TBS Node
   [IN] aActionArg : NULL
 */
 IDE_RC sddDiskMgr::doActIdentifyAllDBFiles(
@@ -5439,7 +5439,7 @@ IDE_RC sddDiskMgr::doActIdentifyAllDBFiles(
         if ( sctTableSpaceMgr::isDiskTableSpace( aSpaceNode->mID )
              != ID_TRUE )
         {
-            // µð½ºÅ© Å×ÀÌºí½ºÆäÀÌ½º°¡ ¾Æ´Ñ °æ¿ì Ã¼Å©ÇÏÁö ¾Ê´Â´Ù.
+            // ë””ìŠ¤í¬ í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ê°€ ì•„ë‹Œ ê²½ìš° ì²´í¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
             break;
         }
 
@@ -5447,8 +5447,8 @@ IDE_RC sddDiskMgr::doActIdentifyAllDBFiles(
                                          SCT_SS_SKIP_IDENTIFY_DB )
              == ID_TRUE )
         {
-            // Å×ÀÌºí½ºÆäÀÌ½º°¡ DISCARDµÈ °æ¿ì Ã¼Å©ÇÏÁö ¾Ê´Â´Ù.
-            // Å×ÀÌºí½ºÆäÀÌ½º°¡ »èÁ¦µÈ °æ¿ì Ã¼Å©ÇÏÁö ¾Ê´Â´Ù.
+            // í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ê°€ DISCARDëœ ê²½ìš° ì²´í¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
+            // í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ê°€ ì‚­ì œëœ ê²½ìš° ì²´í¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
             break;
         }
 
@@ -5466,18 +5466,18 @@ IDE_RC sddDiskMgr::doActIdentifyAllDBFiles(
 
             if ( SMI_FILE_STATE_IS_DROPPED( sFileNode->mState ) )
             {
-                // µ¥ÀÌÅ¸ÆÄÀÏÀÌ »èÁ¦µÈ °æ¿ì ¹«½ÃÇÑ´Ù.
+                // ë°ì´íƒ€íŒŒì¼ì´ ì‚­ì œëœ ê²½ìš° ë¬´ì‹œí•œë‹¤.
                 continue;
             }
 
             // PRJ-1548 User Memory Tablespace
-            // CREATING »óÅÂ ¶Ç´Â DROPPING »óÅÂÀÇ ÆÄÀÏ³ëµå´Â
-            // ¹Ýµå½Ã ÆÄÀÏÀÌ Á¸ÀçÇØ¾ß ÇÑ´Ù.
+            // CREATING ìƒíƒœ ë˜ëŠ” DROPPING ìƒíƒœì˜ íŒŒì¼ë…¸ë“œëŠ”
+            // ë°˜ë“œì‹œ íŒŒì¼ì´ ì¡´ìž¬í•´ì•¼ í•œë‹¤.
             if ( idf::access( sFileNode->mName, F_OK|R_OK|W_OK ) != 0 )
             {
-                // restart ÁßÀÌ¸é
-                // µð½ºÅ© ÀÓ½Ã Å×ÀÌºí½ºÆäÀÌ½ºÀÎ °æ¿ì ´Ù½Ã ¸¸µé¸é µÈ´Ù.
-                // Ã¼Å©Æ÷ÀÎÆ® µî ´Ù¸¥ ÀÌÀ¯·Î(¿î¿µÁß¿¡) È£ÃâµÇ¸éI ±âÁ¸°ú µ¿ÀÏÇÏ°Ô ¿¡·¯ ¿Ã¸²
+                // restart ì¤‘ì´ë©´
+                // ë””ìŠ¤í¬ ìž„ì‹œ í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ì¸ ê²½ìš° ë‹¤ì‹œ ë§Œë“¤ë©´ ëœë‹¤.
+                // ì²´í¬í¬ì¸íŠ¸ ë“± ë‹¤ë¥¸ ì´ìœ ë¡œ(ìš´ì˜ì¤‘ì—) í˜¸ì¶œë˜ë©´I ê¸°ì¡´ê³¼ ë™ì¼í•˜ê²Œ ì—ëŸ¬ ì˜¬ë¦¼
                 if ( ( smiGetStartupPhase() < SMI_STARTUP_SERVICE ) &&
                      ( sctTableSpaceMgr::isTempTableSpace(
                                          sSpaceNode->mHeader.mID ) == ID_TRUE ) )
@@ -5504,14 +5504,14 @@ IDE_RC sddDiskMgr::doActIdentifyAllDBFiles(
             if ( sctTableSpaceMgr::isTempTableSpace(
                                      sSpaceNode->mHeader.mID ) == ID_TRUE )
             {
-                // µð½ºÅ© ÀÓ½Ã Å×ÀÌºí½ºÆäÀÌ½ºÀÎ °æ¿ì µ¥ÀÌÅ¸ÆÄÀÏÀÌ
-                // Á¸ÀçÇÏ´ÂÁö È®ÀÎ¸¸ ÇÑ´Ù.
+                // ë””ìŠ¤í¬ ìž„ì‹œ í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ì¸ ê²½ìš° ë°ì´íƒ€íŒŒì¼ì´
+                // ì¡´ìž¬í•˜ëŠ”ì§€ í™•ì¸ë§Œ í•œë‹¤.
                 continue;
             }
 
 
-            // version, oldest lsn, create lsn ÀÏÄ¡ÇÏÁö ¾ÊÀ¸¸é
-            // media recovery°¡ ÇÊ¿äÇÏ´Ù.
+            // version, oldest lsn, create lsn ì¼ì¹˜í•˜ì§€ ì•Šìœ¼ë©´
+            // media recoveryê°€ í•„ìš”í•˜ë‹¤.
             IDE_TEST_RAISE( checkValidationDBFHdr(
                                                 aStatistics,
                                                 sFileNode,
@@ -5566,13 +5566,13 @@ IDE_RC sddDiskMgr::doActIdentifyAllDBFiles(
 
 
 /*
-  µð½ºÅ© Å×ÀÌºí½ºÆäÀÌ½ºÀÇ ¹Ìµð¾î¿À·ù°¡ ÀÖ´Â µ¥ÀÌÅ¸ÆÄÀÏ ¸ñ·ÏÀ» ¸¸µç´Ù.
+  ë””ìŠ¤í¬ í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ì˜ ë¯¸ë””ì–´ì˜¤ë¥˜ê°€ ìžˆëŠ” ë°ì´íƒ€íŒŒì¼ ëª©ë¡ì„ ë§Œë“ ë‹¤.
 
-  [IN]  aSpaceNode     - Å×ÀÌºí½ºÆäÀÌ½º ³ëµå
-  [IN]  aRecoveryType  - ¹Ìµð¾îº¹±¸ Å¸ÀÔ
-  [OUT] aDiskDBFCount  - ¹Ìµð¾î¿À·ù°¡ ¹ß»ýÇÑ µ¥ÀÌÅ¸ÆÄÀÏ³ëµå °³¼ö
-  [OUT] aFromRedoLSN   - º¹±¸½ÃÀÛ Redo LSN
-  [OUT] aToRedoLSN     - º¹±¸¿Ï·á Redo LSN
+  [IN]  aSpaceNode     - í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ ë…¸ë“œ
+  [IN]  aRecoveryType  - ë¯¸ë””ì–´ë³µêµ¬ íƒ€ìž…
+  [OUT] aDiskDBFCount  - ë¯¸ë””ì–´ì˜¤ë¥˜ê°€ ë°œìƒí•œ ë°ì´íƒ€íŒŒì¼ë…¸ë“œ ê°œìˆ˜
+  [OUT] aFromRedoLSN   - ë³µêµ¬ì‹œìž‘ Redo LSN
+  [OUT] aToRedoLSN     - ë³µêµ¬ì™„ë£Œ Redo LSN
 */
 IDE_RC sddDiskMgr::makeMediaRecoveryDBFList(
                             idvSQL            * aStatistics,
@@ -5615,7 +5615,7 @@ IDE_RC sddDiskMgr::makeMediaRecoveryDBFList(
         }
 
         /* ------------------------------------------------
-         * [1] µ¥ÀÌÅ¸ÆÄÀÏÀÌ Á¸ÀçÇÏ´ÂÁö °Ë»ç
+         * [1] ë°ì´íƒ€íŒŒì¼ì´ ì¡´ìž¬í•˜ëŠ”ì§€ ê²€ì‚¬
          * ----------------------------------------------*/
         if ( idf::access( sFileNode->mName, F_OK|W_OK|R_OK ) != 0 )
         {
@@ -5631,7 +5631,7 @@ IDE_RC sddDiskMgr::makeMediaRecoveryDBFList(
         }
 
         /* ------------------------------------------------
-         * [2] µ¥ÀÌÅ¸ÆÄÀÏ°ú ÆÄÀÏ³ëµå¿Í ¹ÙÀÌ³Ê¸®¹öÀüÀ» °Ë»ç
+         * [2] ë°ì´íƒ€íŒŒì¼ê³¼ íŒŒì¼ë…¸ë“œì™€ ë°”ì´ë„ˆë¦¬ë²„ì „ì„ ê²€ì‚¬
          * ----------------------------------------------*/
         IDE_TEST_RAISE( checkValidationDBFHdr(
                                             aStatistics,
@@ -5643,10 +5643,10 @@ IDE_RC sddDiskMgr::makeMediaRecoveryDBFList(
         if ( sIsMediaFailure == ID_TRUE )
         {
             /*
-               ¹Ìµð¾î ¿À·ù°¡ Á¸ÀçÇÏ´Â °æ¿ì
+               ë¯¸ë””ì–´ ì˜¤ë¥˜ê°€ ì¡´ìž¬í•˜ëŠ” ê²½ìš°
 
-               ÀÏÄ¡ÇÏÁö ¾Ê´Â °æ¿ì´Â ¿ÏÀü(COMPLETE) º¹±¸¸¦
-               ¼öÇàÇØ¾ß ÇÑ´Ù.
+               ì¼ì¹˜í•˜ì§€ ì•ŠëŠ” ê²½ìš°ëŠ” ì™„ì „(COMPLETE) ë³µêµ¬ë¥¼
+               ìˆ˜í–‰í•´ì•¼ í•œë‹¤.
             */
             IDE_TEST_RAISE( (aRecoveryType == SMI_RECOVER_UNTILTIME) ||
                             (aRecoveryType == SMI_RECOVER_UNTILCANCEL),
@@ -5655,35 +5655,35 @@ IDE_RC sddDiskMgr::makeMediaRecoveryDBFList(
         else
         {
             /*
-              ¹Ìµð¾î¿À·ù°¡ ¾ø´Â µ¥ÀÌÅ¸ÆÄÀÏ
+              ë¯¸ë””ì–´ì˜¤ë¥˜ê°€ ì—†ëŠ” ë°ì´íƒ€íŒŒì¼
 
-              ºÒ¿ÏÀüº¹±¸(INCOMPLETE) ¹Ìµð¾î º¹±¸½Ã¿¡´Â
-              ¹é¾÷º»À» °¡Áö°í Àç¼öÇàÀ» ½ÃÀÛÇÏ¹Ç·Î REDO LSNÀÌ
-              ·Î±×¾ÞÄ¿¿Í ÀÏÄ¡ÇÏÁö ¾Ê´Â °æ¿ì´Â Á¸ÀçÇÏÁö ¾Ê´Â´Ù.
+              ë¶ˆì™„ì „ë³µêµ¬(INCOMPLETE) ë¯¸ë””ì–´ ë³µêµ¬ì‹œì—ëŠ”
+              ë°±ì—…ë³¸ì„ ê°€ì§€ê³  ìž¬ìˆ˜í–‰ì„ ì‹œìž‘í•˜ë¯€ë¡œ REDO LSNì´
+              ë¡œê·¸ì•µì»¤ì™€ ì¼ì¹˜í•˜ì§€ ì•ŠëŠ” ê²½ìš°ëŠ” ì¡´ìž¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
 
-              ±×·¸´Ù°í ¿ÏÀüº¹±¸½Ã¿¡ ¸ðµç µ¥ÀÌÅ¸ÆÄÀÏÀÌ
-              ¿À·ù°¡ ÀÖ¾î¾ß ÇÑ´Ù´Â ¸»Àº ¾Æ´Ï´Ù.
+              ê·¸ë ‡ë‹¤ê³  ì™„ì „ë³µêµ¬ì‹œì— ëª¨ë“  ë°ì´íƒ€íŒŒì¼ì´
+              ì˜¤ë¥˜ê°€ ìžˆì–´ì•¼ í•œë‹¤ëŠ” ë§ì€ ì•„ë‹ˆë‹¤.
             */
         }
 
         if ( (aRecoveryType == SMI_RECOVER_COMPLETE) &&
              (sIsMediaFailure != ID_TRUE) )
         {
-            // ¿ÏÀüº¹±¸½Ã ¿À·ù°¡ ¾ø´Â µ¥ÀÌÅ¸ÆÄÀÎ °æ¿ì
-            // ¹Ìµð¾î º¹±¸°¡ ÇÊ¿ä¾ø´Ù.
+            // ì™„ì „ë³µêµ¬ì‹œ ì˜¤ë¥˜ê°€ ì—†ëŠ” ë°ì´íƒ€íŒŒì¸ ê²½ìš°
+            // ë¯¸ë””ì–´ ë³µêµ¬ê°€ í•„ìš”ì—†ë‹¤.
         }
         else
         {
-            // ¿À·ù¸¦ º¹±¸ÇÏ°íÀÚÇÏ´Â ¿ÏÀüº¹±¸ ¶Ç´Â
-            // ¿À·ù°¡ ¾ø´Â ºÒ¿ÏÀüº¹±¸µµ
-            // ¸ðµÎ ¹Ìµð¾î º¹±¸¸¦ ÁøÇàÇÑ´Ù.
+            // ì˜¤ë¥˜ë¥¼ ë³µêµ¬í•˜ê³ ìží•˜ëŠ” ì™„ì „ë³µêµ¬ ë˜ëŠ”
+            // ì˜¤ë¥˜ê°€ ì—†ëŠ” ë¶ˆì™„ì „ë³µêµ¬ë„
+            // ëª¨ë‘ ë¯¸ë””ì–´ ë³µêµ¬ë¥¼ ì§„í–‰í•œë‹¤.
 
-            // ºÒ¿ÏÀü º¹±¸ :
-            // µ¥ÀÌÅ¸ÆÄÀÏ Çì´õÀÇ oldest lsnÀ» °Ë»çÇÑ ´ÙÀ½,
-            // ºÒÀÏÄ¡ÇÏ´Â °æ¿ì º¹±¸´ë»óÆÄÀÏ·Î ¼±Á¤ÇÑ´Ù.
+            // ë¶ˆì™„ì „ ë³µêµ¬ :
+            // ë°ì´íƒ€íŒŒì¼ í—¤ë”ì˜ oldest lsnì„ ê²€ì‚¬í•œ ë‹¤ìŒ,
+            // ë¶ˆì¼ì¹˜í•˜ëŠ” ê²½ìš° ë³µêµ¬ëŒ€ìƒíŒŒì¼ë¡œ ì„ ì •í•œë‹¤.
 
-            // ¿ÏÀüº¹±¸ :
-            // ¸ðµç µ¥ÀÌÅ¸ÆÄÀÏÀÌ º¹±¸´ë»óÀÌ µÈ´Ù.
+            // ì™„ì „ë³µêµ¬ :
+            // ëª¨ë“  ë°ì´íƒ€íŒŒì¼ì´ ë³µêµ¬ëŒ€ìƒì´ ëœë‹¤.
 
             IDE_TEST( smLayerCallback::addRecvFileToHash(
                                            &sDBFileHdr,
@@ -5745,11 +5745,11 @@ IDE_RC sddDiskMgr::makeMediaRecoveryDBFList(
 
 /***********************************************************************
  * Description :
- *  Å×ÀÌºí ½ºÆäÀÌ½ºÀÇ MustRedoToLSN°ª Áß¿¡ °¡Àå Å« °ªÀ» ¹ÝÈ¯ÇÑ´Ù.
+ *  í…Œì´ë¸” ìŠ¤íŽ˜ì´ìŠ¤ì˜ MustRedoToLSNê°’ ì¤‘ì— ê°€ìž¥ í° ê°’ì„ ë°˜í™˜í•œë‹¤.
  *
- * aSpaceNode     - [IN]  Å×ÀÌºí½ºÆäÀÌ½º ³ëµå
- * aMustRedoToLSN - [OUT] º¹±¸¿Ï·á Redo LSN
- * aDBFileName    - [OUT] ÇØ´ç Must Redo to LSNÀ» °¡Áø DBFile
+ * aSpaceNode     - [IN]  í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ ë…¸ë“œ
+ * aMustRedoToLSN - [OUT] ë³µêµ¬ì™„ë£Œ Redo LSN
+ * aDBFileName    - [OUT] í•´ë‹¹ Must Redo to LSNì„ ê°€ì§„ DBFile
  **********************************************************************/
 IDE_RC sddDiskMgr::getMustRedoToLSN( idvSQL            * aStatistics,
                                      sctTableSpaceNode * aSpaceNode,
@@ -5786,11 +5786,11 @@ IDE_RC sddDiskMgr::getMustRedoToLSN( idvSQL            * aStatistics,
             continue;
         }
 
-        // µ¥ÀÌÅ¸ÆÄÀÏÀÌ Á¸ÀçÇÏ´ÂÁö °Ë»ç
+        // ë°ì´íƒ€íŒŒì¼ì´ ì¡´ìž¬í•˜ëŠ”ì§€ ê²€ì‚¬
         IDE_TEST_RAISE( idf::access( sFileNode->mName, F_OK|W_OK|R_OK )
                         != 0 , err_file_not_found );
 
-        // DBFileHdr¸¦ DBFile¿¡¼­ ÀÐ¾î¿Â´Ù.
+        // DBFileHdrë¥¼ DBFileì—ì„œ ì½ì–´ì˜¨ë‹¤.
         IDE_TEST_RAISE( readDBFHdr( aStatistics,
                                     sFileNode,
                                     &sDBFileHdr ) != IDE_SUCCESS,
@@ -5807,7 +5807,7 @@ IDE_RC sddDiskMgr::getMustRedoToLSN( idvSQL            * aStatistics,
     }
 
     SM_GET_LSN( *aMustRedoToLSN, sMustRedoToLSN );
-    *aDBFileName = sDBFileName + 1; // '/' Á¦°ÅÇÏ°í ¹ÝÈ¯
+    *aDBFileName = sDBFileName + 1; // '/' ì œê±°í•˜ê³  ë°˜í™˜
 
     return IDE_SUCCESS;
 
@@ -5828,7 +5828,7 @@ IDE_RC sddDiskMgr::getMustRedoToLSN( idvSQL            * aStatistics,
 
 
 /*
-  µ¥ÀÌÅ¸ÆÄÀÏÀÇ ÆäÀÌÁö ±¸°£À» ¹ÝÈ¯ÇÑ´Ù .
+  ë°ì´íƒ€íŒŒì¼ì˜ íŽ˜ì´ì§€ êµ¬ê°„ì„ ë°˜í™˜í•œë‹¤ .
 */
 IDE_RC  sddDiskMgr::getPageRangeInFileByID( idvSQL          * aStatistics,
                                             scSpaceID         aSpaceID,
@@ -5874,9 +5874,9 @@ IDE_RC  sddDiskMgr::getPageRangeInFileByID( idvSQL          * aStatistics,
 }
 
 /***********************************************************************
- * Description : aSpaceNode°¡ µð½ºÅ© Tablesapce¶ó¸é Tablespace¿¡ ¼ÓÇØ
- *               ÀÖ´Â ¸ðµç DatafileÀÇ Max Open FD Count¸¦ aMaxFDCnt4File
- *               ·Î º¯°æÇÑ´Ù.
+ * Description : aSpaceNodeê°€ ë””ìŠ¤í¬ Tablesapceë¼ë©´ Tablespaceì— ì†í•´
+ *               ìžˆëŠ” ëª¨ë“  Datafileì˜ Max Open FD Countë¥¼ aMaxFDCnt4File
+ *               ë¡œ ë³€ê²½í•œë‹¤.
  *
  * aSpaceNode     - [IN] Space Node Pointer
  * aMaxFDCnt4File - [IN] Max FD Count
@@ -5890,12 +5890,12 @@ IDE_RC  sddDiskMgr::setMaxFDCnt4AllDFileOfTBS( sctTableSpaceNode* aSpaceNode,
 
     IDE_DASSERT( aSpaceNode != NULL );
 
-    // µð½ºÅ© Å×ÀÌºí½ºÆäÀÌ½º°¡ ¾Æ´Ñ °æ¿ì Ã¼Å©ÇÏÁö ¾Ê´Â´Ù.
+    // ë””ìŠ¤í¬ í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ê°€ ì•„ë‹Œ ê²½ìš° ì²´í¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
     IDE_TEST_CONT( sctTableSpaceMgr::isDiskTableSpace( aSpaceNode->mID )
                     == ID_FALSE, err_tbs_type_memory );
 
-    // 1. Å×ÀÌºí½ºÆäÀÌ½º°¡ DISCARDµÈ °æ¿ì Ã¼Å©ÇÏÁö ¾Ê´Â´Ù.
-    // 2. Å×ÀÌºí½ºÆäÀÌ½º°¡ »èÁ¦µÈ °æ¿ì Ã¼Å©ÇÏÁö ¾Ê´Â´Ù.
+    // 1. í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ê°€ DISCARDëœ ê²½ìš° ì²´í¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
+    // 2. í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ê°€ ì‚­ì œëœ ê²½ìš° ì²´í¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
     IDE_TEST_CONT( sctTableSpaceMgr::hasState( aSpaceNode,
                                                 SCT_SS_SKIP_IDENTIFY_DB )
                     == ID_TRUE, err_tbs_skip );
@@ -5908,14 +5908,14 @@ IDE_RC  sddDiskMgr::setMaxFDCnt4AllDFileOfTBS( sctTableSpaceNode* aSpaceNode,
 
         if( sFileNode == NULL )
         {
-            // ¿ÏÀüÈ÷ DropµÈ °æ¿ì.
+            // ì™„ì „ížˆ Dropëœ ê²½ìš°.
             continue;
         }
 
         if( sddDataFile::isDropped( sFileNode )
             == ID_TRUE )
         {
-            // µ¥ÀÌÅ¸ÆÄÀÏÀÌ »èÁ¦µÈ °æ¿ì ¹«½ÃÇÑ´Ù.
+            // ë°ì´íƒ€íŒŒì¼ì´ ì‚­ì œëœ ê²½ìš° ë¬´ì‹œí•œë‹¤.
             continue;
         }
 
@@ -5935,14 +5935,14 @@ IDE_RC  sddDiskMgr::setMaxFDCnt4AllDFileOfTBS( sctTableSpaceNode* aSpaceNode,
 }
 
 /*
-  Offline TBS¿¡ Æ÷ÇÔµÈ TableµéÀÇ Runtime Index headerµéÀ»
-  ¸ðµÎ free ÇÑ´Ù.
+  Offline TBSì— í¬í•¨ëœ Tableë“¤ì˜ Runtime Index headerë“¤ì„
+  ëª¨ë‘ free í•œë‹¤.
 
-  [ Âü°í ]
-  Restart Reocvery °úÁ¤Áß Undo All ¿Ï·á Á÷ÈÄ¿¡ È£ÃâµÈ´Ù.
+  [ ì°¸ê³  ]
+  Restart Reocvery ê³¼ì •ì¤‘ Undo All ì™„ë£Œ ì§í›„ì— í˜¸ì¶œëœë‹¤.
 
-  [ ÀÎÀÚ ]
-  [IN] aSpaceNode - TBS ³ëµå
+  [ ì¸ìž ]
+  [IN] aSpaceNode - TBS ë…¸ë“œ
 
  */
 IDE_RC sddDiskMgr::finiOfflineTBSAction( idvSQL            * aStatistics ,
@@ -5953,10 +5953,10 @@ IDE_RC sddDiskMgr::finiOfflineTBSAction( idvSQL            * aStatistics ,
 
     if ( sctTableSpaceMgr::isDiskTableSpace(aSpaceNode->mID) == ID_TRUE )
     {
-        // TablespaceÀÇ »óÅÂ°¡ OfflineÀÌ¸é
+        // Tablespaceì˜ ìƒíƒœê°€ Offlineì´ë©´
         if (SMI_TBS_IS_OFFLINE(aSpaceNode->mState) )
         {
-            // TableÀÇ Runtime Item  ¹× Runtime Index Header¸¦ Á¦°ÅÇÑ´Ù.
+            // Tableì˜ Runtime Item  ë° Runtime Index Headerë¥¼ ì œê±°í•œë‹¤.
             IDE_TEST( smLayerCallback::alterTBSOffline4Tables( aStatistics,
                                                                aSpaceNode->mID )
                       != IDE_SUCCESS );
@@ -5976,10 +5976,10 @@ IDE_RC sddDiskMgr::finiOfflineTBSAction( idvSQL            * aStatistics ,
 
 /*
 
-  RESIZE DBF ¿¡ ´ëÇÑ Shrink Pending ¿¬»êÀ» ¼öÇàÇÑ´Ù.
+  RESIZE DBF ì— ëŒ€í•œ Shrink Pending ì—°ì‚°ì„ ìˆ˜í–‰í•œë‹¤.
 
   [IN] aSpaceNode : TBS Node
-  [IN] aPendingOp : Pending ±¸Á¶Ã¼
+  [IN] aPendingOp : Pending êµ¬ì¡°ì²´
 
 */
 IDE_RC sddDiskMgr::shrinkFilePending( idvSQL            * aStatistics,
@@ -5997,8 +5997,8 @@ IDE_RC sddDiskMgr::shrinkFilePending( idvSQL            * aStatistics,
 
     sFileNode  = (sddDataFileNode*)aPendingOp->mPendingOpParam;
 
-    // ¹öÆÛ»ó¿¡ ÀûÀçµÈ °ü·Ã ÆäÀÌÁö¸¦ ¹«È¿È­ ½ÃÅ²´Ù.
-    // GC°¡ Á¢±ÙÇÏÁö ¸øÇÏµµ·Ï ÇÑ´Ù.
+    // ë²„í¼ìƒì— ì ìž¬ëœ ê´€ë ¨ íŽ˜ì´ì§€ë¥¼ ë¬´íš¨í™” ì‹œí‚¨ë‹¤.
+    // GCê°€ ì ‘ê·¼í•˜ì§€ ëª»í•˜ë„ë¡ í•œë‹¤.
     IDE_TEST( getPageRangeInFileByID( aStatistics,
                                       sFileNode->mSpaceID,
                                       sFileNode->mID,
@@ -6062,7 +6062,7 @@ IDE_RC sddDiskMgr::shrinkFilePending( idvSQL            * aStatistics,
 
     if ( sPreparedIO != 0 )
     {
-        if ( sState == 0 )  // TBS Latch È¹µæÀÌ ÇÊ¿äÇÑ°æ¿ì
+        if ( sState == 0 )  // TBS Latch íšë“ì´ í•„ìš”í•œê²½ìš°
         {
             IDE_ASSERT( sctTableSpaceMgr::lock( aStatistics )
                         == IDE_SUCCESS );
@@ -6083,7 +6083,7 @@ IDE_RC sddDiskMgr::shrinkFilePending( idvSQL            * aStatistics,
 /* --------------------------------------------------------------------
  * PROJ-2118 BUG Reporting
  *
- * Description : Disk File»óÀÇ PageÀÇ ³»¿ëÀ» ÁöÁ¤ÇÑ trace file¿¡ »Ñ·ÁÁØ´Ù.
+ * Description : Disk Fileìƒì˜ Pageì˜ ë‚´ìš©ì„ ì§€ì •í•œ trace fileì— ë¿Œë ¤ì¤€ë‹¤.
  *
  * ----------------------------------------------------------------- */
 IDE_RC sddDiskMgr::tracePageInFile( UInt            aChkFlag,

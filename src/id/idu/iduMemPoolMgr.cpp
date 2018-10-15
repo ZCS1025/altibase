@@ -57,8 +57,8 @@ IDE_RC iduMemPoolMgr::destroy()
 }
 
 /*
- * mempool list°¡ ÀÌ»óÀÌ ¾ø´ÂÁö checkÇÑ´Ù.
- * iduMemPoolMgr::mMutex°¡ ÀâÇôÀÖ´Â»óÅÂ¿¡¼­ È£ÃâµÇ¾î¾ßÇÔ.
+ * mempool listê°€ ì´ìƒì´ ì—†ëŠ”ì§€ checkí•œë‹¤.
+ * iduMemPoolMgr::mMutexê°€ ì¡í˜€ìˆëŠ”ìƒíƒœì—ì„œ í˜¸ì¶œë˜ì–´ì•¼í•¨.
  */
 void iduMemPoolMgr::verifyPoolList(void)
 {
@@ -84,7 +84,7 @@ void iduMemPoolMgr::verifyPoolList(void)
 }
 
 /*
- *  mem pool list¿¡ »õ·Î¿î mem poolÀ» Ãß°¡ÇÑ´Ù.
+ *  mem pool listì— ìƒˆë¡œìš´ mem poolì„ ì¶”ê°€í•œë‹¤.
  */
 IDE_RC iduMemPoolMgr::addMemPool(iduMemPool * aMemPool)
 {
@@ -122,7 +122,7 @@ IDE_RC iduMemPoolMgr::addMemPool(iduMemPool * aMemPool)
 }
 
 /*
- *  mem pool list¿¡¼­ ÀÎÀÚ·Î ¹ŞÀº mem poolÀ» Á¦°ÅÇÑ´Ù.
+ *  mem pool listì—ì„œ ì¸ìë¡œ ë°›ì€ mem poolì„ ì œê±°í•œë‹¤.
  */
 IDE_RC iduMemPoolMgr::delMemPool(iduMemPool * aMemPool)
 {
@@ -165,7 +165,7 @@ IDE_RC iduMemPoolMgr::delMemPool(iduMemPool * aMemPool)
 }
 
 /*
- * mem pool list¿¡¼­ free chunkµéÀ» ¸ğµÎ OS¿¡ ¹İ³³ÇÑ´Ù.
+ * mem pool listì—ì„œ free chunkë“¤ì„ ëª¨ë‘ OSì— ë°˜ë‚©í•œë‹¤.
  */
 IDE_RC iduMemPoolMgr::shrinkMemPools(void)
 {
@@ -179,7 +179,7 @@ IDE_RC iduMemPoolMgr::shrinkMemPools(void)
 
     IDE_TEST( mMutex.lock(NULL /* idvSQL* */) != IDE_SUCCESS);
 
-    sCur = mListHead;//mListHead´Â ¿¬°áµÈ Ã¹¹øÂ° mem poolÀ» °¡¸£Å°°í ÀÖÀ½.
+    sCur = mListHead;//mListHeadëŠ” ì—°ê²°ëœ ì²«ë²ˆì§¸ mem poolì„ ê°€ë¥´í‚¤ê³  ìˆìŒ.
     if(sCur == NULL)
     {
         t = 0;

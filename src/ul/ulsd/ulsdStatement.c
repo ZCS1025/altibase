@@ -128,7 +128,7 @@ SQLRETURN ulsdNodeDecideStmt(ulnStmt       *aMetaStmt,
 
     if ( aFuncId == ULN_FID_EXECUTE )
     {
-        /* ºĞ»êÁ¤º¸°¡ ¾øÀ¸¸é ¿¡·¯¸¦ ¹ß»ı½ÃÅ²´Ù. */
+        /* ë¶„ì‚°ì •ë³´ê°€ ì—†ìœ¼ë©´ ì—ëŸ¬ë¥¼ ë°œìƒì‹œí‚¨ë‹¤. */
         ACI_TEST_RAISE( ( aMetaStmt->mShardStmtCxt.mShardRangeInfoCnt == 0 ) &&
                         ( aMetaStmt->mShardStmtCxt.mShardDefaultNodeID == ACP_UINT16_MAX ),
                         LABEL_NO_RANGE_FOUNDED );
@@ -138,8 +138,8 @@ SQLRETURN ulsdNodeDecideStmt(ulnStmt       *aMetaStmt,
     }
     else
     {
-        /* fetch, rowcountµî executeÀÌÈÄ¿¡ È£ÃâµÇ´Â °æ¿ì
-         * execute½Ã decideÇÑ node¸¦ È°¿ëÇÑ´Ù.
+        /* fetch, rowcountë“± executeì´í›„ì— í˜¸ì¶œë˜ëŠ” ê²½ìš°
+         * executeì‹œ decideí•œ nodeë¥¼ í™œìš©í•œë‹¤.
          */
     }
 
@@ -179,13 +179,13 @@ SQLRETURN ulsdNodeDecideStmtByValues(ulnStmt       *aMetaStmt,
  * PROJ-2655 Composite shard key
  *
  * STEP 1.
- *        Shard values( bind or constant value )°¡
- *        Server·Î ºÎÅÍ Àü´Ş ¹ŞÀº analysis result»óÀÇ range info¿¡¼­
- *        ¸î ¹ø Â°(range index) À§Ä¡ÇÑ valueÀÎÁö Ã£´Â´Ù.
+ *        Shard values( bind or constant value )ê°€
+ *        Serverë¡œ ë¶€í„° ì „ë‹¬ ë°›ì€ analysis resultìƒì˜ range infoì—ì„œ
+ *        ëª‡ ë²ˆ ì§¸(range index) ìœ„ì¹˜í•œ valueì¸ì§€ ì°¾ëŠ”ë‹¤.
  *
  * STEP 2.
- *        STEP 1.¿¡¼­ ±¸ÇØÁø ¼öÇà ´ë»ó nodeÀÇ range index·Î node index¸¦ ±¸ÇÑ´Ù.
- *        µÎ °³ ÀÌ»óÀÇ nodes°¡ ¼öÇà ´ë»óÀÌ µÇ¸é, ¿¡·¯¸¦ ¹ß»ı ½ÃÅ²´Ù.
+ *        STEP 1.ì—ì„œ êµ¬í•´ì§„ ìˆ˜í–‰ ëŒ€ìƒ nodeì˜ range indexë¡œ node indexë¥¼ êµ¬í•œë‹¤.
+ *        ë‘ ê°œ ì´ìƒì˜ nodesê°€ ìˆ˜í–‰ ëŒ€ìƒì´ ë˜ë©´, ì—ëŸ¬ë¥¼ ë°œìƒ ì‹œí‚¨ë‹¤.
  *
  *********************************************************************************************/
 
@@ -216,12 +216,12 @@ SQLRETURN ulsdNodeDecideStmtByValues(ulnStmt       *aMetaStmt,
 
     if ( aMetaStmt->mShardStmtCxt.mShardSplitMethod == ULN_SHARD_SPLIT_CLONE )
     {
-        /* SPLIT CLONE ÀÏ °æ¿ì */
+        /* SPLIT CLONE ì¼ ê²½ìš° */
         if ( aMetaStmt->mShardStmtCxt.mShardValueCnt == 0 )
         {
-            /* mShardValueCnt°¡ 0ÀÌ¸é random range ¼±ÅÃ */
+            /* mShardValueCntê°€ 0ì´ë©´ random range ì„ íƒ */
 
-            /* AnalysisÀÇ °á°ú°¡ split clone ÀÏ °æ¿ì ¼öÇà ´ë»ó ³ëµå°¡ ÇÏ³ª ÀÌÇÏÀÌ´Ù. */
+            /* Analysisì˜ ê²°ê³¼ê°€ split clone ì¼ ê²½ìš° ìˆ˜í–‰ ëŒ€ìƒ ë…¸ë“œê°€ í•˜ë‚˜ ì´í•˜ì´ë‹¤. */
             ACI_TEST(ulsdGetRangeIndexFromClone(aMetaStmt,
                                                 &sRangeIndex[0].mRangeIndex)
                      != SQL_SUCCESS);
@@ -234,12 +234,12 @@ SQLRETURN ulsdNodeDecideStmtByValues(ulnStmt       *aMetaStmt,
                          aFuncId)
                      != SQL_SUCCESS);
 
-            /* ±â·Ï */
+            /* ê¸°ë¡ */
             sNodeDbcFlags[sNodeDbcIndex] = ACP_TRUE;
         }
         else
         {
-            /* mShardValueCnt°¡ 0ÀÌ ¾Æ´Ï¸é Àü range ¼±ÅÃ */
+            /* mShardValueCntê°€ 0ì´ ì•„ë‹ˆë©´ ì „ range ì„ íƒ */
             for (i = 0; i < aMetaStmt->mShardStmtCxt.mShardRangeInfoCnt; i++)
             {
                 ACI_TEST(ulsdConvertNodeIdToNodeDbcIndex(
@@ -249,15 +249,15 @@ SQLRETURN ulsdNodeDecideStmtByValues(ulnStmt       *aMetaStmt,
                              aFuncId)
                          != SQL_SUCCESS);
 
-                /* ±â·Ï */
+                /* ê¸°ë¡ */
                 sNodeDbcFlags[sNodeDbcIndex] = ACP_TRUE;
             }
         }
     }
     else if ( aMetaStmt->mShardStmtCxt.mShardSplitMethod == ULN_SHARD_SPLIT_SOLO )
     {
-        /* SPLIT SOLO ÀÏ °æ¿ì */
-        /* mShardValueCnt°¡ 1ÀÌ ¾Æ´Ï¸é ¿¡·¯ */
+        /* SPLIT SOLO ì¼ ê²½ìš° */
+        /* mShardValueCntê°€ 1ì´ ì•„ë‹ˆë©´ ì—ëŸ¬ */
         ACP_TEST_RAISE( aMetaStmt->mShardStmtCxt.mShardRangeInfoCnt != 1,
                         LABEL_UNEXPECTED_ERROR );
 
@@ -268,14 +268,14 @@ SQLRETURN ulsdNodeDecideStmtByValues(ulnStmt       *aMetaStmt,
                      aFuncId)
                  != SQL_SUCCESS);
 
-        /* ±â·Ï */
+        /* ê¸°ë¡ */
         sNodeDbcFlags[sNodeDbcIndex] = ACP_TRUE;
     }
     else
     {
-        // SPLIT HASH, RANGE, LIST ÀÏ °æ¿ì
+        // SPLIT HASH, RANGE, LIST ì¼ ê²½ìš°
 
-        // Ã¹ ¹ø Â° shard key value¿¡ ´ëÇÑ, range index¸¦ ±¸ÇÑ´Ù.
+        // ì²« ë²ˆ ì§¸ shard key valueì— ëŒ€í•œ, range indexë¥¼ êµ¬í•œë‹¤.
         for ( i = 0; i < aMetaStmt->mShardStmtCxt.mShardValueCnt; i++ )
         {
             ACI_TEST( ulsdGetRangeIndexByValues( aMetaStmt,
@@ -292,7 +292,7 @@ SQLRETURN ulsdNodeDecideStmtByValues(ulnStmt       *aMetaStmt,
         if ( aMetaStmt->mShardStmtCxt.mShardIsSubKeyExists == ACP_TRUE )
         {
             /*
-             * µÎ ¹ø Â° shard key value¿¡ ´ëÇÑ, range index¸¦ ±¸ÇÑ´Ù.
+             * ë‘ ë²ˆ ì§¸ shard key valueì— ëŒ€í•œ, range indexë¥¼ êµ¬í•œë‹¤.
              */
             for ( i = 0; i < aMetaStmt->mShardStmtCxt.mShardSubValueCnt; i++ )
             {
@@ -322,7 +322,7 @@ SQLRETURN ulsdNodeDecideStmtByValues(ulnStmt       *aMetaStmt,
         }
 
         /*
-         * Range index·Î node index¸¦ ±¸ÇÑ´Ù.
+         * Range indexë¡œ node indexë¥¼ êµ¬í•œë‹¤.
          */
         if ( aMetaStmt->mShardStmtCxt.mShardValueCnt > 0 )
         {
@@ -332,7 +332,7 @@ SQLRETURN ulsdNodeDecideStmtByValues(ulnStmt       *aMetaStmt,
                 /*
                  * CASE 1 : ( mValueCount > 0 && mSubValueCount > 0 )
                  *
-                 * value¿Í sub valueÀÇ range index°¡ °°Àº ³ëµåµéÀÌ ¼öÇà´ë»óÀÌ µÈ´Ù.
+                 * valueì™€ sub valueì˜ range indexê°€ ê°™ì€ ë…¸ë“œë“¤ì´ ìˆ˜í–‰ëŒ€ìƒì´ ëœë‹¤.
                  */
                 sSubValueIndex = sSubRangeIndex[0].mValueIndex;
 
@@ -369,7 +369,7 @@ SQLRETURN ulsdNodeDecideStmtByValues(ulnStmt       *aMetaStmt,
                                          aFuncId)
                                      != SQL_SUCCESS);
 
-                            /* ±â·Ï */
+                            /* ê¸°ë¡ */
                             sNodeDbcFlags[sNodeDbcIndex] = ACP_TRUE;
                             sIsFound = ACP_TRUE;
                         }
@@ -385,7 +385,7 @@ SQLRETURN ulsdNodeDecideStmtByValues(ulnStmt       *aMetaStmt,
                 /*
                  * CASE 2 : ( mValueCount > 0 && mSubValueCount == 0 )
                  *
-                 * valueÀÇ range index¿¡ ÇØ´çÇÏ´Â ³ëµåµéÀÌ ¼öÇà´ë»óÀÌ µÈ´Ù.
+                 * valueì˜ range indexì— í•´ë‹¹í•˜ëŠ” ë…¸ë“œë“¤ì´ ìˆ˜í–‰ëŒ€ìƒì´ ëœë‹¤.
                  */
                 for ( i = 0; i < sRangeIndexCount; i++ )
                 {
@@ -397,7 +397,7 @@ SQLRETURN ulsdNodeDecideStmtByValues(ulnStmt       *aMetaStmt,
                                  aFuncId)
                              != SQL_SUCCESS);
 
-                    /* ±â·Ï */
+                    /* ê¸°ë¡ */
                     sNodeDbcFlags[sNodeDbcIndex] = ACP_TRUE;
                     sIsFound = ACP_TRUE;
                 }
@@ -405,7 +405,7 @@ SQLRETURN ulsdNodeDecideStmtByValues(ulnStmt       *aMetaStmt,
                 /* BUG-45738 */
                 if ( aMetaStmt->mShardStmtCxt.mShardIsSubKeyExists == ACP_TRUE )
                 {
-                    /* Default node¸¦ ¼öÇà³ëµå¿¡ Æ÷ÇÔÇÑ´Ù. */
+                    /* Default nodeë¥¼ ìˆ˜í–‰ë…¸ë“œì— í¬í•¨í•œë‹¤. */
                     sExecDefaultNode = ACP_TRUE;
                 }
                 else
@@ -422,7 +422,7 @@ SQLRETURN ulsdNodeDecideStmtByValues(ulnStmt       *aMetaStmt,
                 /*
                  * CASE 3 : ( mValueCount == 0 && mSubValueCount > 0 )
                  *
-                 * sub valueÀÇ range index¿¡ ÇØ´çÇÏ´Â ³ëµåµéÀÌ ¼öÇà´ë»óÀÌ µÈ´Ù.
+                 * sub valueì˜ range indexì— í•´ë‹¹í•˜ëŠ” ë…¸ë“œë“¤ì´ ìˆ˜í–‰ëŒ€ìƒì´ ëœë‹¤.
                  */
                 for ( j = 0; j < sSubRangeIndexCount; j++ )
                 {
@@ -434,12 +434,12 @@ SQLRETURN ulsdNodeDecideStmtByValues(ulnStmt       *aMetaStmt,
                                  aFuncId)
                              != SQL_SUCCESS);
 
-                    /* ±â·Ï */
+                    /* ê¸°ë¡ */
                     sNodeDbcFlags[sNodeDbcIndex] = ACP_TRUE;
                     sIsFound = ACP_TRUE;
 
                     /* BUG-45738 */
-                    /* Default node¸¦ ¼öÇà³ëµå¿¡ Æ÷ÇÔÇÑ´Ù. */
+                    /* Default nodeë¥¼ ìˆ˜í–‰ë…¸ë“œì— í¬í•¨í•œë‹¤. */
                     sExecDefaultNode = ACP_TRUE; 
                 }
             }
@@ -448,7 +448,7 @@ SQLRETURN ulsdNodeDecideStmtByValues(ulnStmt       *aMetaStmt,
                 /*
                  * CASE 4 : ( mValueCount == 0 && mSubValueCount == 0 )
                  *
-                 * Shard value°¡ ¾ø´Ù¸é, ¸ğµç ³ëµå°¡ ¼öÇà ´ë»óÀÌ µÈ´Ù.
+                 * Shard valueê°€ ì—†ë‹¤ë©´, ëª¨ë“  ë…¸ë“œê°€ ìˆ˜í–‰ ëŒ€ìƒì´ ëœë‹¤.
                  */
                 for (i = 0; i < aMetaStmt->mShardStmtCxt.mShardRangeInfoCnt; i++)
                 {
@@ -459,33 +459,33 @@ SQLRETURN ulsdNodeDecideStmtByValues(ulnStmt       *aMetaStmt,
                                  aFuncId)
                              != SQL_SUCCESS);
 
-                    /* ±â·Ï */
+                    /* ê¸°ë¡ */
                     sNodeDbcFlags[sNodeDbcIndex] = ACP_TRUE;
                     sIsFound = ACP_TRUE;
                 }
 
                 /* BUG-45738 */
-                /* Default node¸¦ ¼öÇà³ëµå¿¡ Æ÷ÇÔÇÑ´Ù. */
+                /* Default nodeë¥¼ ìˆ˜í–‰ë…¸ë“œì— í¬í•¨í•œë‹¤. */
                 sExecDefaultNode = ACP_TRUE;
             }
         }
 
         /*
-         * value¶Ç´Â sub valueÀÇ °ªÀÌ shard range info¿¡ ¾ø°Å³ª, ( sExecDefaultNode == ACP_TRUE )
-         * value¿Í sub valueÀÇ range index°¡ °ãÄ¡Áö ¾Ê´Â °æ¿ì ( sIsFound == ACP_FALSE )
-         * default node°¡ ÀÖ´Ù¸é default node¸¦ ¼öÇà ´ë»ó¿¡ Æ÷ÇÔ½ÃÅ²´Ù.
+         * valueë˜ëŠ” sub valueì˜ ê°’ì´ shard range infoì— ì—†ê±°ë‚˜, ( sExecDefaultNode == ACP_TRUE )
+         * valueì™€ sub valueì˜ range indexê°€ ê²¹ì¹˜ì§€ ì•ŠëŠ” ê²½ìš° ( sIsFound == ACP_FALSE )
+         * default nodeê°€ ìˆë‹¤ë©´ default nodeë¥¼ ìˆ˜í–‰ ëŒ€ìƒì— í¬í•¨ì‹œí‚¨ë‹¤.
          */
         if ( ( sExecDefaultNode == ACP_TRUE ) || ( sIsFound == ACP_FALSE ) )
         {
             /* BUG-45738 */
-            // Default node¿Ü¿¡ ¼öÇà ´ë»ó ³ëµå°¡ ¾ø´Âµ¥
-            // Default node°¡ ¼³Á¤ µÇ¾îÀÖÁö ¾Ê´Ù¸é ¿¡·¯
+            // Default nodeì™¸ì— ìˆ˜í–‰ ëŒ€ìƒ ë…¸ë“œê°€ ì—†ëŠ”ë°
+            // Default nodeê°€ ì„¤ì • ë˜ì–´ìˆì§€ ì•Šë‹¤ë©´ ì—ëŸ¬
             ACI_TEST_RAISE(( sIsFound == ACP_FALSE ) &&
                            ( aMetaStmt->mShardStmtCxt.mShardDefaultNodeID == ACP_UINT16_MAX ),
                            LABEL_NO_NODE_FOUNDED);
 
-            // Default node°¡ ¾ø´õ¶óµµ, ¼öÇà ´ë»ó ³ëµå°¡ ÇÏ³ª¶óµµ ÀÖÀ¸¸é
-            // ±× ³ëµå¿¡¼­¸¸ ¼öÇà½ÃÅ²´Ù. ( for SELECT )
+            // Default nodeê°€ ì—†ë”ë¼ë„, ìˆ˜í–‰ ëŒ€ìƒ ë…¸ë“œê°€ í•˜ë‚˜ë¼ë„ ìˆìœ¼ë©´
+            // ê·¸ ë…¸ë“œì—ì„œë§Œ ìˆ˜í–‰ì‹œí‚¨ë‹¤. ( for SELECT )
             if ( aMetaStmt->mShardStmtCxt.mShardDefaultNodeID != ACP_UINT16_MAX )
             {
                 ACI_TEST(ulsdConvertNodeIdToNodeDbcIndex(
@@ -494,7 +494,7 @@ SQLRETURN ulsdNodeDecideStmtByValues(ulnStmt       *aMetaStmt,
                              &sNodeDbcIndex,
                              aFuncId)
                          != SQL_SUCCESS);
-                /* ±â·Ï */
+                /* ê¸°ë¡ */
                 sNodeDbcFlags[sNodeDbcIndex] = ACP_TRUE;
             }
             else
@@ -510,7 +510,7 @@ SQLRETURN ulsdNodeDecideStmtByValues(ulnStmt       *aMetaStmt,
 
     ulsdGetShardFromDbc(aMetaStmt->mParentDbc, &sShard);
 
-    /* mShardStmtCxt¿¡ ±â·Ï */
+    /* mShardStmtCxtì— ê¸°ë¡ */
     aMetaStmt->mShardStmtCxt.mNodeDbcIndexCount = 0;
     for ( i = 0; i < sShard->mNodeCount; i++ )
     {

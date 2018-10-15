@@ -47,7 +47,7 @@ iSQLProperty::iSQLProperty()
     m_Timing               = ID_FALSE;
     m_Vertical             = ID_FALSE; // BUG-22685
     m_Heading              = ID_TRUE;
-    m_ShowCheckConstraints = ID_FALSE; /* PROJ-1107 Check Constraint Áö¿ø */
+    m_ShowCheckConstraints = ID_FALSE; /* PROJ-1107 Check Constraint ì§€ì› */
     m_ShowForeignKeys      = ID_FALSE;
     m_ShowPartitions       = ID_FALSE; /* BUG-43516 */
     m_PlanCommit           = ID_FALSE;
@@ -103,7 +103,7 @@ void iSQLProperty::clearPlanProperty()
 }
 
 /* ============================================
- * iSQL °ü·Ã È¯°æº¯¼ö¸¦ ÀÐ¾î¼­ ¼¼ÆÃ
+ * iSQL ê´€ë ¨ í™˜ê²½ë³€ìˆ˜ë¥¼ ì½ì–´ì„œ ì„¸íŒ…
  * ============================================ */
 void
 iSQLProperty::SetEnv()
@@ -147,7 +147,7 @@ iSQLProperty::SetEnv()
 
 /* ============================================
  * Set ColSize
- * Display µÇ´Â ÇÑ ÄÃ·³(char,varchar Å¸ÀÔ¸¸ Àû¿ë)ÀÇ ±æÀÌ
+ * Display ë˜ëŠ” í•œ ì»¬ëŸ¼(char,varchar íƒ€ìž…ë§Œ ì ìš©)ì˜ ê¸¸ì´
  * ============================================ */
 void
 iSQLProperty::SetColSize( SChar * a_CommandStr,
@@ -180,7 +180,7 @@ iSQLProperty::SetFeedback( SChar * a_CommandStr,
 
 /* ============================================
  * Set LineSize
- * Display µÇ´Â ÇÑ ¶óÀÎÀÇ ±æÀÌ
+ * Display ë˜ëŠ” í•œ ë¼ì¸ì˜ ê¸¸ì´
  * ============================================ */
 void
 iSQLProperty::SetLineSize( SChar * a_CommandStr,
@@ -204,7 +204,7 @@ iSQLProperty::SetLineSize( SChar * a_CommandStr,
 // BUG-39213 Need to support SET NUMWIDTH in isql
 /* ============================================
  * Set NumWidth
- * Display µÇ´Â ÇÑ ÄÃ·³(numeric, decimal, float Å¸ÀÔ¸¸ Àû¿ë)ÀÇ ±æÀÌ
+ * Display ë˜ëŠ” í•œ ì»¬ëŸ¼(numeric, decimal, float íƒ€ìž…ë§Œ ì ìš©)ì˜ ê¸¸ì´
  * ============================================ */
 void
 iSQLProperty::SetNumWidth( SChar * a_CommandStr,
@@ -227,7 +227,7 @@ iSQLProperty::SetNumWidth( SChar * a_CommandStr,
 
 /* ============================================
  * Set PageSize
- * ·¹ÄÚµå¸¦ ¸î °³ ´ÜÀ§·Î º¸¿©ÁÙ °ÍÀÎ°¡
+ * ë ˆì½”ë“œë¥¼ ëª‡ ê°œ ë‹¨ìœ„ë¡œ ë³´ì—¬ì¤„ ê²ƒì¸ê°€
  * ============================================ */
 void
 iSQLProperty::SetPageSize( SChar * a_CommandStr,
@@ -251,7 +251,7 @@ iSQLProperty::SetPageSize( SChar * a_CommandStr,
 
 /* ============================================
  * Set Term
- * ÄÜ¼Ö È­¸éÀ¸·ÎÀÇ Ãâ·ÂÀ» ÇÒ °ÍÀÎ°¡ ¸» °ÍÀÎ°¡
+ * ì½˜ì†” í™”ë©´ìœ¼ë¡œì˜ ì¶œë ¥ì„ í•  ê²ƒì¸ê°€ ë§ ê²ƒì¸ê°€
  * ============================================ */
 void
 iSQLProperty::SetTerm( SChar * a_CommandStr,
@@ -265,7 +265,7 @@ iSQLProperty::SetTerm( SChar * a_CommandStr,
 
 /* ============================================
  * Set Timing
- * Äõ¸® ¼öÇà ½Ã°£À» º¸¿©ÁÙ °ÍÀÎ°¡ ¸» °ÍÀÎ°¡
+ * ì¿¼ë¦¬ ìˆ˜í–‰ ì‹œê°„ì„ ë³´ì—¬ì¤„ ê²ƒì¸ê°€ ë§ ê²ƒì¸ê°€
  * ============================================ */
 void
 iSQLProperty::SetTiming( SChar * a_CommandStr,
@@ -280,7 +280,7 @@ iSQLProperty::SetTiming( SChar * a_CommandStr,
 // BUG-22685
 /* ============================================
  * Set Vertical
- * ÁúÀÇ °á°ú¹°À» ¼¼·Î·Î º¸¿©ÁÙ °ÍÀÎ°¡
+ * ì§ˆì˜ ê²°ê³¼ë¬¼ì„ ì„¸ë¡œë¡œ ë³´ì—¬ì¤„ ê²ƒì¸ê°€
  * ============================================ */
 void
 iSQLProperty::SetVertical( SChar * a_CommandStr,
@@ -294,7 +294,7 @@ iSQLProperty::SetVertical( SChar * a_CommandStr,
 
 /* ============================================
  * Set Heading
- * Çì´õ(Column Name)¸¦ º¸¿©ÁÙ °ÍÀÎ°¡ ¸» °ÍÀÎ°¡
+ * í—¤ë”(Column Name)ë¥¼ ë³´ì—¬ì¤„ ê²ƒì¸ê°€ ë§ ê²ƒì¸ê°€
  * ============================================ */
 void
 iSQLProperty::SetHeading( SChar * a_CommandStr,
@@ -308,7 +308,7 @@ iSQLProperty::SetHeading( SChar * a_CommandStr,
 
 /* ============================================
  * Set TimeScale
- * Äõ¸® ¼öÇà ½Ã°£ÀÇ ´ÜÀ§
+ * ì¿¼ë¦¬ ìˆ˜í–‰ ì‹œê°„ì˜ ë‹¨ìœ„
  * ============================================ */
 void
 iSQLProperty::SetTimeScale( SChar         * a_CommandStr,
@@ -322,7 +322,7 @@ iSQLProperty::SetTimeScale( SChar         * a_CommandStr,
 
 /* ============================================
  * Set User
- * Connect ÇÒ ¶§¸¶´Ù ÇöÀçÀÇ À¯Àú¸¦ ¼¼ÆÃÇÑ´Ù
+ * Connect í•  ë•Œë§ˆë‹¤ í˜„ìž¬ì˜ ìœ ì €ë¥¼ ì„¸íŒ…í•œë‹¤
  * ============================================ */
 void
 iSQLProperty::SetUserName( SChar * a_UserName )
@@ -395,8 +395,8 @@ void iSQLProperty::SetPasswd(SChar * aPasswd)
 
 // ============================================
 // bug-19279 remote sysdba enable
-// conntype string(tcp/unix...)À» Àç ¼³Á¤ÇÑ´Ù.(È­¸é Ãâ·Â¿ë)
-// why? sysdbaÀÇ °æ¿ì ÃÊ±â°ª°ú ´Ù¸¦ ¼ö ÀÖ´Ù.
+// conntype string(tcp/unix...)ì„ ìž¬ ì„¤ì •í•œë‹¤.(í™”ë©´ ì¶œë ¥ìš©)
+// why? sysdbaì˜ ê²½ìš° ì´ˆê¸°ê°’ê³¼ ë‹¤ë¥¼ ìˆ˜ ìžˆë‹¤.
 void iSQLProperty::AdjustConnTypeStr(idBool aIsSysDBA, SChar* aServerName)
 {
     SInt sConnType = GetConnType(aIsSysDBA, aServerName);
@@ -463,11 +463,11 @@ SInt iSQLProperty::GetConnType(idBool aIsSysDBA, SChar* aServerName)
     }
     // =============================================================
     // bug-19279 remote sysdba enable
-    // Åë½Å ¹æ½Ä(tcp/ unix domain)À» ´ÙÀ½¿¡ ÀÇÇØ °áÁ¤
+    // í†µì‹  ë°©ì‹(tcp/ unix domain)ì„ ë‹¤ìŒì— ì˜í•´ ê²°ì •
     // windows               : tcp
     // localhost: unix domain socket
-    // ±×¿Ü                   : tcp socket (ipc´Â ¸ô¶ó¿ä)
-    // why? localÀÎ °æ¿ì unix domainÀÌ ´õ ¾ÈÁ¤ÀûÀÏ°Í °°¾Æ¼­
+    // ê·¸ì™¸                   : tcp socket (ipcëŠ” ëª°ë¼ìš”)
+    // why? localì¸ ê²½ìš° unix domainì´ ë” ì•ˆì •ì ì¼ê²ƒ ê°™ì•„ì„œ
     else
     {
 #if defined(VC_WIN32) || defined(NTO_QNX)
@@ -521,7 +521,7 @@ SInt iSQLProperty::GetConnType(idBool aIsSysDBA, SChar* aServerName)
 
 /* ============================================
  * Set CheckConstraints
- * desc °á°ú¿¡ Check Constraint Á¤º¸¸¦ º¸¿©ÁÙ °ÍÀÎÁö
+ * desc ê²°ê³¼ì— Check Constraint ì •ë³´ë¥¼ ë³´ì—¬ì¤„ ê²ƒì¸ì§€
  * ============================================ */
 void
 iSQLProperty::SetCheckConstraints( SChar  * a_CommandStr,
@@ -535,7 +535,7 @@ iSQLProperty::SetCheckConstraints( SChar  * a_CommandStr,
 
 /* ============================================
  * Set ForeignKeys
- * desc °á°ú¿¡ foreign key Á¤º¸¸¦ º¸¿©ÁÙ °ÍÀÎÁö
+ * desc ê²°ê³¼ì— foreign key ì •ë³´ë¥¼ ë³´ì—¬ì¤„ ê²ƒì¸ì§€
  * ============================================ */
 void
 iSQLProperty::SetForeignKeys( SChar * a_CommandStr,
@@ -549,7 +549,7 @@ iSQLProperty::SetForeignKeys( SChar * a_CommandStr,
 
 /* ============================================
  * BUG-43516 Set Partitions
- * desc °á°ú¿¡ partition Á¤º¸¸¦ º¸¿©ÁÙ °ÍÀÎÁö
+ * desc ê²°ê³¼ì— partition ì •ë³´ë¥¼ ë³´ì—¬ì¤„ ê²ƒì¸ì§€
  * ============================================ */
 void
 iSQLProperty::SetPartitions( SChar * a_CommandStr,
@@ -563,13 +563,13 @@ iSQLProperty::SetPartitions( SChar * a_CommandStr,
 
 /* ============================================
  * Set PlanCommit
- * autocommit mode false ÀÎ ¼¼¼Ç¿¡¼­ explain plan À»
- * on ¶Ç´Â only ·Î ÇßÀ» ¶§, desc, select * From tab;
- * °°Àº ¸í·É¾î¸¦ »ç¿ëÇÏ°Ô µÇ¸é, ÀÌÀü¿¡ ¼öÇàÁßÀÎ
- * Æ®·£Àè¼ÇÀÌ Á¸ÀçÇÒ °æ¿ì¿¡ ¿¡·¯°¡ ¹ß»ýÇÏ°Ô µÈ´Ù.
+ * autocommit mode false ì¸ ì„¸ì…˜ì—ì„œ explain plan ì„
+ * on ë˜ëŠ” only ë¡œ í–ˆì„ ë•Œ, desc, select * From tab;
+ * ê°™ì€ ëª…ë ¹ì–´ë¥¼ ì‚¬ìš©í•˜ê²Œ ë˜ë©´, ì´ì „ì— ìˆ˜í–‰ì¤‘ì¸
+ * íŠ¸ëžœìž­ì…˜ì´ ì¡´ìž¬í•  ê²½ìš°ì— ì—ëŸ¬ê°€ ë°œìƒí•˜ê²Œ ëœë‹¤.
  * error -> The transaction is already active.
- * ÀÌ¸¦ ¹æÁöÇÏ±â À§ÇØ¼­ ¼öÇàÀü¿¡ commit À» ÀÚµ¿À¸·Î
- * ¼öÇàÇÏµµ·Ï ÇÏ´Â ¿É¼ÇÀ» ÁÙ ¼ö ÀÖ´Ù.
+ * ì´ë¥¼ ë°©ì§€í•˜ê¸° ìœ„í•´ì„œ ìˆ˜í–‰ì „ì— commit ì„ ìžë™ìœ¼ë¡œ
+ * ìˆ˜í–‰í•˜ë„ë¡ í•˜ëŠ” ì˜µì…˜ì„ ì¤„ ìˆ˜ ìžˆë‹¤.
  * ============================================ */
 void
 iSQLProperty::SetPlanCommit( SChar * a_CommandStr,
@@ -615,7 +615,7 @@ iSQLProperty::SetExplainPlan(SChar           * aCmdStr,
 }
 /* ============================================
  * Set LobSize
- * Display µÇ´Â ÇÑ ÄÃ·³(clob Å¸ÀÔ¸¸ Àû¿ë)ÀÇ ±æÀÌ
+ * Display ë˜ëŠ” í•œ ì»¬ëŸ¼(clob íƒ€ìž…ë§Œ ì ìš©)ì˜ ê¸¸ì´
  * ============================================ */
 void
 iSQLProperty::SetLobOffset( SChar * a_CommandStr,
@@ -656,7 +656,7 @@ iSQLProperty::SetLobSize( SChar * a_CommandStr,
 }
 
 /* ============================================
- * ÇöÀçÀÇ iSQL OptionÀ» º¸¿©ÁØ´Ù.
+ * í˜„ìž¬ì˜ iSQL Optionì„ ë³´ì—¬ì¤€ë‹¤.
  * ============================================ */
 void
 iSQLProperty::ShowStmt( SChar          * a_CommandStr,
@@ -716,7 +716,7 @@ iSQLProperty::ShowStmt( SChar          * a_CommandStr,
             idlOS::sprintf(gSpool->m_Buf, "%s", (SChar*)"Vertical  : Off\n");
         gSpool->Print();
 
-        /* PROJ-1107 Check Constraint Áö¿ø */
+        /* PROJ-1107 Check Constraint ì§€ì› */
         if ( m_ShowCheckConstraints == ID_TRUE )
         {
             idlOS::sprintf( gSpool->m_Buf, "%s",
@@ -938,7 +938,7 @@ iSQLProperty::ShowStmt( SChar          * a_CommandStr,
             idlOS::sprintf(gSpool->m_Buf, "%s", (SChar*)"Vertical  : Off\n");
         gSpool->Print();
         break;
-    case iSQL_CHECKCONSTRAINTS : /* PROJ-1107 Check Constraint Áö¿ø */
+    case iSQL_CHECKCONSTRAINTS : /* PROJ-1107 Check Constraint ì§€ì› */
         if ( m_ShowCheckConstraints == ID_TRUE )
         {
             idlOS::sprintf( gSpool->m_Buf, "%s",
@@ -1125,8 +1125,8 @@ idBool iSQLProperty::GetEcho( void )
 
 /* ============================================
  * Set FULLNAME
- * 40 bytes ÀÌ»ó ±æÀÌÀÇ °´Ã¼ ÀÌ¸§À» Àß¶ó¼­ ¶Ç´Â
- * ¸ðµÎ µð½ºÇÃ·¹ÀÌÇÒ °ÍÀÎÁö °áÁ¤
+ * 40 bytes ì´ìƒ ê¸¸ì´ì˜ ê°ì²´ ì´ë¦„ì„ ìž˜ë¼ì„œ ë˜ëŠ”
+ * ëª¨ë‘ ë””ìŠ¤í”Œë ˆì´í•  ê²ƒì¸ì§€ ê²°ì •
  * ============================================ */
 void
 iSQLProperty::SetFullName( SChar * aCommandStr,
@@ -1154,7 +1154,7 @@ idBool iSQLProperty::GetFullName( void )
 
 /* ============================================
  * BUG-41163: SET SQLP[ROMPT]
- * iSQL command prompt ÃÊ±âÈ­
+ * iSQL command prompt ì´ˆê¸°í™”
  * ============================================ */
 void iSQLProperty::InitSqlPrompt()
 {
@@ -1180,7 +1180,7 @@ iSQLProperty::ResetSqlPrompt()
 
 /* ============================================
  * BUG-41163: SET SQLP[ROMPT]
- * iSQL command prompt ¼³Á¤
+ * iSQL command prompt ì„¤ì •
  * ============================================ */
 void
 iSQLProperty::SetSqlPrompt( SChar * aCommandStr,
@@ -1193,9 +1193,9 @@ iSQLProperty::SetSqlPrompt( SChar * aCommandStr,
 }
 
 /*
- * _PRIVILEGE ¶Ç´Â _USER º¯¼ö°¡ Æ÷ÇÔµÈ promptÀÇ °æ¿ì¿¡´Â
- * ¸Å¹ø ÆÄ½ÌÇÏÁö ¾Ê°í CONNECT ¸í·É¾î¸¦ »ç¿ëÇÒ ¶§¸¸ ÆÄ½ÌÇÑ´Ù.
- * Áï PROMPT_VARIABLE_ON, PROMPT_RECONNECT_ON ÀÌ ¸ðµÎ ¼³Á¤µÈ °æ¿ì¿¡¸¸
+ * _PRIVILEGE ë˜ëŠ” _USER ë³€ìˆ˜ê°€ í¬í•¨ëœ promptì˜ ê²½ìš°ì—ëŠ”
+ * ë§¤ë²ˆ íŒŒì‹±í•˜ì§€ ì•Šê³  CONNECT ëª…ë ¹ì–´ë¥¼ ì‚¬ìš©í•  ë•Œë§Œ íŒŒì‹±í•œë‹¤.
+ * ì¦‰ PROMPT_VARIABLE_ON, PROMPT_RECONNECT_ON ì´ ëª¨ë‘ ì„¤ì •ëœ ê²½ìš°ì—ë§Œ
  */
 SChar * iSQLProperty::GetSqlPrompt( void )
 {
@@ -1211,8 +1211,8 @@ SChar * iSQLProperty::GetSqlPrompt( void )
 }
 
 /*
- * CONNECT ¸í·É¾î°¡ ¼öÇàµÈ °æ¿ì PROMPT_RECONNECT_ON bit¸¦ ¼³Á¤ÇÏ±â À§ÇØ,
- * ÀÌ ÇÔ¼ö°¡ È£ÃâµÈ´Ù.
+ * CONNECT ëª…ë ¹ì–´ê°€ ìˆ˜í–‰ëœ ê²½ìš° PROMPT_RECONNECT_ON bitë¥¼ ì„¤ì •í•˜ê¸° ìœ„í•´,
+ * ì´ í•¨ìˆ˜ê°€ í˜¸ì¶œëœë‹¤.
  */
 void iSQLProperty::SetPromptRefreshFlag(UInt aFlag)
 {

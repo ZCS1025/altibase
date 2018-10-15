@@ -20,7 +20,7 @@
  *
  * Description :
  *
- * º» ÆÄÀÏÀº FILE ¿¬»ê°ü·Ã redo/undo ÇÔ¼ö¿¡ ´ëÇÑ ±¸ÇöÆÄÀÏÀÌ´Ù.
+ * ë³¸ íŒŒì¼ì€ FILE ì—°ì‚°ê´€ë ¨ redo/undo í•¨ìˆ˜ì— ëŒ€í•œ êµ¬í˜„íŒŒì¼ì´ë‹¤.
  *
  **********************************************************************/
 
@@ -38,36 +38,36 @@
 /*
 PRJ-1548 User Memory Tablespace
 
-SCT_UPDATE_DRDB_CREATE_TBS ·Î±× Àç¼öÇà
+SCT_UPDATE_DRDB_CREATE_TBS ë¡œê·¸ ì¬ìˆ˜í–‰
 
-Æ®·£Àè¼Ç Commit Pending List: [POP_DBF]->[POP_TBS] // ¼ø¼­ ¹«°ü
+íŠ¸ëœì­ì…˜ Commit Pending List: [POP_DBF]->[POP_TBS] // ìˆœì„œ ë¬´ê´€
 
-¼ø¼­ :   (1)           (2)            (3)      (4)        (5)       (6)       (7)        (8)
-¿¬»ê : [CREATE_TBS]->[CREATE_DBF]->[ANCHOR]->[COMMIT]->[POP_DBF]->[ANCHOR]->[POP_TBS]->[ANCHOR]
-»óÅÂ :  |CREATEING     |CREATING     ÀúÀå      Ä¿¹Ô      ONLINE     ÀúÀå     ONLINE     ÀúÀå
+ìˆœì„œ :   (1)           (2)            (3)      (4)        (5)       (6)       (7)        (8)
+ì—°ì‚° : [CREATE_TBS]->[CREATE_DBF]->[ANCHOR]->[COMMIT]->[POP_DBF]->[ANCHOR]->[POP_TBS]->[ANCHOR]
+ìƒíƒœ :  |CREATEING     |CREATING     ì €ì¥      ì»¤ë°‹      ONLINE     ì €ì¥     ONLINE     ì €ì¥
         |ONLINE        |ONLINE                          ~CREATING           ~CREATING
 
-¾Ë°í¸®Áò
+ì•Œê³ ë¦¬ì¦˜
 
-°¡. (3) ÀÌÀü¿¡ ½ÇÆĞÇÏ¸é Ä¿¹ÔÀÌ ¾ÈµÈ Æ®·£Àè¼ÇÀÌ°í, Loganchor¿¡µµ ÀúÀåµÇÁö ¾Ê¾Ò±â ¶§¹®¿¡
-    TBS List¿¡¼­ °Ë»öÀÌ ¾ÈµÇ¸ç, Àç¼öÇàÇÒ °ÍÀÌ ¾ø´Ù.
+ê°€. (3) ì´ì „ì— ì‹¤íŒ¨í•˜ë©´ ì»¤ë°‹ì´ ì•ˆëœ íŠ¸ëœì­ì…˜ì´ê³ , Loganchorì—ë„ ì €ì¥ë˜ì§€ ì•Šì•˜ê¸° ë•Œë¬¸ì—
+    TBS Listì—ì„œ ê²€ìƒ‰ì´ ì•ˆë˜ë©°, ì¬ìˆ˜í–‰í•  ê²ƒì´ ì—†ë‹¤.
 
-³ª. (3)°ú (4) »çÀÌ¿¡ ½ÇÆĞÇÏ¸é Ä¿¹ÔÀÌ ¾ÈµÈ Æ®·£Àè¼ÇÀÌÁö¸¸, ·Î±×¾ŞÄ¿¿¡ ONLINE|CREATING »óÅÂ·Î
-    ÀúÀåµÇ¾úÀ¸¹Ç·Î, Rollback Pending ¿¬»êÀ» ÅëÇØ DROPPED·Î º¯°æÇØÁÖ¾î¾ß ÇÑ´Ù.
+ë‚˜. (3)ê³¼ (4) ì‚¬ì´ì— ì‹¤íŒ¨í•˜ë©´ ì»¤ë°‹ì´ ì•ˆëœ íŠ¸ëœì­ì…˜ì´ì§€ë§Œ, ë¡œê·¸ì•µì»¤ì— ONLINE|CREATING ìƒíƒœë¡œ
+    ì €ì¥ë˜ì—ˆìœ¼ë¯€ë¡œ, Rollback Pending ì—°ì‚°ì„ í†µí•´ DROPPEDë¡œ ë³€ê²½í•´ì£¼ì–´ì•¼ í•œë‹¤.
 
-´Ù. (7)°ú (8) »çÀÌ¿¡¼­ ½ÇÆĞÇÏ¸é Ä¿¹ÔµÈ Æ®·£Àè¼ÇÀÌÁö¸¸, ·Î±×¾ŞÄ¿¿¡ ONLINE|CREATING »óÅÂ·Î
-    ÀúÀåµÇ¾úÀ¸¹Ç·Î, ONLINE|CREATING »óÅÂÀÏ °æ¿ì¿¡¸¸ Commit Pending ¿¬»êÀ» µî·ÏÇÏ¿©
-    ONLINE »óÅÂ·Î º¯°æÇØÁÖ¾î¾ß ÇÑ´Ù.
+ë‹¤. (7)ê³¼ (8) ì‚¬ì´ì—ì„œ ì‹¤íŒ¨í•˜ë©´ ì»¤ë°‹ëœ íŠ¸ëœì­ì…˜ì´ì§€ë§Œ, ë¡œê·¸ì•µì»¤ì— ONLINE|CREATING ìƒíƒœë¡œ
+    ì €ì¥ë˜ì—ˆìœ¼ë¯€ë¡œ, ONLINE|CREATING ìƒíƒœì¼ ê²½ìš°ì—ë§Œ Commit Pending ì—°ì‚°ì„ ë“±ë¡í•˜ì—¬
+    ONLINE ìƒíƒœë¡œ ë³€ê²½í•´ì£¼ì–´ì•¼ í•œë‹¤.
 
-¶ó. (8) ÀÌÈÄ¿¡ ½ÇÆĞÇÏ¸é Ä¿¹ÔµÈ Æ®·£Àè¼ÇÀÌ°í, ·Î±×¾ŞÄ¿¿¡ ONLINEµÈ »óÅÂ·Î ÀúÀåµÇ¾úÀ¸¹Ç·Î
-    Àç¼öÇà ÇÒ °ÍÀÌ ¾ø´Ù.
+ë¼. (8) ì´í›„ì— ì‹¤íŒ¨í•˜ë©´ ì»¤ë°‹ëœ íŠ¸ëœì­ì…˜ì´ê³ , ë¡œê·¸ì•µì»¤ì— ONLINEëœ ìƒíƒœë¡œ ì €ì¥ë˜ì—ˆìœ¼ë¯€ë¡œ
+    ì¬ìˆ˜í–‰ í•  ê²ƒì´ ì—†ë‹¤.
 
 PROJ-1923 ALTIBASE HDB Disaster Recovery
-À§ ±â´ÉÀ» À§ÇØ ¹«Á¶°Ç redo·Î ¼öÁ¤ÇÑ´Ù.
+ìœ„ ê¸°ëŠ¥ì„ ìœ„í•´ ë¬´ì¡°ê±´ redoë¡œ ìˆ˜ì •í•œë‹¤.
 
-    => º¯°æ µÊ
-°¡. (3) ÀÌÀü¿¡ ½ÇÆĞÇÏ¸é Ä¿¹Ô ¾ÈµÈ Æ®·£Àè¼ÇÀÌ°í, ·Î±×¾ŞÄ¿¿¡µµ ÀúÀåµÇ¾î ÀÖÁö ¾Ê´Ù.
-    µû¶ó¼­ Ã³À½ºÎÅÍ Create TBS¸¦ ¼öÇàÇÑ´Ù. (Ä¿¹ÔÀÌ ¾øÀ¸¹Ç·Î ÃßÈÄ Rollback µÈ´Ù.)
+    => ë³€ê²½ ë¨
+ê°€. (3) ì´ì „ì— ì‹¤íŒ¨í•˜ë©´ ì»¤ë°‹ ì•ˆëœ íŠ¸ëœì­ì…˜ì´ê³ , ë¡œê·¸ì•µì»¤ì—ë„ ì €ì¥ë˜ì–´ ìˆì§€ ì•Šë‹¤.
+    ë”°ë¼ì„œ ì²˜ìŒë¶€í„° Create TBSë¥¼ ìˆ˜í–‰í•œë‹¤. (ì»¤ë°‹ì´ ì—†ìœ¼ë¯€ë¡œ ì¶”í›„ Rollback ëœë‹¤.)
 */
 IDE_RC sddUpdate::redo_SCT_UPDATE_DRDB_CREATE_TBS(
                                             idvSQL    * /* aStatistics */,
@@ -88,7 +88,7 @@ IDE_RC sddUpdate::redo_SCT_UPDATE_DRDB_CREATE_TBS(
                    "aValuesSize : %"ID_UINT32_FMT,
                    aValueSize );
 
-    /* Loganchor·ÎºÎÅÍ ÃÊ±âÈ­µÈ TBS List¸¦ °Ë»öÇÑ´Ù. */
+    /* Loganchorë¡œë¶€í„° ì´ˆê¸°í™”ëœ TBS Listë¥¼ ê²€ìƒ‰í•œë‹¤. */
     sctTableSpaceMgr::findSpaceNodeWithoutException( aSpaceID,
                                                      (void **)&sSpaceNode);
 
@@ -99,46 +99,46 @@ IDE_RC sddUpdate::redo_SCT_UPDATE_DRDB_CREATE_TBS(
 
         if ( SMI_TBS_IS_CREATING(sSpaceNode->mHeader.mState) )
         {
-            /* ¾Ë°í¸®Áò (´Ù)¿¡ ÇØ´çÇÏ´Â CREATINIG »óÅÂÀÏ °æ¿ì¿¡¸¸ ÀÖÀ¸¹Ç·Î
-             * »óÅÂ¸¦ ONLINEÀ¸·Î º¯°æÇÒ ¼ö ÀÖ°Ô Commit Pending ¿¬»êÀ» µî·ÏÇÑ´Ù. */
+            /* ì•Œê³ ë¦¬ì¦˜ (ë‹¤)ì— í•´ë‹¹í•˜ëŠ” CREATINIG ìƒíƒœì¼ ê²½ìš°ì—ë§Œ ìˆìœ¼ë¯€ë¡œ
+             * ìƒíƒœë¥¼ ONLINEìœ¼ë¡œ ë³€ê²½í•  ìˆ˜ ìˆê²Œ Commit Pending ì—°ì‚°ì„ ë“±ë¡í•œë‹¤. */
             if ( smLayerCallback::isBeginTrans( aTrans ) == ID_TRUE )
             {
                 IDE_TEST( sctTableSpaceMgr::addPendingOperation(
                                                 aTrans,
                                                 aSpaceID,
-                                                ID_TRUE, /* commit½Ã¿¡ µ¿ÀÛ */
+                                                ID_TRUE, /* commitì‹œì— ë™ì‘ */
                                                 SCT_POP_CREATE_TBS )
                           != IDE_SUCCESS );
             }
             else
             {
-                /* Active Tx°¡ ¾Æ´Ñ°æ¿ì Pendig µî·ÏÇÏÁö ¾Ê´Â´Ù. */
+                /* Active Txê°€ ì•„ë‹Œê²½ìš° Pendig ë“±ë¡í•˜ì§€ ì•ŠëŠ”ë‹¤. */
             }
 
-            /* ¾Ë°í¸®Áò (³ª)¿¡ ÇØ´çÇÏ´Â °ÍÀº Rollback Pending ¿¬»êÀÌ±â ¶§¹®¿¡
-             * undo_SCT_UPDATE_DRDB_CREATE_TBS()¿¡¼­ POP_DROP_TBS ¿¡¼­ µî·ÏÇÑ´Ù. */
+            /* ì•Œê³ ë¦¬ì¦˜ (ë‚˜)ì— í•´ë‹¹í•˜ëŠ” ê²ƒì€ Rollback Pending ì—°ì‚°ì´ê¸° ë•Œë¬¸ì—
+             * undo_SCT_UPDATE_DRDB_CREATE_TBS()ì—ì„œ POP_DROP_TBS ì—ì„œ ë“±ë¡í•œë‹¤. */
         }
         else
         {
-            /* ¾Ë°í¸®Áò (¶ó) ¿¡ ÇØ´çÇÏ¹Ç·Î Àç¼öÇàÇÏÁö ¾Ê´Â´Ù. */
+            /* ì•Œê³ ë¦¬ì¦˜ (ë¼) ì— í•´ë‹¹í•˜ë¯€ë¡œ ì¬ìˆ˜í–‰í•˜ì§€ ì•ŠëŠ”ë‹¤. */
         }
     }
     else
     {
         sNewSpaceID = sctTableSpaceMgr::getNewTableSpaceID();
 
-        /* ·Î±×¿¡¼­ ÀĞ¾î¿Â spaceID¿Í ¸ŞÅ¸¿¡¼­ ÀĞ¾î¿Â newSpaceID°¡
-         * °°À¸¸é (°¡)¿¡ ÇØ´çÇÏ´Â °æ¿ì Áß redo¸¦ ¼öÇàÇØ¾ß ÇÑ´Ù. */
+        /* ë¡œê·¸ì—ì„œ ì½ì–´ì˜¨ spaceIDì™€ ë©”íƒ€ì—ì„œ ì½ì–´ì˜¨ newSpaceIDê°€
+         * ê°™ìœ¼ë©´ (ê°€)ì— í•´ë‹¹í•˜ëŠ” ê²½ìš° ì¤‘ redoë¥¼ ìˆ˜í–‰í•´ì•¼ í•œë‹¤. */
         if( aSpaceID == sNewSpaceID )
         {
             /* PROJ-1923 ALTIBASE HDB Disaster Recovery
-             * À§ ±â´ÉÀ» Áö¿øÇÏ±â À§ÇØ ¾Ë°í¸®Áò (°¡) ¿¡ ÇØ´çÇÏ´Â °æ¿ì¿¡µµ
-             * Àç¼öÇàÀ» ¼öÇàÇÑ´Ù. */
+             * ìœ„ ê¸°ëŠ¥ì„ ì§€ì›í•˜ê¸° ìœ„í•´ ì•Œê³ ë¦¬ì¦˜ (ê°€) ì— í•´ë‹¹í•˜ëŠ” ê²½ìš°ì—ë„
+             * ì¬ìˆ˜í–‰ì„ ìˆ˜í–‰í•œë‹¤. */
             idlOS::memcpy( (void *)&sTableSpaceAttr,
                            aValuePtr,
                            ID_SIZEOF(smiTableSpaceAttr) );
 
-            // sdptbSpaceDDL::createTBS() À» Âü°íÇÏ¿© redo ÇÑ´Ù.
+            // sdptbSpaceDDL::createTBS() ì„ ì°¸ê³ í•˜ì—¬ redo í•œë‹¤.
             IDE_TEST( sdptbSpaceDDL::createTBS4Redo( aTrans,
                                                      &sTableSpaceAttr )
                       != IDE_SUCCESS );
@@ -159,44 +159,44 @@ IDE_RC sddUpdate::redo_SCT_UPDATE_DRDB_CREATE_TBS(
 /*
 PRJ-1548 User Memory Tablespace
 
-SCT_UPDATE_DRDB_CREATE_TBS ·Î±× UNDO
+SCT_UPDATE_DRDB_CREATE_TBS ë¡œê·¸ UNDO
 
-Æ®·£Àè¼Ç Rollback Pending List: [POP_DBF]->[POP_TBS] // ¼ø¼­¸¸Á·
+íŠ¸ëœì­ì…˜ Rollback Pending List: [POP_DBF]->[POP_TBS] // ìˆœì„œë§Œì¡±
 
 
-¼ø¼­ :   (1)           (2)            (3)      (4)        (5)        (6)
-¿¬»ê : [CREATE_TBS]->[CREATE_DBF]->[ANCHOR]->[CLR_DBF]->[CLR_TBS]->[ROLLBACK]->
-»óÅÂ :  |CREATING     |CREATING      ÀúÀå      |DROPPING |DROPPING
+ìˆœì„œ :   (1)           (2)            (3)      (4)        (5)        (6)
+ì—°ì‚° : [CREATE_TBS]->[CREATE_DBF]->[ANCHOR]->[CLR_DBF]->[CLR_TBS]->[ROLLBACK]->
+ìƒíƒœ :  |CREATING     |CREATING      ì €ì¥      |DROPPING |DROPPING
         |ONLINE       |ONLINE                  |ONLINE   |ONLINE
                                                |CREATING |CREATING
 
-¼ø¼­ :  (7)          (8)       (9)      (10)
-¿¬»ê : [POP_DBF]->[ANCHOR]->[POP_TBS]->[ANCHOR]
-»óÅÂ :  DROPPED    ÀúÀå     DROPPED     ÀúÀå
-        ~ONLINE  (DBF»èÁ¦)  ~ONLINE
+ìˆœì„œ :  (7)          (8)       (9)      (10)
+ì—°ì‚° : [POP_DBF]->[ANCHOR]->[POP_TBS]->[ANCHOR]
+ìƒíƒœ :  DROPPED    ì €ì¥     DROPPED     ì €ì¥
+        ~ONLINE  (DBFì‚­ì œ)  ~ONLINE
         ~CREATING           ~CREATING
         ~DROPPING           ~DROPPING
 
-º¹±¸ ¾Ë°í¸®Áò
+ë³µêµ¬ ì•Œê³ ë¦¬ì¦˜
 
-RESTART½Ã
+RESTARTì‹œ
 
-°¡. (3)undo¸¦ ¼öÇàÇÏ¸é ¿Ï·á°¡ ¾ÈµÈ Æ®·£Àè¼ÇÀÌÁö¸¸, ·Î±×¾ŞÄ¿¿¡ ONLINE|CREATING »óÅÂÀÌ±â
-    ¶§¹®¿¡, ONLINE|CREATING|DROPPING »óÅÂ·Î º¯°æÇÏ°í, Rollback Pending ¿¬»êÀ» µî·ÏÇÏ¿© DROPPED·Î
-    º¯°æÇØÁÖ¾î¾ß ÇÑ´Ù.
+ê°€. (3)undoë¥¼ ìˆ˜í–‰í•˜ë©´ ì™„ë£Œê°€ ì•ˆëœ íŠ¸ëœì­ì…˜ì´ì§€ë§Œ, ë¡œê·¸ì•µì»¤ì— ONLINE|CREATING ìƒíƒœì´ê¸°
+    ë•Œë¬¸ì—, ONLINE|CREATING|DROPPING ìƒíƒœë¡œ ë³€ê²½í•˜ê³ , Rollback Pending ì—°ì‚°ì„ ë“±ë¡í•˜ì—¬ DROPPEDë¡œ
+    ë³€ê²½í•´ì£¼ì–´ì•¼ í•œë‹¤.
 
-³ª. (9)°ú (10) »çÀÌ¿¡¼­ ½ÇÆĞÇÏ¸é Ä¿¹ÔµÈ Æ®·£Àè¼ÇÀÌÁö¸¸, ·Î±×¾ŞÄ¿¿¡ ONLINE|CREATING »óÅÂ·Î
-    ÀúÀåµÇ¾úÀ¸¹Ç·Î, Rollback Pending ¿¬»êÀ» µî·ÏÇÏ¿© DROPPED »óÅÂ·Î º¯°æÇØÁÖ¾î¾ß ÇÑ´Ù.
+ë‚˜. (9)ê³¼ (10) ì‚¬ì´ì—ì„œ ì‹¤íŒ¨í•˜ë©´ ì»¤ë°‹ëœ íŠ¸ëœì­ì…˜ì´ì§€ë§Œ, ë¡œê·¸ì•µì»¤ì— ONLINE|CREATING ìƒíƒœë¡œ
+    ì €ì¥ë˜ì—ˆìœ¼ë¯€ë¡œ, Rollback Pending ì—°ì‚°ì„ ë“±ë¡í•˜ì—¬ DROPPED ìƒíƒœë¡œ ë³€ê²½í•´ì£¼ì–´ì•¼ í•œë‹¤.
 
-´Ù. (10) ÀÌÈÄ¿¡ ½ÇÆĞÇÏ¸é Ä¿¹ÔµÈ Æ®·£Àè¼ÇÀÌ°í, ·Î±×¾ŞÄ¿¿¡ DROPPEDµÈ »óÅÂ·Î ÀúÀåµÇ¾úÀ¸¹Ç·Î
-    °Ë»öÀÌ µÇÁö ¾ÊÀ¸¸ç, undoÇÒ °Íµµ ¾ø´Ù.
+ë‹¤. (10) ì´í›„ì— ì‹¤íŒ¨í•˜ë©´ ì»¤ë°‹ëœ íŠ¸ëœì­ì…˜ì´ê³ , ë¡œê·¸ì•µì»¤ì— DROPPEDëœ ìƒíƒœë¡œ ì €ì¥ë˜ì—ˆìœ¼ë¯€ë¡œ
+    ê²€ìƒ‰ì´ ë˜ì§€ ì•Šìœ¼ë©°, undoí•  ê²ƒë„ ì—†ë‹¤.
 
-RUNTIME½Ã
+RUNTIMEì‹œ
 
-°¡. (1)°ú (2) »çÀÌ¿¡¼­ ½ÇÆĞÇÏ¸é TBS List¿¡¼­ °Ë»öÀÌ ¾ÈµÇ´Â °æ¿ì¿¡´Â Àç¼öÇàÇÒ °ÍÀÌ ¾ø´Ù.
+ê°€. (1)ê³¼ (2) ì‚¬ì´ì—ì„œ ì‹¤íŒ¨í•˜ë©´ TBS Listì—ì„œ ê²€ìƒ‰ì´ ì•ˆë˜ëŠ” ê²½ìš°ì—ëŠ” ì¬ìˆ˜í–‰í•  ê²ƒì´ ì—†ë‹¤.
 
-³ª. (3)¿¡¼­ ½ÇÆĞÇÏ¸é TBS List¿¡¼­ °Ë»öÀÌ µÇ¹Ç·Î, ONLINE|CREATING|DROPPING º¯°æÇÏ°í
-    Rollback Pending ¿¬»êÀ» µî·ÏÇÏ¿© DROPPED·Î º¯°æÇÑ´Ù.
+ë‚˜. (3)ì—ì„œ ì‹¤íŒ¨í•˜ë©´ TBS Listì—ì„œ ê²€ìƒ‰ì´ ë˜ë¯€ë¡œ, ONLINE|CREATING|DROPPING ë³€ê²½í•˜ê³ 
+    Rollback Pending ì—°ì‚°ì„ ë“±ë¡í•˜ì—¬ DROPPEDë¡œ ë³€ê²½í•œë‹¤.
 
 */
 IDE_RC sddUpdate::undo_SCT_UPDATE_DRDB_CREATE_TBS(
@@ -221,15 +221,15 @@ IDE_RC sddUpdate::undo_SCT_UPDATE_DRDB_CREATE_TBS(
     IDE_TEST( sctTableSpaceMgr::lock( aStatistics ) != IDE_SUCCESS );
     sState = 1;
 
-    /* TBS List¸¦ °Ë»öÇÑ´Ù. */
+    /* TBS Listë¥¼ ê²€ìƒ‰í•œë‹¤. */
     sctTableSpaceMgr::findSpaceNodeWithoutException( aSpaceID,
                                                      (void **)&sSpaceNode);
 
     sState = 0;
     IDE_TEST( sctTableSpaceMgr::unlock() != IDE_SUCCESS );
 
-    /* RUNTIME½Ã¿¡´Â sSpaceNode ÀÚÃ¼¿¡ ´ëÇØ¼­ (X) Àá±İÀÌ ÀâÇôÀÖ±â ¶§¹®¿¡
-     * sctTableSpaceMgr::lockÀ» È¹µæÇÒ ÇÊ¿ä°¡ ¾ø´Ù. */
+    /* RUNTIMEì‹œì—ëŠ” sSpaceNode ìì²´ì— ëŒ€í•´ì„œ (X) ì ê¸ˆì´ ì¡í˜€ìˆê¸° ë•Œë¬¸ì—
+     * sctTableSpaceMgr::lockì„ íšë“í•  í•„ìš”ê°€ ì—†ë‹¤. */
     if( sSpaceNode != NULL )
     {
         IDE_ERROR( (sSpaceNode->mHeader.mState & SMI_TBS_DROPPED)
@@ -237,25 +237,25 @@ IDE_RC sddUpdate::undo_SCT_UPDATE_DRDB_CREATE_TBS(
 
         if ( SMI_TBS_IS_CREATING(sSpaceNode->mHeader.mState) )
         {
-            /* CREATE TBS ¿¬»ê¿¡¼­´Â ¾î´À °úÁ¤¿¡¼­ ½ÇÆĞÇÏ´øÁö
-             * Loganchor¿¡ DROPPING»óÅÂ°¡ ÀúÀåµÉ ¼ö ¾øÀ¸¹Ç·Î
-             * RESTART½Ã¿¡´Â DROPPING »óÅÂ°¡ ÀÖÀ» ¼ö ¾øÀ½. */
+            /* CREATE TBS ì—°ì‚°ì—ì„œëŠ” ì–´ëŠ ê³¼ì •ì—ì„œ ì‹¤íŒ¨í•˜ë˜ì§€
+             * Loganchorì— DROPPINGìƒíƒœê°€ ì €ì¥ë  ìˆ˜ ì—†ìœ¼ë¯€ë¡œ
+             * RESTARTì‹œì—ëŠ” DROPPING ìƒíƒœê°€ ìˆì„ ìˆ˜ ì—†ìŒ. */
             IDE_ERROR( (sSpaceNode->mHeader.mState & SMI_TBS_DROPPING)
                        != SMI_TBS_DROPPING );
 
-            /* RESTART ¾Ë°í¸®Áò (°¡),(³ª)¿¡ ÇØ´çÇÑ´Ù.
-             * RUNTIME ¾Ë°í¸®Áò (³ª)¿¡ ÇØ´çÇÑ´Ù. */
+            /* RESTART ì•Œê³ ë¦¬ì¦˜ (ê°€),(ë‚˜)ì— í•´ë‹¹í•œë‹¤.
+             * RUNTIME ì•Œê³ ë¦¬ì¦˜ (ë‚˜)ì— í•´ë‹¹í•œë‹¤. */
             IDE_TEST( sctTableSpaceMgr::addPendingOperation(
                                           aTrans,
                                           sSpaceNode->mHeader.mID,
-                                          ID_FALSE, /* abort ½Ã µ¿ÀÛ */
+                                          ID_FALSE, /* abort ì‹œ ë™ì‘ */
                                           SCT_POP_DROP_TBS) != IDE_SUCCESS );
 
             sSpaceNode->mHeader.mState |= SMI_TBS_DROPPING;
         }
         else
         {
-            /* ¾Ë°í¸®Áò RESTART (´Ù)¿¡ À§¹èµÈ´Ù.
+            /* ì•Œê³ ë¦¬ì¦˜ RESTART (ë‹¤)ì— ìœ„ë°°ëœë‹¤.
              * nothing to do ... */
             IDE_ERROR( 0 );
         }
@@ -263,13 +263,13 @@ IDE_RC sddUpdate::undo_SCT_UPDATE_DRDB_CREATE_TBS(
     }
     else
     {
-        /* RESTART ¾Ë°í¸®Áò (´Ù) ÇØ´ç
-         * RUNTIME ¾Ë°í¸®Áò (°¡) ÇØ´ç
+        /* RESTART ì•Œê³ ë¦¬ì¦˜ (ë‹¤) í•´ë‹¹
+         * RUNTIME ì•Œê³ ë¦¬ì¦˜ (ê°€) í•´ë‹¹
          * nothing to do ... */
     }
 
-    /* RUNTIME½Ã¿¡ º¯°æÀÌ ¹ß»ıÇß´Ù¸é Rollback PendingÀÌ µî·ÏµÇ¾úÀ» °ÍÀÌ°í
-     * Rollback Pending½Ã Loganchor¸¦ °»½ÅÇÑ´Ù. */
+    /* RUNTIMEì‹œì— ë³€ê²½ì´ ë°œìƒí–ˆë‹¤ë©´ Rollback Pendingì´ ë“±ë¡ë˜ì—ˆì„ ê²ƒì´ê³ 
+     * Rollback Pendingì‹œ Loganchorë¥¼ ê°±ì‹ í•œë‹¤. */
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
@@ -289,27 +289,27 @@ IDE_RC sddUpdate::undo_SCT_UPDATE_DRDB_CREATE_TBS(
 /*
 PRJ-1548 User Memory Tablespace
 
-SCT_UPDATE_DRDB_DROP_TBS ·Î±× Àç¼öÇà
+SCT_UPDATE_DRDB_DROP_TBS ë¡œê·¸ ì¬ìˆ˜í–‰
 
-Æ®·£Àè¼Ç Pending List: [POP_DBF]->[POP_TBS] // ¼ø¼­¸¸Á·
+íŠ¸ëœì­ì…˜ Pending List: [POP_DBF]->[POP_TBS] // ìˆœì„œë§Œì¡±
 
-¼ø¼­ :   (1)           (2)      (3)        (4)       (5)       (6)        (7)
-¿¬»ê : [DROP_DBF]->[DROP_TBS]->[COMMIT]->[POP_DBF]->[ANCHOR]->[POP_TBS]->[ANCHOR]
-»óÅÂ :  |DROPPING  |DROPPING   Ä¿¹Ô     |DROPPED     ÀúÀå      DROPPED     ÀúÀå
-        |ONLINE    |ONLINE              |ONLINE     (dbf»èÁ¦)
+ìˆœì„œ :   (1)           (2)      (3)        (4)       (5)       (6)        (7)
+ì—°ì‚° : [DROP_DBF]->[DROP_TBS]->[COMMIT]->[POP_DBF]->[ANCHOR]->[POP_TBS]->[ANCHOR]
+ìƒíƒœ :  |DROPPING  |DROPPING   ì»¤ë°‹     |DROPPED     ì €ì¥      DROPPED     ì €ì¥
+        |ONLINE    |ONLINE              |ONLINE     (dbfì‚­ì œ)
 
-º¹±¸ ¾Ë°í¸®Áò
+ë³µêµ¬ ì•Œê³ ë¦¬ì¦˜
 
-°¡. (3) ÀÌÀü¿¡ ½ÇÆĞÇÏ¸é Ä¿¹ÔÀÌ ¾ÈµÈ Æ®·£Àè¼ÇÀÌ°í, Loganchor¿¡µµ ÀúÀåµÇÁö ¾Ê¾Ò±â ¶§¹®¿¡
-    TBS List¿¡¼­ °Ë»öÀÌ µÇ¸é ONLINE|DROPPING »óÅÂ·Î ¼³Á¤ÇÏ°í, Commit Pending
-    (DROPPINGÀÌ ¾Æ´Ï¸é Á×À½) ¿¬»êÀ» µî·ÏÇÏ¿© DROPPED »óÅÂ·Î º¯°æÇØÁÖ¾î¾ß ÇÑ´Ù.
+ê°€. (3) ì´ì „ì— ì‹¤íŒ¨í•˜ë©´ ì»¤ë°‹ì´ ì•ˆëœ íŠ¸ëœì­ì…˜ì´ê³ , Loganchorì—ë„ ì €ì¥ë˜ì§€ ì•Šì•˜ê¸° ë•Œë¬¸ì—
+    TBS Listì—ì„œ ê²€ìƒ‰ì´ ë˜ë©´ ONLINE|DROPPING ìƒíƒœë¡œ ì„¤ì •í•˜ê³ , Commit Pending
+    (DROPPINGì´ ì•„ë‹ˆë©´ ì£½ìŒ) ì—°ì‚°ì„ ë“±ë¡í•˜ì—¬ DROPPED ìƒíƒœë¡œ ë³€ê²½í•´ì£¼ì–´ì•¼ í•œë‹¤.
 
-³ª. (6)°ú (7) »çÀÌ¿¡¼­ ½ÇÆĞÇÏ¸é Ä¿¹ÔµÈ Æ®·£Àè¼ÇÀÌÁö¸¸, ·Î±×¾ŞÄ¿¿¡ ONLINE »óÅÂ·Î
-    ÀúÀåµÇ¾î ÀÖ±â ¶§¹®¿¡ ONLINE|DROPPING»óÅÂ·Î º¯°æÇÏ°í, Commit Pending ¿¬»êÀ» µî·ÏÇÏ¿©
-    DROPPED »óÅÂ·Î º¯°æÇØÁÖ¾î¾ß ÇÑ´Ù.
+ë‚˜. (6)ê³¼ (7) ì‚¬ì´ì—ì„œ ì‹¤íŒ¨í•˜ë©´ ì»¤ë°‹ëœ íŠ¸ëœì­ì…˜ì´ì§€ë§Œ, ë¡œê·¸ì•µì»¤ì— ONLINE ìƒíƒœë¡œ
+    ì €ì¥ë˜ì–´ ìˆê¸° ë•Œë¬¸ì— ONLINE|DROPPINGìƒíƒœë¡œ ë³€ê²½í•˜ê³ , Commit Pending ì—°ì‚°ì„ ë“±ë¡í•˜ì—¬
+    DROPPED ìƒíƒœë¡œ ë³€ê²½í•´ì£¼ì–´ì•¼ í•œë‹¤.
 
-´Ù. (7) ÀÌÈÄ¿¡ ½ÇÆĞÇÏ¸é Ä¿¹ÔµÈ Æ®·£Àè¼ÇÀÌ°í, »óÅÂ°¡ DROPPED°¡ µÇ¾î Loganchor¿¡
-    ÀúÀåµÇÁö ¾ÊÀ¸¹Ç·Î, TBS List¿¡¼­ °Ë»öµÇÁö ¾Ê´Â´Ù.
+ë‹¤. (7) ì´í›„ì— ì‹¤íŒ¨í•˜ë©´ ì»¤ë°‹ëœ íŠ¸ëœì­ì…˜ì´ê³ , ìƒíƒœê°€ DROPPEDê°€ ë˜ì–´ Loganchorì—
+    ì €ì¥ë˜ì§€ ì•Šìœ¼ë¯€ë¡œ, TBS Listì—ì„œ ê²€ìƒ‰ë˜ì§€ ì•ŠëŠ”ë‹¤.
 
 */
 IDE_RC sddUpdate::redo_SCT_UPDATE_DRDB_DROP_TBS( idvSQL       * /* aStatistics */,
@@ -326,20 +326,20 @@ IDE_RC sddUpdate::redo_SCT_UPDATE_DRDB_DROP_TBS( idvSQL       * /* aStatistics *
     IDE_ERROR( aTrans       != NULL );
     IDE_ERROR( aValueSize   == 0 );
 
-    // TBS List¿¡¼­ °Ë»öÇÑ´Ù.
+    // TBS Listì—ì„œ ê²€ìƒ‰í•œë‹¤.
     sctTableSpaceMgr::findSpaceNodeWithoutException( aSpaceID,
                                                      (void **)&sSpaceNode);
 
     if( sSpaceNode != NULL )
     {
         // PRJ-1548 User Memory Tablespace
-        // DROP TBS ¿¬»êÀÌ commitÀÌ ¾Æ´Ï±â ¶§¹®¿¡ DROPPED·Î
-        // ¼³Á¤ÇÏ¸é °ü·ÃµÈ ·Î±×·¹ÄÚµå¸¦ Àç¼öÇàÇÒ ¼ö ¾ø´Ù.
-        // RESTART RECOVERY½Ã Commit Pending OperationÀ» Àû¿ëÇÏ¿©
-        // º» ¹ö±×¸¦ ¼öÁ¤ÇÑ´Ù.
-        // SCT_UPDATE_DRDB_DROP_TBS Àç¼öÇàÀ» ÇÒ °æ¿ì¿¡´Â DROPPING
-        // »óÅÂ·Î ¼³Á¤ÇÏ°í, ÇØ´ç Æ®·£Àè¼ÇÀÇ COMMIT ·Î±×¸¦ Àç¼öÇàÇÒ ¶§
-        // Commit Pending OperationÀ¸·Î DROPPED »óÅÂ·Î ¼³Á¤ÇÑ´Ù.
+        // DROP TBS ì—°ì‚°ì´ commitì´ ì•„ë‹ˆê¸° ë•Œë¬¸ì— DROPPEDë¡œ
+        // ì„¤ì •í•˜ë©´ ê´€ë ¨ëœ ë¡œê·¸ë ˆì½”ë“œë¥¼ ì¬ìˆ˜í–‰í•  ìˆ˜ ì—†ë‹¤.
+        // RESTART RECOVERYì‹œ Commit Pending Operationì„ ì ìš©í•˜ì—¬
+        // ë³¸ ë²„ê·¸ë¥¼ ìˆ˜ì •í•œë‹¤.
+        // SCT_UPDATE_DRDB_DROP_TBS ì¬ìˆ˜í–‰ì„ í•  ê²½ìš°ì—ëŠ” DROPPING
+        // ìƒíƒœë¡œ ì„¤ì •í•˜ê³ , í•´ë‹¹ íŠ¸ëœì­ì…˜ì˜ COMMIT ë¡œê·¸ë¥¼ ì¬ìˆ˜í–‰í•  ë•Œ
+        // Commit Pending Operationìœ¼ë¡œ DROPPED ìƒíƒœë¡œ ì„¤ì •í•œë‹¤.
 
         if ( (sSpaceNode->mHeader.mState & SMI_TBS_DROPPING)
              != SMI_TBS_DROPPING )
@@ -348,17 +348,17 @@ IDE_RC sddUpdate::redo_SCT_UPDATE_DRDB_DROP_TBS( idvSQL       * /* aStatistics *
             {
                 sSpaceNode->mHeader.mState |= SMI_TBS_DROPPING;
 
-                // ¾Ë°í¸®Áò (°¡), (³ª)¿¡ ÇØ´çÇÏ´Â °æ¿ì Commit Pending ¿¬»ê µî·Ï
+                // ì•Œê³ ë¦¬ì¦˜ (ê°€), (ë‚˜)ì— í•´ë‹¹í•˜ëŠ” ê²½ìš° Commit Pending ì—°ì‚° ë“±ë¡
                 IDE_TEST( sctTableSpaceMgr::addPendingOperation(
                                             aTrans,
                                             aSpaceID,
-                                            ID_TRUE, /* commit½Ã¿¡ µ¿ÀÛ */
+                                            ID_TRUE, /* commitì‹œì— ë™ì‘ */
                                             SCT_POP_DROP_TBS )
                           != IDE_SUCCESS );
             }
             else
             {
-                // Active Tx°¡ ¾Æ´Ñ °æ¿ì¿¡´Â Pending ¿¬»êÀ» Ãß°¡ÇÏÁö ¾Ê´Â´Ù.
+                // Active Txê°€ ì•„ë‹Œ ê²½ìš°ì—ëŠ” Pending ì—°ì‚°ì„ ì¶”ê°€í•˜ì§€ ì•ŠëŠ”ë‹¤.
             }
         }
         else
@@ -368,8 +368,8 @@ IDE_RC sddUpdate::redo_SCT_UPDATE_DRDB_DROP_TBS( idvSQL       * /* aStatistics *
     }
     else
     {
-        // ¾Ë°í¸®Áò (´Ù)¿¡ ÇØ´çÇÏ´Â °æ¿ì TBS List¿¡¼­ °Ë»öÀÌ µÇÁö ¾ÊÀ¸¸ç
-        // Àç¼öÇàÇÏÁö ¾Ê´Â´Ù.
+        // ì•Œê³ ë¦¬ì¦˜ (ë‹¤)ì— í•´ë‹¹í•˜ëŠ” ê²½ìš° TBS Listì—ì„œ ê²€ìƒ‰ì´ ë˜ì§€ ì•Šìœ¼ë©°
+        // ì¬ìˆ˜í–‰í•˜ì§€ ì•ŠëŠ”ë‹¤.
     }
 
     return IDE_SUCCESS;
@@ -382,24 +382,24 @@ IDE_RC sddUpdate::redo_SCT_UPDATE_DRDB_DROP_TBS( idvSQL       * /* aStatistics *
 /*
 PRJ-1548 User Memory Tablespace
 
-SCT_UPDATE_DRDB_DROP_TBS ·Î±× UNDO
+SCT_UPDATE_DRDB_DROP_TBS ë¡œê·¸ UNDO
 
-¼ø¼­ :   (1)           (2)     (3)         (4)        (5)
-¿¬»ê : [DROP_DBF]->[DROP_TBS]->[CLR_TBS]->[CLR_DBF]->[ROLLBACK]
-»óÅÂ :  |ONLINE    |ONLINE     ~DROPPING   ~DROPPING
+ìˆœì„œ :   (1)           (2)     (3)         (4)        (5)
+ì—°ì‚° : [DROP_DBF]->[DROP_TBS]->[CLR_TBS]->[CLR_DBF]->[ROLLBACK]
+ìƒíƒœ :  |ONLINE    |ONLINE     ~DROPPING   ~DROPPING
         |DROPPING  |DROPPING
 
-º¹±¸ ¾Ë°í¸®Áò
+ë³µêµ¬ ì•Œê³ ë¦¬ì¦˜
 
-RESTART½Ã
+RESTARTì‹œ
 
-°¡. (2)ÀÌÈÄ¿¡ ½ÇÆĞÇÑ °æ¿ì, TBS List¿¡¼­ °Ë»öµÈ´Ù¸é (2)¸¦ Àç¼öÇàÇÏ¿©
-    ONLINE|DROPPING »óÅÂÀÌ±â ¶§¹®¿¡, ~DROPPING ¿¬»êÀ» ÇÏ¿© ONLINE »óÅÂ·Î º¯°æÇÑ´Ù.
+ê°€. (2)ì´í›„ì— ì‹¤íŒ¨í•œ ê²½ìš°, TBS Listì—ì„œ ê²€ìƒ‰ëœë‹¤ë©´ (2)ë¥¼ ì¬ìˆ˜í–‰í•˜ì—¬
+    ONLINE|DROPPING ìƒíƒœì´ê¸° ë•Œë¬¸ì—, ~DROPPING ì—°ì‚°ì„ í•˜ì—¬ ONLINE ìƒíƒœë¡œ ë³€ê²½í•œë‹¤.
 
-RUNTIME½Ã
+RUNTIMEì‹œ
 
-°¡. (2)ÀÌÈÄ¿¡ ½ÇÆĞÇÏ¸é TBS List¿¡¼­ °Ë»öÇÏ¿© ~DROPPING ¿¬»êÀ» ¼öÇàÇÏ¿© ONLINE »óÅÂ·Î
-    º¯°æÇÑ´Ù.
+ê°€. (2)ì´í›„ì— ì‹¤íŒ¨í•˜ë©´ TBS Listì—ì„œ ê²€ìƒ‰í•˜ì—¬ ~DROPPING ì—°ì‚°ì„ ìˆ˜í–‰í•˜ì—¬ ONLINE ìƒíƒœë¡œ
+    ë³€ê²½í•œë‹¤.
 
 */
 IDE_RC sddUpdate::undo_SCT_UPDATE_DRDB_DROP_TBS(
@@ -428,14 +428,14 @@ IDE_RC sddUpdate::undo_SCT_UPDATE_DRDB_DROP_TBS(
     sState = 0;
     IDE_TEST( sctTableSpaceMgr::unlock() != IDE_SUCCESS);
 
-    // RUNTIME½Ã¿¡´Â sSpaceNode ÀÚÃ¼¿¡ ´ëÇØ¼­ (X) Àá±İÀÌ ÀâÇôÀÖ±â ¶§¹®¿¡
-    // sctTableSpaceMgr::lockÀ» È¹µæÇÒ ÇÊ¿ä°¡ ¾ø´Ù.
+    // RUNTIMEì‹œì—ëŠ” sSpaceNode ìì²´ì— ëŒ€í•´ì„œ (X) ì ê¸ˆì´ ì¡í˜€ìˆê¸° ë•Œë¬¸ì—
+    // sctTableSpaceMgr::lockì„ íšë“í•  í•„ìš”ê°€ ì—†ë‹¤.
     if( sSpaceNode != NULL )
     {
         if( SMI_TBS_IS_DROPPING(sSpaceNode->mHeader.mState) )
         {
-            // ¾Ë°í¸®Áò RESTART (°¡), RUNTIME (°¡) ¿¡ ÇØ´çÇÏ´Â °æ¿ìÀÌ´Ù.
-            // DROPPINGÀ» ²ô°í, ONLINE »óÅÂ·Î º¯°æÇÑ´Ù.
+            // ì•Œê³ ë¦¬ì¦˜ RESTART (ê°€), RUNTIME (ê°€) ì— í•´ë‹¹í•˜ëŠ” ê²½ìš°ì´ë‹¤.
+            // DROPPINGì„ ë„ê³ , ONLINE ìƒíƒœë¡œ ë³€ê²½í•œë‹¤.
             sSpaceNode->mHeader.mState &= ~SMI_TBS_DROPPING;
         }
 
@@ -446,7 +446,7 @@ IDE_RC sddUpdate::undo_SCT_UPDATE_DRDB_DROP_TBS(
     }
     else
     {
-        // TBS List¿¡¼­ °Ë»öÀÌ µÇÁö ¾ÊÀ¸¸é ¾Æ¹«°Íµµ ÇÏÁö ¾Ê´Â´Ù.
+        // TBS Listì—ì„œ ê²€ìƒ‰ì´ ë˜ì§€ ì•Šìœ¼ë©´ ì•„ë¬´ê²ƒë„ í•˜ì§€ ì•ŠëŠ”ë‹¤.
         // nothing to do...
     }
 
@@ -469,31 +469,31 @@ IDE_RC sddUpdate::undo_SCT_UPDATE_DRDB_DROP_TBS(
 /*
 PRJ-1548 User Memory Tablespace
 
-SCT_UPDATE_DRDB_CREATE_DBF ·Î±× Àç¼öÇà
+SCT_UPDATE_DRDB_CREATE_DBF ë¡œê·¸ ì¬ìˆ˜í–‰
 
-Æ®·£Àè¼Ç Commit Pending List: [POP_DBF]->[POP_TBS]
+íŠ¸ëœì­ì…˜ Commit Pending List: [POP_DBF]->[POP_TBS]
 
-¼ø¼­ :   (1)           (2)            (3)      (4)        (5)       (6)       (7)        (8)
-¿¬»ê : [CREATE_TBS]->[CREATE_DBF]->[ANCHOR]->[COMMIT]->[POP_DBF]->[ANCHOR]->[POP_TBS]->[ANCHOR]
-»óÅÂ :  |CREATEING    |CREATING     ÀúÀå      Ä¿¹Ô      ONLINE     ÀúÀå     ONLINE     ÀúÀå
+ìˆœì„œ :   (1)           (2)            (3)      (4)        (5)       (6)       (7)        (8)
+ì—°ì‚° : [CREATE_TBS]->[CREATE_DBF]->[ANCHOR]->[COMMIT]->[POP_DBF]->[ANCHOR]->[POP_TBS]->[ANCHOR]
+ìƒíƒœ :  |CREATEING    |CREATING     ì €ì¥      ì»¤ë°‹      ONLINE     ì €ì¥     ONLINE     ì €ì¥
         |ONLINE       |ONLINE                          ~CREATING           ~CREATING
 
-¾Ë°í¸®Áò
+ì•Œê³ ë¦¬ì¦˜
 
-°¡. (3) ÀÌÀü¿¡ ½ÇÆĞÇÏ¸é Ä¿¹ÔÀÌ ¾ÈµÈ Æ®·£Àè¼ÇÀÌ°í, Loganchor¿¡µµ ÀúÀåµÇÁö ¾Ê¾Ò±â ¶§¹®¿¡
-    TBS List¿¡¼­ °Ë»öÀÌ ¾ÈµÇ¸ç, Àç¼öÇàÇÒ °ÍÀÌ ¾ø´Ù.
+ê°€. (3) ì´ì „ì— ì‹¤íŒ¨í•˜ë©´ ì»¤ë°‹ì´ ì•ˆëœ íŠ¸ëœì­ì…˜ì´ê³ , Loganchorì—ë„ ì €ì¥ë˜ì§€ ì•Šì•˜ê¸° ë•Œë¬¸ì—
+    TBS Listì—ì„œ ê²€ìƒ‰ì´ ì•ˆë˜ë©°, ì¬ìˆ˜í–‰í•  ê²ƒì´ ì—†ë‹¤.
 
-³ª. (3)°ú (4) »çÀÌ¿¡ ½ÇÆĞÇÏ¸é Ä¿¹ÔÀÌ ¾ÈµÈ Æ®·£Àè¼ÇÀÌÁö¸¸, ·Î±×¾ŞÄ¿¿¡ ONLINE|CREATING »óÅÂ·Î
-    ÀúÀåµÇ¾úÀ¸¹Ç·Î, Rollback Pending ¿¬»êÀ» ÅëÇØ DROPPED·Î º¯°æÇØÁÖ¾î¾ß ÇÑ´Ù.
+ë‚˜. (3)ê³¼ (4) ì‚¬ì´ì— ì‹¤íŒ¨í•˜ë©´ ì»¤ë°‹ì´ ì•ˆëœ íŠ¸ëœì­ì…˜ì´ì§€ë§Œ, ë¡œê·¸ì•µì»¤ì— ONLINE|CREATING ìƒíƒœë¡œ
+    ì €ì¥ë˜ì—ˆìœ¼ë¯€ë¡œ, Rollback Pending ì—°ì‚°ì„ í†µí•´ DROPPEDë¡œ ë³€ê²½í•´ì£¼ì–´ì•¼ í•œë‹¤.
 
-´Ù. (5)°ú (6) »çÀÌ¿¡¼­ ½ÇÆĞÇÏ¸é Ä¿¹ÔµÈ Æ®·£Àè¼ÇÀÌÁö¸¸, ·Î±×¾ŞÄ¿¿¡ ONLINE|CREATING »óÅÂ·Î
-    ÀúÀåµÇ¾úÀ¸¹Ç·Î, ONLINE|CREATING »óÅÂÀÏ °æ¿ì¿¡¸¸ Commit Pending ¿¬»êÀ» µî·ÏÇÏ¿©
-    ONLINE »óÅÂ·Î º¯°æÇØÁÖ¾î¾ß ÇÑ´Ù.
+ë‹¤. (5)ê³¼ (6) ì‚¬ì´ì—ì„œ ì‹¤íŒ¨í•˜ë©´ ì»¤ë°‹ëœ íŠ¸ëœì­ì…˜ì´ì§€ë§Œ, ë¡œê·¸ì•µì»¤ì— ONLINE|CREATING ìƒíƒœë¡œ
+    ì €ì¥ë˜ì—ˆìœ¼ë¯€ë¡œ, ONLINE|CREATING ìƒíƒœì¼ ê²½ìš°ì—ë§Œ Commit Pending ì—°ì‚°ì„ ë“±ë¡í•˜ì—¬
+    ONLINE ìƒíƒœë¡œ ë³€ê²½í•´ì£¼ì–´ì•¼ í•œë‹¤.
 
-¶ó. (6) ÀÌÈÄ¿¡ ½ÇÆĞÇÏ¸é Ä¿¹ÔµÈ Æ®·£Àè¼ÇÀÌ°í, ·Î±×¾ŞÄ¿¿¡ ONLINEµÈ »óÅÂ·Î ÀúÀåµÇ¾úÀ¸¹Ç·Î
-    Àç¼öÇà ÇÒ °ÍÀÌ ¾ø´Ù.
+ë¼. (6) ì´í›„ì— ì‹¤íŒ¨í•˜ë©´ ì»¤ë°‹ëœ íŠ¸ëœì­ì…˜ì´ê³ , ë¡œê·¸ì•µì»¤ì— ONLINEëœ ìƒíƒœë¡œ ì €ì¥ë˜ì—ˆìœ¼ë¯€ë¡œ
+    ì¬ìˆ˜í–‰ í•  ê²ƒì´ ì—†ë‹¤.
 
-# CREATE_TBSÀÇ º¹±¸¾Ë°í¸®Áò°ú °ÅÀÇ µ¿ÀÏÇÏ´Ù.
+# CREATE_TBSì˜ ë³µêµ¬ì•Œê³ ë¦¬ì¦˜ê³¼ ê±°ì˜ ë™ì¼í•˜ë‹¤.
 
 */
 IDE_RC sddUpdate::redo_SCT_UPDATE_DRDB_CREATE_DBF( idvSQL     * /* aStatistics */,
@@ -518,14 +518,14 @@ IDE_RC sddUpdate::redo_SCT_UPDATE_DRDB_CREATE_DBF( idvSQL     * /* aStatistics *
                    "aValueSize : %"ID_UINT32_FMT,
                    aValueSize );
 
-    /* Loganchor·ÎºÎÅÍ ÃÊ±âÈ­µÈ TBS List¸¦ °Ë»öÇÑ´Ù. */
+    /* Loganchorë¡œë¶€í„° ì´ˆê¸°í™”ëœ TBS Listë¥¼ ê²€ìƒ‰í•œë‹¤. */
     IDE_TEST( getTBSDBF( aSpaceID, aFileID, &sSpaceNode, &sFileNode )
               != IDE_SUCCESS );
 
     /* PROJ-1923 ALTIBASE HDB Disaster Recovery
-     * ¾Ë°í¸®Áò (°¡)¿¡ ÇØ´çÇÏ´Â °æ¿ìÀÌ³ª,
-     * SCT_UPDATE_DRDB_CREATE_TBS¸¦ Ç×»ó Redo ÇÏ¹Ç·Î,
-     * SCT_UPDATE_DRDB_CREATE_DBF¸¦ Redo ÇÒ¶§ ÇØ´ç TBS¸¦ ¸øÃ£À¸¸é ¿À·ù »óÈ² */
+     * ì•Œê³ ë¦¬ì¦˜ (ê°€)ì— í•´ë‹¹í•˜ëŠ” ê²½ìš°ì´ë‚˜,
+     * SCT_UPDATE_DRDB_CREATE_TBSë¥¼ í•­ìƒ Redo í•˜ë¯€ë¡œ,
+     * SCT_UPDATE_DRDB_CREATE_DBFë¥¼ Redo í• ë•Œ í•´ë‹¹ TBSë¥¼ ëª»ì°¾ìœ¼ë©´ ì˜¤ë¥˜ ìƒí™© */
     IDE_TEST_RAISE( sSpaceNode == NULL, err_tablespace_does_not_exist );
 
     IDE_ERROR( (sSpaceNode->mHeader.mState & SMI_TBS_DROPPED)
@@ -541,13 +541,13 @@ IDE_RC sddUpdate::redo_SCT_UPDATE_DRDB_CREATE_DBF( idvSQL     * /* aStatistics *
                                aValuePtr,
                                ID_SIZEOF(smiTouchMode) );
 
-                /* ¾Ë°í¸®Áò (´Ù)¿¡ ÇØ´çÇÏ´Â CREATINIG »óÅÂÀÏ °æ¿ì¿¡¸¸
-                 * ÀÖÀ¸¹Ç·Î »óÅÂ¸¦ ONLINEÀ¸·Î º¯°æÇÒ ¼ö ÀÖ°Ô
-                 * Commit Pending ¿¬»êÀ» µî·ÏÇÑ´Ù. */
+                /* ì•Œê³ ë¦¬ì¦˜ (ë‹¤)ì— í•´ë‹¹í•˜ëŠ” CREATINIG ìƒíƒœì¼ ê²½ìš°ì—ë§Œ
+                 * ìˆìœ¼ë¯€ë¡œ ìƒíƒœë¥¼ ONLINEìœ¼ë¡œ ë³€ê²½í•  ìˆ˜ ìˆê²Œ
+                 * Commit Pending ì—°ì‚°ì„ ë“±ë¡í•œë‹¤. */
                 IDE_TEST( sddDataFile::addPendingOperation(
                         aTrans,
                         sFileNode,
-                        ID_TRUE, /* commit½Ã¿¡ µ¿ÀÛ */
+                        ID_TRUE, /* commitì‹œì— ë™ì‘ */
                         SCT_POP_CREATE_DBF,
                         &sPendingOp ) != IDE_SUCCESS );
 
@@ -555,30 +555,30 @@ IDE_RC sddUpdate::redo_SCT_UPDATE_DRDB_CREATE_DBF( idvSQL     * /* aStatistics *
             }
             else
             {
-                /* Active Tx°¡ ¾Æ´Ñ °æ¿ì¿¡´Â Pending ¿¬»êÀ»
-                 * Ãß°¡ÇÏÁö ¾Ê´Â´Ù. */
+                /* Active Txê°€ ì•„ë‹Œ ê²½ìš°ì—ëŠ” Pending ì—°ì‚°ì„
+                 * ì¶”ê°€í•˜ì§€ ì•ŠëŠ”ë‹¤. */
             }
 
-            /* ¾Ë°í¸®Áò (³ª)¿¡ ÇØ´çÇÏ´Â °ÍÀº Rollback Pending¿¬»êÀÌ±â ¶§¹®¿¡
-             * undo_SCT_UPDATE_DRDB_CREATE_DBF()¿¡¼­ POP_DROP_DBF¿¡¼­ µî·ÏÇÑ´Ù. */
+            /* ì•Œê³ ë¦¬ì¦˜ (ë‚˜)ì— í•´ë‹¹í•˜ëŠ” ê²ƒì€ Rollback Pendingì—°ì‚°ì´ê¸° ë•Œë¬¸ì—
+             * undo_SCT_UPDATE_DRDB_CREATE_DBF()ì—ì„œ POP_DROP_DBFì—ì„œ ë“±ë¡í•œë‹¤. */
         }
         else
         {
-            /* ¾Ë°í¸®Áò (¶ó) ¿¡ ÇØ´çÇÏ¹Ç·Î Àç¼öÇàÇÏÁö ¾Ê´Â´Ù. */
+            /* ì•Œê³ ë¦¬ì¦˜ (ë¼) ì— í•´ë‹¹í•˜ë¯€ë¡œ ì¬ìˆ˜í–‰í•˜ì§€ ì•ŠëŠ”ë‹¤. */
         }
     }
     else
     {
         /* PROJ-1923 ALTIBASE HDB Disaster Recovery
-         * À§ ±â´ÉÀ» Áö¿øÇÏ±â À§ÇØ ¾Ë°í¸®Áò (°¡) ¿¡ ÇØ´çÇÏ´Â °æ¿ì ÀÌÁö¸¸
-         * Àç¼öÇàÀ» ¼öÇàÇÑ´Ù.
-         * ±âÁ¸¿¡ DBF ÆÄÀÏÀÌ ÀÖ´Ù¸é »èÁ¦ÇÏ°í »õ·Î ¸¸µé¾îµµ µÈ´Ù.
-         * ¿Ö³ÄÇÏ¸é ·Î±×¾ŞÄ¿¿¡ ±â·ÏµÇ¾î ÀÖÁö ¾ÊÀ¸¹Ç·Î ¾ø´Â ÆÄÀÏ°ú °°´Ù. */
+         * ìœ„ ê¸°ëŠ¥ì„ ì§€ì›í•˜ê¸° ìœ„í•´ ì•Œê³ ë¦¬ì¦˜ (ê°€) ì— í•´ë‹¹í•˜ëŠ” ê²½ìš° ì´ì§€ë§Œ
+         * ì¬ìˆ˜í–‰ì„ ìˆ˜í–‰í•œë‹¤.
+         * ê¸°ì¡´ì— DBF íŒŒì¼ì´ ìˆë‹¤ë©´ ì‚­ì œí•˜ê³  ìƒˆë¡œ ë§Œë“¤ì–´ë„ ëœë‹¤.
+         * ì™œëƒí•˜ë©´ ë¡œê·¸ì•µì»¤ì— ê¸°ë¡ë˜ì–´ ìˆì§€ ì•Šìœ¼ë¯€ë¡œ ì—†ëŠ” íŒŒì¼ê³¼ ê°™ë‹¤. */
         idlOS::memcpy( (void *)&sDataFileAttr,
                        aValuePtr + ID_SIZEOF(smiTouchMode) ,
                        ID_SIZEOF(smiDataFileAttr) );
         
-        // sdptbSpaceDDL::createTBS() À» Âü°íÇÏ¿© redo ÇÑ´Ù.
+        // sdptbSpaceDDL::createTBS() ì„ ì°¸ê³ í•˜ì—¬ redo í•œë‹¤.
         IDE_TEST( sdptbSpaceDDL::createDBF4Redo( aTrans,
                                                  aCurLSN,
                                                  aSpaceID,
@@ -601,43 +601,43 @@ IDE_RC sddUpdate::redo_SCT_UPDATE_DRDB_CREATE_DBF( idvSQL     * /* aStatistics *
 /*
 PRJ-1548 User Memory Tablespace
 
-SCT_UPDATE_DRDB_CREATE_DBF ·Î±× UNDO
+SCT_UPDATE_DRDB_CREATE_DBF ë¡œê·¸ UNDO
 
-Æ®·£Àè¼Ç Pending List: [POP_TBS]->[POP_DBF]
+íŠ¸ëœì­ì…˜ Pending List: [POP_TBS]->[POP_DBF]
 
 
-¼ø¼­ :   (1)           (2)            (3)      (4)        (5)        (6)
-¿¬»ê : [CREATE_TBS]->[CREATE_DBF]->[ANCHOR]->[CLR_DBF]->[CLR_TBS]->[ROLLBACK]->
-»óÅÂ :  CREATING      |CREATING     ÀúÀå      |DROPPING  |DROPPING
+ìˆœì„œ :   (1)           (2)            (3)      (4)        (5)        (6)
+ì—°ì‚° : [CREATE_TBS]->[CREATE_DBF]->[ANCHOR]->[CLR_DBF]->[CLR_TBS]->[ROLLBACK]->
+ìƒíƒœ :  CREATING      |CREATING     ì €ì¥      |DROPPING  |DROPPING
                       |ONLINE                 |ONLINE    |CREATING
                                               |CREATING
-¼ø¼­ :  (7)          (8)       (9)      (10)
-¿¬»ê : [POP_DBF]->[ANCHOR]->[POP_TBS]->[ANCHOR]
-»óÅÂ :  |DROPPED    DBF ÀúÀå  DROPPED   TBS ÀúÀå
-        |ONLINE    (ÆÄÀÏ»èÁ¦)
+ìˆœì„œ :  (7)          (8)       (9)      (10)
+ì—°ì‚° : [POP_DBF]->[ANCHOR]->[POP_TBS]->[ANCHOR]
+ìƒíƒœ :  |DROPPED    DBF ì €ì¥  DROPPED   TBS ì €ì¥
+        |ONLINE    (íŒŒì¼ì‚­ì œ)
 
-º¹±¸ ¾Ë°í¸®Áò
+ë³µêµ¬ ì•Œê³ ë¦¬ì¦˜
 
-RESTART½Ã
+RESTARTì‹œ
 
-°¡. (3)¿¡¼­ undo¸¦ ¼öÇàÇÏ¸é ¿Ï·á°¡ ¾ÈµÈ Æ®·£Àè¼ÇÀÌÁö¸¸, ·Î±×¾ŞÄ¿¿¡ ONLINE|CREATING »óÅÂÀÌ±â
-    ¶§¹®¿¡, ONLINE|CREATING|DROPPING »óÅÂ·Î º¯°æÇÏ°í, Rollback Pending ¿¬»êÀ» µî·ÏÇÏ¿© DROPPED·Î
-    º¯°æÇØÁÖ¾î¾ß ÇÑ´Ù.
+ê°€. (3)ì—ì„œ undoë¥¼ ìˆ˜í–‰í•˜ë©´ ì™„ë£Œê°€ ì•ˆëœ íŠ¸ëœì­ì…˜ì´ì§€ë§Œ, ë¡œê·¸ì•µì»¤ì— ONLINE|CREATING ìƒíƒœì´ê¸°
+    ë•Œë¬¸ì—, ONLINE|CREATING|DROPPING ìƒíƒœë¡œ ë³€ê²½í•˜ê³ , Rollback Pending ì—°ì‚°ì„ ë“±ë¡í•˜ì—¬ DROPPEDë¡œ
+    ë³€ê²½í•´ì£¼ì–´ì•¼ í•œë‹¤.
 
-³ª. (7)°ú (8) »çÀÌ¿¡¼­ ½ÇÆĞÇÏ¸é Ä¿¹ÔµÈ Æ®·£Àè¼ÇÀÌÁö¸¸, ·Î±×¾ŞÄ¿¿¡ ONLINE|CREATING »óÅÂ·Î
-    ÀúÀåµÇ¾úÀ¸¹Ç·Î, Rollback Pending ¿¬»êÀ» µî·ÏÇÏ¿© DROPPED »óÅÂ·Î º¯°æÇØÁÖ¾î¾ß ÇÑ´Ù.
+ë‚˜. (7)ê³¼ (8) ì‚¬ì´ì—ì„œ ì‹¤íŒ¨í•˜ë©´ ì»¤ë°‹ëœ íŠ¸ëœì­ì…˜ì´ì§€ë§Œ, ë¡œê·¸ì•µì»¤ì— ONLINE|CREATING ìƒíƒœë¡œ
+    ì €ì¥ë˜ì—ˆìœ¼ë¯€ë¡œ, Rollback Pending ì—°ì‚°ì„ ë“±ë¡í•˜ì—¬ DROPPED ìƒíƒœë¡œ ë³€ê²½í•´ì£¼ì–´ì•¼ í•œë‹¤.
 
-´Ù. (8) ÀÌÈÄ¿¡ ½ÇÆĞÇÏ¸é Ä¿¹ÔµÈ Æ®·£Àè¼ÇÀÌ°í, ·Î±×¾ŞÄ¿¿¡ DROPPEDµÈ »óÅÂ·Î ÀúÀåµÇ¾úÀ¸¹Ç·Î
-    °Ë»öÀÌ µÇÁö ¾ÊÀ¸¸ç, undoÇÒ °Íµµ ¾ø´Ù.
+ë‹¤. (8) ì´í›„ì— ì‹¤íŒ¨í•˜ë©´ ì»¤ë°‹ëœ íŠ¸ëœì­ì…˜ì´ê³ , ë¡œê·¸ì•µì»¤ì— DROPPEDëœ ìƒíƒœë¡œ ì €ì¥ë˜ì—ˆìœ¼ë¯€ë¡œ
+    ê²€ìƒ‰ì´ ë˜ì§€ ì•Šìœ¼ë©°, undoí•  ê²ƒë„ ì—†ë‹¤.
 
-RUNTIME½Ã
+RUNTIMEì‹œ
 
-°¡. (2)°ú (3) »çÀÌ¿¡¼­ ½ÇÆĞÇÏ¸é TBS List¿¡¼­ °Ë»öÀÌ ¾ÈµÇ´Â °æ¿ì¿¡´Â Àç¼öÇàÇÒ °ÍÀÌ ¾ø´Ù.
+ê°€. (2)ê³¼ (3) ì‚¬ì´ì—ì„œ ì‹¤íŒ¨í•˜ë©´ TBS Listì—ì„œ ê²€ìƒ‰ì´ ì•ˆë˜ëŠ” ê²½ìš°ì—ëŠ” ì¬ìˆ˜í–‰í•  ê²ƒì´ ì—†ë‹¤.
 
-³ª. (3)¿¡¼­ ½ÇÆĞÇÏ¸é TBS List¿¡¼­ °Ë»öÀÌ µÇ¹Ç·Î, ONLINE|CREATING|DROPPING º¯°æÇÏ°í
-    Rollback Pending ¿¬»êÀ» µî·ÏÇÏ¿© DROPPED·Î º¯°æÇÑ´Ù.
+ë‚˜. (3)ì—ì„œ ì‹¤íŒ¨í•˜ë©´ TBS Listì—ì„œ ê²€ìƒ‰ì´ ë˜ë¯€ë¡œ, ONLINE|CREATING|DROPPING ë³€ê²½í•˜ê³ 
+    Rollback Pending ì—°ì‚°ì„ ë“±ë¡í•˜ì—¬ DROPPEDë¡œ ë³€ê²½í•œë‹¤.
 
-# CREATE_TBSÀÇ º¹±¸¾Ë°í¸®Áò°ú °ÅÀÇ µ¿ÀÏÇÏ´Ù.
+# CREATE_TBSì˜ ë³µêµ¬ì•Œê³ ë¦¬ì¦˜ê³¼ ê±°ì˜ ë™ì¼í•˜ë‹¤.
 */
 IDE_RC sddUpdate::undo_SCT_UPDATE_DRDB_CREATE_DBF( idvSQL     * aStatistics,
                                                    void       * aTrans,
@@ -667,8 +667,8 @@ IDE_RC sddUpdate::undo_SCT_UPDATE_DRDB_CREATE_DBF( idvSQL     * aStatistics,
     IDE_TEST( getTBSDBF( aSpaceID, aFileID, &sSpaceNode, &sFileNode )
               != IDE_SUCCESS );
 
-    /* TBS Node¿¡ (X) Àá±İÀ» È¹µæÇß°Å³ª, DBF Node¿¡ (X)Àá±İÀ» È¹µæÇÑ ÀÌÈÄ¶ó¼­
-     * sctTableSpaceMgr::lock()À» È¹µæÇÏÁö ¾Ê´Â´Ù. */
+    /* TBS Nodeì— (X) ì ê¸ˆì„ íšë“í–ˆê±°ë‚˜, DBF Nodeì— (X)ì ê¸ˆì„ íšë“í•œ ì´í›„ë¼ì„œ
+     * sctTableSpaceMgr::lock()ì„ íšë“í•˜ì§€ ì•ŠëŠ”ë‹¤. */
     if( sSpaceNode != NULL )
     {
         if ( sFileNode != NULL )
@@ -679,17 +679,17 @@ IDE_RC sddUpdate::undo_SCT_UPDATE_DRDB_CREATE_DBF( idvSQL     * aStatistics,
                                aValuePtr,
                                ID_SIZEOF(smiTouchMode) );
 
-                /* CREATE TBS ¿¬»ê¿¡¼­´Â ¾î´À °úÁ¤¿¡¼­ ½ÇÆĞÇÏ´øÁö
-                 * Loganchor¿¡ DROPPING»óÅÂ°¡ ÀúÀåµÉ ¼ö ¾øÀ¸¹Ç·Î
-                 * RESTART½Ã¿¡´Â DROPPING »óÅÂ°¡ ÀÖÀ» ¼ö ¾øÀ½. */
+                /* CREATE TBS ì—°ì‚°ì—ì„œëŠ” ì–´ëŠ ê³¼ì •ì—ì„œ ì‹¤íŒ¨í•˜ë˜ì§€
+                 * Loganchorì— DROPPINGìƒíƒœê°€ ì €ì¥ë  ìˆ˜ ì—†ìœ¼ë¯€ë¡œ
+                 * RESTARTì‹œì—ëŠ” DROPPING ìƒíƒœê°€ ìˆì„ ìˆ˜ ì—†ìŒ. */
                 IDE_ERROR( SMI_FILE_STATE_IS_NOT_DROPPING( sFileNode->mState ) );
 
-                /* RESTART ¾Ë°í¸®Áò (°¡),(³ª)¿¡ ÇØ´çÇÑ´Ù.
-                 * RUNTIME ¾Ë°í¸®Áò (³ª)¿¡ ÇØ´çÇÑ´Ù. */
+                /* RESTART ì•Œê³ ë¦¬ì¦˜ (ê°€),(ë‚˜)ì— í•´ë‹¹í•œë‹¤.
+                 * RUNTIME ì•Œê³ ë¦¬ì¦˜ (ë‚˜)ì— í•´ë‹¹í•œë‹¤. */
                 IDE_TEST( sddDataFile::addPendingOperation(
                               aTrans,
                               sFileNode,
-                              ID_FALSE, /* abort ½Ã µ¿ÀÛ */
+                              ID_FALSE, /* abort ì‹œ ë™ì‘ */
                               SCT_POP_DROP_DBF,
                               &sPendingOp ) != IDE_SUCCESS );
 
@@ -701,7 +701,7 @@ IDE_RC sddUpdate::undo_SCT_UPDATE_DRDB_CREATE_DBF( idvSQL     * aStatistics,
             }
             else
             {
-                /* ¾Ë°í¸®Áò RESTART (´Ù)¿¡ À§¹èµÈ´Ù.
+                /* ì•Œê³ ë¦¬ì¦˜ RESTART (ë‹¤)ì— ìœ„ë°°ëœë‹¤.
                  * nothing to do ... */
                 IDE_ERROR( 0 );
             }
@@ -709,16 +709,16 @@ IDE_RC sddUpdate::undo_SCT_UPDATE_DRDB_CREATE_DBF( idvSQL     * aStatistics,
     }
     else
     {
-        /* RESTART ¾Ë°í¸®Áò (´Ù) ÇØ´ç
-         * RUNTIME ¾Ë°í¸®Áò (°¡) ÇØ´ç
+        /* RESTART ì•Œê³ ë¦¬ì¦˜ (ë‹¤) í•´ë‹¹
+         * RUNTIME ì•Œê³ ë¦¬ì¦˜ (ê°€) í•´ë‹¹
          * nothing to do ... */
     }
 
     sState = 0;
     IDE_TEST( sctTableSpaceMgr::unlock() != IDE_SUCCESS );
 
-    /* RUNTIME½Ã¿¡ º¯°æÀÌ ¹ß»ıÇß´Ù¸é Rollback PendingÀÌ µî·ÏµÇ¾úÀ» °ÍÀÌ°í
-     * Rollback Pending½Ã Loganchor¸¦ °»½ÅÇÑ´Ù. */
+    /* RUNTIMEì‹œì— ë³€ê²½ì´ ë°œìƒí–ˆë‹¤ë©´ Rollback Pendingì´ ë“±ë¡ë˜ì—ˆì„ ê²ƒì´ê³ 
+     * Rollback Pendingì‹œ Loganchorë¥¼ ê°±ì‹ í•œë‹¤. */
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
@@ -738,29 +738,29 @@ IDE_RC sddUpdate::undo_SCT_UPDATE_DRDB_CREATE_DBF( idvSQL     * aStatistics,
 /*
 PRJ-1548 User Memory Tablespace
 
-SCT_UPDATE_DRDB_DROP_DBF ·Î±× Àç¼öÇà
+SCT_UPDATE_DRDB_DROP_DBF ë¡œê·¸ ì¬ìˆ˜í–‰
 
-Æ®·£Àè¼Ç Pending List: [POP_DBF]->[POP_TBS]
+íŠ¸ëœì­ì…˜ Pending List: [POP_DBF]->[POP_TBS]
 
-¼ø¼­ :   (1)           (2)      (3)        (4)       (5)       (6)        (7)
-¿¬»ê : [DROP_DBF]->[DROP_TBS]->[COMMIT]->[POP_DBF]->[ANCHOR]->[POP_TBS]->[ANCHOR]
-»óÅÂ :  |DROPPING  |DROPPING   Ä¿¹Ô     |DROPPED     ÀúÀå      DROPPED     ÀúÀå
+ìˆœì„œ :   (1)           (2)      (3)        (4)       (5)       (6)        (7)
+ì—°ì‚° : [DROP_DBF]->[DROP_TBS]->[COMMIT]->[POP_DBF]->[ANCHOR]->[POP_TBS]->[ANCHOR]
+ìƒíƒœ :  |DROPPING  |DROPPING   ì»¤ë°‹     |DROPPED     ì €ì¥      DROPPED     ì €ì¥
         |ONLINE    |ONLINE              |ONLINE
 
-º¹±¸ ¾Ë°í¸®Áò
+ë³µêµ¬ ì•Œê³ ë¦¬ì¦˜
 
-°¡. (3) ÀÌÀü¿¡ ½ÇÆĞÇÏ¸é Ä¿¹ÔÀÌ ¾ÈµÈ Æ®·£Àè¼ÇÀÌ°í, Loganchor¿¡µµ ÀúÀåµÇÁö ¾Ê¾Ò±â ¶§¹®¿¡
-    TBS List¿¡¼­ °Ë»öÀÌ µÇ¸é ONLINE|DROPPING »óÅÂ·Î ¼³Á¤ÇÏ°í, Commit Pending ¿¬»êÀ» µî·ÏÇÏ¿©
-    DROPPED »óÅÂ·Î º¯°æÇØÁÖ¾î¾ß ÇÑ´Ù.
+ê°€. (3) ì´ì „ì— ì‹¤íŒ¨í•˜ë©´ ì»¤ë°‹ì´ ì•ˆëœ íŠ¸ëœì­ì…˜ì´ê³ , Loganchorì—ë„ ì €ì¥ë˜ì§€ ì•Šì•˜ê¸° ë•Œë¬¸ì—
+    TBS Listì—ì„œ ê²€ìƒ‰ì´ ë˜ë©´ ONLINE|DROPPING ìƒíƒœë¡œ ì„¤ì •í•˜ê³ , Commit Pending ì—°ì‚°ì„ ë“±ë¡í•˜ì—¬
+    DROPPED ìƒíƒœë¡œ ë³€ê²½í•´ì£¼ì–´ì•¼ í•œë‹¤.
 
-³ª. (4)°ú (5) »çÀÌ¿¡¼­ ½ÇÆĞÇÏ¸é Ä¿¹ÔµÈ Æ®·£Àè¼ÇÀÌÁö¸¸, ·Î±×¾ŞÄ¿¿¡ ONLINE »óÅÂ·Î
-    ÀúÀåµÇ¾î ÀÖ±â ¶§¹®¿¡ ONLINE|DROPPING»óÅÂ·Î º¯°æÇÏ°í, Commit Pending ¿¬»êÀ» µî·ÏÇÏ¿©
-    DROPPED »óÅÂ·Î º¯°æÇØÁÖ¾î¾ß ÇÑ´Ù.
+ë‚˜. (4)ê³¼ (5) ì‚¬ì´ì—ì„œ ì‹¤íŒ¨í•˜ë©´ ì»¤ë°‹ëœ íŠ¸ëœì­ì…˜ì´ì§€ë§Œ, ë¡œê·¸ì•µì»¤ì— ONLINE ìƒíƒœë¡œ
+    ì €ì¥ë˜ì–´ ìˆê¸° ë•Œë¬¸ì— ONLINE|DROPPINGìƒíƒœë¡œ ë³€ê²½í•˜ê³ , Commit Pending ì—°ì‚°ì„ ë“±ë¡í•˜ì—¬
+    DROPPED ìƒíƒœë¡œ ë³€ê²½í•´ì£¼ì–´ì•¼ í•œë‹¤.
 
-´Ù. (7) ÀÌÈÄ¿¡ ½ÇÆĞÇÏ¸é Ä¿¹ÔµÈ Æ®·£Àè¼ÇÀÌ°í, »óÅÂ°¡ DROPPED°¡ µÇ¾î Loganchor¿¡
-    ÀúÀåµÇÁö ¾ÊÀ¸¹Ç·Î, TBS List¿¡¼­ °Ë»öµÇÁö ¾Ê´Â´Ù.
+ë‹¤. (7) ì´í›„ì— ì‹¤íŒ¨í•˜ë©´ ì»¤ë°‹ëœ íŠ¸ëœì­ì…˜ì´ê³ , ìƒíƒœê°€ DROPPEDê°€ ë˜ì–´ Loganchorì—
+    ì €ì¥ë˜ì§€ ì•Šìœ¼ë¯€ë¡œ, TBS Listì—ì„œ ê²€ìƒ‰ë˜ì§€ ì•ŠëŠ”ë‹¤.
 
-# DROP_TBSÀÇ º¹±¸¾Ë°í¸®Áò°ú °ÅÀÇ µ¿ÀÏÇÏ´Ù.
+# DROP_TBSì˜ ë³µêµ¬ì•Œê³ ë¦¬ì¦˜ê³¼ ê±°ì˜ ë™ì¼í•˜ë‹¤.
 */
 IDE_RC sddUpdate::redo_SCT_UPDATE_DRDB_DROP_DBF( idvSQL       * /* aStatistics */,
                                                  void         * aTrans,
@@ -794,22 +794,22 @@ IDE_RC sddUpdate::redo_SCT_UPDATE_DRDB_DROP_DBF( idvSQL       * /* aStatistics *
         if( sFileNode != NULL )
         {
             // PRJ-1548 User Memory Tablespace
-            // DROP DBF ¿¬»êÀÌ commitÀÌ ¾Æ´Ï±â ¶§¹®¿¡ DROPPED·Î
-            // ¼³Á¤ÇÏ¸é °ü·Ã ·Î±×·¹ÄÚµå¸¦ Àç¼öÇàÇÒ ¼ö ¾ø´Ù.
-            // RESTART RECOVERY½Ã Commit Pending OperationÀ» Àû¿ëÇÏ¿©
-            // º» ¹ö±×¸¦ ¼öÁ¤ÇÑ´Ù.
-            // SCT_UPDATE_DRDB_DROP_DBF Àç¼öÇàÀ» ÇÒ °æ¿ì¿¡´Â DROPPING
-            // »óÅÂ·Î ¼³Á¤ÇÏ°í, ÇØ´ç Æ®·£Àè¼ÇÀÇ COMMIT ·Î±×¸¦ Àç¼öÇàÇÒ ¶§
-            // Commit Pending OperationÀ¸·Î DROPPED »óÅÂ·Î ¼³Á¤ÇÑ´Ù.
+            // DROP DBF ì—°ì‚°ì´ commitì´ ì•„ë‹ˆê¸° ë•Œë¬¸ì— DROPPEDë¡œ
+            // ì„¤ì •í•˜ë©´ ê´€ë ¨ ë¡œê·¸ë ˆì½”ë“œë¥¼ ì¬ìˆ˜í–‰í•  ìˆ˜ ì—†ë‹¤.
+            // RESTART RECOVERYì‹œ Commit Pending Operationì„ ì ìš©í•˜ì—¬
+            // ë³¸ ë²„ê·¸ë¥¼ ìˆ˜ì •í•œë‹¤.
+            // SCT_UPDATE_DRDB_DROP_DBF ì¬ìˆ˜í–‰ì„ í•  ê²½ìš°ì—ëŠ” DROPPING
+            // ìƒíƒœë¡œ ì„¤ì •í•˜ê³ , í•´ë‹¹ íŠ¸ëœì­ì…˜ì˜ COMMIT ë¡œê·¸ë¥¼ ì¬ìˆ˜í–‰í•  ë•Œ
+            // Commit Pending Operationìœ¼ë¡œ DROPPED ìƒíƒœë¡œ ì„¤ì •í•œë‹¤.
             // for fix BUG-14978
 
-            // Commit Pending Operation µî·ÏÇÑ´Ù.
+            // Commit Pending Operation ë“±ë¡í•œë‹¤.
             if ( smLayerCallback::isBeginTrans( aTrans ) == ID_TRUE )
             {
                 IDE_TEST( sddDataFile::addPendingOperation(
                                    aTrans,
                                    sFileNode,
-                                   ID_TRUE, /* commit½Ã µ¿ÀÛ */
+                                   ID_TRUE, /* commitì‹œ ë™ì‘ */
                                    SCT_POP_DROP_DBF,
                                    &sPendingOp )
                           != IDE_SUCCESS );
@@ -818,13 +818,13 @@ IDE_RC sddUpdate::redo_SCT_UPDATE_DRDB_DROP_DBF( idvSQL       * /* aStatistics *
                 sPendingOp->mPendingOpParam = (void*)sFileNode;
                 sPendingOp->mTouchMode      = sTouchMode;
 
-                // DBF NodeÀÇ »óÅÂ¸¦ DROPPINGÀ¸·Î ¼³Á¤ÇÑ´Ù.
+                // DBF Nodeì˜ ìƒíƒœë¥¼ DROPPINGìœ¼ë¡œ ì„¤ì •í•œë‹¤.
                 sFileNode->mState |= SMI_FILE_DROPPING;
             }
             else
             {
-                // Active Tx°¡ ¾Æ´Ñ °æ¿ì¿¡´Â Pending ¿¬»êÀ»
-                // Ãß°¡ÇÏÁö ¾Ê´Â´Ù.
+                // Active Txê°€ ì•„ë‹Œ ê²½ìš°ì—ëŠ” Pending ì—°ì‚°ì„
+                // ì¶”ê°€í•˜ì§€ ì•ŠëŠ”ë‹¤.
             }
         }
         else
@@ -847,26 +847,26 @@ IDE_RC sddUpdate::redo_SCT_UPDATE_DRDB_DROP_DBF( idvSQL       * /* aStatistics *
 /*
 PRJ-1548 User Memory Tablespace
 
-SCT_UPDATE_DRDB_DROP_DBF ·Î±× UNDO
+SCT_UPDATE_DRDB_DROP_DBF ë¡œê·¸ UNDO
 
-¼ø¼­ :   (1)           (2)     (3)         (4)        (5)
-¿¬»ê : [DROP_DBF]->[DROP_TBS]->[CLR_TBS]->[CLR_DBF]->[ROLLBACK]
-»óÅÂ :  |ONLINE    |ONLINE     ~DROPPING   ~DROPPING
+ìˆœì„œ :   (1)           (2)     (3)         (4)        (5)
+ì—°ì‚° : [DROP_DBF]->[DROP_TBS]->[CLR_TBS]->[CLR_DBF]->[ROLLBACK]
+ìƒíƒœ :  |ONLINE    |ONLINE     ~DROPPING   ~DROPPING
         |DROPPING  |DROPPING
 
-º¹±¸ ¾Ë°í¸®Áò
+ë³µêµ¬ ì•Œê³ ë¦¬ì¦˜
 
-RESTART½Ã
+RESTARTì‹œ
 
-°¡. (1)ÀÌÈÄ¿¡ ½ÇÆĞÇÑ °æ¿ì, TBS List¿¡¼­ °Ë»öµÈ´Ù¸é (1)¸¦ Àç¼öÇàÇÏ¿©
-    ONLINE|DROPPING »óÅÂÀÌ±â ¶§¹®¿¡, ~DROPPING ¿¬»êÀ» ÇÏ¿© ONLINE »óÅÂ·Î º¯°æÇÑ´Ù.
+ê°€. (1)ì´í›„ì— ì‹¤íŒ¨í•œ ê²½ìš°, TBS Listì—ì„œ ê²€ìƒ‰ëœë‹¤ë©´ (1)ë¥¼ ì¬ìˆ˜í–‰í•˜ì—¬
+    ONLINE|DROPPING ìƒíƒœì´ê¸° ë•Œë¬¸ì—, ~DROPPING ì—°ì‚°ì„ í•˜ì—¬ ONLINE ìƒíƒœë¡œ ë³€ê²½í•œë‹¤.
 
-RUNTIME½Ã
+RUNTIMEì‹œ
 
-°¡. (1)ÀÌÈÄ¿¡ ½ÇÆĞÇÏ¸é TBS List¿¡¼­ °Ë»öÇÏ¿© ~DROPPING ¿¬»êÀ» ¼öÇàÇÏ¿© ONLINE »óÅÂ·Î
-    º¯°æÇÑ´Ù.
+ê°€. (1)ì´í›„ì— ì‹¤íŒ¨í•˜ë©´ TBS Listì—ì„œ ê²€ìƒ‰í•˜ì—¬ ~DROPPING ì—°ì‚°ì„ ìˆ˜í–‰í•˜ì—¬ ONLINE ìƒíƒœë¡œ
+    ë³€ê²½í•œë‹¤.
 
-# DROP_TBSÀÇ º¹±¸¾Ë°í¸®Áò°ú °ÅÀÇ µ¿ÀÏÇÏ´Ù.
+# DROP_TBSì˜ ë³µêµ¬ì•Œê³ ë¦¬ì¦˜ê³¼ ê±°ì˜ ë™ì¼í•˜ë‹¤.
 
 */
 IDE_RC sddUpdate::undo_SCT_UPDATE_DRDB_DROP_DBF(
@@ -896,16 +896,16 @@ IDE_RC sddUpdate::undo_SCT_UPDATE_DRDB_DROP_DBF(
     sState = 0;
     IDE_TEST( sctTableSpaceMgr::unlock() != IDE_SUCCESS );
 
-    // RUNTIME½Ã¿¡´Â sSpaceNode ÀÚÃ¼¿¡ ´ëÇØ¼­ (X) Àá±İÀÌ ÀâÇôÀÖ±â ¶§¹®¿¡
-    // sctTableSpaceMgr::lockÀ» È¹µæÇÒ ÇÊ¿ä°¡ ¾ø´Ù.
+    // RUNTIMEì‹œì—ëŠ” sSpaceNode ìì²´ì— ëŒ€í•´ì„œ (X) ì ê¸ˆì´ ì¡í˜€ìˆê¸° ë•Œë¬¸ì—
+    // sctTableSpaceMgr::lockì„ íšë“í•  í•„ìš”ê°€ ì—†ë‹¤.
     if ( sSpaceNode != NULL )
     {
         if ( sFileNode != NULL )
         {
             if( SMI_FILE_STATE_IS_DROPPING( sFileNode->mState ) )
             {
-                // ¾Ë°í¸®Áò RESTART (°¡), RUNTIME (°¡) ¿¡ ÇØ´çÇÏ´Â °æ¿ìÀÌ´Ù.
-                // DROPPINGÀ» ²ô°í, ONLINE »óÅÂ·Î º¯°æÇÑ´Ù.
+                // ì•Œê³ ë¦¬ì¦˜ RESTART (ê°€), RUNTIME (ê°€) ì— í•´ë‹¹í•˜ëŠ” ê²½ìš°ì´ë‹¤.
+                // DROPPINGì„ ë„ê³ , ONLINE ìƒíƒœë¡œ ë³€ê²½í•œë‹¤.
                 sFileNode->mState &= ~SMI_FILE_DROPPING;
             }
 
@@ -914,13 +914,13 @@ IDE_RC sddUpdate::undo_SCT_UPDATE_DRDB_DROP_DBF(
         }
         else
         {
-            // TBS List¿¡¼­ °Ë»öÀÌ µÇÁö ¾ÊÀ¸¸é ¾Æ¹«°Íµµ ÇÏÁö ¾Ê´Â´Ù.
+            // TBS Listì—ì„œ ê²€ìƒ‰ì´ ë˜ì§€ ì•Šìœ¼ë©´ ì•„ë¬´ê²ƒë„ í•˜ì§€ ì•ŠëŠ”ë‹¤.
             // nothing to do...
         }
     }
     else
     {
-            // TBS List¿¡¼­ °Ë»öÀÌ µÇÁö ¾ÊÀ¸¸é ¾Æ¹«°Íµµ ÇÏÁö ¾Ê´Â´Ù.
+            // TBS Listì—ì„œ ê²€ìƒ‰ì´ ë˜ì§€ ì•Šìœ¼ë©´ ì•„ë¬´ê²ƒë„ í•˜ì§€ ì•ŠëŠ”ë‹¤.
             // nothing to do...
     }
 
@@ -941,7 +941,7 @@ IDE_RC sddUpdate::undo_SCT_UPDATE_DRDB_DROP_DBF(
 }
 
 /***********************************************************************
- * DESCRIPTION : tbs ³ëµå¿Í dbf ³ëµå¸¦ ¹İÈ¯ÇÑ´Ù.
+ * DESCRIPTION : tbs ë…¸ë“œì™€ dbf ë…¸ë“œë¥¼ ë°˜í™˜í•œë‹¤.
  ***********************************************************************/
 IDE_RC sddUpdate::getTBSDBF( scSpaceID            aSpaceID,
                              UInt                 aFileID,
@@ -1002,31 +1002,31 @@ IDE_RC sddUpdate::getTBSDBF( scSpaceID            aSpaceID,
 /*
 PRJ-1548 User Memory Tablespace
 
-SCT_UPDATE_DRDB_EXTEND_DBF ·Î±× Àç¼öÇà
+SCT_UPDATE_DRDB_EXTEND_DBF ë¡œê·¸ ì¬ìˆ˜í–‰
 
-Æ®·£Àè¼Ç Commit Pending List: [POP_DBF]
+íŠ¸ëœì­ì…˜ Commit Pending List: [POP_DBF]
 
-¼ø¼­ :   (1)                 (2)       (3)      (4)        (5)
-¿¬»ê : [RESIZE_DBF]-------->[ANCHOR]->[COMMIT]->[POP_DBF]->[ANCHOR]
-»óÅÂ :  |ONLINE     (È®Àå)    ÀúÀå      Ä¿¹Ô      ~RESIZING  ÀúÀå
+ìˆœì„œ :   (1)                 (2)       (3)      (4)        (5)
+ì—°ì‚° : [RESIZE_DBF]-------->[ANCHOR]->[COMMIT]->[POP_DBF]->[ANCHOR]
+ìƒíƒœ :  |ONLINE     (í™•ì¥)    ì €ì¥      ì»¤ë°‹      ~RESIZING  ì €ì¥
         |RESIZING
 
-¾Ë°í¸®Áò
+ì•Œê³ ë¦¬ì¦˜
 
-°¡. (1) ÀÌÀü¿¡ ½ÇÆĞÇÏ¸é Ä¿¹ÔÀÌ ¾ÈµÈ Æ®·£Àè¼ÇÀÌ°í, Loganchor¿¡µµ ÀúÀåµÇÁö ¾Ê¾Ò±â ¶§¹®¿¡
-    Àç¼öÇàÇÒ °ÍÀÌ ¾ø´Ù.
+ê°€. (1) ì´ì „ì— ì‹¤íŒ¨í•˜ë©´ ì»¤ë°‹ì´ ì•ˆëœ íŠ¸ëœì­ì…˜ì´ê³ , Loganchorì—ë„ ì €ì¥ë˜ì§€ ì•Šì•˜ê¸° ë•Œë¬¸ì—
+    ì¬ìˆ˜í–‰í•  ê²ƒì´ ì—†ë‹¤.
 
-³ª. (2)°ú (3) »çÀÌ¿¡ ½ÇÆĞÇÏ¸é Ä¿¹ÔÀÌ ¾ÈµÈ Æ®·£Àè¼ÇÀÌÁö¸¸, ·Î±×¾ŞÄ¿¿¡ ONLINE|RESIZING »óÅÂ·Î
-    ÀúÀåµÇ¾úÀ¸¹Ç·Î, Rollback ¿¬»ê½Ã RESIZINGÀÎ°æ¿ì¿¡¸¸ ¹°¸®Àû º¯°æ·® Ãë¼Ò¿Í ~RESIZINGÀ» ÇØÁÖ¾î¾ß ÇÑ´Ù.
-    Áï, RESIZINGÀÎ °æ¿ì´Â ÀÌ¹Ì È®ÀåÀÌ ¿Ï·áµÈ »óÅÂÀÌ±â ¶§¹®ÀÌ´Ù.
+ë‚˜. (2)ê³¼ (3) ì‚¬ì´ì— ì‹¤íŒ¨í•˜ë©´ ì»¤ë°‹ì´ ì•ˆëœ íŠ¸ëœì­ì…˜ì´ì§€ë§Œ, ë¡œê·¸ì•µì»¤ì— ONLINE|RESIZING ìƒíƒœë¡œ
+    ì €ì¥ë˜ì—ˆìœ¼ë¯€ë¡œ, Rollback ì—°ì‚°ì‹œ RESIZINGì¸ê²½ìš°ì—ë§Œ ë¬¼ë¦¬ì  ë³€ê²½ëŸ‰ ì·¨ì†Œì™€ ~RESIZINGì„ í•´ì£¼ì–´ì•¼ í•œë‹¤.
+    ì¦‰, RESIZINGì¸ ê²½ìš°ëŠ” ì´ë¯¸ í™•ì¥ì´ ì™„ë£Œëœ ìƒíƒœì´ê¸° ë•Œë¬¸ì´ë‹¤.
 
-´Ù. (3)°ú (5) »çÀÌ¿¡¼­ ½ÇÆĞÇÏ¸é Ä¿¹ÔµÈ Æ®·£Àè¼ÇÀÌÁö¸¸, ·Î±×¾ŞÄ¿¿¡ ONLINE|RESIZING »óÅÂ·Î
-    ÀúÀåµÇ¾úÀ¸¹Ç·Î, ONLINE|RESIZING »óÅÂÀÏ °æ¿ì¿¡¸¸ Commit Pending ¿¬»êÀ» µî·ÏÇÏ¿©
-    ONLINE »óÅÂ·Î º¯°æÇØÁÖ¾î¾ß ÇÑ´Ù.
-    ¹Ìµğ¾îº¹±¸¸¦ °í·ÁÇØ¼­ ½ÇÁ¦ÆÄÀÏ Å©±â¿Í AfterSize¸¦ °í·ÁÇÏ¿© È®ÀåÀ» ÇÑ´Ù
+ë‹¤. (3)ê³¼ (5) ì‚¬ì´ì—ì„œ ì‹¤íŒ¨í•˜ë©´ ì»¤ë°‹ëœ íŠ¸ëœì­ì…˜ì´ì§€ë§Œ, ë¡œê·¸ì•µì»¤ì— ONLINE|RESIZING ìƒíƒœë¡œ
+    ì €ì¥ë˜ì—ˆìœ¼ë¯€ë¡œ, ONLINE|RESIZING ìƒíƒœì¼ ê²½ìš°ì—ë§Œ Commit Pending ì—°ì‚°ì„ ë“±ë¡í•˜ì—¬
+    ONLINE ìƒíƒœë¡œ ë³€ê²½í•´ì£¼ì–´ì•¼ í•œë‹¤.
+    ë¯¸ë””ì–´ë³µêµ¬ë¥¼ ê³ ë ¤í•´ì„œ ì‹¤ì œíŒŒì¼ í¬ê¸°ì™€ AfterSizeë¥¼ ê³ ë ¤í•˜ì—¬ í™•ì¥ì„ í•œë‹¤
 
-¶ó. (5) ÀÌÈÄ¿¡ ½ÇÆĞÇÏ¸é Ä¿¹ÔµÈ Æ®·£Àè¼ÇÀÌ°í, ·Î±×¾ŞÄ¿¿¡ ONLINEµÈ »óÅÂ·Î ÀúÀåµÇ¾úÀ¸¹Ç·Î
-    Àç¼öÇà ÇÒ °ÍÀÌ ¾ø´Ù.
+ë¼. (5) ì´í›„ì— ì‹¤íŒ¨í•˜ë©´ ì»¤ë°‹ëœ íŠ¸ëœì­ì…˜ì´ê³ , ë¡œê·¸ì•µì»¤ì— ONLINEëœ ìƒíƒœë¡œ ì €ì¥ë˜ì—ˆìœ¼ë¯€ë¡œ
+    ì¬ìˆ˜í–‰ í•  ê²ƒì´ ì—†ë‹¤.
 
 */
 IDE_RC sddUpdate::redo_SCT_UPDATE_DRDB_EXTEND_DBF( idvSQL     * /* aStatistics */,
@@ -1052,10 +1052,10 @@ IDE_RC sddUpdate::redo_SCT_UPDATE_DRDB_EXTEND_DBF( idvSQL     * /* aStatistics *
                    "aValueSize : %"ID_UINT32_FMT,
                    aValueSize );
 
-    // AfterSize : È®ÀåµÈ CURRSIZE
+    // AfterSize : í™•ì¥ëœ CURRSIZE
     idlOS::memcpy( &sAfterSize, aValuePtr, ID_SIZEOF(ULong) );
 
-    // AfterSize : È®ÀåµÈ ÆäÀÌÁö °³¼ö
+    // AfterSize : í™•ì¥ëœ í˜ì´ì§€ ê°œìˆ˜
     idlOS::memcpy( &sDiffSize,
                    aValuePtr+ID_SIZEOF(ULong),
                    ID_SIZEOF(ULong) );
@@ -1065,13 +1065,13 @@ IDE_RC sddUpdate::redo_SCT_UPDATE_DRDB_EXTEND_DBF( idvSQL     * /* aStatistics *
 
     if (sFileNode != NULL)
     {
-        // [Áß¿ä]
-        // ½ÇÁ¦ÆÄÀÏÅ©±â¿Í AfterÅ©±â¸¦ ºñ±³ÇÏ¿© AFTER Å©±â°¡ Å©¸é
-        // ¹«Á¶°Ç CURRSIZE°ªÀ» º¯°æÇÑ´Ù.
-        // SHRINK¿¡¼­µµ ¹°¸®Àû ÆÄÀÏÀº ¼±º°ÀûÀ¸·Î Á¶Á¤ÇÏÁö¸¸,
-        // CURRSIZE °ªÀº º¯°æÇÑ´Ù.
+        // [ì¤‘ìš”]
+        // ì‹¤ì œíŒŒì¼í¬ê¸°ì™€ Afterí¬ê¸°ë¥¼ ë¹„êµí•˜ì—¬ AFTER í¬ê¸°ê°€ í¬ë©´
+        // ë¬´ì¡°ê±´ CURRSIZEê°’ì„ ë³€ê²½í•œë‹¤.
+        // SHRINKì—ì„œë„ ë¬¼ë¦¬ì  íŒŒì¼ì€ ì„ ë³„ì ìœ¼ë¡œ ì¡°ì •í•˜ì§€ë§Œ,
+        // CURRSIZE ê°’ì€ ë³€ê²½í•œë‹¤.
 
-        // ÇöÀç ½ÇÁ¦ ÆÄÀÏÀÇ page °³¼ö¸¦ ±¸ÇÑ´Ù.
+        // í˜„ì¬ ì‹¤ì œ íŒŒì¼ì˜ page ê°œìˆ˜ë¥¼ êµ¬í•œë‹¤.
         IDE_TEST(sddDiskMgr::prepareIO(sFileNode) != IDE_SUCCESS);
 
         IDE_TEST(sFileNode->mFile.getFileSize(&sFileSize) != IDE_SUCCESS);
@@ -1079,37 +1079,37 @@ IDE_RC sddUpdate::redo_SCT_UPDATE_DRDB_EXTEND_DBF( idvSQL     * /* aStatistics *
         sCurrSize = (sFileSize-SM_DBFILE_METAHDR_PAGE_SIZE) /
                     SD_PAGE_SIZE;
 
-        /* PROJ-1923 ¾Æ·¡¿Í °°ÀÌ ÁßÃ¸ if ÀÇ ¼ø¼­¸¦ º¯°æÇÑ´Ù.
-         * ÇÏÁö¸¸, ÄÚµåÀÌÇØ¸¦ À§ÇØ ÁÖ¼®À¸·Î À¯ÁöÇÏµµ·Ï ÇÑ´Ù.
+        /* PROJ-1923 ì•„ë˜ì™€ ê°™ì´ ì¤‘ì²© if ì˜ ìˆœì„œë¥¼ ë³€ê²½í•œë‹¤.
+         * í•˜ì§€ë§Œ, ì½”ë“œì´í•´ë¥¼ ìœ„í•´ ì£¼ì„ìœ¼ë¡œ ìœ ì§€í•˜ë„ë¡ í•œë‹¤.
          *
-         * PRJ-1548 RESIZE ÁßÀÎ °æ¿ì
-         * BUGBUG - Media Recovery ½Ã¿¡µµ sFileNodeÀÇ »óÅÂ°¡ ResizeÀÏ ¼ö ÀÖ´Ù.
+         * PRJ-1548 RESIZE ì¤‘ì¸ ê²½ìš°
+         * BUGBUG - Media Recovery ì‹œì—ë„ sFileNodeì˜ ìƒíƒœê°€ Resizeì¼ ìˆ˜ ìˆë‹¤.
          *
          */
         /*
         * if ( SMI_FILE_STATE_IS_RESIZING( sFileNode->mState ) )
         * {
-        *     // ¾Ë°í¸®Áò (´Ù)¿¡ ÇØ´çÇÏ´Â RESIZING »óÅÂÀÏ °æ¿ì¿¡¸¸ ÀÖÀ¸¹Ç·Î
-        *     // »óÅÂ¸¦ ONLINEÀ¸·Î º¯°æÇÒ ¼ö ÀÖ°Ô Commit Pending ¿¬»êÀ» µî·ÏÇÑ´Ù.
+        *     // ì•Œê³ ë¦¬ì¦˜ (ë‹¤)ì— í•´ë‹¹í•˜ëŠ” RESIZING ìƒíƒœì¼ ê²½ìš°ì—ë§Œ ìˆìœ¼ë¯€ë¡œ
+        *     // ìƒíƒœë¥¼ ONLINEìœ¼ë¡œ ë³€ê²½í•  ìˆ˜ ìˆê²Œ Commit Pending ì—°ì‚°ì„ ë“±ë¡í•œë‹¤.
         *     if ( smLayerCallback::isBeginTrans( aTrans ) == ID_TRUE )
         *     {
         *         IDE_TEST( sddDataFile::addPendingOperation(
         *                 aTrans,
         *                 sFileNode,
-        *                 ID_TRUE, // commit½Ã¿¡ µ¿ÀÛ 
+        *                 ID_TRUE, // commitì‹œì— ë™ì‘ 
         *                 SCT_POP_ALTER_DBF_RESIZE )
         *             != IDE_SUCCESS );
         *     }
         *     else
         *     {
-        *         // ActiveTx°¡ ¾Æ´Ñ °æ¿ì Pending µî·ÏÇÏÁö ¾Ê´Â´Ù.
+        *         // ActiveTxê°€ ì•„ë‹Œ ê²½ìš° Pending ë“±ë¡í•˜ì§€ ì•ŠëŠ”ë‹¤.
         *     }
-        *     // ¾Ë°í¸®Áò (³ª) Rollback ¿¬»ê½Ã ¹°¸®Àû º¯°æ·® Ãë¼Ò(RESIZINGÀÎ °æ¿ì¿¡¸¸)¿Í
-        *     // ~RESIZINGÀ» ÇØÁÖ¾î¾ß ÇÑ´Ù.
+        *     // ì•Œê³ ë¦¬ì¦˜ (ë‚˜) Rollback ì—°ì‚°ì‹œ ë¬¼ë¦¬ì  ë³€ê²½ëŸ‰ ì·¨ì†Œ(RESIZINGì¸ ê²½ìš°ì—ë§Œ)ì™€
+        *     // ~RESIZINGì„ í•´ì£¼ì–´ì•¼ í•œë‹¤.
         * }
         * else
         * {
-        *     // Pending µî·ÏÀ» ÇÒ ÇÊ¿ä°¡ ¾ø´Ù.
+        *     // Pending ë“±ë¡ì„ í•  í•„ìš”ê°€ ì—†ë‹¤.
         * }
         */
 
@@ -1120,16 +1120,16 @@ IDE_RC sddUpdate::redo_SCT_UPDATE_DRDB_EXTEND_DBF( idvSQL     * /* aStatistics *
                 IDE_TEST( sddDataFile::addPendingOperation(
                         aTrans,
                         sFileNode,
-                        ID_TRUE, // commit½Ã¿¡ µ¿ÀÛ 
+                        ID_TRUE, // commitì‹œì— ë™ì‘ 
                         SCT_POP_ALTER_DBF_RESIZE )
                     != IDE_SUCCESS );
             }
             else
             {
-                // PROJ-1923 ¹«Á¶°Ç redo·Î º¯°æÇÑ´Ù.
-                // ·Î±×¾ŞÄ¿ÀÇ size < log¿¡ ±â·ÏµÈ size°¡ Å©´Ù¸é,
-                // ·Î±×¸¸ ±â·ÏÇÏ°í extend°¡ ½ÇÇàµÇÁö ¾ÊÀº°ÍÀÌ¹Ç·Î redoÇÑ´Ù.
-                // ±× ¿Ü¿¡´Â ÇÏÁö ¾Ê´Â´Ù.
+                // PROJ-1923 ë¬´ì¡°ê±´ redoë¡œ ë³€ê²½í•œë‹¤.
+                // ë¡œê·¸ì•µì»¤ì˜ size < logì— ê¸°ë¡ëœ sizeê°€ í¬ë‹¤ë©´,
+                // ë¡œê·¸ë§Œ ê¸°ë¡í•˜ê³  extendê°€ ì‹¤í–‰ë˜ì§€ ì•Šì€ê²ƒì´ë¯€ë¡œ redoí•œë‹¤.
+                // ê·¸ ì™¸ì—ëŠ” í•˜ì§€ ì•ŠëŠ”ë‹¤.
                 if( sCurrSize < sAfterSize )
                 {
                     sFileNode->mState |= SMI_FILE_RESIZING;
@@ -1137,7 +1137,7 @@ IDE_RC sddUpdate::redo_SCT_UPDATE_DRDB_EXTEND_DBF( idvSQL     * /* aStatistics *
                     IDE_TEST( sddDataFile::addPendingOperation(
                             aTrans,
                             sFileNode,
-                            ID_TRUE, // commit½Ã¿¡ µ¿ÀÛ 
+                            ID_TRUE, // commitì‹œì— ë™ì‘ 
                             SCT_POP_ALTER_DBF_RESIZE )
                         != IDE_SUCCESS );
 
@@ -1154,8 +1154,8 @@ IDE_RC sddUpdate::redo_SCT_UPDATE_DRDB_EXTEND_DBF( idvSQL     * /* aStatistics *
             // do nothing
         }
 
-        // ¾ŞÄ¿°¡ aftersizeº¸´Ù ÀÛ°í, ½ÇÁ¦Å©±â°¡ aftersizeº¸´Ù ÀÛÀº °æ¿ì´Â
-        // ¹«Á¶°Ç extend ÇÑ´Ù.
+        // ì•µì»¤ê°€ aftersizeë³´ë‹¤ ì‘ê³ , ì‹¤ì œí¬ê¸°ê°€ aftersizeë³´ë‹¤ ì‘ì€ ê²½ìš°ëŠ”
+        // ë¬´ì¡°ê±´ extend í•œë‹¤.
         if (sCurrSize < sAfterSize)
         {
             sddDataFile::setCurrSize(sFileNode, (sAfterSize - sDiffSize));
@@ -1190,28 +1190,28 @@ IDE_RC sddUpdate::redo_SCT_UPDATE_DRDB_EXTEND_DBF( idvSQL     * /* aStatistics *
 /*
 PRJ-1548 User Memory Tablespace
 
-SCT_UPDATE_DRDB_EXTEND_DBF ·Î±× UNDO
+SCT_UPDATE_DRDB_EXTEND_DBF ë¡œê·¸ UNDO
 
-Æ®·£Àè¼Ç Commit Pending List: [POP_DBF]
+íŠ¸ëœì­ì…˜ Commit Pending List: [POP_DBF]
 
-¼ø¼­ :   (1)                 (2)         (3)          (4)        (5)
-¿¬»ê : [EXTEND_DBF]-------->[ANCHOR]->[CLR_EXTEND]->[ANCHOR]->[ROLLBACK]
-»óÅÂ :  |ONLINE     (È®Àå)    ÀúÀå     ~RESIZING      ÀúÀå     ¿Ï·á
-        |RESIZING                      (º¯°æ·® Ãë¼Ò)
+ìˆœì„œ :   (1)                 (2)         (3)          (4)        (5)
+ì—°ì‚° : [EXTEND_DBF]-------->[ANCHOR]->[CLR_EXTEND]->[ANCHOR]->[ROLLBACK]
+ìƒíƒœ :  |ONLINE     (í™•ì¥)    ì €ì¥     ~RESIZING      ì €ì¥     ì™„ë£Œ
+        |RESIZING                      (ë³€ê²½ëŸ‰ ì·¨ì†Œ)
 
-º¹±¸ ¾Ë°í¸®Áò
+ë³µêµ¬ ì•Œê³ ë¦¬ì¦˜
 
-RESTART½Ã
+RESTARTì‹œ
 
-°¡. (1)°ú (2) »çÀÌ¿¡¼­ ½ÇÆĞÇÏ¸é ·Î±×¾ŞÄ¿¿¡ ONLINE »óÅÂÀÌ°í, RESTART »óÈ²ÀÌ¹Ç·Î È®Àå·®¿¡ ´ëÇØ
-    Ãë¼ÒÇÏÁö ¾Ê´Â´Ù. (°³¼±»çÇ×)
+ê°€. (1)ê³¼ (2) ì‚¬ì´ì—ì„œ ì‹¤íŒ¨í•˜ë©´ ë¡œê·¸ì•µì»¤ì— ONLINE ìƒíƒœì´ê³ , RESTART ìƒí™©ì´ë¯€ë¡œ í™•ì¥ëŸ‰ì— ëŒ€í•´
+    ì·¨ì†Œí•˜ì§€ ì•ŠëŠ”ë‹¤. (ê°œì„ ì‚¬í•­)
 
-³ª. (2)¿¡¼­ undo¸¦ ¼öÇàÇÏ¸é ¿Ï·á°¡ ¾ÈµÈ Æ®·£Àè¼ÇÀÌÁö¸¸, ·Î±×¾ŞÄ¿¿¡ ONLINE|RESIZING »óÅÂÀÌ±â
-    ¶§¹®¿¡, ONLINE(~RESIZING) »óÅÂ·Î º¯°æÇÏ°í, º¯°æ·®À» Ãë¼Ò(Ãà¼Ò)ÇÑ´Ù.
+ë‚˜. (2)ì—ì„œ undoë¥¼ ìˆ˜í–‰í•˜ë©´ ì™„ë£Œê°€ ì•ˆëœ íŠ¸ëœì­ì…˜ì´ì§€ë§Œ, ë¡œê·¸ì•µì»¤ì— ONLINE|RESIZING ìƒíƒœì´ê¸°
+    ë•Œë¬¸ì—, ONLINE(~RESIZING) ìƒíƒœë¡œ ë³€ê²½í•˜ê³ , ë³€ê²½ëŸ‰ì„ ì·¨ì†Œ(ì¶•ì†Œ)í•œë‹¤.
 
-RUNTIME½Ã
+RUNTIMEì‹œ
 
-°¡. (1)°ú (2)¿¡¼­ ½ÇÆĞÇÏ¸é ONLINE|RESIZING »óÅÂ ~RESIZING ÇÏ°í º¯°æ·® Ãë¼ÒÇÑ´Ù.
+ê°€. (1)ê³¼ (2)ì—ì„œ ì‹¤íŒ¨í•˜ë©´ ONLINE|RESIZING ìƒíƒœ ~RESIZING í•˜ê³  ë³€ê²½ëŸ‰ ì·¨ì†Œí•œë‹¤.
 
 */
 IDE_RC sddUpdate::undo_SCT_UPDATE_DRDB_EXTEND_DBF(
@@ -1261,17 +1261,17 @@ IDE_RC sddUpdate::undo_SCT_UPDATE_DRDB_EXTEND_DBF(
                 IDE_ERROR( aIsRestart != ID_TRUE );
 
                 // fix BUG-11337.
-                // µ¥ÀÌÅ¸ ÆÄÀÏÀÌ ¹é¾÷ÁßÀÌ¸é ¿Ï·áÇÒ¶§±îÁö ´ë±â ÇÑ´Ù.
+                // ë°ì´íƒ€ íŒŒì¼ì´ ë°±ì—…ì¤‘ì´ë©´ ì™„ë£Œí• ë•Œê¹Œì§€ ëŒ€ê¸° í•œë‹¤.
                 sddDiskMgr::wait4BackupFileEnd();
 
                 goto retry;
             }
 
-            // ¿î¿µÁß¿¡ RollbackÀÌ ¹ß»ıÇÏ°Å³ª  RESIZING »óÅÂ°¡ Loganchor¿¡ ÀúÀåµÈ °æ¿ì
-            // ½ÇÁ¦ ÆÄÀÏ º¯°æ·®À» Ãë¼ÒÇØÁØ´Ù.
+            // ìš´ì˜ì¤‘ì— Rollbackì´ ë°œìƒí•˜ê±°ë‚˜  RESIZING ìƒíƒœê°€ Loganchorì— ì €ì¥ëœ ê²½ìš°
+            // ì‹¤ì œ íŒŒì¼ ë³€ê²½ëŸ‰ì„ ì·¨ì†Œí•´ì¤€ë‹¤.
             if ( SMI_FILE_STATE_IS_RESIZING( sFileNode->mState ) )
             {
-                // ÇöÀç ½ÇÁ¦ ÆÄÀÏÀÇ page °³¼ö¸¦ ±¸ÇÑ´Ù.
+                // í˜„ì¬ ì‹¤ì œ íŒŒì¼ì˜ page ê°œìˆ˜ë¥¼ êµ¬í•œë‹¤.
                 IDE_TEST(sddDiskMgr::prepareIO(sFileNode) != IDE_SUCCESS);
                 sPrepared = 1;
 
@@ -1290,7 +1290,7 @@ IDE_RC sddUpdate::undo_SCT_UPDATE_DRDB_EXTEND_DBF(
             }
             else
             {
-                // RESTART½Ã (3)ÀÌÀü¿¡ ½ÇÆĞÇÑ °æ¿ì ÀÌ¹Ç·Î ¾Ë°í¸®Áò (°¡)¿¡ ÇØ´çÇÑ´Ù.
+                // RESTARTì‹œ (3)ì´ì „ì— ì‹¤íŒ¨í•œ ê²½ìš° ì´ë¯€ë¡œ ì•Œê³ ë¦¬ì¦˜ (ê°€)ì— í•´ë‹¹í•œë‹¤.
                 // NOTHING TO DO ...
             }
 
@@ -1307,10 +1307,10 @@ IDE_RC sddUpdate::undo_SCT_UPDATE_DRDB_EXTEND_DBF(
 
     if ( sFileNode != NULL )
     {
-        /* BUG-24086: [SD] Restart½Ã¿¡µµ FileÀÌ³ª TBS¿¡ ´ëÇÑ »óÅÂ°¡ ¹Ù²î¾úÀ» °æ¿ì
-         * LogAnchor¿¡ »óÅÂ¸¦ ¹İ¿µÇØ¾ß ÇÑ´Ù.
+        /* BUG-24086: [SD] Restartì‹œì—ë„ Fileì´ë‚˜ TBSì— ëŒ€í•œ ìƒíƒœê°€ ë°”ë€Œì—ˆì„ ê²½ìš°
+         * LogAnchorì— ìƒíƒœë¥¼ ë°˜ì˜í•´ì•¼ í•œë‹¤.
          *
-         * Restart Recovery½Ã¿¡´Â updateDBFNodeAndFlushÇÏÁö ¾Ê´ø°ÍÀ» ÇÏµµ·Ï º¯°æ.
+         * Restart Recoveryì‹œì—ëŠ” updateDBFNodeAndFlushí•˜ì§€ ì•Šë˜ê²ƒì„ í•˜ë„ë¡ ë³€ê²½.
          * */
 
         IDE_ASSERT( smLayerCallback::updateDBFNodeAndFlush( sFileNode )
@@ -1349,31 +1349,31 @@ IDE_RC sddUpdate::undo_SCT_UPDATE_DRDB_EXTEND_DBF(
 /*
 PRJ-1548 User Memory Tablespace
 
-SCT_UPDATE_DRDB_SHRINK_DBF ·Î±× Àç¼öÇà
+SCT_UPDATE_DRDB_SHRINK_DBF ë¡œê·¸ ì¬ìˆ˜í–‰
 
-Æ®·£Àè¼Ç Commit Pending List: [POP_DBF]
+íŠ¸ëœì­ì…˜ Commit Pending List: [POP_DBF]
 
-¼ø¼­ :   (1)                 (2)       (3)      (4)        (5)
-¿¬»ê : [SHRINK_DBF]-------->[ANCHOR]->[COMMIT]->[POP_DBF]->[ANCHOR]
-»óÅÂ :  |ONLINE     (Ãà¼Ò)    ÀúÀå      Ä¿¹Ô    ~RESIZING  ÀúÀå
+ìˆœì„œ :   (1)                 (2)       (3)      (4)        (5)
+ì—°ì‚° : [SHRINK_DBF]-------->[ANCHOR]->[COMMIT]->[POP_DBF]->[ANCHOR]
+ìƒíƒœ :  |ONLINE     (ì¶•ì†Œ)    ì €ì¥      ì»¤ë°‹    ~RESIZING  ì €ì¥
         |RESIZING
 
-¾Ë°í¸®Áò
+ì•Œê³ ë¦¬ì¦˜
 
-°¡. (1) ÀÌÀü¿¡ ½ÇÆĞÇÏ¸é Ä¿¹ÔÀÌ ¾ÈµÈ Æ®·£Àè¼ÇÀÌ°í, Loganchor¿¡µµ ÀúÀåµÇÁö ¾Ê¾Ò±â ¶§¹®¿¡
-    Àç¼öÇàÇÒ °ÍÀÌ ¾ø´Ù.
+ê°€. (1) ì´ì „ì— ì‹¤íŒ¨í•˜ë©´ ì»¤ë°‹ì´ ì•ˆëœ íŠ¸ëœì­ì…˜ì´ê³ , Loganchorì—ë„ ì €ì¥ë˜ì§€ ì•Šì•˜ê¸° ë•Œë¬¸ì—
+    ì¬ìˆ˜í–‰í•  ê²ƒì´ ì—†ë‹¤.
 
-³ª. (2)°ú (3) »çÀÌ¿¡ ½ÇÆĞÇÏ¸é Ä¿¹ÔÀÌ ¾ÈµÈ Æ®·£Àè¼ÇÀÌÁö¸¸, ·Î±×¾ŞÄ¿¿¡ ONLINE|RESIZING »óÅÂ·Î
-    ÀúÀåµÇ¾úÀ¸¹Ç·Î, Rollback ¿¬»ê½Ã RESIZINGÀÎ°æ¿ì¿¡¸¸ ¹°¸®Àû º¯°æ·® Ãë¼Ò¿Í ~RESIZINGÀ» ÇØÁÖ¾î¾ß ÇÑ´Ù.
-    Áï, RESIZINGÀÎ °æ¿ì´Â ÀÌ¹Ì Ãà¼Ò°¡ ¿Ï·áµÈ »óÅÂÀÌ±â ¶§¹®ÀÌ´Ù.
+ë‚˜. (2)ê³¼ (3) ì‚¬ì´ì— ì‹¤íŒ¨í•˜ë©´ ì»¤ë°‹ì´ ì•ˆëœ íŠ¸ëœì­ì…˜ì´ì§€ë§Œ, ë¡œê·¸ì•µì»¤ì— ONLINE|RESIZING ìƒíƒœë¡œ
+    ì €ì¥ë˜ì—ˆìœ¼ë¯€ë¡œ, Rollback ì—°ì‚°ì‹œ RESIZINGì¸ê²½ìš°ì—ë§Œ ë¬¼ë¦¬ì  ë³€ê²½ëŸ‰ ì·¨ì†Œì™€ ~RESIZINGì„ í•´ì£¼ì–´ì•¼ í•œë‹¤.
+    ì¦‰, RESIZINGì¸ ê²½ìš°ëŠ” ì´ë¯¸ ì¶•ì†Œê°€ ì™„ë£Œëœ ìƒíƒœì´ê¸° ë•Œë¬¸ì´ë‹¤.
 
-´Ù. (3)°ú (5) »çÀÌ¿¡¼­ ½ÇÆĞÇÏ¸é Ä¿¹ÔµÈ Æ®·£Àè¼ÇÀÌÁö¸¸, ·Î±×¾ŞÄ¿¿¡ ONLINE|RESIZING »óÅÂ·Î
-    ÀúÀåµÇ¾úÀ¸¹Ç·Î, ONLINE|RESIZING »óÅÂÀÏ °æ¿ì¿¡¸¸ Commit Pending ¿¬»êÀ» µî·ÏÇÏ¿©
-    ONLINE »óÅÂ·Î º¯°æÇØÁÖ¾î¾ß ÇÑ´Ù.
-    ¹Ìµğ¾îº¹±¸¸¦ °í·ÁÇØ¼­ ½ÇÁ¦ÆÄÀÏ Å©±â¿Í AfterSize¸¦ °í·ÁÇÏ¿© È®ÀåÀ» ÇÑ´Ù
+ë‹¤. (3)ê³¼ (5) ì‚¬ì´ì—ì„œ ì‹¤íŒ¨í•˜ë©´ ì»¤ë°‹ëœ íŠ¸ëœì­ì…˜ì´ì§€ë§Œ, ë¡œê·¸ì•µì»¤ì— ONLINE|RESIZING ìƒíƒœë¡œ
+    ì €ì¥ë˜ì—ˆìœ¼ë¯€ë¡œ, ONLINE|RESIZING ìƒíƒœì¼ ê²½ìš°ì—ë§Œ Commit Pending ì—°ì‚°ì„ ë“±ë¡í•˜ì—¬
+    ONLINE ìƒíƒœë¡œ ë³€ê²½í•´ì£¼ì–´ì•¼ í•œë‹¤.
+    ë¯¸ë””ì–´ë³µêµ¬ë¥¼ ê³ ë ¤í•´ì„œ ì‹¤ì œíŒŒì¼ í¬ê¸°ì™€ AfterSizeë¥¼ ê³ ë ¤í•˜ì—¬ í™•ì¥ì„ í•œë‹¤
 
-¶ó. (5) ÀÌÈÄ¿¡ ½ÇÆĞÇÏ¸é Ä¿¹ÔµÈ Æ®·£Àè¼ÇÀÌ°í, ·Î±×¾ŞÄ¿¿¡ ONLINEµÈ »óÅÂ·Î ÀúÀåµÇ¾úÀ¸¹Ç·Î
-    Àç¼öÇà ÇÒ °ÍÀÌ ¾ø´Ù.
+ë¼. (5) ì´í›„ì— ì‹¤íŒ¨í•˜ë©´ ì»¤ë°‹ëœ íŠ¸ëœì­ì…˜ì´ê³ , ë¡œê·¸ì•µì»¤ì— ONLINEëœ ìƒíƒœë¡œ ì €ì¥ë˜ì—ˆìœ¼ë¯€ë¡œ
+    ì¬ìˆ˜í–‰ í•  ê²ƒì´ ì—†ë‹¤.
 
 */
 IDE_RC sddUpdate::redo_SCT_UPDATE_DRDB_SHRINK_DBF(
@@ -1417,7 +1417,7 @@ IDE_RC sddUpdate::redo_SCT_UPDATE_DRDB_SHRINK_DBF(
     {
         if (sFileNode != NULL)
         {
-            // ÇöÀç ½ÇÁ¦ ÆÄÀÏÀÇ page °³¼ö¸¦ ±¸ÇÑ´Ù.
+            // í˜„ì¬ ì‹¤ì œ íŒŒì¼ì˜ page ê°œìˆ˜ë¥¼ êµ¬í•œë‹¤.
             IDE_TEST(sddDiskMgr::prepareIO(sFileNode) != IDE_SUCCESS);
 
             IDE_TEST(sFileNode->mFile.getFileSize(&sFileSize) != IDE_SUCCESS);
@@ -1425,37 +1425,37 @@ IDE_RC sddUpdate::redo_SCT_UPDATE_DRDB_SHRINK_DBF(
             sCurrSize = (sFileSize-SM_DBFILE_METAHDR_PAGE_SIZE) /
                 SD_PAGE_SIZE;
 
-            /* PROJ-1923 ¾Æ·¡¿Í °°ÀÌ ÁßÃ¸ if ÀÇ ¼ø¼­¸¦ º¯°æÇÑ´Ù.
-             * ÇÏÁö¸¸, ÄÚµåÀÌÇØ¸¦ À§ÇØ ÁÖ¼®À¸·Î À¯ÁöÇÏµµ·Ï ÇÑ´Ù. */
+            /* PROJ-1923 ì•„ë˜ì™€ ê°™ì´ ì¤‘ì²© if ì˜ ìˆœì„œë¥¼ ë³€ê²½í•œë‹¤.
+             * í•˜ì§€ë§Œ, ì½”ë“œì´í•´ë¥¼ ìœ„í•´ ì£¼ì„ìœ¼ë¡œ ìœ ì§€í•˜ë„ë¡ í•œë‹¤. */
             /*
-            * // PRJ-1548 RESIZE ÁßÀÎ °æ¿ì
+            * // PRJ-1548 RESIZE ì¤‘ì¸ ê²½ìš°
             * if ( SMI_FILE_STATE_IS_RESIZING( sFileNode->mState ) )
             * {
-            *     // ¾Ë°í¸®Áò (´Ù)¿¡ ÇØ´çÇÏ´Â RESIZING »óÅÂÀÏ °æ¿ì¿¡¸¸ ÀÖÀ¸¹Ç·Î
-            *     // »óÅÂ¸¦ ONLINEÀ¸·Î º¯°æÇÒ ¼ö ÀÖ°Ô Commit Pending ¿¬»êÀ»
-            *     // µî·ÏÇÑ´Ù.
+            *     // ì•Œê³ ë¦¬ì¦˜ (ë‹¤)ì— í•´ë‹¹í•˜ëŠ” RESIZING ìƒíƒœì¼ ê²½ìš°ì—ë§Œ ìˆìœ¼ë¯€ë¡œ
+            *     // ìƒíƒœë¥¼ ONLINEìœ¼ë¡œ ë³€ê²½í•  ìˆ˜ ìˆê²Œ Commit Pending ì—°ì‚°ì„
+            *     // ë“±ë¡í•œë‹¤.
             *     if ( smLayerCallback::isBeginTrans( aTrans ) == ID_TRUE )
             *     {
             *         IDE_TEST( sddDataFile::addPendingOperation(
             *                                   aTrans,
             *                                   sFileNode,
-            *                                   ID_TRUE, // commit½Ã¿¡ µ¿ÀÛ
+            *                                   ID_TRUE, // commitì‹œì— ë™ì‘
             *                                   SCT_POP_ALTER_DBF_RESIZE )
             *                   != IDE_SUCCESS );
             *     }
             *     else
             *     {
-            *         // ActiveTx°¡ ¾Æ´Ñ °æ¿ì Pending µî·ÏÇÏÁö ¾Ê´Â´Ù.
+            *         // ActiveTxê°€ ì•„ë‹Œ ê²½ìš° Pending ë“±ë¡í•˜ì§€ ì•ŠëŠ”ë‹¤.
             *     }
             * 
-            *     // ¸¸¾à CommitÇÏÁö ¸øÇÑ Æ®·£Àè¼ÇÀÌ¶ó¸é Rollback Pending
-            *     // ¿¬»êÀÌ±â ¶§¹®¿¡
-            *     // undo_SCT_UPDATE_DRDB_EXTEND_DBF()¿¡¼­ POP_DROP_DBF ¿¡¼­
-            *     // µî·ÏÇÑ´Ù.
+            *     // ë§Œì•½ Commití•˜ì§€ ëª»í•œ íŠ¸ëœì­ì…˜ì´ë¼ë©´ Rollback Pending
+            *     // ì—°ì‚°ì´ê¸° ë•Œë¬¸ì—
+            *     // undo_SCT_UPDATE_DRDB_EXTEND_DBF()ì—ì„œ POP_DROP_DBF ì—ì„œ
+            *     // ë“±ë¡í•œë‹¤.
             * }
             * else
             * {
-            *     // Pending µî·ÏÀ» ÇÒ ÇÊ¿ä°¡ ¾ø´Ù.
+            *     // Pending ë“±ë¡ì„ í•  í•„ìš”ê°€ ì—†ë‹¤.
             * }
             */
 
@@ -1466,16 +1466,16 @@ IDE_RC sddUpdate::redo_SCT_UPDATE_DRDB_SHRINK_DBF(
                     IDE_TEST( sddDataFile::addPendingOperation(
                             aTrans,
                             sFileNode,
-                            ID_TRUE, // commit½Ã¿¡ µ¿ÀÛ
+                            ID_TRUE, // commitì‹œì— ë™ì‘
                             SCT_POP_ALTER_DBF_RESIZE )
                         != IDE_SUCCESS );
                 }
                 else
                 {
-                    // PROJ-1923 ¹«Á¶°Ç redo·Î º¯°æÇÑ´Ù.
-                    // ·Î±×¾ŞÄ¿ÀÇ size > log ¿¡ ±â·ÏµÈ size°¡ ÀÛ´Ù¸é,
-                    // ·Î±×¸¸ ±â·ÏÇÏ°í shrink °¡ ½ÇÇàµÇÁö ¾ÊÀº°ÍÀÌ¹Ç·Î
-                    // redo ÇÑ´Ù. ±× ¿Ü¿¡´Â ÇÏÁö ¾Ê´Â´Ù.
+                    // PROJ-1923 ë¬´ì¡°ê±´ redoë¡œ ë³€ê²½í•œë‹¤.
+                    // ë¡œê·¸ì•µì»¤ì˜ size > log ì— ê¸°ë¡ëœ sizeê°€ ì‘ë‹¤ë©´,
+                    // ë¡œê·¸ë§Œ ê¸°ë¡í•˜ê³  shrink ê°€ ì‹¤í–‰ë˜ì§€ ì•Šì€ê²ƒì´ë¯€ë¡œ
+                    // redo í•œë‹¤. ê·¸ ì™¸ì—ëŠ” í•˜ì§€ ì•ŠëŠ”ë‹¤.
                     if( sCurrSize > sAfterCurrSize )
                     {
                         sFileNode->mState |= SMI_FILE_RESIZING;
@@ -1483,7 +1483,7 @@ IDE_RC sddUpdate::redo_SCT_UPDATE_DRDB_SHRINK_DBF(
                         IDE_TEST( sddDataFile::addPendingOperation(
                                 aTrans,
                                 sFileNode,
-                                ID_TRUE, // commit½Ã¿¡ µ¿ÀÛ
+                                ID_TRUE, // commitì‹œì— ë™ì‘
                                 SCT_POP_ALTER_DBF_RESIZE,
                                 &sPendingOp )
                             != IDE_SUCCESS );
@@ -1504,10 +1504,10 @@ IDE_RC sddUpdate::redo_SCT_UPDATE_DRDB_SHRINK_DBF(
                 // do nothing
             }
 
-            // [Áß¿ä]
-            // ¹«Á¶°Ç CURRSIZE°ªÀ» º¯°æÇÑ´Ù.
-            // EXTEND¿¡¼­µµ ¹°¸®Àû ÆÄÀÏÀº ¼±º°ÀûÀ¸·Î Á¶Á¤ÇÏÁö¸¸,
-            // CURRSIZE °ªÀº º¯°æÇÑ´Ù.
+            // [ì¤‘ìš”]
+            // ë¬´ì¡°ê±´ CURRSIZEê°’ì„ ë³€ê²½í•œë‹¤.
+            // EXTENDì—ì„œë„ ë¬¼ë¦¬ì  íŒŒì¼ì€ ì„ ë³„ì ìœ¼ë¡œ ì¡°ì •í•˜ì§€ë§Œ,
+            // CURRSIZE ê°’ì€ ë³€ê²½í•œë‹¤.
 
             sddDataFile::setInitSize(sFileNode, sAfterInitSize);
             sddDataFile::setCurrSize(sFileNode, sAfterCurrSize);
@@ -1544,30 +1544,30 @@ IDE_RC sddUpdate::redo_SCT_UPDATE_DRDB_SHRINK_DBF(
 /*
 PRJ-1548 User Memory Tablespace
 
-SCT_UPDATE_DRDB_SHRINK_DBF ·Î±× UNDO
+SCT_UPDATE_DRDB_SHRINK_DBF ë¡œê·¸ UNDO
 
-Æ®·£Àè¼Ç Commit Pending List: [POP_DBF]
+íŠ¸ëœì­ì…˜ Commit Pending List: [POP_DBF]
 
-¼ø¼­ :   (1)                 (2)         (3)          (4)        (5)
-¿¬»ê : [SHRINK_DBF]-------->[ANCHOR]->[CLR_SHRINK]->[ANCHOR]->[ROLLBACK]
-»óÅÂ :  |ONLINE               ÀúÀå     ~RESIZING (Ãà¼Ò)      ÀúÀå     ¿Ï·á
-        |RESIZING                      (º¯°æ·® È®Àå)
+ìˆœì„œ :   (1)                 (2)         (3)          (4)        (5)
+ì—°ì‚° : [SHRINK_DBF]-------->[ANCHOR]->[CLR_SHRINK]->[ANCHOR]->[ROLLBACK]
+ìƒíƒœ :  |ONLINE               ì €ì¥     ~RESIZING (ì¶•ì†Œ)      ì €ì¥     ì™„ë£Œ
+        |RESIZING                      (ë³€ê²½ëŸ‰ í™•ì¥)
 
-º¹±¸ ¾Ë°í¸®Áò
+ë³µêµ¬ ì•Œê³ ë¦¬ì¦˜
 
-RESTART½Ã
+RESTARTì‹œ
 
-°¡. (1)°ú (2) »çÀÌ¿¡¼­ ½ÇÆĞÇÏ¸é ·Î±×¾ŞÄ¿¿¡ ONLINE »óÅÂÀÌ°í, RESTART »óÈ²ÀÌ¹Ç·Î Ãà¼Ò·®¿¡ ´ëÇØ
-    Ãë¼ÒÇÏÁö ¾Ê´Â´Ù. (°³¼±»çÇ×)
+ê°€. (1)ê³¼ (2) ì‚¬ì´ì—ì„œ ì‹¤íŒ¨í•˜ë©´ ë¡œê·¸ì•µì»¤ì— ONLINE ìƒíƒœì´ê³ , RESTART ìƒí™©ì´ë¯€ë¡œ ì¶•ì†ŒëŸ‰ì— ëŒ€í•´
+    ì·¨ì†Œí•˜ì§€ ì•ŠëŠ”ë‹¤. (ê°œì„ ì‚¬í•­)
 
-³ª. (2)¿¡¼­ undo¸¦ ¼öÇàÇÏ¸é ¿Ï·á°¡ ¾ÈµÈ Æ®·£Àè¼ÇÀÌÁö¸¸, ·Î±×¾ŞÄ¿¿¡ ONLINE|RESIZING »óÅÂÀÌ±â
-    ¶§¹®¿¡, ONLINE(~RESIZING) »óÅÂ·Î º¯°æÇÏ°í, º¯°æ·®À» Ãë¼ÒÇÑ´Ù.
+ë‚˜. (2)ì—ì„œ undoë¥¼ ìˆ˜í–‰í•˜ë©´ ì™„ë£Œê°€ ì•ˆëœ íŠ¸ëœì­ì…˜ì´ì§€ë§Œ, ë¡œê·¸ì•µì»¤ì— ONLINE|RESIZING ìƒíƒœì´ê¸°
+    ë•Œë¬¸ì—, ONLINE(~RESIZING) ìƒíƒœë¡œ ë³€ê²½í•˜ê³ , ë³€ê²½ëŸ‰ì„ ì·¨ì†Œí•œë‹¤.
 
-RUNTIME½Ã
+RUNTIMEì‹œ
 
-°¡. (1)°ú (2) »çÀÌ¿¡¼­´Â before ÀÌ¹ÌÁö·Î º¯°æÇØÁØ´Ù.
+ê°€. (1)ê³¼ (2) ì‚¬ì´ì—ì„œëŠ” before ì´ë¯¸ì§€ë¡œ ë³€ê²½í•´ì¤€ë‹¤.
 
-³ª. (3)¿¡¼­ ONLINE|RESIZING »óÅÂ ~RESIZING ÇÏ°í º¯°æ·® Ãë¼ÒÇÑ´Ù.
+ë‚˜. (3)ì—ì„œ ONLINE|RESIZING ìƒíƒœ ~RESIZING í•˜ê³  ë³€ê²½ëŸ‰ ì·¨ì†Œí•œë‹¤.
 
 */
 IDE_RC sddUpdate::undo_SCT_UPDATE_DRDB_SHRINK_DBF(
@@ -1618,24 +1618,24 @@ IDE_RC sddUpdate::undo_SCT_UPDATE_DRDB_SHRINK_DBF(
         if ( sFileNode  != NULL )
         {
             // fix BUG-11337.
-            // µ¥ÀÌÅ¸ ÆÄÀÏÀÌ ¹é¾÷ÁßÀÌ¸é ¿Ï·áÇÒ¶§±îÁö ´ë±â ÇÑ´Ù.
+            // ë°ì´íƒ€ íŒŒì¼ì´ ë°±ì—…ì¤‘ì´ë©´ ì™„ë£Œí• ë•Œê¹Œì§€ ëŒ€ê¸° í•œë‹¤.
             if ( SMI_FILE_STATE_IS_BACKUP( sFileNode->mState ) )
             {
-                // ¾Æ·¡ÇÔ¼ö¿¡¼­ sctTableSpaceMgr::lock()À» ÇØÁ¦Çß´Ù°¡
-                // ´Ù½Ã È¹µæÇØ¼­ return µÊ.
+                // ì•„ë˜í•¨ìˆ˜ì—ì„œ sctTableSpaceMgr::lock()ì„ í•´ì œí–ˆë‹¤ê°€
+                // ë‹¤ì‹œ íšë“í•´ì„œ return ë¨.
                 sddDiskMgr::wait4BackupFileEnd();
                 goto retry;
             }
 
-            // ¿î¿µÁß¿¡ RollbackÀÌ ¹ß»ıÇÏ°Å³ª  RESIZING »óÅÂ°¡ Loganchor¿¡ ÀúÀåµÈ °æ¿ì
-            // ½ÇÁ¦ ÆÄÀÏ¿¡ ´ëÇØ¼­ º¯°æµÈ°ÍÀÌ ¾ø±â ¶§¹®¿¡ »óÅÂ°ª¸¸ »«´Ù.
+            // ìš´ì˜ì¤‘ì— Rollbackì´ ë°œìƒí•˜ê±°ë‚˜  RESIZING ìƒíƒœê°€ Loganchorì— ì €ì¥ëœ ê²½ìš°
+            // ì‹¤ì œ íŒŒì¼ì— ëŒ€í•´ì„œ ë³€ê²½ëœê²ƒì´ ì—†ê¸° ë•Œë¬¸ì— ìƒíƒœê°’ë§Œ ëº€ë‹¤.
             if ( SMI_FILE_STATE_IS_RESIZING( sFileNode->mState ) )
             {
-                // RESTART½Ã (3)ÀÌÀü¿¡ ½ÇÆĞÇÑ °æ¿ì ÀÌ¹Ç·Î ¾Ë°í¸®Áò (°¡)¿¡ ÇØ´çÇÑ´Ù.
+                // RESTARTì‹œ (3)ì´ì „ì— ì‹¤íŒ¨í•œ ê²½ìš° ì´ë¯€ë¡œ ì•Œê³ ë¦¬ì¦˜ (ê°€)ì— í•´ë‹¹í•œë‹¤.
                 // NOTHING TO DO ...
             }
 
-            // TBS Node¿¡ X Àá±İÀ» È¹µæÇÑ »óÅÂÀÌ¹Ç·Î lockÀ» È¹µæÇÒ ÇÊ¿ä¾ø´Ù.
+            // TBS Nodeì— X ì ê¸ˆì„ íšë“í•œ ìƒíƒœì´ë¯€ë¡œ lockì„ íšë“í•  í•„ìš”ì—†ë‹¤.
             sddDataFile::setInitSize(sFileNode, sBeforeInitSize);
             sddDataFile::setCurrSize(sFileNode, sBeforeCurrSize);
 
@@ -1643,7 +1643,7 @@ IDE_RC sddUpdate::undo_SCT_UPDATE_DRDB_SHRINK_DBF(
         }
         else
         {
-            // ¼­¹ö±¸µ¿½Ã¿¡´Â Nothing To do...
+            // ì„œë²„êµ¬ë™ì‹œì—ëŠ” Nothing To do...
         }
 
     }
@@ -1653,10 +1653,10 @@ IDE_RC sddUpdate::undo_SCT_UPDATE_DRDB_SHRINK_DBF(
 
     if ( sFileNode != NULL )
     {
-        /* BUG-24086: [SD] Restart½Ã¿¡µµ FileÀÌ³ª TBS¿¡ ´ëÇÑ »óÅÂ°¡ ¹Ù²î¾úÀ» °æ¿ì
-         * LogAnchor¿¡ »óÅÂ¸¦ ¹İ¿µÇØ¾ß ÇÑ´Ù.
+        /* BUG-24086: [SD] Restartì‹œì—ë„ Fileì´ë‚˜ TBSì— ëŒ€í•œ ìƒíƒœê°€ ë°”ë€Œì—ˆì„ ê²½ìš°
+         * LogAnchorì— ìƒíƒœë¥¼ ë°˜ì˜í•´ì•¼ í•œë‹¤.
          *
-         * Restart Recovery½Ã¿¡´Â updateDBFNodeAndFlushÇÏÁö ¾Ê´ø°ÍÀ» ÇÏµµ·Ï º¯°æ.
+         * Restart Recoveryì‹œì—ëŠ” updateDBFNodeAndFlushí•˜ì§€ ì•Šë˜ê²ƒì„ í•˜ë„ë¡ ë³€ê²½.
          * */
 
         IDE_ASSERT( smLayerCallback::updateDBFNodeAndFlush( sFileNode )
@@ -1677,7 +1677,7 @@ IDE_RC sddUpdate::undo_SCT_UPDATE_DRDB_SHRINK_DBF(
 }
 
 /***********************************************************************
- * DESCRIPTION : datafile autoextend mode¿¡ ´ëÇÑ redo ¼öÇà
+ * DESCRIPTION : datafile autoextend modeì— ëŒ€í•œ redo ìˆ˜í–‰
  * SMR_LT_TBS_UPDATE : SCT_UPDATE_DRDB_AUTOEXTEND_DBF
  * After  image : datafile attribute
  **********************************************************************/
@@ -1744,7 +1744,7 @@ IDE_RC sddUpdate::redo_SCT_UPDATE_DRDB_AUTOEXTEND_DBF(
 }
 
 /***********************************************************************
- * DESCRIPTION : datafile autoextend mode¿¡ ´ëÇÑ undo ¼öÇà
+ * DESCRIPTION : datafile autoextend modeì— ëŒ€í•œ undo ìˆ˜í–‰
  * SMR_LT_TBS_UPDATE : SCT_UPDATE_DRDB_AUTOEXTEND_DBF
  * before image : datafile attribute
  **********************************************************************/
@@ -1795,10 +1795,10 @@ IDE_RC sddUpdate::undo_SCT_UPDATE_DRDB_AUTOEXTEND_DBF(
         {
             sddDataFile::setAutoExtendProp(sFileNode, sAutoExtMode, sNextSize, sMaxSize);
 
-            /* BUG-24086: [SD] Restart½Ã¿¡µµ FileÀÌ³ª TBS¿¡ ´ëÇÑ »óÅÂ°¡ ¹Ù²î¾úÀ» °æ¿ì
-             * LogAnchor¿¡ »óÅÂ¸¦ ¹İ¿µÇØ¾ß ÇÑ´Ù.
+            /* BUG-24086: [SD] Restartì‹œì—ë„ Fileì´ë‚˜ TBSì— ëŒ€í•œ ìƒíƒœê°€ ë°”ë€Œì—ˆì„ ê²½ìš°
+             * LogAnchorì— ìƒíƒœë¥¼ ë°˜ì˜í•´ì•¼ í•œë‹¤.
              *
-             * Restart Recovery½Ã¿¡´Â updateDBFNodeAndFlushÇÏÁö ¾Ê´ø°ÍÀ» ÇÏµµ·Ï º¯°æ.
+             * Restart Recoveryì‹œì—ëŠ” updateDBFNodeAndFlushí•˜ì§€ ì•Šë˜ê²ƒì„ í•˜ë„ë¡ ë³€ê²½.
              * */
 
             IDE_ASSERT( smLayerCallback::updateDBFNodeAndFlush( sFileNode )
@@ -1833,19 +1833,19 @@ IDE_RC sddUpdate::undo_SCT_UPDATE_DRDB_AUTOEXTEND_DBF(
 
 
 /*
-    ALTER TABLESPACE TBS1 OFFLINE .... ¿¡ ´ëÇÑ REDO ¼öÇà
+    ALTER TABLESPACE TBS1 OFFLINE .... ì— ëŒ€í•œ REDO ìˆ˜í–‰
 
-    [ ·Î±× ±¸Á¶ ]
+    [ ë¡œê·¸ êµ¬ì¡° ]
     After Image  --------------------------------------------
       UInt                aAState
 
-    [ ALTER TABLESPACE OFFLINE ÀÇ REDO Ã³¸® ]
-     Offline¿¡ ´ëÇÑ REDO·Î TBSNode.Status ¿¡ ´ëÇÑ
-     Commit Pending Operation µî·Ï
-     (note-1) TBSNode¸¦ loganchor¿¡ flushÇÏÁö ¾ÊÀ½
-              -> Restart Recovery¿Ï·áÈÄ ¸ğµç TBS¸¦ loganchor¿¡ flushÇÏ±â ¶§¹®
-     (note-2) Commit Pending½Ã Resource ÇØÁ¦¸¦ ¼öÇàÇÏÁö ¾ÊÀ½
-              -> Restart Recovery¿Ï·áÈÄ OFFLINE TBS¿¡ ´ëÇÑ ResourceÇØÁ¦¸¦ ÇÑ´Ù
+    [ ALTER TABLESPACE OFFLINE ì˜ REDO ì²˜ë¦¬ ]
+     Offlineì— ëŒ€í•œ REDOë¡œ TBSNode.Status ì— ëŒ€í•œ
+     Commit Pending Operation ë“±ë¡
+     (note-1) TBSNodeë¥¼ loganchorì— flushí•˜ì§€ ì•ŠìŒ
+              -> Restart Recoveryì™„ë£Œí›„ ëª¨ë“  TBSë¥¼ loganchorì— flushí•˜ê¸° ë•Œë¬¸
+     (note-2) Commit Pendingì‹œ Resource í•´ì œë¥¼ ìˆ˜í–‰í•˜ì§€ ì•ŠìŒ
+              -> Restart Recoveryì™„ë£Œí›„ OFFLINE TBSì— ëŒ€í•œ Resourceí•´ì œë¥¼ í•œë‹¤
 */
 IDE_RC sddUpdate::redo_SCT_UPDATE_DRDB_ALTER_TBS_OFFLINE( idvSQL      * /* aStatistics */,
                                                           void        * aTrans,
@@ -1871,17 +1871,17 @@ IDE_RC sddUpdate::redo_SCT_UPDATE_DRDB_ALTER_TBS_OFFLINE( idvSQL      * /* aStat
 
         if ( smLayerCallback::isBeginTrans( aTrans ) == ID_TRUE )
         {
-            // Commit Pendingµî·Ï
-            // Transaction Commit½Ã¿¡ ¼öÇàÇÒ Pending Operationµî·Ï
+            // Commit Pendingë“±ë¡
+            // Transaction Commitì‹œì— ìˆ˜í–‰í•  Pending Operationë“±ë¡
             IDE_TEST( sctTableSpaceMgr::addPendingOperation(
                         aTrans,
                         sTBSNode->mHeader.mID,
-                        ID_TRUE, /* Pending ¿¬»ê ¼öÇà ½ÃÁ¡ : Commit ½Ã */
+                        ID_TRUE, /* Pending ì—°ì‚° ìˆ˜í–‰ ì‹œì  : Commit ì‹œ */
                         SCT_POP_ALTER_TBS_OFFLINE,
                         & sPendingOp ) != IDE_SUCCESS );
 
-            // Commit½Ã sctTableSpaceMgr::executePendingOperation¿¡¼­
-            // (note-2) Commit Pending½Ã Resource ÇØÁ¦¸¦ ¼öÇàÇÏÁö ¾Ê´Â´Ù.
+            // Commitì‹œ sctTableSpaceMgr::executePendingOperationì—ì„œ
+            // (note-2) Commit Pendingì‹œ Resource í•´ì œë¥¼ ìˆ˜í–‰í•˜ì§€ ì•ŠëŠ”ë‹¤.
             sPendingOp->mPendingOpFunc =
                          smLayerCallback::alterTBSOfflineCommitPending;
             sPendingOp->mNewTBSState   = sTBSState;
@@ -1890,12 +1890,12 @@ IDE_RC sddUpdate::redo_SCT_UPDATE_DRDB_ALTER_TBS_OFFLINE( idvSQL      * /* aStat
         }
         else
         {
-            // ActiveTx°¡ ¾Æ´Ñ °æ¿ì Pending µî·ÏÇÏÁö ¾Ê´Â´Ù.
+            // ActiveTxê°€ ì•„ë‹Œ ê²½ìš° Pending ë“±ë¡í•˜ì§€ ì•ŠëŠ”ë‹¤.
         }
     }
     else
     {
-        // ÀÌ¹Ì DropµÈ TablespaceÀÎ °æ¿ì
+        // ì´ë¯¸ Dropëœ Tablespaceì¸ ê²½ìš°
         // nothing to do ...
     }
 
@@ -1908,16 +1908,16 @@ IDE_RC sddUpdate::redo_SCT_UPDATE_DRDB_ALTER_TBS_OFFLINE( idvSQL      * /* aStat
 
 
 /*
-    ALTER TABLESPACE TBS1 OFFLINE .... ¿¡ ´ëÇÑ UNDO ¼öÇà
+    ALTER TABLESPACE TBS1 OFFLINE .... ì— ëŒ€í•œ UNDO ìˆ˜í–‰
 
-    [ ·Î±× ±¸Á¶ ]
+    [ ë¡œê·¸ êµ¬ì¡° ]
     Before Image  --------------------------------------------
       UInt                aBState
 
-    [ ALTER TABLESPACE OFFLINE ÀÇ UNDO Ã³¸® ]
-      (u-010) (020)¿¡ ´ëÇÑ UNDO·Î TBSNode.Status := Before Image(ONLINE)
-      (note-1) TBSNode¸¦ loganchor¿¡ flushÇÏÁö ¾ÊÀ½
-                => Restart Recovery ÀÌÈÄ¿¡ Ã³¸®µÊ.
+    [ ALTER TABLESPACE OFFLINE ì˜ UNDO ì²˜ë¦¬ ]
+      (u-010) (020)ì— ëŒ€í•œ UNDOë¡œ TBSNode.Status := Before Image(ONLINE)
+      (note-1) TBSNodeë¥¼ loganchorì— flushí•˜ì§€ ì•ŠìŒ
+                => Restart Recovery ì´í›„ì— ì²˜ë¦¬ë¨.
 */
 IDE_RC sddUpdate::undo_SCT_UPDATE_DRDB_ALTER_TBS_OFFLINE( idvSQL      * /* aStatistics */,
                                                           void        * /*aTrans*/,
@@ -1940,13 +1940,13 @@ IDE_RC sddUpdate::undo_SCT_UPDATE_DRDB_ALTER_TBS_OFFLINE( idvSQL      * /* aStat
                                          aValuePtr,
                                          & sTBSState ) != IDE_SUCCESS );
 
-        // ¿î¿µÁßÀÌ°Å³ª Restart Recovery½Ã ¸ğµÎ
-        // Switch_to_Offline -> Before State·Î º¹¿øÇÑ´Ù.
+        // ìš´ì˜ì¤‘ì´ê±°ë‚˜ Restart Recoveryì‹œ ëª¨ë‘
+        // Switch_to_Offline -> Before Stateë¡œ ë³µì›í•œë‹¤.
         sTBSNode->mHeader.mState = sTBSState;
     }
     else
     {
-        // ÀÌ¹Ì DropµÈ TablespaceÀÎ °æ¿ì
+        // ì´ë¯¸ Dropëœ Tablespaceì¸ ê²½ìš°
         // nothing to do ...
     }
 
@@ -1959,16 +1959,16 @@ IDE_RC sddUpdate::undo_SCT_UPDATE_DRDB_ALTER_TBS_OFFLINE( idvSQL      * /* aStat
 
 
 /*
-    ALTER TABLESPACE TBS1 ONLINE .... ¿¡ ´ëÇÑ REDO ¼öÇà
+    ALTER TABLESPACE TBS1 ONLINE .... ì— ëŒ€í•œ REDO ìˆ˜í–‰
 
-    [ ·Î±× ±¸Á¶ ]
+    [ ë¡œê·¸ êµ¬ì¡° ]
     After Image  --------------------------------------------
       UInt                aAState
 
-    [ ALTER TABLESPACE ONLINE ÀÇ REDO Ã³¸® ]
+    [ ALTER TABLESPACE ONLINE ì˜ REDO ì²˜ë¦¬ ]
     (r-010) TBSNode.Status := After Image(SW)
-      (note-1) TBSNode¸¦ loganchor¿¡ flushÇÏÁö ¾ÊÀ½
-               -> Restart Recovery¿Ï·áÈÄ ¸ğµç TBS¸¦ loganchor¿¡ flushÇÏ±â ¶§¹®
+      (note-1) TBSNodeë¥¼ loganchorì— flushí•˜ì§€ ì•ŠìŒ
+               -> Restart Recoveryì™„ë£Œí›„ ëª¨ë“  TBSë¥¼ loganchorì— flushí•˜ê¸° ë•Œë¬¸
 */
 IDE_RC sddUpdate::redo_SCT_UPDATE_DRDB_ALTER_TBS_ONLINE( idvSQL       * /* aStatistics */,
                                                          void         * aTrans,
@@ -1994,17 +1994,17 @@ IDE_RC sddUpdate::redo_SCT_UPDATE_DRDB_ALTER_TBS_ONLINE( idvSQL       * /* aStat
 
         if ( smLayerCallback::isBeginTrans( aTrans ) == ID_TRUE )
         {
-            // Commit Pendingµî·Ï
-            // Transaction Commit½Ã¿¡ ¼öÇàÇÒ Pending Operationµî·Ï
+            // Commit Pendingë“±ë¡
+            // Transaction Commitì‹œì— ìˆ˜í–‰í•  Pending Operationë“±ë¡
             IDE_TEST( sctTableSpaceMgr::addPendingOperation(
                         aTrans,
                         sTBSNode->mHeader.mID,
-                        ID_TRUE, /* Pending ¿¬»ê ¼öÇà ½ÃÁ¡ : Commit ½Ã */
+                        ID_TRUE, /* Pending ì—°ì‚° ìˆ˜í–‰ ì‹œì  : Commit ì‹œ */
                         SCT_POP_ALTER_TBS_ONLINE,
                         & sPendingOp ) != IDE_SUCCESS );
 
-            // Commit½Ã sctTableSpaceMgr::executePendingOperation
-            // (note-2) Commit Pending½Ã Resource ÇØÁ¦¸¦ ¼öÇàÇÏÁö ¾Ê´Â´Ù.
+            // Commitì‹œ sctTableSpaceMgr::executePendingOperation
+            // (note-2) Commit Pendingì‹œ Resource í•´ì œë¥¼ ìˆ˜í–‰í•˜ì§€ ì•ŠëŠ”ë‹¤.
             sPendingOp->mPendingOpFunc =
                         smLayerCallback::alterTBSOnlineCommitPending;
             sPendingOp->mNewTBSState   = sTBSState;
@@ -2013,12 +2013,12 @@ IDE_RC sddUpdate::redo_SCT_UPDATE_DRDB_ALTER_TBS_ONLINE( idvSQL       * /* aStat
         }
         else
         {
-            // ActiveTx°¡ ¾Æ´Ñ °æ¿ì Pending µî·ÏÇÏÁö ¾Ê´Â´Ù.
+            // ActiveTxê°€ ì•„ë‹Œ ê²½ìš° Pending ë“±ë¡í•˜ì§€ ì•ŠëŠ”ë‹¤.
         }
     }
     else
     {
-        // ÀÌ¹Ì DropµÈ TablespaceÀÎ °æ¿ì
+        // ì´ë¯¸ Dropëœ Tablespaceì¸ ê²½ìš°
         // nothing to do ...
     }
 
@@ -2031,17 +2031,17 @@ IDE_RC sddUpdate::redo_SCT_UPDATE_DRDB_ALTER_TBS_ONLINE( idvSQL       * /* aStat
 
 
 /*
-    ALTER TABLESPACE TBS1 ONLINE .... ¿¡ ´ëÇÑ UNDO ¼öÇà
+    ALTER TABLESPACE TBS1 ONLINE .... ì— ëŒ€í•œ UNDO ìˆ˜í–‰
 
-    [ ·Î±× ±¸Á¶ ]
+    [ ë¡œê·¸ êµ¬ì¡° ]
     Before Image  --------------------------------------------
       UInt                aBState
 
-    [ ALTER TABLESPACE ONLINE ÀÇ UNDO Ã³¸® ]
+    [ ALTER TABLESPACE ONLINE ì˜ UNDO ì²˜ë¦¬ ]
       (u-050)  TBSNode.Status := Before Image(OFFLINE)
-      (note-1) TBSNode¸¦ loganchor¿¡ flushÇÏÁö ¾ÊÀ½
-               -> ALTER TBS ONLINEEÀÇ Commit PendingÀ» ÅëÇØ
-                  COMMITÀÌÈÄ¿¡¾ß º¯°æµÈ TBS»óÅÂ°¡ log anchor¿¡ flushµÇ±â ¶§¹®
+      (note-1) TBSNodeë¥¼ loganchorì— flushí•˜ì§€ ì•ŠìŒ
+               -> ALTER TBS ONLINEEì˜ Commit Pendingì„ í†µí•´
+                  COMMITì´í›„ì—ì•¼ ë³€ê²½ëœ TBSìƒíƒœê°€ log anchorì— flushë˜ê¸° ë•Œë¬¸
 */
 IDE_RC sddUpdate::undo_SCT_UPDATE_DRDB_ALTER_TBS_ONLINE( idvSQL       * /* aStatistics */,
                                                          void         * /*aTrans*/,
@@ -2068,7 +2068,7 @@ IDE_RC sddUpdate::undo_SCT_UPDATE_DRDB_ALTER_TBS_ONLINE( idvSQL       * /* aStat
     }
     else
     {
-        // ÀÌ¹Ì DropµÈ TablespaceÀÎ °æ¿ì
+        // ì´ë¯¸ Dropëœ Tablespaceì¸ ê²½ìš°
         // nothing to do ...
     }
 
@@ -2080,11 +2080,11 @@ IDE_RC sddUpdate::undo_SCT_UPDATE_DRDB_ALTER_TBS_ONLINE( idvSQL       * /* aStat
 }
 
 /*
-    ALTER TABLESPACE TBS1 ONLINE/OFFLINE .... ¿¡ ´ëÇÑ Log Image¸¦ ºĞ¼®ÇÑ´Ù.
+    ALTER TABLESPACE TBS1 ONLINE/OFFLINE .... ì— ëŒ€í•œ Log Imageë¥¼ ë¶„ì„í•œë‹¤.
 
-    [IN]  aValueSize     - Log Image ÀÇ Å©±â
+    [IN]  aValueSize     - Log Image ì˜ í¬ê¸°
     [IN]  aValuePtr      - Log Image
-    [OUT] aState         - TablespaceÀÇ »óÅÂ
+    [OUT] aState         - Tablespaceì˜ ìƒíƒœ
  */
 IDE_RC sddUpdate::getAlterTBSOnOffImage( UInt       aValueSize,
                                          SChar    * aValuePtr,
@@ -2103,19 +2103,19 @@ IDE_RC sddUpdate::getAlterTBSOnOffImage( UInt       aValueSize,
 }
 
 /*
-    DRDB_ALTER_OFFLINE_DBF ¿¡ ´ëÇÑ REDO ¼öÇà
+    DRDB_ALTER_OFFLINE_DBF ì— ëŒ€í•œ REDO ìˆ˜í–‰
 
-    [ ·Î±× ±¸Á¶ ]
+    [ ë¡œê·¸ êµ¬ì¡° ]
     After Image  --------------------------------------------
       UInt                aAState
 
-    [ OFFLINE DBFÀÇ REDO Ã³¸® ]
-     Offline¿¡ ´ëÇÑ REDO·Î DBFNode.Status ¿¡ ´ëÇÑ Commit Pending Operation µî·Ï
+    [ OFFLINE DBFì˜ REDO ì²˜ë¦¬ ]
+     Offlineì— ëŒ€í•œ REDOë¡œ DBFNode.Status ì— ëŒ€í•œ Commit Pending Operation ë“±ë¡
 
-     (note-1) DBFNode¸¦ loganchor¿¡ flushÇÏÁö ¾ÊÀ½
-              -> Restart Recovery¿Ï·áÈÄ ¸ğµç DBF¸¦ loganchor¿¡ flushÇÏ±â ¶§¹®
-     (note-2) Commit Pending½Ã Resource ÇØÁ¦¸¦ ¼öÇàÇÏÁö ¾ÊÀ½
-              -> DBF ·¹º§¿¡¼­´Â Ã³¸®ÇÒ °ÍÀÌ ¾øÀ½. ( Pending ÇÔ¼ö ºÒÇÊ¿ä )
+     (note-1) DBFNodeë¥¼ loganchorì— flushí•˜ì§€ ì•ŠìŒ
+              -> Restart Recoveryì™„ë£Œí›„ ëª¨ë“  DBFë¥¼ loganchorì— flushí•˜ê¸° ë•Œë¬¸
+     (note-2) Commit Pendingì‹œ Resource í•´ì œë¥¼ ìˆ˜í–‰í•˜ì§€ ì•ŠìŒ
+              -> DBF ë ˆë²¨ì—ì„œëŠ” ì²˜ë¦¬í•  ê²ƒì´ ì—†ìŒ. ( Pending í•¨ìˆ˜ ë¶ˆí•„ìš” )
 */
 IDE_RC sddUpdate::redo_SCT_UPDATE_DRDB_ALTER_DBF_OFFLINE( idvSQL      * /* aStatistics */,
                                                           void        * aTrans,
@@ -2144,19 +2144,19 @@ IDE_RC sddUpdate::redo_SCT_UPDATE_DRDB_ALTER_DBF_OFFLINE( idvSQL      * /* aStat
 
             if ( smLayerCallback::isBeginTrans( aTrans ) == ID_TRUE )
             {
-                // Commit Pendingµî·Ï
-                // Transaction Commit½Ã¿¡ ¼öÇàÇÒ Pending Operationµî·Ï
+                // Commit Pendingë“±ë¡
+                // Transaction Commitì‹œì— ìˆ˜í–‰í•  Pending Operationë“±ë¡
                 IDE_TEST( sddDataFile::addPendingOperation(
                             aTrans,
                             sFileNode,
-                            ID_TRUE, /* Pending ¿¬»ê ¼öÇà ½ÃÁ¡ : Commit ½Ã */
+                            ID_TRUE, /* Pending ì—°ì‚° ìˆ˜í–‰ ì‹œì  : Commit ì‹œ */
                             SCT_POP_ALTER_DBF_OFFLINE,
                             & sPendingOp ) != IDE_SUCCESS );
 
-                // Commit½Ã sctTableSpaceMgr::executePendingOperation¿¡¼­
-                // (note-2) Commit Pending½Ã Resource ÇØÁ¦¸¦ ¼öÇàÇÏÁö ¾Ê´Â´Ù.
+                // Commitì‹œ sctTableSpaceMgr::executePendingOperationì—ì„œ
+                // (note-2) Commit Pendingì‹œ Resource í•´ì œë¥¼ ìˆ˜í–‰í•˜ì§€ ì•ŠëŠ”ë‹¤.
                 sPendingOp->mNewDBFState = sDBFState;
-                // pending ½Ã Ã³¸®ÇÒ ÇÔ¼ö°¡ ¾ø´Ù.
+                // pending ì‹œ ì²˜ë¦¬í•  í•¨ìˆ˜ê°€ ì—†ë‹¤.
                 sPendingOp->mPendingOpFunc = NULL;
             
                 // loganchor flush
@@ -2165,18 +2165,18 @@ IDE_RC sddUpdate::redo_SCT_UPDATE_DRDB_ALTER_DBF_OFFLINE( idvSQL      * /* aStat
             }
             else
             {
-                // ActiveTx°¡ ¾Æ´Ñ °æ¿ì Pending µî·ÏÇÏÁö ¾Ê´Â´Ù.
+                // ActiveTxê°€ ì•„ë‹Œ ê²½ìš° Pending ë“±ë¡í•˜ì§€ ì•ŠëŠ”ë‹¤.
             }
         }
         else
         {
-            // ÀÌ¹Ì DropµÈ DBFÀÎ °æ¿ì
+            // ì´ë¯¸ Dropëœ DBFì¸ ê²½ìš°
             // nothing to do ...
         }
     }
     else
     {
-        // ÀÌ¹Ì DropµÈ TablespaceÀÎ °æ¿ì
+        // ì´ë¯¸ Dropëœ Tablespaceì¸ ê²½ìš°
         // nothing to do ...
     }
 
@@ -2189,18 +2189,18 @@ IDE_RC sddUpdate::redo_SCT_UPDATE_DRDB_ALTER_DBF_OFFLINE( idvSQL      * /* aStat
 
 
 /*
-    DRDB_ALTER_OFFLINE_DBF ¿¡ ´ëÇÑ UNDO ¼öÇà
+    DRDB_ALTER_OFFLINE_DBF ì— ëŒ€í•œ UNDO ìˆ˜í–‰
 
-    [ ·Î±× ±¸Á¶ ]
+    [ ë¡œê·¸ êµ¬ì¡° ]
     Before Image  --------------------------------------------
       UInt                aBState
 
-    [ ALTER TABLESPACE OFFLINE ÀÇ UNDO Ã³¸® ]
-      (u-010) (020)¿¡ ´ëÇÑ UNDO·Î DBFNode.Status := Before Image
-      (note-1) DBFNode¸¦ loganchor¿¡ flushÇÏÁö ¾ÊÀ½
-               commit µÇÁö ¾ÊÀº offline ¿¬»êÀº loganchor¿¡ offline »óÅÂ°¡
-               ³»·Á°¥¼ö ¾ø±â ¶§¹®¿¡ undo½Ã¿¡´Â loganchor¿¡ ÀÌÀü »óÅÂ¸¦
-               flushÇÒ ÇÊ¿ä¾ø´Ù.
+    [ ALTER TABLESPACE OFFLINE ì˜ UNDO ì²˜ë¦¬ ]
+      (u-010) (020)ì— ëŒ€í•œ UNDOë¡œ DBFNode.Status := Before Image
+      (note-1) DBFNodeë¥¼ loganchorì— flushí•˜ì§€ ì•ŠìŒ
+               commit ë˜ì§€ ì•Šì€ offline ì—°ì‚°ì€ loganchorì— offline ìƒíƒœê°€
+               ë‚´ë ¤ê°ˆìˆ˜ ì—†ê¸° ë•Œë¬¸ì— undoì‹œì—ëŠ” loganchorì— ì´ì „ ìƒíƒœë¥¼
+               flushí•  í•„ìš”ì—†ë‹¤.
 */
 IDE_RC sddUpdate::undo_SCT_UPDATE_DRDB_ALTER_DBF_OFFLINE(
                         idvSQL    * /* aStatistics */,
@@ -2228,18 +2228,18 @@ IDE_RC sddUpdate::undo_SCT_UPDATE_DRDB_ALTER_DBF_OFFLINE(
                         & sDBFState ) != IDE_SUCCESS );
 
             // (u-010)
-            // ¿î¿µÁßÀÌ°Å³ª Restart Recovery½Ã ¸ğµÎ Before State·Î º¹¿øÇÑ´Ù.
+            // ìš´ì˜ì¤‘ì´ê±°ë‚˜ Restart Recoveryì‹œ ëª¨ë‘ Before Stateë¡œ ë³µì›í•œë‹¤.
             sFileNode->mState = sDBFState;
         }
         else
         {
-            // ÀÌ¹Ì DropµÈ DBFÀÎ °æ¿ì
+            // ì´ë¯¸ Dropëœ DBFì¸ ê²½ìš°
             // nothing to do ...
         }
     }
     else
     {
-        // ÀÌ¹Ì DropµÈ TablespaceÀÎ °æ¿ì
+        // ì´ë¯¸ Dropëœ Tablespaceì¸ ê²½ìš°
         // nothing to do ...
     }
 
@@ -2252,19 +2252,19 @@ IDE_RC sddUpdate::undo_SCT_UPDATE_DRDB_ALTER_DBF_OFFLINE(
 
 
 /*
-    DRDB_ALTER_ONLINE_DBF ¿¡ ´ëÇÑ REDO ¼öÇà
+    DRDB_ALTER_ONLINE_DBF ì— ëŒ€í•œ REDO ìˆ˜í–‰
 
-    [ ·Î±× ±¸Á¶ ]
+    [ ë¡œê·¸ êµ¬ì¡° ]
     After Image  --------------------------------------------
       UInt                aAState
 
-    [ ONLINE DBFÀÇ REDO Ã³¸® ]
-    Online ¿¡ ´ëÇÑ REDO·Î DBFNode.Status¿¡ ´ëÇÑ Commit Pending Operation µî·Ï
+    [ ONLINE DBFì˜ REDO ì²˜ë¦¬ ]
+    Online ì— ëŒ€í•œ REDOë¡œ DBFNode.Statusì— ëŒ€í•œ Commit Pending Operation ë“±ë¡
 
-    (note-1) DBFNode¸¦ loganchor¿¡ flushÇÏÁö ¾ÊÀ½
-             -> Restart Recovery¿Ï·áÈÄ ¸ğµç DBF¸¦ loganchor¿¡ flushÇÏ±â ¶§¹®
-     (note-2) Commit Pending½Ã Resource ÇØÁ¦¸¦ ¼öÇàÇÏÁö ¾ÊÀ½
-              -> DBF ·¹º§¿¡¼­´Â Ã³¸®ÇÒ °ÍÀÌ ¾øÀ½. ( Pending ÇÔ¼ö ºÒÇÊ¿ä )
+    (note-1) DBFNodeë¥¼ loganchorì— flushí•˜ì§€ ì•ŠìŒ
+             -> Restart Recoveryì™„ë£Œí›„ ëª¨ë“  DBFë¥¼ loganchorì— flushí•˜ê¸° ë•Œë¬¸
+     (note-2) Commit Pendingì‹œ Resource í•´ì œë¥¼ ìˆ˜í–‰í•˜ì§€ ì•ŠìŒ
+              -> DBF ë ˆë²¨ì—ì„œëŠ” ì²˜ë¦¬í•  ê²ƒì´ ì—†ìŒ. ( Pending í•¨ìˆ˜ ë¶ˆí•„ìš” )
 
 */
 IDE_RC sddUpdate::redo_SCT_UPDATE_DRDB_ALTER_DBF_ONLINE(
@@ -2295,35 +2295,35 @@ IDE_RC sddUpdate::redo_SCT_UPDATE_DRDB_ALTER_DBF_ONLINE(
 
             if ( smLayerCallback::isBeginTrans( aTrans ) == ID_TRUE )
             {
-                // Commit Pendingµî·Ï
-                // Transaction Commit½Ã¿¡ ¼öÇàÇÒ Pending Operationµî·Ï
+                // Commit Pendingë“±ë¡
+                // Transaction Commitì‹œì— ìˆ˜í–‰í•  Pending Operationë“±ë¡
                 IDE_TEST( sddDataFile::addPendingOperation(
                             aTrans,
                             sFileNode,
-                            ID_TRUE, /* Pending ¿¬»ê ¼öÇà ½ÃÁ¡ : Commit ½Ã */
+                            ID_TRUE, /* Pending ì—°ì‚° ìˆ˜í–‰ ì‹œì  : Commit ì‹œ */
                             SCT_POP_ALTER_DBF_ONLINE,
                             & sPendingOp ) != IDE_SUCCESS );
 
-                // Commit½Ã sctTableSpaceMgr::executePendingOperation
-                // (note-2) Commit Pending½Ã Resource ÇØÁ¦¸¦ ¼öÇàÇÏÁö ¾Ê´Â´Ù.
+                // Commitì‹œ sctTableSpaceMgr::executePendingOperation
+                // (note-2) Commit Pendingì‹œ Resource í•´ì œë¥¼ ìˆ˜í–‰í•˜ì§€ ì•ŠëŠ”ë‹¤.
                 sPendingOp->mNewDBFState   = sDBFState;
-                // pending ½Ã Ã³¸®ÇÒ ÇÔ¼ö°¡ ¾ø´Ù.
+                // pending ì‹œ ì²˜ë¦¬í•  í•¨ìˆ˜ê°€ ì—†ë‹¤.
                 sPendingOp->mPendingOpFunc = NULL;
             }
             else
             {
-                // ActiveTx°¡ ¾Æ´Ñ °æ¿ì Pending µî·ÏÇÏÁö ¾Ê´Â´Ù.
+                // ActiveTxê°€ ì•„ë‹Œ ê²½ìš° Pending ë“±ë¡í•˜ì§€ ì•ŠëŠ”ë‹¤.
             }
         }
         else
         {
-            // ÀÌ¹Ì DropµÈ DBFÀÎ °æ¿ì
+            // ì´ë¯¸ Dropëœ DBFì¸ ê²½ìš°
             // nothing to do ...
         }
     }
     else
     {
-        // ÀÌ¹Ì DropµÈ TablespaceÀÎ °æ¿ì
+        // ì´ë¯¸ Dropëœ Tablespaceì¸ ê²½ìš°
         // nothing to do ...
     }
 
@@ -2336,17 +2336,17 @@ IDE_RC sddUpdate::redo_SCT_UPDATE_DRDB_ALTER_DBF_ONLINE(
 
 
 /*
-    ALTER TABLESPACE TBS1 ONLINE .... ¿¡ ´ëÇÑ UNDO ¼öÇà
+    ALTER TABLESPACE TBS1 ONLINE .... ì— ëŒ€í•œ UNDO ìˆ˜í–‰
 
-    [ ·Î±× ±¸Á¶ ]
+    [ ë¡œê·¸ êµ¬ì¡° ]
     Before Image  --------------------------------------------
       UInt                aBState
 
-    [ ALTER TABLESPACE ONLINE ÀÇ UNDO Ã³¸® ]
+    [ ALTER TABLESPACE ONLINE ì˜ UNDO ì²˜ë¦¬ ]
       (u-050)  TBSNode.Status := Before Image(OFFLINE)
-      (note-1) TBSNode¸¦ loganchor¿¡ flushÇÏÁö ¾ÊÀ½
-               -> ALTER TBS ONLINEEÀÇ Commit PendingÀ» ÅëÇØ
-                  COMMITÀÌÈÄ¿¡¾ß º¯°æµÈ TBS»óÅÂ°¡ log anchor¿¡ flushµÇ±â ¶§¹®
+      (note-1) TBSNodeë¥¼ loganchorì— flushí•˜ì§€ ì•ŠìŒ
+               -> ALTER TBS ONLINEEì˜ Commit Pendingì„ í†µí•´
+                  COMMITì´í›„ì—ì•¼ ë³€ê²½ëœ TBSìƒíƒœê°€ log anchorì— flushë˜ê¸° ë•Œë¬¸
 */
 IDE_RC sddUpdate::undo_SCT_UPDATE_DRDB_ALTER_DBF_ONLINE(
                         idvSQL        * /* aStatistics */,
@@ -2374,18 +2374,18 @@ IDE_RC sddUpdate::undo_SCT_UPDATE_DRDB_ALTER_DBF_ONLINE(
                         & sDBFState ) != IDE_SUCCESS );
 
             // (u-010)
-            // ¿î¿µÁßÀÌ°Å³ª Restart Recovery½Ã ¸ğµÎ Before State·Î º¹¿øÇÑ´Ù.
+            // ìš´ì˜ì¤‘ì´ê±°ë‚˜ Restart Recoveryì‹œ ëª¨ë‘ Before Stateë¡œ ë³µì›í•œë‹¤.
             sFileNode->mState = sDBFState;
         }
         else
         {
-            // ÀÌ¹Ì DropµÈ DBFÀÎ °æ¿ì
+            // ì´ë¯¸ Dropëœ DBFì¸ ê²½ìš°
             // nothing to do ...
         }
     }
     else
     {
-        // ÀÌ¹Ì DropµÈ TablespaceÀÎ °æ¿ì
+        // ì´ë¯¸ Dropëœ Tablespaceì¸ ê²½ìš°
         // nothing to do ...
     }
 
@@ -2397,11 +2397,11 @@ IDE_RC sddUpdate::undo_SCT_UPDATE_DRDB_ALTER_DBF_ONLINE(
 }
 
 /*
-    DRDB_ALTER_ONLINE_DBF/OFFLINE_DBF¿¡ ´ëÇÑ Log Image¸¦ ºĞ¼®ÇÑ´Ù.
+    DRDB_ALTER_ONLINE_DBF/OFFLINE_DBFì— ëŒ€í•œ Log Imageë¥¼ ë¶„ì„í•œë‹¤.
 
-    [IN]  aValueSize     - Log Image ÀÇ Å©±â
+    [IN]  aValueSize     - Log Image ì˜ í¬ê¸°
     [IN]  aValuePtr      - Log Image
-    [OUT] aState         - DBFÀÇ »óÅÂ
+    [OUT] aState         - DBFì˜ ìƒíƒœ
 */
 IDE_RC sddUpdate::getAlterDBFOnOffImage( UInt       aValueSize,
                                          SChar    * aValuePtr,

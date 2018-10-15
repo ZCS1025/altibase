@@ -53,14 +53,14 @@ static IDE_RC doDropDatabase(idvSQL */*aStatistics*/, qciArgDropDB *aArg)
     sOutputMsg[0] = 0;
 
     /* ---------------------------
-     *  DB È­ÀÏ¸í ±æÀÌ °Ë»ç
+     *  DB í™”ì¼ëª… ê¸¸ì´ ê²€ì‚¬
      * --------------------------*/
     sDBName    = mmuProperty::getDbName();
     sDBNameLen = idlOS::strlen(sDBName);
 
     IDE_TEST_RAISE((sDBNameLen == 0) || (sDBNameLen >= (SInt)SM_MAX_DB_NAME), DBNameLengthError);
 
-    // fix BUG-10470 DBName °Ë»ç
+    // fix BUG-10470 DBName ê²€ì‚¬
     IDE_TEST_RAISE(idlOS::strCaselessMatch(sDBName,
                                            sDBNameLen,
                                            aArg->mDBName,
@@ -68,7 +68,7 @@ static IDE_RC doDropDatabase(idvSQL */*aStatistics*/, qciArgDropDB *aArg)
                    DBNameError);
 
     /* -------------------------------------------
-     *  SHM Á¸Àç °Ë»ç : Á¸ÀçÇÏ¸é ¿¡·¯!!!
+     *  SHM ì¡´ì¬ ê²€ì‚¬ : ì¡´ì¬í•˜ë©´ ì—ëŸ¬!!!
      * ------------------------------------------*/
     sShmDBKey = smuProperty::getShmDBKey();
 
@@ -128,7 +128,7 @@ static IDE_RC doDropDatabase(idvSQL */*aStatistics*/, qciArgDropDB *aArg)
     {
         IDU_FIT_POINT( "mmtCmsDropDB::doDropDatabase::calloc::TBSNameArray" ); 
 
-        //fix BUG-27437 MEM_FORCE¸¦ ¾²¸é ¾ÈµÈ´Ù.
+        //fix BUG-27437 MEM_FORCEë¥¼ ì“°ë©´ ì•ˆëœë‹¤.
         IDE_TEST( iduMemMgr::calloc(IDU_MEM_SM_SMR,
                                     sLogAnchorHeader.mNewTableSpaceID,
                                     ID_SIZEOF(SChar*),
@@ -142,7 +142,7 @@ static IDE_RC doDropDatabase(idvSQL */*aStatistics*/, qciArgDropDB *aArg)
 
         IDE_CALLBACK_SEND_MSG("Removing DB files");
 
-        // °¡º¯¿µ¿ªÀÇ Ã¹¹øÂ° Node Attribute TypeÀ» ÆÇµ¶ÇÑ´Ù.
+        // ê°€ë³€ì˜ì—­ì˜ ì²«ë²ˆì§¸ Node Attribute Typeì„ íŒë…í•œë‹¤.
         IDE_TEST( smrLogAnchorMgr::getFstNodeAttrType( &sLogAnchorFile,
                                                        &sCurOffset,
                                                        &sAttrType ) != IDE_SUCCESS);
@@ -168,10 +168,10 @@ static IDE_RC doDropDatabase(idvSQL */*aStatistics*/, qciArgDropDB *aArg)
 
                         IDU_FIT_POINT( "mmtCmsDropDB::doDropDatabase::calloc::TBSNameArrayID" );
 
-                        // PRJ-1548 SM - User Memory TableSpace °³³äµµÀÔ
-                        // °ü·Ã Chkpt ImagesµéÀ» ¿Ïº®ÇÏ°Ô »èÁ¦ÇÏ±â À§ÇØ¼­
-                        // Å×ÀÌºí½ºÆäÀÌ½º ÀÌ¸§À» Array¿¡ Caching ÇÑ´Ù.
-                        //fix BUG-27437 MEM_FORCE¸¦ ¾²¸é ¾ÈµÈ´Ù.
+                        // PRJ-1548 SM - User Memory TableSpace ê°œë…ë„ì…
+                        // ê´€ë ¨ Chkpt Imagesë“¤ì„ ì™„ë²½í•˜ê²Œ ì‚­ì œí•˜ê¸° ìœ„í•´ì„œ
+                        // í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ì´ë¦„ì„ Arrayì— Caching í•œë‹¤.
+                        //fix BUG-27437 MEM_FORCEë¥¼ ì“°ë©´ ì•ˆëœë‹¤.
                         IDE_TEST( iduMemMgr::calloc(
                                       IDU_MEM_SM_SMR,
                                       (SMI_MAX_TABLESPACE_NAME_LEN + 1),
@@ -196,8 +196,8 @@ static IDE_RC doDropDatabase(idvSQL */*aStatistics*/, qciArgDropDB *aArg)
                                   != IDE_SUCCESS );
 
                         /* BUG-25922
-                         * »ç¿ëÀÚ Å×ÀÌºí½ºÆäÀÌ½º »ı¼º ¹× drop ÇÏ°í
-                         * server kill ÇÏ°í destroydb ½Ã ¼­¹ö°¡ ºñÁ¤»ó Á¾·áÇÕ´Ï´Ù. */
+                         * ì‚¬ìš©ì í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ìƒì„± ë° drop í•˜ê³ 
+                         * server kill í•˜ê³  destroydb ì‹œ ì„œë²„ê°€ ë¹„ì •ìƒ ì¢…ë£Œí•©ë‹ˆë‹¤. */
                         if( SMI_FILE_STATE_IS_NOT_DROPPED(sDataFileAttr.mState) )
                         {
                             // remove it
@@ -262,7 +262,7 @@ static IDE_RC doDropDatabase(idvSQL */*aStatistics*/, qciArgDropDB *aArg)
                 break;
             }
 
-            // ´ÙÀ½ attribute type ÆÇµ¶
+            // ë‹¤ìŒ attribute type íŒë…
             IDE_TEST( smrLogAnchorMgr::getNxtNodeAttrType( &sLogAnchorFile,
                                                            sCurOffset,
                                                            &sAttrType )

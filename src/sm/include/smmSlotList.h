@@ -50,7 +50,7 @@ class smmSlotList
 
     UInt testGetCount( void ) { return mNumber; }
 
-    // BUG-18122 : MEM_BTREE_NODEPOOL performance view Ãß°¡
+    // BUG-18122 : MEM_BTREE_NODEPOOL performance view ì¶”ê°€
     UInt getPageCount( void )      { return mPageCount;      }
     UInt getSlotPerPage( void )    { return mSlotPerPage;    }
     UInt getFreeSlotCount( void )  { return mNumber;         }
@@ -74,7 +74,7 @@ private:
     UInt                   mSlotPerPage;
     UInt                   mPageCount;
 
-    // BUG-18122 : MEM_BTREE_NODEPOOL performance view Ãß°¡
+    // BUG-18122 : MEM_BTREE_NODEPOOL performance view ì¶”ê°€
     ULong                  mTotalAllocReq;
     ULong                  mTotalFreeReq;
 };

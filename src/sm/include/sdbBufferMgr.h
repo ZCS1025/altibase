@@ -33,7 +33,7 @@
 #include <sdbFlushMgr.h>
 #include <sdbBufferArea.h>
 
-// pinningÀ» À§ÇØ ¾²ÀÌ´Â ÀÚ·á±¸Á¶
+// pinningì„ ìœ„í•´ ì“°ì´ëŠ” ìë£Œêµ¬ì¡°
 typedef struct sdbPageID
 {
     /* space ID */
@@ -44,29 +44,29 @@ typedef struct sdbPageID
 
 typedef struct sdbPinningEnv
 {
-    // ÀÚ½ÅÀÌ Á¢±ÙÇÑ pageID¿¡ ´ëÇÑ ±â·ÏÀ» °¡Áö°í ÀÖ´Ù.
+    // ìì‹ ì´ ì ‘ê·¼í•œ pageIDì— ëŒ€í•œ ê¸°ë¡ì„ ê°€ì§€ê³  ìˆë‹¤.
     sdbPageID  *mAccessHistory;
-    // mAccessHisty°¡ ±â·ÏÇÒ ÃÖ´ë pageID°¹¼ö
+    // mAccessHistyê°€ ê¸°ë¡í•  ìµœëŒ€ pageIDê°¯ìˆ˜
     UInt        mAccessHistoryCount;
-    // ÇöÀç Á¢±ÙÇÑ pageID¸¦ ±â·ÏÇÒ À§Ä¡
+    // í˜„ì¬ ì ‘ê·¼í•œ pageIDë¥¼ ê¸°ë¡í•  ìœ„ì¹˜
     UInt        mAccessInsPos;
 
-    // ÀÚ½ÅÀÌ pinningÇÏ°í ÀÖ´Â pageID¿¡ ´ëÇÑ Á¤º¸¸¦ °¡Áø´Ù.
+    // ìì‹ ì´ pinningí•˜ê³  ìˆëŠ” pageIDì— ëŒ€í•œ ì •ë³´ë¥¼ ê°€ì§„ë‹¤.
     sdbPageID  *mPinningList;
-    // ÀÚ½ÅÀÌ pinningÇÏ°í ÀÖ´Â BCBÆ÷ÀÎÅÍ¸¦ °¡Áö°í ÀÖ´Ù.
+    // ìì‹ ì´ pinningí•˜ê³  ìˆëŠ” BCBí¬ì¸í„°ë¥¼ ê°€ì§€ê³  ìˆë‹¤.
     sdbBCB    **mPinningBCBList;
-    // ÃÖ´ëÇÑ pinningÇÒ ¼ö ÀÖ´Â BCB°¹¼ö
+    // ìµœëŒ€í•œ pinningí•  ìˆ˜ ìˆëŠ” BCBê°¯ìˆ˜
     UInt        mPinningCount;
-    // ÇöÀç BCB¸¦ pinningÇÒ À§Ä¡
+    // í˜„ì¬ BCBë¥¼ pinningí•  ìœ„ì¹˜
     UInt        mPinningInsPos;
 } sdbPinningEnv;
 
-// sdbFiltFuncÀÇ aFiltAgr¿¡ ¾²ÀÌ´Â ÀÚ·á±¸Á¶
+// sdbFiltFuncì˜ aFiltAgrì— ì“°ì´ëŠ” ìë£Œêµ¬ì¡°
 typedef struct sdbBCBRange
 {
-    // mSpaceID¿¡ ¼ÓÇÏ¸é¼­
-    // mStartPID º¸´Ù Å©°Å³ª °°°í,
-    // mEndPIDº¸´Ù ÀÛ°Å³ª °°Àº ¸ğµç pid¸¦ ¹üÀ§¿¡ ¼ÓÇÏµµ·ÏÇÑ´Ù.
+    // mSpaceIDì— ì†í•˜ë©´ì„œ
+    // mStartPID ë³´ë‹¤ í¬ê±°ë‚˜ ê°™ê³ ,
+    // mEndPIDë³´ë‹¤ ì‘ê±°ë‚˜ ê°™ì€ ëª¨ë“  pidë¥¼ ë²”ìœ„ì— ì†í•˜ë„ë¡í•œë‹¤.
     scSpaceID   mSpaceID;
     scPageID    mStartPID;
     scPageID    mEndPID;
@@ -74,48 +74,48 @@ typedef struct sdbBCBRange
 
 typedef struct sdbDiscardPageObj
 {
-    /* discard Á¶°Ç °Ë»ç ÇÔ¼ö */
+    /* discard ì¡°ê±´ ê²€ì‚¬ í•¨ìˆ˜ */
     sdbFiltFunc              mFilter;
-    /* Åë°èÁ¤º¸ */
+    /* í†µê³„ì •ë³´ */
     idvSQL                  *mStatistics;
-    /* Àû¿ëÇÒ ¹öÆÛÇ® */
+    /* ì ìš©í•  ë²„í¼í’€ */
     sdbBufferPool           *mBufferPool;
-    /* mFilter¼öÇà¿¡ ÇÊ¿äÇÑ È¯°æ */
+    /* mFilterìˆ˜í–‰ì— í•„ìš”í•œ í™˜ê²½ */
     void                    *mEnv;
-    /* BCB¸¦ ¸ğ¾ÆµÎ´Â Å¥ */
+    /* BCBë¥¼ ëª¨ì•„ë‘ëŠ” í */
     smuQueueMgr              mQueue;
 }sdbDiscardPageObj;
 
 
 typedef struct sdbPageOutObj
 {
-    /* page out Á¶°Ç °Ë»ç ÇÔ¼ö */
+    /* page out ì¡°ê±´ ê²€ì‚¬ í•¨ìˆ˜ */
     sdbFiltFunc              mFilter;
-    /* mFilter¼öÇà¿¡ ÇÊ¿äÇÑ È¯°æ */
+    /* mFilterìˆ˜í–‰ì— í•„ìš”í•œ í™˜ê²½ */
     void                    *mEnv;
-    /* flush¸¦ ÇØ¾ßÇÏ´Â BCBµéÀ» ¸ğ¾ÆµĞ Å¥ */
+    /* flushë¥¼ í•´ì•¼í•˜ëŠ” BCBë“¤ì„ ëª¨ì•„ë‘” í */
     smuQueueMgr              mQueueForFlush;
-    /* make free¸¦ ÇØ¾ßÇÏ´Â BCBµéÀ» ¸ğ¾ÆµĞ Å¥ */
+    /* make freeë¥¼ í•´ì•¼í•˜ëŠ” BCBë“¤ì„ ëª¨ì•„ë‘” í */
     smuQueueMgr              mQueueForMakeFree;
 }sdbPageOutObj;
 
 typedef struct sdbFlushObj
 {
-    /* flush Á¶°Ç °Ë»ç ÇÔ¼ö */
+    /* flush ì¡°ê±´ ê²€ì‚¬ í•¨ìˆ˜ */
     sdbFiltFunc              mFilter;
-    /* mFilter¼öÇà¿¡ ÇÊ¿äÇÑ È¯°æ */
+    /* mFilterìˆ˜í–‰ì— í•„ìš”í•œ í™˜ê²½ */
     void                    *mEnv;
-    /* BCB¸¦ ¸ğ¾ÆµÎ´Â Å¥ */
+    /* BCBë¥¼ ëª¨ì•„ë‘ëŠ” í */
     smuQueueMgr              mQueue;
 }sdbFlushObj;
 
-/* BUG-21793: [es50-x32] natc¿¡¼­ cleanÇÏ°í server startÇÏ´Â °æ¿ì ¼­¹ö »ç¸ÁÇÕ´Ï´Ù.
+/* BUG-21793: [es50-x32] natcì—ì„œ cleaní•˜ê³  server startí•˜ëŠ” ê²½ìš° ì„œë²„ ì‚¬ë§í•©ë‹ˆë‹¤.
  *
- * inline À¸·Î getPage, fixPageÇÔ¼öµéÀ» Ã³¸®ÇÏ¸é compiler ¿À·ù·Î ¼­¹ö°¡ ¿Àµ¿ÀÛÇÕ´Ï´Ù.
- * ÇÏ¿© ÀÌ ÇÔ¼öµéÀ» ¸ğµÎ º¸Åë ÇÔ¼ö·Î Ã³¸®Çß½À´Ï´Ù.
+ * inline ìœ¼ë¡œ getPage, fixPageí•¨ìˆ˜ë“¤ì„ ì²˜ë¦¬í•˜ë©´ compiler ì˜¤ë¥˜ë¡œ ì„œë²„ê°€ ì˜¤ë™ì‘í•©ë‹ˆë‹¤.
+ * í•˜ì—¬ ì´ í•¨ìˆ˜ë“¤ì„ ëª¨ë‘ ë³´í†µ í•¨ìˆ˜ë¡œ ì²˜ë¦¬í–ˆìŠµë‹ˆë‹¤.
  *
- * ÁÖÀÇ: getPage, fixPageÇÔ¼öµéÀ» inlineÃ³¸®ÇÏÁö ¸¶¼¼¿©. linux 32bit release¿¡¼­ ºñÁ¤»ó
- * Á¾·áÇÕ´Ï´Ù.
+ * ì£¼ì˜: getPage, fixPageí•¨ìˆ˜ë“¤ì„ inlineì²˜ë¦¬í•˜ì§€ ë§ˆì„¸ì—¬. linux 32bit releaseì—ì„œ ë¹„ì •ìƒ
+ * ì¢…ë£Œí•©ë‹ˆë‹¤.
  * */
 class sdbBufferMgr
 {
@@ -414,7 +414,7 @@ public:
 
     static IDE_RC gatherStatFromEachBCB();
 private:
-    // buffer pinningÀ» À§ÇÑ ÇÔ¼öµé /////////////////////////////////////////////
+    // buffer pinningì„ ìœ„í•œ í•¨ìˆ˜ë“¤ /////////////////////////////////////////////
     static sdbBCB* findPinnedPage(sdbPinningEnv *aEnv,
                                   scSpaceID      aSpaceID,
                                   scPageID       aPageID);
@@ -425,8 +425,8 @@ private:
                              sdbBCB       **aBCBToUnpin);
     /////////////////////////////////////////////////////////////////////////////
 
-    /* [BUG-20861] ¹öÆÛ hash resize¸¦ ÇÏ±â À§ÇØ¼­ ´Ù¸¥ Æ®·£Àè¼Çµé¤·¸£ ¸ğµÎ Á¢±Ù
-       ÇÏÁö ¸øÇÏ°Ô ÇØ¾ß ÇÕ´Ï´Ù. */
+    /* [BUG-20861] ë²„í¼ hash resizeë¥¼ í•˜ê¸° ìœ„í•´ì„œ ë‹¤ë¥¸ íŠ¸ëœì­ì…˜ë“¤ã…‡ë¥´ ëª¨ë‘ ì ‘ê·¼
+       í•˜ì§€ ëª»í•˜ê²Œ í•´ì•¼ í•©ë‹ˆë‹¤. */
     static void blockAllApprochBufHash( void     *aTrans,
                                         idBool   *aSuccess );
 
@@ -447,13 +447,13 @@ private:
     
 
 private:
-    /* ¹öÆÛ ¸Ş¸ğ¸®¸¦ °ü¸®ÇÏ´Â ¸ğµâ */
+    /* ë²„í¼ ë©”ëª¨ë¦¬ë¥¼ ê´€ë¦¬í•˜ëŠ” ëª¨ë“ˆ */
     static sdbBufferArea mBufferArea;
-    /* BCB °ü¸® ¹× ¹öÆÛ ±³Ã¼ Á¤Ã¥ ¸ğµâ  */
+    /* BCB ê´€ë¦¬ ë° ë²„í¼ êµì²´ ì •ì±… ëª¨ë“ˆ  */
     static sdbBufferPool mBufferPool;
-    /* »ç¿ëÀÚ°¡ alter system ±¸¹® °£ÀÇ µ¿½Ã¼º Á¦¾î */
+    /* ì‚¬ìš©ìê°€ alter system êµ¬ë¬¸ ê°„ì˜ ë™ì‹œì„± ì œì–´ */
     static iduMutex      mBufferMgrMutex;
-    /* ¹öÆÛ ¸Å´ÏÀú°¡ °ü¸®ÇÏ´Â  PAGE°³¼ö (BCB°³¼ö) */
+    /* ë²„í¼ ë§¤ë‹ˆì €ê°€ ê´€ë¦¬í•˜ëŠ”  PAGEê°œìˆ˜ (BCBê°œìˆ˜) */
     static UInt          mPageCount;
 };
 
@@ -480,8 +480,8 @@ inline IDE_RC sdbBufferMgr::fixPageWithoutIO( idvSQL             * aStatistics,
 
 /****************************************************************
  * Description :
- *  ´ÜÁö sdbBufferPoolÀÇ °ü·Ã ÇÔ¼ö¸¦ È£ÃâÇÏ´Â ²®µ¥±â ¿ªÈ°¸¸ ÇÑ´Ù.
- *  ÀÚ¼¼ÇÑ ¼³¸íÀº sdbBufferPoolÀÇ °ü·Ã ÇÔ¼ö¸¦ ÂüÁ¶
+ *  ë‹¨ì§€ sdbBufferPoolì˜ ê´€ë ¨ í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•˜ëŠ” ê»ë°ê¸° ì—­í™œë§Œ í•œë‹¤.
+ *  ìì„¸í•œ ì„¤ëª…ì€ sdbBufferPoolì˜ ê´€ë ¨ í•¨ìˆ˜ë¥¼ ì°¸ì¡°
  ****************************************************************/
 inline IDE_RC sdbBufferMgr::unfixPage( idvSQL     * aStatistics,
                                        UChar      * aPagePtr)
@@ -521,9 +521,9 @@ inline sdbBufferPoolStat *sdbBufferMgr::getBufferPoolStat()
 
 /****************************************************************
  * Description :
- *  ÀÌ ÇÔ¼ö´Â ÁÖ·Î »ç¿ëÀÚ°¡ smuProperty¸¦ ÅëÇØ sdbBufferManager³»ÀÇ
- *  º¯¼ö °ªÀ» ¹Ù²Ü ¶§ »ç¿ëÇÑ´Ù. Áï, »ç¿ëÀÚµé °£ÀÇ µ¿½Ã¼º Á¦¾î¸¦ À§ÇØ »ç¿ëÇÏ°í,
- *  ³»ºÎ¿¡¼­´Â »ç¿ëÇÏÁö ¾Ê´Â´Ù.
+ *  ì´ í•¨ìˆ˜ëŠ” ì£¼ë¡œ ì‚¬ìš©ìê°€ smuPropertyë¥¼ í†µí•´ sdbBufferManagerë‚´ì˜
+ *  ë³€ìˆ˜ ê°’ì„ ë°”ê¿€ ë•Œ ì‚¬ìš©í•œë‹¤. ì¦‰, ì‚¬ìš©ìë“¤ ê°„ì˜ ë™ì‹œì„± ì œì–´ë¥¼ ìœ„í•´ ì‚¬ìš©í•˜ê³ ,
+ *  ë‚´ë¶€ì—ì„œëŠ” ì‚¬ìš©í•˜ì§€ ì•ŠëŠ”ë‹¤.
  ****************************************************************/
 inline void sdbBufferMgr::lockBufferMgrMutex( idvSQL  *aStatistics )
 {
@@ -593,7 +593,7 @@ inline sdbBufferPool* sdbBufferMgr::getBufferPool()
 
 /* PROJ-2102 Secondary Buffer */
 /****************************************************************
- * Description : Secondary Buffer¸¦ »ç¿ë ¸øÇÔ 
+ * Description : Secondary Bufferë¥¼ ì‚¬ìš© ëª»í•¨ 
  ****************************************************************/
 inline void sdbBufferMgr::setSBufferUnserviceable( void )
 {
@@ -601,7 +601,7 @@ inline void sdbBufferMgr::setSBufferUnserviceable( void )
 }
 
 /****************************************************************
- * Description : Secondary Buffer°¡ »ç¿ë °¡´É
+ * Description : Secondary Bufferê°€ ì‚¬ìš© ê°€ëŠ¥
  ****************************************************************/
 inline void sdbBufferMgr::setSBufferServiceable( void )
 {

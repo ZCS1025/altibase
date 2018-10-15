@@ -36,15 +36,15 @@ IDE_RC qcmTableInfoMgr::makeTableInfoFirst( qcStatement   * aStatement,
 
     sTableHandle = (void*) smiGetTable( aTableOID );
 
-    // tableInfoMgr ³ëµå¸¦ ¹Ì¸® »ý¼ºÇÑ´Ù.
-    // makeTableInfoFirst°¡ IDE_FAILURE¸¦ ¸®ÅÏÇß´Ù¸é,
-    // tableInfo´Â »ý¼ºÇÏÁö ¾Ê¾Ò´Ù.
+    // tableInfoMgr ë…¸ë“œë¥¼ ë¯¸ë¦¬ ìƒì„±í•œë‹¤.
+    // makeTableInfoFirstê°€ IDE_FAILUREë¥¼ ë¦¬í„´í–ˆë‹¤ë©´,
+    // tableInfoëŠ” ìƒì„±í•˜ì§€ ì•Šì•˜ë‹¤.
     IDU_LIMITPOINT("qcmTableInfoMgr::makeTableInfoFirst::malloc");
     IDE_TEST( aStatement->qmxMem->alloc( ID_SIZEOF(qcTableInfoMgr),
                                          (void**) &sTableInfoMgr )
               != IDE_SUCCESS);
 
-    // new tableInfo¸¦ »ý¼ºÇÑ´Ù.
+    // new tableInfoë¥¼ ìƒì„±í•œë‹¤.
     IDE_TEST( qcm::makeAndSetQcmTableInfo( QC_SMI_STMT(aStatement),
                                            aTableID,
                                            aTableOID )
@@ -54,13 +54,13 @@ IDE_RC qcmTableInfoMgr::makeTableInfoFirst( qcStatement   * aStatement,
                                    (void**)&sNewTableInfo )
               != IDE_SUCCESS );
 
-    // tableInfoMgr ³ëµå¸¦ ±¸¼ºÇÑ´Ù.
+    // tableInfoMgr ë…¸ë“œë¥¼ êµ¬ì„±í•œë‹¤.
     sTableInfoMgr->tableHandle  = sTableHandle;
     sTableInfoMgr->oldTableInfo = NULL;
     sTableInfoMgr->newTableInfo = (void *) sNewTableInfo;
     sTableInfoMgr->next         = QC_PRIVATE_TMPLATE(aStatement)->tableInfoMgr;
 
-    // µî·ÏÇÑ´Ù.
+    // ë“±ë¡í•œë‹¤.
     QC_PRIVATE_TMPLATE(aStatement)->tableInfoMgr = sTableInfoMgr;
 
     if ( aNewTableInfo != NULL )
@@ -109,7 +109,7 @@ IDE_RC qcmTableInfoMgr::makeTableInfo( qcStatement   * aStatement,
     }
 
     // BUG-16489
-    // °¡Àå ÃÖ½ÅÀÇ tableInfo¸¦ Ã£´Â´Ù.
+    // ê°€ìž¥ ìµœì‹ ì˜ tableInfoë¥¼ ì°¾ëŠ”ë‹¤.
     for ( sTableInfoMgr = QC_PRIVATE_TMPLATE(aStatement)->tableInfoMgr;
           sTableInfoMgr != NULL;
           sTableInfoMgr = sTableInfoMgr->next )
@@ -118,7 +118,7 @@ IDE_RC qcmTableInfoMgr::makeTableInfo( qcStatement   * aStatement,
         {
             if ( sTableInfoMgr->newTableInfo == NULL )
             {
-                // ÀÌ¹Ì »èÁ¦µÊ
+                // ì´ë¯¸ ì‚­ì œë¨
                 sIsDestroyed = ID_TRUE;
             }
             else
@@ -136,16 +136,16 @@ IDE_RC qcmTableInfoMgr::makeTableInfo( qcStatement   * aStatement,
 
     if ( sIsDestroyed == ID_FALSE )
     {
-        // tableInfoMgr ³ëµå¸¦ ¹Ì¸® »ý¼ºÇÑ´Ù.
-        // makeTableInfo°¡ IDE_FAILURE¸¦ ¸®ÅÏÇß´Ù¸é,
-        // tableInfo´Â »ý¼ºÇÏÁö ¾Ê¾Ò´Ù.
+        // tableInfoMgr ë…¸ë“œë¥¼ ë¯¸ë¦¬ ìƒì„±í•œë‹¤.
+        // makeTableInfoê°€ IDE_FAILUREë¥¼ ë¦¬í„´í–ˆë‹¤ë©´,
+        // tableInfoëŠ” ìƒì„±í•˜ì§€ ì•Šì•˜ë‹¤.
         IDU_LIMITPOINT("qcmTableInfoMgr::makeTableInfo::malloc");
         IDE_TEST( aStatement->qmxMem->alloc( ID_SIZEOF(qcTableInfoMgr),
                                              (void**) &sTableInfoMgr )
                   != IDE_SUCCESS);
 
         // PROJ-1502 PARTITIONED DISK TABLE
-        // ÀÎÀÚ·Î ³Ñ¾î¿Â aOldTableInfo´Â partitionInfoÀÓ.
+        // ì¸ìžë¡œ ë„˜ì–´ì˜¨ aOldTableInfoëŠ” partitionInfoìž„.
         if( sIsPartition == ID_TRUE )
         {
             sPartitionID = sOldTableInfo->partitionID;
@@ -163,7 +163,7 @@ IDE_RC qcmTableInfoMgr::makeTableInfo( qcStatement   * aStatement,
                                            & sTempTableHandle)
                      != IDE_SUCCESS);
 
-            // new partition Info¸¦ »ý¼ºÇÑ´Ù.
+            // new partition Infoë¥¼ ìƒì„±í•œë‹¤.
             IDE_TEST( qcmPartition::makeAndSetQcmPartitionInfo(
                           QC_SMI_STMT(aStatement),
                           sPartitionID,
@@ -174,7 +174,7 @@ IDE_RC qcmTableInfoMgr::makeTableInfo( qcStatement   * aStatement,
         }
         else
         {
-            // new tableInfo¸¦ »ý¼ºÇÑ´Ù.
+            // new tableInfoë¥¼ ìƒì„±í•œë‹¤.
             IDE_TEST( qcm::makeAndSetQcmTableInfo( QC_SMI_STMT(aStatement),
                                                    sOldTableInfo->tableID,
                                                    smiGetTableId(sTableHandle) )
@@ -185,13 +185,13 @@ IDE_RC qcmTableInfoMgr::makeTableInfo( qcStatement   * aStatement,
                                        (void**)&sNewTableInfo )
                   != IDE_SUCCESS );
 
-        // tableInfoMgr ³ëµå¸¦ ±¸¼ºÇÑ´Ù.
+        // tableInfoMgr ë…¸ë“œë¥¼ êµ¬ì„±í•œë‹¤.
         sTableInfoMgr->tableHandle  = sTableHandle;
         sTableInfoMgr->oldTableInfo = (void *) sOldTableInfo;
         sTableInfoMgr->newTableInfo = (void *) sNewTableInfo;
         sTableInfoMgr->next         = QC_PRIVATE_TMPLATE(aStatement)->tableInfoMgr;
 
-        // µî·ÏÇÑ´Ù.
+        // ë“±ë¡í•œë‹¤.
         QC_PRIVATE_TMPLATE(aStatement)->tableInfoMgr = sTableInfoMgr;
 
         if ( aNewTableInfo != NULL )
@@ -233,7 +233,7 @@ IDE_RC qcmTableInfoMgr::destroyTableInfo( qcStatement  * aStatement,
     sTableInfo   = aTableInfo;
     sTableHandle = aTableInfo->tableHandle;
 
-    // °¡Àå ÃÖ½ÅÀÇ tableInfo¸¦ Ã£´Â´Ù.
+    // ê°€ìž¥ ìµœì‹ ì˜ tableInfoë¥¼ ì°¾ëŠ”ë‹¤.
     for ( sTableInfoMgr = QC_PRIVATE_TMPLATE(aStatement)->tableInfoMgr;
           sTableInfoMgr != NULL;
           sTableInfoMgr = sTableInfoMgr->next )
@@ -242,7 +242,7 @@ IDE_RC qcmTableInfoMgr::destroyTableInfo( qcStatement  * aStatement,
         {
             if ( sTableInfoMgr->newTableInfo == NULL )
             {
-                // ÀÌ¹Ì »èÁ¦µÊ
+                // ì´ë¯¸ ì‚­ì œë¨
                 sIsDestroyed = ID_TRUE;
             }
             else
@@ -260,19 +260,19 @@ IDE_RC qcmTableInfoMgr::destroyTableInfo( qcStatement  * aStatement,
 
     if ( sIsDestroyed == ID_FALSE )
     {
-        // tableInfoMgr ³ëµå¸¦ »ý¼ºÇÑ´Ù.
+        // tableInfoMgr ë…¸ë“œë¥¼ ìƒì„±í•œë‹¤.
         IDU_LIMITPOINT("qcmTableInfoMgr::destroyTableInfo::malloc");
         IDE_TEST( aStatement->qmxMem->alloc( ID_SIZEOF(qcTableInfoMgr),
                                              (void**) &sTableInfoMgr )
                   != IDE_SUCCESS);
 
-        // tableInfoMgr ³ëµå¸¦ ±¸¼ºÇÑ´Ù.
+        // tableInfoMgr ë…¸ë“œë¥¼ êµ¬ì„±í•œë‹¤.
         sTableInfoMgr->tableHandle  = sTableHandle;
         sTableInfoMgr->oldTableInfo = (void *) sTableInfo;
         sTableInfoMgr->newTableInfo = NULL;
         sTableInfoMgr->next         = QC_PRIVATE_TMPLATE(aStatement)->tableInfoMgr;
 
-        // µî·ÏÇÑ´Ù.
+        // ë“±ë¡í•œë‹¤.
         QC_PRIVATE_TMPLATE(aStatement)->tableInfoMgr = sTableInfoMgr;
     }
     else

@@ -24,7 +24,7 @@ public class DriverTest extends AltibaseTestCase
         assertEquals(aPort, sProp.getProperty(AltibaseProperties.PROP_PORT));
         assertEquals(aDBName, sProp.getDatabase());
 
-        // Properties to URL °ËÁõ
+        // Properties to URL ê²€ì¦
         if (aURL.indexOf(AltibaseVersion.CM_VERSION_STRING) == -1)
         {
             aURL = aURL.replaceAll("jdbc:Altibase://", "jdbc:Altibase_" + AltibaseVersion.CM_VERSION_STRING + "://");
@@ -32,7 +32,7 @@ public class DriverTest extends AltibaseTestCase
         String sURL2 = AltibaseConnection.getURL(sProp);
         if (!aURL.equals(sURL2))
         {
-            // properties´Â ¼ø¼­°¡ ¹Ù²ğ ¼öµµ ÀÖ´Ù. ±×·²¶© °¢ ¿ä¼Ò¸¦ µû·Î °Ë»çÇØ¾ßÇÑ´Ù.
+            // propertiesëŠ” ìˆœì„œê°€ ë°”ë€” ìˆ˜ë„ ìˆë‹¤. ê·¸ëŸ´ë• ê° ìš”ì†Œë¥¼ ë”°ë¡œ ê²€ì‚¬í•´ì•¼í•œë‹¤.
             assertEquals(aURL.length(), sURL2.length());
 
             AltibaseProperties sProp2 = new AltibaseProperties();

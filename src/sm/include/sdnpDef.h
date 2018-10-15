@@ -22,7 +22,7 @@
 #ifndef _O_SDNP_DEF_H_
 # define _O_SDNP_DEF_H_ 1
 
-//disk table¿¡ ´ëÇÑ GRID iterator
+//disk tableì— ëŒ€í•œ GRID iterator
 #include <smDef.h>
 
 typedef struct sdnpIterator
@@ -31,14 +31,14 @@ typedef struct sdnpIterator
     smSCN       mInfinite;
     void*       mTrans;
     void*       mTable;
-    SChar*      mCurRecPtr;  // MRDB scan module¿¡¼­¸¸ Á¤ÀÇÇØ¼­ ¾²µµ·Ï ¼öÁ¤?
+    SChar*      mCurRecPtr;  // MRDB scan moduleì—ì„œë§Œ ì •ì˜í•´ì„œ ì“°ë„ë¡ ìˆ˜ì •?
     SChar*      mLstFetchRecPtr;
     scGRID      mRowGRID;
     smTID       mTid;
     UInt        mFlag;
 
     smiCursorProperties  * mProperties;
-    /* smiIterator °øÅë º¯¼ö ³¡ */
+    /* smiIterator ê³µí†µ ë³€ìˆ˜ ë */
 
     const smiRange     * mRange;
     const smiRange     * mNxtRange;

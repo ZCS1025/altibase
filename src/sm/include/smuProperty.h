@@ -36,16 +36,16 @@
 #define SMU_LOG_FILE_CREATE_WRITE      (0)
 #define SMU_LOG_FILE_CREATE_FALLOCATE  (1)
 
-/* BUG-27122 Restart Recovery½Ã UTrans°¡ Á¢±ÙÇÏ´Â µğ½ºÅ© ÀÎµ¦½ºÀÇ Verify ±â´É
- *           (__SM_CHECK_DISK_INDEX_INTEGRITY = 2 ) Ãß°¡
+/* BUG-27122 Restart Recoveryì‹œ UTransê°€ ì ‘ê·¼í•˜ëŠ” ë””ìŠ¤í¬ ì¸ë±ìŠ¤ì˜ Verify ê¸°ëŠ¥
+ *           (__SM_CHECK_DISK_INDEX_INTEGRITY = 2 ) ì¶”ê°€
  *
- * DISABLED - check integrity ±â´É Off
- * LEVEL 1  - Restart Recovery °úÁ¤¿¡¼­ ¸ğµç µğ½ºÅ© ÀÎµ¦½º Integrity È®ÀÎ
- * LEVEL 2  - Restart Recovery °úÁ¤¿¡¼­ UTransÀÌ Á¢±ÙÇÏ´Â µğ½ºÅ© ÀÎµ¦½º
- *            Integrity È®ÀÎ 
- * LEVEL 3  - __SM_VERIFY_DISK_INDEX_COUNT ¸¸Å­ »ç¿ëÀÚ°¡ Á¤ÀÇÇØÁØ
- *            __SM_VERIFY_DISK_INDEXID ÇÁ·ÎÆÛÆ¼¿Í µ¿ÀÏÇÑ ÀÎµ¦½º¸¸ °ËÁõÇÏ±âµµ
- *            ÇÑ´Ù.
+ * DISABLED - check integrity ê¸°ëŠ¥ Off
+ * LEVEL 1  - Restart Recovery ê³¼ì •ì—ì„œ ëª¨ë“  ë””ìŠ¤í¬ ì¸ë±ìŠ¤ Integrity í™•ì¸
+ * LEVEL 2  - Restart Recovery ê³¼ì •ì—ì„œ UTransì´ ì ‘ê·¼í•˜ëŠ” ë””ìŠ¤í¬ ì¸ë±ìŠ¤
+ *            Integrity í™•ì¸ 
+ * LEVEL 3  - __SM_VERIFY_DISK_INDEX_COUNT ë§Œí¼ ì‚¬ìš©ìê°€ ì •ì˜í•´ì¤€
+ *            __SM_VERIFY_DISK_INDEXID í”„ë¡œí¼í‹°ì™€ ë™ì¼í•œ ì¸ë±ìŠ¤ë§Œ ê²€ì¦í•˜ê¸°ë„
+ *            í•œë‹¤.
  */
 
 #define SMU_MAX_VERIFY_DISK_INDEX_COUNT        (IDP_MAX_VERIFY_INDEX_COUNT)
@@ -65,7 +65,7 @@
 
 /************************************************
  * PROJ-2201 Innovation in sorting and hashing(temp)
- * ¹İº¹ÀûÀÎ Propertyµî·ÏÀ» È¸ÇÇÇÏ±â À§ÇØ ¸¸µë 
+ * ë°˜ë³µì ì¸ Propertyë“±ë¡ì„ íšŒí”¼í•˜ê¸° ìœ„í•´ ë§Œë“¬ 
  ************************************************/
 
 #define SMU_PROPERTY_READONLY_DECLARE( aType, aValNFuncName )       \
@@ -130,24 +130,24 @@
 class smuProperty
 {
 private:
-    // property°¡ loadµÇ¾ú´Â°¡
-    // ÇÑ¹ø ·ÎµåµÇ¸é 2¹ø ÀÌ»ó µÉ ÇÊ¿ä ¾ø´Ù.
+    // propertyê°€ loadë˜ì—ˆëŠ”ê°€
+    // í•œë²ˆ ë¡œë“œë˜ë©´ 2ë²ˆ ì´ìƒ ë  í•„ìš” ì—†ë‹¤.
     static idBool mIsLoaded;
 
 public:
 
     // sdd
-    static UInt mOpenDataFileWaitInterval; // ´ë±â½Ã°£°£°İ (property)
-    static UInt mBackupDataFileEndWaitInterval; //ÆÄÀÏ¹é¾÷´ë±â °£°İ
-    static UInt mMaxOpenDataFileCount; // ÃÖ´ë ¿ÀÇÂ°¡´ÉÇÑ datafile °³¼ö
-    static ULong mDataFileWriteUnitSize; // µ¥ÀÌÅÍÆÄÀÏ »ı¼º½Ã ÆÄÀÏ ¾²±â ´ÜÀ§
+    static UInt mOpenDataFileWaitInterval; // ëŒ€ê¸°ì‹œê°„ê°„ê²© (property)
+    static UInt mBackupDataFileEndWaitInterval; //íŒŒì¼ë°±ì—…ëŒ€ê¸° ê°„ê²©
+    static UInt mMaxOpenDataFileCount; // ìµœëŒ€ ì˜¤í”ˆê°€ëŠ¥í•œ datafile ê°œìˆ˜
+    static ULong mDataFileWriteUnitSize; // ë°ì´í„°íŒŒì¼ ìƒì„±ì‹œ íŒŒì¼ ì“°ê¸° ë‹¨ìœ„
     static UInt mDWDirCount;
     static SChar* mDWDir[SM_MAX_DWDIR_COUNT];
 
-    /* To Fix TASK-2688 DRDBÀÇ Datafile¿¡ ¿©·¯°³ÀÇ FD( File Descriptor )
-     * ¿­¾î¼­ °ü¸®ÇØ¾ß ÇÔ
+    /* To Fix TASK-2688 DRDBì˜ Datafileì— ì—¬ëŸ¬ê°œì˜ FD( File Descriptor )
+     * ì—´ì–´ì„œ ê´€ë¦¬í•´ì•¼ í•¨
      *
-     * ÇÏ³ªÀÇ DRDBÀÇ Data File´ç OpenÇÒ ¼ö ÀÖ´Â FDÀÇ ÃÖ´ë °¹¼ö
+     * í•˜ë‚˜ì˜ DRDBì˜ Data Fileë‹¹ Opení•  ìˆ˜ ìˆëŠ” FDì˜ ìµœëŒ€ ê°¯ìˆ˜
      * */
     static UInt mMaxOpenFDCount4File;
 
@@ -246,12 +246,12 @@ public:
     static UInt  mKeyRedistributionLowLimit;
     static SLong mMaxTraverseLength;
     static UInt  mUnbalancedSplitRate;
-    // BUG-29506 TBT°¡ TBK·Î ÀüÈ¯½Ã º¯°æµÈ offsetÀ» CTS¿¡ ¹İ¿µÇÏÁö ¾Ê½À´Ï´Ù.
-    // ÀçÇöÇÏ±â À§ÇØ CTS ÇÒ´ç ¿©ºÎ¸¦ ÀÓÀÇ·Î Á¦¾îÇÏ±â À§ÇÑ PROPERTY¸¦ Ãß°¡
+    // BUG-29506 TBTê°€ TBKë¡œ ì „í™˜ì‹œ ë³€ê²½ëœ offsetì„ CTSì— ë°˜ì˜í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
+    // ì¬í˜„í•˜ê¸° ìœ„í•´ CTS í• ë‹¹ ì—¬ë¶€ë¥¼ ì„ì˜ë¡œ ì œì–´í•˜ê¸° ìœ„í•œ PROPERTYë¥¼ ì¶”ê°€
     static UInt  mDisableTransactionBoundInCTS;
 
-    // BUG-29839 Àç»ç¿ëµÈ undo page¿¡¼­ ÀÌÀü CTS¸¦ º¸·Á°í ÇÒ ¼ö ÀÖÀ½.
-    // ÀçÇöÇÏ±â À§ÇØ transaction¿¡ Æ¯Á¤ segment entry¸¦ bindingÇÏ´Â ±â´É Ãß°¡
+    // BUG-29839 ì¬ì‚¬ìš©ëœ undo pageì—ì„œ ì´ì „ CTSë¥¼ ë³´ë ¤ê³  í•  ìˆ˜ ìˆìŒ.
+    // ì¬í˜„í•˜ê¸° ìœ„í•´ transactionì— íŠ¹ì • segment entryë¥¼ bindingí•˜ëŠ” ê¸°ëŠ¥ ì¶”ê°€
     static UInt  mManualBindingTXSegByEntryID;
 
     // PROJ-1591
@@ -293,38 +293,38 @@ public:
     static UInt   mRestoreThreadCount;
     static UInt   mRestoreAIOCount;
 
-    /* BUG-µ¥ÀÌÅÍº£ÀÌ½º ÆÄÀÏ ·Îµå½Ã,
-       ÇÑ¹ø¿¡ ÆÄÀÏ¿¡¼­ ¸Ş¸ğ¸®·Î ÀĞ¾îµéÀÏ ÆäÀÌÁö ¼ö */
+    /* BUG-ë°ì´í„°ë² ì´ìŠ¤ íŒŒì¼ ë¡œë“œì‹œ,
+       í•œë²ˆì— íŒŒì¼ì—ì„œ ë©”ëª¨ë¦¬ë¡œ ì½ì–´ë“¤ì¼ í˜ì´ì§€ ìˆ˜ */
     static UInt   mRestoreBufferPageCount;
 
     static UInt   mCheckpointAIOCount;
     static UInt   mCheckpointFlushResponsibility;
 
-    // PROJ-1490 ÆäÀÌÁö¸®½ºÆ® ´ÙÁßÈ­ ¹× ¸Ş¸ğ¸®¹İ³³
-    // ÇÏ³ªÀÇ Expand Chunk¿¡ ¼ÓÇÏ´Â Page¼ö
+    // PROJ-1490 í˜ì´ì§€ë¦¬ìŠ¤íŠ¸ ë‹¤ì¤‘í™” ë° ë©”ëª¨ë¦¬ë°˜ë‚©
+    // í•˜ë‚˜ì˜ Expand Chunkì— ì†í•˜ëŠ” Pageìˆ˜
     static UInt  mExpandChunkPageCount;
 
-    // ´ÙÀ½°ú °°Àº Page ListµéÀ» °¢°¢ ¸î°³ÀÇ List·Î ´ÙÁßÈ­ ÇÒ Áö °áÁ¤ÇÑ´Ù.
+    // ë‹¤ìŒê³¼ ê°™ì€ Page Listë“¤ì„ ê°ê° ëª‡ê°œì˜ Listë¡œ ë‹¤ì¤‘í™” í•  ì§€ ê²°ì •í•œë‹¤.
     //
-    // µ¥ÀÌÅÍº£ÀÌ½º Free Page List
-    // Å×ÀÌºíÀÇ Allocated Page List
-    // Å×ÀÌºíÀÇ Free Page List
+    // ë°ì´í„°ë² ì´ìŠ¤ Free Page List
+    // í…Œì´ë¸”ì˜ Allocated Page List
+    // í…Œì´ë¸”ì˜ Free Page List
     static UInt   mPageListGroupCount;
 
-    // Expand ChunkÈ®Àå½Ã¿¡ Free PageµéÀÌ ¿©·¯¹ø¿¡ °ÉÃÄ¼­
-    // ´ÙÁßÈ­µÈ Free Page List·Î ºĞ¹èµÈ´Ù.
+    // Expand Chunkí™•ì¥ì‹œì— Free Pageë“¤ì´ ì—¬ëŸ¬ë²ˆì— ê±¸ì³ì„œ
+    // ë‹¤ì¤‘í™”ëœ Free Page Listë¡œ ë¶„ë°°ëœë‹¤.
     //
-    // ÀÌ ¶§, ÇÑ¹ø¿¡ ¸î°³ÀÇ Page¸¦ Free Page List·Î ºĞ¹èÇÒÁö¸¦ ¼³Á¤ÇÑ´Ù.
+    // ì´ ë•Œ, í•œë²ˆì— ëª‡ê°œì˜ Pageë¥¼ Free Page Listë¡œ ë¶„ë°°í• ì§€ë¥¼ ì„¤ì •í•œë‹¤.
     static UInt   mPerListDistPageCount;
 
-    // Free Page List°¡ ¿©·¯°³·Î ´ÙÁßÈ­µÊ¿¡ µû¶ó¼­,
-    // Free Page°¡ Æ¯Á¤ Free Page List·Î ¸ô¸± ¼ö ÀÖ´Ù.
+    // Free Page Listê°€ ì—¬ëŸ¬ê°œë¡œ ë‹¤ì¤‘í™”ë¨ì— ë”°ë¼ì„œ,
+    // Free Pageê°€ íŠ¹ì • Free Page Listë¡œ ëª°ë¦´ ìˆ˜ ìˆë‹¤.
     //
-    // ÀÌ¸¦ ºĞ»ê½ÃÅ°±â À§ÇØ¼­, Free Page List¿¡ Free Page°¡ ºÎÁ·ÇÑ °æ¿ì,
-    // ´Ù¸¥ °¡Àå Free Page¸¦ ¸¹ÀÌ °¡Áø Free Page List¿¡¼­ Àı¹İÀ» ¶Ò ¶¼¾î¿Â´Ù.
+    // ì´ë¥¼ ë¶„ì‚°ì‹œí‚¤ê¸° ìœ„í•´ì„œ, Free Page Listì— Free Pageê°€ ë¶€ì¡±í•œ ê²½ìš°,
+    // ë‹¤ë¥¸ ê°€ì¥ Free Pageë¥¼ ë§ì´ ê°€ì§„ Free Page Listì—ì„œ ì ˆë°˜ì„ ëš ë–¼ì–´ì˜¨ë‹¤.
     //
-    // ÀÌ ¶§ Free Page List°¡ ºĞÇÒ µÇ±â À§ÇØ °¡Á®¾ß ÇÏ´Â
-    // ÃÖ¼ÒÇÑÀÇ Page¼ö¸¦ MIN_PAGES_ON_DB_FREE_LIST ÇÁ·ÎÆÛÆ¼¿¡ ÁöÁ¤ÇÑ´Ù.
+    // ì´ ë•Œ Free Page Listê°€ ë¶„í•  ë˜ê¸° ìœ„í•´ ê°€ì ¸ì•¼ í•˜ëŠ”
+    // ìµœì†Œí•œì˜ Pageìˆ˜ë¥¼ MIN_PAGES_ON_DB_FREE_LIST í”„ë¡œí¼í‹°ì— ì§€ì •í•œë‹¤.
     static UInt mMinPagesOnDBFreeList ;
 
     /* 
@@ -341,7 +341,7 @@ public:
 
     /* BUG-33008 [sm-disk-collection] [DRDB] The migration row logic
      * generates invalid undo record.
-     * ¹ö±×¿¡ ´ëÇÑ »çÈÄ Ã³¸® ¼öÇà ¿©ºÎ */
+     * ë²„ê·¸ì— ëŒ€í•œ ì‚¬í›„ ì²˜ë¦¬ ìˆ˜í–‰ ì—¬ë¶€ */
     static UInt   mAfterCare;
     /* BUG-27776 */
     static UInt  mSMStartupTest;
@@ -389,28 +389,28 @@ public:
     static UInt   mShmDBKey;
     static UInt   mShmPageCountPerKey;
 
-    static UInt   mMinLogRecordSizeForCompress; // ¾ĞÃàÇÒ ·Î±×ÀÇ ÃÖ¼Ò Å©±â
+    static UInt   mMinLogRecordSizeForCompress; // ì••ì¶•í•  ë¡œê·¸ì˜ ìµœì†Œ í¬ê¸°
 
     static UInt   mLogAllocMutexType;
     static UInt   mLogReadMethodType;
     static idBool mFastUnlockLogAllocMutex; /* BUG-35392 */
 
     // TASK-2398 Log Compress
-    // ¾ĞÃà ÇØÁ¦µÇ¾î ÇØ½ÌµÈ Disk LogÀÇ ³»¿ëÀ» ÀúÀåÇØµÑ ¹öÆÛÀÇ Å©±â
+    // ì••ì¶• í•´ì œë˜ì–´ í•´ì‹±ëœ Disk Logì˜ ë‚´ìš©ì„ ì €ì¥í•´ë‘˜ ë²„í¼ì˜ í¬ê¸°
     static ULong  mDiskRedoLogDecompressBufferSize;
 
 
-    // ÇÏ³ªÀÇ LFG¿¡¼­ Group CommitÀ» ¼öÇàÇÏ±â À§ÇÑ Update TransactionÀÇ ¼ö
+    // í•˜ë‚˜ì˜ LFGì—ì„œ Group Commitì„ ìˆ˜í–‰í•˜ê¸° ìœ„í•œ Update Transactionì˜ ìˆ˜
     static UInt   mLFGGroupCommitUpdateTxCount;
 
-    // µ¿½Ã¿¡ µé¾î¿À´Â Log Flush¿äÃ»À» Áö¿¬ÇÒ ÀÎÅÍ¹ú
+    // ë™ì‹œì— ë“¤ì–´ì˜¤ëŠ” Log Flushìš”ì²­ì„ ì§€ì—°í•  ì¸í„°ë²Œ
     static UInt   mLFGGroupCommitIntervalUSec;
 
-    // Log Flush¿äÃ»ÀÌ Áö¿¬µÈ TransactionµéÀÌ Log°¡ FLushµÇ¾ú´ÂÁö
-    // Ã¼Å©ÇÒ ÀÎÅÍ¹ú
+    // Log Flushìš”ì²­ì´ ì§€ì—°ëœ Transactionë“¤ì´ Logê°€ FLushë˜ì—ˆëŠ”ì§€
+    // ì²´í¬í•  ì¸í„°ë²Œ
     static UInt   mLFGGroupCommitRetryUSec;
 
-    // Log ±â·Ï½Ã IOÅ¸ÀÔ
+    // Log ê¸°ë¡ì‹œ IOíƒ€ì…
     // 0 : buffered IO
     // 1 : direct IO
     static UInt   mLogIOType;
@@ -418,11 +418,11 @@ public:
     // BUG-15396 : log buffer type ( mmap == 0, memory == 1 )
     static UInt   mLogBufferType;
 
-    // ·Î±× ¾ĞÃà ¸®¼Ò½º Ç®¿¡ À¯ÁöÇÒ ÃÖ¼ÒÇÑÀÇ ¸®¼Ò½º °¹¼ö
+    // ë¡œê·¸ ì••ì¶• ë¦¬ì†ŒìŠ¤ í’€ì— ìœ ì§€í•  ìµœì†Œí•œì˜ ë¦¬ì†ŒìŠ¤ ê°¯ìˆ˜
     static UInt   mMinCompressionResourceCount;
 
-    // ·Î±× ¾ĞÃà ¸®¼Ò½º Ç®¿¡¼­ ¸®¼Ò½º°¡ ¸î ÃÊ ÀÌ»ó
-    // »ç¿ëµÇÁö ¾ÊÀ» °æ¿ì Garbage CollectionÇÒÁö?
+    // ë¡œê·¸ ì••ì¶• ë¦¬ì†ŒìŠ¤ í’€ì—ì„œ ë¦¬ì†ŒìŠ¤ê°€ ëª‡ ì´ˆ ì´ìƒ
+    // ì‚¬ìš©ë˜ì§€ ì•Šì„ ê²½ìš° Garbage Collectioní• ì§€?
     static ULong  mCompressionResourceGCSecond;
 
     /*PROJ-2162 RestartRiskReduction Begin */
@@ -455,9 +455,9 @@ public:
     static UInt mSkipCheckSCNInStartup;
 
 // smp
-    // FreePageList¿¡ ÃÖ¼Ò À¯ÁöÇÒ Page °¹¼ö
+    // FreePageListì— ìµœì†Œ ìœ ì§€í•  Page ê°¯ìˆ˜
     static UInt   mMinPagesOnTableFreeList;
-    // DB¿¡¼­ Table·Î ÇÒ´ç¹Ş¾Æ¿À´Â Page °¹¼ö
+    // DBì—ì„œ Tableë¡œ í• ë‹¹ë°›ì•„ì˜¤ëŠ” Page ê°¯ìˆ˜
     static UInt   mAllocPageCount;
     static UInt   mMemSizeClassCount;
 
@@ -496,13 +496,13 @@ public:
     static UInt mIteratorMemoryParallelFactor;
     static UInt mMMDBDefIdxType;
     static UInt mIndexStatParallelFactor;
-    // PROJ-1629 : RunÀÇ Å©±â
+    // PROJ-1629 : Runì˜ í¬ê¸°
     static ULong mMemoryIndexBuildRunSize;
-    // PROJ-1629 : Merge RunÀÇ °¹¼ö
+    // PROJ-1629 : Merge Runì˜ ê°¯ìˆ˜
     static ULong mMemoryIndexBuildRunCountAtUnionMerge;
-    // PROJ-1629 : Key value·Î buildÇÏ±â À§ÇÑ threshold
+    // PROJ-1629 : Key valueë¡œ buildí•˜ê¸° ìœ„í•œ threshold
     static ULong mMemoryIndexBuildValueLengthThreshold;
-    // TASK-6006 : Index ´ÜÀ§ Parallel Index Rebuilding
+    // TASK-6006 : Index ë‹¨ìœ„ Parallel Index Rebuilding
     static SInt mIndexRebuildParallelMode;
     /* PROJ-2433 */
     static UInt mMemBtreeNodeSize;
@@ -514,7 +514,7 @@ public:
     static SInt mMemIndexKeyRedistributionStandardRate;
     static idBool mScanlistMoveNonBlock;
     static idBool mIsCPUAffinity;
-    static idBool mGatherIndexStatOnDDL; /* BUG-44794 ÀÎµ¦½º ºôµå½Ã ÀÎµ¦½º Åë°è Á¤º¸¸¦ ¼öÁıÇÏÁö ¾Ê´Â È÷µç ÇÁ·ÎÆÛÆ¼ Ãß°¡ */
+    static idBool mGatherIndexStatOnDDL; /* BUG-44794 ì¸ë±ìŠ¤ ë¹Œë“œì‹œ ì¸ë±ìŠ¤ í†µê³„ ì •ë³´ë¥¼ ìˆ˜ì§‘í•˜ì§€ ì•ŠëŠ” íˆë“  í”„ë¡œí¼í‹° ì¶”ê°€ */
 
 //smx
     static UInt  mRebuildMinViewSCNInterval;
@@ -527,10 +527,10 @@ public:
     static UInt  mReplLockTimeOut;
     static UInt  mTransAllocWaitTime;
 
-    // Tx'PrivatePageListHashTable Å©±â
+    // Tx'PrivatePageListHashTable í¬ê¸°
     static UInt  mPrivateBucketCount;
 
-    // PROJ-1671 Disk MVCC ¸®´º¾ó
+    // PROJ-1671 Disk MVCC ë¦¬ë‰´ì–¼
     static UInt  mTXSEGEntryCnt;
     static UInt  mTXSegAllocWaitTime;
 
@@ -600,7 +600,7 @@ public:
     static ULong  mVolMaxDBSize;
 
     //scp
-    /* Proj-2059 DB Upgrade ±â´É */
+    /* Proj-2059 DB Upgrade ê¸°ëŠ¥ */
     static UInt mDataPortFileBlockSize;
     static UInt mExportColumnChainingThreshold;
     static UInt mDataPortDirectIOEnable;
@@ -616,13 +616,13 @@ public:
 
     //util
     static UInt   mPortNo;
-    //Server°¡ StartUpµÉ¶§ ÀÌ Property°¡ 1ÀÏ °æ¿ì¿¡´Â Index Rebuild¸¦ ¼öÇà
-    //ÇÏ°í 0ÀÌ¸é Meta TableÀÇ Index¸¸À» RebuildÇÏ°í ´Ù¸¥ TableÀº BuildÇÏÁö
-    //¾Ê´Â´Ù.
+    //Serverê°€ StartUpë ë•Œ ì´ Propertyê°€ 1ì¼ ê²½ìš°ì—ëŠ” Index Rebuildë¥¼ ìˆ˜í–‰
+    //í•˜ê³  0ì´ë©´ Meta Tableì˜ Indexë§Œì„ Rebuildí•˜ê³  ë‹¤ë¥¸ Tableì€ Buildí•˜ì§€
+    //ì•ŠëŠ”ë‹¤.
     static UInt   mIndexRebuildAtStartup;
 
     /* Proj-2162 RestartRiskReduction
-     * ¼­¹ö ±¸µ¿½Ã ÀÎµ¦½º ±¸Ãà ¾²·¹µå °³¼ö */
+     * ì„œë²„ êµ¬ë™ì‹œ ì¸ë±ìŠ¤ êµ¬ì¶• ì“°ë ˆë“œ ê°œìˆ˜ */
     static UInt   mIndexRebuildParallelFactorAtSartup;
 
     static IDE_RC callbackDPathBufferFlushThreadInterval(idvSQL * /*aStatistics*/,
@@ -633,7 +633,7 @@ public:
 
     //-------------------------------------
     // To Fix PR-14783
-    // System ThreadÀÇ µ¿ÀÛÀ» Á¦¾îÇÔ.
+    // System Threadì˜ ë™ì‘ì„ ì œì–´í•¨.
     //-------------------------------------
 
     static UInt   mRunMemDeleteThread;
@@ -654,7 +654,7 @@ public:
     static UInt   mSmartSSDGCTimeMilliSec;
 #endif
 
-    // PRJ-1864 Partial Write Problem¿¡ ´ëÇÑ ¹®Á¦ ÇØ°á.
+    // PRJ-1864 Partial Write Problemì— ëŒ€í•œ ë¬¸ì œ í•´ê²°.
     static UInt   mCorruptPageErrPolicy;
 
     static ULong  mReservedDiskSizeForLogFile;
@@ -663,19 +663,19 @@ public:
      * PROJ-2201 Innovation in sorting and hashing(temp)
      *********************************************************************/
     //SMU_PROPERTY_WRITABLE_DECLARE( ULong, HashAreaSize );
-    SMU_PROPERTY_READONLY_DECLARE( ULong, HashAreaSize ); /* CallbackÀº µû·Î*/
-    SMU_PROPERTY_READONLY_DECLARE( ULong, TotalWASize ); /* CallbackÀº µû·Î*/
+    SMU_PROPERTY_READONLY_DECLARE( ULong, HashAreaSize ); /* Callbackì€ ë”°ë¡œ*/
+    SMU_PROPERTY_READONLY_DECLARE( ULong, TotalWASize ); /* Callbackì€ ë”°ë¡œ*/
     SMU_PROPERTY_WRITABLE_DECLARE( UInt,  TempSortPartitionSize );
     SMU_PROPERTY_WRITABLE_DECLARE( UInt,  TempSortGroupRatio );
     SMU_PROPERTY_WRITABLE_DECLARE( UInt,  TempHashGroupRatio );
     SMU_PROPERTY_WRITABLE_DECLARE( UInt,  TempClusterHashGroupRatio );
     SMU_PROPERTY_WRITABLE_DECLARE( UInt,  TempUseClusterHash );
-    SMU_PROPERTY_READONLY_DECLARE( UInt,  TempMaxPageCount ); /* Callbackµû·Î*/    
+    SMU_PROPERTY_READONLY_DECLARE( UInt,  TempMaxPageCount ); /* Callbackë”°ë¡œ*/    
     SMU_PROPERTY_WRITABLE_DECLARE( UInt,  TempAllocTryCount );
     SMU_PROPERTY_READONLY_DECLARE( UInt,  TempRowSplitThreshold );
     SMU_PROPERTY_WRITABLE_DECLARE( UInt,  TempSleepInterval );
-    SMU_PROPERTY_READONLY_DECLARE( UInt,  TempFlusherCount ); /* Callbackµû·Î*/
-    SMU_PROPERTY_READONLY_DECLARE( UInt,  TempFlushQueueSize);/* Callbackµû·Î*/
+    SMU_PROPERTY_READONLY_DECLARE( UInt,  TempFlusherCount ); /* Callbackë”°ë¡œ*/
+    SMU_PROPERTY_READONLY_DECLARE( UInt,  TempFlushQueueSize);/* Callbackë”°ë¡œ*/
     SMU_PROPERTY_WRITABLE_DECLARE( UInt,  TempFlushPageCount );
     SMU_PROPERTY_READONLY_DECLARE( UInt,  TempMaxKeySize );
     SMU_PROPERTY_READONLY_DECLARE( UInt,  TempStatsWatchArraySize );
@@ -1181,7 +1181,7 @@ private:
 
     //-------------------------------------
     // To Fix PR-14783
-    // System ThreadÀÇ µ¿ÀÛÀ» Á¦¾îÇÔ.
+    // System Threadì˜ ë™ì‘ì„ ì œì–´í•¨.
     //-------------------------------------
 
     static IDE_RC callbackDiskDeleteThread(idvSQL * /*aStatistics*/,
@@ -1294,7 +1294,7 @@ private:
                                           void  * aNewValue,
                                           void  * /*aArg*/);
 
-    // PROJ-1704 Disk MVCC ¸®´º¾ó
+    // PROJ-1704 Disk MVCC ë¦¬ë‰´ì–¼
     static IDE_RC callbackTSSegSizeShrinkThreshold( idvSQL * /*aStatistics*/,
                                                     SChar * /*aName*/,
                                                     void  * /*aOldValue*/,
@@ -1395,16 +1395,16 @@ private:
                                        void  *aNewValue,
                                        void  * /*aArg*/);
 
-    // BUG-29506 TBT°¡ TBK·Î ÀüÈ¯½Ã º¯°æµÈ offsetÀ» CTS¿¡ ¹İ¿µÇÏÁö ¾Ê½À´Ï´Ù.
-    // ÀçÇöÇÏ±â À§ÇØ CTS ÇÒ´ç ¿©ºÎ¸¦ ÀÓÀÇ·Î Á¦¾îÇÏ±â À§ÇÑ PROPERTY¸¦ Ãß°¡
+    // BUG-29506 TBTê°€ TBKë¡œ ì „í™˜ì‹œ ë³€ê²½ëœ offsetì„ CTSì— ë°˜ì˜í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
+    // ì¬í˜„í•˜ê¸° ìœ„í•´ CTS í• ë‹¹ ì—¬ë¶€ë¥¼ ì„ì˜ë¡œ ì œì–´í•˜ê¸° ìœ„í•œ PROPERTYë¥¼ ì¶”ê°€
     static IDE_RC callbackDisableTransactionBoundInCTS(idvSQL * /*aStatistics*/,
                                                        SChar * /*aName*/,
                                                        void  * /*aOldValue*/,
                                                        void  *aNewValue,
                                                        void  * /*aArg*/);
 
-    // BUG-29839 Àç»ç¿ëµÈ undo page¿¡¼­ ÀÌÀü CTS¸¦ º¸·Á°í ÇÒ ¼ö ÀÖÀ½.
-    // ÀçÇöÇÏ±â À§ÇØ transaction¿¡ Æ¯Á¤ segment entry¸¦ bindingÇÏ´Â ±â´É Ãß°¡
+    // BUG-29839 ì¬ì‚¬ìš©ëœ undo pageì—ì„œ ì´ì „ CTSë¥¼ ë³´ë ¤ê³  í•  ìˆ˜ ìˆìŒ.
+    // ì¬í˜„í•˜ê¸° ìœ„í•´ transactionì— íŠ¹ì • segment entryë¥¼ bindingí•˜ëŠ” ê¸°ëŠ¥ ì¶”ê°€
     static IDE_RC callbackManualBindingTXSegByEntryID(
         idvSQL * /*aStatistics*/,
         SChar * /*aName*/,
@@ -1556,7 +1556,7 @@ private:
                                                  void  * /*aArg*/ );
 
 
-    /* Proj-2059 DB Upgrade ±â´É */
+    /* Proj-2059 DB Upgrade ê¸°ëŠ¥ */
     static IDE_RC callbackDataPortFileBlockSize( idvSQL * /*aStatistics*/,
                                                  SChar * /*aName*/,
                                                  void  * /*aOldValue*/,
@@ -1639,12 +1639,12 @@ public:
     static IDE_RC load();
 
     /* PROJ-2162 RestartRiskReduction
-     * dumpci µî util¿¡¼­´Â loganchor¸¦ ±¸µ¿ÇÏ±â À§ÇØ control´Ü°è±îÁö ¼­¹ö¸¦
-     * ±¸µ¿½ÃÄÑ¾ß ÇÏ¸ç, ÀÌ¸¦ À§ÇØ BufferManager¸¦ ÃÊ±âÈ­ÇØ¾ß ÇÕ´Ï´Ù. 
-     * ÀÌ·¯ÇÑ °úÁ¤¿¡¼­ Buffer¸¦ ÇÒ´çÇÏ´Âµî ÀÇ¹Ì¾ø´Â ÀÛ¾÷À» ÇÕ´Ï´Ù. ÇÏÁö¸¸
-     * ÀÌ¸¦ Á¦¿ÜÇÒ ¼ö´Â ¾ø½À´Ï´Ù. µû¶ó¼­ Utility¸¦ À§ÇÏ¿© BUFFER_AREA_SIZE
-     * µî ÀÏºÎ °ªµéÀ» ÃÖ¼ÒÇÑÀ¸·Î À¯ÁöÇÏ¿©, utilityÀÇ ±¸µ¿ ¼º´ÉÀ» Çâ»ó
-     * ½ÃÅµ´Ï´Ù. */
+     * dumpci ë“± utilì—ì„œëŠ” loganchorë¥¼ êµ¬ë™í•˜ê¸° ìœ„í•´ controlë‹¨ê³„ê¹Œì§€ ì„œë²„ë¥¼
+     * êµ¬ë™ì‹œì¼œì•¼ í•˜ë©°, ì´ë¥¼ ìœ„í•´ BufferManagerë¥¼ ì´ˆê¸°í™”í•´ì•¼ í•©ë‹ˆë‹¤. 
+     * ì´ëŸ¬í•œ ê³¼ì •ì—ì„œ Bufferë¥¼ í• ë‹¹í•˜ëŠ”ë“± ì˜ë¯¸ì—†ëŠ” ì‘ì—…ì„ í•©ë‹ˆë‹¤. í•˜ì§€ë§Œ
+     * ì´ë¥¼ ì œì™¸í•  ìˆ˜ëŠ” ì—†ìŠµë‹ˆë‹¤. ë”°ë¼ì„œ Utilityë¥¼ ìœ„í•˜ì—¬ BUFFER_AREA_SIZE
+     * ë“± ì¼ë¶€ ê°’ë“¤ì„ ìµœì†Œí•œìœ¼ë¡œ ìœ ì§€í•˜ì—¬, utilityì˜ êµ¬ë™ ì„±ëŠ¥ì„ í–¥ìƒ
+     * ì‹œí‚µë‹ˆë‹¤. */
     static void init4Util();
 
     //sdd
@@ -1985,8 +1985,8 @@ public:
         return mSMChecksumDisable;
     }
 
-    // BUG-17526: CASE-8623À» À§ÇÑ AgerÀÇ Buffer Á¢±Ù
-    // Åë°èÁ¤º¸ Ãß°¡
+    // BUG-17526: CASE-8623ì„ ìœ„í•œ Agerì˜ Buffer ì ‘ê·¼
+    // í†µê³„ì •ë³´ ì¶”ê°€
     static idBool getCheckDiskAgerStat()
     {
         return (mCheckDiskAgerStat == 1 ? ID_TRUE : ID_FALSE);
@@ -2033,15 +2033,15 @@ public:
         return mMaxTempHashTableCount;
     }
 
-    // BUG-29506 TBT°¡ TBK·Î ÀüÈ¯½Ã º¯°æµÈ offsetÀ» CTS¿¡ ¹İ¿µÇÏÁö ¾Ê½À´Ï´Ù.
-    // ÀçÇöÇÏ±â À§ÇØ CTS ÇÒ´ç ¿©ºÎ¸¦ ÀÓÀÇ·Î Á¦¾îÇÏ±â À§ÇÑ PROPERTY¸¦ Ãß°¡
+    // BUG-29506 TBTê°€ TBKë¡œ ì „í™˜ì‹œ ë³€ê²½ëœ offsetì„ CTSì— ë°˜ì˜í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
+    // ì¬í˜„í•˜ê¸° ìœ„í•´ CTS í• ë‹¹ ì—¬ë¶€ë¥¼ ì„ì˜ë¡œ ì œì–´í•˜ê¸° ìœ„í•œ PROPERTYë¥¼ ì¶”ê°€
     static UInt getDisableTransactionBoundInCTS()
     {
         return mDisableTransactionBoundInCTS;
     }
 
-    // BUG-29839 Àç»ç¿ëµÈ undo page¿¡¼­ ÀÌÀü CTS¸¦ º¸·Á°í ÇÒ ¼ö ÀÖÀ½.
-    // ÀçÇöÇÏ±â À§ÇØ transaction¿¡ Æ¯Á¤ segment entry¸¦ bindingÇÏ´Â ±â´É Ãß°¡
+    // BUG-29839 ì¬ì‚¬ìš©ëœ undo pageì—ì„œ ì´ì „ CTSë¥¼ ë³´ë ¤ê³  í•  ìˆ˜ ìˆìŒ.
+    // ì¬í˜„í•˜ê¸° ìœ„í•´ transactionì— íŠ¹ì • segment entryë¥¼ bindingí•˜ëŠ” ê¸°ëŠ¥ ì¶”ê°€
     static UInt getManualBindingTXSegByEntryID()
     {
         return mManualBindingTXSegByEntryID;
@@ -2160,34 +2160,34 @@ public:
     }
 
 
-    // PROJ-1490 ÆäÀÌÁö¸®½ºÆ® ´ÙÁßÈ­ ¹× ¸Ş¸ğ¸®¹İ³³
-    // ÇÏ³ªÀÇ Expand Chunk¿¡ ¼ÓÇÏ´Â Page¼ö
+    // PROJ-1490 í˜ì´ì§€ë¦¬ìŠ¤íŠ¸ ë‹¤ì¤‘í™” ë° ë©”ëª¨ë¦¬ë°˜ë‚©
+    // í•˜ë‚˜ì˜ Expand Chunkì— ì†í•˜ëŠ” Pageìˆ˜
     static UInt getExpandChunkPageCount()
     {
         return mExpandChunkPageCount;
     }
 
 
-    // ´ÙÀ½°ú °°Àº Page ListµéÀ» °¢°¢ ¸î°³ÀÇ List·Î ´ÙÁßÈ­ ÇÒ Áö °áÁ¤ÇÑ´Ù.
+    // ë‹¤ìŒê³¼ ê°™ì€ Page Listë“¤ì„ ê°ê° ëª‡ê°œì˜ Listë¡œ ë‹¤ì¤‘í™” í•  ì§€ ê²°ì •í•œë‹¤.
     //
-    // µ¥ÀÌÅÍº£ÀÌ½º Free Page List
-    // Å×ÀÌºíÀÇ Allocated Page List
-    // Å×ÀÌºíÀÇ Free Page List
+    // ë°ì´í„°ë² ì´ìŠ¤ Free Page List
+    // í…Œì´ë¸”ì˜ Allocated Page List
+    // í…Œì´ë¸”ì˜ Free Page List
     static UInt getPageListGroupCount()
     {
         return mPageListGroupCount;
     }
 
 
-    // ÇÑ¹ø¿¡ ¸î°³ÀÇ Page¸¦ Free Page List·Î ºĞ¹èÇÒÁö¸¦ ¸®ÅÏÇÑ´Ù.
+    // í•œë²ˆì— ëª‡ê°œì˜ Pageë¥¼ Free Page Listë¡œ ë¶„ë°°í• ì§€ë¥¼ ë¦¬í„´í•œë‹¤.
     static UInt getPerListDistPageCount()
     {
         return mPerListDistPageCount;
     }
 
-    // Free Page List°¡ List ºĞÇÒÈÄ °¡Á®¾ß ÇÏ´Â ÃÖ¼ÒÇÑÀÇ Page¼ö
-    // Free Page List ºĞÇÒ½Ã¿¡ ÃÖ¼ÒÇÑ ÀÌ ¸¸Å­ÀÇ Page°¡
-    // List¿¡ ³²¾Æ ÀÖÀ» ¼ö ÀÖ´Â °æ¿ì¿¡¸¸ Free Page List¸¦ ºĞÇÒÇÑ´Ù.
+    // Free Page Listê°€ List ë¶„í• í›„ ê°€ì ¸ì•¼ í•˜ëŠ” ìµœì†Œí•œì˜ Pageìˆ˜
+    // Free Page List ë¶„í• ì‹œì— ìµœì†Œí•œ ì´ ë§Œí¼ì˜ Pageê°€
+    // Listì— ë‚¨ì•„ ìˆì„ ìˆ˜ ìˆëŠ” ê²½ìš°ì—ë§Œ Free Page Listë¥¼ ë¶„í• í•œë‹¤.
     static UInt getMinPagesDBTableFreeList()
     {
         return mMinPagesOnDBFreeList;
@@ -2332,7 +2332,7 @@ public:
         return mArchiveMultiplexCount;
     }
 
-    // mmapÀÎÁö, memoryÀÎÁö log buffer typeÀ» ¹İÈ¯
+    // mmapì¸ì§€, memoryì¸ì§€ log buffer typeì„ ë°˜í™˜
     static UInt getLogBufferType()
     {
         return mLogBufferType;
@@ -2400,24 +2400,24 @@ public:
         return mDiskRedoLogDecompressBufferSize;
     }
 
-    // ÇÏ³ªÀÇ LFG¿¡¼­ Group CommitÀ» ¼öÇàÇÏ±â À§ÇÑ Update TransactionÀÇ ¼ö
-    // °¢ LFGº°·Î Update TransactionÀÇ ¼ö¸¦ CountÇÏ¿© ÀÌ °ªº¸´Ù Å©°Å³ª °°À» ¶§
-    // ±×·ìÄ¿¹ÔÀ» ½Ç½ÃÇÑ´Ù.
+    // í•˜ë‚˜ì˜ LFGì—ì„œ Group Commitì„ ìˆ˜í–‰í•˜ê¸° ìœ„í•œ Update Transactionì˜ ìˆ˜
+    // ê° LFGë³„ë¡œ Update Transactionì˜ ìˆ˜ë¥¼ Countí•˜ì—¬ ì´ ê°’ë³´ë‹¤ í¬ê±°ë‚˜ ê°™ì„ ë•Œ
+    // ê·¸ë£¹ì»¤ë°‹ì„ ì‹¤ì‹œí•œë‹¤.
     static UInt getLFGGroupCommitUpdateTxCount()
     {
         return mLFGGroupCommitUpdateTxCount;
     }
 
-    // µ¿½Ã¿¡ µé¾î¿À´Â Log Flush¿äÃ»À» Áö¿¬ÇÒ ÀÎÅÍ¹ú
-    // µ¿½Ã´Ù¹ßÀû Log Flush¿äÃ»À» Áö¿¬ÇÏ¿© I/OÈ½¼ö¿Í ¾çÀ» ÁÙÀÌ´Â °ÍÀÌ
-    // Group CommitÀÇ ¿ø¸®ÀÌ´Ù.
+    // ë™ì‹œì— ë“¤ì–´ì˜¤ëŠ” Log Flushìš”ì²­ì„ ì§€ì—°í•  ì¸í„°ë²Œ
+    // ë™ì‹œë‹¤ë°œì  Log Flushìš”ì²­ì„ ì§€ì—°í•˜ì—¬ I/OíšŸìˆ˜ì™€ ì–‘ì„ ì¤„ì´ëŠ” ê²ƒì´
+    // Group Commitì˜ ì›ë¦¬ì´ë‹¤.
     static UInt getLFGGroupCommitIntervalUSec()
     {
         return mLFGGroupCommitIntervalUSec;
     }
 
-    // Log Flush¿äÃ»ÀÌ Áö¿¬µÈ TransactionµéÀº ÁÖ±âÀûÀ¸·Î ±ú¾î³ª¼­
-    // Log°¡ FlushµÇ¾ú´ÂÁö¸¦ Ã¼Å©ÇÑ´Ù. ¹Ù·Î ÀÌ ÁÖ±â¸¦ °¡Áö´Â ÇÁ·ÎÆÛÆ¼ÀÌ´Ù.
+    // Log Flushìš”ì²­ì´ ì§€ì—°ëœ Transactionë“¤ì€ ì£¼ê¸°ì ìœ¼ë¡œ ê¹¨ì–´ë‚˜ì„œ
+    // Logê°€ Flushë˜ì—ˆëŠ”ì§€ë¥¼ ì²´í¬í•œë‹¤. ë°”ë¡œ ì´ ì£¼ê¸°ë¥¼ ê°€ì§€ëŠ” í”„ë¡œí¼í‹°ì´ë‹¤.
     static UInt getLFGGroupCommitRetryUSec()
     {
         return mLFGGroupCommitRetryUSec;
@@ -2540,7 +2540,7 @@ public:
     }
 
     /* BUG-38515 Add hidden property for skip scn check in startup 
-     * BUG-41600 ÀÌ ÇÁ·ÎÆÛÆ¼ÀÇ °ªÀÌ 2ÀÎ °æ¿ì¸¦ Ãß°¡ÇÑ´Ù. */    
+     * BUG-41600 ì´ í”„ë¡œí¼í‹°ì˜ ê°’ì´ 2ì¸ ê²½ìš°ë¥¼ ì¶”ê°€í•œë‹¤. */    
     static UInt isSkipCheckSCNInStartup()
     {
         return mSkipCheckSCNInStartup;
@@ -2587,8 +2587,8 @@ public:
         return mVerifyDiskIndexName[aIndex];
     }
 
-    /* BUG-32632 User Memory Tablesapce¿¡¼­ Max size¸¦ ¹«½ÃÇÏ´Â ºñ»ó¿ë Property Ãß°¡
-     * User Memory TablespaceÀÇ Max Size¸¦ ¹«½ÃÇÏ°í ¹«Á¶°Ç È®Àå */
+    /* BUG-32632 User Memory Tablesapceì—ì„œ Max sizeë¥¼ ë¬´ì‹œí•˜ëŠ” ë¹„ìƒìš© Property ì¶”ê°€
+     * User Memory Tablespaceì˜ Max Sizeë¥¼ ë¬´ì‹œí•˜ê³  ë¬´ì¡°ê±´ í™•ì¥ */
     static idBool   getIgnoreMemTbsMaxSize( )
     {
         return ( mIgnoreMemTbsMaxSize == 0 ) ? ID_FALSE : ID_TRUE;
@@ -3147,7 +3147,7 @@ public:
 
     //-------------------------------------
     // To Fix PR-14783
-    // System ThreadÀÇ µ¿ÀÛÀ» Á¦¾îÇÔ.
+    // System Threadì˜ ë™ì‘ì„ ì œì–´í•¨.
     //-------------------------------------
 
     static UInt isRunMemDeleteThread()
@@ -3208,7 +3208,7 @@ public:
     }
 
     // scp
-    /* Proj-2059 DB Upgrade ±â´É */
+    /* Proj-2059 DB Upgrade ê¸°ëŠ¥ */
     static UInt getDataPortFileBlockSize()
     {
         return mDataPortFileBlockSize;
@@ -3234,12 +3234,12 @@ public:
         return mCheckpointFlushResponsibility;
     }
 
-    // File SizeÀÌ OSÀÇ  Limitº¸´Ù Å«Áö Ã¼Å©ÇÑ´Ù.
+    // File Sizeì´ OSì˜  Limitë³´ë‹¤ í°ì§€ ì²´í¬í•œë‹¤.
     //
-    // ÀÌ ÇÔ¼ö´Â smÀÇ ´Ù¾çÇÑ ¸ğµâ¿¡¼­ »ç¿ëµÇ´Â ÇÔ¼ö·Î
-    // smuº¸´Ù ´õ ³·Àº Layer¿¡ µÎ´Â °ÍÀÌ ¸Â´Ù.
-    // ÃßÈÄ sm¾È¿¡¼­ smuº¸´Ù ³·Àº Layer°¡ »ı±æ °æ¿ì
-    // ÇØ´ç Layer·Î ¿Å±â´Â °ÍÀÌ ÁÁ´Ù.
+    // ì´ í•¨ìˆ˜ëŠ” smì˜ ë‹¤ì–‘í•œ ëª¨ë“ˆì—ì„œ ì‚¬ìš©ë˜ëŠ” í•¨ìˆ˜ë¡œ
+    // smuë³´ë‹¤ ë” ë‚®ì€ Layerì— ë‘ëŠ” ê²ƒì´ ë§ë‹¤.
+    // ì¶”í›„ smì•ˆì—ì„œ smuë³´ë‹¤ ë‚®ì€ Layerê°€ ìƒê¸¸ ê²½ìš°
+    // í•´ë‹¹ Layerë¡œ ì˜®ê¸°ëŠ” ê²ƒì´ ì¢‹ë‹¤.
     static IDE_RC checkFileSizeLimit( const SChar * aUserKeyword,
                                       ULong aFileSize );
 

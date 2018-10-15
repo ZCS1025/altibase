@@ -26,47 +26,47 @@
 
 /*
 
-  [Volatile]  Startup, Shutdown½ÃÀÇ Tablespace°ü·Ã Ã³¸®¸¦ ±¸Çö
+  [Volatile]  Startup, Shutdownì‹œì˜ Tablespaceê´€ë ¨ ì²˜ë¦¬ë¥¼ êµ¬í˜„
   
-  Âü°í> svm ¸ğµâ ¾ÈÀÇ ¼Ò½º´Â ´ÙÀ½°ú °°ÀÌ LayeringµÇ¾î ÀÖ´Ù.
+  ì°¸ê³ > svm ëª¨ë“ˆ ì•ˆì˜ ì†ŒìŠ¤ëŠ” ë‹¤ìŒê³¼ ê°™ì´ Layeringë˜ì–´ ìˆë‹¤.
   ----------------------------------------------------------------------------
-  svmTBSCreate          ; Create Tablespace ±¸Çö
-  svmTBSDrop            ; Drop Tablespace ±¸Çö
-  svmTBSAlterAutoExtend ; Alter Tablespace Auto Extend ±¸Çö
-  svmTBSStartupShutdown ; Startup, Shutdown½ÃÀÇ Tablespace°ü·Ã Ã³¸®¸¦ ±¸Çö
+  svmTBSCreate          ; Create Tablespace êµ¬í˜„
+  svmTBSDrop            ; Drop Tablespace êµ¬í˜„
+  svmTBSAlterAutoExtend ; Alter Tablespace Auto Extend êµ¬í˜„
+  svmTBSStartupShutdown ; Startup, Shutdownì‹œì˜ Tablespaceê´€ë ¨ ì²˜ë¦¬ë¥¼ êµ¬í˜„
   ----------------------------------------------------------------------------
-  svmManager       ; TablespaceÀÇ ³»ºÎ ±¸Çö 
-  svmFPLManager    ; Tablespace Free Page ListÀÇ ³»ºÎ ±¸Çö
-  svmExpandChunk   ; ChunkÀÇ ³»ºÎ±¸Á¶ ±¸Çö
+  svmManager       ; Tablespaceì˜ ë‚´ë¶€ êµ¬í˜„ 
+  svmFPLManager    ; Tablespace Free Page Listì˜ ë‚´ë¶€ êµ¬í˜„
+  svmExpandChunk   ; Chunkì˜ ë‚´ë¶€êµ¬ì¡° êµ¬í˜„
   ----------------------------------------------------------------------------
  */
 class svmTBSStartupShutdown
 {
 public :
-    // »ı¼ºÀÚ (¾Æ¹«°Íµµ ¾ÈÇÔ)
+    // ìƒì„±ì (ì•„ë¬´ê²ƒë„ ì•ˆí•¨)
     svmTBSStartupShutdown();
 
-    // Volatile Tablespace °ü¸®ÀÚÀÇ ÃÊ±âÈ­
+    // Volatile Tablespace ê´€ë¦¬ìì˜ ì´ˆê¸°í™”
     static IDE_RC initializeStatic();
     
-    // Volatile Tablespace°ü¸®ÀÚÀÇ ÇØÁ¦
+    // Volatile Tablespaceê´€ë¦¬ìì˜ í•´ì œ
     static IDE_RC destroyStatic();
     
 
-    // Log anchor°¡ ÀĞÀº TBSAttr·ÎºÎÅÍ TBSNode¸¦ »ı¼ºÇÑ´Ù.
+    // Log anchorê°€ ì½ì€ TBSAttrë¡œë¶€í„° TBSNodeë¥¼ ìƒì„±í•œë‹¤.
     static IDE_RC loadTableSpaceNode(smiTableSpaceAttr *aTBSAttr,
                                      UInt               aAnchorOffset);
 
-    // ¸ğµç Volatile TBS¸¦ ÃÊ±âÈ­ÇÑ´Ù.
-    // TBSNodeµéÀº ÀÌ¹Ì smrLogAchorMgr¿¡¼­ ÃÊ±âÈ­µÈ »óÅÂÀÌ¾î¾ß ÇÑ´Ù.
+    // ëª¨ë“  Volatile TBSë¥¼ ì´ˆê¸°í™”í•œë‹¤.
+    // TBSNodeë“¤ì€ ì´ë¯¸ smrLogAchorMgrì—ì„œ ì´ˆê¸°í™”ëœ ìƒíƒœì´ì–´ì•¼ í•œë‹¤.
     static IDE_RC prepareAllTBS();
 
-    // ¸ğµç Volatile TBSNodeµéÀ» ÇØÁ¦ÇÑ´Ù.
+    // ëª¨ë“  Volatile TBSNodeë“¤ì„ í•´ì œí•œë‹¤.
     static IDE_RC destroyAllTBSNode();
 
 private :
 
-    // ÇÏ³ªÀÇ Volatile TBS¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+    // í•˜ë‚˜ì˜ Volatile TBSë¥¼ ì´ˆê¸°í™”í•œë‹¤.
     static IDE_RC prepareTBSAction(idvSQL*            aStatistics,
                                    sctTableSpaceNode *aTBSNode,
                                    void              */* aArg */);

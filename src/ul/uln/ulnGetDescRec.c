@@ -18,8 +18,8 @@
 #include <ulnPrivate.h>
 
 /*
- * BUGBUG : »óÀ§ ÇÚµé°£ÀÇ »óÅÂ ÀüÀÌ¿¡ °ü·ÃµÈ ºÎºÐÀÌ ±¸ÇöÀÌ µÇÁö ¾ÊÀº °ü°è·Î
- *          Get/Set DescRec/DescField ÇÔ¼öµéÀÇ »óÅÂÀüÀÌ´Â ±¸ÇöÀÌ ºÒ°¡´ÉÇÏ´Ù.
+ * BUGBUG : ìƒìœ„ í•¸ë“¤ê°„ì˜ ìƒíƒœ ì „ì´ì— ê´€ë ¨ëœ ë¶€ë¶„ì´ êµ¬í˜„ì´ ë˜ì§€ ì•Šì€ ê´€ê³„ë¡œ
+ *          Get/Set DescRec/DescField í•¨ìˆ˜ë“¤ì˜ ìƒíƒœì „ì´ëŠ” êµ¬í˜„ì´ ë¶ˆê°€ëŠ¥í•˜ë‹¤.
  */
 
 SQLRETURN ulnGetDescRec(ulnDesc      *aDesc,
@@ -102,9 +102,9 @@ SQLRETURN ulnGetDescRec(ulnDesc      *aDesc,
 
     /*
      * --------------------------------------------------------------
-     *  Name             : SQL_DESC_NAME ÇÊµåÀÇ °ª ¸®ÅÏ
-     *  aBufferLength    : aName ÀÌ °¡¸®Å°´Â ¹öÆÛÀÇ size
-     *  aStringLengthPtr : ½ÇÁ¦ SQL_DESC_NAME ÇÊµå¿¡ ÀÖ´Â ÀÌ¸§ÀÇ ±æÀÌ
+     *  Name             : SQL_DESC_NAME í•„ë“œì˜ ê°’ ë¦¬í„´
+     *  aBufferLength    : aName ì´ ê°€ë¦¬í‚¤ëŠ” ë²„í¼ì˜ size
+     *  aStringLengthPtr : ì‹¤ì œ SQL_DESC_NAME í•„ë“œì— ìžˆëŠ” ì´ë¦„ì˜ ê¸¸ì´
      * --------------------------------------------------------------
      */
 
@@ -112,7 +112,7 @@ SQLRETURN ulnGetDescRec(ulnDesc      *aDesc,
     {
         ACI_TEST_RAISE(aBufferLength < 0, LABEL_INVALID_BUFFERSIZE);        //BUG-28623 [CodeSonar]Ignored Return Value
         /*
-         * BUGBUG : ulnColAttribute() ÀÇ SQL_DESC_NAME ºÎºÐ°ú Áßº¹µÈ ÄÚµå
+         * BUGBUG : ulnColAttribute() ì˜ SQL_DESC_NAME ë¶€ë¶„ê³¼ ì¤‘ë³µëœ ì½”ë“œ
          */
         /* BUGBUG (BUG-33625) */
         sSourceBuffer = ulnDescRecGetDisplayName(sDescRec);
@@ -135,26 +135,26 @@ SQLRETURN ulnGetDescRec(ulnDesc      *aDesc,
 
     /*
      * --------------------------------------------------------------
-     *  aTypePtr : SQL_DESC_TYPE ÇÊµåÀÇ °ª ¸®ÅÏ
+     *  aTypePtr : SQL_DESC_TYPE í•„ë“œì˜ ê°’ ë¦¬í„´
      * --------------------------------------------------------------
      */
 
     if (aTypePtr != NULL)
     {
         /*
-         * BUGBUG : ulnColAttribute() ÀÇ SQL_DESC_NAME ºÎºÐ°ú Áßº¹µÈ ÄÚµå
+         * BUGBUG : ulnColAttribute() ì˜ SQL_DESC_NAME ë¶€ë¶„ê³¼ ì¤‘ë³µëœ ì½”ë“œ
          *
-         * verbose data type À» ¸®ÅÏÇØ¾ß ÇÑ´Ù.
-         * ulnMeta ÀÇ odbc type ¿¡´Â verbose type ÀÌ µé¾î°£´Ù.
+         * verbose data type ì„ ë¦¬í„´í•´ì•¼ í•œë‹¤.
+         * ulnMeta ì˜ odbc type ì—ëŠ” verbose type ì´ ë“¤ì–´ê°„ë‹¤.
          */
 
         /*
          * Note : ulnTypeMap_LOB_SQLTYPE :
-         *        ÀÌÃ³·³ ulnTypes.cpp ¿¡¼­ ±Ùº»ÀûÀ¸·Î ¼öÁ¤ÇÏÁö ¾Ê°í,
-         *        »ç¿ëÀÚ¿¡°Ô Å¸ÀÔÀ» µ¹·ÁÁÖ´Â ÇÔ¼ö¸¶´Ù ±×¶§±×¶§ long type À» ¸ÅÇÎÇÏ´Â
-         *        ÇÔ¼ö¸¦ È£ÃâÇÏ´Â °ÍÀº ¹ö±×ÀÇ ¼ÒÁöµµ ÀÖ°í À§ÇèÇÑ ÁþÀÌÁö¸¸,
-         *        ulnTypes.cpp ¿¡ function context, dbc, stmt µîÀÇ ÁöÀúºÐÇÑ ´Ù¸¥
-         *        °ÍµéÀ» ¹Þ´Â ÇÔ¼ö¸¦ ¸¸µé°í ½ÍÁö ¾Ê¾Æ¼­ ±»ÀÌ ÀÌ¿Í°°ÀÌ Çß´Ù.
+         *        ì´ì²˜ëŸ¼ ulnTypes.cpp ì—ì„œ ê·¼ë³¸ì ìœ¼ë¡œ ìˆ˜ì •í•˜ì§€ ì•Šê³ ,
+         *        ì‚¬ìš©ìžì—ê²Œ íƒ€ìž…ì„ ëŒë ¤ì£¼ëŠ” í•¨ìˆ˜ë§ˆë‹¤ ê·¸ë•Œê·¸ë•Œ long type ì„ ë§¤í•‘í•˜ëŠ”
+         *        í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•˜ëŠ” ê²ƒì€ ë²„ê·¸ì˜ ì†Œì§€ë„ ìžˆê³  ìœ„í—˜í•œ ì§“ì´ì§€ë§Œ,
+         *        ulnTypes.cpp ì— function context, dbc, stmt ë“±ì˜ ì§€ì €ë¶„í•œ ë‹¤ë¥¸
+         *        ê²ƒë“¤ì„ ë°›ëŠ” í•¨ìˆ˜ë¥¼ ë§Œë“¤ê³  ì‹¶ì§€ ì•Šì•„ì„œ êµ³ì´ ì´ì™€ê°™ì´ í–ˆë‹¤.
          */
 
         sSQLTYPE = ulnMetaGetOdbcType(&sDescRec->mMeta);
@@ -174,10 +174,10 @@ SQLRETURN ulnGetDescRec(ulnDesc      *aDesc,
 
     /*
      * ----------------------------------------------------------------------------
-     *  aSubTypePtr : type ÀÌ SQL_DATETIME ÀÌ³ª SQL_INTERVAL ÀÏ ¶§
-     *                SQL_DESC_DATETIME_INTERVAL_CODE ¸¦ ¸®ÅÏÇÑ´Ù.
+     *  aSubTypePtr : type ì´ SQL_DATETIME ì´ë‚˜ SQL_INTERVAL ì¼ ë•Œ
+     *                SQL_DESC_DATETIME_INTERVAL_CODE ë¥¼ ë¦¬í„´í•œë‹¤.
      *
-     *  msdn ÀÇ ¼³¸íÀ» ÀÐ¾îº¸¸é, type ÀÌ SQL_DATETIME ÀÏ ¶§¿¡¸¸ ¸®ÅÏÇÏ´Â °Í °°´Ù.
+     *  msdn ì˜ ì„¤ëª…ì„ ì½ì–´ë³´ë©´, type ì´ SQL_DATETIME ì¼ ë•Œì—ë§Œ ë¦¬í„´í•˜ëŠ” ê²ƒ ê°™ë‹¤.
      *                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
      * ----------------------------------------------------------------------------
      */
@@ -197,18 +197,18 @@ SQLRETURN ulnGetDescRec(ulnDesc      *aDesc,
 
     /*
      * ----------------------------------------------------------------------------
-     *  aLengthPtr : SQL_DESC_OCTET_LENGTH ¸¦ ¸®ÅÏ
+     *  aLengthPtr : SQL_DESC_OCTET_LENGTH ë¥¼ ë¦¬í„´
      * ----------------------------------------------------------------------------
      */
 
     if (aLengthPtr != NULL)
     {
         /*
-         * BUGBUG : ulnColAttribute() ÀÇ SQL_DESC_NAME ºÎºÐ°ú Áßº¹µÈ ÄÚµå
+         * BUGBUG : ulnColAttribute() ì˜ SQL_DESC_NAME ë¶€ë¶„ê³¼ ì¤‘ë³µëœ ì½”ë“œ
          *
-         * IRD ÀÇ octet length ´Â null Á¾·áÀÚ¸¦ Á¦¿ÜÇÑ ±æÀÌ°¡ µé¾î°£´Ù.
-         * ±×·¯³ª SQLColAttribute ÇÔ¼öÀÇ ¼³¸í¿¡¼­ ÀÌ field id ·Î ¸®ÅÏµÇ´Â °ª¿¡´Â
-         * null Á¾·áÀÚÀÇ ±æÀÌ±îÁö Æ÷ÇÔÇÑ´Ù°í µÇ¾î ÀÖ´Ù.
+         * IRD ì˜ octet length ëŠ” null ì¢…ë£Œìžë¥¼ ì œì™¸í•œ ê¸¸ì´ê°€ ë“¤ì–´ê°„ë‹¤.
+         * ê·¸ëŸ¬ë‚˜ SQLColAttribute í•¨ìˆ˜ì˜ ì„¤ëª…ì—ì„œ ì´ field id ë¡œ ë¦¬í„´ë˜ëŠ” ê°’ì—ëŠ”
+         * null ì¢…ë£Œìžì˜ ê¸¸ì´ê¹Œì§€ í¬í•¨í•œë‹¤ê³  ë˜ì–´ ìžˆë‹¤.
          */
         *aLengthPtr = ulnMetaGetOctetLength(&sDescRec->mMeta) +
                                                 ULN_SIZE_OF_NULLTERMINATION_CHARACTER;
@@ -216,7 +216,7 @@ SQLRETURN ulnGetDescRec(ulnDesc      *aDesc,
 
     /*
      * ----------------------------------------------------------------------------
-     *  aPrecisionPtr : SQL_DESC_PRECISION À» ¸®ÅÏ
+     *  aPrecisionPtr : SQL_DESC_PRECISION ì„ ë¦¬í„´
      * ----------------------------------------------------------------------------
      */
 
@@ -227,7 +227,7 @@ SQLRETURN ulnGetDescRec(ulnDesc      *aDesc,
 
     /*
      * ----------------------------------------------------------------------------
-     *  aScalePtr : SQL_DESC_SCALE À» ¸®ÅÏ
+     *  aScalePtr : SQL_DESC_SCALE ì„ ë¦¬í„´
      * ----------------------------------------------------------------------------
      */
 
@@ -238,7 +238,7 @@ SQLRETURN ulnGetDescRec(ulnDesc      *aDesc,
 
     /*
      * ----------------------------------------------------------------------------
-     *  aNullablePtr : SQL_DESC_NULLABLE À» ¸®ÅÏ
+     *  aNullablePtr : SQL_DESC_NULLABLE ì„ ë¦¬í„´
      * ----------------------------------------------------------------------------
      */
 
@@ -261,7 +261,7 @@ SQLRETURN ulnGetDescRec(ulnDesc      *aDesc,
     ACI_EXCEPTION(LABEL_INVALID_BUFFERSIZE)
     {
         /*
-         * HY090 : ¾ò°íÀÚ ÇÏ´Â Á¤º¸°¡ ¹®ÀÚ Å¸ÀÔÀÎµ¥, aBufferLength ¿¡ À½¼ö¸¦ ÁÖ¾úÀ» °æ¿ì
+         * HY090 : ì–»ê³ ìž í•˜ëŠ” ì •ë³´ê°€ ë¬¸ìž íƒ€ìž…ì¸ë°, aBufferLength ì— ìŒìˆ˜ë¥¼ ì£¼ì—ˆì„ ê²½ìš°
          */
         ulnError(&sFnContext, ulERR_ABORT_INVALID_BUFFER_LEN, aBufferLength);
     }
@@ -279,8 +279,8 @@ SQLRETURN ulnGetDescRec(ulnDesc      *aDesc,
     ACI_EXCEPTION(LABEL_MEM_MAN_ERR2)
     {
         /*
-         * BUGBUG : ÀÌ¿Í°°Àº °æ¿ì¿¡´Â µðÆúÆ®°ªÀ» ¸®ÅÏÇØ¾ß ÇÏÁö¸¸
-         *          ¿©À¯°¡ ¾ø´Â °ü°è·Î ÀÏ´Ü ¸Þ¸ð¸® ¸Å´ÏÁö ¿¡·¯¸¦ ¸®ÅÏÇÑ´Ù.
+         * BUGBUG : ì´ì™€ê°™ì€ ê²½ìš°ì—ëŠ” ë””í´íŠ¸ê°’ì„ ë¦¬í„´í•´ì•¼ í•˜ì§€ë§Œ
+         *          ì—¬ìœ ê°€ ì—†ëŠ” ê´€ê³„ë¡œ ì¼ë‹¨ ë©”ëª¨ë¦¬ ë§¤ë‹ˆì§€ ì—ëŸ¬ë¥¼ ë¦¬í„´í•œë‹¤.
          */
         ulnError(&sFnContext, ulERR_FATAL_MEMORY_MANAGEMENT_ERROR, "ulnColAttribute2");
     }

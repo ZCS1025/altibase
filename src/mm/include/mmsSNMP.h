@@ -22,7 +22,7 @@
 #include <idtBaseThread.h>
 
 /* 
- * PROJ-2473 SNMP Áö¿ø
+ * PROJ-2473 SNMP ì§€ì›
  */
 
 class  mmsSNMP;
@@ -41,11 +41,11 @@ private:
     UInt   mSNMPRecvTimeout;
     UInt   mSNMPSendTimeout;
 
-    /* mPacketBuf´Â µ¥ÀÌÅÍ¸¦ ÁÖ°í ¹ŞÀ» ¶§ »ç¿ëÇÑ´Ù */
+    /* mPacketBufëŠ” ë°ì´í„°ë¥¼ ì£¼ê³  ë°›ì„ ë•Œ ì‚¬ìš©í•œë‹¤ */
     UChar *mPacketBuf;
     SInt   mPacketBufSize;
 
-    /* idm¿¡¼­ ¾ò¾î¿À´Â °ªÀ» ÀúÀå */
+    /* idmì—ì„œ ì–»ì–´ì˜¤ëŠ” ê°’ì„ ì €ì¥ */
     UChar *mValueBuf;
     SInt   mValueBufSize;
 

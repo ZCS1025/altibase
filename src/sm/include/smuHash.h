@@ -28,15 +28,15 @@
 #include <iduLatch.h>
 /*
  * Hash
- * »ç¿ëÀÚ´Â ÇØ½¬ °´Ã¼¸¦ »ç¿ëÇÏ±â À§ÇØ ¾Æ·¡ÀÇ ¼Ó¼ºÀ» initialize()½Ã ³Ñ°Ü¾ß ÇÑ´Ù.
+ * ì‚¬ìš©ìžëŠ” í•´ì‰¬ ê°ì²´ë¥¼ ì‚¬ìš©í•˜ê¸° ìœ„í•´ ì•„ëž˜ì˜ ì†ì„±ì„ initialize()ì‹œ ë„˜ê²¨ì•¼ í•œë‹¤.
  * 
- *  - ¹öÄÏ °¹¼ö   : ÀÔ·ÂµÉ ³ëµåÀÇ ÃÖ´ë °¹¼ö¸¦ °í·ÁÇØ °áÁ¤µÇ¾î¾ß ÇÔ.
- *  - µ¿½Ã¼º ·¹º§ : ´ÜÀÏ °´Ã¼°¡ ÀÌ¿ëÇÏ´Â °ÍÀÎÁö, ´Ù¼ö ¾²·¹µå°¡ µ¿½Ã¿¡ ÀÌ¿ëÇÏ´Â
- *                  °ÍÀÎÁö¿¡ µû¸¥ ¼öÄ¡ (ÀÌ °æ¿ì ÀÏ¹ÝÀûÀ¸·Î CPU°¹¼ö * 2)
- *  - Mutex¸¦ »ç¿ëÇÒ °ÍÀÎÁö¿¡ ´ëÇÑ Flag 
- *  - »ç¿ëµÉ Å°ÀÇ ±æÀÌ
- *  - Å°·ÎºÎÅÍ ¾ò´Â ÇØ½¬ ÇÔ¼ö
- *  - Å°°£ÀÇ ºñ±³ ÇÔ¼ö
+ *  - ë²„ì¼“ ê°¯ìˆ˜   : ìž…ë ¥ë  ë…¸ë“œì˜ ìµœëŒ€ ê°¯ìˆ˜ë¥¼ ê³ ë ¤í•´ ê²°ì •ë˜ì–´ì•¼ í•¨.
+ *  - ë™ì‹œì„± ë ˆë²¨ : ë‹¨ì¼ ê°ì²´ê°€ ì´ìš©í•˜ëŠ” ê²ƒì¸ì§€, ë‹¤ìˆ˜ ì“°ë ˆë“œê°€ ë™ì‹œì— ì´ìš©í•˜ëŠ”
+ *                  ê²ƒì¸ì§€ì— ë”°ë¥¸ ìˆ˜ì¹˜ (ì´ ê²½ìš° ì¼ë°˜ì ìœ¼ë¡œ CPUê°¯ìˆ˜ * 2)
+ *  - Mutexë¥¼ ì‚¬ìš©í•  ê²ƒì¸ì§€ì— ëŒ€í•œ Flag 
+ *  - ì‚¬ìš©ë  í‚¤ì˜ ê¸¸ì´
+ *  - í‚¤ë¡œë¶€í„° ì–»ëŠ” í•´ì‰¬ í•¨ìˆ˜
+ *  - í‚¤ê°„ì˜ ë¹„êµ í•¨ìˆ˜
  */
 
 
@@ -44,14 +44,14 @@ typedef struct smuHashChain
 {
     smuList  mList; /* for double-linked list  */
     void    *mNode; /* real Hash Target Node   */
-    ULong    mKey[1];  /* ³ëµå¿¡ ´ëÇÑ Å°ÀÇ Æ÷ÀÎÅÍ°¡ ÀúÀå : 8·Î alignÀ»  */
+    ULong    mKey[1];  /* ë…¸ë“œì— ëŒ€í•œ í‚¤ì˜ í¬ì¸í„°ê°€ ì €ìž¥ : 8ë¡œ alignì„  */
 }smuHashChain;
 
 typedef struct smuHashBucket
 {
-    iduLatch     * mLock;      /* bucket¿¡ ´ëÇÑ µ¿½Ã¼º Á¦¾î */
-    UInt           mCount;     /* ÇöÀç bucket¿¡ ÀúÀåµÈ ³ëµå °¹¼ö */
-    smuList        mBaseList;  /* double-link listÀÇ base list */
+    iduLatch     * mLock;      /* bucketì— ëŒ€í•œ ë™ì‹œì„± ì œì–´ */
+    UInt           mCount;     /* í˜„ìž¬ bucketì— ì €ìž¥ëœ ë…¸ë“œ ê°¯ìˆ˜ */
+    smuList        mBaseList;  /* double-link listì˜ base list */
 }smuHashBucket;
 
 typedef UInt (*smuHashGenFunc)(void *);
@@ -77,22 +77,22 @@ typedef struct smuHashLatchFunc
 
 typedef struct smuHashBase
 {
-    iduMutex           mMutex;       /* Hash ÀüÃ¼ÀÇ mutex */
+    iduMutex           mMutex;       /* Hash ì „ì²´ì˜ mutex */
 
-    void              *mMemPool;     /* ChainÀÇ ¸Þ¸ð¸® °ü¸®ÀÚ : 
-                                        struct³»ºÎ class »ç¿ë ºÒ°¡. so, void */
+    void              *mMemPool;     /* Chainì˜ ë©”ëª¨ë¦¬ ê´€ë¦¬ìž : 
+                                        structë‚´ë¶€ class ì‚¬ìš© ë¶ˆê°€. so, void */
     UInt               mKeyLength;
     UInt               mBucketCount;
     smuHashBucket     *mBucket;      /* Bucket List */
     smuHashLatchFunc  *mLatchVector;
 
-    smuHashGenFunc     mHashFunc;    /* HASH ÇÔ¼ö : callback */
-    smuHashCompFunc    mCompFunc;    /* ºñ±³ ÇÔ¼ö : callback */
+    smuHashGenFunc     mHashFunc;    /* HASH í•¨ìˆ˜ : callback */
+    smuHashCompFunc    mCompFunc;    /* ë¹„êµ í•¨ìˆ˜ : callback */
 
     /* for Traverse  */
-    idBool             mOpened;      /* TraverseÀÇ Open À¯¹« */
-    UInt               mCurBucket;   /* Á¢±ÙÁßÀÎ   Bucket ¹øÈ£ */
-    smuHashChain      *mCurChain;    /* Á¢±Ù ÁßÀÎ  Chain Æ÷ÀÎÅÍ */
+    idBool             mOpened;      /* Traverseì˜ Open ìœ ë¬´ */
+    UInt               mCurBucket;   /* ì ‘ê·¼ì¤‘ì¸   Bucket ë²ˆí˜¸ */
+    smuHashChain      *mCurChain;    /* ì ‘ê·¼ ì¤‘ì¸  Chain í¬ì¸í„° */
     //fix BUG-21311
     idBool             mDidAllocChain;
 
@@ -158,31 +158,31 @@ public:
     static IDE_RC deleteNode(smuHashBase  *aBase, void *aKeyPtr, void **aNode);
 
     /*
-     * !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! ÁÖÀÇ !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+     * !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! ì£¼ì˜ !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
      *
-     *  lock(), unlock() ÇÔ¼ö´Â findNode(), deleteNode(), insertNode() µîÀÇ
-     *  ¿¬»êÇÔ¼ö¿Í ¹«°üÇÏ±â ¶§¹®¿¡ 
-     *  lock(), unlock() ÇÔ¼ö¸¦ »ç¿ëÇÑ´Ù°í ÇØ¼­ ÀÌ·¯ÇÑ
-     *  ¿¬»êÇÔ¼öÀÇ µ¿ÀÛÀ» Á¦¾îÇÒ ¼ö ÀÖ´Ù°í »ý°¢ÇØ¼­´Â ¾ÈµÈ´Ù!!!!
-     *  ÀÌ ÇÔ¼öÀÇ ¸ñÀûÀº ¿ÜºÎ¿¡¼­ ¾î¶°ÇÑ ÀÇµµ·Î »ç¿ëµÇ´Â Mutex ÀÇ¹Ì¸¦ À§ÇÑ
-     *  ¼­ºñ½º ÇÔ¼ö ÀÌ»ó ¾Æ¹« °Íµµ ¾Æ´Ï´Ù.
+     *  lock(), unlock() í•¨ìˆ˜ëŠ” findNode(), deleteNode(), insertNode() ë“±ì˜
+     *  ì—°ì‚°í•¨ìˆ˜ì™€ ë¬´ê´€í•˜ê¸° ë•Œë¬¸ì— 
+     *  lock(), unlock() í•¨ìˆ˜ë¥¼ ì‚¬ìš©í•œë‹¤ê³  í•´ì„œ ì´ëŸ¬í•œ
+     *  ì—°ì‚°í•¨ìˆ˜ì˜ ë™ìž‘ì„ ì œì–´í•  ìˆ˜ ìžˆë‹¤ê³  ìƒê°í•´ì„œëŠ” ì•ˆëœë‹¤!!!!
+     *  ì´ í•¨ìˆ˜ì˜ ëª©ì ì€ ì™¸ë¶€ì—ì„œ ì–´ë– í•œ ì˜ë„ë¡œ ì‚¬ìš©ë˜ëŠ” Mutex ì˜ë¯¸ë¥¼ ìœ„í•œ
+     *  ì„œë¹„ìŠ¤ í•¨ìˆ˜ ì´ìƒ ì•„ë¬´ ê²ƒë„ ì•„ë‹ˆë‹¤.
      */
     static IDE_RC lock(smuHashBase  *aBase);
     static IDE_RC unlock(smuHashBase  *aBase);
 
     /*
-     * !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! ÁÖÀÇ !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+     * !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! ì£¼ì˜ !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
      *
-     *  ¾Æ·¡ÀÇ ÇÔ¼ö¸¦ È£ÃâÇÒ °æ¿ì¿¡´Â ¾Æ¹«·± Concurrency ControlÀ»
-     *  ÇÏÁö ¾Ê±â ¶§¹®¿¡, È£ÃâÀÚ´Â ¾Æ·¡ÀÇ cutÇÔ¼öÀÇ »ç¿ë¿¡ ÀÖ¾î¼­
-     *  Á¶½ÉÇØ¾ß ÇÑ´Ù.
-     *  ¸¸ÀÏ, open(), cutNode() °úÁ¤¿¡¼­ ´Ù¸¥ ¾²·¹µå°¡ Insert È¤Àº delete¸¦
-     *  ÇÑ´Ù¸é, ¿¹±âÄ¡ ¸øÇÑ »óÈ²ÀÌ ¹ß»ýÇÒ ¼ö ÀÖÀ¸¹Ç·Î,
-     *  ¸â¹ö ÇÔ¼ö lock(), unlock()À» ÀÌ¿ëÇØ¼­ ¿ÜºÎ È£Ãâ ¿µ¿ª¿¡¼­ ¸í½ÃÀûÀ¸·Î
-     *  ¸ðµç Á¢±Ù ÇÔ¼ö¿¡ ´ëÇÑ Ã³¸®¸¦ ÇØ ÁÖ¾î¾ß ÇÑ´Ù.
+     *  ì•„ëž˜ì˜ í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•  ê²½ìš°ì—ëŠ” ì•„ë¬´ëŸ° Concurrency Controlì„
+     *  í•˜ì§€ ì•Šê¸° ë•Œë¬¸ì—, í˜¸ì¶œìžëŠ” ì•„ëž˜ì˜ cutí•¨ìˆ˜ì˜ ì‚¬ìš©ì— ìžˆì–´ì„œ
+     *  ì¡°ì‹¬í•´ì•¼ í•œë‹¤.
+     *  ë§Œì¼, open(), cutNode() ê³¼ì •ì—ì„œ ë‹¤ë¥¸ ì“°ë ˆë“œê°€ Insert í˜¹ì€ deleteë¥¼
+     *  í•œë‹¤ë©´, ì˜ˆê¸°ì¹˜ ëª»í•œ ìƒí™©ì´ ë°œìƒí•  ìˆ˜ ìžˆìœ¼ë¯€ë¡œ,
+     *  ë©¤ë²„ í•¨ìˆ˜ lock(), unlock()ì„ ì´ìš©í•´ì„œ ì™¸ë¶€ í˜¸ì¶œ ì˜ì—­ì—ì„œ ëª…ì‹œì ìœ¼ë¡œ
+     *  ëª¨ë“  ì ‘ê·¼ í•¨ìˆ˜ì— ëŒ€í•œ ì²˜ë¦¬ë¥¼ í•´ ì£¼ì–´ì•¼ í•œë‹¤.
      */
 
-    // ³»ºÎ Traverse & Node Á¦°Å ÀÛ¾÷
+    // ë‚´ë¶€ Traverse & Node ì œê±° ìž‘ì—…
     //fix BUG-21311
     static inline IDE_RC open(smuHashBase *aBase);
     static inline IDE_RC cutNode(smuHashBase *aBase, void **aNode);
@@ -257,7 +257,7 @@ IDE_RC smuHash::getCurNode(smuHashBase *aBase, void **aNode)
         // return the node pointer
         *aNode = aBase->mCurChain->mNode;
     }   
-    else // Traverse ½ÇÆÐ
+    else // Traverse ì‹¤íŒ¨
     {   
         *aNode = NULL; 
     }   

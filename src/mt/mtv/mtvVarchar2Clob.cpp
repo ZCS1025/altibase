@@ -107,7 +107,7 @@ IDE_RC mtvCalculate_Varchar2Clob( mtcNode*,
     }
     else
     {
-        /* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø */
+        /* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ìž… ì§€ì› */
         IDE_TEST_RAISE( aStack[0].column->precision < (SInt)((mtdCharType *)aStack[1].value)->length,
                         ERR_CONVERT );
 

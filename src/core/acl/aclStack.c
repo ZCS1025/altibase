@@ -92,14 +92,14 @@ ACP_INLINE void aclStackFreeSafeNodes(acl_stack_t    *aStack)
     acp_sint32_t  i;
 
     /*
-     * RetireNodes List¸¦ NodesToFree List·Î º¹»ç
+     * RetireNodes Listë¥¼ NodesToFree Listë¡œ ë³µì‚¬
      */
     acpMemCpy(sNodesToFree,
               aStack->mSpec.mLockFree.mRetireNodes,
               sizeof(sNodesToFree));
 
     /*
-     * NodesToFree List¿¡¼­ Hazardous NodeµéÀ» Nullify
+     * NodesToFree Listì—ì„œ Hazardous Nodeë“¤ì„ Nullify
      */
     ACP_MEM_BARRIER();
 
@@ -111,7 +111,7 @@ ACP_INLINE void aclStackFreeSafeNodes(acl_stack_t    *aStack)
     }
 
     /*
-     * NodesToFree ListÀÇ NodeµéÀ» NodePool·Î ¹ÝÈ¯ ÈÄ RetireNodes List¿¡¼­ Á¦°Å
+     * NodesToFree Listì˜ Nodeë“¤ì„ NodePoolë¡œ ë°˜í™˜ í›„ RetireNodes Listì—ì„œ ì œê±°
      */
     sCount = 0;
 
@@ -136,8 +136,8 @@ ACP_INLINE void aclStackFreeSafeNodes(acl_stack_t    *aStack)
 void aclStackRetireNode(acl_stack_t *aStack, aclStackNode *aNode)
 {
 
-    /* ¿ø·¡´Â ¾²·¹µå ·ÎÄÃ ½ºÅä¸®Áö¿¡ ¸®½ºÆ®¸¦ ÀúÀåÇØ¾ßÇÏ´Âµ¥
-       ÆíÀÇ¸¦ À§ÇØ¼­ ¶ô±â¹Ý Àü¿ª ¸®½ºÆ®·Î ¸¸µë */
+    /* ì›ëž˜ëŠ” ì“°ë ˆë“œ ë¡œì»¬ ìŠ¤í† ë¦¬ì§€ì— ë¦¬ìŠ¤íŠ¸ë¥¼ ì €ìž¥í•´ì•¼í•˜ëŠ”ë°
+       íŽ¸ì˜ë¥¼ ìœ„í•´ì„œ ë½ê¸°ë°˜ ì „ì—­ ë¦¬ìŠ¤íŠ¸ë¡œ ë§Œë“¬ */
     acpSpinLockLock(&aStack->mSpec.mLockFree.mRetireLock);
 
     while (aStack->mSpec.mLockFree.mRetireCount == ACL_STACK_SMR_BATCH_SIZE)
@@ -246,12 +246,12 @@ static acp_rc_t aclStackPopLockFree(acl_stack_t *aStack, void **aObj)
 
         ACP_MEM_BARRIER();
 
-        /* topÀÌ ´Ù¸¥ ¾²·¹µå¿¡ÀÇÇØ ¹Ù²¼´Ù.
-           Áï HP¿¡ topÀ» µî·ÏÇÏ±â Á÷Àü¿¡ sTopÀ» ´Ù¸¥ ¾²·¹µå°¡ ¹Ù²Ù°í
-           sTopÀÌ °¡¸®Å°´Â ³ëµå°¡ ÇØÁöµÈ ³ëµåÀÏ ¼ö µµ ÀÖ´Ù.
-           ±×·¯¸é topÀ» HP¿¡ ÀúÀåÇØ¼­ º¸È£ÇÏ¸é ¾ÈµÈ´Ù.
-           topÀº ÀÌ¹Ì Æ²¸° Á¤º¸ÀÌ±â ¶§¹®ÀÌ´Ù.
-           µû¶ó¼­ HP¿¡ µî·ÏÇÑ Á÷ÈÄ¿¡ sTopÀ» ´Ù½ÃÇÑ¹ø È®ÀÎÇÏ´Â °ÍÀÌ´Ù.
+        /* topì´ ë‹¤ë¥¸ ì“°ë ˆë“œì—ì˜í•´ ë°”ê¼ˆë‹¤.
+           ì¦‰ HPì— topì„ ë“±ë¡í•˜ê¸° ì§ì „ì— sTopì„ ë‹¤ë¥¸ ì“°ë ˆë“œê°€ ë°”ê¾¸ê³ 
+           sTopì´ ê°€ë¦¬í‚¤ëŠ” ë…¸ë“œê°€ í•´ì§€ëœ ë…¸ë“œì¼ ìˆ˜ ë„ ìžˆë‹¤.
+           ê·¸ëŸ¬ë©´ topì„ HPì— ì €ìž¥í•´ì„œ ë³´í˜¸í•˜ë©´ ì•ˆëœë‹¤.
+           topì€ ì´ë¯¸ í‹€ë¦° ì •ë³´ì´ê¸° ë•Œë¬¸ì´ë‹¤.
+           ë”°ë¼ì„œ HPì— ë“±ë¡í•œ ì§í›„ì— sTopì„ ë‹¤ì‹œí•œë²ˆ í™•ì¸í•˜ëŠ” ê²ƒì´ë‹¤.
          */
            
         if (sTop != aStack->mTop)
@@ -280,7 +280,7 @@ static acp_rc_t aclStackPopLockFree(acl_stack_t *aStack, void **aObj)
 
     *aObj = sTop->mObj;
 
-    /* ÀÌÁ¦ ³ëµå¸¦ ÇØÁöÇØµµ µÈ´Ù. */
+    /* ì´ì œ ë…¸ë“œë¥¼ í•´ì§€í•´ë„ ëœë‹¤. */
     aclStackPutSmrRec(sSmrRec);
     aclStackRetireNode(aStack, sTop);
 

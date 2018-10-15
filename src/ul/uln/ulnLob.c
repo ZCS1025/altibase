@@ -71,7 +71,7 @@ static ACI_RC ulnLobBufferPrepareMEMORY(ulnFnContext *aFnContext,
     ACP_UNUSED(aLobBuffer);
 
     /*
-     * ¸Þ¸ð¸® ¹öÆÛ´Â ¹Ýµå½Ã »ç¿ëÀÚÀÇ ¹ÙÀÎµå¸Þ¸ð¸®ÀÌ±â ¶§¹®¿¡ ¾Æ¹«°Íµµ ÇØ¼­´Â ¾ÈµÈ´Ù.
+     * ë©”ëª¨ë¦¬ ë²„í¼ëŠ” ë°˜ë“œì‹œ ì‚¬ìš©ìžì˜ ë°”ì¸ë“œë©”ëª¨ë¦¬ì´ê¸° ë•Œë¬¸ì— ì•„ë¬´ê²ƒë„ í•´ì„œëŠ” ì•ˆëœë‹¤.
      */
 
     return ACI_SUCCESS;
@@ -86,7 +86,7 @@ static ACI_RC ulnLobBufferPrepareFILE(ulnFnContext *aFnContext, ulnLobBuffer *aL
     acp_stat_t    sStat;
 
     /*
-     * ÆÄÀÏ ¿ÀÇÂ
+     * íŒŒì¼ ì˜¤í”ˆ
      */
     switch (aLobBuffer->mObject.mFile.mFileOption)
     {
@@ -100,7 +100,7 @@ static ACI_RC ulnLobBufferPrepareFILE(ulnFnContext *aFnContext, ulnLobBuffer *aL
             ULN_FLAG_UP(sNeedCloseFile);
 
             /*
-             * ÆÄÀÏ »çÀÌÁî ¾ò±â
+             * íŒŒì¼ ì‚¬ì´ì¦ˆ ì–»ê¸°
              */
             ACI_TEST_RAISE(acpFileStat(sFileHandle, &sStat) != ACP_RC_SUCCESS,
                            LABEL_GET_FILESIZE_ERR);
@@ -112,8 +112,8 @@ static ACI_RC ulnLobBufferPrepareFILE(ulnFnContext *aFnContext, ulnLobBuffer *aL
             aLobBuffer->mObject.mFile.mFileSize = sFileSize;
 
             /*
-             * ÆÄÀÏ¿¡¼­ºÎÅÍ lob µ¥ÀÌÅÍ¸¦ ÀÐ¾î¼­ Àü¼ÛÇÒ ¶§¿¡´Â ÀÓ½Ã·Î ¾µ ¸Þ¸ð¸®°¡ ÇÊ¿äÇÏ´Ù.
-             * ÆÄÀÏ¿¡ ¼ö½ÅÇÑ lob µ¥ÀÌÅÍ¸¦ ¾µ °æ¿ì¿¡´Â ÀÓ½Ã ¸Þ¸ð¸®°¡ ÇÊ¿ä ¾ø´Ù.
+             * íŒŒì¼ì—ì„œë¶€í„° lob ë°ì´í„°ë¥¼ ì½ì–´ì„œ ì „ì†¡í•  ë•Œì—ëŠ” ìž„ì‹œë¡œ ì“¸ ë©”ëª¨ë¦¬ê°€ í•„ìš”í•˜ë‹¤.
+             * íŒŒì¼ì— ìˆ˜ì‹ í•œ lob ë°ì´í„°ë¥¼ ì“¸ ê²½ìš°ì—ëŠ” ìž„ì‹œ ë©”ëª¨ë¦¬ê°€ í•„ìš” ì—†ë‹¤.
              */
             ACI_TEST_RAISE(aLobBuffer->mObject.mFile.mTempBuffer != NULL, LABEL_MEM_MAN_ERR);
 
@@ -136,18 +136,18 @@ static ACI_RC ulnLobBufferPrepareFILE(ulnFnContext *aFnContext, ulnLobBuffer *aL
 
         case SQL_FILE_OVERWRITE:
             /*
-             * BUGBUG : O_CREAT ¿Í O_EXCL ÀÌ ÇÔ²² ¸í½ÃµÇ¾î ÀÖÀ» °æ¿ìÀÇ openÀº ÆÄÀÏÀÌ Á¸ÀçÇÏ´ÂÁö
-             *          Å×½ºÆ®¸¦ ÇÏ°í ÆÄÀÏÀ» »ý¼ºÇÏ´Â µÎ°³ÀÇ µ¿ÀÛÀ» atomic ÇÏ°Ô Ã³¸®ÇÏ°Ô µÈ´Ù.
-             *          ±×·¯³ª ¹®Á¦´Â ÀÌ µÎ ¿É¼ÇÀÌ ÇÔ²² ¼³Á¤µÇ¾î ÀÖÀ¸¸é ÆÄÀÏÀÌ Á¸ÀçÇÒ °æ¿ì
-             *          ¿¡·¯°¡ ¸®ÅÏµÈ´Ù.
+             * BUGBUG : O_CREAT ì™€ O_EXCL ì´ í•¨ê»˜ ëª…ì‹œë˜ì–´ ìžˆì„ ê²½ìš°ì˜ openì€ íŒŒì¼ì´ ì¡´ìž¬í•˜ëŠ”ì§€
+             *          í…ŒìŠ¤íŠ¸ë¥¼ í•˜ê³  íŒŒì¼ì„ ìƒì„±í•˜ëŠ” ë‘ê°œì˜ ë™ìž‘ì„ atomic í•˜ê²Œ ì²˜ë¦¬í•˜ê²Œ ëœë‹¤.
+             *          ê·¸ëŸ¬ë‚˜ ë¬¸ì œëŠ” ì´ ë‘ ì˜µì…˜ì´ í•¨ê»˜ ì„¤ì •ë˜ì–´ ìžˆìœ¼ë©´ íŒŒì¼ì´ ì¡´ìž¬í•  ê²½ìš°
+             *          ì—ëŸ¬ê°€ ë¦¬í„´ëœë‹¤.
              *
-             *          ±×·±µ¥, ¾Æ·¡ÀÇ ÇÔ¼ö¿¡¼­ O_EXCL À» Ãß°¡ÇÏÀÚ´Ï, Á¸ÀçÇÏ´Â ÆÄÀÏÀ» truncate
-             *          ½ÃÅ°°í µ¤¾î ¾²´Â °Ô ¾ÈµÇ°í(¿¡·¯°¡ ³²), O_EXCL À» »©ÀÚ´Ï atomic ÇÑ
-             *          µ¿ÀÛÀÌ µÇÁö ¾Ê¾Æ¼­ °ÆÁ¤ÀÌ´Ù.
+             *          ê·¸ëŸ°ë°, ì•„ëž˜ì˜ í•¨ìˆ˜ì—ì„œ O_EXCL ì„ ì¶”ê°€í•˜ìžë‹ˆ, ì¡´ìž¬í•˜ëŠ” íŒŒì¼ì„ truncate
+             *          ì‹œí‚¤ê³  ë®ì–´ ì“°ëŠ” ê²Œ ì•ˆë˜ê³ (ì—ëŸ¬ê°€ ë‚¨), O_EXCL ì„ ë¹¼ìžë‹ˆ atomic í•œ
+             *          ë™ìž‘ì´ ë˜ì§€ ì•Šì•„ì„œ ê±±ì •ì´ë‹¤.
              *
-             *          ÀÏ´ÜÀº ÆÄÀÏ Á¸Àç¿©ºÎ Å×½ºÆ®¿¡¼­ Á¸ÀçÇÏÁö ¾Ê´Â°ÍÀ» ÆÇ´ÜÇÏ°í ±× »çÀÌ¿¡
-             *          ´Ù¸¥ ÇÁ·Î°Ô½º°¡ ÆÄÀÏÀ» °°Àº ÀÌ¸§À¸·Î ¸¸µé¾î ¹ö¸®´Â »óÈ²ÀÌ ¹ß»ýÇÒ
-             *          °¡´É¼ºÀº 0 ¿¡ ±ÙÁ¢ÇÑ´Ù°í º¸°í ±×³É O_EXCL »©°í ¸¸µé¾î¹ö·È´Ù.
+             *          ì¼ë‹¨ì€ íŒŒì¼ ì¡´ìž¬ì—¬ë¶€ í…ŒìŠ¤íŠ¸ì—ì„œ ì¡´ìž¬í•˜ì§€ ì•ŠëŠ”ê²ƒì„ íŒë‹¨í•˜ê³  ê·¸ ì‚¬ì´ì—
+             *          ë‹¤ë¥¸ í”„ë¡œê²ŒìŠ¤ê°€ íŒŒì¼ì„ ê°™ì€ ì´ë¦„ìœ¼ë¡œ ë§Œë“¤ì–´ ë²„ë¦¬ëŠ” ìƒí™©ì´ ë°œìƒí• 
+             *          ê°€ëŠ¥ì„±ì€ 0 ì— ê·¼ì ‘í•œë‹¤ê³  ë³´ê³  ê·¸ëƒ¥ O_EXCL ë¹¼ê³  ë§Œë“¤ì–´ë²„ë ¸ë‹¤.
              */
             ACI_TEST_RAISE(
                 acpFileOpen(sFileHandle,
@@ -237,7 +237,7 @@ static ACI_RC ulnLobBufferPrepareFILE(ulnFnContext *aFnContext, ulnLobBuffer *aL
     ULN_IS_FLAG_UP(sNeedCloseFile)
     {
         /*
-         * ÆÄÀÏ ´Ý±â
+         * íŒŒì¼ ë‹«ê¸°
          */
         if (acpFileClose(sFileHandle) != ACP_RC_SUCCESS)
         {
@@ -267,8 +267,8 @@ static ACI_RC ulnLobBufferDataInDumpAsCHAR(cmtVariable  *aCmVariable,
                                            void         *aContext)
 {
     /*
-     * ÀÌ ÇÔ¼ö´Â ulncBLOB_CHAR ¿¡¼­ È£ÃâµÈ´Ù.
-     * º¯È¯À» ÇÑ´Ù. ÇÊ¿äÇÑ ¹öÆÛÀÇ Å©±â´Â °¡Á®¿Â µ¥ÀÌÅÍÅ©±â * 2 + 1 ÀÌ´Ù.
+     * ì´ í•¨ìˆ˜ëŠ” ulncBLOB_CHAR ì—ì„œ í˜¸ì¶œëœë‹¤.
+     * ë³€í™˜ì„ í•œë‹¤. í•„ìš”í•œ ë²„í¼ì˜ í¬ê¸°ëŠ” ê°€ì ¸ì˜¨ ë°ì´í„°í¬ê¸° * 2 + 1 ì´ë‹¤.
      */
 
     ulnFnContext *sFnContext = (ulnFnContext *)aContext;
@@ -281,7 +281,7 @@ static ACI_RC ulnLobBufferDataInDumpAsCHAR(cmtVariable  *aCmVariable,
     ACP_UNUSED(aOffset);
 
     /*
-     * Note : ÁÖÀÇ!!!!! mBuffer °¡ NULL ÀÏ ¼öµµ ÀÖ´Ù.
+     * Note : ì£¼ì˜!!!!! mBuffer ê°€ NULL ì¼ ìˆ˜ë„ ìžˆë‹¤.
      */
 
     sLengthConverted
@@ -291,16 +291,16 @@ static ACI_RC ulnLobBufferDataInDumpAsCHAR(cmtVariable  *aCmVariable,
                             aReceivedDataSize);
 
     /*
-     * À§ÀÇ ÇÔ¼ö ulnConvDumpAsChar °¡ ¸®ÅÏÇÏ´Â °ÍÀº ¾ðÁ¦³ª Â¦¼öÀÌ¸ç,
-     * Ç×»ó null termination À» À§ÇÑ ¿©Áö¸¦ ³²°Ü µÐ ±æÀÌ¸¦ ¸®ÅÏÇÑ´Ù.
+     * ìœ„ì˜ í•¨ìˆ˜ ulnConvDumpAsChar ê°€ ë¦¬í„´í•˜ëŠ” ê²ƒì€ ì–¸ì œë‚˜ ì§ìˆ˜ì´ë©°,
+     * í•­ìƒ null termination ì„ ìœ„í•œ ì—¬ì§€ë¥¼ ë‚¨ê²¨ ë‘” ê¸¸ì´ë¥¼ ë¦¬í„´í•œë‹¤.
      *
-     * Áï, 
+     * ì¦‰, 
      *
      *      *(destination buffer + sLengthConverted) = 0;
      *
-     *  °ú °°ÀÌ ³Î ÅÍ¹Ì³×ÀÌ¼ÇÀ» ¾ÈÀüÇÏ°Ô ÇÒ ¼ö ÀÖ´Ù.
+     *  ê³¼ ê°™ì´ ë„ í„°ë¯¸ë„¤ì´ì…˜ì„ ì•ˆì „í•˜ê²Œ í•  ìˆ˜ ìžˆë‹¤.
      *
-     * ±×¸®°í, sLob ÀÇ mSizeRetrieved ÀÇ ´ÜÀ§´Â ½ÇÁ¦·Î ¼­¹ö¿¡¼­ ¼ö½ÅµÈ µ¥ÀÌÅÍÀÇ ¹ÙÀÌÆ®´ÜÀ§ ±æÀÌ.
+     * ê·¸ë¦¬ê³ , sLob ì˜ mSizeRetrieved ì˜ ë‹¨ìœ„ëŠ” ì‹¤ì œë¡œ ì„œë²„ì—ì„œ ìˆ˜ì‹ ëœ ë°ì´í„°ì˜ ë°”ì´íŠ¸ë‹¨ìœ„ ê¸¸ì´.
      */
 
     sLob->mSizeRetrieved += sLengthConverted / 2;
@@ -315,8 +315,8 @@ static ACI_RC ulnLobBufferDataInDumpAsWCHAR(cmtVariable  *aCmVariable,
                                             void         *aContext)
 {
     /*
-     * ÀÌ ÇÔ¼ö´Â ulncBLOB_WCHAR ¿¡¼­ È£ÃâµÈ´Ù.
-     * º¯È¯À» ÇÑ´Ù. ÇÊ¿äÇÑ ¹öÆÛÀÇ Å©±â´Â °¡Á®¿Â µ¥ÀÌÅÍÅ©±â * 4 + 1 ÀÌ´Ù.
+     * ì´ í•¨ìˆ˜ëŠ” ulncBLOB_WCHAR ì—ì„œ í˜¸ì¶œëœë‹¤.
+     * ë³€í™˜ì„ í•œë‹¤. í•„ìš”í•œ ë²„í¼ì˜ í¬ê¸°ëŠ” ê°€ì ¸ì˜¨ ë°ì´í„°í¬ê¸° * 4 + 1 ì´ë‹¤.
      */
 
     ulnFnContext *sFnContext = (ulnFnContext *)aContext;
@@ -329,7 +329,7 @@ static ACI_RC ulnLobBufferDataInDumpAsWCHAR(cmtVariable  *aCmVariable,
     ACP_UNUSED(aOffset);
 
     /*
-     * Note : ÁÖÀÇ!!!!! mBuffer °¡ NULL ÀÏ ¼öµµ ÀÖ´Ù.
+     * Note : ì£¼ì˜!!!!! mBuffer ê°€ NULL ì¼ ìˆ˜ë„ ìžˆë‹¤.
      */
 
     sLengthConverted
@@ -339,16 +339,16 @@ static ACI_RC ulnLobBufferDataInDumpAsWCHAR(cmtVariable  *aCmVariable,
                              aReceivedDataSize);
 
     /*
-     * À§ÀÇ ÇÔ¼ö ulnConvDumpAsChar °¡ ¸®ÅÏÇÏ´Â °ÍÀº ¾ðÁ¦³ª Â¦¼öÀÌ¸ç,
-     * Ç×»ó null termination À» À§ÇÑ ¿©Áö¸¦ ³²°Ü µÐ ±æÀÌ¸¦ ¸®ÅÏÇÑ´Ù.
+     * ìœ„ì˜ í•¨ìˆ˜ ulnConvDumpAsChar ê°€ ë¦¬í„´í•˜ëŠ” ê²ƒì€ ì–¸ì œë‚˜ ì§ìˆ˜ì´ë©°,
+     * í•­ìƒ null termination ì„ ìœ„í•œ ì—¬ì§€ë¥¼ ë‚¨ê²¨ ë‘” ê¸¸ì´ë¥¼ ë¦¬í„´í•œë‹¤.
      *
-     * Áï,
+     * ì¦‰,
      *
      *      *(destination buffer + sLengthConverted) = 0;
      *
-     *  °ú °°ÀÌ ³Î ÅÍ¹Ì³×ÀÌ¼ÇÀ» ¾ÈÀüÇÏ°Ô ÇÒ ¼ö ÀÖ´Ù.
+     *  ê³¼ ê°™ì´ ë„ í„°ë¯¸ë„¤ì´ì…˜ì„ ì•ˆì „í•˜ê²Œ í•  ìˆ˜ ìžˆë‹¤.
      *
-     * ±×¸®°í, sLob ÀÇ mSizeRetrieved ÀÇ ´ÜÀ§´Â ½ÇÁ¦·Î ¼­¹ö¿¡¼­ ¼ö½ÅµÈ µ¥ÀÌÅÍÀÇ ¹ÙÀÌÆ®´ÜÀ§ ±æÀÌ.
+     * ê·¸ë¦¬ê³ , sLob ì˜ mSizeRetrieved ì˜ ë‹¨ìœ„ëŠ” ì‹¤ì œë¡œ ì„œë²„ì—ì„œ ìˆ˜ì‹ ëœ ë°ì´í„°ì˜ ë°”ì´íŠ¸ë‹¨ìœ„ ê¸¸ì´.
      */
 
     sLob->mSizeRetrieved += (sLengthConverted / ACI_SIZEOF(ulWChar)) / 2;
@@ -363,8 +363,8 @@ static ACI_RC ulnLobBufferDataInBINARY(cmtVariable  *aCmVariable,
                                        void         *aContext)
 {
     /*
-     * ÀÌ ÇÔ¼ö´Â ulncBLOB_BINARY, ulnc_CLOB_BINARY, ulnc_CLOB_CHAR ¿¡¼­ È£ÃâµÈ´Ù.
-     * º¯È¯ ¾øÀÌ ±×´ë·Î º¹»çÇÑ´Ù.
+     * ì´ í•¨ìˆ˜ëŠ” ulncBLOB_BINARY, ulnc_CLOB_BINARY, ulnc_CLOB_CHAR ì—ì„œ í˜¸ì¶œëœë‹¤.
+     * ë³€í™˜ ì—†ì´ ê·¸ëŒ€ë¡œ ë³µì‚¬í•œë‹¤.
      */
 
     ulnFnContext *sFnContext = (ulnFnContext *)aContext;
@@ -383,17 +383,17 @@ static ACI_RC ulnLobBufferDataInBINARY(cmtVariable  *aCmVariable,
     if (sLob->mSizeRetrieved + aReceivedDataSize > sBufferSize)
     {
         /*
-         * ¼ö½ÅµÈ µ¥ÀÌÅÍ°¡ »ç¿ëÀÚ ¹öÆÛ °æ°è¸¦ Áö³­´Ù.
+         * ìˆ˜ì‹ ëœ ë°ì´í„°ê°€ ì‚¬ìš©ìž ë²„í¼ ê²½ê³„ë¥¼ ì§€ë‚œë‹¤.
          *
-         * 01004 ´Â conversion ÇÔ¼ö¸¦ È£ÃâÇÑ ÇÔ¼ö¿¡¼­
-         * length needed, length written º¯¼ö¿Í µ¥ÀÌÅÍ Å¸ÀÔÀ» º¸°í¼­ °áÁ¤ÇÑ´Ù.
+         * 01004 ëŠ” conversion í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•œ í•¨ìˆ˜ì—ì„œ
+         * length needed, length written ë³€ìˆ˜ì™€ ë°ì´í„° íƒ€ìž…ì„ ë³´ê³ ì„œ ê²°ì •í•œë‹¤.
          */
         sSizeToCopy = sBufferSize - sLob->mSizeRetrieved;
     }
     else
     {
         /*
-         * ¼ö½ÅµÈ µ¥ÀÌÅÍ°¡ »ç¿ëÀÚ ¹öÆÛ °æ°è ¾ÈÂÊ¿¡ µé¾î°¥ ¼ö ÀÖ´Â Å©±âÀÌ´Ù.
+         * ìˆ˜ì‹ ëœ ë°ì´í„°ê°€ ì‚¬ìš©ìž ë²„í¼ ê²½ê³„ ì•ˆìª½ì— ë“¤ì–´ê°ˆ ìˆ˜ ìžˆëŠ” í¬ê¸°ì´ë‹¤.
          */
         sSizeToCopy = aReceivedDataSize;
     }
@@ -401,7 +401,7 @@ static ACI_RC ulnLobBufferDataInBINARY(cmtVariable  *aCmVariable,
     if (sSizeToCopy > 0)
     {
         /*
-         * Note : ÁÖÀÇ!!!!! mBuffer °¡ NULL ÀÏ ¼öµµ ÀÖ´Ù.
+         * Note : ì£¼ì˜!!!!! mBuffer ê°€ NULL ì¼ ìˆ˜ë„ ìžˆë‹¤.
          */
         sTarget = sLob->mBuffer->mObject.mMemory.mBuffer + sLob->mSizeRetrieved;
 
@@ -493,7 +493,7 @@ static ACI_RC ulnLobBufferDataInCHAR(cmtVariable  *aCmVariable,
 
     ulnCharSet   *sCharSet = &sLobBuffer->mCharSet;
 
-    /* ÀÌÀü¿¡ ¼ö½ÅµÈ µ¥ÀÌÅÍ ³¡ºÎºÐ + »õ·Î ¼ö½ÅµÈ µ¥ÀÌÅÍÀÇ ½ÃÀÛ Æ÷ÀÎÆ® */
+    /* ì´ì „ì— ìˆ˜ì‹ ëœ ë°ì´í„° ëë¶€ë¶„ + ìƒˆë¡œ ìˆ˜ì‹ ëœ ë°ì´í„°ì˜ ì‹œìž‘ í¬ì¸íŠ¸ */
     acp_uint8_t  *sMergeDataPrePtr = NULL;
     acp_uint8_t  *sMergeDataPtr    = aReceivedData - sCharSet->mRemainSrcLen;
     acp_uint8_t  *sMergeDataCurPtr = aReceivedData - sCharSet->mRemainSrcLen;
@@ -517,11 +517,11 @@ static ACI_RC ulnLobBufferDataInCHAR(cmtVariable  *aCmVariable,
     /* 
      * Partial Converting
      *
-     * ÀÌÀü¿¡ ¼ö½ÅµÈ µ¥ÀÌÅÍ ³¡ºÎºÐ°ú »õ·Î ¼ö½ÅµÈ µ¥ÀÌÅÍ¸¦ ÇÕÃÄ¼­ ÀÎÄÚµù ÇÑ´Ù.
-     * ÀÌÀü µ¥ÀÌÅÍ ³¡ºÎºÐÀº »õ·Î ¼ö½ÅµÈ µ¥ÀÌÅÍÀÇ Çì´õ ¿µ¿ª¿¡ º¹»çµÇ¸ç
-     * ÀÌ¹Ì Çì´õ´Â ÀÐÇôÁ³±â ¶§¹®¿¡ ÈÑ¼ÕÀÌ µÇ¾îµµ ¹®Á¦°¡ ¾ø´Ù.
+     * ì´ì „ì— ìˆ˜ì‹ ëœ ë°ì´í„° ëë¶€ë¶„ê³¼ ìƒˆë¡œ ìˆ˜ì‹ ëœ ë°ì´í„°ë¥¼ í•©ì³ì„œ ì¸ì½”ë”© í•œë‹¤.
+     * ì´ì „ ë°ì´í„° ëë¶€ë¶„ì€ ìƒˆë¡œ ìˆ˜ì‹ ëœ ë°ì´í„°ì˜ í—¤ë” ì˜ì—­ì— ë³µì‚¬ë˜ë©°
+     * ì´ë¯¸ í—¤ë”ëŠ” ì½í˜€ì¡Œê¸° ë•Œë¬¸ì— í›¼ì†ì´ ë˜ì–´ë„ ë¬¸ì œê°€ ì—†ë‹¤.
      *
-     * Âü°í·Î ÀÌÀü¿¡ ¼ö½ÅµÈ µ¥ÀÌÅÍ ³¡ºÎºÐÀº 4byte ÀÌÇÏÀÌ°í Çì´õ »çÀÌÁî´Â 16byteÀÌ´Ù.
+     * ì°¸ê³ ë¡œ ì´ì „ì— ìˆ˜ì‹ ëœ ë°ì´í„° ëë¶€ë¶„ì€ 4byte ì´í•˜ì´ê³  í—¤ë” ì‚¬ì´ì¦ˆëŠ” 16byteì´ë‹¤.
      */
     if (sCharSet->mRemainSrcLen > 0)
     {
@@ -560,7 +560,7 @@ static ACI_RC ulnLobBufferDataInCHAR(cmtVariable  *aCmVariable,
         sAppBufferCurPtr     += (sDestMaxPrecision - sRemainSize);
         sAppBufferRemainSize -= (sDestMaxPrecision - sRemainSize);
 
-        /* PartialÀÎ °æ¿ì */
+        /* Partialì¸ ê²½ìš° */
         if (sLob->mGetSize != 0 && sMergeDataRemainSize < sSrcMaxPrecision)
         {
             sCharSet->mRemainSrcLen = sMergeDataRemainSize;
@@ -593,8 +593,8 @@ static ACI_RC ulnLobBufferDataInCHAR(cmtVariable  *aCmVariable,
     ACI_EXCEPTION(LABEL_MAY_NOT_ENOUGH_APP_BUFFER)
     {
         /* 
-         * mDestLen¿¡´Â Àß¸° ±ÛÀÚÀÇ ÀüÃ¼ »çÀÌÁî±îÁö Æ÷ÇÔÇØ¾ß ÇÑ´Ù.
-         * aLength->mNeeded¿¡ ÀÌ °ªÀÌ º¹»çµÈ´Ù.
+         * mDestLenì—ëŠ” ìž˜ë¦° ê¸€ìžì˜ ì „ì²´ ì‚¬ì´ì¦ˆê¹Œì§€ í¬í•¨í•´ì•¼ í•œë‹¤.
+         * aLength->mNeededì— ì´ ê°’ì´ ë³µì‚¬ëœë‹¤.
          */
         sCharSet->mDestLen += (sAppBufferCurPtr - sAppBuffer);
 
@@ -628,14 +628,14 @@ static ACI_RC ulnLobBufferDataInCHAR(cmtVariable  *aCmVariable,
         }
 
         /* 
-         * "¶ø" KSC5601(B6 F8), UTF-8(EB 9E 8D)
+         * "ëž" KSC5601(B6 F8), UTF-8(EB 9E 8D)
          *
-         * App Buffer°¡ 2¹ÙÀÌÆ® ³²Àº °æ¿ì EB 9E´Â App Buffer¿¡ º¹»çµÇ°í
-         * 8D´Â mRemainTextLen¿¡ º¹»ç µÇ¾î ´ÙÀ½¿¡ »ç¿ëÀÚ°¡ LOB µ¥ÀÌÅÍ¸¦
-         * ¿äÃ»ÇÒ ¶§ Àü´ÞÇØ ÁØ´Ù. BindingÀ» ÇÏ°Å³ª SQLGetData()¸¦ ¾²´Â
-         * °æ¿ì ±ÛÀÚ°¡ Àß·Áµµ µ¥ÀÌÅÍ¸¦ ¹öÆÛ¿¡ ²Ë Ã¤¿öÁà¾ß ÇÑ´Ù.
+         * App Bufferê°€ 2ë°”ì´íŠ¸ ë‚¨ì€ ê²½ìš° EB 9EëŠ” App Bufferì— ë³µì‚¬ë˜ê³ 
+         * 8DëŠ” mRemainTextLenì— ë³µì‚¬ ë˜ì–´ ë‹¤ìŒì— ì‚¬ìš©ìžê°€ LOB ë°ì´í„°ë¥¼
+         * ìš”ì²­í•  ë•Œ ì „ë‹¬í•´ ì¤€ë‹¤. Bindingì„ í•˜ê±°ë‚˜ SQLGetData()ë¥¼ ì“°ëŠ”
+         * ê²½ìš° ê¸€ìžê°€ ìž˜ë ¤ë„ ë°ì´í„°ë¥¼ ë²„í¼ì— ê½‰ ì±„ì›Œì¤˜ì•¼ í•œë‹¤.
          *
-         * GDPositionÀº "¶ø" ´ÙÀ½ ±ÛÀÚ¸¦ °¡¸®Å²´Ù. 
+         * GDPositionì€ "ëž" ë‹¤ìŒ ê¸€ìžë¥¼ ê°€ë¦¬í‚¨ë‹¤. 
          */
         if (sBufferOffset > sAppBufferRemainSize)
         {
@@ -727,7 +727,7 @@ static ACI_RC ulnLobBufferDataInWCHAR(cmtVariable  *aCmVariable,
 
     ulnCharSet   *sCharSet = &sLobBuffer->mCharSet;
 
-    /* ÀÌÀü¿¡ ¼ö½ÅµÈ µ¥ÀÌÅÍ ³¡ºÎºÐ + »õ·Î ¼ö½ÅµÈ µ¥ÀÌÅÍÀÇ ½ÃÀÛ Æ÷ÀÎÆ® */
+    /* ì´ì „ì— ìˆ˜ì‹ ëœ ë°ì´í„° ëë¶€ë¶„ + ìƒˆë¡œ ìˆ˜ì‹ ëœ ë°ì´í„°ì˜ ì‹œìž‘ í¬ì¸íŠ¸ */
     acp_uint8_t  *sMergeDataPrePtr = NULL;
     acp_uint8_t  *sMergeDataPtr    = aReceivedData - sCharSet->mRemainSrcLen;
     acp_uint8_t  *sMergeDataCurPtr = aReceivedData - sCharSet->mRemainSrcLen;
@@ -751,11 +751,11 @@ static ACI_RC ulnLobBufferDataInWCHAR(cmtVariable  *aCmVariable,
     /* 
      * Partial Converting
      *
-     * ÀÌÀü¿¡ ¼ö½ÅµÈ µ¥ÀÌÅÍ ³¡ºÎºÐ°ú »õ·Î ¼ö½ÅµÈ µ¥ÀÌÅÍ¸¦ ÇÕÃÄ¼­ ÀÎÄÚµù ÇÑ´Ù.
-     * ÀÌÀü µ¥ÀÌÅÍ ³¡ºÎºÐÀº »õ·Î ¼ö½ÅµÈ µ¥ÀÌÅÍÀÇ Çì´õ ¿µ¿ª¿¡ º¹»çµÇ¸ç
-     * ÀÌ¹Ì Çì´õ´Â ÀÐÇôÁ³±â ¶§¹®¿¡ ÈÑ¼ÕÀÌ µÇ¾îµµ ¹®Á¦°¡ ¾ø´Ù.
+     * ì´ì „ì— ìˆ˜ì‹ ëœ ë°ì´í„° ëë¶€ë¶„ê³¼ ìƒˆë¡œ ìˆ˜ì‹ ëœ ë°ì´í„°ë¥¼ í•©ì³ì„œ ì¸ì½”ë”© í•œë‹¤.
+     * ì´ì „ ë°ì´í„° ëë¶€ë¶„ì€ ìƒˆë¡œ ìˆ˜ì‹ ëœ ë°ì´í„°ì˜ í—¤ë” ì˜ì—­ì— ë³µì‚¬ë˜ë©°
+     * ì´ë¯¸ í—¤ë”ëŠ” ì½í˜€ì¡Œê¸° ë•Œë¬¸ì— í›¼ì†ì´ ë˜ì–´ë„ ë¬¸ì œê°€ ì—†ë‹¤.
      *
-     * Âü°í·Î ÀÌÀü¿¡ ¼ö½ÅµÈ µ¥ÀÌÅÍ ³¡ºÎºÐÀº 4byte ÀÌÇÏÀÌ°í Çì´õ »çÀÌÁî´Â 16byteÀÌ´Ù.
+     * ì°¸ê³ ë¡œ ì´ì „ì— ìˆ˜ì‹ ëœ ë°ì´í„° ëë¶€ë¶„ì€ 4byte ì´í•˜ì´ê³  í—¤ë” ì‚¬ì´ì¦ˆëŠ” 16byteì´ë‹¤.
      */
     if (sCharSet->mRemainSrcLen > 0)
     {
@@ -799,7 +799,7 @@ static ACI_RC ulnLobBufferDataInWCHAR(cmtVariable  *aCmVariable,
         sAppBufferCurPtr     += (sDestMaxPrecision - sRemainSize);
         sAppBufferRemainSize -= (sDestMaxPrecision - sRemainSize);
 
-        /* PartialÀÎ °æ¿ì */
+        /* Partialì¸ ê²½ìš° */
         if (sLob->mGetSize != 0 && sMergeDataRemainSize < sSrcMaxPrecision)
         {
             sCharSet->mRemainSrcLen = sMergeDataRemainSize;
@@ -848,18 +848,18 @@ static ACI_RC ulnLobBufferDataInWCHAR(cmtVariable  *aCmVariable,
  */
 
 /*
- * Note : ÁÖÀÇ»çÇ×!! ÁÖÀÇ»çÇ×!!!
+ * Note : ì£¼ì˜ì‚¬í•­!! ì£¼ì˜ì‚¬í•­!!!
  *
  *                     |--- cmpArgDBLobPut::mOffset = A + B
- *                     |           : DB ¿¡ ÀúÀåµÈ LOB ÀÇ ½ÃÀÛÀ» 0 À¸·Î ÇßÀ»¶§ÀÇ
- *                     |             offset. Áï, Àý´ë offset
+ *                     |           : DB ì— ì €ìž¥ëœ LOB ì˜ ì‹œìž‘ì„ 0 ìœ¼ë¡œ í–ˆì„ë•Œì˜
+ *                     |             offset. ì¦‰, ì ˆëŒ€ offset
  *                     |
  *                     |  +-- cmpArgDBLobPut::mData
  *                     |  |
- *           |<-- B -->|<-+-->|  DATA : ÇÑ¹øÀÇ cmpArgDBLobPut À¸·Î º¸³»´Â Data
+ *           |<-- B -->|<-+-->|  DATA : í•œë²ˆì˜ cmpArgDBLobPut ìœ¼ë¡œ ë³´ë‚´ëŠ” Data
  *           |         |      |
  *           +---------+------+-------------------+
- *           |  »õ ·Î  | DATA |  ¾²´Â µ¥ÀÌÅÍ ÀüÃ¼ | ¾÷µ¥ÀÌÆ® ÇÏ°íÀÚ ÇÏ´Â Data
+ *           |  ìƒˆ ë¡œ  | DATA |  ì“°ëŠ” ë°ì´í„° ì „ì²´ | ì—…ë°ì´íŠ¸ í•˜ê³ ìž í•˜ëŠ” Data
  *           +---------+------+-------------------+
  * |<-- A -->|                             ______/
  * |         |                       _____/
@@ -867,11 +867,11 @@ static ACI_RC ulnLobBufferDataInWCHAR(cmtVariable  *aCmVariable,
  * | start   |        ______/
  * | offset->|       /
  * +---------+------+------------------------
- * | DB ¿¡ ÀúÀåµÇ¾î ÀÖ´Â LOB µ¥ÀÌÅÍ
+ * | DB ì— ì €ìž¥ë˜ì–´ ìžˆëŠ” LOB ë°ì´í„°
  * +---------+------+------------------------
  *           |      |
  *           |<---->|
- *              Update ÇÏ·Á°í ÇÏ´Â ±¸°£
+ *              Update í•˜ë ¤ê³  í•˜ëŠ” êµ¬ê°„
  */
 
 /* PROJ-2047 Strengthening LOB - Removed aOffset */
@@ -905,7 +905,7 @@ static ACI_RC ulnLobAppendCore(ulnFnContext *aFnContext,
     ACI_TEST(ulnWriteProtocol(aFnContext, aPtContext, &sPacket) != ACI_SUCCESS);
 
     /*
-     * ulnLob ÀÇ »çÀÌÁî¸¦ Ãß°¡½ÃÅ² ¸¸Å­ Áõ°¡½ÃÅ²´Ù.
+     * ulnLob ì˜ ì‚¬ì´ì¦ˆë¥¼ ì¶”ê°€ì‹œí‚¨ ë§Œí¼ ì¦ê°€ì‹œí‚¨ë‹¤.
      */
     aLob->mSize += aSize;
 
@@ -960,7 +960,7 @@ static ACI_RC ulnLobBufferDataOutBINARY(ulnFnContext *aFnContext,
 /*
  * PROJ-2047 Strengthening LOB - Partial Converting
  *
- * ÆÄÀÏÀÇ ³»¿ëÀ» CM Åë½Å ¹öÆÛ¿¡ Á÷Á¢ ¾²µµ·Ï ¼öÁ¤
+ * íŒŒì¼ì˜ ë‚´ìš©ì„ CM í†µì‹  ë²„í¼ì— ì§ì ‘ ì“°ë„ë¡ ìˆ˜ì •
  */
 static ACI_RC ulnLobBufferDataOutFILE(ulnFnContext *aFnContext,
                                       ulnPtContext *aPtContext,
@@ -996,7 +996,7 @@ static ACI_RC ulnLobBufferDataOutFILE(ulnFnContext *aFnContext,
         CMI_WOP(sCtx, CMP_OP_DB_LobPut);
         CMI_WR8(sCtx, &sLobLocatorVal);
 
-        /* µ¥ÀÌÅÍ Å©±â À§Ä¡´Â ¹é¾÷ÇØ µÎÀÚ */
+        /* ë°ì´í„° í¬ê¸° ìœ„ì¹˜ëŠ” ë°±ì—…í•´ ë‘ìž */
         sSizePtr = sCtx->mWriteBlock->mData + sCtx->mWriteBlock->mCursor;
         CMI_WR4(sCtx, &sDataSize); // size
 
@@ -1012,7 +1012,7 @@ static ACI_RC ulnLobBufferDataOutFILE(ulnFnContext *aFnContext,
 
         if (sFileSizeRetrieved != 0)
         {
-            /* ½ÇÁ¦ ÀÐ¾î¿Â Å©±â·Î Overwrite */
+            /* ì‹¤ì œ ì½ì–´ì˜¨ í¬ê¸°ë¡œ Overwrite */
             sDataSize = sFileSizeRetrieved;
             CM_ENDIAN_ASSIGN4(sSizePtr, &sDataSize);
             sCtx->mWriteBlock->mCursor += sFileSizeRetrieved;
@@ -1021,13 +1021,13 @@ static ACI_RC ulnLobBufferDataOutFILE(ulnFnContext *aFnContext,
                      != ACI_SUCCESS);
 
             /*
-             * ulnLob ÀÇ »çÀÌÁî¸¦ Ãß°¡½ÃÅ² ¸¸Å­ Áõ°¡½ÃÅ²´Ù.
+             * ulnLob ì˜ ì‚¬ì´ì¦ˆë¥¼ ì¶”ê°€ì‹œí‚¨ ë§Œí¼ ì¦ê°€ì‹œí‚¨ë‹¤.
              */
             aLob->mSize += sFileSizeRetrieved;
         }
         else
         {
-            /* ÆÄÀÏ¿¡¼­ ÀÐÀº µ¥ÀÌÅÍ°¡ 0ÀÌ¸é mCursorÀÇ À§Ä¡¸¦ µÇµ¹¸®ÀÚ */
+            /* íŒŒì¼ì—ì„œ ì½ì€ ë°ì´í„°ê°€ 0ì´ë©´ mCursorì˜ ìœ„ì¹˜ë¥¼ ë˜ëŒë¦¬ìž */
             sCtx->mWriteBlock->mCursor = sCursor;
         }
     } while (sFileSizeRetrieved != 0 &&
@@ -1113,7 +1113,7 @@ static ACI_RC ulnLobBufferDataOutCHAR(ulnFnContext *aFnContext,
         CMI_WOP(sCtx, CMP_OP_DB_LobPut);
         CMI_WR8(sCtx, &sLobLocatorVal);
 
-        /* µ¥ÀÌÅÍ Å©±â À§Ä¡´Â ¹é¾÷ÇØ µÎÀÚ */
+        /* ë°ì´í„° í¬ê¸° ìœ„ì¹˜ëŠ” ë°±ì—…í•´ ë‘ìž */
         sSizePtr = sCtx->mWriteBlock->mData + sCtx->mWriteBlock->mCursor;
         CMI_WR4(sCtx, &sDestRemainSize); // size
 
@@ -1142,7 +1142,7 @@ static ACI_RC ulnLobBufferDataOutCHAR(ulnFnContext *aFnContext,
             sDestRemainSize -= (sDestMaxPrecision - sRemainSize);
         }
 
-        /* ½ÇÁ¦ ÀÐ¾î¿Â Å©±â·Î Overwrite */
+        /* ì‹¤ì œ ì½ì–´ì˜¨ í¬ê¸°ë¡œ Overwrite */
         CM_ENDIAN_ASSIGN4(sSizePtr, &sDestOffset);
         sCtx->mWriteBlock->mCursor += sDestOffset;
 
@@ -1236,7 +1236,7 @@ static ACI_RC ulnLobBufferDataOutWCHAR(ulnFnContext *aFnContext,
         CMI_WOP(sCtx, CMP_OP_DB_LobPut);
         CMI_WR8(sCtx, &sLobLocatorVal);
 
-        /* µ¥ÀÌÅÍ Å©±â À§Ä¡´Â ¹é¾÷ÇØ µÎÀÚ */
+        /* ë°ì´í„° í¬ê¸° ìœ„ì¹˜ëŠ” ë°±ì—…í•´ ë‘ìž */
         sSizePtr = sCtx->mWriteBlock->mData + sCtx->mWriteBlock->mCursor;
         CMI_WR4(sCtx, &sDestRemainSize); // size
 
@@ -1248,7 +1248,7 @@ static ACI_RC ulnLobBufferDataOutWCHAR(ulnFnContext *aFnContext,
             sRemainSize = sDestMaxPrecision;
 
 #ifndef ENDIAN_IS_BIG_ENDIAN
-            /* UTF16 Little EndianÀÌ¸é Big EndianÀ¸·Î º¯È¯ÇÏÀÚ */
+            /* UTF16 Little Endianì´ë©´ Big Endianìœ¼ë¡œ ë³€í™˜í•˜ìž */
             if (sSrcRemainSize >= 2)
             {
                 sSrcWCharBuf[0] = sSrcCurPtr[1];
@@ -1286,7 +1286,7 @@ static ACI_RC ulnLobBufferDataOutWCHAR(ulnFnContext *aFnContext,
             sDestRemainSize -= (sDestMaxPrecision - sRemainSize);
         }
 
-        /* ½ÇÁ¦ ÀÐ¾î¿Â Å©±â·Î Overwrite */
+        /* ì‹¤ì œ ì½ì–´ì˜¨ í¬ê¸°ë¡œ Overwrite */
         CM_ENDIAN_ASSIGN4(sSizePtr, &sDestOffset);
         sCtx->mWriteBlock->mCursor += sDestOffset;
 
@@ -1340,7 +1340,7 @@ static ACI_RC ulnLobBufferFinalizeMEMORY(ulnFnContext *aFnContext,
 static ACI_RC ulnLobBufferFinalizeFILE(ulnFnContext *aFnContext, ulnLobBuffer *aLobBuffer)
 {
     /*
-     * ÀÓ½Ã·Î ÇÒ´çÇß´ø ¸Þ¸ð¸® ÇØÁ¦
+     * ìž„ì‹œë¡œ í• ë‹¹í–ˆë˜ ë©”ëª¨ë¦¬ í•´ì œ
      */
 
     if (aLobBuffer->mObject.mFile.mTempBuffer != NULL)
@@ -1350,7 +1350,7 @@ static ACI_RC ulnLobBufferFinalizeFILE(ulnFnContext *aFnContext, ulnLobBuffer *a
     }
 
     /*
-     * ÆÄÀÏ Á¤¸®
+     * íŒŒì¼ ì •ë¦¬
      */
 
     aLobBuffer->mObject.mFile.mFileSize = ACP_SINT64_LITERAL(0);
@@ -1396,13 +1396,13 @@ static acp_uint32_t ulnLobBufferGetSizeFILE(ulnLobBuffer *aBuffer)
 /*
  * ========================================
  *
- * ¿ÜºÎ·Î export µÇ´Â ÇÔ¼öµé
+ * ì™¸ë¶€ë¡œ export ë˜ëŠ” í•¨ìˆ˜ë“¤
  *
  *      : SQLGetLob
  *      : SQLPutLob
  *      : SQLGetLobLength
  *
- * µîÀÇ ÇÔ¼ö¿¡¼­ »ç¿ëµÈ´Ù.
+ * ë“±ì˜ í•¨ìˆ˜ì—ì„œ ì‚¬ìš©ëœë‹¤.
  *
  * ========================================
  */
@@ -1432,7 +1432,7 @@ ACI_RC ulnLobGetSize(ulnFnContext *aFnContext,
     ACI_TEST( sDbc == NULL );           //BUG-28623 [CodeSonar]Null Pointer Dereference
 
 
-    /* BUG-44125 [mm-cli] IPCDA ¸ðµå Å×½ºÆ® Áß hang - iloader CLOB */
+    /* BUG-44125 [mm-cli] IPCDA ëª¨ë“œ í…ŒìŠ¤íŠ¸ ì¤‘ hang - iloader CLOB */
     ACI_TEST_RAISE(cmiGetLinkImpl(&aPtContext->mCmiPtContext) == CMI_LINK_IMPL_IPCDA,
                    IPCDANotSupport);
 
@@ -1476,8 +1476,8 @@ ACI_RC ulnLobGetSize(ulnFnContext *aFnContext,
      */
 
     // To Fix BUG-20480
-    // ³í¸®Àû Cursor PositionÀ» ÀÌ¿ëÇÏ¿© Cache ³»¿¡ Á¸ÀçÇÏ´Â Áö¸¦ °Ë»ç
-    // Review : ulnCacheGetRow() ÇÔ¼ö¸¦ ÀÌ¿ëÇÑ ¹°¸®Àû Position »ç¿ëµµ °¡´ÉÇÔ.
+    // ë…¼ë¦¬ì  Cursor Positionì„ ì´ìš©í•˜ì—¬ Cache ë‚´ì— ì¡´ìž¬í•˜ëŠ” ì§€ë¥¼ ê²€ì‚¬
+    // Review : ulnCacheGetRow() í•¨ìˆ˜ë¥¼ ì´ìš©í•œ ë¬¼ë¦¬ì  Position ì‚¬ìš©ë„ ê°€ëŠ¥í•¨.
     for( i = 0; i < (acp_uint32_t)ulnCacheGetRowCount(sCache); i++ )
     {
         sRow = ulnCacheGetRow(sCache, i);
@@ -1503,7 +1503,7 @@ ACI_RC ulnLobGetSize(ulnFnContext *aFnContext,
                     ACI_RAISE( LABEL_CACHE_HIT );
                 }
             }
-            // ¼ö½ÅÇÑ ¿øº» µ¥ÀÌÅÍ¿¡¼­ ´ÙÀ½ column À§Ä¡¸¦ ±¸ÇÑ´Ù.
+            // ìˆ˜ì‹ í•œ ì›ë³¸ ë°ì´í„°ì—ì„œ ë‹¤ìŒ column ìœ„ì¹˜ë¥¼ êµ¬í•œë‹¤.
             ulnDataGetNextColumnOffset(sColumn, sRow->mRow+sOffset, &sOffset);
         }
     }
@@ -1563,7 +1563,7 @@ static ACI_RC ulnLobGetData(ulnFnContext *aFnContext,
     acp_uint32_t  i;
 
     /*
-     * ¹é¾÷
+     * ë°±ì—…
      */
     sTempArg      = aFnContext->mArgs;
     aLob->mBuffer = aLobBuffer;
@@ -1572,8 +1572,8 @@ static ACI_RC ulnLobGetData(ulnFnContext *aFnContext,
      * send LOB GET REQ
      *
      * aStartingOffset :
-     *      ¼­¹ö¿¡ ÀúÀåµÈ lob µ¥ÀÌÅÍ Áß¿¡¼­
-     *      °¡Á®¿À°í ½ÍÀº µ¥ÀÌÅÍÀÇ ½ÃÀÛ À§Ä¡
+     *      ì„œë²„ì— ì €ìž¥ëœ lob ë°ì´í„° ì¤‘ì—ì„œ
+     *      ê°€ì ¸ì˜¤ê³  ì‹¶ì€ ë°ì´í„°ì˜ ì‹œìž‘ ìœ„ì¹˜
      */
 
     aLob->mSizeRetrieved = 0;
@@ -1585,7 +1585,7 @@ static ACI_RC ulnLobGetData(ulnFnContext *aFnContext,
     ACI_TEST( sDbc == NULL );   //BUG-28623 [CodeSonar]Null Pointer Dereference
 
     // fix BUG-18938
-    // LOB µ¥ÀÌÅÍÀÇ ±æÀÌ°¡ 0ÀÌ¸é µ¥ÀÌÅÍ¸¦ ¿äÃ»ÇÒ ÇÊ¿ä°¡ ¾ø´Ù.
+    // LOB ë°ì´í„°ì˜ ê¸¸ì´ê°€ 0ì´ë©´ ë°ì´í„°ë¥¼ ìš”ì²­í•  í•„ìš”ê°€ ì—†ë‹¤.
     ACI_TEST_RAISE(aSizeToGet == 0, NO_NEED_REQUEST_TO_SERVER);
 
     ACI_TEST_RAISE(aLobBuffer->mType != ULN_LOB_BUFFER_TYPE_FILE &&
@@ -1650,7 +1650,7 @@ static ACI_RC ulnLobGetData(ulnFnContext *aFnContext,
     /*
      * PROJ-2047 Strengthening LOB - LOBCACHE
      *
-     * ¼­¹ö¿¡ ¿äÃ»ÇÏ±â Àü¿¡ LOB CACHE¸¦ È®ÀÎÇÏÀÚ.
+     * ì„œë²„ì— ìš”ì²­í•˜ê¸° ì „ì— LOB CACHEë¥¼ í™•ì¸í•˜ìž.
      */
     ACI_TEST_RAISE(ulnLobCacheGetLob(sStmt->mLobCache,
                                      sLobLocatorVal,
@@ -1664,7 +1664,7 @@ static ACI_RC ulnLobGetData(ulnFnContext *aFnContext,
 
     ACI_EXCEPTION_CONT(REQUEST_TO_SERVER);
 
-    /* ¼­¹ö¿¡ ¿äÃ»ÇÏÀÚ */
+    /* ì„œë²„ì— ìš”ì²­í•˜ìž */
     ACI_TEST(ulnWriteLobGetREQ(aFnContext,
                                aPtContext,
                                sLobLocatorVal,
@@ -1673,7 +1673,7 @@ static ACI_RC ulnLobGetData(ulnFnContext *aFnContext,
     ACI_TEST(ulnFlushProtocol(aFnContext, aPtContext) != ACI_SUCCESS);
 
     /*
-     * receive LOB GET RES : ulnCallbackLobGetResult() ÇÔ¼ö¿¡¼­ °è¼ÓµÊ.
+     * receive LOB GET RES : ulnCallbackLobGetResult() í•¨ìˆ˜ì—ì„œ ê³„ì†ë¨.
      */
     ACI_TEST(ulnReadProtocol(aFnContext,
                              aPtContext,
@@ -1683,7 +1683,7 @@ static ACI_RC ulnLobGetData(ulnFnContext *aFnContext,
     ACI_EXCEPTION_CONT(NO_NEED_REQUEST_TO_SERVER);
 
     /*
-     * ¿øº¹
+     * ì›ë³µ
      */
     aFnContext->mArgs = sTempArg;
     aLob->mBuffer     = NULL;
@@ -1698,7 +1698,7 @@ static ACI_RC ulnLobGetData(ulnFnContext *aFnContext,
     ACI_EXCEPTION_END;
 
     /*
-     * ¿øº¹
+     * ì›ë³µ
      */
     aFnContext->mArgs = sTempArg;
     aLob->mBuffer     = NULL;
@@ -1721,9 +1721,9 @@ ACI_RC ulnLobFreeLocator(ulnFnContext *aFnContext, ulnPtContext *aPtContext, acp
     if (sDbc->mConnType == ULN_CONNTYPE_IPC)
     {
         /*
-         * ÆÐÅ¶ Àü¼Û
+         * íŒ¨í‚· ì „ì†¡
          *
-         * BUGBUG : ÀÌ°Å Æ©´×À» ³ªÁß¿¡ ÇÏÀÚ. free ¹Ù±ù¿¡¼­ flush ÇØ ÁÖ¸é ´õ ºü¸£´Ù.
+         * BUGBUG : ì´ê±° íŠœë‹ì„ ë‚˜ì¤‘ì— í•˜ìž. free ë°”ê¹¥ì—ì„œ flush í•´ ì£¼ë©´ ë” ë¹ ë¥´ë‹¤.
          */
         ACI_TEST(ulnFlushProtocol(aFnContext, aPtContext) != ACI_SUCCESS);
 
@@ -1802,9 +1802,9 @@ static ACI_RC ulnLobOpen(ulnFnContext *aFnContext,
     ACP_UNUSED(aPtContext);
 
     /*
-     * BUGBUG : ÀÌºÎºÐ¿¡¼­ ULN_LOB_ST_OPENED ¸¦ ¾ø¾Öµµ µÇ´Â ¹æÇâÀ¸·Î ¼öÁ¤ÇØ¾ß ÇÑ´Ù.
-     *          ÀÏ´Ü, getdata ¿¡¼­ ¾îÂ¿ ¼ö ¾øÀÌ ¿©·¯¹ø open ÀÌ È£ÃâµÇ´Â ±¸Á¶ÀÎ °ü°è·Î
-     *          Áö±ÝÀº ±×³É Åë°úÇÏµµ·Ï Çß´Ù.
+     * BUGBUG : ì´ë¶€ë¶„ì—ì„œ ULN_LOB_ST_OPENED ë¥¼ ì—†ì• ë„ ë˜ëŠ” ë°©í–¥ìœ¼ë¡œ ìˆ˜ì •í•´ì•¼ í•œë‹¤.
+     *          ì¼ë‹¨, getdata ì—ì„œ ì–´ì©” ìˆ˜ ì—†ì´ ì—¬ëŸ¬ë²ˆ open ì´ í˜¸ì¶œë˜ëŠ” êµ¬ì¡°ì¸ ê´€ê³„ë¡œ
+     *          ì§€ê¸ˆì€ ê·¸ëƒ¥ í†µê³¼í•˜ë„ë¡ í–ˆë‹¤.
      */
 
     ACI_TEST_RAISE(aLob->mState != ULN_LOB_ST_LOCATOR &&
@@ -1886,12 +1886,12 @@ static ACI_RC ulnLobAppendBegin(ulnFnContext *aFnContext,
     ACI_TEST(ulnWriteLobPutBeginREQ(aFnContext,
                                     aPtContext,
                                     sLobLocatorVal,
-                                    aLob->mSize,   /* Offset to Start : LOB ÀÇ ¸Ç ³¡ */
+                                    aLob->mSize,   /* Offset to Start : LOB ì˜ ë§¨ ë */
                                     aSizeToAppend) /* Size to append */
              != ACI_SUCCESS);
 
     /*
-     * Note : Append ÇÏ´Â °ÍÀÌ¹Ç·Î LOB »çÀÌÁî¿¡´Â º¯È­°¡ ¾ø´Ù.
+     * Note : Append í•˜ëŠ” ê²ƒì´ë¯€ë¡œ LOB ì‚¬ì´ì¦ˆì—ëŠ” ë³€í™”ê°€ ì—†ë‹¤.
      */
 
     return ACI_SUCCESS;
@@ -1949,7 +1949,7 @@ static ACI_RC ulnLobAppend(ulnFnContext *aFnContext,
     ULN_FLAG_UP(sNeedEndLob);
 
     /*
-     * µ¥ÀÌÅÍ Àü¼Û
+     * ë°ì´í„° ì „ì†¡
      */
 
     ACI_TEST(aLobBuffer->mOp->mDataOut(aFnContext, aPtContext, aLob) != ACI_SUCCESS);
@@ -1979,8 +1979,8 @@ static ACI_RC ulnLobAppend(ulnFnContext *aFnContext,
     ULN_IS_FLAG_UP(sNeedEndLob)
     {
         /*
-         * Note : Flush ¹× ReadProtocol Àº ¿©±â¼­ ¾ÈÇØµµ finalize protocol context ¿¡¼­
-         *        ¾Ë¾Æ¼­ ÇØ ÁØ´Ù. ÀÏ´Ü ¿¡·¯°¡ ³µÀ¸¹Ç·Î ÀØ¾î¹ö·Áµµ µÈ´Ù.
+         * Note : Flush ë° ReadProtocol ì€ ì—¬ê¸°ì„œ ì•ˆí•´ë„ finalize protocol context ì—ì„œ
+         *        ì•Œì•„ì„œ í•´ ì¤€ë‹¤. ì¼ë‹¨ ì—ëŸ¬ê°€ ë‚¬ìœ¼ë¯€ë¡œ ìžŠì–´ë²„ë ¤ë„ ëœë‹¤.
          */
         ulnLobAppendEnd(aFnContext, aPtContext, aLob);
     }
@@ -2014,9 +2014,9 @@ static ACI_RC ulnLobOverWriteBegin(ulnFnContext *aFnContext,
              != ACI_SUCCESS);
 
     /*
-     * Note : Overwrite ÇÏ´Â °ÍÀÌ¹Ç·Î LOB »çÀÌÁî¸¦ °¡»óÀ¸·Î 0 À¸·Î ÃÊ±âÈ­½ÃÄÑ¾ß ÇÑ´Ù.
-     *        ulnLobAppendCore() ÇÔ¼ö¿¡¼­ µ¥ÀÌÅÍ¸¦ Àü¼ÛÇÏ¸é¼­
-     *        ulnLob::mSize ¸¦ Àü¼ÛÇÑ ¾ç¸¸Å­ Áõ°¡½ÃÄÑ¼­ µ¿±âÈ­ ½ÃÅ²´Ù.
+     * Note : Overwrite í•˜ëŠ” ê²ƒì´ë¯€ë¡œ LOB ì‚¬ì´ì¦ˆë¥¼ ê°€ìƒìœ¼ë¡œ 0 ìœ¼ë¡œ ì´ˆê¸°í™”ì‹œì¼œì•¼ í•œë‹¤.
+     *        ulnLobAppendCore() í•¨ìˆ˜ì—ì„œ ë°ì´í„°ë¥¼ ì „ì†¡í•˜ë©´ì„œ
+     *        ulnLob::mSize ë¥¼ ì „ì†¡í•œ ì–‘ë§Œí¼ ì¦ê°€ì‹œì¼œì„œ ë™ê¸°í™” ì‹œí‚¨ë‹¤.
      */
 
     aLob->mSize = 0;
@@ -2075,7 +2075,7 @@ static ACI_RC ulnLobOverWrite(ulnFnContext *aFnContext,
     ULN_FLAG_UP(sNeedEndLob);
 
     /*
-     * µ¥ÀÌÅÍ Àü¼Û
+     * ë°ì´í„° ì „ì†¡
      */
 
     ACI_TEST(aLobBuffer->mOp->mDataOut(aFnContext, aPtContext, aLob) != ACI_SUCCESS);
@@ -2105,8 +2105,8 @@ static ACI_RC ulnLobOverWrite(ulnFnContext *aFnContext,
     ULN_IS_FLAG_UP(sNeedEndLob)
     {
         /*
-         * Note : Flush ¹× ReadProtocol Àº ¿©±â¼­ ¾ÈÇØµµ finalize protocol context ¿¡¼­
-         *        ¾Ë¾Æ¼­ ÇØ ÁØ´Ù. ÀÏ´Ü ¿¡·¯°¡ ³µÀ¸¹Ç·Î ÀØ¾î¹ö·Áµµ µÈ´Ù.
+         * Note : Flush ë° ReadProtocol ì€ ì—¬ê¸°ì„œ ì•ˆí•´ë„ finalize protocol context ì—ì„œ
+         *        ì•Œì•„ì„œ í•´ ì¤€ë‹¤. ì¼ë‹¨ ì—ëŸ¬ê°€ ë‚¬ìœ¼ë¯€ë¡œ ìžŠì–´ë²„ë ¤ë„ ëœë‹¤.
          */
         ulnLobOverWriteEnd(aFnContext, aPtContext, aLob);
     }
@@ -2169,9 +2169,9 @@ static ACI_RC ulnLobUpdateEnd(ulnFnContext *aFnContext, ulnPtContext *aPtContext
 static ACI_RC ulnLobUpdate(ulnFnContext *aFnContext,
                            ulnPtContext *aPtContext,
                            ulnLob       *aLob,
-                           ulnLobBuffer *aLobBuffer,        /* ¾÷µ¥ÀÌÆ® ±¸°£¿¡ »õ·Î Ã¤¿ï µ¥ÀÌÅÍ */
-                           acp_uint32_t  aStartOffset,      /* ¾÷µ¥ÀÌÆ® ½ÃÀÛÁ¡ (¼­¹ö lob) */
-                           acp_uint32_t  aLengthToUpdate)   /* ¾÷µ¥ÀÌÆ® ±¸°£ÀÇ ±æÀÌ */
+                           ulnLobBuffer *aLobBuffer,        /* ì—…ë°ì´íŠ¸ êµ¬ê°„ì— ìƒˆë¡œ ì±„ìš¸ ë°ì´í„° */
+                           acp_uint32_t  aStartOffset,      /* ì—…ë°ì´íŠ¸ ì‹œìž‘ì  (ì„œë²„ lob) */
+                           acp_uint32_t  aLengthToUpdate)   /* ì—…ë°ì´íŠ¸ êµ¬ê°„ì˜ ê¸¸ì´ */
 {
     ULN_FLAG(sNeedEndLob);
 
@@ -2186,9 +2186,9 @@ static ACI_RC ulnLobUpdate(ulnFnContext *aFnContext,
     ACI_TEST( sDbc == NULL );
 
     /*
-     * Note : ¾÷µ¥ÀÌÆ® µÇ¾î¼­ ¹Ù²î´Â ±¸°£¿¡ ´ëÇÑ Á¤º¸´Â update begin ÇÔ¼ö¿¡¼­ Àü¼ÛÇßÀ¸´Ï
-     *        ³ª¸ÓÁö´Â ¾÷µ¥ÀÌÆ®¸¦ ½ÃÀÛÇÒ ±¸°£À» Å©±â·Î ÇÏ´Â ulnLob ¿¡´Ù
-     *        Append ¸¦ ÇÏ´Â °Í°ú ¸¶Âù°¡ÁöÀÌ´Ù.
+     * Note : ì—…ë°ì´íŠ¸ ë˜ì–´ì„œ ë°”ë€ŒëŠ” êµ¬ê°„ì— ëŒ€í•œ ì •ë³´ëŠ” update begin í•¨ìˆ˜ì—ì„œ ì „ì†¡í–ˆìœ¼ë‹ˆ
+     *        ë‚˜ë¨¸ì§€ëŠ” ì—…ë°ì´íŠ¸ë¥¼ ì‹œìž‘í•  êµ¬ê°„ì„ í¬ê¸°ë¡œ í•˜ëŠ” ulnLob ì—ë‹¤
+     *        Append ë¥¼ í•˜ëŠ” ê²ƒê³¼ ë§ˆì°¬ê°€ì§€ì´ë‹¤.
      */
     sOriginalSize = aLob->mSize;
     aLob->mSize   = aStartOffset;
@@ -2205,7 +2205,7 @@ static ACI_RC ulnLobUpdate(ulnFnContext *aFnContext,
     ULN_FLAG_UP(sNeedEndLob);
 
     /*
-     * µ¥ÀÌÅÍ Àü¼Û
+     * ë°ì´í„° ì „ì†¡
      */
 
     ACI_TEST(aLobBuffer->mOp->mDataOut(aFnContext, aPtContext, aLob) != ACI_SUCCESS);
@@ -2218,7 +2218,7 @@ static ACI_RC ulnLobUpdate(ulnFnContext *aFnContext,
     ACI_TEST(ulnLobUpdateEnd(aFnContext, aPtContext, aLob) != ACI_SUCCESS);
 
     /*
-     * ¾÷µ¥ÀÌÆ® ÈÄ¿¡ LOB ÀÇ Å©±â¸¦ ¿øº¹½ÃÄÑ¾ß ÇÑ´Ù.
+     * ì—…ë°ì´íŠ¸ í›„ì— LOB ì˜ í¬ê¸°ë¥¼ ì›ë³µì‹œì¼œì•¼ í•œë‹¤.
      */
 
     ACI_TEST(ulnReadProtocol(aFnContext,
@@ -2226,7 +2226,7 @@ static ACI_RC ulnLobUpdate(ulnFnContext *aFnContext,
                              sDbc->mConnTimeoutValue) != ACI_SUCCESS);
 
     /*
-     * ulnLob::mSize ¸¦ ¾÷µ¥ÀÌÆ® ÇÑ ÈÄÀÇ »çÀÌÁî·Î ÀÏÄ¡½ÃÅ´
+     * ulnLob::mSize ë¥¼ ì—…ë°ì´íŠ¸ í•œ í›„ì˜ ì‚¬ì´ì¦ˆë¡œ ì¼ì¹˜ì‹œí‚´
      */
 
     aLob->mSize = sOriginalSize - aLengthToUpdate + aLobBuffer->mOp->mGetSize(aLobBuffer);
@@ -2240,8 +2240,8 @@ static ACI_RC ulnLobUpdate(ulnFnContext *aFnContext,
     ULN_IS_FLAG_UP(sNeedEndLob)
     {
         /*
-         * Note : Flush ¹× ReadProtocol Àº ¿©±â¼­ ¾ÈÇØµµ finalize protocol context ¿¡¼­
-         *        ¾Ë¾Æ¼­ ÇØ ÁØ´Ù. ÀÏ´Ü ¿¡·¯°¡ ³µÀ¸¹Ç·Î ÀØ¾î¹ö·Áµµ µÈ´Ù.
+         * Note : Flush ë° ReadProtocol ì€ ì—¬ê¸°ì„œ ì•ˆí•´ë„ finalize protocol context ì—ì„œ
+         *        ì•Œì•„ì„œ í•´ ì¤€ë‹¤. ì¼ë‹¨ ì—ëŸ¬ê°€ ë‚¬ìœ¼ë¯€ë¡œ ìžŠì–´ë²„ë ¤ë„ ëœë‹¤.
          */
         ulnLobUpdateEnd(aFnContext, aPtContext, aLob);
     }
@@ -2297,7 +2297,7 @@ ACI_RC ulnCallbackLobGetSizeResult(cmiProtocolContext *aProtocolContext,
     CMI_RD4(aProtocolContext, &sSize);
 
     /*
-     * BUGBUG: lob locator ID ¸¦ Ã¼Å©ÇØ¾ß .... ÇÒ±î?
+     * BUGBUG: lob locator ID ë¥¼ ì²´í¬í•´ì•¼ .... í• ê¹Œ?
      */
 
     *(acp_uint32_t *)(sFnContext->mArgs) = sSize;
@@ -2311,14 +2311,14 @@ ACI_RC ulnCallbackLobGetResult(cmiProtocolContext *aPtContext,
                                void               *aUserContext)
 {
     /*
-     * Note : ¼­¹ö¿¡ ¾Æ¹«¸® Å« »çÀÌÁîÀÇ LOB µ¥ÀÌÅÍ¸¦ ¿äÃ»ÇÏ´õ¶ó°í ¼­¹ö´Â µ¥ÀÌÅÍ¸¦ Àß¶ó¼­
-     *        º¸³»ÁØ´Ù. LOBGET RES ÀÇ mOffset Àº
-     *        ¼­¹ö¿¡ ÀÖ´Â ÀüÃ¼ LOB µ¥ÀÌÅÍ¿¡¼­ ÇöÀç Àü¼ÛµÈ ÆÐÅ¶ÀÌ ½ÃÀÛµÇ´Â Àý´ë À§Ä¡ÀÌ´Ù.
+     * Note : ì„œë²„ì— ì•„ë¬´ë¦¬ í° ì‚¬ì´ì¦ˆì˜ LOB ë°ì´í„°ë¥¼ ìš”ì²­í•˜ë”ë¼ê³  ì„œë²„ëŠ” ë°ì´í„°ë¥¼ ìž˜ë¼ì„œ
+     *        ë³´ë‚´ì¤€ë‹¤. LOBGET RES ì˜ mOffset ì€
+     *        ì„œë²„ì— ìžˆëŠ” ì „ì²´ LOB ë°ì´í„°ì—ì„œ í˜„ìž¬ ì „ì†¡ëœ íŒ¨í‚·ì´ ì‹œìž‘ë˜ëŠ” ì ˆëŒ€ ìœ„ì¹˜ì´ë‹¤.
      *
-     *        Áï, 1Mib µ¥ÀÌÅÍ¸¦ ¿ä±¸ÇØ¼­ ¼­¹ö´Â ÀÌ¸¦Å×¸é, 32Kib ´ÜÀ§·Î ÂÉ°³¼­ LOBGET RES ¸¦
-     *        ¿©·¯¹ø º¸³»ÁØ´Ù.
+     *        ì¦‰, 1Mib ë°ì´í„°ë¥¼ ìš”êµ¬í•´ì„œ ì„œë²„ëŠ” ì´ë¥¼í…Œë©´, 32Kib ë‹¨ìœ„ë¡œ ìª¼ê°œì„œ LOBGET RES ë¥¼
+     *        ì—¬ëŸ¬ë²ˆ ë³´ë‚´ì¤€ë‹¤.
      *
-     *        µ¥ÀÌÅÍÀÇ »çÀÌÁî´Â cmtVariable ÀÇ size ¸¦ ÀÐÀ¸¸é ¾Ë ¼ö ÀÖ´Ù.
+     *        ë°ì´í„°ì˜ ì‚¬ì´ì¦ˆëŠ” cmtVariable ì˜ size ë¥¼ ì½ìœ¼ë©´ ì•Œ ìˆ˜ ìžˆë‹¤.
      */
     ulnFnContext  *sFnContext = (ulnFnContext *)aUserContext;
     ulnLob        *sLob       = (ulnLob *)sFnContext->mArgs;
@@ -2336,7 +2336,7 @@ ACI_RC ulnCallbackLobGetResult(cmiProtocolContext *aPtContext,
     CMI_RD4(aPtContext, &sDataSize);
 
     /*
-     * È£ÃâµÇ´Â ÇÔ¼ö :
+     * í˜¸ì¶œë˜ëŠ” í•¨ìˆ˜ :
      *      ulnLobBufferDataInFILE()
      *      ulnLobBufferDataInBINARY()
      *      ulnLobBufferDataInCHAR()
@@ -2366,7 +2366,7 @@ ACI_RC ulnCallbackLobGetResult(cmiProtocolContext *aPtContext,
     aPtContext->mReadBlock->mCursor += sDataSize;
 
     /*
-     * Note : ¿©±â¿¡¼­ ACI_SUCCESS ¸®ÅÏÇÏ´Â °ÍÀº ¹ö±×°¡ ¾Æ´Ô. ÀÌ ÇÔ¼ö°¡ ÄÝ¹éÇÔ¼öÀÌ±â ¶§¹®ÀÓ.
+     * Note : ì—¬ê¸°ì—ì„œ ACI_SUCCESS ë¦¬í„´í•˜ëŠ” ê²ƒì€ ë²„ê·¸ê°€ ì•„ë‹˜. ì´ í•¨ìˆ˜ê°€ ì½œë°±í•¨ìˆ˜ì´ê¸° ë•Œë¬¸ìž„.
      */
 
     return ACI_SUCCESS;
@@ -2452,7 +2452,7 @@ ACI_RC ulnCallbackLobTrimResult(cmiProtocolContext *aProtocolContext,
  *
  * PROJ-2047 Strengthening LOB - Added Interfaces 
  * 
- * BLOB°ú CLOB¿ë Interface¸¦ ³ª´«´Ù.
+ * BLOBê³¼ CLOBìš© Interfaceë¥¼ ë‚˜ëˆˆë‹¤.
  *
  * ========================================
  */
@@ -2651,7 +2651,7 @@ ACI_RC ulnLobBufferInitialize(ulnLobBuffer *aLobBuffer,
             /*
              * PROJ-2047 Strengthening LOB - Partial Converting
              *
-             * ¼­¹ö¿Í Å¬¶óÀÌ¾ðÆ®Ä³¸¯ÅÍ¼ÂÀÌ µ¿ÀÏÇÑ °æ¿ì¿¡´Â BINARY·Î ¼ÂÆÃÇÑ´Ù.
+             * ì„œë²„ì™€ í´ë¼ì´ì–¸íŠ¸ìºë¦­í„°ì…‹ì´ ë™ì¼í•œ ê²½ìš°ì—ëŠ” BINARYë¡œ ì…‹íŒ…í•œë‹¤.
              */
             if (aDbc != NULL && aLobType == ULN_LOB_TYPE_CLOB)
             {

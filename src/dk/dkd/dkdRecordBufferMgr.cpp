@@ -23,23 +23,23 @@
 
 
 /***********************************************************************
- * Description: Record buffer manager ¸¦ ÃÊ±âÈ­ÇÑ´Ù.
- *              ÀÌ °úÁ¤¿¡¼­ DK data buffer ·ÎºÎÅÍ record buffer ÇÒ´çÀÌ 
- *              °¡´ÉÇÑÁö Ã¼Å©ÇØº¸°í ÇÒ´ç °¡´ÉÇÑ °æ¿ì´Â record buffer 
- *              manager ¸¦ »ı¼ºÇÏ°í, ±×·¸Áö ¾Ê´Ù¸é disk temp table 
- *              manager ¸¦ »ı¼ºÇÑ´Ù.
+ * Description: Record buffer manager ë¥¼ ì´ˆê¸°í™”í•œë‹¤.
+ *              ì´ ê³¼ì •ì—ì„œ DK data buffer ë¡œë¶€í„° record buffer í• ë‹¹ì´ 
+ *              ê°€ëŠ¥í•œì§€ ì²´í¬í•´ë³´ê³  í• ë‹¹ ê°€ëŠ¥í•œ ê²½ìš°ëŠ” record buffer 
+ *              manager ë¥¼ ìƒì„±í•˜ê³ , ê·¸ë ‡ì§€ ì•Šë‹¤ë©´ disk temp table 
+ *              manager ë¥¼ ìƒì„±í•œë‹¤.
  *
- *  BUG-37215: ¿ø·¡´Â record buffer manager °´Ã¼°¡ »ı¼ºµÇ´Â ½ÃÁ¡¿¡¼­ 
- *             TLSF memory allocator ¸¦ »ı¼ºÇÏµµ·Ï µÇ¾î ÀÖ¾úÀ¸³ª È¿À²ÀûÀÎ 
- *             ¸Ş¸ğ¸® ÇÒ´ç ¹× ÇØÁ¦¸¦ À§ÇØ global allocator ¸¦ data buffer 
- *             manager ( dkdDataBufferMgr )¿¡ µÎ°í, ÀÔ·ÂÀÎÀÚ·Î ³Ñ°Ü¹Ş¾Æ
- *             »ç¿ëÇÏµµ·Ï º¯°æµÊ¿¡ µû¶ó TLSF memory allocator ¸¦ »ı¼º°ú 
- *             °ü·ÃµÈ ºÎºĞµéÀÌ »èÁ¦µÇ°í ÀÔ·ÂÀÎÀÚ°¡ ÇÏ³ª Ãß°¡µÊ.
+ *  BUG-37215: ì›ë˜ëŠ” record buffer manager ê°ì²´ê°€ ìƒì„±ë˜ëŠ” ì‹œì ì—ì„œ 
+ *             TLSF memory allocator ë¥¼ ìƒì„±í•˜ë„ë¡ ë˜ì–´ ìˆì—ˆìœ¼ë‚˜ íš¨ìœ¨ì ì¸ 
+ *             ë©”ëª¨ë¦¬ í• ë‹¹ ë° í•´ì œë¥¼ ìœ„í•´ global allocator ë¥¼ data buffer 
+ *             manager ( dkdDataBufferMgr )ì— ë‘ê³ , ì…ë ¥ì¸ìë¡œ ë„˜ê²¨ë°›ì•„
+ *             ì‚¬ìš©í•˜ë„ë¡ ë³€ê²½ë¨ì— ë”°ë¼ TLSF memory allocator ë¥¼ ìƒì„±ê³¼ 
+ *             ê´€ë ¨ëœ ë¶€ë¶„ë“¤ì´ ì‚­ì œë˜ê³  ì…ë ¥ì¸ìê°€ í•˜ë‚˜ ì¶”ê°€ë¨.
  *
- *  aBufBlockCnt    - [IN] ÀÌ record buffer manager °¡ ÇÒ´ç¹ŞÀ» buffer
- *                         ¸¦ ±¸¼ºÇÏ´Â buffer block ÀÇ °³¼ö
- *  aAllocator      - [IN] record buffer ¸¦ ÇÒ´ç¹ŞÀ» ¶§ »ç¿ëÇÏ±â À§ÇÑ 
- *                         TLSF memory allocator ¸¦ °¡¸®Å°´Â Æ÷ÀÎÅÍ
+ *  aBufBlockCnt    - [IN] ì´ record buffer manager ê°€ í• ë‹¹ë°›ì„ buffer
+ *                         ë¥¼ êµ¬ì„±í•˜ëŠ” buffer block ì˜ ê°œìˆ˜
+ *  aAllocator      - [IN] record buffer ë¥¼ í• ë‹¹ë°›ì„ ë•Œ ì‚¬ìš©í•˜ê¸° ìœ„í•œ 
+ *                         TLSF memory allocator ë¥¼ ê°€ë¦¬í‚¤ëŠ” í¬ì¸í„°
  *
  **********************************************************************/
 IDE_RC  dkdRecordBufferMgr::initialize( UInt             aBufBlockCnt, 
@@ -60,9 +60,9 @@ IDE_RC  dkdRecordBufferMgr::initialize( UInt             aBufBlockCnt,
 }
 
 /************************************************************************
- * Description : Record buffer manager ¸¦ Á¤¸®ÇÑ´Ù.
+ * Description : Record buffer manager ë¥¼ ì •ë¦¬í•œë‹¤.
  *
- *  BUG-37487 : return °ªÀ» IDE_RC --> void ·Î º¯°æ.
+ *  BUG-37487 : return ê°’ì„ IDE_RC --> void ë¡œ ë³€ê²½.
  *
  ************************************************************************/
 void dkdRecordBufferMgr::finalize()
@@ -92,9 +92,9 @@ void dkdRecordBufferMgr::finalize()
 }
 
 /************************************************************************
- * Description : Record buffer ·ÎºÎÅÍ record ÇÏ³ª¸¦ fetch ÇØ¿Â´Ù. 
+ * Description : Record buffer ë¡œë¶€í„° record í•˜ë‚˜ë¥¼ fetch í•´ì˜¨ë‹¤. 
  *
- *  aRow        - [OUT] fetch ÇØ¿Ã row ¸¦ °¡¸®Å°´Â Æ÷ÀÎÅÍ
+ *  aRow        - [OUT] fetch í•´ì˜¬ row ë¥¼ ê°€ë¦¬í‚¤ëŠ” í¬ì¸í„°
  *
  ************************************************************************/
 IDE_RC  dkdRecordBufferMgr::fetchRow( void  **aRow )
@@ -126,9 +126,9 @@ IDE_RC  dkdRecordBufferMgr::fetchRow( void  **aRow )
 }
 
 /************************************************************************
- * Description : Record buffer ¿¡ record ÇÏ³ª¸¦ insert ÇÑ´Ù. 
+ * Description : Record buffer ì— record í•˜ë‚˜ë¥¼ insert í•œë‹¤. 
  *
- *  aRecord     - [IN] insert ÇÒ record
+ *  aRecord     - [IN] insert í•  record
  *
  ************************************************************************/
 IDE_RC  dkdRecordBufferMgr::insertRow( dkdRecord  *aRecord )
@@ -142,7 +142,7 @@ IDE_RC  dkdRecordBufferMgr::insertRow( dkdRecord  *aRecord )
 }
 
 /************************************************************************
- * Description : Record buffer ÀÇ iteration À» restart ½ÃÅ²´Ù.
+ * Description : Record buffer ì˜ iteration ì„ restart ì‹œí‚¨ë‹¤.
  *
  ************************************************************************/
 IDE_RC  dkdRecordBufferMgr::restart()
@@ -157,8 +157,8 @@ IDE_RC  dkdRecordBufferMgr::restart()
 }
 
 /************************************************************************
- * Description : Record buffer ÀÇ cursor °¡ record buffer ÀÇ ´ÙÀ½ record
- *               ¸¦ °¡¸®Å°µµ·Ï ÇÑ´Ù.
+ * Description : Record buffer ì˜ cursor ê°€ record buffer ì˜ ë‹¤ìŒ record
+ *               ë¥¼ ê°€ë¦¬í‚¤ë„ë¡ í•œë‹¤.
  *
  ************************************************************************/
 IDE_RC  dkdRecordBufferMgr::moveNext()
@@ -175,8 +175,8 @@ IDE_RC  dkdRecordBufferMgr::moveNext()
 }
 
 /************************************************************************
- * Description : Record buffer ÀÇ cursor °¡ record buffer ÀÇ Ã³À½ record
- *               ¸¦ °¡¸®Å°µµ·Ï ÇÑ´Ù.
+ * Description : Record buffer ì˜ cursor ê°€ record buffer ì˜ ì²˜ìŒ record
+ *               ë¥¼ ê°€ë¦¬í‚¤ë„ë¡ í•œë‹¤.
  *
  ************************************************************************/
 IDE_RC  dkdRecordBufferMgr::moveFirst()

@@ -112,7 +112,7 @@ public final class AltibaseEnvironmentVariables
     }
 
     /**
-     * ALTIBASE_SOCK_RCVBUF_BLOCK_RATIO È¯°æº¯¼ö¸¦ ÀĞ´Â´Ù.
+     * ALTIBASE_SOCK_RCVBUF_BLOCK_RATIO í™˜ê²½ë³€ìˆ˜ë¥¼ ì½ëŠ”ë‹¤.
      */
     public static int getSockRcvBufBlockRatio()
     {

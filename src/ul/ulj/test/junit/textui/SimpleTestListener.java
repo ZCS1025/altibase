@@ -33,7 +33,7 @@ public class SimpleTestListener implements TestListener
     public SimpleTestListener(PrintStream aPrintStream)
     {
         mPrintStream = aPrintStream;
-        // BUG-44466 ansi color »ç¿ë¿©ºÎ¸¦ ½Ã½ºÅÛ ÆÄ¶ó¸ŞÅÍ·Î ºÎÅÍ ¾ò´Â´Ù.
+        // BUG-44466 ansi color ì‚¬ìš©ì—¬ë¶€ë¥¼ ì‹œìŠ¤í…œ íŒŒë¼ë©”í„°ë¡œ ë¶€í„° ì–»ëŠ”ë‹¤.
         String sUseAnsiColor = System.getProperty("UseAnsiColor");
         mUseAnsiColor = sUseAnsiColor == null || sUseAnsiColor.toLowerCase().equals("true");
     }

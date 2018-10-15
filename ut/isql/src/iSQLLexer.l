@@ -23,9 +23,9 @@
     iSQLLexer.l
 
    DESCRIPTION
-    iSQLPreLexer·ÎºÎÅÍ ³Ñ°Ü¹ŞÀº ÀÔ·Â¹öÆÛ¸¦ scanÇÏ¿© token´ÜÀ§·Î ³ª´«´Ù.
-    ÀÌ¶§ isql command¸¸ tokenÀ¸·Î ºĞÇØÇÏ°í
-    sql command´Â ÇÏ³ªÀÇ ÅäÅ«À¸·Î Ã³¸®ÇÑ´Ù.
+    iSQLPreLexerë¡œë¶€í„° ë„˜ê²¨ë°›ì€ ì…ë ¥ë²„í¼ë¥¼ scaní•˜ì—¬ tokenë‹¨ìœ„ë¡œ ë‚˜ëˆˆë‹¤.
+    ì´ë•Œ isql commandë§Œ tokenìœ¼ë¡œ ë¶„í•´í•˜ê³ 
+    sql commandëŠ” í•˜ë‚˜ì˜ í† í°ìœ¼ë¡œ ì²˜ë¦¬í•œë‹¤.
 
    PUBLIC FUNCTION(S)
 
@@ -197,7 +197,7 @@ EXECUTE                     { return ISQL_T_EXECUTE; }
 EXPLAINPLAN                 { return ISQL_T_EXPLAINPLAN; }
 EXIT                        { return ISQL_T_EXIT; }
 FLOAT                       { return ISQL_T_FLOAT; }        /* A3 */
-CHKCONSTRAINTS              { return ISQL_T_CHECKCONSTRAINTS; } /* PROJ-1107 Check Constraint Áö¿ø */
+CHKCONSTRAINTS              { return ISQL_T_CHECKCONSTRAINTS; } /* PROJ-1107 Check Constraint ì§€ì› */
 FOREIGNKEYS                 { return ISQL_T_FOREIGNKEYS; }  /* A3 */
 H                           { return ISQL_T_HISTORY; }
 HEADING                     { return ISQL_T_HEADING; }
@@ -506,24 +506,24 @@ COLUMNS                      {  /* BUG-34447 CLEAR COL[UMNS] */
     return ISQL_S_SEMICOLON;
 }
 <column>[^ "'\t\n\r][^ \t\n\r]*    {
-    /* Ã¹¹®ÀÚ°¡ quotataion mark°¡ ¾Æ´Ï¸é¼­ °ø¹éÀÌ Æ÷ÇÔµÇÁö ¾ÊÀº ¹®ÀÚ¿­ */
+    /* ì²«ë¬¸ìê°€ quotataion markê°€ ì•„ë‹ˆë©´ì„œ ê³µë°±ì´ í¬í•¨ë˜ì§€ ì•Šì€ ë¬¸ìì—´ */
     endState();
     return ISQL_T_COLUMN_IDENTIFIER;
 }
 <column>\"                         {
-    /* column¸íÀ» double quotataion mark·Î ½ÃÀÛ */
+    /* columnëª…ì„ double quotataion markë¡œ ì‹œì‘ */
     gColumnPtr = gColumnBuf;
     endState();
     beginState(dquot);
 }
 <column>'                          {
-    /* column¸íÀ» single quotataion mark·Î ½ÃÀÛ */
+    /* columnëª…ì„ single quotataion markë¡œ ì‹œì‘ */
     gColumnPtr = gColumnBuf;
     endState();
     beginState(squot);
 }
 <dquot>\"\"                        {
-    /* double quoted-string ³»¿¡¼­ escape character Á¦°Å */
+    /* double quoted-string ë‚´ì—ì„œ escape character ì œê±° */
     *gColumnPtr++ = *yytext;
 }
 <dquot>[^"]+                       {
@@ -535,7 +535,7 @@ COLUMNS                      {  /* BUG-34447 CLEAR COL[UMNS] */
     return ISQL_T_QUOTED_COLUMN_IDENTIFIER;
 }
 <squot>''                          {
-    /* single quoted-string ³»¿¡¼­ escape character Á¦°Å */
+    /* single quoted-string ë‚´ì—ì„œ escape character ì œê±° */
     *gColumnPtr++ = *yytext;
 }
 <squot>[^']+                       {
@@ -589,8 +589,8 @@ COLUMNS                      {  /* BUG-34447 CLEAR COL[UMNS] */
     return ISQL_T_QUOT_NUM_FMT;
 }
 <format>[^ \t\n\r]+[^; \t\n\r]     {
-    /* lexer¿¡¼­´Â NUMBER µ¥ÀÌÅÍ Æ÷¸ËÀº °ø¹éÀÌ Æ÷ÇÔµÇÁö ¾ÊÀº ¹®ÀÚ¿­À» ¸ğµÎ Çã¿ëÇÏ°í
-     * ÃßÈÄ mt ÇÔ¼ö¸¦ ÅëÇØ¼­ Æ÷¸ËÀ» °ËÁõÇÒ ¿¹Á¤ */
+    /* lexerì—ì„œëŠ” NUMBER ë°ì´í„° í¬ë§·ì€ ê³µë°±ì´ í¬í•¨ë˜ì§€ ì•Šì€ ë¬¸ìì—´ì„ ëª¨ë‘ í—ˆìš©í•˜ê³ 
+     * ì¶”í›„ mt í•¨ìˆ˜ë¥¼ í†µí•´ì„œ í¬ë§·ì„ ê²€ì¦í•  ì˜ˆì • */
     endState();
     return ISQL_T_NUM_FMT;
 }
@@ -632,9 +632,9 @@ void appendLiteral()
 /* BUG-40246 COLUMN col FORMAT fmt */
 /*
  * Function: beginState
- *   tokenÀ» ¹İÈ¯ÇÏ¸é state°¡ iSQLParserlex ÇÔ¼ö¿¡¼­ ÃÊ±âÈ­µÇ¹Ç·Î
- *   ÀÌ¸¦ ¹æÁöÇÏ±â À§ÇØ token ¹İÈ¯ Àü¿¡ ÀÌ ÇÔ¼ö¸¦ È£ÃâÇÏ¿©
- *   gISQLLStartStateµµ º¯°æÇØ¾ß ÇÑ´Ù.
+ *   tokenì„ ë°˜í™˜í•˜ë©´ stateê°€ iSQLParserlex í•¨ìˆ˜ì—ì„œ ì´ˆê¸°í™”ë˜ë¯€ë¡œ
+ *   ì´ë¥¼ ë°©ì§€í•˜ê¸° ìœ„í•´ token ë°˜í™˜ ì „ì— ì´ í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•˜ì—¬
+ *   gISQLLStartStateë„ ë³€ê²½í•´ì•¼ í•œë‹¤.
  */
 void beginState(UInt state)
 {
@@ -643,8 +643,8 @@ void beginState(UInt state)
 }
 /*
  * Function: endState
- *   beginState·Î º¯°æÇÑ stateÀÇ »ç¿ëÀÌ Á¾·áµÇ¸é
- *   ÀÌ ÇÔ¼ö¸¦ È£ÃâÇÏ¿© gISQLLStartState¸¦ º¹¿øÇØ¾ß ÇÑ´Ù.
+ *   beginStateë¡œ ë³€ê²½í•œ stateì˜ ì‚¬ìš©ì´ ì¢…ë£Œë˜ë©´
+ *   ì´ í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•˜ì—¬ gISQLLStartStateë¥¼ ë³µì›í•´ì•¼ í•œë‹¤.
  */
 void endState()
 {
@@ -759,7 +759,7 @@ iSQLParserlex( YYSTYPE * lvalp,
         }
         if( ( idlOS::strncmp( sNlsUse, (SChar*)"SHIFTJIS", 8 ) == 0 ) ||
             ( idlOS::strncmp( sNlsUse, (SChar*)"JAPANESE", 8 ) == 0 ) ||
-            /* PROJ-2590 [±â´É¼º] CP932 database character set Áö¿ø */
+            /* PROJ-2590 [ê¸°ëŠ¥ì„±] CP932 database character set ì§€ì› */
             ( idlOS::strncmp( sNlsUse, (SChar*)"MS932", 5 ) == 0 ) ||
             ( idlOS::strncmp( sNlsUse, (SChar*)"CP932", 5 ) == 0 ) ||
             ( idlOS::strncmp( sNlsUse, (SChar*)"WINDOWS932", 10 ) == 0 ) )
@@ -769,7 +769,7 @@ iSQLParserlex( YYSTYPE * lvalp,
         else if( ( idlOS::strncmp( sNlsUse, (SChar*)"GB231280", 8 ) == 0 )   ||
                  (idlOS::strncmp( sNlsUse, (SChar*)"ZHS16CGB231280", 14)==0) ||
                  ( idlOS::strncmp( sNlsUse, (SChar*)"CHINESE", 7 )==0 ) ||
-                 /* PROJ-2414 [±â´É¼º] GBK, CP936 character set Ãß°¡ */
+                 /* PROJ-2414 [ê¸°ëŠ¥ì„±] GBK, CP936 character set ì¶”ê°€ */
                  ( idlOS::strncmp( sNlsUse, (SChar*)"MS936", 5 )==0 ) ||
                  ( idlOS::strncmp( sNlsUse, (SChar*)"CP936", 5 )==0 ) ||
                  ( idlOS::strncmp( sNlsUse, (SChar*)"GBK", 3 )==0 ) ||

@@ -22,12 +22,12 @@
 /**
  *  ulnAnalyzeStmtCreate
  *
- *  @aAnalyzeStmt : ulnAnalyzeStmtÀÇ °´Ã¼
- *  @aStmtStr     : Statement ½ºÆ®¸µ
- *  @aStmtStrLen  : Statement ±æÀÌ
+ *  @aAnalyzeStmt : ulnAnalyzeStmtì˜ ê°ì²´
+ *  @aStmtStr     : Statement ìŠ¤íŠ¸ë§
+ *  @aStmtStrLen  : Statement ê¸¸ì´
  *
- *  = Statement¸¦ ºĞ¼®ÇØ ÅäÅ« List¸¦ »ı¼ºÇÑ´Ù.
- *  = ¼º°øÇÏ¸é ACI_SUCCESS, ½ÇÆĞÇÏ¸é ACI_FAILURE
+ *  = Statementë¥¼ ë¶„ì„í•´ í† í° Listë¥¼ ìƒì„±í•œë‹¤.
+ *  = ì„±ê³µí•˜ë©´ ACI_SUCCESS, ì‹¤íŒ¨í•˜ë©´ ACI_FAILURE
  */
 ACI_RC ulnAnalyzeStmtCreate(ulnAnalyzeStmt **aAnalyzeStmt,
                             acp_char_t      *aStmtStr,
@@ -36,8 +36,8 @@ ACI_RC ulnAnalyzeStmtCreate(ulnAnalyzeStmt **aAnalyzeStmt,
 /**
  *  ulnAnalyzeStmtReInit
  *
- *  = ±âÁ¸¿¡ ÇÒ´çµÈ ¸Ş¸ğ¸®¸¦ ÀÌ¿ëÇØ Statement¸¦ ºĞ¼®ÇÏ°í
- *    ÅäÅ« List¸¦ »ı¼ºÇÑ´Ù.
+ *  = ê¸°ì¡´ì— í• ë‹¹ëœ ë©”ëª¨ë¦¬ë¥¼ ì´ìš©í•´ Statementë¥¼ ë¶„ì„í•˜ê³ 
+ *    í† í° Listë¥¼ ìƒì„±í•œë‹¤.
  */
 ACI_RC ulnAnalyzeStmtReInit(ulnAnalyzeStmt **aAnalyzeStmt,
                             acp_char_t      *aStmtStr,
@@ -46,24 +46,24 @@ ACI_RC ulnAnalyzeStmtReInit(ulnAnalyzeStmt **aAnalyzeStmt,
 /**
  *  ulnAnalyzeStmtDestroy
  *
- *  @aAnalyzeStmt : ulnAnalyzeStmtÀÇ Object
+ *  @aAnalyzeStmt : ulnAnalyzeStmtì˜ Object
  *
- *  = ulnAnalyzeStmt °´Ã¼¸¦ ¼Ò¸êÇÑ´Ù.
+ *  = ulnAnalyzeStmt ê°ì²´ë¥¼ ì†Œë©¸í•œë‹¤.
  */
 void ulnAnalyzeStmtDestroy(ulnAnalyzeStmt **aAnalyzeStmt);
 
 /**
  *  ulnAnalyzeStmtGetPosArr
  *
- *  @aAnalyzeStmt : ulnAnalyzeStmtÀÇ °´Ã¼
- *  @aToken  : Ã£À» ÅäÅ« ½ºÆ®¸µ
- *  @aPosArr : Statement ³» aTokenÀÇ Æ÷Áö¼ÇÀ» ÀúÀåÇÑ ¹è¿­
- *  @aPosCnt : Æ÷Áö¼Ç °³¼ö
+ *  @aAnalyzeStmt : ulnAnalyzeStmtì˜ ê°ì²´
+ *  @aToken  : ì°¾ì„ í† í° ìŠ¤íŠ¸ë§
+ *  @aPosArr : Statement ë‚´ aTokenì˜ í¬ì§€ì…˜ì„ ì €ì¥í•œ ë°°ì—´
+ *  @aPosCnt : í¬ì§€ì…˜ ê°œìˆ˜
  *
- *  = aTokenÀÌ PosArr¿¡ ÀÖÀ¸¸é ±× ¹è¿­°ú Æ÷Áö¼ÇÀ» ¹İÈ¯ÇØ ÁØ´Ù.
- *  = aTokenÀÌ PosArr¿¡ ¾ø°Å³ª Statement¿¡ :name, ?°¡ È¥¿ëµÇ¾î ÀÖÀ¸¸é
- *    NULL°ú 0À» ¹İÈ¯ÇØ ÁØ´Ù. Áï Position ¹ÙÀÎµùÀ» ÇÑ´Ù.
- *  = ¼º°øÇÏ¸é ACI_SUCCESS, ½ÇÆĞÇÏ¸é ACI_FAILURE
+ *  = aTokenì´ PosArrì— ìˆìœ¼ë©´ ê·¸ ë°°ì—´ê³¼ í¬ì§€ì…˜ì„ ë°˜í™˜í•´ ì¤€ë‹¤.
+ *  = aTokenì´ PosArrì— ì—†ê±°ë‚˜ Statementì— :name, ?ê°€ í˜¼ìš©ë˜ì–´ ìˆìœ¼ë©´
+ *    NULLê³¼ 0ì„ ë°˜í™˜í•´ ì¤€ë‹¤. ì¦‰ Position ë°”ì¸ë”©ì„ í•œë‹¤.
+ *  = ì„±ê³µí•˜ë©´ ACI_SUCCESS, ì‹¤íŒ¨í•˜ë©´ ACI_FAILURE
  */
 ACI_RC ulnAnalyzeStmtGetPosArr(ulnAnalyzeStmt  *aAnalyzeStmt,
                                acp_char_t      *aToken,

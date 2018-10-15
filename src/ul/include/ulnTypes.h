@@ -18,11 +18,11 @@
 #define _O_ULN_TYPES_H_ 1
 
 /*
- * ÇØ´ç PRECISIONµéÀº ÃÖÀûÀÇ »ó¼ö¸¦ Ã£±â À§ÇØ  DB TypeÀÌ °¡Áú¼ö ÀÖ´Â ÃÖ´ë
- * Å©±â·Î ºÎÅÍ À¯ÃßµÇ¾úÁö¸¸, DB Type°ú »ó°ü¾ø´Â µ¶¸³ÀûÀÎ »ó¼öÀÌ´Ù.
+ * í•´ë‹¹ PRECISIONë“¤ì€ ìµœì ì˜ ìƒìˆ˜ë¥¼ ì°¾ê¸° ìœ„í•´  DB Typeì´ ê°€ì§ˆìˆ˜ ìˆëŠ” ìµœëŒ€
+ * í¬ê¸°ë¡œ ë¶€í„° ìœ ì¶”ë˜ì—ˆì§€ë§Œ, DB Typeê³¼ ìƒê´€ì—†ëŠ” ë…ë¦½ì ì¸ ìƒìˆ˜ì´ë‹¤.
  */
-// BUG-24378 ¼­¹öÀÇ CHAR_MAX_PRECISION ÀÌ 32000À¸·Î ÁÙ¾îµé¾úÀ½
-// BUG-23061 nibble ÀÇ ÃÖ´ë±æÀÌ°¡ 254ÀÔ´Ï´Ù. (MTD_NIBBLE_PRECISION_MAXIMUM)
+// BUG-24378 ì„œë²„ì˜ CHAR_MAX_PRECISION ì´ 32000ìœ¼ë¡œ ì¤„ì–´ë“¤ì—ˆìŒ
+// BUG-23061 nibble ì˜ ìµœëŒ€ê¸¸ì´ê°€ 254ì…ë‹ˆë‹¤. (MTD_NIBBLE_PRECISION_MAXIMUM)
 #define ULN_DEFAULT_PRECISION         0
 #define ULN_MAX_NUMERIC_PRECISION     38
 #define ULN_MAX_NUMERIC_SCALE         20
@@ -35,7 +35,7 @@
 #define ULN_MAX_BINARY_PRECISION      (32000)
 
 /*
- * SQL_C_XXXX ÀÇ enumeration
+ * SQL_C_XXXX ì˜ enumeration
  */
 typedef enum ulnCTypeID
 {
@@ -67,7 +67,7 @@ typedef enum ulnCTypeID
 } ulnCTypeID;
 
 /*
- * MTD_XXXX_ID ÀÇ enumeration
+ * MTD_XXXX_ID ì˜ enumeration
  */
 typedef enum ulnMTypeID
 {
@@ -88,11 +88,11 @@ typedef enum ulnMTypeID
     ULN_MTYPE_NIBBLE       = 14,
     ULN_MTYPE_BYTE         = 15,
     ULN_MTYPE_VARBYTE      = 16,
-    /* bind column info ¿¡¼­ Á¦´ë·Î µÈ ¸ÅÇÎÀ» ÇÏ±â À§ÇØ¼­ TIMESTAMP ¸¦ °¡Àå ¾Õ¿¡ ³õ¾Ò´Ù. */
+    /* bind column info ì—ì„œ ì œëŒ€ë¡œ ëœ ë§¤í•‘ì„ í•˜ê¸° ìœ„í•´ì„œ TIMESTAMP ë¥¼ ê°€ì¥ ì•ì— ë†“ì•˜ë‹¤. */
     ULN_MTYPE_TIMESTAMP    = 17,
-    /* ¼­¹ö¿¡¼­ ¿Ã¶ó¿ÀÁö ¾ÊÀ½. fetch ½Ã¿¡´Â ÀüÇô ÇÊ¿ä¾øÀ½. insert, update ½Ã¿¡¸¸ ÇÊ¿äÇÔ. */
+    /* ì„œë²„ì—ì„œ ì˜¬ë¼ì˜¤ì§€ ì•ŠìŒ. fetch ì‹œì—ëŠ” ì „í˜€ í•„ìš”ì—†ìŒ. insert, update ì‹œì—ë§Œ í•„ìš”í•¨. */
     ULN_MTYPE_DATE         = 18,
-    /* ¼­¹ö¿¡¼­ ¿Ã¶ó¿ÀÁö ¾ÊÀ½. fetch ½Ã¿¡´Â ÀüÇô ÇÊ¿ä¾øÀ½. insert, update ½Ã¿¡¸¸ ÇÊ¿äÇÔ. */
+    /* ì„œë²„ì—ì„œ ì˜¬ë¼ì˜¤ì§€ ì•ŠìŒ. fetch ì‹œì—ëŠ” ì „í˜€ í•„ìš”ì—†ìŒ. insert, update ì‹œì—ë§Œ í•„ìš”í•¨. */
     ULN_MTYPE_TIME         = 19,
     ULN_MTYPE_INTERVAL     = 20,
     ULN_MTYPE_BLOB         = 21,
@@ -106,7 +106,7 @@ typedef enum ulnMTypeID
 } ulnMTypeID;
 
 /*
- * °¢Á¾ Å¸ÀÔ ¸ÅÄª, º¯È¯, ±âº»°ª µîÀ» ¾ò´Â ÇÔ¼ö
+ * ê°ì¢… íƒ€ì… ë§¤ì¹­, ë³€í™˜, ê¸°ë³¸ê°’ ë“±ì„ ì–»ëŠ” í•¨ìˆ˜
  */
 acp_uint32_t ulnTypeMap_MTYPE_MTD(ulnMTypeID aMTYPE);
 ulnMTypeID   ulnTypeMap_MTD_MTYPE(acp_uint32_t aMTD_TYPE);
@@ -132,7 +132,7 @@ ACP_INLINE acp_bool_t ulnTypeIsMemBoundLob(ulnMTypeID aMTYPE, ulnCTypeID aCTYPE)
     if (aMTYPE == ULN_MTYPE_CLOB || aMTYPE == ULN_MTYPE_BLOB)
     {
         /*
-         * »ç¿ëÀÚ°¡ lob locator ·Î ¹ÙÀÎµùÇÏÁö ¾Ê¾ÒÀ¸¸é
+         * ì‚¬ìš©ìê°€ lob locator ë¡œ ë°”ì¸ë”©í•˜ì§€ ì•Šì•˜ìœ¼ë©´
          *      --> SQL_C_FILE, SQL_C_BINARY, SQL_C_CHAR --> memory bound lob
          */
         if (aCTYPE != ULN_CTYPE_BLOB_LOCATOR && aCTYPE != ULN_CTYPE_CLOB_LOCATOR)
@@ -157,8 +157,8 @@ acp_char_t   *ulnTypeGetInfoName(ulnMTypeID aMTYPE);
 acp_sint32_t ulnTypeGetSizeOfFixedType(ulnMTypeID aMTYPE);
 acp_bool_t   ulnTypeIsFixedMType(ulnMTypeID aMTYPE);
 
-/* PROJ-2160 CM Å¸ÀÔÁ¦°Å
-   ¼­¹öÅ¸ÀÔÀÎ MT µ¥ÀÌÅ¸ÀÇ ÃÖ´ë »çÀÌÁî¸¦ ¸®ÅÏÇÑ´Ù. */
+/* PROJ-2160 CM íƒ€ì…ì œê±°
+   ì„œë²„íƒ€ì…ì¸ MT ë°ì´íƒ€ì˜ ìµœëŒ€ ì‚¬ì´ì¦ˆë¥¼ ë¦¬í„´í•œë‹¤. */
 /* BUG-35016 */
 acp_uint32_t ulnTypeGetMaxMtSize(ulnDbc *aDbc, ulnMeta *aMeta);
 

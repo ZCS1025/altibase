@@ -57,7 +57,7 @@ public:
         SM_SET_SCN( aSysMinDskFstViewSCN, &mSysMinDskFstViewSCN );
     }
 
-    // BUG-26881 Àß¸øµÈ CTS stampingÀ¸·Î accesÇÒ ¼ö ¾ø´Â row¸¦ Á¢±ÙÇÔ
+    // BUG-26881 ì˜ëª»ëœ CTS stampingìœ¼ë¡œ accesí•  ìˆ˜ ì—†ëŠ” rowë¥¼ ì ‘ê·¼í•¨
     inline void  getMinOldestFstViewSCN( smSCN * aSysMinOldestFstViewSCN )
     {
         SM_SET_SCN( aSysMinOldestFstViewSCN, &mSysMinOldestFstViewSCN );
@@ -74,19 +74,19 @@ private:
 
 private:
 
-    /* ÁÖ±âÀûÀ¸·Î °»½ÅµÇ´Â Disk StmtÀÇ °¡ÀåÀÛÀº ViewSCN (Á¤È®ÇÏÁö¾ÊÀ½) */
+    /* ì£¼ê¸°ì ìœ¼ë¡œ ê°±ì‹ ë˜ëŠ” Disk Stmtì˜ ê°€ì¥ì‘ì€ ViewSCN (ì •í™•í•˜ì§€ì•ŠìŒ) */
     smSCN         mSysMinDskViewSCN;
 
     // BUG-24885 wrong delayed stamping
     smSCN         mSysMinDskFstViewSCN;
 
-    // BUG-26881 Àß¸øµÈ CTS stampingÀ¸·Î accesÇÒ ¼ö ¾ø´Â row¸¦ Á¢±ÙÇÔ
+    // BUG-26881 ì˜ëª»ëœ CTS stampingìœ¼ë¡œ accesí•  ìˆ˜ ì—†ëŠ” rowë¥¼ ì ‘ê·¼í•¨
     smSCN         mSysMinOldestFstViewSCN;
 
-    idBool        mFinish; /* ¾²·¹µå Á¾·á Á¶°Ç */
-    idBool        mResume; /* JobÀ» ¼öÇàÇÒÁö ¿©ºÎ */
+    idBool        mFinish; /* ì“°ë ˆë“œ ì¢…ë£Œ ì¡°ê±´ */
+    idBool        mResume; /* Jobì„ ìˆ˜í–‰í• ì§€ ì—¬ë¶€ */
 
-    iduMutex      mMutex;  /* ¾²·¹µå Mutex */
+    iduMutex      mMutex;  /* ì“°ë ˆë“œ Mutex */
     iduCond       mCV;     /* Condition Variable */
 };
 

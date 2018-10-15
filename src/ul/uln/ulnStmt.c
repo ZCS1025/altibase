@@ -39,7 +39,7 @@ ACI_RC ulnStmtCreate(ulnDbc *aParentDbc, ulnStmt **aOutputStmt)
     sPool = aParentDbc->mObj.mPool;
 
     /*
-     * ¸Þ¸ð¸® ÀÎ½ºÅÏ½º »ý¼º. Ã»Å©Ç®Àº DBCÀÇ °ÍÀ» »ç¿ë.
+     * ë©”ëª¨ë¦¬ ì¸ìŠ¤í„´ìŠ¤ ìƒì„±. ì²­í¬í’€ì€ DBCì˜ ê²ƒì„ ì‚¬ìš©.
      */
 
     ACI_TEST(uluMemoryCreate(sPool, &sMemory) != ACI_SUCCESS);
@@ -64,8 +64,8 @@ ACI_RC ulnStmtCreate(ulnDbc *aParentDbc, ulnStmt **aOutputStmt)
     sStmt->mObj.mLock = aParentDbc->mObj.mLock;
 
     /*
-     * Diagnostic Header ÃÊ±âÈ­
-     * ½ÇÆÐ½Ã sMemory ¸¸ Á¤¸®ÇÏ´Â °ÍÀ¸·Î ÃæºÐ. DBC ÀÇ Ã»Å©Ç®À» »ó¼Ó¹ÞÀ¸¹Ç·Î ÇØÁ¦ÇÒ ¸Þ¸ð¸® ¾øÀ½.
+     * Diagnostic Header ì´ˆê¸°í™”
+     * ì‹¤íŒ¨ì‹œ sMemory ë§Œ ì •ë¦¬í•˜ëŠ” ê²ƒìœ¼ë¡œ ì¶©ë¶„. DBC ì˜ ì²­í¬í’€ì„ ìƒì†ë°›ìœ¼ë¯€ë¡œ í•´ì œí•  ë©”ëª¨ë¦¬ ì—†ìŒ.
      */
 
     ACI_TEST(ulnCreateDiagHeader((ulnObject *)sStmt, aParentDbc->mObj.mDiagHeader.mPool) 
@@ -132,7 +132,7 @@ ACI_RC ulnStmtCreate(ulnDbc *aParentDbc, ulnStmt **aOutputStmt)
     ulnDescInitializeUserPart(sStmt->mAttrIrd);
 
     /*
-     * stmt ÇÚµé ¸®ÅÏ
+     * stmt í•¸ë“¤ ë¦¬í„´
      */
 
     ACI_TEST(sMemory->mOp->mMalloc(sMemory,
@@ -187,7 +187,7 @@ ACI_RC ulnStmtDestroy(ulnStmt *aStmt)
     ACE_ASSERT(ULN_OBJ_GET_TYPE(aStmt) == ULN_OBJ_TYPE_STMT);
 
     /*
-     * plan tree ¸Þ¸ð¸® ÇØÁ¦
+     * plan tree ë©”ëª¨ë¦¬ í•´ì œ
      */
 
     if (aStmt->mPlanTree != NULL)
@@ -196,7 +196,7 @@ ACI_RC ulnStmtDestroy(ulnStmt *aStmt)
     }
 
     /*
-     * DiagHeader ÆÄ±«
+     * DiagHeader íŒŒê´´
      */
 
     ACI_TEST(ulnDestroyDiagHeader(&aStmt->mObj.mDiagHeader, ULN_DIAG_HDR_NOTOUCH_CHUNKPOOL)
@@ -205,7 +205,7 @@ ACI_RC ulnStmtDestroy(ulnStmt *aStmt)
     sIsSuccessful = ACP_TRUE;
 
     /*
-     * Result Cache ÇØÁ¦
+     * Result Cache í•´ì œ
      */
 
     if (aStmt->mCache != NULL)
@@ -225,24 +225,24 @@ ACI_RC ulnStmtDestroy(ulnStmt *aStmt)
     }
 
     /*
-     * Note : STMT °¡ °¡Áø ¸ðµç Explicit µð½ºÅ©¸³ÅÍÀÇ ¸µÅ©¸¦ ÇØÁ¦ÇÏ°í DBC ·Î µ¹·ÁÁÙ
-     *        ÇÊ¿ä±îÁö´Â ¾ø´Ù.
+     * Note : STMT ê°€ ê°€ì§„ ëª¨ë“  Explicit ë””ìŠ¤í¬ë¦½í„°ì˜ ë§í¬ë¥¼ í•´ì œí•˜ê³  DBC ë¡œ ëŒë ¤ì¤„
+     *        í•„ìš”ê¹Œì§€ëŠ” ì—†ë‹¤.
      *
-     *        ´ÜÁö, Explicit µð½ºÅ©¸³ÅÍ¸¦ °¡Áö°í ÀÖÀ¸¸é, STMT ¸¦ ±× explicit µð½ºÅ©¸³ÅÍÀÇ
-     *        mAssociatedStmtList ¿¡¼­ Á¦°ÅÇØ ÁÖ´Â °ÍÀ¸·Î ÃæºÐÇÏ´Ù.
+     *        ë‹¨ì§€, Explicit ë””ìŠ¤í¬ë¦½í„°ë¥¼ ê°€ì§€ê³  ìžˆìœ¼ë©´, STMT ë¥¼ ê·¸ explicit ë””ìŠ¤í¬ë¦½í„°ì˜
+     *        mAssociatedStmtList ì—ì„œ ì œê±°í•´ ì£¼ëŠ” ê²ƒìœ¼ë¡œ ì¶©ë¶„í•˜ë‹¤.
      *
-     *        ¾îÂ÷ÇÇ Explicit DESC ÀÇ mParentObject ´Â ¾ðÁ¦³ª DBC ÀÌ¸ç DBC ´Â ÀÌ¹Ì ÀÚ½Å¿¡°Ô
-     *        Á÷Á¢ ¼ÓÇÑ DESC ÀÇ ¸®½ºÆ®¸¦ °¡Áö°í ÀÖ±â ¶§¹®ÀÌ´Ù.
+     *        ì–´ì°¨í”¼ Explicit DESC ì˜ mParentObject ëŠ” ì–¸ì œë‚˜ DBC ì´ë©° DBC ëŠ” ì´ë¯¸ ìžì‹ ì—ê²Œ
+     *        ì§ì ‘ ì†í•œ DESC ì˜ ë¦¬ìŠ¤íŠ¸ë¥¼ ê°€ì§€ê³  ìžˆê¸° ë•Œë¬¸ì´ë‹¤.
      *
-     *        STMT ´Â ´ÜÁö Æ÷ÀÎÅÍ¸¸ ¼ÒÀ¯ÇÑ´Ù.
+     *        STMT ëŠ” ë‹¨ì§€ í¬ì¸í„°ë§Œ ì†Œìœ í•œë‹¤.
      */
 
     if (aStmt->mOrigArd != NULL && aStmt->mAttrArd != NULL)
     {
         /*
-         * mOrigArd °¡ NULL ÀÌ ¾Æ´Ï¶ó´Â °ÍÀº Explicit Descriptor °¡ ¼³Á¤µÇ¾î ÀÖ´Ù´Â ¸».
-         * STMT °¡ »ç¶óÁö¹Ç·Î Explicit Descriptor ÀÇ mAssociatedStmtList ¿¡¼­µµ
-         * STMT ¸¦ Á¦°ÅÇØ¾ß ÇÔ.
+         * mOrigArd ê°€ NULL ì´ ì•„ë‹ˆë¼ëŠ” ê²ƒì€ Explicit Descriptor ê°€ ì„¤ì •ë˜ì–´ ìžˆë‹¤ëŠ” ë§.
+         * STMT ê°€ ì‚¬ë¼ì§€ë¯€ë¡œ Explicit Descriptor ì˜ mAssociatedStmtList ì—ì„œë„
+         * STMT ë¥¼ ì œê±°í•´ì•¼ í•¨.
          */
         ulnDescRemoveStmtFromAssociatedStmtList(aStmt, aStmt->mAttrArd);
     }
@@ -250,16 +250,16 @@ ACI_RC ulnStmtDestroy(ulnStmt *aStmt)
     if (aStmt->mOrigApd != NULL && aStmt->mAttrApd != NULL)
     {
         /*
-         * mOrigApd °¡ NULL ÀÌ ¾Æ´Ï¶ó´Â °ÍÀº Explicit Descriptor °¡ ¼³Á¤µÇ¾î ÀÖ´Ù´Â ¸».
-         * STMT °¡ »ç¶óÁö¹Ç·Î Explicit Descriptor ÀÇ mAssociatedStmtList ¿¡¼­µµ
-         * STMT ¸¦ Á¦°ÅÇØ¾ß ÇÔ.
+         * mOrigApd ê°€ NULL ì´ ì•„ë‹ˆë¼ëŠ” ê²ƒì€ Explicit Descriptor ê°€ ì„¤ì •ë˜ì–´ ìžˆë‹¤ëŠ” ë§.
+         * STMT ê°€ ì‚¬ë¼ì§€ë¯€ë¡œ Explicit Descriptor ì˜ mAssociatedStmtList ì—ì„œë„
+         * STMT ë¥¼ ì œê±°í•´ì•¼ í•¨.
          */
         ulnDescRemoveStmtFromAssociatedStmtList(aStmt, aStmt->mAttrApd);
     }
 
     /*
-     * STMT °¡ °¡Áø ¸ðµç Implicit µð½ºÅ©¸³ÅÍµéÀ» ÆÄ±«
-     * BUGBUG: ÇÑ°¡Áö°¡ ½ÇÆÐÇÏ¸é ·Ñ¹éÇÒ ¹æ¹ýÀÌ ¾øÀ¸¹Ç·Î ±×³É °¡ÀÚ.
+     * STMT ê°€ ê°€ì§„ ëª¨ë“  Implicit ë””ìŠ¤í¬ë¦½í„°ë“¤ì„ íŒŒê´´
+     * BUGBUG: í•œê°€ì§€ê°€ ì‹¤íŒ¨í•˜ë©´ ë¡¤ë°±í•  ë°©ë²•ì´ ì—†ìœ¼ë¯€ë¡œ ê·¸ëƒ¥ ê°€ìž.
      */
 
     if (ulnDescDestroy(aStmt->mAttrIrd) != ACI_SUCCESS)
@@ -294,14 +294,14 @@ ACI_RC ulnStmtDestroy(ulnStmt *aStmt)
     ACI_TEST(sIsSuccessful != ACP_TRUE);
 
     /*
-     * STMT ¸¦ ¾ø¾Ö±â Á÷Àü¿¡ ½Ç¼ö¿¡ ÀÇÇÑ Àç»ç¿ëÀ» ¹æÁöÇÏ±â À§ÇØ¼­ ulnObject ¿¡ Ç¥½Ã¸¦ ÇØ µÐ´Ù.
-     * BUG-15894 ¿Í °°Àº »ç¿ëÀÚ ÀÀ¿ë ÇÁ·Î±×·¥¿¡ ÀÇÇÑ ¹ö±×¸¦ ¹æÁöÇÏ±â À§ÇØ¼­ÀÌ´Ù.
+     * STMT ë¥¼ ì—†ì• ê¸° ì§ì „ì— ì‹¤ìˆ˜ì— ì˜í•œ ìž¬ì‚¬ìš©ì„ ë°©ì§€í•˜ê¸° ìœ„í•´ì„œ ulnObject ì— í‘œì‹œë¥¼ í•´ ë‘”ë‹¤.
+     * BUG-15894 ì™€ ê°™ì€ ì‚¬ìš©ìž ì‘ìš© í”„ë¡œê·¸ëž¨ì— ì˜í•œ ë²„ê·¸ë¥¼ ë°©ì§€í•˜ê¸° ìœ„í•´ì„œì´ë‹¤.
      */
 
     aStmt->mObj.mType = ULN_OBJ_TYPE_MAX;
 
     /*
-     * STMT °¡ °¡Áø uluMemory ¸¦ ÆÄ±«ÇÑ´Ù.
+     * STMT ê°€ ê°€ì§„ uluMemory ë¥¼ íŒŒê´´í•œë‹¤.
      */
 
     aStmt->mObj.mMemory->mOp->mDestroyMyself(aStmt->mObj.mMemory);
@@ -314,7 +314,7 @@ ACI_RC ulnStmtDestroy(ulnStmt *aStmt)
         aStmt->mKeyset = NULL;
     }
 
-    /* Note. mRowsetStmt´Â FreeStmt¿¡¼­ Ã³¸®ÇÑ´Ù. */
+    /* Note. mRowsetStmtëŠ” FreeStmtì—ì„œ ì²˜ë¦¬í•œë‹¤. */
 
     if (aStmt->mPrepareTextBuf != NULL)
     {
@@ -485,7 +485,7 @@ ACI_RC ulnStmtInitialize(ulnStmt *aStmt)
     aStmt->mResultSetCount         = 0;
     aStmt->mCurrentResultSetID     = 0;
 
-    /* ¾ÕÀü¿¡ getdata() ÇÑ ÄÃ·³ÀÇ ¹øÈ£¸¦ ±â¾ïÇØ µÖ¾ß ÇÔ */
+    /* ì•žì „ì— getdata() í•œ ì»¬ëŸ¼ì˜ ë²ˆí˜¸ë¥¼ ê¸°ì–µí•´ ë‘¬ì•¼ í•¨ */
     aStmt->mGDColumnNumber         = ULN_GD_COLUMN_NUMBER_INIT_VALUE;
 
     ulnStmtResetPD(aStmt);
@@ -498,9 +498,9 @@ ACI_RC ulnStmtInitialize(ulnStmt *aStmt)
     acpListInit(&aStmt->mResultFreeList);
 
     /*
-     * SES ÀÇ -n ¿É¼ÇÀ» À§ÇÑ ¼Ó¼ºÀÓ. ÀÌ ¼Ó¼ºÀÌ ACP_FALSE ·Î µÇ¾î ÀÖÀ¸¸é
-     * SQLBindParameter() ¿¡¼­ indicator °¡ NULL ÀÌ¶óµµ SQL_NTS ·Î °£ÁÖÇÏÁö ¾Ê´Â´Ù.
-     * default ´Â ACP_TRUE ·Î ÇØ µÖ¾ß ÀÏ¹ÝÀûÀÎ °æ¿ì Á¦´ë·Î µ¿ÀÛÇÑ´Ù.
+     * SES ì˜ -n ì˜µì…˜ì„ ìœ„í•œ ì†ì„±ìž„. ì´ ì†ì„±ì´ ACP_FALSE ë¡œ ë˜ì–´ ìžˆìœ¼ë©´
+     * SQLBindParameter() ì—ì„œ indicator ê°€ NULL ì´ë¼ë„ SQL_NTS ë¡œ ê°„ì£¼í•˜ì§€ ì•ŠëŠ”ë‹¤.
+     * default ëŠ” ACP_TRUE ë¡œ í•´ ë‘¬ì•¼ ì¼ë°˜ì ì¸ ê²½ìš° ì œëŒ€ë¡œ ë™ìž‘í•œë‹¤.
      */
     aStmt->mAttrInputNTS           = ACP_TRUE;
 
@@ -551,7 +551,7 @@ ACI_RC ulnStmtInitialize(ulnStmt *aStmt)
    /* PROJ-1891 Deferred Prepare */
     aStmt->mAttrDeferredPrepare      = ULN_CONN_DEFERRED_PREPARE_DEFAULT;
     aStmt->mDeferredPrepareStateFunc = NULL;
-    // bug-35198: rowset (row array) size°¡ º¯ÇÏ¸é, ÇÑ¹ø¸¸ ÀúÀåÇÔ
+    // bug-35198: rowset (row array) sizeê°€ ë³€í•˜ë©´, í•œë²ˆë§Œ ì €ìž¥í•¨
     aStmt->mPrevRowSetSize           = 0;
 
     aStmt->mExecutedParamSetMaxSize  = 0;  /* BUG-42096 */
@@ -599,16 +599,16 @@ ACI_RC ulnStmtSetApd(ulnStmt *aStmt, ulnDesc *aDesc)
     if (aStmt->mOrigApd == NULL)
     {
         /*
-         * ±× Àü¿¡ ¼¼ÆÃµÈ Explicit Descriptor °¡ ¾ø´Ù.
-         * Implicit Descriptor ¸¦ ¹é¾÷ÇØ µÎÀÚ.
+         * ê·¸ ì „ì— ì„¸íŒ…ëœ Explicit Descriptor ê°€ ì—†ë‹¤.
+         * Implicit Descriptor ë¥¼ ë°±ì—…í•´ ë‘ìž.
          */
         aStmt->mOrigApd = aStmt->mAttrApd;
     }
     else
     {
         /*
-         * ±× Àü¿¡ ¼¼ÆÃµÈ Explicit Descriptor °¡ ÀÖ´Ù.
-         * ±× ÀüÀÇ Explicit Descriptor ÀÇ mAssociatedStmtList ¿¡¼­ STMT ¸¦ Á¦°ÅÇØ Áà¾ß ÇÑ´Ù.
+         * ê·¸ ì „ì— ì„¸íŒ…ëœ Explicit Descriptor ê°€ ìžˆë‹¤.
+         * ê·¸ ì „ì˜ Explicit Descriptor ì˜ mAssociatedStmtList ì—ì„œ STMT ë¥¼ ì œê±°í•´ ì¤˜ì•¼ í•œë‹¤.
          */
         ulnDescRemoveStmtFromAssociatedStmtList(aStmt, aStmt->mAttrApd);
     }
@@ -628,16 +628,16 @@ ACI_RC ulnStmtSetArd(ulnStmt *aStmt, ulnDesc *aDesc)
     if (aStmt->mOrigArd == NULL)
     {
         /*
-         * ±× Àü¿¡ ¼¼ÆÃµÈ Explicit Descriptor °¡ ¾ø´Ù.
-         * Implicit Descriptor ¸¦ ¹é¾÷ÇØ µÎÀÚ.
+         * ê·¸ ì „ì— ì„¸íŒ…ëœ Explicit Descriptor ê°€ ì—†ë‹¤.
+         * Implicit Descriptor ë¥¼ ë°±ì—…í•´ ë‘ìž.
          */
         aStmt->mOrigArd = aStmt->mAttrArd;
     }
     else
     {
         /*
-         * ±× Àü¿¡ ¼¼ÆÃµÈ Explicit Descriptor °¡ ÀÖ´Ù.
-         * ±× ÀüÀÇ Explicit Descriptor ÀÇ mAssociatedStmtList ¿¡¼­ STMT ¸¦ Á¦°ÅÇØ Áà¾ß ÇÑ´Ù.
+         * ê·¸ ì „ì— ì„¸íŒ…ëœ Explicit Descriptor ê°€ ìžˆë‹¤.
+         * ê·¸ ì „ì˜ Explicit Descriptor ì˜ mAssociatedStmtList ì—ì„œ STMT ë¥¼ ì œê±°í•´ ì¤˜ì•¼ í•œë‹¤.
          */
         ulnDescRemoveStmtFromAssociatedStmtList(aStmt, aStmt->mAttrArd);
     }
@@ -706,11 +706,11 @@ acp_uint16_t ulnStmtGetColumnCount(ulnStmt *aStmt)
     acp_uint16_t sDescRecCount;
 
     /*
-     * IRD ¿¡ ÀÖ´Â column count ÀÌ´Ù.
+     * IRD ì— ìžˆëŠ” column count ì´ë‹¤.
      */
     if (ulnStmtGetAttrCursorType(aStmt) == SQL_CURSOR_KEYSET_DRIVEN)
     {
-        /* _PROWID´Â Count¿¡¼­ »©¾ßÇÑ´Ù. */
+        /* _PROWIDëŠ” Countì—ì„œ ë¹¼ì•¼í•œë‹¤. */
         sDescRecCount = aStmt->mIrd4KeysetDriven->mDescRecCount - 1;
     }
     else
@@ -718,7 +718,7 @@ acp_uint16_t ulnStmtGetColumnCount(ulnStmt *aStmt)
         sDescRecCount = aStmt->mAttrIrd->mDescRecCount;
         if (ulnStmtGetIrdRec(aStmt, 0) != NULL)
         {
-            /* BOOKMARK ÄÃ·³Àº column count¿¡ Æ÷ÇÔÇÏÁö ¾Ê´Â´Ù. */
+            /* BOOKMARK ì»¬ëŸ¼ì€ column countì— í¬í•¨í•˜ì§€ ì•ŠëŠ”ë‹¤. */
             sDescRecCount--;
         }
     }
@@ -732,7 +732,7 @@ ulnDescRec *ulnStmtGetIrdRec(ulnStmt *aStmt, acp_uint16_t aColumnNumber)
 
     if (ulnStmtGetAttrCursorType(aStmt) == SQL_CURSOR_KEYSET_DRIVEN)
     {
-        /* _PROWID°¡ Æ÷ÇÔµÇ¾îÀÖÀ¸¹Ç·Î 2ºÎÅÍ ¾ò´Â´Ù. */
+        /* _PROWIDê°€ í¬í•¨ë˜ì–´ìžˆìœ¼ë¯€ë¡œ 2ë¶€í„° ì–»ëŠ”ë‹¤. */
         sDescRec = ulnDescGetDescRec(aStmt->mIrd4KeysetDriven, aColumnNumber + 1);
     }
     else
@@ -746,7 +746,7 @@ ulnDescRec *ulnStmtGetIrdRec(ulnStmt *aStmt, acp_uint16_t aColumnNumber)
 void ulnStmtSetAttrParamBindOffsetPtr(ulnStmt *aStmt, ulvULen *aOffsetPtr)
 {
     /*
-     * APD ÀÇ SQL_DESC_BIND_OFFSET_PTR ·Î ¸ÅÇÎ
+     * APD ì˜ SQL_DESC_BIND_OFFSET_PTR ë¡œ ë§¤í•‘
      */
     ulnDescSetBindOffsetPtr(aStmt->mAttrApd, aOffsetPtr);
 }
@@ -754,7 +754,7 @@ void ulnStmtSetAttrParamBindOffsetPtr(ulnStmt *aStmt, ulvULen *aOffsetPtr)
 ulvULen *ulnStmtGetAttrParamBindOffsetPtr(ulnStmt *aStmt)
 {
     /*
-     * APD ÀÇ SQL_DESC_BIND_OFFSET_PTR ·Î ¸ÅÇÎ
+     * APD ì˜ SQL_DESC_BIND_OFFSET_PTR ë¡œ ë§¤í•‘
      */
     return ulnDescGetBindOffsetPtr(aStmt->mAttrApd);
 }
@@ -764,7 +764,7 @@ ulvULen ulnStmtGetParamBindOffsetValue(ulnStmt *aStmt)
     ulvULen *sOffsetPtr;
 
     /*
-     * ¸¸¾à »ç¿ëÀÚ°¡ Bind Offset À» ÁöÁ¤ÇÏ¿´´Ù¸é ±× °ªÀ» ¾ò¾î¿Â´Ù.
+     * ë§Œì•½ ì‚¬ìš©ìžê°€ Bind Offset ì„ ì§€ì •í•˜ì˜€ë‹¤ë©´ ê·¸ ê°’ì„ ì–»ì–´ì˜¨ë‹¤.
      */
     sOffsetPtr = ulnStmtGetAttrParamBindOffsetPtr(aStmt);
 
@@ -781,7 +781,7 @@ ulvULen ulnStmtGetParamBindOffsetValue(ulnStmt *aStmt)
 void ulnStmtSetAttrRowBindOffsetPtr(ulnStmt *aStmt, ulvULen *aOffsetPtr)
 {
     /*
-     * ARD ÀÇ SQL_DESC_BIND_OFFSET_PTR ·Î ¸ÅÇÎ
+     * ARD ì˜ SQL_DESC_BIND_OFFSET_PTR ë¡œ ë§¤í•‘
      */
     ulnDescSetBindOffsetPtr(aStmt->mAttrArd, aOffsetPtr);
 }
@@ -789,7 +789,7 @@ void ulnStmtSetAttrRowBindOffsetPtr(ulnStmt *aStmt, ulvULen *aOffsetPtr)
 ulvULen *ulnStmtGetAttrRowBindOffsetPtr(ulnStmt *aStmt)
 {
     /*
-     * ARD ÀÇ SQL_DESC_BIND_OFFSET_PTR ·Î ¸ÅÇÎ
+     * ARD ì˜ SQL_DESC_BIND_OFFSET_PTR ë¡œ ë§¤í•‘
      */
     return ulnDescGetBindOffsetPtr(aStmt->mAttrArd);
 }
@@ -799,7 +799,7 @@ ulvULen ulnStmtGetRowBindOffsetValue(ulnStmt *aStmt)
     ulvULen *sOffsetPtr;
 
     /*
-     * ¸¸¾à »ç¿ëÀÚ°¡ Bind Offset À» ÁöÁ¤ÇÏ¿´´Ù¸é ±× °ªÀ» ¾ò¾î¿Â´Ù.
+     * ë§Œì•½ ì‚¬ìš©ìžê°€ Bind Offset ì„ ì§€ì •í•˜ì˜€ë‹¤ë©´ ê·¸ ê°’ì„ ì–»ì–´ì˜¨ë‹¤.
      */
     sOffsetPtr = ulnStmtGetAttrRowBindOffsetPtr(aStmt);
 
@@ -816,7 +816,7 @@ ulvULen ulnStmtGetRowBindOffsetValue(ulnStmt *aStmt)
 acp_uint32_t ulnStmtGetAttrParamBindType(ulnStmt *aStmt)
 {
     /*
-     * APD ÀÇ SQL_DESC_BIND_TYPE À¸·Î ¸ÅÇÎ
+     * APD ì˜ SQL_DESC_BIND_TYPE ìœ¼ë¡œ ë§¤í•‘
      */
     return ulnDescGetBindType(aStmt->mAttrApd);
 }
@@ -824,7 +824,7 @@ acp_uint32_t ulnStmtGetAttrParamBindType(ulnStmt *aStmt)
 void ulnStmtSetAttrParamBindType(ulnStmt *aStmt, acp_uint32_t aType)
 {
     /*
-     * APD ÀÇ SQL_DESC_BIND_TYPE À¸·Î ¸ÅÇÎ
+     * APD ì˜ SQL_DESC_BIND_TYPE ìœ¼ë¡œ ë§¤í•‘
      */
     ulnDescSetBindType(aStmt->mAttrApd, aType);
 }
@@ -848,7 +848,7 @@ acp_uint16_t ulnStmtGetAttrParamOperationValue(ulnStmt *aStmt, acp_uint32_t aRow
 acp_uint16_t *ulnStmtGetAttrParamOperationPtr(ulnStmt *aStmt)
 {
     /*
-     * APD ÀÇ SQL_DESC_ARRAY_STATUS_PTR ·Î ¸ÅÇÎµÊ.
+     * APD ì˜ SQL_DESC_ARRAY_STATUS_PTR ë¡œ ë§¤í•‘ë¨.
      */
     return ulnDescGetArrayStatusPtr(aStmt->mAttrApd);
 }
@@ -856,7 +856,7 @@ acp_uint16_t *ulnStmtGetAttrParamOperationPtr(ulnStmt *aStmt)
 void ulnStmtSetAttrParamOperationPtr(ulnStmt *aStmt, acp_uint16_t *aOperationPtr)
 {
     /*
-     * APD ÀÇ SQL_DESC_ARRAY_STATUS_PTR ·Î ¸ÅÇÎµÊ.
+     * APD ì˜ SQL_DESC_ARRAY_STATUS_PTR ë¡œ ë§¤í•‘ë¨.
      */
     ulnDescSetArrayStatusPtr(aStmt->mAttrApd, aOperationPtr);
 }
@@ -886,7 +886,7 @@ void ulnStmtSetAttrParamStatusPtr(ulnStmt *aStmt, acp_uint16_t *aStatusPtr)
 void ulnStmtSetAttrParamsProcessedPtr(ulnStmt *aStmt, ulvULen *aProcessedPtr)
 {
     /*
-     * IPD ÀÇ SQL_DESC_ROWS_PROCESSED_PTR
+     * IPD ì˜ SQL_DESC_ROWS_PROCESSED_PTR
      */
     ulnDescSetRowsProcessedPtr(aStmt->mAttrIpd, aProcessedPtr);
 }
@@ -894,7 +894,7 @@ void ulnStmtSetAttrParamsProcessedPtr(ulnStmt *aStmt, ulvULen *aProcessedPtr)
 ulvULen *ulnStmtGetAttrParamsProcessedPtr(ulnStmt *aStmt)
 {
     /*
-     * IPD ÀÇ SQL_DESC_ROWS_PROCESSED_PTR
+     * IPD ì˜ SQL_DESC_ROWS_PROCESSED_PTR
      */
     return ulnDescGetRowsProcessedPtr(aStmt->mAttrIpd);
 }
@@ -921,7 +921,7 @@ ACI_RC ulnStmtIncreaseParamsProcessedValue(ulnStmt *aStmt)
 /*
  * ulnStmt[Set|Get]AttrConcurrency.
  *
- * SQL_ATTR_CONCURRENCY statement attribute ¸¦ ¼³Á¤ÇÏ°Å³ª ¾ò¾î¿À´Â ÇÔ¼ö.
+ * SQL_ATTR_CONCURRENCY statement attribute ë¥¼ ì„¤ì •í•˜ê±°ë‚˜ ì–»ì–´ì˜¤ëŠ” í•¨ìˆ˜.
  */
 void ulnStmtSetAttrConcurrency(ulnStmt *aStmt, acp_uint32_t aConcurrency)
 {
@@ -936,7 +936,7 @@ acp_uint32_t ulnStmtGetAttrConcurrency(ulnStmt *aStmt)
 /*
  * ulnStmt[Set|Get]AttrCursorScrollable.
  *
- * SQL_ATTR_CURSOR_SCROLLABLE statement attr À» ¼³Á¤ÇÏ°Å³ª ¾ò¾î¿À´Â ÇÔ¼ö.
+ * SQL_ATTR_CURSOR_SCROLLABLE statement attr ì„ ì„¤ì •í•˜ê±°ë‚˜ ì–»ì–´ì˜¤ëŠ” í•¨ìˆ˜.
  */
 acp_uint32_t ulnStmtGetAttrCursorScrollable(ulnStmt *aStmt)
 {
@@ -953,11 +953,11 @@ ACI_RC ulnStmtSetAttrCursorScrollable(ulnStmt *aStmt, acp_uint32_t aScrollable)
 /*
  * ulnStmt[Get|Set]AttrCursorSensitivity.
  *
- * SQL_ATTR_CURSOR_SENSITIVITY statement attr À» ¼³Á¤ÇÏ°Å³ª ¾ò¾î¿À´Â ÇÔ¼ö.
+ * SQL_ATTR_CURSOR_SENSITIVITY statement attr ì„ ì„¤ì •í•˜ê±°ë‚˜ ì–»ì–´ì˜¤ëŠ” í•¨ìˆ˜.
  *
  * Note
- *  ÇöÀç·Î½á´Â ¿À·ÎÁö SQL_INSENSITIVE ¸¸ Áö¿øÇÑ´Ù.
- *  µû¶ó¼­ ´Ù¸¥ °ªÀ» ¼¼Æ¼¾ÆÈ÷ ¾Êµµ·Ï ÁÖÀÇÇØ¾ß ÇÏ´Ù.
+ *  í˜„ìž¬ë¡œì¨ëŠ” ì˜¤ë¡œì§€ SQL_INSENSITIVE ë§Œ ì§€ì›í•œë‹¤.
+ *  ë”°ë¼ì„œ ë‹¤ë¥¸ ê°’ì„ ì„¸í‹°ì•„ížˆ ì•Šë„ë¡ ì£¼ì˜í•´ì•¼ í•˜ë‹¤.
  */
 acp_uint32_t ulnStmtGetAttrCursorSensitivity(ulnStmt *aStmt)
 {
@@ -969,10 +969,10 @@ ACI_RC ulnStmtSetAttrCursorSensitivity(ulnStmt *aStmt, acp_uint32_t aSensitivity
     ACI_TEST(aSensitivity == SQL_UNSPECIFIED);
 
     /*
-     * BUGBUG : µðÆúÆ® °ªÀº SQL_UNSPECIFIED ÀÌÁö¸¸, ÇöÁö ul °ú cm ¹× mm ¿¡¼­
-     *          sensitive ÇÑ Ä¿¼­¸¦ Áö¿øÇÏÁö ¸øÇÏ±â ¶§¹®¿¡ INSENSITIVE ¸¦ ±âº»À¸·Î Çß´Ù
+     * BUGBUG : ë””í´íŠ¸ ê°’ì€ SQL_UNSPECIFIED ì´ì§€ë§Œ, í˜„ì§€ ul ê³¼ cm ë° mm ì—ì„œ
+     *          sensitive í•œ ì»¤ì„œë¥¼ ì§€ì›í•˜ì§€ ëª»í•˜ê¸° ë•Œë¬¸ì— INSENSITIVE ë¥¼ ê¸°ë³¸ìœ¼ë¡œ í–ˆë‹¤
      *
-     *          °ú¿¬.. INSENSITIVE °¡ ¸Â´ÂÁö, ¾Æ´Ï¸é UNSPECIFIED °¡ ¸Â´ÂÁö ¸ð¸£°Ú´Ù.
+     *          ê³¼ì—°.. INSENSITIVE ê°€ ë§žëŠ”ì§€, ì•„ë‹ˆë©´ UNSPECIFIED ê°€ ë§žëŠ”ì§€ ëª¨ë¥´ê² ë‹¤.
      */
     ulnCursorSetSensitivity(&aStmt->mCursor, aSensitivity);
 
@@ -986,7 +986,7 @@ ACI_RC ulnStmtSetAttrCursorSensitivity(ulnStmt *aStmt, acp_uint32_t aSensitivity
 /*
  * ulnStmt[Get|Set]AttrCursorType.
  *
- * SQL_ATTR_CURSOR_TYPE statement attr À» ¼³Á¤ÇÏ°Å³ª ¾ò¾î¿À´Â ÇÔ¼ö.
+ * SQL_ATTR_CURSOR_TYPE statement attr ì„ ì„¤ì •í•˜ê±°ë‚˜ ì–»ì–´ì˜¤ëŠ” í•¨ìˆ˜.
  */
 acp_uint32_t ulnStmtGetAttrCursorType(ulnStmt *aStmt)
 {
@@ -1001,13 +1001,13 @@ void ulnStmtSetAttrCursorType(ulnStmt *aStmt, acp_uint32_t aType)
 /*
  * ulnStmt[Get|Set]AttrParamsetSize.
  *
- * SQL_ATTR_PARAMSET_SIZE statement attr À» ¼³Á¤ÇÏ°Å³ª ¾ò¾î¿À´Â ÇÔ¼ö.
- * ÀÌ ¼Ó¼ºÀº Param ÀÇ Array Binding ½Ã¿¡ Array ¿¡ ÀÖ´Â element ÀÇ °¹¼öÀÌ´Ù.
+ * SQL_ATTR_PARAMSET_SIZE statement attr ì„ ì„¤ì •í•˜ê±°ë‚˜ ì–»ì–´ì˜¤ëŠ” í•¨ìˆ˜.
+ * ì´ ì†ì„±ì€ Param ì˜ Array Binding ì‹œì— Array ì— ìžˆëŠ” element ì˜ ê°¯ìˆ˜ì´ë‹¤.
  */
 acp_uint32_t ulnStmtGetAttrParamsetSize(ulnStmt *aStmt)
 {
     /*
-     * APD ÀÇ SQL_DESC_ARRAY_SIZE ·Î ¸ÅÇÎ
+     * APD ì˜ SQL_DESC_ARRAY_SIZE ë¡œ ë§¤í•‘
      */
     return ulnDescGetArraySize(aStmt->mAttrApd);
 }
@@ -1015,7 +1015,7 @@ acp_uint32_t ulnStmtGetAttrParamsetSize(ulnStmt *aStmt)
 void ulnStmtSetAttrParamsetSize(ulnStmt *aStmt, acp_uint32_t aSize)
 {
     /*
-     * APD ÀÇ SQL_DESC_ARRAY_SIZE ·Î ¸ÅÇÎ
+     * APD ì˜ SQL_DESC_ARRAY_SIZE ë¡œ ë§¤í•‘
      */
     ulnDescSetArraySize(aStmt->mAttrApd, aSize);
 }
@@ -1023,8 +1023,8 @@ void ulnStmtSetAttrParamsetSize(ulnStmt *aStmt, acp_uint32_t aSize)
 /*
  * ulnStmt[Set|Get]AttrQueryTimeout.
  *
- * ÀÌ ÇÔ¼öµéÀ» È£ÃâÇÏ¿© ÇØ´ç ¼Ó¼ºÀ» ¼¼ÆÃÇÏ´Â ÇÔ¼öµéÀº
- * Datasource ÀÇ max/min timeout ¿¡ ÁÖÀÇÇØ¾ß ÇÑ´Ù.
+ * ì´ í•¨ìˆ˜ë“¤ì„ í˜¸ì¶œí•˜ì—¬ í•´ë‹¹ ì†ì„±ì„ ì„¸íŒ…í•˜ëŠ” í•¨ìˆ˜ë“¤ì€
+ * Datasource ì˜ max/min timeout ì— ì£¼ì˜í•´ì•¼ í•œë‹¤.
  */
 ACI_RC ulnStmtSetAttrQueryTimeout(ulnStmt *aStmt, acp_uint32_t aTimeout)
 {
@@ -1056,7 +1056,7 @@ ACI_RC ulnStmtSetAttrRetrieveData(ulnStmt *aStmt, acp_uint32_t aRetrieve)
 acp_uint32_t ulnStmtGetAttrRowBindType(ulnStmt *aStmt)
 {
     /*
-     * ARD ÀÇ SQL_DESC_BIND_TYPE À¸·Î ¸ÅÇÎ
+     * ARD ì˜ SQL_DESC_BIND_TYPE ìœ¼ë¡œ ë§¤í•‘
      */
     return ulnDescGetBindType(aStmt->mAttrArd);
 }
@@ -1064,7 +1064,7 @@ acp_uint32_t ulnStmtGetAttrRowBindType(ulnStmt *aStmt)
 void ulnStmtSetAttrRowBindType(ulnStmt *aStmt, acp_uint32_t aType)
 {
     /*
-     * ARD ÀÇ SQL_DESC_BIND_TYPE À¸·Î ¸ÅÇÎ
+     * ARD ì˜ SQL_DESC_BIND_TYPE ìœ¼ë¡œ ë§¤í•‘
      */
     ulnDescSetBindType(aStmt->mAttrArd, aType);
 }
@@ -1072,7 +1072,7 @@ void ulnStmtSetAttrRowBindType(ulnStmt *aStmt, acp_uint32_t aType)
 void ulnStmtSetAttrRowOperationPtr(ulnStmt *aStmt, acp_uint16_t *aOperationPtr)
 {
     /*
-     * ARD ÀÇ SQL_DESC_ARRAY_STATUS_PTR ·Î ¸ÅÇÎµÊ.
+     * ARD ì˜ SQL_DESC_ARRAY_STATUS_PTR ë¡œ ë§¤í•‘ë¨.
      */
     ulnDescSetArrayStatusPtr(aStmt->mAttrArd, aOperationPtr);
 }
@@ -1080,7 +1080,7 @@ void ulnStmtSetAttrRowOperationPtr(ulnStmt *aStmt, acp_uint16_t *aOperationPtr)
 acp_uint16_t *ulnStmtGetAttrRowOperationPtr(ulnStmt *aStmt)
 {
     /*
-     * ARD ÀÇ SQL_DESC_ARRAY_STATUS_PTR ·Î ¸ÅÇÎµÊ.
+     * ARD ì˜ SQL_DESC_ARRAY_STATUS_PTR ë¡œ ë§¤í•‘ë¨.
      */
     return ulnDescGetArrayStatusPtr(aStmt->mAttrArd);
 }
@@ -1128,7 +1128,7 @@ void ulnStmtSetAttrRowStatusValue(ulnStmt *aStmt, acp_uint32_t aRow, acp_uint16_
 void ulnStmtSetAttrRowStatusPtr(ulnStmt *aStmt, acp_uint16_t *aStatusPtr)
 {
     /*
-     * IRD ÀÇ SQL_DESC_ARRAY_STATUS_PTR ·Î ¸ÅÇÎµÊ.
+     * IRD ì˜ SQL_DESC_ARRAY_STATUS_PTR ë¡œ ë§¤í•‘ë¨.
      */
     ulnDescSetArrayStatusPtr(aStmt->mAttrIrd, aStatusPtr);
 }
@@ -1152,7 +1152,7 @@ acp_uint16_t ulnStmtGetAttrRowStatusValue(ulnStmt *aStmt, acp_uint32_t aRow)
 acp_uint16_t *ulnStmtGetAttrRowStatusPtr(ulnStmt *aStmt)
 {
     /*
-     * IRD ÀÇ SQL_DESC_ARRAY_STATUS_PTR ·Î ¸ÅÇÎµÊ.
+     * IRD ì˜ SQL_DESC_ARRAY_STATUS_PTR ë¡œ ë§¤í•‘ë¨.
      */
     return ulnDescGetArrayStatusPtr(aStmt->mAttrIrd);
 }
@@ -1165,7 +1165,7 @@ void ulnStmtSetRowsFetchedValue(ulnStmt *aStmt, ulvULen aValue)
 ulvULen *ulnStmtGetAttrRowsFetchedPtr(ulnStmt *aStmt)
 {
     /*
-     * IRD ÀÇ SQL_DESC_ARRAY_STATUS_PTR ·Î ¸ÅÇÎµÊ.
+     * IRD ì˜ SQL_DESC_ARRAY_STATUS_PTR ë¡œ ë§¤í•‘ë¨.
      */
     return ulnDescGetRowsProcessedPtr(aStmt->mAttrIrd);
 }
@@ -1173,7 +1173,7 @@ ulvULen *ulnStmtGetAttrRowsFetchedPtr(ulnStmt *aStmt)
 void ulnStmtSetAttrRowsFetchedPtr(ulnStmt *aStmt, ulvULen *aFetchedPtr)
 {
     /*
-     * IRD ÀÇ SQL_DESC_ARRAY_STATUS_PTR ·Î ¸ÅÇÎµÊ.
+     * IRD ì˜ SQL_DESC_ARRAY_STATUS_PTR ë¡œ ë§¤í•‘ë¨.
      */
     ulnDescSetRowsProcessedPtr(aStmt->mAttrIrd, aFetchedPtr);
 }
@@ -1191,8 +1191,8 @@ acp_bool_t ulnStmtIsCursorOpen(ulnStmt *aStmt)
 }
 
 /*
- * stmt ¿¡ µþ·Á ÀÖ´Â ¸ðµç ARD, APD µéÀ» µû¶ó°¡¸é¼­ BINDINFO SENT FLAG ¸¦ Å¬¸®¾î ½ÃÄÑ ÁØ´Ù.
- * ¼­¹ö¿¡¼­ prepare ¸¦ ÇÏ¸é ÀÌÀüÀÇ ¹ÙÀÎµå Á¤º¸µéÀ» ´Ù ³¯·Á¹ö¸®µµ·Ï ¹Ù²î¸é¼­ ÇÊ¿äÇÏ°Ô µÇ¾ú´Ù.
+ * stmt ì— ë”¸ë ¤ ìžˆëŠ” ëª¨ë“  ARD, APD ë“¤ì„ ë”°ë¼ê°€ë©´ì„œ BINDINFO SENT FLAG ë¥¼ í´ë¦¬ì–´ ì‹œì¼œ ì¤€ë‹¤.
+ * ì„œë²„ì—ì„œ prepare ë¥¼ í•˜ë©´ ì´ì „ì˜ ë°”ì¸ë“œ ì •ë³´ë“¤ì„ ë‹¤ ë‚ ë ¤ë²„ë¦¬ë„ë¡ ë°”ë€Œë©´ì„œ í•„ìš”í•˜ê²Œ ë˜ì—ˆë‹¤.
  */
 void ulnStmtClearBindInfoSentFlagAll(ulnStmt *aStmt)
 {
@@ -1355,7 +1355,7 @@ ulnResult *ulnStmtGetNextResult(ulnStmt *aStmt)
                 if( ((acp_list_t *)sCurrResult)->mNext == &aStmt->mResultList )
                 {
                     /*
-                     * ¸¶Áö¸· result
+                     * ë§ˆì§€ë§‰ result
                      */
                     sNextResult = NULL;
                 }
@@ -1456,7 +1456,7 @@ void ulnStmtSetPrepared(ulnStmt    *aStmt,
 /* PROJ-1381 Fetch Across Commit */
 
 /**
- * Prepare Mode¸¦ ¾ò´Â´Ù.
+ * Prepare Modeë¥¼ ì–»ëŠ”ë‹¤.
  *
  * @param[in] aStmt     statement handle
  * @param[in] aExecMode Execute Mode
@@ -1494,7 +1494,7 @@ acp_uint8_t ulnStmtGetPrepareMode(ulnStmt *aStmt, acp_uint8_t aExecMode)
 }
 
 /**
- * Cursor Hold ¼Ó¼ºÀ» ¼³Á¤ÇÑ´Ù.
+ * Cursor Hold ì†ì„±ì„ ì„¤ì •í•œë‹¤.
  *
  * @param[in] aStmt       statement handle
  * @param[in] aCursorHold holdablility. SQL_CURSOR_HOLD_ON or SQL_CURSOR_HOLD_OFF.
@@ -1505,11 +1505,11 @@ void ulnStmtSetAttrCursorHold(ulnStmt *aStmt, acp_uint32_t aCursorHold)
 }
 
 /**
- * Cursor Hold ¼Ó¼ºÀ» ¾ò´Â´Ù.
+ * Cursor Hold ì†ì„±ì„ ì–»ëŠ”ë‹¤.
  *
  * @param[in] aStmt statement handle
  *
- * @return HoldableÀÌ¸é SQL_CURSOR_HOLD_ON, ¾Æ´Ï¸é SQL_CURSOR_HOLD_OFF
+ * @return Holdableì´ë©´ SQL_CURSOR_HOLD_ON, ì•„ë‹ˆë©´ SQL_CURSOR_HOLD_OFF
  */
 acp_uint32_t ulnStmtGetAttrCursorHold(ulnStmt *aStmt)
 {
@@ -1517,11 +1517,11 @@ acp_uint32_t ulnStmtGetAttrCursorHold(ulnStmt *aStmt)
 }
 
 /**
- * FetchBookmarkPtr·Î ¼³Á¤µÈ ºÏ¸¶Å© °ªÀ» ¾ò´Â´Ù.
+ * FetchBookmarkPtrë¡œ ì„¤ì •ëœ ë¶ë§ˆí¬ ê°’ì„ ì–»ëŠ”ë‹¤.
  *
  * @param[in] aStmt statement handle
  *
- * @return FetchBookmarkPtr·Î ¼³Á¤µÈ ºÏ¸¶Å© °ª. ¼³Á¤µÈ °ªÀÌ ¾øÀ¸¸é 0
+ * @return FetchBookmarkPtrë¡œ ì„¤ì •ëœ ë¶ë§ˆí¬ ê°’. ì„¤ì •ëœ ê°’ì´ ì—†ìœ¼ë©´ 0
  */
 acp_sint64_t ulnStmtGetAttrFetchBookmarkVal(ulnStmt *aStmt)
 {
@@ -1529,8 +1529,8 @@ acp_sint64_t ulnStmtGetAttrFetchBookmarkVal(ulnStmt *aStmt)
 
     if (aStmt->mAttrFetchBookmarkPtr != NULL)
     {
-        /* VARIABLEÀÏ ¶§ÀÇ ÃÖ´ë°ªÀ» 64bit signed int·Î Á¦ÇÑÇÏ´Â ÀÌÀ¯´Â
-         * CursorPositionÀÌ sint64¶ó ±× ÀÌ»óÀº ÀÇ¹Ì°¡ ¾ø±â ¶§¹®. */
+        /* VARIABLEì¼ ë•Œì˜ ìµœëŒ€ê°’ì„ 64bit signed intë¡œ ì œí•œí•˜ëŠ” ì´ìœ ëŠ”
+         * CursorPositionì´ sint64ë¼ ê·¸ ì´ìƒì€ ì˜ë¯¸ê°€ ì—†ê¸° ë•Œë¬¸. */
         if (ulnStmtGetAttrUseBookMarks(aStmt) == SQL_UB_VARIABLE)
         {
             sBookmarkVal = *((acp_sint64_t *) aStmt->mAttrFetchBookmarkPtr);
@@ -1545,11 +1545,11 @@ acp_sint64_t ulnStmtGetAttrFetchBookmarkVal(ulnStmt *aStmt)
 }
 
 /**
- * SQL_FETCH_BOOKMARK ÇÒ ¶§ »ç¿ëÇÒ ºÏ¸¶Å©¸¦ ´ãÀº Æ÷ÀÎÅÍ¸¦ ¾ò´Â´Ù.
+ * SQL_FETCH_BOOKMARK í•  ë•Œ ì‚¬ìš©í•  ë¶ë§ˆí¬ë¥¼ ë‹´ì€ í¬ì¸í„°ë¥¼ ì–»ëŠ”ë‹¤.
  *
  * @param[in] aStmt statement handle
  *
- * @return SQL_FETCH_BOOKMARK ÇÒ ¶§ »ç¿ëÇÒ ºÏ¸¶Å©¸¦ ´ãÀº Æ÷ÀÎÅÍ
+ * @return SQL_FETCH_BOOKMARK í•  ë•Œ ì‚¬ìš©í•  ë¶ë§ˆí¬ë¥¼ ë‹´ì€ í¬ì¸í„°
  */
 acp_uint8_t* ulnStmtGetAttrFetchBookmarkPtr(ulnStmt *aStmt)
 {
@@ -1557,10 +1557,10 @@ acp_uint8_t* ulnStmtGetAttrFetchBookmarkPtr(ulnStmt *aStmt)
 }
 
 /**
- * SQL_FETCH_BOOKMARK ÇÒ ¶§ »ç¿ëÇÒ ºÏ¸¶Å©¸¦ ´ãÀº Æ÷ÀÎÅÍ¸¦ ¼³Á¤ÇÑ´Ù.
+ * SQL_FETCH_BOOKMARK í•  ë•Œ ì‚¬ìš©í•  ë¶ë§ˆí¬ë¥¼ ë‹´ì€ í¬ì¸í„°ë¥¼ ì„¤ì •í•œë‹¤.
  *
  * @param[in] aStmt             statement handle
- * @param[in] aFetchBookmarkPtr SQL_FETCH_BOOKMARK ÇÒ ¶§ »ç¿ëÇÒ ºÏ¸¶Å©¸¦ ´ãÀº Æ÷ÀÎÅÍ
+ * @param[in] aFetchBookmarkPtr SQL_FETCH_BOOKMARK í•  ë•Œ ì‚¬ìš©í•  ë¶ë§ˆí¬ë¥¼ ë‹´ì€ í¬ì¸í„°
  */
 void ulnStmtSetAttrFetchBookmarkPtr(ulnStmt *aStmt, acp_uint8_t *aFetchBookmarkPtr)
 {
@@ -1584,11 +1584,11 @@ ACI_RC ulnStmtCreateKeyset(ulnStmt *aStmt)
 }
 
 /**
- * Cache¿¡ ½×À» ¹æ½ÄÀ» È®ÀÎÇÑ´Ù.
+ * Cacheì— ìŒ“ì„ ë°©ì‹ì„ í™•ì¸í•œë‹¤.
  *
  * @param[in] aStmt statement handle
  *
- * @return Cache¿¡ ½×À» ¹æ½Ä
+ * @return Cacheì— ìŒ“ì„ ë°©ì‹
  */
 ulnStmtFetchMode ulnStmtGetFetchMode(ulnStmt *aStmt)
 {
@@ -1596,10 +1596,10 @@ ulnStmtFetchMode ulnStmtGetFetchMode(ulnStmt *aStmt)
 }
 
 /**
- * Fetch ÇßÀ» ¶§, Cache¿¡ ¾î¶² ¹æ½ÄÀ¸·Î ½×À» °ÍÀÎÁö¸¦ ¼³Á¤ÇÑ´Ù.
+ * Fetch í–ˆì„ ë•Œ, Cacheì— ì–´ë–¤ ë°©ì‹ìœ¼ë¡œ ìŒ“ì„ ê²ƒì¸ì§€ë¥¼ ì„¤ì •í•œë‹¤.
  *
  * @param[in] aStmt      statement handle
- * @param[in] aFetchMode Cache¿¡ ½×À» ¹æ½Ä
+ * @param[in] aFetchMode Cacheì— ìŒ“ì„ ë°©ì‹
  */
 void ulnStmtSetFetchMode(ulnStmt *aStmt, ulnStmtFetchMode aFetchMode)
 {
@@ -1607,15 +1607,15 @@ void ulnStmtSetFetchMode(ulnStmt *aStmt, ulnStmtFetchMode aFetchMode)
 }
 
 /**
- * PrepareText¸¦ ÀúÀåÇØ³î ¹öÆÛ¸¦ ÇÒ´çÇÑ´Ù.
- * ¸¸¾à, ÀÌ¹Ì ÃæºÐÇÑ ¸Þ¸ð¸®°¡ ÇÒ´çµÇ¾îÀÖ´Ù¸é Á¶¿ëÈ÷ ³Ñ¾î°£´Ù.
+ * PrepareTextë¥¼ ì €ìž¥í•´ë†€ ë²„í¼ë¥¼ í• ë‹¹í•œë‹¤.
+ * ë§Œì•½, ì´ë¯¸ ì¶©ë¶„í•œ ë©”ëª¨ë¦¬ê°€ í• ë‹¹ë˜ì–´ìžˆë‹¤ë©´ ì¡°ìš©ížˆ ë„˜ì–´ê°„ë‹¤.
  *
- * ÀÌÀü¿¡ ÀÖ´ø °ªÀº ¾ø¾îÁø´Ù.
+ * ì´ì „ì— ìžˆë˜ ê°’ì€ ì—†ì–´ì§„ë‹¤.
  *
  * @param[in] aStmt   statement handle
- * @param[in] aBufLen ¹öÆÛ ±æÀÌ
+ * @param[in] aBufLen ë²„í¼ ê¸¸ì´
  *
- * @return ¼º°øÇÏ¸é ACI_SUCCESS, ¾Æ´Ï¸é ACI_FAILURE
+ * @return ì„±ê³µí•˜ë©´ ACI_SUCCESS, ì•„ë‹ˆë©´ ACI_FAILURE
  */
 ACI_RC ulnStmtEnsureAllocPrepareTextBuf(ulnStmt *aStmt, acp_sint32_t aBufLen)
 {
@@ -1641,15 +1641,15 @@ ACI_RC ulnStmtEnsureAllocPrepareTextBuf(ulnStmt *aStmt, acp_sint32_t aBufLen)
 }
 
 /**
- * RowsetÀ» ½×´Âµ¥ ¾²±âÀ§ÇÑ Äõ¸®¹®À» ÀúÀåÇØ³î ¹öÆÛ¸¦ ÀçÇÒ´çÇÑ´Ù.
- * ¸¸¾à, ÀÌ¹Ì ÃæºÐÇÑ ¸Þ¸ð¸®°¡ ÇÒ´çµÇ¾îÀÖ´Ù¸é Á¶¿ëÈ÷ ³Ñ¾î°£´Ù.
+ * Rowsetì„ ìŒ“ëŠ”ë° ì“°ê¸°ìœ„í•œ ì¿¼ë¦¬ë¬¸ì„ ì €ìž¥í•´ë†€ ë²„í¼ë¥¼ ìž¬í• ë‹¹í•œë‹¤.
+ * ë§Œì•½, ì´ë¯¸ ì¶©ë¶„í•œ ë©”ëª¨ë¦¬ê°€ í• ë‹¹ë˜ì–´ìžˆë‹¤ë©´ ì¡°ìš©ížˆ ë„˜ì–´ê°„ë‹¤.
  *
- * ÀÌÀü¿¡ ÀÖ´ø °ªÀ» À¯ÁöÇÑ´Ù.
+ * ì´ì „ì— ìžˆë˜ ê°’ì„ ìœ ì§€í•œë‹¤.
  *
  * @param[in] aStmt   statement handle
- * @param[in] aBufLen ¹öÆÛ ±æÀÌ
+ * @param[in] aBufLen ë²„í¼ ê¸¸ì´
  *
- * @return ¼º°øÇÏ¸é ACI_SUCCESS, ¾Æ´Ï¸é ACI_FAILURE
+ * @return ì„±ê³µí•˜ë©´ ACI_SUCCESS, ì•„ë‹ˆë©´ ACI_FAILURE
  */
 ACI_RC ulnStmtEnsureReallocQstrForRowset(ulnStmt *aStmt, acp_sint32_t aBufLen)
 {
@@ -1794,12 +1794,12 @@ ACI_RC ulnStmtEnsureAllocColumnIgnoreFlagsBuf(ulnStmt      *aStmt,
 }
 
 /**
- * Updatable¿¡ »ç¿ëÇÒ TableNameÀ» ¸¸µç´Ù.
+ * Updatableì— ì‚¬ìš©í•  TableNameì„ ë§Œë“ ë‹¤.
  *
- * ÀÌ¹Ì ¸¸µé¾ú´Ù¸é Á¶¿ëÈ÷ ³Ñ¾î°£´Ù.
+ * ì´ë¯¸ ë§Œë“¤ì—ˆë‹¤ë©´ ì¡°ìš©ížˆ ë„˜ì–´ê°„ë‹¤.
  *
- * @return Updatable¿¡ »ç¿ëÇÒ TableNameÀ» Àß ¸¸µé¾úÀ¸¸é ACI_SUCCESS,
- *         ¾Æ´Ï¸é ACI_FAILURE
+ * @return Updatableì— ì‚¬ìš©í•  TableNameì„ ìž˜ ë§Œë“¤ì—ˆìœ¼ë©´ ACI_SUCCESS,
+ *         ì•„ë‹ˆë©´ ACI_FAILURE
  */
 ACI_RC ulnStmtBuildTableNameForUpdate(ulnStmt *aStmt)
 {
@@ -1830,8 +1830,8 @@ ACI_RC ulnStmtBuildTableNameForUpdate(ulnStmt *aStmt)
         sSchemaNameLen = acpCStrLen(sSchemaName, ACP_SINT32_MAX);
     }
 
-    /* SchemaNameÀº ¾øÀ» ¼öµµ ÀÖ´Ù. ¿¹¸¦µé¸é, V$SESSION °°Àº °Å?
-     * ÀÌ·±°Ç ¾ø´Â°Ô Á¤»óÀÌ¹Ç·Î Á¶¿ëÈ÷ ³Ñ¾î°¡¾ßÇÑ´Ù. */
+    /* SchemaNameì€ ì—†ì„ ìˆ˜ë„ ìžˆë‹¤. ì˜ˆë¥¼ë“¤ë©´, V$SESSION ê°™ì€ ê±°?
+     * ì´ëŸ°ê±´ ì—†ëŠ”ê²Œ ì •ìƒì´ë¯€ë¡œ ì¡°ìš©ížˆ ë„˜ì–´ê°€ì•¼í•œë‹¤. */
     if (sSchemaNameLen == 0)
     {
         ACI_TEST(acpSnprintf(aStmt->mTableNameForUpdate,

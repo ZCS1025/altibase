@@ -172,18 +172,18 @@ IDE_RC mmuServerStat::checkServerRunning(idBool *aRunningFlag)
     PDL_SOCKET  sFd = PDL_INVALID_SOCKET;
 
     /* ---------------------------
-     *  [1] Server Running °Ë»ç : FileLock
+     *  [1] Server Running ê²€ì‚¬ : FileLock
      * --------------------------*/
 
     if (idlOS::flock_trywrlock(&mLockFile) == 0)
     {
         /* --------------------------------------------------------
-         *  [2] Server Running °Ë»ç : Port Bind
+         *  [2] Server Running ê²€ì‚¬ : Port Bind
          *
-         *      [1] °úÁ¤¿¡¼­ LockÀÌ ÀâÇû´õ¶óµµ
-         *          LockFileÀ» »èÁ¦Çß±â ¶§¹®¿¡ ¾ò¾îÁø Æ²¸°
-         *          °ªÀÏ ¼ö ÀÖ´Ù. µû¶ó¼­, ÇØ´ç Æ÷Æ®¸¦ BindÇØ¼­
-         *          Á¤¸»·Î ½ÇÇàÁßÀÌ ¾Æ´ÑÁö ´Ù½Ã Àç°Ë»ç ÇÑ´Ù.
+         *      [1] ê³¼ì •ì—ì„œ Lockì´ ì¡í˜”ë”ë¼ë„
+         *          LockFileì„ ì‚­ì œí–ˆê¸° ë•Œë¬¸ì— ì–»ì–´ì§„ í‹€ë¦°
+         *          ê°’ì¼ ìˆ˜ ìˆë‹¤. ë”°ë¼ì„œ, í•´ë‹¹ í¬íŠ¸ë¥¼ Bindí•´ì„œ
+         *          ì •ë§ë¡œ ì‹¤í–‰ì¤‘ì´ ì•„ë‹Œì§€ ë‹¤ì‹œ ì¬ê²€ì‚¬ í•œë‹¤.
          * ------------------------------------------------------*/
 
         idlOS::memset(&servaddr, 0, sizeof(servaddr));

@@ -54,18 +54,18 @@ public:
 
     void   destroy();
 
-    /* 1.Local¿¡¼­ µð½ºÅ©¿¡ flushµÈ ½ÃÁ¡ÀÇ SN°ú ´ëÀÀµÇ´Â RemoteÀÇ SNÀ» ±¸ÇØ¾ß ÇÏ¸ç,
-     *   ÀÌ¶§, sn mapÀ» ½ºÄµÇØ¾ßÇÑ´Ù.
-     * 2.¾çÂÊ ¸ðµÎ¿¡¼­ µð½ºÅ©¿¡ flushµÈ ¿£Æ®¸®¸¦ ÁÖ±âÀûÀ¸·Î »èÁ¦ÇØ¾ßÇÏ¸ç, ÀÌ ¶§¿¡µµ ½ºÄµÀÌ ÇÊ¿äÇÏ´Ù.
-     * ½ºÄµ È½¼ö¸¦ ÁÙÀÌ±â À§ÇØ ÀÌ µÎ °¡Áö ÀÛ¾÷À» ÇÑ¹ø ½ºÄµ½Ã ÇÔ²² ÇÏµµ·Ï ÇÑ´Ù.
-     * 1¹ø ÀÛ¾÷À» À§ÇØ, local flush SNÀÌ ÇÊ¿äÇÏ¸ç, 2¹ø ÀÛ¾÷À» À§ÇØ local/remote flush snÀÌ ÇÊ¿äÇÏ´Ù.
-     * ±×·¡¼­ ¾çÂÊ ¸ðµÎ¿¡¼­ µð½ºÅ©¿¡ flushµÈ SNÀ» ÀÎÀÚ·Î ¹Þ´Â´Ù.
+    /* 1.Localì—ì„œ ë””ìŠ¤í¬ì— flushëœ ì‹œì ì˜ SNê³¼ ëŒ€ì‘ë˜ëŠ” Remoteì˜ SNì„ êµ¬í•´ì•¼ í•˜ë©°,
+     *   ì´ë•Œ, sn mapì„ ìŠ¤ìº”í•´ì•¼í•œë‹¤.
+     * 2.ì–‘ìª½ ëª¨ë‘ì—ì„œ ë””ìŠ¤í¬ì— flushëœ ì—”íŠ¸ë¦¬ë¥¼ ì£¼ê¸°ì ìœ¼ë¡œ ì‚­ì œí•´ì•¼í•˜ë©°, ì´ ë•Œì—ë„ ìŠ¤ìº”ì´ í•„ìš”í•˜ë‹¤.
+     * ìŠ¤ìº” íšŸìˆ˜ë¥¼ ì¤„ì´ê¸° ìœ„í•´ ì´ ë‘ ê°€ì§€ ìž‘ì—…ì„ í•œë²ˆ ìŠ¤ìº”ì‹œ í•¨ê»˜ í•˜ë„ë¡ í•œë‹¤.
+     * 1ë²ˆ ìž‘ì—…ì„ ìœ„í•´, local flush SNì´ í•„ìš”í•˜ë©°, 2ë²ˆ ìž‘ì—…ì„ ìœ„í•´ local/remote flush snì´ í•„ìš”í•˜ë‹¤.
+     * ê·¸ëž˜ì„œ ì–‘ìª½ ëª¨ë‘ì—ì„œ ë””ìŠ¤í¬ì— flushëœ SNì„ ì¸ìžë¡œ ë°›ëŠ”ë‹¤.
      */
     void   getLocalFlushedRemoteSN(smSN   aLocalFlushSN, 
                                    smSN   aRemoteFlushSN,
                                    smSN   aRestartSN,
                                    smSN * aLocalFlushedRemoteSN);
-    /*Recoery Sender°¡ ·Î±×¸¦ ÀÐÀº ÈÄ ÇØ´ç Æ®·£Àè¼ÇÀÌ RecoveryÇØ¾ßÇÏ´ÂÁö È®ÀÎ ÇÔ*/
+    /*Recoery Senderê°€ ë¡œê·¸ë¥¼ ì½ì€ í›„ í•´ë‹¹ íŠ¸ëžœìž­ì…˜ì´ Recoveryí•´ì•¼í•˜ëŠ”ì§€ í™•ì¸ í•¨*/
     idBool needRecoveryTx(smSN aBeginLogSN);
 
     void   setMaxSNs();
@@ -103,14 +103,14 @@ private:
 
     iduMemPool      mEntryPool;
     iduList         mSNMap;
-    /* SN Map Mgr Mutex´Â check point thread¿Í receiver°¡ µ¿½Ã¿¡ ¸®½ºÆ®¿¡ Á¢±ÙÇÏ´Â °ÍÀ» ¹æÁö ÇÏ±â À§ÇØ À¯ÁöÇÑ´Ù.
-     * checkpoint thread´Â checkpoint½Ã ¸®½ºÆ®ÀÇ Ã³À½ ¿£Æ®¸®¸¦ °Ë»öÇÏ¸ç, receiver´Â ¸®½ºÆ®¸¦ ¼öÁ¤ ¹× °Ë»öÇÑ´Ù. 
-     * ¸®½ºÆ®¸¦ ¼öÁ¤ÇÏ´Â °ÍÀº receiver¿Í executor°¡ ¹èÅ¸ÀûÀ¸·Î ¼öÇàÇÏ¹Ç·Î, 
-     * receiver/executor´Â ¸®½ºÆ®¸¦ °»½Å ÇÒ ¶§¿¡¸¸ lockÀ» Àâµµ·Ï ÇÏ¿© ºÒÇÊ¿äÇÑ lockÀ» ÀâÁö ¾Êµµ·Ï ÇÑ´Ù.
-     * checkpoint thread´Â °Ë»ö ½Ã lockÀ» Àâ¾Æ¼­, checkpoint thread°¡ Àß¸øµÈ °ªÀ» ÀÐÁö ¾Êµµ·Ï ÇÑ´Ù.
+    /* SN Map Mgr MutexëŠ” check point threadì™€ receiverê°€ ë™ì‹œì— ë¦¬ìŠ¤íŠ¸ì— ì ‘ê·¼í•˜ëŠ” ê²ƒì„ ë°©ì§€ í•˜ê¸° ìœ„í•´ ìœ ì§€í•œë‹¤.
+     * checkpoint threadëŠ” checkpointì‹œ ë¦¬ìŠ¤íŠ¸ì˜ ì²˜ìŒ ì—”íŠ¸ë¦¬ë¥¼ ê²€ìƒ‰í•˜ë©°, receiverëŠ” ë¦¬ìŠ¤íŠ¸ë¥¼ ìˆ˜ì • ë° ê²€ìƒ‰í•œë‹¤. 
+     * ë¦¬ìŠ¤íŠ¸ë¥¼ ìˆ˜ì •í•˜ëŠ” ê²ƒì€ receiverì™€ executorê°€ ë°°íƒ€ì ìœ¼ë¡œ ìˆ˜í–‰í•˜ë¯€ë¡œ, 
+     * receiver/executorëŠ” ë¦¬ìŠ¤íŠ¸ë¥¼ ê°±ì‹  í•  ë•Œì—ë§Œ lockì„ ìž¡ë„ë¡ í•˜ì—¬ ë¶ˆí•„ìš”í•œ lockì„ ìž¡ì§€ ì•Šë„ë¡ í•œë‹¤.
+     * checkpoint threadëŠ” ê²€ìƒ‰ ì‹œ lockì„ ìž¡ì•„ì„œ, checkpoint threadê°€ ìž˜ëª»ëœ ê°’ì„ ì½ì§€ ì•Šë„ë¡ í•œë‹¤.
      */
     iduMutex        mSNMapMgrMutex;
-    smSN            mMaxMasterCommitSN; //recoveryÇØ¾ß ÇÏ´Â Áö¿¡ ´ëÇÑ ¿©ºÎ¸¦ ºü¸£°Ô °¨ÁöÇÏ±â À§ÇØ À¯ÁöÇÔ
+    smSN            mMaxMasterCommitSN; //recoveryí•´ì•¼ í•˜ëŠ” ì§€ì— ëŒ€í•œ ì—¬ë¶€ë¥¼ ë¹ ë¥´ê²Œ ê°ì§€í•˜ê¸° ìœ„í•´ ìœ ì§€í•¨
 };
 
 #endif //_O_RPR_SNMAPMGR_H_

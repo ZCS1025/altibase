@@ -20,7 +20,7 @@
  *
  * Description :
  *
- * º» ÆÄÀÏÀº ¹é¾÷ °ü¸®ÀÚ¿¡ ´ëÇÑ ±¸ÇöÆÄÀÏÀÌ´Ù.
+ * ë³¸ íŒŒì¼ì€ ë°±ì—… ê´€ë¦¬ìì— ëŒ€í•œ êµ¬í˜„íŒŒì¼ì´ë‹¤.
  *
  **********************************************************************/
 
@@ -39,8 +39,8 @@
 
 /*********************************************************
  * Description: buildRecordForStableMemDataFiles
-  - ¸Ş¸ğ¸® Å×ÀÌºí ½ºÆäÀÌ½ºÀÇ stable DB µ¥ÀÌÅ¸ ÆÄÀÏ ¸ñ·ÏÀ»
-    º¸¿©ÁÖ´Â performance view ÀÇ build ÇÔ¼ö.
+  - ë©”ëª¨ë¦¬ í…Œì´ë¸” ìŠ¤í˜ì´ìŠ¤ì˜ stable DB ë°ì´íƒ€ íŒŒì¼ ëª©ë¡ì„
+    ë³´ì—¬ì£¼ëŠ” performance view ì˜ build í•¨ìˆ˜.
 
  *********************************************************/
 IDE_RC
@@ -60,7 +60,7 @@ smrFT::buildRecordForStableMemDataFiles(idvSQL	    * /* aStatistics */,
     smmTBSNode            * sCurTBS;
     smrStableMemDataFile  * sStableMemDataFile;
 
-    /* ¿¹¿Ü¿¡¼­ »ç¿ëÇÏ±â ¶§¹®¿¡ ÀÎÀÚ°Ë»ç ÀÌÀü¿¡ ÃÊ±âÈ­ µÇ¾î¾ß ÇÔ */
+    /* ì˜ˆì™¸ì—ì„œ ì‚¬ìš©í•˜ê¸° ë•Œë¬¸ì— ì¸ìê²€ì‚¬ ì´ì „ì— ì´ˆê¸°í™” ë˜ì–´ì•¼ í•¨ */
     SMU_LIST_INIT_BASE(&sDataFileLstBase);
 
     IDE_ERROR( aHeader != NULL );
@@ -70,10 +70,10 @@ smrFT::buildRecordForStableMemDataFiles(idvSQL	    * /* aStatistics */,
 
     while( sCurTBS != NULL )
     {
-        /* BUG-44816: X$STABLE_MEM_DATAFILES¸¦ ¸¸µå·Á°í ½Ãµµ ÇÒ ¶§,
-         * º¯°æÁßÀÎ TBS¸¦ Á¢±ÙÇØ¼­ ¼¼±×¸àÅ×ÀÌ¼Ç ÆúÆ®¸¦ ¹ß»ı½ÃÅ³ ¼ö ÀÖ´Ù.
-         * ( ONLINE, OFFLINE º¯°æÀº TBS³ëµå¸¦ ÇØÁ¦ÇÏ°Å³ª µ¥ÀÌÅÍ ÆÄÀÏÀ»
-         * »èÁ¦ ÇÏÁö ¾ÊÀ¸¹Ç·Î °í·ÁÇÏÁö ¾ÊÀ½.)  
+        /* BUG-44816: X$STABLE_MEM_DATAFILESë¥¼ ë§Œë“œë ¤ê³  ì‹œë„ í•  ë•Œ,
+         * ë³€ê²½ì¤‘ì¸ TBSë¥¼ ì ‘ê·¼í•´ì„œ ì„¸ê·¸ë©˜í…Œì´ì…˜ í´íŠ¸ë¥¼ ë°œìƒì‹œí‚¬ ìˆ˜ ìˆë‹¤.
+         * ( ONLINE, OFFLINE ë³€ê²½ì€ TBSë…¸ë“œë¥¼ í•´ì œí•˜ê±°ë‚˜ ë°ì´í„° íŒŒì¼ì„
+         * ì‚­ì œ í•˜ì§€ ì•Šìœ¼ë¯€ë¡œ ê³ ë ¤í•˜ì§€ ì•ŠìŒ.)  
          */
         if ( SMI_TBS_IS_CREATING( sCurTBS->mHeader.mState ) 
              || SMI_TBS_IS_DROPPING( sCurTBS->mHeader.mState )
@@ -100,11 +100,11 @@ smrFT::buildRecordForStableMemDataFiles(idvSQL	    * /* aStatistics */,
         sWhichDB = sCurTBS->mTBSAttr.mMemAttr.mCurrentDB;
 
         /* ------------------------------------------------
-         * [1] stableÇÑ memory database file ¸ñ·ÏÀ» ¸¸µç´Ù.
+         * [1] stableí•œ memory database file ëª©ë¡ì„ ë§Œë“ ë‹¤.
          * ----------------------------------------------*/
         /*
-         * BUG-24163 smrBackupMgr::buildRecordForStableMemDataFiles¿¡¼­
-         *  DBÆÄÀÏ¸ñ·ÏÀ» ¸¸µé¶§ ÆÄÀÏ°¹¼öº¸´Ù ÇÑ°³´õ °Ë»çÇÕ´Ï´Ù.
+         * BUG-24163 smrBackupMgr::buildRecordForStableMemDataFilesì—ì„œ
+         *  DBíŒŒì¼ëª©ë¡ì„ ë§Œë“¤ë•Œ íŒŒì¼ê°¯ìˆ˜ë³´ë‹¤ í•œê°œë” ê²€ì‚¬í•©ë‹ˆë‹¤.
          */
         for(i = 0,sDiskMemDBFileCount=0 ;
             i < sCurTBS->mMemBase->mDBFileCount[sWhichDB];
@@ -123,8 +123,8 @@ smrFT::buildRecordForStableMemDataFiles(idvSQL	    * /* aStatistics */,
                             sWhichDB,
                             i);
 
-                // memory »ó¿¡´Â Á¸ÀçÇÏ³ª, ½ÇÁ¦ disk ¿¡ ¾ø´Â °æ¿ìÀÓ.
-                // skip ÇÑ´Ù.
+                // memory ìƒì—ëŠ” ì¡´ì¬í•˜ë‚˜, ì‹¤ì œ disk ì— ì—†ëŠ” ê²½ìš°ì„.
+                // skip í•œë‹¤.
                 continue;
             }
 
@@ -133,7 +133,7 @@ smrFT::buildRecordForStableMemDataFiles(idvSQL	    * /* aStatistics */,
             /* TC/Server/LimitEnv/Bugs/BUG-24163/BUG-24163_1.sql */
             /* IDU_FIT_POINT_RAISE( "smrFT::buildRecordForStableMemDataFiles::malloc",
                                     insufficient_memory ); */
-            /* [TODO] immediate·Î º¯°æÇÒ°Í. */
+            /* [TODO] immediateë¡œ ë³€ê²½í• ê²ƒ. */
 
             IDE_TEST( iduMemMgr::malloc(IDU_MEM_SM_SMR,
                                         ID_SIZEOF(smrStableMemDataFile),
@@ -155,8 +155,8 @@ smrFT::buildRecordForStableMemDataFiles(idvSQL	    * /* aStatistics */,
     }
 
     /* ------------------------------------------------
-     * [2] stableÇÑ memory database file fixed table record setÀ»
-     * ¸¸µç´Ù.
+     * [2] stableí•œ memory database file fixed table record setì„
+     * ë§Œë“ ë‹¤.
      * ----------------------------------------------*/
 
     // [3] build record.
@@ -217,22 +217,22 @@ smrFT::buildRecordForStableMemDataFiles(idvSQL	    * /* aStatistics */,
 }
 
 /*********************************************************
- * Description: archive log list ¼öÇà
- * ·Î±×¸ğµå¿¡ °üÇÑ Á¤º¸¿Í µ¥ÀÌÅÍº£ÀÌ½º archive »óÅÂ¿¡ ´ëÇÑ
- * ´ÙÀ½°ú°°Àº Á¤º¸¸¦ Á¦°øÇÑ´Ù.
+ * Description: archive log list ìˆ˜í–‰
+ * ë¡œê·¸ëª¨ë“œì— ê´€í•œ ì •ë³´ì™€ ë°ì´í„°ë² ì´ìŠ¤ archive ìƒíƒœì— ëŒ€í•œ
+ * ë‹¤ìŒê³¼ê°™ì€ ì •ë³´ë¥¼ ì œê³µí•œë‹¤.
  *
  * - Database log mode
- *   : µ¥ÀÌÅ¸º£ÀÌ½º archivelog ¸ğµå Ãâ·Â
+ *   : ë°ì´íƒ€ë² ì´ìŠ¤ archivelog ëª¨ë“œ ì¶œë ¥
  * - Archive Thread Activated
- *   : archivelog thread°¡ È°¼ºÈ­»óÅÂÀÎÁö ºñÈ°¼ºÈ­»óÅÂÀÎÁö Ãâ·Â
+ *   : archivelog threadê°€ í™œì„±í™”ìƒíƒœì¸ì§€ ë¹„í™œì„±í™”ìƒíƒœì¸ì§€ ì¶œë ¥
  * - Archive destination directory
- *   : archive log directory Ãâ·Â
+ *   : archive log directory ì¶œë ¥
  * - Oldest online log sequence
- *   : »èÁ¦µÇÁö ¾ÊÀº online logfile Áß °¡Àå ¿À·£µÈ logfile ¹øÈ£ Ãâ·Â
+ *   : ì‚­ì œë˜ì§€ ì•Šì€ online logfile ì¤‘ ê°€ì¥ ì˜¤ëœëœ logfile ë²ˆí˜¸ ì¶œë ¥
  * - Next log sequence to archive
- *   : archive log listÁß ´ÙÀ½ archive ÇÒ logfile ¹øÈ£ Ãâ·Â
+ *   : archive log listì¤‘ ë‹¤ìŒ archive í•  logfile ë²ˆí˜¸ ì¶œë ¥
  * - Current log sequence
- *   : ÇöÀç ·Î±×ÆÄÀÏ ¹øÈ£ Ãâ·Â
+ *   : í˜„ì¬ ë¡œê·¸íŒŒì¼ ë²ˆí˜¸ ì¶œë ¥
  *********************************************************/
 IDE_RC smrFT::buildRecordForArchiveInfo(idvSQL              * /*aStatistics*/,
                                         void        *aHeader,
@@ -255,7 +255,7 @@ IDE_RC smrFT::buildRecordForArchiveInfo(idvSQL              * /*aStatistics*/,
     smrLogMgr::getLogFileMgr().getCurLogFileNo( &sCurLogFileNo );
 
     /*
-       Archive Info¸¦ »ı¼ºÇÏ°í Fixed Table Record¸¦ ±¸¼ºÇÑ´Ù.
+       Archive Infoë¥¼ ìƒì„±í•˜ê³  Fixed Table Recordë¥¼ êµ¬ì„±í•œë‹¤.
     */
     sArchiveInfo.mArchiveMode= smrRecoveryMgr::getArchiveMode();
     sArchiveInfo.mArchThrRunning = smrLogMgr::getArchiveThread().isStarted();
@@ -417,13 +417,13 @@ iduFixedTableDesc  gStableMemDataFileTableDesc=
 };
 
 /***********************************************************************
- * Description : V$LFG¸¦ À§ÇÑ Record¸¦ ºôµåÇÑ´Ù.aRecordBuffer¿¡ aRecordCount
- *               ¸¸Å­ÀÇ ·¹ÄÚµå¸¦ ¸¸µé¾î ÀúÀåÇÑ´Ù. ±×¸®°í ·¹ÄÚµåÀÇ °¹¼ö¸¦ aRecordCount
- *               ¿¡ ÀúÀåÇÑ´Ù.
+ * Description : V$LFGë¥¼ ìœ„í•œ Recordë¥¼ ë¹Œë“œí•œë‹¤.aRecordBufferì— aRecordCount
+ *               ë§Œí¼ì˜ ë ˆì½”ë“œë¥¼ ë§Œë“¤ì–´ ì €ì¥í•œë‹¤. ê·¸ë¦¬ê³  ë ˆì½”ë“œì˜ ê°¯ìˆ˜ë¥¼ aRecordCount
+ *               ì— ì €ì¥í•œë‹¤.
  *
  * aHeader           - [IN]  Fixed Table Desc
- * aRecordBuffer     - [OUT] Record°¡ ÀúÀåµÉ ¹öÆÛ
- * aRecordCount      - [OUT] aRecordBuffer¿¡ ÀúÀåµÈ ·¹ÄÚµåÀÇ °¹¼ö
+ * aRecordBuffer     - [OUT] Recordê°€ ì €ì¥ë  ë²„í¼
+ * aRecordCount      - [OUT] aRecordBufferì— ì €ì¥ëœ ë ˆì½”ë“œì˜ ê°¯ìˆ˜
  ***********************************************************************/
 IDE_RC smrFT::buildRecordOfLFGForFixedTable( idvSQL              * /*aStatistics*/,
                                              void                *  aHeader,
@@ -441,9 +441,9 @@ IDE_RC smrFT::buildRecordOfLFGForFixedTable( idvSQL              * /*aStatistics
 
     sPerfLFG.mCurWriteLFNo = smrLogMgr::getLogFileMgr().getCurWriteLFNo();
 
-    /* BUG-19271 control´Ü°è¿¡¼­ v$lfg, x$lfg¸¦ Á¶È¸ÇÏ¸é DB ºñÁ¤»ó Á¾·áÇÔ
+    /* BUG-19271 controlë‹¨ê³„ì—ì„œ v$lfg, x$lfgë¥¼ ì¡°íšŒí•˜ë©´ DB ë¹„ì •ìƒ ì¢…ë£Œí•¨
      *
-     * Control´Ü°è´Â RedoÀüÀÌ±â¶§¹®¿¡ ¸¶Áö¸· LogÀÇ OffsetÀ» ¾Ë ¼ö ¾ø½À´Ï´Ù.
+     * Controlë‹¨ê³„ëŠ” Redoì „ì´ê¸°ë•Œë¬¸ì— ë§ˆì§€ë§‰ Logì˜ Offsetì„ ì•Œ ìˆ˜ ì—†ìŠµë‹ˆë‹¤.
      * */
     if ( smiGetStartupPhase() == SMI_STARTUP_CONTROL )
     {
@@ -831,11 +831,11 @@ IDE_RC smrFT::buildRecordForRecvFailObj(idvSQL              * /*aStatistics*/,
 
         switch( sCursor->mCause )
         {
-        case SMR_RTOI_CAUSE_OBJECT:   /* °´Ã¼(Table,index,Page)µîÀÌ ÀÌ»óÇÔ*/
-        case SMR_RTOI_CAUSE_REDO:     /* RedoRecovery¿¡¼­ ½ÇÆĞÇßÀ½ */
-        case SMR_RTOI_CAUSE_UNDO:     /* UndoRecovery¿¡¼­ ½ÇÆĞÇßÀ½ */
-        case SMR_RTOI_CAUSE_REFINE:   /* Refine¿¡¼­ ½ÇÆĞÇßÀ½ */
-        case SMR_RTOI_CAUSE_PROPERTY: /* Property¿¡ ÀÇÇØ °­Á¦·Î Á¦¿ÜµÊ  */
+        case SMR_RTOI_CAUSE_OBJECT:   /* ê°ì²´(Table,index,Page)ë“±ì´ ì´ìƒí•¨*/
+        case SMR_RTOI_CAUSE_REDO:     /* RedoRecoveryì—ì„œ ì‹¤íŒ¨í–ˆìŒ */
+        case SMR_RTOI_CAUSE_UNDO:     /* UndoRecoveryì—ì„œ ì‹¤íŒ¨í–ˆìŒ */
+        case SMR_RTOI_CAUSE_REFINE:   /* Refineì—ì„œ ì‹¤íŒ¨í–ˆìŒ */
+        case SMR_RTOI_CAUSE_PROPERTY: /* Propertyì— ì˜í•´ ê°•ì œë¡œ ì œì™¸ë¨  */
             idlOS::strncpy( sRTOI4FT.mCause, 
                             sRTOICause[ sCursor->mCause ], 
                             9 );

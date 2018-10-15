@@ -19,11 +19,11 @@
  * $Id: qmgSelection.cpp 82075 2018-01-17 06:39:52Z jina.kim $
  *
  * Description :
- *     Selection Graph¸¦ À§ÇÑ ¼öÇà ÇÔ¼ö
+ *     Selection Graphë¥¼ ìœ„í•œ ìˆ˜í–‰ í•¨ìˆ˜
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  **********************************************************************/
 
@@ -51,12 +51,12 @@ qmgSelection::init( qcStatement * aStatement,
 {
 /***********************************************************************
  *
- * Description : qmgSelection GraphÀÇ ÃÊ±âÈ­
+ * Description : qmgSelection Graphì˜ ì´ˆê¸°í™”
  *
  * Implementation :
- *    (1) qmgSelectionÀ» À§ÇÑ °ø°£ ÇÒ´ç ¹ŞÀ½
- *    (2) graph( ¸ğµç Graph¸¦ À§ÇÑ °øÅë ÀÚ·á ±¸Á¶) ÃÊ±âÈ­
- *    (3) out ¼³Á¤
+ *    (1) qmgSelectionì„ ìœ„í•œ ê³µê°„ í• ë‹¹ ë°›ìŒ
+ *    (2) graph( ëª¨ë“  Graphë¥¼ ìœ„í•œ ê³µí†µ ìë£Œ êµ¬ì¡°) ì´ˆê¸°í™”
+ *    (3) out ì„¤ì •
  *
  ***********************************************************************/
 
@@ -66,7 +66,7 @@ qmgSelection::init( qcStatement * aStatement,
     IDU_FIT_POINT_FATAL( "qmgSelection::init::__FT__" );
 
     //---------------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //---------------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -74,16 +74,16 @@ qmgSelection::init( qcStatement * aStatement,
     IDE_DASSERT( aFrom != NULL );
 
     //---------------------------------------------------
-    // Selection Graph¸¦ À§ÇÑ ±âº» ÃÊ±âÈ­
+    // Selection Graphë¥¼ ìœ„í•œ ê¸°ë³¸ ì´ˆê¸°í™”
     //---------------------------------------------------
 
-    // qmgSelectionÀ» À§ÇÑ °ø°£ ÇÒ´ç
+    // qmgSelectionì„ ìœ„í•œ ê³µê°„ í• ë‹¹
     IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF( qmgSELT ),
                                              (void**) &sMyGraph )
               != IDE_SUCCESS );
 
 
-    // Graph °øÅë Á¤º¸ÀÇ ÃÊ±âÈ­
+    // Graph ê³µí†µ ì •ë³´ì˜ ì´ˆê¸°í™”
     IDE_TEST( qmg::initGraph( & sMyGraph->graph ) != IDE_SUCCESS );
 
     sMyGraph->graph.type = QMG_SELECTION;
@@ -96,7 +96,7 @@ qmgSelection::init( qcStatement * aStatement,
     sMyGraph->graph.makePlan = qmgSelection::makePlan;
     sMyGraph->graph.printGraph = qmgSelection::printGraph;
 
-    // Disk/Memory Á¤º¸ ¼³Á¤
+    // Disk/Memory ì •ë³´ ì„¤ì •
     sTableRef =  sMyGraph->graph.myFrom->tableRef;
     if ( ( QC_SHARED_TMPLATE(aStatement)->tmplate.rows[sTableRef->table].lflag
            & MTC_TUPLE_STORAGE_MASK ) == MTC_TUPLE_STORAGE_DISK )
@@ -114,7 +114,7 @@ qmgSelection::init( qcStatement * aStatement,
     sMyGraph->graph.flag |= QMG_ROWNUM_PUSHED_TRUE;
 
     //---------------------------------------------------
-    // Selection °íÀ¯ Á¤º¸ÀÇ ÃÊ±âÈ­
+    // Selection ê³ ìœ  ì •ë³´ì˜ ì´ˆê¸°í™”
     //---------------------------------------------------
 
     sMyGraph->limit = NULL;
@@ -125,12 +125,12 @@ qmgSelection::init( qcStatement * aStatement,
     sMyGraph->sdf = NULL;
 
     // PROJ-1502 PARTITIONED DISK TABLE
-    // partition¿¡ ´ëÇÑ selection graphÀÓÀ» ¸í½Ã
+    // partitionì— ëŒ€í•œ selection graphì„ì„ ëª…ì‹œ
     sMyGraph->partitionRef = NULL;
 
     sMyGraph->mFlag = QMG_SELT_FLAG_CLEAR;
 
-    // out ¼³Á¤
+    // out ì„¤ì •
     *aGraph = (qmgGraph *)sMyGraph;
 
     return IDE_SUCCESS;
@@ -150,13 +150,13 @@ qmgSelection::init( qcStatement     * aStatement,
 /***********************************************************************
  *
  * Description : PROJ-1502 PARTITIONED DISK TABLE
- *               qmgSelection GraphÀÇ ÃÊ±âÈ­
+ *               qmgSelection Graphì˜ ì´ˆê¸°í™”
  *
  * Implementation :
- *    (1) qmgSelectionÀ» À§ÇÑ °ø°£ ÇÒ´ç ¹ŞÀ½
- *    (2) graph( ¸ğµç Graph¸¦ À§ÇÑ °øÅë ÀÚ·á ±¸Á¶) ÃÊ±âÈ­
- *    (3) reference partitionÀ» ¼¼ÆÃ
- *    (3) out ¼³Á¤
+ *    (1) qmgSelectionì„ ìœ„í•œ ê³µê°„ í• ë‹¹ ë°›ìŒ
+ *    (2) graph( ëª¨ë“  Graphë¥¼ ìœ„í•œ ê³µí†µ ìë£Œ êµ¬ì¡°) ì´ˆê¸°í™”
+ *    (3) reference partitionì„ ì„¸íŒ…
+ *    (3) out ì„¤ì •
  *
  ***********************************************************************/
 
@@ -166,7 +166,7 @@ qmgSelection::init( qcStatement     * aStatement,
     IDU_FIT_POINT_FATAL( "qmgSelection::init::__FT__" );
 
     //---------------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //---------------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -175,24 +175,24 @@ qmgSelection::init( qcStatement     * aStatement,
     IDE_DASSERT( aPartitionRef != NULL );
 
     //---------------------------------------------------
-    // Selection Graph¸¦ À§ÇÑ ±âº» ÃÊ±âÈ­
+    // Selection Graphë¥¼ ìœ„í•œ ê¸°ë³¸ ì´ˆê¸°í™”
     //---------------------------------------------------
     sTableRef = aFrom->tableRef;
 
-    // qmgSelectionÀ» À§ÇÑ °ø°£ ÇÒ´ç
+    // qmgSelectionì„ ìœ„í•œ ê³µê°„ í• ë‹¹
     IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF( qmgSELT ),
                                              (void**) &sMyGraph )
               != IDE_SUCCESS );
 
 
-    // Graph °øÅë Á¤º¸ÀÇ ÃÊ±âÈ­
+    // Graph ê³µí†µ ì •ë³´ì˜ ì´ˆê¸°í™”
     IDE_TEST( qmg::initGraph( & sMyGraph->graph ) != IDE_SUCCESS );
 
     sMyGraph->graph.type = QMG_SELECTION;
     qtc::dependencySetWithDep( & sMyGraph->graph.depInfo,
                                & aFrom->depInfo );
 
-    // partitionÀÇ dependency·Î º¯°æ.
+    // partitionì˜ dependencyë¡œ ë³€ê²½.
     qtc::dependencyChange( sTableRef->table,
                            aPartitionRef->table,
                            &sMyGraph->graph.depInfo,
@@ -205,7 +205,7 @@ qmgSelection::init( qcStatement     * aStatement,
     sMyGraph->graph.makePlan = qmgSelection::makePlanPartition;
     sMyGraph->graph.printGraph = qmgSelection::printGraphPartition;
 
-    // Disk/Memory Á¤º¸ ¼³Á¤
+    // Disk/Memory ì •ë³´ ì„¤ì •
     if ( ( QC_SHARED_TMPLATE(aStatement)->tmplate.rows[aPartitionRef->table].lflag
            & MTC_TUPLE_STORAGE_MASK ) == MTC_TUPLE_STORAGE_DISK )
     {
@@ -219,7 +219,7 @@ qmgSelection::init( qcStatement     * aStatement,
     }
 
     //---------------------------------------------------
-    // Selection °íÀ¯ Á¤º¸ÀÇ ÃÊ±âÈ­
+    // Selection ê³ ìœ  ì •ë³´ì˜ ì´ˆê¸°í™”
     //---------------------------------------------------
 
     sMyGraph->limit = NULL;
@@ -230,13 +230,13 @@ qmgSelection::init( qcStatement     * aStatement,
     sMyGraph->sdf = NULL;
 
     // PROJ-1502 PARTITIONED DISK TABLE
-    // partition¿¡ ´ëÇÑ selection graphÀÓÀ» ¸í½Ã
+    // partitionì— ëŒ€í•œ selection graphì„ì„ ëª…ì‹œ
     sMyGraph->partitionRef = aPartitionRef;
 
-    /* BUG-44659 ¹Ì»ç¿ë PartitionÀÇ Åë°è Á¤º¸¸¦ Ãâ·ÂÇÏ´Ù°¡,
-     *           GraphÀÇ Partition/Column/Index Name ºÎºĞ¿¡¼­ ºñÁ¤»ó Á¾·áÇÒ ¼ö ÀÖ½À´Ï´Ù.
-     *  LockÀ» ÀâÁö ¾Ê°í Meta Cache¸¦ »ç¿ëÇÏ¸é, ºñÁ¤»ó Á¾·áÇÒ ¼ö ÀÖ½À´Ï´Ù.
-     *  qmgSELT¿¡¼­ Partition NameÀ» º¸°üÇÏµµ·Ï ¼öÁ¤ÇÕ´Ï´Ù.
+    /* BUG-44659 ë¯¸ì‚¬ìš© Partitionì˜ í†µê³„ ì •ë³´ë¥¼ ì¶œë ¥í•˜ë‹¤ê°€,
+     *           Graphì˜ Partition/Column/Index Name ë¶€ë¶„ì—ì„œ ë¹„ì •ìƒ ì¢…ë£Œí•  ìˆ˜ ìˆìŠµë‹ˆë‹¤.
+     *  Lockì„ ì¡ì§€ ì•Šê³  Meta Cacheë¥¼ ì‚¬ìš©í•˜ë©´, ë¹„ì •ìƒ ì¢…ë£Œí•  ìˆ˜ ìˆìŠµë‹ˆë‹¤.
+     *  qmgSELTì—ì„œ Partition Nameì„ ë³´ê´€í•˜ë„ë¡ ìˆ˜ì •í•©ë‹ˆë‹¤.
      */
     (void)idlOS::memcpy( sMyGraph->partitionName,
                          aPartitionRef->partitionInfo->name,
@@ -247,7 +247,7 @@ qmgSelection::init( qcStatement     * aStatement,
 
     sMyGraph->mFlag = QMG_SELT_FLAG_CLEAR;
 
-    // out ¼³Á¤
+    // out ì„¤ì •
     *aGraph = (qmgGraph *)sMyGraph;
 
     return IDE_SUCCESS;
@@ -261,22 +261,22 @@ IDE_RC qmgSelection::optimize(qcStatement * aStatement, qmgGraph * aGraph)
 {
 /***********************************************************************
  *
- * Description : qmgSelectionÀÇ ÃÖÀûÈ­
+ * Description : qmgSelectionì˜ ìµœì í™”
  *
  * Implementation :
- *    (1) View Graph »ı¼º
- *        - BUG-9736 ¼öÁ¤ ½Ã¿¡ View Graph »ı¼º°úÁ¤À» init °úÁ¤À¸·Î ¿Å°åÀ¸³ª
- *          init °úÁ¤¿¡¼­ View Graph¸¦ »ı¼ºÇÒ °æ¿ì, Push SelectionÀ» Àû¿ëÇÒ ¼ö
- *          ¾ø´Ù. BUG-9736Àº left outer, full outer joinÀÇ subquery graph »ı¼º
- *          À§Ä¡ º¯°æÀ¸·Î ÇØ°áÇØ¾ß ÇÔ
- *    (2) bad transitive predicateÀ» Á¦°Å
- *    (3) Subquery Graph »ı¼º
- *    (4) °øÅë ºñ¿ë Á¤º¸ ¼³Á¤( recordSize, inputRecordCnt, pageCnt )
- *    (5) Predicate Àç¹èÄ¡ ¹× °³º° PredicateÀÇ selectivity °è»ê
- *    (6) ÀüÃ¼ selectivity °è»ê ¹× °øÅë ºñ¿ë Á¤º¸ÀÇ selectivity¿¡ ÀúÀå
- *    (7) Access Method ¼±ÅÃ
- *    (8) Preserved Order ¼³Á¤
- *    (9) °øÅë ºñ¿ë Á¤º¸ ¼³Á¤( outputRecordCnt, myCost, totalCost )
+ *    (1) View Graph ìƒì„±
+ *        - BUG-9736 ìˆ˜ì • ì‹œì— View Graph ìƒì„±ê³¼ì •ì„ init ê³¼ì •ìœ¼ë¡œ ì˜®ê²¼ìœ¼ë‚˜
+ *          init ê³¼ì •ì—ì„œ View Graphë¥¼ ìƒì„±í•  ê²½ìš°, Push Selectionì„ ì ìš©í•  ìˆ˜
+ *          ì—†ë‹¤. BUG-9736ì€ left outer, full outer joinì˜ subquery graph ìƒì„±
+ *          ìœ„ì¹˜ ë³€ê²½ìœ¼ë¡œ í•´ê²°í•´ì•¼ í•¨
+ *    (2) bad transitive predicateì„ ì œê±°
+ *    (3) Subquery Graph ìƒì„±
+ *    (4) ê³µí†µ ë¹„ìš© ì •ë³´ ì„¤ì •( recordSize, inputRecordCnt, pageCnt )
+ *    (5) Predicate ì¬ë°°ì¹˜ ë° ê°œë³„ Predicateì˜ selectivity ê³„ì‚°
+ *    (6) ì „ì²´ selectivity ê³„ì‚° ë° ê³µí†µ ë¹„ìš© ì •ë³´ì˜ selectivityì— ì €ì¥
+ *    (7) Access Method ì„ íƒ
+ *    (8) Preserved Order ì„¤ì •
+ *    (9) ê³µí†µ ë¹„ìš© ì •ë³´ ì„¤ì •( outputRecordCnt, myCost, totalCost )
  *
  ***********************************************************************/
 
@@ -299,14 +299,14 @@ IDE_RC qmgSelection::optimize(qcStatement * aStatement, qmgGraph * aGraph)
     IDU_FIT_POINT_FATAL( "qmgSelection::optimize::__FT__" );
 
     //---------------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //---------------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aGraph != NULL );
 
     //---------------------------------------------------
-    // ±âº» ÃÊ±âÈ­
+    // ê¸°ë³¸ ì´ˆê¸°í™”
     //---------------------------------------------------
 
     sMyGraph = (qmgSELT*) aGraph;
@@ -314,12 +314,12 @@ IDE_RC qmgSelection::optimize(qcStatement * aStatement, qmgGraph * aGraph)
     sRecordSize = 0;
 
     //---------------------------------------------------
-    // View GraphÀÇ »ı¼º ¹× Åë°è Á¤º¸ ±¸Ãà
-    //   ( ÀÏ¹İ TableÀÇ Åë°è Á¤º¸´Â Validation °úÁ¤¿¡¼­ ¼³Á¤µÊ )
+    // View Graphì˜ ìƒì„± ë° í†µê³„ ì •ë³´ êµ¬ì¶•
+    //   ( ì¼ë°˜ Tableì˜ í†µê³„ ì •ë³´ëŠ” Validation ê³¼ì •ì—ì„œ ì„¤ì •ë¨ )
     //---------------------------------------------------
 
     // PROJ-2582 recursive with
-    // recursive view¸¦ view Ã³·³ Ã³¸® ÇÏ±â À§ÇØ view º¹»ç..
+    // recursive viewë¥¼ view ì²˜ëŸ¼ ì²˜ë¦¬ í•˜ê¸° ìœ„í•´ view ë³µì‚¬..
     if ( sTableRef->recursiveView != NULL )
     {
         sTableRef->view = sTableRef->recursiveView;
@@ -331,19 +331,19 @@ IDE_RC qmgSelection::optimize(qcStatement * aStatement, qmgGraph * aGraph)
 
     if( sTableRef->view != NULL )
     {
-        // View GraphÀÇ »ı¼º
+        // View Graphì˜ ìƒì„±
         IDE_TEST( makeViewGraph( aStatement, & sMyGraph->graph )
                   != IDE_SUCCESS );
 
-        // Åë°è Á¤º¸ÀÇ ±¸Ãà
+        // í†µê³„ ì •ë³´ì˜ êµ¬ì¶•
         IDE_TEST( qmoStat::getStatInfo4View( aStatement,
                                              & sMyGraph->graph,
                                              & sTableRef->statInfo )
                   != IDE_SUCCESS );
 
         // fix BUG-11209
-        // selection graph´Â ÇÏÀ§¿¡ view°¡ ¿Ã ¼ö ÀÖÀ¸¹Ç·Î
-        // view°¡ ÀÖÀ» ¶§´Â viewÀÇ projection graphÀÇ Å¸ÀÔÀ¸·Î flag¸¦ º¸Á¤ÇÑ´Ù.
+        // selection graphëŠ” í•˜ìœ„ì— viewê°€ ì˜¬ ìˆ˜ ìˆìœ¼ë¯€ë¡œ
+        // viewê°€ ìˆì„ ë•ŒëŠ” viewì˜ projection graphì˜ íƒ€ì…ìœ¼ë¡œ flagë¥¼ ë³´ì •í•œë‹¤.
         sMyGraph->graph.flag &= ~QMG_GRAPH_TYPE_MASK;
         sMyGraph->graph.flag |= QMG_GRAPH_TYPE_MASK &
             sMyGraph->graph.left->flag;
@@ -351,25 +351,25 @@ IDE_RC qmgSelection::optimize(qcStatement * aStatement, qmgGraph * aGraph)
     else
     {
         //---------------------------------------------------
-        // ::init¿¡¼­ ÀÌ¹Ì flag ÃÊ±âÈ­°¡ ÀÌ·ç¾î Á³À¸¹Ç·Î, View°¡ ¾Æ´Ñ°æ¿ì¿¡´Â
-        // ¾Æ¹«Ã³¸®µµ ÇÏÁö ¾ÊÀ¸¸é µÈ´Ù.
+        // ::initì—ì„œ ì´ë¯¸ flag ì´ˆê¸°í™”ê°€ ì´ë£¨ì–´ ì¡Œìœ¼ë¯€ë¡œ, Viewê°€ ì•„ë‹Œê²½ìš°ì—ëŠ”
+        // ì•„ë¬´ì²˜ë¦¬ë„ í•˜ì§€ ì•Šìœ¼ë©´ ëœë‹¤.
         // PROJ-2582 recursive with
-        // recursive viewÀÇ Åë°è Á¤º¸ÀÇ ±¸Ãà
-        // validate ´Ü°è¿¡¼­ view´Â statInfo »ı¼º ÇÏÁö ¾Ê±â ¶§¹®¿¡
-        // rightÀÇ recursive view´Â tableRefÀÇ statInfo°¡ ¾ø´Ù.
-        // right child´Â leftÀÇ VMTR·Î Åë°èÁ¤º¸¸¦ ±¸Ãà
+        // recursive viewì˜ í†µê³„ ì •ë³´ì˜ êµ¬ì¶•
+        // validate ë‹¨ê³„ì—ì„œ viewëŠ” statInfo ìƒì„± í•˜ì§€ ì•Šê¸° ë•Œë¬¸ì—
+        // rightì˜ recursive viewëŠ” tableRefì˜ statInfoê°€ ì—†ë‹¤.
+        // right childëŠ” leftì˜ VMTRë¡œ í†µê³„ì •ë³´ë¥¼ êµ¬ì¶•
         //---------------------------------------------------
 
         if ( ( sTableRef->flag & QMS_TABLE_REF_RECURSIVE_VIEW_MASK )
              == QMS_TABLE_REF_RECURSIVE_VIEW_TRUE )
         {
-            // right queryÀÇ recursive view¿¡ ÀÓ½Ã·Î ¿¬°áÇÑ leftÀÇ graph¿¬°á
+            // right queryì˜ recursive viewì— ì„ì‹œë¡œ ì—°ê²°í•œ leftì˜ graphì—°ê²°
             sMyGraph->graph.left = aStatement->myPlan->graph;
 
-            // ´Ù½Ã right queryÀÇ recursive view graph¸¦ ¹İÈ¯
+            // ë‹¤ì‹œ right queryì˜ recursive view graphë¥¼ ë°˜í™˜
             aStatement->myPlan->graph = & sMyGraph->graph;
             
-            // Åë°è Á¤º¸ÀÇ ±¸Ãà
+            // í†µê³„ ì •ë³´ì˜ êµ¬ì¶•
             IDE_TEST( qmoStat::getStatInfo4View( aStatement,
                                                  & sMyGraph->graph,
                                                  & sTableRef->statInfo )
@@ -383,26 +383,26 @@ IDE_RC qmgSelection::optimize(qcStatement * aStatement, qmgGraph * aGraph)
 
     //---------------------------------------------------
     // PROJ-1404
-    // ºÒÇÊ¿äÇÑ bad transitive predicateÀ» Á¦°ÅÇÑ´Ù.
+    // ë¶ˆí•„ìš”í•œ bad transitive predicateì„ ì œê±°í•œë‹¤.
     //---------------------------------------------------
     
-    // »ı¼ºµÈ transitive predicateÀÌ »ç¿ëÀÚ°¡ ÀÔ·ÂÇÑ predicate°ú Áßº¹µÇ´Â
-    // °æ¿ì °¡´ÉÇÑ ÀÌ¸¦ Á¦°ÅÇÏ´Â °ÍÀÌ ÁÁ´Ù.
-    // (¾ÆÁ÷Àº »ı¼ºÇÏ´Â transitive predicateÀÌ one table predicateÀÌ¶ó¼­
-    // selection graph¿¡¼­ Ã³¸®ÇÒ ¼ö ÀÖ´Ù.)
+    // ìƒì„±ëœ transitive predicateì´ ì‚¬ìš©ìê°€ ì…ë ¥í•œ predicateê³¼ ì¤‘ë³µë˜ëŠ”
+    // ê²½ìš° ê°€ëŠ¥í•œ ì´ë¥¼ ì œê±°í•˜ëŠ” ê²ƒì´ ì¢‹ë‹¤.
+    // (ì•„ì§ì€ ìƒì„±í•˜ëŠ” transitive predicateì´ one table predicateì´ë¼ì„œ
+    // selection graphì—ì„œ ì²˜ë¦¬í•  ìˆ˜ ìˆë‹¤.)
     //
-    // ¿¹1)
+    // ì˜ˆ1)
     // select * from ( select * from t1 where t1.i1=1 ) v1, t2
     // where v1.i1=t2.i1 and t2.i1=1;
-    // transitive predicate {t1.i1=1}À» »ı¼ºÇÏÁö¸¸
-    // v1 whereÀıÀÇ predicate°ú Áßº¹µÇ¹Ç·Î Á¦°ÅÇÏ´Â °ÍÀÌ ÁÁ´Ù.
+    // transitive predicate {t1.i1=1}ì„ ìƒì„±í•˜ì§€ë§Œ
+    // v1 whereì ˆì˜ predicateê³¼ ì¤‘ë³µë˜ë¯€ë¡œ ì œê±°í•˜ëŠ” ê²ƒì´ ì¢‹ë‹¤.
     //
-    // ¿¹2)
+    // ì˜ˆ2)
     // select * from t1 left join t2 on t1.i1=t2.i1 and t1.i1=1
     // where t2.i1=1;
-    // onÀı¿¡¼­ transitive predicate {t2.i1=1}À» »ı¼ºÇÏÁö¸¸
-    // ÀÌ´Â right·Î ³»·Á°¡°Ô µÇ°í whereÀı¿¡¼­ ³»·Á¿Â
-    // predicate°ú Áßº¹µÇ¹Ç·Î Á¦°ÅÇÏ´Â °ÍÀÌ ÁÁ´Ù.
+    // onì ˆì—ì„œ transitive predicate {t2.i1=1}ì„ ìƒì„±í•˜ì§€ë§Œ
+    // ì´ëŠ” rightë¡œ ë‚´ë ¤ê°€ê²Œ ë˜ê³  whereì ˆì—ì„œ ë‚´ë ¤ì˜¨
+    // predicateê³¼ ì¤‘ë³µë˜ë¯€ë¡œ ì œê±°í•˜ëŠ” ê²ƒì´ ì¢‹ë‹¤.
     
     if ( ( sMyGraph->graph.myPredicate != NULL ) &&
          ( sTableRef->view == NULL ) )
@@ -418,16 +418,16 @@ IDE_RC qmgSelection::optimize(qcStatement * aStatement, qmgGraph * aGraph)
     }
     
     //---------------------------------------------------
-    // SubqueryÀÇ Graph »ı¼º
+    // Subqueryì˜ Graph ìƒì„±
     //---------------------------------------------------
 
     if ( sMyGraph->graph.myPredicate != NULL )
     {
         // To Fix PR-11461, PR-11460
-        // ÀÏ¹İ TableÀÎ °æ¿ì¿¡¸¸ Subquery KeyRange ÃÖÀûÈ­¸¦ Àû¿ëÇÒ ¼ö ÀÖ´Ù.
+        // ì¼ë°˜ Tableì¸ ê²½ìš°ì—ë§Œ Subquery KeyRange ìµœì í™”ë¥¼ ì ìš©í•  ìˆ˜ ìˆë‹¤.
         if ( sTableRef->view == NULL )
         {
-            // ÀÏ¹İ Å×ÀÌºíÀÎ °æ¿ì
+            // ì¼ë°˜ í…Œì´ë¸”ì¸ ê²½ìš°
             IDE_TEST(
                 qmoPred::optimizeSubqueries( aStatement,
                                              sMyGraph->graph.myPredicate,
@@ -436,7 +436,7 @@ IDE_RC qmgSelection::optimize(qcStatement * aStatement, qmgGraph * aGraph)
         }
         else
         {
-            // ViewÀÎ °æ¿ì
+            // Viewì¸ ê²½ìš°
             IDE_TEST(
                 qmoPred::optimizeSubqueries( aStatement,
                                              sMyGraph->graph.myPredicate,
@@ -450,13 +450,13 @@ IDE_RC qmgSelection::optimize(qcStatement * aStatement, qmgGraph * aGraph)
     }
 
     //---------------------------------------------------
-    // °øÅë ºñ¿ë Á¤º¸ÀÇ ¼³Á¤
+    // ê³µí†µ ë¹„ìš© ì •ë³´ì˜ ì„¤ì •
     //---------------------------------------------------
     
-    // recordSize ¼³Á¤
+    // recordSize ì„¤ì •
     if ( sTableRef->view == NULL )
     {
-        // ÀÏ¹İ TableÀÎ °æ¿ì
+        // ì¼ë°˜ Tableì¸ ê²½ìš°
         sColumns = sTableRef->tableInfo->columns;
         sColumnCnt = sTableRef->tableInfo->columnCount;
 
@@ -467,7 +467,7 @@ IDE_RC qmgSelection::optimize(qcStatement * aStatement, qmgGraph * aGraph)
     }
     else
     {
-        // ViewÀÎ °æ¿ì,
+        // Viewì¸ ê²½ìš°,
         // To Fix BUG-8241
         for ( sTarget = ((qmgPROJ*)(sMyGraph->graph.left))->target;
               sTarget != NULL;
@@ -478,17 +478,17 @@ IDE_RC qmgSelection::optimize(qcStatement * aStatement, qmgGraph * aGraph)
             sRecordSize += sTargetColumn->column.size;
         }
     }
-    // BUG-36463 sRecordSize ´Â 0ÀÌ µÇ¾î¼­´Â ¾ÈµÈ´Ù.
+    // BUG-36463 sRecordSize ëŠ” 0ì´ ë˜ì–´ì„œëŠ” ì•ˆëœë‹¤.
     sRecordSize = IDL_MAX( sRecordSize, 1 );
 
     sMyGraph->graph.costInfo.recordSize = sRecordSize;
 
-    // inputRecordCnt ¼³Á¤
+    // inputRecordCnt ì„¤ì •
     sMyGraph->graph.costInfo.inputRecordCnt =
         sTableRef->statInfo->totalRecordCnt;
 
     //---------------------------------------------------
-    // PredicateÀÇ Àç¹èÄ¡ ¹× °³º° PredicateÀÇ Selectivity °è»ê
+    // Predicateì˜ ì¬ë°°ì¹˜ ë° ê°œë³„ Predicateì˜ Selectivity ê³„ì‚°
     //---------------------------------------------------
 
     if ( sMyGraph->graph.myPredicate != NULL )
@@ -509,8 +509,8 @@ IDE_RC qmgSelection::optimize(qcStatement * aStatement, qmgGraph * aGraph)
     }
 
     /* BUG-43006 FixedTable Indexing Filter
-     * Fixed Table¿¡ ´ëÇØoptimizer_formance_view ÇÁ·ÎÆÛÆ¼°¡ ²¨Á®ÀÖ´Ù¸é index°¡ ¾ø´Ù°í
-     * ¼³Á¤ÇØÁà¾ßÇÑ´Ù.
+     * Fixed Tableì— ëŒ€í•´optimizer_formance_view í”„ë¡œí¼í‹°ê°€ êº¼ì ¸ìˆë‹¤ë©´ indexê°€ ì—†ë‹¤ê³ 
+     * ì„¤ì •í•´ì¤˜ì•¼í•œë‹¤.
      */
     if ( ( ( sTableRef->tableInfo->tableType == QCM_FIXED_TABLE ) ||
            ( sTableRef->tableInfo->tableType == QCM_DUMP_TABLE ) ||
@@ -528,11 +528,11 @@ IDE_RC qmgSelection::optimize(qcStatement * aStatement, qmgGraph * aGraph)
     setParallelScanFlag(aStatement, aGraph);
 
     //---------------------------------------------------------------
-    // accessMethod ¼±ÅÃ
+    // accessMethod ì„ íƒ
     // 
-    // rid predicate ÀÌ ÀÖ´Â °æ¿ì ¹«Á¶°Ç rid scan À» ½ÃµµÇÑ´Ù.
-    // rid predicate ÀÌ ÀÖ´õ¶óµµ  rid scan À» ÇÒ¼ö ¾ø´Â °æ¿ìµµ ÀÖ´Ù.
-    // ÀÌ °æ¿ì¿¡µµ index scan ÀÌ µÇÁö ¾Ê°í full scan À» ÇÏ°Ô µÈ´Ù.
+    // rid predicate ì´ ìˆëŠ” ê²½ìš° ë¬´ì¡°ê±´ rid scan ì„ ì‹œë„í•œë‹¤.
+    // rid predicate ì´ ìˆë”ë¼ë„  rid scan ì„ í• ìˆ˜ ì—†ëŠ” ê²½ìš°ë„ ìˆë‹¤.
+    // ì´ ê²½ìš°ì—ë„ index scan ì´ ë˜ì§€ ì•Šê³  full scan ì„ í•˜ê²Œ ëœë‹¤.
     //---------------------------------------------------------------
 
     if ( sMyGraph->graph.ridPredicate != NULL )
@@ -562,9 +562,9 @@ IDE_RC qmgSelection::optimize(qcStatement * aStatement, qmgGraph * aGraph)
     }
     else
     {
-        // TASK-6699 TPC-H ¼º´É °³¼±
-        // Cost °è»ê¿¡ ÇÊ¿äÇÑ ParallelDegree¸¦ °è»êÇÑ´Ù.
-        // ´Ü ParallelDegree ³ôÀÎ´Ù°íÇØ¼­ ºñ·ÊÇØ¼­ ¼º´ÉÀÌ Áõ°¡ÇÏÁö ¾ÊÀ¸¹Ç·Î ÃÖ´ë°ªÀº 4
+        // TASK-6699 TPC-H ì„±ëŠ¥ ê°œì„ 
+        // Cost ê³„ì‚°ì— í•„ìš”í•œ ParallelDegreeë¥¼ ê³„ì‚°í•œë‹¤.
+        // ë‹¨ ParallelDegree ë†’ì¸ë‹¤ê³ í•´ì„œ ë¹„ë¡€í•´ì„œ ì„±ëŠ¥ì´ ì¦ê°€í•˜ì§€ ì•Šìœ¼ë¯€ë¡œ ìµœëŒ€ê°’ì€ 4
         if ( (sMyGraph->mFlag & QMG_SELT_PARALLEL_SCAN_MASK) == QMG_SELT_PARALLEL_SCAN_TRUE )
         {
             if ( sMyGraph->graph.myFrom->tableRef->mParallelDegree > 1 )
@@ -601,8 +601,8 @@ IDE_RC qmgSelection::optimize(qcStatement * aStatement, qmgGraph * aGraph)
                                        0 )
                   != IDE_SUCCESS);
 
-        // TASK-6699 TPC-H ¼º´É °³¼±
-        // Index °¡ ¼±ÅÃµÇ¸é Parallel ¼öÇàÀÌ ¾ÈµÊ
+        // TASK-6699 TPC-H ì„±ëŠ¥ ê°œì„ 
+        // Index ê°€ ì„ íƒë˜ë©´ Parallel ìˆ˜í–‰ì´ ì•ˆë¨
         if (sMyGraph->selectedIndex != NULL)
         {
             sMyGraph->mFlag &= ~QMG_SELT_PARALLEL_SCAN_MASK;
@@ -614,7 +614,7 @@ IDE_RC qmgSelection::optimize(qcStatement * aStatement, qmgGraph * aGraph)
         }
 
         // To fix BUG-12742
-        // hint¸¦ »ç¿ëÇÑ °æ¿ì´Â index¸¦ Á¦°ÅÇÒ ¼ö ¾ø´Ù.
+        // hintë¥¼ ì‚¬ìš©í•œ ê²½ìš°ëŠ” indexë¥¼ ì œê±°í•  ìˆ˜ ì—†ë‹¤.
         if( (sSelectedScanHint == QMG_USED_SCAN_HINT) ||
             (aStatement->myPlan->parseTree->stmtKind == QCI_STMT_DEQUEUE) )
         {
@@ -629,29 +629,29 @@ IDE_RC qmgSelection::optimize(qcStatement * aStatement, qmgGraph * aGraph)
     }
 
     //---------------------------------------------------
-    // Preserved Order ¼³Á¤
+    // Preserved Order ì„¤ì •
     //---------------------------------------------------
 
-    // preserved order ÃÊ±âÈ­
+    // preserved order ì´ˆê¸°í™”
     sMyGraph->graph.flag &= ~QMG_PRESERVED_ORDER_MASK;
     sMyGraph->graph.flag |= QMG_PRESERVED_ORDER_NOT_DEFINED;
 
     if ( sMyGraph->selectedMethod->method == NULL )
     {
         //---------------------------------------------------
-        // FULL SCANÀÌ ¼±ÅÃµÈ °æ¿ì
+        // FULL SCANì´ ì„ íƒëœ ê²½ìš°
         //---------------------------------------------------
 
         if ( sMyGraph->graph.left != NULL )
         {
             //---------------------------------------------------
-            // ViewÀÎ °æ¿ì, ÇÏÀ§ÀÇ Preserved Order¸¦ µû¸§
+            // Viewì¸ ê²½ìš°, í•˜ìœ„ì˜ Preserved Orderë¥¼ ë”°ë¦„
             //---------------------------------------------------
 
             if ( sMyGraph->graph.left->preservedOrder != NULL )
             {
                 // BUG-43692,BUG-44004
-                // recursive with (recursive view) ´Â preserved order°¡Áú¼ö ¾ø´Ù.
+                // recursive with (recursive view) ëŠ” preserved orderê°€ì§ˆìˆ˜ ì—†ë‹¤.
                 if ( ( sTableRef->flag & QMS_TABLE_REF_RECURSIVE_VIEW_MASK )
                      == QMS_TABLE_REF_RECURSIVE_VIEW_TRUE )
                 {
@@ -661,8 +661,8 @@ IDE_RC qmgSelection::optimize(qcStatement * aStatement, qmgGraph * aGraph)
                 }
                 else
                 {
-                    // ÇÏÀ§ viewÀÇ preserved order º¹»ç ÈÄ,
-                    // table ID º¯°æ
+                    // í•˜ìœ„ viewì˜ preserved order ë³µì‚¬ í›„,
+                    // table ID ë³€ê²½
                     IDE_TEST( copyPreservedOrderFromView(
                                   aStatement,
                                   sMyGraph->graph.left,
@@ -685,14 +685,14 @@ IDE_RC qmgSelection::optimize(qcStatement * aStatement, qmgGraph * aGraph)
                      ( ( sMyGraph->graph.left->flag & QMG_PROJ_VIEW_OPT_TIP_CMTR_MASK ) ==
                        QMG_PROJ_VIEW_OPT_TIP_CMTR_TRUE ) )
                 {
-                    // view ÃÖÀûÈ­ typeÀÌ View MaterializationÀÎ °æ¿ì
+                    // view ìµœì í™” typeì´ View Materializationì¸ ê²½ìš°
                     sMyGraph->graph.flag |= QMG_PRESERVED_ORDER_NEVER;
                     sMyGraph->graph.left->flag &= ~QMG_PRESERVED_ORDER_MASK;
                     sMyGraph->graph.left->flag |= QMG_PRESERVED_ORDER_NEVER;
                 }
                 else
                 {
-                    //view ÃÖÀûÈ­ typeÀÌ Push SelectionÀÎ °æ¿ì
+                    //view ìµœì í™” typeì´ Push Selectionì¸ ê²½ìš°
                     sMyGraph->graph.flag |= ( sMyGraph->graph.left->flag &
                                               QMG_PRESERVED_ORDER_MASK );
                 }
@@ -709,7 +709,7 @@ IDE_RC qmgSelection::optimize(qcStatement * aStatement, qmgGraph * aGraph)
             if( sSelectedScanHint == QMG_USED_ONLY_FULL_SCAN_HINT )
             {
                 //---------------------------------------------------
-                // FULL SCAN Hint°¡ ¼±ÅÃµÈ °æ¿ì
+                // FULL SCAN Hintê°€ ì„ íƒëœ ê²½ìš°
                 //---------------------------------------------------
 
                 sMyGraph->graph.flag &= ~QMG_PRESERVED_ORDER_MASK;
@@ -718,18 +718,18 @@ IDE_RC qmgSelection::optimize(qcStatement * aStatement, qmgGraph * aGraph)
             else
             {
                 //---------------------------------------------------
-                // cost¿¡ ÀÇÇØ FULL SCANÀÌ ¼±ÅÃµÈ °æ¿ì
+                // costì— ì˜í•´ FULL SCANì´ ì„ íƒëœ ê²½ìš°
                 //---------------------------------------------------
                 if ( sMyGraph->accessMethodCnt > 1 )
                 {
-                    // index°¡ Á¸ÀçÇÏ´Â °æ¿ì
+                    // indexê°€ ì¡´ì¬í•˜ëŠ” ê²½ìš°
                     sMyGraph->graph.flag &= ~QMG_PRESERVED_ORDER_MASK;
                     sMyGraph->graph.flag |=
                         QMG_PRESERVED_ORDER_NOT_DEFINED;
                 }
                 else
                 {
-                    // index°¡ ¾ø´Â °æ¿ì
+                    // indexê°€ ì—†ëŠ” ê²½ìš°
                     sMyGraph->graph.flag &= ~QMG_PRESERVED_ORDER_MASK;
                     sMyGraph->graph.flag |= QMG_PRESERVED_ORDER_NEVER;
                 }
@@ -739,13 +739,13 @@ IDE_RC qmgSelection::optimize(qcStatement * aStatement, qmgGraph * aGraph)
     else
     {
         //---------------------------------------------------
-        // INDEX SCANÀÌ ¼±ÅÃµÈ °æ¿ì
+        // INDEX SCANì´ ì„ íƒëœ ê²½ìš°
         //---------------------------------------------------
 
         // To Fix PR-9181
-        // Index ScanÀÌ¶ó ÇÒ Áö¶óµµ
-        // IN SUBQUERY KEY RANGE°¡ »ç¿ëµÉ °æ¿ì
-        // Order°¡ º¸ÀåµÇÁö ¾Ê´Â´Ù.
+        // Index Scanì´ë¼ í•  ì§€ë¼ë„
+        // IN SUBQUERY KEY RANGEê°€ ì‚¬ìš©ë  ê²½ìš°
+        // Orderê°€ ë³´ì¥ë˜ì§€ ì•ŠëŠ”ë‹¤.
         if ( ( sMyGraph->selectedMethod->method->flag &
                QMO_STAT_CARD_IDX_IN_SUBQUERY_MASK )
              == QMO_STAT_CARD_IDX_IN_SUBQUERY_TRUE )
@@ -768,11 +768,11 @@ IDE_RC qmgSelection::optimize(qcStatement * aStatement, qmgGraph * aGraph)
         }
     }
 
-    /* BUG-43006 ½ÇÁ¦ Index°¡ ¾Æ´Ï°í FixedTableÀÇ Filter ¿ªÈ°À»
-     * ¼öÇàÇÏ±â ¶§¹®¿¡ orderingÀÌ ¾ø´Ù. µû¶ó¼­ presevered order °¡
-     * ¾ø´Ù°í ¼³Á¤ÇØÁà¾ßÇÑ´Ù.
+    /* BUG-43006 ì‹¤ì œ Indexê°€ ì•„ë‹ˆê³  FixedTableì˜ Filter ì—­í™œì„
+     * ìˆ˜í–‰í•˜ê¸° ë•Œë¬¸ì— orderingì´ ì—†ë‹¤. ë”°ë¼ì„œ presevered order ê°€
+     * ì—†ë‹¤ê³  ì„¤ì •í•´ì¤˜ì•¼í•œë‹¤.
      */
-    /* BUG-43498 fixed table¿¡¼­ internal index »ç¿ë½Ã Á¤·ÄÀÌ ¾ÊµÊ */
+    /* BUG-43498 fixed tableì—ì„œ internal index ì‚¬ìš©ì‹œ ì •ë ¬ì´ ì•Šë¨ */
     if ( ( sTableRef->tableInfo->tableType == QCM_FIXED_TABLE ) ||
          ( sTableRef->tableInfo->tableType == QCM_DUMP_TABLE ) ||
          ( sTableRef->tableInfo->tableType == QCM_PERFORMANCE_VIEW ) )
@@ -787,20 +787,20 @@ IDE_RC qmgSelection::optimize(qcStatement * aStatement, qmgGraph * aGraph)
     }
 
     //---------------------------------------------------
-    // °øÅë ºñ¿ë Á¤º¸ÀÇ ¼³Á¤
+    // ê³µí†µ ë¹„ìš© ì •ë³´ì˜ ì„¤ì •
     //---------------------------------------------------
 
     sMyGraph->graph.costInfo.selectivity = 
         sMyGraph->selectedMethod->methodSelectivity;
 
-    // output record count ¼³Á¤
+    // output record count ì„¤ì •
     sOutputRecordCnt = sMyGraph->graph.costInfo.selectivity *
         sMyGraph->graph.costInfo.inputRecordCnt;
 
     sMyGraph->graph.costInfo.outputRecordCnt =
         ( sOutputRecordCnt < 1 ) ? 1 : sOutputRecordCnt;
 
-    // myCost, totalCost ¼³Á¤
+    // myCost, totalCost ì„¤ì •
     sMyGraph->graph.costInfo.myAccessCost =
         sMyGraph->selectedMethod->accessCost;
 
@@ -811,10 +811,10 @@ IDE_RC qmgSelection::optimize(qcStatement * aStatement, qmgGraph * aGraph)
         sMyGraph->selectedMethod->totalCost;
 
     //---------------------------------------
-    // ÃÑ ºñ¿ë Á¤º¸ ¼³Á¤
+    // ì´ ë¹„ìš© ì •ë³´ ì„¤ì •
     //---------------------------------------
 
-    // 0 ( ChildÀÇ Total Cost) + My Cost
+    // 0 ( Childì˜ Total Cost) + My Cost
     sMyGraph->graph.costInfo.totalAccessCost =
         sMyGraph->selectedMethod->accessCost;
 
@@ -826,19 +826,19 @@ IDE_RC qmgSelection::optimize(qcStatement * aStatement, qmgGraph * aGraph)
 
     if ( sMyGraph->graph.left != NULL )
     {
-        // Child°¡ Á¸ÀçÇÏ´Â °æ¿ì
+        // Childê°€ ì¡´ì¬í•˜ëŠ” ê²½ìš°
 
         if ( ( (sMyGraph->graph.left->flag & QMG_PROJ_VIEW_OPT_TIP_VMTR_MASK)
                == QMG_PROJ_VIEW_OPT_TIP_VMTR_TRUE ) ||
              ( (sMyGraph->graph.left->flag & QMG_PROJ_VIEW_OPT_TIP_CMTR_MASK)
                == QMG_PROJ_VIEW_OPT_TIP_CMTR_TRUE ) )
         {
-            // View Materialization µÈ °æ¿ì¶ó¸é
-            // ChildÀÇ Cost¸¦ ´©ÀûÇÏÁö ¾Ê´Â´Ù.
+            // View Materialization ëœ ê²½ìš°ë¼ë©´
+            // Childì˜ Costë¥¼ ëˆ„ì í•˜ì§€ ì•ŠëŠ”ë‹¤.
         }
         else
         {
-            // ChildÀÇ ºñ¿ëÁ¤º¸¸¦ ´©ÀûÇÑ´Ù.
+            // Childì˜ ë¹„ìš©ì •ë³´ë¥¼ ëˆ„ì í•œë‹¤.
             sMyGraph->graph.costInfo.totalAccessCost +=
                 sMyGraph->graph.left->costInfo.totalAccessCost;
 
@@ -851,21 +851,21 @@ IDE_RC qmgSelection::optimize(qcStatement * aStatement, qmgGraph * aGraph)
     }
     else
     {
-        // ¼ø¼öÇÑ Selection ±×·¡ÇÁÀÓ.
-        // ´©ÀûÇÒ Á¤º¸°¡ ¾øÀ½
+        // ìˆœìˆ˜í•œ Selection ê·¸ë˜í”„ì„.
+        // ëˆ„ì í•  ì •ë³´ê°€ ì—†ìŒ
     }
 
     //---------------------------------------------------
-    // PROJ-1446 Host variableÀ» Æ÷ÇÔÇÑ ÁúÀÇ ÃÖÀûÈ­
-    // host variable¿¡ ´ëÇÑ ÃÖÀûÈ­¸¦ À§ÇÑ ÁØºñ°úÁ¤
+    // PROJ-1446 Host variableì„ í¬í•¨í•œ ì§ˆì˜ ìµœì í™”
+    // host variableì— ëŒ€í•œ ìµœì í™”ë¥¼ ìœ„í•œ ì¤€ë¹„ê³¼ì •
     //---------------------------------------------------
     if ((sSelectedScanHint == QMG_NOT_USED_SCAN_HINT) &&
         (sMyGraph->accessMethodCnt > 1))
     {
         /*
          * BUG-38863 result wrong: host variable
-         * table scan parallel or vertical parallel ¿¡¼­´Â
-         * host º¯¼ö ÃÖÀûÈ­¸¦ ¼öÇàÇÏÁö ¾Ê´Â´Ù.
+         * table scan parallel or vertical parallel ì—ì„œëŠ”
+         * host ë³€ìˆ˜ ìµœì í™”ë¥¼ ìˆ˜í–‰í•˜ì§€ ì•ŠëŠ”ë‹¤.
          */
         if ((sTableRef->mParallelDegree == 1) ||
             ((aGraph->flag & QMG_PARALLEL_IMPOSSIBLE_MASK) ==
@@ -883,7 +883,7 @@ IDE_RC qmgSelection::optimize(qcStatement * aStatement, qmgGraph * aGraph)
                 /* nothing to do */
             }
 
-            // environmentÀÇ ±â·Ï
+            // environmentì˜ ê¸°ë¡
             qcgPlan::registerPlanProperty( aStatement,
                                            PLAN_PROPERTY_HOST_OPTIMIZE_ENABLE );
         }
@@ -894,10 +894,10 @@ IDE_RC qmgSelection::optimize(qcStatement * aStatement, qmgGraph * aGraph)
     }
     else
     {
-        // scan hint°¡ »ç¿ëµÇ¸é È£½ºÆ® º¯¼ö¿¡ ´ëÇÑ ÃÖÀûÈ­¸¦ ¼öÇàÇÏÁö ¾Ê´Â´Ù.
-        // index°¡ ¾øÀ» °æ¿ì¿¡µµ È£½ºÆ® º¯¼ö¿¡ ´ëÇÑ ÃÖÀûÈ­¸¦ ¼öÇàÇÏÁö ¾Ê´Â´Ù.
-        // rid predicate ÀÌ ÀÖÀ»¶§µµ index scan ÇÏÁö ¾ÊÀ¸¹Ç·Î ¼öÇàÇÏÁö ¾Ê´Â´Ù.
-        // table scan parallel ¶Ç´Â vertical parallel ¿¡¼­ ¼öÇàÇÏÁö ¾Ê´Â´Ù.
+        // scan hintê°€ ì‚¬ìš©ë˜ë©´ í˜¸ìŠ¤íŠ¸ ë³€ìˆ˜ì— ëŒ€í•œ ìµœì í™”ë¥¼ ìˆ˜í–‰í•˜ì§€ ì•ŠëŠ”ë‹¤.
+        // indexê°€ ì—†ì„ ê²½ìš°ì—ë„ í˜¸ìŠ¤íŠ¸ ë³€ìˆ˜ì— ëŒ€í•œ ìµœì í™”ë¥¼ ìˆ˜í–‰í•˜ì§€ ì•ŠëŠ”ë‹¤.
+        // rid predicate ì´ ìˆì„ë•Œë„ index scan í•˜ì§€ ì•Šìœ¼ë¯€ë¡œ ìˆ˜í–‰í•˜ì§€ ì•ŠëŠ”ë‹¤.
+        // table scan parallel ë˜ëŠ” vertical parallel ì—ì„œ ìˆ˜í–‰í•˜ì§€ ì•ŠëŠ”ë‹¤.
         // Nothing to do...
     }
 
@@ -912,13 +912,13 @@ IDE_RC qmgSelection::optimize(qcStatement * aStatement, qmgGraph * aGraph)
  * ------------------------------------------------------------------
  * PROJ-2402 Parallel Table Scan
  * ------------------------------------------------------------------
- * ÀÏ¹İ table ¿¡ parallel À» ÇÒÁö ¸»Áö¸¦ °áÁ¤ÇÏ´Â flag
+ * ì¼ë°˜ table ì— parallel ì„ í• ì§€ ë§ì§€ë¥¼ ê²°ì •í•˜ëŠ” flag
  *
  * 1. parallel degree > 1
- * 2. select for update ÀÇ °æ¿ì ºÒ°¡´É
- * 3. index scan ÀÌ ¾Æ´Ï¾î¾ß ÇÔ
- * 4. subquery filter °¡ ¾ø¾î¾ß ÇÔ
- * 5. predicate ¿¡ outer column ÀÌ ¾ø¾î¾ß ÇÔ
+ * 2. select for update ì˜ ê²½ìš° ë¶ˆê°€ëŠ¥
+ * 3. index scan ì´ ì•„ë‹ˆì–´ì•¼ í•¨
+ * 4. subquery filter ê°€ ì—†ì–´ì•¼ í•¨
+ * 5. predicate ì— outer column ì´ ì—†ì–´ì•¼ í•¨
  * ------------------------------------------------------------------
  */
 void qmgSelection::setParallelScanFlag(qcStatement* aStatement,
@@ -939,8 +939,8 @@ void qmgSelection::setParallelScanFlag(qcStatement* aStatement,
     {
         if ( aGraph->myFrom->tableRef->tableAccessHints != NULL )
         {
-            /* BUG-43757 Partial Full Scan Hint »ç¿ë½Ã Parallel Plan
-             * Àº »ç¿ëµÇÁö ¾Ê¾Æ¾ßÇÑ´Ù
+            /* BUG-43757 Partial Full Scan Hint ì‚¬ìš©ì‹œ Parallel Plan
+             * ì€ ì‚¬ìš©ë˜ì§€ ì•Šì•„ì•¼í•œë‹¤
              */
             if ( aGraph->myFrom->tableRef->tableAccessHints->count > 1 )
             {
@@ -970,8 +970,8 @@ void qmgSelection::setParallelScanFlag(qcStatement* aStatement,
     }
 
     // BUG-42317
-    // »óÀ§ qmgGraph ÀÇ parallel ¼öÇà¿¡ ¿µÇâÀ» ¹ÌÄ¡´Â
-    // QMG_PARALLEL_EXEC_MASK ¸¦ °áÁ¤Áş´Â °Ë»ç¸¦ ¿ì¼± check ÇØ¾ß ÇÑ´Ù.
+    // ìƒìœ„ qmgGraph ì˜ parallel ìˆ˜í–‰ì— ì˜í–¥ì„ ë¯¸ì¹˜ëŠ”
+    // QMG_PARALLEL_EXEC_MASK ë¥¼ ê²°ì •ì§“ëŠ” ê²€ì‚¬ë¥¼ ìš°ì„  check í•´ì•¼ í•œë‹¤.
     if ( sPredicate != NULL )
     {
         for (sNextIter = sPredicate;
@@ -985,7 +985,7 @@ void qmgSelection::setParallelScanFlag(qcStatement* aStatement,
                 if ((sMoreIter->node->lflag & QTC_NODE_SUBQUERY_MASK) ==
                     QTC_NODE_SUBQUERY_EXIST)
                 {
-                    /* »óÀ§ graph µµ parallel ÇÒ ¼ö ¾øÀ½ */
+                    /* ìƒìœ„ graph ë„ parallel í•  ìˆ˜ ì—†ìŒ */
                     aGraph->flag &= ~QMG_PARALLEL_EXEC_MASK;
                     aGraph->flag |= QMG_PARALLEL_EXEC_FALSE;
                     sIsParallel = ID_FALSE;
@@ -997,11 +997,11 @@ void qmgSelection::setParallelScanFlag(qcStatement* aStatement,
                 }
 
                 /* BUG-39769
-                   node°¡ functionÀÏ °æ¿ì, parallel scanÇÏ¸é ¾È µÈ´Ù. */
+                   nodeê°€ functionì¼ ê²½ìš°, parallel scaní•˜ë©´ ì•ˆ ëœë‹¤. */
                 if ( (sMoreIter->node->lflag & QTC_NODE_PROC_FUNCTION_MASK) ==
                      QTC_NODE_PROC_FUNCTION_TRUE )
                 {
-                    /* »óÀ§ graph µµ parallel ÇÒ ¼ö ¾øÀ½ */
+                    /* ìƒìœ„ graph ë„ parallel í•  ìˆ˜ ì—†ìŒ */
                     aGraph->flag &= ~QMG_PARALLEL_EXEC_MASK;
                     aGraph->flag |= QMG_PARALLEL_EXEC_FALSE;
                     sIsParallel = ID_FALSE;
@@ -1013,11 +1013,11 @@ void qmgSelection::setParallelScanFlag(qcStatement* aStatement,
                 }
 
                 /* BUG-39770
-                   package¸¦ ÂüÁ¶ÇÒ °æ¿ì, parallel scanÇÏ¸é ¾È µÈ´Ù. */
+                   packageë¥¼ ì°¸ì¡°í•  ê²½ìš°, parallel scaní•˜ë©´ ì•ˆ ëœë‹¤. */
                 if ( (sMoreIter->node->lflag & QTC_NODE_PKG_MEMBER_MASK) ==
                      QTC_NODE_PKG_MEMBER_EXIST )
                 {
-                    /* »óÀ§ graph µµ parallel ÇÒ ¼ö ¾øÀ½ */
+                    /* ìƒìœ„ graph ë„ parallel í•  ìˆ˜ ì—†ìŒ */
                     aGraph->flag &= ~QMG_PARALLEL_EXEC_MASK;
                     aGraph->flag |= QMG_PARALLEL_EXEC_FALSE;
                     sIsParallel = ID_FALSE;
@@ -1029,11 +1029,11 @@ void qmgSelection::setParallelScanFlag(qcStatement* aStatement,
                 }
 
                 /* BUG-41932
-                   lob¸¦ ÂüÁ¶ÇÒ °æ¿ì, parallel scanÇÏ¸é ¾È µÈ´Ù. */
+                   lobë¥¼ ì°¸ì¡°í•  ê²½ìš°, parallel scaní•˜ë©´ ì•ˆ ëœë‹¤. */
                 if ( (sMoreIter->node->lflag & QTC_NODE_LOB_COLUMN_MASK) ==
                      QTC_NODE_LOB_COLUMN_EXIST )
                 {
-                    /* »óÀ§ graph µµ parallel ÇÒ ¼ö ¾øÀ½ */
+                    /* ìƒìœ„ graph ë„ parallel í•  ìˆ˜ ì—†ìŒ */
                     aGraph->flag &= ~QMG_PARALLEL_EXEC_MASK;
                     aGraph->flag |= QMG_PARALLEL_EXEC_FALSE;
                     sIsParallel = ID_FALSE;
@@ -1046,11 +1046,11 @@ void qmgSelection::setParallelScanFlag(qcStatement* aStatement,
 
                 /*
                  * BUG-38763
-                 * push_pred ¿¡ ÀÇÇØ t1.i1 = t2.i1 ¿Í °°Àº
-                 * predicate ÀÌ µé¾î¿Â °æ¿ì
-                 * t1.i1 °ú t2.i1 ÀÌ ¼­·Î ´Ù¸¥ template ¿¡ ÀÖÀ¸¸é
-                 * filter °¡ Á¦´ë·Î µ¿ÀÛÇÏÁö ¾Ê´Â´Ù.
-                 * ÀÌ¸¦ ¹æÁöÇÏ±âÀ§ÇØ parallel plan À» »ı¼ºÇÏÁö ¾Ê´Â´Ù.
+                 * push_pred ì— ì˜í•´ t1.i1 = t2.i1 ì™€ ê°™ì€
+                 * predicate ì´ ë“¤ì–´ì˜¨ ê²½ìš°
+                 * t1.i1 ê³¼ t2.i1 ì´ ì„œë¡œ ë‹¤ë¥¸ template ì— ìˆìœ¼ë©´
+                 * filter ê°€ ì œëŒ€ë¡œ ë™ì‘í•˜ì§€ ì•ŠëŠ”ë‹¤.
+                 * ì´ë¥¼ ë°©ì§€í•˜ê¸°ìœ„í•´ parallel plan ì„ ìƒì„±í•˜ì§€ ì•ŠëŠ”ë‹¤.
                  */
                 if (qtc::dependencyContains(&aGraph->depInfo,
                                             &sMoreIter->node->depInfo) == ID_FALSE)
@@ -1072,7 +1072,7 @@ void qmgSelection::setParallelScanFlag(qcStatement* aStatement,
         /* nothing to do */
     }
 
-    // BUG-39567 Lateral View ³»ºÎ¿¡¼­´Â Parallel ScanÀ» ±İÁöÇÑ´Ù.
+    // BUG-39567 Lateral View ë‚´ë¶€ì—ì„œëŠ” Parallel Scanì„ ê¸ˆì§€í•œë‹¤.
     if ( qtc::haveDependencies( & sMyGraph->graph.myQuerySet->lateralDepInfo )
          == ID_TRUE )
     {
@@ -1088,8 +1088,8 @@ void qmgSelection::setParallelScanFlag(qcStatement* aStatement,
     {
         /*
          * BUG-38803
-         * select for update ±¸¹®Àº SCAN->init ¿¡¼­ cursor open ÇÏ¹Ç·Î
-         * parallel ºÒ°¡´É
+         * select for update êµ¬ë¬¸ì€ SCAN->init ì—ì„œ cursor open í•˜ë¯€ë¡œ
+         * parallel ë¶ˆê°€ëŠ¥
          */
         sIsParallel = ID_FALSE;
         IDE_CONT(LABEL_EXIT);
@@ -1101,7 +1101,7 @@ void qmgSelection::setParallelScanFlag(qcStatement* aStatement,
 
     if ( sMyGraph->graph.ridPredicate != NULL )
     {
-        // BUG-43756 _prowid »ç¿ë½Ã parallel ÇÃ·£À» »ı¼ºÇÏÁö ¾Ê½À´Ï´Ù.
+        // BUG-43756 _prowid ì‚¬ìš©ì‹œ parallel í”Œëœì„ ìƒì„±í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
         sIsParallel = ID_FALSE;
         IDE_CONT(LABEL_EXIT);
     }
@@ -1112,7 +1112,7 @@ void qmgSelection::setParallelScanFlag(qcStatement* aStatement,
 
     if ( aGraph->myFrom->tableRef->remoteTable != NULL )
     {
-        // BUG-43819 remoteTable »ç¿ë½Ã parallel ÇÃ·£À» »ı¼ºÇÏÁö ¾Ê½À´Ï´Ù.
+        // BUG-43819 remoteTable ì‚¬ìš©ì‹œ parallel í”Œëœì„ ìƒì„±í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
         sIsParallel = ID_FALSE;
         IDE_CONT(LABEL_EXIT);
     }
@@ -1142,15 +1142,15 @@ qmgSelection::prepareScanDecisionFactor( qcStatement * aStatement,
 {
 /***********************************************************************
  *
- * Description : È£½ºÆ® º¯¼ö°¡ ÀÖ´Â ÁúÀÇ¹®À» ÃÖÀûÈ­ÇÏ±â À§ÇØ
- *               qmoScanDecisionFactor ÀÚ·á ±¸Á¶¸¦ ±¸¼ºÇÑ´Ù.
- *               predicate Áß¿¡¼­ È£½ºÆ® º¯¼ö°¡ Á¸ÀçÇÏ¸é,
- *               qmoScanDecisionFactor¿¡ ÀÚ·á¸¦ ±¸ÃàÇÑ´Ù.
- *               ÀÌ ÀÚ·á´Â data°¡ ¹ÙÀÎµùµÈ ÈÄ, selectivity¸¦ ´Ù½Ã
- *               °è»êÇÏ°í access method¸¦ Àç¼³Á¤ÇÒ ¶§ »ç¿ëµÈ´Ù.
- *               ÇÏ³ªÀÇ selection graph¿¡ ´ëÇØ
- *               ÇÏ³ªÀÇ qmoScanDecisionFactor°¡ »ı¼ºµÇ°Å³ª È¤Àº
- *               »ı¼ºµÇÁö ¾Ê´Â´Ù.
+ * Description : í˜¸ìŠ¤íŠ¸ ë³€ìˆ˜ê°€ ìˆëŠ” ì§ˆì˜ë¬¸ì„ ìµœì í™”í•˜ê¸° ìœ„í•´
+ *               qmoScanDecisionFactor ìë£Œ êµ¬ì¡°ë¥¼ êµ¬ì„±í•œë‹¤.
+ *               predicate ì¤‘ì—ì„œ í˜¸ìŠ¤íŠ¸ ë³€ìˆ˜ê°€ ì¡´ì¬í•˜ë©´,
+ *               qmoScanDecisionFactorì— ìë£Œë¥¼ êµ¬ì¶•í•œë‹¤.
+ *               ì´ ìë£ŒëŠ” dataê°€ ë°”ì¸ë”©ëœ í›„, selectivityë¥¼ ë‹¤ì‹œ
+ *               ê³„ì‚°í•˜ê³  access methodë¥¼ ì¬ì„¤ì •í•  ë•Œ ì‚¬ìš©ëœë‹¤.
+ *               í•˜ë‚˜ì˜ selection graphì— ëŒ€í•´
+ *               í•˜ë‚˜ì˜ qmoScanDecisionFactorê°€ ìƒì„±ë˜ê±°ë‚˜ í˜¹ì€
+ *               ìƒì„±ë˜ì§€ ì•ŠëŠ”ë‹¤.
  *
  * Implementation :
  *
@@ -1172,31 +1172,31 @@ qmgSelection::prepareScanDecisionFactor( qcStatement * aStatement,
         sSDF->basePlan = NULL;
         sSDF->candidateCount = 0;
 
-        // sSDF->predicate ¼¼ÆÃ
+        // sSDF->predicate ì„¸íŒ…
         IDE_TEST( qmoPred::deepCopyPredicate( QC_QMP_MEM(aStatement),
                                               aGraph->graph.myPredicate,
                                               &sSDF->predicate )
                   != IDE_SUCCESS );
 
-        // sSDF->predicate->mySelectivityOffset, totalSelectivityOffset ¼¼ÆÃ
+        // sSDF->predicate->mySelectivityOffset, totalSelectivityOffset ì„¸íŒ…
         IDE_TEST( setSelectivityOffset( aStatement,
                                         sSDF->predicate )
                   != IDE_SUCCESS );
 
-        // sSDF->accessMethodsOffset ¼¼ÆÃ
+        // sSDF->accessMethodsOffset ì„¸íŒ…
         IDE_TEST( qtc::getDataOffset( aStatement,
                                       ID_SIZEOF(qmoAccessMethod)
                                       * aGraph->accessMethodCnt,
                                       &sSDF->accessMethodsOffset )
                   != IDE_SUCCESS );
 
-        // sSDF->selectedMethodOffset ¼¼ÆÃ
+        // sSDF->selectedMethodOffset ì„¸íŒ…
         IDE_TEST( qtc::getDataOffset( aStatement,
                                       ID_SIZEOF(UInt),
                                       &sSDF->selectedMethodOffset )
                   != IDE_SUCCESS );
 
-        // sSDF ¿¬°á
+        // sSDF ì—°ê²°
         IDE_TEST( qtc::addSDF( aStatement, sSDF ) != IDE_SUCCESS );
 
         aGraph->sdf = sSDF;
@@ -1219,23 +1219,23 @@ qmgSelection::setSelectivityOffset( qcStatement  * aStatement,
 {
 /********************************************************************
  *
- * Description : predicateÀÇ mySelectivity¿Í totalSelectivity¸¦
- *               ¼¼ÆÃÇÑ´Ù.
+ * Description : predicateì˜ mySelectivityì™€ totalSelectivityë¥¼
+ *               ì„¸íŒ…í•œë‹¤.
  *
- *               ÀÌ ÇÔ¼ö´Â checkPredicateForHostOpt() ÇÔ¼ö°¡ È£ÃâµÈ ÈÄ¿¡
- *               ºÒ·Á¾ß ÇÑ´Ù.
+ *               ì´ í•¨ìˆ˜ëŠ” checkPredicateForHostOpt() í•¨ìˆ˜ê°€ í˜¸ì¶œëœ í›„ì—
+ *               ë¶ˆë ¤ì•¼ í•œë‹¤.
  *
  * Implementation :
  *
- *               ¸ğµç predicateµé¿¡ ´ëÇØ host ÃÖÀûÈ­°¡ °¡´ÉÇÏ¸é
- *               mySelectivityOffset¿¡ data À§Ä¡¸¦ ¼¼ÆÃÇÑ´Ù.
- *               ±×·¸Áö ¾ÊÀ¸¸é QMO_SELECTIVITY_OFFSET_NOT_USED¸¦
- *               ¼¼ÆÃÇÑ´Ù.
+ *               ëª¨ë“  predicateë“¤ì— ëŒ€í•´ host ìµœì í™”ê°€ ê°€ëŠ¥í•˜ë©´
+ *               mySelectivityOffsetì— data ìœ„ì¹˜ë¥¼ ì„¸íŒ…í•œë‹¤.
+ *               ê·¸ë ‡ì§€ ì•Šìœ¼ë©´ QMO_SELECTIVITY_OFFSET_NOT_USEDë¥¼
+ *               ì„¸íŒ…í•œë‹¤.
  *
- *               more listÀÇ Ã¹¹øÂ° predicate¿¡ ´ëÇØ
- *               host ÃÖÀûÈ­°¡ °¡´ÉÇÏ¸é totalSelectivity¿¡
- *               data À§Ä¡¸¦ ¼¼ÆÃÇÏ°í ±×·¸Áö ¾ÊÀ¸¸é
- *               QMO_SELECTIVITY_OFFSET_NOT_USED¸¦ ¼¼ÆÃÇÑ´Ù.
+ *               more listì˜ ì²«ë²ˆì§¸ predicateì— ëŒ€í•´
+ *               host ìµœì í™”ê°€ ê°€ëŠ¥í•˜ë©´ totalSelectivityì—
+ *               data ìœ„ì¹˜ë¥¼ ì„¸íŒ…í•˜ê³  ê·¸ë ‡ì§€ ì•Šìœ¼ë©´
+ *               QMO_SELECTIVITY_OFFSET_NOT_USEDë¥¼ ì„¸íŒ…í•œë‹¤.
  *
  ********************************************************************/
 
@@ -1332,37 +1332,37 @@ qmgSelection::makePlan( qcStatement * aStatement, const qmgGraph * aParent, qmgG
 {
 /***********************************************************************
  *
- * Description : qmgSelection·Î ºÎÅÍ PlanÀ» »ı¼ºÇÑ´Ù.
+ * Description : qmgSelectionë¡œ ë¶€í„° Planì„ ìƒì„±í•œë‹¤.
  *
  * Implementation :
- *    - qmgSelectionÀ¸·Î ºÎÅÍ »ı¼º°¡´ÉÇÑ plan
+ *    - qmgSelectionìœ¼ë¡œ ë¶€í„° ìƒì„±ê°€ëŠ¥í•œ plan
  *
- *        1. Base TableÀ» À§ÇÑ Selection GraphÀÎ °æ¿ì
+ *        1. Base Tableì„ ìœ„í•œ Selection Graphì¸ ê²½ìš°
  *
- *           - ¸ğµç Predicate Á¤º¸´Â [SCAN]³ëµå¿¡ Æ÷ÇÔµÈ´Ù.
+ *           - ëª¨ë“  Predicate ì •ë³´ëŠ” [SCAN]ë…¸ë“œì— í¬í•¨ëœë‹¤.
  *
  *                 [SCAN]
  *
- *        2. View¸¦ À§ÇÑ Selection GraphÀÎ °æ¿ì
+ *        2. Viewë¥¼ ìœ„í•œ Selection Graphì¸ ê²½ìš°
  *
- *           - ÀÌ °æ¿ì´Â qmgSelectionÀÇ Child°¡ ¹İµå½Ã qmgProjectionÀÌ´Ù.
- *           - PredicateÀÇ Á¸Àç À¯¹«¿¡ µû¶ó [FILT] ³ëµå°¡ »ı¼ºµÈ´Ù.
+ *           - ì´ ê²½ìš°ëŠ” qmgSelectionì˜ Childê°€ ë°˜ë“œì‹œ qmgProjectionì´ë‹¤.
+ *           - Predicateì˜ ì¡´ì¬ ìœ ë¬´ì— ë”°ë¼ [FILT] ë…¸ë“œê°€ ìƒì„±ëœë‹¤.
  *
- *           2.1 Child Graph qmgProjectionÀÌ View MaterializationµÈ °æ¿ì
+ *           2.1 Child Graph qmgProjectionì´ View Materializationëœ ê²½ìš°
  *
  *               ( [FILT] )
  *                   |
  *                 [VSCN]
  *
- *           2.2 Child Graph qmgProjectionÀÌ View MaterializationÀÌ ¾Æ´Ñ °æ¿ì
+ *           2.2 Child Graph qmgProjectionì´ View Materializationì´ ì•„ë‹Œ ê²½ìš°
  *
  *               ( [FILT] )
  *                   |
  *                 [VIEW]
  *
- *        3. recursive View¸¦ À§ÇÑ Selection GraphÀÎ °æ¿ì
+ *        3. recursive Viewë¥¼ ìœ„í•œ Selection Graphì¸ ê²½ìš°
  *
- *           - ÀÌ °æ¿ì´Â qmgSelectionÀÇ Child°¡ ¹İµå½Ã qmgProjectionÀÌ´Ù.
+ *           - ì´ ê²½ìš°ëŠ” qmgSelectionì˜ Childê°€ ë°˜ë“œì‹œ qmgProjectionì´ë‹¤.
  *
  *                 [VSCN]
  *
@@ -1374,7 +1374,7 @@ qmgSelection::makePlan( qcStatement * aStatement, const qmgGraph * aParent, qmgG
     IDU_FIT_POINT_FATAL( "qmgSelection::makePlan::__FT__" );
 
     //---------------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //---------------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -1383,7 +1383,7 @@ qmgSelection::makePlan( qcStatement * aStatement, const qmgGraph * aParent, qmgG
     sMyGraph       = (qmgSELT *) aGraph;
 
     //---------------------------------------------------
-    // Current CNFÀÇ µî·Ï
+    // Current CNFì˜ ë“±ë¡
     //---------------------------------------------------
 
     if( sMyGraph->graph.myCNF != NULL )
@@ -1397,7 +1397,7 @@ qmgSelection::makePlan( qcStatement * aStatement, const qmgGraph * aParent, qmgG
     }
 
     // PROJ-2179
-    // UPDATE ±¸¹®ÀÇ °æ¿ì parent°¡ NULLÀÏ ¼ö ÀÖ´Ù.
+    // UPDATE êµ¬ë¬¸ì˜ ê²½ìš° parentê°€ NULLì¼ ìˆ˜ ìˆë‹¤.
     if( aParent != NULL )
     {
         sMyGraph->graph.myPlan = aParent->myPlan;
@@ -1418,11 +1418,11 @@ qmgSelection::makePlan( qcStatement * aStatement, const qmgGraph * aParent, qmgG
     if( (sMyGraph->graph.left == NULL) )
     {
         /*
-         * 1. DML ÀÌ ¾Æ´Ï¾î¾ß ÇÔ
-         * 2. keyrange °¡ ¾ø¾î¾ß ÇÔ
-         * 3. subquery ¾Æ´Ï¾î¾ß ÇÔ
-         * 4. parallel table scan °¡ °¡´ÉÇÑ graph
-         * 5. ¹İº¹¼öÇàµÇ´Â join ¿À¸¥ÂÊÀÌ ¾Æ´Ï¾î¾ß ÇÔ
+         * 1. DML ì´ ì•„ë‹ˆì–´ì•¼ í•¨
+         * 2. keyrange ê°€ ì—†ì–´ì•¼ í•¨
+         * 3. subquery ì•„ë‹ˆì–´ì•¼ í•¨
+         * 4. parallel table scan ê°€ ê°€ëŠ¥í•œ graph
+         * 5. ë°˜ë³µìˆ˜í–‰ë˜ëŠ” join ì˜¤ë¥¸ìª½ì´ ì•„ë‹ˆì–´ì•¼ í•¨
          */
         if (((aGraph->flag & QMG_PARALLEL_IMPOSSIBLE_MASK) ==
              QMG_PARALLEL_IMPOSSIBLE_FALSE) &&
@@ -1490,25 +1490,25 @@ qmgSelection::makeTableScan( qcStatement * aStatement,
     //-----------------------------------------------------
 
     //-----------------------------------------------------
-    // 1. Base TableÀ» À§ÇÑ Selection GraphÀÎ °æ¿ì
+    // 1. Base Tableì„ ìœ„í•œ Selection Graphì¸ ê²½ìš°
     //-----------------------------------------------------
 
-    // ÇÏÀ§ ³ëµå°¡ ¾ø´Â leafÀÎ baseÀÏ °æ¿ì SCANÀ» »ı¼ºÇÑ´Ù.
+    // í•˜ìœ„ ë…¸ë“œê°€ ì—†ëŠ” leafì¸ baseì¼ ê²½ìš° SCANì„ ìƒì„±í•œë‹¤.
 
     // To Fix PR-11562
-    // Indexable MIN-MAX ÃÖÀûÈ­°¡ Àû¿ëµÈ °æ¿ì
-    // Preserved Order´Â ¹æÇâ¼ºÀ» °¡Áü, µû¶ó¼­ ÇØ´ç Á¤º¸¸¦
-    // ¼³Á¤ÇØÁÙ ÇÊ¿ä°¡ ¾øÀ½.
-    // INDEXABLE Min-MaxÀÇ ¼³Á¤
-    // °ü·Ã ÄÚµå Á¦°Å
+    // Indexable MIN-MAX ìµœì í™”ê°€ ì ìš©ëœ ê²½ìš°
+    // Preserved OrderëŠ” ë°©í–¥ì„±ì„ ê°€ì§, ë”°ë¼ì„œ í•´ë‹¹ ì •ë³´ë¥¼
+    // ì„¤ì •í•´ì¤„ í•„ìš”ê°€ ì—†ìŒ.
+    // INDEXABLE Min-Maxì˜ ì„¤ì •
+    // ê´€ë ¨ ì½”ë“œ ì œê±°
 
     //-----------------------------------------------------
     // To Fix BUG-8747
-    // Selection Graph¿¡ Not Null Key Range¸¦ »ı¼ºÇÏ¶ó´Â Flag°¡
-    // ÀÖ´Â °æ¿ì, Leaf Info¿¡ ±× Á¤º¸¸¦ ¼³Á¤ÇÑ´Ù.
-    // - Selection Graph¿¡¼­ Not Null Key Range »ı¼º Flag Àû¿ëµÇ´Â Á¶°Ç
-    //   (1) indexable Min Max°¡ Àû¿ëµÈ Selection Graph
-    //   (2) Merge Join ÇÏÀ§ÀÇ Selection Graph
+    // Selection Graphì— Not Null Key Rangeë¥¼ ìƒì„±í•˜ë¼ëŠ” Flagê°€
+    // ìˆëŠ” ê²½ìš°, Leaf Infoì— ê·¸ ì •ë³´ë¥¼ ì„¤ì •í•œë‹¤.
+    // - Selection Graphì—ì„œ Not Null Key Range ìƒì„± Flag ì ìš©ë˜ëŠ” ì¡°ê±´
+    //   (1) indexable Min Maxê°€ ì ìš©ëœ Selection Graph
+    //   (2) Merge Join í•˜ìœ„ì˜ Selection Graph
     //-----------------------------------------------------
 
     if( (aMyGraph->graph.flag & QMG_SELT_NOTNULL_KEYRANGE_MASK ) ==
@@ -1520,7 +1520,7 @@ qmgSelection::makeTableScan( qcStatement * aStatement,
     else
     {
         // To Fix PR-10288
-        // NOTNULL KEY RANGE°¡ ¾Æ´Ñ °æ¿ì·Î ¹İµå½Ã ¼³Á¤ÇØ ÁÖ¾î¾ß ÇÔ.
+        // NOTNULL KEY RANGEê°€ ì•„ë‹Œ ê²½ìš°ë¡œ ë°˜ë“œì‹œ ì„¤ì •í•´ ì£¼ì–´ì•¼ í•¨.
         sSCANInfo.flag &= ~QMO_SCAN_INFO_NOTNULL_KEYRANGE_MASK;
         sSCANInfo.flag |= QMO_SCAN_INFO_NOTNULL_KEYRANGE_FALSE;
     }
@@ -1561,9 +1561,9 @@ qmgSelection::makeTableScan( qcStatement * aStatement,
         sSCANInfo.mParallelInfo.mSeqNo  = 1;
     }
 
-    //SCAN»ı¼º
-    //»ı¼ºµÈ ³ëµåÀÇ À§Ä¡´Â ¹İµå½Ã graph.myPlan¿¡ ¼¼ÆÃÀ» ÇÏµµ·Ï ÇÑ´Ù.
-    //ÀÌ Á¤º¸¸¦ ´Ù½Ã child·Î »ï°í ´ÙÀ½ ³ëµå ¸¸µé¶§ ¿¬°áÇÏµµ·Ï ÇÑ´Ù.
+    //SCANìƒì„±
+    //ìƒì„±ëœ ë…¸ë“œì˜ ìœ„ì¹˜ëŠ” ë°˜ë“œì‹œ graph.myPlanì— ì„¸íŒ…ì„ í•˜ë„ë¡ í•œë‹¤.
+    //ì´ ì •ë³´ë¥¼ ë‹¤ì‹œ childë¡œ ì‚¼ê³  ë‹¤ìŒ ë…¸ë“œ ë§Œë“¤ë•Œ ì—°ê²°í•˜ë„ë¡ í•œë‹¤.
     IDE_TEST( qmoOneNonPlan::makeSCAN( aStatement ,
                                        aMyGraph->graph.myQuerySet ,
                                        aMyGraph->graph.myFrom ,
@@ -1574,17 +1574,17 @@ qmgSelection::makeTableScan( qcStatement * aStatement,
 
     qmg::setPlanInfo( aStatement, sSCAN, &(aMyGraph->graph) );
 
-    // BUG-25916 : clobÀ» select for update ÇÏ´ø µµÁß assert ¹ß»ı
-    // clob locatorÀÇ Á¦¾àÀ¸·Î lobfilter·Î ºĞ·ùµÈ °ÍÀÌ Á¸ÀçÇÏ¸é
-    // SCAN ³ëµå »óÀ§¿¡ FILTER ³ëµå·Î Ã³¸®ÇØ¾ß ÇÑ´Ù.
+    // BUG-25916 : clobì„ select for update í•˜ë˜ ë„ì¤‘ assert ë°œìƒ
+    // clob locatorì˜ ì œì•½ìœ¼ë¡œ lobfilterë¡œ ë¶„ë¥˜ëœ ê²ƒì´ ì¡´ì¬í•˜ë©´
+    // SCAN ë…¸ë“œ ìƒìœ„ì— FILTER ë…¸ë“œë¡œ ì²˜ë¦¬í•´ì•¼ í•œë‹¤.
     sLobFilter = ((qmncSCAN*)sSCAN)->method.lobFilter;
 
     if ( sLobFilter != NULL )
     {
         // BUGBUG
-        // Lob filterÀÇ °æ¿ì SCANÀ» »ı¼ºÇÑ ÈÄ¿¡ À¯¹«¸¦ ¾Ë ¼ö ÀÖ´Ù.
-        // µû¶ó¼­ FILTÀÇ »ı¼º ¿©ºÎµµ SCANÀÇ »ı¼º ÈÄ¿¡ °áÁ¤µÈ´Ù.
-        // BUG-25916ÀÇ ¹®Á¦ ÇØ°á ¹æ¹ıÀ» ¼öÁ¤ÇØ¾ß ÇÑ´Ù.
+        // Lob filterì˜ ê²½ìš° SCANì„ ìƒì„±í•œ í›„ì— ìœ ë¬´ë¥¼ ì•Œ ìˆ˜ ìˆë‹¤.
+        // ë”°ë¼ì„œ FILTì˜ ìƒì„± ì—¬ë¶€ë„ SCANì˜ ìƒì„± í›„ì— ê²°ì •ëœë‹¤.
+        // BUG-25916ì˜ ë¬¸ì œ í•´ê²° ë°©ë²•ì„ ìˆ˜ì •í•´ì•¼ í•œë‹¤.
         IDE_TEST( qmoOneNonPlan::initFILT(
                       aStatement ,
                       aMyGraph->graph.myQuerySet ,
@@ -1609,10 +1609,10 @@ qmgSelection::makeTableScan( qcStatement * aStatement,
     }
 
     // fix BUG-13482
-    // SCAN ³ëµå »ı¼º½Ã,
-    // filterÁ¸ÀçµîÀ¸·Î SCAN Limit ÃÖÀûÈ­¸¦ Àû¿ëÇÏÁö ¸øÇÑ °æ¿ì,
-    // selection graphÀÇ limitµµ NULL·Î ¼³Á¤ÇÑ´Ù.
-    // ÀÌ´Â »óÀ§ PROJ ³ëµå »ı¼º½Ã, limit start value Á¶Á¤ÀÇ Á¤º¸°¡ µÊ.
+    // SCAN ë…¸ë“œ ìƒì„±ì‹œ,
+    // filterì¡´ì¬ë“±ìœ¼ë¡œ SCAN Limit ìµœì í™”ë¥¼ ì ìš©í•˜ì§€ ëª»í•œ ê²½ìš°,
+    // selection graphì˜ limitë„ NULLë¡œ ì„¤ì •í•œë‹¤.
+    // ì´ëŠ” ìƒìœ„ PROJ ë…¸ë“œ ìƒì„±ì‹œ, limit start value ì¡°ì •ì˜ ì •ë³´ê°€ ë¨.
     if( sSCANInfo.limit == NULL )
     {
         aMyGraph->limit = NULL;
@@ -1655,8 +1655,8 @@ qmgSelection::makeViewScan( qcStatement * aStatement,
 
 
     //---------------------------------------
-    // predicateÀÇ Á¸Àç À¯¹«¿¡ µû¶ó
-    // FILT »ı¼º
+    // predicateì˜ ì¡´ì¬ ìœ ë¬´ì— ë”°ë¼
+    // FILT ìƒì„±
     //---------------------------------------
 
     if( ( aMyGraph->graph.myPredicate != NULL ) ||
@@ -1742,21 +1742,21 @@ qmgSelection::makeViewScan( qcStatement * aStatement,
     }
 
     //-----------------------------------------------------
-    // 2. View¸¦ À§ÇÑ Selection GraphÀÎ °æ¿ì
+    // 2. Viewë¥¼ ìœ„í•œ Selection Graphì¸ ê²½ìš°
     //-----------------------------------------------------
 
     IDE_DASSERT( aMyGraph->graph.left->type == QMG_PROJECTION );
 
     //----------------------
-    // ÇÏÀ§ PlanÀÇ »ı¼º
+    // í•˜ìœ„ Planì˜ ìƒì„±
     //----------------------
 
     // To Fix BUG-8241
     if( aMyGraph->graph.left->myPlan == NULL )
     {
         // To Fix PR-8470
-        // View¿¡ ´ëÇÑ Plan Tree »ı¼º ½Ã¿¡´Â ViewÀÇ Statement¸¦
-        // »ç¿ëÇÏ¿©¾ß ÇÔ
+        // Viewì— ëŒ€í•œ Plan Tree ìƒì„± ì‹œì—ëŠ” Viewì˜ Statementë¥¼
+        // ì‚¬ìš©í•˜ì—¬ì•¼ í•¨
         IDE_TEST( aMyGraph->graph.left->makePlan(
                       aMyGraph->graph.myFrom->tableRef->view,
                       &aMyGraph->graph,
@@ -1773,8 +1773,8 @@ qmgSelection::makeViewScan( qcStatement * aStatement,
         == QMG_PROJ_VIEW_OPT_TIP_VMTR_TRUE )
     {
         //---------------------------------------
-        // VSCN»ı¼º
-        //     - MaterializationÀÌ ÀÖ´Â °æ¿ì
+        // VSCNìƒì„±
+        //     - Materializationì´ ìˆëŠ” ê²½ìš°
         //---------------------------------------
 
         IDE_TEST( qmoOneNonPlan::makeVSCN( aStatement ,
@@ -1789,14 +1789,14 @@ qmgSelection::makeViewScan( qcStatement * aStatement,
     else
     {
         //---------------------------------------
-        // VIEW »ı¼º
-        //     - MaterializationÀÌ ¾ø´Â °æ¿ì
+        // VIEW ìƒì„±
+        //     - Materializationì´ ì—†ëŠ” ê²½ìš°
         //---------------------------------------
 
         sFlag &= ~QMO_MAKEVIEW_FROM_MASK;
         sFlag |= QMO_MAKEVIEW_FROM_SELECTION;
 
-        //VIEW»ı¼º
+        //VIEWìƒì„±
         IDE_TEST( qmoOneNonPlan::makeVIEW( aStatement ,
                                            aMyGraph->graph.myQuerySet ,
                                            aMyGraph->graph.myFrom ,
@@ -1809,8 +1809,8 @@ qmgSelection::makeViewScan( qcStatement * aStatement,
     }
 
     //---------------------------------------
-    // predicateÀÇ Á¸Àç À¯¹«¿¡ µû¶ó
-    // FILT »ı¼º
+    // predicateì˜ ì¡´ì¬ ìœ ë¬´ì— ë”°ë¼
+    // FILT ìƒì„±
     //---------------------------------------
 
     if( ( aMyGraph->graph.myPredicate != NULL ) ||
@@ -1885,7 +1885,7 @@ IDE_RC qmgSelection::makeParallelScan(qcStatement* aStatement,
                                         &sPSCRD)
              != IDE_SUCCESS);
 
-    // ÃÊ±âÈ­
+    // ì´ˆê¸°í™”
     sPRLQCount      = 0;
     sSCANInfo.limit = NULL;
 
@@ -1952,7 +1952,7 @@ IDE_RC qmgSelection::makeParallelScan(qcStatement* aStatement,
 
         /*
          * BUG-38823
-         * constant filter ´Â PSCRD °¡ °®´Â´Ù
+         * constant filter ëŠ” PSCRD ê°€ ê°–ëŠ”ë‹¤
          */
         sSCANInfo.constantPredicate = NULL;
 
@@ -2062,8 +2062,8 @@ qmgSelection::alterSelectedIndex( qcStatement * aStatement,
     if( aNewSelectedIndex != NULL )
     {
         // PROJ-1502 PARTITIONED DISK TABLE
-        // ¼±ÅÃµÈ index°¡ local index¶ó¸é °¢ ÆÄÆ¼¼Ç¿¡ ¸Â´Â
-        // local index partitionÀ» Ã£¾Æ¾ß ÇÑ´Ù.
+        // ì„ íƒëœ indexê°€ local indexë¼ë©´ ê° íŒŒí‹°ì…˜ì— ë§ëŠ”
+        // local index partitionì„ ì°¾ì•„ì•¼ í•œë‹¤.
         if( ( aNewSelectedIndex->indexPartitionType ==
               QCM_LOCAL_PREFIXED_PARTITIONED_INDEX ) ||
             ( aNewSelectedIndex->indexPartitionType ==
@@ -2102,16 +2102,16 @@ qmgSelection::alterSelectedIndex( qcStatement * aStatement,
     aGraph->selectedIndex = sNewSelectedIndex;
 
     // To fix BUG-12742
-    // »óÀ§ graph¿¡ ÀÇÇØ °áÁ¤µÈ °æ¿ì
-    // index¸¦ ¾ø¾Ù ¼ö ¾ø´Ù.
+    // ìƒìœ„ graphì— ì˜í•´ ê²°ì •ëœ ê²½ìš°
+    // indexë¥¼ ì—†ì•¨ ìˆ˜ ì—†ë‹¤.
     aGraph->forceIndexScan = ID_TRUE;
     
     if( aGraph->sdf != NULL )
     {
-        // ÇöÀç selection graphÀÇ selectedIndex°¡
-        // »óÀ§ graph¿¡ ÀÇÇØ ´Ù½Ã °áÁ¤µÈ °æ¿ì
-        // host optimizationÀ» ÇØ¼­´Â ¾ÈµÈ´Ù.
-        // ÀÌ °æ¿ì sdf¸¦ disableÇÑ´Ù.
+        // í˜„ì¬ selection graphì˜ selectedIndexê°€
+        // ìƒìœ„ graphì— ì˜í•´ ë‹¤ì‹œ ê²°ì •ëœ ê²½ìš°
+        // host optimizationì„ í•´ì„œëŠ” ì•ˆëœë‹¤.
+        // ì´ ê²½ìš° sdfë¥¼ disableí•œë‹¤.
         IDE_TEST( qtc::removeSDF( aStatement, aGraph->sdf ) != IDE_SUCCESS );
 
         aGraph->sdf = NULL;
@@ -2141,7 +2141,7 @@ qmgSelection::printGraph( qcStatement  * aStatement,
 /***********************************************************************
  *
  * Description :
- *    Graph¸¦ ±¸¼ºÇÏ´Â °øÅë Á¤º¸¸¦ Ãâ·ÂÇÑ´Ù.
+ *    Graphë¥¼ êµ¬ì„±í•˜ëŠ” ê³µí†µ ì •ë³´ë¥¼ ì¶œë ¥í•œë‹¤.
  *
  *
  * Implementation :
@@ -2158,7 +2158,7 @@ qmgSelection::printGraph( qcStatement  * aStatement,
     IDU_FIT_POINT_FATAL( "qmgSelection::printGraph::__FT__" );
 
     //-----------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //-----------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -2168,7 +2168,7 @@ qmgSelection::printGraph( qcStatement  * aStatement,
     sMyGraph = (qmgSELT*)aGraph;
 
     //-----------------------------------
-    // GraphÀÇ ½ÃÀÛ Ãâ·Â
+    // Graphì˜ ì‹œì‘ ì¶œë ¥
     //-----------------------------------
 
     if (aDepth == 0)
@@ -2182,7 +2182,7 @@ qmgSelection::printGraph( qcStatement  * aStatement,
     }
 
     //-----------------------------------
-    // Graph °øÅë Á¤º¸ÀÇ Ãâ·Â
+    // Graph ê³µí†µ ì •ë³´ì˜ ì¶œë ¥
     //-----------------------------------
 
     IDE_TEST( qmg::printGraph( aStatement,
@@ -2192,7 +2192,7 @@ qmgSelection::printGraph( qcStatement  * aStatement,
               != IDE_SUCCESS );
 
     //-----------------------------------
-    // Graph °íÀ¯ Á¤º¸ÀÇ Ãâ·Â
+    // Graph ê³ ìœ  ì •ë³´ì˜ ì¶œë ¥
     //-----------------------------------
 
     IDE_TEST( qmoStat::printStat( aGraph->myFrom,
@@ -2201,7 +2201,7 @@ qmgSelection::printGraph( qcStatement  * aStatement,
               != IDE_SUCCESS );
 
     //-----------------------------------
-    // Access method º° Á¤º¸ Ãâ·Â
+    // Access method ë³„ ì •ë³´ ì¶œë ¥
     //-----------------------------------
 
     QMG_PRINT_LINE_FEED( i, aDepth, aString );
@@ -2218,7 +2218,7 @@ qmgSelection::printGraph( qcStatement  * aStatement,
     }
 
     //-----------------------------------
-    // Subquery Graph Á¤º¸ÀÇ Ãâ·Â
+    // Subquery Graph ì •ë³´ì˜ ì¶œë ¥
     //-----------------------------------
 
     for ( sPredicate = aGraph->myPredicate;
@@ -2254,19 +2254,19 @@ qmgSelection::printGraph( qcStatement  * aStatement,
     }
 
     //-----------------------------------
-    // Child Graph °íÀ¯ Á¤º¸ÀÇ Ãâ·Â
+    // Child Graph ê³ ìœ  ì •ë³´ì˜ ì¶œë ¥
     //-----------------------------------
 
     if ( aGraph->myFrom->tableRef->view != NULL )
     {
-        // View¿¡ ´ëÇÑ ±×·¡ÇÁ Á¤º¸ Ãâ·Â
+        // Viewì— ëŒ€í•œ ê·¸ë˜í”„ ì •ë³´ ì¶œë ¥
         QMG_PRINT_LINE_FEED( i, aDepth, aString );
         iduVarStringAppend( aString,
                             "::VIEW STATEMENT GRAPH BEGIN" );
 
         // To Fix BUG-9586
-        // view¿¡ ´ëÇÑ graph Ãâ·Â½Ã qcStatement´Â
-        // aGraph->myFrom->tableRef->view °¡ µÇ¾î¾ß ÇÔ
+        // viewì— ëŒ€í•œ graph ì¶œë ¥ì‹œ qcStatementëŠ”
+        // aGraph->myFrom->tableRef->view ê°€ ë˜ì–´ì•¼ í•¨
         IDE_TEST( aGraph->left->printGraph( aGraph->myFrom->tableRef->view,
                                             aGraph->left,
                                             aDepth + 1,
@@ -2284,7 +2284,7 @@ qmgSelection::printGraph( qcStatement  * aStatement,
     }
 
     //-----------------------------------
-    // GraphÀÇ ¸¶Áö¸· Ãâ·Â
+    // Graphì˜ ë§ˆì§€ë§‰ ì¶œë ¥
     //-----------------------------------
 
     if (aDepth == 0)
@@ -2358,35 +2358,35 @@ qmgSelection::makeViewGraph( qcStatement * aStatement,
 {
 /***********************************************************************
  *
- * Description : View GraphÀÇ »ı¼º
+ * Description : View Graphì˜ ìƒì„±
  *
  * Implementation :
- *    (1) Ã¹¹øÂ° ViewÀÌ°Å³ª, µ¿ÀÏ View°¡ Á¸ÀçÇÏÁö ¾Ê´Â °æ¿ì
- *        A. View ÃÖÀûÈ­ Hint°¡ ¾ø´Â °æ¿ì
- *           i    Push Selection Àû¿ë
- *           ii   View Graph »ı¼º
- *           iii. View Graph ¿¬°á
- *           iv.  View ÃÖÀûÈ­ type °áÁ¤
- *           v.   View Materialization ¿©ºÎ¸¦ ÇÏÀ§ Projection Graph¿¡ ¿¬°á
- *        B. View ÃÖÀûÈ­ Hint°¡ VMTRÀÎ °æ¿ì
- *           ii   View Graph »ı¼º
- *           iii. View Graph ¿¬°á
- *           iv.  View ÃÖÀûÈ­ type °áÁ¤ :  view ÃÖÀûÈ­ typeÀ» Not Defined
- *                ( µÎ¹øÂ° view¿¡¼­ View MaterializationÀ¸·Î ¼³Á¤µÊ )
- *           v.   View Materialization ¿©ºÎ¸¦ ÇÏÀ§ Projection Graph¿¡ ¿¬°á
- *        C. View ÃÖÀûÈ­ Hint°¡ Push SelectionÀÎ °æ¿ì
- *          i    Push Selection Àû¿ë
- *           ii   View Graph »ı¼º
- *           iii. View Graph ¿¬°á
- *           iv.  View ÃÖÀûÈ­ type °áÁ¤ :
- *                ¼º°ø À¯¹«¿¡ »ó°ü¾øÀÌ view ÃÖÀûÈ­ typeÀ» push selection
- *               ( view materializationÀ¸·Î ¼öÇàÇÏÁö ¾Êµµ·Ï ÇÏ±â À§ÇÔ )
- *           v.   View Materialization ¿©ºÎ¸¦ ÇÏÀ§ Projection Graph¿¡ ¿¬°á
- *    (2) µÎ¹øÂ° ÀÌ»óÀÇ ViewÀÎ °æ¿ì
- *        A. Ã¹¹øÂ° View ÃÖÀûÈ­ typeÀÌ °áÁ¤µÇÁö ¾ÊÀº °æ¿ì,
- *           View ÃÖÀûÈ­ typeÀ» View MaterializationÀ¸·Î °áÁ¤
- *        B. Ã¹¹øÂ° View ÃÖÀûÈ­ typeÀÌ °áÁ¤µÈ °æ¿ì,
- *           Ã¹¹øÂ° View ÃÖÀûÈ­ typeÀ» µû¸§
+ *    (1) ì²«ë²ˆì§¸ Viewì´ê±°ë‚˜, ë™ì¼ Viewê°€ ì¡´ì¬í•˜ì§€ ì•ŠëŠ” ê²½ìš°
+ *        A. View ìµœì í™” Hintê°€ ì—†ëŠ” ê²½ìš°
+ *           i    Push Selection ì ìš©
+ *           ii   View Graph ìƒì„±
+ *           iii. View Graph ì—°ê²°
+ *           iv.  View ìµœì í™” type ê²°ì •
+ *           v.   View Materialization ì—¬ë¶€ë¥¼ í•˜ìœ„ Projection Graphì— ì—°ê²°
+ *        B. View ìµœì í™” Hintê°€ VMTRì¸ ê²½ìš°
+ *           ii   View Graph ìƒì„±
+ *           iii. View Graph ì—°ê²°
+ *           iv.  View ìµœì í™” type ê²°ì • :  view ìµœì í™” typeì„ Not Defined
+ *                ( ë‘ë²ˆì§¸ viewì—ì„œ View Materializationìœ¼ë¡œ ì„¤ì •ë¨ )
+ *           v.   View Materialization ì—¬ë¶€ë¥¼ í•˜ìœ„ Projection Graphì— ì—°ê²°
+ *        C. View ìµœì í™” Hintê°€ Push Selectionì¸ ê²½ìš°
+ *          i    Push Selection ì ìš©
+ *           ii   View Graph ìƒì„±
+ *           iii. View Graph ì—°ê²°
+ *           iv.  View ìµœì í™” type ê²°ì • :
+ *                ì„±ê³µ ìœ ë¬´ì— ìƒê´€ì—†ì´ view ìµœì í™” typeì„ push selection
+ *               ( view materializationìœ¼ë¡œ ìˆ˜í–‰í•˜ì§€ ì•Šë„ë¡ í•˜ê¸° ìœ„í•¨ )
+ *           v.   View Materialization ì—¬ë¶€ë¥¼ í•˜ìœ„ Projection Graphì— ì—°ê²°
+ *    (2) ë‘ë²ˆì§¸ ì´ìƒì˜ Viewì¸ ê²½ìš°
+ *        A. ì²«ë²ˆì§¸ View ìµœì í™” typeì´ ê²°ì •ë˜ì§€ ì•Šì€ ê²½ìš°,
+ *           View ìµœì í™” typeì„ View Materializationìœ¼ë¡œ ê²°ì •
+ *        B. ì²«ë²ˆì§¸ View ìµœì í™” typeì´ ê²°ì •ëœ ê²½ìš°,
+ *           ì²«ë²ˆì§¸ View ìµœì í™” typeì„ ë”°ë¦„
  *
  ***********************************************************************/
 
@@ -2397,13 +2397,13 @@ qmgSelection::makeViewGraph( qcStatement * aStatement,
     IDU_FIT_POINT_FATAL( "qmgSelection::makeViewGraph::__FT__" );
 
     //---------------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //---------------------------------------------------
 
     IDE_DASSERT( aGraph != NULL );
 
     //---------------------------------------------------
-    // ±âº» ÃÊ±âÈ­
+    // ê¸°ë³¸ ì´ˆê¸°í™”
     //---------------------------------------------------
 
     sTableRef          = aGraph->myFrom->tableRef;
@@ -2413,7 +2413,7 @@ qmgSelection::makeViewGraph( qcStatement * aStatement,
     // BUG-40355 rownum predicate to limit
     //---------------------------------------------------
 
-    // BUG-45296 rownum Pred À» left outer ÀÇ ¿À¸¥ÂÊÀ¸·Î ³»¸®¸é ¾ÈµË´Ï´Ù.
+    // BUG-45296 rownum Pred ì„ left outer ì˜ ì˜¤ë¥¸ìª½ìœ¼ë¡œ ë‚´ë¦¬ë©´ ì•ˆë©ë‹ˆë‹¤.
     if ( (aGraph->flag & QMG_ROWNUM_PUSHED_MASK) == QMG_ROWNUM_PUSHED_TRUE )
     {
         IDE_TEST ( qmoRownumPredToLimit::rownumPredToLimitTransform(
@@ -2428,11 +2428,11 @@ qmgSelection::makeViewGraph( qcStatement * aStatement,
         // nothing to do.
     }
 
-    // doRownumPredToLimit ÇÔ¼ö¿¡¼­ myPredicate °ªÀÌ º¯°æµÉ¼ö ÀÖ´Ù.
+    // doRownumPredToLimit í•¨ìˆ˜ì—ì„œ myPredicate ê°’ì´ ë³€ê²½ë ìˆ˜ ìˆë‹¤.
     sPredicate         = aGraph->myPredicate;
 
     //---------------------------------------------------
-    // ViewÀÇ index hint Àû¿ë PROJ-1495
+    // Viewì˜ index hint ì ìš© PROJ-1495
     //---------------------------------------------------
 
     if( sTableRef->tableAccessHints != NULL )
@@ -2447,7 +2447,7 @@ qmgSelection::makeViewGraph( qcStatement * aStatement,
     }
 
     //---------------------------------------------------
-    // PROJ-1473 VIEW ³»ºÎ·ÎÀÇ push projection ÀüÆÄ
+    // PROJ-1473 VIEW ë‚´ë¶€ë¡œì˜ push projection ì „íŒŒ
     //---------------------------------------------------
 
     if( aGraph->myQuerySet->materializeType == QMO_MATERIALIZE_TYPE_VALUE )
@@ -2464,13 +2464,13 @@ qmgSelection::makeViewGraph( qcStatement * aStatement,
     }
 
     //---------------------------------------------------
-    // View ÃÖÀûÈ­ Type °áÁ¤
+    // View ìµœì í™” Type ê²°ì •
     //---------------------------------------------------
 
     if ( sTableRef->sameViewRef == NULL )
     {
         //---------------------------------------------------
-        // Ã¹¹øÂ° View ÀÌ°Å³ª, µ¿ÀÏ View°¡ Á¸ÀçÇÏÁö ¾Ê´Â °æ¿ì
+        // ì²«ë²ˆì§¸ View ì´ê±°ë‚˜, ë™ì¼ Viewê°€ ì¡´ì¬í•˜ì§€ ì•ŠëŠ” ê²½ìš°
         //---------------------------------------------------
 
         switch( sTableRef->viewOptType )
@@ -2478,10 +2478,10 @@ qmgSelection::makeViewGraph( qcStatement * aStatement,
             case QMO_VIEW_OPT_TYPE_NOT_DEFINED :
 
                 //---------------------------------------------------
-                // Hint °¡ ¾ø´Â °æ¿ì
+                // Hint ê°€ ì—†ëŠ” ê²½ìš°
                 //---------------------------------------------------
 
-                // push selection °¡´ÉÇÑÁö ½Ãµµ
+                // push selection ê°€ëŠ¥í•œì§€ ì‹œë„
                 IDE_TEST( doViewPushSelection( aStatement,
                                                sTableRef,
                                                sPredicate,
@@ -2489,58 +2489,58 @@ qmgSelection::makeViewGraph( qcStatement * aStatement,
                                                & sIsPushed )
                           != IDE_SUCCESS );
 
-                // View Graph »ı¼º
+                // View Graph ìƒì„±
                 IDE_TEST( qmo::makeGraph( sTableRef->view ) != IDE_SUCCESS );
 
-                // View Graph ¿¬°á
+                // View Graph ì—°ê²°
                 aGraph->left = sTableRef->view->myPlan->graph;
 
-                // View ÃÖÀûÈ­ type °áÁ¤
+                // View ìµœì í™” type ê²°ì •
                 if ( sIsPushed == ID_TRUE )
                 {
-                    // push selectionÀÌ ¼º°øÇÑ °æ¿ì
+                    // push selectionì´ ì„±ê³µí•œ ê²½ìš°
                     sTableRef->viewOptType = QMO_VIEW_OPT_TYPE_PUSH;
                 }
                 else
                 {
-                    // push selection ½ÇÆĞÇÑ °æ¿ì
+                    // push selection ì‹¤íŒ¨í•œ ê²½ìš°
                     sTableRef->viewOptType = QMO_VIEW_OPT_TYPE_NOT_DEFINED;
                 }
 
-                // View Materialization ¿©ºÎ ¼³Á¤
+                // View Materialization ì—¬ë¶€ ì„¤ì •
                 aGraph->left->flag &= ~QMG_PROJ_VIEW_OPT_TIP_VMTR_MASK;
                 aGraph->left->flag |= QMG_PROJ_VIEW_OPT_TIP_VMTR_FALSE;
                 break;
             case QMO_VIEW_OPT_TYPE_VMTR :
 
                 //---------------------------------------------------
-                // View NO_PUSH_SELECT_VIEW Hint°¡ ÀÖ´Â °æ¿ì
-                //    - ÃÖÃÊ View : Not Defined ·Î ¼³Á¤
-                //    - ±× ÀÌÈÄ : ´ÙÀ½ View°¡ ÂüÁ¶ÇÒ¶§, Materialization ¼³Á¤
-                //               ´ÙÀ½ View°¡ ¾ø´Â °æ¿ì, Materialization ¼³Á¤
+                // View NO_PUSH_SELECT_VIEW Hintê°€ ìˆëŠ” ê²½ìš°
+                //    - ìµœì´ˆ View : Not Defined ë¡œ ì„¤ì •
+                //    - ê·¸ ì´í›„ : ë‹¤ìŒ Viewê°€ ì°¸ì¡°í• ë•Œ, Materialization ì„¤ì •
+                //               ë‹¤ìŒ Viewê°€ ì—†ëŠ” ê²½ìš°, Materialization ì„¤ì •
                 //---------------------------------------------------
 
                 // To Fix BUG-8400
                 if ( sTableRef->view->myPlan->graph == NULL )
                 {
-                    // View Graph »ı¼º
+                    // View Graph ìƒì„±
                     IDE_TEST( qmo::makeGraph( sTableRef->view )
                               != IDE_SUCCESS );
 
-                    // View ÃÖÀûÈ­ type °áÁ¤
+                    // View ìµœì í™” type ê²°ì •
                     sTableRef->viewOptType = QMO_VIEW_OPT_TYPE_NOT_DEFINED;
 
                     // To Fix PR-11558
-                    // »ı¼ºµÈ ViewÀÇ ÃÖ»óÀ§ Graph¸¦ ¿¬°á½ÃÄÑ¾ß ÇÔ.
+                    // ìƒì„±ëœ Viewì˜ ìµœìƒìœ„ Graphë¥¼ ì—°ê²°ì‹œì¼œì•¼ í•¨.
                     aGraph->left = sTableRef->view->myPlan->graph;
 
-                    // View Materialization ¿©ºÎ ¼³Á¤
+                    // View Materialization ì—¬ë¶€ ì„¤ì •
                     aGraph->left->flag &= ~QMG_PROJ_VIEW_OPT_TIP_VMTR_MASK;
                     aGraph->left->flag |= QMG_PROJ_VIEW_OPT_TIP_VMTR_FALSE;
                 }
                 else
                 {
-                    // View Graph ¿¬°á
+                    // View Graph ì—°ê²°
                     aGraph->left = sTableRef->view->myPlan->graph;
                 }
 
@@ -2548,32 +2548,32 @@ qmgSelection::makeViewGraph( qcStatement * aStatement,
             case QMO_VIEW_OPT_TYPE_POTENTIAL_VMTR :
 
                 //---------------------------------------------------
-                // view¸¦ Áö±İ±îÁö ÇÑ¹ø¸¸ »ç¿ëÇØ¼­ VMTRÀ» º¸·ùÇß´ø °æ¿ì
+                // viewë¥¼ ì§€ê¸ˆê¹Œì§€ í•œë²ˆë§Œ ì‚¬ìš©í•´ì„œ VMTRì„ ë³´ë¥˜í–ˆë˜ ê²½ìš°
                 //---------------------------------------------------
                 
                 IDE_DASSERT( sTableRef->view->myPlan->graph != NULL );
 
-                // View Graph ¿¬°á
+                // View Graph ì—°ê²°
                 aGraph->left = sTableRef->view->myPlan->graph;
 
-                // View Materialization ¿©ºÎ ¼³Á¤
+                // View Materialization ì—¬ë¶€ ì„¤ì •
                 aGraph->left->flag &= ~QMG_PROJ_VIEW_OPT_TIP_VMTR_MASK;
                 aGraph->left->flag |= QMG_PROJ_VIEW_OPT_TIP_VMTR_TRUE;
 
-                // View ÃÖÀûÈ­ type °áÁ¤
+                // View ìµœì í™” type ê²°ì •
                 sTableRef->viewOptType = QMO_VIEW_OPT_TYPE_VMTR;
 
                 break;
             case QMO_VIEW_OPT_TYPE_PUSH :
 
                 //---------------------------------------------------
-                // Push Selection Hint°¡ ÀÖ´Â °æ¿ì
-                //    - Push Selection ¼º°ø ¿©ºÎ¿¡ »ó°ü¾øÀÌ ViewOptTypeÀ»
-                //      Push SelectionÀ¸·Î ¼³Á¤ÇÏ¿© ´ÙÀ½ View ÂüÁ¶½Ã
-                //      View Materialization ÇÏÁö ¸øÇÏµµ·Ï ÇÑ´Ù.
+                // Push Selection Hintê°€ ìˆëŠ” ê²½ìš°
+                //    - Push Selection ì„±ê³µ ì—¬ë¶€ì— ìƒê´€ì—†ì´ ViewOptTypeì„
+                //      Push Selectionìœ¼ë¡œ ì„¤ì •í•˜ì—¬ ë‹¤ìŒ View ì°¸ì¡°ì‹œ
+                //      View Materialization í•˜ì§€ ëª»í•˜ë„ë¡ í•œë‹¤.
                 //---------------------------------------------------
 
-                // push selection °¡´ÉÇÑÁö ½Ãµµ
+                // push selection ê°€ëŠ¥í•œì§€ ì‹œë„
                 IDE_TEST( doViewPushSelection( aStatement,
                                                sTableRef,
                                                sPredicate,
@@ -2581,45 +2581,45 @@ qmgSelection::makeViewGraph( qcStatement * aStatement,
                                                & sIsPushed )
                           != IDE_SUCCESS );
 
-                // View Graph »ı¼º
+                // View Graph ìƒì„±
                 IDE_TEST( qmo::makeGraph( sTableRef->view ) != IDE_SUCCESS );
 
-                // View Graph ¿¬°á
+                // View Graph ì—°ê²°
                 aGraph->left = sTableRef->view->myPlan->graph;
 
-                // View ÃÖÀûÈ­ type °áÁ¤
+                // View ìµœì í™” type ê²°ì •
                 sTableRef->viewOptType = QMO_VIEW_OPT_TYPE_PUSH;
 
-                // View Materialization ¿©ºÎ ¼³Á¤
+                // View Materialization ì—¬ë¶€ ì„¤ì •
                 aGraph->left->flag &= ~QMG_PROJ_VIEW_OPT_TIP_VMTR_MASK;
                 aGraph->left->flag |= QMG_PROJ_VIEW_OPT_TIP_VMTR_FALSE;
                 break;
             case QMO_VIEW_OPT_TYPE_FORCE_VMTR :
 
                 //---------------------------------------------------
-                // View materialze Hint°¡ ÀÖ´Â °æ¿ì
-                //    Materialization ¼³Á¤
+                // View materialze Hintê°€ ìˆëŠ” ê²½ìš°
+                //    Materialization ì„¤ì •
                 //---------------------------------------------------
 
                 if ( sTableRef->view->myPlan->graph == NULL )
                 {
-                    // View Graph »ı¼º
+                    // View Graph ìƒì„±
                     IDE_TEST( qmo::makeGraph( sTableRef->view )
                               != IDE_SUCCESS );
 
-                    // View ÃÖÀûÈ­ type °áÁ¤
+                    // View ìµœì í™” type ê²°ì •
                     sTableRef->viewOptType = QMO_VIEW_OPT_TYPE_FORCE_VMTR;
 
-                    // »ı¼ºµÈ ViewÀÇ ÃÖ»óÀ§ Graph¸¦ ¿¬°á½ÃÄÑ¾ß ÇÔ.
+                    // ìƒì„±ëœ Viewì˜ ìµœìƒìœ„ Graphë¥¼ ì—°ê²°ì‹œì¼œì•¼ í•¨.
                     aGraph->left = sTableRef->view->myPlan->graph;
 
-                    // View Materialization ¿©ºÎ ¼³Á¤
+                    // View Materialization ì—¬ë¶€ ì„¤ì •
                     aGraph->left->flag &= ~QMG_PROJ_VIEW_OPT_TIP_VMTR_MASK;
                     aGraph->left->flag |= QMG_PROJ_VIEW_OPT_TIP_VMTR_TRUE;
                 }
                 else
                 {
-                    // View Graph ¿¬°á
+                    // View Graph ì—°ê²°
                     aGraph->left = sTableRef->view->myPlan->graph;
                 }
 
@@ -2628,21 +2628,21 @@ qmgSelection::makeViewGraph( qcStatement * aStatement,
                 // To Fix BUG-8400
                 if ( sTableRef->view->myPlan->graph == NULL )
                 {
-                    // View Graph »ı¼º
+                    // View Graph ìƒì„±
                     IDE_TEST( qmo::makeGraph( sTableRef->view )
                               != IDE_SUCCESS );
 
                     // To Fix PR-11558
-                    // »ı¼ºµÈ ViewÀÇ ÃÖ»óÀ§ Graph¸¦ ¿¬°á½ÃÄÑ¾ß ÇÔ.
+                    // ìƒì„±ëœ Viewì˜ ìµœìƒìœ„ Graphë¥¼ ì—°ê²°ì‹œì¼œì•¼ í•¨.
                     aGraph->left = sTableRef->view->myPlan->graph;
 
-                    // View Materialization ¿©ºÎ ¼³Á¤
+                    // View Materialization ì—¬ë¶€ ì„¤ì •
                     aGraph->left->flag &= ~QMG_PROJ_VIEW_OPT_TIP_CMTR_MASK;
                     aGraph->left->flag |= QMG_PROJ_VIEW_OPT_TIP_CMTR_TRUE;
                 }
                 else
                 {
-                    // View Graph ¿¬°á
+                    // View Graph ì—°ê²°
                     aGraph->left = sTableRef->view->myPlan->graph;
                 }
                 break;
@@ -2655,7 +2655,7 @@ qmgSelection::makeViewGraph( qcStatement * aStatement,
     else
     {
         //---------------------------------------------------
-        // µÎ ¹øÂ° ÀÌ»óÀÇ ViewÀÎ °æ¿ì
+        // ë‘ ë²ˆì§¸ ì´ìƒì˜ Viewì¸ ê²½ìš°
         //---------------------------------------------------
 
         switch ( sTableRef->sameViewRef->viewOptType )
@@ -2663,7 +2663,7 @@ qmgSelection::makeViewGraph( qcStatement * aStatement,
             case QMO_VIEW_OPT_TYPE_NOT_DEFINED:
 
                 // PROJ-2582 recursive with
-                // Ã¹¹øÂ° viewÀÇ Statement·Î ¿¬°á
+                // ì²«ë²ˆì§¸ viewì˜ Statementë¡œ ì—°ê²°
                 if ( ( sTableRef->flag & QMS_TABLE_REF_RECURSIVE_VIEW_MASK )
                      == QMS_TABLE_REF_RECURSIVE_VIEW_TRUE )
                 {
@@ -2671,7 +2671,7 @@ qmgSelection::makeViewGraph( qcStatement * aStatement,
                 }
                 else
                 {
-                    // BUG-43659 view ÃÖÀûÈ­½Ã °á°ú¿À·ù
+                    // BUG-43659 view ìµœì í™”ì‹œ ê²°ê³¼ì˜¤ë¥˜
                     IDE_TEST( mergeViewTargetFlag( sTableRef->sameViewRef->view,
                                                    sTableRef->view ) != IDE_SUCCESS );
 
@@ -2679,21 +2679,21 @@ qmgSelection::makeViewGraph( qcStatement * aStatement,
                 }
 
                 // BUG-38022
-                // sameViewRef°¡ ÀÖÁö¸¸ ½ÇÁ¦·Î Äõ¸®¿¡¼­ ÇÑ¹ø¸¸ »ç¿ëÇÏ´Â °æ¿ì´Â
-                // VMTRÀ» »ı¼ºÇÏÁö ¾Êµµ·Ï ÇÑ´Ù.
+                // sameViewRefê°€ ìˆì§€ë§Œ ì‹¤ì œë¡œ ì¿¼ë¦¬ì—ì„œ í•œë²ˆë§Œ ì‚¬ìš©í•˜ëŠ” ê²½ìš°ëŠ”
+                // VMTRì„ ìƒì„±í•˜ì§€ ì•Šë„ë¡ í•œë‹¤.
                 if ( sTableRef->view->myPlan->graph == NULL )
                 {
                     IDE_TEST( qmo::makeGraph( sTableRef->view )
                               != IDE_SUCCESS );
 
-                    // Graph¸¦ ¿¬°áÇÑ´Ù.
+                    // Graphë¥¼ ì—°ê²°í•œë‹¤.
                     aGraph->left = sTableRef->view->myPlan->graph;
 
-                    // View Materialization ¿©ºÎ ¼³Á¤
+                    // View Materialization ì—¬ë¶€ ì„¤ì •
                     aGraph->left->flag &= ~QMG_PROJ_VIEW_OPT_TIP_VMTR_MASK;
                     aGraph->left->flag |= QMG_PROJ_VIEW_OPT_TIP_VMTR_FALSE;
 
-                    // Ã¹¹øÂ° viewÀÇ ÃÖÀûÈ­ typeÀ» POTENTIAL_VMTR·Î ¼³Á¤
+                    // ì²«ë²ˆì§¸ viewì˜ ìµœì í™” typeì„ POTENTIAL_VMTRë¡œ ì„¤ì •
                     sTableRef->sameViewRef->viewOptType = QMO_VIEW_OPT_TYPE_POTENTIAL_VMTR;
                     break;
                 }
@@ -2702,8 +2702,8 @@ qmgSelection::makeViewGraph( qcStatement * aStatement,
                     // Nothing to do.
                 }
 
-                // ½ÇÁ¦·Î Äõ¸®¿¡¼­ µÎ¹ø ÀÌ»ó »ç¿ëÇÏ´Â °æ¿ì
-                // ÇöÀç view¿Í Ã¹¹øÂ° viewÀÇ ÃÖÀûÈ­ typeÀ» ¸ğµÎ VMTR·Î ¼³Á¤
+                // ì‹¤ì œë¡œ ì¿¼ë¦¬ì—ì„œ ë‘ë²ˆ ì´ìƒ ì‚¬ìš©í•˜ëŠ” ê²½ìš°
+                // í˜„ì¬ viewì™€ ì²«ë²ˆì§¸ viewì˜ ìµœì í™” typeì„ ëª¨ë‘ VMTRë¡œ ì„¤ì •
                 sTableRef->sameViewRef->viewOptType = QMO_VIEW_OPT_TYPE_VMTR;
                 /* fall through */
             case QMO_VIEW_OPT_TYPE_VMTR :
@@ -2712,7 +2712,7 @@ qmgSelection::makeViewGraph( qcStatement * aStatement,
                 sTableRef->viewOptType = QMO_VIEW_OPT_TYPE_VMTR;
 
                 // PROJ-2582 recursive with
-                // Ã¹¹øÂ° viewÀÇ Statement·Î ¿¬°á
+                // ì²«ë²ˆì§¸ viewì˜ Statementë¡œ ì—°ê²°
                 if ( ( sTableRef->flag & QMS_TABLE_REF_RECURSIVE_VIEW_MASK )
                      == QMS_TABLE_REF_RECURSIVE_VIEW_TRUE )
                 {
@@ -2720,7 +2720,7 @@ qmgSelection::makeViewGraph( qcStatement * aStatement,
                 }
                 else
                 {
-                    // BUG-43659 view ÃÖÀûÈ­½Ã °á°ú¿À·ù
+                    // BUG-43659 view ìµœì í™”ì‹œ ê²°ê³¼ì˜¤ë¥˜
                     IDE_TEST( mergeViewTargetFlag( sTableRef->sameViewRef->view,
                                                    sTableRef->view ) != IDE_SUCCESS );
 
@@ -2728,8 +2728,8 @@ qmgSelection::makeViewGraph( qcStatement * aStatement,
                 }
 
                 // To Fix BUG-8400
-                // View Graph°¡ »ı¼ºµÇÁö ¾ÊÀº °æ¿ì,
-                // View Graph¸¦ »ı¼ºÇÑ´Ù.
+                // View Graphê°€ ìƒì„±ë˜ì§€ ì•Šì€ ê²½ìš°,
+                // View Graphë¥¼ ìƒì„±í•œë‹¤.
                 if ( sTableRef->view->myPlan->graph == NULL )
                 {
                     IDE_TEST( qmo::makeGraph( sTableRef->view )
@@ -2740,25 +2740,25 @@ qmgSelection::makeViewGraph( qcStatement * aStatement,
                     // nothing to do
                 }
 
-                // Graph¸¦ ¿¬°áÇÑ´Ù.
+                // Graphë¥¼ ì—°ê²°í•œë‹¤.
                 aGraph->left = sTableRef->view->myPlan->graph;
 
-                // ÇÏÀ§ÀÇ Projection Graph¿¡ VMTR Á¤º¸¸¦ ¼³Á¤
+                // í•˜ìœ„ì˜ Projection Graphì— VMTR ì •ë³´ë¥¼ ì„¤ì •
                 aGraph->left->flag &= ~QMG_PROJ_VIEW_OPT_TIP_VMTR_MASK;
                 aGraph->left->flag |= QMG_PROJ_VIEW_OPT_TIP_VMTR_TRUE;
 
                 // To Fix PR-11562
-                // View MaterializationÀÇ preserverd order¸¦ ¹«Á¶°Ç ASC À¸·Î
-                // ¼³Á¤ÇÏ¸é ¾ÈµÊ.
-                // °ü·Ã ÄÚµå Á¦°Å.
+                // View Materializationì˜ preserverd orderë¥¼ ë¬´ì¡°ê±´ ASC ìœ¼ë¡œ
+                // ì„¤ì •í•˜ë©´ ì•ˆë¨.
+                // ê´€ë ¨ ì½”ë“œ ì œê±°.
                 break;
 
             case QMO_VIEW_OPT_TYPE_PUSH :
-                // Ã¹¹øÂ° viewÀÇ ÃÖÀûÈ­ typeÀ» µû¸¥´Ù.
+                // ì²«ë²ˆì§¸ viewì˜ ìµœì í™” typeì„ ë”°ë¥¸ë‹¤.
                 sTableRef->viewOptType = QMO_VIEW_OPT_TYPE_PUSH;
 
-                // push selection °¡´ÉÇÑÁö ½ÃµµÇØ °¡´ÉÇÏ¸é
-                // push selection ¼öÇà
+                // push selection ê°€ëŠ¥í•œì§€ ì‹œë„í•´ ê°€ëŠ¥í•˜ë©´
+                // push selection ìˆ˜í–‰
 
                 IDE_TEST( doViewPushSelection( aStatement,
                                                sTableRef,
@@ -2767,33 +2767,33 @@ qmgSelection::makeViewGraph( qcStatement * aStatement,
                                                & sIsPushed )
                           != IDE_SUCCESS );
 
-                // View Graph »ı¼º
+                // View Graph ìƒì„±
                 IDE_TEST( qmo::makeGraph( sTableRef->view ) != IDE_SUCCESS );
 
-                // View Graph ¿¬°á
+                // View Graph ì—°ê²°
                 aGraph->left = sTableRef->view->myPlan->graph;
 
-                // ÇÏÀ§ÀÇ Projection Graph¿¡ VMTR Á¤º¸¸¦ ¼³Á¤
+                // í•˜ìœ„ì˜ Projection Graphì— VMTR ì •ë³´ë¥¼ ì„¤ì •
                 aGraph->left->flag &= ~QMG_PROJ_VIEW_OPT_TIP_VMTR_MASK;
                 aGraph->left->flag |= QMG_PROJ_VIEW_OPT_TIP_VMTR_FALSE;
                 break;
             case QMO_VIEW_OPT_TYPE_CMTR :
-                // BUG-37237 hierarchy query´Â same view¸¦ Ã³¸®ÇÏÁö ¾Ê´Â´Ù.
+                // BUG-37237 hierarchy queryëŠ” same viewë¥¼ ì²˜ë¦¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
                 if ( sTableRef->view->myPlan->graph == NULL )
                 {
-                    // View Graph »ı¼º
+                    // View Graph ìƒì„±
                     IDE_TEST( qmo::makeGraph( sTableRef->view )
                               != IDE_SUCCESS );
 
                     aGraph->left = sTableRef->view->myPlan->graph;
 
-                    // View Materialization ¿©ºÎ ¼³Á¤
+                    // View Materialization ì—¬ë¶€ ì„¤ì •
                     aGraph->left->flag &= ~QMG_PROJ_VIEW_OPT_TIP_CMTR_MASK;
                     aGraph->left->flag |= QMG_PROJ_VIEW_OPT_TIP_CMTR_TRUE;
                 }
                 else
                 {
-                    // View Graph ¿¬°á
+                    // View Graph ì—°ê²°
                     aGraph->left = sTableRef->view->myPlan->graph;
                 }
                 break;
@@ -2829,7 +2829,7 @@ IDE_RC qmgSelection::mergeViewTargetFlag( qcStatement * aDesView,
         sDesColumn = QTC_STMT_COLUMN( aDesView, sDesViewTarget->targetColumn );
         sSrcColumn = QTC_STMT_COLUMN( aSrcView, sSrcViewTarget->targetColumn );
 
-        // makeSCAN ¿¡¼­ »ç¿ëµÇ´Â flag ¸¦ À¯Áö½ÃÅ´
+        // makeSCAN ì—ì„œ ì‚¬ìš©ë˜ëŠ” flag ë¥¼ ìœ ì§€ì‹œí‚´
         sDesColumn->flag |= sSrcColumn->flag & (
             MTC_COLUMN_USE_COLUMN_MASK |
             MTC_COLUMN_USE_TARGET_MASK |
@@ -2847,12 +2847,12 @@ qmgSelection::setViewIndexHints( qcStatement         * aStatement,
 {
 //----------------------------------------------------------------------
 //
-// Description : VIEW index hint¸¦ VIEW¸¦ ±¸¼ºÇÏ´Â ÇØ´ç base table¿¡ ³»¸°´Ù.
+// Description : VIEW index hintë¥¼ VIEWë¥¼ êµ¬ì„±í•˜ëŠ” í•´ë‹¹ base tableì— ë‚´ë¦°ë‹¤.
 //
 // Implementation : PROJ-1495
 //
 //
-//   ¿¹) create table t1( i1 integer, i2 integer );
+//   ì˜ˆ) create table t1( i1 integer, i2 integer );
 //       create index t1_i1 on t1( i1 );
 //
 //       create table t2( i1 integer, i2 integer );
@@ -2875,7 +2875,7 @@ qmgSelection::setViewIndexHints( qcStatement         * aStatement,
     IDU_FIT_POINT_FATAL( "qmgSelection::setViewIndexHints::__FT__" );
 
     //---------------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //---------------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -2883,13 +2883,13 @@ qmgSelection::setViewIndexHints( qcStatement         * aStatement,
     IDE_DASSERT( aTableRef->tableAccessHints != NULL );
 
     //---------------------------------------------------
-    // ±âº» ÃÊ±âÈ­
+    // ê¸°ë³¸ ì´ˆê¸°í™”
     //---------------------------------------------------
 
     sQuerySet = ((qmsParseTree *)aTableRef->view->myPlan->parseTree)->querySet;
 
     //---------------------------------------------------
-    // °¢ table Access hint¸¦ VIEW ³»ºÎ ÇØ´ç base table·Î ³»¸°´Ù.
+    // ê° table Access hintë¥¼ VIEW ë‚´ë¶€ í•´ë‹¹ base tableë¡œ ë‚´ë¦°ë‹¤.
     //---------------------------------------------------
 
     for( sAccessHint = aTableRef->tableAccessHints;
@@ -2917,11 +2917,11 @@ qmgSelection::findQuerySet4ViewIndexHints( qcStatement         * aStatement,
 {
 /***********************************************************************
  *
- * Description : VIEW index hint¸¦ VIEW¸¦ ±¸¼ºÇÏ´Â ÇØ´ç base table¿¡ ³»¸°´Ù.
+ * Description : VIEW index hintë¥¼ VIEWë¥¼ êµ¬ì„±í•˜ëŠ” í•´ë‹¹ base tableì— ë‚´ë¦°ë‹¤.
  *
  * Implementation : PROJ-1495
  *
- *  view ³»ºÎ ÇØ´ç querySetÀ» Ã£´Â´Ù.
+ *  view ë‚´ë¶€ í•´ë‹¹ querySetì„ ì°¾ëŠ”ë‹¤.
  *
  ***********************************************************************/
 
@@ -2930,7 +2930,7 @@ qmgSelection::findQuerySet4ViewIndexHints( qcStatement         * aStatement,
     IDU_FIT_POINT_FATAL( "qmgSelection::findQuerySet4ViewIndexHints::__FT__" );
 
     //---------------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //---------------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -2938,7 +2938,7 @@ qmgSelection::findQuerySet4ViewIndexHints( qcStatement         * aStatement,
     IDE_DASSERT( aAccessHint != NULL );
 
     //---------------------------------------------------
-    // setÀÌ ¾Æ´Ñ querySetÀ» Ã£¾Æ view index hint¸¦ Àû¿ë
+    // setì´ ì•„ë‹Œ querySetì„ ì°¾ì•„ view index hintë¥¼ ì ìš©
     //---------------------------------------------------
 
     if( aQuerySet->setOp == QMS_NONE )
@@ -2948,14 +2948,14 @@ qmgSelection::findQuerySet4ViewIndexHints( qcStatement         * aStatement,
              sFrom = sFrom->next )
         {
             //----------------------------------
-            // view index hint¸¦ ÇØ´ç base table¿¡ Á¤º¸ ¼³Á¤
+            // view index hintë¥¼ í•´ë‹¹ base tableì— ì •ë³´ ì„¤ì •
             //----------------------------------
             if( sFrom->joinType == QMS_NO_JOIN )
             {
                 if( sFrom->tableRef->view == NULL )
                 {
                     //---------------------------------------
-                    // ÇöÀç Å×ÀÌºíÀÌ base table·Î index hint Àû¿ë
+                    // í˜„ì¬ í…Œì´ë¸”ì´ base tableë¡œ index hint ì ìš©
                     //---------------------------------------
 
                     IDE_TEST( setViewIndexHintInBaseTable( aStatement,
@@ -2965,16 +2965,16 @@ qmgSelection::findQuerySet4ViewIndexHints( qcStatement         * aStatement,
                 }
                 else
                 {
-                    // VIEW ÀÎ °æ¿ì·Î,
-                    // index hint Àû¿ë´ë»óÀÌ ¾Æ´Ô.
+                    // VIEW ì¸ ê²½ìš°ë¡œ,
+                    // index hint ì ìš©ëŒ€ìƒì´ ì•„ë‹˜.
                 }
             }
             else
             {
                 //-----------------------------------------
-                // ÇöÀç Å×ÀÌºíÀÌ base tableÀÌ ¾Æ´Ï¹Ç·Î,
-                // left, right fromÀ» ¼øÈ¸ÇÏ¸é¼­
-                // base tableÀ» Ã£¾Æ¼­ index hint Á¤º¸ ¼³Á¤
+                // í˜„ì¬ í…Œì´ë¸”ì´ base tableì´ ì•„ë‹ˆë¯€ë¡œ,
+                // left, right fromì„ ìˆœíšŒí•˜ë©´ì„œ
+                // base tableì„ ì°¾ì•„ì„œ index hint ì •ë³´ ì„¤ì •
                 //-----------------------------------------
 
                 IDE_TEST(
@@ -3027,7 +3027,7 @@ qmgSelection::findBaseTableNSetIndexHint( qcStatement         * aStatement,
 {
 /***********************************************************************
  *
- * Description : VIEW¿¡ ´ëÇÑ index hint Àû¿ë
+ * Description : VIEWì— ëŒ€í•œ index hint ì ìš©
  *
  * Implementation : PROJ-1495
  *
@@ -3036,7 +3036,7 @@ qmgSelection::findBaseTableNSetIndexHint( qcStatement         * aStatement,
     IDU_FIT_POINT_FATAL( "qmgSelection::findBaseTableNSetIndexHint::__FT__" );
 
     //---------------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //---------------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -3044,7 +3044,7 @@ qmgSelection::findBaseTableNSetIndexHint( qcStatement         * aStatement,
     IDE_DASSERT( aAccessHint != NULL );
 
     //---------------------------------------------------
-    // left From¿¡ ´ëÇÑ Ã³¸®
+    // left Fromì— ëŒ€í•œ ì²˜ë¦¬
     //---------------------------------------------------
 
     if( aFrom->left->joinType == QMS_NO_JOIN )
@@ -3058,8 +3058,8 @@ qmgSelection::findBaseTableNSetIndexHint( qcStatement         * aStatement,
         }
         else
         {
-            // VIEWÀÎ °æ¿ì·Î,
-            // index hint Àû¿ë´ë»óÀÌ ¾Æ´Ô.
+            // VIEWì¸ ê²½ìš°ë¡œ,
+            // index hint ì ìš©ëŒ€ìƒì´ ì•„ë‹˜.
         }
     }
     else
@@ -3071,7 +3071,7 @@ qmgSelection::findBaseTableNSetIndexHint( qcStatement         * aStatement,
     }
 
     //---------------------------------------------------
-    // right From¿¡ ´ëÇÑ Ã³¸®
+    // right Fromì— ëŒ€í•œ ì²˜ë¦¬
     //---------------------------------------------------
 
     if( aFrom->right->joinType == QMS_NO_JOIN )
@@ -3085,8 +3085,8 @@ qmgSelection::findBaseTableNSetIndexHint( qcStatement         * aStatement,
         }
         else
         {
-            // VIEWÀÎ °æ¿ì·Î,
-            // index hint Àû¿ë´ë»óÀÌ ¾Æ´Ô.
+            // VIEWì¸ ê²½ìš°ë¡œ,
+            // index hint ì ìš©ëŒ€ìƒì´ ì•„ë‹˜.
         }
     }
     else
@@ -3112,16 +3112,16 @@ qmgSelection::setViewIndexHintInBaseTable( qcStatement * aStatement,
 {
 /***********************************************************************
  *
- * Description : VIEW¿¡ ´ëÇÑ index hint Àû¿ë
+ * Description : VIEWì— ëŒ€í•œ index hint ì ìš©
  *
  * Implementation : PROJ-1495
  *
- *  view³»ºÎÀÇ °¢ querySetÀÇ base table·Î
- *  view index hint¿¡ ÇØ´çÇÏ´Â index¸¦ Ã£¾Æ¼­ TableAccess hint¸¦ ¸¸µç´Ù.
+ *  viewë‚´ë¶€ì˜ ê° querySetì˜ base tableë¡œ
+ *  view index hintì— í•´ë‹¹í•˜ëŠ” indexë¥¼ ì°¾ì•„ì„œ TableAccess hintë¥¼ ë§Œë“ ë‹¤.
  *
- *     1. hint index name¿¡ ÇØ´çÇÏ´Â index°¡ Á¸ÀçÇÏ´ÂÁö °Ë»ç
- *     2. Á¸ÀçÇÏ¸é,
- *        indexHintÁ¤º¸¸¦ ¸¸µé¾î¼­ base table¿¡ ¿¬°áÇÑ´Ù.
+ *     1. hint index nameì— í•´ë‹¹í•˜ëŠ” indexê°€ ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬
+ *     2. ì¡´ì¬í•˜ë©´,
+ *        indexHintì •ë³´ë¥¼ ë§Œë“¤ì–´ì„œ base tableì— ì—°ê²°í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -3138,7 +3138,7 @@ qmgSelection::setViewIndexHintInBaseTable( qcStatement * aStatement,
     IDU_FIT_POINT_FATAL( "qmgSelection::setViewIndexHintInBaseTable::__FT__" );
 
     //---------------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //---------------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -3146,8 +3146,8 @@ qmgSelection::setViewIndexHintInBaseTable( qcStatement * aStatement,
     IDE_DASSERT( aAccessHint != NULL );
 
     //---------------------------------------------------
-    // hint index name¿¡ ÇØ´çÇÏ´Â index°¡ Á¸ÀçÇÏ´ÂÁö¸¦ °Ë»çÇØ¼­
-    // Á¸ÀçÇÏ¸é, base table¿¡ ¿¬°áÇÒ indexHintÁ¤º¸¸¦ ¸¸µç´Ù.
+    // hint index nameì— í•´ë‹¹í•˜ëŠ” indexê°€ ì¡´ì¬í•˜ëŠ”ì§€ë¥¼ ê²€ì‚¬í•´ì„œ
+    // ì¡´ì¬í•˜ë©´, base tableì— ì—°ê²°í•  indexHintì •ë³´ë¥¼ ë§Œë“ ë‹¤.
     //---------------------------------------------------
 
     for( sHintIndex = aAccessHint->indices;
@@ -3197,14 +3197,14 @@ qmgSelection::setViewIndexHintInBaseTable( qcStatement * aStatement,
     }
 
     //----------------------------------------------
-    // VIEW index hint Áß ÇØ´ç base table¿¡ ÀÎµ¦½º°¡ Á¸ÀçÇÏ´Â °æ¿ì
-    // base tableÀÇ tableRef¿¡ ±× Á¤º¸ ¼³Á¤
+    // VIEW index hint ì¤‘ í•´ë‹¹ base tableì— ì¸ë±ìŠ¤ê°€ ì¡´ì¬í•˜ëŠ” ê²½ìš°
+    // base tableì˜ tableRefì— ê·¸ ì •ë³´ ì„¤ì •
     //----------------------------------------------
 
     if( sHintIndices != NULL )
     {
         //--------------------------------------
-        // qmsHintTable Á¤º¸ ±¸¼º
+        // qmsHintTable ì •ë³´ êµ¬ì„±
         //--------------------------------------
 
         IDE_TEST(
@@ -3222,7 +3222,7 @@ qmgSelection::setViewIndexHintInBaseTable( qcStatement * aStatement,
         sHintTable->next  = NULL;
 
         //--------------------------------------
-        // qmsTableAccessHints Á¤º¸ ±¸¼º
+        // qmsTableAccessHints ì •ë³´ êµ¬ì„±
         //--------------------------------------
 
         IDE_TEST(
@@ -3239,7 +3239,7 @@ qmgSelection::setViewIndexHintInBaseTable( qcStatement * aStatement,
         sTableAccessHint->next    = NULL;
 
         //--------------------------------------
-        // ÇØ´ç tableÀÇ tableRef¿¡ tableAccessHint Á¤º¸ ¿¬°á
+        // í•´ë‹¹ tableì˜ tableRefì— tableAccessHint ì •ë³´ ì—°ê²°
         //--------------------------------------
 
         if( aFrom->tableRef->tableAccessHints == NULL )
@@ -3248,8 +3248,8 @@ qmgSelection::setViewIndexHintInBaseTable( qcStatement * aStatement,
         }
         else
         {
-            // ÀÌ¹Ì ÇØ´ç table¿¡ tableAccessHint°¡ ÀÖ´Â °æ¿ì,
-            // tableAccessHint¿¬°á¸®½ºÆ®ÀÇ ¸Ç¸¶Áö¸·¿¡ ¿¬°á.
+            // ì´ë¯¸ í•´ë‹¹ tableì— tableAccessHintê°€ ìˆëŠ” ê²½ìš°,
+            // tableAccessHintì—°ê²°ë¦¬ìŠ¤íŠ¸ì˜ ë§¨ë§ˆì§€ë§‰ì— ì—°ê²°.
             for( sCurAccess = aFrom->tableRef->tableAccessHints;
                  sCurAccess->next != NULL;
                  sCurAccess = sCurAccess->next ) ;
@@ -3259,7 +3259,7 @@ qmgSelection::setViewIndexHintInBaseTable( qcStatement * aStatement,
     }
     else
     {
-        // ÇØ´ç base table¿¡ Àû¿ëµÈ index°¡ ¾øÀ½.
+        // í•´ë‹¹ base tableì— ì ìš©ëœ indexê°€ ì—†ìŒ.
         // Nothing To Do
     }
 
@@ -3279,14 +3279,14 @@ qmgSelection::doViewPushProjection( qcStatement  * aViewStatement,
  *
  * Description :
  *     PROJ-1473 
- *     view¿¡ ´ëÇÑ push projectionÀ» ¼öÇàÇÑ´Ù.
+ *     viewì— ëŒ€í•œ push projectionì„ ìˆ˜í–‰í•œë‹¤.
  *
  * Implementation :
  *
- *     1. SETÀıÀº union all¸¸ °¡´É
+ *     1. SETì ˆì€ union allë§Œ ê°€ëŠ¥
  *     2. distinct (X)
  *     3. group by (X)
- *     4. target Column¿¡ aggr (X)
+ *     4. target Columnì— aggr (X)
  *
  ***********************************************************************/
 
@@ -3344,7 +3344,7 @@ qmgSelection::doPushProjection( qcStatement  * aViewStatement,
  *
  * Description :
  *     PROJ-1473
- *     view¿¡ ´ëÇÑ push projectionÀ» ¼öÇàÇÑ´Ù.
+ *     viewì— ëŒ€í•œ push projectionì„ ìˆ˜í–‰í•œë‹¤.
  *
  * Implementation :
  *
@@ -3376,7 +3376,7 @@ qmgSelection::doPushProjection( qcStatement  * aViewStatement,
                       & MTC_TUPLE_MATERIALIZE_MASK )
                     == MTC_TUPLE_MATERIALIZE_VALUE )
                 {
-                    // view³»ºÎ·Î push projection
+                    // viewë‚´ë¶€ë¡œ push projection
                     sMtcTemplate->rows[sTarget->targetColumn->node.table].lflag
                         &= ~MTC_TUPLE_VIEW_PUSH_PROJ_MASK;
                     sMtcTemplate->rows[sTarget->targetColumn->node.table].lflag
@@ -3461,12 +3461,12 @@ qmgSelection::doViewPushSelection( qcStatement  * aStatement,
  *
  * Description :
  *     BUG-18367 view push selection
- *     view¿¡ ´ëÇÑ push selectionÀ» ¼öÇàÇÑ´Ù.
+ *     viewì— ëŒ€í•œ push selectionì„ ìˆ˜í–‰í•œë‹¤.
  *
  * Implementation :
- *     view¿¡ ´ëÇÑ ´ÙÀ½ µÎ °¡Áö ÇüÅÂ¸¦ Ã³¸®ÇÑ´Ù.
- *     (1) view¿¡ ´ëÇÑ one table predicate
- *     (2) PUSH_PRED ÈùÆ®·Î ³»·Á¿Â view¿¡ ´ëÇÑ join predicate
+ *     viewì— ëŒ€í•œ ë‹¤ìŒ ë‘ ê°€ì§€ í˜•íƒœë¥¼ ì²˜ë¦¬í•œë‹¤.
+ *     (1) viewì— ëŒ€í•œ one table predicate
+ *     (2) PUSH_PRED íŒíŠ¸ë¡œ ë‚´ë ¤ì˜¨ viewì— ëŒ€í•œ join predicate
  *
  ***********************************************************************/
 
@@ -3478,15 +3478,15 @@ qmgSelection::doViewPushSelection( qcStatement  * aStatement,
     UShort          sViewTupleId;
     UInt            sColumnID;
     idBool          sIsIndexable;
-    idBool          sIsPushed;         // viewÀÇ ÇÏÀ§ setÀı¿¡ ÇÏ³ª¶óµµ ³»·Á°¨
-    idBool          sIsPushedAll;      // viewÀÇ ÇÏÀ§ setÀı¿¡ ¸ğµÎ ³»·Á°¨
+    idBool          sIsPushed;         // viewì˜ í•˜ìœ„ setì ˆì— í•˜ë‚˜ë¼ë„ ë‚´ë ¤ê°
+    idBool          sIsPushedAll;      // viewì˜ í•˜ìœ„ setì ˆì— ëª¨ë‘ ë‚´ë ¤ê°
     idBool          sRemainPushedPredicate;
     idBool          sRemovePredicate;
 
     IDU_FIT_POINT_FATAL( "qmgSelection::doViewPushSelection::__FT__" );
 
     //---------------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //---------------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -3494,7 +3494,7 @@ qmgSelection::doViewPushSelection( qcStatement  * aStatement,
     IDE_DASSERT( aIsPushed != NULL );
 
     //---------------------------------------------------
-    // ±âº» ÃÊ±âÈ­
+    // ê¸°ë³¸ ì´ˆê¸°í™”
     //---------------------------------------------------
 
     sView = aTableRef->view;
@@ -3513,14 +3513,14 @@ qmgSelection::doViewPushSelection( qcStatement  * aStatement,
              == QMO_PRED_PUSH_PRED_HINT_TRUE )
         {
             //---------------------------------------------------
-            // PUSH_PRED ÈùÆ®¿¡ ÀÇÇØ ³»·Á¿Â join predicateÀÎ °æ¿ì
+            // PUSH_PRED íŒíŠ¸ì— ì˜í•´ ë‚´ë ¤ì˜¨ join predicateì¸ ê²½ìš°
             //---------------------------------------------------
 
             if ( ( sPredicate->node->lflag & QTC_NODE_SUBQUERY_MASK )
                  != QTC_NODE_SUBQUERY_EXIST )
             {
                 //---------------------------------------------------
-                // °¢ PredicateÀÌ Subquery°¡ ¾Æ´Ñ °æ¿ì
+                // ê° Predicateì´ Subqueryê°€ ì•„ë‹Œ ê²½ìš°
                 //---------------------------------------------------
 
                 IDE_TEST( qmoPred::isIndexable( aStatement,
@@ -3533,7 +3533,7 @@ qmgSelection::doViewPushSelection( qcStatement  * aStatement,
                 if ( sIsIndexable == ID_TRUE )
                 {
                     //---------------------------------------------------
-                    // Indexable ÇÑ °æ¿ì
+                    // Indexable í•œ ê²½ìš°
                     //---------------------------------------------------
 
                     IDE_TEST( qmoPred::getColumnID( aStatement,
@@ -3545,7 +3545,7 @@ qmgSelection::doViewPushSelection( qcStatement  * aStatement,
                     if ( sColumnID != QMO_COLUMNID_LIST )
                     {
                         //---------------------------------------------------
-                        // Indexable PredicateÀÌ List°¡ ¾Æ´Ñ °æ¿ì
+                        // Indexable Predicateì´ Listê°€ ì•„ë‹Œ ê²½ìš°
                         //---------------------------------------------------
 
                         IDE_TEST( qmoPushPred::doPushDownViewPredicate(
@@ -3563,32 +3563,32 @@ qmgSelection::doViewPushSelection( qcStatement  * aStatement,
                     }
                     else
                     {
-                        // ListÀÎ °æ¿ì, Push Selection ÇÏÁö ¾ÊÀ½ : ÃßÈÄ È®Àå
+                        // Listì¸ ê²½ìš°, Push Selection í•˜ì§€ ì•ŠìŒ : ì¶”í›„ í™•ì¥
                     }
                 }
                 else
                 {
-                    // indexable predicateÀÌ ¾Æ´Ñ °æ¿ì
+                    // indexable predicateì´ ì•„ë‹Œ ê²½ìš°
                     // nothing to do
                 }
             }
             else
             {
-                // SubqueryÀÎ °æ¿ì
+                // Subqueryì¸ ê²½ìš°
                 // nothing to do
             }
         }
         else
         {
             //---------------------------------------------------
-            // viewÀÇ one table predicateÀÎ °æ¿ì
+            // viewì˜ one table predicateì¸ ê²½ìš°
             //---------------------------------------------------
 
             if ( ( sPredicate->node->lflag & QTC_NODE_SUBQUERY_MASK )
                  != QTC_NODE_SUBQUERY_EXIST )
             {
                 //---------------------------------------------------
-                // °¢ PredicateÀÌ Subquery°¡ ¾Æ´Ñ °æ¿ì
+                // ê° Predicateì´ Subqueryê°€ ì•„ë‹Œ ê²½ìš°
                 //---------------------------------------------------
 
                 if ( qtc::getPosNextBitSet( & sPredicate->node->depInfo,
@@ -3597,7 +3597,7 @@ qmgSelection::doViewPushSelection( qcStatement  * aStatement,
                      == QTC_DEPENDENCIES_END )
                 {
                     //---------------------------------------------------
-                    // °¢ PredicateÀÌ ¿ÜºÎÂüÁ¶ ÄÃ·³ÀÌ ¾ø´Â °æ¿ì
+                    // ê° Predicateì´ ì™¸ë¶€ì°¸ì¡° ì»¬ëŸ¼ì´ ì—†ëŠ” ê²½ìš°
                     //---------------------------------------------------
 
                     IDE_TEST( qmoPushPred::doPushDownViewPredicate(
@@ -3615,22 +3615,22 @@ qmgSelection::doViewPushSelection( qcStatement  * aStatement,
                 }
                 else
                 {
-                    // ¿ÜºÎÂüÁ¶ ÄÃ·³À» °¡Áö´Â °æ¿ì
+                    // ì™¸ë¶€ì°¸ì¡° ì»¬ëŸ¼ì„ ê°€ì§€ëŠ” ê²½ìš°
                     // Nothing to do.
                 }
             }
             else
             {
-                // SubqueryÀÎ °æ¿ì
+                // Subqueryì¸ ê²½ìš°
                 // nothing to do
             }
         }
 
         // fix BUG-12515
-        // viewÀÇ ·¹ÄÚµå°¹¼ö´Â push selectionµÈ
-        // predicateÀÇ selectivity·Î °è»êµÇ¹Ç·Î
-        // whereÀı¿¡ ³²¾Æ ÀÖ´Â predicateÀÇ selectivity°¡
-        // Ãß°¡ÀûÀ¸·Î °è»êµÇÁö ¾Êµµ·Ï ÇÏ±â À§ÇØ
+        // viewì˜ ë ˆì½”ë“œê°¯ìˆ˜ëŠ” push selectionëœ
+        // predicateì˜ selectivityë¡œ ê³„ì‚°ë˜ë¯€ë¡œ
+        // whereì ˆì— ë‚¨ì•„ ìˆëŠ” predicateì˜ selectivityê°€
+        // ì¶”ê°€ì ìœ¼ë¡œ ê³„ì‚°ë˜ì§€ ì•Šë„ë¡ í•˜ê¸° ìœ„í•´
         if( sIsPushed == ID_TRUE )
         {
             *aIsPushed = ID_TRUE;
@@ -3648,23 +3648,23 @@ qmgSelection::doViewPushSelection( qcStatement  * aStatement,
              == QMO_PRED_TRANS_PRED_TRUE )
         {
             //---------------------------------------------------
-            // TRANSITIVE PREDICATE ÃÖÀûÈ­¿¡ ÀÇÇØ »ı¼ºµÈ predicateÀ»
-            // predicate list¿¡¼­ Á¦°ÅÇÑ´Ù.
+            // TRANSITIVE PREDICATE ìµœì í™”ì— ì˜í•´ ìƒì„±ëœ predicateì„
+            // predicate listì—ì„œ ì œê±°í•œë‹¤.
             // PROJ-1404
-            // ( ³²°ÜµÑ °æ¿ì filter·Î Ã³¸®µÇ¸ç ÀÌ´Â bad transitive predicate ÀÌ¹Ç·Î )
+            // ( ë‚¨ê²¨ë‘˜ ê²½ìš° filterë¡œ ì²˜ë¦¬ë˜ë©° ì´ëŠ” bad transitive predicate ì´ë¯€ë¡œ )
             //---------------------------------------------------
             sRemovePredicate = ID_TRUE;
         }
         else
         {
             //---------------------------------------------------
-            // Pushed PredicateÀ»
-            // ÇØ´ç predicateÀ» predicate list¿¡¼­ Á¦°ÅÇÑ´Ù. ( BUG-18367 )
+            // Pushed Predicateì„
+            // í•´ë‹¹ predicateì„ predicate listì—ì„œ ì œê±°í•œë‹¤. ( BUG-18367 )
             // 
-            // < Á¦¿Ü »óÈ² : Áï, predicateÀ» ³²°ÜµÎ¾î¾ß ÇÏ´Â °æ¿ì >
-            // (1) Æ¯Á¤ ±¸¹® Æ¯¼º ¶§¹®¿¡ pushed predicateÀ» »èÁ¦ÇÏ¸é
-            //     °á°ú°¡ Æ²¸° °æ¿ì
-            // (2) viewÀÇ setÀı Áß ÀÏºÎ¿¡¸¸ push predicateµÈ °æ¿ì
+            // < ì œì™¸ ìƒí™© : ì¦‰, predicateì„ ë‚¨ê²¨ë‘ì–´ì•¼ í•˜ëŠ” ê²½ìš° >
+            // (1) íŠ¹ì • êµ¬ë¬¸ íŠ¹ì„± ë•Œë¬¸ì— pushed predicateì„ ì‚­ì œí•˜ë©´
+            //     ê²°ê³¼ê°€ í‹€ë¦° ê²½ìš°
+            // (2) viewì˜ setì ˆ ì¤‘ ì¼ë¶€ì—ë§Œ push predicateëœ ê²½ìš°
             //---------------------------------------------------
             
             if ( sIsPushed == ID_TRUE )
@@ -3673,38 +3673,38 @@ qmgSelection::doViewPushSelection( qcStatement  * aStatement,
                 {
                     if ( sRemainPushedPredicate == ID_TRUE )
                     {
-                        // Æ¯Á¤ ±¸¹®Àº ±× Æ¯¼º ¶§¹®¿¡ ¸ğµÎ push µÇ¾îµµ
-                        // predicateÀ» »èÁ¦ÇÏ¸é ±× °á°ú°¡ Æ²¸²
-                        // ÀÌ Á¤º¸´Â doPushDownViewPredicate()¿¡¼­ ¼³Á¤ÇØÁÜ
+                        // íŠ¹ì • êµ¬ë¬¸ì€ ê·¸ íŠ¹ì„± ë•Œë¬¸ì— ëª¨ë‘ push ë˜ì–´ë„
+                        // predicateì„ ì‚­ì œí•˜ë©´ ê·¸ ê²°ê³¼ê°€ í‹€ë¦¼
+                        // ì´ ì •ë³´ëŠ” doPushDownViewPredicate()ì—ì„œ ì„¤ì •í•´ì¤Œ
                         sRemovePredicate = ID_FALSE;
                     }
                     else
                     {
-                        // viewÀÇ ¸ğµç queryset¿¡ push predicate ÇßÀ¸¹Ç·Î
-                        // predicateÀ» »èÁ¦½ÃÄÑµµµÊ
+                        // viewì˜ ëª¨ë“  querysetì— push predicate í–ˆìœ¼ë¯€ë¡œ
+                        // predicateì„ ì‚­ì œì‹œì¼œë„ë¨
                         sRemovePredicate = ID_TRUE;
                     }
                 }
                 else
                 {
-                    // ÀÏºÎ¸¸ push µÇ¾úÀ¸¹Ç·Î predicateÀ» ³²°ÜµÎ¾î¾ß ÇÔ
+                    // ì¼ë¶€ë§Œ push ë˜ì—ˆìœ¼ë¯€ë¡œ predicateì„ ë‚¨ê²¨ë‘ì–´ì•¼ í•¨
                     sRemovePredicate = ID_FALSE;
                 }
             }
             else
             {
-                // Push µÇÁö ¾Ê¾ÒÀ¸¹Ç·Î predicateÀ» ³²°ÜµÎ¾î¾ß ÇÔ
+                // Push ë˜ì§€ ì•Šì•˜ìœ¼ë¯€ë¡œ predicateì„ ë‚¨ê²¨ë‘ì–´ì•¼ í•¨
                 sRemovePredicate = ID_FALSE;
             }
         }
 
         if ( sRemovePredicate == ID_TRUE )
         {
-            // ¿¬°á°ü°è Á¦°Å
+            // ì—°ê²°ê´€ê³„ ì œê±°
         }
         else
         {
-            // ¿¬°á°ü°è À¯Áö
+            // ì—°ê²°ê´€ê³„ ìœ ì§€
             if( sRemainPredicate == NULL )
             {
                 sRemainPredicate = sPredicate;
@@ -3744,14 +3744,14 @@ qmgSelection::makePreservedOrder( qcStatement        * aStatement,
 {
 /***********************************************************************
  *
- * Description : Preserved OrderÀÇ »ı¼º
+ * Description : Preserved Orderì˜ ìƒì„±
  *
  * Implementation :
- *    (1) direction hint¿¡ µû¸¥ Ã¹¹øÂ° Ä®·³ direction ¼³Á¤ ¹× forward ¿©ºÎ ¼³Á¤
- *        - direction hint°¡ ¾ø´Â °æ¿ì : Ã¹¹øÂ° Ä®·³ directionÀº not defined
- *        - direction hint°¡ ÀÖ´Â °æ¿ì : Ã¹¹øÂ° Ä®·³ directionÀº hint¸¦ µû¸§
- *                                     & forward ¶Ç´Â backward·Î ÀĞÀ»Áö °áÁ¤
- *    (2) IndexÀÇ °¢ Ä®·³¿¡ ´ëÇÏ¿© preserved order »ı¼º ¹× Á¤º¸ ¼³Á¤
+ *    (1) direction hintì— ë”°ë¥¸ ì²«ë²ˆì§¸ ì¹¼ëŸ¼ direction ì„¤ì • ë° forward ì—¬ë¶€ ì„¤ì •
+ *        - direction hintê°€ ì—†ëŠ” ê²½ìš° : ì²«ë²ˆì§¸ ì¹¼ëŸ¼ directionì€ not defined
+ *        - direction hintê°€ ìˆëŠ” ê²½ìš° : ì²«ë²ˆì§¸ ì¹¼ëŸ¼ directionì€ hintë¥¼ ë”°ë¦„
+ *                                     & forward ë˜ëŠ” backwardë¡œ ì½ì„ì§€ ê²°ì •
+ *    (2) Indexì˜ ê° ì¹¼ëŸ¼ì— ëŒ€í•˜ì—¬ preserved order ìƒì„± ë° ì •ë³´ ì„¤ì •
  *
  ***********************************************************************/
 
@@ -3768,14 +3768,14 @@ qmgSelection::makePreservedOrder( qcStatement        * aStatement,
     IDU_FIT_POINT_FATAL( "qmgSelection::makePreservedOrder::__FT__" );
 
     //---------------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //---------------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aIdxCardInfo != NULL );
 
     //---------------------------------------------------
-    // ±âº» ÃÊ±âÈ­
+    // ê¸°ë³¸ ì´ˆê¸°í™”
     //---------------------------------------------------
 
     sFirst       = NULL;
@@ -3785,7 +3785,7 @@ qmgSelection::makePreservedOrder( qcStatement        * aStatement,
     sKeyColsFlag = aIdxCardInfo->index->keyColsFlag;
 
     //---------------------------------------------------
-    //  direction hint¿¡ µû¸¥ Ã¹¹øÂ° Ä®·³ direction ¹× Forward ¿©ºÎ ¼³Á¤
+    //  direction hintì— ë”°ë¥¸ ì²«ë²ˆì§¸ ì¹¼ëŸ¼ direction ë° Forward ì—¬ë¶€ ì„¤ì •
     //---------------------------------------------------
 
     switch( aIdxCardInfo->flag & QMO_STAT_CARD_IDX_HINT_MASK )
@@ -3825,7 +3825,7 @@ qmgSelection::makePreservedOrder( qcStatement        * aStatement,
     }
 
     //---------------------------------------------------
-    // IndexÀÇ °¢ Ä®·³¿¡ ´ëÇÏ¿© preserved order »ı¼º ¹× Á¤º¸ ¼³Á¤
+    // Indexì˜ ê° ì¹¼ëŸ¼ì— ëŒ€í•˜ì—¬ preserved order ìƒì„± ë° ì •ë³´ ì„¤ì •
     //---------------------------------------------------
 
     for ( i = 0; i < sKeyColCnt; i++ )
@@ -3841,21 +3841,21 @@ qmgSelection::makePreservedOrder( qcStatement        * aStatement,
 
         if ( sFirst == NULL )
         {
-            // direction ¼³Á¤
+            // direction ì„¤ì •
             sPreservedOrder->direction = sFirstDirection;
-            // preserved order ¿¬°á
+            // preserved order ì—°ê²°
             sFirst = sCurrent = sPreservedOrder;
         }
         else
         {
             //---------------------------------------------------
-            // ¹æÇâ ¼³Á¤
+            // ë°©í–¥ ì„¤ì •
             //---------------------------------------------------
 
             if ( sFirstDirection == QMG_DIRECTION_NOT_DEFINED )
             {
                 //---------------------------------------------------
-                // ¹æÇâÀÌ Not Defined ÀÎ °æ¿ì
+                // ë°©í–¥ì´ Not Defined ì¸ ê²½ìš°
                 //---------------------------------------------------
 
                 if ( ( sKeyColsFlag[i-1] & SMI_COLUMN_ORDER_MASK ) ==
@@ -3871,7 +3871,7 @@ qmgSelection::makePreservedOrder( qcStatement        * aStatement,
             else
             {
                 //---------------------------------------------------
-                // ¹æÇâÀÌ Á¤ÇØÁø °æ¿ì
+                // ë°©í–¥ì´ ì •í•´ì§„ ê²½ìš°
                 //---------------------------------------------------
 
                 if ( sIsForward == ID_TRUE )
@@ -3942,11 +3942,11 @@ qmgSelection::getBestAccessMethodInExecutionTime(
     sAccessMethodCnt = 0;
 
     // PROJ-1436
-    // execution time¿¡´Â index card info¸¦ º¹»çÇØ¼­ »ç¿ëÇÏ¿©
-    // shared planÀ» º¯°æ½ÃÅ°Áö ¾Ê°Ô ÇÑ´Ù.
+    // execution timeì—ëŠ” index card infoë¥¼ ë³µì‚¬í•´ì„œ ì‚¬ìš©í•˜ì—¬
+    // shared planì„ ë³€ê²½ì‹œí‚¤ì§€ ì•Šê²Œ í•œë‹¤.
     sIdxCnt = aStatInfo->indexCnt;
 
-    // execution timeÀÌ¹Ç·Î qmxMemÀ» »ç¿ëÇÑ´Ù.
+    // execution timeì´ë¯€ë¡œ qmxMemì„ ì‚¬ìš©í•œë‹¤.
     IDE_TEST( QC_QMX_MEM(aStatement)->alloc(
                   ID_SIZEOF(qmoIdxCardInfo) * sIdxCnt,
                   (void**) & sIdxCardInfo )
@@ -3957,8 +3957,8 @@ qmgSelection::getBestAccessMethodInExecutionTime(
                    ID_SIZEOF(qmoIdxCardInfo) * sIdxCnt );
     
     // BUG-36958
-    // reprepare ½Ã qmeMem ÀÌ ÇØÁ¦µÇ¸é¼­ cost °è»ê¿¡ ÇÊ¿äÇÑ system Åë°èÁ¤º¸¸¦ ¾òÀ» ¼ö ¾ø´Ù.
-    // µû¶ó¼­ execution time ¿¡ qmxMem À» »ç¿ëÇÏ¿© system Åë°èÁ¤º¸¸¦ ´Ù½Ã ¾ò¾î¿Â´Ù.
+    // reprepare ì‹œ qmeMem ì´ í•´ì œë˜ë©´ì„œ cost ê³„ì‚°ì— í•„ìš”í•œ system í†µê³„ì •ë³´ë¥¼ ì–»ì„ ìˆ˜ ì—†ë‹¤.
+    // ë”°ë¼ì„œ execution time ì— qmxMem ì„ ì‚¬ìš©í•˜ì—¬ system í†µê³„ì •ë³´ë¥¼ ë‹¤ì‹œ ì–»ì–´ì˜¨ë‹¤.
 
     IDE_TEST( QC_QMX_MEM(aStatement)->alloc(
                   ID_SIZEOF(qmoSystemStatistics),
@@ -3977,7 +3977,7 @@ qmgSelection::getBestAccessMethodInExecutionTime(
     }
 
     //---------------------------------------------------
-    // Access MethodÀÇ ±¸Ãà ´Ü°è
+    // Access Methodì˜ êµ¬ì¶• ë‹¨ê³„
     //---------------------------------------------------
 
     if( ( aGraph->flag & QMG_GRAPH_TYPE_MASK ) == QMG_GRAPH_TYPE_DISK )
@@ -3989,7 +3989,7 @@ qmgSelection::getBestAccessMethodInExecutionTime(
         sIsMemory = ID_TRUE;
     }
 
-    // FULL SCAN Access Method ¼³Á¤
+    // FULL SCAN Access Method ì„¤ì •
     setFullScanMethod( aStatement,
                        aStatInfo,
                        aPredicate,
@@ -3999,7 +3999,7 @@ qmgSelection::getBestAccessMethodInExecutionTime(
 
     sAccessMethodCnt++;
 
-    // INDEX SCAN Access Method ¼³Á¤
+    // INDEX SCAN Access Method ì„¤ì •
     for ( i = 0; i < sIdxCnt; i++ )
     {
         sCurIdxCardInfo = & sIdxCardInfo[i];
@@ -4028,7 +4028,7 @@ qmgSelection::getBestAccessMethodInExecutionTime(
         }
         else
         {
-            // NO INDEX Hint°¡ ÀÖ´Â °æ¿ì, ±¸ÃàÇÏÁö ¾ÊÀ½
+            // NO INDEX Hintê°€ ìˆëŠ” ê²½ìš°, êµ¬ì¶•í•˜ì§€ ì•ŠìŒ
         }
     }
 
@@ -4060,12 +4060,12 @@ IDE_RC qmgSelection::getBestAccessMethod(qcStatement      *aStatement,
 {
 /***********************************************************************
  *
- * Description : AccessMethod ÀÇ ¼³Á¤ ¹× cost ºñ±³ ÈÄ °¡Àå ÁÁÀº
- *               AccessMethod¸¦ ¼±ÅÃ
+ * Description : AccessMethod ì˜ ì„¤ì • ë° cost ë¹„êµ í›„ ê°€ì¥ ì¢‹ì€
+ *               AccessMethodë¥¼ ì„ íƒ
  *
  * Implementation :
- *    (1) Access Method Á¤º¸ ±¸Ãà
- *    (2) ±¸ÃàµÈ Access Method¿¡¼­ °¡Àå cost°¡ ÁÁÀº access method ¼±ÅÃ
+ *    (1) Access Method ì •ë³´ êµ¬ì¶•
+ *    (2) êµ¬ì¶•ëœ Access Methodì—ì„œ ê°€ì¥ costê°€ ì¢‹ì€ access method ì„ íƒ
  *
  ***********************************************************************/
 
@@ -4084,7 +4084,7 @@ IDE_RC qmgSelection::getBestAccessMethod(qcStatement      *aStatement,
     IDU_FIT_POINT_FATAL( "qmgSelection::getBestAccessMethod::__FT__" );
 
     //---------------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //---------------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -4092,7 +4092,7 @@ IDE_RC qmgSelection::getBestAccessMethod(qcStatement      *aStatement,
     IDE_DASSERT( aAccessMethod != NULL );
 
     //---------------------------------------------------
-    // ±âº» ÃÊ±âÈ­
+    // ê¸°ë³¸ ì´ˆê¸°í™”
     //---------------------------------------------------
 
     sAccessMethod        = aAccessMethod;
@@ -4104,13 +4104,13 @@ IDE_RC qmgSelection::getBestAccessMethod(qcStatement      *aStatement,
     for( i = 0; i < sIdxCnt; i++ )
     {
         // fix BUG-12888
-        // ÀÌ flag´Â graph»ı¼º½Ã¸¸ ÂüÁ¶ÇÏ±â¶§¹®¿¡,
-        // clearÇØµµ ÀÌ¹Ì »ı¼ºµÈ graph¿¡´Â ¿µÇâÀ» ¹ÌÄ¡Áö ¾ÊÀ½.
+        // ì´ flagëŠ” graphìƒì„±ì‹œë§Œ ì°¸ì¡°í•˜ê¸°ë•Œë¬¸ì—,
+        // clearí•´ë„ ì´ë¯¸ ìƒì„±ëœ graphì—ëŠ” ì˜í–¥ì„ ë¯¸ì¹˜ì§€ ì•ŠìŒ.
         sIdxCardInfo[i].flag = QMO_STAT_CLEAR;
     }
 
     //---------------------------------------------------
-    // Access MethodÀÇ ±¸Ãà ´Ü°è
+    // Access Methodì˜ êµ¬ì¶• ë‹¨ê³„
     //---------------------------------------------------
 
     if( ( aGraph->flag & QMG_GRAPH_TYPE_MASK ) == QMG_GRAPH_TYPE_DISK )
@@ -4125,7 +4125,7 @@ IDE_RC qmgSelection::getBestAccessMethod(qcStatement      *aStatement,
     for ( ; sAccessHint != NULL; sAccessHint = sAccessHint->next )
     {
         //---------------------------------------------------
-        // Hint°¡ Á¸ÀçÇÏ´Â °æ¿ì, Hint¿¡ µû¶ó Access Method ¼³Á¤
+        // Hintê°€ ì¡´ì¬í•˜ëŠ” ê²½ìš°, Hintì— ë”°ë¼ Access Method ì„¤ì •
         //---------------------------------------------------
 
         if ( sAccessHint->accessType ==
@@ -4141,21 +4141,21 @@ IDE_RC qmgSelection::getBestAccessMethod(qcStatement      *aStatement,
             (*aAccessMethodCnt)++;
 
             // To Fix PR-11937
-            // Index Nested Loop Join ÀÇ »ç¿ë °¡´É¼º ¿©ºÎ¸¦ ÆÇ´ÜÇÏ±â À§ÇÏ¿©
-            // Full Scan Hint°¡ Àû¿ëµÇ¾úÀ½À» ¼³Á¤ÇÑ´Ù.
-            // Join Graph¿¡¼­ ÀÌ°ªÀÇ ¼³Á¤ ¿©ºÎ¸¦ º¸°í ÆÇ´ÜÇÏ°Ô µÈ´Ù.
+            // Index Nested Loop Join ì˜ ì‚¬ìš© ê°€ëŠ¥ì„± ì—¬ë¶€ë¥¼ íŒë‹¨í•˜ê¸° ìœ„í•˜ì—¬
+            // Full Scan Hintê°€ ì ìš©ë˜ì—ˆìŒì„ ì„¤ì •í•œë‹¤.
+            // Join Graphì—ì„œ ì´ê°’ì˜ ì„¤ì • ì—¬ë¶€ë¥¼ ë³´ê³  íŒë‹¨í•˜ê²Œ ëœë‹¤.
             aGraph->flag &= ~QMG_SELT_FULL_SCAN_HINT_MASK;
             aGraph->flag |= QMG_SELT_FULL_SCAN_HINT_TRUE;
         }
         else
         {
             //---------------------------------------------------
-            // INDEX SCAN Hint ¶Ç´Â NO INDEX SCAN Hint ÀÎ °æ¿ì,
-            // ³ª¿­µÈ Index¸¦ µû¶ó°¡¸é¼­ »ç¿ë °¡´ÉÇÑ index hintÀÎ °æ¿ì
-            // access method¸¦ ¼³Á¤ÇÑ´Ù.
+            // INDEX SCAN Hint ë˜ëŠ” NO INDEX SCAN Hint ì¸ ê²½ìš°,
+            // ë‚˜ì—´ëœ Indexë¥¼ ë”°ë¼ê°€ë©´ì„œ ì‚¬ìš© ê°€ëŠ¥í•œ index hintì¸ ê²½ìš°
+            // access methodë¥¼ ì„¤ì •í•œë‹¤.
             //---------------------------------------------------
 
-            // BUG-43534 index ( table ) ÈùÆ®¸¦ Áö¿øÇØ¾ß ÇÕ´Ï´Ù.
+            // BUG-43534 index ( table ) íŒíŠ¸ë¥¼ ì§€ì›í•´ì•¼ í•©ë‹ˆë‹¤.
             if ( sAccessHint->indices == NULL )
             {
                 for ( i = 0; i < sIdxCnt; i++ )
@@ -4239,36 +4239,36 @@ IDE_RC qmgSelection::getBestAccessMethod(qcStatement      *aStatement,
         if( sAccessMethod[0].method == NULL )
         {
             //---------------------------------------------------
-            // FULL SCAN Hint ¸¸ÀÌ Á¸ÀçÇÏ´Â °æ¿ì,
-            // - Preserved Order¸¦ Never Preserved Order·Î ¼³Á¤ÇÏ±â À§ÇØ
+            // FULL SCAN Hint ë§Œì´ ì¡´ì¬í•˜ëŠ” ê²½ìš°,
+            // - Preserved Orderë¥¼ Never Preserved Orderë¡œ ì„¤ì •í•˜ê¸° ìœ„í•´
             //---------------------------------------------------
             *aSelectedScanHint = QMG_USED_ONLY_FULL_SCAN_HINT;
         }
         else
         {
-            // hint¿¡ ÀÇÇØ¼­ index scanÀÌ °áÁ¤µÈ °æ¿ì
-            // ³ªÁß¿¡ host º¯¼öÀÇ ÃÖÀûÈ­¸¦ ½ÃµµÇÏÁö ¾Ê±â À§ÇØ
+            // hintì— ì˜í•´ì„œ index scanì´ ê²°ì •ëœ ê²½ìš°
+            // ë‚˜ì¤‘ì— host ë³€ìˆ˜ì˜ ìµœì í™”ë¥¼ ì‹œë„í•˜ì§€ ì•Šê¸° ìœ„í•´
             *aSelectedScanHint = QMG_USED_SCAN_HINT;
         }
     }
     else
     {
         // BUG-13800
-        // Scan hint°¡ ¿©·¯°³ ÁÖ¾îÁ³À» °æ¿ì
-        // ÀÌÁß¿¡ ÇÏ³ª°¡ ¼±ÅÃµÉ °ÍÀÌ±â ¶§¹®¿¡
-        // ¸¶Âù°¡Áö·Î host ÃÖÀûÈ­¸¦ Ãë¼ÒÇØ¾ß ÇÑ´Ù.
+        // Scan hintê°€ ì—¬ëŸ¬ê°œ ì£¼ì–´ì¡Œì„ ê²½ìš°
+        // ì´ì¤‘ì— í•˜ë‚˜ê°€ ì„ íƒë  ê²ƒì´ê¸° ë•Œë¬¸ì—
+        // ë§ˆì°¬ê°€ì§€ë¡œ host ìµœì í™”ë¥¼ ì·¨ì†Œí•´ì•¼ í•œë‹¤.
         *aSelectedScanHint = QMG_USED_SCAN_HINT;
     }
 
     if ( *aAccessMethodCnt == 0 )
     {
         //---------------------------------------------------
-        // (1) Hint°¡ Á¸ÀçÇÏÁö ¾Ê´Â °æ¿ì
-        // (2) Index Hint°¡ ÁÖ¾îÁ³À¸³ª ÇØ´ç Hint¸¦ ¸ğµÎ »ç¿ëÇÒ ¼ö ¾ø´Â °æ¿ì
-        // (3) No Index Hint ¸¸ÀÌ Á¸ÀçÇÒ °æ¿ì
+        // (1) Hintê°€ ì¡´ì¬í•˜ì§€ ì•ŠëŠ” ê²½ìš°
+        // (2) Index Hintê°€ ì£¼ì–´ì¡Œìœ¼ë‚˜ í•´ë‹¹ Hintë¥¼ ëª¨ë‘ ì‚¬ìš©í•  ìˆ˜ ì—†ëŠ” ê²½ìš°
+        // (3) No Index Hint ë§Œì´ ì¡´ì¬í•  ê²½ìš°
         //---------------------------------------------------
 
-        // FULL SCAN Access Method ¼³Á¤
+        // FULL SCAN Access Method ì„¤ì •
         setFullScanMethod( aStatement,
                            aStatInfo,
                            aPredicate,
@@ -4278,7 +4278,7 @@ IDE_RC qmgSelection::getBestAccessMethod(qcStatement      *aStatement,
         sIsFullScan = ID_TRUE;
         (*aAccessMethodCnt)++;
 
-        // INDEX SCAN Access Method ¼³Á¤
+        // INDEX SCAN Access Method ì„¤ì •
         for ( i = 0; i < sIdxCnt; i++ )
         {
             sCurIdxCardInfo = & sIdxCardInfo[i];
@@ -4307,7 +4307,7 @@ IDE_RC qmgSelection::getBestAccessMethod(qcStatement      *aStatement,
             }
             else
             {
-                // NO INDEX Hint°¡ ÀÖ´Â °æ¿ì, ±¸ÃàÇÏÁö ¾ÊÀ½
+                // NO INDEX Hintê°€ ìˆëŠ” ê²½ìš°, êµ¬ì¶•í•˜ì§€ ì•ŠìŒ
             }
         }
     }
@@ -4318,10 +4318,10 @@ IDE_RC qmgSelection::getBestAccessMethod(qcStatement      *aStatement,
 
     /**
      * PROJ-2641 Hierarchy Query Index
-     * Hierarchy query ÀÇ °æ¿ì full scanº¸´Ù index scanÀÌ À¯¸®ÇÏ°í
-     * °³³ä»ó index scan½Ã index °¡ memory¿¡ loadµÇ¸é disk io°¡
-     * ¾ø´Ù°í º¸°í full scan½Ã¿¡´Â level¿¡ µû¶ó disk io°¡ Àü¹İÀûÀ¸·Î
-     * Å©°Ô Áõ°¡ÇÏ¹Ç·Î full scan½Ã disk io °ªÀ» Áõ°¡½ÃÄÑ ÁØ´Ù.
+     * Hierarchy query ì˜ ê²½ìš° full scanë³´ë‹¤ index scanì´ ìœ ë¦¬í•˜ê³ 
+     * ê°œë…ìƒ index scanì‹œ index ê°€ memoryì— loadë˜ë©´ disk ioê°€
+     * ì—†ë‹¤ê³  ë³´ê³  full scanì‹œì—ëŠ” levelì— ë”°ë¼ disk ioê°€ ì „ë°˜ì ìœ¼ë¡œ
+     * í¬ê²Œ ì¦ê°€í•˜ë¯€ë¡œ full scanì‹œ disk io ê°’ì„ ì¦ê°€ì‹œì¼œ ì¤€ë‹¤.
      */
     if ( ( ( aFlag & QMG_BEST_ACCESS_METHOD_HIERARCHY_MASK )
            == QMG_BEST_ACCESS_METHOD_HIERARCHY_TRUE ) &&
@@ -4394,8 +4394,8 @@ void qmgSelection::setFullScanMethod( qcStatement      * aStatement,
     aAccessMethod->keyRangeCost         = 0;
     aAccessMethod->keyFilterCost        = 0;
 
-    // TASK-6699 TPC-H ¼º´É °³¼±
-    // ParallelDegree ¸¦ °í·ÁÇÏ¿© Full scan cost ¸¦ °è»êÇÑ´Ù.
+    // TASK-6699 TPC-H ì„±ëŠ¥ ê°œì„ 
+    // ParallelDegree ë¥¼ ê³ ë ¤í•˜ì—¬ Full scan cost ë¥¼ ê³„ì‚°í•œë‹¤.
     aAccessMethod->accessCost = aAccessMethod->accessCost / aParallelDegree;
     aAccessMethod->diskCost   = aAccessMethod->diskCost / aParallelDegree;
     aAccessMethod->totalCost  = sCost / aParallelDegree;
@@ -4450,7 +4450,7 @@ IDE_RC qmgSelection::setIndexScanMethod( qcStatement      * aStatement,
     if( aPredicate != NULL )
     {
         //--------------------------------------
-        // range, filter ÃßÃâ
+        // range, filter ì¶”ì¶œ
         //--------------------------------------
         IDE_TEST( qmoPred::extractRangeAndFilter( aStatement,
                                                   sTemplate,
@@ -4559,14 +4559,14 @@ IDE_RC qmgSelection::setIndexScanMethod( qcStatement      * aStatement,
                                        &(aAccessMethod->diskCost) );
 
     //--------------------------------------
-    // qmoAccessMethod ¼³Á¤
+    // qmoAccessMethod ì„¤ì •
     //--------------------------------------
     sAccessMethod->method               = aIdxCardInfo;
 
     // To Fix PR-9181
-    // Index°¡ Key Range¸¦ À§ÇÑ PredicateÀ» °¡Áö°í ÀÖ´Â Áö
-    // °¡Áö°í ÀÖÀ» °æ¿ì IN SUBQUERY KEY RANGE¸¦ »ç¿ëÇÏ´Â Áö¸¦
-    // ¼³Á¤ÇÔ.
+    // Indexê°€ Key Rangeë¥¼ ìœ„í•œ Predicateì„ ê°€ì§€ê³  ìˆëŠ” ì§€
+    // ê°€ì§€ê³  ìˆì„ ê²½ìš° IN SUBQUERY KEY RANGEë¥¼ ì‚¬ìš©í•˜ëŠ” ì§€ë¥¼
+    // ì„¤ì •í•¨.
     if( sKeyRange == NULL )
     {
         sAccessMethod->method->flag &= ~QMO_STAT_CARD_IDX_EXIST_PRED_MASK;
@@ -4575,14 +4575,14 @@ IDE_RC qmgSelection::setIndexScanMethod( qcStatement      * aStatement,
         sAccessMethod->method->flag &= ~QMO_STAT_CARD_IDX_IN_SUBQUERY_MASK;
         sAccessMethod->method->flag |= QMO_STAT_CARD_IDX_IN_SUBQUERY_FALSE;
 
-        /* BUG-44850 Index NL , Inverse index NL Á¶ÀÎ ÃÖÀûÈ­ ¼öÇà½Ã ºñ¿ëÀÌ µ¿ÀÏÇÏ¸é primary key¸¦ ¿ì¼±ÀûÀ¸·Î ¼±ÅÃ. */
+        /* BUG-44850 Index NL , Inverse index NL ì¡°ì¸ ìµœì í™” ìˆ˜í–‰ì‹œ ë¹„ìš©ì´ ë™ì¼í•˜ë©´ primary keyë¥¼ ìš°ì„ ì ìœ¼ë¡œ ì„ íƒ. */
         if ( (QCU_OPTIMIZER_INDEX_NL_JOIN_ACCESS_METHOD_POLICY == 0) &&
              (aGraph->myFrom->tableRef->tableInfo->primaryKey != NULL) )
         {
             if ( sAccessMethod->method->index->indexId
                  == aGraph->myFrom->tableRef->tableInfo->primaryKey->indexId )
             {
-                // Primary IndexÀÓ
+                // Primary Indexì„
                 sAccessMethod->method->flag &= ~QMO_STAT_CARD_IDX_PRIMARY_MASK;
                 sAccessMethod->method->flag |= QMO_STAT_CARD_IDX_PRIMARY_TRUE;
             }
@@ -4605,7 +4605,7 @@ IDE_RC qmgSelection::setIndexScanMethod( qcStatement      * aStatement,
         sAccessMethod->method->flag |= QMO_STAT_CARD_IDX_EXIST_PRED_TRUE;
 
         // To Fix PR-9181
-        // IN SUBQUERY KEYRANGE°¡ ¼³Á¤µÇ¾î ÀÖ´Â Áö¸¦ ¼³Á¤ÇÔ
+        // IN SUBQUERY KEYRANGEê°€ ì„¤ì •ë˜ì–´ ìˆëŠ” ì§€ë¥¼ ì„¤ì •í•¨
         if ( ( sKeyRange->pred->flag & QMO_PRED_INSUBQUERY_MASK )
              == QMO_PRED_INSUBQUERY_ABSENT )
         {
@@ -4623,7 +4623,7 @@ IDE_RC qmgSelection::setIndexScanMethod( qcStatement      * aStatement,
             if( sAccessMethod->method->index->indexId
                 == aGraph->myFrom->tableRef->tableInfo->primaryKey->indexId )
             {
-                // Primary IndexÀÓ
+                // Primary Indexì„
                 sAccessMethod->method->flag &= ~QMO_STAT_CARD_IDX_PRIMARY_MASK;
                 sAccessMethod->method->flag |= QMO_STAT_CARD_IDX_PRIMARY_TRUE;
             }
@@ -4646,8 +4646,8 @@ IDE_RC qmgSelection::setIndexScanMethod( qcStatement      * aStatement,
      * create index .. on t1 (i1, i2, i3)
      * select .. from .. where t1.i1 = 1 and t1.i2 = 2 order by i3;
      *
-     * °íÁ¤µÈ °ªÀ» °®´Â column (i1, i2) ¸¦ ÀúÀåÇØµĞ´Ù.
-     * ÈÄ¿¡ preserved order ºñ±³½Ã i1, i2 ¸¦ Á¦¿ÜÇÏ°í ºñ±³ÇÑ´Ù.
+     * ê³ ì •ëœ ê°’ì„ ê°–ëŠ” column (i1, i2) ë¥¼ ì €ì¥í•´ë‘”ë‹¤.
+     * í›„ì— preserved order ë¹„êµì‹œ i1, i2 ë¥¼ ì œì™¸í•˜ê³  ë¹„êµí•œë‹¤.
      */
     if ((sKeyRange != NULL) && (aInExecutionTime == ID_FALSE))
     {
@@ -4711,11 +4711,11 @@ IDE_RC qmgSelection::selectBestMethod( qcStatement      * aStatement,
     IDU_FIT_POINT_FATAL( "qmgSelection::selectBestMethod::__FT__" );
 
     //---------------------------------------------------
-    // Accees Method ¼±ÅÃ ´Ü°è
-    //   - cost°¡ °¡Àå ³·Àº table access method¸¦ ¼±ÅÃ
+    // Accees Method ì„ íƒ ë‹¨ê³„
+    //   - costê°€ ê°€ì¥ ë‚®ì€ table access methodë¥¼ ì„ íƒ
     //---------------------------------------------------
 
-    // sSelected ÃÊ±âÈ­
+    // sSelected ì´ˆê¸°í™”
     *aSelected = aAccessMethod;
 
     for ( i = 0; i < aAccessMethodCnt; i++ )
@@ -4724,12 +4724,12 @@ IDE_RC qmgSelection::selectBestMethod( qcStatement      * aStatement,
                                 aAccessMethod[i].totalCost) == ID_TRUE)
         {
             //---------------------------------------------------
-            // cost°¡ ÁÁÀº access method ¼±ÅÃ
+            // costê°€ ì¢‹ì€ access method ì„ íƒ
             //---------------------------------------------------
 
             // To Fix PR-8134
-            // Cost °¡ ÁÁÀº ÀÎµ¦½ºÀÏ °æ¿ì¶ó ÇÏ´õ¶óµµ ½ÇÁ¦ »ç¿ëÇÏ´Â
-            // PredicateÀÌ Á¸ÀçÇÏ¿©¾ß ÇÔ.
+            // Cost ê°€ ì¢‹ì€ ì¸ë±ìŠ¤ì¼ ê²½ìš°ë¼ í•˜ë”ë¼ë„ ì‹¤ì œ ì‚¬ìš©í•˜ëŠ”
+            // Predicateì´ ì¡´ì¬í•˜ì—¬ì•¼ í•¨.
             if ( aAccessMethod[i].method != NULL )
             {
                 if ( ( aAccessMethod[i].method->index->indexTypeId == SMI_ADDITIONAL_RTREE_INDEXTYPE_ID ) && 
@@ -4737,15 +4737,15 @@ IDE_RC qmgSelection::selectBestMethod( qcStatement      * aStatement,
                        == QMO_STAT_CARD_IDX_EXIST_PRED_FALSE ) )
                 {
                     // BUG-38082, BUG-40269
-                    // predicate ÀÌ Á¸ÀçÇÏ´õ¶óµµ R-treeÀÇ KeyRange¸¦ °¡Áö°í ÀÖÁö ¾ÊÀº predicateÀÌ¶ó¸é
-                    // index(R-tree) ¼±ÅÃÀ» ¹èÁ¦ÇÑ´Ù. ±×·¡¼­ predicate À¯¹«¿¡ °ü°è¾øÀÌ flag¸¦ °Ë»çÇÏµµ·Ï ÇÑ´Ù.
+                    // predicate ì´ ì¡´ì¬í•˜ë”ë¼ë„ R-treeì˜ KeyRangeë¥¼ ê°€ì§€ê³  ìˆì§€ ì•Šì€ predicateì´ë¼ë©´
+                    // index(R-tree) ì„ íƒì„ ë°°ì œí•œë‹¤. ê·¸ë˜ì„œ predicate ìœ ë¬´ì— ê´€ê³„ì—†ì´ flagë¥¼ ê²€ì‚¬í•˜ë„ë¡ í•œë‹¤.
 
                     sIndexChange = ID_FALSE;
                 }
                 else
                 {
-                    // BUG-37861 / BUG-39666 ¸Ş¸ğ¸® Å×ÀÌºí¿¡¼­¸¸ PredicateÀ» °Ë»çÇÔ
-                    /* PROJ-2464 hybrid partitioned table Áö¿ø */
+                    // BUG-37861 / BUG-39666 ë©”ëª¨ë¦¬ í…Œì´ë¸”ì—ì„œë§Œ Predicateì„ ê²€ì‚¬í•¨
+                    /* PROJ-2464 hybrid partitioned table ì§€ì› */
                     if ( ( aTableInfo->tableFlag & SMI_TABLE_TYPE_MASK ) != SMI_TABLE_DISK )
                     {
                         if( (aAccessMethod[i].method->flag &
@@ -4774,16 +4774,16 @@ IDE_RC qmgSelection::selectBestMethod( qcStatement      * aStatement,
                                    aAccessMethod[i].totalCost) == ID_TRUE)
         {
             //---------------------------------------------------
-            // cost°¡ µ¿ÀÏÇÑ °æ¿ì
+            // costê°€ ë™ì¼í•œ ê²½ìš°
             //---------------------------------------------------
 
             sIndexChange = ID_FALSE;
 
-            // Access Method¸¦ º¯°æÇÒ °ÍÀÎÁö¸¦ °áÁ¤
+            // Access Methodë¥¼ ë³€ê²½í•  ê²ƒì¸ì§€ë¥¼ ê²°ì •
             while (1)
             {
                 //-------------------------------------------------
-                // ÇöÀç Method°¡ Full ScanÀÌ¶ó¸é º¯°æÇÏÁö ¾ÊÀ½
+                // í˜„ì¬ Methodê°€ Full Scanì´ë¼ë©´ ë³€ê²½í•˜ì§€ ì•ŠìŒ
                 //-------------------------------------------------
 
                 if (aAccessMethod[i].method == NULL)
@@ -4809,8 +4809,8 @@ IDE_RC qmgSelection::selectBestMethod( qcStatement      * aStatement,
 
                 //----------------------------------------------------------------------------------------
                 // BUG-38082, BUG-40269
-                // predicate ÀÌ Á¸ÀçÇÏ´õ¶óµµ R-treeÀÇ KeyRange¸¦ °¡Áö°í ÀÖÁö ¾ÊÀº predicateÀÌ¶ó¸é
-                // index(R-tree) ¼±ÅÃÀ» ¹èÁ¦ÇÑ´Ù. ±×·¡¼­ predicate À¯¹«¿¡ °ü°è¾øÀÌ flag¸¦ °Ë»çÇÏµµ·Ï ÇÑ´Ù.
+                // predicate ì´ ì¡´ì¬í•˜ë”ë¼ë„ R-treeì˜ KeyRangeë¥¼ ê°€ì§€ê³  ìˆì§€ ì•Šì€ predicateì´ë¼ë©´
+                // index(R-tree) ì„ íƒì„ ë°°ì œí•œë‹¤. ê·¸ë˜ì„œ predicate ìœ ë¬´ì— ê´€ê³„ì—†ì´ flagë¥¼ ê²€ì‚¬í•˜ë„ë¡ í•œë‹¤.
                 //----------------------------------------------------------------------------------------
 
                 if ( ( aAccessMethod[i].method->index->indexTypeId == SMI_ADDITIONAL_RTREE_INDEXTYPE_ID ) && 
@@ -4826,8 +4826,8 @@ IDE_RC qmgSelection::selectBestMethod( qcStatement      * aStatement,
                 }
 
                 //-------------------------------------------------
-                // ÇöÀç Method°¡ PredicateÀÌ ¾ø´Â
-                // Index¶ó¸é º¯°æÇÏÁö ¾ÊÀ½
+                // í˜„ì¬ Methodê°€ Predicateì´ ì—†ëŠ”
+                // Indexë¼ë©´ ë³€ê²½í•˜ì§€ ì•ŠìŒ
                 //-------------------------------------------------
 
                 if ((aAccessMethod[i].method->flag &
@@ -4843,9 +4843,9 @@ IDE_RC qmgSelection::selectBestMethod( qcStatement      * aStatement,
                 }
 
                 //-------------------------------------------------
-                // ¼±ÅÃµÈ Method°¡ Full ScanÀÌ°í
-                // ÇöÀç Method°¡ PredicateÀ» °¡Áø Index¶ó¸é
-                // Method¸¦ º¯°æÇÔ.
+                // ì„ íƒëœ Methodê°€ Full Scanì´ê³ 
+                // í˜„ì¬ Methodê°€ Predicateì„ ê°€ì§„ Indexë¼ë©´
+                // Methodë¥¼ ë³€ê²½í•¨.
                 //-------------------------------------------------
 
                 if ((*aSelected)->method == NULL)
@@ -4859,9 +4859,9 @@ IDE_RC qmgSelection::selectBestMethod( qcStatement      * aStatement,
                 }
 
                 //-------------------------------------------------
-                // ÇöÀç Method´Â PredicateÀÌ ÀÖ´Â indexÀÌ°í
-                // ¼±ÅÃµÈ Method´Â PredicateÀÌ ¾ø´Â indexÀÏ ¶§
-                // Method º¯°æÇÔ.
+                // í˜„ì¬ MethodëŠ” Predicateì´ ìˆëŠ” indexì´ê³ 
+                // ì„ íƒëœ MethodëŠ” Predicateì´ ì—†ëŠ” indexì¼ ë•Œ
+                // Method ë³€ê²½í•¨.
                 //------------------------------------------------
 
                 if (((*aSelected)->method->flag &
@@ -4877,8 +4877,8 @@ IDE_RC qmgSelection::selectBestMethod( qcStatement      * aStatement,
                 }
 
                 //-------------------------------------------------
-                // µÑ ¸ğµÎ ÇØ´ç index¸¦ »ç¿ëÇÏ´Â predicateÀÌ ÀÖ´Â °æ¿ì,
-                // keyFilterSelecitivity°¡ ÁÁÀº method¸¦ ¼±ÅÃ
+                // ë‘˜ ëª¨ë‘ í•´ë‹¹ indexë¥¼ ì‚¬ìš©í•˜ëŠ” predicateì´ ìˆëŠ” ê²½ìš°,
+                // keyFilterSelecitivityê°€ ì¢‹ì€ methodë¥¼ ì„ íƒ
                 //------------------------------------------------
 
                 if ((*aSelected)->keyFilterSelectivity >
@@ -4892,10 +4892,10 @@ IDE_RC qmgSelection::selectBestMethod( qcStatement      * aStatement,
                 }
 
                 /*
-                 * BUG-30307: index ¼±ÅÃ½Ã ¿¹»óºñ¿ëÀÌ °°À»¶§
-                 *            ºñÈ¿À²ÀûÀÎ index ¸¦ Å¸´Â °æ¿ì°¡ ÀÖ½À´Ï´Ù
+                 * BUG-30307: index ì„ íƒì‹œ ì˜ˆìƒë¹„ìš©ì´ ê°™ì„ë•Œ
+                 *            ë¹„íš¨ìœ¨ì ì¸ index ë¥¼ íƒ€ëŠ” ê²½ìš°ê°€ ìˆìŠµë‹ˆë‹¤
                  *
-                 * ÇØ´ç index ÀÇ selectivity µµ ºñ±³ÇØº»´Ù
+                 * í•´ë‹¹ index ì˜ selectivity ë„ ë¹„êµí•´ë³¸ë‹¤
                  *
                  */
                 if ((*aSelected)->keyRangeSelectivity > aAccessMethod[i].keyRangeSelectivity)
@@ -4915,7 +4915,7 @@ IDE_RC qmgSelection::selectBestMethod( qcStatement      * aStatement,
             sIndexChange = ID_FALSE;
         }
 
-        // Access Method º¯°æ
+        // Access Method ë³€ê²½
         if ( sIndexChange == ID_TRUE )
         {
             *aSelected = & aAccessMethod[i];
@@ -4970,7 +4970,7 @@ qmgSelection::copyPreservedOrderFromView( qcStatement        * aStatement,
 {
 /***********************************************************************
  *
- * Description : ViewÀÇ preserved order¸¦ CopyÇÏ¿© table, column º¯°æ
+ * Description : Viewì˜ preserved orderë¥¼ Copyí•˜ì—¬ table, column ë³€ê²½
  *
  * Implementation :
  *
@@ -4988,13 +4988,13 @@ qmgSelection::copyPreservedOrderFromView( qcStatement        * aStatement,
     IDU_FIT_POINT_FATAL( "qmgSelection::copyPreservedOrderFromView::__FT__" );
 
     //---------------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //---------------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
 
     //---------------------------------------------------
-    // ±âº» ÃÊ±âÈ­
+    // ê¸°ë³¸ ì´ˆê¸°í™”
     //---------------------------------------------------
 
     sCurOrder   = NULL;
@@ -5009,15 +5009,15 @@ qmgSelection::copyPreservedOrderFromView( qcStatement        * aStatement,
                                                  (void**)&sPreservedOrder )
                   != IDE_SUCCESS );
 
-        // table º¯°æ
+        // table ë³€ê²½
         sPreservedOrder->table = aTable;
 
-        // column º¯°æ
+        // column ë³€ê²½
         for ( sTarget = sPROJ->target, sPredPos = 0;
               sTarget != NULL;
               sTarget = sTarget->next, sPredPos++ )
         {
-            // BUG-38193 targetÀÇ pass node ¸¦ °í·ÁÇØ¾ß ÇÕ´Ï´Ù.
+            // BUG-38193 targetì˜ pass node ë¥¼ ê³ ë ¤í•´ì•¼ í•©ë‹ˆë‹¤.
             if ( sTarget->targetColumn->node.module == &qtc::passModule )
             {
                 sTargetNode = (qtcNode*)(sTarget->targetColumn->node.arguments);
@@ -5071,21 +5071,21 @@ qmgSelection::copySELTAndAlterSelectedIndex( qcStatement * aStatement,
 {
 /****************************************************************************
  *
- * Description : qmgJoin¿¡¼­ ANTI°¡ ¼±ÅÃµÈ °æ¿ì
- *               ÇÏÀ§ SELT graph¸¦ º¹»çÇØ¾ß ÇÑ´Ù.
- *               ÇÏÁö¸¸ º¹»ç °úÁ¤¿¡¼­ predicateÀÇ º¹»ç À¯¹«³ª,
- *               º¹»çÇÑ ÈÄ ¾î¶² graphÀÇ access method¸¦ ¹Ù²ÜÁö¿¡ ´ëÇÑ Ã³¸®³ª,
- *               scanDecisionFactorÀÇ Ã³¸® µî º¹ÀâÇÑ ¿ä¼Ò¸¦ Ã³¸®ÇÏ±â À§ÇØ¼­
- *               º¹»ç ¾Ë°í¸®ÁòÀ» qmgSelection¿¡¼­ ±¸ÇöÇÑ´Ù.
- *               SELT graph¸¦ º¹»çÇØ¾ßÇÒ ÇÊ¿ä°¡ ÀÖÀ» °æ¿ì
- *               ¹İµå½Ã qmgSelection¿¡¼­ ±¸ÇöÇØ¼­ È£ÃâÇÏµµ·Ï ÇÑ´Ù.
+ * Description : qmgJoinì—ì„œ ANTIê°€ ì„ íƒëœ ê²½ìš°
+ *               í•˜ìœ„ SELT graphë¥¼ ë³µì‚¬í•´ì•¼ í•œë‹¤.
+ *               í•˜ì§€ë§Œ ë³µì‚¬ ê³¼ì •ì—ì„œ predicateì˜ ë³µì‚¬ ìœ ë¬´ë‚˜,
+ *               ë³µì‚¬í•œ í›„ ì–´ë–¤ graphì˜ access methodë¥¼ ë°”ê¿€ì§€ì— ëŒ€í•œ ì²˜ë¦¬ë‚˜,
+ *               scanDecisionFactorì˜ ì²˜ë¦¬ ë“± ë³µì¡í•œ ìš”ì†Œë¥¼ ì²˜ë¦¬í•˜ê¸° ìœ„í•´ì„œ
+ *               ë³µì‚¬ ì•Œê³ ë¦¬ì¦˜ì„ qmgSelectionì—ì„œ êµ¬í˜„í•œë‹¤.
+ *               SELT graphë¥¼ ë³µì‚¬í•´ì•¼í•  í•„ìš”ê°€ ìˆì„ ê²½ìš°
+ *               ë°˜ë“œì‹œ qmgSelectionì—ì„œ êµ¬í˜„í•´ì„œ í˜¸ì¶œí•˜ë„ë¡ í•œë‹¤.
  *
- *               aWhich = 0 : targetÀÇ access method¸¦ ¹Ù²Û´Ù.
- *               aWhich = 1 : sourceÀÇ access method¸¦ ¹Ù²Û´Ù.
+ *               aWhich = 0 : targetì˜ access methodë¥¼ ë°”ê¾¼ë‹¤.
+ *               aWhich = 1 : sourceì˜ access methodë¥¼ ë°”ê¾¼ë‹¤.
  *
- * Implementation : aSource¸¦ aTarget¿¡ º¹»çÇÑ ÈÄ,
- *                  selectedIndex°¡ ¹Ù²ğ graph¿¡ ´ëÇØ¼­´Â
- *                  sdf¸¦ ¹«È¿È­ ÇÑ´Ù.
+ * Implementation : aSourceë¥¼ aTargetì— ë³µì‚¬í•œ í›„,
+ *                  selectedIndexê°€ ë°”ë€” graphì— ëŒ€í•´ì„œëŠ”
+ *                  sdfë¥¼ ë¬´íš¨í™” í•œë‹¤.
  *
  *****************************************************************************/
 
@@ -5152,14 +5152,14 @@ qmgSelection::optimizePartition( qcStatement * aStatement, qmgGraph * aGraph )
     IDU_FIT_POINT_FATAL( "qmgSelection::optimizePartition::__FT__" );
 
     //---------------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //---------------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aGraph != NULL );
 
     //---------------------------------------------------
-    // ±âº» ÃÊ±âÈ­
+    // ê¸°ë³¸ ì´ˆê¸°í™”
     //---------------------------------------------------
 
     sMyGraph = (qmgSELT*) aGraph;
@@ -5167,10 +5167,10 @@ qmgSelection::optimizePartition( qcStatement * aStatement, qmgGraph * aGraph )
     sRecordSize = 0;
 
     //---------------------------------------------------
-    // °øÅë ºñ¿ë Á¤º¸ÀÇ ¼³Á¤
+    // ê³µí†µ ë¹„ìš© ì •ë³´ì˜ ì„¤ì •
     //---------------------------------------------------
 
-    // recordSize ¼³Á¤
+    // recordSize ì„¤ì •
     sColumns = sPartitionRef->partitionInfo->columns;
     sColumnCnt = sPartitionRef->partitionInfo->columnCount;
 
@@ -5178,17 +5178,17 @@ qmgSelection::optimizePartition( qcStatement * aStatement, qmgGraph * aGraph )
     {
         sRecordSize += sColumns[i].basicInfo->column.size;
     }
-    // BUG-36463 sRecordSize ´Â 0ÀÌ µÇ¾î¼­´Â ¾ÈµÈ´Ù.
+    // BUG-36463 sRecordSize ëŠ” 0ì´ ë˜ì–´ì„œëŠ” ì•ˆëœë‹¤.
     sRecordSize = IDL_MAX( sRecordSize, 1 );
 
     sMyGraph->graph.costInfo.recordSize = sRecordSize;
 
-    // inputRecordCnt ¼³Á¤
+    // inputRecordCnt ì„¤ì •
     sMyGraph->graph.costInfo.inputRecordCnt =
         sPartitionRef->statInfo->totalRecordCnt;
 
     //---------------------------------------------------
-    // PredicateÀÇ Àç¹èÄ¡ ¹× °³º° PredicateÀÇ Selectivity °è»ê
+    // Predicateì˜ ì¬ë°°ì¹˜ ë° ê°œë³„ Predicateì˜ Selectivity ê³„ì‚°
     //---------------------------------------------------
 
     if ( sMyGraph->graph.myPredicate != NULL )
@@ -5212,7 +5212,7 @@ qmgSelection::optimizePartition( qcStatement * aStatement, qmgGraph * aGraph )
     sRidPredicate = sMyGraph->graph.ridPredicate;
 
     //---------------------------------------------------
-    // accessMethod ¼±ÅÃ
+    // accessMethod ì„ íƒ
     //---------------------------------------------------
 
     if (sRidPredicate != NULL)
@@ -5264,7 +5264,7 @@ qmgSelection::optimizePartition( qcStatement * aStatement, qmgGraph * aGraph )
                  != IDE_SUCCESS);
 
         // To fix BUG-12742
-        // hint¸¦ »ç¿ëÇÑ °æ¿ì´Â index¸¦ Á¦°ÅÇÒ ¼ö ¾ø´Ù.
+        // hintë¥¼ ì‚¬ìš©í•œ ê²½ìš°ëŠ” indexë¥¼ ì œê±°í•  ìˆ˜ ì—†ë‹¤.
         if( sSelectedScanHint == QMG_USED_SCAN_HINT )
         {
             sMyGraph->forceIndexScan = ID_TRUE;
@@ -5278,17 +5278,17 @@ qmgSelection::optimizePartition( qcStatement * aStatement, qmgGraph * aGraph )
     }
 
     //---------------------------------------------------
-    // Preserved Order ¼³Á¤
+    // Preserved Order ì„¤ì •
     //---------------------------------------------------
 
-    // preserved order ÃÊ±âÈ­
+    // preserved order ì´ˆê¸°í™”
     sMyGraph->graph.flag &= ~QMG_PRESERVED_ORDER_MASK;
     sMyGraph->graph.flag |= QMG_PRESERVED_ORDER_NOT_DEFINED;
 
     if ( sMyGraph->selectedMethod->method == NULL )
     {
         //---------------------------------------------------
-        // FULL SCANÀÌ ¼±ÅÃµÈ °æ¿ì
+        // FULL SCANì´ ì„ íƒëœ ê²½ìš°
         //---------------------------------------------------
 
         if ( ( sMyGraph->graph.flag & QMG_PRESERVED_ORDER_MASK )
@@ -5297,7 +5297,7 @@ qmgSelection::optimizePartition( qcStatement * aStatement, qmgGraph * aGraph )
             if( sSelectedScanHint == QMG_USED_ONLY_FULL_SCAN_HINT )
             {
                 //---------------------------------------------------
-                // FULL SCAN Hint°¡ ¼±ÅÃµÈ °æ¿ì
+                // FULL SCAN Hintê°€ ì„ íƒëœ ê²½ìš°
                 //---------------------------------------------------
 
                 sMyGraph->graph.flag &= ~QMG_PRESERVED_ORDER_MASK;
@@ -5306,19 +5306,19 @@ qmgSelection::optimizePartition( qcStatement * aStatement, qmgGraph * aGraph )
             else
             {
                 //---------------------------------------------------
-                // cost¿¡ ÀÇÇØ FULL SCANÀÌ ¼±ÅÃµÈ °æ¿ì :
+                // costì— ì˜í•´ FULL SCANì´ ì„ íƒëœ ê²½ìš° :
                 //---------------------------------------------------
 
                 if ( sMyGraph->accessMethodCnt > 1)
                 {
-                    // index°¡ Á¸ÀçÇÏ´Â °æ¿ì
+                    // indexê°€ ì¡´ì¬í•˜ëŠ” ê²½ìš°
                     sMyGraph->graph.flag &= ~QMG_PRESERVED_ORDER_MASK;
                     sMyGraph->graph.flag |=
                         QMG_PRESERVED_ORDER_NOT_DEFINED;
                 }
                 else
                 {
-                    // index°¡ ¾ø´Â °æ¿ì
+                    // indexê°€ ì—†ëŠ” ê²½ìš°
                     sMyGraph->graph.flag &= ~QMG_PRESERVED_ORDER_MASK;
                     sMyGraph->graph.flag |= QMG_PRESERVED_ORDER_NEVER;
                 }
@@ -5328,7 +5328,7 @@ qmgSelection::optimizePartition( qcStatement * aStatement, qmgGraph * aGraph )
     else
     {
         //---------------------------------------------------
-        // INDEX SCANÀÌ ¼±ÅÃµÈ °æ¿ì
+        // INDEX SCANì´ ì„ íƒëœ ê²½ìš°
         //---------------------------------------------------
 
         IDE_TEST( makePreservedOrder( aStatement,
@@ -5342,20 +5342,20 @@ qmgSelection::optimizePartition( qcStatement * aStatement, qmgGraph * aGraph )
     }
 
     //---------------------------------------------------
-    // °øÅë ºñ¿ë Á¤º¸ÀÇ ¼³Á¤
+    // ê³µí†µ ë¹„ìš© ì •ë³´ì˜ ì„¤ì •
     //---------------------------------------------------
 
     sMyGraph->graph.costInfo.selectivity = 
         sMyGraph->selectedMethod->methodSelectivity;
 
-    // output record count ¼³Á¤
+    // output record count ì„¤ì •
     sOutputRecordCnt =  sMyGraph->accessMethod->methodSelectivity *
         sMyGraph->graph.costInfo.inputRecordCnt;
 
     sMyGraph->graph.costInfo.outputRecordCnt =
         ( sOutputRecordCnt < 1 ) ? 1 : sOutputRecordCnt;
 
-    // myCost, totalCost ¼³Á¤
+    // myCost, totalCost ì„¤ì •
     sMyGraph->graph.costInfo.myAccessCost =
         sMyGraph->selectedMethod->accessCost;
 
@@ -5366,10 +5366,10 @@ qmgSelection::optimizePartition( qcStatement * aStatement, qmgGraph * aGraph )
         sMyGraph->selectedMethod->totalCost;
 
     //---------------------------------------
-    // ÃÑ ºñ¿ë Á¤º¸ ¼³Á¤
+    // ì´ ë¹„ìš© ì •ë³´ ì„¤ì •
     //---------------------------------------
 
-    // 0 ( ChildÀÇ Total Cost) + My Cost
+    // 0 ( Childì˜ Total Cost) + My Cost
     sMyGraph->graph.costInfo.totalAccessCost =
         sMyGraph->selectedMethod->accessCost;
 
@@ -5380,8 +5380,8 @@ qmgSelection::optimizePartition( qcStatement * aStatement, qmgGraph * aGraph )
         sMyGraph->selectedMethod->totalCost;
 
     //---------------------------------------------------
-    // PROJ-1446 Host variableÀ» Æ÷ÇÔÇÑ ÁúÀÇ ÃÖÀûÈ­
-    // host variable¿¡ ´ëÇÑ ÃÖÀûÈ­¸¦ À§ÇÑ ÁØºñ°úÁ¤
+    // PROJ-1446 Host variableì„ í¬í•¨í•œ ì§ˆì˜ ìµœì í™”
+    // host variableì— ëŒ€í•œ ìµœì í™”ë¥¼ ìœ„í•œ ì¤€ë¹„ê³¼ì •
     //---------------------------------------------------
     if( (QCU_HOST_OPTIMIZE_ENABLE == 1) &&
         (sSelectedScanHint == QMG_NOT_USED_SCAN_HINT) &&
@@ -5394,12 +5394,12 @@ qmgSelection::optimizePartition( qcStatement * aStatement, qmgGraph * aGraph )
     }
     else
     {
-        // scan hint°¡ »ç¿ëµÇ¸é È£½ºÆ® º¯¼ö¿¡ ´ëÇÑ ÃÖÀûÈ­¸¦ ¼öÇàÇÏÁö ¾Ê´Â´Ù.
-        // index°¡ ¾øÀ» °æ¿ì¿¡µµ È£½ºÆ® º¯¼ö¿¡ ´ëÇÑ ÃÖÀûÈ­¸¦ ¼öÇàÇÏÁö ¾Ê´Â´Ù.
+        // scan hintê°€ ì‚¬ìš©ë˜ë©´ í˜¸ìŠ¤íŠ¸ ë³€ìˆ˜ì— ëŒ€í•œ ìµœì í™”ë¥¼ ìˆ˜í–‰í•˜ì§€ ì•ŠëŠ”ë‹¤.
+        // indexê°€ ì—†ì„ ê²½ìš°ì—ë„ í˜¸ìŠ¤íŠ¸ ë³€ìˆ˜ì— ëŒ€í•œ ìµœì í™”ë¥¼ ìˆ˜í–‰í•˜ì§€ ì•ŠëŠ”ë‹¤.
         // Nothing to do...
     }
 
-    // environmentÀÇ ±â·Ï
+    // environmentì˜ ê¸°ë¡
     qcgPlan::registerPlanProperty( aStatement,
                                    PLAN_PROPERTY_HOST_OPTIMIZE_ENABLE );
     
@@ -5419,13 +5419,13 @@ qmgSelection::makePlanPartition( qcStatement * aStatement, const qmgGraph * /*aP
 /***********************************************************************
  *
  * Description : PROJ-1502 PARTITIONED DISK TABLE
- *               qmgSelection·Î ºÎÅÍ PlanÀ» »ı¼ºÇÑ´Ù.
- *               partitionÇÏ³ª¿¡ ´ëÇÑ SCANÀ» »ı¼ºÇÑ´Ù.
+ *               qmgSelectionë¡œ ë¶€í„° Planì„ ìƒì„±í•œë‹¤.
+ *               partitioní•˜ë‚˜ì— ëŒ€í•œ SCANì„ ìƒì„±í•œë‹¤.
  *
  * Implementation :
- *    - qmgSelectionÀ¸·Î ºÎÅÍ »ı¼º°¡´ÉÇÑ plan
+ *    - qmgSelectionìœ¼ë¡œ ë¶€í„° ìƒì„±ê°€ëŠ¥í•œ plan
  *
- *           - ¸ğµç Predicate Á¤º¸´Â [SCAN]³ëµå¿¡ Æ÷ÇÔµÈ´Ù.
+ *           - ëª¨ë“  Predicate ì •ë³´ëŠ” [SCAN]ë…¸ë“œì— í¬í•¨ëœë‹¤.
  *
  *                 [SCAN]
  *
@@ -5439,7 +5439,7 @@ qmgSelection::makePlanPartition( qcStatement * aStatement, const qmgGraph * /*aP
     IDU_FIT_POINT_FATAL( "qmgSelection::makePlanPartition::__FT__" );
 
     //---------------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //---------------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -5449,7 +5449,7 @@ qmgSelection::makePlanPartition( qcStatement * aStatement, const qmgGraph * /*aP
     sMyGraph       = (qmgSELT *) aGraph;
 
     //---------------------------------------------------
-    // Current CNFÀÇ µî·Ï
+    // Current CNFì˜ ë“±ë¡
     //---------------------------------------------------
 
     if( sMyGraph->graph.myCNF != NULL )
@@ -5463,25 +5463,25 @@ qmgSelection::makePlanPartition( qcStatement * aStatement, const qmgGraph * /*aP
     }
 
     //-----------------------------------------------------
-    // 1. Base TableÀ» À§ÇÑ Selection GraphÀÎ °æ¿ì
+    // 1. Base Tableì„ ìœ„í•œ Selection Graphì¸ ê²½ìš°
     //-----------------------------------------------------
 
-    // ÇÏÀ§ ³ëµå°¡ ¾ø´Â leafÀÎ baseÀÏ °æ¿ì SCANÀ» »ı¼ºÇÑ´Ù.
+    // í•˜ìœ„ ë…¸ë“œê°€ ì—†ëŠ” leafì¸ baseì¼ ê²½ìš° SCANì„ ìƒì„±í•œë‹¤.
 
     // To Fix PR-11562
-    // Indexable MIN-MAX ÃÖÀûÈ­°¡ Àû¿ëµÈ °æ¿ì
-    // Preserved Order´Â ¹æÇâ¼ºÀ» °¡Áü, µû¶ó¼­ ÇØ´ç Á¤º¸¸¦
-    // ¼³Á¤ÇØÁÙ ÇÊ¿ä°¡ ¾øÀ½.
-    // INDEXABLE Min-MaxÀÇ ¼³Á¤
-    // °ü·Ã ÄÚµå Á¦°Å
+    // Indexable MIN-MAX ìµœì í™”ê°€ ì ìš©ëœ ê²½ìš°
+    // Preserved OrderëŠ” ë°©í–¥ì„±ì„ ê°€ì§, ë”°ë¼ì„œ í•´ë‹¹ ì •ë³´ë¥¼
+    // ì„¤ì •í•´ì¤„ í•„ìš”ê°€ ì—†ìŒ.
+    // INDEXABLE Min-Maxì˜ ì„¤ì •
+    // ê´€ë ¨ ì½”ë“œ ì œê±°
 
     //-----------------------------------------------------
     // To Fix BUG-8747
-    // Selection Graph¿¡ Not Null Key Range¸¦ »ı¼ºÇÏ¶ó´Â Flag°¡
-    // ÀÖ´Â °æ¿ì, Leaf Info¿¡ ±× Á¤º¸¸¦ ¼³Á¤ÇÑ´Ù.
-    // - Selection Graph¿¡¼­ Not Null Key Range »ı¼º Flag Àû¿ëµÇ´Â Á¶°Ç
-    //   (1) indexable Min Max°¡ Àû¿ëµÈ Selection Graph
-    //   (2) Merge Join ÇÏÀ§ÀÇ Selection Graph
+    // Selection Graphì— Not Null Key Rangeë¥¼ ìƒì„±í•˜ë¼ëŠ” Flagê°€
+    // ìˆëŠ” ê²½ìš°, Leaf Infoì— ê·¸ ì •ë³´ë¥¼ ì„¤ì •í•œë‹¤.
+    // - Selection Graphì—ì„œ Not Null Key Range ìƒì„± Flag ì ìš©ë˜ëŠ” ì¡°ê±´
+    //   (1) indexable Min Maxê°€ ì ìš©ëœ Selection Graph
+    //   (2) Merge Join í•˜ìœ„ì˜ Selection Graph
     //-----------------------------------------------------
 
     if( (sMyGraph->graph.flag & QMG_SELT_NOTNULL_KEYRANGE_MASK ) ==
@@ -5493,7 +5493,7 @@ qmgSelection::makePlanPartition( qcStatement * aStatement, const qmgGraph * /*aP
     else
     {
         // To Fix PR-10288
-        // NOTNULL KEY RANGE°¡ ¾Æ´Ñ °æ¿ì·Î ¹İµå½Ã ¼³Á¤ÇØ ÁÖ¾î¾ß ÇÔ.
+        // NOTNULL KEY RANGEê°€ ì•„ë‹Œ ê²½ìš°ë¡œ ë°˜ë“œì‹œ ì„¤ì •í•´ ì£¼ì–´ì•¼ í•¨.
         sSCANInfo.flag &= ~QMO_SCAN_INFO_NOTNULL_KEYRANGE_MASK;
         sSCANInfo.flag |= QMO_SCAN_INFO_NOTNULL_KEYRANGE_FALSE;
     }
@@ -5542,11 +5542,11 @@ qmgSelection::makePlanPartition( qcStatement * aStatement, const qmgGraph * /*aP
         sSCANInfo.mParallelInfo.mSeqNo  = 1;
     }
     
-    //SCAN»ı¼º
-    //»ı¼ºµÈ ³ëµåÀÇ À§Ä¡´Â ¹İµå½Ã graph.myPlan¿¡ ¼¼ÆÃÀ» ÇÏµµ·Ï ÇÑ´Ù.
-    //ÀÌ Á¤º¸¸¦ ´Ù½Ã child·Î »ï°í ´ÙÀ½ ³ëµå ¸¸µé¶§ ¿¬°áÇÏµµ·Ï ÇÑ´Ù.
-    // partition¿¡ ´ëÇÑ scan
-    // partitionRef¸¦ ÀÎÀÚ·Î ³Ñ°ÜÁÖ¾î¾ß ÇÑ´Ù.
+    //SCANìƒì„±
+    //ìƒì„±ëœ ë…¸ë“œì˜ ìœ„ì¹˜ëŠ” ë°˜ë“œì‹œ graph.myPlanì— ì„¸íŒ…ì„ í•˜ë„ë¡ í•œë‹¤.
+    //ì´ ì •ë³´ë¥¼ ë‹¤ì‹œ childë¡œ ì‚¼ê³  ë‹¤ìŒ ë…¸ë“œ ë§Œë“¤ë•Œ ì—°ê²°í•˜ë„ë¡ í•œë‹¤.
+    // partitionì— ëŒ€í•œ scan
+    // partitionRefë¥¼ ì¸ìë¡œ ë„˜ê²¨ì£¼ì–´ì•¼ í•œë‹¤.
     IDE_TEST( qmoOneNonPlan::makeSCAN4Partition(
                   aStatement,
                   sMyGraph->graph.myQuerySet,
@@ -5557,10 +5557,10 @@ qmgSelection::makePlanPartition( qcStatement * aStatement, const qmgGraph * /*aP
               != IDE_SUCCESS);
 
     // fix BUG-13482
-    // SCAN ³ëµå »ı¼º½Ã,
-    // filterÁ¸ÀçµîÀ¸·Î SCAN Limit ÃÖÀûÈ­¸¦ Àû¿ëÇÏÁö ¸øÇÑ °æ¿ì,
-    // selection graphÀÇ limitµµ NULL·Î ¼³Á¤ÇÑ´Ù.
-    // ÀÌ´Â »óÀ§ PROJ ³ëµå »ı¼º½Ã, limit start value Á¶Á¤ÀÇ Á¤º¸°¡ µÊ.
+    // SCAN ë…¸ë“œ ìƒì„±ì‹œ,
+    // filterì¡´ì¬ë“±ìœ¼ë¡œ SCAN Limit ìµœì í™”ë¥¼ ì ìš©í•˜ì§€ ëª»í•œ ê²½ìš°,
+    // selection graphì˜ limitë„ NULLë¡œ ì„¤ì •í•œë‹¤.
+    // ì´ëŠ” ìƒìœ„ PROJ ë…¸ë“œ ìƒì„±ì‹œ, limit start value ì¡°ì •ì˜ ì •ë³´ê°€ ë¨.
     if( sSCANInfo.limit == NULL )
     {
         sMyGraph->limit = NULL;
@@ -5592,7 +5592,7 @@ qmgSelection::printGraphPartition( qcStatement  * aStatement,
     IDU_FIT_POINT_FATAL( "qmgSelection::printGraphPartition::__FT__" );
 
     //-----------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //-----------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -5606,7 +5606,7 @@ qmgSelection::printGraphPartition( qcStatement  * aStatement,
     IDE_DASSERT( sMyGraph->partitionRef != NULL );
 
     //-----------------------------------
-    // Graph °øÅë Á¤º¸ÀÇ Ãâ·Â
+    // Graph ê³µí†µ ì •ë³´ì˜ ì¶œë ¥
     //-----------------------------------
 
     IDE_TEST( qmg::printGraph( aStatement,
@@ -5616,7 +5616,7 @@ qmgSelection::printGraphPartition( qcStatement  * aStatement,
               != IDE_SUCCESS );
 
     //-----------------------------------
-    // Graph °íÀ¯ Á¤º¸ÀÇ Ãâ·Â
+    // Graph ê³ ìœ  ì •ë³´ì˜ ì¶œë ¥
     //-----------------------------------
 
     IDE_TEST( qmoStat::printStat4Partition( sMyGraph->graph.myFrom->tableRef,
@@ -5639,7 +5639,7 @@ qmgSelection::setJoinPushDownPredicate( qmgSELT       * aGraph,
 {
 /***********************************************************************
  *
- *  Description : push-down join predicate¸¦ ¸Ç ¾Õ¿¡ ¿¬°áÇÑ´Ù.
+ *  Description : push-down join predicateë¥¼ ë§¨ ì•ì— ì—°ê²°í•œë‹¤.
  *
  *  Implementation :
  *
@@ -5655,8 +5655,8 @@ qmgSelection::setJoinPushDownPredicate( qmgSELT       * aGraph,
                     ERR_NOT_EXIST_PREDICATE );
 
     //--------------------------------------
-    // join predicateÀÇ ¿¬°á¸®½ºÆ®¸¦
-    // selection graphÀÇ predicate ¿¬°á¸®½ºÆ® ¸Ç Ã³À½¿¡ ¿¬°á½ÃÅ²´Ù.
+    // join predicateì˜ ì—°ê²°ë¦¬ìŠ¤íŠ¸ë¥¼
+    // selection graphì˜ predicate ì—°ê²°ë¦¬ìŠ¤íŠ¸ ë§¨ ì²˜ìŒì— ì—°ê²°ì‹œí‚¨ë‹¤.
     //--------------------------------------
 
     for( sJoinPredicate       = *aPredicate;
@@ -5686,18 +5686,18 @@ qmgSelection::setNonJoinPushDownPredicate( qmgSELT       * aGraph,
 {
 /***********************************************************************
  *
- *  Description : non-join push predicate¸¦ selection graph¿¡ ¿¬°á.
+ *  Description : non-join push predicateë¥¼ selection graphì— ì—°ê²°.
  *
  *  Implementation :
- *     ÀÎÀÚ·Î ¹ŞÀº non-joinable predicateÀº keyFilter or filter·Î
- *     Ã³¸®µÇ¾î¾ß ÇÑ´Ù.
- *     µû¶ó¼­, keyRange·Î ÃßÃâµÉ joinable predicate¿¡´Â ¿¬°áµÇÁö ¾Êµµ·Ï ÇÑ´Ù.
+ *     ì¸ìë¡œ ë°›ì€ non-joinable predicateì€ keyFilter or filterë¡œ
+ *     ì²˜ë¦¬ë˜ì–´ì•¼ í•œë‹¤.
+ *     ë”°ë¼ì„œ, keyRangeë¡œ ì¶”ì¶œë  joinable predicateì—ëŠ” ì—°ê²°ë˜ì§€ ì•Šë„ë¡ í•œë‹¤.
  *
- *     1. joinable predicateÀº Á¦¿Ü
- *        joinable predicateÀº selection graph predicateÀÇ Ã³À½ºÎºĞ¿¡
- *        ¿¬°áµÇ¾î ÀÖ±â ¶§¹®¿¡, masking Á¤º¸¸¦ ÀÌ¿ëÇØ¼­, joinable predicateÀ»
- *        Á¦¿ÜÇÑ´Ù.
- *     2. non-joinable predicate°ú µ¿ÀÏÇÑ ÄÃ·³À» Ã£¾Æ¼­ ¿¬°á.
+ *     1. joinable predicateì€ ì œì™¸
+ *        joinable predicateì€ selection graph predicateì˜ ì²˜ìŒë¶€ë¶„ì—
+ *        ì—°ê²°ë˜ì–´ ìˆê¸° ë•Œë¬¸ì—, masking ì •ë³´ë¥¼ ì´ìš©í•´ì„œ, joinable predicateì„
+ *        ì œì™¸í•œë‹¤.
+ *     2. non-joinable predicateê³¼ ë™ì¼í•œ ì»¬ëŸ¼ì„ ì°¾ì•„ì„œ ì—°ê²°.
  ***********************************************************************/
 
     qmoPredicate * sJoinPredicate;
@@ -5707,30 +5707,30 @@ qmgSelection::setNonJoinPushDownPredicate( qmgSELT       * aGraph,
     IDU_FIT_POINT_FATAL( "qmgSelection::setNonJoinPushDownPredicate::__FT__" );
 
     //--------------------------------------
-    // selection graph predicateÀÇ ¿¬°á¸®½ºÆ® Áß
-    // non-joinable predicateÀÇ columnID¿Í µ¿ÀÏÇÑ predicateÀÇ ¿¬°á¸®½ºÆ®¿¡
-    // non-joinable predicateÀ» ¿¬°áÇÑ´Ù.
+    // selection graph predicateì˜ ì—°ê²°ë¦¬ìŠ¤íŠ¸ ì¤‘
+    // non-joinable predicateì˜ columnIDì™€ ë™ì¼í•œ predicateì˜ ì—°ê²°ë¦¬ìŠ¤íŠ¸ì—
+    // non-joinable predicateì„ ì—°ê²°í•œë‹¤.
     //--------------------------------------
 
-    // sPredicate : index joinable predicateÀ» Á¦¿ÜÇÑ
-    //              Ã¹¹øÂ° predicateÀ» °¡¸®Å°°Ô µÈ´Ù.
+    // sPredicate : index joinable predicateì„ ì œì™¸í•œ
+    //              ì²«ë²ˆì§¸ predicateì„ ê°€ë¦¬í‚¤ê²Œ ëœë‹¤.
 
     sJoinPredicate = *aPredicate;
 
     if( sJoinPredicate == NULL )
     {
         // PROJ-1502 PARTITIONED DISK TABLE
-        // subquery°¡ Æ÷ÇÔµÈ predicate´Â partition graph¿¡¼­ Ã³¸®ÇÏ¹Ç·Î,
-        // non-join push down predicate´Â NULLÀÏ ¼ö ÀÖ´Ù.
+        // subqueryê°€ í¬í•¨ëœ predicateëŠ” partition graphì—ì„œ ì²˜ë¦¬í•˜ë¯€ë¡œ,
+        // non-join push down predicateëŠ” NULLì¼ ìˆ˜ ìˆë‹¤.
         // Nothing to do.
     }
     else
     {
         if( aGraph->graph.myPredicate == NULL )
         {
-            // selection graph¿¡ predicateÀÌ ÇÏ³ªµµ ¾ø´Â °æ¿ì·Î,
-            // Ã¹¹øÂ° non-joinable predicate ¿¬°áÇÏ°í,
-            // ¿¬°áµÈ predicateÀÇ next ¿¬°áÀ» ²÷´Â´Ù.
+            // selection graphì— predicateì´ í•˜ë‚˜ë„ ì—†ëŠ” ê²½ìš°ë¡œ,
+            // ì²«ë²ˆì§¸ non-joinable predicate ì—°ê²°í•˜ê³ ,
+            // ì—°ê²°ëœ predicateì˜ next ì—°ê²°ì„ ëŠëŠ”ë‹¤.
             aGraph->graph.myPredicate = sJoinPredicate;
             sJoinPredicate = sJoinPredicate->next;
             aGraph->graph.myPredicate->next = NULL;
@@ -5738,10 +5738,10 @@ qmgSelection::setNonJoinPushDownPredicate( qmgSELT       * aGraph,
         }
         else
         {
-            // selection graph¿¡ predicateÀÌ ÀÖ´Â °æ¿ì·Î,
-            // Index Nested Loop Joinable PredicateµéÀº Á¦¿ÜÇÑ´Ù.
-            // non-joinable predicateÀº keyFilter or filter·Î Ã³¸®µÇ¾î¾ß ÇÏ¹Ç·Î,
-            // keyRange·Î ÃßÃâµÉ Index Nested Loop Join Predicate°ú´Â º°µµ·Î ¿¬°á.
+            // selection graphì— predicateì´ ìˆëŠ” ê²½ìš°ë¡œ,
+            // Index Nested Loop Joinable Predicateë“¤ì€ ì œì™¸í•œë‹¤.
+            // non-joinable predicateì€ keyFilter or filterë¡œ ì²˜ë¦¬ë˜ì–´ì•¼ í•˜ë¯€ë¡œ,
+            // keyRangeë¡œ ì¶”ì¶œë  Index Nested Loop Join Predicateê³¼ëŠ” ë³„ë„ë¡œ ì—°ê²°.
 
             for( sPredicate = aGraph->graph.myPredicate;
                  sPredicate->next != NULL;
@@ -5758,9 +5758,9 @@ qmgSelection::setNonJoinPushDownPredicate( qmgSELT       * aGraph,
                 }
             }
 
-            // À§ Ã³¸® °úÁ¤¿¡¼­, selection graph¿¡ joinable predicate¸¸ ÀÖ´Â °æ¿ì,
-            // ¸¶Áö¸· joinable predicateÀÇ next¿¡ non-joinable predicateÀ» ¿¬°á,
-            // ¿¬°áµÈ non-joinable predicateÀÇ next ¿¬°áÀ» ²÷´Â´Ù.
+            // ìœ„ ì²˜ë¦¬ ê³¼ì •ì—ì„œ, selection graphì— joinable predicateë§Œ ìˆëŠ” ê²½ìš°,
+            // ë§ˆì§€ë§‰ joinable predicateì˜ nextì— non-joinable predicateì„ ì—°ê²°,
+            // ì—°ê²°ëœ non-joinable predicateì˜ next ì—°ê²°ì„ ëŠëŠ”ë‹¤.
             if( ( sPredicate->flag & QMO_PRED_INDEX_NESTED_JOINABLE_MASK )
                 == QMO_PRED_INDEX_NESTED_JOINABLE_TRUE )
             {
@@ -5775,24 +5775,24 @@ qmgSelection::setNonJoinPushDownPredicate( qmgSELT       * aGraph,
             }
         }
 
-        // Index Nested Loop Joinable PredicateÀ» Á¦¿ÜÇÑ
-        // selection graph predicate ¸®½ºÆ®¿¡¼­ non-joinable predicate°ú
-        // columnID°¡ °°Àº predicate¿¡ non-joinable predicateÀ» ¿¬°áÇÏ°í,
-        // ¿¬°áµÈ non-joinableÀÇ nextÀÇ ¿¬°áÀ» ²÷´Â´Ù.
+        // Index Nested Loop Joinable Predicateì„ ì œì™¸í•œ
+        // selection graph predicate ë¦¬ìŠ¤íŠ¸ì—ì„œ non-joinable predicateê³¼
+        // columnIDê°€ ê°™ì€ predicateì— non-joinable predicateì„ ì—°ê²°í•˜ê³ ,
+        // ì—°ê²°ëœ non-joinableì˜ nextì˜ ì—°ê²°ì„ ëŠëŠ”ë‹¤.
 
         while( sJoinPredicate != NULL )
         {
-            // joinable predicateÀ» Á¦¿ÜÇÑ predicateÁß¿¡¼­ join predicate°ú
-            // °°Àº ÄÃ·³ÀÌ Á¸ÀçÇÏ´ÂÁö¸¦ °Ë»ç.
-            // sPredicate : index joinable predicateÀ» Á¦¿ÜÇÑ
-            //              Ã¹¹øÂ° predicateÀ» °¡¸®Å²´Ù.
+            // joinable predicateì„ ì œì™¸í•œ predicateì¤‘ì—ì„œ join predicateê³¼
+            // ê°™ì€ ì»¬ëŸ¼ì´ ì¡´ì¬í•˜ëŠ”ì§€ë¥¼ ê²€ì‚¬.
+            // sPredicate : index joinable predicateì„ ì œì™¸í•œ
+            //              ì²«ë²ˆì§¸ predicateì„ ê°€ë¦¬í‚¨ë‹¤.
 
-            // ÄÃ·³º°·Î ¿¬°á°ü°è ¸¸µé±â
-            // µ¿ÀÏ ÄÃ·³ÀÌ ÀÖ´Â °æ¿ì, µ¿ÀÏ ÄÃ·³ÀÇ ¸¶Áö¸· predicate.more¿¡
-            // µ¿ÀÏ ÄÃ·³ÀÌ ¾ø´Â °æ¿ì, sPredicateÀÇ ¸¶Áö¸· predicate.next¿¡
-            // (1) »õ·Î¿î predicate(sJoinPredicate)À» ¿¬°áÇÏ°í,
+            // ì»¬ëŸ¼ë³„ë¡œ ì—°ê²°ê´€ê³„ ë§Œë“¤ê¸°
+            // ë™ì¼ ì»¬ëŸ¼ì´ ìˆëŠ” ê²½ìš°, ë™ì¼ ì»¬ëŸ¼ì˜ ë§ˆì§€ë§‰ predicate.moreì—
+            // ë™ì¼ ì»¬ëŸ¼ì´ ì—†ëŠ” ê²½ìš°, sPredicateì˜ ë§ˆì§€ë§‰ predicate.nextì—
+            // (1) ìƒˆë¡œìš´ predicate(sJoinPredicate)ì„ ì—°ê²°í•˜ê³ ,
             // (2) sJoinPredicate = sJoinPredicate->next
-            // (3) ¿¬°áµÈ predicateÀÇ next ¿¬°á°ü°è¸¦ ²÷À½.
+            // (3) ì—°ê²°ëœ predicateì˜ next ì—°ê²°ê´€ê³„ë¥¼ ëŠìŒ.
 
             sNextPredicate = sJoinPredicate->next;
 
@@ -5803,14 +5803,14 @@ qmgSelection::setNonJoinPushDownPredicate( qmgSELT       * aGraph,
 
         //---------------------------------------------------
         // To Fix BUG-13292
-        // Subquery´Â ´Ù¸¥ Predicate°ú ÇÔ²² key range¸¦ ±¸¼ºÇÒ ¼ö ¾ø´Ù.
-        // ±×·¯³ª ´ÙÀ½ ¿¹Á¦¿Í °°Àº °æ¿ì, ÇÔ²¾ ±¸¼ºµÇ°Ô µÈ´Ù.
-        // ex) ¼±ÅÃµÈ Join Method : Full Nested Loop Join
+        // SubqueryëŠ” ë‹¤ë¥¸ Predicateê³¼ í•¨ê»˜ key rangeë¥¼ êµ¬ì„±í•  ìˆ˜ ì—†ë‹¤.
+        // ê·¸ëŸ¬ë‚˜ ë‹¤ìŒ ì˜ˆì œì™€ ê°™ì€ ê²½ìš°, í•¨ê¼ êµ¬ì„±ë˜ê²Œ ëœë‹¤.
+        // ex) ì„ íƒëœ Join Method : Full Nested Loop Join
         //     right Graph        : selection graph
-        //     ==> full nested loop joinÀÇ join predicateÀ» right¿¡ ³»·ÁÁÙ¶§
-        //         in subquery°¡ key range·Î ¼±ÅÃµÇ¸é ´Üµ¶À¸·Î key range¸¦
-        //         ±¸¼ºÇÒ ¼ö ÀÖµµ·Ï Ã³¸®ÇØÁÖ¾î¾ß ÇÑ´Ù.
-        //         ÀÌ¿Í °°Àº ÀÛ¾÷À» ÇØÁÖ´Â ÇÔ¼ö°¡ processIndexableSubQ()ÀÌ´Ù.
+        //     ==> full nested loop joinì˜ join predicateì„ rightì— ë‚´ë ¤ì¤„ë•Œ
+        //         in subqueryê°€ key rangeë¡œ ì„ íƒë˜ë©´ ë‹¨ë…ìœ¼ë¡œ key rangeë¥¼
+        //         êµ¬ì„±í•  ìˆ˜ ìˆë„ë¡ ì²˜ë¦¬í•´ì£¼ì–´ì•¼ í•œë‹¤.
+        //         ì´ì™€ ê°™ì€ ì‘ì—…ì„ í•´ì£¼ëŠ” í•¨ìˆ˜ê°€ processIndexableSubQ()ì´ë‹¤.
         //---------------------------------------------------
 
         IDE_TEST( qmoPred::processIndexableInSubQ( &aGraph->graph.myPredicate )
@@ -5834,12 +5834,12 @@ qmgSelection::alterForceRidScan( qcStatement * aStatement,
 /***********************************************************************
  *
  * Description : PROJ-1624 global non-partitioned index
- *               partition graphÀÇ ÃÖÀûÈ­¿Ï·á ÈÄ global index scanÀÌ
- *               ¼±ÅÃµÇ¸é global index scan¿ë graph·Î º¯°æÇÑ´Ù.
+ *               partition graphì˜ ìµœì í™”ì™„ë£Œ í›„ global index scanì´
+ *               ì„ íƒë˜ë©´ global index scanìš© graphë¡œ ë³€ê²½í•œë‹¤.
  *
  * Implementation :
- *      - predicate µî ¸ğµç Á¤º¸ ÃÊ±âÈ­
- *      - sdf Á¦°Å
+ *      - predicate ë“± ëª¨ë“  ì •ë³´ ì´ˆê¸°í™”
+ *      - sdf ì œê±°
  *
  ***********************************************************************/
 
@@ -5848,7 +5848,7 @@ qmgSelection::alterForceRidScan( qcStatement * aStatement,
     IDU_FIT_POINT_FATAL( "qmgSelection::alterForceRidScan::__FT__" );
 
     //---------------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //---------------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -5857,10 +5857,10 @@ qmgSelection::alterForceRidScan( qcStatement * aStatement,
     sMyGraph = (qmgSELT *) aGraph;
     
     //---------------------------------------------------
-    // ÃÊ±âÈ­
+    // ì´ˆê¸°í™”
     //---------------------------------------------------
     
-    // Selection Graph¿¡ Not Null Key Range »ı¼º Flag ÃÊ±âÈ­
+    // Selection Graphì— Not Null Key Range ìƒì„± Flag ì´ˆê¸°í™”
     sMyGraph->graph.flag &= ~QMG_SELT_NOTNULL_KEYRANGE_MASK;
     sMyGraph->graph.flag |= QMG_SELT_NOTNULL_KEYRANGE_FALSE;
 
@@ -5872,14 +5872,14 @@ qmgSelection::alterForceRidScan( qcStatement * aStatement,
     sMyGraph->graph.preservedOrder    = NULL;
     sMyGraph->graph.nnfFilter         = NULL;
     sMyGraph->forceIndexScan          = ID_FALSE;
-    sMyGraph->forceRidScan            = ID_TRUE;   // °­Á¦ rid scan ¼³Á¤
+    sMyGraph->forceRidScan            = ID_TRUE;   // ê°•ì œ rid scan ì„¤ì •
     
     if( sMyGraph->sdf != NULL )
     {
-        // ÇöÀç selection graphÀÇ selectedIndex°¡
-        // »óÀ§ graph¿¡ ÀÇÇØ ´Ù½Ã °áÁ¤µÈ °æ¿ì
-        // host optimizationÀ» ÇØ¼­´Â ¾ÈµÈ´Ù.
-        // ÀÌ °æ¿ì sdf¸¦ disableÇÑ´Ù.
+        // í˜„ì¬ selection graphì˜ selectedIndexê°€
+        // ìƒìœ„ graphì— ì˜í•´ ë‹¤ì‹œ ê²°ì •ëœ ê²½ìš°
+        // host optimizationì„ í•´ì„œëŠ” ì•ˆëœë‹¤.
+        // ì´ ê²½ìš° sdfë¥¼ disableí•œë‹¤.
         IDE_TEST( qtc::removeSDF( aStatement, sMyGraph->sdf ) != IDE_SUCCESS );
 
         sMyGraph->sdf = NULL;
@@ -5901,8 +5901,8 @@ qmgSelection::finalizePreservedOrder( qmgGraph * aGraph )
 {
 /***********************************************************************
  *
- *  Description : Preserved OrderÀÇ directionÀ» °áÁ¤ÇÑ´Ù.
- *                directionÀÌ NOT_DEFINED ÀÏ °æ¿ì¿¡¸¸ È£ÃâÇÏ¿©¾ß ÇÑ´Ù.
+ *  Description : Preserved Orderì˜ directionì„ ê²°ì •í•œë‹¤.
+ *                directionì´ NOT_DEFINED ì¼ ê²½ìš°ì—ë§Œ í˜¸ì¶œí•˜ì—¬ì•¼ í•œë‹¤.
  *
  *  Implementation :
  *
@@ -5921,9 +5921,9 @@ qmgSelection::finalizePreservedOrder( qmgGraph * aGraph )
 
     if ( aGraph->left != NULL )
     {
-        // ViewÀÎ °æ¿ì, ÇÏÀ§ÀÇ Preserved Order¸¦ µû¸§
-        // ViewÀÇ table, columnÀ¸·Î º¯È¯ÇÏ±â ¶§¹®¿¡
-        //  µÎ Preserved orderÀÇ table°ú columnÀº ´Ù¸¦ ¼ö ÀÖ´Ù.
+        // Viewì¸ ê²½ìš°, í•˜ìœ„ì˜ Preserved Orderë¥¼ ë”°ë¦„
+        // Viewì˜ table, columnìœ¼ë¡œ ë³€í™˜í•˜ê¸° ë•Œë¬¸ì—
+        //  ë‘ Preserved orderì˜ tableê³¼ columnì€ ë‹¤ë¥¼ ìˆ˜ ìˆë‹¤.
         sPreservedOrder = aGraph->preservedOrder;
         sChildOrder     = aGraph->left->preservedOrder;
         for ( ; sPreservedOrder != NULL && sChildOrder != NULL;
@@ -5935,11 +5935,11 @@ qmgSelection::finalizePreservedOrder( qmgGraph * aGraph )
     }
     else
     {
-        // View°¡ ¾Æ´Ï°í Preserved order°¡ Á¸ÀçÇÏ´Â °æ¿ì´Â Index scan»ÓÀÌ´Ù.
+        // Viewê°€ ì•„ë‹ˆê³  Preserved orderê°€ ì¡´ì¬í•˜ëŠ” ê²½ìš°ëŠ” Index scanë¿ì´ë‹¤.
         sKeyColCount = sMyGraph->selectedIndex->keyColCount;
         sKeyColsFlag = sMyGraph->selectedIndex->keyColsFlag;
     
-        // Selected indexÀÇ order·Î directionÀ» °áÁ¤ÇÑ´Ù.
+        // Selected indexì˜ orderë¡œ directionì„ ê²°ì •í•œë‹¤.
         for ( sPreservedOrder = aGraph->preservedOrder,
                   i = 0;
               sPreservedOrder != NULL &&
@@ -5971,7 +5971,7 @@ IDE_RC qmgSelection::makeRecursiveViewScan( qcStatement * aStatement,
      * Description : PROJ-2582 recursive with
      *
      * Implementation :
-     *   VSCAN »ı¼º.
+     *   VSCAN ìƒì„±.
      *
      *   right query
      *     [FILT]
@@ -5987,8 +5987,8 @@ IDE_RC qmgSelection::makeRecursiveViewScan( qcStatement * aStatement,
     IDU_FIT_POINT_FATAL( "qmgSelection::makeRecursiveViewScan::__FT__" );
 
     //---------------------------------------
-    // predicateÀÇ Á¸Àç À¯¹«¿¡ µû¶ó
-    // FILT »ı¼º
+    // predicateì˜ ì¡´ì¬ ìœ ë¬´ì— ë”°ë¼
+    // FILT ìƒì„±
     //---------------------------------------
 
     if( ( aMyGraph->graph.myPredicate != NULL ) ||
@@ -6049,13 +6049,13 @@ IDE_RC qmgSelection::makeRecursiveViewScan( qcStatement * aStatement,
     aMyGraph->graph.myPlan = sVSCN;    
 
     //---------------------------------------
-    // VSCN»ı¼º
+    // VSCNìƒì„±
     //---------------------------------------
 
     // codesonar::Null Pointer Dereference
     IDE_FT_ERROR( aMyGraph->graph.left != NULL );
     
-    // right VSCNÀº LEFT ÀÇ ÃÖ»óÀ§ VMTRÀ» child·Î °¡Áø´Ù.
+    // right VSCNì€ LEFT ì˜ ìµœìƒìœ„ VMTRì„ childë¡œ ê°€ì§„ë‹¤.
     IDE_TEST( qmoOneNonPlan::makeVSCN( aStatement,
                                        aMyGraph->graph.myQuerySet,
                                        aMyGraph->graph.myFrom,
@@ -6066,8 +6066,8 @@ IDE_RC qmgSelection::makeRecursiveViewScan( qcStatement * aStatement,
     qmg::setPlanInfo( aStatement, sVSCN, &(aMyGraph->graph) );
     
     //---------------------------------------
-    // predicateÀÇ Á¸Àç À¯¹«¿¡ µû¶ó
-    // FILT »ı¼º
+    // predicateì˜ ì¡´ì¬ ìœ ë¬´ì— ë”°ë¼
+    // FILT ìƒì„±
     //---------------------------------------
 
     if( ( aMyGraph->graph.myPredicate != NULL ) ||

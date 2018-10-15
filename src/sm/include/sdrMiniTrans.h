@@ -20,39 +20,39 @@
  *
  * Description :
  *
- * º» ÆÄÀÏÀº mini-transaction¿¡ ´ëÇÑ Çì´õ ÆÄÀÏÀÌ´Ù.
+ * ë³¸ íŒŒì¼ì€ mini-transactionì— ëŒ€í•œ í—¤ë” íŒŒì¼ì´ë‹¤.
  *
- * # °³³ä
+ * # ê°œë…
  *
- * mini-transactionÀÌ¶õ Æ¯Á¤ ´ÜÀ§ÀÛ¾÷¿¡ ´ëÇÑ page fix¿Í º¯°æ redo
- * ·Î±×µéÀ» ÀúÀåÇØ µÎ¾ú´Ù°¡ mini-transactionÀÇ commit¿¬»êÀ» ¼öÇà½Ã
- * ÇÑ²¨¹ø¿¡ ÀúÀåÇß´ø ·Î±×¸¦ ·Î±×ÆÄÀÏ¿¡ write ÇÏ°í, fixµÇ¾ú´ø page¸¦
- * unfix½ÃÄÑ¼­ actomicÀ» º¸ÀåÇÏ±â À§ÇÑ °´Ã¼ÀÌ´Ù.
- * ÀÌÇÏ mini-transactionÀ» mtx¶ó°í ÇÑ´Ù
+ * mini-transactionì´ë€ íŠ¹ì • ë‹¨ìœ„ì‘ì—…ì— ëŒ€í•œ page fixì™€ ë³€ê²½ redo
+ * ë¡œê·¸ë“¤ì„ ì €ì¥í•´ ë‘ì—ˆë‹¤ê°€ mini-transactionì˜ commitì—°ì‚°ì„ ìˆ˜í–‰ì‹œ
+ * í•œêº¼ë²ˆì— ì €ì¥í–ˆë˜ ë¡œê·¸ë¥¼ ë¡œê·¸íŒŒì¼ì— write í•˜ê³ , fixë˜ì—ˆë˜ pageë¥¼
+ * unfixì‹œì¼œì„œ actomicì„ ë³´ì¥í•˜ê¸° ìœ„í•œ ê°ì²´ì´ë‹¤.
+ * ì´í•˜ mini-transactionì„ mtxë¼ê³  í•œë‹¤
  *
- * # ¼³¸í
+ * # ì„¤ëª…
  *
- * mtxÀ» ½ÃÀÛÇÑ ÀÌÈÄ¿¡ ¾ò´Â ¸ğµç ¹öÆÛ ÇÁ·¹ÀÓ°ú ¹öÆÛ¿¡ ´ëÇÑ
- * latch´Â mtx¿¡ pushµÈ´Ù.
- * ¸¸¾à ÇÑ ´ÜÀ§ÀÇ ÀÛ¾÷ Áß Áß°£¿¡ Á×´Â´Ù¸é ±× ÀÛ¾÷ÀÇ ¾î¶² ³»¿ëµµ
- * ·Î±×¿¡ ¹İ¿µµÇÁö ¾ÊÀ¸¸ç, mtx commit½Ã¿¡¸¸ ·Î±×¿¡ ±× ³»¿ëÀÌ ¹İ¿µµÈ´Ù.
- * mtx commit½Ã¿¡¸¸ ¹öÆÛµéÀÌ unfixµÇ¹Ç·Î mtx Áß°£¿¡ ÆäÀÌÁö¿¡ ´ëÇÑ ¾î¶°ÇÑ
- * º¯°æµµ µğ½ºÅ©¿¡ ¹İ¿µµÇÁö ¾Ê´Â´Ù.
- * ½ÇÁ¦ ·Î±×¿¡ writeÇÑ ÀÌÈÄ°¡ µÇ¾î¾ß µğ½ºÅ©¿¡ º¯°æÇÑ ÆäÀÌÁö°¡ ¹İ¿µµÉ ¼ö ÀÖ´Ù.
- * ¹Ì´ÏÆ®·£Àè¼ÇÀÌ startÈÄ commitÇÏ´Â µ¿¾ÈÀÇ ÇàÀ§´Â atomic ÇÏ´Ù°í
- * ÇÒ ¼ö ÀÖ´Ù. ÀÌ¸¦ À§ÇØ mtx ³»ºÎ¿¡¼­´Â ·Î±× ¹öÆÛ¸¦ À¯ÁöÇÑ´Ù.
+ * mtxì„ ì‹œì‘í•œ ì´í›„ì— ì–»ëŠ” ëª¨ë“  ë²„í¼ í”„ë ˆì„ê³¼ ë²„í¼ì— ëŒ€í•œ
+ * latchëŠ” mtxì— pushëœë‹¤.
+ * ë§Œì•½ í•œ ë‹¨ìœ„ì˜ ì‘ì—… ì¤‘ ì¤‘ê°„ì— ì£½ëŠ”ë‹¤ë©´ ê·¸ ì‘ì—…ì˜ ì–´ë–¤ ë‚´ìš©ë„
+ * ë¡œê·¸ì— ë°˜ì˜ë˜ì§€ ì•Šìœ¼ë©°, mtx commitì‹œì—ë§Œ ë¡œê·¸ì— ê·¸ ë‚´ìš©ì´ ë°˜ì˜ëœë‹¤.
+ * mtx commitì‹œì—ë§Œ ë²„í¼ë“¤ì´ unfixë˜ë¯€ë¡œ mtx ì¤‘ê°„ì— í˜ì´ì§€ì— ëŒ€í•œ ì–´ë– í•œ
+ * ë³€ê²½ë„ ë””ìŠ¤í¬ì— ë°˜ì˜ë˜ì§€ ì•ŠëŠ”ë‹¤.
+ * ì‹¤ì œ ë¡œê·¸ì— writeí•œ ì´í›„ê°€ ë˜ì–´ì•¼ ë””ìŠ¤í¬ì— ë³€ê²½í•œ í˜ì´ì§€ê°€ ë°˜ì˜ë  ìˆ˜ ìˆë‹¤.
+ * ë¯¸ë‹ˆíŠ¸ëœì­ì…˜ì´ startí›„ commití•˜ëŠ” ë™ì•ˆì˜ í–‰ìœ„ëŠ” atomic í•˜ë‹¤ê³ 
+ * í•  ìˆ˜ ìˆë‹¤. ì´ë¥¼ ìœ„í•´ mtx ë‚´ë¶€ì—ì„œëŠ” ë¡œê·¸ ë²„í¼ë¥¼ ìœ ì§€í•œë‹¤.
  *
- * mtr start -> commit µÇ±â ±îÁö mtx´Â ´ÙÀ½ÀÇ ÀÛ¾÷À» ¼öÇàÇÑ´Ù.
- *    - ¿ÀºêÁ§Æ®¿Í latch¸ğµå¸¦ ÀúÀå
- *    - ¹öÆÛ ÇÁ·¹ÀÓ fix
- *    - ·Î±×¸¦ ·Î±×¹öÆÛ¿¡  ÀúÀå
+ * mtr start -> commit ë˜ê¸° ê¹Œì§€ mtxëŠ” ë‹¤ìŒì˜ ì‘ì—…ì„ ìˆ˜í–‰í•œë‹¤.
+ *    - ì˜¤ë¸Œì íŠ¸ì™€ latchëª¨ë“œë¥¼ ì €ì¥
+ *    - ë²„í¼ í”„ë ˆì„ fix
+ *    - ë¡œê·¸ë¥¼ ë¡œê·¸ë²„í¼ì—  ì €ì¥
  *
- * commitµÇ¸é ÀÌ¿Í °°Àº ÀÛ¾÷À» ÇÑ´Ù.
- *    - ÀúÀåµÈ ¿ÀºêÁ§Æ®¿Í latch ¸ğµå¸¦ ÇØÁ¦
- *    - »ç¿ëµÈ ¹öÆÛ ÇÁ·¹ÀÓ unfix
- *    - ·Î±×¹öÆÛ¸¦ ½ÇÁ¦ log¿¡ write
+ * commitë˜ë©´ ì´ì™€ ê°™ì€ ì‘ì—…ì„ í•œë‹¤.
+ *    - ì €ì¥ëœ ì˜¤ë¸Œì íŠ¸ì™€ latch ëª¨ë“œë¥¼ í•´ì œ
+ *    - ì‚¬ìš©ëœ ë²„í¼ í”„ë ˆì„ unfix
+ *    - ë¡œê·¸ë²„í¼ë¥¼ ì‹¤ì œ logì— write
  *
- * 1) mtx ±¸¼º ¿ä¼Ò
+ * 1) mtx êµ¬ì„± ìš”ì†Œ
  *      __________
  *      | sdrMtx |_______________________________
  *      |________|                               |
@@ -66,41 +66,41 @@
  *
  *
  *    - sdrMtx
- *    mtxÀÇ ¸ğµç Á¤º¸¸¦ ÀúÀåÇÑ´Ù. atomicÀ» º¸ÀåÇØ¾ß ÇÏ´Â
- *    ÀÛ¾÷À» À§ÇØ¼­ mtx¸¦ ½ÃÀÛÇÑ´Ù. ´ÙÀ½°ú °°Àº ±¸¼º¿ä¼Ò°¡ ÀÖ´Ù.
+ *    mtxì˜ ëª¨ë“  ì •ë³´ë¥¼ ì €ì¥í•œë‹¤. atomicì„ ë³´ì¥í•´ì•¼ í•˜ëŠ”
+ *    ì‘ì—…ì„ ìœ„í•´ì„œ mtxë¥¼ ì‹œì‘í•œë‹¤. ë‹¤ìŒê³¼ ê°™ì€ êµ¬ì„±ìš”ì†Œê°€ ìˆë‹¤.
  *
  *    1) log buffer
- *    dynamic ¹öÆÛ(smuDynArray)·Î mtx start ÀÌÈÄ¿¡ ¿¬»ê¿¡ ÀÇÇØ ¹ß»ıÇÏ´Â
- *    ·Î±×¸¦ ±â·ÏÇÑ´Ù. mtx commit ½Ã¿¡ ½ÇÁ¦ ·Î±×ÆÄÀÏ¹öÆÛ¿¡ write ÇÑ´Ù.
+ *    dynamic ë²„í¼(smuDynArray)ë¡œ mtx start ì´í›„ì— ì—°ì‚°ì— ì˜í•´ ë°œìƒí•˜ëŠ”
+ *    ë¡œê·¸ë¥¼ ê¸°ë¡í•œë‹¤. mtx commit ì‹œì— ì‹¤ì œ ë¡œê·¸íŒŒì¼ë²„í¼ì— write í•œë‹¤.
  *
  *    2) sdrMtxStackInfo(Latch Stack)
- *    latch itemÀ» ½×¾ÆµĞ´Ù. ÀÌ itemµéÀº commit½Ã¿¡ ¸ğµÎ ÇØÁ¦µÈ´Ù.
+ *    latch itemì„ ìŒ“ì•„ë‘”ë‹¤. ì´ itemë“¤ì€ commitì‹œì— ëª¨ë‘ í•´ì œëœë‹¤.
  *
  *    - sdrMtxLatchItem
- *    latchStack¿¡ ÀúÀåµÇ´Â ±¸Á¶ÀÌ´Ù. ¿ÀºêÁ§Æ®¿Í latch ¸ğµå·Î ±¸¼ºµÊ
- *    ¿ÀºêÁ§Æ®·Î´Â BCB, ·¡Ä¡, ¹ÂÅØ½º°¡ µÉ ¼ö ÀÖ´Ù.
+ *    latchStackì— ì €ì¥ë˜ëŠ” êµ¬ì¡°ì´ë‹¤. ì˜¤ë¸Œì íŠ¸ì™€ latch ëª¨ë“œë¡œ êµ¬ì„±ë¨
+ *    ì˜¤ë¸Œì íŠ¸ë¡œëŠ” BCB, ë˜ì¹˜, ë®¤í…ìŠ¤ê°€ ë  ìˆ˜ ìˆë‹¤.
  *
- * 2) mtx¿¡ ÀúÀåµÇ´Â DRDBÀÇ ·Î±×ÀÇ ±¸Á¶
+ * 2) mtxì— ì €ì¥ë˜ëŠ” DRDBì˜ ë¡œê·¸ì˜ êµ¬ì¡°
  *
  *  __header(16bytes)_  _________body_____
  * /__________________\/__________________\
  * | type | RID | len | log-specipic body |
  * |______|_____|_____|___________________|
  *
- * mtx start ÀÌÈÄ ÀÌ·¯ÇÑ ·Î±×°¡ ÇÑ°³ ÀÌ»ó ¹İº¹µÇ¾î commit µÉ ¶§±îÁö
- * ½×ÀÎ´Ù. mtx commit ½Ã¿¡ ·Î±× ¹öÆÛ´Â ·Î±× °ü¸®ÀÚ¿¡ Àü´ŞµÈ´Ù.
+ * mtx start ì´í›„ ì´ëŸ¬í•œ ë¡œê·¸ê°€ í•œê°œ ì´ìƒ ë°˜ë³µë˜ì–´ commit ë  ë•Œê¹Œì§€
+ * ìŒ“ì¸ë‹¤. mtx commit ì‹œì— ë¡œê·¸ ë²„í¼ëŠ” ë¡œê·¸ ê´€ë¦¬ìì— ì „ë‹¬ëœë‹¤.
  *
- * 3) ·Î±× °ü¸®ÀÚ°¡ ±â·ÏÇÏ´Â ½ÇÁ¦ ·Î±×ÀÇ ±¸Á¶
+ * 3) ë¡œê·¸ ê´€ë¦¬ìê°€ ê¸°ë¡í•˜ëŠ” ì‹¤ì œ ë¡œê·¸ì˜ êµ¬ì¡°
  *
  *  ______________ header__________________  ____body_________  tail
  * /_______________________________________\/_______________ _\/_____\
- * | type | TxID | flag | previous undo LSN | ¿©·¯°³ÀÇ Mtx Log |      |
+ * | type | TxID | flag | previous undo LSN | ì—¬ëŸ¬ê°œì˜ Mtx Log |      |
  * |______|______|______|___________________|__________________|______|
  *
- * ½ÇÁ¦ ·Î±×È­ÀÏ¿¡ ¾²ÀÌ´Â ·Î±×´Â header¿Í ¿©·¯ °³ÀÇ DRDB ·Î±×·Î ±¸¼ºµÈ
- * body, ±×¸®°í tail·Î ±¸¼ºµÈ´Ù.
- * ·Î±× headerÀÇ Á¤º¸¸¦ ±¸¼ºÇÏ±â À§ÇØ¼­´Â type°ú TxID°¡ ÇÊ¿äÇÏ¸ç ÀÌ¸¦
- * mtx start½Ã ¹Ş¾Æ¼­ commit½Ã ·Î±×¿¡ writeÇÒ ¶§ Àü´ŞÇÑ´Ù.
+ * ì‹¤ì œ ë¡œê·¸í™”ì¼ì— ì“°ì´ëŠ” ë¡œê·¸ëŠ” headerì™€ ì—¬ëŸ¬ ê°œì˜ DRDB ë¡œê·¸ë¡œ êµ¬ì„±ëœ
+ * body, ê·¸ë¦¬ê³  tailë¡œ êµ¬ì„±ëœë‹¤.
+ * ë¡œê·¸ headerì˜ ì •ë³´ë¥¼ êµ¬ì„±í•˜ê¸° ìœ„í•´ì„œëŠ” typeê³¼ TxIDê°€ í•„ìš”í•˜ë©° ì´ë¥¼
+ * mtx startì‹œ ë°›ì•„ì„œ commitì‹œ ë¡œê·¸ì— writeí•  ë•Œ ì „ë‹¬í•œë‹¤.
  *
  **********************************************************************/
 
@@ -113,7 +113,7 @@ class sdrMiniTrans
 {
 public:
 
-    /* mtx ÃÊ±âÈ­ ¹× ½ÃÀÛ */
+    /* mtx ì´ˆê¸°í™” ë° ì‹œì‘ */
     static IDE_RC begin( idvSQL*       aStatistics,
                          sdrMtx*       aMtx,
                          void*         aTrans,
@@ -130,8 +130,8 @@ public:
 
 
     /* ------------------------------------------------
-     * !!] mtx·Î È¹µæÇÑ latchitemÀ» releaseÇÏ¸ç, ÀÛ¼ºµÈ
-     * ·Î±×¸¦ ·Î±×ÆÄÀÏ¿¡ ±â·ÏÇÏ°í, ¸ğµç resource¸¦ ÇØÁ¦ÇÑ´Ù
+     * !!] mtxë¡œ íšë“í•œ latchitemì„ releaseí•˜ë©°, ì‘ì„±ëœ
+     * ë¡œê·¸ë¥¼ ë¡œê·¸íŒŒì¼ì— ê¸°ë¡í•˜ê³ , ëª¨ë“  resourceë¥¼ í•´ì œí•œë‹¤
      * ----------------------------------------------*/
     static IDE_RC commit( sdrMtx * aMtx,
                           UInt     aContType = 0,      /* in */
@@ -142,13 +142,13 @@ public:
     static IDE_RC setDirtyPage(void*    aMtx,
                                UChar*   aPagePtr );
 
-    /* ÀÏ¹İ ÆäÀÌÁöÀÓ¿¡µµ log¸¦ ¾È³²±æ¶§ ¼³Á¤. (ex: Index Bottom-up Build) */
+    /* ì¼ë°˜ í˜ì´ì§€ì„ì—ë„ logë¥¼ ì•ˆë‚¨ê¸¸ë•Œ ì„¤ì •. (ex: Index Bottom-up Build) */
     static void setNologgingPersistent( sdrMtx* aMtx );
 
     static void makeStartInfo( sdrMtx* aMtx,
                                sdrMtxStartInfo * aStartInfo );
 
-    /* Æ¯Á¤ ¿¬»ê¿¡ ´ëÇÑ NTA ·Î±× ¼³Á¤ */
+    /* íŠ¹ì • ì—°ì‚°ì— ëŒ€í•œ NTA ë¡œê·¸ ì„¤ì • */
     static void setNTA( sdrMtx*   aMtx,
                         scSpaceID aSpaceID,
                         UInt      aOpType,
@@ -168,21 +168,21 @@ public:
     static void setCLR(sdrMtx* aMtx,
                        smLSN*  aPPrevLSN);
 
-    /* RollbackÇÏ´õ¶óµµ Undo¸¦ ¾ÈÇØµµ µÊ */
+    /* Rollbackí•˜ë”ë¼ë„ Undoë¥¼ ì•ˆí•´ë„ ë¨ */
     static void setIgnoreMtxUndo( sdrMtx* aMtx )
     {
         /* BUG-32579 The MiniTransaction commit should not be used in
          * exception handling area.
          * 
-         * ºÎºĞÀûÀ¸·Î ·Î±×°¡ ¾²¿©Áø »óÈ²¿¡¼­´Â MtxUndo°¡ °¡´ÉÇÑ »óÈ²
-         * ÀÌ ¾Æ´Ï´Ù. */ 
+         * ë¶€ë¶„ì ìœ¼ë¡œ ë¡œê·¸ê°€ ì“°ì—¬ì§„ ìƒí™©ì—ì„œëŠ” MtxUndoê°€ ê°€ëŠ¥í•œ ìƒí™©
+         * ì´ ì•„ë‹ˆë‹¤. */ 
         IDE_ASSERT( aMtx->mRemainLogRecSize == 0 );
 
         aMtx->mFlag &= ~SDR_MTX_IGNORE_UNDO_MASK;
         aMtx->mFlag |= SDR_MTX_IGNORE_UNDO_ON;
     }
 
-    /* DML°ü·Ã redo/undo ·Î±× À§Ä¡¸¦ ±â·ÏÇÑ´Ù */
+    /* DMLê´€ë ¨ redo/undo ë¡œê·¸ ìœ„ì¹˜ë¥¼ ê¸°ë¡í•œë‹¤ */
     static void setRefOffset(sdrMtx* aMtx,
                              smOID   aTableOID = SM_NULL_OID);
 
@@ -191,14 +191,14 @@ public:
 
     static void* getStatSQL( void * aMtx ) { return (void*)((sdrMtx*)aMtx)->mStatSQL; }
 
-    /* mtxÀÇ ·Î±ë¸ğµå¸¦ ¹İÈ¯ */
+    /* mtxì˜ ë¡œê¹…ëª¨ë“œë¥¼ ë°˜í™˜ */
     static sdrMtxLogMode getLogMode(sdrMtx*        aMtx);
 
     static sdrMtxLoggingType getLoggingType(sdrMtx*        aMtx);
 
     static UInt getDLogAttr(sdrMtx *aMtx);
 
-    /* page º¯°æºÎºĞ¿¡ ´ëÇÑ ·Î±×¸¸ ±â·ÏÇÑ´Ù. */
+    /* page ë³€ê²½ë¶€ë¶„ì— ëŒ€í•œ ë¡œê·¸ë§Œ ê¸°ë¡í•œë‹¤. */
     static IDE_RC writeLogRec(sdrMtx*      aMtx,
                               UChar*       aWritePtr,
                               void*        aValue,
@@ -213,20 +213,20 @@ public:
 
 
 
-    /* page¿¡ ´ëÇÑ º¯°æ°ú ÇÔ²² SDR_*_BYTES Å¸ÀÔ ·Î±×¸¦
-       mtx ·Î±× ¹öÆÛ¿¡ ±â·ÏÇÑ´Ù. */
+    /* pageì— ëŒ€í•œ ë³€ê²½ê³¼ í•¨ê»˜ SDR_*_BYTES íƒ€ì… ë¡œê·¸ë¥¼
+       mtx ë¡œê·¸ ë²„í¼ì— ê¸°ë¡í•œë‹¤. */
     static IDE_RC writeNBytes(void*           aMtx,
                               UChar*          aDest,
                               void*           aValue,
                               UInt            aLogType);
 
-    /* ÇöÀç mtx ·Î±× ¹öÆÛÀÇ  offset¿¡¼­
-       Æ¯Á¤ ±æÀÌÀÇ value¸¦ write */
+    /* í˜„ì¬ mtx ë¡œê·¸ ë²„í¼ì˜  offsetì—ì„œ
+       íŠ¹ì • ê¸¸ì´ì˜ valueë¥¼ write */
     static IDE_RC write(sdrMtx*  aMtx,
                         void*    aValue,
                         UInt     aLength );
 
-    /* latch itemÀ» mtx ½ºÅÃ¿¡ push */
+    /* latch itemì„ mtx ìŠ¤íƒì— push */
     static IDE_RC push(void*            aMtx,
                        void*            aObject,
                        UInt             aLatchMode );
@@ -235,11 +235,11 @@ public:
                            void*            aObject,
                            UInt             aLatchMode );
 
-    /* BUG-24730 [SD] DropµÈ Temp SegmentÀÇ Extent´Â ºü¸£°Ô Àç»ç¿ëµÇ¾î¾ß ÇÕ´Ï´Ù. 
+    /* BUG-24730 [SD] Dropëœ Temp Segmentì˜ ExtentëŠ” ë¹ ë¥´ê²Œ ì¬ì‚¬ìš©ë˜ì–´ì•¼ í•©ë‹ˆë‹¤. 
      *
-     * FreeÇÏ·Á´Â ExtentµéÀº Mini-Transaction Commit ÀÌÈÄ¿¡ Cache¿¡ Ãß°¡µÇ¾î¾ß 
-     * ÇÕ´Ï´Ù. Mini-TransactionÀÌ CommitÀÌÀü¿¡ »ğÀÔµÇ¸é, CommitÀÌÀü¿¡ ÀçÈ°¿ë
-     * µÇ¾î¹ö¸³´Ï´Ù.*/
+     * Freeí•˜ë ¤ëŠ” Extentë“¤ì€ Mini-Transaction Commit ì´í›„ì— Cacheì— ì¶”ê°€ë˜ì–´ì•¼ 
+     * í•©ë‹ˆë‹¤. Mini-Transactionì´ Commitì´ì „ì— ì‚½ì…ë˜ë©´, Commitì´ì „ì— ì¬í™œìš©
+     * ë˜ì–´ë²„ë¦½ë‹ˆë‹¤.*/
     static IDE_RC addPendingJob(void              * aMtx,
                                 idBool              aIsCommitJob,
                                 idBool              aFreeData,
@@ -255,8 +255,8 @@ public:
                               sdrSavePoint *aSP );
 
     /* PROJ-2162 RestartRiskReduction
-     * XÆ¯Á¤ ½ºÅÃ¿¡ Æ¯Á¤ page ID¿¡ ÇØ´çÇÏ´Â BCB°¡ Á¸ÀçÇÒ °æ¿ì,
-     * ÇØ´ç page frame¿¡ ´ëÇÑ Æ÷ÀÎÅÍ¸¦ ¹İÈ¯ */
+     * XíŠ¹ì • ìŠ¤íƒì— íŠ¹ì • page IDì— í•´ë‹¹í•˜ëŠ” BCBê°€ ì¡´ì¬í•  ê²½ìš°,
+     * í•´ë‹¹ page frameì— ëŒ€í•œ í¬ì¸í„°ë¥¼ ë°˜í™˜ */
     static UChar * getPagePtrFromPageID( sdrMtx     * aMtx,
                                          scSpaceID    aSpaceID,
                                          scPageID     aPageID );
@@ -275,8 +275,8 @@ public:
 
     static idBool isNologgingPersistent( void *aMtx );
 
-    /* writeLogRecÇÔ¼ö¸¦ ÅëÇØ SubLogÀÇ Å©±â¸¦ ¼³Á¤ÇØ³õ°í ±×°Íº¸´Ù ÀÛÀº·®ÀÇ
-     * Log¹Û¿¡ ¾²Áö ¸øÇßÀ¸¸é, Mtx´Â ±úÁø °ÍÀÌ´Ù. */
+    /* writeLogRecí•¨ìˆ˜ë¥¼ í†µí•´ SubLogì˜ í¬ê¸°ë¥¼ ì„¤ì •í•´ë†“ê³  ê·¸ê²ƒë³´ë‹¤ ì‘ì€ëŸ‰ì˜
+     * Logë°–ì— ì“°ì§€ ëª»í–ˆìœ¼ë©´, MtxëŠ” ê¹¨ì§„ ê²ƒì´ë‹¤. */
     static idBool isRemainLogRec( void *aMtx );
 
     // for debug
@@ -296,7 +296,7 @@ static IDE_RC dump(void*) { return IDE_SUCCESS; }
 
 private:
 
-    /* ÃÊ±âÈ­ */
+    /* ì´ˆê¸°í™” */
     static IDE_RC initialize( idvSQL*       aStatistics,
                               sdrMtx*       aMtx,
                               void*         aTrans,
@@ -307,15 +307,15 @@ private:
 
     static IDE_RC destroy( sdrMtx *aMtx );
 
-    /* ·Î±× header¿¡ type°ú RID¸¦ ¼³Á¤ÇÑ´Ù.*/
+    /* ë¡œê·¸ headerì— typeê³¼ RIDë¥¼ ì„¤ì •í•œë‹¤.*/
     static IDE_RC initLogRec( sdrMtx*        aMtx,
                               scGRID         aWriteGRID,
                               UInt           aLength,
                               sdrLogType     aType);
 
 
-    /* Tablespace¿¡ Log CompressionÀ» ÇÏÁö ¾Êµµ·Ï ¼³Á¤µÈ °æ¿ì
-       ·Î±× ¾ĞÃàÀ» ÇÏÁö ¾Êµµ·Ï ¼³Á¤
+    /* Tablespaceì— Log Compressionì„ í•˜ì§€ ì•Šë„ë¡ ì„¤ì •ëœ ê²½ìš°
+       ë¡œê·¸ ì••ì¶•ì„ í•˜ì§€ ì•Šë„ë¡ ì„¤ì •
     */
     static IDE_RC checkTBSLogCompAttr( sdrMtx*      aMtx,
                                        scSpaceID    aSpaceID );
@@ -326,22 +326,22 @@ private:
                                 sdrLogType aType );
 
 
-    /* ·Î±× ±â·ÏÀ» À§ÇÑ mtx ·Î±× ¹öÆÛ ÃÊ±âÈ­ */
+    /* ë¡œê·¸ ê¸°ë¡ì„ ìœ„í•œ mtx ë¡œê·¸ ë²„í¼ ì´ˆê¸°í™” */
     static IDE_RC initLogBuffer(sdrMtx* aMtx);
 
     static IDE_RC destroyLogBuffer(sdrMtx* aMtx);
 
-    /* BUG-24730 [SD] DropµÈ Temp SegmentÀÇ Extent´Â ºü¸£°Ô Àç»ç¿ëµÇ¾î¾ß ÇÕ´Ï´Ù. 
+    /* BUG-24730 [SD] Dropëœ Temp Segmentì˜ ExtentëŠ” ë¹ ë¥´ê²Œ ì¬ì‚¬ìš©ë˜ì–´ì•¼ í•©ë‹ˆë‹¤. 
      *
-     * FreeÇÏ·Á´Â ExtentµéÀº Mini-Transaction Commit ÀÌÈÄ¿¡ Cache¿¡ Ãß°¡µÇ¾î¾ß 
-     * ÇÕ´Ï´Ù. Mini-TransactionÀÌ CommitÀÌÀü¿¡ »ğÀÔµÇ¸é, CommitÀÌÀü¿¡ ÀçÈ°¿ë
-     * µÇ¾î¹ö¸³´Ï´Ù.*/
+     * Freeí•˜ë ¤ëŠ” Extentë“¤ì€ Mini-Transaction Commit ì´í›„ì— Cacheì— ì¶”ê°€ë˜ì–´ì•¼ 
+     * í•©ë‹ˆë‹¤. Mini-Transactionì´ Commitì´ì „ì— ì‚½ì…ë˜ë©´, Commitì´ì „ì— ì¬í™œìš©
+     * ë˜ì–´ë²„ë¦½ë‹ˆë‹¤.*/
     static IDE_RC executePendingJob(void   * aMtx,
                                     idBool   aDoCommitJob );
 
     static IDE_RC destroyPendingJob( void * aMtx);
 
-    /*  mtx ½ºÅÃÀÇ ÇÑ itemÀÇ release ÀÛ¾÷À» ¼öÇàÇÑ´Ù. */
+    /*  mtx ìŠ¤íƒì˜ í•œ itemì˜ release ì‘ì—…ì„ ìˆ˜í–‰í•œë‹¤. */
     static IDE_RC releaseLatchItem(sdrMtx*           aMtx,
                                    sdrMtxLatchItem*  aItem);
 
@@ -349,11 +349,11 @@ private:
                                             sdrMtxLatchItem *aItem);
 
     /* PROJ-2162 RestartRiskReduction
-     * OnlineDRDBRedo±â´ÉÀ» ÅëÇØ Page¸¦ º¹±¸ÇÒ ÇÊ¿ä°¡ ÀÖ´ÂÁö °ËÁõÇÑ´Ù. */
+     * OnlineDRDBRedoê¸°ëŠ¥ì„ í†µí•´ Pageë¥¼ ë³µêµ¬í•  í•„ìš”ê°€ ìˆëŠ”ì§€ ê²€ì¦í•œë‹¤. */
     static idBool needMtxRollback( sdrMtx * aMtx );
 
     /* PROJ-2162 RestartRiskReduction
-     * Mtx Commit¸¶´Ù DRDB Redo±â´ÉÀ» °ËÁõÇÔ */
+     * Mtx Commitë§ˆë‹¤ DRDB Redoê¸°ëŠ¥ì„ ê²€ì¦í•¨ */
     static IDE_RC validateDRDBRedo( sdrMtx          * aMtx,
                                     sdrMtxStackInfo * aMtxStack,
                                     smuDynArrayBase * aLogBuffer );
@@ -368,17 +368,17 @@ private:
         scPageID          aPageID );
 
 private:
-    // °¢ mtx stack item¿¡ type¿¡ µû¶ó Àû¿ëÇÒ ÇÔ¼ö¿Í
-    // item¿¡ ´ëÇÑ Á¤º¸¸¦ °¡Áø´Ù.
+    // ê° mtx stack itemì— typeì— ë”°ë¼ ì ìš©í•  í•¨ìˆ˜ì™€
+    // itemì— ëŒ€í•œ ì •ë³´ë¥¼ ê°€ì§„ë‹¤.
     static sdrMtxLatchItemApplyInfo
                   mItemVector[SDR_MTX_RELEASE_FUNC_NUM];
 
 #if defined(DEBUG)
     /* PROJ-2162 RestartRiskReduction
-     * Mtx Rollback Å×½ºÆ®¸¦ À§ÇÑ ÀÓ½Ã seq.
-     * __SM_MTX_ROLLBACK_TEST °ªÀÌ ¼³Á¤µÇ¸é (0ÀÌ ¾Æ´Ï¸é) ÀÌ °ªÀÌ
-     * MtxCommit½Ã¸¶´Ù Áõ°¡ÇÑ´Ù. ±×¸®°í À§ Property°ª¿¡ µµ´ŞÇÏ¸é
-     * °­Á¦·Î RollbackÀ» ½ÃµµÇÑ´Ù. */
+     * Mtx Rollback í…ŒìŠ¤íŠ¸ë¥¼ ìœ„í•œ ì„ì‹œ seq.
+     * __SM_MTX_ROLLBACK_TEST ê°’ì´ ì„¤ì •ë˜ë©´ (0ì´ ì•„ë‹ˆë©´) ì´ ê°’ì´
+     * MtxCommitì‹œë§ˆë‹¤ ì¦ê°€í•œë‹¤. ê·¸ë¦¬ê³  ìœ„ Propertyê°’ì— ë„ë‹¬í•˜ë©´
+     * ê°•ì œë¡œ Rollbackì„ ì‹œë„í•œë‹¤. */
     static UInt mMtxRollbackTestSeq;
 #endif
 };

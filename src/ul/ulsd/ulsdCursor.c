@@ -31,8 +31,8 @@ SQLRETURN ulsdCloseCursor(ulnStmt      *aStmt)
 }
 
 /*
- * ¾î¶² Node °¡ ¼öÇàµÇ¾ú´ÂÁö º°µµ·Î Ã¼Å©¸¦ ÇÏÁö ¾ÊÀ¸¹Ç·Î
- * Close ´Â ÀüÃ¼ Node ¿¡ ´ëÇØ Silent ·Î ¼öÇàÇÔ
+ * ì–´ë–¤ Node ê°€ ìˆ˜í–‰ë˜ì—ˆëŠ”ì§€ ë³„ë„ë¡œ ì²´í¬ë¥¼ í•˜ì§€ ì•Šìœ¼ë¯€ë¡œ
+ * Close ëŠ” ì „ì²´ Node ì— ëŒ€í•´ Silent ë¡œ ìˆ˜í–‰í•¨
  */
 SQLRETURN ulsdNodeSilentCloseCursor(ulsdDbc      *aShard,
                                     ulnStmt      *aStmt)

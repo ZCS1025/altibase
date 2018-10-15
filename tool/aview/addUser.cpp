@@ -71,7 +71,7 @@ void __fastcall TForm2::Button1Click(TObject *Sender)
 	}
 
 
-	// ¿¬°áÀ» À§ÇÑ ¸Þ¸ð¸® ÇÒ´ç.
+	// ì—°ê²°ì„ ìœ„í•œ ë©”ëª¨ë¦¬ í• ë‹¹.
 	if (SQLAllocEnv(&env) != SQL_SUCCESS)
 	{
 		ShowMessage("SQLAllocEnv Fail");
@@ -90,7 +90,7 @@ void __fastcall TForm2::Button1Click(TObject *Sender)
 		return;
 	}
 
-	// Á¢¼ÓÁ¤º¸¸¦ °¡Á®¿É´Ï´ç..
+	// ì ‘ì†ì •ë³´ë¥¼ ê°€ì ¸ì˜µë‹ˆë‹¹..
 	if (!Form5->getDsnInfo(Form5->SERVERNAME->Caption, "User",     USER))
 	{
 		ShowMessage("Can't Get User");
@@ -105,7 +105,7 @@ void __fastcall TForm2::Button1Click(TObject *Sender)
 		return;
 	}
 
-	// ÁøÂ¥ ¿¬°áÇØº¾´Ï´Ù.
+	// ì§„ì§œ ì—°ê²°í•´ë´…ë‹ˆë‹¤.
 	if (SQLConnect(dbc, Form5->SERVERNAME->Caption.c_str(), SQL_NTS, USER, SQL_NTS, PASSWD, SQL_NTS) != SQL_SUCCESS)
 	{
 		dbErrMsg1(env, dbc, SQL_NULL_HSTMT);
@@ -153,22 +153,22 @@ void __fastcall TForm2::Button1Click(TObject *Sender)
 
 	ShowMessage("Create User Success!!");
 
-	// ¹®Á¦´Â mainForm¿¡ Ãß°¡¸¦ ÇØ¾ß ÇÏ´Âµð...
-	// ±×³É µÚ¿¡ ºÙÈù´Ù.
-	// ´Ù½Ã ÀÐ¾îµéÀÎ´Ù.. ¿¡°ø..
+	// ë¬¸ì œëŠ” mainFormì— ì¶”ê°€ë¥¼ í•´ì•¼ í•˜ëŠ”ë””...
+	// ê·¸ëƒ¥ ë’¤ì— ë¶™ížŒë‹¤.
+	// ë‹¤ì‹œ ì½ì–´ë“¤ì¸ë‹¤.. ì—ê³µ..
 	if (Form5->DBNODE->Selected)
 	{
-		// ´Ù½Ã ÀÐ¾îµéÀÌ±â¶ó¸é ±×³É ¾Æ·¡ ÇÔ¼ö·Î ³¡..
+		// ë‹¤ì‹œ ì½ì–´ë“¤ì´ê¸°ë¼ë©´ ê·¸ëƒ¥ ì•„ëž˜ í•¨ìˆ˜ë¡œ ë..
 		//Form5->Connect1Click(this);
 
-		// Á¦ÀÏ ¾Õ¿¡´Ù Áý¾îÃÄ³Ö±â..
+		// ì œì¼ ì•žì—ë‹¤ ì§‘ì–´ì³ë„£ê¸°..
 		TTreeNode *tNode = Form5->DBNODE->Selected;
 		TTreeNode *rootNode = NULL;
 
 		while (tNode->Parent)
 			tNode = tNode->Parent;
 
-        // ÀÌ·± ¾Ö¸Å¸ðÈ£¼º ÄÚµå°¡ ¸¹¾ÆÁø´Ù.. Â¥Áõ³ª³ß.		
+        // ì´ëŸ° ì• ë§¤ëª¨í˜¸ì„± ì½”ë“œê°€ ë§Žì•„ì§„ë‹¤.. ì§œì¦ë‚˜ë„¹.		
 		rootNode = tNode;
 		tNode = Form5->DBNODE->Items->Insert(rootNode->getFirstChild(), UID->Text.UpperCase());
 		Form5->DBNODE->Items->AddChild(tNode, "Tables");

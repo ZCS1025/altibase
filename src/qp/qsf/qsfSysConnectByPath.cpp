@@ -19,13 +19,13 @@
  * $Id: qsfSysConnectByPath.cpp 82075 2018-01-17 06:39:52Z jina.kim $
  *
  * SYS_CONNECT_BY_PATH( ColumnName, '\' )
- *  ÁöÁ¤µÈ ÄÃ·³¿¡ ´ëÇØ ·¹º§ 1ºÎÅÍ ÇöÁ¦ ·¹º§ ±îÁöÀÇ °ªÀ» ±¸ºÐÀÚ·Î ±¸ºÐÇØ¼­ º¸¿©ÁØ´Ù.
- *  ColumnNameÀº ¼ø¼ö ÄÃ·³¸¸ °¡´ÉÇÏ´Ù.
- *  Delimiter´Â Ç×»ó CONSTANT¸¸ °¡´ÉÇÏ´Ù.
- *  sSFWGH->hierStack ÀÇ Pseudo Column¿¡ Hierarchy QueryÀÇ Stack
- *  Æ÷ÀÎÅÍ°¡ ÀÖ´Ù. ÀÌ¸¦ ÅëÇØ¼­ Root Node ºÎÅÍ ÇöÁ¦ ±îÁöÀÇ Row¸¦ ¾ò´Â´Ù.
+ *  ì§€ì •ëœ ì»¬ëŸ¼ì— ëŒ€í•´ ë ˆë²¨ 1ë¶€í„° í˜„ì œ ë ˆë²¨ ê¹Œì§€ì˜ ê°’ì„ êµ¬ë¶„ìžë¡œ êµ¬ë¶„í•´ì„œ ë³´ì—¬ì¤€ë‹¤.
+ *  ColumnNameì€ ìˆœìˆ˜ ì»¬ëŸ¼ë§Œ ê°€ëŠ¥í•˜ë‹¤.
+ *  DelimiterëŠ” í•­ìƒ CONSTANTë§Œ ê°€ëŠ¥í•˜ë‹¤.
+ *  sSFWGH->hierStack ì˜ Pseudo Columnì— Hierarchy Queryì˜ Stack
+ *  í¬ì¸í„°ê°€ ìžˆë‹¤. ì´ë¥¼ í†µí•´ì„œ Root Node ë¶€í„° í˜„ì œ ê¹Œì§€ì˜ Rowë¥¼ ì–»ëŠ”ë‹¤.
  *
- *  ÀÌ SYS_CONNECT_BY_PATHÀÇ ÄÃ·´ Å¸ÀÔÀº Ç×»ó mtdVarchar ÀÌ´Ù.
+ *  ì´ SYS_CONNECT_BY_PATHì˜ ì»¬ëŸ½ íƒ€ìž…ì€ í•­ìƒ mtdVarchar ì´ë‹¤.
  ***********************************************************************/
 
 #include <qsf.h>
@@ -139,7 +139,7 @@ static IDE_RC qsfSysConnectByPathEstimate( mtcNode     * aNode,
                                         sModules )
               != IDE_SUCCESS );
 
-    /* mtdVarchar TypeÀ¸·Î ÃÊ±âÈ­ */
+    /* mtdVarchar Typeìœ¼ë¡œ ì´ˆê¸°í™” */
     IDE_TEST( mtc::initializeColumn( aStack[0].column,
                                      &mtdVarchar,
                                      1,
@@ -147,7 +147,7 @@ static IDE_RC qsfSysConnectByPathEstimate( mtcNode     * aNode,
                                      0)
               != IDE_SUCCESS );
 
-    // environmentÀÇ ±â·Ï
+    // environmentì˜ ê¸°ë¡
     if ( sCallBackInfo->statement != NULL )
     {
         qcgPlan::registerPlanProperty( sCallBackInfo->statement,
@@ -301,7 +301,7 @@ IDE_RC qsfSysConnectByPathCalculate( mtcNode     * aNode,
             /* Nothing to do */
         }
 
-        /* 64·¹º§ ÀÌ»óÀÏ °æ¿ì ´ÙÀ½ ½ºÅÃÀ» Ã£¾Æ¾ßÇÑ´Ù. */
+        /* 64ë ˆë²¨ ì´ìƒì¼ ê²½ìš° ë‹¤ìŒ ìŠ¤íƒì„ ì°¾ì•„ì•¼í•œë‹¤. */
         if ( sLevel < QMND_CNBY_BLOCKSIZE )
         {
             i = sLevel;
@@ -321,9 +321,9 @@ IDE_RC qsfSysConnectByPathCalculate( mtcNode     * aNode,
 
         sItem = &sStack->items[i];
 
-        // PROJ-2362 memory temp ÀúÀå È¿À²¼º °³¼±
+        // PROJ-2362 memory temp ì €ìž¥ íš¨ìœ¨ì„± ê°œì„ 
         /* PROJ-2641 Hierarchy Query Index
-         * Table¿¡ ´ëÇÑ Hierarchy query´Â baseMTRÀÌ NULL ÀÌ´Ù.
+         * Tableì— ëŒ€í•œ Hierarchy queryëŠ” baseMTRì´ NULL ì´ë‹¤.
          */
         if ( ( QCU_REDUCE_TEMP_MEMORY_ENABLE == 1 ) &&
              ( sStack->baseMTR != NULL ) )
@@ -347,7 +347,7 @@ IDE_RC qsfSysConnectByPathCalculate( mtcNode     * aNode,
             }
             
             /* BUG-40027
-             * temp typeÀÌ ÀÖÀ¸¹Ç·Î columnÁ¤º¸±îÁö º¯°æÇØ¾ß ÇÑ´Ù.
+             * temp typeì´ ìžˆìœ¼ë¯€ë¡œ columnì •ë³´ê¹Œì§€ ë³€ê²½í•´ì•¼ í•œë‹¤.
              */
             aTemplate->rows[sStack->myRowID].columns =
                 aTemplate->rows[sStack->baseRowID].columns;
@@ -358,16 +358,16 @@ IDE_RC qsfSysConnectByPathCalculate( mtcNode     * aNode,
         }
 
         /* BUG-39848
-         * arguments¿¡ ¿ÜºÎ ÂüÁ¶ÄÃ·³ÀÌ ÀÖ´Â subquery°¡ ÀÖ°í, storeµÇ´Â °æ¿ì
-         * connect by¸¦ referenceÇÏ°í ÀÖ±â¶§¹®¿¡ modify count¸¦ º¯°æÇØ¾ßÇÑ´Ù.
+         * argumentsì— ì™¸ë¶€ ì°¸ì¡°ì»¬ëŸ¼ì´ ìžˆëŠ” subqueryê°€ ìžˆê³ , storeë˜ëŠ” ê²½ìš°
+         * connect byë¥¼ referenceí•˜ê³  ìžˆê¸°ë•Œë¬¸ì— modify countë¥¼ ë³€ê²½í•´ì•¼í•œë‹¤.
          */
         aTemplate->rows[sStack->myRowID].row = sItem->rowPtr;
         aTemplate->rows[sStack->myRowID].modify++;
 
         if ( sStack->myRowID != sStack->baseRowID )
         {
-            /* BUG-39611 baseTuple¿¡ row Pointer¸¦ ÀúÀåÈÄ arguments¿¡
-             * ´ëÇÑ calculate ¸¦ ¼öÇàÇÑ´Ù.
+            /* BUG-39611 baseTupleì— row Pointerë¥¼ ì €ìž¥í›„ argumentsì—
+             * ëŒ€í•œ calculate ë¥¼ ìˆ˜í–‰í•œë‹¤.
              */
             aTemplate->rows[sStack->baseRowID].row = sItem->rowPtr;
             aTemplate->rows[sStack->baseRowID].modify++;

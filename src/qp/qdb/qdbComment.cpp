@@ -39,13 +39,13 @@ IDE_RC qdbComment::validateCommentTable(qcStatement * aStatement)
 /***********************************************************************
  *
  * Description :
- *    COMMENT ON TABLE ... IS ... ÀÇ validation ¼öÇà
+ *    COMMENT ON TABLE ... IS ... ì˜ validation ìˆ˜í–‰
  *
  * Implementation :
- *    1. Å×ÀÌºí Á¸Àç ¿©ºÎ Ã¼Å© (User Name °ËÁõ Æ÷ÇÔ)
- *    2. Å×ÀÌºíÀÇ ¼ÒÀ¯ÀÚ°¡ SYSTEM_ ÀÌ¸é comment ºÒ°¡´É
- *    3. ±ÇÇÑÀÌ ÀÖ´ÂÁö Ã¼Å©(ALTER object È¤Àº ALTER ANY TABLE privilege)
- *    4. ÁÖ¼® ±æÀÌ °Ë»ç
+ *    1. í…Œì´ë¸” ì¡´ì¬ ì—¬ë¶€ ì²´í¬ (User Name ê²€ì¦ í¬í•¨)
+ *    2. í…Œì´ë¸”ì˜ ì†Œìœ ìê°€ SYSTEM_ ì´ë©´ comment ë¶ˆê°€ëŠ¥
+ *    3. ê¶Œí•œì´ ìˆëŠ”ì§€ ì²´í¬(ALTER object í˜¹ì€ ALTER ANY TABLE privilege)
+ *    4. ì£¼ì„ ê¸¸ì´ ê²€ì‚¬
  *
  ***********************************************************************/
     qdCommentParseTree  * sParseTree  = NULL;
@@ -59,7 +59,7 @@ IDE_RC qdbComment::validateCommentTable(qcStatement * aStatement)
     UInt                  sTableType;
     UInt                  sSequenceID;
 
-    // Parameter °ËÁõ
+    // Parameter ê²€ì¦
     IDE_DASSERT( aStatement     != NULL );
 
     sParseTree = (qdCommentParseTree *)aStatement->myPlan->parseTree;
@@ -88,7 +88,7 @@ IDE_RC qdbComment::validateCommentTable(qcStatement * aStatement)
                 // found the table
                 sTableType = smiGetTableFlag(sObjectHandle) & SMI_TABLE_TYPE_MASK;
                 
-                // comment´Â »ç¿ëÀÚ°¡ »ı¼ºÇÑ table¿¡¸¸ °¡´ÉÇÏ´Ù.
+                // commentëŠ” ì‚¬ìš©ìê°€ ìƒì„±í•œ tableì—ë§Œ ê°€ëŠ¥í•˜ë‹¤.
                 if( ( sTableType != SMI_TABLE_MEMORY ) &&
                     ( sTableType != SMI_TABLE_DISK ) &&
                     ( sTableType != SMI_TABLE_VOLATILE ) )
@@ -120,13 +120,13 @@ IDE_RC qdbComment::validateCommentTable(qcStatement * aStatement)
     
     sParseTree->tableSCN    = smiGetRowSCN( sParseTree->tableHandle );
 
-    // Validation À§ÇØ IS Lock
+    // Validation ìœ„í•´ IS Lock
     IDE_TEST( qcm::lockTableForDDLValidation(aStatement,
                                              sParseTree->tableHandle,
                                              sParseTree->tableSCN)
               != IDE_SUCCESS );
 
-    // Operatable Flag °Ë»ç
+    // Operatable Flag ê²€ì‚¬
     if (QCM_IS_OPERATABLE_QP_COMMENT(
             sParseTree->tableInfo->operatableFlag )
         != ID_TRUE)
@@ -139,12 +139,12 @@ IDE_RC qdbComment::validateCommentTable(qcStatement * aStatement)
         // Nothing to do
     }
 
-    // Alter Privilege °Ë»ç
+    // Alter Privilege ê²€ì‚¬
     IDE_TEST( qdpRole::checkDDLAlterTablePriv( aStatement,
                                                sParseTree->tableInfo )
               != IDE_SUCCESS );
     
-    // Literal ±æÀÌ °Ë»ç (4k)
+    // Literal ê¸¸ì´ ê²€ì‚¬ (4k)
     IDE_TEST_RAISE( sParseTree->comment.size > QC_MAX_COMMENT_LITERAL_LEN,
                     ERR_COMMENT_TOO_LONG );
 
@@ -192,14 +192,14 @@ IDE_RC qdbComment::validateCommentColumn(qcStatement * aStatement)
 /***********************************************************************
  *
  * Description :
- *    COMMENT ON COLUMN ... IS ... ÀÇ validation ¼öÇà
+ *    COMMENT ON COLUMN ... IS ... ì˜ validation ìˆ˜í–‰
  *
  * Implementation :
- *    1. Å×ÀÌºí Á¸Àç ¿©ºÎ Ã¼Å© (User Name °ËÁõ Æ÷ÇÔ)
- *    2. Å×ÀÌºíÀÇ ¼ÒÀ¯ÀÚ°¡ SYSTEM_ ÀÌ¸é comment ºÒ°¡´É
- *    3. ±ÇÇÑÀÌ ÀÖ´ÂÁö Ã¼Å©(ALTER object È¤Àº ALTER ANY TABLE privilege)
- *    4. ÄÃ·³ Á¸Àç ¿©ºÎ Ã¼Å©
- *    5. ÁÖ¼® ±æÀÌ °Ë»ç
+ *    1. í…Œì´ë¸” ì¡´ì¬ ì—¬ë¶€ ì²´í¬ (User Name ê²€ì¦ í¬í•¨)
+ *    2. í…Œì´ë¸”ì˜ ì†Œìœ ìê°€ SYSTEM_ ì´ë©´ comment ë¶ˆê°€ëŠ¥
+ *    3. ê¶Œí•œì´ ìˆëŠ”ì§€ ì²´í¬(ALTER object í˜¹ì€ ALTER ANY TABLE privilege)
+ *    4. ì»¬ëŸ¼ ì¡´ì¬ ì—¬ë¶€ ì²´í¬
+ *    5. ì£¼ì„ ê¸¸ì´ ê²€ì‚¬
  *
  ***********************************************************************/
     qdCommentParseTree  * sParseTree;
@@ -214,7 +214,7 @@ IDE_RC qdbComment::validateCommentColumn(qcStatement * aStatement)
     UInt                  sTableType;
     UInt                  sSequenceID;
 
-    // Parameter °ËÁõ
+    // Parameter ê²€ì¦
     IDE_DASSERT( aStatement != NULL );
 
     sParseTree = (qdCommentParseTree *)aStatement->myPlan->parseTree;
@@ -243,7 +243,7 @@ IDE_RC qdbComment::validateCommentColumn(qcStatement * aStatement)
                 // found the table
                 sTableType = smiGetTableFlag(sObjectHandle) & SMI_TABLE_TYPE_MASK;
 
-                // comment´Â »ç¿ëÀÚ°¡ »ı¼ºÇÑ table¿¡¸¸ °¡´ÉÇÏ´Ù.
+                // commentëŠ” ì‚¬ìš©ìê°€ ìƒì„±í•œ tableì—ë§Œ ê°€ëŠ¥í•˜ë‹¤.
                 if( ( sTableType != SMI_TABLE_MEMORY ) &&
                     ( sTableType != SMI_TABLE_DISK ) &&
                     ( sTableType != SMI_TABLE_VOLATILE ) )
@@ -275,13 +275,13 @@ IDE_RC qdbComment::validateCommentColumn(qcStatement * aStatement)
 
     sParseTree->tableSCN    = smiGetRowSCN( sParseTree->tableHandle );
 
-    // Validation À§ÇØ IS Lock
+    // Validation ìœ„í•´ IS Lock
     IDE_TEST( qcm::lockTableForDDLValidation(aStatement,
                                              sParseTree->tableHandle,
                                              sParseTree->tableSCN)
               != IDE_SUCCESS );
 
-    // Operatable Flag °Ë»ç
+    // Operatable Flag ê²€ì‚¬
     if (QCM_IS_OPERATABLE_QP_COMMENT(
             sParseTree->tableInfo->operatableFlag )
         != ID_TRUE)
@@ -294,19 +294,19 @@ IDE_RC qdbComment::validateCommentColumn(qcStatement * aStatement)
         // Nothing to do
     }
 
-    // Alter Privilege °Ë»ç
+    // Alter Privilege ê²€ì‚¬
     IDE_TEST( qdpRole::checkDDLAlterTablePriv( aStatement,
                                                sParseTree->tableInfo )
               != IDE_SUCCESS );
 
-    // Column Á¸Àç ¿©ºÎ °Ë»ç
+    // Column ì¡´ì¬ ì—¬ë¶€ ê²€ì‚¬
     IDE_TEST( qcmCache::getColumn( aStatement,
                                    sParseTree->tableInfo,
                                    sParseTree->columnName,
                                    &sColumn )
               != IDE_SUCCESS );
 
-    // Literal ±æÀÌ °Ë»ç (4000)
+    // Literal ê¸¸ì´ ê²€ì‚¬ (4000)
     IDE_TEST_RAISE( sParseTree->comment.size > QC_MAX_COMMENT_LITERAL_LEN,
                     ERR_COMMENT_TOO_LONG );
 
@@ -354,13 +354,13 @@ IDE_RC qdbComment::executeCommentTable(qcStatement * aStatement)
 /***********************************************************************
  *
  * Description :
- *    COMMENT ON TABLE ... IS ... ¼öÇà
+ *    COMMENT ON TABLE ... IS ... ìˆ˜í–‰
  *
  * Implementation :
- *    1. Å×ÀÌºí¿¡ Lock È¹µæ (IS)
- *    2. Comment°¡ ÀÌ¹Ì Á¸ÀçÇÏ´ÂÁö Ã¼Å©
- *    3.   -> Á¸ÀçÇÏ¸é Update, ±×·¸Áö ¾ÊÀ¸¸é Insert
- *    4. ¸ŞÅ¸¿¡ ¹İ¿µ
+ *    1. í…Œì´ë¸”ì— Lock íšë“ (IS)
+ *    2. Commentê°€ ì´ë¯¸ ì¡´ì¬í•˜ëŠ”ì§€ ì²´í¬
+ *    3.   -> ì¡´ì¬í•˜ë©´ Update, ê·¸ë ‡ì§€ ì•Šìœ¼ë©´ Insert
+ *    4. ë©”íƒ€ì— ë°˜ì˜
  *
  ***********************************************************************/
     qdCommentParseTree  * sParseTree   = NULL;
@@ -369,19 +369,19 @@ IDE_RC qdbComment::executeCommentTable(qcStatement * aStatement)
     idBool                sExist       = ID_FALSE;
     vSLong                sRowCnt      = 0;    
 
-    // Parameter °ËÁõ
+    // Parameter ê²€ì¦
     IDE_DASSERT( aStatement     != NULL );
 
     sParseTree = (qdCommentParseTree *)aStatement->myPlan->parseTree;
 
-    // Table¿¡ Lock È¹µæ (IS)
+    // Tableì— Lock íšë“ (IS)
     IDE_TEST( qcm::validateAndLockTable( aStatement,
                                          sParseTree->tableHandle,
                                          sParseTree->tableSCN,
                                          SMI_TABLE_LOCK_IS )
               != IDE_SUCCESS );    
 
-    // Sql Query °ø°£ ÇÒ´ç
+    // Sql Query ê³µê°„ í• ë‹¹
     IDU_LIMITPOINT("qdbComment::executeCommentTable::malloc1");
     IDE_TEST( STRUCT_ALLOC_WITH_SIZE( aStatement->qmxMem,
                                       SChar,
@@ -389,7 +389,7 @@ IDE_RC qdbComment::executeCommentTable(qcStatement * aStatement)
                                       &sSqlStr )
               != IDE_SUCCESS );
 
-    // Comment °ø°£ ÇÒ´ç
+    // Comment ê³µê°„ í• ë‹¹
     IDU_LIMITPOINT("qdbComment::executeCommentTable::malloc2");
     IDE_TEST( STRUCT_ALLOC_WITH_SIZE( aStatement->qmxMem,
                                       SChar,
@@ -397,10 +397,10 @@ IDE_RC qdbComment::executeCommentTable(qcStatement * aStatement)
                                       &sCommentStr )
               != IDE_SUCCESS );
 
-    // Comment ³»¿ë º¹»ç
+    // Comment ë‚´ìš© ë³µì‚¬
     QC_STR_COPY( sCommentStr, sParseTree->comment );
 
-    // Comment°¡ ÀÌ¹Ì Á¸ÀçÇÏ´ÂÁö Ã¼Å©
+    // Commentê°€ ì´ë¯¸ ì¡´ì¬í•˜ëŠ”ì§€ ì²´í¬
     IDE_TEST( existCommentTable( aStatement,
                                  sParseTree->tableInfo->tableOwnerName,
                                  sParseTree->tableInfo->name,
@@ -409,7 +409,7 @@ IDE_RC qdbComment::executeCommentTable(qcStatement * aStatement)
 
     if (sExist == ID_TRUE)
     {
-        // ÀÌ¹Ì Á¸ÀçÇÏ¸é Update
+        // ì´ë¯¸ ì¡´ì¬í•˜ë©´ Update
         idlOS::snprintf( sSqlStr, QD_MAX_SQL_LENGTH,
                          "UPDATE SYS_COMMENTS_ "
                          "SET COMMENTS = VARCHAR'%s' "
@@ -422,7 +422,7 @@ IDE_RC qdbComment::executeCommentTable(qcStatement * aStatement)
     }
     else
     {
-        // ¾ÆÁ÷ Á¸ÀçÇÏÁö ¾ÊÀ¸¸é Insert
+        // ì•„ì§ ì¡´ì¬í•˜ì§€ ì•Šìœ¼ë©´ Insert
         idlOS::snprintf( sSqlStr, QD_MAX_SQL_LENGTH,
                          "INSERT INTO SYS_COMMENTS_ "
                          "( USER_NAME, TABLE_NAME, COLUMN_NAME, COMMENTS ) "
@@ -432,7 +432,7 @@ IDE_RC qdbComment::executeCommentTable(qcStatement * aStatement)
                          sCommentStr );
     }
 
-    // ¸ŞÅ¸¿¡ ¹İ¿µ
+    // ë©”íƒ€ì— ë°˜ì˜
     IDE_TEST( qcg::runDMLforDDL( QC_SMI_STMT( aStatement ),
                                  sSqlStr,
                                  &sRowCnt )
@@ -457,13 +457,13 @@ IDE_RC qdbComment::executeCommentColumn(qcStatement * aStatement)
 /***********************************************************************
  *
  * Description :
- *    COMMENT ON COLUMN ... IS ... ¼öÇà
+ *    COMMENT ON COLUMN ... IS ... ìˆ˜í–‰
  *
  * Implementation :
- *    1. Å×ÀÌºí¿¡ Lock È¹µæ (IS)
- *    2. Comment°¡ ÀÌ¹Ì Á¸ÀçÇÏ´ÂÁö Ã¼Å©
- *    3.   -> Á¸ÀçÇÏ¸é Update, ±×·¸Áö ¾ÊÀ¸¸é Insert
- *    4. ¸ŞÅ¸¿¡ ¹İ¿µ
+ *    1. í…Œì´ë¸”ì— Lock íšë“ (IS)
+ *    2. Commentê°€ ì´ë¯¸ ì¡´ì¬í•˜ëŠ”ì§€ ì²´í¬
+ *    3.   -> ì¡´ì¬í•˜ë©´ Update, ê·¸ë ‡ì§€ ì•Šìœ¼ë©´ Insert
+ *    4. ë©”íƒ€ì— ë°˜ì˜
  *
  ***********************************************************************/
     qdCommentParseTree  * sParseTree   = NULL;
@@ -473,19 +473,19 @@ IDE_RC qdbComment::executeCommentColumn(qcStatement * aStatement)
     idBool                sExist       = ID_FALSE;
     vSLong                sRowCnt      = 0;
 
-    // Parameter °ËÁõ
+    // Parameter ê²€ì¦
     IDE_DASSERT( aStatement     != NULL );
 
     sParseTree = (qdCommentParseTree *)aStatement->myPlan->parseTree;
 
-    // Table¿¡ Lock È¹µæ (IS)
+    // Tableì— Lock íšë“ (IS)
     IDE_TEST( qcm::validateAndLockTable( aStatement,
                                          sParseTree->tableHandle,
                                          sParseTree->tableSCN,
                                          SMI_TABLE_LOCK_IS )
               != IDE_SUCCESS );
     
-    // Sql Query °ø°£ ÇÒ´ç
+    // Sql Query ê³µê°„ í• ë‹¹
     IDU_LIMITPOINT("qdbComment::executeCommentColumn::malloc1");
     IDE_TEST( STRUCT_ALLOC_WITH_SIZE( aStatement->qmxMem,
                                       SChar,
@@ -493,7 +493,7 @@ IDE_RC qdbComment::executeCommentColumn(qcStatement * aStatement)
                                       &sSqlStr )
               != IDE_SUCCESS );
 
-    // Comment °ø°£ ÇÒ´ç
+    // Comment ê³µê°„ í• ë‹¹
     IDU_LIMITPOINT("qdbComment::executeCommentColumn::malloc2");
     IDE_TEST( STRUCT_ALLOC_WITH_SIZE( aStatement->qmxMem,
                                       SChar,
@@ -501,13 +501,13 @@ IDE_RC qdbComment::executeCommentColumn(qcStatement * aStatement)
                                       &sCommentStr )
               != IDE_SUCCESS );
 
-    // Comment ³»¿ë º¹»ç
+    // Comment ë‚´ìš© ë³µì‚¬
     QC_STR_COPY( sCommentStr, sParseTree->comment );
 
-    // Column ³»¿ë º¹»ç
+    // Column ë‚´ìš© ë³µì‚¬
     QC_STR_COPY( sColumnStr, sParseTree->columnName );
 
-    // Comment°¡ ÀÌ¹Ì Á¸ÀçÇÏ´ÂÁö Ã¼Å©
+    // Commentê°€ ì´ë¯¸ ì¡´ì¬í•˜ëŠ”ì§€ ì²´í¬
     IDE_TEST( existCommentColumn( aStatement,
                                   sParseTree->tableInfo->tableOwnerName,
                                   sParseTree->tableInfo->name,
@@ -517,7 +517,7 @@ IDE_RC qdbComment::executeCommentColumn(qcStatement * aStatement)
 
     if (sExist == ID_TRUE)
     {
-        // ÀÌ¹Ì Á¸ÀçÇÏ¸é Update
+        // ì´ë¯¸ ì¡´ì¬í•˜ë©´ Update
         idlOS::snprintf( sSqlStr, QD_MAX_SQL_LENGTH,
                          "UPDATE SYS_COMMENTS_ "
                          "SET COMMENTS = VARCHAR'%s' "
@@ -531,7 +531,7 @@ IDE_RC qdbComment::executeCommentColumn(qcStatement * aStatement)
     }
     else
     {
-        // ¾ÆÁ÷ Á¸ÀçÇÏÁö ¾ÊÀ¸¸é Insert
+        // ì•„ì§ ì¡´ì¬í•˜ì§€ ì•Šìœ¼ë©´ Insert
         idlOS::snprintf( sSqlStr, QD_MAX_SQL_LENGTH,
                          "INSERT INTO SYS_COMMENTS_ "
                          "( USER_NAME, TABLE_NAME, COLUMN_NAME, COMMENTS ) "
@@ -542,7 +542,7 @@ IDE_RC qdbComment::executeCommentColumn(qcStatement * aStatement)
                          sCommentStr );
     }
 
-    // ¸ŞÅ¸¿¡ ¹İ¿µ
+    // ë©”íƒ€ì— ë°˜ì˜
     IDE_TEST( qcg::runDMLforDDL( QC_SMI_STMT( aStatement ),
                                  sSqlStr,
                                  &sRowCnt )
@@ -569,17 +569,17 @@ IDE_RC qdbComment::updateCommentTable( qcStatement  * aStatement,
 /***********************************************************************
  *
  * Description :
- *    Comment ±¸¹®ÀÌ ¾Æ´Ñ ´Ù¸¥ ±¸¹®¿¡ ÀÇÇØ Table(View)ÀÇ ÀÌ¸§ÀÌ ¹Ù²ğ°æ¿ì
- *    Comment ¸ŞÅ¸ÀÇ ÇØ´ç Object ÀÌ¸§À» º¯°æ
+ *    Comment êµ¬ë¬¸ì´ ì•„ë‹Œ ë‹¤ë¥¸ êµ¬ë¬¸ì— ì˜í•´ Table(View)ì˜ ì´ë¦„ì´ ë°”ë€”ê²½ìš°
+ *    Comment ë©”íƒ€ì˜ í•´ë‹¹ Object ì´ë¦„ì„ ë³€ê²½
  *
  * Implementation :
- *    1. CommentÀÇ Table ÀÌ¸§À» º¯°æ
+ *    1. Commentì˜ Table ì´ë¦„ì„ ë³€ê²½
  *
  ***********************************************************************/
     vSLong              sRowCnt        = 0;
     SChar             * sSqlStr        = NULL;
 
-    // Parameter °ËÁõ
+    // Parameter ê²€ì¦
     IDE_DASSERT( aStatement     != NULL );
     IDE_DASSERT( aUserName      != NULL );
     IDE_DASSERT( aOldTableName  != NULL );
@@ -589,7 +589,7 @@ IDE_RC qdbComment::updateCommentTable( qcStatement  * aStatement,
     IDE_DASSERT( *aOldTableName != '\0' );
     IDE_DASSERT( *aNewTableName != '\0' );
 
-    // ¸ŞÅ¸ º¯°æ
+    // ë©”íƒ€ ë³€ê²½
     IDU_LIMITPOINT("qdbComment::updateCommentTable::malloc");
     IDE_TEST( STRUCT_ALLOC_WITH_SIZE( aStatement->qmxMem,
                                       SChar,
@@ -597,7 +597,7 @@ IDE_RC qdbComment::updateCommentTable( qcStatement  * aStatement,
                                       &sSqlStr )
               != IDE_SUCCESS );
 
-    // Table Comment¿Í Column Comment ¸ğµÎ ¼öÁ¤ÇÏ´Â Äõ¸®
+    // Table Commentì™€ Column Comment ëª¨ë‘ ìˆ˜ì •í•˜ëŠ” ì¿¼ë¦¬
     idlOS::snprintf( sSqlStr, QD_MAX_SQL_LENGTH,
                      "UPDATE SYS_COMMENTS_ "
                      "SET TABLE_NAME = VARCHAR'%s' "
@@ -612,10 +612,10 @@ IDE_RC qdbComment::updateCommentTable( qcStatement  * aStatement,
                                  &sRowCnt )
               != IDE_SUCCESS );
 
-    // Table Comment, Column Comment »èÁ¦ ½Ã´Â
-    // 0°ÇÀÏ¼öµµ ÀÖ°í (Comment °¡ ¾ÆÁ÷ ´Ş¸®±â Àü)
-    // ¿©·¯ °ÇÀÏ¼öµµ ÀÖ´Ù. (Table Comment¿Í Column Comment°¡ ¿©·¯ °Ç)
-    // ±×·¡¼­ sRowCnt´Â °Ë»çÇÏÁö ¾Ê´Â´Ù.
+    // Table Comment, Column Comment ì‚­ì œ ì‹œëŠ”
+    // 0ê±´ì¼ìˆ˜ë„ ìˆê³  (Comment ê°€ ì•„ì§ ë‹¬ë¦¬ê¸° ì „)
+    // ì—¬ëŸ¬ ê±´ì¼ìˆ˜ë„ ìˆë‹¤. (Table Commentì™€ Column Commentê°€ ì—¬ëŸ¬ ê±´)
+    // ê·¸ë˜ì„œ sRowCntëŠ” ê²€ì‚¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
 
     return IDE_SUCCESS;
 
@@ -633,17 +633,17 @@ IDE_RC qdbComment::updateCommentColumn( qcStatement  * aStatement,
 /***********************************************************************
  *
  * Description :
- *    Comment ±¸¹®ÀÌ ¾Æ´Ñ ´Ù¸¥ ±¸¹®¿¡ ÀÇÇØ ColumnÀÇ ÀÌ¸§ÀÌ ¹Ù²ğ°æ¿ì
- *    Comment ¸ŞÅ¸ÀÇ ÇØ´ç Object ÀÌ¸§À» º¯°æ
+ *    Comment êµ¬ë¬¸ì´ ì•„ë‹Œ ë‹¤ë¥¸ êµ¬ë¬¸ì— ì˜í•´ Columnì˜ ì´ë¦„ì´ ë°”ë€”ê²½ìš°
+ *    Comment ë©”íƒ€ì˜ í•´ë‹¹ Object ì´ë¦„ì„ ë³€ê²½
  *
  * Implementation :
- *    1. CommentÀÇ Column ÀÌ¸§À» º¯°æ
+ *    1. Commentì˜ Column ì´ë¦„ì„ ë³€ê²½
  *
  ***********************************************************************/
     vSLong              sRowCnt        = 0;
     SChar             * sSqlStr        = NULL;
 
-    // Parameter °ËÁõ
+    // Parameter ê²€ì¦
     IDE_DASSERT( aStatement      != NULL );
     IDE_DASSERT( aUserName       != NULL );
     IDE_DASSERT( aTableName      != NULL );
@@ -655,7 +655,7 @@ IDE_RC qdbComment::updateCommentColumn( qcStatement  * aStatement,
     IDE_DASSERT( *aNewColumnName != '\0' );
     IDE_DASSERT( *aNewColumnName != '\0' );
 
-    // ¸ŞÅ¸ º¯°æ
+    // ë©”íƒ€ ë³€ê²½
     IDU_LIMITPOINT("qdbComment::updateCommentColumn::malloc");
     IDE_TEST( STRUCT_ALLOC_WITH_SIZE( aStatement->qmxMem,
                                       SChar,
@@ -663,7 +663,7 @@ IDE_RC qdbComment::updateCommentColumn( qcStatement  * aStatement,
                                       &sSqlStr )
               != IDE_SUCCESS );
 
-    // Column Comment ¼öÁ¤ÇÏ´Â Äõ¸®
+    // Column Comment ìˆ˜ì •í•˜ëŠ” ì¿¼ë¦¬
     idlOS::snprintf( sSqlStr, QD_MAX_SQL_LENGTH,
                      "UPDATE SYS_COMMENTS_ "
                      "SET COLUMN_NAME = VARCHAR'%s' "
@@ -680,7 +680,7 @@ IDE_RC qdbComment::updateCommentColumn( qcStatement  * aStatement,
                                  &sRowCnt )
               != IDE_SUCCESS );
 
-    // »èÁ¦µÈ Column Comment°¡ 1°Çº¸´Ù ¸¹´Ù¸é ¸ŞÅ¸ ºñÁ¤»óÀÓ
+    // ì‚­ì œëœ Column Commentê°€ 1ê±´ë³´ë‹¤ ë§ë‹¤ë©´ ë©”íƒ€ ë¹„ì •ìƒì„
     IDE_TEST_RAISE( sRowCnt > 1, ERR_META_CRASH );
 
     return IDE_SUCCESS;
@@ -702,16 +702,16 @@ IDE_RC qdbComment::deleteCommentTable( qcStatement  * aStatement,
 /***********************************************************************
  *
  * Description :
- *    TableÀÌ »èÁ¦ µÉ °æ¿ì ´ëÀÀÇÏ´Â Comment¸¦ »èÁ¦
+ *    Tableì´ ì‚­ì œ ë  ê²½ìš° ëŒ€ì‘í•˜ëŠ” Commentë¥¼ ì‚­ì œ
  *
  * Implementation :
- *    1. ÇØ´ç Object¿¡ ¼ÓÇÏ´Â Table Comment, Column Comment »èÁ¦
+ *    1. í•´ë‹¹ Objectì— ì†í•˜ëŠ” Table Comment, Column Comment ì‚­ì œ
  *
  ***********************************************************************/
     vSLong              sRowCnt        = 0;
     SChar             * sSqlStr        = NULL;
     
-    // Parameter °ËÁõ
+    // Parameter ê²€ì¦
     IDE_DASSERT( aStatement     != NULL );
     IDE_DASSERT( aUserName      != NULL );
     IDE_DASSERT( aTableName     != NULL );
@@ -719,7 +719,7 @@ IDE_RC qdbComment::deleteCommentTable( qcStatement  * aStatement,
     IDE_DASSERT( *aUserName     != '\0' );
     IDE_DASSERT( *aTableName    != '\0' );
 
-    // ¸ŞÅ¸ º¯°æ
+    // ë©”íƒ€ ë³€ê²½
     IDU_LIMITPOINT("qdbComment::deleteCommentTable::malloc");
     IDE_TEST( STRUCT_ALLOC_WITH_SIZE( aStatement->qmxMem,
                                       SChar,
@@ -727,7 +727,7 @@ IDE_RC qdbComment::deleteCommentTable( qcStatement  * aStatement,
                                       &sSqlStr )
               != IDE_SUCCESS );
 
-    // Table Comment, Column Comment »èÁ¦ÇÏ´Â Äõ¸®
+    // Table Comment, Column Comment ì‚­ì œí•˜ëŠ” ì¿¼ë¦¬
     idlOS::snprintf( sSqlStr, QD_MAX_SQL_LENGTH,
                      "DELETE FROM SYS_COMMENTS_ "
                      "WHERE USER_NAME = VARCHAR'%s' "
@@ -740,10 +740,10 @@ IDE_RC qdbComment::deleteCommentTable( qcStatement  * aStatement,
                                  &sRowCnt )
               != IDE_SUCCESS );
 
-    // Table Comment, Column Comment »èÁ¦ ½Ã´Â
-    // 0°ÇÀÏ¼öµµ ÀÖ°í (Comment °¡ ¾ÆÁ÷ ´Ş¸®±â Àü)
-    // ¿©·¯ °ÇÀÏ¼öµµ ÀÖ´Ù. (Table Comment¿Í Column Comment°¡ ¿©·¯ °Ç)
-    // ±×·¡¼­ sRowCnt´Â °Ë»çÇÏÁö ¾Ê´Â´Ù.
+    // Table Comment, Column Comment ì‚­ì œ ì‹œëŠ”
+    // 0ê±´ì¼ìˆ˜ë„ ìˆê³  (Comment ê°€ ì•„ì§ ë‹¬ë¦¬ê¸° ì „)
+    // ì—¬ëŸ¬ ê±´ì¼ìˆ˜ë„ ìˆë‹¤. (Table Commentì™€ Column Commentê°€ ì—¬ëŸ¬ ê±´)
+    // ê·¸ë˜ì„œ sRowCntëŠ” ê²€ì‚¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
 
     return IDE_SUCCESS;
 
@@ -761,16 +761,16 @@ IDE_RC qdbComment::deleteCommentColumn( qcStatement  * aStatement,
 /***********************************************************************
  *
  * Description :
- *    ColumnÀÌ »èÁ¦ µÉ °æ¿ì ´ëÀÀÇÏ´Â Comment¸¦ »èÁ¦
+ *    Columnì´ ì‚­ì œ ë  ê²½ìš° ëŒ€ì‘í•˜ëŠ” Commentë¥¼ ì‚­ì œ
  *
  * Implementation :
- *    1. ÇØ´ç Column¿¡ ¼ÓÇÏ´Â Comment »èÁ¦
+ *    1. í•´ë‹¹ Columnì— ì†í•˜ëŠ” Comment ì‚­ì œ
  *
  ***********************************************************************/
     vSLong              sRowCnt        = 0;
     SChar             * sSqlStr        = NULL;
 
-    // Parameter °ËÁõ
+    // Parameter ê²€ì¦
     IDE_DASSERT( aStatement     != NULL );
     IDE_DASSERT( aUserName      != NULL );
     IDE_DASSERT( aTableName     != NULL );
@@ -780,7 +780,7 @@ IDE_RC qdbComment::deleteCommentColumn( qcStatement  * aStatement,
     IDE_DASSERT( *aTableName    != '\0' );
     IDE_DASSERT( *aColumnName   != '\0' );
 
-    // ¸ŞÅ¸ º¯°æ
+    // ë©”íƒ€ ë³€ê²½
     IDU_LIMITPOINT("qdbComment::deleteCommentColumn::malloc");
     IDE_TEST( STRUCT_ALLOC_WITH_SIZE( aStatement->qmxMem,
                                       SChar,
@@ -788,7 +788,7 @@ IDE_RC qdbComment::deleteCommentColumn( qcStatement  * aStatement,
                                       &sSqlStr )
               != IDE_SUCCESS );
 
-    // Column Comment »èÁ¦ÇÏ´Â Äõ¸®
+    // Column Comment ì‚­ì œí•˜ëŠ” ì¿¼ë¦¬
     idlOS::snprintf( sSqlStr, QD_MAX_SQL_LENGTH,
                      "DELETE FROM SYS_COMMENTS_ "
                      "WHERE USER_NAME = VARCHAR'%s' "
@@ -803,7 +803,7 @@ IDE_RC qdbComment::deleteCommentColumn( qcStatement  * aStatement,
                                  &sRowCnt )
               != IDE_SUCCESS );
 
-    // »èÁ¦µÈ Column Comment°¡ 1°Çº¸´Ù ¸¹´Ù¸é ¸ŞÅ¸ ºñÁ¤»óÀÓ
+    // ì‚­ì œëœ Column Commentê°€ 1ê±´ë³´ë‹¤ ë§ë‹¤ë©´ ë©”íƒ€ ë¹„ì •ìƒì„
     IDE_TEST_RAISE( sRowCnt > 1, ERR_META_CRASH );
 
     return IDE_SUCCESS;
@@ -856,7 +856,7 @@ IDE_RC qdbComment::existCommentTable( qcStatement    * aStatement,
     IDE_DASSERT( *aUserName  != '\0' );
     IDE_DASSERT( *aTableName != '\0' );
 
-    // ÃÊ±âÈ­
+    // ì´ˆê¸°í™”
     
     sUserName   = (mtdCharType *) &sUserNameBuffer;
     sTableName  = (mtdCharType *) &sTableNameBuffer;
@@ -870,7 +870,7 @@ IDE_RC qdbComment::existCommentTable( qcStatement    * aStatement,
                           aTableName,
                           idlOS::strlen(aTableName) );
 
-    // °Ë»ö Á¶°Ç
+    // ê²€ìƒ‰ ì¡°ê±´
     qtc::initializeMetaRange( &sRange,
                               MTD_COMPARE_MTDVAL_MTDVAL );  // Meta is memory table
 
@@ -917,7 +917,7 @@ IDE_RC qdbComment::existCommentTable( qcStatement    * aStatement,
 
     qtc::fixMetaRange( &sRange );
 
-    // Á¶È¸
+    // ì¡°íšŒ
     IDE_TEST( qcm::selectCount( QC_SMI_STMT(aStatement),
                                 gQcmComments,
                                 &sRowCount,
@@ -986,7 +986,7 @@ IDE_RC qdbComment::existCommentColumn( qcStatement    * aStatement,
     IDE_DASSERT( *aTableName  != '\0' );
     IDE_DASSERT( *aColumnName != '\0' );
 
-    // ÃÊ±âÈ­
+    // ì´ˆê¸°í™”
     
     sUserName   = (mtdCharType *) &sUserNameBuffer;
     sTableName  = (mtdCharType *) &sTableNameBuffer;
@@ -1005,7 +1005,7 @@ IDE_RC qdbComment::existCommentColumn( qcStatement    * aStatement,
                           aColumnName,
                           idlOS::strlen(aColumnName) );
 
-    // °Ë»ö Á¶°Ç
+    // ê²€ìƒ‰ ì¡°ê±´
     qtc::initializeMetaRange( &sRange,
                               MTD_COMPARE_MTDVAL_MTDVAL );  // Meta is memory table
 
@@ -1053,7 +1053,7 @@ IDE_RC qdbComment::existCommentColumn( qcStatement    * aStatement,
 
     qtc::fixMetaRange( &sRange );
 
-    // Á¶È¸
+    // ì¡°íšŒ
     IDE_TEST( qcm::selectCount( QC_SMI_STMT(aStatement),
                                 gQcmComments,
                                 &sRowCount,
@@ -1086,13 +1086,13 @@ IDE_RC qdbComment::copyCommentsMeta( qcStatement  * aStatement,
 /***********************************************************************
  *
  * Description :
- *      Comment¸¦ º¹»çÇÑ´Ù. (Meta Table)
+ *      Commentë¥¼ ë³µì‚¬í•œë‹¤. (Meta Table)
  *          - SYS_COMMENTS_
- *              - TABLE_NAMEÀ» Target Table NameÀ¸·Î ÁöÁ¤ÇÑ´Ù.
- *              - Hidden ColumnÀÌ¸é Function-based IndexÀÇ ColumnÀÌ¹Ç·Î, Hidden Column NameÀ» º¯°æÇÑ´Ù.
- *                  - Hidden Column Name¿¡ Prefix¸¦ ºÙÀÎ´Ù.
+ *              - TABLE_NAMEì„ Target Table Nameìœ¼ë¡œ ì§€ì •í•œë‹¤.
+ *              - Hidden Columnì´ë©´ Function-based Indexì˜ Columnì´ë¯€ë¡œ, Hidden Column Nameì„ ë³€ê²½í•œë‹¤.
+ *                  - Hidden Column Nameì— Prefixë¥¼ ë¶™ì¸ë‹¤.
  *                      - Hidden Column Name = Index Name + $ + IDX + Number
- *              - ³ª¸ÓÁö´Â ±×´ë·Î º¹»çÇÑ´Ù.
+ *              - ë‚˜ë¨¸ì§€ëŠ” ê·¸ëŒ€ë¡œ ë³µì‚¬í•œë‹¤.
  *
  * Implementation :
  *
@@ -1138,7 +1138,7 @@ IDE_RC qdbComment::copyCommentsMeta( qcStatement  * aStatement,
           ( sSourceColumn != NULL ) && ( sTargetColumn != NULL );
           sSourceColumn = sSourceColumn->next, sTargetColumn = sTargetColumn->next )
     {
-        // Target Column¿¡ Hidden Column Prefix¸¦ ÀÌ¹Ì Àû¿ëÇß´Ù.
+        // Target Columnì— Hidden Column Prefixë¥¼ ì´ë¯¸ ì ìš©í–ˆë‹¤.
         idlOS::snprintf( sSqlStr,
                          QD_MAX_SQL_LENGTH,
                          "INSERT INTO SYS_COMMENTS_ SELECT "

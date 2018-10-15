@@ -27,12 +27,12 @@
 # include <smlDef.h>
 # include <smrDef.h>
 
-/* PROJ-1442 Replication Online Áß DDL Çã¿ë
- * Table Meta Log RecordÀÇ Body¿¡ ÇØ´çÇÏ´Â ºÎºĞ
+/* PROJ-1442 Replication Online ì¤‘ DDL í—ˆìš©
+ * Table Meta Log Recordì˜ Bodyì— í•´ë‹¹í•˜ëŠ” ë¶€ë¶„
  */
 typedef smrTableMeta smiTableMeta;
 
-//mtcDef.h ¿¡ MTC_POLICY_NAME_SIZE¿Í µ¿ÀÏ ÇØ¾ß ÇÕ´Ï´Ù.
+//mtcDef.h ì— MTC_POLICY_NAME_SIZEì™€ ë™ì¼ í•´ì•¼ í•©ë‹ˆë‹¤.
 #define SM_POLICY_NAME_SIZE (16 - 1)
 
 typedef struct smiColumnMeta
@@ -47,9 +47,9 @@ typedef struct smiColumnMeta
     SInt        mMTPrecision;
     SInt        mMTScale;
 
-    /* BUG-26891 : º¸¾È ÄÃ·³ Á¤º¸  */
-    SInt        mMTEncPrecision;                      // ¾ÏÈ£ µ¥ÀÌÅ¸ Å¸ÀÔÀÇ precision
-    SChar       mMTPolicy[SM_POLICY_NAME_SIZE + 1];    // º¸¾È Á¤Ã¥ÀÇ ÀÌ¸§ (Null Terminated String)
+    /* BUG-26891 : ë³´ì•ˆ ì»¬ëŸ¼ ì •ë³´  */
+    SInt        mMTEncPrecision;                      // ì•”í˜¸ ë°ì´íƒ€ íƒ€ì…ì˜ precision
+    SChar       mMTPolicy[SM_POLICY_NAME_SIZE + 1];    // ë³´ì•ˆ ì •ì±…ì˜ ì´ë¦„ (Null Terminated String)
 
     /* SM Column */
     UInt        mSMID;
@@ -121,7 +121,7 @@ public:
                                UInt                  aParallelDegree,
                                const void**          aTable );
 
-    /* MEMORY/DISK TableÀ» Drop ÇÑ´Ù */
+    /* MEMORY/DISK Tableì„ Drop í•œë‹¤ */
     static IDE_RC dropTable( smiStatement      * aStatement,
                              const void        * aTable,
                              smiTBSLockValidType aTBSLvType );
@@ -183,17 +183,17 @@ public:
                               const void          * aTable,
                               smiTBSLockValidType   aTBSLvType );
 
-    // MEMORY TABLE¿¡ FREE PAGEµéÀ» DB¿¡ ¹İ³³ÇÑ´Ù.
+    // MEMORY TABLEì— FREE PAGEë“¤ì„ DBì— ë°˜ë‚©í•œë‹¤.
     static IDE_RC compactTable( smiStatement * aStatement,
                                 const void   * aTable,
                                 ULong          aPages );
 
-    // DISK TABLEÀÇ Garbage VersionÀ» Á¦°ÅÇÑ´Ù.
+    // DISK TABLEì˜ Garbage Versionì„ ì œê±°í•œë‹¤.
     static IDE_RC agingTable( smiStatement * aStatement,
                               const void   * aTable );
 
     // PROJ-1704 MVCC Renewal
-    // DISK INDEXÀÇ Garbage VersionÀ» Á¦°ÅÇÑ´Ù.
+    // DISK INDEXì˜ Garbage Versionì„ ì œê±°í•œë‹¤.
     static IDE_RC agingIndex( smiStatement * aStatement,
                               const void   * aIndex );
 
@@ -209,7 +209,7 @@ public:
     static IDE_RC lockTable( smiTrans*   aTrans,
                              const void* aTable );
 
-    // BUG-17477 : rp¿¡¼­ ÇÊ¿äÇÑ ÇÔ¼ö
+    // BUG-17477 : rpì—ì„œ í•„ìš”í•œ í•¨ìˆ˜
     static IDE_RC lockTable( SInt          aSlot,
                              smlLockItem  *aLockItem,
                              smlLockMode   aLockMode,
@@ -272,7 +272,7 @@ public:
                                  idvSQL       * aStatistics = NULL);
     
     /* PROJ-1594 Volatile TBS */
-    /* Volatile TableÀ» backupÇÑ´Ù. */
+    /* Volatile Tableì„ backupí•œë‹¤. */
     static IDE_RC backupVolatileTable(smiStatement * aStatement,
                                       const void   * aTable,
                                       SChar        * aBackupFileName,
@@ -285,7 +285,7 @@ public:
                                            const void   * aDstTable,
                                            idvSQL       * aStatistics );
 
-    /* Memory table¿¡ ´ëÇØ restore ÀÛ¾÷À» ¼öÇàÇÑ´Ù. */
+    /* Memory tableì— ëŒ€í•´ restore ì‘ì—…ì„ ìˆ˜í–‰í•œë‹¤. */
     static IDE_RC restoreMemTable(void                  * aTrans,
                                   const void            * aSrcTable,
                                   const void            * aDstTable,
@@ -296,7 +296,7 @@ public:
                                   idBool                  aUndo,
                                   smiAlterTableCallBack * aCallBack );
 
-    /* Volatile table¿¡ ´ëÇØ restore ÀÛ¾÷À» ¼öÇàÇÑ´Ù. */
+    /* Volatile tableì— ëŒ€í•´ restore ì‘ì—…ì„ ìˆ˜í–‰í•œë‹¤. */
     static IDE_RC restoreVolTable(void                  * aTrans,
                                   const void            * aSrcTable,
                                   const void            * aDstTable,
@@ -432,13 +432,13 @@ public:
                                    ULong                /* aDirectKeyMaxSize */,
                                    const void**         aIndex);
     
-    // TableÀÇ Flag¸¦ º¯°æÇÑ´Ù.
+    // Tableì˜ Flagë¥¼ ë³€ê²½í•œë‹¤.
     static IDE_RC alterTableFlag( smiStatement *aStatement,
                                   const void   *aTable,
                                   UInt          aFlagMask,
                                   UInt          aFlagValue );
 
-    // Table Meta Log Record¸¦ ±â·ÏÇÑ´Ù.
+    // Table Meta Log Recordë¥¼ ê¸°ë¡í•œë‹¤.
     static IDE_RC writeTableMetaLog(smiTrans     * aTrans,
                                     smiTableMeta * aTableMeta,
                                     const void   * aLogBody,

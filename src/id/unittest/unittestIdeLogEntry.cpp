@@ -191,7 +191,7 @@ void unittestIdeTestNotLogging()
     ACT_CHECK( ACP_RC_IS_SUCCESS(sRC) );
     ACT_ASSERT( beginsWith( sLine, "* ALTIBASE LOGFILE-1 (" ) );
 
-    /* log entry °¡ ±â·ÏµÇÁö ¾Ê¾ÒÀ¸¸é timestamp°¡ ¾ø¾î¾ß ÇÑ´Ù */
+    /* log entry ê°€ ê¸°ë¡ë˜ì§€ ì•Šì•˜ìœ¼ë©´ timestampê°€ ì—†ì–´ì•¼ í•œë‹¤ */
     sRC = acpStdGetCString(&sFile, sLine, 256);
     ACT_CHECK( ACP_RC_IS_SUCCESS(sRC) );
     ACT_ASSERT( !isValidTimestampFormat( sLine ) );

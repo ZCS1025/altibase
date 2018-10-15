@@ -22,8 +22,8 @@
  * FILE DESCRIPTION : smiDataPort.cpp                        *
  * -----------------------------------------------------------*
  *
- * Proj-2059 DB Upgrade ±â´É
- * Server Áß½ÉÀûÀ¸·Î µ¥ÀÌÅÍ¸¦ °¡Á®¿À°í ³Ö´Â ±â´É
+ * Proj-2059 DB Upgrade ê¸°ëŠ¥
+ * Server ì¤‘ì‹¬ì ìœ¼ë¡œ ë°ì´í„°ë¥¼ ê°€ì ¸ì˜¤ê³  ë„£ëŠ” ê¸°ëŠ¥
  **************************************************************/
 
 #include <idl.h>
@@ -136,8 +136,8 @@ IDE_RC gSmiDataPortHeaderValidation( void * aDesc,
 
     IDE_EXCEPTION( ERR_ABORT_DATA_PORT_INTERNAL_ERROR );
     {
-        // Memory ÇÒ´ç ÈÄ, ÇØ´ç ¸Ş¸ğ¸®¿¡ º» Header¸¦ DumpÇØµÓ´Ï´Ù
-        // ±×¸®°í DumpµÈ Header¸¦ TRC·Î±×¿¡ Ãâ·ÂÇÕ´Ï´Ù.
+        // Memory í• ë‹¹ í›„, í•´ë‹¹ ë©”ëª¨ë¦¬ì— ë³¸ Headerë¥¼ Dumpí•´ë‘¡ë‹ˆë‹¤
+        // ê·¸ë¦¬ê³  Dumpëœ Headerë¥¼ TRCë¡œê·¸ì— ì¶œë ¥í•©ë‹ˆë‹¤.
         if( iduMemMgr::calloc( IDU_MEM_SM_SCP, 
                                1, 
                                IDE_DUMP_DEST_LIMIT, 
@@ -197,16 +197,16 @@ IDE_RC smiDataPort::findHandle( SChar          * aName,
 /***********************************************************************
  *
  * Description :
- *  Export¸¦ À§ÇÑ ÁØºñ¸¦ ÇÑ´Ù.
+ *  Exportë¥¼ ìœ„í•œ ì¤€ë¹„ë¥¼ í•œë‹¤.
  *
- *  aStatistics         - [IN]     Åë°èÁ¤º¸
- *  aHanlde             - [IN/OUT] ÁøÇàÇÒ ÀÛ¾÷¿¡ ´ëÇÑ Handle 
- *  aHeader             - [IN]     °øÅë Header
- *  aJobName            - [IN]     ÇöÀç ¼öÇàÇÏ´Â JobÀÇ ÀÌ¸§
- *  aObjectName         - [IN]     ´ë»ó  °´Ã¼ÀÇ ÀÌ¸§
- *  aLobColumnCount     - [IN]     LobColumnÀÇ °³¼ö
+ *  aStatistics         - [IN]     í†µê³„ì •ë³´
+ *  aHanlde             - [IN/OUT] ì§„í–‰í•  ì‘ì—…ì— ëŒ€í•œ Handle 
+ *  aHeader             - [IN]     ê³µí†µ Header
+ *  aJobName            - [IN]     í˜„ì¬ ìˆ˜í–‰í•˜ëŠ” Jobì˜ ì´ë¦„
+ *  aObjectName         - [IN]     ëŒ€ìƒ  ê°ì²´ì˜ ì´ë¦„
+ *  aLobColumnCount     - [IN]     LobColumnì˜ ê°œìˆ˜
  *  aType               - [IN]     Type
- *  aSplit              - [IN]     Split±âÁØ Row ¼ö
+ *  aSplit              - [IN]     Splitê¸°ì¤€ Row ìˆ˜
  *
  **********************************************************************/
 
@@ -240,7 +240,7 @@ IDE_RC smiDataPort::beginExport( idvSQL              * aStatistics,
             sModule = &scpfModule;
             break;
         default:
-            // File¹æ½Ä ¿Ü¿¡´Â Áö¿øÇÏÁö ¾Ê´Â´Ù.
+            // Fileë°©ì‹ ì™¸ì—ëŠ” ì§€ì›í•˜ì§€ ì•ŠëŠ”ë‹¤.
             ideLog::log( IDE_SERVER_0, "invalid type : %u ",
                          aType );
             IDE_ASSERT( 0 );
@@ -335,11 +335,11 @@ IDE_RC smiDataPort::beginExport( idvSQL              * aStatistics,
 /***********************************************************************
  *
  * Description :
- *  Row¸¦ ÇÏ³ª WriteÇÑ´Ù.
+ *  Rowë¥¼ í•˜ë‚˜ Writeí•œë‹¤.
  *
- *  aStatistics         - [IN] Åë°èÁ¤º¸
- *  aHanlde             - [IN] ÁøÇàÇÒ ÀÛ¾÷¿¡ ´ëÇÑ Handle 
- *  aValueList          - [IN] »ğÀÔÇÒ value
+ *  aStatistics         - [IN] í†µê³„ì •ë³´
+ *  aHanlde             - [IN] ì§„í–‰í•  ì‘ì—…ì— ëŒ€í•œ Handle 
+ *  aValueList          - [IN] ì‚½ì…í•  value
  *
  **********************************************************************/
 
@@ -370,11 +370,11 @@ IDE_RC smiDataPort::write( idvSQL      * aStatistics,
 /***********************************************************************
  *
  * Description :
- *  LobÀ» ¾µ ÁØºñ¸¦ ÇÑ´Ù.
+ *  Lobì„ ì“¸ ì¤€ë¹„ë¥¼ í•œë‹¤.
  *
- *  aStatistics         - [IN] Åë°èÁ¤º¸
- *  aHanlde             - [IN] ÁøÇàÇÒ ÀÛ¾÷¿¡ ´ëÇÑ Handle 
- *  aLobLength          - [IN] ±â·ÏÇÒ LobColumnÀÇ ÀüÃ¼ Length
+ *  aStatistics         - [IN] í†µê³„ì •ë³´
+ *  aHanlde             - [IN] ì§„í–‰í•  ì‘ì—…ì— ëŒ€í•œ Handle 
+ *  aLobLength          - [IN] ê¸°ë¡í•  LobColumnì˜ ì „ì²´ Length
  *
  **********************************************************************/
 
@@ -405,12 +405,12 @@ IDE_RC smiDataPort::prepareLob( idvSQL      * aStatistics,
 /***********************************************************************
  *
  * Description :
- *  LobÀ» ±â·ÏÇÑ´Ù.
+ *  Lobì„ ê¸°ë¡í•œë‹¤.
  *
- *  aStatistics         - [IN] Åë°èÁ¤º¸
- *  aHanlde             - [IN] ÁøÇàÇÒ ÀÛ¾÷¿¡ ´ëÇÑ Handle 
- *  aLobPieceLength     - [IN] ±â·ÏÇÒ LobPieceÀÇ ±æÀÌ
- *  aLobPieceValue      - [IN] ±â·ÏÇÒ LobPiece
+ *  aStatistics         - [IN] í†µê³„ì •ë³´
+ *  aHanlde             - [IN] ì§„í–‰í•  ì‘ì—…ì— ëŒ€í•œ Handle 
+ *  aLobPieceLength     - [IN] ê¸°ë¡í•  LobPieceì˜ ê¸¸ì´
+ *  aLobPieceValue      - [IN] ê¸°ë¡í•  LobPiece
  *
  **********************************************************************/
 IDE_RC smiDataPort::writeLob( idvSQL      * aStatistics,
@@ -443,10 +443,10 @@ IDE_RC smiDataPort::writeLob( idvSQL      * aStatistics,
 /***********************************************************************
  *
  * Description :
- *  LobÀÇ ±â·ÏÀÌ ¿Ï·áµÇ¾ú´Ù.
+ *  Lobì˜ ê¸°ë¡ì´ ì™„ë£Œë˜ì—ˆë‹¤.
  *
- *  aStatistics         - [IN] Åë°èÁ¤º¸
- *  aHanlde             - [IN] ÁøÇàÇÒ ÀÛ¾÷¿¡ ´ëÇÑ Handle 
+ *  aStatistics         - [IN] í†µê³„ì •ë³´
+ *  aHanlde             - [IN] ì§„í–‰í•  ì‘ì—…ì— ëŒ€í•œ Handle 
  *
  **********************************************************************/
 IDE_RC smiDataPort::finishLobWriting( idvSQL      * aStatistics,
@@ -474,10 +474,10 @@ IDE_RC smiDataPort::finishLobWriting( idvSQL      * aStatistics,
 /***********************************************************************
  *
  * Description :
- *  Export¸¦ Á¾·áÇÑ´Ù.
+ *  Exportë¥¼ ì¢…ë£Œí•œë‹¤.
  *
- *  aStatistics         - [IN] Åë°èÁ¤º¸
- *  aHanlde             - [IN] Á¾·áÇÒ ÀÛ¾÷¿¡ ´ëÇÑ Handle 
+ *  aStatistics         - [IN] í†µê³„ì •ë³´
+ *  aHanlde             - [IN] ì¢…ë£Œí•  ì‘ì—…ì— ëŒ€í•œ Handle 
  *
  **********************************************************************/
 IDE_RC smiDataPort::endExport( idvSQL      * aStatistics,
@@ -527,15 +527,15 @@ IDE_RC smiDataPort::endExport( idvSQL      * aStatistics,
 /***********************************************************************
  *
  * Description :
- *  Import¸¦ À§ÇÑ ÁØºñ¸¦ ÇÑ´Ù.
+ *  Importë¥¼ ìœ„í•œ ì¤€ë¹„ë¥¼ í•œë‹¤.
  *
- *  aStatistics         - [IN]      Åë°èÁ¤º¸
- *  aHanlde             - [IN/OUT]  ÁøÇàÇÒ ÀÛ¾÷¿¡ ´ëÇÑ Handle 
- *  aJobName            - [IN]      ÇöÀç ¼öÇàÇÏ´Â JobÀÇ ÀÌ¸§
- *  aObjectName         - [IN]      ´ë»ó  °´Ã¼ÀÇ ÀÌ¸§
+ *  aStatistics         - [IN]      í†µê³„ì •ë³´
+ *  aHanlde             - [IN/OUT]  ì§„í–‰í•  ì‘ì—…ì— ëŒ€í•œ Handle 
+ *  aJobName            - [IN]      í˜„ì¬ ìˆ˜í–‰í•˜ëŠ” Jobì˜ ì´ë¦„
+ *  aObjectName         - [IN]      ëŒ€ìƒ  ê°ì²´ì˜ ì´ë¦„
  *  aType               - [IN]      aType
- *  aFirstRowSeq        - [IN]      °¡Á®¿Ã Ã¹¹øÂ° Row¹øÈ£
- *  aLastRowSeq         - [IN]      °¡Á®¿Ã ¸¶Áö¸· Row¹øÈ£
+ *  aFirstRowSeq        - [IN]      ê°€ì ¸ì˜¬ ì²«ë²ˆì§¸ Rowë²ˆí˜¸
+ *  aLastRowSeq         - [IN]      ê°€ì ¸ì˜¬ ë§ˆì§€ë§‰ Rowë²ˆí˜¸
  *
  **********************************************************************/
 IDE_RC smiDataPort::beginImport( idvSQL               * aStatistics, 
@@ -569,7 +569,7 @@ IDE_RC smiDataPort::beginImport( idvSQL               * aStatistics,
             sModule = &scpfModule;
             break;
         default:
-            // File¹æ½Ä ¿Ü¿¡´Â Áö¿øÇÏÁö ¾Ê´Â´Ù.
+            // Fileë°©ì‹ ì™¸ì—ëŠ” ì§€ì›í•˜ì§€ ì•ŠëŠ”ë‹¤.
             ideLog::log( IDE_SERVER_0, "invalid type : %u ",
                          aType );
             IDE_ASSERT( 0 );
@@ -662,12 +662,12 @@ IDE_RC smiDataPort::beginImport( idvSQL               * aStatistics,
 /***********************************************************************
  *
  * Description :
- *  rowµéÀ» ÀĞ´Â´Ù.
+ *  rowë“¤ì„ ì½ëŠ”ë‹¤.
  *
- *  aStatistics         - [IN]  Åë°èÁ¤º¸
- *  aHanlde             - [IN]  ÁøÇàÇÒ ÀÛ¾÷¿¡ ´ëÇÑ Handle 
- *  aRows               - [IN]  ÀĞÀº row
- *  aRowCount           - [IN]  ÀĞÀº RowÀÇ °³¼ö
+ *  aStatistics         - [IN]  í†µê³„ì •ë³´
+ *  aHanlde             - [IN]  ì§„í–‰í•  ì‘ì—…ì— ëŒ€í•œ Handle 
+ *  aRows               - [IN]  ì½ì€ row
+ *  aRowCount           - [IN]  ì½ì€ Rowì˜ ê°œìˆ˜
  *
  **********************************************************************/
 
@@ -702,11 +702,11 @@ IDE_RC smiDataPort::read( idvSQL      * aStatistics,
 /***********************************************************************
  *
  * Description :
- *  Ãß°¡·Î ÀĞÀ» LobColumn ÇÏ³ªÀÇ ÃÑ ±æÀÌ¸¦ °¡Á®¿Â´Ù.
+ *  ì¶”ê°€ë¡œ ì½ì„ LobColumn í•˜ë‚˜ì˜ ì´ ê¸¸ì´ë¥¼ ê°€ì ¸ì˜¨ë‹¤.
  *
- *  aStatistics         - [IN]  Åë°èÁ¤º¸
- *  aHanlde             - [IN]  Á¾·áÇÒ ÀÛ¾÷¿¡ ´ëÇÑ Handle 
- *  aLength             - [OUT] ÀĞÀ» LobÀÇ ÃÑ ±æÀÌ
+ *  aStatistics         - [IN]  í†µê³„ì •ë³´
+ *  aHanlde             - [IN]  ì¢…ë£Œí•  ì‘ì—…ì— ëŒ€í•œ Handle 
+ *  aLength             - [OUT] ì½ì„ Lobì˜ ì´ ê¸¸ì´
  *
  **********************************************************************/
 
@@ -738,12 +738,12 @@ IDE_RC smiDataPort::readLobLength( idvSQL      * aStatistics,
 /***********************************************************************
  *
  * Description :
- *  LobÀ» ÀĞ´Â´Ù.
+ *  Lobì„ ì½ëŠ”ë‹¤.
  *
- *  aStatistics         - [IN]  Åë°èÁ¤º¸
- *  aHanlde             - [IN]  Á¾·áÇÒ ÀÛ¾÷¿¡ ´ëÇÑ Handle 
- *  aLobPieceLength     - [OUT] ÀĞÀ» LobPieceÀÇ ±æÀÌ
- *  aLobPieceValue      - [OUT] ÀĞÀ» LobPiece
+ *  aStatistics         - [IN]  í†µê³„ì •ë³´
+ *  aHanlde             - [IN]  ì¢…ë£Œí•  ì‘ì—…ì— ëŒ€í•œ Handle 
+ *  aLobPieceLength     - [OUT] ì½ì„ LobPieceì˜ ê¸¸ì´
+ *  aLobPieceValue      - [OUT] ì½ì„ LobPiece
  *
  **********************************************************************/
 IDE_RC smiDataPort::readLob( idvSQL      * aStatistics, 
@@ -776,10 +776,10 @@ IDE_RC smiDataPort::readLob( idvSQL      * aStatistics,
 /***********************************************************************
  *
  * Description :
- *  LobÀÇ ÀĞ±â°¡ ¿Ï·áµÇ¾ú´Ù.
+ *  Lobì˜ ì½ê¸°ê°€ ì™„ë£Œë˜ì—ˆë‹¤.
  *
- *  aStatistics         - [IN] Åë°èÁ¤º¸
- *  aHanlde             - [IN] ÁøÇàÇÒ ÀÛ¾÷¿¡ ´ëÇÑ Handle 
+ *  aStatistics         - [IN] í†µê³„ì •ë³´
+ *  aHanlde             - [IN] ì§„í–‰í•  ì‘ì—…ì— ëŒ€í•œ Handle 
  *
  **********************************************************************/
 IDE_RC smiDataPort::finishLobReading( idvSQL      * aStatistics,
@@ -808,10 +808,10 @@ IDE_RC smiDataPort::finishLobReading( idvSQL      * aStatistics,
 /***********************************************************************
  *
  * Description :
- *  import °úÁ¤À» Á¾·áÇÕ´Ï´Ù.
+ *  import ê³¼ì •ì„ ì¢…ë£Œí•©ë‹ˆë‹¤.
  *
- *  aStatistics         - [IN]  Åë°èÁ¤º¸
- *  aHanlde             - [IN]  Á¾·áÇÒ ÀÛ¾÷¿¡ ´ëÇÑ Handle 
+ *  aStatistics         - [IN]  í†µê³„ì •ë³´
+ *  aHanlde             - [IN]  ì¢…ë£Œí•  ì‘ì—…ì— ëŒ€í•œ Handle 
  *
  **********************************************************************/
 IDE_RC smiDataPort::endImport( idvSQL      * aStatistics,
@@ -859,18 +859,18 @@ IDE_RC smiDataPort::endImport( idvSQL      * aStatistics,
 /****************************************************************
  * Proj-2059 DB Upgrade
  *
- * Structure¿¡ ÀÖ´Â Member VariableÀ» Endian »ó°ü ¾øÀÌ
- * ÀĞ°í ¾µ ¼ö ÀÖµµ·Ï, FormatÀ» Á¤ÀÇÇÑ DATA_PORT_HEADER¿¡ ´ëÇÑ ÇÔ¼ö
+ * Structureì— ìˆëŠ” Member Variableì„ Endian ìƒê´€ ì—†ì´
+ * ì½ê³  ì“¸ ìˆ˜ ìˆë„ë¡, Formatì„ ì •ì˜í•œ DATA_PORT_HEADERì— ëŒ€í•œ í•¨ìˆ˜
  ****************************************************************/
 
-/* ¿øº» ±¸Á¶Ã¼ÀÇ Å©±â¸¦ ¹İÈ¯ÇÑ´Ù. */
+/* ì›ë³¸ êµ¬ì¡°ì²´ì˜ í¬ê¸°ë¥¼ ë°˜í™˜í•œë‹¤. */
 UInt smiDataPort::getHeaderSize( smiDataPortHeaderDesc  * aDesc,
                                  UInt                     aVersion)
 {
     return aDesc[ aVersion ].mSize;
 }
 
-/* EncodingµÈ µ¥ÀÌÅÍÀÇ Å©±â¸¦ ±¸ÇÑ´Ù. */
+/* Encodingëœ ë°ì´í„°ì˜ í¬ê¸°ë¥¼ êµ¬í•œë‹¤. */
 UInt smiDataPort::getEncodedHeaderSize( smiDataPortHeaderDesc   * aDesc,
                                         UInt                      aVersion)
 {
@@ -880,7 +880,7 @@ UInt smiDataPort::getEncodedHeaderSize( smiDataPortHeaderDesc   * aDesc,
 
     IDE_DASSERT( aDesc         != NULL );
 
-    // ÇØ´ç ¹öÀü±îÁö Ãß°¡µÈ Ç×¸ñÀÇ Å©±â¸¦ ´õÇÔ
+    // í•´ë‹¹ ë²„ì „ê¹Œì§€ ì¶”ê°€ëœ í•­ëª©ì˜ í¬ê¸°ë¥¼ ë”í•¨
     for( i=SMI_DATAPORT_VERSION_BEGIN; i<=aVersion; i++ )
     {
         sColDesc = aDesc[i].mColumnDesc;
@@ -891,14 +891,14 @@ UInt smiDataPort::getEncodedHeaderSize( smiDataPortHeaderDesc   * aDesc,
         }
     }
 
-    // ChecksumÀÌ µÚ¿¡ ºÙ´Â´Ù
+    // Checksumì´ ë’¤ì— ë¶™ëŠ”ë‹¤
     sTotalSize += ID_SIZEOF( UInt );
 
     return sTotalSize;
 }
 
 
-/* DescÀÇ Min/Max¼³Á¤À» ¹ÙÅÁÀ¸·Î Header¿¡ ´ëÇÑ ValidationÀ» ¼öÇàÇÑ´Ù. */
+/* Descì˜ Min/Maxì„¤ì •ì„ ë°”íƒ•ìœ¼ë¡œ Headerì— ëŒ€í•œ Validationì„ ìˆ˜í–‰í•œë‹¤. */
 IDE_RC smiDataPort::validateHeader( smiDataPortHeaderDesc   * aDesc,
                                     UInt                      aVersion,
                                     void                    * aHeader )
@@ -919,7 +919,7 @@ IDE_RC smiDataPort::validateHeader( smiDataPortHeaderDesc   * aDesc,
 }
 
 
-/* Desc¿¡ µû¶ó Header¸¦ writeÇÑ´Ù. */
+/* Descì— ë”°ë¼ Headerë¥¼ writeí•œë‹¤. */
 IDE_RC smiDataPort::writeHeader( smiDataPortHeaderDesc   * aDesc,
                                  UInt                      aVersion,
                                  void                    * aHeader,
@@ -939,7 +939,7 @@ IDE_RC smiDataPort::writeHeader( smiDataPortHeaderDesc   * aDesc,
 
     sBeginOffset = *aOffset;
 
-    // ÇØ´ç ¹öÀü±îÁö Ãß°¡µÈ Ç×¸ñµéÀ» º¹»çÇÔ
+    // í•´ë‹¹ ë²„ì „ê¹Œì§€ ì¶”ê°€ëœ í•­ëª©ë“¤ì„ ë³µì‚¬í•¨
     for( i=SMI_DATAPORT_VERSION_BEGIN; i<=aVersion; i++ )
     {
         sColDesc = aDesc[i].mColumnDesc;
@@ -976,7 +976,7 @@ IDE_RC smiDataPort::writeHeader( smiDataPortHeaderDesc   * aDesc,
         }
     }
 
-    // Checksum ±â·Ï
+    // Checksum ê¸°ë¡
     sCalculatedChecksum = smuUtility::foldBinary( aDestBuffer + sBeginOffset,
                                                   (*aOffset) - sBeginOffset );
 
@@ -995,7 +995,7 @@ IDE_RC smiDataPort::writeHeader( smiDataPortHeaderDesc   * aDesc,
 }
 
 
-/* Desc¿¡ µû¶ó Header¸¦ ReadÇÑ´Ù. */
+/* Descì— ë”°ë¼ Headerë¥¼ Readí•œë‹¤. */
 IDE_RC smiDataPort::readHeader( smiDataPortHeaderDesc   * aDesc,
                                 UInt                      aVersion,
                                 UChar                   * aSourceBuffer,
@@ -1020,14 +1020,14 @@ IDE_RC smiDataPort::readHeader( smiDataPortHeaderDesc   * aDesc,
     
     sBeginOffset = *aOffset;
 
-    // ÇØ´ç ¹öÀü±îÁöÀÇ Ç×¸ñµéÀ» ÀĞÀ½
+    // í•´ë‹¹ ë²„ì „ê¹Œì§€ì˜ í•­ëª©ë“¤ì„ ì½ìŒ
     for( i=SMI_DATAPORT_VERSION_BEGIN; i<=aVersion; i++ )
     {
         sColDesc = aDesc[i].mColumnDesc;
 
         while( sColDesc->mName != NULL )
         {
-            //  ¼³°è ¿À·ù
+            //  ì„¤ê³„ ì˜¤ë¥˜
             IDE_DASSERT( ((*aOffset) + sColDesc->mSize) <= aSourceBufferSize );
 
             switch( sColDesc->mType )
@@ -1061,7 +1061,7 @@ IDE_RC smiDataPort::readHeader( smiDataPortHeaderDesc   * aDesc,
         }
     }
 
-    // Checksum È®ÀÎ
+    // Checksum í™•ì¸
     sCalculatedChecksum = smuUtility::foldBinary( aSourceBuffer + sBeginOffset,
                                                   (*aOffset) - sBeginOffset );
 
@@ -1072,7 +1072,7 @@ IDE_RC smiDataPort::readHeader( smiDataPortHeaderDesc   * aDesc,
                     ERR_ABORT_CORRUPTED_HEADER );
 
 
-    // ÃÖ½Å ¹öÀüÀÇ Ç×¸ñµéÀ» Default°ªÀ¸·Î ¼³Á¤ÇÔ
+    // ìµœì‹  ë²„ì „ì˜ í•­ëª©ë“¤ì„ Defaultê°’ìœ¼ë¡œ ì„¤ì •í•¨
     for( i=aVersion+1; i<=SMI_DATAPORT_VERSION_LATEST; i++ )
     {
         sColDesc = aDesc[i].mColumnDesc;
@@ -1084,8 +1084,8 @@ IDE_RC smiDataPort::readHeader( smiDataPortHeaderDesc   * aDesc,
 
         while( sColDesc->mName != NULL )
         {
-            // SMI_READ_XXX ÇÔ¼ö°¡ ¾Æ´Ñ memcpy¸¦ »ç¿ëÇÕ´Ï´Ù.
-            // Memory»ó¿¡¼­ ¹Ù·Î º¹»çÇÏ±â ¶§¹®ÀÔ´Ï´Ù. 
+            // SMI_READ_XXX í•¨ìˆ˜ê°€ ì•„ë‹Œ memcpyë¥¼ ì‚¬ìš©í•©ë‹ˆë‹¤.
+            // Memoryìƒì—ì„œ ë°”ë¡œ ë³µì‚¬í•˜ê¸° ë•Œë¬¸ì…ë‹ˆë‹¤. 
             switch( sColDesc->mType )
             {
                 case SMI_DATAPORT_HEADER_TYPE_CHAR:
@@ -1134,7 +1134,7 @@ IDE_RC smiDataPort::readHeader( smiDataPortHeaderDesc   * aDesc,
     return IDE_FAILURE;
 }
 
-/* HeaderÀÇ °ªÀ» DumpÇÑ´Ù. */
+/* Headerì˜ ê°’ì„ Dumpí•œë‹¤. */
 IDE_RC smiDataPort::dumpHeader( smiDataPortHeaderDesc   * aDesc,
                                 UInt                      aVersion,
                                 void                    * aSourceHeader,
@@ -1153,7 +1153,7 @@ IDE_RC smiDataPort::dumpHeader( smiDataPortHeaderDesc   * aDesc,
     IDE_ERROR( aOutSize       > 0 );
 
 
-    // ÇØ´ç ¹öÀü±îÁö Ç×¸ñµéÀ» dump
+    // í•´ë‹¹ ë²„ì „ê¹Œì§€ í•­ëª©ë“¤ì„ dump
     for( i=SMI_DATAPORT_VERSION_BEGIN; i<=aVersion; i++ )
     {
         sColDesc = aDesc[i].mColumnDesc;

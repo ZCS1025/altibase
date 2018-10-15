@@ -197,7 +197,7 @@ IDE_RC tsmCreateLobTable(UInt            aOwnerID,
 
     IDE_ASSERT( ideAllocErrorSpace() == IDE_SUCCESS );
 
-    /* BUG-23680 [5.3.1 Release] TSM ¡§ªÛ»≠ */
+    /* BUG-23680 [5.3.1 Release] TSM Ï†ïÏÉÅÌôî */
     if( smiTableSpace::isDiskTableSpace( gTBSID )
         == ID_TRUE )
     {

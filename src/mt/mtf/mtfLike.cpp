@@ -71,7 +71,7 @@ static IDE_RC mtfLikeEstimateXlobLocatorFast( mtcNode*     aNode,
                                               SInt         aRemain,
                                               mtcCallBack* aCallBack );
 
-/* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø */
+/* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ì… ì§€ì› */
 static IDE_RC mtfLikeEstimateClobValueFast( mtcNode     * aNode,
                                             mtcTemplate * aTemplate,
                                             mtcStack    * aStack,
@@ -439,77 +439,77 @@ IDE_RC mtfLikeCalculate4XlobLocatorMBOnePass( mtdClobLocatorType  aLocator,
                                               UInt                aMaxCharSize,
                                               const mtlModule   * aLanguage );
 
-/* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø */
+/* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ì… ì§€ì› */
 IDE_RC mtfLikeCalculate4ClobValue( mtcNode     * aNode,
                                    mtcStack    * aStack,
                                    SInt          aRemain,
                                    void        * aInfo,
                                    mtcTemplate * aTemplate );
 
-/* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø */
+/* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ì… ì§€ì› */
 IDE_RC mtfLikeCalculate4ClobValueMB( mtcNode     * aNode,
                                      mtcStack    * aStack,
                                      SInt          aRemain,
                                      void        * aInfo,
                                      mtcTemplate * aTemplate );
 
-/* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø */
+/* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ì… ì§€ì› */
 IDE_RC mtfLikeCalculate4ClobValueNormal( mtcNode     * aNode,
                                          mtcStack    * aStack,
                                          SInt          aRemain,
                                          void        * aInfo,
                                          mtcTemplate * aTemplate );
 
-/* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø */
+/* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ì… ì§€ì› */
 IDE_RC mtfLikeCalculate4ClobValueMBNormal( mtcNode     * aNode,
                                            mtcStack    * aStack,
                                            SInt          aRemain,
                                            void        * aInfo,
                                            mtcTemplate * aTemplate );
 
-/* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø */
+/* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ì… ì§€ì› */
 IDE_RC mtfLikeCalculate4ClobValueNormalFast( mtcNode     * aNode,
                                              mtcStack    * aStack,
                                              SInt          aRemain,
                                              void        * aInfo,
                                              mtcTemplate * aTemplate );
 
-/* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø */
+/* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ì… ì§€ì› */
 IDE_RC mtfLikeCalculateEqual4ClobValueFast( mtcNode     * aNode,
                                             mtcStack    * aStack,
                                             SInt          aRemain,
                                             void        * aInfo,
                                             mtcTemplate * aTemplate );
 
-/* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø */
+/* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ì… ì§€ì› */
 IDE_RC mtfLikeCalculateIsNotNull4ClobValueFast( mtcNode     * aNode,
                                                 mtcStack    * aStack,
                                                 SInt          aRemain,
                                                 void        * aInfo,
                                                 mtcTemplate * aTemplate );
 
-/* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø */
+/* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ì… ì§€ì› */
 IDE_RC mtfLikeCalculateLength4ClobValueFast( mtcNode     * aNode,
                                              mtcStack    * aStack,
                                              SInt          aRemain,
                                              void        * aInfo,
                                              mtcTemplate * aTemplate );
 
-/* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø */
+/* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ì… ì§€ì› */
 IDE_RC mtfLikeCalculateOnePercent4ClobValueFast( mtcNode     * aNode,
                                                  mtcStack    * aStack,
                                                  SInt          aRemain,
                                                  void        * aInfo,
                                                  mtcTemplate * aTemplate );
 
-/* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø */
+/* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ì… ì§€ì› */
 IDE_RC mtfLikeCalculate4ClobValueMBNormalFast( mtcNode     * aNode,
                                                mtcStack    * aStack,
                                                SInt          aRemain,
                                                void        * aInfo,
                                                mtcTemplate * aTemplate );
 
-/* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø */
+/* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ì… ì§€ì› */
 IDE_RC mtfLikeCalculateLength4ClobValueMBFast( mtcNode     * aNode,
                                                mtcStack    * aStack,
                                                SInt          aRemain,
@@ -569,7 +569,7 @@ const mtcExecute mtfExecuteMB = {
     mtfLikeCalculateMB,
     NULL,
     mtk::estimateRangeDefaultLike,
-    mtfExtractRange  // MBÀÎ °æ¿ì mtfExtractRange¾È¿¡¼­ ºĞ±âÇÔ
+    mtfExtractRange  // MBì¸ ê²½ìš° mtfExtractRangeì•ˆì—ì„œ ë¶„ê¸°í•¨
 };
 
 //fix for BUG-15930
@@ -581,7 +581,7 @@ const mtcExecute mtfExecuteMBNormal = {
     mtfLikeCalculateMBNormal,
     NULL,
     mtk::estimateRangeDefaultLike,
-    mtfExtractRange  // MBÀÎ °æ¿ì mtfExtractRange¾È¿¡¼­ ºĞ±âÇÔ
+    mtfExtractRange  // MBì¸ ê²½ìš° mtfExtractRangeì•ˆì—ì„œ ë¶„ê¸°í•¨
 };
 
 // PROJ-1755
@@ -592,7 +592,7 @@ const mtcExecute mtfExecute4XlobLocator = {
     mtf::calculateNA,
     mtfLikeCalculate4XlobLocator,
     NULL,
-    mtk::estimateRangeNA,  // lobÀº index°¡ ¾øÀ½
+    mtk::estimateRangeNA,  // lobì€ indexê°€ ì—†ìŒ
     mtk::extractRangeNA
 };
 
@@ -604,7 +604,7 @@ const mtcExecute mtfExecute4XlobLocatorMB = {
     mtf::calculateNA,
     mtfLikeCalculate4XlobLocatorMB,
     NULL,
-    mtk::estimateRangeNA,  // lobÀº index°¡ ¾øÀ½
+    mtk::estimateRangeNA,  // lobì€ indexê°€ ì—†ìŒ
     mtk::extractRangeNA
 };
 
@@ -616,7 +616,7 @@ const mtcExecute mtfExecute4XlobLocatorNormal = {
     mtf::calculateNA,
     mtfLikeCalculate4XlobLocatorNormal,
     NULL,
-    mtk::estimateRangeNA,  // lobÀº index°¡ ¾øÀ½
+    mtk::estimateRangeNA,  // lobì€ indexê°€ ì—†ìŒ
     mtk::extractRangeNA
 };
 
@@ -628,7 +628,7 @@ const mtcExecute mtfExecute4XlobLocatorMBNormal = {
     mtf::calculateNA,
     mtfLikeCalculate4XlobLocatorMBNormal,
     NULL,
-    mtk::estimateRangeNA,  // lobÀº index°¡ ¾øÀ½
+    mtk::estimateRangeNA,  // lobì€ indexê°€ ì—†ìŒ
     mtk::extractRangeNA
 };
 
@@ -641,7 +641,7 @@ const mtcExecute mtfExecute4Echar = {
     mtfLikeCalculate4Echar,
     NULL,
     mtk::estimateRangeDefaultLike4Echar,
-    mtfExtractRange4Echar  // MBÀÎ °æ¿ì mtfExtractRange¾È¿¡¼­ ºĞ±âÇÔ
+    mtfExtractRange4Echar  // MBì¸ ê²½ìš° mtfExtractRangeì•ˆì—ì„œ ë¶„ê¸°í•¨
 };
 
 const mtcExecute mtfExecute4EcharMB = {
@@ -652,7 +652,7 @@ const mtcExecute mtfExecute4EcharMB = {
     mtfLikeCalculate4EcharMB,
     NULL,
     mtk::estimateRangeDefaultLike4Echar,
-    mtfExtractRange4Echar  // MBÀÎ °æ¿ì mtfExtractRange¾È¿¡¼­ ºĞ±âÇÔ
+    mtfExtractRange4Echar  // MBì¸ ê²½ìš° mtfExtractRangeì•ˆì—ì„œ ë¶„ê¸°í•¨
 };
 
 // PROJ-2002 Column Security
@@ -664,7 +664,7 @@ const mtcExecute mtfExecute4EcharNormal = {
     mtfLikeCalculate4EcharNormal,
     NULL,
     mtk::estimateRangeDefaultLike4Echar,
-    mtfExtractRange4Echar  // MBÀÎ °æ¿ì mtfExtractRange¾È¿¡¼­ ºĞ±âÇÔ
+    mtfExtractRange4Echar  // MBì¸ ê²½ìš° mtfExtractRangeì•ˆì—ì„œ ë¶„ê¸°í•¨
 };
 
 const mtcExecute mtfExecute4EcharMBNormal = {
@@ -675,10 +675,10 @@ const mtcExecute mtfExecute4EcharMBNormal = {
     mtfLikeCalculate4EcharMBNormal,
     NULL,
     mtk::estimateRangeDefaultLike4Echar,
-    mtfExtractRange4Echar  // MBÀÎ °æ¿ì mtfExtractRange¾È¿¡¼­ ºĞ±âÇÔ
+    mtfExtractRange4Echar  // MBì¸ ê²½ìš° mtfExtractRangeì•ˆì—ì„œ ë¶„ê¸°í•¨
 };
 
-/* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø */
+/* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ì… ì§€ì› */
 const mtcExecute mtfExecute4ClobValue = {
     mtf::calculateNA,
     mtf::calculateNA,
@@ -686,11 +686,11 @@ const mtcExecute mtfExecute4ClobValue = {
     mtf::calculateNA,
     mtfLikeCalculate4ClobValue,
     NULL,
-    mtk::estimateRangeNA,  // lobÀº index°¡ ¾øÀ½
+    mtk::estimateRangeNA,  // lobì€ indexê°€ ì—†ìŒ
     mtk::extractRangeNA
 };
 
-/* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø */
+/* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ì… ì§€ì› */
 const mtcExecute mtfExecute4ClobValueMB = {
     mtf::calculateNA,
     mtf::calculateNA,
@@ -698,11 +698,11 @@ const mtcExecute mtfExecute4ClobValueMB = {
     mtf::calculateNA,
     mtfLikeCalculate4ClobValueMB,
     NULL,
-    mtk::estimateRangeNA,  // lobÀº index°¡ ¾øÀ½
+    mtk::estimateRangeNA,  // lobì€ indexê°€ ì—†ìŒ
     mtk::extractRangeNA
 };
 
-/* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø */
+/* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ì… ì§€ì› */
 const mtcExecute mtfExecute4ClobValueNormal = {
     mtf::calculateNA,
     mtf::calculateNA,
@@ -710,11 +710,11 @@ const mtcExecute mtfExecute4ClobValueNormal = {
     mtf::calculateNA,
     mtfLikeCalculate4ClobValueNormal,
     NULL,
-    mtk::estimateRangeNA,  // lobÀº index°¡ ¾øÀ½
+    mtk::estimateRangeNA,  // lobì€ indexê°€ ì—†ìŒ
     mtk::extractRangeNA
 };
 
-/* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø */
+/* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ì… ì§€ì› */
 const mtcExecute mtfExecute4ClobValueMBNormal = {
     mtf::calculateNA,
     mtf::calculateNA,
@@ -722,7 +722,7 @@ const mtcExecute mtfExecute4ClobValueMBNormal = {
     mtf::calculateNA,
     mtfLikeCalculate4ClobValueMBNormal,
     NULL,
-    mtk::estimateRangeNA,  // lobÀº index°¡ ¾øÀ½
+    mtk::estimateRangeNA,  // lobì€ indexê°€ ì—†ìŒ
     mtk::extractRangeNA
 };
 
@@ -785,14 +785,14 @@ IDE_RC mtfLikeEstimate( mtcNode*     aNode,
               != IDE_SUCCESS );
 
     // BUG-40992 FATAL when using _prowid
-    // ÀÎÀÚÀÇ °æ¿ì mtcStack ÀÇ column °ªÀ» ÀÌ¿ëÇÏ¸é µÈ´Ù.
+    // ì¸ìì˜ ê²½ìš° mtcStack ì˜ column ê°’ì„ ì´ìš©í•˜ë©´ ëœë‹¤.
     sIndexColumn     = aStack[1].column;
 
     // BUG-22611
-    // switch-case¿¡ UInt ÇüÀ¸·Î À½¼ö°ªÀÌ µÎ¹ø ÀÌ»ó ¿À¸é ¼­¹ö ºñÁ¤»ó Á¾·á
+    // switch-caseì— UInt í˜•ìœ¼ë¡œ ìŒìˆ˜ê°’ì´ ë‘ë²ˆ ì´ìƒ ì˜¤ë©´ ì„œë²„ ë¹„ì •ìƒ ì¢…ë£Œ
     // ex )  case MTD_BIT_ID: ==> (UInt)-7 
     //       case MTD_VARBIT_ID: ==> (UInt)-8
-    // µû¶ó¼­ SInt ÇüÀ¸·Î Å¸ÀÔ Ä³½ºÆÃ ÇÏµµ·Ï ¼öÁ¤ÇÔ 
+    // ë”°ë¼ì„œ SInt í˜•ìœ¼ë¡œ íƒ€ì… ìºìŠ¤íŒ… í•˜ë„ë¡ ìˆ˜ì •í•¨ 
     sModuleId = (SInt)sIndexColumn->module->id;
 
     switch ( sModuleId )
@@ -843,7 +843,7 @@ IDE_RC mtfLikeEstimate( mtcNode*     aNode,
             else
             {
                 // PROJ-1755
-                // format string¿¡ µû¸¥ ÃÖÀû ÇÔ¼ö¸¦ ¿¬°áÇÑ´Ù.
+                // format stringì— ë”°ë¥¸ ìµœì  í•¨ìˆ˜ë¥¼ ì—°ê²°í•œë‹¤.
                 IDE_TEST( mtfLikeEstimateXlobLocatorFast( aNode,
                                                           aTemplate,
                                                           aStack,
@@ -905,7 +905,7 @@ IDE_RC mtfLikeEstimate( mtcNode*     aNode,
                 else
                 {
                     // PROJ-1755
-                    // format string¿¡ µû¸¥ ÃÖÀû ÇÔ¼ö¸¦ ¿¬°áÇÑ´Ù.
+                    // format stringì— ë”°ë¥¸ ìµœì  í•¨ìˆ˜ë¥¼ ì—°ê²°í•œë‹¤.
                     IDE_TEST( mtfLikeEstimateXlobLocatorFast( aNode,
                                                               aTemplate,
                                                               aStack,
@@ -960,7 +960,7 @@ IDE_RC mtfLikeEstimate( mtcNode*     aNode,
                 else
                 {
                     // PROJ-1755
-                    // format string¿¡ µû¸¥ ÃÖÀû ÇÔ¼ö¸¦ ¿¬°áÇÑ´Ù.
+                    // format stringì— ë”°ë¥¸ ìµœì  í•¨ìˆ˜ë¥¼ ì—°ê²°í•œë‹¤.
                     IDE_TEST( mtfLikeEstimateClobValueFast( aNode,
                                                             aTemplate,
                                                             aStack,
@@ -1006,7 +1006,7 @@ IDE_RC mtfLikeEstimate( mtcNode*     aNode,
             else
             {
                 // PROJ-1755
-                // format string¿¡ µû¸¥ ÃÖÀû ÇÔ¼ö¸¦ ¿¬°áÇÑ´Ù.
+                // format stringì— ë”°ë¥¸ ìµœì  í•¨ìˆ˜ë¥¼ ì—°ê²°í•œë‹¤.
                 IDE_TEST( mtfLikeEstimateBitFast( aNode,
                                                   aTemplate,
                                                   aStack,
@@ -1028,7 +1028,7 @@ IDE_RC mtfLikeEstimate( mtcNode*     aNode,
                           != IDE_SUCCESS );
                 sModules[1] = sModules[0];
 
-                // escape ¹®ÀÚ´Â ¿øº» Å¸ÀÔÀ¸·Î º¯È¯ÇÑ´Ù.
+                // escape ë¬¸ìëŠ” ì›ë³¸ íƒ€ì…ìœ¼ë¡œ ë³€í™˜í•œë‹¤.
                 if ( sModules[0] == &mtdEchar )
                 {
                     sModules[2] = &mtdChar;
@@ -1077,7 +1077,7 @@ IDE_RC mtfLikeEstimate( mtcNode*     aNode,
             }
             else
             {
-                // format string¿¡ µû¸¥ ÃÖÀû ÇÔ¼ö¸¦ ¿¬°áÇÑ´Ù.
+                // format stringì— ë”°ë¥¸ ìµœì  í•¨ìˆ˜ë¥¼ ì—°ê²°í•œë‹¤.
                 IDE_TEST( mtfLikeEstimateEcharFast( aNode,
                                                     aTemplate,
                                                     aStack,
@@ -1139,7 +1139,7 @@ IDE_RC mtfLikeEstimate( mtcNode*     aNode,
             else
             {
                 // PROJ-1755
-                // format string¿¡ µû¸¥ ÃÖÀû ÇÔ¼ö¸¦ ¿¬°áÇÑ´Ù.
+                // format stringì— ë”°ë¥¸ ìµœì  í•¨ìˆ˜ë¥¼ ì—°ê²°í•œë‹¤.
                 IDE_TEST( mtfLikeEstimateCharFast( aNode,
                                                    aTemplate,
                                                    aStack,
@@ -1157,7 +1157,7 @@ IDE_RC mtfLikeEstimate( mtcNode*     aNode,
     }
     else
     {
-        // BUG-37057 ÆĞÅÏÀÇ ±æÀÌ´Â ¹®ÀÚ¿­ÀÇ ±æÀÌ¸¦ ³Ñ¾î°¥¼ö ¾ø´Ù.
+        // BUG-37057 íŒ¨í„´ì˜ ê¸¸ì´ëŠ” ë¬¸ìì—´ì˜ ê¸¸ì´ë¥¼ ë„˜ì–´ê°ˆìˆ˜ ì—†ë‹¤.
         sFormatInfo = (mtcLikeFormatInfo*)
                     aTemplate->rows[aNode->table].execute[aNode->column].calculateInfo;
 
@@ -1188,7 +1188,7 @@ IDE_RC mtfLikeEstimate( mtcNode*     aNode,
     {
         if( sEscapeNode == NULL )
         {
-            // formatÀÌ »ó¼öÀÌ°í esacpe¹®ÀÚ°¡ ¾ø´Â °æ¿ì
+            // formatì´ ìƒìˆ˜ì´ê³  esacpeë¬¸ìê°€ ì—†ëŠ” ê²½ìš°
 
             aNode->lflag &= ~MTC_NODE_REESTIMATE_MASK;
             aNode->lflag |= MTC_NODE_REESTIMATE_TRUE;
@@ -1202,21 +1202,21 @@ IDE_RC mtfLikeEstimate( mtcNode*     aNode,
                   ( ( aTemplate->rows[sEscapeNode->table].lflag & MTC_TUPLE_TYPE_MASK )
                     == MTC_TUPLE_TYPE_INTERMEDIATE ) ) )
             {
-                // formatÀÌ »ó¼öÀÌ°í escape¹®ÀÚµµ »ó¼öÀÎ °æ¿ì
+                // formatì´ ìƒìˆ˜ì´ê³  escapeë¬¸ìë„ ìƒìˆ˜ì¸ ê²½ìš°
 
                 aNode->lflag &= ~MTC_NODE_REESTIMATE_MASK;
                 aNode->lflag |= MTC_NODE_REESTIMATE_TRUE;
             }
             else
             {
-                // formatÀÌ »ó¼öÀÌ°í escape¹®ÀÚ°¡ »ó¼ö°¡ ¾Æ´Ñ °æ¿ì
+                // formatì´ ìƒìˆ˜ì´ê³  escapeë¬¸ìê°€ ìƒìˆ˜ê°€ ì•„ë‹Œ ê²½ìš°
 
                 aNode->lflag &= ~MTC_NODE_REESTIMATE_MASK;
                 aNode->lflag |= MTC_NODE_REESTIMATE_FALSE;
             }
         }
             
-        // BUG-38070 undef typeÀ¸·Î re-estimateÇÏÁö ¾Ê´Â´Ù.
+        // BUG-38070 undef typeìœ¼ë¡œ re-estimateí•˜ì§€ ì•ŠëŠ”ë‹¤.
         if ( ( aTemplate->variableRow != ID_USHORT_MAX ) &&
              ( ( aNode->lflag & MTC_NODE_BIND_MASK ) == MTC_NODE_BIND_EXIST ) )
         {
@@ -1238,7 +1238,7 @@ IDE_RC mtfLikeEstimate( mtcNode*     aNode,
     }
     else
     {
-        // formatÀÌ »ó¼ö°¡ ¾Æ´Ñ °æ¿ì
+        // formatì´ ìƒìˆ˜ê°€ ì•„ë‹Œ ê²½ìš°
 
         aNode->lflag &= ~MTC_NODE_REESTIMATE_MASK;
         aNode->lflag |= MTC_NODE_REESTIMATE_FALSE;
@@ -1272,7 +1272,7 @@ IDE_RC classifyFormatString( const UChar       * aFormat,
     UChar    * sPattern;
     UShort     sPatternSize;
 
-    // escape ¹®ÀÚ ¼³Á¤
+    // escape ë¬¸ì ì„¤ì •
     if( aEscapeLen < 1 )
     {
         sNullEscape = ID_TRUE;
@@ -1287,7 +1287,7 @@ IDE_RC classifyFormatString( const UChar       * aFormat,
         IDE_RAISE( ERR_INVALID_ESCAPE );
     }
 
-    // '_', '%'ÀÇ °¹¼ö
+    // '_', '%'ì˜ ê°¯ìˆ˜
     sIndex = (UChar*) aFormat;
     sFence = sIndex + aFormatLen;
     
@@ -1299,38 +1299,38 @@ IDE_RC classifyFormatString( const UChar       * aFormat,
         if( (sNullEscape == ID_FALSE) && (*sIndex == sEscape) )
         {
             // To Fix PR-13004
-            // ABR ¹æÁö¸¦ À§ÇÏ¿© Áõ°¡½ÃÅ² ÈÄ °Ë»çÇÏ¿©¾ß ÇÔ
+            // ABR ë°©ì§€ë¥¼ ìœ„í•˜ì—¬ ì¦ê°€ì‹œí‚¨ í›„ ê²€ì‚¬í•˜ì—¬ì•¼ í•¨
             sIndex++;
             
-            // escape ¹®ÀÚÀÎ °æ¿ì,
-            // escape ´ÙÀ½ ¹®ÀÚ°¡ '%','_' ¹®ÀÚÀÎÁö °Ë»ç
+            // escape ë¬¸ìì¸ ê²½ìš°,
+            // escape ë‹¤ìŒ ë¬¸ìê°€ '%','_' ë¬¸ìì¸ì§€ ê²€ì‚¬
             IDE_TEST_RAISE( sIndex >= sFence, ERR_INVALID_LITERAL );
             
             // To Fix BUG-12578
             IDE_TEST_RAISE( (*sIndex != (UShort)'%') &&
                             (*sIndex != (UShort)'_') &&
-                            (*sIndex != sEscape), // sEsacpe´Â nullÀÌ ¾Æ´Ô
+                            (*sIndex != sEscape), // sEsacpeëŠ” nullì´ ì•„ë‹˜
                             ERR_INVALID_LITERAL );
 
-            // ÀÏ¹İ ¹®ÀÚÀÎ °æ¿ì
+            // ì¼ë°˜ ë¬¸ìì¸ ê²½ìš°
             aFormatInfo->charCnt++;
         }
         else if( *sIndex == (UShort)'_' )
         {
-            // Æ¯¼ö¹®ÀÚ '_'ÀÎ °æ¿ì            
+            // íŠ¹ìˆ˜ë¬¸ì '_'ì¸ ê²½ìš°            
             aFormatInfo->underCnt++;
         }
         else if( *sIndex == (UShort)'%' )
         {
-            // Æ¯¼ö¹®ÀÚ '%'ÀÎ °æ¿ì
+            // íŠ¹ìˆ˜ë¬¸ì '%'ì¸ ê²½ìš°
             aFormatInfo->percentCnt++;
 
             // BUGBUG
-            // ³í¸®ÀûÀÎ '%'ÀÇ °¹¼ö¸¦ Ã£¾Æ¾ß ÇÔ
-            // ex) 'aaa%%bb'ÀÇ %°¹¼ö´Â ³í¸®ÀûÀ¸·Î 1°³ÀÓ
+            // ë…¼ë¦¬ì ì¸ '%'ì˜ ê°¯ìˆ˜ë¥¼ ì°¾ì•„ì•¼ í•¨
+            // ex) 'aaa%%bb'ì˜ %ê°¯ìˆ˜ëŠ” ë…¼ë¦¬ì ìœ¼ë¡œ 1ê°œì„
 
             // BUG-20524
-            // Ã¹¹øÂ° '%'¿¡ ´ëÇÏ¿© ±× À§Ä¡¸¦ ±â·ÏÇÑ´Ù.
+            // ì²«ë²ˆì§¸ '%'ì— ëŒ€í•˜ì—¬ ê·¸ ìœ„ì¹˜ë¥¼ ê¸°ë¡í•œë‹¤.
             if ( aFormatInfo->percentCnt == 1 )
             {
                 aFormatInfo->firstPercent = sPattern;
@@ -1342,11 +1342,11 @@ IDE_RC classifyFormatString( const UChar       * aFormat,
         }
         else
         {
-            // ÀÏ¹İ ¹®ÀÚÀÎ °æ¿ì
+            // ì¼ë°˜ ë¬¸ìì¸ ê²½ìš°
             aFormatInfo->charCnt++;
         }
 
-        // formatPatternÀ» ±¸¼º
+        // formatPatternì„ êµ¬ì„±
         *sPattern = *sIndex;
         sPatternSize++;
         
@@ -1356,7 +1356,7 @@ IDE_RC classifyFormatString( const UChar       * aFormat,
 
     aFormatInfo->patternSize = sPatternSize;
 
-    // ÀÏ¹İ¹®ÀÚ, '_', '%'ÀÇ °¹¼ö·Î format stringÀ» ºĞ·ùÇÔ
+    // ì¼ë°˜ë¬¸ì, '_', '%'ì˜ ê°¯ìˆ˜ë¡œ format stringì„ ë¶„ë¥˜í•¨
     if ( aFormatInfo->underCnt == 0 )
     {
         if ( aFormatInfo->percentCnt == 0 )
@@ -1366,7 +1366,7 @@ IDE_RC classifyFormatString( const UChar       * aFormat,
                 // underCnt = 0, percentCnt = 0, charCnt = 0
                 
                 // case 1
-                // null È¤Àº ''
+                // null í˜¹ì€ ''
                 aFormatInfo->type = MTC_FORMAT_NULL;
             }
             else
@@ -1374,7 +1374,7 @@ IDE_RC classifyFormatString( const UChar       * aFormat,
                 // underCnt = 0, percentCnt = 0, charCnt > 0
                 
                 // case 2
-                // ÀÏ¹İ¹®ÀÚ·Î¸¸ ±¸¼ºµÊ
+                // ì¼ë°˜ë¬¸ìë¡œë§Œ êµ¬ì„±ë¨
                 aFormatInfo->type = MTC_FORMAT_NORMAL;
             }
         }
@@ -1385,7 +1385,7 @@ IDE_RC classifyFormatString( const UChar       * aFormat,
                 // underCnt = 0, percentCnt > 0, charCnt = 0
                 
                 // case 4
-                // '%'·Î¸¸ ±¸¼ºµÊ
+                // '%'ë¡œë§Œ êµ¬ì„±ë¨
                 aFormatInfo->type = MTC_FORMAT_PERCENT;
             }
             else
@@ -1393,17 +1393,17 @@ IDE_RC classifyFormatString( const UChar       * aFormat,
                 // underCnt = 0, percentCnt > 0, charCnt > 0
                 
                 // case 6
-                // ÀÏ¹İ¹®ÀÚ¿Í '%'·Î ±¸¼ºµÊ
+                // ì¼ë°˜ë¬¸ìì™€ '%'ë¡œ êµ¬ì„±ë¨
                 if ( aFormatInfo->percentCnt == 1 )
                 {
                     // case 6-1
-                    // ÀÏ¹İ¹®ÀÚ¿Í '%' 1°³·Î ±¸¼ºµÊ
+                    // ì¼ë°˜ë¬¸ìì™€ '%' 1ê°œë¡œ êµ¬ì„±ë¨
                     aFormatInfo->type = MTC_FORMAT_NORMAL_ONE_PERCENT;
                 }
                 else
                 {
                     // case 6-2
-                    // ÀÏ¹İ¹®ÀÚ¿Í '%' 2°³ÀÌ»óÀ¸·Î ±¸¼ºµÊ
+                    // ì¼ë°˜ë¬¸ìì™€ '%' 2ê°œì´ìƒìœ¼ë¡œ êµ¬ì„±ë¨
                     aFormatInfo->type = MTC_FORMAT_NORMAL_MANY_PERCENT;
                 }
             }
@@ -1418,7 +1418,7 @@ IDE_RC classifyFormatString( const UChar       * aFormat,
                 // underCnt > 0, percentCnt = 0, charCnt = 0
                 
                 // case 3
-                // '_'·Î¸¸ ±¸¼ºµÊ
+                // '_'ë¡œë§Œ êµ¬ì„±ë¨
                 aFormatInfo->type = MTC_FORMAT_UNDER;
             }
             else
@@ -1426,7 +1426,7 @@ IDE_RC classifyFormatString( const UChar       * aFormat,
                 // underCnt > 0, percentCnt = 0, charCnt > 0
                 
                 // case 5
-                // ÀÏ¹İ¹®ÀÚ¿Í '_'·Î ±¸¼ºµÊ
+                // ì¼ë°˜ë¬¸ìì™€ '_'ë¡œ êµ¬ì„±ë¨
                 aFormatInfo->type = MTC_FORMAT_NORMAL_UNDER;
             }
         }
@@ -1437,7 +1437,7 @@ IDE_RC classifyFormatString( const UChar       * aFormat,
                 // underCnt > 0, percentCnt > 0, charCnt = 0
                 
                 // case 7
-                // '_'¿Í '%'·Î ±¸¼ºµÊ
+                // '_'ì™€ '%'ë¡œ êµ¬ì„±ë¨
                 aFormatInfo->type = MTC_FORMAT_UNDER_PERCENT;
             }
             else
@@ -1445,16 +1445,16 @@ IDE_RC classifyFormatString( const UChar       * aFormat,
                 // underCnt > 0, percentCnt > 0, charCnt > 0
                 
                 // case 8
-                // ÀÏ¹İ¹®ÀÚ¿Í '_', '%'·Î ±¸¼ºµÊ
+                // ì¼ë°˜ë¬¸ìì™€ '_', '%'ë¡œ êµ¬ì„±ë¨
                 aFormatInfo->type = MTC_FORMAT_ALL;
             }
         }
     }
 
-    // case 6-1ÀÎ '%'°¡ 1°³ÀÎ °æ¿ì ºÎ°¡ Á¤º¸¸¦ ¼³Á¤ÇÑ´Ù.
+    // case 6-1ì¸ '%'ê°€ 1ê°œì¸ ê²½ìš° ë¶€ê°€ ì •ë³´ë¥¼ ì„¤ì •í•œë‹¤.
     if ( aFormatInfo->type == MTC_FORMAT_NORMAL_ONE_PERCENT )
     {
-        // '%'°¡ 1°³ÀÎ °æ¿ì ´ÙÀ½°ú °°ÀÌ Ç¥ÇöÇÒ ¼ö ÀÖ´Ù.
+        // '%'ê°€ 1ê°œì¸ ê²½ìš° ë‹¤ìŒê³¼ ê°™ì´ í‘œí˜„í•  ìˆ˜ ìˆë‹¤.
         // [head]%[tail]
         
         // [head]
@@ -1471,7 +1471,7 @@ IDE_RC classifyFormatString( const UChar       * aFormat,
     }
 
     // PROJ-1753 one pass like
-    // case 5,6-2,8¿¡ ´ëÇÑ ÃÖÀûÈ­
+    // case 5,6-2,8ì— ëŒ€í•œ ìµœì í™”
     if ( ( aFormatInfo->type == MTC_FORMAT_NORMAL_UNDER ) ||
          ( aFormatInfo->type == MTC_FORMAT_NORMAL_MANY_PERCENT ) ||
          ( aFormatInfo->type == MTC_FORMAT_ALL ) )
@@ -1499,7 +1499,7 @@ IDE_RC classifyFormatString( const UChar       * aFormat,
     else
     {
         // BUG-35504
-        // new like¿¡¼­´Â format length Á¦ÇÑÀÌ ÀÖ´Ù.
+        // new likeì—ì„œëŠ” format length ì œí•œì´ ìˆë‹¤.
         IDE_TEST_RAISE( aFormatLen > MTC_LIKE_PATTERN_MAX_SIZE,
                         ERR_LONG_PATTERN );
     }
@@ -1542,7 +1542,7 @@ IDE_RC classifyFormatStringMB( const UChar       * aFormat,
     
     if( aLanguage->id == MTL_UTF16_ID )
     {
-        // escape ¹®ÀÚ ¼³Á¤
+        // escape ë¬¸ì ì„¤ì •
         if( aEscapeLen < MTL_UTF16_PRECISION )
         {
             sNullEscape = ID_TRUE;
@@ -1558,7 +1558,7 @@ IDE_RC classifyFormatStringMB( const UChar       * aFormat,
     }
     else
     {    
-        // escape ¹®ÀÚ ¼³Á¤
+        // escape ë¬¸ì ì„¤ì •
         if( aEscapeLen < 1 )
         {
             sNullEscape = ID_TRUE;
@@ -1573,7 +1573,7 @@ IDE_RC classifyFormatStringMB( const UChar       * aFormat,
         }
     }
     
-    // '_', '%'ÀÇ °¹¼ö
+    // '_', '%'ì˜ ê°¯ìˆ˜
     sIndex     = (UChar*) aFormat;
     sIndexPrev = sIndex;
     sFence     = sIndex + aFormatLen;
@@ -1602,7 +1602,7 @@ IDE_RC classifyFormatStringMB( const UChar       * aFormat,
         if( sEqual == ID_TRUE )
         {
             // To Fix PR-13004
-            // ABR ¹æÁö¸¦ À§ÇÏ¿© Áõ°¡½ÃÅ² ÈÄ °Ë»çÇÏ¿©¾ß ÇÔ
+            // ABR ë°©ì§€ë¥¼ ìœ„í•˜ì—¬ ì¦ê°€ì‹œí‚¨ í›„ ê²€ì‚¬í•˜ì—¬ì•¼ í•¨
             (void)mtf::nextChar( sFence,
                                  &sIndex,
                                  &sIndexPrev,
@@ -1612,8 +1612,8 @@ IDE_RC classifyFormatStringMB( const UChar       * aFormat,
                                           sFence,
                                           aLanguage );
 
-            // escape ¹®ÀÚÀÎ °æ¿ì,
-            // escape ´ÙÀ½ ¹®ÀÚ°¡ '%','_' ¹®ÀÚÀÎÁö °Ë»ç
+            // escape ë¬¸ìì¸ ê²½ìš°,
+            // escape ë‹¤ìŒ ë¬¸ìê°€ '%','_' ë¬¸ìì¸ì§€ ê²€ì‚¬
             sEqual1 = mtc::compareOneChar( sIndex,
                                            sSize,
                                            aLanguage->specialCharSet[MTL_PC_IDX],
@@ -1635,7 +1635,7 @@ IDE_RC classifyFormatStringMB( const UChar       * aFormat,
                             (sEqual3 != ID_TRUE),
                             ERR_INVALID_LITERAL );
 
-            // ÀÏ¹İ ¹®ÀÚÀÎ °æ¿ì
+            // ì¼ë°˜ ë¬¸ìì¸ ê²½ìš°
             aFormatInfo->charCnt++;
         }
         else
@@ -1647,7 +1647,7 @@ IDE_RC classifyFormatStringMB( const UChar       * aFormat,
             
             if ( sEqual == ID_TRUE )
             {
-                // Æ¯¼ö¹®ÀÚ '_'ÀÎ °æ¿ì            
+                // íŠ¹ìˆ˜ë¬¸ì '_'ì¸ ê²½ìš°            
                 aFormatInfo->underCnt++;
             }
             else
@@ -1659,15 +1659,15 @@ IDE_RC classifyFormatStringMB( const UChar       * aFormat,
                             
                 if ( sEqual == ID_TRUE )
                 {
-                    // Æ¯¼ö¹®ÀÚ '%'ÀÎ °æ¿ì
+                    // íŠ¹ìˆ˜ë¬¸ì '%'ì¸ ê²½ìš°
                     aFormatInfo->percentCnt++;
                     
                     // BUGBUG
-                    // ³í¸®ÀûÀÎ '%'ÀÇ °¹¼ö¸¦ Ã£¾Æ¾ß ÇÔ
-                    // ex) 'aaa%%bb'ÀÇ %°¹¼ö´Â ³í¸®ÀûÀ¸·Î 1°³ÀÓ
+                    // ë…¼ë¦¬ì ì¸ '%'ì˜ ê°¯ìˆ˜ë¥¼ ì°¾ì•„ì•¼ í•¨
+                    // ex) 'aaa%%bb'ì˜ %ê°¯ìˆ˜ëŠ” ë…¼ë¦¬ì ìœ¼ë¡œ 1ê°œì„
                     
                     // BUG-20524
-                    // Ã¹¹øÂ° '%'¿¡ ´ëÇÏ¿© ±× À§Ä¡¸¦ ±â·ÏÇÑ´Ù.
+                    // ì²«ë²ˆì§¸ '%'ì— ëŒ€í•˜ì—¬ ê·¸ ìœ„ì¹˜ë¥¼ ê¸°ë¡í•œë‹¤.
                     if ( aFormatInfo->percentCnt == 1 )
                     {
                         aFormatInfo->firstPercent = sPattern;
@@ -1679,7 +1679,7 @@ IDE_RC classifyFormatStringMB( const UChar       * aFormat,
                 }
                 else
                 {
-                    // ÀÏ¹İ ¹®ÀÚÀÎ °æ¿ì
+                    // ì¼ë°˜ ë¬¸ìì¸ ê²½ìš°
                     aFormatInfo->charCnt++;
                 }
             }
@@ -1690,7 +1690,7 @@ IDE_RC classifyFormatStringMB( const UChar       * aFormat,
                              &sIndexPrev,
                              aLanguage );
         
-        // formatPatternÀ» ±¸¼º
+        // formatPatternì„ êµ¬ì„±
         idlOS::memcpy( sPattern,
                        sIndexPrev,
                        sIndex - sIndexPrev );
@@ -1701,7 +1701,7 @@ IDE_RC classifyFormatStringMB( const UChar       * aFormat,
 
     aFormatInfo->patternSize = sPatternSize;
 
-    // ÀÏ¹İ¹®ÀÚ, '_', '%'ÀÇ °¹¼ö·Î format stringÀ» ºĞ·ùÇÔ
+    // ì¼ë°˜ë¬¸ì, '_', '%'ì˜ ê°¯ìˆ˜ë¡œ format stringì„ ë¶„ë¥˜í•¨
     if ( aFormatInfo->underCnt == 0 )
     {
         if ( aFormatInfo->percentCnt == 0 )
@@ -1711,7 +1711,7 @@ IDE_RC classifyFormatStringMB( const UChar       * aFormat,
                 // underCnt = 0, percentCnt = 0, charCnt = 0
                 
                 // case 1
-                // null È¤Àº ''
+                // null í˜¹ì€ ''
                 aFormatInfo->type = MTC_FORMAT_NULL;
             }
             else
@@ -1719,7 +1719,7 @@ IDE_RC classifyFormatStringMB( const UChar       * aFormat,
                 // underCnt = 0, percentCnt = 0, charCnt > 0
                 
                 // case 2
-                // ÀÏ¹İ¹®ÀÚ·Î¸¸ ±¸¼ºµÊ
+                // ì¼ë°˜ë¬¸ìë¡œë§Œ êµ¬ì„±ë¨
                 aFormatInfo->type = MTC_FORMAT_NORMAL;
             }
         }
@@ -1730,7 +1730,7 @@ IDE_RC classifyFormatStringMB( const UChar       * aFormat,
                 // underCnt = 0, percentCnt > 0, charCnt = 0
                 
                 // case 4
-                // '%'·Î¸¸ ±¸¼ºµÊ
+                // '%'ë¡œë§Œ êµ¬ì„±ë¨
                 aFormatInfo->type = MTC_FORMAT_PERCENT;
             }
             else
@@ -1738,17 +1738,17 @@ IDE_RC classifyFormatStringMB( const UChar       * aFormat,
                 // underCnt = 0, percentCnt > 0, charCnt > 0
                 
                 // case 6
-                // ÀÏ¹İ¹®ÀÚ¿Í '%'·Î ±¸¼ºµÊ
+                // ì¼ë°˜ë¬¸ìì™€ '%'ë¡œ êµ¬ì„±ë¨
                 if ( aFormatInfo->percentCnt == 1 )
                 {
                     // case 6-1
-                    // ÀÏ¹İ¹®ÀÚ¿Í '%' 1°³·Î ±¸¼ºµÊ
+                    // ì¼ë°˜ë¬¸ìì™€ '%' 1ê°œë¡œ êµ¬ì„±ë¨
                     aFormatInfo->type = MTC_FORMAT_NORMAL_ONE_PERCENT;
                 }
                 else
                 {
                     // case 6-2
-                    // ÀÏ¹İ¹®ÀÚ¿Í '%' 2°³ÀÌ»óÀ¸·Î ±¸¼ºµÊ
+                    // ì¼ë°˜ë¬¸ìì™€ '%' 2ê°œì´ìƒìœ¼ë¡œ êµ¬ì„±ë¨
                     aFormatInfo->type = MTC_FORMAT_NORMAL_MANY_PERCENT;
                 }
             }
@@ -1763,7 +1763,7 @@ IDE_RC classifyFormatStringMB( const UChar       * aFormat,
                 // underCnt > 0, percentCnt = 0, charCnt = 0
                 
                 // case 3
-                // '_'·Î¸¸ ±¸¼ºµÊ
+                // '_'ë¡œë§Œ êµ¬ì„±ë¨
                 aFormatInfo->type = MTC_FORMAT_UNDER;
             }
             else
@@ -1771,7 +1771,7 @@ IDE_RC classifyFormatStringMB( const UChar       * aFormat,
                 // underCnt > 0, percentCnt = 0, charCnt > 0
                 
                 // case 5
-                // ÀÏ¹İ¹®ÀÚ¿Í '_'·Î ±¸¼ºµÊ
+                // ì¼ë°˜ë¬¸ìì™€ '_'ë¡œ êµ¬ì„±ë¨
                 aFormatInfo->type = MTC_FORMAT_NORMAL_UNDER;
             }
         }
@@ -1782,7 +1782,7 @@ IDE_RC classifyFormatStringMB( const UChar       * aFormat,
                 // underCnt > 0, percentCnt > 0, charCnt = 0
                 
                 // case 7
-                // '_'¿Í '%'·Î ±¸¼ºµÊ
+                // '_'ì™€ '%'ë¡œ êµ¬ì„±ë¨
                 aFormatInfo->type = MTC_FORMAT_UNDER_PERCENT;
             }
             else
@@ -1790,16 +1790,16 @@ IDE_RC classifyFormatStringMB( const UChar       * aFormat,
                 // underCnt > 0, percentCnt > 0, charCnt > 0
                 
                 // case 8
-                // ÀÏ¹İ¹®ÀÚ¿Í '_', '%'·Î ±¸¼ºµÊ
+                // ì¼ë°˜ë¬¸ìì™€ '_', '%'ë¡œ êµ¬ì„±ë¨
                 aFormatInfo->type = MTC_FORMAT_ALL;
             }
         }
     }
 
-    // case 6-1ÀÎ °æ¿ì '%'°¡ 1ÀÎ °æ ºÎ°¡ Á¤º¸¸¦ ¼³Á¤ÇÑ´Ù.
+    // case 6-1ì¸ ê²½ìš° '%'ê°€ 1ì¸ ê²½ ë¶€ê°€ ì •ë³´ë¥¼ ì„¤ì •í•œë‹¤.
     if ( aFormatInfo->type == MTC_FORMAT_NORMAL_ONE_PERCENT )
     {
-        // '%'°¡ 1°³ÀÎ °æ¿ì ´ÙÀ½°ú °°ÀÌ Ç¥ÇöÇÒ ¼ö ÀÖ´Ù.
+        // '%'ê°€ 1ê°œì¸ ê²½ìš° ë‹¤ìŒê³¼ ê°™ì´ í‘œí˜„í•  ìˆ˜ ìˆë‹¤.
         // [head]%[tail]
 
         if( aLanguage->id != MTL_UTF16_ID )
@@ -1816,7 +1816,7 @@ IDE_RC classifyFormatStringMB( const UChar       * aFormat,
         else
         {
             // PROJ-1579 NCHAR
-            // UTF16¿¡¼­´Â '%'°¡ 2byteÀÌ¹Ç·Î ¾Æ·¡¿Í °°ÀÌ °è»êÇÑ´Ù.
+            // UTF16ì—ì„œëŠ” '%'ê°€ 2byteì´ë¯€ë¡œ ì•„ë˜ì™€ ê°™ì´ ê³„ì‚°í•œë‹¤.
 
             // [head]
             aFormatInfo->head = aFormatInfo->pattern;
@@ -1834,7 +1834,7 @@ IDE_RC classifyFormatStringMB( const UChar       * aFormat,
     }
     
     // PROJ-1753 one pass like
-    // case 5,6-2,8¿¡ ´ëÇÑ ÃÖÀûÈ­
+    // case 5,6-2,8ì— ëŒ€í•œ ìµœì í™”
     if ( ( aFormatInfo->type == MTC_FORMAT_NORMAL_UNDER ) ||
          ( aFormatInfo->type == MTC_FORMAT_NORMAL_MANY_PERCENT ) ||
          ( aFormatInfo->type == MTC_FORMAT_ALL ) )
@@ -1862,7 +1862,7 @@ IDE_RC classifyFormatStringMB( const UChar       * aFormat,
     else
     {
         // BUG-35504
-        // new like¿¡¼­´Â format length Á¦ÇÑÀÌ ÀÖ´Ù.
+        // new likeì—ì„œëŠ” format length ì œí•œì´ ìˆë‹¤.
         IDE_TEST_RAISE( aFormatLen > MTC_LIKE_PATTERN_MAX_SIZE,
                         ERR_LONG_PATTERN );
     }
@@ -1905,7 +1905,7 @@ IDE_RC mtfLikeFormatInfo( mtcNode            * aNode,
     UChar              * sFormat;
 
     // BUG-40992 FATAL when using _prowid
-    // ÀÎÀÚÀÇ °æ¿ì mtcStack ÀÇ column °ªÀ» ÀÌ¿ëÇÏ¸é µÈ´Ù.
+    // ì¸ìì˜ ê²½ìš° mtcStack ì˜ column ê°’ì„ ì´ìš©í•˜ë©´ ëœë‹¤.
     sIndexColumn     = aStack[1].column;
 
     sIndexNode       = aNode->arguments;
@@ -1925,7 +1925,7 @@ IDE_RC mtfLikeFormatInfo( mtcNode            * aNode,
         if ( ( sFormatColumn->module->id == MTD_ECHAR_ID ) ||
              ( sFormatColumn->module->id == MTD_EVARCHAR_ID ) )
         {
-            // formatÀº »ó¼öÀÌ¹Ç·Î ¹İµå½Ã default policyÀÌ´Ù.
+            // formatì€ ìƒìˆ˜ì´ë¯€ë¡œ ë°˜ë“œì‹œ default policyì´ë‹¤.
             IDE_ASSERT_MSG( sFormatColumn->policy[0] == '\0',
                             "sFormatColumn->policy : %c \n",
                             sFormatColumn->policy[0] );
@@ -1955,19 +1955,19 @@ IDE_RC mtfLikeFormatInfo( mtcNode            * aNode,
 
         if ( sEscapeNode == NULL )
         {
-            // formatÁ¤º¸¸¦ (sLikeFormatInfo) ÀúÀåÇÒ °ø°£À» ÇÒ´ç
+            // formatì •ë³´ë¥¼ (sLikeFormatInfo) ì €ì¥í•  ê³µê°„ì„ í• ë‹¹
             IDE_TEST( aCallBack->alloc( aCallBack->info,
                                         ID_SIZEOF(mtcLikeFormatInfo),
                                         (void**) & sFormatInfo )
                       != IDE_SUCCESS );
 
-            // formatInfo ÃÊ±âÈ­
+            // formatInfo ì´ˆê¸°í™”
             idlOS::memset( (void*)sFormatInfo,
                            0x00,
                            ID_SIZEOF(mtcLikeFormatInfo));
             sFormatInfo->type = MTC_FORMAT_ALL;
             
-            // format patternÀ» ÀúÀåÇÒ °ø°£À» ÇÒ´ç
+            // format patternì„ ì €ì¥í•  ê³µê°„ì„ í• ë‹¹
             if ( *aFormatLength > 0 )
             {
                 IDE_TEST( aCallBack->alloc( aCallBack->info,
@@ -1981,7 +1981,7 @@ IDE_RC mtfLikeFormatInfo( mtcNode            * aNode,
                           != IDE_SUCCESS );
             
                 // PROJ-1755
-                // format stringÀÇ ºĞ·ù
+                // format stringì˜ ë¶„ë¥˜
                 if ( sIndexColumn->language == &mtlAscii )
                 {
                     IDE_TEST( classifyFormatString( sFormat,
@@ -2029,19 +2029,19 @@ IDE_RC mtfLikeFormatInfo( mtcNode            * aNode,
                         MTD_OFFSET_USE,
                         mtdChar.staticNull );
 
-                // formatÁ¤º¸¸¦ (sLikeFormatInfo) ÀúÀåÇÒ °ø°£À» ÇÒ´ç
+                // formatì •ë³´ë¥¼ (sLikeFormatInfo) ì €ì¥í•  ê³µê°„ì„ í• ë‹¹
                 IDE_TEST( aCallBack->alloc( aCallBack->info,
                                             ID_SIZEOF(mtcLikeFormatInfo),
                                             (void**) & sFormatInfo )
                           != IDE_SUCCESS );
                 
-                // formatInfo ÃÊ±âÈ­
+                // formatInfo ì´ˆê¸°í™”
                 idlOS::memset( (void*)sFormatInfo,
                                0x00,
                                ID_SIZEOF(mtcLikeFormatInfo));
                 sFormatInfo->type = MTC_FORMAT_ALL;
                 
-                // format patternÀ» ÀúÀåÇÒ °ø°£À» ÇÒ´ç
+                // format patternì„ ì €ì¥í•  ê³µê°„ì„ í• ë‹¹
                 if ( (*aFormatLength) > 0 )
                 {
                     IDE_TEST( aCallBack->alloc( aCallBack->info,
@@ -2055,7 +2055,7 @@ IDE_RC mtfLikeFormatInfo( mtcNode            * aNode,
                               != IDE_SUCCESS );
                     
                     // PROJ-1755
-                    // format stringÀÇ ºĞ·ù
+                    // format stringì˜ ë¶„ë¥˜
                     if ( sIndexColumn->language == &mtlAscii )
                     {
                         IDE_TEST( classifyFormatString( sFormat,
@@ -2115,7 +2115,7 @@ IDE_RC mtfLikeEstimateCharFast( mtcNode*     aNode,
     UShort              sFormatLen;    
 
     // BUG-40992 FATAL when using _prowid
-    // ÀÎÀÚÀÇ °æ¿ì mtcStack ÀÇ column °ªÀ» ÀÌ¿ëÇÏ¸é µÈ´Ù.
+    // ì¸ìì˜ ê²½ìš° mtcStack ì˜ column ê°’ì„ ì´ìš©í•˜ë©´ ëœë‹¤.
     sIndexColumn     = aStack[1].column;
 
     if ( mtfLikeFormatInfo( aNode, aTemplate, aStack, & sFormatInfo, &sFormatLen, aCallBack) == IDE_SUCCESS )
@@ -2362,7 +2362,7 @@ IDE_RC mtfLikeEstimateXlobLocatorFast( mtcNode*     aNode,
     UShort              sFormatLen;    
 
     // BUG-40992 FATAL when using _prowid
-    // ÀÎÀÚÀÇ °æ¿ì mtcStack ÀÇ column °ªÀ» ÀÌ¿ëÇÏ¸é µÈ´Ù.
+    // ì¸ìì˜ ê²½ìš° mtcStack ì˜ column ê°’ì„ ì´ìš©í•˜ë©´ ëœë‹¤.
     sIndexColumn     = aStack[1].column;
 
     if ( mtfLikeFormatInfo( aNode, aTemplate, aStack, & sFormatInfo, &sFormatLen, aCallBack ) == IDE_SUCCESS )
@@ -2504,7 +2504,7 @@ IDE_RC mtfLikeEstimateEcharFast( mtcNode*     aNode,
     UShort              sFormatLen;    
 
     // BUG-40992 FATAL when using _prowid
-    // ÀÎÀÚÀÇ °æ¿ì mtcStack ÀÇ column °ªÀ» ÀÌ¿ëÇÏ¸é µÈ´Ù.
+    // ì¸ìì˜ ê²½ìš° mtcStack ì˜ column ê°’ì„ ì´ìš©í•˜ë©´ ëœë‹¤.
     sIndexColumn     = aStack[1].column;
 
     if ( mtfLikeFormatInfo( aNode, aTemplate, aStack, & sFormatInfo, &sFormatLen, aCallBack ) == IDE_SUCCESS )
@@ -2658,7 +2658,7 @@ static IDE_RC mtfLikeKey( UChar           * aKey,
     UChar  * sIndex;
     UChar  * sFence;
         
-    // escape ¹®ÀÚ ¼³Á¤ 
+    // escape ë¬¸ì ì„¤ì • 
     if( aEscapeLen < 1 )
     {
         sNullEscape = ID_TRUE;
@@ -2681,28 +2681,28 @@ static IDE_RC mtfLikeKey( UChar           * aKey,
         if( (sNullEscape == ID_FALSE) && (*sIndex == sEscape) )
         {
             // To Fix PR-13004
-            // ABR ¹æÁö¸¦ À§ÇÏ¿© Áõ°¡½ÃÅ² ÈÄ °Ë»çÇÏ¿©¾ß ÇÔ
+            // ABR ë°©ì§€ë¥¼ ìœ„í•˜ì—¬ ì¦ê°€ì‹œí‚¨ í›„ ê²€ì‚¬í•˜ì—¬ì•¼ í•¨
             sIndex++;
             
-            // escape ¹®ÀÚÀÎ °æ¿ì,
-            // escape ´ÙÀ½ ¹®ÀÚ°¡ '%','_' ¹®ÀÚÀÎÁö °Ë»ç
+            // escape ë¬¸ìì¸ ê²½ìš°,
+            // escape ë‹¤ìŒ ë¬¸ìê°€ '%','_' ë¬¸ìì¸ì§€ ê²€ì‚¬
             IDE_TEST_RAISE( sIndex >= sFence, ERR_INVALID_LITERAL );
             
             // To Fix BUG-12578
             IDE_TEST_RAISE( (*sIndex != (UShort)'%') &&
                             (*sIndex != (UShort)'_') &&
-                            (*sIndex != sEscape), // sEsacpe´Â nullÀÌ ¾Æ´Ô
+                            (*sIndex != sEscape), // sEsacpeëŠ” nullì´ ì•„ë‹˜
                             ERR_INVALID_LITERAL );
         }
         else if( (*sIndex == (UShort)'%') ||
                  (*sIndex == (UShort)'_') )
         {
-            // Æ¯¼ö¹®ÀÚÀÎ °æ¿ì 
+            // íŠ¹ìˆ˜ë¬¸ìì¸ ê²½ìš° 
             break;
         }
         else
         {
-            // ÀÏ¹İ ¹®ÀÚÀÎ °æ¿ì
+            // ì¼ë°˜ ë¬¸ìì¸ ê²½ìš°
         }
 
         aKey[(*aKeyLen)++] = *sIndex;
@@ -2781,7 +2781,7 @@ static IDE_RC mtfLikeKeyMB( UChar           * aKey,
 
     if( aLanguage->id == MTL_UTF16_ID )
     {
-        // escape ¹®ÀÚ ¼³Á¤
+        // escape ë¬¸ì ì„¤ì •
         if( aEscapeLen < MTL_UTF16_PRECISION )
         {
             sNullEscape = ID_TRUE;
@@ -2797,7 +2797,7 @@ static IDE_RC mtfLikeKeyMB( UChar           * aKey,
     }
     else
     {    
-        // escape ¹®ÀÚ ¼³Á¤
+        // escape ë¬¸ì ì„¤ì •
         if( aEscapeLen < 1 )
         {
             sNullEscape = ID_TRUE;
@@ -2838,7 +2838,7 @@ static IDE_RC mtfLikeKeyMB( UChar           * aKey,
         if( sEqual == ID_TRUE )
         {
             // To Fix PR-13004
-            // ABR ¹æÁö¸¦ À§ÇÏ¿© Áõ°¡½ÃÅ² ÈÄ °Ë»çÇÏ¿©¾ß ÇÔ
+            // ABR ë°©ì§€ë¥¼ ìœ„í•˜ì—¬ ì¦ê°€ì‹œí‚¨ í›„ ê²€ì‚¬í•˜ì—¬ì•¼ í•¨
             (void)mtf::nextChar( sFence,
                                  &sIndex,
                                  &sIndexPrev,
@@ -2848,8 +2848,8 @@ static IDE_RC mtfLikeKeyMB( UChar           * aKey,
                                           sFence,
                                           aLanguage );
 
-            // escape ¹®ÀÚÀÎ °æ¿ì,
-            // escape ´ÙÀ½ ¹®ÀÚ°¡ '%','_' ¹®ÀÚÀÎÁö °Ë»ç
+            // escape ë¬¸ìì¸ ê²½ìš°,
+            // escape ë‹¤ìŒ ë¬¸ìê°€ '%','_' ë¬¸ìì¸ì§€ ê²€ì‚¬
             sEqual1 = mtc::compareOneChar( sIndex,
                                            sSize,
                                            aLanguage->specialCharSet[MTL_PC_IDX],
@@ -2886,12 +2886,12 @@ static IDE_RC mtfLikeKeyMB( UChar           * aKey,
             if( (sEqual1 == ID_TRUE) ||
                 (sEqual2 == ID_TRUE) )
             {
-                // Æ¯¼ö¹®ÀÚÀÎ °æ¿ì
+                // íŠ¹ìˆ˜ë¬¸ìì¸ ê²½ìš°
                 break;
             }
             else
             {
-                // ÀÏ¹İ ¹®ÀÚÀÎ °æ¿ì
+                // ì¼ë°˜ ë¬¸ìì¸ ê²½ìš°
             }
         }
 
@@ -3082,7 +3082,7 @@ IDE_RC mtfExtractRange( mtcNode*      aNode,
         sValueColumn2->column.offset = 0;                     
 
         //fix For BUG-15930  
-        // like key ±¸ÇÔ 
+        // like key êµ¬í•¨ 
         if( (const mtlModule *) (sValueColumn->language) == &mtlAscii )
         {
             IDE_TEST( mtfLikeKey( sValue1->value,
@@ -3112,12 +3112,12 @@ IDE_RC mtfExtractRange( mtcNode*      aNode,
 
         //--------------------------------------------------
         // To Fix BUG-12306
-        // - like key°¡ 'F%', 'F_' Å¸ÀÔÀÎ °æ¿ì,
-        //   like key °ªÀÇ ¸¶Áö¸· ¹®ÀÚ¸¦ ÇÏ³ª Áõ°¡
-        //   ex) LIKE 'aa%'ÀÎ °æ¿ì : sValue1->value 'aa'
+        // - like keyê°€ 'F%', 'F_' íƒ€ì…ì¸ ê²½ìš°,
+        //   like key ê°’ì˜ ë§ˆì§€ë§‰ ë¬¸ìë¥¼ í•˜ë‚˜ ì¦ê°€
+        //   ex) LIKE 'aa%'ì¸ ê²½ìš° : sValue1->value 'aa'
         //                           sValue2->value 'ab'
-        // - like key°¡ 'F' Å¸ÀÔÀÎ °æ¿ì,
-        //   ex) LIKE 'aa'ÀÎ °æ¿ì  : sValue1->value 'aa'
+        // - like keyê°€ 'F' íƒ€ì…ì¸ ê²½ìš°,
+        //   ex) LIKE 'aa'ì¸ ê²½ìš°  : sValue1->value 'aa'
         //                           sValue2->value 'aa'
         //--------------------------------------------------
         
@@ -3126,7 +3126,7 @@ IDE_RC mtfExtractRange( mtcNode*      aNode,
         
         if ( sIsEqual == ID_FALSE )
         {
-            // like key°¡ 'F%', 'F_' Å¸ÀÔÀÎ °æ¿ì,
+            // like keyê°€ 'F%', 'F_' íƒ€ì…ì¸ ê²½ìš°,
             for( sValue2->length = sValue1->length;
                  sValue2->length > 0;
                  sValue2->length-- )
@@ -3140,7 +3140,7 @@ IDE_RC mtfExtractRange( mtcNode*      aNode,
         }
         else
         {
-            // like key°¡ 'F' Å¸ÀÔÀÎ °æ¿ì
+            // like keyê°€ 'F' íƒ€ì…ì¸ ê²½ìš°
         }
         
         aRange->prev = NULL;
@@ -3152,13 +3152,13 @@ IDE_RC mtfExtractRange( mtcNode*      aNode,
             if ( sIsEqual == ID_TRUE )
             {
                 //---------------------------
-                // RangeCallBack ¼³Á¤
+                // RangeCallBack ì„¤ì •
                 //---------------------------
 
                 if ( aInfo->compValueType == MTD_COMPARE_FIXED_MTDVAL_FIXED_MTDVAL ||
                      aInfo->compValueType == MTD_COMPARE_MTDVAL_MTDVAL )
                 {
-                    // mtd typeÀÇ column value¿¡ ´ëÇÑ range callback 
+                    // mtd typeì˜ column valueì— ëŒ€í•œ range callback 
                     aRange->minimum.callback     = mtk::rangeCallBackGE4Mtd;
                     aRange->maximum.callback     = mtk::rangeCallBackLE4Mtd;
                 }
@@ -3168,7 +3168,7 @@ IDE_RC mtfExtractRange( mtcNode*      aNode,
                          ( aInfo->compValueType == MTD_COMPARE_STOREDVAL_STOREDVAL ) )
                     {
                         /* MTD_COMPARE_STOREDVAL_MTDVAL
-                           stored typeÀÇ column value¿¡ ´ëÇÑ range callback */
+                           stored typeì˜ column valueì— ëŒ€í•œ range callback */
                         aRange->minimum.callback     = mtk::rangeCallBackGE4Stored;
                         aRange->maximum.callback     = mtk::rangeCallBackLE4Stored;
                     }
@@ -3185,7 +3185,7 @@ IDE_RC mtfExtractRange( mtcNode*      aNode,
                 if ( aInfo->compValueType == MTD_COMPARE_FIXED_MTDVAL_FIXED_MTDVAL ||
                      aInfo->compValueType == MTD_COMPARE_MTDVAL_MTDVAL )
                 {
-                    // mtd typeÀÇ column value¿¡ ´ëÇÑ range callback 
+                    // mtd typeì˜ column valueì— ëŒ€í•œ range callback 
                     aRange->minimum.callback     = mtk::rangeCallBackGE4Mtd;
                     aRange->maximum.callback     = mtk::rangeCallBackLT4Mtd;
                 }
@@ -3195,7 +3195,7 @@ IDE_RC mtfExtractRange( mtcNode*      aNode,
                          ( aInfo->compValueType == MTD_COMPARE_STOREDVAL_STOREDVAL ) )
                     {
                         /* MTD_COMPARE_STOREDVAL_MTDVAL
-                           stored typeÀÇ column value¿¡ ´ëÇÑ range callback */
+                           stored typeì˜ column valueì— ëŒ€í•œ range callback */
                         aRange->minimum.callback     = mtk::rangeCallBackGE4Stored;
                         aRange->maximum.callback     = mtk::rangeCallBackLT4Stored;
                     }
@@ -3209,7 +3209,7 @@ IDE_RC mtfExtractRange( mtcNode*      aNode,
             }
 
             //---------------------------
-            // MinimumCallBack ¼³Á¤
+            // MinimumCallBack ì„¤ì •
             //---------------------------
             
             sMinimumCallBack->columnIdx  =  aInfo->columnIdx;
@@ -3254,7 +3254,7 @@ IDE_RC mtfExtractRange( mtcNode*      aNode,
             }
 
             //---------------------------
-            // MaximumCallBack Á¤º¸ ¼³Á¤
+            // MaximumCallBack ì •ë³´ ì„¤ì •
             //---------------------------
         
             sMaximumCallBack->columnIdx  =  aInfo->columnIdx;
@@ -3316,7 +3316,7 @@ IDE_RC mtfExtractRange( mtcNode*      aNode,
                 if ( aInfo->compValueType == MTD_COMPARE_FIXED_MTDVAL_FIXED_MTDVAL ||
                      aInfo->compValueType == MTD_COMPARE_MTDVAL_MTDVAL )
                 {
-                    // mtd typeÀÇ column value¿¡ ´ëÇÑ range callback 
+                    // mtd typeì˜ column valueì— ëŒ€í•œ range callback 
                     aRange->minimum.callback     = mtk::rangeCallBackGE4Mtd;
                     aRange->maximum.callback     = mtk::rangeCallBackLE4Mtd;
                 }
@@ -3326,7 +3326,7 @@ IDE_RC mtfExtractRange( mtcNode*      aNode,
                          ( aInfo->compValueType == MTD_COMPARE_STOREDVAL_STOREDVAL ) )
                     {
                         /* MTD_COMPARE_STOREDVAL_MTDVAL
-                           stored typeÀÇ column value¿¡ ´ëÇÑ range callback */
+                           stored typeì˜ column valueì— ëŒ€í•œ range callback */
                         aRange->minimum.callback     = mtk::rangeCallBackGE4Stored;
                         aRange->maximum.callback     = mtk::rangeCallBackLE4Stored;
                     }
@@ -3341,13 +3341,13 @@ IDE_RC mtfExtractRange( mtcNode*      aNode,
             else
             {
                 //---------------------------
-                // RangeCallBack ¼³Á¤
+                // RangeCallBack ì„¤ì •
                 //---------------------------
 
                 if ( aInfo->compValueType == MTD_COMPARE_FIXED_MTDVAL_FIXED_MTDVAL ||
                      aInfo->compValueType == MTD_COMPARE_MTDVAL_MTDVAL )
                 {
-                    // mtd typeÀÇ column value¿¡ ´ëÇÑ range callback 
+                    // mtd typeì˜ column valueì— ëŒ€í•œ range callback 
                     aRange->minimum.callback     = mtk::rangeCallBackGT4Mtd;
                     aRange->maximum.callback     = mtk::rangeCallBackLE4Mtd;
                 }
@@ -3357,7 +3357,7 @@ IDE_RC mtfExtractRange( mtcNode*      aNode,
                          ( aInfo->compValueType == MTD_COMPARE_STOREDVAL_STOREDVAL ) )
                     {
                         /* MTD_COMPARE_STOREDVAL_MTDVAL
-                           stored typeÀÇ column value¿¡ ´ëÇÑ range callback */
+                           stored typeì˜ column valueì— ëŒ€í•œ range callback */
                         aRange->minimum.callback     = mtk::rangeCallBackGT4Stored;
                         aRange->maximum.callback     = mtk::rangeCallBackLE4Stored;
                     }
@@ -3371,7 +3371,7 @@ IDE_RC mtfExtractRange( mtcNode*      aNode,
             }
 
             //---------------------------
-            // MinimumCallBack Á¤º¸ ¼³Á¤
+            // MinimumCallBack ì •ë³´ ì„¤ì •
             //---------------------------
             
             sMinimumCallBack->columnIdx  =  aInfo->columnIdx;
@@ -3415,7 +3415,7 @@ IDE_RC mtfExtractRange( mtcNode*      aNode,
             }
 
             //---------------------------
-            // MaximumCallBack Á¤º¸ ¼³Á¤
+            // MaximumCallBack ì •ë³´ ì„¤ì •
             //---------------------------
             
             sMaximumCallBack->columnIdx  =  aInfo->columnIdx;
@@ -3494,21 +3494,21 @@ IDE_RC mtfLikeCalculate( mtcNode*     aNode,
 {
 /***********************************************************************
  *
- * Description : LikeÀÇ Calculate ¼öÇà
- *               ÆĞÅÏÀÇ ±æÀÌ¿Í »ç¿ë ¸ğµâ¿¡ µû¸¥ ºĞ±â¸¦ ¼öÇàÇÑ´Ù.
+ * Description : Likeì˜ Calculate ìˆ˜í–‰
+ *               íŒ¨í„´ì˜ ê¸¸ì´ì™€ ì‚¬ìš© ëª¨ë“ˆì— ë”°ë¥¸ ë¶„ê¸°ë¥¼ ìˆ˜í–‰í•œë‹¤.
  *
  * Implementation :
  *    ex ) WHERE dname LIKE '%\_dep%' ESCAPE '\'
  *
- *    aStack[0] : °á°ú
- *    aStack[1] : ÀĞ¾î¿Â ½ºÆ®¸µ
- *               ( eg. 'develop_dep'¿Í °°Àº dname Ä®·³°ª)
- *    aStack[2] : ÆĞÅÏ ½ºÆ®¸µ
- *               ( eg. '\_dep'¿Í °°Àº ÆĞÅÏ ÀÏÄ¡ °Ë»ç Á¶°Ç°ª )
- *    aStack[3] : escape ¹®ÀÚ
- *               ( eg. '_dep'¸¦ ÆĞÅÏ ÀÏÄ¡ °Ë»ç Á¶°Ç°ªÀ¸·Î »ç¿ëÇÒ °æ¿ì,
- *                     '_'¿Í °°Àº Æ¯¼ö ¹®ÀÚ¸¦ ÀÏ¹İ ¹®ÀÚ·Î ÀÎ½ÄÇÏµµ·Ï ÇÏ´Â
- *                     '\' ¹®ÀÚ¸¦ ÁöÁ¤ÇÒ °æ¿ì ) 
+ *    aStack[0] : ê²°ê³¼
+ *    aStack[1] : ì½ì–´ì˜¨ ìŠ¤íŠ¸ë§
+ *               ( eg. 'develop_dep'ì™€ ê°™ì€ dname ì¹¼ëŸ¼ê°’)
+ *    aStack[2] : íŒ¨í„´ ìŠ¤íŠ¸ë§
+ *               ( eg. '\_dep'ì™€ ê°™ì€ íŒ¨í„´ ì¼ì¹˜ ê²€ì‚¬ ì¡°ê±´ê°’ )
+ *    aStack[3] : escape ë¬¸ì
+ *               ( eg. '_dep'ë¥¼ íŒ¨í„´ ì¼ì¹˜ ê²€ì‚¬ ì¡°ê±´ê°’ìœ¼ë¡œ ì‚¬ìš©í•  ê²½ìš°,
+ *                     '_'ì™€ ê°™ì€ íŠ¹ìˆ˜ ë¬¸ìë¥¼ ì¼ë°˜ ë¬¸ìë¡œ ì¸ì‹í•˜ë„ë¡ í•˜ëŠ”
+ *                     '\' ë¬¸ìë¥¼ ì§€ì •í•  ê²½ìš° ) 
  *
  ***********************************************************************/
     
@@ -3611,7 +3611,7 @@ IDE_RC mtfLikeCalculateEqualFast( mtcNode*     aNode,
 {
 /***********************************************************************
  *
- * Description : PROJ-1755 LikeÀÇ Calculate Fast ¼öÇà
+ * Description : PROJ-1755 Likeì˜ Calculate Fast ìˆ˜í–‰
  *
  * Implementation :
  *
@@ -3729,7 +3729,7 @@ IDE_RC mtfLikeCalculateIsNotNullFast( mtcNode*     aNode,
 {
 /***********************************************************************
  *
- * Description : PROJ-1755 LikeÀÇ Calculate Fast ¼öÇà
+ * Description : PROJ-1755 Likeì˜ Calculate Fast ìˆ˜í–‰
  *
  * Implementation :
  *
@@ -3793,7 +3793,7 @@ IDE_RC mtfLikeCalculateLengthFast( mtcNode*     aNode,
 {
 /***********************************************************************
  *
- * Description : PROJ-1755 LikeÀÇ Calculate Fast ¼öÇà
+ * Description : PROJ-1755 Likeì˜ Calculate Fast ìˆ˜í–‰
  *
  * Implementation :
  *
@@ -3918,7 +3918,7 @@ IDE_RC mtfLikeCalculateOnePercentFast( mtcNode*     aNode,
 {
 /***********************************************************************
  *
- * Description : PROJ-1755 LikeÀÇ Calculate Fast ¼öÇà
+ * Description : PROJ-1755 Likeì˜ Calculate Fast ìˆ˜í–‰
  *
  * Implementation :
  *
@@ -4029,21 +4029,21 @@ IDE_RC mtfLikeCalculateMB( mtcNode*     aNode,
 {
 /***********************************************************************
  *
- * Description : LikeÀÇ Calculate ¼öÇà
- *               ÆĞÅÏÀÇ ±æÀÌ¿Í »ç¿ë ¸ğµâ¿¡ µû¸¥ ºĞ±â¸¦ ¼öÇÚÇÑ´Ù.
+ * Description : Likeì˜ Calculate ìˆ˜í–‰
+ *               íŒ¨í„´ì˜ ê¸¸ì´ì™€ ì‚¬ìš© ëª¨ë“ˆì— ë”°ë¥¸ ë¶„ê¸°ë¥¼ ìˆ˜í•¸í•œë‹¤.
  *
  * Implementation :
  *    ex ) WHERE dname LIKE '%\_dep%' ESCAPE '\'
  *
- *    aStack[0] : °á°ú
- *    aStack[1] : ÀĞ¾î¿Â ½ºÆ®¸µ
- *               ( eg. 'develop_dep'¿Í °°Àº dname Ä®·³°ª)
- *    aStack[2] : ÆĞÅÏ ½ºÆ®¸µ
- *               ( eg. '\_dep'¿Í °°Àº ÆĞÅÏ ÀÏÄ¡ °Ë»ç Á¶°Ç°ª )
- *    aStack[3] : escape ¹®ÀÚ
- *               ( eg. '_dep'¸¦ ÆĞÅÏ ÀÏÄ¡ °Ë»ç Á¶°Ç°ªÀ¸·Î »ç¿ëÇÒ °æ¿ì,
- *                     '_'¿Í °°Àº Æ¯¼ö ¹®ÀÚ¸¦ ÀÏ¹İ ¹®ÀÚ·Î ÀÎ½ÄÇÏµµ·Ï ÇÏ´Â
- *                     '\' ¹®ÀÚ¸¦ ÁöÁ¤ÇÒ °æ¿ì ) 
+ *    aStack[0] : ê²°ê³¼
+ *    aStack[1] : ì½ì–´ì˜¨ ìŠ¤íŠ¸ë§
+ *               ( eg. 'develop_dep'ì™€ ê°™ì€ dname ì¹¼ëŸ¼ê°’)
+ *    aStack[2] : íŒ¨í„´ ìŠ¤íŠ¸ë§
+ *               ( eg. '\_dep'ì™€ ê°™ì€ íŒ¨í„´ ì¼ì¹˜ ê²€ì‚¬ ì¡°ê±´ê°’ )
+ *    aStack[3] : escape ë¬¸ì
+ *               ( eg. '_dep'ë¥¼ íŒ¨í„´ ì¼ì¹˜ ê²€ì‚¬ ì¡°ê±´ê°’ìœ¼ë¡œ ì‚¬ìš©í•  ê²½ìš°,
+ *                     '_'ì™€ ê°™ì€ íŠ¹ìˆ˜ ë¬¸ìë¥¼ ì¼ë°˜ ë¬¸ìë¡œ ì¸ì‹í•˜ë„ë¡ í•˜ëŠ”
+ *                     '\' ë¬¸ìë¥¼ ì§€ì •í•  ê²½ìš° ) 
  *
  ***********************************************************************/
     
@@ -4159,7 +4159,7 @@ IDE_RC mtfLikeCalculateLengthMBFast( mtcNode*     aNode,
 {
 /***********************************************************************
  *
- * Description : PROJ-1755 LikeÀÇ Calculate Fast ¼öÇà
+ * Description : PROJ-1755 Likeì˜ Calculate Fast ìˆ˜í–‰
  *
  * Implementation :
  *
@@ -4354,21 +4354,21 @@ IDE_RC mtfLikeCalculate4XlobLocator( mtcNode*     aNode,
 {
 /***********************************************************************
  *
- * Description : LikeÀÇ Calculate ¼öÇà
- *               ÆĞÅÏÀÇ ±æÀÌ¿Í »ç¿ë ¸ğµâ¿¡ µû¸¥ ºĞ±â¸¦ ¼öÇàÇÑ´Ù.
+ * Description : Likeì˜ Calculate ìˆ˜í–‰
+ *               íŒ¨í„´ì˜ ê¸¸ì´ì™€ ì‚¬ìš© ëª¨ë“ˆì— ë”°ë¥¸ ë¶„ê¸°ë¥¼ ìˆ˜í–‰í•œë‹¤.
  *
  * Implementation :
  *    ex ) WHERE dname LIKE '%\_dep%' ESCAPE '\'
  *
- *    aStack[0] : °á°ú
- *    aStack[1] : ÀĞ¾î¿Â ½ºÆ®¸µ
- *               ( eg. 'develop_dep'¿Í °°Àº dname Ä®·³°ª)
- *    aStack[2] : ÆĞÅÏ ½ºÆ®¸µ
- *               ( eg. '\_dep'¿Í °°Àº ÆĞÅÏ ÀÏÄ¡ °Ë»ç Á¶°Ç°ª )
- *    aStack[3] : escape ¹®ÀÚ
- *               ( eg. '_dep'¸¦ ÆĞÅÏ ÀÏÄ¡ °Ë»ç Á¶°Ç°ªÀ¸·Î »ç¿ëÇÒ °æ¿ì,
- *                     '_'¿Í °°Àº Æ¯¼ö ¹®ÀÚ¸¦ ÀÏ¹İ ¹®ÀÚ·Î ÀÎ½ÄÇÏµµ·Ï ÇÏ´Â
- *                     '\' ¹®ÀÚ¸¦ ÁöÁ¤ÇÒ °æ¿ì ) 
+ *    aStack[0] : ê²°ê³¼
+ *    aStack[1] : ì½ì–´ì˜¨ ìŠ¤íŠ¸ë§
+ *               ( eg. 'develop_dep'ì™€ ê°™ì€ dname ì¹¼ëŸ¼ê°’)
+ *    aStack[2] : íŒ¨í„´ ìŠ¤íŠ¸ë§
+ *               ( eg. '\_dep'ì™€ ê°™ì€ íŒ¨í„´ ì¼ì¹˜ ê²€ì‚¬ ì¡°ê±´ê°’ )
+ *    aStack[3] : escape ë¬¸ì
+ *               ( eg. '_dep'ë¥¼ íŒ¨í„´ ì¼ì¹˜ ê²€ì‚¬ ì¡°ê±´ê°’ìœ¼ë¡œ ì‚¬ìš©í•  ê²½ìš°,
+ *                     '_'ì™€ ê°™ì€ íŠ¹ìˆ˜ ë¬¸ìë¥¼ ì¼ë°˜ ë¬¸ìë¡œ ì¸ì‹í•˜ë„ë¡ í•˜ëŠ”
+ *                     '\' ë¬¸ìë¥¼ ì§€ì •í•  ê²½ìš° ) 
  *
  ***********************************************************************/
 
@@ -4423,7 +4423,7 @@ IDE_RC mtfLikeCalculate4XlobLocator( mtcNode*     aNode,
         
         sRefineString = (UChar*)(sTempBinary->mValue);
         
-        // escape ¹®ÀÚ
+        // escape ë¬¸ì
         if( ( aNode->lflag & MTC_NODE_ARGUMENT_COUNT_MASK ) == 3 )
         {
             sVarchar = (mtdCharType*)aStack[3].value;
@@ -4478,7 +4478,7 @@ IDE_RC mtfLikeCalculateEqual4XlobLocatorFast( mtcNode*     aNode,
 {
 /***********************************************************************
  *
- * Description : PROJ-1755 LikeÀÇ Calculate Fast ¼öÇà
+ * Description : PROJ-1755 Likeì˜ Calculate Fast ìˆ˜í–‰
  *
  * Implementation :
  *
@@ -4531,7 +4531,7 @@ IDE_RC mtfLikeCalculateEqual4XlobLocatorFast( mtcNode*     aNode,
             
             while ( sBufferOffset < sLobLength )
             {
-                // ¹öÆÛ¸¦ ÀĞ´Â´Ù.
+                // ë²„í¼ë¥¼ ì½ëŠ”ë‹¤.
                 if ( sBufferOffset + MTC_LOB_BUFFER_SIZE > sLobLength )
                 {
                     sBufferMount = sLobLength - sBufferOffset;
@@ -4551,7 +4551,7 @@ IDE_RC mtfLikeCalculateEqual4XlobLocatorFast( mtcNode*     aNode,
                                         &sReadLength )
                           != IDE_SUCCESS );
 
-                // ºñ±³ÇÑ´Ù.
+                // ë¹„êµí•œë‹¤.
                 sCompare = idlOS::memcmp( sBuffer,
                                           sPatternOffset,
                                           sBufferMount );
@@ -4604,7 +4604,7 @@ IDE_RC mtfLikeCalculateIsNotNull4XlobLocatorFast( mtcNode*     aNode,
 {
 /***********************************************************************
  *
- * Description : PROJ-1755 LikeÀÇ Calculate Fast ¼öÇà
+ * Description : PROJ-1755 Likeì˜ Calculate Fast ìˆ˜í–‰
  *
  * Implementation :
  *
@@ -4675,7 +4675,7 @@ IDE_RC mtfLikeCalculateLength4XlobLocatorFast( mtcNode*     aNode,
 {
 /***********************************************************************
  *
- * Description : PROJ-1755 LikeÀÇ Calculate Fast ¼öÇà
+ * Description : PROJ-1755 Likeì˜ Calculate Fast ìˆ˜í–‰
  *
  * Implementation :
  *
@@ -4774,7 +4774,7 @@ IDE_RC mtfLikeCalculateOnePercent4XlobLocatorFast( mtcNode*     aNode,
 {
 /***********************************************************************
  *
- * Description : PROJ-1755 LikeÀÇ Calculate Fast ¼öÇà
+ * Description : PROJ-1755 Likeì˜ Calculate Fast ìˆ˜í–‰
  *
  * Implementation :
  *
@@ -4835,7 +4835,7 @@ IDE_RC mtfLikeCalculateOnePercent4XlobLocatorFast( mtcNode*     aNode,
 
                 while ( sBufferOffset < sFormatInfo->headSize )
                 {
-                    // ¹öÆÛ¸¦ ÀĞ´Â´Ù.
+                    // ë²„í¼ë¥¼ ì½ëŠ”ë‹¤.
                     if ( sBufferOffset + MTC_LOB_BUFFER_SIZE > sFormatInfo->headSize )
                     {
                         sBufferMount = sFormatInfo->headSize - sBufferOffset;
@@ -4855,7 +4855,7 @@ IDE_RC mtfLikeCalculateOnePercent4XlobLocatorFast( mtcNode*     aNode,
                                             &sReadLength )
                               != IDE_SUCCESS );
                     
-                    // ºñ±³ÇÑ´Ù.
+                    // ë¹„êµí•œë‹¤.
                     sCompare = idlOS::memcmp( sBuffer,
                                               sHeadOffset,
                                               sBufferMount );
@@ -4887,7 +4887,7 @@ IDE_RC mtfLikeCalculateOnePercent4XlobLocatorFast( mtcNode*     aNode,
 
                     while ( sBufferOffset < sLobLength )
                     {
-                        // ¹öÆÛ¸¦ ÀĞ´Â´Ù.
+                        // ë²„í¼ë¥¼ ì½ëŠ”ë‹¤.
                         if ( sBufferOffset + MTC_LOB_BUFFER_SIZE > sLobLength )
                         {
                             sBufferMount = sLobLength - sBufferOffset;
@@ -4907,7 +4907,7 @@ IDE_RC mtfLikeCalculateOnePercent4XlobLocatorFast( mtcNode*     aNode,
                                                 &sReadLength )
                                   != IDE_SUCCESS );
                         
-                        // ºñ±³ÇÑ´Ù.
+                        // ë¹„êµí•œë‹¤.
                         sCompare = idlOS::memcmp( sBuffer,
                                                   sTailOffset,
                                                   sBufferMount );
@@ -4970,20 +4970,20 @@ IDE_RC mtfLikeCalculate4XlobLocatorMB( mtcNode*     aNode,
 {
 /***********************************************************************
  *
- * Description : LikeÀÇ Calculate ¼öÇà
- *               ÆĞÅÏÀÇ ±æÀÌ¿Í »ç¿ë ¸ğµâ¿¡ µû¸¥ ºĞ±â¸¦ ¼öÇàÇÑ´Ù.
+ * Description : Likeì˜ Calculate ìˆ˜í–‰
+ *               íŒ¨í„´ì˜ ê¸¸ì´ì™€ ì‚¬ìš© ëª¨ë“ˆì— ë”°ë¥¸ ë¶„ê¸°ë¥¼ ìˆ˜í–‰í•œë‹¤.
  * Implementation :
  *    ex ) WHERE dname LIKE '%\_dep%' ESCAPE '\'
  *
- *    aStack[0] : °á°ú
- *    aStack[1] : ÀĞ¾î¿Â ½ºÆ®¸µ
- *               ( eg. 'develop_dep'¿Í °°Àº dname Ä®·³°ª)
- *    aStack[2] : ÆĞÅÏ ½ºÆ®¸µ
- *               ( eg. '\_dep'¿Í °°Àº ÆĞÅÏ ÀÏÄ¡ °Ë»ç Á¶°Ç°ª )
- *    aStack[3] : escape ¹®ÀÚ
- *               ( eg. '_dep'¸¦ ÆĞÅÏ ÀÏÄ¡ °Ë»ç Á¶°Ç°ªÀ¸·Î »ç¿ëÇÒ °æ¿ì,
- *                     '_'¿Í °°Àº Æ¯¼ö ¹®ÀÚ¸¦ ÀÏ¹İ ¹®ÀÚ·Î ÀÎ½ÄÇÏµµ·Ï ÇÏ´Â
- *                     '\' ¹®ÀÚ¸¦ ÁöÁ¤ÇÒ °æ¿ì ) 
+ *    aStack[0] : ê²°ê³¼
+ *    aStack[1] : ì½ì–´ì˜¨ ìŠ¤íŠ¸ë§
+ *               ( eg. 'develop_dep'ì™€ ê°™ì€ dname ì¹¼ëŸ¼ê°’)
+ *    aStack[2] : íŒ¨í„´ ìŠ¤íŠ¸ë§
+ *               ( eg. '\_dep'ì™€ ê°™ì€ íŒ¨í„´ ì¼ì¹˜ ê²€ì‚¬ ì¡°ê±´ê°’ )
+ *    aStack[3] : escape ë¬¸ì
+ *               ( eg. '_dep'ë¥¼ íŒ¨í„´ ì¼ì¹˜ ê²€ì‚¬ ì¡°ê±´ê°’ìœ¼ë¡œ ì‚¬ìš©í•  ê²½ìš°,
+ *                     '_'ì™€ ê°™ì€ íŠ¹ìˆ˜ ë¬¸ìë¥¼ ì¼ë°˜ ë¬¸ìë¡œ ì¸ì‹í•˜ë„ë¡ í•˜ëŠ”
+ *                     '\' ë¬¸ìë¥¼ ì§€ì •í•  ê²½ìš° ) 
  *
  ***********************************************************************/
 
@@ -5044,7 +5044,7 @@ IDE_RC mtfLikeCalculate4XlobLocatorMB( mtcNode*     aNode,
         
         sRefineString = (UChar*)(sTempBinary->mValue);
 
-        // escape ¹®ÀÚ
+        // escape ë¬¸ì
         if( ( aNode->lflag & MTC_NODE_ARGUMENT_COUNT_MASK ) == 3 )
         {
             sVarchar = (mtdCharType*)aStack[3].value;
@@ -5105,7 +5105,7 @@ IDE_RC mtfLikeCalculateLength4XlobLocatorMBFast( mtcNode*     aNode,
 {
 /***********************************************************************
  *
- * Description : PROJ-1755 LikeÀÇ Calculate Fast ¼öÇà
+ * Description : PROJ-1755 Likeì˜ Calculate Fast ìˆ˜í–‰
  *
  * Implementation :
  *
@@ -5160,7 +5160,7 @@ IDE_RC mtfLikeCalculateLength4XlobLocatorMBFast( mtcNode*     aNode,
         
         while ( sBufferOffset < sLobLength )
         {
-            // ¹öÆÛ¸¦ ÀĞ´Â´Ù.
+            // ë²„í¼ë¥¼ ì½ëŠ”ë‹¤.
             if ( sBufferOffset + MTC_LOB_BUFFER_SIZE + MTL_MAX_PRECISION > sLobLength )
             {
                 sBufferMount = sLobLength - sBufferOffset;
@@ -5182,7 +5182,7 @@ IDE_RC mtfLikeCalculateLength4XlobLocatorMBFast( mtcNode*     aNode,
                                     &sReadLength )
                       != IDE_SUCCESS );
             
-            // ¹öÆÛ¿¡¼­ ¹®ÀÚ¿­ ±æÀÌ¸¦ ±¸ÇÑ´Ù.
+            // ë²„í¼ì—ì„œ ë¬¸ìì—´ ê¸¸ì´ë¥¼ êµ¬í•œë‹¤.
             sIndex = sBuffer;
             sFence = sIndex + sBufferSize;
             sBufferFence = sIndex + sBufferMount;
@@ -5383,7 +5383,7 @@ IDE_RC mtfExtractRange4Bit( mtcNode*      aNode,
         
         sValueColumn2->column.offset = 0;                     
 
-        // like key ±¸ÇÔ 
+        // like key êµ¬í•¨ 
         IDE_TEST( mtfLikeKey( sValue1->value,
                               &sValue1->length,
                               MTC_LIKE_KEY_PRECISION,
@@ -5427,7 +5427,7 @@ IDE_RC mtfExtractRange4Bit( mtcNode*      aNode,
             if ( aInfo->compValueType == MTD_COMPARE_FIXED_MTDVAL_FIXED_MTDVAL ||
                  aInfo->compValueType == MTD_COMPARE_MTDVAL_MTDVAL )
             {
-                // mtd typeÀÇ column value¿¡ ´ëÇÑ range callback 
+                // mtd typeì˜ column valueì— ëŒ€í•œ range callback 
                 aRange->minimum.callback     = mtk::rangeCallBackGE4Mtd;
                 aRange->maximum.callback     = mtk::rangeCallBackLE4Mtd;
             }
@@ -5437,7 +5437,7 @@ IDE_RC mtfExtractRange4Bit( mtcNode*      aNode,
                      ( aInfo->compValueType == MTD_COMPARE_STOREDVAL_STOREDVAL ) )
                 {
                     /* MTD_COMPARE_STOREDVAL_MTDVAL
-                       stored typeÀÇ column value¿¡ ´ëÇÑ range callback */
+                       stored typeì˜ column valueì— ëŒ€í•œ range callback */
                     aRange->minimum.callback     = mtk::rangeCallBackGE4Stored;
                     aRange->maximum.callback     = mtk::rangeCallBackLE4Stored;
                 }
@@ -5495,7 +5495,7 @@ IDE_RC mtfExtractRange4Bit( mtcNode*      aNode,
             if ( aInfo->compValueType == MTD_COMPARE_FIXED_MTDVAL_FIXED_MTDVAL ||
                  aInfo->compValueType == MTD_COMPARE_MTDVAL_MTDVAL )
             {
-                // mtd typeÀÇ column value¿¡ ´ëÇÑ range callback 
+                // mtd typeì˜ column valueì— ëŒ€í•œ range callback 
                 aRange->minimum.callback     = mtk::rangeCallBackGE4Mtd;
                 aRange->maximum.callback     = mtk::rangeCallBackLE4Mtd;
             }
@@ -5505,7 +5505,7 @@ IDE_RC mtfExtractRange4Bit( mtcNode*      aNode,
                      ( aInfo->compValueType == MTD_COMPARE_STOREDVAL_STOREDVAL ) )
                 {
                     /* MTD_COMPARE_STOREDVAL_MTDVAL
-                       stored typeÀÇ column value¿¡ ´ëÇÑ range callback */
+                       stored typeì˜ column valueì— ëŒ€í•œ range callback */
                     aRange->minimum.callback     = mtk::rangeCallBackGE4Stored;
                     aRange->maximum.callback     = mtk::rangeCallBackLE4Stored;
                 }
@@ -5699,7 +5699,7 @@ IDE_RC nextCharWithBuffer( mtcLobBuffer    * aBuffer,
         
         aBuffer->offset = aCursor->offset;
         
-        // ¹öÆÛ¸¦ ÀĞ´Â´Ù.
+        // ë²„í¼ë¥¼ ì½ëŠ”ë‹¤.
         IDE_TEST( mtfLikeReadLob( aBuffer )
                       != IDE_SUCCESS );
     }
@@ -5714,7 +5714,7 @@ IDE_RC nextCharWithBuffer( mtcLobBuffer    * aBuffer,
     {
         aBuffer->offset += ( aCursor->index - aBuffer->buf );
         
-        // ¹öÆÛ¸¦ ÀĞ´Â´Ù.
+        // ë²„í¼ë¥¼ ì½ëŠ”ë‹¤.
         IDE_TEST( mtfLikeReadLob( aBuffer )
                   != IDE_SUCCESS );
         
@@ -5747,7 +5747,7 @@ IDE_RC compareCharWithBuffer( mtcLobBuffer       * aBuffer,
         
         aBuffer->offset = aCursor->offset;
         
-        // ¹öÆÛ¸¦ ÀĞ´Â´Ù.
+        // ë²„í¼ë¥¼ ì½ëŠ”ë‹¤.
         IDE_TEST( mtfLikeReadLob( aBuffer )
                       != IDE_SUCCESS );
     }
@@ -5796,7 +5796,7 @@ IDE_RC nextCharWithBufferMB( mtcLobBuffer    * aBuffer,
         
         aBuffer->offset = aCursor->offset;
         
-        // ¹öÆÛ¸¦ ÀĞ´Â´Ù.
+        // ë²„í¼ë¥¼ ì½ëŠ”ë‹¤.
         IDE_TEST( mtfLikeReadLob( aBuffer )
                       != IDE_SUCCESS );
     }
@@ -5811,7 +5811,7 @@ IDE_RC nextCharWithBufferMB( mtcLobBuffer    * aBuffer,
     {
         aBuffer->offset += ( aCursor->index - aBuffer->buf );
         
-        // ¹öÆÛ¸¦ ÀĞ´Â´Ù.
+        // ë²„í¼ë¥¼ ì½ëŠ”ë‹¤.
         IDE_TEST( mtfLikeReadLob( aBuffer )
                   != IDE_SUCCESS );
         
@@ -5848,7 +5848,7 @@ IDE_RC compareCharWithBufferMB( mtcLobBuffer       * aBuffer,
         
         aBuffer->offset = aCursor->offset;
         
-        // ¹öÆÛ¸¦ ÀĞ´Â´Ù.
+        // ë²„í¼ë¥¼ ì½ëŠ”ë‹¤.
         IDE_TEST( mtfLikeReadLob( aBuffer )
                       != IDE_SUCCESS );
     }
@@ -6080,9 +6080,9 @@ IDE_RC mtfExtractRange4Echar( mtcNode*      aNode,
         sValueColumn2->column.offset = 0;                     
 
         //--------------------------------------------------
-        // pattern stringÀ¸·Î ÄÃ·³ÀÌ ¿À´Â °æ¿ì
-        // default policy°¡ ¾Æ´Ï¹Ç·Î decrypt¸¦ ¼öÇàÇÏ¿©
-        // plain text¸¦ ¾ò´Â´Ù.
+        // pattern stringìœ¼ë¡œ ì»¬ëŸ¼ì´ ì˜¤ëŠ” ê²½ìš°
+        // default policyê°€ ì•„ë‹ˆë¯€ë¡œ decryptë¥¼ ìˆ˜í–‰í•˜ì—¬
+        // plain textë¥¼ ì–»ëŠ”ë‹¤.
         //--------------------------------------------------
         
         if ( sValueColumn->policy[0] != '\0' )
@@ -6121,8 +6121,8 @@ IDE_RC mtfExtractRange4Echar( mtcNode*      aNode,
             sPlainLength = sValue->mCipherLength;
         }
 
-        // BUG-43810 echar typeÀÇ key range¸¦ »ı¼ºÇÒ¶§´Â
-        // plain text¿¡¼­ space padingÀ» Á¦¿ÜÇÑ ±æÀÌ¸¦ Ã£´Â´Ù.
+        // BUG-43810 echar typeì˜ key rangeë¥¼ ìƒì„±í• ë•ŒëŠ”
+        // plain textì—ì„œ space padingì„ ì œì™¸í•œ ê¸¸ì´ë¥¼ ì°¾ëŠ”ë‹¤.
         if ( sValueColumn->module->id == MTD_ECHAR_ID )
         {
             for ( ; sPlainLength > 1; sPlainLength-- )
@@ -6143,7 +6143,7 @@ IDE_RC mtfExtractRange4Echar( mtcNode*      aNode,
         }
         
         //fix For BUG-15930  
-        // like key ±¸ÇÔ 
+        // like key êµ¬í•¨ 
         if( (const mtlModule *) (sValueColumn->language) == &mtlAscii )
         {
             IDE_TEST( mtfLikeKey( sValue1->mValue,
@@ -6173,12 +6173,12 @@ IDE_RC mtfExtractRange4Echar( mtcNode*      aNode,
 
         //--------------------------------------------------
         // To Fix BUG-12306
-        // - like key°¡ 'F%', 'F_' Å¸ÀÔÀÎ °æ¿ì,
-        //   like key °ªÀÇ ¸¶Áö¸· ¹®ÀÚ¸¦ ÇÏ³ª Áõ°¡
-        //   ex) LIKE 'aa%'ÀÎ °æ¿ì : sValue1->value 'aa'
+        // - like keyê°€ 'F%', 'F_' íƒ€ì…ì¸ ê²½ìš°,
+        //   like key ê°’ì˜ ë§ˆì§€ë§‰ ë¬¸ìë¥¼ í•˜ë‚˜ ì¦ê°€
+        //   ex) LIKE 'aa%'ì¸ ê²½ìš° : sValue1->value 'aa'
         //                           sValue2->value 'ab'
-        // - like key°¡ 'F' Å¸ÀÔÀÎ °æ¿ì,
-        //   ex) LIKE 'aa'ÀÎ °æ¿ì  : sValue1->value 'aa'
+        // - like keyê°€ 'F' íƒ€ì…ì¸ ê²½ìš°,
+        //   ex) LIKE 'aa'ì¸ ê²½ìš°  : sValue1->value 'aa'
         //                           sValue2->value 'aa'
         //--------------------------------------------------
 
@@ -6189,7 +6189,7 @@ IDE_RC mtfExtractRange4Echar( mtcNode*      aNode,
         
         if ( sIsEqual == ID_FALSE )
         {
-            // like key°¡ 'F%', 'F_' Å¸ÀÔÀÎ °æ¿ì,
+            // like keyê°€ 'F%', 'F_' íƒ€ì…ì¸ ê²½ìš°,
             for( sValue2->mCipherLength = sValue1->mCipherLength;
                  sValue2->mCipherLength > 0;
                  sValue2->mCipherLength-- )
@@ -6203,11 +6203,11 @@ IDE_RC mtfExtractRange4Echar( mtcNode*      aNode,
         }
         else
         {
-            // like key°¡ 'F' Å¸ÀÔÀÎ °æ¿ì
+            // like keyê°€ 'F' íƒ€ì…ì¸ ê²½ìš°
         }
 
         //--------------------------------------------------
-        // ECC »ı¼º
+        // ECC ìƒì„±
         //--------------------------------------------------
 
         if ( sValue1->mCipherLength > 0 )
@@ -6267,13 +6267,13 @@ IDE_RC mtfExtractRange4Echar( mtcNode*      aNode,
             if ( sIsEqual == ID_TRUE )
             {
                 //---------------------------
-                // RangeCallBack ¼³Á¤
+                // RangeCallBack ì„¤ì •
                 //---------------------------
 
                 if ( aInfo->compValueType == MTD_COMPARE_FIXED_MTDVAL_FIXED_MTDVAL ||
                      aInfo->compValueType == MTD_COMPARE_MTDVAL_MTDVAL )
                 {
-                    // mtd typeÀÇ column value¿¡ ´ëÇÑ range callback 
+                    // mtd typeì˜ column valueì— ëŒ€í•œ range callback 
                     aRange->minimum.callback     = mtk::rangeCallBackGE4Mtd;
                     aRange->maximum.callback     = mtk::rangeCallBackLE4Mtd;
                 }
@@ -6283,7 +6283,7 @@ IDE_RC mtfExtractRange4Echar( mtcNode*      aNode,
                          ( aInfo->compValueType == MTD_COMPARE_STOREDVAL_STOREDVAL ) )
                     {
                         /* MTD_COMPARE_STOREDVAL_MTDVAL
-                           stored typeÀÇ column value¿¡ ´ëÇÑ range callback */
+                           stored typeì˜ column valueì— ëŒ€í•œ range callback */
                         aRange->minimum.callback     = mtk::rangeCallBackGE4Stored;
                         aRange->maximum.callback     = mtk::rangeCallBackLE4Stored;
                     }
@@ -6300,7 +6300,7 @@ IDE_RC mtfExtractRange4Echar( mtcNode*      aNode,
                 if ( aInfo->compValueType == MTD_COMPARE_FIXED_MTDVAL_FIXED_MTDVAL ||
                      aInfo->compValueType == MTD_COMPARE_MTDVAL_MTDVAL )
                 {
-                    // mtd typeÀÇ column value¿¡ ´ëÇÑ range callback 
+                    // mtd typeì˜ column valueì— ëŒ€í•œ range callback 
                     aRange->minimum.callback     = mtk::rangeCallBackGE4Mtd;
                     aRange->maximum.callback     = mtk::rangeCallBackLT4Mtd;
                 }
@@ -6310,7 +6310,7 @@ IDE_RC mtfExtractRange4Echar( mtcNode*      aNode,
                          ( aInfo->compValueType == MTD_COMPARE_STOREDVAL_STOREDVAL ) )
                     {
                         /* MTD_COMPARE_STOREDVAL_MTDVAL
-                           stored typeÀÇ column value¿¡ ´ëÇÑ range callback */
+                           stored typeì˜ column valueì— ëŒ€í•œ range callback */
                         aRange->minimum.callback     = mtk::rangeCallBackGE4Stored;
                         aRange->maximum.callback     = mtk::rangeCallBackLT4Stored;
                     }
@@ -6324,7 +6324,7 @@ IDE_RC mtfExtractRange4Echar( mtcNode*      aNode,
             }
 
             //---------------------------
-            // MinimumCallBack ¼³Á¤
+            // MinimumCallBack ì„¤ì •
             //---------------------------
             
             sMinimumCallBack->columnIdx  = aInfo->columnIdx;
@@ -6349,7 +6349,7 @@ IDE_RC mtfExtractRange4Echar( mtcNode*      aNode,
                 }
                 else
                 {
-                    // echar, evarchar´Â samegroup compare°¡ ºÒ°¡´ÉÇÏ´Ù.
+                    // echar, evarcharëŠ” samegroup compareê°€ ë¶ˆê°€ëŠ¥í•˜ë‹¤.
                     IDE_ASSERT( 0 );
                 }
             }
@@ -6359,7 +6359,7 @@ IDE_RC mtfExtractRange4Echar( mtcNode*      aNode,
             }
 
             //---------------------------
-            // MaximumCallBack Á¤º¸ ¼³Á¤
+            // MaximumCallBack ì •ë³´ ì„¤ì •
             //---------------------------
             
             sMaximumCallBack->columnIdx  = aInfo->columnIdx;
@@ -6383,7 +6383,7 @@ IDE_RC mtfExtractRange4Echar( mtcNode*      aNode,
                 }
                 else
                 {
-                    // echar, evarchar´Â samegroup compare°¡ ºÒ°¡´ÉÇÏ´Ù.
+                    // echar, evarcharëŠ” samegroup compareê°€ ë¶ˆê°€ëŠ¥í•˜ë‹¤.
                     IDE_ASSERT( 0 );
                 }
             }
@@ -6412,7 +6412,7 @@ IDE_RC mtfExtractRange4Echar( mtcNode*      aNode,
                 if ( aInfo->compValueType == MTD_COMPARE_FIXED_MTDVAL_FIXED_MTDVAL ||
                      aInfo->compValueType == MTD_COMPARE_MTDVAL_MTDVAL )
                 {
-                    // mtd typeÀÇ column value¿¡ ´ëÇÑ range callback 
+                    // mtd typeì˜ column valueì— ëŒ€í•œ range callback 
                     aRange->minimum.callback     = mtk::rangeCallBackGE4Mtd;
                     aRange->maximum.callback     = mtk::rangeCallBackLE4Mtd;
                 }
@@ -6422,7 +6422,7 @@ IDE_RC mtfExtractRange4Echar( mtcNode*      aNode,
                          ( aInfo->compValueType == MTD_COMPARE_STOREDVAL_STOREDVAL ) )
                     {
                         /* MTD_COMPARE_STOREDVAL_MTDVAL
-                           stored typeÀÇ column value¿¡ ´ëÇÑ range callback */
+                           stored typeì˜ column valueì— ëŒ€í•œ range callback */
                         aRange->minimum.callback     = mtk::rangeCallBackGE4Stored;
                         aRange->maximum.callback     = mtk::rangeCallBackLE4Stored;
                     }
@@ -6437,13 +6437,13 @@ IDE_RC mtfExtractRange4Echar( mtcNode*      aNode,
             else
             {
                 //---------------------------
-                // RangeCallBack ¼³Á¤
+                // RangeCallBack ì„¤ì •
                 //---------------------------
 
                 if ( aInfo->compValueType == MTD_COMPARE_FIXED_MTDVAL_FIXED_MTDVAL ||
                      aInfo->compValueType == MTD_COMPARE_MTDVAL_MTDVAL )
                 {
-                    // mtd typeÀÇ column value¿¡ ´ëÇÑ range callback 
+                    // mtd typeì˜ column valueì— ëŒ€í•œ range callback 
                     aRange->minimum.callback     = mtk::rangeCallBackGT4Mtd;
                     aRange->maximum.callback     = mtk::rangeCallBackLE4Mtd;
                 }
@@ -6453,7 +6453,7 @@ IDE_RC mtfExtractRange4Echar( mtcNode*      aNode,
                          ( aInfo->compValueType == MTD_COMPARE_STOREDVAL_STOREDVAL ) )
                     {
                         /* MTD_COMPARE_STOREDVAL_MTDVAL
-                           stored typeÀÇ column value¿¡ ´ëÇÑ range callback */
+                           stored typeì˜ column valueì— ëŒ€í•œ range callback */
                         aRange->minimum.callback     = mtk::rangeCallBackGT4Stored;
                         aRange->maximum.callback     = mtk::rangeCallBackLE4Stored;
                     }
@@ -6467,7 +6467,7 @@ IDE_RC mtfExtractRange4Echar( mtcNode*      aNode,
             }
  
             //---------------------------
-            // MinimumCallBack Á¤º¸ ¼³Á¤
+            // MinimumCallBack ì •ë³´ ì„¤ì •
             //---------------------------
             
             sMinimumCallBack->columnIdx  = aInfo->columnIdx;
@@ -6492,7 +6492,7 @@ IDE_RC mtfExtractRange4Echar( mtcNode*      aNode,
                 }
                 else
                 {
-                    // echar, evarchar´Â samegroup compare°¡ ºÒ°¡´ÉÇÏ´Ù.
+                    // echar, evarcharëŠ” samegroup compareê°€ ë¶ˆê°€ëŠ¥í•˜ë‹¤.
                     IDE_ASSERT( 0 );
                 }
             }
@@ -6502,7 +6502,7 @@ IDE_RC mtfExtractRange4Echar( mtcNode*      aNode,
             }
 
             //---------------------------
-            // MaximumCallBack Á¤º¸ ¼³Á¤
+            // MaximumCallBack ì •ë³´ ì„¤ì •
             //---------------------------
             
             sMaximumCallBack->columnIdx  = aInfo->columnIdx;
@@ -6527,7 +6527,7 @@ IDE_RC mtfExtractRange4Echar( mtcNode*      aNode,
                 }
                 else
                 {
-                    // echar, evarchar´Â samegroup compare°¡ ºÒ°¡´ÉÇÏ´Ù.
+                    // echar, evarcharëŠ” samegroup compareê°€ ë¶ˆê°€ëŠ¥í•˜ë‹¤.
                     IDE_ASSERT( 0 );
                 }
             }
@@ -6572,21 +6572,21 @@ IDE_RC mtfLikeCalculate4Echar( mtcNode*     aNode,
 {
 /***********************************************************************
  *
- * Description : LikeÀÇ Calculate ¼öÇà
- *               ÆĞÅÏÀÇ ±æÀÌ¿Í »ç¿ë ¸ğµâ¿¡ µû¸¥ ºĞ±â¸¦ ¼öÇàÇÑ´Ù.
+ * Description : Likeì˜ Calculate ìˆ˜í–‰
+ *               íŒ¨í„´ì˜ ê¸¸ì´ì™€ ì‚¬ìš© ëª¨ë“ˆì— ë”°ë¥¸ ë¶„ê¸°ë¥¼ ìˆ˜í–‰í•œë‹¤.
  *
  * Implementation :
  *    ex ) WHERE dname LIKE '%\_dep%' ESCAPE '\'
  *
- *    aStack[0] : °á°ú
- *    aStack[1] : ÀĞ¾î¿Â ½ºÆ®¸µ
- *               ( eg. 'develop_dep'¿Í °°Àº dname Ä®·³°ª)
- *    aStack[2] : ÆĞÅÏ ½ºÆ®¸µ
- *               ( eg. '\_dep'¿Í °°Àº ÆĞÅÏ ÀÏÄ¡ °Ë»ç Á¶°Ç°ª )
- *    aStack[3] : escape ¹®ÀÚ
- *               ( eg. '_dep'¸¦ ÆĞÅÏ ÀÏÄ¡ °Ë»ç Á¶°Ç°ªÀ¸·Î »ç¿ëÇÒ °æ¿ì,
- *                     '_'¿Í °°Àº Æ¯¼ö ¹®ÀÚ¸¦ ÀÏ¹İ ¹®ÀÚ·Î ÀÎ½ÄÇÏµµ·Ï ÇÏ´Â
- *                     '\' ¹®ÀÚ¸¦ ÁöÁ¤ÇÒ °æ¿ì ) 
+ *    aStack[0] : ê²°ê³¼
+ *    aStack[1] : ì½ì–´ì˜¨ ìŠ¤íŠ¸ë§
+ *               ( eg. 'develop_dep'ì™€ ê°™ì€ dname ì¹¼ëŸ¼ê°’)
+ *    aStack[2] : íŒ¨í„´ ìŠ¤íŠ¸ë§
+ *               ( eg. '\_dep'ì™€ ê°™ì€ íŒ¨í„´ ì¼ì¹˜ ê²€ì‚¬ ì¡°ê±´ê°’ )
+ *    aStack[3] : escape ë¬¸ì
+ *               ( eg. '_dep'ë¥¼ íŒ¨í„´ ì¼ì¹˜ ê²€ì‚¬ ì¡°ê±´ê°’ìœ¼ë¡œ ì‚¬ìš©í•  ê²½ìš°,
+ *                     '_'ì™€ ê°™ì€ íŠ¹ìˆ˜ ë¬¸ìë¥¼ ì¼ë°˜ ë¬¸ìë¡œ ì¸ì‹í•˜ë„ë¡ í•˜ëŠ”
+ *                     '\' ë¬¸ìë¥¼ ì§€ì •í•  ê²½ìš° ) 
  *
  ***********************************************************************/
     
@@ -6635,7 +6635,7 @@ IDE_RC mtfLikeCalculate4Echar( mtcNode*     aNode,
     else
     {
         //--------------------------------------------------
-        // search stringÀÇ plain text¸¦ ¾ò´Â´Ù.
+        // search stringì˜ plain textë¥¼ ì–»ëŠ”ë‹¤.
         //--------------------------------------------------
 
         sEchar   = (mtdEcharType*)aStack[1].value;
@@ -6684,7 +6684,7 @@ IDE_RC mtfLikeCalculate4Echar( mtcNode*     aNode,
         sStringFence = sStringPlain + sStringPlainLength;
         
         //--------------------------------------------------
-        // format stringÀÇ plain text¸¦ ¾ò´Â´Ù.
+        // format stringì˜ plain textë¥¼ ì–»ëŠ”ë‹¤.
         //--------------------------------------------------
         
         sEchar = (mtdEcharType*)aStack[2].value;
@@ -6697,8 +6697,8 @@ IDE_RC mtfLikeCalculate4Echar( mtcNode*     aNode,
 
         if ( sEncNode->conversion == NULL )
         {
-            // conversionÀÌ nullÀÎ °æ¿ì default policy°¡ ¾Æ´Ñ
-            // ÄÃ·³ÀÌ format stringÀÌ ¿À´Â °æ¿ì°¡ ÀÖ´Ù.
+            // conversionì´ nullì¸ ê²½ìš° default policyê°€ ì•„ë‹Œ
+            // ì»¬ëŸ¼ì´ format stringì´ ì˜¤ëŠ” ê²½ìš°ê°€ ìˆë‹¤.
             sEncColumn = aTemplate->rows[sEncNode->baseTable].columns
                 + sEncNode->baseColumn;
         
@@ -6740,8 +6740,8 @@ IDE_RC mtfLikeCalculate4Echar( mtcNode*     aNode,
         }
         else
         {
-            // conversionÀÌ ÀÖ´Â °æ¿ì conversion½Ã Ç×»ó
-            // default policy·Î º¯È¯µÈ´Ù.
+            // conversionì´ ìˆëŠ” ê²½ìš° conversionì‹œ í•­ìƒ
+            // default policyë¡œ ë³€í™˜ëœë‹¤.
             sFormatPlain = sEchar->mValue;
             sFormatPlainLength = sEchar->mCipherLength;
         }
@@ -6811,7 +6811,7 @@ IDE_RC mtfLikeCalculateEqual4EcharFast( mtcNode*     aNode,
 {
 /***********************************************************************
  *
- * Description : PROJ-1755 LikeÀÇ Calculate Fast ¼öÇà
+ * Description : PROJ-1755 Likeì˜ Calculate Fast ìˆ˜í–‰
  *
  * Implementation :
  *
@@ -6850,7 +6850,7 @@ IDE_RC mtfLikeCalculateEqual4EcharFast( mtcNode*     aNode,
     else
     {
         //--------------------------------------------------
-        // search stringÀÇ plain text¸¦ ¾ò´Â´Ù.
+        // search stringì˜ plain textë¥¼ ì–»ëŠ”ë‹¤.
         //--------------------------------------------------
         
         sEchar   = (mtdEcharType*)aStack[1].value;
@@ -6898,7 +6898,7 @@ IDE_RC mtfLikeCalculateEqual4EcharFast( mtcNode*     aNode,
         sString = sStringPlain;
         
         //--------------------------------------------------
-        // like ¼öÇà
+        // like ìˆ˜í–‰
         //--------------------------------------------------
         
         sFormatInfo = (mtcLikeFormatInfo*) aInfo;
@@ -6985,7 +6985,7 @@ IDE_RC mtfLikeCalculateIsNotNull4EcharFast( mtcNode*     aNode,
 {
 /***********************************************************************
  *
- * Description : PROJ-1755 LikeÀÇ Calculate Fast ¼öÇà
+ * Description : PROJ-1755 Likeì˜ Calculate Fast ìˆ˜í–‰
  *
  * Implementation :
  *
@@ -7046,7 +7046,7 @@ IDE_RC mtfLikeCalculateLength4EcharFast( mtcNode*     aNode,
 {
 /***********************************************************************
  *
- * Description : PROJ-1755 LikeÀÇ Calculate Fast ¼öÇà
+ * Description : PROJ-1755 Likeì˜ Calculate Fast ìˆ˜í–‰
  *
  * Implementation :
  *
@@ -7085,7 +7085,7 @@ IDE_RC mtfLikeCalculateLength4EcharFast( mtcNode*     aNode,
     else
     {
         //--------------------------------------------------
-        // search stringÀÇ plain text¸¦ ¾ò´Â´Ù.
+        // search stringì˜ plain textë¥¼ ì–»ëŠ”ë‹¤.
         //--------------------------------------------------
         
         sEchar   = (mtdEcharType*)aStack[1].value;
@@ -7133,7 +7133,7 @@ IDE_RC mtfLikeCalculateLength4EcharFast( mtcNode*     aNode,
         //sString = sStringPlain;
         
         //--------------------------------------------------
-        // like ¼öÇà
+        // like ìˆ˜í–‰
         //--------------------------------------------------
 
         sFormatInfo = (mtcLikeFormatInfo*) aInfo;
@@ -7227,7 +7227,7 @@ IDE_RC mtfLikeCalculateOnePercent4EcharFast( mtcNode*     aNode,
 {
 /***********************************************************************
  *
- * Description : PROJ-1755 LikeÀÇ Calculate Fast ¼öÇà
+ * Description : PROJ-1755 Likeì˜ Calculate Fast ìˆ˜í–‰
  *
  * Implementation :
  *
@@ -7266,7 +7266,7 @@ IDE_RC mtfLikeCalculateOnePercent4EcharFast( mtcNode*     aNode,
     else
     {
         //--------------------------------------------------
-        // search stringÀÇ plain text¸¦ ¾ò´Â´Ù.
+        // search stringì˜ plain textë¥¼ ì–»ëŠ”ë‹¤.
         //--------------------------------------------------
         
         sEchar   = (mtdEcharType*)aStack[1].value;
@@ -7315,7 +7315,7 @@ IDE_RC mtfLikeCalculateOnePercent4EcharFast( mtcNode*     aNode,
         sStringFence = sStringPlain + sStringPlainLength;
         
         //--------------------------------------------------
-        // like ¼öÇà
+        // like ìˆ˜í–‰
         //--------------------------------------------------
         
         sFormatInfo  = (mtcLikeFormatInfo*) aInfo;
@@ -7392,21 +7392,21 @@ IDE_RC mtfLikeCalculate4EcharMB( mtcNode*     aNode,
 {
 /***********************************************************************
  *
- * Description : LikeÀÇ Calculate ¼öÇà
- *               ÆĞÅÏÀÇ ±æÀÌ¿Í »ç¿ë ¸ğµâ¿¡ µû¸¥ ºĞ±â¸¦ ¼öÇàÇÑ´Ù.
+ * Description : Likeì˜ Calculate ìˆ˜í–‰
+ *               íŒ¨í„´ì˜ ê¸¸ì´ì™€ ì‚¬ìš© ëª¨ë“ˆì— ë”°ë¥¸ ë¶„ê¸°ë¥¼ ìˆ˜í–‰í•œë‹¤.
  *
  * Implementation :
  *    ex ) WHERE dname LIKE '%\_dep%' ESCAPE '\'
  *
- *    aStack[0] : °á°ú
- *    aStack[1] : ÀĞ¾î¿Â ½ºÆ®¸µ
- *               ( eg. 'develop_dep'¿Í °°Àº dname Ä®·³°ª)
- *    aStack[2] : ÆĞÅÏ ½ºÆ®¸µ
- *               ( eg. '\_dep'¿Í °°Àº ÆĞÅÏ ÀÏÄ¡ °Ë»ç Á¶°Ç°ª )
- *    aStack[3] : escape ¹®ÀÚ
- *               ( eg. '_dep'¸¦ ÆĞÅÏ ÀÏÄ¡ °Ë»ç Á¶°Ç°ªÀ¸·Î »ç¿ëÇÒ °æ¿ì,
- *                     '_'¿Í °°Àº Æ¯¼ö ¹®ÀÚ¸¦ ÀÏ¹İ ¹®ÀÚ·Î ÀÎ½ÄÇÏµµ·Ï ÇÏ´Â
- *                     '\' ¹®ÀÚ¸¦ ÁöÁ¤ÇÒ °æ¿ì ) 
+ *    aStack[0] : ê²°ê³¼
+ *    aStack[1] : ì½ì–´ì˜¨ ìŠ¤íŠ¸ë§
+ *               ( eg. 'develop_dep'ì™€ ê°™ì€ dname ì¹¼ëŸ¼ê°’)
+ *    aStack[2] : íŒ¨í„´ ìŠ¤íŠ¸ë§
+ *               ( eg. '\_dep'ì™€ ê°™ì€ íŒ¨í„´ ì¼ì¹˜ ê²€ì‚¬ ì¡°ê±´ê°’ )
+ *    aStack[3] : escape ë¬¸ì
+ *               ( eg. '_dep'ë¥¼ íŒ¨í„´ ì¼ì¹˜ ê²€ì‚¬ ì¡°ê±´ê°’ìœ¼ë¡œ ì‚¬ìš©í•  ê²½ìš°,
+ *                     '_'ì™€ ê°™ì€ íŠ¹ìˆ˜ ë¬¸ìë¥¼ ì¼ë°˜ ë¬¸ìë¡œ ì¸ì‹í•˜ë„ë¡ í•˜ëŠ”
+ *                     '\' ë¬¸ìë¥¼ ì§€ì •í•  ê²½ìš° ) 
  *
  ***********************************************************************/
 
@@ -7458,7 +7458,7 @@ IDE_RC mtfLikeCalculate4EcharMB( mtcNode*     aNode,
     else
     {
         //--------------------------------------------------
-        // search stringÀÇ plain text¸¦ ¾ò´Â´Ù.
+        // search stringì˜ plain textë¥¼ ì–»ëŠ”ë‹¤.
         //--------------------------------------------------
 
         sEchar   = (mtdEcharType*)aStack[1].value;
@@ -7507,7 +7507,7 @@ IDE_RC mtfLikeCalculate4EcharMB( mtcNode*     aNode,
         sStringFence = sStringPlain + sStringPlainLength;
         
         //--------------------------------------------------
-        // format stringÀÇ plain text¸¦ ¾ò´Â´Ù.
+        // format stringì˜ plain textë¥¼ ì–»ëŠ”ë‹¤.
         //--------------------------------------------------
         
         sEchar = (mtdEcharType*)aStack[2].value;
@@ -7520,8 +7520,8 @@ IDE_RC mtfLikeCalculate4EcharMB( mtcNode*     aNode,
         
         if ( sEncNode->conversion == NULL )
         {
-            // conversionÀÌ nullÀÎ °æ¿ì default policy°¡ ¾Æ´Ñ
-            // ÄÃ·³ÀÌ format stringÀÌ ¿À´Â °æ¿ì°¡ ÀÖ´Ù.
+            // conversionì´ nullì¸ ê²½ìš° default policyê°€ ì•„ë‹Œ
+            // ì»¬ëŸ¼ì´ format stringì´ ì˜¤ëŠ” ê²½ìš°ê°€ ìˆë‹¤.
             sEncColumn = aTemplate->rows[sEncNode->baseTable].columns
                 + sEncNode->baseColumn;
         
@@ -7563,8 +7563,8 @@ IDE_RC mtfLikeCalculate4EcharMB( mtcNode*     aNode,
         }
         else
         {
-            // conversionÀÌ ÀÖ´Â °æ¿ì conversion½Ã Ç×»ó
-            // default policy·Î º¯È¯µÈ´Ù.
+            // conversionì´ ìˆëŠ” ê²½ìš° conversionì‹œ í•­ìƒ
+            // default policyë¡œ ë³€í™˜ëœë‹¤.
             sFormatPlain = sEchar->mValue;
             sFormatPlainLength = sEchar->mCipherLength;
         }
@@ -7572,7 +7572,7 @@ IDE_RC mtfLikeCalculate4EcharMB( mtcNode*     aNode,
         sFormat      = sFormatPlain;
         
         //--------------------------------------------------
-        // escape ¹®ÀÚ
+        // escape ë¬¸ì
         //--------------------------------------------------
         
         sColumn = aTemplate->rows[aNode->table].columns + aNode->column;
@@ -7648,7 +7648,7 @@ IDE_RC mtfLikeCalculateLength4EcharMBFast( mtcNode*     aNode,
 {
 /***********************************************************************
  *
- * Description : PROJ-1755 LikeÀÇ Calculate Fast ¼öÇà
+ * Description : PROJ-1755 Likeì˜ Calculate Fast ìˆ˜í–‰
  *
  * Implementation :
  *
@@ -7694,7 +7694,7 @@ IDE_RC mtfLikeCalculateLength4EcharMBFast( mtcNode*     aNode,
         sLength     = 0;
 
         //--------------------------------------------------
-        // search stringÀÇ plain text¸¦ ¾ò´Â´Ù.
+        // search stringì˜ plain textë¥¼ ì–»ëŠ”ë‹¤.
         //--------------------------------------------------
         
         sEchar   = (mtdEcharType*)aStack[1].value;
@@ -7740,7 +7740,7 @@ IDE_RC mtfLikeCalculateLength4EcharMBFast( mtcNode*     aNode,
         }
         
         //--------------------------------------------------
-        // like ¼öÇà
+        // like ìˆ˜í–‰
         //--------------------------------------------------
 
         sFormatInfo = (mtcLikeFormatInfo*) aInfo;
@@ -7898,11 +7898,11 @@ SInt matchSubString( UChar * aSource,
 {
 /***********************************************************************
  *
- * Description :  ÀÏÄ¡ÇÏ´Â ºÎºĞ ¹®ÀÚ¿­ÀÇ À§Ä¡¸¦ ±¸ÇÑ´Ù.
+ * Description :  ì¼ì¹˜í•˜ëŠ” ë¶€ë¶„ ë¬¸ìì—´ì˜ ìœ„ì¹˜ë¥¼ êµ¬í•œë‹¤.
  *
  * Implementation :
- *   ´ÜÀÏ ¹ÙÀÌÆ®¿Í ¸ÖÆ¼ ¹ÙÀÌÆ®¿¡ °ü°è ¾øÀÌ ±¸ÇÏ´Â ¹æ¹ıÀ» ÃëÇØ »ç¿ëÇÏ´Â Ãø¿¡¼­
- * °ª¿¡ À§Ä¡ ÆÇº°À» ÅëÇØ °ËÁõÀ» ÇÑ´Ù.
+ *   ë‹¨ì¼ ë°”ì´íŠ¸ì™€ ë©€í‹° ë°”ì´íŠ¸ì— ê´€ê³„ ì—†ì´ êµ¬í•˜ëŠ” ë°©ë²•ì„ ì·¨í•´ ì‚¬ìš©í•˜ëŠ” ì¸¡ì—ì„œ
+ * ê°’ì— ìœ„ì¹˜ íŒë³„ì„ í†µí•´ ê²€ì¦ì„ í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -7948,7 +7948,7 @@ SInt matchSubString( UChar * aSource,
                 // nothing to do
             }
 
-            // BUG-37131 ¸¶Áö¸· source hash°ªÀº °è»êÇÏÁö ¾Ê´Â´Ù.
+            // BUG-37131 ë§ˆì§€ë§‰ source hashê°’ì€ ê³„ì‚°í•˜ì§€ ì•ŠëŠ”ë‹¤.
             if ( i < aSourceSize - aPatternSize )
             {
                 sHashSource = (((sHashSource - (*sOldChar) * sResult) << MTC_LIKE_SHIFT) + (*sNewChar) ) & MTC_LIKE_HASH_KEY;
@@ -7985,11 +7985,11 @@ IDE_RC matchSubStringForLOB( mtcLobBuffer     * aBuffer,
 {
 /***********************************************************************
  *
- * Description :  LOB¿¡¼­ ÀÏÄ¡ÇÏ´Â ºÎºĞ ¹®ÀÚ¿­ÀÇ À§Ä¡¸¦ ±¸ÇÑ´Ù.
+ * Description :  LOBì—ì„œ ì¼ì¹˜í•˜ëŠ” ë¶€ë¶„ ë¬¸ìì—´ì˜ ìœ„ì¹˜ë¥¼ êµ¬í•œë‹¤.
  *
  * Implementation :
- *   ´ÜÀÏ ¹ÙÀÌÆ®¿Í ¸ÖÆ¼ ¹ÙÀÌÆ®¿¡ °ü°è ¾øÀÌ ±¸ÇÏ´Â ¹æ¹ıÀ» ÃëÇØ »ç¿ëÇÏ´Â Ãø¿¡¼­
- * °ª¿¡ À§Ä¡ ÆÇº°À» ÅëÇØ °ËÁõÀ» ÇÑ´Ù.   
+ *   ë‹¨ì¼ ë°”ì´íŠ¸ì™€ ë©€í‹° ë°”ì´íŠ¸ì— ê´€ê³„ ì—†ì´ êµ¬í•˜ëŠ” ë°©ë²•ì„ ì·¨í•´ ì‚¬ìš©í•˜ëŠ” ì¸¡ì—ì„œ
+ * ê°’ì— ìœ„ì¹˜ íŒë³„ì„ í†µí•´ ê²€ì¦ì„ í•œë‹¤.   
  *
  ***********************************************************************/
     
@@ -8071,7 +8071,7 @@ IDE_RC matchSubStringForLOB( mtcLobBuffer     * aBuffer,
                 // nothing to do 
             }
 
-            // BUG-37131 ¸¶Áö¸· source hash°ªÀº °è»êÇÏÁö ¾Ê´Â´Ù.
+            // BUG-37131 ë§ˆì§€ë§‰ source hashê°’ì€ ê³„ì‚°í•˜ì§€ ì•ŠëŠ”ë‹¤.
             if ( sOffset + aPatternSize < aLobLength )
             {
                 sHashSource = ((( sHashSource - (*sOldChar) * sResult ) << MTC_LIKE_SHIFT ) + (*sNewChar) ) & MTC_LIKE_HASH_KEY;
@@ -8131,17 +8131,17 @@ static IDE_RC getMoreInfoFromPattern( const UChar      * aFormat,
 {
 /***********************************************************************
  *
- * Description :  °°Àº ÆĞÅÏ³¢¸® ºĞ·ù ÇÏ°í EscapeÃ³¸®¸¦ ÇÑ´Ù.
+ * Description :  ê°™ì€ íŒ¨í„´ë¼ë¦¬ ë¶„ë¥˜ í•˜ê³  Escapeì²˜ë¦¬ë¥¼ í•œë‹¤.
  *
  * Implementation :
- * 3°¡ÁöÀÇ ÆĞÅÏ %, _, ¹®ÀÚ¿­ ·Î ³ª´©¾î ¿¬¼ÓÀÌ µÇ´Â µ¿ÀÏÇÑ ÆĞÅÏÀ¸·Î ³ª´«´Ù.  
- * ¶ÇÇÑ ¿©±â¼­ escape¹®ÀÚ¸¦ Á¦°ÅÇÑ´Ù.
+ * 3ê°€ì§€ì˜ íŒ¨í„´ %, _, ë¬¸ìì—´ ë¡œ ë‚˜ëˆ„ì–´ ì—°ì†ì´ ë˜ëŠ” ë™ì¼í•œ íŒ¨í„´ìœ¼ë¡œ ë‚˜ëˆˆë‹¤.  
+ * ë˜í•œ ì—¬ê¸°ì„œ escapeë¬¸ìë¥¼ ì œê±°í•œë‹¤.
  *
- *  ºí·° Å¸ÀÔ¿¡ µû¶ó cnt¿¡ µé¾î °¡´Â ÀÇ¹Ì°¡ ´Ù¸£´Ù.
+ *  ë¸”ëŸ­ íƒ€ì…ì— ë”°ë¼ cntì— ë“¤ì–´ ê°€ëŠ” ì˜ë¯¸ê°€ ë‹¤ë¥´ë‹¤.
  *
- *  ¹®ÀÚ¿­:  ½ÇÁ¦ ¹®ÀÚ¿­ÀÇ ¹ÙÀÌÆ®
- *  _     :  _ÀÇ ¼ö
- *  %     :  %ÀÇ ¼ö
+ *  ë¬¸ìì—´:  ì‹¤ì œ ë¬¸ìì—´ì˜ ë°”ì´íŠ¸
+ *  _     :  _ì˜ ìˆ˜
+ *  %     :  %ì˜ ìˆ˜
  ***********************************************************************/
     
     UChar          * sPattern;
@@ -8155,13 +8155,13 @@ static IDE_RC getMoreInfoFromPattern( const UChar      * aFormat,
     UChar          * sPtr;
 
     // BUG-35504
-    // new like¿¡¼­´Â format length Á¦ÇÑÀÌ ÀÖ´Ù.
+    // new likeì—ì„œëŠ” format length ì œí•œì´ ìˆë‹¤.
     IDE_TEST_RAISE( aFormatLen > MTC_LIKE_PATTERN_MAX_SIZE,
                     ERR_LONG_PATTERN );
     
     sPtr = aNewString;    
 
-    // escape ¹®ÀÚ ¼³Á¤
+    // escape ë¬¸ì ì„¤ì •
     if( aEscapeLen < 1 )
     {
         sNullEscape = ID_TRUE;
@@ -8182,13 +8182,13 @@ static IDE_RC getMoreInfoFromPattern( const UChar      * aFormat,
     sPattern      = (UChar*) aFormat;
     sPatternFence = sPattern + aFormatLen;
 
-    // Ã¹¹øÂ° ±ÛÂ¥ÀÇ Å¸ÀÔÀ» ¾ò¾î ¿Â´Ù.
+    // ì²«ë²ˆì§¸ ê¸€ì§œì˜ íƒ€ì…ì„ ì–»ì–´ ì˜¨ë‹¤.
 
     if ( sPattern < sPatternFence )
     {
         sTokenCnt = 1;
         
-        if( (sNullEscape == ID_FALSE) && (*sPattern == sEscape) ) // escape °É·ÈÀ»¶§
+        if( (sNullEscape == ID_FALSE) && (*sPattern == sEscape) ) // escape ê±¸ë ¸ì„ë•Œ
         {
             sPattern++;
 
@@ -8196,7 +8196,7 @@ static IDE_RC getMoreInfoFromPattern( const UChar      * aFormat,
 
             IDE_TEST_RAISE( (*sPattern != (UShort)'%') &&
                             (*sPattern != (UShort)'_') &&
-                            (*sPattern != sEscape), // sEsacpe´Â nullÀÌ ¾Æ´Ô
+                            (*sPattern != sEscape), // sEsacpeëŠ” nullì´ ì•„ë‹˜
                             ERR_INVALID_LITERAL );
 
             sType = MTC_FORMAT_BLOCK_STRING;            
@@ -8228,7 +8228,7 @@ static IDE_RC getMoreInfoFromPattern( const UChar      * aFormat,
 
     while( sPattern < sPatternFence )
     {
-        if( (sNullEscape == ID_FALSE) && (*sPattern == sEscape) ) // escape °É·ÈÀ»¶§
+        if( (sNullEscape == ID_FALSE) && (*sPattern == sEscape) ) // escape ê±¸ë ¸ì„ë•Œ
         {
             sPattern++;
 
@@ -8236,7 +8236,7 @@ static IDE_RC getMoreInfoFromPattern( const UChar      * aFormat,
 
             IDE_TEST_RAISE( (*sPattern != (UShort)'%') &&
                             (*sPattern != (UShort)'_') &&
-                            (*sPattern != sEscape), // sEsacpe´Â nullÀÌ ¾Æ´Ô
+                            (*sPattern != sEscape), // sEsacpeëŠ” nullì´ ì•„ë‹˜
                             ERR_INVALID_LITERAL );
 
             switch( sType )
@@ -8333,7 +8333,7 @@ static IDE_RC getMoreInfoFromPattern( const UChar      * aFormat,
         sPattern++;
     }
 
-    // ¹«Á¶°Ç ´İ¾Æ ÁØ´Ù.
+    // ë¬´ì¡°ê±´ ë‹«ì•„ ì¤€ë‹¤.
     if ( sStart != NULL )
     {        
         aBlockInfo[sBlockCnt].type      = sType;
@@ -8375,17 +8375,17 @@ static IDE_RC getMoreInfoFromPatternMB( const UChar      * aFormat,
 {
 /***********************************************************************
  *
- * Description :  °°Àº ÆĞÅÏ³¢¸® ºĞ·ù ÇÏ°í EscapeÃ³¸®¸¦ ÇÑ´Ù.
+ * Description :  ê°™ì€ íŒ¨í„´ë¼ë¦¬ ë¶„ë¥˜ í•˜ê³  Escapeì²˜ë¦¬ë¥¼ í•œë‹¤.
  *
  * Implementation :
- * 3°¡ÁöÀÇ ÆĞÅÏ %, _, ¹®ÀÚ¿­ ·Î ³ª´©¾î ¿¬¼ÓÀÌ µÇ´Â µ¿ÀÏÇÑ ÆĞÅÏÀ¸·Î ³ª´«´Ù.  
- * ¶ÇÇÑ ¿©±â¼­ escape¹®ÀÚ¸¦ Á¦°ÅÇÑ´Ù.
+ * 3ê°€ì§€ì˜ íŒ¨í„´ %, _, ë¬¸ìì—´ ë¡œ ë‚˜ëˆ„ì–´ ì—°ì†ì´ ë˜ëŠ” ë™ì¼í•œ íŒ¨í„´ìœ¼ë¡œ ë‚˜ëˆˆë‹¤.  
+ * ë˜í•œ ì—¬ê¸°ì„œ escapeë¬¸ìë¥¼ ì œê±°í•œë‹¤.
  *
- *  ºí·° Å¸ÀÔ¿¡ µû¶ó cnt¿¡ µé¾î °¡´Â ÀÇ¹Ì°¡ ´Ù¸£´Ù.
+ *  ë¸”ëŸ­ íƒ€ì…ì— ë”°ë¼ cntì— ë“¤ì–´ ê°€ëŠ” ì˜ë¯¸ê°€ ë‹¤ë¥´ë‹¤.
  *
- *  ¹®ÀÚ¿­:  ½ÇÁ¦ ¹®ÀÚ¿­ÀÇ ¹ÙÀÌÆ®
- *  _     :  _ÀÇ ¼ö ----> µû¶ó¼­ ½ÇÁ¦ ¹ÙÀÌÆ® °ªÀ¸·Î´Â ¾ó¸¶°¡ µÉÁö ¾Ë ¼ö ¾ø´Ù.
- *  %     :  %ÀÇ ¼ö
+ *  ë¬¸ìì—´:  ì‹¤ì œ ë¬¸ìì—´ì˜ ë°”ì´íŠ¸
+ *  _     :  _ì˜ ìˆ˜ ----> ë”°ë¼ì„œ ì‹¤ì œ ë°”ì´íŠ¸ ê°’ìœ¼ë¡œëŠ” ì–¼ë§ˆê°€ ë ì§€ ì•Œ ìˆ˜ ì—†ë‹¤.
+ *  %     :  %ì˜ ìˆ˜
  ***********************************************************************/
     
     UChar          * sPattern;
@@ -8404,16 +8404,16 @@ static IDE_RC getMoreInfoFromPatternMB( const UChar      * aFormat,
     idBool           sEqual3;    
 
     // BUG-35504
-    // new like¿¡¼­´Â format length Á¦ÇÑÀÌ ÀÖ´Ù.
+    // new likeì—ì„œëŠ” format length ì œí•œì´ ìˆë‹¤.
     IDE_TEST_RAISE( aFormatLen > MTC_LIKE_PATTERN_MAX_SIZE,
                     ERR_LONG_PATTERN );
     
     sPtr = aNewString;    
 
-    // escape ¹®ÀÚ ¼³Á¤
+    // escape ë¬¸ì ì„¤ì •
     if ( aLanguage->id == MTL_UTF16_ID )
     {
-        // escape ¹®ÀÚ ¼³Á¤
+        // escape ë¬¸ì ì„¤ì •
         if( aEscapeLen < MTL_UTF16_PRECISION )
         {
             sNullEscape = ID_TRUE;
@@ -8453,7 +8453,7 @@ static IDE_RC getMoreInfoFromPatternMB( const UChar      * aFormat,
     sPatternFence = sPattern + aFormatLen;
     sPrev         = sPattern;    
 
-    // Ã¹¹øÂ° ±ÛÀÚÀÇ Å¸ÀÔÀ» ¾ò¾î ¿Â´Ù.
+    // ì²«ë²ˆì§¸ ê¸€ìì˜ íƒ€ì…ì„ ì–»ì–´ ì˜¨ë‹¤.
     if ( sPattern < sPatternFence )
     {
         sSize = mtl::getOneCharSize( sPattern,
@@ -8503,7 +8503,7 @@ static IDE_RC getMoreInfoFromPatternMB( const UChar      * aFormat,
                             (sEqual3 != ID_TRUE),
                             ERR_INVALID_LITERAL );
 
-            // ÀÏ¹İ ¹®ÀÚÀÎ °æ¿ì
+            // ì¼ë°˜ ë¬¸ìì¸ ê²½ìš°
             sTokenCnt = sSize;
             sType     = MTC_FORMAT_BLOCK_STRING;            
         }
@@ -8516,7 +8516,7 @@ static IDE_RC getMoreInfoFromPatternMB( const UChar      * aFormat,
             
             if ( sEqual == ID_TRUE )
             {
-                // Æ¯¼ö¹®ÀÚ '_'ÀÎ °æ¿ì
+                // íŠ¹ìˆ˜ë¬¸ì '_'ì¸ ê²½ìš°
                 sType     = MTC_FORMAT_BLOCK_UNDER;
                 sTokenCnt = 1;
             }
@@ -8529,13 +8529,13 @@ static IDE_RC getMoreInfoFromPatternMB( const UChar      * aFormat,
                             
                 if ( sEqual == ID_TRUE )
                 {
-                    // Æ¯¼ö¹®ÀÚ '%'ÀÎ °æ¿ì
+                    // íŠ¹ìˆ˜ë¬¸ì '%'ì¸ ê²½ìš°
                     sType     = MTC_FORMAT_BLOCK_PERCENT;
                     sTokenCnt = 1;
                 }
                 else
                 {
-                    // ÀÏ¹İ ¹®ÀÚÀÎ °æ¿ì
+                    // ì¼ë°˜ ë¬¸ìì¸ ê²½ìš°
                     sType     = MTC_FORMAT_BLOCK_STRING;
                     sTokenCnt = sSize;
                 }
@@ -8606,7 +8606,7 @@ static IDE_RC getMoreInfoFromPatternMB( const UChar      * aFormat,
                             (sEqual3 != ID_TRUE),
                             ERR_INVALID_LITERAL );
 
-            // ÀÏ¹İ ¹®ÀÚÀÎ °æ¿ì
+            // ì¼ë°˜ ë¬¸ìì¸ ê²½ìš°
             switch( sType )
             {
                 case MTC_FORMAT_BLOCK_STRING:
@@ -8635,7 +8635,7 @@ static IDE_RC getMoreInfoFromPatternMB( const UChar      * aFormat,
             
             if ( sEqual == ID_TRUE )
             {
-                // Æ¯¼ö¹®ÀÚ '_'ÀÎ °æ¿ì
+                // íŠ¹ìˆ˜ë¬¸ì '_'ì¸ ê²½ìš°
                 switch( sType )
                 {
                     case MTC_FORMAT_BLOCK_STRING:
@@ -8664,7 +8664,7 @@ static IDE_RC getMoreInfoFromPatternMB( const UChar      * aFormat,
                             
                 if ( sEqual == ID_TRUE )
                 {
-                    // Æ¯¼ö¹®ÀÚ '%'ÀÎ °æ¿ì
+                    // íŠ¹ìˆ˜ë¬¸ì '%'ì¸ ê²½ìš°
                     switch( sType )
                     {
                         case MTC_FORMAT_BLOCK_STRING:
@@ -8686,7 +8686,7 @@ static IDE_RC getMoreInfoFromPatternMB( const UChar      * aFormat,
                 }
                 else
                 {
-                    // ÀÏ¹İ ¹®ÀÚÀÎ °æ¿ì
+                    // ì¼ë°˜ ë¬¸ìì¸ ê²½ìš°
                     switch( sType )
                     {
                         case MTC_FORMAT_BLOCK_STRING:
@@ -8722,7 +8722,7 @@ static IDE_RC getMoreInfoFromPatternMB( const UChar      * aFormat,
         sPtr += sPattern - sPrev;
     }    
 
-    // ¹«Á¶°Ç ´İ¾Æ ÁØ´Ù.
+    // ë¬´ì¡°ê±´ ë‹«ì•„ ì¤€ë‹¤.
     if ( sStart != NULL )
     {        
         aBlockInfo[sBlockCnt].type      = sType;
@@ -8761,22 +8761,22 @@ IDE_RC mtfLikeCalculateNormalFast( mtcNode*     aNode,
 {
 /***********************************************************************
  *
- * Description : ´Ü¼øÇÑ ÆĞÅÏÀÌ ¾Æ´Ñ °æ¿ì
- *                LikeÀÇ Calculate ¼öÇà
- *                ÆĞÅÏ ±æÀÌ¿Í »ç¿ë ¸ğµâ¿¡ µû¶ó Ã³¸® ¹æ¹ıÀ» °áÁ¤ÇÑ´Ù.
+ * Description : ë‹¨ìˆœí•œ íŒ¨í„´ì´ ì•„ë‹Œ ê²½ìš°
+ *                Likeì˜ Calculate ìˆ˜í–‰
+ *                íŒ¨í„´ ê¸¸ì´ì™€ ì‚¬ìš© ëª¨ë“ˆì— ë”°ë¼ ì²˜ë¦¬ ë°©ë²•ì„ ê²°ì •í•œë‹¤.
  *
  * Implementation :
  *    ex ) WHERE dname LIKE '%\_dep%' ESCAPE '\'
  *
- *    aStack[0] : °á°ú
- *    aStack[1] : ÀĞ¾î¿Â ½ºÆ®¸µ
- *               ( eg. 'develop_dep'¿Í °°Àº dname Ä®·³°ª)
- *    aStack[2] : ÆĞÅÏ ½ºÆ®¸µ
- *               ( eg. '\_dep'¿Í °°Àº ÆĞÅÏ ÀÏÄ¡ °Ë»ç Á¶°Ç°ª )
- *    aStack[3] : escape ¹®ÀÚ
- *               ( eg. '_dep'¸¦ ÆĞÅÏ ÀÏÄ¡ °Ë»ç Á¶°Ç°ªÀ¸·Î »ç¿ëÇÒ °æ¿ì,
- *                     '_'¿Í °°Àº Æ¯¼ö ¹®ÀÚ¸¦ ÀÏ¹İ ¹®ÀÚ·Î ÀÎ½ÄÇÏµµ·Ï ÇÏ´Â
- *                     '\' ¹®ÀÚ¸¦ ÁöÁ¤ÇÒ °æ¿ì ) 
+ *    aStack[0] : ê²°ê³¼
+ *    aStack[1] : ì½ì–´ì˜¨ ìŠ¤íŠ¸ë§
+ *               ( eg. 'develop_dep'ì™€ ê°™ì€ dname ì¹¼ëŸ¼ê°’)
+ *    aStack[2] : íŒ¨í„´ ìŠ¤íŠ¸ë§
+ *               ( eg. '\_dep'ì™€ ê°™ì€ íŒ¨í„´ ì¼ì¹˜ ê²€ì‚¬ ì¡°ê±´ê°’ )
+ *    aStack[3] : escape ë¬¸ì
+ *               ( eg. '_dep'ë¥¼ íŒ¨í„´ ì¼ì¹˜ ê²€ì‚¬ ì¡°ê±´ê°’ìœ¼ë¡œ ì‚¬ìš©í•  ê²½ìš°,
+ *                     '_'ì™€ ê°™ì€ íŠ¹ìˆ˜ ë¬¸ìë¥¼ ì¼ë°˜ ë¬¸ìë¡œ ì¸ì‹í•˜ë„ë¡ í•˜ëŠ”
+ *                     '\' ë¬¸ìë¥¼ ì§€ì •í•  ê²½ìš° ) 
  *
  ***********************************************************************/
     
@@ -8837,22 +8837,22 @@ IDE_RC mtfLikeCalculateMBNormalFast( mtcNode*     aNode,
 {
  /***********************************************************************
  *
- * Description : ´Ü¼øÇÑ ÆĞÅÏÀÌ ¾Æ´Ñ °æ¿ì
- *                LikeÀÇ Calculate ¼öÇà
- *                ÆĞÅÏ ±æÀÌ¿Í »ç¿ë ¸ğµâ¿¡ µû¶ó Ã³¸® ¹æ¹ıÀ» °áÁ¤ÇÑ´Ù.   
+ * Description : ë‹¨ìˆœí•œ íŒ¨í„´ì´ ì•„ë‹Œ ê²½ìš°
+ *                Likeì˜ Calculate ìˆ˜í–‰
+ *                íŒ¨í„´ ê¸¸ì´ì™€ ì‚¬ìš© ëª¨ë“ˆì— ë”°ë¼ ì²˜ë¦¬ ë°©ë²•ì„ ê²°ì •í•œë‹¤.   
  *
  * Implementation :
  *    ex ) WHERE dname LIKE '%\_dep%' ESCAPE '\'
  *
- *    aStack[0] : °á°ú
- *    aStack[1] : ÀĞ¾î¿Â ½ºÆ®¸µ
- *               ( eg. 'develop_dep'¿Í °°Àº dname Ä®·³°ª)
- *    aStack[2] : ÆĞÅÏ ½ºÆ®¸µ
- *               ( eg. '\_dep'¿Í °°Àº ÆĞÅÏ ÀÏÄ¡ °Ë»ç Á¶°Ç°ª )
- *    aStack[3] : escape ¹®ÀÚ
- *               ( eg. '_dep'¸¦ ÆĞÅÏ ÀÏÄ¡ °Ë»ç Á¶°Ç°ªÀ¸·Î »ç¿ëÇÒ °æ¿ì,
- *                     '_'¿Í °°Àº Æ¯¼ö ¹®ÀÚ¸¦ ÀÏ¹İ ¹®ÀÚ·Î ÀÎ½ÄÇÏµµ·Ï ÇÏ´Â
- *                     '\' ¹®ÀÚ¸¦ ÁöÁ¤ÇÒ °æ¿ì ) 
+ *    aStack[0] : ê²°ê³¼
+ *    aStack[1] : ì½ì–´ì˜¨ ìŠ¤íŠ¸ë§
+ *               ( eg. 'develop_dep'ì™€ ê°™ì€ dname ì¹¼ëŸ¼ê°’)
+ *    aStack[2] : íŒ¨í„´ ìŠ¤íŠ¸ë§
+ *               ( eg. '\_dep'ì™€ ê°™ì€ íŒ¨í„´ ì¼ì¹˜ ê²€ì‚¬ ì¡°ê±´ê°’ )
+ *    aStack[3] : escape ë¬¸ì
+ *               ( eg. '_dep'ë¥¼ íŒ¨í„´ ì¼ì¹˜ ê²€ì‚¬ ì¡°ê±´ê°’ìœ¼ë¡œ ì‚¬ìš©í•  ê²½ìš°,
+ *                     '_'ì™€ ê°™ì€ íŠ¹ìˆ˜ ë¬¸ìë¥¼ ì¼ë°˜ ë¬¸ìë¡œ ì¸ì‹í•˜ë„ë¡ í•˜ëŠ”
+ *                     '\' ë¬¸ìë¥¼ ì§€ì •í•  ê²½ìš° ) 
  *
  ***********************************************************************/
     
@@ -8917,22 +8917,22 @@ IDE_RC mtfLikeCalculate4XlobLocatorNormalFast( mtcNode*     aNode,
 {
 /***********************************************************************
  *
- * Description : ´Ü¼øÇÑ ÆĞÅÏÀÌ ¾Æ´Ñ °æ¿ì
- *                LikeÀÇ Calculate ¼öÇà
- *                ÆĞÅÏ ±æÀÌ¿Í »ç¿ë ¸ğµâ¿¡ µû¶ó Ã³¸® ¹æ¹ıÀ» °áÁ¤ÇÑ´Ù.
+ * Description : ë‹¨ìˆœí•œ íŒ¨í„´ì´ ì•„ë‹Œ ê²½ìš°
+ *                Likeì˜ Calculate ìˆ˜í–‰
+ *                íŒ¨í„´ ê¸¸ì´ì™€ ì‚¬ìš© ëª¨ë“ˆì— ë”°ë¼ ì²˜ë¦¬ ë°©ë²•ì„ ê²°ì •í•œë‹¤.
  *
  * Implementation :
  *    ex ) WHERE dname LIKE '%\_dep%' ESCAPE '\'
  *
- *    aStack[0] : °á°ú
- *    aStack[1] : ÀĞ¾î¿Â ½ºÆ®¸µ
- *               ( eg. 'develop_dep'¿Í °°Àº dname Ä®·³°ª)
- *    aStack[2] : ÆĞÅÏ ½ºÆ®¸µ
- *               ( eg. '\_dep'¿Í °°Àº ÆĞÅÏ ÀÏÄ¡ °Ë»ç Á¶°Ç°ª )
- *    aStack[3] : escape ¹®ÀÚ
- *               ( eg. '_dep'¸¦ ÆĞÅÏ ÀÏÄ¡ °Ë»ç Á¶°Ç°ªÀ¸·Î »ç¿ëÇÒ °æ¿ì,
- *                     '_'¿Í °°Àº Æ¯¼ö ¹®ÀÚ¸¦ ÀÏ¹İ ¹®ÀÚ·Î ÀÎ½ÄÇÏµµ·Ï ÇÏ´Â
- *                     '\' ¹®ÀÚ¸¦ ÁöÁ¤ÇÒ °æ¿ì ) 
+ *    aStack[0] : ê²°ê³¼
+ *    aStack[1] : ì½ì–´ì˜¨ ìŠ¤íŠ¸ë§
+ *               ( eg. 'develop_dep'ì™€ ê°™ì€ dname ì¹¼ëŸ¼ê°’)
+ *    aStack[2] : íŒ¨í„´ ìŠ¤íŠ¸ë§
+ *               ( eg. '\_dep'ì™€ ê°™ì€ íŒ¨í„´ ì¼ì¹˜ ê²€ì‚¬ ì¡°ê±´ê°’ )
+ *    aStack[3] : escape ë¬¸ì
+ *               ( eg. '_dep'ë¥¼ íŒ¨í„´ ì¼ì¹˜ ê²€ì‚¬ ì¡°ê±´ê°’ìœ¼ë¡œ ì‚¬ìš©í•  ê²½ìš°,
+ *                     '_'ì™€ ê°™ì€ íŠ¹ìˆ˜ ë¬¸ìë¥¼ ì¼ë°˜ ë¬¸ìë¡œ ì¸ì‹í•˜ë„ë¡ í•˜ëŠ”
+ *                     '\' ë¬¸ìë¥¼ ì§€ì •í•  ê²½ìš° ) 
  *
  ***********************************************************************/
     
@@ -8996,22 +8996,22 @@ IDE_RC mtfLikeCalculate4XlobLocatorMBNormalFast( mtcNode*     aNode,
 {
 /***********************************************************************
  *
- * Description : ´Ü¼øÇÑ ÆĞÅÏÀÌ ¾Æ´Ñ °æ¿ì
- *                LikeÀÇ Calculate ¼öÇà
- *                ÆĞÅÏ ±æÀÌ¿Í »ç¿ë ¸ğµâ¿¡ µû¶ó Ã³¸® ¹æ¹ıÀ» °áÁ¤ÇÑ´Ù.
+ * Description : ë‹¨ìˆœí•œ íŒ¨í„´ì´ ì•„ë‹Œ ê²½ìš°
+ *                Likeì˜ Calculate ìˆ˜í–‰
+ *                íŒ¨í„´ ê¸¸ì´ì™€ ì‚¬ìš© ëª¨ë“ˆì— ë”°ë¼ ì²˜ë¦¬ ë°©ë²•ì„ ê²°ì •í•œë‹¤.
  *
  * Implementation :
  *    ex ) WHERE dname LIKE '%\_dep%' ESCAPE '\'
  *
- *    aStack[0] : °á°ú
- *    aStack[1] : ÀĞ¾î¿Â ½ºÆ®¸µ
- *               ( eg. 'develop_dep'¿Í °°Àº dname Ä®·³°ª)
- *    aStack[2] : ÆĞÅÏ ½ºÆ®¸µ
- *               ( eg. '\_dep'¿Í °°Àº ÆĞÅÏ ÀÏÄ¡ °Ë»ç Á¶°Ç°ª )
- *    aStack[3] : escape ¹®ÀÚ
- *               ( eg. '_dep'¸¦ ÆĞÅÏ ÀÏÄ¡ °Ë»ç Á¶°Ç°ªÀ¸·Î »ç¿ëÇÒ °æ¿ì,
- *                     '_'¿Í °°Àº Æ¯¼ö ¹®ÀÚ¸¦ ÀÏ¹İ ¹®ÀÚ·Î ÀÎ½ÄÇÏµµ·Ï ÇÏ´Â
- *                     '\' ¹®ÀÚ¸¦ ÁöÁ¤ÇÒ °æ¿ì ) 
+ *    aStack[0] : ê²°ê³¼
+ *    aStack[1] : ì½ì–´ì˜¨ ìŠ¤íŠ¸ë§
+ *               ( eg. 'develop_dep'ì™€ ê°™ì€ dname ì¹¼ëŸ¼ê°’)
+ *    aStack[2] : íŒ¨í„´ ìŠ¤íŠ¸ë§
+ *               ( eg. '\_dep'ì™€ ê°™ì€ íŒ¨í„´ ì¼ì¹˜ ê²€ì‚¬ ì¡°ê±´ê°’ )
+ *    aStack[3] : escape ë¬¸ì
+ *               ( eg. '_dep'ë¥¼ íŒ¨í„´ ì¼ì¹˜ ê²€ì‚¬ ì¡°ê±´ê°’ìœ¼ë¡œ ì‚¬ìš©í•  ê²½ìš°,
+ *                     '_'ì™€ ê°™ì€ íŠ¹ìˆ˜ ë¬¸ìë¥¼ ì¼ë°˜ ë¬¸ìë¡œ ì¸ì‹í•˜ë„ë¡ í•˜ëŠ”
+ *                     '\' ë¬¸ìë¥¼ ì§€ì •í•  ê²½ìš° ) 
  *
  ***********************************************************************/
 
@@ -9085,22 +9085,22 @@ IDE_RC mtfLikeCalculate4EcharNormalFast( mtcNode*     aNode,
 {
 /***********************************************************************
  *
- * Description : ´Ü¼øÇÑ ÆĞÅÏÀÌ ¾Æ´Ñ °æ¿ì
- *                LikeÀÇ Calculate ¼öÇà
- *                ÆĞÅÏ ±æÀÌ¿Í »ç¿ë ¸ğµâ¿¡ µû¶ó Ã³¸® ¹æ¹ıÀ» °áÁ¤ÇÑ´Ù.
+ * Description : ë‹¨ìˆœí•œ íŒ¨í„´ì´ ì•„ë‹Œ ê²½ìš°
+ *                Likeì˜ Calculate ìˆ˜í–‰
+ *                íŒ¨í„´ ê¸¸ì´ì™€ ì‚¬ìš© ëª¨ë“ˆì— ë”°ë¼ ì²˜ë¦¬ ë°©ë²•ì„ ê²°ì •í•œë‹¤.
  *
  * Implementation :
  *    ex ) WHERE dname LIKE '%\_dep%' ESCAPE '\'
  *
- *    aStack[0] : °á°ú
- *    aStack[1] : ÀĞ¾î¿Â ½ºÆ®¸µ
- *               ( eg. 'develop_dep'¿Í °°Àº dname Ä®·³°ª)
- *    aStack[2] : ÆĞÅÏ ½ºÆ®¸µ
- *               ( eg. '\_dep'¿Í °°Àº ÆĞÅÏ ÀÏÄ¡ °Ë»ç Á¶°Ç°ª )
- *    aStack[3] : escape ¹®ÀÚ
- *               ( eg. '_dep'¸¦ ÆĞÅÏ ÀÏÄ¡ °Ë»ç Á¶°Ç°ªÀ¸·Î »ç¿ëÇÒ °æ¿ì,
- *                     '_'¿Í °°Àº Æ¯¼ö ¹®ÀÚ¸¦ ÀÏ¹İ ¹®ÀÚ·Î ÀÎ½ÄÇÏµµ·Ï ÇÏ´Â
- *                     '\' ¹®ÀÚ¸¦ ÁöÁ¤ÇÒ °æ¿ì ) 
+ *    aStack[0] : ê²°ê³¼
+ *    aStack[1] : ì½ì–´ì˜¨ ìŠ¤íŠ¸ë§
+ *               ( eg. 'develop_dep'ì™€ ê°™ì€ dname ì¹¼ëŸ¼ê°’)
+ *    aStack[2] : íŒ¨í„´ ìŠ¤íŠ¸ë§
+ *               ( eg. '\_dep'ì™€ ê°™ì€ íŒ¨í„´ ì¼ì¹˜ ê²€ì‚¬ ì¡°ê±´ê°’ )
+ *    aStack[3] : escape ë¬¸ì
+ *               ( eg. '_dep'ë¥¼ íŒ¨í„´ ì¼ì¹˜ ê²€ì‚¬ ì¡°ê±´ê°’ìœ¼ë¡œ ì‚¬ìš©í•  ê²½ìš°,
+ *                     '_'ì™€ ê°™ì€ íŠ¹ìˆ˜ ë¬¸ìë¥¼ ì¼ë°˜ ë¬¸ìë¡œ ì¸ì‹í•˜ë„ë¡ í•˜ëŠ”
+ *                     '\' ë¬¸ìë¥¼ ì§€ì •í•  ê²½ìš° ) 
  *
  ***********************************************************************/
     
@@ -9140,7 +9140,7 @@ IDE_RC mtfLikeCalculate4EcharNormalFast( mtcNode*     aNode,
     else
     {
         //--------------------------------------------------
-        // search stringÀÇ plain text¸¦ ¾ò´Â´Ù.
+        // search stringì˜ plain textë¥¼ ì–»ëŠ”ë‹¤.
         //--------------------------------------------------
 
         sEchar   = (mtdEcharType*)aStack[1].value;
@@ -9189,7 +9189,7 @@ IDE_RC mtfLikeCalculate4EcharNormalFast( mtcNode*     aNode,
         sStringFence = sStringPlain + sStringPlainLength;
 
         //--------------------------------------------------
-        // format stringÀÇ plain text¸¦ ¾ò´Â´Ù.
+        // format stringì˜ plain textë¥¼ ì–»ëŠ”ë‹¤.
         //--------------------------------------------------
         
         sEchar = (mtdEcharType*)aStack[2].value;
@@ -9202,8 +9202,8 @@ IDE_RC mtfLikeCalculate4EcharNormalFast( mtcNode*     aNode,
         
         if ( sEncNode->conversion == NULL )
         {
-            // conversionÀÌ nullÀÎ °æ¿ì default policy°¡ ¾Æ´Ñ
-            // ÄÃ·³ÀÌ format stringÀÌ ¿À´Â °æ¿ì°¡ ÀÖ´Ù.
+            // conversionì´ nullì¸ ê²½ìš° default policyê°€ ì•„ë‹Œ
+            // ì»¬ëŸ¼ì´ format stringì´ ì˜¤ëŠ” ê²½ìš°ê°€ ìˆë‹¤.
             sEncColumn = aTemplate->rows[sEncNode->baseTable].columns
                 + sEncNode->baseColumn;
         
@@ -9245,8 +9245,8 @@ IDE_RC mtfLikeCalculate4EcharNormalFast( mtcNode*     aNode,
         }
         else
         {
-            // conversionÀÌ ÀÖ´Â °æ¿ì conversion½Ã Ç×»ó
-            // default policy·Î º¯È¯µÈ´Ù.
+            // conversionì´ ìˆëŠ” ê²½ìš° conversionì‹œ í•­ìƒ
+            // default policyë¡œ ë³€í™˜ëœë‹¤.
             sFormatPlain = sEchar->mValue;
             sFormatPlainLength = sEchar->mCipherLength;
         }        
@@ -9282,22 +9282,22 @@ IDE_RC mtfLikeCalculate4EcharMBNormalFast( mtcNode*     aNode,
 
 /***********************************************************************
  *
- * Description : ´Ü¼øÇÑ ÆĞÅÏÀÌ ¾Æ´Ñ °æ¿ì
- *                LikeÀÇ Calculate ¼öÇà
- *                ÆĞÅÏ ±æÀÌ¿Í »ç¿ë ¸ğµâ¿¡ µû¶ó Ã³¸® ¹æ¹ıÀ» °áÁ¤ÇÑ´Ù.   
+ * Description : ë‹¨ìˆœí•œ íŒ¨í„´ì´ ì•„ë‹Œ ê²½ìš°
+ *                Likeì˜ Calculate ìˆ˜í–‰
+ *                íŒ¨í„´ ê¸¸ì´ì™€ ì‚¬ìš© ëª¨ë“ˆì— ë”°ë¼ ì²˜ë¦¬ ë°©ë²•ì„ ê²°ì •í•œë‹¤.   
  *
  * Implementation :
  *    ex ) WHERE dname LIKE '%\_dep%' ESCAPE '\'
  *
- *    aStack[0] : °á°ú
- *    aStack[1] : ÀĞ¾î¿Â ½ºÆ®¸µ
- *               ( eg. 'develop_dep'¿Í °°Àº dname Ä®·³°ª)
- *    aStack[2] : ÆĞÅÏ ½ºÆ®¸µ
- *               ( eg. '\_dep'¿Í °°Àº ÆĞÅÏ ÀÏÄ¡ °Ë»ç Á¶°Ç°ª )
- *    aStack[3] : escape ¹®ÀÚ
- *               ( eg. '_dep'¸¦ ÆĞÅÏ ÀÏÄ¡ °Ë»ç Á¶°Ç°ªÀ¸·Î »ç¿ëÇÒ °æ¿ì,
- *                     '_'¿Í °°Àº Æ¯¼ö ¹®ÀÚ¸¦ ÀÏ¹İ ¹®ÀÚ·Î ÀÎ½ÄÇÏµµ·Ï ÇÏ´Â
- *                     '\' ¹®ÀÚ¸¦ ÁöÁ¤ÇÒ °æ¿ì ) 
+ *    aStack[0] : ê²°ê³¼
+ *    aStack[1] : ì½ì–´ì˜¨ ìŠ¤íŠ¸ë§
+ *               ( eg. 'develop_dep'ì™€ ê°™ì€ dname ì¹¼ëŸ¼ê°’)
+ *    aStack[2] : íŒ¨í„´ ìŠ¤íŠ¸ë§
+ *               ( eg. '\_dep'ì™€ ê°™ì€ íŒ¨í„´ ì¼ì¹˜ ê²€ì‚¬ ì¡°ê±´ê°’ )
+ *    aStack[3] : escape ë¬¸ì
+ *               ( eg. '_dep'ë¥¼ íŒ¨í„´ ì¼ì¹˜ ê²€ì‚¬ ì¡°ê±´ê°’ìœ¼ë¡œ ì‚¬ìš©í•  ê²½ìš°,
+ *                     '_'ì™€ ê°™ì€ íŠ¹ìˆ˜ ë¬¸ìë¥¼ ì¼ë°˜ ë¬¸ìë¡œ ì¸ì‹í•˜ë„ë¡ í•˜ëŠ”
+ *                     '\' ë¬¸ìë¥¼ ì§€ì •í•  ê²½ìš° ) 
  *
  ***********************************************************************/
     
@@ -9339,7 +9339,7 @@ IDE_RC mtfLikeCalculate4EcharMBNormalFast( mtcNode*     aNode,
     else
     {
         //--------------------------------------------------
-        // search stringÀÇ plain text¸¦ ¾ò´Â´Ù.
+        // search stringì˜ plain textë¥¼ ì–»ëŠ”ë‹¤.
         //--------------------------------------------------
 
         sEchar   = (mtdEcharType*)aStack[1].value;
@@ -9388,7 +9388,7 @@ IDE_RC mtfLikeCalculate4EcharMBNormalFast( mtcNode*     aNode,
         sStringFence = sStringPlain + sStringPlainLength;
 
         //--------------------------------------------------
-        // format stringÀÇ plain text¸¦ ¾ò´Â´Ù.
+        // format stringì˜ plain textë¥¼ ì–»ëŠ”ë‹¤.
         //--------------------------------------------------
         
         sEchar = (mtdEcharType*)aStack[2].value;
@@ -9401,8 +9401,8 @@ IDE_RC mtfLikeCalculate4EcharMBNormalFast( mtcNode*     aNode,
 
         if ( sEncNode->conversion == NULL )
         {
-            // conversionÀÌ nullÀÎ °æ¿ì default policy°¡ ¾Æ´Ñ
-            // ÄÃ·³ÀÌ format stringÀÌ ¿À´Â °æ¿ì°¡ ÀÖ´Ù.
+            // conversionì´ nullì¸ ê²½ìš° default policyê°€ ì•„ë‹Œ
+            // ì»¬ëŸ¼ì´ format stringì´ ì˜¤ëŠ” ê²½ìš°ê°€ ìˆë‹¤.
             sEncColumn = aTemplate->rows[sEncNode->baseTable].columns
                 + sEncNode->baseColumn;
         
@@ -9444,8 +9444,8 @@ IDE_RC mtfLikeCalculate4EcharMBNormalFast( mtcNode*     aNode,
         }
         else
         {
-            // conversionÀÌ ÀÖ´Â °æ¿ì conversion½Ã Ç×»ó
-            // default policy·Î º¯È¯µÈ´Ù.
+            // conversionì´ ìˆëŠ” ê²½ìš° conversionì‹œ í•­ìƒ
+            // default policyë¡œ ë³€í™˜ëœë‹¤.
             sFormatPlain = sEchar->mValue;
             sFormatPlainLength = sEchar->mCipherLength;
         }
@@ -9899,20 +9899,20 @@ IDE_RC mtfLikeCalculateOnePass( UChar            * aString,
 {
 /***********************************************************************
  *
- * Description : LikeÀÇ Calculate ¼öÇà
+ * Description : Likeì˜ Calculate ìˆ˜í–‰
  *
  * Implementation :
  *    ex ) WHERE dname LIKE '%\_dep%' ESCAPE '\'
  *
- *    aStack[0] : °á°ú
- *    aStack[1] : ÀĞ¾î¿Â ½ºÆ®¸µ
- *               ( eg. 'develop_dep'¿Í °°Àº dname Ä®·³°ª)
- *    aStack[2] : ÆĞÅÏ ½ºÆ®¸µ
- *               ( eg. '\_dep'¿Í °°Àº ÆĞÅÏ ÀÏÄ¡ °Ë»ç Á¶°Ç°ª )
- *    aStack[3] : escape ¹®ÀÚ
- *               ( eg. '_dep'¸¦ ÆĞÅÏ ÀÏÄ¡ °Ë»ç Á¶°Ç°ªÀ¸·Î »ç¿ëÇÒ °æ¿ì,
- *                     '_'¿Í °°Àº Æ¯¼ö ¹®ÀÚ¸¦ ÀÏ¹İ ¹®ÀÚ·Î ÀÎ½ÄÇÏµµ·Ï ÇÏ´Â
- *                     '\' ¹®ÀÚ¸¦ ÁöÁ¤ÇÒ °æ¿ì ) 
+ *    aStack[0] : ê²°ê³¼
+ *    aStack[1] : ì½ì–´ì˜¨ ìŠ¤íŠ¸ë§
+ *               ( eg. 'develop_dep'ì™€ ê°™ì€ dname ì¹¼ëŸ¼ê°’)
+ *    aStack[2] : íŒ¨í„´ ìŠ¤íŠ¸ë§
+ *               ( eg. '\_dep'ì™€ ê°™ì€ íŒ¨í„´ ì¼ì¹˜ ê²€ì‚¬ ì¡°ê±´ê°’ )
+ *    aStack[3] : escape ë¬¸ì
+ *               ( eg. '_dep'ë¥¼ íŒ¨í„´ ì¼ì¹˜ ê²€ì‚¬ ì¡°ê±´ê°’ìœ¼ë¡œ ì‚¬ìš©í•  ê²½ìš°,
+ *                     '_'ì™€ ê°™ì€ íŠ¹ìˆ˜ ë¬¸ìë¥¼ ì¼ë°˜ ë¬¸ìë¡œ ì¸ì‹í•˜ë„ë¡ í•˜ëŠ”
+ *                     '\' ë¬¸ìë¥¼ ì§€ì •í•  ê²½ìš° ) 
  *
  ***********************************************************************/
     
@@ -9937,7 +9937,7 @@ IDE_RC mtfLikeCalculateOnePass( UChar            * aString,
 
     sBlock = sBlockFence - 1;
 
-    /*    %aaa%bbbb%ccc ¿Í °°Àº °æ¿ì ccc¸¦ Á¦°Å ÇÏ´Â ºÎºĞÀÌ´Ù */
+    /*    %aaa%bbbb%ccc ì™€ ê°™ì€ ê²½ìš° cccë¥¼ ì œê±° í•˜ëŠ” ë¶€ë¶„ì´ë‹¤ */
         
     while( (sBlock >= sBlockStart ) &&
            (sIsTrue == ID_TRUE) )
@@ -9949,7 +9949,7 @@ IDE_RC mtfLikeCalculateOnePass( UChar            * aString,
         }
         else
         {
-            /* µÚºÎÅÍ °Ë»çÇÑ´Ù */
+            /* ë’¤ë¶€í„° ê²€ì‚¬í•œë‹¤ */
             if ( sBlock->type == MTC_FORMAT_BLOCK_STRING )
             {
                 if ( sStringFence - sString >= sBlock->sizeOrCnt )
@@ -9997,9 +9997,9 @@ IDE_RC mtfLikeCalculateOnePass( UChar            * aString,
         {
             case MTC_FORMAT_BLOCK_STRING:
                 
-                /*  Ã³À½ ¹®ÀÚ¿­ÀÌ°Å³ª ¶Ç´Â ´Ü¼ø ºñ±³ÀÏ°æ¿ì¿¡¸¸ ¿Ã ¼ö ÀÖ´Ù.
-                     __string¿¡¼­ __¸¦ Ã³¸® ÇÑ µÚ¿¡ ¿À°Å³ª
-                     string ÇüÅÂ¿¡¼­ ºÒ·¯Áø´Ù */
+                /*  ì²˜ìŒ ë¬¸ìì—´ì´ê±°ë‚˜ ë˜ëŠ” ë‹¨ìˆœ ë¹„êµì¼ê²½ìš°ì—ë§Œ ì˜¬ ìˆ˜ ìˆë‹¤.
+                     __stringì—ì„œ __ë¥¼ ì²˜ë¦¬ í•œ ë’¤ì— ì˜¤ê±°ë‚˜
+                     string í˜•íƒœì—ì„œ ë¶ˆëŸ¬ì§„ë‹¤ */
                 if ( sStringFence - sString >= sBlock->sizeOrCnt )
                 {
                     if ( idlOS::memcmp( sBlock->start,
@@ -10023,7 +10023,7 @@ IDE_RC mtfLikeCalculateOnePass( UChar            * aString,
                 break;
 
             case MTC_FORMAT_BLOCK_UNDER:
-                /* ¹®ÀÚ ¼ö¸¸Å­ µÚ·Î º¸³½´Ù.*/
+                /* ë¬¸ì ìˆ˜ë§Œí¼ ë’¤ë¡œ ë³´ë‚¸ë‹¤.*/
 
                 if ( sString + sBlock->sizeOrCnt <= sStringFence )
                 {
@@ -10046,7 +10046,7 @@ IDE_RC mtfLikeCalculateOnePass( UChar            * aString,
                         
                     if ( sBlock->type == MTC_FORMAT_BLOCK_UNDER )
                     {
-                        /*  __ ÀÌ ÆĞÅÏÀ¸·Î ³ª¿ÔÀ» °æ¿ì ±×¸¸Å­ ±ÛÂ¥¸¦ ¹Î´Ù */
+                        /*  __ ì´ íŒ¨í„´ìœ¼ë¡œ ë‚˜ì™”ì„ ê²½ìš° ê·¸ë§Œí¼ ê¸€ì§œë¥¼ ë¯¼ë‹¤ */
 
                         sString += sBlock->sizeOrCnt;
                         sBlock++;                    
@@ -10080,12 +10080,12 @@ IDE_RC mtfLikeCalculateOnePass( UChar            * aString,
 
                                 if ( sCmpResult == -1 )
                                 {
-                                    /* ºÎºĞ ¹®ÀÚ¿­ °Ë»ö½Ã ¾ø´Â °ÍÀº ¾ø´Â °ÍÀÌ´Ù */
+                                    /* ë¶€ë¶„ ë¬¸ìì—´ ê²€ìƒ‰ì‹œ ì—†ëŠ” ê²ƒì€ ì—†ëŠ” ê²ƒì´ë‹¤ */
                                     sIsTrue = ID_FALSE;
                                 }
                                 else
                                 {
-                                    /* ºí·° ´ÜÀ§ÀÇ ¸ÅÄªÀ» ½ÃÀÛÇÑ´Ù */
+                                    /* ë¸”ëŸ­ ë‹¨ìœ„ì˜ ë§¤ì¹­ì„ ì‹œì‘í•œë‹¤ */
                                     sTempBlock  = sBlock  + 1;
                                     sTempString = sString + sCmpResult + sBlock->sizeOrCnt;
                                     sIsTrue     = ID_TRUE;
@@ -10096,7 +10096,7 @@ IDE_RC mtfLikeCalculateOnePass( UChar            * aString,
                                                              sStringFence )
                                          != ID_TRUE )
                                     {
-                                        /* ºí·° ¸ÅÄªÀÌ Æ²·ÈÀ»¶§ ´ÙÀ½ ¿ÀÇÁ¼ÂÀ¸·Î ÀÌµ¿½ÃÅ²´Ù*/
+                                        /* ë¸”ëŸ­ ë§¤ì¹­ì´ í‹€ë ¸ì„ë•Œ ë‹¤ìŒ ì˜¤í”„ì…‹ìœ¼ë¡œ ì´ë™ì‹œí‚¨ë‹¤*/
                                         sString += (sCmpResult + 1);                                            
                                     }
                                     else
@@ -10108,17 +10108,17 @@ IDE_RC mtfLikeCalculateOnePass( UChar            * aString,
                                 }
                             }
                         }
-                        else // __·Î ÀÎÇØ ¹Ğ¾ú´õ´Ï %ÀÌ´Ù.
+                        else // __ë¡œ ì¸í•´ ë°€ì—ˆë”ë‹ˆ %ì´ë‹¤.
                         {
                             // nothing to do
                         }
                     }
-                    else // __·Î ÀÎÇØ ´õ ¹Ğ¾úÁö¸¸ ´õ ÀÌ»ó ³²Áö ¾Ê¾Ò´Ù.
+                    else // __ë¡œ ì¸í•´ ë” ë°€ì—ˆì§€ë§Œ ë” ì´ìƒ ë‚¨ì§€ ì•Šì•˜ë‹¤.
                     {
                         // nothing to do
                     }
                 }                     
-                else // ¸¶Áö¸· %%               
+                else // ë§ˆì§€ë§‰ %%               
                 {                    
                     sBlock++;
                     sString = sStringFence;                        
@@ -10159,20 +10159,20 @@ IDE_RC mtfLikeCalculateMBOnePass( UChar            * aString,
 {
 /***********************************************************************
  *
- * Description : LikeÀÇ Calculate ¼öÇà
+ * Description : Likeì˜ Calculate ìˆ˜í–‰
  *
  * Implementation :
  *    ex ) WHERE dname LIKE '%\_dep%' ESCAPE '\'
  *
- *    aStack[0] : °á°ú
- *    aStack[1] : ÀĞ¾î¿Â ½ºÆ®¸µ
- *               ( eg. 'develop_dep'¿Í °°Àº dname Ä®·³°ª)
- *    aStack[2] : ÆĞÅÏ ½ºÆ®¸µ
- *               ( eg. '\_dep'¿Í °°Àº ÆĞÅÏ ÀÏÄ¡ °Ë»ç Á¶°Ç°ª )
- *    aStack[3] : escape ¹®ÀÚ
- *               ( eg. '_dep'¸¦ ÆĞÅÏ ÀÏÄ¡ °Ë»ç Á¶°Ç°ªÀ¸·Î »ç¿ëÇÒ °æ¿ì,
- *                     '_'¿Í °°Àº Æ¯¼ö ¹®ÀÚ¸¦ ÀÏ¹İ ¹®ÀÚ·Î ÀÎ½ÄÇÏµµ·Ï ÇÏ´Â
- *                     '\' ¹®ÀÚ¸¦ ÁöÁ¤ÇÒ °æ¿ì ) 
+ *    aStack[0] : ê²°ê³¼
+ *    aStack[1] : ì½ì–´ì˜¨ ìŠ¤íŠ¸ë§
+ *               ( eg. 'develop_dep'ì™€ ê°™ì€ dname ì¹¼ëŸ¼ê°’)
+ *    aStack[2] : íŒ¨í„´ ìŠ¤íŠ¸ë§
+ *               ( eg. '\_dep'ì™€ ê°™ì€ íŒ¨í„´ ì¼ì¹˜ ê²€ì‚¬ ì¡°ê±´ê°’ )
+ *    aStack[3] : escape ë¬¸ì
+ *               ( eg. '_dep'ë¥¼ íŒ¨í„´ ì¼ì¹˜ ê²€ì‚¬ ì¡°ê±´ê°’ìœ¼ë¡œ ì‚¬ìš©í•  ê²½ìš°,
+ *                     '_'ì™€ ê°™ì€ íŠ¹ìˆ˜ ë¬¸ìë¥¼ ì¼ë°˜ ë¬¸ìë¡œ ì¸ì‹í•˜ë„ë¡ í•˜ëŠ”
+ *                     '\' ë¬¸ìë¥¼ ì§€ì •í•  ê²½ìš° ) 
  *
  ***********************************************************************/
     
@@ -10203,7 +10203,7 @@ IDE_RC mtfLikeCalculateMBOnePass( UChar            * aString,
     
     sBlock = sBlockFence - 1;
 
-    /*    %aaa%bbbb%ccc ¿Í °°Àº °æ¿ì ccc¸¦ Á¦°Å ÇÏ´Â ºÎºĞÀÌ´Ù */
+    /*    %aaa%bbbb%ccc ì™€ ê°™ì€ ê²½ìš° cccë¥¼ ì œê±° í•˜ëŠ” ë¶€ë¶„ì´ë‹¤ */
     
     while( (sBlock >= sBlockStart ) &&
            (sIsTrue == ID_TRUE) )
@@ -10215,7 +10215,7 @@ IDE_RC mtfLikeCalculateMBOnePass( UChar            * aString,
         }
         else
         {
-            /* µÚºÎÅÍ °Ë»çÇÑ´Ù */
+            /* ë’¤ë¶€í„° ê²€ì‚¬í•œë‹¤ */
             if ( sBlock->type == MTC_FORMAT_BLOCK_STRING )
             {
                 if ( sStringFence - sString >= sBlock->sizeOrCnt )
@@ -10293,9 +10293,9 @@ IDE_RC mtfLikeCalculateMBOnePass( UChar            * aString,
         switch ( sBlock->type )
         {
             case MTC_FORMAT_BLOCK_STRING:
-                /*  Ã³À½ ¹®ÀÚ¿­ÀÌ°Å³ª ¶Ç´Â ´Ü¼ø ºñ±³ÀÏ°æ¿ì¿¡¸¸ ¿Ã ¼ö ÀÖ´Ù.
-                     __string¿¡¼­ __¸¦ Ã³¸® ÇÑ µÚ¿¡ ¿À°Å³ª
-                     string ÇüÅÂ¿¡¼­ ºÒ·¯Áø´Ù */
+                /*  ì²˜ìŒ ë¬¸ìì—´ì´ê±°ë‚˜ ë˜ëŠ” ë‹¨ìˆœ ë¹„êµì¼ê²½ìš°ì—ë§Œ ì˜¬ ìˆ˜ ìˆë‹¤.
+                     __stringì—ì„œ __ë¥¼ ì²˜ë¦¬ í•œ ë’¤ì— ì˜¤ê±°ë‚˜
+                     string í˜•íƒœì—ì„œ ë¶ˆëŸ¬ì§„ë‹¤ */
 
                 if ( sStringFence - sString >= sBlock->sizeOrCnt )
                 {   
@@ -10320,7 +10320,7 @@ IDE_RC mtfLikeCalculateMBOnePass( UChar            * aString,
                 break;
 
             case MTC_FORMAT_BLOCK_UNDER:
-                /* ¹®ÀÚ ¼ö¸¸Å­ µÚ·Î º¸³½´Ù.*/
+                /* ë¬¸ì ìˆ˜ë§Œí¼ ë’¤ë¡œ ë³´ë‚¸ë‹¤.*/
 
                 for ( i = 0 ; i < sBlock->sizeOrCnt; i++)
                 {
@@ -10360,7 +10360,7 @@ IDE_RC mtfLikeCalculateMBOnePass( UChar            * aString,
                         
                     if ( sBlock->type == MTC_FORMAT_BLOCK_UNDER )
                     {
-                        /*  __ ÀÌ ÆĞÅÏÀ¸·Î ³ª¿ÔÀ» °æ¿ì ±×¸¸Å­ ±ÛÂ¥¸¦ ¹Î´Ù */
+                        /*  __ ì´ íŒ¨í„´ìœ¼ë¡œ ë‚˜ì™”ì„ ê²½ìš° ê·¸ë§Œí¼ ê¸€ì§œë¥¼ ë¯¼ë‹¤ */
                         for ( i = 0 ; i < sBlock->sizeOrCnt; i++)
                         {
                             if ( sString >= sStringFence )
@@ -10418,15 +10418,15 @@ IDE_RC mtfLikeCalculateMBOnePass( UChar            * aString,
                                 
                                 if ( sCmpResult == -1 )                                    
                                 {
-                                    /* ºÎºĞ ¹®ÀÚ¿­ °Ë»ö½Ã ¾ø´Â °ÍÀº ¾ø´Â °ÍÀÌ´Ù */
+                                    /* ë¶€ë¶„ ë¬¸ìì—´ ê²€ìƒ‰ì‹œ ì—†ëŠ” ê²ƒì€ ì—†ëŠ” ê²ƒì´ë‹¤ */
                                     sIsTrue = ID_FALSE;                                    
                                 }
                                 else
                                 {
-                                    /* matchSubStringÀÇ °æ¿ì Multibyte¸¦ °í·Á ÇÏÁö ¾Ê¾Ò´Ù µû¶ó¼­
-                                       Àß¸øµÈ °á°ú°ªÀ» µ¹·Á ÁÙ ¼ö ÀÖ´Ù.
-                                       °Ë»öµÈ °á°úÀÇ °ªÀÌ ¹®ÀÚ¿­ÀÇ Á¦´ë·Î µÈ ½ÃÀÛÁ¡ÀÌ¶ó¸é
-                                       Á¦´ë·Î °Ë»öÀ» ÇÑ°ÍÀÌ´Ù. */
+                                    /* matchSubStringì˜ ê²½ìš° Multibyteë¥¼ ê³ ë ¤ í•˜ì§€ ì•Šì•˜ë‹¤ ë”°ë¼ì„œ
+                                       ì˜ëª»ëœ ê²°ê³¼ê°’ì„ ëŒë ¤ ì¤„ ìˆ˜ ìˆë‹¤.
+                                       ê²€ìƒ‰ëœ ê²°ê³¼ì˜ ê°’ì´ ë¬¸ìì—´ì˜ ì œëŒ€ë¡œ ëœ ì‹œì‘ì ì´ë¼ë©´
+                                       ì œëŒ€ë¡œ ê²€ìƒ‰ì„ í•œê²ƒì´ë‹¤. */
                                     
                                     while( sValidChar < sString + sCmpResult )
                                     {
@@ -10438,7 +10438,7 @@ IDE_RC mtfLikeCalculateMBOnePass( UChar            * aString,
                                     
                                     if ( sValidChar == sString + sCmpResult )
                                     {
-                                        /* ºí·° ´ÜÀ§ÀÇ ¸ÅÄªÀ» ½ÃÀÛÇÑ´Ù */
+                                        /* ë¸”ëŸ­ ë‹¨ìœ„ì˜ ë§¤ì¹­ì„ ì‹œì‘í•œë‹¤ */
                                         sTempBlock  = sBlock + 1;
                                         sTempString = sString + sCmpResult + sBlock->sizeOrCnt;
                                         sIsTrue     = ID_TRUE;
@@ -10449,7 +10449,7 @@ IDE_RC mtfLikeCalculateMBOnePass( UChar            * aString,
                                                                    sStringFence,
                                                                    aLanguage ) != ID_TRUE )
                                         {
-                                            /* ºí·° ¸ÅÄªÀÌ Æ²·ÈÀ»¶§ ´ÙÀ½ ¿ÀÇÁ¼ÂÀ¸·Î ÀÌµ¿½ÃÅ²´Ù*/
+                                            /* ë¸”ëŸ­ ë§¤ì¹­ì´ í‹€ë ¸ì„ë•Œ ë‹¤ìŒ ì˜¤í”„ì…‹ìœ¼ë¡œ ì´ë™ì‹œí‚¨ë‹¤*/
                                             sString += sCmpResult;
                                             (void)mtf::nextChar( sStringFence,
                                                                  &sString,
@@ -10471,17 +10471,17 @@ IDE_RC mtfLikeCalculateMBOnePass( UChar            * aString,
                                 }
                             }
                         }
-                        else // __·Î ÀÎÇØ ¹Ğ¾ú´õ´Ï %ÀÌ´Ù.
+                        else // __ë¡œ ì¸í•´ ë°€ì—ˆë”ë‹ˆ %ì´ë‹¤.
                         {
                             // nothing to do
                         }
                     }
-                    else // __·Î ÀÎÇØ ´õ ¹Ğ¾úÁö¸¸ ´õ ÀÌ»ó ³²Áö ¾Ê¾Ò´Ù.
+                    else // __ë¡œ ì¸í•´ ë” ë°€ì—ˆì§€ë§Œ ë” ì´ìƒ ë‚¨ì§€ ì•Šì•˜ë‹¤.
                     {   
                         // nothing to do 
                     }
                 }
-                else // ¸¶Áö¸· %%               
+                else // ë§ˆì§€ë§‰ %%               
                 {                    
                     sBlock++;
                     sString = sStringFence;                        
@@ -10522,20 +10522,20 @@ IDE_RC mtfLikeCalculate4XlobLocatorOnePass( mtdClobLocatorType  aLocator,
 {
 /***********************************************************************
  *
- * Description : LikeÀÇ Calculate ¼öÇà
+ * Description : Likeì˜ Calculate ìˆ˜í–‰
  *
  * Implementation :
  *    ex ) WHERE dname LIKE '%\_dep%' ESCAPE '\'
  *
- *    aStack[0] : °á°ú
- *    aStack[1] : ÀĞ¾î¿Â ½ºÆ®¸µ
- *               ( eg. 'develop_dep'¿Í °°Àº dname Ä®·³°ª)
- *    aStack[2] : ÆĞÅÏ ½ºÆ®¸µ
- *               ( eg. '\_dep'¿Í °°Àº ÆĞÅÏ ÀÏÄ¡ °Ë»ç Á¶°Ç°ª )
- *    aStack[3] : escape ¹®ÀÚ
- *               ( eg. '_dep'¸¦ ÆĞÅÏ ÀÏÄ¡ °Ë»ç Á¶°Ç°ªÀ¸·Î »ç¿ëÇÒ °æ¿ì,
- *                     '_'¿Í °°Àº Æ¯¼ö ¹®ÀÚ¸¦ ÀÏ¹İ ¹®ÀÚ·Î ÀÎ½ÄÇÏµµ·Ï ÇÏ´Â
- *                     '\' ¹®ÀÚ¸¦ ÁöÁ¤ÇÒ °æ¿ì ) 
+ *    aStack[0] : ê²°ê³¼
+ *    aStack[1] : ì½ì–´ì˜¨ ìŠ¤íŠ¸ë§
+ *               ( eg. 'develop_dep'ì™€ ê°™ì€ dname ì¹¼ëŸ¼ê°’)
+ *    aStack[2] : íŒ¨í„´ ìŠ¤íŠ¸ë§
+ *               ( eg. '\_dep'ì™€ ê°™ì€ íŒ¨í„´ ì¼ì¹˜ ê²€ì‚¬ ì¡°ê±´ê°’ )
+ *    aStack[3] : escape ë¬¸ì
+ *               ( eg. '_dep'ë¥¼ íŒ¨í„´ ì¼ì¹˜ ê²€ì‚¬ ì¡°ê±´ê°’ìœ¼ë¡œ ì‚¬ìš©í•  ê²½ìš°,
+ *                     '_'ì™€ ê°™ì€ íŠ¹ìˆ˜ ë¬¸ìë¥¼ ì¼ë°˜ ë¬¸ìë¡œ ì¸ì‹í•˜ë„ë¡ í•˜ëŠ”
+ *                     '\' ë¬¸ìë¥¼ ì§€ì •í•  ê²½ìš° ) 
  *
  ***********************************************************************/
     
@@ -10564,7 +10564,7 @@ IDE_RC mtfLikeCalculate4XlobLocatorOnePass( mtdClobLocatorType  aLocator,
 
     sBlock = sBlockFence - 1;
 
-    /*    %aaa%bbbb%ccc ¿Í °°Àº °æ¿ì ccc¸¦ Á¦°Å ÇÏ´Â ºÎºĞÀÌ´Ù */
+    /*    %aaa%bbbb%ccc ì™€ ê°™ì€ ê²½ìš° cccë¥¼ ì œê±° í•˜ëŠ” ë¶€ë¶„ì´ë‹¤ */
         
     while( (sBlock >= sBlockStart ) &&
            (sIsTrue == ID_TRUE) )
@@ -10631,9 +10631,9 @@ IDE_RC mtfLikeCalculate4XlobLocatorOnePass( mtdClobLocatorType  aLocator,
         {
             case MTC_FORMAT_BLOCK_STRING:
 
-                 /*  Ã³À½ ¹®ÀÚ¿­ÀÌ°Å³ª ¶Ç´Â ´Ü¼ø ºñ±³ÀÏ°æ¿ì¿¡¸¸ ¿Ã ¼ö ÀÖ´Ù.
-                     __string¿¡¼­ __¸¦ Ã³¸® ÇÑ µÚ¿¡ ¿À°Å³ª
-                     string ÇüÅÂ¿¡¼­ ºÒ·¯Áø´Ù */
+                 /*  ì²˜ìŒ ë¬¸ìì—´ì´ê±°ë‚˜ ë˜ëŠ” ë‹¨ìˆœ ë¹„êµì¼ê²½ìš°ì—ë§Œ ì˜¬ ìˆ˜ ìˆë‹¤.
+                     __stringì—ì„œ __ë¥¼ ì²˜ë¦¬ í•œ ë’¤ì— ì˜¤ê±°ë‚˜
+                     string í˜•íƒœì—ì„œ ë¶ˆëŸ¬ì§„ë‹¤ */
                 if ( sOffset + sBlock->sizeOrCnt <= sLobLength )
                 {                        
                     IDE_TEST( mtc::readLob( NULL, /* idvSQL* */
@@ -10665,7 +10665,7 @@ IDE_RC mtfLikeCalculate4XlobLocatorOnePass( mtdClobLocatorType  aLocator,
                 break;
 
             case MTC_FORMAT_BLOCK_UNDER:
-                /* ¹®ÀÚ ¼ö¸¸Å­ µÚ·Î º¸³½´Ù.*/
+                /* ë¬¸ì ìˆ˜ë§Œí¼ ë’¤ë¡œ ë³´ë‚¸ë‹¤.*/
 
                 if ( sOffset + sBlock->sizeOrCnt <= sLobLength )
                 {
@@ -10688,7 +10688,7 @@ IDE_RC mtfLikeCalculate4XlobLocatorOnePass( mtdClobLocatorType  aLocator,
                         
                     if ( sBlock->type == MTC_FORMAT_BLOCK_UNDER )
                     {
-                        /*  __ ÀÌ ÆĞÅÏÀ¸·Î ³ª¿ÔÀ» °æ¿ì ±×¸¸Å­ ±ÛÂ¥¸¦ ¹Î´Ù */
+                        /*  __ ì´ íŒ¨í„´ìœ¼ë¡œ ë‚˜ì™”ì„ ê²½ìš° ê·¸ë§Œí¼ ê¸€ì§œë¥¼ ë¯¼ë‹¤ */
                         sOffset += sBlock->sizeOrCnt;
                         sBlock++;                        
                     }
@@ -10724,12 +10724,12 @@ IDE_RC mtfLikeCalculate4XlobLocatorOnePass( mtdClobLocatorType  aLocator,
 
                                 if ( sCmpResult == -1 )
                                 {
-                                    /* ºÎºĞ ¹®ÀÚ¿­ °Ë»ö½Ã ¾ø´Â °ÍÀº ¾ø´Â °ÍÀÌ´Ù */
+                                    /* ë¶€ë¶„ ë¬¸ìì—´ ê²€ìƒ‰ì‹œ ì—†ëŠ” ê²ƒì€ ì—†ëŠ” ê²ƒì´ë‹¤ */
                                     sIsTrue = ID_FALSE;                                    
                                 }
                                 else
                                 {
-                                    /* ºí·° ´ÜÀ§ÀÇ ¸ÅÄªÀ» ½ÃÀÛÇÑ´Ù */
+                                    /* ë¸”ëŸ­ ë‹¨ìœ„ì˜ ë§¤ì¹­ì„ ì‹œì‘í•œë‹¤ */
                                     sTempBlock  = sBlock + 1;
                                     sTempOffset = sOffset + sCmpResult + sBlock->sizeOrCnt;
                                     sIsTrue     = ID_TRUE;                                        
@@ -10744,7 +10744,7 @@ IDE_RC mtfLikeCalculate4XlobLocatorOnePass( mtdClobLocatorType  aLocator,
                                         
                                     if ( sIsTempTrue != ID_TRUE )
                                     {
-                                        /* ºí·° ¸ÅÄªÀÌ Æ²·ÈÀ»¶§ ´ÙÀ½ ¿ÀÇÁ¼ÂÀ¸·Î ÀÌµ¿½ÃÅ²´Ù*/
+                                        /* ë¸”ëŸ­ ë§¤ì¹­ì´ í‹€ë ¸ì„ë•Œ ë‹¤ìŒ ì˜¤í”„ì…‹ìœ¼ë¡œ ì´ë™ì‹œí‚¨ë‹¤*/
                                         sOffset += (sCmpResult + 1);                                            
                                     }
                                     else
@@ -10756,17 +10756,17 @@ IDE_RC mtfLikeCalculate4XlobLocatorOnePass( mtdClobLocatorType  aLocator,
                                 }
                             }
                         }
-                        else // __·Î ÀÎÇØ ¹Ğ¾ú´õ´Ï %ÀÌ´Ù.
+                        else // __ë¡œ ì¸í•´ ë°€ì—ˆë”ë‹ˆ %ì´ë‹¤.
                         {
                             // nothing to do
                         }
                     }
-                    else // __·Î ÀÎÇØ ´õ ¹Ğ¾úÁö¸¸ ´õ ÀÌ»ó ³²Áö ¾Ê¾Ò´Ù.
+                    else // __ë¡œ ì¸í•´ ë” ë°€ì—ˆì§€ë§Œ ë” ì´ìƒ ë‚¨ì§€ ì•Šì•˜ë‹¤.
                     {
                         // nothing to do
                     }
                 }
-                else // ¸¶Áö¸· %%               
+                else // ë§ˆì§€ë§‰ %%               
                 {                    
                     sBlock++;
                     sOffset = sLobLength;
@@ -10808,20 +10808,20 @@ IDE_RC mtfLikeCalculate4XlobLocatorMBOnePass( mtdClobLocatorType  aLocator,
 {    
 /***********************************************************************
  *
- * Description : LikeÀÇ Calculate ¼öÇà
+ * Description : Likeì˜ Calculate ìˆ˜í–‰
  *
  * Implementation :
  *    ex ) WHERE dname LIKE '%\_dep%' ESCAPE '\'
  *
- *    aStack[0] : °á°ú
- *    aStack[1] : ÀĞ¾î¿Â ½ºÆ®¸µ
- *               ( eg. 'develop_dep'¿Í °°Àº dname Ä®·³°ª)
- *    aStack[2] : ÆĞÅÏ ½ºÆ®¸µ
- *               ( eg. '\_dep'¿Í °°Àº ÆĞÅÏ ÀÏÄ¡ °Ë»ç Á¶°Ç°ª )
- *    aStack[3] : escape ¹®ÀÚ
- *               ( eg. '_dep'¸¦ ÆĞÅÏ ÀÏÄ¡ °Ë»ç Á¶°Ç°ªÀ¸·Î »ç¿ëÇÒ °æ¿ì,
- *                     '_'¿Í °°Àº Æ¯¼ö ¹®ÀÚ¸¦ ÀÏ¹İ ¹®ÀÚ·Î ÀÎ½ÄÇÏµµ·Ï ÇÏ´Â
- *                     '\' ¹®ÀÚ¸¦ ÁöÁ¤ÇÒ °æ¿ì ) 
+ *    aStack[0] : ê²°ê³¼
+ *    aStack[1] : ì½ì–´ì˜¨ ìŠ¤íŠ¸ë§
+ *               ( eg. 'develop_dep'ì™€ ê°™ì€ dname ì¹¼ëŸ¼ê°’)
+ *    aStack[2] : íŒ¨í„´ ìŠ¤íŠ¸ë§
+ *               ( eg. '\_dep'ì™€ ê°™ì€ íŒ¨í„´ ì¼ì¹˜ ê²€ì‚¬ ì¡°ê±´ê°’ )
+ *    aStack[3] : escape ë¬¸ì
+ *               ( eg. '_dep'ë¥¼ íŒ¨í„´ ì¼ì¹˜ ê²€ì‚¬ ì¡°ê±´ê°’ìœ¼ë¡œ ì‚¬ìš©í•  ê²½ìš°,
+ *                     '_'ì™€ ê°™ì€ íŠ¹ìˆ˜ ë¬¸ìë¥¼ ì¼ë°˜ ë¬¸ìë¡œ ì¸ì‹í•˜ë„ë¡ í•˜ëŠ”
+ *                     '\' ë¬¸ìë¥¼ ì§€ì •í•  ê²½ìš° ) 
  *
  ***********************************************************************/
 
@@ -10859,7 +10859,7 @@ IDE_RC mtfLikeCalculate4XlobLocatorMBOnePass( mtdClobLocatorType  aLocator,
         
     sBlock = sBlockFence - 1;
 
-    /*    %aaa%bbbb%ccc ¿Í °°Àº °æ¿ì ccc¸¦ Á¦°Å ÇÏ´Â ºÎºĞÀÌ´Ù */
+    /*    %aaa%bbbb%ccc ì™€ ê°™ì€ ê²½ìš° cccë¥¼ ì œê±° í•˜ëŠ” ë¶€ë¶„ì´ë‹¤ */
         
     while( (sBlock >= sBlockStart ) &&
            (sIsTrue == ID_TRUE) )
@@ -10871,7 +10871,7 @@ IDE_RC mtfLikeCalculate4XlobLocatorMBOnePass( mtdClobLocatorType  aLocator,
         }
         else
         {
-            /* µÚºÎÅÍ °Ë»çÇÑ´Ù */
+            /* ë’¤ë¶€í„° ê²€ì‚¬í•œë‹¤ */
             if ( sBlock->type == MTC_FORMAT_BLOCK_STRING )
             {
                 if ( sLobLength >= sBlock->sizeOrCnt )
@@ -10982,9 +10982,9 @@ IDE_RC mtfLikeCalculate4XlobLocatorMBOnePass( mtdClobLocatorType  aLocator,
         switch ( sBlock->type )
         {
             case MTC_FORMAT_BLOCK_STRING:
-                /*  Ã³À½ ¹®ÀÚ¿­ÀÌ°Å³ª ¶Ç´Â ´Ü¼ø ºñ±³ÀÏ°æ¿ì¿¡¸¸ ¿Ã ¼ö ÀÖ´Ù.
-                    __string¿¡¼­ __¸¦ Ã³¸® ÇÑ µÚ¿¡ ¿À°Å³ª
-                    string ÇüÅÂ¿¡¼­ ºÒ·¯Áø´Ù */
+                /*  ì²˜ìŒ ë¬¸ìì—´ì´ê±°ë‚˜ ë˜ëŠ” ë‹¨ìˆœ ë¹„êµì¼ê²½ìš°ì—ë§Œ ì˜¬ ìˆ˜ ìˆë‹¤.
+                    __stringì—ì„œ __ë¥¼ ì²˜ë¦¬ í•œ ë’¤ì— ì˜¤ê±°ë‚˜
+                    string í˜•íƒœì—ì„œ ë¶ˆëŸ¬ì§„ë‹¤ */
                
                 if ( sOffset + sBlock->sizeOrCnt <= sLobLength )
                 {
@@ -11017,7 +11017,7 @@ IDE_RC mtfLikeCalculate4XlobLocatorMBOnePass( mtdClobLocatorType  aLocator,
                 break;
 
             case MTC_FORMAT_BLOCK_UNDER:
-                /* ¹®ÀÚ ¼ö¸¸Å­ µÚ·Î º¸³½´Ù.*/
+                /* ë¬¸ì ìˆ˜ë§Œí¼ ë’¤ë¡œ ë³´ë‚¸ë‹¤.*/
 
                 sMaxStringLen = sBlock->sizeOrCnt * aMaxCharSize;
 
@@ -11081,7 +11081,7 @@ IDE_RC mtfLikeCalculate4XlobLocatorMBOnePass( mtdClobLocatorType  aLocator,
                         
                     if ( sBlock->type == MTC_FORMAT_BLOCK_UNDER )
                     {
-                        /*  __ ÀÌ ÆĞÅÏÀ¸·Î ³ª¿ÔÀ» °æ¿ì ±×¸¸Å­ ±ÛÂ¥¸¦ ¹Î´Ù */
+                        /*  __ ì´ íŒ¨í„´ìœ¼ë¡œ ë‚˜ì™”ì„ ê²½ìš° ê·¸ë§Œí¼ ê¸€ì§œë¥¼ ë¯¼ë‹¤ */
                         sOffset += sBlock->sizeOrCnt;
                         sBlock++;                            
                     }
@@ -11117,15 +11117,15 @@ IDE_RC mtfLikeCalculate4XlobLocatorMBOnePass( mtdClobLocatorType  aLocator,
 
                                 if ( sCmpResult == -1 )
                                 {
-                                    /* ºÎºĞ ¹®ÀÚ¿­ °Ë»ö½Ã ¾ø´Â °ÍÀº ¾ø´Â °ÍÀÌ´Ù */
+                                    /* ë¶€ë¶„ ë¬¸ìì—´ ê²€ìƒ‰ì‹œ ì—†ëŠ” ê²ƒì€ ì—†ëŠ” ê²ƒì´ë‹¤ */
                                     sIsTrue = ID_FALSE;                                    
                                 }
                                 else
                                 {
-                                    /* matchSubStringÀÇ °æ¿ì Multibyte¸¦ °í·Á ÇÏÁö ¾Ê¾Ò´Ù µû¶ó¼­
-                                       Àß¸øµÈ °á°ú°ªÀ» µ¹·Á ÁÙ ¼ö ÀÖ´Ù.
-                                       °Ë»öµÈ °á°úÀÇ °ªÀÌ ¹®ÀÚ¿­ÀÇ Á¦´ë·Î µÈ ½ÃÀÛÁ¡ÀÌ¶ó¸é
-                                       Á¦´ë·Î °Ë»öÀ» ÇÑ°ÍÀÌ´Ù. */
+                                    /* matchSubStringì˜ ê²½ìš° Multibyteë¥¼ ê³ ë ¤ í•˜ì§€ ì•Šì•˜ë‹¤ ë”°ë¼ì„œ
+                                       ì˜ëª»ëœ ê²°ê³¼ê°’ì„ ëŒë ¤ ì¤„ ìˆ˜ ìˆë‹¤.
+                                       ê²€ìƒ‰ëœ ê²°ê³¼ì˜ ê°’ì´ ë¬¸ìì—´ì˜ ì œëŒ€ë¡œ ëœ ì‹œì‘ì ì´ë¼ë©´
+                                       ì œëŒ€ë¡œ ê²€ìƒ‰ì„ í•œê²ƒì´ë‹¤. */
                                     
                                     while ( sValidChar < sOffset + sCmpResult )
                                     {
@@ -11166,7 +11166,7 @@ IDE_RC mtfLikeCalculate4XlobLocatorMBOnePass( mtdClobLocatorType  aLocator,
 
                                     if ( sValidChar == sOffset + sCmpResult )
                                     {
-                                        /* ºí·° ´ÜÀ§ÀÇ ¸ÅÄªÀ» ½ÃÀÛÇÑ´Ù */
+                                        /* ë¸”ëŸ­ ë‹¨ìœ„ì˜ ë§¤ì¹­ì„ ì‹œì‘í•œë‹¤ */
                                         sTempBlock  = sBlock + 1;
                                         sTempOffset = sOffset + sCmpResult + sBlock->sizeOrCnt;
                                         sIsTrue     = ID_TRUE;                                        
@@ -11182,11 +11182,11 @@ IDE_RC mtfLikeCalculate4XlobLocatorMBOnePass( mtdClobLocatorType  aLocator,
                                         
                                         if ( sIsTempTrue != ID_TRUE )
                                         {
-                                            /* ºí·° ¸ÅÄªÀÌ Æ²·ÈÀ»¶§ ´ÙÀ½ ¿ÀÇÁ¼ÂÀ¸·Î ÀÌµ¿½ÃÅ²´Ù*/
+                                            /* ë¸”ëŸ­ ë§¤ì¹­ì´ í‹€ë ¸ì„ë•Œ ë‹¤ìŒ ì˜¤í”„ì…‹ìœ¼ë¡œ ì´ë™ì‹œí‚¨ë‹¤*/
                                             sOffset += sCmpResult;
-                                            /* ½ÇÁ¦·Î LOBÀ» ÀĞ¾î nextchar¸¦ ÇØ¾ß ÇÏ´Âµ¥ ºÎ´ã½º·¯¿ö +1¸¸ Çß´Ù
-                                               ÀÌÈÄ¿¡ ½ÇÇàµÇ´Â MatchSubstring¿¡¼­ readlobÀ» ¼öÇà ÇÒ°ÍÀÌ°í
-                                               ½ÇÁ¦·Î +1µÈ ºÎºĞÀÌ ºÎºĞ ¹®ÀÚ¿­ °Ë»öÀÌ µÉ È®·üÀº ¸Å¿ì ³·´Ù */
+                                            /* ì‹¤ì œë¡œ LOBì„ ì½ì–´ nextcharë¥¼ í•´ì•¼ í•˜ëŠ”ë° ë¶€ë‹´ìŠ¤ëŸ¬ì›Œ +1ë§Œ í–ˆë‹¤
+                                               ì´í›„ì— ì‹¤í–‰ë˜ëŠ” MatchSubstringì—ì„œ readlobì„ ìˆ˜í–‰ í• ê²ƒì´ê³ 
+                                               ì‹¤ì œë¡œ +1ëœ ë¶€ë¶„ì´ ë¶€ë¶„ ë¬¸ìì—´ ê²€ìƒ‰ì´ ë  í™•ë¥ ì€ ë§¤ìš° ë‚®ë‹¤ */
                                             sOffset++;                                            
                                         }
                                         else
@@ -11203,17 +11203,17 @@ IDE_RC mtfLikeCalculate4XlobLocatorMBOnePass( mtdClobLocatorType  aLocator,
                                 }
                             }
                         }
-                        else // __·Î ÀÎÇØ ¹Ğ¾ú´õ´Ï %ÀÌ´Ù.
+                        else // __ë¡œ ì¸í•´ ë°€ì—ˆë”ë‹ˆ %ì´ë‹¤.
                         {
                             // nothing to do
                         }
                     }
-                    else // __·Î ÀÎÇØ ´õ ¹Ğ¾úÁö¸¸ ´õ ÀÌ»ó ³²Áö ¾Ê¾Ò´Ù.
+                    else // __ë¡œ ì¸í•´ ë” ë°€ì—ˆì§€ë§Œ ë” ì´ìƒ ë‚¨ì§€ ì•Šì•˜ë‹¤.
                     {
                         // nothing to do
                     }
                 }
-                else // ¸¶Áö¸· %%               
+                else // ë§ˆì§€ë§‰ %%               
                 {                    
                     sBlock++;
                     sOffset = sLobLength;
@@ -11253,20 +11253,20 @@ IDE_RC mtfLikeCalculateNormal( mtcNode*     aNode,
 {
 /***********************************************************************
  *
- * Description : LikeÀÇ Calculate ¼öÇà
+ * Description : Likeì˜ Calculate ìˆ˜í–‰
  *
  * Implementation :
  *    ex ) WHERE dname LIKE '%\_dep%' ESCAPE '\'
  *
- *    aStack[0] : °á°ú
- *    aStack[1] : ÀĞ¾î¿Â ½ºÆ®¸µ
- *               ( eg. 'develop_dep'¿Í °°Àº dname Ä®·³°ª)
- *    aStack[2] : ÆĞÅÏ ½ºÆ®¸µ
- *               ( eg. '\_dep'¿Í °°Àº ÆĞÅÏ ÀÏÄ¡ °Ë»ç Á¶°Ç°ª )
- *    aStack[3] : escape ¹®ÀÚ
- *               ( eg. '_dep'¸¦ ÆĞÅÏ ÀÏÄ¡ °Ë»ç Á¶°Ç°ªÀ¸·Î »ç¿ëÇÒ °æ¿ì,
- *                     '_'¿Í °°Àº Æ¯¼ö ¹®ÀÚ¸¦ ÀÏ¹İ ¹®ÀÚ·Î ÀÎ½ÄÇÏµµ·Ï ÇÏ´Â
- *                     '\' ¹®ÀÚ¸¦ ÁöÁ¤ÇÒ °æ¿ì ) 
+ *    aStack[0] : ê²°ê³¼
+ *    aStack[1] : ì½ì–´ì˜¨ ìŠ¤íŠ¸ë§
+ *               ( eg. 'develop_dep'ì™€ ê°™ì€ dname ì¹¼ëŸ¼ê°’)
+ *    aStack[2] : íŒ¨í„´ ìŠ¤íŠ¸ë§
+ *               ( eg. '\_dep'ì™€ ê°™ì€ íŒ¨í„´ ì¼ì¹˜ ê²€ì‚¬ ì¡°ê±´ê°’ )
+ *    aStack[3] : escape ë¬¸ì
+ *               ( eg. '_dep'ë¥¼ íŒ¨í„´ ì¼ì¹˜ ê²€ì‚¬ ì¡°ê±´ê°’ìœ¼ë¡œ ì‚¬ìš©í•  ê²½ìš°,
+ *                     '_'ì™€ ê°™ì€ íŠ¹ìˆ˜ ë¬¸ìë¥¼ ì¼ë°˜ ë¬¸ìë¡œ ì¸ì‹í•˜ë„ë¡ í•˜ëŠ”
+ *                     '\' ë¬¸ìë¥¼ ì§€ì •í•  ê²½ìš° ) 
  *
  ***********************************************************************/
     
@@ -11329,16 +11329,16 @@ IDE_RC mtfLikeCalculateNormal( mtcNode*     aNode,
                                 ERR_INVALID_LITERAL );
                 IDE_TEST_RAISE( (*sFormat != '%') &&
                                 (*sFormat != '_') &&
-                                (*sFormat != sEscape), // sEsacpe´Â nullÀÌ ¾Æ´Ô
+                                (*sFormat != sEscape), // sEsacpeëŠ” nullì´ ì•„ë‹˜
                                 ERR_INVALID_LITERAL );
 
                 if( *sFormat != *sString )
                 {
                     // Bug-11942 fix
-                    // 'aaab' like 'aaa__' escape '_' Ã³¸®½Ã
-                    // sFormatÀÌ ÇöÀç aaa__ÀÇ ¸¶Áö¸· _ÀÎµ¥
-                    // b != '_' ÀÌ¹Ç·Î break¸¦ ÇÏÁö¸¸
-                    // sFormatÀ» ´Ù½Ã ¾ÕÀ¸·Î ÇÑÄ­ ´ç°Ü¾ß ÇÑ´Ù.
+                    // 'aaab' like 'aaa__' escape '_' ì²˜ë¦¬ì‹œ
+                    // sFormatì´ í˜„ì¬ aaa__ì˜ ë§ˆì§€ë§‰ _ì¸ë°
+                    // b != '_' ì´ë¯€ë¡œ breakë¥¼ í•˜ì§€ë§Œ
+                    // sFormatì„ ë‹¤ì‹œ ì•ìœ¼ë¡œ í•œì¹¸ ë‹¹ê²¨ì•¼ í•œë‹¤.
                     sFormat--;
                     break;
                 }
@@ -11354,7 +11354,7 @@ IDE_RC mtfLikeCalculateNormal( mtcNode*     aNode,
                 */
                 if ( *sFormat != '_' )
                 {
-                    // ÀÏ¹İ ¹®ÀÚÀÎ °æ¿ì
+                    // ì¼ë°˜ ë¬¸ìì¸ ê²½ìš°
                     if ( *sFormat != *sString )
                     {
                         break;
@@ -11366,7 +11366,7 @@ IDE_RC mtfLikeCalculateNormal( mtcNode*     aNode,
                 }
                 else
                 {
-                    // '_'¹®ÀÚÀÎ °æ¿ì
+                    // '_'ë¬¸ìì¸ ê²½ìš°
                     // keep going
                 }
             }
@@ -11388,7 +11388,7 @@ IDE_RC mtfLikeCalculateNormal( mtcNode*     aNode,
                             
                             IDE_TEST_RAISE( (*sFormatIntermediate != '%') && 
                                             (*sFormatIntermediate != '_') &&
-                                            (*sFormatIntermediate != sEscape), // sEsacpe´Â nullÀÌ ¾Æ´Ô
+                                            (*sFormatIntermediate != sEscape), // sEsacpeëŠ” nullì´ ì•„ë‹˜
                                             ERR_INVALID_LITERAL );
                             
                             if( *sStringIntermediate !=
@@ -11453,7 +11453,7 @@ IDE_RC mtfLikeCalculateNormal( mtcNode*     aNode,
 
                     IDE_TEST_RAISE( (*sFormat != '%') &&
                                     (*sFormat != '_') &&
-                                    (*sFormat != sEscape), // sEsacpe´Â nullÀÌ ¾Æ´Ô
+                                    (*sFormat != sEscape), // sEsacpeëŠ” nullì´ ì•„ë‹˜
                                     ERR_INVALID_LITERAL );
                     if( *sFormat != ' ' )
                     {
@@ -11483,7 +11483,7 @@ IDE_RC mtfLikeCalculateNormal( mtcNode*     aNode,
 
                     IDE_TEST_RAISE( (*sFormat != '%') &&
                                     (*sFormat != '_') &&
-                                    (*sFormat != sEscape), // sEsacpe´Â nullÀÌ ¾Æ´Ô
+                                    (*sFormat != sEscape), // sEsacpeëŠ” nullì´ ì•„ë‹˜
                                     ERR_INVALID_LITERAL );
 
                     // Bug-11942 fix
@@ -11545,20 +11545,20 @@ IDE_RC mtfLikeCalculateMBNormal( mtcNode*     aNode,
 {
 /***********************************************************************
  *
- * Description : LikeÀÇ Calculate ¼öÇà
+ * Description : Likeì˜ Calculate ìˆ˜í–‰
  *
  * Implementation :
  *    ex ) WHERE dname LIKE '%\_dep%' ESCAPE '\'
  *
- *    aStack[0] : °á°ú
- *    aStack[1] : ÀĞ¾î¿Â ½ºÆ®¸µ
- *               ( eg. 'develop_dep'¿Í °°Àº dname Ä®·³°ª)
- *    aStack[2] : ÆĞÅÏ ½ºÆ®¸µ
- *               ( eg. '\_dep'¿Í °°Àº ÆĞÅÏ ÀÏÄ¡ °Ë»ç Á¶°Ç°ª )
- *    aStack[3] : escape ¹®ÀÚ
- *               ( eg. '_dep'¸¦ ÆĞÅÏ ÀÏÄ¡ °Ë»ç Á¶°Ç°ªÀ¸·Î »ç¿ëÇÒ °æ¿ì,
- *                     '_'¿Í °°Àº Æ¯¼ö ¹®ÀÚ¸¦ ÀÏ¹İ ¹®ÀÚ·Î ÀÎ½ÄÇÏµµ·Ï ÇÏ´Â
- *                     '\' ¹®ÀÚ¸¦ ÁöÁ¤ÇÒ °æ¿ì ) 
+ *    aStack[0] : ê²°ê³¼
+ *    aStack[1] : ì½ì–´ì˜¨ ìŠ¤íŠ¸ë§
+ *               ( eg. 'develop_dep'ì™€ ê°™ì€ dname ì¹¼ëŸ¼ê°’)
+ *    aStack[2] : íŒ¨í„´ ìŠ¤íŠ¸ë§
+ *               ( eg. '\_dep'ì™€ ê°™ì€ íŒ¨í„´ ì¼ì¹˜ ê²€ì‚¬ ì¡°ê±´ê°’ )
+ *    aStack[3] : escape ë¬¸ì
+ *               ( eg. '_dep'ë¥¼ íŒ¨í„´ ì¼ì¹˜ ê²€ì‚¬ ì¡°ê±´ê°’ìœ¼ë¡œ ì‚¬ìš©í•  ê²½ìš°,
+ *                     '_'ì™€ ê°™ì€ íŠ¹ìˆ˜ ë¬¸ìë¥¼ ì¼ë°˜ ë¬¸ìë¡œ ì¸ì‹í•˜ë„ë¡ í•˜ëŠ”
+ *                     '\' ë¬¸ìë¥¼ ì§€ì •í•  ê²½ìš° ) 
  *
  ***********************************************************************/
     
@@ -11665,8 +11665,8 @@ IDE_RC mtfLikeCalculateMBNormal( mtcNode*     aNode,
                                               sFormatFence,
                                               sLanguage );
 
-                // escape ¹®ÀÚÀÎ °æ¿ì,
-                // escape ´ÙÀ½ ¹®ÀÚ°¡ '%','_' ¹®ÀÚÀÎÁö °Ë»ç
+                // escape ë¬¸ìì¸ ê²½ìš°,
+                // escape ë‹¤ìŒ ë¬¸ìê°€ '%','_' ë¬¸ìì¸ì§€ ê²€ì‚¬
                 sEqual1 = mtc::compareOneChar( sFormat,
                                                sSize,
                                                sLanguage->specialCharSet[MTL_PC_IDX],
@@ -11695,10 +11695,10 @@ IDE_RC mtfLikeCalculateMBNormal( mtcNode*     aNode,
                 if( sEqual != ID_TRUE )
                 {
                     // Bug-11942 fix
-                    // 'aaab' like 'aaa__' escape '_' Ã³¸®½Ã
-                    // sFormatÀÌ ÇöÀç aaa__ÀÇ ¸¶Áö¸· _ÀÎµ¥
-                    // b != '_' ÀÌ¹Ç·Î break¸¦ ÇÏÁö¸¸
-                    // sFormatÀ» ´Ù½Ã ¾ÕÀ¸·Î ÇÑÄ­ ´ç°Ü¾ß ÇÑ´Ù.
+                    // 'aaab' like 'aaa__' escape '_' ì²˜ë¦¬ì‹œ
+                    // sFormatì´ í˜„ì¬ aaa__ì˜ ë§ˆì§€ë§‰ _ì¸ë°
+                    // b != '_' ì´ë¯€ë¡œ breakë¥¼ í•˜ì§€ë§Œ
+                    // sFormatì„ ë‹¤ì‹œ ì•ìœ¼ë¡œ í•œì¹¸ ë‹¹ê²¨ì•¼ í•œë‹¤.
                     sFormat = sFormatPrev;
                     break;
                 }
@@ -11719,7 +11719,7 @@ IDE_RC mtfLikeCalculateMBNormal( mtcNode*     aNode,
                     
                     if ( sEqual != ID_TRUE )
                     {
-                        // ÀÏ¹İ ¹®ÀÚÀÎ °æ¿ì
+                        // ì¼ë°˜ ë¬¸ìì¸ ê²½ìš°
                         sEqual = mtc::compareOneChar( sFormat,
                                                       sSize,
                                                       sString,
@@ -11736,7 +11736,7 @@ IDE_RC mtfLikeCalculateMBNormal( mtcNode*     aNode,
                     }
                     else
                     {
-                        // '_'¹®ÀÚÀÎ °æ¿ì
+                        // '_'ë¬¸ìì¸ ê²½ìš°
                         // keep going
                     }
                 }
@@ -12146,20 +12146,20 @@ IDE_RC mtfLikeCalculate4XlobLocatorNormal( mtcNode*     aNode,
 {
 /***********************************************************************
  *
- * Description : LikeÀÇ Calculate ¼öÇà
+ * Description : Likeì˜ Calculate ìˆ˜í–‰
  *
  * Implementation :
  *    ex ) WHERE dname LIKE '%\_dep%' ESCAPE '\'
  *
- *    aStack[0] : °á°ú
- *    aStack[1] : ÀĞ¾î¿Â ½ºÆ®¸µ
- *               ( eg. 'develop_dep'¿Í °°Àº dname Ä®·³°ª)
- *    aStack[2] : ÆĞÅÏ ½ºÆ®¸µ
- *               ( eg. '\_dep'¿Í °°Àº ÆĞÅÏ ÀÏÄ¡ °Ë»ç Á¶°Ç°ª )
- *    aStack[3] : escape ¹®ÀÚ
- *               ( eg. '_dep'¸¦ ÆĞÅÏ ÀÏÄ¡ °Ë»ç Á¶°Ç°ªÀ¸·Î »ç¿ëÇÒ °æ¿ì,
- *                     '_'¿Í °°Àº Æ¯¼ö ¹®ÀÚ¸¦ ÀÏ¹İ ¹®ÀÚ·Î ÀÎ½ÄÇÏµµ·Ï ÇÏ´Â
- *                     '\' ¹®ÀÚ¸¦ ÁöÁ¤ÇÒ °æ¿ì ) 
+ *    aStack[0] : ê²°ê³¼
+ *    aStack[1] : ì½ì–´ì˜¨ ìŠ¤íŠ¸ë§
+ *               ( eg. 'develop_dep'ì™€ ê°™ì€ dname ì¹¼ëŸ¼ê°’)
+ *    aStack[2] : íŒ¨í„´ ìŠ¤íŠ¸ë§
+ *               ( eg. '\_dep'ì™€ ê°™ì€ íŒ¨í„´ ì¼ì¹˜ ê²€ì‚¬ ì¡°ê±´ê°’ )
+ *    aStack[3] : escape ë¬¸ì
+ *               ( eg. '_dep'ë¥¼ íŒ¨í„´ ì¼ì¹˜ ê²€ì‚¬ ì¡°ê±´ê°’ìœ¼ë¡œ ì‚¬ìš©í•  ê²½ìš°,
+ *                     '_'ì™€ ê°™ì€ íŠ¹ìˆ˜ ë¬¸ìë¥¼ ì¼ë°˜ ë¬¸ìë¡œ ì¸ì‹í•˜ë„ë¡ í•˜ëŠ”
+ *                     '\' ë¬¸ìë¥¼ ì§€ì •í•  ê²½ìš° ) 
  *
  ***********************************************************************/
 
@@ -12205,7 +12205,7 @@ IDE_RC mtfLikeCalculate4XlobLocatorNormal( mtcNode*     aNode,
         sFormat      = sVarchar->value;
         sFormatFence = sFormat + sVarchar->length;
         
-        // escape ¹®ÀÚ
+        // escape ë¬¸ì
         if( ( aNode->lflag & MTC_NODE_ARGUMENT_COUNT_MASK ) == 3 )
         {
             sVarchar = (mtdCharType*)aStack[3].value;
@@ -12218,7 +12218,7 @@ IDE_RC mtfLikeCalculate4XlobLocatorNormal( mtcNode*     aNode,
             sNullEscape = ID_TRUE;
         }
 
-        // buffer ÃÊ±âÈ­
+        // buffer ì´ˆê¸°í™”
         sBuffer.locator = sLocator;
         sBuffer.length  = sLobLength;
         sBuffer.buf     = sBuf;
@@ -12226,7 +12226,7 @@ IDE_RC mtfLikeCalculate4XlobLocatorNormal( mtcNode*     aNode,
         sBuffer.fence   = NULL;
         sBuffer.size    = 0;
 
-        // ¹öÆÛ¸¦ ÀĞ´Â´Ù.
+        // ë²„í¼ë¥¼ ì½ëŠ”ë‹¤.
         IDE_TEST( mtfLikeReadLob( &sBuffer ) != IDE_SUCCESS );
 
         sString.offset = sBuffer.offset;
@@ -12244,7 +12244,7 @@ IDE_RC mtfLikeCalculate4XlobLocatorNormal( mtcNode*     aNode,
                                 ERR_INVALID_LITERAL );
                 IDE_TEST_RAISE( (*sFormat != '%') &&
                                 (*sFormat != '_') &&
-                                (*sFormat != sEscape), // sEsacpe´Â nullÀÌ ¾Æ´Ô
+                                (*sFormat != sEscape), // sEsacpeëŠ” nullì´ ì•„ë‹˜
                                 ERR_INVALID_LITERAL );
 
                 // compare
@@ -12257,10 +12257,10 @@ IDE_RC mtfLikeCalculate4XlobLocatorNormal( mtcNode*     aNode,
                 if( sEqual != ID_TRUE )
                 {
                     // Bug-11942 fix
-                    // 'aaab' like 'aaa__' escape '_' Ã³¸®½Ã
-                    // sFormatÀÌ ÇöÀç aaa__ÀÇ ¸¶Áö¸· _ÀÎµ¥
-                    // b != '_' ÀÌ¹Ç·Î break¸¦ ÇÏÁö¸¸
-                    // sFormatÀ» ´Ù½Ã ¾ÕÀ¸·Î ÇÑÄ­ ´ç°Ü¾ß ÇÑ´Ù.
+                    // 'aaab' like 'aaa__' escape '_' ì²˜ë¦¬ì‹œ
+                    // sFormatì´ í˜„ì¬ aaa__ì˜ ë§ˆì§€ë§‰ _ì¸ë°
+                    // b != '_' ì´ë¯€ë¡œ breakë¥¼ í•˜ì§€ë§Œ
+                    // sFormatì„ ë‹¤ì‹œ ì•ìœ¼ë¡œ í•œì¹¸ ë‹¹ê²¨ì•¼ í•œë‹¤.
                     sFormat--;
                     break;
                 }
@@ -12276,7 +12276,7 @@ IDE_RC mtfLikeCalculate4XlobLocatorNormal( mtcNode*     aNode,
                 */
                 if ( *sFormat != '_' )
                 {
-                    // ÀÏ¹İ ¹®ÀÚÀÎ °æ¿ì
+                    // ì¼ë°˜ ë¬¸ìì¸ ê²½ìš°
                     // compare
                     IDE_TEST( compareCharWithBuffer( &sBuffer,
                                                      &sString,
@@ -12295,7 +12295,7 @@ IDE_RC mtfLikeCalculate4XlobLocatorNormal( mtcNode*     aNode,
                 }
                 else
                 {
-                    // '_'¹®ÀÚÀÎ °æ¿ì
+                    // '_'ë¬¸ìì¸ ê²½ìš°
                     // keep going
                 }
             }
@@ -12320,7 +12320,7 @@ IDE_RC mtfLikeCalculate4XlobLocatorNormal( mtcNode*     aNode,
                             
                             IDE_TEST_RAISE( (*sFormatIntermediate != '%') && 
                                             (*sFormatIntermediate != '_') &&
-                                            (*sFormatIntermediate != sEscape), // sEsacpe´Â nullÀÌ ¾Æ´Ô
+                                            (*sFormatIntermediate != sEscape), // sEsacpeëŠ” nullì´ ì•„ë‹˜
                                             ERR_INVALID_LITERAL );
 
                             // compare
@@ -12442,7 +12442,7 @@ IDE_RC mtfLikeCalculate4XlobLocatorNormal( mtcNode*     aNode,
                 
                 IDE_TEST_RAISE( (*sFormat != '%') &&
                                 (*sFormat != '_') &&
-                                (*sFormat != sEscape), // sEsacpe´Â nullÀÌ ¾Æ´Ô
+                                (*sFormat != sEscape), // sEsacpeëŠ” nullì´ ì•„ë‹˜
                                 ERR_INVALID_LITERAL );
                 
                 // Bug-11942 fix
@@ -12492,20 +12492,20 @@ IDE_RC mtfLikeCalculate4XlobLocatorMBNormal( mtcNode*     aNode,
 {
 /***********************************************************************
  *
- * Description : LikeÀÇ Calculate ¼öÇà
+ * Description : Likeì˜ Calculate ìˆ˜í–‰
  *
  * Implementation :
  *    ex ) WHERE dname LIKE '%\_dep%' ESCAPE '\'
  *
- *    aStack[0] : °á°ú
- *    aStack[1] : ÀĞ¾î¿Â ½ºÆ®¸µ
- *               ( eg. 'develop_dep'¿Í °°Àº dname Ä®·³°ª)
- *    aStack[2] : ÆĞÅÏ ½ºÆ®¸µ
- *               ( eg. '\_dep'¿Í °°Àº ÆĞÅÏ ÀÏÄ¡ °Ë»ç Á¶°Ç°ª )
- *    aStack[3] : escape ¹®ÀÚ
- *               ( eg. '_dep'¸¦ ÆĞÅÏ ÀÏÄ¡ °Ë»ç Á¶°Ç°ªÀ¸·Î »ç¿ëÇÒ °æ¿ì,
- *                     '_'¿Í °°Àº Æ¯¼ö ¹®ÀÚ¸¦ ÀÏ¹İ ¹®ÀÚ·Î ÀÎ½ÄÇÏµµ·Ï ÇÏ´Â
- *                     '\' ¹®ÀÚ¸¦ ÁöÁ¤ÇÒ °æ¿ì ) 
+ *    aStack[0] : ê²°ê³¼
+ *    aStack[1] : ì½ì–´ì˜¨ ìŠ¤íŠ¸ë§
+ *               ( eg. 'develop_dep'ì™€ ê°™ì€ dname ì¹¼ëŸ¼ê°’)
+ *    aStack[2] : íŒ¨í„´ ìŠ¤íŠ¸ë§
+ *               ( eg. '\_dep'ì™€ ê°™ì€ íŒ¨í„´ ì¼ì¹˜ ê²€ì‚¬ ì¡°ê±´ê°’ )
+ *    aStack[3] : escape ë¬¸ì
+ *               ( eg. '_dep'ë¥¼ íŒ¨í„´ ì¼ì¹˜ ê²€ì‚¬ ì¡°ê±´ê°’ìœ¼ë¡œ ì‚¬ìš©í•  ê²½ìš°,
+ *                     '_'ì™€ ê°™ì€ íŠ¹ìˆ˜ ë¬¸ìë¥¼ ì¼ë°˜ ë¬¸ìë¡œ ì¸ì‹í•˜ë„ë¡ í•˜ëŠ”
+ *                     '\' ë¬¸ìë¥¼ ì§€ì •í•  ê²½ìš° ) 
  *
  ***********************************************************************/
     
@@ -12560,7 +12560,7 @@ IDE_RC mtfLikeCalculate4XlobLocatorMBNormal( mtcNode*     aNode,
         sFormatPrev  = sFormat;
         sFormatFence = sFormat + sVarchar->length;
 
-        // escape ¹®ÀÚ
+        // escape ë¬¸ì
         if( ( aNode->lflag & MTC_NODE_ARGUMENT_COUNT_MASK ) == 3 )
         {
             sVarchar = (mtdCharType*)aStack[3].value;
@@ -12575,7 +12575,7 @@ IDE_RC mtfLikeCalculate4XlobLocatorMBNormal( mtcNode*     aNode,
             sNullEscape = ID_TRUE;
         }
 
-        // buffer ÃÊ±âÈ­
+        // buffer ì´ˆê¸°í™”
         sBuffer.locator = sLocator;
         sBuffer.length  = sLobLength;
         sBuffer.buf     = sBuf;
@@ -12583,7 +12583,7 @@ IDE_RC mtfLikeCalculate4XlobLocatorMBNormal( mtcNode*     aNode,
         sBuffer.fence   = NULL;
         sBuffer.size    = 0;
 
-        // ¹öÆÛ¸¦ ÀĞ´Â´Ù.
+        // ë²„í¼ë¥¼ ì½ëŠ”ë‹¤.
         IDE_TEST( mtfLikeReadLob( &sBuffer ) != IDE_SUCCESS );
 
         sString.offset = sBuffer.offset;
@@ -12653,10 +12653,10 @@ IDE_RC mtfLikeCalculate4XlobLocatorMBNormal( mtcNode*     aNode,
                 if( sEqual != ID_TRUE )
                 {
                     // Bug-11942 fix
-                    // 'aaab' like 'aaa__' escape '_' Ã³¸®½Ã
-                    // sFormatÀÌ ÇöÀç aaa__ÀÇ ¸¶Áö¸· _ÀÎµ¥
-                    // b != '_' ÀÌ¹Ç·Î break¸¦ ÇÏÁö¸¸
-                    // sFormatÀ» ´Ù½Ã ¾ÕÀ¸·Î ÇÑÄ­ ´ç°Ü¾ß ÇÑ´Ù.
+                    // 'aaab' like 'aaa__' escape '_' ì²˜ë¦¬ì‹œ
+                    // sFormatì´ í˜„ì¬ aaa__ì˜ ë§ˆì§€ë§‰ _ì¸ë°
+                    // b != '_' ì´ë¯€ë¡œ breakë¥¼ í•˜ì§€ë§Œ
+                    // sFormatì„ ë‹¤ì‹œ ì•ìœ¼ë¡œ í•œì¹¸ ë‹¹ê²¨ì•¼ í•œë‹¤.
                     sFormat = sFormatPrev;
                     break;
                 }
@@ -12677,7 +12677,7 @@ IDE_RC mtfLikeCalculate4XlobLocatorMBNormal( mtcNode*     aNode,
                     
                     if ( sEqual != ID_TRUE )  // normal char
                     {
-                        // ÀÏ¹İ ¹®ÀÚÀÎ °æ¿ì
+                        // ì¼ë°˜ ë¬¸ìì¸ ê²½ìš°
                         // compare
                         IDE_TEST( compareCharWithBufferMB( &sBuffer,
                                                            &sString,
@@ -12698,7 +12698,7 @@ IDE_RC mtfLikeCalculate4XlobLocatorMBNormal( mtcNode*     aNode,
                     }
                     else
                     {
-                        // '_'¹®ÀÚÀÎ °æ¿ì
+                        // '_'ë¬¸ìì¸ ê²½ìš°
                         // keep going
                     }
                 }
@@ -13022,20 +13022,20 @@ IDE_RC mtfLikeCalculate4EcharNormal( mtcNode*     aNode,
 {
 /***********************************************************************
  *
- * Description : LikeÀÇ Calculate ¼öÇà
+ * Description : Likeì˜ Calculate ìˆ˜í–‰
  *
  * Implementation :
  *    ex ) WHERE dname LIKE '%\_dep%' ESCAPE '\'
  *
- *    aStack[0] : °á°ú
- *    aStack[1] : ÀĞ¾î¿Â ½ºÆ®¸µ
- *               ( eg. 'develop_dep'¿Í °°Àº dname Ä®·³°ª)
- *    aStack[2] : ÆĞÅÏ ½ºÆ®¸µ
- *               ( eg. '\_dep'¿Í °°Àº ÆĞÅÏ ÀÏÄ¡ °Ë»ç Á¶°Ç°ª )
- *    aStack[3] : escape ¹®ÀÚ
- *               ( eg. '_dep'¸¦ ÆĞÅÏ ÀÏÄ¡ °Ë»ç Á¶°Ç°ªÀ¸·Î »ç¿ëÇÒ °æ¿ì,
- *                     '_'¿Í °°Àº Æ¯¼ö ¹®ÀÚ¸¦ ÀÏ¹İ ¹®ÀÚ·Î ÀÎ½ÄÇÏµµ·Ï ÇÏ´Â
- *                     '\' ¹®ÀÚ¸¦ ÁöÁ¤ÇÒ °æ¿ì ) 
+ *    aStack[0] : ê²°ê³¼
+ *    aStack[1] : ì½ì–´ì˜¨ ìŠ¤íŠ¸ë§
+ *               ( eg. 'develop_dep'ì™€ ê°™ì€ dname ì¹¼ëŸ¼ê°’)
+ *    aStack[2] : íŒ¨í„´ ìŠ¤íŠ¸ë§
+ *               ( eg. '\_dep'ì™€ ê°™ì€ íŒ¨í„´ ì¼ì¹˜ ê²€ì‚¬ ì¡°ê±´ê°’ )
+ *    aStack[3] : escape ë¬¸ì
+ *               ( eg. '_dep'ë¥¼ íŒ¨í„´ ì¼ì¹˜ ê²€ì‚¬ ì¡°ê±´ê°’ìœ¼ë¡œ ì‚¬ìš©í•  ê²½ìš°,
+ *                     '_'ì™€ ê°™ì€ íŠ¹ìˆ˜ ë¬¸ìë¥¼ ì¼ë°˜ ë¬¸ìë¡œ ì¸ì‹í•˜ë„ë¡ í•˜ëŠ”
+ *                     '\' ë¬¸ìë¥¼ ì§€ì •í•  ê²½ìš° ) 
  *
  ***********************************************************************/
     const mtdModule * sModule;
@@ -13080,7 +13080,7 @@ IDE_RC mtfLikeCalculate4EcharNormal( mtcNode*     aNode,
     else
     {
         //--------------------------------------------------
-        // search stringÀÇ plain text¸¦ ¾ò´Â´Ù.
+        // search stringì˜ plain textë¥¼ ì–»ëŠ”ë‹¤.
         //--------------------------------------------------
 
         sEchar   = (mtdEcharType*)aStack[1].value;
@@ -13129,7 +13129,7 @@ IDE_RC mtfLikeCalculate4EcharNormal( mtcNode*     aNode,
         sStringFence = sStringPlain + sStringPlainLength;
         
         //--------------------------------------------------
-        // format stringÀÇ plain text¸¦ ¾ò´Â´Ù.
+        // format stringì˜ plain textë¥¼ ì–»ëŠ”ë‹¤.
         //--------------------------------------------------
         
         sEchar = (mtdEcharType*)aStack[2].value;
@@ -13142,8 +13142,8 @@ IDE_RC mtfLikeCalculate4EcharNormal( mtcNode*     aNode,
 
         if ( sEncNode->conversion == NULL )
         {
-            // conversionÀÌ nullÀÎ °æ¿ì default policy°¡ ¾Æ´Ñ
-            // ÄÃ·³ÀÌ format stringÀÌ ¿À´Â °æ¿ì°¡ ÀÖ´Ù.
+            // conversionì´ nullì¸ ê²½ìš° default policyê°€ ì•„ë‹Œ
+            // ì»¬ëŸ¼ì´ format stringì´ ì˜¤ëŠ” ê²½ìš°ê°€ ìˆë‹¤.
             sEncColumn = aTemplate->rows[sEncNode->baseTable].columns
                 + sEncNode->baseColumn;
         
@@ -13185,8 +13185,8 @@ IDE_RC mtfLikeCalculate4EcharNormal( mtcNode*     aNode,
         }
         else
         {
-            // conversionÀÌ ÀÖ´Â °æ¿ì conversion½Ã Ç×»ó
-            // default policy·Î º¯È¯µÈ´Ù.
+            // conversionì´ ìˆëŠ” ê²½ìš° conversionì‹œ í•­ìƒ
+            // default policyë¡œ ë³€í™˜ëœë‹¤.
             sFormatPlain = sEchar->mValue;
             sFormatPlainLength = sEchar->mCipherLength;
         }
@@ -13195,7 +13195,7 @@ IDE_RC mtfLikeCalculate4EcharNormal( mtcNode*     aNode,
         sFormatFence = sFormatPlain + sFormatPlainLength;
         
         //--------------------------------------------------
-        // escape ¹®ÀÚ
+        // escape ë¬¸ì
         //--------------------------------------------------
         
         if( ( aNode->lflag & MTC_NODE_ARGUMENT_COUNT_MASK ) == 3 )
@@ -13211,7 +13211,7 @@ IDE_RC mtfLikeCalculate4EcharNormal( mtcNode*     aNode,
         }
         
         //--------------------------------------------------
-        // like ¼öÇà
+        // like ìˆ˜í–‰
         //--------------------------------------------------
         
         for( ; (sString < sStringFence) && (sFormat < sFormatFence);
@@ -13224,16 +13224,16 @@ IDE_RC mtfLikeCalculate4EcharNormal( mtcNode*     aNode,
                                 ERR_INVALID_LITERAL );
                 IDE_TEST_RAISE( (*sFormat != '%') &&
                                 (*sFormat != '_') &&
-                                (*sFormat != sEscape), // sEsacpe´Â nullÀÌ ¾Æ´Ô
+                                (*sFormat != sEscape), // sEsacpeëŠ” nullì´ ì•„ë‹˜
                                 ERR_INVALID_LITERAL );
 
                 if( *sFormat != *sString )
                 {
                     // Bug-11942 fix
-                    // 'aaab' like 'aaa__' escape '_' Ã³¸®½Ã
-                    // sFormatÀÌ ÇöÀç aaa__ÀÇ ¸¶Áö¸· _ÀÎµ¥
-                    // b != '_' ÀÌ¹Ç·Î break¸¦ ÇÏÁö¸¸
-                    // sFormatÀ» ´Ù½Ã ¾ÕÀ¸·Î ÇÑÄ­ ´ç°Ü¾ß ÇÑ´Ù.
+                    // 'aaab' like 'aaa__' escape '_' ì²˜ë¦¬ì‹œ
+                    // sFormatì´ í˜„ì¬ aaa__ì˜ ë§ˆì§€ë§‰ _ì¸ë°
+                    // b != '_' ì´ë¯€ë¡œ breakë¥¼ í•˜ì§€ë§Œ
+                    // sFormatì„ ë‹¤ì‹œ ì•ìœ¼ë¡œ í•œì¹¸ ë‹¹ê²¨ì•¼ í•œë‹¤.
                     sFormat--;
                     break;
                 }
@@ -13249,7 +13249,7 @@ IDE_RC mtfLikeCalculate4EcharNormal( mtcNode*     aNode,
                 */
                 if ( *sFormat != '_' )
                 {
-                    // ÀÏ¹İ ¹®ÀÚÀÎ °æ¿ì
+                    // ì¼ë°˜ ë¬¸ìì¸ ê²½ìš°
                     if ( *sFormat != *sString )
                     {
                         break;
@@ -13261,7 +13261,7 @@ IDE_RC mtfLikeCalculate4EcharNormal( mtcNode*     aNode,
                 }
                 else
                 {
-                    // '_'¹®ÀÚÀÎ °æ¿ì
+                    // '_'ë¬¸ìì¸ ê²½ìš°
                     // keep going
                 }
             }
@@ -13283,7 +13283,7 @@ IDE_RC mtfLikeCalculate4EcharNormal( mtcNode*     aNode,
                             
                             IDE_TEST_RAISE( (*sFormatIntermediate != '%') && 
                                             (*sFormatIntermediate != '_') &&
-                                            (*sFormatIntermediate != sEscape), // sEsacpe´Â nullÀÌ ¾Æ´Ô
+                                            (*sFormatIntermediate != sEscape), // sEsacpeëŠ” nullì´ ì•„ë‹˜
                                             ERR_INVALID_LITERAL );
                             
                             if( *sStringIntermediate !=
@@ -13348,7 +13348,7 @@ IDE_RC mtfLikeCalculate4EcharNormal( mtcNode*     aNode,
 
                     IDE_TEST_RAISE( (*sFormat != '%') &&
                                     (*sFormat != '_') &&
-                                    (*sFormat != sEscape), // sEsacpe´Â nullÀÌ ¾Æ´Ô
+                                    (*sFormat != sEscape), // sEsacpeëŠ” nullì´ ì•„ë‹˜
                                     ERR_INVALID_LITERAL );
                     if( *sFormat != ' ' )
                     {
@@ -13378,7 +13378,7 @@ IDE_RC mtfLikeCalculate4EcharNormal( mtcNode*     aNode,
 
                     IDE_TEST_RAISE( (*sFormat != '%') &&
                                     (*sFormat != '_') &&
-                                    (*sFormat != sEscape), // sEsacpe´Â nullÀÌ ¾Æ´Ô
+                                    (*sFormat != sEscape), // sEsacpeëŠ” nullì´ ì•„ë‹˜
                                     ERR_INVALID_LITERAL );
 
                     // Bug-11942 fix
@@ -13441,20 +13441,20 @@ IDE_RC mtfLikeCalculate4EcharMBNormal( mtcNode*     aNode,
 {
 /***********************************************************************
  *
- * Description : LikeÀÇ Calculate ¼öÇà
+ * Description : Likeì˜ Calculate ìˆ˜í–‰
  *
  * Implementation :
  *    ex ) WHERE dname LIKE '%\_dep%' ESCAPE '\'
  *
- *    aStack[0] : °á°ú
- *    aStack[1] : ÀĞ¾î¿Â ½ºÆ®¸µ
- *               ( eg. 'develop_dep'¿Í °°Àº dname Ä®·³°ª)
- *    aStack[2] : ÆĞÅÏ ½ºÆ®¸µ
- *               ( eg. '\_dep'¿Í °°Àº ÆĞÅÏ ÀÏÄ¡ °Ë»ç Á¶°Ç°ª )
- *    aStack[3] : escape ¹®ÀÚ
- *               ( eg. '_dep'¸¦ ÆĞÅÏ ÀÏÄ¡ °Ë»ç Á¶°Ç°ªÀ¸·Î »ç¿ëÇÒ °æ¿ì,
- *                     '_'¿Í °°Àº Æ¯¼ö ¹®ÀÚ¸¦ ÀÏ¹İ ¹®ÀÚ·Î ÀÎ½ÄÇÏµµ·Ï ÇÏ´Â
- *                     '\' ¹®ÀÚ¸¦ ÁöÁ¤ÇÒ °æ¿ì ) 
+ *    aStack[0] : ê²°ê³¼
+ *    aStack[1] : ì½ì–´ì˜¨ ìŠ¤íŠ¸ë§
+ *               ( eg. 'develop_dep'ì™€ ê°™ì€ dname ì¹¼ëŸ¼ê°’)
+ *    aStack[2] : íŒ¨í„´ ìŠ¤íŠ¸ë§
+ *               ( eg. '\_dep'ì™€ ê°™ì€ íŒ¨í„´ ì¼ì¹˜ ê²€ì‚¬ ì¡°ê±´ê°’ )
+ *    aStack[3] : escape ë¬¸ì
+ *               ( eg. '_dep'ë¥¼ íŒ¨í„´ ì¼ì¹˜ ê²€ì‚¬ ì¡°ê±´ê°’ìœ¼ë¡œ ì‚¬ìš©í•  ê²½ìš°,
+ *                     '_'ì™€ ê°™ì€ íŠ¹ìˆ˜ ë¬¸ìë¥¼ ì¼ë°˜ ë¬¸ìë¡œ ì¸ì‹í•˜ë„ë¡ í•˜ëŠ”
+ *                     '\' ë¬¸ìë¥¼ ì§€ì •í•  ê²½ìš° ) 
  *
  ***********************************************************************/
     
@@ -13510,7 +13510,7 @@ IDE_RC mtfLikeCalculate4EcharMBNormal( mtcNode*     aNode,
     else
     {
         //--------------------------------------------------
-        // search stringÀÇ plain text¸¦ ¾ò´Â´Ù.
+        // search stringì˜ plain textë¥¼ ì–»ëŠ”ë‹¤.
         //--------------------------------------------------
 
         sEchar   = (mtdEcharType*)aStack[1].value;
@@ -13559,7 +13559,7 @@ IDE_RC mtfLikeCalculate4EcharMBNormal( mtcNode*     aNode,
         sStringFence = sStringPlain + sStringPlainLength;
         
         //--------------------------------------------------
-        // format stringÀÇ plain text¸¦ ¾ò´Â´Ù.
+        // format stringì˜ plain textë¥¼ ì–»ëŠ”ë‹¤.
         //--------------------------------------------------
         
         sEchar = (mtdEcharType*)aStack[2].value;
@@ -13572,8 +13572,8 @@ IDE_RC mtfLikeCalculate4EcharMBNormal( mtcNode*     aNode,
         
         if ( sEncNode->conversion == NULL )
         {
-            // conversionÀÌ nullÀÎ °æ¿ì default policy°¡ ¾Æ´Ñ
-            // ÄÃ·³ÀÌ format stringÀÌ ¿À´Â °æ¿ì°¡ ÀÖ´Ù.
+            // conversionì´ nullì¸ ê²½ìš° default policyê°€ ì•„ë‹Œ
+            // ì»¬ëŸ¼ì´ format stringì´ ì˜¤ëŠ” ê²½ìš°ê°€ ìˆë‹¤.
             sEncColumn = aTemplate->rows[sEncNode->baseTable].columns
                 + sEncNode->baseColumn;
         
@@ -13615,8 +13615,8 @@ IDE_RC mtfLikeCalculate4EcharMBNormal( mtcNode*     aNode,
         }
         else
         {
-            // conversionÀÌ ÀÖ´Â °æ¿ì conversion½Ã Ç×»ó
-            // default policy·Î º¯È¯µÈ´Ù.
+            // conversionì´ ìˆëŠ” ê²½ìš° conversionì‹œ í•­ìƒ
+            // default policyë¡œ ë³€í™˜ëœë‹¤.
             sFormatPlain = sEchar->mValue;
             sFormatPlainLength = sEchar->mCipherLength;
         }
@@ -13625,7 +13625,7 @@ IDE_RC mtfLikeCalculate4EcharMBNormal( mtcNode*     aNode,
         sFormatFence = sFormatPlain + sFormatPlainLength;
         
         //--------------------------------------------------
-        // escape ¹®ÀÚ
+        // escape ë¬¸ì
         //--------------------------------------------------
         
         if( ( aNode->lflag & MTC_NODE_ARGUMENT_COUNT_MASK ) == 3 )
@@ -13651,7 +13651,7 @@ IDE_RC mtfLikeCalculate4EcharMBNormal( mtcNode*     aNode,
         }
         
         //--------------------------------------------------
-        // like ¼öÇà
+        // like ìˆ˜í–‰
         //--------------------------------------------------
         
         for( ; (sString < sStringFence) && (sFormat < sFormatFence); )
@@ -13687,8 +13687,8 @@ IDE_RC mtfLikeCalculate4EcharMBNormal( mtcNode*     aNode,
                                               sFormatFence,
                                               sLanguage );
 
-                // escape ¹®ÀÚÀÎ °æ¿ì,
-                // escape ´ÙÀ½ ¹®ÀÚ°¡ '%','_' ¹®ÀÚÀÎÁö °Ë»ç
+                // escape ë¬¸ìì¸ ê²½ìš°,
+                // escape ë‹¤ìŒ ë¬¸ìê°€ '%','_' ë¬¸ìì¸ì§€ ê²€ì‚¬
                 sEqual1 = mtc::compareOneChar( sFormat,
                                                sSize,
                                                sLanguage->specialCharSet[MTL_PC_IDX],
@@ -13717,10 +13717,10 @@ IDE_RC mtfLikeCalculate4EcharMBNormal( mtcNode*     aNode,
                 if( sEqual != ID_TRUE )
                 {
                     // Bug-11942 fix
-                    // 'aaab' like 'aaa__' escape '_' Ã³¸®½Ã
-                    // sFormatÀÌ ÇöÀç aaa__ÀÇ ¸¶Áö¸· _ÀÎµ¥
-                    // b != '_' ÀÌ¹Ç·Î break¸¦ ÇÏÁö¸¸
-                    // sFormatÀ» ´Ù½Ã ¾ÕÀ¸·Î ÇÑÄ­ ´ç°Ü¾ß ÇÑ´Ù.
+                    // 'aaab' like 'aaa__' escape '_' ì²˜ë¦¬ì‹œ
+                    // sFormatì´ í˜„ì¬ aaa__ì˜ ë§ˆì§€ë§‰ _ì¸ë°
+                    // b != '_' ì´ë¯€ë¡œ breakë¥¼ í•˜ì§€ë§Œ
+                    // sFormatì„ ë‹¤ì‹œ ì•ìœ¼ë¡œ í•œì¹¸ ë‹¹ê²¨ì•¼ í•œë‹¤.
                     sFormat = sFormatPrev;
                     break;
                 }
@@ -13741,7 +13741,7 @@ IDE_RC mtfLikeCalculate4EcharMBNormal( mtcNode*     aNode,
                     
                     if ( sEqual != ID_TRUE )
                     {
-                        // ÀÏ¹İ ¹®ÀÚÀÎ °æ¿ì
+                        // ì¼ë°˜ ë¬¸ìì¸ ê²½ìš°
                         sEqual = mtc::compareOneChar( sFormat,
                                                       sSize,
                                                       sString,
@@ -13758,7 +13758,7 @@ IDE_RC mtfLikeCalculate4EcharMBNormal( mtcNode*     aNode,
                     }
                     else
                     {
-                        // '_'¹®ÀÚÀÎ °æ¿ì
+                        // '_'ë¬¸ìì¸ ê²½ìš°
                         // keep going
                     }
                 }
@@ -14169,21 +14169,21 @@ IDE_RC mtfLikeCalculate4ClobValue( mtcNode     * aNode,
 {
 /***********************************************************************
  *
- * Description : LikeÀÇ Calculate ¼öÇà
- *               ÆĞÅÏÀÇ ±æÀÌ¿Í »ç¿ë ¸ğµâ¿¡ µû¸¥ ºĞ±â¸¦ ¼öÇàÇÑ´Ù.
+ * Description : Likeì˜ Calculate ìˆ˜í–‰
+ *               íŒ¨í„´ì˜ ê¸¸ì´ì™€ ì‚¬ìš© ëª¨ë“ˆì— ë”°ë¥¸ ë¶„ê¸°ë¥¼ ìˆ˜í–‰í•œë‹¤.
  *
  * Implementation :
  *    ex ) WHERE dname LIKE '%\_dep%' ESCAPE '\'
  *
- *    aStack[0] : °á°ú
- *    aStack[1] : ÀĞ¾î¿Â ½ºÆ®¸µ
- *               ( eg. 'develop_dep'¿Í °°Àº dname Ä®·³°ª)
- *    aStack[2] : ÆĞÅÏ ½ºÆ®¸µ
- *               ( eg. '\_dep'¿Í °°Àº ÆĞÅÏ ÀÏÄ¡ °Ë»ç Á¶°Ç°ª )
- *    aStack[3] : escape ¹®ÀÚ
- *               ( eg. '_dep'¸¦ ÆĞÅÏ ÀÏÄ¡ °Ë»ç Á¶°Ç°ªÀ¸·Î »ç¿ëÇÒ °æ¿ì,
- *                     '_'¿Í °°Àº Æ¯¼ö ¹®ÀÚ¸¦ ÀÏ¹İ ¹®ÀÚ·Î ÀÎ½ÄÇÏµµ·Ï ÇÏ´Â
- *                     '\' ¹®ÀÚ¸¦ ÁöÁ¤ÇÒ °æ¿ì )
+ *    aStack[0] : ê²°ê³¼
+ *    aStack[1] : ì½ì–´ì˜¨ ìŠ¤íŠ¸ë§
+ *               ( eg. 'develop_dep'ì™€ ê°™ì€ dname ì¹¼ëŸ¼ê°’)
+ *    aStack[2] : íŒ¨í„´ ìŠ¤íŠ¸ë§
+ *               ( eg. '\_dep'ì™€ ê°™ì€ íŒ¨í„´ ì¼ì¹˜ ê²€ì‚¬ ì¡°ê±´ê°’ )
+ *    aStack[3] : escape ë¬¸ì
+ *               ( eg. '_dep'ë¥¼ íŒ¨í„´ ì¼ì¹˜ ê²€ì‚¬ ì¡°ê±´ê°’ìœ¼ë¡œ ì‚¬ìš©í•  ê²½ìš°,
+ *                     '_'ì™€ ê°™ì€ íŠ¹ìˆ˜ ë¬¸ìë¥¼ ì¼ë°˜ ë¬¸ìë¡œ ì¸ì‹í•˜ë„ë¡ í•˜ëŠ”
+ *                     '\' ë¬¸ìë¥¼ ì§€ì •í•  ê²½ìš° )
  *
  ***********************************************************************/
 
@@ -14284,21 +14284,21 @@ IDE_RC mtfLikeCalculate4ClobValueMB( mtcNode     * aNode,
 {
 /***********************************************************************
  *
- * Description : LikeÀÇ Calculate ¼öÇà
- *               ÆĞÅÏÀÇ ±æÀÌ¿Í »ç¿ë ¸ğµâ¿¡ µû¸¥ ºĞ±â¸¦ ¼öÇàÇÑ´Ù.
+ * Description : Likeì˜ Calculate ìˆ˜í–‰
+ *               íŒ¨í„´ì˜ ê¸¸ì´ì™€ ì‚¬ìš© ëª¨ë“ˆì— ë”°ë¥¸ ë¶„ê¸°ë¥¼ ìˆ˜í–‰í•œë‹¤.
  *
  * Implementation :
  *    ex ) WHERE dname LIKE '%\_dep%' ESCAPE '\'
  *
- *    aStack[0] : °á°ú
- *    aStack[1] : ÀĞ¾î¿Â ½ºÆ®¸µ
- *               ( eg. 'develop_dep'¿Í °°Àº dname Ä®·³°ª)
- *    aStack[2] : ÆĞÅÏ ½ºÆ®¸µ
- *               ( eg. '\_dep'¿Í °°Àº ÆĞÅÏ ÀÏÄ¡ °Ë»ç Á¶°Ç°ª )
- *    aStack[3] : escape ¹®ÀÚ
- *               ( eg. '_dep'¸¦ ÆĞÅÏ ÀÏÄ¡ °Ë»ç Á¶°Ç°ªÀ¸·Î »ç¿ëÇÒ °æ¿ì,
- *                     '_'¿Í °°Àº Æ¯¼ö ¹®ÀÚ¸¦ ÀÏ¹İ ¹®ÀÚ·Î ÀÎ½ÄÇÏµµ·Ï ÇÏ´Â
- *                     '\' ¹®ÀÚ¸¦ ÁöÁ¤ÇÒ °æ¿ì )
+ *    aStack[0] : ê²°ê³¼
+ *    aStack[1] : ì½ì–´ì˜¨ ìŠ¤íŠ¸ë§
+ *               ( eg. 'develop_dep'ì™€ ê°™ì€ dname ì¹¼ëŸ¼ê°’)
+ *    aStack[2] : íŒ¨í„´ ìŠ¤íŠ¸ë§
+ *               ( eg. '\_dep'ì™€ ê°™ì€ íŒ¨í„´ ì¼ì¹˜ ê²€ì‚¬ ì¡°ê±´ê°’ )
+ *    aStack[3] : escape ë¬¸ì
+ *               ( eg. '_dep'ë¥¼ íŒ¨í„´ ì¼ì¹˜ ê²€ì‚¬ ì¡°ê±´ê°’ìœ¼ë¡œ ì‚¬ìš©í•  ê²½ìš°,
+ *                     '_'ì™€ ê°™ì€ íŠ¹ìˆ˜ ë¬¸ìë¥¼ ì¼ë°˜ ë¬¸ìë¡œ ì¸ì‹í•˜ë„ë¡ í•˜ëŠ”
+ *                     '\' ë¬¸ìë¥¼ ì§€ì •í•  ê²½ìš° )
  *
  ***********************************************************************/
 
@@ -14413,21 +14413,21 @@ IDE_RC mtfLikeCalculate4ClobValueNormal( mtcNode     * aNode,
 {
 /***********************************************************************
  *
- * Description : LikeÀÇ Calculate ¼öÇà
- *               ÆĞÅÏÀÇ ±æÀÌ¿Í »ç¿ë ¸ğµâ¿¡ µû¸¥ ºĞ±â¸¦ ¼öÇàÇÑ´Ù.
+ * Description : Likeì˜ Calculate ìˆ˜í–‰
+ *               íŒ¨í„´ì˜ ê¸¸ì´ì™€ ì‚¬ìš© ëª¨ë“ˆì— ë”°ë¥¸ ë¶„ê¸°ë¥¼ ìˆ˜í–‰í•œë‹¤.
  *
  * Implementation :
  *    ex ) WHERE dname LIKE '%\_dep%' ESCAPE '\'
  *
- *    aStack[0] : °á°ú
- *    aStack[1] : ÀĞ¾î¿Â ½ºÆ®¸µ
- *               ( eg. 'develop_dep'¿Í °°Àº dname Ä®·³°ª)
- *    aStack[2] : ÆĞÅÏ ½ºÆ®¸µ
- *               ( eg. '\_dep'¿Í °°Àº ÆĞÅÏ ÀÏÄ¡ °Ë»ç Á¶°Ç°ª )
- *    aStack[3] : escape ¹®ÀÚ
- *               ( eg. '_dep'¸¦ ÆĞÅÏ ÀÏÄ¡ °Ë»ç Á¶°Ç°ªÀ¸·Î »ç¿ëÇÒ °æ¿ì,
- *                     '_'¿Í °°Àº Æ¯¼ö ¹®ÀÚ¸¦ ÀÏ¹İ ¹®ÀÚ·Î ÀÎ½ÄÇÏµµ·Ï ÇÏ´Â
- *                     '\' ¹®ÀÚ¸¦ ÁöÁ¤ÇÒ °æ¿ì )
+ *    aStack[0] : ê²°ê³¼
+ *    aStack[1] : ì½ì–´ì˜¨ ìŠ¤íŠ¸ë§
+ *               ( eg. 'develop_dep'ì™€ ê°™ì€ dname ì¹¼ëŸ¼ê°’)
+ *    aStack[2] : íŒ¨í„´ ìŠ¤íŠ¸ë§
+ *               ( eg. '\_dep'ì™€ ê°™ì€ íŒ¨í„´ ì¼ì¹˜ ê²€ì‚¬ ì¡°ê±´ê°’ )
+ *    aStack[3] : escape ë¬¸ì
+ *               ( eg. '_dep'ë¥¼ íŒ¨í„´ ì¼ì¹˜ ê²€ì‚¬ ì¡°ê±´ê°’ìœ¼ë¡œ ì‚¬ìš©í•  ê²½ìš°,
+ *                     '_'ì™€ ê°™ì€ íŠ¹ìˆ˜ ë¬¸ìë¥¼ ì¼ë°˜ ë¬¸ìë¡œ ì¸ì‹í•˜ë„ë¡ í•˜ëŠ”
+ *                     '\' ë¬¸ìë¥¼ ì§€ì •í•  ê²½ìš° )
  *
  ***********************************************************************/
 
@@ -14487,16 +14487,16 @@ IDE_RC mtfLikeCalculate4ClobValueNormal( mtcNode     * aNode,
                                 ERR_INVALID_LITERAL );
                 IDE_TEST_RAISE( (*sFormat != '%') &&
                                 (*sFormat != '_') &&
-                                (*sFormat != sEscape), // sEsacpe´Â nullÀÌ ¾Æ´Ô
+                                (*sFormat != sEscape), // sEsacpeëŠ” nullì´ ì•„ë‹˜
                                 ERR_INVALID_LITERAL );
 
                 if ( *sFormat != *sString )
                 {
                     // Bug-11942 fix
-                    // 'aaab' like 'aaa__' escape '_' Ã³¸®½Ã
-                    // sFormatÀÌ ÇöÀç aaa__ÀÇ ¸¶Áö¸· _ÀÎµ¥
-                    // b != '_' ÀÌ¹Ç·Î break¸¦ ÇÏÁö¸¸
-                    // sFormatÀ» ´Ù½Ã ¾ÕÀ¸·Î ÇÑÄ­ ´ç°Ü¾ß ÇÑ´Ù.
+                    // 'aaab' like 'aaa__' escape '_' ì²˜ë¦¬ì‹œ
+                    // sFormatì´ í˜„ì¬ aaa__ì˜ ë§ˆì§€ë§‰ _ì¸ë°
+                    // b != '_' ì´ë¯€ë¡œ breakë¥¼ í•˜ì§€ë§Œ
+                    // sFormatì„ ë‹¤ì‹œ ì•ìœ¼ë¡œ í•œì¹¸ ë‹¹ê²¨ì•¼ í•œë‹¤.
                     sFormat--;
                     break;
                 }
@@ -14515,7 +14515,7 @@ IDE_RC mtfLikeCalculate4ClobValueNormal( mtcNode     * aNode,
                  */
                 if ( *sFormat != '_' )
                 {
-                    // ÀÏ¹İ ¹®ÀÚÀÎ °æ¿ì
+                    // ì¼ë°˜ ë¬¸ìì¸ ê²½ìš°
                     if ( *sFormat != *sString )
                     {
                         break;
@@ -14527,7 +14527,7 @@ IDE_RC mtfLikeCalculate4ClobValueNormal( mtcNode     * aNode,
                 }
                 else
                 {
-                    // '_'¹®ÀÚÀÎ °æ¿ì
+                    // '_'ë¬¸ìì¸ ê²½ìš°
                     // keep going
                 }
             }
@@ -14549,7 +14549,7 @@ IDE_RC mtfLikeCalculate4ClobValueNormal( mtcNode     * aNode,
 
                             IDE_TEST_RAISE( (*sFormatIntermediate != '%') &&
                                             (*sFormatIntermediate != '_') &&
-                                            (*sFormatIntermediate != sEscape), // sEsacpe´Â nullÀÌ ¾Æ´Ô
+                                            (*sFormatIntermediate != sEscape), // sEsacpeëŠ” nullì´ ì•„ë‹˜
                                             ERR_INVALID_LITERAL );
 
                             if ( *sStringIntermediate !=
@@ -14611,7 +14611,7 @@ IDE_RC mtfLikeCalculate4ClobValueNormal( mtcNode     * aNode,
 
                 IDE_TEST_RAISE( (*sFormat != '%') &&
                                 (*sFormat != '_') &&
-                                (*sFormat != sEscape), // sEsacpe´Â nullÀÌ ¾Æ´Ô
+                                (*sFormat != sEscape), // sEsacpeëŠ” nullì´ ì•„ë‹˜
                                 ERR_INVALID_LITERAL );
 
                 // Bug-11942 fix
@@ -14659,21 +14659,21 @@ IDE_RC mtfLikeCalculate4ClobValueMBNormal( mtcNode     * aNode,
 {
 /***********************************************************************
  *
- * Description : LikeÀÇ Calculate ¼öÇà
- *               ÆĞÅÏÀÇ ±æÀÌ¿Í »ç¿ë ¸ğµâ¿¡ µû¸¥ ºĞ±â¸¦ ¼öÇàÇÑ´Ù.
+ * Description : Likeì˜ Calculate ìˆ˜í–‰
+ *               íŒ¨í„´ì˜ ê¸¸ì´ì™€ ì‚¬ìš© ëª¨ë“ˆì— ë”°ë¥¸ ë¶„ê¸°ë¥¼ ìˆ˜í–‰í•œë‹¤.
  *
  * Implementation :
  *    ex ) WHERE dname LIKE '%\_dep%' ESCAPE '\'
  *
- *    aStack[0] : °á°ú
- *    aStack[1] : ÀĞ¾î¿Â ½ºÆ®¸µ
- *               ( eg. 'develop_dep'¿Í °°Àº dname Ä®·³°ª)
- *    aStack[2] : ÆĞÅÏ ½ºÆ®¸µ
- *               ( eg. '\_dep'¿Í °°Àº ÆĞÅÏ ÀÏÄ¡ °Ë»ç Á¶°Ç°ª )
- *    aStack[3] : escape ¹®ÀÚ
- *               ( eg. '_dep'¸¦ ÆĞÅÏ ÀÏÄ¡ °Ë»ç Á¶°Ç°ªÀ¸·Î »ç¿ëÇÒ °æ¿ì,
- *                     '_'¿Í °°Àº Æ¯¼ö ¹®ÀÚ¸¦ ÀÏ¹İ ¹®ÀÚ·Î ÀÎ½ÄÇÏµµ·Ï ÇÏ´Â
- *                     '\' ¹®ÀÚ¸¦ ÁöÁ¤ÇÒ °æ¿ì )
+ *    aStack[0] : ê²°ê³¼
+ *    aStack[1] : ì½ì–´ì˜¨ ìŠ¤íŠ¸ë§
+ *               ( eg. 'develop_dep'ì™€ ê°™ì€ dname ì¹¼ëŸ¼ê°’)
+ *    aStack[2] : íŒ¨í„´ ìŠ¤íŠ¸ë§
+ *               ( eg. '\_dep'ì™€ ê°™ì€ íŒ¨í„´ ì¼ì¹˜ ê²€ì‚¬ ì¡°ê±´ê°’ )
+ *    aStack[3] : escape ë¬¸ì
+ *               ( eg. '_dep'ë¥¼ íŒ¨í„´ ì¼ì¹˜ ê²€ì‚¬ ì¡°ê±´ê°’ìœ¼ë¡œ ì‚¬ìš©í•  ê²½ìš°,
+ *                     '_'ì™€ ê°™ì€ íŠ¹ìˆ˜ ë¬¸ìë¥¼ ì¼ë°˜ ë¬¸ìë¡œ ì¸ì‹í•˜ë„ë¡ í•˜ëŠ”
+ *                     '\' ë¬¸ìë¥¼ ì§€ì •í•  ê²½ìš° )
  *
  ***********************************************************************/
 
@@ -14778,8 +14778,8 @@ IDE_RC mtfLikeCalculate4ClobValueMBNormal( mtcNode     * aNode,
                                              sFormatFence,
                                              sLanguage );
 
-                // escape ¹®ÀÚÀÎ °æ¿ì,
-                // escape ´ÙÀ½ ¹®ÀÚ°¡ '%','_' ¹®ÀÚÀÎÁö °Ë»ç
+                // escape ë¬¸ìì¸ ê²½ìš°,
+                // escape ë‹¤ìŒ ë¬¸ìê°€ '%','_' ë¬¸ìì¸ì§€ ê²€ì‚¬
                 sEqual1 = mtc::compareOneChar( sFormat,
                                                sSize,
                                                sLanguage->specialCharSet[MTL_PC_IDX],
@@ -14808,10 +14808,10 @@ IDE_RC mtfLikeCalculate4ClobValueMBNormal( mtcNode     * aNode,
                 if ( sEqual != ID_TRUE )
                 {
                     // Bug-11942 fix
-                    // 'aaab' like 'aaa__' escape '_' Ã³¸®½Ã
-                    // sFormatÀÌ ÇöÀç aaa__ÀÇ ¸¶Áö¸· _ÀÎµ¥
-                    // b != '_' ÀÌ¹Ç·Î break¸¦ ÇÏÁö¸¸
-                    // sFormatÀ» ´Ù½Ã ¾ÕÀ¸·Î ÇÑÄ­ ´ç°Ü¾ß ÇÑ´Ù.
+                    // 'aaab' like 'aaa__' escape '_' ì²˜ë¦¬ì‹œ
+                    // sFormatì´ í˜„ì¬ aaa__ì˜ ë§ˆì§€ë§‰ _ì¸ë°
+                    // b != '_' ì´ë¯€ë¡œ breakë¥¼ í•˜ì§€ë§Œ
+                    // sFormatì„ ë‹¤ì‹œ ì•ìœ¼ë¡œ í•œì¹¸ ë‹¹ê²¨ì•¼ í•œë‹¤.
                     sFormat = sFormatPrev;
                     break;
                 }
@@ -14836,7 +14836,7 @@ IDE_RC mtfLikeCalculate4ClobValueMBNormal( mtcNode     * aNode,
 
                     if ( sEqual != ID_TRUE )
                     {
-                        // ÀÏ¹İ ¹®ÀÚÀÎ °æ¿ì
+                        // ì¼ë°˜ ë¬¸ìì¸ ê²½ìš°
                         sEqual = mtc::compareOneChar( sFormat,
                                                       sSize,
                                                       sString,
@@ -14853,7 +14853,7 @@ IDE_RC mtfLikeCalculate4ClobValueMBNormal( mtcNode     * aNode,
                     }
                     else
                     {
-                        // '_'¹®ÀÚÀÎ °æ¿ì
+                        // '_'ë¬¸ìì¸ ê²½ìš°
                         // keep going
                     }
                 }
@@ -15148,7 +15148,7 @@ IDE_RC mtfLikeEstimateClobValueFast( mtcNode     * aNode,
     UShort              sFormatLen;
 
     // BUG-40992 FATAL when using _prowid
-    // ÀÎÀÚÀÇ °æ¿ì mtcStack ÀÇ column °ªÀ» ÀÌ¿ëÇÏ¸é µÈ´Ù.
+    // ì¸ìì˜ ê²½ìš° mtcStack ì˜ column ê°’ì„ ì´ìš©í•˜ë©´ ëœë‹¤.
     sIndexColumn     = aStack[1].column;
 
     if ( mtfLikeFormatInfo( aNode, aTemplate, aStack, & sFormatInfo, &sFormatLen, aCallBack) == IDE_SUCCESS )
@@ -15286,22 +15286,22 @@ IDE_RC mtfLikeCalculate4ClobValueNormalFast( mtcNode     * aNode,
 {
 /***********************************************************************
  *
- * Description : ´Ü¼øÇÑ ÆĞÅÏÀÌ ¾Æ´Ñ °æ¿ì
- *                LikeÀÇ Calculate ¼öÇà
- *                ÆĞÅÏ ±æÀÌ¿Í »ç¿ë ¸ğµâ¿¡ µû¶ó Ã³¸® ¹æ¹ıÀ» °áÁ¤ÇÑ´Ù.
+ * Description : ë‹¨ìˆœí•œ íŒ¨í„´ì´ ì•„ë‹Œ ê²½ìš°
+ *                Likeì˜ Calculate ìˆ˜í–‰
+ *                íŒ¨í„´ ê¸¸ì´ì™€ ì‚¬ìš© ëª¨ë“ˆì— ë”°ë¼ ì²˜ë¦¬ ë°©ë²•ì„ ê²°ì •í•œë‹¤.
  *
  * Implementation :
  *    ex ) WHERE dname LIKE '%\_dep%' ESCAPE '\'
  *
- *    aStack[0] : °á°ú
- *    aStack[1] : ÀĞ¾î¿Â ½ºÆ®¸µ
- *               ( eg. 'develop_dep'¿Í °°Àº dname Ä®·³°ª)
- *    aStack[2] : ÆĞÅÏ ½ºÆ®¸µ
- *               ( eg. '\_dep'¿Í °°Àº ÆĞÅÏ ÀÏÄ¡ °Ë»ç Á¶°Ç°ª )
- *    aStack[3] : escape ¹®ÀÚ
- *               ( eg. '_dep'¸¦ ÆĞÅÏ ÀÏÄ¡ °Ë»ç Á¶°Ç°ªÀ¸·Î »ç¿ëÇÒ °æ¿ì,
- *                     '_'¿Í °°Àº Æ¯¼ö ¹®ÀÚ¸¦ ÀÏ¹İ ¹®ÀÚ·Î ÀÎ½ÄÇÏµµ·Ï ÇÏ´Â
- *                     '\' ¹®ÀÚ¸¦ ÁöÁ¤ÇÒ °æ¿ì )
+ *    aStack[0] : ê²°ê³¼
+ *    aStack[1] : ì½ì–´ì˜¨ ìŠ¤íŠ¸ë§
+ *               ( eg. 'develop_dep'ì™€ ê°™ì€ dname ì¹¼ëŸ¼ê°’)
+ *    aStack[2] : íŒ¨í„´ ìŠ¤íŠ¸ë§
+ *               ( eg. '\_dep'ì™€ ê°™ì€ íŒ¨í„´ ì¼ì¹˜ ê²€ì‚¬ ì¡°ê±´ê°’ )
+ *    aStack[3] : escape ë¬¸ì
+ *               ( eg. '_dep'ë¥¼ íŒ¨í„´ ì¼ì¹˜ ê²€ì‚¬ ì¡°ê±´ê°’ìœ¼ë¡œ ì‚¬ìš©í•  ê²½ìš°,
+ *                     '_'ì™€ ê°™ì€ íŠ¹ìˆ˜ ë¬¸ìë¥¼ ì¼ë°˜ ë¬¸ìë¡œ ì¸ì‹í•˜ë„ë¡ í•˜ëŠ”
+ *                     '\' ë¬¸ìë¥¼ ì§€ì •í•  ê²½ìš° )
  *
  ***********************************************************************/
 
@@ -15358,8 +15358,8 @@ IDE_RC mtfLikeCalculateEqual4ClobValueFast( mtcNode     * aNode,
 {
 /***********************************************************************
  *
- * Description : PROJ-1755 LikeÀÇ Calculate Fast ¼öÇà
- *               PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø
+ * Description : PROJ-1755 Likeì˜ Calculate Fast ìˆ˜í–‰
+ *               PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ì… ì§€ì›
  *
  * Implementation :
  *
@@ -15433,8 +15433,8 @@ IDE_RC mtfLikeCalculateIsNotNull4ClobValueFast( mtcNode     * aNode,
 {
 /***********************************************************************
  *
- * Description : PROJ-1755 LikeÀÇ Calculate Fast ¼öÇà
- *               PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø
+ * Description : PROJ-1755 Likeì˜ Calculate Fast ìˆ˜í–‰
+ *               PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ì… ì§€ì›
  *
  * Implementation :
  *
@@ -15495,8 +15495,8 @@ IDE_RC mtfLikeCalculateLength4ClobValueFast( mtcNode     * aNode,
 {
 /***********************************************************************
  *
- * Description : PROJ-1755 LikeÀÇ Calculate Fast ¼öÇà
- *               PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø
+ * Description : PROJ-1755 Likeì˜ Calculate Fast ìˆ˜í–‰
+ *               PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ì… ì§€ì›
  *
  * Implementation :
  *
@@ -15585,8 +15585,8 @@ IDE_RC mtfLikeCalculateOnePercent4ClobValueFast( mtcNode     * aNode,
 {
 /***********************************************************************
  *
- * Description : PROJ-1755 LikeÀÇ Calculate Fast ¼öÇà
- *               PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø
+ * Description : PROJ-1755 Likeì˜ Calculate Fast ìˆ˜í–‰
+ *               PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ì… ì§€ì›
  *
  * Implementation :
  *
@@ -15692,22 +15692,22 @@ IDE_RC mtfLikeCalculate4ClobValueMBNormalFast( mtcNode     * aNode,
 {
 /***********************************************************************
  *
- * Description : ´Ü¼øÇÑ ÆĞÅÏÀÌ ¾Æ´Ñ °æ¿ì
- *                LikeÀÇ Calculate ¼öÇà
- *                ÆĞÅÏ ±æÀÌ¿Í »ç¿ë ¸ğµâ¿¡ µû¶ó Ã³¸® ¹æ¹ıÀ» °áÁ¤ÇÑ´Ù.
+ * Description : ë‹¨ìˆœí•œ íŒ¨í„´ì´ ì•„ë‹Œ ê²½ìš°
+ *                Likeì˜ Calculate ìˆ˜í–‰
+ *                íŒ¨í„´ ê¸¸ì´ì™€ ì‚¬ìš© ëª¨ë“ˆì— ë”°ë¼ ì²˜ë¦¬ ë°©ë²•ì„ ê²°ì •í•œë‹¤.
  *
  * Implementation :
  *    ex ) WHERE dname LIKE '%\_dep%' ESCAPE '\'
  *
- *    aStack[0] : °á°ú
- *    aStack[1] : ÀĞ¾î¿Â ½ºÆ®¸µ
- *               ( eg. 'develop_dep'¿Í °°Àº dname Ä®·³°ª)
- *    aStack[2] : ÆĞÅÏ ½ºÆ®¸µ
- *               ( eg. '\_dep'¿Í °°Àº ÆĞÅÏ ÀÏÄ¡ °Ë»ç Á¶°Ç°ª )
- *    aStack[3] : escape ¹®ÀÚ
- *               ( eg. '_dep'¸¦ ÆĞÅÏ ÀÏÄ¡ °Ë»ç Á¶°Ç°ªÀ¸·Î »ç¿ëÇÒ °æ¿ì,
- *                     '_'¿Í °°Àº Æ¯¼ö ¹®ÀÚ¸¦ ÀÏ¹İ ¹®ÀÚ·Î ÀÎ½ÄÇÏµµ·Ï ÇÏ´Â
- *                     '\' ¹®ÀÚ¸¦ ÁöÁ¤ÇÒ °æ¿ì )
+ *    aStack[0] : ê²°ê³¼
+ *    aStack[1] : ì½ì–´ì˜¨ ìŠ¤íŠ¸ë§
+ *               ( eg. 'develop_dep'ì™€ ê°™ì€ dname ì¹¼ëŸ¼ê°’)
+ *    aStack[2] : íŒ¨í„´ ìŠ¤íŠ¸ë§
+ *               ( eg. '\_dep'ì™€ ê°™ì€ íŒ¨í„´ ì¼ì¹˜ ê²€ì‚¬ ì¡°ê±´ê°’ )
+ *    aStack[3] : escape ë¬¸ì
+ *               ( eg. '_dep'ë¥¼ íŒ¨í„´ ì¼ì¹˜ ê²€ì‚¬ ì¡°ê±´ê°’ìœ¼ë¡œ ì‚¬ìš©í•  ê²½ìš°,
+ *                     '_'ì™€ ê°™ì€ íŠ¹ìˆ˜ ë¬¸ìë¥¼ ì¼ë°˜ ë¬¸ìë¡œ ì¸ì‹í•˜ë„ë¡ í•˜ëŠ”
+ *                     '\' ë¬¸ìë¥¼ ì§€ì •í•  ê²½ìš° )
  *
  ***********************************************************************/
 
@@ -15769,8 +15769,8 @@ IDE_RC mtfLikeCalculateLength4ClobValueMBFast( mtcNode     * aNode,
 {
 /***********************************************************************
  *
- * Description : PROJ-1755 LikeÀÇ Calculate Fast ¼öÇà
- *               PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø
+ * Description : PROJ-1755 Likeì˜ Calculate Fast ìˆ˜í–‰
+ *               PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ì… ì§€ì›
  *
  * Implementation :
  *

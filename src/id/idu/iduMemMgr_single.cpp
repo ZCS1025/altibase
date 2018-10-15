@@ -23,10 +23,10 @@
 #include <iduMemMgr.h>
 
 /***********************************************************************
- * iduMemMgr_single.cpp : IDU_SINGLE_TYPE, IDU_MEMMGR_CLIENT¿¡¼­ »ç¿ë
- * iduMemMgrÀ» ¼­¹ö ¸ğµå·Î ÃÊ±âÈ­ÇÏ±â ÀÌÀü,
- * È¤Àº client´Â ÀÌ ¸ğµâÀ» »ç¿ëÇÑ´Ù.
- * ¸Ş¸ğ¸® Åë°èÁ¤º¸¸¦ ±â·ÏÇÏÁö ¾Ê´Â´Ù.
+ * iduMemMgr_single.cpp : IDU_SINGLE_TYPE, IDU_MEMMGR_CLIENTì—ì„œ ì‚¬ìš©
+ * iduMemMgrì„ ì„œë²„ ëª¨ë“œë¡œ ì´ˆê¸°í™”í•˜ê¸° ì´ì „,
+ * í˜¹ì€ clientëŠ” ì´ ëª¨ë“ˆì„ ì‚¬ìš©í•œë‹¤.
+ * ë©”ëª¨ë¦¬ í†µê³„ì •ë³´ë¥¼ ê¸°ë¡í•˜ì§€ ì•ŠëŠ”ë‹¤.
  **********************************************************************/
 IDE_RC iduMemMgr::single_initializeStatic(void)
 {

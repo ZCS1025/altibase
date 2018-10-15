@@ -38,7 +38,7 @@ ulpCodeGen::ulpCodeGen()
 /* 
  * DESCRIPTION :
  *
- *  ulpCodeGen»ı¼ºÀÚ¿¡¼­ È£ÃâµÇ¸ç, ¹öÆÛ ÇÒ´çÇÏ°í º¯¼ö ÃÊ±âÈ­ÇÔ.
+ *  ulpCodeGenìƒì„±ìì—ì„œ í˜¸ì¶œë˜ë©°, ë²„í¼ í• ë‹¹í•˜ê³  ë³€ìˆ˜ ì´ˆê¸°í™”í•¨.
  */
 IDE_RC ulpCodeGen::ulpInit()
 {
@@ -97,7 +97,7 @@ IDE_RC ulpCodeGen::ulpInit()
 /* 
  * DESCRIPTION :
  *
- *  ulpCodeGen ¼Ò¸êÀÚ¿¡¼­ È£ÃâµÇ¸ç, fileÀ» ´İ°í ¹öÆÛ¸¦ ÇØÁ¦ÇÔ.
+ *  ulpCodeGen ì†Œë©¸ìì—ì„œ í˜¸ì¶œë˜ë©°, fileì„ ë‹«ê³  ë²„í¼ë¥¼ í•´ì œí•¨.
  */
 IDE_RC ulpCodeGen::ulpFinalize()
 {
@@ -110,14 +110,14 @@ IDE_RC ulpCodeGen::ulpFinalize()
         }
     }
 
-    /* 2. mQueryBuf ¸Ş¸ğ¸® ÇØÁ¦ */
+    /* 2. mQueryBuf ë©”ëª¨ë¦¬ í•´ì œ */
     if ( mQueryBuf != NULL )
     {
         idlOS::free(mQueryBuf);
         mQueryBuf = NULL;
     }
 
-    /* 3. mHostVar ÇØÁ¦ */
+    /* 3. mHostVar í•´ì œ */
     ulpClearEmSQLInfo();
 
     if ( mHostVarNumArr != NULL )
@@ -140,7 +140,7 @@ SChar *ulpCodeGen::ulpGetQueryBuf()
 /*
  * DESCRIPTION :
  *
- *  mEmSQLInfo ÃÊ±âÈ­.
+ *  mEmSQLInfo ì´ˆê¸°í™”.
  */
 void ulpCodeGen::ulpClearEmSQLInfo()
 {
@@ -171,7 +171,7 @@ void ulpCodeGen::ulpClearEmSQLInfo()
 
     mHostVarNumOffset = 0;
 
-    /* mHostVar list ¸ğµÎ ÇØÁ¦ÇÔ. */
+    /* mHostVar list ëª¨ë‘ í•´ì œí•¨. */
     IDU_LIST_ITERATE_SAFE(&(mEmSQLInfo.mHostVar), sIterator, sNextNode)
     {
         IDU_LIST_REMOVE( sIterator );
@@ -195,30 +195,30 @@ void ulpCodeGen::ulpClearSharedPtrInfo()
 /*
  * DESCRIPTION :
  *
- *  Æ¯Á¤ stringÀ» ±×´ë·Î buffer¿¡ ¾´´Ù. (Àç±ÍÇÔ¼ö)
+ *  íŠ¹ì • stringì„ ê·¸ëŒ€ë¡œ bufferì— ì“´ë‹¤. (ì¬ê·€í•¨ìˆ˜)
  */
 void ulpCodeGen::ulpGenNString ( SChar *aStr, UInt aLen)
 {
     UInt sEmptyLen;
-    /* mWriteBufÀÇ ºó°ø°£ byte Å©±â */
+    /* mWriteBufì˜ ë¹ˆê³µê°„ byte í¬ê¸° */
     sEmptyLen = GEN_WRITE_BUF_SIZE - mWriteBufOffset;
 
     if ( sEmptyLen < aLen )
-    {   /* ºó°ø°£ÀÇ Å©±â°¡ ¾²·ÁÇÏ´Â ±æÀÌº¸´Ù ÀÛÀ»°æ¿ì, ÀÏ´Ü ºó°ø°£ ¸¸Å­¸¸ ¹öÆÛ¿¡ ¾´´Ù. */
+    {   /* ë¹ˆê³µê°„ì˜ í¬ê¸°ê°€ ì“°ë ¤í•˜ëŠ” ê¸¸ì´ë³´ë‹¤ ì‘ì„ê²½ìš°, ì¼ë‹¨ ë¹ˆê³µê°„ ë§Œí¼ë§Œ ë²„í¼ì— ì“´ë‹¤. */
         if ( sEmptyLen > 0 )
         {
             ulpGenSnprintf( mWriteBuf + mWriteBufOffset, sEmptyLen, aStr, GEN_WRITE_BUF );
         }
-        /* ¹öÆÛ°¡ ²ËÃ¡À¸¹Ç·Î, ÆÄÀÏ¿¡ flushÇÑ´Ù. mWriteBufOffsetÀº 0À¸·Î ÃÊ±âÈ­µÈ´Ù. */
+        /* ë²„í¼ê°€ ê½‰ì°¼ìœ¼ë¯€ë¡œ, íŒŒì¼ì— flushí•œë‹¤. mWriteBufOffsetì€ 0ìœ¼ë¡œ ì´ˆê¸°í™”ëœë‹¤. */
         if ( ulpGenWriteFile() == IDE_FAILURE )
         {
             IDE_ASSERT(0);
         }
-        /* Àç±ÍÀûÀ¸·Î ¹İº¹ÇÏ¿© ¹öÆÛ¿¡ ¾´´Ù. */
+        /* ì¬ê·€ì ìœ¼ë¡œ ë°˜ë³µí•˜ì—¬ ë²„í¼ì— ì“´ë‹¤. */
         ulpGenNString ( (SChar *)(aStr + sEmptyLen), aLen - sEmptyLen );
     }
     else
-    {   /* ¹öÆÛ°ø°£ÀÌ ÃæºĞÇÏ¸é ¹öÆÛ¿¡ ¾´´Ù. */
+    {   /* ë²„í¼ê³µê°„ì´ ì¶©ë¶„í•˜ë©´ ë²„í¼ì— ì“´ë‹¤. */
         if ( aLen > 0 )
         {
             ulpGenSnprintf( mWriteBuf + mWriteBufOffset, sEmptyLen, aStr, GEN_WRITE_BUF );
@@ -229,32 +229,32 @@ void ulpCodeGen::ulpGenNString ( SChar *aStr, UInt aLen)
 /* 
  * DESCRIPTION :
  *
- *  Æ¯Á¤ stringÀ» ±×´ë·Î buffer¿¡ ¾´´Ù. (Àç±ÍÇÔ¼ö)
+ *  íŠ¹ì • stringì„ ê·¸ëŒ€ë¡œ bufferì— ì“´ë‹¤. (ì¬ê·€í•¨ìˆ˜)
  */
 void ulpCodeGen::ulpGenString ( SChar *aStr )
 {
     UInt sLen;
     UInt sEmptyLen;
-    /* mWriteBufÀÇ ºó°ø°£ byte Å©±â */
+    /* mWriteBufì˜ ë¹ˆê³µê°„ byte í¬ê¸° */
     sEmptyLen = GEN_WRITE_BUF_SIZE - mWriteBufOffset;
     sLen = idlOS::strlen( aStr );
 
     if ( sEmptyLen < sLen )
-    {   /* ºó°ø°£ÀÇ Å©±â°¡ ¾²·ÁÇÏ´Â ±æÀÌº¸´Ù ÀÛÀ»°æ¿ì, ÀÏ´Ü ºó°ø°£ ¸¸Å­¸¸ ¹öÆÛ¿¡ ¾´´Ù. */
+    {   /* ë¹ˆê³µê°„ì˜ í¬ê¸°ê°€ ì“°ë ¤í•˜ëŠ” ê¸¸ì´ë³´ë‹¤ ì‘ì„ê²½ìš°, ì¼ë‹¨ ë¹ˆê³µê°„ ë§Œí¼ë§Œ ë²„í¼ì— ì“´ë‹¤. */
         if ( sEmptyLen > 0 )
         {
             ulpGenSnprintf( mWriteBuf + mWriteBufOffset, sEmptyLen, aStr, GEN_WRITE_BUF );
         }
-        /* ¹öÆÛ°¡ ²ËÃ¡À¸¹Ç·Î, ÆÄÀÏ¿¡ flushÇÑ´Ù. mWriteBufOffsetÀº 0À¸·Î ÃÊ±âÈ­µÈ´Ù. */
+        /* ë²„í¼ê°€ ê½‰ì°¼ìœ¼ë¯€ë¡œ, íŒŒì¼ì— flushí•œë‹¤. mWriteBufOffsetì€ 0ìœ¼ë¡œ ì´ˆê¸°í™”ëœë‹¤. */
         if ( ulpGenWriteFile() == IDE_FAILURE )
         {
             IDE_ASSERT(0);
         }
-        /* Àç±ÍÀûÀ¸·Î ¹İº¹ÇÏ¿© ¹öÆÛ¿¡ ¾´´Ù. */
+        /* ì¬ê·€ì ìœ¼ë¡œ ë°˜ë³µí•˜ì—¬ ë²„í¼ì— ì“´ë‹¤. */
         ulpGenString ( aStr + sEmptyLen );
     }
     else
-    {   /* ¹öÆÛ°ø°£ÀÌ ÃæºĞÇÏ¸é ¹öÆÛ¿¡ ¾´´Ù. */
+    {   /* ë²„í¼ê³µê°„ì´ ì¶©ë¶„í•˜ë©´ ë²„í¼ì— ì“´ë‹¤. */
         if ( sLen > 0 )
         {
             ulpGenSnprintf( mWriteBuf + mWriteBufOffset, sEmptyLen, aStr, GEN_WRITE_BUF );
@@ -266,7 +266,7 @@ void ulpCodeGen::ulpGenString ( SChar *aStr )
 /* 
  * DESCRIPTION :
  *
- *  Æ¯Á¤ stringÀ» comment ÇüÅÂ·Î buffer¿¡ ¾´´Ù.
+ *  íŠ¹ì • stringì„ comment í˜•íƒœë¡œ bufferì— ì“´ë‹¤.
  */
 //  ex>  <string>     =>       /*<string>*/
 void ulpCodeGen::ulpGenComment( SChar *aStr )
@@ -286,10 +286,10 @@ void ulpCodeGen::ulpGenComment( SChar *aStr )
     sCh  = NULL;
     sLen = idlOS::strlen(aStr);
 
-    /* mWriteBufÀÇ ºó°ø°£ byte Å©±â */
+    /* mWriteBufì˜ ë¹ˆê³µê°„ byte í¬ê¸° */
     sEmptyLen = GEN_WRITE_BUF_SIZE - mWriteBufOffset;
 
-    /* 1. string¾È¿¡ ÁÖ¼® ±âÈ£°¡ ÀÖÀ¸¸é '*'¸¦ '#'¹®ÀÚ·Î ¹Ù²ãÁØ´Ù. */
+    /* 1. stringì•ˆì— ì£¼ì„ ê¸°í˜¸ê°€ ìˆìœ¼ë©´ '*'ë¥¼ '#'ë¬¸ìë¡œ ë°”ê¿”ì¤€ë‹¤. */
     while ( (sCh = idlOS::strstr(aStr, "*/")) != NULL )
     {
         idlOS::strncpy (sCh,"#",1);
@@ -302,7 +302,7 @@ void ulpCodeGen::ulpGenComment( SChar *aStr )
     }
 
 
-    /* 2. ¹öÆÛ°¡ °ÅÀÇ ²ËÂ÷ÀÖ¾î sCommLÀ» ¾µ ¼ö ¾øÀ»°æ¿ì Ã³¸®. */
+    /* 2. ë²„í¼ê°€ ê±°ì˜ ê½‰ì°¨ìˆì–´ sCommLì„ ì“¸ ìˆ˜ ì—†ì„ê²½ìš° ì²˜ë¦¬. */
     if ( sEmptyLen < sCommLLen )
     {
         if ( ulpGenWriteFile() == IDE_FAILURE )
@@ -311,14 +311,14 @@ void ulpCodeGen::ulpGenComment( SChar *aStr )
         }
     }
 
-    /* 3. sCommLÀ» ¹öÆÛ¿¡ ¾´´Ù. */
+    /* 3. sCommLì„ ë²„í¼ì— ì“´ë‹¤. */
     ulpGenNString ( sCommL, sCommLLen );
 
-    /* 4. ÁÖ¼®¾ÈÀÇ stringÀ» ¹öÆÛ¿¡ ¾´´Ù. */
+    /* 4. ì£¼ì„ì•ˆì˜ stringì„ ë²„í¼ì— ì“´ë‹¤. */
     ulpGenNString ( aStr, sLen );
 
     sEmptyLen = GEN_WRITE_BUF_SIZE - mWriteBufOffset;
-    /* 5. ¹öÆÛ°¡ °ÅÀÇ ²ËÂ÷ÀÖ¾î sCommRÀ» ¾µ ¼ö ¾øÀ»°æ¿ì Ã³¸®. */
+    /* 5. ë²„í¼ê°€ ê±°ì˜ ê½‰ì°¨ìˆì–´ sCommRì„ ì“¸ ìˆ˜ ì—†ì„ê²½ìš° ì²˜ë¦¬. */
     if ( sEmptyLen < sCommRLen )
     {
         if ( ulpGenWriteFile() == IDE_FAILURE )
@@ -327,11 +327,11 @@ void ulpCodeGen::ulpGenComment( SChar *aStr )
         }
     }
 
-    /* 6. sCommRÀ» ¹öÆÛ¿¡ ¾´´Ù. */
+    /* 6. sCommRì„ ë²„í¼ì— ì“´ë‹¤. */
     ulpGenNString ( sCommR, sCommRLen );
 
 
-    /* #·Î º¯°æµÈ query buffer ¸¦ ´Ù½Ã º¹±¸ÇÑ´Ù. (HINTÃ³¸®¸¦ À§ÇÔ.) */
+    /* #ë¡œ ë³€ê²½ëœ query buffer ë¥¼ ë‹¤ì‹œ ë³µêµ¬í•œë‹¤. (HINTì²˜ë¦¬ë¥¼ ìœ„í•¨.) */
     if ( sIsChange == ID_TRUE )
     {
         while ( (sCh = idlOS::strstr(aStr, "#/")) != NULL )
@@ -351,15 +351,15 @@ void ulpCodeGen::ulpGenComment( SChar *aStr )
 /*
  * DESCRIPTION :
  *
- *  ÀÎÀÚ·Î ¹ŞÀº aStrÀ» ¹öÆÛ¿¡ ¾²¸ç, offestÀ» ¾²´Â ±æÀÌ ¸¸Å­ Áõ°¡½ÃÄÑ ÁØ´Ù.
+ *  ì¸ìë¡œ ë°›ì€ aStrì„ ë²„í¼ì— ì“°ë©°, offestì„ ì“°ëŠ” ê¸¸ì´ ë§Œí¼ ì¦ê°€ì‹œì¼œ ì¤€ë‹¤.
  */
 void ulpCodeGen::ulpGenSnprintf( SChar *aBuf, UInt aSize, const SChar *aStr, SInt aType )
 {
     UInt sLen;
 
-    // ÇÔ¼ö¸íÀº ulpGenSnprintfÀÎµ¥ ½ÇÁ¦·Î´Â strncpy¸¦ È£ÃâÇÏ³×;;
-    // snprintf ¸¦ »ç¿ëÇÏ¸é ¾ÈµÈ´Ù. ¿Ö³ÄÇÏ¸é, snprintf´Â
-    // Ç×»ó Á¦ÀÏ µÚ¿¡ nullÀ» Æ÷ÇÔ½ÃÅ°±â ¶§¹®ÀÌ´Ù.
+    // í•¨ìˆ˜ëª…ì€ ulpGenSnprintfì¸ë° ì‹¤ì œë¡œëŠ” strncpyë¥¼ í˜¸ì¶œí•˜ë„¤;;
+    // snprintf ë¥¼ ì‚¬ìš©í•˜ë©´ ì•ˆëœë‹¤. ì™œëƒí•˜ë©´, snprintfëŠ”
+    // í•­ìƒ ì œì¼ ë’¤ì— nullì„ í¬í•¨ì‹œí‚¤ê¸° ë•Œë¬¸ì´ë‹¤.
     idlOS::strncpy( aBuf, aStr, aSize);
 
     sLen = idlOS::strlen( aStr );
@@ -367,8 +367,8 @@ void ulpCodeGen::ulpGenSnprintf( SChar *aBuf, UInt aSize, const SChar *aStr, SIn
     switch ( aType )
     {
         case GEN_WRITE_BUF :
-            // aSize´Â write bufferÀÇ ³²Àº °ø°£ÀÌ¸ç,
-            // ¾µ string ±æÀÌ sLen°¡ ´õ Å¬°æ¿ì offsetÀ» aSize¸¸Å­ ´õÇÔ.
+            // aSizeëŠ” write bufferì˜ ë‚¨ì€ ê³µê°„ì´ë©°,
+            // ì“¸ string ê¸¸ì´ sLenê°€ ë” í´ê²½ìš° offsetì„ aSizeë§Œí¼ ë”í•¨.
             if( sLen > aSize )
             {
                 mWriteBufOffset += aSize;
@@ -397,7 +397,7 @@ void ulpCodeGen::ulpGenSnprintf( SChar *aBuf, UInt aSize, const SChar *aStr, SIn
 /*
  * DESCRIPTION :
  *
- *  varchar¼±¾ğ ºÎºĞÀ» C code·Î º¯È¯ÇÏ¿© buffer¿¡ ¾´´Ù.
+ *  varcharì„ ì–¸ ë¶€ë¶„ì„ C codeë¡œ ë³€í™˜í•˜ì—¬ bufferì— ì“´ë‹¤.
  */
 void ulpCodeGen::ulpGenVarchar( ulpSymTElement *aSymNode )
 {
@@ -407,16 +407,16 @@ void ulpCodeGen::ulpGenVarchar( ulpSymTElement *aSymNode )
 
     sVarcharStr = "struct { SQLLEN len; char arr";
     sVarcharLen = idlOS::strlen( sVarcharStr );
-    /* write¹öÆÛ¿¡ ¾²ÀÚ. */
+    /* writeë²„í¼ì— ì“°ì. */
     ulpGenNString ( (SChar *)sVarcharStr, sVarcharLen);
 
     sVarcharLen = MAX_HOSTVAR_NAME_SIZE * 2;
 
-    // mAlloc  Àº * ·Î ¼±¾ğµÈ º¯¼öÀÏ°æ¿ì ÂüÀÌ µÇ¸ç,
-    // mIsarray´Â []·Î ¼±¾ğµÈ º¯¼öÀÏ°æ¿ì ÂüÀÌµÈ´Ù.
-    // mPointer´Â ¸îÁß Æ÷ÀÎÅÍ/¹è¿­ ÀÎÁö¿¡ ´ëÇÑ Á¤º¸¸¦ ÀúÀåÇÔ.
+    // mAlloc  ì€ * ë¡œ ì„ ì–¸ëœ ë³€ìˆ˜ì¼ê²½ìš° ì°¸ì´ ë˜ë©°,
+    // mIsarrayëŠ” []ë¡œ ì„ ì–¸ëœ ë³€ìˆ˜ì¼ê²½ìš° ì°¸ì´ëœë‹¤.
+    // mPointerëŠ” ëª‡ì¤‘ í¬ì¸í„°/ë°°ì—´ ì¸ì§€ì— ëŒ€í•œ ì •ë³´ë¥¼ ì €ì¥í•¨.
     if( aSymNode -> mAlloc != ID_TRUE )
-    {   // varchar xxx[...][...]...; ÀÏ°æ¿ì
+    {   // varchar xxx[...][...]...; ì¼ê²½ìš°
         if( aSymNode->mIsarray == ID_TRUE )
         {
             if ( (aSymNode->mArraySize2[0] == '\0') &&
@@ -437,7 +437,7 @@ void ulpCodeGen::ulpGenVarchar( ulpSymTElement *aSymNode )
         }
     }
     else
-    {   // varchar *...xxx...; ÀÏ°æ¿ì
+    {   // varchar *...xxx...; ì¼ê²½ìš°
         if ( aSymNode->mArraySize[0] == '\0' )
         {
             if( aSymNode->mPointer == 1 )
@@ -459,7 +459,7 @@ void ulpCodeGen::ulpGenVarchar( ulpSymTElement *aSymNode )
         }
     }
 
-    /* write¹öÆÛ¿¡ ¾²ÀÚ. */
+    /* writeë²„í¼ì— ì“°ì. */
     ulpGenNString ( sTmpStr, idlOS::strlen(sTmpStr) );
 }
 
@@ -467,29 +467,29 @@ void ulpCodeGen::ulpGenVarchar( ulpSymTElement *aSymNode )
 /*
  * DESCRIPTION :
  *
- *  Æ¯Á¤ query stringÀ» ±×´ë·Î mQueryBuf¿¡ ¾´´Ù. (Àç±ÍÇÔ¼ö)
+ *  íŠ¹ì • query stringì„ ê·¸ëŒ€ë¡œ mQueryBufì— ì“´ë‹¤. (ì¬ê·€í•¨ìˆ˜)
  */
 IDE_RC ulpCodeGen::ulpGenQueryString ( SChar *aStr )
 {
     UInt sLen;
     UInt sEmptyLen;
-    /* mQueryBuf ºó°ø°£ byte Å©±â */
+    /* mQueryBuf ë¹ˆê³µê°„ byte í¬ê¸° */
     sEmptyLen = mQueryBufSize - mQueryBufOffset;
     sLen = idlOS::strlen( aStr );
 
     if ( sEmptyLen < sLen )
-    {   /* ºó°ø°£ÀÇ Å©±â°¡ ¾²·ÁÇÏ´Â ±æÀÌº¸´Ù ÀÛÀ»°æ¿ì, size¸¦ µÎ¹è·Î ÇÏ¿© realloc. */
+    {   /* ë¹ˆê³µê°„ì˜ í¬ê¸°ê°€ ì“°ë ¤í•˜ëŠ” ê¸¸ì´ë³´ë‹¤ ì‘ì„ê²½ìš°, sizeë¥¼ ë‘ë°°ë¡œ í•˜ì—¬ realloc. */
         mQueryBuf = (SChar *)idlOS::realloc( mQueryBuf, mQueryBufSize * 2 );
         IDE_TEST_RAISE( mQueryBuf == NULL, ERR_MEMORY_ALLOC );
         mQueryBufSize *= 2;
-        /* Àç±ÍÀûÀ¸·Î È£ÃâÇÏ¿© ¹öÆÛ size°¡ ÀÛÀ¸¸é relooacÇÑ´Ù. */
+        /* ì¬ê·€ì ìœ¼ë¡œ í˜¸ì¶œí•˜ì—¬ ë²„í¼ sizeê°€ ì‘ìœ¼ë©´ relooací•œë‹¤. */
         if( ulpGenQueryString ( aStr ) == IDE_FAILURE )
         {
             IDE_ASSERT(0);
         }
     }
     else
-    {   /* ¹öÆÛ°ø°£ÀÌ ÃæºĞÇÏ¸é ¹öÆÛ¿¡ ¾´´Ù. */
+    {   /* ë²„í¼ê³µê°„ì´ ì¶©ë¶„í•˜ë©´ ë²„í¼ì— ì“´ë‹¤. */
         if ( sLen > 0 )
         {
             ulpGenSnprintf( mQueryBuf + mQueryBufOffset, sEmptyLen, aStr, GEN_QUERY_BUF );
@@ -514,7 +514,7 @@ IDE_RC ulpCodeGen::ulpGenQueryString ( SChar *aStr )
 /* 
  * DESCRIPTION :
  *
- *  Embedded SQL ±¸¹®¿¡ ´ëÇÑ Á¤º¸¸¦ mEmSQLInfo ¿¡ ÀúÀåÇÑ´Ù.
+ *  Embedded SQL êµ¬ë¬¸ì— ëŒ€í•œ ì •ë³´ë¥¼ mEmSQLInfo ì— ì €ì¥í•œë‹¤.
  */
 void ulpCodeGen::ulpGenEmSQL( ulpGENSQLINFO aType, void *aValue )
 {
@@ -587,7 +587,7 @@ void ulpCodeGen::ulpGenEmSQL( ulpGENSQLINFO aType, void *aValue )
             mEmSQLInfo.mHostValueType = *((ulpGENhvType*)aValue);
             break;
         default :
-            /* ±×¿ÜÀÇ Á¤º¸´Â ¾ø´Ù. */
+            /* ê·¸ì™¸ì˜ ì •ë³´ëŠ” ì—†ë‹¤. */
             IDE_ASSERT(0);
             break;
     } 
@@ -596,7 +596,7 @@ void ulpCodeGen::ulpGenEmSQL( ulpGENSQLINFO aType, void *aValue )
 /* 
  * DESCRIPTION :
  *
- *   mEmSQLInfo.mNumofHostvar ¸¦ aNum ¸¸Å­ Áõ°¡ ½ÃÅ²´Ù.
+ *   mEmSQLInfo.mNumofHostvar ë¥¼ aNum ë§Œí¼ ì¦ê°€ ì‹œí‚¨ë‹¤.
  */
 void ulpCodeGen::ulpIncHostVarNum( UInt aNum )
 {
@@ -607,18 +607,18 @@ void ulpCodeGen::ulpIncHostVarNum( UInt aNum )
 /* 
  * DESCRIPTION :
  *
- *  mEmSQLInfoÁ¤º¸¿Í mQueryBuf¸¦ Åä´ë·Î ÄÚµå¸¦ »ı¼ºÇÏ¿© mWriteBuf¿¡ ¾´´Ù.
+ *  mEmSQLInfoì •ë³´ì™€ mQueryBufë¥¼ í† ëŒ€ë¡œ ì½”ë“œë¥¼ ìƒì„±í•˜ì—¬ mWriteBufì— ì“´ë‹¤.
  */
 void ulpCodeGen::ulpGenEmSQLFlush( ulpStmtType aStmtType, idBool aIsPrintQuery )
 {
-    /* °¢ Á¤º¸¿¡ ´ëÇÑ º¯È¯ ÄÚµå ÀÓ½Ã ÀúÀå¼Ò, 2k ¸é ÃæºĞÇÏÁö ¾ÊÀ»±î? */
+    /* ê° ì •ë³´ì— ëŒ€í•œ ë³€í™˜ ì½”ë“œ ì„ì‹œ ì €ì¥ì†Œ, 2k ë©´ ì¶©ë¶„í•˜ì§€ ì•Šì„ê¹Œ? */
     SChar              sTmpStr[MAX_HOSTVAR_NAME_SIZE * 2];
     UInt               sCnt;
     iduListNode       *sIterator = NULL;
     ulpGenHostVarList *sHostVar  = NULL;
     ulpWhenever       *sWhenever = NULL;
 
-    /* 1. basic code »ı¼º. */
+    /* 1. basic code ìƒì„±. */
     ulpGenString( (SChar *)"\n" );
 
     ulpGenPrintLineMacro();
@@ -689,7 +689,7 @@ void ulpCodeGen::ulpGenEmSQLFlush( ulpStmtType aStmtType, idBool aIsPrintQuery )
         ulpGenString ( (SChar *)"    ulpSqlstmt.ismt = 0;\n" );
     }
 
-    /* 2. mEmSQLInfo¸¦ Åä´ë·Î code »ı¼º ÇÑ´Ù. */
+    /* 2. mEmSQLInfoë¥¼ í† ëŒ€ë¡œ code ìƒì„± í•œë‹¤. */
     switch( aStmtType )
     {
         case S_Connect:
@@ -898,7 +898,7 @@ void ulpCodeGen::ulpGenEmSQLFlush( ulpStmtType aStmtType, idBool aIsPrintQuery )
 
     ulpGenPrintLineMacro();
     ulpGenString ( (SChar *)"    ulpSqlstmt.esqlopts    = _esqlopts;\n" );
-    // ³»Àå±¸¹® ¿¡·¯°á°ú¸¦ À§ÇÑ ÄÚµå»ı¼º
+    // ë‚´ì¥êµ¬ë¬¸ ì—ëŸ¬ê²°ê³¼ë¥¼ ìœ„í•œ ì½”ë“œìƒì„±
     ulpGenPrintLineMacro();
     ulpGenString ( (SChar *)"    ulpSqlstmt.sqlcaerr    = &sqlca;\n" );
     ulpGenPrintLineMacro();
@@ -906,7 +906,7 @@ void ulpCodeGen::ulpGenEmSQLFlush( ulpStmtType aStmtType, idBool aIsPrintQuery )
     ulpGenPrintLineMacro();
     ulpGenString ( (SChar *)"    ulpSqlstmt.sqlstateerr = ulpGetSqlstate();\n" );
 
-    // È£½ºÆ® º¯¼ö °ü·Ã ÄÚµå»ı¼º
+    // í˜¸ìŠ¤íŠ¸ ë³€ìˆ˜ ê´€ë ¨ ì½”ë“œìƒì„±
     for ( sCnt = 0, (sIterator) = (&(mEmSQLInfo.mHostVar))->mNext;
           (sIterator) != &(mEmSQLInfo.mHostVar);
           (sIterator) = (sIterator)->mNext, sCnt++ )
@@ -920,7 +920,7 @@ void ulpCodeGen::ulpGenEmSQLFlush( ulpStmtType aStmtType, idBool aIsPrintQuery )
     {
         if( mEmSQLInfo.mConnName[0] == ':' )
         {
-            // :hostº¯¼ö ÀÏ°æ¿ì Ã³¸®.
+            // :hostë³€ìˆ˜ ì¼ê²½ìš° ì²˜ë¦¬.
             idlOS::snprintf( sTmpStr, MAX_HOSTVAR_NAME_SIZE * 2,
                              "    ulpDoEmsql( (char*) %s, &ulpSqlstmt, NULL );\n",
                              mEmSQLInfo.mConnName + 1 );
@@ -941,7 +941,7 @@ void ulpCodeGen::ulpGenEmSQLFlush( ulpStmtType aStmtType, idBool aIsPrintQuery )
         ulpGenString ((SChar *)"    ulpDoEmsql( NULL, &ulpSqlstmt, NULL );\n" );
     }
 
-    // WHENEVER ±¸¹® ÄÚµå»ı¼º.
+    // WHENEVER êµ¬ë¬¸ ì½”ë“œìƒì„±.
     sWhenever = ulpGenGetWhenever();
     switch( sWhenever->mCondition )
     {
@@ -1101,8 +1101,8 @@ void ulpCodeGen::ulpGenHostVar( ulpStmtType aStmtType, ulpGenHostVarList *aHostV
     ulpSymTElement *sIndFieldNode = NULL;
     ulpSymTNode    *sIndFieldSymTNode;
 
-    /* BUG-29479 : double ¹è¿­ »ç¿ë½Ã precompile Àß¸øµÇ´Â °æ¿ì¹ß»ıÇÔ. */
-    // ³»Àå±¸¹®³»¿¡¼­ »ç¿ëÁßÀÎ È£½ºÆ® º¯¼öÀÇ brace ¼ö¸¦ ¾ò¾î¿Â´Ù.
+    /* BUG-29479 : double ë°°ì—´ ì‚¬ìš©ì‹œ precompile ì˜ëª»ë˜ëŠ” ê²½ìš°ë°œìƒí•¨. */
+    // ë‚´ì¥êµ¬ë¬¸ë‚´ì—ì„œ ì‚¬ìš©ì¤‘ì¸ í˜¸ìŠ¤íŠ¸ ë³€ìˆ˜ì˜ brace ìˆ˜ë¥¼ ì–»ì–´ì˜¨ë‹¤.
     // ex> :hostval[10]    => brace count = 1
     // ex> :hostval[10][0] => brace count = 2
     sBraceCnt4HV  = ulpGenBraceCnt4HV( aHostVar->mRealName,
@@ -1141,20 +1141,20 @@ void ulpCodeGen::ulpGenHostVar( ulpStmtType aStmtType, ulpGenHostVarList *aHostV
             if( !GEN_VERIFY_BIT(sHostValInfo, GEN_HVINFO_IS_STRUCT) )
             {   // is not a struct
                 //====================
-                // 1. mHostVar ÄÚµå»ı¼º.
+                // 1. mHostVar ì½”ë“œìƒì„±.
                 //====================
 
-                /* BUG-29479 : double ¹è¿­ »ç¿ë½Ã precompile Àß¸øµÇ´Â °æ¿ì¹ß»ıÇÔ. */
+                /* BUG-29479 : double ë°°ì—´ ì‚¬ìš©ì‹œ precompile ì˜ëª»ë˜ëŠ” ê²½ìš°ë°œìƒí•¨. */
                 /*
-                º¯¼ö°¡ Æ÷ÀÎÅÍ Å¸ÀÔÀÏ Áö¶óµµ, ³»Àå±¸¹®¾È¿¡¼­ :<variable name>[index] ÀÌ¶ó°í Ç¥ÇöµÇ¸é
-                ´õÀÌ»ó Æ÷ÀÎÅÍ Å¸ÀÔÀÌ ¾Æ´Ò¼ö ÀÖ´Ù.
+                ë³€ìˆ˜ê°€ í¬ì¸í„° íƒ€ì…ì¼ ì§€ë¼ë„, ë‚´ì¥êµ¬ë¬¸ì•ˆì—ì„œ :<variable name>[index] ì´ë¼ê³  í‘œí˜„ë˜ë©´
+                ë”ì´ìƒ í¬ì¸í„° íƒ€ì…ì´ ì•„ë‹ìˆ˜ ìˆë‹¤.
                 ex>
                 int *a;
                 int b[10];
                 exec sql insert into t1 values ( :a[0], :b[0] );
-                =>a[0] ¿Í b[0]´Â pointer typeÀÌ ¾Æ´Ï¶ó int typeÀÌ´Ù.
-                µû¶ó¼­, ³»Àå ±¸¹® ¾È¿¡ »ç¿ëµÇ´Â array or pointer º¯¼öµÚ¿¡ [index] °¡ ¿ÔÀ»°æ¿ì¸¦ À§ÇØ
-                sSymNode -> mPointer( pointer depth ) ¿¡ sBraceCnt4HV( brace¼ö )¸¦ »©Áà¾ßÇÑ´Ù.
+                =>a[0] ì™€ b[0]ëŠ” pointer typeì´ ì•„ë‹ˆë¼ int typeì´ë‹¤.
+                ë”°ë¼ì„œ, ë‚´ì¥ êµ¬ë¬¸ ì•ˆì— ì‚¬ìš©ë˜ëŠ” array or pointer ë³€ìˆ˜ë’¤ì— [index] ê°€ ì™”ì„ê²½ìš°ë¥¼ ìœ„í•´
+                sSymNode -> mPointer( pointer depth ) ì— sBraceCnt4HV( braceìˆ˜ )ë¥¼ ë¹¼ì¤˜ì•¼í•œë‹¤.
                 */
                 switch ( GEN_SUBSET_BIT(sHostValInfo,
                                         GEN_HVINFO_IS_VARCHAR |
@@ -1185,7 +1185,7 @@ void ulpCodeGen::ulpGenHostVar( ulpStmtType aStmtType, ulpGenHostVarList *aHostV
                 }
 
                 //====================
-                // 2. mHostInd, mVcInd ÄÚµå»ı¼º.
+                // 2. mHostInd, mVcInd ì½”ë“œìƒì„±.
                 //====================
                 switch ( GEN_SUBSET_BIT(sHostValInfo,
                                         GEN_HVINFO_IS_VARCHAR |
@@ -1262,7 +1262,7 @@ void ulpCodeGen::ulpGenHostVar( ulpStmtType aStmtType, ulpGenHostVarList *aHostV
                 }
 
                 //====================
-                // 3. isarr,arrsize ÄÚµå»ı¼º.
+                // 3. isarr,arrsize ì½”ë“œìƒì„±.
                 //====================
                 switch ( GEN_SUBSET_BIT(sHostValInfo,
                                         GEN_HVINFO_IS_1POINTER  |
@@ -1297,14 +1297,14 @@ void ulpCodeGen::ulpGenHostVar( ulpStmtType aStmtType, ulpGenHostVarList *aHostV
 
 
                 //====================
-                // 4. mType ÄÚµå»ı¼º.
+                // 4. mType ì½”ë“œìƒì„±.
                 //====================
                 PRINT_LineMacro();
                 PRINT_mType("%d",*aCnt, sSymNode -> mType );
 
 
                 //====================
-                // 5. isstruct ÄÚµå»ı¼º.
+                // 5. isstruct ì½”ë“œìƒì„±.
                 //====================
                 switch ( GEN_SUBSET_BIT(sHostValInfo,
                                         GEN_HVINFO_IS_VARCHAR|
@@ -1324,7 +1324,7 @@ void ulpCodeGen::ulpGenHostVar( ulpStmtType aStmtType, ulpGenHostVarList *aHostV
 
 
                 //====================
-                // 6. mSizeof ÄÚµå»ı¼º.
+                // 6. mSizeof ì½”ë“œìƒì„±.
                 //====================
                 switch ( GEN_SUBSET_BIT(sHostValInfo,
                                         GEN_HVINFO_IS_STRTYPE) )
@@ -1375,7 +1375,7 @@ void ulpCodeGen::ulpGenHostVar( ulpStmtType aStmtType, ulpGenHostVarList *aHostV
 
 
                 //====================
-                // 7. mLen ÄÚµå»ı¼º.
+                // 7. mLen ì½”ë“œìƒì„±.
                 //====================
                 switch ( GEN_SUBSET_BIT(sHostValInfo,
                                         GEN_HVINFO_IS_STRTYPE   |
@@ -1421,7 +1421,7 @@ void ulpCodeGen::ulpGenHostVar( ulpStmtType aStmtType, ulpGenHostVarList *aHostV
 
 
                 //====================
-                // 8. mMaxlen ÄÚµå»ı¼º.
+                // 8. mMaxlen ì½”ë“œìƒì„±.
                 //====================
                 switch ( GEN_SUBSET_BIT(sHostValInfo,
                                         GEN_HVINFO_IS_STRTYPE   |
@@ -1482,7 +1482,7 @@ void ulpCodeGen::ulpGenHostVar( ulpStmtType aStmtType, ulpGenHostVarList *aHostV
 
 
                 //====================
-                // 9. mUnsign ÄÚµå»ı¼º.
+                // 9. mUnsign ì½”ë“œìƒì„±.
                 //====================
                 switch ( GEN_SUBSET_BIT(sHostValInfo,
                                         GEN_HVINFO_IS_SIGNED) )
@@ -1499,7 +1499,7 @@ void ulpCodeGen::ulpGenHostVar( ulpStmtType aStmtType, ulpGenHostVarList *aHostV
 
 
                 //====================
-                // 10. mInOut ÄÚµå»ı¼º.
+                // 10. mInOut ì½”ë“œìƒì„±.
                 //====================
                 switch ( aHostVar -> mInOutType )
                 {
@@ -1525,7 +1525,7 @@ void ulpCodeGen::ulpGenHostVar( ulpStmtType aStmtType, ulpGenHostVarList *aHostV
 
 
                 //====================
-                // 11. mIsDynAlloc ÄÚµå»ı¼º.
+                // 11. mIsDynAlloc ì½”ë“œìƒì„±.
                 //====================
                 switch ( GEN_SUBSET_BIT(sHostValInfo,
                                         GEN_HVINFO_IS_DALLOC) )
@@ -1542,7 +1542,7 @@ void ulpCodeGen::ulpGenHostVar( ulpStmtType aStmtType, ulpGenHostVarList *aHostV
 
 
                 //====================
-                // 12. mMoreInfo ÄÚµå»ı¼º.
+                // 12. mMoreInfo ì½”ë“œìƒì„±.
                 //====================
                 if( GEN_VERIFY_BIT(sHostValInfo, GEN_HVINFO_IS_MOREINFO) )
                 {
@@ -1552,7 +1552,7 @@ void ulpCodeGen::ulpGenHostVar( ulpStmtType aStmtType, ulpGenHostVarList *aHostV
 
 
                 //====================
-                // 13. mFileopt ÄÚµå»ı¼º.
+                // 13. mFileopt ì½”ë“œìƒì„±.
                 //====================
                 if( GEN_VERIFY_BIT(sHostValInfo, GEN_HVINFO_IS_LOB) )
                 {
@@ -1561,7 +1561,7 @@ void ulpCodeGen::ulpGenHostVar( ulpStmtType aStmtType, ulpGenHostVarList *aHostV
                                    aHostVar->mRealFileOptName );
                 }
 
-                /* ÆÄÀÏ¿¡ ¾´´Ù. */
+                /* íŒŒì¼ì— ì“´ë‹¤. */
                 WRITEtoFile(sTmpStr,sSLength);
             }
             else
@@ -1596,8 +1596,8 @@ void ulpCodeGen::ulpGenHostVar( ulpStmtType aStmtType, ulpGenHostVarList *aHostV
 
                 sIsField = ID_TRUE;
 
-                // structureÀÏ°æ¿ì
-                // struct fieldµéÀ» ¼øÈ¸ÇÏ¸ç ÄÚµå»ı¼º.
+                // structureì¼ê²½ìš°
+                // struct fieldë“¤ì„ ìˆœíšŒí•˜ë©° ì½”ë“œìƒì„±.
                 for( sI = 0
                      ; sI < sSymNode->mStructLink->mChild->mCnt
                      ; sI++,
@@ -1626,7 +1626,7 @@ void ulpCodeGen::ulpGenHostVar( ulpStmtType aStmtType, ulpGenHostVarList *aHostV
                                           sBraceCnt4HV, sBraceCnt4Ind );
 
                     //====================
-                    // 1. mHostVar ÄÚµå»ı¼º.
+                    // 1. mHostVar ì½”ë“œìƒì„±.
                     //====================
                     switch ( GEN_SUBSET_BIT(sHostValInfo4Field,
                                             GEN_HVINFO_IS_VARCHAR |
@@ -1660,7 +1660,7 @@ void ulpCodeGen::ulpGenHostVar( ulpStmtType aStmtType, ulpGenHostVarList *aHostV
 
 
                     //====================
-                    // 2. mHostInd, mVcInd ÄÚµå»ı¼º.
+                    // 2. mHostInd, mVcInd ì½”ë“œìƒì„±.
                     //====================
                     switch ( GEN_SUBSET_BIT(sHostValInfo4Field,
                                             GEN_HVINFO_IS_VARCHAR |
@@ -1714,7 +1714,7 @@ void ulpCodeGen::ulpGenHostVar( ulpStmtType aStmtType, ulpGenHostVarList *aHostV
 
 
                     //====================
-                    // 3. isstruct,structsize ÄÚµå»ı¼º.
+                    // 3. isstruct,structsize ì½”ë“œìƒì„±.
                     //====================
                     if ( ((ulpGenHostVarList *)(&(mEmSQLInfo.mHostVar))->mNext->mObj == aHostVar) &&
                          (mEmSQLInfo.mHostValueType != GEN_ARRAY ) )
@@ -1734,14 +1734,14 @@ void ulpCodeGen::ulpGenHostVar( ulpStmtType aStmtType, ulpGenHostVarList *aHostV
                         }
                     }
                     else
-                    {   // struct º¯¼ö°¡ ¿©·¯°³ ¿Â´Ù¸é isstruct´Â 0ÀÌ´Ù.
+                    {   // struct ë³€ìˆ˜ê°€ ì—¬ëŸ¬ê°œ ì˜¨ë‹¤ë©´ isstructëŠ” 0ì´ë‹¤.
                         PRINT_LineMacro();
                         PRINT_isstruct( "0",*aCnt );
                     }
 
 
                     //====================
-                    // 4. isarr, arrsize ÄÚµå»ı¼º.
+                    // 4. isarr, arrsize ì½”ë“œìƒì„±.
                     //====================
                     if( GEN_VERIFY_BIT(sHostValInfo,GEN_HVINFO_IS_ARRAY) )
                     {
@@ -1752,7 +1752,7 @@ void ulpCodeGen::ulpGenHostVar( ulpStmtType aStmtType, ulpGenHostVarList *aHostV
                     }
                     else
                     {
-                        // structure ÀÌÁö¸¸ ¸ğµç fieldµéÀÌ arrayÀÏ °æ¿ì.
+                        // structure ì´ì§€ë§Œ ëª¨ë“  fieldë“¤ì´ arrayì¼ ê²½ìš°.
                         if ( mEmSQLInfo.mHostValueType == GEN_ARRAY )
                         {
                             switch ( GEN_SUBSET_BIT(sHostValInfo4Field,
@@ -1790,14 +1790,14 @@ void ulpCodeGen::ulpGenHostVar( ulpStmtType aStmtType, ulpGenHostVarList *aHostV
 
 
                     //====================
-                    // 5. mType ÄÚµå»ı¼º.
+                    // 5. mType ì½”ë“œìƒì„±.
                     //====================
                     PRINT_LineMacro();
                     PRINT_mType( "%d",*aCnt, sFieldNode -> mType );
 
 
                     //====================
-                    // 6. mSizeof ÄÚµå»ı¼º.
+                    // 6. mSizeof ì½”ë“œìƒì„±.
                     //====================
                     switch ( GEN_SUBSET_BIT(sHostValInfo4Field,
                                             GEN_HVINFO_IS_STRTYPE) )
@@ -1848,7 +1848,7 @@ void ulpCodeGen::ulpGenHostVar( ulpStmtType aStmtType, ulpGenHostVarList *aHostV
 
 
                     //====================
-                    // 7. mLen ÄÚµå»ı¼º.
+                    // 7. mLen ì½”ë“œìƒì„±.
                     //====================
                     switch ( GEN_SUBSET_BIT(sHostValInfo4Field,
                                             GEN_HVINFO_IS_STRTYPE   |
@@ -1889,7 +1889,7 @@ void ulpCodeGen::ulpGenHostVar( ulpStmtType aStmtType, ulpGenHostVarList *aHostV
 
 
                     //====================
-                    // 8. mMaxlen ÄÚµå»ı¼º.
+                    // 8. mMaxlen ì½”ë“œìƒì„±.
                     //====================
                     switch ( GEN_SUBSET_BIT(sHostValInfo4Field,
                                             GEN_HVINFO_IS_STRTYPE   |
@@ -1937,7 +1937,7 @@ void ulpCodeGen::ulpGenHostVar( ulpStmtType aStmtType, ulpGenHostVarList *aHostV
 
 
                     //====================
-                    // 9. mUnsign ÄÚµå»ı¼º.
+                    // 9. mUnsign ì½”ë“œìƒì„±.
                     //====================
                     switch ( GEN_SUBSET_BIT(sHostValInfo4Field,
                                             GEN_HVINFO_IS_SIGNED) )
@@ -1954,7 +1954,7 @@ void ulpCodeGen::ulpGenHostVar( ulpStmtType aStmtType, ulpGenHostVarList *aHostV
 
 
                     //====================
-                    // 10. mInOut ÄÚµå»ı¼º.
+                    // 10. mInOut ì½”ë“œìƒì„±.
                     //====================
                     switch ( aHostVar -> mInOutType )
                     {
@@ -1976,7 +1976,7 @@ void ulpCodeGen::ulpGenHostVar( ulpStmtType aStmtType, ulpGenHostVarList *aHostV
 
 
                     //====================
-                    // 11. mIsDynAlloc ÄÚµå»ı¼º.
+                    // 11. mIsDynAlloc ì½”ë“œìƒì„±.
                     //====================
                     switch ( GEN_SUBSET_BIT(sHostValInfo4Field,
                                             GEN_HVINFO_IS_DALLOC) )
@@ -1993,7 +1993,7 @@ void ulpCodeGen::ulpGenHostVar( ulpStmtType aStmtType, ulpGenHostVarList *aHostV
 
 
                     //====================
-                    // 12. mMoreInfo ÄÚµå»ı¼º.
+                    // 12. mMoreInfo ì½”ë“œìƒì„±.
                     //====================
                     if( GEN_VERIFY_BIT(sHostValInfo4Field, GEN_HVINFO_IS_MOREINFO) )
                     {
@@ -2003,7 +2003,7 @@ void ulpCodeGen::ulpGenHostVar( ulpStmtType aStmtType, ulpGenHostVarList *aHostV
 
 
                     //====================
-                    // 13. mFileopt ÄÚµå»ı¼º.
+                    // 13. mFileopt ì½”ë“œìƒì„±.
                     //====================
                     if( GEN_VERIFY_BIT(sHostValInfo, GEN_HVINFO_IS_LOB) )
                     {
@@ -2013,16 +2013,16 @@ void ulpCodeGen::ulpGenHostVar( ulpStmtType aStmtType, ulpGenHostVarList *aHostV
 
                     /* BUG-26381 [valgrind bug] */
                     if ( sIndFieldSymTNode != NULL )
-                    {   // ´ÙÀ½ field node·Î ÀÌµ¿.
+                    {   // ë‹¤ìŒ field nodeë¡œ ì´ë™.
                         sIndFieldSymTNode = sIndFieldSymTNode->mInOrderNext;
                     }
 
-                    /* ÆÄÀÏ¿¡ ¾´´Ù. */
+                    /* íŒŒì¼ì— ì“´ë‹¤. */
                     WRITEtoFile(sTmpStr,sSLength);
                 }
                 *aCnt -= 1;
             }
-            /* ÆÄÀÏ¿¡ ¾´´Ù. */
+            /* íŒŒì¼ì— ì“´ë‹¤. */
             WRITEtoFile(sTmpStr,sSLength);
             break;
     }
@@ -2032,7 +2032,7 @@ void ulpCodeGen::ulpGenHostVar( ulpStmtType aStmtType, ulpGenHostVarList *aHostV
 /*
  * DESCRIPTION :
  *
- *  mEmSQLInfo->mHostVar¿¡ hostº¯¼ö Á¤º¸¸¦ °®´Â ulpSymbolNode ¸¦ Ãß°¡ÇÑ´Ù.
+ *  mEmSQLInfo->mHostVarì— hostë³€ìˆ˜ ì •ë³´ë¥¼ ê°–ëŠ” ulpSymbolNode ë¥¼ ì¶”ê°€í•œë‹¤.
  */
 IDE_RC ulpCodeGen::ulpGenAddHostVarList( SChar          *aRealName,
                                          ulpSymTElement *aNode,
@@ -2119,7 +2119,7 @@ IDE_RC ulpCodeGen::ulpGenAddHostVarList( SChar          *aRealName,
 /*
  * DESCRIPTION :
  *
- *  mWriteBufÀÇ mWriteBufOffset±îÁöÀÇ data¸¦ file¿¡ ¾´´Ù.
+ *  mWriteBufì˜ mWriteBufOffsetê¹Œì§€ì˜ dataë¥¼ fileì— ì“´ë‹¤.
  */
 IDE_RC ulpCodeGen::ulpGenWriteFile( )
 {
@@ -2138,7 +2138,7 @@ IDE_RC ulpCodeGen::ulpGenWriteFile( )
                                        mOutFilePtr ) != (UInt)1,
                         ERR_FILE_WRITE );
     }
-    /* offset ÃÊ±âÈ­. */
+    /* offset ì´ˆê¸°í™”. */
     mWriteBufOffset = 0;
 
     return IDE_SUCCESS;
@@ -2160,7 +2160,7 @@ IDE_RC ulpCodeGen::ulpGenWriteFile( )
 /*
  * DESCRIPTION :
  *
- *  ¾²°íÀÚÇÏ´Â ÆÄÀÏÀ» Open ÇÑ´Ù.
+ *  ì“°ê³ ìí•˜ëŠ” íŒŒì¼ì„ Open í•œë‹¤.
  */
 IDE_RC ulpCodeGen::ulpGenOpenFile( SChar *aFileName)
 {
@@ -2188,7 +2188,7 @@ IDE_RC ulpCodeGen::ulpGenOpenFile( SChar *aFileName)
 /*
  * DESCRIPTION :
  *
- *  Ã³¸®ÁßÀÎ ÆÄÀÏÀ» Close ÇÑ´Ù.
+ *  ì²˜ë¦¬ì¤‘ì¸ íŒŒì¼ì„ Close í•œë‹¤.
  */
 IDE_RC ulpCodeGen::ulpGenCloseFile()
 {
@@ -2219,8 +2219,8 @@ IDE_RC ulpCodeGen::ulpGenCloseFile()
 /*
  * DESCRIPTION :
  *
- *  Ã³À½ ulpInitialize °¡ È£Ãâ µÇ¾ú´ø °ÍÃ³·³ °´Ã¼°¡ ÃÊ±âÈ­ µÈ´Ù.
- *  ( GEN_INIT_QUERYBUF_SIZE¸¦ 32k·Î ´Ù½Ã ÃÊ±âÈ­ ÇÏÁö´Â ¾ÊÀ½. )
+ *  ì²˜ìŒ ulpInitialize ê°€ í˜¸ì¶œ ë˜ì—ˆë˜ ê²ƒì²˜ëŸ¼ ê°ì²´ê°€ ì´ˆê¸°í™” ëœë‹¤.
+ *  ( GEN_INIT_QUERYBUF_SIZEë¥¼ 32kë¡œ ë‹¤ì‹œ ì´ˆê¸°í™” í•˜ì§€ëŠ” ì•ŠìŒ. )
  */
 void ulpCodeGen::ulpGenClearAll()
 {
@@ -2242,14 +2242,14 @@ void ulpCodeGen::ulpGenClearAll()
 }
 
 
-/* Æ¯Á¤ charater¸¦ buffer¿¡ ¾´´Ù. */
+/* íŠ¹ì • charaterë¥¼ bufferì— ì“´ë‹¤. */
 void ulpCodeGen::ulpGenPutChar ( SChar aCh )
 {
     UInt sEmptyLen;
 
     sEmptyLen = GEN_WRITE_BUF_SIZE - mWriteBufOffset;
 
-    // Àû¾îµµ charÇÏ³ª´Â µé¾î°¥¼ö ÀÖ¾î¾ß µÇÀÜ´Ï?
+    // ì ì–´ë„ charí•˜ë‚˜ëŠ” ë“¤ì–´ê°ˆìˆ˜ ìˆì–´ì•¼ ë˜ì”ë‹ˆ?
     if( sEmptyLen > 1 )
     {
         mWriteBuf[ mWriteBufOffset++ ] = aCh;
@@ -2262,14 +2262,14 @@ void ulpCodeGen::ulpGenPutChar ( SChar aCh )
 }
 
 
-/* mWriteBufOffset¸¦  °¨¼Ò½ÃÅ²´Ù. */
+/* mWriteBufOffsetë¥¼  ê°ì†Œì‹œí‚¨ë‹¤. */
 void ulpCodeGen::ulpGenUnputChar ( void )
 {
     mWriteBufOffset--;
 }
 
 
-/* Query buffer¸¦ ÃÊ±âÈ­ÇØÁÜ */
+/* Query bufferë¥¼ ì´ˆê¸°í™”í•´ì¤Œ */
 void ulpCodeGen::ulpGenInitQBuff( void )
 {
     if ( (mQueryBuf != NULL) &&
@@ -2286,10 +2286,10 @@ void ulpCodeGen::ulpTransEmQuery ( SChar *aQueryBuf )
 /***********************************************************************
  *
  * Description :
- *    ³»Àå ±¸¹®À» cli°¡ ¼öÇàÇÒ¼ö ÀÖµµ·Ï ³»Àåsql±¸¹®À» º¯°æÇÏ¿© write buffer¿¡ ½áÁØ´Ù.
+ *    ë‚´ì¥ êµ¬ë¬¸ì„ cliê°€ ìˆ˜í–‰í• ìˆ˜ ìˆë„ë¡ ë‚´ì¥sqlêµ¬ë¬¸ì„ ë³€ê²½í•˜ì—¬ write bufferì— ì¨ì¤€ë‹¤.
  *
- *    BUGBUG - °¡´ÉÇÏ´Ù¸é ÃßÈÄ¿¡ ÀÌº¹ÀâÇÑ ÇÔ¼ö¸¦ ¾ø¾Ö°í ulpComly.y¿¡¼­
- *             ÆÄ½ÌÁß º¯È¯ÇÏµµ·Ï ÇÏ´Â°Ô ÁÁÀ»µí...
+ *    BUGBUG - ê°€ëŠ¥í•˜ë‹¤ë©´ ì¶”í›„ì— ì´ë³µì¡í•œ í•¨ìˆ˜ë¥¼ ì—†ì• ê³  ulpComly.yì—ì„œ
+ *             íŒŒì‹±ì¤‘ ë³€í™˜í•˜ë„ë¡ í•˜ëŠ”ê²Œ ì¢‹ì„ë“¯...
  *
  * Implementation :
  *
@@ -2455,7 +2455,7 @@ void ulpCodeGen::ulpTransEmQuery ( SChar *aQueryBuf )
     ulpGenString ( (SChar *)"\"" );
 }
 
-/* WHENEVER ±¸¹® »óÅÂÁ¤º¸ ¼³Á¤ ÇÔ¼ö */
+/* WHENEVER êµ¬ë¬¸ ìƒíƒœì •ë³´ ì„¤ì • í•¨ìˆ˜ */
 void ulpCodeGen::ulpGenSetWhenever( SInt aDepth,
                                     ulpGENWHENEVERCOND aCond,
                                     ulpGENWHENEVERACT aAct,
@@ -2695,9 +2695,9 @@ void ulpCodeGen::ulpGenRemoveQueryToken( SChar *aToken )
         {
             if ( sTokOffset == 0 )
             {
-                /* BUG-28314 : ³»Àåsql±¸¹®(select)À» Àß¸ø º¯È¯ÇÏ´Â °æ¿ì¹ß»ı.  */
-                // Äû¸® ¹öÆÛÀÇ µÚ¿¡¼­ºÎÅÍ °Ë»öÇØ°¡¸ç aToken°ú °°Àº stringÀ» Ã£¾Æ
-                // Áö¿öÁØ´Ù.
+                /* BUG-28314 : ë‚´ì¥sqlêµ¬ë¬¸(select)ì„ ì˜ëª» ë³€í™˜í•˜ëŠ” ê²½ìš°ë°œìƒ.  */
+                // í€´ë¦¬ ë²„í¼ì˜ ë’¤ì—ì„œë¶€í„° ê²€ìƒ‰í•´ê°€ë©° aTokenê³¼ ê°™ì€ stringì„ ì°¾ì•„
+                // ì§€ì›Œì¤€ë‹¤.
                 sIsMatch = ID_TRUE;
                 break;
             }
@@ -2789,22 +2789,22 @@ void ulpCodeGen::ulpGenInitPrint( void )
 }
 
 
-/* BUG-29479 : double ¹è¿­ »ç¿ë½Ã precompile Àß¸øµÇ´Â °æ¿ì¹ß»ıÇÔ. */
+/* BUG-29479 : double ë°°ì—´ ì‚¬ìš©ì‹œ precompile ì˜ëª»ë˜ëŠ” ê²½ìš°ë°œìƒí•¨. */
 SShort ulpCodeGen::ulpGenBraceCnt4HV( SChar *aValueName, SInt aLen )
 {
 /***********************************************************************
  *
  * Description :
- *    È£½ºÆ®º¯¼ö ÀÌ¸§À» ÀÎÀÚ·Î ¹Ş¾Æ ÀÌ¸§ ¸ÇµÚ¿¡ array index¸¦ ÁöÁ¤ÇÏ´Â ¹®¹ıÀÎ
- *   [...] °¡ ¸î¹ø ¹İº¹µÇ´ÂÁö countÇØÁÖ´Â ÇÔ¼ö.
- *   ´Ü, valuename[] ¿Í°°ÀÌ [...]¾ÈÀÌ ºñ¾îÀÖÀ» °æ¿ì countÇÏÁö ¾Ê´Â´Ù.
+ *    í˜¸ìŠ¤íŠ¸ë³€ìˆ˜ ì´ë¦„ì„ ì¸ìë¡œ ë°›ì•„ ì´ë¦„ ë§¨ë’¤ì— array indexë¥¼ ì§€ì •í•˜ëŠ” ë¬¸ë²•ì¸
+ *   [...] ê°€ ëª‡ë²ˆ ë°˜ë³µë˜ëŠ”ì§€ countí•´ì£¼ëŠ” í•¨ìˆ˜.
+ *   ë‹¨, valuename[] ì™€ê°™ì´ [...]ì•ˆì´ ë¹„ì–´ìˆì„ ê²½ìš° countí•˜ì§€ ì•ŠëŠ”ë‹¤.
  *
- *   »ç½Ç, ulpCompl.l ¿¡¼­ host º¯¼öÀÇ expr. Àº ÀÌÁß [..][..] À» Áö¿øÇÏÁö ¾Ê´Â´Ù.
- *   µû¶ó¼­ ÇöÁ¦·Î¼­´Â sBraceCnt°ªÀÌ 1À» ³ÑÁö ¸øÇÑ´Ù.
+ *   ì‚¬ì‹¤, ulpCompl.l ì—ì„œ host ë³€ìˆ˜ì˜ expr. ì€ ì´ì¤‘ [..][..] ì„ ì§€ì›í•˜ì§€ ì•ŠëŠ”ë‹¤.
+ *   ë”°ë¼ì„œ í˜„ì œë¡œì„œëŠ” sBraceCntê°’ì´ 1ì„ ë„˜ì§€ ëª»í•œë‹¤.
  *
  ***********************************************************************/
-    SShort   sIsInBrace;    // nested []ÀÇ depth.
-    SShort   sBraceCnt;     // ÃÑ []ÀÇ ¼ö.
+    SShort   sIsInBrace;    // nested []ì˜ depth.
+    SShort   sBraceCnt;     // ì´ []ì˜ ìˆ˜.
     idBool   sBreak;
     idBool   sIncBraceCnt;
 
@@ -2815,7 +2815,7 @@ SShort ulpCodeGen::ulpGenBraceCnt4HV( SChar *aValueName, SInt aLen )
 
     if( aLen > 0 )
     {
-        // º¯¼ö ÀÌ¸§ÀÇ µÚ¿¡¼­ ºÎÅÍ parsing ÇÑ´Ù.
+        // ë³€ìˆ˜ ì´ë¦„ì˜ ë’¤ì—ì„œ ë¶€í„° parsing í•œë‹¤.
         for( ; aLen > 0 ; aLen-- )
         {
             switch( aValueName[aLen-1] )
@@ -2834,7 +2834,7 @@ SShort ulpCodeGen::ulpGenBraceCnt4HV( SChar *aValueName, SInt aLen )
                     break;
                 case ' ':
                 case '\t':
-                    // [] ¾È¿¡ °ø¹é¸¸ÀÖÀ¸¸é []´Â ¾Æ¹«·± ÀÇ¹Ì¾ø´Ù.
+                    // [] ì•ˆì— ê³µë°±ë§Œìˆìœ¼ë©´ []ëŠ” ì•„ë¬´ëŸ° ì˜ë¯¸ì—†ë‹¤.
                     break;
                 default:
                     if (sIsInBrace==0)
@@ -2864,7 +2864,7 @@ void ulpCodeGen::ulpGenDebugPrint( ulpSymTElement *aSymNode )
 /***********************************************************************
  *
  * Description :
- *    debugging ¿ëµµÀÇ È£½ºÆ®º¯¼ö Á¤º¸ printÇØÁÖ´Â ÇÔ¼ö.
+ *    debugging ìš©ë„ì˜ í˜¸ìŠ¤íŠ¸ë³€ìˆ˜ ì •ë³´ printí•´ì£¼ëŠ” í•¨ìˆ˜.
  *
  ***********************************************************************/
     /*
@@ -2872,16 +2872,16 @@ void ulpCodeGen::ulpGenDebugPrint( ulpSymTElement *aSymNode )
     {
         SChar            mName[MAX_HOSTVAR_NAME_SIZE];   // var name
         ulpHostType      mType;                          // variable type
-        idBool           mIsTypedef;                     // typdef·Î Á¤ÀÇµÈ type ÀÌ¸§ÀÌ³Ä?
+        idBool           mIsTypedef;                     // typdefë¡œ ì •ì˜ëœ type ì´ë¦„ì´ëƒ?
         idBool           mIsarray;
         SChar            mArraySize[MAX_NUMBER_LEN];
         SChar            mArraySize2[MAX_NUMBER_LEN];
         idBool           mIsstruct;
         SChar            mStructName[MAX_HOSTVAR_NAME_SIZE];  // struct tag name
-        ulpStructTNode  *mStructLink;             // struct typeÀÏ°æ¿ì link
+        ulpStructTNode  *mStructLink;             // struct typeì¼ê²½ìš° link
         idBool           mIssign;                 // unsigned or signed
         SShort           mPointer;
-        idBool           mAlloc;                  // application¿¡¼­ Á÷Á¢ allocÇß´ÂÁö ¿©ºÎ.
+        idBool           mAlloc;                  // applicationì—ì„œ ì§ì ‘ allocí–ˆëŠ”ì§€ ì—¬ë¶€.
         UInt             mMoreInfo;               // Some additional infomation.
         idBool           mIsExtern;               // is extern variable?
     } ulpSymTElement;
@@ -2959,9 +2959,9 @@ void ulpCodeGen::ulpGenSharedPtr( ulpSymTElement *aSymNode )
 
     sStr[0] = '\0'; /* Initialize this array to avoid codesonar warning */
 
-    // mAlloc  Àº * ·Î ¼±¾ğµÈ º¯¼öÀÏ°æ¿ì ÂüÀÌ µÇ¸ç,
-    // mIsarray´Â []·Î ¼±¾ğµÈ º¯¼öÀÏ°æ¿ì ÂüÀÌµÈ´Ù.
-    // mPointer´Â ¸îÁß Æ÷ÀÎÅÍ/¹è¿­ ÀÎÁö¿¡ ´ëÇÑ Á¤º¸¸¦ ÀúÀåÇÔ.
+    // mAlloc  ì€ * ë¡œ ì„ ì–¸ëœ ë³€ìˆ˜ì¼ê²½ìš° ì°¸ì´ ë˜ë©°,
+    // mIsarrayëŠ” []ë¡œ ì„ ì–¸ëœ ë³€ìˆ˜ì¼ê²½ìš° ì°¸ì´ëœë‹¤.
+    // mPointerëŠ” ëª‡ì¤‘ í¬ì¸í„°/ë°°ì—´ ì¸ì§€ì— ëŒ€í•œ ì •ë³´ë¥¼ ì €ì¥í•¨.
     if( aSymNode -> mAlloc != ID_TRUE )
     {   
         if( aSymNode->mIsarray == ID_TRUE )

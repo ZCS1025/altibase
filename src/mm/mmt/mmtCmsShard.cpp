@@ -141,7 +141,7 @@ static IDE_RC answerShardNodeGetListResult( cmiProtocolContext * aProtocolContex
 
     IDE_EXCEPTION_END;
 
-    /* BUG-44124 ipcda ¸ğµå »ç¿ë Áß hang - iloader ÄÃ·³ÀÌ ¸¹Àº Å×ÀÌºí */
+    /* BUG-44124 ipcda ëª¨ë“œ ì‚¬ìš© ì¤‘ hang - iloader ì»¬ëŸ¼ì´ ë§ì€ í…Œì´ë¸” */
     if ( ( sWriteCheckState == CMI_WRITE_CHECK_ACTIVATED ) &&
          ( cmiGetLinkImpl( aProtocolContext ) == CMI_LINK_IMPL_IPCDA ) )
     {
@@ -227,7 +227,7 @@ static IDE_RC answerShardNodeUpdateListResult( cmiProtocolContext * aProtocolCon
 
     IDE_EXCEPTION_END;
 
-    /* BUG-44124 ipcda ¸ğµå »ç¿ë Áß hang - iloader ÄÃ·³ÀÌ ¸¹Àº Å×ÀÌºí */
+    /* BUG-44124 ipcda ëª¨ë“œ ì‚¬ìš© ì¤‘ hang - iloader ì»¬ëŸ¼ì´ ë§ì€ í…Œì´ë¸” */
     if ( ( sWriteCheckState == CMI_WRITE_CHECK_ACTIVATED ) &&
          ( cmiGetLinkImpl( aProtocolContext ) == CMI_LINK_IMPL_IPCDA ) )
     {
@@ -655,7 +655,7 @@ static IDE_RC answerShardAnalyzeResult( cmiProtocolContext *aProtocolContext,
 
     IDE_EXCEPTION_END;
 
-    /* BUG-44124 ipcda ¸ğµå »ç¿ë Áß hang - iloader ÄÃ·³ÀÌ ¸¹Àº Å×ÀÌºí */
+    /* BUG-44124 ipcda ëª¨ë“œ ì‚¬ìš© ì¤‘ hang - iloader ì»¬ëŸ¼ì´ ë§ì€ í…Œì´ë¸” */
     if ( ( sWriteCheckState == CMI_WRITE_CHECK_ACTIVATED ) &&
          ( cmiGetLinkImpl(aProtocolContext) == CMI_LINK_IMPL_IPCDA ) )
     {
@@ -767,7 +767,7 @@ IDE_RC mmtServiceThread::shardAnalyzeProtocol(cmiProtocolContext *aProtocolConte
 
     IDE_TEST(answerShardAnalyzeResult(aProtocolContext, sStatement) != IDE_SUCCESS);
 
-    /* ´õÀÌ»ó »ç¿ëµÇÁö ¾ÊÀ¸¹Ç·Î Áï½Ã ÇØÁ¦ÇÑ´Ù. */
+    /* ë”ì´ìƒ ì‚¬ìš©ë˜ì§€ ì•Šìœ¼ë¯€ë¡œ ì¦‰ì‹œ í•´ì œí•œë‹¤. */
     IDE_TEST(qci::clearStatement(sStatement->getQciStmt(),
                                  sStatement->getSmiStmt(),
                                  QCI_STMT_STATE_INITIALIZED)
@@ -838,7 +838,7 @@ static IDE_RC answerShardTransactionResult( cmiProtocolContext *aProtocolContext
 
     IDE_EXCEPTION_END;
 
-    /* BUG-44124 ipcda ¸ğµå »ç¿ë Áß hang - iloader ÄÃ·³ÀÌ ¸¹Àº Å×ÀÌºí */
+    /* BUG-44124 ipcda ëª¨ë“œ ì‚¬ìš© ì¤‘ hang - iloader ì»¬ëŸ¼ì´ ë§ì€ í…Œì´ë¸” */
     if ( ( sWriteCheckState == CMI_WRITE_CHECK_ACTIVATED ) &&
          ( cmiGetLinkImpl(aProtocolContext) == CMI_LINK_IMPL_IPCDA ) )
     {
@@ -954,7 +954,7 @@ static IDE_RC answerShardPrepareResult( cmiProtocolContext *aProtocolContext,
 
     IDE_EXCEPTION_END;
 
-    /* BUG-44124 ipcda ¸ğµå »ç¿ë Áß hang - iloader ÄÃ·³ÀÌ ¸¹Àº Å×ÀÌºí */
+    /* BUG-44124 ipcda ëª¨ë“œ ì‚¬ìš© ì¤‘ hang - iloader ì»¬ëŸ¼ì´ ë§ì€ í…Œì´ë¸” */
     if ( ( sWriteCheckState == CMI_WRITE_CHECK_ACTIVATED) &&
          ( cmiGetLinkImpl(aProtocolContext) == CMI_LINK_IMPL_IPCDA ) )
     {
@@ -991,7 +991,7 @@ IDE_RC mmtServiceThread::shardPrepareProtocol(cmiProtocolContext *aProtocolConte
     }
     else
     {
-        /* size°¡ Àß¸øµÇ¾ú´Ù. ÀÏ´Ü ÀĞ°í ¿¡·¯ */
+        /* sizeê°€ ì˜ëª»ë˜ì—ˆë‹¤. ì¼ë‹¨ ì½ê³  ì—ëŸ¬ */
         for ( i = 0; i < sXIDSize; i++ )
         {
             CMI_RD1(aProtocolContext, sDummy);
@@ -1046,7 +1046,7 @@ static IDE_RC answerShardEndPendingTxResult( cmiProtocolContext *aProtocolContex
 
     IDE_EXCEPTION_END;
 
-    /* BUG-44124 ipcda ¸ğµå »ç¿ë Áß hang - iloader ÄÃ·³ÀÌ ¸¹Àº Å×ÀÌºí */
+    /* BUG-44124 ipcda ëª¨ë“œ ì‚¬ìš© ì¤‘ hang - iloader ì»¬ëŸ¼ì´ ë§ì€ í…Œì´ë¸” */
     if( ( sWriteCheckState == CMI_WRITE_CHECK_ACTIVATED ) &&
         ( cmiGetLinkImpl(aProtocolContext) == CMI_LINK_IMPL_IPCDA ) )
     {
@@ -1083,7 +1083,7 @@ IDE_RC mmtServiceThread::shardEndPendingTxProtocol(cmiProtocolContext *aProtocol
     }
     else
     {
-        /* size°¡ Àß¸øµÇ¾ú´Ù. ÀÏ´Ü ÀĞ°í ¿¡·¯ */
+        /* sizeê°€ ì˜ëª»ë˜ì—ˆë‹¤. ì¼ë‹¨ ì½ê³  ì—ëŸ¬ */
         for ( i = 0; i < sXIDSize; i++ )
         {
             CMI_RD1(aProtocolContext, sDummy);

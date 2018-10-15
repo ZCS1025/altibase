@@ -174,7 +174,7 @@ public:
                            UChar           aSlotNum,
                            UShort          aKeyOffset );
 
-    // BUG-29506 TBT°¡ TBK·Î ÀüÈ¯½Ã offsetÀ» CTS¿¡ ¹İ¿µÇÏÁö ¾Ê½À´Ï´Ù.
+    // BUG-29506 TBTê°€ TBKë¡œ ì „í™˜ì‹œ offsetì„ CTSì— ë°˜ì˜í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
     static IDE_RC updateRefKey( sdrMtx        * aMtx,
                                 sdpPhyPageHdr * aPage,
                                 UChar           aSlotNum,
@@ -207,13 +207,13 @@ public:
     static IDE_RC wait4Trans( void   * aTrans,
                               smTID    aWait4TID );
 
-    /*TASK-4007 [SM] PBT¸¦ À§ÇÑ ±â´É Ãß°¡ - dumpddfÁ¤»óÈ­
-     *Index CTLÀ» DumpÇÏ¿© º¸¿©ÁØ´Ù*/
+    /*TASK-4007 [SM] PBTë¥¼ ìœ„í•œ ê¸°ëŠ¥ ì¶”ê°€ - dumpddfì •ìƒí™”
+     *Index CTLì„ Dumpí•˜ì—¬ ë³´ì—¬ì¤€ë‹¤*/
     static IDE_RC dump ( UChar *sPage ,
                          SChar *aOutBuf ,
                          UInt   aOutSize );
 
-    // BUG-28711 SM PBT º¸°­
+    // BUG-28711 SM PBT ë³´ê°•
     static void dumpIndexNode( sdpPhyPageHdr * aNode );
 
     static smSCN getCommitSCN( sdpPhyPageHdr * aPage,

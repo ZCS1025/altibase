@@ -25,9 +25,9 @@
 
 /* ------------------------------------------------------------------------------
  *
- *           VERSIONÀ» ¾Æ·¡ÀÇ ¸ÅÅ©·Î¿¡¼­ ¼öÁ¤ÇÏ±â ¹Ù¶÷.
+ *           VERSIONì„ ì•„ëž˜ì˜ ë§¤í¬ë¡œì—ì„œ ìˆ˜ì •í•˜ê¸° ë°”ëžŒ.
  *
- *  -> example)  ¹öÁ¯ÀÌ 9.2.123ÀÏ °æ¿ì
+ *  -> example)  ë²„ì ¼ì´ 9.2.123ì¼ ê²½ìš°
  *
  *               #define IDU_ALTIBASE_MAJOR_VERSION    9
  *               #define IDU_ALTIBASE_MINOR_VERSION    2
@@ -155,8 +155,8 @@ acp_sint32_t aciMkSystemInfoString()
     acpCStrCpy(aciSystemInfoString, ACI_SYSTEM_INFO_LENGTH,
                aciPackageInfoString, acpCStrLen(aciPackageInfoString, ACI_SYSTEM_INFO_LENGTH));
 
-    /*     ¾Æ·¡ ÄÚµå´Â ³Ê¹« ÀÌ»óÇÏ°Ô º¸ÀÏ ¼öµµ ÀÖ°ÚÁö¸¸ */
-    /* klocworks ¿¡·¯¸¦ ¾ø¾Ö±â À§ÇØ ºÎµæÀÌÇÏ°Ô ÀÌ·±½ÄÀ¸·Î ÀÛ¼ºÇß´Ù. */
+    /*     ì•„ëž˜ ì½”ë“œëŠ” ë„ˆë¬´ ì´ìƒí•˜ê²Œ ë³´ì¼ ìˆ˜ë„ ìžˆê² ì§€ë§Œ */
+    /* klocworks ì—ëŸ¬ë¥¼ ì—†ì• ê¸° ìœ„í•´ ë¶€ë“ì´í•˜ê²Œ ì´ëŸ°ì‹ìœ¼ë¡œ ìž‘ì„±í–ˆë‹¤. */
     sAvailableLen = sizeof(aciSystemInfoString) - acpCStrLen(aciSystemInfoString, ACI_SYSTEM_INFO_LENGTH) - 1;
     if (sAvailableLen > 0)
     {

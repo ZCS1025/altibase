@@ -46,7 +46,7 @@ static IDE_RC mtfMultihash256Estimate( mtcNode     * aNode,
 mtfModule mtfMultihash256 = {
     2|MTC_NODE_OPERATOR_FUNCTION|MTC_NODE_EAT_NULL_TRUE,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
+    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìê°€ ì•„ë‹˜)
     mtfMultihash256FunctionName,
     NULL,
     mtf::initializeDefault,
@@ -112,10 +112,10 @@ IDE_RC mtfMultihash256Estimate( mtcNode     * aNode,
           sNode = sNode->next, sStack++ )
     {
         /* BUG-22611
-         * switch-case¿¡ UInt ÇüÀ¸·Î À½¼ö°ªÀÌ µÎ¹ø ÀÌ»ó ¿À¸é ¼­¹ö ºñÁ¤»ó Á¾·á
+         * switch-caseì— UInt í˜•ìœ¼ë¡œ ìŒìˆ˜ê°’ì´ ë‘ë²ˆ ì´ìƒ ì˜¤ë©´ ì„œë²„ ë¹„ì •ìƒ ì¢…ë£Œ
          * ex )  case MTD_BIT_ID: ==> (UInt)-7
          *       case MTD_VARBIT_ID: ==> (UInt)-8
-         * µû¶ó¼­ SInt ÇüÀ¸·Î Å¸ÀÔ Ä³½ºÆÃ ÇÏµµ·Ï ¼öÁ¤ÇÔ
+         * ë”°ë¼ì„œ SInt í˜•ìœ¼ë¡œ íƒ€ì… ìºìŠ¤íŒ… í•˜ë„ë¡ ìˆ˜ì •í•¨
          */
         sModuleId = (SInt) sStack->column->module->id;
 
@@ -212,7 +212,7 @@ IDE_RC mtfMultihash256Calculate( mtcNode     * aNode,
  *
  *  MULTIHASH256( I1, I2, I3, ... )
  *
- *  ¿©·¯ ÄÃ·³À» ¿¬¼ÓÀûÀ¸·Î ÇØ½ÌÇÏ´Â ¸ÖÆ¼ ÇØ½ÌÀ» ¼öÇàÇÑ´Ù.
+ *  ì—¬ëŸ¬ ì»¬ëŸ¼ì„ ì—°ì†ì ìœ¼ë¡œ í•´ì‹±í•˜ëŠ” ë©€í‹° í•´ì‹±ì„ ìˆ˜í–‰í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -253,7 +253,7 @@ IDE_RC mtfMultihash256Calculate( mtcNode     * aNode,
 
         if ( sColumn->module->isNull( sColumn, sValue ) == ID_TRUE )
         {
-            // n¹øÂ° null°ú n+1¹øÂ° nullÀ» ±¸ºĞÇÑ´Ù.
+            // në²ˆì§¸ nullê³¼ n+1ë²ˆì§¸ nullì„ êµ¬ë¶„í•œë‹¤.
             sValue = (void*) &sOrder;
             sSize = 2;
         }
@@ -309,7 +309,7 @@ IDE_RC mtfMultihash256CalculateFast( mtcNode     * aNode,
  *
  *  MULTIHASH256( I1, I2, I3, ... )
  *
- *  ¿©·¯ ÄÃ·³À» ¿¬¼ÓÀûÀ¸·Î ÇØ½ÌÇÏ´Â ¸ÖÆ¼ ÇØ½ÌÀ» ¼öÇàÇÑ´Ù.
+ *  ì—¬ëŸ¬ ì»¬ëŸ¼ì„ ì—°ì†ì ìœ¼ë¡œ í•´ì‹±í•˜ëŠ” ë©€í‹° í•´ì‹±ì„ ìˆ˜í–‰í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -350,7 +350,7 @@ IDE_RC mtfMultihash256CalculateFast( mtcNode     * aNode,
 
         if ( sColumn->module->isNull( sColumn, sValue ) == ID_TRUE )
         {
-            // n¹øÂ° null°ú n+1¹øÂ° nullÀ» ±¸ºĞÇÑ´Ù.
+            // në²ˆì§¸ nullê³¼ n+1ë²ˆì§¸ nullì„ êµ¬ë¶„í•œë‹¤.
             sValue = (void*) &sOrder;
             sSize = 2;
         }

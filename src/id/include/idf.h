@@ -20,12 +20,12 @@
 #include <OS.h>
 
 /*
-1. ¸®´ª½º raw device´Â fsync¸¦ Áö¿øÇÏÁö ¾Ê´Â´Ù.
-   µû¶ó¼­ ¸®´ª½º¿¡¼­´Â raw device¸¦ »ç¿ëÇÏ¸é ¾ÈµÈ´Ù.
+1. ë¦¬ëˆ…ìŠ¤ raw deviceëŠ” fsyncë¥¼ ì§€ì›í•˜ì§€ ì•ŠëŠ”ë‹¤.
+   ë”°ë¼ì„œ ë¦¬ëˆ…ìŠ¤ì—ì„œëŠ” raw deviceë¥¼ ì‚¬ìš©í•˜ë©´ ì•ˆëœë‹¤.
 
-2. VxWorks raw device´Â alignment¸¦ °í·ÁÇÏÁö ¾Ê¾Æµµ µÈ´Ù.
-   ÇÏÁö¸¸ lseek, fsync´Â ioctl ÇÔ¼ö¸¦ ÅëÇØ¼­¸¸ Áö¿øµÈ´Ù.
-   µû¶ó¼­ logging, lock, lseek, fsync¿¡ ´ëÇÑ °í·Á°¡ ÇÊ¿äÇÏ´Ù.
+2. VxWorks raw deviceëŠ” alignmentë¥¼ ê³ ë ¤í•˜ì§€ ì•Šì•„ë„ ëœë‹¤.
+   í•˜ì§€ë§Œ lseek, fsyncëŠ” ioctl í•¨ìˆ˜ë¥¼ í†µí•´ì„œë§Œ ì§€ì›ëœë‹¤.
+   ë”°ë¼ì„œ logging, lock, lseek, fsyncì— ëŒ€í•œ ê³ ë ¤ê°€ í•„ìš”í•˜ë‹¤.
 */
 
 //==============================================================
@@ -153,7 +153,7 @@
 #define IDF_FILE_HOLE_MASK     (0x80000000)
 #define IDF_FILE_HOLE_INVERTER (0x7FFFFFFF)
 
-// ÆäÀÌÁö ÇÒ´çÀ» 8°³¾¿ ÇÏ±â ¶§¹®¿¡ Direct Page MapÀÇ Å©±â´Â 8ÀÇ ¹è¼ö¿©¾ß ÇÑ´Ù.
+// í˜ì´ì§€ í• ë‹¹ì„ 8ê°œì”© í•˜ê¸° ë•Œë¬¸ì— Direct Page Mapì˜ í¬ê¸°ëŠ” 8ì˜ ë°°ìˆ˜ì—¬ì•¼ í•œë‹¤.
 #define IDF_DIRECT_MAP_SIZE      (8)
 #define IDF_INDIRECT_MAP_SIZE (8192) //(IDF_PAGE_SIZE / 4)
 #define IDF_INDIRECT_ENTRY_SIZE (32) // sizeof(int) * IDF_PAGES_PER_BLOCK 
@@ -205,30 +205,30 @@ typedef struct idfMaster
 {
     UInt  mMajorVersion;     // file system major version
     UInt  mMinorVersion;     // file system minor version
-    UInt  mNumOfPages;       // ÀüÃ¼ PageÀÇ °³¼ö
-    UInt  mSizeOfPage;       // 1°³ PageÀÇ Å©±â
-    UInt  mAllocedPages;     // ÇÒ´çÇÑ ÆäÀÌÁö °³¼ö, mNumOfPages >= mAllocedPages
-    UChar mFSMode;           // ÆÄÀÏÀÇ °ø°£À» ÇÑ ¹ø¿¡ ¸ğµÎ ÇÒ´çÇÒÁö ¼³Á¤
-    UChar mLogMode;          // LogÀÇ ¸ğµå¸¦ ¼³Á¤ [0 : no logging | 1 : logging]
-    UInt  mNumOfFiles;       // file °³¼ö
-    UInt  mPagesPerBlock;    // Block ´ç Page °³¼ö
-    SInt  mTimestamp;        // Master Page¸¦ ÀúÀåÇÑ ½Ã°£
-    SInt  mMaxFileCount;     // ÃÖ´ë ÆÄÀÏ °³¼ö
-    SInt  mMaxFileOpenCount; // ÃÖ´ë ÆÄÀÏ descriptor °³¼ö
+    UInt  mNumOfPages;       // ì „ì²´ Pageì˜ ê°œìˆ˜
+    UInt  mSizeOfPage;       // 1ê°œ Pageì˜ í¬ê¸°
+    UInt  mAllocedPages;     // í• ë‹¹í•œ í˜ì´ì§€ ê°œìˆ˜, mNumOfPages >= mAllocedPages
+    UChar mFSMode;           // íŒŒì¼ì˜ ê³µê°„ì„ í•œ ë²ˆì— ëª¨ë‘ í• ë‹¹í• ì§€ ì„¤ì •
+    UChar mLogMode;          // Logì˜ ëª¨ë“œë¥¼ ì„¤ì • [0 : no logging | 1 : logging]
+    UInt  mNumOfFiles;       // file ê°œìˆ˜
+    UInt  mPagesPerBlock;    // Block ë‹¹ Page ê°œìˆ˜
+    SInt  mTimestamp;        // Master Pageë¥¼ ì €ì¥í•œ ì‹œê°„
+    SInt  mMaxFileCount;     // ìµœëŒ€ íŒŒì¼ ê°œìˆ˜
+    SInt  mMaxFileOpenCount; // ìµœëŒ€ íŒŒì¼ descriptor ê°œìˆ˜
     UInt  mCRC;              // CRC of Master
-    UInt  mSignature;        // Mater PageÀÇ ¸¶Áö¸·À» ¸í½Ã
+    UInt  mSignature;        // Mater Pageì˜ ë§ˆì§€ë§‰ì„ ëª…ì‹œ
 } idfMaster;
 
 typedef struct idfMeta
 {
-    SChar mFileName[IDF_MAX_FILE_NAME_LEN];  // ÆÄÀÏ ÀÌ¸§
-    SInt  mFileID;                           // ÆÄÀÏ °íÀ¯ ¹øÈ£, 0¹øºÎÅÍ ÇÒ´ç
-    UInt  mSize;                             // ÆÄÀÏ Å©±â
-    SInt  mCTime;                            // ÆÄÀÏ »ı¼º ½Ã°£
-    UInt  mNumOfPagesU;                      // »ç¿ëÁßÀÎ Page °³¼ö
-    UInt  mNumOfPagesA;                      // ÇÒ´çÇÑ Page °³¼ö
+    SChar mFileName[IDF_MAX_FILE_NAME_LEN];  // íŒŒì¼ ì´ë¦„
+    SInt  mFileID;                           // íŒŒì¼ ê³ ìœ  ë²ˆí˜¸, 0ë²ˆë¶€í„° í• ë‹¹
+    UInt  mSize;                             // íŒŒì¼ í¬ê¸°
+    SInt  mCTime;                            // íŒŒì¼ ìƒì„± ì‹œê°„
+    UInt  mNumOfPagesU;                      // ì‚¬ìš©ì¤‘ì¸ Page ê°œìˆ˜
+    UInt  mNumOfPagesA;                      // í• ë‹¹í•œ Page ê°œìˆ˜
     UInt  mDirectPages[IDF_DIRECT_MAP_SIZE]; // Direct Page Address(MAX 256KB)
-    UInt  mIndPages[IDF_INDIRECT_PAGE_NUM];  // FATÀÇ ÁÖ¼Ò(MAX 4GB)
+    UInt  mIndPages[IDF_INDIRECT_PAGE_NUM];  // FATì˜ ì£¼ì†Œ(MAX 4GB)
     UInt  mCRC;                              // CRC of Meta
     UInt  mSignature;
 } idfMeta;
@@ -248,18 +248,18 @@ typedef struct idfFdEntry
 
 typedef struct idfDirent
 {
-    // µğ·ºÅä¸® ¹ØÀÇ Dirent°´Ã¼´Â double linked list·Î ¿¬°áµÇ¾î ÀÖ´Ù.
-    // readdir_r() ÇÔ¼ö È£Ãâ½Ã list¸¦ Å½»öÇÏ¸é¼­ ÇÏ³ª¾¿ ¹İÈ¯ÇÑ´Ù.
-    // dirent °´Ã¼´Â mDirent¿¡ ´Ş·ÁÀÖ´Ù.
+    // ë””ë ‰í† ë¦¬ ë°‘ì˜ Direntê°ì²´ëŠ” double linked listë¡œ ì—°ê²°ë˜ì–´ ìˆë‹¤.
+    // readdir_r() í•¨ìˆ˜ í˜¸ì¶œì‹œ listë¥¼ íƒìƒ‰í•˜ë©´ì„œ í•˜ë‚˜ì”© ë°˜í™˜í•œë‹¤.
+    // dirent ê°ì²´ëŠ” mDirentì— ë‹¬ë ¤ìˆë‹¤.
     void      *mDirent;
-    idfDirent *mNext; // next idfDirent°´Ã¼¸¦ °¡¸®Å´
+    idfDirent *mNext; // next idfDirentê°ì²´ë¥¼ ê°€ë¦¬í‚´
 } idfDirent;
 
 typedef struct idfDir
 {
-    SInt       mDirCount; // idfDirent°´Ã¼ÀÇ °³¼ö
-    SInt       mDirIndex; // readdir_r() È£Ãâ½Ã ÀĞÀº idfDirent°´Ã¼ÀÇ index
-    idfDirent *mFirst;    // Ã¹¹øÂ° idfDirent°´Ã¼¸¦ °¡¸®Å´
+    SInt       mDirCount; // idfDirentê°ì²´ì˜ ê°œìˆ˜
+    SInt       mDirIndex; // readdir_r() í˜¸ì¶œì‹œ ì½ì€ idfDirentê°ì²´ì˜ index
+    idfDirent *mFirst;    // ì²«ë²ˆì§¸ idfDirentê°ì²´ë¥¼ ê°€ë¦¬í‚´
 } idfDir;
 typedef struct idfPageMap // idf Indirect Page Map
 {
@@ -339,15 +339,15 @@ class idf
 private:
 public :
     //================================================
-    // ¸â¹ö º¯¼ö
+    // ë©¤ë²„ ë³€ìˆ˜
     //     idf::mMaster : 
-    //     idf::mFd     : ´ÜÀÏ µ¥ÀÌÅÍ ÆÄÀÏ descriptor
-    //     idf::mLogFd  : ·Î±× ÆÄÀÏ descriptor 
+    //     idf::mFd     : ë‹¨ì¼ ë°ì´í„° íŒŒì¼ descriptor
+    //     idf::mLogFd  : ë¡œê·¸ íŒŒì¼ descriptor 
     //================================================
     static idfMaster     mMaster;
     static idfMetaEntry *mMetaList;
     static idfFdEntry   *mFdList;
-    static UChar        *mBlockMap; // ÀüÃ¼ ºí·ÏÀÇ »óÅÂ Á¤º¸¸¦ Ç¥½Ã
+    static UChar        *mBlockMap; // ì „ì²´ ë¸”ë¡ì˜ ìƒíƒœ ì •ë³´ë¥¼ í‘œì‹œ
     static SInt         *mBlockList;
     static UChar        *mEmptyBuf;
     static UInt         *mCRCTable; // 256bytes CRC Table
@@ -365,7 +365,7 @@ public :
     static UInt         *mMapLog;
     static UInt          mMapLogCount;
 
-    // MetaÀÇ Indirect Page¿¡ Á¢±ÙÇÏ±â À§ÇØ Á¸ÀçÇÏ¸ç, idfPageMapÀ» °ü¸®ÇÑ´Ù.
+    // Metaì˜ Indirect Pageì— ì ‘ê·¼í•˜ê¸° ìœ„í•´ ì¡´ì¬í•˜ë©°, idfPageMapì„ ê´€ë¦¬í•œë‹¤.
     static idfPageMap *mPageMapPool;
     static UInt        mPageMapPoolCount;
 
@@ -375,7 +375,7 @@ public :
     static PDL_HANDLE mFd;
     static PDL_HANDLE mLogFd;
 
-    // ¼³Á¤À» À§ÇÑ º¯¼ö
+    // ì„¤ì •ì„ ìœ„í•œ ë³€ìˆ˜
     static UInt mPageNum;
     static UInt mPageSize;
     static UInt mPagesPerBlock;
@@ -402,7 +402,7 @@ public :
     static PDL_thread_mutex_t  mMutex;
     static PDL_OS::pdl_flock_t mLockFile;
 
-    // ÃÊ±âÈ­ ÇÔ¼ö
+    // ì´ˆê¸°í™” í•¨ìˆ˜
     static void   initWithIdlOS();
     static void   initWithIdfCore();
     static void   initMasterPage(idfMaster*);
@@ -417,10 +417,10 @@ public :
     static void   initCRCTable();
     static void   initLogList();
 
-    // º¹±¸ ÇÔ¼ö
+    // ë³µêµ¬ í•¨ìˆ˜
     static IDE_RC doRecovery();
 
-    // Á¾·á ÇÔ¼ö
+    // ì¢…ë£Œ í•¨ìˆ˜
     static void   finalMutex();
     static void   finalFiles();
     static void   finalLockFile();
@@ -435,7 +435,7 @@ public :
     static PDL_HANDLE idlopen(const SChar *pathname, SInt flag, ...);
 
     //========================
-    // ÇÔ¼ö Æ÷ÀÎÅÍ (I/O APIs)
+    // í•¨ìˆ˜ í¬ì¸í„° (I/O APIs)
     //========================
     static idfopen      open;
     static idfclose     close;
@@ -517,7 +517,7 @@ public :
     static IDE_RC validateMaster();
     */
 
-    // °øÅë »ç¿ë 
+    // ê³µí†µ ì‚¬ìš© 
     static SChar *getpath(const SChar*);
     static IDE_RC getFreePage(UInt*, UInt);
     static SInt   getUnusedFd();
@@ -530,23 +530,23 @@ public :
     static void   getMetaCRC(idfMeta*);
     static void   getMasterCRC();
 
-    // µğ·ºÅä¸® °ü·Ã ÇÔ¼ö
+    // ë””ë ‰í† ë¦¬ ê´€ë ¨ í•¨ìˆ˜
     static idfDir *getDir(const SChar*);
     static IDE_RC  isDir(const SChar*);
 
-    // ÀÚ¿ø ¹İÈ¯ ÇÔ¼ö
+    // ìì› ë°˜í™˜ í•¨ìˆ˜
     static IDE_RC freeFd(SInt);
     static IDE_RC freeMeta(SInt);
 
-    // ½Ã½ºÅÛ ÆäÀÌÁö °ü·Ã ÇÔ¼ö
+    // ì‹œìŠ¤í…œ í˜ì´ì§€ ê´€ë ¨ í•¨ìˆ˜
     static IDE_RC writeMaster();
 
-    // ·Î±× ±â·Ï ÇÔ¼ö
+    // ë¡œê·¸ ê¸°ë¡ í•¨ìˆ˜
     static IDE_RC masterLog(UInt);
     static IDE_RC appandPageMapLog(SInt, SInt, SInt);
     static IDE_RC initLog();
 
-    // lock °ü·Ã ÇÔ¼ö
+    // lock ê´€ë ¨ í•¨ìˆ˜
     static void lock();
     static void unlock();
 

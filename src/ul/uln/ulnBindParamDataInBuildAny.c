@@ -112,7 +112,7 @@ ACI_RC ulnParamDataInBuildAny_CHAR_CHAR(ulnFnContext *aFnContext,
             (sCliCharset->id              == MTL_UTF16_ID) ||
             (sDbc->mCharsetLangModule->id == MTL_UTF16_ID))
         {
-            // µ•¿Ã≈Õ∞° º’Ω«µ«¡ˆ æ ¥¬ ∞ÊøÏø° «—«ÿº≠ PRECISION∏∏≈≠∏∏ ∫∏≥Ω¥Ÿ.
+            // Îç∞Ïù¥ÌÑ∞Í∞Ä ÏÜêÏã§ÎêòÏßÄ ÏïäÎäî Í≤ΩÏö∞Ïóê ÌïúÌï¥ÏÑú PRECISIONÎßåÌÅºÎßå Î≥¥ÎÇ∏Îã§.
             ACI_TEST(ulnCharSetConvert(aCharSet,
                                        aFnContext,
                                        NULL,
@@ -198,7 +198,7 @@ ACI_RC ulnParamDataInBuildAny_CHAR_NUMERIC(ulnFnContext *aFnContext,
     }
     else
     {
-        // WCHAR µ•¿Ã≈Õ¿Œ ∞ÊøÏ πÆ¿⁄º¬∫Ø»Ø¿ª «ÿ¡÷æÓæﬂ «—¥Ÿ.
+        // WCHAR Îç∞Ïù¥ÌÑ∞Ïù∏ Í≤ΩÏö∞ Î¨∏ÏûêÏÖãÎ≥ÄÌôòÏùÑ Ìï¥Ï£ºÏñ¥Ïïº ÌïúÎã§.
         // ex) '37': 0x00 0x37 (2bytes) => 0x37 (1byte)
         if (sCType == ULN_CTYPE_WCHAR)
         {
@@ -225,7 +225,7 @@ ACI_RC ulnParamDataInBuildAny_CHAR_NUMERIC(ulnFnContext *aFnContext,
         ACI_TEST_RAISE( mtcNumericCanonize( sNumeric,
                                             sNumeric2,
                                             sBindInfo->mPrecision,
-                                            // ¡§∫∏∞° ¿÷¿ª±Ó?
+                                            // Ï†ïÎ≥¥Í∞Ä ÏûàÏùÑÍπå?
                                             sBindInfo->mScale,
                                             &sCanonized )
                         != ACI_SUCCESS, LABEL_MTCONV_ERROR );
@@ -1532,7 +1532,7 @@ ACI_RC ulnParamDataInBuildAny_CHAR_NCHAR(ulnFnContext *aFnContext,
         {
             sCliCharset = sDbc->mWcharCharsetLangModule;
         }
-        // µ•¿Ã≈Õ∞° º’Ω«µ«¡ˆ æ ¥¬ ∞ÊøÏø° «—«ÿº≠ PRECISION∏∏≈≠∏∏ ∫∏≥Ω¥Ÿ.
+        // Îç∞Ïù¥ÌÑ∞Í∞Ä ÏÜêÏã§ÎêòÏßÄ ÏïäÎäî Í≤ΩÏö∞Ïóê ÌïúÌï¥ÏÑú PRECISIONÎßåÌÅºÎßå Î≥¥ÎÇ∏Îã§.
         ACI_TEST(ulnCharSetConvert(aCharSet,
                                    aFnContext,
                                    NULL,
@@ -1543,8 +1543,8 @@ ACI_RC ulnParamDataInBuildAny_CHAR_NCHAR(ulnFnContext *aFnContext,
                                    CONV_DATA_IN)
                  != ACI_SUCCESS);
 
-        // BUG-23645 ƒ≥∏Ø≈Õº¬ ∫Ø»ØΩ√ ≈¨∂Û¿Ãæ∆Æø°º≠ µ•¿Ã≈∏∏¶ ¿ﬂ∂Ûº≠ ∫∏≥¿¥œ¥Ÿ.
-        // º≠πˆ∑Œ ∫∏≥æ∂ß¥¬ ƒ¡πˆ¡Øµ» µ•¿Ã≈∏∏¶ ¿¸∫Œ ∫∏≥Ω¥Ÿ.
+        // BUG-23645 Ï∫êÎ¶≠ÌÑ∞ÏÖã Î≥ÄÌôòÏãú ÌÅ¥ÎùºÏù¥Ïñ∏Ìä∏ÏóêÏÑú Îç∞Ïù¥ÌÉÄÎ•º ÏûòÎùºÏÑú Î≥¥ÎÉÖÎãàÎã§.
+        // ÏÑúÎ≤ÑÎ°ú Î≥¥ÎÇºÎïåÎäî Ïª®Î≤ÑÏ†ºÎêú Îç∞Ïù¥ÌÉÄÎ•º Ï†ÑÎ∂Ä Î≥¥ÎÇ∏Îã§.
         sCopyLen = aCharSet->mDestLen;
         ULN_CHUNK_WR2(sStmt, &sCopyLen);
         ULN_CHUNK_WCP(sStmt, ulnCharSetGetConvertedText(aCharSet), sCopyLen);
@@ -1641,7 +1641,7 @@ ACI_RC ulnParamDataInBuildAny_NUMERIC_NUMERIC(ulnFnContext *aFnContext,
 
             sSign  = (acp_sint8_t)(sUserVal->sign);
 
-            // buffer∏¶ 0¿∏∑Œ √ ±‚»≠ «œ¡ˆ æ ¥¬¥Ÿ
+            // bufferÎ•º 0ÏúºÎ°ú Ï¥àÍ∏∞Ìôî ÌïòÏßÄ ÏïäÎäîÎã§
             ulncNumericInitFromData(&sSrc,
                                     256,
                                     // see changeSessionStateService()
@@ -1650,7 +1650,7 @@ ACI_RC ulnParamDataInBuildAny_NUMERIC_NUMERIC(ulnFnContext *aFnContext,
                                     SQL_MAX_NUMERIC_LEN, // 16
                                     sUserValLen );
 
-            // buffer∏¶ 0¿∏∑Œ √ ±‚»≠ «—¥Ÿ
+            // bufferÎ•º 0ÏúºÎ°ú Ï¥àÍ∏∞Ìôî ÌïúÎã§
             ulncNumericInitialize(&sDst,
                                   100,
                                   ULNC_ENDIAN_BIG,
@@ -1712,10 +1712,10 @@ ACI_RC ulnParamDataInBuildAny_NUMERIC_NUMERIC(ulnFnContext *aFnContext,
                            (sScale > MTD_NUMERIC_SCALE_MAXIMUM),
                            LABEL_INVALID_LITERAL);
 
-            // BUG-32571: TargetType¿Ã FLOAT¿Œ ∞ÊøÏ scale¿Ã 0
+            // BUG-32571: TargetTypeÏù¥ FLOATÏù∏ Í≤ΩÏö∞ scaleÏù¥ 0
             if(aDescRecIpd->mMeta.mMTYPE != ULN_MTYPE_FLOAT)
             {
-                // ex) -88888.44444 (10, 5): scale 6∞° µ«æÓ error 
+                // ex) -88888.44444 (10, 5): scale 6Í∞Ä ÎêòÏñ¥ error 
                 ACI_TEST_RAISE(sScale > aDescRecIpd->mMeta.mOdbcScale, InvalidScaleSize );
             }
 
@@ -1798,7 +1798,7 @@ ACI_RC ulnParamDataInBuildAny_OLD(ulnFnContext *aFnContext,
     sCTYPE = sApdMeta->mCTYPE;
 
     // proj_2160 cm_type removal
-    // ¿Ã «‘ºˆ∏¶ ≈∏∏È æ»µ»¥Ÿ. ¿œ¥‹ assert∑Œ ∏∑æ∆µ–¥Ÿ
+    // Ïù¥ Ìï®ÏàòÎ•º ÌÉÄÎ©¥ ÏïàÎêúÎã§. ÏùºÎã® assertÎ°ú ÎßâÏïÑÎëîÎã§
     /* BUG-35242 ALTI-PCM-002 Coding Convention Violation in UL module */
     acpPrintf( "parameter binding of [%d to %d] is not supported\n",
                sCTYPE,
@@ -2607,8 +2607,8 @@ ACI_RC ulnParamDataInBuildAny_FLOAT_REAL(ulnFnContext *aFnContext,
 
     if (aUserDataPtr == NULL || aUserOctetLength == SQL_NULL_DATA)
     {
-        // mtdRealNull(acp_uint32_t)¿ª sRealValue∑Œ casting«œ∏È æ»µ 
-        // ∞™¿Ã ∫Ø«—¥Ÿ. cf) 0x7fffffff -> 0x80000000
+        // mtdRealNull(acp_uint32_t)ÏùÑ sRealValueÎ°ú castingÌïòÎ©¥ ÏïàÎê®
+        // Í∞íÏù¥ Î≥ÄÌïúÎã§. cf) 0x7fffffff -> 0x80000000
         ULN_CHUNK_WR4(sStmt, &mtcdRealNull);
     }
     else
@@ -2647,8 +2647,8 @@ ACI_RC ulnParamDataInBuildAny_DOUBLE_DOUBLE(ulnFnContext *aFnContext,
 
     if (aUserDataPtr == NULL || aUserOctetLength == SQL_NULL_DATA)
     {
-        // mtdDoubleNull(acp_uint64_t)¿ª sDoubleValue∑Œ casting«œ∏È æ»µ 
-        // ∞™¿Ã ∫Ø«—¥Ÿ. cf) 0x7fffffffffffffff -> 0x43e0000000000000
+        // mtdDoubleNull(acp_uint64_t)ÏùÑ sDoubleValueÎ°ú castingÌïòÎ©¥ ÏïàÎê®
+        // Í∞íÏù¥ Î≥ÄÌïúÎã§. cf) 0x7fffffffffffffff -> 0x43e0000000000000
         ULN_CHUNK_WR8(sStmt, &mtcdDoubleNull);
     }
     else
@@ -2763,8 +2763,8 @@ ACI_RC ulnParamDataInBuildAny_BINARY_NCHAR(ulnFnContext *aFnContext,
                                    CONV_DATA_IN)
                  != ACI_SUCCESS);
 
-        // BUG-23645 ƒ≥∏Ø≈Õº¬ ∫Ø»ØΩ√ ≈¨∂Û¿Ãæ∆Æø°º≠ µ•¿Ã≈∏∏¶ ¿ﬂ∂Ûº≠ ∫∏≥¿¥œ¥Ÿ.
-        // º≠πˆ∑Œ ∫∏≥æ∂ß¥¬ ƒ¡πˆ¡Øµ» µ•¿Ã≈∏∏¶ ¿¸∫Œ ∫∏≥Ω¥Ÿ.
+        // BUG-23645 Ï∫êÎ¶≠ÌÑ∞ÏÖã Î≥ÄÌôòÏãú ÌÅ¥ÎùºÏù¥Ïñ∏Ìä∏ÏóêÏÑú Îç∞Ïù¥ÌÉÄÎ•º ÏûòÎùºÏÑú Î≥¥ÎÉÖÎãàÎã§.
+        // ÏÑúÎ≤ÑÎ°ú Î≥¥ÎÇºÎïåÎäî Ïª®Î≤ÑÏ†ºÎêú Îç∞Ïù¥ÌÉÄÎ•º Ï†ÑÎ∂Ä Î≥¥ÎÇ∏Îã§.
         sCopyLen = aCharSet->mDestLen;
         ULN_CHUNK_WR2(sStmt, &sCopyLen);
         ULN_CHUNK_WCP(sStmt, ulnCharSetGetConvertedText(aCharSet), sCopyLen);
@@ -2895,7 +2895,7 @@ ACI_RC ulnParamDataInBuildAny_BINARY_BIT(ulnFnContext *aFnContext,
     else
     {
         sLen32   = *((acp_uint32_t*)aUserDataPtr);
-        // precision ∞™¿∏∑Œ∫Œ≈Õ Ω«¡¶ byte ±Ê¿Ã∏¶ ±∏«—¥Ÿ
+        // precision Í∞íÏúºÎ°úÎ∂ÄÌÑ∞ Ïã§Ï†ú byte Í∏∏Ïù¥Î•º Íµ¨ÌïúÎã§
         sByteLen = BIT_TO_BYTE(sLen32);
         sMinRequiredBytes = ACI_SIZEOF(acp_uint32_t) + sByteLen;
         ACI_TEST_RAISE(sUserDataLength < sMinRequiredBytes, LABEL_INVALID_DATA_SIZE);
@@ -2963,10 +2963,10 @@ ACI_RC ulnParamDataInBuildAny_BINARY_NIBBLE(ulnFnContext *aFnContext,
     else
     {
         sLen8 = *((acp_uint8_t*)aUserDataPtr);
-        // BUG-23061 nibble ¿« √÷¥Î±Ê¿Ã∞° 254¿‘¥œ¥Ÿ.
+        // BUG-23061 nibble Ïùò ÏµúÎåÄÍ∏∏Ïù¥Í∞Ä 254ÏûÖÎãàÎã§.
         ACI_TEST_RAISE(sLen8 > MTD_NIBBLE_PRECISION_MAXIMUM,
                        LABEL_INVALID_DATA_SIZE);
-        // precision ∞™¿∏∑Œ∫Œ≈Õ Ω«¡¶ byte ±Ê¿Ã∏¶ ±∏«—¥Ÿ
+        // precision Í∞íÏúºÎ°úÎ∂ÄÌÑ∞ Ïã§Ï†ú byte Í∏∏Ïù¥Î•º Íµ¨ÌïúÎã§
         sByteLen  = (sLen8 + 1)/2;
         sMinRequiredBytes = ACI_SIZEOF(acp_uint8_t) + sByteLen;
         ACI_TEST_RAISE(sUserDataLength < sMinRequiredBytes, LABEL_INVALID_DATA_SIZE);
@@ -3332,9 +3332,9 @@ ACI_RC ulnParamDataInBuildAny_BINARY_INTERVAL(ulnFnContext *aFnContext,
                                                   ulnCharSet   *aCharSet)
 {
     /*
-     * NOTE : Altibase ø°¥¬ interval ≈∏¿‘¿∏∑Œ ƒ√∑≥¿ª ∏∏µÈ ºˆ æ¯¥Ÿ.
-     *        µ˚∂Ûº≠, interval ≈∏¿‘¿∫ fetch »§¿∫ outbinding ∏∏ ∞°¥…«œ∏Á,
-     *        insert ¥¬ ∫“∞°¥…«œ¥Ÿ.
+     * NOTE : Altibase ÏóêÎäî interval ÌÉÄÏûÖÏúºÎ°ú Ïª¨ÎüºÏùÑ ÎßåÎì§ Ïàò ÏóÜÎã§.
+     *        Îî∞ÎùºÏÑú, interval ÌÉÄÏûÖÏùÄ fetch ÌòπÏùÄ outbinding Îßå Í∞ÄÎä•ÌïòÎ©∞,
+     *        insert Îäî Î∂àÍ∞ÄÎä•ÌïòÎã§.
      */
     // proj_2160 cm_type removal
     // this callback never be called.

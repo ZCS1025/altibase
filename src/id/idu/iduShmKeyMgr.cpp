@@ -37,29 +37,29 @@ iduShmKeyMgr::~iduShmKeyMgr()
 }
 
 /*
-   ´ÙÀ½ »ç¿ëÇÒ °øÀ¯¸Ş¸ğ¸® Key ÈÄº¸¸¦ Ã£¾Æ ¸®ÅÏÇÑ´Ù.
+   ë‹¤ìŒ ì‚¬ìš©í•  ê³µìœ ë©”ëª¨ë¦¬ Key í›„ë³´ë¥¼ ì°¾ì•„ ë¦¬í„´í•œë‹¤.
 
-   ÈÄº¸ÀÎ ÀÌÀ¯ :
-     ÇØ´ç Key¸¦ ÀÌ¿ëÇÏ¿© »õ °øÀ¯¸Ş¸ğ¸® ¿µ¿ªÀ» »ı¼ºÇÒ ¼ö ÀÖÀ» ¼öµµ ÀÖ°í
-     ÀÌ¹Ì ÇØ´ç Key·Î °øÀ¯¸Ş¸ğ¸® ¿µ¿ªÀÌ »ı¼ºµÇ¾î ÀÖÀ» ¼öµµ ÀÖ±â ¶§¹®.
+   í›„ë³´ì¸ ì´ìœ  :
+     í•´ë‹¹ Keyë¥¼ ì´ìš©í•˜ì—¬ ìƒˆ ê³µìœ ë©”ëª¨ë¦¬ ì˜ì—­ì„ ìƒì„±í•  ìˆ˜ ìˆì„ ìˆ˜ë„ ìˆê³ 
+     ì´ë¯¸ í•´ë‹¹ Keyë¡œ ê³µìœ ë©”ëª¨ë¦¬ ì˜ì—­ì´ ìƒì„±ë˜ì–´ ìˆì„ ìˆ˜ë„ ìˆê¸° ë•Œë¬¸.
 
-   aShmKeyCandidate [OUT] 0 : °øÀ¯¸Ş¸ğ¸® Key ÈÄº¸°¡ ¾øÀ½
-                          Otherwise : »ç¿ëÇÒ ¼ö ÀÖ´Â °øÀ¯¸Ş¸ğ¸® Key ÈÄº¸
+   aShmKeyCandidate [OUT] 0 : ê³µìœ ë©”ëª¨ë¦¬ Key í›„ë³´ê°€ ì—†ìŒ
+                          Otherwise : ì‚¬ìš©í•  ìˆ˜ ìˆëŠ” ê³µìœ ë©”ëª¨ë¦¬ Key í›„ë³´
 
    PROJ-1548 Memory Tablespace
-   - mSeekKey¿¡ ´ëÇÑ µ¿½Ã¼º Á¦¾î¸¦ ÇÏ´Â ÀÌÀ¯
-     - mSeekKey´Â ¿©·¯ Tx°¡ µ¿½Ã¿¡ Á¢±ÙÇÒ ¼ö ÀÖ´Ù.
-     - mSeekKey´Â ¿©·¯ Tablespace¿¡¼­ µ¿½Ã¿¡ Á¢±ÙÇÒ ¼ö ÀÖ´Ù.
+   - mSeekKeyì— ëŒ€í•œ ë™ì‹œì„± ì œì–´ë¥¼ í•˜ëŠ” ì´ìœ 
+     - mSeekKeyëŠ” ì—¬ëŸ¬ Txê°€ ë™ì‹œì— ì ‘ê·¼í•  ìˆ˜ ìˆë‹¤.
+     - mSeekKeyëŠ” ì—¬ëŸ¬ Tablespaceì—ì„œ ë™ì‹œì— ì ‘ê·¼í•  ìˆ˜ ìˆë‹¤.
 
-  - °¡´ÉÇÏ¸é ÀÌÀü¿¡ ´Ù¸¥ Tablespace¿¡¼­ »ç¿ëµÇ¾ú´ø Key¸¦
-     ÀçÈ°¿ëÇÏ¿© »ç¿ëÇÑ´Ù.
+  - ê°€ëŠ¥í•˜ë©´ ì´ì „ì— ë‹¤ë¥¸ Tablespaceì—ì„œ ì‚¬ìš©ë˜ì—ˆë˜ Keyë¥¼
+     ì¬í™œìš©í•˜ì—¬ ì‚¬ìš©í•œë‹¤.
 */
 IDE_RC iduShmKeyMgr::getShmKeyCandidate( key_t * aShmKeyCandidate )
 {
     IDE_ASSERT( mSSegment != NULL );
     IDE_ASSERT( aShmKeyCandidate != NULL );
 
-    // »ç¿ëÇÒ ¼ö ÀÖ´Â KeyÈÄº¸°¡ ÀÖ´Â°¡?
+    // ì‚¬ìš©í•  ìˆ˜ ìˆëŠ” Keyí›„ë³´ê°€ ìˆëŠ”ê°€?
     if( mSSegment->mNxtShmKey > IDU_MIN_SHM_KEY_CANDIDATE )
     {
         *aShmKeyCandidate = --mSSegment->mNxtShmKey;
@@ -84,7 +84,7 @@ IDE_RC iduShmKeyMgr::getShmKeyCandidate( key_t * aShmKeyCandidate )
 }
 
 /*
- * shmShmKeyMgrÀÇ static ÃÊ±âÈ­ ¼öÇà
+ * shmShmKeyMgrì˜ static ì´ˆê¸°í™” ìˆ˜í–‰
  */
 IDE_RC iduShmKeyMgr::initializeStatic( iduShmSSegment *aSSegment )
 {
@@ -94,7 +94,7 @@ IDE_RC iduShmKeyMgr::initializeStatic( iduShmSSegment *aSSegment )
 }
 
 /*
- * shmShmKeyMgrÀÇ static ÆÄ±« ¼öÇà
+ * shmShmKeyMgrì˜ static íŒŒê´´ ìˆ˜í–‰
  */
 IDE_RC iduShmKeyMgr::destroyStatic()
 {

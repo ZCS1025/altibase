@@ -159,19 +159,19 @@ mtdModule mtcdVarbit = {
     {
         // Key Comparison
         {
-            // mt valueµé °£ÀÇ compare 
+            // mt valueë“¤ ê°„ì˜ compare 
             mtdVarbitMtdMtdKeyAscComp, // Ascending Key Comparison
             mtdVarbitMtdMtdKeyDescComp // Descending Key Comparison
         }
         ,
         {
-            // mt value¿Í stored value°£ÀÇ compare 
+            // mt valueì™€ stored valueê°„ì˜ compare 
             mtdVarbitStoredMtdKeyAscComp, // Ascending Key Comparison
             mtdVarbitStoredMtdKeyDescComp // Descending Key Comparison
         }
         ,
         {
-            // stored valueµé °£ÀÇ compare 
+            // stored valueë“¤ ê°„ì˜ compare 
             mtdVarbitStoredStoredKeyAscComp, // Ascending Key Comparison
             mtdVarbitStoredStoredKeyDescComp // Descending Key Comparison
         }
@@ -196,7 +196,7 @@ ACI_RC mtdInitializeVarbit( acp_uint32_t aNo )
 {
     ACI_TEST( mtdInitializeModule( &mtcdVarbit, aNo ) != ACI_SUCCESS );
     
-    // mtdColumnÀÇ ÃÊ±âÈ­
+    // mtdColumnì˜ ì´ˆê¸°í™”
     ACI_TEST( mtcInitializeColumn( & mtdColumn,
                                    & mtcdVarbit,
                                    0,   // arguments
@@ -307,7 +307,7 @@ ACI_RC mtdValue( mtcTemplate*  aTemplate ,
             {
                 ACI_TEST_RAISE( sBinary[sToken[0]] > 1, ERR_INVALID_LITERAL );
 
-                // °ª ³Ö±â Àü¿¡ 0À¸·Î ÃÊ±âÈ­
+                // ê°’ ë„£ê¸° ì „ì— 0ìœ¼ë¡œ ì´ˆê¸°í™”
                 acpMemSet( sIterator,
                            0x00,
                            1 );
@@ -329,7 +329,7 @@ ACI_RC mtdValue( mtcTemplate*  aTemplate ,
             }
         }
 
-        // precision, scale Àç ¼³Á¤ ÈÄ, estimate·Î semantic °Ë»ç
+        // precision, scale ì¬ ì„¤ì • í›„, estimateë¡œ semantic ê²€ì‚¬
         aColumn->flag            = 1;
         aColumn->precision       = sValue->length != 0 ? sValue->length : 1;
         aColumn->scale           = 0;
@@ -477,7 +477,7 @@ mtdVarbitMtdMtdKeyAscComp( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd Å¸ÀÔÀÇ Keyµé °£ÀÇ ascending compare
+ * Description : Mtd íƒ€ì…ì˜ Keyë“¤ ê°„ì˜ ascending compare
  *
  * Implementation :
  *
@@ -553,7 +553,7 @@ mtdVarbitMtdMtdKeyDescComp( mtdValueInfo* aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd Å¸ÀÔÀÇ Keyµé °£ÀÇ descending compare
+ * Description : Mtd íƒ€ì…ì˜ Keyë“¤ ê°„ì˜ descending compare
  *
  * Implementation :
  *
@@ -628,7 +628,7 @@ mtdVarbitStoredMtdKeyAscComp( mtdValueInfo* aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd Å¸ÀÔÀÇ Key¿Í Stored Key °£ÀÇ ascending compare
+ * Description : Mtd íƒ€ì…ì˜ Keyì™€ Stored Key ê°„ì˜ ascending compare
  *
  * Implementation :
  *
@@ -663,10 +663,10 @@ mtdVarbitStoredMtdKeyAscComp( mtdValueInfo* aValueInfo1,
 
     if( sLength1 != 0 && sLength2 != 0 )
     {
-        // length°¡ 0ÀÌ ¾Æ´Ñ °æ¿ì(Áï, NULL value°¡ ¾Æ´Ñ °æ¿ì)¿¡ 
-        // aValueInfo1->value¿¡´Â varbit value°¡ ÀúÀåµÇ¾î ÀÖÀ½
-        // ( varbit value´Â (length + value) ÀÌ°í,
-        //   NULL value°¡ ¾Æ´Ñ °æ¿ì¿¡ length Á¤º¸¸¦ ÀĞ¾î¿Ã ¼ö ÀÖÀ½ )
+        // lengthê°€ 0ì´ ì•„ë‹Œ ê²½ìš°(ì¦‰, NULL valueê°€ ì•„ë‹Œ ê²½ìš°)ì— 
+        // aValueInfo1->valueì—ëŠ” varbit valueê°€ ì €ì¥ë˜ì–´ ìˆìŒ
+        // ( varbit valueëŠ” (length + value) ì´ê³ ,
+        //   NULL valueê°€ ì•„ë‹Œ ê²½ìš°ì— length ì •ë³´ë¥¼ ì½ì–´ì˜¬ ìˆ˜ ìˆìŒ )
         MTC_INT_BYTE_ASSIGN( &sLength1, aValueInfo1->value );
         sValue1  = ((acp_uint8_t*)aValueInfo1->value) + mtdHeaderSize();
         
@@ -704,7 +704,7 @@ mtdVarbitStoredMtdKeyDescComp( mtdValueInfo* aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd Å¸ÀÔÀÇ Key¿Í Stored Key °£ÀÇ descending compare
+ * Description : Mtd íƒ€ì…ì˜ Keyì™€ Stored Key ê°„ì˜ descending compare
  *
  * Implementation :
  *
@@ -739,10 +739,10 @@ mtdVarbitStoredMtdKeyDescComp( mtdValueInfo* aValueInfo1,
     
     if( sLength1 != 0 && sLength2 != 0 )
     {
-        // length°¡ 0ÀÌ ¾Æ´Ñ °æ¿ì(Áï, NULL value°¡ ¾Æ´Ñ °æ¿ì)¿¡ 
-        // aValueInfo1->value¿¡´Â varbit value°¡ ÀúÀåµÇ¾î ÀÖÀ½
-        // ( varbit value´Â (length + value) ÀÌ°í,
-        //   NULL value°¡ ¾Æ´Ñ °æ¿ì¿¡ length Á¤º¸¸¦ ÀĞ¾î¿Ã ¼ö ÀÖÀ½ )
+        // lengthê°€ 0ì´ ì•„ë‹Œ ê²½ìš°(ì¦‰, NULL valueê°€ ì•„ë‹Œ ê²½ìš°)ì— 
+        // aValueInfo1->valueì—ëŠ” varbit valueê°€ ì €ì¥ë˜ì–´ ìˆìŒ
+        // ( varbit valueëŠ” (length + value) ì´ê³ ,
+        //   NULL valueê°€ ì•„ë‹Œ ê²½ìš°ì— length ì •ë³´ë¥¼ ì½ì–´ì˜¬ ìˆ˜ ìˆìŒ )
         MTC_INT_BYTE_ASSIGN( &sLength1, aValueInfo1->value );
         sValue1  = ((acp_uint8_t*)aValueInfo1->value) + mtdHeaderSize();
         
@@ -779,7 +779,7 @@ mtdVarbitStoredStoredKeyAscComp( mtdValueInfo* aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Stored Keyµé °£ÀÇ ascending compare
+ * Description : Stored Keyë“¤ ê°„ì˜ ascending compare
  *
  * Implementation :
  *
@@ -808,10 +808,10 @@ mtdVarbitStoredStoredKeyAscComp( mtdValueInfo* aValueInfo1,
 
     if( sLength1 != 0 && sLength2 != 0 )
     {
-        // length°¡ 0ÀÌ ¾Æ´Ñ °æ¿ì(Áï, NULL value°¡ ¾Æ´Ñ °æ¿ì)¿¡ 
-        // aValueInfo1->value¿¡´Â varbit value°¡ ÀúÀåµÇ¾î ÀÖÀ½
-        // ( varbit value´Â (length + value) ÀÌ°í,
-        //   NULL value°¡ ¾Æ´Ñ °æ¿ì¿¡ length Á¤º¸¸¦ ÀĞ¾î¿Ã ¼ö ÀÖÀ½ )
+        // lengthê°€ 0ì´ ì•„ë‹Œ ê²½ìš°(ì¦‰, NULL valueê°€ ì•„ë‹Œ ê²½ìš°)ì— 
+        // aValueInfo1->valueì—ëŠ” varbit valueê°€ ì €ì¥ë˜ì–´ ìˆìŒ
+        // ( varbit valueëŠ” (length + value) ì´ê³ ,
+        //   NULL valueê°€ ì•„ë‹Œ ê²½ìš°ì— length ì •ë³´ë¥¼ ì½ì–´ì˜¬ ìˆ˜ ìˆìŒ )
         MTC_INT_BYTE_ASSIGN( &sLength1, aValueInfo1->value );
         sValue1  = ((acp_uint8_t*)aValueInfo1->value) + mtdHeaderSize();
 
@@ -850,7 +850,7 @@ mtdVarbitStoredStoredKeyDescComp( mtdValueInfo* aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Stored Keyµé °£ÀÇ descending compare
+ * Description : Stored Keyë“¤ ê°„ì˜ descending compare
  *
  * Implementation :
  *
@@ -879,10 +879,10 @@ mtdVarbitStoredStoredKeyDescComp( mtdValueInfo* aValueInfo1,
     
     if( sLength1 != 0 && sLength2 != 0 )
     {
-        // length°¡ 0ÀÌ ¾Æ´Ñ °æ¿ì(Áï, NULL value°¡ ¾Æ´Ñ °æ¿ì)¿¡ 
-        // aValueInfo1->value¿¡´Â varbit value°¡ ÀúÀåµÇ¾î ÀÖÀ½
-        // ( varbit value´Â (length + value) ÀÌ°í,
-        //   NULL value°¡ ¾Æ´Ñ °æ¿ì¿¡ length Á¤º¸¸¦ ÀĞ¾î¿Ã ¼ö ÀÖÀ½ ) 
+        // lengthê°€ 0ì´ ì•„ë‹Œ ê²½ìš°(ì¦‰, NULL valueê°€ ì•„ë‹Œ ê²½ìš°)ì— 
+        // aValueInfo1->valueì—ëŠ” varbit valueê°€ ì €ì¥ë˜ì–´ ìˆìŒ
+        // ( varbit valueëŠ” (length + value) ì´ê³ ,
+        //   NULL valueê°€ ì•„ë‹Œ ê²½ìš°ì— length ì •ë³´ë¥¼ ì½ì–´ì˜¬ ìˆ˜ ìˆìŒ ) 
         MTC_INT_BYTE_ASSIGN( &sLength1, aValueInfo1->value );
         sValue1  = ((acp_uint8_t*)aValueInfo1->value) + mtdHeaderSize();
 
@@ -964,7 +964,7 @@ ACI_RC mtdValidate( mtcColumn*   aColumn,
 {
 /***********************************************************************
  *
- * Description : valueÀÇ semantic °Ë»ç ¹× mtcColum ÃÊ±âÈ­
+ * Description : valueì˜ semantic ê²€ì‚¬ ë° mtcColum ì´ˆê¸°í™”
  *
  * Implementation :
  *
@@ -977,9 +977,9 @@ ACI_RC mtdValidate( mtcColumn*   aColumn,
     ACI_TEST_RAISE( BIT_TO_BYTE(sVal->length) + sizeof(acp_uint32_t) != aValueSize,
                     ERR_INVALID_LENGTH );
 
-    // ÃÊ±âÈ­µÈ aColumnÀº cannonize() ½Ã¿¡ »ç¿ë
-    // ÀÌ¶§, data type moduleÀÇ precision Á¤º¸¸¸À» »ç¿ëÇÏ¹Ç·Î,
-    // language Á¤º¸ ¼³Á¤ÇÒ ÇÊ¿ä¾øÀ½ 
+    // ì´ˆê¸°í™”ëœ aColumnì€ cannonize() ì‹œì— ì‚¬ìš©
+    // ì´ë•Œ, data type moduleì˜ precision ì •ë³´ë§Œì„ ì‚¬ìš©í•˜ë¯€ë¡œ,
+    // language ì •ë³´ ì„¤ì •í•  í•„ìš”ì—†ìŒ 
     ACI_TEST( mtcInitializeColumn( aColumn,
                                    & mtcdVarbit,
                                    1,              // arguments
@@ -1010,8 +1010,8 @@ static ACI_RC mtdStoredValue2MtdValue( acp_uint32_t aColumnSize,
 {
 /*******************************************************************
  * PROJ-1705
- * µğ½ºÅ©Å×ÀÌºíÄÃ·³ÀÇ µ¥ÀÌÅ¸¸¦
- * qp ·¹ÄÚµåÃ³¸®¿µ¿ªÀÇ ÇØ´ç ÄÃ·³À§Ä¡¿¡ º¹»ç
+ * ë””ìŠ¤í¬í…Œì´ë¸”ì»¬ëŸ¼ì˜ ë°ì´íƒ€ë¥¼
+ * qp ë ˆì½”ë“œì²˜ë¦¬ì˜ì—­ì˜ í•´ë‹¹ ì»¬ëŸ¼ìœ„ì¹˜ì— ë³µì‚¬
  *******************************************************************/
 
     mtdBitType  * sVarbitValue;
@@ -1020,14 +1020,14 @@ static ACI_RC mtdStoredValue2MtdValue( acp_uint32_t aColumnSize,
     
     if( ( aDestValueOffset == 0 ) && ( aLength == 0 ) )
     {
-        // NULL µ¥ÀÌÅ¸
+        // NULL ë°ì´íƒ€
         sVarbitValue->length = 0;
     }
     else
     {
-        // bit typeÀº mtdDataTypeÇüÅÂ·Î ÀúÀåµÇ¹Ç·Î
-        // length ¿¡ header size°¡ Æ÷ÇÔµÇ¾î ÀÖ¾î 
-        // ¿©±â¼­ º°µµÀÇ °è»êÀ» ÇÏÁö ¾Ê¾Æµµ µÈ´Ù. 
+        // bit typeì€ mtdDataTypeí˜•íƒœë¡œ ì €ì¥ë˜ë¯€ë¡œ
+        // length ì— header sizeê°€ í¬í•¨ë˜ì–´ ìˆì–´ 
+        // ì—¬ê¸°ì„œ ë³„ë„ì˜ ê³„ì‚°ì„ í•˜ì§€ ì•Šì•„ë„ ëœë‹¤. 
         ACI_TEST_RAISE( (aDestValueOffset + aLength) > aColumnSize, ERR_INVALID_STORED_VALUE );
 
         acpMemCpy( (acp_uint8_t*)sVarbitValue + aDestValueOffset, aValue, aLength );
@@ -1050,9 +1050,9 @@ acp_uint32_t mtdNullValueSize()
 {
 /*******************************************************************
  * PROJ-1705
- * °¢ µ¥ÀÌÅ¸Å¸ÀÔÀÇ null ValueÀÇ Å©±â ¹İÈ¯
- * ¿¹ ) mtdBitType( acp_uint32_t length; acp_uint8_t value[1] ) ¿¡¼­
- *      lengthÅ¸ÀÔÀÎ UShortÀÇ Å©±â¸¦ ¹İÈ¯
+ * ê° ë°ì´íƒ€íƒ€ì…ì˜ null Valueì˜ í¬ê¸° ë°˜í™˜
+ * ì˜ˆ ) mtdBitType( acp_uint32_t length; acp_uint8_t value[1] ) ì—ì„œ
+ *      lengthíƒ€ì…ì¸ UShortì˜ í¬ê¸°ë¥¼ ë°˜í™˜
  *******************************************************************/
 
     return mtdActualSize( NULL,
@@ -1064,10 +1064,10 @@ static acp_uint32_t mtdHeaderSize()
 {
 /***********************************************************************
  * PROJ-1705
- * length¸¦ °¡Áö´Â µ¥ÀÌÅ¸Å¸ÀÔÀÇ length Á¤º¸¸¦ ÀúÀåÇÏ´Â º¯¼öÀÇ Å©±â ¹İÈ¯
- * ¿¹ ) mtdBitType( acp_uint32_t length; acp_uint8_t value[1] ) ¿¡¼­
- *      lengthÅ¸ÀÔÀÎ UShortÀÇ Å©±â¸¦ ¹İÈ¯
- *  integer¿Í °°Àº °íÁ¤±æÀÌ µ¥ÀÌÅ¸Å¸ÀÔÀº 0 ¹İÈ¯
+ * lengthë¥¼ ê°€ì§€ëŠ” ë°ì´íƒ€íƒ€ì…ì˜ length ì •ë³´ë¥¼ ì €ì¥í•˜ëŠ” ë³€ìˆ˜ì˜ í¬ê¸° ë°˜í™˜
+ * ì˜ˆ ) mtdBitType( acp_uint32_t length; acp_uint8_t value[1] ) ì—ì„œ
+ *      lengthíƒ€ì…ì¸ UShortì˜ í¬ê¸°ë¥¼ ë°˜í™˜
+ *  integerì™€ ê°™ì€ ê³ ì •ê¸¸ì´ ë°ì´íƒ€íƒ€ì…ì€ 0 ë°˜í™˜
  **********************************************************************/
 
     return sizeof(acp_uint32_t);

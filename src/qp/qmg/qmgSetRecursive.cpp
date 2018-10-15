@@ -19,11 +19,11 @@
  * $Id: qmgSetRecursive.cpp 82075 2018-01-17 06:39:52Z jina.kim $
  *
  * Description :
- *     RECURSIVE UNION ALL Graph¸¦ À§ÇÑ ¼öÇà ÇÔ¼ö
+ *     RECURSIVE UNION ALL Graphë¥¼ ìœ„í•œ ìˆ˜í–‰ í•¨ìˆ˜
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  **********************************************************************/
 
@@ -45,12 +45,12 @@ IDE_RC qmgSetRecursive::init( qcStatement * aStatement,
 {
 /***********************************************************************
  *
- * Description : qmgSetRecursiveÀÇ ÃÊ±âÈ­
+ * Description : qmgSetRecursiveì˜ ì´ˆê¸°í™”
  *
  * Implementation :
- *    (1) qmgSetRecursiveÀ» À§ÇÑ °ø°£ ÇÒ´ç
- *    (2) graph( ¸ðµç Graph¸¦ À§ÇÑ °øÅë ÀÚ·á ±¸Á¶ ) ÃÊ±âÈ­
- *    (3) out ¼³Á¤
+ *    (1) qmgSetRecursiveì„ ìœ„í•œ ê³µê°„ í• ë‹¹
+ *    (2) graph( ëª¨ë“  Graphë¥¼ ìœ„í•œ ê³µí†µ ìžë£Œ êµ¬ì¡° ) ì´ˆê¸°í™”
+ *    (3) out ì„¤ì •
  *
  ***********************************************************************/
 
@@ -59,7 +59,7 @@ IDE_RC qmgSetRecursive::init( qcStatement * aStatement,
     IDU_FIT_POINT_FATAL( "qmgSetRecursive::init::__FT__" );
 
     //---------------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //---------------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -68,16 +68,16 @@ IDE_RC qmgSetRecursive::init( qcStatement * aStatement,
     IDE_DASSERT( aRightGraph != NULL );
 
     //---------------------------------------------------
-    // Set Graph¸¦ À§ÇÑ ±âº» ÃÊ±âÈ­
+    // Set Graphë¥¼ ìœ„í•œ ê¸°ë³¸ ì´ˆê¸°í™”
     //---------------------------------------------------
 
-    // qmgSetRecursiveÀ» À§ÇÑ °ø°£ ÇÒ´ç
+    // qmgSetRecursiveì„ ìœ„í•œ ê³µê°„ í• ë‹¹
     IDU_FIT_POINT( "qmgSetRecursive::init::alloc::sMyGraph" );
     IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF( qmgRUNION ),
                                              (void**) & sMyGraph )
               != IDE_SUCCESS );
 
-    // Graph °øÅë Á¤º¸ÀÇ ÃÊ±âÈ­
+    // Graph ê³µí†µ ì •ë³´ì˜ ì´ˆê¸°í™”
     IDE_TEST( qmg::initGraph( & sMyGraph->graph ) != IDE_SUCCESS );
 
     sMyGraph->graph.type = QMG_RECURSIVE_UNION_ALL;
@@ -90,8 +90,8 @@ IDE_RC qmgSetRecursive::init( qcStatement * aStatement,
     sMyGraph->recursiveViewGraph = aRecursiveViewGraph;
 
     // PROJ-1358
-    // SETÀÇ °æ¿ì ChildÀÇ Dependency¸¦ ´©ÀûÇÏÁö ¾Ê°í,
-    // ÀÚ½ÅÀÇ VIEW¿¡ ´ëÇÑ dependency¸¸ ¼³Á¤ÇÑ´Ù.
+    // SETì˜ ê²½ìš° Childì˜ Dependencyë¥¼ ëˆ„ì í•˜ì§€ ì•Šê³ ,
+    // ìžì‹ ì˜ VIEWì— ëŒ€í•œ dependencyë§Œ ì„¤ì •í•œë‹¤.
     qtc::dependencySetWithDep( & sMyGraph->graph.depInfo,
                                & aQuerySet->depInfo );
 
@@ -99,11 +99,11 @@ IDE_RC qmgSetRecursive::init( qcStatement * aStatement,
     sMyGraph->graph.makePlan = qmgSetRecursive::makePlan;
     sMyGraph->graph.printGraph = qmgSetRecursive::printGraph;
 
-    // MEMORY ¸¸ Áö¿øÇÑ´Ù.
+    // MEMORY ë§Œ ì§€ì›í•œë‹¤.
     sMyGraph->graph.flag &= ~QMG_GRAPH_TYPE_MASK;
     sMyGraph->graph.flag |= QMG_GRAPH_TYPE_MEMORY;
 
-    // out ¼³Á¤
+    // out ì„¤ì •
     *aGraph = (qmgGraph*)sMyGraph;
 
     return IDE_SUCCESS;
@@ -118,11 +118,11 @@ IDE_RC qmgSetRecursive::optimize( qcStatement * aStatement,
 {
 /***********************************************************************
  *
- * Description : qmgSetRecursiveÀÇ ÃÖÀûÈ­
+ * Description : qmgSetRecursiveì˜ ìµœì í™”
  *
  * Implementation :
- *    (1) ÃÊ±âÈ­
- *    (2) °øÅë ºñ¿ë Á¤º¸ ¼³Á¤
+ *    (1) ì´ˆê¸°í™”
+ *    (2) ê³µí†µ ë¹„ìš© ì •ë³´ ì„¤ì •
  *    (3) Preserved Order
  *
  ***********************************************************************/
@@ -133,27 +133,27 @@ IDE_RC qmgSetRecursive::optimize( qcStatement * aStatement,
     IDU_FIT_POINT_FATAL( "qmgSetRecursive::optimize::__FT__" );
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aGraph != NULL );
 
     //------------------------------------------
-    // ±âº» ÃÊ±âÈ­
+    // ê¸°ë³¸ ì´ˆê¸°í™”
     //------------------------------------------
 
     sMyGraph = (qmgRUNION*) aGraph;
 
     //------------------------------------------
-    // cost °è»ê
+    // cost ê³„ì‚°
     //------------------------------------------
 
     sMyGraph->graph.costInfo.myAccessCost = 0;
     sMyGraph->graph.costInfo.myDiskCost   = 0;
 
     //------------------------------------------
-    // °øÅë ºñ¿ë Á¤º¸ÀÇ ¼³Á¤
+    // ê³µí†µ ë¹„ìš© ì •ë³´ì˜ ì„¤ì •
     //------------------------------------------
 
     // record size
@@ -183,7 +183,7 @@ IDE_RC qmgSetRecursive::optimize( qcStatement * aStatement,
     sMyGraph->graph.costInfo.myDiskCost   = 0;   
 
     // myCost
-    // My Access Cost¿Í My Disk Cost´Â ÀÌ¹Ì °è»êµÊ.
+    // My Access Costì™€ My Disk CostëŠ” ì´ë¯¸ ê³„ì‚°ë¨.
     sMyGraph->graph.costInfo.myAllCost =
         sMyGraph->graph.costInfo.myAccessCost +
         sMyGraph->graph.costInfo.myDiskCost;
@@ -199,7 +199,7 @@ IDE_RC qmgSetRecursive::optimize( qcStatement * aStatement,
         sMyGraph->graph.left->costInfo.totalAllCost +
         sMyGraph->graph.right->costInfo.totalAllCost;
 
-    // preserved order ¼³Á¤
+    // preserved order ì„¤ì •
     sMyGraph->graph.flag &= ~QMG_PRESERVED_ORDER_MASK;
     sMyGraph->graph.flag |= QMG_PRESERVED_ORDER_NEVER;
 
@@ -217,12 +217,12 @@ IDE_RC qmgSetRecursive::makePlan( qcStatement    * aStatement,
 {
 /***********************************************************************
  *
- * Description : qmgSetRecursiveÀ¸·Î ºÎÅÍ PlanÀ» »ý¼ºÇÑ´Ù.
+ * Description : qmgSetRecursiveìœ¼ë¡œ ë¶€í„° Planì„ ìƒì„±í•œë‹¤.
  *
  * Implementation :
- *     - qmgSetRecursiveÀ¸·Î ºÎÅÍ »ý¼º°¡´ÉÇÑ Plan
+ *     - qmgSetRecursiveìœ¼ë¡œ ë¶€í„° ìƒì„±ê°€ëŠ¥í•œ Plan
  *
- *               ( [PROJ] ) : parent°¡ SETÀÎ °æ¿ì »ý¼ºµÊ
+ *               ( [PROJ] ) : parentê°€ SETì¸ ê²½ìš° ìƒì„±ë¨
  *                   |
  *                 [VIEW]
  *                   |
@@ -237,7 +237,7 @@ IDE_RC qmgSetRecursive::makePlan( qcStatement    * aStatement,
     IDU_FIT_POINT_FATAL( "qmgSetRecursive::makePlan::__FT__" );
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -245,7 +245,7 @@ IDE_RC qmgSetRecursive::makePlan( qcStatement    * aStatement,
 
     sMyGraph = (qmgRUNION*) aGraph;
 
-    // parallel ¼öÇà ÇÏÁö ¸øÇÔ.
+    // parallel ìˆ˜í–‰ í•˜ì§€ ëª»í•¨.
     aGraph->flag &= ~QMG_PARALLEL_IMPOSSIBLE_MASK;
     aGraph->flag |= QMG_PARALLEL_IMPOSSIBLE_TRUE;
 
@@ -269,20 +269,20 @@ IDE_RC qmgSetRecursive::makeChild( qcStatement * aStatement,
     IDU_FIT_POINT_FATAL( "qmgSetRecursive::makeChild::__FT__" );
 
     // BUG-38410
-    // SCAN parallel flag ¸¦ ÀÚ½Ä ³ëµå·Î ¹°·ÁÁØ´Ù.
+    // SCAN parallel flag ë¥¼ ìžì‹ ë…¸ë“œë¡œ ë¬¼ë ¤ì¤€ë‹¤.
     aMyGraph->graph.left->flag  |= (aMyGraph->graph.flag &
                                     QMG_PLAN_EXEC_REPEATED_MASK);
     aMyGraph->graph.right->flag |= (aMyGraph->graph.flag &
                                     QMG_PLAN_EXEC_REPEATED_MASK);
 
-    /* ViewMtrÀ» »ý¼ºÇÏµµ·Ï Mask ¼³Á¤ */
+    /* ViewMtrì„ ìƒì„±í•˜ë„ë¡ Mask ì„¤ì • */
     aMyGraph->graph.left->flag &= ~QMG_PROJ_VIEW_OPT_TIP_VMTR_MASK;
     aMyGraph->graph.left->flag |= QMG_PROJ_VIEW_OPT_TIP_VMTR_TRUE;
 
     aMyGraph->graph.right->flag &= ~QMG_PROJ_VIEW_OPT_TIP_VMTR_MASK;
     aMyGraph->graph.right->flag |= QMG_PROJ_VIEW_OPT_TIP_VMTR_TRUE;
 
-    // Ç×»ó Memeory Temp Table À» ÀÌ¿ëÇÑ´Ù.
+    // í•­ìƒ Memeory Temp Table ì„ ì´ìš©í•œë‹¤.
     aMyGraph->graph.left->flag &= ~QMG_GRAPH_TYPE_MASK;
     aMyGraph->graph.left->flag |= QMG_GRAPH_TYPE_MEMORY;
 
@@ -312,7 +312,7 @@ IDE_RC qmgSetRecursive::makeUnionAllRecursive( qcStatement * aStatement,
 {
 /***********************************************************************
  *
- * Description : qmgSetRecursiveÀ¸·Î ºÎÅÍ PlanÀ» »ý¼ºÇÑ´Ù.
+ * Description : qmgSetRecursiveìœ¼ë¡œ ë¶€í„° Planì„ ìƒì„±í•œë‹¤.
  *
  * Implementation :
  *
@@ -334,7 +334,7 @@ IDE_RC qmgSetRecursive::makeUnionAllRecursive( qcStatement * aStatement,
     IDU_FIT_POINT_FATAL( "qmgSetRecursive::makeUnionAllRecursive::__FT__" );
 
     //----------------------------
-    // Top-down ÃÊ±âÈ­
+    // Top-down ì´ˆê¸°í™”
     //----------------------------
 
     //-----------------------
@@ -359,7 +359,7 @@ IDE_RC qmgSetRecursive::makeUnionAllRecursive( qcStatement * aStatement,
     aMyGraph->graph.myPlan = sSREC;
 
     //-----------------------
-    // ÇÏÀ§ plan »ý¼º
+    // í•˜ìœ„ plan ìƒì„±
     //-----------------------
 
     IDE_TEST( makeChild( aStatement,
@@ -367,7 +367,7 @@ IDE_RC qmgSetRecursive::makeUnionAllRecursive( qcStatement * aStatement,
               != IDE_SUCCESS );
 
     //----------------------------
-    // Bottom-up »ý¼º
+    // Bottom-up ìƒì„±
     //----------------------------
 
     //-----------------------
@@ -421,7 +421,7 @@ IDE_RC qmgSetRecursive::printGraph( qcStatement  * aStatement,
 /***********************************************************************
  *
  * Description :
- *    Graph¸¦ ±¸¼ºÇÏ´Â °øÅë Á¤º¸¸¦ Ãâ·ÂÇÑ´Ù.
+ *    Graphë¥¼ êµ¬ì„±í•˜ëŠ” ê³µí†µ ì •ë³´ë¥¼ ì¶œë ¥í•œë‹¤.
  *
  *
  * Implementation :
@@ -431,7 +431,7 @@ IDE_RC qmgSetRecursive::printGraph( qcStatement  * aStatement,
     IDU_FIT_POINT_FATAL( "qmgSetRecursive::printGraph::__FT__" );
 
     //-----------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //-----------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -439,7 +439,7 @@ IDE_RC qmgSetRecursive::printGraph( qcStatement  * aStatement,
     IDE_DASSERT( aString != NULL );
 
     //-----------------------------------
-    // Graph °øÅë Á¤º¸ÀÇ Ãâ·Â
+    // Graph ê³µí†µ ì •ë³´ì˜ ì¶œë ¥
     //-----------------------------------
 
     IDE_TEST( qmg::printGraph( aStatement,
@@ -449,12 +449,12 @@ IDE_RC qmgSetRecursive::printGraph( qcStatement  * aStatement,
               != IDE_SUCCESS );
 
     //-----------------------------------
-    // Graph °íÀ¯ Á¤º¸ÀÇ Ãâ·Â
+    // Graph ê³ ìœ  ì •ë³´ì˜ ì¶œë ¥
     //-----------------------------------
 
 
     //-----------------------------------
-    // Child Graph °íÀ¯ Á¤º¸ÀÇ Ãâ·Â
+    // Child Graph ê³ ìœ  ì •ë³´ì˜ ì¶œë ¥
     //-----------------------------------
 
     IDE_TEST( aGraph->left->printGraph( aStatement,

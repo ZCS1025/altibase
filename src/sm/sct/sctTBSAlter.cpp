@@ -32,7 +32,7 @@
 #include <sctTBSAlter.h>
 
 /*
-  »ı¼ºÀÚ (¾Æ¹«°Íµµ ¾ÈÇÔ)
+  ìƒì„±ì (ì•„ë¬´ê²ƒë„ ì•ˆí•¨)
 */
 sctTBSAlter::sctTBSAlter()
 {
@@ -40,24 +40,24 @@ sctTBSAlter::sctTBSAlter()
 }
 
 /*
-    Tablespace Attrbute FlagÀÇ º¯°æ ( ex> ALTER TABLESPACE LOG COMPRESS ON )
+    Tablespace Attrbute Flagì˜ ë³€ê²½ ( ex> ALTER TABLESPACE LOG COMPRESS ON )
     
     aTrans      [IN] Transaction
-    aSpaceID    [IN] TablespaceÀÇ ID
-    aAttrFlagMask             [IN] º¯°æÇÒ Attribute FlagÀÇ MASK
-    aAttrFlagNewValue         [IN] º¯°æÇÒ Attribute FlagÀÇ »õ·Î¿î °ª
+    aSpaceID    [IN] Tablespaceì˜ ID
+    aAttrFlagMask             [IN] ë³€ê²½í•  Attribute Flagì˜ MASK
+    aAttrFlagNewValue         [IN] ë³€ê²½í•  Attribute Flagì˜ ìƒˆë¡œìš´ ê°’
     
-    [ ¾Ë°í¸®Áò ]
+    [ ì•Œê³ ë¦¬ì¦˜ ]
       (010) lock TBSNode in X
-      (030) ·Î±ë½Ç½Ã => ALTER_TBS_ATTR_FLAG
-      (040) ATTR FLAG¸¦ º¯°æ 
-      (050) Tablespace Node¸¦ Log Anchor¿¡ Flush!
+      (030) ë¡œê¹…ì‹¤ì‹œ => ALTER_TBS_ATTR_FLAG
+      (040) ATTR FLAGë¥¼ ë³€ê²½ 
+      (050) Tablespace Nodeë¥¼ Log Anchorì— Flush!
       
-    [ ALTER_TBS_ATTR_FLAG ÀÇ REDO Ã³¸® ]
+    [ ALTER_TBS_ATTR_FLAG ì˜ REDO ì²˜ë¦¬ ]
       (r-010) TBSNode.AttrFlag := AfterImage.AttrFlag
 
-    [ ALTER_TBS_ATTR_FLAG ÀÇ UNDO Ã³¸® ]
-      (u-010) ·Î±ë½Ç½Ã -> CLR ( ALTER_TBS_ATTR_FLAG )
+    [ ALTER_TBS_ATTR_FLAG ì˜ UNDO ì²˜ë¦¬ ]
+      (u-010) ë¡œê¹…ì‹¤ì‹œ -> CLR ( ALTER_TBS_ATTR_FLAG )
       (u-020) TBSNode.AttrFlag := BeforeImage.AttrFlag
 */
 IDE_RC sctTBSAlter::alterTBSAttrFlag(void      * aTrans,
@@ -76,7 +76,7 @@ IDE_RC sctTBSAlter::alterTBSAttrFlag(void      * aTrans,
     IDE_DASSERT( aTrans != NULL );
 
     ///////////////////////////////////////////////////////////////////////////
-    // Tablespace ID·ÎºÎÅÍ Node¸¦ °¡Á®¿Â´Ù
+    // Tablespace IDë¡œë¶€í„° Nodeë¥¼ ê°€ì ¸ì˜¨ë‹¤
     IDE_TEST( sctTableSpaceMgr::lock( NULL ) != IDE_SUCCESS );
     sState = 1;
     
@@ -92,7 +92,7 @@ IDE_RC sctTBSAlter::alterTBSAttrFlag(void      * aTrans,
 
     ///////////////////////////////////////////////////////////////////////////
     // (010) lock TBSNode in X
-    //       DROPPED,DISCARD,OFFLINE ÀÎ °æ¿ì ¿©±â¿¡¼­ ¿¡·¯°¡ ¹ß»ıÇÑ´Ù.
+    //       DROPPED,DISCARD,OFFLINE ì¸ ê²½ìš° ì—¬ê¸°ì—ì„œ ì—ëŸ¬ê°€ ë°œìƒí•œë‹¤.
     IDE_TEST( sctTableSpaceMgr::lockTBSNode( 
                                    aTrans,
                                    sSpaceNode,
@@ -101,14 +101,14 @@ IDE_RC sctTBSAlter::alterTBSAttrFlag(void      * aTrans,
                                    SCT_VAL_DDL_DML) /* validation */
               != IDE_SUCCESS );
 
-    // Tablespace Attributeº¯°æÀ» À§ÇØ Attribute Pointer¸¦ °¡Á®¿Â´Ù
+    // Tablespace Attributeë³€ê²½ì„ ìœ„í•´ Attribute Pointerë¥¼ ê°€ì ¸ì˜¨ë‹¤
     IDE_TEST( sctTableSpaceMgr::getTBSAttrFlagPtrByID( sSpaceNode->mID,
                                                        & sAttrFlagPtr )
               != IDE_SUCCESS );
     
     
     ///////////////////////////////////////////////////////////////////////////
-    // (e-010) ÀÌ¹Ì ÇØ´ç Attribute°¡ ¼³Á¤µÇ¾î ÀÖ´Â °æ¿ì ¿¡·¯ 
+    // (e-010) ì´ë¯¸ í•´ë‹¹ Attributeê°€ ì„¤ì •ë˜ì–´ ìˆëŠ” ê²½ìš° ì—ëŸ¬ 
     IDE_TEST( checkErrorOnAttrFlag( sSpaceNode,
                                     *sAttrFlagPtr,
                                     aAttrFlagMask,
@@ -116,12 +116,12 @@ IDE_RC sctTBSAlter::alterTBSAttrFlag(void      * aTrans,
               != IDE_SUCCESS );
 
     sBeforeAttrFlag  = *sAttrFlagPtr;
-    // »õ·Î¿î AttrFlag := MASKºñÆ® ²ô°í NewValueºñÆ® Å²´Ù
+    // ìƒˆë¡œìš´ AttrFlag := MASKë¹„íŠ¸ ë„ê³  NewValueë¹„íŠ¸ í‚¨ë‹¤
     sAfterAttrFlag   = ( sBeforeAttrFlag & ~aAttrFlagMask ) |
                        aAttrFlagNewValue ;
     
     ///////////////////////////////////////////////////////////////////////////
-    // (030) ·Î±ë½Ç½Ã => ALTER_TBS_ATTR_FLAG
+    // (030) ë¡œê¹…ì‹¤ì‹œ => ALTER_TBS_ATTR_FLAG
     IDE_TEST( smLayerCallback::writeTBSAlterAttrFlag ( aTrans,
                                                        aTableSpaceID,
                                                        /* Before Image */
@@ -131,12 +131,12 @@ IDE_RC sctTBSAlter::alterTBSAttrFlag(void      * aTrans,
               != IDE_SUCCESS );
 
     ///////////////////////////////////////////////////////////////////////////
-    // (040) AttrFlag º¯°æ 
+    // (040) AttrFlag ë³€ê²½ 
     *sAttrFlagPtr  = sAfterAttrFlag;
 
 
     ///////////////////////////////////////////////////////////////////////////
-    // (050) Tablespace Node¸¦ Log Anchor¿¡ Flush!
+    // (050) Tablespace Nodeë¥¼ Log Anchorì— Flush!
     IDE_TEST( smLayerCallback::updateTBSNodeAndFlush( sSpaceNode ) 
               != IDE_SUCCESS );
     
@@ -155,8 +155,8 @@ IDE_RC sctTBSAlter::alterTBSAttrFlag(void      * aTrans,
             break;
     }
 
-    // (010)¿¡¼­ È¹µæÇÑ Tablespace X LockÀº UNDO¿Ï·áÈÄ ÀÚµ¿À¸·Î Ç®°ÔµÈ´Ù
-    // ¿©±â¼­ º°µµ Ã³¸®ÇÒ ÇÊ¿ä ¾øÀ½
+    // (010)ì—ì„œ íšë“í•œ Tablespace X Lockì€ UNDOì™„ë£Œí›„ ìë™ìœ¼ë¡œ í’€ê²Œëœë‹¤
+    // ì—¬ê¸°ì„œ ë³„ë„ ì²˜ë¦¬í•  í•„ìš” ì—†ìŒ
     
     IDE_POP();
     
@@ -164,19 +164,19 @@ IDE_RC sctTBSAlter::alterTBSAttrFlag(void      * aTrans,
 }
 
 /*
-    Tablespace Attrbute FlagÀÇ º¯°æ¿¡ ´ëÇÑ ¿¡·¯Ã³¸® 
-    aSpaceNode                [IN] TablespaceÀÇ Node
-    aCurrentAttrFlag          [IN] ÇöÀç Tablespace¿¡ ¼³Á¤µÈ Attribute Flag°ª
-    aAttrFlagMask             [IN] º¯°æÇÒ Attribute FlagÀÇ MASK
-    aAttrFlagNewValue         [IN] º¯°æÇÒ Attribute FlagÀÇ »õ·Î¿î °ª
+    Tablespace Attrbute Flagì˜ ë³€ê²½ì— ëŒ€í•œ ì—ëŸ¬ì²˜ë¦¬ 
+    aSpaceNode                [IN] Tablespaceì˜ Node
+    aCurrentAttrFlag          [IN] í˜„ì¬ Tablespaceì— ì„¤ì •ëœ Attribute Flagê°’
+    aAttrFlagMask             [IN] ë³€ê²½í•  Attribute Flagì˜ MASK
+    aAttrFlagNewValue         [IN] ë³€ê²½í•  Attribute Flagì˜ ìƒˆë¡œìš´ ê°’
     
-    [ ¿¡·¯Ã³¸® ]
-      (e-010) Volatile Tablespace¿¡ ´ëÇØ
-              ·Î±× ¾ĞÃà ¿©ºÎ¸¦ º¯°æÇÏ·Á ÇÏ¸é ¿¡·¯ 
-      (e-020) ÀÌ¹Ì Attrubute Flag°¡ ¼³Á¤µÇ¾î ÀÖÀ¸¸é ¿¡·¯
+    [ ì—ëŸ¬ì²˜ë¦¬ ]
+      (e-010) Volatile Tablespaceì— ëŒ€í•´
+              ë¡œê·¸ ì••ì¶• ì—¬ë¶€ë¥¼ ë³€ê²½í•˜ë ¤ í•˜ë©´ ì—ëŸ¬ 
+      (e-020) ì´ë¯¸ Attrubute Flagê°€ ì„¤ì •ë˜ì–´ ìˆìœ¼ë©´ ì—ëŸ¬
       
-    [ ¼±°áÁ¶°Ç ]
-      aTBSNode¿¡ ÇØ´çÇÏ´Â Tablespace¿¡ X¶ôÀÌ ÀâÇôÀÖ´Â »óÅÂ¿©¾ß ÇÑ´Ù.
+    [ ì„ ê²°ì¡°ê±´ ]
+      aTBSNodeì— í•´ë‹¹í•˜ëŠ” Tablespaceì— Xë½ì´ ì¡í˜€ìˆëŠ” ìƒíƒœì—¬ì•¼ í•œë‹¤.
 */
 IDE_RC sctTBSAlter::checkErrorOnAttrFlag( sctTableSpaceNode * aSpaceNode,
                                           UInt        aCurrentAttrFlag,
@@ -186,8 +186,8 @@ IDE_RC sctTBSAlter::checkErrorOnAttrFlag( sctTableSpaceNode * aSpaceNode,
     IDE_DASSERT( aSpaceNode != NULL );
 
     ///////////////////////////////////////////////////////////////////////////
-    //  (e-010) Volatile Tablespace¿¡ ´ëÇØ
-    //          ·Î±× ¾ĞÃà ÇÏµµ·Ï ¼³Á¤ÇÏ¸é ¿¡·¯ 
+    //  (e-010) Volatile Tablespaceì— ëŒ€í•´
+    //          ë¡œê·¸ ì••ì¶• í•˜ë„ë¡ ì„¤ì •í•˜ë©´ ì—ëŸ¬ 
     if ( sctTableSpaceMgr::isVolatileTableSpace( aSpaceNode->mID ) == ID_TRUE )
     {
         if ( (aAttrFlagMask & SMI_TBS_ATTR_LOG_COMPRESS_MASK) != 0 )
@@ -201,7 +201,7 @@ IDE_RC sctTBSAlter::checkErrorOnAttrFlag( sctTableSpaceNode * aSpaceNode,
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    // (e-020) ÀÌ¹Ì Attribute Flag°¡ ¼³Á¤µÇ¾î ÀÖÀ¸¸é ¿¡·¯
+    // (e-020) ì´ë¯¸ Attribute Flagê°€ ì„¤ì •ë˜ì–´ ìˆìœ¼ë©´ ì—ëŸ¬
     IDE_TEST_RAISE( ( aCurrentAttrFlag & aAttrFlagMask )
                     == aAttrFlagNewValue,
                     error_already_set_attr_flag);

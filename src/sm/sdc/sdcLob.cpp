@@ -88,15 +88,15 @@ IDE_RC sdcLob::close()
 }
 
 /***********************************************************************
- * Description : ÀÚ½ÅÀÇ view¿¡ ¸Â´Â LOB Value¸¦ ÀĞ´Â ÇÔ¼ö.
+ * Description : ìì‹ ì˜ viewì— ë§ëŠ” LOB Valueë¥¼ ì½ëŠ” í•¨ìˆ˜.
  *
- *   aStatistics - [IN]  Åë°èÁ¤º¸
+ *   aStatistics - [IN]  í†µê³„ì •ë³´
  *   aTrans      - [IN]  Transaction
- *   aLobViewEnv - [IN]  ÀÚ½ÅÀÌ ºÁ¾ß ÇÒ LOB¿¡ ´ëÇÑ Á¤º¸
- *   aOffset     - [IN]  ºÎºĞ read½Ã ÀĞÀ» Offset
- *   aAmount     - [IN]  read¿äÃ» Å©±â
- *   aPiece      - [OUT] ÀĞÀº LOB Data¸¦ ´ãÀ» ¹öÆÛ
- *   aReadLength - [OUT] ÀĞÀº LOB DataÀÇ Å©±â
+ *   aLobViewEnv - [IN]  ìì‹ ì´ ë´ì•¼ í•  LOBì— ëŒ€í•œ ì •ë³´
+ *   aOffset     - [IN]  ë¶€ë¶„ readì‹œ ì½ì„ Offset
+ *   aAmount     - [IN]  readìš”ì²­ í¬ê¸°
+ *   aPiece      - [OUT] ì½ì€ LOB Dataë¥¼ ë‹´ì„ ë²„í¼
+ *   aReadLength - [OUT] ì½ì€ LOB Dataì˜ í¬ê¸°
  ***********************************************************************/
 IDE_RC sdcLob::read( idvSQL       * aStatistics,
                      void         * /*aTrans*/,
@@ -152,20 +152,20 @@ IDE_RC sdcLob::read( idvSQL       * aStatistics,
 }
 
 /***********************************************************************
- * Description :  lob piece¿¡¼­ value¸¦ writeÇÏ´Â ÇÔ¼ö.
- *                WriteÇÒ Å©±â°¡ 0ÀÎ °æ¿ì MM¿¡¼­ È£ÃâµÇÁö ¾Ê´Â´Ù.
+ * Description :  lob pieceì—ì„œ valueë¥¼ writeí•˜ëŠ” í•¨ìˆ˜.
+ *                Writeí•  í¬ê¸°ê°€ 0ì¸ ê²½ìš° MMì—ì„œ í˜¸ì¶œë˜ì§€ ì•ŠëŠ”ë‹¤.
  * Implementation:
  *
- *    aStatistics - [IN] Åë°èÁ¤º¸
+ *    aStatistics - [IN] í†µê³„ì •ë³´
  *    aTrans      - [IN] Transaction
- *    aLobViewEnv - [IN] ÀÚ½ÅÀÌ ºÁ¾ßÇÒ LOB¿¡´ëÇÑ Á¤º¸
+ *    aLobViewEnv - [IN] ìì‹ ì´ ë´ì•¼í•  LOBì—ëŒ€í•œ ì •ë³´
  *    aLobLocator - [IN] Lob Locator
- *    aOffset     - [IN] ºÎºĞ write½Ã writeÇÒ offset
- *    aAmount     - [IN] wrtieÇÒ data Å©±â
- *    aPieceVal   - [IN] wrtieÇÒ data°¡ ÀÖ´Â buffer
- *    aFromAPI    - [IN] ODBCµîÀÇ API¿¡ ÀÇÇÑ È£Ãâ°ú Äõ¸®¿¡ ÀÇÇÑ È£ÃâÀ» ±¸ºĞ
- *    aContType   - [IN] drdbÀÇ ·Î±×°¡ ¿©·¯ ·Î±×¿¡ °ÉÃÄ ÀúÀåÀÌ µÇ¾ú´ÂÁö
- *                       ´ÜÀÏ·Î±×ÀÎÁö¸¦ ÆÇ´Ü ÇÒ ¼ö ÀÖ´Â type
+ *    aOffset     - [IN] ë¶€ë¶„ writeì‹œ writeí•  offset
+ *    aAmount     - [IN] wrtieí•  data í¬ê¸°
+ *    aPieceVal   - [IN] wrtieí•  dataê°€ ìˆëŠ” buffer
+ *    aFromAPI    - [IN] ODBCë“±ì˜ APIì— ì˜í•œ í˜¸ì¶œê³¼ ì¿¼ë¦¬ì— ì˜í•œ í˜¸ì¶œì„ êµ¬ë¶„
+ *    aContType   - [IN] drdbì˜ ë¡œê·¸ê°€ ì—¬ëŸ¬ ë¡œê·¸ì— ê±¸ì³ ì €ì¥ì´ ë˜ì—ˆëŠ”ì§€
+ *                       ë‹¨ì¼ë¡œê·¸ì¸ì§€ë¥¼ íŒë‹¨ í•  ìˆ˜ ìˆëŠ” type
  **********************************************************************/
 IDE_RC sdcLob::write( idvSQL       * aStatistics,
                       void         * aTrans,
@@ -238,14 +238,14 @@ IDE_RC sdcLob::write( idvSQL       * aStatistics,
 }
 
 /**********************************************************************
- * Description : Write ½ÃÀÛ offsetÀ» ¼³Á¤ÇÑ´Ù.
+ * Description : Write ì‹œì‘ offsetì„ ì„¤ì •í•œë‹¤.
  *
- *    aStatistics     - [IN] Åë°è Á¤º¸
+ *    aStatistics     - [IN] í†µê³„ ì •ë³´
  *    aTrans          - [IN] Transaction
- *    aLobViewEnv     - [IN] ÀÚ½ÅÀÌ ºÁ¾ß ÇÒ LOB¿¡´ëÇÑ Á¤º¸
+ *    aLobViewEnv     - [IN] ìì‹ ì´ ë´ì•¼ í•  LOBì—ëŒ€í•œ ì •ë³´
  *    aLobLocator     - [IN] Lob Locator
- *    aWriteOffset    - [IN] WriteÇÒ Offset
- *    aWriteSize      - [IN] WriteÇÒ Size(¹Ì»ç¿ë)
+ *    aWriteOffset    - [IN] Writeí•  Offset
+ *    aWriteSize      - [IN] Writeí•  Size(ë¯¸ì‚¬ìš©)
  **********************************************************************/
 IDE_RC sdcLob::prepare4Write( idvSQL       * aStatistics,
                               void         * aTrans,
@@ -299,13 +299,13 @@ IDE_RC sdcLob::prepare4Write( idvSQL       * aStatistics,
 }
 
 /***********************************************************************
- * Description : Write°¡ Á¾·áµÇ¾ú´Ù. Lob Cursor
- *               BufferÀÇ ³»¿ëÀ» Row¿¡ UpdateÇÏ°í,
- *               Replication Log¸¦ ³²±ä´Ù.
+ * Description : Writeê°€ ì¢…ë£Œë˜ì—ˆë‹¤. Lob Cursor
+ *               Bufferì˜ ë‚´ìš©ì„ Rowì— Updateí•˜ê³ ,
+ *               Replication Logë¥¼ ë‚¨ê¸´ë‹¤.
  *
- *    aStatistics - [IN] Åë°è Á¤º¸
+ *    aStatistics - [IN] í†µê³„ ì •ë³´
  *    aTrans      - [IN] Transaction
- *    aLobViewEnv - [IN] ÀÚ½ÅÀÌ ºÁ¾ß ÇÒ LOB¿¡´ëÇÑ Á¤º¸
+ *    aLobViewEnv - [IN] ìì‹ ì´ ë´ì•¼ í•  LOBì—ëŒ€í•œ ì •ë³´
  *    aLobLocator - [IN] Lob Locator
  **********************************************************************/
 IDE_RC sdcLob::finishWrite( idvSQL          * aStatistics,
@@ -353,15 +353,15 @@ IDE_RC sdcLob::finishWrite( idvSQL          * aStatistics,
 }
 
 /***********************************************************************
- * Description : lobCursor°¡ °¡¸£Å°°í ÀÖ´Â LOBÀÇ ±æÀÌ¸¦ returnÇÑ´Ù.
+ * Description : lobCursorê°€ ê°€ë¥´í‚¤ê³  ìˆëŠ” LOBì˜ ê¸¸ì´ë¥¼ returní•œë‹¤.
  * Implementation:
  *
- *   aStatistics - [IN]  Åë°èÁ¤º¸
+ *   aStatistics - [IN]  í†µê³„ì •ë³´
  *   aTrans      - [IN]  Transaction
- *   aLobViewEnv - [IN]  ÀÚ½ÅÀÌ ºÁ¾ßÇÒ LOB¿¡´ëÇÑ Á¤º¸
- *   aLobLen     - [OUT] LOBÀÇ ±æÀÌ
- *   aLobMode    - [OUT] LOBÀÇ ÀúÀå ¸ğµå (In/Out)
- *   aIsNullLob  - [OUT] LOBÀÇ Null ¿©ºÎ
+ *   aLobViewEnv - [IN]  ìì‹ ì´ ë´ì•¼í•  LOBì—ëŒ€í•œ ì •ë³´
+ *   aLobLen     - [OUT] LOBì˜ ê¸¸ì´
+ *   aLobMode    - [OUT] LOBì˜ ì €ì¥ ëª¨ë“œ (In/Out)
+ *   aIsNullLob  - [OUT] LOBì˜ Null ì—¬ë¶€
  **********************************************************************/
 IDE_RC sdcLob::getLobInfo( idvSQL        * aStatistics,
                            void          * aTrans,
@@ -420,13 +420,13 @@ IDE_RC sdcLob::getLobInfo( idvSQL        * aStatistics,
 }
 
 /***********************************************************************
- * Description : replication °ü·Ã ·Î±× ÇÔ¼ö.
+ * Description : replication ê´€ë ¨ ë¡œê·¸ í•¨ìˆ˜.
  * Implementation:
  *
- *   aStatistics - [IN] Åë°èÁ¤º¸
+ *   aStatistics - [IN] í†µê³„ì •ë³´
  *   aTrans      - [IN] Transaction
  *   aLobLocator - [IN] LOB Locator
- *   aLobViewEnv - [IN] ÀÚ½ÅÀÌ ºÁ¾ßÇÒ LOB¿¡´ëÇÑ Á¤º¸
+ *   aLobViewEnv - [IN] ìì‹ ì´ ë´ì•¼í•  LOBì—ëŒ€í•œ ì •ë³´
  **********************************************************************/
 IDE_RC sdcLob::writeLog4CursorOpen( idvSQL       * aStatistics,
                                     void         * aTrans,
@@ -499,8 +499,8 @@ IDE_RC sdcLob::writeLog4CursorOpen( idvSQL       * aStatistics,
 }
 
 /***********************************************************************
- * Description : aOffsetÀ¸·Î ºÎÅÍ aAmount Å©±â ¸¸Å­À» ÀĞ´Â´Ù.
- *               aAmountº¸´Ù Àû°Ô ÀĞÀ» ¼ö ÀÖ´Ù.
+ * Description : aOffsetìœ¼ë¡œ ë¶€í„° aAmount í¬ê¸° ë§Œí¼ì„ ì½ëŠ”ë‹¤.
+ *               aAmountë³´ë‹¤ ì ê²Œ ì½ì„ ìˆ˜ ìˆë‹¤.
  **********************************************************************/
 IDE_RC sdcLob::readInternal( idvSQL       * aStatistics,
                              smLobViewEnv * aLobViewEnv,
@@ -575,8 +575,8 @@ IDE_RC sdcLob::readInternal( idvSQL       * aStatistics,
 }
 
 /***********************************************************************
- * Description : aOffsetÀ¸·Î ºÎÅÍ aAmount Å©±â ¸¸Å­À» ÀĞ´Â´Ù.
- *               Lob Column Buffer·Î ºÎÅÍ ÀĞ´Â´Ù.(In Mode LOB)
+ * Description : aOffsetìœ¼ë¡œ ë¶€í„° aAmount í¬ê¸° ë§Œí¼ì„ ì½ëŠ”ë‹¤.
+ *               Lob Column Bufferë¡œ ë¶€í„° ì½ëŠ”ë‹¤.(In Mode LOB)
  **********************************************************************/
 IDE_RC sdcLob::readBuffer( smLobViewEnv     * aLobViewEnv,
                            sdcLobColBuffer  * aLobColBuf,
@@ -616,8 +616,8 @@ IDE_RC sdcLob::readBuffer( smLobViewEnv     * aLobViewEnv,
 }
 
 /***********************************************************************
- * Description : aOffsetÀ¸·Î ºÎÅÍ aAmount Å©±â ¸¸Å­À» ÀĞ´Â´Ù.
- *               Direct Page·Î ºÎÅÍ ÀĞ´Â´Ù.(Out Mode LOB)
+ * Description : aOffsetìœ¼ë¡œ ë¶€í„° aAmount í¬ê¸° ë§Œí¼ì„ ì½ëŠ”ë‹¤.
+ *               Direct Pageë¡œ ë¶€í„° ì½ëŠ”ë‹¤.(Out Mode LOB)
  **********************************************************************/
 IDE_RC sdcLob::readDirect( idvSQL        * aStatistics,
                            smLobViewEnv  * aLobViewEnv,
@@ -677,8 +677,8 @@ IDE_RC sdcLob::readDirect( idvSQL        * aStatistics,
 }
 
 /***********************************************************************
- * Description : aOffsetÀ¸·Î ºÎÅÍ aAmount Å©±â ¸¸Å­À» ÀĞ´Â´Ù.
- *               Lob Index·Î ºÎÅÍ ÀĞ´Â´Ù.(Out Mode LOB)
+ * Description : aOffsetìœ¼ë¡œ ë¶€í„° aAmount í¬ê¸° ë§Œí¼ì„ ì½ëŠ”ë‹¤.
+ *               Lob Indexë¡œ ë¶€í„° ì½ëŠ”ë‹¤.(Out Mode LOB)
  **********************************************************************/
 IDE_RC sdcLob::readIndex( idvSQL        * aStatistics,
                           smLobViewEnv  * aLobViewEnv,
@@ -841,7 +841,7 @@ IDE_RC sdcLob::readIndex( idvSQL        * aStatistics,
 }
 
 /***********************************************************************
- * Description : À¯È¿ÇÑ ¹öÀüÀÇ Leaf Key¸¦ ÀĞ´Â´Ù.
+ * Description : ìœ íš¨í•œ ë²„ì „ì˜ Leaf Keyë¥¼ ì½ëŠ”ë‹¤.
  **********************************************************************/
 IDE_RC sdcLob::getValidVersionLKey( idvSQL      * aStatistics,
                                     ULong         aLobVersion,
@@ -895,7 +895,7 @@ IDE_RC sdcLob::getValidVersionLKey( idvSQL      * aStatistics,
 }
 
 /***********************************************************************
- * Description : Undo Record·Î Leaf Key¸¦ °¡Á®¿Â´Ù.
+ * Description : Undo Recordë¡œ Leaf Keyë¥¼ ê°€ì ¸ì˜¨ë‹¤.
  **********************************************************************/
 IDE_RC sdcLob::makeOldVersionLKey( idvSQL       * aStatistics,
                                    sdSID          aUndoSID,
@@ -950,7 +950,7 @@ IDE_RC sdcLob::makeOldVersionLKey( idvSQL       * aStatistics,
 }
 
 /***********************************************************************
- * Description : aPID ÆäÀÌÁö·Î ºÎÅÍ °ªÀ» ÀĞ´Â´Ù.
+ * Description : aPID í˜ì´ì§€ë¡œ ë¶€í„° ê°’ì„ ì½ëŠ”ë‹¤.
  **********************************************************************/
 IDE_RC sdcLob::readPage( idvSQL      * aStatistics,
                          smiColumn   * aColumn,
@@ -1049,7 +1049,7 @@ IDE_RC sdcLob::readPage( idvSQL      * aStatistics,
 }
 
 /***********************************************************************
- * Description : Last Page Á¤º¸¸¦ °»½Å(Áõ°¡)½ÃÅ²´Ù.
+ * Description : Last Page ì •ë³´ë¥¼ ê°±ì‹ (ì¦ê°€)ì‹œí‚¨ë‹¤.
  **********************************************************************/
 void sdcLob::incLastPageInfo( sdcLobColBuffer   * aLobColBuf,
                               UInt                aOffset,
@@ -1090,7 +1090,7 @@ void sdcLob::incLastPageInfo( sdcLobColBuffer   * aLobColBuf,
 }
 
 /***********************************************************************
- * Description : Last Page Á¤º¸¸¦ °»½Å(°¨¼Ò)½ÃÅ²´Ù.
+ * Description : Last Page ì •ë³´ë¥¼ ê°±ì‹ (ê°ì†Œ)ì‹œí‚¨ë‹¤.
  **********************************************************************/
 void sdcLob::decLastPageInfo( sdcLobColBuffer   * aLobColBuf,
                               UInt                aOffset )
@@ -1129,9 +1129,9 @@ void sdcLob::decLastPageInfo( sdcLobColBuffer   * aLobColBuf,
 }
 
 /***********************************************************************
- * Description : LOB¿¡ ´ëÇÑ erase¸¦ ¼öÇàÇÑ´Ù.
- *               ÃßÈÄ ÇÊ¿äÇÒ °ÍÀ¸·Î ¿¹»óµÇ´Â ±â´ÉÀ¸·Î Ãß°¡µÇ¾ú´Ù.
- *               »ç¿ëÇÏ±â À§ÇØ¼­´Â Å×½ºÆ®°¡ ÇÊ¿äÇÏ´Ù.
+ * Description : LOBì— ëŒ€í•œ eraseë¥¼ ìˆ˜í–‰í•œë‹¤.
+ *               ì¶”í›„ í•„ìš”í•  ê²ƒìœ¼ë¡œ ì˜ˆìƒë˜ëŠ” ê¸°ëŠ¥ìœ¼ë¡œ ì¶”ê°€ë˜ì—ˆë‹¤.
+ *               ì‚¬ìš©í•˜ê¸° ìœ„í•´ì„œëŠ” í…ŒìŠ¤íŠ¸ê°€ í•„ìš”í•˜ë‹¤.
  **********************************************************************/
 IDE_RC sdcLob::erase( idvSQL       * aStatistics,
                       void         * aTrans,
@@ -1230,7 +1230,7 @@ IDE_RC sdcLob::erase( idvSQL       * aStatistics,
 }
 
 /***********************************************************************
- * Description : LOB¿¡ ´ëÇÑ trimÀ» ¼öÇàÇÑ´Ù.
+ * Description : LOBì— ëŒ€í•œ trimì„ ìˆ˜í–‰í•œë‹¤.
  **********************************************************************/
 IDE_RC sdcLob::trim( idvSQL       * aStatistics,
                      void         * aTrans,
@@ -1328,7 +1328,7 @@ IDE_RC sdcLob::trim( idvSQL       * aStatistics,
 }
 
 /***********************************************************************
- * Description : LOB¿¡ ¸ğµå º¯È¯ Å¸ÀÔÀ» ¹İÈ¯ÇÑ´Ù.
+ * Description : LOBì— ëª¨ë“œ ë³€í™˜ íƒ€ì…ì„ ë°˜í™˜í•œë‹¤.
  **********************************************************************/
 sdcLobChangeType sdcLob::getLobChangeType( sdcLobColBuffer * aLobColBuf,
                                            smiColumn       * aColumn,
@@ -1368,7 +1368,7 @@ sdcLobChangeType sdcLob::getLobChangeType( sdcLobColBuffer * aLobColBuf,
 }
 
 /***********************************************************************
- * Description : aPieceVal¸¦ WriteÇÑ´Ù.
+ * Description : aPieceValë¥¼ Writeí•œë‹¤.
  **********************************************************************/
 IDE_RC sdcLob::writeInternal( idvSQL            * aStatistics,
                               void              * aTrans,
@@ -1438,7 +1438,7 @@ IDE_RC sdcLob::writeInternal( idvSQL            * aStatistics,
 }
 
 /***********************************************************************
- * Description : º¯È¯ Å¸ÀÔÀÌ in to in °æ¿ì¿¡ ´ëÇÑ WriteÇÑ´Ù.
+ * Description : ë³€í™˜ íƒ€ì…ì´ in to in ê²½ìš°ì— ëŒ€í•œ Writeí•œë‹¤.
  **********************************************************************/
 IDE_RC sdcLob::writeInToIn( smLobViewEnv    * aLobViewEnv,
                             UChar           * aPieceVal,
@@ -1462,7 +1462,7 @@ IDE_RC sdcLob::writeInToIn( smLobViewEnv    * aLobViewEnv,
 }
 
 /***********************************************************************
- * Description : º¯È¯ Å¸ÀÔÀÌ in to out °æ¿ì¿¡ ´ëÇÑ WriteÇÑ´Ù.
+ * Description : ë³€í™˜ íƒ€ì…ì´ in to out ê²½ìš°ì— ëŒ€í•œ Writeí•œë‹¤.
  **********************************************************************/
 IDE_RC sdcLob::writeInToOut( idvSQL          * aStatistics,
                              void            * aTrans,
@@ -1591,7 +1591,7 @@ IDE_RC sdcLob::writeInToOut( idvSQL          * aStatistics,
 }
 
 /***********************************************************************
- * Description : º¯È¯ Å¸ÀÔÀÌ out to out °æ¿ì¿¡ ´ëÇÑ WriteÇÑ´Ù.
+ * Description : ë³€í™˜ íƒ€ì…ì´ out to out ê²½ìš°ì— ëŒ€í•œ Writeí•œë‹¤.
  **********************************************************************/
 IDE_RC sdcLob::writeOutToOut( idvSQL          * aStatistics,
                               void            * aTrans,
@@ -1661,7 +1661,7 @@ IDE_RC sdcLob::writeOutToOut( idvSQL          * aStatistics,
 }
 
 /***********************************************************************
- * Description : LOB Index ´ëÇÑ Write¸¦ ¼öÇàÇÑ´Ù.
+ * Description : LOB Index ëŒ€í•œ Writeë¥¼ ìˆ˜í–‰í•œë‹¤.
  **********************************************************************/
 IDE_RC sdcLob::writeIndex( idvSQL           * aStatistics,
                            void             * aTrans,
@@ -1803,7 +1803,7 @@ IDE_RC sdcLob::writeIndex( idvSQL           * aStatistics,
 }
 
 /***********************************************************************
- * Description : Leaf Node¸¦ Append ÇÑ´Ù.
+ * Description : Leaf Nodeë¥¼ Append í•œë‹¤.
  **********************************************************************/
 IDE_RC sdcLob::appendLeafNode( idvSQL       * aStatistics,
                                void         * aTrans,
@@ -1919,8 +1919,8 @@ IDE_RC sdcLob::appendLeafNode( idvSQL       * aStatistics,
          */
 
         /*
-         * allocPage¿¡ ´ëÇÑ undo´Â segment°¡ Ã³¸®ÇÑ´Ù. µû¶ó¼­ alloc
-         * page¿¡ ´ëÇÑ undo°¡ skipµÇÁö ¾Êµµ·Ï NTA¸¦ ¿©±â¼­ Âï´Â´Ù.
+         * allocPageì— ëŒ€í•œ undoëŠ” segmentê°€ ì²˜ë¦¬í•œë‹¤. ë”°ë¼ì„œ alloc
+         * pageì— ëŒ€í•œ undoê°€ skipë˜ì§€ ì•Šë„ë¡ NTAë¥¼ ì—¬ê¸°ì„œ ì°ëŠ”ë‹¤.
          */ 
 
         sNTA = smLayerCallback::getLstUndoNxtLSN( aTrans );
@@ -1953,7 +1953,7 @@ IDE_RC sdcLob::appendLeafNode( idvSQL       * aStatistics,
 }
 
 /***********************************************************************
- * Description : Leaf Node¸¦ Append ÇÑ °Í¿¡ ´ëÇÑ Logical Undo¸¦ ¼öÇàÇÑ´Ù.
+ * Description : Leaf Nodeë¥¼ Append í•œ ê²ƒì— ëŒ€í•œ Logical Undoë¥¼ ìˆ˜í–‰í•œë‹¤.
  **********************************************************************/
 IDE_RC sdcLob::appendLeafNodeRollback( idvSQL       * aStatistics,
                                        sdrMtx       * aMtx,
@@ -2079,7 +2079,7 @@ IDE_RC sdcLob::appendLeafNodeRollback( idvSQL       * aStatistics,
 }
 
 /***********************************************************************
- * Description : »õ·Î¿î Root Node¸¦ »ı¼ºÇÑ´Ù.
+ * Description : ìƒˆë¡œìš´ Root Nodeë¥¼ ìƒì„±í•œë‹¤.
  **********************************************************************/
 IDE_RC sdcLob::makeNewRootNode( idvSQL      * aStatistics,
                                 sdrMtx      * aMtx,
@@ -2147,7 +2147,7 @@ IDE_RC sdcLob::makeNewRootNode( idvSQL      * aStatistics,
 }
 
 /***********************************************************************
- * Description : »õ·Î¿î Internal Key¸¦ »ğÀÔÇÑ´Ù.
+ * Description : ìƒˆë¡œìš´ Internal Keyë¥¼ ì‚½ì…í•œë‹¤.
  **********************************************************************/
 IDE_RC sdcLob::insertInternalKey( sdrMtx    * aMtx,
                                   UChar     * aNode,
@@ -2198,7 +2198,7 @@ IDE_RC sdcLob::insertInternalKey( sdrMtx    * aMtx,
 }
 
 /***********************************************************************
- * Description : Internal NodeÀÇ °ø°£ Á¸Àç À¯¹«¸¦ ¹İÈ¯ÇÑ´Ù.
+ * Description : Internal Nodeì˜ ê³µê°„ ì¡´ì¬ ìœ ë¬´ë¥¼ ë°˜í™˜í•œë‹¤.
  **********************************************************************/
 idBool sdcLob::isInternalNodeFull( UChar * sNode )
 {
@@ -2220,7 +2220,7 @@ idBool sdcLob::isInternalNodeFull( UChar * sNode )
 }
 
 /***********************************************************************
- * Description : Key¸¦ propagate ÇÑ´Ù.
+ * Description : Keyë¥¼ propagate í•œë‹¤.
  **********************************************************************/
 IDE_RC sdcLob::propagateKey( idvSQL         * aStatistics,
                              sdrMtx         * aMtx,
@@ -2341,7 +2341,7 @@ IDE_RC sdcLob::propagateKey( idvSQL         * aStatistics,
 }
 
 /***********************************************************************
- * Description : ¸Ç ¿À¸¥ÂÊ Leaf Node¸¦ Å½»öÇÑ´Ù.
+ * Description : ë§¨ ì˜¤ë¥¸ìª½ Leaf Nodeë¥¼ íƒìƒ‰í•œë‹¤.
  **********************************************************************/
 IDE_RC sdcLob::findRightMostLeafNode( idvSQL        * aStatistics,
                                       scSpaceID       aLobColSpaceID,
@@ -2427,7 +2427,7 @@ IDE_RC sdcLob::findRightMostLeafNode( idvSQL        * aStatistics,
 }
 
 /***********************************************************************
- * Description : Leaf Key¸¦ updateÇÑ´Ù.
+ * Description : Leaf Keyë¥¼ updateí•œë‹¤.
  **********************************************************************/
 IDE_RC sdcLob::updateKey( idvSQL            * aStatistics,
                           void              * aTrans,
@@ -2484,7 +2484,7 @@ IDE_RC sdcLob::updateKey( idvSQL            * aStatistics,
 }
 
 /***********************************************************************
- * Description : Leaf Key¸¦ »ı¼ºÇÑ´Ù.
+ * Description : Leaf Keyë¥¼ ìƒì„±í•œë‹¤.
  **********************************************************************/
 IDE_RC sdcLob::makeUpdateLKey( idvSQL         * aStatistics,
                                void           * aTrans,
@@ -2627,7 +2627,7 @@ IDE_RC sdcLob::makeUpdateLKey( idvSQL         * aStatistics,
 }
 
 /***********************************************************************
- * Description : Leaf Key¸¦ Leaf Node¿¡ »ğÀÔÇÑ´Ù.
+ * Description : Leaf Keyë¥¼ Leaf Nodeì— ì‚½ì…í•œë‹¤.
  **********************************************************************/
 IDE_RC sdcLob::writeUpdateLKey( idvSQL      * aStatistics,
                                 void        * aTrans,
@@ -2777,7 +2777,7 @@ IDE_RC sdcLob::writeUpdateLKey( idvSQL      * aStatistics,
 }
 
 /***********************************************************************
- * Description : Leaf Key¸¦ Æ¯Á¤ Entry ÆäÀÌÁö¸¦ WriteÇÑ´Ù.
+ * Description : Leaf Keyë¥¼ íŠ¹ì • Entry í˜ì´ì§€ë¥¼ Writeí•œë‹¤.
  **********************************************************************/
 IDE_RC sdcLob::writeEntry( idvSQL        * aStatistics,
                            void          * aTrans,
@@ -2840,7 +2840,7 @@ IDE_RC sdcLob::writeEntry( idvSQL        * aStatistics,
 }
 
 /***********************************************************************
- * Description : Leaf Key¸¦ Æ¯Á¤ Entry ÆäÀÌÁö¸¦ eraseÇÑ´Ù.
+ * Description : Leaf Keyë¥¼ íŠ¹ì • Entry í˜ì´ì§€ë¥¼ eraseí•œë‹¤.
  **********************************************************************/
 IDE_RC sdcLob::eraseEntry( idvSQL        * aStatistics,
                            void          * aTrans,
@@ -2882,7 +2882,7 @@ IDE_RC sdcLob::eraseEntry( idvSQL        * aStatistics,
 }
 
 /***********************************************************************
- * Description : Leaf Key¸¦ Æ¯Á¤ Entry ÆäÀÌÁö¸¦ trimÇÑ´Ù.
+ * Description : Leaf Keyë¥¼ íŠ¹ì • Entry í˜ì´ì§€ë¥¼ trimí•œë‹¤.
  **********************************************************************/
 IDE_RC sdcLob::trimEntry( idvSQL        * aStatistics,
                           void          * aTrans,
@@ -2924,7 +2924,7 @@ IDE_RC sdcLob::trimEntry( idvSQL        * aStatistics,
 }
 
 /***********************************************************************
- * Description : ÆäÀÌÁö¸¦ trimÇÑ´Ù.
+ * Description : í˜ì´ì§€ë¥¼ trimí•œë‹¤.
  **********************************************************************/
 IDE_RC sdcLob::trimPage( idvSQL      * aStatistics,
                          void        * aTrans,
@@ -3047,7 +3047,7 @@ IDE_RC sdcLob::trimPage( idvSQL      * aStatistics,
 }
 
 /***********************************************************************
- * Description : Leaf Key¸¦ »ğÀÔÇÑ´Ù.
+ * Description : Leaf Keyë¥¼ ì‚½ì…í•œë‹¤.
  **********************************************************************/
 IDE_RC sdcLob::insertKey( idvSQL        * aStatistics,
                           void          * aTrans,
@@ -3104,7 +3104,7 @@ IDE_RC sdcLob::insertKey( idvSQL        * aStatistics,
 }
 
 /***********************************************************************
- * Description : Insert¸¦ À§ÇÑ Leaf Key¸¦ »ı¼ºÇÑ´Ù.
+ * Description : Insertë¥¼ ìœ„í•œ Leaf Keyë¥¼ ìƒì„±í•œë‹¤.
  **********************************************************************/
 IDE_RC sdcLob::makeInsertLKey( idvSQL         * aStatistics,
                                void           * aTrans,
@@ -3212,7 +3212,7 @@ IDE_RC sdcLob::makeInsertLKey( idvSQL         * aStatistics,
 }
 
 /***********************************************************************
- * Description : Insert¸¦ À§ÇÑ Leaf Key¸¦ Leaf Node¿¡ »ğÀÔÇÑ´Ù.
+ * Description : Insertë¥¼ ìœ„í•œ Leaf Keyë¥¼ Leaf Nodeì— ì‚½ì…í•œë‹¤.
  **********************************************************************/
 IDE_RC sdcLob::writeInsertLKey( idvSQL      * aStatistics,
                                 void        * aTrans,
@@ -3296,7 +3296,7 @@ IDE_RC sdcLob::writeInsertLKey( idvSQL      * aStatistics,
 }
 
 /***********************************************************************
- * Description : aOffsetÀ¸·ÎºÎÅÍ Page Sequence¸¦ ¹İÈ¯ÇÑ´Ù.
+ * Description : aOffsetìœ¼ë¡œë¶€í„° Page Sequenceë¥¼ ë°˜í™˜í•œë‹¤.
  **********************************************************************/
 UInt sdcLob::getPageSeq( UInt aOffset )
 {
@@ -3304,7 +3304,7 @@ UInt sdcLob::getPageSeq( UInt aOffset )
 }
 
 /***********************************************************************
- * Description : aOffsetÀ¸·ÎºÎÅÍ Entry Sequence¸¦ ¹İÈ¯ÇÑ´Ù.
+ * Description : aOffsetìœ¼ë¡œë¶€í„° Entry Sequenceë¥¼ ë°˜í™˜í•œë‹¤.
  **********************************************************************/
 SShort sdcLob::getEntrySeq( UInt aOffset )
 {
@@ -3323,7 +3323,7 @@ SShort sdcLob::getEntrySeq( UInt aOffset )
 }
 
 /***********************************************************************
- * Description : Lob Data Layer ½ÃÀÛ ÁÖ¼Ò¸¦ ¹İÈ¯ÇÑ´Ù.
+ * Description : Lob Data Layer ì‹œì‘ ì£¼ì†Œë¥¼ ë°˜í™˜í•œë‹¤.
  **********************************************************************/
 UChar* sdcLob::getLobDataLayerStartPtr( UChar * aPage )
 {
@@ -3333,7 +3333,7 @@ UChar* sdcLob::getLobDataLayerStartPtr( UChar * aPage )
 }
 
 /***********************************************************************
- * Description : Max Leaf Key Count¸¦ ¹İÈ¯ÇÑ´Ù.
+ * Description : Max Leaf Key Countë¥¼ ë°˜í™˜í•œë‹¤.
  **********************************************************************/
 UShort sdcLob::getMaxLeafKeyCount()
 {
@@ -3341,7 +3341,7 @@ UShort sdcLob::getMaxLeafKeyCount()
 }
 
 /***********************************************************************
- * Description : Max Internal Key Count¸¦ ¹İÈ¯ÇÑ´Ù.
+ * Description : Max Internal Key Countë¥¼ ë°˜í™˜í•œë‹¤.
  **********************************************************************/
 UShort sdcLob::getMaxInternalKeyCount()
 {
@@ -3349,7 +3349,7 @@ UShort sdcLob::getMaxInternalKeyCount()
 }
 
 /***********************************************************************
- * Description : aPageSeq¿¡ ÇØ´çÇÏ´Â Internal Key¸¦ ¹İÈ¯ÇÑ´Ù.
+ * Description : aPageSeqì— í•´ë‹¹í•˜ëŠ” Internal Keyë¥¼ ë°˜í™˜í•œë‹¤.
  **********************************************************************/
 IDE_RC sdcLob::findInternalKey( sdcLobNodeHdr * aNodeHdr,
                                 UInt            aPageSeq,
@@ -3404,7 +3404,7 @@ IDE_RC sdcLob::findInternalKey( sdcLobNodeHdr * aNodeHdr,
 }
 
 /***********************************************************************
- * Description : aPageSeq¿¡ ÇØ´çÇÏ´Â Leaf Key¸¦ ¹İÈ¯ÇÑ´Ù.
+ * Description : aPageSeqì— í•´ë‹¹í•˜ëŠ” Leaf Keyë¥¼ ë°˜í™˜í•œë‹¤.
  **********************************************************************/
 IDE_RC sdcLob::findLeafKey( sdcLobNodeHdr * aNodeHdr,
                             UInt            aPageSeq,
@@ -3458,7 +3458,7 @@ IDE_RC sdcLob::findLeafKey( sdcLobNodeHdr * aNodeHdr,
 }
 
 /***********************************************************************
- * Description : aPageSeq¿¡ ÇØ´çÇÏ´Â Leaf Key¸¦ Å½»öÇÑ´Ù.
+ * Description : aPageSeqì— í•´ë‹¹í•˜ëŠ” Leaf Keyë¥¼ íƒìƒ‰í•œë‹¤.
  **********************************************************************/
 IDE_RC sdcLob::traverse( idvSQL     * aStatistics,
                          smiColumn  * aColumn,
@@ -3585,8 +3585,8 @@ IDE_RC sdcLob::traverse( idvSQL     * aStatistics,
 }
 
 /***********************************************************************
- * Description : aPageSeq¿¡ ÇØ´çÇÏ´Â Leaf Key¸¦ Å½»öÇÑ´Ù.
- *               Leaf NodeÀÇ Link¸¦ µû¶ó°¡¸é¼­ Sequential ScanÇÑ´Ù.
+ * Description : aPageSeqì— í•´ë‹¹í•˜ëŠ” Leaf Keyë¥¼ íƒìƒ‰í•œë‹¤.
+ *               Leaf Nodeì˜ Linkë¥¼ ë”°ë¼ê°€ë©´ì„œ Sequential Scaní•œë‹¤.
  **********************************************************************/
 IDE_RC sdcLob::traverseSequential( idvSQL     * aStatistics,
                                    smiColumn  * aColumn,
@@ -3690,7 +3690,7 @@ IDE_RC sdcLob::traverseSequential( idvSQL     * aStatistics,
 }
 
 /***********************************************************************
- * Description : Direct Page¿¡ Write ÇÑ´Ù.
+ * Description : Direct Pageì— Write í•œë‹¤.
  **********************************************************************/
 IDE_RC sdcLob::writeDirect( idvSQL           * aStatistics,
                             void             * aTrans,
@@ -3844,7 +3844,7 @@ IDE_RC sdcLob::writeDirect( idvSQL           * aStatistics,
 }
 
 /***********************************************************************
- * Description : Page Offset¿Í Page¿¡¼­ WriteÇÒ Å©±â¸¦ ¹İÈ¯ÇÑ´Ù.
+ * Description : Page Offsetì™€ Pageì—ì„œ Writeí•  í¬ê¸°ë¥¼ ë°˜í™˜í•œë‹¤.
  **********************************************************************/
 IDE_RC sdcLob::getWritePageOffsetAndSize( UInt     aOffset,
                                           UInt     aPieceLen,
@@ -3872,7 +3872,7 @@ IDE_RC sdcLob::getWritePageOffsetAndSize( UInt     aOffset,
 }
 
 /***********************************************************************
- * Description : Page Offset¿Í Page¿¡¼­ ReadÇÒ Å©±â¸¦ ¹İÈ¯ÇÑ´Ù.
+ * Description : Page Offsetì™€ Pageì—ì„œ Readí•  í¬ê¸°ë¥¼ ë°˜í™˜í•œë‹¤.
  **********************************************************************/
 IDE_RC sdcLob::getReadPageOffsetAndSize( UChar  * aPage,
                                          UInt     aOffset,
@@ -3921,7 +3921,7 @@ IDE_RC sdcLob::getReadPageOffsetAndSize( UChar  * aPage,
 }
 
 /***********************************************************************
- * Description : Page¸¦ eraseÇÑ´Ù.
+ * Description : Pageë¥¼ eraseí•œë‹¤.
  **********************************************************************/
 IDE_RC sdcLob::erasePage( idvSQL      * aStatistics,
                           void        * aTrans,
@@ -4040,7 +4040,7 @@ IDE_RC sdcLob::erasePage( idvSQL      * aStatistics,
 }
 
 /***********************************************************************
- * Description : PageÀÇ ¸ğµç µ¥ÀÌÅÍ°¡ WriteµÇ´Â ¿©ºÎ¸¦ ¹İÈ¯ÇÑ´Ù.
+ * Description : Pageì˜ ëª¨ë“  ë°ì´í„°ê°€ Writeë˜ëŠ” ì—¬ë¶€ë¥¼ ë°˜í™˜í•œë‹¤.
  **********************************************************************/
 idBool sdcLob::isFullPageWrite( sdcLobNodeHdr   * aNodeHdr,
                                 UInt            * aOffset,
@@ -4071,7 +4071,7 @@ idBool sdcLob::isFullPageWrite( sdcLobNodeHdr   * aNodeHdr,
 }
 
 /***********************************************************************
- * Description : Page¸¦ WriteÇÑ´Ù.
+ * Description : Pageë¥¼ Writeí•œë‹¤.
  **********************************************************************/
 IDE_RC sdcLob::writePage( idvSQL        * aStatistics,
                           void          * aTrans,
@@ -4241,7 +4241,7 @@ IDE_RC sdcLob::writePage( idvSQL        * aStatistics,
 }
 
 /***********************************************************************
- * Description : Old VersionÀÇ Direct Page¸¦ AgableList¿¡ ¿¬°áÇÑ´Ù.
+ * Description : Old Versionì˜ Direct Pageë¥¼ AgableListì— ì—°ê²°í•œë‹¤.
  **********************************************************************/
 IDE_RC sdcLob::removeOldPages( idvSQL       * aStatistics,
                                void         * aTrans,
@@ -4282,7 +4282,7 @@ IDE_RC sdcLob::removeOldPages( idvSQL       * aStatistics,
 }
 
 /***********************************************************************
- * Description : Old VersionÀÇ Entry Page¸¦ AgableList¿¡ ¿¬°áÇÑ´Ù.
+ * Description : Old Versionì˜ Entry Pageë¥¼ AgableListì— ì—°ê²°í•œë‹¤.
  **********************************************************************/
 IDE_RC sdcLob::removeOldPages( idvSQL       * aStatistics,
                                void         * aTrans,
@@ -4319,7 +4319,7 @@ IDE_RC sdcLob::removeOldPages( idvSQL       * aStatistics,
 }
 
 /***********************************************************************
- * Description : Page¸¦ AgableList¿¡ ¿¬°áÇÑ´Ù.
+ * Description : Pageë¥¼ AgableListì— ì—°ê²°í•œë‹¤.
  **********************************************************************/
 IDE_RC sdcLob::addPage2AgingList( idvSQL      * aStatistics,
                                    void        * aTrans,
@@ -4472,7 +4472,7 @@ IDE_RC sdcLob::addPage2AgingList( idvSQL      * aStatistics,
 }
 
 /***********************************************************************
- * Description : Page¸¦ CopyÇÑ´Ù.
+ * Description : Pageë¥¼ Copyí•œë‹¤.
  **********************************************************************/
 IDE_RC sdcLob::copyPage( sdrMtx * aMtx,
                          UChar  * aDstPage,
@@ -4520,7 +4520,7 @@ IDE_RC sdcLob::copyPage( sdrMtx * aMtx,
 }
 
 /***********************************************************************
- * Description : Page¸¦ Copy & TrimÇÑ´Ù.
+ * Description : Pageë¥¼ Copy & Trimí•œë‹¤.
  **********************************************************************/
 IDE_RC sdcLob::copyAndTrimPage( sdrMtx * aMtx,
                                 UChar  * aDstPage,
@@ -4575,7 +4575,7 @@ IDE_RC sdcLob::copyAndTrimPage( sdrMtx * aMtx,
 }
 
 /***********************************************************************
- * Description : Page¿¡ ´ëÇÑ erase¸¦ ¼öÇàÇÑ´Ù.
+ * Description : Pageì— ëŒ€í•œ eraseë¥¼ ìˆ˜í–‰í•œë‹¤.
  **********************************************************************/
 IDE_RC sdcLob::eraseLobPiece( sdrMtx    * aMtx,
                               smiColumn * aColumn,
@@ -4631,7 +4631,7 @@ IDE_RC sdcLob::eraseLobPiece( sdrMtx    * aMtx,
 }
 
 /***********************************************************************
- * Description : Page¿¡ ´ëÇÑ write¸¦ ¼öÇàÇÑ´Ù.
+ * Description : Pageì— ëŒ€í•œ writeë¥¼ ìˆ˜í–‰í•œë‹¤.
  **********************************************************************/
 IDE_RC sdcLob::writeLobPiece( idvSQL        * aStatistics,
                               void          * aTrans,
@@ -4788,7 +4788,7 @@ IDE_RC sdcLob::writeLobPiece( idvSQL        * aStatistics,
 }
 
 /***********************************************************************
- * Description : Page¸¦ ÇÒ´çÇÑ´Ù.
+ * Description : Pageë¥¼ í• ë‹¹í•œë‹¤.
  **********************************************************************/
 IDE_RC sdcLob::allocNewPage( idvSQL         * aStatistics,
                              sdrMtx         * aMtx,
@@ -4837,7 +4837,7 @@ IDE_RC sdcLob::allocNewPage( idvSQL         * aStatistics,
 }
 
 /***********************************************************************
- * Description : Logical Node¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+ * Description : Logical Nodeë¥¼ ì´ˆê¸°í™”í•œë‹¤.
  **********************************************************************/
 IDE_RC sdcLob::initializeNodeHdr( sdrMtx        * aMtx,
                                   sdpPhyPageHdr * aPage,
@@ -4916,7 +4916,7 @@ IDE_RC sdcLob::initializeNodeHdr( sdrMtx        * aMtx,
 }
 
 /***********************************************************************
- * Description : aNeedPageCnt ¸¸Å­ÀÇ Page¸¦ Aging ½ÃµµÇÑ´Ù.
+ * Description : aNeedPageCnt ë§Œí¼ì˜ Pageë¥¼ Aging ì‹œë„í•œë‹¤.
  **********************************************************************/
 IDE_RC sdcLob::agingPages( idvSQL    * aStatistics,
                            void      * aTrans,
@@ -5014,7 +5014,7 @@ IDE_RC sdcLob::agingPages( idvSQL    * aStatistics,
 }
 
 /***********************************************************************
- * Description : Page¸¦ Aging ÇÑ´Ù.
+ * Description : Pageë¥¼ Aging í•œë‹¤.
  **********************************************************************/
 IDE_RC sdcLob::agingNode( idvSQL     * aStatistics,
                           sdrMtx     * aMtx,
@@ -5073,7 +5073,7 @@ IDE_RC sdcLob::agingNode( idvSQL     * aStatistics,
 }
 
 /***********************************************************************
- * Description : Data Page¸¦ Aging ÇÑ´Ù.
+ * Description : Data Pageë¥¼ Aging í•œë‹¤.
  **********************************************************************/
 IDE_RC sdcLob::agingDataNode( idvSQL     * aStatistics,
                               sdrMtx     * aMtx,
@@ -5128,7 +5128,7 @@ IDE_RC sdcLob::agingDataNode( idvSQL     * aStatistics,
 }
 
 /***********************************************************************
- * Description : Index Page¸¦ Aging ÇÑ´Ù.
+ * Description : Index Pageë¥¼ Aging í•œë‹¤.
  **********************************************************************/
 IDE_RC sdcLob::agingIndexNode( idvSQL     * aStatistics,
                                sdrMtx     * aMtx,
@@ -5173,7 +5173,7 @@ IDE_RC sdcLob::agingIndexNode( idvSQL     * aStatistics,
 }
 
 /***********************************************************************
- * Description : Leaf Key¸¦ »èÁ¦ÇÑ´Ù.
+ * Description : Leaf Keyë¥¼ ì‚­ì œí•œë‹¤.
  **********************************************************************/
 IDE_RC sdcLob::deleteLeafKey( idvSQL        * aStatistics,
                               sdrMtx        * aMtx,
@@ -5326,7 +5326,7 @@ IDE_RC sdcLob::deleteLeafKey( idvSQL        * aStatistics,
 }
 
 /***********************************************************************
- * Description : Internal Key¸¦ »èÁ¦ÇÑ´Ù.
+ * Description : Internal Keyë¥¼ ì‚­ì œí•œë‹¤.
  **********************************************************************/
 IDE_RC sdcLob::deleteInternalKey( idvSQL        * aStatistics,
                                   sdrMtx        * aMtx,
@@ -5451,7 +5451,7 @@ IDE_RC sdcLob::deleteInternalKey( idvSQL        * aStatistics,
 }
 
 /***********************************************************************
- * Description : Page Type °ú Aging °¡´É ¿©ºÎ¸¦ ¹İÈ¯ÇÑ´Ù.
+ * Description : Page Type ê³¼ Aging ê°€ëŠ¥ ì—¬ë¶€ë¥¼ ë°˜í™˜í•œë‹¤.
  **********************************************************************/
 IDE_RC sdcLob::getNodeInfo( idvSQL      * aStatistics,
                             smiColumn   * aColumn,
@@ -5501,13 +5501,13 @@ IDE_RC sdcLob::getNodeInfo( idvSQL      * aStatistics,
                   != IDE_SUCCESS );
 
         /* BUG-25702
-         * statement ´ÜÀ§·Î miminum disk viewscnÀ» °ü¸®ÇÏ°Ô µÇ¸é¼­
-         * SysMinDskViewSCN°ú sCommitSCNÀÇ ºñ±³¸¸À¸·Î´Â
-         * Æ®·£Àè¼ÇÀÌ commitµÇ¾ú´ÂÁö¸¦ ÆÇ´ÜÇÒ ¼ö ¾ø°Ô µÇ¾ú´Ù.
-         * ¾ÆÁ÷ Æ®·£Àè¼ÇÀÌ commitÇÏÁö ¾Ê¾Ò´õ¶óµµ sSysMinDskViewSCNÀÌ
-         * sCommitSCNº¸´Ù Å« °æ¿ì°¡ ÀÖÀ» ¼ö ÀÖ´Ù.
-         * ±×·¡¼­ Æ®·£Àè¼ÇÀÌ commit µÇ¾ú´ÂÁö ¿©ºÎ¸¦ ÆÇ´ÜÇÏ±â À§ÇØ¼­
-         * SM_SCN_IS_VIEWSCN() Á¶°Ç°Ë»ç¸¦ Ãß°¡ÇÑ´Ù. */
+         * statement ë‹¨ìœ„ë¡œ miminum disk viewscnì„ ê´€ë¦¬í•˜ê²Œ ë˜ë©´ì„œ
+         * SysMinDskViewSCNê³¼ sCommitSCNì˜ ë¹„êµë§Œìœ¼ë¡œëŠ”
+         * íŠ¸ëœì­ì…˜ì´ commitë˜ì—ˆëŠ”ì§€ë¥¼ íŒë‹¨í•  ìˆ˜ ì—†ê²Œ ë˜ì—ˆë‹¤.
+         * ì•„ì§ íŠ¸ëœì­ì…˜ì´ commití•˜ì§€ ì•Šì•˜ë”ë¼ë„ sSysMinDskViewSCNì´
+         * sCommitSCNë³´ë‹¤ í° ê²½ìš°ê°€ ìˆì„ ìˆ˜ ìˆë‹¤.
+         * ê·¸ë˜ì„œ íŠ¸ëœì­ì…˜ì´ commit ë˜ì—ˆëŠ”ì§€ ì—¬ë¶€ë¥¼ íŒë‹¨í•˜ê¸° ìœ„í•´ì„œ
+         * SM_SCN_IS_VIEWSCN() ì¡°ê±´ê²€ì‚¬ë¥¼ ì¶”ê°€í•œë‹¤. */
         if( (SM_SCN_IS_VIEWSCN(sCommitSCN) != ID_TRUE) &&
             (SM_SCN_IS_LT(&sCommitSCN, &sSysMinDskViewSCN) == ID_TRUE) )
         {
@@ -5543,7 +5543,7 @@ IDE_RC sdcLob::getNodeInfo( idvSQL      * aStatistics,
 }
 
 /***********************************************************************
- * Description : Commit SCNÀ» ±¸ÇÑ´Ù.
+ * Description : Commit SCNì„ êµ¬í•œë‹¤.
  **********************************************************************/
 IDE_RC sdcLob::getCommitSCN( idvSQL * aStatistics,
                              sdSID    aTSSlotSID,
@@ -5577,7 +5577,7 @@ IDE_RC sdcLob::getCommitSCN( idvSQL * aStatistics,
 }
 
 /***********************************************************************
- * Description : Lob Column Buffer¿¡ WriteÇÑ´Ù.(In-Mode)
+ * Description : Lob Column Bufferì— Writeí•œë‹¤.(In-Mode)
  **********************************************************************/
 IDE_RC sdcLob::writeBuffer( smLobViewEnv    * aLobViewEnv,
                             UChar           * aPieceVal,
@@ -5700,7 +5700,7 @@ IDE_RC sdcLob::writeBuffer( smLobViewEnv    * aLobViewEnv,
 }
 
 /***********************************************************************
- * Description : Lob Desc¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+ * Description : Lob Descë¥¼ ì´ˆê¸°í™”í•œë‹¤.
  **********************************************************************/
 void sdcLob::initLobDesc( sdcLobDesc * aLobDesc )
 {
@@ -5720,10 +5720,10 @@ void sdcLob::initLobDesc( sdcLobDesc * aLobDesc )
 }
 
 /***********************************************************************
- * Description : LOB Meta Page¸¦ ÃÊ±âÈ­ ÇÑ´Ù.(mFreeList ÃÊ±âÈ­)
+ * Description : LOB Meta Pageë¥¼ ì´ˆê¸°í™” í•œë‹¤.(mFreeList ì´ˆê¸°í™”)
  *
- *   aMetaPtr - [IN] ÃÊ±âÈ­ ÇÒ LOB Meta PageÀÇ Pointer
- *   aMtx     - [IN] ¹Ì´Ï Æ®·£Àè¼Ç
+ *   aMetaPtr - [IN] ì´ˆê¸°í™” í•  LOB Meta Pageì˜ Pointer
+ *   aMtx     - [IN] ë¯¸ë‹ˆ íŠ¸ëœì­ì…˜
  **********************************************************************/
 IDE_RC sdcLob::initLobMetaPage( UChar       * aMetaPtr,
                                 smiColumn   * aColumn,
@@ -5792,7 +5792,7 @@ IDE_RC sdcLob::initLobMetaPage( UChar       * aMetaPtr,
 }
 
 /***********************************************************************
- * Description : Lob ÄÃ·³¿¡ ´ëÇÑ ÆäÀÌÁöµéÀ» Agable List¿¡ ¿¬°áÇÑ´Ù.
+ * Description : Lob ì»¬ëŸ¼ì— ëŒ€í•œ í˜ì´ì§€ë“¤ì„ Agable Listì— ì—°ê²°í•œë‹¤.
  **********************************************************************/
 IDE_RC sdcLob::removeLob( idvSQL            * aStatistics,     
                           void              * aTrans,
@@ -5829,7 +5829,7 @@ IDE_RC sdcLob::removeLob( idvSQL            * aStatistics,
 }
 
 /***********************************************************************
- * Description : Lob Desc Å©±â¸¦ ¹İÈ¯ÇÑ´Ù.
+ * Description : Lob Desc í¬ê¸°ë¥¼ ë°˜í™˜í•œë‹¤.
  **********************************************************************/
 UInt sdcLob::getDiskLobDescSize()
 {
@@ -5837,9 +5837,9 @@ UInt sdcLob::getDiskLobDescSize()
 }
 
 /***********************************************************************
- * Description :  DiskLobÀ» À§ÇÑ LobViewEnv ÃÊ±âÈ­
+ * Description :  DiskLobì„ ìœ„í•œ LobViewEnv ì´ˆê¸°í™”
  *
- * aLobViewEnv - [OUT] ÃÊ±âÈ­ÇÒ aLobViewEnv Æ÷ÀÎÅÍ
+ * aLobViewEnv - [OUT] ì´ˆê¸°í™”í•  aLobViewEnv í¬ì¸í„°
  **********************************************************************/
 void sdcLob::initLobViewEnv( smLobViewEnv * aLobViewEnv )
 {
@@ -5876,14 +5876,14 @@ void sdcLob::initLobViewEnv( smLobViewEnv * aLobViewEnv )
 }
 
 /***********************************************************************
- * Description : FetchÇÒ ¶§ ³Ñ°ÜÁÙ Columnº¹»ç ÇÔ¼ö
- *               LOB Descriptor¸¦ °¡Á®¿Ã ¿ëµµ
+ * Description : Fetchí•  ë•Œ ë„˜ê²¨ì¤„ Columnë³µì‚¬ í•¨ìˆ˜
+ *               LOB Descriptorë¥¼ ê°€ì ¸ì˜¬ ìš©ë„
  *
- *    aColumn      - [IN] »ç¿ëÇÏÁö ¾ÊÀ½
- *    aDestValue   - [OUT] º¹»çÇÑ °ÍÀ» ´ãÀ» °÷
- *    aWriteOffset - [IN] »ç¿ëÇÏÁö ¾ÊÀ½
- *    aSrcLength   - [IN] º¹»çÇÒ ±æÀÌ sdcLobDesc¿Í °°¾Æ¾ß ÇÑ´Ù.
- *    aSrcValue    - [IN] Page³» LobDescriptorÀÇ Pointer
+ *    aColumn      - [IN] ì‚¬ìš©í•˜ì§€ ì•ŠìŒ
+ *    aDestValue   - [OUT] ë³µì‚¬í•œ ê²ƒì„ ë‹´ì„ ê³³
+ *    aWriteOffset - [IN] ì‚¬ìš©í•˜ì§€ ì•ŠìŒ
+ *    aSrcLength   - [IN] ë³µì‚¬í•  ê¸¸ì´ sdcLobDescì™€ ê°™ì•„ì•¼ í•œë‹¤.
+ *    aSrcValue    - [IN] Pageë‚´ LobDescriptorì˜ Pointer
  **********************************************************************/
 IDE_RC sdcLob::copyLobColData( const UInt   /*aColumnSize*/,
                                const void   * aDestValue,
@@ -5897,7 +5897,7 @@ IDE_RC sdcLob::copyLobColData( const UInt   /*aColumnSize*/,
     {
         IDE_ASSERT( aWriteOffset == 0 );
         
-        // NULL µ¥ÀÌÅ¸
+        // NULL ë°ì´íƒ€
         sLobColValue->value = NULL;
         sLobColValue->length = 0;
     }
@@ -5924,7 +5924,7 @@ IDE_RC sdcLob::copyLobColData( const UInt   /*aColumnSize*/,
 }
 
 /***********************************************************************
- * Description : Lob Column Buffer¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+ * Description : Lob Column Bufferë¥¼ ì´ˆê¸°í™”í•œë‹¤.
  **********************************************************************/
 IDE_RC sdcLob::initLobColBuffer( sdcLobColBuffer * aLobColBuf,
                                  UInt              aLength,
@@ -5964,7 +5964,7 @@ IDE_RC sdcLob::initLobColBuffer( sdcLobColBuffer * aLobColBuf,
 }
 
 /***********************************************************************
- * Description : Lob Column Buffer¸¦ ÇØÁ¦ÇÑ´Ù.
+ * Description : Lob Column Bufferë¥¼ í•´ì œí•œë‹¤.
  **********************************************************************/
 IDE_RC sdcLob::finalLobColBuffer( sdcLobColBuffer * aLobColBuf )
 {
@@ -5991,7 +5991,7 @@ IDE_RC sdcLob::finalLobColBuffer( sdcLobColBuffer * aLobColBuf )
 }
 
 /***********************************************************************
- * Description : LOB DataÀÇ Å©±â¸¦ LOB Descriptor ·ÎºÎÅÍ ¾ò´Â´Ù.
+ * Description : LOB Dataì˜ í¬ê¸°ë¥¼ LOB Descriptor ë¡œë¶€í„° ì–»ëŠ”ë‹¤.
  *
  * aLobDesc - [IN] LOB Descriptor
  **********************************************************************/
@@ -6009,7 +6009,7 @@ ULong sdcLob::getLobLengthFromLobDesc( const sdcLobDesc* aLobDesc )
 }
 
 /***********************************************************************
- * Description : Lob Length¸¦ ¹İÈ¯ÇÑ´Ù.
+ * Description : Lob Lengthë¥¼ ë°˜í™˜í•œë‹¤.
  **********************************************************************/
 IDE_RC sdcLob::getLobLength( sdcLobColBuffer  * aLobColBuf,
                              ULong            * aLength)
@@ -6041,7 +6041,7 @@ IDE_RC sdcLob::getLobLength( sdcLobColBuffer  * aLobColBuf,
 }
 
 /***********************************************************************
- * Description : Lob ColumnÀ» Lob Column Buffer¿¡ ÀĞ¾î µéÀÎ´Ù.
+ * Description : Lob Columnì„ Lob Column Bufferì— ì½ì–´ ë“¤ì¸ë‹¤.
  **********************************************************************/
 IDE_RC sdcLob::readLobColBuf( idvSQL       * aStatistics,
                               void         * aTrans,
@@ -6098,7 +6098,7 @@ IDE_RC sdcLob::readLobColBuf( idvSQL       * aStatistics,
 
     sLobInfo4Fetch.mOpenMode = aLobViewEnv->mOpenMode;
 
-    /* BUG-43093 lob size°¡ 0ÀÏ °æ¿ì mInOutMode°¡ ÃÊ±âÈ­µÇÁö ¾Ê´Â´Ù. */
+    /* BUG-43093 lob sizeê°€ 0ì¼ ê²½ìš° mInOutModeê°€ ì´ˆê¸°í™”ë˜ì§€ ì•ŠëŠ”ë‹¤. */
     sLobInfo4Fetch.mInOutMode = SDC_COLUMN_IN_MODE;
 
     if( aLobViewEnv->mOpenMode == SMI_LOB_READ_LAST_VERSION_MODE )
@@ -6181,7 +6181,7 @@ IDE_RC sdcLob::readLobColBuf( idvSQL       * aStatistics,
 }
 
 /***********************************************************************
- * Description : Lob Column BufferÀÇ °ªÀ¸·Î Lob ColumnÀ» updateÇÑ´Ù.
+ * Description : Lob Column Bufferì˜ ê°’ìœ¼ë¡œ Lob Columnì„ updateí•œë‹¤.
  **********************************************************************/
 IDE_RC sdcLob::updateLobCol( idvSQL         * aStatistics,
                              void           * aTrans,
@@ -6264,7 +6264,7 @@ IDE_RC sdcLob::updateLobCol( idvSQL         * aStatistics,
 }
 
 /***********************************************************************
- * Description : Lob VersionÀ» °»½ÅÇÑ´Ù.
+ * Description : Lob Versionì„ ê°±ì‹ í•œë‹¤.
  **********************************************************************/
 IDE_RC sdcLob::adjustLobVersion( smLobViewEnv * aLobViewEnv )
 {
@@ -6416,8 +6416,8 @@ IDE_RC sdcLob::writeLobWritePieceRedoLog( sdrMtx        * aMtx,
               != IDE_SUCCESS );
     
     /*
-     * fix BUG-15799, replication¿¡ À§ÇÏ¿©
-     * lobÀ» SQL±¸¹®À¸·Î null·Î updateÇÏ´Â °ÍÀ» Ç¥ÇöÇÏ±â À§ÇÔ.
+     * fix BUG-15799, replicationì— ìœ„í•˜ì—¬
+     * lobì„ SQLêµ¬ë¬¸ìœ¼ë¡œ nullë¡œ updateí•˜ëŠ” ê²ƒì„ í‘œí˜„í•˜ê¸° ìœ„í•¨.
      */
     
     if( aWriteSize > 0 )
@@ -6487,8 +6487,8 @@ IDE_RC sdcLob::writeLobWritePiece4DMLRedoLog( sdrMtx    * aMtx,
               != IDE_SUCCESS );
     
     /*
-     * fix BUG-15799, replication¿¡ À§ÇÏ¿©
-     * lobÀ» SQL±¸¹®À¸·Î null·Î updateÇÏ´Â °ÍÀ» Ç¥ÇöÇÏ±â À§ÇÔ.
+     * fix BUG-15799, replicationì— ìœ„í•˜ì—¬
+     * lobì„ SQLêµ¬ë¬¸ìœ¼ë¡œ nullë¡œ updateí•˜ëŠ” ê²ƒì„ í‘œí˜„í•˜ê¸° ìœ„í•¨.
      */
     
     if( aWriteSize > 0 )
@@ -6660,7 +6660,7 @@ UInt sdcLob::getNeedPageCount( sdcLobColBuffer  * aLobColBuf,
  * ================================================ */
 
 /***********************************************************************
- * Description: Lob Data PageÀÇ Logical Header ¸¦ Dump
+ * Description: Lob Data Pageì˜ Logical Header ë¥¼ Dump
  ***********************************************************************/
 IDE_RC sdcLob::dumpLobDataPageHdr( UChar * aPage,
                                    SChar * aOutBuf,
@@ -6728,8 +6728,8 @@ IDE_RC sdcLob::dumpLobDataPageHdr( UChar * aPage,
 }
 
 /***********************************************************************
- * Description: Lob Data Page¿¡ ÀúÀåµÈ Data¸¦ DumpÇÑ´Ù.
- * BUG-29385 Lob Data, Lob InodeµîÀÇ Lob Page PBT ±â´ÉÀÌ ÇÊ¿äÇÕ´Ï´Ù.
+ * Description: Lob Data Pageì— ì €ì¥ëœ Dataë¥¼ Dumpí•œë‹¤.
+ * BUG-29385 Lob Data, Lob Inodeë“±ì˜ Lob Page PBT ê¸°ëŠ¥ì´ í•„ìš”í•©ë‹ˆë‹¤.
  ***********************************************************************/
 IDE_RC sdcLob::dumpLobDataPageBody( UChar *aPage ,
                                     SChar *aOutBuf ,
@@ -6747,7 +6747,7 @@ IDE_RC sdcLob::dumpLobDataPageBody( UChar *aPage ,
                      aOutSize,
                      "------------ Disk LOB Data Begin -----------\n" );
 
-    /* page¸¦ Hexa code·Î dumpÇÏ¿© Ãâ·ÂÇÑ´Ù. */
+    /* pageë¥¼ Hexa codeë¡œ dumpí•˜ì—¬ ì¶œë ¥í•œë‹¤. */
     if( ideLog::ideMemToHexStr( sLobDataStartPtr,
                                 SDC_LOB_PAGE_BODY_SIZE,
                                 IDE_DUMP_FORMAT_NORMAL,
@@ -6768,8 +6768,8 @@ IDE_RC sdcLob::dumpLobDataPageBody( UChar *aPage ,
 }
 
 /***********************************************************************
- * Description: Lob Meta Page¸¦ DumpÇÑ´Ù.
- * BUG-29385 Lob Data, Lob InodeµîÀÇ Lob Page PBT ±â´ÉÀÌ ÇÊ¿äÇÕ´Ï´Ù.
+ * Description: Lob Meta Pageë¥¼ Dumpí•œë‹¤.
+ * BUG-29385 Lob Data, Lob Inodeë“±ì˜ Lob Page PBT ê¸°ëŠ¥ì´ í•„ìš”í•©ë‹ˆë‹¤.
  ***********************************************************************/
 IDE_RC sdcLob::dumpLobMeta( UChar *aPage ,
                             SChar *aOutBuf ,

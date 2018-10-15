@@ -68,7 +68,7 @@ alalib:
 	$(MAKE) alalib_shared
 
 #################
-# static CLI ºôµå
+# static CLI ë¹Œë“œ
 #################
 odbccli_static:
 	$(Q) -$(RM) $(ALTIBASE_HOME)/lib/$(LIBPRE)odbccli.$(LIBEXT)
@@ -92,7 +92,7 @@ endif
 $(ODBCCLI_LIB_PATH): $(ODBCCLI_OBJS)
 
 #################
-# shared CLI ºôµå
+# shared CLI ë¹Œë“œ
 #################
 odbccli_shared:
 ifeq "$(NEED_SHARED_LIBRARY)" "no" # defined in pd/makefiles2/*.mk : only aix 4.x no
@@ -116,7 +116,7 @@ else
 endif # IBM_AIX
 
 #################
-# static CLI for Shard ºôµå
+# static CLI for Shard ë¹Œë“œ
 #################
 shardcli_static:
 	$(Q) -$(RM) $(ALTIBASE_HOME)/lib/$(LIBPRE)shardcli.$(LIBEXT)
@@ -138,7 +138,7 @@ endif
 $(SHARDCLI_LIB_PATH): $(SHARDCLI_OBJS)
 
 #################
-# shared CLI for Shard ºôµå
+# shared CLI for Shard ë¹Œë“œ
 #################
 shardcli_shared: $(SHARDCLI_SHOBJS)
 	$(Q) -$(RM) $(SHARDCLI_SHLIB_PATH)
@@ -155,11 +155,11 @@ else
 endif # IBM_AIX
 
 ############################################
-# ACS LIB ºôµå
+# ACS LIB ë¹Œë“œ
 ############################################
 
 #################
-# static acslib ºôµå
+# static acslib ë¹Œë“œ
 #################
 
 acslib_static: $(ACS_LIB_PATH)
@@ -167,7 +167,7 @@ acslib_static: $(ACS_LIB_PATH)
 $(ACS_LIB_PATH): $(ACS_OBJS)
 
 #################
-# shared acslib ºôµå
+# shared acslib ë¹Œë“œ
 #################
 
 acslib_shared:
@@ -183,11 +183,11 @@ acs_shared_build: $(ACS_SHOBJS)
 	$(SOLINK.c) $(SOOUT)$(ACS_SHLIB_PATH) $(ACS_SHOBJS) $(LDROPT)$(ALTICORE_LIBDIR) $(ALTICORE_LIBDIR)/$(LIBPRE)alticore_pic.$(LIBEXT) $(CLFLAGS)
 
 ############################################
-# ALA LIB ºôµå
+# ALA LIB ë¹Œë“œ
 ############################################
 
 #################
-# static alalib ºôµå
+# static alalib ë¹Œë“œ
 #################
 
 ifeq "$(OS_TARGET)" "IBM_AIX"
@@ -210,7 +210,7 @@ $(ALA_LIB_PATH): $(ALA_OBJS)
 endif
 
 #################
-# shared alalib ºôµå
+# shared alalib ë¹Œë“œ
 #################
 
 alalib_shared:
@@ -235,7 +235,7 @@ ala_shared_build: $(ALA_SHOBJS)
 	$(Q) $(SOLINK.c) $(SOOUT)$(ALA_SHLIB_PATH) $(ALA_SHOBJS) $(CLFLAGS) $(LDROPT)$(ALTICORE_LIBDIR) $(ALTICORE_LIBDIR)/$(LIBPRE)alticore_pic.$(LIBEXT)
 
 ################
-# Unix ODBC ºôµå
+# Unix ODBC ë¹Œë“œ
 ################
 unix_odbc: $(UNIX_ODBC_OBJS)
 	$(Q) -$(RM) $(UNIX_ODBC_SHLIB_PATH)

@@ -41,11 +41,11 @@ smrRedoLSNMgr::~smrRedoLSNMgr()
 }
 
 /***********************************************************************
- * Description : smrRedoLSNMgr¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+ * Description : smrRedoLSNMgrë¥¼ ì´ˆê¸°í™”í•œë‹¤.
 
-  smrRedoInfo¸¦ ÇÒ´çÇÏ°í °¢°¢ÀÇ smrRedoInfoÀÇ
-  mRedoLSNÀÌ °¡¸®Å°´Â LogÀÇ Head¿¡ mSN°ª¿¡ µû¶ó¼­ SortingÇÏ±â À§ÇØ
-  mRedoLSNÀÌ °¡¸®Å°´Â Log¸¦ ÀÐ¾î¼­ mSortRedoInfo¿¡ »ðÀÔÇÑ´Ù.
+  smrRedoInfoë¥¼ í• ë‹¹í•˜ê³  ê°ê°ì˜ smrRedoInfoì˜
+  mRedoLSNì´ ê°€ë¦¬í‚¤ëŠ” Logì˜ Headì— mSNê°’ì— ë”°ë¼ì„œ Sortingí•˜ê¸° ìœ„í•´
+  mRedoLSNì´ ê°€ë¦¬í‚¤ëŠ” Logë¥¼ ì½ì–´ì„œ mSortRedoInfoì— ì‚½ìž…í•œë‹¤.
 
   aRedoLSN : [IN] Redo LSN 
 */
@@ -68,9 +68,9 @@ IDE_RC smrRedoLSNMgr::initialize( smLSN *aRedoLSN )
     return IDE_FAILURE;
 }
 
-/* Redo Info¸¦ ÃÊ±âÈ­ÇÑ´Ù
+/* Redo Infoë¥¼ ì´ˆê¸°í™”í•œë‹¤
 
-   [IN] aRedoInfo - ÃÊ±âÈ­ÇÒ Redo Info
+   [IN] aRedoInfo - ì´ˆê¸°í™”í•  Redo Info
  */
 IDE_RC smrRedoLSNMgr::initializeRedoInfo( smrRedoInfo * aRedoInfo )
 {
@@ -78,10 +78,10 @@ IDE_RC smrRedoLSNMgr::initializeRedoInfo( smrRedoInfo * aRedoInfo )
 
     idlOS::memset( aRedoInfo, 0, ID_SIZEOF( *aRedoInfo ) );
 
-    // Log Record°¡ ¾ÐÃà ÇØÁ¦µÈ ÈÄ,
-    // ¹Ù·Î RedoµÇÁö ¾Ê°í Hash Table¿¡ ¸Å´Þ¸°Ã¤·Î ³²¾ÆÀÖ°Ô µÈ´Ù.
-    // ÀÌ¸¦ À§ÇØ LogÀÇ Decompress Buffer¸¦ Àç»ç¿ëÇÏÁö ¾Êµµ·Ï,
-    // iduGrowingMemoryHandleÀ» »ç¿ëÇÑ´Ù.
+    // Log Recordê°€ ì••ì¶• í•´ì œëœ í›„,
+    // ë°”ë¡œ Redoë˜ì§€ ì•Šê³  Hash Tableì— ë§¤ë‹¬ë¦°ì±„ë¡œ ë‚¨ì•„ìžˆê²Œ ëœë‹¤.
+    // ì´ë¥¼ ìœ„í•´ Logì˜ Decompress Bufferë¥¼ ìž¬ì‚¬ìš©í•˜ì§€ ì•Šë„ë¡,
+    // iduGrowingMemoryHandleì„ ì‚¬ìš©í•œë‹¤.
 
     /* smrRedoLSNMgr_initializeRedoInfo_malloc_DecompBufferHandle1.tc */
     IDU_FIT_POINT("smrRedoLSNMgr::initializeRedoInfo::malloc::DecompBufferHandle1");
@@ -91,13 +91,13 @@ IDE_RC smrRedoLSNMgr::initializeRedoInfo( smrRedoInfo * aRedoInfo )
                                IDU_MEM_FORCE)
              != IDE_SUCCESS);
 
-    // ·Î±× ¾ÐÃà¹öÆÛ ÇÚµéÀÇ ÃÊ±âÈ­
+    // ë¡œê·¸ ì••ì¶•ë²„í¼ í•¸ë“¤ì˜ ì´ˆê¸°í™”
     IDE_TEST( ((iduGrowingMemoryHandle*)aRedoInfo->mDecompBufferHandle)->
                     initialize(
                         IDU_MEM_SM_SMR,
-                        // Chunk Å©±â
-                        // ( ÃÖ´ë ÇÒ´ç°¡´ÉÇÑ ¾ÐÃà¹öÆÛÅ©±â
-                        //   => Log RecordÀÇ ÃÖ´ë Å©±â == ·Î±×ÆÄÀÏÅ©±â)
+                        // Chunk í¬ê¸°
+                        // ( ìµœëŒ€ í• ë‹¹ê°€ëŠ¥í•œ ì••ì¶•ë²„í¼í¬ê¸°
+                        //   => Log Recordì˜ ìµœëŒ€ í¬ê¸° == ë¡œê·¸íŒŒì¼í¬ê¸°)
                         smuProperty::getLogFileSize() )
               != IDE_SUCCESS );
 
@@ -111,15 +111,15 @@ IDE_RC smrRedoLSNMgr::initializeRedoInfo( smrRedoInfo * aRedoInfo )
 }
 
 
-/* Redo Info¸¦ ÆÄ±«ÇÑ´Ù
+/* Redo Infoë¥¼ íŒŒê´´í•œë‹¤
 
-   [IN] aRedoInfo - ÆÄ±«ÇÒ Redo Info
+   [IN] aRedoInfo - íŒŒê´´í•  Redo Info
  */
 IDE_RC smrRedoLSNMgr::destroyRedoInfo( smrRedoInfo * aRedoInfo )
 {
     IDE_DASSERT( aRedoInfo != NULL );
 
-    // ·Î±× ¾ÐÃà¹öÆÛ ÇÚµéÀÇ ÆÄ±«
+    // ë¡œê·¸ ì••ì¶•ë²„í¼ í•¸ë“¤ì˜ íŒŒê´´
     IDE_TEST( ((iduGrowingMemoryHandle*)aRedoInfo->mDecompBufferHandle)->
                 destroy() != IDE_SUCCESS );
 
@@ -127,7 +127,7 @@ IDE_RC smrRedoLSNMgr::destroyRedoInfo( smrRedoInfo * aRedoInfo )
               != IDE_SUCCESS );
     aRedoInfo->mDecompBufferHandle = NULL;
 
-    // BUGBUG Log FileÀÇ Close´Â ¾îµð¼­ ÇÏ´ÂÁö?
+    // BUGBUG Log Fileì˜ CloseëŠ” ì–´ë””ì„œ í•˜ëŠ”ì§€?
 
     return IDE_SUCCESS;
 
@@ -136,9 +136,9 @@ IDE_RC smrRedoLSNMgr::destroyRedoInfo( smrRedoInfo * aRedoInfo )
     return IDE_FAILURE;
 }
 
-/* Decompress Log Buffer Å©±â¸¦ ¾ò¾î¿Â´Ù
+/* Decompress Log Buffer í¬ê¸°ë¥¼ ì–»ì–´ì˜¨ë‹¤
 
-   return - Decompress Log BufferÅ©±â
+   return - Decompress Log Bufferí¬ê¸°
  */
 
 ULong smrRedoLSNMgr::getDecompBufferSize()
@@ -148,7 +148,7 @@ ULong smrRedoLSNMgr::getDecompBufferSize()
                 getSize();
 }
 
-// Decompress Log Buffer°¡ ÇÒ´çÇÑ ¸ðµç ¸Þ¸ð¸®¸¦ ÇØÁ¦ÇÑ´Ù.
+// Decompress Log Bufferê°€ í• ë‹¹í•œ ëª¨ë“  ë©”ëª¨ë¦¬ë¥¼ í•´ì œí•œë‹¤.
 IDE_RC smrRedoLSNMgr::clearDecompBuffer()
 {
 
@@ -163,10 +163,10 @@ IDE_RC smrRedoLSNMgr::clearDecompBuffer()
     return IDE_FAILURE;
 }
 
-/* Redo Info¸¦ Sort Array¿¡ PushÇÑ´Ù.
+/* Redo Infoë¥¼ Sort Arrayì— Pushí•œë‹¤.
 
-   [IN] aRedoInfo -  Sort Array¿¡ PushÇÒ Redo Info
-   [IN] aRedoLSN  -  Redo ½ÃÀÛ À§Ä¡¸¦ °¡¸®Å°´Â LSN
+   [IN] aRedoInfo -  Sort Arrayì— Pushí•  Redo Info
+   [IN] aRedoLSN  -  Redo ì‹œìž‘ ìœ„ì¹˜ë¥¼ ê°€ë¦¬í‚¤ëŠ” LSN
 
  */
 IDE_RC smrRedoLSNMgr::pushRedoInfo( smrRedoInfo * aRedoInfo,
@@ -183,7 +183,7 @@ IDE_RC smrRedoLSNMgr::pushRedoInfo( smrRedoInfo * aRedoInfo,
     sDecompBufferHandle  = aRedoInfo->mDecompBufferHandle;
     sOrgDecompBufferSize = sDecompBufferHandle->getSize();
 
-    /*mRedoLSNÀÌ °¡¸®Å°´Â Log¸¦ ÀÐ¾î¼­ mRedoInfo¿¡ »ðÀÔÇÑ´Ù.*/
+    /*mRedoLSNì´ ê°€ë¦¬í‚¤ëŠ” Logë¥¼ ì½ì–´ì„œ mRedoInfoì— ì‚½ìž…í•œë‹¤.*/
     IDE_TEST(smrLogMgr::readLog( aRedoInfo->mDecompBufferHandle,
                                  &(aRedoInfo->mRedoLSN),
                                  ID_FALSE, /* don't Close Log File When aLogFile doesn't include aLSN */
@@ -198,7 +198,7 @@ IDE_RC smrRedoLSNMgr::pushRedoInfo( smrRedoInfo * aRedoInfo,
     {
         sLogHeadPtr = &aRedoInfo->mLogHead;
 
-        // µð½ºÅ© ·Î±×¸¦ ÀÐÀº °æ¿ì
+        // ë””ìŠ¤í¬ ë¡œê·¸ë¥¼ ì½ì€ ê²½ìš°
         if ( smrLogMgr::isDiskLogType(
                  smrLogHeadI::getType( sLogHeadPtr ))
              == ID_TRUE )
@@ -211,7 +211,7 @@ IDE_RC smrRedoLSNMgr::pushRedoInfo( smrRedoInfo * aRedoInfo,
     }
     else
     {
-        /* ActiveÇÑ TransactionÀÌ ÇÏ³ªµµ ¾øÀ» °æ¿ì */
+        /* Activeí•œ Transactionì´ í•˜ë‚˜ë„ ì—†ì„ ê²½ìš° */
     }
 
     return IDE_SUCCESS;
@@ -224,9 +224,9 @@ IDE_RC smrRedoLSNMgr::pushRedoInfo( smrRedoInfo * aRedoInfo,
 
 
 /***********************************************************************
- * Description : smrRedoLSNMgr¸¦ ÇØÁ¦ÇÑ´Ù.
+ * Description : smrRedoLSNMgrë¥¼ í•´ì œí•œë‹¤.
  *
- * ÇÒ´çµÈ Resource¸¦ ÇØÁ¦ÇÑ´Ù.
+ * í• ë‹¹ëœ Resourceë¥¼ í•´ì œí•œë‹¤.
  */
 
 IDE_RC smrRedoLSNMgr::destroy()
@@ -244,12 +244,12 @@ IDE_RC smrRedoLSNMgr::destroy()
 }
 
 /***********************************************************************
- * Description : iduPriorityQueue¿¡¼­ ItemµéÀ» CompareÇÒ ¶§ »ç¿ëÇÏ´Â
- *               Callback FunctionÀÓ. 
- *               iduPriorityQueueÀÇ initializeÇÒ¶§ ³Ñ°ÜÁü
+ * Description : iduPriorityQueueì—ì„œ Itemë“¤ì„ Compareí•  ë•Œ ì‚¬ìš©í•˜ëŠ”
+ *               Callback Functionìž„. 
+ *               iduPriorityQueueì˜ initializeí• ë•Œ ë„˜ê²¨ì§
  *
- * arg1  - [IN] compareÇÒ smrRedoInfo 1
- * arg2  - [IN] compareÇÒ smrRedoInfo 2
+ * arg1  - [IN] compareí•  smrRedoInfo 1
+ * arg2  - [IN] compareí•  smrRedoInfo 2
 */
 SInt smrRedoLSNMgr::compare(const void *arg1,const void *arg2)
 {
@@ -277,16 +277,16 @@ SInt smrRedoLSNMgr::compare(const void *arg1,const void *arg2)
 }
 
 /***********************************************************************
- * Description : RedoÇÒ Log¸¦ ÀÐ¾î¼­ ÁØ´Ù.
+ * Description : Redoí•  Logë¥¼ ì½ì–´ì„œ ì¤€ë‹¤.
  *
- * mSortRedoInfo¿¡ µé¾îÀÖ´Â smrRedoInfoÁß¿¡¼­ °¡Àå ÀÛÀº mSN°ªÀ»
- * °¡Áø Log¸¦ ÀÐ¾îµéÀÎ´Ù.
+ * mSortRedoInfoì— ë“¤ì–´ìžˆëŠ” smrRedoInfoì¤‘ì—ì„œ ê°€ìž¥ ìž‘ì€ mSNê°’ì„
+ * ê°€ì§„ Logë¥¼ ì½ì–´ë“¤ì¸ë‹¤.
  *
- * [OUT] aLSN       - LogÀÇ LSN
- * [OUT] aLogHead   - aLSNÀÌ °¡¸®Å°´Â logÀÇ LogHead
- * [OUT] aLogPtr    - aLSNÀÌ °¡¸®Å°´Â logÀÇ Log Buffr Ptr
- * [OUT] aLogSizeAtDisk - disk »ó¿¡¼­ÀÇ logÀÇ ±æÀÌ
- * [OUT] aIsValid   - aLSNÀÌ °¡¸®Å°´Â log°¡  ValidÇÏ¸é ID_TRUE¾Æ´Ï¸é ID_FALSE
+ * [OUT] aLSN       - Logì˜ LSN
+ * [OUT] aLogHead   - aLSNì´ ê°€ë¦¬í‚¤ëŠ” logì˜ LogHead
+ * [OUT] aLogPtr    - aLSNì´ ê°€ë¦¬í‚¤ëŠ” logì˜ Log Buffr Ptr
+ * [OUT] aLogSizeAtDisk - disk ìƒì—ì„œì˜ logì˜ ê¸¸ì´
+ * [OUT] aIsValid   - aLSNì´ ê°€ë¦¬í‚¤ëŠ” logê°€  Validí•˜ë©´ ID_TRUEì•„ë‹ˆë©´ ID_FALSE
  ***********************************************************************/
 IDE_RC smrRedoLSNMgr::readLog(smLSN      ** aLSN,
                               smrLogHead ** aLogHead,
@@ -317,7 +317,7 @@ IDE_RC smrRedoLSNMgr::readLog(smLSN      ** aLSN,
         if(mCurRedoInfoPtr->mIsValid == ID_TRUE)
         {
             /* BUG-35392
-             * Dummy Log ¸¦ °Ç³Ê¶Ù¸é¼­ Á¤»ó ·Î±×¸¦ ÀÐÀ»¶§ ±îÁö ¹«ÇÑ ¹Ýº¹ */
+             * Dummy Log ë¥¼ ê±´ë„ˆë›°ë©´ì„œ ì •ìƒ ë¡œê·¸ë¥¼ ì½ì„ë•Œ ê¹Œì§€ ë¬´í•œ ë°˜ë³µ */
             while(1)
             {
                 sDecompBufferHandle = mCurRedoInfoPtr->mDecompBufferHandle;
@@ -326,10 +326,10 @@ IDE_RC smrRedoLSNMgr::readLog(smLSN      ** aLSN,
                 sOrgDecompBufferSize = sDecompBufferHandle->getSize();
 
 
-                /* ¸¶Áö¸·À¸·Î Redo¿¬»êÀ» ÇÑ smrRedoInfoÀÇ mRedoLSNÀº
-                 * smrRecoveryMgrÀÇ Redo¿¡¼­ update°¡ µÈ´Ù. µû¶ó¼­ ´Ù½Ã
-                 * mRedoLSNÀÌ °¡¸®Å°´Â ·Î±×¸¦ ÀÐ¾î¼­ smrRedoInfo¸¦ °»½ÅÇÏ°í
-                 * ´Ù½Ã mSortRedoInfo¿¡ ³Ö¾î¾ß ÇÑ´Ù.*/
+                /* ë§ˆì§€ë§‰ìœ¼ë¡œ Redoì—°ì‚°ì„ í•œ smrRedoInfoì˜ mRedoLSNì€
+                 * smrRecoveryMgrì˜ Redoì—ì„œ updateê°€ ëœë‹¤. ë”°ë¼ì„œ ë‹¤ì‹œ
+                 * mRedoLSNì´ ê°€ë¦¬í‚¤ëŠ” ë¡œê·¸ë¥¼ ì½ì–´ì„œ smrRedoInfoë¥¼ ê°±ì‹ í•˜ê³ 
+                 * ë‹¤ì‹œ mSortRedoInfoì— ë„£ì–´ì•¼ í•œë‹¤.*/
                 IDE_TEST( smrLogMgr::readLog( mCurRedoInfoPtr->mDecompBufferHandle,
                                               &(mCurRedoInfoPtr->mRedoLSN),
                                               ID_FALSE, /* don't Close Log File When aLogFile doesn't include aLSN */
@@ -343,11 +343,11 @@ IDE_RC smrRedoLSNMgr::readLog(smLSN      ** aLSN,
                 if(mCurRedoInfoPtr->mIsValid == ID_TRUE)
                 {
 
-                    // »õ·Î¿î ·Î±×ÆÄÀÏÀ» ÀÐÀº °æ¿ì
+                    // ìƒˆë¡œìš´ ë¡œê·¸íŒŒì¼ì„ ì½ì€ ê²½ìš°
                     if ( sOrgLogFile != mCurRedoInfoPtr->mLogFilePtr )
                     {
-                        // ±âÁ¸ ·Î±×ÆÄÀÏÀ» CloseÇÑ´Ù.
-                        // ÀÌÀ¯ : makeCopyOfDiskLogÀÇ ÁÖ¼® Âü°í
+                        // ê¸°ì¡´ ë¡œê·¸íŒŒì¼ì„ Closeí•œë‹¤.
+                        // ì´ìœ  : makeCopyOfDiskLogì˜ ì£¼ì„ ì°¸ê³ 
                         IDE_TEST( smrLogMgr::closeLogFile( sOrgLogFile )
                                   != IDE_SUCCESS );
                     }
@@ -361,7 +361,7 @@ IDE_RC smrRedoLSNMgr::readLog(smLSN      ** aLSN,
                         continue;
                     }
 
-                    // µð½ºÅ© ·Î±×¸¦ ÀÐÀº °æ¿ì
+                    // ë””ìŠ¤í¬ ë¡œê·¸ë¥¼ ì½ì€ ê²½ìš°
                     if ( smrLogMgr::isDiskLogType( smrLogHeadI::getType( sLogHeadPtr ))
                          == ID_TRUE )
                     {
@@ -422,10 +422,10 @@ IDE_RC smrRedoLSNMgr::readLog(smLSN      ** aLSN,
 }
 
 /*
- * Description : ¾ÐÃà¹öÆÛ¸¦ »ç¿ëÇÏÁö ¾ÊÀº Disk Log memcpy
+ * Description : ì••ì¶•ë²„í¼ë¥¼ ì‚¬ìš©í•˜ì§€ ì•Šì€ Disk Log memcpy
  *
  * To Fix BUG-21078
- * ¾ÐÃàµÇÁö ¾ÊÀº DiskLog¸¦ º°µµÀÇ Memory °ø°£¿¡ memcpy ÇÑ´Ù.
+ * ì••ì¶•ë˜ì§€ ì•Šì€ DiskLogë¥¼ ë³„ë„ì˜ Memory ê³µê°„ì— memcpy í•œë‹¤.
  */
 IDE_RC smrRedoLSNMgr::makeCopyOfDiskLogIfNonComp(
                           smrRedoInfo     * aCurRedoInfoPtr,
@@ -436,23 +436,23 @@ IDE_RC smrRedoLSNMgr::makeCopyOfDiskLogIfNonComp(
 
     sLogHeadPtr = &aCurRedoInfoPtr->mLogHead;
 
-    // µð½ºÅ© ·Î±×¸¦ ÀÐÀº °æ¿ì
+    // ë””ìŠ¤í¬ ë¡œê·¸ë¥¼ ì½ì€ ê²½ìš°
     if ( smrLogMgr::isDiskLogType(
              smrLogHeadI::getType( sLogHeadPtr ))
          == ID_TRUE )
     {
-        // ¾ÐÃà¹öÆÛ¸¦ »ç¿ëÇÏÁö ¾ÊÀº °æ¿ì
+        // ì••ì¶•ë²„í¼ë¥¼ ì‚¬ìš©í•˜ì§€ ì•Šì€ ê²½ìš°
         if ( aOrgDecompBufferSize ==
              aDecompBufferHandle->getSize() )
         {
-            // ¾ÐÃàµÇÁö ¾ÊÀº ·Î±×ÀÌ´Ù.
-            // ¿øº»·Î±×Å©±â¿Í Disk»óÀÇ LogÅ©±â°¡ °°¾Æ¾ß ÇÔ
+            // ì••ì¶•ë˜ì§€ ì•Šì€ ë¡œê·¸ì´ë‹¤.
+            // ì›ë³¸ë¡œê·¸í¬ê¸°ì™€ Diskìƒì˜ Logí¬ê¸°ê°€ ê°™ì•„ì•¼ í•¨
             IDE_DASSERT( aCurRedoInfoPtr->mLogSizeAtDisk ==
                          smrLogHeadI::getSize(sLogHeadPtr) );
 
             // To Fix BUG-18686
-            //   Disk LogÀÇ Redo½Ã Decompression Buffer¸¦ ±âÁØÀ¸·Î
-            //   Hash µÈ Log RecordµéÀ» Apply
+            //   Disk Logì˜ Redoì‹œ Decompression Bufferë¥¼ ê¸°ì¤€ìœ¼ë¡œ
+            //   Hash ëœ Log Recordë“¤ì„ Apply
             IDE_TEST( makeCopyOfDiskLog(
                           aDecompBufferHandle,
                           aCurRedoInfoPtr->mLogPtr,
@@ -460,9 +460,9 @@ IDE_RC smrRedoLSNMgr::makeCopyOfDiskLogIfNonComp(
                           & aCurRedoInfoPtr->mLogPtr )
                       != IDE_SUCCESS );
 
-            // ·Î±× Head´Â (aCurRedoInfoPtr->mLogHead)
-            // ÀÌ¹Ì ¸Þ¸ð¸® º¹»çµÈ »óÅÂÀÌ´Ù.
-            // º°µµ Ã³¸® ÇÏÁö ¾Ê¾Æµµ µÈ´Ù.
+            // ë¡œê·¸ HeadëŠ” (aCurRedoInfoPtr->mLogHead)
+            // ì´ë¯¸ ë©”ëª¨ë¦¬ ë³µì‚¬ëœ ìƒíƒœì´ë‹¤.
+            // ë³„ë„ ì²˜ë¦¬ í•˜ì§€ ì•Šì•„ë„ ëœë‹¤.
         }
     }
 
@@ -473,41 +473,41 @@ IDE_RC smrRedoLSNMgr::makeCopyOfDiskLogIfNonComp(
     return IDE_FAILURE;
 }
 
-// ¸Þ¸ð¸® ÇÚµé·ÎºÎÅÍ ÇÒ´çÇÑ ¸Þ¸ð¸®¿¡ ·Î±×¸¦ º¹»çÇÑ´Ù.
+// ë©”ëª¨ë¦¬ í•¸ë“¤ë¡œë¶€í„° í• ë‹¹í•œ ë©”ëª¨ë¦¬ì— ë¡œê·¸ë¥¼ ë³µì‚¬í•œë‹¤.
 //
 // To Fix BUG-18686
-//   Disk LogÀÇ Redo½Ã Decompression Buffer¸¦ ±âÁØÀ¸·Î
-//   Hash µÈ Log RecordµéÀ» Apply
+//   Disk Logì˜ Redoì‹œ Decompression Bufferë¥¼ ê¸°ì¤€ìœ¼ë¡œ
+//   Hash ëœ Log Recordë“¤ì„ Apply
 //
-// Disk LogÀÇ °æ¿ì Page ID±âÁØÀ¸·Î Hash Table¿¡
-// ´Þ¾ÆµÎ¾ú´Ù°¡ ÇÑ²¨¹ø¿¡ RedoÇÑ´Ù.
+// Disk Logì˜ ê²½ìš° Page IDê¸°ì¤€ìœ¼ë¡œ Hash Tableì—
+// ë‹¬ì•„ë‘ì—ˆë‹¤ê°€ í•œêº¼ë²ˆì— Redoí•œë‹¤.
 //
-// ·Î±× ·¹ÄÚµå´Â ·Î±× ÆÄÀÏ °´Ã¼ÀÇ ·Î±×¹öÆÛ
-// ¸Þ¸ð¸®¸¦ °¡¸®Å°°Ô µÇ´Âµ¥, ÀÌ·¯ÇÑ ¸Þ¸ð¸®¸¦
-// À¯ÁöÇÏ±â À§ÇØ¼­´Â ·Î±× ÆÄÀÏÀ»
-// openÇØµÎ¾î¾ß ÇÑ´Ù.
+// ë¡œê·¸ ë ˆì½”ë“œëŠ” ë¡œê·¸ íŒŒì¼ ê°ì²´ì˜ ë¡œê·¸ë²„í¼
+// ë©”ëª¨ë¦¬ë¥¼ ê°€ë¦¬í‚¤ê²Œ ë˜ëŠ”ë°, ì´ëŸ¬í•œ ë©”ëª¨ë¦¬ë¥¼
+// ìœ ì§€í•˜ê¸° ìœ„í•´ì„œëŠ” ë¡œê·¸ íŒŒì¼ì„
+// opení•´ë‘ì–´ì•¼ í•œë‹¤.
 //
-// ÀÌ °æ¿ì, Disk Log»Ó ¾Æ´Ï¶ó Memory Log±îÁö
-// OpenµÈ ·Î±×ÆÄÀÏ ¾È¿¡ Á¸ÀçÇÏ¿©
-// ¸Þ¸ð¸® ³¶ºñ°¡ ¹ß»ýÇÑ´Ù.
+// ì´ ê²½ìš°, Disk Logë¿ ì•„ë‹ˆë¼ Memory Logê¹Œì§€
+// Openëœ ë¡œê·¸íŒŒì¼ ì•ˆì— ì¡´ìž¬í•˜ì—¬
+// ë©”ëª¨ë¦¬ ë‚­ë¹„ê°€ ë°œìƒí•œë‹¤.
 
-// ¾ÐÃàÇØÁ¦µÈ ·Î±×ÀÇ °æ¿ì Decompress Buffer¿¡
-// ·Î±×°¡ ÀÖÀ¸¸ç, ÀÌ ¹öÆÛ°¡ Æ¯Á¤ Å©±â ÀÌ»óÀ¸·Î
-// Ä¿Áö¸é Disk Log¸¦ Hash·ÎºÎÅÍ Buffer¿¡ ¹Ý¿µÇÑ´Ù.
+// ì••ì¶•í•´ì œëœ ë¡œê·¸ì˜ ê²½ìš° Decompress Bufferì—
+// ë¡œê·¸ê°€ ìžˆìœ¼ë©°, ì´ ë²„í¼ê°€ íŠ¹ì • í¬ê¸° ì´ìƒìœ¼ë¡œ
+// ì»¤ì§€ë©´ Disk Logë¥¼ Hashë¡œë¶€í„° Bufferì— ë°˜ì˜í•œë‹¤.
 //
-// Disk·Î±×ÀÇ °æ¿ì ¾ÐÃàµÇÁö ¾ÊÀº ·Î±×µµ
-// Decompress Buffer·ÎºÎÅÍ ÇÒ´çµÈ ¸Þ¸ð¸®¿¡
-// ·Î±×¸¦ º¹»çÇÏ°í ÀÌ¸¦ PID-Log Hash Table¿¡¼­
-// °¡¸®Å°µµ·Ï ÇÑ´Ù.
+// Diskë¡œê·¸ì˜ ê²½ìš° ì••ì¶•ë˜ì§€ ì•Šì€ ë¡œê·¸ë„
+// Decompress Bufferë¡œë¶€í„° í• ë‹¹ëœ ë©”ëª¨ë¦¬ì—
+// ë¡œê·¸ë¥¼ ë³µì‚¬í•˜ê³  ì´ë¥¼ PID-Log Hash Tableì—ì„œ
+// ê°€ë¦¬í‚¤ë„ë¡ í•œë‹¤.
 //
-// ÀÌ·¸°Ô ÇÏ¸é ·Î±×ÆÄÀÏÀ» OpenµÈÃ¤·Î À¯ÁöÇÒ
-// ÇÊ¿ä°¡ ¾øÀ¸¹Ç·Î,
-// ÇÏ³ªÀÇ ·Î±×ÆÄÀÏÀ» ´Ù ÀÐ°ÔµÇ¸é close¸¦ ÇÑ´Ù.
+// ì´ë ‡ê²Œ í•˜ë©´ ë¡œê·¸íŒŒì¼ì„ Openëœì±„ë¡œ ìœ ì§€í• 
+// í•„ìš”ê°€ ì—†ìœ¼ë¯€ë¡œ,
+// í•˜ë‚˜ì˜ ë¡œê·¸íŒŒì¼ì„ ë‹¤ ì½ê²Œë˜ë©´ closeë¥¼ í•œë‹¤.
 /*
-   [IN] aMemoryHandle - ·Î±×¸¦ º¹»çÇÒ ¸Þ¸ð¸®¸¦ ÇÒ´ç¹ÞÀ» ÇÚµé
-   [IN] aOrgLogPtr - ¿øº»·Î±× ÁÖ¼Ò
-   [IN] aOrgLogSize - ¿øº»·Î±× Å©±â
-   [OUT] aCopiedLogPtr -º¹»çµÈ ·Î±×ÀÇ ÁÖ¼Ò
+   [IN] aMemoryHandle - ë¡œê·¸ë¥¼ ë³µì‚¬í•  ë©”ëª¨ë¦¬ë¥¼ í• ë‹¹ë°›ì„ í•¸ë“¤
+   [IN] aOrgLogPtr - ì›ë³¸ë¡œê·¸ ì£¼ì†Œ
+   [IN] aOrgLogSize - ì›ë³¸ë¡œê·¸ í¬ê¸°
+   [OUT] aCopiedLogPtr -ë³µì‚¬ëœ ë¡œê·¸ì˜ ì£¼ì†Œ
  */
 IDE_RC smrRedoLSNMgr::makeCopyOfDiskLog( iduMemoryHandle * aMemoryHandle,
                                          SChar *      aOrgLogPtr,

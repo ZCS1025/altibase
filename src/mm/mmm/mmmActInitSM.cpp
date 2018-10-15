@@ -53,35 +53,35 @@ static IDE_RC mmmPhaseActionInitSM(mmmPhase        aPhase,
     IDE_TEST(smiStartup(sStartupPhase,aOptionflag, &mmm::mSmiGlobalCallBackList) != IDE_SUCCESS);
 
     /* PROJ-1488 Altibase Spatio-Temporal DBMS */
-    /* R-Tree ¿Í 3DR-Tree Index Ãß°¡ */
+    /* R-Tree ì™€ 3DR-Tree Index ì¶”ê°€ */
     if ( sStartupPhase == SMI_STARTUP_PRE_PROCESS )
     {
         IDE_TEST( sti::addExtSM_Index() != IDE_SUCCESS );
     }
     else
     {
-        // ÃÖÃÊ ÇÑ¹ø¸¸ µî·ÏÇÑ´Ù.
+        // ìµœì´ˆ í•œë²ˆë§Œ ë“±ë¡í•œë‹¤.
     }
 
-    /* BUG-25279 Btree for spatial°ú Disk BtreeÀÇ ÀÚ·á±¸Á¶ ¹× ·Î±ë ºĞ¸® 
-     *  º» ÇÁ·ÎÁ§Æ®¸¦ ÅëÇØ Disk IndexÀÇ ÀúÀå±¸Á¶°¡ º¯°æµÇ±â ¶§¹®¿¡
-     * Btree for spatial, Áï Disk Rtree Index´Â Disk Btree index¿Í
-     * ÀúÀå ±¸Á¶ ¹× ·Î±ëÀÌ µ¶¸³µÇ¾î¾ß ÇÑ´Ù.
+    /* BUG-25279 Btree for spatialê³¼ Disk Btreeì˜ ìë£Œêµ¬ì¡° ë° ë¡œê¹… ë¶„ë¦¬ 
+     *  ë³¸ í”„ë¡œì íŠ¸ë¥¼ í†µí•´ Disk Indexì˜ ì €ì¥êµ¬ì¡°ê°€ ë³€ê²½ë˜ê¸° ë•Œë¬¸ì—
+     * Btree for spatial, ì¦‰ Disk Rtree IndexëŠ” Disk Btree indexì™€
+     * ì €ì¥ êµ¬ì¡° ë° ë¡œê¹…ì´ ë…ë¦½ë˜ì–´ì•¼ í•œë‹¤.
      *
-     *  ÀÌ¿¡ µû¶ó Disk Rtree¸¦ À§ÇÑ Recovery ÇÔ¼öµéÀÌ st ¸ğµâ·Î ÀÌµ¿
-     * µÇ¸ç sm¿¡¼­´Â st¸ğµâÀÇ Recovery ÇÔ¼ö¸¦ »ç¿ëÇÏ±â À§ÇØ ¿ÜºÎ¸ğµâ
-     * ·Î ¿¬°áÇÑ´Ù.
+     *  ì´ì— ë”°ë¼ Disk Rtreeë¥¼ ìœ„í•œ Recovery í•¨ìˆ˜ë“¤ì´ st ëª¨ë“ˆë¡œ ì´ë™
+     * ë˜ë©° smì—ì„œëŠ” stëª¨ë“ˆì˜ Recovery í•¨ìˆ˜ë¥¼ ì‚¬ìš©í•˜ê¸° ìœ„í•´ ì™¸ë¶€ëª¨ë“ˆ
+     * ë¡œ ì—°ê²°í•œë‹¤.
      *
-     *  ¶ÇÇÑ ¿ÜºÎ¸ğµâ·Î RecoveryÇÔ¼ö¸¦ ¿¬°áÇÏ´Â ÀÏÀ» Control´Ü°è¿¡¼­
-     * ¼öÇàÇÑ´Ù. ¿Ö³ÄÇÏ¸é Control ÃÊÀÔºÎ¿¡¼­ Redo - Undo MapÀ» ÃÊ±âÈ­
-     * ÇÏ±â ¶§¹®ÀÌ´Ù.          */
+     *  ë˜í•œ ì™¸ë¶€ëª¨ë“ˆë¡œ Recoveryí•¨ìˆ˜ë¥¼ ì—°ê²°í•˜ëŠ” ì¼ì„ Controlë‹¨ê³„ì—ì„œ
+     * ìˆ˜í–‰í•œë‹¤. ì™œëƒí•˜ë©´ Control ì´ˆì…ë¶€ì—ì„œ Redo - Undo Mapì„ ì´ˆê¸°í™”
+     * í•˜ê¸° ë•Œë¬¸ì´ë‹¤.          */
     if ( sStartupPhase == SMI_STARTUP_CONTROL )
     {
         IDE_TEST( sti::addExtSM_Recovery() != IDE_SUCCESS );
     }
     else
     {
-        // ÃÖÃÊ ÇÑ¹ø¸¸ µî·ÏÇÑ´Ù.
+        // ìµœì´ˆ í•œë²ˆë§Œ ë“±ë¡í•œë‹¤.
     }
 
     return IDE_SUCCESS;

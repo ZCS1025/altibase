@@ -116,7 +116,7 @@ ACI_RC ulxTransactionProtocol(ulnDbc       *aDbc,
     CMI_WR8(sCtx, (acp_uint64_t*)&aFlag);
     CMI_WR8(sCtx, &sArgument);
 
-    // XID ±¸Á¶¸â¹ö°¡ °¡º¯±æÀÌ longÇüÀÌ¾î¼­ °íÁ¤±æÀÌ ¹öÆÛ°¡ ÇÊ¿ä
+    // XID êµ¬ì¡°ë©¤ë²„ê°€ ê°€ë³€ê¸¸ì´ longí˜•ì´ì–´ì„œ ê³ ì •ê¸¸ì´ ë²„í¼ê°€ í•„ìš”
     sFormatID    = aXid->formatID;
     sGTRIDLength = aXid->gtrid_length;
     sBQUALLength = aXid->bqual_length;
@@ -142,8 +142,8 @@ ACI_RC ulxTransactionProtocol(ulnDbc       *aDbc,
     ACI_EXCEPTION(read_err);
     {
         /* bug-36037: invalid xid
-           invalid xidÀÎ °æ¿ì xa result¸¦ ¹ÞÁö ¾Ê°í
-           error result¸¦ ¼ö½ÅÇÏ¿© mXaResult°¡ ÀÇ¹Ì ¾øÀ½ */
+           invalid xidì¸ ê²½ìš° xa resultë¥¼ ë°›ì§€ ì•Šê³ 
+           error resultë¥¼ ìˆ˜ì‹ í•˜ì—¬ mXaResultê°€ ì˜ë¯¸ ì—†ìŒ */
         if (sFnContext.mXaResult != XA_OK)
         {
             *aResult = sFnContext.mXaResult;
@@ -203,7 +203,7 @@ ACI_RC ulxRecoverProtocol(ulnDbc        *aDbc,
     CMI_WR8(sCtx, &sArgument);
 
     /*
-     * ÇÁ·ÎÅäÄÝ ¾²±â
+     * í”„ë¡œí† ì½œ ì“°ê¸°
      */
     ACI_TEST(ulnWriteProtocol(&sFnContext, &(aDbc->mPtContext), &sPacket)
              != ACI_SUCCESS);
@@ -289,7 +289,7 @@ ACI_RC ulxCallbackXaXid(cmiProtocolContext *aCtx,
 
     ACI_TEST_RAISE(sXid == NULL, LABEL_INVALID_PROTOCOL);
 
-    // XID ±¸Á¶¸â¹ö°¡ °¡º¯±æÀÌ longÇüÀÌ¾î¼­ °íÁ¤±æÀÌ ¹öÆÛ°¡ ÇÊ¿ä
+    // XID êµ¬ì¡°ë©¤ë²„ê°€ ê°€ë³€ê¸¸ì´ longí˜•ì´ì–´ì„œ ê³ ì •ê¸¸ì´ ë²„í¼ê°€ í•„ìš”
     CMI_RD8(aCtx, (acp_uint64_t*)&(sFormatID));
     CMI_RD8(aCtx, (acp_uint64_t*)&(sGTRIDLength));
     CMI_RD8(aCtx, (acp_uint64_t*)&(sBQUALLength));

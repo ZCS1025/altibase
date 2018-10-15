@@ -19,7 +19,7 @@
  *
  * $Id: sdpModule.cpp 27220 2008-07-23 14:56:22Z newdaily $
  *
- * Page LayerÀÇ Å×ÀÌºí½ºÆäÀÌ½º ¹× ¼¼±×¸ÕÆ®ÀÇ °ø°£°ü¸® ¸ğµâµéÀ» Á¤ÀÇÇÑ´Ù.
+ * Page Layerì˜ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ë° ì„¸ê·¸ë¨¼íŠ¸ì˜ ê³µê°„ê´€ë¦¬ ëª¨ë“ˆë“¤ì„ ì •ì˜í•œë‹¤.
  *
  **********************************************************************/
 
@@ -31,7 +31,7 @@
 
 /*
  * [ FETB ]
- * BitmapÀ» »ç¿ëÇÑ Extent TablespaceÀÇ °ø°£°ü¸® ¸ğµâÀ» Á¤ÀÇÇÑ´Ù.
+ * Bitmapì„ ì‚¬ìš©í•œ Extent Tablespaceì˜ ê³µê°„ê´€ë¦¬ ëª¨ë“ˆì„ ì •ì˜í•œë‹¤.
  */
 sdpExtMgmtOp gSdptbOp =
 {
@@ -71,7 +71,7 @@ sdpExtMgmtOp gSdptbOp =
 
 /*
  * [ FMS ]
- * Freelist Managed Segment ÀÇ °ø°£°ü¸® ¸ğµâÀ» Á¤ÀÇÇÑ´Ù.
+ * Freelist Managed Segment ì˜ ê³µê°„ê´€ë¦¬ ëª¨ë“ˆì„ ì •ì˜í•œë‹¤.
  */
 sdpSegMgmtOp gSdpsfOp =
 {
@@ -122,7 +122,7 @@ sdpSegMgmtOp gSdpsfOp =
 
 /*
  * [ TMS ]
- * Treelist Managed Segment ÀÇ °ø°£°ü¸® ¸ğµâÀ» Á¤ÀÇÇÑ´Ù.
+ * Treelist Managed Segment ì˜ ê³µê°„ê´€ë¦¬ ëª¨ë“ˆì„ ì •ì˜í•œë‹¤.
  */
 sdpSegMgmtOp gSdpstOp =
 {
@@ -173,7 +173,7 @@ sdpSegMgmtOp gSdpstOp =
 
 /*
  * [ CMS ]
- * Circular-List Managed Segment ÀÇ °ø°£°ü¸® ¸ğµâÀ» Á¤ÀÇÇÑ´Ù.
+ * Circular-List Managed Segment ì˜ ê³µê°„ê´€ë¦¬ ëª¨ë“ˆì„ ì •ì˜í•œë‹¤.
  */
 sdpSegMgmtOp gSdpscOp =
 {

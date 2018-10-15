@@ -21,20 +21,20 @@
 
 /************************************************************************
  * Description :
- *    ¹öÆÛÇ®¿¡¼­ »ç¿ëÇÏ´Â checkpoint list setÀ» ±¸ÇöÇÑ ÆÄÀÏÀÌ´Ù.
- *    checkpoint list´Â BCB°¡ dirtyµÇ´Â ½ÃÁ¡¿¡ LRU list¿Í »ó°ü¾øÀÌ
- *    ´Ş¸®´Â ¸®½ºÆ®ÀÌ´Ù.
- *    ±×·± checkpoint list´Â ÇÏ³ªÀÇ setÀ¸·Î ´ÙÁß °ü¸®µÇ´Âµ¥
- *    ´Ù¸¥ ¸®½ºÆ®µé°ú´Â ´Ş¸® ÇÑ Å¬·¡½º¿¡¼­
- *    ´ÙÁß ¸®½ºÆ®°¡ °ü¸®µÇ´Â°Ô Æ¯Â¡ÀÌ´Ù.
- *    ÀÌ´Â checkpoint list µé Áß¿¡ °¡Àå ÀÛÀº recovery LSNÀ»
- *    ¿ÜºÎ¿¡¼­ ±¸ÇÏ±â ½±µµ·Ï ÇÏ±â À§ÇØ¼­ÀÌ´Ù.
+ *    ë²„í¼í’€ì—ì„œ ì‚¬ìš©í•˜ëŠ” checkpoint list setì„ êµ¬í˜„í•œ íŒŒì¼ì´ë‹¤.
+ *    checkpoint listëŠ” BCBê°€ dirtyë˜ëŠ” ì‹œì ì— LRU listì™€ ìƒê´€ì—†ì´
+ *    ë‹¬ë¦¬ëŠ” ë¦¬ìŠ¤íŠ¸ì´ë‹¤.
+ *    ê·¸ëŸ° checkpoint listëŠ” í•˜ë‚˜ì˜ setìœ¼ë¡œ ë‹¤ì¤‘ ê´€ë¦¬ë˜ëŠ”ë°
+ *    ë‹¤ë¥¸ ë¦¬ìŠ¤íŠ¸ë“¤ê³¼ëŠ” ë‹¬ë¦¬ í•œ í´ë˜ìŠ¤ì—ì„œ
+ *    ë‹¤ì¤‘ ë¦¬ìŠ¤íŠ¸ê°€ ê´€ë¦¬ë˜ëŠ”ê²Œ íŠ¹ì§•ì´ë‹¤.
+ *    ì´ëŠ” checkpoint list ë“¤ ì¤‘ì— ê°€ì¥ ì‘ì€ recovery LSNì„
+ *    ì™¸ë¶€ì—ì„œ êµ¬í•˜ê¸° ì‰½ë„ë¡ í•˜ê¸° ìœ„í•´ì„œì´ë‹¤.
  *
- *    + transaction threadµé¿¡ ÀÇÇØ setDirty½Ã add()°¡ È£ÃâµÈ´Ù.
- *    + flusher¿¡ ÀÇÇØ flush½Ã minBCB(), nextBCB(), remove()°¡ È£ÃâµÈ´Ù.
- *    + checkpoint thread¿¡ ÀÇÇØ checkpoint½Ã getRecoveryLSN()ÀÌ È£ÃâµÈ´Ù.
+ *    + transaction threadë“¤ì— ì˜í•´ setDirtyì‹œ add()ê°€ í˜¸ì¶œëœë‹¤.
+ *    + flusherì— ì˜í•´ flushì‹œ minBCB(), nextBCB(), remove()ê°€ í˜¸ì¶œëœë‹¤.
+ *    + checkpoint threadì— ì˜í•´ checkpointì‹œ getRecoveryLSN()ì´ í˜¸ì¶œëœë‹¤.
  *
- *    checkpoint flush½Ã ´ÙÀ½°ú °°Àº Çü½ÄÀ¸·Î »ç¿ëÇØ¾ß ÇÑ´Ù.
+ *    checkpoint flushì‹œ ë‹¤ìŒê³¼ ê°™ì€ í˜•ì‹ìœ¼ë¡œ ì‚¬ìš©í•´ì•¼ í•œë‹¤.
  *
  *    sdbCPListSet::minBCB(&sBCB);
  *    while (sBCB != NULL)
@@ -52,8 +52,8 @@
  *    }
  *
  * Implementation :
- *    °¢ checkpoint list´Â ÇÏ³ªÀÇ mutex¿¡ ÀÇÇØ °ü¸®µÈ´Ù.
- *    ÀÌ mutex´Â add()¿Í remove()¿¡¼­ »ç¿ëµÈ´Ù.
+ *    ê° checkpoint listëŠ” í•˜ë‚˜ì˜ mutexì— ì˜í•´ ê´€ë¦¬ëœë‹¤.
+ *    ì´ mutexëŠ” add()ì™€ remove()ì—ì„œ ì‚¬ìš©ëœë‹¤.
  ************************************************************************/
 
 #include <sdbCPListSet.h>
@@ -63,9 +63,9 @@
 
 /************************************************************************
  * Description:
- *  ÃÊ±âÈ­
- * aListCount   - [IN] ¸®½ºÆ® °³¼ö
- * aType        - [IN] BufferMgr or SecondaryBufferMgr ¿¡¼­ È£ÃâµÇ¾ú´ÂÁö.
+ *  ì´ˆê¸°í™”
+ * aListCount   - [IN] ë¦¬ìŠ¤íŠ¸ ê°œìˆ˜
+ * aType        - [IN] BufferMgr or SecondaryBufferMgr ì—ì„œ í˜¸ì¶œë˜ì—ˆëŠ”ì§€.
  ************************************************************************/
 IDE_RC sdbCPListSet::initialize( UInt aListCount, sdLayerState aType )
 {
@@ -146,8 +146,8 @@ IDE_RC sdbCPListSet::initialize( UInt aListCount, sdLayerState aType )
         }
     }
 
-    // ÀÌ ÈÄ¿¡ IDE_TEST ±¸¹®À» »ç¿ëÇÏ·Á¸é mListMutexÀÇ destroyÃ³¸®¸¦
-    // exception ÄÚµå¿¡¼­ ÇØÁà¾ß ÇÑ´Ù.
+    // ì´ í›„ì— IDE_TEST êµ¬ë¬¸ì„ ì‚¬ìš©í•˜ë ¤ë©´ mListMutexì˜ destroyì²˜ë¦¬ë¥¼
+    // exception ì½”ë“œì—ì„œ í•´ì¤˜ì•¼ í•œë‹¤.
 
     return IDE_SUCCESS;
 
@@ -177,7 +177,7 @@ IDE_RC sdbCPListSet::initialize( UInt aListCount, sdLayerState aType )
 
 /***********************************************************************
  * Description :
- *  ¼Ò¸êÀÚ
+ *  ì†Œë©¸ì
  ***********************************************************************/
 IDE_RC sdbCPListSet::destroy()
 {
@@ -202,21 +202,21 @@ IDE_RC sdbCPListSet::destroy()
 
 /************************************************************************
  * Description :
- *    checkpoint list¿¡ BCB¸¦ recoveryLSN ¼øÀ¸·Î Á¤·ÄÇÏ¿© Ãß°¡ÇÑ´Ù.
- *    ±âº»ÀûÀ¸·Î BCBÀÇ mPageID¿¡ ÀÇÇØ checkpoint list no°¡ Á¤ÇØÁö´Âµ¥,
- *    ÇØ´ç listÀÇ mutex°¡ Àá°ÜÀÖÀ¸¸é ´ÙÀ½ list¿¡ ³Ö°Ô µÈ´Ù.
- *    ¸¸¾à list °³¼ö¸¸Å­ ½ÃµµÇØµµ mutex Àâ´Âµ¥ ½ÇÆĞÇÏ¸é Ã³À½¿¡ ¼±ÅÃÇß´ø
- *    list¿¡¼­ mutex lockÀ» ¿äÃ»ÇÏ°í ´ë±âÇÏ°Ô µÈ´Ù.
+ *    checkpoint listì— BCBë¥¼ recoveryLSN ìˆœìœ¼ë¡œ ì •ë ¬í•˜ì—¬ ì¶”ê°€í•œë‹¤.
+ *    ê¸°ë³¸ì ìœ¼ë¡œ BCBì˜ mPageIDì— ì˜í•´ checkpoint list noê°€ ì •í•´ì§€ëŠ”ë°,
+ *    í•´ë‹¹ listì˜ mutexê°€ ì ê²¨ìˆìœ¼ë©´ ë‹¤ìŒ listì— ë„£ê²Œ ëœë‹¤.
+ *    ë§Œì•½ list ê°œìˆ˜ë§Œí¼ ì‹œë„í•´ë„ mutex ì¡ëŠ”ë° ì‹¤íŒ¨í•˜ë©´ ì²˜ìŒì— ì„ íƒí–ˆë˜
+ *    listì—ì„œ mutex lockì„ ìš”ì²­í•˜ê³  ëŒ€ê¸°í•˜ê²Œ ëœë‹¤.
  *
  * Implementation :
- *    ´ÙÀ½ 3´Ü°è¸¦ ÅëÇØ add¸¦ ÇÑ´Ù.
- *    1. »ğÀÔÇÒ list¸¦ ¹°»öÇÑ´Ù. list mutex È¹µæ¿¡ ¼º°øÇÏ¸é ÇØ´ç list¿¡
- *       ³Ö°ÔµÈ´Ù.
- *    2. list¸¦ Ã£¾ÒÀ¸¸é »ğÀÔÇÒ À§Ä¡¸¦ Ã£´Â´Ù. tailºÎÅÍ ¼øÈ¸ÇÏ¿©
- *       ÀÚ½ÅÀÇ recoveryLSNº¸´Ù ÀÛÀº BCB¸¦ ¸¸³¯¶§±îÁö mPrev·Î ÁøÇàÇÑ´Ù.
- *    3. À§Ä¡¸¦ Ã£¾ÒÀ¸¸é aBCB¸¦ ¸®½ºÆ®¿¡ ³¢¾î ³Ö´Â´Ù.
+ *    ë‹¤ìŒ 3ë‹¨ê³„ë¥¼ í†µí•´ addë¥¼ í•œë‹¤.
+ *    1. ì‚½ì…í•  listë¥¼ ë¬¼ìƒ‰í•œë‹¤. list mutex íšë“ì— ì„±ê³µí•˜ë©´ í•´ë‹¹ listì—
+ *       ë„£ê²Œëœë‹¤.
+ *    2. listë¥¼ ì°¾ì•˜ìœ¼ë©´ ì‚½ì…í•  ìœ„ì¹˜ë¥¼ ì°¾ëŠ”ë‹¤. tailë¶€í„° ìˆœíšŒí•˜ì—¬
+ *       ìì‹ ì˜ recoveryLSNë³´ë‹¤ ì‘ì€ BCBë¥¼ ë§Œë‚ ë•Œê¹Œì§€ mPrevë¡œ ì§„í–‰í•œë‹¤.
+ *    3. ìœ„ì¹˜ë¥¼ ì°¾ì•˜ìœ¼ë©´ aBCBë¥¼ ë¦¬ìŠ¤íŠ¸ì— ë¼ì–´ ë„£ëŠ”ë‹¤.
  *
- *  aStatistics - [IN]  Åë°èÁ¤º¸
+ *  aStatistics - [IN]  í†µê³„ì •ë³´
  *  aBCB        - [IN]  BCB
  ************************************************************************/
 void sdbCPListSet::add( idvSQL * aStatistics, void * aBCB )
@@ -235,20 +235,20 @@ void sdbCPListSet::add( idvSQL * aStatistics, void * aBCB )
     sListNo   = SD_GET_BCB_PAGEID( aBCB ) % mListCount;
     sTryCount = 0;
 
-    // [1 ´Ü°è: listµé¿¡ ´ëÇØ mutex°¡ ÀâÈ÷´Â list¸¦ Ã£´Â´Ù.]
-    // listµé¿¡ ´ëÇØ lockÀ» ½ÃµµÇÑ´Ù.
+    // [1 ë‹¨ê³„: listë“¤ì— ëŒ€í•´ mutexê°€ ì¡íˆëŠ” listë¥¼ ì°¾ëŠ”ë‹¤.]
+    // listë“¤ì— ëŒ€í•´ lockì„ ì‹œë„í•œë‹¤.
     while (1)
     {
         if (sTryCount == mListCount)
         {
-            // trylockÀ» mListCount¸¸Å­ ½ÃµµÇßÀ¸¸é
-            // lock()À¸·Î ´ë±â¸¦ ÇÑ´Ù.
+            // trylockì„ mListCountë§Œí¼ ì‹œë„í–ˆìœ¼ë©´
+            // lock()ìœ¼ë¡œ ëŒ€ê¸°ë¥¼ í•œë‹¤.
             IDE_ASSERT(mListMutex[sListNo].lock(aStatistics)
                        == IDE_SUCCESS);
             break;
         }
-        // ÀÏ¹İÀûÀ¸·Î trylockÀ» È£ÃâÇÏ¿©
-        // lock È¹µæ¿¡ ½ÇÆĞÇÏ¸é ´ÙÀ½ list·Î ¿Å±ä´Ù.
+        // ì¼ë°˜ì ìœ¼ë¡œ trylockì„ í˜¸ì¶œí•˜ì—¬
+        // lock íšë“ì— ì‹¤íŒ¨í•˜ë©´ ë‹¤ìŒ listë¡œ ì˜®ê¸´ë‹¤.
         IDE_ASSERT(mListMutex[sListNo].trylock(isSucceed)
                    == IDE_SUCCESS);
         sTryCount++;
@@ -257,8 +257,8 @@ void sdbCPListSet::add( idvSQL * aStatistics, void * aBCB )
         {
             break;
         }
-        // ´ÙÀ½ tryÇÒ list no¸¦ ±¸ÇÑ´Ù.
-        // ÇÑ¹ÙÄû µ¹¸é ´Ù½Ã 0ºÎÅÍ tryÇÑ´Ù.
+        // ë‹¤ìŒ tryí•  list noë¥¼ êµ¬í•œë‹¤.
+        // í•œë°”í€´ ëŒë©´ ë‹¤ì‹œ 0ë¶€í„° tryí•œë‹¤.
         if (sListNo == mListCount - 1)
         {
             sListNo = 0;
@@ -269,9 +269,9 @@ void sdbCPListSet::add( idvSQL * aStatistics, void * aBCB )
         }
     }
 
-    // [2 ´Ü°è: listÀÇ tailºÎÅÍ recoveryLSNÀ» °Ë»çÇÏ¿© µé¾î°¥ À§Ä¡¸¦ Ã£´Â´Ù.]
-    // ²¿¸®ºÎÅÍ ¼øÈ¸ÇÏ¿© aBCBÀÇ recoveryLSNº¸´Ù
-    // °°°Å³ª ÀÛÀº Ã¹¹øÂ° BCB¸¦ Ã£´Â´Ù.
+    // [2 ë‹¨ê³„: listì˜ tailë¶€í„° recoveryLSNì„ ê²€ì‚¬í•˜ì—¬ ë“¤ì–´ê°ˆ ìœ„ì¹˜ë¥¼ ì°¾ëŠ”ë‹¤.]
+    // ê¼¬ë¦¬ë¶€í„° ìˆœíšŒí•˜ì—¬ aBCBì˜ recoveryLSNë³´ë‹¤
+    // ê°™ê±°ë‚˜ ì‘ì€ ì²«ë²ˆì§¸ BCBë¥¼ ì°¾ëŠ”ë‹¤.
     sNode = SMU_LIST_GET_LAST(&mBase[sListNo]);
     while (sNode != &mBase[sListNo])
     {
@@ -286,7 +286,7 @@ void sdbCPListSet::add( idvSQL * aStatistics, void * aBCB )
         sNode = SMU_LIST_GET_PREV(sNode);
     }
 
-    // [3 ´Ü°è: Ã£Àº À§Ä¡¿¡ BCB¸¦ ³Ö´Â´Ù.]
+    // [3 ë‹¨ê³„: ì°¾ì€ ìœ„ì¹˜ì— BCBë¥¼ ë„£ëŠ”ë‹¤.]
     SMU_LIST_ADD_AFTER(sNode, SD_GET_BCB_CPLISTITEM( aBCB ) );
 
     SD_GET_BCB_CPLISTNO( aBCB ) = sListNo;
@@ -297,23 +297,23 @@ void sdbCPListSet::add( idvSQL * aStatistics, void * aBCB )
 
 /************************************************************************
  * Description :
- *    checkpoint listµé Áß¿¡ °¡Àå ÀÛÀº recovery LSNÀ» °¡Áø BCB¸¦ Ã£´Â´Ù.
- *    Ã£Àº BCB¸¦ checkpoint list¿¡¼­ »©Áø ¾Ê´Â´Ù.
- *    ¶ÇÇÑ Ã£Àº BCB´Â checkpoint list¿¡ ´ëÇØ mutex¸¦ ÀâÁö ¾Ê±â ¶§¹®¿¡
- *    ¹İÈ¯ÇÒ ½ÃÁ¡¿¡ checkpoint list¿¡ ´Ş·ÁÀÖ´ÂÁö, ÃÖ¼ÒÀÇ recovery LSNÀÌ
- *    ¸Â´ÂÁö´Â º¸ÀåÇÒ ¼ö ¾ø´Ù.
- *    ÀÌ ÇÔ¼ö¸¦ È£ÃâÇÑ °÷¿¡¼­ °á°ú·Î ¾òÀº BCB¿¡ ´ëÇØ stateMutex¸¦ ÀâÀº ÈÄ
- *    state¸¦ È®ÀÎÇÏ¿© dirtyÀÎÁö¸¦ °Ë»çÇØ¾ß ÇÑ´Ù.
- *    ÃÖ¼Ò recovery LSNÀÌ ¾Æ´Ï¾îµµ checkpoint flush°¡ ¹®Á¦°¡ µÇÁø ¾Ê´Â´Ù.
+ *    checkpoint listë“¤ ì¤‘ì— ê°€ì¥ ì‘ì€ recovery LSNì„ ê°€ì§„ BCBë¥¼ ì°¾ëŠ”ë‹¤.
+ *    ì°¾ì€ BCBë¥¼ checkpoint listì—ì„œ ë¹¼ì§„ ì•ŠëŠ”ë‹¤.
+ *    ë˜í•œ ì°¾ì€ BCBëŠ” checkpoint listì— ëŒ€í•´ mutexë¥¼ ì¡ì§€ ì•Šê¸° ë•Œë¬¸ì—
+ *    ë°˜í™˜í•  ì‹œì ì— checkpoint listì— ë‹¬ë ¤ìˆëŠ”ì§€, ìµœì†Œì˜ recovery LSNì´
+ *    ë§ëŠ”ì§€ëŠ” ë³´ì¥í•  ìˆ˜ ì—†ë‹¤.
+ *    ì´ í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•œ ê³³ì—ì„œ ê²°ê³¼ë¡œ ì–»ì€ BCBì— ëŒ€í•´ stateMutexë¥¼ ì¡ì€ í›„
+ *    stateë¥¼ í™•ì¸í•˜ì—¬ dirtyì¸ì§€ë¥¼ ê²€ì‚¬í•´ì•¼ í•œë‹¤.
+ *    ìµœì†Œ recovery LSNì´ ì•„ë‹ˆì–´ë„ checkpoint flushê°€ ë¬¸ì œê°€ ë˜ì§„ ì•ŠëŠ”ë‹¤.
  *
  * Implementation :
- *    checkpoint list¸¦ ¼øÈ¸ÇÏ¸é¼­ °¡Àå ¾Õ¿¡ ÀÖ´Â BCB³¢¸® recovery LSNÀ»
- *    ºñ±³ÇÏ¿© °¡Àå ÀÛÀº LSNÀ» °¡Áø BCB¸¦ ¹İÈ¯ÇÑ´Ù.
- *    °¢ ¸®½ºÆ®ÀÇ BCB¸¦ ÂüÁ¶ÇÒ ¶© mutex¸¦ ÀâÁö ¾Ê´Â´Ù.
- *    ¼­·Î ´Ù¸¥ ¾²·¹µå¿¡ ÀÇÇØ µ¿½Ã¿¡ ÀÌ ÇÔ¼ö°¡ ºÒ¸°´Ù¸é
- *    °°Àº BCB¸¦ ¹İÈ¯¹Ş°Ô µÉ °ÍÀÌ´Ù.
- *    ÇÏÁö¸¸ flushÇÒ ¶§ BCBÀÇ BCBMutex¸¦ È¹µæÇÔÀ¸·Î½á,
- *    °°Àº BCB¸¦ µÎ flusher¿¡ ÀÇÇØ µ¿½Ã¿¡ flushµÇ´Â ÀÏÀº ¾øÀ» °ÍÀÌ´Ù.
+ *    checkpoint listë¥¼ ìˆœíšŒí•˜ë©´ì„œ ê°€ì¥ ì•ì— ìˆëŠ” BCBë¼ë¦¬ recovery LSNì„
+ *    ë¹„êµí•˜ì—¬ ê°€ì¥ ì‘ì€ LSNì„ ê°€ì§„ BCBë¥¼ ë°˜í™˜í•œë‹¤.
+ *    ê° ë¦¬ìŠ¤íŠ¸ì˜ BCBë¥¼ ì°¸ì¡°í•  ë• mutexë¥¼ ì¡ì§€ ì•ŠëŠ”ë‹¤.
+ *    ì„œë¡œ ë‹¤ë¥¸ ì“°ë ˆë“œì— ì˜í•´ ë™ì‹œì— ì´ í•¨ìˆ˜ê°€ ë¶ˆë¦°ë‹¤ë©´
+ *    ê°™ì€ BCBë¥¼ ë°˜í™˜ë°›ê²Œ ë  ê²ƒì´ë‹¤.
+ *    í•˜ì§€ë§Œ flushí•  ë•Œ BCBì˜ BCBMutexë¥¼ íšë“í•¨ìœ¼ë¡œì¨,
+ *    ê°™ì€ BCBë¥¼ ë‘ flusherì— ì˜í•´ ë™ì‹œì— flushë˜ëŠ” ì¼ì€ ì—†ì„ ê²ƒì´ë‹¤.
  ***********************************************************************/
 sdBCB* sdbCPListSet::getMin()
 {
@@ -323,10 +323,10 @@ sdBCB* sdbCPListSet::getMin()
     sdBCB   * sFirstBCB;
     sdBCB   * sRet;
 
-    // checkpoint list°¡ ¸ğµÎ ºñ¾îÀÖÀ¸¸é NULLÀ» ¸®ÅÏÇÏ°Ô µÈ´Ù.
+    // checkpoint listê°€ ëª¨ë‘ ë¹„ì–´ìˆìœ¼ë©´ NULLì„ ë¦¬í„´í•˜ê²Œ ëœë‹¤.
     sRet = NULL;
 
-    // sMinLSNÀÇ °ªÀ» ÃÖ´ë°ªÀ¸·Î ÃÊ±âÈ­ÇÑ´Ù.
+    // sMinLSNì˜ ê°’ì„ ìµœëŒ€ê°’ìœ¼ë¡œ ì´ˆê¸°í™”í•œë‹¤.
     SM_LSN_MAX(sMinLSN);
 
     for (i = 0; i < mListCount; i++)
@@ -334,8 +334,8 @@ sdBCB* sdbCPListSet::getMin()
         sNode = SMU_LIST_GET_FIRST(&mBase[i]);
         if (sNode == &mBase[i])
         {
-            // checkpoint list°¡ ºñ¾î ÀÖ°Å³ª skip listÀÌ¸é
-            // skipÇÑ´Ù.
+            // checkpoint listê°€ ë¹„ì–´ ìˆê±°ë‚˜ skip listì´ë©´
+            // skipí•œë‹¤.
             continue;
         }
 
@@ -351,21 +351,21 @@ sdBCB* sdbCPListSet::getMin()
 
 /***********************************************************************
  * Description :
- *    ÀÔ·Â¹ŞÀº BCB°¡ ¼ÓÇÑ list ´ÙÀ½ÀÇ listÀÇ Ã¹¹øÂ° BCB¸¦ ¹İÈ¯ÇÑ´Ù.
- *    ´ÙÀ½ list¿¡ BCB°¡ ¾øÀ¸¸é ±× ´ÙÀ½ listÀÇ BCB¸¦ ¹İÈ¯ÇÑ´Ù.
- *    ¸ğµç list°¡ ºñ¾îÀÖÀ¸¸é NULLÀ» ¹İÈ¯ÇÑ´Ù.
- *    aCurrBCB´Â minBCB()¸¦ ÅëÇØ¼­ ¾òÀº BCBÀÌ±â ¶§¹®¿¡
- *    ÀÌ ÇÔ¼ö°¡ ºÒ·ÁÁú ½ÃÁ¡¿¡ aCurrBCB°¡ list¿¡¼­ ºüÁ³À» ¼öµµ ÀÖ´Ù.
- *    ÀÌ °æ¿ì¿£ listÀÇ minBCB¸¦ ¹İÈ¯ÇÑ´Ù.
+ *    ì…ë ¥ë°›ì€ BCBê°€ ì†í•œ list ë‹¤ìŒì˜ listì˜ ì²«ë²ˆì§¸ BCBë¥¼ ë°˜í™˜í•œë‹¤.
+ *    ë‹¤ìŒ listì— BCBê°€ ì—†ìœ¼ë©´ ê·¸ ë‹¤ìŒ listì˜ BCBë¥¼ ë°˜í™˜í•œë‹¤.
+ *    ëª¨ë“  listê°€ ë¹„ì–´ìˆìœ¼ë©´ NULLì„ ë°˜í™˜í•œë‹¤.
+ *    aCurrBCBëŠ” minBCB()ë¥¼ í†µí•´ì„œ ì–»ì€ BCBì´ê¸° ë•Œë¬¸ì—
+ *    ì´ í•¨ìˆ˜ê°€ ë¶ˆë ¤ì§ˆ ì‹œì ì— aCurrBCBê°€ listì—ì„œ ë¹ ì¡Œì„ ìˆ˜ë„ ìˆë‹¤.
+ *    ì´ ê²½ìš°ì—” listì˜ minBCBë¥¼ ë°˜í™˜í•œë‹¤.
  *
  * Implementation :
- *    ÁÖ¾îÁø mListNo + 1ºÎÅÍ mListNo - 1±îÁö ¼øÈ¯ÇÏ¸é¼­
- *    Ã¹¹øÂ° BCB°¡ NULLÀÌ ¾Æ´Ï¸é ¹İÈ¯ÇÑ´Ù.
+ *    ì£¼ì–´ì§„ mListNo + 1ë¶€í„° mListNo - 1ê¹Œì§€ ìˆœí™˜í•˜ë©´ì„œ
+ *    ì²«ë²ˆì§¸ BCBê°€ NULLì´ ì•„ë‹ˆë©´ ë°˜í™˜í•œë‹¤.
  *    
- * aCurrBCB - [IN]  ÀÌ BCB°¡ ¼ÓÇÑ listÀÇ ´ÙÀ½ listÁß¿¡
- *                  empty°¡ ¾Æ´Ñ listÀÇ Ã¹¹øÀç BCB¸¦ Ã£´Â´Ù.
- *                  ¹İÈ¯µÇ´Â BCB´Â Ã£Àº BCB°¡ ¹İÈ¯µÈ´Ù.
- *                  ¸øÃ£À¸¸é NULLÀÌ ¹İÈ¯µÈ´Ù.
+ * aCurrBCB - [IN]  ì´ BCBê°€ ì†í•œ listì˜ ë‹¤ìŒ listì¤‘ì—
+ *                  emptyê°€ ì•„ë‹Œ listì˜ ì²«ë²ˆì¬ BCBë¥¼ ì°¾ëŠ”ë‹¤.
+ *                  ë°˜í™˜ë˜ëŠ” BCBëŠ” ì°¾ì€ BCBê°€ ë°˜í™˜ëœë‹¤.
+ *                  ëª»ì°¾ìœ¼ë©´ NULLì´ ë°˜í™˜ëœë‹¤.
  ***********************************************************************/
 sdBCB* sdbCPListSet::getNextOf( void * aCurrBCB )
 {
@@ -380,18 +380,18 @@ sdBCB* sdbCPListSet::getNextOf( void * aCurrBCB )
 
     if( sBeforeListNo == SDB_CP_LIST_NONE )
     {
-        // ID_UINT_MAXÀÎ °æ¿ì¿£ ¸®½ºÆ®¿¡¼­ ºüÁ®ÀÖ´Â °æ¿ì
-        // aCurrBCB°¡ ÀÌ¹Ì list¿¡¼­ ºüÁ®ÀÖ´Ù. 
-        // ÀÌ °æ¿ì listÀÇ minBCB¸¦ ¹İÈ¯ÇÑ´Ù.
+        // ID_UINT_MAXì¸ ê²½ìš°ì—” ë¦¬ìŠ¤íŠ¸ì—ì„œ ë¹ ì ¸ìˆëŠ” ê²½ìš°
+        // aCurrBCBê°€ ì´ë¯¸ listì—ì„œ ë¹ ì ¸ìˆë‹¤. 
+        // ì´ ê²½ìš° listì˜ minBCBë¥¼ ë°˜í™˜í•œë‹¤.
         sRet = getMin();
     }
     else
     {
         sRet = NULL;
 
-        // aListNo°ªÀÌ 3ÀÌ°í ¸®½ºÆ® °³¼ö°¡ 5¶ó¸é
-        // ·çÇÁ´Â 4, 5, 6, 7¸¦ ¼øÈ¸ÇÏ°í
-        // list ID´Â 4, 0, 1, 2¸¦ ¼øÈ¸ÇÑ´Ù.
+        // aListNoê°’ì´ 3ì´ê³  ë¦¬ìŠ¤íŠ¸ ê°œìˆ˜ê°€ 5ë¼ë©´
+        // ë£¨í”„ëŠ” 4, 5, 6, 7ë¥¼ ìˆœíšŒí•˜ê³ 
+        // list IDëŠ” 4, 0, 1, 2ë¥¼ ìˆœíšŒí•œë‹¤.
         for (i = sBeforeListNo + 1; i < sBeforeListNo + mListCount; i++)
         {
             if (i >= mListCount)
@@ -416,25 +416,25 @@ sdBCB* sdbCPListSet::getNextOf( void * aCurrBCB )
 
 /***********************************************************************
  * Description :
- *  checkpoint ¸®½ºÆ®´Â LRU, Flush, prepare List¿Í ´Ù¸£°Ô ¹ÂÅØ½º°¡ ÇÏ³ª¹Û¿¡
- *  Á¸Àç ÇÏÁö ¾Ê´Â´Ù.  ¿Ö³Ä¸é, checkpoint¸®½ºÆ®´Â »ğÀÔ°ú »èÁ¦°¡ ¸®½ºÆ® ³»ÀÇ
- *  ¾î´À°÷¿¡¼­µç ÀÏ¾î³¯ ¼ö ÀÖ±â ¶§¹®ÀÌ´Ù.
+ *  checkpoint ë¦¬ìŠ¤íŠ¸ëŠ” LRU, Flush, prepare Listì™€ ë‹¤ë¥´ê²Œ ë®¤í…ìŠ¤ê°€ í•˜ë‚˜ë°–ì—
+ *  ì¡´ì¬ í•˜ì§€ ì•ŠëŠ”ë‹¤.  ì™œëƒë©´, checkpointë¦¬ìŠ¤íŠ¸ëŠ” ì‚½ì…ê³¼ ì‚­ì œê°€ ë¦¬ìŠ¤íŠ¸ ë‚´ì˜
+ *  ì–´ëŠê³³ì—ì„œë“  ì¼ì–´ë‚  ìˆ˜ ìˆê¸° ë•Œë¬¸ì´ë‹¤.
  * 
- *    checkpoint list¿¡¼­ aBCB¸¦ Á¦°ÅÇÑ´Ù.
- *    aBCB¿¡´Â ¾î¶² checkpoint list¿¡ ÀÚ½ÅÀÌ ´Ş·ÁÀÖ´ÂÁö
- *    list no°¡ ÀÖ´Ù. ÀÌ list no¸¦ ÂüÁ¶ÇÏ¿© list mutex¸¦ ÀâÀº ÈÄ
- *    aBCB¸¦ ¸®½ºÆ®¿¡¼­ Á¦°ÅÇÑ´Ù.
+ *    checkpoint listì—ì„œ aBCBë¥¼ ì œê±°í•œë‹¤.
+ *    aBCBì—ëŠ” ì–´ë–¤ checkpoint listì— ìì‹ ì´ ë‹¬ë ¤ìˆëŠ”ì§€
+ *    list noê°€ ìˆë‹¤. ì´ list noë¥¼ ì°¸ì¡°í•˜ì—¬ list mutexë¥¼ ì¡ì€ í›„
+ *    aBCBë¥¼ ë¦¬ìŠ¤íŠ¸ì—ì„œ ì œê±°í•œë‹¤.
  *
  * Implementation :
- *    aBCBÀÇ mCPListItem Á¤º¸´Â checkpoint list mutex(mListMutex)¿¡
- *    ÀÇÇØ º¸È£µÇ¾î¾ß ÇÑ´Ù. µû¶ó¼­ mCPListItemÀÇ Á¤º¸¸¦ ÂüÁ¶,
- *    º¯°æÇÏ±â À§ÇØ¼­´Â mListMutex¸¦ Àâ¾Æ¾ß ÇÏ´Âµ¥, mListMutex¸¦ 
- *    Àâ±âÀ§ÇØ¼­´Â mCPListITem.mListNo¸¦ ÂüÁ¶ÇØ¾ß ÇÑ´Ù.
- *    mCPListItem.mListNo Á¤º¸¸¦ mutex¾øÀÌ ÀĞ¾î¾ß ÇÏ±â ¶§¹®¿¡
- *    dirty readÀÌ´Ù. ÀÌ °ªÀ» ÀĞ°í mutex¸¦ ÀâÀº ÈÄ ´Ù½Ã mListNo¸¦
- *    °Ë»çÇØ¾ß ÇÑ´Ù.
+ *    aBCBì˜ mCPListItem ì •ë³´ëŠ” checkpoint list mutex(mListMutex)ì—
+ *    ì˜í•´ ë³´í˜¸ë˜ì–´ì•¼ í•œë‹¤. ë”°ë¼ì„œ mCPListItemì˜ ì •ë³´ë¥¼ ì°¸ì¡°,
+ *    ë³€ê²½í•˜ê¸° ìœ„í•´ì„œëŠ” mListMutexë¥¼ ì¡ì•„ì•¼ í•˜ëŠ”ë°, mListMutexë¥¼ 
+ *    ì¡ê¸°ìœ„í•´ì„œëŠ” mCPListITem.mListNoë¥¼ ì°¸ì¡°í•´ì•¼ í•œë‹¤.
+ *    mCPListItem.mListNo ì •ë³´ë¥¼ mutexì—†ì´ ì½ì–´ì•¼ í•˜ê¸° ë•Œë¬¸ì—
+ *    dirty readì´ë‹¤. ì´ ê°’ì„ ì½ê³  mutexë¥¼ ì¡ì€ í›„ ë‹¤ì‹œ mListNoë¥¼
+ *    ê²€ì‚¬í•´ì•¼ í•œë‹¤.
  *    
- *  aStatistics - [IN]  Åë°èÁ¤º¸
+ *  aStatistics - [IN]  í†µê³„ì •ë³´
  *  aBCB        - [IN]  BCB
  ***********************************************************************/
 void sdbCPListSet::remove( idvSQL * aStatistics, void * aBCB )
@@ -443,19 +443,19 @@ void sdbCPListSet::remove( idvSQL * aStatistics, void * aBCB )
 
     IDE_DASSERT( aBCB != NULL );
     IDE_DASSERT( SD_GET_CPLIST_NO( aBCB ) != ID_UINT_MAX );
-    // BCB°¡ ¼ÓÇÑ list no¸¦ ¾ò¾î¿Â´Ù.
-    // list¿¡ ´ëÇØ mutex¸¦ ÀâÁö ¾ÊÀº »óÅÂÀÌ±â ¶§¹®¿¡
-    // dirty readÀÌ´Ù.
+    // BCBê°€ ì†í•œ list noë¥¼ ì–»ì–´ì˜¨ë‹¤.
+    // listì— ëŒ€í•´ mutexë¥¼ ì¡ì§€ ì•Šì€ ìƒíƒœì´ê¸° ë•Œë¬¸ì—
+    // dirty readì´ë‹¤.
     sListNo  = SD_GET_CPLIST_NO( aBCB );
 
-    // list¿¡ ´ëÇØ mutex¸¦ Àâ´Â´Ù.
-    // BCBÀÇ mCPListItemÀ» ÂüÁ¶ÇÏ±â À§ÇØ¼­´Â ¹İµå½Ã
-    // list mutex¸¦ Àâ¾Æ¾ß ÇÑ´Ù.
+    // listì— ëŒ€í•´ mutexë¥¼ ì¡ëŠ”ë‹¤.
+    // BCBì˜ mCPListItemì„ ì°¸ì¡°í•˜ê¸° ìœ„í•´ì„œëŠ” ë°˜ë“œì‹œ
+    // list mutexë¥¼ ì¡ì•„ì•¼ í•œë‹¤.
     IDE_ASSERT( mListMutex[sListNo].lock( aStatistics ) == IDE_SUCCESS );
 
-    // list mutex¸¦ ÀâÀº ÈÄ ´Ù½Ã list no¸¦ °Ë»çÇÑ´Ù.
-    // ÀÌ °ªÀÌ ´Ù¸£´Ù¸é ÇÑ BCB¿¡ ´ëÇØ¼­ µÎ ¾²·¹µå°¡ removeÇÑ
-    // °æ¿ìÀÌ´Ù. flush ¾Ë°í¸®Áò »ó ÀÌ·± °æ¿ì´Â ¹ß»ıÇÒ ¼ø ¾ø´Ù.
+    // list mutexë¥¼ ì¡ì€ í›„ ë‹¤ì‹œ list noë¥¼ ê²€ì‚¬í•œë‹¤.
+    // ì´ ê°’ì´ ë‹¤ë¥´ë‹¤ë©´ í•œ BCBì— ëŒ€í•´ì„œ ë‘ ì“°ë ˆë“œê°€ removeí•œ
+    // ê²½ìš°ì´ë‹¤. flush ì•Œê³ ë¦¬ì¦˜ ìƒ ì´ëŸ° ê²½ìš°ëŠ” ë°œìƒí•  ìˆœ ì—†ë‹¤.
     IDE_ASSERT( sListNo == SD_GET_CPLIST_NO( aBCB ) );
 
     SMU_LIST_DELETE( SD_GET_BCB_CPLISTITEM( aBCB ) );
@@ -467,11 +467,11 @@ void sdbCPListSet::remove( idvSQL * aStatistics, void * aBCB )
 
 /***********************************************************************
  * Description :
- *  ÇöÀç checkpoint listµéÀÇ BCBÀÇ recoveryLSN¿¡¼­ °¡Àå ÀÛÀº recoveryLSNÀ»
- *  ¸®ÅÏÇÑ´Ù.
+ *  í˜„ì¬ checkpoint listë“¤ì˜ BCBì˜ recoveryLSNì—ì„œ ê°€ì¥ ì‘ì€ recoveryLSNì„
+ *  ë¦¬í„´í•œë‹¤.
  *  
- *  aStatistics - [IN]  Åë°èÁ¤º¸
- *  aMinLSN     - [OUT] °¡Àå ÀÛÀº recoveryLSN
+ *  aStatistics - [IN]  í†µê³„ì •ë³´
+ *  aMinLSN     - [OUT] ê°€ì¥ ì‘ì€ recoveryLSN
  ***********************************************************************/
 void sdbCPListSet::getMinRecoveryLSN( idvSQL *aStatistics, smLSN *aMinLSN )
 {
@@ -481,23 +481,23 @@ void sdbCPListSet::getMinRecoveryLSN( idvSQL *aStatistics, smLSN *aMinLSN )
 
     IDE_DASSERT(aMinLSN != NULL);
 
-    // checkpoint list¿¡ BCB°¡ ÇÏ³ªµµ ¾øÀ¸¸é MAX°ªÀÌ ¸®ÅÏµÈ´Ù.
+    // checkpoint listì— BCBê°€ í•˜ë‚˜ë„ ì—†ìœ¼ë©´ MAXê°’ì´ ë¦¬í„´ëœë‹¤.
     SM_LSN_MAX( *aMinLSN );
 
     for (i = 0; i < mListCount; i++)
     {
-        // recoveryLSNÀ» ÀĞ±â À§ÇØ¼­´Â list mutex¸¦ Àâ¾Æ¾ß ÇÑ´Ù.
-        // BCBÀÇ LSNÀ» ¾ò¾î¿À´Â µ¿¾È BCBÀÇ LSNÀÌ ¸®½ºÆ®¿¡ ºüÁö¸é¼­ LSN°ªÀÌ
-        // ÃÊ±âÈ­ µÉ ¼ö ÀÖ±â ¶§¹®¿¡, lockÀ» °É¾î¼­ Á¦´ë·Î µÈ BCBÀÇ LSN°ªÀ»
-        // ¾ò¾î¿Â´Ù.
+        // recoveryLSNì„ ì½ê¸° ìœ„í•´ì„œëŠ” list mutexë¥¼ ì¡ì•„ì•¼ í•œë‹¤.
+        // BCBì˜ LSNì„ ì–»ì–´ì˜¤ëŠ” ë™ì•ˆ BCBì˜ LSNì´ ë¦¬ìŠ¤íŠ¸ì— ë¹ ì§€ë©´ì„œ LSNê°’ì´
+        // ì´ˆê¸°í™” ë  ìˆ˜ ìˆê¸° ë•Œë¬¸ì—, lockì„ ê±¸ì–´ì„œ ì œëŒ€ë¡œ ëœ BCBì˜ LSNê°’ì„
+        // ì–»ì–´ì˜¨ë‹¤.
         IDE_ASSERT(mListMutex[i].lock(aStatistics) == IDE_SUCCESS);
 
         sNode = SMU_LIST_GET_FIRST(&mBase[i]);
 
         if (sNode == &mBase[i])
         {
-            // checkpoint list°¡ ºñ¾î ÀÖ°Å³ª skip listÀÌ¸é
-            // skipÇÑ´Ù.
+            // checkpoint listê°€ ë¹„ì–´ ìˆê±°ë‚˜ skip listì´ë©´
+            // skipí•œë‹¤.
             IDE_ASSERT(mListMutex[i].unlock() == IDE_SUCCESS);
             continue;
         }
@@ -516,11 +516,11 @@ void sdbCPListSet::getMinRecoveryLSN( idvSQL *aStatistics, smLSN *aMinLSN )
 
 /***********************************************************************
  * Description :
- *  ÇöÀç checkpoint listµéÀÇ BCBÀÇ recoveryLSN¿¡¼­ °¡Àå Å« recoveryLSNÀ»
- *  ¸®ÅÏÇÑ´Ù.
+ *  í˜„ì¬ checkpoint listë“¤ì˜ BCBì˜ recoveryLSNì—ì„œ ê°€ì¥ í° recoveryLSNì„
+ *  ë¦¬í„´í•œë‹¤.
  *  
- *  aStatistics - [IN]  Åë°èÁ¤º¸
- *  aMaxLSN     - [OUT] °¡Àå Å« recoveryLSN
+ *  aStatistics - [IN]  í†µê³„ì •ë³´
+ *  aMaxLSN     - [OUT] ê°€ì¥ í° recoveryLSN
  ***********************************************************************/
 void sdbCPListSet::getMaxRecoveryLSN(idvSQL *aStatistics, smLSN *aMaxLSN)
 {
@@ -534,7 +534,7 @@ void sdbCPListSet::getMaxRecoveryLSN(idvSQL *aStatistics, smLSN *aMaxLSN)
 
     for (i = 0; i < mListCount; i++)
     {
-        // recoveryLSNÀ» ÀĞ±â À§ÇØ¼­´Â list mutex¸¦ Àâ¾Æ¾ß ÇÑ´Ù.
+        // recoveryLSNì„ ì½ê¸° ìœ„í•´ì„œëŠ” list mutexë¥¼ ì¡ì•„ì•¼ í•œë‹¤.
         IDE_ASSERT(mListMutex[i].lock(aStatistics) == IDE_SUCCESS);
 
         sNode = SMU_LIST_GET_LAST(&mBase[i]);
@@ -556,7 +556,7 @@ void sdbCPListSet::getMaxRecoveryLSN(idvSQL *aStatistics, smLSN *aMaxLSN)
  
 /***********************************************************************
  * Description :
- *  ÇöÀç checkpoint list°¡ À¯ÁöÇÏ´Â ¸ğµç BCBµéÀÇ °³¼ö¸¦ ¸®ÅÏÇÑ´Ù.
+ *  í˜„ì¬ checkpoint listê°€ ìœ ì§€í•˜ëŠ” ëª¨ë“  BCBë“¤ì˜ ê°œìˆ˜ë¥¼ ë¦¬í„´í•œë‹¤.
  ***********************************************************************/
 UInt sdbCPListSet::getTotalBCBCnt()
 {

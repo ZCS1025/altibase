@@ -20,7 +20,7 @@
  *
  * Description :
  *
- * º» ÆÄÀÏÀº recovery layerÀÇ disk Á¤ÀÇ Çì´õÆÄÀÏÀÌ´Ù.
+ * ë³¸ íŒŒì¼ì€ recovery layerì˜ disk ì •ì˜ í—¤ë”íŒŒì¼ì´ë‹¤.
  *
  **********************************************************************/
 #ifndef _O_SDR_DEF_H_
@@ -32,13 +32,13 @@
 #include <smuDynArray.h>
 
 // BUG-13972
-// sdrMtxStackInfoÀÇ size´Â 128À» ³ÑÀ» ¼ö ¾øµµ·Ï ÇÑ´Ù.
-// ÀÌ °ªÀ» ¿ÜºÎ¿¡¼­ Á¤ÇÏµµ·Ï µÇ¾î ÀÖ¾úÁö¸¸
-// sdrMtxStack ³»ºÎ·Î °¡Á®¿Â´Ù.
+// sdrMtxStackInfoì˜ sizeëŠ” 128ì„ ë„˜ì„ ìˆ˜ ì—†ë„ë¡ í•œë‹¤.
+// ì´ ê°’ì„ ì™¸ë¶€ì—ì„œ ì •í•˜ë„ë¡ ë˜ì–´ ìˆì—ˆì§€ë§Œ
+// sdrMtxStack ë‚´ë¶€ë¡œ ê°€ì ¸ì˜¨ë‹¤.
 #define SDR_MAX_MTX_STACK_SIZE   (128)
 
-// PRJ-1867 sdbDef.h¿¡¼­ ¿Å°Ü¿Ô´Ù.
-// Corrupt Page¸¦ ÀĞ¾úÀ» ¶§ÀÇ ´ëÃ³ ¹æ¹ı
+// PRJ-1867 sdbDef.hì—ì„œ ì˜®ê²¨ì™”ë‹¤.
+// Corrupt Pageë¥¼ ì½ì—ˆì„ ë•Œì˜ ëŒ€ì²˜ ë°©ë²•
 typedef enum
 {
     SDR_CORRUPTED_PAGE_READ_FATAL = 0,
@@ -47,84 +47,84 @@ typedef enum
 } sdrCorruptPageReadPolicy;
 
 /*-------------------------------------------
- * Description : DRDB ·Î±× Å¸ÀÔ
+ * Description : DRDB ë¡œê·¸ íƒ€ì…
  *-------------------------------------------*/
 typedef enum
 {
-    /* page ¼Ó¼º update °ü·Ã */
-    SDR_SDP_1BYTE  = 1,                /* 1byte  ¼Ó¼º°ªÀÇ ¼³Á¤ */
-    SDR_SDP_2BYTE  = 2,                /* 2bytes ¼Ó¼º°ªÀÇ ¼³Á¤ */
-    SDR_SDP_4BYTE  = 4,                /* 4bytes ¼Ó¼º°ªÀÇ ¼³Á¤ */
-    SDR_SDP_8BYTE  = 8,                /* 8bytes ¼Ó¼º°ªÀÇ ¼³Á¤ */
-    SDR_SDP_BINARY,                    /* Nbytes ¼Ó¼º°ªÀÇ ¼³Á¤ */
+    /* page ì†ì„± update ê´€ë ¨ */
+    SDR_SDP_1BYTE  = 1,                /* 1byte  ì†ì„±ê°’ì˜ ì„¤ì • */
+    SDR_SDP_2BYTE  = 2,                /* 2bytes ì†ì„±ê°’ì˜ ì„¤ì • */
+    SDR_SDP_4BYTE  = 4,                /* 4bytes ì†ì„±ê°’ì˜ ì„¤ì • */
+    SDR_SDP_8BYTE  = 8,                /* 8bytes ì†ì„±ê°’ì˜ ì„¤ì • */
+    SDR_SDP_BINARY,                    /* Nbytes ì†ì„±ê°’ì˜ ì„¤ì • */
 
-    /* page °ü·Ã Å¸ÀÔ */
-    // PROJ-1665 : pageÀÇ consistent Á¤º¸¸¦ ¼³Á¤ÇÏ´Â log
-    // media recovery ½Ã¿¡ nologgingÀ¸·Î Direct-Path INSERT°¡ ¼öÇàµÈ
-    // PageÀÎ °æ¿ì, in-consistent ÇÔÀ» ¾Ë¾Æ³»±â À§ÇÔ
+    /* page ê´€ë ¨ íƒ€ì… */
+    // PROJ-1665 : pageì˜ consistent ì •ë³´ë¥¼ ì„¤ì •í•˜ëŠ” log
+    // media recovery ì‹œì— nologgingìœ¼ë¡œ Direct-Path INSERTê°€ ìˆ˜í–‰ëœ
+    // Pageì¸ ê²½ìš°, in-consistent í•¨ì„ ì•Œì•„ë‚´ê¸° ìœ„í•¨
     SDR_SDP_PAGE_CONSISTENT = 32,
 
-    SDR_SDP_INIT_PHYSICAL_PAGE,         /* extent desc¿¡¼­ freepage ÇÒ´ç ¶Ç´Â
-                                           ¿¹¾àÆäÀÌÁö ÇÒ´ç, value ¾øÀ½ */
-    SDR_SDP_INIT_LOGICAL_HDR,           /* logical header ÃÊ±âÈ­ */
-    SDR_SDP_INIT_SLOT_DIRECTORY,        /* slot directory ÃÊ±âÈ­ */
-    SDR_SDP_FREE_SLOT,                  /* page¿¡¼­ ½ÇÁ¦·Î ÇÏ³ªÀÇ sltoÀ» free */
+    SDR_SDP_INIT_PHYSICAL_PAGE,         /* extent descì—ì„œ freepage í• ë‹¹ ë˜ëŠ”
+                                           ì˜ˆì•½í˜ì´ì§€ í• ë‹¹, value ì—†ìŒ */
+    SDR_SDP_INIT_LOGICAL_HDR,           /* logical header ì´ˆê¸°í™” */
+    SDR_SDP_INIT_SLOT_DIRECTORY,        /* slot directory ì´ˆê¸°í™” */
+    SDR_SDP_FREE_SLOT,                  /* pageì—ì„œ ì‹¤ì œë¡œ í•˜ë‚˜ì˜ sltoì„ free */
     SDR_SDP_FREE_SLOT_FOR_SID,
     SDR_SDP_RESTORE_FREESPACE_CREDIT,
 
     // BUG-17615
-    SDR_SDP_RESET_PAGE,                 /* index bottom-up build½Ã page reset */
+    SDR_SDP_RESET_PAGE,                 /* index bottom-up buildì‹œ page reset */
 
     // PRJ-1149
-    SDR_SDP_WRITE_PAGEIMG,             /* ¹é¾÷°úÁ¤Áß¿¡ write¹ß»ı½Ã ½ÇÁ¦
-                                           µ¥ÀÌÅ¸ÆÄÀÏ¿¡ write¸¦ ÇÏÁö¾Ê°í
-                                           ·Î±×·Î ³²±è */
+    SDR_SDP_WRITE_PAGEIMG,             /* ë°±ì—…ê³¼ì •ì¤‘ì— writeë°œìƒì‹œ ì‹¤ì œ
+                                           ë°ì´íƒ€íŒŒì¼ì— writeë¥¼ í•˜ì§€ì•Šê³ 
+                                           ë¡œê·¸ë¡œ ë‚¨ê¹€ */
     // sdb
-    // PROJ-1665 : Direct-Path Buffer¿¡¼­ Direct-Path INSERT°¡ ¼öÇàµÈ
-    //             Page¸¦ FlushÇÒ¶§ Page ÀüÃ¼¿¡ ´ëÇÏ¿© Logging
+    // PROJ-1665 : Direct-Path Bufferì—ì„œ Direct-Path INSERTê°€ ìˆ˜í–‰ëœ
+    //             Pageë¥¼ Flushí• ë•Œ Page ì „ì²´ì— ëŒ€í•˜ì—¬ Logging
     SDR_SDP_WRITE_DPATH_INS_PAGE,      /* PROJ-1665 */
 
     // PROJ-1671 Bitmap-based Tablespace And Segment Space Management
-    SDR_SDPST_INIT_SEGHDR,              /* Segment Header ÃÊ±âÈ­ */
-    SDR_SDPST_INIT_BMP,                 /* Root/Internal Bitmap Page ÃÊ±âÈ­ */
-    SDR_SDPST_INIT_LFBMP,               /* Leaf Bitmap Page ÃÊ±âÈ­ */
-    SDR_SDPST_INIT_EXTDIR,              /* Extent Map Page ÃÊ±âÈ­ */
-    SDR_SDPST_ADD_RANGESLOT,            /* leaf bmp pageÀÇ rangeslotÀ» ±â·Ï */
-    SDR_SDPST_ADD_SLOTS,                /* rt/it-bmp pageÀÇ slotµéÀ» ±â·Ï */
-    SDR_SDPST_ADD_EXTDESC,              /* extent map page¿¡ extslot ±â·Ï */
-    SDR_SDPST_ADD_EXT_TO_SEGHDR,        /* segment¿¡ extent ¿¬°á */
-    SDR_SDPST_UPDATE_WM,                /* HWM °»½Å */
-    SDR_SDPST_UPDATE_MFNL,              /* BMP MFNL °»½Å */
-    SDR_SDPST_UPDATE_PBS,               /* PBS °»½Å */
-    SDR_SDPST_UPDATE_LFBMP_4DPATH,      /* DirectPath¿Ï·á½Ã lfbmp bitsetº¯°æ */
+    SDR_SDPST_INIT_SEGHDR,              /* Segment Header ì´ˆê¸°í™” */
+    SDR_SDPST_INIT_BMP,                 /* Root/Internal Bitmap Page ì´ˆê¸°í™” */
+    SDR_SDPST_INIT_LFBMP,               /* Leaf Bitmap Page ì´ˆê¸°í™” */
+    SDR_SDPST_INIT_EXTDIR,              /* Extent Map Page ì´ˆê¸°í™” */
+    SDR_SDPST_ADD_RANGESLOT,            /* leaf bmp pageì˜ rangeslotì„ ê¸°ë¡ */
+    SDR_SDPST_ADD_SLOTS,                /* rt/it-bmp pageì˜ slotë“¤ì„ ê¸°ë¡ */
+    SDR_SDPST_ADD_EXTDESC,              /* extent map pageì— extslot ê¸°ë¡ */
+    SDR_SDPST_ADD_EXT_TO_SEGHDR,        /* segmentì— extent ì—°ê²° */
+    SDR_SDPST_UPDATE_WM,                /* HWM ê°±ì‹  */
+    SDR_SDPST_UPDATE_MFNL,              /* BMP MFNL ê°±ì‹  */
+    SDR_SDPST_UPDATE_PBS,               /* PBS ê°±ì‹  */
+    SDR_SDPST_UPDATE_LFBMP_4DPATH,      /* DirectPathì™„ë£Œì‹œ lfbmp bitsetë³€ê²½ */
 
     // PROJ-1705 Disk MVCC Renewal
-    /* XXX: migration issue ¶§¹®¿¡ ¾Æ·¡ °ªÀº 58ÀÌ¾î¾ß ÇÑ´Ù. */
-    SDR_SDPSC_INIT_SEGHDR = 58,         /* Segment Header ÃÊ±âÈ­ */
-    SDR_SDPSC_INIT_EXTDIR,              /* ExtDir Page ÃÊ±âÈ­ */
-    SDR_SDPSC_ADD_EXTDESC_TO_EXTDIR,    /* ExtDir Page¿¡ ExtDesc ±â·Ï */
+    /* XXX: migration issue ë•Œë¬¸ì— ì•„ë˜ ê°’ì€ 58ì´ì–´ì•¼ í•œë‹¤. */
+    SDR_SDPSC_INIT_SEGHDR = 58,         /* Segment Header ì´ˆê¸°í™” */
+    SDR_SDPSC_INIT_EXTDIR,              /* ExtDir Page ì´ˆê¸°í™” */
+    SDR_SDPSC_ADD_EXTDESC_TO_EXTDIR,    /* ExtDir Pageì— ExtDesc ê¸°ë¡ */
 
     SDR_SDPTB_INIT_LGHDR_PAGE,         /* local group header initialize */
     SDR_SDPTB_ALLOC_IN_LG,             /* alloc by bitmap index */
     SDR_SDPTB_FREE_IN_LG,              /* free by bitmap index */
 
                                        /* DML - insert, update, delete */
-    SDR_SDC_INSERT_ROW_PIECE = 64,     /* page¿¡ row piece¸¦ insertÇÑ ÈÄ¿¡ ±â·Ï */
+    SDR_SDC_INSERT_ROW_PIECE = 64,     /* pageì— row pieceë¥¼ insertí•œ í›„ì— ê¸°ë¡ */
     SDR_SDC_INSERT_ROW_PIECE_FOR_UPDATE,
-    SDR_SDC_INSERT_ROW_PIECE_FOR_DELETEUNDO, /* delete rollbackÀ» ¼öÇàÇÑ ÈÄ¿¡ ±â·Ï */
+    SDR_SDC_INSERT_ROW_PIECE_FOR_DELETEUNDO, /* delete rollbackì„ ìˆ˜í–‰í•œ í›„ì— ê¸°ë¡ */
     SDR_SDC_UPDATE_ROW_PIECE,
     SDR_SDC_OVERWRITE_ROW_PIECE,
     SDR_SDC_CHANGE_ROW_PIECE_LINK,
     SDR_SDC_DELETE_FIRST_COLUMN_PIECE,
     SDR_SDC_ADD_FIRST_COLUMN_PIECE,
     SDR_SDC_DELETE_ROW_PIECE_FOR_UPDATE,
-    SDR_SDC_DELETE_ROW_PIECE,          /* row piece¿¡ delete flag¸¦ ¼³Á¤ÇÑ ÈÄ¿¡ ±â·Ï */
+    SDR_SDC_DELETE_ROW_PIECE,          /* row pieceì— delete flagë¥¼ ì„¤ì •í•œ í›„ì— ê¸°ë¡ */
     SDR_SDC_LOCK_ROW,
     SDR_SDC_PK_LOG,
 
     // PROJ-1705 Disk MVCC Renewal
-    SDR_SDC_INIT_CTL,                   /* CTL ¿µ¿ª ¹× Çì´õ ÃÊ±âÈ­ */
-    SDR_SDC_EXTEND_CTL,                 /* CTL ¿µ¿ª */
+    SDR_SDC_INIT_CTL,                   /* CTL ì˜ì—­ ë° í—¤ë” ì´ˆê¸°í™” */
+    SDR_SDC_EXTEND_CTL,                 /* CTL ì˜ì—­ */
     SDR_SDC_BIND_CTS,                   /* Binding CTS */
     SDR_SDC_UNBIND_CTS,                 /* unbinding CTS */
     SDR_SDC_BIND_ROW,                   /* Binding In-Row CTS */
@@ -135,27 +135,27 @@ typedef enum
     SDR_SDC_BIND_TSS,                  /* bind TSS */
     SDR_SDC_UNBIND_TSS,                /* unbind TSS */
     SDR_SDC_SET_INITSCN_TO_TSS,        /* Set INITSCN to CTS */
-    SDR_SDC_INIT_TSS_PAGE,             /* TSS ÆäÀÌÁö ÃÊ±âÈ­ */
-    SDR_SDC_INIT_UNDO_PAGE,            /* Undo ÆäÀÌÁö ÃÊ±âÈ­ */
-    SDR_SDC_INSERT_UNDO_REC,           /* undo segment¿¡ undo log¸¦
-                                          »ı¼ºÇÑ ÈÄ¿¡ ±â·Ï */
+    SDR_SDC_INIT_TSS_PAGE,             /* TSS í˜ì´ì§€ ì´ˆê¸°í™” */
+    SDR_SDC_INIT_UNDO_PAGE,            /* Undo í˜ì´ì§€ ì´ˆê¸°í™” */
+    SDR_SDC_INSERT_UNDO_REC,           /* undo segmentì— undo logë¥¼
+                                          ìƒì„±í•œ í›„ì— ê¸°ë¡ */
 
-    SDR_SDN_INSERT_INDEX_KEY = 96,     /* internal key¿¡ ´ëÇÑ insert */
-    SDR_SDN_FREE_INDEX_KEY,            /* internal key¿¡ ´ëÇÑ delete */
-    SDR_SDN_INSERT_UNIQUE_KEY,         /* insert index unique key¿¡ ´ëÇÑ
+    SDR_SDN_INSERT_INDEX_KEY = 96,     /* internal keyì— ëŒ€í•œ insert */
+    SDR_SDN_FREE_INDEX_KEY,            /* internal keyì— ëŒ€í•œ delete */
+    SDR_SDN_INSERT_UNIQUE_KEY,         /* insert index unique keyì— ëŒ€í•œ
                                         * physical redo and logical undo */
-    SDR_SDN_INSERT_DUP_KEY,            /* insert index duplicate key¿¡ ´ëÇÑ
+    SDR_SDN_INSERT_DUP_KEY,            /* insert index duplicate keyì— ëŒ€í•œ
                                         * physical redo and logical undo */
-    SDR_SDN_DELETE_KEY_WITH_NTA,       /* delete index key¿¡ ´ëÇÑ
+    SDR_SDN_DELETE_KEY_WITH_NTA,       /* delete index keyì— ëŒ€í•œ
                                         * physical redo and logical undo */
-    SDR_SDN_FREE_KEYS,                 /* BUG-19637 SMO¿¡ ÀÇÇØ splitµÉ¶§
-                                           index key°¡ ¿©·¯ °³ free */
-    SDR_SDN_COMPACT_INDEX_PAGE,        /* index page¿¡ ´ëÇÑ compact */
+    SDR_SDN_FREE_KEYS,                 /* BUG-19637 SMOì— ì˜í•´ splitë ë•Œ
+                                           index keyê°€ ì—¬ëŸ¬ ê°œ free */
+    SDR_SDN_COMPACT_INDEX_PAGE,        /* index pageì— ëŒ€í•œ compact */
     SDR_SDN_MAKE_CHAINED_KEYS,
     SDR_SDN_MAKE_UNCHAINED_KEYS,
     SDR_SDN_KEY_STAMPING,
-    SDR_SDN_INIT_CTL,                  /* Index CTL ¿µ¿ª ¹× Çì´õ ÃÊ±âÈ­ */
-    SDR_SDN_EXTEND_CTL,                /* Index CTL È®Àå */
+    SDR_SDN_INIT_CTL,                  /* Index CTL ì˜ì—­ ë° í—¤ë” ì´ˆê¸°í™” */
+    SDR_SDN_EXTEND_CTL,                /* Index CTL í™•ì¥ */
     SDR_SDN_FREE_CTS,
 
     /*
@@ -173,13 +173,13 @@ typedef enum
     SDR_SDC_LOB_FREE_LEAF_KEY,
     
     SDR_SDC_LOB_WRITE_PIECE,           /* PROJ-1362 lob piece write,
-                                        * replication¶§¹®¿¡ Ãß°¡
-                                        * SMÀÔÀå¿¡¼­´Â SDR_SDP_BINARY¸¦
-                                        * »ç¿ëÇØµµ ¹«°ü. */
+                                        * replicationë•Œë¬¸ì— ì¶”ê°€
+                                        * SMì…ì¥ì—ì„œëŠ” SDR_SDP_BINARYë¥¼
+                                        * ì‚¬ìš©í•´ë„ ë¬´ê´€. */
     SDR_SDC_LOB_WRITE_PIECE4DML,
     
-    SDR_SDC_LOB_WRITE_PIECE_PREV,      /* replication¶§¹®¿¡ Ãß°¡,
-                                        * replicationÀº ÀÌ ·Î±×¸¦ ¹«½ÃÇÑ´Ù. */
+    SDR_SDC_LOB_WRITE_PIECE_PREV,      /* replicationë•Œë¬¸ì— ì¶”ê°€,
+                                        * replicationì€ ì´ ë¡œê·¸ë¥¼ ë¬´ì‹œí•œë‹¤. */
 
     SDR_SDC_LOB_ADD_PAGE_TO_AGINGLIST,
 
@@ -252,17 +252,17 @@ typedef enum sdrOPType
 } sdrOPType;
 
 /* ------------------------------------------------
- * Description : sdrHashNode Ã³¸® »óÅÂ Á¤ÀÇ
+ * Description : sdrHashNode ì²˜ë¦¬ ìƒíƒœ ì •ì˜
  *
- * hash ³ëµå ³»ÀÇ hashed log°¡ ¸ğµÎ ÆäÀÌÁö¿¡
- * ¹İ¿µ ¿©ºÎ¸¦ ³ªÅ¸³»´Â »óÅÂ°ªÀ» Á¤ÀÇÇÑ´Ù.
+ * hash ë…¸ë“œ ë‚´ì˜ hashed logê°€ ëª¨ë‘ í˜ì´ì§€ì—
+ * ë°˜ì˜ ì—¬ë¶€ë¥¼ ë‚˜íƒ€ë‚´ëŠ” ìƒíƒœê°’ì„ ì •ì˜í•œë‹¤.
  * ----------------------------------------------*/
 typedef enum
 {
-    SDR_RECV_NOT_START = 0,   /* Àû¿ëµÇÁö¾ÊÀº ³ëµå »óÅÂ */
-    SDR_RECV_START,           /* Àû¿ëÁßÀÎ ³ëµå »óÅÂ */
-    SDR_RECV_FINISHED,        /* Àû¿ë¿Ï·áµÈ ³ëµå »óÅÂ */
-    SDR_RECV_INVALID          /* À¯È¿ÇÏÁö ¾ÊÀº hash ³ëµå */
+    SDR_RECV_NOT_START = 0,   /* ì ìš©ë˜ì§€ì•Šì€ ë…¸ë“œ ìƒíƒœ */
+    SDR_RECV_START,           /* ì ìš©ì¤‘ì¸ ë…¸ë“œ ìƒíƒœ */
+    SDR_RECV_FINISHED,        /* ì ìš©ì™„ë£Œëœ ë…¸ë“œ ìƒíƒœ */
+    SDR_RECV_INVALID          /* ìœ íš¨í•˜ì§€ ì•Šì€ hash ë…¸ë“œ */
 } sdrHashNodeState;
 
 typedef struct sdrInitPageInfo
@@ -279,51 +279,51 @@ typedef struct sdrInitPageInfo
     UShort       mPageType;
     // Page State
     UShort       mPageState;
-    // Parent¿¡¼­ ÇöÀç ÆäÀÌÁö°¡ ¸î¹øÂ° ÆäÀÌÁöÀÎ°¡
+    // Parentì—ì„œ í˜„ì¬ í˜ì´ì§€ê°€ ëª‡ë²ˆì§¸ í˜ì´ì§€ì¸ê°€
     SShort       mIdxInParent;
     UShort       mAlign;
 } sdrInitPageInfo;
 
 /* ------------------------------------------------
- * Description : media recovery ´ë»ó µ¥ÀÌÅ¸ÆÄÀÏµéÀÇ ÀÚ·á±¸Á¶
+ * Description : media recovery ëŒ€ìƒ ë°ì´íƒ€íŒŒì¼ë“¤ì˜ ìë£Œêµ¬ì¡°
  * ----------------------------------------------*/
 typedef struct sdrRecvFileHashNode
 {
-    sdrHashNodeState   mState;       /* Æ÷ÇÔµÈ redo ·Î±×µéÀÌ ¹İ¿µµÈ »óÅÂ */
+    sdrHashNodeState   mState;       /* í¬í•¨ëœ redo ë¡œê·¸ë“¤ì´ ë°˜ì˜ëœ ìƒíƒœ */
 
     scSpaceID          mSpaceID;     /* tablespace id */
     sdFileID           mFileID;      /* file id */
-    scPageID           mFstPageID;   /* µ¥ÀÌÅ¸ÆÄÀÏÀÇ ½ÃÀÛ PAGE ID*/
-    scPageID           mLstPageID;   /* µ¥ÀÌÅ¸ÆÄÀÏÀÇ ¸¶Áö¸· PAGE ID*/
-    smLSN              mFromLSN;     /* Àû¿ëÇÒ ÃÖÃÊ redo ·Î±×ÀÇ LSN */
-    smLSN              mToLSN;       /* Àû¿ëÇÒ ¸¶Áö¸· redo ·Î±×ÀÇ LSN */
-    time_t             mToTime;      /* Àû¿ëÇÒ ¸¶Áö¸· redo ·Î±×ÀÇ
-                                        commit ·Î±×ÀÇ LSN (time) */
+    scPageID           mFstPageID;   /* ë°ì´íƒ€íŒŒì¼ì˜ ì‹œì‘ PAGE ID*/
+    scPageID           mLstPageID;   /* ë°ì´íƒ€íŒŒì¼ì˜ ë§ˆì§€ë§‰ PAGE ID*/
+    smLSN              mFromLSN;     /* ì ìš©í•  ìµœì´ˆ redo ë¡œê·¸ì˜ LSN */
+    smLSN              mToLSN;       /* ì ìš©í•  ë§ˆì§€ë§‰ redo ë¡œê·¸ì˜ LSN */
+    time_t             mToTime;      /* ì ìš©í•  ë§ˆì§€ë§‰ redo ë¡œê·¸ì˜
+                                        commit ë¡œê·¸ì˜ LSN (time) */
 
-    UInt               mApplyRedoLogCnt; /* Àû¿ëÇÒ ·Î±× °³¼ö */
-    sddDataFileNode*   mFileNode;        /* º¹±¸ ¿Ï·áÁ÷ÈÄ ÆÄÀÏÇì´õ¿Í
-                                            ·Î±×¾ŞÄ¿ sync¸¦ À§ÇØ */
-    SChar*             mSpaceName;    /* tablespace ¸í*/
+    UInt               mApplyRedoLogCnt; /* ì ìš©í•  ë¡œê·¸ ê°œìˆ˜ */
+    sddDataFileNode*   mFileNode;        /* ë³µêµ¬ ì™„ë£Œì§í›„ íŒŒì¼í—¤ë”ì™€
+                                            ë¡œê·¸ì•µì»¤ syncë¥¼ ìœ„í•´ */
+    SChar*             mSpaceName;    /* tablespace ëª…*/
 } sdrRecvFileHashNode;
 
 /* ------------------------------------------------
- * Description : hash ¹öÄÏÀÌ °ü¸®ÇÏ´Â hash ³ëµå ±¸Á¶Ã¼
+ * Description : hash ë²„ì¼“ì´ ê´€ë¦¬í•˜ëŠ” hash ë…¸ë“œ êµ¬ì¡°ì²´
  * ----------------------------------------------*/
 typedef struct sdrRedoHashNode
 {
-    sdrHashNodeState     mState;       /* Æ÷ÇÔµÈ redo ·Î±×µéÀÌ ¹İ¿µµÈ »óÅÂ¸¦
-                                      ³ªÅ¸³»´Â ÇÃ·¡±× */
+    sdrHashNodeState     mState;       /* í¬í•¨ëœ redo ë¡œê·¸ë“¤ì´ ë°˜ì˜ëœ ìƒíƒœë¥¼
+                                      ë‚˜íƒ€ë‚´ëŠ” í”Œë˜ê·¸ */
     scSpaceID            mSpaceID;     /* tablespace id */
     scPageID             mPageID;      /* page id */
-    UInt                 mRedoLogCount; /* Æ÷ÇÔÇÏ´Â redo ·Î±× ³ëµå count */
-    smuList              mRedoLogList; /* Æ÷ÇÔÇÏ´Â redo ·Î±× listÀÇ base node */
+    UInt                 mRedoLogCount; /* í¬í•¨í•˜ëŠ” redo ë¡œê·¸ ë…¸ë“œ count */
+    smuList              mRedoLogList; /* í¬í•¨í•˜ëŠ” redo ë¡œê·¸ listì˜ base node */
 
-    sdrRecvFileHashNode* mRecvItem;    /* media recovery½Ã »ç¿ëµÇ´Â 2Â÷ hash ³ëµå
-                                          Æ÷ÀÎÅÍ */
+    sdrRecvFileHashNode* mRecvItem;    /* media recoveryì‹œ ì‚¬ìš©ë˜ëŠ” 2ì°¨ hash ë…¸ë“œ
+                                          í¬ì¸í„° */
 } sdrRedoHashNode;
 
 /* ------------------------------------------------
- * PROJ-1665 : corrupted pages hash node ±¸Á¶Ã¼
+ * PROJ-1665 : corrupted pages hash node êµ¬ì¡°ì²´
  * ----------------------------------------------*/
 typedef struct sdrCorruptPageHashNode
 {
@@ -333,65 +333,65 @@ typedef struct sdrCorruptPageHashNode
 } sdrCorruptPageHashNode;
 
 /* ------------------------------------------------
- * Description : ½ÇÁ¦ redo log°¡ ÀúÀåµÈ ±¸Á¶Ã¼
+ * Description : ì‹¤ì œ redo logê°€ ì €ì¥ëœ êµ¬ì¡°ì²´
  * ----------------------------------------------*/
 typedef struct sdrRedoLogData
 {
-    sdrLogType    mType;         /* ·Î±× Å¸ÀÔ */
+    sdrLogType    mType;         /* ë¡œê·¸ íƒ€ì… */
     scSpaceID     mSpaceID;      /* SpaceID  - for PROJ-2162 */
     scOffset      mOffset;       /* offset */
     scSlotNum     mSlotNum;      /* slot num */
     scPageID      mPageID;       /* PID      - for PROJ-2162 */
-    void        * mSourceLog;    /* ¿øº»·Î±× - for PROJ-2162 */
+    void        * mSourceLog;    /* ì›ë³¸ë¡œê·¸ - for PROJ-2162 */
     SChar       * mValue;        /* value */
-    UInt          mValueLength;  /* value ±æÀÌ */
+    UInt          mValueLength;  /* value ê¸¸ì´ */
     smTID         mTransID;      /* tx id */
-    smLSN         mBeginLSN;     /* ·Î±×ÀÇ start lsn */
-    smLSN         mEndLSN;       /* ·Î±×ÀÇ end lsn */
-    smuList       mNode4RedoLog; /* redo ·Î±×ÀÇ ¿¬°á ¸®½ºÆ® */
+    smLSN         mBeginLSN;     /* ë¡œê·¸ì˜ start lsn */
+    smLSN         mEndLSN;       /* ë¡œê·¸ì˜ end lsn */
+    smuList       mNode4RedoLog; /* redo ë¡œê·¸ì˜ ì—°ê²° ë¦¬ìŠ¤íŠ¸ */
 } sdrRedoLogData;
 
 
 /* --------------------------------------------------------------------
- * ¿©±âºÎÅÍ mini transaction °ü·Ã
+ * ì—¬ê¸°ë¶€í„° mini transaction ê´€ë ¨
  * ----------------------------------------------------------------- */
 /* --------------------------------------------------------------------
- * mtxÀÇ ·Î±ë ¸ğµå
- * ÀÏ¹İÀûÀ¸·Î´Â ·Î±ë ¸ğµåÀÌ³ª
- * ³ë ·Î±ë ¸ğµå·Î ÁøÇàÇÏ´Â ¿ÀÆÛ·¹ÀÌ¼ÇÀÌ Á¸ÀçÇÑ´Ù.
+ * mtxì˜ ë¡œê¹… ëª¨ë“œ
+ * ì¼ë°˜ì ìœ¼ë¡œëŠ” ë¡œê¹… ëª¨ë“œì´ë‚˜
+ * ë…¸ ë¡œê¹… ëª¨ë“œë¡œ ì§„í–‰í•˜ëŠ” ì˜¤í¼ë ˆì´ì…˜ì´ ì¡´ì¬í•œë‹¤.
  * ----------------------------------------------------------------- */
 
 typedef enum
 {
-    // read ¿ëÀ¸·Î¸¸ È¤Àº log ÇÊ¿ä¾øÀÌ ÀÛ¾÷ÇÑ´Ù.
+    // read ìš©ìœ¼ë¡œë§Œ í˜¹ì€ log í•„ìš”ì—†ì´ ì‘ì—…í•œë‹¤.
     SDR_MTX_NOLOGGING = 0,
 
-    // redo ·Î±×¸¦ writeÇÑ´Ù. ÀÏ¹İÀûÀ¸·Î »ç¿ëµÈ´Ù.
+    // redo ë¡œê·¸ë¥¼ writeí•œë‹¤. ì¼ë°˜ì ìœ¼ë¡œ ì‚¬ìš©ëœë‹¤.
     SDR_MTX_LOGGING
 } sdrMtxLogMode;
 
 
 /* --------------------------------------------------------------------
- * ·Î±ëÀ» redo¸¸ ÇÒ °ÍÀÌ³Ä redo¿¡ ´ëÇÑ beforeÀÌ¹ÌÁö¸¦ ±â·ÏÇÒ °ÍÀÌ³Ä.
- * before image´Â ³ªÁß¿¡ ÀÌ ¿¬»êÀ» undoÇÒ ¶§ »ç¿ëµÈ´Ù.
- * ÀÌ´Â mtx begin - commit »çÀÌ¿¡ abort°¡ ¹ß»ıÇßÀ» ¶§,
- * abort¸¦ Ã³¸®ÇÏ±â À§ÇÏ¿© ÀÌÀüÀÇ ÆäÀÌÁö ¿¬»êÀ» µÇµ¹¸®±â À§ÇØ »ç¿ëµÈ´Ù.
- * mtx logging ¸ğµåÀÏ¶§ ´ÙÀ½ÀÇ 2°³ÀÇ typeÀ¸·Î ±¸ºĞµÈ´Ù.
+ * ë¡œê¹…ì„ redoë§Œ í•  ê²ƒì´ëƒ redoì— ëŒ€í•œ beforeì´ë¯¸ì§€ë¥¼ ê¸°ë¡í•  ê²ƒì´ëƒ.
+ * before imageëŠ” ë‚˜ì¤‘ì— ì´ ì—°ì‚°ì„ undoí•  ë•Œ ì‚¬ìš©ëœë‹¤.
+ * ì´ëŠ” mtx begin - commit ì‚¬ì´ì— abortê°€ ë°œìƒí–ˆì„ ë•Œ,
+ * abortë¥¼ ì²˜ë¦¬í•˜ê¸° ìœ„í•˜ì—¬ ì´ì „ì˜ í˜ì´ì§€ ì—°ì‚°ì„ ë˜ëŒë¦¬ê¸° ìœ„í•´ ì‚¬ìš©ëœë‹¤.
+ * mtx logging ëª¨ë“œì¼ë•Œ ë‹¤ìŒì˜ 2ê°œì˜ typeìœ¼ë¡œ êµ¬ë¶„ëœë‹¤.
  * ----------------------------------------------------------------- */
 typedef enum
 {
-    // redo ·Î±×¸¦ writeÇÑ´Ù. ÀÏ¹İÀûÀ¸·Î »ç¿ëµÈ´Ù.
+    // redo ë¡œê·¸ë¥¼ writeí•œë‹¤. ì¼ë°˜ì ìœ¼ë¡œ ì‚¬ìš©ëœë‹¤.
     SDR_MTX_LOGGING_REDO_ONLY = 0 ,
 
-    // n byte redo·Î±×¿¡ ´ëÇÑ undo log¸¦ writeÇÑ´Ù.
+    // n byte redoë¡œê·¸ì— ëŒ€í•œ undo logë¥¼ writeí•œë‹¤.
     SDR_MTX_LOGGING_WITH_UNDO
 
 } sdrMtxLoggingType;
 
 
 /* --------------------------------------------------------------------
- * mtx¿¡¼­ »ç¿ëÇÏ´Â latchÀÇ Á¾·ù.
- * commit½Ã¿¡ ÀÌ Á¾·ùµû¶ó release¸¦ ÇØÁÖ°Ô µÈ´Ù.
+ * mtxì—ì„œ ì‚¬ìš©í•˜ëŠ” latchì˜ ì¢…ë¥˜.
+ * commitì‹œì— ì´ ì¢…ë¥˜ë”°ë¼ releaseë¥¼ í•´ì£¼ê²Œ ëœë‹¤.
  * ----------------------------------------------------------------- */
 typedef enum
 {
@@ -401,27 +401,27 @@ typedef enum
 
     SDR_MTX_PAGE_NO = SDB_NO_LATCH,// no latch
 
-    SDR_MTX_LATCH_X,               // latch¸¸ X·Î Àâ´Â´Ù.
+    SDR_MTX_LATCH_X,               // latchë§Œ Xë¡œ ì¡ëŠ”ë‹¤.
 
-    SDR_MTX_LATCH_S,               // latch¸¸ S·Î Àâ´Â´Ù.
+    SDR_MTX_LATCH_S,               // latchë§Œ Së¡œ ì¡ëŠ”ë‹¤.
 
-    SDR_MTX_MUTEX_X                // mutex¸¦ Àâ´Â´Ù.
+    SDR_MTX_MUTEX_X                // mutexë¥¼ ì¡ëŠ”ë‹¤.
 
 } sdrMtxLatchMode;
 
 /* --------------------------------------------------------------------
- * mtx¿¡¼­ »ç¿ëÇÏ´Â latchÀÇ Á¾·ù¿¡ µû¸¥ relase function°³¼ö
- * sdrMtxLatchModeÀÇ °³¼ö¿Í °°´Ù.
+ * mtxì—ì„œ ì‚¬ìš©í•˜ëŠ” latchì˜ ì¢…ë¥˜ì— ë”°ë¥¸ relase functionê°œìˆ˜
+ * sdrMtxLatchModeì˜ ê°œìˆ˜ì™€ ê°™ë‹¤.
  * ----------------------------------------------------------------- */
 #define SDR_MTX_RELEASE_FUNC_NUM  (SDR_MTX_MUTEX_X+1)
 
 
 /* ----------------------------------------------------------------------------
  *   PROJ-1867
- *   CorruptPageErrPolicy - Corrupt Page¸¦ ¹ß°ßÇÏ¿´À» ¶§ ´ëÃ³¹æ½Ä
- *   SDR_CORRUPT_PAGE_ERR_POLICY_SERVERFATAL - CorruptPage ¹ß°ß½Ã ¼­¹ö Á¾·á
+ *   CorruptPageErrPolicy - Corrupt Pageë¥¼ ë°œê²¬í•˜ì˜€ì„ ë•Œ ëŒ€ì²˜ë°©ì‹
+ *   SDR_CORRUPT_PAGE_ERR_POLICY_SERVERFATAL - CorruptPage ë°œê²¬ì‹œ ì„œë²„ ì¢…ë£Œ
  *   SDR_CORRUPT_PAGE_ERR_POLICY_OVERWRITE
- *                              - CorruptPage ¹ß°ß½Ã ImgLog·Î Overwrite ½Ãµµ
+ *                              - CorruptPage ë°œê²¬ì‹œ ImgLogë¡œ Overwrite ì‹œë„
  *   CORRUPT_PAGE_ERR_POLICY  0(00)  1(01)  2(10)  3(11)
  *   SERVERFATAL  (01)          X      O      X      O
  *   OVERWRITE    (10)          X      X      O      O
@@ -432,9 +432,9 @@ typedef enum
 
 /* --------------------------------------------------------------------
  *
- * latch itemÀÇ Å¸ÀÔÀ» ³ªÅ¸³½´Ù.
- * mtx stack¿¡ Æ¯Á¤ ¾ÆÀÌÅÛÀÌ ÀÖ³ª È®ÀÎÇÏ°íÀÚ ÇÒ¶§
- * »ç¿ëµÈ´Ù.
+ * latch itemì˜ íƒ€ì…ì„ ë‚˜íƒ€ë‚¸ë‹¤.
+ * mtx stackì— íŠ¹ì • ì•„ì´í…œì´ ìˆë‚˜ í™•ì¸í•˜ê³ ì í• ë•Œ
+ * ì‚¬ìš©ëœë‹¤.
  *
  * ----------------------------------------------------------------- */
 typedef enum
@@ -445,33 +445,33 @@ typedef enum
 } sdrMtxItemSourceType;
 
 /* ---------------------------------------------
- * latch release¸¦ À§ÇÑ function prototype
+ * latch releaseë¥¼ ìœ„í•œ function prototype
  * --------------------------------------------- */
 typedef IDE_RC (*smrMtxReleaseFunc)( void *aObject,
                                      UInt  aLatchMode,
                                      void *aMtx );
 
 /* ---------------------------------------------
- * stack¿¡ ÀûÀçµÈ ObjectÀÇ ºñ±³¸¦ À§ÇÑ ÇÔ¼ö
+ * stackì— ì ì¬ëœ Objectì˜ ë¹„êµë¥¼ ìœ„í•œ í•¨ìˆ˜
  * --------------------------------------------- */
 typedef idBool (*smrMtxCompareFunc)( void *aLhs,
                                      void *aRhs );
 
 /* ---------------------------------------------
- * stack¿¡ ÀûÀçµÈ Object¸¦ dump ÇÏ±â À§ÇÑ ÇÔ¼ö
+ * stackì— ì ì¬ëœ Objectë¥¼ dump í•˜ê¸° ìœ„í•œ í•¨ìˆ˜
  * --------------------------------------------- */
 typedef IDE_RC (*smrMtxDumpFunc)( void *aObject );
 
 
 /* --------------------------------------------------------------------
- * enum typeÀÇ latch modeÀÌ¸§ÀÇ ÃÖ´ë ±æÀÌ
- * dump¸¦ À§ÇÑ °ÍÀÌ¹Ç·Î Å« ÀÇ¹Ì´Â ¾ø´Ù.
+ * enum typeì˜ latch modeì´ë¦„ì˜ ìµœëŒ€ ê¸¸ì´
+ * dumpë¥¼ ìœ„í•œ ê²ƒì´ë¯€ë¡œ í° ì˜ë¯¸ëŠ” ì—†ë‹¤.
  * ----------------------------------------------------------------- */
 #define LATCH_MODE_NAME_MAX_LEN (50)
 
 /* --------------------------------------------------------------------
- * mtx stackÀÇ °¢ latch item¿¡ Àû¿ëµÇ´Â ÇÔ¼öµéÀÇ ÁıÇÕ°ú
- * latch ´ë»ó¿¡ ´ëÇÑ Á¤º¸
+ * mtx stackì˜ ê° latch itemì— ì ìš©ë˜ëŠ” í•¨ìˆ˜ë“¤ì˜ ì§‘í•©ê³¼
+ * latch ëŒ€ìƒì— ëŒ€í•œ ì •ë³´
  * ----------------------------------------------------------------- */
 typedef struct sdrMtxLatchItemApplyInfo
 {
@@ -481,28 +481,28 @@ typedef struct sdrMtxLatchItemApplyInfo
     smrMtxDumpFunc    mDumpFunc;
     sdrMtxItemSourceType mSourceType;
 
-    // dump¸¦ À§ÇÑ latch modeÀÇ ¹®ÀÚ¿­
+    // dumpë¥¼ ìœ„í•œ latch modeì˜ ë¬¸ìì—´
     SChar             mLatchModeName[LATCH_MODE_NAME_MAX_LEN];
 
 } sdrMtxLatchItemApplyInfo;
 
 /* --------------------------------------------------------------------
- * Description mtx ½ºÅÃ¿¡ ÀúÀåµÇ´Â ÀÚ·á±¸Á¶
+ * Description mtx ìŠ¤íƒì— ì €ì¥ë˜ëŠ” ìë£Œêµ¬ì¡°
  *
- * latch ½ºÅÃ¿¡ pushÇÏ°Å³ª popÇÏ´Â ´ÜÀ§ÀÚ·áÀÌ´Ù.
+ * latch ìŠ¤íƒì— pushí•˜ê±°ë‚˜ popí•˜ëŠ” ë‹¨ìœ„ìë£Œì´ë‹¤.
  * ----------------------------------------------------------------- */
 typedef struct sdrMtxLatchItem
 {
     void*             mObject;
     sdrMtxLatchMode   mLatchMode;
-    smuAlignBuf       mPageCopy;  /*PROJ-2162 RedoValidationÀ» À§ÇØ Á¸Àç*/
+    smuAlignBuf       mPageCopy;  /*PROJ-2162 RedoValidationì„ ìœ„í•´ ì¡´ì¬*/
 } sdrMtxLatchItem;
 
 /* --------------------------------------------------------------------
- * Description : DRDB ·Î±×ÀÇ Header
+ * Description : DRDB ë¡œê·¸ì˜ Header
  *
- * ·Î±×ÀÇ Å¸ÀÔÀÌ SDR_1/2/4/8_BYTESÀÎ °æ¿ì body¿¡ length¸¦
- * ±â·ÏÇÏÁö ¾ÊÀ¸¸ç, ±× ¿ÜÀÇ °æ¿ì´Â length¸¦ »ç¿ëÇÑ´Ù.
+ * ë¡œê·¸ì˜ íƒ€ì…ì´ SDR_1/2/4/8_BYTESì¸ ê²½ìš° bodyì— lengthë¥¼
+ * ê¸°ë¡í•˜ì§€ ì•Šìœ¼ë©°, ê·¸ ì™¸ì˜ ê²½ìš°ëŠ” lengthë¥¼ ì‚¬ìš©í•œë‹¤.
  * ----------------------------------------------------------------- */
 typedef struct sdrLogHdr
 {
@@ -512,36 +512,36 @@ typedef struct sdrLogHdr
 } sdrLogHdr;
 
 /* --------------------------------------------------------------------
- * 2°³ÀÇ stack itemÀ» ¹Ş¾Æ ºñ±³ÇÏ´Â functionÀÌ´Ù.
+ * 2ê°œì˜ stack itemì„ ë°›ì•„ ë¹„êµí•˜ëŠ” functionì´ë‹¤.
  * ----------------------------------------------------------------- */
 typedef idBool (*sdrMtxStackItemCompFunc)(void *, void *);
 
 /* --------------------------------------------------------------------
- * stackÀÇ Á¤º¸¸¦ °®´Â´Ù. ¸®½ºÆ®¸¦ ÀÌ¿ëÇÏ¿© ±¸ÇöµÊ
+ * stackì˜ ì •ë³´ë¥¼ ê°–ëŠ”ë‹¤. ë¦¬ìŠ¤íŠ¸ë¥¼ ì´ìš©í•˜ì—¬ êµ¬í˜„ë¨
  * ----------------------------------------------------------------- */
 typedef struct sdrMtxStackInfo
 {
-    UInt          mTotalSize;      // ½ºÅÃÀÇ ÃÑ Å©±â
+    UInt          mTotalSize;      // ìŠ¤íƒì˜ ì´ í¬ê¸°
 
-    UInt          mCurrSize;      // ÇöÀç ½ºÅÃÀÇ Å©±â
+    UInt          mCurrSize;      // í˜„ì¬ ìŠ¤íƒì˜ í¬ê¸°
 
     sdrMtxLatchItem mArray[SDR_MAX_MTX_STACK_SIZE];
 
 } sdrMtxStackInfo;
 
 /* -------------------------------------------------------------------------
- * BUG-24730 [SD] DropµÈ Temp SegmentÀÇ Extent´Â ºü¸£°Ô Àç»ç¿ëµÇ¾î¾ß ÇÕ´Ï´Ù. 
+ * BUG-24730 [SD] Dropëœ Temp Segmentì˜ ExtentëŠ” ë¹ ë¥´ê²Œ ì¬ì‚¬ìš©ë˜ì–´ì•¼ í•©ë‹ˆë‹¤. 
  * 
- * Mini-transaction Commit ÀÌÈÄ¿¡ ÀçÈ°¿ë µÇµµ·Ï ÇÏ±â À§ÇØ, Mini-transaction
- * ¿¡¼­ Free Extent ¸ñ·ÏÀ» °®°í ÀÖ½À´Ï´Ù. FreeExtent´Â Mini-TransactionÀÇ
- * Commit °úÁ¤ Áß ¸¶Áö¸·¿¡ ÀÏ¾î³ª¾ß ÇÏ´Â Pending ¿¬»ê ÀÔ´Ï´Ù.
+ * Mini-transaction Commit ì´í›„ì— ì¬í™œìš© ë˜ë„ë¡ í•˜ê¸° ìœ„í•´, Mini-transaction
+ * ì—ì„œ Free Extent ëª©ë¡ì„ ê°–ê³  ìˆìŠµë‹ˆë‹¤. FreeExtentëŠ” Mini-Transactionì˜
+ * Commit ê³¼ì • ì¤‘ ë§ˆì§€ë§‰ì— ì¼ì–´ë‚˜ì•¼ í•˜ëŠ” Pending ì—°ì‚° ì…ë‹ˆë‹¤.
  * ---------------------------------------------------------------------- */
 typedef IDE_RC (*sdrMtxPendingFunc)( void * aData );
 
 /* --------------------------------------------------------------------------
  *  PROJ-2162 RestartRiskReduction
- *  DISK MiniTransaction °ü·Ã FlagµîÀ» Á¤ÀÇÇÔ.
- *  Ãß°¡ÀûÀ¸·Î DiskLogging °ü·Ã FlagµîÀº smDef.h¿¡ SM_DLOG Prefix·Î Á¤¸®µÊ
+ *  DISK MiniTransaction ê´€ë ¨ Flagë“±ì„ ì •ì˜í•¨.
+ *  ì¶”ê°€ì ìœ¼ë¡œ DiskLogging ê´€ë ¨ Flagë“±ì€ smDef.hì— SM_DLOG Prefixë¡œ ì •ë¦¬ë¨
  * ------------------------------------------------------------------------*/
 
 /*  For DISK NOLOGGING Attributes */
@@ -550,73 +550,73 @@ typedef IDE_RC (*sdrMtxPendingFunc)( void * aData );
 # define SDR_MTX_NOLOGGING_ATTR_PERSISTENT_ON     (0x00000001)
 
 /* TASK-2398 Log Compress
- *   Disk Log°¡ Log File¿¡ ±â·ÏµÉ ¶§ ¾ĞÃà ¿©ºÎ¸¦ °áÁ¤ÇÏ´Â Flag
- *   => Mini TransactionÀÌ ±â·ÏÇÏ´Â LogÁß
- *      LOG¾ĞÃàÀ» ÇÏÁö ¾Ê°Ú´Ù°í ¼³Á¤µÈ Tablespace¿¡ ´ëÇÑ ·Î±×°¡
- *      ÇÏ³ª¶óµµ ÀÖÀ¸¸é, ·Î±×¸¦ ¾ĞÃàÇÏÁö ¾Ê´Â´Ù. */
+ *   Disk Logê°€ Log Fileì— ê¸°ë¡ë  ë•Œ ì••ì¶• ì—¬ë¶€ë¥¼ ê²°ì •í•˜ëŠ” Flag
+ *   => Mini Transactionì´ ê¸°ë¡í•˜ëŠ” Logì¤‘
+ *      LOGì••ì¶•ì„ í•˜ì§€ ì•Šê² ë‹¤ê³  ì„¤ì •ëœ Tablespaceì— ëŒ€í•œ ë¡œê·¸ê°€
+ *      í•˜ë‚˜ë¼ë„ ìˆìœ¼ë©´, ë¡œê·¸ë¥¼ ì••ì¶•í•˜ì§€ ì•ŠëŠ”ë‹¤. */
 # define SDR_MTX_LOG_SHOULD_COMPRESS_MASK         (0x00000002)
 # define SDR_MTX_LOG_SHOULD_COMPRESS_ON           (0x00000000)
 # define SDR_MTX_LOG_SHOULD_COMPRESS_OFF          (0x00000002)
 
-/* mtx°¡ initµÇ¾úÀ¸¸é true
- * destroyµÇ¸é false
- * rollback½Ã¿¡ trueÀÏ¶§¸¸ rollbackÀ» ¼öÇàÇÏµµ·Ï ÇÏ±â À§ÇØ Ãß°¡
- * mtx beginÇÏ´Â ÇÔ¼ö¿¡¼­´Â StateÃ³¸® ¾øÀÌ exception¿¡¼­
- * mtx rollback¸¸ ÇØÁÖ¸é µÈ´Ù. */
+/* mtxê°€ initë˜ì—ˆìœ¼ë©´ true
+ * destroyë˜ë©´ false
+ * rollbackì‹œì— trueì¼ë•Œë§Œ rollbackì„ ìˆ˜í–‰í•˜ë„ë¡ í•˜ê¸° ìœ„í•´ ì¶”ê°€
+ * mtx beginí•˜ëŠ” í•¨ìˆ˜ì—ì„œëŠ” Stateì²˜ë¦¬ ì—†ì´ exceptionì—ì„œ
+ * mtx rollbackë§Œ í•´ì£¼ë©´ ëœë‹¤. */
 # define SDR_MTX_INITIALIZED_MASK                 (0x00000004)
 # define SDR_MTX_INITIALIZED_ON                   (0x00000000)
 # define SDR_MTX_INITIALIZED_OFF                  (0x00000004)
 
-/* Logging ¿©ºÎ Flag
- * NoLogging - read ¿ëÀ¸·Î¸¸ È¤Àº log ÇÊ¿ä¾øÀÌ ÀÛ¾÷ÇÑ´Ù.
- * Logging   - redo ·Î±×¸¦ writeÇÑ´Ù. ÀÏ¹İÀûÀ¸·Î »ç¿ëµÈ´Ù.
- * ( °ú°Å sdrMtxLogMde¿´À½ ) */
+/* Logging ì—¬ë¶€ Flag
+ * NoLogging - read ìš©ìœ¼ë¡œë§Œ í˜¹ì€ log í•„ìš”ì—†ì´ ì‘ì—…í•œë‹¤.
+ * Logging   - redo ë¡œê·¸ë¥¼ writeí•œë‹¤. ì¼ë°˜ì ìœ¼ë¡œ ì‚¬ìš©ëœë‹¤.
+ * ( ê³¼ê±° sdrMtxLogMdeì˜€ìŒ ) */
 # define SDR_MTX_LOGGING_MASK                     (0x00000008)
 # define SDR_MTX_LOGGING_ON                       (0x00000000)
 # define SDR_MTX_LOGGING_OFF                      (0x00000008)
 
-/* Refrence Offset ¼³Á¤ ¿©ºÎ ( RefOffset )
+/* Refrence Offset ì„¤ì • ì—¬ë¶€ ( RefOffset )
  *
- * - DML°ü·Ã undo/redo ·Î±× À§Ä¡ ±â·Ï
- * ref offsetÀº ÇÏ³ªÀÇ smrDiskLog¿¡ ±â·ÏµÈ ¿©·¯°³ÀÇ disk ·Î±×µé Áß
- * replication sender°¡ Âü°íÇÏ¿© ·Î±×¸¦ ÆÇµ¶ÇÏ°Å³ª transaction undo½Ã¿¡
- * ÆÇµ¶ÇÏ´Â DML°ü·Ã redo/undo ·Î±×°¡ ±â·ÏµÈ À§Ä¡¸¦ ÀÇ¹ÌÇÑ´Ù. */
+ * - DMLê´€ë ¨ undo/redo ë¡œê·¸ ìœ„ì¹˜ ê¸°ë¡
+ * ref offsetì€ í•˜ë‚˜ì˜ smrDiskLogì— ê¸°ë¡ëœ ì—¬ëŸ¬ê°œì˜ disk ë¡œê·¸ë“¤ ì¤‘
+ * replication senderê°€ ì°¸ê³ í•˜ì—¬ ë¡œê·¸ë¥¼ íŒë…í•˜ê±°ë‚˜ transaction undoì‹œì—
+ * íŒë…í•˜ëŠ” DMLê´€ë ¨ redo/undo ë¡œê·¸ê°€ ê¸°ë¡ëœ ìœ„ì¹˜ë¥¼ ì˜ë¯¸í•œë‹¤. */
 # define SDR_MTX_REFOFFSET_MASK                   (0x00000010)
 # define SDR_MTX_REFOFFSET_OFF                    (0x00000000)
 # define SDR_MTX_REFOFFSET_ON                     (0x00000010)
 
-/* MtxUndo°¡´É ¿©ºÎ
+/* MtxUndoê°€ëŠ¥ ì—¬ë¶€
  * 
  *  PROJ-2162 RestartRiskReduction
- *  Mtx´Â ±âº»ÀûÀ¸·Î DirtyPage(XLatchÀâÀ¸¸é ÀÚµ¿À¸·Î DirtyPage·Î ÀÎ½Ä)¿¡
- * ´ëÇØ º¹±¸ÇÏ´Â ±â´ÉÀº ÀÖÁö¸¸, µî·ÏµÇÁö ¾ÊÀº Runtime°´Ã¼ÀÇ º¹±¸µîÀº ¾ËÁö
- * ¸øÇÏ±â ¶§¹®¿¡ º¹±¸ ºÒ°¡´ÉÇÏ´Ù. µû¶ó¼­ ÀÌ·¯ÇÑ °æ¿ì¿¡ ¹®Á¦ ¾ø´ÂÁö¸¦ °ËÁõ
- * ÇØ¾ß ÇÑ´Ù.
- *  Å×½º¸£¸¦ ÅëÇØ °ËÁõµÈ °æ¿ì¸¸ MtxRollback °¡´É ¿©ºÎ¸¦ ¼³Á¤ÇÑ´Ù.
+ *  MtxëŠ” ê¸°ë³¸ì ìœ¼ë¡œ DirtyPage(XLatchì¡ìœ¼ë©´ ìë™ìœ¼ë¡œ DirtyPageë¡œ ì¸ì‹)ì—
+ * ëŒ€í•´ ë³µêµ¬í•˜ëŠ” ê¸°ëŠ¥ì€ ìˆì§€ë§Œ, ë“±ë¡ë˜ì§€ ì•Šì€ Runtimeê°ì²´ì˜ ë³µêµ¬ë“±ì€ ì•Œì§€
+ * ëª»í•˜ê¸° ë•Œë¬¸ì— ë³µêµ¬ ë¶ˆê°€ëŠ¥í•˜ë‹¤. ë”°ë¼ì„œ ì´ëŸ¬í•œ ê²½ìš°ì— ë¬¸ì œ ì—†ëŠ”ì§€ë¥¼ ê²€ì¦
+ * í•´ì•¼ í•œë‹¤.
+ *  í…ŒìŠ¤ë¥´ë¥¼ í†µí•´ ê²€ì¦ëœ ê²½ìš°ë§Œ MtxRollback ê°€ëŠ¥ ì—¬ë¶€ë¥¼ ì„¤ì •í•œë‹¤.
  *
- * ÀÌ¿¡ ´ëÇÑ Å×½ºÆ® ¹æ¹ıÀº
+ * ì´ì— ëŒ€í•œ í…ŒìŠ¤íŠ¸ ë°©ë²•ì€
  * TC/Server/sm4/Project3/PROJ-2162/function/mtxtest
- * ¸¦ Âü°íÇÑ´Ù. */
+ * ë¥¼ ì°¸ê³ í•œë‹¤. */
 # define SDR_MTX_UNDOABLE_MASK                    (0x00000020)
 # define SDR_MTX_UNDOABLE_OFF                     (0x00000000)
 # define SDR_MTX_UNDOABLE_ON                      (0x00000020)
 
-/* MtxUndo¹«½Ã ¿©ºÎ
+/* MtxUndoë¬´ì‹œ ì—¬ë¶€
  * 
  *  PROJ-2162 RestartRiskReduction
- *  Mtx´Â DirtyµÈ ÆäÀÌÁö¸¦ ¹İµå½Ã º¹±¸ÇÑ´Ù. ÀÌ ¿¬»êÀº ¿À·¡ °É¸°´Ù. ÇÏÁö¸¸
- * UniqueViolation, °ø°£ºÎÁ·, Update Retry ¿¬»ê µî UndoÇÒ ÇÊ¿ä ¾øÀÌ 
- * ±×³É LogµîÀ» ¹«½ÃÇØµµ µÇ´Â °æ¿ì°¡ ÀÖ´Ù.
- *  ÀÌ·± °æ¿ì Mtx»ç¿ë Ãø¿¡¼­ ÇØ´ç »çÇ×À» ¼³Á¤ÇÔÀ¸·Î½á ¾µ´ë¾ø´Â RollbackÀ»
- * ¸·´Â´Ù. */
+ *  MtxëŠ” Dirtyëœ í˜ì´ì§€ë¥¼ ë°˜ë“œì‹œ ë³µêµ¬í•œë‹¤. ì´ ì—°ì‚°ì€ ì˜¤ë˜ ê±¸ë¦°ë‹¤. í•˜ì§€ë§Œ
+ * UniqueViolation, ê³µê°„ë¶€ì¡±, Update Retry ì—°ì‚° ë“± Undoí•  í•„ìš” ì—†ì´ 
+ * ê·¸ëƒ¥ Logë“±ì„ ë¬´ì‹œí•´ë„ ë˜ëŠ” ê²½ìš°ê°€ ìˆë‹¤.
+ *  ì´ëŸ° ê²½ìš° Mtxì‚¬ìš© ì¸¡ì—ì„œ í•´ë‹¹ ì‚¬í•­ì„ ì„¤ì •í•¨ìœ¼ë¡œì¨ ì“¸ëŒ€ì—†ëŠ” Rollbackì„
+ * ë§‰ëŠ”ë‹¤. */
 # define SDR_MTX_IGNORE_UNDO_MASK                 (0x00000040)
 # define SDR_MTX_IGNORE_UNDO_OFF                  (0x00000000)
 # define SDR_MTX_IGNORE_UNDO_ON                   (0x00000040)
 
-/* StartupBugDetector ±â´É ¼öÇà ¿©ºÎ
+/* StartupBugDetector ê¸°ëŠ¥ ìˆ˜í–‰ ì—¬ë¶€
  *
  *  PROJ-2162 RestartRiskReduction
- * __SM_ENABLE_STARTUP_BUG_DETECTOR ÀÇ °ªÀ» ÀúÀåÇØµĞ´Ù. */
+ * __SM_ENABLE_STARTUP_BUG_DETECTOR ì˜ ê°’ì„ ì €ì¥í•´ë‘”ë‹¤. */
 # define SDR_MTX_STARTUP_BUG_DETECTOR_MASK        (0x00000080)
 # define SDR_MTX_STARTUP_BUG_DETECTOR_OFF         (0x00000000)
 # define SDR_MTX_STARTUP_BUG_DETECTOR_ON          (0x00000080)
@@ -648,87 +648,87 @@ typedef IDE_RC (*sdrMtxPendingFunc)( void * aData );
 
 typedef struct sdrMtxPendingJob
 {
-    idBool              mIsCommitJob; /* Commit½Ã ¼öÇà(T) Rollback½Ã ¼öÇà(F)*/
-    idBool              mFreeData;    /* JobÁ¦°Å½Ã Dataº¯¼ö¸¦ FreeÇØÁÜ */
-    sdrMtxPendingFunc   mPendingFunc; /* JobÀ» ¼öÇàÇÒ ÇÔ¼ö */
-    void              * mData;        /* JobÀ» ¼öÇàÇÏ´Âµ¥ ÇÊ¿äÇÑ µ¥ÀÌÅÍ.*/
+    idBool              mIsCommitJob; /* Commitì‹œ ìˆ˜í–‰(T) Rollbackì‹œ ìˆ˜í–‰(F)*/
+    idBool              mFreeData;    /* Jobì œê±°ì‹œ Dataë³€ìˆ˜ë¥¼ Freeí•´ì¤Œ */
+    sdrMtxPendingFunc   mPendingFunc; /* Jobì„ ìˆ˜í–‰í•  í•¨ìˆ˜ */
+    void              * mData;        /* Jobì„ ìˆ˜í–‰í•˜ëŠ”ë° í•„ìš”í•œ ë°ì´í„°.*/
 } sdrMtxPendingJob;
 
 
 
 /* --------------------------------------------------------------------
- * Description : mini-transaction ÀÚ·á±¸Á¶
+ * Description : mini-transaction ìë£Œêµ¬ì¡°
  *
- * mtxÀÇ Á¤º¸¸¦ À¯ÁöÇÑ´Ù.
+ * mtxì˜ ì •ë³´ë¥¼ ìœ ì§€í•œë‹¤.
  * ----------------------------------------------------------------- */
 typedef struct sdrMtx
 {
-    smuDynArrayBase     mLogBuffer;  /* mtx ·Î±× ¹öÆÛ */
-    idvSQL*             mStatSQL;    /* Åë°èÁ¤º¸ */
-    void*               mTrans;      /* mtx¸¦ ÃÊ±âÈ­ÇÑ Æ®·£Àè¼Ç */
+    smuDynArrayBase     mLogBuffer;  /* mtx ë¡œê·¸ ë²„í¼ */
+    idvSQL*             mStatSQL;    /* í†µê³„ì •ë³´ */
+    void*               mTrans;      /* mtxë¥¼ ì´ˆê¸°í™”í•œ íŠ¸ëœì­ì…˜ */
 
     UInt                mLogCnt;
-    scSpaceID           mAccSpaceID; /* mtx¿¡ ÀÇÇØ º¯°æµÇ´Â TBS´Â ÇÏ³ªÀÌ´Ù. */
-                                     /* ´Ü, undo tbs´Â data tbs¿¡
-                                        ÀÇÇØ ÇÔ²² º¯°æµÉ ¼ö ÀÖ´Ù */
+    scSpaceID           mAccSpaceID; /* mtxì— ì˜í•´ ë³€ê²½ë˜ëŠ” TBSëŠ” í•˜ë‚˜ì´ë‹¤. */
+                                     /* ë‹¨, undo tbsëŠ” data tbsì—
+                                        ì˜í•´ í•¨ê»˜ ë³€ê²½ë  ìˆ˜ ìˆë‹¤ */
 
     smLSN               mBeginLSN;    /* Begin LSN */
     smLSN               mEndLSN;      /* End LSN   */
-    // disk logÀÇ ¼Ó¼º mtx begin½Ã¿¡ Á¤ÀÇµÈ´Ù.
+    // disk logì˜ ì†ì„± mtx beginì‹œì— ì •ì˜ëœë‹¤.
     UInt                mDLogAttr;
 
     UInt                mFlag;
-    UInt                mOpType;      /* operation ·Î±ëÀÇ ¿¬»ê Å¸ÀÔ */
-    smLSN               mPPrevLSN;    /* NTA ±¸°£ ¼³Á¤¿¡ ÇÊ¿äÇÑ LSN
-                                         ÀÌÀüÀÇ ÀÌÀü LSN */
-    UInt                mRefOffset;   /* ·Î±×¹öÆÛ»óÀÇ DML°ü·Ã
-                                         redo/undo ·Î±× À§Ä¡ */
+    UInt                mOpType;      /* operation ë¡œê¹…ì˜ ì—°ì‚° íƒ€ì… */
+    smLSN               mPPrevLSN;    /* NTA êµ¬ê°„ ì„¤ì •ì— í•„ìš”í•œ LSN
+                                         ì´ì „ì˜ ì´ì „ LSN */
+    UInt                mRefOffset;   /* ë¡œê·¸ë²„í¼ìƒì˜ DMLê´€ë ¨
+                                         redo/undo ë¡œê·¸ ìœ„ì¹˜ */
 
     /* -----------------------------------------------------------------------
-     * BUG-24730 [SD] DropµÈ Temp SegmentÀÇ Extent´Â ºü¸£°Ô Àç»ç¿ëµÇ¾î¾ß 
-     * ÇÕ´Ï´Ù. 
+     * BUG-24730 [SD] Dropëœ Temp Segmentì˜ ExtentëŠ” ë¹ ë¥´ê²Œ ì¬ì‚¬ìš©ë˜ì–´ì•¼ 
+     * í•©ë‹ˆë‹¤. 
      * 
-     * Mini-transaction Commit ÀÌÈÄ¿¡ ÀçÈ°¿ë µÇµµ·Ï ÇÏ±â À§ÇØ, MiniTransaction
-     * ¿¡¼­ Free Extent ¸ñ·ÏÀ» °®°í ÀÖ½À´Ï´Ù. FreeExtent´Â MiniTransactionÀÇ
-     * Commit °úÁ¤ Áß ¸¶Áö¸·¿¡ ÀÏ¾î³ª¾ß ÇÏ´Â Pending ¿¬»ê ÀÔ´Ï´Ù.
+     * Mini-transaction Commit ì´í›„ì— ì¬í™œìš© ë˜ë„ë¡ í•˜ê¸° ìœ„í•´, MiniTransaction
+     * ì—ì„œ Free Extent ëª©ë¡ì„ ê°–ê³  ìˆìŠµë‹ˆë‹¤. FreeExtentëŠ” MiniTransactionì˜
+     * Commit ê³¼ì • ì¤‘ ë§ˆì§€ë§‰ì— ì¼ì–´ë‚˜ì•¼ í•˜ëŠ” Pending ì—°ì‚° ì…ë‹ˆë‹¤.
      * -------------------------------------------------------------------- */
     smuList             mPendingJob;
 
     UInt                mDataCount;
 
-    // replicationÀ» À§ÇÑ table oid
+    // replicationì„ ìœ„í•œ table oid
     smOID               mTableOID;
 
     /* PROJ-2162 RestartRiskReduction
-     * DRDB Log´Â N°³ÀÇ SubLog·Î ±¸¼ºµÇ¸ç ÇÏ³ªÀÇ SubLog´Â initLogRec¿¡ ÀÇÇØ
-     * sdrLogHdrÀÇ ÇüÅÂ·Î Header°¡ ±â·ÏµÈ´Ù. µû¶ó¼­ initLogRecÀ¸·Î ÇÑ
-     * SubLogÀÇ Å©±â¸¦ ¼±¾ğÇßÀ¸¸é, ±× SubLog¸¦ ÀüºÎ ½á¾ß¸¸ Mtx°¡ Á¤»ó
-     * CommitµÉ ¼ö ÀÖ´Ù. */
+     * DRDB LogëŠ” Nê°œì˜ SubLogë¡œ êµ¬ì„±ë˜ë©° í•˜ë‚˜ì˜ SubLogëŠ” initLogRecì— ì˜í•´
+     * sdrLogHdrì˜ í˜•íƒœë¡œ Headerê°€ ê¸°ë¡ëœë‹¤. ë”°ë¼ì„œ initLogRecìœ¼ë¡œ í•œ
+     * SubLogì˜ í¬ê¸°ë¥¼ ì„ ì–¸í–ˆìœ¼ë©´, ê·¸ SubLogë¥¼ ì „ë¶€ ì¨ì•¼ë§Œ Mtxê°€ ì •ìƒ
+     * Commitë  ìˆ˜ ìˆë‹¤. */
     /* BUG-32579 The MiniTransaction commit should not be used in
      * exception handling area. */
     UInt                mRemainLogRecSize; 
 
     //-----------------------------------------------------
     // PROJ-1566
-    // < Extent ÇÒ´ç¹ŞÀ»¶§ >
+    // < Extent í• ë‹¹ë°›ì„ë•Œ >
     // - mData1 : SpaceID
     // - mData2 : segment RID
     // - mData3 : extent RID
-    // < Page list¸¦ metaÀÇ Page list¿¡ Ãß°¡ÇÒ ¶§ >
+    // < Page listë¥¼ metaì˜ Page listì— ì¶”ê°€í•  ë•Œ >
     // - mData1 : table OID
     // - mData2 : tail page PID
-    // - mData3 : »ı¼ºµÈ pageµé Áß, table typeÀÎ page °³¼ö
-    // - mData4 : »ı¼ºµÈ ¸ğµç page °³¼ö ( multiple, external Æ÷ÇÔ )
+    // - mData3 : ìƒì„±ëœ pageë“¤ ì¤‘, table typeì¸ page ê°œìˆ˜
+    // - mData4 : ìƒì„±ëœ ëª¨ë“  page ê°œìˆ˜ ( multiple, external í¬í•¨ )
     //-----------------------------------------------------
     ULong               mData[ SM_DISK_NTALOG_DATA_COUNT ];
 
-    sdrMtxStackInfo     mLatchStack;  /* mtx¿¡¼­ »ç¿ëµÇ´Â stack */
-    sdrMtxStackInfo     mXLatchPageStack; /* XLatch¸¦ ÀâÀº PageµéÀÇ Stack */
+    sdrMtxStackInfo     mLatchStack;  /* mtxì—ì„œ ì‚¬ìš©ë˜ëŠ” stack */
+    sdrMtxStackInfo     mXLatchPageStack; /* XLatchë¥¼ ì¡ì€ Pageë“¤ì˜ Stack */
 } sdrMtx;
 
 
 /* --------------------------------------------------------------------
- * mtx°¡ beginÇÏ´Âµ¥ ÇÊ¿äÇÑ trans, logmode¸¦ Àü´ŞÇÏ±â À§ÇÑ ±¸Á¶Ã¼
+ * mtxê°€ beginí•˜ëŠ”ë° í•„ìš”í•œ trans, logmodeë¥¼ ì „ë‹¬í•˜ê¸° ìœ„í•œ êµ¬ì¡°ì²´
  *
  * ----------------------------------------------------------------- */
 typedef struct sdrMtxStartInfo
@@ -739,40 +739,40 @@ typedef struct sdrMtxStartInfo
 
 
 /* --------------------------------------------------------------------
- * stackÀÇ °¢ itemÀÇ ³»¿ëÀ» dumpÇÒ °ÍÀÎ°¡.
+ * stackì˜ ê° itemì˜ ë‚´ìš©ì„ dumpí•  ê²ƒì¸ê°€.
  * ----------------------------------------------------------------- */
 typedef enum
 {
-    // stack¸¸ dumpÇÑ´Ù.
+    // stackë§Œ dumpí•œë‹¤.
     SDR_MTX_DUMP_NORMAL,
-    // stackÀÇ ¾ÆÀÌÅÛÀ» ¸ğµÎ dumpÇÑ´Ù.
+    // stackì˜ ì•„ì´í…œì„ ëª¨ë‘ dumpí•œë‹¤.
     SDR_MTX_DUMP_DETAILED
 } sdrMtxDumpMode ;
 
 /* --------------------------------------------------------------------
- * mtxÀÇ save point
- * ÀÌ ½ÃÁ¡±îÁö latch ÀâÀº ¸ğµç object¸¦ ÇØÁ¦ÇÒ ¼ö ÀÖ´Ù.
- * save point ÀÌÈÄ·Î log°¡ write µÇ¾ú´Ù¸é save point´Â ¹«È¿È­µÈ´Ù.
+ * mtxì˜ save point
+ * ì´ ì‹œì ê¹Œì§€ latch ì¡ì€ ëª¨ë“  objectë¥¼ í•´ì œí•  ìˆ˜ ìˆë‹¤.
+ * save point ì´í›„ë¡œ logê°€ write ë˜ì—ˆë‹¤ë©´ save pointëŠ” ë¬´íš¨í™”ëœë‹¤.
  * ----------------------------------------------------------------- */
 typedef struct sdrSavePoint
 {
-    // stackÀÇ À§Ä¡
+    // stackì˜ ìœ„ì¹˜
     UInt   mStackIndex;
 
-    // XLatch StackÀÇ À§Ä¡
+    // XLatch Stackì˜ ìœ„ì¹˜
     UInt   mXLatchStackIndex;
 
-    // mtx°¡ writeÇÑ logÀÇ Å©±â
+    // mtxê°€ writeí•œ logì˜ í¬ê¸°
     UInt   mLogSize;
 } sdrSavePoint;
 
 /* --------------------------------------------------------------------
- * Redo ½Ã¿¡ ÇÊ¿äÇÑ Á¤º¸
+ * Redo ì‹œì— í•„ìš”í•œ ì •ë³´
  * ----------------------------------------------------------------- */
 typedef struct sdrRedoInfo
 {
-    sdrLogType     mLogType; // ·Î±×Å¸ÀÔ
-    scSlotNum      mSlotNum; // TableÆäÀÌÁöÀÇ Slot Num
+    sdrLogType     mLogType; // ë¡œê·¸íƒ€ì…
+    scSlotNum      mSlotNum; // Tableí˜ì´ì§€ì˜ Slot Num
 } sdrRedoInfo;
 
 typedef IDE_RC (*sdrDiskRedoFunction)( SChar       * aData,

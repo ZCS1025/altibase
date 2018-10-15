@@ -1243,17 +1243,17 @@ static IDE_RC svnpFetchNextR( svnpIterator  * aIterator)
     idBool      sIsVisibleRow;
     scGRID      sGRID;
     idBool      sIsValidGRID;
-    /* BUG-39836 : ÃÖÃÊ°ª ÀúÀå º¯¼ö Ãß°¡ */ 
+    /* BUG-39836 : ìµœì´ˆê°’ ì €ì¥ ë³€ìˆ˜ ì¶”ê°€ */ 
     ULong           sReadRecordCountOrigin;
     ULong           sFirstReadRecordPosOrigin; 
     const smiRange *sNxtRangeOrigin;
 
-    /* BUG-39836 : repeatable read¸ğµå¿¡¼­ smnp/svnpFetchNextRÇÔ¼ö´Â fetchÇÒ 
-     * row¸¦ ¼øÈ¸ÇÏ°í lockÀ» Àâ´Â´Ù. ´ë»óÀÌ µÇ´Â row¸¦ ¼øÈ¸ÇÏ±â À§ÇØ aIterator->mPropertiesÀÇ
-     * mReadRecordCount¿Í mFirstReadRecordPos, mNxtRange°ªÀ» ÀÌ¿ëÇÑ´Ù. ÀÌ ÇÔ¼ö¿¡¼­´Â
-     * lock¸¸ Àâ°í ½ÇÁ¦ fetch´Â smnp/svnpFetchNext¿¡¼­ ¼öÇàÇÑ´Ù. (smnp/svnpSeekFunctions ÂüÁ¶)
-     * µû¶ó¼­ mReadRecordCount¿Í mFirstReadRecordPos, mNxtRangeÀÇ ÃÖÃÊ °ªÀ» ÀúÀåÇÏ°í
-     * ÀÌ ÇÔ¼ö°¡ Á¾·á µÇ´Â ½ÃÁ¡¿¡ ÀÌ º¯¼öµéÀÇ °ªÀ» ÃÖÃÊ°ªÀ¸·Î º¹±¸ ½ÃÄÑ ÁÖ¾î¾ß ÇÑ´Ù.
+    /* BUG-39836 : repeatable readëª¨ë“œì—ì„œ smnp/svnpFetchNextRí•¨ìˆ˜ëŠ” fetchí•  
+     * rowë¥¼ ìˆœíšŒí•˜ê³  lockì„ ì¡ëŠ”ë‹¤. ëŒ€ìƒì´ ë˜ëŠ” rowë¥¼ ìˆœíšŒí•˜ê¸° ìœ„í•´ aIterator->mPropertiesì˜
+     * mReadRecordCountì™€ mFirstReadRecordPos, mNxtRangeê°’ì„ ì´ìš©í•œë‹¤. ì´ í•¨ìˆ˜ì—ì„œëŠ”
+     * lockë§Œ ì¡ê³  ì‹¤ì œ fetchëŠ” smnp/svnpFetchNextì—ì„œ ìˆ˜í–‰í•œë‹¤. (smnp/svnpSeekFunctions ì°¸ì¡°)
+     * ë”°ë¼ì„œ mReadRecordCountì™€ mFirstReadRecordPos, mNxtRangeì˜ ìµœì´ˆ ê°’ì„ ì €ì¥í•˜ê³ 
+     * ì´ í•¨ìˆ˜ê°€ ì¢…ë£Œ ë˜ëŠ” ì‹œì ì— ì´ ë³€ìˆ˜ë“¤ì˜ ê°’ì„ ìµœì´ˆê°’ìœ¼ë¡œ ë³µêµ¬ ì‹œì¼œ ì£¼ì–´ì•¼ í•œë‹¤.
      */
     sReadRecordCountOrigin    = aIterator->mProperties->mReadRecordCount;
     sFirstReadRecordPosOrigin = aIterator->mProperties->mFirstReadRecordPos; 
@@ -1340,7 +1340,7 @@ static IDE_RC svnpFetchNextR( svnpIterator  * aIterator)
     aIterator->lstFetchRecPtr = NULL;
     SC_MAKE_NULL_GRID( aIterator->mRowGRID );
 
-    /* BUG-39836 : mReadRecordCount¿Í mFirstReadRecordPos, mNxtRange¸¦ ÃÖÃÊ °ªÀ¸·Î º¹¿ø */
+    /* BUG-39836 : mReadRecordCountì™€ mFirstReadRecordPos, mNxtRangeë¥¼ ìµœì´ˆ ê°’ìœ¼ë¡œ ë³µì› */
     aIterator->mProperties->mReadRecordCount    = sReadRecordCountOrigin;
     aIterator->mProperties->mFirstReadRecordPos = sFirstReadRecordPosOrigin;
     aIterator->mNxtRange                        = sNxtRangeOrigin;
@@ -1365,16 +1365,16 @@ static IDE_RC svnpFreeIterator( void * /* aIteratorMem */ )
 }
 
 /*******************************************************************************
- * Description: smpSlotHeaderÀÇ next¸¦ µû¶ó°¡¼­ ÀÚ½ÅÀÌ ÀĞÀ» ¼ö ÀÖ´Â visibleÇÑ
- *              versionÀÌ ÀÖÀ» °æ¿ì, ÀĞÀ» ¼ö ÀÖ´Â versionÀÇ row pointer¸¦ ¹İÈ¯.
- *              ÀĞÀ» ¼ö ÀÖ´Â versionÀÌ ¾øÀ» °æ¿ì, aIsVisibleRow¸¦ ID_FALSE·Î
- *              ¼³Á¤ÇÏ¿© ¹İÈ¯.
+ * Description: smpSlotHeaderì˜ nextë¥¼ ë”°ë¼ê°€ì„œ ìì‹ ì´ ì½ì„ ìˆ˜ ìˆëŠ” visibleí•œ
+ *              versionì´ ìˆì„ ê²½ìš°, ì½ì„ ìˆ˜ ìˆëŠ” versionì˜ row pointerë¥¼ ë°˜í™˜.
+ *              ì½ì„ ìˆ˜ ìˆëŠ” versionì´ ì—†ì„ ê²½ìš°, aIsVisibleRowë¥¼ ID_FALSEë¡œ
+ *              ì„¤ì •í•˜ì—¬ ë°˜í™˜.
  *
  * Parameters:
  *  - aIterator     [IN] Iterator
- *  - aFstOID       [IN] ÃÖÃÊ Á¢±ÙÇÑ recordÀÇ OID
- *  - aRow          [OUT] ÀĞ¾î¿Â recordÀÇ pointer
- *  - aIsVisibleRow [OUT] aRowÀÇ pointer°¡ visibleÇÑ record¸¦ °¡¸®Å°°í ÀÖ´ÂÁö
+ *  - aFstOID       [IN] ìµœì´ˆ ì ‘ê·¼í•œ recordì˜ OID
+ *  - aRow          [OUT] ì½ì–´ì˜¨ recordì˜ pointer
+ *  - aIsVisibleRow [OUT] aRowì˜ pointerê°€ visibleí•œ recordë¥¼ ê°€ë¦¬í‚¤ê³  ìˆëŠ”ì§€
  ******************************************************************************/
 static IDE_RC svnpGetValidVersion( svnpIterator  * aIterator,
                                    smOID           aFstOID,
@@ -1452,13 +1452,13 @@ static IDE_RC svnpGetValidVersion( svnpIterator  * aIterator,
 }
 
 /*******************************************************************************
- * Description: MRDB¿¡ ´ëÇØ fetch by GRID¸¦ ¼öÇàÇÒ ¶§ ´ë»ó GRID°¡ À¯È¿ÇÑÁö
- *              È®ÀÎÇÏ´Â ÇÔ¼ö
+ * Description: MRDBì— ëŒ€í•´ fetch by GRIDë¥¼ ìˆ˜í–‰í•  ë•Œ ëŒ€ìƒ GRIDê°€ ìœ íš¨í•œì§€
+ *              í™•ì¸í•˜ëŠ” í•¨ìˆ˜
  *
  * Parameters:
- *  - aTableHdr     [IN] Fetch ´ë»ó tableÀÇ table header
- *  - aGRID         [IN] Fetch ´ë»ó recordÀÇ GRID
- *  - aIsValidGRID  [OUT] GRID°¡ À¯È¿ÇÑÁö ¿©ºÎ
+ *  - aTableHdr     [IN] Fetch ëŒ€ìƒ tableì˜ table header
+ *  - aGRID         [IN] Fetch ëŒ€ìƒ recordì˜ GRID
+ *  - aIsValidGRID  [OUT] GRIDê°€ ìœ íš¨í•œì§€ ì—¬ë¶€
  ******************************************************************************/
 static IDE_RC svnpValidateGRID( smcTableHeader     * aTableHdr,
                                 scGRID               aGRID,
@@ -1475,7 +1475,7 @@ static IDE_RC svnpValidateGRID( smcTableHeader     * aTableHdr,
 
     *aIsValidGRID = ID_FALSE;
 
-    /* ÀĞÀ» ¼ö ÀÖ´Â GRIDÀÎÁö °Ë»ç */
+    /* ì½ì„ ìˆ˜ ìˆëŠ” GRIDì¸ì§€ ê²€ì‚¬ */
     IDE_TEST_CONT( SC_GRID_IS_NULL(aGRID) == ID_TRUE,
                     error_invalid_grid );
 
@@ -1486,7 +1486,7 @@ static IDE_RC svnpValidateGRID( smcTableHeader     * aTableHdr,
     sPageID  = SC_MAKE_PID(aGRID);
     sOffset  = SC_MAKE_OFFSET(aGRID);
 
-    /* GRID¿Í table headerÀÇ SpaceID ÀÏÄ¡ °Ë»ç */
+    /* GRIDì™€ table headerì˜ SpaceID ì¼ì¹˜ ê²€ì‚¬ */
     IDE_TEST_CONT( sSpaceID != aTableHdr->mSpaceID,
                     error_invalid_grid );
 
@@ -1496,10 +1496,10 @@ static IDE_RC svnpValidateGRID( smcTableHeader     * aTableHdr,
 
     sMaxPageCnt = svmDatabase::getAllocPersPageCount( &sTBSNode->mMemBase );
 
-    /* GRIDÀÇ PageID°¡ À¯È¿ÇÑ PageID ¹üÀ§ ¾ÈÀÎÁö È®ÀÎ */
+    /* GRIDì˜ PageIDê°€ ìœ íš¨í•œ PageID ë²”ìœ„ ì•ˆì¸ì§€ í™•ì¸ */
     IDE_TEST_CONT( !(sPageID < sMaxPageCnt), error_invalid_grid );
 
-    /* ´ë»ó page°¡ table¿¡ ÇÒ´ç µÇ¾î ÀÖ´Â data page°¡ ¸Â´ÂÁö È®ÀÎ */
+    /* ëŒ€ìƒ pageê°€ tableì— í• ë‹¹ ë˜ì–´ ìˆëŠ” data pageê°€ ë§ëŠ”ì§€ í™•ì¸ */
     IDE_TEST( svmExpandChunk::getPageState( sTBSNode,
                                             sPageID,
                                             &sPageState )
@@ -1512,13 +1512,13 @@ static IDE_RC svnpValidateGRID( smcTableHeader     * aTableHdr,
                                           (void**)&sPageHdrPtr )
               != IDE_SUCCESS );
 
-    /* GRID¿Í pageÀÇ TableOID°¡ ÀÏÄ¡ÇÏ´ÂÁö, fixed page°¡ ¸Â´ÂÁö È®ÀÎ */
+    /* GRIDì™€ pageì˜ TableOIDê°€ ì¼ì¹˜í•˜ëŠ”ì§€, fixed pageê°€ ë§ëŠ”ì§€ í™•ì¸ */
     IDE_TEST_CONT( ( sPageHdrPtr->mTableOID != aTableHdr->mSelfOID ) &&
                     ( SMP_GET_PERS_PAGE_TYPE(sPageHdrPtr) ==
                             SMP_PAGETYPE_FIX ),
                     error_invalid_grid );
 
-    /* offsetÀÌ slot size¿¡ µû¸¥ align¿¡ ´ëÇØ À¯È¿ÇÑ offset °ªÀÎÁö È®ÀÎ */
+    /* offsetì´ slot sizeì— ë”°ë¥¸ alignì— ëŒ€í•´ ìœ íš¨í•œ offset ê°’ì¸ì§€ í™•ì¸ */
     sSlotSize = aTableHdr->mFixed.mVRDB.mSlotSize;
 
     IDE_TEST_CONT( ((sOffset - ID_SIZEOF(smpPersPageHeader)) % sSlotSize)
@@ -1526,7 +1526,7 @@ static IDE_RC svnpValidateGRID( smcTableHeader     * aTableHdr,
                     error_invalid_grid )
 
 
-    /* ¸ğµç °Ë»ç¸¦ Åë°úÇÏ¿´À½. */
+    /* ëª¨ë“  ê²€ì‚¬ë¥¼ í†µê³¼í•˜ì˜€ìŒ. */
     *aIsValidGRID = ID_TRUE;
 
     IDE_EXCEPTION_CONT( error_invalid_grid );

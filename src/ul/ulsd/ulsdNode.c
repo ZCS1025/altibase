@@ -231,7 +231,7 @@ SQLRETURN ulsdGetRangeIndexFromHash(ulnStmt        *aMetaStmt,
         {
             sHashMax = aMetaStmt->mShardStmtCxt.mShardRangeInfo[i].mShardSubRange.mHashMax;
 
-            /* BUG-45462 mShardRangeÀÇ °ªÀ¸·Î new groupÀ» ÆÇ´ÜÇÑ´Ù. */
+            /* BUG-45462 mShardRangeì˜ ê°’ìœ¼ë¡œ new groupì„ íŒë‹¨í•œë‹¤. */
             if ( i == 0 )
             {
                 sNewPriorGroup = ACP_TRUE;
@@ -276,7 +276,7 @@ SQLRETURN ulsdGetRangeIndexFromHash(ulnStmt        *aMetaStmt,
 
     if ( sRangeIndexCount == *aRangeIndexCount )
     {
-        /* default node°¡ ÀÖ´Ù¸é ¼³Á¤ÇÑ´Ù */
+        /* default nodeê°€ ìˆë‹¤ë©´ ì„¤ì •í•œë‹¤ */
         ACI_TEST_RAISE(aMetaStmt->mShardStmtCxt.mShardDefaultNodeID == ACP_UINT16_MAX,
                        LABEL_NO_NODE_FOUNDED);
 
@@ -327,14 +327,14 @@ SQLRETURN ulsdGetRangeIndexFromClone(ulnStmt         *aMetaStmt,
 
     if ( aMetaStmt->mParentDbc->mShardDbcCxt.mShardIsNodeTransactionBegin == ACP_TRUE )
     {
-        // Touch µÈ ³ëµå°¡ ÀÖ´Ù.
+        // Touch ëœ ë…¸ë“œê°€ ìˆë‹¤.
         sTouchNode = aMetaStmt->mParentDbc->mShardDbcCxt.mShardDbc->mNodeInfo[aMetaStmt->mParentDbc->mShardDbcCxt.mShardOnTransactionNodeIndex ]->mNodeId;
 
         for ( i = 0; i < aMetaStmt->mShardStmtCxt.mShardRangeInfoCnt; i++ )
         {
             if ( sTouchNode == aMetaStmt->mShardStmtCxt.mShardRangeInfo[i].mShardNodeID )
             {
-                // Touch µÈ ³ëµå°¡ ¼öÇà °¡´ÉÇÑ ³ëµå¸ñ·Ï¿¡ ÀÖ´Ù.
+                // Touch ëœ ë…¸ë“œê°€ ìˆ˜í–‰ ê°€ëŠ¥í•œ ë…¸ë“œëª©ë¡ì— ìˆë‹¤.
                 sRangeIndex = i;
                 sIsFound = ACP_TRUE;
 
@@ -348,7 +348,7 @@ SQLRETURN ulsdGetRangeIndexFromClone(ulnStmt         *aMetaStmt,
     }
     else
     {
-        // Touch µÈ ³ëµå°¡ ¾ø´Ù.
+        // Touch ëœ ë…¸ë“œê°€ ì—†ë‹¤.
         /* Nothing to do. */
     }
 
@@ -407,7 +407,7 @@ SQLRETURN ulsdGetRangeIndexFromRange(ulnStmt        *aMetaStmt,
     {
         for ( i = 0; i < aMetaStmt->mShardStmtCxt.mShardRangeInfoCnt; i++ )
         {
-            /* mtdModuleÀÇ compare·Î ºñ±³ÇÑ´Ù. */
+            /* mtdModuleì˜ compareë¡œ ë¹„êµí•œë‹¤. */
             sRangeValue1.column = NULL;
             sRangeValue1.value  = aMetaStmt->mShardStmtCxt.mShardRangeInfo[i].mShardRange.mMax;
             sRangeValue1.flag   = MTD_OFFSET_USELESS;
@@ -464,7 +464,7 @@ SQLRETURN ulsdGetRangeIndexFromRange(ulnStmt        *aMetaStmt,
 
         for ( i = 0; i < aMetaStmt->mShardStmtCxt.mShardRangeInfoCnt; i++ )
         {
-            /* BUG-45462 mShardRangeÀÇ °ªÀ¸·Î new groupÀ» ÆÇ´ÜÇÑ´Ù. */
+            /* BUG-45462 mShardRangeì˜ ê°’ìœ¼ë¡œ new groupì„ íŒë‹¨í•œë‹¤. */
             if ( i == 0 )
             {
                 sNewPriorGroup = ACP_TRUE;
@@ -490,7 +490,7 @@ SQLRETURN ulsdGetRangeIndexFromRange(ulnStmt        *aMetaStmt,
                 }
             }
 
-            /* mtdModuleÀÇ compare·Î ºñ±³ÇÑ´Ù. */
+            /* mtdModuleì˜ compareë¡œ ë¹„êµí•œë‹¤. */
             sRangeValue1.column = NULL;
             sRangeValue1.value  = aMetaStmt->mShardStmtCxt.mShardRangeInfo[i].mShardSubRange.mMax;
             sRangeValue1.flag   = MTD_OFFSET_USELESS;
@@ -516,7 +516,7 @@ SQLRETURN ulsdGetRangeIndexFromRange(ulnStmt        *aMetaStmt,
 
     if ( sRangeIndexCount == *aRangeIndexCount )
     {
-        /* default node°¡ ÀÖ´Ù¸é ¼³Á¤ÇÑ´Ù */
+        /* default nodeê°€ ìˆë‹¤ë©´ ì„¤ì •í•œë‹¤ */
         ACI_TEST_RAISE(aMetaStmt->mShardStmtCxt.mShardDefaultNodeID == ACP_UINT16_MAX,
                        LABEL_NO_NODE_FOUNDED);
 
@@ -583,7 +583,7 @@ SQLRETURN ulsdGetRangeIndexFromList(ulnStmt        *aMetaStmt,
   
     for ( i = 0; i < aMetaStmt->mShardStmtCxt.mShardRangeInfoCnt; i++ )
     {
-        /* mtdModuleÀÇ compare·Î ºñ±³ÇÑ´Ù. */
+        /* mtdModuleì˜ compareë¡œ ë¹„êµí•œë‹¤. */
         if ( aIsSubKey == ACP_FALSE )
         {
             sListValue.value  = aMetaStmt->mShardStmtCxt.mShardRangeInfo[i].mShardRange.mMax;
@@ -611,7 +611,7 @@ SQLRETURN ulsdGetRangeIndexFromList(ulnStmt        *aMetaStmt,
 
     if ( sRangeIndexCount == *aRangeIndexCount )
     {
-        /* default node°¡ ÀÖ´Ù¸é ¼³Á¤ÇÑ´Ù */
+        /* default nodeê°€ ìˆë‹¤ë©´ ì„¤ì •í•œë‹¤ */
         ACI_TEST_RAISE(aMetaStmt->mShardStmtCxt.mShardDefaultNodeID == ACP_UINT16_MAX,
                        LABEL_NO_NODE_FOUNDED);
 

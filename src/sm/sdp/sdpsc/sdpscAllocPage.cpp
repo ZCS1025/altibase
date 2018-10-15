@@ -19,8 +19,8 @@
  *
  * $Id: sdpscAllocPage.cpp 82075 2018-01-17 06:39:52Z jina.kim $
  *
- * º» ÆÄÀÏÀº Circular-List Managed Segment¿¡¼­ °¡¿ë°ø°£ ÇÒ´ç ¿¬»ê °ü·Ã STATIC
- * ÀÎÅÍÆäÀÌ½º¸¦ °ü¸®ÇÑ´Ù.
+ * ë³¸ íŒŒì¼ì€ Circular-List Managed Segmentì—ì„œ ê°€ìš©ê³µê°„ í• ë‹¹ ì—°ì‚° ê´€ë ¨ STATIC
+ * ì¸í„°íŽ˜ì´ìŠ¤ë¥¼ ê´€ë¦¬í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -35,20 +35,20 @@
 
 
 /***********************************************************************
- * Description : ÆäÀÌÁö¸¦ »ý¼ºÇÏ°í, ÇÊ¿äÇÑ ÆäÀÌÁö Å¸ÀÔ ÃÊ±âÈ­ ¹× logical
- *               Header¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+ * Description : íŽ˜ì´ì§€ë¥¼ ìƒì„±í•˜ê³ , í•„ìš”í•œ íŽ˜ì´ì§€ íƒ€ìž… ì´ˆê¸°í™” ë° logical
+ *               Headerë¥¼ ì´ˆê¸°í™”í•œë‹¤.
  *
- * aStatistics   - [IN]  Åë°èÁ¤º¸
- * aSpaceID      - [IN]  Å×ÀÌºí½ºÆäÀÌ½º ID
- * aNewPageID    - [IN]  »ý¼ºÇÒ ÆäÀÌÁö ID
- * aPageType     - [IN]  »ý¼ºÇÒ ÆäÀÌÁöÀÇ Å¸ÀÔ
- * aParentInfo   - [IN]  »ý¼ºÇÒ ÆäÀÌÁö Çì´õ¿¡ ±â·ÏÇÒ »óÀ§ ³ëµåÀÇ Á¤º¸
- *                       ¾øÀ¸¸é ±â·ÏÇÏÁö ¾ÊÀ½
- * aPageBitSet   - [IN]  ÆäÀÌÁö °¡¿ë°ø°£ÀÇ »óÅÂ°ª
- * aMtx4Latch    - [IN]  ÆäÀÌÁö¿¡ ´ëÇÑ X-Latch¸¦ À¯ÁöÇØ¾ßÇÒ Mtx Æ÷ÀÎÅÍ
- * aMtx4Logging  - [IN]  ÆäÀÌÁö »ý¼º·Î±×¸¦ ±â·ÏÇÏ±â À§ÇÑ Mtx Æ÷ÀÎÅÍ
- *                       aMtx4Latch¿Í µ¿ÀÏÇÑ Æ÷ÀÎÅÍÀÏ¼öµµ ÀÖ´Ù.
- * aNewPagePtr   - [OUT] »ý¼ºµÈ »õ ÆäÀÌÁöÀÇ ½ÃÀÛ Æ÷ÀÎÅÍ
+ * aStatistics   - [IN]  í†µê³„ì •ë³´
+ * aSpaceID      - [IN]  í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ ID
+ * aNewPageID    - [IN]  ìƒì„±í•  íŽ˜ì´ì§€ ID
+ * aPageType     - [IN]  ìƒì„±í•  íŽ˜ì´ì§€ì˜ íƒ€ìž…
+ * aParentInfo   - [IN]  ìƒì„±í•  íŽ˜ì´ì§€ í—¤ë”ì— ê¸°ë¡í•  ìƒìœ„ ë…¸ë“œì˜ ì •ë³´
+ *                       ì—†ìœ¼ë©´ ê¸°ë¡í•˜ì§€ ì•ŠìŒ
+ * aPageBitSet   - [IN]  íŽ˜ì´ì§€ ê°€ìš©ê³µê°„ì˜ ìƒíƒœê°’
+ * aMtx4Latch    - [IN]  íŽ˜ì´ì§€ì— ëŒ€í•œ X-Latchë¥¼ ìœ ì§€í•´ì•¼í•  Mtx í¬ì¸í„°
+ * aMtx4Logging  - [IN]  íŽ˜ì´ì§€ ìƒì„±ë¡œê·¸ë¥¼ ê¸°ë¡í•˜ê¸° ìœ„í•œ Mtx í¬ì¸í„°
+ *                       aMtx4Latchì™€ ë™ì¼í•œ í¬ì¸í„°ì¼ìˆ˜ë„ ìžˆë‹¤.
+ * aNewPagePtr   - [OUT] ìƒì„±ëœ ìƒˆ íŽ˜ì´ì§€ì˜ ì‹œìž‘ í¬ì¸í„°
  *
  ***********************************************************************/
 IDE_RC sdpscAllocPage::createPage( idvSQL           * aStatistics,
@@ -100,15 +100,15 @@ IDE_RC sdpscAllocPage::createPage( idvSQL           * aStatistics,
 
 /***********************************************************************
  *
- * Description : phyical hdr¿Í logical hdr¸¦ page type¿¡ ¸Â°Ô formatÇÑ´Ù.
+ * Description : phyical hdrì™€ logical hdrë¥¼ page typeì— ë§žê²Œ formatí•œë‹¤.
  *
- * aNewPagePtr   - [IN] ÃÊ±âÈ­ÇÒ ÆäÀÌÁöÀÇ ½ÃÀÛ Æ÷ÀÎÅÍ
- * aNewPageID    - [IN] »ý¼ºÇÒ ÆäÀÌÁö ID
- * aPageType     - [IN] »ý¼ºÇÒ ÆäÀÌÁöÀÇ Å¸ÀÔ
- * aParentInfo   - [IN] »ý¼ºÇÒ ÆäÀÌÁö Çì´õ¿¡ ±â·ÏÇÒ »óÀ§ ³ëµåÀÇ Á¤º¸
- *                      ¾øÀ¸¸é ±â·ÏÇÏÁö ¾ÊÀ½
- * aPageBitSet   - [IN] ÆäÀÌÁö °¡¿ë°ø°£ÀÇ »óÅÂ°ª
- * aMtx          - [IN] ÆäÀÌÁö »ý¼º·Î±×¸¦ ±â·ÏÇÏ±â À§ÇÑ Mtx Æ÷ÀÎÅÍ
+ * aNewPagePtr   - [IN] ì´ˆê¸°í™”í•  íŽ˜ì´ì§€ì˜ ì‹œìž‘ í¬ì¸í„°
+ * aNewPageID    - [IN] ìƒì„±í•  íŽ˜ì´ì§€ ID
+ * aPageType     - [IN] ìƒì„±í•  íŽ˜ì´ì§€ì˜ íƒ€ìž…
+ * aParentInfo   - [IN] ìƒì„±í•  íŽ˜ì´ì§€ í—¤ë”ì— ê¸°ë¡í•  ìƒìœ„ ë…¸ë“œì˜ ì •ë³´
+ *                      ì—†ìœ¼ë©´ ê¸°ë¡í•˜ì§€ ì•ŠìŒ
+ * aPageBitSet   - [IN] íŽ˜ì´ì§€ ê°€ìš©ê³µê°„ì˜ ìƒíƒœê°’
+ * aMtx          - [IN] íŽ˜ì´ì§€ ìƒì„±ë¡œê·¸ë¥¼ ê¸°ë¡í•˜ê¸° ìœ„í•œ Mtx í¬ì¸í„°
  *
  ***********************************************************************/
 IDE_RC sdpscAllocPage::formatPageHdr( sdpPhyPageHdr    * aNewPagePtr,
@@ -140,16 +140,16 @@ IDE_RC sdpscAllocPage::formatPageHdr( sdpPhyPageHdr    * aNewPagePtr,
 
 
 /***********************************************************************
- * Description : [ INTERFACE ] Append ¹æ½ÄÀÇ Page ÇÒ´ç ¿¬»ê
+ * Description : [ INTERFACE ] Append ë°©ì‹ì˜ Page í• ë‹¹ ì—°ì‚°
  *
- * aStatistics      - [IN] Åë°è Á¤º¸
+ * aStatistics      - [IN] í†µê³„ ì •ë³´
  * aSpaceID         - [IN] TableSpace ID
  * aSegHandle       - [IN] Segment Handle
- * aPrvAllocExtRID  - [IN] ÀÌÀü¿¡ Page¸¦ ÇÒ´ç¹Þ¾Ò´ø Extent RID
- * aPrvAllocPageID  - [IN] ÀÌÀü¿¡ ÇÒ´ç¹ÞÀº PageID
+ * aPrvAllocExtRID  - [IN] ì´ì „ì— Pageë¥¼ í• ë‹¹ë°›ì•˜ë˜ Extent RID
+ * aPrvAllocPageID  - [IN] ì´ì „ì— í• ë‹¹ë°›ì€ PageID
  * aMtx             - [IN] Mini Transaction Pointer
- * aAllocExtRID     - [OUT] »õ·Î¿î Page°¡ ÇÒ´çµÈ Extent RID
- * aAllocPID        - [OUT] »õ·Ó°Ô ÇÒ´ç¹ÞÀº PageID
+ * aAllocExtRID     - [OUT] ìƒˆë¡œìš´ Pageê°€ í• ë‹¹ëœ Extent RID
+ * aAllocPID        - [OUT] ìƒˆë¡­ê²Œ í• ë‹¹ë°›ì€ PageID
  *
  ***********************************************************************/
 IDE_RC sdpscAllocPage::allocNewPage4Append(
@@ -218,22 +218,22 @@ IDE_RC sdpscAllocPage::allocNewPage4Append(
 
 /***********************************************************************
  *
- * Description : [ INTERFACE ] Append ¹æ½ÄÀÇ Page È®º¸
+ * Description : [ INTERFACE ] Append ë°©ì‹ì˜ Page í™•ë³´
  *
- * (1) ÇöÀç Extent¿¡ ÀÌÀü ÇÒ´ç¹ÞÀº ÆäÀÌÁö ÀÌÈÄ·Î New Page°¡ Á¸ÀçÇÑ´Ù¸é SUCCESS!!
- * (2) ÇöÀç Extent·ÎºÎÅÍ ÀÌÀü ÇÒ´ç¹ÞÀº ÆäÀÌÁö°¡ ¸¶Áö¸· Page¿´´Ù¸é ´ÙÀ½ Extent°¡
- *     Á¸ÀçÇÏ´ÂÁö È®ÀÎÇÑ´Ù. Á¸ÀçÇÑ´Ù¸é SUCCESS ±×·¸Áö ¾ÊÀ¸¸é (3)
- * (3) »õ·Î¿î Extent¸¦ ÇÒ´çÇÑ´Ù. ÇÒ´çÇßÀ¸¸é SUCCESS, ±×·¸Áö ¾ÊÀ¸¸é SpaceNotEnough
- *     ¿¡·¯ ¹ß»ýÇÑ´Ù.
+ * (1) í˜„ìž¬ Extentì— ì´ì „ í• ë‹¹ë°›ì€ íŽ˜ì´ì§€ ì´í›„ë¡œ New Pageê°€ ì¡´ìž¬í•œë‹¤ë©´ SUCCESS!!
+ * (2) í˜„ìž¬ Extentë¡œë¶€í„° ì´ì „ í• ë‹¹ë°›ì€ íŽ˜ì´ì§€ê°€ ë§ˆì§€ë§‰ Pageì˜€ë‹¤ë©´ ë‹¤ìŒ Extentê°€
+ *     ì¡´ìž¬í•˜ëŠ”ì§€ í™•ì¸í•œë‹¤. ì¡´ìž¬í•œë‹¤ë©´ SUCCESS ê·¸ë ‡ì§€ ì•Šìœ¼ë©´ (3)
+ * (3) ìƒˆë¡œìš´ Extentë¥¼ í• ë‹¹í•œë‹¤. í• ë‹¹í–ˆìœ¼ë©´ SUCCESS, ê·¸ë ‡ì§€ ì•Šìœ¼ë©´ SpaceNotEnough
+ *     ì—ëŸ¬ ë°œìƒí•œë‹¤.
  *
- * aStatistics          - [IN] Åë°è Á¤º¸
+ * aStatistics          - [IN] í†µê³„ ì •ë³´
  * aMtx                 - [IN] Mini Transaction Pointer
  * aSpaceID             - [IN] TableSpace ID
  * aSegHandle           - [IN] Segment Handle
- * aPrvAllocExtRID      - [IN] ÀÌÀü¿¡ Page¸¦ ÇÒ´ç¹Þ¾Ò´ø Extent RID
- * aFstPIDOfPrvAllocExt - [IN] ÀÌÀü¿¡ Page¸¦ ÇÒ´ç¹Þ¾Ò´ø Extent RID
- * aPrvAllocPageID      - [IN] ÀÌÀü¿¡ ÇÒ´ç¹ÞÀº PageID
- * aPageType            - [IN] È®º¸ÇÒ ÆäÀÌÁö Å¸ÀÔ
+ * aPrvAllocExtRID      - [IN] ì´ì „ì— Pageë¥¼ í• ë‹¹ë°›ì•˜ë˜ Extent RID
+ * aFstPIDOfPrvAllocExt - [IN] ì´ì „ì— Pageë¥¼ í• ë‹¹ë°›ì•˜ë˜ Extent RID
+ * aPrvAllocPageID      - [IN] ì´ì „ì— í• ë‹¹ë°›ì€ PageID
+ * aPageType            - [IN] í™•ë³´í•  íŽ˜ì´ì§€ íƒ€ìž…
  *
  ***********************************************************************/
 IDE_RC sdpscAllocPage::prepareNewPage4Append(
@@ -253,8 +253,8 @@ IDE_RC sdpscAllocPage::prepareNewPage4Append(
     IDE_ASSERT( aSegHandle    != NULL );
     IDE_ASSERT( aMtx          != NULL );
 
-    /* ¿©±â¼­´Â ÆäÀÌÁö¸¦ ÇÒ´çÇØ¼­ ¹ÝÈ¯ÇÏÁö ¾Ê°í,
-     * ÇÒ´çÇÒ ¼ö ÀÖ´Â ÆäÀÌÁö ID¸¦ ¹ÝÈ¯ÇÒ»ÓÀÌ´Ù. */
+    /* ì—¬ê¸°ì„œëŠ” íŽ˜ì´ì§€ë¥¼ í• ë‹¹í•´ì„œ ë°˜í™˜í•˜ì§€ ì•Šê³ ,
+     * í• ë‹¹í•  ìˆ˜ ìžˆëŠ” íŽ˜ì´ì§€ IDë¥¼ ë°˜í™˜í• ë¿ì´ë‹¤. */
     IDE_TEST( sdpscExtDir::allocNewPageInExt( aStatistics,
                                               aMtx,
                                               aSpaceID,

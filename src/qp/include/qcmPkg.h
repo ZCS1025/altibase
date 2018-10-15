@@ -121,7 +121,7 @@ public:
                   qsOID                 aPkgOID,
                   qcmPkgStatusType      aStatus);
    
-    // º°µµÀÇ Æ®·£Àè¼ÇÀ» »ç¿ëÇØ¼­ ÇÁ·Î½ÃÀúÀÇ »óÅÂ¸¦ ¹Ù²Û´Ù. 
+    // ë³„ë„ì˜ íŠ¸ëœì­ì…˜ì„ ì‚¬ìš©í•´ì„œ í”„ë¡œì‹œì €ì˜ ìƒíƒœë¥¼ ë°”ê¾¼ë‹¤. 
     static IDE_RC pkgUpdateStatusTx(
                   qcStatement         * aStatement,
                   qsOID                 aPkgOID,
@@ -219,8 +219,8 @@ public:
                   qsObjectType     aRelatedObjectType);
 
     /* BUG-39340
-       alter package ~ compile specificationÇÏ¸é,
-       package body¸¸ invalidµÈ´Ù. */
+       alter package ~ compile specificationí•˜ë©´,
+       package bodyë§Œ invalidëœë‹¤. */
     static IDE_RC relSetInvalidPkgBody(
                   qcStatement    * aStatement,
                   UInt             aPkgBodyUserID,

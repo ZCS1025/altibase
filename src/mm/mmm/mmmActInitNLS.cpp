@@ -28,7 +28,7 @@ static IDE_RC mmmPhaseActionInitNLS(mmmPhase         /*aPhase*/,
     //IDE_TEST(idnSetDefaultFactory(mmuProperty::getNLS()) != IDE_SUCCESS);
 
     // PROJ-1579 NCHAR
-    // mtdModule.column->language Á¤º¸¸¦ ´Ù½Ã ¼¼ÆÃÇØÁØ´Ù.
+    // mtdModule.column->language ì •ë³´ë¥¼ ë‹¤ì‹œ ì„¸íŒ…í•´ì¤€ë‹¤.
     IDE_TEST( mtd::modifyNls4MtdModule() != IDE_SUCCESS );
 
     return IDE_SUCCESS;

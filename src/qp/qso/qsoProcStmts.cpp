@@ -250,11 +250,11 @@ IDE_RC qsoProcStmts::optimizeGoto(
 /***********************************************************************
  *
  * Description : PROJ-1335, To fix BUG-12475
- *               GOTOÀÇ optimization( ½ÇÁ¦·Î´Â validation )
+ *               GOTOì˜ optimization( ì‹¤ì œë¡œëŠ” validation )
  * Implementation :
- *     (1) ÀÚ½ÅÀÇ parent statement¸¦ µû¶ó°¡¸é¼­
- *         µ¿ÀÏÇÑ labelÀÌ ÀÖ´ÂÁö °Ë»ö
- *     (2) µ¿ÀÏÇÑ labelÀÌ Á¸ÀçÇÑ´Ù¸é labelID¸¦ gotoStmt¿¡ ¼¼ÆÃ
+ *     (1) ìì‹ ì˜ parent statementë¥¼ ë”°ë¼ê°€ë©´ì„œ
+ *         ë™ì¼í•œ labelì´ ìˆëŠ”ì§€ ê²€ìƒ‰
+ *     (2) ë™ì¼í•œ labelì´ ì¡´ì¬í•œë‹¤ë©´ labelIDë¥¼ gotoStmtì— ì„¸íŒ…
  *
  ***********************************************************************/
 

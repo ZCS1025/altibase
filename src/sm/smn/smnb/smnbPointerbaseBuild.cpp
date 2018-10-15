@@ -175,8 +175,8 @@ IDE_RC smnbPointerbaseBuild::buildIndex( void               * aTrans,
                                               aNullPtr )
                       != IDE_SUCCESS);
 
-            // BUG-30426 [SM] Memory Index »ı¼º ½ÇÆĞ½Ã
-            // thread¸¦ destroy ÇØ¾ß ÇÕ´Ï´Ù.
+            // BUG-30426 [SM] Memory Index ìƒì„± ì‹¤íŒ¨ì‹œ
+            // threadë¥¼ destroy í•´ì•¼ í•©ë‹ˆë‹¤.
             sThrState++;
             
             IDE_TEST( sThreads[i].start() != IDE_SUCCESS);
@@ -194,8 +194,8 @@ IDE_RC smnbPointerbaseBuild::buildIndex( void               * aTrans,
             }
         }
 
-        // BUG-30426 [SM] Memory Index »ı¼º ½ÇÆĞ½Ã
-        // thread¸¦ destroy ÇØ¾ß ÇÕ´Ï´Ù.
+        // BUG-30426 [SM] Memory Index ìƒì„± ì‹¤íŒ¨ì‹œ
+        // threadë¥¼ destroy í•´ì•¼ í•©ë‹ˆë‹¤.
         while( sThrState > 0 )
         {
             IDE_TEST(sThreads[--sThrState].destroy() != IDE_SUCCESS);
@@ -242,7 +242,7 @@ IDE_RC smnbPointerbaseBuild::buildIndex( void               * aTrans,
     }
     else
     {
-        /* µ¥ÀÌÅÍ°¡ ÀüÇô ¾ø´Â »óÅÂ¸é, Åë°è¸¦ Invalid»óÅÂ·Î µÒ. */
+        /* ë°ì´í„°ê°€ ì „í˜€ ì—†ëŠ” ìƒíƒœë©´, í†µê³„ë¥¼ Invalidìƒíƒœë¡œ ë‘ . */
     }
 
     ideLog::log( IDE_SM_0, "\
@@ -278,8 +278,8 @@ IDE_RC smnbPointerbaseBuild::buildIndex( void               * aTrans,
 
     IDE_PUSH();
 
-    // BUG-30426 [SM] Memory Index »ı¼º ½ÇÆĞ½Ã
-    // thread¸¦ destroy ÇØ¾ß ÇÕ´Ï´Ù.
+    // BUG-30426 [SM] Memory Index ìƒì„± ì‹¤íŒ¨ì‹œ
+    // threadë¥¼ destroy í•´ì•¼ í•©ë‹ˆë‹¤.
     for(i = 0; i < sThrState; i++)
     {
         (void)sThreads[i].destroy();
@@ -300,15 +300,15 @@ IDE_RC smnbPointerbaseBuild::buildIndex( void               * aTrans,
     switch( sNodeAllocState )
     {
         case 2:
-            /* internalnode / leafnode ¸ğµÎ ÇÒ´çÀÌ ³¡³­ °æ¿ì */
+            /* internalnode / leafnode ëª¨ë‘ í• ë‹¹ì´ ëë‚œ ê²½ìš° */
             (void)(sIndexModules)->mFreeAllNodeList( aStatistics,
                                                      aIndex,
                                                      aTrans );
             break;
         case 1:
-            /* BUG-41421 Å° Áßº¹À¸·Î ÀÎµ¦½º »ı¼ºÀÌ ½ÇÆĞÇÒ °æ¿ì
-             * leafnode¿¡ ÇÒ´çµÈ ¸Ş¸ğ¸®¸¦ ¹İÈ¯ÇØ¾ß ÇÑ´Ù. */
-            /* leafnode¸¸ ÇÒ´çÀÌ ³¡³­ °æ¿ì */
+            /* BUG-41421 í‚¤ ì¤‘ë³µìœ¼ë¡œ ì¸ë±ìŠ¤ ìƒì„±ì´ ì‹¤íŒ¨í•  ê²½ìš°
+             * leafnodeì— í• ë‹¹ëœ ë©”ëª¨ë¦¬ë¥¼ ë°˜í™˜í•´ì•¼ í•œë‹¤. */
+            /* leafnodeë§Œ í• ë‹¹ì´ ëë‚œ ê²½ìš° */
             (void)removePrepareNodeList( aIndex );
             break;
         case 0:
@@ -324,7 +324,7 @@ IDE_RC smnbPointerbaseBuild::buildIndex( void               * aTrans,
 /* ------------------------------------------------
  * Description :
  *
- * Index build ¾²·¹µå ÃÊ±âÈ­
+ * Index build ì“°ë ˆë“œ ì´ˆê¸°í™”
  * ----------------------------------------------*/
 IDE_RC smnbPointerbaseBuild::initialize( void        * aTrans,
                                          idvSQL      * aStatistics,
@@ -534,7 +534,7 @@ IDE_RC smnbPointerbaseBuild::quickSort( void            * aTrans,
     /* BUG-39681 Do not need statistic information when server start */
     if( smiGetStartupPhase() == SMI_STARTUP_SERVICE )
     {
-        // BUG-18201 : Memory/Disk Index Åë°èÄ¡
+        // BUG-18201 : Memory/Disk Index í†µê³„ì¹˜
         SMNB_ADD_STATISTIC( &(sIndexHeader->mStmtStat),
                             &sIndexStat );
     }
@@ -557,8 +557,8 @@ IDE_RC smnbPointerbaseBuild::quickSort( void            * aTrans,
 /* ---------------------------------------------------------
  * Description:
  *
- * - data pageµé·ÎºÎÅÍ row pointer¸¦ ÃßÃâÇÏ¿©
- *   ÀÓ½Ã leaf node¿¡ ÀúÀå
+ * - data pageë“¤ë¡œë¶€í„° row pointerë¥¼ ì¶”ì¶œí•˜ì—¬
+ *   ì„ì‹œ leaf nodeì— ì €ì¥
  * ---------------------------------------------------------*/
 IDE_RC smnbPointerbaseBuild::extractRow( idvSQL           * aStatistics,
                                          smcTableHeader   * aTable,
@@ -586,7 +586,7 @@ IDE_RC smnbPointerbaseBuild::extractRow( idvSQL           * aStatistics,
 
     while( 1 )
     {
-        /* ÇÔ¼ö ³»ºÎ¿¡¼­ Lock Ç®°í ´Ù½Ã Àâ¾ÆÁÜ */
+        /* í•¨ìˆ˜ ë‚´ë¶€ì—ì„œ Lock í’€ê³  ë‹¤ì‹œ ì¡ì•„ì¤Œ */
         IDE_TEST( aGetPageFunc( aTable, &sPageID, &sLocked ) != IDE_SUCCESS );
 
         if( sPageID == SM_NULL_OID )
@@ -612,8 +612,8 @@ IDE_RC smnbPointerbaseBuild::extractRow( idvSQL           * aStatistics,
             // check not null
             if( sHeader->mIsNotNull == ID_TRUE )
             {
-                // ÇÏ³ª¶óµµ NullÀÌ¸é ¾ÈµÇ±â ¶§¹®¿¡
-                // ¸ğµÎ NullÀÎ °æ¿ì¸¸ Ã¼Å©ÇÏ´Â isNullKey¸¦ »ç¿ëÇÏ¸é ¾ÈµÈ´Ù
+                // í•˜ë‚˜ë¼ë„ Nullì´ë©´ ì•ˆë˜ê¸° ë•Œë¬¸ì—
+                // ëª¨ë‘ Nullì¸ ê²½ìš°ë§Œ ì²´í¬í•˜ëŠ” isNullKeyë¥¼ ì‚¬ìš©í•˜ë©´ ì•ˆëœë‹¤
 
                 for( sColumn = &sHeader->columns[0];
                      sColumn < sHeader->fence;
@@ -658,7 +658,7 @@ IDE_RC smnbPointerbaseBuild::extractRow( idvSQL           * aStatistics,
 
     if( sLocked == ID_TRUE )
     {
-        // nullÀÏ °æ¿ì latch°¡ ÀâÈù pageÀÇ latch¸¦ ÇØÁ¦
+        // nullì¼ ê²½ìš° latchê°€ ì¡íŒ pageì˜ latchë¥¼ í•´ì œ
         (void)smnManager::releasePageLatch( aTable, sPageID );
         sLocked = ID_FALSE;
     }
@@ -670,8 +670,8 @@ IDE_RC smnbPointerbaseBuild::extractRow( idvSQL           * aStatistics,
 /* ---------------------------------------------------------
  * Description:
  *
- * - key Áßº¹À¸·Î ÀÎÇÑ ÀÎµ¦½º »ı¼º ½ÇÆĞ½Ã ÀÎµ¦½º Çì´õÀÇ root°¡ ¾Æ´Ñ
- *   pFstNode¸¦ Å¸°í µé¾î°¡ ³ëµå¿¡ ÇÒ´çµÈ ¸Ş¸ğ¸®¸¦ ¹İÈ¯ÇØ¾ß ÇÑ´Ù.
+ * - key ì¤‘ë³µìœ¼ë¡œ ì¸í•œ ì¸ë±ìŠ¤ ìƒì„± ì‹¤íŒ¨ì‹œ ì¸ë±ìŠ¤ í—¤ë”ì˜ rootê°€ ì•„ë‹Œ
+ *   pFstNodeë¥¼ íƒ€ê³  ë“¤ì–´ê°€ ë…¸ë“œì— í• ë‹¹ëœ ë©”ëª¨ë¦¬ë¥¼ ë°˜í™˜í•´ì•¼ í•œë‹¤.
  * ---------------------------------------------------------*/
 IDE_RC smnbPointerbaseBuild::removePrepareNodeList( smnIndexHeader * aIndex )
 {
@@ -753,9 +753,9 @@ IDE_RC smnbPointerbaseBuild::insertRowToLeaf( smnIndexHeader  * aIndex,
     smnbBTree::setLeafSlot( sCurLNode,
                             sCurLNode->mSlotCount,
                             aRow,
-                            NULL ); /* PROJ-2433 : direct key´Â ¾Æ·¡¿¡¼­ ¼¼ÆÃÇÔ */
+                            NULL ); /* PROJ-2433 : direct keyëŠ” ì•„ë˜ì—ì„œ ì„¸íŒ…í•¨ */
 
-    /* PROJ-2433 direct key ¼¼ÆÃ */
+    /* PROJ-2433 direct key ì„¸íŒ… */
     if ( SMNB_IS_DIRECTKEY_IN_NODE( sCurLNode ) == ID_TRUE )
     {
         IDE_TEST( smnbBTree::makeKeyFromRow( sHeader,
@@ -1111,10 +1111,10 @@ IDE_RC smnbPointerbaseBuild::partition( void            * aTrans,
             (aRightNode->sequence == aLeftNode->sequence && i < j))
         {
             /* PROJ-2433
-             * ¾Æ·¡ ÄÚµå°¡ Á»º¹ÀâÇØº¸ÀÌÁö¸¸, °£´ÜÇÏ´Ù.
+             * ì•„ë˜ ì½”ë“œê°€ ì¢€ë³µì¡í•´ë³´ì´ì§€ë§Œ, ê°„ë‹¨í•˜ë‹¤.
              *
-             * NODE aRightNodeÀÇ slot j¿Í
-             * NODE aLeftNodeÀÇ slot iÀÇ ÀÚ¸®¸¦ ¹Ù²Ù´Â ÄÚµåÀÌ´Ù.
+             * NODE aRightNodeì˜ slot jì™€
+             * NODE aLeftNodeì˜ slot iì˜ ìë¦¬ë¥¼ ë°”ê¾¸ëŠ” ì½”ë“œì´ë‹¤.
              */
 
             sRow = NULL;
@@ -1171,12 +1171,12 @@ IDE_RC smnbPointerbaseBuild::partition( void            * aTrans,
 
     IDE_EXCEPTION_END;
 
-    /* BUG-42169 ¼­¹ö Àç½ÃÀÛÀ¸·Î ÀÎÇÑ index rebuild °úÁ¤¿¡¼­ uniqueness°¡ ±úÁú°æ¿ì
-     * µğ¹ö±×¸¦ À§ÇÑ Ãß°¡ Á¤º¸¸¦ Ãâ·ÂÇØ¾ß ÇÑ´Ù. */
+    /* BUG-42169 ì„œë²„ ì¬ì‹œì‘ìœ¼ë¡œ ì¸í•œ index rebuild ê³¼ì •ì—ì„œ uniquenessê°€ ê¹¨ì§ˆê²½ìš°
+     * ë””ë²„ê·¸ë¥¼ ìœ„í•œ ì¶”ê°€ ì •ë³´ë¥¼ ì¶œë ¥í•´ì•¼ í•œë‹¤. */
     if ( ( ideGetErrorCode() == smERR_ABORT_smnUniqueViolation ) &&
          ( smiGetStartupPhase() != SMI_STARTUP_SERVICE ) )
     {    
-        /* sm trc log¿¡´Â header ¹× ¹®Á¦°¡ ¹ß»ıÇÑ nodeÀÇ dump Á¤º¸¸¦ ³²±ä´Ù. */
+        /* sm trc logì—ëŠ” header ë° ë¬¸ì œê°€ ë°œìƒí•œ nodeì˜ dump ì •ë³´ë¥¼ ë‚¨ê¸´ë‹¤. */
         ideLog::log( IDE_SM_0, "Unique Violation Error Occurs In Restart Rebuild Index" );
         smnManager::logCommonHeader( aIndexHeader->mIndexHeader );
 
@@ -1192,7 +1192,7 @@ IDE_RC smnbPointerbaseBuild::partition( void            * aTrans,
                 IDE_ASSERT(0);
         }
 
-        /* error trc log¿¡´Â ¹®Á¦°¡ ¹ß»ıÇÑ ÀÎµ¦½ºÀÇ id, nameÀ» ³²±ä´Ù. */
+        /* error trc logì—ëŠ” ë¬¸ì œê°€ ë°œìƒí•œ ì¸ë±ìŠ¤ì˜ id, nameì„ ë‚¨ê¸´ë‹¤. */
         ideLog::log( IDE_ERR_0, "Unique Violation Error Occurs In Restart Rebuild Index\n"
                      "IndexOID    : %"ID_UINT32_FMT"\n"
                      "IndexName   : %s\n",
@@ -1243,7 +1243,7 @@ IDE_RC smnbPointerbaseBuild::makeTree( smnbHeader  * aIndexHeader,
                                      aIndexHeader,
                                      IDU_LATCH_UNLOCKED );
 
-        // BUG-18292 : V$MEM_BTREE_HEADER Á¤º¸ Ãß°¡
+        // BUG-18292 : V$MEM_BTREE_HEADER ì •ë³´ ì¶”ê°€
         aIndexHeader->nodeCount++;
         
         sFstParentINode = sNewINode;
@@ -1299,7 +1299,7 @@ IDE_RC smnbPointerbaseBuild::makeTree( smnbHeader  * aIndexHeader,
                                          aIndexHeader,
                                          IDU_LATCH_UNLOCKED );
 
-            // BUG-18292 : V$MEM_BTREE_HEADER Á¤º¸ Ãß°¡
+            // BUG-18292 : V$MEM_BTREE_HEADER ì •ë³´ ì¶”ê°€
             aIndexHeader->nodeCount++;
 
             sCurINode->nextSPtr = sNewINode;
@@ -1320,7 +1320,7 @@ IDE_RC smnbPointerbaseBuild::makeTree( smnbHeader  * aIndexHeader,
                                          aIndexHeader,
                                          IDU_LATCH_UNLOCKED );
             
-            // BUG-18292 : V$MEM_BTREE_HEADER Á¤º¸ Ãß°¡
+            // BUG-18292 : V$MEM_BTREE_HEADER ì •ë³´ ì¶”ê°€
             aIndexHeader->nodeCount++;
 
             sCurParentINode = sFstParentINode;
@@ -1372,7 +1372,7 @@ IDE_RC smnbPointerbaseBuild::makeTree( smnbHeader  * aIndexHeader,
                                                  aIndexHeader,
                                                  IDU_LATCH_UNLOCKED );
                     
-                    // BUG-18292 : V$MEM_BTREE_HEADER Á¤º¸ Ãß°¡
+                    // BUG-18292 : V$MEM_BTREE_HEADER ì •ë³´ ì¶”ê°€
                     aIndexHeader->nodeCount++;
 
                     sCurParentINode = sFstParentINode;
@@ -1387,7 +1387,7 @@ IDE_RC smnbPointerbaseBuild::makeTree( smnbHeader  * aIndexHeader,
                                                  aIndexHeader,
                                                  IDU_LATCH_UNLOCKED );
                     
-                    // BUG-18292 : V$MEM_BTREE_HEADER Á¤º¸ Ãß°¡
+                    // BUG-18292 : V$MEM_BTREE_HEADER ì •ë³´ ì¶”ê°€
                     aIndexHeader->nodeCount++;
 
                     sCurParentINode->nextSPtr = sNewINode;
@@ -1406,7 +1406,7 @@ IDE_RC smnbPointerbaseBuild::makeTree( smnbHeader  * aIndexHeader,
     while((sCurINode->flag & SMNB_NODE_TYPE_MASK) == SMNB_NODE_TYPE_INTERNAL)
     {
         /* PROJ-2433
-         * child pointer´Â À¯Áö */
+         * child pointerëŠ” ìœ ì§€ */
         smnbBTree::setInternalSlot( sCurINode,
                                     (SShort)( sCurINode->mSlotCount - 1 ),
                                     sCurINode->mChildPtrs[sCurINode->mSlotCount - 1],

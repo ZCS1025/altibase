@@ -15,8 +15,8 @@
  */
 
 /**
- * acp.h ¸¦ include ÇÏ°í alticore ÇÔ¼ö¸¦ È£ÃâÇÏÁö ¾ÊÀº ÀÌÀ¯´Â alticore ÀÇ
- * socket handle Àº Ä¸½¶È­µÇ¾î ÀÖ°í ÇöÀç·Î¼­ C ÄÚµå°¡ °£´ÜÇÏ±â ¶§¹®ÀÌ´Ù.
+ * acp.h ë¥¼ include í•˜ê³  alticore í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•˜ì§€ ì•Šì€ ì´ìœ ëŠ” alticore ì˜
+ * socket handle ì€ ìº¡ìŠí™”ë˜ì–´ ìžˆê³  í˜„ìž¬ë¡œì„œ C ì½”ë“œê°€ ê°„ë‹¨í•˜ê¸° ë•Œë¬¸ì´ë‹¤.
  */
 #include <acp.h>
 #include <Altibase_jdbc_driver_JniExt.h>

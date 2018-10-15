@@ -46,7 +46,7 @@ static IDE_RC stfGeomFromTextEstimate(
 mtfModule stfGeomFromText = {
     1|MTC_NODE_OPERATOR_FUNCTION,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
+    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìžê°€ ì•„ë‹˜)
     stfGeomFromTextFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -176,7 +176,7 @@ IDE_RC stfGeomFromTextCalculate(
         sQcTmplate = (qcTemplate*) aTemplate;
         sQmxMem    = QC_QMX_MEM( sQcTmplate->stmt );
 
-        // Memory Àç»ç¿ëÀ» À§ÇÏ¿© ÇöÀç À§Ä¡ ±â·Ï
+        // Memory ìž¬ì‚¬ìš©ì„ ìœ„í•˜ì—¬ í˜„ìž¬ ìœ„ì¹˜ ê¸°ë¡
         IDE_TEST( sQmxMem->getStatus(&sQmxMemStatus) != IDE_SUCCESS);
         sStage = 1;
         
@@ -190,7 +190,7 @@ IDE_RC stfGeomFromTextCalculate(
 
         IDE_TEST_RAISE( rc != IDE_SUCCESS, ERR_INVALID_LITERAL );
 
-        // Memory Àç»ç¿ëÀ» À§ÇÑ Memory ÀÌµ¿
+        // Memory ìž¬ì‚¬ìš©ì„ ìœ„í•œ Memory ì´ë™
         sStage = 0;
         IDE_TEST( sQmxMem->setStatus(&sQmxMemStatus) != IDE_SUCCESS);
     }

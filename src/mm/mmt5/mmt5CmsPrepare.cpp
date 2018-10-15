@@ -55,8 +55,8 @@ static IDE_RC answerPrepareResult(cmiProtocolContext *aProtocolContext, mmcState
     sBaseTableOwnerName[0] = '\0';
     sBaseTableName[0]      = '\0';
 
-    // cf) viewÀÎ °æ¿ì QP¿¡¼­ table ¸íÀÌ ¾Æ´Ñ view ¸íÀ» ¹ÝÈ¯.
-    // ÇÏÁö¸¸, viewÀÎ °æ¿ì »ç¿ë¾ÈÇÒ °ÍÀÌ¹Ç·Î »ó°ü¾øÀ½.
+    // cf) viewì¸ ê²½ìš° QPì—ì„œ table ëª…ì´ ì•„ë‹Œ view ëª…ì„ ë°˜í™˜.
+    // í•˜ì§€ë§Œ, viewì¸ ê²½ìš° ì‚¬ìš©ì•ˆí•  ê²ƒì´ë¯€ë¡œ ìƒê´€ì—†ìŒ.
     IDE_TEST(qci::getBaseTableInfo(sQciStmt,
                                    sBaseTableOwnerName,
                                    sBaseTableName,
@@ -173,7 +173,7 @@ IDE_RC mmtServiceThread::prepareProtocolA5(cmiProtocolContext *aProtocolContext,
         sStatement->setStmtState(MMC_STMT_STATE_ALLOC);
     }
     // bug-34746: query_timeout flag is cleared by other stmt
-    // query_timeout È®ÀÎ½Ã mCurrStmtID·Î ºñ±³ÇÑ´Ù
+    // query_timeout í™•ì¸ì‹œ mCurrStmtIDë¡œ ë¹„êµí•œë‹¤
     sSession->getInfo()->mCurrStmtID = sStatement->getStmtID();
 
     /* BUG-38472 Query timeout applies to one statement. */

@@ -30,7 +30,7 @@
 /***********************************************************************
  *
  * Description :
- *    Parallel Queue ³ëµåÀÇ ÃÊ±âÈ­
+ *    Parallel Queue ë…¸ë“œì˜ ì´ˆê¸°í™”
  *
  * Implementation :
  *
@@ -65,7 +65,7 @@ IDE_RC qmnPRLQ::init( qcTemplate * aTemplate,
         sDataPlan->mCurrentNode = NULL;
     }
 
-    /* sDataPlan->mThrArg ´Â À§¿¡ firstInit ¿¡¼­ ÃÊ±âÈ­ µÇ¾úÀ½ */
+    /* sDataPlan->mThrArg ëŠ” ìœ„ì— firstInit ì—ì„œ ì´ˆê¸°í™” ë˜ì—ˆìŒ */
     sDataPlan->doIt         = qmnPRLQ::doItFirst;
     sDataPlan->mAllRowRead  = 0;
     sDataPlan->mThrObj     = NULL;
@@ -81,7 +81,7 @@ IDE_RC qmnPRLQ::init( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    PRLQ nodeÀÇ Data ¿µ¿ªÀÇ ¸â¹ö¿¡ ´ëÇÑ ÃÊ±âÈ­¸¦ ¼öÇà
+ *    PRLQ nodeì˜ Data ì˜ì—­ì˜ ë©¤ë²„ì— ëŒ€í•œ ì´ˆê¸°í™”ë¥¼ ìˆ˜í–‰
  *
  * Implementation :
  *
@@ -97,12 +97,12 @@ IDE_RC qmnPRLQ::firstInit( qcTemplate * aTemplate,
 
     sMemory = aTemplate->stmt->qmxMem;
 
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     IDE_DASSERT( aTemplate != NULL );
     IDE_DASSERT( aDataPlan != NULL );
 
     //---------------------------------
-    // PRLQ Queue ÃÊ±âÈ­
+    // PRLQ Queue ì´ˆê¸°í™”
     //---------------------------------
     aDataPlan->mQueue.mHead = 0;
     aDataPlan->mQueue.mTail = 0;
@@ -117,7 +117,7 @@ IDE_RC qmnPRLQ::firstInit( qcTemplate * aTemplate,
              != IDE_SUCCESS);
 
     //---------------------------------
-    // Thread arguemnt ÇÒ´ç ¹× ÃÊ±âÈ­
+    // Thread arguemnt í• ë‹¹ ë° ì´ˆê¸°í™”
     //---------------------------------
     IDU_FIT_POINT( "qmnPRLQ::firstInit::alloc::mThrArg", 
                     idERR_ABORT_InsufficientMemory );
@@ -149,15 +149,15 @@ IDE_RC qmnPRLQ::firstInit( qcTemplate * aTemplate,
                             (void**)&sTemplate->stmt)
              != IDE_SUCCESS);
 
-    /* worker thread ¿¡¼­ »ç¿ëÇÒ QMX, QXC memory »ý¼º */
+    /* worker thread ì—ì„œ ì‚¬ìš©í•  QMX, QXC memory ìƒì„± */
     IDE_TEST( qcg::allocPRLQExecutionMemory( aTemplate->stmt,
                                              &sPRLQMemory,
                                              &sPRLQCacheMemory )     // PROJ-2452
               != IDE_SUCCESS);
 
     /*
-     * »õ·Î »ý¼ºÇÑ ¸Þ¸ð¸®¸¦ »ç¿ëÇØ worker thread ¿ë template À» »ý¼ºÇÑ´Ù.
-     * ³»ºÎ¿¡¼­ statement º¹»ç¿Í »õ QMX, QXC ¸Þ¸ð¸® ¿¬°á µîµµ ¸ðµÎ Ã³¸®ÇÑ´Ù.
+     * ìƒˆë¡œ ìƒì„±í•œ ë©”ëª¨ë¦¬ë¥¼ ì‚¬ìš©í•´ worker thread ìš© template ì„ ìƒì„±í•œë‹¤.
+     * ë‚´ë¶€ì—ì„œ statement ë³µì‚¬ì™€ ìƒˆ QMX, QXC ë©”ëª¨ë¦¬ ì—°ê²° ë“±ë„ ëª¨ë‘ ì²˜ë¦¬í•œë‹¤.
      */
     IDE_TEST( qcg::allocAndCloneTemplate4Parallel( sPRLQMemory,
                                                    sPRLQCacheMemory, // PROJ-2452
@@ -166,15 +166,15 @@ IDE_RC qmnPRLQ::firstInit( qcTemplate * aTemplate,
               != IDE_SUCCESS );
 
     // PROJ-2527 WITHIN GROUP AGGR
-    // mtcTemplateµµ finalize¸¦ È£ÃâÇÏ°Ô µÇ¾ú´Ù. ÀÌ¸¦ À§ÇØ¼­
-    // cloneÇÑ template¸¦ ±â·ÏÇÑ´Ù.
+    // mtcTemplateë„ finalizeë¥¼ í˜¸ì¶œí•˜ê²Œ ë˜ì—ˆë‹¤. ì´ë¥¼ ìœ„í•´ì„œ
+    // cloneí•œ templateë¥¼ ê¸°ë¡í•œë‹¤.
     IDE_TEST( qcg::addPRLQChildTemplate( aTemplate->stmt,
                                          sTemplate )
               != IDE_SUCCESS );
     
     sStackSize = aTemplate->tmplate.stackCount;
 
-    /* worker thread ¿ë stack »ý¼º */
+    /* worker thread ìš© stack ìƒì„± */
     IDU_FIT_POINT( "qmnPRLQ::firstInit::alloc::Stack",
                     idERR_ABORT_InsufficientMemory );
 
@@ -189,7 +189,7 @@ IDE_RC qmnPRLQ::firstInit( qcTemplate * aTemplate,
     aDataPlan->mTemplateCloned = ID_FALSE;
 
     //---------------------------------
-    // ÃÊ±âÈ­ ¿Ï·á¸¦ Ç¥±â
+    // ì´ˆê¸°í™” ì™„ë£Œë¥¼ í‘œê¸°
     //---------------------------------
     *aDataPlan->flag &= ~QMND_PRLQ_INIT_DONE_MASK;
     *aDataPlan->flag |= QMND_PRLQ_INIT_DONE_TRUE;
@@ -204,10 +204,10 @@ IDE_RC qmnPRLQ::firstInit( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    PRLQÀÇ °íÀ¯ ±â´ÉÀ» ¼öÇàÇÑ´Ù.
+ *    PRLQì˜ ê³ ìœ  ê¸°ëŠ¥ì„ ìˆ˜í–‰í•œë‹¤.
  *
  * Implementation :
- *    ÁöÁ¤µÈ ÇÔ¼ö Æ÷ÀÎÅÍ¸¦ ¼öÇàÇÑ´Ù.
+ *    ì§€ì •ëœ í•¨ìˆ˜ í¬ì¸í„°ë¥¼ ìˆ˜í–‰í•œë‹¤.
  *
  ***********************************************************************/
 IDE_RC qmnPRLQ::doIt( qcTemplate * aTemplate,
@@ -227,8 +227,8 @@ IDE_RC qmnPRLQ::doIt( qcTemplate * aTemplate,
         if (sCodePlan->mParallelType == QMNC_PRLQ_PARALLEL_TYPE_SCAN)
         {
             /*
-             * non-partition ÀÎ °æ¿ì
-             * ¸¶Áö¸· doIt Á÷ÈÄ thread ¹ÝÈ¯
+             * non-partition ì¸ ê²½ìš°
+             * ë§ˆì§€ë§‰ doIt ì§í›„ thread ë°˜í™˜
              */
             sThrStatus = acpAtomicGet32(&sDataPlan->mThrObj->mStatus);
             while (sThrStatus == QMC_THR_STATUS_RUN)
@@ -241,16 +241,16 @@ IDE_RC qmnPRLQ::doIt( qcTemplate * aTemplate,
         else
         {
             /*
-             * partition ÀÎ °æ¿ì (PPCRD ¾Æ·¡ PRLQ °¡ ÀÖ´Â °æ¿ì)
+             * partition ì¸ ê²½ìš° (PPCRD ì•„ëž˜ PRLQ ê°€ ìžˆëŠ” ê²½ìš°)
              *
-             * PRLQ ÀÇ child °¡ 1 °³ ÀÌ»óÀÏ °æ¿ì thread ¸¦ Àç»ç¿ëÇÏ±â À§ÇØ
-             * ¿©±â¼­ thread ¹ÝÈ¯ÇÏÁö ¾Ê´Â´Ù.
-             * ´ë½Å PRLQ ¸¦ »ç¿ëÇÏ´Â ³ëµå(multi children À» °®´Â ³ëµå)°¡
-             * PRLQ ÀÇ thread ¸¦ ¹ÝÈ¯ÇØ¾ß ÇÑ´Ù. (qmnPRLQ::returnThread)
+             * PRLQ ì˜ child ê°€ 1 ê°œ ì´ìƒì¼ ê²½ìš° thread ë¥¼ ìž¬ì‚¬ìš©í•˜ê¸° ìœ„í•´
+             * ì—¬ê¸°ì„œ thread ë°˜í™˜í•˜ì§€ ì•ŠëŠ”ë‹¤.
+             * ëŒ€ì‹  PRLQ ë¥¼ ì‚¬ìš©í•˜ëŠ” ë…¸ë“œ(multi children ì„ ê°–ëŠ” ë…¸ë“œ)ê°€
+             * PRLQ ì˜ thread ë¥¼ ë°˜í™˜í•´ì•¼ í•œë‹¤. (qmnPRLQ::returnThread)
              */
         }
 
-        // Thread °¡ Àç»ç¿ëµÉ ¼ö ÀÖÀ¸¹Ç·Î ÃÊ±âÈ­ ÇØÁØ´Ù.
+        // Thread ê°€ ìž¬ì‚¬ìš©ë  ìˆ˜ ìžˆìœ¼ë¯€ë¡œ ì´ˆê¸°í™” í•´ì¤€ë‹¤.
         acpAtomicSet32(&sDataPlan->mAllRowRead, 0);
     }
 
@@ -264,7 +264,7 @@ IDE_RC qmnPRLQ::doIt( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    Child¿¡ ´ëÇÏ¿© padNull()À» È£ÃâÇÑ´Ù.
+ *    Childì— ëŒ€í•˜ì—¬ padNull()ì„ í˜¸ì¶œí•œë‹¤.
  *
  * Implementation :
  *
@@ -278,7 +278,7 @@ IDE_RC qmnPRLQ::padNull( qcTemplate* aTemplate, qmnPlan* aPlan )
     if ( (aTemplate->planFlag[sCodePlan->planID] & QMND_PRLQ_INIT_DONE_MASK)
          == QMND_PRLQ_INIT_DONE_FALSE )
     {
-        // ÃÊ±âÈ­µÇÁö ¾ÊÀº °æ¿ì ÃÊ±âÈ­ ¼öÇà
+        // ì´ˆê¸°í™”ë˜ì§€ ì•Šì€ ê²½ìš° ì´ˆê¸°í™” ìˆ˜í–‰
         IDE_TEST( aPlan->init( aTemplate, aPlan ) != IDE_SUCCESS );
     }
     else
@@ -288,7 +288,7 @@ IDE_RC qmnPRLQ::padNull( qcTemplate* aTemplate, qmnPlan* aPlan )
 
     IDE_DASSERT( sDataPlan->mCurrentNode != NULL );
 
-    // Child Plan¿¡ ´ëÇÏ¿© Null Padding¼öÇà
+    // Child Planì— ëŒ€í•˜ì—¬ Null Paddingìˆ˜í–‰
     return sDataPlan->mCurrentNode->padNull(aTemplate, sDataPlan->mCurrentNode);
 
     IDE_EXCEPTION_END;
@@ -300,8 +300,8 @@ IDE_RC qmnPRLQ::padNull( qcTemplate* aTemplate, qmnPlan* aPlan )
  * ------------------------------------------------------------------
  * PROJ-2402 Parallel Table Scan
  *
- * doItFirst() ¿¡¼­ ¼öÇàÇÏ´Â ÀÛ¾÷ ¾ÕºÎºÐÀ» ¼öÇà
- * thread ¸¦ ½ÃÀÛ½ÃÅ°°í ÇÏÀ§ SCAN ÀÇ startIt ÀÌ ¿Ï·áµÉ¶§±îÁö ´ë±â
+ * doItFirst() ì—ì„œ ìˆ˜í–‰í•˜ëŠ” ìž‘ì—… ì•žë¶€ë¶„ì„ ìˆ˜í–‰
+ * thread ë¥¼ ì‹œìž‘ì‹œí‚¤ê³  í•˜ìœ„ SCAN ì˜ startIt ì´ ì™„ë£Œë ë•Œê¹Œì§€ ëŒ€ê¸°
  * ------------------------------------------------------------------
  */
 IDE_RC qmnPRLQ::startIt(qcTemplate* aTemplate, qmnPlan* aPlan, UInt* aTID)
@@ -317,9 +317,9 @@ IDE_RC qmnPRLQ::startIt(qcTemplate* aTemplate, qmnPlan* aPlan, UInt* aTID)
     sMemory        = aTemplate->stmt->qmxMem;
 
     //---------------------------------
-    // Template º¹»ç (BUG-38294)
+    // Template ë³µì‚¬ (BUG-38294)
     //---------------------------------
-    // ½ÇÇà Àü worker thread ¿¡¼­ »ç¿ëÇÒ template À» clone ÇÑ´Ù.
+    // ì‹¤í–‰ ì „ worker thread ì—ì„œ ì‚¬ìš©í•  template ì„ clone í•œë‹¤.
 
     if (sDataPlan->mTemplateCloned == ID_FALSE)
     {
@@ -336,7 +336,7 @@ IDE_RC qmnPRLQ::startIt(qcTemplate* aTemplate, qmnPlan* aPlan, UInt* aTID)
 
     /*
      * ----------------------------------------------------------------
-     * Thead manager ·Î ºÎÅÍ thread ¾ò¾î¿È
+     * Thead manager ë¡œ ë¶€í„° thread ì–»ì–´ì˜´
      * ----------------------------------------------------------------
      */
 
@@ -344,8 +344,8 @@ IDE_RC qmnPRLQ::startIt(qcTemplate* aTemplate, qmnPlan* aPlan, UInt* aTID)
     sDataPlan->mThrArg->mTemplate  = &sDataPlan->mTemplate;
     sDataPlan->mThrObj            = NULL;
 
-    /* PROJ-2464 hybrid partitioned table Áö¿ø
-     *  - HPT È¯°æÀ» °í·ÁÇØ¼­ Child ½ÇÇà ½Ã¿¡ Memory, Disk Type¸¦ ÆÇ´ÜÇÏ°í µ¿ÀÛÀ» °áÁ¤ÇÏµµ·Ï ÇÑ´Ù.
+    /* PROJ-2464 hybrid partitioned table ì§€ì›
+     *  - HPT í™˜ê²½ì„ ê³ ë ¤í•´ì„œ Child ì‹¤í–‰ ì‹œì— Memory, Disk Typeë¥¼ íŒë‹¨í•˜ê³  ë™ìž‘ì„ ê²°ì •í•˜ë„ë¡ í•œë‹¤.
      */
     if ( sDataPlan->mExistDisk == ID_TRUE )
     {
@@ -358,8 +358,8 @@ IDE_RC qmnPRLQ::startIt(qcTemplate* aTemplate, qmnPlan* aPlan, UInt* aTID)
 
         for (i = 0; i < sDataPlan->mQueue.mSize; i++)
         {
-            // qmc::setRowSize ¿¡¼­Ã³·³ cralloc ÇØ¾ß ÇÑ´Ù.
-            // ±×·¸Áö ¾ÊÀ¸¸é ÀÏºÎ type ÀÇ readRow ½Ã Àß¸øµÈ °ªÀ» ÀÐÀ» ¼ö ÀÖ´Ù.
+            // qmc::setRowSize ì—ì„œì²˜ëŸ¼ cralloc í•´ì•¼ í•œë‹¤.
+            // ê·¸ë ‡ì§€ ì•Šìœ¼ë©´ ì¼ë¶€ type ì˜ readRow ì‹œ ìž˜ëª»ëœ ê°’ì„ ì½ì„ ìˆ˜ ìžˆë‹¤.
             IDU_FIT_POINT( "qmnPRLQ::startIt::cralloc::mRowBufferItem",
                             idERR_ABORT_InsufficientMemory );
 
@@ -382,17 +382,17 @@ IDE_RC qmnPRLQ::startIt(qcTemplate* aTemplate, qmnPlan* aPlan, UInt* aTID)
 
     if (sDataPlan->mThrObj != NULL)
     {
-        // Thread È¹µæ¿¡ ¼º°ø
+        // Thread íšë“ì— ì„±ê³µ
         IDE_TEST(qmcThrWakeup(sDataPlan->mThrObj, &sIsSuccess) != IDE_SUCCESS);
         IDE_TEST_RAISE(sIsSuccess == ID_FALSE, ERR_IN_THREAD);
 
         /* PPCRD or PSCRD */
         sDataPlan->doIt = qmnPRLQ::doItNextDequeue;
 
-        // Plan Ãâ·ÂÀ» À§ÇØ thread id ¸¦ ÀúÀåÇÑ´Ù.
+        // Plan ì¶œë ¥ì„ ìœ„í•´ thread id ë¥¼ ì €ìž¥í•œë‹¤.
         sDataPlan->plan.mTID = sDataPlan->mThrObj->mID;
 
-        /* child node (SCAN) ÀÇ startIt ÀÌ ³¡³¯¶§±îÁö ´ë±â */
+        /* child node (SCAN) ì˜ startIt ì´ ëë‚ ë•Œê¹Œì§€ ëŒ€ê¸° */
         while (acpAtomicGet32(&sDataPlan->mAllRowRead) == 0)
         {
             idlOS::thr_yield();
@@ -400,11 +400,11 @@ IDE_RC qmnPRLQ::startIt(qcTemplate* aTemplate, qmnPlan* aPlan, UInt* aTID)
     }
     else
     {
-        // Thread È¹µæ¿¡ ½ÇÆÐ
+        // Thread íšë“ì— ì‹¤íŒ¨
         sDataPlan->doIt = qmnPRLQ::doItNextSerial;
 
-        // Plan Ãâ·ÂÀ» À§ÇØ thread id ¸¦ ÀúÀåÇÑ´Ù.
-        // Thread ¸¦ ÇÒ´ç¹ÞÁö ¸øÇÏ¸é TID ´Â QMN_PLAN_INIT_THREAD_ID
+        // Plan ì¶œë ¥ì„ ìœ„í•´ thread id ë¥¼ ì €ìž¥í•œë‹¤.
+        // Thread ë¥¼ í• ë‹¹ë°›ì§€ ëª»í•˜ë©´ TID ëŠ” QMN_PLAN_INIT_THREAD_ID
         sDataPlan->plan.mTID = QMN_PLAN_INIT_THREAD_ID;
     }
 
@@ -436,7 +436,7 @@ IDE_RC qmnPRLQ::startIt(qcTemplate* aTemplate, qmnPlan* aPlan, UInt* aTID)
 /***********************************************************************
  *
  * Description :
- *    PRLQ ³ëµåÀÇ ¼öÇà Á¤º¸¸¦ Ãâ·ÂÇÑ´Ù.
+ *    PRLQ ë…¸ë“œì˜ ìˆ˜í–‰ ì •ë³´ë¥¼ ì¶œë ¥í•œë‹¤.
  *
  * Implementation :
  *
@@ -458,7 +458,7 @@ IDE_RC qmnPRLQ::printPlan( qcTemplate   * aTemplate,
     sDataPlan->flag = &aTemplate->planFlag[sCodePlan->planID];
 
     //----------------------------
-    // Display À§Ä¡ °áÁ¤
+    // Display ìœ„ì¹˜ ê²°ì •
     //----------------------------
     qmn::printSpaceDepth(aString, aDepth);
     iduVarStringAppendLength( aString, "PARALLEL-QUEUE", 14 );
@@ -476,8 +476,8 @@ IDE_RC qmnPRLQ::printPlan( qcTemplate   * aTemplate,
     if (sTID == 0)
     {
         /*
-         * data plan ÃÊ±âÈ­°¡ ¾ÈµÇ¾îÀÖ°Å³ª serial ·Î ½ÇÇàµÈ °æ¿ì
-         * ½ÇÁ¦ »ç¿ëµÈ template Àº original template
+         * data plan ì´ˆê¸°í™”ê°€ ì•ˆë˜ì–´ìžˆê±°ë‚˜ serial ë¡œ ì‹¤í–‰ëœ ê²½ìš°
+         * ì‹¤ì œ ì‚¬ìš©ëœ template ì€ original template
          */
         sTemplate = aTemplate;
     }
@@ -506,7 +506,7 @@ IDE_RC qmnPRLQ::printPlan( qcTemplate   * aTemplate,
     iduVarStringAppendLength( aString, "\n", 1 );
 
     //----------------------------
-    // Operatorº° °á°ú Á¤º¸ Ãâ·Â
+    // Operatorë³„ ê²°ê³¼ ì •ë³´ ì¶œë ¥
     //----------------------------
     if ( QCU_TRCLOG_RESULT_DESC == 1 )
     {
@@ -531,8 +531,8 @@ IDE_RC qmnPRLQ::printPlan( qcTemplate   * aTemplate,
     }
     else
     {
-        // Multi children À» °¡Áö´Â PRLQ (PPCRD ÇÏÀ§¿¡ ¿Ã °æ¿ì)
-        // Ãâ·ÂÇÏÁö ¾Ê´Â´Ù.
+        // Multi children ì„ ê°€ì§€ëŠ” PRLQ (PPCRD í•˜ìœ„ì— ì˜¬ ê²½ìš°)
+        // ì¶œë ¥í•˜ì§€ ì•ŠëŠ”ë‹¤.
     }
 
     return IDE_SUCCESS;
@@ -546,7 +546,7 @@ IDE_RC qmnPRLQ::doItDefault( qcTemplate * /* aTemplate */,
                              qmnPlan    * /* aPlan */,
                              qmcRowFlag * /* aFlag */ )
 {
-    /* ÀÌ ÇÔ¼ö°¡ ¼öÇàµÇ¸é ¾ÈµÊ. */
+    /* ì´ í•¨ìˆ˜ê°€ ìˆ˜í–‰ë˜ë©´ ì•ˆë¨. */
     IDE_DASSERT( 0 );
 
     return IDE_FAILURE;
@@ -555,10 +555,10 @@ IDE_RC qmnPRLQ::doItDefault( qcTemplate * /* aTemplate */,
 /***********************************************************************
  *
  * Description :
- *    PRLQ ÀÇ ÃÖÃÊ ¼öÇà ÇÔ¼ö
- *    Child¸¦ ¼öÇàÇÏ°í ¿ëµµ¿¡ ¸Â´Â ¼öÇà ÇÔ¼ö¸¦ °áÁ¤ÇÑ´Ù.
- *    ÃÖÃÊ ¼±ÅÃµÈ Row´Â ¹Ýµå½Ã »óÀ§ ³ëµå·Î Àü´ÞµÇ±â ¶§¹®¿¡
- *    ¿ëµµ¿¡ ¸Â´Â Ã³¸®°¡ ÇÊ¿ä¾ø´Ù.
+ *    PRLQ ì˜ ìµœì´ˆ ìˆ˜í–‰ í•¨ìˆ˜
+ *    Childë¥¼ ìˆ˜í–‰í•˜ê³  ìš©ë„ì— ë§žëŠ” ìˆ˜í–‰ í•¨ìˆ˜ë¥¼ ê²°ì •í•œë‹¤.
+ *    ìµœì´ˆ ì„ íƒëœ RowëŠ” ë°˜ë“œì‹œ ìƒìœ„ ë…¸ë“œë¡œ ì „ë‹¬ë˜ê¸° ë•Œë¬¸ì—
+ *    ìš©ë„ì— ë§žëŠ” ì²˜ë¦¬ê°€ í•„ìš”ì—†ë‹¤.
  *
  * Implementation :
  *
@@ -573,7 +573,7 @@ IDE_RC qmnPRLQ::doItFirst( qcTemplate * aTemplate,
 
     IDE_TEST(startIt(aTemplate, aPlan, NULL) != IDE_SUCCESS);
 
-    // Queue ¿¡¼­ Ã¹¹øÂ° row ¸¦ °¡Á®¿Â´Ù.
+    // Queue ì—ì„œ ì²«ë²ˆì§¸ row ë¥¼ ê°€ì ¸ì˜¨ë‹¤.
     IDE_TEST( sDataPlan->doIt( aTemplate, aPlan, aFlag ) != IDE_SUCCESS );
 
     return IDE_SUCCESS;
@@ -587,11 +587,11 @@ IDE_RC qmnPRLQ::doItFirst( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    PRLQ ÀÇ doIt ½ÇÇà ÇÔ¼ö
- *    Thread ¸¦ ¾òÁö ¸øÇßÀ» ¶§ »ç¿ëµÈ´Ù.
+ *    PRLQ ì˜ doIt ì‹¤í–‰ í•¨ìˆ˜
+ *    Thread ë¥¼ ì–»ì§€ ëª»í–ˆì„ ë•Œ ì‚¬ìš©ëœë‹¤.
  *
  * Implementation :
- *    ÇÏÀ§ ³ëµåÀÇ doIt ÇÔ¼ö¸¦ È£ÃâÇÑ´Ù.
+ *    í•˜ìœ„ ë…¸ë“œì˜ doIt í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•œë‹¤.
  *
  ***********************************************************************/
 IDE_RC qmnPRLQ::doItNextSerial( qcTemplate* aTemplate,
@@ -603,27 +603,27 @@ IDE_RC qmnPRLQ::doItNextSerial( qcTemplate* aTemplate,
 
     IDE_DASSERT( sDataPlan->mCurrentNode != NULL );
 
-    // Child¸¦ ¼öÇà
+    // Childë¥¼ ìˆ˜í–‰
     IDE_TEST( sDataPlan->mCurrentNode->doIt( aTemplate,
                                              sDataPlan->mCurrentNode,
                                              aFlag ) != IDE_SUCCESS );
 
     if( ( *aFlag & QMC_ROW_DATA_MASK ) == QMC_ROW_DATA_NONE )
     {
-        // record°¡ ¾ø´Â °æ¿ì
-        // ´ÙÀ½ ¼öÇàÀ» À§ÇØ ÃÖÃÊ ¼öÇà ÇÔ¼ö·Î ¼³Á¤ÇÔ.
+        // recordê°€ ì—†ëŠ” ê²½ìš°
+        // ë‹¤ìŒ ìˆ˜í–‰ì„ ìœ„í•´ ìµœì´ˆ ìˆ˜í–‰ í•¨ìˆ˜ë¡œ ì„¤ì •í•¨.
         sDataPlan->doIt = qmnPRLQ::doItFirst;
     }
     else
     {
         // PROJ-2444
-        // PRLQ ¿¡ ÀúÀåÈÄ »óÀ§ ÇÃ·£¿¡¼­ PRLQ ÀÇ µ¥ÀÌÅÍ¸¦ Á÷Á¢ ÀÐ´Â´Ù.
+        // PRLQ ì— ì €ìž¥í›„ ìƒìœ„ í”Œëžœì—ì„œ PRLQ ì˜ ë°ì´í„°ë¥¼ ì§ì ‘ ì½ëŠ”ë‹¤.
         sDataPlan->mRid = sChildDataPlan->myTuple->rid;
         sDataPlan->mRow = sChildDataPlan->myTuple->row;
     }
 
-    // PPCRD ¿¡¼­ serial ½ÇÇàÀÏ °æ¿ì ¹Ù·Î ´Ù¸¥ partition À» ½ÇÇàÇÏµµ·Ï
-    // flag ¸¦ ¼³Á¤ÇÑ´Ù.
+    // PPCRD ì—ì„œ serial ì‹¤í–‰ì¼ ê²½ìš° ë°”ë¡œ ë‹¤ë¥¸ partition ì„ ì‹¤í–‰í•˜ë„ë¡
+    // flag ë¥¼ ì„¤ì •í•œë‹¤.
     *aFlag &= ~QMC_ROW_QUEUE_EMPTY_MASK;
     *aFlag |= QMC_ROW_QUEUE_EMPTY_TRUE;
 
@@ -636,11 +636,11 @@ IDE_RC qmnPRLQ::doItNextSerial( qcTemplate* aTemplate,
 
 /*
  * ------------------------------------------------------------------
- * PPCRD or PSCRD ¾Æ·¡ PRLQ °¡ ¿ÔÀ»¶§ÀÇ doIt
+ * PPCRD or PSCRD ì•„ëž˜ PRLQ ê°€ ì™”ì„ë•Œì˜ doIt
  *
- * »óÀ§ ³ëµå°¡ º¸´Ù À¯¿¬ÇÏ°Ô ·¹ÄÚµå¸¦ °¡Á®°¡°Ô ÇÏ±â À§ÇØ
- * µµÁß¿¡ queue °¡ ºñ¾îÀÖÀ» °æ¿ì ´ë±âÇÏÁö ¾Ê°í
- * DATA_NONE + QUEUE_EMPTY ¸¦ ¹ÝÈ¯ÇÑ´Ù.
+ * ìƒìœ„ ë…¸ë“œê°€ ë³´ë‹¤ ìœ ì—°í•˜ê²Œ ë ˆì½”ë“œë¥¼ ê°€ì ¸ê°€ê²Œ í•˜ê¸° ìœ„í•´
+ * ë„ì¤‘ì— queue ê°€ ë¹„ì–´ìžˆì„ ê²½ìš° ëŒ€ê¸°í•˜ì§€ ì•Šê³ 
+ * DATA_NONE + QUEUE_EMPTY ë¥¼ ë°˜í™˜í•œë‹¤.
  * ------------------------------------------------------------------
  */
 IDE_RC qmnPRLQ::doItNextDequeue( qcTemplate * aTemplate,
@@ -657,12 +657,12 @@ IDE_RC qmnPRLQ::doItNextDequeue( qcTemplate * aTemplate,
 
     while (1)
     {
-        // ´ÙÀ½ Record¸¦ ÀÐ´Â´Ù.
+        // ë‹¤ìŒ Recordë¥¼ ì½ëŠ”ë‹¤.
         if (dequeue( &sDataPlan->mQueue,
                      &sDataPlan->mRid,
                      &sDataPlan->mRow ) == ID_TRUE)
         {
-            // queue ¿¡¼­ row ¸¦ ÇÑ°Ç ²¨³»¿Ô´Ù.
+            // queue ì—ì„œ row ë¥¼ í•œê±´ êº¼ë‚´ì™”ë‹¤.
             *aFlag = QMC_ROW_DATA_EXIST;
             break;
         }
@@ -675,26 +675,26 @@ IDE_RC qmnPRLQ::doItNextDequeue( qcTemplate * aTemplate,
 
         if (sAllRowRead == 0)
         {
-            // mAllRowRead °¡ 0: ÇÏÀ§ ³ëµå initialize Áß ÀÌ°Å³ª
-            // doItFirst ½ÇÇà Áß queue °¡ ºñ¾îÀÖÁö¸¸ ¾ÆÁ÷ row ¸¦
-            // ÀÐ°í ÀÖ´Â ÁßÀÌ¹Ç·Î °è¼Ó Àç½ÃµµÇÑ´Ù.
-            // loop ¸¦ °è¼Ó µ·´Ù.
+            // mAllRowRead ê°€ 0: í•˜ìœ„ ë…¸ë“œ initialize ì¤‘ ì´ê±°ë‚˜
+            // doItFirst ì‹¤í–‰ ì¤‘ queue ê°€ ë¹„ì–´ìžˆì§€ë§Œ ì•„ì§ row ë¥¼
+            // ì½ê³  ìžˆëŠ” ì¤‘ì´ë¯€ë¡œ ê³„ì† ìž¬ì‹œë„í•œë‹¤.
+            // loop ë¥¼ ê³„ì† ëˆë‹¤.
             acpSleepUsec(sSleep);
             sSleep = (sSleep < QCU_PARALLEL_QUERY_QUEUE_SLEEP_MAX) ?
                 (sSleep << 1) : 1;
         }
         else if (sAllRowRead == 1)
         {
-            // mAllRowRead °¡ 1: row ¸¦ ÀÐ°í ÀÖ´Â Áß
-            // queue °¡ ºñ¾îÀÖÁö¸¸ ¾ÆÁ÷ row ¸¦ ÀÐ°í ÀÖ´Â ÁßÀÌ´Ù.
-            // »óÀ§ PPCRD ¿¡¼­ ´ÙÀ½ partition À» ÀÐµµ·Ï °á°ú¸¦ ¸®ÅÏÇÑ´Ù.
+            // mAllRowRead ê°€ 1: row ë¥¼ ì½ê³  ìžˆëŠ” ì¤‘
+            // queue ê°€ ë¹„ì–´ìžˆì§€ë§Œ ì•„ì§ row ë¥¼ ì½ê³  ìžˆëŠ” ì¤‘ì´ë‹¤.
+            // ìƒìœ„ PPCRD ì—ì„œ ë‹¤ìŒ partition ì„ ì½ë„ë¡ ê²°ê³¼ë¥¼ ë¦¬í„´í•œë‹¤.
             *aFlag = QMC_ROW_DATA_NONE | QMC_ROW_QUEUE_EMPTY_FALSE;
             break;
         }
         else if (sAllRowRead == 2)
         {
-            // BUG-40598 ÄÄÆÄÀÏ·¯¿¡ µû¶ó °á°ú°¡ Æ²¸²
-            // acpAtomicGet32 ¸¦ ÀÌ¿ëÇÏ¿© ÇÑ¹ø´õ Ã¼Å©ÇÔ
+            // BUG-40598 ì»´íŒŒì¼ëŸ¬ì— ë”°ë¼ ê²°ê³¼ê°€ í‹€ë¦¼
+            // acpAtomicGet32 ë¥¼ ì´ìš©í•˜ì—¬ í•œë²ˆë” ì²´í¬í•¨
             sAllRowRead = acpAtomicGet32( &sDataPlan->mAllRowRead );
 
             if ( sAllRowRead != 2 )
@@ -707,30 +707,30 @@ IDE_RC qmnPRLQ::doItNextDequeue( qcTemplate * aTemplate,
             }
 
             /*
-             * Á÷Àü¿¡ dequeue ½ÇÆÐÇßÁö¸¸,
-             * ¼ø°£ÀûÀ¸·Î enqueue °¡ µÇ°í AllRowRead = 2 °¡ µÇ¾úÀ»¼öµµ ÀÖ´Ù.
-             * ´Ù½Ã È®ÀÎÇØ¾ßÇÔ
+             * ì§ì „ì— dequeue ì‹¤íŒ¨í–ˆì§€ë§Œ,
+             * ìˆœê°„ì ìœ¼ë¡œ enqueue ê°€ ë˜ê³  AllRowRead = 2 ê°€ ë˜ì—ˆì„ìˆ˜ë„ ìžˆë‹¤.
+             * ë‹¤ì‹œ í™•ì¸í•´ì•¼í•¨
              */
             if (dequeue( &sDataPlan->mQueue,
                          &sDataPlan->mRid,
                          &sDataPlan->mRow ) == ID_TRUE)
             {
-                // queue ¿¡¼­ row ¸¦ ÇÑ°Ç ²¨³»¿Ô´Ù.
+                // queue ì—ì„œ row ë¥¼ í•œê±´ êº¼ë‚´ì™”ë‹¤.
                 *aFlag = QMC_ROW_DATA_EXIST;
                 break;
             }
             else
             {
-                // mAllRowRead °¡ 2: row ´Ù ÀÐ¾úÀ½
-                // row ¸¦ ´Ù ÀÐ¾ú°í, queue µµ ºñ¾îÀÖ´Â »óÅÂÀÌ´Ù.
-                // ´õÀÌ»ó ÀÐÀ» row °¡ ¾ø´Ù.
+                // mAllRowRead ê°€ 2: row ë‹¤ ì½ì—ˆìŒ
+                // row ë¥¼ ë‹¤ ì½ì—ˆê³ , queue ë„ ë¹„ì–´ìžˆëŠ” ìƒíƒœì´ë‹¤.
+                // ë”ì´ìƒ ì½ì„ row ê°€ ì—†ë‹¤.
                 *aFlag = QMC_ROW_DATA_NONE | QMC_ROW_QUEUE_EMPTY_TRUE;
                 break;
             }
         }
         else
         {
-            // Thread ¿¡¼­ ¿¡·¯ ¹ß»ý
+            // Thread ì—ì„œ ì—ëŸ¬ ë°œìƒ
             IDE_RAISE(ERR_IN_THREAD);
         }
     }
@@ -738,8 +738,8 @@ IDE_RC qmnPRLQ::doItNextDequeue( qcTemplate * aTemplate,
     if ( ( (*aFlag & QMC_ROW_DATA_MASK) == QMC_ROW_DATA_NONE ) &&
          ( (*aFlag & QMC_ROW_QUEUE_EMPTY_MASK) == QMC_ROW_QUEUE_EMPTY_TRUE ) )
     {
-        // record°¡ ¾ø´Â °æ¿ì
-        // ´ÙÀ½ ¼öÇàÀ» À§ÇØ Àç¼öÇà ÇÔ¼ö·Î ¼³Á¤ÇÔ.
+        // recordê°€ ì—†ëŠ” ê²½ìš°
+        // ë‹¤ìŒ ìˆ˜í–‰ì„ ìœ„í•´ ìž¬ìˆ˜í–‰ í•¨ìˆ˜ë¡œ ì„¤ì •í•¨.
         sDataPlan->doIt = qmnPRLQ::doItResume;
     }
     else
@@ -765,14 +765,14 @@ IDE_RC qmnPRLQ::doItNextDequeue( qcTemplate * aTemplate,
 
 /***********************************************************************
  * Description :
- *    PRLQ ÀÇ ÇÏÀ§³ëµå º¯°æ ÈÄ Ã¹ ¼öÇà ÇÔ¼ö
- *    Thread ¿¡ º¯°æÇÒ ÇÏÀ§ ³ëµå¸¦ ÁöÁ¤ÇÏ°í ½ÃÀÛÇÏµµ·Ï ÇÑ´Ù.
+ *    PRLQ ì˜ í•˜ìœ„ë…¸ë“œ ë³€ê²½ í›„ ì²« ìˆ˜í–‰ í•¨ìˆ˜
+ *    Thread ì— ë³€ê²½í•  í•˜ìœ„ ë…¸ë“œë¥¼ ì§€ì •í•˜ê³  ì‹œìž‘í•˜ë„ë¡ í•œë‹¤.
  *
- *    partition ÇÏ³ª Ã³¸®ÇÒ¶§¸¶´Ù threadGet ÇÏÁö ¾Ê±â À§ÇØ
- *    PRLQ °¡ ÇÏ³ªÀÇ scan À» ³¡³»°í ¹ÝÈ¯µÇÁö ¾Ê°í ´Ù¸¥ scan À» ½ÇÇàÇÑ´Ù.
+ *    partition í•˜ë‚˜ ì²˜ë¦¬í• ë•Œë§ˆë‹¤ threadGet í•˜ì§€ ì•Šê¸° ìœ„í•´
+ *    PRLQ ê°€ í•˜ë‚˜ì˜ scan ì„ ëë‚´ê³  ë°˜í™˜ë˜ì§€ ì•Šê³  ë‹¤ë¥¸ scan ì„ ì‹¤í–‰í•œë‹¤.
  *
- *    PPCRD ¾Æ·¡ÀÇ ¾ÆÁ÷ assign ¾ÈµÈ ´Ù¸¥ scan À¸·Î ±³Ã¼µÉ¶§ È£ÃâµÈ´Ù.
- *    partition table ÀÎ °æ¿ì¸¸ ÇØ´ç
+ *    PPCRD ì•„ëž˜ì˜ ì•„ì§ assign ì•ˆëœ ë‹¤ë¥¸ scan ìœ¼ë¡œ êµì²´ë ë•Œ í˜¸ì¶œëœë‹¤.
+ *    partition table ì¸ ê²½ìš°ë§Œ í•´ë‹¹
  ***********************************************************************/
 IDE_RC qmnPRLQ::doItResume( qcTemplate * aTemplate,
                             qmnPlan    * aPlan,
@@ -792,18 +792,18 @@ IDE_RC qmnPRLQ::doItResume( qcTemplate * aTemplate,
 
     /*
      * ----------------------------------------------------------------
-     * thead ¿¡ »õ·Î¿î ÇÏÀ§ ³ëµå¸¦ Àü´Þ, ½ÃÀÛÇÑ´Ù.
+     * thead ì— ìƒˆë¡œìš´ í•˜ìœ„ ë…¸ë“œë¥¼ ì „ë‹¬, ì‹œìž‘í•œë‹¤.
      * ----------------------------------------------------------------
      */
 
-    // Template, Queue, AllRowRead, row buffer µîÀº ±×´ë·Î »ç¿ëÇÑ´Ù.
-    // ÇÏÀ§ ³ëµå¸¦ º¯°æÇÑ´Ù.
+    // Template, Queue, AllRowRead, row buffer ë“±ì€ ê·¸ëŒ€ë¡œ ì‚¬ìš©í•œë‹¤.
+    // í•˜ìœ„ ë…¸ë“œë¥¼ ë³€ê²½í•œë‹¤.
     sDataPlan->mThrArg->mChildPlan = sChildCodePlan;
 
     IDE_TEST(qmcThrWakeup(sDataPlan->mThrObj, &sIsSuccess) != IDE_SUCCESS);
     IDE_TEST_RAISE(sIsSuccess == ID_FALSE, ERR_IN_THREAD);
 
-    // Queue ¿¡¼­ Ã¹¹øÂ° row ¸¦ °¡Á®¿Â´Ù.
+    // Queue ì—ì„œ ì²«ë²ˆì§¸ row ë¥¼ ê°€ì ¸ì˜¨ë‹¤.
     IDE_TEST( sDataPlan->doIt( aTemplate, aPlan, aFlag ) != IDE_SUCCESS );
 
     return IDE_SUCCESS;
@@ -837,7 +837,7 @@ IDE_RC qmnPRLQ::runChildEnqueue( qmcThrObj * aThrObj )
 
     sPRLQThrArg    = (qmnPRLQThrArg*)aThrObj->mPrivateArg;
     // BUG-38294
-    // Argument ·Î template À» Àü´Þ¹Þ¾Æ »ç¿ëÇÑ´Ù.
+    // Argument ë¡œ template ì„ ì „ë‹¬ë°›ì•„ ì‚¬ìš©í•œë‹¤.
     sTemplate      = sPRLQThrArg->mTemplate;
     sChildPlan     = sPRLQThrArg->mChildPlan;
     sParallelQueue = sPRLQThrArg->mPRLQQueue;
@@ -853,15 +853,15 @@ IDE_RC qmnPRLQ::runChildEnqueue( qmcThrObj * aThrObj )
                                    aThrObj->mID )
               != IDE_SUCCESS );
 
-    /* PROJ-2464 hybrid partitioned table Áö¿ø
-     *  - HPT È¯°æÀ» °í·ÁÇØ¼­ Child ½ÇÇà ½Ã¿¡ Memory, Disk Type¸¦ ÆÇ´ÜÇÏ°í µ¿ÀÛÀ» °áÁ¤ÇÏµµ·Ï ÇÑ´Ù.
+    /* PROJ-2464 hybrid partitioned table ì§€ì›
+     *  - HPT í™˜ê²½ì„ ê³ ë ¤í•´ì„œ Child ì‹¤í–‰ ì‹œì— Memory, Disk Typeë¥¼ íŒë‹¨í•˜ê³  ë™ìž‘ì„ ê²°ì •í•˜ë„ë¡ í•œë‹¤.
      */
     if ( ( sChildPlan->flag & QMN_PLAN_STORAGE_MASK ) == QMN_PLAN_STORAGE_DISK )
     {
         sOldChildTupleRow = sChildDataPlan->myTuple->row;
 
-        // ÀÚ½Ä ÇÃ·£ÀÇ myTuple->row ÀÇ Æ÷ÀÎÅÍ¸¦ ÀÌ¿ëÇÏ¿©
-        // rowBuffer À» º¯°æÇÑ´Ù.
+        // ìžì‹ í”Œëžœì˜ myTuple->row ì˜ í¬ì¸í„°ë¥¼ ì´ìš©í•˜ì—¬
+        // rowBuffer ì„ ë³€ê²½í•œë‹¤.
         sChildDataPlan->myTuple->row = sPRLQThrArg->mRowBuffer[0];
 
         sQueueIdx = 0;
@@ -875,7 +875,7 @@ IDE_RC qmnPRLQ::runChildEnqueue( qmcThrObj * aThrObj )
 
     (void)acpAtomicSet32(sPRLQThrArg->mAllRowRead, 1);
 
-    // Child¸¦ ¼öÇà
+    // Childë¥¼ ìˆ˜í–‰
     IDE_TEST( sChildPlan->doIt( sTemplate,
                                 sChildPlan,
                                 &sFlag )
@@ -891,12 +891,12 @@ IDE_RC qmnPRLQ::runChildEnqueue( qmcThrObj * aThrObj )
                              sChildDataPlan->myTuple->rid,
                              sChildDataPlan->myTuple->row) == ID_TRUE)
                 {
-                    /* PROJ-2464 hybrid partitioned table Áö¿ø
-                     *  - HPT È¯°æÀ» °í·ÁÇØ¼­ Child ½ÇÇà ½Ã¿¡ Memory, Disk Type¸¦ ÆÇ´ÜÇÏ°í µ¿ÀÛÀ» °áÁ¤ÇÏµµ·Ï ÇÑ´Ù.
+                    /* PROJ-2464 hybrid partitioned table ì§€ì›
+                     *  - HPT í™˜ê²½ì„ ê³ ë ¤í•´ì„œ Child ì‹¤í–‰ ì‹œì— Memory, Disk Typeë¥¼ íŒë‹¨í•˜ê³  ë™ìž‘ì„ ê²°ì •í•˜ë„ë¡ í•œë‹¤.
                      */
                     if ( ( sChildPlan->flag & QMN_PLAN_STORAGE_MASK ) == QMN_PLAN_STORAGE_DISK )
                     {
-                        /* row buffer ¹Ù²ãÄ¡±â */
+                        /* row buffer ë°”ê¿”ì¹˜ê¸° */
                         sQueueIdx = ((sQueueIdx + 1) < sParallelQueue->mSize) ?
                             (sQueueIdx + 1) : 0;
 
@@ -923,12 +923,12 @@ IDE_RC qmnPRLQ::runChildEnqueue( qmcThrObj * aThrObj )
         }
         else
         {
-            // ¸ðµç row read ¿Ï·á
+            // ëª¨ë“  row read ì™„ë£Œ
             acpAtomicSet32(sPRLQThrArg->mAllRowRead, 2);
             break;
         }
 
-        // Child¸¦ ¼öÇà
+        // Childë¥¼ ìˆ˜í–‰
         IDE_TEST( sChildPlan->doIt( sTemplate,
                                     sChildPlan,
                                     &sFlag )
@@ -958,8 +958,8 @@ IDE_RC qmnPRLQ::runChildEnqueue( qmcThrObj * aThrObj )
 
 /*
  * ------------------------------------------------------------------
- * PPCRD ·ÎºÎÅÍ È£ÃâµÊ
- * PRLQ ¿¡ ½ÇÇàÇØ¾ß ÇÒ SCAN À» ¿¬°á
+ * PPCRD ë¡œë¶€í„° í˜¸ì¶œë¨
+ * PRLQ ì— ì‹¤í–‰í•´ì•¼ í•  SCAN ì„ ì—°ê²°
  * ------------------------------------------------------------------
  */
 void qmnPRLQ::setChildNode( qcTemplate * aTemplate,
@@ -968,18 +968,18 @@ void qmnPRLQ::setChildNode( qcTemplate * aTemplate,
 {
     qmndPRLQ * sDataPlan = (qmndPRLQ*)(aTemplate->tmplate.data + aPlan->offset);
 
-    // 1. ÇÏÀ§ ³ëµå º¯°æ
+    // 1. í•˜ìœ„ ë…¸ë“œ ë³€ê²½
     sDataPlan->mCurrentNode = aChildPlan;
 }
 
 /***********************************************************************
  *
  * Description :
- *    PRLQ ÀÇ thread ¸¦ ¹ÝÈ¯ÇÑ´Ù.
- *    ÇöÀç PRLQ ÀÇ ¸ðµç »ç¿ëÀÌ ³¡³µÀ»¶§ PPCRD ·ÎºÎÅÍ È£ÃâµÈ´Ù.
+ *    PRLQ ì˜ thread ë¥¼ ë°˜í™˜í•œë‹¤.
+ *    í˜„ìž¬ PRLQ ì˜ ëª¨ë“  ì‚¬ìš©ì´ ëë‚¬ì„ë•Œ PPCRD ë¡œë¶€í„° í˜¸ì¶œëœë‹¤.
  *
  * Implementation :
- *    Thread °¡ wait »óÅÂ°¡ µÉ ¶§±îÁö ±â´Ù¸° ÈÄ ¹ÝÈ¯ÇÑ´Ù.
+ *    Thread ê°€ wait ìƒíƒœê°€ ë  ë•Œê¹Œì§€ ê¸°ë‹¤ë¦° í›„ ë°˜í™˜í•œë‹¤.
  *
  ***********************************************************************/
 void qmnPRLQ::returnThread( qcTemplate * aTemplate, qmnPlan * aPlan )
@@ -1052,9 +1052,9 @@ qcTemplate* qmnPRLQ::getTemplate(qcTemplate* aTemplate, qmnPlan* aPlan)
 
 /***********************************************************************
  *
- * Description : PROJ-2464 hybrid partitioned table Áö¿ø
+ * Description : PROJ-2464 hybrid partitioned table ì§€ì›
  *
- *    PRLQ nodeÀÇ Data ¿µ¿ªÀÇ Ãß°¡ Á¤º¸¿¡ ´ëÇÑ ÃÊ±âÈ­
+ *    PRLQ nodeì˜ Data ì˜ì—­ì˜ ì¶”ê°€ ì •ë³´ì— ëŒ€í•œ ì´ˆê¸°í™”
  *
  * Implementation :
  *
@@ -1070,6 +1070,6 @@ void qmnPRLQ::setPRLQInfo( qcTemplate * aTemplate,
     sDataPlan->mExistDisk = aExistDisk;
 
     /* INFO 2 */
-    /* BUG-43403 mExistDisk¸¦ ¼³Á¤ÇÒ ¶§, Disk Row Offsetµµ ¼³Á¤ÇÑ´Ù. */
+    /* BUG-43403 mExistDiskë¥¼ ì„¤ì •í•  ë•Œ, Disk Row Offsetë„ ì„¤ì •í•œë‹¤. */
     sDataPlan->mDiskRowOffset = aDiskRowOffset;
 }

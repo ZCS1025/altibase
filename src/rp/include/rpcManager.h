@@ -217,7 +217,7 @@ typedef struct rpxReceiverStatistics
     ULong   mStatSendAck;
 } rpxReceiverStatistics;
 
-/* PROJ-1442 Replication Online Áß DDL Çã¿ë
+/* PROJ-1442 Replication Online ì¤‘ DDL í—ˆìš©
  * For the X$REPRECEIVER_COLUMN Fix Table
  */
 typedef struct rpxReceiverColumnInfo
@@ -356,8 +356,8 @@ public:
 
     void   run();
 
-    //BUG-22703 : Begin Statement¸¦ ¼öÇàÇÑ ÈÄ¿¡ HangÀÌ °É¸®Áö ¾Ê¾Æ¾ß ÇÕ´Ï´Ù.
-    // aStatistics  Åë°è Á¤º¸ ÆÄ¶ó¸ŞÅÍ¸¦ Ãß°¡ ÇÕ´Ï´Ù.
+    //BUG-22703 : Begin Statementë¥¼ ìˆ˜í–‰í•œ í›„ì— Hangì´ ê±¸ë¦¬ì§€ ì•Šì•„ì•¼ í•©ë‹ˆë‹¤.
+    // aStatistics  í†µê³„ ì •ë³´ íŒŒë¼ë©”í„°ë¥¼ ì¶”ê°€ í•©ë‹ˆë‹¤.
     IDE_RC realize(RP_REPL_THR_MODE   thr_mode,
                    idvSQL           * aStatistics);
     IDE_RC realizeRecoveryItem( idvSQL * aStatistics );
@@ -429,8 +429,8 @@ public:
 
     static IDE_RC dropReplication( void        * aQcStatement );
 
-    //BUG-22703 : Begin Statement¸¦ ¼öÇàÇÑ ÈÄ¿¡ HangÀÌ °É¸®Áö ¾Ê¾Æ¾ß ÇÕ´Ï´Ù.
-    // aStatistics  Åë°è Á¤º¸ ÆÄ¶ó¸ŞÅÍ¸¦ Ãß°¡ ÇÕ´Ï´Ù.
+    //BUG-22703 : Begin Statementë¥¼ ìˆ˜í–‰í•œ í›„ì— Hangì´ ê±¸ë¦¬ì§€ ì•Šì•„ì•¼ í•©ë‹ˆë‹¤.
+    // aStatistics  í†µê³„ ì •ë³´ íŒŒë¼ë©”í„°ë¥¼ ì¶”ê°€ í•©ë‹ˆë‹¤.
     static IDE_RC startSenderThread(smiStatement  * aSmiStmt,
                                     SChar         * aReplName,
                                     RP_SENDER_TYPE  astartType,
@@ -481,7 +481,7 @@ public:
                                    SChar        * aRepName,
                                    smSN           aSN );
 
-    // Replication Minimum XSNÀ» º¯°æÇÑ´Ù.
+    // Replication Minimum XSNì„ ë³€ê²½í•œë‹¤.
     static IDE_RC updateXSN( smiStatement * aSmiStmt,
                              SChar        * aRepName,
                              smSN           aSN );
@@ -500,11 +500,11 @@ public:
     IDE_RC processRPRequest(cmiLink           *aLink,
                             idBool             aIsRecoveryPhase);
 
-    // aRepNameÀ» °®´Â Sender¸¦ ±ú¿î´Ù.
+    // aRepNameì„ ê°–ëŠ” Senderë¥¼ ê¹¨ìš´ë‹¤.
     void   wakeupSender(const SChar* aRepName);
 
-    //BUG-22703 : Begin Statement¸¦ ¼öÇàÇÑ ÈÄ¿¡ HangÀÌ °É¸®Áö ¾Ê¾Æ¾ß ÇÕ´Ï´Ù.
-    // aStatistics  Åë°è Á¤º¸ ÆÄ¶ó¸ŞÅÍ¸¦ Ãß°¡ ÇÕ´Ï´Ù.
+    //BUG-22703 : Begin Statementë¥¼ ìˆ˜í–‰í•œ í›„ì— Hangì´ ê±¸ë¦¬ì§€ ì•Šì•„ì•¼ í•©ë‹ˆë‹¤.
+    // aStatistics  í†µê³„ ì •ë³´ íŒŒë¼ë©”í„°ë¥¼ ì¶”ê°€ í•©ë‹ˆë‹¤.
     IDE_RC stopReceiverThread(SChar  * aRepName,
                               idBool   aAlreadyLocked,
                               idvSQL * aStatistics);
@@ -528,10 +528,10 @@ public:
                                                 qcmTableInfo    * aTableInfo );
 
     /*************************************************************
-     * alter table t1 add column(...) À» ÇßÀ» ¶§,
-     * eager replication¿¡¼­´Â t1 Å×ÀÌºíÀ» replicationÇÏ°í ÀÖÀ» ¶§,
-     * DDLÀ» Çã¿ëÇÏÁö ¾Ê´Â´Ù. ±×·¯¹Ç·Î, tableOID¸¦ ÀÌ¿ëÇÏ¿©
-     * ÇØ´ç Å×ÀÌºíÀ» replication ÁßÀÎ Sender°¡ ÀÖ´ÂÁö Ã£¾ÆºÁ¾ßÇÑ´Ù.
+     * alter table t1 add column(...) ì„ í–ˆì„ ë•Œ,
+     * eager replicationì—ì„œëŠ” t1 í…Œì´ë¸”ì„ replicationí•˜ê³  ìˆì„ ë•Œ,
+     * DDLì„ í—ˆìš©í•˜ì§€ ì•ŠëŠ”ë‹¤. ê·¸ëŸ¬ë¯€ë¡œ, tableOIDë¥¼ ì´ìš©í•˜ì—¬
+     * í•´ë‹¹ í…Œì´ë¸”ì„ replication ì¤‘ì¸ Senderê°€ ìˆëŠ”ì§€ ì°¾ì•„ë´ì•¼í•œë‹¤.
      ************************************************************/
     static IDE_RC isRunningEagerSenderByTableOID( smiStatement  * aSmiStmt,
                                                   idvSQL        * aStatistics,
@@ -656,7 +656,7 @@ public:
 
     //----------------------------------------------
     //PROJ-1541
-    /* BUG-26482 ´ë±â ÇÔ¼ö¸¦ CommitLog ±â·Ï ÀüÈÄ·Î ºĞ¸®ÇÏ¿© È£ÃâÇÕ´Ï´Ù. */
+    /* BUG-26482 ëŒ€ê¸° í•¨ìˆ˜ë¥¼ CommitLog ê¸°ë¡ ì „í›„ë¡œ ë¶„ë¦¬í•˜ì—¬ í˜¸ì¶œí•©ë‹ˆë‹¤. */
     static IDE_RC waitForReplicationBeforeCommit( idvSQL          * aStatistics,
                                                   const smTID       aTID,
                                                   const smSN        aLastSN,
@@ -719,8 +719,8 @@ public:
     IDE_RC stopRecoverySenderThread(rprRecoveryItem * aRecoveryItem,
                                     idvSQL          * aStatistics);
 
-    //BUG-22703 : Begin Statement¸¦ ¼öÇàÇÑ ÈÄ¿¡ HangÀÌ °É¸®Áö ¾Ê¾Æ¾ß ÇÕ´Ï´Ù.
-    // aStatistics  Åë°è Á¤º¸ ÆÄ¶ó¸ŞÅÍ¸¦ Ãß°¡ ÇÕ´Ï´Ù.
+    //BUG-22703 : Begin Statementë¥¼ ìˆ˜í–‰í•œ í›„ì— Hangì´ ê±¸ë¦¬ì§€ ì•Šì•„ì•¼ í•©ë‹ˆë‹¤.
+    // aStatistics  í†µê³„ ì •ë³´ íŒŒë¼ë©”í„°ë¥¼ ì¶”ê°€ í•©ë‹ˆë‹¤.
     static IDE_RC removeRecoveryItem(rprRecoveryItem * aRecoveryItem, 
                                      idvSQL          * aStatistics);
     static IDE_RC removeRecoveryItemsWithName(SChar  * aRepName,
@@ -769,7 +769,7 @@ public:
             return (mMyself != NULL) ? mMyself->mServerID : (SChar *)"";
         }
 
-    /* archive log¸¦ ÀĞÀ» ¼ö ÀÖ´Â ALAÀÎ°¡? */
+    /* archive logë¥¼ ì½ì„ ìˆ˜ ìˆëŠ” ALAì¸ê°€? */
     inline static idBool isArchiveALA(SInt aRole)
         {
             if ((aRole == RP_ROLE_ANALYSIS) &&
@@ -817,7 +817,7 @@ private:
     rpdSenderInfo     **mSenderInfoArrList;
     //PROJ-1608 recovery from replication
     SInt                mMaxRecoveryItemCount;
-    //mRecoveryList(¿î¿µÁß)¿Í mToDoRecoveryCount(½ÃÀÛÇÒ¶§)´Â recovery mutex¸¦ ÀÌ¿ëÇÏ¿© µ¿±âÈ­ ÇÔ
+    //mRecoveryList(ìš´ì˜ì¤‘)ì™€ mToDoRecoveryCount(ì‹œì‘í• ë•Œ)ëŠ” recovery mutexë¥¼ ì´ìš©í•˜ì—¬ ë™ê¸°í™” í•¨
     rprRecoveryItem    *mRecoveryItemList;
     UInt                mToDoRecoveryCount;
     smSN                mRPRecoverySN;
@@ -831,14 +831,14 @@ private:
     static iduMutex     mPort0Mutex;
     static idBool       mPort0Flag;
 
-    /* PROJ-1915 Meta º¸°ü : ActiveServerÀÇ Sender¿¡¼­ ¹ŞÀº Meta¸¦ º¸°üÇÑ´Ù. */
-    rpdMeta            *mRemoteMetaArray; /* ¸®½Ã¹ö °³¼ö ¸¸Å­ »ı¼ºÇÑ´Ù. */
+    /* PROJ-1915 Meta ë³´ê´€ : ActiveServerì˜ Senderì—ì„œ ë°›ì€ Metaë¥¼ ë³´ê´€í•œë‹¤. */
+    rpdMeta            *mRemoteMetaArray; /* ë¦¬ì‹œë²„ ê°œìˆ˜ ë§Œí¼ ìƒì„±í•œë‹¤. */
 
     /* BUG-25960 : V$REPOFFLINE_STATUS
-     * CREATE REPLICATION options OFFILE / ALTER replication OFFLINE ENABLE ¼öÇà½Ã addOfflineStatus()
-     * ALTRE replication OFFLINE DISABLE / DROP replication ¼öÇà½Ã removeOfflineStatus()
-     * ALTER replication START with OFFLINE ¼öÇà½Ã setOfflineStatus() (STARTED, ¿¹¿Ü½Ã FAILED)
-     * ALTER replicaiton START with OFFLINE Á¾·á½Ã setOfflineStatus() (END , SUCCESS_COUNT Áõ°¡)
+     * CREATE REPLICATION options OFFILE / ALTER replication OFFLINE ENABLE ìˆ˜í–‰ì‹œ addOfflineStatus()
+     * ALTRE replication OFFLINE DISABLE / DROP replication ìˆ˜í–‰ì‹œ removeOfflineStatus()
+     * ALTER replication START with OFFLINE ìˆ˜í–‰ì‹œ setOfflineStatus() (STARTED, ì˜ˆì™¸ì‹œ FAILED)
+     * ALTER replicaiton START with OFFLINE ì¢…ë£Œì‹œ setOfflineStatus() (END , SUCCESS_COUNT ì¦ê°€)
      */
     rpxOfflineInfo     *mOfflineStatusList;
 
@@ -848,7 +848,7 @@ private:
 
     iduLatch            mSenderLatch;
 
-    /* BUG-31374 Implicit Savepoint ÀÌ¸§ÀÇ ¹è¿­ */
+    /* BUG-31374 Implicit Savepoint ì´ë¦„ì˜ ë°°ì—´ */
     static SChar        mImplSPNameArr[SMI_STATEMENT_DEPTH_MAX][RP_SAVEPOINT_NAME_LEN + 1];
 
     static IDE_RC checkRemoteReplVersion( cmiProtocolContext * aProtocolContext,

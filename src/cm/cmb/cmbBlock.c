@@ -25,22 +25,22 @@ acp_uint32_t        gIPCDASimpleQueryDataBlockSize = (32 * 1024);
 ACI_RC cmbBlockMove(cmbBlock *aTargetBlock, cmbBlock *aSourceBlock, acp_uint32_t aOffset)
 {
     /*
-     * offset ¹üÀ§ °Ë»ç
+     * offset ë²”ìœ„ ê²€ì‚¬
      */
     ACE_ASSERT(aOffset < aSourceBlock->mDataSize);
 
     /*
-     * Target Block Size ¼¼ÆÃ
+     * Target Block Size ì„¸íŒ…
      */
     aTargetBlock->mDataSize = aSourceBlock->mDataSize - aOffset;
 
     /*
-     * Source Block Size ¼¼ÆÃ
+     * Source Block Size ì„¸íŒ…
      */
     aSourceBlock->mDataSize = aOffset;
 
     /*
-     * Source Block¿¡¼­ Target BlockÀ¸·Î º¹»ç
+     * Source Blockì—ì„œ Target Blockìœ¼ë¡œ ë³µì‚¬
      */
     acpMemCpy(aTargetBlock->mData, aSourceBlock->mData + aOffset, aTargetBlock->mDataSize);
 
@@ -297,7 +297,7 @@ ACI_RC cmbBlockReadDateTime(cmbBlock *aBlock, cmtDateTime *aDateTime, acp_bool_t
     CMB_BLOCK_CHECK_READ_CURSOR(aBlock, 13);
 
     /*
-     * DateTime ÀÐÀ½
+     * DateTime ì½ìŒ
      */
     CMB_BLOCK_READ_BYTE2(aBlock, &aDateTime->mYear);
     CMB_BLOCK_READ_BYTE1(aBlock, &aDateTime->mMonth);
@@ -331,7 +331,7 @@ ACI_RC cmbBlockReadInterval(cmbBlock *aBlock, cmtInterval *aInterval, acp_bool_t
     CMB_BLOCK_CHECK_READ_CURSOR(aBlock, 16);
 
     /*
-     * Interval ÀÐÀ½
+     * Interval ì½ìŒ
      */
     CMB_BLOCK_READ_BYTE8(aBlock, &aInterval->mSecond);
     CMB_BLOCK_READ_BYTE8(aBlock, &aInterval->mMicroSecond);
@@ -358,12 +358,12 @@ ACI_RC cmbBlockReadNumeric(cmbBlock *aBlock, cmtNumeric *aNumeric, acp_bool_t *a
     acp_uint16_t sCursor;
 
     /*
-     * Cursor À§Ä¡ º¹»ç
+     * Cursor ìœ„ì¹˜ ë³µì‚¬
      */
     sCursor = aBlock->mCursor;
 
     /*
-     * Numeric Array Size ÀÐÀ½
+     * Numeric Array Size ì½ìŒ
      */
     ACI_TEST(cmbBlockReadUChar(aBlock, &aNumeric->mSize, aSuccess) != ACI_SUCCESS);
 
@@ -374,14 +374,14 @@ ACI_RC cmbBlockReadNumeric(cmbBlock *aBlock, cmtNumeric *aNumeric, acp_bool_t *a
     CMB_BLOCK_CHECK_READ_CURSOR(aBlock, aNumeric->mSize + NUMERIC_HEADER_SIZE - 1);
 
     /*
-     * Numeric ¼Ó¼º ÀÐÀ½
+     * Numeric ì†ì„± ì½ìŒ
      */
     CMB_BLOCK_READ_BYTE1(aBlock, &aNumeric->mPrecision);
     CMB_BLOCK_READ_BYTE2(aBlock, &aNumeric->mScale);
     CMB_BLOCK_READ_BYTE1(aBlock, &aNumeric->mSign);
 
     /*
-     * Numeric Array º¹»ç
+     * Numeric Array ë³µì‚¬
      */
     acpMemCpy(aNumeric->mData, aBlock->mData + aBlock->mCursor, aNumeric->mSize);
 
@@ -406,7 +406,7 @@ ACI_RC cmbBlockReadNumeric(cmbBlock *aBlock, cmtNumeric *aNumeric, acp_bool_t *a
     ACI_EXCEPTION_END;
     {
         /*
-         * Cursor À§Ä¡ º¹±¸
+         * Cursor ìœ„ì¹˜ ë³µêµ¬
          */
         aBlock->mCursor = sCursor;
     }
@@ -423,12 +423,12 @@ ACI_RC cmbBlockReadVariable(cmbBlock *aBlock, cmtVariable *aVariable, acp_bool_t
     acp_bool_t   sHeaderReadFlag = ACP_FALSE;
 
     /*
-     * Cursor À§Ä¡ º¹»ç
+     * Cursor ìœ„ì¹˜ ë³µì‚¬
      */
     sCursor = aBlock->mCursor;
 
     /*
-     * Variable Header ÀÐÀ½
+     * Variable Header ì½ìŒ
      */
     CMB_BLOCK_CHECK_READ_CURSOR(aBlock, VARIABLE_HEADER_SIZE);
 
@@ -439,7 +439,7 @@ ACI_RC cmbBlockReadVariable(cmbBlock *aBlock, cmtVariable *aVariable, acp_bool_t
     sHeaderReadFlag = ACP_TRUE;
 
     /*
-     * Variable¿¡ Piece Ãß°¡
+     * Variableì— Piece ì¶”ê°€
      */
     CMB_BLOCK_CHECK_READ_CURSOR(aBlock, sPieceSize);
 
@@ -476,7 +476,7 @@ ACI_RC cmbBlockReadVariable(cmbBlock *aBlock, cmtVariable *aVariable, acp_bool_t
     ACI_EXCEPTION_END;
     {
         /*
-         * Cursor À§Ä¡ º¹±¸
+         * Cursor ìœ„ì¹˜ ë³µêµ¬
          */
         aBlock->mCursor = sCursor;
     }
@@ -490,19 +490,19 @@ ACI_RC cmbBlockReadInVariable(cmbBlock *aBlock, cmtInVariable *aInVariable, acp_
     acp_uint8_t  sInVariableDelimeter;
 
     /*
-     * Cursor À§Ä¡ º¹»ç
+     * Cursor ìœ„ì¹˜ ë³µì‚¬
      */
     sCursor = aBlock->mCursor;
 
     /*
-     * IN BLOCK Variable Header ÀÐÀ½
+     * IN BLOCK Variable Header ì½ìŒ
      */
     CMB_BLOCK_CHECK_READ_CURSOR(aBlock, 4);
 
     CMB_BLOCK_READ_BYTE4(aBlock, &aInVariable->mSize);
 
     /*
-     * IN BLOCK Variable data ÀÐÀ½
+     * IN BLOCK Variable data ì½ìŒ
      */
     CMB_BLOCK_CHECK_READ_CURSOR(aBlock, aInVariable->mSize);
 
@@ -532,7 +532,7 @@ ACI_RC cmbBlockReadInVariable(cmbBlock *aBlock, cmtInVariable *aInVariable, acp_
     ACI_EXCEPTION_END;
     {
         /*
-         * Cursor À§Ä¡ º¹±¸
+         * Cursor ìœ„ì¹˜ ë³µêµ¬
          */
         aBlock->mCursor = sCursor;
     }
@@ -630,19 +630,19 @@ ACI_RC cmbBlockReadAny(cmbBlock *aBlock, cmtAny *aAny, acp_bool_t *aSuccess)
     acp_uint8_t  sType;
 
     /*
-     * Cursor À§Ä¡ º¹»ç
+     * Cursor ìœ„ì¹˜ ë³µì‚¬
      */
     sCursor = aBlock->mCursor;
 
     /*
-     * Type ID ÀÐÀ½
+     * Type ID ì½ìŒ
      */
     ACI_TEST(cmbBlockReadUChar(aBlock, &sType, aSuccess) != ACI_SUCCESS);
 
     if (*aSuccess == ACP_TRUE)
     {
         /*
-         * ÃÊ±âÈ­
+         * ì´ˆê¸°í™”
          */
         if (aAny->mType == CMT_ID_NONE)
         {
@@ -654,7 +654,7 @@ ACI_RC cmbBlockReadAny(cmbBlock *aBlock, cmtAny *aAny, acp_bool_t *aSuccess)
         }
 
         /*
-         * Type º°·Î Data ÀÐÀ½
+         * Type ë³„ë¡œ Data ì½ìŒ
          */
         switch (aAny->mType)
         {
@@ -764,7 +764,7 @@ ACI_RC cmbBlockReadAny(cmbBlock *aBlock, cmtAny *aAny, acp_bool_t *aSuccess)
     ACI_EXCEPTION_END;
     {
         /*
-         * Cursor À§Ä¡ º¹±¸
+         * Cursor ìœ„ì¹˜ ë³µêµ¬
          */
         aBlock->mCursor = sCursor;
     }
@@ -778,19 +778,19 @@ ACI_RC cmbBlockReadCollection(cmbBlock *aBlock, cmtCollection *aCollection, acp_
     acp_uint8_t  sType;
 
     /*
-     * Cursor À§Ä¡ º¹»ç
+     * Cursor ìœ„ì¹˜ ë³µì‚¬
      */
     sCursor = aBlock->mCursor;
 
     /*
-     * Type ID ÀÐÀ½
+     * Type ID ì½ìŒ
      */
     ACI_TEST(cmbBlockReadUChar(aBlock, &sType, aSuccess) != ACI_SUCCESS);
 
     if (*aSuccess == ACP_TRUE)
     {
         /*
-         * ÃÊ±âÈ­
+         * ì´ˆê¸°í™”
          */
         if (aCollection->mType == CMT_ID_NONE)
         {
@@ -802,7 +802,7 @@ ACI_RC cmbBlockReadCollection(cmbBlock *aBlock, cmtCollection *aCollection, acp_
         }
 
         /*
-         * Type º°·Î Data ÀÐÀ½
+         * Type ë³„ë¡œ Data ì½ìŒ
          */
         switch (aCollection->mType)
         {
@@ -829,7 +829,7 @@ ACI_RC cmbBlockReadCollection(cmbBlock *aBlock, cmtCollection *aCollection, acp_
     ACI_EXCEPTION_END;
     {
         /*
-         * Cursor À§Ä¡ º¹±¸
+         * Cursor ìœ„ì¹˜ ë³µêµ¬
          */
         aBlock->mCursor = sCursor;
     }
@@ -1010,7 +1010,7 @@ ACI_RC cmbBlockWriteDateTime(cmbBlock *aBlock, cmtDateTime *aDateTime, acp_bool_
     CMB_BLOCK_CHECK_WRITE_CURSOR(aBlock, 13);
 
     /*
-     * DataTime ¾¸
+     * DataTime ì”€
      */
     CMB_BLOCK_WRITE_BYTE2(aBlock, aDateTime->mYear);
     CMB_BLOCK_WRITE_BYTE1(aBlock, aDateTime->mMonth);
@@ -1035,7 +1035,7 @@ ACI_RC cmbBlockWriteInterval(cmbBlock *aBlock, cmtInterval *aInterval, acp_bool_
     CMB_BLOCK_CHECK_WRITE_CURSOR(aBlock, 16);
 
     /*
-     * Interval ¾¸
+     * Interval ì”€
      */
     CMB_BLOCK_WRITE_BYTE8(aBlock, aInterval->mSecond);
     CMB_BLOCK_WRITE_BYTE8(aBlock, aInterval->mMicroSecond);
@@ -1056,7 +1056,7 @@ ACI_RC cmbBlockWriteNumeric(cmbBlock *aBlock, cmtNumeric *aNumeric, acp_bool_t *
     CMB_BLOCK_CHECK_WRITE_CURSOR(aBlock, aNumeric->mSize + NUMERIC_HEADER_SIZE);
 
     /*
-     * Numeric ¼Ó¼º ¾¸
+     * Numeric ì†ì„± ì”€
      */
     CMB_BLOCK_WRITE_BYTE1(aBlock, aNumeric->mSize);
     CMB_BLOCK_WRITE_BYTE1(aBlock, aNumeric->mPrecision);
@@ -1064,7 +1064,7 @@ ACI_RC cmbBlockWriteNumeric(cmbBlock *aBlock, cmtNumeric *aNumeric, acp_bool_t *
     CMB_BLOCK_WRITE_BYTE1(aBlock, aNumeric->mSign);
 
     /*
-     * Numeric Array ¾¸
+     * Numeric Array ì”€
      */
     acpMemCpy(aBlock->mData + aBlock->mCursor, aNumeric->mData, aNumeric->mSize);
 
@@ -1092,14 +1092,14 @@ ACI_RC cmbBlockWriteVariable(cmbBlock *aBlock, cmtVariable *aVariable, acp_uint3
     acp_uint16_t sPieceSize;
 
     /*
-     * Variable Size È¹µæ ¹× °Ë»ç
+     * Variable Size íšë“ ë° ê²€ì‚¬
      */
     sSize = cmtVariableGetSize(aVariable);
 
     ACI_TEST_RAISE((sSize > 0) && (aVariable->mPieceCount == 0), InvalidVariableType);
 
     /*
-     * SizeLeft = 0 ÀÎ °æ¿ì SizeLeft <- Variable Size·Î ¼¼ÆÃ
+     * SizeLeft = 0 ì¸ ê²½ìš° SizeLeft <- Variable Sizeë¡œ ì„¸íŒ…
      */
     if (*aSizeLeft == 0)
     {
@@ -1107,19 +1107,19 @@ ACI_RC cmbBlockWriteVariable(cmbBlock *aBlock, cmtVariable *aVariable, acp_uint3
     }
 
     /*
-     * Variable ÃÖ¼Ò »çÀÌÁî È®º¸¿©ºÎ °Ë»ç
+     * Variable ìµœì†Œ ì‚¬ì´ì¦ˆ í™•ë³´ì—¬ë¶€ ê²€ì‚¬
      */
     CMB_BLOCK_CHECK_WRITE_CURSOR(aBlock, VARIABLE_HEADER_SIZE + (*aSizeLeft ? 1 : 0));
 
     /*
-     * Variable Write Offset ¾¸
+     * Variable Write Offset ì”€
      */
     sOffset = sSize - *aSizeLeft;
 
     CMB_BLOCK_WRITE_BYTE4(aBlock, sOffset);
 
     /*
-     * Variable Write Size °è»ê
+     * Variable Write Size ê³„ì‚°
      */
     sPieceSize = ACP_MIN(*aSizeLeft,
                          (acp_uint16_t)(aBlock->mBlockSize -
@@ -1127,19 +1127,19 @@ ACI_RC cmbBlockWriteVariable(cmbBlock *aBlock, cmtVariable *aVariable, acp_uint3
                                         (VARIABLE_HEADER_SIZE - 4)));
 
     /*
-     * Variable Write Size ¾¸
+     * Variable Write Size ì”€
      */
     CMB_BLOCK_WRITE_BYTE2(aBlock, sPieceSize);
 
     /*
-     * ¸¶Áö¸· PieceÀÎÁö °Ë»ç ÈÄ Flag ¾¸
+     * ë§ˆì§€ë§‰ Pieceì¸ì§€ ê²€ì‚¬ í›„ Flag ì”€
      */
     *aSizeLeft -= sPieceSize;
 
     CMB_BLOCK_WRITE_BYTE1(aBlock, (*aSizeLeft ? 0 : 1));
 
     /*
-     * Variable Data ¾¸
+     * Variable Data ì”€
      */
     ACI_TEST(cmtVariableCopy(aVariable,
                              aBlock->mData + aBlock->mCursor,
@@ -1149,7 +1149,7 @@ ACI_RC cmbBlockWriteVariable(cmbBlock *aBlock, cmtVariable *aVariable, acp_uint3
     CMB_BLOCK_MOVE_WRITE_CURSOR(aBlock, sPieceSize);
 
     /*
-     * ¸¶Áö¸· PieceÀÌ¸é ³¡
+     * ë§ˆì§€ë§‰ Pieceì´ë©´ ë
      */
     *aSuccess = *aSizeLeft ? ACP_FALSE : ACP_TRUE;
 
@@ -1175,19 +1175,19 @@ ACI_RC cmbBlockWriteInVariable(cmbBlock *aBlock, cmtInVariable *aInVariable, acp
     CMB_BLOCK_CHECK_WRITE_CURSOR(aBlock, aInVariable->mSize + 5);
 
     /*
-     * IN BLOCK Variable Write Size ¾¸
+     * IN BLOCK Variable Write Size ì”€
      */
     CMB_BLOCK_WRITE_BYTE4(aBlock, aInVariable->mSize);
 
     /*
-     * IN BLOCK Variable Data ¾¸
+     * IN BLOCK Variable Data ì”€
      */
     acpMemCpy(aBlock->mData + aBlock->mCursor, aInVariable->mData, aInVariable->mSize);
 
     CMB_BLOCK_MOVE_WRITE_CURSOR(aBlock, aInVariable->mSize);
 
     /*
-     * IN BLOCK Variable Delimeter ¾¸
+     * IN BLOCK Variable Delimeter ì”€
      * Make in-variable data null terminated string
      */
     CMB_BLOCK_WRITE_BYTE1(aBlock, sInVariableDelimeter);
@@ -1209,9 +1209,9 @@ ACI_RC cmbBlockWriteBit(cmbBlock *aBlock, cmtBit *aBit, acp_uint32_t *aSizeLeft,
     if (*aSizeLeft == 0)
     {
         /*
-         * Data Size°¡ 0ÀÎ°ÇÁö Ã³À½º¸³»´Â °ÇÁö ÆÇ´ÜÇÒ ¼ö ¾øÀ¸¹Ç·Î
-         * Ã³À½ º¸³¾ ¶§ Data Size°¡ 0ÀÎ °æ¿ì ÂÉ°³ÁöÁö ¾Ê°í
-         * ÇÑ¹ø¿¡ º¸³»Áöµµ·Ï ¹öÆÛ Æ÷ÀÎÅÍ¸¦ °Ë»çÇÑ´Ù.
+         * Data Sizeê°€ 0ì¸ê±´ì§€ ì²˜ìŒë³´ë‚´ëŠ” ê±´ì§€ íŒë‹¨í•  ìˆ˜ ì—†ìœ¼ë¯€ë¡œ
+         * ì²˜ìŒ ë³´ë‚¼ ë•Œ Data Sizeê°€ 0ì¸ ê²½ìš° ìª¼ê°œì§€ì§€ ì•Šê³ 
+         * í•œë²ˆì— ë³´ë‚´ì§€ë„ë¡ ë²„í¼ í¬ì¸í„°ë¥¼ ê²€ì‚¬í•œë‹¤.
          */
         CMB_BLOCK_CHECK_WRITE_CURSOR(aBlock, VARIABLE_HEADER_SIZE + 4);
 
@@ -1259,9 +1259,9 @@ ACI_RC cmbBlockWriteNibble(cmbBlock *aBlock, cmtNibble *aNibble, acp_uint32_t *a
     if (*aSizeLeft == 0)
     {
         /*
-         * Data Size°¡ 0ÀÎ°ÇÁö Ã³À½º¸³»´Â °ÇÁö ÆÇ´ÜÇÒ ¼ö ¾øÀ¸¹Ç·Î
-         * Ã³À½ º¸³¾ ¶§ Data Size°¡ 0ÀÎ °æ¿ì ÂÉ°³ÁöÁö ¾Ê°í
-         * ÇÑ¹ø¿¡ º¸³»Áöµµ·Ï ¹öÆÛ Æ÷ÀÎÅÍ¸¦ °Ë»çÇÑ´Ù.
+         * Data Sizeê°€ 0ì¸ê±´ì§€ ì²˜ìŒë³´ë‚´ëŠ” ê±´ì§€ íŒë‹¨í•  ìˆ˜ ì—†ìœ¼ë¯€ë¡œ
+         * ì²˜ìŒ ë³´ë‚¼ ë•Œ Data Sizeê°€ 0ì¸ ê²½ìš° ìª¼ê°œì§€ì§€ ì•Šê³ 
+         * í•œë²ˆì— ë³´ë‚´ì§€ë„ë¡ ë²„í¼ í¬ì¸í„°ë¥¼ ê²€ì‚¬í•œë‹¤.
          */
         CMB_BLOCK_CHECK_WRITE_CURSOR(aBlock, VARIABLE_HEADER_SIZE + 4);
 
@@ -1309,24 +1309,24 @@ ACI_RC cmbBlockWriteAny(cmbBlock *aBlock, cmtAny *aAny, acp_uint32_t *aSizeLeft,
     acp_uint16_t sCursor;
 
     /*
-     * Cursor À§Ä¡ º¹»ç
+     * Cursor ìœ„ì¹˜ ë³µì‚¬
      */
     sCursor = aBlock->mCursor;
 
     /*
-     * Type ID ¹üÀ§ °Ë»ç
+     * Type ID ë²”ìœ„ ê²€ì‚¬
      */
     ACE_ASSERT((aAny->mType > CMT_ID_NONE) && (aAny->mType < CMT_ID_MAX));
 
     /*
-     * Type ID ¾¸
+     * Type ID ì”€
      */
     ACI_TEST(cmbBlockWriteUChar(aBlock, aAny->mType, aSuccess) != ACI_SUCCESS);
 
     if (*aSuccess == ACP_TRUE)
     {
         /*
-         * Type º°·Î Data ¾¸
+         * Type ë³„ë¡œ Data ì”€
          */
         switch (aAny->mType)
         {
@@ -1431,7 +1431,7 @@ ACI_RC cmbBlockWriteAny(cmbBlock *aBlock, cmtAny *aAny, acp_uint32_t *aSizeLeft,
     ACI_EXCEPTION_END;
     {
         /*
-         * Cursor À§Ä¡ º¹±¸
+         * Cursor ìœ„ì¹˜ ë³µêµ¬
          */
         aBlock->mCursor   = sCursor;
         aBlock->mDataSize = sCursor;
@@ -1445,25 +1445,25 @@ ACI_RC cmbBlockWriteCollection(cmbBlock *aBlock, cmtCollection *aCollection, acp
     acp_uint16_t sCursor;
 
     /*
-     * Cursor À§Ä¡ º¹»ç
+     * Cursor ìœ„ì¹˜ ë³µì‚¬
      */
     sCursor = aBlock->mCursor;
 
     /*
-     * Type ID ¹üÀ§ °Ë»ç
+     * Type ID ë²”ìœ„ ê²€ì‚¬
      */
     ACE_ASSERT((aCollection->mType == CMT_ID_VARIABLE) ||
                (aCollection->mType == CMT_ID_IN_VARIABLE));
 
     /*
-     * Type ID ¾¸
+     * Type ID ì”€
      */
     ACI_TEST(cmbBlockWriteUChar(aBlock, aCollection->mType, aSuccess) != ACI_SUCCESS);
 
     if (*aSuccess == ACP_TRUE)
     {
         /*
-         * Type º°·Î Data ¾¸
+         * Type ë³„ë¡œ Data ì”€
          */
         switch (aCollection->mType)
         {
@@ -1485,7 +1485,7 @@ ACI_RC cmbBlockWriteCollection(cmbBlock *aBlock, cmtCollection *aCollection, acp
     ACI_EXCEPTION_END;
     {
         /*
-         * Cursor À§Ä¡ º¹±¸
+         * Cursor ìœ„ì¹˜ ë³µêµ¬
          */
         aBlock->mCursor   = sCursor;
         aBlock->mDataSize = sCursor;

@@ -33,7 +33,7 @@
 #include <smmTBSMultiPhase.h>
 
 /*
-  »ı¼ºÀÚ (¾Æ¹«°Íµµ ¾ÈÇÔ)
+  ìƒì„±ì (ì•„ë¬´ê²ƒë„ ì•ˆí•¨)
 */
 smmTBSAlterChkptPath::smmTBSAlterChkptPath()
 {
@@ -42,40 +42,40 @@ smmTBSAlterChkptPath::smmTBSAlterChkptPath()
 
 
 /*
-    »õ·Î¿î Checkpoint Path¸¦ Ãß°¡ÇÑ´Ù.
+    ìƒˆë¡œìš´ Checkpoint Pathë¥¼ ì¶”ê°€í•œë‹¤.
 
     aTrans     [IN] Transaction
-    aSpaceID   [IN] TablespaceÀÇ ID
-    aChkptPath [IN] Tablespace¿¡ Ãß°¡ÇÒ Checkpoint Path
+    aSpaceID   [IN] Tablespaceì˜ ID
+    aChkptPath [IN] Tablespaceì— ì¶”ê°€í•  Checkpoint Path
 
-    [ ¾Ë°í¸®Áò ]
-      (010) CheckpointPathNode ÇÒ´ç
-      (020) TBSNode ¿¡ CheckpointPathNode Ãß°¡
+    [ ì•Œê³ ë¦¬ì¦˜ ]
+      (010) CheckpointPathNode í• ë‹¹
+      (020) TBSNode ì— CheckpointPathNode ì¶”ê°€
       (030) Log Anchor Flush
 
-    [ Checkpoint Path addµµÁß ¼­¹ö »ç¸ÁÇÏ¸é? ]
-      - ¿©·¯ ¹úÀÇ Log AnchorÁß ÀÏºÎ°¡ ºÎºĞ FlushµÇ¾î
-        inconsistentÇÑ »óÅÂ°¡ µÈ´Ù.
-      - ¼­¹ö Àç±âµ¿½Ã consistentÇÑ ÃÖ½Å Log Anchor¸¦
-        ÀĞ°Ô µÇ¹Ç·Î ¹®Á¦µÇÁö ¾ÊÀ½.
+    [ Checkpoint Path addë„ì¤‘ ì„œë²„ ì‚¬ë§í•˜ë©´? ]
+      - ì—¬ëŸ¬ ë²Œì˜ Log Anchorì¤‘ ì¼ë¶€ê°€ ë¶€ë¶„ Flushë˜ì–´
+        inconsistentí•œ ìƒíƒœê°€ ëœë‹¤.
+      - ì„œë²„ ì¬ê¸°ë™ì‹œ consistentí•œ ìµœì‹  Log Anchorë¥¼
+        ì½ê²Œ ë˜ë¯€ë¡œ ë¬¸ì œë˜ì§€ ì•ŠìŒ.
 
-    [ ¿¡·¯Ã³¸® ]
-      (e-010) CONTROL´Ü°è°¡ ¾Æ´Ï¸é ¿¡·¯
-      (e-020) ÀÌ¹Ì Tablespace¿¡ Á¸ÀçÇÏ´Â Checkpoint PathÀÌ¸é ¿¡·¯ 
-      (e-030) NewPath°¡ ¾ø´Â µğ·ºÅä¸®ÀÌ¸é ¿¡·¯
-      (e-040) NewPath°¡ µğ·ºÅä¸®°¡ ¾Æ´Ñ ÆÄÀÏÀÌ¸é ¿¡·¯
-      (e-050) NewPath¿¡ read/write/execute permissionÀÌ ¾øÀ¸¸é ¿¡·¯
+    [ ì—ëŸ¬ì²˜ë¦¬ ]
+      (e-010) CONTROLë‹¨ê³„ê°€ ì•„ë‹ˆë©´ ì—ëŸ¬
+      (e-020) ì´ë¯¸ Tablespaceì— ì¡´ì¬í•˜ëŠ” Checkpoint Pathì´ë©´ ì—ëŸ¬ 
+      (e-030) NewPathê°€ ì—†ëŠ” ë””ë ‰í† ë¦¬ì´ë©´ ì—ëŸ¬
+      (e-040) NewPathê°€ ë””ë ‰í† ë¦¬ê°€ ì•„ë‹Œ íŒŒì¼ì´ë©´ ì—ëŸ¬
+      (e-050) NewPathì— read/write/execute permissionì´ ì—†ìœ¼ë©´ ì—ëŸ¬
 
-    [ ±âÅ¸ ]
-      - ±âÁ¸ÀÇ Checkpoint¿¡¼­ »õ·Î Ãß°¡µÈ Checkpoint Path·ÎÀÇ 
-        Checkpoint Image File ÀçºĞ¹è¸¦ ÇÏÁö ¾Ê´Â´Ù.
-      - Checkpoint Image°¡ °©ÀÚ±â ¾ø¾îÁö¸é DBA´Â ´çÈ²ÇÒ °ÍÀÌ´Ù.
-      - Checkpoint Image File ÀçºĞ¹è¿¡ ´ëÇÑ UndoÃ³¸®°¡ º¹ÀâÇÏ´Ù.
-      - ÀçºĞ¹è°¡ ÇÊ¿äÇÑ °æ¿ì altibase ³»¸®°í DBA°¡ Á÷Á¢Ã³¸®
+    [ ê¸°íƒ€ ]
+      - ê¸°ì¡´ì˜ Checkpointì—ì„œ ìƒˆë¡œ ì¶”ê°€ëœ Checkpoint Pathë¡œì˜ 
+        Checkpoint Image File ì¬ë¶„ë°°ë¥¼ í•˜ì§€ ì•ŠëŠ”ë‹¤.
+      - Checkpoint Imageê°€ ê°‘ìê¸° ì—†ì–´ì§€ë©´ DBAëŠ” ë‹¹í™©í•  ê²ƒì´ë‹¤.
+      - Checkpoint Image File ì¬ë¶„ë°°ì— ëŒ€í•œ Undoì²˜ë¦¬ê°€ ë³µì¡í•˜ë‹¤.
+      - ì¬ë¶„ë°°ê°€ í•„ìš”í•œ ê²½ìš° altibase ë‚´ë¦¬ê³  DBAê°€ ì§ì ‘ì²˜ë¦¬
     
-    [ ÁÖÀÇ ]
-      ¿©±â¿¡ ÀÎÀÚ·Î ³Ñ¾î¿À´Â Checkpoint Path ¸Ş¸ğ¸®´Â
-      ÇÔ¼ö È£Ãâ Á¾·áÈÄ ÇØÁ¦µÇ±â ¶§¹®¿¡ ±×´ë·Î »ç¿ëÇÏ¸é ¾ÈµÈ´Ù.
+    [ ì£¼ì˜ ]
+      ì—¬ê¸°ì— ì¸ìë¡œ ë„˜ì–´ì˜¤ëŠ” Checkpoint Path ë©”ëª¨ë¦¬ëŠ”
+      í•¨ìˆ˜ í˜¸ì¶œ ì¢…ë£Œí›„ í•´ì œë˜ê¸° ë•Œë¬¸ì— ê·¸ëŒ€ë¡œ ì‚¬ìš©í•˜ë©´ ì•ˆëœë‹¤.
       
 */
 IDE_RC smmTBSAlterChkptPath::alterTBSaddChkptPath( scSpaceID          aSpaceID,
@@ -87,17 +87,17 @@ IDE_RC smmTBSAlterChkptPath::alterTBSaddChkptPath( scSpaceID          aSpaceID,
     IDE_DASSERT( aChkptPath != NULL );
         
     //////////////////////////////////////////////////////////////////
-    // (e-010) CONTROL´Ü°è°¡ ¾Æ´Ï¸é ¿¡·¯
-    // => smiTableSpace¿¡¼­ ÀÌ¹Ì Ã³¸®
+    // (e-010) CONTROLë‹¨ê³„ê°€ ì•„ë‹ˆë©´ ì—ëŸ¬
+    // => smiTableSpaceì—ì„œ ì´ë¯¸ ì²˜ë¦¬
 
-    // TablespaceÀÇ TBSNode¸¦ ¾ò¾î¿Â´Ù.
+    // Tablespaceì˜ TBSNodeë¥¼ ì–»ì–´ì˜¨ë‹¤.
     IDE_TEST( sctTableSpaceMgr::findSpaceNodeBySpaceID(
                   aSpaceID,
                   (void**) & sTBSNode )
               != IDE_SUCCESS );
 
     //////////////////////////////////////////////////////////////////
-    // (e-020) ÀÌ¹Ì Tablespace¿¡ Á¸ÀçÇÏ´Â Checkpoint PathÀÌ¸é ¿¡·¯
+    // (e-020) ì´ë¯¸ Tablespaceì— ì¡´ì¬í•˜ëŠ” Checkpoint Pathì´ë©´ ì—ëŸ¬
     IDE_TEST( smmTBSChkptPath::findChkptPathNode( sTBSNode,
                                                   aChkptPath,
                                                   & sCPathNode )
@@ -105,20 +105,20 @@ IDE_RC smmTBSAlterChkptPath::alterTBSaddChkptPath( scSpaceID          aSpaceID,
     IDE_TEST_RAISE( sCPathNode != NULL, err_chkpt_path_already_exists );
         
     //////////////////////////////////////////////////////////////////
-    // (e-030) NewPath°¡ ¾ø´Â µğ·ºÅä¸®ÀÌ¸é ¿¡·¯
-    // (e-040) NewPath°¡ µğ·ºÅä¸®°¡ ¾Æ´Ñ ÆÄÀÏÀÌ¸é ¿¡·¯
-    // (e-050) NewPath¿¡ read/write/execute permissionÀÌ ¾øÀ¸¸é ¿¡·¯
+    // (e-030) NewPathê°€ ì—†ëŠ” ë””ë ‰í† ë¦¬ì´ë©´ ì—ëŸ¬
+    // (e-040) NewPathê°€ ë””ë ‰í† ë¦¬ê°€ ì•„ë‹Œ íŒŒì¼ì´ë©´ ì—ëŸ¬
+    // (e-050) NewPathì— read/write/execute permissionì´ ì—†ìœ¼ë©´ ì—ëŸ¬
     IDE_TEST( smmTBSChkptPath::checkAccess2ChkptPath( aChkptPath )
               != IDE_SUCCESS );
     
     //////////////////////////////////////////////////////////////////
-    // (010) CheckpointPathNode ÇÒ´ç
+    // (010) CheckpointPathNode í• ë‹¹
     IDE_TEST( smmTBSChkptPath::makeChkptPathNode( aSpaceID,
                                                   aChkptPath,
                                                   & sCPathNode )
               != IDE_SUCCESS );
     
-    // (020) TBSNode ¿¡ CheckpointPathNode Ãß°¡
+    // (020) TBSNode ì— CheckpointPathNode ì¶”ê°€
     IDE_TEST( smmTBSChkptPath::addChkptPathNode( sTBSNode,
                                                  sCPathNode )
               != IDE_SUCCESS );
@@ -142,37 +142,37 @@ IDE_RC smmTBSAlterChkptPath::alterTBSaddChkptPath( scSpaceID          aSpaceID,
 
 
 /*
-    ±âÁ¸ÀÇ Checkpoint Path¸¦ º¯°æÇÑ´Ù.
+    ê¸°ì¡´ì˜ Checkpoint Pathë¥¼ ë³€ê²½í•œë‹¤.
     
     aTrans         [IN] Transaction
-    aSpaceID       [IN] TablespaceÀÇ ID
-    aOrgChkptPath  [IN] ±âÁ¸ Checkpoint Path
-    aNewChkptPath  [IN] »õ Checkpoint Path
+    aSpaceID       [IN] Tablespaceì˜ ID
+    aOrgChkptPath  [IN] ê¸°ì¡´ Checkpoint Path
+    aNewChkptPath  [IN] ìƒˆ Checkpoint Path
 
-    [ ¾Ë°í¸®Áò ]
-      (010) CheckpointPathNode °Ë»ö 
-      (020) CheckpointPath º¯°æ 
+    [ ì•Œê³ ë¦¬ì¦˜ ]
+      (010) CheckpointPathNode ê²€ìƒ‰ 
+      (020) CheckpointPath ë³€ê²½ 
       (030) Log Anchor Flush
 
-    [ Checkpoint Path renameµµÁß ¼­¹ö »ç¸ÁÇÏ¸é? ]
-      - smmTBSAlterChkptPath::addChkptPath Âü°í
+    [ Checkpoint Path renameë„ì¤‘ ì„œë²„ ì‚¬ë§í•˜ë©´? ]
+      - smmTBSAlterChkptPath::addChkptPath ì°¸ê³ 
     
-    [ ¿¡·¯Ã³¸® ]
-      (e-010) CONTROL´Ü°è°¡ ¾Æ´Ï¸é ¿¡·¯
-      (e-020) sNewChkptPath°¡ Tablespace¿¡ ÀÌ¹Ì Á¸ÀçÇÏ¸é ¿¡·¯ 
-      (e-030) aOrgChkptPath °¡ aSpaceID¿¡ ÇØ´çÇÏ´Â Tablespace¿¡ ¾øÀ¸¸é ¿¡·¯
-      (e-040) NewPath°¡ ¾ø´Â µğ·ºÅä¸®ÀÌ¸é ¿¡·¯
-      (e-050) NewPath°¡ µğ·ºÅä¸®°¡ ¾Æ´Ñ ÆÄÀÏÀÌ¸é ¿¡·¯
-      (e-060) NewPath¿¡ read/write/execute permissionÀÌ ¾øÀ¸¸é ¿¡·¯
+    [ ì—ëŸ¬ì²˜ë¦¬ ]
+      (e-010) CONTROLë‹¨ê³„ê°€ ì•„ë‹ˆë©´ ì—ëŸ¬
+      (e-020) sNewChkptPathê°€ Tablespaceì— ì´ë¯¸ ì¡´ì¬í•˜ë©´ ì—ëŸ¬ 
+      (e-030) aOrgChkptPath ê°€ aSpaceIDì— í•´ë‹¹í•˜ëŠ” Tablespaceì— ì—†ìœ¼ë©´ ì—ëŸ¬
+      (e-040) NewPathê°€ ì—†ëŠ” ë””ë ‰í† ë¦¬ì´ë©´ ì—ëŸ¬
+      (e-050) NewPathê°€ ë””ë ‰í† ë¦¬ê°€ ì•„ë‹Œ íŒŒì¼ì´ë©´ ì—ëŸ¬
+      (e-060) NewPathì— read/write/execute permissionì´ ì—†ìœ¼ë©´ ì—ëŸ¬
 
-    [ ±âÅ¸ ]
-      - Checkpoint Image¸¦ OldPath¿¡¼­ NewPath·Î
-        ÀÌµ¿ÇÏ´Â Ã³¸®´Â ÇÏÁö ¾Ê´Â´Ù. ( DBA°¡ Á÷Á¢ Ã³¸®ÇØ¾ß ÇÔ )
+    [ ê¸°íƒ€ ]
+      - Checkpoint Imageë¥¼ OldPathì—ì„œ NewPathë¡œ
+        ì´ë™í•˜ëŠ” ì²˜ë¦¬ëŠ” í•˜ì§€ ì•ŠëŠ”ë‹¤. ( DBAê°€ ì§ì ‘ ì²˜ë¦¬í•´ì•¼ í•¨ )
       
-    [ ÁÖÀÇ ]
-      ¿©±â¿¡ ÀÎÀÚ·Î ³Ñ¾î¿À´Â smiChkptPathAttrÀÇ ¸Ş¸ğ¸®´Â
-      ÇÔ¼ö È£Ãâ Á¾·áÈÄ ÇØÁ¦µÉ ¼ö ÀÖÀ¸¹Ç·Î ±×´ë·Î »ç¿ëÇÏ¸é ¾ÈµÈ´Ù.
-      smiChkptPathAttrÀ» »õ·Î ÇÒ´çÇÏ¿© º¹»çÇØ¾ß ÇÑ´Ù.
+    [ ì£¼ì˜ ]
+      ì—¬ê¸°ì— ì¸ìë¡œ ë„˜ì–´ì˜¤ëŠ” smiChkptPathAttrì˜ ë©”ëª¨ë¦¬ëŠ”
+      í•¨ìˆ˜ í˜¸ì¶œ ì¢…ë£Œí›„ í•´ì œë  ìˆ˜ ìˆìœ¼ë¯€ë¡œ ê·¸ëŒ€ë¡œ ì‚¬ìš©í•˜ë©´ ì•ˆëœë‹¤.
+      smiChkptPathAttrì„ ìƒˆë¡œ í• ë‹¹í•˜ì—¬ ë³µì‚¬í•´ì•¼ í•œë‹¤.
 */
 IDE_RC smmTBSAlterChkptPath::alterTBSrenameChkptPath( scSpaceID      aSpaceID,
                                                SChar        * aOrgChkptPath,
@@ -185,17 +185,17 @@ IDE_RC smmTBSAlterChkptPath::alterTBSrenameChkptPath( scSpaceID      aSpaceID,
     IDE_DASSERT( aNewChkptPath != NULL );
 
     //////////////////////////////////////////////////////////////////
-    // (e-010) CONTROL´Ü°è°¡ ¾Æ´Ï¸é ¿¡·¯
-    // => smiTableSpace¿¡¼­ ÀÌ¹Ì Ã³¸®
+    // (e-010) CONTROLë‹¨ê³„ê°€ ì•„ë‹ˆë©´ ì—ëŸ¬
+    // => smiTableSpaceì—ì„œ ì´ë¯¸ ì²˜ë¦¬
 
-    // Memory Dictionary TablespaceÀÇ TBSNode¸¦ ¾ò¾î¿Â´Ù.
+    // Memory Dictionary Tablespaceì˜ TBSNodeë¥¼ ì–»ì–´ì˜¨ë‹¤.
     IDE_TEST( sctTableSpaceMgr::findSpaceNodeBySpaceID(
                   aSpaceID,
                   (void**) & sTBSNode )
               != IDE_SUCCESS );
 
     //////////////////////////////////////////////////////////////////
-    // (e-020) sNewChkptPath°¡ Tablespace¿¡ ÀÌ¹Ì Á¸ÀçÇÏ¸é ¿¡·¯ 
+    // (e-020) sNewChkptPathê°€ Tablespaceì— ì´ë¯¸ ì¡´ì¬í•˜ë©´ ì—ëŸ¬ 
     IDE_TEST( smmTBSChkptPath::findChkptPathNode( sTBSNode,
                                                   aNewChkptPath,
                                                   & sCPathNode )
@@ -203,25 +203,25 @@ IDE_RC smmTBSAlterChkptPath::alterTBSrenameChkptPath( scSpaceID      aSpaceID,
     IDE_TEST_RAISE( sCPathNode != NULL, err_chkpt_path_node_already_exist );
     
     //////////////////////////////////////////////////////////////////////
-    // (010) CheckpointPathNode °Ë»ö
+    // (010) CheckpointPathNode ê²€ìƒ‰
     IDE_TEST( smmTBSChkptPath::findChkptPathNode( sTBSNode,
                                                   aOrgChkptPath,
                                                   & sCPathNode )
               != IDE_SUCCESS );
 
     //////////////////////////////////////////////////////////////////
-    // (e-030) aOrgChkptPath °¡ aSpaceID¿¡ ÇØ´çÇÏ´Â Tablespace¿¡ ¾øÀ¸¸é ¿¡·¯
+    // (e-030) aOrgChkptPath ê°€ aSpaceIDì— í•´ë‹¹í•˜ëŠ” Tablespaceì— ì—†ìœ¼ë©´ ì—ëŸ¬
     IDE_TEST_RAISE( sCPathNode == NULL, err_chkpt_path_node_not_found );
 
     //////////////////////////////////////////////////////////////////////
-    // (e-040) NewPath°¡ ¾ø´Â µğ·ºÅä¸®ÀÌ¸é ¿¡·¯
-    // (e-050) NewPath°¡ µğ·ºÅä¸®°¡ ¾Æ´Ñ ÆÄÀÏÀÌ¸é ¿¡·¯
-    // (e-060) NewPath¿¡ read/write/execute permissionÀÌ ¾øÀ¸¸é ¿¡·¯
+    // (e-040) NewPathê°€ ì—†ëŠ” ë””ë ‰í† ë¦¬ì´ë©´ ì—ëŸ¬
+    // (e-050) NewPathê°€ ë””ë ‰í† ë¦¬ê°€ ì•„ë‹Œ íŒŒì¼ì´ë©´ ì—ëŸ¬
+    // (e-060) NewPathì— read/write/execute permissionì´ ì—†ìœ¼ë©´ ì—ëŸ¬
     IDE_TEST( smmTBSChkptPath::checkAccess2ChkptPath( aNewChkptPath )
               != IDE_SUCCESS );
     
     //////////////////////////////////////////////////////////////////////
-    // (020) CheckpointPath º¯°æ
+    // (020) CheckpointPath ë³€ê²½
     IDE_TEST( smmTBSChkptPath::renameChkptPathNode( sCPathNode, aNewChkptPath )
               != IDE_SUCCESS );
     
@@ -248,38 +248,38 @@ IDE_RC smmTBSAlterChkptPath::alterTBSrenameChkptPath( scSpaceID      aSpaceID,
 }
 
 /*
-    ±âÁ¸ÀÇ Checkpoint Path¸¦ Á¦°ÅÇÑ´Ù.
+    ê¸°ì¡´ì˜ Checkpoint Pathë¥¼ ì œê±°í•œë‹¤.
 
     aTrans     [IN] Transaction
-    aSpaceID   [IN] TablespaceÀÇ ID
-    aChkptPath [IN] Tablespace¿¡¼­ Á¦°ÅÇÒ Checkpoint Path
+    aSpaceID   [IN] Tablespaceì˜ ID
+    aChkptPath [IN] Tablespaceì—ì„œ ì œê±°í•  Checkpoint Path
 
-    [ ¾Ë°í¸®Áò ]
-      (010) CheckpointPathNode °Ë»ö 
-      (020) CheckpointPath Á¦°Å 
+    [ ì•Œê³ ë¦¬ì¦˜ ]
+      (010) CheckpointPathNode ê²€ìƒ‰ 
+      (020) CheckpointPath ì œê±° 
       (030) Log Anchor Flush
     
 
-    [ Checkpoint Path dropµµÁß ¼­¹ö »ç¸ÁÇÏ¸é? ]
-      - smmTBSAlterChkptPath::addChkptPath Âü°í
+    [ Checkpoint Path dropë„ì¤‘ ì„œë²„ ì‚¬ë§í•˜ë©´? ]
+      - smmTBSAlterChkptPath::addChkptPath ì°¸ê³ 
 
-    [ ¿¡·¯Ã³¸® ]
-      (e-010) CONTROL´Ü°è°¡ ¾Æ´Ï¸é ¿¡·¯ 
-      (e-020) OldPath°¡ ÇØ´ç TBSNode¿¡ CheckpointPath·Î ¾øÀ¸¸é ¿¡·¯
-      (e-030) ÇØ´ç TBSÀÇ ¿ÀÁ÷ ÇÏ³ª»ÓÀÎ Checkpoint Path¸¦
-              DROP½Ãµµ ÇÏ¸é ¿¡·¯
-      (e-040) DROPÇÏ·Á´Â °æ·ÎÀÇ Checkpoint Image¸¦ ´Ù¸¥ À¯È¿ÇÑ °æ·Î·Î ¿Å°å´ÂÁö È®ÀÎ.
-              DROPÇÏ·Á´Â °æ·Î¿¡ ³²¾Æ ÀÖÀ¸¸é ¿¡·¯
+    [ ì—ëŸ¬ì²˜ë¦¬ ]
+      (e-010) CONTROLë‹¨ê³„ê°€ ì•„ë‹ˆë©´ ì—ëŸ¬ 
+      (e-020) OldPathê°€ í•´ë‹¹ TBSNodeì— CheckpointPathë¡œ ì—†ìœ¼ë©´ ì—ëŸ¬
+      (e-030) í•´ë‹¹ TBSì˜ ì˜¤ì§ í•˜ë‚˜ë¿ì¸ Checkpoint Pathë¥¼
+              DROPì‹œë„ í•˜ë©´ ì—ëŸ¬
+      (e-040) DROPí•˜ë ¤ëŠ” ê²½ë¡œì˜ Checkpoint Imageë¥¼ ë‹¤ë¥¸ ìœ íš¨í•œ ê²½ë¡œë¡œ ì˜®ê²¼ëŠ”ì§€ í™•ì¸.
+              DROPí•˜ë ¤ëŠ” ê²½ë¡œì— ë‚¨ì•„ ìˆìœ¼ë©´ ì—ëŸ¬
 
-    [ ±âÅ¸ ]
-      - Checkpoint Image¸¦ DropÇÑ Path¿¡¼­
-        DropµÇÁö ¾ÊÀº Path·Î ÀÌµ¿ÇÏ´Â Ã³¸®´Â ÇÏÁö ¾Ê´Â´Ù. 
-       ( DBA°¡ Á÷Á¢ Ã³¸®ÇØ¾ß ÇÔ )
+    [ ê¸°íƒ€ ]
+      - Checkpoint Imageë¥¼ Dropí•œ Pathì—ì„œ
+        Dropë˜ì§€ ì•Šì€ Pathë¡œ ì´ë™í•˜ëŠ” ì²˜ë¦¬ëŠ” í•˜ì§€ ì•ŠëŠ”ë‹¤. 
+       ( DBAê°€ ì§ì ‘ ì²˜ë¦¬í•´ì•¼ í•¨ )
     
-    ÁÖÀÇ --
-      ¿©±â¿¡ ÀÎÀÚ·Î ³Ñ¾î¿À´Â smiChkptPathAttrÀÇ ¸Ş¸ğ¸®´Â
-      ÇÔ¼ö È£Ãâ Á¾·áÈÄ ÇØÁ¦µÉ ¼ö ÀÖÀ¸¹Ç·Î ±×´ë·Î »ç¿ëÇÏ¸é ¾ÈµÈ´Ù.
-      smiChkptPathAttrÀ» »õ·Î ÇÒ´çÇÏ¿© º¹»çÇØ¾ß ÇÑ´Ù.
+    ì£¼ì˜ --
+      ì—¬ê¸°ì— ì¸ìë¡œ ë„˜ì–´ì˜¤ëŠ” smiChkptPathAttrì˜ ë©”ëª¨ë¦¬ëŠ”
+      í•¨ìˆ˜ í˜¸ì¶œ ì¢…ë£Œí›„ í•´ì œë  ìˆ˜ ìˆìœ¼ë¯€ë¡œ ê·¸ëŒ€ë¡œ ì‚¬ìš©í•˜ë©´ ì•ˆëœë‹¤.
+      smiChkptPathAttrì„ ìƒˆë¡œ í• ë‹¹í•˜ì—¬ ë³µì‚¬í•´ì•¼ í•œë‹¤.
 */
 IDE_RC smmTBSAlterChkptPath::alterTBSdropChkptPath( scSpaceID     aSpaceID,
                                                     SChar       * aChkptPath )
@@ -291,29 +291,29 @@ IDE_RC smmTBSAlterChkptPath::alterTBSdropChkptPath( scSpaceID     aSpaceID,
     IDE_DASSERT( aChkptPath != NULL );
 
     //////////////////////////////////////////////////////////////////
-    // (e-010) CONTROL´Ü°è°¡ ¾Æ´Ï¸é ¿¡·¯
-    // => smiTableSpace¿¡¼­ ÀÌ¹Ì Ã³¸®
+    // (e-010) CONTROLë‹¨ê³„ê°€ ì•„ë‹ˆë©´ ì—ëŸ¬
+    // => smiTableSpaceì—ì„œ ì´ë¯¸ ì²˜ë¦¬
 
-    // Memory Dictionary TablespaceÀÇ TBSNode¸¦ ¾ò¾î¿Â´Ù.
+    // Memory Dictionary Tablespaceì˜ TBSNodeë¥¼ ì–»ì–´ì˜¨ë‹¤.
     IDE_TEST( sctTableSpaceMgr::findSpaceNodeBySpaceID(
                   aSpaceID,
                   (void**) & sTBSNode )
               != IDE_SUCCESS );
 
     //////////////////////////////////////////////////////////////////////
-    // (010) CheckpointPathNode °Ë»ö 
+    // (010) CheckpointPathNode ê²€ìƒ‰ 
     IDE_TEST( smmTBSChkptPath::findChkptPathNode( sTBSNode,
                                                   aChkptPath,
                                                   & sCPathNode )
               != IDE_SUCCESS );
 
     //////////////////////////////////////////////////////////////////////
-    // (e-020) OldPath°¡ ÇØ´ç TBSNode¿¡ CheckpointPath·Î ¾øÀ¸¸é ¿¡·¯
+    // (e-020) OldPathê°€ í•´ë‹¹ TBSNodeì— CheckpointPathë¡œ ì—†ìœ¼ë©´ ì—ëŸ¬
     IDE_TEST_RAISE( sCPathNode == NULL, err_chkpt_path_node_not_found );
 
     //////////////////////////////////////////////////////////////////////
-    // (e-030) ÇØ´ç TBSÀÇ ¿ÀÁ÷ ÇÏ³ª»ÓÀÎ Checkpoint Path¸¦
-    //         DROP½Ãµµ ÇÏ¸é ¿¡·¯
+    // (e-030) í•´ë‹¹ TBSì˜ ì˜¤ì§ í•˜ë‚˜ë¿ì¸ Checkpoint Pathë¥¼
+    //         DROPì‹œë„ í•˜ë©´ ì—ëŸ¬
     IDE_TEST( smmTBSChkptPath::getChkptPathNodeCount( sTBSNode,
                                                       & sCPathCount )
               != IDE_SUCCESS );
@@ -321,23 +321,23 @@ IDE_RC smmTBSAlterChkptPath::alterTBSdropChkptPath( scSpaceID     aSpaceID,
     IDE_TEST_RAISE( sCPathCount == 1, err_trial_to_drop_the_last_chkpt_path );
 
     //////////////////////////////////////////////////////////////////////
-    // (e-040)  BUG-28523 DROPÇÏ·Á´Â °æ·ÎÀÇ Checkpoint Image FileÀ»
-    //          ´Ù¸¥ À¯È¿ÇÑ °æ·Î·Î ¿Å±âÁö ¾Ê°í DROP½Ãµµ ÇÏ¸é ¿¡·¯
+    // (e-040)  BUG-28523 DROPí•˜ë ¤ëŠ” ê²½ë¡œì˜ Checkpoint Image Fileì„
+    //          ë‹¤ë¥¸ ìœ íš¨í•œ ê²½ë¡œë¡œ ì˜®ê¸°ì§€ ì•Šê³  DROPì‹œë„ í•˜ë©´ ì—ëŸ¬
     IDE_TEST( smmDatabaseFile::checkChkptImgInDropCPath( sTBSNode,
                                                          sCPathNode )
               != IDE_SUCCESS );
 
     //////////////////////////////////////////////////////////////////////
-    // (020) CheckpointPath Á¦°Å
+    // (020) CheckpointPath ì œê±°
     IDE_TEST( smmTBSChkptPath::removeChkptPathNode( sTBSNode, sCPathNode )
               != IDE_SUCCESS );
 
     //////////////////////////////////////////////////////////////////////
     // (030) Log Anchor Flush
     //
-    // ¸ğµç TablespaceÀÇ Log AnchorÁ¤º¸¸¦ »õ·Î ±¸ÃàÇÑ´Ù.
-    // ( Á¦°ÅµÈ Checkpoint Path Node¸¦ Á¦¿ÜÇÑ
-    //   ³ª¸ÓÁö Checkpoint Path Node¸¸ Log Anchor¿¡ ³²°ÜµÎ±â À§ÇÔ )
+    // ëª¨ë“  Tablespaceì˜ Log Anchorì •ë³´ë¥¼ ìƒˆë¡œ êµ¬ì¶•í•œë‹¤.
+    // ( ì œê±°ëœ Checkpoint Path Nodeë¥¼ ì œì™¸í•œ
+    //   ë‚˜ë¨¸ì§€ Checkpoint Path Nodeë§Œ Log Anchorì— ë‚¨ê²¨ë‘ê¸° ìœ„í•¨ )
     IDE_TEST( smLayerCallback::updateAnchorOfTBS() != IDE_SUCCESS );
     
     return IDE_SUCCESS;

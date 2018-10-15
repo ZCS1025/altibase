@@ -19,8 +19,8 @@
  *
  * $Id: sdpsfSegDDL.cpp 27226 2008-07-23 17:36:35Z newdaily $
  *
- * º» ÆÄÀÏÀº SegmentÀÇ Create/Drop/Alter/Reset ¿¬»êÀÇ
- * STATIC ÀÎÅÍÆäÀÌ½ºµéÀ» °ü¸®ÇÑ´Ù.
+ * ë³¸ íŒŒì¼ì€ Segmentì˜ Create/Drop/Alter/Reset ì—°ì‚°ì˜
+ * STATIC ì¸í„°í˜ì´ìŠ¤ë“¤ì„ ê´€ë¦¬í•œë‹¤.
  *
  **********************************************************************/
 
@@ -41,15 +41,15 @@
 # include <sdptbExtent.h>
 
 /***********************************************************************
- * Description : Segment¸¦ »ı¼ºÇÑ´Ù.
+ * Description : Segmentë¥¼ ìƒì„±í•œë‹¤.
  *
- * aStatistics      - [IN] Åë°è Á¤º¸
+ * aStatistics      - [IN] í†µê³„ ì •ë³´
  * aMtx             - [IN] Mini Transaction Pointer
  * aSpaceID         - [IN] SpaceID
  * aSegType         - [IN] Segment Type
  *
- * aSegHandle       - [OUT] Segment Handle¿¡ Seg PID¿Í Segment Header Page
- *                          ¿¡¼­ Meta°¡ À§Ä¡ÇÏ´Â OffsetÀÌ ¼³Á¤µÈ´Ù.
+ * aSegHandle       - [OUT] Segment Handleì— Seg PIDì™€ Segment Header Page
+ *                          ì—ì„œ Metaê°€ ìœ„ì¹˜í•˜ëŠ” Offsetì´ ì„¤ì •ëœë‹¤.
  ***********************************************************************/
 IDE_RC sdpsfSegDDL::createSegment( idvSQL           * aStatistics,
                                    sdrMtx           * aMtx,
@@ -74,9 +74,9 @@ IDE_RC sdpsfSegDDL::createSegment( idvSQL           * aStatistics,
 }
 
 /***********************************************************************
- * Description : Segment¸¦ DropÇÑ´Ù.
+ * Description : Segmentë¥¼ Dropí•œë‹¤.
  *
- * aStatistics    - [IN] Åë°è Á¤º¸
+ * aStatistics    - [IN] í†µê³„ ì •ë³´
  * aMtx           - [IN] Mini Transaction Pointer
  * aSpaceID       - [IN] SpaceID
  * aSegPID        - [IN] Segment PID
@@ -114,9 +114,9 @@ IDE_RC sdpsfSegDDL::dropSegment( idvSQL           * aStatistics,
 }
 
 /***********************************************************************
- * Description : Segment¸¦ Create´ç½ÃÀÇ ÃÊ±â»óÅÂ·Î ¸¸µç´Ù.
+ * Description : Segmentë¥¼ Createë‹¹ì‹œì˜ ì´ˆê¸°ìƒíƒœë¡œ ë§Œë“ ë‹¤.
  *
- * aStatistics      - [IN] Åë°è Á¤º¸
+ * aStatistics      - [IN] í†µê³„ ì •ë³´
  * aMtx             - [IN] Mini Transaction Pointer
  * aSpaceID         - [IN] SpaceID
  * aSegHandle       - [IN] Segment Handle
@@ -143,7 +143,7 @@ IDE_RC sdpsfSegDDL::resetSegment( idvSQL           * aStatistics,
                   &sSegHdrPtr )
               != IDE_SUCCESS );
 
-    /* Ã¹¹øÂ° Extent¸¸ Á¦¿ÜÇÏ°í ¸ğµç Extent¸¦ FreeÇÑ´Ù. */
+    /* ì²«ë²ˆì§¸ Extentë§Œ ì œì™¸í•˜ê³  ëª¨ë“  Extentë¥¼ Freeí•œë‹¤. */
     IDE_TEST( sdpsfExtMgr::freeExtsExceptFst(
                   aStatistics,
                   aMtx,
@@ -151,7 +151,7 @@ IDE_RC sdpsfSegDDL::resetSegment( idvSQL           * aStatistics,
                   sSegHdrPtr )
               != IDE_SUCCESS );
 
-    /* Segment Desc¸¦ ÃÊ±âÈ­ ÇÑ´Ù. */
+    /* Segment Descë¥¼ ì´ˆê¸°í™” í•œë‹¤. */
     IDE_TEST( sdpsfSH::init( aStatistics,
                              aMtx,
                              aSpaceID,
@@ -178,9 +178,9 @@ IDE_RC sdpsfSegDDL::resetSegment( idvSQL           * aStatistics,
 }
 
 /***********************************************************************
- * Description : SegmentÀÇ aExtRIDÀÌÈÄ Extent¸¦ µ¥ÀÌÅ¸ º£ÀÌ½º¿¡ ¹İÈ¯ÇÑ´Ù
+ * Description : Segmentì˜ aExtRIDì´í›„ Extentë¥¼ ë°ì´íƒ€ ë² ì´ìŠ¤ì— ë°˜í™˜í•œë‹¤
  *
- * aStatistics      - [IN] Åë°è Á¤º¸
+ * aStatistics      - [IN] í†µê³„ ì •ë³´
  * aMtx             - [IN] Mini Transaction Pointer
  * aSpaceID         - [IN] SpaceID
  * aSegHdr          - [IN] Segment Hdr
@@ -212,9 +212,9 @@ IDE_RC sdpsfSegDDL::trim( idvSQL           *aStatistics,
 }
 
 /***********************************************************************
- * Description : Segment ÇÒ´ç ¹× Segment Meta Header ÃÊ±âÈ­
+ * Description : Segment í• ë‹¹ ë° Segment Meta Header ì´ˆê¸°í™”
  *
- * aStatistics      - [IN]     Åë°è Á¤º¸
+ * aStatistics      - [IN]     í†µê³„ ì •ë³´
  * aMtx             - [IN]     Mini Transaction Pointer
  * aSpaceID         - [IN]     SpaceID
  * aSegType         - [IN/OUT] Segment Type
@@ -270,8 +270,8 @@ IDE_RC sdpsfSegDDL::allocateSegment( idvSQL        * aStatistics,
     sFstPID       = sExtDesc.mExtFstPID;
     sPageCntINExt = sExtDesc.mLength;
 
-    /* SegHdr¿¡ ´ëÇÑ Latch¸¦ Ç®Áö ¾Ê±â À§ÇØ¼­ ÀÎÀÚ·Î ³Ñ°Ü¿À´Â
-     * Mini Trans·Î Buffer Create¸¦ ÇÑ´Ù. */
+    /* SegHdrì— ëŒ€í•œ Latchë¥¼ í’€ì§€ ì•Šê¸° ìœ„í•´ì„œ ì¸ìë¡œ ë„˜ê²¨ì˜¤ëŠ”
+     * Mini Transë¡œ Buffer Createë¥¼ í•œë‹¤. */
     IDE_TEST( sdpPhyPage::create( aStatistics,
                                   aSpaceID,
                                   sFstPID,
@@ -299,7 +299,7 @@ IDE_RC sdpsfSegDDL::allocateSegment( idvSQL        * aStatistics,
                              aSegType )
               != IDE_SUCCESS );
 
-    /* »ı¼ºµÈ SegHdrÀÇ PID¸¦ ³Ñ°ÜÁØ´Ù. */
+    /* ìƒì„±ëœ SegHdrì˜ PIDë¥¼ ë„˜ê²¨ì¤€ë‹¤. */
     aSegHandle->mSegPID  =
         sdpPhyPage::getPageIDFromPtr( sSegHdrPtr );
 

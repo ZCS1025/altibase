@@ -33,7 +33,7 @@ public class GetMoreResultsTest extends AltibaseTestCase
         stmt.close();
 
         stmt = connection().prepareCall("EXEC PROC1('abcde')");
-        stmt.executeUpdate(); // executeUpdate·Îµµ ResultSetÀÌ ÀÖ´Â Äõ¸® ¼öÇàÀ» Çã¿ë (oracle-like)
+        stmt.executeUpdate(); // executeUpdateë¡œë„ ResultSetì´ ìˆëŠ” ì¿¼ë¦¬ ìˆ˜í–‰ì„ í—ˆìš© (oracle-like)
         rs1 = stmt.getResultSet();
         assertEquals(false, rs1.next());
         rs1.close();

@@ -143,19 +143,19 @@ void ulnConfigFileLoad()
                         ulnConfigFileTrim(sDataSourceName);
                         if(ulnConfigFileGetDataSourceInternal(sDataSourceName) == NULL )
                         {
-                            //ÇØ´ç DataSource °¡ µî·ÏµÇ¾î ÀÖÁö¾ÊÀ½.
+                            //í•´ë‹¹ DataSource ê°€ ë“±ë¡ë˜ì–´ ìˆì§€ì•ŠìŒ.
                             sDataSource = ulnConfigFileRegisterDataSource(sDataSourceName);
                             if(sDataSource == NULL)
                             {
-                                // fix BUG-25971 UL-FailOverÃß°¡ÇÑ ÇÔ¼ö¿¡¼­ ¸Ş¸ğ¸® ÇÑ°è»óÈ²À»
-                                // °í·ÁÇÏÁö ¾ÊÀ½.
+                                // fix BUG-25971 UL-FailOverì¶”ê°€í•œ í•¨ìˆ˜ì—ì„œ ë©”ëª¨ë¦¬ í•œê³„ìƒí™©ì„
+                                // ê³ ë ¤í•˜ì§€ ì•ŠìŒ.
                                 continue;
                             }
                             sDataSourceName = sDataSource->mDataSourceName;
                         }
                         else
                         {
-                            //ÇØ´ç DataSource °¡ µî·ÏµÇ¾î ÀÖÀ½.
+                            //í•´ë‹¹ DataSource ê°€ ë“±ë¡ë˜ì–´ ìˆìŒ.
                             sDataSourceName = NULL;
                         }//else
                     }//else
@@ -190,17 +190,17 @@ void ulnConfigFileLoad()
                     }
                     sConnAttr = ulnGetConnAttrIDfromKEYWORD(sKeyWordStr, acpCStrLen(sKeyWordStr, ACP_SINT32_MAX));
                     sDataSource = ulnConfigFileGetDataSourceInternal(sDataSourceName);
-                    // fix BUG-25971 UL-FailOverÃß°¡ÇÑ ÇÔ¼ö¿¡¼­ ¸Ş¸ğ¸® ÇÑ°è»óÈ²À»
-                    // °í·ÁÇÏÁö ¾ÊÀ½.
+                    // fix BUG-25971 UL-FailOverì¶”ê°€í•œ í•¨ìˆ˜ì—ì„œ ë©”ëª¨ë¦¬ í•œê³„ìƒí™©ì„
+                    // ê³ ë ¤í•˜ì§€ ì•ŠìŒ.
                     if(sDataSource == NULL)
                     {
                         continue;
                     }
                     if(sConnAttr  < ULN_CONN_ATTR_MAX)
                     {
-                        // fix BUG-25971 UL-FailOverÃß°¡ÇÑ ÇÔ¼ö¿¡¼­ ¸Ş¸ğ¸® ÇÑ°è»óÈ²À»
-                        // °í·ÁÇÏÁö ¾ÊÀ½.
-                        // ¸Ş¸ğ¸® ºÎÁ·ÀÏ¶§ , Connection attribute loss¸¦ Çã¿ëÇÑ´Ù.
+                        // fix BUG-25971 UL-FailOverì¶”ê°€í•œ í•¨ìˆ˜ì—ì„œ ë©”ëª¨ë¦¬ í•œê³„ìƒí™©ì„
+                        // ê³ ë ¤í•˜ì§€ ì•ŠìŒ.
+                        // ë©”ëª¨ë¦¬ ë¶€ì¡±ì¼ë•Œ , Connection attribute lossë¥¼ í—ˆìš©í•œë‹¤.
                         (void)ulnDataSourceAddConnAttr(sDataSource,sConnAttr,sValueStr);
                     }
                     else
@@ -231,15 +231,15 @@ static  ulnDataSource * ulnConfigFileRegisterDataSource(acp_char_t *aDataSourceN
 
     acp_uint32_t   sBucket = (sHashKeyVal % ULN_DATASOURCE_BUCKET_COUNT);
 
-    // fix BUG-25971 UL-FailOverÃß°¡ÇÑ ÇÔ¼ö¿¡¼­ ¸Ş¸ğ¸® ÇÑ°è»óÈ²À»
-    // °í·ÁÇÏÁö ¾ÊÀ½.
+    // fix BUG-25971 UL-FailOverì¶”ê°€í•œ í•¨ìˆ˜ì—ì„œ ë©”ëª¨ë¦¬ í•œê³„ìƒí™©ì„
+    // ê³ ë ¤í•˜ì§€ ì•ŠìŒ.
     ACI_TEST(acpMemAlloc((void**)&sDataSource, ACI_SIZEOF(ulnDataSource)) != ACP_RC_SUCCESS);
     sStage = 1;
 
     sDataSourceNameLen = acpCStrLen(aDataSourceName, ACP_SINT32_MAX);
 
-    // fix BUG-25971 UL-FailOverÃß°¡ÇÑ ÇÔ¼ö¿¡¼­ ¸Ş¸ğ¸® ÇÑ°è»óÈ²À»
-    // °í·ÁÇÏÁö ¾ÊÀ½.
+    // fix BUG-25971 UL-FailOverì¶”ê°€í•œ í•¨ìˆ˜ì—ì„œ ë©”ëª¨ë¦¬ í•œê³„ìƒí™©ì„
+    // ê³ ë ¤í•˜ì§€ ì•ŠìŒ.
     ACI_TEST(acpMemAlloc((void**)&sDataSource->mDataSourceName, sDataSourceNameLen + 1)
              != ACP_RC_SUCCESS);
 
@@ -256,8 +256,8 @@ static  ulnDataSource * ulnConfigFileRegisterDataSource(acp_char_t *aDataSourceN
     return sDataSource;
 
     ACI_EXCEPTION_END;
-    // fix BUG-25971 UL-FailOverÃß°¡ÇÑ ÇÔ¼ö¿¡¼­ ¸Ş¸ğ¸® ÇÑ°è»óÈ²À»
-    // °í·ÁÇÏÁö ¾ÊÀ½.
+    // fix BUG-25971 UL-FailOverì¶”ê°€í•œ í•¨ìˆ˜ì—ì„œ ë©”ëª¨ë¦¬ í•œê³„ìƒí™©ì„
+    // ê³ ë ¤í•˜ì§€ ì•ŠìŒ.
     switch (sStage )
     {
         case 1:

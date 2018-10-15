@@ -20,7 +20,7 @@
  *
  * Description :
  *     PROJ-1371 PSM File Handling
- *     FILE¿¡ stringÀ» ±â·ÏÇÏ´Â ÇÔ¼ö
+ *     FILEì— stringì„ ê¸°ë¡í•˜ëŠ” í•¨ìˆ˜
  *
  * Syntax :
  *     FILE_PUT( file FILE_TYPE, buffer VARCHAR, autoflush BOOLEAN )
@@ -49,7 +49,7 @@ static IDE_RC qsfEstimate( mtcNode*     aNode,
 mtfModule qsfFPutModule = {
     1|MTC_NODE_OPERATOR_MISC|MTC_NODE_VARIABLE_TRUE,
     ~0,
-    1.0,                    // default selectivity (ºñ±³ ¿¬»êÀÚ ¾Æ´Ô)
+    1.0,                    // default selectivity (ë¹„êµ ì—°ì‚°ì ì•„ë‹˜)
     qsfFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -146,13 +146,13 @@ IDE_RC qsfCalculate_FPut( mtcNode*     aNode,
  *     file_put calculate
  *
  * Implementation :
- *     1. filehandleÀÌ nullÀÎ °æ¿ì  error
- *     2. buffer°¡ nullÀÎ °æ¿ì ¾Æ¹«°Íµµ ÇÏÁö ¾Ê°í success
- *     3. autoflush°¡ nullÀÎ °æ¿ì error
- *     4. open mode°¡ w, a°¡ ¾Æ´Ñ °æ¿ì error
- *     5. putStringÇÔ¼ö È£ÃâÇÏ¿© ÆÄÀÏ¿¡ ±â·Ï
- *     6. autoflush°¡ TRUEÀÌ¸é flush
- *     7. return value´Â dummy·Î, TRUE·Î ¼¼ÆÃ
+ *     1. filehandleì´ nullì¸ ê²½ìš°  error
+ *     2. bufferê°€ nullì¸ ê²½ìš° ì•„ë¬´ê²ƒë„ í•˜ì§€ ì•Šê³  success
+ *     3. autoflushê°€ nullì¸ ê²½ìš° error
+ *     4. open modeê°€ w, aê°€ ì•„ë‹Œ ê²½ìš° error
+ *     5. putStringí•¨ìˆ˜ í˜¸ì¶œí•˜ì—¬ íŒŒì¼ì— ê¸°ë¡
+ *     6. autoflushê°€ TRUEì´ë©´ flush
+ *     7. return valueëŠ” dummyë¡œ, TRUEë¡œ ì„¸íŒ…
  *
  ***********************************************************************/
     

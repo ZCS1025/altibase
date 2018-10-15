@@ -106,7 +106,7 @@ public:
     void             resetStat();
     void             setName(SChar *aName);
 
-    /* BUG-43940 V$mutex¿¡¼­ mutex lockÀ» È¹µæÇÑ ½º·¹µå IDÃâ·Â */
+    /* BUG-43940 V$mutexì—ì„œ mutex lockì„ íšë“í•œ ìŠ¤ë ˆë“œ IDì¶œë ¥ */
     void             setThreadID();
 };
 

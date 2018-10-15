@@ -53,8 +53,8 @@ ACI_RC ulnSFID_52(ulnFnContext *aFnContext)
  */
 
 /*
- * Note : 64bit odbc ¿¡¼­ SQLROWSETSIZE ´Â SQLUINTEGER ÀÌ´Ù. Áï 32ºñÆ® Á¤¼öÀÌ´Ù.
- *        ExtendedFetch ÀÇ 4¹øÂ° parameter ´Â 64ºñÆ®°¡ ¾Æ´Ï¶ó 32ºñÆ®ÀÌ´Ù.
+ * Note : 64bit odbc ì—ì„œ SQLROWSETSIZE ëŠ” SQLUINTEGER ì´ë‹¤. ì¦‰ 32ë¹„íŠ¸ ì •ìˆ˜ì´ë‹¤.
+ *        ExtendedFetch ì˜ 4ë²ˆì§¸ parameter ëŠ” 64ë¹„íŠ¸ê°€ ì•„ë‹ˆë¼ 32ë¹„íŠ¸ì´ë‹¤.
  */
 
 SQLRETURN ulnExtendedFetch(ulnStmt      *aStmt,
@@ -86,20 +86,20 @@ SQLRETURN ulnExtendedFetch(ulnStmt      *aStmt,
      */
 
     /*
-     * Note : ¾Æ·¡¿Í °°Àº ¹Ù²ãÄ¡±â°¡ °¡´ÉÇÑ ÀÌÀ¯´Â stmt ¸¦ °øÀ¯ÇÏÁö ¾Ê±â ¶§¹®ÀÌ´Ù.
-     *        dbc ·¹º§¿¡¼­ exclusive ÇÑ lock À» Àâ±â ¶§¹®¿¡ Àý´ë·Î ÇÑ stmt ¿¡ µÎ°³ÀÇ ÇÔ¼ö°¡
-     *        ½ÇÇàµÇÁö ¾Ê´Â´Ù.
-     *        µû¶ó¼­ ¾Æ·¡Ã³·³ ¹Ù²ãÄ¡±â ÇØ¼­ ¾ÈÀüÇÏ°Ô »ç¿ëÇÒ ¼ö ÀÖ´Ù.
+     * Note : ì•„ëž˜ì™€ ê°™ì€ ë°”ê¿”ì¹˜ê¸°ê°€ ê°€ëŠ¥í•œ ì´ìœ ëŠ” stmt ë¥¼ ê³µìœ í•˜ì§€ ì•Šê¸° ë•Œë¬¸ì´ë‹¤.
+     *        dbc ë ˆë²¨ì—ì„œ exclusive í•œ lock ì„ ìž¡ê¸° ë•Œë¬¸ì— ì ˆëŒ€ë¡œ í•œ stmt ì— ë‘ê°œì˜ í•¨ìˆ˜ê°€
+     *        ì‹¤í–‰ë˜ì§€ ì•ŠëŠ”ë‹¤.
+     *        ë”°ë¼ì„œ ì•„ëž˜ì²˜ëŸ¼ ë°”ê¿”ì¹˜ê¸° í•´ì„œ ì•ˆì „í•˜ê²Œ ì‚¬ìš©í•  ìˆ˜ ìžˆë‹¤.
      */
 
     /*
-     * ¹Ù²ãÄ¡±â 1 : SQL_ATTR_ROW_STATUS_PTR
+     * ë°”ê¿”ì¹˜ê¸° 1 : SQL_ATTR_ROW_STATUS_PTR
      * ------------------------------------
-     * Row status array 4 extended fetch ¸¦ ¼¼ÆÃÇÑ´Ù.
-     * stmt ÀÇ ¼Ó¼ºÀ¸·Î½á, SQLFetchScroll() ÇÔ¼ö°¡ »ç¿ëÇÏ´Â SQL_ATTR_ROW_STATUS_PTR °ú´Â
-     * ´Ù¸¥ ¹öÆÛ¸¦ ½á¾ß ÇÑ´Ù°í ODBC ¿¡¼­ ÀÌ¾ß±âÇÏ°í ÀÖ´Ù.
+     * Row status array 4 extended fetch ë¥¼ ì„¸íŒ…í•œë‹¤.
+     * stmt ì˜ ì†ì„±ìœ¼ë¡œì¨, SQLFetchScroll() í•¨ìˆ˜ê°€ ì‚¬ìš©í•˜ëŠ” SQL_ATTR_ROW_STATUS_PTR ê³¼ëŠ”
+     * ë‹¤ë¥¸ ë²„í¼ë¥¼ ì¨ì•¼ í•œë‹¤ê³  ODBC ì—ì„œ ì´ì•¼ê¸°í•˜ê³  ìžˆë‹¤.
      *
-     * ÀÏ´Ü ¹Ù²ãÄ¡±â¸¦ ÇÑ ÈÄ, ³ªÁß¿¡ º¹±¸½ÃÄÑ µÎ¸é µÈ´Ù.
+     * ì¼ë‹¨ ë°”ê¿”ì¹˜ê¸°ë¥¼ í•œ í›„, ë‚˜ì¤‘ì— ë³µêµ¬ì‹œì¼œ ë‘ë©´ ëœë‹¤.
      */
 
     sOriginalRowStatusArray = ulnStmtGetAttrRowStatusPtr(aStmt);
@@ -109,9 +109,9 @@ SQLRETURN ulnExtendedFetch(ulnStmt      *aStmt,
 
     // fix BUG-20745
     // http://msdn.microsoft.com/en-us/library/ms713591.aspx
-    // SQLExtendedFetch¿¡¼­´Â SQL_ATTR_ROW_BIND_OFFSET_PTR¸¦ »ç¿ëÇÒ ¼ö ¾øÁö¸¸
-    // MSDASQL¿¡¼­ ÀÌ·¸°Ô È£ÃâÇÏ°í ÀÖÀ½.
-    // µû¶ó¼­ SQLExtendedFetch¿¡¼­µµ SQL_ATTR_ROW_BIND_OFFSET_PTR¸¦ »ç¿ëÇÒ ¼ö ÀÖ°Ô º¯°æÇÔ
+    // SQLExtendedFetchì—ì„œëŠ” SQL_ATTR_ROW_BIND_OFFSET_PTRë¥¼ ì‚¬ìš©í•  ìˆ˜ ì—†ì§€ë§Œ
+    // MSDASQLì—ì„œ ì´ë ‡ê²Œ í˜¸ì¶œí•˜ê³  ìžˆìŒ.
+    // ë”°ë¼ì„œ SQLExtendedFetchì—ì„œë„ SQL_ATTR_ROW_BIND_OFFSET_PTRë¥¼ ì‚¬ìš©í•  ìˆ˜ ìžˆê²Œ ë³€ê²½í•¨
 
     /*
      * ===========================================
@@ -122,7 +122,7 @@ SQLRETURN ulnExtendedFetch(ulnStmt      *aStmt,
     ACI_TEST(ulnCheckFetchOrientation(&sFnContext, aOrientation) != ACI_SUCCESS);
 
     /*
-     * Protocol Context ÃÊ±âÈ­
+     * Protocol Context ì´ˆê¸°í™”
      */
     //fix BUG-17722
     ACI_TEST(ulnInitializeProtocolContext(&sFnContext,
@@ -142,7 +142,7 @@ SQLRETURN ulnExtendedFetch(ulnStmt      *aStmt,
                           &sNumberOfRowsFetched) != ACI_SUCCESS);
 
     /*
-     * »ç¿ëÀÚ¿¡°Ô ¸î°³ÀÇ row ¸¦ ÆäÄ¡ÇØ ¿Ô´ÂÁö ¸®ÅÏÇØ ÁØ´Ù.
+     * ì‚¬ìš©ìžì—ê²Œ ëª‡ê°œì˜ row ë¥¼ íŽ˜ì¹˜í•´ ì™”ëŠ”ì§€ ë¦¬í„´í•´ ì¤€ë‹¤.
      */
     if (aRowCountPtr != NULL)
     {
@@ -150,11 +150,11 @@ SQLRETURN ulnExtendedFetch(ulnStmt      *aStmt,
     }
 
     /*
-     * µ¥ÀÌÅÍ¸¦ fetch ÇØ ÁÖÁö ¾ÊÀº row µéÀÇ status array ¸¦ SQL_ROW_NOROW ·Î ¸¸µé¾î ÁØ´Ù.
+     * ë°ì´í„°ë¥¼ fetch í•´ ì£¼ì§€ ì•Šì€ row ë“¤ì˜ status array ë¥¼ SQL_ROW_NOROW ë¡œ ë§Œë“¤ì–´ ì¤€ë‹¤.
      *
-     * block cursor ¸¦ »ç¿ëÇÒ ¶§,
-     * °¡·É 10 ÁÙÀ» »ç¿ëÀÚ°¡ ÆäÄ¡Çß´Âµ¥, µ¥ÀÌÅÍ´Â 5ÁÙ¸¸ µé¾î°¬À» °æ¿ì,
-     * ³ª¸ÓÁö 5 ÁÙÀÇ row status ptr ¿¡´Â SQL_ROW_NOROW ¸¦ ³Ö¾î Áà¾ß ÇÑ´Ù.
+     * block cursor ë¥¼ ì‚¬ìš©í•  ë•Œ,
+     * ê°€ë ¹ 10 ì¤„ì„ ì‚¬ìš©ìžê°€ íŽ˜ì¹˜í–ˆëŠ”ë°, ë°ì´í„°ëŠ” 5ì¤„ë§Œ ë“¤ì–´ê°”ì„ ê²½ìš°,
+     * ë‚˜ë¨¸ì§€ 5 ì¤„ì˜ row status ptr ì—ëŠ” SQL_ROW_NOROW ë¥¼ ë„£ì–´ ì¤˜ì•¼ í•œë‹¤.
      */
     ulnStmtInitRowStatusArrayValue(aStmt,
                                    sNumberOfRowsFetched,
@@ -162,18 +162,18 @@ SQLRETURN ulnExtendedFetch(ulnStmt      *aStmt,
                                    SQL_ROW_NOROW);
 
     /*
-     * Note : ¿¡·¯ ¸®ÅÏ¿¡ ÀÖ¾î¼­ ¸ðµç row °¡ error ÀÌ¸é extended fetch ´Â SQL_SUCCESS_WITH_INFO ¸¦
-     *        ¸®ÅÏÇÏ°í, SQL_ERROR ¸¦ ¸®ÅÏÇÏÁö ¾Ê´Â´Ù.
+     * Note : ì—ëŸ¬ ë¦¬í„´ì— ìžˆì–´ì„œ ëª¨ë“  row ê°€ error ì´ë©´ extended fetch ëŠ” SQL_SUCCESS_WITH_INFO ë¥¼
+     *        ë¦¬í„´í•˜ê³ , SQL_ERROR ë¥¼ ë¦¬í„´í•˜ì§€ ì•ŠëŠ”ë‹¤.
      *
-     *        ±×·±µ¥, ¸ðµç row °¡ error ÀÎ »óÈ²Àº row ÇÏ³ª°¡ fetch µÇ¾ú´Âµ¥, ±× row °¡ error ÀÎ
-     *        »óÈ²¹Û¿¡ ¾ø´Ù.
-     *        ÀÌ °æ¿ì, SQLFetchScroll() Àº SQL_ERROR ¸¦ ¸®ÅÏÇÏ°Ô µÇ¾î ÀÖ±ä ÇÑµ¥,...
+     *        ê·¸ëŸ°ë°, ëª¨ë“  row ê°€ error ì¸ ìƒí™©ì€ row í•˜ë‚˜ê°€ fetch ë˜ì—ˆëŠ”ë°, ê·¸ row ê°€ error ì¸
+     *        ìƒí™©ë°–ì— ì—†ë‹¤.
+     *        ì´ ê²½ìš°, SQLFetchScroll() ì€ SQL_ERROR ë¥¼ ë¦¬í„´í•˜ê²Œ ë˜ì–´ ìžˆê¸´ í•œë°,...
      *
-     * BUGBUG : ÀÌ·¯ÇÑ °æ¿ì¸¦ Ã³¸®ÇÏµµ·Ï ÇØ¾ß ÇÑ´Ù.
+     * BUGBUG : ì´ëŸ¬í•œ ê²½ìš°ë¥¼ ì²˜ë¦¬í•˜ë„ë¡ í•´ì•¼ í•œë‹¤.
      */
 
     /*
-     * Protocol Context Á¤¸®
+     * Protocol Context ì •ë¦¬
      */
     ULN_FLAG_DOWN(sNeedFinPtContext);
     //fix BUG-17722
@@ -187,7 +187,7 @@ SQLRETURN ulnExtendedFetch(ulnStmt      *aStmt,
      */
 
     /*
-     * ¹Ù²ãÄ¡±â ÇØ µÎ¾ú´ø SQL_ATTR_ROW_STATUS_PTR À» ¿ø»óº¹±¸ÇÑ´Ù.
+     * ë°”ê¿”ì¹˜ê¸° í•´ ë‘ì—ˆë˜ SQL_ATTR_ROW_STATUS_PTR ì„ ì›ìƒë³µêµ¬í•œë‹¤.
      */
     ulnStmtSetAttrRowStatusPtr(aStmt, sOriginalRowStatusArray);
 
@@ -208,7 +208,7 @@ SQLRETURN ulnExtendedFetch(ulnStmt      *aStmt,
     ULN_IS_FLAG_UP(sNeedRecoverRowStatusPtr)
     {
         /*
-         * ¹Ù²ãÄ¡±â ÇØ µÎ¾ú´ø SQL_ATTR_ROW_STATUS_PTR À» ¿ø»óº¹±¸ÇÑ´Ù.
+         * ë°”ê¿”ì¹˜ê¸° í•´ ë‘ì—ˆë˜ SQL_ATTR_ROW_STATUS_PTR ì„ ì›ìƒë³µêµ¬í•œë‹¤.
          */
         ulnStmtSetAttrRowStatusPtr(aStmt, sOriginalRowStatusArray);
     }

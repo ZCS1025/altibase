@@ -80,7 +80,7 @@ public:
         mBinaryFlag = (aBinaryFlag != 0) ? ILO_TRUE : ILO_FALSE;
     }
     
-    // PROJ-2030, CT_CASE-3020 CHAR outfile Áö¿ø
+    // PROJ-2030, CT_CASE-3020 CHAR outfile ì§€ì›
     void setOutFileFlag(SInt aOutFileFlag)    
     {
         mOutFileFlag = (aOutFileFlag != 0) ? ILO_TRUE : ILO_FALSE;    
@@ -102,7 +102,7 @@ public:
     iloTableNode   *m_Condition;
     iloTableNode   *m_DateFormat;
     iloBool          mBinaryFlag;
-    iloBool          mOutFileFlag;  // PROJ-2030, CT_CASE-3020 CHAR outfile Áö¿ø
+    iloBool          mOutFileFlag;  // PROJ-2030, CT_CASE-3020 CHAR outfile ì§€ì›
 };
 
 class iloTableTree
@@ -143,15 +143,15 @@ public:
     void Reset();
 
     SInt GetTableInfo( ALTIBASE_ILOADER_HANDLE aHandle, iloTableNode *pTableNameNode);
-    // TABLE_NODE¿¡ ´ëÇÑ Æ÷ÀÎÅÍ¸¦ ÀÔ·ÂÀ¸·Î ¹Ş¾Æ Å×ÀÌºí¿¡ ´ëÇÑ Á¤º¸¸¦ ¾ò´Â´Ù.
-    // ÀÌ¶§ ÇüÁ¦ Å×ÀÌºí ³ëµå°¡ ÀÖ´ÂÁö´Â °Ë»öÇÏÁö ¾Ê´Â´Ù.
+    // TABLE_NODEì— ëŒ€í•œ í¬ì¸í„°ë¥¼ ì…ë ¥ìœ¼ë¡œ ë°›ì•„ í…Œì´ë¸”ì— ëŒ€í•œ ì •ë³´ë¥¼ ì–»ëŠ”ë‹¤.
+    // ì´ë•Œ í˜•ì œ í…Œì´ë¸” ë…¸ë“œê°€ ìˆëŠ”ì§€ëŠ” ê²€ìƒ‰í•˜ì§€ ì•ŠëŠ”ë‹¤.
     iloBool ExistDownCond()               { return m_bDownCond; }
 
     SChar *GetQueryString()              { return m_QueryString; }
 
     SChar *GetTableName()                { return m_TableName; }
 
-    /* BUG-17563 : iloader ¿¡¼­ Å«µû¿ÈÇ¥ ÀÌ¿ëÇÑ Naming Rule Á¦¾à Á¦°Å  */
+    /* BUG-17563 : iloader ì—ì„œ í°ë”°ì˜´í‘œ ì´ìš©í•œ Naming Rule ì œì•½ ì œê±°  */
     SChar *GetTransTableName(SChar *aName, UInt aLen);
 
     SInt GetAttrCount()                  { return m_AttrCount; }
@@ -165,7 +165,7 @@ public:
 
     SChar *GetAttrName(SInt nAttr);
 
-    /* BUG-17563 : iloader ¿¡¼­ Å«µû¿ÈÇ¥ ÀÌ¿ëÇÑ Naming Rule Á¦¾à Á¦°Å  */
+    /* BUG-17563 : iloader ì—ì„œ í°ë”°ì˜´í‘œ ì´ìš©í•œ Naming Rule ì œì•½ ì œê±°  */
     SChar *GetTransAttrName(SInt nAttr, SChar *aName, UInt aLen);
 
     EispAttrType GetAttrType(SInt nAttr);
@@ -223,53 +223,53 @@ private:
                          SQLLEN *aRawLen);
 
 public:
-    /* * ÀÌÇÏ 6 °³ÀÇ º¯¼ö´Â iLoaderÀÇ in ¸í·É ½Ã »ç¿ë * */
-    /* ¹®ÀÚ¿­ ÇüÅÂÀÇ °ªÀÌ ÀúÀåµÇ´Â ¹öÆÛ.
-     * SQLBindParameter()¿¡ ÀÇÇØ ¹ÙÀÎµåµÉ ¼ö ÀÖ´Ù. */
+    /* * ì´í•˜ 6 ê°œì˜ ë³€ìˆ˜ëŠ” iLoaderì˜ in ëª…ë ¹ ì‹œ ì‚¬ìš© * */
+    /* ë¬¸ìì—´ í˜•íƒœì˜ ê°’ì´ ì €ì¥ë˜ëŠ” ë²„í¼.
+     * SQLBindParameter()ì— ì˜í•´ ë°”ì¸ë“œë  ìˆ˜ ìˆë‹¤. */
     SChar             **mAttrCVal;
-    /* mAttrCValÀÇ °¢ ¿ø¼Ò(SChar *)°¡ °¡¸®Å°´Â ¹è¿­ÀÇ ¿ø¼Ò Å©±â */
+    /* mAttrCValì˜ ê° ì›ì†Œ(SChar *)ê°€ ê°€ë¦¬í‚¤ëŠ” ë°°ì—´ì˜ ì›ì†Œ í¬ê¸° */
     UInt               *mAttrCValEltLen;
-    /* µ¥ÀÌÅÍÇü °íÀ¯ ÇüÅÂÀÇ °ªÀÌ ÀúÀåµÇ´Â ¹öÆÛ.
-     * SQLBindParameter()¿¡ ÀÇÇØ ¹ÙÀÎµåµÉ ¼ö ÀÖ´Ù. */
+    /* ë°ì´í„°í˜• ê³ ìœ  í˜•íƒœì˜ ê°’ì´ ì €ì¥ë˜ëŠ” ë²„í¼.
+     * SQLBindParameter()ì— ì˜í•´ ë°”ì¸ë“œë  ìˆ˜ ìˆë‹¤. */
     void              **mAttrVal;
-    /* mAttrValÀÇ °¢ ¿ø¼Ò(void *)°¡ °¡¸®Å°´Â ¹è¿­ÀÇ ¿ø¼Ò Å©±â */
+    /* mAttrValì˜ ê° ì›ì†Œ(void *)ê°€ ê°€ë¦¬í‚¤ëŠ” ë°°ì—´ì˜ ì›ì†Œ í¬ê¸° */
     UInt               *mAttrValEltLen;
     /* BUG - 18804 */
-    /* ReadOneRecord()ÇÒ ¶§ error³­ ÇÊµåµéÀ» Àá½Ã ÀúÀåÇÏ´Â ¹öÆÛ.*/
+    /* ReadOneRecord()í•  ë•Œ errorë‚œ í•„ë“œë“¤ì„ ì ì‹œ ì €ì¥í•˜ëŠ” ë²„í¼.*/
     SChar             **mAttrFail;
     /* BUG-28208 */
     SInt               *mAttrFailMaxLen;
     /* TASK-2657 */
     UInt               *mAttrFailLen;
-    /* SQLBindParameter()¿¡ ÀÎÀÚ·Î ÁÙ Áö½ÃÀÚ º¯¼ö */
+    /* SQLBindParameter()ì— ì¸ìë¡œ ì¤„ ì§€ì‹œì ë³€ìˆ˜ */
     SQLLEN            **mAttrInd;
-    /* µ¥ÀÌÅÍ ÆÄÀÏ ¶Ç´Â LOB ÆÄÀÏ ³»¿¡¼­ LOB µ¥ÀÌÅÍÀÇ ½ÃÀÛ À§Ä¡.
-     * LOB ÄÃ·³ÀÎ °æ¿ì¸¸ ¸Ş¸ğ¸® ÇÒ´çµÈ´Ù.
-     * "¹°¸®Àû"ÀÇ ÀÇ¹Ì´Â Windows ÇÃ·§Æû¿¡¼­ "\n"ÀÌ "\r\n"À¸·Î ÀúÀåµÇ´Âµ¥,
-     * LOB µ¥ÀÌÅÍ¿¡ "\n"ÀÌ ÀÖÀ» °æ¿ì ½ÇÁ¦ ÀúÀåµÇ´Â ±æÀÌÀÎ 2·Î Ä«¿îÆ®ÇÑ´Ù´Â °ÍÀÌ´Ù.
-     * use_lob_file=no ¶Ç´Â
-     * use_lob_file=yes, use_separate_files=noÀÎ °æ¿ì »ç¿ëµÈ´Ù. */
+    /* ë°ì´í„° íŒŒì¼ ë˜ëŠ” LOB íŒŒì¼ ë‚´ì—ì„œ LOB ë°ì´í„°ì˜ ì‹œì‘ ìœ„ì¹˜.
+     * LOB ì»¬ëŸ¼ì¸ ê²½ìš°ë§Œ ë©”ëª¨ë¦¬ í• ë‹¹ëœë‹¤.
+     * "ë¬¼ë¦¬ì "ì˜ ì˜ë¯¸ëŠ” Windows í”Œë«í¼ì—ì„œ "\n"ì´ "\r\n"ìœ¼ë¡œ ì €ì¥ë˜ëŠ”ë°,
+     * LOB ë°ì´í„°ì— "\n"ì´ ìˆì„ ê²½ìš° ì‹¤ì œ ì €ì¥ë˜ëŠ” ê¸¸ì´ì¸ 2ë¡œ ì¹´ìš´íŠ¸í•œë‹¤ëŠ” ê²ƒì´ë‹¤.
+     * use_lob_file=no ë˜ëŠ”
+     * use_lob_file=yes, use_separate_files=noì¸ ê²½ìš° ì‚¬ìš©ëœë‹¤. */
     ULong             **mLOBPhyOffs;
-    /* LOB µ¥ÀÌÅÍÀÇ ¹°¸®Àû ±æÀÌ.
-     * LOB ÄÃ·³ÀÎ °æ¿ì¸¸ ¸Ş¸ğ¸® ÇÒ´çµÈ´Ù.
-     * use_lob_file=no ¶Ç´Â
-     * use_lob_file=yes, use_separate_files=noÀÎ °æ¿ì »ç¿ëµÈ´Ù. */
+    /* LOB ë°ì´í„°ì˜ ë¬¼ë¦¬ì  ê¸¸ì´.
+     * LOB ì»¬ëŸ¼ì¸ ê²½ìš°ë§Œ ë©”ëª¨ë¦¬ í• ë‹¹ëœë‹¤.
+     * use_lob_file=no ë˜ëŠ”
+     * use_lob_file=yes, use_separate_files=noì¸ ê²½ìš° ì‚¬ìš©ëœë‹¤. */
     ULong             **mLOBPhyLen;
-    /* LOB µ¥ÀÌÅÍÀÇ ±æÀÌ.
-     * LOB ÄÃ·³ÀÎ °æ¿ì¸¸ ¸Ş¸ğ¸® ÇÒ´çµÈ´Ù.
-     * "¹°¸®Àû" ±æÀÌ¿Í´Â ´Ş¸® "\n"Àº 1¹ÙÀÌÆ®·Î Ä«¿îÆ®ÇÑ´Ù.
-     * use_lob_file=noÀÎ °æ¿ì »ç¿ëµÈ´Ù. */
+    /* LOB ë°ì´í„°ì˜ ê¸¸ì´.
+     * LOB ì»¬ëŸ¼ì¸ ê²½ìš°ë§Œ ë©”ëª¨ë¦¬ í• ë‹¹ëœë‹¤.
+     * "ë¬¼ë¦¬ì " ê¸¸ì´ì™€ëŠ” ë‹¬ë¦¬ "\n"ì€ 1ë°”ì´íŠ¸ë¡œ ì¹´ìš´íŠ¸í•œë‹¤.
+     * use_lob_file=noì¸ ê²½ìš° ì‚¬ìš©ëœë‹¤. */
     ULong             **mLOBLen; /* Used only when use_lob_file=no */
     SChar               m_HintString[MAX_WORD_LEN*3];
     SQLUSMALLINT       *mStatusPtr;
     iloBool              mSkipFlag[MAX_ATTR_COUNT];
-    iloBool              mOutFileFlag[MAX_ATTR_COUNT];  // PROJ-2030, CT_CASE-3020 CHAR outfile Áö¿ø
+    iloBool              mOutFileFlag[MAX_ATTR_COUNT];  // PROJ-2030, CT_CASE-3020 CHAR outfile ì§€ì›
     iloBool              mNoExpFlag[MAX_ATTR_COUNT];
     SInt                mPrecision[MAX_ATTR_COUNT];
     SInt                mScale[MAX_ATTR_COUNT];
     SChar              *mAttrDateFormat[MAX_ATTR_COUNT];
     SInt                mIsQueue;
-    UInt                mLOBColumnCount;    //BUG-24583 Table¿¡ Æ÷ÇÔµÈ LOB ColumnÀÇ °³¼ö
+    UInt                mLOBColumnCount;    //BUG-24583 Tableì— í¬í•¨ëœ LOB Columnì˜ ê°œìˆ˜
 };
 
 inline SChar *iloTableInfo::GetAttrCVal(SInt nAttr, SInt aArrayCnt)

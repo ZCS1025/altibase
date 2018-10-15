@@ -36,7 +36,7 @@ IDE_RC cmnLinkPeerInitializeUNIX(cmnLink *aLink)
     cmnLinkPeerUNIX *sLink = (cmnLinkPeerUNIX *)aLink;
 
     /*
-     * ¸â¹ö ÃÊ±âÈ­
+     * ë©¤ë²„ ì´ˆê¸°í™”
      */
     sLink->mDesc.mHandle = PDL_INVALID_SOCKET;
     sLink->mDispatchInfo = 0;
@@ -52,12 +52,12 @@ IDE_RC cmnLinkPeerFinalizeUNIX(cmnLink *aLink)
     cmbPool         *sPool = sLink->mLinkPeer.mPool;
 
     /*
-     * socketÀÌ ¿­·ÁÀÖÀ¸¸é ´ÝÀ½
+     * socketì´ ì—´ë ¤ìžˆìœ¼ë©´ ë‹«ìŒ
      */
     IDE_TEST(aLink->mOp->mClose(aLink) != IDE_SUCCESS);
 
     /*
-     * Pending BlockÀÌ ÇÒ´çµÇ¾î ÀÖÀ¸¸é ÇØÁ¦
+     * Pending Blockì´ í• ë‹¹ë˜ì–´ ìžˆìœ¼ë©´ í•´ì œ
      */
     if (sLink->mPendingBlock != NULL)
     {
@@ -74,7 +74,7 @@ IDE_RC cmnLinkPeerCloseUNIX(cmnLink *aLink)
     cmnLinkPeerUNIX *sLink = (cmnLinkPeerUNIX *)aLink;
 
     /*
-     * socketÀÌ ¿­·ÁÀÖÀ¸¸é ´ÝÀ½
+     * socketì´ ì—´ë ¤ìžˆìœ¼ë©´ ë‹«ìŒ
      */
     if (sLink->mDesc.mHandle != PDL_INVALID_SOCKET)
     {
@@ -91,7 +91,7 @@ IDE_RC cmnLinkPeerGetHandleUNIX(cmnLink *aLink, void *aHandle)
     cmnLinkPeerUNIX *sLink = (cmnLinkPeerUNIX *)aLink;
 
     /*
-     * socketÀ» µ¹·ÁÁÜ
+     * socketì„ ëŒë ¤ì¤Œ
      */
     *(PDL_SOCKET *)aHandle = sLink->mDesc.mHandle;
 
@@ -103,7 +103,7 @@ IDE_RC cmnLinkPeerGetDispatchInfoUNIX(cmnLink *aLink, void *aDispatchInfo)
     cmnLinkPeerUNIX *sLink = (cmnLinkPeerUNIX *)aLink;
 
     /*
-     * DispatcherInfo¸¦ µ¹·ÁÁÜ
+     * DispatcherInfoë¥¼ ëŒë ¤ì¤Œ
      */
     *(UInt *)aDispatchInfo = sLink->mDispatchInfo;
 
@@ -115,7 +115,7 @@ IDE_RC cmnLinkPeerSetDispatchInfoUNIX(cmnLink *aLink, void *aDispatchInfo)
     cmnLinkPeerUNIX *sLink = (cmnLinkPeerUNIX *)aLink;
 
     /*
-     * DispatcherInfo¸¦ ¼¼ÆÃ
+     * DispatcherInfoë¥¼ ì„¸íŒ…
      */
     sLink->mDispatchInfo = *(UInt *)aDispatchInfo;
 
@@ -187,7 +187,7 @@ IDE_RC cmnLinkPeerGetDescUNIX(cmnLinkPeer *aLink, void *aDesc)
     cmnLinkPeerUNIX *sLink = (cmnLinkPeerUNIX *)aLink;
 
     /*
-     * Desc¸¦ µ¹·ÁÁÜ
+     * Descë¥¼ ëŒë ¤ì¤Œ
      */
     *(cmnLinkDescUNIX **)aDesc = &sLink->mDesc;
 
@@ -227,21 +227,21 @@ IDE_RC cmnLinkPeerConnectUNIX(cmnLinkPeer *aLink, cmnLinkConnectArg *aConnectArg
     UInt             sPathLen;
 
     /*
-     * socket »ý¼º
+     * socket ìƒì„±
      */
     sLink->mDesc.mHandle = idlOS::socket(AF_UNIX, SOCK_STREAM, 0);
 
     IDE_TEST_RAISE(sLink->mDesc.mHandle == PDL_INVALID_SOCKET, SocketError);
 
     /*
-     * UNIX ÆÄÀÏÀÌ¸§ ±æÀÌ °Ë»ç
+     * UNIX íŒŒì¼ì´ë¦„ ê¸¸ì´ ê²€ì‚¬
      */
     sPathLen = idlOS::strlen(aConnectArg->mUNIX.mFilePath);
 
     IDE_TEST_RAISE(ID_SIZEOF(sLink->mDesc.mAddr.sun_path) <= sPathLen, UnixPathTruncated);
 
     /*
-     * UNIX ÁÖ¼Ò ¼¼ÆÃ
+     * UNIX ì£¼ì†Œ ì„¸íŒ…
      */
     sLink->mDesc.mAddr.sun_family = AF_UNIX;
 
@@ -260,7 +260,7 @@ IDE_RC cmnLinkPeerConnectUNIX(cmnLinkPeer *aLink, cmnLinkConnectArg *aConnectArg
                    ConnectError);
 
     /*
-     * socket ÃÊ±âÈ­
+     * socket ì´ˆê¸°í™”
      */
     IDE_TEST(aLink->mPeerOp->mSetOptions(aLink, aOption) != IDE_SUCCESS);
 
@@ -280,7 +280,7 @@ IDE_RC cmnLinkPeerConnectUNIX(cmnLinkPeer *aLink, cmnLinkConnectArg *aConnectArg
     }
     IDE_EXCEPTION_END;
 
-    // BUG-24170 [CM] cmiConnect ½ÇÆÐ ½Ã, cmiConnect ³»¿¡¼­ close ÇØ¾ß ÇÕ´Ï´Ù
+    // BUG-24170 [CM] cmiConnect ì‹¤íŒ¨ ì‹œ, cmiConnect ë‚´ì—ì„œ close í•´ì•¼ í•©ë‹ˆë‹¤
     if (sLink->mDesc.mHandle != PDL_INVALID_SOCKET)
     {
         (void)idlOS::closesocket(sLink->mDesc.mHandle);
@@ -337,7 +337,7 @@ IDE_RC cmnLinkPeerRecvUNIX(cmnLinkPeer *aLink, cmbBlock **aBlock, cmpHeader *aHe
     cmpPacketType    sPacketType = aLink->mLink.mPacketType;
 
     /*
-     * Pending BlockÀÖÀ¸¸é »ç¿ë ±×·¸Áö ¾ÊÀ¸¸é Block ÇÒ´ç
+     * Pending Blockìžˆìœ¼ë©´ ì‚¬ìš© ê·¸ë ‡ì§€ ì•Šìœ¼ë©´ Block í• ë‹¹
      */
     /* proj_2160 cm_type removal */
     /* A7 or CMP_PACKET_TYPE_UNKNOWN: block already allocated. */
@@ -371,7 +371,7 @@ IDE_RC cmnLinkPeerRecvUNIX(cmnLinkPeer *aLink, cmbBlock **aBlock, cmpHeader *aHe
     }
 
     /*
-     * Protocol Header Size Å©±â ÀÌ»ó ÀÐÀ½
+     * Protocol Header Size í¬ê¸° ì´ìƒ ì½ìŒ
      */
     IDE_TEST(cmnSockRecv(sBlock,
                          aLink,
@@ -381,13 +381,13 @@ IDE_RC cmnLinkPeerRecvUNIX(cmnLinkPeer *aLink, cmbBlock **aBlock, cmpHeader *aHe
                          IDV_STAT_INDEX_RECV_UNIX_BYTE) != IDE_SUCCESS);
 
     /*
-     * Protocol Header ÇØ¼®
+     * Protocol Header í•´ì„
      */
     IDE_TEST(cmpHeaderRead(aLink, &sHeader, sBlock) != IDE_SUCCESS);
     sPacketSize = sHeader.mA7.mPayloadLength + CMP_HEADER_SIZE;
 
     /*
-     * ÆÐÅ¶ Å©±â ÀÌ»ó ÀÐÀ½
+     * íŒ¨í‚· í¬ê¸° ì´ìƒ ì½ìŒ
      */
     IDE_TEST(cmnSockRecv(sBlock,
                          aLink,
@@ -397,7 +397,7 @@ IDE_RC cmnLinkPeerRecvUNIX(cmnLinkPeer *aLink, cmbBlock **aBlock, cmpHeader *aHe
                          IDV_STAT_INDEX_RECV_UNIX_BYTE) != IDE_SUCCESS);
 
     /*
-     * ÆÐÅ¶ Å©±â ÀÌ»ó ÀÐÇûÀ¸¸é ÇöÀç ÆÐÅ¶ ÀÌÈÄÀÇ µ¥ÀÌÅÍ¸¦ Pending BlockÀ¸·Î ¿Å±è
+     * íŒ¨í‚· í¬ê¸° ì´ìƒ ì½í˜”ìœ¼ë©´ í˜„ìž¬ íŒ¨í‚· ì´í›„ì˜ ë°ì´í„°ë¥¼ Pending Blockìœ¼ë¡œ ì˜®ê¹€
      */
     if (sBlock->mDataSize > sPacketSize)
     {
@@ -406,7 +406,7 @@ IDE_RC cmnLinkPeerRecvUNIX(cmnLinkPeer *aLink, cmbBlock **aBlock, cmpHeader *aHe
     }
 
     /*
-     * Block°ú Header¸¦ µ¹·ÁÁÜ
+     * Blockê³¼ Headerë¥¼ ëŒë ¤ì¤Œ
      */
     /* proj_2160 cm_type removal
      *  Do not use mLink.mPacketType. instead, use sPacketType.
@@ -429,7 +429,7 @@ IDE_RC cmnLinkPeerSendUNIX(cmnLinkPeer *aLink, cmbBlock *aBlock)
     cmnLinkPeerUNIX *sLink = (cmnLinkPeerUNIX *)aLink;
 
     /*
-     * Block Àü¼Û
+     * Block ì „ì†¡
      */
     IDE_TEST(cmnSockSend(aBlock,
                          aLink,
@@ -481,13 +481,13 @@ IDE_RC cmnLinkPeerAllocBlockUNIX(cmnLinkPeer *aLink, cmbBlock **aBlock)
     IDE_TEST(aLink->mPool->mOp->mAllocBlock(aLink->mPool, &sBlock) != IDE_SUCCESS);
 
     /*
-     * Write Block ÃÊ±âÈ­
+     * Write Block ì´ˆê¸°í™”
      */
     sBlock->mDataSize = CMP_HEADER_SIZE;
     sBlock->mCursor   = CMP_HEADER_SIZE;
 
     /*
-     * Write BlockÀ» µ¹·ÁÁÜ
+     * Write Blockì„ ëŒë ¤ì¤Œ
      */
     *aBlock = sBlock;
 
@@ -499,7 +499,7 @@ IDE_RC cmnLinkPeerAllocBlockUNIX(cmnLinkPeer *aLink, cmbBlock **aBlock)
 IDE_RC cmnLinkPeerFreeBlockUNIX(cmnLinkPeer *aLink, cmbBlock *aBlock)
 {
     /*
-     * Block ÇØÁ¦
+     * Block í•´ì œ
      */
     IDE_TEST(aLink->mPool->mOp->mFreeBlock(aLink->mPool, aBlock) != IDE_SUCCESS);
 
@@ -572,25 +572,25 @@ IDE_RC cmnLinkPeerMapUNIX(cmnLink *aLink)
     cmnLinkPeer *sLink = (cmnLinkPeer *)aLink;
 
     /*
-     * Link °Ë»ç
+     * Link ê²€ì‚¬
      */
     IDE_ASSERT(aLink->mType == CMN_LINK_TYPE_PEER_SERVER ||
                aLink->mType == CMN_LINK_TYPE_PEER_CLIENT);
     IDE_ASSERT(aLink->mImpl == CMN_LINK_IMPL_UNIX);
 
     /*
-     * Shared Pool È¹µæ
+     * Shared Pool íšë“
      */
     IDE_TEST(cmbPoolGetSharedPool(&sLink->mPool, CMB_POOL_IMPL_LOCAL) != IDE_SUCCESS);
 
     /*
-     * ÇÔ¼ö Æ÷ÀÎÅÍ ¼¼ÆÃ
+     * í•¨ìˆ˜ í¬ì¸í„° ì„¸íŒ…
      */
     aLink->mOp     = &gCmnLinkPeerOpUNIX;
     sLink->mPeerOp = &gCmnLinkPeerPeerOpUNIX;
 
     /*
-     * ¸â¹ö ÃÊ±âÈ­
+     * ë©¤ë²„ ì´ˆê¸°í™”
      */
     sLink->mStatistics = NULL;
     sLink->mUserPtr    = NULL;

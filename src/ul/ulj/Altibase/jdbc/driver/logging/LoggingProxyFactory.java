@@ -28,7 +28,7 @@ import javax.sql.XAConnection;
 import javax.transaction.xa.XAResource;
 
 /**
- * Å¸ÄÏ¿ÀºêÁ§Æ®¸¦ ¹Ş¾Æ¼­ ÇØ´çÇÏ´Â ProxyÅ¬·¡½º¸¦ »ı¼ºÇÏ¿© µ¹·ÁÁÖ´Â ÆÑÅä¸® Å¬·¡½º
+ * íƒ€ì¼“ì˜¤ë¸Œì íŠ¸ë¥¼ ë°›ì•„ì„œ í•´ë‹¹í•˜ëŠ” Proxyí´ë˜ìŠ¤ë¥¼ ìƒì„±í•˜ì—¬ ëŒë ¤ì£¼ëŠ” íŒ©í† ë¦¬ í´ë˜ìŠ¤
  * 
  * @author yjpark
  *
@@ -36,7 +36,7 @@ import javax.transaction.xa.XAResource;
 public final class LoggingProxyFactory
 {
     /**
-     * Connection, Statement ÀÎÅÍÆäÀÌ½º´Â °¢°¢ ±¸ÇöÇÑ Proxy¸¦ »ı¼ºÇÏ°í ³ª¸ÓÁö´Â LoggingProxy¸¦ »ı¼ºÇÑ´Ù.
+     * Connection, Statement ì¸í„°í˜ì´ìŠ¤ëŠ” ê°ê° êµ¬í˜„í•œ Proxyë¥¼ ìƒì„±í•˜ê³  ë‚˜ë¨¸ì§€ëŠ” LoggingProxyë¥¼ ìƒì„±í•œë‹¤.
      * 
      * @param aClassInfo
      * @param aOrigin

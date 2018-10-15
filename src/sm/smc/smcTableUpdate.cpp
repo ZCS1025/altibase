@@ -63,12 +63,12 @@ IDE_RC smcTableUpdate::redo_SMR_LT_TRANS_COMMIT(SChar     *aAfterImage,
                           SMI_ID_TABLESPACE_SYSTEM_MEMORY_DIC,
                           sPageID,
                           &sIsExistTBS,
-                          &sIsApplyLog ) // sIsFailureDBF º¹±¸´ë»óÀÌ¶ó¸é
+                          &sIsApplyLog ) // sIsFailureDBF ë³µêµ¬ëŒ€ìƒì´ë¼ë©´
                        != IDE_SUCCESS );
         }
         else
         {
-            // ¹Ìµğ¾îº¹±¸°¡ ¾Æ´Ñ°æ¿ì¿¡´Â ¹«Á¶°Ç Àû¿ëÇÑ´Ù.
+            // ë¯¸ë””ì–´ë³µêµ¬ê°€ ì•„ë‹Œê²½ìš°ì—ëŠ” ë¬´ì¡°ê±´ ì ìš©í•œë‹¤.
             sIsExistTBS = ID_TRUE;
             sIsApplyLog = ID_TRUE;
         }
@@ -84,10 +84,10 @@ IDE_RC smcTableUpdate::redo_SMR_LT_TRANS_COMMIT(SChar     *aAfterImage,
                             (void**)&sTableHeader )
                         == IDE_SUCCESS );
 
-            /* BUG-15710: Redo½Ã¿¡ Æ¯Á¤¿µ¿ªÀÇ µ¥ÀÌÅ¸°¡ ¿Ã¹Ù¸¥Áö ASSERT¸¦
-             * °É°í ÀÖ½À´Ï´Ù.
-             * Redo½Ã¿¡ ÇØ´çµ¥ÀÌÅ¸¿¡ redoÇÏ±âÀü±îÁö´Â ValidÇÏ´Ù´Â °ÍÀ»
-             * º¸ÀåÇÏÁö ¸øÇÕ´Ï´Ù.
+            /* BUG-15710: Redoì‹œì— íŠ¹ì •ì˜ì—­ì˜ ë°ì´íƒ€ê°€ ì˜¬ë°”ë¥¸ì§€ ASSERTë¥¼
+             * ê±¸ê³  ìˆìŠµë‹ˆë‹¤.
+             * Redoì‹œì— í•´ë‹¹ë°ì´íƒ€ì— redoí•˜ê¸°ì „ê¹Œì§€ëŠ” Validí•˜ë‹¤ëŠ” ê²ƒì„
+             * ë³´ì¥í•˜ì§€ ëª»í•©ë‹ˆë‹¤.
              * IDE_ASSERT( SMI_TABLE_TYPE_IS_DISK( sTableHeader ) == ID_TRUE );
              */
             idlOS::memcpy( &(sTableHeader->mFixed.mDRDB.mRecCnt),
@@ -102,7 +102,7 @@ IDE_RC smcTableUpdate::redo_SMR_LT_TRANS_COMMIT(SChar     *aAfterImage,
         }
         else
         {
-            // ¹Ìµğ¾î º¹±¸½Ã¿¡¸¸ Àû¿ëÇÏÁö ¾Ê°í ³Ñ¾î°¡´Â °æ¿ì°¡ Á¸ÀçÇÑ´Ù.
+            // ë¯¸ë””ì–´ ë³µêµ¬ì‹œì—ë§Œ ì ìš©í•˜ì§€ ì•Šê³  ë„˜ì–´ê°€ëŠ” ê²½ìš°ê°€ ì¡´ì¬í•œë‹¤.
             IDE_ERROR_MSG( aForMediaRecovery == ID_TRUE, 
                            "aForMediaRecovery : %"ID_UINT32_FMT, aForMediaRecovery );
 
@@ -236,8 +236,8 @@ IDE_RC smcTableUpdate::undo_SMC_TABLEHEADER_UPDATE_INDEX(
     else
     {
         // PR-14912
-        // ÀÌÀü index slot header¿¡ buildÇß´ø index runtime header¸£
-        // Á¦°ÅÇÑ´Ù.
+        // ì´ì „ index slot headerì— buildí–ˆë˜ index runtime headerë¥´
+        // ì œê±°í•œë‹¤.
         // but, do not redo CLR
         if( SMI_TABLE_TYPE_IS_DISK( sTableHeader ) == ID_TRUE &&
             ( smrRecoveryMgr::isRefineDRDBIdx()    == ID_TRUE ) )
@@ -271,24 +271,24 @@ IDE_RC smcTableUpdate::undo_SMC_TABLEHEADER_UPDATE_INDEX(
         sState = 0;
         IDE_TEST( smcTable::unlatch( sTableHeader ) != IDE_SUCCESS );
     }
-    else // restart½Ã
+    else // restartì‹œ
     {
         /* ------------------------------------------------
          * PR-14912
-         * ÇØ´ç°æ¿ì´Â index »ı¼º ¹× Á¦°Å°úÁ¤¿¡¼­ system crash°¡
-         * ¹ß»ıÇÏ¿© restart recoveryÇÏ´Â °úÁ¤¿¡ ÀÌÀü(old) index header
-         * µéÀ» ÀúÀåÇÏ°í ÀÖ´Â index header slot¿¡ ´ëÇØ¼­
-         * ´Ù½Ã index runtime header¸¦ build ÇØÁÖ¾î¾ß ÇÑ´Ù.
+         * í•´ë‹¹ê²½ìš°ëŠ” index ìƒì„± ë° ì œê±°ê³¼ì •ì—ì„œ system crashê°€
+         * ë°œìƒí•˜ì—¬ restart recoveryí•˜ëŠ” ê³¼ì •ì— ì´ì „(old) index header
+         * ë“¤ì„ ì €ì¥í•˜ê³  ìˆëŠ” index header slotì— ëŒ€í•´ì„œ
+         * ë‹¤ì‹œ index runtime headerë¥¼ build í•´ì£¼ì–´ì•¼ í•œë‹¤.
          *
-         * [ ÁÖÀÇ»çÇ× ]
-         * new index header slot¿¡ ´ëÇØ¼­ redoAll ¿Ï·áÁ÷ÈÄ¿¡
-         * »ı¼ºÀº ÇØÁÖÁö¸¸, ±ò²ûÇÏ°Ô ´Ù½Ã »ı¼ºÇØÁØ´Ù.
+         * [ ì£¼ì˜ì‚¬í•­ ]
+         * new index header slotì— ëŒ€í•´ì„œ redoAll ì™„ë£Œì§í›„ì—
+         * ìƒì„±ì€ í•´ì£¼ì§€ë§Œ, ê¹”ë”í•˜ê²Œ ë‹¤ì‹œ ìƒì„±í•´ì¤€ë‹¤.
          * ----------------------------------------------*/
         // but, do not redo CLR
         if( SMI_TABLE_TYPE_IS_DISK( sTableHeader ) == ID_TRUE &&
             ( smrRecoveryMgr::isRefineDRDBIdx()    == ID_TRUE ) )
         {
-            // Lock & RuntimeItem ´Â ÀÌ¹Ì Á¸ÀçÇÏ¹Ç·Î ÃÊ±âÈ­ÇÒ ÇÊ¿ä¾ø´Ù.
+            // Lock & RuntimeItem ëŠ” ì´ë¯¸ ì¡´ì¬í•˜ë¯€ë¡œ ì´ˆê¸°í™”í•  í•„ìš”ì—†ë‹¤.
             IDE_TEST( smcTable::rebuildRuntimeIndexHeaders(
                                   NULL,  /* idvSQL* */
                                   sTableHeader,
@@ -357,27 +357,27 @@ IDE_RC smcTableUpdate::redo_undo_SMC_TABLEHEADER_UPDATE_COLUMNS(
     idlOS::memcpy(&(sTableHeader->mColumnCount), aAfterImage, ID_SIZEOF(UInt));
 
 
-    /* Runtime Header°¡ Á¸ÀçÇÏ´Â °æ¿ì, Áï Undo ½ÃÁ¡¿¡¼­¸¸ ¼öÇàÇÔ */
+    /* Runtime Headerê°€ ì¡´ì¬í•˜ëŠ” ê²½ìš°, ì¦‰ Undo ì‹œì ì—ì„œë§Œ ìˆ˜í–‰í•¨ */
     if ( SMI_TABLE_TYPE_IS_DISK( sTableHeader ) == ID_TRUE )
     {
         /* BUG-31949 [qp-ddl-dcl-execute] failure of index visibility check
          * after abort real-time DDL in partitioned table. 
-         * ÀÌ °æ¿ì´Â RestartRecovery Áß¿¡µµ ¼öÇàÇØ¾ß ÇÒ ÇÊ¿ä°¡ ÀÖ´Ù. ¿Ö³ÄÇÏ¸é DRDB
-         * Index Header°¡ Redo ÈÄ ¸¸µé¾îÁö±â ¶§¹®¿¡, ´ÙÀ½°ú °°Àº ¹®Á¦°¡ ¹ß»ıÇÒ ¼ö
-         * ÀÖ´Ù.
+         * ì´ ê²½ìš°ëŠ” RestartRecovery ì¤‘ì—ë„ ìˆ˜í–‰í•´ì•¼ í•  í•„ìš”ê°€ ìˆë‹¤. ì™œëƒí•˜ë©´ DRDB
+         * Index Headerê°€ Redo í›„ ë§Œë“¤ì–´ì§€ê¸° ë•Œë¬¸ì—, ë‹¤ìŒê³¼ ê°™ì€ ë¬¸ì œê°€ ë°œìƒí•  ìˆ˜
+         * ìˆë‹¤.
          *
          * 1) Alter table modify column ( A -> A~)
-         * 2) CommitµÇÁö ¸øÇÏ°í ºñÁ¤»ó Á¾·á
+         * 2) Commitë˜ì§€ ëª»í•˜ê³  ë¹„ì •ìƒ ì¢…ë£Œ
          * 3) Restart Recovery
-         * 4) Redo ½ÃÀÛ
+         * 4) Redo ì‹œì‘
          * 5) Redo SMR_SMC_TABLEHEADER_UPDATE_COLUMNS
-         *      Table Column Á¤º¸¸¦ A -> A~ ·Î º¯°æ
-         * 6) DRDB Index Runtime Header »ı¼º
-         *      Table ColumnÀÇ A~¸¦ ¹ÙÅÁÀ¸·Î Index Runtime Header »ı¼ºµÊ
+         *      Table Column ì •ë³´ë¥¼ A -> A~ ë¡œ ë³€ê²½
+         * 6) DRDB Index Runtime Header ìƒì„±
+         *      Table Columnì˜ A~ë¥¼ ë°”íƒ•ìœ¼ë¡œ Index Runtime Header ìƒì„±ë¨
          * 7) Undo SMR_SMC_TABLEHEADER_UPDATE_COLUMNS
-         *      Table Column Á¤º¸¸¦ A~-> A ·Î º¯°æ
-         *      ÇÏÁö¸¸ Index Runtime Header´Â º¯°æÇÏÁö ¾ÊÀ½
-         * 8) Table ColumnÀº ColumnÀÌ AÀÎµ¥,  Index ColumnÀº A~°¡ µÊ */
+         *      Table Column ì •ë³´ë¥¼ A~-> A ë¡œ ë³€ê²½
+         *      í•˜ì§€ë§Œ Index Runtime HeaderëŠ” ë³€ê²½í•˜ì§€ ì•ŠìŒ
+         * 8) Table Columnì€ Columnì´ Aì¸ë°,  Index Columnì€ A~ê°€ ë¨ */
         if ( smrRecoveryMgr::isRefineDRDBIdx() == ID_TRUE )
         {
             for ( i = 0 ; i < smcTable::getIndexCount( sTableHeader ) ; i ++ )
@@ -395,9 +395,9 @@ IDE_RC smcTableUpdate::redo_undo_SMC_TABLEHEADER_UPDATE_COLUMNS(
         }
 
         /* PROJ-2399 Row Template
-         * ¾÷µ¥ÀÌÆ®µÈ columnÁ¤º¸¸¦ ¹ÙÅÁÀ¸·Î RowTemplate¸¦ Àç±¸¼º ÇÑ´Ù. 
-         * rowTemplate´Â restartÀÌÈÄ¿¡ ¸¸µé¾îÁø´Ù.(refine¿Ï·á ÀÌÈÄ) 
-         * µû¶ó¼­ restart°¡ ¾Æ´Ñ ¼­ºñ½º»óÅÂÀÏ¶§ undo¸¸ Ã³¸®ÇÏ¸é µÈ´Ù. */
+         * ì—…ë°ì´íŠ¸ëœ columnì •ë³´ë¥¼ ë°”íƒ•ìœ¼ë¡œ RowTemplateë¥¼ ì¬êµ¬ì„± í•œë‹¤. 
+         * rowTemplateëŠ” restartì´í›„ì— ë§Œë“¤ì–´ì§„ë‹¤.(refineì™„ë£Œ ì´í›„) 
+         * ë”°ë¼ì„œ restartê°€ ì•„ë‹Œ ì„œë¹„ìŠ¤ìƒíƒœì¼ë•Œ undoë§Œ ì²˜ë¦¬í•˜ë©´ ëœë‹¤. */
         if ( (smrRecoveryMgr::isRestart() != ID_TRUE) && 
              (sTableHeader->mColumns.fstPieceOID != SM_NULL_OID) )
         {
@@ -701,8 +701,8 @@ IDE_RC smcTableUpdate::redo_SMC_TABLEHEADER_SET_INCONSISTENT(
 
     sForMediaRecovery = (idBool)aData;
 
-    /* MediaRecovery ¿Ü¿¡µµ ÇØ¾ßÇÏ´Â °æ¿ìÀÌ°Å³ª,
-     * ÇöÀç MediaReovery ÁßÀÏ °æ¿ì */
+    /* MediaRecovery ì™¸ì—ë„ í•´ì•¼í•˜ëŠ” ê²½ìš°ì´ê±°ë‚˜,
+     * í˜„ì¬ MediaReovery ì¤‘ì¼ ê²½ìš° */
     if( ( sForMediaRecovery == ID_FALSE ) ||
         ( smrRecoveryMgr::isMediaRecoveryPhase() == ID_TRUE ) )
     {
@@ -930,7 +930,7 @@ IDE_RC smcTableUpdate::undo_SMC_TABLEHEADER_UPDATE_TABLE_SEGMENT(smTID        /*
                     (void**)&sTableHeader )
                 == IDE_SUCCESS );
 
-    /* BUG-15710: Redo½Ã¿¡ Æ¯Á¤¿µ¿ªÀÇ µ¥ÀÌÅ¸°¡ ¿Ã¹Ù¸¥Áö ASSERT¸¦ °É°í ÀÖ½À´Ï´Ù.
+    /* BUG-15710: Redoì‹œì— íŠ¹ì •ì˜ì—­ì˜ ë°ì´íƒ€ê°€ ì˜¬ë°”ë¥¸ì§€ ASSERTë¥¼ ê±¸ê³  ìˆìŠµë‹ˆë‹¤.
        IDE_DASSERT( SMI_TABLE_TYPE_IS_DISK( sTableHeader ) == ID_TRUE );
     */
 

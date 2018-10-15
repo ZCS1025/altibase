@@ -19,11 +19,11 @@
  * $Id: qmgInsert.h 53265 2012-05-18 00:05:06Z seo0jun $
  *
  * Description :
- *     Insert Graph¸¦ À§ÇÑ Á¤ÀÇ
+ *     Insert Graphë¥¼ ìœ„í•œ ì •ì˜
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  **********************************************************************/
 
@@ -34,45 +34,45 @@
 #include <qmgDef.h>
 
 //---------------------------------------------------
-// Insert GraphÀÇ Define »ó¼ö
+// Insert Graphì˜ Define ìƒìˆ˜
 //---------------------------------------------------
 
 
 //---------------------------------------------------
-// Multi-Insert Graph ¸¦ °ü¸®ÇÏ±â À§ÇÑ ÀÚ·á ±¸Á¶
+// Multi-Insert Graph ë¥¼ ê´€ë¦¬í•˜ê¸° ìœ„í•œ ìë£Œ êµ¬ì¡°
 //---------------------------------------------------
 
 typedef struct qmgMTIT
 {
-    qmgGraph             graph;    // °øÅë Graph Á¤º¸
+    qmgGraph             graph;    // ê³µí†µ Graph ì •ë³´
 
     //---------------------------------
-    // insert °ü·Ã Á¤º¸
+    // insert ê´€ë ¨ ì •ë³´
     //---------------------------------
     
 } qmgMTIT;
 
 //---------------------------------------------------
-// Mutlti-Insert Graph ¸¦ °ü¸®ÇÏ±â À§ÇÑ ÇÔ¼ö
+// Mutlti-Insert Graph ë¥¼ ê´€ë¦¬í•˜ê¸° ìœ„í•œ í•¨ìˆ˜
 //---------------------------------------------------
 
 class qmgMultiInsert
 {
 public:
-    // Graph ÀÇ ÃÊ±âÈ­
+    // Graph ì˜ ì´ˆê¸°í™”
     static IDE_RC  init( qcStatement * aStatement,
                          qmgGraph    * aChildGraph,
                          qmgGraph   ** aGraph );
 
-    // GraphÀÇ ÃÖÀûÈ­ ¼öÇà
+    // Graphì˜ ìµœì í™” ìˆ˜í–‰
     static IDE_RC  optimize( qcStatement * aStatement, qmgGraph * aGraph );
 
-    // GraphÀÇ Plan Tree »ı¼º
+    // Graphì˜ Plan Tree ìƒì„±
     static IDE_RC  makePlan( qcStatement    * aStatement,
                              const qmgGraph * aParent,
                              qmgGraph       * aGraph );
 
-    // GraphÀÇ °øÅë Á¤º¸¸¦ Ãâ·ÂÇÔ.
+    // Graphì˜ ê³µí†µ ì •ë³´ë¥¼ ì¶œë ¥í•¨.
     static IDE_RC  printGraph( qcStatement  * aStatement,
                                qmgGraph     * aGraph,
                                ULong          aDepth,

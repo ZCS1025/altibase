@@ -29,7 +29,7 @@ ACI_RC cmbPoolInitializeLOCAL(cmbPool *aPool)
     cmbPoolLOCAL *sPool = (cmbPoolLOCAL *)aPool;
 
     /*
-     * Block Pool ÃÊ±âÈ­
+     * Block Pool ì´ˆê¸°í™”
      */
     ACI_TEST(aclMemPoolCreate(&sPool->mBlockPool,
                               ACI_SIZEOF(cmbBlock) + aPool->mBlockSize,
@@ -46,7 +46,7 @@ ACI_RC cmbPoolFinalizeLOCAL(cmbPool *aPool)
     cmbPoolLOCAL *sPool = (cmbPoolLOCAL *)aPool;
 
     /*
-     * Block Pool »èÁ¦
+     * Block Pool ì‚­ì œ
      */
     aclMemPoolDestroy(&sPool->mBlockPool);
 
@@ -58,12 +58,12 @@ ACI_RC cmbPoolAllocBlockLOCAL(cmbPool *aPool, cmbBlock **aBlock)
     cmbPoolLOCAL *sPool = (cmbPoolLOCAL *)aPool;
 
     /*
-     * Block ÇÒ´ç
+     * Block í• ë‹¹
      */
     ACI_TEST(aclMemPoolAlloc(&sPool->mBlockPool, (void **)aBlock) != ACP_RC_SUCCESS);
 
     /*
-     * Block ÃÊ±âÈ­
+     * Block ì´ˆê¸°í™”
      */
     (*aBlock)->mBlockSize   = aPool->mBlockSize;
     (*aBlock)->mDataSize    = 0;
@@ -83,13 +83,13 @@ ACI_RC cmbPoolFreeBlockLOCAL(cmbPool *aPool, cmbBlock *aBlock)
     cmbPoolLOCAL *sPool  = (cmbPoolLOCAL *)aPool;
 
     /*
-     * List¿¡¼­ Block »èÁ¦
+     * Listì—ì„œ Block ì‚­ì œ
      */
 
     acpListDeleteNode(&aBlock->mListNode);
 
     /*
-     * Block ÇØÁ¦
+     * Block í•´ì œ
      */
     aclMemPoolFree(&sPool->mBlockPool, (void*)aBlock);
 
@@ -112,7 +112,7 @@ struct cmbPoolOP gCmbPoolOpLOCALClient =
 ACI_RC cmbPoolMapLOCAL(cmbPool *aPool)
 {
     /*
-     * ÇÔ¼ö Æ÷ÀÎÅÍ ¼¼ÆÃ
+     * í•¨ìˆ˜ í¬ì¸í„° ì„¸íŒ…
      */
     aPool->mOp = &gCmbPoolOpLOCALClient;
 

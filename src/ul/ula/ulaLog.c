@@ -29,11 +29,11 @@
  * -----------------------------------------------------------------------------
  *  ulaLog :
  *
- *      ideMsgLog ÀÇ ±¸ÇöÀ» ±×´ë·Î °¡Á®¿È.
+ *      ideMsgLog ì˜ êµ¬í˜„ì„ ê·¸ëŒ€ë¡œ ê°€ì ¸ì˜´.
  *
- *      ¿ø·¡´Â ideMsgLog Å¬·¡½ºÀÇ ÀÎ½ºÅÏ½º·Î ulaLog ¸¦ »ı¼ºÇßÀ¸³ª
- *      PROJ-1000 ÁøÇàÇÏ¸é¼­ id ¸¦ ¾ø¾Ö´Â Åë¿¡
- *      ideMsgLog ¸¦ ±×´ë·Î °¡Á®¿À°Ô µÊ.
+ *      ì›ë˜ëŠ” ideMsgLog í´ë˜ìŠ¤ì˜ ì¸ìŠ¤í„´ìŠ¤ë¡œ ulaLog ë¥¼ ìƒì„±í–ˆìœ¼ë‚˜
+ *      PROJ-1000 ì§„í–‰í•˜ë©´ì„œ id ë¥¼ ì—†ì• ëŠ” í†µì—
+ *      ideMsgLog ë¥¼ ê·¸ëŒ€ë¡œ ê°€ì ¸ì˜¤ê²Œ ë¨.
  * -----------------------------------------------------------------------------
  */
 
@@ -62,10 +62,10 @@ struct ulaLogMgr
     acp_char_t       mFileName[1024]; // File Name
     acp_offset_t     mSize;           // file size
     acp_uint32_t     mMaxNumber;      // loop file number
-    acp_uint32_t     mCurNumber;      // ReplaceµÉ È­ÀÏ¹øÈ£
-    acp_uint32_t     mInitialized;    // ÃÊ±âÈ­ À¯¹« : acp_bool_tÀ» ¾²Áö ¾ÊÀº
-                                      // °ÍÀº Á¤Àû¿µ¿ªÀ¸·Î 0 ÃÊ±âÈ­À¸·Î
-                                      // µÇ±â ¶§¹®¿¡ ÀÇ¹Ì°¡ Æ²·ÁÁü.
+    acp_uint32_t     mCurNumber;      // Replaceë  í™”ì¼ë²ˆí˜¸
+    acp_uint32_t     mInitialized;    // ì´ˆê¸°í™” ìœ ë¬´ : acp_bool_tì„ ì“°ì§€ ì•Šì€
+                                      // ê²ƒì€ ì •ì ì˜ì—­ìœ¼ë¡œ 0 ì´ˆê¸°í™”ìœ¼ë¡œ
+                                      // ë˜ê¸° ë•Œë¬¸ì— ì˜ë¯¸ê°€ í‹€ë ¤ì§.
 };
 
 static ulaLogMgr gUlaLogMgr;
@@ -196,15 +196,15 @@ ACI_RC ulaLogMgrCreateFileAndHeader(ulaLogMgr *aLogMgr)
 
     /*
      * PROJ-1000 Client C Porting
-     *           id ¸¦ ¾ø¾Ö¸é¼­, iduVersionString, iduGetSystemInfoString(),
-     *           iduGetProductionTimeString() ÀÌ ¸¹Àº °ÍÀ» ¹°°í µé¾î¿À¹Ç·Î
-     *           ¾ø¾Ú.
+     *           id ë¥¼ ì—†ì• ë©´ì„œ, iduVersionString, iduGetSystemInfoString(),
+     *           iduGetProductionTimeString() ì´ ë§ì€ ê²ƒì„ ë¬¼ê³  ë“¤ì–´ì˜¤ë¯€ë¡œ
+     *           ì—†ì•°.
      *
-     *           ´Ü¼øÇÑ ·Î±×ÀÇ Çì´õÀÌ±â ¶§¹®¿¡
-     *           Å« ¹®Á¦ ¾ø´Ù°í ÆÇ´Ü.
+     *           ë‹¨ìˆœí•œ ë¡œê·¸ì˜ í—¤ë”ì´ê¸° ë•Œë¬¸ì—
+     *           í° ë¬¸ì œ ì—†ë‹¤ê³  íŒë‹¨.
      *
-     *           ·Î±× Çì´õ¸¦ ÀĞÀ» ¶§¿¡µµ ULA_MSGLOG_HEADER_NUMBER µÚÀÇ
-     *           ¼ıÀÚ±îÁö¸¸ Ã¼Å©ÇÏ±â ¶§¹®¿¡ Å« ¹®Á¦ ¾ø¾î º¸ÀÓ.
+     *           ë¡œê·¸ í—¤ë”ë¥¼ ì½ì„ ë•Œì—ë„ ULA_MSGLOG_HEADER_NUMBER ë’¤ì˜
+     *           ìˆ«ìê¹Œì§€ë§Œ ì²´í¬í•˜ê¸° ë•Œë¬¸ì— í° ë¬¸ì œ ì—†ì–´ ë³´ì„.
      */
     
     (void)acpFprintf(aLogMgr->mFP,
@@ -229,11 +229,11 @@ static ACI_RC ulaLogMgrCheckExist(ulaLogMgr *aLogMgr)
     acp_stat_t sStat;
 
     /*
-     * BUGBUG : acp ¿¡ access() ÇÔ¼ö¸¦ ´ëÃ¼ÇÒ ¼ö ÀÖ´Â ÇÔ¼ö°¡ ¾øÀ½.
-     *          ¿ì¼±Àº º» ÇÔ¼ö ulaLogMgrCheckExist() ÀÇ ÀÌ¸§Ã³·³
-     *          ÆÄÀÏ ÀÇ Á¸Àç ¿©ºÎ¸¸ Ã¼Å©ÇÏµµ·Ï ±¸ÇöÇÔ.
+     * BUGBUG : acp ì— access() í•¨ìˆ˜ë¥¼ ëŒ€ì²´í•  ìˆ˜ ìˆëŠ” í•¨ìˆ˜ê°€ ì—†ìŒ.
+     *          ìš°ì„ ì€ ë³¸ í•¨ìˆ˜ ulaLogMgrCheckExist() ì˜ ì´ë¦„ì²˜ëŸ¼
+     *          íŒŒì¼ ì˜ ì¡´ì¬ ì—¬ë¶€ë§Œ ì²´í¬í•˜ë„ë¡ êµ¬í˜„í•¨.
      *
-     *          BUG-29613 À¸·Î µî·ÏÇÔ.
+     *          BUG-29613 ìœ¼ë¡œ ë“±ë¡í•¨.
      */
     sRc = acpFileStatAtPath(aLogMgr->mFileName, &sStat, ACP_TRUE);
     if (ACP_RC_IS_ENOENT(sRc))
@@ -287,7 +287,7 @@ static ACI_RC ulaLogMgrReadFileNumber(ulaLogMgr    *aLogMgr,
 
     sBufferLen = (acp_sint32_t)acpCStrLen(sBuffer, ACI_SIZEOF(sBuffer));
 
-    for (i = 0; i <= sBufferLen; i++) // °ø¹é Á¦°Å
+    for (i = 0; i <= sBufferLen; i++) // ê³µë°± ì œê±°
     {
         if (sBuffer[i] == 0) break;
         if (sBuffer[i] == ' ')
@@ -358,11 +358,11 @@ static ACI_RC ulaLogMgrOpen(ulaLogMgr *aLogMgr)
 
     ACE_DASSERT( aLogMgr->mInitialized == 1 );
 
-    if (ulaLogMgrCheckExist(aLogMgr) == ACI_SUCCESS) // È­ÀÏÀÌ Á¸ÀçÇÔ.
+    if (ulaLogMgrCheckExist(aLogMgr) == ACI_SUCCESS) // í™”ì¼ì´ ì¡´ì¬í•¨.
     {
         if (ulaLogMgrReadFileNumber(aLogMgr, &sCurNumber) != ACI_SUCCESS)
         {
-            // È­ÀÏÀÇ ³»¿ëÀÌ ºñÁ¤»óÀÓ => Áö¿îÈÄ¿¡ 1¹øÀ¸·Î Àç»ı¼º
+            // í™”ì¼ì˜ ë‚´ìš©ì´ ë¹„ì •ìƒì„ => ì§€ìš´í›„ì— 1ë²ˆìœ¼ë¡œ ì¬ìƒì„±
             (void)acpStdClose( aLogMgr->mFP );
             (void)ulaLogMgrErase(aLogMgr);
 
@@ -377,7 +377,7 @@ static ACI_RC ulaLogMgrOpen(ulaLogMgr *aLogMgr)
             ACI_TEST_RAISE(ACP_RC_NOT_SUCCESS(sRc), open_error);
         }
     }
-    else // È­ÀÏÀÌ ¾øÀ½
+    else // í™”ì¼ì´ ì—†ìŒ
     {
         aLogMgr->mCurNumber = 1;
         ACI_TEST_RAISE(ulaLogMgrCreateFileAndHeader(aLogMgr) != ACI_SUCCESS,
@@ -405,14 +405,14 @@ static ACI_RC ulaLogMgrCheckSizeAndRename(ulaLogMgr *aLogMgr)
     acp_rc_t     sRc;
     acp_offset_t sSize = 0;
 
-    // È­ÀÏ Size Check and Cutting
-    if (aLogMgr->mSize != 0) // È­ÀÏ Size ¸í½ÃµÇ¸é Cutting.
+    // í™”ì¼ Size Check and Cutting
+    if (aLogMgr->mSize != 0) // í™”ì¼ Size ëª…ì‹œë˜ë©´ Cutting.
     {
         sRc = acpStdTell(aLogMgr->mFP, &sSize); 
 
-        /* È­ÀÏ Å©±â¸¦ ³ÑÀ½ : ÀÚ¸£±â 
-         * acpStdTell ¿¡ ½ÇÆĞÇÔ : ÇØ´ç ·Î±× ÆÄÀÏÀ» º¹»çº»À¸·Î ³Ñ±â°í
-         * »õ ·Î±× ÆÄÀÏ ¾¸. */
+        /* í™”ì¼ í¬ê¸°ë¥¼ ë„˜ìŒ : ìë¥´ê¸° 
+         * acpStdTell ì— ì‹¤íŒ¨í•¨ : í•´ë‹¹ ë¡œê·¸ íŒŒì¼ì„ ë³µì‚¬ë³¸ìœ¼ë¡œ ë„˜ê¸°ê³ 
+         * ìƒˆ ë¡œê·¸ íŒŒì¼ ì”€. */
         if ( ( sRc != ACP_RC_SUCCESS ) ||              
              ( sSize >= aLogMgr->mSize ) ) 
         {
@@ -420,8 +420,8 @@ static ACI_RC ulaLogMgrCheckSizeAndRename(ulaLogMgr *aLogMgr)
 
             /*
              * - 1. close
-             * - 2. ÇöÀç È­ÀÏÀ» rename
-             * - 3. »õ·Ó°Ô »ı¼º
+             * - 2. í˜„ì¬ í™”ì¼ì„ rename
+             * - 3. ìƒˆë¡­ê²Œ ìƒì„±
              */
             (void)acpStdClose( aLogMgr->mFP ); 
 
@@ -510,7 +510,7 @@ static ACI_RC ulaLogMgrLogBody(ulaLogMgr        *aLogMgr,
 }
 
 // fix BUG-28453
-// ¿À¹ö·ÎµùµÈ logBody()¸¦ ºĞ¸®
+// ì˜¤ë²„ë¡œë”©ëœ logBody()ë¥¼ ë¶„ë¦¬
 static ACI_RC ulaLogMgrLogBodyV(ulaLogMgr        *aLogMgr,
                                 const acp_char_t *format,
                                 va_list           aList)
@@ -536,7 +536,7 @@ static ACI_RC ulaLogMgrFlush(ulaLogMgr *aLogMgr)
 
     if (aLogMgr->mFP)
     {
-        if (ulaLogMgrCheckExist(aLogMgr) != ACI_SUCCESS) // È­ÀÏÀÌ Áö¿öÁü
+        if (ulaLogMgrCheckExist(aLogMgr) != ACI_SUCCESS) // í™”ì¼ì´ ì§€ì›Œì§
         {
             (void)ulaLogMgrClose(aLogMgr);
 
@@ -578,8 +578,8 @@ ACI_RC ulaEnableLogging(const acp_char_t *aLogDirectory,
     ACI_TEST_RAISE(aLogFileName == NULL, ERR_PARAMETER_NULL);
 
     /*
-     * Note : unix / windows ±¸ºĞÇØ¼­ / È¤Àº \ ¸¦ ³Ö¾î¾ß ÇÏ´Âµ¥,
-     *        acp ¿¡¼­´Â ÇÊ¿ä ¾ø´Ù.
+     * Note : unix / windows êµ¬ë¶„í•´ì„œ / í˜¹ì€ \ ë¥¼ ë„£ì–´ì•¼ í•˜ëŠ”ë°,
+     *        acp ì—ì„œëŠ” í•„ìš” ì—†ë‹¤.
      */
     (void)acpSnprintf(sTargetFileName, ACI_SIZEOF(sTargetFileName), "%s%c%s",
                       aLogDirectory, '/', aLogFileName);
@@ -673,7 +673,7 @@ ACI_RC ulaLogTrace(ulaErrorMgr      *aOutErrorMgr,
     va_start(sArgs, aFormat);
 
     // fix BUG-28453
-    // ¿À¹ö·ÎµùµÈ logBody()¸¦ ºĞ¸®
+    // ì˜¤ë²„ë¡œë”©ëœ logBody()ë¥¼ ë¶„ë¦¬
     (void)ulaLogMgrLogBodyV(&gUlaLogMgr, aFormat, sArgs);
 
     va_end(sArgs);

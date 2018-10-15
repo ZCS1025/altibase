@@ -21,17 +21,17 @@
  * Description :
  *     LMST(LiMit SorT) Node
  *
- *     °ü°èÇü ¸ğµ¨¿¡¼­ sorting ¿¬»êÀ» ¼öÇàÇÏ´Â Plan Node ÀÌ´Ù.
+ *     ê´€ê³„í˜• ëª¨ë¸ì—ì„œ sorting ì—°ì‚°ì„ ìˆ˜í–‰í•˜ëŠ” Plan Node ì´ë‹¤.
  *
- *     ´ÙÀ½°ú °°Àº ±â´ÉÀ» À§ÇØ »ç¿ëµÈ´Ù.
+ *     ë‹¤ìŒê³¼ ê°™ì€ ê¸°ëŠ¥ì„ ìœ„í•´ ì‚¬ìš©ëœë‹¤.
  *         - Limit Order By
  *             : SELECT * FROM T1 ORDER BY I1 LIMIT 10;
  *         - Store And Search
- *             : MIN, MAX °ª¸¸À» ÀúÀå °ü¸®
+ *             : MIN, MAX ê°’ë§Œì„ ì €ì¥ ê´€ë¦¬
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  **********************************************************************/
 
@@ -47,7 +47,7 @@ qmnLMST::init( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    LMST ³ëµåÀÇ ÃÊ±âÈ­
+ *    LMST ë…¸ë“œì˜ ì´ˆê¸°í™”
  *
  * Implementation :
  *
@@ -66,7 +66,7 @@ qmnLMST::init( qcTemplate * aTemplate,
     sDataPlan->doIt        = qmnLMST::doItDefault;
 
     //----------------------------------------
-    // ÃÖÃÊ ÃÊ±âÈ­ ¼öÇà
+    // ìµœì´ˆ ì´ˆê¸°í™” ìˆ˜í–‰
     //----------------------------------------
 
     if ( (*sDataPlan->flag & QMND_LMST_INIT_DONE_MASK)
@@ -87,7 +87,7 @@ qmnLMST::init( qcTemplate * aTemplate,
     if ( sDependency == ID_TRUE )
     {
         //----------------------------------------
-        // Temp Table ±¸Ãà Àü ÃÊ±âÈ­
+        // Temp Table êµ¬ì¶• ì „ ì´ˆê¸°í™”
         //----------------------------------------
 
         sDataPlan->mtrTotalCnt = 0;
@@ -96,7 +96,7 @@ qmnLMST::init( qcTemplate * aTemplate,
         IDE_TEST( qmcSortTemp::clear( sDataPlan->sortMgr ) != IDE_SUCCESS );
 
         //----------------------------------------
-        // ¿ëµµ¿¡ µû¸¥ Temp TableÀ» ±¸Ãà
+        // ìš©ë„ì— ë”°ë¥¸ Temp Tableì„ êµ¬ì¶•
         //----------------------------------------
 
         IDE_TEST( aPlan->left->init( aTemplate,
@@ -107,13 +107,13 @@ qmnLMST::init( qcTemplate * aTemplate,
         {
             if ( (sCodePlan->flag & QMNC_LMST_USE_MASK ) == QMNC_LMST_USE_ORDERBY )
             {
-                // Limit Order By¸¦ À§ÇÑ ÀúÀå
+                // Limit Order Byë¥¼ ìœ„í•œ ì €ì¥
                 IDE_TEST( store4OrderBy( aTemplate, sCodePlan, sDataPlan )
                         != IDE_SUCCESS );
             }
             else
             {
-                // Store And Search¸¦ À§ÇÑ ÀúÀå
+                // Store And Searchë¥¼ ìœ„í•œ ì €ì¥
                 IDE_TEST( store4StoreSearch( aTemplate, sCodePlan, sDataPlan )
                         != IDE_SUCCESS );
             }
@@ -124,7 +124,7 @@ qmnLMST::init( qcTemplate * aTemplate,
         }
 
         //----------------------------------------
-        // Temp Table ±¸Ãà ÈÄ ÃÊ±âÈ­
+        // Temp Table êµ¬ì¶• í›„ ì´ˆê¸°í™”
         //----------------------------------------
 
         sDataPlan->depValue = sDataPlan->depTuple->modify;
@@ -135,10 +135,10 @@ qmnLMST::init( qcTemplate * aTemplate,
     }
 
     //----------------------------------------
-    // ¼öÇà ÇÔ¼ö °áÁ¤
+    // ìˆ˜í–‰ í•¨ìˆ˜ ê²°ì •
     //----------------------------------------
 
-    // BUG-37681 limit 0 ÀÏ¶§ º°µµÀÇ doit ÇÔ¼ö¸¦ ¼öÇàÇÏµµ·Ï ÇÑ´Ù.
+    // BUG-37681 limit 0 ì¼ë•Œ ë³„ë„ì˜ doit í•¨ìˆ˜ë¥¼ ìˆ˜í–‰í•˜ë„ë¡ í•œë‹¤.
     if( sCodePlan->limitCnt != 0 )
     {
         if ( (sCodePlan->flag & QMNC_LMST_USE_MASK ) == QMNC_LMST_USE_ORDERBY )
@@ -172,10 +172,10 @@ qmnLMST::doIt( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    LMST ÀÇ °íÀ¯ ±â´ÉÀ» ¼öÇàÇÑ´Ù.
+ *    LMST ì˜ ê³ ìœ  ê¸°ëŠ¥ì„ ìˆ˜í–‰í•œë‹¤.
  *
  * Implementation :
- *    ÁöÁ¤µÈ ÇÔ¼ö Æ÷ÀÎÅÍ¸¦ ¼öÇàÇÑ´Ù.
+ *    ì§€ì •ëœ í•¨ìˆ˜ í¬ì¸í„°ë¥¼ ìˆ˜í–‰í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -204,11 +204,11 @@ qmnLMST::padNull( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    LMST ³ëµåÀÇ Tuple¿¡ Null Row¸¦ ¼³Á¤ÇÑ´Ù.
+ *    LMST ë…¸ë“œì˜ Tupleì— Null Rowë¥¼ ì„¤ì •í•œë‹¤.
  *
  * Implementation :
- *    Child PlanÀÇ Null PaddingÀ» ¼öÇàÇÏ°í,
- *    ÀÚ½ÅÀÇ Null Row¸¦ Temp Table·ÎºÎÅÍ È¹µæÇÑ´Ù.
+ *    Child Planì˜ Null Paddingì„ ìˆ˜í–‰í•˜ê³ ,
+ *    ìì‹ ì˜ Null Rowë¥¼ Temp Tableë¡œë¶€í„° íšë“í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -242,9 +242,9 @@ qmnLMST::padNull( qcTemplate * aTemplate,
     sDataPlan->plan.myTuple->modify++;
 
     // To Fix PR-9822
-    // padNull() ÇÔ¼ö´Â Child ÀÇ modify °ªÀ» º¯°æ½ÃÅ°°Ô µÈ´Ù.
-    // ÀÌ´Â Àç±¸Ãà ¿©ºÎ¿Í °ü°è°¡ ¾øÀ¸¹Ç·Î ±× °ªÀ» ÀúÀåÇÏ¿©
-    // Àç±¸ÃàÀÌ µÇÁö ¾Êµµ·Ï ÇÑ´Ù.
+    // padNull() í•¨ìˆ˜ëŠ” Child ì˜ modify ê°’ì„ ë³€ê²½ì‹œí‚¤ê²Œ ëœë‹¤.
+    // ì´ëŠ” ì¬êµ¬ì¶• ì—¬ë¶€ì™€ ê´€ê³„ê°€ ì—†ìœ¼ë¯€ë¡œ ê·¸ ê°’ì„ ì €ì¥í•˜ì—¬
+    // ì¬êµ¬ì¶•ì´ ë˜ì§€ ì•Šë„ë¡ í•œë‹¤.
     sDataPlan->depValue = sDataPlan->depTuple->modify;
 
     return IDE_SUCCESS;
@@ -267,7 +267,7 @@ qmnLMST::printPlan( qcTemplate   * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    LMST ³ëµåÀÇ ¼öÇà Á¤º¸¸¦ Ãâ·ÂÇÑ´Ù.
+ *    LMST ë…¸ë“œì˜ ìˆ˜í–‰ ì •ë³´ë¥¼ ì¶œë ¥í•œë‹¤.
  *
  * Implementation :
  *
@@ -287,7 +287,7 @@ qmnLMST::printPlan( qcTemplate   * aTemplate,
     SLong  sRecordCnt;
 
     //----------------------------
-    // Display À§Ä¡ °áÁ¤
+    // Display ìœ„ì¹˜ ê²°ì •
     //----------------------------
 
     for ( i = 0; i < aDepth; i++ )
@@ -297,20 +297,20 @@ qmnLMST::printPlan( qcTemplate   * aTemplate,
     }
 
     //----------------------------
-    // ¼öÇà Á¤º¸ Ãâ·Â
+    // ìˆ˜í–‰ ì •ë³´ ì¶œë ¥
     //----------------------------
 
     if ( aMode == QMN_DISPLAY_ALL )
     {
         //----------------------------
-        // explain plan = on; ÀÎ °æ¿ì
+        // explain plan = on; ì¸ ê²½ìš°
         //----------------------------
 
         if ( (*sDataPlan->flag & QMND_LMST_INIT_DONE_MASK)
              == QMND_LMST_INIT_DONE_TRUE )
         {
             sIsInit = ID_TRUE;
-            // ¼öÇà Á¤º¸ È¹µæ
+            // ìˆ˜í–‰ ì •ë³´ íšë“
             IDE_TEST( qmcSortTemp::getDisplayInfo( sDataPlan->sortMgr,
                                                    & sDiskPageCnt,
                                                    & sRecordCnt )
@@ -333,7 +333,7 @@ qmnLMST::printPlan( qcTemplate   * aTemplate,
             else
             {
                 // BUG-29209
-                // ITEM_SIZE Á¤º¸ º¸¿©ÁÖÁö ¾ÊÀ½
+                // ITEM_SIZE ì •ë³´ ë³´ì—¬ì£¼ì§€ ì•ŠìŒ
                 iduVarStringAppendFormat(
                     aString,
                     "LIMIT-SORT ( ITEM_SIZE: BLOCKED, "
@@ -357,7 +357,7 @@ qmnLMST::printPlan( qcTemplate   * aTemplate,
     else
     {
         //----------------------------
-        // explain plan = only; ÀÎ °æ¿ì
+        // explain plan = only; ì¸ ê²½ìš°
         //----------------------------
 
         iduVarStringAppendFormat( aString,
@@ -369,7 +369,7 @@ qmnLMST::printPlan( qcTemplate   * aTemplate,
     }
 
     //----------------------------
-    // Cost Ãâ·Â
+    // Cost ì¶œë ¥
     //----------------------------
     qmn::printCost( aString,
                     sCodePlan->plan.qmgAllCost );
@@ -429,7 +429,7 @@ qmnLMST::printPlan( qcTemplate   * aTemplate,
     }
 
     //----------------------------
-    // Operatorº° °á°ú Á¤º¸ Ãâ·Â
+    // Operatorë³„ ê²°ê³¼ ì •ë³´ ì¶œë ¥
     //----------------------------
     if ( QCU_TRCLOG_RESULT_DESC == 1 )
     {
@@ -445,7 +445,7 @@ qmnLMST::printPlan( qcTemplate   * aTemplate,
     }
 
     //----------------------------
-    // Child Plan Á¤º¸ Ãâ·Â
+    // Child Plan ì •ë³´ ì¶œë ¥
     //----------------------------
 
     IDE_TEST( aPlan->left->printPlan( aTemplate,
@@ -471,7 +471,7 @@ qmnLMST::doItDefault( qcTemplate * /* aTemplate */,
 /***********************************************************************
  *
  * Description :
- *    ÀÌ ÇÔ¼ö°¡ ¼öÇàµÇ¸é ¾ÈµÊ.
+ *    ì´ í•¨ìˆ˜ê°€ ìˆ˜í–‰ë˜ë©´ ì•ˆë¨.
  *
  * Implementation :
  *
@@ -496,10 +496,10 @@ qmnLMST::doItFirstOrderBy( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    LIMIT ORDER BY¸¦ À§ÇÑ ÃÖÃÊ ¼öÇà
+ *    LIMIT ORDER BYë¥¼ ìœ„í•œ ìµœì´ˆ ìˆ˜í–‰
  *
  * Implementation :
- *    Temp TableÀ» ÀÌ¿ëÇÏ¿© ¼øÂ÷ °Ë»öÀ» ÇÑ´Ù.
+ *    Temp Tableì„ ì´ìš©í•˜ì—¬ ìˆœì°¨ ê²€ìƒ‰ì„ í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -521,7 +521,7 @@ qmnLMST::doItFirstOrderBy( qcTemplate * aTemplate,
               != IDE_SUCCESS );
     sDataPlan->plan.myTuple->row = (sSearchRow == NULL) ? sOrgRow : sSearchRow;
 
-    // Data°¡ Á¸ÀçÇÒ °æ¿ì Tuple Set º¹¿ø
+    // Dataê°€ ì¡´ì¬í•  ê²½ìš° Tuple Set ë³µì›
     if ( sSearchRow != NULL )
     {
         *aFlag = QMC_ROW_DATA_EXIST;
@@ -554,10 +554,10 @@ qmnLMST::doItNextOrderBy( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    LIMIT ORDER BY¸¦ À§ÇÑ ´ÙÀ½ ¼öÇà
+ *    LIMIT ORDER BYë¥¼ ìœ„í•œ ë‹¤ìŒ ìˆ˜í–‰
  *
  * Implementation :
- *    Temp TableÀ» ÀÌ¿ëÇÏ¿© ¼øÂ÷ °Ë»öÀ» ÇÑ´Ù.
+ *    Temp Tableì„ ì´ìš©í•˜ì—¬ ìˆœì°¨ ê²€ìƒ‰ì„ í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -576,7 +576,7 @@ qmnLMST::doItNextOrderBy( qcTemplate * aTemplate,
               != IDE_SUCCESS );
     sDataPlan->plan.myTuple->row = (sSearchRow == NULL) ? sOrgRow : sSearchRow;
 
-    // Data°¡ Á¸ÀçÇÒ °æ¿ì Tuple Set º¹¿ø
+    // Dataê°€ ì¡´ì¬í•  ê²½ìš° Tuple Set ë³µì›
     if ( sSearchRow != NULL )
     {
         *aFlag = QMC_ROW_DATA_EXIST;
@@ -607,14 +607,14 @@ qmnLMST::doItFirstStoreSearch( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *     Store And Search¸¦ À§ÇÑ Ã¹ ¹øÂ° °Ë»öÀ» ¼öÇàÇÑ´Ù.
+ *     Store And Searchë¥¼ ìœ„í•œ ì²« ë²ˆì§¸ ê²€ìƒ‰ì„ ìˆ˜í–‰í•œë‹¤.
  *
  * Implementation :
- *     LMST°¡ Store And Search¸¦ À§ÇØ »ç¿ëµÇ´Â °æ¿ì´Â
- *     ´ÙÀ½°ú °°Àº Subquery PredicateÀÌ »ç¿ëµÇ´Â °æ¿ìÀÌ´Ù.
- *     Predicate°ú ÇÊ¿ä·Î ÇÏ´Â DataÀÇ Á¾·ù´Â ´ÙÀ½°ú °°´Ù.
+ *     LMSTê°€ Store And Searchë¥¼ ìœ„í•´ ì‚¬ìš©ë˜ëŠ” ê²½ìš°ëŠ”
+ *     ë‹¤ìŒê³¼ ê°™ì€ Subquery Predicateì´ ì‚¬ìš©ë˜ëŠ” ê²½ìš°ì´ë‹¤.
+ *     Predicateê³¼ í•„ìš”ë¡œ í•˜ëŠ” Dataì˜ ì¢…ë¥˜ëŠ” ë‹¤ìŒê³¼ ê°™ë‹¤.
  *     ------------------------------------------------------
- *       Predicate          |   ÇÊ¿ä Data
+ *       Predicate          |   í•„ìš” Data
  *     ------------------------------------------------------
  *       >ANY, >=ANY        |  MIN Value, NULL Value
  *       <ANY, <=ANY        |  MAX Value, NULL Value
@@ -624,10 +624,10 @@ qmnLMST::doItFirstStoreSearch( qcTemplate * aTemplate,
  *       !=ALL              |  MIN Value, MAX Value, NULL Value
  *     ------------------------------------------------------
  *
- *    ±×·¯³ª, Predicate¿¡ µû¸¥ ÇÊ¿ä Data¸¦ ÀÏÀÏÀÌ °áÁ¤ÇÏÁö ¾Ê°í
- *    ´ÙÀ½°ú °°Àº ¼ø¼­¿¡ ÀÇÇÏ¿© Data°¡ Return µÉ ¼ö ÀÖµµ·Ï ÇÏ¿©
- *    º¹Àâµµ¸¦ ³·Ãá´Ù.
- *        MIN Value -> MAX Value -> NULL Value -> Data ¾øÀ½
+ *    ê·¸ëŸ¬ë‚˜, Predicateì— ë”°ë¥¸ í•„ìš” Dataë¥¼ ì¼ì¼ì´ ê²°ì •í•˜ì§€ ì•Šê³ 
+ *    ë‹¤ìŒê³¼ ê°™ì€ ìˆœì„œì— ì˜í•˜ì—¬ Dataê°€ Return ë  ìˆ˜ ìˆë„ë¡ í•˜ì—¬
+ *    ë³µì¡ë„ë¥¼ ë‚®ì¶˜ë‹¤.
+ *        MIN Value -> MAX Value -> NULL Value -> Data ì—†ìŒ
  *
  ***********************************************************************/
 
@@ -644,7 +644,7 @@ qmnLMST::doItFirstStoreSearch( qcTemplate * aTemplate,
               != IDE_SUCCESS );
 
     //------------------------------------
-    // Left-Most °ª ÃßÃâ
+    // Left-Most ê°’ ì¶”ì¶œ
     //------------------------------------
 
     sOrgRow = sSearchRow = sDataPlan->plan.myTuple->row;
@@ -656,7 +656,7 @@ qmnLMST::doItFirstStoreSearch( qcTemplate * aTemplate,
     if ( sSearchRow != NULL )
     {
         //------------------------------------
-        // Data°¡ Á¸ÀçÇÒ °æ¿ì Tuple Set º¹¿ø
+        // Dataê°€ ì¡´ì¬í•  ê²½ìš° Tuple Set ë³µì›
         //------------------------------------
 
         *aFlag = QMC_ROW_DATA_EXIST;
@@ -669,12 +669,12 @@ qmnLMST::doItFirstStoreSearch( qcTemplate * aTemplate,
     else
     {
         //------------------------------------
-        // Data°¡ ¾ø´Â °æ¿ì NULL Á¸Àç À¯¹« È®ÀÎ
+        // Dataê°€ ì—†ëŠ” ê²½ìš° NULL ì¡´ì¬ ìœ ë¬´ í™•ì¸
         //------------------------------------
 
         if ( sDataPlan->isNullStore == ID_TRUE )
         {
-            // NULL Row¸¦ ¸¸µé¾î ÁÜ
+            // NULL Rowë¥¼ ë§Œë“¤ì–´ ì¤Œ
             *aFlag = QMC_ROW_DATA_EXIST;
 
             IDE_TEST( qmnLMST::padNull( aTemplate, aPlan ) != IDE_SUCCESS );
@@ -683,7 +683,7 @@ qmnLMST::doItFirstStoreSearch( qcTemplate * aTemplate,
         }
         else
         {
-            // ¿øÇÏ´Â °á°ú°¡ ¾øÀ½
+            // ì›í•˜ëŠ” ê²°ê³¼ê°€ ì—†ìŒ
             *aFlag = QMC_ROW_DATA_NONE;
         }
     }
@@ -706,7 +706,7 @@ qmnLMST::doItNextStoreSearch( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *     Store And Search¸¦ À§ÇÑ ´ÙÀ½ °Ë»öÀ» ¼öÇàÇÑ´Ù.
+ *     Store And Searchë¥¼ ìœ„í•œ ë‹¤ìŒ ê²€ìƒ‰ì„ ìˆ˜í–‰í•œë‹¤.
  *
  * Implementation :
  *
@@ -722,7 +722,7 @@ qmnLMST::doItNextStoreSearch( qcTemplate * aTemplate,
     void * sSearchRow;
 
     //------------------------------------
-    // Right-Most °ª ÃßÃâ
+    // Right-Most ê°’ ì¶”ì¶œ
     //------------------------------------
 
     sOrgRow = sSearchRow = sDataPlan->plan.myTuple->row;
@@ -734,7 +734,7 @@ qmnLMST::doItNextStoreSearch( qcTemplate * aTemplate,
     if ( sSearchRow != NULL )
     {
         //------------------------------------
-        // Data°¡ Á¸ÀçÇÒ °æ¿ì Tuple Set º¹¿ø
+        // Dataê°€ ì¡´ì¬í•  ê²½ìš° Tuple Set ë³µì›
         //------------------------------------
 
         *aFlag = QMC_ROW_DATA_EXIST;
@@ -745,12 +745,12 @@ qmnLMST::doItNextStoreSearch( qcTemplate * aTemplate,
     else
     {
         //------------------------------------
-        // Data°¡ ¾ø´Â °æ¿ì NULL Á¸Àç À¯¹« È®ÀÎ
+        // Dataê°€ ì—†ëŠ” ê²½ìš° NULL ì¡´ì¬ ìœ ë¬´ í™•ì¸
         //------------------------------------
 
         if ( sDataPlan->isNullStore == ID_TRUE )
         {
-            // NULL Row¸¦ ¸¸µé¾î ÁÜ
+            // NULL Rowë¥¼ ë§Œë“¤ì–´ ì¤Œ
             *aFlag = QMC_ROW_DATA_EXIST;
 
             IDE_TEST( qmnLMST::padNull( aTemplate, aPlan ) != IDE_SUCCESS );
@@ -759,7 +759,7 @@ qmnLMST::doItNextStoreSearch( qcTemplate * aTemplate,
         }
         else
         {
-            // ¿øÇÏ´Â °á°ú°¡ ¾øÀ½
+            // ì›í•˜ëŠ” ê²°ê³¼ê°€ ì—†ìŒ
             *aFlag = QMC_ROW_DATA_NONE;
             sDataPlan->doIt = qmnLMST::doItFirstStoreSearch;
         }
@@ -782,10 +782,10 @@ qmnLMST::doItLastStoreSearch( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *     Store And Search¸¦ À§ÇÑ ¸¶Áö¸· °Ë»öÀ» ¼öÇàÇÑ´Ù.
+ *     Store And Searchë¥¼ ìœ„í•œ ë§ˆì§€ë§‰ ê²€ìƒ‰ì„ ìˆ˜í–‰í•œë‹¤.
  *
  * Implementation :
- *     µ¥ÀÌÅÍ ¾øÀ½À» ¸®ÅÏÇÑ´Ù.
+ *     ë°ì´í„° ì—†ìŒì„ ë¦¬í„´í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -813,7 +813,7 @@ qmnLMST::doItAllFalse( qcTemplate * /*aTemplate*/,
 
     IDE_DASSERT( sCodePlan->limitCnt == 0 );
 
-    // µ¥ÀÌÅÍ ¾øÀ½À» Setting
+    // ë°ì´í„° ì—†ìŒì„ Setting
     *aFlag &= ~QMC_ROW_DATA_MASK;
     *aFlag |= QMC_ROW_DATA_NONE;
 
@@ -828,7 +828,7 @@ qmnLMST::firstInit( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    LMST nodeÀÇ Data ¿µ¿ªÀÇ ¸â¹ö¿¡ ´ëÇÑ ÃÊ±âÈ­¸¦ ¼öÇà
+ *    LMST nodeì˜ Data ì˜ì—­ì˜ ë©¤ë²„ì— ëŒ€í•œ ì´ˆê¸°í™”ë¥¼ ìˆ˜í–‰
  *
  * Implementation :
  *
@@ -836,7 +836,7 @@ qmnLMST::firstInit( qcTemplate * aTemplate,
     qmndLMST * sCacheDataPlan = NULL;
 
     //---------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //---------------------------------
 
     IDE_DASSERT( (aCodePlan->plan.flag & QMN_PLAN_STORAGE_MASK)
@@ -845,7 +845,7 @@ qmnLMST::firstInit( qcTemplate * aTemplate,
     IDE_DASSERT( aCodePlan->limitCnt <= QMN_LMST_MAXIMUM_LIMIT_CNT );
 
     //---------------------------------
-    // LMST °íÀ¯ Á¤º¸ÀÇ ÃÊ±âÈ­
+    // LMST ê³ ìœ  ì •ë³´ì˜ ì´ˆê¸°í™”
     //---------------------------------
 
     /* PROJ-2462 Result Cache */
@@ -885,14 +885,14 @@ qmnLMST::firstInit( qcTemplate * aTemplate,
     aDataPlan->depValue = QMN_PLAN_DEFAULT_DEPENDENCY_VALUE;
 
     //---------------------------------
-    // Temp TableÀÇ ÃÊ±âÈ­
+    // Temp Tableì˜ ì´ˆê¸°í™”
     //---------------------------------
 
     IDE_TEST( initTempTable( aTemplate, aCodePlan, aDataPlan )
               != IDE_SUCCESS );
 
     //---------------------------------
-    // ÃÊ±âÈ­ ¿Ï·á¸¦ Ç¥±â
+    // ì´ˆê¸°í™” ì™„ë£Œë¥¼ í‘œê¸°
     //---------------------------------
 
     *aDataPlan->flag &= ~QMND_LMST_INIT_DONE_MASK;
@@ -926,13 +926,13 @@ qmnLMST::initMtrNode( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    ÀúÀå ColumnÀÇ °ü¸®¸¦ À§ÇÑ ³ëµå¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+ *    ì €ì¥ Columnì˜ ê´€ë¦¬ë¥¼ ìœ„í•œ ë…¸ë“œë¥¼ ì´ˆê¸°í™”í•œë‹¤.
  *
  * Implementation :
  *
  ***********************************************************************/
     //---------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //---------------------------------
 
     IDE_DASSERT( aCodePlan->mtrNodeOffset > 0 );
@@ -946,7 +946,7 @@ qmnLMST::initMtrNode( qcTemplate * aTemplate,
     }
     else
     {
-        // Store And Search·Î »ç¿ëµÇ´Â °æ¿ì Base TableÀº ÀúÀåÇÏÁö ¾Ê´Â´Ù.
+        // Store And Searchë¡œ ì‚¬ìš©ë˜ëŠ” ê²½ìš° Base Tableì€ ì €ì¥í•˜ì§€ ì•ŠëŠ”ë‹¤.
         IDE_DASSERT( aCodePlan->baseTableCount == 0 );
     }
 
@@ -964,13 +964,13 @@ qmnLMST::initMtrNode( qcTemplate * aTemplate,
 
     /* PROJ-2462 Result Cache */
     //---------------------------------
-    // ÀúÀå ColumnÀÇ ÃÊ±âÈ­
+    // ì €ì¥ Columnì˜ ì´ˆê¸°í™”
     //---------------------------------
 
-    // 1.  ÀúÀå ColumnÀÇ ¿¬°á Á¤º¸ »ı¼º
-    // 2.  ÀúÀå ColumnÀÇ ÃÊ±âÈ­
-    // 3.  ÀúÀå ColumnÀÇ offsetÀ» ÀçÁ¶Á¤
-    // 4.  Row SizeÀÇ °è»ê
+    // 1.  ì €ì¥ Columnì˜ ì—°ê²° ì •ë³´ ìƒì„±
+    // 2.  ì €ì¥ Columnì˜ ì´ˆê¸°í™”
+    // 3.  ì €ì¥ Columnì˜ offsetì„ ì¬ì¡°ì •
+    // 4.  Row Sizeì˜ ê³„ì‚°
 
     IDE_TEST( qmc::linkMtrNode( aCodePlan->myNode,
                                 aDataPlan->mtrNode ) != IDE_SUCCESS );
@@ -980,7 +980,7 @@ qmnLMST::initMtrNode( qcTemplate * aTemplate,
                                 aCodePlan->baseTableCount )
               != IDE_SUCCESS );
 
-    // Memory Temp Table¸¸À» »ç¿ëÇÔ
+    // Memory Temp Tableë§Œì„ ì‚¬ìš©í•¨
     IDE_TEST( qmc::refineOffsets( aDataPlan->mtrNode,
                                   QMC_MEMSORT_TEMPHEADER_SIZE )
               != IDE_SUCCESS );
@@ -1005,7 +1005,7 @@ qmnLMST::initSortNode( qmncLMST   * aCodePlan,
 /***********************************************************************
  *
  * Description :
- *     ÀúÀå ColumnÀÇ Á¤º¸ Áß Á¤·Ä ColumnÀÇ ½ÃÀÛ À§Ä¡¸¦ Ã£´Â´Ù.
+ *     ì €ì¥ Columnì˜ ì •ë³´ ì¤‘ ì •ë ¬ Columnì˜ ì‹œì‘ ìœ„ì¹˜ë¥¼ ì°¾ëŠ”ë‹¤.
  *
  * Implementation :
  *
@@ -1016,7 +1016,7 @@ qmnLMST::initSortNode( qmncLMST   * aCodePlan,
 
     qmdMtrNode * sNode;
 
-    // ÃÖÃÊ Á¤·Ä ColumnÀÇ À§Ä¡ °Ë»ö
+    // ìµœì´ˆ ì •ë ¬ Columnì˜ ìœ„ì¹˜ ê²€ìƒ‰
     for ( sNode = aDataPlan->mtrNode; sNode != NULL; sNode = sNode->next )
     {
         if ( ( sNode->myNode->flag & QMC_MTR_SORT_NEED_MASK )
@@ -1029,17 +1029,17 @@ qmnLMST::initSortNode( qmncLMST   * aCodePlan,
     aDataPlan->sortNode = sNode;
 
     //---------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //---------------------------------
 
     if ( (aCodePlan->flag & QMNC_LMST_USE_MASK ) == QMNC_LMST_USE_ORDERBY )
     {
-        // ¹İµå½Ã Á¤·Ä ColumnÀÌ ÀÖ¾î¾ß ÇÑ´Ù.
+        // ë°˜ë“œì‹œ ì •ë ¬ Columnì´ ìˆì–´ì•¼ í•œë‹¤.
         IDE_DASSERT( aDataPlan->sortNode != NULL );
     }
     else
     {
-        // Store And Search·Î »ç¿ëµÇ´Â °æ¿ì
+        // Store And Searchë¡œ ì‚¬ìš©ë˜ëŠ” ê²½ìš°
         IDE_DASSERT( aDataPlan->sortNode == aDataPlan->mtrNode );
     }
 
@@ -1057,7 +1057,7 @@ qmnLMST::initTempTable( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *     Sort Temp TableÀ» ÃÊ±âÈ­ÇÑ´Ù.
+ *     Sort Temp Tableì„ ì´ˆê¸°í™”í•œë‹¤.
  *
  * Implementation :
  *
@@ -1066,21 +1066,21 @@ qmnLMST::initTempTable( qcTemplate * aTemplate,
     qmndLMST * sCacheDataPlan = NULL;
 
     //-----------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //-----------------------------
 
-    // Memory Temp Table¸¸À» »ç¿ëÇÔ
+    // Memory Temp Tableë§Œì„ ì‚¬ìš©í•¨
     IDE_DASSERT( (aDataPlan->plan.myTuple->lflag & MTC_TUPLE_STORAGE_MASK )
                  == MTC_TUPLE_STORAGE_MEMORY );
 
     //-----------------------------
-    // Flag Á¤º¸ ÃÊ±âÈ­
+    // Flag ì •ë³´ ì´ˆê¸°í™”
     //-----------------------------
 
     sFlag = QMCD_SORT_TMP_STORAGE_MEMORY;
 
     //-----------------------------
-    // Temp Table ÃÊ±âÈ­
+    // Temp Table ì´ˆê¸°í™”
     //-----------------------------
 
     if ( ( *aDataPlan->flag & QMN_PLAN_RESULT_CACHE_EXIST_MASK )
@@ -1148,7 +1148,7 @@ IDE_RC qmnLMST::checkDependency( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    Dependent Tuple¿¡ º¯È­°¡ ÀÖ´Â Áö¸¦ °Ë»ç
+ *    Dependent Tupleì— ë³€í™”ê°€ ìˆëŠ” ì§€ë¥¼ ê²€ì‚¬
  *
  * Implementation :
  *
@@ -1195,17 +1195,17 @@ qmnLMST::store4OrderBy( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *     ORDER BY¸¦ À§ÇÑ ÀúÀå
+ *     ORDER BYë¥¼ ìœ„í•œ ì €ì¥
  *
  * Implementation :
- *     ´ÙÀ½ Á¶°Ç±îÁö Child¸¦ ¹İº¹ ¼öÇàÇÏ¿© ÀúÀå
- *          - Data°¡ Á¸ÀçÇÏÁö ¾ÊÀ» °æ¿ì
- *          - Limitº¸´Ù ¸¹ÀÌ »ğÀÔµÇ´Â °æ¿ì
- *     Sorting ¼öÇà
- *     Data°¡ ´õ Á¸ÀçÇÒ °æ¿ì
- *          - »ğÀÔ ¿©ºÎ °áÁ¤ ¹× »ğÀÔ ¼öÇà
- *          - Memory¸¦ Ç×»ó Àç»ç¿ëÇÏ°Ô µÇ¹Ç·Î, Ãß°¡ÀûÀÎ ¸Ş¸ğ¸® ÇÒ´çÀº
- *            ÇÏÁö ¾Ê´Â´Ù.
+ *     ë‹¤ìŒ ì¡°ê±´ê¹Œì§€ Childë¥¼ ë°˜ë³µ ìˆ˜í–‰í•˜ì—¬ ì €ì¥
+ *          - Dataê°€ ì¡´ì¬í•˜ì§€ ì•Šì„ ê²½ìš°
+ *          - Limitë³´ë‹¤ ë§ì´ ì‚½ì…ë˜ëŠ” ê²½ìš°
+ *     Sorting ìˆ˜í–‰
+ *     Dataê°€ ë” ì¡´ì¬í•  ê²½ìš°
+ *          - ì‚½ì… ì—¬ë¶€ ê²°ì • ë° ì‚½ì… ìˆ˜í–‰
+ *          - Memoryë¥¼ í•­ìƒ ì¬ì‚¬ìš©í•˜ê²Œ ë˜ë¯€ë¡œ, ì¶”ê°€ì ì¸ ë©”ëª¨ë¦¬ í• ë‹¹ì€
+ *            í•˜ì§€ ì•ŠëŠ”ë‹¤.
  *
  ***********************************************************************/
 
@@ -1216,7 +1216,7 @@ qmnLMST::store4OrderBy( qcTemplate * aTemplate,
     qmndLMST * sCacheDataPlan = NULL;
 
     //------------------------------
-    // Child RecordÀÇ ÀúÀå
+    // Child Recordì˜ ì €ì¥
     //------------------------------
 
     IDE_TEST( aCodePlan->plan.left->doIt( aTemplate,
@@ -1237,13 +1237,13 @@ qmnLMST::store4OrderBy( qcTemplate * aTemplate,
     }
 
     //------------------------------
-    // Á¤·Ä ¼öÇà
+    // ì •ë ¬ ìˆ˜í–‰
     //------------------------------
-    // SORT¿Í ´Ş¸® LMSTÀÇ °æ¿ì, Ç×»ó Á¤·ÄÀ» ¼öÇàÇÔ
+    // SORTì™€ ë‹¬ë¦¬ LMSTì˜ ê²½ìš°, í•­ìƒ ì •ë ¬ì„ ìˆ˜í–‰í•¨
     IDE_TEST( qmcSortTemp::sort( aDataPlan->sortMgr ) != IDE_SUCCESS );
 
     //------------------------------
-    // Limit Sorting ¼öÇà
+    // Limit Sorting ìˆ˜í–‰
     //------------------------------
 
     if ( (sFlag & QMC_ROW_DATA_MASK) == QMC_ROW_DATA_EXIST )
@@ -1308,18 +1308,18 @@ qmnLMST::store4StoreSearch( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *     Store And Search¸¦ À§ÇÑ ÀúÀå
- *     MIN, MAX°ª¸¸ ÀúÀåÇÏ°í NULLÁ¸Àç ¿©ºÎ¸¸ ÆÇ´ÜÇÑ´Ù.
+ *     Store And Searchë¥¼ ìœ„í•œ ì €ì¥
+ *     MIN, MAXê°’ë§Œ ì €ì¥í•˜ê³  NULLì¡´ì¬ ì—¬ë¶€ë§Œ íŒë‹¨í•œë‹¤.
  *
  * Implementation :
- *     2°Ç¸¸À» ÀúÀå
- *        - MIN, MAX Ã³¸®¸¦ À§ÇØ µÎ °Ç¸¸À» ÀúÀå
- *        - NULL Á¸Àç À¯¹«¸¦ °Ë»çÇÏ¿© NULLÀÌ ¾Æ´Ñ °æ¿ì¸¸ »ğÀÔ
- *     2°Ç ÀúÀå ½Ã Á¤·Ä ¼öÇà
- *     ÀÌ ÈÄ ÀúÀåÇÏ´Â ColumnÀº NULLÀÌ ¾Æ´Ñ °æ¿ì¿¡ ÇÑÇÏ¿©
- *          - Min, Max°ªÀ» ±³È¯ÇÏ¿© ÀúÀå
- *          - Memory¸¦ Ç×»ó Àç»ç¿ëÇÏ°Ô µÇ¹Ç·Î, Ãß°¡ÀûÀÎ ¸Ş¸ğ¸® ÇÒ´çÀº
- *            ÇÏÁö ¾Ê´Â´Ù.
+ *     2ê±´ë§Œì„ ì €ì¥
+ *        - MIN, MAX ì²˜ë¦¬ë¥¼ ìœ„í•´ ë‘ ê±´ë§Œì„ ì €ì¥
+ *        - NULL ì¡´ì¬ ìœ ë¬´ë¥¼ ê²€ì‚¬í•˜ì—¬ NULLì´ ì•„ë‹Œ ê²½ìš°ë§Œ ì‚½ì…
+ *     2ê±´ ì €ì¥ ì‹œ ì •ë ¬ ìˆ˜í–‰
+ *     ì´ í›„ ì €ì¥í•˜ëŠ” Columnì€ NULLì´ ì•„ë‹Œ ê²½ìš°ì— í•œí•˜ì—¬
+ *          - Min, Maxê°’ì„ êµí™˜í•˜ì—¬ ì €ì¥
+ *          - Memoryë¥¼ í•­ìƒ ì¬ì‚¬ìš©í•˜ê²Œ ë˜ë¯€ë¡œ, ì¶”ê°€ì ì¸ ë©”ëª¨ë¦¬ í• ë‹¹ì€
+ *            í•˜ì§€ ì•ŠëŠ”ë‹¤.
  *
  ***********************************************************************/
 
@@ -1332,13 +1332,13 @@ qmnLMST::store4StoreSearch( qcTemplate * aTemplate,
     qmndLMST * sCacheDataPlan = NULL;
 
     //------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------
 
     IDE_DASSERT( aCodePlan->limitCnt == 2 );
 
     //------------------------------
-    // Child RecordÀÇ ÀúÀå
+    // Child Recordì˜ ì €ì¥
     //------------------------------
 
     IDE_TEST( qmcSortTemp::alloc( aDataPlan->sortMgr,
@@ -1382,13 +1382,13 @@ qmnLMST::store4StoreSearch( qcTemplate * aTemplate,
     }
 
     //------------------------------
-    // Á¤·Ä ¼öÇà
+    // ì •ë ¬ ìˆ˜í–‰
     //------------------------------
 
     IDE_TEST( qmcSortTemp::sort( aDataPlan->sortMgr ) != IDE_SUCCESS );
 
     //------------------------------
-    // MIN-MAX ±³È¯ ¼öÇà
+    // MIN-MAX êµí™˜ ìˆ˜í–‰
     //------------------------------
 
     if ( (sFlag & QMC_ROW_DATA_MASK) == QMC_ROW_DATA_EXIST )
@@ -1458,14 +1458,14 @@ qmnLMST::addOneRow( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    Temp Table¿¡ ÇÏ³ªÀÇ Record¸¦ ±¸¼ºÇÏ¿© »ğÀÔÇÑ´Ù.
+ *    Temp Tableì— í•˜ë‚˜ì˜ Recordë¥¼ êµ¬ì„±í•˜ì—¬ ì‚½ì…í•œë‹¤.
  *
  * Implementation :
- *    1. °ø°£ ÇÒ´ç : Temp TableÀ» ÀÌ¿ëÇÏ¿© °ø°£ ÇÒ´çÀ» ¹ŞÀ¸¸ç,
- *                   Memory Temp TableÀÇ °æ¿ì¿¡¸¸ º°µµÀÇ °ø°£À»
- *                   ÇÒ´çÇØ ÁØ´Ù.
- *    2. ÀúÀå RowÀÇ ±¸¼º
- *    3. RowÀÇ »ğÀÔ
+ *    1. ê³µê°„ í• ë‹¹ : Temp Tableì„ ì´ìš©í•˜ì—¬ ê³µê°„ í• ë‹¹ì„ ë°›ìœ¼ë©°,
+ *                   Memory Temp Tableì˜ ê²½ìš°ì—ë§Œ ë³„ë„ì˜ ê³µê°„ì„
+ *                   í• ë‹¹í•´ ì¤€ë‹¤.
+ *    2. ì €ì¥ Rowì˜ êµ¬ì„±
+ *    3. Rowì˜ ì‚½ì…
  *
  ***********************************************************************/
 
@@ -1499,10 +1499,10 @@ qmnLMST::setMtrRow( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *     ÀúÀå Row¸¦ ±¸¼ºÇÑ´Ù.
+ *     ì €ì¥ Rowë¥¼ êµ¬ì„±í•œë‹¤.
  *
  * Implementation :
- *     ÀúÀå ColumnÀ» ¼øÈ¸ÇÏ¸ç, ÀúÀå Row¸¦ ±¸¼ºÇÑ´Ù.
+ *     ì €ì¥ Columnì„ ìˆœíšŒí•˜ë©°, ì €ì¥ Rowë¥¼ êµ¬ì„±í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -1536,7 +1536,7 @@ qmnLMST::setTupleSet( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *     °Ë»öµÈ ÀúÀå Row¸¦ ±âÁØÀ¸·Î Tuple SetÀ» º¹¿øÇÑ´Ù.
+ *     ê²€ìƒ‰ëœ ì €ì¥ Rowë¥¼ ê¸°ì¤€ìœ¼ë¡œ Tuple Setì„ ë³µì›í•œë‹¤.
  *
  * Implementation :
  *

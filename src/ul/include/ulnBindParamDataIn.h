@@ -31,10 +31,10 @@
                           ulnCharSet   *aCharSet)
 
 /*
- * BUGBUG : aDescRecIpd °¡ ¿©±â µé¾î°¡ ÀÖ´Â ÀÌÀ¯´Â,
- *          old ÇÔ¼ö¿¡¼­ SQL_C_DEFAULT ¸¦ Ã¼Å©ÇÏ°í ±×¿¡ µû¸¥ °ªÀ» ¾ò±â À§ÇØ »ç¿ëÇÏ´Â
- *          ´Ü ÇÑ°¡Áö ÀÌÀ¯¹Û¿¡ ¾ø´Ù.
- *          ÀÌ°ÍÀ» Àß Ã³¸®ÇØ¼­ ¾ø¾Öµµ·Ï ÇØ¾ß ÇÑ´Ù.
+ * BUGBUG : aDescRecIpd ê°€ ì—¬ê¸° ë“¤ì–´ê°€ ìžˆëŠ” ì´ìœ ëŠ”,
+ *          old í•¨ìˆ˜ì—ì„œ SQL_C_DEFAULT ë¥¼ ì²´í¬í•˜ê³  ê·¸ì— ë”°ë¥¸ ê°’ì„ ì–»ê¸° ìœ„í•´ ì‚¬ìš©í•˜ëŠ”
+ *          ë‹¨ í•œê°€ì§€ ì´ìœ ë°–ì— ì—†ë‹¤.
+ *          ì´ê²ƒì„ ìž˜ ì²˜ë¦¬í•´ì„œ ì—†ì• ë„ë¡ í•´ì•¼ í•œë‹¤.
  */
 
 typedef ACI_RC ulnParamDataInBuildAnyFunc(ulnFnContext *aFnContext,
@@ -48,7 +48,7 @@ typedef ACI_RC ulnParamDataInBuildAnyFunc(ulnFnContext *aFnContext,
 
 /*
  * ======================================================================
- * SQL_C_CHAR ¸¦ SQL_TYPE ¿¡ ¾Ë¸Â°Ô precision À» º¸¾Æ°¡¸é¼­ Àü¼ÛÇÏ´Â ÇÔ¼ö
+ * SQL_C_CHAR ë¥¼ SQL_TYPE ì— ì•Œë§žê²Œ precision ì„ ë³´ì•„ê°€ë©´ì„œ ì „ì†¡í•˜ëŠ” í•¨ìˆ˜
  * ======================================================================
  */
 
@@ -135,7 +135,7 @@ ULN_BIND_PARAM_DATA_IN_BUILD_ANY_FUNC(ulnParamDataInBuildAny_TIMESTAMP_TIMESTAMP
 
 /*
  * =============================================================
- * ±âÁ¸¿¡ »ç¿ëÇÏ´ø ulnWriteParamDataInREQ() ¸¦ È£ÃâÇÏ´Â ÇÔ¼ö
+ * ê¸°ì¡´ì— ì‚¬ìš©í•˜ë˜ ulnWriteParamDataInREQ() ë¥¼ í˜¸ì¶œí•˜ëŠ” í•¨ìˆ˜
  * =============================================================
  */
 

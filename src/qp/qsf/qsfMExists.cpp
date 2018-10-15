@@ -19,14 +19,14 @@
  * $Id: qsfMExists.cpp 82075 2018-01-17 06:39:52Z jina.kim $
  *
  * Description :
- *     PROJ-1075 array typeº¯¼öÀÇ member function EXISTS
+ *     PROJ-1075 array typeë³€ìˆ˜ì˜ member function EXISTS
  *
  * Syntax :
  *     arr_var.EXISTS( index );
- *     RETURN BOOLEAN  <= ÇØ´ç elementÀÇ Á¸Àç À¯¹«¸¦ ¸®ÅÏ
+ *     RETURN BOOLEAN  <= í•´ë‹¹ elementì˜ ì¡´ì¬ ìœ ë¬´ë¥¼ ë¦¬í„´
  *
  * Implementation :
- *     1. index¿¡ ÇØ´çÇÏ´Â element°¡ ÀÖÀ¸¸é TRUE, ¾øÀ¸¸é FALSE
+ *     1. indexì— í•´ë‹¹í•˜ëŠ” elementê°€ ìˆìœ¼ë©´ TRUE, ì—†ìœ¼ë©´ FALSE
  *
  **********************************************************************/
 
@@ -63,7 +63,7 @@ IDE_RC qsfMExistsCalculate(mtcNode*     aNode,
 mtfModule qsfMExistsModule = {
     1|MTC_NODE_OPERATOR_FUNCTION|MTC_NODE_VARIABLE_TRUE,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
+    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìê°€ ì•„ë‹˜)
     qsfMExistsFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -90,22 +90,22 @@ IDE_RC qsfMExistsEstimate( mtcNode*     aNode,
 {
 /***********************************************************************
  *
- * Description : PROJ-1075 existsÇÔ¼öÀÇ estimate
+ * Description : PROJ-1075 existsí•¨ìˆ˜ì˜ estimate
  *
  * Implementation :
- *            ±âº»ÀûÀÎ routineÀº ÀÏ¹İ qsf~ÇÔ¼öµé°ú °°À¸³ª,
- *            host variable bindingÀ» Çã¿ëÇÏÁö ¾Ê°í
- *            psm³»ºÎ¿¡¼­¸¸ »ç¿ëÀÌ °¡´ÉÇÏ´Ù.
- *            argument°¡ 1°³ÀÎÁö Ã¼Å©.
+ *            ê¸°ë³¸ì ì¸ routineì€ ì¼ë°˜ qsf~í•¨ìˆ˜ë“¤ê³¼ ê°™ìœ¼ë‚˜,
+ *            host variable bindingì„ í—ˆìš©í•˜ì§€ ì•Šê³ 
+ *            psmë‚´ë¶€ì—ì„œë§Œ ì‚¬ìš©ì´ ê°€ëŠ¥í•˜ë‹¤.
+ *            argumentê°€ 1ê°œì¸ì§€ ì²´í¬.
  *
- *            ´ÙÀ½°ú °°Àº À¯ÇüÀ¸·Î µé¾î¿Ã ¼ö ÀÖ´Ù.
+ *            ë‹¤ìŒê³¼ ê°™ì€ ìœ í˜•ìœ¼ë¡œ ë“¤ì–´ì˜¬ ìˆ˜ ìˆë‹¤.
  *            (1) var_name.exists(index)
  *            (2) label_name.var_name.exists(index)
- *            var_nameÀº qtcNodeÀÇ tableName¿¡ ÇØ´çµÇ¹Ç·Î ¹«Á¶°Ç Á¸ÀçÇØ¾ß ÇÑ´Ù.
- *            qtcNode->userName, tableNameÀ» ÀÌ¿ëÇÏ¿© array type variableÀ» °Ë»ö.
- *            execute->calculateInfo¿¡ Ã£Àº º¯¼öÀÇ Á¤º¸¸¦ ¿¬°áÇÏ¿© ÁØ´Ù.
- *            index´Â arrayº¯¼öÀÇ key columnÀÇ module·Î conversion node»ı¼º.
- *            return typeÀº boolean.
+ *            var_nameì€ qtcNodeì˜ tableNameì— í•´ë‹¹ë˜ë¯€ë¡œ ë¬´ì¡°ê±´ ì¡´ì¬í•´ì•¼ í•œë‹¤.
+ *            qtcNode->userName, tableNameì„ ì´ìš©í•˜ì—¬ array type variableì„ ê²€ìƒ‰.
+ *            execute->calculateInfoì— ì°¾ì€ ë³€ìˆ˜ì˜ ì •ë³´ë¥¼ ì—°ê²°í•˜ì—¬ ì¤€ë‹¤.
+ *            indexëŠ” arrayë³€ìˆ˜ì˜ key columnì˜ moduleë¡œ conversion nodeìƒì„±.
+ *            return typeì€ boolean.
  *
  ***********************************************************************/    
 
@@ -119,7 +119,7 @@ IDE_RC qsfMExistsEstimate( mtcNode*     aNode,
 
     sStatement       = ((qcTemplate*)aTemplate)->stmt;
 
-    // ¹İµå½Ã psm ³»ºÎ¿¡¼­¸¸ »ç¿ë.
+    // ë°˜ë“œì‹œ psm ë‚´ë¶€ì—ì„œë§Œ ì‚¬ìš©.
     IDE_TEST_RAISE( (sStatement->spvEnv->createProc == NULL) &&
                     (sStatement->spvEnv->createPkg == NULL),
                     ERR_NOT_ALLOWED );
@@ -135,10 +135,10 @@ IDE_RC qsfMExistsEstimate( mtcNode*     aNode,
 
     aStack[0].column = aTemplate->rows[aNode->table].columns + aNode->column;
 
-    // ÀûÇÕ¼º °Ë»ç. tableNameÀº ¹İµå½Ã Á¸ÀçÇØ¾ß ÇÔ.
+    // ì í•©ì„± ê²€ì‚¬. tableNameì€ ë°˜ë“œì‹œ ì¡´ì¬í•´ì•¼ í•¨.
     IDE_DASSERT( QC_IS_NULL_NAME(sNode->tableName) == ID_FALSE );
 
-    // array type º¯¼ö¸¦ °Ë»ö.
+    // array type ë³€ìˆ˜ë¥¼ ê²€ìƒ‰.
     IDE_TEST( qsvProcVar::searchArrayVar( sStatement,
                                           sNode,
                                           &sIsFound,
@@ -156,7 +156,7 @@ IDE_RC qsfMExistsEstimate( mtcNode*     aNode,
     {
         aTemplate->rows[aNode->table].execute[aNode->column] = qsfExecute;
 
-        // º¯¼öÀÇ table, columnÁ¤º¸¸¦ execute->calculateInfo¿¡ ¿¬°áÇÑ´Ù.
+        // ë³€ìˆ˜ì˜ table, columnì •ë³´ë¥¼ execute->calculateInfoì— ì—°ê²°í•œë‹¤.
         IDE_TEST( aCallBack->alloc( aCallBack->info,
                                     ID_SIZEOF( qtcColumnInfo ),
                                     (void**)&sColumnInfo )
@@ -168,7 +168,7 @@ IDE_RC qsfMExistsEstimate( mtcNode*     aNode,
 
         aTemplate->rows[aNode->table].execute[aNode->column].calculateInfo = (void*)sColumnInfo;
 
-        // typeInfoÀÇ Ã¹¹øÂ° ÄÃ·³ÀÌ index columnÀÓ.
+        // typeInfoì˜ ì²«ë²ˆì§¸ ì»¬ëŸ¼ì´ index columnì„.
         sModule = sArrayVariable->typeInfo->columns->basicInfo->module;
 
         IDE_TEST( mtf::makeConversionNodes( aNode,
@@ -179,7 +179,7 @@ IDE_RC qsfMExistsEstimate( mtcNode*     aNode,
                                             &sModule )
                   != IDE_SUCCESS );
 
-        // return typeÀº boolean
+        // return typeì€ boolean
         IDE_TEST( mtc::initializeColumn( aStack[0].column,
                                          &mtdBoolean,
                                          0,
@@ -222,12 +222,12 @@ IDE_RC qsfMExistsCalculate(mtcNode*     aNode,
 {
 /***********************************************************************
  *
- * Description : PROJ-1075 existsÇÔ¼öÀÇ calculate
+ * Description : PROJ-1075 existsí•¨ìˆ˜ì˜ calculate
  *
  * Implementation :
- *          aInfo¿¡¼­ qsxArrayInfo¸¦ °¡Á®¿Í¼­
- *          existsÇÔ¼ö¸¦ È£ÃâÇÑ´Ù.
- *          ´Ü, index°¡ nullÀÎ °æ¿ìµµ ¿¡·¯¸¦ ³»Áö ¾Ê°í Á¤Ã¥»ó FALSE.
+ *          aInfoì—ì„œ qsxArrayInfoë¥¼ ê°€ì ¸ì™€ì„œ
+ *          existsí•¨ìˆ˜ë¥¼ í˜¸ì¶œí•œë‹¤.
+ *          ë‹¨, indexê°€ nullì¸ ê²½ìš°ë„ ì—ëŸ¬ë¥¼ ë‚´ì§€ ì•Šê³  ì •ì±…ìƒ FALSE.
  *
  ***********************************************************************/    
 
@@ -248,8 +248,8 @@ IDE_RC qsfMExistsCalculate(mtcNode*     aNode,
               != IDE_SUCCESS );
 
     /* BUG-38243
-       array method »ç¿ë ½Ã, ÇØ´ç array´Â ÇØ´ç aTemplateÀÌ ¾Æ´Ñ
-       ´Ù¸¥ template¿¡ Á¤º¸°¡ ÀÖÀ» ¼ö ÀÖ´Ù. */
+       array method ì‚¬ìš© ì‹œ, í•´ë‹¹ arrayëŠ” í•´ë‹¹ aTemplateì´ ì•„ë‹Œ
+       ë‹¤ë¥¸ templateì— ì •ë³´ê°€ ìˆì„ ìˆ˜ ìˆë‹¤. */
     if ( sColumnInfo->objectId == QS_EMPTY_OID )
     {
         sTemplateForArrayVar = aTemplate;
@@ -272,7 +272,7 @@ IDE_RC qsfMExistsCalculate(mtcNode*     aNode,
     sArrayInfo = *((qsxArrayInfo ** )( (UChar*) sTemplateForArrayVar->rows[sColumnInfo->table].row
                                        + sArrayColumn->column.offset ));
 
-    // ÀûÇÕ¼º °Ë»ç.
+    // ì í•©ì„± ê²€ì‚¬.
     IDE_TEST_RAISE( sArrayInfo == NULL, ERR_INVALID_ARRAY );
 
     sReturnValue = (mtdBooleanType*)aStack[0].value;
@@ -280,7 +280,7 @@ IDE_RC qsfMExistsCalculate(mtcNode*     aNode,
     if( aStack[1].column->module->isNull( aStack[1].column,
                                           aStack[1].value ) == ID_TRUE )
     {
-        // index°¡ nullÀÎ °æ¿ìµµ error³»Áö ¾Ê°í FALSE
+        // indexê°€ nullì¸ ê²½ìš°ë„ errorë‚´ì§€ ì•Šê³  FALSE
         *sReturnValue = MTD_BOOLEAN_FALSE;
     }
     else

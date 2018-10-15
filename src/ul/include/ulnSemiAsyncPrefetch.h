@@ -87,30 +87,30 @@ typedef struct ulnSemiAsyncPrefetchAutoTuning
     ulnStmt              *mStmt;
 
     /* statistics */
-    acp_time_t            mBeginTimeToMeasure;     /* d, f time À» ÃøÁ¤ÇÏ±â À§ÇÑ ½ÃÀÛ ½Ã°£ */
-    acp_time_t            mEndTimeToMeasure;       /* d, f time À» ÃøÁ¤ÇÏ±â À§ÇÑ ³¡ ½Ã°£ */
+    acp_time_t            mBeginTimeToMeasure;     /* d, f time ì„ ì¸¡ì •í•˜ê¸° ìœ„í•œ ì‹œì‘ ì‹œê°„ */
+    acp_time_t            mEndTimeToMeasure;       /* d, f time ì„ ì¸¡ì •í•˜ê¸° ìœ„í•œ ë ì‹œê°„ */
     acp_sint64_t          mTotalElapsedTime;       /* d + k time */
     acp_sint64_t          mAppLoadTime;            /* d time */
     acp_sint64_t          mPrefetchTime;           /* f time */
     acp_double_t          mDFRatio;                /* d / f ratio */
-    ulnAutoTuningDecision mDecision;               /* prefetch rows Áõ/°¨ °áÁ¤ */
-    acp_sint32_t          mAppReadRows;            /* d time µ¿¾È application ¿¡¼­ read ÇÑ rows */
-    acp_uint32_t          mFetchedRows;            /* f time µ¿¾È fetched rows */
+    ulnAutoTuningDecision mDecision;               /* prefetch rows ì¦/ê° ê²°ì • */
+    acp_sint32_t          mAppReadRows;            /* d time ë™ì•ˆ application ì—ì„œ read í•œ rows */
+    acp_uint32_t          mFetchedRows;            /* f time ë™ì•ˆ fetched rows */
     acp_uint32_t          mNetworkIdleTime;        /* r time */
     acp_sint64_t          mSockReadTime;           /* k time */
     struct tcp_info       mTcpInfo;                /* TCP statistics in kernel */
 
     /* state */
     ulnAutoTuningState    mState;                  /* auto-tuning state */
-    acp_uint32_t          mPrefetchRows;           /* x_(t+1) : ¿¹ÃøµÈ prefetch rows */
-    acp_uint32_t          mLastStablePrefetchRows; /* ¸¶Áö¸·À¸·Î stable ÇÑ prefetch rows */
-    acp_bool_t            mIsTrialOneMore;         /* Á¤È®ÇÑ feedback À» À§ÇØ ÇÑ¹ø ´õ Àû¿ëÇÒÁöÀÇ ¿©ºÎ */
-    acp_uint32_t          mDFRatioUnstableCount;   /* ÆøÁÖ »óÅÂ¸¦ °Ë»çÇÏ±â À§ÇØ d / f ºñÀ²»ó unstable È¸¼ö */
-    acp_uint32_t          mConsecutiveCount;       /* µ¿ÀÏÇÑ prefetch rows ·Î ¿¹ÃøÇÑ ¿¬¼Ó È¸¼ö */
-    acp_uint32_t          mRZeroCountOnOptimal;    /* optimal »óÅÂ¿¡¼­ r = 0 È¸¼ö */
+    acp_uint32_t          mPrefetchRows;           /* x_(t+1) : ì˜ˆì¸¡ëœ prefetch rows */
+    acp_uint32_t          mLastStablePrefetchRows; /* ë§ˆì§€ë§‰ìœ¼ë¡œ stable í•œ prefetch rows */
+    acp_bool_t            mIsTrialOneMore;         /* ì •í™•í•œ feedback ì„ ìœ„í•´ í•œë²ˆ ë” ì ìš©í• ì§€ì˜ ì—¬ë¶€ */
+    acp_uint32_t          mDFRatioUnstableCount;   /* í­ì£¼ ìƒíƒœë¥¼ ê²€ì‚¬í•˜ê¸° ìœ„í•´ d / f ë¹„ìœ¨ìƒ unstable íšŒìˆ˜ */
+    acp_uint32_t          mConsecutiveCount;       /* ë™ì¼í•œ prefetch rows ë¡œ ì˜ˆì¸¡í•œ ì—°ì† íšŒìˆ˜ */
+    acp_uint32_t          mRZeroCountOnOptimal;    /* optimal ìƒíƒœì—ì„œ r = 0 íšŒìˆ˜ */
 
-    acp_bool_t            mIsAdjustedSockRcvBuf;   /* socket receive buffer ¸¦ Á¶ÀıÇÏ¿´´ÂÁöÀÇ ¿©ºÎ */
-    acp_uint32_t          mLastAdjustedSockRcvBufSize; /* auto-tuned prefetch rows ¿¡ ÀÇÇØ ¸¶Áö¸·À¸·Î Á¶ÀıµÈ socket receive buffer size */
+    acp_bool_t            mIsAdjustedSockRcvBuf;   /* socket receive buffer ë¥¼ ì¡°ì ˆí•˜ì˜€ëŠ”ì§€ì˜ ì—¬ë¶€ */
+    acp_uint32_t          mLastAdjustedSockRcvBufSize; /* auto-tuned prefetch rows ì— ì˜í•´ ë§ˆì§€ë§‰ìœ¼ë¡œ ì¡°ì ˆëœ socket receive buffer size */
 
     /* staticstics of last prediction */
     ulnAutoTuningState    mLastState;              /* last auto-tuning state */

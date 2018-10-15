@@ -106,7 +106,7 @@ public:
                                                UInt                      aParallelID,
                                                SInt                      aApplierIndex );
 
-    /* PROJ-1915 : ¸®½Ã¹ö°¡ Ack¸¦ º¸³»±â Àü¿¡ Restart SNÀ» º¸°ü */
+    /* PROJ-1915 : ë¦¬ì‹œë²„ê°€ Ackë¥¼ ë³´ë‚´ê¸° ì „ì— Restart SNì„ ë³´ê´€ */
     smSN           mRestartSN;
     smiStatement   mSmiStmt;
     smiTableCursor mCursor;
@@ -316,7 +316,7 @@ private:
     //proj-1608 recovery from replication
     rprSNMapMgr*          mSNMapMgr;
 
-    /* BUG-31545 ¼öÇà½Ã°£ Åë°èÁ¤º¸ */
+    /* BUG-31545 ìˆ˜í–‰ì‹œê°„ í†µê³„ì •ë³´ */
     idvSQL              * mOpStatistics;
 
     UInt                  mTransactionFlag;
@@ -327,7 +327,7 @@ private:
 
     RP_ROLE               mRole;
 
-    // Performace View Àü¿ë
+    // Performace View ì „ìš©
     smSN        mApplyXSN;
     ULong       mInsertSuccessCount;
     ULong       mInsertFailureCount;
@@ -343,9 +343,9 @@ private:
     /* BUG-38533 numa aware thread initialize */
     rpReceiverStartMode   mStartMode;
 
-    /* Key range ±¸¼ºÀ» ÇÒ¶§ »ç¿ëÇÏ´Â ¸Ş¸ğ¸® ¿µ¿ª,
-     * Performance¸¦ À§ÇØ rpxReceiverApply ³»¿¡ ¹Ì¸® ¸Ş¸ğ¸®¸¦ ÇÒ´çÇØ ³õ°í,
-     * ¹İº¹ÇÏ¿© ±× ¸Ş¸ğ¸®¸¦ Àç»ç¿ëÇÏµµ·Ï ÇÑ´Ù.
+    /* Key range êµ¬ì„±ì„ í• ë•Œ ì‚¬ìš©í•˜ëŠ” ë©”ëª¨ë¦¬ ì˜ì—­,
+     * Performanceë¥¼ ìœ„í•´ rpxReceiverApply ë‚´ì— ë¯¸ë¦¬ ë©”ëª¨ë¦¬ë¥¼ í• ë‹¹í•´ ë†“ê³ ,
+     * ë°˜ë³µí•˜ì—¬ ê·¸ ë©”ëª¨ë¦¬ë¥¼ ì¬ì‚¬ìš©í•˜ë„ë¡ í•œë‹¤.
      * Used Only - rpxReceiverApply::getKeyRange()
      */
     qriMetaRangeColumn  * mRangeColumn;

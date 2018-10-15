@@ -47,7 +47,7 @@ extern uluMemoryOpSet    gUluMemoryOp[];
  */
 
 /*
- * manager alloc ¹æ½ÄÀÏ ¶§ ¾²´Â chunk
+ * manager alloc ë°©ì‹ì¼ ë•Œ ì“°ëŠ” chunk
  */
 
 struct uluChunk
@@ -55,14 +55,14 @@ struct uluChunk
     acp_list_node_t  mList;
 
     acp_uint8_t     *mBuffer;
-    acp_uint32_t     mChunkSize;        /* mBuffer °¡ °¡¸®Å°´Â °÷ ºÎÅÍ Ã»Å©ÀÇ ³¡±îÁöÀÇ Å©±â */
+    acp_uint32_t     mChunkSize;        /* mBuffer ê°€ ê°€ë¦¬í‚¤ëŠ” ê³³ ë¶€í„° ì²­í¬ì˜ ëê¹Œì§€ì˜ í¬ê¸° */
     acp_uint32_t     mOffset;           /* Current offset */
-    acp_uint32_t     mFreeMemSize;      /* ÀÌ Ã»Å©¿¡ ³²Àº free ¸Ş¸ğ¸®ÀÇ Å©±â */
-    acp_uint32_t     mSavepoints[1];    /* ¹è¿­¿¡ µé¾î°¡´Â °ªÀº mBuffer ·ÎºÎÅÍÀÇ offset */
+    acp_uint32_t     mFreeMemSize;      /* ì´ ì²­í¬ì— ë‚¨ì€ free ë©”ëª¨ë¦¬ì˜ í¬ê¸° */
+    acp_uint32_t     mSavepoints[1];    /* ë°°ì—´ì— ë“¤ì–´ê°€ëŠ” ê°’ì€ mBuffer ë¡œë¶€í„°ì˜ offset */
 };
 
 /*
- * direct alloc ¹æ½ÄÀÏ ¶§ ¾²´Â chunk
+ * direct alloc ë°©ì‹ì¼ ë•Œ ì“°ëŠ” chunk
  */
 
 struct uluChunk_DIRECT
@@ -86,7 +86,7 @@ static void uluInitSavepoints(uluChunk *aChunk, acp_uint32_t aNumOfSavepoints)
     acp_uint32_t sIndex;
 
     /*
-     * mSavepoints[] ¹è¿­¿¡ ÀüºÎ 0 À» ³Ö´Â ÇÔ¼ö.
+     * mSavepoints[] ë°°ì—´ì— ì „ë¶€ 0 ì„ ë„£ëŠ” í•¨ìˆ˜.
      */
 
     for (sIndex = 0; sIndex < aNumOfSavepoints + 1; sIndex++)
@@ -96,12 +96,12 @@ static void uluInitSavepoints(uluChunk *aChunk, acp_uint32_t aNumOfSavepoints)
 }
 
 /*
- * ÇÒ´çµÇ´Â ¸Ş¸ğ¸®ÀÇ ¾ç
+ * í• ë‹¹ë˜ëŠ” ë©”ëª¨ë¦¬ì˜ ì–‘
  *
- *      sizeof(uluChunk) + (Savepoint °¹¼ö)°³ÀÇ acp_uint32_t + sizeof(uluMemory) + align8(aSizeRequested)
+ *      sizeof(uluChunk) + (Savepoint ê°¯ìˆ˜)ê°œì˜ acp_uint32_t + sizeof(uluMemory) + align8(aSizeRequested)
  *
- * uluMemory ÀÇ ÀÎ½ºÅÏ½º°¡ µé¾î°¥ ÀÚ¸®¸¦ ¿©À¯·Î ´õ ÇÒ´çÇÔÀ¸·Î½á »ç¿ëÀÚ°¡
- * Ã»Å© Ç®À» ¸¸µé ¶§ ÃÖ´ë·Î ÁöÁ¤ÇÑ ¾ç¸¸Å­ÀÇ ¸Ş¸ğ¸®¸¦ ÇÒ´çÇÒ ¼ö ÀÖµµ·Ï º¸ÀåÇÑ´Ù.
+ * uluMemory ì˜ ì¸ìŠ¤í„´ìŠ¤ê°€ ë“¤ì–´ê°ˆ ìë¦¬ë¥¼ ì—¬ìœ ë¡œ ë” í• ë‹¹í•¨ìœ¼ë¡œì¨ ì‚¬ìš©ìê°€
+ * ì²­í¬ í’€ì„ ë§Œë“¤ ë•Œ ìµœëŒ€ë¡œ ì§€ì •í•œ ì–‘ë§Œí¼ì˜ ë©”ëª¨ë¦¬ë¥¼ í• ë‹¹í•  ìˆ˜ ìˆë„ë¡ ë³´ì¥í•œë‹¤.
  */
 static uluChunk *uluCreateChunk(acp_uint32_t aSizeRequested, acp_uint32_t aNumOfSavepoints)
 {
@@ -118,7 +118,7 @@ static uluChunk *uluCreateChunk(acp_uint32_t aSizeRequested, acp_uint32_t aNumOf
              != ACP_RC_SUCCESS);
 
     /*
-     * uluChunk ¿Í mSavepoints ¹è¿­À» 0 À¸·Î ÃÊ±âÈ­
+     * uluChunk ì™€ mSavepoints ë°°ì—´ì„ 0 ìœ¼ë¡œ ì´ˆê¸°í™”
      */
     acpMemSet(sNewChunk, 0, sSizeChunkHeader);
 
@@ -195,24 +195,24 @@ static uluChunk *uluGetChunkFromPool_MANAGER(uluChunkPool *aPool, acp_uint32_t a
     sNewChunk = NULL;
 
     /*
-     * ¿äÃ»ÇÑ Ã»Å©ÀÇ Å©±â°¡ µğÆúÆ®º¸´Ù Å©¸é ¹«Á¶°Ç Ã»Å© ÇÒ´çÇÑ´Ù.
-     * Ã»Å© »çÀÌÁîÀÇ °Ë»öºñ¿ëÀ» ÁÙÀÌ±â À§ÇÔÀÌ´Ù.
+     * ìš”ì²­í•œ ì²­í¬ì˜ í¬ê¸°ê°€ ë””í´íŠ¸ë³´ë‹¤ í¬ë©´ ë¬´ì¡°ê±´ ì²­í¬ í• ë‹¹í•œë‹¤.
+     * ì²­í¬ ì‚¬ì´ì¦ˆì˜ ê²€ìƒ‰ë¹„ìš©ì„ ì¤„ì´ê¸° ìœ„í•¨ì´ë‹¤.
      *
-     * Note : µğÆúÆ® Ã»Å© »çÀÌÁî¸¦ ÀûÀıÇÏ°Ô Àß °áÁ¤ÇØ¾ß ÇÊ¿ä¾ø´Â malloc À» ¸¹ÀÌ ¿¹¹æÇÒ ¼ö
-     *        ÀÖ´Ù.
+     * Note : ë””í´íŠ¸ ì²­í¬ ì‚¬ì´ì¦ˆë¥¼ ì ì ˆí•˜ê²Œ ì˜ ê²°ì •í•´ì•¼ í•„ìš”ì—†ëŠ” malloc ì„ ë§ì´ ì˜ˆë°©í•  ìˆ˜
+     *        ìˆë‹¤.
      */
     if (aChunkSize <= aPool->mDefaultChunkSize)
     {
         /*
-         * uluChunkPool ÀÌ °¡Áö°í ÀÖ´Â free chunk ÀÇ °¹¼ö¸¦ °¡Áö°í
-         * Ã»Å©¸¦ ´õ ÇÒ´çÇØ¾ß ÇÏ´ÂÁö¸¦ ÆÇ´ÜÇØ¼­ ÇÊ¿äÇÑ ¸¸Å­À» ´õ ÇÒ´çÇÑ´Ù.
+         * uluChunkPool ì´ ê°€ì§€ê³  ìˆëŠ” free chunk ì˜ ê°¯ìˆ˜ë¥¼ ê°€ì§€ê³ 
+         * ì²­í¬ë¥¼ ë” í• ë‹¹í•´ì•¼ í•˜ëŠ”ì§€ë¥¼ íŒë‹¨í•´ì„œ í•„ìš”í•œ ë§Œí¼ì„ ë” í• ë‹¹í•œë‹¤.
          */
         if (aPool->mFreeChunkCnt == 0)
         {
             if (aPool->mFreeBigChunkCnt == 0)
             {
                 /*
-                 * Á¤¸» free chunk °¡ ¾ø´Ù.
+                 * ì •ë§ free chunk ê°€ ì—†ë‹¤.
                  */
                 sNewChunk = uluCreateChunk(aPool->mDefaultChunkSize, aPool->mNumberOfSP);
 
@@ -221,7 +221,7 @@ static uluChunk *uluGetChunkFromPool_MANAGER(uluChunkPool *aPool, acp_uint32_t a
             else
             {
                 /*
-                 * ±×³ª¸¶ Big chunk list ¿¡ free chunk °¡ ÀÖ´Ù.
+                 * ê·¸ë‚˜ë§ˆ Big chunk list ì— free chunk ê°€ ìˆë‹¤.
                  */
                 sNewChunk = (uluChunk *)(aPool->mFreeBigChunkList.mNext);
                 ACI_TEST(sNewChunk == NULL);
@@ -242,16 +242,16 @@ static uluChunk *uluGetChunkFromPool_MANAGER(uluChunkPool *aPool, acp_uint32_t a
     else
     {
         /*
-         * µğÆúÆ® Ã»Å© »çÀÌÁî º¸´Ù Å« Å©±âÀÇ ¸Ş¸ğ¸®¸¦ ¿äÃ».
+         * ë””í´íŠ¸ ì²­í¬ ì‚¬ì´ì¦ˆ ë³´ë‹¤ í° í¬ê¸°ì˜ ë©”ëª¨ë¦¬ë¥¼ ìš”ì²­.
          */
 
         /*
-         * free big chunk list °Ë»ö,
+         * free big chunk list ê²€ìƒ‰,
          */
         ACP_LIST_ITERATE_SAFE(&(aPool->mFreeBigChunkList), sIterator, sIteratorSafe)
         {
             /*
-             * ¿äÃ»µÈ »çÀÌÁîº¸´Ù Å« Ã»Å©°¡ ÀÖÀ¸¸é ±×°ÍÀ» ¸®ÅÏ.
+             * ìš”ì²­ëœ ì‚¬ì´ì¦ˆë³´ë‹¤ í° ì²­í¬ê°€ ìˆìœ¼ë©´ ê·¸ê²ƒì„ ë¦¬í„´.
              */
             if (((uluChunk *)sIterator)->mChunkSize >= aChunkSize)
             {
@@ -266,7 +266,7 @@ static uluChunk *uluGetChunkFromPool_MANAGER(uluChunkPool *aPool, acp_uint32_t a
         }
 
         /*
-         * ¾øÀ¸¸é ÇØ´ç »çÀÌÁî·Î Ã»Å© »ı¼º, ¸®ÅÏ.
+         * ì—†ìœ¼ë©´ í•´ë‹¹ ì‚¬ì´ì¦ˆë¡œ ì²­í¬ ìƒì„±, ë¦¬í„´.
          */
         if (sNewChunk == NULL)
         {
@@ -303,10 +303,10 @@ static void uluReturnChunkToPool_MANAGER(uluChunkPool *aPool, uluChunk *aChunk)
     ACE_DASSERT(aChunk != NULL);
 
     /*
-     * Note: Ã³À½ »ı¼ºÇÏ´Â Ã»Å©´Â ¹®Á¦°¡ ¾ø°ÚÁö¸¸,
-     *       ¹İÈ¯µÈ Ã»Å©¸¦ Àç»ç¿ëÇÏ´Â °æ¿ì ¸ğµç ÇÊµå°¡ ÃÊ±â »óÅÂ´Â ¾Æ´Ô¿¡ Æ²¸²¾ø´Ù.
-     *       µû¶ó¼­ Ã»Å©ÀÇ ÇÊµå¸¦ ÃÊ±âÈ­ÇÏ´Â °ÍÀÌ ÇÊ¿äÇÏ´Ù.
-     *       ±×·¸°Ô ÇÏ¿© Ã»Å© Ç®¿¡ ÀÖ´Â ¸ğµç Ã»Å©´Â °¡Á®¿À´Â Áï½Ã ÀÌ¿ë °¡´ÉÇÏµµ·Ï ÇÑ´Ù.
+     * Note: ì²˜ìŒ ìƒì„±í•˜ëŠ” ì²­í¬ëŠ” ë¬¸ì œê°€ ì—†ê² ì§€ë§Œ,
+     *       ë°˜í™˜ëœ ì²­í¬ë¥¼ ì¬ì‚¬ìš©í•˜ëŠ” ê²½ìš° ëª¨ë“  í•„ë“œê°€ ì´ˆê¸° ìƒíƒœëŠ” ì•„ë‹˜ì— í‹€ë¦¼ì—†ë‹¤.
+     *       ë”°ë¼ì„œ ì²­í¬ì˜ í•„ë“œë¥¼ ì´ˆê¸°í™”í•˜ëŠ” ê²ƒì´ í•„ìš”í•˜ë‹¤.
+     *       ê·¸ë ‡ê²Œ í•˜ì—¬ ì²­í¬ í’€ì— ìˆëŠ” ëª¨ë“  ì²­í¬ëŠ” ê°€ì ¸ì˜¤ëŠ” ì¦‰ì‹œ ì´ìš© ê°€ëŠ¥í•˜ë„ë¡ í•œë‹¤.
      */
     uluInitSavepoints(aChunk, aPool->mNumberOfSP);
     aChunk->mFreeMemSize = aChunk->mChunkSize;
@@ -315,7 +315,7 @@ static void uluReturnChunkToPool_MANAGER(uluChunkPool *aPool, uluChunk *aChunk)
     if (aChunk->mChunkSize > aPool->mActualSizeOfDefaultSingleChunk)
     {
         /*
-         * Å©±â°¡ default chunk size º¸´Ù Å« Ã»Å©¸¦ µ¹·ÁÁÜ.
+         * í¬ê¸°ê°€ default chunk size ë³´ë‹¤ í° ì²­í¬ë¥¼ ëŒë ¤ì¤Œ.
          */
         acpListPrependNode(&(aPool->mFreeBigChunkList), (acp_list_t *)aChunk);
         aPool->mFreeBigChunkCnt++;
@@ -323,7 +323,7 @@ static void uluReturnChunkToPool_MANAGER(uluChunkPool *aPool, uluChunk *aChunk)
     else
     {
         /*
-         * Å©±â°¡ default chunk size ÀÎ Ã»Å©¸¦ µ¹·ÁÁÜ.
+         * í¬ê¸°ê°€ default chunk size ì¸ ì²­í¬ë¥¼ ëŒë ¤ì¤Œ.
          */
         acpListPrependNode(&(aPool->mFreeChunkList), (acp_list_t *)aChunk);
         aPool->mFreeChunkCnt++;
@@ -340,7 +340,7 @@ static void uluReturnChunkToPool_DIRECT(uluChunkPool *aPool, uluChunk *aChunk)
 
 /*
  * ==========================================================
- * uluChunkPool : Initialize Chunk Pool : ÃÖÃÊ º¸À¯ Ã»Å© »ı¼º
+ * uluChunkPool : Initialize Chunk Pool : ìµœì´ˆ ë³´ìœ  ì²­í¬ ìƒì„±
  * ==========================================================
  */
 
@@ -384,8 +384,8 @@ static void uluDestroyChunkPool_MANAGER(uluChunkPool *aPool)
     acp_list_node_t *sTempHeadNext;
 
     /*
-     * aPool À» ¼Ò½º·Î »ç¿ëÇÏ°í ÀÖ´Â ¸ğµç uluMemory ÀÇ
-     * ÀÎ½ºÅÏ½º¸¦ ¹æ¹®ÇØ¼­ ÆÄ±«ÇÑ´Ù.
+     * aPool ì„ ì†ŒìŠ¤ë¡œ ì‚¬ìš©í•˜ê³  ìˆëŠ” ëª¨ë“  uluMemory ì˜
+     * ì¸ìŠ¤í„´ìŠ¤ë¥¼ ë°©ë¬¸í•´ì„œ íŒŒê´´í•œë‹¤.
      */
 
     ACP_LIST_ITERATE_SAFE(&aPool->mMemoryList, sTempHead, sTempHeadNext)
@@ -453,7 +453,7 @@ uluChunkPool *uluChunkPoolCreate(acp_uint32_t aDefaultChunkSize, acp_uint32_t aN
     acp_uint32_t  sActualSizeOfDefaultSingleChunk;
 
     /*
-     * Note : ¼¼ÀÌºê Æ÷ÀÎÆ®ÀÇ °¹¼ö°¡ Ã»Å© »çÀÌÁîÀÇ ¹İÀÌ ³ÑÀ¸¸é ÀÇ¹Ì°¡ ¾ø´Ù.
+     * Note : ì„¸ì´ë¸Œ í¬ì¸íŠ¸ì˜ ê°¯ìˆ˜ê°€ ì²­í¬ ì‚¬ì´ì¦ˆì˜ ë°˜ì´ ë„˜ìœ¼ë©´ ì˜ë¯¸ê°€ ì—†ë‹¤.
      */
     ACI_TEST(aNumOfSavepoints >= (aDefaultChunkSize >> 1));
 
@@ -522,16 +522,16 @@ static ACI_RC uluMemoryAlloc_MANAGER(uluMemory *aMemory, void **aPtr, acp_uint32
     uluChunk        *sChunkForNewMem;
 
     /*
-     * align ÀÌ 4 ¶ó°í °¡Á¤ÇÒ ¶§,
-     * ¿©À¯ ¸Ş¸ğ¸®°¡ 3 ÀÌ°í, ¿äÃ»µÈ »çÀÌÁî°¡ 3 ÀÏ ¶§¿¡µµ
-     * align ÇÑ °ªÀÌ ¿©À¯ ¸Ş¸ğ¸®¸¦ ÃÊ°úÇÏ¹Ç·Î ±×³É ¿¡·¯¸¦ ¸®ÅÏÇÏÀÚ.
+     * align ì´ 4 ë¼ê³  ê°€ì •í•  ë•Œ,
+     * ì—¬ìœ  ë©”ëª¨ë¦¬ê°€ 3 ì´ê³ , ìš”ì²­ëœ ì‚¬ì´ì¦ˆê°€ 3 ì¼ ë•Œì—ë„
+     * align í•œ ê°’ì´ ì—¬ìœ  ë©”ëª¨ë¦¬ë¥¼ ì´ˆê³¼í•˜ë¯€ë¡œ ê·¸ëƒ¥ ì—ëŸ¬ë¥¼ ë¦¬í„´í•˜ì.
      */
     aSize = ACP_ALIGN8(aSize);
 
     if (aMemory->mMaxAllocatableSize >= aSize)
     {
         /*
-         * ÃæºĞÇÑ ¸Ş¸ğ¸®¸¦ °¡Áø Ã»Å©¸¦ Ã£¾Æ¼­ ¼±ÅÃÇÑ´Ù.
+         * ì¶©ë¶„í•œ ë©”ëª¨ë¦¬ë¥¼ ê°€ì§„ ì²­í¬ë¥¼ ì°¾ì•„ì„œ ì„ íƒí•œë‹¤.
          */
         ACP_LIST_ITERATE(&(aMemory->mChunkList), sTempNode)
         {
@@ -556,10 +556,10 @@ static ACI_RC uluMemoryAlloc_MANAGER(uluMemory *aMemory, void **aPtr, acp_uint32
     }
 
     /*
-     * Ã»Å©ÀÇ ÁØºñ°¡ ³¡³µÀ¸¹Ç·Î,
-     * - »ç¿ëÀÚ¿¡°Ô µ¹·ÁÁÙ ¸Ş¸ğ¸® ÁÖ¼Ò¸¦ ÁØºñÇÑ´Ù.
-     * - mChunk.mFreeMemSize ¸¦ Á¶Á¤ÇÑ´Ù.
-     * - offset À» Á¶Á¤ÇÑ´Ù.
+     * ì²­í¬ì˜ ì¤€ë¹„ê°€ ëë‚¬ìœ¼ë¯€ë¡œ,
+     * - ì‚¬ìš©ìì—ê²Œ ëŒë ¤ì¤„ ë©”ëª¨ë¦¬ ì£¼ì†Œë¥¼ ì¤€ë¹„í•œë‹¤.
+     * - mChunk.mFreeMemSize ë¥¼ ì¡°ì •í•œë‹¤.
+     * - offset ì„ ì¡°ì •í•œë‹¤.
      */
 
     sAddrForUser                   = sChunkForNewMem->mBuffer + sChunkForNewMem->mOffset;
@@ -570,7 +570,7 @@ static ACI_RC uluMemoryAlloc_MANAGER(uluMemory *aMemory, void **aPtr, acp_uint32
 
 
     /*
-     * ¸Ş¸ğ¸® ÁÖ¼Ò ¸®ÅÏ
+     * ë©”ëª¨ë¦¬ ì£¼ì†Œ ë¦¬í„´
      */
 
     *aPtr = sAddrForUser;
@@ -592,7 +592,7 @@ static ACI_RC uluMemoryAlloc_DIRECT(uluMemory *aMemory, void **aBufferPtr, acp_u
     uluChunk_DIRECT *sMemoryDesc = NULL;
 
     /*
-     * descriptor ÇÒ´ç
+     * descriptor í• ë‹¹
      */
 
     ACI_TEST(acpMemAlloc((void**)&sMemoryDesc, ACI_SIZEOF(uluChunk_DIRECT))
@@ -602,7 +602,7 @@ static ACI_RC uluMemoryAlloc_DIRECT(uluMemory *aMemory, void **aBufferPtr, acp_u
     acpListInitObj(&sMemoryDesc->mList, sMemoryDesc);
 
     /*
-     * ½ÇÁ¦ ¹öÆÛ ÇÒ´ç
+     * ì‹¤ì œ ë²„í¼ í• ë‹¹
      */
 
     sMemoryDesc->mBufferSize = aSize;
@@ -610,14 +610,14 @@ static ACI_RC uluMemoryAlloc_DIRECT(uluMemory *aMemory, void **aBufferPtr, acp_u
     ACI_TEST(acpMemAlloc((void**)&sMemoryDesc->mBuffer, aSize) != ACP_RC_SUCCESS);
 
     /*
-     * ¸Ş¸ğ¸®¿¡ ¸Å´Ş±â
+     * ë©”ëª¨ë¦¬ì— ë§¤ë‹¬ê¸°
      */
 
     acpListPrependNode(&aMemory->mChunkList, (acp_list_node_t *)sMemoryDesc);
     aMemory->mAllocCount++;
 
     /*
-     * ÇÒ´çÇÑ ¸Ş¸ğ¸® µ¹·ÁÁÖ±â
+     * í• ë‹¹í•œ ë©”ëª¨ë¦¬ ëŒë ¤ì£¼ê¸°
      */
 
     *aBufferPtr = sMemoryDesc->mBuffer;
@@ -650,7 +650,7 @@ static void uluMemoryDestroy_MANAGER(uluMemory *aMemory)
     uluChunkPool    *sPool = aMemory->mChunkPool;
 
     /*
-     * ³» ÀÚ½ÅÀ» Ã»Å© Ç®ÀÇ ¸Ş¸ğ¸® ¸®½ºÆ®¿¡¼­ »èÁ¦ÇÑ´Ù.
+     * ë‚´ ìì‹ ì„ ì²­í¬ í’€ì˜ ë©”ëª¨ë¦¬ ë¦¬ìŠ¤íŠ¸ì—ì„œ ì‚­ì œí•œë‹¤.
      */
 
     uluChunkPoolRemoveMemory(sPool, aMemory);
@@ -658,13 +658,13 @@ static void uluMemoryDestroy_MANAGER(uluMemory *aMemory)
     sFirst = 0;
 
     /*
-     * Ã»Å©¸¦ ¸ğµÎ ¹İ³³ÇÑ´Ù.
+     * ì²­í¬ë¥¼ ëª¨ë‘ ë°˜ë‚©í•œë‹¤.
      */
 
     ACP_LIST_ITERATE_SAFE(&aMemory->mChunkList, sTempHead, sTempHeadNext)
     {
         /*
-         * uluMemory °¡ ÀÖ´Â initial chunk ¸¦ »èÁ¦ÇÏ´Â °ÍÀ» ÇÇÇÏ±â À§ÇÔ.
+         * uluMemory ê°€ ìˆëŠ” initial chunk ë¥¼ ì‚­ì œí•˜ëŠ” ê²ƒì„ í”¼í•˜ê¸° ìœ„í•¨.
          */
 
         if (sFirst == 0)
@@ -678,7 +678,7 @@ static void uluMemoryDestroy_MANAGER(uluMemory *aMemory)
     }
 
     /*
-     * initial chunk ¸¦ »èÁ¦
+     * initial chunk ë¥¼ ì‚­ì œ
      */
 
     sPool->mOp->mReturnChunk(sPool, (uluChunk *)(aMemory->mChunkList.mNext));
@@ -708,13 +708,13 @@ static void uluMemoryDestroy_DIRECT(uluMemory *aMemory)
     acp_list_node_t *sIterator2;
 
     /*
-     * ³» ÀÚ½ÅÀ» Ã»Å© Ç®ÀÇ ¸Ş¸ğ¸® ¸®½ºÆ®¿¡¼­ »èÁ¦ÇÑ´Ù.
+     * ë‚´ ìì‹ ì„ ì²­í¬ í’€ì˜ ë©”ëª¨ë¦¬ ë¦¬ìŠ¤íŠ¸ì—ì„œ ì‚­ì œí•œë‹¤.
      */
 
     uluChunkPoolRemoveMemory(aMemory->mChunkPool, aMemory);
 
     /*
-     * °¡Áö°í ÀÖ´Â ¸ğµç ¸Ş¸ğ¸®¸¦ free ÇÑ´Ù.
+     * ê°€ì§€ê³  ìˆëŠ” ëª¨ë“  ë©”ëª¨ë¦¬ë¥¼ free í•œë‹¤.
      */
 
     ACP_LIST_ITERATE_SAFE(&aMemory->mChunkList, sIterator, sIterator2)
@@ -727,7 +727,7 @@ static void uluMemoryDestroy_DIRECT(uluMemory *aMemory)
     }
 
     /*
-     * uluMemory ÀÚ½ÅÀ» free
+     * uluMemory ìì‹ ì„ free
      */
 
     acpMemFree(aMemory->mSPArray);
@@ -741,11 +741,11 @@ static void uluMemoryDestroy_DIRECT(uluMemory *aMemory)
  */
 
 /*
- * Note : mChunkPool->mNumberOfSP °¡ 3 ÀÌ¸é,
- *        mSavepoints¹è¿­Àº 0 ºÎÅÍ 3 ±îÁöÀÇ ¹è¿­ ÀÎÀÚ¸¦ °®´Â´Ù.
+ * Note : mChunkPool->mNumberOfSP ê°€ 3 ì´ë©´,
+ *        mSavepointsë°°ì—´ì€ 0 ë¶€í„° 3 ê¹Œì§€ì˜ ë°°ì—´ ì¸ìë¥¼ ê°–ëŠ”ë‹¤.
  *
- *        ÀÌ°ÍÀº uluMemory ±¸Á¶Ã¼¿ëÀÇ ¼¼ÀÌºê Æ÷ÀÎÆ® 0 ¹ø°ú
- *        3°³±îÁöÀÇ SP (1, 2, 3) °¡ ÇÊ¿äÇÏ±â ¶§¹®ÀÌ´Ù.
+ *        ì´ê²ƒì€ uluMemory êµ¬ì¡°ì²´ìš©ì˜ ì„¸ì´ë¸Œ í¬ì¸íŠ¸ 0 ë²ˆê³¼
+ *        3ê°œê¹Œì§€ì˜ SP (1, 2, 3) ê°€ í•„ìš”í•˜ê¸° ë•Œë¬¸ì´ë‹¤.
  */
 
 static ACI_RC uluMemoryMarkSP_MANAGER(uluMemory *aMemory)
@@ -767,14 +767,14 @@ static ACI_RC uluMemoryMarkSP_MANAGER(uluMemory *aMemory)
         for (sTempSPIndex = sCurrSPIndex + 1; sTempSPIndex < sNewSPIndex; sTempSPIndex++)
         {
             /*
-             * Current SP Index ¿¡ ÀúÀåµÈ offset À» New SP Index ¹Ù·Î ¾ÕÀü±îÁöÀÇ SP Index µé¿¡
-             * º¹»çÇØ ³Ö´Â´Ù.
+             * Current SP Index ì— ì €ì¥ëœ offset ì„ New SP Index ë°”ë¡œ ì•ì „ê¹Œì§€ì˜ SP Index ë“¤ì—
+             * ë³µì‚¬í•´ ë„£ëŠ”ë‹¤.
              */
             ((uluChunk *)sTempNode)->mSavepoints[sTempSPIndex] = ((uluChunk *)sTempNode)->mOffset;
         }
 
         /*
-         * »õ·Î¿î SP Index ¿¡ Ã»Å©ÀÇ ÇöÀç offset À» ¼¼ÆÃÇÑ´Ù.
+         * ìƒˆë¡œìš´ SP Index ì— ì²­í¬ì˜ í˜„ì¬ offset ì„ ì„¸íŒ…í•œë‹¤.
          */
         ((uluChunk *)sTempNode)->mSavepoints[sTempSPIndex] = ((uluChunk *)sTempNode)->mOffset;
     }
@@ -850,19 +850,19 @@ static ACI_RC uluMemoryFreeToSP_MANAGER(uluMemory *aMemory, acp_uint32_t aSPInde
     ACE_DASSERT(aMemory != NULL);
 
     /*
-     * Note sp 0 À¸·Î °¡¶ó´Â °ÍÀº ¸Ş¸ğ¸®°¡ Ã³À½ »ı¼ºµÈ »óÅÂ·Î °¡¶ó´Â ¶æÀÌ´Ù.
-     * µû¶ó¼­ Ã¼Å©ÇÒ ÇÊ¿ä ¾ø´Ù.
+     * Note sp 0 ìœ¼ë¡œ ê°€ë¼ëŠ” ê²ƒì€ ë©”ëª¨ë¦¬ê°€ ì²˜ìŒ ìƒì„±ëœ ìƒíƒœë¡œ ê°€ë¼ëŠ” ëœ»ì´ë‹¤.
+     * ë”°ë¼ì„œ ì²´í¬í•  í•„ìš” ì—†ë‹¤.
      *
-     * Note aSPIndex °¡ mCurrentSPIndex ¿Í °°´õ¶óµµ °Å±â±îÁö ÇÁ¸®¸¦ ÇØ¾ß ÇÑ´Ù.
+     * Note aSPIndex ê°€ mCurrentSPIndex ì™€ ê°™ë”ë¼ë„ ê±°ê¸°ê¹Œì§€ í”„ë¦¬ë¥¼ í•´ì•¼ í•œë‹¤.
      */
 
     ACI_TEST_RAISE(aSPIndex > aMemory->mCurrentSPIndex, INVALID_SP_INDEX);
 
     /*
-     * µ¿ÀÛ°úÁ¤.
-     * - uluMemory.mCurrentSPIndex ¸¦ aSPIndex ·Î ¼¼ÆÃÇÑ´Ù.
-     * - uluMemory °¡ °¡Áö°í ÀÖ´Â mChunkList ¸¦ Âß µ¹¾Æº¸¸é¼­
-     *   mSavepoints[aSPIndex] °¡ 0 ÀÎ ³ğÀÌ ÀÖÀ¸¸é Ã»Å© Ç®·Î ¹İ³³ÇÑ´Ù.
+     * ë™ì‘ê³¼ì •.
+     * - uluMemory.mCurrentSPIndex ë¥¼ aSPIndex ë¡œ ì„¸íŒ…í•œë‹¤.
+     * - uluMemory ê°€ ê°€ì§€ê³  ìˆëŠ” mChunkList ë¥¼ ì­‰ ëŒì•„ë³´ë©´ì„œ
+     *   mSavepoints[aSPIndex] ê°€ 0 ì¸ ë†ˆì´ ìˆìœ¼ë©´ ì²­í¬ í’€ë¡œ ë°˜ë‚©í•œë‹¤.
      */
     aMemory->mCurrentSPIndex = aSPIndex;
 
@@ -877,12 +877,12 @@ static ACI_RC uluMemoryFreeToSP_MANAGER(uluMemory *aMemory, acp_uint32_t aSPInde
         else
         {
             /*
-             * Chunk ÀÇ Offset À» ÁöÁ¤µÈ savepoint index ¿¡ µé¾î ÀÖ´Â °ªÀ¸·Î ¹Ù²Û´Ù.
+             * Chunk ì˜ Offset ì„ ì§€ì •ëœ savepoint index ì— ë“¤ì–´ ìˆëŠ” ê°’ìœ¼ë¡œ ë°”ê¾¼ë‹¤.
              */
             ((uluChunk *)sTempNode)->mOffset = ((uluChunk *)sTempNode)->mSavepoints[aSPIndex];
 
             /*
-             * Chunk ÀÇ mFreeMemSize ¸¦ ´Ù½Ã °è»êÇØ¼­ ¼¼ÆÃÇÑ´Ù.
+             * Chunk ì˜ mFreeMemSize ë¥¼ ë‹¤ì‹œ ê³„ì‚°í•´ì„œ ì„¸íŒ…í•œë‹¤.
              */
             ((uluChunk *)sTempNode)->mFreeMemSize =
                 ((uluChunk *)sTempNode)->mChunkSize - ((uluChunk *)sTempNode)->mOffset;
@@ -918,8 +918,8 @@ static ACI_RC uluMemoryFreeToSP_DIRECT(uluMemory *aMemory, acp_uint32_t aSPIndex
     if (aNode != NULL)
     {
         /*
-         * SP °¡ °¡¸®Å°´Â ¸Ş¸ğ¸®ºí·ÏÀº ÇØÁ¦µÇ¸é ¾ÈµÈ´Ù.
-         * ±× ´ÙÀ½ ºí·ÏºÎÅÍ ³¡±îÁö ÇØÁ¦ÇØ¾ß ÇÑ´Ù.
+         * SP ê°€ ê°€ë¦¬í‚¤ëŠ” ë©”ëª¨ë¦¬ë¸”ë¡ì€ í•´ì œë˜ë©´ ì•ˆëœë‹¤.
+         * ê·¸ ë‹¤ìŒ ë¸”ë¡ë¶€í„° ëê¹Œì§€ í•´ì œí•´ì•¼ í•œë‹¤.
          */
 
         aNode = aNode->mNext;
@@ -933,7 +933,7 @@ static ACI_RC uluMemoryFreeToSP_DIRECT(uluMemory *aMemory, acp_uint32_t aSPIndex
                 sMemDesc = (uluChunk_DIRECT *)sIterator1;
 
                 /*
-                 * Note : uluMemoryFreeElement_DIRECT() ¿¡¼­ LIST_REMOVE ±îÁö ÇÑ´Ù
+                 * Note : uluMemoryFreeElement_DIRECT() ì—ì„œ LIST_REMOVE ê¹Œì§€ í•œë‹¤
                  */
 
                 uluMemoryFreeElement_DIRECT(sMemDesc);
@@ -965,7 +965,7 @@ uluMemory *uluMemoryCreate_MANAGER(uluChunkPool *aSourcePool)
     uluChunk     *sInitialChunk;
 
     /*
-     * ÃÖÃÊ¿¡ ÇÊ¿äÇÑ Ã»Å©¸¦ °¡Á®¿Â´Ù.
+     * ìµœì´ˆì— í•„ìš”í•œ ì²­í¬ë¥¼ ê°€ì ¸ì˜¨ë‹¤.
      */
     sInitialChunk = aSourcePool->mOp->mGetChunk(aSourcePool, aSourcePool->mDefaultChunkSize);
     ACI_TEST(sInitialChunk == NULL);
@@ -973,17 +973,17 @@ uluMemory *uluMemoryCreate_MANAGER(uluChunkPool *aSourcePool)
     sSizeUluMemory = ACP_ALIGN8(ACI_SIZEOF(uluMemory));
 
     /*
-     * uluMemory ÀÎ½ºÅÏ½º¸¦ À§ÇÑ °ø°£À» ÇÒ´çÇÑ µÚ¿¡ Ã»Å©ÀÇ savepoint index 0 ¹ø¿¡
-     * uluMemory ÀÇ »çÀÌÁî¸¦ ³Ö¾î ÁÜÀ¸·Î½á ½Ç¼ö·Î ÀÎÇÑ initial chunk ÀÇ ¹İ³³À»
-     * ¹æÁöÇØ¾ß ÇÑ´Ù.
+     * uluMemory ì¸ìŠ¤í„´ìŠ¤ë¥¼ ìœ„í•œ ê³µê°„ì„ í• ë‹¹í•œ ë’¤ì— ì²­í¬ì˜ savepoint index 0 ë²ˆì—
+     * uluMemory ì˜ ì‚¬ì´ì¦ˆë¥¼ ë„£ì–´ ì¤Œìœ¼ë¡œì¨ ì‹¤ìˆ˜ë¡œ ì¸í•œ initial chunk ì˜ ë°˜ë‚©ì„
+     * ë°©ì§€í•´ì•¼ í•œë‹¤.
      *
-     * ¼¼ÀÌºê Æ÷ÀÎÆ® ÀÎµ¦½º´Â 1 º£ÀÌ½º·Î ÇÑ´Ù.
-     * ¿Ö³ÄÇÏ¸é ½Ç¼ö·Î uluMemory ±¸Á¶Ã¼°¡ µé¾î°¡ ÀÖ´Â Ã»Å©¸¦ ¹İ³³ÇÏ¸é ¾ÈµÇ±â
-     * ¶§¹®ÀÌ´Ù. uluMemory ±¸Á¶Ã¼°¡ µé¾îÀÖ´Â Ã»Å©´Â uluMemory °¡ ÆÄ±«µÉ ¶§±îÁö
-     * ¹İ³³ÇÏÁö ¾Ê´Â´Ù. ¶ÇÇÑ ±× Ã»Å©¸¸ savepoint index 0 ¿¡ °ªÀ» °¡Áö°Ô µÈ´Ù.
+     * ì„¸ì´ë¸Œ í¬ì¸íŠ¸ ì¸ë±ìŠ¤ëŠ” 1 ë² ì´ìŠ¤ë¡œ í•œë‹¤.
+     * ì™œëƒí•˜ë©´ ì‹¤ìˆ˜ë¡œ uluMemory êµ¬ì¡°ì²´ê°€ ë“¤ì–´ê°€ ìˆëŠ” ì²­í¬ë¥¼ ë°˜ë‚©í•˜ë©´ ì•ˆë˜ê¸°
+     * ë•Œë¬¸ì´ë‹¤. uluMemory êµ¬ì¡°ì²´ê°€ ë“¤ì–´ìˆëŠ” ì²­í¬ëŠ” uluMemory ê°€ íŒŒê´´ë  ë•Œê¹Œì§€
+     * ë°˜ë‚©í•˜ì§€ ì•ŠëŠ”ë‹¤. ë˜í•œ ê·¸ ì²­í¬ë§Œ savepoint index 0 ì— ê°’ì„ ê°€ì§€ê²Œ ëœë‹¤.
      *
-     * »õ·Î »ı¼ºÇÑ Ã»Å©¿¡ uluMemory ¸¦ ÇÒ´çÇßÀ¸¹Ç·Î
-     * uluChunk.mFreeMemSize ¸¦ Á¶Á¤ÇÑ´Ù.
+     * ìƒˆë¡œ ìƒì„±í•œ ì²­í¬ì— uluMemory ë¥¼ í• ë‹¹í–ˆìœ¼ë¯€ë¡œ
+     * uluChunk.mFreeMemSize ë¥¼ ì¡°ì •í•œë‹¤.
      */
 
     sNewMemory = (uluMemory *)(sInitialChunk->mBuffer);
@@ -1006,8 +1006,8 @@ uluMemory *uluMemoryCreate_MANAGER(uluChunkPool *aSourcePool)
     uluChunkPoolAddMemory(aSourcePool, sNewMemory);
 
     /*
-     * ÇÒ´ç¹ŞÀº Ã»Å©¸¦ uluMemory ÀÇ Ã»Å© ¸®½ºÆ®¿¡ ¸Å´Ü´Ù.
-     * ¸Å´Ş±â Àü¿¡ ¸µÅ©ÇìµåÀÇ ÃÊ±âÈ­¸¦ ¹İµå½Ã ÇØ ÁÖ¾î¾ß ÇÑ´Ù.
+     * í• ë‹¹ë°›ì€ ì²­í¬ë¥¼ uluMemory ì˜ ì²­í¬ ë¦¬ìŠ¤íŠ¸ì— ë§¤ë‹¨ë‹¤.
+     * ë§¤ë‹¬ê¸° ì „ì— ë§í¬í—¤ë“œì˜ ì´ˆê¸°í™”ë¥¼ ë°˜ë“œì‹œ í•´ ì£¼ì–´ì•¼ í•œë‹¤.
      */
 
     acpListPrependNode(&sNewMemory->mChunkList, (acp_list_t *)sInitialChunk);
@@ -1026,7 +1026,7 @@ uluMemory *uluMemoryCreate_DIRECT(uluChunkPool *aSourcePool)
     uluMemory    *sNewMemory = NULL;
 
     /*
-     * ÇÊ¿äÇÑ ¸Ş¸ğ¸® ÇÒ´ç
+     * í•„ìš”í•œ ë©”ëª¨ë¦¬ í• ë‹¹
      */
 
     ACI_TEST(acpMemAlloc((void**)&sNewMemory, ACI_SIZEOF(uluMemory)) != ACP_RC_SUCCESS);
@@ -1038,7 +1038,7 @@ uluMemory *uluMemoryCreate_DIRECT(uluChunkPool *aSourcePool)
     acpMemSet(sNewMemory->mSPArray, 0, sSPArraySize);
 
     /*
-     * ÃÊ±âÈ­
+     * ì´ˆê¸°í™”
      */
 
     acpListInitObj(&sNewMemory->mList, sNewMemory);
@@ -1062,7 +1062,7 @@ uluMemory *uluMemoryCreate_DIRECT(uluChunkPool *aSourcePool)
         acpMemFree(sNewMemory);
     }
 
-    //BUG-25201 [CodeSonar] ¸Ş¸ğ¸® ÇØÁ¦ÈÄ Æ÷ÀÎÅÍ ¸®ÅÏÇÔ.
+    //BUG-25201 [CodeSonar] ë©”ëª¨ë¦¬ í•´ì œí›„ í¬ì¸í„° ë¦¬í„´í•¨.
     return NULL;
 }
 
@@ -1071,8 +1071,8 @@ ACI_RC uluMemoryCreate(uluChunkPool *aSourcePool, uluMemory **aNewMem)
     uluMemory *sNewMemory;
 
     /*
-     * create ¿Í initialize ¸¦ ºĞ¸®ÇÏ°í ½ÍÁö¸¸
-     * ±×·¯ÀÚ¸é ±¸Á¶ÀÇ º¯°æÀÌ ºÒ°¡ÇÇÇÏ¹Ç·Î ±×³É create ¾È¿¡¼­ initialize ±îÁö ÇÑ´Ù.
+     * create ì™€ initialize ë¥¼ ë¶„ë¦¬í•˜ê³  ì‹¶ì§€ë§Œ
+     * ê·¸ëŸ¬ìë©´ êµ¬ì¡°ì˜ ë³€ê²½ì´ ë¶ˆê°€í”¼í•˜ë¯€ë¡œ ê·¸ëƒ¥ create ì•ˆì—ì„œ initialize ê¹Œì§€ í•œë‹¤.
      */
 
     sNewMemory = gUluMemoryOp[gUluMemoryType].mCreate(aSourcePool);

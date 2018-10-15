@@ -21,12 +21,12 @@
  * Description :
  *     Predicate Manager
  *
- *     ºñ±³ ¿¬»êÀÚ¸¦ Æ÷ÇÔÇÏ´Â Predicateµé¿¡ ´ëÇÑ Àü¹İÀûÀÎ °ü¸®¸¦
- *     ´ã´çÇÑ´Ù.
+ *     ë¹„êµ ì—°ì‚°ìë¥¼ í¬í•¨í•˜ëŠ” Predicateë“¤ì— ëŒ€í•œ ì „ë°˜ì ì¸ ê´€ë¦¬ë¥¼
+ *     ë‹´ë‹¹í•œë‹¤.
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  **********************************************************************/
 
@@ -93,16 +93,16 @@ compareFilter( const void * aElem1,
 {
 /***********************************************************************
  *
- * Description : filter orderingÀ» À§ÇÑ compare ÇÔ¼ö
+ * Description : filter orderingì„ ìœ„í•œ compare í•¨ìˆ˜
  *
  * Implementation :
  *
- *     ÀÎÀÚ·Î ³Ñ¾î¿Â µÎ predicate->selectivity¸¦ ºñ±³ÇÑ´Ù.
+ *     ì¸ìë¡œ ë„˜ì–´ì˜¨ ë‘ predicate->selectivityë¥¼ ë¹„êµí•œë‹¤.
  *
  ***********************************************************************/
 
     //--------------------------------------
-    // filter orderingÀ» À§ÇÑ selectivity ºñ±³
+    // filter orderingì„ ìœ„í•œ selectivity ë¹„êµ
     //--------------------------------------
 
     if( (*(qmoPredicate**)aElem1)->mySelectivity >
@@ -135,14 +135,14 @@ qmoPred::setCompositeKeyUsableFlag( qmoPredicate * aPredicate )
 /***********************************************************************
  *
  *  Description : PROJ-1502 PARTITIONED DISK TABLE
- *                composite key¿Í °ü·ÃÇÑ predicateÀÇ flag¸¦ ¼¼ÆÃÇÑ´Ù.
+ *                composite keyì™€ ê´€ë ¨í•œ predicateì˜ flagë¥¼ ì„¸íŒ…í•œë‹¤.
  *
  *  Implementation :
- *     °ü·Ã ±¸Á¶ : composite index, range partition key(composite key)
- *     ¿¬¼ÓÀûÀÎ key column ÄÃ·³¿©ºÎ¿Í equal ºñ±³¿¬»êÀÚ Á¸Àç ¿©ºÎ ¼³Á¤.
- *     ¿¬¼ÓÀûÀÎ key column »ç¿ëÇÒ ¼ö ÀÖ´Â predicateÀº,
- *       (1) equal(=)°ú IN¿¬»êÀÚÀÌ¸ç,
- *       (2) ÄÃ·³¿¡ predicateÀÌ ÇÏ³ª¸¸ ÀÖ´Â °æ¿ìÀÌ´Ù.
+ *     ê´€ë ¨ êµ¬ì¡° : composite index, range partition key(composite key)
+ *     ì—°ì†ì ì¸ key column ì»¬ëŸ¼ì—¬ë¶€ì™€ equal ë¹„êµì—°ì‚°ì ì¡´ì¬ ì—¬ë¶€ ì„¤ì •.
+ *     ì—°ì†ì ì¸ key column ì‚¬ìš©í•  ìˆ˜ ìˆëŠ” predicateì€,
+ *       (1) equal(=)ê³¼ INì—°ì‚°ìì´ë©°,
+ *       (2) ì»¬ëŸ¼ì— predicateì´ í•˜ë‚˜ë§Œ ìˆëŠ” ê²½ìš°ì´ë‹¤.
  *
  ***********************************************************************/
 
@@ -152,16 +152,16 @@ qmoPred::setCompositeKeyUsableFlag( qmoPredicate * aPredicate )
     qtcNode      * sCompareNode;
 
     //--------------------------------------
-    // ¿¬¼ÓÀûÀÎ key column »ç¿ë°¡´É¿©ºÎ¿Í
-    // µ¿ÀÏÄÃ·³¸®½ºÆ®¿¡ equal(in) ºñ±³¿¬»êÀÚ Á¸Àç¿©ºÎ ¼³Á¤
-    // 1. ¿¬¼ÓÀûÀÎ key column »ç¿ë°¡´É ¿©ºÎ
-    //    keyRange ÃßÃâ½Ã ÇÊ¿äÇÑ Á¤º¸.
-    // 2. µ¿ÀÏÄÃ·³¸®½ºÆ®¿¡ equal(in) ºñ±³¿¬»êÀÚ Á¸Àç¿©ºÎ
-    //    selection graphÀÇ composite index¿¡ ´ëÇÑ selectivity º¸Á¤½Ã ÇÊ¿ä.
+    // ì—°ì†ì ì¸ key column ì‚¬ìš©ê°€ëŠ¥ì—¬ë¶€ì™€
+    // ë™ì¼ì»¬ëŸ¼ë¦¬ìŠ¤íŠ¸ì— equal(in) ë¹„êµì—°ì‚°ì ì¡´ì¬ì—¬ë¶€ ì„¤ì •
+    // 1. ì—°ì†ì ì¸ key column ì‚¬ìš©ê°€ëŠ¥ ì—¬ë¶€
+    //    keyRange ì¶”ì¶œì‹œ í•„ìš”í•œ ì •ë³´.
+    // 2. ë™ì¼ì»¬ëŸ¼ë¦¬ìŠ¤íŠ¸ì— equal(in) ë¹„êµì—°ì‚°ì ì¡´ì¬ì—¬ë¶€
+    //    selection graphì˜ composite indexì— ëŒ€í•œ selectivity ë³´ì •ì‹œ í•„ìš”.
     // To Fix PR-11731
-    //    IS NULL ¿¬»êÀÚ ¿ª½Ã ¿¬¼ÓÀûÀÎ key column »ç¿ëÀÌ °¡´ÉÇÏ´Ù.
+    //    IS NULL ì—°ì‚°ì ì—­ì‹œ ì—°ì†ì ì¸ key column ì‚¬ìš©ì´ ê°€ëŠ¥í•˜ë‹¤.
     // To Fix PR-11491
-    //    =ALL ¿¬»êÀÚ ¿ª½Ã ¿¬¼ÓÀûÀÎ key column »ç¿ëÀÌ °¡´ÉÇÏ´Ù.
+    //    =ALL ì—°ì‚°ì ì—­ì‹œ ì—°ì†ì ì¸ key column ì‚¬ìš©ì´ ê°€ëŠ¥í•˜ë‹¤.
     //--------------------------------------
 
     sIsExistEqual     = ID_FALSE;
@@ -180,8 +180,8 @@ qmoPred::setCompositeKeyUsableFlag( qmoPredicate * aPredicate )
             while( sCompareNode != NULL )
             {
                 // To Fix PR-11731
-                // IS NULL ¿¬»êÀÚ ¿ª½Ã ¿¬¼ÓÀûÀÎ key column »ç¿ëÀÌ °¡´ÉÇÔ.
-                // BUG-11491 =ALLµµ Ãß°¡ÇÔ.
+                // IS NULL ì—°ì‚°ì ì—­ì‹œ ì—°ì†ì ì¸ key column ì‚¬ìš©ì´ ê°€ëŠ¥í•¨.
+                // BUG-11491 =ALLë„ ì¶”ê°€í•¨.
                 if( ( sCompareNode->node.module == &mtfEqual ) ||
                     ( sCompareNode->node.module == &mtfEqualAny ) ||
                     ( sCompareNode->node.module == &mtfEqualAll ) ||
@@ -202,8 +202,8 @@ qmoPred::setCompositeKeyUsableFlag( qmoPredicate * aPredicate )
             sCompareNode = sMorePredicate->node;
 
             // To Fix PR-11731
-            // IS NULL ¿¬»êÀÚ ¿ª½Ã ¿¬¼ÓÀûÀÎ key column »ç¿ëÀÌ °¡´ÉÇÔ.
-            // BUG-11491 =ALLµµ Ãß°¡ÇÔ.
+            // IS NULL ì—°ì‚°ì ì—­ì‹œ ì—°ì†ì ì¸ key column ì‚¬ìš©ì´ ê°€ëŠ¥í•¨.
+            // BUG-11491 =ALLë„ ì¶”ê°€í•¨.
             if( ( sCompareNode->node.module == &mtfEqual ) ||
                 ( sCompareNode->node.module == &mtfEqualAny ) ||
                 ( sCompareNode->node.module == &mtfEqualAll ) ||
@@ -220,7 +220,7 @@ qmoPred::setCompositeKeyUsableFlag( qmoPredicate * aPredicate )
 
 
     //--------------------------------------
-    // Ã¹¹øÂ° qmoPredicate¿¡ flag Á¤º¸ ÀúÀå
+    // ì²«ë²ˆì§¸ qmoPredicateì— flag ì •ë³´ ì €ì¥
     //--------------------------------------
 
     if( sIsExistEqual == ID_TRUE )
@@ -259,31 +259,31 @@ qmoPred::relocatePredicate4PartTable(
 /***********************************************************************
  *
  * Description : PROJ-1502 PARTITIONED DISK TABLE
- *               - partition graphÀÇ predicate Àç¹èÄ¡
+ *               - partition graphì˜ predicate ì¬ë°°ì¹˜
  *
- *     partition graph¿¡¼­´Â ÇØ´ç Å×ÀÌºí¿¡ ´ëÇÑ
- *     OR ¶Ç´Â ºñ±³¿¬»êÀÚ ´ÜÀ§ÀÇ predicate¿¬°áÁ¤º¸¸¦ °¡Áø´Ù.
- *     predicate°ü¸®ÀÚ´Â ÀÌ¸¦
- *     (1) µ¿ÀÏ ÄÃ·³À» Æ÷ÇÔÇÏ´Â predicateÀÇ ºĞ·ù
- *     (2) ÇÏ³ªÀÇ ÀÎµ¦½º·ÎºÎÅÍ ¾ò¾î³¾ ¼ö ÀÖ´Â predicateÀÇ ºĞ·ù¸¦
- *     ¿ëÀÌÇÏ°Ô ÇÏ±â À§ÇØ predicateÀ» Àç¹èÄ¡ÇÑ´Ù.
+ *     partition graphì—ì„œëŠ” í•´ë‹¹ í…Œì´ë¸”ì— ëŒ€í•œ
+ *     OR ë˜ëŠ” ë¹„êµì—°ì‚°ì ë‹¨ìœ„ì˜ predicateì—°ê²°ì •ë³´ë¥¼ ê°€ì§„ë‹¤.
+ *     predicateê´€ë¦¬ìëŠ” ì´ë¥¼
+ *     (1) ë™ì¼ ì»¬ëŸ¼ì„ í¬í•¨í•˜ëŠ” predicateì˜ ë¶„ë¥˜
+ *     (2) í•˜ë‚˜ì˜ ì¸ë±ìŠ¤ë¡œë¶€í„° ì–»ì–´ë‚¼ ìˆ˜ ìˆëŠ” predicateì˜ ë¶„ë¥˜ë¥¼
+ *     ìš©ì´í•˜ê²Œ í•˜ê¸° ìœ„í•´ predicateì„ ì¬ë°°ì¹˜í•œë‹¤.
  *
- *     [predicateÀÇ Àç¹èÄ¡ ±âÁØ]
- *     1. ÀÎµ¦½º»ç¿ëÀÌ °¡´ÉÇÑ one column predicateµéÀ» ÄÃ·³º°·Î ºĞ¸®¹èÄ¡
- *     2. ÀÎµ¦½º»ç¿ëÀÌ °¡´ÉÇÑ multi column predicate(LIST)µéÀ» ºĞ¸®¹èÄ¡
- *     3. ÀÎµ¦½º»ç¿ëÀÌ ºÒ°¡´ÉÇÑ predicateµéÀ» ºĞ¸®¹èÄ¡
+ *     [predicateì˜ ì¬ë°°ì¹˜ ê¸°ì¤€]
+ *     1. ì¸ë±ìŠ¤ì‚¬ìš©ì´ ê°€ëŠ¥í•œ one column predicateë“¤ì„ ì»¬ëŸ¼ë³„ë¡œ ë¶„ë¦¬ë°°ì¹˜
+ *     2. ì¸ë±ìŠ¤ì‚¬ìš©ì´ ê°€ëŠ¥í•œ multi column predicate(LIST)ë“¤ì„ ë¶„ë¦¬ë°°ì¹˜
+ *     3. ì¸ë±ìŠ¤ì‚¬ìš©ì´ ë¶ˆê°€ëŠ¥í•œ predicateë“¤ì„ ë¶„ë¦¬ë°°ì¹˜
  *
  * Implementation :
  *
- *     (1) °¢ predicateµé¿¡ ´ëÇØ¼­ indexable predicateÀÎÁö¸¦ °Ë»çÇØ¼­,
- *         ÄÃ·³º°·Î ºĞ¸®¹èÄ¡
- *     (2) indexable column¿¡ ´ëÇÑ IN(subquery)¿¡ ´ëÇÑ Ã³¸®´Â ÇÏÁö ¾ÊÀ½.
- *     (3) selectivity¸¦ ±¸ÇÏ´Â ÀÛ¾÷Àº ÇÏÁö ¾ÊÀ½.
+ *     (1) ê° predicateë“¤ì— ëŒ€í•´ì„œ indexable predicateì¸ì§€ë¥¼ ê²€ì‚¬í•´ì„œ,
+ *         ì»¬ëŸ¼ë³„ë¡œ ë¶„ë¦¬ë°°ì¹˜
+ *     (2) indexable columnì— ëŒ€í•œ IN(subquery)ì— ëŒ€í•œ ì²˜ë¦¬ëŠ” í•˜ì§€ ì•ŠìŒ.
+ *     (3) selectivityë¥¼ êµ¬í•˜ëŠ” ì‘ì—…ì€ í•˜ì§€ ì•ŠìŒ.
  *
- *     Åë°èÁ¤º¸¸¦ ÀÌ¿ëÇÏÁö ¾Ê´Â´Ù. ¿À·ÎÁö partition keyrange¸¦
- *     ÃßÃâÇÏ±â À§ÇÔÀÓ.
- *     Àç¹èÄ¡¸¸Àº ÇÏ¹Ç·Î, selectivity¸¦ ÁöÁ¤ÇØ ÁÖ´Â ¿ªÇÒÀº
- *     qmgSelection::optimizePartition¿¡¼­ ÇÏ°Ô µÈ´Ù.
+ *     í†µê³„ì •ë³´ë¥¼ ì´ìš©í•˜ì§€ ì•ŠëŠ”ë‹¤. ì˜¤ë¡œì§€ partition keyrangeë¥¼
+ *     ì¶”ì¶œí•˜ê¸° ìœ„í•¨ì„.
+ *     ì¬ë°°ì¹˜ë§Œì€ í•˜ë¯€ë¡œ, selectivityë¥¼ ì§€ì •í•´ ì£¼ëŠ” ì—­í• ì€
+ *     qmgSelection::optimizePartitionì—ì„œ í•˜ê²Œ ëœë‹¤.
  *
  ***********************************************************************/
     qmoPredicate * sInPredicate;
@@ -294,7 +294,7 @@ qmoPred::relocatePredicate4PartTable(
     IDU_FIT_POINT_FATAL( "qmoPred::relocatePredicate4PartTable::__FT__" );
 
     //--------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //--------------------------------------
 
     IDE_DASSERT( aStatement         != NULL );
@@ -303,13 +303,13 @@ qmoPred::relocatePredicate4PartTable(
     IDE_DASSERT( aOutPredicate      != NULL );
 
     //--------------------------------------
-    // predicate Àç¹èÄ¡
+    // predicate ì¬ë°°ì¹˜
     //--------------------------------------
 
     sInPredicate = aInPredicate;
 
-    // Base TableÀÇ Predicate¿¡ ´ëÇÑ ºĞ·ù :
-    // indexable predicateÀ» ÆÇ´ÜÇÏ°í, columnID ¼³Á¤
+    // Base Tableì˜ Predicateì— ëŒ€í•œ ë¶„ë¥˜ :
+    // indexable predicateì„ íŒë‹¨í•˜ê³ , columnID ì„¤ì •
     IDE_TEST( classifyPartTablePredicate( aStatement,
                                           sInPredicate,
                                           aPartitionMethod,
@@ -318,7 +318,7 @@ qmoPred::relocatePredicate4PartTable(
               != IDE_SUCCESS );
     sRelocatePred = sInPredicate;
     sInPredicate = sInPredicate->next;
-    // ¿¬°áµÈ sInPredicateÀÇ next ¿¬°áÀ» ²÷´Â´Ù.
+    // ì—°ê²°ëœ sInPredicateì˜ next ì—°ê²°ì„ ëŠëŠ”ë‹¤.
     sRelocatePred->next = NULL;
 
     while ( sInPredicate != NULL )
@@ -330,12 +330,12 @@ qmoPred::relocatePredicate4PartTable(
                                               aOuterDependencies )
                   != IDE_SUCCESS );
 
-        // ÄÃ·³º°·Î ¿¬°á°ü°è ¸¸µé±â
-        // µ¿ÀÏ ÄÃ·³ÀÌ ÀÖ´Â °æ¿ì, µ¿ÀÏ ÄÃ·³ÀÇ ¸¶Áö¸· predicate.more¿¡
-        // µ¿ÀÏ ÄÃ·³ÀÌ ¾ø´Â °æ¿ì, sRelocateÀÇ ¸¶Áö¸· predicate.next¿¡
-        // (1) »õ·Î¿î predicate(sInPredicate)À» ¿¬°áÇÏ°í,
+        // ì»¬ëŸ¼ë³„ë¡œ ì—°ê²°ê´€ê³„ ë§Œë“¤ê¸°
+        // ë™ì¼ ì»¬ëŸ¼ì´ ìˆëŠ” ê²½ìš°, ë™ì¼ ì»¬ëŸ¼ì˜ ë§ˆì§€ë§‰ predicate.moreì—
+        // ë™ì¼ ì»¬ëŸ¼ì´ ì—†ëŠ” ê²½ìš°, sRelocateì˜ ë§ˆì§€ë§‰ predicate.nextì—
+        // (1) ìƒˆë¡œìš´ predicate(sInPredicate)ì„ ì—°ê²°í•˜ê³ ,
         // (2) sInPredicate = sInPredicate->next
-        // (3) ¿¬°áµÈ predicateÀÇ next ¿¬°á°ü°è¸¦ ²÷À½.
+        // (3) ì—°ê²°ëœ predicateì˜ next ì—°ê²°ê´€ê³„ë¥¼ ëŠìŒ.
 
         sNextPredicate = sInPredicate->next;
 
@@ -373,30 +373,30 @@ qmoPred::relocatePredicate( qcStatement      * aStatement,
 {
 /***********************************************************************
  *
- * Description : - selection graphÀÇ predicate Àç¹èÄ¡
- *               - selectivity °ª ¼¼ÆÃ
- *               - Host optimization ¿©ºÎ ¼¼ÆÃ
+ * Description : - selection graphì˜ predicate ì¬ë°°ì¹˜
+ *               - selectivity ê°’ ì„¸íŒ…
+ *               - Host optimization ì—¬ë¶€ ì„¸íŒ…
  *
- *     selection graph¿¡¼­´Â ÇØ´ç Å×ÀÌºí¿¡ ´ëÇÑ
- *     OR ¶Ç´Â ºñ±³¿¬»êÀÚ ´ÜÀ§ÀÇ predicate¿¬°áÁ¤º¸¸¦ °¡Áø´Ù.
- *     predicate°ü¸®ÀÚ´Â ÀÌ¸¦
- *     (1) µ¿ÀÏ ÄÃ·³À» Æ÷ÇÔÇÏ´Â predicateÀÇ ºĞ·ù
- *     (2) ÇÏ³ªÀÇ ÀÎµ¦½º·ÎºÎÅÍ ¾ò¾î³¾ ¼ö ÀÖ´Â predicateÀÇ ºĞ·ù¸¦
- *     ¿ëÀÌÇÏ°Ô ÇÏ±â À§ÇØ predicateÀ» Àç¹èÄ¡ÇÑ´Ù.
+ *     selection graphì—ì„œëŠ” í•´ë‹¹ í…Œì´ë¸”ì— ëŒ€í•œ
+ *     OR ë˜ëŠ” ë¹„êµì—°ì‚°ì ë‹¨ìœ„ì˜ predicateì—°ê²°ì •ë³´ë¥¼ ê°€ì§„ë‹¤.
+ *     predicateê´€ë¦¬ìëŠ” ì´ë¥¼
+ *     (1) ë™ì¼ ì»¬ëŸ¼ì„ í¬í•¨í•˜ëŠ” predicateì˜ ë¶„ë¥˜
+ *     (2) í•˜ë‚˜ì˜ ì¸ë±ìŠ¤ë¡œë¶€í„° ì–»ì–´ë‚¼ ìˆ˜ ìˆëŠ” predicateì˜ ë¶„ë¥˜ë¥¼
+ *     ìš©ì´í•˜ê²Œ í•˜ê¸° ìœ„í•´ predicateì„ ì¬ë°°ì¹˜í•œë‹¤.
  *
- *     [predicateÀÇ Àç¹èÄ¡ ±âÁØ]
- *     1. ÀÎµ¦½º»ç¿ëÀÌ °¡´ÉÇÑ one column predicateµéÀ» ÄÃ·³º°·Î ºĞ¸®¹èÄ¡
- *     2. ÀÎµ¦½º»ç¿ëÀÌ °¡´ÉÇÑ multi column predicate(LIST)µéÀ» ºĞ¸®¹èÄ¡
- *     3. ÀÎµ¦½º»ç¿ëÀÌ ºÒ°¡´ÉÇÑ predicateµéÀ» ºĞ¸®¹èÄ¡
+ *     [predicateì˜ ì¬ë°°ì¹˜ ê¸°ì¤€]
+ *     1. ì¸ë±ìŠ¤ì‚¬ìš©ì´ ê°€ëŠ¥í•œ one column predicateë“¤ì„ ì»¬ëŸ¼ë³„ë¡œ ë¶„ë¦¬ë°°ì¹˜
+ *     2. ì¸ë±ìŠ¤ì‚¬ìš©ì´ ê°€ëŠ¥í•œ multi column predicate(LIST)ë“¤ì„ ë¶„ë¦¬ë°°ì¹˜
+ *     3. ì¸ë±ìŠ¤ì‚¬ìš©ì´ ë¶ˆê°€ëŠ¥í•œ predicateë“¤ì„ ë¶„ë¦¬ë°°ì¹˜
  *
  * Implementation :
  *
- *     (1) °¢ predicateµé¿¡ ´ëÇØ¼­ indexable predicateÀÎÁö¸¦ °Ë»çÇØ¼­,
- *         ÄÃ·³º°·Î ºĞ¸®¹èÄ¡
- *     (2) indexable column¿¡ ´ëÇÑ IN(subquery)¿¡ ´ëÇÑ Ã³¸®
- *     (3) one column¿¡ ´ëÇÑ ´ëÇ¥ selectivity¸¦ ±¸ÇØ¼­,
- *         qmoPredicate->moreÀÇ ¿¬°á¸®½ºÆ® Áß,
- *         Ã¹¹øÂ° qmoPredicate.totalSelectivity¿¡ ÀÌ °ªÀ» ÀúÀåÇÑ´Ù.
+ *     (1) ê° predicateë“¤ì— ëŒ€í•´ì„œ indexable predicateì¸ì§€ë¥¼ ê²€ì‚¬í•´ì„œ,
+ *         ì»¬ëŸ¼ë³„ë¡œ ë¶„ë¦¬ë°°ì¹˜
+ *     (2) indexable columnì— ëŒ€í•œ IN(subquery)ì— ëŒ€í•œ ì²˜ë¦¬
+ *     (3) one columnì— ëŒ€í•œ ëŒ€í‘œ selectivityë¥¼ êµ¬í•´ì„œ,
+ *         qmoPredicate->moreì˜ ì—°ê²°ë¦¬ìŠ¤íŠ¸ ì¤‘,
+ *         ì²«ë²ˆì§¸ qmoPredicate.totalSelectivityì— ì´ ê°’ì„ ì €ì¥í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -408,7 +408,7 @@ qmoPred::relocatePredicate( qcStatement      * aStatement,
     IDU_FIT_POINT_FATAL( "qmoPred::relocatePredicate::__FT__" );
 
     //--------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //--------------------------------------
 
     IDE_DASSERT( aStatement         != NULL );
@@ -418,13 +418,13 @@ qmoPred::relocatePredicate( qcStatement      * aStatement,
     IDE_DASSERT( aOutPredicate      != NULL );
 
     //--------------------------------------
-    // predicate Àç¹èÄ¡
+    // predicate ì¬ë°°ì¹˜
     //--------------------------------------
 
     sInPredicate = aInPredicate;
 
-    // Base TableÀÇ Predicate¿¡ ´ëÇÑ ºĞ·ù :
-    // indexable predicateÀ» ÆÇ´ÜÇÏ°í, columnID¿Í selectivity ¼³Á¤
+    // Base Tableì˜ Predicateì— ëŒ€í•œ ë¶„ë¥˜ :
+    // indexable predicateì„ íŒë‹¨í•˜ê³ , columnIDì™€ selectivity ì„¤ì •
     IDE_TEST( classifyTablePredicate( aStatement,
                                       sInPredicate,
                                       aTableDependencies,
@@ -433,7 +433,7 @@ qmoPred::relocatePredicate( qcStatement      * aStatement,
               != IDE_SUCCESS );
     sRelocatePred = sInPredicate;
     sInPredicate  = sInPredicate->next;
-    // ¿¬°áµÈ sInPredicateÀÇ next ¿¬°áÀ» ²÷´Â´Ù.
+    // ì—°ê²°ëœ sInPredicateì˜ next ì—°ê²°ì„ ëŠëŠ”ë‹¤.
     sRelocatePred->next = NULL;
 
     while ( sInPredicate != NULL )
@@ -445,12 +445,12 @@ qmoPred::relocatePredicate( qcStatement      * aStatement,
                                           aStatiscalData )
                   != IDE_SUCCESS );
 
-        // ÄÃ·³º°·Î ¿¬°á°ü°è ¸¸µé±â
-        // µ¿ÀÏ ÄÃ·³ÀÌ ÀÖ´Â °æ¿ì, µ¿ÀÏ ÄÃ·³ÀÇ ¸¶Áö¸· predicate.more¿¡
-        // µ¿ÀÏ ÄÃ·³ÀÌ ¾ø´Â °æ¿ì, sRelocateÀÇ ¸¶Áö¸· predicate.next¿¡
-        // (1) »õ·Î¿î predicate(sInPredicate)À» ¿¬°áÇÏ°í,
+        // ì»¬ëŸ¼ë³„ë¡œ ì—°ê²°ê´€ê³„ ë§Œë“¤ê¸°
+        // ë™ì¼ ì»¬ëŸ¼ì´ ìˆëŠ” ê²½ìš°, ë™ì¼ ì»¬ëŸ¼ì˜ ë§ˆì§€ë§‰ predicate.moreì—
+        // ë™ì¼ ì»¬ëŸ¼ì´ ì—†ëŠ” ê²½ìš°, sRelocateì˜ ë§ˆì§€ë§‰ predicate.nextì—
+        // (1) ìƒˆë¡œìš´ predicate(sInPredicate)ì„ ì—°ê²°í•˜ê³ ,
         // (2) sInPredicate = sInPredicate->next
-        // (3) ¿¬°áµÈ predicateÀÇ next ¿¬°á°ü°è¸¦ ²÷À½.
+        // (3) ì—°ê²°ëœ predicateì˜ next ì—°ê²°ê´€ê³„ë¥¼ ëŠìŒ.
 
         sNextPredicate = sInPredicate->next;
 
@@ -462,26 +462,26 @@ qmoPred::relocatePredicate( qcStatement      * aStatement,
     }
 
     //--------------------------------------
-    // Àç¹èÄ¡ ¿Ï·áÈÄ, indexable column¿¡ ´ëÇÑ IN(subquery)ÀÇ Ã³¸®
-    // IN(subquery)´Â ´Ù¸¥ ÄÃ·³°ú °°ÀÌ keyRange¸¦ ±¸¼ºÇÏÁö ¸øÇÏ°í,
-    // ´Üµ¶À¸·Î ±¸¼ºÇØ¾ßÇÏ¹Ç·Î, keyRangeÃßÃâÀü¿¡ ´ÙÀ½°ú °°ÀÌ Ã³¸®ÇÑ´Ù.
-    // IN(subquery)°¡ Á¸ÀçÇÏ´Â ÄÃ·³ÀÎ °æ¿ì,
-    // selectivity°¡ ÁÁÀº predicateÀ» Ã£´Â´Ù.
-    // (1) Ã£Àº predicateÀÌ IN(subquery)ÀÌ¸é,
-    //     IN(subquery)ÀÌ¿ÜÀÇ predicateÀº non-indexable column ¸®½ºÆ®¿¡ ¿¬°á
-    // (2) Ã£Àº predicateÀÌ IN(subquery)°¡ ¾Æ´Ï¸é,
-    //     IN(subquery) predicateµéÀ» non-indexable column ¸®½ºÆ®¿¡ ¿¬°á
+    // ì¬ë°°ì¹˜ ì™„ë£Œí›„, indexable columnì— ëŒ€í•œ IN(subquery)ì˜ ì²˜ë¦¬
+    // IN(subquery)ëŠ” ë‹¤ë¥¸ ì»¬ëŸ¼ê³¼ ê°™ì´ keyRangeë¥¼ êµ¬ì„±í•˜ì§€ ëª»í•˜ê³ ,
+    // ë‹¨ë…ìœ¼ë¡œ êµ¬ì„±í•´ì•¼í•˜ë¯€ë¡œ, keyRangeì¶”ì¶œì „ì— ë‹¤ìŒê³¼ ê°™ì´ ì²˜ë¦¬í•œë‹¤.
+    // IN(subquery)ê°€ ì¡´ì¬í•˜ëŠ” ì»¬ëŸ¼ì¸ ê²½ìš°,
+    // selectivityê°€ ì¢‹ì€ predicateì„ ì°¾ëŠ”ë‹¤.
+    // (1) ì°¾ì€ predicateì´ IN(subquery)ì´ë©´,
+    //     IN(subquery)ì´ì™¸ì˜ predicateì€ non-indexable column ë¦¬ìŠ¤íŠ¸ì— ì—°ê²°
+    // (2) ì°¾ì€ predicateì´ IN(subquery)ê°€ ì•„ë‹ˆë©´,
+    //     IN(subquery) predicateë“¤ì„ non-indexable column ë¦¬ìŠ¤íŠ¸ì— ì—°ê²°
     //--------------------------------------
 
     IDE_TEST( processIndexableInSubQ( & sRelocatePred )
               != IDE_SUCCESS );
 
     //--------------------------------------
-    // Àç¹èÄ¡ ¿Ï·áÈÄ,
-    // ´ëÇ¥ selectivity¿Í
-    // one column¿¡ ´ëÇÑ
-    //     (1) ´ÙÀ½ÀÎµ¦½º »ç¿ë°¡´É¿©ºÎ
-    //     (2) equal(in)¿¬»êÀÚ Á¸Àç¿©ºÎ¿¡ ´ëÇÑ Á¤º¸ ¼³Á¤
+    // ì¬ë°°ì¹˜ ì™„ë£Œí›„,
+    // ëŒ€í‘œ selectivityì™€
+    // one columnì— ëŒ€í•œ
+    //     (1) ë‹¤ìŒì¸ë±ìŠ¤ ì‚¬ìš©ê°€ëŠ¥ì—¬ë¶€
+    //     (2) equal(in)ì—°ì‚°ì ì¡´ì¬ì—¬ë¶€ì— ëŒ€í•œ ì •ë³´ ì„¤ì •
     //--------------------------------------
 
     for ( sPredicate  = sRelocatePred;
@@ -515,31 +515,31 @@ qmoPred::classifyJoinPredicate( qcStatement  * aStatement,
 {
 /***********************************************************************
  *
- * Description : Join predicate¿¡ ´ëÇÑ ºĞ·ù
+ * Description : Join predicateì— ëŒ€í•œ ë¶„ë¥˜
  *
  * Implementation :
  *
- *     join predicateÀ¸·Î ºĞ·ùµÈ predicate¿¡ ´ëÇØ,
- *     ¾î¶² join methodÀÇ predicateÀ¸·Î »ç¿ëµÉ ¼ö ÀÖ´ÂÁöÀÇ Á¤º¸¿Í
- *     »ç¿ë°¡´É join methodÀÇ ¼öÇà °¡´É ¹æÇâ¼º¿¡ ´ëÇÑ Á¤º¸¸¦
- *     qmoPredicate.flag¿¡ ¼³Á¤ÇÑ´Ù.
+ *     join predicateìœ¼ë¡œ ë¶„ë¥˜ëœ predicateì— ëŒ€í•´,
+ *     ì–´ë–¤ join methodì˜ predicateìœ¼ë¡œ ì‚¬ìš©ë  ìˆ˜ ìˆëŠ”ì§€ì˜ ì •ë³´ì™€
+ *     ì‚¬ìš©ê°€ëŠ¥ join methodì˜ ìˆ˜í–‰ ê°€ëŠ¥ ë°©í–¥ì„±ì— ëŒ€í•œ ì •ë³´ë¥¼
+ *     qmoPredicate.flagì— ì„¤ì •í•œë‹¤.
  *
- *     1. joinable prediateÀÎÁö¸¦ °Ë»ç.
- *        OR ÇÏÀ§³ëµå°¡ 2°³ ÀÌ»óÀÎ °æ¿ì´Â, index nested loop join¸¸
- *        °¡´ÉÇÏ¹Ç·Î, 2ÀÇ(1)¿¡ ´ëÇØ¼­¸¸ Ã³¸®ÇÑ´Ù.
- *        ¿¹) t1.i1=t2.i1 OR t1.i1=t2.i2
- *     2. joinable predicateÀÌ¸é,
- *        index nested loop join, sort join, hash join, merge joinÀÇ
- *        »ç¿ë°¡´É¿©ºÎ¿Í join ¼öÇà°¡´É¹æÇâ¿¡ ´ëÇÑ Á¤º¸¸¦ ¼³Á¤ÇÑ´Ù.
- *        (1) index nested loop join »ç¿ë°¡´É ÆÇ´Ü
- *        (2) OR ³ëµå ÇÏÀ§°¡ ÇÏ³ªÀÎ °æ¿ì¸¸ hash/sort/merge join »ç¿ë°¡´É ÆÇ´Ü
- *            I)  sort join »ç¿ë°¡´É ÆÇ´Ü : [=,>,>=,<,<=]¸ğµÎ µ¿ÀÏÇÏ°Ô Ã³¸®µÊ
- *            II) hash join »ç¿ë°¡´É ÆÇ´Ü : [=] hash »ç¿ë°¡´É
- *            III) merge join »ç¿ë°¡´É ÆÇ´Ü
- *                [ >, >=, <, <= ] : merge join »ç¿ë °¡´É
- *                . =     : merge join ¾ç¹æÇâ ¸ğµÎ ¼öÇà°¡´É
- *                . >, >= : left->right ·Î ¼öÇà°¡´É
- *                . <, <= : right->left ·Î ¼öÇà°¡´É
+ *     1. joinable prediateì¸ì§€ë¥¼ ê²€ì‚¬.
+ *        OR í•˜ìœ„ë…¸ë“œê°€ 2ê°œ ì´ìƒì¸ ê²½ìš°ëŠ”, index nested loop joinë§Œ
+ *        ê°€ëŠ¥í•˜ë¯€ë¡œ, 2ì˜(1)ì— ëŒ€í•´ì„œë§Œ ì²˜ë¦¬í•œë‹¤.
+ *        ì˜ˆ) t1.i1=t2.i1 OR t1.i1=t2.i2
+ *     2. joinable predicateì´ë©´,
+ *        index nested loop join, sort join, hash join, merge joinì˜
+ *        ì‚¬ìš©ê°€ëŠ¥ì—¬ë¶€ì™€ join ìˆ˜í–‰ê°€ëŠ¥ë°©í–¥ì— ëŒ€í•œ ì •ë³´ë¥¼ ì„¤ì •í•œë‹¤.
+ *        (1) index nested loop join ì‚¬ìš©ê°€ëŠ¥ íŒë‹¨
+ *        (2) OR ë…¸ë“œ í•˜ìœ„ê°€ í•˜ë‚˜ì¸ ê²½ìš°ë§Œ hash/sort/merge join ì‚¬ìš©ê°€ëŠ¥ íŒë‹¨
+ *            I)  sort join ì‚¬ìš©ê°€ëŠ¥ íŒë‹¨ : [=,>,>=,<,<=]ëª¨ë‘ ë™ì¼í•˜ê²Œ ì²˜ë¦¬ë¨
+ *            II) hash join ì‚¬ìš©ê°€ëŠ¥ íŒë‹¨ : [=] hash ì‚¬ìš©ê°€ëŠ¥
+ *            III) merge join ì‚¬ìš©ê°€ëŠ¥ íŒë‹¨
+ *                [ >, >=, <, <= ] : merge join ì‚¬ìš© ê°€ëŠ¥
+ *                . =     : merge join ì–‘ë°©í–¥ ëª¨ë‘ ìˆ˜í–‰ê°€ëŠ¥
+ *                . >, >= : left->right ë¡œ ìˆ˜í–‰ê°€ëŠ¥
+ *                . <, <= : right->left ë¡œ ìˆ˜í–‰ê°€ëŠ¥
  *
  ***********************************************************************/
 
@@ -550,7 +550,7 @@ qmoPred::classifyJoinPredicate( qcStatement  * aStatement,
     IDU_FIT_POINT_FATAL( "qmoPred::classifyJoinPredicate::__FT__" );
 
     //--------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //--------------------------------------
 
     IDE_DASSERT( aStatement        != NULL );
@@ -560,7 +560,7 @@ qmoPred::classifyJoinPredicate( qcStatement  * aStatement,
     IDE_DASSERT( aFromDependencies != NULL );
 
     //--------------------------------------
-    // join predicate ºĞ·ù
+    // join predicate ë¶„ë¥˜
     //--------------------------------------
 
     sCurPredicate = aPredicate;
@@ -568,7 +568,7 @@ qmoPred::classifyJoinPredicate( qcStatement  * aStatement,
     while ( sCurPredicate != NULL )
     {
         //--------------------------------------
-        // joinable predicateÀÎÁö¸¦ ÆÇ´ÜÇÑ´Ù.
+        // joinable predicateì¸ì§€ë¥¼ íŒë‹¨í•œë‹¤.
         //--------------------------------------
 
         IDE_TEST( isJoinablePredicate( sCurPredicate,
@@ -582,12 +582,12 @@ qmoPred::classifyJoinPredicate( qcStatement  * aStatement,
              == QMO_PRED_JOINABLE_PRED_TRUE )
         {
             //--------------------------------------
-            // joinable predicate¿¡ ´ëÇÑ
-            // join method¿Í join ¼öÇà°¡´É¹æÇâ ¼³Á¤
+            // joinable predicateì— ëŒ€í•œ
+            // join methodì™€ join ìˆ˜í–‰ê°€ëŠ¥ë°©í–¥ ì„¤ì •
             //--------------------------------------
 
             //--------------------------------------
-            // indexable join predicate¿¡ ´ëÇÑ Á¤º¸ ¼³Á¤
+            // indexable join predicateì— ëŒ€í•œ ì •ë³´ ì„¤ì •
             //-------------------------------------
             IDE_TEST( isIndexableJoinPredicate( aStatement,
                                                 sCurPredicate,
@@ -597,18 +597,18 @@ qmoPred::classifyJoinPredicate( qcStatement  * aStatement,
 
             if ( sIsOnlyIndexNestedLoop == ID_TRUE )
             {
-                // OR ³ëµå ÇÏÀ§¿¡ ºñ±³¿¬»êÀÚ°¡ ¿©·¯°³ ÀÖ´Â °æ¿ì·Î,
-                // index nested loop join method¸¸ »ç¿ë°¡´ÉÇÏ¹Ç·Î ÀÌÇÏ skip
+                // OR ë…¸ë“œ í•˜ìœ„ì— ë¹„êµì—°ì‚°ìê°€ ì—¬ëŸ¬ê°œ ìˆëŠ” ê²½ìš°ë¡œ,
+                // index nested loop join methodë§Œ ì‚¬ìš©ê°€ëŠ¥í•˜ë¯€ë¡œ ì´í•˜ skip
 
                 // Nothing To Do
             }
             else
             {
                 //--------------------------------------
-                // ºñ±³¿¬»êÀÚ Á¤º¸·Î sort, hash, merge join¿¡ ´ëÇÑ Á¤º¸ ¼³Á¤
+                // ë¹„êµì—°ì‚°ì ì •ë³´ë¡œ sort, hash, merge joinì— ëŒ€í•œ ì •ë³´ ì„¤ì •
                 //-------------------------------------
 
-                // ºñ±³¿¬»êÀÚ ³ëµå¸¦ Ã£´Â´Ù.
+                // ë¹„êµì—°ì‚°ì ë…¸ë“œë¥¼ ì°¾ëŠ”ë‹¤.
                 sNode = sCurPredicate->node;
 
                 if ( ( sNode->node.lflag & MTC_NODE_LOGICAL_CONDITION_MASK )
@@ -622,9 +622,9 @@ qmoPred::classifyJoinPredicate( qcStatement  * aStatement,
                 }
 
                 //-------------------------------------
-                // sort joinable predicate¿¡ ´ëÇÑ Á¤º¸ ¼³Á¤
-                // sort joinable predicateÀº
-                // [ =, >, >=, <, <= ]¿¡ µ¿ÀÏÇÏ°Ô Àû¿ëµÊ.
+                // sort joinable predicateì— ëŒ€í•œ ì •ë³´ ì„¤ì •
+                // sort joinable predicateì€
+                // [ =, >, >=, <, <= ]ì— ë™ì¼í•˜ê²Œ ì ìš©ë¨.
                 //-------------------------------------
 
                 IDE_TEST( isSortJoinablePredicate( sCurPredicate,
@@ -635,8 +635,8 @@ qmoPred::classifyJoinPredicate( qcStatement  * aStatement,
                           != IDE_SUCCESS );
 
                 //-------------------------------------
-                // hash joinable predicate¿¡ ´ëÇÑ Á¤º¸ ¼³Á¤
-                // [ = ] : hash °¡´É
+                // hash joinable predicateì— ëŒ€í•œ ì •ë³´ ì„¤ì •
+                // [ = ] : hash ê°€ëŠ¥
                 //-------------------------------------
 
                 IDE_TEST( isHashJoinablePredicate( sCurPredicate,
@@ -647,15 +647,15 @@ qmoPred::classifyJoinPredicate( qcStatement  * aStatement,
                           != IDE_SUCCESS );
 
                 //-------------------------------------
-                // merge joinable predicate¿¡ ´ëÇÑ Á¤º¸ ¼³Á¤
-                // 1. ÀÎµ¦½º »ı¼º °¡´É ¿©ºÎ °Ë»ç
-                //    sort¿Í µ¿ÀÏ. ÀÌ¹Ì sort¿¡¼­ °Ë»çÇßÀ¸¹Ç·Î,
-                //    QMO_PRED_SORT_JOINABLE_TRUE ÀÌ¸é, ÀÎµ¦½º »ı¼º°¡´É
-                // 2. ÀÎµ¦½º »ı¼º°¡´ÉÇÏ¸é, ¾Æ·¡ Á¤º¸ ¼³Á¤.
-                //    [ =, >, >=, <, <= ] : merge °¡´É
-                //    [ = ]    : ¾ç¹æÇâ ¼öÇà°¡´É
-                //    [ >,>= ] : left->right ¼öÇà°¡´É
-                //    [ <,<= ] : right->left ¼öÇà°¡´É
+                // merge joinable predicateì— ëŒ€í•œ ì •ë³´ ì„¤ì •
+                // 1. ì¸ë±ìŠ¤ ìƒì„± ê°€ëŠ¥ ì—¬ë¶€ ê²€ì‚¬
+                //    sortì™€ ë™ì¼. ì´ë¯¸ sortì—ì„œ ê²€ì‚¬í–ˆìœ¼ë¯€ë¡œ,
+                //    QMO_PRED_SORT_JOINABLE_TRUE ì´ë©´, ì¸ë±ìŠ¤ ìƒì„±ê°€ëŠ¥
+                // 2. ì¸ë±ìŠ¤ ìƒì„±ê°€ëŠ¥í•˜ë©´, ì•„ë˜ ì •ë³´ ì„¤ì •.
+                //    [ =, >, >=, <, <= ] : merge ê°€ëŠ¥
+                //    [ = ]    : ì–‘ë°©í–¥ ìˆ˜í–‰ê°€ëŠ¥
+                //    [ >,>= ] : left->right ìˆ˜í–‰ê°€ëŠ¥
+                //    [ <,<= ] : right->left ìˆ˜í–‰ê°€ëŠ¥
                 //-------------------------------------
 
                 IDE_TEST( isMergeJoinablePredicate( sCurPredicate,
@@ -667,12 +667,12 @@ qmoPred::classifyJoinPredicate( qcStatement  * aStatement,
             }
 
             //---------------------------------------
-            // »ç¿ë°¡´ÉÇÑ join method°¡ ¾ø´Â °æ¿ì,
-            // non-joinable predicateÀ¸·Î ÀúÀåÇÑ´Ù.
-            // ¿¹: t1.i1+1 = t2.i1+1 OR t1.i2+1 = t2.i2+1
-            //     OR ³ëµå ÇÏÀ§¿¡ ¿©·¯°³ÀÇ ºñ±³¿¬»êÀÚ°¡ ÀÖ¾î
-            //     joinable predicateÀ¸·Î ÆÇ´ÜµÇ¾úÀ¸³ª,
-            //     ÀÌÈÄ, index nested loop join method¸¦ »ç¿ëÇÏÁö ¸øÇÒ °æ¿ì...
+            // ì‚¬ìš©ê°€ëŠ¥í•œ join methodê°€ ì—†ëŠ” ê²½ìš°,
+            // non-joinable predicateìœ¼ë¡œ ì €ì¥í•œë‹¤.
+            // ì˜ˆ: t1.i1+1 = t2.i1+1 OR t1.i2+1 = t2.i2+1
+            //     OR ë…¸ë“œ í•˜ìœ„ì— ì—¬ëŸ¬ê°œì˜ ë¹„êµì—°ì‚°ìê°€ ìˆì–´
+            //     joinable predicateìœ¼ë¡œ íŒë‹¨ë˜ì—ˆìœ¼ë‚˜,
+            //     ì´í›„, index nested loop join methodë¥¼ ì‚¬ìš©í•˜ì§€ ëª»í•  ê²½ìš°...
             //----------------------------------------
             if ( ( sCurPredicate->flag & QMO_PRED_JOINABLE_MASK )
                  == QMO_PRED_JOINABLE_FALSE )
@@ -708,20 +708,20 @@ qmoPred::makeJoinPushDownPredicate( qcStatement    * aStatement,
 {
 /***********************************************************************
  *
- * Description : Index Nested Loop JoinÀÇ push down joinable predicate
+ * Description : Index Nested Loop Joinì˜ push down joinable predicate
  *
- *   (1) Inner Join (2) Left Outer Join (3) Anti Outer Join Ã³¸®½Ã
- *   join graph¿¡¼­ selection graph·Î join index È°¿ëÀ» À§ÇØ join-push predicate·Î
- *   ¸¸µç´Ù.
+ *   (1) Inner Join (2) Left Outer Join (3) Anti Outer Join ì²˜ë¦¬ì‹œ
+ *   join graphì—ì„œ selection graphë¡œ join index í™œìš©ì„ ìœ„í•´ join-push predicateë¡œ
+ *   ë§Œë“ ë‹¤.
  *
- *   *aNewPredicate : addµÉ joinable predicateÀÇ ¿¬°á¸®½ºÆ®
- *                    joinable predicateµµ predicate Àç¹èÄ¡¿Í µ¿ÀÏÇÏ°Ô
- *                    ÄÃ·³º°·Î ºĞ¸®µÇ¾î ÀÖ´Ù.
+ *   *aNewPredicate : addë  joinable predicateì˜ ì—°ê²°ë¦¬ìŠ¤íŠ¸
+ *                    joinable predicateë„ predicate ì¬ë°°ì¹˜ì™€ ë™ì¼í•˜ê²Œ
+ *                    ì»¬ëŸ¼ë³„ë¡œ ë¶„ë¦¬ë˜ì–´ ìˆë‹¤.
  *
  *
  * Implementation :
  *
- *     1. joinable predicate¿¡ indexArgument¿Í columID ¼³Á¤
+ *     1. joinable predicateì— indexArgumentì™€ columID ì„¤ì •
  *
  ***********************************************************************/
 
@@ -732,7 +732,7 @@ qmoPred::makeJoinPushDownPredicate( qcStatement    * aStatement,
     IDU_FIT_POINT_FATAL( "qmoPred::makeJoinPushDownPredicate::__FT__" );
 
     //--------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //--------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -740,7 +740,7 @@ qmoPred::makeJoinPushDownPredicate( qcStatement    * aStatement,
     IDE_DASSERT( aRightDependencies != NULL );
 
     //--------------------------------------
-    // joinable predicateÀÇ indexArgument¿Í columnID ¼³Á¤.
+    // joinable predicateì˜ indexArgumentì™€ columnID ì„¤ì •.
     //--------------------------------------
 
     for ( sJoinPredicate  = aNewPredicate;
@@ -751,11 +751,11 @@ qmoPred::makeJoinPushDownPredicate( qcStatement    * aStatement,
               sPredicate != NULL;
               sPredicate  = sPredicate->more )
         {
-            // indexArgument ¼³Á¤
+            // indexArgument ì„¤ì •
             IDE_TEST( setIndexArgument( sPredicate->node,
                                         aRightDependencies )
                       != IDE_SUCCESS );
-            // columnID ¼³Á¤
+            // columnID ì„¤ì •
             IDE_TEST( getColumnID( aStatement,
                                    sPredicate->node,
                                    ID_TRUE,
@@ -791,13 +791,13 @@ qmoPred::makeNonJoinPushDownPredicate( qcStatement   * aStatement,
  *
  * Description : push down non-joinable predicate
  *
- *     Index Nested Loop JoinÀÇ °æ¿ì,
- *     join graph¿¡¼­ selection graph·Î non-joinable predicateÀ» ³»¸®°Ô µÇ¸ç,
- *     Full Nested Loop JoinÀÇ °æ¿ì,
- *     right graph°¡ selection graphÀÌ¸é, join predicateÀ» ³»¸®°Ô µÈ´Ù.
+ *     Index Nested Loop Joinì˜ ê²½ìš°,
+ *     join graphì—ì„œ selection graphë¡œ non-joinable predicateì„ ë‚´ë¦¬ê²Œ ë˜ë©°,
+ *     Full Nested Loop Joinì˜ ê²½ìš°,
+ *     right graphê°€ selection graphì´ë©´, join predicateì„ ë‚´ë¦¬ê²Œ ëœë‹¤.
  *
- *     *aNewPredicate : addµÉ join predicateÀÇ ¿¬°á¸®½ºÆ®
- *                      non-joinable predicateÀº ÄÃ·³º°·Î ºĞ¸®µÇ¾î ÀÖÁö ¾Ê´Ù.
+ *     *aNewPredicate : addë  join predicateì˜ ì—°ê²°ë¦¬ìŠ¤íŠ¸
+ *                      non-joinable predicateì€ ì»¬ëŸ¼ë³„ë¡œ ë¶„ë¦¬ë˜ì–´ ìˆì§€ ì•Šë‹¤.
  *
  * Implementation :
  *
@@ -811,7 +811,7 @@ qmoPred::makeNonJoinPushDownPredicate( qcStatement   * aStatement,
     IDU_FIT_POINT_FATAL( "qmoPred::makeNonJoinPushDownPredicate::__FT__" );
 
     //--------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //--------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -819,13 +819,13 @@ qmoPred::makeNonJoinPushDownPredicate( qcStatement   * aStatement,
     IDE_DASSERT( aRightDependencies != NULL );
 
     //--------------------------------------
-    // non-joinable predicate¿¡ ´ëÇÑ indexArgument¿Í columnID ¼³Á¤
-    //  . indexable     : indexArgument ¿Í columnID(smiColumn.id) ¼³Á¤
-    //  . non-indexable : columnID(QMO_COLUMNID_NON_INDEXABLE) ¼³Á¤
+    // non-joinable predicateì— ëŒ€í•œ indexArgumentì™€ columnID ì„¤ì •
+    //  . indexable     : indexArgument ì™€ columnID(smiColumn.id) ì„¤ì •
+    //  . non-indexable : columnID(QMO_COLUMNID_NON_INDEXABLE) ì„¤ì •
     //--------------------------------------
 
-    // non-joinable predicateÀÇ indexable¿©ºÎ¸¦ ÆÇ´ÜÇÏ±â À§ÇØ,
-    // directionÁ¤º¸¸¦ ÀÎÀÚ·Î ¹Ş´Â´Ù.
+    // non-joinable predicateì˜ indexableì—¬ë¶€ë¥¼ íŒë‹¨í•˜ê¸° ìœ„í•´,
+    // directionì •ë³´ë¥¼ ì¸ìë¡œ ë°›ëŠ”ë‹¤.
     sJoinDirection = QMO_PRED_CLEAR;
 
     if ( ( aDirection & QMO_JOIN_METHOD_DIRECTION_MASK )
@@ -838,16 +838,16 @@ qmoPred::makeNonJoinPushDownPredicate( qcStatement   * aStatement,
         sJoinDirection = QMO_PRED_INDEX_RIGHT_LEFT;
     }
 
-    // non-joinable predicateÀº ÄÃ·³º°·Î ºĞ¸®µÇ¾î ÀÖÁö ¾Ê´Ù.
+    // non-joinable predicateì€ ì»¬ëŸ¼ë³„ë¡œ ë¶„ë¦¬ë˜ì–´ ìˆì§€ ì•Šë‹¤.
 
     for ( sJoinPredicate  = aNewPredicate;
           sJoinPredicate != NULL;
           sJoinPredicate  = sJoinPredicate->next )
     {
         // BUG-11519 fix
-        // index joinableÀÌ trueÀÌ°í
-        // join ¼öÇà¹æÇâÀÌ sJoinDirection°ú °°°Å³ª ¾ç¹æÇâÀÌ¸é
-        // indexableÀ» true·Î ¼¼ÆÃÇÑ´Ù.
+        // index joinableì´ trueì´ê³ 
+        // join ìˆ˜í–‰ë°©í–¥ì´ sJoinDirectionê³¼ ê°™ê±°ë‚˜ ì–‘ë°©í–¥ì´ë©´
+        // indexableì„ trueë¡œ ì„¸íŒ…í•œë‹¤.
         if ( ( sJoinPredicate->flag & QMO_PRED_INDEX_JOINABLE_MASK )
              == QMO_PRED_INDEX_JOINABLE_TRUE &&
              ( ( sJoinPredicate->flag & QMO_PRED_INDEX_DIRECTION_MASK )
@@ -855,7 +855,7 @@ qmoPred::makeNonJoinPushDownPredicate( qcStatement   * aStatement,
                ( sJoinPredicate->flag & QMO_PRED_INDEX_DIRECTION_MASK )
                == QMO_PRED_INDEX_BIDIRECTION ) )
         {
-            // indexable predicate¿¡ ´ëÇÑ indexArgument ¼³Á¤
+            // indexable predicateì— ëŒ€í•œ indexArgument ì„¤ì •
             IDE_TEST( setIndexArgument( sJoinPredicate->node,
                                         aRightDependencies )
                       != IDE_SUCCESS );
@@ -867,7 +867,7 @@ qmoPred::makeNonJoinPushDownPredicate( qcStatement   * aStatement,
             sIsIndexable = ID_FALSE;
         }
 
-        // columnID ¼³Á¤
+        // columnID ì„¤ì •
         IDE_TEST( getColumnID( aStatement,
                                sJoinPredicate->node,
                                sIsIndexable,
@@ -893,7 +893,7 @@ qmoPred::isRownumPredicate( qmoPredicate  * aPredicate,
  *
  * Description
  *     PROJ-1405
- *     rownum predicateÀÇ ÆÇ´Ü
+ *     rownum predicateì˜ íŒë‹¨
  *
  * Implementation :
  *
@@ -902,14 +902,14 @@ qmoPred::isRownumPredicate( qmoPredicate  * aPredicate,
     IDU_FIT_POINT_FATAL( "qmoPred::isRownumPredicate::__FT__" );
 
     //--------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //--------------------------------------
 
     IDE_DASSERT( aPredicate != NULL );
     IDE_DASSERT( aIsTrue    != NULL );
 
     //--------------------------------------
-    // rownum predicateÀÇ ÆÇ´Ü
+    // rownum predicateì˜ íŒë‹¨
     //--------------------------------------
 
     if ( ( aPredicate->node->lflag & QTC_NODE_ROWNUM_MASK )
@@ -933,42 +933,42 @@ qmoPred::isConstantPredicate( qmoPredicate  * aPredicate       ,
 {
 /***********************************************************************
  *
- * Description : constant predicateÀÇ ÆÇ´Ü
+ * Description : constant predicateì˜ íŒë‹¨
  *
- *     constant predicateÀº FROMÀıÀÇ table°ú »ó°ü¾ø´Â predicateÀÌ´Ù.
- *     ¿¹)  1 = 1
+ *     constant predicateì€ FROMì ˆì˜ tableê³¼ ìƒê´€ì—†ëŠ” predicateì´ë‹¤.
+ *     ì˜ˆ)  1 = 1
  *
- *   <LEVEL, PRIOR column Ã³¸®½Ã>
- *   LEVEL = 1, PRIOR I1 = 1°ú °°Àº °æ¿ì´Â Ã³¸®µÇ´Â °÷¿¡ µû¶ó,
- *   constant predicateÀÌ ¾Æ´Ô¿¡µµ ºÒ±¸ÇÏ°í, constant predicateÀ¸·Î
- *   ºĞ·ùµÉ ¼ö ÀÖ´Ù. µû¶ó¼­, graph¿¡¼­´Â ´ÙÀ½°ú °°ÀÌ Ã³¸®ÇØ¾ß ÇÑ´Ù.
+ *   <LEVEL, PRIOR column ì²˜ë¦¬ì‹œ>
+ *   LEVEL = 1, PRIOR I1 = 1ê³¼ ê°™ì€ ê²½ìš°ëŠ” ì²˜ë¦¬ë˜ëŠ” ê³³ì— ë”°ë¼,
+ *   constant predicateì´ ì•„ë‹˜ì—ë„ ë¶ˆêµ¬í•˜ê³ , constant predicateìœ¼ë¡œ
+ *   ë¶„ë¥˜ë  ìˆ˜ ìˆë‹¤. ë”°ë¼ì„œ, graphì—ì„œëŠ” ë‹¤ìŒê³¼ ê°™ì´ ì²˜ë¦¬í•´ì•¼ í•œë‹¤.
  *
  *   1. LEVEL pseudo column
- *      (1) hierarchy queryÀÎ °æ¿ì
- *          . whereÀı Ã³¸®½Ã :
- *            LEVEL = 1 °ú °°Àº °æ¿ì´Â, filter·Î Ã³¸®µÇ¾î¾ß ÇÑ´Ù.
- *            (constant filter·Î Ã³¸®µÇ¸é ¾ÈµÊ.)
- *            Áï, constant filterÀÌ¸é, LEVEL columnÀÌ Á¸ÀçÇÏ´ÂÁö¸¦ °Ë»çÇØ¼­,
- *            LEVEL columnÀÌ Á¸ÀçÇÏ¸é, filter·Î Ã³¸®µÇµµ·Ï ÇØ¾ß ÇÔ.
- *          .connect byÀı Ã³¸®½Ã :
- *            LEVEL = 1 °ú °°Àº °æ¿ì´Â, level filter·Î Ã³¸®µÇ¾î¾ß ÇÑ´Ù.
- *            Áï, constant filterÀÌ¸é, LEVEL columnÀÌ Á¸ÀçÇÏ´ÂÁö¸¦ °Ë»çÇØ¼­,
- *            LEVEL columnÀÌ Á¸ÀçÇÏ¸é, level filter·Î Ã³¸®µÇµµ·Ï ÇØ¾ß ÇÔ.
+ *      (1) hierarchy queryì¸ ê²½ìš°
+ *          . whereì ˆ ì²˜ë¦¬ì‹œ :
+ *            LEVEL = 1 ê³¼ ê°™ì€ ê²½ìš°ëŠ”, filterë¡œ ì²˜ë¦¬ë˜ì–´ì•¼ í•œë‹¤.
+ *            (constant filterë¡œ ì²˜ë¦¬ë˜ë©´ ì•ˆë¨.)
+ *            ì¦‰, constant filterì´ë©´, LEVEL columnì´ ì¡´ì¬í•˜ëŠ”ì§€ë¥¼ ê²€ì‚¬í•´ì„œ,
+ *            LEVEL columnì´ ì¡´ì¬í•˜ë©´, filterë¡œ ì²˜ë¦¬ë˜ë„ë¡ í•´ì•¼ í•¨.
+ *          .connect byì ˆ ì²˜ë¦¬ì‹œ :
+ *            LEVEL = 1 ê³¼ ê°™ì€ ê²½ìš°ëŠ”, level filterë¡œ ì²˜ë¦¬ë˜ì–´ì•¼ í•œë‹¤.
+ *            ì¦‰, constant filterì´ë©´, LEVEL columnì´ ì¡´ì¬í•˜ëŠ”ì§€ë¥¼ ê²€ì‚¬í•´ì„œ,
+ *            LEVEL columnì´ ì¡´ì¬í•˜ë©´, level filterë¡œ ì²˜ë¦¬ë˜ë„ë¡ í•´ì•¼ í•¨.
  *
- *      (2) hierarchy query°¡ ¾Æ´Ñ °æ¿ì,
- *         .whereÀı Ã³¸®½Ã, constant predicateÀ¸·Î Ã³¸®.
+ *      (2) hierarchy queryê°€ ì•„ë‹Œ ê²½ìš°,
+ *         .whereì ˆ ì²˜ë¦¬ì‹œ, constant predicateìœ¼ë¡œ ì²˜ë¦¬.
  *
  *   2. PRIOR column
- *      (1) hierarchy queryÀÎ °æ¿ì
- *          constant filterÀÌ¸é, PRIOR columnÀÌ Á¸ÀçÇÏ´ÂÁö¸¦ °Ë»çÇØ¼­,
- *          PRIOR columnÀÌ Á¸ÀçÇÏ¸é, filter·Î Ã³¸®µÇµµ·Ï ÇØ¾ß ÇÔ.
- *          (constant filter°¡ ¾Æ´Ô.)
- *      (2) hierarchy query°¡ ¾Æ´Ñ °æ¿ì, PRIOR columnÀ» »ç¿ëÇÒ ¼ö ¾ø´Ù.
+ *      (1) hierarchy queryì¸ ê²½ìš°
+ *          constant filterì´ë©´, PRIOR columnì´ ì¡´ì¬í•˜ëŠ”ì§€ë¥¼ ê²€ì‚¬í•´ì„œ,
+ *          PRIOR columnì´ ì¡´ì¬í•˜ë©´, filterë¡œ ì²˜ë¦¬ë˜ë„ë¡ í•´ì•¼ í•¨.
+ *          (constant filterê°€ ì•„ë‹˜.)
+ *      (2) hierarchy queryê°€ ì•„ë‹Œ ê²½ìš°, PRIOR columnì„ ì‚¬ìš©í•  ìˆ˜ ì—†ë‹¤.
  *
  * Implementation :
  *
- *    ÃÖ»óÀ§ ³ëµå¿¡¼­ ¾Æ·¡ÀÇ Á¶°ÇÀ» °Ë»ç.
- *    ( predicateÀÇ dependencies & FROMÀÇ dependencies ) == 0
+ *    ìµœìƒìœ„ ë…¸ë“œì—ì„œ ì•„ë˜ì˜ ì¡°ê±´ì„ ê²€ì‚¬.
+ *    ( predicateì˜ dependencies & FROMì˜ dependencies ) == 0
  *
  ***********************************************************************/
 
@@ -977,7 +977,7 @@ qmoPred::isConstantPredicate( qmoPredicate  * aPredicate       ,
     IDU_FIT_POINT_FATAL( "qmoPred::isConstantPredicate::__FT__" );
 
     //--------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //--------------------------------------
 
     IDE_DASSERT( aPredicate        != NULL );
@@ -985,16 +985,16 @@ qmoPred::isConstantPredicate( qmoPredicate  * aPredicate       ,
     IDE_DASSERT( aIsTrue           != NULL );
 
     //--------------------------------------
-    // constant predicateÀÇ ÆÇ´Ü
-    // dependencies´Â ÃÖ»óÀ§ ³ëµå¿¡¼­ ÆÇ´ÜÇÑ´Ù.
+    // constant predicateì˜ íŒë‹¨
+    // dependenciesëŠ” ìµœìƒìœ„ ë…¸ë“œì—ì„œ íŒë‹¨í•œë‹¤.
     //--------------------------------------
 
-    // predicateÀÇ dependencies & FROMÀÇ dependencies
+    // predicateì˜ dependencies & FROMì˜ dependencies
     qtc::dependencyAnd ( & aPredicate->node->depInfo,
                          aFromDependencies,
                          & sAndDependencies );
 
-    // (predicateÀÇ dependencies & FROMÀÇ dependencies)ÀÇ °á°ú°¡ 0ÀÎÁö °Ë»ç
+    // (predicateì˜ dependencies & FROMì˜ dependencies)ì˜ ê²°ê³¼ê°€ 0ì¸ì§€ ê²€ì‚¬
     if ( qtc::dependencyEqual( & sAndDependencies,
                                & qtc::zeroDependencies ) == ID_TRUE )
     {
@@ -1017,16 +1017,16 @@ qmoPred::isOneTablePredicate( qmoPredicate  * aPredicate         ,
 {
 /***********************************************************************
  *
- * Description : one table predicateÀÇ ÆÇ´Ü
+ * Description : one table predicateì˜ íŒë‹¨
  *
- *     one table predicate: FROMÀıÀÇ table Áß ÇÏ³ª¿¡¸¸ ¼ÓÇÏ´Â predicate
- *     ¿¹) T1.i1 = 1
+ *     one table predicate: FROMì ˆì˜ table ì¤‘ í•˜ë‚˜ì—ë§Œ ì†í•˜ëŠ” predicate
+ *     ì˜ˆ) T1.i1 = 1
  *
  * Implementation :
  *
- *    ÃÖ»óÀ§ ³ëµå¿¡¼­ ¾Æ·¡ÀÇ Á¶°ÇÀ» °Ë»ç.
- *    (  ( predicateÀÇ dependencies & FROMÀÇ dependencies )
- *       & ~(FROMÀÇ ÇØ´ç tableÀÇ dependencies)    ) == 0
+ *    ìµœìƒìœ„ ë…¸ë“œì—ì„œ ì•„ë˜ì˜ ì¡°ê±´ì„ ê²€ì‚¬.
+ *    (  ( predicateì˜ dependencies & FROMì˜ dependencies )
+ *       & ~(FROMì˜ í•´ë‹¹ tableì˜ dependencies)    ) == 0
  *
  ***********************************************************************/
 
@@ -1035,7 +1035,7 @@ qmoPred::isOneTablePredicate( qmoPredicate  * aPredicate         ,
     IDU_FIT_POINT_FATAL( "qmoPred::isOneTablePredicate::__FT__" );
 
     //--------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //--------------------------------------
 
     IDE_DASSERT( aPredicate          != NULL );
@@ -1044,11 +1044,11 @@ qmoPred::isOneTablePredicate( qmoPredicate  * aPredicate         ,
     IDE_DASSERT( aIsTrue             != NULL );
 
     //--------------------------------------
-    // one table predicate ÆÇ´Ü
-    // dependencies´Â ÃÖ»óÀ§ ³ëµå¿¡¼­ ÆÇ´ÜÇÑ´Ù.
+    // one table predicate íŒë‹¨
+    // dependenciesëŠ” ìµœìƒìœ„ ë…¸ë“œì—ì„œ íŒë‹¨í•œë‹¤.
     //--------------------------------------
 
-    // predicateÀÇ dependencies & FROMÀÇ dependencies
+    // predicateì˜ dependencies & FROMì˜ dependencies
     qtc::dependencyAnd( & aPredicate->node->depInfo,
                         aFromDependencies,
                         & sAndDependencies );
@@ -1062,8 +1062,8 @@ qmoPred::isOneTablePredicate( qmoPredicate  * aPredicate         ,
         // (2) select * from t1
         //     where exists( select * from t2
         //                   where t1.i1=t2.i1 );
-        // (1),(2)ÀÇ ÁúÀÇ¹®ÀÇ °æ¿ì,
-        // subqueryÀÇ  t1.i1=t2.i1Àº variable predicateÀ¸·Î ºĞ·ùµÇ¾î¾ß ÇÑ´Ù.
+        // (1),(2)ì˜ ì§ˆì˜ë¬¸ì˜ ê²½ìš°,
+        // subqueryì˜  t1.i1=t2.i1ì€ variable predicateìœ¼ë¡œ ë¶„ë¥˜ë˜ì–´ì•¼ í•œë‹¤.
 
         *aIsTrue = ID_TRUE;
 
@@ -1071,16 +1071,16 @@ qmoPred::isOneTablePredicate( qmoPredicate  * aPredicate         ,
                                       & aPredicate->node->depInfo ) == ID_TRUE )
         {
             // BUG-28470
-            // Inner JoinµÈ Å×ÀÌºíµéÀº ³í¸®ÀûÀ¸·Î ÇÏ³ªÀÇ Å×ÀÌºí·Î º»´Ù.
-            // ±× ¶§¹®¿¡ whereÀı¿¡¼­ Inner JoinµÈ Å×ÀÌºíµéÀ» »ç¿ëÇÑ PredicateÀº
-            // One Table PredicateÀ¸·Î ºĞ·ùµÇÁö¸¸ Selectivity °è»ê ½Ã¿¡
-            // ·¹ÄÚµå¸¦ ÂüÁ¶ÇÒ ¼ö ¾øÀ¸¹Ç·Î Variable PredicateÀ¸·Î ºĞ·ùµÇ¾î¾ß ÇÑ´Ù.
-            // ¿¹) select * from t1 inner join t2 on t1.i1=t2.i1
+            // Inner Joinëœ í…Œì´ë¸”ë“¤ì€ ë…¼ë¦¬ì ìœ¼ë¡œ í•˜ë‚˜ì˜ í…Œì´ë¸”ë¡œ ë³¸ë‹¤.
+            // ê·¸ ë•Œë¬¸ì— whereì ˆì—ì„œ Inner Joinëœ í…Œì´ë¸”ë“¤ì„ ì‚¬ìš©í•œ Predicateì€
+            // One Table Predicateìœ¼ë¡œ ë¶„ë¥˜ë˜ì§€ë§Œ Selectivity ê³„ì‚° ì‹œì—
+            // ë ˆì½”ë“œë¥¼ ì°¸ì¡°í•  ìˆ˜ ì—†ìœ¼ë¯€ë¡œ Variable Predicateìœ¼ë¡œ ë¶„ë¥˜ë˜ì–´ì•¼ í•œë‹¤.
+            // ì˜ˆ) select * from t1 inner join t2 on t1.i1=t2.i1
             //     where  t1.i2 > substr(t2.i2)
             if ( ( aTableDependencies->depCount > 1 )
                  && ( aPredicate->node->depInfo.depCount > 1 ) )
             {
-                // variable predicateÀ¸·Î ºĞ·ùµÇ¾î¾ß ÇÔ.
+                // variable predicateìœ¼ë¡œ ë¶„ë¥˜ë˜ì–´ì•¼ í•¨.
                 aPredicate->flag &= ~QMO_PRED_VALUE_MASK;
                 aPredicate->flag |= QMO_PRED_VARIABLE;
             }
@@ -1092,7 +1092,7 @@ qmoPred::isOneTablePredicate( qmoPredicate  * aPredicate         ,
         }
         else
         {
-            // variable predicateÀ¸·Î ºĞ·ùµÇ¾î¾ß ÇÔ.
+            // variable predicateìœ¼ë¡œ ë¶„ë¥˜ë˜ì–´ì•¼ í•¨.
             aPredicate->flag &= ~QMO_PRED_VALUE_MASK;
             aPredicate->flag |= QMO_PRED_VARIABLE;
         }
@@ -1113,15 +1113,15 @@ qmoPred::optimizeSubqueries( qcStatement  * aStatement,
 {
 /***********************************************************************
  *
- * Description : qmoPredicate->node¿¡ Á¸ÀçÇÏ´Â ¸ğµç subquery¿¡ ´ëÇÑ Ã³¸®
+ * Description : qmoPredicate->nodeì— ì¡´ì¬í•˜ëŠ” ëª¨ë“  subqueryì— ëŒ€í•œ ì²˜ë¦¬
  *
- *  selection graph¿¡¼­ myPredicate¿¡ ´Ş·ÁÀÖ´Â predicateµé¿¡ ´ëÇØ¼­,
- *  subquery¿¡ ´ëÇÑ Ã³¸®¸¦ À§ÇØ, ÀÌ ÇÔ¼ö¸¦ È£ÃâÇÏ°Ô µÈ´Ù.
+ *  selection graphì—ì„œ myPredicateì— ë‹¬ë ¤ìˆëŠ” predicateë“¤ì— ëŒ€í•´ì„œ,
+ *  subqueryì— ëŒ€í•œ ì²˜ë¦¬ë¥¼ ìœ„í•´, ì´ í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•˜ê²Œ ëœë‹¤.
  *
  * Implementation :
  *
- *     qmoPredicate->node¿¡ Á¸ÀçÇÏ´Â ¸ğµç subquery¸¦ Ã£¾Æ¼­,
- *     ÀÌ¿¡ ´ëÇØ ÃÖÀûÈ­ ÆÁ Àû¿ë ¹× graph¸¦ »ı¼ºÇÑ´Ù.
+ *     qmoPredicate->nodeì— ì¡´ì¬í•˜ëŠ” ëª¨ë“  subqueryë¥¼ ì°¾ì•„ì„œ,
+ *     ì´ì— ëŒ€í•´ ìµœì í™” íŒ ì ìš© ë° graphë¥¼ ìƒì„±í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -1131,14 +1131,14 @@ qmoPred::optimizeSubqueries( qcStatement  * aStatement,
     IDU_FIT_POINT_FATAL( "qmoPred::optimizeSubqueries::__FT__" );
 
     //--------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //--------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
-    IDE_DASSERT( aPredicate != NULL ); // selection graphÀÇ myPredicate
+    IDE_DASSERT( aPredicate != NULL ); // selection graphì˜ myPredicate
 
     //--------------------------------------
-    // predicate¿¡ Á¸ÀçÇÏ´Â ¸ğµç subqueryÀÇ Ã³¸®
+    // predicateì— ì¡´ì¬í•˜ëŠ” ëª¨ë“  subqueryì˜ ì²˜ë¦¬
     //--------------------------------------
 
     if ( ( aPredicate->flag & QMO_PRED_CONSTANT_FILTER_MASK )
@@ -1178,19 +1178,19 @@ qmoPred::optimizeSubqueryInNode( qcStatement  * aStatement,
 {
 /***********************************************************************
  *
- * Description : qtcNode¿¡ Á¸ÀçÇÏ´Â ¸ğµç subquery¿¡ ´ëÇÑ Ã³¸®
+ * Description : qtcNodeì— ì¡´ì¬í•˜ëŠ” ëª¨ë“  subqueryì— ëŒ€í•œ ì²˜ë¦¬
  *
  * Implementation :
  *
- *     qtcNode¿¡ Á¸ÀçÇÏ´Â ¸ğµç subquery¸¦ Ã£¾Æ¼­,
- *     ÀÌ¿¡ ´ëÇØ ÃÖÀûÈ­ ÆÁ Àû¿ë ¹× graph¸¦ »ı¼ºÇÑ´Ù.
+ *     qtcNodeì— ì¡´ì¬í•˜ëŠ” ëª¨ë“  subqueryë¥¼ ì°¾ì•„ì„œ,
+ *     ì´ì— ëŒ€í•´ ìµœì í™” íŒ ì ìš© ë° graphë¥¼ ìƒì„±í•œë‹¤.
  *
- *     ÀÌ ÇÔ¼ö´Â qmoPred::optimizeSubqueries()
- *               qmgGrouping::optimize() ¿¡¼­ È£ÃâµÈ´Ù.
+ *     ì´ í•¨ìˆ˜ëŠ” qmoPred::optimizeSubqueries()
+ *               qmgGrouping::optimize() ì—ì„œ í˜¸ì¶œëœë‹¤.
  *
- *     qmgGrouping¿¡¼­´Â aggr, group, having¿¡ ´ëÇÑ subquery Ã³¸®¸¦ À§ÇØ
- *     ÀÌ ÇÔ¼ö¸¦ È£ÃâÇÑ´Ù.
- *     (1) aggr, groupÀº Á¶°ÇÀıÀÌ ¾Æ´Ô. (2) havingÀº Á¶°ÇÀıÀÓ.
+ *     qmgGroupingì—ì„œëŠ” aggr, group, havingì— ëŒ€í•œ subquery ì²˜ë¦¬ë¥¼ ìœ„í•´
+ *     ì´ í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•œë‹¤.
+ *     (1) aggr, groupì€ ì¡°ê±´ì ˆì´ ì•„ë‹˜. (2) havingì€ ì¡°ê±´ì ˆì„.
  *
  ***********************************************************************/
 
@@ -1199,14 +1199,14 @@ qmoPred::optimizeSubqueryInNode( qcStatement  * aStatement,
     IDU_FIT_POINT_FATAL( "qmoPred::optimizeSubqueryInNode::__FT__" );
 
     //--------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //--------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aNode != NULL );
 
     //--------------------------------------
-    // qtcNode¿¡ Á¸ÀçÇÏ´Â ¸ğµç subqueryÀÇ Ã³¸®
+    // qtcNodeì— ì¡´ì¬í•˜ëŠ” ëª¨ë“  subqueryì˜ ì²˜ë¦¬
     //--------------------------------------
 
     if ( ( aNode->lflag & QTC_NODE_SUBQUERY_MASK )
@@ -1230,14 +1230,14 @@ qmoPred::optimizeSubqueryInNode( qcStatement  * aStatement,
         }
         else
         {
-            // grouping graph¿¡¼­ aggr, group¿¡ ´ëÇÑ Ã³¸®
+            // grouping graphì—ì„œ aggr, groupì— ëŒ€í•œ ì²˜ë¦¬
 
             // To Fix BUG-9522
             sNode = aNode;
 
             // fix BUG-12934
-            // constant filterÀÎ °æ¿ì, store and search¸¦ ÇÏÁö ¾Ê±â À§ÇØ
-            // ÀÓ½ÃÁ¤º¸ ÀúÀå
+            // constant filterì¸ ê²½ìš°, store and searchë¥¼ í•˜ì§€ ì•Šê¸° ìœ„í•´
+            // ì„ì‹œì •ë³´ ì €ì¥
             if ( aConstantPred == ID_TRUE )
             {
                 sNode->lflag &= ~QTC_NODE_CONSTANT_FILTER_MASK;
@@ -1253,7 +1253,7 @@ qmoPred::optimizeSubqueryInNode( qcStatement  * aStatement,
                                              aTryKeyRange )
                       != IDE_SUCCESS );
 
-            // ÀÓ½Ã·Î ÀúÀåµÈ Á¤º¸ Á¦°Å
+            // ì„ì‹œë¡œ ì €ì¥ëœ ì •ë³´ ì œê±°
             sNode->lflag &= ~QTC_NODE_CONSTANT_FILTER_MASK;
             sNode->lflag |= QTC_NODE_CONSTANT_FILTER_FALSE;
         }
@@ -1279,10 +1279,10 @@ qmoPred::separateJoinPred( qmoPredicate  * aPredicate,
 {
 /***********************************************************************
  *
- * Description : joinable predicate°ú non-joinable predicateÀ» ºĞ¸®ÇÑ´Ù.
+ * Description : joinable predicateê³¼ non-joinable predicateì„ ë¶„ë¦¬í•œë‹¤.
  *
- * 1. ÀÎÀÚ·Î ³Ñ¾î¿Â join predicate list¿Í joinable predicate InfoÀÇ
- *    ¿¬°á°ü°è´Â ´ÙÀ½°ú °°´Ù.
+ * 1. ì¸ìë¡œ ë„˜ì–´ì˜¨ join predicate listì™€ joinable predicate Infoì˜
+ *    ì—°ê²°ê´€ê³„ëŠ” ë‹¤ìŒê³¼ ê°™ë‹¤.
  *                                 aPredicate [p1]-[p2]-[p3]-[p4]-[p5]
  *                      ________________________|    |              |
  *                      |                            |              |
@@ -1293,7 +1293,7 @@ qmoPred::separateJoinPred( qmoPredicate  * aPredicate,
  *                               \ /                                |
  *                             [Info2]______________________________|
  *
- * 2. ºĞ¸®¹èÄ¡µÈ ¸ğ½À
+ * 2. ë¶„ë¦¬ë°°ì¹˜ëœ ëª¨ìŠµ
  *    (1) joinable Predicate    (2) non-joinable predicate
  *        [p1]-[p2]                 [p3]->[p4]
  *              |
@@ -1317,7 +1317,7 @@ qmoPred::separateJoinPred( qmoPredicate  * aPredicate,
     IDU_FIT_POINT_FATAL( "qmoPred::separateJoinPred::__FT__" );
 
     //--------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //--------------------------------------
 
     if ( aJoinablePredInfo != NULL )
@@ -1332,10 +1332,10 @@ qmoPred::separateJoinPred( qmoPredicate  * aPredicate,
     IDE_DASSERT( aNonJoinPred != NULL );
 
     //--------------------------------------
-    // joinable predicate ºĞ¸®
+    // joinable predicate ë¶„ë¦¬
     //--------------------------------------
 
-    sPredicateList = aPredicate;  // aPredicateÀº join predicate list
+    sPredicateList = aPredicate;  // aPredicateì€ join predicate list
 
     for ( sPredInfo  = aJoinablePredInfo;
           sPredInfo != NULL;
@@ -1378,7 +1378,7 @@ qmoPred::separateJoinPred( qmoPredicate  * aPredicate,
                 sMoreTempList       = sMoreTempList->more;
             }
 
-            // join predicate list¿¡¼­ÀÇ ¿¬°áÀ» ²÷´Â´Ù.
+            // join predicate listì—ì„œì˜ ì—°ê²°ì„ ëŠëŠ”ë‹¤.
             if ( sPrevPredicate == NULL )
             {
                 sPredicateList = sPredicate->next;
@@ -1406,9 +1406,9 @@ qmoPred::separateJoinPred( qmoPredicate  * aPredicate,
     *aJoinPred = sJoinPredList;
 
     //--------------------------------------
-    // non-joinable predicate ÀÇ ¿¬°á
-    // sPredicateList°¡ NULLÀÏ¼öµµ ÀÖ´Ù.
-    // ÀÌ °æ¿ì,¿¬°á°úÁ¤¿¡¼­ sPredicateÀÌ NULL·Î ¼¼ÆÃµÊ.
+    // non-joinable predicate ì˜ ì—°ê²°
+    // sPredicateListê°€ NULLì¼ìˆ˜ë„ ìˆë‹¤.
+    // ì´ ê²½ìš°,ì—°ê²°ê³¼ì •ì—ì„œ sPredicateì´ NULLë¡œ ì„¸íŒ…ë¨.
     //--------------------------------------
 
     *aNonJoinPred = sPredicateList;
@@ -1434,12 +1434,12 @@ qmoPred::getColumnNodeOfJoinPred( qcStatement  * aStatement,
 /***********************************************************************
  *
  * Description : BUG-24673
- *               Join predicate¿¡ ´ëÇÑ columnNode ¸¦
- *               ¹İÈ¯ÇÑ´Ù.
+ *               Join predicateì— ëŒ€í•œ columnNode ë¥¼
+ *               ë°˜í™˜í•œë‹¤.
  *
  * Implementation :
  *
- *     join predicate¿¡ ÇÊ¿äÇÑ preserved order°Ë»ç½Ã »ç¿ëÇÑ´Ù.
+ *     join predicateì— í•„ìš”í•œ preserved orderê²€ì‚¬ì‹œ ì‚¬ìš©í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -1451,7 +1451,7 @@ qmoPred::getColumnNodeOfJoinPred( qcStatement  * aStatement,
     qtcNode * sFirstColumnNode = NULL;
 
     //--------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //--------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -1459,16 +1459,16 @@ qmoPred::getColumnNodeOfJoinPred( qcStatement  * aStatement,
     IDE_DASSERT( aDependencies != NULL );
 
     //--------------------------------------
-    // join predicateÀÇ columnID ¼³Á¤
+    // join predicateì˜ columnID ì„¤ì •
     //--------------------------------------
 
-    // join predicate ÇÏÀ§¿¡ ¿©·¯°³ÀÇ ºñ±³¿¬»êÀÚ ³ëµå°¡ ¿Ã ¼öµµ ÀÖÀ¸¹Ç·Î,
-    // ÀÌ¿¡ ´ëÇÑ °í·Á°¡ ÇÊ¿äÇÔ. ( ÀÌ °æ¿ì´Â index nested loop join¸¸ °¡´É )
+    // join predicate í•˜ìœ„ì— ì—¬ëŸ¬ê°œì˜ ë¹„êµì—°ì‚°ì ë…¸ë“œê°€ ì˜¬ ìˆ˜ë„ ìˆìœ¼ë¯€ë¡œ,
+    // ì´ì— ëŒ€í•œ ê³ ë ¤ê°€ í•„ìš”í•¨. ( ì´ ê²½ìš°ëŠ” index nested loop joinë§Œ ê°€ëŠ¥ )
 
     if( ( aPredicate->node->node.lflag & MTC_NODE_LOGICAL_CONDITION_MASK )
         == MTC_NODE_LOGICAL_CONDITION_TRUE )
     {
-        // CNF ÀÎ °æ¿ì
+        // CNF ì¸ ê²½ìš°
 
         sCompareNode = (qtcNode *)(aPredicate->node->node.arguments);
 
@@ -1477,9 +1477,9 @@ qmoPred::getColumnNodeOfJoinPred( qcStatement  * aStatement,
             sCurNode = (qtcNode*)(sCompareNode->node.arguments);
 
             // To Fix PR-8025
-            // Dependency¿¡ ºÎÇÕÇÏ´Â Argument¸¦ ±¸ÇÔ.
-            // ÀÎÀÚ·Î ³Ñ¾î¿Â ÇÏÀ§ selection graph¿Í
-            // dependencies°¡ µ¿ÀÏÇÑÁö °Ë»ç.
+            // Dependencyì— ë¶€í•©í•˜ëŠ” Argumentë¥¼ êµ¬í•¨.
+            // ì¸ìë¡œ ë„˜ì–´ì˜¨ í•˜ìœ„ selection graphì™€
+            // dependenciesê°€ ë™ì¼í•œì§€ ê²€ì‚¬.
             if( qtc::dependencyEqual( aDependencies,
                                       & sCurNode->depInfo ) == ID_TRUE )
             {
@@ -1499,10 +1499,10 @@ qmoPred::getColumnNodeOfJoinPred( qcStatement  * aStatement,
                 }
                 else
                 {
-                    // =, !=, >, >=, <, <= À» Á¦¿ÜÇÑ ¸ğµç ºñ±³¿¬»êÀÚ´Â
-                    // ºñ±³¿¬»êÀÚÀÇ argument¿¡ column node°¡ Á¸ÀçÇÑ´Ù.
-                    // µû¶ó¼­, ÀÌ ¿¬»êÀÚµéÀÌ ¿À´Â °æ¿ì,
-                    // ÇØ´ç Å×ÀÌºíÀÇ ÄÃ·³ÀÌ ¾Æ´Ñ °æ¿ì,
+                    // =, !=, >, >=, <, <= ì„ ì œì™¸í•œ ëª¨ë“  ë¹„êµì—°ì‚°ìëŠ”
+                    // ë¹„êµì—°ì‚°ìì˜ argumentì— column nodeê°€ ì¡´ì¬í•œë‹¤.
+                    // ë”°ë¼ì„œ, ì´ ì—°ì‚°ìë“¤ì´ ì˜¤ëŠ” ê²½ìš°,
+                    // í•´ë‹¹ í…Œì´ë¸”ì˜ ì»¬ëŸ¼ì´ ì•„ë‹Œ ê²½ìš°,
 
                     sCurNode = NULL;
                 }
@@ -1512,13 +1512,13 @@ qmoPred::getColumnNodeOfJoinPred( qcStatement  * aStatement,
             {
                 if ( QTC_IS_COLUMN( aStatement, sCurNode ) == ID_TRUE )
                 {
-                    // ºñ±³¿¬»êÀÚÀÇ argument°¡ ÄÃ·³ÀÎ °æ¿ì,
-                    // columnNode¸¦ ±¸ÇÑ´Ù.
+                    // ë¹„êµì—°ì‚°ìì˜ argumentê°€ ì»¬ëŸ¼ì¸ ê²½ìš°,
+                    // columnNodeë¥¼ êµ¬í•œë‹¤.
                     sColumnNode = sCurNode;    
                 }
                 else
                 {
-                    // Index¸¦ »ç¿ëÇÒ ¼ö ¾ø´Â °æ¿ìÀÓ.
+                    // Indexë¥¼ ì‚¬ìš©í•  ìˆ˜ ì—†ëŠ” ê²½ìš°ì„.
                     sIsIndexable = ID_FALSE;
                 }
             }
@@ -1531,9 +1531,9 @@ qmoPred::getColumnNodeOfJoinPred( qcStatement  * aStatement,
             {
                 if( sIsFirstNode == ID_TRUE )
                 {
-                    // OR ³ëµå ÇÏÀ§ÀÇ Ã¹¹øÂ° ºñ±³¿¬»êÀÚ Ã³¸®½Ã,
-                    // ÀÌÈÄ column ºñ±³¸¦ À§ÇØ,
-                    // sFirstColumn¿¡ column¸¦ ÀúÀå.
+                    // OR ë…¸ë“œ í•˜ìœ„ì˜ ì²«ë²ˆì§¸ ë¹„êµì—°ì‚°ì ì²˜ë¦¬ì‹œ,
+                    // ì´í›„ column ë¹„êµë¥¼ ìœ„í•´,
+                    // sFirstColumnì— columnë¥¼ ì €ì¥.
                     sFirstColumnNode = sColumnNode;
                     sIsFirstNode = ID_FALSE;
                 }
@@ -1542,12 +1542,12 @@ qmoPred::getColumnNodeOfJoinPred( qcStatement  * aStatement,
                     // Nothing To Do
                 }
                 
-                // ÀÏ´Ü first, column nodeµÑ´Ù nullÀÌ¸é ¾ÈµÈ´Ù.
-                // nullÀÌ¶ó´Â °ÍÀº indexableÇÏÁö ¾ÊÀº °Í.
+                // ì¼ë‹¨ first, column nodeë‘˜ë‹¤ nullì´ë©´ ì•ˆëœë‹¤.
+                // nullì´ë¼ëŠ” ê²ƒì€ indexableí•˜ì§€ ì•Šì€ ê²ƒ.
                 if( ( sFirstColumnNode != NULL ) &&
                     ( sColumnNode != NULL ) )
                 {
-                    // ¼­·Î ´Ù¸¥ ÄÃ·³ÀÌ¶ó¸é indexableÇÏÁö ¾ÊÀ½
+                    // ì„œë¡œ ë‹¤ë¥¸ ì»¬ëŸ¼ì´ë¼ë©´ indexableí•˜ì§€ ì•ŠìŒ
                     if( ( sFirstColumnNode->node.table ==
                           sColumnNode->node.table ) &&
                         ( sFirstColumnNode->node.column ==
@@ -1577,15 +1577,15 @@ qmoPred::getColumnNodeOfJoinPred( qcStatement  * aStatement,
     }
     else
     {
-        // DNF ÀÎ °æ¿ì
+        // DNF ì¸ ê²½ìš°
 
         sCompareNode = aPredicate->node;
         sCurNode = (qtcNode*)(sCompareNode->node.arguments);
 
         // To Fix PR-8025
-        // Dependency¿¡ ºÎÇÕÇÏ´Â Argument¸¦ ±¸ÇÔ.
-        // ÀÎÀÚ·Î ³Ñ¾î¿Â ÇÏÀ§ selection graph¿Í
-        // dependencies°¡ µ¿ÀÏÇÑÁö °Ë»ç.
+        // Dependencyì— ë¶€í•©í•˜ëŠ” Argumentë¥¼ êµ¬í•¨.
+        // ì¸ìë¡œ ë„˜ì–´ì˜¨ í•˜ìœ„ selection graphì™€
+        // dependenciesê°€ ë™ì¼í•œì§€ ê²€ì‚¬.
         if( qtc::dependencyEqual( aDependencies,
                                   & sCurNode->depInfo ) == ID_TRUE )
         {
@@ -1605,10 +1605,10 @@ qmoPred::getColumnNodeOfJoinPred( qcStatement  * aStatement,
             }
             else
             {
-                // =, !=, >, >=, <, <= À» Á¦¿ÜÇÑ ¸ğµç ºñ±³¿¬»êÀÚ´Â
-                // ºñ±³¿¬»êÀÚÀÇ argument¿¡ column node°¡ Á¸ÀçÇÑ´Ù.
-                // µû¶ó¼­, ÀÌ ¿¬»êÀÚµéÀÌ ¿À´Â °æ¿ì,
-                // ÇØ´ç Å×ÀÌºíÀÇ ÄÃ·³ÀÌ ¾Æ´Ñ °æ¿ì,
+                // =, !=, >, >=, <, <= ì„ ì œì™¸í•œ ëª¨ë“  ë¹„êµì—°ì‚°ìëŠ”
+                // ë¹„êµì—°ì‚°ìì˜ argumentì— column nodeê°€ ì¡´ì¬í•œë‹¤.
+                // ë”°ë¼ì„œ, ì´ ì—°ì‚°ìë“¤ì´ ì˜¤ëŠ” ê²½ìš°,
+                // í•´ë‹¹ í…Œì´ë¸”ì˜ ì»¬ëŸ¼ì´ ì•„ë‹Œ ê²½ìš°,
 
                 sCurNode = NULL;
             }
@@ -1618,13 +1618,13 @@ qmoPred::getColumnNodeOfJoinPred( qcStatement  * aStatement,
         {
             if ( QTC_IS_COLUMN( aStatement, sCurNode ) == ID_TRUE )
             {
-                // ºñ±³¿¬»êÀÚÀÇ argument°¡ ÄÃ·³ÀÎ °æ¿ì,
-                // columnID¸¦ ±¸ÇÑ´Ù.
+                // ë¹„êµì—°ì‚°ìì˜ argumentê°€ ì»¬ëŸ¼ì¸ ê²½ìš°,
+                // columnIDë¥¼ êµ¬í•œë‹¤.
                 sColumnNode = sCurNode;
             }
             else
             {
-                // Index¸¦ »ç¿ëÇÒ ¼ö ¾ø´Â °æ¿ìÀÓ.
+                // Indexë¥¼ ì‚¬ìš©í•  ìˆ˜ ì—†ëŠ” ê²½ìš°ì„.
                 sIsIndexable = ID_FALSE;
             }
         }
@@ -1654,17 +1654,17 @@ qmoPred::setColumnIDToJoinPred( qcStatement  * aStatement,
 {
 /***********************************************************************
  *
- * Description : Join predicate¿¡ ´ëÇÑ columnID Á¤º¸¸¦
- *               qmoPredicate.id¿¡ ÀúÀåÇÑ´Ù.
+ * Description : Join predicateì— ëŒ€í•œ columnID ì •ë³´ë¥¼
+ *               qmoPredicate.idì— ì €ì¥í•œë‹¤.
  *
  * Implementation :
  *
- *     join order °áÁ¤°úÁ¤¿¡¼­ join graphÀÇ ÇÏÀ§°¡ selection graphÀÏ °æ¿ì,
- *     composite index¿¡ ´ëÇÑ selectivity º¸Á¤À» ÇÏ°Ô µÇ´Âµ¥,
- *     join predicateÀÇ composite indexÀÇ ÄÃ·³Æ÷ÇÔ¿©ºÎ¸¦ °Ë»çÇÏ±â À§ÇØ
- *     graph¿¡¼­ È£ÃâÇÏ°Ô µÈ´Ù.
+ *     join order ê²°ì •ê³¼ì •ì—ì„œ join graphì˜ í•˜ìœ„ê°€ selection graphì¼ ê²½ìš°,
+ *     composite indexì— ëŒ€í•œ selectivity ë³´ì •ì„ í•˜ê²Œ ë˜ëŠ”ë°,
+ *     join predicateì˜ composite indexì˜ ì»¬ëŸ¼í¬í•¨ì—¬ë¶€ë¥¼ ê²€ì‚¬í•˜ê¸° ìœ„í•´
+ *     graphì—ì„œ í˜¸ì¶œí•˜ê²Œ ëœë‹¤.
  *
- *     columnID Á¤º¸¸¦ qmoPredicate.flag¿¡ ÀúÀåÇÑ´Ù.
+ *     columnID ì •ë³´ë¥¼ qmoPredicate.flagì— ì €ì¥í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -1678,7 +1678,7 @@ qmoPred::setColumnIDToJoinPred( qcStatement  * aStatement,
     IDU_FIT_POINT_FATAL( "qmoPred::setColumnIDToJoinPred::__FT__" );
 
     //--------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //--------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -1686,16 +1686,16 @@ qmoPred::setColumnIDToJoinPred( qcStatement  * aStatement,
     IDE_DASSERT( aDependencies != NULL );
 
     //--------------------------------------
-    // join predicateÀÇ columnID ¼³Á¤
+    // join predicateì˜ columnID ì„¤ì •
     //--------------------------------------
 
-    // join predicate ÇÏÀ§¿¡ ¿©·¯°³ÀÇ ºñ±³¿¬»êÀÚ ³ëµå°¡ ¿Ã ¼öµµ ÀÖÀ¸¹Ç·Î,
-    // ÀÌ¿¡ ´ëÇÑ °í·Á°¡ ÇÊ¿äÇÔ. ( ÀÌ °æ¿ì´Â index nested loop join¸¸ °¡´É )
+    // join predicate í•˜ìœ„ì— ì—¬ëŸ¬ê°œì˜ ë¹„êµì—°ì‚°ì ë…¸ë“œê°€ ì˜¬ ìˆ˜ë„ ìˆìœ¼ë¯€ë¡œ,
+    // ì´ì— ëŒ€í•œ ê³ ë ¤ê°€ í•„ìš”í•¨. ( ì´ ê²½ìš°ëŠ” index nested loop joinë§Œ ê°€ëŠ¥ )
 
     if ( ( aPredicate->node->node.lflag & MTC_NODE_LOGICAL_CONDITION_MASK )
          == MTC_NODE_LOGICAL_CONDITION_TRUE )
     {
-        // CNF ÀÎ °æ¿ì
+        // CNF ì¸ ê²½ìš°
 
         sCompareNode = (qtcNode *)(aPredicate->node->node.arguments);
 
@@ -1704,9 +1704,9 @@ qmoPred::setColumnIDToJoinPred( qcStatement  * aStatement,
             sCurNode = (qtcNode*)(sCompareNode->node.arguments);
 
             // To Fix PR-8025
-            // Dependency¿¡ ºÎÇÕÇÏ´Â Argument¸¦ ±¸ÇÔ.
-            // ÀÎÀÚ·Î ³Ñ¾î¿Â ÇÏÀ§ selection graph¿Í
-            // dependencies°¡ µ¿ÀÏÇÑÁö °Ë»ç.
+            // Dependencyì— ë¶€í•©í•˜ëŠ” Argumentë¥¼ êµ¬í•¨.
+            // ì¸ìë¡œ ë„˜ì–´ì˜¨ í•˜ìœ„ selection graphì™€
+            // dependenciesê°€ ë™ì¼í•œì§€ ê²€ì‚¬.
             if ( qtc::dependencyEqual( aDependencies,
                                        & sCurNode->depInfo ) == ID_TRUE )
             {
@@ -1726,10 +1726,10 @@ qmoPred::setColumnIDToJoinPred( qcStatement  * aStatement,
                 }
                 else
                 {
-                    // =, !=, >, >=, <, <= À» Á¦¿ÜÇÑ ¸ğµç ºñ±³¿¬»êÀÚ´Â
-                    // ºñ±³¿¬»êÀÚÀÇ argument¿¡ column node°¡ Á¸ÀçÇÑ´Ù.
-                    // µû¶ó¼­, ÀÌ ¿¬»êÀÚµéÀÌ ¿À´Â °æ¿ì,
-                    // ÇØ´ç Å×ÀÌºíÀÇ ÄÃ·³ÀÌ ¾Æ´Ñ °æ¿ì,
+                    // =, !=, >, >=, <, <= ì„ ì œì™¸í•œ ëª¨ë“  ë¹„êµì—°ì‚°ìëŠ”
+                    // ë¹„êµì—°ì‚°ìì˜ argumentì— column nodeê°€ ì¡´ì¬í•œë‹¤.
+                    // ë”°ë¼ì„œ, ì´ ì—°ì‚°ìë“¤ì´ ì˜¤ëŠ” ê²½ìš°,
+                    // í•´ë‹¹ í…Œì´ë¸”ì˜ ì»¬ëŸ¼ì´ ì•„ë‹Œ ê²½ìš°,
 
                     sCurNode = NULL;
                 }
@@ -1739,15 +1739,15 @@ qmoPred::setColumnIDToJoinPred( qcStatement  * aStatement,
             {
                 if ( QTC_IS_COLUMN( aStatement, sCurNode ) == ID_TRUE )
                 {
-                    // ºñ±³¿¬»êÀÚÀÇ argument°¡ ÄÃ·³ÀÎ °æ¿ì,
-                    // columnID¸¦ ±¸ÇÑ´Ù.
+                    // ë¹„êµì—°ì‚°ìì˜ argumentê°€ ì»¬ëŸ¼ì¸ ê²½ìš°,
+                    // columnIDë¥¼ êµ¬í•œë‹¤.
                     sColumnID =
                         QC_SHARED_TMPLATE(aStatement)->tmplate.rows[sCurNode->node.table].
                         columns[sCurNode->node.column].column.id;
                 }
                 else
                 {
-                    // Index¸¦ »ç¿ëÇÒ ¼ö ¾ø´Â °æ¿ìÀÓ.
+                    // Indexë¥¼ ì‚¬ìš©í•  ìˆ˜ ì—†ëŠ” ê²½ìš°ì„.
                     sIsIndexable = ID_FALSE;
                 }
             }
@@ -1760,9 +1760,9 @@ qmoPred::setColumnIDToJoinPred( qcStatement  * aStatement,
             {
                 if ( sIsFirstNode == ID_TRUE )
                 {
-                    // OR ³ëµå ÇÏÀ§ÀÇ Ã¹¹øÂ° ºñ±³¿¬»êÀÚ Ã³¸®½Ã,
-                    // ÀÌÈÄ columnID ºñ±³¸¦ À§ÇØ,
-                    // sFirstColumnID¿¡ columnID¸¦ ÀúÀå.
+                    // OR ë…¸ë“œ í•˜ìœ„ì˜ ì²«ë²ˆì§¸ ë¹„êµì—°ì‚°ì ì²˜ë¦¬ì‹œ,
+                    // ì´í›„ columnID ë¹„êµë¥¼ ìœ„í•´,
+                    // sFirstColumnIDì— columnIDë¥¼ ì €ì¥.
                     sFirstColumnID = sColumnID;
                     sIsFirstNode   = ID_FALSE;
                 }
@@ -1791,15 +1791,15 @@ qmoPred::setColumnIDToJoinPred( qcStatement  * aStatement,
     }
     else
     {
-        // DNF ÀÎ °æ¿ì
+        // DNF ì¸ ê²½ìš°
 
         sCompareNode = aPredicate->node;
         sCurNode     = (qtcNode*)(sCompareNode->node.arguments);
 
         // To Fix PR-8025
-        // Dependency¿¡ ºÎÇÕÇÏ´Â Argument¸¦ ±¸ÇÔ.
-        // ÀÎÀÚ·Î ³Ñ¾î¿Â ÇÏÀ§ selection graph¿Í
-        // dependencies°¡ µ¿ÀÏÇÑÁö °Ë»ç.
+        // Dependencyì— ë¶€í•©í•˜ëŠ” Argumentë¥¼ êµ¬í•¨.
+        // ì¸ìë¡œ ë„˜ì–´ì˜¨ í•˜ìœ„ selection graphì™€
+        // dependenciesê°€ ë™ì¼í•œì§€ ê²€ì‚¬.
         if ( qtc::dependencyEqual( aDependencies,
                                    & sCurNode->depInfo ) == ID_TRUE )
         {
@@ -1819,10 +1819,10 @@ qmoPred::setColumnIDToJoinPred( qcStatement  * aStatement,
             }
             else
             {
-                // =, !=, >, >=, <, <= À» Á¦¿ÜÇÑ ¸ğµç ºñ±³¿¬»êÀÚ´Â
-                // ºñ±³¿¬»êÀÚÀÇ argument¿¡ column node°¡ Á¸ÀçÇÑ´Ù.
-                // µû¶ó¼­, ÀÌ ¿¬»êÀÚµéÀÌ ¿À´Â °æ¿ì,
-                // ÇØ´ç Å×ÀÌºíÀÇ ÄÃ·³ÀÌ ¾Æ´Ñ °æ¿ì,
+                // =, !=, >, >=, <, <= ì„ ì œì™¸í•œ ëª¨ë“  ë¹„êµì—°ì‚°ìëŠ”
+                // ë¹„êµì—°ì‚°ìì˜ argumentì— column nodeê°€ ì¡´ì¬í•œë‹¤.
+                // ë”°ë¼ì„œ, ì´ ì—°ì‚°ìë“¤ì´ ì˜¤ëŠ” ê²½ìš°,
+                // í•´ë‹¹ í…Œì´ë¸”ì˜ ì»¬ëŸ¼ì´ ì•„ë‹Œ ê²½ìš°,
 
                 sCurNode = NULL;
             }
@@ -1832,15 +1832,15 @@ qmoPred::setColumnIDToJoinPred( qcStatement  * aStatement,
         {
             if ( QTC_IS_COLUMN( aStatement, sCurNode ) == ID_TRUE )
             {
-                // ºñ±³¿¬»êÀÚÀÇ argument°¡ ÄÃ·³ÀÎ °æ¿ì,
-                // columnID¸¦ ±¸ÇÑ´Ù.
+                // ë¹„êµì—°ì‚°ìì˜ argumentê°€ ì»¬ëŸ¼ì¸ ê²½ìš°,
+                // columnIDë¥¼ êµ¬í•œë‹¤.
                 sColumnID =
                     QC_SHARED_TMPLATE(aStatement)->tmplate.rows[sCurNode->node.table].
                     columns[sCurNode->node.column].column.id;
             }
             else
             {
-                // Index¸¦ »ç¿ëÇÒ ¼ö ¾ø´Â °æ¿ìÀÓ.
+                // Indexë¥¼ ì‚¬ìš©í•  ìˆ˜ ì—†ëŠ” ê²½ìš°ì„.
                 sIsIndexable = ID_FALSE;
             }
         }
@@ -1872,109 +1872,109 @@ qmoPred::isIndexable( qcStatement   * aStatement,
 {
 /***********************************************************************
  *
- * Description : predicateÀÇ indexable ¿©ºÎ ÆÇ´Ü
+ * Description : predicateì˜ indexable ì—¬ë¶€ íŒë‹¨
  *
- *     <indexable predicateÀÇ Á¤ÀÇ>
+ *     <indexable predicateì˜ ì •ì˜>
  *
- *     Á¶°Ç1. indexable operator ÀÌ¾î¾ß ÇÑ´Ù.
- *            system level operator »Ó¸¸ ¾Æ´Ï¶ó,
- *            user level operator(quantifyºñ±³¿¬»êÀÚ)µµ Æ÷ÇÔµÈ´Ù.
+ *     ì¡°ê±´1. indexable operator ì´ì–´ì•¼ í•œë‹¤.
+ *            system level operator ë¿ë§Œ ì•„ë‹ˆë¼,
+ *            user level operator(quantifyë¹„êµì—°ì‚°ì)ë„ í¬í•¨ëœë‹¤.
  *
- *     Á¶°Ç2. columnÀÌ ÀÖ¾î¾ß ÇÑ´Ù.
- *            ¿¹) i1=1(O), i1=i2(O), i1=i1+1(O), i1+1=1(O), 1=1(X),
+ *     ì¡°ê±´2. columnì´ ìˆì–´ì•¼ í•œë‹¤.
+ *            ì˜ˆ) i1=1(O), i1=i2(O), i1=i1+1(O), i1+1=1(O), 1=1(X),
  *                (i1,i2,i3)=(i1,i2,i3)(O), (i1,i2,i3)=(1,1,1)(O),
  *                (i1,i2,1 )=( 1, 1, 1)(X), (1,subquery)=(1,1)(X)
  *
- *     Á¶°Ç3. column¿¡ ¿¬»êÀÌ ¾ø¾î¾ß ÇÑ´Ù.
+ *     ì¡°ê±´3. columnì— ì—°ì‚°ì´ ì—†ì–´ì•¼ í•œë‹¤.
  *
- *            ¿¹) i1=1(O), i1=i2(O), i1=i1+1(O), i1+1=1(X)
+ *            ì˜ˆ) i1=1(O), i1=i2(O), i1=i1+1(O), i1+1=1(X)
  *
- *     Á¶°Ç4. columnÀÌ ÇÑÂÊ¿¡¸¸ Á¸ÀçÇØ¾ß ÇÑ´Ù.
- *            ¿¹) i1=1(O), i1=i1+1(X), i1=i2(X)
+ *     ì¡°ê±´4. columnì´ í•œìª½ì—ë§Œ ì¡´ì¬í•´ì•¼ í•œë‹¤.
+ *            ì˜ˆ) i1=1(O), i1=i1+1(X), i1=i2(X)
  *
- *     Á¶°Ç5. column¿¡ conversionÀÌ ¹ß»ıÇÏÁö ¾Ê¾Æ¾ß ÇÑ´Ù.
- *            ¿¹) i1(integer)=smallint'1'(O), i1(integer)=3.5(X)
+ *     ì¡°ê±´5. columnì— conversionì´ ë°œìƒí•˜ì§€ ì•Šì•„ì•¼ í•œë‹¤.
+ *            ì˜ˆ) i1(integer)=smallint'1'(O), i1(integer)=3.5(X)
  *
- *     Á¶°Ç6. value¿¡ ´ëÇÑ Á¶°ÇÃ¼Å©
- *            6-1. subquery°¡ ¿À´Â °æ¿ì, subquery typeÀÌ A,NÇüÀÌ¾î¾ß ÇÑ´Ù.
- *                 ¿¹) a1 = (select i1 from t2 where i1=1)(O)
+ *     ì¡°ê±´6. valueì— ëŒ€í•œ ì¡°ê±´ì²´í¬
+ *            6-1. subqueryê°€ ì˜¤ëŠ” ê²½ìš°, subquery typeì´ A,Ní˜•ì´ì–´ì•¼ í•œë‹¤.
+ *                 ì˜ˆ) a1 = (select i1 from t2 where i1=1)(O)
  *                     a1 = (select sum(i1) from t2)(O)
  *                     a1 = (select i1 from t2 where i1=al)(X)
  *                     a1 = (select sum(i1) from t2 where i1=a1)(X)
- *            6-2. LIKE¿¡ ´ëÇÑ ÆĞÅÏ¹®ÀÚ´Â ÀÏ¹İ¹®ÀÚ·Î ½ÃÀÛÇÏ¿©¾ß ÇÑ´Ù.
- *                 ¿¹) i1 like 'a%'(O) , i1 like '\_a%' escape'\'(O)
+ *            6-2. LIKEì— ëŒ€í•œ íŒ¨í„´ë¬¸ìëŠ” ì¼ë°˜ë¬¸ìë¡œ ì‹œì‘í•˜ì—¬ì•¼ í•œë‹¤.
+ *                 ì˜ˆ) i1 like 'a%'(O) , i1 like '\_a%' escape'\'(O)
  *                     i1 like '%a%'(X), i1 like '_bc'(X)
- *            6-3. host º¯¼ö°¡ ¿À´Â °æ¿ì
- *                 ¿¹) i1=?(O), i1=?+1(O)
+ *            6-3. host ë³€ìˆ˜ê°€ ì˜¤ëŠ” ê²½ìš°
+ *                 ì˜ˆ) i1=?(O), i1=?+1(O)
  *
- *     Á¶°Ç7. OR³ëµå ÇÏÀ§¿¡ µ¿ÀÏÇÑ ÄÃ·³¸¸ ÀÖ´Â °æ¿ìÀÌ¾î¾ß ÇÑ´Ù.
- *            ´Ü, subquery °¡ ¿À´Â °æ¿ì´Â Á¦¿ÜµÈ´Ù.
- *            ¿¹) i1=1 OR i1=2(O), (i1,i2)=(1,1) OR (i1,i2)=(2,2)(O),
+ *     ì¡°ê±´7. ORë…¸ë“œ í•˜ìœ„ì— ë™ì¼í•œ ì»¬ëŸ¼ë§Œ ìˆëŠ” ê²½ìš°ì´ì–´ì•¼ í•œë‹¤.
+ *            ë‹¨, subquery ê°€ ì˜¤ëŠ” ê²½ìš°ëŠ” ì œì™¸ëœë‹¤.
+ *            ì˜ˆ) i1=1 OR i1=2(O), (i1,i2)=(1,1) OR (i1,i2)=(2,2)(O),
  *                i1=1 OR i2=2(X),
  *                i1 in (subquery) OR i1 in (subquery)(X),
  *                i1=1 OR i1 in (subquery) (X)
  *                (i1=1 and i2=1) or i1=( subquery ) (X)
  *
- *     Á¶°Ç8. index°¡ ÀÖ¾î¾ß ÇÑ´Ù.
- *            Á¶°Ç1~7±îÁö·Î indexable predicateÀÌ ÆÇ´ÜµÇ¾úÀ¸¸é,
- *            ÀÌ¿¡ ÇØ´çÇÏ´Â index°¡ ÀÖ¾î¾ß ÇÑ´Ù.
+ *     ì¡°ê±´8. indexê°€ ìˆì–´ì•¼ í•œë‹¤.
+ *            ì¡°ê±´1~7ê¹Œì§€ë¡œ indexable predicateì´ íŒë‹¨ë˜ì—ˆìœ¼ë©´,
+ *            ì´ì— í•´ë‹¹í•˜ëŠ” indexê°€ ìˆì–´ì•¼ í•œë‹¤.
  *
- *     < ÁúÀÇ ¼öÇà°úÁ¤¿¡¼­ÀÇ indexable predicateÀÇ ÆÇ´Ü¹üÀ§ >
+ *     < ì§ˆì˜ ìˆ˜í–‰ê³¼ì •ì—ì„œì˜ indexable predicateì˜ íŒë‹¨ë²”ìœ„ >
  *
- *     (1) parsing & validation °úÁ¤¿¡¼­ÀÇ ÆÇ´Ü¹üÀ§
- *         Á¶°Ç1, Á¶°Ç2, Á¶°Ç3, ÀÌ ¼¼°¡Áö Á¶°ÇÀ» ¸¸Á·ÇÏ¸é
- *         mtcNode.lflag¿¡ MTC_NODE_INDEX_USABLEÀ» ¼³Á¤ÇÔ.
+ *     (1) parsing & validation ê³¼ì •ì—ì„œì˜ íŒë‹¨ë²”ìœ„
+ *         ì¡°ê±´1, ì¡°ê±´2, ì¡°ê±´3, ì´ ì„¸ê°€ì§€ ì¡°ê±´ì„ ë§Œì¡±í•˜ë©´
+ *         mtcNode.lflagì— MTC_NODE_INDEX_USABLEì„ ì„¤ì •í•¨.
  *
- *     (2) graph »ı¼º°úÁ¤¿¡¼­ÀÇ ÆÇ´Ü¹üÀ§
- *         Á¶°Ç4, Á¶°Ç5, Á¶°Ç6, Á¶°Ç7
+ *     (2) graph ìƒì„±ê³¼ì •ì—ì„œì˜ íŒë‹¨ë²”ìœ„
+ *         ì¡°ê±´4, ì¡°ê±´5, ì¡°ê±´6, ì¡°ê±´7
  *
- *     (3) plan tree »ı¼º°úÁ¤¿¡¼­ÀÇ ÆÇ´Ü¹üÀ§
- *         INÀıÀÇ subquery keyRange¿¡ ´ëÇÑ Á¶°Ç°ú Á¶°Ç8
+ *     (3) plan tree ìƒì„±ê³¼ì •ì—ì„œì˜ íŒë‹¨ë²”ìœ„
+ *         INì ˆì˜ subquery keyRangeì— ëŒ€í•œ ì¡°ê±´ê³¼ ì¡°ê±´8
  *
- *     (4) execution °úÁ¤¿¡¼­ÀÇ ÆÇ´Ü¹üÀ§
- *         hostº¯¼ö¿¡ ´ëÇÑ bindingÀÌ ³¡³­ÈÄ,
- *         column¿¡ ´ëÇÑ conversion¹ß»ı¿©ºÎ¿Í
- *         LIKE¿¬»êÀÚÀÇ ÆĞÅÏ¹®ÀÚ°¡ ÀÏ¹İ¹®ÀÚ·Î ½ÃÀÛÇÏ´ÂÁöÀÇ ¿©ºÎ
+ *     (4) execution ê³¼ì •ì—ì„œì˜ íŒë‹¨ë²”ìœ„
+ *         hostë³€ìˆ˜ì— ëŒ€í•œ bindingì´ ëë‚œí›„,
+ *         columnì— ëŒ€í•œ conversionë°œìƒì—¬ë¶€ì™€
+ *         LIKEì—°ì‚°ìì˜ íŒ¨í„´ë¬¸ìê°€ ì¼ë°˜ë¬¸ìë¡œ ì‹œì‘í•˜ëŠ”ì§€ì˜ ì—¬ë¶€
  *
- * Implementation : ÀÌ ÇÔ¼ö´Â graph »ı¼º°úÁ¤¿¡¼­ÀÇ ÆÇ´Ü¹üÀ§¸¦ °Ë»çÇÔ.
+ * Implementation : ì´ í•¨ìˆ˜ëŠ” graph ìƒì„±ê³¼ì •ì—ì„œì˜ íŒë‹¨ë²”ìœ„ë¥¼ ê²€ì‚¬í•¨.
  *
- *     1. Á¶°Ç1,2,3ÀÇ ÆÇ´Ü
- *        mtcNode.flag°¡ MTC_NODE_INDEX_USABLE ÀÎÁö¸¦ °Ë»ç
+ *     1. ì¡°ê±´1,2,3ì˜ íŒë‹¨
+ *        mtcNode.flagê°€ MTC_NODE_INDEX_USABLE ì¸ì§€ë¥¼ ê²€ì‚¬
  *
- *     2. Á¶°Ç4ÀÇ ÆÇ´Ü
- *        (1) operandÀÇ dependency°¡ Áßº¹µÇÁö ¾Ê´ÂÁö¸¦ °Ë»çÇÑ´Ù.
- *            (ÀÌ °Ë»ç·Î ÄÃ·³ÀÌ ÇÑÂÊ¿¡¸¸ Á¸ÀçÇÑ´Ù´Â °ÍÀÌ °ËÁõµÊ)
+ *     2. ì¡°ê±´4ì˜ íŒë‹¨
+ *        (1) operandì˜ dependencyê°€ ì¤‘ë³µë˜ì§€ ì•ŠëŠ”ì§€ë¥¼ ê²€ì‚¬í•œë‹¤.
+ *            (ì´ ê²€ì‚¬ë¡œ ì»¬ëŸ¼ì´ í•œìª½ì—ë§Œ ì¡´ì¬í•œë‹¤ëŠ” ê²ƒì´ ê²€ì¦ë¨)
  *
- *            dependency Áßº¹ ÆÇ´Ü¹æ¹ıÀº,
- *            ( ( ºñ±³¿¬»êÀÚÇÏÀ§ÀÇ µÎ°³ ³ëµåÀÇ dependencies¸¦ AND¿¬»ê)
- *              & FROMÀÇ ÇØ´ç tableÀÇ dependency ) != 0
+ *            dependency ì¤‘ë³µ íŒë‹¨ë°©ë²•ì€,
+ *            ( ( ë¹„êµì—°ì‚°ìí•˜ìœ„ì˜ ë‘ê°œ ë…¸ë“œì˜ dependenciesë¥¼ ANDì—°ì‚°)
+ *              & FROMì˜ í•´ë‹¹ tableì˜ dependency ) != 0
  *
- *        (2) (1)ÀÌ °ËÁõµÇ¸é,
- *            ÄÃ·³ÀÌ ¸ğµÎ ÇØ´ç tableÀÇ ÄÃ·³À¸·Î ±¸¼ºµÇ¾ú´ÂÁö¸¦ °Ë»ç.
+ *        (2) (1)ì´ ê²€ì¦ë˜ë©´,
+ *            ì»¬ëŸ¼ì´ ëª¨ë‘ í•´ë‹¹ tableì˜ ì»¬ëŸ¼ìœ¼ë¡œ êµ¬ì„±ë˜ì—ˆëŠ”ì§€ë¥¼ ê²€ì‚¬.
  *
- *     3. Á¶°Ç5ÀÇ ÆÇ´Ü
+ *     3. ì¡°ê±´5ì˜ íŒë‹¨
  *        (1) column
- *            valueÂÊ¿¡ hostº¯¼ö°¡ ¾ø´Âµ¥µµ,
- *            column¿¡ conversionÀÌ ¹ß»ıÇß´ÂÁö¸¦ °Ë»ç.
+ *            valueìª½ì— hostë³€ìˆ˜ê°€ ì—†ëŠ”ë°ë„,
+ *            columnì— conversionì´ ë°œìƒí–ˆëŠ”ì§€ë¥¼ ê²€ì‚¬.
  *
  *        (2) LIST
- *            valueÂÊ LIST ÇÏÀ§ ³ëµåµéÀ» ¸ğµÎ Á¶»çÇØ¼­, hostº¯¼ö°¡ ¾Æ´Ï¸é¼­,
- *            valueÀÇ leftConversionÀÌ Á¸ÀçÇÏ´ÂÁö °Ë»ç.
+ *            valueìª½ LIST í•˜ìœ„ ë…¸ë“œë“¤ì„ ëª¨ë‘ ì¡°ì‚¬í•´ì„œ, hostë³€ìˆ˜ê°€ ì•„ë‹ˆë©´ì„œ,
+ *            valueì˜ leftConversionì´ ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬.
  *
- *     4. Á¶°Ç6ÀÇ ÆÇ´Ü
- *        (1) 6-1Á¶°Ç : QTC_NODE_SUBQUERY_EXIST
- *        (2) 6-2Á¶°Ç : subquery°ü¸®ÀÚ·ÎºÎÅÍ typeÀ» ¾Ë¾Æ³½´Ù.
- *        (3) 6-3Á¶°Ç :
- *            value nodeÀÇ tupleÀÌ MTC_TUPLE_TYPE_CONSTANTÀÎÁö¸¦ °Ë»ç.
+ *     4. ì¡°ê±´6ì˜ íŒë‹¨
+ *        (1) 6-1ì¡°ê±´ : QTC_NODE_SUBQUERY_EXIST
+ *        (2) 6-2ì¡°ê±´ : subqueryê´€ë¦¬ìë¡œë¶€í„° typeì„ ì•Œì•„ë‚¸ë‹¤.
+ *        (3) 6-3ì¡°ê±´ :
+ *            value nodeì˜ tupleì´ MTC_TUPLE_TYPE_CONSTANTì¸ì§€ë¥¼ ê²€ì‚¬.
  *
- *     5. Á¶°Ç7ÀÇ ÆÇ´Ü
- *        (1) OR³ëµå ÇÏÀ§¿¡ 1°³ÀÇ ºñ±³¿¬»êÀÚ°¡ Á¸ÀçÇÒ °æ¿ì,
- *            .indexable predicateÀÎÁö¸¸ ÆÇ´Ü
- *        (2) OR³ëµå ÇÏÀ§¿¡ 2°³ÀÌ»óÀÇ ºñ±³¿¬»êÀÚ°¡ Á¸ÀçÇÒ °æ¿ì,
- *            . subquery¸¦ Æ÷ÇÔÇÏÁö ¾Ê¾Æ¾ß ÇÑ´Ù.
- *            . ÇÏÀ§ ºñ±³¿¬»êÀÚµéÀÌ ¸ğµÎ indexableÀÌ¾î¾ß ÇÑ´Ù.
- *            . ÇÏÀ§ ³ëµåµéÀÇ columID°¡ ¸ğµÎ °°¾Æ¾ß ÇÑ´Ù.
- *              (´Ü, ÄÃ·³ÀÌ LISTÀÎ °æ¿ì´Â non-indexable·Î Ã³¸®)
+ *     5. ì¡°ê±´7ì˜ íŒë‹¨
+ *        (1) ORë…¸ë“œ í•˜ìœ„ì— 1ê°œì˜ ë¹„êµì—°ì‚°ìê°€ ì¡´ì¬í•  ê²½ìš°,
+ *            .indexable predicateì¸ì§€ë§Œ íŒë‹¨
+ *        (2) ORë…¸ë“œ í•˜ìœ„ì— 2ê°œì´ìƒì˜ ë¹„êµì—°ì‚°ìê°€ ì¡´ì¬í•  ê²½ìš°,
+ *            . subqueryë¥¼ í¬í•¨í•˜ì§€ ì•Šì•„ì•¼ í•œë‹¤.
+ *            . í•˜ìœ„ ë¹„êµì—°ì‚°ìë“¤ì´ ëª¨ë‘ indexableì´ì–´ì•¼ í•œë‹¤.
+ *            . í•˜ìœ„ ë…¸ë“œë“¤ì˜ columIDê°€ ëª¨ë‘ ê°™ì•„ì•¼ í•œë‹¤.
+ *              (ë‹¨, ì»¬ëŸ¼ì´ LISTì¸ ê²½ìš°ëŠ” non-indexableë¡œ ì²˜ë¦¬)
  *
  ***********************************************************************/
 
@@ -1987,16 +1987,16 @@ qmoPred::isIndexable( qcStatement   * aStatement,
     IDU_FIT_POINT_FATAL( "qmoPred::isIndexable::__FT__" );
 
     //--------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //--------------------------------------
 
     IDE_DASSERT( aPredicate != NULL );
     IDE_DASSERT( aIsIndexable != NULL );
 
     //--------------------------------------
-    // Á¶°Ç 7ÀÇ °Ë»ç
-    // OR³ëµå ÇÏÀ§¿¡ µ¿ÀÏÇÑ ÄÃ·³¸¸ ÀÖ´Â °æ¿ì,
-    // ´Ü, subquery ³ëµå°¡ Á¸ÀçÇÏ´Â °æ¿ì´Â Á¦¿ÜµÈ´Ù.
+    // ì¡°ê±´ 7ì˜ ê²€ì‚¬
+    // ORë…¸ë“œ í•˜ìœ„ì— ë™ì¼í•œ ì»¬ëŸ¼ë§Œ ìˆëŠ” ê²½ìš°,
+    // ë‹¨, subquery ë…¸ë“œê°€ ì¡´ì¬í•˜ëŠ” ê²½ìš°ëŠ” ì œì™¸ëœë‹¤.
     //--------------------------------------
 
     sNode = aPredicate->node;
@@ -2005,21 +2005,21 @@ qmoPred::isIndexable( qcStatement   * aStatement,
          == MTC_NODE_LOGICAL_CONDITION_TRUE )
     {
         //--------------------------------------
-        // CNF ÀÎ °æ¿ì·Î,
-        // ÀÎÀÚ·Î ³Ñ¾î¿Â predicateÀÇ ÃÖ»óÀ§ ³ëµå´Â OR³ëµåÀÌ¸ç,
-        // OR ³ëµå ÇÏÀ§¿¡ ¿©·¯°³ÀÇ ºñ±³¿¬»êÀÚ°¡ ¿Ã ¼ö ÀÖ´Ù.
-        // OR ³ëµå ÇÏÀ§¿¡ ºñ±³¿¬»êÀÚ°¡ ÇÏ³ªÀÏ¶§¿Í ¿©·¯°³ÀÏ¶§ÀÇ
-        // Á¶°Ç°Ë»ç°¡ Æ²¸®¹Ç·Î, ÀÌ¸¦ ±¸ºĞÇÏ¿© Ã³¸®ÇÑ´Ù.
+        // CNF ì¸ ê²½ìš°ë¡œ,
+        // ì¸ìë¡œ ë„˜ì–´ì˜¨ predicateì˜ ìµœìƒìœ„ ë…¸ë“œëŠ” ORë…¸ë“œì´ë©°,
+        // OR ë…¸ë“œ í•˜ìœ„ì— ì—¬ëŸ¬ê°œì˜ ë¹„êµì—°ì‚°ìê°€ ì˜¬ ìˆ˜ ìˆë‹¤.
+        // OR ë…¸ë“œ í•˜ìœ„ì— ë¹„êµì—°ì‚°ìê°€ í•˜ë‚˜ì¼ë•Œì™€ ì—¬ëŸ¬ê°œì¼ë•Œì˜
+        // ì¡°ê±´ê²€ì‚¬ê°€ í‹€ë¦¬ë¯€ë¡œ, ì´ë¥¼ êµ¬ë¶„í•˜ì—¬ ì²˜ë¦¬í•œë‹¤.
         //--------------------------------------
 
-        // sNode´Â ºñ±³¿¬»êÀÚ ³ëµå
+        // sNodeëŠ” ë¹„êµì—°ì‚°ì ë…¸ë“œ
         sNode = (qtcNode *)(sNode->node.arguments);
 
         if ( aPredicate->node->node.arguments->next == NULL )
         {
 
-            // 1. OR ³ëµå ÇÏÀ§¿¡ ºñ±³¿¬»êÀÚ°¡ ÇÏ³ª¸¸ ¿À´Â °æ¿ì,
-            //    indexableÀÎÁö¸¸ ÆÇ´ÜÇÏ¸é µÈ´Ù.
+            // 1. OR ë…¸ë“œ í•˜ìœ„ì— ë¹„êµì—°ì‚°ìê°€ í•˜ë‚˜ë§Œ ì˜¤ëŠ” ê²½ìš°,
+            //    indexableì¸ì§€ë§Œ íŒë‹¨í•˜ë©´ ëœë‹¤.
             IDE_TEST( isIndexableUnitPred( aStatement,
                                            sNode,
                                            aTableDependencies,
@@ -2040,13 +2040,13 @@ qmoPred::isIndexable( qcStatement   * aStatement,
         }
         else
         {
-            // 2. OR ³ëµå ÇÏÀ§¿¡ ºñ±³¿¬»êÀÚ°¡ ¿©·¯°³ ¿À´Â °æ¿ì,
-            //   (1) subquery°¡ Á¸ÀçÇÏÁö ¾Ê¾Æ¾ß ÇÑ´Ù.
-            //   (2) ºñ±³¿¬»êÀÚ°¡ ¸ğµÎ indexable predicateÀÌ¾î¾ß ÇÑ´Ù.
-            //   (3) ºñ±³¿¬»êÀÚ ³ëµåÀÇ columnID°¡ ¸ğµÎ µ¿ÀÏÇØ¾ß ÇÑ´Ù.
-            //       (´Ü, columnÀÌ LISTÀÎ °æ¿ì´Â Á¦¿ÜÇÑ´Ù.)
+            // 2. OR ë…¸ë“œ í•˜ìœ„ì— ë¹„êµì—°ì‚°ìê°€ ì—¬ëŸ¬ê°œ ì˜¤ëŠ” ê²½ìš°,
+            //   (1) subqueryê°€ ì¡´ì¬í•˜ì§€ ì•Šì•„ì•¼ í•œë‹¤.
+            //   (2) ë¹„êµì—°ì‚°ìê°€ ëª¨ë‘ indexable predicateì´ì–´ì•¼ í•œë‹¤.
+            //   (3) ë¹„êµì—°ì‚°ì ë…¸ë“œì˜ columnIDê°€ ëª¨ë‘ ë™ì¼í•´ì•¼ í•œë‹¤.
+            //       (ë‹¨, columnì´ LISTì¸ ê²½ìš°ëŠ” ì œì™¸í•œë‹¤.)
 
-            // subquery°¡ Á¸ÀçÇÏÁö ¾Ê¾Æ¾ß ÇÑ´Ù.
+            // subqueryê°€ ì¡´ì¬í•˜ì§€ ì•Šì•„ì•¼ í•œë‹¤.
             if ( ( aPredicate->node->lflag & QTC_NODE_SUBQUERY_MASK )
                  == QTC_NODE_SUBQUERY_EXIST )
             {
@@ -2056,7 +2056,7 @@ qmoPred::isIndexable( qcStatement   * aStatement,
             {
                 while ( sNode != NULL )
                 {
-                    // indexable predicateÀÎÁö °Ë»ç
+                    // indexable predicateì¸ì§€ ê²€ì‚¬
                     IDE_TEST( isIndexableUnitPred( aStatement,
                                                    sNode,
                                                    aTableDependencies,
@@ -2066,7 +2066,7 @@ qmoPred::isIndexable( qcStatement   * aStatement,
 
                     if ( sIsIndexablePred == ID_TRUE )
                     {
-                        // columnID¸¦ ¾ò´Â´Ù.
+                        // columnIDë¥¼ ì–»ëŠ”ë‹¤.
                         IDE_TEST( getColumnID( aStatement,
                                                sNode,
                                                ID_TRUE,
@@ -2075,9 +2075,9 @@ qmoPred::isIndexable( qcStatement   * aStatement,
 
                         if ( sIsFirstNode == ID_TRUE )
                         {
-                            // OR ³ëµå ÇÏÀ§ÀÇ Ã¹¹øÂ° ºñ±³¿¬»êÀÚ Ã³¸®½Ã,
-                            // ÀÌÈÄÀÇ columnID ºñ±³¸¦ À§ÇØ,
-                            // sFirstColumnID¿¡ columnID¸¦ ÀúÀå.
+                            // OR ë…¸ë“œ í•˜ìœ„ì˜ ì²«ë²ˆì§¸ ë¹„êµì—°ì‚°ì ì²˜ë¦¬ì‹œ,
+                            // ì´í›„ì˜ columnID ë¹„êµë¥¼ ìœ„í•´,
+                            // sFirstColumnIDì— columnIDë¥¼ ì €ì¥.
                             sFirstColumnID = sColumnID;
                             sIsFirstNode   = ID_FALSE;
                         }
@@ -2086,8 +2086,8 @@ qmoPred::isIndexable( qcStatement   * aStatement,
                             // Nothing To Do
                         }
 
-                        // columnÀÌ LIST°¡ ¾Æ´Ñ one columnÀ¸·Î ±¸¼ºµÇ¾î ÀÖ°í,
-                        // Ã¹¹øÂ° ºñ±³¿¬»êÀÚÀÇ columnID¿Í °°ÀºÁö¸¦ °Ë»ç.
+                        // columnì´ LISTê°€ ì•„ë‹Œ one columnìœ¼ë¡œ êµ¬ì„±ë˜ì–´ ìˆê³ ,
+                        // ì²«ë²ˆì§¸ ë¹„êµì—°ì‚°ìì˜ columnIDì™€ ê°™ì€ì§€ë¥¼ ê²€ì‚¬.
                         if ( ( sColumnID != QMO_COLUMNID_LIST ) &&
                              ( sColumnID == sFirstColumnID ) )
                         {
@@ -2102,17 +2102,17 @@ qmoPred::isIndexable( qcStatement   * aStatement,
                     else
                     {
                         // BUG-39036 select one or all value optimization
-                        // keyRange or »ó¼ö°ª ÀÇ ÇüÅÂÀÏ¶§ keyRange »ı¼ºÀÌ ½ÇÆĞÇÏ´Â°ÍÀ» ¼º°øÇÏ°Ô ÇÑ´Ù.
-                        // ´Ü ? = 1 °ú °°Àº ¹ÙÀÎµå º¯¼ö´Â Çã¿ëÇÏÁö¸¸ 1 = 1 °ú °°Àº ÇüÅÂ´Â Çã¿ëÇÏÁö ¾Ê´Â´Ù.
+                        // keyRange or ìƒìˆ˜ê°’ ì˜ í˜•íƒœì¼ë•Œ keyRange ìƒì„±ì´ ì‹¤íŒ¨í•˜ëŠ”ê²ƒì„ ì„±ê³µí•˜ê²Œ í•œë‹¤.
+                        // ë‹¨ ? = 1 ê³¼ ê°™ì€ ë°”ì¸ë“œ ë³€ìˆ˜ëŠ” í—ˆìš©í•˜ì§€ë§Œ 1 = 1 ê³¼ ê°™ì€ í˜•íƒœëŠ” í—ˆìš©í•˜ì§€ ì•ŠëŠ”ë‹¤.
                         // select * from t1 where :emp is null or i1 = :emp; ( o )
                         // SELECT * FROM t1 WHERE i1=1 OR 1=1; ( x )
 
                         // BUG-40878 koscom case
                         // SELECT count(*) FROM t1
                         // WHERE i2 = to_number('20150209') AND ((1 = 0  and i1  = :a1 ) or ( 0 = 0 and i7 = :a2 ));
-                        // À§ ÁúÀÇ¿¡¼­ 1 = 0  and i1  = :a1 À» indexable ·Î ÆÇ´ÜÇÏÁö¸¸
-                        // i2 = to_number('20150209') °ú °áÇÕÇÏ¸é¼­ °á°ú°¡ Æ²·ÁÁø´Ù.
-                        // µû¶ó¼­ ¿©·¯°³ÀÇ predicate °¡ ¿À´Â °æ¿ì¿¡´Â indexable ·Î ÆÇ´ÜÇÏÁö ¾Ê´Â´Ù.
+                        // ìœ„ ì§ˆì˜ì—ì„œ 1 = 0  and i1  = :a1 ì„ indexable ë¡œ íŒë‹¨í•˜ì§€ë§Œ
+                        // i2 = to_number('20150209') ê³¼ ê²°í•©í•˜ë©´ì„œ ê²°ê³¼ê°€ í‹€ë ¤ì§„ë‹¤.
+                        // ë”°ë¼ì„œ ì—¬ëŸ¬ê°œì˜ predicate ê°€ ì˜¤ëŠ” ê²½ìš°ì—ëŠ” indexable ë¡œ íŒë‹¨í•˜ì§€ ì•ŠëŠ”ë‹¤.
                         if ( (qtc::haveDependencies( &sNode->depInfo ) == ID_TRUE) ||
                              (sNode->node.module == &qtc::valueModule) ||
                              (aPredicate->next != NULL) )
@@ -2134,10 +2134,10 @@ qmoPred::isIndexable( qcStatement   * aStatement,
     else
     {
         //------------------------------------------
-        // DNF ÀÎ °æ¿ì·Î,
-        // ÀÎÀÚ·Î ³Ñ¾î¿Â predicateÀÇ ÃÖ»óÀ§ ³ëµå´Â ºñ±³¿¬»êÀÚ ³ëµåÀÌ´Ù.
-        // ¾ÆÁ÷ predicateÀÇ ¿¬°á°ü°è°¡ ²÷¾îÁöÁö ¾ÊÀº »óÅÂÀÌ¹Ç·Î,
-        // ÀÎÀÚ·Î ³Ñ¾î¿Â ºñ±³¿¬»êÀÚ ³ëµå ÇÏ³ª¿¡ ´ëÇØ¼­¸¸ Ã³¸®ÇØ¾ß ÇÑ´Ù.
+        // DNF ì¸ ê²½ìš°ë¡œ,
+        // ì¸ìë¡œ ë„˜ì–´ì˜¨ predicateì˜ ìµœìƒìœ„ ë…¸ë“œëŠ” ë¹„êµì—°ì‚°ì ë…¸ë“œì´ë‹¤.
+        // ì•„ì§ predicateì˜ ì—°ê²°ê´€ê³„ê°€ ëŠì–´ì§€ì§€ ì•Šì€ ìƒíƒœì´ë¯€ë¡œ,
+        // ì¸ìë¡œ ë„˜ì–´ì˜¨ ë¹„êµì—°ì‚°ì ë…¸ë“œ í•˜ë‚˜ì— ëŒ€í•´ì„œë§Œ ì²˜ë¦¬í•´ì•¼ í•œë‹¤.
         //-------------------------------------------
 
         IDE_TEST( isIndexableUnitPred( aStatement,
@@ -2164,20 +2164,20 @@ qmoPred::isROWNUMColumn( qmsQuerySet * aQuerySet,
 {
 /***********************************************************************
  *
- * Description : ROWNUM columnÀÇ ÆÇ´Ü
+ * Description : ROWNUM columnì˜ íŒë‹¨
  *
- *     materialized node¿¡¼­ ROWNUM column Ã³¸® ¹æ½ÄÀ» valueÇüÀ¸·Î
- *     ÁöÁ¤ÇÏ±â À§ÇØ¼­ ÇØ´ç ³ëµå°¡ ROWNUM columnÀÎÁö¸¦ ÆÇ´ÜÇÑ´Ù.
+ *     materialized nodeì—ì„œ ROWNUM column ì²˜ë¦¬ ë°©ì‹ì„ valueí˜•ìœ¼ë¡œ
+ *     ì§€ì •í•˜ê¸° ìœ„í•´ì„œ í•´ë‹¹ ë…¸ë“œê°€ ROWNUM columnì¸ì§€ë¥¼ íŒë‹¨í•œë‹¤.
  *
  * Implementation :
  *
- *      ROWNUM pseudo columnÀº qmsSFWGH::rownum ÀÚ·á±¸Á¶¿¡
- *      qtcNodeÇüÅÂ·Î °ü¸®µÈ´Ù.
- *      ÀÌ qmsSFWGH::rownum ÀÚ·á±¸Á¶ÀÇ tupleID¿Í columnID¸¦ ÀÌ¿ëÇÑ´Ù.
+ *      ROWNUM pseudo columnì€ qmsSFWGH::rownum ìë£Œêµ¬ì¡°ì—
+ *      qtcNodeí˜•íƒœë¡œ ê´€ë¦¬ëœë‹¤.
+ *      ì´ qmsSFWGH::rownum ìë£Œêµ¬ì¡°ì˜ tupleIDì™€ columnIDë¥¼ ì´ìš©í•œë‹¤.
  *
- *      ÀÎÀÚ·Î ³Ñ¾î¿Â aNodeÀÇ tupleID, columnID°¡
- *      qmsSFWGH::rownumÀÇ tupleID, columnID¿Í °°À¸¸é,
- *      ROWNUM columnÀ¸·Î ÆÇ´ÜÇÑ´Ù.
+ *      ì¸ìë¡œ ë„˜ì–´ì˜¨ aNodeì˜ tupleID, columnIDê°€
+ *      qmsSFWGH::rownumì˜ tupleID, columnIDì™€ ê°™ìœ¼ë©´,
+ *      ROWNUM columnìœ¼ë¡œ íŒë‹¨í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -2185,15 +2185,15 @@ qmoPred::isROWNUMColumn( qmsQuerySet * aQuerySet,
     idBool     sResult;
 
     //--------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //--------------------------------------
 
     IDE_DASSERT( aQuerySet  != NULL );
     IDE_DASSERT( aNode      != NULL );
 
     //--------------------------------------
-    // ROWNUM ColumnÀÇ ÆÇ´Ü
-    // °Ë»ç´ë»ó Node¿Í qmsSFWGH->rowumÀÇ tupleID¿Í columnID°¡ °°ÀºÁö¸¦ ºñ±³.
+    // ROWNUM Columnì˜ íŒë‹¨
+    // ê²€ì‚¬ëŒ€ìƒ Nodeì™€ qmsSFWGH->rowumì˜ tupleIDì™€ columnIDê°€ ê°™ì€ì§€ë¥¼ ë¹„êµ.
     //--------------------------------------
 
     sNode = aQuerySet->SFWGH->rownum;
@@ -2201,8 +2201,8 @@ qmoPred::isROWNUMColumn( qmsQuerySet * aQuerySet,
     if( sNode != NULL )
     {
         // BUG-17949
-        // select rownum ... group by rownumÀÎ °æ¿ì
-        // SFWGH->rownum¿¡ passNode°¡ ´Ş·ÁÀÖ´Ù.
+        // select rownum ... group by rownumì¸ ê²½ìš°
+        // SFWGH->rownumì— passNodeê°€ ë‹¬ë ¤ìˆë‹¤.
         if( sNode->node.module == & qtc::passModule )
         {
             sNode = (qtcNode*) sNode->node.arguments;
@@ -2238,33 +2238,33 @@ qmoPred::setPriorNodeID( qcStatement  * aStatement,
 {
 /***********************************************************************
  *
- * Description : prior columnÀÌ Á¸ÀçÇÏ´ÂÁö °Ë»çÇØ¼­,
- *               prior columnÀÌ Á¸ÀçÇÏ¸é,  prior tuple·Î º¯°æ½ÃÅ²´Ù.
+ * Description : prior columnì´ ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬í•´ì„œ,
+ *               prior columnì´ ì¡´ì¬í•˜ë©´,  prior tupleë¡œ ë³€ê²½ì‹œí‚¨ë‹¤.
  *
- *     hierarchy node°¡ »ı¼ºµÇ¾î¾ß prior tupleÀ» ¾Ë ¼ö ÀÖÀ¸¹Ç·Î,
- *     plan node »ı¼º½Ã, prior column¿¡ ´ëÇÑ tupleÀ» prior tuple·Î
- *     Àç¼³Á¤ÇÑ´Ù.
- *     µû¶ó¼­, ¸ğµç expression°ú predicateÀÌ Á¸ÀçÇÏ´Â
- *     °÷¿¡¼­ ÀÌ ÀÛ¾÷À» ¼öÇàÇØ¾ß ÇÑ´Ù. predicate °ü¸®ÀÚ´Â ÀÌ·¯ÇÑ ÄÚµå°¡
- *     ºĞ»êµÇÁö ¾Êµµ·Ï moduleÈ­ÇÏ¸ç, ¸ğµç expression°ú predicateÀÌ
- *     Á¸ÀçÇÏ´Â °÷¿¡¼­´Â ÀÌ ÇÔ¼ö¸¦ È£ÃâÇÏµµ·Ï ÇÑ´Ù.
+ *     hierarchy nodeê°€ ìƒì„±ë˜ì–´ì•¼ prior tupleì„ ì•Œ ìˆ˜ ìˆìœ¼ë¯€ë¡œ,
+ *     plan node ìƒì„±ì‹œ, prior columnì— ëŒ€í•œ tupleì„ prior tupleë¡œ
+ *     ì¬ì„¤ì •í•œë‹¤.
+ *     ë”°ë¼ì„œ, ëª¨ë“  expressionê³¼ predicateì´ ì¡´ì¬í•˜ëŠ”
+ *     ê³³ì—ì„œ ì´ ì‘ì—…ì„ ìˆ˜í–‰í•´ì•¼ í•œë‹¤. predicate ê´€ë¦¬ìëŠ” ì´ëŸ¬í•œ ì½”ë“œê°€
+ *     ë¶„ì‚°ë˜ì§€ ì•Šë„ë¡ moduleí™”í•˜ë©°, ëª¨ë“  expressionê³¼ predicateì´
+ *     ì¡´ì¬í•˜ëŠ” ê³³ì—ì„œëŠ” ì´ í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•˜ë„ë¡ í•œë‹¤.
  *
  * Implementation :
  *
- *     hierarchy°¡ Á¸ÀçÇÏ¸é,
- *     qtc::priorNodeSetWithNewTuple()È£Ãâ
- *     [ ÀÌ ÇÔ¼ö´Â, ÇØ´ç Node¸¦ TraverseÇÏ¸é¼­,
- *       PRIOR NodeÀÇ Table ID¸¦ »õ·Î¿î Table ID·Î º¯°æÇÑ´Ù. ]
+ *     hierarchyê°€ ì¡´ì¬í•˜ë©´,
+ *     qtc::priorNodeSetWithNewTuple()í˜¸ì¶œ
+ *     [ ì´ í•¨ìˆ˜ëŠ”, í•´ë‹¹ Nodeë¥¼ Traverseí•˜ë©´ì„œ,
+ *       PRIOR Nodeì˜ Table IDë¥¼ ìƒˆë¡œìš´ Table IDë¡œ ë³€ê²½í•œë‹¤. ]
  *
- *     prior columnÀÌ ÀÖ´Ù¸é, prior tuple·Î º¯°æ½ÃÅ°°í,
- *     prior columnÀÌ ¾ø´Ù¸é, ¾Æ¹« Ã³¸®µµ ÇÏÁö ¾Ê´Â´Ù.
+ *     prior columnì´ ìˆë‹¤ë©´, prior tupleë¡œ ë³€ê²½ì‹œí‚¤ê³ ,
+ *     prior columnì´ ì—†ë‹¤ë©´, ì•„ë¬´ ì²˜ë¦¬ë„ í•˜ì§€ ì•ŠëŠ”ë‹¤.
  *
  ***********************************************************************/
 
     IDU_FIT_POINT_FATAL( "qmoPred::setPriorNodeID::__FT__" );
 
     //--------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //--------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -2272,12 +2272,12 @@ qmoPred::setPriorNodeID( qcStatement  * aStatement,
     IDE_DASSERT( aNode      != NULL );
 
     //--------------------------------------
-    // hierarchy°¡ Á¸ÀçÇÏ¸é, tupleÀ» º¯°æÇÑ´Ù.
+    // hierarchyê°€ ì¡´ì¬í•˜ë©´, tupleì„ ë³€ê²½í•œë‹¤.
     //--------------------------------------
 
     if ( aQuerySet->setOp == QMS_NONE )
     {
-        // SET ÀıÀÌ ¾Æ´Ñ °æ¿ì,
+        // SET ì ˆì´ ì•„ë‹Œ ê²½ìš°,
         IDE_FT_ASSERT( aQuerySet->SFWGH != NULL );
 
         if ( aQuerySet->SFWGH->hierarchy != NULL )
@@ -2295,7 +2295,7 @@ qmoPred::setPriorNodeID( qcStatement  * aStatement,
     }
     else
     {
-        // SET ÀıÀÎ °æ¿ì,
+        // SET ì ˆì¸ ê²½ìš°,
         // Nothing To Do
     }
 
@@ -2314,21 +2314,21 @@ qmoPred::linkPredicate( qcStatement   * aStatement,
 {
 /***********************************************************************
  *
- * Description : keyRange, keyFilter·Î ÃßÃâµÈ qmoPredicateÀÇ
- *              ¿¬°áÁ¤º¸·Î, ÇÏ³ªÀÇ qtcNodeÀÇ ±×·ìÀ¸·Î ¿¬°áÁ¤º¸¸¦ ¸¸µç´Ù.
+ * Description : keyRange, keyFilterë¡œ ì¶”ì¶œëœ qmoPredicateì˜
+ *              ì—°ê²°ì •ë³´ë¡œ, í•˜ë‚˜ì˜ qtcNodeì˜ ê·¸ë£¹ìœ¼ë¡œ ì—°ê²°ì •ë³´ë¥¼ ë§Œë“ ë‹¤.
  *
- *     keyRange, keyFilter·Î ÃßÃâµÈ Á¤º¸´Â qmoPredicateÀÇ
- *     ¿¬°áÁ¤º¸·Î ±¸¼ºµÇ¾î ÀÖÀ¸¸ç, ÀÌ qmoPredicate->predicate¿¡
- *     qtcNodeÇüÅÂÀÇ predicateÀÌ °¢°¢ ºĞ»êµÇ¾î ÀÖ´Ù.
- *     keyRange Àû¿ëÀ» À§ÇØ, ÀÌ ºĞ»êµÇ¾î ÀÖ´Â qtcNodeÀÇ predicateµéÀ»
- *     ÇÏ³ªÀÇ ±×·ìÀ¸·Î ¿¬°áÁ¤º¸¸¦ ¸¸µç´Ù.
+ *     keyRange, keyFilterë¡œ ì¶”ì¶œëœ ì •ë³´ëŠ” qmoPredicateì˜
+ *     ì—°ê²°ì •ë³´ë¡œ êµ¬ì„±ë˜ì–´ ìˆìœ¼ë©°, ì´ qmoPredicate->predicateì—
+ *     qtcNodeí˜•íƒœì˜ predicateì´ ê°ê° ë¶„ì‚°ë˜ì–´ ìˆë‹¤.
+ *     keyRange ì ìš©ì„ ìœ„í•´, ì´ ë¶„ì‚°ë˜ì–´ ìˆëŠ” qtcNodeì˜ predicateë“¤ì„
+ *     í•˜ë‚˜ì˜ ê·¸ë£¹ìœ¼ë¡œ ì—°ê²°ì •ë³´ë¥¼ ë§Œë“ ë‹¤.
  *
  * Implementation :
  *
- *     ºĞ»êµÇ¾î ÀÖ´Â qtcNodeÀÇ predicateµéÀ» ´Ü¼ø ¿¬°áÇÑ´Ù.
- *     1. »õ·Î¿î AND ³ëµå »ı¼º
- *     2. AND ³ëµå ÇÏÀ§¿¡ predicateµéÀ» ¿¬°áÇÑ´Ù.
- *     3. AND ³ëµåÀÇ flag¿Í dependencies¸¦ ¼³Á¤ÇÑ´Ù.
+ *     ë¶„ì‚°ë˜ì–´ ìˆëŠ” qtcNodeì˜ predicateë“¤ì„ ë‹¨ìˆœ ì—°ê²°í•œë‹¤.
+ *     1. ìƒˆë¡œìš´ AND ë…¸ë“œ ìƒì„±
+ *     2. AND ë…¸ë“œ í•˜ìœ„ì— predicateë“¤ì„ ì—°ê²°í•œë‹¤.
+ *     3. AND ë…¸ë“œì˜ flagì™€ dependenciesë¥¼ ì„¤ì •í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -2342,7 +2342,7 @@ qmoPred::linkPredicate( qcStatement   * aStatement,
     IDU_FIT_POINT_FATAL( "qmoPred::linkPredicate::__FT__" );
 
     //--------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //--------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -2350,7 +2350,7 @@ qmoPred::linkPredicate( qcStatement   * aStatement,
     IDE_DASSERT( aNode      != NULL );
 
     //--------------------------------------
-    // »õ·Î¿î AND ³ëµå¸¦ ÇÏ³ª »ı¼ºÇÑ´Ù.
+    // ìƒˆë¡œìš´ AND ë…¸ë“œë¥¼ í•˜ë‚˜ ìƒì„±í•œë‹¤.
     //--------------------------------------
 
     SET_EMPTY_POSITION( sNullPosition );
@@ -2363,8 +2363,8 @@ qmoPred::linkPredicate( qcStatement   * aStatement,
               != IDE_SUCCESS );
 
     //--------------------------------------
-    // AND ³ëµå ÇÏÀ§¿¡
-    // qmoPredicate->node¿¡ Èğ¾îÁ® ÀÖ´Â predicateµéÀ» ¿¬°áÇÑ´Ù.
+    // AND ë…¸ë“œ í•˜ìœ„ì—
+    // qmoPredicate->nodeì— í©ì–´ì ¸ ìˆëŠ” predicateë“¤ì„ ì—°ê²°í•œë‹¤.
     //--------------------------------------
 
     for ( sPredicate  = aPredicate;
@@ -2375,7 +2375,7 @@ qmoPred::linkPredicate( qcStatement   * aStatement,
               sMorePredicate != NULL;
               sMorePredicate  = sMorePredicate->more )
         {
-            // ÇöÀç qtcNodeÀÇ next¿¬°á°ü°è¸¦ ²÷´Â´Ù.
+            // í˜„ì¬ qtcNodeì˜ nextì—°ê²°ê´€ê³„ë¥¼ ëŠëŠ”ë‹¤.
             sMorePredicate->node->node.next = NULL;
 
             if ( sNode == NULL )
@@ -2397,8 +2397,8 @@ qmoPred::linkPredicate( qcStatement   * aStatement,
                                                 sANDNode[0] )
               != IDE_SUCCESS );
 
-    // »õ·Î »ı¼ºµÈ AND ³ëµåÀÇ flag¿Í dependencies¸¦ Àç¼³Á¤ÇÏÁö ¾Ê¾Æµµ µÈ´Ù.
-    // ÂüÁ¶ BUG-7557
+    // ìƒˆë¡œ ìƒì„±ëœ AND ë…¸ë“œì˜ flagì™€ dependenciesë¥¼ ì¬ì„¤ì •í•˜ì§€ ì•Šì•„ë„ ëœë‹¤.
+    // ì°¸ì¡° BUG-7557
 
     *aNode = sANDNode[0];
 
@@ -2416,26 +2416,26 @@ qmoPred::linkFilterPredicate( qcStatement   * aStatement,
 {
 /***********************************************************************
  *
- * Description : filter·Î ÃßÃâµÈ qmoPredicateÀÇ ¿¬°áÁ¤º¸·Î,
- *               ÇÏ³ªÀÇ qtcNodeÀÇ ±×·ìÀ¸·Î ¿¬°áÁ¤º¸¸¦ ¸¸µç´Ù.
+ * Description : filterë¡œ ì¶”ì¶œëœ qmoPredicateì˜ ì—°ê²°ì •ë³´ë¡œ,
+ *               í•˜ë‚˜ì˜ qtcNodeì˜ ê·¸ë£¹ìœ¼ë¡œ ì—°ê²°ì •ë³´ë¥¼ ë§Œë“ ë‹¤.
  *
- *     filter·Î ÃßÃâµÈ Á¤º¸´Â qmoPredicateÀÇ ¿¬°áÁ¤º¸·Î ±¸¼ºµÇ¾î ÀÖÀ¸¸ç,
- *     ÀÌ qmoPredicate->node¿¡ qtcNodeÇüÅÂÀÇ predicateÀÌ °¢°¢
- *     ºĞ»êµÇ¾î ÀÖ´Ù.
- *     filter Àû¿ëÀ» À§ÇØ ºĞ»êµÇ¾î ÀÖ´Â qtcNodeÀÇ predicateµéÀ»
- *     ÇÏ³ªÀÇ ±×·ìÀ¸·Î ¿¬°áÁ¤º¸¸¦ ¸¸µç´Ù.
+ *     filterë¡œ ì¶”ì¶œëœ ì •ë³´ëŠ” qmoPredicateì˜ ì—°ê²°ì •ë³´ë¡œ êµ¬ì„±ë˜ì–´ ìˆìœ¼ë©°,
+ *     ì´ qmoPredicate->nodeì— qtcNodeí˜•íƒœì˜ predicateì´ ê°ê°
+ *     ë¶„ì‚°ë˜ì–´ ìˆë‹¤.
+ *     filter ì ìš©ì„ ìœ„í•´ ë¶„ì‚°ë˜ì–´ ìˆëŠ” qtcNodeì˜ predicateë“¤ì„
+ *     í•˜ë‚˜ì˜ ê·¸ë£¹ìœ¼ë¡œ ì—°ê²°ì •ë³´ë¥¼ ë§Œë“ ë‹¤.
  *
- *     filter·Î ÃßÃâµÈ predicateµéÀº selectivity°¡ ÁÁÀº predicateÀÌ
- *     ¸ÕÀú Ã³¸®µÇµµ·Ï ÇÏ¿© ¼±ÅÃµÇ´Â ·¹ÄÚµåÀÇ ¼ö¸¦ ÁÙÀÓÀ¸·Î½á,
- *     ¼º´ÉÀ» Çâ»ó½ÃÅ²´Ù. ( filter ordering )
+ *     filterë¡œ ì¶”ì¶œëœ predicateë“¤ì€ selectivityê°€ ì¢‹ì€ predicateì´
+ *     ë¨¼ì € ì²˜ë¦¬ë˜ë„ë¡ í•˜ì—¬ ì„ íƒë˜ëŠ” ë ˆì½”ë“œì˜ ìˆ˜ë¥¼ ì¤„ì„ìœ¼ë¡œì¨,
+ *     ì„±ëŠ¥ì„ í–¥ìƒì‹œí‚¨ë‹¤. ( filter ordering )
  *
  * Implementation :
  *
- *     1. °¢ predicateÀÇ selectivity¸¦ ºñ±³ÇØ¼­,
- *        selectivity°¡ ÁÁÀº ¼ø¼­´ë·Î qmoPredicateÀ» Á¤·ÄÇÑ´Ù.
- *     2. »õ·Î¿î AND³ëµå¸¦ ÇÏ³ª »ı¼ºÇÏ°í,
- *        AND³ëµå ÇÏÀ§¿¡ 1¿¡¼­ Á¤·ÄµÈ ¼ø¼­·Î qtcNode¸¦ ¿¬°áÇÑ´Ù.
- *     4. AND ³ëµåÀÇ flag¿Í dependencies¸¦ ¼³Á¤ÇÑ´Ù.
+ *     1. ê° predicateì˜ selectivityë¥¼ ë¹„êµí•´ì„œ,
+ *        selectivityê°€ ì¢‹ì€ ìˆœì„œëŒ€ë¡œ qmoPredicateì„ ì •ë ¬í•œë‹¤.
+ *     2. ìƒˆë¡œìš´ ANDë…¸ë“œë¥¼ í•˜ë‚˜ ìƒì„±í•˜ê³ ,
+ *        ANDë…¸ë“œ í•˜ìœ„ì— 1ì—ì„œ ì •ë ¬ëœ ìˆœì„œë¡œ qtcNodeë¥¼ ì—°ê²°í•œë‹¤.
+ *     4. AND ë…¸ë“œì˜ flagì™€ dependenciesë¥¼ ì„¤ì •í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -2451,7 +2451,7 @@ qmoPred::linkFilterPredicate( qcStatement   * aStatement,
     IDU_FIT_POINT_FATAL( "qmoPred::linkFilterPredicate::__FT__" );
 
     //--------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //--------------------------------------
 
     IDE_FT_ASSERT( aStatement != NULL );
@@ -2459,16 +2459,16 @@ qmoPred::linkFilterPredicate( qcStatement   * aStatement,
     IDE_FT_ASSERT( aNode      != NULL );
 
     //--------------------------------------
-    // filter ordering Àû¿ë
-    // selectivity°¡ ÀÛÀº ¼ø¼­´ë·Î predicateµéÀ» ¿¬°áÇÑ´Ù.
+    // filter ordering ì ìš©
+    // selectivityê°€ ì‘ì€ ìˆœì„œëŒ€ë¡œ predicateë“¤ì„ ì—°ê²°í•œë‹¤.
     //--------------------------------------
 
     //--------------------------------------
-    // selectivity°¡ ÁÁÀº ¼ø¼­´ë·Î Á¤·Ä(qsort)ÇÏ±â À§ÇØ,
-    // predicateÀÇ ¹è¿­À» ¸¸µç´Ù.
+    // selectivityê°€ ì¢‹ì€ ìˆœì„œëŒ€ë¡œ ì •ë ¬(qsort)í•˜ê¸° ìœ„í•´,
+    // predicateì˜ ë°°ì—´ì„ ë§Œë“ ë‹¤.
     //--------------------------------------
 
-    // ÀÎÀÚ·Î ³Ñ¾î¿Â filterÀÇ predicate °¹¼ö¸¦ ±¸ÇÑ´Ù.
+    // ì¸ìë¡œ ë„˜ì–´ì˜¨ filterì˜ predicate ê°¯ìˆ˜ë¥¼ êµ¬í•œë‹¤.
     for ( sPredicate  = aPredicate;
           sPredicate != NULL;
           sPredicate  = sPredicate->next )
@@ -2481,12 +2481,12 @@ qmoPred::linkFilterPredicate( qcStatement   * aStatement,
         }
     }
 
-    // qmoPredicate ¹è¿­À» ¸¸µé±â À§ÇÑ ¸Ş¸ğ¸®ÇÒ´ç(qsort¸¦ À§ÇØ)
+    // qmoPredicate ë°°ì—´ì„ ë§Œë“¤ê¸° ìœ„í•œ ë©”ëª¨ë¦¬í• ë‹¹(qsortë¥¼ ìœ„í•´)
     IDE_TEST( QC_QMP_MEM( aStatement )->alloc( ID_SIZEOF( qmoPredicate* ) * sPredCnt,
                                                (void **)& sPredicateArray )
               != IDE_SUCCESS );
 
-    // ÇÒ´ç¹ŞÀº ¸Ş¸ğ¸®¿¡ ÀÎÀÚ·Î ¹ŞÀº qmoPredicate ÁÖ¼ÒÀúÀå
+    // í• ë‹¹ë°›ì€ ë©”ëª¨ë¦¬ì— ì¸ìë¡œ ë°›ì€ qmoPredicate ì£¼ì†Œì €ì¥
     for ( sPredicate  = aPredicate, sIndex = 0;
           sPredicate != NULL;
           sPredicate  = sPredicate->next )
@@ -2502,8 +2502,8 @@ qmoPred::linkFilterPredicate( qcStatement   * aStatement,
     }
 
     //--------------------------------------
-    // filter·Î Ã³¸®ÇÒ predicateÀÇ °¹¼ö°¡ 2ÀÌ»óÀÌ¸é,
-    // selectivity°¡ ÀÛÀº ¼ø¼­·Î Á¤·ÄÇÑ´Ù.
+    // filterë¡œ ì²˜ë¦¬í•  predicateì˜ ê°¯ìˆ˜ê°€ 2ì´ìƒì´ë©´,
+    // selectivityê°€ ì‘ì€ ìˆœì„œë¡œ ì •ë ¬í•œë‹¤.
     //--------------------------------------
 
     if ( sPredCnt > 1 )
@@ -2519,7 +2519,7 @@ qmoPred::linkFilterPredicate( qcStatement   * aStatement,
     }
 
     //--------------------------------------
-    // »õ·Î¿î AND ³ëµå¸¦ ÇÏ³ª »ı¼ºÇÑ´Ù.
+    // ìƒˆë¡œìš´ AND ë…¸ë“œë¥¼ í•˜ë‚˜ ìƒì„±í•œë‹¤.
     //--------------------------------------
 
     SET_EMPTY_POSITION( sNullPosition );
@@ -2532,22 +2532,22 @@ qmoPred::linkFilterPredicate( qcStatement   * aStatement,
               != IDE_SUCCESS );
 
     //--------------------------------------
-    // AND ³ëµå ÇÏÀ§¿¡ qsort·Î Á¤·ÄµÈ qtcNode¸¦ ¿¬°áÇÑ´Ù.
+    // AND ë…¸ë“œ í•˜ìœ„ì— qsortë¡œ ì •ë ¬ëœ qtcNodeë¥¼ ì—°ê²°í•œë‹¤.
     //--------------------------------------
 
     sANDNode[0]->node.arguments
         = (mtcNode *)(sPredicateArray[0]->node);
     sNode = (qtcNode *)(sANDNode[0]->node.arguments);
 
-    sPredicateArray[0]->node->node.next = NULL; // ¿¬°á°ü°è¸¦ ²÷´Â´Ù.
+    sPredicateArray[0]->node->node.next = NULL; // ì—°ê²°ê´€ê³„ë¥¼ ëŠëŠ”ë‹¤.
 
     for ( sIndex = 1;
           sIndex < sPredCnt;
           sIndex++ )
     {
-        // ÇöÀç predicateÀÇ next ¿¬°á°ü°è¸¦ ²÷´Â´Ù.
+        // í˜„ì¬ predicateì˜ next ì—°ê²°ê´€ê³„ë¥¼ ëŠëŠ”ë‹¤.
         sPredicateArray[sIndex]->node->node.next = NULL;
-        // ANDÀÇ ÇÏÀ§ ³ëµå·Î ¿¬°á.
+        // ANDì˜ í•˜ìœ„ ë…¸ë“œë¡œ ì—°ê²°.
         sNode->node.next = (mtcNode *)(sPredicateArray[sIndex]->node);
         sNode            = (qtcNode *)(sNode->node.next);
     }
@@ -2570,10 +2570,10 @@ IDE_RC qmoPred::sortORNodeBySubQ( qcStatement   * aStatement,
 {
 /***********************************************************************
  *
- * Description : Or node ÀÇ ÀÎÀÚµéÀ» SubQ ¿Í NonSubQ ·Î ³ª´«´Ù.
- *               NonSubQ ¸¦ ¾ÕÀ¸·Î ¸ğ¾Æ¼­ ¸ÕÀú ¼öÇàÇÏµµ·Ï ÇÑ´Ù.
+ * Description : Or node ì˜ ì¸ìë“¤ì„ SubQ ì™€ NonSubQ ë¡œ ë‚˜ëˆˆë‹¤.
+ *               NonSubQ ë¥¼ ì•ìœ¼ë¡œ ëª¨ì•„ì„œ ë¨¼ì € ìˆ˜í–‰í•˜ë„ë¡ í•œë‹¤.
  *
- * BUG-38971 subQuery filter ¸¦ Á¤·ÄÇÒ ÇÊ¿ä°¡ ÀÖ½À´Ï´Ù.
+ * BUG-38971 subQuery filter ë¥¼ ì •ë ¬í•  í•„ìš”ê°€ ìˆìŠµë‹ˆë‹¤.
  *
  ***********************************************************************/
 
@@ -2588,7 +2588,7 @@ IDE_RC qmoPred::sortORNodeBySubQ( qcStatement   * aStatement,
     IDU_FIT_POINT_FATAL( "qmoPred::sortORNodeBySubQ::__FT__" );
 
     //--------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //--------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -2596,7 +2596,7 @@ IDE_RC qmoPred::sortORNodeBySubQ( qcStatement   * aStatement,
 
     sOrNode = (mtcNode*)aNode;
 
-    // ÀÎÀÚ·Î ³Ñ¾î¿Â filterÀÇ Node °¹¼ö¸¦ ±¸ÇÑ´Ù.
+    // ì¸ìë¡œ ë„˜ì–´ì˜¨ filterì˜ Node ê°¯ìˆ˜ë¥¼ êµ¬í•œë‹¤.
     for ( sNode  = sOrNode->arguments, sNodeCnt = 0;
           sNode != NULL;
           sNode  = sNode->next )
@@ -2604,12 +2604,12 @@ IDE_RC qmoPred::sortORNodeBySubQ( qcStatement   * aStatement,
         sNodeCnt++;
     }
 
-    // ¹è¿­À» ¸¸µé±â À§ÇÑ ¸Ş¸ğ¸®ÇÒ´ç
+    // ë°°ì—´ì„ ë§Œë“¤ê¸° ìœ„í•œ ë©”ëª¨ë¦¬í• ë‹¹
     IDE_TEST( QC_QME_MEM( aStatement )->cralloc( ID_SIZEOF( mtcNode* ) * sNodeCnt * 2,
                                                  (void **)& sNodePtrArray )
               != IDE_SUCCESS );
 
-    // ÇÒ´ç¹ŞÀº ¸Ş¸ğ¸®¿¡ ÀÎÀÚ·Î ¹ŞÀº Node ÁÖ¼ÒÀúÀå
+    // í• ë‹¹ë°›ì€ ë©”ëª¨ë¦¬ì— ì¸ìë¡œ ë°›ì€ Node ì£¼ì†Œì €ì¥
     for ( sNode  = sOrNode->arguments, sNonSubQ = 0, sSubQ = sNodeCnt;
           sNode != NULL;
           sNode  = sNode->next )
@@ -2627,7 +2627,7 @@ IDE_RC qmoPred::sortORNodeBySubQ( qcStatement   * aStatement,
         }
     }
 
-    // Or ³ëµåÀÇ arguments ¿¡ ¿¬°áÇØÁØ´Ù.
+    // Or ë…¸ë“œì˜ arguments ì— ì—°ê²°í•´ì¤€ë‹¤.
     for ( i = 0;
           i < sNodeCnt * 2;
           i++ )
@@ -2646,7 +2646,7 @@ IDE_RC qmoPred::sortORNodeBySubQ( qcStatement   * aStatement,
         }
     }
 
-    // ³ª¸ÓÁö ³ëµåµéÀ» ¿¬°áÇØÁØ´Ù.
+    // ë‚˜ë¨¸ì§€ ë…¸ë“œë“¤ì„ ì—°ê²°í•´ì¤€ë‹¤.
     for ( i = i+1;
           i < sNodeCnt * 2;
           i++ )
@@ -2679,7 +2679,7 @@ qmoPred::removeIndexableFromFilter( qmoPredWrapper * aFilter )
 
     IDU_FIT_POINT_FATAL( "qmoPred::removeIndexableFromFilter::__FT__" );
 
-    // filter/subquery filter¿¡ ´ëÇØ subquery ÃÖÀûÈ­ ÆÁ Á¦°ÅÇØ¾ß ÇÔ.
+    // filter/subquery filterì— ëŒ€í•´ subquery ìµœì í™” íŒ ì œê±°í•´ì•¼ í•¨.
     for ( sWrapperIter  = aFilter;
           sWrapperIter != NULL;
           sWrapperIter  = sWrapperIter->next )
@@ -2783,8 +2783,8 @@ qmoPred::fixPredToRangeAndFilter( qcStatement        * aStatement,
     IDE_DASSERT( aLobFilter != NULL );
     IDE_DASSERT( aSubqueryFilter != NULL );
 
-    // filter, lobFilter, subqueryFilter º°·Î
-    // ¿¬°á°ü°è¸¦ ÀçÁ¶Á¤ÇÑ´Ù.
+    // filter, lobFilter, subqueryFilter ë³„ë¡œ
+    // ì—°ê²°ê´€ê³„ë¥¼ ì¬ì¡°ì •í•œë‹¤.
     IDE_TEST( relinkPredicate( *aFilter )
               != IDE_SUCCESS );
     IDE_TEST( relinkPredicate( *aLobFilter )
@@ -2799,8 +2799,8 @@ qmoPred::fixPredToRangeAndFilter( qcStatement        * aStatement,
     IDE_TEST( removeMoreConnection( *aSubqueryFilter, ID_FALSE )
               != IDE_SUCCESS );
 
-    // filter, lobFilter, subqueryFilter¿¡ ´ëÇØ
-    // subquery ÃÖÀûÈ­ ÆÁ Á¦°ÅÇØ¾ß ÇÔ.
+    // filter, lobFilter, subqueryFilterì— ëŒ€í•´
+    // subquery ìµœì í™” íŒ ì œê±°í•´ì•¼ í•¨.
     IDE_TEST( removeIndexableFromFilter( *aFilter )
               != IDE_SUCCESS );
     IDE_TEST( removeIndexableFromFilter( *aLobFilter )
@@ -2810,7 +2810,7 @@ qmoPred::fixPredToRangeAndFilter( qcStatement        * aStatement,
 
     if ( *aKeyRange != NULL )
     {
-        // key range º°·Î ¿¬°á°ü°è¸¦ ÀçÁ¶Á¤ÇÑ´Ù.
+        // key range ë³„ë¡œ ì—°ê²°ê´€ê³„ë¥¼ ì¬ì¡°ì •í•œë‹¤.
         IDE_TEST( relinkPredicate( *aKeyRange )
                   != IDE_SUCCESS );
         IDE_TEST( removeMoreConnection( *aKeyRange, ID_TRUE )
@@ -2825,7 +2825,7 @@ qmoPred::fixPredToRangeAndFilter( qcStatement        * aStatement,
 
         if ( *aKeyFilter != NULL )
         {
-            // key filter º°·Î ¿¬°á°ü°è¸¦ ÀçÁ¶Á¤ÇÑ´Ù.
+            // key filter ë³„ë¡œ ì—°ê²°ê´€ê³„ë¥¼ ì¬ì¡°ì •í•œë‹¤.
             IDE_TEST( relinkPredicate( *aKeyFilter )
                       != IDE_SUCCESS );
             IDE_TEST( removeMoreConnection( *aKeyFilter, ID_TRUE )
@@ -2844,8 +2844,8 @@ qmoPred::fixPredToRangeAndFilter( qcStatement        * aStatement,
         }
 
         // To fix BUG-15348
-        // process4Range¿¡¼­ like¸¦ filter·Î ºĞ·ùÇßÀ» °æ¿ì
-        // filter¸¦ »õ·Î ¿¬°áÇØ ÁÖ¾î¾ß ÇÔ.
+        // process4Rangeì—ì„œ likeë¥¼ filterë¡œ ë¶„ë¥˜í–ˆì„ ê²½ìš°
+        // filterë¥¼ ìƒˆë¡œ ì—°ê²°í•´ ì£¼ì–´ì•¼ í•¨.
         IDE_TEST( relinkPredicate( *aFilter )
                   != IDE_SUCCESS );
     }
@@ -2966,8 +2966,8 @@ qmoPred::makePartFilterPredicate( qcStatement        * aStatement,
         *aPartFilter = sPartFilter->pred;
     }
 
-    // partFilter´Â predicate¿¬°á°ü°è¸¦ ÀÌ¹Ì Á¶Á¤ÇÏ¿´À¸¹Ç·Î,
-    // remain, subqueryFilter¸¸ ¿¬°á°ü°è Á¶Á¤ÇÏ¸é µÈ´Ù.
+    // partFilterëŠ” predicateì—°ê²°ê´€ê³„ë¥¼ ì´ë¯¸ ì¡°ì •í•˜ì˜€ìœ¼ë¯€ë¡œ,
+    // remain, subqueryFilterë§Œ ì—°ê²°ê´€ê³„ ì¡°ì •í•˜ë©´ ëœë‹¤.
     IDE_TEST( fixPredToRangeAndFilter( aStatement,
                                        aQuerySet,
                                        & sPartFilter,
@@ -3021,7 +3021,7 @@ qmoPred::extractPartKeyRangePredicate( qcStatement         * aStatement,
     *aPartKeyRange = NULL;
 
     //--------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //--------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -3029,7 +3029,7 @@ qmoPred::extractPartKeyRangePredicate( qcStatement         * aStatement,
     IDE_DASSERT( aPartKeyColumns != NULL );
 
     //--------------------------------------
-    // °á°ú°ª ÃÊ±âÈ­
+    // ê²°ê³¼ê°’ ì´ˆê¸°í™”
     //--------------------------------------
     IDE_TEST( qmoPredWrapperI::initializeWrapperPool( QC_QMP_MEM( aStatement ),
                                                       aWrapperPool )
@@ -3080,18 +3080,18 @@ qmoPred::extractPartKeyRange4LIST( qcStatement        * aStatement,
 /***********************************************************************
  *
  * Description : PROJ-1502 PARTITIONED DISK TABLE
- *               LIST¿¡ ´ëÇÑ partition keyRange¸¦ ÃßÃâÇÑ´Ù.
+ *               LISTì— ëŒ€í•œ partition keyRangeë¥¼ ì¶”ì¶œí•œë‹¤.
  *
  * Implementation :
  *
- *   ÀÌ ÇÔ¼ö´Â ¸®½ºÆ® ÄÃ·³¸®½ºÆ®¸¸ ÀÎÀÚ·Î ¹Ş¾Æ¼­,
- *   ÇÏ³ªÀÇ ¸®½ºÆ®¿¡ ´ëÇØ partition keyRange¸¦
- *   ÆÇ´ÜÇØ¼­ ÇØ´çÇÏ´Â °÷¿¡ ¿¬°áÇÑ´Ù.
+ *   ì´ í•¨ìˆ˜ëŠ” ë¦¬ìŠ¤íŠ¸ ì»¬ëŸ¼ë¦¬ìŠ¤íŠ¸ë§Œ ì¸ìë¡œ ë°›ì•„ì„œ,
+ *   í•˜ë‚˜ì˜ ë¦¬ìŠ¤íŠ¸ì— ëŒ€í•´ partition keyRangeë¥¼
+ *   íŒë‹¨í•´ì„œ í•´ë‹¹í•˜ëŠ” ê³³ì— ì—°ê²°í•œë‹¤.
  *
- *      ¸®½ºÆ®ÀÇ ÆÄÆ¼¼Ç ÇÁ·ç´×/ÇÊÅÍ¸µ °¡´É¼º °Ë»ç.
- *      (1) ¸®½ºÆ®ÄÃ·³ÀÌ ÆÄÆ¼¼Ç Å° ÄÃ·³¿¡ ¿¬¼ÓÀûÀ¸·Î Æ÷ÇÔµÇ¸é,
- *          partition keyRange·Î ºĞ·ù
- *      (2) ±×·¸Áö ¾Ê´Ù¸é ¹«Á¶°Ç filter¶ó°í ¼¼ÆÃÇÔ.
+ *      ë¦¬ìŠ¤íŠ¸ì˜ íŒŒí‹°ì…˜ í”„ë£¨ë‹/í•„í„°ë§ ê°€ëŠ¥ì„± ê²€ì‚¬.
+ *      (1) ë¦¬ìŠ¤íŠ¸ì»¬ëŸ¼ì´ íŒŒí‹°ì…˜ í‚¤ ì»¬ëŸ¼ì— ì—°ì†ì ìœ¼ë¡œ í¬í•¨ë˜ë©´,
+ *          partition keyRangeë¡œ ë¶„ë¥˜
+ *      (2) ê·¸ë ‡ì§€ ì•Šë‹¤ë©´ ë¬´ì¡°ê±´ filterë¼ê³  ì„¸íŒ…í•¨.
  ***********************************************************************/
 
     qmoPredWrapper * sWrapperIter;
@@ -3101,7 +3101,7 @@ qmoPred::extractPartKeyRange4LIST( qcStatement        * aStatement,
     IDU_FIT_POINT_FATAL( "qmoPred::extractPartKeyRange4LIST::__FT__" );
 
     //--------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //--------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -3110,8 +3110,8 @@ qmoPred::extractPartKeyRange4LIST( qcStatement        * aStatement,
     IDE_DASSERT( aPartKeyRange != NULL );
 
     //--------------------------------------
-    // ¸®½ºÆ® ÄÃ·³¸®½ºÆ®¿¡ ´Ş·ÁÀÖ´Â °¢°¢ÀÇ ÄÃ·³¿¡ ´ëÇØ
-    // partition keyRange/filter¿¡ ´ëÇÑ ÆÇ´ÜÀ» ¼öÇà.
+    // ë¦¬ìŠ¤íŠ¸ ì»¬ëŸ¼ë¦¬ìŠ¤íŠ¸ì— ë‹¬ë ¤ìˆëŠ” ê°ê°ì˜ ì»¬ëŸ¼ì— ëŒ€í•´
+    // partition keyRange/filterì— ëŒ€í•œ íŒë‹¨ì„ ìˆ˜í–‰.
     //--------------------------------------
 
     for ( sWrapperIter  = *aSource;
@@ -3133,7 +3133,7 @@ qmoPred::extractPartKeyRange4LIST( qcStatement        * aStatement,
     }
 
     //--------------------------------------
-    // partition keyrange ÃßÃâ
+    // partition keyrange ì¶”ì¶œ
     //--------------------------------------
 
     if ( sWrapperIter != NULL )
@@ -3161,7 +3161,7 @@ qmoPred::extractPartKeyRange4LIST( qcStatement        * aStatement,
             }
         } // for
     }
-    else // list predicateÀÌ ¾ø´Â °æ¿ì ¾Æ¹«·± ÀÛ¾÷À» ÇÏÁö ¾Ê´Â´Ù.
+    else // list predicateì´ ì—†ëŠ” ê²½ìš° ì•„ë¬´ëŸ° ì‘ì—…ì„ í•˜ì§€ ì•ŠëŠ”ë‹¤.
     {
         // Nothing to do...
     }
@@ -3182,21 +3182,21 @@ qmoPred::extractPartKeyRange4Column( qcmColumn        * aPartKeyColumns,
 /***********************************************************************
  *
  * Description : PROJ-1502 PARTITIONED DISK TABLE
- *               one column¿¡ ´ëÇÑ partition keyRange¸¦ ÃßÃâÇÑ´Ù.
+ *               one columnì— ëŒ€í•œ partition keyRangeë¥¼ ì¶”ì¶œí•œë‹¤.
  *
  *
  * Implementation :
  *
- *   partition key ÄÃ·³¼ø¼­´ë·Î ¾Æ·¡ÀÇ ÀÛ¾÷ ¼öÇà
+ *   partition key ì»¬ëŸ¼ìˆœì„œëŒ€ë¡œ ì•„ë˜ì˜ ì‘ì—… ìˆ˜í–‰
  *
- *   1. partition key ÄÃ·³°ú °°Àº ÄÃ·³ÀÇ ÄÃ·³¸®½ºÆ®¸¦ Ã£´Â´Ù.
- *      (1) ¾ÆÁ÷ partition keyRange·Î ºĞ·ùµÈ predicateÀÌ ¾ø´Â °æ¿ì,
- *          keyRange¿¡ Ã£Àº predicate ¿¬°á
- *      (2) ÀÌ¹Ì partition keyRange·Î ºĞ·ùµÈ predicateÀÌ Á¸ÀçÇÏ´Â °æ¿ì,
- *             partition keyRange ¿¡ ¿¬°áÇÏ°í, ´ÙÀ½ partition key ÄÃ·³À¸·Î ÁøÇà.
- *   2. Ã£Àº ÄÃ·³ÀÌ
- *      (1) ´ÙÀ½ partition key ÄÃ·³ »ç¿ë °¡´ÉÇÑ ÄÃ·³ÀÌ¸é ( equal(=), in )
- *      (2) ´ÙÀ½ partition key ÄÃ·³ »ç¿ë ºÒ°¡´ÉÇÑ ÄÃ·³ÀÌ¸é, (equal¿ÜÀÇ predicateÆ÷ÇÔ)
+ *   1. partition key ì»¬ëŸ¼ê³¼ ê°™ì€ ì»¬ëŸ¼ì˜ ì»¬ëŸ¼ë¦¬ìŠ¤íŠ¸ë¥¼ ì°¾ëŠ”ë‹¤.
+ *      (1) ì•„ì§ partition keyRangeë¡œ ë¶„ë¥˜ëœ predicateì´ ì—†ëŠ” ê²½ìš°,
+ *          keyRangeì— ì°¾ì€ predicate ì—°ê²°
+ *      (2) ì´ë¯¸ partition keyRangeë¡œ ë¶„ë¥˜ëœ predicateì´ ì¡´ì¬í•˜ëŠ” ê²½ìš°,
+ *             partition keyRange ì— ì—°ê²°í•˜ê³ , ë‹¤ìŒ partition key ì»¬ëŸ¼ìœ¼ë¡œ ì§„í–‰.
+ *   2. ì°¾ì€ ì»¬ëŸ¼ì´
+ *      (1) ë‹¤ìŒ partition key ì»¬ëŸ¼ ì‚¬ìš© ê°€ëŠ¥í•œ ì»¬ëŸ¼ì´ë©´ ( equal(=), in )
+ *      (2) ë‹¤ìŒ partition key ì»¬ëŸ¼ ì‚¬ìš© ë¶ˆê°€ëŠ¥í•œ ì»¬ëŸ¼ì´ë©´, (equalì™¸ì˜ predicateí¬í•¨)
  *
  *
  ***********************************************************************/
@@ -3209,7 +3209,7 @@ qmoPred::extractPartKeyRange4Column( qcmColumn        * aPartKeyColumns,
     IDU_FIT_POINT_FATAL( "qmoPred::extractPartKeyRange4Column::__FT__" );
 
     //--------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //--------------------------------------
 
     IDE_DASSERT( aPartKeyColumns != NULL );
@@ -3217,21 +3217,21 @@ qmoPred::extractPartKeyRange4Column( qcmColumn        * aPartKeyColumns,
     IDE_DASSERT( aPartKeyRange != NULL );
 
     //--------------------------------------
-    // Partition KeyRange ÃßÃâ
+    // Partition KeyRange ì¶”ì¶œ
     //--------------------------------------
 
-    // hash partition methodÀÎ °æ¿ì ¸ğµç partition key columnÀ» Æ÷ÇÔÇØ¾ß ÇÑ´Ù.
-    // ¶ÇÇÑ ¸ğµÎ equality ¿¬»êÀÌ¾î¾ß ÇÑ´Ù.
+    // hash partition methodì¸ ê²½ìš° ëª¨ë“  partition key columnì„ í¬í•¨í•´ì•¼ í•œë‹¤.
+    // ë˜í•œ ëª¨ë‘ equality ì—°ì‚°ì´ì–´ì•¼ í•œë‹¤.
     if ( aPartitionMethod == QCM_PARTITION_METHOD_HASH )
     {
         for ( sKeyColumn  = aPartKeyColumns;
               sKeyColumn != NULL;
               sKeyColumn  = sKeyColumn->next )
         {
-            // partition key ÄÃ·³ÀÇ columnID¸¦ ±¸ÇÑ´Ù.
+            // partition key ì»¬ëŸ¼ì˜ columnIDë¥¼ êµ¬í•œë‹¤.
             sPartKeyColumnID = sKeyColumn->basicInfo->column.id;
 
-            // partition key ÄÃ·³°ú °°Àº columnID¸¦ Ã£´Â´Ù.
+            // partition key ì»¬ëŸ¼ê³¼ ê°™ì€ columnIDë¥¼ ì°¾ëŠ”ë‹¤.
             for ( sWrapperIter  = *aSource;
                   sWrapperIter != NULL;
                   sWrapperIter  = sWrapperIter->next )
@@ -3256,23 +3256,23 @@ qmoPred::extractPartKeyRange4Column( qcmColumn        * aPartKeyColumns,
                        QMO_PRED_NEXT_KEY_USABLE_MASK )
                      == QMO_PRED_NEXT_KEY_USABLE )
                 {
-                    // ÀÌ ÄÃ·³Àº equal(=)°ú in predicate¸¸À¸·Î ±¸¼ºµÇ¾î ÀÖ´Ù.
-                    // ´ÙÀ½ partition key ÄÃ·³À¸·Î ÁøÇà.
+                    // ì´ ì»¬ëŸ¼ì€ equal(=)ê³¼ in predicateë§Œìœ¼ë¡œ êµ¬ì„±ë˜ì–´ ìˆë‹¤.
+                    // ë‹¤ìŒ partition key ì»¬ëŸ¼ìœ¼ë¡œ ì§„í–‰.
                     // Nothing To Do
                 }
                 else
                 {
-                    // ÀÌ ÄÃ·³Àº equal(=)/in ÀÌ¿ÜÀÇ predicateÀ» Æ÷ÇÔÇÏ°í ÀÖÀ¸¹Ç·Î,
-                    // ´ÙÀ½ partition key ÄÃ·³À» »ç¿ëÇÒ ¼ö ¾ø´Ù.
+                    // ì´ ì»¬ëŸ¼ì€ equal(=)/in ì´ì™¸ì˜ predicateì„ í¬í•¨í•˜ê³  ìˆìœ¼ë¯€ë¡œ,
+                    // ë‹¤ìŒ partition key ì»¬ëŸ¼ì„ ì‚¬ìš©í•  ìˆ˜ ì—†ë‹¤.
 
-                    // ´ÙÀ½ partition key·ÎÀÇ ÀÛ¾÷À» ÁøÇàÇÏÁö ¾Ê´Â´Ù.
+                    // ë‹¤ìŒ partition keyë¡œì˜ ì‘ì—…ì„ ì§„í–‰í•˜ì§€ ì•ŠëŠ”ë‹¤.
                     break;
 
                 }
             }
         }
 
-        // ¸ğµÎ ´ëÀÀµÇ´Â partition key ÄÃ·³ÀÌ ³ª¿Í¾ß ÇÑ´Ù.
+        // ëª¨ë‘ ëŒ€ì‘ë˜ëŠ” partition key ì»¬ëŸ¼ì´ ë‚˜ì™€ì•¼ í•œë‹¤.
         if ( sKeyColumn == NULL )
         {
             sIsExtractable = ID_TRUE;
@@ -3289,13 +3289,13 @@ qmoPred::extractPartKeyRange4Column( qcmColumn        * aPartKeyColumns,
 
 
     //--------------------------------------
-    // partition key ÄÃ·³¼ø¼­´ë·Î partition key ÄÃ·³°ú µ¿ÀÏÇÑ ÄÃ·³À» Ã£¾Æ¼­
-    // partition keyRangeÆ÷ÇÔ ¿©ºÎ¸¦ °áÁ¤ÇÑ´Ù.
-    // 1. partition key ÄÃ·³Àº ¿¬¼ÓÀûÀ¸·Î »ç¿ë°¡´ÉÇÏ¿©¾ß ÇÑ´Ù.
-    //    ¿¹: partition key on T1(i1, i2, i3)
-    //      (1) i1=1 and i2=1 and i3=1 ==> i1,i2,i3 ¸ğµÎ »ç¿ë °¡´É
-    //      (2) i1=1 and i3=1          ==> i1¸¸ »ç¿ë °¡´É
-    // 2. subquery´Â Á¦¿Ü.
+    // partition key ì»¬ëŸ¼ìˆœì„œëŒ€ë¡œ partition key ì»¬ëŸ¼ê³¼ ë™ì¼í•œ ì»¬ëŸ¼ì„ ì°¾ì•„ì„œ
+    // partition keyRangeí¬í•¨ ì—¬ë¶€ë¥¼ ê²°ì •í•œë‹¤.
+    // 1. partition key ì»¬ëŸ¼ì€ ì—°ì†ì ìœ¼ë¡œ ì‚¬ìš©ê°€ëŠ¥í•˜ì—¬ì•¼ í•œë‹¤.
+    //    ì˜ˆ: partition key on T1(i1, i2, i3)
+    //      (1) i1=1 and i2=1 and i3=1 ==> i1,i2,i3 ëª¨ë‘ ì‚¬ìš© ê°€ëŠ¥
+    //      (2) i1=1 and i3=1          ==> i1ë§Œ ì‚¬ìš© ê°€ëŠ¥
+    // 2. subqueryëŠ” ì œì™¸.
     //--------------------------------------
 
     if ( sIsExtractable == ID_TRUE )
@@ -3304,11 +3304,11 @@ qmoPred::extractPartKeyRange4Column( qcmColumn        * aPartKeyColumns,
               sKeyColumn != NULL;
               sKeyColumn  = sKeyColumn->next )
         {
-            // partition key ÄÃ·³ÀÇ columnID¸¦ ±¸ÇÑ´Ù.
+            // partition key ì»¬ëŸ¼ì˜ columnIDë¥¼ êµ¬í•œë‹¤.
             sPartKeyColumnID = sKeyColumn->basicInfo->column.id;
 
 
-            // partition key ÄÃ·³°ú °°Àº columnID¸¦ Ã£´Â´Ù.
+            // partition key ì»¬ëŸ¼ê³¼ ê°™ì€ columnIDë¥¼ ì°¾ëŠ”ë‹¤.
             for ( sWrapperIter  = *aSource;
                   sWrapperIter != NULL;
                   sWrapperIter  = sWrapperIter->next )
@@ -3337,12 +3337,12 @@ qmoPred::extractPartKeyRange4Column( qcmColumn        * aPartKeyColumns,
 
             if ( sWrapperIter == NULL )
             {
-                // ÇöÀç partition key ÄÃ·³°ú µ¿ÀÏÇÑ ÄÃ·³ÀÇ predicateÀÌ Á¸ÀçÇÏÁö ¾Ê´Â °æ¿ì
+                // í˜„ì¬ partition key ì»¬ëŸ¼ê³¼ ë™ì¼í•œ ì»¬ëŸ¼ì˜ predicateì´ ì¡´ì¬í•˜ì§€ ì•ŠëŠ” ê²½ìš°
                 break;
             }
             else
             {
-                // ÇöÀç partition key ÄÃ·³°ú µ¿ÀÏÇÑ ÄÃ·³ÀÇ predicateÀÌ Á¸ÀçÇÏ´Â °æ¿ì
+                // í˜„ì¬ partition key ì»¬ëŸ¼ê³¼ ë™ì¼í•œ ì»¬ëŸ¼ì˜ predicateì´ ì¡´ì¬í•˜ëŠ” ê²½ìš°
 
                 IDE_TEST( qmoPredWrapperI::moveWrapper( sWrapperIter,
                                                         aSource,
@@ -3353,21 +3353,21 @@ qmoPred::extractPartKeyRange4Column( qcmColumn        * aPartKeyColumns,
                        QMO_PRED_NEXT_KEY_USABLE_MASK )
                      == QMO_PRED_NEXT_KEY_USABLE )
                 {
-                    // ÀÌ ÄÃ·³Àº equal(=)°ú in predicate¸¸À¸·Î ±¸¼ºµÇ¾î ÀÖ´Ù.
-                    // ´ÙÀ½ partition key ÄÃ·³À¸·Î ÁøÇà.
+                    // ì´ ì»¬ëŸ¼ì€ equal(=)ê³¼ in predicateë§Œìœ¼ë¡œ êµ¬ì„±ë˜ì–´ ìˆë‹¤.
+                    // ë‹¤ìŒ partition key ì»¬ëŸ¼ìœ¼ë¡œ ì§„í–‰.
                     // Nothing To Do
                 }
                 else
                 {
-                    // ÀÌ ÄÃ·³Àº equal(=)/in ÀÌ¿ÜÀÇ predicateÀ» Æ÷ÇÔÇÏ°í ÀÖÀ¸¹Ç·Î,
-                    // ´ÙÀ½ partition key ÄÃ·³À» »ç¿ëÇÒ ¼ö ¾ø´Ù.
+                    // ì´ ì»¬ëŸ¼ì€ equal(=)/in ì´ì™¸ì˜ predicateì„ í¬í•¨í•˜ê³  ìˆìœ¼ë¯€ë¡œ,
+                    // ë‹¤ìŒ partition key ì»¬ëŸ¼ì„ ì‚¬ìš©í•  ìˆ˜ ì—†ë‹¤.
 
-                    // ´ÙÀ½ partition key·ÎÀÇ ÀÛ¾÷À» ÁøÇàÇÏÁö ¾Ê´Â´Ù.
+                    // ë‹¤ìŒ partition keyë¡œì˜ ì‘ì—…ì„ ì§„í–‰í•˜ì§€ ì•ŠëŠ”ë‹¤.
                     break;
 
                 }
-            } // partition key ÄÃ·³°ú °°Àº ÄÃ·³À» °¡Áø predicateÀÌ ÀÖÀ» °æ¿ì,
-        } //  for()¹®
+            } // partition key ì»¬ëŸ¼ê³¼ ê°™ì€ ì»¬ëŸ¼ì„ ê°€ì§„ predicateì´ ìˆì„ ê²½ìš°,
+        } //  for()ë¬¸
     }
     else
     {
@@ -3390,7 +3390,7 @@ qmoPred::checkUsablePartitionKey4List( qcStatement   * aStatement,
 {
 /***********************************************************************
  *
- * Description : LIST ÄÃ·³¸®½ºÆ®ÀÇ partition key »ç¿ë¿©ºÎ °Ë»ç
+ * Description : LIST ì»¬ëŸ¼ë¦¬ìŠ¤íŠ¸ì˜ partition key ì‚¬ìš©ì—¬ë¶€ ê²€ì‚¬
  *
  * Implementation :
  *
@@ -3412,7 +3412,7 @@ qmoPred::checkUsablePartitionKey4List( qcStatement   * aStatement,
     IDU_FIT_POINT_FATAL( "qmoPred::checkUsablePartitionKey4List::__FT__" );
 
     //--------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //--------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -3421,13 +3421,13 @@ qmoPred::checkUsablePartitionKey4List( qcStatement   * aStatement,
     IDE_DASSERT( aPredType != NULL );
 
     //---------------------------------------
-    // LISTÀÇ ÀÎµ¦½º »ç¿ë °¡´É¼º °Ë»ç
-    // ÀÎµ¦½º »ç¿ë°¡´É ÄÃ·³¿¡ LISTÄÃ·³ÀÌ ¸ğµÎ Æ÷ÇÔµÇ±â¸¸ ÇÏ¸é µÈ´Ù.
-    // 1. ¸®½ºÆ®ÄÃ·³ÀÌ ÀÎµ¦½º ÄÃ·³¿¡ ¿¬¼ÓÀûÀ¸·Î ¸ğµÎ Æ÷ÇÔµÇ¸é,
-    //     keyRange·Î ºĞ·ù
-    // 2. ¿¬¼ÓÀûÀÌÁö´Â ¾ÊÁö¸¸, ¸®½ºÆ® ÄÃ·³ÀÌ ¸ğµÎ ÀÎµ¦½º ÄÃ·³¿¡
-    //    Æ÷ÇÔµÇ¸é, keyFilter·Î ºĞ·ù
-    // 3. 1°ú2¿¡ Æ÷ÇÔµÇÁö ¾ÊÀ¸¸é, filter·Î ºĞ·ù
+    // LISTì˜ ì¸ë±ìŠ¤ ì‚¬ìš© ê°€ëŠ¥ì„± ê²€ì‚¬
+    // ì¸ë±ìŠ¤ ì‚¬ìš©ê°€ëŠ¥ ì»¬ëŸ¼ì— LISTì»¬ëŸ¼ì´ ëª¨ë‘ í¬í•¨ë˜ê¸°ë§Œ í•˜ë©´ ëœë‹¤.
+    // 1. ë¦¬ìŠ¤íŠ¸ì»¬ëŸ¼ì´ ì¸ë±ìŠ¤ ì»¬ëŸ¼ì— ì—°ì†ì ìœ¼ë¡œ ëª¨ë‘ í¬í•¨ë˜ë©´,
+    //     keyRangeë¡œ ë¶„ë¥˜
+    // 2. ì—°ì†ì ì´ì§€ëŠ” ì•Šì§€ë§Œ, ë¦¬ìŠ¤íŠ¸ ì»¬ëŸ¼ì´ ëª¨ë‘ ì¸ë±ìŠ¤ ì»¬ëŸ¼ì—
+    //    í¬í•¨ë˜ë©´, keyFilterë¡œ ë¶„ë¥˜
+    // 3. 1ê³¼2ì— í¬í•¨ë˜ì§€ ì•Šìœ¼ë©´, filterë¡œ ë¶„ë¥˜
     //---------------------------------------
 
     if ( ( aPredicate->node->node.lflag & MTC_NODE_LOGICAL_CONDITION_MASK )
@@ -3449,10 +3449,10 @@ qmoPred::checkUsablePartitionKey4List( qcStatement   * aStatement,
         sColumnLIST = (qtcNode *)(sCompareNode->node.arguments->next);
     }
 
-    // LIST columnÀÇ °³¼ö È¹µæ
+    // LIST columnì˜ ê°œìˆ˜ íšë“
     sListCount = sColumnLIST->node.lflag & MTC_NODE_ARGUMENT_COUNT_MASK;
 
-    // LISTÀÇ ÀÎµ¦½º »ç¿ë °¡´É¼º °Ë»ç.
+    // LISTì˜ ì¸ë±ìŠ¤ ì‚¬ìš© ê°€ëŠ¥ì„± ê²€ì‚¬.
     sCount      = 0;
     sIsKeyRange = ID_TRUE;
     for ( sColumn  = aPartKeyColumns;
@@ -3508,13 +3508,13 @@ qmoPred::checkUsablePartitionKey4List( qcStatement   * aStatement,
 
     if ( sCount == sListCount )
     {
-        // LISTÀÇ ¸ğµç columnÀÌ index ³»¿¡ Æ÷ÇÔµÊ
+        // LISTì˜ ëª¨ë“  columnì´ index ë‚´ì— í¬í•¨ë¨
         sIsExist = ID_TRUE;
     }
     else
     {
-        // LISTÀÇ column Áß  index¿¡ Æ÷ÇÔµÇÁö ¾Ê´Â °ÍÀÌ Á¸ÀçÇÔ.
-        // filter Ã³¸® ´ëÇ×
+        // LISTì˜ column ì¤‘  indexì— í¬í•¨ë˜ì§€ ì•ŠëŠ” ê²ƒì´ ì¡´ì¬í•¨.
+        // filter ì²˜ë¦¬ ëŒ€í•­
         sIsExist = ID_FALSE;
     }
 
@@ -3649,37 +3649,37 @@ qmoPred::extractRangeAndFilter( qcStatement        * aStatement,
 {
 /***********************************************************************
  *
- * Description : keyRange, keyFilter, filter, subqueryFilter¸¦ ÃßÃâÇÑ´Ù.
+ * Description : keyRange, keyFilter, filter, subqueryFilterë¥¼ ì¶”ì¶œí•œë‹¤.
  *
- *   »ç¿ëµÇ´Â ÀÎµ¦½º Á¤º¸¸¦ º¸°í,
- *   1. disk table ÀÌ¸é,
- *      keyRange, keyFilter, filter, subqueryFilter·Î ºĞ¸®
- *   2. memory table ÀÌ¸é,
- *      keyRange, filter, subqueryFilter·Î ºĞ¸®ÇÑ´Ù.
- *      (Áï, keyFilter¸¦ ºĞ¸®ÇØ³»Áö ¾Ê´Â´Ù.)
+ *   ì‚¬ìš©ë˜ëŠ” ì¸ë±ìŠ¤ ì •ë³´ë¥¼ ë³´ê³ ,
+ *   1. disk table ì´ë©´,
+ *      keyRange, keyFilter, filter, subqueryFilterë¡œ ë¶„ë¦¬
+ *   2. memory table ì´ë©´,
+ *      keyRange, filter, subqueryFilterë¡œ ë¶„ë¦¬í•œë‹¤.
+ *      (ì¦‰, keyFilterë¥¼ ë¶„ë¦¬í•´ë‚´ì§€ ì•ŠëŠ”ë‹¤.)
  *
  * Implementation :
  *
- *   1. KeyRange ÃßÃâ
- *      1) LIST ÄÃ·³¿¡ ´ëÇÑ Ã³¸®
- *          LIST ÄÃ·³¸®½ºÆ®¿¡ ¿¬°áµÈ predicateµé¿¡ ´ëÇØ¼­,
- *          keyRange, keyFilter, filter, subqueryFilter·Î ºĞ¸®ÇÑ´Ù.
- *      2) one column¿¡ ´ëÇÑ Ã³¸®.
- *         (1) index nested loop join predicateÀÌ Á¸ÀçÇÏ´Â °æ¿ì,
- *             join index ÃÖÀûÈ­¿¡ ÀÇÇÏ¿© join predicateÀ» ¿ì¼± Àû¿ë.
- *             ÂüÁ¶ BUG-7098
- *             ( ¸¸¾à, LIST¿¡¼­ ÃßÃâµÈ keyRange°¡ ÀÖ´Ù¸é,
- *               .IN subqueryÀÎ °æ¿ì´Â subqueryFilter·Î
- *               .IN subquery°¡ ¾Æ´Ñ °æ¿ì´Â keyFilter·Î ºĞ·ùµÇµµ·Ï ÇÑ´Ù. )
- *         (2) index nested loop join predicateÀÌ Á¸ÀçÇÏÁö ¾Ê´Â °æ¿ì,
- *           A. LIST ÄÃ·³¿¡ ´ëÇÑ keyRange°¡ Á¸ÀçÇÏ¸é,
- *              one column¿¡ ´ëÇÑ keyRange´Â ÃßÃâÇÏÁö ¾Ê°í
- *           B. LIST ÄÃ·³¿¡ ´ëÇÑ keyRange°¡ Á¸ÀçÇÏÁö ¾ÊÀ¸¸é,
- *              one column¿¡ ´ëÇÑ keyRange ÃßÃâ
- *   2. keyFilter ÃßÃâ
- *      (1) ÃßÃâµÈ keyRange°¡ Á¸ÀçÇÏ¸é,
- *      (2) disk table¿¡ ´ëÇØ¼­ keyFilter ÃßÃâ
- *   3. filter, subquery filter  Ã³¸®
+ *   1. KeyRange ì¶”ì¶œ
+ *      1) LIST ì»¬ëŸ¼ì— ëŒ€í•œ ì²˜ë¦¬
+ *          LIST ì»¬ëŸ¼ë¦¬ìŠ¤íŠ¸ì— ì—°ê²°ëœ predicateë“¤ì— ëŒ€í•´ì„œ,
+ *          keyRange, keyFilter, filter, subqueryFilterë¡œ ë¶„ë¦¬í•œë‹¤.
+ *      2) one columnì— ëŒ€í•œ ì²˜ë¦¬.
+ *         (1) index nested loop join predicateì´ ì¡´ì¬í•˜ëŠ” ê²½ìš°,
+ *             join index ìµœì í™”ì— ì˜í•˜ì—¬ join predicateì„ ìš°ì„  ì ìš©.
+ *             ì°¸ì¡° BUG-7098
+ *             ( ë§Œì•½, LISTì—ì„œ ì¶”ì¶œëœ keyRangeê°€ ìˆë‹¤ë©´,
+ *               .IN subqueryì¸ ê²½ìš°ëŠ” subqueryFilterë¡œ
+ *               .IN subqueryê°€ ì•„ë‹Œ ê²½ìš°ëŠ” keyFilterë¡œ ë¶„ë¥˜ë˜ë„ë¡ í•œë‹¤. )
+ *         (2) index nested loop join predicateì´ ì¡´ì¬í•˜ì§€ ì•ŠëŠ” ê²½ìš°,
+ *           A. LIST ì»¬ëŸ¼ì— ëŒ€í•œ keyRangeê°€ ì¡´ì¬í•˜ë©´,
+ *              one columnì— ëŒ€í•œ keyRangeëŠ” ì¶”ì¶œí•˜ì§€ ì•Šê³ 
+ *           B. LIST ì»¬ëŸ¼ì— ëŒ€í•œ keyRangeê°€ ì¡´ì¬í•˜ì§€ ì•Šìœ¼ë©´,
+ *              one columnì— ëŒ€í•œ keyRange ì¶”ì¶œ
+ *   2. keyFilter ì¶”ì¶œ
+ *      (1) ì¶”ì¶œëœ keyRangeê°€ ì¡´ì¬í•˜ë©´,
+ *      (2) disk tableì— ëŒ€í•´ì„œ keyFilter ì¶”ì¶œ
+ *   3. filter, subquery filter  ì²˜ë¦¬
  *
  ***********************************************************************/
 
@@ -3688,7 +3688,7 @@ qmoPred::extractRangeAndFilter( qcStatement        * aStatement,
     IDU_FIT_POINT_FATAL( "qmoPred::extractRangeAndFilter::__FT__" );
 
     //--------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //--------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -3701,7 +3701,7 @@ qmoPred::extractRangeAndFilter( qcStatement        * aStatement,
     IDE_DASSERT( aSubqueryFilter != NULL );
 
     //--------------------------------------
-    // °á°ú°ª ÃÊ±âÈ­
+    // ê²°ê³¼ê°’ ì´ˆê¸°í™”
     //--------------------------------------
 
     if ( aInExecutionTime == ID_TRUE )
@@ -3729,12 +3729,12 @@ qmoPred::extractRangeAndFilter( qcStatement        * aStatement,
               != IDE_SUCCESS );
 
     //--------------------------------------
-    // keyRange, keyFilter, filter, subuqeyrFilter ÃßÃâ
+    // keyRange, keyFilter, filter, subuqeyrFilter ì¶”ì¶œ
     //--------------------------------------
 
     if ( aIndex == NULL )
     {
-        // filter, subqueryFilter¸¦ ºĞ¸®ÇØ¼­ ³Ñ±ä´Ù.
+        // filter, subqueryFilterë¥¼ ë¶„ë¦¬í•´ì„œ ë„˜ê¸´ë‹¤.
         IDE_TEST( separateFilters( aTemplate,
                                    sSource,
                                    aFilter,
@@ -3746,9 +3746,9 @@ qmoPred::extractRangeAndFilter( qcStatement        * aStatement,
     else
     {
         //--------------------------------------------
-        // LIST ÄÃ·³¿¡ ´ëÇÑ Ã³¸®
-        // : ÇöÀç predicate ¿¬°á¸®½ºÆ®¿¡¼­ LIST ÄÃ·³¸¸ ºĞ¸®ÇØ¼­,
-        //   LIST ÄÃ·³¿¡ ´ëÇÑ keyRange/keyFilter/filter/subqueryFilter¸¦ ºĞ¸®
+        // LIST ì»¬ëŸ¼ì— ëŒ€í•œ ì²˜ë¦¬
+        // : í˜„ì¬ predicate ì—°ê²°ë¦¬ìŠ¤íŠ¸ì—ì„œ LIST ì»¬ëŸ¼ë§Œ ë¶„ë¦¬í•´ì„œ,
+        //   LIST ì»¬ëŸ¼ì— ëŒ€í•œ keyRange/keyFilter/filter/subqueryFilterë¥¼ ë¶„ë¦¬
         //--------------------------------------------
 
         IDE_TEST( extractRange4LIST( aTemplate,
@@ -3762,14 +3762,14 @@ qmoPred::extractRangeAndFilter( qcStatement        * aStatement,
                   != IDE_SUCCESS );
 
         //--------------------------------------
-        // keyRange ÃßÃâ
-        // 1. index nested loop join predicateÀÌ ÀÖ´Â °æ¿ì,
-        //    index nested loop join predicateÀÌ keyRange·Î ¼±ÅÃµÇµµ·Ï ÇÑ´Ù.
-        // 2. index nested loop join predicateÀÌ ¾ø´Â °æ¿ì,
-        //    (1) LIST¿¡¼­ ¼±ÅÃµÈ keyRange°¡ ÀÖ´Â °æ¿ì,
-        //        one column¿¡ ´ëÇÑ keyRange ÃßÃâ skip
-        //    (2) LIST¿¡¼­ ¼±ÅÃµÈ keyRange°¡ ¾ø´Â °æ¿ì,
-        //        one column¿¡ ´ëÇÑ keyRange ÃßÃâ
+        // keyRange ì¶”ì¶œ
+        // 1. index nested loop join predicateì´ ìˆëŠ” ê²½ìš°,
+        //    index nested loop join predicateì´ keyRangeë¡œ ì„ íƒë˜ë„ë¡ í•œë‹¤.
+        // 2. index nested loop join predicateì´ ì—†ëŠ” ê²½ìš°,
+        //    (1) LISTì—ì„œ ì„ íƒëœ keyRangeê°€ ìˆëŠ” ê²½ìš°,
+        //        one columnì— ëŒ€í•œ keyRange ì¶”ì¶œ skip
+        //    (2) LISTì—ì„œ ì„ íƒëœ keyRangeê°€ ì—†ëŠ” ê²½ìš°,
+        //        one columnì— ëŒ€í•œ keyRange ì¶”ì¶œ
         //--------------------------------------
 
         IDE_TEST( extractKeyRange( aIndex,
@@ -3780,17 +3780,17 @@ qmoPred::extractRangeAndFilter( qcStatement        * aStatement,
                   != IDE_SUCCESS );
 
         //--------------------------------------
-        // keyFilter ÃßÃâ
-        // : LIST ÄÃ·³ÀÌ Á¸ÀçÇÏ´Â °æ¿ì, ÀÌ¹Ì LIST ÄÃ·³Ã³¸®½Ã keyFilter ºĞ·ùµÊ.
-        //   µû¶ó¼­, one column¿¡ ´ëÇÑ keyFilter¸¸ ÃßÃâÇÏ¸é µÈ´Ù.
+        // keyFilter ì¶”ì¶œ
+        // : LIST ì»¬ëŸ¼ì´ ì¡´ì¬í•˜ëŠ” ê²½ìš°, ì´ë¯¸ LIST ì»¬ëŸ¼ì²˜ë¦¬ì‹œ keyFilter ë¶„ë¥˜ë¨.
+        //   ë”°ë¼ì„œ, one columnì— ëŒ€í•œ keyFilterë§Œ ì¶”ì¶œí•˜ë©´ ëœë‹¤.
         //
-        // 1. keyRange Á¸ÀçÀ¯¹«
-        //    (1) keyRange°¡ Á¸Àç : keyFilter ÃßÃâ
-        //    (2) keyRange°¡ Á¸ÀçÇÏÁö ¾ÊÀ¸¸é, keyFilterÀÇ ¿ëµµ°¡ ¹«ÀÇ¹ÌÇÏ¹Ç·Î,
-        //        keyFilter¸¦ ÃßÃâÇÏÁö ¾Ê´Â´Ù.
-        // 2. tableÀÇ Á¾·ù
-        //    (1) disk table   : keyFilter ÃßÃâ(disk I/O¸¦ ÁÙÀÌ±â À§ÇÔ)
-        //    (2) memory table : keyFilter ÃßÃâÇÏÁö ¾ÊÀ½.(ÀÎµ¦½º»ç¿ëÀÇ ±Ø´ëÈ­)
+        // 1. keyRange ì¡´ì¬ìœ ë¬´
+        //    (1) keyRangeê°€ ì¡´ì¬ : keyFilter ì¶”ì¶œ
+        //    (2) keyRangeê°€ ì¡´ì¬í•˜ì§€ ì•Šìœ¼ë©´, keyFilterì˜ ìš©ë„ê°€ ë¬´ì˜ë¯¸í•˜ë¯€ë¡œ,
+        //        keyFilterë¥¼ ì¶”ì¶œí•˜ì§€ ì•ŠëŠ”ë‹¤.
+        // 2. tableì˜ ì¢…ë¥˜
+        //    (1) disk table   : keyFilter ì¶”ì¶œ(disk I/Oë¥¼ ì¤„ì´ê¸° ìœ„í•¨)
+        //    (2) memory table : keyFilter ì¶”ì¶œí•˜ì§€ ì•ŠìŒ.(ì¸ë±ìŠ¤ì‚¬ìš©ì˜ ê·¹ëŒ€í™”)
         //--------------------------------------
 
         IDE_TEST( extractKeyFilter( aIsMemory,
@@ -3802,13 +3802,13 @@ qmoPred::extractRangeAndFilter( qcStatement        * aStatement,
                   != IDE_SUCCESS );
 
         //--------------------------------------
-        // Filter ÃßÃâ
+        // Filter ì¶”ì¶œ
         //--------------------------------------
 
-        // keyRange, keyFilter ÃßÃâÈÄ,
-        // ³²¾ÆÀÖ´Â predicateµé·Î ¸ğµÎ filter·Î ºĞ·ùÇÑ´Ù.
-        // ÇöÀç ³²¾ÆÀÖ´Â predicateÀº ´ÙÀ½ÀÇ µÎ Á¾·ùÀÌ´Ù.
-        // (1) one columnÀÇ indexable predicate
+        // keyRange, keyFilter ì¶”ì¶œí›„,
+        // ë‚¨ì•„ìˆëŠ” predicateë“¤ë¡œ ëª¨ë‘ filterë¡œ ë¶„ë¥˜í•œë‹¤.
+        // í˜„ì¬ ë‚¨ì•„ìˆëŠ” predicateì€ ë‹¤ìŒì˜ ë‘ ì¢…ë¥˜ì´ë‹¤.
+        // (1) one columnì˜ indexable predicate
         // (2) non-indexable predicate
 
         IDE_TEST( separateFilters( aTemplate,
@@ -3836,34 +3836,34 @@ qmoPred::getColumnID( qcStatement   * aStatement,
 {
 /***********************************************************************
  *
- * Description : columnID ¼³Á¤
+ * Description : columnID ì„¤ì •
  *
- *     selection graphÀÇ ¸ğµç predicate¿¡ ´ëÇÑ columnID¸¦ ¼³Á¤ÇÑ´Ù.
+ *     selection graphì˜ ëª¨ë“  predicateì— ëŒ€í•œ columnIDë¥¼ ì„¤ì •í•œë‹¤.
  *
- *     ÀÌ ÇÔ¼ö¸¦ È£ÃâÇÏ´Â °÷Àº
+ *     ì´ í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•˜ëŠ” ê³³ì€
  *     (1) qmoPred::classifyTablePredicate()
  *     (2) qmoPred::makeJoinPushDownPredicate()
- *     (3) qmoPred::addNonJoinablePredicate() ÀÌ¸ç,
- *     columnID¸¦ ¼³Á¤ÇÏ´Â ÇÔ¼ö¸¦ °øÅëÀ¸·Î »ç¿ëÇÏ±â À§ÇØ¼­,
- *     predicateÀÇ indexable¿©ºÎ¸¦ ÀÎÀÚ·Î ¹Ş´Â´Ù.
+ *     (3) qmoPred::addNonJoinablePredicate() ì´ë©°,
+ *     columnIDë¥¼ ì„¤ì •í•˜ëŠ” í•¨ìˆ˜ë¥¼ ê³µí†µìœ¼ë¡œ ì‚¬ìš©í•˜ê¸° ìœ„í•´ì„œ,
+ *     predicateì˜ indexableì—¬ë¶€ë¥¼ ì¸ìë¡œ ë°›ëŠ”ë‹¤.
  *
  * Implementation :
  *
- *     1. indexable predicate ÀÎ °æ¿ì,
- *        (1) one column : ÇØ´ç columnID¼³Á¤
- *        (2) LIST       : QMO_COLUMNID_LIST·Î ¼³Á¤
+ *     1. indexable predicate ì¸ ê²½ìš°,
+ *        (1) one column : í•´ë‹¹ columnIDì„¤ì •
+ *        (2) LIST       : QMO_COLUMNID_LISTë¡œ ì„¤ì •
  *
- *        OR ³ëµå ÇÏÀ§¿¡ ¿©·¯°³ÀÇ ºñ±³¿¬»êÀÚ°¡ ÀÖ´õ¶óµµ,
- *        ¸ğµÎ µ¿ÀÏ ÄÃ·³À¸·Î ±¸¼ºµÇ¾î ÀÖ´Ù.
+ *        OR ë…¸ë“œ í•˜ìœ„ì— ì—¬ëŸ¬ê°œì˜ ë¹„êµì—°ì‚°ìê°€ ìˆë”ë¼ë„,
+ *        ëª¨ë‘ ë™ì¼ ì»¬ëŸ¼ìœ¼ë¡œ êµ¬ì„±ë˜ì–´ ìˆë‹¤.
  *
- *     2. non-indexable predicate ÀÎ °æ¿ì,
- *        QMO_COLUMNID_NON_INDEXABLE·Î ¼³Á¤
- *     (ÀÎÀÚ·Î ¹ŞÀ» ¼ö ÀÖ´Â ³ëµåÀÇ ÇüÅÂ´Â ´ÙÀ½°ú °°´Ù.)
+ *     2. non-indexable predicate ì¸ ê²½ìš°,
+ *        QMO_COLUMNID_NON_INDEXABLEë¡œ ì„¤ì •
+ *     (ì¸ìë¡œ ë°›ì„ ìˆ˜ ìˆëŠ” ë…¸ë“œì˜ í˜•íƒœëŠ” ë‹¤ìŒê³¼ ê°™ë‹¤.)
  *
  *
- *     (1)  OR         (2)  OR                        (3) ºñ±³¿¬»êÀÚ
+ *     (1)  OR         (2)  OR                        (3) ë¹„êµì—°ì‚°ì
  *          |               |                                 |
- *       ºñ±³¿¬»êÀÚ     ºñ±³¿¬»êÀÚ->...->ºñ±³¿¬»êÀÚ
+ *       ë¹„êµì—°ì‚°ì     ë¹„êµì—°ì‚°ì->...->ë¹„êµì—°ì‚°ì
  *          |               |                |
  *
  ***********************************************************************/
@@ -3873,20 +3873,20 @@ qmoPred::getColumnID( qcStatement   * aStatement,
 
     IDU_FIT_POINT_FATAL( "qmoPred::getColumnID::__FT__" );
 
-    // ÃÊ±â°ª ¼³Á¤
+    // ì´ˆê¸°ê°’ ì„¤ì •
     *aColumnID = QMO_COLUMNID_NOT_FOUND;
 
     if ( aIsIndexable == ID_TRUE )
     {
         //--------------------------------------
-        // indexable predicate¿¡ ´ëÇÑ
-        // one column°ú LISTÀÇ columnID ¼³Á¤
+        // indexable predicateì— ëŒ€í•œ
+        // one columnê³¼ LISTì˜ columnID ì„¤ì •
         //--------------------------------------
 
         //--------------------------------------
-        // ºñ±³¿¬»êÀÚ ³ëµå¸¦ Ã£´Â´Ù.
-        // ÀÎÀÚ·Î ³Ñ¾î¿Â ÃÖ»óÀ§ ³ëµå°¡ ³í¸®¿¬»êÀÚÀÎ °æ¿ì,
-        // ºñ±³¿¬»êÀÚ ³ëµå¸¦ Ã£±â À§ÇØ, ³í¸®¿¬»êÀÚ(OR) skip
+        // ë¹„êµì—°ì‚°ì ë…¸ë“œë¥¼ ì°¾ëŠ”ë‹¤.
+        // ì¸ìë¡œ ë„˜ì–´ì˜¨ ìµœìƒìœ„ ë…¸ë“œê°€ ë…¼ë¦¬ì—°ì‚°ìì¸ ê²½ìš°,
+        // ë¹„êµì—°ì‚°ì ë…¸ë“œë¥¼ ì°¾ê¸° ìœ„í•´, ë…¼ë¦¬ì—°ì‚°ì(OR) skip
         //--------------------------------------
         if ( ( sNode->node.lflag & MTC_NODE_LOGICAL_CONDITION_MASK )
              == MTC_NODE_LOGICAL_CONDITION_TRUE )
@@ -3895,18 +3895,18 @@ qmoPred::getColumnID( qcStatement   * aStatement,
         }
 
         // BUG-39036 select one or all value optimization
-        // keyRange or »ó¼ö°ª ÀÇ ÇüÅÂÀÏ¶§ keyRange »ı¼ºÀÌ ½ÇÆĞÇÏ´Â°ÍÀ» ¼º°øÇÏ°Ô ÇÑ´Ù.
-        // »ó¼ö°ªÀ» °¡Áö´Â keyRange°¡ ¿Ã ¼ö ÀÖÀ¸¹Ç·Î ³ëµå¸¦ ¼øÈ¸ÇØ¾ß ÇÑ´Ù.
+        // keyRange or ìƒìˆ˜ê°’ ì˜ í˜•íƒœì¼ë•Œ keyRange ìƒì„±ì´ ì‹¤íŒ¨í•˜ëŠ”ê²ƒì„ ì„±ê³µí•˜ê²Œ í•œë‹¤.
+        // ìƒìˆ˜ê°’ì„ ê°€ì§€ëŠ” keyRangeê°€ ì˜¬ ìˆ˜ ìˆìœ¼ë¯€ë¡œ ë…¸ë“œë¥¼ ìˆœíšŒí•´ì•¼ í•œë‹¤.
         while ( sNode != NULL )
         {
             if ( qtc::dependencyEqual( & sNode->depInfo,
                                        & qtc::zeroDependencies ) == ID_FALSE )
             {
                 //--------------------------------------
-                // indexArgument Á¤º¸·Î columnID¸¦ ¼³Á¤ÇÑ´Ù.
+                // indexArgument ì •ë³´ë¡œ columnIDë¥¼ ì„¤ì •í•œë‹¤.
                 //--------------------------------------
 
-                // indexArgument Á¤º¸·Î columnÀ» Ã£´Â´Ù.
+                // indexArgument ì •ë³´ë¡œ columnì„ ì°¾ëŠ”ë‹¤.
                 if ( sNode->indexArgument == 0 )
                 {
                     sCurNode = (qtcNode *)( sNode->node.arguments );
@@ -3916,11 +3916,11 @@ qmoPred::getColumnID( qcStatement   * aStatement,
                     sCurNode = (qtcNode *)( sNode->node.arguments->next );
                 }
 
-                // Ã£Àº columnÁ¤º¸·Î columnID ¼³Á¤
+                // ì°¾ì€ columnì •ë³´ë¡œ columnID ì„¤ì •
                 if ( ( sCurNode->node.lflag & MTC_NODE_OPERATOR_MASK )
                      == MTC_NODE_OPERATOR_LIST )
                 {
-                    // LISTÀÇ columnID ¼³Á¤
+                    // LISTì˜ columnID ì„¤ì •
                     *aColumnID = QMO_COLUMNID_LIST;
                 }
                 else if ( QTC_IS_RID_COLUMN( sCurNode ) == ID_TRUE )
@@ -3930,7 +3930,7 @@ qmoPred::getColumnID( qcStatement   * aStatement,
                 }
                 else
                 {
-                    // one columnÀÇ columnID ¼³Á¤
+                    // one columnì˜ columnID ì„¤ì •
                     *aColumnID =
                         QC_SHARED_TMPLATE(aStatement)->tmplate.rows[sCurNode->node.table].
                         columns[sCurNode->node.column].column.id;
@@ -3946,11 +3946,11 @@ qmoPred::getColumnID( qcStatement   * aStatement,
     }
     else
     {
-        // non-indexable predicate¿¡ ´ëÇÑ columnID ¼³Á¤.
+        // non-indexable predicateì— ëŒ€í•œ columnID ì„¤ì •.
         *aColumnID = QMO_COLUMNID_NON_INDEXABLE;
     }
 
-    // À§ÀÇ °úÁ¤À¸·Î columnID¸¦ ¹İµå½Ã Ã£¾Æ¾ß ÇÑ´Ù.
+    // ìœ„ì˜ ê³¼ì •ìœ¼ë¡œ columnIDë¥¼ ë°˜ë“œì‹œ ì°¾ì•„ì•¼ í•œë‹¤.
     IDE_DASSERT( *aColumnID != QMO_COLUMNID_NOT_FOUND );
 
     return IDE_SUCCESS;
@@ -3965,7 +3965,7 @@ qmoPred::checkUsableIndex4List( qcTemplate    * aTemplate,
 {
 /***********************************************************************
  *
- * Description : LIST ÄÃ·³¸®½ºÆ®ÀÇ ÀÎµ¦½º »ç¿ë¿©ºÎ °Ë»ç
+ * Description : LIST ì»¬ëŸ¼ë¦¬ìŠ¤íŠ¸ì˜ ì¸ë±ìŠ¤ ì‚¬ìš©ì—¬ë¶€ ê²€ì‚¬
  *
  * Implementation :
  *
@@ -3987,7 +3987,7 @@ qmoPred::checkUsableIndex4List( qcTemplate    * aTemplate,
     IDU_FIT_POINT_FATAL( "qmoPred::checkUsableIndex4List::__FT__" );
 
     //--------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //--------------------------------------
 
     IDE_DASSERT( aTemplate != NULL );
@@ -3996,13 +3996,13 @@ qmoPred::checkUsableIndex4List( qcTemplate    * aTemplate,
     IDE_DASSERT( aPredType != NULL );
 
     //---------------------------------------
-    // LISTÀÇ ÀÎµ¦½º »ç¿ë °¡´É¼º °Ë»ç
-    // ÀÎµ¦½º »ç¿ë°¡´É ÄÃ·³¿¡ LISTÄÃ·³ÀÌ ¸ğµÎ Æ÷ÇÔµÇ±â¸¸ ÇÏ¸é µÈ´Ù.
-    // 1. ¸®½ºÆ®ÄÃ·³ÀÌ ÀÎµ¦½º ÄÃ·³¿¡ ¿¬¼ÓÀûÀ¸·Î ¸ğµÎ Æ÷ÇÔµÇ¸é,
-    //     keyRange·Î ºĞ·ù
-    // 2. ¿¬¼ÓÀûÀÌÁö´Â ¾ÊÁö¸¸, ¸®½ºÆ® ÄÃ·³ÀÌ ¸ğµÎ ÀÎµ¦½º ÄÃ·³¿¡
-    //    Æ÷ÇÔµÇ¸é, keyFilter·Î ºĞ·ù
-    // 3. 1°ú2¿¡ Æ÷ÇÔµÇÁö ¾ÊÀ¸¸é, filter·Î ºĞ·ù
+    // LISTì˜ ì¸ë±ìŠ¤ ì‚¬ìš© ê°€ëŠ¥ì„± ê²€ì‚¬
+    // ì¸ë±ìŠ¤ ì‚¬ìš©ê°€ëŠ¥ ì»¬ëŸ¼ì— LISTì»¬ëŸ¼ì´ ëª¨ë‘ í¬í•¨ë˜ê¸°ë§Œ í•˜ë©´ ëœë‹¤.
+    // 1. ë¦¬ìŠ¤íŠ¸ì»¬ëŸ¼ì´ ì¸ë±ìŠ¤ ì»¬ëŸ¼ì— ì—°ì†ì ìœ¼ë¡œ ëª¨ë‘ í¬í•¨ë˜ë©´,
+    //     keyRangeë¡œ ë¶„ë¥˜
+    // 2. ì—°ì†ì ì´ì§€ëŠ” ì•Šì§€ë§Œ, ë¦¬ìŠ¤íŠ¸ ì»¬ëŸ¼ì´ ëª¨ë‘ ì¸ë±ìŠ¤ ì»¬ëŸ¼ì—
+    //    í¬í•¨ë˜ë©´, keyFilterë¡œ ë¶„ë¥˜
+    // 3. 1ê³¼2ì— í¬í•¨ë˜ì§€ ì•Šìœ¼ë©´, filterë¡œ ë¶„ë¥˜
     //---------------------------------------
 
     if ( ( aPredicate->node->node.lflag & MTC_NODE_LOGICAL_CONDITION_MASK )
@@ -4024,10 +4024,10 @@ qmoPred::checkUsableIndex4List( qcTemplate    * aTemplate,
         sColumnLIST = (qtcNode *)(sCompareNode->node.arguments->next);
     }
 
-    // LIST columnÀÇ °³¼ö È¹µæ
+    // LIST columnì˜ ê°œìˆ˜ íšë“
     sListCount = sColumnLIST->node.lflag & MTC_NODE_ARGUMENT_COUNT_MASK;
 
-    // LISTÀÇ ÀÎµ¦½º »ç¿ë °¡´É¼º °Ë»ç.
+    // LISTì˜ ì¸ë±ìŠ¤ ì‚¬ìš© ê°€ëŠ¥ì„± ê²€ì‚¬.
     sCount      = 0;
     sIsKeyRange = ID_TRUE;
     for ( sKeyColCount = 0;
@@ -4083,13 +4083,13 @@ qmoPred::checkUsableIndex4List( qcTemplate    * aTemplate,
 
     if ( sCount == sListCount )
     {
-        // LISTÀÇ ¸ğµç columnÀÌ index ³»¿¡ Æ÷ÇÔµÊ
+        // LISTì˜ ëª¨ë“  columnì´ index ë‚´ì— í¬í•¨ë¨
         sIsExist = ID_TRUE;
     }
     else
     {
-        // LISTÀÇ column Áß  index¿¡ Æ÷ÇÔµÇÁö ¾Ê´Â °ÍÀÌ Á¸ÀçÇÔ.
-        // filter Ã³¸® ´ëÇ×
+        // LISTì˜ column ì¤‘  indexì— í¬í•¨ë˜ì§€ ì•ŠëŠ” ê²ƒì´ ì¡´ì¬í•¨.
+        // filter ì²˜ë¦¬ ëŒ€í•­
         sIsExist = ID_FALSE;
     }
 
@@ -4123,7 +4123,7 @@ qmoPred::findChildGraph( qtcNode   * aCompareNode,
 {
 /***********************************************************************
  *
- * Description : ºñ±³¿¬»êÀÚ °¢ ÇÏÀ§ ³ëµå¿¡ ÇØ´çÇÏ´Â graph¸¦ Ã£´Â´Ù.
+ * Description : ë¹„êµì—°ì‚°ì ê° í•˜ìœ„ ë…¸ë“œì— í•´ë‹¹í•˜ëŠ” graphë¥¼ ì°¾ëŠ”ë‹¤.
  *
  * Implementation :
  *
@@ -4135,7 +4135,7 @@ qmoPred::findChildGraph( qtcNode   * aCompareNode,
     IDU_FIT_POINT_FATAL( "qmoPred::findChildGraph::__FT__" );
 
     //--------------------------------------
-    // ºñ±³¿¬»êÀÚ °¢ ÇÏÀ§ ³ëµå¿¡ ÇØ´çÇÏ´Â graph¸¦ Ã£´Â´Ù.
+    // ë¹„êµì—°ì‚°ì ê° í•˜ìœ„ ë…¸ë“œì— í•´ë‹¹í•˜ëŠ” graphë¥¼ ì°¾ëŠ”ë‹¤.
     //--------------------------------------
 
 
@@ -4143,8 +4143,8 @@ qmoPred::findChildGraph( qtcNode   * aCompareNode,
     IDE_DASSERT( aCompareNode->node.arguments->next != NULL );
 
     //-------------------------------------------------------------------
-    // aCompareNodeÀÇ dependencies´Â outer column¿¡ ´ëÇÑ
-    // dependencies¸¦ Á¦°ÅÇÑ ÈÄ °Ë»çÇÏ¿©¾ß ÇÑ´Ù.
+    // aCompareNodeì˜ dependenciesëŠ” outer columnì— ëŒ€í•œ
+    // dependenciesë¥¼ ì œê±°í•œ í›„ ê²€ì‚¬í•˜ì—¬ì•¼ í•œë‹¤.
     //-------------------------------------------------------------------
 
     qtc::dependencyAnd( & ((qtcNode *)(aCompareNode->node.arguments))->depInfo,
@@ -4157,10 +4157,10 @@ qmoPred::findChildGraph( qtcNode   * aCompareNode,
 
 
     //-------------------------------------------------------------------
-    // aCompareNode->node.argumentsÀÇ dependencies´Â
-    // aGraph1ÀÇ dependencies¿¡ Æ÷ÇÔµÇ°Å³ª
-    // aGraph2ÀÇ dependencies¿¡ Æ÷ÇÔµÇ¾î¾ß ÇÑ´Ù.
-    // Ã£Áö ¸øÇÒ °æ¿ì´Â ¾îµò°¡ÀÇ ¹ö±×ÀÓÀ» ¾Ë¸®±â À§ÇØ ASSERT¸¦ »ç¿ëÇÑ´Ù.
+    // aCompareNode->node.argumentsì˜ dependenciesëŠ”
+    // aGraph1ì˜ dependenciesì— í¬í•¨ë˜ê±°ë‚˜
+    // aGraph2ì˜ dependenciesì— í¬í•¨ë˜ì–´ì•¼ í•œë‹¤.
+    // ì°¾ì§€ ëª»í•  ê²½ìš°ëŠ” ì–´ë”˜ê°€ì˜ ë²„ê·¸ì„ì„ ì•Œë¦¬ê¸° ìœ„í•´ ASSERTë¥¼ ì‚¬ìš©í•œë‹¤.
     //-------------------------------------------------------------------
 
     if ( ( qtc::dependencyContains( & aGraph1->depInfo,
@@ -4180,13 +4180,13 @@ qmoPred::findChildGraph( qtcNode   * aCompareNode,
                                          & sTempDependencies2 )
                 == ID_TRUE ) )
     {
-        // BUG-24981 joinable predicateÀÇ ºñ±³¿¬»êÀÚ °¢ ÇÏÀ§ ³ëµå¿¡ ÇØ´çÇÏ´Â
-        // graph(joinÇÏÀ§±×·¡ÇÁ)¸¦ Ã£´Â °úÁ¤¿¡¼­ ¼­¹ö ºñÁ¤»óÁ¾·á
+        // BUG-24981 joinable predicateì˜ ë¹„êµì—°ì‚°ì ê° í•˜ìœ„ ë…¸ë“œì— í•´ë‹¹í•˜ëŠ”
+        // graph(joiní•˜ìœ„ê·¸ë˜í”„)ë¥¼ ì°¾ëŠ” ê³¼ì •ì—ì„œ ì„œë²„ ë¹„ì •ìƒì¢…ë£Œ
 
         *aLeftColumnGraph = aGraph2;
         *aRightColumnGraph = aGraph1;
     }
-    else // µÑ´Ù ¾Æ´Ñ °æ¿ì¿¡´Â ÀÌ ÇÔ¼ö°¡ ºÒ¸®¸é ¾ÈµÈ´Ù.
+    else // ë‘˜ë‹¤ ì•„ë‹Œ ê²½ìš°ì—ëŠ” ì´ í•¨ìˆ˜ê°€ ë¶ˆë¦¬ë©´ ì•ˆëœë‹¤.
     {
         IDE_RAISE( ERR_INVALID_GRAPH );
     }
@@ -4214,27 +4214,27 @@ qmoPred::classifyTablePredicate( qcStatement      * aStatement,
 {
 /***********************************************************************
  *
- * Description : Base TableÀÇ Predicate¿¡ ´ëÇÑ ºĞ·ù
+ * Description : Base Tableì˜ Predicateì— ëŒ€í•œ ë¶„ë¥˜
  *
- *    predicate Àç¹èÄ¡ °úÁ¤¿¡¼­ °¢ predicate¿¡ ´ëÇØ
- *    indexable predicateÀ» ÆÇ´ÜÇÏ°í, columnID¿Í selectivity¸¦ ¼³Á¤ÇÑ´Ù.
- *    (´ë»ó: selection graphÀÇ myPredicate)
+ *    predicate ì¬ë°°ì¹˜ ê³¼ì •ì—ì„œ ê° predicateì— ëŒ€í•´
+ *    indexable predicateì„ íŒë‹¨í•˜ê³ , columnIDì™€ selectivityë¥¼ ì„¤ì •í•œë‹¤.
+ *    (ëŒ€ìƒ: selection graphì˜ myPredicate)
  *
  * Implementation :
- *     1. indexable predicateÀÎÁö¸¦ ÆÇ´Ü.
- *     2. predicateÀÇ fixed/variable Á¤º¸ ÀúÀå.
- *        [variable predicate ÆÇ´Ü±âÁØ]
+ *     1. indexable predicateì¸ì§€ë¥¼ íŒë‹¨.
+ *     2. predicateì˜ fixed/variable ì •ë³´ ì €ì¥.
+ *        [variable predicate íŒë‹¨ê¸°ì¤€]
  *        . join predicate
- *        . host º¯¼ö Á¸Àç
- *        . subquery Á¸Àç
- *        . prior columnÀÌ Æ÷ÇÔµÈ predicate( ¿¹: prior i1=i1 )
- *     3. columnID ¼³Á¤
- *        (1) indexable predicate ÀÌ¸é,
+ *        . host ë³€ìˆ˜ ì¡´ì¬
+ *        . subquery ì¡´ì¬
+ *        . prior columnì´ í¬í•¨ëœ predicate( ì˜ˆ: prior i1=i1 )
+ *     3. columnID ì„¤ì •
+ *        (1) indexable predicate ì´ë©´,
  *            . one column : smiColumn.id
  *            . LIST       : QMO_COLUMNID_LIST
- *        (2) non-indexable predicate ÀÌ¸é,
+ *        (2) non-indexable predicate ì´ë©´,
  *            columnID = QMO_COLUMNID_NON_INDEXABLE
- *     4. predicate¿¡ ´ëÇÑ selectivity ¼³Á¤.
+ *     4. predicateì— ëŒ€í•œ selectivity ì„¤ì •.
  *
  ***********************************************************************/
 
@@ -4243,13 +4243,13 @@ qmoPred::classifyTablePredicate( qcStatement      * aStatement,
     IDU_FIT_POINT_FATAL( "qmoPred::classifyTablePredicate::__FT__" );
 
     //--------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //--------------------------------------
 
     IDE_DASSERT( aPredicate != NULL );
 
     //--------------------------------------
-    // predicate¿¡ ´ëÇÑ indexable ÆÇ´Ü
+    // predicateì— ëŒ€í•œ indexable íŒë‹¨
     //--------------------------------------
 
     IDE_TEST( isIndexable( aStatement,
@@ -4260,7 +4260,7 @@ qmoPred::classifyTablePredicate( qcStatement      * aStatement,
               != IDE_SUCCESS );
 
     //--------------------------------------
-    // columnID ¼³Á¤
+    // columnID ì„¤ì •
     //--------------------------------------
 
     IDE_TEST( getColumnID( aStatement,
@@ -4270,16 +4270,16 @@ qmoPred::classifyTablePredicate( qcStatement      * aStatement,
               != IDE_SUCCESS );
 
     //--------------------------------------
-    // predicate¿¡ ´ëÇÑ selectivity ¼³Á¤.
+    // predicateì— ëŒ€í•œ selectivity ì„¤ì •.
     //--------------------------------------
 
 
     if ( aStatiscalData != NULL )
     {
         // fix BUG-12515
-        // VIEW ¾ÈÀ¸·Î push selectionµÇ°í ³­ ÈÄ,
-        // whereÀı¿¡ ³²¾ÆÀÖ´Â predicate¿¡ ´ëÇØ¼­´Â selectivity¸¦ ±¸ÇÏÁö ¾ÊÀ½.
-        // predicate->mySelectivity = 1·Î ÃÊ±âÈ­ µÇ¾î ÀÖÀ½.
+        // VIEW ì•ˆìœ¼ë¡œ push selectionë˜ê³  ë‚œ í›„,
+        // whereì ˆì— ë‚¨ì•„ìˆëŠ” predicateì— ëŒ€í•´ì„œëŠ” selectivityë¥¼ êµ¬í•˜ì§€ ì•ŠìŒ.
+        // predicate->mySelectivity = 1ë¡œ ì´ˆê¸°í™” ë˜ì–´ ìˆìŒ.
 
         if ( ( aPredicate->flag & QMO_PRED_PUSH_REMAIN_MASK )
              == QMO_PRED_PUSH_REMAIN_FALSE )
@@ -4299,7 +4299,7 @@ qmoPred::classifyTablePredicate( qcStatement      * aStatement,
     else
     {
         // Nothing to do.
-        // Åë°èÁ¤º¸°¡ ¾øÀ¸¹Ç·Î selectivity´Â ¼³Á¤ÇÏÁö ¾Ê´Â´Ù.
+        // í†µê³„ì •ë³´ê°€ ì—†ìœ¼ë¯€ë¡œ selectivityëŠ” ì„¤ì •í•˜ì§€ ì•ŠëŠ”ë‹¤.
     }
 
     return IDE_SUCCESS;
@@ -4318,27 +4318,27 @@ qmoPred::classifyPartTablePredicate( qcStatement        * aStatement,
 {
 /***********************************************************************
  *
- * Description : Base TableÀÇ Predicate¿¡ ´ëÇÑ ºĞ·ù
+ * Description : Base Tableì˜ Predicateì— ëŒ€í•œ ë¶„ë¥˜
  *
- *    predicate Àç¹èÄ¡ °úÁ¤¿¡¼­ °¢ predicate¿¡ ´ëÇØ
- *    indexable predicateÀ» ÆÇ´ÜÇÏ°í, columnID¿Í selectivity¸¦ ¼³Á¤ÇÑ´Ù.
- *    (´ë»ó: selection graphÀÇ myPredicate)
+ *    predicate ì¬ë°°ì¹˜ ê³¼ì •ì—ì„œ ê° predicateì— ëŒ€í•´
+ *    indexable predicateì„ íŒë‹¨í•˜ê³ , columnIDì™€ selectivityë¥¼ ì„¤ì •í•œë‹¤.
+ *    (ëŒ€ìƒ: selection graphì˜ myPredicate)
  *
  * Implementation :
- *     1. indexable predicateÀÎÁö¸¦ ÆÇ´Ü.\
- *     2. predicateÀÇ fixed/variable Á¤º¸ ÀúÀå.
- *        [variable predicate ÆÇ´Ü±âÁØ]
+ *     1. indexable predicateì¸ì§€ë¥¼ íŒë‹¨.\
+ *     2. predicateì˜ fixed/variable ì •ë³´ ì €ì¥.
+ *        [variable predicate íŒë‹¨ê¸°ì¤€]
  *        . join predicate
- *        . host º¯¼ö Á¸Àç
- *        . subquery Á¸Àç
- *        . prior columnÀÌ Æ÷ÇÔµÈ predicate( ¿¹: prior i1=i1 )
- *     3. columnID ¼³Á¤
- *        (1) indexable predicate ÀÌ¸é,
+ *        . host ë³€ìˆ˜ ì¡´ì¬
+ *        . subquery ì¡´ì¬
+ *        . prior columnì´ í¬í•¨ëœ predicate( ì˜ˆ: prior i1=i1 )
+ *     3. columnID ì„¤ì •
+ *        (1) indexable predicate ì´ë©´,
  *            . one column : smiColumn.id
  *            . LIST       : QMO_COLUMNID_LIST
- *        (2) non-indexable predicate ÀÌ¸é,
+ *        (2) non-indexable predicate ì´ë©´,
  *            columnID = QMO_COLUMNID_NON_INDEXABLE
- *     4. predicate¿¡ ´ëÇÑ selectivity ¼³Á¤.
+ *     4. predicateì— ëŒ€í•œ selectivity ì„¤ì •.
  *
  ***********************************************************************/
 
@@ -4347,13 +4347,13 @@ qmoPred::classifyPartTablePredicate( qcStatement        * aStatement,
     IDU_FIT_POINT_FATAL( "qmoPred::classifyPartTablePredicate::__FT__" );
 
     //--------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //--------------------------------------
 
     IDE_DASSERT( aPredicate != NULL );
 
     //--------------------------------------
-    // predicate¿¡ ´ëÇÑ indexable ÆÇ´Ü
+    // predicateì— ëŒ€í•œ indexable íŒë‹¨
     //--------------------------------------
 
     IDE_TEST( isPartitionPrunable( aStatement,
@@ -4365,7 +4365,7 @@ qmoPred::classifyPartTablePredicate( qcStatement        * aStatement,
               != IDE_SUCCESS );
 
     //--------------------------------------
-    // columnID ¼³Á¤
+    // columnID ì„¤ì •
     //--------------------------------------
 
     IDE_TEST( getColumnID( aStatement,
@@ -4391,107 +4391,107 @@ qmoPred::isPartitionPrunable( qcStatement        * aStatement,
 {
 /***********************************************************************
  *
- * Description : predicateÀÇ indexable ¿©ºÎ ÆÇ´Ü
+ * Description : predicateì˜ indexable ì—¬ë¶€ íŒë‹¨
  *
- *     <indexable predicateÀÇ Á¤ÀÇ>
+ *     <indexable predicateì˜ ì •ì˜>
  *
- *     Á¶°Ç1. indexable operator ÀÌ¾î¾ß ÇÑ´Ù.
- *            system level operator »Ó¸¸ ¾Æ´Ï¶ó,
- *            user level operator(quantifyºñ±³¿¬»êÀÚ)µµ Æ÷ÇÔµÈ´Ù.
+ *     ì¡°ê±´1. indexable operator ì´ì–´ì•¼ í•œë‹¤.
+ *            system level operator ë¿ë§Œ ì•„ë‹ˆë¼,
+ *            user level operator(quantifyë¹„êµì—°ì‚°ì)ë„ í¬í•¨ëœë‹¤.
  *
- *     Á¶°Ç2. columnÀÌ ÀÖ¾î¾ß ÇÑ´Ù.
- *            ¿¹) i1=1(O), i1=i2(O), i1=i1+1(O), i1+1=1(O), 1=1(X),
+ *     ì¡°ê±´2. columnì´ ìˆì–´ì•¼ í•œë‹¤.
+ *            ì˜ˆ) i1=1(O), i1=i2(O), i1=i1+1(O), i1+1=1(O), 1=1(X),
  *                (i1,i2,i3)=(i1,i2,i3)(O), (i1,i2,i3)=(1,1,1)(O),
  *                (i1,i2,1 )=( 1, 1, 1)(X), (1,subquery)=(1,1)(X)
  *
- *     Á¶°Ç3. column¿¡ ¿¬»êÀÌ ¾ø¾î¾ß ÇÑ´Ù.
+ *     ì¡°ê±´3. columnì— ì—°ì‚°ì´ ì—†ì–´ì•¼ í•œë‹¤.
  *
- *            ¿¹) i1=1(O), i1=i2(O), i1=i1+1(O), i1+1=1(X)
+ *            ì˜ˆ) i1=1(O), i1=i2(O), i1=i1+1(O), i1+1=1(X)
  *
- *     Á¶°Ç4. columnÀÌ ÇÑÂÊ¿¡¸¸ Á¸ÀçÇØ¾ß ÇÑ´Ù.
- *            ¿¹) i1=1(O), i1=i1+1(X), i1=i2(X)
+ *     ì¡°ê±´4. columnì´ í•œìª½ì—ë§Œ ì¡´ì¬í•´ì•¼ í•œë‹¤.
+ *            ì˜ˆ) i1=1(O), i1=i1+1(X), i1=i2(X)
  *
- *     Á¶°Ç5. column¿¡ conversionÀÌ ¹ß»ıÇÏÁö ¾Ê¾Æ¾ß ÇÑ´Ù.
- *            ¿¹) i1(integer)=smallint'1'(O), i1(integer)=3.5(X)
- *            sameGroupCompare·Î ÀÎÇØ ÀÌ Á¦¾àÀº ¿ÏÈ­µÊ.
+ *     ì¡°ê±´5. columnì— conversionì´ ë°œìƒí•˜ì§€ ì•Šì•„ì•¼ í•œë‹¤.
+ *            ì˜ˆ) i1(integer)=smallint'1'(O), i1(integer)=3.5(X)
+ *            sameGroupCompareë¡œ ì¸í•´ ì´ ì œì•½ì€ ì™„í™”ë¨.
  *
- *     Á¶°Ç6. value¿¡ ´ëÇÑ Á¶°ÇÃ¼Å©
- *            6-1. subquery´Â ¹«Á¶°Ç ¾ÈµÈ´Ù.
- *                 ¿¹) a1 = (select i1 from t2 where i1=1)(X)
+ *     ì¡°ê±´6. valueì— ëŒ€í•œ ì¡°ê±´ì²´í¬
+ *            6-1. subqueryëŠ” ë¬´ì¡°ê±´ ì•ˆëœë‹¤.
+ *                 ì˜ˆ) a1 = (select i1 from t2 where i1=1)(X)
  *                     a1 = (select sum(i1) from t2)(X)
  *                     a1 = (select i1 from t2 where i1=al)(X)
  *                     a1 = (select sum(i1) from t2 where i1=a1)(X)
- *            6-2. LIKE¿¡ ´ëÇÑ ÆĞÅÏ¹®ÀÚ´Â ÀÏ¹İ¹®ÀÚ·Î ½ÃÀÛÇÏ¿©¾ß ÇÑ´Ù.
- *                 ¿¹) i1 like 'a%'(O) , i1 like '\_a%' escape'\'(O)
+ *            6-2. LIKEì— ëŒ€í•œ íŒ¨í„´ë¬¸ìëŠ” ì¼ë°˜ë¬¸ìë¡œ ì‹œì‘í•˜ì—¬ì•¼ í•œë‹¤.
+ *                 ì˜ˆ) i1 like 'a%'(O) , i1 like '\_a%' escape'\'(O)
  *                     i1 like '%a%'(X), i1 like '_bc'(X)
- *            6-3. host º¯¼ö°¡ ¿À´Â °æ¿ì´Â ¹«Á¶°Ç ¾ÈµÈ´Ù.
- *                 ¿¹) i1=?(X), i1=?+1(X)
+ *            6-3. host ë³€ìˆ˜ê°€ ì˜¤ëŠ” ê²½ìš°ëŠ” ë¬´ì¡°ê±´ ì•ˆëœë‹¤.
+ *                 ì˜ˆ) i1=?(X), i1=?+1(X)
  *
- *     Á¶°Ç7. OR³ëµå ÇÏÀ§¿¡ µ¿ÀÏÇÑ ÄÃ·³¸¸ ÀÖ´Â °æ¿ìÀÌ¾î¾ß ÇÑ´Ù.
- *            ´Ü, subquery °¡ ¿À´Â °æ¿ì´Â Á¦¿ÜµÈ´Ù.
- *            ¿¹) i1=1 OR i1=2(O), (i1,i2)=(1,1) OR (i1,i2)=(2,2)(O),
+ *     ì¡°ê±´7. ORë…¸ë“œ í•˜ìœ„ì— ë™ì¼í•œ ì»¬ëŸ¼ë§Œ ìˆëŠ” ê²½ìš°ì´ì–´ì•¼ í•œë‹¤.
+ *            ë‹¨, subquery ê°€ ì˜¤ëŠ” ê²½ìš°ëŠ” ì œì™¸ëœë‹¤.
+ *            ì˜ˆ) i1=1 OR i1=2(O), (i1,i2)=(1,1) OR (i1,i2)=(2,2)(O),
  *                i1=1 OR i2=2(X),
  *                i1 in (subquery) OR i1 in (subquery)(X),
  *                i1=1 OR i1 in (subquery) (X)
  *                (i1=1 and i2=1) or i1=( subquery ) (X)
  *
  *
- *     < ÁúÀÇ ¼öÇà°úÁ¤¿¡¼­ÀÇ partition prunable predicate ÀÇ ÆÇ´Ü¹üÀ§ >
+ *     < ì§ˆì˜ ìˆ˜í–‰ê³¼ì •ì—ì„œì˜ partition prunable predicate ì˜ íŒë‹¨ë²”ìœ„ >
  *
- *     (1) parsing & validation °úÁ¤¿¡¼­ÀÇ ÆÇ´Ü¹üÀ§
- *         Á¶°Ç1, Á¶°Ç2, Á¶°Ç3, ÀÌ ¼¼°¡Áö Á¶°ÇÀ» ¸¸Á·ÇÏ¸é
- *         mtcNode.lflag¿¡ MTC_NODE_INDEX_USABLEÀ» ¼³Á¤ÇÔ.
+ *     (1) parsing & validation ê³¼ì •ì—ì„œì˜ íŒë‹¨ë²”ìœ„
+ *         ì¡°ê±´1, ì¡°ê±´2, ì¡°ê±´3, ì´ ì„¸ê°€ì§€ ì¡°ê±´ì„ ë§Œì¡±í•˜ë©´
+ *         mtcNode.lflagì— MTC_NODE_INDEX_USABLEì„ ì„¤ì •í•¨.
  *
- *     (2) graph »ı¼º°úÁ¤¿¡¼­ÀÇ ÆÇ´Ü¹üÀ§
- *         Á¶°Ç4, Á¶°Ç5, Á¶°Ç6, Á¶°Ç7
+ *     (2) graph ìƒì„±ê³¼ì •ì—ì„œì˜ íŒë‹¨ë²”ìœ„
+ *         ì¡°ê±´4, ì¡°ê±´5, ì¡°ê±´6, ì¡°ê±´7
  *
- *     (3) plan tree »ı¼º°úÁ¤¿¡¼­ÀÇ ÆÇ´Ü¹üÀ§
- *         partition filter¸¦ ÃßÃâÇÔ.
+ *     (3) plan tree ìƒì„±ê³¼ì •ì—ì„œì˜ íŒë‹¨ë²”ìœ„
+ *         partition filterë¥¼ ì¶”ì¶œí•¨.
  *
- *     (4) execution °úÁ¤¿¡¼­ÀÇ ÆÇ´Ü¹üÀ§
- *         bindingÀÌ ³¡³­ ÈÄ, ¶Ç´Â doItFirst¿¡¼­ partition filter¸¦
- *         »õ·Î »ı¼ºÇÑ´Ù.
+ *     (4) execution ê³¼ì •ì—ì„œì˜ íŒë‹¨ë²”ìœ„
+ *         bindingì´ ëë‚œ í›„, ë˜ëŠ” doItFirstì—ì„œ partition filterë¥¼
+ *         ìƒˆë¡œ ìƒì„±í•œë‹¤.
  *
- * Implementation : ÀÌ ÇÔ¼ö´Â graph »ı¼º°úÁ¤¿¡¼­ÀÇ ÆÇ´Ü¹üÀ§¸¦ °Ë»çÇÔ.
+ * Implementation : ì´ í•¨ìˆ˜ëŠ” graph ìƒì„±ê³¼ì •ì—ì„œì˜ íŒë‹¨ë²”ìœ„ë¥¼ ê²€ì‚¬í•¨.
  *
- *     1. Á¶°Ç1,2,3ÀÇ ÆÇ´Ü
- *        mtcNode.lflag°¡ MTC_NODE_INDEX_USABLE ÀÎÁö¸¦ °Ë»ç
+ *     1. ì¡°ê±´1,2,3ì˜ íŒë‹¨
+ *        mtcNode.lflagê°€ MTC_NODE_INDEX_USABLE ì¸ì§€ë¥¼ ê²€ì‚¬
  *
- *     2. Á¶°Ç4ÀÇ ÆÇ´Ü
- *        (1) operandÀÇ dependency°¡ Áßº¹µÇÁö ¾Ê´ÂÁö¸¦ °Ë»çÇÑ´Ù.
- *            (ÀÌ °Ë»ç·Î ÄÃ·³ÀÌ ÇÑÂÊ¿¡¸¸ Á¸ÀçÇÑ´Ù´Â °ÍÀÌ °ËÁõµÊ)
+ *     2. ì¡°ê±´4ì˜ íŒë‹¨
+ *        (1) operandì˜ dependencyê°€ ì¤‘ë³µë˜ì§€ ì•ŠëŠ”ì§€ë¥¼ ê²€ì‚¬í•œë‹¤.
+ *            (ì´ ê²€ì‚¬ë¡œ ì»¬ëŸ¼ì´ í•œìª½ì—ë§Œ ì¡´ì¬í•œë‹¤ëŠ” ê²ƒì´ ê²€ì¦ë¨)
  *
- *            dependency Áßº¹ ÆÇ´Ü¹æ¹ıÀº,
- *            ( ( ºñ±³¿¬»êÀÚÇÏÀ§ÀÇ µÎ°³ ³ëµåÀÇ dependencies¸¦ AND¿¬»ê)
- *              & FROMÀÇ ÇØ´ç tableÀÇ dependency ) != 0
+ *            dependency ì¤‘ë³µ íŒë‹¨ë°©ë²•ì€,
+ *            ( ( ë¹„êµì—°ì‚°ìí•˜ìœ„ì˜ ë‘ê°œ ë…¸ë“œì˜ dependenciesë¥¼ ANDì—°ì‚°)
+ *              & FROMì˜ í•´ë‹¹ tableì˜ dependency ) != 0
  *
- *        (2) (1)ÀÌ °ËÁõµÇ¸é,
- *            ÄÃ·³ÀÌ ¸ğµÎ ÇØ´ç tableÀÇ ÄÃ·³À¸·Î ±¸¼ºµÇ¾ú´ÂÁö¸¦ °Ë»ç.
+ *        (2) (1)ì´ ê²€ì¦ë˜ë©´,
+ *            ì»¬ëŸ¼ì´ ëª¨ë‘ í•´ë‹¹ tableì˜ ì»¬ëŸ¼ìœ¼ë¡œ êµ¬ì„±ë˜ì—ˆëŠ”ì§€ë¥¼ ê²€ì‚¬.
  *
- *     3. Á¶°Ç5ÀÇ ÆÇ´Ü
+ *     3. ì¡°ê±´5ì˜ íŒë‹¨
  *        (1) column
- *            valueÂÊ¿¡ hostº¯¼ö°¡ ¾ø´Âµ¥µµ,
- *            column¿¡ conversionÀÌ ¹ß»ıÇß´ÂÁö¸¦ °Ë»ç.
+ *            valueìª½ì— hostë³€ìˆ˜ê°€ ì—†ëŠ”ë°ë„,
+ *            columnì— conversionì´ ë°œìƒí–ˆëŠ”ì§€ë¥¼ ê²€ì‚¬.
  *
  *        (2) LIST
- *            valueÂÊ LIST ÇÏÀ§ ³ëµåµéÀ» ¸ğµÎ Á¶»çÇØ¼­, hostº¯¼ö°¡ ¾Æ´Ï¸é¼­,
- *            valueÀÇ leftConversionÀÌ Á¸ÀçÇÏ´ÂÁö °Ë»ç.
+ *            valueìª½ LIST í•˜ìœ„ ë…¸ë“œë“¤ì„ ëª¨ë‘ ì¡°ì‚¬í•´ì„œ, hostë³€ìˆ˜ê°€ ì•„ë‹ˆë©´ì„œ,
+ *            valueì˜ leftConversionì´ ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬.
  *
- *     4. Á¶°Ç6ÀÇ ÆÇ´Ü
- *        (1) 6-1Á¶°Ç : QTC_NODE_SUBQUERY_EXIST
- *        (2) 6-2Á¶°Ç : ?
- *        (3) 6-3Á¶°Ç :
- *            value nodeÀÇ tupleÀÌ MTC_TUPLE_TYPE_CONSTANTÀÎÁö¸¦ °Ë»ç.
+ *     4. ì¡°ê±´6ì˜ íŒë‹¨
+ *        (1) 6-1ì¡°ê±´ : QTC_NODE_SUBQUERY_EXIST
+ *        (2) 6-2ì¡°ê±´ : ?
+ *        (3) 6-3ì¡°ê±´ :
+ *            value nodeì˜ tupleì´ MTC_TUPLE_TYPE_CONSTANTì¸ì§€ë¥¼ ê²€ì‚¬.
  *
- *     5. Á¶°Ç7ÀÇ ÆÇ´Ü
- *        (1) OR³ëµå ÇÏÀ§¿¡ 1°³ÀÇ ºñ±³¿¬»êÀÚ°¡ Á¸ÀçÇÒ °æ¿ì,
- *            subquery°¡ ¿À¸é ¾ÈµÊ.
- *            partition prunable predicateÀÎÁö ÆÇ´Ü
- *        (2) OR³ëµå ÇÏÀ§¿¡ 2°³ÀÌ»óÀÇ ºñ±³¿¬»êÀÚ°¡ Á¸ÀçÇÒ °æ¿ì,
- *            . subquery¸¦ Æ÷ÇÔÇÏÁö ¾Ê¾Æ¾ß ÇÑ´Ù.
- *            . ÇÏÀ§ ºñ±³¿¬»êÀÚµéÀÌ ¸ğµÎ partition prunableÀÌ¾î¾ß ÇÑ´Ù.
- *            . ÇÏÀ§ ³ëµåµéÀÇ columID°¡ ¸ğµÎ °°¾Æ¾ß ÇÑ´Ù.
- *              (´Ü, ÄÃ·³ÀÌ LISTÀÎ °æ¿ì´Â nonÀ¸·Î Ã³¸®)
+ *     5. ì¡°ê±´7ì˜ íŒë‹¨
+ *        (1) ORë…¸ë“œ í•˜ìœ„ì— 1ê°œì˜ ë¹„êµì—°ì‚°ìê°€ ì¡´ì¬í•  ê²½ìš°,
+ *            subqueryê°€ ì˜¤ë©´ ì•ˆë¨.
+ *            partition prunable predicateì¸ì§€ íŒë‹¨
+ *        (2) ORë…¸ë“œ í•˜ìœ„ì— 2ê°œì´ìƒì˜ ë¹„êµì—°ì‚°ìê°€ ì¡´ì¬í•  ê²½ìš°,
+ *            . subqueryë¥¼ í¬í•¨í•˜ì§€ ì•Šì•„ì•¼ í•œë‹¤.
+ *            . í•˜ìœ„ ë¹„êµì—°ì‚°ìë“¤ì´ ëª¨ë‘ partition prunableì´ì–´ì•¼ í•œë‹¤.
+ *            . í•˜ìœ„ ë…¸ë“œë“¤ì˜ columIDê°€ ëª¨ë‘ ê°™ì•„ì•¼ í•œë‹¤.
+ *              (ë‹¨, ì»¬ëŸ¼ì´ LISTì¸ ê²½ìš°ëŠ” nonìœ¼ë¡œ ì²˜ë¦¬)
  *
  ***********************************************************************/
     UInt     sColumnID;
@@ -4503,7 +4503,7 @@ qmoPred::isPartitionPrunable( qcStatement        * aStatement,
     IDU_FIT_POINT_FATAL( "qmoPred::isPartitionPrunable::__FT__" );
 
     //--------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //--------------------------------------
     IDE_DASSERT( aPredicate != NULL );
     IDE_DASSERT( aIsPartitionPrunable != NULL );
@@ -4514,20 +4514,20 @@ qmoPred::isPartitionPrunable( qcStatement        * aStatement,
          == MTC_NODE_LOGICAL_CONDITION_TRUE )
     {
         //--------------------------------------
-        // CNF ÀÎ °æ¿ì·Î,
-        // ÀÎÀÚ·Î ³Ñ¾î¿Â predicateÀÇ ÃÖ»óÀ§ ³ëµå´Â OR³ëµåÀÌ¸ç,
-        // OR ³ëµå ÇÏÀ§¿¡ ¿©·¯°³ÀÇ ºñ±³¿¬»êÀÚ°¡ ¿Ã ¼ö ÀÖ´Ù.
-        // OR ³ëµå ÇÏÀ§¿¡ ºñ±³¿¬»êÀÚ°¡ ÇÏ³ªÀÏ¶§¿Í ¿©·¯°³ÀÏ¶§ÀÇ
-        // Á¶°Ç°Ë»ç°¡ Æ²¸®¹Ç·Î, ÀÌ¸¦ ±¸ºĞÇÏ¿© Ã³¸®ÇÑ´Ù.
+        // CNF ì¸ ê²½ìš°ë¡œ,
+        // ì¸ìë¡œ ë„˜ì–´ì˜¨ predicateì˜ ìµœìƒìœ„ ë…¸ë“œëŠ” ORë…¸ë“œì´ë©°,
+        // OR ë…¸ë“œ í•˜ìœ„ì— ì—¬ëŸ¬ê°œì˜ ë¹„êµì—°ì‚°ìê°€ ì˜¬ ìˆ˜ ìˆë‹¤.
+        // OR ë…¸ë“œ í•˜ìœ„ì— ë¹„êµì—°ì‚°ìê°€ í•˜ë‚˜ì¼ë•Œì™€ ì—¬ëŸ¬ê°œì¼ë•Œì˜
+        // ì¡°ê±´ê²€ì‚¬ê°€ í‹€ë¦¬ë¯€ë¡œ, ì´ë¥¼ êµ¬ë¶„í•˜ì—¬ ì²˜ë¦¬í•œë‹¤.
         //--------------------------------------
 
-        // sNode´Â ºñ±³¿¬»êÀÚ ³ëµå
+        // sNodeëŠ” ë¹„êµì—°ì‚°ì ë…¸ë“œ
         sNode = (qtcNode *)(sNode->node.arguments);
 
         if ( aPredicate->node->node.arguments->next == NULL )
         {
-            // 1. OR ³ëµå ÇÏÀ§¿¡ ºñ±³¿¬»êÀÚ°¡ ÇÏ³ª¸¸ ¿À´Â °æ¿ì,
-            // subquery°¡ Á¸ÀçÇÏ¸é ¾ÈµÈ´Ù.
+            // 1. OR ë…¸ë“œ í•˜ìœ„ì— ë¹„êµì—°ì‚°ìê°€ í•˜ë‚˜ë§Œ ì˜¤ëŠ” ê²½ìš°,
+            // subqueryê°€ ì¡´ì¬í•˜ë©´ ì•ˆëœë‹¤.
 
             if ( ( aPredicate->node->lflag & QTC_NODE_SUBQUERY_MASK )
                  == QTC_NODE_SUBQUERY_EXIST )
@@ -4549,13 +4549,13 @@ qmoPred::isPartitionPrunable( qcStatement        * aStatement,
         }
         else
         {
-            // 2. OR ³ëµå ÇÏÀ§¿¡ ºñ±³¿¬»êÀÚ°¡ ¿©·¯°³ ¿À´Â °æ¿ì,
-            //   (1) subquery°¡ Á¸ÀçÇÏÁö ¾Ê¾Æ¾ß ÇÑ´Ù.
-            //   (2) ºñ±³¿¬»êÀÚ°¡ ¸ğµÎ indexable predicateÀÌ¾î¾ß ÇÑ´Ù.
-            //   (3) ºñ±³¿¬»êÀÚ ³ëµåÀÇ columnID°¡ ¸ğµÎ µ¿ÀÏÇØ¾ß ÇÑ´Ù.
-            //       (´Ü, columnÀÌ LISTÀÎ °æ¿ì´Â Á¦¿ÜÇÑ´Ù.)
+            // 2. OR ë…¸ë“œ í•˜ìœ„ì— ë¹„êµì—°ì‚°ìê°€ ì—¬ëŸ¬ê°œ ì˜¤ëŠ” ê²½ìš°,
+            //   (1) subqueryê°€ ì¡´ì¬í•˜ì§€ ì•Šì•„ì•¼ í•œë‹¤.
+            //   (2) ë¹„êµì—°ì‚°ìê°€ ëª¨ë‘ indexable predicateì´ì–´ì•¼ í•œë‹¤.
+            //   (3) ë¹„êµì—°ì‚°ì ë…¸ë“œì˜ columnIDê°€ ëª¨ë‘ ë™ì¼í•´ì•¼ í•œë‹¤.
+            //       (ë‹¨, columnì´ LISTì¸ ê²½ìš°ëŠ” ì œì™¸í•œë‹¤.)
 
-            // subquery°¡ Á¸ÀçÇÏÁö ¾Ê¾Æ¾ß ÇÑ´Ù.
+            // subqueryê°€ ì¡´ì¬í•˜ì§€ ì•Šì•„ì•¼ í•œë‹¤.
             if ( ( aPredicate->node->lflag & QTC_NODE_SUBQUERY_MASK )
                  == QTC_NODE_SUBQUERY_EXIST )
             {
@@ -4565,7 +4565,7 @@ qmoPred::isPartitionPrunable( qcStatement        * aStatement,
             {
                 while ( sNode != NULL )
                 {
-                    // partition prunable predicateÀÎÁö °Ë»ç
+                    // partition prunable predicateì¸ì§€ ê²€ì‚¬
                     IDE_TEST( isPartitionPrunableOnePred( aStatement,
                                                           sNode,
                                                           aPartitionMethod,
@@ -4576,7 +4576,7 @@ qmoPred::isPartitionPrunable( qcStatement        * aStatement,
 
                     if ( sIsPartitionPrunablePred == ID_TRUE )
                     {
-                        // columnID¸¦ ¾ò´Â´Ù.
+                        // columnIDë¥¼ ì–»ëŠ”ë‹¤.
                         IDE_TEST( getColumnID( aStatement,
                                                sNode,
                                                ID_TRUE,
@@ -4585,9 +4585,9 @@ qmoPred::isPartitionPrunable( qcStatement        * aStatement,
 
                         if ( sIsFirstNode == ID_TRUE )
                         {
-                            // OR ³ëµå ÇÏÀ§ÀÇ Ã¹¹øÂ° ºñ±³¿¬»êÀÚ Ã³¸®½Ã,
-                            // ÀÌÈÄÀÇ columnID ºñ±³¸¦ À§ÇØ,
-                            // sFirstColumnID¿¡ columnID¸¦ ÀúÀå.
+                            // OR ë…¸ë“œ í•˜ìœ„ì˜ ì²«ë²ˆì§¸ ë¹„êµì—°ì‚°ì ì²˜ë¦¬ì‹œ,
+                            // ì´í›„ì˜ columnID ë¹„êµë¥¼ ìœ„í•´,
+                            // sFirstColumnIDì— columnIDë¥¼ ì €ì¥.
                             sFirstColumnID = sColumnID;
                             sIsFirstNode   = ID_FALSE;
                         }
@@ -4596,8 +4596,8 @@ qmoPred::isPartitionPrunable( qcStatement        * aStatement,
                             // Nothing To Do
                         }
 
-                        // columnÀÌ LIST°¡ ¾Æ´Ñ one columnÀ¸·Î ±¸¼ºµÇ¾î ÀÖ°í,
-                        // Ã¹¹øÂ° ºñ±³¿¬»êÀÚÀÇ columnID¿Í °°ÀºÁö¸¦ °Ë»ç.
+                        // columnì´ LISTê°€ ì•„ë‹Œ one columnìœ¼ë¡œ êµ¬ì„±ë˜ì–´ ìˆê³ ,
+                        // ì²«ë²ˆì§¸ ë¹„êµì—°ì‚°ìì˜ columnIDì™€ ê°™ì€ì§€ë¥¼ ê²€ì‚¬.
                         if ( ( sColumnID != QMO_COLUMNID_LIST )
                              && ( sColumnID == sFirstColumnID ) )
                         {
@@ -4666,9 +4666,9 @@ qmoPred::isPartitionPrunableOnePred( qcStatement        * aStatement,
 {
 /***********************************************************************
  *
- * Description : ºñ±³¿¬»êÀÚ ´ÜÀ§·Î partition prunable ¿©ºÎ¸¦ ÆÇ´ÜÇÑ´Ù.
+ * Description : ë¹„êµì—°ì‚°ì ë‹¨ìœ„ë¡œ partition prunable ì—¬ë¶€ë¥¼ íŒë‹¨í•œë‹¤.
  *
- * Implementation : qmoPred::isPartitionPrunable()ÀÇ ÁÖ¼® ÂüÁ¶.
+ * Implementation : qmoPred::isPartitionPrunable()ì˜ ì£¼ì„ ì°¸ì¡°.
  *
  ************************************************************************/
 
@@ -4680,13 +4680,13 @@ qmoPred::isPartitionPrunableOnePred( qcStatement        * aStatement,
     IDU_FIT_POINT_FATAL( "qmoPred::isPartitionPrunableOnePred::__FT__" );
 
     //--------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //--------------------------------------
 
     IDE_DASSERT( aIsPartitionPrunable != NULL );
 
     //--------------------------------------
-    // partition prunable ÆÇ´Ü
+    // partition prunable íŒë‹¨
     //--------------------------------------
 
     sCompareNode = aNode;
@@ -4703,8 +4703,8 @@ qmoPred::isPartitionPrunableOnePred( qcStatement        * aStatement,
                  ( sCompareNode->node.module == &mtfEqualAny ) ||
                  ( sCompareNode->node.module == &mtfIsNull ) )
             {
-                // ºñ±³¿¬»êÀÚ°¡ equal, IN, isnull ÀÎ °æ¿ì
-                // hash, range, list partition method¸ğµÎ °¡´É.
+                // ë¹„êµì—°ì‚°ìê°€ equal, IN, isnull ì¸ ê²½ìš°
+                // hash, range, list partition methodëª¨ë‘ ê°€ëŠ¥.
                 // Nothing To Do.
 
             }
@@ -4713,7 +4713,7 @@ qmoPred::isPartitionPrunableOnePred( qcStatement        * aStatement,
                 if ( ( aPartitionMethod == QCM_PARTITION_METHOD_HASH ) ||
                      ( aPartitionMethod == QCM_PARTITION_METHOD_LIST ) )
                 {
-                    // list, hash´Â equality¿¬»ê°ú isnull¿¬»ê »©°í´Â ¸ğµÎ ºÒ°¡´É.
+                    // list, hashëŠ” equalityì—°ì‚°ê³¼ isnullì—°ì‚° ë¹¼ê³ ëŠ” ëª¨ë‘ ë¶ˆê°€ëŠ¥.
                     sIsPartitionPrunablePred = ID_FALSE;
                 }
                 else
@@ -4722,8 +4722,8 @@ qmoPred::isPartitionPrunableOnePred( qcStatement        * aStatement,
                          ( sCompareNode->node.module == &mtfNotEqualAny ) ||
                          ( sCompareNode->node.module == &mtfNotEqualAll ) )
                     {
-                        // ºñ±³¿¬»êÀÚ°¡ equal, IN ÀÌ ¾Æ´Ñ °æ¿ì
-                        // ÄÃ·³ÂÊÀÌ LISTÀÌ¸é, non-indexable·Î ºĞ·ù
+                        // ë¹„êµì—°ì‚°ìê°€ equal, IN ì´ ì•„ë‹Œ ê²½ìš°
+                        // ì»¬ëŸ¼ìª½ì´ LISTì´ë©´, non-indexableë¡œ ë¶„ë¥˜
                         if ( ( sCompareNode->node.arguments->lflag &
                                MTC_NODE_INDEX_MASK ) == MTC_NODE_INDEX_USABLE )
                         {
@@ -4766,10 +4766,10 @@ qmoPred::isPartitionPrunableOnePred( qcStatement        * aStatement,
         }
 
         //--------------------------------------
-        // Á¶°Ç 4ÀÇ ÆÇ´Ü
-        //   : columnÀÌ ÇÑÂÊ¿¡¸¸ Á¸ÀçÇØ¾ß ÇÑ´Ù.
-        //   (1) µÎ operandÀÇ dependency°¡ Áßº¹µÇÁö ¾Ê´ÂÁö¸¦ °Ë»çÇÑ´Ù.
-        //   (2) columnÀÌ ¸ğµÎ ÇØ´ç tableÀÇ columnÀ¸·Î ±¸¼ºµÇ¾ú´ÂÁö¸¦ °Ë»ç.
+        // ì¡°ê±´ 4ì˜ íŒë‹¨
+        //   : columnì´ í•œìª½ì—ë§Œ ì¡´ì¬í•´ì•¼ í•œë‹¤.
+        //   (1) ë‘ operandì˜ dependencyê°€ ì¤‘ë³µë˜ì§€ ì•ŠëŠ”ì§€ë¥¼ ê²€ì‚¬í•œë‹¤.
+        //   (2) columnì´ ëª¨ë‘ í•´ë‹¹ tableì˜ columnìœ¼ë¡œ êµ¬ì„±ë˜ì—ˆëŠ”ì§€ë¥¼ ê²€ì‚¬.
         //--------------------------------------
         IDE_TEST( isExistColumnOneSide( aStatement,
                                         sCompareNode,
@@ -4790,15 +4790,15 @@ qmoPred::isPartitionPrunableOnePred( qcStatement        * aStatement,
         if ( ( sCompareNode->node.module == &mtfIsNull ) ||
              ( sCompareNode->node.module == &mtfIsNotNull ) )
         {
-            // IS NULL, IS NOT NULL ÀÎ °æ¿ì,
-            // ¿¹: i1 is null, i1 is not null
-            // ÀÌ °æ¿ì´Â, value node¸¦ °¡ÁöÁö ¾Ê±â ¶§¹®¿¡,
-            // (1) column¿¡ conversionÀÌ ¹ß»ıÇÏÁö ¾Ê°í,
-            // (2) value¿¡ ´ëÇÑ Á¶°ÇÃ¼Å©¸¦ ÇÏÁö ¾Ê¾Æµµ µÈ´Ù.
+            // IS NULL, IS NOT NULL ì¸ ê²½ìš°,
+            // ì˜ˆ: i1 is null, i1 is not null
+            // ì´ ê²½ìš°ëŠ”, value nodeë¥¼ ê°€ì§€ì§€ ì•Šê¸° ë•Œë¬¸ì—,
+            // (1) columnì— conversionì´ ë°œìƒí•˜ì§€ ì•Šê³ ,
+            // (2) valueì— ëŒ€í•œ ì¡°ê±´ì²´í¬ë¥¼ í•˜ì§€ ì•Šì•„ë„ ëœë‹¤.
 
             // fix BUG-15773
-            // R-tree ÀÎµ¦½º°¡ ¼³Á¤µÈ ·¹ÄÚµå¿¡ ´ëÇØ¼­
-            // is null, is not null ¿¬»êÀÚ´Â full scanÇØ¾ß ÇÑ´Ù.
+            // R-tree ì¸ë±ìŠ¤ê°€ ì„¤ì •ëœ ë ˆì½”ë“œì— ëŒ€í•´ì„œ
+            // is null, is not null ì—°ì‚°ìëŠ” full scaní•´ì•¼ í•œë‹¤.
             if ( QC_SHARED_TMPLATE(aStatement)->tmplate.
                  rows[sCompareNode->node.arguments->table].
                  columns[sCompareNode->node.arguments->column].type.dataTypeId
@@ -4814,8 +4814,8 @@ qmoPred::isPartitionPrunableOnePred( qcStatement        * aStatement,
         else
         {
             //--------------------------------------
-            // Á¶°Ç 5ÀÇ ÆÇ´Ü
-            //   : column°ú value°¡ µ¿ÀÏ°è¿­¿¡ ¼ÓÇÏ´Â data typeÀÎÁö¸¦ °Ë»ç
+            // ì¡°ê±´ 5ì˜ íŒë‹¨
+            //   : columnê³¼ valueê°€ ë™ì¼ê³„ì—´ì— ì†í•˜ëŠ” data typeì¸ì§€ë¥¼ ê²€ì‚¬
             //--------------------------------------
 
             IDE_TEST( checkSameGroupType( aStatement,
@@ -4833,12 +4833,12 @@ qmoPred::isPartitionPrunableOnePred( qcStatement        * aStatement,
             }
 
             //--------------------------------------
-            // Á¶°Ç 6ÀÇ ÆÇ´Ü
-            //   : value¿¡ ´ëÇÑ Á¶°ÇÃ¼Å©
-            //   (1) hostº¯¼ö°¡ Á¸ÀçÇÏ¸é, indexable·Î ÆÇ´ÜÇÑ´Ù.
-            //   (2) subquery°¡ ¿À´Â °æ¿ì´Â ¾ÈµÊ
-            //   (3) deterministic functionÀÌ ¿À´Â °æ¿ìµµ ¾È µÊ( BUG-39823 ).
-            //   (4) LIKE¿¡ ´ëÇÑ ÆĞÅÏ¹®ÀÚ´Â ÀÏ¹İ¹®ÀÚ·Î ½ÃÀÛÇÏ¿©¾ß ÇÑ´Ù.
+            // ì¡°ê±´ 6ì˜ íŒë‹¨
+            //   : valueì— ëŒ€í•œ ì¡°ê±´ì²´í¬
+            //   (1) hostë³€ìˆ˜ê°€ ì¡´ì¬í•˜ë©´, indexableë¡œ íŒë‹¨í•œë‹¤.
+            //   (2) subqueryê°€ ì˜¤ëŠ” ê²½ìš°ëŠ” ì•ˆë¨
+            //   (3) deterministic functionì´ ì˜¤ëŠ” ê²½ìš°ë„ ì•ˆ ë¨( BUG-39823 ).
+            //   (4) LIKEì— ëŒ€í•œ íŒ¨í„´ë¬¸ìëŠ” ì¼ë°˜ë¬¸ìë¡œ ì‹œì‘í•˜ì—¬ì•¼ í•œë‹¤.
             //--------------------------------------
 
             IDE_TEST( isPartitionPrunableValue( aStatement,
@@ -4884,15 +4884,15 @@ qmoPred::isPartitionPrunableValue( qcStatement * aStatement,
 {
 /***********************************************************************
  *
- * Description : indexable Predicate ÆÇ´Ü½Ã,
- *               value¿¡ ´ëÇÑ Á¶°Ç °Ë»ç( Á¶°Ç 6ÀÇ °Ë»ç).
+ * Description : indexable Predicate íŒë‹¨ì‹œ,
+ *               valueì— ëŒ€í•œ ì¡°ê±´ ê²€ì‚¬( ì¡°ê±´ 6ì˜ ê²€ì‚¬).
  *
  * Implementation :
  *
- *     1. hostº¯¼ö°¡ Á¸ÀçÇÏ¸é, indexable·Î ÆÇ´ÜÇÑ´Ù.
- *     2. subquery°¡ ¿À´Â °æ¿ì ¾ÈµÊ.
- *     3. deterministion functionÀÎ °æ¿ìµµ ¾È µÊ( BUG-39823 ).
- *     4. LIKE¿¡ ´ëÇÑ ÆĞÅÏ¹®ÀÚ´Â ÀÏ¹İ¹®ÀÚ·Î ½ÃÀÛÇÏ¿©¾ß ÇÑ´Ù.
+ *     1. hostë³€ìˆ˜ê°€ ì¡´ì¬í•˜ë©´, indexableë¡œ íŒë‹¨í•œë‹¤.
+ *     2. subqueryê°€ ì˜¤ëŠ” ê²½ìš° ì•ˆë¨.
+ *     3. deterministion functionì¸ ê²½ìš°ë„ ì•ˆ ë¨( BUG-39823 ).
+ *     4. LIKEì— ëŒ€í•œ íŒ¨í„´ë¬¸ìëŠ” ì¼ë°˜ë¬¸ìë¡œ ì‹œì‘í•˜ì—¬ì•¼ í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -4905,13 +4905,13 @@ qmoPred::isPartitionPrunableValue( qcStatement * aStatement,
     IDU_FIT_POINT_FATAL( "qmoPred::isPartitionPrunableValue::__FT__" );
 
     //--------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //--------------------------------------
 
     IDE_DASSERT( aIsPartitionPrunable != NULL );
 
     //--------------------------------------
-    // Á¶°Ç6ÀÇ ÆÇ´Ü : valueÀÇ Á¶°Ç Ã¼Å©
+    // ì¡°ê±´6ì˜ íŒë‹¨ : valueì˜ ì¡°ê±´ ì²´í¬
     //--------------------------------------
 
     sCompareNode = aNode;
@@ -4926,11 +4926,11 @@ qmoPred::isPartitionPrunableValue( qcStatement * aStatement,
     }
 
     // PROJ-1492
-    // È£½ºÆ® º¯¼öÀÇ Å¸ÀÔÀÌ °áÁ¤µÇ´õ¶óµµ ±× °ªÀº data bindingÀü¿¡´Â
-    // ¾Ë ¼ö ¾ø´Ù.
+    // í˜¸ìŠ¤íŠ¸ ë³€ìˆ˜ì˜ íƒ€ì…ì´ ê²°ì •ë˜ë”ë¼ë„ ê·¸ ê°’ì€ data bindingì „ì—ëŠ”
+    // ì•Œ ìˆ˜ ì—†ë‹¤.
     if ( MTC_NODE_IS_DEFINED_VALUE( & sCompareNode->node ) == ID_FALSE )
     {
-        // 1. host º¯¼ö°¡ Á¸ÀçÇÏ¸é, indexable·Î ÆÇ´ÜÇÑ´Ù.
+        // 1. host ë³€ìˆ˜ê°€ ì¡´ì¬í•˜ë©´, indexableë¡œ íŒë‹¨í•œë‹¤.
         // Nothing To Do
     }
     else
@@ -4943,7 +4943,7 @@ qmoPred::isPartitionPrunableValue( qcStatement * aStatement,
                   sNode != NULL;
                   sNode  = (qtcNode *)(sNode->node.next) )
             {
-                // 2. subquery°¡ ¿À´Â °æ¿ì partition prunableÇÏÁö ¾Ê´Ù.
+                // 2. subqueryê°€ ì˜¤ëŠ” ê²½ìš° partition prunableí•˜ì§€ ì•Šë‹¤.
                 if ( ( sNode->node.lflag & MTC_NODE_OPERATOR_MASK )
                      == MTC_NODE_OPERATOR_SUBQUERY )
                 {
@@ -4952,13 +4952,13 @@ qmoPred::isPartitionPrunableValue( qcStatement * aStatement,
                 }
                 else
                 {
-                    // subquery node°¡ ¾Æ´Ñ °æ¿ì
+                    // subquery nodeê°€ ì•„ë‹Œ ê²½ìš°
                     // Nothing To Do
                 }
 
                 /* BUG-39823
-                   3. deterministic function node°¡ ¿À´Â °æ¿ì,
-                   partition prunable ÇÏÁö ¾Ê´Ù. */
+                   3. deterministic function nodeê°€ ì˜¤ëŠ” ê²½ìš°,
+                   partition prunable í•˜ì§€ ì•Šë‹¤. */
                 if ( ( ( sNode->lflag & QTC_NODE_PROC_FUNCTION_MASK )
                        == QTC_NODE_PROC_FUNCTION_TRUE ) &&
                      ( ( sNode->lflag & QTC_NODE_PROC_FUNC_DETERMINISTIC_MASK )
@@ -4973,10 +4973,10 @@ qmoPred::isPartitionPrunableValue( qcStatement * aStatement,
                 }
             } // end of for()
 
-            // 4. LIKE¿¡ ´ëÇÑ ÆĞÅÏ¹®ÀÚ´Â ÀÏ¹İ¹®ÀÚ·Î ½ÃÀÛÇÏ¿©¾ß ÇÑ´Ù.
+            // 4. LIKEì— ëŒ€í•œ íŒ¨í„´ë¬¸ìëŠ” ì¼ë°˜ë¬¸ìë¡œ ì‹œì‘í•˜ì—¬ì•¼ í•œë‹¤.
             if ( sCompareNode->node.module == &mtfLike )
             {
-                // ÀÏ¹İ¹®ÀÚ·Î ½ÃÀÛÇÏ´Â »ó¼öÀÎÁö¸¦ °Ë»çÇÑ´Ù.
+                // ì¼ë°˜ë¬¸ìë¡œ ì‹œì‘í•˜ëŠ” ìƒìˆ˜ì¸ì§€ë¥¼ ê²€ì‚¬í•œë‹¤.
                 if ( (QC_SHARED_TMPLATE( aStatement )->
                       tmplate.rows[sValueNode->node.table].lflag
                       & MTC_TUPLE_TYPE_MASK )
@@ -4999,7 +4999,7 @@ qmoPred::isPartitionPrunableValue( qcStatement * aStatement,
                 else
                 {
                     // BUG-25594
-                    // dynamic constant expressionÀÌ¸é indexable·Î ÆÇ´ÜÇÑ´Ù.
+                    // dynamic constant expressionì´ë©´ indexableë¡œ íŒë‹¨í•œë‹¤.
                     if ( qtc::isConstNode4LikePattern( aStatement,
                                                        sValueNode,
                                                        aOuterDependencies )
@@ -5046,9 +5046,9 @@ qmoPred::isIndexableUnitPred( qcStatement * aStatement,
 {
 /***********************************************************************
  *
- * Description : ºñ±³¿¬»êÀÚ ´ÜÀ§·Î indexable ¿©ºÎ¸¦ ÆÇ´ÜÇÑ´Ù.
+ * Description : ë¹„êµì—°ì‚°ì ë‹¨ìœ„ë¡œ indexable ì—¬ë¶€ë¥¼ íŒë‹¨í•œë‹¤.
  *
- * Implementation : qmoPred::isIndexable()ÀÇ ÁÖ¼® ÂüÁ¶.
+ * Implementation : qmoPred::isIndexable()ì˜ ì£¼ì„ ì°¸ì¡°.
  *
  ************************************************************************/
 
@@ -5060,13 +5060,13 @@ qmoPred::isIndexableUnitPred( qcStatement * aStatement,
     IDU_FIT_POINT_FATAL( "qmoPred::isIndexableUnitPred::__FT__" );
 
     //--------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //--------------------------------------
 
     IDE_DASSERT( aIsIndexable != NULL );
 
     //--------------------------------------
-    // indexable ÆÇ´Ü
+    // indexable íŒë‹¨
     //--------------------------------------
 
     sCompareNode = aNode;
@@ -5076,34 +5076,34 @@ qmoPred::isIndexableUnitPred( qcStatement * aStatement,
         sIsTemp = ID_FALSE;
 
         //--------------------------------------
-        // Á¶°Ç 1, 2, 3ÀÇ ÆÇ´Ü
-        //  (1) Á¶°Ç 1 : indexable operator ÀÌ¾î¾ß ÇÑ´Ù.
-        //  (2) Á¶°Ç 2 : columnÀÌ ÀÖ¾î¾ß ÇÑ´Ù.
-        //  (3) Á¶°Ç 3 : column¿¡ ¿¬»êÀÌ ¾ø¾î¾ß ÇÑ´Ù.
+        // ì¡°ê±´ 1, 2, 3ì˜ íŒë‹¨
+        //  (1) ì¡°ê±´ 1 : indexable operator ì´ì–´ì•¼ í•œë‹¤.
+        //  (2) ì¡°ê±´ 2 : columnì´ ìˆì–´ì•¼ í•œë‹¤.
+        //  (3) ì¡°ê±´ 3 : columnì— ì—°ì‚°ì´ ì—†ì–´ì•¼ í•œë‹¤.
         //--------------------------------------
 
         if ( ( sCompareNode->node.lflag & MTC_NODE_INDEX_MASK )
              == MTC_NODE_INDEX_USABLE )
         {
-            // LIST ÄÃ·³ÀÎ °æ¿ì´Â,
-            // equal(=)°ú IN ¿¬»êÀÚ¸¸ indexable operator·Î ÆÇ´ÜÇÑ´Ù.
-            // ºñ±³¿¬»êÀÚ°¡ equal°ú INÀÌ ¾Æ´Ï¶ó¸é,
-            // ºñ±³¿¬»êÀÚ ÇÏÀ§ ÄÃ·³ÂÊÀÌ LIST ÀÎÁö °Ë»ç.
-            // LIST ÄÃ·³ÀÌ ¿Ã ¼ö ÀÖ´Â ºñ±³¿¬»êÀÚ´Â ´ÙÀ½°ú °°´Ù.
+            // LIST ì»¬ëŸ¼ì¸ ê²½ìš°ëŠ”,
+            // equal(=)ê³¼ IN ì—°ì‚°ìë§Œ indexable operatorë¡œ íŒë‹¨í•œë‹¤.
+            // ë¹„êµì—°ì‚°ìê°€ equalê³¼ INì´ ì•„ë‹ˆë¼ë©´,
+            // ë¹„êµì—°ì‚°ì í•˜ìœ„ ì»¬ëŸ¼ìª½ì´ LIST ì¸ì§€ ê²€ì‚¬.
+            // LIST ì»¬ëŸ¼ì´ ì˜¬ ìˆ˜ ìˆëŠ” ë¹„êµì—°ì‚°ìëŠ” ë‹¤ìŒê³¼ ê°™ë‹¤.
             // [ =, !=, =ANY(IN), !=ANY, =ALL, !=ALL(NOT IN) ]
             if ( ( sCompareNode->node.module == &mtfEqual )    ||
                  ( sCompareNode->node.module == &mtfEqualAll ) ||
                  ( sCompareNode->node.module == &mtfEqualAny ) )
             {
-                // ºñ±³¿¬»êÀÚ°¡ equal, IN ÀÎ °æ¿ì
+                // ë¹„êµì—°ì‚°ìê°€ equal, IN ì¸ ê²½ìš°
                 // Nothing To Do
             }
             else if ( ( sCompareNode->node.module == &mtfNotEqual )    ||
                       ( sCompareNode->node.module == &mtfNotEqualAny ) ||
                       ( sCompareNode->node.module == &mtfNotEqualAll ) )
             {
-                // ºñ±³¿¬»êÀÚ°¡ equal, IN ÀÌ ¾Æ´Ñ °æ¿ì
-                // ÄÃ·³ÂÊÀÌ LISTÀÌ¸é, non-indexable·Î ºĞ·ù
+                // ë¹„êµì—°ì‚°ìê°€ equal, IN ì´ ì•„ë‹Œ ê²½ìš°
+                // ì»¬ëŸ¼ìª½ì´ LISTì´ë©´, non-indexableë¡œ ë¶„ë¥˜
 
                 if ( ( sCompareNode->node.arguments->lflag &
                        MTC_NODE_INDEX_MASK )
@@ -5129,7 +5129,7 @@ qmoPred::isIndexableUnitPred( qcStatement * aStatement,
             {
                 /* Nothing to Do */
                 // BETWEEN , NOT BETWEEN , IS NULL, IS NOT NULL
-                // NVL_EQUAL, NOT NVL_EQUL ºñ±³ ¿¬»êÀÚ°¡ ¿Ã¼ö ÀÖ´Ù.
+                // NVL_EQUAL, NOT NVL_EQUL ë¹„êµ ì—°ì‚°ìê°€ ì˜¬ìˆ˜ ìˆë‹¤.
             }
         }
         else
@@ -5147,10 +5147,10 @@ qmoPred::isIndexableUnitPred( qcStatement * aStatement,
         }
 
         //--------------------------------------
-        // Á¶°Ç 4ÀÇ ÆÇ´Ü
-        //   : columnÀÌ ÇÑÂÊ¿¡¸¸ Á¸ÀçÇØ¾ß ÇÑ´Ù.
-        //   (1) µÎ operandÀÇ dependency°¡ Áßº¹µÇÁö ¾Ê´ÂÁö¸¦ °Ë»çÇÑ´Ù.
-        //   (2) columnÀÌ ¸ğµÎ ÇØ´ç tableÀÇ columnÀ¸·Î ±¸¼ºµÇ¾ú´ÂÁö¸¦ °Ë»ç.
+        // ì¡°ê±´ 4ì˜ íŒë‹¨
+        //   : columnì´ í•œìª½ì—ë§Œ ì¡´ì¬í•´ì•¼ í•œë‹¤.
+        //   (1) ë‘ operandì˜ dependencyê°€ ì¤‘ë³µë˜ì§€ ì•ŠëŠ”ì§€ë¥¼ ê²€ì‚¬í•œë‹¤.
+        //   (2) columnì´ ëª¨ë‘ í•´ë‹¹ tableì˜ columnìœ¼ë¡œ êµ¬ì„±ë˜ì—ˆëŠ”ì§€ë¥¼ ê²€ì‚¬.
         //--------------------------------------
 
         IDE_TEST( isExistColumnOneSide( aStatement,
@@ -5171,15 +5171,15 @@ qmoPred::isIndexableUnitPred( qcStatement * aStatement,
         if( ( sCompareNode->node.module == &mtfIsNull ) ||
             ( sCompareNode->node.module == &mtfIsNotNull ) )
         {
-            // IS NULL, IS NOT NULL ÀÎ °æ¿ì,
-            // ¿¹: i1 is null, i1 is not null
-            // ÀÌ °æ¿ì´Â, value node¸¦ °¡ÁöÁö ¾Ê±â ¶§¹®¿¡,
-            // (1) column¿¡ conversionÀÌ ¹ß»ıÇÏÁö ¾Ê°í,
-            // (2) value¿¡ ´ëÇÑ Á¶°ÇÃ¼Å©¸¦ ÇÏÁö ¾Ê¾Æµµ µÈ´Ù.
+            // IS NULL, IS NOT NULL ì¸ ê²½ìš°,
+            // ì˜ˆ: i1 is null, i1 is not null
+            // ì´ ê²½ìš°ëŠ”, value nodeë¥¼ ê°€ì§€ì§€ ì•Šê¸° ë•Œë¬¸ì—,
+            // (1) columnì— conversionì´ ë°œìƒí•˜ì§€ ì•Šê³ ,
+            // (2) valueì— ëŒ€í•œ ì¡°ê±´ì²´í¬ë¥¼ í•˜ì§€ ì•Šì•„ë„ ëœë‹¤.
 
             // fix BUG-15773
-            // R-tree ÀÎµ¦½º°¡ ¼³Á¤µÈ ·¹ÄÚµå¿¡ ´ëÇØ¼­
-            // is null, is not null ¿¬»êÀÚ´Â full scanÇØ¾ß ÇÑ´Ù.
+            // R-tree ì¸ë±ìŠ¤ê°€ ì„¤ì •ëœ ë ˆì½”ë“œì— ëŒ€í•´ì„œ
+            // is null, is not null ì—°ì‚°ìëŠ” full scaní•´ì•¼ í•œë‹¤.
             if ( QC_SHARED_TMPLATE( aStatement )->tmplate.
                  rows[sCompareNode->node.arguments->table].
                  columns[sCompareNode->node.arguments->column].type.dataTypeId
@@ -5197,12 +5197,12 @@ qmoPred::isIndexableUnitPred( qcStatement * aStatement,
              if ( sCompareNode->node.module == &mtfInlist )
             {
                 /* BUG-32622 inlist operator
-                   INLIST ÀÎ °æ¿ì
-                   ¿¹: inlist(i1, 'aa,bb,cc')
-                   ÀÌ °æ¿ì´Â value node´Â column°ú ´Ù¸¥ typeÀÌÁö¸¸
-                   column¿¡ index°¡ ÀÖ´Â °æ¿ì °­Á¦·Î index¸¦ ÅÂ¿ì±â¶§¹®¿¡
-                   Ç×»ó indexableÇÏ´Ù°í ÆÇ´ÜÇÑ´Ù.
-                   (index¸¦ ¸øÇÏ´Â °æ¿ì´Â ¿¡·¯¸¦ ¹İÈ¯ÇÑ´Ù.)
+                   INLIST ì¸ ê²½ìš°
+                   ì˜ˆ: inlist(i1, 'aa,bb,cc')
+                   ì´ ê²½ìš°ëŠ” value nodeëŠ” columnê³¼ ë‹¤ë¥¸ typeì´ì§€ë§Œ
+                   columnì— indexê°€ ìˆëŠ” ê²½ìš° ê°•ì œë¡œ indexë¥¼ íƒœìš°ê¸°ë•Œë¬¸ì—
+                   í•­ìƒ indexableí•˜ë‹¤ê³  íŒë‹¨í•œë‹¤.
+                   (indexë¥¼ ëª»í•˜ëŠ” ê²½ìš°ëŠ” ì—ëŸ¬ë¥¼ ë°˜í™˜í•œë‹¤.)
                 */
                 sNode = (qtcNode *)(sCompareNode->node.arguments);
                 sNode->lflag &= ~QTC_NODE_CHECK_SAMEGROUP_MASK;
@@ -5211,8 +5211,8 @@ qmoPred::isIndexableUnitPred( qcStatement * aStatement,
             else
             {
                 //--------------------------------------
-                // Á¶°Ç 5ÀÇ ÆÇ´Ü
-                //   : column°ú value°¡ µ¿ÀÏ°è¿­¿¡ ¼ÓÇÏ´Â data typeÀÎÁö¸¦ °Ë»ç
+                // ì¡°ê±´ 5ì˜ íŒë‹¨
+                //   : columnê³¼ valueê°€ ë™ì¼ê³„ì—´ì— ì†í•˜ëŠ” data typeì¸ì§€ë¥¼ ê²€ì‚¬
                 //--------------------------------------
 
                 IDE_TEST( checkSameGroupType( aStatement,
@@ -5230,11 +5230,11 @@ qmoPred::isIndexableUnitPred( qcStatement * aStatement,
                 }
 
                 //--------------------------------------
-                // Á¶°Ç 6ÀÇ ÆÇ´Ü
-                //   : value¿¡ ´ëÇÑ Á¶°ÇÃ¼Å©
-                //   (1) hostº¯¼ö°¡ Á¸ÀçÇÏ¸é, indexable·Î ÆÇ´ÜÇÑ´Ù.
-                //   (2) subquery°¡ ¿À´Â °æ¿ì, subquery typeÀÌ A, NÇüÀÌ¾î¾ß ÇÑ´Ù.
-                //   (3) LIKE¿¡ ´ëÇÑ ÆĞÅÏ¹®ÀÚ´Â ÀÏ¹İ¹®ÀÚ·Î ½ÃÀÛÇÏ¿©¾ß ÇÑ´Ù.
+                // ì¡°ê±´ 6ì˜ íŒë‹¨
+                //   : valueì— ëŒ€í•œ ì¡°ê±´ì²´í¬
+                //   (1) hostë³€ìˆ˜ê°€ ì¡´ì¬í•˜ë©´, indexableë¡œ íŒë‹¨í•œë‹¤.
+                //   (2) subqueryê°€ ì˜¤ëŠ” ê²½ìš°, subquery typeì´ A, Ní˜•ì´ì–´ì•¼ í•œë‹¤.
+                //   (3) LIKEì— ëŒ€í•œ íŒ¨í„´ë¬¸ìëŠ” ì¼ë°˜ë¬¸ìë¡œ ì‹œì‘í•˜ì—¬ì•¼ í•œë‹¤.
                 //--------------------------------------
 
                 IDE_TEST( isIndexableValue( aStatement,
@@ -5273,23 +5273,23 @@ qmoPred::isExistColumnOneSide( qcStatement * aStatement,
 {
 /***********************************************************************
  *
- * Description : indexable predicate ÆÇ´Ü½Ã,
- *               ÄÃ·³ÀÌ ÇÑÂÊ¿¡¸¸ Á¸ÀçÇÏ´ÂÁö¸¦ ÆÇ´Ü(Á¶°Ç4ÀÇ ÆÇ´Ü).
+ * Description : indexable predicate íŒë‹¨ì‹œ,
+ *               ì»¬ëŸ¼ì´ í•œìª½ì—ë§Œ ì¡´ì¬í•˜ëŠ”ì§€ë¥¼ íŒë‹¨(ì¡°ê±´4ì˜ íŒë‹¨).
  *
  * Implementation :
  *
- *    1. µÎ operandÀÇ dependency°¡ Áßº¹µÇÁö ¾Ê¾Æ¾ß ÇÑ´Ù.
- *        dependencies Áßº¹ =
- *               ( ( ºñ±³¿¬»êÀÚÇÏÀ§ÀÇ µÎ°³ ³ëµåÀÇ dependencies¸¦ AND¿¬»ê )
- *                 & FROMÀÇ ÇØ´ç tableÀÇ dependency ) != 0 )
+ *    1. ë‘ operandì˜ dependencyê°€ ì¤‘ë³µë˜ì§€ ì•Šì•„ì•¼ í•œë‹¤.
+ *        dependencies ì¤‘ë³µ =
+ *               ( ( ë¹„êµì—°ì‚°ìí•˜ìœ„ì˜ ë‘ê°œ ë…¸ë“œì˜ dependenciesë¥¼ ANDì—°ì‚° )
+ *                 & FROMì˜ í•´ë‹¹ tableì˜ dependency ) != 0 )
  *
- *    2. columnÀÌ ¸ğµÎ ÇØ´ç tableÀÇ columnÀ¸·Î ±¸¼ºµÇ¾î¾ß ÇÑ´Ù.
- *       columnÀÌ ÇÑÂÊ¿¡¸¸ Á¸ÀçÇÑ´Ù ÇÏ´õ¶óµµ,
- *       LIST ÇÏÀ§¿¡ outer column, »ó¼ö, ºñ±³¿¬»êÀÚ°¡ ¾ÆÁ÷ Á¸ÀçÇÒ ¼ö ÀÖ°í,
- *       one columnÀÎ °æ¿ìµµ ÄÃ·³ÀÌ ¾Æ´Ñ ºñ±³¿¬»êÀÚÀÏ ¼ö ÀÖ´Ù.
- *       (1) LIST : outer columnÀÌ Á¸ÀçÇÏÁö ¾Ê¾Æ¾ß ÇÑ´Ù.
- *                  ¸ğµÎ columnÀÌ¾î¾ß ÇÑ´Ù.
- *       (2) one column : ¸ğµÎ columnÀÌ¾î¾ß ÇÑ´Ù.
+ *    2. columnì´ ëª¨ë‘ í•´ë‹¹ tableì˜ columnìœ¼ë¡œ êµ¬ì„±ë˜ì–´ì•¼ í•œë‹¤.
+ *       columnì´ í•œìª½ì—ë§Œ ì¡´ì¬í•œë‹¤ í•˜ë”ë¼ë„,
+ *       LIST í•˜ìœ„ì— outer column, ìƒìˆ˜, ë¹„êµì—°ì‚°ìê°€ ì•„ì§ ì¡´ì¬í•  ìˆ˜ ìˆê³ ,
+ *       one columnì¸ ê²½ìš°ë„ ì»¬ëŸ¼ì´ ì•„ë‹Œ ë¹„êµì—°ì‚°ìì¼ ìˆ˜ ìˆë‹¤.
+ *       (1) LIST : outer columnì´ ì¡´ì¬í•˜ì§€ ì•Šì•„ì•¼ í•œë‹¤.
+ *                  ëª¨ë‘ columnì´ì–´ì•¼ í•œë‹¤.
+ *       (2) one column : ëª¨ë‘ columnì´ì–´ì•¼ í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -5305,13 +5305,13 @@ qmoPred::isExistColumnOneSide( qcStatement * aStatement,
     IDU_FIT_POINT_FATAL( "qmoPred::isExistColumnOneSide::__FT__" );
 
     //--------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //--------------------------------------
 
     IDE_DASSERT( aIsIndexable != NULL );
 
     //--------------------------------------
-    // Á¶°Ç4ÀÇ ÆÇ´Ü : ÄÃ·³ÀÌ ÇÑÂÊ¿¡¸¸ Á¸ÀçÇØ¾ß ÇÑ´Ù.
+    // ì¡°ê±´4ì˜ íŒë‹¨ : ì»¬ëŸ¼ì´ í•œìª½ì—ë§Œ ì¡´ì¬í•´ì•¼ í•œë‹¤.
     //--------------------------------------
 
     while ( sIsTemp == ID_TRUE )
@@ -5320,57 +5320,57 @@ qmoPred::isExistColumnOneSide( qcStatement * aStatement,
         sCompareNode = aNode;
 
         //----------------------------
-        // 1. µÎ operandÀÇ dependency°¡ Áßº¹µÇÁö ¾Ê¾Æ¾ß ÇÑ´Ù.
+        // 1. ë‘ operandì˜ dependencyê°€ ì¤‘ë³µë˜ì§€ ì•Šì•„ì•¼ í•œë‹¤.
         //----------------------------
 
-        // 1) IS NULL, IS NOT NULL ÀÎ °æ¿ì
-        //    ºñ±³¿¬»êÀÚ ÇÏÀ§¿¡ ÇÏ³ªÀÇ ³ëµå¸¸ Á¸ÀçÇÑ´Ù.
-        //    µû¶ó¼­, dependency Áßº¹ °Ë»ç´Â ÇÏÁö ¾Ê¾Æµµ µÊ.
-        // 2) BETWEEN, NOT BETWEEN ÀÎ °æ¿ì
-        //    ºñ±³¿¬»êÀÚ ³ëµå ÇÏÀ§¿¡ ¼¼°³ÀÇ ³ëµå°¡ Á¸ÀçÇÑ´Ù.
-        //     [ºñ±³¿¬»êÀÚ³ëµå]   i1 between 1 and 2
+        // 1) IS NULL, IS NOT NULL ì¸ ê²½ìš°
+        //    ë¹„êµì—°ì‚°ì í•˜ìœ„ì— í•˜ë‚˜ì˜ ë…¸ë“œë§Œ ì¡´ì¬í•œë‹¤.
+        //    ë”°ë¼ì„œ, dependency ì¤‘ë³µ ê²€ì‚¬ëŠ” í•˜ì§€ ì•Šì•„ë„ ë¨.
+        // 2) BETWEEN, NOT BETWEEN ì¸ ê²½ìš°
+        //    ë¹„êµì—°ì‚°ì ë…¸ë“œ í•˜ìœ„ì— ì„¸ê°œì˜ ë…¸ë“œê°€ ì¡´ì¬í•œë‹¤.
+        //     [ë¹„êµì—°ì‚°ìë…¸ë“œ]   i1 between 1 and 2
         //             |
         //            \ /
-        //        [ÄÃ·³³ëµå] -> [value³ëµå] -> [value³ëµå]
-        //      µû¶ó¼­, Ãß°¡·Î ³ª¸ÓÁö ÇÏ³ªÀÇ value ³ëµå¿¡ ´ëÇÑ
-        //      dependency Áßº¹°Ë»çµµ ¼öÇàÇØ¾ß ÇÑ´Ù.
+        //        [ì»¬ëŸ¼ë…¸ë“œ] -> [valueë…¸ë“œ] -> [valueë…¸ë“œ]
+        //      ë”°ë¼ì„œ, ì¶”ê°€ë¡œ ë‚˜ë¨¸ì§€ í•˜ë‚˜ì˜ value ë…¸ë“œì— ëŒ€í•œ
+        //      dependency ì¤‘ë³µê²€ì‚¬ë„ ìˆ˜í–‰í•´ì•¼ í•œë‹¤.
         //
         //    NVL_EQUAL, NOT NVL_EQUAL
-        //    ºñ±³ ¿¬»êÀÚ ³ëµå ÇÏÀ§¿¡ ¼¼°³ÀÇ ³ëµå°¡ Á¸ÀçÇÑ´Ù.
-        //    [ÄÃ·³³ëµå] -> [value³ëµå] -> [value³ëµå]
-        //     ¸¶Áö¸· Ã¹¹øÂ° value³ëµå´Â °ü°è ¾ø´Ù.
+        //    ë¹„êµ ì—°ì‚°ì ë…¸ë“œ í•˜ìœ„ì— ì„¸ê°œì˜ ë…¸ë“œê°€ ì¡´ì¬í•œë‹¤.
+        //    [ì»¬ëŸ¼ë…¸ë“œ] -> [valueë…¸ë“œ] -> [valueë…¸ë“œ]
+        //     ë§ˆì§€ë§‰ ì²«ë²ˆì§¸ valueë…¸ë“œëŠ” ê´€ê³„ ì—†ë‹¤.
         //
-        // 3) ³ª¸ÓÁö ºñ±³¿¬»êÀÚµéÀ» ºñ±³¿¬»êÀÚ ÇÏÀ§ µÎ°³ ³ëµå¿¡ ´ëÇÑ °Ë»ç.
+        // 3) ë‚˜ë¨¸ì§€ ë¹„êµì—°ì‚°ìë“¤ì„ ë¹„êµì—°ì‚°ì í•˜ìœ„ ë‘ê°œ ë…¸ë“œì— ëŒ€í•œ ê²€ì‚¬.
         //
 
         for ( sCurNode  = (qtcNode *)(sCompareNode->node.arguments->next);
               sCurNode != NULL;
               sCurNode  = (qtcNode *)(sCurNode->node.next) )
         {
-            // (1). ºñ±³¿¬»êÀÚ ÇÏÀ§ µÎ°³ ³ëµåÀÇ dependencies¸¦ AND ¿¬»ê
+            // (1). ë¹„êµì—°ì‚°ì í•˜ìœ„ ë‘ê°œ ë…¸ë“œì˜ dependenciesë¥¼ AND ì—°ì‚°
             qtc::dependencyAnd(
                 & ((qtcNode*)(sCompareNode->node.arguments))->depInfo,
                 & sCurNode->depInfo,
                 & sAndDependencies );
 
-            // (2). (1)ÀÇ °á°ú¿Í FROMÀÇ ÇØ´ç tableÀÇ dependencies¸¦ AND ¿¬»ê
+            // (2). (1)ì˜ ê²°ê³¼ì™€ FROMì˜ í•´ë‹¹ tableì˜ dependenciesë¥¼ AND ì—°ì‚°
             qtc::dependencyAnd( & sAndDependencies,
                                 aTableDependencies,
                                 & sResultDependencies );
 
-            // (3). (2)ÀÇ °á°ú°¡ 0°¡ ¾Æ´Ï¸é, dependency Áßº¹À¸·Î
-            // ºñ±³¿¬»êÀÚ ÇÏÀ§ µÎ°³ ³ëµå ¸ğµÎ °°Àº Å×ÀÌºíÀÇ ÄÃ·³ÀÌ Á¸ÀçÇÑ´Ù.
+            // (3). (2)ì˜ ê²°ê³¼ê°€ 0ê°€ ì•„ë‹ˆë©´, dependency ì¤‘ë³µìœ¼ë¡œ
+            // ë¹„êµì—°ì‚°ì í•˜ìœ„ ë‘ê°œ ë…¸ë“œ ëª¨ë‘ ê°™ì€ í…Œì´ë¸”ì˜ ì»¬ëŸ¼ì´ ì¡´ì¬í•œë‹¤.
             if ( qtc::dependencyEqual( & sResultDependencies,
                                        & qtc::zeroDependencies ) == ID_TRUE )
             {
-                // ÄÃ·³ÀÌ ÇÑÂÊ¿¡¸¸ Á¸ÀçÇÏ´Â °æ¿ì
+                // ì»¬ëŸ¼ì´ í•œìª½ì—ë§Œ ì¡´ì¬í•˜ëŠ” ê²½ìš°
 
-                // between°ú not between ºñ±³¿¬»êÀÚ´Â
-                // ³ª¸ÓÁö ÇÏ³ªÀÇ value node¿¡ ´ëÇÑ dependency Áßº¹°Ë»ç¼öÇà.
+                // betweenê³¼ not between ë¹„êµì—°ì‚°ìëŠ”
+                // ë‚˜ë¨¸ì§€ í•˜ë‚˜ì˜ value nodeì— ëŒ€í•œ dependency ì¤‘ë³µê²€ì‚¬ìˆ˜í–‰.
                 if ( sCurNode->node.next != NULL )
                 {
                     // To Fix PR-8728
-                    // ¿¬»êÀÚ ³ëµåÀÇ ¸ğµâÀ» °Ë»çÇÏ¿©¾ß ÇÔ.
+                    // ì—°ì‚°ì ë…¸ë“œì˜ ëª¨ë“ˆì„ ê²€ì‚¬í•˜ì—¬ì•¼ í•¨.
                     if ( ( sCompareNode->node.module == &mtfBetween )    ||
                          ( sCompareNode->node.module == &mtfNotBetween ) ||
                          ( sCompareNode->node.module == &mtfNvlEqual )   ||
@@ -5391,7 +5391,7 @@ qmoPred::isExistColumnOneSide( qcStatement * aStatement,
             else
             {
                 // NVL_EQUAL (expr1, expr2, expr3)
-                // expr2´Â °ü·ÃÀÌ ¾ø´Ù.
+                // expr2ëŠ” ê´€ë ¨ì´ ì—†ë‹¤.
                 if ( sCurNode->node.next != NULL )
                 {
                     if ( ( sCompareNode->node.module == &mtfNvlEqual ) ||
@@ -5423,28 +5423,28 @@ qmoPred::isExistColumnOneSide( qcStatement * aStatement,
         }
 
         //----------------------------
-        // 2. column¿¡ ´ëÇÑ Ãß°¡ °ËÁõÀ¸·Î,
-        //    ÇØ´ç tableÀÇ ÄÃ·³¸¸ÀÌ Á¸ÀçÇÏ´ÂÁö¸¦ °Ë»ç.
+        // 2. columnì— ëŒ€í•œ ì¶”ê°€ ê²€ì¦ìœ¼ë¡œ,
+        //    í•´ë‹¹ tableì˜ ì»¬ëŸ¼ë§Œì´ ì¡´ì¬í•˜ëŠ”ì§€ë¥¼ ê²€ì‚¬.
         //----------------------------
 
-        // (1). columnNode¸¦ ±¸ÇÑ´Ù.
-        //      columnNode´Â ÇØ´ç tableÀÇ dependencies¿Í µ¿ÀÏÇÑ ³ëµå
-        //      ( LISTÀÇ °æ¿ì, outer ColumnÁ¸Àç°¡ ¿©±â¼­ °Ë»çµÊ.)
+        // (1). columnNodeë¥¼ êµ¬í•œë‹¤.
+        //      columnNodeëŠ” í•´ë‹¹ tableì˜ dependenciesì™€ ë™ì¼í•œ ë…¸ë“œ
+        //      ( LISTì˜ ê²½ìš°, outer Columnì¡´ì¬ê°€ ì—¬ê¸°ì„œ ê²€ì‚¬ë¨.)
 
-        // ¿ø·¡ ÀÖ´ø Á¤Ã¥Àº -------------------------------------------------------
-        // indexable operator Áß,
-        // =, !=, <, >, <=, >= ¸¸
-        // ÄÃ·³³ëµå¿Í value³ëµåÀÇ À§Ä¡°¡ ¹Ù²ğ ¼ö ÀÖ´Ù.
-        // µû¶ó¼­, ÀÌ °æ¿ì¸¸ ºñ±³¿¬»êÀÚ ÇÏÀ§ µÎ ³ëµå¸¦ ¸ğµÎ °Ë»çÇØ¼­
-        // ÄÃ·³ ³ëµå¸¦ ±¸ÇÑ´Ù.
-        //  ¿¹) i1 = 1 , 1 = i1 °ú °°ÀÌ »ç¿ë °¡´É.
-        // ÀÌ ¿ÜÀÇ ºñ±³¿¬»êÀÚ´Â ÄÃ·³³ëµå°¡ ºñ±³¿¬»êÀÚÀÇ argument¿¡¸¸
-        // ¿Ã ¼ö ÀÖÀ¸¹Ç·Î, ºñ±³¿¬»êÀÚÀÇ argument¸¸ °Ë»ç.
-        //  ¿¹) i1 between 1 and 2, i1 in ( 1, 2 )
-        // AST°¡ Ãß°¡ µÇ¸é¼­ ------------------------------------------------------
-        // PR-15291 "Geometry ¿¬»êÀÚ Áß ÆÄ¶ó¹ÌÅÍÀÇ ¼ø¼­¿¡ µû¶ó °ªÀÌ Æ²¸° ¿¬»êÀÚ°¡ ÀÖ½À´Ï´Ù"
-        // Geometry °´Ã¼µµ ÄÃ·³³ëµå¿Í value³ëµåÀÇ À§Ä¡°¡ ¹Ù²ğ ¼ö ÀÖ¾î¾ß ÇÏ¹Ç·Î
-        // MTC_NODE_INDEX_ARGUMENT_BOTH ÇÃ·¡±×¸¦ ÀÌ¿ëÇØ ÀÎµ¦½º ¼öÇàÀ» °áÁ¤ÇÑ´Ù.
+        // ì›ë˜ ìˆë˜ ì •ì±…ì€ -------------------------------------------------------
+        // indexable operator ì¤‘,
+        // =, !=, <, >, <=, >= ë§Œ
+        // ì»¬ëŸ¼ë…¸ë“œì™€ valueë…¸ë“œì˜ ìœ„ì¹˜ê°€ ë°”ë€” ìˆ˜ ìˆë‹¤.
+        // ë”°ë¼ì„œ, ì´ ê²½ìš°ë§Œ ë¹„êµì—°ì‚°ì í•˜ìœ„ ë‘ ë…¸ë“œë¥¼ ëª¨ë‘ ê²€ì‚¬í•´ì„œ
+        // ì»¬ëŸ¼ ë…¸ë“œë¥¼ êµ¬í•œë‹¤.
+        //  ì˜ˆ) i1 = 1 , 1 = i1 ê³¼ ê°™ì´ ì‚¬ìš© ê°€ëŠ¥.
+        // ì´ ì™¸ì˜ ë¹„êµì—°ì‚°ìëŠ” ì»¬ëŸ¼ë…¸ë“œê°€ ë¹„êµì—°ì‚°ìì˜ argumentì—ë§Œ
+        // ì˜¬ ìˆ˜ ìˆìœ¼ë¯€ë¡œ, ë¹„êµì—°ì‚°ìì˜ argumentë§Œ ê²€ì‚¬.
+        //  ì˜ˆ) i1 between 1 and 2, i1 in ( 1, 2 )
+        // ASTê°€ ì¶”ê°€ ë˜ë©´ì„œ ------------------------------------------------------
+        // PR-15291 "Geometry ì—°ì‚°ì ì¤‘ íŒŒë¼ë¯¸í„°ì˜ ìˆœì„œì— ë”°ë¼ ê°’ì´ í‹€ë¦° ì—°ì‚°ìê°€ ìˆìŠµë‹ˆë‹¤"
+        // Geometry ê°ì²´ë„ ì»¬ëŸ¼ë…¸ë“œì™€ valueë…¸ë“œì˜ ìœ„ì¹˜ê°€ ë°”ë€” ìˆ˜ ìˆì–´ì•¼ í•˜ë¯€ë¡œ
+        // MTC_NODE_INDEX_ARGUMENT_BOTH í”Œë˜ê·¸ë¥¼ ì´ìš©í•´ ì¸ë±ìŠ¤ ìˆ˜í–‰ì„ ê²°ì •í•œë‹¤.
         if ( qtc::dependencyEqual(
                  & ((qtcNode *)(sCompareNode->node.arguments))->depInfo,
                  aTableDependencies ) == ID_TRUE )
@@ -5487,14 +5487,14 @@ qmoPred::isExistColumnOneSide( qcStatement * aStatement,
             break;
         }
 
-        // (2) columnNode°¡ ÇØ´ç tableÀÇ dependencies¿Í µ¿ÀÏÇÏ´Ù ÇÏ´õ¶óµµ,
-        //     .LIST       : ÇÏÀ§¿¡ »ó¼ö¿Í ºñ±³¿¬»êÀÚ°¡ ÀÖÀ» ¼ö ÀÖ°í,
-        //     .one column : ÇÏÀ§¿¡ ºñ±³¿¬»êÀÚ°¡ ÀÖÀ» ¼ö ÀÖÀ¸¹Ç·Î,
-        //     ¸ğµÎ ÄÃ·³À¸·Î ±¸¼ºµÇ¾ú´ÂÁö¸¦ °Ë»ç.
+        // (2) columnNodeê°€ í•´ë‹¹ tableì˜ dependenciesì™€ ë™ì¼í•˜ë‹¤ í•˜ë”ë¼ë„,
+        //     .LIST       : í•˜ìœ„ì— ìƒìˆ˜ì™€ ë¹„êµì—°ì‚°ìê°€ ìˆì„ ìˆ˜ ìˆê³ ,
+        //     .one column : í•˜ìœ„ì— ë¹„êµì—°ì‚°ìê°€ ìˆì„ ìˆ˜ ìˆìœ¼ë¯€ë¡œ,
+        //     ëª¨ë‘ ì»¬ëŸ¼ìœ¼ë¡œ êµ¬ì„±ë˜ì—ˆëŠ”ì§€ë¥¼ ê²€ì‚¬.
         if ( ( sColumnNode->node.lflag & MTC_NODE_OPERATOR_MASK )
              == MTC_NODE_OPERATOR_LIST )
         {
-            // LISTÀÎ °æ¿ì
+            // LISTì¸ ê²½ìš°
 
             sCurNode = (qtcNode *)(sColumnNode->node.arguments);
 
@@ -5514,7 +5514,7 @@ qmoPred::isExistColumnOneSide( qcStatement * aStatement,
         }
         else
         {
-            // one columnÀÎ °æ¿ì
+            // one columnì¸ ê²½ìš°
 
             if ( QTC_IS_COLUMN( aStatement, sColumnNode ) == ID_TRUE )
             {
@@ -5528,7 +5528,7 @@ qmoPred::isExistColumnOneSide( qcStatement * aStatement,
     } // end of while()
 
     //--------------------------------------
-    // indexArgumentÀÇ ¼³Á¤.
+    // indexArgumentì˜ ì„¤ì •.
     //--------------------------------------
 
     if ( sIsExistColumnOneSide == ID_TRUE )
@@ -5552,14 +5552,14 @@ qmoPred::checkSameGroupType( qcStatement * aStatement,
 {
 /***********************************************************************
  *
- * Description : indexable predicate ÆÇ´Ü½Ã,
- *               column¿¡ conversionÀÌ ¹ß»ıÇß´ÂÁö¸¦ °Ë»ç(Á¶°Ç 5ÀÇ °Ë»ç).
+ * Description : indexable predicate íŒë‹¨ì‹œ,
+ *               columnì— conversionì´ ë°œìƒí–ˆëŠ”ì§€ë¥¼ ê²€ì‚¬(ì¡°ê±´ 5ì˜ ê²€ì‚¬).
  *
  * Implementation :
  *
- *    column°ú value°¡ µ¿ÀÏÇÑ °è¿­¿¡ ¼ÓÇÏ´Â µ¥ÀÌÅÍÅ¸ÀÔÀÎÁö¸¦ ÆÇ´ÜÇÑ´Ù.
+ *    columnê³¼ valueê°€ ë™ì¼í•œ ê³„ì—´ì— ì†í•˜ëŠ” ë°ì´í„°íƒ€ì…ì¸ì§€ë¥¼ íŒë‹¨í•œë‹¤.
  *
- * ¿¹: select * from t1
+ * ì˜ˆ: select * from t1
  *   where (i1, i2) = ( (select i1 from t2), (select i2 from t2) );
  *
  *   [ = ]
@@ -5570,7 +5570,7 @@ qmoPred::checkSameGroupType( qcStatement * aStatement,
  *     |             |                       |
  *    sCurColumn   [t2.i1]              [t2.i2]
  *
- * ¿¹: select * from t1
+ * ì˜ˆ: select * from t1
  *     where (i1, i2) = ((select max(i1) from t2), (select max(i2) from t2) );
  *
  *   [ = ]
@@ -5583,7 +5583,7 @@ qmoPred::checkSameGroupType( qcStatement * aStatement,
  *                   |                       |
  *                  [t2.i1]               [t2.i2]
  *
- * ¿¹: where ( i1, i2 ) in ( (select i1, i2 from t1 where i1=1),
+ * ì˜ˆ: where ( i1, i2 ) in ( (select i1, i2 from t1 where i1=1),
  *                           (select i1, i2 from t2 where i1=2) );
  *
  *   [ IN ]
@@ -5594,7 +5594,7 @@ qmoPred::checkSameGroupType( qcStatement * aStatement,
  *     |             |                       |
  *    sCurColumn   [t1.i1]      [t2.i1]    [t2.i1]   [t2.i2] <--sValue
  *
- * ¿¹: where ( i1, i2 ) in ( (select min(i1), min(i2) from t1),
+ * ì˜ˆ: where ( i1, i2 ) in ( (select min(i1), min(i2) from t1),
  *                           (select max(i1), max(i2) from t2) );
  *
  *   [ IN ]
@@ -5607,7 +5607,7 @@ qmoPred::checkSameGroupType( qcStatement * aStatement,
  *    sCurColumn     |             |         |          |
  *                 [t1.i1]      [t2.i1]    [t2.i1]   [t2.i2]
  *
- * ¿¹:  where ( i1, i2 ) in ( select (select min(i1) from t1),
+ * ì˜ˆ:  where ( i1, i2 ) in ( select (select min(i1) from t1),
  *                                   (select min(i1) from t2)
  *                            from t2 );
  *   [ IN ]
@@ -5620,7 +5620,7 @@ qmoPred::checkSameGroupType( qcStatement * aStatement,
  *    sCurColumn       |             |
  *                   [t1.i1]      [t2.i1]
  *
- * ¿¹: where ( i1, i2 ) in ( select (select (select min(i1) from t1) from t1),
+ * ì˜ˆ: where ( i1, i2 ) in ( select (select (select min(i1) from t1) from t1),
  *                                  (select (select min(i1) from t2) from t2)
  *                           from t2 );
  *
@@ -5651,14 +5651,14 @@ qmoPred::checkSameGroupType( qcStatement * aStatement,
     IDU_FIT_POINT_FATAL( "qmoPred::checkSameGroupType::__FT__" );
 
     //--------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //--------------------------------------
 
     IDE_DASSERT( aIsIndexable != NULL );
 
     //--------------------------------------
-    // Á¶°Ç5ÀÇ ÆÇ´Ü : column¿¡ conversionÀÌ ¹ß»ıÇÏÁö ¾Ê¾Æ¾ß ÇÑ´Ù.
-    // column°ú value°¡ µ¿ÀÏ°è¿­¿¡ ¼ÓÇÏ´Â data typeÀÎÁö¸¦ °Ë»ç
+    // ì¡°ê±´5ì˜ íŒë‹¨ : columnì— conversionì´ ë°œìƒí•˜ì§€ ì•Šì•„ì•¼ í•œë‹¤.
+    // columnê³¼ valueê°€ ë™ì¼ê³„ì—´ì— ì†í•˜ëŠ” data typeì¸ì§€ë¥¼ ê²€ì‚¬
     //--------------------------------------
 
     sCompareNode = aNode;
@@ -5675,14 +5675,14 @@ qmoPred::checkSameGroupType( qcStatement * aStatement,
     }
 
     // PROJ-1364
-    // column node¿¡ conversionÀÌ Á¸ÀçÇÏ´õ¶óµµ
-    // value¿Í µ¿ÀÏ°è¿­ÀÇ data typeÀÌ¸é, indexable predicateÀ¸·Î
-    // ºĞ·ùÇØ¼­, index¸¦ Å» ¼ö ÀÖµµ·Ï ÇÑ´Ù.
+    // column nodeì— conversionì´ ì¡´ì¬í•˜ë”ë¼ë„
+    // valueì™€ ë™ì¼ê³„ì—´ì˜ data typeì´ë©´, indexable predicateìœ¼ë¡œ
+    // ë¶„ë¥˜í•´ì„œ, indexë¥¼ íƒˆ ìˆ˜ ìˆë„ë¡ í•œë‹¤.
 
     if ( ( sColumnNode->node.lflag & MTC_NODE_OPERATOR_MASK )
          == MTC_NODE_OPERATOR_LIST )
     {
-        // column node°¡ LISTÀÎ °æ¿ì,
+        // column nodeê°€ LISTì¸ ê²½ìš°,
         // (i1,i2,i3) = ( 1,2,3 )
         // (i1,i2,i3) in ( (1,1,1), (2,2,2) )
         // (i1,i2,i3) in ( (select i1,i2,i3 ...), (select i1,i2,i3 ...) )
@@ -5713,7 +5713,7 @@ qmoPred::checkSameGroupType( qcStatement * aStatement,
     }
     else
     {
-        // column node°¡ columnÀÎ °æ¿ì
+        // column nodeê°€ columnì¸ ê²½ìš°
         // i1 = 1
         // i1 in ( 1, 2, 3 )
         // i1 in ( select i1 from ... )
@@ -5737,8 +5737,8 @@ qmoPred::checkSameGroupType( qcStatement * aStatement,
     while ( ( sIsNotExist == ID_TRUE ) &&
             ( sCurValue != NULL ) && ( sCurValue != sColumnNode ) )
     {
-        // (1=i1)ÀÇ °æ¿ì, value->next°¡ Á¸ÀçÇÔÀ¸·Î
-        // columnNode¿Í valueNode°¡ °°Áö ¾ÊÀ½À» °Ë»ç.
+        // (1=i1)ì˜ ê²½ìš°, value->nextê°€ ì¡´ì¬í•¨ìœ¼ë¡œ
+        // columnNodeì™€ valueNodeê°€ ê°™ì§€ ì•ŠìŒì„ ê²€ì‚¬.
 
         // ( i1, i2 ) in ( ( 1,1 ), ( 2, 2 ) )
         // ( i1, i2 ) in ( select i1, i2 from ... )
@@ -5759,16 +5759,16 @@ qmoPred::checkSameGroupType( qcStatement * aStatement,
 
         while ( ( sColumn != NULL ) && ( sColumn != sValueNode ) )
         {
-            // (i1=1)ÀÇ °æ¿ì, column->next°¡ Á¸ÀçÇÔÀ¸·Î
-            // columnNode¿Í valueNode°¡ °°Áö ¾ÊÀ½À» °Ë»ç.
+            // (i1=1)ì˜ ê²½ìš°, column->nextê°€ ì¡´ì¬í•¨ìœ¼ë¡œ
+            // columnNodeì™€ valueNodeê°€ ê°™ì§€ ì•ŠìŒì„ ê²€ì‚¬.
 
-            // QTC_NODE_CHECK_SAMEGROUP_MASK¸¦ ¼³Á¤ÇÏ´Â ÀÌÀ¯´Â,
-            // qmoKeyRange::isIndexable() ÇÔ¼ö³»¿¡¼­
-            //  (1) host º¯¼ö°¡ binding µÈ ÈÄ,
-            //  (2) sort temp table¿¡ ´ëÇÑ keyRange »ı¼º½Ã,
-            // µ¿ÀÏ°è¿­ÀÇ index »ç¿ë°¡´ÉÇÑÁö¸¦ ÆÇ´ÜÇÏ°Ô µÇ¸ç,
-            // ÀÌ¶§, prepare ´Ü°è¿¡¼­ ÀÌ¹Ì ÆÇ´ÜµÈ predicate¿¡ ´ëÇØ,
-            // Áßº¹ °Ë»çÇÏÁö ¾Ê±â À§ÇØ
+            // QTC_NODE_CHECK_SAMEGROUP_MASKë¥¼ ì„¤ì •í•˜ëŠ” ì´ìœ ëŠ”,
+            // qmoKeyRange::isIndexable() í•¨ìˆ˜ë‚´ì—ì„œ
+            //  (1) host ë³€ìˆ˜ê°€ binding ëœ í›„,
+            //  (2) sort temp tableì— ëŒ€í•œ keyRange ìƒì„±ì‹œ,
+            // ë™ì¼ê³„ì—´ì˜ index ì‚¬ìš©ê°€ëŠ¥í•œì§€ë¥¼ íŒë‹¨í•˜ê²Œ ë˜ë©°,
+            // ì´ë•Œ, prepare ë‹¨ê³„ì—ì„œ ì´ë¯¸ íŒë‹¨ëœ predicateì— ëŒ€í•´,
+            // ì¤‘ë³µ ê²€ì‚¬í•˜ì§€ ì•Šê¸° ìœ„í•´
 
             // fix BUG-12058 BUG-12061
             sColumn->lflag &= ~QTC_NODE_CHECK_SAMEGROUP_MASK;
@@ -5828,31 +5828,31 @@ qmoPred::isSameGroupType( qcTemplate  * aTemplate,
 {
 /***********************************************************************
  *
- * Description : ÄÃ·³¿¡ conversionÀÌ Á¸ÀçÇÏ´Â °æ¿ì,
- *               value node¿Í µ¿ÀÏ°è¿­ÀÇ µ¥ÀÌÅÍÅ¸ÀÔÀÎÁö¸¦ ÆÇ´Ü.
+ * Description : ì»¬ëŸ¼ì— conversionì´ ì¡´ì¬í•˜ëŠ” ê²½ìš°,
+ *               value nodeì™€ ë™ì¼ê³„ì—´ì˜ ë°ì´í„°íƒ€ì…ì¸ì§€ë¥¼ íŒë‹¨.
  *
  * Implementation :
  *
- *    ÂüÁ¶ : PROJ-1364
+ *    ì°¸ì¡° : PROJ-1364
  *
- *    data typeÀÇ ºĞ·ù
+ *    data typeì˜ ë¶„ë¥˜
  *
  *    -------------------------------------------------------------
- *    ¹®ÀÚÇü°è¿­ | CHAR, VARCHAR, NCHAR, NVARCHAR,
+ *    ë¬¸ìí˜•ê³„ì—´ | CHAR, VARCHAR, NCHAR, NVARCHAR,
  *               | BIT, VARBIT, ECHAR, EVARCHAR
  *    -------------------------------------------------------------
- *    ¼ıÀÚÇü°è¿­ | Native | Á¤¼öÇü | BIGINT, INTEGER, SMALLINT
+ *    ìˆ«ìí˜•ê³„ì—´ | Native | ì •ìˆ˜í˜• | BIGINT, INTEGER, SMALLINT
  *               |        |----------------------------------------
- *               |        | ½Ç¼öÇü | DOUBLE, REAL
+ *               |        | ì‹¤ìˆ˜í˜• | DOUBLE, REAL
  *               --------------------------------------------------
- *               | Non-   | °íÁ¤¼Ò¼öÁ¡Çü | NUMERIC, DECIMAL,
+ *               | Non-   | ê³ ì •ì†Œìˆ˜ì í˜• | NUMERIC, DECIMAL,
  *               | Native |              | NUMBER(p), NUMBER(p,s)
  *               |        |----------------------------------------
- *               |        | ºÎÁ¤¼Ò¼öÁ¡Çü | FLOAT, NUMBER
+ *               |        | ë¶€ì •ì†Œìˆ˜ì í˜• | FLOAT, NUMBER
  *    -------------------------------------------------------------
  *    To fix BUG-15768
- *    ±âÅ¸ °è¿­  | NIBBLE, BYTE ´Â ´ëÇ¥Å¸ÀÔÀÌ ¾øÀ½.
- *               | µû¶ó¼­ µ¿ÀÏ°è¿­ ºñ±³¸¦ ÇÒ ¼ö ¾øÀ½.
+ *    ê¸°íƒ€ ê³„ì—´  | NIBBLE, BYTE ëŠ” ëŒ€í‘œíƒ€ì…ì´ ì—†ìŒ.
+ *               | ë”°ë¼ì„œ ë™ì¼ê³„ì—´ ë¹„êµë¥¼ í•  ìˆ˜ ì—†ìŒ.
  *    -------------------------------------------------------------
  *
  ***********************************************************************/
@@ -5866,23 +5866,23 @@ qmoPred::isSameGroupType( qcTemplate  * aTemplate,
     mtcColumn  * sValueColumn;
 
     //--------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //--------------------------------------
 
     IDE_DASSERT( aTemplate   != NULL );
     IDE_DASSERT( aColumnNode != NULL );
 
     //--------------------------------------
-    // column°ú value°¡ µ¿ÀÏ °è¿­ÀÇ data typeÀÎÁö¸¦ ÆÇ´Ü
+    // columnê³¼ valueê°€ ë™ì¼ ê³„ì—´ì˜ data typeì¸ì§€ë¥¼ íŒë‹¨
     //--------------------------------------
 
     sColumnConversionNode = aColumnNode;
 
     // fix BUG-12061
-    // ¿¹:  where ( i1, i2 ) = ( (select max(i1) ..),
+    // ì˜ˆ:  where ( i1, i2 ) = ( (select max(i1) ..),
     //                           (select max(i2) ..) )
-    //  aValueNode°¡ indirect nodeÀÎ °æ¿ì°¡ ÀÖÀ¸¹Ç·Î,
-    //  ÀÌ¶§, ½ÇÁ¦ ºñ±³´ë»ó ³ëµå¸¦ Ã£´Â´Ù.
+    //  aValueNodeê°€ indirect nodeì¸ ê²½ìš°ê°€ ìˆìœ¼ë¯€ë¡œ,
+    //  ì´ë•Œ, ì‹¤ì œ ë¹„êµëŒ€ìƒ ë…¸ë“œë¥¼ ì°¾ëŠ”ë‹¤.
     //  [ = ]
     //    |
     //  [LIST]-----------[LIST]    |----- aValueNode-----|
@@ -5894,8 +5894,8 @@ qmoPred::isSameGroupType( qcTemplate  * aTemplate,
     //                     [I1]                   [I2]
     //
     // fix BUG-16047
-    // conversion node°¡ ´Ş·ÁÀÖ´Â °æ¿ì,
-    // ½ÇÁ¦ ºñ±³´ë»ó ³ëµå´Â conversion nodeÀÌ´Ù.
+    // conversion nodeê°€ ë‹¬ë ¤ìˆëŠ” ê²½ìš°,
+    // ì‹¤ì œ ë¹„êµëŒ€ìƒ ë…¸ë“œëŠ” conversion nodeì´ë‹¤.
     if( aValueNode == NULL )
     {
         sCheckValue = NULL;
@@ -5910,9 +5910,9 @@ qmoPred::isSameGroupType( qcTemplate  * aTemplate,
     if( aColumnNode->node.module == &qtc::passModule )
     {
         // To Fix PR-8700
-        // t1.i1 + 1 > t2.i1 + 1 °ú °°Àº ¿¬»êÀ» Ã³¸®ÇÒ ¶§,
-        // ¿¬»êÀÇ ¹İº¹ ¼öÇàÀ» ¹æÁöÇÏ±â À§ÇØ Pass Node¸¦ »ç¿ëÇÏ¿©
-        // ¿¬°áÇÏ°Ô µÇ¸ç, Pass Node´Â ¹İµå½Ã IndirectionµÈ´Ù.
+        // t1.i1 + 1 > t2.i1 + 1 ê³¼ ê°™ì€ ì—°ì‚°ì„ ì²˜ë¦¬í•  ë•Œ,
+        // ì—°ì‚°ì˜ ë°˜ë³µ ìˆ˜í–‰ì„ ë°©ì§€í•˜ê¸° ìœ„í•´ Pass Nodeë¥¼ ì‚¬ìš©í•˜ì—¬
+        // ì—°ê²°í•˜ê²Œ ë˜ë©°, Pass NodeëŠ” ë°˜ë“œì‹œ Indirectionëœë‹¤.
         //
         //      [>]
         //       |
@@ -5922,11 +5922,11 @@ qmoPred::isSameGroupType( qcTemplate  * aTemplate,
         //                 V
         //                [+]
         //
-        // µû¶ó¼­, Key Range »ı¼º½Ã¿¡ Pass NodeÀÇ °æ¿ì
-        // ConversionÀÌ ¹ß»ıÇÏÁö ¾Ê´õ¶óµµ ConversionÀÌ ¹ß»ıÇÑ °ÍÀ¸·Î
-        // ÆÇ´ÜµÈ´Ù.  ÀÌ·¯ÇÑ °æ¿ì Pass Node´Â Conversion °ú ÀüÇô
-        // °ü°è ¾ø´Â NodeÀÌ¸ç, ConversionÀÌ ¹ß»ıÇÏÁö ¾ÊÀº °ÍÀ¸·Î
-        // ÆÇ´ÜÇÏ¿©¾ß ÇÑ´Ù.
+        // ë”°ë¼ì„œ, Key Range ìƒì„±ì‹œì— Pass Nodeì˜ ê²½ìš°
+        // Conversionì´ ë°œìƒí•˜ì§€ ì•Šë”ë¼ë„ Conversionì´ ë°œìƒí•œ ê²ƒìœ¼ë¡œ
+        // íŒë‹¨ëœë‹¤.  ì´ëŸ¬í•œ ê²½ìš° Pass NodeëŠ” Conversion ê³¼ ì „í˜€
+        // ê´€ê³„ ì—†ëŠ” Nodeì´ë©°, Conversionì´ ë°œìƒí•˜ì§€ ì•Šì€ ê²ƒìœ¼ë¡œ
+        // íŒë‹¨í•˜ì—¬ì•¼ í•œë‹¤.
 
         // Nothing To Do
     }
@@ -5936,10 +5936,10 @@ qmoPred::isSameGroupType( qcTemplate  * aTemplate,
         {
             if( aValueNode != NULL )
             {
-                // ¿¹ : varchar_col in ( intger'1', bigint'1' )
+                // ì˜ˆ : varchar_col in ( intger'1', bigint'1' )
 
                 // BUG-21936
-                // aValueNodeÀÇ leftCoversionÀÌ °í·ÁµÇ¾î¾ß ÇÑ´Ù.
+                // aValueNodeì˜ leftCoversionì´ ê³ ë ¤ë˜ì–´ì•¼ í•œë‹¤.
                 if( aValueNode->node.leftConversion != NULL )
                 {
                     sColumnConversionNode =
@@ -5952,7 +5952,7 @@ qmoPred::isSameGroupType( qcTemplate  * aTemplate,
             }
             else
             {
-                // ¿¹ : i1 is null
+                // ì˜ˆ : i1 is null
                 // Nothing To Do
             }
         }
@@ -5983,8 +5983,8 @@ qmoPred::isSameGroupType( qcTemplate  * aTemplate,
             if( sColumnType == MTD_GROUP_TEXT )
             {
                 // PROJ-2002 Column Security
-                // echar, evarchar´Â text groupÀÌ³ª ´ÙÀ½°ú °°Àº °æ¿ì
-                // group compare°¡ ºÒ°¡´ÉÇÏ´Ù.
+                // echar, evarcharëŠ” text groupì´ë‚˜ ë‹¤ìŒê³¼ ê°™ì€ ê²½ìš°
+                // group compareê°€ ë¶ˆê°€ëŠ¥í•˜ë‹¤.
                 //
                 // -------------+-------------------------------------------
                 //              |                column
@@ -5992,16 +5992,16 @@ qmoPred::isSameGroupType( qcTemplate  * aTemplate,
                 //              | char     | varchar  | echar    | evarchar
                 // ---+---------+----------+----------+----------+----------
                 //    | char    | char     | varchar  | echar    | evarchar 
-                //    |         |          |          | (ºÒ°¡´É) | (ºÒ°¡´É)
+                //    |         |          |          | (ë¶ˆê°€ëŠ¥) | (ë¶ˆê°€ëŠ¥)
                 //  v +---------+----------+----------+----------+----------
                 //  a | varchar | varchar  | varchar  | varchar  | evarchar 
-                //  l |         |          |          | (ºÒ°¡´É) | (ºÒ°¡´É)
+                //  l |         |          |          | (ë¶ˆê°€ëŠ¥) | (ë¶ˆê°€ëŠ¥)
                 //  u +---------+----------+----------+----------+----------
                 //  e | echar   | echar    | varchar  | echar    | evarchar
-                //    |         | (ºÒ°¡´É) | (ºÒ°¡´É) |          | (ºÒ°¡´É)
+                //    |         | (ë¶ˆê°€ëŠ¥) | (ë¶ˆê°€ëŠ¥) |          | (ë¶ˆê°€ëŠ¥)
                 //    +---------+----------+----------+----------+----------
                 //    | evarchar| evarchar | evarchar | evarchar | evarchar 
-                //    |         | (ºÒ°¡´É) | (ºÒ°¡´É) | (ºÒ°¡´É) |
+                //    |         | (ë¶ˆê°€ëŠ¥) | (ë¶ˆê°€ëŠ¥) | (ë¶ˆê°€ëŠ¥) |
                 // ---+---------+----------+----------+----------+----------
                 
                 if ( ( sColumnColumn->module->id == MTD_ECHAR_ID ) ||
@@ -6009,8 +6009,8 @@ qmoPred::isSameGroupType( qcTemplate  * aTemplate,
                      ( sValueColumn->module->id == MTD_ECHAR_ID ) ||
                      ( sValueColumn->module->id == MTD_EVARCHAR_ID ) )
                 {
-                    // columnÀÌ³ª value¿¡ ¾ÏÈ£ Å¸ÀÔÀÌ ÀÖ´Ù¸é
-                    // µ¿ÀÏ °è¿­ ±×·ì ºñ±³°¡ ºÒ°¡´É.
+                    // columnì´ë‚˜ valueì— ì•”í˜¸ íƒ€ì…ì´ ìˆë‹¤ë©´
+                    // ë™ì¼ ê³„ì—´ ê·¸ë£¹ ë¹„êµê°€ ë¶ˆê°€ëŠ¥.
                     sIsSameGroupType = ID_FALSE;
                 }
                 else
@@ -6019,8 +6019,8 @@ qmoPred::isSameGroupType( qcTemplate  * aTemplate,
                 }
                 
                 // BUG-26283
-                // nchar, nvarchar´Â text groupÀÌ³ª ´ÙÀ½°ú °°Àº °æ¿ì
-                // group compare°¡ ºÒ°¡´ÉÇÏ´Ù.
+                // nchar, nvarcharëŠ” text groupì´ë‚˜ ë‹¤ìŒê³¼ ê°™ì€ ê²½ìš°
+                // group compareê°€ ë¶ˆê°€ëŠ¥í•˜ë‹¤.
                 //
                 // -------------+-------------------------------------------
                 //              |                column
@@ -6034,10 +6034,10 @@ qmoPred::isSameGroupType( qcTemplate  * aTemplate,
                 //  l |         |          |          |          | 
                 //  u +---------+----------+----------+----------+----------
                 //  e | nchar   | nchar    | nvarchar | nchar    | nvarchar
-                //    |         | (ºÒ°¡´É) | (ºÒ°¡´É) |          |
+                //    |         | (ë¶ˆê°€ëŠ¥) | (ë¶ˆê°€ëŠ¥) |          |
                 //    +---------+----------+----------+----------+----------
                 //    | nvarchar| nvarchar | nvarchar | nvarchar | nvarchar 
-                //    |         | (ºÒ°¡´É) | (ºÒ°¡´É) |          |
+                //    |         | (ë¶ˆê°€ëŠ¥) | (ë¶ˆê°€ëŠ¥) |          |
                 // ---+---------+----------+----------+----------+----------
                 
                 if ( ( ( sColumnColumn->module->id == MTD_CHAR_ID ) ||
@@ -6046,8 +6046,8 @@ qmoPred::isSameGroupType( qcTemplate  * aTemplate,
                      ( ( sValueColumn->module->id == MTD_NCHAR_ID ) ||
                        ( sValueColumn->module->id == MTD_NVARCHAR_ID ) ) )
                 {
-                    // columnÀÌ char/varcharÀÌ°í value°¡ nchar/nvarcharÀÌ¸é
-                    // µ¿ÀÏ °è¿­ ±×·ì ºñ±³°¡ ºÒ°¡´É.
+                    // columnì´ char/varcharì´ê³  valueê°€ nchar/nvarcharì´ë©´
+                    // ë™ì¼ ê³„ì—´ ê·¸ë£¹ ë¹„êµê°€ ë¶ˆê°€ëŠ¥.
                     sIsSameGroupType = ID_FALSE;
                 }
                 else
@@ -6063,8 +6063,8 @@ qmoPred::isSameGroupType( qcTemplate  * aTemplate,
             if( sColumnType == MTD_GROUP_MISC )
             {
                 // To fix BUG-15768
-                // ±âÅ¸ ±×·ìÀº ´ëÇ¥Å¸ÀÔÀÌ Á¸ÀçÇÏÁö ¾ÊÀ½.
-                // µû¶ó¼­, µ¿ÀÏ °è¿­ ±×·ì ºñ±³°¡ ºÒ°¡´É.
+                // ê¸°íƒ€ ê·¸ë£¹ì€ ëŒ€í‘œíƒ€ì…ì´ ì¡´ì¬í•˜ì§€ ì•ŠìŒ.
+                // ë”°ë¼ì„œ, ë™ì¼ ê³„ì—´ ê·¸ë£¹ ë¹„êµê°€ ë¶ˆê°€ëŠ¥.
                 sIsSameGroupType = ID_FALSE;
             }
             else
@@ -6090,16 +6090,16 @@ qmoPred::isIndexableValue( qcStatement * aStatement,
 {
 /***********************************************************************
  *
- * Description : indexable Predicate ÆÇ´Ü½Ã,
- *               value¿¡ ´ëÇÑ Á¶°Ç °Ë»ç( Á¶°Ç 6ÀÇ °Ë»ç).
+ * Description : indexable Predicate íŒë‹¨ì‹œ,
+ *               valueì— ëŒ€í•œ ì¡°ê±´ ê²€ì‚¬( ì¡°ê±´ 6ì˜ ê²€ì‚¬).
  *
  * Implementation :
  *
- *     1. hostº¯¼ö°¡ Á¸ÀçÇÏ¸é, indexable·Î ÆÇ´ÜÇÑ´Ù.
- *     2. subquery°¡ ¿À´Â °æ¿ì, subquery typeÀÌ A, NÇüÀÌ¾î¾ß ÇÑ´Ù.
- *        subqueryÃÖÀûÈ­ ÆÁ Àû¿ë°á°ú°¡
- *        subquery keyRange or INÀıÀÇ subquery keyRange ÀÎÁö °Ë»ç.
- *     3. LIKE¿¡ ´ëÇÑ ÆĞÅÏ¹®ÀÚ´Â ÀÏ¹İ¹®ÀÚ·Î ½ÃÀÛÇÏ¿©¾ß ÇÑ´Ù.
+ *     1. hostë³€ìˆ˜ê°€ ì¡´ì¬í•˜ë©´, indexableë¡œ íŒë‹¨í•œë‹¤.
+ *     2. subqueryê°€ ì˜¤ëŠ” ê²½ìš°, subquery typeì´ A, Ní˜•ì´ì–´ì•¼ í•œë‹¤.
+ *        subqueryìµœì í™” íŒ ì ìš©ê²°ê³¼ê°€
+ *        subquery keyRange or INì ˆì˜ subquery keyRange ì¸ì§€ ê²€ì‚¬.
+ *     3. LIKEì— ëŒ€í•œ íŒ¨í„´ë¬¸ìëŠ” ì¼ë°˜ë¬¸ìë¡œ ì‹œì‘í•˜ì—¬ì•¼ í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -6113,13 +6113,13 @@ qmoPred::isIndexableValue( qcStatement * aStatement,
     IDU_FIT_POINT_FATAL( "qmoPred::isIndexableValue::__FT__" );
 
     //--------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //--------------------------------------
 
     IDE_DASSERT( aIsIndexable != NULL );
 
     //--------------------------------------
-    // Á¶°Ç6ÀÇ ÆÇ´Ü : valueÀÇ Á¶°Ç Ã¼Å©
+    // ì¡°ê±´6ì˜ íŒë‹¨ : valueì˜ ì¡°ê±´ ì²´í¬
     //--------------------------------------
 
     sCompareNode = aNode;
@@ -6134,11 +6134,11 @@ qmoPred::isIndexableValue( qcStatement * aStatement,
     }
 
     // PROJ-1492
-    // È£½ºÆ® º¯¼öÀÇ Å¸ÀÔÀÌ °áÁ¤µÇ´õ¶óµµ ±× °ªÀº data bindingÀü¿¡´Â
-    // ¾Ë ¼ö ¾ø´Ù.
+    // í˜¸ìŠ¤íŠ¸ ë³€ìˆ˜ì˜ íƒ€ì…ì´ ê²°ì •ë˜ë”ë¼ë„ ê·¸ ê°’ì€ data bindingì „ì—ëŠ”
+    // ì•Œ ìˆ˜ ì—†ë‹¤.
     if ( MTC_NODE_IS_DEFINED_VALUE( & sCompareNode->node ) == ID_FALSE )
     {
-        // 1. host º¯¼ö°¡ Á¸ÀçÇÏ¸é, indexable·Î ÆÇ´ÜÇÑ´Ù.
+        // 1. host ë³€ìˆ˜ê°€ ì¡´ì¬í•˜ë©´, indexableë¡œ íŒë‹¨í•œë‹¤.
         // Nothing To Do
     }
     else
@@ -6147,11 +6147,11 @@ qmoPred::isIndexableValue( qcStatement * aStatement,
         {
             sIsTemp = ID_FALSE;
 
-            // 2. subquery°¡ ¿À´Â °æ¿ì, subquery typeÀÌ A, NÇüÀÌ¾î¾ß ÇÑ´Ù.
-            //    subqueryÃÖÀûÈ­ ÆÁ Àû¿ë°á°ú°¡
-            //    subquery keyRange or INÀıÀÇ subquery keyRange ÀÎÁö °Ë»ç.
-            //    ´Ü, between, not betweenÀÎ °æ¿ì´Â
-            //    store and search ÃÖÀûÈ­ ÆÁÀÎÁö¸¦ °Ë»çÇÑ´Ù.
+            // 2. subqueryê°€ ì˜¤ëŠ” ê²½ìš°, subquery typeì´ A, Ní˜•ì´ì–´ì•¼ í•œë‹¤.
+            //    subqueryìµœì í™” íŒ ì ìš©ê²°ê³¼ê°€
+            //    subquery keyRange or INì ˆì˜ subquery keyRange ì¸ì§€ ê²€ì‚¬.
+            //    ë‹¨, between, not betweenì¸ ê²½ìš°ëŠ”
+            //    store and search ìµœì í™” íŒì¸ì§€ë¥¼ ê²€ì‚¬í•œë‹¤.
 
             for ( sNode  = sValueNode;
                   sNode != NULL;
@@ -6165,7 +6165,7 @@ qmoPred::isIndexableValue( qcStatement * aStatement,
                     if ( ( sCompareNode->node.module == &mtfBetween ) ||
                          ( sCompareNode->node.module == &mtfNotBetween ) )
                     {
-                        // between, not betweenÀÎ °æ¿ì
+                        // between, not betweenì¸ ê²½ìš°
 
                         if ( ( sPROJGraph->subqueryTipFlag
                                & QMG_PROJ_SUBQUERY_TIP_MASK )
@@ -6181,9 +6181,9 @@ qmoPred::isIndexableValue( qcStatement * aStatement,
                     }
                     else
                     {
-                        // between, not betweenÀÌ ¾Æ´Ñ °æ¿ì
-                        // value node°¡ ÇÏ³ªÀÌ¹Ç·Î,
-                        // ÇÏ³ªÀÇ value node °Ë»ç ÈÄ, for¹®À» ºüÁ® ³ª°£´Ù.
+                        // between, not betweenì´ ì•„ë‹Œ ê²½ìš°
+                        // value nodeê°€ í•˜ë‚˜ì´ë¯€ë¡œ,
+                        // í•˜ë‚˜ì˜ value node ê²€ì‚¬ í›„, forë¬¸ì„ ë¹ ì ¸ ë‚˜ê°„ë‹¤.
 
                         if ( ( ( sPROJGraph->subqueryTipFlag
                                  & QMG_PROJ_SUBQUERY_TIP_MASK )
@@ -6204,7 +6204,7 @@ qmoPred::isIndexableValue( qcStatement * aStatement,
                 }
                 else
                 {
-                    // subquery node°¡ ¾Æ´Ñ °æ¿ì
+                    // subquery nodeê°€ ì•„ë‹Œ ê²½ìš°
                     // Nothing To Do
                 }
             } // end of for()
@@ -6218,10 +6218,10 @@ qmoPred::isIndexableValue( qcStatement * aStatement,
                 break;
             }
 
-            // 3. LIKE¿¡ ´ëÇÑ ÆĞÅÏ¹®ÀÚ´Â ÀÏ¹İ¹®ÀÚ·Î ½ÃÀÛÇÏ¿©¾ß ÇÑ´Ù.
+            // 3. LIKEì— ëŒ€í•œ íŒ¨í„´ë¬¸ìëŠ” ì¼ë°˜ë¬¸ìë¡œ ì‹œì‘í•˜ì—¬ì•¼ í•œë‹¤.
             if ( sCompareNode->node.module == &mtfLike )
             {
-                // ÀÏ¹İ¹®ÀÚ·Î ½ÃÀÛÇÏ´Â »ó¼öÀÎÁö¸¦ °Ë»çÇÑ´Ù.
+                // ì¼ë°˜ë¬¸ìë¡œ ì‹œì‘í•˜ëŠ” ìƒìˆ˜ì¸ì§€ë¥¼ ê²€ì‚¬í•œë‹¤.
                 if ( ( QC_SHARED_TMPLATE( aStatement )->
                        tmplate.rows[sValueNode->node.table].lflag
                        & MTC_TUPLE_TYPE_MASK)
@@ -6244,7 +6244,7 @@ qmoPred::isIndexableValue( qcStatement * aStatement,
                 else
                 {
                     // BUG-25594
-                    // dynamic constant expressionÀÌ¸é indexable·Î ÆÇ´ÜÇÑ´Ù.
+                    // dynamic constant expressionì´ë©´ indexableë¡œ íŒë‹¨í•œë‹¤.
                     if ( qtc::isConstNode4LikePattern( aStatement,
                                                        sValueNode,
                                                        aOuterDependencies )
@@ -6290,18 +6290,18 @@ qmoPred::isIndexableLIKE( qcStatement  * aStatement,
 {
 /***********************************************************************
  *
- * Description : LIKE ¿¬»êÀÚÀÇ index »ç¿ë °¡´É ¿©ºÎ ÆÇ´Ü
+ * Description : LIKE ì—°ì‚°ìì˜ index ì‚¬ìš© ê°€ëŠ¥ ì—¬ë¶€ íŒë‹¨
  *
  * Implementation :
  *
- *     LIKEÀÇ ÆĞÅÏ¹®ÀÚ°¡ ÀÏ¹İ¹®ÀÚ·Î ½ÃÀÛÇÏ´ÂÁö¸¦ °Ë»çÇÑ´Ù.
- *     ¿¹) i1 like 'acd%' (O), i1 like '%de' (X), i1 like ? (O),
+ *     LIKEì˜ íŒ¨í„´ë¬¸ìê°€ ì¼ë°˜ë¬¸ìë¡œ ì‹œì‘í•˜ëŠ”ì§€ë¥¼ ê²€ì‚¬í•œë‹¤.
+ *     ì˜ˆ) i1 like 'acd%' (O), i1 like '%de' (X), i1 like ? (O),
  *         i1 like '%%de' escape '%' (O), i1 like 'bc'||'d%' (O)
  *
- *     1. (1) valueÀÇ Ã¹¹øÂ° ¹®ÀÚ°¡ %, _ °¡ ¾Æ´Ï¸é, indexable·Î ÆÇ´Ü.
- *        (2) valueÀÇ Ã¹¹øÂ° ¹®ÀÚ°¡ %, _ ÀÌ¸é,
- *            escape ¹®ÀÚ¿Í ÀÏÄ¡ÇÏ´ÂÁö¸¦ °Ë»çÇØ¼­,
- *            ÀÏÄ¡ÇÏ¸é, indexable·Î ÆÇ´Ü.
+ *     1. (1) valueì˜ ì²«ë²ˆì§¸ ë¬¸ìê°€ %, _ ê°€ ì•„ë‹ˆë©´, indexableë¡œ íŒë‹¨.
+ *        (2) valueì˜ ì²«ë²ˆì§¸ ë¬¸ìê°€ %, _ ì´ë©´,
+ *            escape ë¬¸ìì™€ ì¼ì¹˜í•˜ëŠ”ì§€ë¥¼ ê²€ì‚¬í•´ì„œ,
+ *            ì¼ì¹˜í•˜ë©´, indexableë¡œ íŒë‹¨.
  *
  ***********************************************************************/
 
@@ -6328,21 +6328,21 @@ qmoPred::isIndexableLIKE( qcStatement  * aStatement,
     IDU_FIT_POINT_FATAL( "qmoPred::isIndexableLIKE::__FT__" );
 
     //--------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //--------------------------------------
 
     IDE_DASSERT( aLikeNode != NULL );
     IDE_DASSERT( aIsIndexable != NULL );
 
     //--------------------------------------
-    // LIKE ¿¬»êÀÚ¿¡ ´ëÇÑ indexable ÆÇ´Ü
+    // LIKE ì—°ì‚°ìì— ëŒ€í•œ indexable íŒë‹¨
     //--------------------------------------
 
     sTemplate   = QC_SHARED_TMPLATE(aStatement);
     sValueNode  = (qtcNode *)(aLikeNode->node.arguments->next);
     sEscapeNode = (qtcNode *)(sValueNode->node.next);
 
-    // value node¿¡¼­ ÆĞÅÏ¹®ÀÚ¸¦ ¾ò¾î¿Â´Ù.
+    // value nodeì—ì„œ íŒ¨í„´ë¬¸ìë¥¼ ì–»ì–´ì˜¨ë‹¤.
     IDE_TEST( qtc::calculate( sValueNode, sTemplate )
               != IDE_SUCCESS );
 
@@ -6350,12 +6350,12 @@ qmoPred::isIndexableLIKE( qcStatement  * aStatement,
     sValue  = sTemplate->tmplate.stack->value;
 
     // To Fix PR-12999
-    // Char°¡ Null ÀÎ °æ¿ì sPatternEcharValue->value[0] ¿¡´Â ¾Æ¹« °ªµµ Á¸ÀçÇÏÁö ¾ÊÀ½
-    // µû¶ó¼­, UMRÀ» ¹æÁöÇÏ±â À§ÇØ¼­´Â Null ¿©ºÎ¸¦ ¸ÕÀú ÆÇ´ÜÇØ¾ß ÇÔ.
+    // Charê°€ Null ì¸ ê²½ìš° sPatternEcharValue->value[0] ì—ëŠ” ì•„ë¬´ ê°’ë„ ì¡´ì¬í•˜ì§€ ì•ŠìŒ
+    // ë”°ë¼ì„œ, UMRì„ ë°©ì§€í•˜ê¸° ìœ„í•´ì„œëŠ” Null ì—¬ë¶€ë¥¼ ë¨¼ì € íŒë‹¨í•´ì•¼ í•¨.
     if ( sColumn->module->isNull( sColumn, sValue )
          == ID_TRUE )
     {
-        // Null ÀÎ °æ¿ì
+        // Null ì¸ ê²½ìš°
         sIsIndexableLike = ID_FALSE;
     }
     else
@@ -6366,17 +6366,17 @@ qmoPred::isIndexableLIKE( qcStatement  * aStatement,
              (sColumn->module->id == MTD_EVARCHAR_ID) )
         {
             // PROJ-2002 Column Security
-            // patternÀÌ echar, evarcharÀÎ °æ¿ì
+            // patternì´ echar, evarcharì¸ ê²½ìš°
 
             sPatternEcharValue = (mtdEcharType*)sValue;
 
             //--------------------------------------------------
-            // format stringÀÇ plain text¸¦ ¾ò´Â´Ù.
+            // format stringì˜ plain textë¥¼ ì–»ëŠ”ë‹¤.
             //--------------------------------------------------
 
             sEncColumn = QTC_STMT_COLUMN( aStatement, sValueNode );
 
-            // »ó¼ö´Â policy¸¦ °¡Áú ¼ö ¾ø´Ù.
+            // ìƒìˆ˜ëŠ” policyë¥¼ ê°€ì§ˆ ìˆ˜ ì—†ë‹¤.
             IDE_FT_ASSERT( sEncColumn->policy[0] == '\0' );
 
             sPattern       = sPatternEcharValue->mValue;
@@ -6384,7 +6384,7 @@ qmoPred::isIndexableLIKE( qcStatement  * aStatement,
         }
         else
         {
-            // patternÀÌ char, varchar, nchar, nvarcharÀÇ °æ¿ì
+            // patternì´ char, varchar, nchar, nvarcharì˜ ê²½ìš°
 
             sPatternValue = (mtdCharType*)sValue;
 
@@ -6396,13 +6396,13 @@ qmoPred::isIndexableLIKE( qcStatement  * aStatement,
                                      sPattern + sPatternLength,
                                      sLanguage );
 
-        // '%' ¹®ÀÚÀÎÁö °Ë»ç
+        // '%' ë¬¸ìì¸ì§€ ê²€ì‚¬
         sIsEqual1 = mtc::compareOneChar( sPattern,
                                          sSize,
                                          sLanguage->specialCharSet[MTL_PC_IDX],
                                          sLanguage->specialCharSize );
 
-        // '_' ¹®ÀÚÀÎÁö °Ë»ç
+        // '_' ë¬¸ìì¸ì§€ ê²€ì‚¬
         sIsEqual2 = mtc::compareOneChar( sPattern,
                                          sSize,
                                          sLanguage->specialCharSet[MTL_UB_IDX],
@@ -6410,20 +6410,20 @@ qmoPred::isIndexableLIKE( qcStatement  * aStatement,
 
         if ( ( sIsEqual1 != ID_TRUE ) && ( sIsEqual2 != ID_TRUE ) )
         {
-            // ÆĞÅÏ¹®ÀÚÀÇ Ã¹¹øÂ° ¹®ÀÚ°¡ '%', '_'·Î ½ÃÀÛÇÏÁö ¾Ê´Â´Ù.
+            // íŒ¨í„´ë¬¸ìì˜ ì²«ë²ˆì§¸ ë¬¸ìê°€ '%', '_'ë¡œ ì‹œì‘í•˜ì§€ ì•ŠëŠ”ë‹¤.
             // Nothing To Do
         }
         else
         {
-            // ÆĞÅÏ¹®ÀÚÀÇ Ã¹¹øÂ° ¹®ÀÚ°¡ '%', '_'·Î ½ÃÀÛÇÑ´Ù¸é,
-            // escape ¹®ÀÚ¿Í µ¿ÀÏÇÑÁö¸¦ °Ë»çÇÑ´Ù.
+            // íŒ¨í„´ë¬¸ìì˜ ì²«ë²ˆì§¸ ë¬¸ìê°€ '%', '_'ë¡œ ì‹œì‘í•œë‹¤ë©´,
+            // escape ë¬¸ìì™€ ë™ì¼í•œì§€ë¥¼ ê²€ì‚¬í•œë‹¤.
             if ( sEscapeNode != NULL )
             {
                 IDE_TEST( qtc::calculate( sEscapeNode,
                                           sTemplate )
                           != IDE_SUCCESS );
 
-                // escape ¹®ÀÚ¸¦ ¾ò¾î¿Â´Ù.
+                // escape ë¬¸ìë¥¼ ì–»ì–´ì˜¨ë‹¤.
                 sEscapeValue = (mtdCharType*)sTemplate->tmplate.stack->value;
 
                 sIsEqual3 = mtc::compareOneChar( sPattern,
@@ -6440,7 +6440,7 @@ qmoPred::isIndexableLIKE( qcStatement  * aStatement,
                     sIsIndexableLike = ID_FALSE;
                 }
             }
-            else  // escape ¹®ÀÚ°¡ ¾ø´Â °æ¿ì
+            else  // escape ë¬¸ìê°€ ì—†ëŠ” ê²½ìš°
             {
                 sIsIndexableLike = ID_FALSE;
             }
@@ -6469,26 +6469,26 @@ qmoPred::processIndexableInSubQ( qmoPredicate ** aPredicate )
 {
 /***********************************************************************
  *
- * Description : Àç¹èÄ¡°¡ ¿Ï·áµÈ °¢ indexable column¿¡ ´ëÇÑ
- *               IN(subquery)¿¡ ´ëÇÑ Ã³¸®
+ * Description : ì¬ë°°ì¹˜ê°€ ì™„ë£Œëœ ê° indexable columnì— ëŒ€í•œ
+ *               IN(subquery)ì— ëŒ€í•œ ì²˜ë¦¬
  *
  * Implementation :
  *
- *     IN(subquery)´Â ´Ù¸¥ predicate°ú ÇÔ²² keyRange¸¦ ±¸¼ºÇÒ ¼ö ¾ø°í,
- *     ´Üµ¶À¸·Î¸¸ keyRange¸¦ ±¸¼ºÇØ¾ßÇÏ¹Ç·Î predicate ºĞ·ù°¡ ³¡³ª°í ³ª¸é,
- *     indexable ÄÃ·³¿¡ ´ëÇØ IN(subquery)°¡ Á¸ÀçÇÏ´Â °æ¿ì,
- *     ´ÙÀ½°ú °°ÀÌ Ã³¸®ÇÑ´Ù.
+ *     IN(subquery)ëŠ” ë‹¤ë¥¸ predicateê³¼ í•¨ê»˜ keyRangeë¥¼ êµ¬ì„±í•  ìˆ˜ ì—†ê³ ,
+ *     ë‹¨ë…ìœ¼ë¡œë§Œ keyRangeë¥¼ êµ¬ì„±í•´ì•¼í•˜ë¯€ë¡œ predicate ë¶„ë¥˜ê°€ ëë‚˜ê³  ë‚˜ë©´,
+ *     indexable ì»¬ëŸ¼ì— ëŒ€í•´ IN(subquery)ê°€ ì¡´ì¬í•˜ëŠ” ê²½ìš°,
+ *     ë‹¤ìŒê³¼ ê°™ì´ ì²˜ë¦¬í•œë‹¤.
  *
- *     selectivity°¡ ÁÁÀº predicateÀ» Ã£´Â´Ù.
- *     A. Ã£Àº predicateÀÌ IN(subquery)ÀÌ¸é,
- *        . ÇØ´ç ÄÃ·³¸®½ºÆ®¿¡ Ã£Àº IN(subquery)¸¸ ³²±â°í,
- *        . ³ª¸ÓÁö predicateµéÀº non-indexableÀÇ ¸®½ºÆ®¿¡ ´Ş¾ÆÁØ´Ù.
- *     B. Ã£Àº predicateÀÌ IN(subquery)°¡ ¾Æ´Ï¸é,
- *        . IN(subquery)µéÀ» ¸ğµÎ Ã£¾Æ¼­ non-indexableÀÇ ¸®½ºÆ®¿¡ ´Ş¾ÆÁØ´Ù.
+ *     selectivityê°€ ì¢‹ì€ predicateì„ ì°¾ëŠ”ë‹¤.
+ *     A. ì°¾ì€ predicateì´ IN(subquery)ì´ë©´,
+ *        . í•´ë‹¹ ì»¬ëŸ¼ë¦¬ìŠ¤íŠ¸ì— ì°¾ì€ IN(subquery)ë§Œ ë‚¨ê¸°ê³ ,
+ *        . ë‚˜ë¨¸ì§€ predicateë“¤ì€ non-indexableì˜ ë¦¬ìŠ¤íŠ¸ì— ë‹¬ì•„ì¤€ë‹¤.
+ *     B. ì°¾ì€ predicateì´ IN(subquery)ê°€ ì•„ë‹ˆë©´,
+ *        . IN(subquery)ë“¤ì„ ëª¨ë‘ ì°¾ì•„ì„œ non-indexableì˜ ë¦¬ìŠ¤íŠ¸ì— ë‹¬ì•„ì¤€ë‹¤.
  *
- *     µû¶ó¼­, indexable column LIST¿¡´Â ´ÙÀ½°ú °°Àº µÎ °¡ÁöÀÇ °æ¿ì°¡ »ı±ä´Ù.
- *             (1) IN(subquery) ÇÏ³ª¸¸ Á¸Àç
- *             (2) IN(subquery)°¡ ¾ø´Â predicateµé·Î¸¸ ±¸¼º
+ *     ë”°ë¼ì„œ, indexable column LISTì—ëŠ” ë‹¤ìŒê³¼ ê°™ì€ ë‘ ê°€ì§€ì˜ ê²½ìš°ê°€ ìƒê¸´ë‹¤.
+ *             (1) IN(subquery) í•˜ë‚˜ë§Œ ì¡´ì¬
+ *             (2) IN(subquery)ê°€ ì—†ëŠ” predicateë“¤ë¡œë§Œ êµ¬ì„±
  *
  *     Example )
  *
@@ -6515,7 +6515,7 @@ qmoPred::processIndexableInSubQ( qmoPredicate ** aPredicate )
     qmoPredicate * sNextPredicate;
     qmoPredicate * sMorePredicate;
     qmoPredicate * sMoreMorePred;
-    qmoPredicate * sSelPredicate;   // selectivity°¡ ÁÁÀº predicate
+    qmoPredicate * sSelPredicate;   // selectivityê°€ ì¢‹ì€ predicate
     qmoPredicate * sTempPredicate = NULL;
     qmoPredicate * sLastTempPred  = NULL;
     qmoPredicate * sTemp = NULL;
@@ -6524,13 +6524,13 @@ qmoPred::processIndexableInSubQ( qmoPredicate ** aPredicate )
     IDU_FIT_POINT_FATAL( "qmoPred::processIndexableInSubQ::__FT__" );
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_DASSERT( aPredicate != NULL );
 
     //------------------------------------------
-    // non-indexable ÄÃ·³¸®½ºÆ®¸¦ Ã£´Â´Ù.
+    // non-indexable ì»¬ëŸ¼ë¦¬ìŠ¤íŠ¸ë¥¼ ì°¾ëŠ”ë‹¤.
     //------------------------------------------
 
     sPredicate = *aPredicate;
@@ -6542,15 +6542,15 @@ qmoPred::processIndexableInSubQ( qmoPredicate ** aPredicate )
 
     if ( sCurPredicate == NULL )
     {
-        // ÀÎÀÚ·Î ³Ñ¾î¿Â predicate ¸®½ºÆ®¿¡´Â
-        // non-indexable predicateÀÌ Á¸ÀçÇÏÁö ¾Ê´Â °æ¿ì
+        // ì¸ìë¡œ ë„˜ì–´ì˜¨ predicate ë¦¬ìŠ¤íŠ¸ì—ëŠ”
+        // non-indexable predicateì´ ì¡´ì¬í•˜ì§€ ì•ŠëŠ” ê²½ìš°
 
         sNonIndexablePred = NULL;
     }
     else
     {
-        // ÀÎÀÚ·Î ³Ñ¾î¿Â predicate ¸®½ºÆ®¿¡´Â
-        // non-indexable predicateÀÌ Á¸ÀçÇÏ´Â °æ¿ì
+        // ì¸ìë¡œ ë„˜ì–´ì˜¨ predicate ë¦¬ìŠ¤íŠ¸ì—ëŠ”
+        // non-indexable predicateì´ ì¡´ì¬í•˜ëŠ” ê²½ìš°
         sNonIndexablePred = sCurPredicate;
 
         for ( sLastNonIndexable        = sNonIndexablePred;
@@ -6559,7 +6559,7 @@ qmoPred::processIndexableInSubQ( qmoPredicate ** aPredicate )
     }
 
     //------------------------------------------
-    // °¢ ÄÃ·³º°·Î IN(subquery)¿¡ ´ëÇÑ Ã³¸®
+    // ê° ì»¬ëŸ¼ë³„ë¡œ IN(subquery)ì— ëŒ€í•œ ì²˜ë¦¬
     //------------------------------------------
 
     for ( sCurPredicate  = sPredicate;
@@ -6567,7 +6567,7 @@ qmoPred::processIndexableInSubQ( qmoPredicate ** aPredicate )
           sCurPredicate  = sNextPredicate )
     {
         //------------------------------------------
-        // IN(subquery)°¡ Á¸ÀçÇÏ´ÂÁö È®ÀÎ.
+        // IN(subquery)ê°€ ì¡´ì¬í•˜ëŠ”ì§€ í™•ì¸.
         //------------------------------------------
 
         sTemp = NULL;
@@ -6580,7 +6580,7 @@ qmoPred::processIndexableInSubQ( qmoPredicate ** aPredicate )
         }
         else
         {
-            // ÄÃ·³¸®½ºÆ®¿¡ IN(subquery)¸¦ Æ÷ÇÔÇÑ predicateÀÌ ÀÖ´ÂÁö °Ë»ç
+            // ì»¬ëŸ¼ë¦¬ìŠ¤íŠ¸ì— IN(subquery)ë¥¼ í¬í•¨í•œ predicateì´ ìˆëŠ”ì§€ ê²€ì‚¬
             for ( sMorePredicate  = sCurPredicate;
                   sMorePredicate != NULL;
                   sMorePredicate  = sMorePredicate->more )
@@ -6598,15 +6598,15 @@ qmoPred::processIndexableInSubQ( qmoPredicate ** aPredicate )
 
             if ( sMorePredicate == NULL )
             {
-                // ÄÃ·³¸®½ºÆ®¿¡ IN(subquery)¸¦ Æ÷ÇÔÇÑ predicateÀÌ ¾ø´Â °æ¿ì
+                // ì»¬ëŸ¼ë¦¬ìŠ¤íŠ¸ì— IN(subquery)ë¥¼ í¬í•¨í•œ predicateì´ ì—†ëŠ” ê²½ìš°
                 sTemp = sCurPredicate;
             }
             else
             {
-                // ÄÃ·³¸®½ºÆ®¿¡ IN(subquery)¸¦ Æ÷ÇÔÇÑ predicateÀÌ ÀÖ´Â °æ¿ì
+                // ì»¬ëŸ¼ë¦¬ìŠ¤íŠ¸ì— IN(subquery)ë¥¼ í¬í•¨í•œ predicateì´ ìˆëŠ” ê²½ìš°
 
                 //------------------------------------------
-                // selectivity°¡ °¡Àå ÁÁÀº predicateÀ» Ã£´Â´Ù.
+                // selectivityê°€ ê°€ì¥ ì¢‹ì€ predicateì„ ì°¾ëŠ”ë‹¤.
                 //------------------------------------------
 
                 sMorePredicate = sCurPredicate;
@@ -6632,10 +6632,10 @@ qmoPred::processIndexableInSubQ( qmoPredicate ** aPredicate )
                      == QMO_PRED_INSUBQUERY_EXIST )
                 {
                     //------------------------------------------
-                    // Ã£Àº predicateÀÌ IN(subquery)ÀÌ¸é,
-                    // . ÇØ´ç ÄÃ·³¸®½ºÆ®¿¡  IN(subquery)¸¸ ³²±â°í,
-                    // . ³ª¸ÓÁö predicateµéÀº non-indexableÀÇ ¸®½ºÆ®¿¡
-                    //   ´Ş¾ÆÁØ´Ù.
+                    // ì°¾ì€ predicateì´ IN(subquery)ì´ë©´,
+                    // . í•´ë‹¹ ì»¬ëŸ¼ë¦¬ìŠ¤íŠ¸ì—  IN(subquery)ë§Œ ë‚¨ê¸°ê³ ,
+                    // . ë‚˜ë¨¸ì§€ predicateë“¤ì€ non-indexableì˜ ë¦¬ìŠ¤íŠ¸ì—
+                    //   ë‹¬ì•„ì¤€ë‹¤.
                     //------------------------------------------
 
                     for ( sMorePredicate  = sCurPredicate;
@@ -6650,15 +6650,15 @@ qmoPred::processIndexableInSubQ( qmoPredicate ** aPredicate )
                         }
                         else
                         {
-                            // non-indexable ¿¡ ¿¬°á
-                            // columnID º¯°æ
+                            // non-indexable ì— ì—°ê²°
+                            // columnID ë³€ê²½
                             sMorePredicate->id = QMO_COLUMNID_NON_INDEXABLE;
 
                             if ( ( sMorePredicate->node->lflag &
                                   QTC_NODE_SUBQUERY_MASK )
                                   == QTC_NODE_SUBQUERY_EXIST )
                             {
-                                // subqueryKeyRange ÃÖÀûÈ­ ÆÁÀ» »èÁ¦ÇÑ´Ù.
+                                // subqueryKeyRange ìµœì í™” íŒì„ ì‚­ì œí•œë‹¤.
                                 IDE_TEST( removeIndexableSubQTip( sMorePredicate->node ) != IDE_SUCCESS );
                             }
                             else
@@ -6671,9 +6671,9 @@ qmoPred::processIndexableInSubQ( qmoPredicate ** aPredicate )
                                 sNonIndexablePred = sMorePredicate;
                                 sLastNonIndexable = sNonIndexablePred;
 
-                                // ÀÎÀÚ·Î ³Ñ¾î¿Â predicate ¸®½ºÆ®¿¡´Â
-                                // non-indexable predicateÀÌ Á¸ÀçÇÏÁö ¾Ê´Â °æ¿ì
-                                // predicate list¿¡ ¿¬°áµÇ¾î¾ß ÇÑ´Ù.
+                                // ì¸ìë¡œ ë„˜ì–´ì˜¨ predicate ë¦¬ìŠ¤íŠ¸ì—ëŠ”
+                                // non-indexable predicateì´ ì¡´ì¬í•˜ì§€ ì•ŠëŠ” ê²½ìš°
+                                // predicate listì— ì—°ê²°ë˜ì–´ì•¼ í•œë‹¤.
                                 if ( sTempPredicate == NULL )
                                 {
                                     sTempPredicate = sNonIndexablePred;
@@ -6694,13 +6694,13 @@ qmoPred::processIndexableInSubQ( qmoPredicate ** aPredicate )
 
                         sMorePredicate->more = NULL;
                     }
-                } // selectivity°¡ ÁÁÀº predicateÀÌ IN(subquery)ÀÎ °æ¿ìÀÇ Ã³¸®
+                } // selectivityê°€ ì¢‹ì€ predicateì´ IN(subquery)ì¸ ê²½ìš°ì˜ ì²˜ë¦¬
                 else
                 {
                     //------------------------------------------
-                    // Ã£Àº predicateÀÌ IN(subquery)°¡ ¾Æ´Ï¸é,
-                    // . IN(subquery)µéÀ» ¸ğµÎ Ã£¾Æ¼­
-                    //   non-indexableÀÇ ¸®½ºÆ®¿¡ ´Ş¾ÆÁØ´Ù.
+                    // ì°¾ì€ predicateì´ IN(subquery)ê°€ ì•„ë‹ˆë©´,
+                    // . IN(subquery)ë“¤ì„ ëª¨ë‘ ì°¾ì•„ì„œ
+                    //   non-indexableì˜ ë¦¬ìŠ¤íŠ¸ì— ë‹¬ì•„ì¤€ë‹¤.
                     //------------------------------------------
                     for ( sMorePredicate  = sCurPredicate;
                           sMorePredicate != NULL;
@@ -6725,11 +6725,11 @@ qmoPred::processIndexableInSubQ( qmoPredicate ** aPredicate )
                         }
                         else
                         {
-                            // non-indexable ¿¡ ¿¬°á
-                            // IN(subquery)°¡ filter·Î »ç¿ëµÇ¹Ç·Î,
-                            // IN(subquery) ÃÖÀûÈ­ ÆÁ flag¸¦ »èÁ¦ÇÑ´Ù.
+                            // non-indexable ì— ì—°ê²°
+                            // IN(subquery)ê°€ filterë¡œ ì‚¬ìš©ë˜ë¯€ë¡œ,
+                            // IN(subquery) ìµœì í™” íŒ flagë¥¼ ì‚­ì œí•œë‹¤.
                             IDE_TEST( removeIndexableSubQTip( sMorePredicate->node ) != IDE_SUCCESS );
-                            // columnID º¯°æ
+                            // columnID ë³€ê²½
                             sMorePredicate->id = QMO_COLUMNID_NON_INDEXABLE;
 
                             if ( sNonIndexablePred == NULL )
@@ -6737,9 +6737,9 @@ qmoPred::processIndexableInSubQ( qmoPredicate ** aPredicate )
                                 sNonIndexablePred = sMorePredicate;
                                 sLastNonIndexable = sNonIndexablePred;
 
-                                // ÀÎÀÚ·Î ³Ñ¾î¿Â predicate ¸®½ºÆ®¿¡´Â
-                                // non-indexable predicateÀÌ Á¸ÀçÇÏÁö ¾Ê´Â °æ¿ì
-                                // predicate list¿¡ ¿¬°áµÇ¾î¾ß ÇÑ´Ù.
+                                // ì¸ìë¡œ ë„˜ì–´ì˜¨ predicate ë¦¬ìŠ¤íŠ¸ì—ëŠ”
+                                // non-indexable predicateì´ ì¡´ì¬í•˜ì§€ ì•ŠëŠ” ê²½ìš°
+                                // predicate listì— ì—°ê²°ë˜ì–´ì•¼ í•œë‹¤.
                                 if ( sTempPredicate == NULL )
                                 {
                                     sTempPredicate = sNonIndexablePred;
@@ -6797,28 +6797,28 @@ qmoPred::isJoinablePredicate( qmoPredicate * aPredicate,
 {
 /***********************************************************************
  *
- * Description : joinable predicateÀÇ ÆÇ´Ü
+ * Description : joinable predicateì˜ íŒë‹¨
  *
- * [joinable predicate]: predicateÀÇ ÇÏÀ§ ³ëµå°¡
- *                       JOIN graphÀÇ child graph¿¡ ÇÏ³ª¾¿ ´ëÀÀµÇ¾î¾ß ÇÔ.
- *     ¿¹) t1.i1 = t2.i1 (O),  t1.i1+1 = t2.i1+1 (O),
+ * [joinable predicate]: predicateì˜ í•˜ìœ„ ë…¸ë“œê°€
+ *                       JOIN graphì˜ child graphì— í•˜ë‚˜ì”© ëŒ€ì‘ë˜ì–´ì•¼ í•¨.
+ *     ì˜ˆ) t1.i1 = t2.i1 (O),  t1.i1+1 = t2.i1+1 (O),
  *         t1.i1=t2.i1 OR t1.i1=t2.i2 (O) : only index nested loop join
- *         t1.i1=1 OR t2.i1=3 (X) : join predicateÀÌÁö¸¸, non-joinable.
+ *         t1.i1=1 OR t2.i1=3 (X) : join predicateì´ì§€ë§Œ, non-joinable.
  *
  * Implementation :
  *
- *    joinable predicateÀ» ÆÇ´ÜÇØ¼­, qmoPredicate.flag¿¡ ±× Á¤º¸ ¼³Á¤.
+ *    joinable predicateì„ íŒë‹¨í•´ì„œ, qmoPredicate.flagì— ê·¸ ì •ë³´ ì„¤ì •.
  *
- *    OR ÇÏÀ§ ³ëµå°¡ 2°³ÀÌ»óÀÎ °æ¿ì´Â, ¸ğµÎ joinable predicateÀÌ¾î¾ß ÇÑ´Ù.
- *     1. joinable predicateÀ¸·Î »ç¿ëµÉ¼ö ÀÖ´Â ºñ±³¿¬»êÀÚ ÆÇ´Ü.
+ *    OR í•˜ìœ„ ë…¸ë“œê°€ 2ê°œì´ìƒì¸ ê²½ìš°ëŠ”, ëª¨ë‘ joinable predicateì´ì–´ì•¼ í•œë‹¤.
+ *     1. joinable predicateìœ¼ë¡œ ì‚¬ìš©ë ìˆ˜ ìˆëŠ” ë¹„êµì—°ì‚°ì íŒë‹¨.
  *        [ =, >, >=, <, <= ]
- *     2. 1ÀÇ Á¶°ÇÀÌ ¸¸Á·µÇ¸é,
- *        ºñ±³¿¬»êÀÚ ÇÏÀ§ µÎ°³ ³ëµåÀÇ dependencies Á¤º¸·Î
- *        ÇÏ³ªÀÇ ³ëµå°¡ left childÀÇ ÄÃ·³ÀÌ¶ó¸é,
- *        ³ª¸ÓÁö ÇÏ³ªÀÇ ³ëµå´Â right childÀÇ ÄÃ·³ÀÎÁö¸¦ °Ë»çÇÑ´Ù.
+ *     2. 1ì˜ ì¡°ê±´ì´ ë§Œì¡±ë˜ë©´,
+ *        ë¹„êµì—°ì‚°ì í•˜ìœ„ ë‘ê°œ ë…¸ë“œì˜ dependencies ì •ë³´ë¡œ
+ *        í•˜ë‚˜ì˜ ë…¸ë“œê°€ left childì˜ ì»¬ëŸ¼ì´ë¼ë©´,
+ *        ë‚˜ë¨¸ì§€ í•˜ë‚˜ì˜ ë…¸ë“œëŠ” right childì˜ ì»¬ëŸ¼ì¸ì§€ë¥¼ ê²€ì‚¬í•œë‹¤.
  *
- * [ aIsOnlyIndexNestedLoop Àº t1.i1=t2.i1 OR t1.i1=t2.i2¿Í °°Àº °æ¿ì¿¡
- *   true·Î ¼³Á¤µÈ´Ù. ]
+ * [ aIsOnlyIndexNestedLoop ì€ t1.i1=t2.i1 OR t1.i1=t2.i2ì™€ ê°™ì€ ê²½ìš°ì—
+ *   trueë¡œ ì„¤ì •ëœë‹¤. ]
  *
  ***********************************************************************/
 
@@ -6829,7 +6829,7 @@ qmoPred::isJoinablePredicate( qmoPredicate * aPredicate,
     IDU_FIT_POINT_FATAL( "qmoPred::isJoinablePredicate::__FT__" );
 
     //--------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //--------------------------------------
 
     IDE_DASSERT( aPredicate != NULL );
@@ -6838,7 +6838,7 @@ qmoPred::isJoinablePredicate( qmoPredicate * aPredicate,
     IDE_DASSERT( aIsOnlyIndexNestedLoop != NULL );
 
     //--------------------------------------
-    // joinable predicateÀÇ ÆÇ´Ü
+    // joinable predicateì˜ íŒë‹¨
     //--------------------------------------
 
     sNode = aPredicate->node;
@@ -6847,21 +6847,21 @@ qmoPred::isJoinablePredicate( qmoPredicate * aPredicate,
          == MTC_NODE_OPERATOR_OR )
     {
         //-------------------------------------
-        // CNF ÀÎ °æ¿ì·Î,
-        // ÀÎÀÚ·Î ³Ñ¾î¿Â predicateÀÇ ÃÖ»óÀ§ ³ëµå´Â OR³ëµåÀÌ¸ç,
-        // OR ³ëµå ÇÏÀ§¿¡ ¿©·¯°³ÀÇ join predicateÀÌ ¿Ã ¼ö ÀÖ´Ù.
-        // OR ³ëµå ÇÏÀ§¿¡ ¿©·¯°³ÀÇ join predicateÀÌ ¿À´Â °æ¿ì,
-        // ¸ğµç predicateÀÌ joinableÀÌ¾î¾ß ÇÏ¸ç,
-        // index nested loop join method¸¸ »ç¿ëÇÒ ¼ö ÀÖ´Ù.
+        // CNF ì¸ ê²½ìš°ë¡œ,
+        // ì¸ìë¡œ ë„˜ì–´ì˜¨ predicateì˜ ìµœìƒìœ„ ë…¸ë“œëŠ” ORë…¸ë“œì´ë©°,
+        // OR ë…¸ë“œ í•˜ìœ„ì— ì—¬ëŸ¬ê°œì˜ join predicateì´ ì˜¬ ìˆ˜ ìˆë‹¤.
+        // OR ë…¸ë“œ í•˜ìœ„ì— ì—¬ëŸ¬ê°œì˜ join predicateì´ ì˜¤ëŠ” ê²½ìš°,
+        // ëª¨ë“  predicateì´ joinableì´ì–´ì•¼ í•˜ë©°,
+        // index nested loop join methodë§Œ ì‚¬ìš©í•  ìˆ˜ ìˆë‹¤.
         //--------------------------------------
 
-        // sNode´Â ºñ±³¿¬»êÀÚ ³ëµå
+        // sNodeëŠ” ë¹„êµì—°ì‚°ì ë…¸ë“œ
         sNode = (qtcNode *)(sNode->node.arguments);
 
         if ( aPredicate->node->node.arguments->next == NULL )
         {
-            // 1. OR ³ëµå ÇÏÀ§¿¡ ºñ±³¿¬»êÀÚ°¡ ÇÏ³ª¸¸ ¿À´Â °æ¿ì
-            //    joinable predicateÀÎÁö¸¸ ÆÇ´ÜÇÏ¸é µÈ´Ù.
+            // 1. OR ë…¸ë“œ í•˜ìœ„ì— ë¹„êµì—°ì‚°ìê°€ í•˜ë‚˜ë§Œ ì˜¤ëŠ” ê²½ìš°
+            //    joinable predicateì¸ì§€ë§Œ íŒë‹¨í•˜ë©´ ëœë‹¤.
             IDE_TEST( isJoinableOnePred( sNode,
                                          aFromDependencies,
                                          aLeftChildDependencies,
@@ -6871,9 +6871,9 @@ qmoPred::isJoinablePredicate( qmoPredicate * aPredicate,
         }
         else
         {
-            // 2. OR ³ëµå ÇÏÀ§¿¡ ºñ±³¿¬»êÀÚ°¡ ¿©·¯°³ ¿À´Â °æ¿ì
-            //    ÇÏÀ§ ³ëµå°¡ ¸ğµÎ joinable predicateÀÌ¾î¾ß ÇÑ´Ù.
-            //    ÀÌ °æ¿ì´Â, index nested loop join method¸¸ »ç¿ëÇÒ ¼ö ÀÖ´Ù.
+            // 2. OR ë…¸ë“œ í•˜ìœ„ì— ë¹„êµì—°ì‚°ìê°€ ì—¬ëŸ¬ê°œ ì˜¤ëŠ” ê²½ìš°
+            //    í•˜ìœ„ ë…¸ë“œê°€ ëª¨ë‘ joinable predicateì´ì–´ì•¼ í•œë‹¤.
+            //    ì´ ê²½ìš°ëŠ”, index nested loop join methodë§Œ ì‚¬ìš©í•  ìˆ˜ ìˆë‹¤.
 
             sIsOnlyIndexNestedLoopPred = ID_TRUE;
 
@@ -6903,10 +6903,10 @@ qmoPred::isJoinablePredicate( qmoPredicate * aPredicate,
     else
     {
         //-------------------------------------
-        // DNFÀÎ °æ¿ì·Î,
-        // ÀÎÀÚ·Î ³Ñ¾î¿Â predicateÀÇ ÃÖ»óÀ§ ³ëµå´Â ºñ±³¿¬»êÀÚ ³ëµåÀÌ´Ù.
-        // ¾ÆÁ÷ predicateÀÇ ¿¬°á°ü°è°¡ ²÷¾îÁöÁö ¾ÊÀº »óÅÂÀÌ¹Ç·Î,
-        // ÀÎÀÚ·Î ³Ñ¾î¿Â ºñ±³¿¬»êÀÚ ³ëµå ÇÏ³ª¿¡ ´ëÇØ¼­¸¸ Ã³¸®ÇØ¾ß ÇÑ´Ù.
+        // DNFì¸ ê²½ìš°ë¡œ,
+        // ì¸ìë¡œ ë„˜ì–´ì˜¨ predicateì˜ ìµœìƒìœ„ ë…¸ë“œëŠ” ë¹„êµì—°ì‚°ì ë…¸ë“œì´ë‹¤.
+        // ì•„ì§ predicateì˜ ì—°ê²°ê´€ê³„ê°€ ëŠì–´ì§€ì§€ ì•Šì€ ìƒíƒœì´ë¯€ë¡œ,
+        // ì¸ìë¡œ ë„˜ì–´ì˜¨ ë¹„êµì—°ì‚°ì ë…¸ë“œ í•˜ë‚˜ì— ëŒ€í•´ì„œë§Œ ì²˜ë¦¬í•´ì•¼ í•œë‹¤.
         //--------------------------------------
 
         IDE_TEST( isJoinableOnePred( sNode,
@@ -6918,7 +6918,7 @@ qmoPred::isJoinablePredicate( qmoPredicate * aPredicate,
     }
 
     //-------------------------------------
-    // qmoPredicate.flag¿¡ joinable predicate Á¤º¸¸¦ ÀúÀåÇÑ´Ù.
+    // qmoPredicate.flagì— joinable predicate ì •ë³´ë¥¼ ì €ì¥í•œë‹¤.
     //-------------------------------------
 
     if ( sIsJoinable == ID_TRUE )
@@ -6951,21 +6951,21 @@ qmoPred::isJoinableOnePred( qtcNode     * aNode,
 {
 /***********************************************************************
  *
- * Description : ÇÏ³ªÀÇ ºñ±³¿¬»êÀÚ¿¡ ´ëÇÑ joinable predicate ÆÇ´Ü
+ * Description : í•˜ë‚˜ì˜ ë¹„êµì—°ì‚°ìì— ëŒ€í•œ joinable predicate íŒë‹¨
  *
- *     qmoPred::isJoinablePredicate() ÇÔ¼ö ÁÖ¼® ÂüÁ¶.
+ *     qmoPred::isJoinablePredicate() í•¨ìˆ˜ ì£¼ì„ ì°¸ì¡°.
  *
  * Implementation :
  *
- *  ºñ±³¿¬»êÀÚÀÇ °¢ ÇÏÀ§³ëµå°¡
- *  left/right child graph¿¡ ÇÏ³ª¾¿ ´ëÀÀµÇ´ÂÁö °Ë»ç.
+ *  ë¹„êµì—°ì‚°ìì˜ ê° í•˜ìœ„ë…¸ë“œê°€
+ *  left/right child graphì— í•˜ë‚˜ì”© ëŒ€ì‘ë˜ëŠ”ì§€ ê²€ì‚¬.
  *
- *  1. ºñ±³¿¬»êÀÚ °¢ ÇÏÀ§³ëµå¿¡ ´ëÇÏ¿©, ÇØ´ç tableÀÇ dependencies¸¦ ±¸ÇÑ´Ù.
- *     nodeDependencies = ³ëµåÀÇ dependencies & FROMÀÇ dependencies
- *  2. ³ëµå°¡ left/right graph¿¡ ¼ÓÇÏ´Â ÄÃ·³ÀÎÁö °Ë»ç
- *     orDependencies = nodeDependencies | left/right graphÀÇ dependencies
- *  3. orDependencies°¡ left/right graphÀÇ dependencies¿Í µ¿ÀÏÇÏ¸é,
- *     ÇØ´ç ³ëµå´Â left/right graph¿¡ ¼ÓÇÏ´Â ÄÃ·³ÀÌ¶ó°í ÆÇ´ÜÇÑ´Ù.
+ *  1. ë¹„êµì—°ì‚°ì ê° í•˜ìœ„ë…¸ë“œì— ëŒ€í•˜ì—¬, í•´ë‹¹ tableì˜ dependenciesë¥¼ êµ¬í•œë‹¤.
+ *     nodeDependencies = ë…¸ë“œì˜ dependencies & FROMì˜ dependencies
+ *  2. ë…¸ë“œê°€ left/right graphì— ì†í•˜ëŠ” ì»¬ëŸ¼ì¸ì§€ ê²€ì‚¬
+ *     orDependencies = nodeDependencies | left/right graphì˜ dependencies
+ *  3. orDependenciesê°€ left/right graphì˜ dependenciesì™€ ë™ì¼í•˜ë©´,
+ *     í•´ë‹¹ ë…¸ë“œëŠ” left/right graphì— ì†í•˜ëŠ” ì»¬ëŸ¼ì´ë¼ê³  íŒë‹¨í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -6983,14 +6983,14 @@ qmoPred::isJoinableOnePred( qtcNode     * aNode,
     IDU_FIT_POINT_FATAL( "qmoPred::isJoinableOnePred::__FT__" );
 
     //--------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //--------------------------------------
 
     IDE_DASSERT( aNode != NULL );
     IDE_DASSERT( aIsJoinable != NULL );
 
     //--------------------------------------
-    // joinable ÆÇ´Ü
+    // joinable íŒë‹¨
     //--------------------------------------
 
     sCompareNode = aNode;
@@ -7001,7 +7001,7 @@ qmoPred::isJoinableOnePred( qtcNode     * aNode,
 
         // fix BUG-12282
         //--------------------------------------
-        // subquery¸¦ Æ÷ÇÔÇÏÁö ¾Ê¾Æ¾ß ÇÔ.
+        // subqueryë¥¼ í¬í•¨í•˜ì§€ ì•Šì•„ì•¼ í•¨.
         //--------------------------------------
         if ( ( sCompareNode->lflag & QTC_NODE_SUBQUERY_MASK )
              == QTC_NODE_SUBQUERY_EXIST )
@@ -7015,7 +7015,7 @@ qmoPred::isJoinableOnePred( qtcNode     * aNode,
         }
 
         //--------------------------------------
-        // joinable predicateÀ¸·Î »ç¿ëµÉ¼ö ÀÖ´Â ºñ±³¿¬»êÀÚ ÆÇ´Ü.
+        // joinable predicateìœ¼ë¡œ ì‚¬ìš©ë ìˆ˜ ìˆëŠ” ë¹„êµì—°ì‚°ì íŒë‹¨.
         // [ =, >, >=, <, <= ]
         //--------------------------------------
         // To Fix PR-15434
@@ -7031,17 +7031,17 @@ qmoPred::isJoinableOnePred( qtcNode     * aNode,
         }
 
         //--------------------------------------
-        // ºñ±³¿¬»êÀÚ ÇÏÀ§ µÎ°³ ³ëµåÀÇ dependency Á¤º¸·Î
-        // µÎ°³ÀÇ ÇÏÀ§ ³ëµå°¡ join graphÀÇ left/right child¿¡
-        // ÇÏ³ª¾¿ ´ëÀÀµÇ´ÂÁö °Ë»çÇÑ´Ù.
+        // ë¹„êµì—°ì‚°ì í•˜ìœ„ ë‘ê°œ ë…¸ë“œì˜ dependency ì •ë³´ë¡œ
+        // ë‘ê°œì˜ í•˜ìœ„ ë…¸ë“œê°€ join graphì˜ left/right childì—
+        // í•˜ë‚˜ì”© ëŒ€ì‘ë˜ëŠ”ì§€ ê²€ì‚¬í•œë‹¤.
         //--------------------------------------
 
         sFirstNode = (qtcNode *)(sCompareNode->node.arguments);
         sSecondNode = (qtcNode *)(sCompareNode->node.arguments->next);
 
         //--------------------------------------
-        // ºñ±³ ¿¬»êÀÚ °¢ ÇÏÀ§ ³ëµåµéÀÇ ÇØ´ç tableÀÇ dependencies¸¦ ±¸ÇÑ´Ù.
-        // (nodeÀÇ dependencies) & FROMÀÇ dependencies
+        // ë¹„êµ ì—°ì‚°ì ê° í•˜ìœ„ ë…¸ë“œë“¤ì˜ í•´ë‹¹ tableì˜ dependenciesë¥¼ êµ¬í•œë‹¤.
+        // (nodeì˜ dependencies) & FROMì˜ dependencies
         //--------------------------------------
 
         qtc::dependencyAnd( & sFirstNode->depInfo,
@@ -7053,8 +7053,8 @@ qmoPred::isJoinableOnePred( qtcNode     * aNode,
                             & sSecondNodeDependencies );
 
         //--------------------------------------
-        // ºñ±³¿¬»êÀÚ ³ëµåÀÇ argument¿¡ ´ëÇØ¼­,
-        // left child, right childÀÇ dependencies¿Í oring
+        // ë¹„êµì—°ì‚°ì ë…¸ë“œì˜ argumentì— ëŒ€í•´ì„œ,
+        // left child, right childì˜ dependenciesì™€ oring
         //--------------------------------------
 
         IDE_TEST( qtc::dependencyOr( & sFirstNodeDependencies,
@@ -7072,7 +7072,7 @@ qmoPred::isJoinableOnePred( qtcNode     * aNode,
                                    aLeftChildDependencies ) == ID_TRUE )
         {
             //--------------------------------------
-            // ºñ±³¿¬»êÀÚÀÇ argument ³ëµå°¡ left child graph¿¡ ¼ÓÇÏ´Â ÄÃ·³
+            // ë¹„êµì—°ì‚°ìì˜ argument ë…¸ë“œê°€ left child graphì— ì†í•˜ëŠ” ì»¬ëŸ¼
             //--------------------------------------
 
             IDE_TEST( qtc::dependencyOr( & sSecondNodeDependencies,
@@ -7085,13 +7085,13 @@ qmoPred::isJoinableOnePred( qtcNode     * aNode,
                                        aRightChildDependencies ) == ID_TRUE )
             {
                 //--------------------------------------
-                // ºñ±³¿¬»êÀÚÀÇ argument->next ³ëµå°¡
-                // right child graph¿¡ ¼ÓÇÏ´Â ÄÃ·³
+                // ë¹„êµì—°ì‚°ìì˜ argument->next ë…¸ë“œê°€
+                // right child graphì— ì†í•˜ëŠ” ì»¬ëŸ¼
                 //--------------------------------------
 
-                //sCompareNode->node.arguments°¡ left child graph¿¡ Æ÷ÇÔµÇ°í,
-                //sCompareNode->node.arguemtns->next°¡ right child graph¿¡
-                // Æ÷ÇÔÇÏ¹Ç·Î, joinable predicateÀ¸·Î ÆÇ´Ü
+                //sCompareNode->node.argumentsê°€ left child graphì— í¬í•¨ë˜ê³ ,
+                //sCompareNode->node.arguemtns->nextê°€ right child graphì—
+                // í¬í•¨í•˜ë¯€ë¡œ, joinable predicateìœ¼ë¡œ íŒë‹¨
 
                 // Nothing To Do
             }
@@ -7106,7 +7106,7 @@ qmoPred::isJoinableOnePred( qtcNode     * aNode,
                                         aRightChildDependencies ) == ID_TRUE )
         {
             //--------------------------------------
-            // ºñ±³¿¬»êÀÚÀÇ argument ³ëµå°¡ right child graph¿¡ ¼ÓÇÏ´Â ÄÃ·³
+            // ë¹„êµì—°ì‚°ìì˜ argument ë…¸ë“œê°€ right child graphì— ì†í•˜ëŠ” ì»¬ëŸ¼
             //--------------------------------------
 
             IDE_TEST( qtc::dependencyOr( & sSecondNodeDependencies,
@@ -7118,13 +7118,13 @@ qmoPred::isJoinableOnePred( qtcNode     * aNode,
                                        aLeftChildDependencies ) == ID_TRUE )
             {
                 //--------------------------------------
-                // ºñ±³¿¬»êÀÚÀÇ argument->next ³ëµå°¡
-                // left child graph¿¡ ¼ÓÇÏ´Â ÄÃ·³
+                // ë¹„êµì—°ì‚°ìì˜ argument->next ë…¸ë“œê°€
+                // left child graphì— ì†í•˜ëŠ” ì»¬ëŸ¼
                 //--------------------------------------
 
-                //sCompareNode->node.arguments°¡ right child graph¿¡ Æ÷ÇÔµÇ°í,
-                //sCompareNode->node.arguments->next°¡ left child graph¿¡
-                //Æ÷ÇÔµÇ¹Ç·Î, joinable predicateÀ¸·Î ÆÇ´Ü
+                //sCompareNode->node.argumentsê°€ right child graphì— í¬í•¨ë˜ê³ ,
+                //sCompareNode->node.arguments->nextê°€ left child graphì—
+                //í¬í•¨ë˜ë¯€ë¡œ, joinable predicateìœ¼ë¡œ íŒë‹¨
                 // Nothing To Do
             }
             else
@@ -7167,41 +7167,41 @@ qmoPred::isIndexableJoinPredicate( qcStatement  * aStatement,
 {
 /***********************************************************************
  *
- * Description : indexable join predicateÀÇ ÆÇ´Ü
+ * Description : indexable join predicateì˜ íŒë‹¨
  *
- *     < indexable join predicateÀÇ Á¤ÀÇ >
- *     indexable join predicateÀº one table predicate°ú °ÅÀÇ µ¿ÀÏÇÏ¸ç,
- *     Â÷ÀÌÁ¡Àº ´ÙÀ½°ú °°´Ù.
+ *     < indexable join predicateì˜ ì •ì˜ >
+ *     indexable join predicateì€ one table predicateê³¼ ê±°ì˜ ë™ì¼í•˜ë©°,
+ *     ì°¨ì´ì ì€ ë‹¤ìŒê³¼ ê°™ë‹¤.
  *
- *     Á¶°Ç0.
- *            0-1. right child graph°¡ qmgSelection graphÀÌ°í,
- *            0-2. joinable predicateÀÌ¾î¾ß ÇÏ°í,
+ *     ì¡°ê±´0.
+ *            0-1. right child graphê°€ qmgSelection graphì´ê³ ,
+ *            0-2. joinable predicateì´ì–´ì•¼ í•˜ê³ ,
  *
- *     Á¶°Ç1. joinable operator´Â [=, >, >=, <, <=]·Î Á¦ÇÑÀûÀÌ°í,
- *            [ joinable predicate°Ë»ç¿¡¼­ ÀÌ¹Ì °É·¯Áü. ]
+ *     ì¡°ê±´1. joinable operatorëŠ” [=, >, >=, <, <=]ë¡œ ì œí•œì ì´ê³ ,
+ *            [ joinable predicateê²€ì‚¬ì—ì„œ ì´ë¯¸ ê±¸ëŸ¬ì§. ]
  *
- *     Á¶°Ç6. subquery¸¦ Æ÷ÇÔÇÏÁö ¾Ê´Â´Ù.
+ *     ì¡°ê±´6. subqueryë¥¼ í¬í•¨í•˜ì§€ ì•ŠëŠ”ë‹¤.
  *
  * Implementation :
  *
- *     one table predicate°ú Â÷ÀÌ³ª´Â Á¶°ÇµéÀ» ¹Ì¸® °É·¯³»°í,
- *     one table predicate°ú µ¿ÀÏÇÑ isIndexable()ÇÔ¼ö¸¦ »ç¿ëÇÑ´Ù.
+ *     one table predicateê³¼ ì°¨ì´ë‚˜ëŠ” ì¡°ê±´ë“¤ì„ ë¯¸ë¦¬ ê±¸ëŸ¬ë‚´ê³ ,
+ *     one table predicateê³¼ ë™ì¼í•œ isIndexable()í•¨ìˆ˜ë¥¼ ì‚¬ìš©í•œë‹¤.
  *
- *     ÀÎÀÚ·Î ³Ñ¾î¿Â predicateÀº joinable operatorÀÇ joinable predicateÀÌ¹Ç·Î,
- *     subqueryÁ¸Àç¿©ºÎ¿Í right child graph°¡ qmgSelection ÀÎÁö¸¸ È®ÀÎÇÑ´Ù.
+ *     ì¸ìë¡œ ë„˜ì–´ì˜¨ predicateì€ joinable operatorì˜ joinable predicateì´ë¯€ë¡œ,
+ *     subqueryì¡´ì¬ì—¬ë¶€ì™€ right child graphê°€ qmgSelection ì¸ì§€ë§Œ í™•ì¸í•œë‹¤.
  *
- *     1. subquery°¡ Á¸ÀçÇÏ´ÂÁö °Ë»ç.
+ *     1. subqueryê°€ ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬.
  *
- *     2. left->right·ÎÀÇ °Ë»ç.
- *        right child graph°¡ qmgSelection graphÀÌ°í,
- *        indexable predicateÀÌ¸é,
+ *     2. left->rightë¡œì˜ ê²€ì‚¬.
+ *        right child graphê°€ qmgSelection graphì´ê³ ,
+ *        indexable predicateì´ë©´,
  *
- *     3. right->left·ÎÀÇ °Ë»ç.
- *        left child graph°¡ qmgSelection graphÀÌ°í,
- *        indexable predicateÀÌ¸é,
+ *     3. right->leftë¡œì˜ ê²€ì‚¬.
+ *        left child graphê°€ qmgSelection graphì´ê³ ,
+ *        indexable predicateì´ë©´,
  *
- *     indexable predicateÀ¸·Î ÆÇ´ÜÇÏ°í, index nested loop join°ú
- *     °¢°¢ÀÇ ¼öÇà°¡´ÉÇÑ join¹æÇâÀ» qmoPredicate.flag¿¡ ¼³Á¤ÇÑ´Ù.
+ *     indexable predicateìœ¼ë¡œ íŒë‹¨í•˜ê³ , index nested loop joinê³¼
+ *     ê°ê°ì˜ ìˆ˜í–‰ê°€ëŠ¥í•œ joinë°©í–¥ì„ qmoPredicate.flagì— ì„¤ì •í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -7211,32 +7211,32 @@ qmoPred::isIndexableJoinPredicate( qcStatement  * aStatement,
     IDU_FIT_POINT_FATAL( "qmoPred::isIndexableJoinPredicate::__FT__" );
 
     //--------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //--------------------------------------
 
     IDE_DASSERT( aPredicate != NULL );
 
     //--------------------------------------
-    // indexable join predicateÀÇ ÆÇ´Ü
+    // indexable join predicateì˜ íŒë‹¨
     //--------------------------------------
 
     aPredicate->flag &= ~QMO_PRED_INDEX_JOINABLE_MASK;
     aPredicate->flag &= ~QMO_PRED_INDEX_DIRECTION_MASK;
 
     //--------------------------------------
-    // subquery°¡ Á¸ÀçÇÏÁö ¾Ê¾Æ¾ß ÇÑ´Ù.
-    // joinable predicate°Ë»ç½Ã, ÀÌ¹Ì °É·¯Áü.
+    // subqueryê°€ ì¡´ì¬í•˜ì§€ ì•Šì•„ì•¼ í•œë‹¤.
+    // joinable predicateê²€ì‚¬ì‹œ, ì´ë¯¸ ê±¸ëŸ¬ì§.
     //--------------------------------------
 
     //--------------------------------------
-    // join ¹æÇâÀ» left child -> right child·Î ¼öÇà½Ã,
-    // index joinable predicateÀ¸·Î »ç¿ë°¡´ÉÇÑÁö °Ë»ç.
+    // join ë°©í–¥ì„ left child -> right childë¡œ ìˆ˜í–‰ì‹œ,
+    // index joinable predicateìœ¼ë¡œ ì‚¬ìš©ê°€ëŠ¥í•œì§€ ê²€ì‚¬.
     //--------------------------------------
 
     sRightGraph = aRightChildGraph;
 
     // PROJ-1502 PARTITIONED DISK TABLE
-    // right child graph°¡ selection ¶Ç´Â partition graphÀÎÁö °Ë»ç.
+    // right child graphê°€ selection ë˜ëŠ” partition graphì¸ì§€ ê²€ì‚¬.
     if ( ( sRightGraph->type == QMG_SELECTION ) ||
          ( sRightGraph->type == QMG_PARTITION ) )
     {
@@ -7247,8 +7247,8 @@ qmoPred::isIndexableJoinPredicate( qcStatement  * aStatement,
                                & sIsIndexableJoinPred )
                   != IDE_SUCCESS );
 
-        // qmoPredicate.flag¿¡
-        // left->right·ÎÀÇ ¼öÇà °¡´É Á¤º¸¸¦ ÀúÀåÇÑ´Ù.
+        // qmoPredicate.flagì—
+        // left->rightë¡œì˜ ìˆ˜í–‰ ê°€ëŠ¥ ì •ë³´ë¥¼ ì €ì¥í•œë‹¤.
         if ( sIsIndexableJoinPred == ID_TRUE )
         {
             aPredicate->flag |= QMO_PRED_INDEX_JOINABLE_TRUE;
@@ -7265,14 +7265,14 @@ qmoPred::isIndexableJoinPredicate( qcStatement  * aStatement,
     }
 
     //--------------------------------------
-    // join ¹æÇâÀ» right child -> left child·Î ¼öÇà½Ã,
-    // index joinable predicateÀ¸·Î »ç¿ë°¡´ÉÇÑÁö °Ë»ç.
+    // join ë°©í–¥ì„ right child -> left childë¡œ ìˆ˜í–‰ì‹œ,
+    // index joinable predicateìœ¼ë¡œ ì‚¬ìš©ê°€ëŠ¥í•œì§€ ê²€ì‚¬.
     //--------------------------------------
 
     sRightGraph = aLeftChildGraph;
 
     // PROJ-1502 PARTITIONED DISK TABLE
-    // left child graph°¡ selection graph¶Ç´Â partition graphÀÎÁö °Ë»ç.
+    // left child graphê°€ selection graphë˜ëŠ” partition graphì¸ì§€ ê²€ì‚¬.
     if ( ( sRightGraph->type == QMG_SELECTION ) ||
          ( sRightGraph->type == QMG_PARTITION ) )
     {
@@ -7283,8 +7283,8 @@ qmoPred::isIndexableJoinPredicate( qcStatement  * aStatement,
                                & sIsIndexableJoinPred )
                   != IDE_SUCCESS );
 
-        // qmoPredicate.flag¿¡
-        // right->left·ÎÀÇ ¼öÇà °¡´É Á¤º¸¸¦ ÀúÀåÇÑ´Ù.
+        // qmoPredicate.flagì—
+        // right->leftë¡œì˜ ìˆ˜í–‰ ê°€ëŠ¥ ì •ë³´ë¥¼ ì €ì¥í•œë‹¤.
         if ( sIsIndexableJoinPred == ID_TRUE )
         {
             aPredicate->flag |= QMO_PRED_INDEX_JOINABLE_TRUE;
@@ -7317,21 +7317,21 @@ qmoPred::isSortJoinablePredicate( qmoPredicate * aPredicate,
 {
 /***********************************************************************
  *
- * Description : sort joinable predicateÀÇ ÆÇ´Ü ( key size limit °Ë»ç )
+ * Description : sort joinable predicateì˜ íŒë‹¨ ( key size limit ê²€ì‚¬ )
  *
  * Implementation :
  *
- *     disk sort temp tableÀ» »ç¿ëÇØ¾ß ÇÏ´Â °æ¿ì,
- *     index »ı¼º °¡´ÉÇÑ ÄÃ·³ÀÎÁö¿¡ ´ëÇÑ °Ë»ç¸¦ ¼öÇàÇÏ°í,
- *     index »ı¼º °¡´É ÄÃ·³ÀÌ¸é, sort joinable predicateÀ¸·Î ÆÇ´ÜÇÑ´Ù.
+ *     disk sort temp tableì„ ì‚¬ìš©í•´ì•¼ í•˜ëŠ” ê²½ìš°,
+ *     index ìƒì„± ê°€ëŠ¥í•œ ì»¬ëŸ¼ì¸ì§€ì— ëŒ€í•œ ê²€ì‚¬ë¥¼ ìˆ˜í–‰í•˜ê³ ,
+ *     index ìƒì„± ê°€ëŠ¥ ì»¬ëŸ¼ì´ë©´, sort joinable predicateìœ¼ë¡œ íŒë‹¨í•œë‹¤.
  *
- *     1. index »ı¼º °¡´É ÄÃ·³ÆÇ´Ü
- *     2. sort columnÀÌ index »ı¼º °¡´É ÄÃ·³ÀÌ¸é,
- *        qmoPredicate.flag¿¡ sort join method »ç¿ë°¡´ÉÇÔÀ» ÀúÀå.
+ *     1. index ìƒì„± ê°€ëŠ¥ ì»¬ëŸ¼íŒë‹¨
+ *     2. sort columnì´ index ìƒì„± ê°€ëŠ¥ ì»¬ëŸ¼ì´ë©´,
+ *        qmoPredicate.flagì— sort join method ì‚¬ìš©ê°€ëŠ¥í•¨ì„ ì €ì¥.
  *
  *     TODO :
- *     host º¯¼ö¸¦ Æ÷ÇÔÇÏ´Â °æ¿ì
- *     key size limit °Ë»ç¸¦ execution time¿¡ ÆÇ´ÜÇØ¾ß ÇÑ´Ù.
+ *     host ë³€ìˆ˜ë¥¼ í¬í•¨í•˜ëŠ” ê²½ìš°
+ *     key size limit ê²€ì‚¬ë¥¼ execution timeì— íŒë‹¨í•´ì•¼ í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -7343,16 +7343,16 @@ qmoPred::isSortJoinablePredicate( qmoPredicate * aPredicate,
     IDU_FIT_POINT_FATAL( "qmoPred::isSortJoinablePredicate::__FT__" );
 
     //--------------------------------------
-    // sort joinable ÆÇ´Ü
+    // sort joinable íŒë‹¨
     //--------------------------------------
 
-    // sCompareNode´Â ºñ±³¿¬»êÀÚ ³ëµå
+    // sCompareNodeëŠ” ë¹„êµì—°ì‚°ì ë…¸ë“œ
     sCompareNode = aNode;
 
     //--------------------------------------
     // BUG-15849
-    // equal·ù ¿¬»êÀÌÁö¸¸, sort joinÀ» »ç¿ëÇÒ ¼ö ¾ø´Â °æ¿ì°¡ ÀÖ´Ù.
-    // ¿¹) stfContains, stfCrosses, stfEquals, stfIntersects,
+    // equalë¥˜ ì—°ì‚°ì´ì§€ë§Œ, sort joinì„ ì‚¬ìš©í•  ìˆ˜ ì—†ëŠ” ê²½ìš°ê°€ ìˆë‹¤.
+    // ì˜ˆ) stfContains, stfCrosses, stfEquals, stfIntersects,
     //     stfOverlaps, stfTouches, stfWithin
     //--------------------------------------
     if ( ( sCompareNode->node.module == &mtfEqual )
@@ -7361,7 +7361,7 @@ qmoPred::isSortJoinablePredicate( qmoPredicate * aPredicate,
          || ( sCompareNode->node.module == &mtfLessThan )
          || ( sCompareNode->node.module == &mtfLessEqual ) )
     {
-        // ºñ±³¿¬»êÀÚ°¡ equal·ùÀÎ °æ¿ì,
+        // ë¹„êµì—°ì‚°ìê°€ equalë¥˜ì¸ ê²½ìš°,
 
         if ( ( ( sCompareNode->node.arguments->lflag &
                  MTC_NODE_OPERATOR_MASK )
@@ -7370,12 +7370,12 @@ qmoPred::isSortJoinablePredicate( qmoPredicate * aPredicate,
                  MTC_NODE_OPERATOR_MASK )
                == MTC_NODE_OPERATOR_LIST ) )
         {
-            // BUGBUG: List typeÀÌ join keyÀÎ °æ¿ì Ã³¸® ÇÊ¿ä
+            // BUGBUG: List typeì´ join keyì¸ ê²½ìš° ì²˜ë¦¬ í•„ìš”
             sIsSortJoinablePred = ID_FALSE;
         }
         else
         {
-            // ºñ±³¿¬»êÀÚ °¢ ÇÏÀ§ ³ëµå¿¡ ÇØ´çÇÏ´Â graph¸¦ Ã£´Â´Ù.
+            // ë¹„êµì—°ì‚°ì ê° í•˜ìœ„ ë…¸ë“œì— í•´ë‹¹í•˜ëŠ” graphë¥¼ ì°¾ëŠ”ë‹¤.
             IDE_TEST( findChildGraph( sCompareNode,
                                       aFromDependencies,
                                       aLeftChildGraph,
@@ -7387,7 +7387,7 @@ qmoPred::isSortJoinablePredicate( qmoPredicate * aPredicate,
     }
     else
     {
-        // ºñ±³¿¬»êÀÚ°¡ equal·ù°¡ ¾Æ´Ñ °æ¿ì,
+        // ë¹„êµì—°ì‚°ìê°€ equalë¥˜ê°€ ì•„ë‹Œ ê²½ìš°,
 
         sIsSortJoinablePred = ID_FALSE;
     }
@@ -7420,22 +7420,22 @@ qmoPred::isHashJoinablePredicate( qmoPredicate * aPredicate,
 {
 /***********************************************************************
  *
- * Description : Hash joinable predicateÀÇ ÆÇ´Ü ( key size limit °Ë»ç )
+ * Description : Hash joinable predicateì˜ íŒë‹¨ ( key size limit ê²€ì‚¬ )
  *
  * Implementation :
  *
- *     disk hash temp tableÀ» »ç¿ëÇØ¾ß ÇÏ´Â °æ¿ì,
- *     index »ı¼º °¡´ÉÇÑ ÄÃ·³ÀÎÁö¿¡ ´ëÇÑ °Ë»ç¸¦ ¼öÇàÇÏ°í,
- *     index »ı¼º °¡´É ÄÃ·³ÀÌ¸é, hash joinable predicateÀ¸·Î ÆÇ´ÜÇÑ´Ù.
+ *     disk hash temp tableì„ ì‚¬ìš©í•´ì•¼ í•˜ëŠ” ê²½ìš°,
+ *     index ìƒì„± ê°€ëŠ¥í•œ ì»¬ëŸ¼ì¸ì§€ì— ëŒ€í•œ ê²€ì‚¬ë¥¼ ìˆ˜í–‰í•˜ê³ ,
+ *     index ìƒì„± ê°€ëŠ¥ ì»¬ëŸ¼ì´ë©´, hash joinable predicateìœ¼ë¡œ íŒë‹¨í•œë‹¤.
  *
- *     1. hash columnÀÇ index »ı¼º °¡´É ÄÃ·³ ÆÇ´Ü
- *     2. hash columnÀÌ index »ı¼º °¡´É ÄÃ·³ÀÌ¸é,
- *        qmoPredicate.flag¿¡ hash join method »ç¿ë°¡´ÉÇÔÀ» ¼³Á¤.
+ *     1. hash columnì˜ index ìƒì„± ê°€ëŠ¥ ì»¬ëŸ¼ íŒë‹¨
+ *     2. hash columnì´ index ìƒì„± ê°€ëŠ¥ ì»¬ëŸ¼ì´ë©´,
+ *        qmoPredicate.flagì— hash join method ì‚¬ìš©ê°€ëŠ¥í•¨ì„ ì„¤ì •.
  *
  *     TODO :
- *     (1) host º¯¼ö¸¦ Æ÷ÇÔÇÏ´Â °æ¿ì
- *         key size limit °Ë»ç¸¦ execution time¿¡ ÆÇ´ÜÇØ¾ß ÇÑ´Ù.
- *     (2) hash key columnÀÌ ¿©·¯°³ÀÎ °æ¿ì
+ *     (1) host ë³€ìˆ˜ë¥¼ í¬í•¨í•˜ëŠ” ê²½ìš°
+ *         key size limit ê²€ì‚¬ë¥¼ execution timeì— íŒë‹¨í•´ì•¼ í•œë‹¤.
+ *     (2) hash key columnì´ ì—¬ëŸ¬ê°œì¸ ê²½ìš°
  *
  ***********************************************************************/
 
@@ -7447,21 +7447,21 @@ qmoPred::isHashJoinablePredicate( qmoPredicate * aPredicate,
     IDU_FIT_POINT_FATAL( "qmoPred::isHashJoinablePredicate::__FT__" );
 
     //--------------------------------------
-    // Hash joinable ÆÇ´Ü
+    // Hash joinable íŒë‹¨
     //--------------------------------------
 
     // TODO :
-    // ÀÌ ·ÎÁ÷¿¡¼­´Â hash columnÀÌ ÇÏ³ªÀÎ °æ¿ì¿¡ ´ëÇØ¼­¸¸
-    // index »ı¼º°¡´É ¿©ºÎ¸¦ °Ë»çÇÏ´Âµ¥,
-    // hash columnÀÌ ¿©·¯°³ »ç¿ëµÉ °æ¿ì,
-    // index »ı¼ºÀ» ÇÒ ¼ö ¾øÀ» °æ¿ì°¡ »ı±æ ¼ö ÀÖ´Ù.
+    // ì´ ë¡œì§ì—ì„œëŠ” hash columnì´ í•˜ë‚˜ì¸ ê²½ìš°ì— ëŒ€í•´ì„œë§Œ
+    // index ìƒì„±ê°€ëŠ¥ ì—¬ë¶€ë¥¼ ê²€ì‚¬í•˜ëŠ”ë°,
+    // hash columnì´ ì—¬ëŸ¬ê°œ ì‚¬ìš©ë  ê²½ìš°,
+    // index ìƒì„±ì„ í•  ìˆ˜ ì—†ì„ ê²½ìš°ê°€ ìƒê¸¸ ìˆ˜ ìˆë‹¤.
 
-    // sCompareNode´Â ºñ±³¿¬»êÀÚ ³ëµå
+    // sCompareNodeëŠ” ë¹„êµì—°ì‚°ì ë…¸ë“œ
     sCompareNode = aNode;
 
     if ( sCompareNode->node.module == &mtfEqual )
     {
-        // ºñ±³¿¬»êÀÚ°¡ equalÀÎ °æ¿ì,
+        // ë¹„êµì—°ì‚°ìê°€ equalì¸ ê²½ìš°,
 
         if ( ( ( sCompareNode->node.arguments->lflag &
                  MTC_NODE_OPERATOR_MASK )
@@ -7470,12 +7470,12 @@ qmoPred::isHashJoinablePredicate( qmoPredicate * aPredicate,
                  MTC_NODE_OPERATOR_MASK )
                == MTC_NODE_OPERATOR_LIST ) )
         {
-            // BUGBUG: List typeÀÌ join keyÀÎ °æ¿ì Ã³¸® ÇÊ¿ä
+            // BUGBUG: List typeì´ join keyì¸ ê²½ìš° ì²˜ë¦¬ í•„ìš”
             sIsHashJoinablePred = ID_FALSE;
         }
         else
         {
-            // ºñ±³¿¬»êÀÚ °¢ ÇÏÀ§ ³ëµå¿¡ ÇØ´çÇÏ´Â graph¸¦ Ã£´Â´Ù.
+            // ë¹„êµì—°ì‚°ì ê° í•˜ìœ„ ë…¸ë“œì— í•´ë‹¹í•˜ëŠ” graphë¥¼ ì°¾ëŠ”ë‹¤.
             IDE_TEST( findChildGraph( sCompareNode,
                                       aFromDependencies,
                                       aLeftChildGraph,
@@ -7487,7 +7487,7 @@ qmoPred::isHashJoinablePredicate( qmoPredicate * aPredicate,
     }
     else
     {
-        // ºñ±³¿¬»êÀÚ°¡ equalÀÌ ¾Æ´Ñ °æ¿ì,
+        // ë¹„êµì—°ì‚°ìê°€ equalì´ ì•„ë‹Œ ê²½ìš°,
 
         sIsHashJoinablePred = ID_FALSE;
     }
@@ -7520,28 +7520,28 @@ qmoPred::isMergeJoinablePredicate( qmoPredicate * aPredicate,
 {
 /***********************************************************************
  *
- * Description : merge joinable predicateÀÇ ÆÇ´Ü (¹æÇâ¼º °Ë»ç)
+ * Description : merge joinable predicateì˜ íŒë‹¨ (ë°©í–¥ì„± ê²€ì‚¬)
  *
  * Implementation :
  *
- *      [ ÀÎµ¦½º »ı¼º °¡´É ¿©ºÎ °Ë»ç ]
- *      sort joinable ÆÇ´Ü½Ã¿Í µ¿ÀÏÇÏ´Ù.
- *      µû¶ó¼­, ÀÌ¹Ì sort joinable ÆÇ´Ü½Ã ÀÎµ¦½º »ı¼º °¡´É ¿©ºÎ°¡
- *      ÆÇ´ÜµÇ¾úÀ¸¹Ç·Î, QMO_PRED_SORT_JOINABLE_TRUEÀÌ¸é,
- *      merge join method »ç¿ë °¡´É°ú ¼öÇà¹æÇâ¿¡ ´ëÇÑ Á¤º¸¸¦ ¼³Á¤ÇÑ´Ù.
+ *      [ ì¸ë±ìŠ¤ ìƒì„± ê°€ëŠ¥ ì—¬ë¶€ ê²€ì‚¬ ]
+ *      sort joinable íŒë‹¨ì‹œì™€ ë™ì¼í•˜ë‹¤.
+ *      ë”°ë¼ì„œ, ì´ë¯¸ sort joinable íŒë‹¨ì‹œ ì¸ë±ìŠ¤ ìƒì„± ê°€ëŠ¥ ì—¬ë¶€ê°€
+ *      íŒë‹¨ë˜ì—ˆìœ¼ë¯€ë¡œ, QMO_PRED_SORT_JOINABLE_TRUEì´ë©´,
+ *      merge join method ì‚¬ìš© ê°€ëŠ¥ê³¼ ìˆ˜í–‰ë°©í–¥ì— ëŒ€í•œ ì •ë³´ë¥¼ ì„¤ì •í•œë‹¤.
  *
- *      merge joinÀº [=, >, >=, <, <=]ºñ±³¿¬»êÀÚ¿¡ ´ëÇØ ¼öÇà°¡´ÉÇÏ¸ç,
- *      °¢ ¿¬»êÀÚ¿¡ ´ëÇÑ ¹æÇâ¼º °Ë»ç¸¦ ¼öÇàÇÑ´Ù.
+ *      merge joinì€ [=, >, >=, <, <=]ë¹„êµì—°ì‚°ìì— ëŒ€í•´ ìˆ˜í–‰ê°€ëŠ¥í•˜ë©°,
+ *      ê° ì—°ì‚°ìì— ëŒ€í•œ ë°©í–¥ì„± ê²€ì‚¬ë¥¼ ìˆ˜í–‰í•œë‹¤.
  *
- *      1) Semi/anti joinÀÇ °æ¿ì
- *        ¿¬»êÀÚ¿¡ °ü°è ¾øÀÌ left->right¸¸ Çã¿ë
- *      2) Inner joinÀÇ °æ¿ì
- *        1. equal(=) ºñ±³¿¬»êÀÚ
- *           left->right, right->left ¸ğµÎ ¼öÇà°¡´É
+ *      1) Semi/anti joinì˜ ê²½ìš°
+ *        ì—°ì‚°ìì— ê´€ê³„ ì—†ì´ left->rightë§Œ í—ˆìš©
+ *      2) Inner joinì˜ ê²½ìš°
+ *        1. equal(=) ë¹„êµì—°ì‚°ì
+ *           left->right, right->left ëª¨ë‘ ìˆ˜í–‰ê°€ëŠ¥
  *
- *        2. [ >, >=, <, <= ] ºñ±³¿¬»êÀÚ
- *           (1) [ >, >= ] : left->right·Î ¼öÇà°¡´É
- *           (2) [ <, <= ] : right->left·Î ¼öÇà°¡´É
+ *        2. [ >, >=, <, <= ] ë¹„êµì—°ì‚°ì
+ *           (1) [ >, >= ] : left->rightë¡œ ìˆ˜í–‰ê°€ëŠ¥
+ *           (2) [ <, <= ] : right->leftë¡œ ìˆ˜í–‰ê°€ëŠ¥
  *
  ***********************************************************************/
 
@@ -7552,21 +7552,21 @@ qmoPred::isMergeJoinablePredicate( qmoPredicate * aPredicate,
     IDU_FIT_POINT_FATAL( "qmoPred::isMergeJoinablePredicate::__FT__" );
 
     //--------------------------------------
-    // merge joinable ÆÇ´Ü
+    // merge joinable íŒë‹¨
     //--------------------------------------
 
     //--------------------------------------
-    // merge joinÀÇ ÀÎµ¦½º »ı¼º°¡´É ¿©ºÎ´Â sort joinable ÆÇ´Ü½Ã¿Í µ¿ÀÏÇÏ´Ù.
-    // µû¶ó¼­, QMO_PRED_SORT_JOINABLE_TRUE ÀÌ¸é,
-    // merge join ¿¡¼­µµ ÀÎµ¦½º »ı¼º °¡´ÉÇÑ °æ¿ìÀÌ¹Ç·Î,
-    // merge join method »ç¿ë°¡´É¿©ºÎ¿Í ¼öÇà ¹æÇâ Á¤º¸¸¦ ÆÇ´ÜÇÑ´Ù.
+    // merge joinì˜ ì¸ë±ìŠ¤ ìƒì„±ê°€ëŠ¥ ì—¬ë¶€ëŠ” sort joinable íŒë‹¨ì‹œì™€ ë™ì¼í•˜ë‹¤.
+    // ë”°ë¼ì„œ, QMO_PRED_SORT_JOINABLE_TRUE ì´ë©´,
+    // merge join ì—ì„œë„ ì¸ë±ìŠ¤ ìƒì„± ê°€ëŠ¥í•œ ê²½ìš°ì´ë¯€ë¡œ,
+    // merge join method ì‚¬ìš©ê°€ëŠ¥ì—¬ë¶€ì™€ ìˆ˜í–‰ ë°©í–¥ ì •ë³´ë¥¼ íŒë‹¨í•œë‹¤.
     //--------------------------------------
 
     if ( ( aPredicate->flag & QMO_PRED_SORT_JOINABLE_MASK )
          == QMO_PRED_SORT_JOINABLE_TRUE )
     {
         //-------------------------------------
-        // ÀÎµ¦½º »ı¼º°¡´ÉÇÑ °æ¿ì·Î, merge join¿¡ ´ëÇÑ Á¤º¸¸¦ ¼³Á¤.
+        // ì¸ë±ìŠ¤ ìƒì„±ê°€ëŠ¥í•œ ê²½ìš°ë¡œ, merge joinì— ëŒ€í•œ ì •ë³´ë¥¼ ì„¤ì •.
         //-------------------------------------
 
         aPredicate->flag &= ~QMO_PRED_MERGE_JOINABLE_MASK;
@@ -7576,18 +7576,18 @@ qmoPred::isMergeJoinablePredicate( qmoPredicate * aPredicate,
 
         if ( sCompareNode->node.module == &mtfEqual )
         {
-            // equal ºñ±³¿¬»êÀÚ´Â left->right, right->left ¸ğµÎ ¼öÇà°¡´ÉÇÏ´Ù.
+            // equal ë¹„êµì—°ì‚°ìëŠ” left->right, right->left ëª¨ë‘ ìˆ˜í–‰ê°€ëŠ¥í•˜ë‹¤.
             aPredicate->flag &= ~QMO_PRED_MERGE_DIRECTION_MASK;
             aPredicate->flag |= QMO_PRED_MERGE_LEFT_RIGHT;
             aPredicate->flag |= QMO_PRED_MERGE_RIGHT_LEFT;
         }
         else
         {
-            // [ >, >=, <, <= ] ºñ±³¿¬»êÀÚ
-            // . [ >, >= ] : left->right·Î ¼öÇà°¡´É
-            // . [ <, <= ] : right->left·Î ¼öÇà°¡´É
+            // [ >, >=, <, <= ] ë¹„êµì—°ì‚°ì
+            // . [ >, >= ] : left->rightë¡œ ìˆ˜í–‰ê°€ëŠ¥
+            // . [ <, <= ] : right->leftë¡œ ìˆ˜í–‰ê°€ëŠ¥
 
-            // ºñ±³¿¬»êÀÚ °¢ ÇÏÀ§ ³ëµå¿¡ ÇØ´çÇÏ´Â graph¸¦ Ã£´Â´Ù.
+            // ë¹„êµì—°ì‚°ì ê° í•˜ìœ„ ë…¸ë“œì— í•´ë‹¹í•˜ëŠ” graphë¥¼ ì°¾ëŠ”ë‹¤.
             IDE_TEST( findChildGraph( sCompareNode,
                                       aFromDependencies,
                                       aLeftChildGraph,
@@ -7603,19 +7603,19 @@ qmoPred::isMergeJoinablePredicate( qmoPredicate * aPredicate,
 
                 if ( sLeftMergeColumnGraph == aLeftChildGraph )
                 {
-                    // ¿¹:    [join]     ,         [>]
+                    // ì˜ˆ:    [join]     ,         [>]
                     //          |                   |
                     //      [T1]   [T2]     [t1.i1]   [t2.i1]
-                    // merge join ¼öÇà¹æÇâÀº left->right
+                    // merge join ìˆ˜í–‰ë°©í–¥ì€ left->right
                     aPredicate->flag &= ~QMO_PRED_MERGE_DIRECTION_MASK;
                     aPredicate->flag |= QMO_PRED_MERGE_LEFT_RIGHT;
                 }
                 else
                 {
-                    // ¿¹:    [join]     ,         [>]
+                    // ì˜ˆ:    [join]     ,         [>]
                     //          |                   |
                     //      [T1]   [T2]     [t2.i1]   [t1.i1]
-                    // merge join ¼öÇà¹æÇâÀº right->left
+                    // merge join ìˆ˜í–‰ë°©í–¥ì€ right->left
                     aPredicate->flag &= ~QMO_PRED_MERGE_DIRECTION_MASK;
                     aPredicate->flag |= QMO_PRED_MERGE_RIGHT_LEFT;
                 }
@@ -7626,29 +7626,29 @@ qmoPred::isMergeJoinablePredicate( qmoPredicate * aPredicate,
 
                 if ( sLeftMergeColumnGraph == aLeftChildGraph )
                 {
-                    // ¿¹:    [join]     ,         [<]
+                    // ì˜ˆ:    [join]     ,         [<]
                     //          |                   |
                     //      [T1]   [T2]     [t1.i1]   [t2.i1]
-                    // merge join ¼öÇà¹æÇâÀº right->left
+                    // merge join ìˆ˜í–‰ë°©í–¥ì€ right->left
                     aPredicate->flag &= ~QMO_PRED_MERGE_DIRECTION_MASK;
                     aPredicate->flag |= QMO_PRED_MERGE_RIGHT_LEFT;
                 }
                 else
                 {
-                    // ¿¹:    [join]     ,         [<]
+                    // ì˜ˆ:    [join]     ,         [<]
                     //          |                   |
                     //      [T1]   [T2]     [t2.i1]   [t1.i1]
-                    // merge join ¼öÇà¹æÇâÀº left->right
+                    // merge join ìˆ˜í–‰ë°©í–¥ì€ left->right
                     aPredicate->flag &= ~QMO_PRED_MERGE_DIRECTION_MASK;
                     aPredicate->flag |= QMO_PRED_MERGE_LEFT_RIGHT;
                 }
             }
-        } // ºñ±³¿¬»êÀÚ°¡ [ >, >=, <, <= ]ÀÎ °æ¿ì
-    } // QMO_PRED_SORT_JOINABLE_TRUEÀÎ °æ¿ì(Áï, ÀÎµ¦½º »ı¼º°¡´ÉÇÑ °æ¿ì)
+        } // ë¹„êµì—°ì‚°ìê°€ [ >, >=, <, <= ]ì¸ ê²½ìš°
+    } // QMO_PRED_SORT_JOINABLE_TRUEì¸ ê²½ìš°(ì¦‰, ì¸ë±ìŠ¤ ìƒì„±ê°€ëŠ¥í•œ ê²½ìš°)
     else
     {
         //-------------------------------------
-        // QMO_PRED_SORT_JOINABLE_FALSEÀÎ °æ¿ì(Áï, ÀÎµ¦½º »ı¼º ºÒ°¡´ÉÇÑ °æ¿ì)
+        // QMO_PRED_SORT_JOINABLE_FALSEì¸ ê²½ìš°(ì¦‰, ì¸ë±ìŠ¤ ìƒì„± ë¶ˆê°€ëŠ¥í•œ ê²½ìš°)
         //-------------------------------------
 
         aPredicate->flag &= ~QMO_PRED_MERGE_JOINABLE_MASK;
@@ -7674,10 +7674,10 @@ qmoPred::extractKeyRange( qcmIndex        * aIndex,
 {
 /***********************************************************************
  *
- * Description : keyRange ÃßÃâ
+ * Description : keyRange ì¶”ì¶œ
  *
- *     index nested loop join predicateÀÌ Á¸ÀçÇÒ °æ¿ì,
- *     index nested loop join predicateÀÌ keyRange·Î ¼±ÅÃµÇµµ·Ï ÇÑ´Ù.
+ *     index nested loop join predicateì´ ì¡´ì¬í•  ê²½ìš°,
+ *     index nested loop join predicateì´ keyRangeë¡œ ì„ íƒë˜ë„ë¡ í•œë‹¤.
  *
  * Implementation :
  *
@@ -7687,7 +7687,7 @@ qmoPred::extractKeyRange( qcmIndex        * aIndex,
     IDU_FIT_POINT_FATAL( "qmoPred::extractKeyRange::__FT__" );
 
     //--------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //--------------------------------------
 
     IDE_DASSERT( aIndex != NULL );
@@ -7697,7 +7697,7 @@ qmoPred::extractKeyRange( qcmIndex        * aIndex,
     IDE_DASSERT( aSubqueryFilter != NULL );
 
     //--------------------------------------
-    // keyRange ÃßÃâ
+    // keyRange ì¶”ì¶œ
     //--------------------------------------
 
     if ( *aSource != NULL )
@@ -7706,12 +7706,12 @@ qmoPred::extractKeyRange( qcmIndex        * aIndex,
              == QMO_PRED_INDEX_NESTED_JOINABLE_TRUE )
         {
             //--------------------------------------
-            // index nested loop join predicateÀÌ Á¸ÀçÇÏ´Â °æ¿ì,
-            // LIST Ã³¸®½Ã keyRange·Î ºĞ·ùµÈ predicateÀÌ ÀÖ´Ù¸é,
-            // (1) IN subqueryÀÎ °æ¿ì, subquery filter¿¡ ¿¬°á
-            // (2) IN subquery°¡ ¾Æ´Ñ °æ¿ì, keyFilter¿¡ ¿¬°áÇÏ°í
-            // index nested loop join predicateÀÌ keyRange·Î
-            // ¼±ÅÃµÇµµ·Ï ÇÑ´Ù.
+            // index nested loop join predicateì´ ì¡´ì¬í•˜ëŠ” ê²½ìš°,
+            // LIST ì²˜ë¦¬ì‹œ keyRangeë¡œ ë¶„ë¥˜ëœ predicateì´ ìˆë‹¤ë©´,
+            // (1) IN subqueryì¸ ê²½ìš°, subquery filterì— ì—°ê²°
+            // (2) IN subqueryê°€ ì•„ë‹Œ ê²½ìš°, keyFilterì— ì—°ê²°í•˜ê³ 
+            // index nested loop join predicateì´ keyRangeë¡œ
+            // ì„ íƒë˜ë„ë¡ í•œë‹¤.
             //--------------------------------------
 
             if ( *aKeyRange == NULL )
@@ -7742,18 +7742,18 @@ qmoPred::extractKeyRange( qcmIndex        * aIndex,
         }
         else
         {
-            // index nested loop join predicateÀÌ Á¸ÀçÇÏÁö ¾Ê´Â °æ¿ì,
+            // index nested loop join predicateì´ ì¡´ì¬í•˜ì§€ ì•ŠëŠ” ê²½ìš°,
 
             //--------------------------------------
-            // LIST Ã³¸®½Ã, keyRange·Î ºĞ·ùµÈ predicateÀÌ
-            // (1) Á¸ÀçÇÏ¸é, one column¿¡ ´ëÇÑ keyRange´Â ÃßÃâÇÏÁö ¾Ê°í,
-            // (2) Á¸ÀçÇÏÁö ¾ÊÀ¸¸é, one column¿¡ ´ëÇÑ keyRange¸¦ ÃßÃâÇÑ´Ù.
+            // LIST ì²˜ë¦¬ì‹œ, keyRangeë¡œ ë¶„ë¥˜ëœ predicateì´
+            // (1) ì¡´ì¬í•˜ë©´, one columnì— ëŒ€í•œ keyRangeëŠ” ì¶”ì¶œí•˜ì§€ ì•Šê³ ,
+            // (2) ì¡´ì¬í•˜ì§€ ì•Šìœ¼ë©´, one columnì— ëŒ€í•œ keyRangeë¥¼ ì¶”ì¶œí•œë‹¤.
             //--------------------------------------
 
             if ( *aKeyRange == NULL )
             {
                 //--------------------------------------
-                // one column¿¡ ´ëÇÑ keyRange ÃßÃâ
+                // one columnì— ëŒ€í•œ keyRange ì¶”ì¶œ
                 //--------------------------------------
                 IDE_TEST( extractKeyRange4Column( aIndex,
                                                   aSource,
@@ -7762,8 +7762,8 @@ qmoPred::extractKeyRange( qcmIndex        * aIndex,
             }
             else
             {
-                // LIST ÄÃ·³¿¡ ´ëÇÑ keyRange°¡ ÀÖ´Â °æ¿ì,
-                // one column¿¡ ´ëÇÑ keyRange ÃßÃâÀº skip
+                // LIST ì»¬ëŸ¼ì— ëŒ€í•œ keyRangeê°€ ìˆëŠ” ê²½ìš°,
+                // one columnì— ëŒ€í•œ keyRange ì¶”ì¶œì€ skip
 
                 // Nothing To Do
             }
@@ -7771,7 +7771,7 @@ qmoPred::extractKeyRange( qcmIndex        * aIndex,
     }
     else
     {
-        // source°¡ ¾øÀ¸¹Ç·Î ÇÒ°Ô ¾ø´Ù.
+        // sourceê°€ ì—†ìœ¼ë¯€ë¡œ í• ê²Œ ì—†ë‹¤.
     }
 
     return IDE_SUCCESS;
@@ -7789,42 +7789,42 @@ qmoPred::extractKeyRange4Column( qcmIndex        * aIndex,
 {
 /***********************************************************************
  *
- * Description : one column¿¡ ´ëÇÑ keyRange¸¦ ÃßÃâÇÑ´Ù.
+ * Description : one columnì— ëŒ€í•œ keyRangeë¥¼ ì¶”ì¶œí•œë‹¤.
  *
- *  [join index ÃÖÀûÈ­¿¡ ÀÇÇÏ¿© join predicateÀ» ¿ì¼± Àû¿ë.(BUG-7098)]
- *   join index ÃÖÀûÈ­¿¡ ÀÇÇØ index nested joinable predicateÀÌ ÀÖÀ¸¸é,
- *   ÀÌ join predicateÀÌ one table predicateÀ» ¿ì¼±ÇÏ¿© keyRange·Î ÃßÃâÇØ¾ß
- *   ÇÑ´Ù. ÇöÀç predicate ¹èÄ¡»ó index joinable predicateÀÌ ´Ù¸¥ predicateº¸´Ù
- *   ¾Õ¿¡ À§Ä¡ÇØ ÀÖ°í, ÀÎµ¦½º´Â joinable predicateÀÇ columnÀ» ¿¬¼ÓÀûÀ¸·Î
- *   »ç¿ëÇÒ ¼ö ÀÖ´Â °ÍÀÌ¹Ç·Î, ÀÚ¿¬½º·´°Ô joinable predicateÀÌ ¿ì¼±ÀûÀ¸·Î
- *   Ã³¸®µÉ ¼ö ÀÖÀ¸¹Ç·Î, ÀÌ¿¡ ´ëÇÑ º°µµÀÇ °Ë»ç¸¦ ÇÏÁö ¾Ê¾Æµµ µÈ´Ù.
+ *  [join index ìµœì í™”ì— ì˜í•˜ì—¬ join predicateì„ ìš°ì„  ì ìš©.(BUG-7098)]
+ *   join index ìµœì í™”ì— ì˜í•´ index nested joinable predicateì´ ìˆìœ¼ë©´,
+ *   ì´ join predicateì´ one table predicateì„ ìš°ì„ í•˜ì—¬ keyRangeë¡œ ì¶”ì¶œí•´ì•¼
+ *   í•œë‹¤. í˜„ì¬ predicate ë°°ì¹˜ìƒ index joinable predicateì´ ë‹¤ë¥¸ predicateë³´ë‹¤
+ *   ì•ì— ìœ„ì¹˜í•´ ìˆê³ , ì¸ë±ìŠ¤ëŠ” joinable predicateì˜ columnì„ ì—°ì†ì ìœ¼ë¡œ
+ *   ì‚¬ìš©í•  ìˆ˜ ìˆëŠ” ê²ƒì´ë¯€ë¡œ, ìì—°ìŠ¤ëŸ½ê²Œ joinable predicateì´ ìš°ì„ ì ìœ¼ë¡œ
+ *   ì²˜ë¦¬ë  ìˆ˜ ìˆìœ¼ë¯€ë¡œ, ì´ì— ëŒ€í•œ ë³„ë„ì˜ ê²€ì‚¬ë¥¼ í•˜ì§€ ì•Šì•„ë„ ëœë‹¤.
  *
- *  [µ¿ÀÏ ÄÃ·³ÀÇ ÄÃ·³¸®½ºÆ®´Â ´ÙÀ½°ú °°ÀÌ ±¸¼ºµÇ¾î ÀÖ´Ù.]
- *   . IN(subquery) ÇÏ³ª¸¸ Á¸Àç
- *   . IN(subquery)¸¦ Æ÷ÇÔÇÏÁö ¾Ê´Â predicateµéÀÇ ¿¬°á
- *  ÀÌÀ¯´Â, IN(subquery)´Â ¿ÀÁ÷ predicateÇÏ³ª¿¡ ´ëÇØ¼­¸¸ keyRange¸¦ ±¸¼ºÇÒ ¼ö
- *  ÀÖÀ¸¹Ç·Î, keyRange ÃßÃâÀ» ¿ëÀÌÇÏ°Ô ÇÏ±â À§ÇØ, predicateÀç¹èÄ¡°¡ ³¡³ª¸é,
- *  selectivity°¡ ÁÁÀº predicateÀ» ±âÁØÀ¸·Î ÀÌ¿Í °°ÀÌ µ¿ÀÏ ÄÃ·³ÀÇ ¸®½ºÆ®¸¦
- *  ±¸¼ºÇÑ´Ù. (ÂüÁ¶ qmoPred::processIndexableInSubQ())
+ *  [ë™ì¼ ì»¬ëŸ¼ì˜ ì»¬ëŸ¼ë¦¬ìŠ¤íŠ¸ëŠ” ë‹¤ìŒê³¼ ê°™ì´ êµ¬ì„±ë˜ì–´ ìˆë‹¤.]
+ *   . IN(subquery) í•˜ë‚˜ë§Œ ì¡´ì¬
+ *   . IN(subquery)ë¥¼ í¬í•¨í•˜ì§€ ì•ŠëŠ” predicateë“¤ì˜ ì—°ê²°
+ *  ì´ìœ ëŠ”, IN(subquery)ëŠ” ì˜¤ì§ predicateí•˜ë‚˜ì— ëŒ€í•´ì„œë§Œ keyRangeë¥¼ êµ¬ì„±í•  ìˆ˜
+ *  ìˆìœ¼ë¯€ë¡œ, keyRange ì¶”ì¶œì„ ìš©ì´í•˜ê²Œ í•˜ê¸° ìœ„í•´, predicateì¬ë°°ì¹˜ê°€ ëë‚˜ë©´,
+ *  selectivityê°€ ì¢‹ì€ predicateì„ ê¸°ì¤€ìœ¼ë¡œ ì´ì™€ ê°™ì´ ë™ì¼ ì»¬ëŸ¼ì˜ ë¦¬ìŠ¤íŠ¸ë¥¼
+ *  êµ¬ì„±í•œë‹¤. (ì°¸ì¡° qmoPred::processIndexableInSubQ())
  *
  * Implementation :
  *
- *   ÀÎµ¦½º ÄÃ·³¼ø¼­´ë·Î ¾Æ·¡ÀÇ ÀÛ¾÷ ¼öÇà
+ *   ì¸ë±ìŠ¤ ì»¬ëŸ¼ìˆœì„œëŒ€ë¡œ ì•„ë˜ì˜ ì‘ì—… ìˆ˜í–‰
  *
- *   1. ÀÎµ¦½º ÄÃ·³°ú °°Àº ÄÃ·³ÀÇ ÄÃ·³¸®½ºÆ®¸¦ Ã£´Â´Ù.
- *      (1) ¾ÆÁ÷ keyRange·Î ºĞ·ùµÈ predicateÀÌ ¾ø´Â °æ¿ì,
- *          keyRange¿¡ Ã£Àº predicate ¿¬°á
- *          A. IN subquery ÀÌ¸é, ´ÙÀ½ ÀÎµ¦½º ÄÃ·³À¸·Î ÁøÇàÇÏÁö ¾Ê´Â´Ù.
- *          B. IN subquery°¡ ¾Æ´Ï¸é, ´ÙÀ½ ÀÎµ¦½º ÄÃ·³À¸·Î ÁøÇà.
- *      (2) ÀÌ¹Ì keyRange·Î ºĞ·ùµÈ predicateÀÌ Á¸ÀçÇÏ´Â °æ¿ì,
- *          A. IN subquery ÀÌ¸é,
- *             keyRange ¿¡ ¿¬°áÇÏÁö ¾Ê°í,
- *             ´ÙÀ½ ÀÎµ¦½º ÄÃ·³À¸·Îµµ ÁøÇàÇÏÁö ¾Ê´Â´Ù.
- *          B. IN subquery°¡ ¾Æ´Ï¸é,
- *             keyRange ¿¡ ¿¬°áÇÏ°í, ´ÙÀ½ ÀÎµ¦½º ÄÃ·³À¸·Î ÁøÇà.
- *   2. Ã£Àº ÄÃ·³ÀÌ
- *      (1) ´ÙÀ½ ÀÎµ¦½º ÄÃ·³ »ç¿ë °¡´ÉÇÑ ÄÃ·³ÀÌ¸é ( equal(=), in )
- *      (2) ´ÙÀ½ ÀÎµ¦½º ÄÃ·³ »ç¿ë ºÒ°¡´ÉÇÑ ÄÃ·³ÀÌ¸é, (equal¿ÜÀÇ predicateÆ÷ÇÔ)
+ *   1. ì¸ë±ìŠ¤ ì»¬ëŸ¼ê³¼ ê°™ì€ ì»¬ëŸ¼ì˜ ì»¬ëŸ¼ë¦¬ìŠ¤íŠ¸ë¥¼ ì°¾ëŠ”ë‹¤.
+ *      (1) ì•„ì§ keyRangeë¡œ ë¶„ë¥˜ëœ predicateì´ ì—†ëŠ” ê²½ìš°,
+ *          keyRangeì— ì°¾ì€ predicate ì—°ê²°
+ *          A. IN subquery ì´ë©´, ë‹¤ìŒ ì¸ë±ìŠ¤ ì»¬ëŸ¼ìœ¼ë¡œ ì§„í–‰í•˜ì§€ ì•ŠëŠ”ë‹¤.
+ *          B. IN subqueryê°€ ì•„ë‹ˆë©´, ë‹¤ìŒ ì¸ë±ìŠ¤ ì»¬ëŸ¼ìœ¼ë¡œ ì§„í–‰.
+ *      (2) ì´ë¯¸ keyRangeë¡œ ë¶„ë¥˜ëœ predicateì´ ì¡´ì¬í•˜ëŠ” ê²½ìš°,
+ *          A. IN subquery ì´ë©´,
+ *             keyRange ì— ì—°ê²°í•˜ì§€ ì•Šê³ ,
+ *             ë‹¤ìŒ ì¸ë±ìŠ¤ ì»¬ëŸ¼ìœ¼ë¡œë„ ì§„í–‰í•˜ì§€ ì•ŠëŠ”ë‹¤.
+ *          B. IN subqueryê°€ ì•„ë‹ˆë©´,
+ *             keyRange ì— ì—°ê²°í•˜ê³ , ë‹¤ìŒ ì¸ë±ìŠ¤ ì»¬ëŸ¼ìœ¼ë¡œ ì§„í–‰.
+ *   2. ì°¾ì€ ì»¬ëŸ¼ì´
+ *      (1) ë‹¤ìŒ ì¸ë±ìŠ¤ ì»¬ëŸ¼ ì‚¬ìš© ê°€ëŠ¥í•œ ì»¬ëŸ¼ì´ë©´ ( equal(=), in )
+ *      (2) ë‹¤ìŒ ì¸ë±ìŠ¤ ì»¬ëŸ¼ ì‚¬ìš© ë¶ˆê°€ëŠ¥í•œ ì»¬ëŸ¼ì´ë©´, (equalì™¸ì˜ predicateí¬í•¨)
  *
  *
  ***********************************************************************/
@@ -7836,7 +7836,7 @@ qmoPred::extractKeyRange4Column( qcmIndex        * aIndex,
     IDU_FIT_POINT_FATAL( "qmoPred::extractKeyRange4Column::__FT__" );
 
     //--------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //--------------------------------------
 
     IDE_DASSERT( aIndex != NULL );
@@ -7844,42 +7844,42 @@ qmoPred::extractKeyRange4Column( qcmIndex        * aIndex,
     IDE_DASSERT( aKeyRange != NULL );
 
     //--------------------------------------
-    // KeyRange ÃßÃâ
+    // KeyRange ì¶”ì¶œ
     //--------------------------------------
 
     //--------------------------------------
-    // ÀÎµ¦½º ÄÃ·³¼ø¼­´ë·Î ÀÎµ¦½º ÄÃ·³°ú µ¿ÀÏÇÑ ÄÃ·³À» Ã£¾Æ¼­
-    // keyRangeÆ÷ÇÔ ¿©ºÎ¸¦ °áÁ¤ÇÑ´Ù.
-    // 1. ÀÎµ¦½º ÄÃ·³Àº ¿¬¼ÓÀûÀ¸·Î »ç¿ë°¡´ÉÇÏ¿©¾ß ÇÑ´Ù.
-    //    ¿¹: index on T1(i1, i2, i3)
-    //      (1) i1=1 and i2=1 and i3=1 ==> i1,i2,i3 ¸ğµÎ »ç¿ë °¡´É
-    //      (2) i1=1 and i3=1          ==> i1¸¸ »ç¿ë °¡´É
-    // 2. IN subquery keyRange´Â ´Üµ¶À¸·Î ±¸¼ºÇØ¾ß ÇÑ´Ù.
-    //    ¿¹: index on T1(i1, i2, i3, i4, i5)
-    //      (1) i1 in ( subquery ) and i2=1  ==> i1¸¸ »ç¿ë °¡´É
+    // ì¸ë±ìŠ¤ ì»¬ëŸ¼ìˆœì„œëŒ€ë¡œ ì¸ë±ìŠ¤ ì»¬ëŸ¼ê³¼ ë™ì¼í•œ ì»¬ëŸ¼ì„ ì°¾ì•„ì„œ
+    // keyRangeí¬í•¨ ì—¬ë¶€ë¥¼ ê²°ì •í•œë‹¤.
+    // 1. ì¸ë±ìŠ¤ ì»¬ëŸ¼ì€ ì—°ì†ì ìœ¼ë¡œ ì‚¬ìš©ê°€ëŠ¥í•˜ì—¬ì•¼ í•œë‹¤.
+    //    ì˜ˆ: index on T1(i1, i2, i3)
+    //      (1) i1=1 and i2=1 and i3=1 ==> i1,i2,i3 ëª¨ë‘ ì‚¬ìš© ê°€ëŠ¥
+    //      (2) i1=1 and i3=1          ==> i1ë§Œ ì‚¬ìš© ê°€ëŠ¥
+    // 2. IN subquery keyRangeëŠ” ë‹¨ë…ìœ¼ë¡œ êµ¬ì„±í•´ì•¼ í•œë‹¤.
+    //    ì˜ˆ: index on T1(i1, i2, i3, i4, i5)
+    //      (1) i1 in ( subquery ) and i2=1  ==> i1ë§Œ ì‚¬ìš© ê°€ëŠ¥
     //      (2) i1=1 and i2=1 and i3 in (subquery) and i4=1 and i5=1
-    //          ==> i1, i2¸¸ »ç¿ë °¡´É
+    //          ==> i1, i2ë§Œ ì‚¬ìš© ê°€ëŠ¥
     //--------------------------------------
 
     for ( sKeyColCount = 0;
           sKeyColCount < aIndex->keyColCount;
           sKeyColCount++ )
     {
-        // ÀÎµ¦½º ÄÃ·³ÀÇ columnID¸¦ ±¸ÇÑ´Ù.
+        // ì¸ë±ìŠ¤ ì»¬ëŸ¼ì˜ columnIDë¥¼ êµ¬í•œë‹¤.
         sIdxColumnID = aIndex->keyColumns[sKeyColCount].column.id;
 
         //--------------------------------------------
-        // join index ÃÖÀûÈ­¿¡ ÀÇÇØ index nested joinable predicateÀÌ ÀÖÀ¸¸é,
-        // ÀÌ join predicateÀÌ one table predicateÀ» ¿ì¼±ÇÏ¿©
-        // keyRange·Î ÃßÃâÇØ¾ß ÇÑ´Ù.
-        // ÇöÀç predicate ¹èÄ¡»ó index joinable predicateÀÌ
-        // ´Ù¸¥ predicateº¸´Ù ¾Õ¿¡ À§Ä¡ÇØ ÀÖ°í,
-        // ÀÎµ¦½º´Â joinable predicateÀÇ columnÀ» ¿¬¼ÓÀûÀ¸·Î »ç¿ëÇÒ ¼ö ÀÖ´Â
-        // °ÍÀÌ¹Ç·Î, ÀÚ¿¬½º·´°Ô joinable predicateÀÌ ¿ì¼±ÀûÀ¸·Î Ã³¸®µÉ ¼ö
-        // ÀÖÀ¸¹Ç·Î, ÀÌ¿¡ ´ëÇÑ º°µµÀÇ °Ë»ç¸¦ ÇÏÁö ¾Ê¾Æµµ µÈ´Ù.
+        // join index ìµœì í™”ì— ì˜í•´ index nested joinable predicateì´ ìˆìœ¼ë©´,
+        // ì´ join predicateì´ one table predicateì„ ìš°ì„ í•˜ì—¬
+        // keyRangeë¡œ ì¶”ì¶œí•´ì•¼ í•œë‹¤.
+        // í˜„ì¬ predicate ë°°ì¹˜ìƒ index joinable predicateì´
+        // ë‹¤ë¥¸ predicateë³´ë‹¤ ì•ì— ìœ„ì¹˜í•´ ìˆê³ ,
+        // ì¸ë±ìŠ¤ëŠ” joinable predicateì˜ columnì„ ì—°ì†ì ìœ¼ë¡œ ì‚¬ìš©í•  ìˆ˜ ìˆëŠ”
+        // ê²ƒì´ë¯€ë¡œ, ìì—°ìŠ¤ëŸ½ê²Œ joinable predicateì´ ìš°ì„ ì ìœ¼ë¡œ ì²˜ë¦¬ë  ìˆ˜
+        // ìˆìœ¼ë¯€ë¡œ, ì´ì— ëŒ€í•œ ë³„ë„ì˜ ê²€ì‚¬ë¥¼ í•˜ì§€ ì•Šì•„ë„ ëœë‹¤.
         //--------------------------------------------
 
-        // ÀÎµ¦½º ÄÃ·³°ú °°Àº columnID¸¦ Ã£´Â´Ù.
+        // ì¸ë±ìŠ¤ ì»¬ëŸ¼ê³¼ ê°™ì€ columnIDë¥¼ ì°¾ëŠ”ë‹¤.
         for ( sWrapperIter  = *aSource;
               sWrapperIter != NULL;
               sWrapperIter  = sWrapperIter->next )
@@ -7908,19 +7908,19 @@ qmoPred::extractKeyRange4Column( qcmIndex        * aIndex,
 
         if ( sWrapperIter == NULL )
         {
-            // ÇöÀç ÀÎµ¦½º ÄÃ·³°ú µ¿ÀÏÇÑ ÄÃ·³ÀÇ predicateÀÌ Á¸ÀçÇÏÁö ¾Ê´Â °æ¿ì
+            // í˜„ì¬ ì¸ë±ìŠ¤ ì»¬ëŸ¼ê³¼ ë™ì¼í•œ ì»¬ëŸ¼ì˜ predicateì´ ì¡´ì¬í•˜ì§€ ì•ŠëŠ” ê²½ìš°
             break;
         }
         else
         {
-            // ÇöÀç ÀÎµ¦½º ÄÃ·³°ú µ¿ÀÏÇÑ ÄÃ·³ÀÇ predicateÀÌ Á¸ÀçÇÏ´Â °æ¿ì
+            // í˜„ì¬ ì¸ë±ìŠ¤ ì»¬ëŸ¼ê³¼ ë™ì¼í•œ ì»¬ëŸ¼ì˜ predicateì´ ì¡´ì¬í•˜ëŠ” ê²½ìš°
 
-            // ÇöÀç predicateÀÌ IN subquery keyRangeÀÌ¸é,
+            // í˜„ì¬ predicateì´ IN subquery keyRangeì´ë©´,
             if ( ( sWrapperIter->pred->flag & QMO_PRED_INSUBQUERY_MASK )
                  == QMO_PRED_INSUBQUERY_EXIST )
             {
-                // Ã¹¹øÂ° range·Î ºĞ·ùµÈ °Å¸é range¿¡ Ãß°¡ÇÏ°í
-                // ±×·¸Áö ¾ÊÀ¸¸é range¿¡ Ãß°¡ÇÏÁö ¾Ê´Â´Ù.
+                // ì²«ë²ˆì§¸ rangeë¡œ ë¶„ë¥˜ëœ ê±°ë©´ rangeì— ì¶”ê°€í•˜ê³ 
+                // ê·¸ë ‡ì§€ ì•Šìœ¼ë©´ rangeì— ì¶”ê°€í•˜ì§€ ì•ŠëŠ”ë‹¤.
                 if ( ( *aKeyRange == NULL ) &&
                      ( aIndex->indexHandle != NULL ) )
                 {
@@ -7934,7 +7934,7 @@ qmoPred::extractKeyRange4Column( qcmIndex        * aIndex,
                     // Nothing To Do
                 }
 
-                // in subqueryÀÏ °æ¿ì ´õÀÌ»ó ÁøÇàÇÏÁö ¾Ê´Â´Ù.
+                // in subqueryì¼ ê²½ìš° ë”ì´ìƒ ì§„í–‰í•˜ì§€ ì•ŠëŠ”ë‹¤.
                 break;
             }
             else
@@ -7948,21 +7948,21 @@ qmoPred::extractKeyRange4Column( qcmIndex        * aIndex,
             if ( ( sWrapperIter->pred->flag & QMO_PRED_NEXT_KEY_USABLE_MASK )
                  == QMO_PRED_NEXT_KEY_USABLE )
             {
-                // ÀÌ ÄÃ·³Àº equal(=)°ú in predicate¸¸À¸·Î ±¸¼ºµÇ¾î ÀÖ´Ù.
-                // ´ÙÀ½ ÀÎµ¦½º ÄÃ·³À¸·Î ÁøÇà.
+                // ì´ ì»¬ëŸ¼ì€ equal(=)ê³¼ in predicateë§Œìœ¼ë¡œ êµ¬ì„±ë˜ì–´ ìˆë‹¤.
+                // ë‹¤ìŒ ì¸ë±ìŠ¤ ì»¬ëŸ¼ìœ¼ë¡œ ì§„í–‰.
                 // Nothing To Do
             }
             else
             {
-                // ÀÌ ÄÃ·³Àº equal(=)/in ÀÌ¿ÜÀÇ predicateÀ» Æ÷ÇÔÇÏ°í ÀÖÀ¸¹Ç·Î,
-                // ´ÙÀ½ ÀÎµ¦½º ÄÃ·³À» »ç¿ëÇÒ ¼ö ¾ø´Ù.
+                // ì´ ì»¬ëŸ¼ì€ equal(=)/in ì´ì™¸ì˜ predicateì„ í¬í•¨í•˜ê³  ìˆìœ¼ë¯€ë¡œ,
+                // ë‹¤ìŒ ì¸ë±ìŠ¤ ì»¬ëŸ¼ì„ ì‚¬ìš©í•  ìˆ˜ ì—†ë‹¤.
 
-                // ´ÙÀ½ ÀÎµ¦½º·ÎÀÇ ÀÛ¾÷À» ÁøÇàÇÏÁö ¾Ê´Â´Ù.
+                // ë‹¤ìŒ ì¸ë±ìŠ¤ë¡œì˜ ì‘ì—…ì„ ì§„í–‰í•˜ì§€ ì•ŠëŠ”ë‹¤.
                 break;
 
             }
-        } // ÀÎµ¦½º ÄÃ·³°ú °°Àº ÄÃ·³À» °¡Áø predicateÀÌ ÀÖÀ» °æ¿ì,
-    } // index column for()¹®
+        } // ì¸ë±ìŠ¤ ì»¬ëŸ¼ê³¼ ê°™ì€ ì»¬ëŸ¼ì„ ê°€ì§„ predicateì´ ìˆì„ ê²½ìš°,
+    } // index column for()ë¬¸
 
     return IDE_SUCCESS;
 
@@ -7982,7 +7982,7 @@ qmoPred::extractKeyFilter( idBool            aIsMemory,
 {
 /***********************************************************************
  *
- * Description :  keyFilter¸¦ ÃßÃâ
+ * Description :  keyFilterë¥¼ ì¶”ì¶œ
  *
  *
  * Implementation :
@@ -7992,7 +7992,7 @@ qmoPred::extractKeyFilter( idBool            aIsMemory,
     IDU_FIT_POINT_FATAL( "qmoPred::extractKeyFilter::__FT__" );
 
     //--------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //--------------------------------------
 
     IDE_DASSERT( aKeyRange != NULL );
@@ -8000,7 +8000,7 @@ qmoPred::extractKeyFilter( idBool            aIsMemory,
     IDE_DASSERT( aFilter != NULL );
 
     //--------------------------------------
-    // KeyFilter ÃßÃâ
+    // KeyFilter ì¶”ì¶œ
     //--------------------------------------
 
     if ( ( aIsMemory == ID_FALSE ) &&
@@ -8010,15 +8010,15 @@ qmoPred::extractKeyFilter( idBool            aIsMemory,
              == QMO_PRED_INSUBQUERY_ABSENT )
         {
             //----------------------------------
-            // disk tableÀÌ°í,
-            // keyRange°¡ Á¸ÀçÇÏ°í,
-            // keyRange°¡ IN subquery keyRange°¡ ¾Æ´Ñ °æ¿ì,
-            // keyFilter ÃßÃâ
+            // disk tableì´ê³ ,
+            // keyRangeê°€ ì¡´ì¬í•˜ê³ ,
+            // keyRangeê°€ IN subquery keyRangeê°€ ì•„ë‹Œ ê²½ìš°,
+            // keyFilter ì¶”ì¶œ
             //----------------------------------
 
             // To fix BUG-27401
-            // list¿¡¼­ ÀÌ¹Ì keyfilter°¡ ÃßÃâµÇ¾î ÀÖ´Â °æ¿ì
-            // keyfilter¸¦ ÃßÃâÇÏÁö ¾Ê´Â´Ù.
+            // listì—ì„œ ì´ë¯¸ keyfilterê°€ ì¶”ì¶œë˜ì–´ ìˆëŠ” ê²½ìš°
+            // keyfilterë¥¼ ì¶”ì¶œí•˜ì§€ ì•ŠëŠ”ë‹¤.
             if ( *aKeyFilter == NULL )
             {
                 IDE_TEST( extractKeyFilter4Column( aIndex,
@@ -8033,17 +8033,17 @@ qmoPred::extractKeyFilter( idBool            aIsMemory,
         }
         else
         {
-            // ´õ ÀÌ»ó Ã³¸®ÇÒ predicateÀÌ ¾ø´Â °æ¿ì
+            // ë” ì´ìƒ ì²˜ë¦¬í•  predicateì´ ì—†ëŠ” ê²½ìš°
             // Nothing To Do
         }
     }
     else
     {
         //----------------------------------
-        // keyRange°¡ Á¸ÀçÇÏÁö ¾Ê°Å³ª,
-        // memory tableÀÎ °æ¿ì, keyFilter¸¦ ÃßÃâÇÏÁö ¾Ê´Â´Ù.
-        // LIST ¿¡¼­ ÃßÃâÇÑ keyFilter°¡ ÀÖ´Â °æ¿ì,
-        // filter¿¡ ¿¬°áÇÑ´Ù.
+        // keyRangeê°€ ì¡´ì¬í•˜ì§€ ì•Šê±°ë‚˜,
+        // memory tableì¸ ê²½ìš°, keyFilterë¥¼ ì¶”ì¶œí•˜ì§€ ì•ŠëŠ”ë‹¤.
+        // LIST ì—ì„œ ì¶”ì¶œí•œ keyFilterê°€ ìˆëŠ” ê²½ìš°,
+        // filterì— ì—°ê²°í•œë‹¤.
         //----------------------------------
 
         IDE_TEST( qmoPredWrapperI::moveAll( aKeyFilter, aFilter )
@@ -8065,21 +8065,21 @@ qmoPred::extractKeyFilter4Column( qcmIndex        * aIndex,
 {
 /***********************************************************************
  *
- * Description : one column¿¡ ´ëÇÑ keyFilter¸¦ ÃßÃâÇÑ´Ù.
+ * Description : one columnì— ëŒ€í•œ keyFilterë¥¼ ì¶”ì¶œí•œë‹¤.
  *
- *  memory table¿¡ ´ëÇØ¼­´Â keyFilter¸¦ ÃßÃâÇÏÁö ¾Ê´Â´Ù.
- *  keyFilter´Â ÀÎµ¦½ºÀÇ ¿¬¼ÓÀûÀÎ »ç¿ë°ú´Â »ó°ü¾øÀÌ ÀÎµ¦½º¿¡ Æ÷ÇÔµÇ±â¸¸
- *  ÇÏ¸éµÈ´Ù.
+ *  memory tableì— ëŒ€í•´ì„œëŠ” keyFilterë¥¼ ì¶”ì¶œí•˜ì§€ ì•ŠëŠ”ë‹¤.
+ *  keyFilterëŠ” ì¸ë±ìŠ¤ì˜ ì—°ì†ì ì¸ ì‚¬ìš©ê³¼ëŠ” ìƒê´€ì—†ì´ ì¸ë±ìŠ¤ì— í¬í•¨ë˜ê¸°ë§Œ
+ *  í•˜ë©´ëœë‹¤.
  *
  * Implementation :
  *
- *   disk tableÀÎ °æ¿ì,
- *   1. ÀÎµ¦½º ÄÃ·³°ú µ¿ÀÏÇÑ ÄÃ·³ÀÇ ÄÃ·³¸®½ºÆ®¸¦ Ã£´Â´Ù.
- *   2. Ã£Àº ÄÃ·³¸®½ºÆ®¿¡
- *      (1) IN(subquery)°¡ Á¸ÀçÇÏ¸é,
- *          ¾Æ¹« Ã³¸®µµ ÇÏÁö ¾Ê°í, ´ÙÀ½ ÀÎµ¦½º ÄÃ·³ ¼öÇà.
- *      (2) IN(subquery)°¡ Á¸ÀçÇÏÁö ¾ÊÀ¸¸é,
- *          keyFilter ¿¡ ¿¬°áÇÏ°í, ´ÙÀ½ ÀÎµ¦½º ÄÃ·³ ¼öÇà.
+ *   disk tableì¸ ê²½ìš°,
+ *   1. ì¸ë±ìŠ¤ ì»¬ëŸ¼ê³¼ ë™ì¼í•œ ì»¬ëŸ¼ì˜ ì»¬ëŸ¼ë¦¬ìŠ¤íŠ¸ë¥¼ ì°¾ëŠ”ë‹¤.
+ *   2. ì°¾ì€ ì»¬ëŸ¼ë¦¬ìŠ¤íŠ¸ì—
+ *      (1) IN(subquery)ê°€ ì¡´ì¬í•˜ë©´,
+ *          ì•„ë¬´ ì²˜ë¦¬ë„ í•˜ì§€ ì•Šê³ , ë‹¤ìŒ ì¸ë±ìŠ¤ ì»¬ëŸ¼ ìˆ˜í–‰.
+ *      (2) IN(subquery)ê°€ ì¡´ì¬í•˜ì§€ ì•Šìœ¼ë©´,
+ *          keyFilter ì— ì—°ê²°í•˜ê³ , ë‹¤ìŒ ì¸ë±ìŠ¤ ì»¬ëŸ¼ ìˆ˜í–‰.
  *
  ***********************************************************************/
 
@@ -8090,7 +8090,7 @@ qmoPred::extractKeyFilter4Column( qcmIndex        * aIndex,
     IDU_FIT_POINT_FATAL( "qmoPred::extractKeyFilter4Column::__FT__" );
 
     //--------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //--------------------------------------
 
     IDE_DASSERT( aIndex != NULL );
@@ -8098,17 +8098,17 @@ qmoPred::extractKeyFilter4Column( qcmIndex        * aIndex,
     IDE_DASSERT( aKeyFilter != NULL );
 
     //--------------------------------------
-    // KeyFilter ÃßÃâ
+    // KeyFilter ì¶”ì¶œ
     //--------------------------------------
 
     for ( sKeyColCount = 0;
           sKeyColCount < aIndex->keyColCount && *aSource != NULL;
           sKeyColCount++ )
     {
-        // ÀÎµ¦½º ÄÃ·³ÀÇ columnID¸¦ ±¸ÇÑ´Ù.
+        // ì¸ë±ìŠ¤ ì»¬ëŸ¼ì˜ columnIDë¥¼ êµ¬í•œë‹¤.
         sIdxColumnID = aIndex->keyColumns[sKeyColCount].column.id;
 
-        // ÀÎµ¦½º ÄÃ·³°ú °°Àº columnID¸¦ Ã£´Â´Ù.
+        // ì¸ë±ìŠ¤ ì»¬ëŸ¼ê³¼ ê°™ì€ columnIDë¥¼ ì°¾ëŠ”ë‹¤.
         for ( sWrapperIter  = *aSource;
               sWrapperIter != NULL;
               sWrapperIter  = sWrapperIter->next )
@@ -8125,33 +8125,33 @@ qmoPred::extractKeyFilter4Column( qcmIndex        * aIndex,
 
         if ( sWrapperIter == NULL )
         {
-            // ÀÎµ¦½º ÄÃ·³°ú µ¿ÀÏÇÑ ÄÃ·³ÀÇ predicateÀÌ Á¸ÀçÇÏÁö ¾Ê´Â °æ¿ì,
-            // ´ÙÀ½ ÀÎµ¦½º ÄÃ·³À¸·Î ÁøÇà
-            // keyFilter´Â ¿¬¼ÓÀûÀÎ ÀÎµ¦½º »ç¿ë¿¡ °ü°è¾øÀÌ
-            // ÀÎµ¦½º ÄÃ·³¿¡ ¼ÓÇÏ±â¸¸ ÇÏ¸é µÈ´Ù.
+            // ì¸ë±ìŠ¤ ì»¬ëŸ¼ê³¼ ë™ì¼í•œ ì»¬ëŸ¼ì˜ predicateì´ ì¡´ì¬í•˜ì§€ ì•ŠëŠ” ê²½ìš°,
+            // ë‹¤ìŒ ì¸ë±ìŠ¤ ì»¬ëŸ¼ìœ¼ë¡œ ì§„í–‰
+            // keyFilterëŠ” ì—°ì†ì ì¸ ì¸ë±ìŠ¤ ì‚¬ìš©ì— ê´€ê³„ì—†ì´
+            // ì¸ë±ìŠ¤ ì»¬ëŸ¼ì— ì†í•˜ê¸°ë§Œ í•˜ë©´ ëœë‹¤.
 
             // Nothing To Do
         }
         else
         {
-            // ÀÎµ¦½º ÄÃ·³°ú µ¿ÀÏÇÑ ÄÃ·³ÀÇ predicateÀÌ Á¸ÀçÇÏ´Â °æ¿ì,
+            // ì¸ë±ìŠ¤ ì»¬ëŸ¼ê³¼ ë™ì¼í•œ ì»¬ëŸ¼ì˜ predicateì´ ì¡´ì¬í•˜ëŠ” ê²½ìš°,
 
             if ( ( sWrapperIter->pred->flag & QMO_PRED_INSUBQUERY_MASK )
                  == QMO_PRED_INSUBQUERY_EXIST )
             {
-                // ÀÎµ¦½º ÄÃ·³°ú °°Àº columnID¸¦ °¡Áø ÄÃ·³ÀÇ predicateÀÌ
-                // IN subqueryÀÎ °æ¿ì,
-                // IN subquery´Â keyFilter·Î »ç¿ëÇÏÁö ¸øÇÏ¹Ç·Î, skip
+                // ì¸ë±ìŠ¤ ì»¬ëŸ¼ê³¼ ê°™ì€ columnIDë¥¼ ê°€ì§„ ì»¬ëŸ¼ì˜ predicateì´
+                // IN subqueryì¸ ê²½ìš°,
+                // IN subqueryëŠ” keyFilterë¡œ ì‚¬ìš©í•˜ì§€ ëª»í•˜ë¯€ë¡œ, skip
 
                 // Nothing To Do
             }
             else
             {
-                // ÀÎµ¦½º ÄÃ·³°ú °°Àº columnID¸¦ °¡Áø ÄÃ·³ÀÇ predicateÀÌ
-                // IN subquery°¡ ¾Æ´Ñ °æ¿ì,
-                // Áï, keyFilter·Î »ç¿ëÇÒ ¼ö ÀÖ´Â predicate
+                // ì¸ë±ìŠ¤ ì»¬ëŸ¼ê³¼ ê°™ì€ columnIDë¥¼ ê°€ì§„ ì»¬ëŸ¼ì˜ predicateì´
+                // IN subqueryê°€ ì•„ë‹Œ ê²½ìš°,
+                // ì¦‰, keyFilterë¡œ ì‚¬ìš©í•  ìˆ˜ ìˆëŠ” predicate
 
-                // keyFilter¿¡ ¿¬°á
+                // keyFilterì— ì—°ê²°
                 IDE_TEST( qmoPredWrapperI::moveWrapper( sWrapperIter,
                                                         aSource,
                                                         aKeyFilter )
@@ -8159,8 +8159,8 @@ qmoPred::extractKeyFilter4Column( qcmIndex        * aIndex,
             }
 
             // fix BUG-10091
-            // = ÀÌ¿ÜÀÇ ºñ±³¿¬»êÀÚ°¡ Á¸ÀçÇÏ¸é
-            // keyFilter ÃßÃâÀ» ¸ØÃá´Ù.
+            // = ì´ì™¸ì˜ ë¹„êµì—°ì‚°ìê°€ ì¡´ì¬í•˜ë©´
+            // keyFilter ì¶”ì¶œì„ ë©ˆì¶˜ë‹¤.
             if ( ( sWrapperIter->pred->flag & QMO_PRED_NEXT_KEY_USABLE_MASK )
                  == QMO_PRED_NEXT_KEY_USABLE )
             {
@@ -8193,20 +8193,20 @@ qmoPred::extractRange4LIST( qcTemplate         * aTemplate,
 {
 /***********************************************************************
  *
- * Description : LIST¿¡ ´ëÇÑ
- *               keyRange, keyFilter, filter, subqueryFilter¸¦ ÃßÃâÇÑ´Ù.
+ * Description : LISTì— ëŒ€í•œ
+ *               keyRange, keyFilter, filter, subqueryFilterë¥¼ ì¶”ì¶œí•œë‹¤.
  *
  * Implementation :
  *
- *   ÀÌ ÇÔ¼ö´Â ¸®½ºÆ® ÄÃ·³¸®½ºÆ®¸¸ ÀÎÀÚ·Î ¹Ş¾Æ¼­,
- *   ÇÏ³ªÀÇ ¸®½ºÆ®¿¡ ´ëÇØ keyRange/keyFilter/filter/subqueryFilter¸¦
- *   ÆÇ´ÜÇØ¼­ ÇØ´çÇÏ´Â °÷¿¡ ¿¬°áÇÑ´Ù.
+ *   ì´ í•¨ìˆ˜ëŠ” ë¦¬ìŠ¤íŠ¸ ì»¬ëŸ¼ë¦¬ìŠ¤íŠ¸ë§Œ ì¸ìë¡œ ë°›ì•„ì„œ,
+ *   í•˜ë‚˜ì˜ ë¦¬ìŠ¤íŠ¸ì— ëŒ€í•´ keyRange/keyFilter/filter/subqueryFilterë¥¼
+ *   íŒë‹¨í•´ì„œ í•´ë‹¹í•˜ëŠ” ê³³ì— ì—°ê²°í•œë‹¤.
  *
- *      ¸®½ºÆ®ÀÇ ÀÎµ¦½º »ç¿ë°¡´É¼º °Ë»ç.
- *      (1) ¸®½ºÆ®ÄÃ·³ÀÌ ÀÎµ¦½º ÄÃ·³¿¡ ¿¬¼ÓÀûÀ¸·Î Æ÷ÇÔµÇ¸é, keyRange·Î ºĞ·ù
- *      (2) ¿¬¼ÓÀûÀÌÁö´Â ¾ÊÁö¸¸, ¸®½ºÆ® ÄÃ·³ÀÌ ¸ğµÎ ÀÎµ¦½º ÄÃ·³¿¡ Æ÷ÇÔµÇ¸é,
- *          keyFilter·Î ºĞ·ù
- *      (3) (1)°ú (2)°¡ ¾Æ´Ï¸é, filter·Î ºĞ·ù
+ *      ë¦¬ìŠ¤íŠ¸ì˜ ì¸ë±ìŠ¤ ì‚¬ìš©ê°€ëŠ¥ì„± ê²€ì‚¬.
+ *      (1) ë¦¬ìŠ¤íŠ¸ì»¬ëŸ¼ì´ ì¸ë±ìŠ¤ ì»¬ëŸ¼ì— ì—°ì†ì ìœ¼ë¡œ í¬í•¨ë˜ë©´, keyRangeë¡œ ë¶„ë¥˜
+ *      (2) ì—°ì†ì ì´ì§€ëŠ” ì•Šì§€ë§Œ, ë¦¬ìŠ¤íŠ¸ ì»¬ëŸ¼ì´ ëª¨ë‘ ì¸ë±ìŠ¤ ì»¬ëŸ¼ì— í¬í•¨ë˜ë©´,
+ *          keyFilterë¡œ ë¶„ë¥˜
+ *      (3) (1)ê³¼ (2)ê°€ ì•„ë‹ˆë©´, filterë¡œ ë¶„ë¥˜
  *
  ***********************************************************************/
 
@@ -8217,7 +8217,7 @@ qmoPred::extractRange4LIST( qcTemplate         * aTemplate,
     IDU_FIT_POINT_FATAL( "qmoPred::extractRange4LIST::__FT__" );
 
     //--------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //--------------------------------------
 
     IDE_DASSERT( aTemplate != NULL );
@@ -8229,8 +8229,8 @@ qmoPred::extractRange4LIST( qcTemplate         * aTemplate,
     IDE_DASSERT( aSubqueryFilter != NULL );
 
     //--------------------------------------
-    // ¸®½ºÆ® ÄÃ·³¸®½ºÆ®¿¡ ´Ş·ÁÀÖ´Â °¢°¢ÀÇ ÄÃ·³¿¡ ´ëÇØ
-    // keyRange/keyFilter/filter/IN(subquery)¿¡ ´ëÇÑ ÆÇ´ÜÀ» ¼öÇà.
+    // ë¦¬ìŠ¤íŠ¸ ì»¬ëŸ¼ë¦¬ìŠ¤íŠ¸ì— ë‹¬ë ¤ìˆëŠ” ê°ê°ì˜ ì»¬ëŸ¼ì— ëŒ€í•´
+    // keyRange/keyFilter/filter/IN(subquery)ì— ëŒ€í•œ íŒë‹¨ì„ ìˆ˜í–‰.
     //--------------------------------------
 
     for ( sWrapperIter  = *aSource;
@@ -8252,7 +8252,7 @@ qmoPred::extractRange4LIST( qcTemplate         * aTemplate,
     }
 
     //--------------------------------------
-    // KeyRange, KeyFilter, filter, subqueryFilter ÃßÃâ
+    // KeyRange, KeyFilter, filter, subqueryFilter ì¶”ì¶œ
     //--------------------------------------
 
     if ( sWrapperIter != NULL )
@@ -8276,13 +8276,13 @@ qmoPred::extractRange4LIST( qcTemplate         * aTemplate,
             }
             else
             {
-                // keyFilter³ª filter·Î ºĞ·ùµÈ °æ¿ì,
-                // ÀÌ °æ¿ì, IN subquery´Â subqueryFilter¿¡ ¿¬°áÇØ¾ß ÇÑ´Ù.
+                // keyFilterë‚˜ filterë¡œ ë¶„ë¥˜ëœ ê²½ìš°,
+                // ì´ ê²½ìš°, IN subqueryëŠ” subqueryFilterì— ì—°ê²°í•´ì•¼ í•œë‹¤.
 
                 if ( ( sPredIter->flag & QMO_PRED_INSUBQUERY_MASK )
                      == QMO_PRED_INSUBQUERY_EXIST )
                 {
-                    // IN subqueryÀÌ¸é, subqueryFilter¿¡ ¿¬°á
+                    // IN subqueryì´ë©´, subqueryFilterì— ì—°ê²°
                     IDE_TEST( qmoPredWrapperI::addPred( sPredIter,
                                                         aSubqueryFilter,
                                                         aWrapperPool )
@@ -8292,7 +8292,7 @@ qmoPred::extractRange4LIST( qcTemplate         * aTemplate,
                 {
                     if ( sPredType == QMO_KEYFILTER )
                     {
-                        // keyFilter·Î ºĞ·ùµÈ °æ¿ì·Î, keyFilter¿¡ ¿¬°á
+                        // keyFilterë¡œ ë¶„ë¥˜ëœ ê²½ìš°ë¡œ, keyFilterì— ì—°ê²°
                         IDE_TEST( qmoPredWrapperI::addPred( sPredIter,
                                                             aKeyFilter,
                                                             aWrapperPool )
@@ -8301,10 +8301,10 @@ qmoPred::extractRange4LIST( qcTemplate         * aTemplate,
                     else
                     {
                         // BUG-11328 fix
-                        // ³²¾Æ ÀÖ´Â predicate¿¡ ´ëÇØ
-                        // filter ÀÎÁö subquery filterÀÎÁö
-                        // ÆÇ´ÜÇØ¾ß ÇÑ´Ù.
-                        // ±âÁ¸¿¡´Â ÀÌ ºí·°¿¡¼­ filter·Î¸¸ Ã³¸®Çß´Ù.
+                        // ë‚¨ì•„ ìˆëŠ” predicateì— ëŒ€í•´
+                        // filter ì¸ì§€ subquery filterì¸ì§€
+                        // íŒë‹¨í•´ì•¼ í•œë‹¤.
+                        // ê¸°ì¡´ì—ëŠ” ì´ ë¸”ëŸ­ì—ì„œ filterë¡œë§Œ ì²˜ë¦¬í–ˆë‹¤.
                         if ( ( sPredIter->node->lflag & QTC_NODE_SUBQUERY_MASK )
                              == QTC_NODE_SUBQUERY_EXIST )
                         {
@@ -8325,7 +8325,7 @@ qmoPred::extractRange4LIST( qcTemplate         * aTemplate,
             }
         } // for
     }
-    else // list predicateÀÌ ¾ø´Â °æ¿ì ¾Æ¹«·± ÀÛ¾÷À» ÇÏÁö ¾Ê´Â´Ù.
+    else // list predicateì´ ì—†ëŠ” ê²½ìš° ì•„ë¬´ëŸ° ì‘ì—…ì„ í•˜ì§€ ì•ŠëŠ”ë‹¤.
     {
         // Nothing to do...
     }
@@ -8347,10 +8347,10 @@ qmoPred::process4Range( qcStatement        * aStatement,
 {
 /***********************************************************************
  *
- * Description : keyRange¿Í keyFilter·Î ºĞ·ùµÈ predicate¿¡ ´ëÇÑ Ã³¸®
+ * Description : keyRangeì™€ keyFilterë¡œ ë¶„ë¥˜ëœ predicateì— ëŒ€í•œ ì²˜ë¦¬
  *
- *       (1) quantify ºñ±³¿¬»êÀÚ¿¡ ´ëÇÑ ³ëµå º¯È¯ ¼öÇà
- *       (2) LIKE ºñ±³¿¬»êÀÚ¿¡ ´ëÇÑ filter »ı¼º
+ *       (1) quantify ë¹„êµì—°ì‚°ìì— ëŒ€í•œ ë…¸ë“œ ë³€í™˜ ìˆ˜í–‰
+ *       (2) LIKE ë¹„êµì—°ì‚°ìì— ëŒ€í•œ filter ìƒì„±
  *
  * Implementation :
  *
@@ -8364,14 +8364,14 @@ qmoPred::process4Range( qcStatement        * aStatement,
     IDU_FIT_POINT_FATAL( "qmoPred::process4Range::__FT__" );
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_DASSERT( aRange != NULL );
     IDE_DASSERT( aFilter != NULL );
 
     //------------------------------------------
-    // Range¿¡ ´ëÇÑ Ã³¸®
+    // Rangeì— ëŒ€í•œ ì²˜ë¦¬
     //------------------------------------------
 
     sOrgPhase = aQuerySet->processPhase;
@@ -8388,7 +8388,7 @@ qmoPred::process4Range( qcStatement        * aStatement,
                   sMorePredicate  = sMorePredicate->more )
             {
                 //------------------------------------------
-                // quantify ºñ±³¿¬»êÀÚ¿¡ ´ëÇÑ ³ëµå º¯È¯
+                // quantify ë¹„êµì—°ì‚°ìì— ëŒ€í•œ ë…¸ë“œ ë³€í™˜
                 //------------------------------------------
 
                 IDE_TEST( nodeTransform( aStatement,
@@ -8404,15 +8404,15 @@ qmoPred::process4Range( qcStatement        * aStatement,
                  == QMO_PRED_NEXT_KEY_USABLE )
             {
                 //------------------------------------------
-                // one column predicateÀÌ¸é¼­, ´ÙÀ½ÀÎµ¦½º »ç¿ë°¡´ÉÇÑ °æ¿ì
-                // ³ëµåº¯È¯¸¸ ¼öÇàÇÏ¸é µÊ.
+                // one column predicateì´ë©´ì„œ, ë‹¤ìŒì¸ë±ìŠ¤ ì‚¬ìš©ê°€ëŠ¥í•œ ê²½ìš°
+                // ë…¸ë“œë³€í™˜ë§Œ ìˆ˜í–‰í•˜ë©´ ë¨.
                 //------------------------------------------
                 for ( sMorePredicate  = sPredicate;
                       sMorePredicate != NULL;
                       sMorePredicate  = sMorePredicate->more )
                 {
                     //------------------------------------------
-                    // quantify ºñ±³¿¬»êÀÚ¿¡ ´ëÇÑ ³ëµå º¯È¯
+                    // quantify ë¹„êµì—°ì‚°ìì— ëŒ€í•œ ë…¸ë“œ ë³€í™˜
                     //------------------------------------------
                     IDE_TEST( nodeTransform( aStatement,
                                              sMorePredicate->node,
@@ -8425,16 +8425,16 @@ qmoPred::process4Range( qcStatement        * aStatement,
             else
             {
                 //------------------------------------------
-                // one column predicateÀÌ¸é¼­,
-                // ´ÙÀ½ÀÎµ¦½º »ç¿ë°¡´ÉÇÏÁö ¾ÊÀº °æ¿ì
-                // (Áï, equal/in ÀÌ¿ÜÀÇ ºñ±³¿¬»êÀÚ°¡ ÀÖ´Â °æ¿ì)
+                // one column predicateì´ë©´ì„œ,
+                // ë‹¤ìŒì¸ë±ìŠ¤ ì‚¬ìš©ê°€ëŠ¥í•˜ì§€ ì•Šì€ ê²½ìš°
+                // (ì¦‰, equal/in ì´ì™¸ì˜ ë¹„êµì—°ì‚°ìê°€ ìˆëŠ” ê²½ìš°)
                 //------------------------------------------
                 for ( sMorePredicate  = sPredicate;
                       sMorePredicate != NULL;
                       sMorePredicate  = sMorePredicate->more )
                 {
                     //------------------------------------------
-                    // quantify ºñ±³¿¬»êÀÚ¿¡ ´ëÇÑ ³ëµå º¯È¯
+                    // quantify ë¹„êµì—°ì‚°ìì— ëŒ€í•œ ë…¸ë“œ ë³€í™˜
                     //------------------------------------------
 
                     IDE_TEST( nodeTransform( aStatement,
@@ -8445,8 +8445,8 @@ qmoPred::process4Range( qcStatement        * aStatement,
 
                     //------------------------------------------
                     // To Fix PR-9679
-                    // LIKE µî°ú °°ÀÌ Filter°¡ ¹İµå½Ã ÇÊ¿äÇÑ
-                    // ºñ±³¿¬»êÀÚ¿¡ ´ëÇÑ filter »ı¼º
+                    // LIKE ë“±ê³¼ ê°™ì´ Filterê°€ ë°˜ë“œì‹œ í•„ìš”í•œ
+                    // ë¹„êµì—°ì‚°ìì— ëŒ€í•œ filter ìƒì„±
                     //------------------------------------------
 
                     IDE_TEST( makeFilterNeedPred( aStatement,
@@ -8473,7 +8473,7 @@ qmoPred::process4Range( qcStatement        * aStatement,
     aQuerySet->processPhase = sOrgPhase;
 
     //------------------------------------------
-    // variable / fixed / IN subquery KeyRange Á¤º¸ ÀúÀå
+    // variable / fixed / IN subquery KeyRange ì •ë³´ ì €ì¥
     //------------------------------------------
 
     IDE_TEST( setRangeInfo( aQuerySet, aRange )
@@ -8497,21 +8497,21 @@ qmoPred::separateFilters( qcTemplate         * aTemplate,
 {
 /***********************************************************************
  *
- * Description : qmoPredicate ¸®½ºÆ®¿¡¼­ filter, subqueryFilter¸¦ ºĞ¸®ÇÑ´Ù.
+ * Description : qmoPredicate ë¦¬ìŠ¤íŠ¸ì—ì„œ filter, subqueryFilterë¥¼ ë¶„ë¦¬í•œë‹¤.
  *
- *   extractRangeAndFilter()ÇÔ¼ö¿¡¼­
- *   1. ÀÎµ¦½º Á¤º¸°¡ ¾øÀ» °æ¿ì,
- *      ÀÎÀÚ·Î ³Ñ¾î¿Â predicateÀ» filter¿Í subqueryFilter·Î ºĞ¸®ÇÏ±â À§ÇØ¼­
- *   2. ÀÎµ¦½º Á¤º¸°¡ ÀÖÀ» °æ¿ì,
- *      keyRange, keyFilter¸¦ ¸ğµÎ ÃßÃâÇÏ°í ³²Àº predicateµéÀ»
- *      filter¿Í subqueryFilter·Î ºĞ¸®ÇÏ±â À§ÇØ¼­
- *   ÀÌ ÇÔ¼ö¸¦ È£ÃâÇÏ°Ô µÈ´Ù.
+ *   extractRangeAndFilter()í•¨ìˆ˜ì—ì„œ
+ *   1. ì¸ë±ìŠ¤ ì •ë³´ê°€ ì—†ì„ ê²½ìš°,
+ *      ì¸ìë¡œ ë„˜ì–´ì˜¨ predicateì„ filterì™€ subqueryFilterë¡œ ë¶„ë¦¬í•˜ê¸° ìœ„í•´ì„œ
+ *   2. ì¸ë±ìŠ¤ ì •ë³´ê°€ ìˆì„ ê²½ìš°,
+ *      keyRange, keyFilterë¥¼ ëª¨ë‘ ì¶”ì¶œí•˜ê³  ë‚¨ì€ predicateë“¤ì„
+ *      filterì™€ subqueryFilterë¡œ ë¶„ë¦¬í•˜ê¸° ìœ„í•´ì„œ
+ *   ì´ í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•˜ê²Œ ëœë‹¤.
  *
  * Implementation :
  *
- *    1. indexable predicate¿¡ ´ëÇÑ
- *       IN(subquery), subquery KeyRange ÃÖÀûÈ­ ÆÁ Á¦°Å
- *    2. subqueryFilter, filter ºĞ¸®
+ *    1. indexable predicateì— ëŒ€í•œ
+ *       IN(subquery), subquery KeyRange ìµœì í™” íŒ ì œê±°
+ *    2. subqueryFilter, filter ë¶„ë¦¬
  *
  ***********************************************************************/
 
@@ -8521,7 +8521,7 @@ qmoPred::separateFilters( qcTemplate         * aTemplate,
     IDU_FIT_POINT_FATAL( "qmoPred::separateFilters::__FT__" );
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_DASSERT( aFilter != NULL );
@@ -8529,8 +8529,8 @@ qmoPred::separateFilters( qcTemplate         * aTemplate,
     IDE_DASSERT( aSubqueryFilter != NULL );
 
     //------------------------------------------
-    // ÀÎÀÚ·Î ³Ñ¾î¿Â predicate list¸¦ °¢°¢ Á¶»çÇØ¼­,
-    // filter¿Í subqueryFilter¸¦ ºĞ¸®ÇÑ´Ù.
+    // ì¸ìë¡œ ë„˜ì–´ì˜¨ predicate listë¥¼ ê°ê° ì¡°ì‚¬í•´ì„œ,
+    // filterì™€ subqueryFilterë¥¼ ë¶„ë¦¬í•œë‹¤.
     //------------------------------------------
 
     for( sWrapperIter = aSource;
@@ -8545,7 +8545,7 @@ qmoPred::separateFilters( qcTemplate         * aTemplate,
                 == QTC_NODE_SUBQUERY_EXIST )
             {
                 //----------------------------
-                // subquery¸¦ Æ÷ÇÔÇÏ´Â °æ¿ì
+                // subqueryë¥¼ í¬í•¨í•˜ëŠ” ê²½ìš°
                 //----------------------------
                 IDE_TEST( qmoPredWrapperI::addPred( sPredIter,
                                                     aSubqueryFilter,
@@ -8555,7 +8555,7 @@ qmoPred::separateFilters( qcTemplate         * aTemplate,
             else
             {
                 //-------------------------------
-                // subquery¸¦ Æ÷ÇÔÇÏÁö ¾Ê´Â °æ¿ì
+                // subqueryë¥¼ í¬í•¨í•˜ì§€ ì•ŠëŠ” ê²½ìš°
                 //-------------------------------
 
                 if( (QTC_NODE_LOB_COLUMN_EXIST ==
@@ -8564,14 +8564,14 @@ qmoPred::separateFilters( qcTemplate         * aTemplate,
                      QCI_STMT_SELECT_FOR_UPDATE) )
                 {
                     /* BUG-25916
-                     * clobÀ» select fot update ÇÏ´ø µµÁß Assert ¹ß»ı */
-                    /* lob ÄÃ·³ÀÇ °æ¿ì ÇÊÅÍÃ³¸®½Ã¿¡ ÆäÀÌÁöÂüÁ¶(getPage)°¡ ÇÊ¿äÇÏ´Ù.
-                     * ±×·±µ¥ select for update½Ã¿¡´Â record lockÀ» °É±âÀ§ÇØ
-                     * ÀÌ¹Ì ÆäÀÌÁö¿¡ X lockÀÌ ÀâÈù »óÅÂÀÌ±â ¶§¹®¿¡,
-                     * lob ÄÃ·³ÀÇ ÇÊÅÍÃ³¸®¸¦ ÇÒ¶§ S lockÀ» È¹µæÇÏ·Á´Ù°¡
-                     * ASSERT·Î Á×´Â ¹®Á¦°¡ ¹ß»ıÇÑ´Ù.
-                     * ±×·¡¼­ ÀÌ °æ¿ì(select for update && lob ÄÃ·³ÀÌ ÀÖ´Â °æ¿ì)
-                     * lobFilter·Î ºĞ·ùÇÏ°í SCANÀ§¿¡ FILT ³ëµå¸¦ Ãß°¡ÇÏ¿© Ã³¸®ÇÑ´Ù. */
+                     * clobì„ select fot update í•˜ë˜ ë„ì¤‘ Assert ë°œìƒ */
+                    /* lob ì»¬ëŸ¼ì˜ ê²½ìš° í•„í„°ì²˜ë¦¬ì‹œì— í˜ì´ì§€ì°¸ì¡°(getPage)ê°€ í•„ìš”í•˜ë‹¤.
+                     * ê·¸ëŸ°ë° select for updateì‹œì—ëŠ” record lockì„ ê±¸ê¸°ìœ„í•´
+                     * ì´ë¯¸ í˜ì´ì§€ì— X lockì´ ì¡íŒ ìƒíƒœì´ê¸° ë•Œë¬¸ì—,
+                     * lob ì»¬ëŸ¼ì˜ í•„í„°ì²˜ë¦¬ë¥¼ í• ë•Œ S lockì„ íšë“í•˜ë ¤ë‹¤ê°€
+                     * ASSERTë¡œ ì£½ëŠ” ë¬¸ì œê°€ ë°œìƒí•œë‹¤.
+                     * ê·¸ë˜ì„œ ì´ ê²½ìš°(select for update && lob ì»¬ëŸ¼ì´ ìˆëŠ” ê²½ìš°)
+                     * lobFilterë¡œ ë¶„ë¥˜í•˜ê³  SCANìœ„ì— FILT ë…¸ë“œë¥¼ ì¶”ê°€í•˜ì—¬ ì²˜ë¦¬í•œë‹¤. */
                     IDE_TEST( qmoPredWrapperI::addPred( sPredIter,
                                                         aLobFilter,
                                                         aWrapperPool )
@@ -8602,9 +8602,9 @@ qmoPred::setRangeInfo( qmsQuerySet  * aQuerySet,
 {
 /***********************************************************************
  *
- * Description : keyRange/keyFilter·Î ÃßÃâµÈ predicateÀÇ ¿¬°á¸®½ºÆ® Áß
- *               ÁÂÃøÃÖ»ó´Ü¿¡ fixed/variable/InSubqueryKeyRange¿¡ ´ëÇÑ
- *               Á¤º¸¸¦ ÀúÀåÇÑ´Ù.
+ * Description : keyRange/keyFilterë¡œ ì¶”ì¶œëœ predicateì˜ ì—°ê²°ë¦¬ìŠ¤íŠ¸ ì¤‘
+ *               ì¢Œì¸¡ìµœìƒë‹¨ì— fixed/variable/InSubqueryKeyRangeì— ëŒ€í•œ
+ *               ì •ë³´ë¥¼ ì €ì¥í•œë‹¤.
  *
  * Implementation :
  *
@@ -8616,14 +8616,14 @@ qmoPred::setRangeInfo( qmsQuerySet  * aQuerySet,
     IDU_FIT_POINT_FATAL( "qmoPred::setRangeInfo::__FT__" );
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_DASSERT( aPredicate != NULL );
 
     //------------------------------------------
-    //  ÀÎÀÚ·Î ³Ñ¾î¿Â predicateÀÇ ¿¬°á¸®½ºÆ® Áß ÁÂÃøÃÖ»ó´Ü¿¡
-    //  fixed/variable/IN Subquery keyRange Á¤º¸ ÀúÀå
+    //  ì¸ìë¡œ ë„˜ì–´ì˜¨ predicateì˜ ì—°ê²°ë¦¬ìŠ¤íŠ¸ ì¤‘ ì¢Œì¸¡ìµœìƒë‹¨ì—
+    //  fixed/variable/IN Subquery keyRange ì •ë³´ ì €ì¥
     //------------------------------------------
 
     for( sPredicate = aPredicate;
@@ -8662,14 +8662,14 @@ qmoPred::setRangeInfo( qmsQuerySet  * aQuerySet,
     }
 
     //-------------------------------------
-    // fixed ÀÎ °æ¿ì, LEVEL columnÀÌ Æ÷ÇÔµÈ °æ¿ì,
-    // hierarchy query ÀÌ¸é, variable keyRange·Î,
-    // hierarchy query°¡ ¾Æ´Ï¸é, fixed keyRange·Î ºĞ·ùµÇ¾î¾ß ÇÑ´Ù.
+    // fixed ì¸ ê²½ìš°, LEVEL columnì´ í¬í•¨ëœ ê²½ìš°,
+    // hierarchy query ì´ë©´, variable keyRangeë¡œ,
+    // hierarchy queryê°€ ì•„ë‹ˆë©´, fixed keyRangeë¡œ ë¶„ë¥˜ë˜ì–´ì•¼ í•œë‹¤.
     //--------------------------------------
 
     if( aQuerySet->SFWGH->hierarchy != NULL )
     {
-        // hierarchy°¡ Á¸ÀçÇÏ´Â °æ¿ì
+        // hierarchyê°€ ì¡´ì¬í•˜ëŠ” ê²½ìš°
 
         if( ( aPredicate->flag & QMO_PRED_VALUE_MASK ) == QMO_PRED_FIXED )
         {
@@ -8703,7 +8703,7 @@ qmoPred::setRangeInfo( qmsQuerySet  * aQuerySet,
     }
     else
     {
-        // hierarchy°¡ Á¸ÀçÇÏÁö ¾Ê´Â °æ¿ì,
+        // hierarchyê°€ ì¡´ì¬í•˜ì§€ ì•ŠëŠ” ê²½ìš°,
         // Nothing To Do
     }
 
@@ -8718,11 +8718,11 @@ qmoPred::makeFilterNeedPred( qcStatement   * aStatement,
 {
 /***********************************************************************
  *
- * Description :  Like¿Í °°ÀÌ Range°¡ Á¸ÀçÇÏ´õ¶óµµ
- *                Filter°¡ ÇÊ¿äÇÑ °æ¿ì ÀÌ¿¡ ´ëÇÑ Filter¸¦ »ı¼ºÇÑ´Ù.
+ * Description :  Likeì™€ ê°™ì´ Rangeê°€ ì¡´ì¬í•˜ë”ë¼ë„
+ *                Filterê°€ í•„ìš”í•œ ê²½ìš° ì´ì— ëŒ€í•œ Filterë¥¼ ìƒì„±í•œë‹¤.
  *
- *     LIKE ºñ±³¿¬»êÀÚ´Â keyRange·Î ÃßÃâµÇ¾ú´ÙÇÏ´õ¶óµµ
- *     'ab%de', 'a_ce' ¿Í °°Àº ÆĞÅÏ¹®ÀÚ¸¦ °Ë»öÇÏ±â À§ÇÑ filter°¡ ÇÊ¿äÇÏ´Ù.
+ *     LIKE ë¹„êµì—°ì‚°ìëŠ” keyRangeë¡œ ì¶”ì¶œë˜ì—ˆë‹¤í•˜ë”ë¼ë„
+ *     'ab%de', 'a_ce' ì™€ ê°™ì€ íŒ¨í„´ë¬¸ìë¥¼ ê²€ìƒ‰í•˜ê¸° ìœ„í•œ filterê°€ í•„ìš”í•˜ë‹¤.
  *
  * Implementation :
  *
@@ -8740,16 +8740,16 @@ qmoPred::makeFilterNeedPred( qcStatement   * aStatement,
     IDU_FIT_POINT_FATAL( "qmoPred::makeFilterNeedPred::__FT__" );
 
     //------------------------------------------
-    // LIKE¿¡ ´ëÇÑ filter »ı¼º
+    // LIKEì— ëŒ€í•œ filter ìƒì„±
     //------------------------------------------
 
     if( ( aPredicate->node->node.lflag & MTC_NODE_LOGICAL_CONDITION_MASK )
         == MTC_NODE_LOGICAL_CONDITION_TRUE )
     {
-        // CNF ÀÎ °æ¿ì
+        // CNF ì¸ ê²½ìš°
 
-        // OR ³ëµå ÇÏÀ§ÀÇ ºñ±³¿¬»êÀÚ ³ëµå Áß LIKEºñ±³¿¬»êÀÚ¿¡ ´ëÇÑ
-        // filter »ı¼ºÀÌ ÇÊ¿äÇÑÁö °Ë»ç
+        // OR ë…¸ë“œ í•˜ìœ„ì˜ ë¹„êµì—°ì‚°ì ë…¸ë“œ ì¤‘ LIKEë¹„êµì—°ì‚°ìì— ëŒ€í•œ
+        // filter ìƒì„±ì´ í•„ìš”í•œì§€ ê²€ì‚¬
         sCompareNode = (qtcNode *)(aPredicate->node->node.arguments);
 
         while( sCompareNode != NULL )
@@ -8783,14 +8783,14 @@ qmoPred::makeFilterNeedPred( qcStatement   * aStatement,
         if ( sNeedFilter == ID_TRUE )
         {
             // BUG-15482, BUG-24843
-            // OR ³ëµå ÇÏÀ§ÀÇ ºñ±³¿¬»êÀÚ ³ëµå Áß LIKEºñ±³¿¬»êÀÚ¿¡
-            // ÇÏ³ª¶óµµ filter°¡ ÇÊ¿äÇÏ¸é LIKE¸¦ Æ÷ÇÔÇÑ ¸ğµç ¿¬»êÀÚ¿¡
-            // ´ëÇØ filter¸¦ »ı¼ºÇØ¾ß ÇÑ´Ù.
+            // OR ë…¸ë“œ í•˜ìœ„ì˜ ë¹„êµì—°ì‚°ì ë…¸ë“œ ì¤‘ LIKEë¹„êµì—°ì‚°ìì—
+            // í•˜ë‚˜ë¼ë„ filterê°€ í•„ìš”í•˜ë©´ LIKEë¥¼ í¬í•¨í•œ ëª¨ë“  ì—°ì‚°ìì—
+            // ëŒ€í•´ filterë¥¼ ìƒì„±í•´ì•¼ í•œë‹¤.
             sCompareNode = (qtcNode *)(aPredicate->node->node.arguments);
 
             while( sCompareNode != NULL )
             {
-                // ºñ±³¿¬»êÀÚ ÇÏÀ§ ³ëµåµé ¸ğµÎ º¹»ç
+                // ë¹„êµì—°ì‚°ì í•˜ìœ„ ë…¸ë“œë“¤ ëª¨ë‘ ë³µì‚¬
                 IDE_TEST( qtc::cloneQTCNodeTree( QC_QMP_MEM( aStatement ),
                                                  sCompareNode,
                                                  & sLikeNode,
@@ -8815,7 +8815,7 @@ qmoPred::makeFilterNeedPred( qcStatement   * aStatement,
             }
 
             // BUG-15482
-            // »õ·Î¿î OR ³ëµå¸¦ ÇÏ³ª »ı¼ºÇÑ´Ù.
+            // ìƒˆë¡œìš´ OR ë…¸ë“œë¥¼ í•˜ë‚˜ ìƒì„±í•œë‹¤.
             SET_EMPTY_POSITION( sNullPosition );
 
             IDE_TEST( qtc::makeNode( aStatement,
@@ -8825,7 +8825,7 @@ qmoPred::makeFilterNeedPred( qcStatement   * aStatement,
                                      2 )
                       != IDE_SUCCESS );
 
-            // OR ³ëµå ÇÏÀ§¿¡ sLikeFilterNode¸¦ ¿¬°áÇÑ´Ù.
+            // OR ë…¸ë“œ í•˜ìœ„ì— sLikeFilterNodeë¥¼ ì—°ê²°í•œë‹¤.
             sORNode[0]->node.arguments = (mtcNode *)sLikeFilterNode;
 
             IDE_TEST( qtc::estimateNodeWithoutArgument( aStatement,
@@ -8841,7 +8841,7 @@ qmoPred::makeFilterNeedPred( qcStatement   * aStatement,
     }
     else
     {
-        // DNF ÀÎ °æ¿ì
+        // DNF ì¸ ê²½ìš°
 
         if ( ( aPredicate->node->node.lflag & MTC_NODE_FILTER_MASK )
             == MTC_NODE_FILTER_NEED )
@@ -8910,21 +8910,21 @@ qmoPred::nodeTransform( qcStatement  * aStatement,
 {
 /***********************************************************************
  *
- * Description : keyRange Àû¿ëÀ» À§ÇÑ ³ëµå º¯È¯
+ * Description : keyRange ì ìš©ì„ ìœ„í•œ ë…¸ë“œ ë³€í™˜
  *
- *     LIST ¿Í quantify ºñ±³¿¬»êÀÚ¿¡ ´ëÇØ¼­, keyRange¸¦ Àû¿ëÇÏ±â À§ÇØ
- *     system level operator·Î ³ëµåº¯È¯½ÃÅ²´Ù.
+ *     LIST ì™€ quantify ë¹„êµì—°ì‚°ìì— ëŒ€í•´ì„œ, keyRangeë¥¼ ì ìš©í•˜ê¸° ìœ„í•´
+ *     system level operatorë¡œ ë…¸ë“œë³€í™˜ì‹œí‚¨ë‹¤.
  *
- *     OR ³ëµå ÇÏÀ§¿¡ one columnÀÎ °æ¿ì, ¿©·¯°³ÀÇ ºñ±³¿¬»êÀÚ°¡ ¿Ã ¼ö ÀÖ°í,
- *     OR ³ëµå ÇÏÀ§¿¡ LIST ´Â ÇÏ³ª¸¸ ¿Ã ¼ö ÀÖ´Ù.
+ *     OR ë…¸ë“œ í•˜ìœ„ì— one columnì¸ ê²½ìš°, ì—¬ëŸ¬ê°œì˜ ë¹„êµì—°ì‚°ìê°€ ì˜¬ ìˆ˜ ìˆê³ ,
+ *     OR ë…¸ë“œ í•˜ìœ„ì— LIST ëŠ” í•˜ë‚˜ë§Œ ì˜¬ ìˆ˜ ìˆë‹¤.
  *
  * Implementation :
  *
- *       1. ºñ±³¿¬»êÀÚ ³ëµå°¡ quantifyÀÎ °æ¿ì ³ëµå º¯È¯
- *           ¿¹: i1 in ( 1, 2 ) or i1 in ( 3, 4)
+ *       1. ë¹„êµì—°ì‚°ì ë…¸ë“œê°€ quantifyì¸ ê²½ìš° ë…¸ë“œ ë³€í™˜
+ *           ì˜ˆ: i1 in ( 1, 2 ) or i1 in ( 3, 4)
  *               i1 in ( 1, 2 ) or i1 < 5
- *           ¿¹: i1 in ( 1, 2 )
- *       2. ºñ±³¿¬»êÀÚ ³ëµå°¡ quantify°¡ ¾Æ´Ñ °æ¿ì, LIST¸¸ ³ëµå º¯È¯
+ *           ì˜ˆ: i1 in ( 1, 2 )
+ *       2. ë¹„êµì—°ì‚°ì ë…¸ë“œê°€ quantifyê°€ ì•„ë‹Œ ê²½ìš°, LISTë§Œ ë…¸ë“œ ë³€í™˜
  *
  ***********************************************************************/
 
@@ -8939,16 +8939,16 @@ qmoPred::nodeTransform( qcStatement  * aStatement,
     if( ( aSourceNode->node.lflag & MTC_NODE_LOGICAL_CONDITION_MASK )
         == MTC_NODE_LOGICAL_CONDITION_TRUE )
     {
-        // CNFÀÎ °æ¿ì·Î, ÃÖ»óÀ§ ³ëµå°¡ OR ³ëµå
+        // CNFì¸ ê²½ìš°ë¡œ, ìµœìƒìœ„ ë…¸ë“œê°€ OR ë…¸ë“œ
         sCompareNode = (qtcNode *)(aSourceNode->node.arguments);
 
         //------------------------------------------
-        // ÇÏ³ªÀÇ ºñ±³¿¬»êÀÚ ´ÜÀ§·Î ³ëµå º¯È¯
-        // 1. ºñ±³¿¬»êÀÚ ³ëµå°¡ quantifyÀÎ °æ¿ì ³ëµå º¯È¯
-        //    ¿¹: i1 in ( 1, 2 ) or i1 in ( 3, 4)
+        // í•˜ë‚˜ì˜ ë¹„êµì—°ì‚°ì ë‹¨ìœ„ë¡œ ë…¸ë“œ ë³€í™˜
+        // 1. ë¹„êµì—°ì‚°ì ë…¸ë“œê°€ quantifyì¸ ê²½ìš° ë…¸ë“œ ë³€í™˜
+        //    ì˜ˆ: i1 in ( 1, 2 ) or i1 in ( 3, 4)
         //        i1 in ( 1, 2 ) or i1 < 5
-        //    ¿¹: i1 in ( 1, 2 )
-        // 2. ºñ±³¿¬»êÀÚ ³ëµå°¡ quantify°¡ ¾Æ´Ñ °æ¿ì, LIST¸¸ ³ëµå º¯È¯
+        //    ì˜ˆ: i1 in ( 1, 2 )
+        // 2. ë¹„êµì—°ì‚°ì ë…¸ë“œê°€ quantifyê°€ ì•„ë‹Œ ê²½ìš°, LISTë§Œ ë…¸ë“œ ë³€í™˜
         //------------------------------------------
 
         while( sCompareNode != NULL )
@@ -8958,12 +8958,12 @@ qmoPred::nodeTransform( qcStatement  * aStatement,
             if( ( sCompareNode->node.lflag & MTC_NODE_GROUP_COMPARISON_MASK )
                 == MTC_NODE_GROUP_COMPARISON_TRUE )
             {
-                // quantify ºñ±³¿¬»êÀÚ·Î³ëµåº¯È¯ ÇÊ¿ä
+                // quantify ë¹„êµì—°ì‚°ìë¡œë…¸ë“œë³€í™˜ í•„ìš”
                 // Nothing To Do
             }
             else
             {
-                // quantify ºñ±³¿¬»êÀÚ°¡ ¾Æ´Ñ °æ¿ì, LIST¸¸ ³ëµå º¯È¯
+                // quantify ë¹„êµì—°ì‚°ìê°€ ì•„ë‹Œ ê²½ìš°, LISTë§Œ ë…¸ë“œ ë³€í™˜
                 if( sCompareNode->indexArgument == 0 )
                 {
                     if( ( sCompareNode->node.arguments->lflag &
@@ -8990,7 +8990,7 @@ qmoPred::nodeTransform( qcStatement  * aStatement,
                 }
             }
 
-            // ³ëµå º¯È¯ ¼öÇà.
+            // ë…¸ë“œ ë³€í™˜ ìˆ˜í–‰.
             if( sIsNodeTransformNeed == ID_TRUE )
             {
                 IDE_TEST( nodeTransform4OneCond( aStatement,
@@ -9004,7 +9004,7 @@ qmoPred::nodeTransform( qcStatement  * aStatement,
                 sTransformOneCond = sCompareNode;
             }
 
-            // Ã³¸®µÈ ºñ±³¿¬»êÀÚ ¿¬°á¸®½ºÆ® ¸¸µé±â
+            // ì²˜ë¦¬ëœ ë¹„êµì—°ì‚°ì ì—°ê²°ë¦¬ìŠ¤íŠ¸ ë§Œë“¤ê¸°
             if( sTransformNode == NULL )
             {
                 sTransformNode = sTransformOneCond;
@@ -9020,11 +9020,11 @@ qmoPred::nodeTransform( qcStatement  * aStatement,
         }
 
         //--------------------------------------
-        // ³ëµå º¯È¯È¯ ³ëµåµéÀ» ¿ø·¡ OR³ëµå ÇÏÀ§¿¡ ¿¬°áÇÑ´Ù.
-        // ¿¹: i1 in (1,2) OR i1 = 7
-        //     ¾Æ·¡¿Í °°ÀÌ ³ëµå º¯È¯µÇ´Âµ¥, ÀÌÈÄ, qtcNode·Î ¿¬°áÇÒ¶§
-        //     ÃÖ»óÀ§ ³ëµåÀÇ next°¡ ÀÖ´Â °æ¿ì¸¦ °í·ÁÇØ¾ß ÇÏ¹Ç·Î,
-        //     ¿©±â¼­, ¿ø·¡ OR ³ëµå ÇÏÀ§¿¡ ³ëµå º¯È¯µÈ ³ëµå¸¦ ÇÏÀ§·Î ¿¬°áÇÑ´Ù.
+        // ë…¸ë“œ ë³€í™˜í™˜ ë…¸ë“œë“¤ì„ ì›ë˜ ORë…¸ë“œ í•˜ìœ„ì— ì—°ê²°í•œë‹¤.
+        // ì˜ˆ: i1 in (1,2) OR i1 = 7
+        //     ì•„ë˜ì™€ ê°™ì´ ë…¸ë“œ ë³€í™˜ë˜ëŠ”ë°, ì´í›„, qtcNodeë¡œ ì—°ê²°í• ë•Œ
+        //     ìµœìƒìœ„ ë…¸ë“œì˜ nextê°€ ìˆëŠ” ê²½ìš°ë¥¼ ê³ ë ¤í•´ì•¼ í•˜ë¯€ë¡œ,
+        //     ì—¬ê¸°ì„œ, ì›ë˜ OR ë…¸ë“œ í•˜ìœ„ì— ë…¸ë“œ ë³€í™˜ëœ ë…¸ë“œë¥¼ í•˜ìœ„ë¡œ ì—°ê²°í•œë‹¤.
         //
         //                                      OR
         //                                      |
@@ -9036,22 +9036,22 @@ qmoPred::nodeTransform( qcStatement  * aStatement,
         //--------------------------------------
         aSourceNode->node.arguments = (mtcNode *)&(sTransformNode->node);
         sTransformNode = aSourceNode;
-    } // CNF ÀÎ °æ¿ìÀÇ Ã³¸®
+    } // CNF ì¸ ê²½ìš°ì˜ ì²˜ë¦¬
     else
     {
-        // DNFÀÎ °æ¿ì·Î, ÃÖ»óÀ§ ³ëµå°¡ ºñ±³¿¬»êÀÚ
+        // DNFì¸ ê²½ìš°ë¡œ, ìµœìƒìœ„ ë…¸ë“œê°€ ë¹„êµì—°ì‚°ì
 
         sIsNodeTransformNeed = ID_TRUE;
 
         if( ( aSourceNode->node.lflag & MTC_NODE_GROUP_COMPARISON_MASK )
             == MTC_NODE_GROUP_COMPARISON_TRUE )
         {
-            // quantify ºñ±³¿¬»êÀÚ·Î³ëµåº¯È¯ ÇÊ¿ä
+            // quantify ë¹„êµì—°ì‚°ìë¡œë…¸ë“œë³€í™˜ í•„ìš”
             // Nothing To Do
         }
         else
         {
-            // quantify ºñ±³¿¬»êÀÚ°¡ ¾Æ´Ñ °æ¿ì, LIST¸¸ ³ëµå º¯È¯
+            // quantify ë¹„êµì—°ì‚°ìê°€ ì•„ë‹Œ ê²½ìš°, LISTë§Œ ë…¸ë“œ ë³€í™˜
             if( aSourceNode->indexArgument == 0 )
             {
                 if( ( aSourceNode->node.arguments->lflag &
@@ -9078,7 +9078,7 @@ qmoPred::nodeTransform( qcStatement  * aStatement,
             }
         }
 
-        // ³ëµå º¯È¯ ¼öÇà.
+        // ë…¸ë“œ ë³€í™˜ ìˆ˜í–‰.
         if( sIsNodeTransformNeed == ID_TRUE )
         {
             IDE_TEST( nodeTransform4OneCond( aStatement,
@@ -9091,7 +9091,7 @@ qmoPred::nodeTransform( qcStatement  * aStatement,
         {
             sTransformNode = aSourceNode;
         }
-    } // DNF ÀÎ °æ¿ìÀÇ Ã³¸®
+    } // DNF ì¸ ê²½ìš°ì˜ ì²˜ë¦¬
 
     *aTransformNode = sTransformNode;
 
@@ -9104,24 +9104,24 @@ qmoPred::nodeTransform( qcStatement  * aStatement,
 
 /***********************************************************************
  *
- * qmoPredTrans °ü·Ã ¼³¸í
+ * qmoPredTrans ê´€ë ¨ ì„¤ëª…
  *
- *    : nodeTransform() ÇÔ¼ö¸¦ ¼öÇàÇÏ´Â °úÁ¤¿¡¼­
- *      ¿©·¯ ³»ºÎ ÇÔ¼öµéÀÌ È£ÃâµÇ´Âµ¥
- *      ¸ğµÎ ³ëµåµéÀ» Àç±¸¼ºÇÏ´Â º¹ÀâÇÑ ·ÎÁ÷À¸·Î ±¸ÇöÀÌ µÇ¾î ÀÖ´Ù.
- *      nodeTransform() °ú °ü·ÃµÈ ÇÔ¼öµéÀÌ È£ÃâµÇ´Â ÀÎÅÍÆäÀÌ½º¸¦
- *      ´Ü¼øÈ­ÇÏ°í, ÇÔ¼ö ³»¿ëÀ» º¸´Ù ½±°Ô ÀÌÇØÇÒ ¼ö ÀÖ°Ô ÇÏ±â À§ÇØ
- *      °ü·ÃÇÔ¼öµéÀ» ¸®ÆÑÅä¸µÇÑ´Ù.
+ *    : nodeTransform() í•¨ìˆ˜ë¥¼ ìˆ˜í–‰í•˜ëŠ” ê³¼ì •ì—ì„œ
+ *      ì—¬ëŸ¬ ë‚´ë¶€ í•¨ìˆ˜ë“¤ì´ í˜¸ì¶œë˜ëŠ”ë°
+ *      ëª¨ë‘ ë…¸ë“œë“¤ì„ ì¬êµ¬ì„±í•˜ëŠ” ë³µì¡í•œ ë¡œì§ìœ¼ë¡œ êµ¬í˜„ì´ ë˜ì–´ ìˆë‹¤.
+ *      nodeTransform() ê³¼ ê´€ë ¨ëœ í•¨ìˆ˜ë“¤ì´ í˜¸ì¶œë˜ëŠ” ì¸í„°í˜ì´ìŠ¤ë¥¼
+ *      ë‹¨ìˆœí™”í•˜ê³ , í•¨ìˆ˜ ë‚´ìš©ì„ ë³´ë‹¤ ì‰½ê²Œ ì´í•´í•  ìˆ˜ ìˆê²Œ í•˜ê¸° ìœ„í•´
+ *      ê´€ë ¨í•¨ìˆ˜ë“¤ì„ ë¦¬íŒ©í† ë§í•œë‹¤.
  *
- *      ¸®ÆÑÅä¸µÀÇ ¿äÁ¡Àº, nodeTransform °ü·Ã ÇÔ¼öµé »çÀÌÀÇ
- *      parameterÀÇ º¹Àâµµ¸¦ ÁÙÀÌ±â À§ÇØ
- *      qmoPredTrans¶ó´Â ±¸Á¶Ã¼¸¦ Á¤ÀÇÇÏ°í
- *      ÀÌ ±¸Á¶Ã¼¸¦ operationÇÒ ¼ö ÀÖ´Â ÇÔ¼öµéÀ» ¸ğ¾Æ ³õÀº
- *      qmoPredTransI¶ó´Â class¸¦ Á¤ÀÇÇÑ´Ù.
+ *      ë¦¬íŒ©í† ë§ì˜ ìš”ì ì€, nodeTransform ê´€ë ¨ í•¨ìˆ˜ë“¤ ì‚¬ì´ì˜
+ *      parameterì˜ ë³µì¡ë„ë¥¼ ì¤„ì´ê¸° ìœ„í•´
+ *      qmoPredTransë¼ëŠ” êµ¬ì¡°ì²´ë¥¼ ì •ì˜í•˜ê³ 
+ *      ì´ êµ¬ì¡°ì²´ë¥¼ operationí•  ìˆ˜ ìˆëŠ” í•¨ìˆ˜ë“¤ì„ ëª¨ì•„ ë†“ì€
+ *      qmoPredTransIë¼ëŠ” classë¥¼ ì •ì˜í•œë‹¤.
  *
- *      qtcNodeÀÇ ±¸Á¶¸¦ Å½»öÇÏ´Â ·ÎÁ÷Àº ¸ğµÎ
- *      qmoPredTransIÀÇ ÇÔ¼öµéÀÌ Ã³¸®ÇÏ°í
- *      nodeTransform °ü·Ã ÇÔ¼öµéÀº ³ëµå º¯Çü¿¡ °ü·ÃµÈ ·ÎÁ÷¸¸À» ±¸ÇöÇÑ´Ù.
+ *      qtcNodeì˜ êµ¬ì¡°ë¥¼ íƒìƒ‰í•˜ëŠ” ë¡œì§ì€ ëª¨ë‘
+ *      qmoPredTransIì˜ í•¨ìˆ˜ë“¤ì´ ì²˜ë¦¬í•˜ê³ 
+ *      nodeTransform ê´€ë ¨ í•¨ìˆ˜ë“¤ì€ ë…¸ë“œ ë³€í˜•ì— ê´€ë ¨ëœ ë¡œì§ë§Œì„ êµ¬í˜„í•œë‹¤.
  *
  *      by kumdory, 2005-04-25
  *
@@ -9136,12 +9136,12 @@ qmoPredTransI::initPredTrans( qmoPredTrans  * aPredTrans,
 /***********************************************************************
  *
  * Description :
- *      aPredTransÀÇ °¢ ¸É¹ö¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+ *      aPredTransì˜ ê° ë§´ë²„ë¥¼ ì´ˆê¸°í™”í•œë‹¤.
  *
  * Implementation :
- *      aStatement¸¦ ¼¼ÆÃÇÏ°í,
- *      Logical node¿Í condition node¸¦ ¸¸µé±â À§ÇØ
- *      compareNodeÀÇ ¿ÀÆÛ·¹ÀÌ¼ÇÀ» ºĞ¼®ÇÑ´Ù.
+ *      aStatementë¥¼ ì„¸íŒ…í•˜ê³ ,
+ *      Logical nodeì™€ condition nodeë¥¼ ë§Œë“¤ê¸° ìœ„í•´
+ *      compareNodeì˜ ì˜¤í¼ë ˆì´ì…˜ì„ ë¶„ì„í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -9162,11 +9162,11 @@ qmoPredTransI::makeConditionNode( qmoPredTrans * aPredTrans,
 /***********************************************************************
  *
  * Description :
- *      "=", "<=" °°Àº condition node ¸¦ »ı¼ºÇÑ´Ù.
+ *      "=", "<=" ê°™ì€ condition node ë¥¼ ìƒì„±í•œë‹¤.
  *
  * Implementation :
- *      qmoPredTransIÀÇ private ÇÔ¼öÀÎ makePredNode¸¦ »ç¿ëÇÑ´Ù.
- *      ¸¸µé¾îÁø condition nodeÀÇ indexArgument ¸¦ 0À¸·Î ¼¼ÆÃÇØ¾ß ÇÑ´Ù.
+ *      qmoPredTransIì˜ private í•¨ìˆ˜ì¸ makePredNodeë¥¼ ì‚¬ìš©í•œë‹¤.
+ *      ë§Œë“¤ì–´ì§„ condition nodeì˜ indexArgument ë¥¼ 0ìœ¼ë¡œ ì„¸íŒ…í•´ì•¼ í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -9178,12 +9178,12 @@ qmoPredTransI::makeConditionNode( qmoPredTrans * aPredTrans,
                             aResultNode )
               != IDE_SUCCESS );
 
-    // »ı¼ºµÈ condition node¿¡ ´ëÇØ estimationÇØÁØ´Ù.
+    // ìƒì„±ëœ condition nodeì— ëŒ€í•´ estimationí•´ì¤€ë‹¤.
     IDE_TEST( estimateConditionNode( aPredTrans,
                                      *aResultNode )
               != IDE_SUCCESS );
 
-    // ºñ±³ ¿¬»êÀÚ ³ëµå¿¡ ´ëÇØ indexArgument¸¦ 0À¸·Î ¼¼ÆÃÇÑ´Ù.
+    // ë¹„êµ ì—°ì‚°ì ë…¸ë“œì— ëŒ€í•´ indexArgumentë¥¼ 0ìœ¼ë¡œ ì„¸íŒ…í•œë‹¤.
     (*aResultNode)->indexArgument = 0;
 
     return IDE_SUCCESS;
@@ -9201,10 +9201,10 @@ qmoPredTransI::makeLogicalNode( qmoPredTrans * aPredTrans,
 /***********************************************************************
  *
  * Description :
- *      "AND", "OR" °°Àº logical operator node ¸¦ »ı¼ºÇÑ´Ù.
+ *      "AND", "OR" ê°™ì€ logical operator node ë¥¼ ìƒì„±í•œë‹¤.
  *
  * Implementation :
- *      qmoPredTransIÀÇ private ÇÔ¼öÀÎ makePredNode¸¦ »ç¿ëÇÑ´Ù.
+ *      qmoPredTransIì˜ private í•¨ìˆ˜ì¸ makePredNodeë¥¼ ì‚¬ìš©í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -9216,7 +9216,7 @@ qmoPredTransI::makeLogicalNode( qmoPredTrans * aPredTrans,
                             aResultNode )
               != IDE_SUCCESS );
 
-    // »ı¼ºµÈ logical node¿¡ ´ëÇØ estimationÇØÁØ´Ù.
+    // ìƒì„±ëœ logical nodeì— ëŒ€í•´ estimationí•´ì¤€ë‹¤.
     IDE_TEST( estimateLogicalNode( aPredTrans,
                                    * aResultNode )
               != IDE_SUCCESS );
@@ -9236,10 +9236,10 @@ qmoPredTransI::makeAndNode( qmoPredTrans * aPredTrans,
 /***********************************************************************
  *
  * Description :
- *      "AND" node ¸¦ »ı¼ºÇÑ´Ù.
+ *      "AND" node ë¥¼ ìƒì„±í•œë‹¤.
  *
  * Implementation :
- *      qmoPredTransIÀÇ private ÇÔ¼öÀÎ makePredNode¸¦ »ç¿ëÇÑ´Ù.
+ *      qmoPredTransIì˜ private í•¨ìˆ˜ì¸ makePredNodeë¥¼ ì‚¬ìš©í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -9251,7 +9251,7 @@ qmoPredTransI::makeAndNode( qmoPredTrans * aPredTrans,
                             aResultNode )
               != IDE_SUCCESS );
 
-    // »ı¼ºµÈ logical node¿¡ ´ëÇØ estimationÇØÁØ´Ù.
+    // ìƒì„±ëœ logical nodeì— ëŒ€í•´ estimationí•´ì¤€ë‹¤.
     IDE_TEST( estimateLogicalNode( aPredTrans,
                                    *aResultNode )
               != IDE_SUCCESS );
@@ -9272,12 +9272,12 @@ qmoPredTransI::makePredNode( qcStatement  * aStatement,
 /***********************************************************************
  *
  * Description :
- *      °¢Á¾ predicate node¸¦ ¼º¼ºÇÑ´Ù.
- *      priavate ÇÔ¼öÀÌ¸ç, makeLogicalNode, makeConditionNode, makeAndNode¿¡
- *      ÀÇÇØ È£ÃâµÈ´Ù.
+ *      ê°ì¢… predicate nodeë¥¼ ì„±ì„±í•œë‹¤.
+ *      priavate í•¨ìˆ˜ì´ë©°, makeLogicalNode, makeConditionNode, makeAndNodeì—
+ *      ì˜í•´ í˜¸ì¶œëœë‹¤.
  *
  * Implementation :
- *      aArgumentNode´Â ¹İµå½Ã next°¡ ´Ş·Á ÀÖ¾î¾ß ÇÑ´Ù.
+ *      aArgumentNodeëŠ” ë°˜ë“œì‹œ nextê°€ ë‹¬ë ¤ ìˆì–´ì•¼ í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -9320,10 +9320,10 @@ qmoPredTransI::copyNode( qmoPredTrans * aPredTrans,
 /***********************************************************************
  *
  * Description :
- *      qtcNode¸¦ »õ·Î¿î ¸Ş¸ğ¸® ¿µ¿ª¿¡ º¹»çÇÑ´Ù.
+ *      qtcNodeë¥¼ ìƒˆë¡œìš´ ë©”ëª¨ë¦¬ ì˜ì—­ì— ë³µì‚¬í•œë‹¤.
  *
  * Implementation :
- *      »ç½Ç ÀÌ ÇÔ¼ö´Â qtc.cpp¿¡ ÀÖ¾î¾ß ÇÑ´Ù.
+ *      ì‚¬ì‹¤ ì´ í•¨ìˆ˜ëŠ” qtc.cppì— ìˆì–´ì•¼ í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -9331,12 +9331,12 @@ qmoPredTransI::copyNode( qmoPredTrans * aPredTrans,
 
     IDU_FIT_POINT_FATAL( "qmoPredTransI::copyNode::__FT__" );
 
-    // »õ·Î¿î ³ëµå¸¦ ¸¸µé±â À§ÇÑ ¸Ş¸ğ¸®¸¦ ÇÒ´ç¹Ş´Â´Ù.
+    // ìƒˆë¡œìš´ ë…¸ë“œë¥¼ ë§Œë“¤ê¸° ìœ„í•œ ë©”ëª¨ë¦¬ë¥¼ í• ë‹¹ë°›ëŠ”ë‹¤.
     IDE_TEST( QC_QMP_MEM( aPredTrans->statement )->alloc( ID_SIZEOF( qtcNode ),
                                                           (void **)& sNode )
               != IDE_SUCCESS  );
 
-    // ÀÎÀÚ·Î ¹ŞÀº column node¿Í value node¸¦ º¹»ç.
+    // ì¸ìë¡œ ë°›ì€ column nodeì™€ value nodeë¥¼ ë³µì‚¬.
     idlOS::memcpy( sNode, aNode, ID_SIZEOF(qtcNode) );
 
     sNode->node.next = NULL;
@@ -9358,13 +9358,13 @@ qmoPredTransI::makeSubQWrapperNode( qmoPredTrans * aPredTrans,
 /***********************************************************************
  *
  * Description :
- *      subqueryWrapper ³ëµå¸¦ »ı¼ºÇÑ´Ù.
+ *      subqueryWrapper ë…¸ë“œë¥¼ ìƒì„±í•œë‹¤.
  *
  * Implementation :
- *      qtc¿¡ ÀÌ¹Ì ÀÖ´Â ÇÔ¼öÁö¸¸
- *      qmoPredÀÇ transformNode °è¿­ ÇÔ¼ö¿¡¼­
- *      °¢Á¾ ³ëµå¸¦ ¸¸µå´Â µ¿ÀÏÇÑ ÇÔ¼ö ÀÎÅÍÆäÀÌ½º¸¦ Á¦°øÇÏ±â À§ÇØ
- *      ÇÑ¹ø wrapping ÇÑ´Ù.
+ *      qtcì— ì´ë¯¸ ìˆëŠ” í•¨ìˆ˜ì§€ë§Œ
+ *      qmoPredì˜ transformNode ê³„ì—´ í•¨ìˆ˜ì—ì„œ
+ *      ê°ì¢… ë…¸ë“œë¥¼ ë§Œë“œëŠ” ë™ì¼í•œ í•¨ìˆ˜ ì¸í„°í˜ì´ìŠ¤ë¥¼ ì œê³µí•˜ê¸° ìœ„í•´
+ *      í•œë²ˆ wrapping í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -9390,12 +9390,12 @@ qmoPredTransI::makeIndirectNode( qmoPredTrans * aPredTrans,
 /***********************************************************************
  *
  * Description :
- *      »õ·Î¿î ¸Ş¸ğ¸® ¿µ¿ª¿¡ indirect node¸¦ »ı¼ºÇÑ´Ù.
+ *      ìƒˆë¡œìš´ ë©”ëª¨ë¦¬ ì˜ì—­ì— indirect nodeë¥¼ ìƒì„±í•œë‹¤.
  *
  * Implementation :
- *      qtc¿¡ ÀÖ´Â ÇÔ¼ö¸¦ »ç¿ëÇÏÁö¸¸, allocÀº ¿©±â¼­ ÇØÁØ´Ù.
- *      makeSubQWrapperNode¿Í ¸¶Âù°¡Áö·Î µ¿ÀÏÇÑ ÀÎÅÍÆäÀÌ½º¸¦
- *      Á¦°øÇÏ±â À§ÇØ ÇÑ¹ø wrapping ÇÑ´Ù.
+ *      qtcì— ìˆëŠ” í•¨ìˆ˜ë¥¼ ì‚¬ìš©í•˜ì§€ë§Œ, allocì€ ì—¬ê¸°ì„œ í•´ì¤€ë‹¤.
+ *      makeSubQWrapperNodeì™€ ë§ˆì°¬ê°€ì§€ë¡œ ë™ì¼í•œ ì¸í„°í˜ì´ìŠ¤ë¥¼
+ *      ì œê³µí•˜ê¸° ìœ„í•´ í•œë²ˆ wrapping í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -9432,27 +9432,27 @@ qmoPredTransI::estimateConditionNode( qmoPredTrans * aPredTrans,
 /***********************************************************************
  *
  * Description :
- *      qmoPred::nodeTransform4OneNode¿¡ ÀÖ´ø estimate ºÎºĞÀ»
- *      µû·Î »« ÇÔ¼öÀÌ´Ù.
+ *      qmoPred::nodeTransform4OneNodeì— ìˆë˜ estimate ë¶€ë¶„ì„
+ *      ë”°ë¡œ ëº€ í•¨ìˆ˜ì´ë‹¤.
  *
  * Implementation :
  *
- *   [ column nodeÀÇ conversion Á¤º¸ ¼³Á¤ ] :
- *    quantify ºñ±³¿¬»êÀÚ´Â column¿¡ ´ëÇÑ conversion Á¤º¸¸¦
- *    value nodeÀÇ leftConversion¿¡ °¡Áö°í ÀÖ´Ù.
- *    µû¶ó¼­, value ³ëµå¿¡ leftConversion node°¡ ÀÖÀ¸¸é,
- *    ÀÌ leftConversionÀ» columnNodeÀÇ conversionÀ¸·Î ¿¬°áÇÏ°í,
- *    valueNodeÀÇ leftConversionÀÇ ¿¬°á°ü°è´Â ²÷´Â´Ù.
+ *   [ column nodeì˜ conversion ì •ë³´ ì„¤ì • ] :
+ *    quantify ë¹„êµì—°ì‚°ìëŠ” columnì— ëŒ€í•œ conversion ì •ë³´ë¥¼
+ *    value nodeì˜ leftConversionì— ê°€ì§€ê³  ìˆë‹¤.
+ *    ë”°ë¼ì„œ, value ë…¸ë“œì— leftConversion nodeê°€ ìˆìœ¼ë©´,
+ *    ì´ leftConversionì„ columnNodeì˜ conversionìœ¼ë¡œ ì—°ê²°í•˜ê³ ,
+ *    valueNodeì˜ leftConversionì˜ ì—°ê²°ê´€ê³„ëŠ” ëŠëŠ”ë‹¤.
  *
  *   // fix BUG-10574
- *   // hostº¯¼ö¸¦ Æ÷ÇÔÇÏ´Â predicate¿¡ ´ëÇÑ keyrange Àû¿ë ³ëµåº¯È¯½Ã,
- *   // ³ëµå º¯È¯ÀÌ ¼öÇàµÇ°í ³­ ÈÄ,
- *   // hostº¯¼ö¸¦ Æ÷ÇÔÇÏÁö ¾Ê´Â predicate¿¡ ´ëÇØ, estimate ¸¦ ¼öÇàÇÑ´Ù.
- *   //   ¿¹) i1 in ( 1, 1.0, ? )
- *   //       ³ëµåº¯È¯ ¼öÇà
+ *   // hostë³€ìˆ˜ë¥¼ í¬í•¨í•˜ëŠ” predicateì— ëŒ€í•œ keyrange ì ìš© ë…¸ë“œë³€í™˜ì‹œ,
+ *   // ë…¸ë“œ ë³€í™˜ì´ ìˆ˜í–‰ë˜ê³  ë‚œ í›„,
+ *   // hostë³€ìˆ˜ë¥¼ í¬í•¨í•˜ì§€ ì•ŠëŠ” predicateì— ëŒ€í•´, estimate ë¥¼ ìˆ˜í–‰í•œë‹¤.
+ *   //   ì˜ˆ) i1 in ( 1, 1.0, ? )
+ *   //       ë…¸ë“œë³€í™˜ ìˆ˜í–‰
  *   //       ==> (i1=1) or (i1=1.0) or (i1=?)
  *   //           ------------------
- *   //           estimate ¼öÇà
+ *   //           estimate ìˆ˜í–‰
  ***********************************************************************/
 
     qtcNode        * sArgColumnNode;
@@ -9465,16 +9465,16 @@ qmoPredTransI::estimateConditionNode( qmoPredTrans * aPredTrans,
     sArgValueNode = qtcNodeI::nextNode( sArgColumnNode );
 
     // fix BUG-12061 BUG-12058
-    // ¿¹ : where ( i1, i2 ) = ( (select max(i1) ..),
-    //                           (select max(i2) ..) ) ÀÇ ³ëµå º¯È¯ ÈÄ,
+    // ì˜ˆ : where ( i1, i2 ) = ( (select max(i1) ..),
+    //                           (select max(i2) ..) ) ì˜ ë…¸ë“œ ë³€í™˜ í›„,
     //      where ( i1, i2 ) in ( (select i1, i2 from ...),
-    //                            (select i1, i2 from ...) ) ÀÇ ³ëµå º¯È¯ ÈÄ,
-    // µîµî...
-    // À§ ÁúÀÇ¹®ÀÇ °æ¿ì, ³ëµå º¯È¯½Ã,
-    // subqueryWrapper µîÀÇ indirect nodeµéÀÌ ¿¬°áµÇ¸ç,
-    // value nodeÀÇ left conversionÀÌ Á¸ÀçÇÒ °æ¿ì µîÀ» À§ÇØ
-    // ½ÇÁ¦·Î ÂüÁ¶ÇÏ´Â value node¸¦ Ã£¾Æ¾ß ÇÔ.
-    // subquery¸¦ Æ÷ÇÔÇÑ ³ëµåº¯È¯ ÇÔ¼öÀÇ ÁÖ¼® ÂüÁ¶
+    //                            (select i1, i2 from ...) ) ì˜ ë…¸ë“œ ë³€í™˜ í›„,
+    // ë“±ë“±...
+    // ìœ„ ì§ˆì˜ë¬¸ì˜ ê²½ìš°, ë…¸ë“œ ë³€í™˜ì‹œ,
+    // subqueryWrapper ë“±ì˜ indirect nodeë“¤ì´ ì—°ê²°ë˜ë©°,
+    // value nodeì˜ left conversionì´ ì¡´ì¬í•  ê²½ìš° ë“±ì„ ìœ„í•´
+    // ì‹¤ì œë¡œ ì°¸ì¡°í•˜ëŠ” value nodeë¥¼ ì°¾ì•„ì•¼ í•¨.
+    // subqueryë¥¼ í¬í•¨í•œ ë…¸ë“œë³€í™˜ í•¨ìˆ˜ì˜ ì£¼ì„ ì°¸ì¡°
 
     for( sValueNode = sArgValueNode;
          ( (sValueNode->node.lflag & MTC_NODE_INDIRECT_MASK )
@@ -9528,8 +9528,8 @@ qmoPredTransI::setLogicalNCondition( qmoPredTrans * aPredTrans,
 {
 /***********************************************************************
  *
- * Description : keyRange Àû¿ëÀ» À§ÇÑ ³ëµå º¯È¯½Ã ³ëµå º¯È¯Àü ºñ±³¿¬»êÀÚ¿Í
- *               ´ëÀÀµÇ´Â ºñ±³¿¬»êÀÚ¿Í ³í¸®¿¬»êÀÚ¸¦ Ã£´Â´Ù.
+ * Description : keyRange ì ìš©ì„ ìœ„í•œ ë…¸ë“œ ë³€í™˜ì‹œ ë…¸ë“œ ë³€í™˜ì „ ë¹„êµì—°ì‚°ìì™€
+ *               ëŒ€ì‘ë˜ëŠ” ë¹„êµì—°ì‚°ìì™€ ë…¼ë¦¬ì—°ì‚°ìë¥¼ ì°¾ëŠ”ë‹¤.
  *
  * Implementation :
  *
@@ -9545,14 +9545,14 @@ qmoPredTransI::setLogicalNCondition( qmoPredTrans * aPredTrans,
  ***********************************************************************/
 
     //------------------------------------------
-    // ´ëÀÀµÇ´Â ºñ±³¿¬»êÀÚ¸¦ Ã£´Â´Ù.
+    // ëŒ€ì‘ë˜ëŠ” ë¹„êµì—°ì‚°ìë¥¼ ì°¾ëŠ”ë‹¤.
     //------------------------------------------
 
     if( ( aCompareNode->node.lflag & MTC_NODE_GROUP_COMPARISON_MASK )
         != MTC_NODE_GROUP_COMPARISON_TRUE )
     {
-        // LISTÇüÀÇ ³ëµå º¯È¯ Áß =, !=°ú ´ëÀÀµÇ´Â ºñ±³¿¬»êÀÚ
-        // ¿¹: (i1,i2,i3)=(1,2,3), (i1,i2,i3)!=(1,2,3)
+        // LISTí˜•ì˜ ë…¸ë“œ ë³€í™˜ ì¤‘ =, !=ê³¼ ëŒ€ì‘ë˜ëŠ” ë¹„êµì—°ì‚°ì
+        // ì˜ˆ: (i1,i2,i3)=(1,2,3), (i1,i2,i3)!=(1,2,3)
         switch ( aCompareNode->node.module->lflag &
                  ( MTC_NODE_OPERATOR_MASK ) )
         {
@@ -9577,7 +9577,7 @@ qmoPredTransI::setLogicalNCondition( qmoPredTrans * aPredTrans,
     }
     else
     {
-        // one column°ú LISTÀÇ quantify ºñ±³¿¬»êÀÚ¿Í ´ëÀÀµÇ´Â ºñ±³¿¬»êÀÚ
+        // one columnê³¼ LISTì˜ quantify ë¹„êµì—°ì‚°ìì™€ ëŒ€ì‘ë˜ëŠ” ë¹„êµì—°ì‚°ì
         switch ( aCompareNode->node.module->lflag &
                  ( MTC_NODE_OPERATOR_MASK | MTC_NODE_GROUP_MASK ) )
         {
@@ -9660,10 +9660,10 @@ qmoPred::nodeTransform4OneCond( qcStatement  * aStatement,
 {
 /***********************************************************************
  *
- * Description : OR ³ëµå ÇÏÀ§ ÇÏ³ªÀÇ ºñ±³¿¬»êÀÚ ³ëµå ´ÜÀ§·Î ³ëµå º¯È¯
+ * Description : OR ë…¸ë“œ í•˜ìœ„ í•˜ë‚˜ì˜ ë¹„êµì—°ì‚°ì ë…¸ë“œ ë‹¨ìœ„ë¡œ ë…¸ë“œ ë³€í™˜
  *
- *     LIST ¿Í quantify ºñ±³¿¬»êÀÚ¿¡ ´ëÇØ¼­, keyRange¸¦ Àû¿ëÇÏ±â À§ÇØ
- *     system level operator·Î ³ëµåº¯È¯½ÃÅ²´Ù.
+ *     LIST ì™€ quantify ë¹„êµì—°ì‚°ìì— ëŒ€í•´ì„œ, keyRangeë¥¼ ì ìš©í•˜ê¸° ìœ„í•´
+ *     system level operatorë¡œ ë…¸ë“œë³€í™˜ì‹œí‚¨ë‹¤.
  *
  * Implementation :
  *
@@ -9678,13 +9678,13 @@ qmoPred::nodeTransform4OneCond( qcStatement  * aStatement,
 
     IDU_FIT_POINT_FATAL( "qmoPred::nodeTransform4OneCond::__FT__" );
 
-    // ³ëµå º¯Çü¿¡ ÇÊ¿äÇÑ ÀÚ·á±¸Á¶¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+    // ë…¸ë“œ ë³€í˜•ì— í•„ìš”í•œ ìë£Œêµ¬ì¡°ë¥¼ ì´ˆê¸°í™”í•œë‹¤.
     qmoPredTransI::initPredTrans( &sPredTrans,
                                   aStatement,
                                   aCompareNode,
                                   aQuerySet );
 
-    // indexArgument Á¤º¸·Î columnNode¿Í valueNode¸¦ Ã£´Â´Ù.
+    // indexArgument ì •ë³´ë¡œ columnNodeì™€ valueNodeë¥¼ ì°¾ëŠ”ë‹¤.
     if( aCompareNode->indexArgument == 0 )
     {
         sColumnNode = qtcNodeI::argumentNode( aCompareNode );
@@ -9696,9 +9696,9 @@ qmoPred::nodeTransform4OneCond( qcStatement  * aStatement,
         sColumnNode  = qtcNodeI::nextNode( sValueNode );
     }
 
-    // value node´Â list³ëµåÀÌ°Å³ª subquery nodeÀÌ´Ù.
-    // ´Üµ¶ value ³ëµåÀÏ ¼ö´Â ¾ø´Ù.
-    // Áï, where i1 in (1) ÀÌ¶ó ÇÏ´õ¶óµµ 1Àº list·Î ±¸¼ºµÈ´Ù.
+    // value nodeëŠ” listë…¸ë“œì´ê±°ë‚˜ subquery nodeì´ë‹¤.
+    // ë‹¨ë… value ë…¸ë“œì¼ ìˆ˜ëŠ” ì—†ë‹¤.
+    // ì¦‰, where i1 in (1) ì´ë¼ í•˜ë”ë¼ë„ 1ì€ listë¡œ êµ¬ì„±ëœë‹¤.
     if( qtcNodeI::isListNode( sValueNode ) == ID_TRUE )
     {
         IDE_TEST( nodeTransform4List( & sPredTrans,
@@ -9709,7 +9709,7 @@ qmoPred::nodeTransform4OneCond( qcStatement  * aStatement,
     }
     else
     {
-        // value node´Â subquery ³ëµåÀÌ´Ù.
+        // value nodeëŠ” subquery ë…¸ë“œì´ë‹¤.
         IDE_TEST( nodeTransform4SubQ( & sPredTrans,
                                       aCompareNode,
                                       sColumnNode,
@@ -9719,7 +9719,7 @@ qmoPred::nodeTransform4OneCond( qcStatement  * aStatement,
     }
 
     //------------------------------------------
-    // »õ·Î¿î ³í¸®¿¬»êÀÚ¸¦ »ı¼ºÇÏ°í, ÇÏÀ§¿¡ º¯È¯µÈ ³ëµå¸¦ ¿¬°áÇÑ´Ù.
+    // ìƒˆë¡œìš´ ë…¼ë¦¬ì—°ì‚°ìë¥¼ ìƒì„±í•˜ê³ , í•˜ìœ„ì— ë³€í™˜ëœ ë…¸ë“œë¥¼ ì—°ê²°í•œë‹¤.
     //------------------------------------------
 
     IDE_TEST( qmoPredTransI::makeLogicalNode( & sPredTrans,
@@ -9742,27 +9742,27 @@ qmoPred::nodeTransform4List( qmoPredTrans * aPredTrans,
 {
 /***********************************************************************
  *
- * Description : ÇÏ³ªÀÇ ¸®½ºÆ®¿¡ ´ëÇØ ³ëµå º¯È¯
+ * Description : í•˜ë‚˜ì˜ ë¦¬ìŠ¤íŠ¸ì— ëŒ€í•´ ë…¸ë“œ ë³€í™˜
  *
  * Implementation :
  *
- *    aValueNode´Â list nodeÀÌ´Ù.
- *    ÀÌ list nodeÀÇ argument¸¦ next·Î ¼øÈ¸ÇÏ¸é¼­ °¢°¢¿¡ ´ëÇØ ³ëµå º¯È¯À» ÇÑ´Ù.
+ *    aValueNodeëŠ” list nodeì´ë‹¤.
+ *    ì´ list nodeì˜ argumentë¥¼ nextë¡œ ìˆœíšŒí•˜ë©´ì„œ ê°ê°ì— ëŒ€í•´ ë…¸ë“œ ë³€í™˜ì„ í•œë‹¤.
  *
- *    aValueNode = ( a, b )¿¡ ´ëÇØ,
- *      1) a, b°¡ °¢°¢ listÀÏ °æ¿ì
- *         - subqeuryÀÎ °æ¿ì: multi column subquery¶ó ºÎ¸¥´Ù.
- *           (¿¹) (i1, i2) in ( (select a1, a2 from ...), (select a1, a2 from ...) )
- *           (¿¹) i1 in ( (select a1, a2 from ...), (select a1, a2 from ...) )
- *         - ÀÏ¹İ listÀÎ °æ¿ì
- *           (¿¹) (i1, i2) in ( (1, 2), (3, 4) )
- *      2) a, b°¡ °¢°¢ one valueÀÏ °æ¿ì
- *         - subqueryÀÎ °æ¿ì: one column subquery¶ó ºÎ¸¥´Ù.
- *           (¿¹) (i1, i2) in ( (select a1 from ...), (select a2 from ...) )
- *           (¿¹) i1 in ( (select a1 from ...), (select a2 from ...) )
- *         - ÀÏ¹İ valueÀÎ °æ¿ì
- *           (¿¹) (i1, i2) in ( 1, 2 )
- *           (¿¹) i1 in ( 1, 2 )
+ *    aValueNode = ( a, b )ì— ëŒ€í•´,
+ *      1) a, bê°€ ê°ê° listì¼ ê²½ìš°
+ *         - subqeuryì¸ ê²½ìš°: multi column subqueryë¼ ë¶€ë¥¸ë‹¤.
+ *           (ì˜ˆ) (i1, i2) in ( (select a1, a2 from ...), (select a1, a2 from ...) )
+ *           (ì˜ˆ) i1 in ( (select a1, a2 from ...), (select a1, a2 from ...) )
+ *         - ì¼ë°˜ listì¸ ê²½ìš°
+ *           (ì˜ˆ) (i1, i2) in ( (1, 2), (3, 4) )
+ *      2) a, bê°€ ê°ê° one valueì¼ ê²½ìš°
+ *         - subqueryì¸ ê²½ìš°: one column subqueryë¼ ë¶€ë¥¸ë‹¤.
+ *           (ì˜ˆ) (i1, i2) in ( (select a1 from ...), (select a2 from ...) )
+ *           (ì˜ˆ) i1 in ( (select a1 from ...), (select a2 from ...) )
+ *         - ì¼ë°˜ valueì¸ ê²½ìš°
+ *           (ì˜ˆ) (i1, i2) in ( 1, 2 )
+ *           (ì˜ˆ) i1 in ( 1, 2 )
  *
  ************************************************************************/
 
@@ -9774,11 +9774,11 @@ qmoPred::nodeTransform4List( qmoPredTrans * aPredTrans,
 
     *aTransformNode = NULL;
 
-    // listÀÇ Ã¹¹øÂ° argument node ºÎÅÍ ³ëµå º¯È¯À» ¼öÇàÇÑ´Ù.
+    // listì˜ ì²«ë²ˆì§¸ argument node ë¶€í„° ë…¸ë“œ ë³€í™˜ì„ ìˆ˜í–‰í•œë‹¤.
     sArgValueNode  = qtcNodeI::argumentNode( aValueNode );
 
     // column list, list of list value
-    // column list, list of subquery value Ã³¸®
+    // column list, list of subquery value ì²˜ë¦¬
     if( qtcNodeI::isListNode( sArgValueNode ) == ID_TRUE ||
         isMultiColumnSubqueryNode( sArgValueNode ) == ID_TRUE )
     {
@@ -9802,10 +9802,10 @@ qmoPred::nodeTransform4List( qmoPredTrans * aPredTrans,
             }
             else
             {
-                // sArgValueNode°¡ listÀÌ°Å³ª subquery ¿´À¸¸é
-                // Ç×»ó ÀÌ µÑ ÁßÀÇ ÇÏ³ª¿©¾ß ÇÑ´Ù. Áï, value nodeÀÌ¸é ¾ÈµÈ´Ù.
-                // (i1, i2) in ( (1,2), (1,(2,3)) ) ÀÌ·±°Ç ¾ÈµÈ´Ù´Â ÀÇ¹ÌÀÓ.
-                // one column subqueryµµ ¿Ã ¼ö ¾ø´Ù.
+                // sArgValueNodeê°€ listì´ê±°ë‚˜ subquery ì˜€ìœ¼ë©´
+                // í•­ìƒ ì´ ë‘˜ ì¤‘ì˜ í•˜ë‚˜ì—¬ì•¼ í•œë‹¤. ì¦‰, value nodeì´ë©´ ì•ˆëœë‹¤.
+                // (i1, i2) in ( (1,2), (1,(2,3)) ) ì´ëŸ°ê±´ ì•ˆëœë‹¤ëŠ” ì˜ë¯¸ì„.
+                // one column subqueryë„ ì˜¬ ìˆ˜ ì—†ë‹¤.
 
                 IDE_FT_ASSERT( 0 );
             }
@@ -9827,12 +9827,12 @@ qmoPred::nodeTransform4List( qmoPredTrans * aPredTrans,
         }
     }
     // column list, list value
-    // one column, list value Ã³¸®
+    // one column, list value ì²˜ë¦¬
     else
     {
         if( qtcNodeI::isListNode( aColumnNode ) == ID_TRUE )
         {
-            // (i1, i2) in (1,2) °°Àº °æ¿ì
+            // (i1, i2) in (1,2) ê°™ì€ ê²½ìš°
             IDE_TEST( qmoPred::nodeTransformListColumnListValue( aPredTrans,
                                                                  aColumnNode,
                                                                  sArgValueNode,
@@ -9841,7 +9841,7 @@ qmoPred::nodeTransform4List( qmoPredTrans * aPredTrans,
         }
         else
         {
-            // i1 in (1) °°Àº °æ¿ì
+            // i1 in (1) ê°™ì€ ê²½ìš°
             IDE_TEST( qmoPred::nodeTransformOneColumnListValue( aPredTrans,
                                                                 aColumnNode,
                                                                 sArgValueNode,
@@ -9866,12 +9866,12 @@ qmoPred::nodeTransformListColumnListValue( qmoPredTrans * aPredTrans,
 /***********************************************************************
  *
  *   Description :
- *         nodeTransform4List¿¡¼­ value list¸¦ Ã³¸®ÇÏ±â À§ÇÑ ÇÔ¼ö
- *         (i1, i2) in (1,2) °°Àº °æ¿ì¸¦ Ã³¸®ÇÑ´Ù.
+ *         nodeTransform4Listì—ì„œ value listë¥¼ ì²˜ë¦¬í•˜ê¸° ìœ„í•œ í•¨ìˆ˜
+ *         (i1, i2) in (1,2) ê°™ì€ ê²½ìš°ë¥¼ ì²˜ë¦¬í•œë‹¤.
  *
  *   Implementation :
- *         columnÀÇ °³¼ö¿Í valueÀÇ °³¼ö°¡ °°´Ù°í °¡Á¤ÇÏ°í,
- *         °°Áö ¾ÊÀº °æ¿ì¿¡´Â validation½Ã¿¡ ¿¡·¯°¡ ³­´Ù.
+ *         columnì˜ ê°œìˆ˜ì™€ valueì˜ ê°œìˆ˜ê°€ ê°™ë‹¤ê³  ê°€ì •í•˜ê³ ,
+ *         ê°™ì§€ ì•Šì€ ê²½ìš°ì—ëŠ” validationì‹œì— ì—ëŸ¬ê°€ ë‚œë‹¤.
  *
  ***********************************************************************/
 
@@ -9908,8 +9908,8 @@ qmoPred::nodeTransformListColumnListValue( qmoPredTrans * aPredTrans,
         aColumnNode = qtcNodeI::nextNode( aColumnNode );
     }
 
-    // AND ³í¸®¿¬»êÀÚ¸¦ »ı¼ºÇÏ°í,
-    // AND ÇÏÀ§¿¡ º¯È¯µÈ ³ëµå¸¦ ¿¬°áÇÑ´Ù.
+    // AND ë…¼ë¦¬ì—°ì‚°ìë¥¼ ìƒì„±í•˜ê³ ,
+    // AND í•˜ìœ„ì— ë³€í™˜ëœ ë…¸ë“œë¥¼ ì—°ê²°í•œë‹¤.
     IDE_TEST( qmoPredTransI::makeAndNode( aPredTrans,
                                           * aTransformNode,
                                           aTransformNode )
@@ -9931,11 +9931,11 @@ qmoPred::nodeTransformOneColumnListValue( qmoPredTrans * aPredTrans,
 /***********************************************************************
  *
  *   Description :
- *         nodeTransform4List¿¡¼­ value list¸¦ Ã³¸®ÇÏ±â À§ÇÑ ÇÔ¼ö
- *         i1 in (1) °°Àº °æ¿ì¸¦ Ã³¸®ÇÑ´Ù.
+ *         nodeTransform4Listì—ì„œ value listë¥¼ ì²˜ë¦¬í•˜ê¸° ìœ„í•œ í•¨ìˆ˜
+ *         i1 in (1) ê°™ì€ ê²½ìš°ë¥¼ ì²˜ë¦¬í•œë‹¤.
  *
  *   Implementation :
- *         columnÀº ÇÏ³ªÀÌ´Ù.
+ *         columnì€ í•˜ë‚˜ì´ë‹¤.
  *
  ***********************************************************************/
 
@@ -9985,33 +9985,33 @@ qmoPred::nodeTransformOneNode( qmoPredTrans * aPredTrans,
 {
 /***********************************************************************
  *
- * Description : ÇÏ³ªÀÇ column³ëµå¿Í value³ëµå¿¡ ´ëÇÑ ³ëµå º¯È¯ ¼öÇà
+ * Description : í•˜ë‚˜ì˜ columnë…¸ë“œì™€ valueë…¸ë“œì— ëŒ€í•œ ë…¸ë“œ ë³€í™˜ ìˆ˜í–‰
  *
- *     ÀÎÀÚ·Î ¹ŞÀº column node¿Í value node¸¦ º¹»çÇÏ°í,
- *     ³ëµåº¯È¯¿¡ ¾Ë¸ÂÀº ºñ±³¿¬»êÀÚ(system level operator) ³ëµå¸¦ ¸¸µé¾î¼­
- *     º¹»çÇÑ ³ëµå¸¦ ¿¬°áÇÏ¿© »õ·Î¿î predicateÀ» ¸¸µç´Ù.
+ *     ì¸ìë¡œ ë°›ì€ column nodeì™€ value nodeë¥¼ ë³µì‚¬í•˜ê³ ,
+ *     ë…¸ë“œë³€í™˜ì— ì•Œë§ì€ ë¹„êµì—°ì‚°ì(system level operator) ë…¸ë“œë¥¼ ë§Œë“¤ì–´ì„œ
+ *     ë³µì‚¬í•œ ë…¸ë“œë¥¼ ì—°ê²°í•˜ì—¬ ìƒˆë¡œìš´ predicateì„ ë§Œë“ ë‹¤.
  *
- *     [ column nodeÀÇ conversion Á¤º¸ ¼³Á¤ ]
- *     quantify ºñ±³¿¬»êÀÚ´Â column¿¡ ´ëÇÑ conversion Á¤º¸¸¦
- *     value nodeÀÇ leftConversion¿¡ °¡Áö°í ÀÖ´Ù.
- *     ¿¹: i1(integer) in ( 1, 2, 3.5, ? )
- *         À§ÀÇ ¿¹¿¡¼­ valueÂÊÀÇ 3.5¿Í ?ÀÎ °æ¿ì,
- *         leftConversion¿¡ column conversionÀÇ Á¤º¸¸¦ °¡Áö°í ÀÖ´Ù.
- *     ³ëµå º¯È¯ÀÌ ¼öÇàµÇ¸é system level operator¸¦ »ç¿ëÇÏ±â ¶§¹®¿¡
- *     column node°¡ conversion Á¤º¸¸¦ °¡Áö°í ÀÖ¾î¾ß ÇÑ´Ù.
- *     º¹»çµÈ column node¿¡´Â conversion Á¤º¸°¡ ¾ø±â ¶§¹®¿¡,
- *     value nodeÀÇ leftConversion Á¤º¸¸¦ º¸°í
- *     column node¿¡ ´ëÇÑ conversion Á¤º¸¸¦ ¸¸µé¾î¾ß ÇÑ´Ù.
+ *     [ column nodeì˜ conversion ì •ë³´ ì„¤ì • ]
+ *     quantify ë¹„êµì—°ì‚°ìëŠ” columnì— ëŒ€í•œ conversion ì •ë³´ë¥¼
+ *     value nodeì˜ leftConversionì— ê°€ì§€ê³  ìˆë‹¤.
+ *     ì˜ˆ: i1(integer) in ( 1, 2, 3.5, ? )
+ *         ìœ„ì˜ ì˜ˆì—ì„œ valueìª½ì˜ 3.5ì™€ ?ì¸ ê²½ìš°,
+ *         leftConversionì— column conversionì˜ ì •ë³´ë¥¼ ê°€ì§€ê³  ìˆë‹¤.
+ *     ë…¸ë“œ ë³€í™˜ì´ ìˆ˜í–‰ë˜ë©´ system level operatorë¥¼ ì‚¬ìš©í•˜ê¸° ë•Œë¬¸ì—
+ *     column nodeê°€ conversion ì •ë³´ë¥¼ ê°€ì§€ê³  ìˆì–´ì•¼ í•œë‹¤.
+ *     ë³µì‚¬ëœ column nodeì—ëŠ” conversion ì •ë³´ê°€ ì—†ê¸° ë•Œë¬¸ì—,
+ *     value nodeì˜ leftConversion ì •ë³´ë¥¼ ë³´ê³ 
+ *     column nodeì— ëŒ€í•œ conversion ì •ë³´ë¥¼ ë§Œë“¤ì–´ì•¼ í•œë‹¤.
  *
  * Implementation :
  *
- *     1. ÀÎÀÚ·Î ¹ŞÀº column node¿Í value node¸¦ º¹»ç.
- *     2. value nodeÀÇ leftConversion Á¤º¸¸¦ º¸°í,
- *        column nodeÀÇ conversion Á¤º¸ ¼³Á¤.
- *     3. ³ëµåº¯È¯¿¡ ¾Ë¸Â´Â ºñ±³¿¬»êÀÚ ³ëµå¸¦ »ı¼ºÇÏ°í,
- *        1ÀÇ ³ëµå¸¦ ÇÏÀ§³ëµå·Î ¿¬°á
- *        (1) ºñ±³¿¬»êÀÚ ³ëµå estimateNode
- *        (2) ºñ±³¿¬»êÀÚ ³ëµå indexArgument ¼³Á¤.
+ *     1. ì¸ìë¡œ ë°›ì€ column nodeì™€ value nodeë¥¼ ë³µì‚¬.
+ *     2. value nodeì˜ leftConversion ì •ë³´ë¥¼ ë³´ê³ ,
+ *        column nodeì˜ conversion ì •ë³´ ì„¤ì •.
+ *     3. ë…¸ë“œë³€í™˜ì— ì•Œë§ëŠ” ë¹„êµì—°ì‚°ì ë…¸ë“œë¥¼ ìƒì„±í•˜ê³ ,
+ *        1ì˜ ë…¸ë“œë¥¼ í•˜ìœ„ë…¸ë“œë¡œ ì—°ê²°
+ *        (1) ë¹„êµì—°ì‚°ì ë…¸ë“œ estimateNode
+ *        (2) ë¹„êµì—°ì‚°ì ë…¸ë“œ indexArgument ì„¤ì •.
  *
  ***********************************************************************/
 
@@ -10021,15 +10021,15 @@ qmoPred::nodeTransformOneNode( qmoPredTrans * aPredTrans,
 
     IDU_FIT_POINT_FATAL( "qmoPred::nodeTransformOneNode::__FT__" );
 
-    // multi column subquery¿¡ ´ëÇØ¼­´Â ÀÌ ÇÔ¼ö¿¡ µé¾î¿Í¼­´Â ¾ÈµÈ´Ù.
-    // ÀÌ °æ¿ì´Â nodeTransform4OneRowSubQ() ÇÔ¼ö¸¦ Å¸¾ß ÇÑ´Ù.
+    // multi column subqueryì— ëŒ€í•´ì„œëŠ” ì´ í•¨ìˆ˜ì— ë“¤ì–´ì™€ì„œëŠ” ì•ˆëœë‹¤.
+    // ì´ ê²½ìš°ëŠ” nodeTransform4OneRowSubQ() í•¨ìˆ˜ë¥¼ íƒ€ì•¼ í•œë‹¤.
     if( isMultiColumnSubqueryNode( aValueNode ) == ID_TRUE )
     {
         IDE_DASSERT( 0 );
     }
 
     //-----------------------------------
-    // column, value node º¹»ç
+    // column, value node ë³µì‚¬
     //-----------------------------------
     IDE_TEST( qmoPredTransI::copyNode( aPredTrans,
                                        aColumnNode,
@@ -10049,7 +10049,7 @@ qmoPred::nodeTransformOneNode( qmoPredTrans * aPredTrans,
 
     qtcNodeI::linkNode( sColumnNode, sValueNode );
 
-    // quantify ºñ±³¿¬»êÀÚ¿¡ ´ëÀÀµÇ´Â »õ·Î¿î ºñ±³¿¬»êÀÚ¸¦ ¸¸µç´Ù.
+    // quantify ë¹„êµì—°ì‚°ìì— ëŒ€ì‘ë˜ëŠ” ìƒˆë¡œìš´ ë¹„êµì—°ì‚°ìë¥¼ ë§Œë“ ë‹¤.
     IDE_TEST( qmoPredTransI::makeConditionNode( aPredTrans,
                                                 sColumnNode,
                                                 & sConditionNode )
@@ -10072,11 +10072,11 @@ qmoPred::nodeTransform4OneRowSubQ( qmoPredTrans * aPredTrans,
 {
 /***********************************************************************
  *
- * Description : value node°¡ one row SUBQUERY ÀÎ °æ¿ìÀÇ ³ëµå º¯È¯
+ * Description : value nodeê°€ one row SUBQUERY ì¸ ê²½ìš°ì˜ ë…¸ë“œ ë³€í™˜
  *
  * Implementation :
  *
- *     ¿¹) (i1,i2) in ( ( select a1, a2 from ... ), ( select a1, a2 from ... ) )
+ *     ì˜ˆ) (i1,i2) in ( ( select a1, a2 from ... ), ( select a1, a2 from ... ) )
  *
  *    [IN]
  *      |
@@ -10136,19 +10136,19 @@ qmoPred::nodeTransform4OneRowSubQ( qmoPredTrans * aPredTrans,
         {
 
             // fix BUG-13939
-            // keyRange »ı¼º½Ã, in subquery or subquery keyRangeÀÏ °æ¿ì,
-            // subquery¸¦ ¼öÇàÇÒ ¼ö ÀÖµµ·Ï ÇÏ±â À§ÇØ
-            // ³ëµåº¯È¯ÈÄ, subquery node°¡ ¿¬°áµÈ ºñ±³¿¬»êÀÚ³ëµå¿¡
-            // ±× Á¤º¸¸¦ ÀúÀåÇÑ´Ù.
+            // keyRange ìƒì„±ì‹œ, in subquery or subquery keyRangeì¼ ê²½ìš°,
+            // subqueryë¥¼ ìˆ˜í–‰í•  ìˆ˜ ìˆë„ë¡ í•˜ê¸° ìœ„í•´
+            // ë…¸ë“œë³€í™˜í›„, subquery nodeê°€ ì—°ê²°ëœ ë¹„êµì—°ì‚°ìë…¸ë“œì—
+            // ê·¸ ì •ë³´ë¥¼ ì €ì¥í•œë‹¤.
             sConditionNode->lflag &= ~QTC_NODE_SUBQUERY_RANGE_MASK;
             sConditionNode->lflag |= QTC_NODE_SUBQUERY_RANGE_TRUE;
 
             sFirstNode = sConditionNode;
             sLastNode = sConditionNode;
 
-            // sIteratorValueNode´Â Ã³À½¿¡ subquery¸¦ °¡¸®Å°´Â ³ëµå¿´´Ù.
-            // µÎ¹øÂ° ÄÃ·³ºÎÅÍ´Â subqueryÀÇ µÎ¹øÂ° ÄÃ·³ ³ëµå¸¦ °¡¸®ÄÑ¾ß ÇÑ´Ù.
-            // À§ ±×¸² ÂüÁ¶.
+            // sIteratorValueNodeëŠ” ì²˜ìŒì— subqueryë¥¼ ê°€ë¦¬í‚¤ëŠ” ë…¸ë“œì˜€ë‹¤.
+            // ë‘ë²ˆì§¸ ì»¬ëŸ¼ë¶€í„°ëŠ” subqueryì˜ ë‘ë²ˆì§¸ ì»¬ëŸ¼ ë…¸ë“œë¥¼ ê°€ë¦¬ì¼œì•¼ í•œë‹¤.
+            // ìœ„ ê·¸ë¦¼ ì°¸ì¡°.
             sIteratorValueNode = qtcNodeI::argumentNode( sIteratorValueNode );
         }
         else
@@ -10182,11 +10182,11 @@ qmoPred::nodeTransform4SubQ( qmoPredTrans * aPredTrans,
 {
 /***********************************************************************
  *
- * Description : value node°¡ SUBQUERY ÀÎ °æ¿ìÀÇ ³ëµå º¯È¯
+ * Description : value nodeê°€ SUBQUERY ì¸ ê²½ìš°ì˜ ë…¸ë“œ ë³€í™˜
  *
  * Implementation :
  *
- *     ¿¹) i1 in ( select a1 from ... )
+ *     ì˜ˆ) i1 in ( select a1 from ... )
  *
  *        [IN]                        [=]
  *         |                           |
@@ -10196,7 +10196,7 @@ qmoPred::nodeTransform4SubQ( qmoPredTrans * aPredTrans,
  *                                               |
  *                                             [a1]
  *
- *     ¿¹) (i1,i2) in ( select a1, a2 from ... )
+ *     ì˜ˆ) (i1,i2) in ( select a1, a2 from ... )
  *
  *     [IN]                          [=] -------------------> [=]
  *      |                             |                        |
@@ -10249,7 +10249,7 @@ qmoPred::nodeTransform4SubQ( qmoPredTrans * aPredTrans,
         }
 
         //------------------------------------------
-        // column node º¹»ç
+        // column node ë³µì‚¬
         //------------------------------------------
         IDE_TEST( qmoPredTransI::copyNode( aPredTrans,
                                            aColumnNode,
@@ -10257,7 +10257,7 @@ qmoPred::nodeTransform4SubQ( qmoPredTrans * aPredTrans,
                   != IDE_SUCCESS );
 
         //------------------------------------------
-        // value node¿¡ ´ëÇÑ subqueryWrapperNode »ı¼º
+        // value nodeì— ëŒ€í•œ subqueryWrapperNode ìƒì„±
         //------------------------------------------
         IDE_TEST( qmoPredTransI::makeSubQWrapperNode( aPredTrans,
                                                       aValueNode,
@@ -10266,17 +10266,17 @@ qmoPred::nodeTransform4SubQ( qmoPredTrans * aPredTrans,
 
         qtcNodeI::linkNode( sNewColumnNode, sSubqueryWrapperNode );
 
-        // ³ëµåº¯È¯Àü ºñ±³¿¬»êÀÚ¿¡ ´ëÀÀµÇ´Â »õ·Î¿î ºñ±³¿¬»êÀÚ¸¦ ¸¸µç´Ù.
+        // ë…¸ë“œë³€í™˜ì „ ë¹„êµì—°ì‚°ìì— ëŒ€ì‘ë˜ëŠ” ìƒˆë¡œìš´ ë¹„êµì—°ì‚°ìë¥¼ ë§Œë“ ë‹¤.
         IDE_TEST( qmoPredTransI::makeConditionNode( aPredTrans,
                                                     sNewColumnNode,
                                                     & sConditionNode )
                   != IDE_SUCCESS );
 
         // fix BUG-13939
-        // keyRange »ı¼º½Ã, in subquery or subquery keyRangeÀÏ °æ¿ì,
-        // subquery¸¦ ¼öÇàÇÒ ¼ö ÀÖµµ·Ï ÇÏ±â À§ÇØ
-        // ³ëµåº¯È¯ÈÄ, subquery node°¡ ¿¬°áµÈ ºñ±³¿¬»êÀÚ³ëµå¿¡
-        // ±× Á¤º¸¸¦ ÀúÀåÇÑ´Ù.
+        // keyRange ìƒì„±ì‹œ, in subquery or subquery keyRangeì¼ ê²½ìš°,
+        // subqueryë¥¼ ìˆ˜í–‰í•  ìˆ˜ ìˆë„ë¡ í•˜ê¸° ìœ„í•´
+        // ë…¸ë“œë³€í™˜í›„, subquery nodeê°€ ì—°ê²°ëœ ë¹„êµì—°ì‚°ìë…¸ë“œì—
+        // ê·¸ ì •ë³´ë¥¼ ì €ì¥í•œë‹¤.
         sConditionNode->lflag &= ~QTC_NODE_SUBQUERY_RANGE_MASK;
         sConditionNode->lflag |= QTC_NODE_SUBQUERY_RANGE_TRUE;
 
@@ -10285,8 +10285,8 @@ qmoPred::nodeTransform4SubQ( qmoPredTrans * aPredTrans,
 
         if( sIsListColumn == ID_TRUE )
         {
-            // ÀÎÀÚ·Î ³Ñ¾î¿Â ÄÃ·³³ëµå°¡ LISTÀÎ °æ¿ì
-            // ³ª¸ÓÁö ÄÃ·³¿¡ ´ëÇÑ ³ëµåº¯È¯ ¼öÇà
+            // ì¸ìë¡œ ë„˜ì–´ì˜¨ ì»¬ëŸ¼ë…¸ë“œê°€ LISTì¸ ê²½ìš°
+            // ë‚˜ë¨¸ì§€ ì»¬ëŸ¼ì— ëŒ€í•œ ë…¸ë“œë³€í™˜ ìˆ˜í–‰
 
             aColumnNode = qtcNodeI::nextNode( aColumnNode );
             aValueNode  = qtcNodeI::nextNode(
@@ -10295,11 +10295,11 @@ qmoPred::nodeTransform4SubQ( qmoPredTrans * aPredTrans,
             while( aColumnNode != NULL )
             {
                 //------------------------------------------
-                // column node´Â º¹»çÇÏ°í,
-                // subquery partÂÊÀº InDirect ÇÏÀ§ÀÇ argument·Î ¿¬°áÇÑ´Ù.
+                // column nodeëŠ” ë³µì‚¬í•˜ê³ ,
+                // subquery partìª½ì€ InDirect í•˜ìœ„ì˜ argumentë¡œ ì—°ê²°í•œë‹¤.
                 //------------------------------------------
 
-                // column node Ã³¸®
+                // column node ì²˜ë¦¬
                 IDE_TEST( qmoPredTransI::copyNode( aPredTrans,
                                                    aColumnNode,
                                                    & sNewColumnNode )
@@ -10312,7 +10312,7 @@ qmoPred::nodeTransform4SubQ( qmoPredTrans * aPredTrans,
 
                 qtcNodeI::linkNode( sNewColumnNode, sIndNode );
 
-                // ³ëµåº¯È¯Àü ºñ±³¿¬»êÀÚ¿¡ ´ëÀÀµÇ´Â »õ·Î¿î ºñ±³¿¬»êÀÚ¸¦ ¸¸µç´Ù.
+                // ë…¸ë“œë³€í™˜ì „ ë¹„êµì—°ì‚°ìì— ëŒ€ì‘ë˜ëŠ” ìƒˆë¡œìš´ ë¹„êµì—°ì‚°ìë¥¼ ë§Œë“ ë‹¤.
                 IDE_TEST( qmoPredTransI::makeConditionNode( aPredTrans,
                                                             sNewColumnNode,
                                                             & sConditionNode )
@@ -10332,36 +10332,36 @@ qmoPred::nodeTransform4SubQ( qmoPredTrans * aPredTrans,
         }
         else
         {
-            // ÀÎÀÚ·Î ³Ñ¾î¿Â ÄÃ·³³ëµå°¡ LIST°¡ ¾Æ´Ñ columnÀÎ °æ¿ì
+            // ì¸ìë¡œ ë„˜ì–´ì˜¨ ì»¬ëŸ¼ë…¸ë“œê°€ LISTê°€ ì•„ë‹Œ columnì¸ ê²½ìš°
             // Nothing To Do
         }
     }
 
     // fix BUG-13969
-    // subquery¿¡ ´ëÇÑ ³ëµå º¯È¯½Ã,
-    // subquery node¿¡ ´ëÇÑ dependency´Â Æ÷ÇÔÇÏÁö ¾Ê´Â´Ù.
-    // column nodeÀÇ dependency Á¤º¸¸¸ »óÀ§³ëµå·Î ¿Ã¸°´Ù.
+    // subqueryì— ëŒ€í•œ ë…¸ë“œ ë³€í™˜ì‹œ,
+    // subquery nodeì— ëŒ€í•œ dependencyëŠ” í¬í•¨í•˜ì§€ ì•ŠëŠ”ë‹¤.
+    // column nodeì˜ dependency ì •ë³´ë§Œ ìƒìœ„ë…¸ë“œë¡œ ì˜¬ë¦°ë‹¤.
     //
-    // ¿¹: SELECT COUNT(*) FROM T1
+    // ì˜ˆ: SELECT COUNT(*) FROM T1
     //      WHERE (I1,I2) IN ( SELECT I1, I2 FROM T2 );
     //           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-    //  À§ IN predicateÀÇ dependency´Â T1ÀÌ´Ù.
-    //  ³ëµåº¯È¯½Ã, ÀÌ dependencyÁ¤º¸°¡ (T1,T2)°¡ µÇ¹Ç·Î,
-    //  ÀÌ dependencyÁ¤º¸¸¦ ¿ø·¡ dependencyÁ¤º¸ÀÎ (T1)À¸·Î º¹¿øÇÑ´Ù.
-    //  ÄÃ·³³ëµåÀÇ dependency¸¦ ºñ±³¿¬»êÀÚÀÇ dependency·Î ¼³Á¤ÇÑ´Ù.
-    //  ³ëµåº¯È¯½Ã, column ³ëµå´Â ºñ±³¿¬»êÀÚ³ëµåÀÇ argument¿¡ ¿¬°áµÈ´Ù.
+    //  ìœ„ IN predicateì˜ dependencyëŠ” T1ì´ë‹¤.
+    //  ë…¸ë“œë³€í™˜ì‹œ, ì´ dependencyì •ë³´ê°€ (T1,T2)ê°€ ë˜ë¯€ë¡œ,
+    //  ì´ dependencyì •ë³´ë¥¼ ì›ë˜ dependencyì •ë³´ì¸ (T1)ìœ¼ë¡œ ë³µì›í•œë‹¤.
+    //  ì»¬ëŸ¼ë…¸ë“œì˜ dependencyë¥¼ ë¹„êµì—°ì‚°ìì˜ dependencyë¡œ ì„¤ì •í•œë‹¤.
+    //  ë…¸ë“œë³€í™˜ì‹œ, column ë…¸ë“œëŠ” ë¹„êµì—°ì‚°ìë…¸ë“œì˜ argumentì— ì—°ê²°ëœë‹¤.
 
     // BUG-36575
-    // subquery¿¡ ÀÇÁ¸¼ºÀÌ ¾ø´Â ¿ÜºÎÂüÁ¶ÄÃ·³¿¡ in-subquery key range°¡
-    // »ı¼ºµÇ´õ¶óµµ ¿ÜºÎÂüÁ¶ÄÃ·³ÀÇ °ªÀÌ ¹Ù²î´Â °æ¿ì rebuildÇÒ ¼ö ÀÖµµ·Ï
-    // column¿¡ dependency¸¦ ¼³Á¤ÇÑ´Ù.
+    // subqueryì— ì˜ì¡´ì„±ì´ ì—†ëŠ” ì™¸ë¶€ì°¸ì¡°ì»¬ëŸ¼ì— in-subquery key rangeê°€
+    // ìƒì„±ë˜ë”ë¼ë„ ì™¸ë¶€ì°¸ì¡°ì»¬ëŸ¼ì˜ ê°’ì´ ë°”ë€ŒëŠ” ê²½ìš° rebuildí•  ìˆ˜ ìˆë„ë¡
+    // columnì— dependencyë¥¼ ì„¤ì •í•œë‹¤.
     //
-    // ¿¹: select
+    // ì˜ˆ: select
     //        (select count(*) from t1 where i1 in (select i1 from t2 where i1=t3.i1))
     //                                       ^^^
     //     from t3;
     //
-    // À§ i1ÀÇ dependency´Â (t1,t3)ÀÌ´Ù.
+    // ìœ„ i1ì˜ dependencyëŠ” (t1,t3)ì´ë‹¤.
     
     if( sIsListColumn == ID_TRUE )
     {
@@ -10384,7 +10384,7 @@ qmoPred::nodeTransform4SubQ( qmoPredTrans * aPredTrans,
                 &(sConditionNode->depInfo) );
         }
 
-        // subqueryÀÇ outer dependency¸¦ orÇÑ´Ù.
+        // subqueryì˜ outer dependencyë¥¼ orí•œë‹¤.
         qtc::dependencyOr( 
             &((qtcNode*)(((*aTransformNode)->node).arguments))->depInfo,
             &(sSubqueryWrapperNode->depInfo),
@@ -10419,36 +10419,36 @@ qmoPred::setIndexArgument( qtcNode       * aNode,
 {
 /***********************************************************************
  *
- * Description : indexArgument ¼³Á¤
+ * Description : indexArgument ì„¤ì •
  *
- *     indexable predicate¿¡ ´ëÇØ, indexArgument¸¦ ¼³Á¤ÇÑ´Ù.
+ *     indexable predicateì— ëŒ€í•´, indexArgumentë¥¼ ì„¤ì •í•œë‹¤.
  *
- *     indexArgument´Â ´ÙÀ½°ú °°Àº °æ¿ì¿¡ ¼³Á¤ÇÏ°Ô µÈ´Ù.
- *     (1) indexable predicate ÆÇ´Ü½Ã.
- *     (2) Index Nested Loop Join predicateÀ» selection graph¿¡ ³»¸±¶§.
- *         ÀÌ °æ¿ì´Â, indexable join predicateÆÇ´Ü½Ã indexArgument°¡
- *         ¼³Á¤µÇ±â´Â ÇÏÁö¸¸, ÀÌ¶§ÀÇ Á¤º¸´Â Á¤È®ÇÑ Á¤º¸°¡ ¾Æ´Ï±â¶§¹®¿¡,
- *         join method°¡ È®Á¤µÇ°í, selection graph·Î join predicateÀ»
- *         ³»¸±¶§, Á¤È®ÇÑ Á¤º¸¸¦ ´Ù½Ã ¼³Á¤ÇÏ°Ô µÈ´Ù.
- *         ¶Ç, Anti Outer Nested Loop Join½Ã, AOJN ³ëµå¿¡ join predicateÀ»
- *         ¿¬°áÇÒ¶§µµ indexArgument°¡ º¯°æµÇ¾î¾ß ÇÑ´Ù.
+ *     indexArgumentëŠ” ë‹¤ìŒê³¼ ê°™ì€ ê²½ìš°ì— ì„¤ì •í•˜ê²Œ ëœë‹¤.
+ *     (1) indexable predicate íŒë‹¨ì‹œ.
+ *     (2) Index Nested Loop Join predicateì„ selection graphì— ë‚´ë¦´ë•Œ.
+ *         ì´ ê²½ìš°ëŠ”, indexable join predicateíŒë‹¨ì‹œ indexArgumentê°€
+ *         ì„¤ì •ë˜ê¸°ëŠ” í•˜ì§€ë§Œ, ì´ë•Œì˜ ì •ë³´ëŠ” ì •í™•í•œ ì •ë³´ê°€ ì•„ë‹ˆê¸°ë•Œë¬¸ì—,
+ *         join methodê°€ í™•ì •ë˜ê³ , selection graphë¡œ join predicateì„
+ *         ë‚´ë¦´ë•Œ, ì •í™•í•œ ì •ë³´ë¥¼ ë‹¤ì‹œ ì„¤ì •í•˜ê²Œ ëœë‹¤.
+ *         ë˜, Anti Outer Nested Loop Joinì‹œ, AOJN ë…¸ë“œì— join predicateì„
+ *         ì—°ê²°í• ë•Œë„ indexArgumentê°€ ë³€ê²½ë˜ì–´ì•¼ í•œë‹¤.
  *
- *     ÀÌ ÇÔ¼ö¸¦ È£ÃâÇÏ´Â °÷Àº
+ *     ì´ í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•˜ëŠ” ê³³ì€
  *     (1) qmoPred::isIndexable()
  *     (2) qmoPred::makeJoinPushDownPredicate()
- *     (3) qmoPred::makeNonJoinPushDownPredicate() ÀÌ¸ç,
- *     indexArgument ¼³Á¤ÇÏ´Â ÇÔ¼ö¸¦ °øÅëÀ¸·Î »ç¿ëÇÏ±â À§ÇØ¼­,
- *     qtcNode¸¦ ÀÎÀÚ·Î ¹Ş´Â´Ù.
+ *     (3) qmoPred::makeNonJoinPushDownPredicate() ì´ë©°,
+ *     indexArgument ì„¤ì •í•˜ëŠ” í•¨ìˆ˜ë¥¼ ê³µí†µìœ¼ë¡œ ì‚¬ìš©í•˜ê¸° ìœ„í•´ì„œ,
+ *     qtcNodeë¥¼ ì¸ìë¡œ ë°›ëŠ”ë‹¤.
  *
  * Implementation :
  *
- *     dependencies Á¤º¸·Î ºñ±³¿¬»êÀÚ ³ëµå¿¡ indexArgumentÁ¤º¸¸¦ ¼³Á¤.
+ *     dependencies ì •ë³´ë¡œ ë¹„êµì—°ì‚°ì ë…¸ë“œì— indexArgumentì •ë³´ë¥¼ ì„¤ì •.
  *
- *     (ÀÎÀÚ·Î ¹ŞÀ» ¼ö ÀÖ´Â ³ëµåÀÇ ÇüÅÂ´Â ´ÙÀ½°ú °°´Ù.)
+ *     (ì¸ìë¡œ ë°›ì„ ìˆ˜ ìˆëŠ” ë…¸ë“œì˜ í˜•íƒœëŠ” ë‹¤ìŒê³¼ ê°™ë‹¤.)
  *
- *     (1)  OR         (2)  OR                        (3) ºñ±³¿¬»êÀÚ
+ *     (1)  OR         (2)  OR                        (3) ë¹„êµì—°ì‚°ì
  *          |               |                                 |
- *       ºñ±³¿¬»êÀÚ     ºñ±³¿¬»êÀÚ->...->ºñ±³¿¬»êÀÚ
+ *       ë¹„êµì—°ì‚°ì     ë¹„êµì—°ì‚°ì->...->ë¹„êµì—°ì‚°ì
  *          |               |                |
  *
  ***********************************************************************/
@@ -10459,8 +10459,8 @@ qmoPred::setIndexArgument( qtcNode       * aNode,
     IDU_FIT_POINT_FATAL( "qmoPred::setIndexArgument::__FT__" );
 
     //------------------------------------------
-    // ºñ±³¿¬»êÀÚ ³ëµå¸¦ Ã£´Â´Ù.
-    // ºñ±³¿¬»êÀÚ ³ëµå¸¦ Ã£±âÀ§ÇØ, ³í¸®¿¬»êÀÚ(OR)³ëµå skip
+    // ë¹„êµì—°ì‚°ì ë…¸ë“œë¥¼ ì°¾ëŠ”ë‹¤.
+    // ë¹„êµì—°ì‚°ì ë…¸ë“œë¥¼ ì°¾ê¸°ìœ„í•´, ë…¼ë¦¬ì—°ì‚°ì(OR)ë…¸ë“œ skip
     //------------------------------------------
     if( ( sNode->node.lflag & MTC_NODE_LOGICAL_CONDITION_MASK )
            == MTC_NODE_LOGICAL_CONDITION_TRUE )
@@ -10468,18 +10468,18 @@ qmoPred::setIndexArgument( qtcNode       * aNode,
         sNode = (qtcNode *)(sNode->node.arguments);
 
         //------------------------------------------
-        // ÃÖ»óÀ§ ³ëµå°¡ OR ³ëµåÀÎ °æ¿ì,
-        // OR ³ëµå ÇÏÀ§¿¡ °°Àº ÄÃ·³ÀÇ ºñ±³¿¬»êÀÚ°¡ ¿©·¯°³ ¿Ã ¼ö ÀÖ´Ù.
+        // ìµœìƒìœ„ ë…¸ë“œê°€ OR ë…¸ë“œì¸ ê²½ìš°,
+        // OR ë…¸ë“œ í•˜ìœ„ì— ê°™ì€ ì»¬ëŸ¼ì˜ ë¹„êµì—°ì‚°ìê°€ ì—¬ëŸ¬ê°œ ì˜¬ ìˆ˜ ìˆë‹¤.
         //------------------------------------------
         for( sCurNode = sNode ;
              sCurNode != NULL;
              sCurNode = (qtcNode *)(sCurNode->node.next) )
         {
             //--------------------------------------
-            // indexArgument ¼³Á¤
+            // indexArgument ì„¤ì •
             //--------------------------------------
 
-            // dependenciesÁ¤º¸·Î ÄÃ·³À» Ã£¾Æ, indexArgumentÁ¤º¸¸¦ ¼³Á¤ÇÑ´Ù.
+            // dependenciesì •ë³´ë¡œ ì»¬ëŸ¼ì„ ì°¾ì•„, indexArgumentì •ë³´ë¥¼ ì„¤ì •í•œë‹¤.
             if( qtc::dependencyEqual(
                     & ((qtcNode *)(sCurNode->node.arguments))->depInfo,
                     aDependencies ) == ID_TRUE )
@@ -10495,10 +10495,10 @@ qmoPred::setIndexArgument( qtcNode       * aNode,
     else
     {
         //--------------------------------------
-        // indexArgument ¼³Á¤
+        // indexArgument ì„¤ì •
         //--------------------------------------
 
-        // dependenciesÁ¤º¸·Î ÄÃ·³À» Ã£¾Æ, indexArgumentÁ¤º¸¸¦ ¼³Á¤ÇÑ´Ù.
+        // dependenciesì •ë³´ë¡œ ì»¬ëŸ¼ì„ ì°¾ì•„, indexArgumentì •ë³´ë¥¼ ì„¤ì •í•œë‹¤.
         if( qtc::dependencyEqual(
                 & ((qtcNode *)(sNode->node.arguments))->depInfo,
                 aDependencies ) == ID_TRUE )
@@ -10521,18 +10521,18 @@ qmoPred::linkPred4ColumnID( qmoPredicate * aDestPred,
 {
 /***********************************************************************
  *
- * Description :  ÄÃ·³º°·Î ¿¬°á°ü°è¸¦ ¸¸µç´Ù.
+ * Description :  ì»¬ëŸ¼ë³„ë¡œ ì—°ê²°ê´€ê³„ë¥¼ ë§Œë“ ë‹¤.
  *
- *     qmoPred::addNonJoinablePredicate()°ú qmoPred::relocatePredicate()
- *     ¿¡¼­ ÀÌ ÇÔ¼ö¸¦ È£ÃâÇÑ´Ù.
+ *     qmoPred::addNonJoinablePredicate()ê³¼ qmoPred::relocatePredicate()
+ *     ì—ì„œ ì´ í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•œë‹¤.
  *
  * Implementation :
  *
- *     1. dest predicate¿¡ source predicate°ú µ¿ÀÏ ÄÃ·³ÀÌ ÀÖ´Â °æ¿ì,
- *        µ¿ÀÏ ÄÃ·³ÀÇ ¸¶Áö¸· qmoPredicate->more¿¡ source predicate ¿¬°á
+ *     1. dest predicateì— source predicateê³¼ ë™ì¼ ì»¬ëŸ¼ì´ ìˆëŠ” ê²½ìš°,
+ *        ë™ì¼ ì»¬ëŸ¼ì˜ ë§ˆì§€ë§‰ qmoPredicate->moreì— source predicate ì—°ê²°
  *
- *     2. dest predicate¿¡ source predicate°ú µ¿ÀÏ ÄÃ·³ÀÌ ¾ø´Â °æ¿ì,
- *        dest predicate ÀÇ ¸¶Áö¸· qmoPredicate->next¿¡ source predicate¿¬°á
+ *     2. dest predicateì— source predicateê³¼ ë™ì¼ ì»¬ëŸ¼ì´ ì—†ëŠ” ê²½ìš°,
+ *        dest predicate ì˜ ë§ˆì§€ë§‰ qmoPredicate->nextì— source predicateì—°ê²°
  *
  ***********************************************************************/
 
@@ -10543,7 +10543,7 @@ qmoPred::linkPred4ColumnID( qmoPredicate * aDestPred,
     IDU_FIT_POINT_FATAL( "qmoPred::linkPred4ColumnID::__FT__" );
 
     //--------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //--------------------------------------
 
     IDE_DASSERT( aDestPred != NULL );
@@ -10566,26 +10566,26 @@ qmoPred::linkPred4ColumnID( qmoPredicate * aDestPred,
 
     if( sIsSameColumnID == ID_TRUE )
     {
-        // µ¿ÀÏ ÄÃ·³ÀÌ Á¸ÀçÇÏ´Â °æ¿ì
+        // ë™ì¼ ì»¬ëŸ¼ì´ ì¡´ì¬í•˜ëŠ” ê²½ìš°
 
         for( sMorePredicate = sPredicate;
              sMorePredicate->more != NULL;
              sMorePredicate = sMorePredicate->more ) ;
 
         sMorePredicate->more = aSourcePred;
-        // ¿¬°áµÈ predicateÀÇ next ¿¬°á°ü°è¸¦ ²÷´Â´Ù.
+        // ì—°ê²°ëœ predicateì˜ next ì—°ê²°ê´€ê³„ë¥¼ ëŠëŠ”ë‹¤.
         sMorePredicate->more->next = NULL;
     }
     else // ( sIsSameColumnID == ID_FALSE )
     {
-        // µ¿ÀÏ ÄÃ·³ÀÌ Á¸ÀçÇÏÁö ¾Ê´Â °æ¿ì
+        // ë™ì¼ ì»¬ëŸ¼ì´ ì¡´ì¬í•˜ì§€ ì•ŠëŠ” ê²½ìš°
 
         for( sPredicate = aDestPred;
              sPredicate->next != NULL;
              sPredicate = sPredicate->next ) ;
 
         sPredicate->next = aSourcePred;
-        // ¿¬°áµÈ predicateÀÇ next ¿¬°á°ü°è¸¦ ²÷´Â´Ù.
+        // ì—°ê²°ëœ predicateì˜ next ì—°ê²°ê´€ê³„ë¥¼ ëŠëŠ”ë‹¤.
         sPredicate->next->next = NULL;
     }
 
@@ -10598,20 +10598,20 @@ qmoPred::removeIndexableSubQTip( qtcNode      * aNode  )
 {
 /***********************************************************************
  *
- * Description : indexable subqueryTip »èÁ¦
+ * Description : indexable subqueryTip ì‚­ì œ
  *
- *     IN(subquery) ¶Ç´Â subquery keyRange ÃÖÀûÈ­ ÆÁ Àû¿ë predicateÀÌ
- *     keyRange·Î ÃßÃâµÇÁö ¸øÇÏ°í, filter·Î ºüÁö´Â °æ¿ì,
- *     ¼³Á¤µÇ¾î ÀÖ´Â ÆÁ Á¤º¸¸¦ »èÁ¦ÇÏ°í,
- *     store and search ÃÖÀûÈ­ ÆÁÀ» Àû¿ëÇÏµµ·Ï ¼öÁ¤ÇÑ´Ù.
- *     subquery ÃÖÀûÈ­½Ã, ÀÌ·± °æ¿ì¸¦ ´ëºñÇØ  store and search ÆÁ¿¡ °üÇÑ
- *     Á¤º¸¸¦ ¹Ì¸® ¼³Á¤ÇØ ³õ¾ÒÀ¸¹Ç·Î, flag¸¸ ¹Ù²Ù¸é µÈ´Ù.
+ *     IN(subquery) ë˜ëŠ” subquery keyRange ìµœì í™” íŒ ì ìš© predicateì´
+ *     keyRangeë¡œ ì¶”ì¶œë˜ì§€ ëª»í•˜ê³ , filterë¡œ ë¹ ì§€ëŠ” ê²½ìš°,
+ *     ì„¤ì •ë˜ì–´ ìˆëŠ” íŒ ì •ë³´ë¥¼ ì‚­ì œí•˜ê³ ,
+ *     store and search ìµœì í™” íŒì„ ì ìš©í•˜ë„ë¡ ìˆ˜ì •í•œë‹¤.
+ *     subquery ìµœì í™”ì‹œ, ì´ëŸ° ê²½ìš°ë¥¼ ëŒ€ë¹„í•´  store and search íŒì— ê´€í•œ
+ *     ì •ë³´ë¥¼ ë¯¸ë¦¬ ì„¤ì •í•´ ë†“ì•˜ìœ¼ë¯€ë¡œ, flagë§Œ ë°”ê¾¸ë©´ ëœë‹¤.
  *
  * Implementation :
  *
- *     1. indexArgument Á¤º¸·Î subquery node¸¦ Ã£´Â´Ù.
- *     2. ÇØ´ç subquery ÃÖÀûÈ­ ÆÁ Á¤º¸¸¦ »èÁ¦ÇÏ°í,
- *        store and search ÃÖÀûÈ­ ÆÁ Á¤º¸ ¼³Á¤.
+ *     1. indexArgument ì •ë³´ë¡œ subquery nodeë¥¼ ì°¾ëŠ”ë‹¤.
+ *     2. í•´ë‹¹ subquery ìµœì í™” íŒ ì •ë³´ë¥¼ ì‚­ì œí•˜ê³ ,
+ *        store and search ìµœì í™” íŒ ì •ë³´ ì„¤ì •.
  *
  ***********************************************************************/
 
@@ -10632,39 +10632,39 @@ qmoPred::removeIndexableSubQTip( qtcNode      * aNode  )
     }
 
     //------------------------------------------
-    // subquery node¸¦ Ã£´Â´Ù.
+    // subquery nodeë¥¼ ì°¾ëŠ”ë‹¤.
     //------------------------------------------
 
-    // ¿¹) i1 = (select i1 from t2 where i1 = 1 );
+    // ì˜ˆ) i1 = (select i1 from t2 where i1 = 1 );
     //     i1 = (select i1 from ...) or i1 = (select i1 fro ... )
 
     while( sCompareNode != NULL )
     {
         // fix BUG-11485
-        // non-indexable, indexable predicateÀÌ
-        // ¸ğµÎ ÀÌ ÄÚµå·Î µé¾î¿Ã ¼ö ÀÖÀ¸¹Ç·Î
-        // indexArgument·Î value node·Î Ã£À» °æ¿ì,
-        // (1) indexArgument°¡ ¼³Á¤µÇÁö ¾Ê¾Æ subquery node¸¦ ¸ø Ã£À» ¼ö ÀÖ°í,
-        // (2) indexArgument°¡ ÃÊ±âÈ­ µÇÁö ¾ÊÀº °æ¿ìµµ ÀÖÀ»¼ö ÀÖ¾î,
-        // ºñ±³¿¬»êÀÚ ÇÏÀ§ ³ëµåµéÀÇ ¿¬°á¸®½ºÆ®¸¦ µû¶ó°¡¸é¼­,
-        // subquery tip Àû¿ëÀ» Á¦°ÅÇÑ´Ù.
-        // in subquery/subquery keyRange°¡ Àû¿ëµÈ predicateÀº
-        // i1 OP subquery ¿Í °°Àº ÇüÅÂÀÌ¹Ç·Î
-        // ÀÌ¿Í °°ÀÌ Ã³¸®ÇÏ´Â°ÍÀÌ °¡´É.
+        // non-indexable, indexable predicateì´
+        // ëª¨ë‘ ì´ ì½”ë“œë¡œ ë“¤ì–´ì˜¬ ìˆ˜ ìˆìœ¼ë¯€ë¡œ
+        // indexArgumentë¡œ value nodeë¡œ ì°¾ì„ ê²½ìš°,
+        // (1) indexArgumentê°€ ì„¤ì •ë˜ì§€ ì•Šì•„ subquery nodeë¥¼ ëª» ì°¾ì„ ìˆ˜ ìˆê³ ,
+        // (2) indexArgumentê°€ ì´ˆê¸°í™” ë˜ì§€ ì•Šì€ ê²½ìš°ë„ ìˆì„ìˆ˜ ìˆì–´,
+        // ë¹„êµì—°ì‚°ì í•˜ìœ„ ë…¸ë“œë“¤ì˜ ì—°ê²°ë¦¬ìŠ¤íŠ¸ë¥¼ ë”°ë¼ê°€ë©´ì„œ,
+        // subquery tip ì ìš©ì„ ì œê±°í•œë‹¤.
+        // in subquery/subquery keyRangeê°€ ì ìš©ëœ predicateì€
+        // i1 OP subquery ì™€ ê°™ì€ í˜•íƒœì´ë¯€ë¡œ
+        // ì´ì™€ ê°™ì´ ì²˜ë¦¬í•˜ëŠ”ê²ƒì´ ê°€ëŠ¥.
         sNode = (qtcNode*)(sCompareNode->node.arguments);
 
         while( sNode != NULL )
         {
             //------------------------------------------
-            // subqueryTipFlag¿¡
-            // in subquery keyRange/subuqery keyRange¿¡ ´ëÇÑ flag°¡ ¼³Á¤µÈ°æ¿ì,
-            // indexable Subquery TipÀ» Á¦°ÅÇÏ°í,
-            // store and search ÃÖÀûÈ­ ÆÁÀ» Àû¿ëÇÏµµ·Ï flag¸¦ Àç¼³Á¤ÇÑ´Ù.
-            // ´Ü, [IN(=ANY), NOT IN(!=ALL), =ALL, !=ANY
-            // ÀúÀå¹æ½ÄÀÇ Á¦¾à»çÇ×]À¸·Î
-            //     ÀÎÇØ store and search ÃÖÀûÈ­¸¦ ¼öÇàÇÒ ¼ö ¾ø´Â °æ¿ì´Â
-            //     (qmoSubquery::storeAndSearch() ÇÔ¼ö ÁÖ¼® ÂüÁ¶)
-            //     subquery ÃÖÀûÈ­ ÆÁÀÌ Á¸ÀçÇÏÁö ¾Ê´Â°É·Î ¼³Á¤ÇÑ´Ù.
+            // subqueryTipFlagì—
+            // in subquery keyRange/subuqery keyRangeì— ëŒ€í•œ flagê°€ ì„¤ì •ëœê²½ìš°,
+            // indexable Subquery Tipì„ ì œê±°í•˜ê³ ,
+            // store and search ìµœì í™” íŒì„ ì ìš©í•˜ë„ë¡ flagë¥¼ ì¬ì„¤ì •í•œë‹¤.
+            // ë‹¨, [IN(=ANY), NOT IN(!=ALL), =ALL, !=ANY
+            // ì €ì¥ë°©ì‹ì˜ ì œì•½ì‚¬í•­]ìœ¼ë¡œ
+            //     ì¸í•´ store and search ìµœì í™”ë¥¼ ìˆ˜í–‰í•  ìˆ˜ ì—†ëŠ” ê²½ìš°ëŠ”
+            //     (qmoSubquery::storeAndSearch() í•¨ìˆ˜ ì£¼ì„ ì°¸ì¡°)
+            //     subquery ìµœì í™” íŒì´ ì¡´ì¬í•˜ì§€ ì•ŠëŠ”ê±¸ë¡œ ì„¤ì •í•œë‹¤.
             //-----------------------------------------
 
             if( ( sNode->node.lflag & MTC_NODE_OPERATOR_MASK )
@@ -10680,15 +10680,15 @@ qmoPred::removeIndexableSubQTip( qtcNode      * aNode  )
                         == QMG_PROJ_SUBQUERY_TIP_IN_KEYRANGE ) )
                 {
                     // fix PR-8936
-                    // store and search¸¦ Àû¿ëÇÒ ¼ö ¾ø´Â °æ¿ì,
+                    // store and searchë¥¼ ì ìš©í•  ìˆ˜ ì—†ëŠ” ê²½ìš°,
                     if( ( sPROJGraph->subqueryTipFlag &
                           QMG_PROJ_SUBQUERY_STORENSEARCH_MASK )
                         == QMG_PROJ_SUBQUERY_STORENSEARCH_NONE )
                     {
-                        // store and search ÃÖÀûÈ­ ÆÁÀ» Àû¿ëÇÒ ¼ö ¾ø´Â °æ¿ì
+                        // store and search ìµœì í™” íŒì„ ì ìš©í•  ìˆ˜ ì—†ëŠ” ê²½ìš°
                         // [ IN(=ANY), NOT IN(!=ALL), =ALL, !=ANY
-                        //   ÀúÀå¹æ½ÄÀÇ Á¦¾à»çÇ× ]
-                        // qmoSubquery::storeAndSearch() ÇÔ¼ö ÁÖ¼® ÂüÁ¶
+                        //   ì €ì¥ë°©ì‹ì˜ ì œì•½ì‚¬í•­ ]
+                        // qmoSubquery::storeAndSearch() í•¨ìˆ˜ ì£¼ì„ ì°¸ì¡°
 
                         sPROJGraph->subqueryTipFlag &=
                             ~QMG_PROJ_SUBQUERY_TIP_MASK;
@@ -10758,8 +10758,8 @@ qmoPred::copyPredicate4Partition( qcStatement   * aStatement,
                 }
                 else
                 {
-                    // variable predicate copy°¡ FALSEÀÌ°í,
-                    // predicateÀÌ variableÀÌ¸é copyÇÏÁö ¾ÊÀ½
+                    // variable predicate copyê°€ FALSEì´ê³ ,
+                    // predicateì´ variableì´ë©´ copyí•˜ì§€ ì•ŠìŒ
                     if( ( aCopyVariablePred == ID_FALSE ) &&
                         QMO_PRED_IS_VARIABLE( sMoreIter ) == ID_TRUE )
                     {
@@ -10825,9 +10825,9 @@ qmoPred::copyOnePredicate4Partition( qcStatement   * aStatement,
                                                ID_FALSE )
               != IDE_SUCCESS );
 
-    // conversion node¸¦ »õ·Î ¸¸µé¾î ÁØ´Ù.
+    // conversion nodeë¥¼ ìƒˆë¡œ ë§Œë“¤ì–´ ì¤€ë‹¤.
     // BUG-27291
-    // re-estimate°¡ °¡´ÉÇÏµµ·Ï aStatement¸¦ ÀÎÀÚ¿¡ Ãß°¡ÇÑ´Ù.
+    // re-estimateê°€ ê°€ëŠ¥í•˜ë„ë¡ aStatementë¥¼ ì¸ìì— ì¶”ê°€í•œë‹¤.
     IDE_TEST( qtc::estimate( (*aResult)->node,
                              QC_SHARED_TMPLATE(aStatement),
                              aStatement,
@@ -10964,7 +10964,7 @@ qmoPred::copyOnePredicate( iduVarMemList * aMemory,
 }
 
 // fix BUG-19211
-// constant predicate±îÁö º¹»çÇÑ´Ù.
+// constant predicateê¹Œì§€ ë³µì‚¬í•œë‹¤.
 IDE_RC
 qmoPred::copyOneConstPredicate( iduVarMemList * aMemory,
                                 qmoPredicate  * aSource,
@@ -11019,7 +11019,7 @@ qmoPred::createPredicate( iduVarMemList * aMemory,
     (*aNewPredicate)->next = NULL;
     (*aNewPredicate)->more = NULL;
 
-    // transitive predicateÀÎ °æ¿ì ¼³Á¤ÇÑ´Ù.
+    // transitive predicateì¸ ê²½ìš° ì„¤ì •í•œë‹¤.
     if ( (aNode->lflag & QTC_NODE_TRANS_PRED_MASK)
          == QTC_NODE_TRANS_PRED_EXIST )
     {
@@ -11043,27 +11043,27 @@ qmoPred::checkPredicateForHostOpt( qmoPredicate * aPredicate )
 {
 /***********************************************************************
  *
- * Description : Host º¯¼ö¸¦ Æ÷ÇÔÇÑ ÁúÀÇ ÃÖÀûÈ­¸¦ ¼öÇàÇÒ °ÍÀÎÁö
- *               ÆÇ´ÜÇÑ´Ù.
+ * Description : Host ë³€ìˆ˜ë¥¼ í¬í•¨í•œ ì§ˆì˜ ìµœì í™”ë¥¼ ìˆ˜í–‰í•  ê²ƒì¸ì§€
+ *               íŒë‹¨í•œë‹¤.
  *
- *            ** (ÁÖÀÇ) **
- *               execution½Ã¿¡ ¼º´ÉÀ» À§ÇØ predicate->flag¿¡ Á¤º¸¸¦ ¼¼ÆÃÇÑ´Ù.
+ *            ** (ì£¼ì˜) **
+ *               executionì‹œì— ì„±ëŠ¥ì„ ìœ„í•´ predicate->flagì— ì •ë³´ë¥¼ ì„¸íŒ…í•œë‹¤.
  *
- *               - °³º° predicate¿¡ ´ëÇØ execution Å¸ÀÓ¿¡ selectivity¸¦
- *                 ´Ù½Ã ±¸ÇØ¾ßÇÏ´ÂÁöÀÇ ¿©ºÎ
+ *               - ê°œë³„ predicateì— ëŒ€í•´ execution íƒ€ì„ì— selectivityë¥¼
+ *                 ë‹¤ì‹œ êµ¬í•´ì•¼í•˜ëŠ”ì§€ì˜ ì—¬ë¶€
  *                 : QMO_PRED_HOST_OPTIMIZE_TRUE
  *
- *               - more listÀÇ Ã¹¹øÂ° predicate¿¡ ´ëÇØ
- *                 total selectivity¸¦ ´Ù½Ã ±¸ÇØ¾ßÇÏ´ÂÁöÀÇ ¿©ºÎ
+ *               - more listì˜ ì²«ë²ˆì§¸ predicateì— ëŒ€í•´
+ *                 total selectivityë¥¼ ë‹¤ì‹œ êµ¬í•´ì•¼í•˜ëŠ”ì§€ì˜ ì—¬ë¶€
  *                 : QMO_PRED_HEAD_HOST_OPTIMIZE_TRUE
  *
- *   ´ÙÀ½ÀÇ Á¶°ÇÀ» ¸¸Á·ÇØ¾ß ¼öÇàÇÑ´Ù.
- *    - È£½ºÆ® º¯¼ö°¡ Á¸ÀçÇØ¾ß ÇÑ´Ù.
- *    - È£½ºÆ® º¯¼ö¸¦ Æ÷ÇÔÇÑ predicate¿¡ ´ëÇØ...
- *      - indexableÀÌ¾î¾ß ÇÑ´Ù.
- *      - list ÀÌ¸é ¾ÈµÈ´Ù.
- *      - <, >, <=, >=, between, not between ¿¬»êÀÚÀÌ¾î¾ß ÇÑ´Ù.
- *    - predicateµé Áß¿¡ in-subquery¸¦ °¡Áö°í ÀÖÀ¸¸é ¾ÈµÈ´Ù.
+ *   ë‹¤ìŒì˜ ì¡°ê±´ì„ ë§Œì¡±í•´ì•¼ ìˆ˜í–‰í•œë‹¤.
+ *    - í˜¸ìŠ¤íŠ¸ ë³€ìˆ˜ê°€ ì¡´ì¬í•´ì•¼ í•œë‹¤.
+ *    - í˜¸ìŠ¤íŠ¸ ë³€ìˆ˜ë¥¼ í¬í•¨í•œ predicateì— ëŒ€í•´...
+ *      - indexableì´ì–´ì•¼ í•œë‹¤.
+ *      - list ì´ë©´ ì•ˆëœë‹¤.
+ *      - <, >, <=, >=, between, not between ì—°ì‚°ìì´ì–´ì•¼ í•œë‹¤.
+ *    - predicateë“¤ ì¤‘ì— in-subqueryë¥¼ ê°€ì§€ê³  ìˆìœ¼ë©´ ì•ˆëœë‹¤.
  *
  ***********************************************************************/
 
@@ -11151,8 +11151,8 @@ qmoPredWrapperI::extractWrapper( qmoPredWrapper  * aTarget,
     IDE_DASSERT( aTarget != NULL );
     IDE_DASSERT( *aFrom != NULL );
 
-    // aTargetÀÌ aFromÀÇ Ã³À½ÀÏ ¶§
-    // aFromÀÇ À§Ä¡¸¦ ¹Ù²ã¾ß ÇÑ´Ù.
+    // aTargetì´ aFromì˜ ì²˜ìŒì¼ ë•Œ
+    // aFromì˜ ìœ„ì¹˜ë¥¼ ë°”ê¿”ì•¼ í•œë‹¤.
     if( *aFrom == aTarget )
     {
         *aFrom = aTarget->next;
@@ -11162,8 +11162,8 @@ qmoPredWrapperI::extractWrapper( qmoPredWrapper  * aTarget,
         // Nothing to do...
     }
 
-    // aTagetÀÇ prev, next¸¦ ¼­·Î ¿¬°áÇÏ°í
-    // aTargetÀ» »«´Ù.
+    // aTagetì˜ prev, nextë¥¼ ì„œë¡œ ì—°ê²°í•˜ê³ 
+    // aTargetì„ ëº€ë‹¤.
     if( aTarget->prev != NULL )
     {
         aTarget->prev->next = aTarget->next;
@@ -11370,10 +11370,10 @@ qmoPred::separateRownumPred( qcStatement   * aStatement,
  *
  * Description :
  *     PROJ-1405 ROWNUM
- *     stopkey predicate°ú filter predicateÀ» ºĞ¸®ÇÑ´Ù.
+ *     stopkey predicateê³¼ filter predicateì„ ë¶„ë¦¬í•œë‹¤.
  *
- *     1. ÀÎÀÚ·Î ³Ñ¾î¿Â predicate list¿¡¼­ stopkey predicateÀº
- *        ´ÙÀ½°ú °°´Ù.
+ *     1. ì¸ìë¡œ ë„˜ì–´ì˜¨ predicate listì—ì„œ stopkey predicateì€
+ *        ë‹¤ìŒê³¼ ê°™ë‹¤.
  *
  *        aPredicate [p1]-[p2]-[p3]-[p4]-[p5]
  *                      ______________|
@@ -11381,7 +11381,7 @@ qmoPred::separateRownumPred( qcStatement   * aStatement,
  *                      |
  *             stopkey predicate
  *
- *     2. ºĞ¸®¹èÄ¡µÈ ¸ğ½À
+ *     2. ë¶„ë¦¬ë°°ì¹˜ëœ ëª¨ìŠµ
  *       (1) stopkey Predicate    (2) filter predicate
  *           [p4]                     [p1]-[p2]-[p3]-[p5]
  *
@@ -11399,7 +11399,7 @@ qmoPred::separateRownumPred( qcStatement   * aStatement,
     IDU_FIT_POINT_FATAL( "qmoPred::separateRownumPred::__FT__" );
 
     //--------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //--------------------------------------
 
     IDE_DASSERT( aPredicate   != NULL );
@@ -11407,7 +11407,7 @@ qmoPred::separateRownumPred( qcStatement   * aStatement,
     IDE_DASSERT( aFilterPred  != NULL );
 
     //--------------------------------------
-    // ÃÊ±âÈ­ ÀÛ¾÷
+    // ì´ˆê¸°í™” ì‘ì—…
     //--------------------------------------
 
     sFilterPredicate = aPredicate;
@@ -11416,7 +11416,7 @@ qmoPred::separateRownumPred( qcStatement   * aStatement,
     sStopRecordCount = 0;
 
     //--------------------------------------
-    // stopkey predicate ºĞ¸®
+    // stopkey predicate ë¶„ë¦¬
     //--------------------------------------
 
     for ( sPredicate = aPredicate;
@@ -11476,34 +11476,34 @@ qmoPred::isStopkeyPredicate( qcStatement  * aStatement,
  *
  * Description :
  *     PROJ-1405 ROWNUM
- *     stopkey predicateÀÎÁö °Ë»çÇÑ´Ù.
- *     predicateÀÌ CNF·Î Ã³¸®µÉ¶§¸¸ stopkey predicateÀÌ »ı¼ºµÈ´Ù.
- *     DNF³ª NNF·Î Ã³¸®µÇ´Â °æ¿ì´Â ¸ğµÎ filter predicateÀ¸·Î »ı¼ºµÈ´Ù.
+ *     stopkey predicateì¸ì§€ ê²€ì‚¬í•œë‹¤.
+ *     predicateì´ CNFë¡œ ì²˜ë¦¬ë ë•Œë§Œ stopkey predicateì´ ìƒì„±ëœë‹¤.
+ *     DNFë‚˜ NNFë¡œ ì²˜ë¦¬ë˜ëŠ” ê²½ìš°ëŠ” ëª¨ë‘ filter predicateìœ¼ë¡œ ìƒì„±ëœë‹¤.
  *
- *     stopkey°¡ µÉ ¼ö ÀÖ´Â Á¶°ÇÀº ´ÙÀ½°ú °°´Ù.
- *     1. ROWNUM <= »ó¼ö/È£½ºÆ® º¯¼ö
- *     2. ROWNUM < »ó¼ö/È£½ºÆ® º¯¼ö
+ *     stopkeyê°€ ë  ìˆ˜ ìˆëŠ” ì¡°ê±´ì€ ë‹¤ìŒê³¼ ê°™ë‹¤.
+ *     1. ROWNUM <= ìƒìˆ˜/í˜¸ìŠ¤íŠ¸ ë³€ìˆ˜
+ *     2. ROWNUM < ìƒìˆ˜/í˜¸ìŠ¤íŠ¸ ë³€ìˆ˜
  *     3. ROWNUM = 1
- *     4. »ó¼ö/È£½ºÆ® º¯¼ö >= ROWNUM
- *     5. »ó¼ö/È£½ºÆ® º¯¼ö > ROWNUM
+ *     4. ìƒìˆ˜/í˜¸ìŠ¤íŠ¸ ë³€ìˆ˜ >= ROWNUM
+ *     5. ìƒìˆ˜/í˜¸ìŠ¤íŠ¸ ë³€ìˆ˜ > ROWNUM
  *     6. 1 = ROWNUM
  *
- *     ¿¹)
+ *     ì˜ˆ)
  *           OR
  *           |
  *           <
  *           |
  *        ROWNUM - 3
  *
- *     stopkeyÀÎ °æ¿ì aStopRecordCountÀº ´ÙÀ½ÀÇ °ªÀ» °¡Áø´Ù.
- *     a. È£½ºÆ® º¯¼ö : -1
- *     b. ÀÇ¹Ì ¾ø´Â »ó¼ö : 0
- *     c. ÀÇ¹Ì ÀÖ´Â »ó¼ö : 1ÀÌ»ó
+ *     stopkeyì¸ ê²½ìš° aStopRecordCountì€ ë‹¤ìŒì˜ ê°’ì„ ê°€ì§„ë‹¤.
+ *     a. í˜¸ìŠ¤íŠ¸ ë³€ìˆ˜ : -1
+ *     b. ì˜ë¯¸ ì—†ëŠ” ìƒìˆ˜ : 0
+ *     c. ì˜ë¯¸ ìˆëŠ” ìƒìˆ˜ : 1ì´ìƒ
  *
  * Implementation :
- *     1. ÃÖ»óÀ§ ³ëµå´Â OR ³ëµå¿©¾ß ÇÑ´Ù.
- *     2. ºñ±³¿¬»êÀÚÀÇ next´Â NULLÀÌ¾î¾ß ÇÑ´Ù.
- *     3. ºñ±³¿¬»êÀÚÀÇ ÀÎÀÚµéÀº À§ Á¶°ÇÀ» ¸¸Á·ÇØ¾ß ÇÑ´Ù.
+ *     1. ìµœìƒìœ„ ë…¸ë“œëŠ” OR ë…¸ë“œì—¬ì•¼ í•œë‹¤.
+ *     2. ë¹„êµì—°ì‚°ìì˜ nextëŠ” NULLì´ì–´ì•¼ í•œë‹¤.
+ *     3. ë¹„êµì—°ì‚°ìì˜ ì¸ìë“¤ì€ ìœ„ ì¡°ê±´ì„ ë§Œì¡±í•´ì•¼ í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -11519,7 +11519,7 @@ qmoPred::isStopkeyPredicate( qcStatement  * aStatement,
     IDU_FIT_POINT_FATAL( "qmoPred::isStopkeyPredicate::__FT__" );
 
     //--------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //--------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -11527,7 +11527,7 @@ qmoPred::isStopkeyPredicate( qcStatement  * aStatement,
     IDE_DASSERT( aNode      != NULL );
 
     //--------------------------------------
-    // ÃÊ±âÈ­ ÀÛ¾÷
+    // ì´ˆê¸°í™” ì‘ì—…
     //--------------------------------------
 
     sOrNode = aNode;
@@ -11536,28 +11536,28 @@ qmoPred::isStopkeyPredicate( qcStatement  * aStatement,
     sMinusOne = 0;
 
     //--------------------------------------
-    // stopkey predicate °Ë»ç
+    // stopkey predicate ê²€ì‚¬
     //--------------------------------------
 
-    // ÃÖ»óÀ§ ³ëµå´Â OR ³ëµå¿©¾ß ÇÑ´Ù.
+    // ìµœìƒìœ„ ë…¸ë“œëŠ” OR ë…¸ë“œì—¬ì•¼ í•œë‹¤.
     if ( ( sOrNode->node.lflag & MTC_NODE_OPERATOR_MASK )
          == MTC_NODE_OPERATOR_OR )
     {
         sCompareNode = (qtcNode*) sOrNode->node.arguments;
 
-        // ºñ±³¿¬»êÀÚÀÇ next´Â NULLÀÌ¾î¾ß ÇÑ´Ù.
+        // ë¹„êµì—°ì‚°ìì˜ nextëŠ” NULLì´ì–´ì•¼ í•œë‹¤.
         if ( sCompareNode->node.next == NULL )
         {
             switch ( sCompareNode->node.lflag & MTC_NODE_OPERATOR_MASK )
             {
                 case MTC_NODE_OPERATOR_LESS:
-                    // ROWNUM < »ó¼ö/È£½ºÆ® º¯¼ö
+                    // ROWNUM < ìƒìˆ˜/í˜¸ìŠ¤íŠ¸ ë³€ìˆ˜
 
                     sMinusOne = 1;
                     /* fall through */
 
                 case MTC_NODE_OPERATOR_LESS_EQUAL:
-                    // ROWNUM <= »ó¼ö/È£½ºÆ® º¯¼ö
+                    // ROWNUM <= ìƒìˆ˜/í˜¸ìŠ¤íŠ¸ ë³€ìˆ˜
 
                     sRownumNode = (qtcNode*) sCompareNode->node.arguments;
                     sValueNode = (qtcNode*) sRownumNode->node.next;
@@ -11579,7 +11579,7 @@ qmoPred::isStopkeyPredicate( qcStatement  * aStatement,
 
                                 if ( sStopRecordCount < 1 )
                                 {
-                                    // ÀÇ¹Ì¾ø´Â »ó¼ö´Â 0°ú °°´Ù.
+                                    // ì˜ë¯¸ì—†ëŠ” ìƒìˆ˜ëŠ” 0ê³¼ ê°™ë‹¤.
                                     sStopRecordCount = 0;
                                 }
                                 else
@@ -11615,13 +11615,13 @@ qmoPred::isStopkeyPredicate( qcStatement  * aStatement,
                     break;
 
                 case MTC_NODE_OPERATOR_GREATER:
-                    // »ó¼ö/È£½ºÆ® º¯¼ö > ROWNUM
+                    // ìƒìˆ˜/í˜¸ìŠ¤íŠ¸ ë³€ìˆ˜ > ROWNUM
 
                     sMinusOne = 1;
                     /* fall through */
 
                 case MTC_NODE_OPERATOR_GREATER_EQUAL:
-                    // »ó¼ö/È£½ºÆ® º¯¼ö >= ROWNUM
+                    // ìƒìˆ˜/í˜¸ìŠ¤íŠ¸ ë³€ìˆ˜ >= ROWNUM
 
                     sValueNode = (qtcNode*) sCompareNode->node.arguments;
                     sRownumNode = (qtcNode*) sValueNode->node.next;
@@ -11643,7 +11643,7 @@ qmoPred::isStopkeyPredicate( qcStatement  * aStatement,
 
                                 if ( sStopRecordCount < 1 )
                                 {
-                                    // ÀÇ¹Ì¾ø´Â »ó¼ö´Â 0°ú °°´Ù.
+                                    // ì˜ë¯¸ì—†ëŠ” ìƒìˆ˜ëŠ” 0ê³¼ ê°™ë‹¤.
                                     sStopRecordCount = 0;
                                 }
                                 else
@@ -11771,7 +11771,7 @@ qmoPred::removeTransitivePredicate( qmoPredicate ** aPredicate,
  *
  * Description :
  *     PROJ-1404 Transitive Predicate Generation
- *     predicate list¿¡¼­ »ı¼ºµÈ transitive predicateÀ» Á¦°ÅÇÑ´Ù.
+ *     predicate listì—ì„œ ìƒì„±ëœ transitive predicateì„ ì œê±°í•œë‹¤.
  *
  * Implementation :
  *
@@ -11787,13 +11787,13 @@ qmoPred::removeTransitivePredicate( qmoPredicate ** aPredicate,
     IDU_FIT_POINT_FATAL( "qmoPred::removeTransitivePredicate::__FT__" );
 
     //--------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //--------------------------------------
 
     IDE_DASSERT( aPredicate != NULL );
 
     //--------------------------------------
-    // transitive predicate Á¦°Å
+    // transitive predicate ì œê±°
     //--------------------------------------
 
     for ( sPredicate = *aPredicate;
@@ -11818,7 +11818,7 @@ qmoPred::removeTransitivePredicate( qmoPredicate ** aPredicate,
             {
                 // Nothing to do.
 
-                // transitive join predicateÀº Á¦°ÅÇÑ´Ù.
+                // transitive join predicateì€ ì œê±°í•œë‹¤.
             }
             else
             {
@@ -11835,7 +11835,7 @@ qmoPred::removeTransitivePredicate( qmoPredicate ** aPredicate,
             }
         }
 
-        // predicate more list¿¡¼­ÀÇ ¿¬°áÀ» ²÷´Â´Ù.
+        // predicate more listì—ì„œì˜ ì—°ê²°ì„ ëŠëŠ”ë‹¤.
         if ( sPrevMorePredicate != NULL )
         {
             sPrevMorePredicate->more = NULL;
@@ -11845,7 +11845,7 @@ qmoPred::removeTransitivePredicate( qmoPredicate ** aPredicate,
             // Nothing to do.
         }
 
-        // predicate list¿¡ ¿¬°áÇÑ´Ù.
+        // predicate listì— ì—°ê²°í•œë‹¤.
         if ( sFirstMorePredicate != NULL )
         {
             if ( sPrevPredicate == NULL )
@@ -11865,7 +11865,7 @@ qmoPred::removeTransitivePredicate( qmoPredicate ** aPredicate,
         }
     }
 
-    // predicate list¿¡¼­ÀÇ ¿¬°áÀ» ²÷´Â´Ù.
+    // predicate listì—ì„œì˜ ì—°ê²°ì„ ëŠëŠ”ë‹¤.
     if ( sPrevPredicate != NULL )
     {
         sPrevPredicate->next = NULL;
@@ -11888,8 +11888,8 @@ qmoPred::removeEquivalentTransitivePredicate( qcStatement   * aStatement,
  *
  * Description :
  *     PROJ-1404 Transitive Predicate Generation
- *     »ı¼ºµÈ transitive predicate°ú ³í¸®ÀûÀ¸·Î Áßº¹µÈ predicateÀÌ
- *     ÀÖ´Â °æ¿ì »èÁ¦ÇÑ´Ù.
+ *     ìƒì„±ëœ transitive predicateê³¼ ë…¼ë¦¬ì ìœ¼ë¡œ ì¤‘ë³µëœ predicateì´
+ *     ìˆëŠ” ê²½ìš° ì‚­ì œí•œë‹¤.
  *
  * Implementation :
  *
@@ -11903,25 +11903,25 @@ qmoPred::removeEquivalentTransitivePredicate( qcStatement   * aStatement,
     IDU_FIT_POINT_FATAL( "qmoPred::removeEquivalentTransitivePredicate::__FT__" );
 
     //--------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //--------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aPredicate != NULL );
 
     //--------------------------------------
-    // ÃÊ±âÈ­ ÀÛ¾÷
+    // ì´ˆê¸°í™” ì‘ì—…
     //--------------------------------------
 
     sPredicate = *aPredicate;
 
     //--------------------------------------
-    // Áßº¹µÈ transitive predicate Á¦°Å
+    // ì¤‘ë³µëœ transitive predicate ì œê±°
     //--------------------------------------
 
     while ( sPredicate != NULL )
     {
-        // ¾ÆÁ÷ relocate ÀüÀÌ´Ù.
+        // ì•„ì§ relocate ì „ì´ë‹¤.
         IDE_DASSERT( sPredicate->more == NULL );
 
         sIsExist = ID_FALSE;
@@ -11987,10 +11987,10 @@ IDE_RC qmoPred::addNNFFilter4linkedFilter( qcStatement   * aStatement,
  *
  * Description :
  *     BUG-35155 Partial CNF
- *     linkFilterPredicate ¿¡¼­ ¸¸µé¾îÁø qtcNode ±×·ì¿¡ NNF ÇÊÅÍ¸¦ Ãß°¡ÇÑ´Ù.
+ *     linkFilterPredicate ì—ì„œ ë§Œë“¤ì–´ì§„ qtcNode ê·¸ë£¹ì— NNF í•„í„°ë¥¼ ì¶”ê°€í•œë‹¤.
  *
  * Implementation :
- *     ÃÖ»óÀ§¿¡ AND ³ëµå°¡ ÀÖÀ¸¹Ç·Î arguments ÀÇ next ³¡¿¡ NNF ÇÊÅÍ¸¦ ¿¬°áÇÑ´Ù.
+ *     ìµœìƒìœ„ì— AND ë…¸ë“œê°€ ìˆìœ¼ë¯€ë¡œ arguments ì˜ next ëì— NNF í•„í„°ë¥¼ ì—°ê²°í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -12021,17 +12021,17 @@ idBool qmoPred::hasOnlyColumnCompInPredList( qmoPredInfo * aJoinPredList )
 {
 /****************************************************************************
  * 
- *  Description : BUG-39403 Inverse Index Join Method Predicate Á¦ÇÑ
+ *  Description : BUG-39403 Inverse Index Join Method Predicate ì œí•œ
  *  
- *  ÀÔ·ÂµÈ Join Predicate List¿¡¼­, 
- *  ¸ğµç Join Predicate°¡ ´ÙÀ½À» ¸¸Á·ÇÏ´ÂÁö °Ë»çÇÑ´Ù.
+ *  ì…ë ¥ëœ Join Predicate Listì—ì„œ, 
+ *  ëª¨ë“  Join Predicateê°€ ë‹¤ìŒì„ ë§Œì¡±í•˜ëŠ”ì§€ ê²€ì‚¬í•œë‹¤.
  *
- *   - (Assertion) Join PredicateÀº INDEX_JOINABLE ÀÌ¾î¾ß ÇÑ´Ù.
- *   - (Assertion) Join PredicateÀÌ '=' ¿©¾ß ÇÑ´Ù.
- *   - Join PredicateÀÇ Operand ¸ğµÎ ColumnÀÎÁö °ËÁõÇÑ´Ù.
+ *   - (Assertion) Join Predicateì€ INDEX_JOINABLE ì´ì–´ì•¼ í•œë‹¤.
+ *   - (Assertion) Join Predicateì´ '=' ì—¬ì•¼ í•œë‹¤.
+ *   - Join Predicateì˜ Operand ëª¨ë‘ Columnì¸ì§€ ê²€ì¦í•œë‹¤.
  *  
- *  > ¾î´À ÇÏ³ª¶óµµ ColumnÀÌ ¾Æ´Ñ ExpressionÀ» °¡Áö°í ÀÖÀ» ¶§, FALSE
- *  > ¸ğµç PredicateÀÌ Column µé¸¸ ºñ±³ÇÏ´Â °æ¿ì, TRUE
+ *  > ì–´ëŠ í•˜ë‚˜ë¼ë„ Columnì´ ì•„ë‹Œ Expressionì„ ê°€ì§€ê³  ìˆì„ ë•Œ, FALSE
+ *  > ëª¨ë“  Predicateì´ Column ë“¤ë§Œ ë¹„êµí•˜ëŠ” ê²½ìš°, TRUE
  *
  ***************************************************************************/
 
@@ -12048,25 +12048,25 @@ idBool qmoPred::hasOnlyColumnCompInPredList( qmoPredInfo * aJoinPredList )
               sJoinPredInfo != NULL;
               sJoinPredInfo = sJoinPredInfo->more )
         {
-            // °¢°¢ÀÇ Join PredicateÀÌ INDEX_JOINABLE ÀÌ¾î¾ß ÇÑ´Ù.
+            // ê°ê°ì˜ Join Predicateì´ INDEX_JOINABLE ì´ì–´ì•¼ í•œë‹¤.
             IDE_DASSERT( ( sJoinPredInfo->predicate->flag & QMO_PRED_INDEX_JOINABLE_MASK )
                          == QMO_PRED_INDEX_JOINABLE_TRUE );
 
-            // PredicateÀÇ Ã¹ Node¸¦ °¡Áö°í ¿Â´Ù.
+            // Predicateì˜ ì²« Nodeë¥¼ ê°€ì§€ê³  ì˜¨ë‹¤.
             sNode = sJoinPredInfo->predicate->node;
 
-            // CNF FormÀÌ¹Ç·Î, °¢ PredicateÀº OR NodeÀÌ°Å³ª
-            // Predicate ÀÚÃ¼·Î ³Ñ¾î¿Â´Ù.
+            // CNF Formì´ë¯€ë¡œ, ê° Predicateì€ OR Nodeì´ê±°ë‚˜
+            // Predicate ìì²´ë¡œ ë„˜ì–´ì˜¨ë‹¤.
             if ( ( sNode->node.lflag & MTC_NODE_LOGICAL_CONDITION_MASK )
                  == MTC_NODE_LOGICAL_CONDITION_TRUE )
             {
-                // sNode°¡ OR NodeÀÎ °æ¿ì (AND°¡ µÉ ¼ö ¾ø´Ù)
+                // sNodeê°€ OR Nodeì¸ ê²½ìš° (ANDê°€ ë  ìˆ˜ ì—†ë‹¤)
                 IDE_DASSERT( ( sNode->node.lflag & MTC_NODE_OPERATOR_MASK ) == MTC_NODE_OPERATOR_OR )
 
-                // OR NodeÀÇ ÇÏÀ§ Node¸¦ Å½»öÇÑ´Ù.
+                // OR Nodeì˜ í•˜ìœ„ Nodeë¥¼ íƒìƒ‰í•œë‹¤.
                 sNode = (qtcNode *)(sNode->node.arguments);
 
-                // OR NodeÀÇ ÇÏÀ§ Node¸¦ ¸ğµÎ Å½»öÇØ °ËÁõ
+                // OR Nodeì˜ í•˜ìœ„ Nodeë¥¼ ëª¨ë‘ íƒìƒ‰í•´ ê²€ì¦
                 while( sNode != NULL )
                 {
                     sHasOnlyColumn = hasOnlyColumnCompInPredNode( sNode );
@@ -12083,13 +12083,13 @@ idBool qmoPred::hasOnlyColumnCompInPredList( qmoPredInfo * aJoinPredList )
             }
             else
             {
-                // sNode°¡ OR Node°¡ ¾Æ´Ñ °æ¿ì
-                // ¹Ù·Î °ËÁõÇÑ´Ù.
+                // sNodeê°€ OR Nodeê°€ ì•„ë‹Œ ê²½ìš°
+                // ë°”ë¡œ ê²€ì¦í•œë‹¤.
                 sHasOnlyColumn = hasOnlyColumnCompInPredNode( sNode );
             }
 
-            // ExpressionÀ» °¡Áø Join PredicatÀ» Ã£¾Ò´Ù¸é
-            // ´Ù¸¥ Join Predicate Å½»öÀ» Áß´ÜÇÑ´Ù.
+            // Expressionì„ ê°€ì§„ Join Predicatì„ ì°¾ì•˜ë‹¤ë©´
+            // ë‹¤ë¥¸ Join Predicate íƒìƒ‰ì„ ì¤‘ë‹¨í•œë‹¤.
             if ( sHasOnlyColumn == ID_FALSE )
             {
                 break;
@@ -12100,8 +12100,8 @@ idBool qmoPred::hasOnlyColumnCompInPredList( qmoPredInfo * aJoinPredList )
             }
         }
 
-        // ExpressionÀ» °¡Áø Join PredicatÀ» Ã£¾Ò´Ù¸é
-        // ´Ù¸¥ Join Predicate Å½»öÀ» Áß´ÜÇÑ´Ù.
+        // Expressionì„ ê°€ì§„ Join Predicatì„ ì°¾ì•˜ë‹¤ë©´
+        // ë‹¤ë¥¸ Join Predicate íƒìƒ‰ì„ ì¤‘ë‹¨í•œë‹¤.
         if ( sHasOnlyColumn == ID_FALSE )
         {
             break;
@@ -12119,15 +12119,15 @@ idBool qmoPred::hasOnlyColumnCompInPredNode( qtcNode * aNode )
 {
 /****************************************************************************
  * 
- *  Description : BUG-39403 Inverse Index Join Method Predicate Á¦ÇÑ
+ *  Description : BUG-39403 Inverse Index Join Method Predicate ì œí•œ
  *  
- *  ÀÔ·ÂµÈ Join Predicate Node¿¡¼­, ´ÙÀ½À» ¸¸Á·ÇÏ´ÂÁö °Ë»çÇÑ´Ù.
+ *  ì…ë ¥ëœ Join Predicate Nodeì—ì„œ, ë‹¤ìŒì„ ë§Œì¡±í•˜ëŠ”ì§€ ê²€ì‚¬í•œë‹¤.
  *
- *   - (Assertion) Join PredicateÀÌ '=' ¿©¾ß ÇÑ´Ù.
- *   - Join Predicate NodeÀÇ Operand ¸ğµÎ ColumnÀÎÁö °ËÁõÇÑ´Ù.
+ *   - (Assertion) Join Predicateì´ '=' ì—¬ì•¼ í•œë‹¤.
+ *   - Join Predicate Nodeì˜ Operand ëª¨ë‘ Columnì¸ì§€ ê²€ì¦í•œë‹¤.
  *  
- *  > ¾î´À ÇÑ ÂÊÀÌ¶óµµ ColumnÀÌ ¾Æ´Ñ ExpressionÀ» °¡Áö°í ÀÖÀ» ¶§, FALSE
- *  > ÇØ´ç Predicate Node°¡ Column µé¸¸ ºñ±³ÇÏ´Â °æ¿ì, TRUE
+ *  > ì–´ëŠ í•œ ìª½ì´ë¼ë„ Columnì´ ì•„ë‹Œ Expressionì„ ê°€ì§€ê³  ìˆì„ ë•Œ, FALSE
+ *  > í•´ë‹¹ Predicate Nodeê°€ Column ë“¤ë§Œ ë¹„êµí•˜ëŠ” ê²½ìš°, TRUE
  *
  ***************************************************************************/
 

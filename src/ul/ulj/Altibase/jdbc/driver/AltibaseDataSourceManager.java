@@ -27,9 +27,9 @@ import Altibase.jdbc.driver.ex.ErrorDef;
 import Altibase.jdbc.driver.util.AltibaseEnvironmentVariables;
 
 /**
- * DataSource¸¦ °ü¸®ÇÏ±â À§ÇÑ Å¬·¡½º.
+ * DataSourceë¥¼ ê´€ë¦¬í•˜ê¸° ìœ„í•œ í´ë˜ìŠ¤.
  * <p>
- * DataSource ¼³Á¤À» ÀĞ°í, DSN¿¡ ÇØ´çÇÏ´Â DataSource °´Ã¼¸¦ ¹İÈ¯ÇØÁØ´Ù.
+ * DataSource ì„¤ì •ì„ ì½ê³ , DSNì— í•´ë‹¹í•˜ëŠ” DataSource ê°ì²´ë¥¼ ë°˜í™˜í•´ì¤€ë‹¤.
  */
 final class AltibaseDataSourceManager
 {
@@ -63,10 +63,10 @@ final class AltibaseDataSourceManager
     }
 
     /**
-     * aDSN¿¡ ÇØ´çÇÏ´Â AltibaseDataSource¸¦ ¾ò´Â´Ù.
+     * aDSNì— í•´ë‹¹í•˜ëŠ” AltibaseDataSourceë¥¼ ì–»ëŠ”ë‹¤.
      * 
      * @param aDSN Data Source Name (case insensitive)
-     * @return aDSN¿¡ ÇØ´çÇÏ´Â AltibaseDataSource °´Ã¼. ¾øÀ¸¸é null.
+     * @return aDSNì— í•´ë‹¹í•˜ëŠ” AltibaseDataSource ê°ì²´. ì—†ìœ¼ë©´ null.
      */
     public AltibaseDataSource getDataSource(String aDSN)
     {
@@ -78,9 +78,9 @@ final class AltibaseDataSourceManager
     }
 
     /**
-     * DataSource ¼³Á¤ ÆÄÀÏÀ» ÀĞ´Â´Ù.
+     * DataSource ì„¤ì • íŒŒì¼ì„ ì½ëŠ”ë‹¤.
      * <p>
-     * ¿ì¼±¼øÀ§´Â ´ÙÀ½°ú °°À¸¸ç, ÀÌ Áß ÇÑ ÆÄÀÏ¸¸ ÀĞ´Â´Ù:
+     * ìš°ì„ ìˆœìœ„ëŠ” ë‹¤ìŒê³¼ ê°™ìœ¼ë©°, ì´ ì¤‘ í•œ íŒŒì¼ë§Œ ì½ëŠ”ë‹¤:
      * <ol>
      * <li>./altibase_cli.ini</li>
      * <li>$HOME/altibase_cli.ini</li>
@@ -118,10 +118,10 @@ final class AltibaseDataSourceManager
     }
 
     /**
-     * ÁöÁ¤ÇÑ DataSource ¼³Á¤ ÆÄÀÏÀ» ÀĞ´Â´Ù.
+     * ì§€ì •í•œ DataSource ì„¤ì • íŒŒì¼ì„ ì½ëŠ”ë‹¤.
      * 
-     * @param aConfFilePath ÀĞÀ» ¼³Á¤ÆÄÀÏ °æ·Î
-     * @throws FileNotFoundException ¼³Á¤ÆÄÀÏÀÌ ¾ø´Â °æ¿ì
+     * @param aConfFilePath ì½ì„ ì„¤ì •íŒŒì¼ ê²½ë¡œ
+     * @throws FileNotFoundException ì„¤ì •íŒŒì¼ì´ ì—†ëŠ” ê²½ìš°
      */
     private void load(String aConfFilePath) throws FileNotFoundException
     {

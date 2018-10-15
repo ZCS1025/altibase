@@ -28,7 +28,7 @@ acp_bool_t hbpIsValidIPFormat(acp_char_t * aIP)
     acp_rc_t              sAcpRCipv4 = ACP_RC_SUCCESS;
     acp_rc_t              sAcpRCipv6 = ACP_RC_SUCCESS;
 
-    if (aIP != NULL) /* BUGBUG222 : ¹ØÀÇ acpCStrCpy¿¡¼­ return°ªÀ» º¸Áö ¾Ê´Â´Ù. */
+    if (aIP != NULL) /* BUGBUG222 : ë°‘ì˜ acpCStrCpyì—ì„œ returnê°’ì„ ë³´ì§€ ì•ŠëŠ”ë‹¤. */
     {
 
         (void)acpCStrCpy( sIP,

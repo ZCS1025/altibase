@@ -18,36 +18,36 @@
 /***********************************************************************
  * $Id: smuWorkerThread.h
  *
- * PROJ-2162 RestartRiskReduction ¿¡¼­ Ãß°¡µÊ
+ * PROJ-2162 RestartRiskReduction ì—ì„œ ì¶”ê°€ë¨
  *
  * Description :
- * Thread¿¡ ´ëÇÑ Wrapping class.
- * ½±°Ô ChildThread¿¡°Ô ÀÏÀ» ºĞ¹èÇÒ ¼ö ÀÖ´Â °¡Àå °£´ÜÇÑ Å¬·¡½º
+ * Threadì— ëŒ€í•œ Wrapping class.
+ * ì‰½ê²Œ ChildThreadì—ê²Œ ì¼ì„ ë¶„ë°°í•  ìˆ˜ ìˆëŠ” ê°€ì¥ ê°„ë‹¨í•œ í´ë˜ìŠ¤
  *
  * Algorithm  :
- * JobQueue¸¦ SingleWriterMulterReader ·Î »ç¿ëÇÏ¿©, ¾÷¹«¸¦ ºĞ¹èÇÑ´Ù.
+ * JobQueueë¥¼ SingleWriterMulterReader ë¡œ ì‚¬ìš©í•˜ì—¬, ì—…ë¬´ë¥¼ ë¶„ë°°í•œë‹¤.
  *
- * ChildThread°¡ 4°³ ÀÖ´Ù°í ÇßÀ»¶§,
- * ThreadMgr°¡ JobÀ» QueueÀÇ 1¹ø,2¹ø,3¹ø,4¹ø,5¹ø µîÀÇ Slot¿¡ µî·ÏÇÏ¸é,
- * 0¹ø  - 0,4,8,12
- * 1¹ø  - 1,5,9,13
- * 2¹ø  - 2,6,10,14
- * 3¹ø  - 3,7,11,15
- * À§ ¾÷¹«µéÀ» °¢°¢ ½ÇÇàÇÑ´Ù.
+ * ChildThreadê°€ 4ê°œ ìˆë‹¤ê³  í–ˆì„ë•Œ,
+ * ThreadMgrê°€ Jobì„ Queueì˜ 1ë²ˆ,2ë²ˆ,3ë²ˆ,4ë²ˆ,5ë²ˆ ë“±ì˜ Slotì— ë“±ë¡í•˜ë©´,
+ * 0ë²ˆ  - 0,4,8,12
+ * 1ë²ˆ  - 1,5,9,13
+ * 2ë²ˆ  - 2,6,10,14
+ * 3ë²ˆ  - 3,7,11,15
+ * ìœ„ ì—…ë¬´ë“¤ì„ ê°ê° ì‹¤í–‰í•œë‹¤.
  *
- * µû¶ó¼­ °¢ JobÀÇ ¼Ò¿ä½Ã°£¿¡ µû¶ó, Æ¯Á¤ ClientThreadÀÇ Ã³¸®°¡ ´Ê¾îÁö´Â
- * Çö»óÀÌ ³ªÅ¸³¯ ¼öµµ ÀÖ´Ù.
+ * ë”°ë¼ì„œ ê° Jobì˜ ì†Œìš”ì‹œê°„ì— ë”°ë¼, íŠ¹ì • ClientThreadì˜ ì²˜ë¦¬ê°€ ëŠ¦ì–´ì§€ëŠ”
+ * í˜„ìƒì´ ë‚˜íƒ€ë‚  ìˆ˜ë„ ìˆë‹¤.
  *
  * Issue :
- * 1) Queue¿¡ ´ëÇØ¼­´Â DirtyWrite/DirtyRead¸¦ ¼öÇàÇÑ´Ù. Pointerº¯¼ö
- *    ÀÌ±â ¶§¹®¿¡, °ªÀ» °¡Á®¿À´Â °Í ÀÚÃ¼´Â AtomicÇÏ±â ¶§¹®¿¡ °¡´ÉÇÏ´Ù.
- * 2) ÇÏÁö¸¸ ABA ProblemÀÌ ¹ß»ıÇßÀ» °æ¿ì, ´Ù¸¥ Core¿¡ CacheMiss¸¦
- *    ¾Ë·ÁÁÖÁö ¾Ê´Â ¹®Á¦°¡ ¹ß»ıÇÒ ¼ö ÀÖÀ¸¹Ç·Î, ÇØ´ç °æ¿ì¿¡¸¸
- *    volatile À» »ç¿ëÇÑ´Ù.
- * 3) ThreadCnt°¡ 1ÀÏ °æ¿ì, ThreadMgr°¡ addJob ÇÔ¼ö¿¡¼­ Á÷Á¢ JobÀ»
- *    Ã³¸®ÇÑ´Ù. ¸¸¾àÀÇ °æ¿ì ThreadMgr°¡ Á¦´ë·Î µ¿ÀÛÇÏÁö ¾Ê¾Æ Hang¿¡
- *    ºüÁ³À» °æ¿ì¸¦ ´ëºñÇØ, ThreadCnt°¡ 1ÀÌ¸é SingleThreadÃ³·³
- *    µ¿ÀÛÇÏµµ·Ï ÇÏ±â À§ÇÔÀÌ´Ù. 
+ * 1) Queueì— ëŒ€í•´ì„œëŠ” DirtyWrite/DirtyReadë¥¼ ìˆ˜í–‰í•œë‹¤. Pointerë³€ìˆ˜
+ *    ì´ê¸° ë•Œë¬¸ì—, ê°’ì„ ê°€ì ¸ì˜¤ëŠ” ê²ƒ ìì²´ëŠ” Atomicí•˜ê¸° ë•Œë¬¸ì— ê°€ëŠ¥í•˜ë‹¤.
+ * 2) í•˜ì§€ë§Œ ABA Problemì´ ë°œìƒí–ˆì„ ê²½ìš°, ë‹¤ë¥¸ Coreì— CacheMissë¥¼
+ *    ì•Œë ¤ì£¼ì§€ ì•ŠëŠ” ë¬¸ì œê°€ ë°œìƒí•  ìˆ˜ ìˆìœ¼ë¯€ë¡œ, í•´ë‹¹ ê²½ìš°ì—ë§Œ
+ *    volatile ì„ ì‚¬ìš©í•œë‹¤.
+ * 3) ThreadCntê°€ 1ì¼ ê²½ìš°, ThreadMgrê°€ addJob í•¨ìˆ˜ì—ì„œ ì§ì ‘ Jobì„
+ *    ì²˜ë¦¬í•œë‹¤. ë§Œì•½ì˜ ê²½ìš° ThreadMgrê°€ ì œëŒ€ë¡œ ë™ì‘í•˜ì§€ ì•Šì•„ Hangì—
+ *    ë¹ ì¡Œì„ ê²½ìš°ë¥¼ ëŒ€ë¹„í•´, ThreadCntê°€ 1ì´ë©´ SingleThreadì²˜ëŸ¼
+ *    ë™ì‘í•˜ë„ë¡ í•˜ê¸° ìœ„í•¨ì´ë‹¤. 
  *
  **********************************************************************/
 
@@ -64,13 +64,13 @@
  *  smuWorkerThreadMgr     sThreadMgr;
  *
  *  IDE_TEST( smuWorkerThread::initialize( 
- *        <¾÷¹«¸¦ Ã³¸®ÇÏ´Â ÇÔ¼ö>,
- *        <ChildThread°³¼ö>,
- *        <QueueÅ©±â>,
+ *        <ì—…ë¬´ë¥¼ ì²˜ë¦¬í•˜ëŠ” í•¨ìˆ˜>,
+ *        <ChildThreadê°œìˆ˜>,
+ *        <Queueí¬ê¸°>,
  *        &sThreadMgr )
  *    != IDE_SUCCESS );
  *
- *  IDE_TEST( smuWorkerThread::addJob( &sThreadMgr, <¾÷¹«º¯¼ö> ) != IDE_SUCCESS );
+ *  IDE_TEST( smuWorkerThread::addJob( &sThreadMgr, <ì—…ë¬´ë³€ìˆ˜> ) != IDE_SUCCESS );
  *  IDE_TEST( smuWorkerThread::finalize( &sThreadMgr ) != IDE_SUCCESS );
 */
 
@@ -80,22 +80,22 @@ class smuWorkerThread;
 
 typedef struct smuWorkerThreadMgr
 {
-    smuWorkerThreadFunc    mThreadFunc;    /* ¾÷¹« Ã³¸®¿ë ÇÔ¼ö */
-    UInt                   mThreadCnt;     /* Thread °³¼ö */
-    idBool                 mDone;          /* ´õÀÌ»ó ÇÒÀÏÀÌ ¾ø´Â°¡? */
+    smuWorkerThreadFunc    mThreadFunc;    /* ì—…ë¬´ ì²˜ë¦¬ìš© í•¨ìˆ˜ */
+    UInt                   mThreadCnt;     /* Thread ê°œìˆ˜ */
+    idBool                 mDone;          /* ë”ì´ìƒ í• ì¼ì´ ì—†ëŠ”ê°€? */
                     
     void                ** mJobQueue;      /* Job Queue. */
-    UInt                   mJobTail;       /* QueueÀÇ Tail */
-    UInt                   mQueueSize;     /* QueueÀÇ Å©±â */
+    UInt                   mJobTail;       /* Queueì˜ Tail */
+    UInt                   mQueueSize;     /* Queueì˜ í¬ê¸° */
 
-    smuWorkerThread      * mThreadArray;   /* ChildThreadµé */
+    smuWorkerThread      * mThreadArray;   /* ChildThreadë“¤ */
 } smuWorkerThreadMgr;
 
 class smuWorkerThread : public idtBaseThread
 {
 public:
-    UInt                 mJobIdx;          /* ÀÚ½ÅÀÌ °¡Á®¿Ã JobÀÇ Index */
-    smuWorkerThreadMgr * mThreadMgr;       /* ÀÚ½ÅÀ» °ü¸®ÇÏ´Â °ü¸®ÀÚ */
+    UInt                 mJobIdx;          /* ìì‹ ì´ ê°€ì ¸ì˜¬ Jobì˜ Index */
+    smuWorkerThreadMgr * mThreadMgr;       /* ìì‹ ì„ ê´€ë¦¬í•˜ëŠ” ê´€ë¦¬ì */
 
     smuWorkerThread() : idtBaseThread() {}
 
@@ -107,7 +107,7 @@ public:
     static IDE_RC addJob( smuWorkerThreadMgr * aThreadMgr, void * aParam );
     static void   wait( smuWorkerThreadMgr * aThreadMgr );
 
-    virtual void run(); /* »ó¼Ó¹ŞÀº main ½ÇÇà ·çÆ¾ */
+    virtual void run(); /* ìƒì†ë°›ì€ main ì‹¤í–‰ ë£¨í‹´ */
 };
 
 #endif 

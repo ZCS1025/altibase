@@ -23,10 +23,10 @@ public final class StringUtils
     }
 
     /**
-     * ¹®ÀÚ¿­ÀÌ nullÀÌ°Å³ª ºñ¾ú´ÂÁö È®ÀÎÇÑ´Ù.
+     * ë¬¸ìžì—´ì´ nullì´ê±°ë‚˜ ë¹„ì—ˆëŠ”ì§€ í™•ì¸í•œë‹¤.
      * 
-     * @param aStr È®ÀÎÇÒ ¹®ÀÚ¿­
-     * @return null ¶Ç´Â ±æÀÌ°¡ 0ÀÎ ¹®ÀÚ¿­ÀÎÁö ¿©ºÎ
+     * @param aStr í™•ì¸í•  ë¬¸ìžì—´
+     * @return null ë˜ëŠ” ê¸¸ì´ê°€ 0ì¸ ë¬¸ìžì—´ì¸ì§€ ì—¬ë¶€
      */
     public static boolean isEmpty(String aStr)
     {
@@ -34,11 +34,11 @@ public final class StringUtils
     }
 
     /**
-     * ´ë¼Ò¹®ÀÚ ±¸º°¾øÀÌ, starts stringÀ¸·Î ½ÃÀÛÇÏ´ÂÁö È®ÀÎÇÑ´Ù.
+     * ëŒ€ì†Œë¬¸ìž êµ¬ë³„ì—†ì´, starts stringìœ¼ë¡œ ì‹œìž‘í•˜ëŠ”ì§€ í™•ì¸í•œë‹¤.
      * 
-     * @param aSrcStr È®ÀÎÇÒ ¹®ÀÚ¿­
-     * @param aStartsStr ½ÃÀÛ ¹®ÀÚ¿­
-     * @return starts stringÀ¸·Î ½ÃÀÛÇÏ¸é true, ¾Æ´Ï¸é false
+     * @param aSrcStr í™•ì¸í•  ë¬¸ìžì—´
+     * @param aStartsStr ì‹œìž‘ ë¬¸ìžì—´
+     * @return starts stringìœ¼ë¡œ ì‹œìž‘í•˜ë©´ true, ì•„ë‹ˆë©´ false
      */
     public static boolean startsWithIgnoreCase(String aSrcStr, String aStartsStr)
     {
@@ -46,12 +46,12 @@ public final class StringUtils
     }
 
     /**
-     * ´ë¼Ò¹®ÀÚ ±¸º°¾øÀÌ, µÎ ¹®ÀÚ¿­À» ºñ±³ÇÑ´Ù.
+     * ëŒ€ì†Œë¬¸ìž êµ¬ë³„ì—†ì´, ë‘ ë¬¸ìžì—´ì„ ë¹„êµí•œë‹¤.
      * 
-     * @param aSrcStr È®ÀÎÇÒ ¹®ÀÚ¿­
-     * @param aStartIdx È®ÀÎÇÒ ¹®ÀÚ¿­¿¡¼­ ºñ±³¸¦ ½ÃÀÛÇÒ À§Ä¡(0 base)
-     * @param aStartsStr ½ÃÀÛ ¹®ÀÚ¿­
-     * @return start stringÀ¸·Î ½ÃÀÛÇÏ¸é true, ¾Æ´Ï¸é false
+     * @param aSrcStr í™•ì¸í•  ë¬¸ìžì—´
+     * @param aStartIdx í™•ì¸í•  ë¬¸ìžì—´ì—ì„œ ë¹„êµë¥¼ ì‹œìž‘í•  ìœ„ì¹˜(0 base)
+     * @param aStartsStr ì‹œìž‘ ë¬¸ìžì—´
+     * @return start stringìœ¼ë¡œ ì‹œìž‘í•˜ë©´ true, ì•„ë‹ˆë©´ false
      */
     public static boolean startsWithIgnoreCase(String aSrcStr, int aStartIdx, String aStartsStr)
     {
@@ -59,11 +59,11 @@ public final class StringUtils
     }
 
     /**
-     * ´ë¼Ò¹®ÀÚ ±¸º°¾øÀÌ, ends stringÀ¸·Î ³¡³ª´ÂÁö È®ÀÎÇÑ´Ù.
+     * ëŒ€ì†Œë¬¸ìž êµ¬ë³„ì—†ì´, ends stringìœ¼ë¡œ ëë‚˜ëŠ”ì§€ í™•ì¸í•œë‹¤.
      * 
-     * @param aSrcStr È®ÀÎÇÒ ¹®ÀÚ¿­
-     * @param aEndsStr ³¡ ¹®ÀÚ¿­
-     * @return ends stringÀ¸·Î ³¡³ª¸é true, ¾Æ´Ï¸é false
+     * @param aSrcStr í™•ì¸í•  ë¬¸ìžì—´
+     * @param aEndsStr ë ë¬¸ìžì—´
+     * @return ends stringìœ¼ë¡œ ëë‚˜ë©´ true, ì•„ë‹ˆë©´ false
      */
     public static boolean endsWithIgnoreCase(String aSrcStr, String aEndsStr)
     {
@@ -72,11 +72,11 @@ public final class StringUtils
     }
 
     /**
-     * ´ë¼Ò¹®ÀÚ ±¸º°¾øÀÌ, µÎ ¹®ÀÚ¿­À» ºñ±³ÇÑ´Ù.
+     * ëŒ€ì†Œë¬¸ìž êµ¬ë³„ì—†ì´, ë‘ ë¬¸ìžì—´ì„ ë¹„êµí•œë‹¤.
      * 
-     * @param aStr1 ¹®ÀÚ¿­ 1
-     * @param aStr2 ¹®ÀÚ¿­ 2
-     * @return °°À¸¸é 0, aStr1ÀÌ Å©°Å³ª aStr2¸¦ ¸ðµÎ Æ÷ÇÔÇÏ¸é¼­ ±æ¸é ¾ç¼ö, ¾Æ´Ï¸é À½¼ö
+     * @param aStr1 ë¬¸ìžì—´ 1
+     * @param aStr2 ë¬¸ìžì—´ 2
+     * @return ê°™ìœ¼ë©´ 0, aStr1ì´ í¬ê±°ë‚˜ aStr2ë¥¼ ëª¨ë‘ í¬í•¨í•˜ë©´ì„œ ê¸¸ë©´ ì–‘ìˆ˜, ì•„ë‹ˆë©´ ìŒìˆ˜
      */
     public static int compareIgnoreCase(String aStr1, String aStr2)
     {
@@ -84,19 +84,19 @@ public final class StringUtils
     }
 
     /**
-     * ´ë¼Ò¹®ÀÚ ±¸º°¾øÀÌ, µÎ ¹®ÀÚ¿­À» ºñ±³ÇÑ´Ù.
+     * ëŒ€ì†Œë¬¸ìž êµ¬ë³„ì—†ì´, ë‘ ë¬¸ìžì—´ì„ ë¹„êµí•œë‹¤.
      * 
-     * @param aStr1 ¹®ÀÚ¿­ 1
-     * @param aStartIdx1 aStr1¿¡¼­ ºñ±³¸¦ ½ÃÀÛÇÒ À§Ä¡(0 base)
-     * @param aStr2 ¹®ÀÚ¿­ 2
-     * @return °°À¸¸é 0, aStr1ÀÌ Å©°Å³ª aStr2¸¦ ¸ðµÎ Æ÷ÇÔÇÏ¸é¼­ ±æ¸é ¾ç¼ö, ¾Æ´Ï¸é À½¼ö
+     * @param aStr1 ë¬¸ìžì—´ 1
+     * @param aStartIdx1 aStr1ì—ì„œ ë¹„êµë¥¼ ì‹œìž‘í•  ìœ„ì¹˜(0 base)
+     * @param aStr2 ë¬¸ìžì—´ 2
+     * @return ê°™ìœ¼ë©´ 0, aStr1ì´ í¬ê±°ë‚˜ aStr2ë¥¼ ëª¨ë‘ í¬í•¨í•˜ë©´ì„œ ê¸¸ë©´ ì–‘ìˆ˜, ì•„ë‹ˆë©´ ìŒìˆ˜
      */
     public static int compareIgnoreCase(String aStr1, int aStartIdx1, String aStr2)
     {
         int sResult = compareIgnoreCase(aStr1, aStartIdx1, aStr2, 0, Math.min(aStr1.length(), aStr2.length()));
         if (sResult == 0)
         {
-            // ºñ±³ °¡´ÉÇÑ ºÎºÐÀÌ ¸ðµÎ °°´Ù¸é, º¸´Ù ±ä ÂÊÀÌ Å©´Ù.
+            // ë¹„êµ ê°€ëŠ¥í•œ ë¶€ë¶„ì´ ëª¨ë‘ ê°™ë‹¤ë©´, ë³´ë‹¤ ê¸´ ìª½ì´ í¬ë‹¤.
             sResult = (aStr1.length() - aStartIdx1) - aStr2.length();
             sResult = (sResult > 0) ? 1 : (sResult < 0) ? -1 : 0;
         }
@@ -104,14 +104,14 @@ public final class StringUtils
     }
 
     /**
-     * ´ë¼Ò¹®ÀÚ ±¸º°¾øÀÌ, µÎ ¹®ÀÚ¿­À» ºñ±³ÇÑ´Ù.
+     * ëŒ€ì†Œë¬¸ìž êµ¬ë³„ì—†ì´, ë‘ ë¬¸ìžì—´ì„ ë¹„êµí•œë‹¤.
      * 
-     * @param aStr1 ¹®ÀÚ¿­ 1
-     * @param aStartIdx1 aStr1¿¡¼­ ºñ±³¸¦ ½ÃÀÛÇÒ À§Ä¡(0 base)
-     * @param aStr2 ¹®ÀÚ¿­ 2
-     * @param aStartIdx2 aStr2¿¡¼­ ºñ±³¸¦ ½ÃÀÛÇÒ À§Ä¡(0 base)
-     * @param aLength ºñ±³ÇÒ ±æÀÌ
-     * @return °°À¸¸é 0, aStr1ÀÌ Å©¸é ¾ç¼ö, ¾Æ´Ï¸é À½¼ö
+     * @param aStr1 ë¬¸ìžì—´ 1
+     * @param aStartIdx1 aStr1ì—ì„œ ë¹„êµë¥¼ ì‹œìž‘í•  ìœ„ì¹˜(0 base)
+     * @param aStr2 ë¬¸ìžì—´ 2
+     * @param aStartIdx2 aStr2ì—ì„œ ë¹„êµë¥¼ ì‹œìž‘í•  ìœ„ì¹˜(0 base)
+     * @param aLength ë¹„êµí•  ê¸¸ì´
+     * @return ê°™ìœ¼ë©´ 0, aStr1ì´ í¬ë©´ ì–‘ìˆ˜, ì•„ë‹ˆë©´ ìŒìˆ˜
      */
     public static int compareIgnoreCase(String aStr1, int aStartIdx1, String aStr2, int aStartIdx2, int aLength)
     {

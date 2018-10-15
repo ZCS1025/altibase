@@ -19,11 +19,11 @@
  * $Id: qmgPartition.cpp 20233 2007-02-01 01:58:21Z shsuh $
  *
  * Description :
- *     Partition Graph¸¦ À§ÇÑ ¼öÇà ÇÔ¼ö
+ *     Partition Graphë¥¼ ìœ„í•œ ìˆ˜í–‰ í•¨ìˆ˜
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  **********************************************************************/
 
@@ -49,12 +49,12 @@ qmgPartition::init( qcStatement * aStatement,
 {
 /***********************************************************************
  *
- * Description : qmgPartition GraphÀÇ ÃÊ±âÈ­
+ * Description : qmgPartition Graphì˜ ì´ˆê¸°í™”
  *
  * Implementation :
- *    (1) qmgPartitionÀ» À§ÇÑ °ø°£ ÇÒ´ç ¹ŞÀ½
- *    (2) graph( ¸ğµç Graph¸¦ À§ÇÑ °øÅë ÀÚ·á ±¸Á¶) ÃÊ±âÈ­
- *    (3) out ¼³Á¤
+ *    (1) qmgPartitionì„ ìœ„í•œ ê³µê°„ í• ë‹¹ ë°›ìŒ
+ *    (2) graph( ëª¨ë“  Graphë¥¼ ìœ„í•œ ê³µí†µ ìë£Œ êµ¬ì¡°) ì´ˆê¸°í™”
+ *    (3) out ì„¤ì •
  *
  ***********************************************************************/
 
@@ -64,7 +64,7 @@ qmgPartition::init( qcStatement * aStatement,
     IDU_FIT_POINT_FATAL( "qmgPartition::init::__FT__" );
 
     //---------------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //---------------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -72,16 +72,16 @@ qmgPartition::init( qcStatement * aStatement,
     IDE_DASSERT( aFrom != NULL );
 
     //---------------------------------------------------
-    // Partition Graph¸¦ À§ÇÑ ±âº» ÃÊ±âÈ­
+    // Partition Graphë¥¼ ìœ„í•œ ê¸°ë³¸ ì´ˆê¸°í™”
     //---------------------------------------------------
 
-    // qmgPartitionÀ» À§ÇÑ °ø°£ ÇÒ´ç
+    // qmgPartitionì„ ìœ„í•œ ê³µê°„ í• ë‹¹
     IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF( qmgPARTITION ),
                                              (void**) &sMyGraph )
               != IDE_SUCCESS );
 
 
-    // Graph °øÅë Á¤º¸ÀÇ ÃÊ±âÈ­
+    // Graph ê³µí†µ ì •ë³´ì˜ ì´ˆê¸°í™”
     IDE_TEST( qmg::initGraph( & sMyGraph->graph ) != IDE_SUCCESS );
 
     sMyGraph->graph.type = QMG_PARTITION;
@@ -94,7 +94,7 @@ qmgPartition::init( qcStatement * aStatement,
     sMyGraph->graph.makePlan = qmgPartition::makePlan;
     sMyGraph->graph.printGraph = qmgPartition::printGraph;
 
-    // Disk/Memory Á¤º¸ ¼³Á¤
+    // Disk/Memory ì •ë³´ ì„¤ì •
     sTableRef =  sMyGraph->graph.myFrom->tableRef;
     if ( ( QC_SHARED_TMPLATE(aStatement)->tmplate.rows[sTableRef->table].lflag
            & MTC_TUPLE_STORAGE_MASK ) == MTC_TUPLE_STORAGE_DISK )
@@ -109,7 +109,7 @@ qmgPartition::init( qcStatement * aStatement,
     }
 
     //---------------------------------------------------
-    // Partition °íÀ¯ Á¤º¸ÀÇ ÃÊ±âÈ­
+    // Partition ê³ ìœ  ì •ë³´ì˜ ì´ˆê¸°í™”
     //---------------------------------------------------
 
     sMyGraph->limit = NULL;
@@ -124,7 +124,7 @@ qmgPartition::init( qcStatement * aStatement,
 
     sMyGraph->forceIndexScan = ID_FALSE;
     
-    // out ¼³Á¤
+    // out ì„¤ì •
     *aGraph = (qmgGraph *)sMyGraph;
 
     return IDE_SUCCESS;
@@ -139,7 +139,7 @@ qmgPartition::optimize( qcStatement * aStatement, qmgGraph * aGraph )
 {
 /***********************************************************************
  *
- * Description : qmgPartitionÀÇ ÃÖÀûÈ­
+ * Description : qmgPartitionì˜ ìµœì í™”
  *
  * Implementation :
  *
@@ -167,14 +167,14 @@ qmgPartition::optimize( qcStatement * aStatement, qmgGraph * aGraph )
     IDU_FIT_POINT_FATAL( "qmgPartition::optimize::__FT__" );
 
     //---------------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //---------------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aGraph != NULL );
 
     //---------------------------------------------------
-    // ±âº» ÃÊ±âÈ­
+    // ê¸°ë³¸ ì´ˆê¸°í™”
     //---------------------------------------------------
 
     sMyGraph          = (qmgPARTITION*) aGraph;
@@ -188,26 +188,26 @@ qmgPartition::optimize( qcStatement * aStatement, qmgGraph * aGraph )
 
     //---------------------------------------------------
     // PROJ-1404
-    // ºÒÇÊ¿äÇÑ bad transitive predicateÀ» Á¦°ÅÇÑ´Ù.
+    // ë¶ˆí•„ìš”í•œ bad transitive predicateì„ ì œê±°í•œë‹¤.
     //---------------------------------------------------
     
-    // »ı¼ºµÈ transitive predicateÀÌ »ç¿ëÀÚ°¡ ÀÔ·ÂÇÑ predicate°ú Áßº¹µÇ´Â
-    // °æ¿ì °¡´ÉÇÑ ÀÌ¸¦ Á¦°ÅÇÏ´Â °ÍÀÌ ÁÁ´Ù.
-    // (¾ÆÁ÷Àº »ı¼ºÇÏ´Â transitive predicateÀÌ one table predicateÀÌ¶ó¼­
-    // selection graph¿¡¼­ Ã³¸®ÇÒ ¼ö ÀÖ´Ù.)
+    // ìƒì„±ëœ transitive predicateì´ ì‚¬ìš©ìê°€ ì…ë ¥í•œ predicateê³¼ ì¤‘ë³µë˜ëŠ”
+    // ê²½ìš° ê°€ëŠ¥í•œ ì´ë¥¼ ì œê±°í•˜ëŠ” ê²ƒì´ ì¢‹ë‹¤.
+    // (ì•„ì§ì€ ìƒì„±í•˜ëŠ” transitive predicateì´ one table predicateì´ë¼ì„œ
+    // selection graphì—ì„œ ì²˜ë¦¬í•  ìˆ˜ ìˆë‹¤.)
     //
-    // ¿¹1)
+    // ì˜ˆ1)
     // select * from ( select * from t1 where t1.i1=1 ) v1, t2
     // where v1.i1=t2.i1 and t2.i1=1;
-    // transitive predicate {t1.i1=1}À» »ı¼ºÇÏÁö¸¸
-    // v1 whereÀıÀÇ predicate°ú Áßº¹µÇ¹Ç·Î Á¦°ÅÇÏ´Â °ÍÀÌ ÁÁ´Ù.
+    // transitive predicate {t1.i1=1}ì„ ìƒì„±í•˜ì§€ë§Œ
+    // v1 whereì ˆì˜ predicateê³¼ ì¤‘ë³µë˜ë¯€ë¡œ ì œê±°í•˜ëŠ” ê²ƒì´ ì¢‹ë‹¤.
     //
-    // ¿¹2)
+    // ì˜ˆ2)
     // select * from t1 left join t2 on t1.i1=t2.i1 and t1.i1=1
     // where t2.i1=1;
-    // onÀı¿¡¼­ transitive predicate {t2.i1=1}À» »ı¼ºÇÏÁö¸¸
-    // ÀÌ´Â right·Î ³»·Á°¡°Ô µÇ°í whereÀı¿¡¼­ ³»·Á¿Â
-    // predicate°ú Áßº¹µÇ¹Ç·Î Á¦°ÅÇÏ´Â °ÍÀÌ ÁÁ´Ù.
+    // onì ˆì—ì„œ transitive predicate {t2.i1=1}ì„ ìƒì„±í•˜ì§€ë§Œ
+    // ì´ëŠ” rightë¡œ ë‚´ë ¤ê°€ê²Œ ë˜ê³  whereì ˆì—ì„œ ë‚´ë ¤ì˜¨
+    // predicateê³¼ ì¤‘ë³µë˜ë¯€ë¡œ ì œê±°í•˜ëŠ” ê²ƒì´ ì¢‹ë‹¤.
     
     if ( sMyGraph->graph.myPredicate != NULL )
     {
@@ -222,7 +222,7 @@ qmgPartition::optimize( qcStatement * aStatement, qmgGraph * aGraph )
     }
     
     //---------------------------------------------------
-    // SubqueryÀÇ Graph »ı¼º
+    // Subqueryì˜ Graph ìƒì„±
     //---------------------------------------------------
 
     if ( sMyGraph->graph.myPredicate != NULL )
@@ -239,10 +239,10 @@ qmgPartition::optimize( qcStatement * aStatement, qmgGraph * aGraph )
     }
 
     //---------------------------------------------------
-    // partition keyrangeÃßÃâ ¹× °Ë»ç
+    // partition keyrangeì¶”ì¶œ ë° ê²€ì‚¬
     //---------------------------------------------------
 
-    // ÀÏ´Ü ¸ğµç ÆÄÆ¼¼Ç¿¡ ´ëÇÑ Á¤º¸¸¦ ±¸ÃàÇÑ´Ù.
+    // ì¼ë‹¨ ëª¨ë“  íŒŒí‹°ì…˜ì— ëŒ€í•œ ì •ë³´ë¥¼ êµ¬ì¶•í•œë‹¤.
     IDE_TEST(
         qmoPartition::makePartitions(
             aStatement,
@@ -251,12 +251,12 @@ qmgPartition::optimize( qcStatement * aStatement, qmgGraph * aGraph )
 
     if ( sMyGraph->graph.myPredicate != NULL )
     {
-        // partition pruningÀ» À§ÇØ predicate¸¦ º¹»ç.
-        // fixed predicate¿¡ ´ëÇØ¼­¸¸ partition keyrange¸¦ ÃßÃâÇÒ
-        // ¼ö ÀÖÀ¸¹Ç·Î,
-        // subquery, variable predicate¸¦ Á¦¿ÜÇÏ°í º¹»çÇÑ´Ù.
+        // partition pruningì„ ìœ„í•´ predicateë¥¼ ë³µì‚¬.
+        // fixed predicateì— ëŒ€í•´ì„œë§Œ partition keyrangeë¥¼ ì¶”ì¶œí• 
+        // ìˆ˜ ìˆìœ¼ë¯€ë¡œ,
+        // subquery, variable predicateë¥¼ ì œì™¸í•˜ê³  ë³µì‚¬í•œë‹¤.
 
-        // partition key range Ãâ·Â¿ë
+        // partition key range ì¶œë ¥ìš©
         IDE_TEST(qmoPred::copyPredicate4Partition(
                      aStatement,
                      sMyGraph->graph.myPredicate,
@@ -266,15 +266,15 @@ qmgPartition::optimize( qcStatement * aStatement, qmgGraph * aGraph )
                      ID_FALSE )
                  != IDE_SUCCESS );
 
-        // predicateÀ» º¹»çÇÏ¿´±â ¶§¹®¿¡ intermediate tupleÀ» »õ·Î ÇÒ´çÇÔ.
+        // predicateì„ ë³µì‚¬í•˜ì˜€ê¸° ë•Œë¬¸ì— intermediate tupleì„ ìƒˆë¡œ í• ë‹¹í•¨.
         IDE_TEST( qtc::fixAfterValidation( QC_QMP_MEM(aStatement),
                                            QC_SHARED_TMPLATE(aStatement) )
                   != IDE_SUCCESS );
         
-        // subquery predicateÀ» Á¦¿ÜÇÏ¿´±â ¶§¹®¿¡ nullÀÏ ¼ö ÀÖÀ½.
+        // subquery predicateì„ ì œì™¸í•˜ì˜€ê¸° ë•Œë¬¸ì— nullì¼ ìˆ˜ ìˆìŒ.
         if( sPredicate != NULL )
         {
-            // predicateÀÇ Àç¹èÄ¡(Åë°èÁ¤º¸ ¹«½ÃÇÏ°í ±×³É Àç¹èÄ¡¸¸ ÇÑ´Ù.)
+            // predicateì˜ ì¬ë°°ì¹˜(í†µê³„ì •ë³´ ë¬´ì‹œí•˜ê³  ê·¸ëƒ¥ ì¬ë°°ì¹˜ë§Œ í•œë‹¤.)
             IDE_TEST( qmoPred::relocatePredicate4PartTable(
                           aStatement,
                           sPredicate,
@@ -284,7 +284,7 @@ qmgPartition::optimize( qcStatement * aStatement, qmgGraph * aGraph )
                           & sPredicate )
                       != IDE_SUCCESS );
             
-            // partition keyrange predicate »ı¼º.
+            // partition keyrange predicate ìƒì„±.
             IDE_TEST( qmoPred::makePartKeyRangePredicate(
                           aStatement,
                           sMyGraph->graph.myQuerySet,
@@ -294,7 +294,7 @@ qmgPartition::optimize( qcStatement * aStatement, qmgGraph * aGraph )
                           &sPartKeyRangePred )
                       != IDE_SUCCESS );
 
-            // partition keyrange predicate·ÎºÎÅÍ partition keyrangeÃßÃâ.
+            // partition keyrange predicateë¡œë¶€í„° partition keyrangeì¶”ì¶œ.
             IDE_TEST( extractPartKeyRange(
                           aStatement,
                           sMyGraph->graph.myQuerySet,
@@ -306,8 +306,8 @@ qmgPartition::optimize( qcStatement * aStatement, qmgGraph * aGraph )
                           &sPartKeyRange )
                       != IDE_SUCCESS );
 
-            // sPartKeyRangeNode´Â Ãâ·Â¿ëÀÌ´Ù.
-            // sPartKeyRange´Â ÇÁ·ç´×¿ë.
+            // sPartKeyRangeNodeëŠ” ì¶œë ¥ìš©ì´ë‹¤.
+            // sPartKeyRangeëŠ” í”„ë£¨ë‹ìš©.
         }
         else
         {
@@ -326,8 +326,8 @@ qmgPartition::optimize( qcStatement * aStatement, qmgGraph * aGraph )
         }
         else
         {
-            // partition keyrange°¡ ¾ø´Ù.
-            // pruningÀ» ÇÒ ÇÊ¿ä°¡ ¾øÀ½.
+            // partition keyrangeê°€ ì—†ë‹¤.
+            // pruningì„ í•  í•„ìš”ê°€ ì—†ìŒ.
             // Nothing to do.
         }
     }
@@ -337,7 +337,7 @@ qmgPartition::optimize( qcStatement * aStatement, qmgGraph * aGraph )
     }
 
     //---------------------------------------------------
-    // partitionº° Åë°è Á¤º¸ ±¸Ãà
+    // partitionë³„ í†µê³„ ì •ë³´ êµ¬ì¶•
     //---------------------------------------------------
 
     IDE_TEST( qcmPartition::validateAndLockPartitions(
@@ -346,13 +346,13 @@ qmgPartition::optimize( qcStatement * aStatement, qmgGraph * aGraph )
                   SMI_TABLE_LOCK_IS )
               != IDE_SUCCESS );
 
-    /* PROJ-2464 hybrid partitioned table Áö¿ø */
+    /* PROJ-2464 hybrid partitioned table ì§€ì› */
     IDE_TEST( qcmPartition::makePartitionSummary( aStatement, sTableRef )
               != IDE_SUCCESS );
 
-    // ¼±ÅÃµÈ ÆÄÆ¼¼ÇÀÇ °³¼ö¸¦ ±¸ÇÏ¸é¼­
-    // Åë°èÁ¤º¸¸¦ ±¸ÇÑ´Ù.
-    // Æ©ÇÃ ¼ÂÀ» ÇÒ´çÇÑ´Ù.
+    // ì„ íƒëœ íŒŒí‹°ì…˜ì˜ ê°œìˆ˜ë¥¼ êµ¬í•˜ë©´ì„œ
+    // í†µê³„ì •ë³´ë¥¼ êµ¬í•œë‹¤.
+    // íŠœí”Œ ì…‹ì„ í• ë‹¹í•œë‹¤.
     for( sPartitionCount = 0,
              sPartitionRef = sTableRef->partitionRef;
          sPartitionRef != NULL;
@@ -378,7 +378,7 @@ qmgPartition::optimize( qcStatement * aStatement, qmgGraph * aGraph )
             sMyGraph->graph.myFrom;
     }
 
-    // index tableÀÇ Åë°èÁ¤º¸¸¦ ±¸ÇÑ´Ù.
+    // index tableì˜ í†µê³„ì •ë³´ë¥¼ êµ¬í•œë‹¤.
     for ( i = 0; i < sTableRef->indexTableCount; i++ )
     {
         IDE_TEST( qmoStat::getStatInfo4BaseTable(
@@ -389,8 +389,8 @@ qmgPartition::optimize( qcStatement * aStatement, qmgGraph * aGraph )
                   != IDE_SUCCESS );
     }
 
-    // °¢°¢ÀÇ partition¿¡ ´ëÇÑ Åë°è Á¤º¸¸¦ ±¸ÇÑ ÈÄ,
-    // ÀÌ¸¦ ÀÌ¿ëÇÏ¿© partitioned tableÀÇ Åë°è Á¤º¸¸¦ ±¸ÇÑ´Ù.
+    // ê°ê°ì˜ partitionì— ëŒ€í•œ í†µê³„ ì •ë³´ë¥¼ êµ¬í•œ í›„,
+    // ì´ë¥¼ ì´ìš©í•˜ì—¬ partitioned tableì˜ í†µê³„ ì •ë³´ë¥¼ êµ¬í•œë‹¤.
     IDE_TEST( qmoStat::getStatInfo4PartitionedTable(
                   aStatement,
                   sMyGraph->graph.myQuerySet->SFWGH->hints->optGoalType,
@@ -399,20 +399,20 @@ qmgPartition::optimize( qcStatement * aStatement, qmgGraph * aGraph )
               != IDE_SUCCESS );
 
     //---------------------------------------------------
-    // global index¸¦ À§ÇÑ predicate ÃÖÀûÈ­
+    // global indexë¥¼ ìœ„í•œ predicate ìµœì í™”
     //---------------------------------------------------
 
     if ( sMyGraph->graph.myPredicate != NULL )
     {
-        // selectivity °è»ê¿ëÀ¸·Î º¹»ç
+        // selectivity ê³„ì‚°ìš©ìœ¼ë¡œ ë³µì‚¬
         IDE_TEST(qmoPred::deepCopyPredicate(
                      QC_QMP_MEM(aStatement),
                      sMyGraph->graph.myPredicate,
                      & sMyPredicate )
                  != IDE_SUCCESS );
 
-        // PredicateÀÇ Àç¹èÄ¡ ¹× °³º° PredicateÀÇ Selectivity °è»ê
-        // selectivity °è»ê°ú access method °Ô»ê¿ëÀ¸·Î¸¸ »ç¿ëÇÑ´Ù.
+        // Predicateì˜ ì¬ë°°ì¹˜ ë° ê°œë³„ Predicateì˜ Selectivity ê³„ì‚°
+        // selectivity ê³„ì‚°ê³¼ access method ê²Œì‚°ìš©ìœ¼ë¡œë§Œ ì‚¬ìš©í•œë‹¤.
         IDE_TEST( qmoPred::relocatePredicate(
                       aStatement,
                       sMyPredicate,
@@ -428,24 +428,24 @@ qmgPartition::optimize( qcStatement * aStatement, qmgGraph * aGraph )
     }
 
     //---------------------------------------------------------------
-    // child ÃÖÀûÈ­
+    // child ìµœì í™”
     //---------------------------------------------------------------
 
     if( sPartitionCount >= 1 )
     {
-        //¼±ÅÃµÈ ÆÄÆ¼¼ÇÀÌ ÃÖ¼Ò ÇÑ°³ ÀÌ»óÀÎ °æ¿ìÀÓ.
+        //ì„ íƒëœ íŒŒí‹°ì…˜ì´ ìµœì†Œ í•œê°œ ì´ìƒì¸ ê²½ìš°ì„.
 
         //---------------------------------------------------------------
-        // child graphÀÇ »ı¼º
+        // child graphì˜ ìƒì„±
         //---------------------------------------------------------------
 
-        // graph->children±¸Á¶Ã¼ÀÇ ¸Ş¸ğ¸® ÇÒ´ç.
+        // graph->childrenêµ¬ì¡°ì²´ì˜ ë©”ëª¨ë¦¬ í• ë‹¹.
         IDE_TEST( QC_QMP_MEM(aStatement)->alloc(
                       ID_SIZEOF(qmgChildren) * sPartitionCount,
                       (void**) &sMyGraph->graph.children )
                   != IDE_SUCCESS );
 
-        // child graph pointerÀÇ ¸Ş¸ğ¸® ÇÒ´ç.
+        // child graph pointerì˜ ë©”ëª¨ë¦¬ í• ë‹¹.
         IDE_TEST( QC_QMP_MEM(aStatement)->alloc(
                       ID_SIZEOF(qmgGraph *) * sPartitionCount,
                       (void**) &sChildGraph )
@@ -462,12 +462,12 @@ qmgPartition::optimize( qcStatement * aStatement, qmgGraph * aGraph )
                                           &sChildGraph[i] )
                       != IDE_SUCCESS );
 
-            // child graph¿¡ predicate¸¦ ³»¸².
-            // join graph¿¡¼­ ÀÌ¹Ì ³»·Á¿Ã °ÍÀº ´Ù ³»·Á¿Â »óÅÂ.
-            // subquery predicate¸¦ »©°í ³ª¸ÓÁö predicateÀº ¸ğµÎ ³»¸°´Ù.
-            // ÁÖÀÇÁ¡ : º¹»çÇØ¼­ ³»·Á¾ß ÇÔ.
-            // TODO1502: in subquery keyrange¸¸ ¸ø³»¸®´Â°ÇÁö
-            // ´Ù ³»¸®¸é ¾ÈµÇ´Â°ÇÁö Ã¶ÀúÇÑ Á¶»ç ÇÊ¿ä.
+            // child graphì— predicateë¥¼ ë‚´ë¦¼.
+            // join graphì—ì„œ ì´ë¯¸ ë‚´ë ¤ì˜¬ ê²ƒì€ ë‹¤ ë‚´ë ¤ì˜¨ ìƒíƒœ.
+            // subquery predicateë¥¼ ë¹¼ê³  ë‚˜ë¨¸ì§€ predicateì€ ëª¨ë‘ ë‚´ë¦°ë‹¤.
+            // ì£¼ì˜ì  : ë³µì‚¬í•´ì„œ ë‚´ë ¤ì•¼ í•¨.
+            // TODO1502: in subquery keyrangeë§Œ ëª»ë‚´ë¦¬ëŠ”ê±´ì§€
+            // ë‹¤ ë‚´ë¦¬ë©´ ì•ˆë˜ëŠ”ê±´ì§€ ì² ì €í•œ ì¡°ì‚¬ í•„ìš”.
             IDE_TEST(qmoPred::copyPredicate4Partition(
                          aStatement,
                          sMyGraph->graph.myPredicate,
@@ -488,13 +488,13 @@ qmgPartition::optimize( qcStatement * aStatement, qmgGraph * aGraph )
                      != IDE_SUCCESS );
         }
 
-        // predicateÀ» º¹»çÇÏ¿´±â ¶§¹®¿¡ intermediate tupleÀ» »õ·Î ÇÒ´çÇÔ.
+        // predicateì„ ë³µì‚¬í•˜ì˜€ê¸° ë•Œë¬¸ì— intermediate tupleì„ ìƒˆë¡œ í• ë‹¹í•¨.
         IDE_TEST( qtc::fixAfterValidation( QC_QMP_MEM(aStatement),
                                            QC_SHARED_TMPLATE(aStatement) )
                   != IDE_SUCCESS );
 
         //---------------------------------------------------------------
-        // child graphÀÇ optimize
+        // child graphì˜ optimize
         //---------------------------------------------------------------
 
         for( i = 0, sPartitionRef = sTableRef->partitionRef;
@@ -502,7 +502,7 @@ qmgPartition::optimize( qcStatement * aStatement, qmgGraph * aGraph )
              i++, sPartitionRef = sPartitionRef->next )
         {
             // PROJ-1705
-            // validation½Ã ¼öÁıµÈ ÁúÀÇ¿¡ »ç¿ëµÈ ÄÃ·³Á¤º¸ ÀüÆÄ
+            // validationì‹œ ìˆ˜ì§‘ëœ ì§ˆì˜ì— ì‚¬ìš©ëœ ì»¬ëŸ¼ì •ë³´ ì „íŒŒ
 
             sMtcTuple = &(QC_SHARED_TMPLATE(aStatement)->tmplate.rows[sPartitionRef->table]);
 
@@ -514,9 +514,9 @@ qmgPartition::optimize( qcStatement * aStatement, qmgGraph * aGraph )
                 sFlag = QC_SHARED_TMPLATE(aStatement)->tmplate.
                     rows[sTableRef->table].columns[sColumnCnt].flag;
 
-                /* PROJ-2464 hybrid partitioned table Áö¿ø
-                 *  Partitionº°·Î DML Without Retry¸¦ Áö¿øÇÏ±â À§ÇØ,
-                 *  MTC_COLUMN_USE_WHERE_MASK¿Í MTC_COLUMN_USE_SET_MASK¸¦ Partition Tuple¿¡ º¹»çÇÑ´Ù.
+                /* PROJ-2464 hybrid partitioned table ì§€ì›
+                 *  Partitionë³„ë¡œ DML Without Retryë¥¼ ì§€ì›í•˜ê¸° ìœ„í•´,
+                 *  MTC_COLUMN_USE_WHERE_MASKì™€ MTC_COLUMN_USE_SET_MASKë¥¼ Partition Tupleì— ë³µì‚¬í•œë‹¤.
                  */
                 sMtcTuple->columns[sColumnCnt].flag &= ~MTC_COLUMN_USE_COLUMN_MASK;
                 sMtcTuple->columns[sColumnCnt].flag &= ~MTC_COLUMN_USE_TARGET_MASK;
@@ -529,7 +529,7 @@ qmgPartition::optimize( qcStatement * aStatement, qmgGraph * aGraph )
                 sMtcTuple->columns[sColumnCnt].flag |= sFlag & MTC_COLUMN_USE_SET_MASK;
             }
 
-            // °¢°¢ÀÇ ÆÄÆ¼¼Ç º°·Î optimize.
+            // ê°ê°ì˜ íŒŒí‹°ì…˜ ë³„ë¡œ optimize.
             IDE_TEST( sChildGraph[i]->optimize( aStatement,
                                                 sChildGraph[i] )
                       != IDE_SUCCESS );
@@ -553,12 +553,12 @@ qmgPartition::optimize( qcStatement * aStatement, qmgGraph * aGraph )
     }
 
     //---------------------------------------------------
-    // accessMethod ¼±ÅÃ
+    // accessMethod ì„ íƒ
     //---------------------------------------------------
 
-    // rid predicate ÀÌ ÀÖ´Â °æ¿ì ¹«Á¶°Ç rid scan À» ½ÃµµÇÑ´Ù.
-    // rid predicate ÀÌ ÀÖ´õ¶óµµ  rid scan À» ÇÒ¼ö ¾ø´Â °æ¿ìµµ ÀÖ´Ù.
-    // ÀÌ °æ¿ì¿¡µµ index scan ÀÌ µÇÁö ¾Ê°í full scan À» ÇÏ°Ô µÈ´Ù.
+    // rid predicate ì´ ìˆëŠ” ê²½ìš° ë¬´ì¡°ê±´ rid scan ì„ ì‹œë„í•œë‹¤.
+    // rid predicate ì´ ìˆë”ë¼ë„  rid scan ì„ í• ìˆ˜ ì—†ëŠ” ê²½ìš°ë„ ìˆë‹¤.
+    // ì´ ê²½ìš°ì—ë„ index scan ì´ ë˜ì§€ ì•Šê³  full scan ì„ í•˜ê²Œ ëœë‹¤.
     if ( sMyGraph->graph.ridPredicate != NULL )
     {
         IDE_TEST(QC_QMP_MEM(aStatement)->alloc(ID_SIZEOF(qmoAccessMethod),
@@ -584,7 +584,7 @@ qmgPartition::optimize( qcStatement * aStatement, qmgGraph * aGraph )
     }
     else
     {
-        // »ç¿ë °¡´ÉÇÑ access methodµéÀ» ¼¼ÆÃÇÑ´Ù.
+        // ì‚¬ìš© ê°€ëŠ¥í•œ access methodë“¤ì„ ì„¸íŒ…í•œë‹¤.
         sMyGraph->accessMethodCnt = sTableRef->tableInfo->indexCount + 1;
 
         IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF(qmoAccessMethod) *
@@ -606,8 +606,8 @@ qmgPartition::optimize( qcStatement * aStatement, qmgGraph * aGraph )
                   != IDE_SUCCESS);
 
         // BUG-37125 tpch plan optimization
-        // ÆÄÆ¼¼Ç ÇÁ·ç´×ÀÌ µÇ¾úÀ»¶§ ºÎÁ¤È®ÇÑ Åë°èÁ¤º¸·Î scan method ¸¦ Á¤ÇÏ°í ÀÖ´Ù.
-        // °¢°¢ÀÇ ÆÄÆ¼¼ÇÀÇ cost °ªÀÇ ÇÕÀ» °¡Áö°í scan method ¸¦ ¼³Á¤ÇØ¾ß ÇÑ´Ù.
+        // íŒŒí‹°ì…˜ í”„ë£¨ë‹ì´ ë˜ì—ˆì„ë•Œ ë¶€ì •í™•í•œ í†µê³„ì •ë³´ë¡œ scan method ë¥¼ ì •í•˜ê³  ìˆë‹¤.
+        // ê°ê°ì˜ íŒŒí‹°ì…˜ì˜ cost ê°’ì˜ í•©ì„ ê°€ì§€ê³  scan method ë¥¼ ì„¤ì •í•´ì•¼ í•œë‹¤.
         IDE_TEST( reviseAccessMethodsCost( sMyGraph,
                                            sPartitionCount )
                   != IDE_SUCCESS);
@@ -635,7 +635,7 @@ qmgPartition::optimize( qcStatement * aStatement, qmgGraph * aGraph )
         }
 
         // To fix BUG-12742
-        // hint¸¦ »ç¿ëÇÑ °æ¿ì´Â index¸¦ Á¦°ÅÇÒ ¼ö ¾ø´Ù.
+        // hintë¥¼ ì‚¬ìš©í•œ ê²½ìš°ëŠ” indexë¥¼ ì œê±°í•  ìˆ˜ ì—†ë‹¤.
         if( (sSelectedScanHint == QMG_USED_SCAN_HINT) ||
             (aStatement->myPlan->parseTree->stmtKind == QCI_STMT_DEQUEUE) )
         {
@@ -647,8 +647,8 @@ qmgPartition::optimize( qcStatement * aStatement, qmgGraph * aGraph )
         }
 
         //---------------------------------------------------
-        // selected index°¡ global indexÀÎ °æ¿ì
-        // hint°¡ global indexÀÎ °æ¿ì
+        // selected indexê°€ global indexì¸ ê²½ìš°
+        // hintê°€ global indexì¸ ê²½ìš°
         //---------------------------------------------------
 
         if ( sMyGraph->selectedIndex != NULL )
@@ -671,24 +671,24 @@ qmgPartition::optimize( qcStatement * aStatement, qmgGraph * aGraph )
     }
 
     //---------------------------------------------------
-    // Preserved Order ¼³Á¤
+    // Preserved Order ì„¤ì •
     //---------------------------------------------------
 
-    // partitionÀÌ 1°³ÀÎ °æ¿ì
-    // global index°¡ ¼±ÅÃµÈ °æ¿ì
-    // full scan hint°¡ ÀÖ´Â °æ¿ì
-    // index scan hint°¡ ÀÖ´Â °æ¿ì
+    // partitionì´ 1ê°œì¸ ê²½ìš°
+    // global indexê°€ ì„ íƒëœ ê²½ìš°
+    // full scan hintê°€ ìˆëŠ” ê²½ìš°
+    // index scan hintê°€ ìˆëŠ” ê²½ìš°
 
     if ( sIsIndexTableScan == ID_TRUE )
     {
         //---------------------------------------------------
-        // INDEX TABLE SCANÀÌ ¼±ÅÃµÈ °æ¿ì
+        // INDEX TABLE SCANì´ ì„ íƒëœ ê²½ìš°
         //---------------------------------------------------
 
         // To Fix PR-9181
-        // Index ScanÀÌ¶ó ÇÒ Áö¶óµµ
-        // IN SUBQUERY KEY RANGE°¡ »ç¿ëµÉ °æ¿ì
-        // Order°¡ º¸ÀåµÇÁö ¾Ê´Â´Ù.
+        // Index Scanì´ë¼ í•  ì§€ë¼ë„
+        // IN SUBQUERY KEY RANGEê°€ ì‚¬ìš©ë  ê²½ìš°
+        // Orderê°€ ë³´ì¥ë˜ì§€ ì•ŠëŠ”ë‹¤.
         if ( ( sMyGraph->selectedMethod->method->flag &
                QMO_STAT_CARD_IDX_IN_SUBQUERY_MASK )
              == QMO_STAT_CARD_IDX_IN_SUBQUERY_TRUE )
@@ -714,13 +714,13 @@ qmgPartition::optimize( qcStatement * aStatement, qmgGraph * aGraph )
         if ( sMyGraph->selectedMethod->method == NULL )
         {
             //---------------------------------------------------
-            // FULL SCANÀÌ ¼±ÅÃµÈ °æ¿ì
+            // FULL SCANì´ ì„ íƒëœ ê²½ìš°
             //---------------------------------------------------
 
             if( sSelectedScanHint == QMG_USED_ONLY_FULL_SCAN_HINT )
             {
                 //---------------------------------------------------
-                // FULL SCAN Hint°¡ ¼±ÅÃµÈ °æ¿ì
+                // FULL SCAN Hintê°€ ì„ íƒëœ ê²½ìš°
                 //---------------------------------------------------
 
                 sMyGraph->graph.preservedOrder = NULL;
@@ -731,7 +731,7 @@ qmgPartition::optimize( qcStatement * aStatement, qmgGraph * aGraph )
             else
             {
                 //---------------------------------------------------
-                // cost¿¡ ÀÇÇØ FULL SCANÀÌ ¼±ÅÃµÈ °æ¿ì
+                // costì— ì˜í•´ FULL SCANì´ ì„ íƒëœ ê²½ìš°
                 //---------------------------------------------------
 
                 if ( sMyGraph->accessMethodCnt > 1 )
@@ -752,20 +752,20 @@ qmgPartition::optimize( qcStatement * aStatement, qmgGraph * aGraph )
 
                     if ( sExistIndexTable == ID_TRUE )
                     {
-                        // global index°¡ Á¸ÀçÇÏ´Â °æ¿ì
+                        // global indexê°€ ì¡´ì¬í•˜ëŠ” ê²½ìš°
                         sMyGraph->graph.flag &= ~QMG_PRESERVED_ORDER_MASK;
                         sMyGraph->graph.flag |= QMG_PRESERVED_ORDER_NOT_DEFINED;
                     }
                     else
                     {
-                        // global index°¡ ¾ø´Â °æ¿ì
+                        // global indexê°€ ì—†ëŠ” ê²½ìš°
                         sMyGraph->graph.flag &= ~QMG_PRESERVED_ORDER_MASK;
                         sMyGraph->graph.flag |= QMG_PRESERVED_ORDER_NEVER;
                     }
                 }
                 else
                 {
-                    // global index°¡ ¾ø´Â °æ¿ì
+                    // global indexê°€ ì—†ëŠ” ê²½ìš°
                     sMyGraph->graph.flag &= ~QMG_PRESERVED_ORDER_MASK;
                     sMyGraph->graph.flag |= QMG_PRESERVED_ORDER_NEVER;
                 }
@@ -774,25 +774,25 @@ qmgPartition::optimize( qcStatement * aStatement, qmgGraph * aGraph )
         else
         {
             //---------------------------------------------------
-            // LOCAL INDEX SCANÀÌ ¼±ÅÃµÈ °æ¿ì
+            // LOCAL INDEX SCANì´ ì„ íƒëœ ê²½ìš°
             //---------------------------------------------------
 
-            // local index·Î´Â order¸¦ °¡Áú ¼ö ¾ø´Ù.
+            // local indexë¡œëŠ” orderë¥¼ ê°€ì§ˆ ìˆ˜ ì—†ë‹¤.
             sMyGraph->graph.flag &= ~QMG_PRESERVED_ORDER_MASK;
             sMyGraph->graph.flag |= QMG_PRESERVED_ORDER_NEVER;
         }
     }
 
     //---------------------------------------------------
-    // Parallel query Á¤º¸ÀÇ ¼³Á¤
+    // Parallel query ì •ë³´ì˜ ì„¤ì •
     //---------------------------------------------------
     if (aStatement->myPlan->parseTree->stmtKind == QCI_STMT_SELECT)
     {
         if (sTableRef->mParallelDegree > 1)
         {
-            // parallel degree °¡ 2 ÀÌ»óÀÌ´õ¶óµµ
-            // access method °¡ ´ÙÀ½°ú °°À» °æ¿ì´Â
-            // parallel execution ÀÌ ºÒ°¡´ÉÇÏ´Ù.
+            // parallel degree ê°€ 2 ì´ìƒì´ë”ë¼ë„
+            // access method ê°€ ë‹¤ìŒê³¼ ê°™ì„ ê²½ìš°ëŠ”
+            // parallel execution ì´ ë¶ˆê°€ëŠ¥í•˜ë‹¤.
             //
             // - GLOBAL INDEX SCAN
             if ( sMyGraph->selectedIndex != NULL )
@@ -834,7 +834,7 @@ qmgPartition::optimize( qcStatement * aStatement, qmgGraph * aGraph )
 
     /*
      * BUG-41134
-     * child °¡ parallel ¼öÇà ÇÒ ¼ö ÀÖ´ÂÁö °Ë»ç
+     * child ê°€ parallel ìˆ˜í–‰ í•  ìˆ˜ ìˆëŠ”ì§€ ê²€ì‚¬
      */
     if ((sMyGraph->graph.flag & QMG_PARALLEL_EXEC_MASK) == QMG_PARALLEL_EXEC_TRUE)
     {
@@ -855,20 +855,20 @@ qmgPartition::optimize( qcStatement * aStatement, qmgGraph * aGraph )
     }
 
     //---------------------------------------------------
-    // °øÅë ºñ¿ë Á¤º¸ÀÇ ¼³Á¤
+    // ê³µí†µ ë¹„ìš© ì •ë³´ì˜ ì„¤ì •
     //---------------------------------------------------
 
     if( sPartitionCount >= 1 )
     {
-        // recordSize ¼³Á¤
-        // ¾Æ¹« child graph¿¡¼­ °¡Á®¿À¸é µÈ´Ù.
+        // recordSize ì„¤ì •
+        // ì•„ë¬´ child graphì—ì„œ ê°€ì ¸ì˜¤ë©´ ëœë‹¤.
         sMyGraph->graph.costInfo.recordSize =
             sMyGraph->graph.children[0].childGraph->costInfo.recordSize;
 
         sMyGraph->graph.costInfo.selectivity =
             sMyGraph->selectedMethod->methodSelectivity;
 
-        // inputRecordCnt´Â child·ÎºÎÅÍ ±¸ÇÑ´Ù.
+        // inputRecordCntëŠ” childë¡œë¶€í„° êµ¬í•œë‹¤.
         sMyGraph->graph.costInfo.inputRecordCnt = 0;
 
         for( i = 0, sPartitionRef = sTableRef->partitionRef;
@@ -878,7 +878,7 @@ qmgPartition::optimize( qcStatement * aStatement, qmgGraph * aGraph )
             sMyGraph->graph.costInfo.inputRecordCnt +=
                 sPartitionRef->statInfo->totalRecordCnt;
         }
-        // ·¹ÄÚµå °¹¼ö´Â ÃÖ¼Ò ÇÑ°³ÀÌ»óÀ¸·Î À¯ÁöÇÑ´Ù.
+        // ë ˆì½”ë“œ ê°¯ìˆ˜ëŠ” ìµœì†Œ í•œê°œì´ìƒìœ¼ë¡œ ìœ ì§€í•œë‹¤.
         if( sMyGraph->graph.costInfo.inputRecordCnt < 1 )
         {
             sMyGraph->graph.costInfo.inputRecordCnt = 1;
@@ -888,7 +888,7 @@ qmgPartition::optimize( qcStatement * aStatement, qmgGraph * aGraph )
             // Nothing to do.
         }
 
-        // output record count ¼³Á¤
+        // output record count ì„¤ì •
         sOutputRecordCnt =
             sMyGraph->graph.costInfo.selectivity *
             sMyGraph->graph.costInfo.inputRecordCnt;
@@ -896,7 +896,7 @@ qmgPartition::optimize( qcStatement * aStatement, qmgGraph * aGraph )
         sMyGraph->graph.costInfo.outputRecordCnt =
             ( sOutputRecordCnt < 1 ) ? 1 : sOutputRecordCnt;
 
-        // myCost, totalCost ¼³Á¤
+        // myCost, totalCost ì„¤ì •
         sMyGraph->graph.costInfo.myAccessCost =
             sMyGraph->selectedMethod->accessCost;
 
@@ -906,7 +906,7 @@ qmgPartition::optimize( qcStatement * aStatement, qmgGraph * aGraph )
         sMyGraph->graph.costInfo.myAllCost =
             sMyGraph->selectedMethod->totalCost;
 
-        // ÀÚ½ÅÀÇ cost´Â total°ú °°À½. ¸ğµÎ childÀÇ cost¸¦ Æ÷ÇÔÇÏ°í ÀÖ´Ù.
+        // ìì‹ ì˜ costëŠ” totalê³¼ ê°™ìŒ. ëª¨ë‘ childì˜ costë¥¼ í¬í•¨í•˜ê³  ìˆë‹¤.
         sMyGraph->graph.costInfo.totalAccessCost =
             sMyGraph->graph.costInfo.myAccessCost;
         sMyGraph->graph.costInfo.totalDiskCost =
@@ -916,9 +916,9 @@ qmgPartition::optimize( qcStatement * aStatement, qmgGraph * aGraph )
     }
     else
     {
-        // TODO1502: ºñ¿ëÁ¤º¸¸¦ Àß ¼¼ÆÃÇØÁÖ¾î¾ß ÇÑ´Ù.
-        // ´©ÀûÇÒ Á¤º¸°¡ ¾øÀ½
-        // ¼±ÅÃµÈ ÆÄÆ¼¼ÇÀÌ ¾ø´Ù!
+        // TODO1502: ë¹„ìš©ì •ë³´ë¥¼ ì˜ ì„¸íŒ…í•´ì£¼ì–´ì•¼ í•œë‹¤.
+        // ëˆ„ì í•  ì •ë³´ê°€ ì—†ìŒ
+        // ì„ íƒëœ íŒŒí‹°ì…˜ì´ ì—†ë‹¤!
         sMyGraph->graph.costInfo.recordSize         = 1;
         sMyGraph->graph.costInfo.selectivity        = 0;
         sMyGraph->graph.costInfo.inputRecordCnt     = 1;
@@ -988,7 +988,7 @@ qmgPartition::reviseAccessMethodsCost( qmgPARTITION   * aPartitionGraph,
                 {
                     sChildGrpah = (qmgSELT*) sChildList->childGraph;
 
-                    // ÀÚ½Ä ±×·¡ÇÁÀÇ ·¹ÄÚµå °¹¼ö ºñÀ²´ë·Î selectivity ¸¦ ¹İ¿µÇÑ´Ù.
+                    // ìì‹ ê·¸ë˜í”„ì˜ ë ˆì½”ë“œ ê°¯ìˆ˜ ë¹„ìœ¨ëŒ€ë¡œ selectivity ë¥¼ ë°˜ì˜í•œë‹¤.
                     sChildPercent = sChildList->childGraph->costInfo.inputRecordCnt /
                         sTotalInputCount;
 
@@ -1029,7 +1029,7 @@ qmgPartition::reviseAccessMethodsCost( qmgPARTITION   * aPartitionGraph,
                         if( aPartitionGraph->accessMethod[i].method->index->indexId ==
                             sChildGrpah->accessMethod[j].method->index->indexId )
                         {
-                            // ÀÚ½Ä ±×·¡ÇÁÀÇ ·¹ÄÚµå °¹¼ö ºñÀ²´ë·Î selectivity ¸¦ ¹İ¿µÇÑ´Ù.
+                            // ìì‹ ê·¸ë˜í”„ì˜ ë ˆì½”ë“œ ê°¯ìˆ˜ ë¹„ìœ¨ëŒ€ë¡œ selectivity ë¥¼ ë°˜ì˜í•œë‹¤.
                             sChildPercent = sChildList->childGraph->costInfo.inputRecordCnt /
                                 sTotalInputCount;
 
@@ -1066,7 +1066,7 @@ qmgPartition::reviseAccessMethodsCost( qmgPARTITION   * aPartitionGraph,
                 //--------------------------------------
                 sTableRef = aPartitionGraph->graph.myFrom->tableRef;
 
-                // ÀÎµ¦½º Å×ÀÌºíÀ» Á¢±ÙÇÏ´Â ºñ¿ëÀ» Ãß°¡ÇÑ´Ù.
+                // ì¸ë±ìŠ¤ í…Œì´ë¸”ì„ ì ‘ê·¼í•˜ëŠ” ë¹„ìš©ì„ ì¶”ê°€í•œë‹¤.
                 sMerge.totalCost = qmoCost::getTableRIDScanCost(
                     sTableRef->statInfo,
                     &sMerge.accessCost,
@@ -1094,18 +1094,18 @@ qmgPartition::makePlan( qcStatement * aStatement, const qmgGraph * aParent, qmgG
 {
 /***********************************************************************
  *
- * Description : qmgPartition·Î ºÎÅÍ PlanÀ» »ı¼ºÇÑ´Ù.
- *               partition filter ÃßÃâÀ» À§ÇØ ¿©±â¼­ predicate¸¦ Àç¹èÄ¡ÇÑ´Ù.
+ * Description : qmgPartitionë¡œ ë¶€í„° Planì„ ìƒì„±í•œë‹¤.
+ *               partition filter ì¶”ì¶œì„ ìœ„í•´ ì—¬ê¸°ì„œ predicateë¥¼ ì¬ë°°ì¹˜í•œë‹¤.
  * Implementation :
- *    - qmgPartitionÀ¸·Î ºÎÅÍ »ı¼º°¡´ÉÇÑ plan
+ *    - qmgPartitionìœ¼ë¡œ ë¶€í„° ìƒì„±ê°€ëŠ¥í•œ plan
  *
- *        1. ÀÏ¹İ scanÀÎ °æ¿ì
+ *        1. ì¼ë°˜ scanì¸ ê²½ìš°
  *
  *                 [PSCN]
  *                   |
  *                 [SCAN]-[SCAN]-[SCAN]-...-[SCAN]
  *
- *        2. Parallel scanÀÎ °æ¿ì
+ *        2. Parallel scanì¸ ê²½ìš°
  *
  *                 [PPCRD]
  *                   |  |
@@ -1131,7 +1131,7 @@ qmgPartition::makePlan( qcStatement * aStatement, const qmgGraph * aParent, qmgG
     IDU_FIT_POINT_FATAL( "qmgPartition::makePlan::__FT__" );
 
     //---------------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //---------------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -1146,7 +1146,7 @@ qmgPartition::makePlan( qcStatement * aStatement, const qmgGraph * aParent, qmgG
     sCurPlanChildren = NULL;
 
     //---------------------------------------------------
-    // Current CNFÀÇ µî·Ï
+    // Current CNFì˜ ë“±ë¡
     //---------------------------------------------------
     if( sMyGraph->graph.myCNF != NULL )
     {
@@ -1173,14 +1173,14 @@ qmgPartition::makePlan( qcStatement * aStatement, const qmgGraph * aParent, qmgG
     }
 
     //---------------------------------------------------
-    // Index Table ScanÀÎ °æ¿ì RID SCANÀ¸·Î º¯°æ
+    // Index Table Scanì¸ ê²½ìš° RID SCANìœ¼ë¡œ ë³€ê²½
     //---------------------------------------------------
     
     // PROJ-1624 global non-partitioned index
-    // selected index°¡ global index¶ó¸é scanÀ» index table scan¿ëÀ¸·Î º¯°æÇÑ´Ù.
-    // ¿ø·¡´Â makeGraph Áß¿¡ ¼öÇàÇÏ´Â °ÍÀÌ ¸ÂÁö¸¸
-    // bottom-upÀ¸·Î ÃÖÀûÈ­µÇ¸é¼­ »óÀ§ graph¿¡¼­µµ graph¸¦ º¯°æ½ÃÅ°¹Ç·Î
-    // makePlan Á÷Àü¿¡ ¼öÇàÇÑ´Ù.
+    // selected indexê°€ global indexë¼ë©´ scanì„ index table scanìš©ìœ¼ë¡œ ë³€ê²½í•œë‹¤.
+    // ì›ë˜ëŠ” makeGraph ì¤‘ì— ìˆ˜í–‰í•˜ëŠ” ê²ƒì´ ë§ì§€ë§Œ
+    // bottom-upìœ¼ë¡œ ìµœì í™”ë˜ë©´ì„œ ìƒìœ„ graphì—ì„œë„ graphë¥¼ ë³€ê²½ì‹œí‚¤ë¯€ë¡œ
+    // makePlan ì§ì „ì— ìˆ˜í–‰í•œë‹¤.
     if ( sMyGraph->selectedIndex != NULL )
     {
         if ( sMyGraph->selectedIndex->indexPartitionType ==
@@ -1206,10 +1206,10 @@ qmgPartition::makePlan( qcStatement * aStatement, const qmgGraph * aParent, qmgG
     }
 
     // PROJ-1071
-    // 1. Parallel degree °¡ 1 º¸´Ù Å« °æ¿ì
-    // 2. Subquery °¡ ¾Æ´Ï¿©¾ß ÇÔ
-    // 3. Parallel ½ÇÇà °¡´ÉÇÑ graph
-    // 4. Parallel SCAN ÀÌ Çã¿ëµÇ¾î¾ß ÇÔ (BUG-38410)
+    // 1. Parallel degree ê°€ 1 ë³´ë‹¤ í° ê²½ìš°
+    // 2. Subquery ê°€ ì•„ë‹ˆì—¬ì•¼ í•¨
+    // 3. Parallel ì‹¤í–‰ ê°€ëŠ¥í•œ graph
+    // 4. Parallel SCAN ì´ í—ˆìš©ë˜ì–´ì•¼ í•¨ (BUG-38410)
     if ( ( (sMyGraph->graph.flag & QMG_PARALLEL_EXEC_MASK)
            == QMG_PARALLEL_EXEC_TRUE ) &&
          ( aGraph->myQuerySet->parentTupleID
@@ -1227,11 +1227,11 @@ qmgPartition::makePlan( qcStatement * aStatement, const qmgGraph * aParent, qmgG
     }
     
     //----------------------------------------------
-    // PCRD È¤Àº PPCRD ÀÇ »ı¼º
+    // PCRD í˜¹ì€ PPCRD ì˜ ìƒì„±
     //----------------------------------------------
     if (sMakePPCRD == ID_FALSE)
     {
-        // Parallel query °¡ ¾Æ´Ô
+        // Parallel query ê°€ ì•„ë‹˜
         IDE_TEST( qmoMultiNonPlan::initPCRD( aStatement,
                                              sMyGraph->graph.myQuerySet,
                                              sMyGraph->graph.myPlan,
@@ -1251,16 +1251,16 @@ qmgPartition::makePlan( qcStatement * aStatement, const qmgGraph * aParent, qmgG
 
     sMyGraph->graph.myPlan = sPCRD;
 
-    // child planÀÇ »ı¼º
+    // child planì˜ ìƒì„±
     sTableRef->partitionRef = NULL;
 
     for( sChildren = sMyGraph->graph.children;
          sChildren != NULL;
          sChildren = sChildren->next )
     {
-        // planÀ» »ı¼ºÇÏ¸é¼­ partition reference¸¦ mergeÇÑ´Ù.
-        // DNF·Î µÈ °æ¿ì °¢°¢ÀÇ planÀÌ ¼­·Î ´Ù¸¥ partition reference¸¦
-        // °¡Áö¹Ç·Î mergeÇØ ÁÖ¾î¾ß ÇÔ.
+        // planì„ ìƒì„±í•˜ë©´ì„œ partition referenceë¥¼ mergeí•œë‹¤.
+        // DNFë¡œ ëœ ê²½ìš° ê°ê°ì˜ planì´ ì„œë¡œ ë‹¤ë¥¸ partition referenceë¥¼
+        // ê°€ì§€ë¯€ë¡œ mergeí•´ ì£¼ì–´ì•¼ í•¨.
         IDE_DASSERT( sChildren->childGraph->type == QMG_SELECTION );
 
         IDE_TEST( qmoPartition::mergePartitionRef(
@@ -1268,7 +1268,7 @@ qmgPartition::makePlan( qcStatement * aStatement, const qmgGraph * aParent, qmgG
                       ((qmgSELT*)sChildren->childGraph)->partitionRef )
                   != IDE_SUCCESS );
 
-        /* PROJ-2464 hybrid partitioned table Áö¿ø */
+        /* PROJ-2464 hybrid partitioned table ì§€ì› */
         IDE_TEST( qcmPartition::makePartitionSummary( aStatement, sTableRef )
                   != IDE_SUCCESS );
 
@@ -1280,7 +1280,7 @@ qmgPartition::makePlan( qcStatement * aStatement, const qmgGraph * aParent, qmgG
     }
 
     //----------------------------------------------
-    // child PRLQ planÀÇ »ı¼º
+    // child PRLQ planì˜ ìƒì„±
     //----------------------------------------------
     sPCRD->childrenPRLQ = NULL;
 
@@ -1291,8 +1291,8 @@ qmgPartition::makePlan( qcStatement * aStatement, const qmgGraph * aParent, qmgG
     }
     else
     {
-        // PRLQ ´Â parallel degree ¸¸Å­ ¸¸µéµÇ
-        // partition ¼öº¸´Ù ¸¹Áö ¾Ê¾Æ¾ß ÇÑ´Ù.
+        // PRLQ ëŠ” parallel degree ë§Œí¼ ë§Œë“¤ë˜
+        // partition ìˆ˜ë³´ë‹¤ ë§ì§€ ì•Šì•„ì•¼ í•œë‹¤.
         for( i = 0, sChildren = sMyGraph->graph.children;
              (i < sTableRef->mParallelDegree) && (i < sPartitionCount)
                  && (sChildren != NULL);
@@ -1311,11 +1311,11 @@ qmgPartition::makePlan( qcStatement * aStatement, const qmgGraph * aParent, qmgG
                                                  sPRLQ )
                       != IDE_SUCCESS );
 
-            // PRLQ ¿Í SCAN Àº Á÷Á¢ÀûÀÎ »ó-ÇÏÀ§ °ü°è¸¦ °¡ÁöÁö ¾Ê´Â´Ù.
+            // PRLQ ì™€ SCAN ì€ ì§ì ‘ì ì¸ ìƒ-í•˜ìœ„ ê´€ê³„ë¥¼ ê°€ì§€ì§€ ì•ŠëŠ”ë‹¤.
             sPRLQ->left = NULL;
 
             //----------------------------------------------
-            // Children PRLQ ·Î plan À» ¿¬°á
+            // Children PRLQ ë¡œ plan ì„ ì—°ê²°
             //----------------------------------------------
             IDE_TEST(QC_QMP_MEM(aStatement)->alloc(ID_SIZEOF(qmnChildren),
                                                    (void**)&sChildrenPRLQ)
@@ -1325,7 +1325,7 @@ qmgPartition::makePlan( qcStatement * aStatement, const qmgGraph * aParent, qmgG
             sChildrenPRLQ->next = NULL;
 
             //----------------------------------------------
-            // Children PRLQ PlanÀÇ ¿¬°á °ü°è¸¦ ±¸Ãà
+            // Children PRLQ Planì˜ ì—°ê²° ê´€ê³„ë¥¼ êµ¬ì¶•
             //----------------------------------------------
             if ( sCurPlanChildren == NULL )
             {
@@ -1346,11 +1346,11 @@ qmgPartition::makePlan( qcStatement * aStatement, const qmgGraph * aParent, qmgG
 
     //-----------------------------------------------------
     // To Fix BUG-8747
-    // Selection Graph¿¡ Not Null Key Range¸¦ »ı¼ºÇÏ¶ó´Â Flag°¡
-    // ÀÖ´Â °æ¿ì, Leaf Info¿¡ ±× Á¤º¸¸¦ ¼³Á¤ÇÑ´Ù.
-    // - Selection Graph¿¡¼­ Not Null Key Range »ı¼º Flag Àû¿ëµÇ´Â Á¶°Ç
-    //   (1) indexable Min Max°¡ Àû¿ëµÈ Selection Graph
-    //   (2) Merge Join ÇÏÀ§ÀÇ Selection Graph
+    // Selection Graphì— Not Null Key Rangeë¥¼ ìƒì„±í•˜ë¼ëŠ” Flagê°€
+    // ìˆëŠ” ê²½ìš°, Leaf Infoì— ê·¸ ì •ë³´ë¥¼ ì„¤ì •í•œë‹¤.
+    // - Selection Graphì—ì„œ Not Null Key Range ìƒì„± Flag ì ìš©ë˜ëŠ” ì¡°ê±´
+    //   (1) indexable Min Maxê°€ ì ìš©ëœ Selection Graph
+    //   (2) Merge Join í•˜ìœ„ì˜ Selection Graph
     //-----------------------------------------------------
 
     if( (sMyGraph->graph.flag & QMG_SELT_NOTNULL_KEYRANGE_MASK ) ==
@@ -1362,28 +1362,28 @@ qmgPartition::makePlan( qcStatement * aStatement, const qmgGraph * aParent, qmgG
     else
     {
         // To Fix PR-10288
-        // NOTNULL KEY RANGE°¡ ¾Æ´Ñ °æ¿ì·Î ¹İµå½Ã ¼³Á¤ÇØ ÁÖ¾î¾ß ÇÔ.
+        // NOTNULL KEY RANGEê°€ ì•„ë‹Œ ê²½ìš°ë¡œ ë°˜ë“œì‹œ ì„¤ì •í•´ ì£¼ì–´ì•¼ í•¨.
         sPCRDInfo.flag &= ~QMO_PCRD_INFO_NOTNULL_KEYRANGE_MASK;
         sPCRDInfo.flag |= QMO_PCRD_INFO_NOTNULL_KEYRANGE_FALSE;
     }
     
     //---------------------------------------------------
-    // partition filter ÃßÃâ¿ë predicate Ã³¸®
+    // partition filter ì¶”ì¶œìš© predicate ì²˜ë¦¬
     //---------------------------------------------------
     
-    // non-joinable predicateÀÌ pushdownµÉ ¼ö ÀÖ´Ù.
+    // non-joinable predicateì´ pushdownë  ìˆ˜ ìˆë‹¤.
     if ( sMyGraph->graph.myPredicate != NULL )
     {
-        // partition pruningÀ» À§ÇØ predicate¸¦ º¹»ç
+        // partition pruningì„ ìœ„í•´ predicateë¥¼ ë³µì‚¬
         
-        // partition filter ÃßÃâ¿ë
+        // partition filter ì¶”ì¶œìš©
         IDE_TEST(qmoPred::deepCopyPredicate(
                      QC_QMP_MEM(aStatement),
                      sMyGraph->graph.myPredicate,
                      &sMyGraph->partFilterPredicate )
                  != IDE_SUCCESS );
         
-        // predicate¸¦ Àç¹èÄ¡ÇÑ´Ù.(partition filterÃßÃâ¿ë)
+        // predicateë¥¼ ì¬ë°°ì¹˜í•œë‹¤.(partition filterì¶”ì¶œìš©)
         IDE_TEST( qmoPred::relocatePredicate4PartTable(
                       aStatement,
                       sMyGraph->partFilterPredicate,
@@ -1399,13 +1399,13 @@ qmgPartition::makePlan( qcStatement * aStatement, const qmgGraph * aParent, qmgG
     }
 
     //---------------------------------------------------
-    // global index¸¦ À§ÇÑ predicate ÃÖÀûÈ­
+    // global indexë¥¼ ìœ„í•œ predicate ìµœì í™”
     //---------------------------------------------------
 
-    // non-joinable predicateÀÌ pushdownµÉ ¼ö ÀÖ´Ù.
+    // non-joinable predicateì´ pushdownë  ìˆ˜ ìˆë‹¤.
     if ( sMyGraph->graph.myPredicate != NULL )
     {
-        // predicate¸¦ Àç¹èÄ¡ÇÑ´Ù.
+        // predicateë¥¼ ì¬ë°°ì¹˜í•œë‹¤.
         IDE_TEST( qmoPred::relocatePredicate(
                       aStatement,
                       sMyGraph->graph.myPredicate,
@@ -1497,15 +1497,15 @@ qmgPartition::alterSelectedIndex( qcStatement  * aStatement,
     IDU_FIT_POINT_FATAL( "qmgPartition::alterSelectedIndex::__FT__" );
 
     // PROJ-1624 Global Index
-    // global index´Â partitioned table¿¡¸¸ »ı¼ºµÇ¾î ÀÖ´Ù.
+    // global indexëŠ” partitioned tableì—ë§Œ ìƒì„±ë˜ì–´ ìˆë‹¤.
     if ( aNewSelectedIndex->indexPartitionType ==
          QCM_NONE_PARTITIONED_INDEX )
     {
         aGraph->selectedIndex = aNewSelectedIndex;
 
         // To fix BUG-12742
-        // »óÀ§ graph¿¡ ÀÇÇØ °áÁ¤µÈ °æ¿ì
-        // index¸¦ ¾ø¾Ù ¼ö ¾ø´Ù.
+        // ìƒìœ„ graphì— ì˜í•´ ê²°ì •ëœ ê²½ìš°
+        // indexë¥¼ ì—†ì•¨ ìˆ˜ ì—†ë‹¤.
         aGraph->forceIndexScan = ID_TRUE;
     }
     else
@@ -1540,8 +1540,8 @@ qmgPartition::printGraph( qcStatement  * aStatement,
 /***********************************************************************
  *
  * Description :
- *    Graph¸¦ ±¸¼ºÇÏ´Â °øÅë Á¤º¸¸¦ Ãâ·ÂÇÑ´Ù.
- *    TODO1502: partition graphÀÇ °íÀ¯ Á¤º¸¸¦ Ãâ·ÂÇØÁà¾ß ÇÑ´Ù.
+ *    Graphë¥¼ êµ¬ì„±í•˜ëŠ” ê³µí†µ ì •ë³´ë¥¼ ì¶œë ¥í•œë‹¤.
+ *    TODO1502: partition graphì˜ ê³ ìœ  ì •ë³´ë¥¼ ì¶œë ¥í•´ì¤˜ì•¼ í•œë‹¤.
  *
  * Implementation :
  *
@@ -1556,7 +1556,7 @@ qmgPartition::printGraph( qcStatement  * aStatement,
     IDU_FIT_POINT_FATAL( "qmgPartition::printGraph::__FT__" );
 
     //-----------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //-----------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -1566,7 +1566,7 @@ qmgPartition::printGraph( qcStatement  * aStatement,
     sMyGraph = (qmgPARTITION*)aGraph;
 
     //-----------------------------------
-    // Graph °øÅë Á¤º¸ÀÇ Ãâ·Â
+    // Graph ê³µí†µ ì •ë³´ì˜ ì¶œë ¥
     //-----------------------------------
 
     IDE_TEST( qmg::printGraph( aStatement,
@@ -1576,7 +1576,7 @@ qmgPartition::printGraph( qcStatement  * aStatement,
               != IDE_SUCCESS );
 
     //-----------------------------------
-    // Graph °íÀ¯ Á¤º¸ÀÇ Ãâ·Â
+    // Graph ê³ ìœ  ì •ë³´ì˜ ì¶œë ¥
     //-----------------------------------
 
     IDE_TEST( qmoStat::printStat( aGraph->myFrom,
@@ -1586,7 +1586,7 @@ qmgPartition::printGraph( qcStatement  * aStatement,
 
     //-----------------------------------
     // BUG-38192
-    // Access method º° Á¤º¸ Ãâ·Â
+    // Access method ë³„ ì •ë³´ ì¶œë ¥
     //-----------------------------------
 
     QMG_PRINT_LINE_FEED( i, aDepth, aString );
@@ -1604,7 +1604,7 @@ qmgPartition::printGraph( qcStatement  * aStatement,
     }
 
     //-----------------------------------
-    // Subquery Graph Á¤º¸ÀÇ Ãâ·Â
+    // Subquery Graph ì •ë³´ì˜ ì¶œë ¥
     //-----------------------------------
 
     for ( sPredicate = aGraph->myPredicate;
@@ -1640,7 +1640,7 @@ qmgPartition::printGraph( qcStatement  * aStatement,
     }
 
     //-----------------------------------
-    // Child Graph °íÀ¯ Á¤º¸ÀÇ Ãâ·Â
+    // Child Graph ê³ ìœ  ì •ë³´ì˜ ì¶œë ¥
     //-----------------------------------
 
     // BUG-38192
@@ -1714,7 +1714,7 @@ qmgPartition::extractPartKeyRange(
     }
     else
     {
-        // qtcNode·ÎÀÇ º¯È¯
+        // qtcNodeë¡œì˜ ë³€í™˜
         IDE_TEST( qmoPred::linkPredicate( aStatement ,
                                           *aPartKeyPred ,
                                           &sKey ) != IDE_SUCCESS );
@@ -1726,10 +1726,10 @@ qmgPartition::extractPartKeyRange(
         if( sKey != NULL )
         {
             // To Fix PR-9481
-            // CNF·Î ±¸¼ºµÈ Key Range PredicateÀ» DNF normalizeÇÒ °æ¿ì
-            // ¾öÃ»³ª°Ô ¸¹Àº Node·Î º¯È¯µÉ ¼ö ÀÖ´Ù.
-            // ÀÌ¸¦ °Ë»çÇÏ¿© Áö³ªÄ¡°Ô ¸¹Àº º¯È­°¡ ÇÊ¿äÇÑ °æ¿ì¿¡´Â
-            // Default Key Range¸¸À» »ı¼ºÇÏ°Ô ÇÑ´Ù.
+            // CNFë¡œ êµ¬ì„±ëœ Key Range Predicateì„ DNF normalizeí•  ê²½ìš°
+            // ì—„ì²­ë‚˜ê²Œ ë§ì€ Nodeë¡œ ë³€í™˜ë  ìˆ˜ ìˆë‹¤.
+            // ì´ë¥¼ ê²€ì‚¬í•˜ì—¬ ì§€ë‚˜ì¹˜ê²Œ ë§ì€ ë³€í™”ê°€ í•„ìš”í•œ ê²½ìš°ì—ëŠ”
+            // Default Key Rangeë§Œì„ ìƒì„±í•˜ê²Œ í•œë‹¤.
             IDE_TEST( qmoNormalForm::estimateDNF( sKey, &sEstDNFCnt )
                       != IDE_SUCCESS );
 
@@ -1739,14 +1739,14 @@ qmgPartition::extractPartKeyRange(
             }
             else
             {
-                // DNFÇüÅÂ·Î º¯È¯
+                // DNFí˜•íƒœë¡œ ë³€í™˜
                 IDE_TEST( qmoNormalForm::normalizeDNF( aStatement ,
                                                        sKey ,
                                                        &sDNFKey )
                           != IDE_SUCCESS );
             }
 
-            // environmentÀÇ ±â·Ï
+            // environmentì˜ ê¸°ë¡
             qcgPlan::registerPlanProperty( aStatement,
                                            PLAN_PROPERTY_NORMAL_FORM_MAXIMUM );
         }
@@ -1760,7 +1760,7 @@ qmgPartition::extractPartKeyRange(
             IDE_DASSERT( ( (*aPartKeyPred)->flag  & QMO_PRED_VALUE_MASK )
                          == QMO_PRED_FIXED );
 
-            // KeyRange¸¦ À§ÇØ DNF·Î ºÎÅÍ size estimationÀ» ÇÑ´Ù.
+            // KeyRangeë¥¼ ìœ„í•´ DNFë¡œ ë¶€í„° size estimationì„ í•œë‹¤.
             IDE_TEST( qmoKeyRange::estimateKeyRange( QC_SHARED_TMPLATE(aStatement) ,
                                                      sDNFKey ,
                                                      &sEstimateSize )
@@ -1770,18 +1770,18 @@ qmgPartition::extractPartKeyRange(
                                                      (void**)&sRangeArea )
                       != IDE_SUCCESS );
 
-            // partition keyrange¸¦ »ı¼ºÇÑ´Ù.
+            // partition keyrangeë¥¼ ìƒì„±í•œë‹¤.
 
             // PROJ-1872
-            // Partition Key´Â Partition Table °áÁ¤ÇÒ¶§ ¾²ÀÓ
-            // (PartitionÀ» ³ª´©´Â ±âÁØ°ª)°ú (PredicateÀÇ value)¿Í
-            // ºñ±³ÇÏ¹Ç·Î MTD Value°£ÀÇ compare¸¦ »ç¿ëÇÔ
+            // Partition KeyëŠ” Partition Table ê²°ì •í• ë•Œ ì“°ì„
+            // (Partitionì„ ë‚˜ëˆ„ëŠ” ê¸°ì¤€ê°’)ê³¼ (Predicateì˜ value)ì™€
+            // ë¹„êµí•˜ë¯€ë¡œ MTD Valueê°„ì˜ compareë¥¼ ì‚¬ìš©í•¨
             // ex) i1 < 10 => Partition P1
             //     i1 < 20 => Partition P2
             //     i1 < 30 => Partition P3
             // SELECT ... FROM ... WHERE i1 = 5
-            // P1, P2, P3¿¡¼­ P1 PartitionÀ» ¼±ÅÃÇÏ±â À§ÇØ
-            // Partition Key Range¸¦ »ç¿ëÇÔ
+            // P1, P2, P3ì—ì„œ P1 Partitionì„ ì„ íƒí•˜ê¸° ìœ„í•´
+            // Partition Key Rangeë¥¼ ì‚¬ìš©í•¨
             sCompareType = MTD_COMPARE_MTDVAL_MTDVAL;
 
             IDE_TEST(
@@ -1820,21 +1820,21 @@ qmgPartition::copyPARTITIONAndAlterSelectedIndex( qcStatement   * aStatement,
 {
 /****************************************************************************
  *
- * Description : qmgJoin¿¡¼­ ANTI°¡ ¼±ÅÃµÈ °æ¿ì
- *               ÇÏÀ§ SELT graph¸¦ º¹»çÇØ¾ß ÇÑ´Ù.
- *               ÇÏÁö¸¸ º¹»ç °úÁ¤¿¡¼­ predicateÀÇ º¹»ç À¯¹«³ª,
- *               º¹»çÇÑ ÈÄ ¾î¶² graphÀÇ access method¸¦ ¹Ù²ÜÁö¿¡ ´ëÇÑ Ã³¸®³ª,
- *               scanDecisionFactorÀÇ Ã³¸® µî º¹ÀâÇÑ ¿ä¼Ò¸¦ Ã³¸®ÇÏ±â À§ÇØ¼­
- *               º¹»ç ¾Ë°í¸®ÁòÀ» qmgSelection¿¡¼­ ±¸ÇöÇÑ´Ù.
- *               SELT graph¸¦ º¹»çÇØ¾ßÇÒ ÇÊ¿ä°¡ ÀÖÀ» °æ¿ì
- *               ¹İµå½Ã qmgSelection¿¡¼­ ±¸ÇöÇØ¼­ È£ÃâÇÏµµ·Ï ÇÑ´Ù.
+ * Description : qmgJoinì—ì„œ ANTIê°€ ì„ íƒëœ ê²½ìš°
+ *               í•˜ìœ„ SELT graphë¥¼ ë³µì‚¬í•´ì•¼ í•œë‹¤.
+ *               í•˜ì§€ë§Œ ë³µì‚¬ ê³¼ì •ì—ì„œ predicateì˜ ë³µì‚¬ ìœ ë¬´ë‚˜,
+ *               ë³µì‚¬í•œ í›„ ì–´ë–¤ graphì˜ access methodë¥¼ ë°”ê¿€ì§€ì— ëŒ€í•œ ì²˜ë¦¬ë‚˜,
+ *               scanDecisionFactorì˜ ì²˜ë¦¬ ë“± ë³µì¡í•œ ìš”ì†Œë¥¼ ì²˜ë¦¬í•˜ê¸° ìœ„í•´ì„œ
+ *               ë³µì‚¬ ì•Œê³ ë¦¬ì¦˜ì„ qmgSelectionì—ì„œ êµ¬í˜„í•œë‹¤.
+ *               SELT graphë¥¼ ë³µì‚¬í•´ì•¼í•  í•„ìš”ê°€ ìˆì„ ê²½ìš°
+ *               ë°˜ë“œì‹œ qmgSelectionì—ì„œ êµ¬í˜„í•´ì„œ í˜¸ì¶œí•˜ë„ë¡ í•œë‹¤.
  *
- *               aWhich = 0 : targetÀÇ access method¸¦ ¹Ù²Û´Ù.
- *               aWhich = 1 : sourceÀÇ access method¸¦ ¹Ù²Û´Ù.
+ *               aWhich = 0 : targetì˜ access methodë¥¼ ë°”ê¾¼ë‹¤.
+ *               aWhich = 1 : sourceì˜ access methodë¥¼ ë°”ê¾¼ë‹¤.
  *
- * Implementation : aSource¸¦ aTarget¿¡ º¹»çÇÑ ÈÄ,
- *                  selectedIndex°¡ ¹Ù²ğ graph¿¡ ´ëÇØ¼­´Â
- *                  sdf¸¦ ¹«È¿È­ ÇÑ´Ù.
+ * Implementation : aSourceë¥¼ aTargetì— ë³µì‚¬í•œ í›„,
+ *                  selectedIndexê°€ ë°”ë€” graphì— ëŒ€í•´ì„œëŠ”
+ *                  sdfë¥¼ ë¬´íš¨í™” í•œë‹¤.
  *
  *****************************************************************************/
 
@@ -1858,7 +1858,7 @@ qmgPartition::copyPARTITIONAndAlterSelectedIndex( qcStatement   * aStatement,
 
     idlOS::memcpy( sTarget, aSource, ID_SIZEOF( qmgPARTITION ) );
     
-    // graph->children±¸Á¶Ã¼ÀÇ ¸Ş¸ğ¸® ÇÒ´ç.
+    // graph->childrenêµ¬ì¡°ì²´ì˜ ë©”ëª¨ë¦¬ í• ë‹¹.
     IDE_TEST( QC_QMP_MEM(aStatement)->alloc(
                   ID_SIZEOF(qmgChildren) * sChildCnt,
                   (void**) &sTarget->graph.children )
@@ -1924,13 +1924,13 @@ qmgPartition::setJoinPushDownPredicate( qcStatement   * aStatement,
 /***********************************************************************
  *
  *  Description : PROJ-1502 PARTITIONED DISK TABLE
- *                push-down join predicate¸¦ partition graph¿¡ ¿¬°áÇÑ´Ù.
+ *                push-down join predicateë¥¼ partition graphì— ì—°ê²°í•œë‹¤.
  *
  *  Implementation :
- *                 1) partition graph¿¡ µş¸° child graph(selection)¿¡
- *                    join predicate¸¦ º¹»çÇÏ¿© ¿¬°á½ÃÅ²´Ù.
- *                 2) partition graph¿¡´Â join predicate¸¦ Á÷Á¢ ¿¬°á½ÃÅ²´Ù.
- *                 3) parameter·Î ¹ŞÀº join predicate¸¦ null·Î ¼¼ÆÃ.
+ *                 1) partition graphì— ë”¸ë¦° child graph(selection)ì—
+ *                    join predicateë¥¼ ë³µì‚¬í•˜ì—¬ ì—°ê²°ì‹œí‚¨ë‹¤.
+ *                 2) partition graphì—ëŠ” join predicateë¥¼ ì§ì ‘ ì—°ê²°ì‹œí‚¨ë‹¤.
+ *                 3) parameterë¡œ ë°›ì€ join predicateë¥¼ nullë¡œ ì„¸íŒ….
  *
  ***********************************************************************/
 
@@ -1941,7 +1941,7 @@ qmgPartition::setJoinPushDownPredicate( qcStatement   * aStatement,
 
     IDU_FIT_POINT_FATAL( "qmgPartition::setJoinPushDownPredicate::__FT__" );
 
-    // partition graphÀÇ child graph¿¡ º¹»çÇÏ¿© ¿¬°á.
+    // partition graphì˜ child graphì— ë³µì‚¬í•˜ì—¬ ì—°ê²°.
     for( sChild = aGraph->graph.children;
          sChild != NULL;
          sChild = sChild->next )
@@ -1963,7 +1963,7 @@ qmgPartition::setJoinPushDownPredicate( qcStatement   * aStatement,
                   != IDE_SUCCESS );
     }
 
-    // partition graph¿¡ ¿¬°á.
+    // partition graphì— ì—°ê²°.
     for( sJoinPredicate       = *aPredicate;
          sJoinPredicate->next != NULL;
          sJoinPredicate       = sJoinPredicate->next ) ;
@@ -1987,13 +1987,13 @@ qmgPartition::setNonJoinPushDownPredicate( qcStatement   * aStatement,
 /***********************************************************************
  *
  *  Description : PROJ-1502 PARTITIONED DISK TABLE
- *                push-down join predicate¸¦ partition graph¿¡ ¿¬°áÇÑ´Ù.
+ *                push-down join predicateë¥¼ partition graphì— ì—°ê²°í•œë‹¤.
  *
  *  Implementation :
- *                 1) partition graph¿¡ µş¸° child graph(selection)¿¡
- *                    join predicate¸¦ º¹»çÇÏ¿© ¿¬°á½ÃÅ²´Ù.
- *                 2) partition graph¿¡´Â join predicate¸¦ Á÷Á¢ ¿¬°á½ÃÅ²´Ù.
- *                 3) parameter·Î ¹ŞÀº join predicate¸¦ null·Î ¼¼ÆÃ.
+ *                 1) partition graphì— ë”¸ë¦° child graph(selection)ì—
+ *                    join predicateë¥¼ ë³µì‚¬í•˜ì—¬ ì—°ê²°ì‹œí‚¨ë‹¤.
+ *                 2) partition graphì—ëŠ” join predicateë¥¼ ì§ì ‘ ì—°ê²°ì‹œí‚¨ë‹¤.
+ *                 3) parameterë¡œ ë°›ì€ join predicateë¥¼ nullë¡œ ì„¸íŒ….
  *
  ***********************************************************************/
 
@@ -2006,7 +2006,7 @@ qmgPartition::setNonJoinPushDownPredicate( qcStatement   * aStatement,
 
     IDU_FIT_POINT_FATAL( "qmgPartition::setNonJoinPushDownPredicate::__FT__" );
 
-    // partition graphÀÇ child graph¿¡ º¹»çÇÏ¿© ¿¬°á.
+    // partition graphì˜ child graphì— ë³µì‚¬í•˜ì—¬ ì—°ê²°.
     for( sChild = aGraph->graph.children;
          sChild != NULL;
          sChild = sChild->next )
@@ -2033,9 +2033,9 @@ qmgPartition::setNonJoinPushDownPredicate( qcStatement   * aStatement,
 
     if( aGraph->graph.myPredicate == NULL )
     {
-        // selection graph¿¡ predicateÀÌ ÇÏ³ªµµ ¾ø´Â °æ¿ì·Î,
-        // Ã¹¹øÂ° non-joinable predicate ¿¬°áÇÏ°í,
-        // ¿¬°áµÈ predicateÀÇ next ¿¬°áÀ» ²÷´Â´Ù.
+        // selection graphì— predicateì´ í•˜ë‚˜ë„ ì—†ëŠ” ê²½ìš°ë¡œ,
+        // ì²«ë²ˆì§¸ non-joinable predicate ì—°ê²°í•˜ê³ ,
+        // ì—°ê²°ëœ predicateì˜ next ì—°ê²°ì„ ëŠëŠ”ë‹¤.
         aGraph->graph.myPredicate = sJoinPredicate;
         sJoinPredicate = sJoinPredicate->next;
         aGraph->graph.myPredicate->next = NULL;
@@ -2043,10 +2043,10 @@ qmgPartition::setNonJoinPushDownPredicate( qcStatement   * aStatement,
     }
     else
     {
-        // selection graph¿¡ predicateÀÌ ÀÖ´Â °æ¿ì·Î,
-        // Index Nested Loop Joinable PredicateµéÀº Á¦¿ÜÇÑ´Ù.
-        // non-joinable predicateÀº keyFilter or filter·Î Ã³¸®µÇ¾î¾ß ÇÏ¹Ç·Î,
-        // keyRange·Î ÃßÃâµÉ Index Nested Loop Join Predicate°ú´Â º°µµ·Î ¿¬°á.
+        // selection graphì— predicateì´ ìˆëŠ” ê²½ìš°ë¡œ,
+        // Index Nested Loop Joinable Predicateë“¤ì€ ì œì™¸í•œë‹¤.
+        // non-joinable predicateì€ keyFilter or filterë¡œ ì²˜ë¦¬ë˜ì–´ì•¼ í•˜ë¯€ë¡œ,
+        // keyRangeë¡œ ì¶”ì¶œë  Index Nested Loop Join Predicateê³¼ëŠ” ë³„ë„ë¡œ ì—°ê²°.
 
         for( sPredicate = aGraph->graph.myPredicate;
              sPredicate->next != NULL;
@@ -2063,9 +2063,9 @@ qmgPartition::setNonJoinPushDownPredicate( qcStatement   * aStatement,
             }
         }
 
-        // À§ Ã³¸® °úÁ¤¿¡¼­, selection graph¿¡ joinable predicate¸¸ ÀÖ´Â °æ¿ì,
-        // ¸¶Áö¸· joinable predicateÀÇ next¿¡ non-joinable predicateÀ» ¿¬°á,
-        // ¿¬°áµÈ non-joinable predicateÀÇ next ¿¬°áÀ» ²÷´Â´Ù.
+        // ìœ„ ì²˜ë¦¬ ê³¼ì •ì—ì„œ, selection graphì— joinable predicateë§Œ ìˆëŠ” ê²½ìš°,
+        // ë§ˆì§€ë§‰ joinable predicateì˜ nextì— non-joinable predicateì„ ì—°ê²°,
+        // ì—°ê²°ëœ non-joinable predicateì˜ next ì—°ê²°ì„ ëŠëŠ”ë‹¤.
         if( ( sPredicate->flag & QMO_PRED_INDEX_NESTED_JOINABLE_MASK )
             == QMO_PRED_INDEX_NESTED_JOINABLE_TRUE )
         {
@@ -2080,24 +2080,24 @@ qmgPartition::setNonJoinPushDownPredicate( qcStatement   * aStatement,
         }
     }
 
-    // Index Nested Loop Joinable PredicateÀ» Á¦¿ÜÇÑ
-    // selection graph predicate ¸®½ºÆ®¿¡¼­ non-joinable predicate°ú
-    // columnID°¡ °°Àº predicate¿¡ non-joinable predicateÀ» ¿¬°áÇÏ°í,
-    // ¿¬°áµÈ non-joinableÀÇ nextÀÇ ¿¬°áÀ» ²÷´Â´Ù.
+    // Index Nested Loop Joinable Predicateì„ ì œì™¸í•œ
+    // selection graph predicate ë¦¬ìŠ¤íŠ¸ì—ì„œ non-joinable predicateê³¼
+    // columnIDê°€ ê°™ì€ predicateì— non-joinable predicateì„ ì—°ê²°í•˜ê³ ,
+    // ì—°ê²°ëœ non-joinableì˜ nextì˜ ì—°ê²°ì„ ëŠëŠ”ë‹¤.
 
     while( sJoinPredicate != NULL )
     {
-        // joinable predicateÀ» Á¦¿ÜÇÑ predicateÁß¿¡¼­ join predicate°ú
-        // °°Àº ÄÃ·³ÀÌ Á¸ÀçÇÏ´ÂÁö¸¦ °Ë»ç.
-        // sPredicate : index joinable predicateÀ» Á¦¿ÜÇÑ
-        //              Ã¹¹øÂ° predicateÀ» °¡¸®Å²´Ù.
+        // joinable predicateì„ ì œì™¸í•œ predicateì¤‘ì—ì„œ join predicateê³¼
+        // ê°™ì€ ì»¬ëŸ¼ì´ ì¡´ì¬í•˜ëŠ”ì§€ë¥¼ ê²€ì‚¬.
+        // sPredicate : index joinable predicateì„ ì œì™¸í•œ
+        //              ì²«ë²ˆì§¸ predicateì„ ê°€ë¦¬í‚¨ë‹¤.
 
-        // ÄÃ·³º°·Î ¿¬°á°ü°è ¸¸µé±â
-        // µ¿ÀÏ ÄÃ·³ÀÌ ÀÖ´Â °æ¿ì, µ¿ÀÏ ÄÃ·³ÀÇ ¸¶Áö¸· predicate.more¿¡
-        // µ¿ÀÏ ÄÃ·³ÀÌ ¾ø´Â °æ¿ì, sPredicateÀÇ ¸¶Áö¸· predicate.next¿¡
-        // (1) »õ·Î¿î predicate(sJoinPredicate)À» ¿¬°áÇÏ°í,
+        // ì»¬ëŸ¼ë³„ë¡œ ì—°ê²°ê´€ê³„ ë§Œë“¤ê¸°
+        // ë™ì¼ ì»¬ëŸ¼ì´ ìˆëŠ” ê²½ìš°, ë™ì¼ ì»¬ëŸ¼ì˜ ë§ˆì§€ë§‰ predicate.moreì—
+        // ë™ì¼ ì»¬ëŸ¼ì´ ì—†ëŠ” ê²½ìš°, sPredicateì˜ ë§ˆì§€ë§‰ predicate.nextì—
+        // (1) ìƒˆë¡œìš´ predicate(sJoinPredicate)ì„ ì—°ê²°í•˜ê³ ,
         // (2) sJoinPredicate = sJoinPredicate->next
-        // (3) ¿¬°áµÈ predicateÀÇ next ¿¬°á°ü°è¸¦ ²÷À½.
+        // (3) ì—°ê²°ëœ predicateì˜ next ì—°ê²°ê´€ê³„ë¥¼ ëŠìŒ.
 
         sNextPredicate = sJoinPredicate->next;
 
@@ -2120,8 +2120,8 @@ qmgPartition::finalizePreservedOrder( qmgGraph * aGraph )
 {
 /***********************************************************************
  *
- *  Description : Preserved OrderÀÇ directionÀ» °áÁ¤ÇÑ´Ù.
- *                directionÀÌ NOT_DEFINED ÀÏ °æ¿ì¿¡¸¸ È£ÃâÇÏ¿©¾ß ÇÑ´Ù.
+ *  Description : Preserved Orderì˜ directionì„ ê²°ì •í•œë‹¤.
+ *                directionì´ NOT_DEFINED ì¼ ê²½ìš°ì—ë§Œ í˜¸ì¶œí•˜ì—¬ì•¼ í•œë‹¤.
  *
  *  Implementation :
  *
@@ -2137,14 +2137,14 @@ qmgPartition::finalizePreservedOrder( qmgGraph * aGraph )
 
     sMyGraph = (qmgPARTITION*) aGraph;
 
-    // Preserved order°¡ Á¸ÀçÇÏ´Â °æ¿ì´Â global index scan»ÓÀÌ´Ù.
+    // Preserved orderê°€ ì¡´ì¬í•˜ëŠ” ê²½ìš°ëŠ” global index scanë¿ì´ë‹¤.
     IDE_DASSERT( sMyGraph->selectedIndex->indexPartitionType ==
                  QCM_NONE_PARTITIONED_INDEX );
     
     sKeyColCount = sMyGraph->selectedIndex->keyColCount;
     sKeyColsFlag = sMyGraph->selectedIndex->keyColsFlag;
     
-    // Selected indexÀÇ order·Î directionÀ» °áÁ¤ÇÑ´Ù.
+    // Selected indexì˜ orderë¡œ directionì„ ê²°ì •í•œë‹¤.
     for ( sPreservedOrder = aGraph->preservedOrder,
               i = 0;
           sPreservedOrder != NULL &&

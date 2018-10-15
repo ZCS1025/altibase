@@ -60,10 +60,10 @@ static const acp_char_t ulnConvByteToCharTableLOW[256] =
 };
 
 /*
- * aDstBuffer ¿¡ aSrcBuffer ¸¦ char ·Î ´ıÇÁÇÑ´Ù.
- * null termination À» À§ÇÑ °ø°£¿¡´Â char ¸¦ "¾²Áö" ¾Ê´Â´Ù.
- * ¸®ÅÏ°ªÀº "¾²¿©Áø" char ÀÇ °¹¼öÀÌ´Ù.
- * È£ÃâÀÚ´Â aDstBuffer + ¸®ÅÏ°ª ¿¡ null termination À» ÇÑ´Ù.
+ * aDstBuffer ì— aSrcBuffer ë¥¼ char ë¡œ ë¤í”„í•œë‹¤.
+ * null termination ì„ ìœ„í•œ ê³µê°„ì—ëŠ” char ë¥¼ "ì“°ì§€" ì•ŠëŠ”ë‹¤.
+ * ë¦¬í„´ê°’ì€ "ì“°ì—¬ì§„" char ì˜ ê°¯ìˆ˜ì´ë‹¤.
+ * í˜¸ì¶œìëŠ” aDstBuffer + ë¦¬í„´ê°’ ì— null termination ì„ í•œë‹¤.
  */
 
 acp_uint32_t ulnConvDumpAsChar(acp_uint8_t *aDstBuffer, acp_uint32_t aDstSize, acp_uint8_t *aSrcBuffer, acp_uint32_t aSrcLength)

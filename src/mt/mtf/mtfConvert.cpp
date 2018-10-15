@@ -46,7 +46,7 @@ static IDE_RC mtfConvertEstimate( mtcNode*     aNode,
 mtfModule mtfConvert = {
     1|MTC_NODE_OPERATOR_FUNCTION,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
+    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìê°€ ì•„ë‹˜)
     mtfConvertFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -184,8 +184,8 @@ IDE_RC mtfConvertEstimate( mtcNode*     aNode,
                                                         mtfExecuteNcharFor3Args;
         }
 
-        // NCHARÀÇ precisionÀº ¹®ÀÚÀÇ °³¼öÀÌ¹Ç·Î
-        // °á°ú Å¸ÀÔÀÎ charÀÇ precisionÀº max precision¸¸Å­ ´Ã¾î³¯ ¼ö ÀÖ´Ù.
+        // NCHARì˜ precisionì€ ë¬¸ìì˜ ê°œìˆ˜ì´ë¯€ë¡œ
+        // ê²°ê³¼ íƒ€ì…ì¸ charì˜ precisionì€ max precisionë§Œí¼ ëŠ˜ì–´ë‚  ìˆ˜ ìˆë‹¤.
         sPrecision = aStack[1].column->precision * MTL_MAX_PRECISION;
 
         sPrecision = IDL_MIN( aStack[1].column->precision * MTL_MAX_PRECISION,
@@ -204,7 +204,7 @@ IDE_RC mtfConvertEstimate( mtcNode*     aNode,
                                                         mtfExecuteFor3Args;
         }
 
-        // Ä³¸¯ÅÍ ¼Â º¯È¯ ÈÄ, ÃÖ´ë 2¹è±îÁö ´Ã¾î³¯ ¼ö ÀÖ´Ù.
+        // ìºë¦­í„° ì…‹ ë³€í™˜ í›„, ìµœëŒ€ 2ë°°ê¹Œì§€ ëŠ˜ì–´ë‚  ìˆ˜ ìˆë‹¤.
         // ex) ASCII => UTF16
         sPrecision = aStack[1].column->precision * 2;
     }
@@ -242,13 +242,13 @@ IDE_RC mtfConvertCalculateFor2Args( mtcNode*     aNode,
  * Implementation :
  *    CONVERT( string, , dest_char_set )
  *
- *    aStack[0] : º¯È¯µÈ ¹®ÀÚ¿­
- *    aStack[1] : º¯È¯ÇÒ ¹®ÀÚ¿­
- *    aStack[2] : ¸ñÇ¥ Ä³¸¯ÅÍ ¼Â
+ *    aStack[0] : ë³€í™˜ëœ ë¬¸ìì—´
+ *    aStack[1] : ë³€í™˜í•  ë¬¸ìì—´
+ *    aStack[2] : ëª©í‘œ ìºë¦­í„° ì…‹
  *
  *    ex ) CONVERT( 'SALESMAN', 'UTF8' ) ==> 
- *          ÀÔ·Â ¹®ÀÚ¿­À» ÇöÀç µ¥ÀÌÅÍº£ÀÌ½º Ä³¸¯ÅÍ ¼Â¿¡¼­ 
- *          UTF8 Ä³¸¯ÅÍ ¼ÂÀ¸·Î º¯È¯ÇÑ´Ù. 
+ *          ì…ë ¥ ë¬¸ìì—´ì„ í˜„ì¬ ë°ì´í„°ë² ì´ìŠ¤ ìºë¦­í„° ì…‹ì—ì„œ 
+ *          UTF8 ìºë¦­í„° ì…‹ìœ¼ë¡œ ë³€í™˜í•œë‹¤. 
  *
  ***********************************************************************/
     
@@ -338,13 +338,13 @@ IDE_RC mtfConvertCalculateFor3Args( mtcNode*     aNode,
  * Implementation :
  *    CONVERT( string, , dest_char_set, src_char_set )
  *
- *    aStack[0] : º¯È¯µÈ ¹®ÀÚ¿­
- *    aStack[1] : º¯È¯ÇÒ ¹®ÀÚ¿­
- *    aStack[2] : ¸ñÇ¥ Ä³¸¯ÅÍ ¼Â
- *    aStack[3] : ¼Ò½º Ä³¸¯ÅÍ ¼Â
+ *    aStack[0] : ë³€í™˜ëœ ë¬¸ìì—´
+ *    aStack[1] : ë³€í™˜í•  ë¬¸ìì—´
+ *    aStack[2] : ëª©í‘œ ìºë¦­í„° ì…‹
+ *    aStack[3] : ì†ŒìŠ¤ ìºë¦­í„° ì…‹
  *
  *    ex ) CONVERT( 'SALESMAN', 'UTF8', 'KO16KSC5601' ) ==> 
- *          ÀÔ·Â ¹®ÀÚ¿­À» KO16KSC5601 => UTF8·Î º¯È¯ÇÑ´Ù.
+ *          ì…ë ¥ ë¬¸ìì—´ì„ KO16KSC5601 => UTF8ë¡œ ë³€í™˜í•œë‹¤.
  *
  ***********************************************************************/
     
@@ -461,13 +461,13 @@ IDE_RC mtfConvertCalculateNcharFor2Args( mtcNode*     aNode,
  * Implementation :
  *    CONVERT( string, , dest_char_set )
  *
- *    aStack[0] : º¯È¯µÈ ¹®ÀÚ¿­
- *    aStack[1] : º¯È¯ÇÒ ¹®ÀÚ¿­
- *    aStack[2] : ¸ñÇ¥ Ä³¸¯ÅÍ ¼Â
+ *    aStack[0] : ë³€í™˜ëœ ë¬¸ìì—´
+ *    aStack[1] : ë³€í™˜í•  ë¬¸ìì—´
+ *    aStack[2] : ëª©í‘œ ìºë¦­í„° ì…‹
  *
  *    ex ) CONVERT( 'SALESMAN', 'UTF8' ) ==> 
- *          ÀÔ·Â ¹®ÀÚ¿­À» ÇöÀç µ¥ÀÌÅÍº£ÀÌ½º Ä³¸¯ÅÍ ¼Â¿¡¼­ 
- *          UTF8 Ä³¸¯ÅÍ ¼ÂÀ¸·Î º¯È¯ÇÑ´Ù. 
+ *          ì…ë ¥ ë¬¸ìì—´ì„ í˜„ì¬ ë°ì´í„°ë² ì´ìŠ¤ ìºë¦­í„° ì…‹ì—ì„œ 
+ *          UTF8 ìºë¦­í„° ì…‹ìœ¼ë¡œ ë³€í™˜í•œë‹¤. 
  *
  ***********************************************************************/
     
@@ -557,13 +557,13 @@ IDE_RC mtfConvertCalculateNcharFor3Args( mtcNode*     aNode,
  * Implementation :
  *    CONVERT( string, , dest_char_set, src_char_set )
  *
- *    aStack[0] : º¯È¯µÈ ¹®ÀÚ¿­
- *    aStack[1] : º¯È¯ÇÒ ¹®ÀÚ¿­
- *    aStack[2] : ¸ñÇ¥ Ä³¸¯ÅÍ ¼Â
- *    aStack[3] : ¼Ò½º Ä³¸¯ÅÍ ¼Â
+ *    aStack[0] : ë³€í™˜ëœ ë¬¸ìì—´
+ *    aStack[1] : ë³€í™˜í•  ë¬¸ìì—´
+ *    aStack[2] : ëª©í‘œ ìºë¦­í„° ì…‹
+ *    aStack[3] : ì†ŒìŠ¤ ìºë¦­í„° ì…‹
  *
  *    ex ) CONVERT( 'SALESMAN', 'UTF8', 'KO16KSC5601' ) ==> 
- *          ÀÔ·Â ¹®ÀÚ¿­À» KO16KSC5601 => UTF8·Î º¯È¯ÇÑ´Ù.
+ *          ì…ë ¥ ë¬¸ìì—´ì„ KO16KSC5601 => UTF8ë¡œ ë³€í™˜í•œë‹¤.
  *
  ***********************************************************************/
     
@@ -683,7 +683,7 @@ IDE_RC mtfConvertCharSet4Char( mtcStack        * aStack,
     SInt              sDestRemain = 0;
     SInt              sTempRemain = 0;
 
-    // º¯È¯ °á°úÀÇ Å©±â¸¦ Ã¼Å©ÇÏ±â À§ÇÔ
+    // ë³€í™˜ ê²°ê³¼ì˜ í¬ê¸°ë¥¼ ì²´í¬í•˜ê¸° ìœ„í•¨
     sDestRemain = aStack[0].column->precision;
 
     sSourceIndex = aSource->value;
@@ -699,7 +699,7 @@ IDE_RC mtfConvertCharSet4Char( mtcStack        * aStack,
         sIdnDestCharSet = mtl::getIdnCharSet( aDestCharSet );
 
         //-----------------------------------------
-        // Ä³¸¯ÅÍ ¼Â º¯È¯
+        // ìºë¦­í„° ì…‹ ë³€í™˜
         //-----------------------------------------
         while( sSourceIndex < sSourceFence )
         {
@@ -782,7 +782,7 @@ IDE_RC mtfConvertCharSet4Nchar( mtcStack        * aStack,
         sIdnDestCharSet = mtl::getIdnCharSet( aDestCharSet );
 
         //-----------------------------------------
-        // Ä³¸¯ÅÍ ¼Â º¯È¯
+        // ìºë¦­í„° ì…‹ ë³€í™˜
         //-----------------------------------------        
         while( sSourceIndex < sSourceFence )
         {

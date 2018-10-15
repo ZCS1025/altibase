@@ -21,7 +21,7 @@
 #include <ulnString.h>
 
 /*
- * Note : gULN_CM_PROTOCOL Àº url ÆÄ½ÌÇÒ ¶§¸¸ ¾´´Ù.
+ * Note : gULN_CM_PROTOCOL ì€ url íŒŒì‹±í•  ë•Œë§Œ ì“´ë‹¤.
  */
 const ulnKeyLinkImpl gULN_CM_PROTOCOL[]=
 {
@@ -34,8 +34,8 @@ const ulnKeyLinkImpl gULN_CM_PROTOCOL[]=
 };
 
 /*
- * Note : Altibase property ÆÄÀÏÀÇ ¸ğµç ¼ıÀÚ¿¡´Â K, M, G µîÀÇ metric ÀÌ ºÙÀ» ¼ö ÀÖ´Ù.
- *        ul µµ µû¶óÇÏÀÚ.
+ * Note : Altibase property íŒŒì¼ì˜ ëª¨ë“  ìˆ«ìì—ëŠ” K, M, G ë“±ì˜ metric ì´ ë¶™ì„ ìˆ˜ ìˆë‹¤.
+ *        ul ë„ ë”°ë¼í•˜ì.
  */
 
 const ulnMetricPrefixInt gULN_MUL[]=
@@ -65,14 +65,14 @@ const ulnMetricPrefixInt gULN_MUL_TIME[]=
 };
 
 /*
- * ¸î°¡Áö Æ¯Á¤ °ª¸¸ °¡Áö´Â ¼Ó¼ºµé
+ * ëª‡ê°€ì§€ íŠ¹ì • ê°’ë§Œ ê°€ì§€ëŠ” ì†ì„±ë“¤
  */
 
 const ulnDiscreteInt gULN_BOOL[]=
 {
     /*
-     * ÀÌ°Å, output connection string ¸¸µé ¶§ gULN_BOOL[SQL_TRUE]->mKey Ã³·³ ÂüÁ¶ÇÑ´Ù -0-;;
-     * °Å±âÀÇ °ÍÀ» ¼öÁ¤ÇÏÁö ¾ÊÀ¸¸é ÃÖÃÊÀÇ on, off ´Â ¹Ù²Ù¸é ¾ÈµÈ´Ù.
+     * ì´ê±°, output connection string ë§Œë“¤ ë•Œ gULN_BOOL[SQL_TRUE]->mKey ì²˜ëŸ¼ ì°¸ì¡°í•œë‹¤ -0-;;
+     * ê±°ê¸°ì˜ ê²ƒì„ ìˆ˜ì •í•˜ì§€ ì•Šìœ¼ë©´ ìµœì´ˆì˜ on, off ëŠ” ë°”ê¾¸ë©´ ì•ˆëœë‹¤.
      */
     { "OFF",    SQL_FALSE },
     { "ON",     SQL_TRUE },
@@ -169,7 +169,7 @@ const ulnDiscreteInt gULN_ACCESS_MODE[] =
 
 
 /*
- * Æ¯Á¤ ¹®ÀÚ¿­ÀÌ¸é Á¤ÇØÁø °ªÀ¸·Î Ä¡È¯ÇÏ´Â ¼Ó¼ºµé
+ * íŠ¹ì • ë¬¸ìì—´ì´ë©´ ì •í•´ì§„ ê°’ìœ¼ë¡œ ì¹˜í™˜í•˜ëŠ” ì†ì„±ë“¤
  */
 
 const ulnReservedString gSQL_DATE[]=
@@ -198,7 +198,7 @@ const ulnDiscreteInt gULN_PRIVILEGE[] =
 
 /* bug-31468: adding conn-attr for trace logging */
 /* bug-35142 cli trace log
-   TraceLog ¿¬°á¼Ó¼ºÀº ´õÀÌ»ó »ç¿ëÇÏÁö ¾Ê´Â´Ù */
+   TraceLog ì—°ê²°ì†ì„±ì€ ë”ì´ìƒ ì‚¬ìš©í•˜ì§€ ì•ŠëŠ”ë‹¤ */
 const ulnDiscreteInt gULN_TRACELOG[] =
 {
     { "off",     ULN_TRACELOG_OFF },
@@ -218,11 +218,11 @@ const ulnDiscreteInt gULN_TRACELOG[] =
 
 /*
  * ==============================================================================
- * BUGBUG : ¼Ó¼ºÀÌ ¼¼ÆÃµÉ ¼ö ÀÖ´Â ½ÃÁ¡µµ ÀÌ Ç¥¿¡ ÇÔ°Ô ³Ö¾î¾ß ÇÑ´Ù. Before, Either
+ * BUGBUG : ì†ì„±ì´ ì„¸íŒ…ë  ìˆ˜ ìˆëŠ” ì‹œì ë„ ì´ í‘œì— í•¨ê²Œ ë„£ì–´ì•¼ í•œë‹¤. Before, Either
  * ==============================================================================
  */
 
-/* ulnConnAttribute.hÀÇ ulnConnAttrID°ú ¼ø¼­°¡ µ¿ÀÏÇØ¾ß ÇÑ´Ù. */
+/* ulnConnAttribute.hì˜ ulnConnAttrIDê³¼ ìˆœì„œê°€ ë™ì¼í•´ì•¼ í•œë‹¤. */
 const ulnConnAttribute gUlnConnAttrTable[ULN_CONN_ATTR_MAX]  =
 {
     { /* ConnAttrID  */ ULN_CONN_ATTR_DSN,
@@ -443,7 +443,7 @@ const ulnConnAttribute gUlnConnAttrTable[ULN_CONN_ATTR_MAX]  =
       /* Max         */ SQL_MODE_READ_ONLY,
       /* Check       */ gULN_ACCESS_MODE 
     },
-    /* Optimizer Mode °¡ ¹¹Áö? */
+    /* Optimizer Mode ê°€ ë­ì§€? */
     { /* ConnAttrID  */ ULN_CONN_ATTR_OPTIMIZER_MODE,
       /* Keyword     */ "OPTIMIZER_MODE",
       /* SQL_ATTR_ID */ ALTIBASE_OPTIMIZER_MODE,
@@ -535,8 +535,8 @@ const ulnConnAttribute gUlnConnAttrTable[ULN_CONN_ATTR_MAX]  =
       /* Max         */ 0,
       /* Check       */ gNULL_LIST 
     },
-    /* BUGBUG : ±¸Çöµµ ¾ÈÇØ³ùÀ¸¸é¼­ ±×³É ¼¼ÆÃ¸¸ ÇÏ°í ¸ğ¸¥Ã´ ÇÏ´Â°Ç ÂóÂóÇÑµ¥... HYC00 ³» Áà¾ß ÇÒ °Í °°Àºµ¥... ÀÌ ¾Æ·§ÂÊ¿¡ ÀüºÎ´Ù ±×·±µ¥...
-     * Note   : ±¸Çö ¾ÈÇÏ°í ±×³É ¼¼ÆÃÇÏ·Á´Ï ¾î¶² °ªµµ ¹Ş¾ÆÁÖ±â À§ÇØ¼­ tDINT ÀÎµ¥µµ tINT-gULN_MULÂ¦À», tSTR ÀÌ¸é gNULL_LIST ¸¦ ¾¸ */
+    /* BUGBUG : êµ¬í˜„ë„ ì•ˆí•´ë†¨ìœ¼ë©´ì„œ ê·¸ëƒ¥ ì„¸íŒ…ë§Œ í•˜ê³  ëª¨ë¥¸ì²™ í•˜ëŠ”ê±´ ì°ì°í•œë°... HYC00 ë‚´ ì¤˜ì•¼ í•  ê²ƒ ê°™ì€ë°... ì´ ì•„ë«ìª½ì— ì „ë¶€ë‹¤ ê·¸ëŸ°ë°...
+     * Note   : êµ¬í˜„ ì•ˆí•˜ê³  ê·¸ëƒ¥ ì„¸íŒ…í•˜ë ¤ë‹ˆ ì–´ë–¤ ê°’ë„ ë°›ì•„ì£¼ê¸° ìœ„í•´ì„œ tDINT ì¸ë°ë„ tINT-gULN_MULì§ì„, tSTR ì´ë©´ gNULL_LIST ë¥¼ ì”€ */
     { /* ConnAttrID  */ ULN_CONN_ATTR_ODBC_CURSORS,
       /* Keyword     */ "",
       /* SQL_ATTR_ID */ SQL_ATTR_ODBC_CURSORS,
@@ -991,11 +991,11 @@ const ulnConnAttribute gUlnConnAttrTable[ULN_CONN_ATTR_MAX]  =
       /* Check       */ gULN_MUL
     },
     /*
-     * BUG-45286 (http://nok.altibase.com/x/nRhrAg Âü°í)
+     * BUG-45286 (http://nok.altibase.com/x/nRhrAg ì°¸ê³ )
      *
-     * @0 : Áö¿¬¾øÀ½, Default
-     * @1 : ParamInfoSetList, ParamDataIn Áö¿¬
-     * @2 : ParamInfoSetList, ParamDataIn, Free with Drop Áö¿¬
+     * @0 : ì§€ì—°ì—†ìŒ, Default
+     * @1 : ParamInfoSetList, ParamDataIn ì§€ì—°
+     * @2 : ParamInfoSetList, ParamDataIn, Free with Drop ì§€ì—°
      */
     { /* ConnAttrID  */ ULN_CONN_ATTR_PDO_DEFER_PROTOCOLS,
       /* Keyword     */ "PDO_DEFER_PROTOCOLS",
@@ -1060,9 +1060,9 @@ const ulnAttrNameIdPair gUlnConnAttrMap_PROFILE[] =
     { NULL                        , ULN_CONN_ATTR_MAX                       }
 };
 
-// bug-20706 ¾Æ·¡ Å×ÀÌºíÀº ¹İµå½Ã ¾Æ½ºÅ° ÄÚµå ¼ø¼­·Î µÇ¾î¾ß ÇÑ´Ù.
-// Connection Attribute ´Â case in-sensitiveÇÏ°Ô Ã³¸®ÇÑ´Ù.
-// µû¶ó¼­ ¿©±â´Â ÆíÀÇ»ó ¼Ò¹®ÀÚ·Î ±â¼úÇØ ÁÖ¼¼¿ä.
+// bug-20706 ì•„ë˜ í…Œì´ë¸”ì€ ë°˜ë“œì‹œ ì•„ìŠ¤í‚¤ ì½”ë“œ ìˆœì„œë¡œ ë˜ì–´ì•¼ í•œë‹¤.
+// Connection Attribute ëŠ” case in-sensitiveí•˜ê²Œ ì²˜ë¦¬í•œë‹¤.
+// ë”°ë¼ì„œ ì—¬ê¸°ëŠ” í¸ì˜ìƒ ì†Œë¬¸ìë¡œ ê¸°ìˆ í•´ ì£¼ì„¸ìš”.
 const struct ulnAttrNameIdPair gUlnConnAttrMap_KEYWORD[] =
 {
     { "access_mode"               , ULN_CONN_ATTR_ACCESS_MODE               },
@@ -1205,7 +1205,7 @@ ulnConnAttrID ulnGetConnAttrIDfromSQL_ATTR_ID(acp_sint32_t aSQL_ATTR_ID)
     acp_uint32_t i;
 
     /*
-     * switch - case ¸¦ ¾²´Â°Ô ´õ ºü¸¦±î? ±×³É µ¹ÀÚ.
+     * switch - case ë¥¼ ì“°ëŠ”ê²Œ ë” ë¹ ë¥¼ê¹Œ? ê·¸ëƒ¥ ëŒì.
      */
 
     for (i = 0; i < ULN_CONN_ATTR_MAX; i++)
@@ -1263,7 +1263,7 @@ void ulnConnAttrArrFinal(ulnConnAttrArr *aUnsupportedConnAttr)
 /**
  * ulnConnAttrArrAddId
  *
- * aId¸¦ ulnConnAttrArr¿¡ ÀúÀåÇÑ´Ù.
+ * aIdë¥¼ ulnConnAttrArrì— ì €ì¥í•œë‹¤.
  */
 ACI_RC ulnConnAttrArrAddId(ulnConnAttrArr *aUnsupportedConnAttr,
                            ulnConnAttrID   aId)
@@ -1281,7 +1281,7 @@ ACI_RC ulnConnAttrArrAddId(ulnConnAttrArr *aUnsupportedConnAttr,
     }
     else
     {
-        /* °ø°£ÀÌ ºÎÁ·ÇÏ¸é 2¹è·Î ´Ã¸®ÀÚ */
+        /* ê³µê°„ì´ ë¶€ì¡±í•˜ë©´ 2ë°°ë¡œ ëŠ˜ë¦¬ì */
         if (aUnsupportedConnAttr->mArrIndex *
             (acp_sint32_t)ACI_SIZEOF(ulnConnAttrID) == aUnsupportedConnAttr->mArrSize)
         {
@@ -1319,7 +1319,7 @@ ACI_RC ulnConnAttrArrAddId(ulnConnAttrArr *aUnsupportedConnAttr,
 /**
  * ulnConnAttrArrHasId
  *
- * ulnConnAttrArr¿¡ aId°¡ ÀúÀåµÇ¾î ÀÖ´ÂÁö È®ÀÎÇÑ´Ù.
+ * ulnConnAttrArrì— aIdê°€ ì €ì¥ë˜ì–´ ìˆëŠ”ì§€ í™•ì¸í•œë‹¤.
  */
 ACI_RC ulnConnAttrArrHasId(ulnConnAttrArr *aUnsupportedConnAttr,
                            ulnConnAttrID   aId)
@@ -1346,7 +1346,7 @@ ACI_RC ulnConnAttrArrHasId(ulnConnAttrArr *aUnsupportedConnAttr,
 /**
  * ulnGetConnAttrKEYWORDfromConnAttrId
  *
- * ConnAttrId¸¦ ÀÌ¿ëÇØ Keyword¸¦ ¾Ë¾Æ¿Â´Ù.
+ * ConnAttrIdë¥¼ ì´ìš©í•´ Keywordë¥¼ ì•Œì•„ì˜¨ë‹¤.
  */
 acp_char_t *ulnGetConnAttrKEYWORDfromConnAttrId(ulnConnAttrID aConnAttrId)
 {

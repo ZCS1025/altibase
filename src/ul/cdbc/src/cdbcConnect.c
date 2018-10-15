@@ -19,11 +19,11 @@
 
 
 /**
- * ¿¬°á ¹®ÀÚ¿­À» ÀÌ¿ëÇØ ¼­¹ö¿¡ Á¢¼ÓÇÑ´Ù.
+ * ì—°ê²° ë¬¸ìžì—´ì„ ì´ìš©í•´ ì„œë²„ì— ì ‘ì†í•œë‹¤.
  *
- * @param[in] aABConn ¿¬°á ÇÚµé
- * @param[in] aConnStr ¿¬°á ¹®ÀÚ¿­
- * @return ¼º°øÇÏ¸é ALTIBASE_SUCCESS, ±×·¸Áö ¾ÊÀ¸¸é ALTIBASE_ERROR
+ * @param[in] aABConn ì—°ê²° í•¸ë“¤
+ * @param[in] aConnStr ì—°ê²° ë¬¸ìžì—´
+ * @return ì„±ê³µí•˜ë©´ ALTIBASE_SUCCESS, ê·¸ë ‡ì§€ ì•Šìœ¼ë©´ ALTIBASE_ERROR
  */
 CDBC_EXPORT
 ALTIBASE_RC altibase_connect (ALTIBASE aABConn, const acp_char_t *aConnStr)

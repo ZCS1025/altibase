@@ -55,7 +55,7 @@ static IDE_RC mtfSumKeepEstimate( mtcNode     * aNode,
 mtfModule mtfSumKeep = {
     3 | MTC_NODE_OPERATOR_AGGREGATION,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
+    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìžê°€ ì•„ë‹˜)
     mtfSumKeepFunctionName,
     NULL,
     mtfSumKeepInitialize,
@@ -92,7 +92,7 @@ static mtfSubModule mtfSumKeepEstimates[3] = {
 };
 
 // BUG-41994
-// high performance¿ë group table
+// high performanceìš© group table
 static mtfSubModule mtfSumKeepEstimatesHighPerformance[2] = {
     { mtfSumKeepEstimatesHighPerformance+1, mtfSumKeepEstimateDouble },
     { NULL, mtfSumKeepEstimateBigint }
@@ -254,7 +254,7 @@ IDE_RC mtfSumKeepEstimateFloat( mtcNode     * aNode,
                                      0 )
               != IDE_SUCCESS );
 
-    // SumKeep °á°ú°¡ NullÀÎÁö ¾Æ´ÑÁö ÀúÀåÇÔ
+    // SumKeep ê²°ê³¼ê°€ Nullì¸ì§€ ì•„ë‹Œì§€ ì €ìž¥í•¨
     IDE_TEST( mtc::initializeColumn( aStack[0].column + 1,
                                      & mtdBoolean,
                                      0,
@@ -273,7 +273,7 @@ IDE_RC mtfSumKeepEstimateFloat( mtcNode     * aNode,
                     ( aStack[1].column->module == &mtdBoolean ),
                     ERR_CONVERSION_NOT_APPLICABLE );
 
-    // funcData »ç¿ë
+    // funcData ì‚¬ìš©
     aNode->info = aTemplate->funcDataCnt;
     aTemplate->funcDataCnt++;
 
@@ -314,7 +314,7 @@ IDE_RC mtfSumKeepInitializeFloat( mtcNode     * aNode,
 
     sBinary = (mtdBinaryType*)((UChar*)aTemplate->rows[aNode->table].row +
                                         sColumn[2].column.offset);
-    // ÃÖÃÊ µî·Ï
+    // ìµœì´ˆ ë“±ë¡
     if ( aTemplate->funcData[aNode->info] == NULL )
     {
         IDE_TEST( mtf::allocFuncDataMemory( &sMemoryMgr )
@@ -329,7 +329,7 @@ IDE_RC mtfSumKeepInitializeFloat( mtcNode     * aNode,
         IDE_TEST( mtf::initializeFuncDataBasicInfo( sFuncData,
                                                     sMemoryMgr )
                   != IDE_SUCCESS );
-        // µî·Ï
+        // ë“±ë¡
         aTemplate->funcData[aNode->info] = sFuncData;
     }
     else
@@ -582,8 +582,8 @@ static const mtcExecute mtfSumKeepExecuteDouble = {
     mtk::extractRangeNA
 };
 
-// ÃÖÀûÀÇ SumKeepÀ» ¼öÇàÇÏ´Â
-// aggregate ÇÔ¼ö¸¦ Æ÷ÇÔÇÏ°í ÀÖ´Â execute
+// ìµœì ì˜ SumKeepì„ ìˆ˜í–‰í•˜ëŠ”
+// aggregate í•¨ìˆ˜ë¥¼ í¬í•¨í•˜ê³  ìžˆëŠ” execute
 static const mtcExecute mtfSumKeepExecuteDoubleFast = {
     mtfSumKeepInitializeDouble,
     mtfSumKeepAggregateDoubleFast,
@@ -621,18 +621,18 @@ IDE_RC mtfSumKeepEstimateDouble( mtcNode     * aNode,
     aStack[0].column = aTemplate->rows[aNode->table].columns + aNode->column;
     aTemplate->rows[aNode->table].execute[aNode->column] = mtfSumKeepExecuteDouble;
 
-    // ÃÖÀûÈ­µÈ aggregate ÇÔ¼ö
+    // ìµœì í™”ëœ aggregate í•¨ìˆ˜
     sArgModule = aNode->arguments->module;
 
-    // mtf::initializeTemplate¿¡¼­ °¢ subModule¿¡ ´ëÇØ
-    // estimateBound¸¦ È£ÃâÇÏ´Âµ¥ ÀÌ¶§¿¡´Â node¿¡ moduleÀÌ
-    // ¾È´Þ·ÁÀÖ±â ¶§¹®¿¡ NULL Ã¼Å©¸¦ ÇØ¾ß ÇÑ´Ù.
+    // mtf::initializeTemplateì—ì„œ ê° subModuleì— ëŒ€í•´
+    // estimateBoundë¥¼ í˜¸ì¶œí•˜ëŠ”ë° ì´ë•Œì—ëŠ” nodeì— moduleì´
+    // ì•ˆë‹¬ë ¤ìžˆê¸° ë•Œë¬¸ì— NULL ì²´í¬ë¥¼ í•´ì•¼ í•œë‹¤.
     if ( sArgModule != NULL )
     {
-        // SumKeep(i1) Ã³·³ i1°¡ ´ÜÀÏ ÄÃ·³ÀÌ°í conversionµÇÁö ¾Ê´Â´Ù¸é
-        // ÃÖÀûÈ­µÈ executionÀ» ´Þ¾ÆÁØ´Ù.
+        // SumKeep(i1) ì²˜ëŸ¼ i1ê°€ ë‹¨ì¼ ì»¬ëŸ¼ì´ê³  conversionë˜ì§€ ì•ŠëŠ”ë‹¤ë©´
+        // ìµœì í™”ëœ executionì„ ë‹¬ì•„ì¤€ë‹¤.
         // BUG-19856
-        // view ÄÃ·³ÀÎ °æ¿ì ÃÖÀûÈ­µÈ executionÀ» ´ÞÁö¾Ê´Â´Ù.
+        // view ì»¬ëŸ¼ì¸ ê²½ìš° ìµœì í™”ëœ executionì„ ë‹¬ì§€ì•ŠëŠ”ë‹¤.
         if ( ( ( aTemplate->rows[aNode->arguments->table].lflag & MTC_TUPLE_VIEW_MASK )
                == MTC_TUPLE_VIEW_FALSE ) &&
              ( idlOS::strncmp((SChar*)sArgModule->names->string,
@@ -641,7 +641,7 @@ IDE_RC mtfSumKeepEstimateDouble( mtcNode     * aNode,
              ( aNode->arguments->conversion == NULL ) )
         {
             // sum(i1) keep ( dense_rank first order by i1,i2,i3 )
-            // order by column µµ ¼ø¼ö Ã¶·³ÀÎÁö È®ÀÎÇØ¾ßÇÑ´Ù.
+            // order by column ë„ ìˆœìˆ˜ ì² ëŸ¼ì¸ì§€ í™•ì¸í•´ì•¼í•œë‹¤.
             for ( sNode = aNode->arguments->next->next;
                   sNode != NULL;
                   sNode = sNode->next )
@@ -688,7 +688,7 @@ IDE_RC mtfSumKeepEstimateDouble( mtcNode     * aNode,
                                      0 )
               != IDE_SUCCESS );
 
-    // SumKeep °á°ú°¡ NullÀÎÁö ¾Æ´ÑÁö ÀúÀåÇÔ
+    // SumKeep ê²°ê³¼ê°€ Nullì¸ì§€ ì•„ë‹Œì§€ ì €ìž¥í•¨
     IDE_TEST( mtc::initializeColumn( aStack[0].column + 1,
                                      & mtdBoolean,
                                      0,
@@ -707,7 +707,7 @@ IDE_RC mtfSumKeepEstimateDouble( mtcNode     * aNode,
                     ( aStack[1].column->module == &mtdBoolean ),
                     ERR_CONVERSION_NOT_APPLICABLE );
 
-    // funcData »ç¿ë
+    // funcData ì‚¬ìš©
     aNode->info = aTemplate->funcDataCnt;
     aTemplate->funcDataCnt++;
 
@@ -743,7 +743,7 @@ IDE_RC mtfSumKeepInitializeDouble( mtcNode     * aNode,
 
     sBinary = (mtdBinaryType*)((UChar*)aTemplate->rows[aNode->table].row +
                                         sColumn[2].column.offset);
-    // ÃÖÃÊ µî·Ï
+    // ìµœì´ˆ ë“±ë¡
     if ( aTemplate->funcData[aNode->info] == NULL )
     {
         IDE_TEST( mtf::allocFuncDataMemory( &sMemoryMgr )
@@ -758,7 +758,7 @@ IDE_RC mtfSumKeepInitializeDouble( mtcNode     * aNode,
         IDE_TEST( mtf::initializeFuncDataBasicInfo( sFuncData,
                                                     sMemoryMgr )
                   != IDE_SUCCESS );
-        // µî·Ï
+        // ë“±ë¡
         aTemplate->funcData[aNode->info] = sFuncData;
     }
     else
@@ -876,10 +876,10 @@ IDE_RC mtfSumKeepAggregateDouble( mtcNode     * aNode,
         }
         else if ( sAction == MTF_KEEP_ACTION_AGGR )
         {
-            // mtdDouble.isNull() ¸¦ È£ÃâÇÏ´Â ´ë½Å
-            // Á÷Á¢ null °Ë»ç¸¦ ÇÑ´Ù.
-            // aStack->valueÀÇ µ¥ÀÌÅÍ Å¸ÀÔÀ» ¹Ì¸® ¾Ë±â ¶§¹®¿¡
-            // Á÷Á¢ null °Ë»ç¸¦ ÇÏ´Âµ¥ ¼öÇà ¼Óµµ¸¦ À§ÇØ¼­ÀÌ´Ù.
+            // mtdDouble.isNull() ë¥¼ í˜¸ì¶œí•˜ëŠ” ëŒ€ì‹ 
+            // ì§ì ‘ null ê²€ì‚¬ë¥¼ í•œë‹¤.
+            // aStack->valueì˜ ë°ì´í„° íƒ€ìž…ì„ ë¯¸ë¦¬ ì•Œê¸° ë•Œë¬¸ì—
+            // ì§ì ‘ null ê²€ì‚¬ë¥¼ í•˜ëŠ”ë° ìˆ˜í–‰ ì†ë„ë¥¼ ìœ„í•´ì„œì´ë‹¤.
             if ( ( *(ULong*)(aStack[1].value) & MTD_DOUBLE_EXPONENT_MASK )
                  != MTD_DOUBLE_EXPONENT_MASK )
             {
@@ -996,10 +996,10 @@ IDE_RC mtfSumKeepAggregateDoubleFast( mtcNode     * aNode,
         }
         else if ( sAction == MTF_KEEP_ACTION_AGGR )
         {
-            // mtdDouble.isNull() ¸¦ È£ÃâÇÏ´Â ´ë½Å
-            // Á÷Á¢ null °Ë»ç¸¦ ÇÑ´Ù.
-            // aStack->valueÀÇ µ¥ÀÌÅÍ Å¸ÀÔÀ» ¹Ì¸® ¾Ë±â ¶§¹®¿¡
-            // Á÷Á¢ null °Ë»ç¸¦ ÇÏ´Âµ¥ ¼öÇà ¼Óµµ¸¦ À§ÇØ¼­ÀÌ´Ù.
+            // mtdDouble.isNull() ë¥¼ í˜¸ì¶œí•˜ëŠ” ëŒ€ì‹ 
+            // ì§ì ‘ null ê²€ì‚¬ë¥¼ í•œë‹¤.
+            // aStack->valueì˜ ë°ì´í„° íƒ€ìž…ì„ ë¯¸ë¦¬ ì•Œê¸° ë•Œë¬¸ì—
+            // ì§ì ‘ null ê²€ì‚¬ë¥¼ í•˜ëŠ”ë° ìˆ˜í–‰ ì†ë„ë¥¼ ìœ„í•´ì„œì´ë‹¤.
             if ( ( *(ULong*)(aStack[1].value) & MTD_DOUBLE_EXPONENT_MASK )
                  != MTD_DOUBLE_EXPONENT_MASK )
             {
@@ -1121,8 +1121,8 @@ static const mtcExecute mtfSumKeepExecuteBigint = {
 };
 
 
-// ÃÖÀûÀÇ SumKeepÀ» ¼öÇàÇÏ´Â
-// aggregate ÇÔ¼ö¸¦ Æ÷ÇÔÇÏ°í ÀÖ´Â execute
+// ìµœì ì˜ SumKeepì„ ìˆ˜í–‰í•˜ëŠ”
+// aggregate í•¨ìˆ˜ë¥¼ í¬í•¨í•˜ê³  ìžˆëŠ” execute
 static const mtcExecute mtfSumKeepExecuteBigintFast = {
     mtfSumKeepInitializeBigint,
     mtfSumKeepAggregateBigintFast,
@@ -1161,19 +1161,19 @@ IDE_RC mtfSumKeepEstimateBigint( mtcNode     * aNode,
 
     aTemplate->rows[aNode->table].execute[aNode->column] = mtfSumKeepExecuteBigint;
 
-    // ÃÖÀûÈ­µÈ aggregate ÇÔ¼ö
+    // ìµœì í™”ëœ aggregate í•¨ìˆ˜
     sArgModule = aNode->arguments->module;
 
-    // mtf::initializeTemplate¿¡¼­ °¢ subModule¿¡ ´ëÇØ
-    // estimateBound¸¦ È£ÃâÇÏ´Âµ¥ ÀÌ¶§¿¡´Â node¿¡ moduleÀÌ
-    // ¾È´Þ·ÁÀÖ±â ¶§¹®¿¡ NULL Ã¼Å©¸¦ ÇØ¾ß ÇÑ´Ù.
+    // mtf::initializeTemplateì—ì„œ ê° subModuleì— ëŒ€í•´
+    // estimateBoundë¥¼ í˜¸ì¶œí•˜ëŠ”ë° ì´ë•Œì—ëŠ” nodeì— moduleì´
+    // ì•ˆë‹¬ë ¤ìžˆê¸° ë•Œë¬¸ì— NULL ì²´í¬ë¥¼ í•´ì•¼ í•œë‹¤.
     if ( sArgModule != NULL )
     {
-        // SumKeep(i1) Ã³·³ i1°¡ ´ÜÀÏ ÄÃ·³ÀÌ°í conversionµÇÁö ¾Ê´Â´Ù¸é
-        // ÃÖÀûÈ­µÈ executionÀ» ´Þ¾ÆÁØ´Ù.
+        // SumKeep(i1) ì²˜ëŸ¼ i1ê°€ ë‹¨ì¼ ì»¬ëŸ¼ì´ê³  conversionë˜ì§€ ì•ŠëŠ”ë‹¤ë©´
+        // ìµœì í™”ëœ executionì„ ë‹¬ì•„ì¤€ë‹¤.
 
         // BUG-19856
-        // view ÄÃ·³ÀÎ °æ¿ì ÃÖÀûÈ­µÈ executionÀ» ´ÞÁö¾Ê´Â´Ù.
+        // view ì»¬ëŸ¼ì¸ ê²½ìš° ìµœì í™”ëœ executionì„ ë‹¬ì§€ì•ŠëŠ”ë‹¤.
         if ( ( ( aTemplate->rows[aNode->arguments->table].lflag & MTC_TUPLE_VIEW_MASK )
               == MTC_TUPLE_VIEW_FALSE ) &&
              ( idlOS::strncmp((SChar*)sArgModule->names->string,
@@ -1182,7 +1182,7 @@ IDE_RC mtfSumKeepEstimateBigint( mtcNode     * aNode,
             ( aNode->arguments->conversion == NULL ) )
         {
             // sum(i1) keep ( dense_rank first order by i1,i2,i3 )
-            // order by column µµ °Ë»çÇØÁà¾ßÇÑ´Ù.
+            // order by column ë„ ê²€ì‚¬í•´ì¤˜ì•¼í•œë‹¤.
             for ( sNode = aNode->arguments->next->next;
                   sNode != NULL;
                   sNode = sNode->next )
@@ -1229,7 +1229,7 @@ IDE_RC mtfSumKeepEstimateBigint( mtcNode     * aNode,
                                      0 )
               != IDE_SUCCESS );
 
-    // SumKeep °á°ú°¡ NullÀÎÁö ¾Æ´ÑÁö ÀúÀåÇÔ
+    // SumKeep ê²°ê³¼ê°€ Nullì¸ì§€ ì•„ë‹Œì§€ ì €ìž¥í•¨
     IDE_TEST( mtc::initializeColumn( aStack[0].column + 1,
                                      & mtdBoolean,
                                      0,
@@ -1248,7 +1248,7 @@ IDE_RC mtfSumKeepEstimateBigint( mtcNode     * aNode,
                     ( aStack[1].column->module == &mtdBoolean ),
                     ERR_CONVERSION_NOT_APPLICABLE );
 
-    // funcData »ç¿ë
+    // funcData ì‚¬ìš©
     aNode->info = aTemplate->funcDataCnt;
     aTemplate->funcDataCnt++;
 
@@ -1286,7 +1286,7 @@ IDE_RC mtfSumKeepInitializeBigint( mtcNode     * aNode,
     sBinary = (mtdBinaryType*)((UChar*)aTemplate->rows[aNode->table].row +
                                         sColumn[2].column.offset);
 
-    // ÃÖÃÊ µî·Ï
+    // ìµœì´ˆ ë“±ë¡
     if ( aTemplate->funcData[aNode->info] == NULL )
     {
         IDE_TEST( mtf::allocFuncDataMemory( &sMemoryMgr )
@@ -1301,7 +1301,7 @@ IDE_RC mtfSumKeepInitializeBigint( mtcNode     * aNode,
         IDE_TEST( mtf::initializeFuncDataBasicInfo( sFuncData,
                                                     sMemoryMgr )
                   != IDE_SUCCESS );
-        // µî·Ï
+        // ë“±ë¡
         aTemplate->funcData[aNode->info] = sFuncData;
     }
     else
@@ -1416,10 +1416,10 @@ IDE_RC mtfSumKeepAggregateBigint( mtcNode     * aNode,
         }
         else if ( sAction == MTF_KEEP_ACTION_AGGR )
         {
-            // mtdBigint.isNull() ¸¦ È£ÃâÇÏ´Â ´ë½Å
-            // Á÷Á¢ null °Ë»ç¸¦ ÇÑ´Ù.
-            // aStack->valueÀÇ µ¥ÀÌÅÍ Å¸ÀÔÀ» ¹Ì¸® ¾Ë±â ¶§¹®¿¡
-            // Á÷Á¢ null °Ë»ç¸¦ ÇÏ´Âµ¥ ¼öÇà ¼Óµµ¸¦ À§ÇØ¼­ÀÌ´Ù.
+            // mtdBigint.isNull() ë¥¼ í˜¸ì¶œí•˜ëŠ” ëŒ€ì‹ 
+            // ì§ì ‘ null ê²€ì‚¬ë¥¼ í•œë‹¤.
+            // aStack->valueì˜ ë°ì´í„° íƒ€ìž…ì„ ë¯¸ë¦¬ ì•Œê¸° ë•Œë¬¸ì—
+            // ì§ì ‘ null ê²€ì‚¬ë¥¼ í•˜ëŠ”ë° ìˆ˜í–‰ ì†ë„ë¥¼ ìœ„í•´ì„œì´ë‹¤.
             if ( *(mtdBigintType*)aStack[1].value != MTD_BIGINT_NULL )
             {
                 *(mtdBigintType*)((UChar*) aTemplate->rows[aNode->table].row +
@@ -1532,10 +1532,10 @@ IDE_RC mtfSumKeepAggregateBigintFast( mtcNode     * aNode,
         }
         else if ( sAction == MTF_KEEP_ACTION_AGGR )
         {
-            // mtdBigint.isNull() ¸¦ È£ÃâÇÏ´Â ´ë½Å
-            // Á÷Á¢ null °Ë»ç¸¦ ÇÑ´Ù.
-            // aStack->valueÀÇ µ¥ÀÌÅÍ Å¸ÀÔÀ» ¹Ì¸® ¾Ë±â ¶§¹®¿¡
-            // Á÷Á¢ null °Ë»ç¸¦ ÇÏ´Âµ¥ ¼öÇà ¼Óµµ¸¦ À§ÇØ¼­ÀÌ´Ù.
+            // mtdBigint.isNull() ë¥¼ í˜¸ì¶œí•˜ëŠ” ëŒ€ì‹ 
+            // ì§ì ‘ null ê²€ì‚¬ë¥¼ í•œë‹¤.
+            // aStack->valueì˜ ë°ì´í„° íƒ€ìž…ì„ ë¯¸ë¦¬ ì•Œê¸° ë•Œë¬¸ì—
+            // ì§ì ‘ null ê²€ì‚¬ë¥¼ í•˜ëŠ”ë° ìˆ˜í–‰ ì†ë„ë¥¼ ìœ„í•´ì„œì´ë‹¤.
             if ( *(mtdBigintType*)aStack[1].value != MTD_BIGINT_NULL )
             {
                 *(mtdBigintType*)((UChar*) aTemplate->rows[aNode->table].row +

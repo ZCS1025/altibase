@@ -18,8 +18,8 @@
 /*****************************************************************************
  * $Id: mtuProperty.h 82075 2018-01-17 06:39:52Z jina.kim $
  *
- * MT¿¡¼­ »ç¿ëÇÏ´Â System Property¿¡ ´ëÇÑ Á¤ÀÇ
- * A4¿¡¼­ Á¦°øÇÏ´Â Property °ü¸®ÀÚ¸¦ ÀÌ¿ëÇÏ¿© Ã³¸®ÇÑ´Ù.
+ * MTì—ì„œ ì‚¬ìš©í•˜ëŠ” System Propertyì— ëŒ€í•œ ì •ì˜
+ * A4ì—ì„œ ì œê³µí•˜ëŠ” Property ê´€ë¦¬ìë¥¼ ì´ìš©í•˜ì—¬ ì²˜ë¦¬í•œë‹¤.
  *
  *        
  * 
@@ -79,7 +79,7 @@
 #define MTU_LIKE_USE_NEW_MODULE ( (UInt)0)
 #define MTU_LIKE_USE_OLD_MODULE ( (UInt)1)
 
-/* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø */
+/* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ì… ì§€ì› */
 #define MTU_LOB_OBJECT_BUFFER_SIZE  ( MTU_PROPERTY(mLOBObjectBufSize) )
 
 // BUG-37247
@@ -141,7 +141,7 @@ typedef struct mtuProperties
     SChar              mOSTimezoneString[MTC_TIMEZONE_NAME_LEN + 1];
     SLong              mOSTimezoneSecond;
 
-    /* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø */
+    /* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ì… ì§€ì› */
     UInt               mLOBObjectBufSize;
 
     // BUG-37247
@@ -174,10 +174,10 @@ public:
     static IDE_RC initProperty( idvSQL * aStatistics );
     static IDE_RC finalProperty( idvSQL * aStatistics );
     
-    // System ±¸µ¿ ½Ã °ü·Ã Property¸¦ Loading ÇÔ.
+    // System êµ¬ë™ ì‹œ ê´€ë ¨ Propertyë¥¼ Loading í•¨.
     static IDE_RC load();
 
-    // System ±¸µ¿ ½Ã °ü·Ã PropertyÀÇ callback À» µî·ÏÇÔ
+    // System êµ¬ë™ ì‹œ ê´€ë ¨ Propertyì˜ callback ì„ ë“±ë¡í•¨
     static IDE_RC setupUpdateCallback();
 
 #ifdef ALTIBASE_PRODUCT_XDB
@@ -186,7 +186,7 @@ public:
 #endif
 
     //----------------------------------------------
-    // Writable Property¸¦ À§ÇÑ Call Back ÇÔ¼öµé
+    // Writable Propertyë¥¼ ìœ„í•œ Call Back í•¨ìˆ˜ë“¤
     //----------------------------------------------
 
     static IDE_RC changeDEFAULT_DATE_FORMAT( idvSQL * aStatistics,

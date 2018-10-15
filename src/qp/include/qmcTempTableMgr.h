@@ -20,11 +20,11 @@
  *
  *  Temp Table Manager
  *
- *     ÁúÀÇ Ã³¸® °úÁ¤ Áß¿¡ »ı¼ºµÈ Temp TableµéÀ»
- *     ÁúÀÇ Á¾·á ÈÄ ¸ğµç ÀÚ¿øÀ» ÇØÁ¦ÇÑ´Ù.
- *     Memory Temp TableÀÇ °æ¿ì Memory °ü¸®ÀÚ¿¡ ÀÇÇØ ÀÚµ¿ ÇØÁ¦µÇ¸ç,
- *     Disk Temp TableÀÇ °æ¿ì Table HandleÀ» µî·ÏÇÏ°í,
- *     ÁúÀÇ Á¾·á ½Ã Table HandleÀ» ÀÌ¿ëÇÏ¿© ¸ğµç Temp TableµéÀ» Á¦°ÅÇÑ´Ù.
+ *     ì§ˆì˜ ì²˜ë¦¬ ê³¼ì • ì¤‘ì— ìƒì„±ëœ Temp Tableë“¤ì„
+ *     ì§ˆì˜ ì¢…ë£Œ í›„ ëª¨ë“  ìì›ì„ í•´ì œí•œë‹¤.
+ *     Memory Temp Tableì˜ ê²½ìš° Memory ê´€ë¦¬ìì— ì˜í•´ ìë™ í•´ì œë˜ë©°,
+ *     Disk Temp Tableì˜ ê²½ìš° Table Handleì„ ë“±ë¡í•˜ê³ ,
+ *     ì§ˆì˜ ì¢…ë£Œ ì‹œ Table Handleì„ ì´ìš©í•˜ì—¬ ëª¨ë“  Temp Tableë“¤ì„ ì œê±°í•œë‹¤.
  *
  **********************************************************************/
 
@@ -36,7 +36,7 @@
 #include <qmcMemory.h>
 
 //---------------------------------
-// »ı¼ºµÈ Temp TableÀÇ HandleÀÇ list
+// ìƒì„±ëœ Temp Tableì˜ Handleì˜ list
 //---------------------------------
 
 typedef struct qmcCreatedTable
@@ -46,7 +46,7 @@ typedef struct qmcCreatedTable
 } qmcCreatedTable;
 
 //---------------------------------
-// Temp Table °ü¸®ÀÚ
+// Temp Table ê´€ë¦¬ì
 //---------------------------------
 
 typedef struct qmcdTempTableMgr

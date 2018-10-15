@@ -39,28 +39,28 @@ const SChar *MMDXASTATE[] =
 };
 
 /**
- * ÀÓ½Ã·Î ÂüÁ¶¸¸ ÇÒ °æ¿ì,
- * ÆíÀÇ¸¦ À§ÇØ¼­ mmdXa::fix ´ë½Å mmdXaSafeFind¸¦ ÀÌ¿ëÇÑ´Ù.
+ * ì„ì‹œë¡œ ì°¸ì¡°ë§Œ í•  ê²½ìš°,
+ * í¸ì˜ë¥¼ ìœ„í•´ì„œ mmdXa::fix ëŒ€ì‹  mmdXaSafeFindë¥¼ ì´ìš©í•œë‹¤.
  *
- * mmdXaSafeFind()´Â fix count¸¦ Áõ°¡½ÃÅ°Áö ¾ÊÀ¸¹Ç·Î
- * µµÁß¿¡ ¿¹¿Ü°¡ ¹ß»ıÇÏ´õ¶óµµ fix count¿Í °ü·ÃµÈ º°µµÀÇ Ã³¸®¸¦ ÇÒ ÇÊ¿ä°¡ ¾ø´Ù.
+ * mmdXaSafeFind()ëŠ” fix countë¥¼ ì¦ê°€ì‹œí‚¤ì§€ ì•Šìœ¼ë¯€ë¡œ
+ * ë„ì¤‘ì— ì˜ˆì™¸ê°€ ë°œìƒí•˜ë”ë¼ë„ fix countì™€ ê´€ë ¨ëœ ë³„ë„ì˜ ì²˜ë¦¬ë¥¼ í•  í•„ìš”ê°€ ì—†ë‹¤.
  *
- * mmdXaSafeFind()·Î ¾òÀº mmdXidÀÇ Æ÷ÀÎÅÍ¸¦ ÀÌ¿ëÇØ¼­
- * Æ÷ÀÎÅÍ °ªÀ» ºñ±³, È®ÀÎÇÏ´Â °Í ¿Ü¿¡ ´Ù¸¥ ¿¬»êÀ» ÇØ¼­´Â ¾ÈµÇ¸ç,
- * °¡±ŞÀû mmdXa::fix()¿Í mmdXa::unFix() »çÀÌ¿¡¼­ È£ÃâÇÒ °ÍÀ» ±ÇÇÑ´Ù.
+ * mmdXaSafeFind()ë¡œ ì–»ì€ mmdXidì˜ í¬ì¸í„°ë¥¼ ì´ìš©í•´ì„œ
+ * í¬ì¸í„° ê°’ì„ ë¹„êµ, í™•ì¸í•˜ëŠ” ê²ƒ ì™¸ì— ë‹¤ë¥¸ ì—°ì‚°ì„ í•´ì„œëŠ” ì•ˆë˜ë©°,
+ * ê°€ê¸‰ì  mmdXa::fix()ì™€ mmdXa::unFix() ì‚¬ì´ì—ì„œ í˜¸ì¶œí•  ê²ƒì„ ê¶Œí•œë‹¤.
  *
  * @param aXidObjPtr
- *        xid °´Ã¼ÀÇ Æ÷ÀÎÅÍ¸¦ ´ãÀ» º¯¼öÀÇ Æ÷ÀÎÅÍ
+ *        xid ê°ì²´ì˜ í¬ì¸í„°ë¥¼ ë‹´ì„ ë³€ìˆ˜ì˜ í¬ì¸í„°
  * @param aXIDPtr
- *        mmdXidManager¿¡¼­ °Ë»öÇÒ xid °ª
+ *        mmdXidManagerì—ì„œ ê²€ìƒ‰í•  xid ê°’
  * @param aXaLogFlag
- *        xid °´Ã¼¸¦ Ã£¾Ò´Ù´Â °ÍÀ» ·Î±×¿¡ ³²±æÁö ¿©ºÎ.
- *        mmdXidManager::find() ÇÒ ¶§, ¼¼¹øÂ° ÀÎÀÚ·Î ³Ñ±æ °ª.
+ *        xid ê°ì²´ë¥¼ ì°¾ì•˜ë‹¤ëŠ” ê²ƒì„ ë¡œê·¸ì— ë‚¨ê¸¸ì§€ ì—¬ë¶€.
+ *        mmdXidManager::find() í•  ë•Œ, ì„¸ë²ˆì§¸ ì¸ìë¡œ ë„˜ê¸¸ ê°’.
  *
- * @return mmdXidManager::find()¿¡ ½ÇÆĞÇÑ °æ¿ì, IDE_FAILURE.
- *         mmdXidManager::find() ½ÇÆĞ´Â smuHash::findNodeLatch()¸¦ »ç¿ëÇßÀ» ¶§
- *         lock È¹µæ, ÇØÁ¦¿¡ ½ÇÆĞÇÏ¸é ¹ß»ıÇÑ´Ù.
- *         ±× ¿ÜÀÇ °æ¿ì¿¡´Â IDE_ASSERT()·Î °Ë»çÇÏ¹Ç·Î ½ÇÆĞÇÏ¸é ¼­¹ö°¡ ´Ù¿î µÉ °Í.
+ * @return mmdXidManager::find()ì— ì‹¤íŒ¨í•œ ê²½ìš°, IDE_FAILURE.
+ *         mmdXidManager::find() ì‹¤íŒ¨ëŠ” smuHash::findNodeLatch()ë¥¼ ì‚¬ìš©í–ˆì„ ë•Œ
+ *         lock íšë“, í•´ì œì— ì‹¤íŒ¨í•˜ë©´ ë°œìƒí•œë‹¤.
+ *         ê·¸ ì™¸ì˜ ê²½ìš°ì—ëŠ” IDE_ASSERT()ë¡œ ê²€ì‚¬í•˜ë¯€ë¡œ ì‹¤íŒ¨í•˜ë©´ ì„œë²„ê°€ ë‹¤ìš´ ë  ê²ƒ.
  */
 IDE_RC mmdXaSafeFind(mmdXid **aXidObjPtr, ID_XID *aXIDPtr, mmdXaLogFlag aXaLogFlag)
 {
@@ -91,18 +91,18 @@ IDE_RC mmdXaSafeFind(mmdXid **aXidObjPtr, ID_XID *aXIDPtr, mmdXaLogFlag aXaLogFl
 }
 
 /**
- * ID_XID¿¡ ÇØ´çÇÏ´Â mmdXid¸¦ Ã£°í
- * fix count¸¦ 1 Áõ°¡½ÃÅ²´Ù.
+ * ID_XIDì— í•´ë‹¹í•˜ëŠ” mmdXidë¥¼ ì°¾ê³ 
+ * fix countë¥¼ 1 ì¦ê°€ì‹œí‚¨ë‹¤.
  *
  * @param aXidObjPtr
- *        xid °´Ã¼ÀÇ Æ÷ÀÎÅÍ¸¦ ´ãÀ» º¯¼öÀÇ Æ÷ÀÎÅÍ
+ *        xid ê°ì²´ì˜ í¬ì¸í„°ë¥¼ ë‹´ì„ ë³€ìˆ˜ì˜ í¬ì¸í„°
  * @param aXIDPtr
- *        mmdXidManager¿¡¼­ °Ë»öÇÒ xid °ª
+ *        mmdXidManagerì—ì„œ ê²€ìƒ‰í•  xid ê°’
  * @param aXaLogFlag
- *        xid °´Ã¼¸¦ Ã£¾Ò´Ù´Â °ÍÀ» ·Î±×¿¡ ³²±æÁö ¿©ºÎ.
- *        mmdXidManager::find() ÇÒ ¶§, ¼¼¹øÂ° ÀÎÀÚ·Î ³Ñ±æ °ª.
+ *        xid ê°ì²´ë¥¼ ì°¾ì•˜ë‹¤ëŠ” ê²ƒì„ ë¡œê·¸ì— ë‚¨ê¸¸ì§€ ì—¬ë¶€.
+ *        mmdXidManager::find() í•  ë•Œ, ì„¸ë²ˆì§¸ ì¸ìë¡œ ë„˜ê¸¸ ê°’.
  *
- * @return mmdXidManager::find()¿¡ ½ÇÆĞÇÑ °æ¿ì, IDE_FAILURE.
+ * @return mmdXidManager::find()ì— ì‹¤íŒ¨í•œ ê²½ìš°, IDE_FAILURE.
  */
 IDE_RC mmdXa::fix(mmdXid **aXidObjPtr, ID_XID *aXIDPtr, mmdXaLogFlag aXaLogFlag)
 {
@@ -115,8 +115,8 @@ IDE_RC mmdXa::fix(mmdXid **aXidObjPtr, ID_XID *aXIDPtr, mmdXaLogFlag aXaLogFlag)
   that is to say , chanage the granularity from global to bucket level.
  */               
     
-    /* BUG-27968 XA Fix/Unfix Scalability¸¦ Çâ»ó½ÃÄÑ¾ß ÇÕ´Ï´Ù.
-     fix(list-s-latch) , fixWithAdd(list-x-latch)·Î ºĞ¸®½ÃÄÑ fix º´¸ñÀ» ºĞ»ê½ÃÅµ´Ï´Ù. */
+    /* BUG-27968 XA Fix/Unfix Scalabilityë¥¼ í–¥ìƒì‹œì¼œì•¼ í•©ë‹ˆë‹¤.
+     fix(list-s-latch) , fixWithAdd(list-x-latch)ë¡œ ë¶„ë¦¬ì‹œì¼œ fix ë³‘ëª©ì„ ë¶„ì‚°ì‹œí‚µë‹ˆë‹¤. */
     IDE_ASSERT(mmdXidManager::lockRead(sBucketPos) == IDE_SUCCESS);
     sStage = 1;
 
@@ -124,9 +124,9 @@ IDE_RC mmdXa::fix(mmdXid **aXidObjPtr, ID_XID *aXIDPtr, mmdXaLogFlag aXaLogFlag)
 
     if (sXidObj != NULL)
     {
-        /* BUG-27968 XA Fix/Unfix Scalability¸¦ Çâ»ó½ÃÄÑ¾ß ÇÕ´Ï´Ù.
-           list-s-latch·Î Àâ¾Ò±â¶§¹®¿¡  xid fix-countÁ¤ÇÕ¼ºÀ» À§ÇÏ¿©
-          xid latch¸¦ Àâ°í fix count¸¦ Áõ°¡ÇÏ´Â fixWithLatchÇÔ¼ö¸¦ »ç¿ëÇÑ´Ù.*/
+        /* BUG-27968 XA Fix/Unfix Scalabilityë¥¼ í–¥ìƒì‹œì¼œì•¼ í•©ë‹ˆë‹¤.
+           list-s-latchë¡œ ì¡ì•˜ê¸°ë•Œë¬¸ì—  xid fix-countì •í•©ì„±ì„ ìœ„í•˜ì—¬
+          xid latchë¥¼ ì¡ê³  fix countë¥¼ ì¦ê°€í•˜ëŠ” fixWithLatchí•¨ìˆ˜ë¥¼ ì‚¬ìš©í•œë‹¤.*/
         sXidObj->fixWithLatch();
     }
     sStage = 0;
@@ -153,19 +153,19 @@ IDE_RC mmdXa::fix(mmdXid **aXidObjPtr, ID_XID *aXIDPtr, mmdXaLogFlag aXaLogFlag)
 
 
 /**
- * Caller°¡ ¹Ì¸® »ı¼ºÇØµĞ xid object¸¦  xid list¿¡ Ãß°¡½Ãµµ¸¦ ÇÑ´Ù.
- * ÀÌ¹Ì list¿¡ ÀÖ´Â °æ¿ì¿¡´Â ±âµî·ÏµÈ xid object¸¦ È°¿ëÇÏµµ·Ï ÇÑ´Ù.
+ * Callerê°€ ë¯¸ë¦¬ ìƒì„±í•´ë‘” xid objectë¥¼  xid listì— ì¶”ê°€ì‹œë„ë¥¼ í•œë‹¤.
+ * ì´ë¯¸ listì— ìˆëŠ” ê²½ìš°ì—ëŠ” ê¸°ë“±ë¡ëœ xid objectë¥¼ í™œìš©í•˜ë„ë¡ í•œë‹¤.
  *
  * @param aXidObj2Add
- *         Caller°¡ latch durationÀ» ÁÙÀÌ±â À§ÇÏ¿© ¹Ì¸® »ı¼ºÇØµĞ xid object
+ *         Callerê°€ latch durationì„ ì¤„ì´ê¸° ìœ„í•˜ì—¬ ë¯¸ë¦¬ ìƒì„±í•´ë‘” xid object
  * @param aFixedXidObjPtr
- *        xid list¿¡¼­ aXidPtr value·Î °Ë»öÇÏ¿© ¾øÀ¸¸é aXidObj2Add pointer°¡ µÇ°í,
- *        °Ë»öÇÏ¿© ÀÖÀ¸¸é  °Ë»öµÈ xid object pointer°¡ µÈ´Ù.                               
+ *        xid listì—ì„œ aXidPtr valueë¡œ ê²€ìƒ‰í•˜ì—¬ ì—†ìœ¼ë©´ aXidObj2Add pointerê°€ ë˜ê³ ,
+ *        ê²€ìƒ‰í•˜ì—¬ ìˆìœ¼ë©´  ê²€ìƒ‰ëœ xid object pointerê°€ ëœë‹¤.                               
  * @param aXaLogFlag
- *        xid °´Ã¼¸¦ Ã£¾Ò´Ù´Â °ÍÀ» ·Î±×¿¡ ³²±æÁö ¿©ºÎ.
- *        mmdXidManager::find() ÇÒ ¶§, ¼¼¹øÂ° ÀÎÀÚ·Î ³Ñ±æ °ª.
+ *        xid ê°ì²´ë¥¼ ì°¾ì•˜ë‹¤ëŠ” ê²ƒì„ ë¡œê·¸ì— ë‚¨ê¸¸ì§€ ì—¬ë¶€.
+ *        mmdXidManager::find() í•  ë•Œ, ì„¸ë²ˆì§¸ ì¸ìë¡œ ë„˜ê¸¸ ê°’.
  *
- * @return mmdXidManager::find()¿¡ ½ÇÆĞÇÑ °æ¿ì, IDE_FAILURE.
+ * @return mmdXidManager::find()ì— ì‹¤íŒ¨í•œ ê²½ìš°, IDE_FAILURE.
  */
 
 IDE_RC mmdXa::fixWithAdd(mmdXaContext */*aXaContext*/,
@@ -184,8 +184,8 @@ IDE_RC mmdXa::fixWithAdd(mmdXaContext */*aXaContext*/,
        that is to say , chanage the granularity from global to bucket level. */           
     UInt sBucket = mmdXidManager::getBucketPos(aXIDPtr);
 
-    /* BUG-27968 XA Fix/Unfix Scalability¸¦ Çâ»ó½ÃÄÑ¾ß ÇÕ´Ï´Ù.
-     fix(list-s-latch) , fixWithAdd(list-x-latch)·Î ºĞ¸®½ÃÄÑ fix º´¸ñÀ» ºĞ»ê½ÃÅµ´Ï´Ù. */
+    /* BUG-27968 XA Fix/Unfix Scalabilityë¥¼ í–¥ìƒì‹œì¼œì•¼ í•©ë‹ˆë‹¤.
+     fix(list-s-latch) , fixWithAdd(list-x-latch)ë¡œ ë¶„ë¦¬ì‹œì¼œ fix ë³‘ëª©ì„ ë¶„ì‚°ì‹œí‚µë‹ˆë‹¤. */
     IDE_ASSERT(mmdXidManager::lockWrite(sBucket) == IDE_SUCCESS);
     sStage = 1;
 
@@ -224,29 +224,29 @@ IDE_RC mmdXa::fixWithAdd(mmdXaContext */*aXaContext*/,
 }
 
 /**
- * ID_XID¿¡ ÇØ´çÇÏ´Â mmdXid¸¦ Ã£°í
- * fix count¸¦ 1 °¨¼Ò½ÃÅ²´Ù.
+ * ID_XIDì— í•´ë‹¹í•˜ëŠ” mmdXidë¥¼ ì°¾ê³ 
+ * fix countë¥¼ 1 ê°ì†Œì‹œí‚¨ë‹¤.
  *
- * ¸¸¾à, fix count°¡ 0ÀÌ µÆÀ¸¸é
- * ¸Ş¸ğ¸®¸¦ ¹İÈ¯ÇÑ´Ù.
+ * ë§Œì•½, fix countê°€ 0ì´ ëìœ¼ë©´
+ * ë©”ëª¨ë¦¬ë¥¼ ë°˜í™˜í•œë‹¤.
  *
- * aXidObj°¡ NULLÀÌ¸é ¾Æ¹«°Íµµ ¾ÈÇÑ´Ù.
+ * aXidObjê°€ NULLì´ë©´ ì•„ë¬´ê²ƒë„ ì•ˆí•œë‹¤.
  *
  * @param aXidObj
- *        xid °´Ã¼ÀÇ Æ÷ÀÎÅÍ
+ *        xid ê°ì²´ì˜ í¬ì¸í„°
  * @param aXIDPtr
- *        aXidObj·Î ³Ñ±â´Â °´Ã¼ÀÇ ID_XID °ª
+ *        aXidObjë¡œ ë„˜ê¸°ëŠ” ê°ì²´ì˜ ID_XID ê°’
  * @param aOptFlag
- *        unfix ÇÒ ¶§, Ãß°¡·Î ¼öÇàÇÒ µ¿ÀÛ ÁöÁ¤.
- *        MMD_XA_REMOVE_FROM_XIDLIST¸¸ Çã¿ëµÇ¸ç ±× ¿ÜÀÇ ¿É¼ÇÀº ¹«½ÃµÈ´Ù.
- *        Ãß°¡·Î ¼öÇàÇÒ µ¿ÀÛÀÌ ¾øÀ» °æ¿ì¿¡´Â ¸í½ÃÀûÀ¸·Î MMD_XA_NONE¸¦ ³Ñ±æ °ÍÀ» ±ÇÀå.
+ *        unfix í•  ë•Œ, ì¶”ê°€ë¡œ ìˆ˜í–‰í•  ë™ì‘ ì§€ì •.
+ *        MMD_XA_REMOVE_FROM_XIDLISTë§Œ í—ˆìš©ë˜ë©° ê·¸ ì™¸ì˜ ì˜µì…˜ì€ ë¬´ì‹œëœë‹¤.
+ *        ì¶”ê°€ë¡œ ìˆ˜í–‰í•  ë™ì‘ì´ ì—†ì„ ê²½ìš°ì—ëŠ” ëª…ì‹œì ìœ¼ë¡œ MMD_XA_NONEë¥¼ ë„˜ê¸¸ ê²ƒì„ ê¶Œì¥.
  *
- * @return mmdXidManager::find()¿¡ ½ÇÆĞÇÑ °æ¿ì, IDE_FAILURE.
- *         mmdXidManager::find() ½ÇÆĞ´Â smuHash::findNodeLatch()¸¦ »ç¿ëÇßÀ» ¶§
- *         lock È¹µæ, ÇØÁ¦¿¡ ½ÇÆĞÇÏ¸é ¹ß»ıÇÏ¸ç,
- *         aXidObj°¡ NULLÀÌ ¾Æ´Ò °æ¿ì¿¡¸¸ ¼öÇàÇÑ´Ù.
- *         MMD_XA_REMOVE_FROM_XIDLIST ¿É¼ÇÀ» »ç¿ëÇÑ °æ¿ì¿¡¸¸ ÇØ´çÇÏ¸ç,
- *         ±× ¿ÜÀÇ °æ¿ì¿¡´Â IDE_ASSERT()·Î °Ë»çÇÏ¹Ç·Î ½ÇÆĞÇÏ¸é ¼­¹ö°¡ ´Ù¿î µÉ °Í.
+ * @return mmdXidManager::find()ì— ì‹¤íŒ¨í•œ ê²½ìš°, IDE_FAILURE.
+ *         mmdXidManager::find() ì‹¤íŒ¨ëŠ” smuHash::findNodeLatch()ë¥¼ ì‚¬ìš©í–ˆì„ ë•Œ
+ *         lock íšë“, í•´ì œì— ì‹¤íŒ¨í•˜ë©´ ë°œìƒí•˜ë©°,
+ *         aXidObjê°€ NULLì´ ì•„ë‹ ê²½ìš°ì—ë§Œ ìˆ˜í–‰í•œë‹¤.
+ *         MMD_XA_REMOVE_FROM_XIDLIST ì˜µì…˜ì„ ì‚¬ìš©í•œ ê²½ìš°ì—ë§Œ í•´ë‹¹í•˜ë©°,
+ *         ê·¸ ì™¸ì˜ ê²½ìš°ì—ëŠ” IDE_ASSERT()ë¡œ ê²€ì‚¬í•˜ë¯€ë¡œ ì‹¤íŒ¨í•˜ë©´ ì„œë²„ê°€ ë‹¤ìš´ ë  ê²ƒ.
  */
 IDE_RC mmdXa::unFix(mmdXid *aXidObj, ID_XID * /*aXIDPtr*/, UInt aOptFlag)
 {
@@ -260,9 +260,9 @@ IDE_RC mmdXa::unFix(mmdXid *aXidObj, ID_XID * /*aXIDPtr*/, UInt aOptFlag)
     if (aXidObj != NULL)
     {
         /* bug-35619: valgrind warning: invalid read of size 1
-           aXIDPtr ÀÎÀÚ¸¦ Àß ¸ø ³Ñ°Ü »ç¿ëÇÏ´Â °ÍÀ» ¸·±â À§ÇØ
-           mmdXid ³»ºÎÀÇ XID¸¦ »ç¿ëÇÔ.
-           ÇÔ¼öÈ£ÃâÇÏ´Â °÷ÀÌ ¸¹À¸¹Ç·Î ÀÎÀÚ´Â ±×´ë·Î À¯Áö */
+           aXIDPtr ì¸ìë¥¼ ì˜ ëª» ë„˜ê²¨ ì‚¬ìš©í•˜ëŠ” ê²ƒì„ ë§‰ê¸° ìœ„í•´
+           mmdXid ë‚´ë¶€ì˜ XIDë¥¼ ì‚¬ìš©í•¨.
+           í•¨ìˆ˜í˜¸ì¶œí•˜ëŠ” ê³³ì´ ë§ìœ¼ë¯€ë¡œ ì¸ìëŠ” ê·¸ëŒ€ë¡œ ìœ ì§€ */
         sXIDPtr = aXidObj->getXid();
 
         /* fix BUG-35374 To improve scalability about XA, latch
@@ -288,9 +288,9 @@ IDE_RC mmdXa::unFix(mmdXid *aXidObj, ID_XID * /*aXIDPtr*/, UInt aOptFlag)
         }
         sStage = 0;
         IDE_ASSERT(mmdXidManager::unlock(sBucket) == IDE_SUCCESS);
-       /* BUG-27968 XA Fix/Unfix Scalability¸¦ Çâ»ó½ÃÄÑ¾ß ÇÕ´Ï´Ù.
-        XA Unfix ½Ã¿¡ latch duarationÀ» ÁÙÀÌ±âÀ§ÇÏ¿© xid fix-Count¸¦ xid list latch releaseÇÏ°í ³ª¼­ 
-        aXid Object¸¦ ÇØÁ¦ ÇÑ´Ù.*/
+       /* BUG-27968 XA Fix/Unfix Scalabilityë¥¼ í–¥ìƒì‹œì¼œì•¼ í•©ë‹ˆë‹¤.
+        XA Unfix ì‹œì— latch duarationì„ ì¤„ì´ê¸°ìœ„í•˜ì—¬ xid fix-Countë¥¼ xid list latch releaseí•˜ê³  ë‚˜ì„œ 
+        aXid Objectë¥¼ í•´ì œ í•œë‹¤.*/
         if(sFixCount == 0)
         {    
             IDE_ASSERT(mmdXidManager::free(aXidObj, ID_TRUE)
@@ -346,8 +346,8 @@ IDE_RC mmdXa::beginStart(mmdXaContext     *aXaContext,
     PDL_Time_Value sSleepTime;
     PDL_Time_Value sMaxSleepTime;
     PDL_Time_Value sCurSleepTime;
-    /* BUG-22935  °°Àº  XID¿¡ ´ëÇÏ¿© ,  xa_start with TMJOIN°ú xa_commit,xa_rollbackÀÌ µ¿½Ã¿¡
-       ¼öÇàµÉ¶§ ºñÁ¤»ó Á¾·á*/
+    /* BUG-22935  ê°™ì€  XIDì— ëŒ€í•˜ì—¬ ,  xa_start with TMJOINê³¼ xa_commit,xa_rollbackì´ ë™ì‹œì—
+       ìˆ˜í–‰ë ë•Œ ë¹„ì •ìƒ ì¢…ë£Œ*/
     mmdXid        *sXid = NULL;
     ID_XID         sXidValue;
 
@@ -375,24 +375,24 @@ IDE_RC mmdXa::beginStart(mmdXaContext     *aXaContext,
                 sSleepTime.set(0, MMD_XA_RETRY_SPIN_TIMEOUT);
                 sCurSleepTime.set(0,0);
                 sMaxSleepTime.set(mmuProperty::getQueryTimeout(),0);
-                /* BUG-22935  °°Àº  XID¿¡ ´ëÇÏ¿© ,  xa_start with TMJOIN°ú xa_commit,xa_rollbackÀÌ µ¿½Ã¿¡
-                   ¼öÇàµÉ¶§ ºñÁ¤»ó Á¾·á*/
+                /* BUG-22935  ê°™ì€  XIDì— ëŒ€í•˜ì—¬ ,  xa_start with TMJOINê³¼ xa_commit,xa_rollbackì´ ë™ì‹œì—
+                   ìˆ˜í–‰ë ë•Œ ë¹„ì •ìƒ ì¢…ë£Œ*/
                 idlOS::memcpy(&sXidValue,aXid->getXid(),ID_SIZEOF(sXidValue));
                 *aState =1;
                 aXid->unlock();
               retry:
                 IDE_TEST(mmdXaSafeFind(&sXid,&sXidValue,MMD_XA_DO_NOT_LOG) != IDE_SUCCESS);
                 IDE_TEST_RAISE(((sXid == NULL) ||( sXid != aXid)),XidNotExist);
-                //fix BUG-27101, Xa BeginStart½Ã¿¡ lock¼º°øÀÌÀü¿¡ state¸¦ º¯°æÇÏ°í ÀÖ½À´Ï´Ù.
-                //±×¸®°í Code-Sonar Null reference waringÀ» Á¦°ÅÇÏ±â À§ÇÏ¿©
-                // sXid´ë½Å aXid¸¦ »ç¿ëÇÕ´Ï´Ù( sXid ¿Í aXid¿Í °°±â¶§¹®ÀÔ´Ï´Ù).
+                //fix BUG-27101, Xa BeginStartì‹œì— lockì„±ê³µì´ì „ì— stateë¥¼ ë³€ê²½í•˜ê³  ìˆìŠµë‹ˆë‹¤.
+                //ê·¸ë¦¬ê³  Code-Sonar Null reference waringì„ ì œê±°í•˜ê¸° ìœ„í•˜ì—¬
+                // sXidëŒ€ì‹  aXidë¥¼ ì‚¬ìš©í•©ë‹ˆë‹¤( sXid ì™€ aXidì™€ ê°™ê¸°ë•Œë¬¸ì…ë‹ˆë‹¤).
                 aXid->lock();
                 *aState =2;
                 if ( (aXid->getState() == MMD_XA_STATE_ACTIVE ) &&  (sCurSleepTime < sMaxSleepTime  ) )
                 {
                     *aState = 1;
-                    //Code-Sonar null reference waringÀ» Á¦°ÅÇÏ±â À§ÇÏ¿©
-                    //sXid´ë½Å aXid¸¦ »ç¿ëÇÕ´Ï´Ù( sXid ¿Í aXid¿Í °°±â¶§¹®ÀÔ´Ï´Ù).
+                    //Code-Sonar null reference waringì„ ì œê±°í•˜ê¸° ìœ„í•˜ì—¬
+                    //sXidëŒ€ì‹  aXidë¥¼ ì‚¬ìš©í•©ë‹ˆë‹¤( sXid ì™€ aXidì™€ ê°™ê¸°ë•Œë¬¸ì…ë‹ˆë‹¤).
                     aXid->unlock();
                     idlOS::sleep(sSleepTime);
 
@@ -407,8 +407,8 @@ IDE_RC mmdXa::beginStart(mmdXaContext     *aXaContext,
 
         }//else
 
-        /* BUG-22935  °°Àº  XID¿¡ ´ëÇÏ¿© ,  xa_start with TMJOIN°ú xa_commit,xa_rollbackÀÌ µ¿½Ã¿¡
-         ¼öÇàµÉ¶§ ºñÁ¤»ó Á¾·á*/
+        /* BUG-22935  ê°™ì€  XIDì— ëŒ€í•˜ì—¬ ,  xa_start with TMJOINê³¼ xa_commit,xa_rollbackì´ ë™ì‹œì—
+         ìˆ˜í–‰ë ë•Œ ë¹„ì •ìƒ ì¢…ë£Œ*/
         IDE_TEST_RAISE((aXid->getState() != MMD_XA_STATE_IDLE), InvalidXaState);
 
         IDE_TEST_RAISE(!MMD_XA_XID_RESTART_FLAG(aXaContext->mFlag), XidAlreadyExist);
@@ -469,7 +469,7 @@ IDE_RC mmdXa::beginEnd(mmdXaContext *aXaContext, mmdXid *aXid, mmdXid *aCurrentX
 {
     IDE_TEST_RAISE(aXaContext->mSession->isXaSession() != ID_TRUE, InvalidXaSession);
     // bug-26973: codesonar: xid null ref
-    // xid null °Ë»çÇÏ´Â ºÎºĞÀ» switch ÀÌÈÄ¿¡¼­ ÀÌÀüÀ¸·Î ¿Å±è.
+    // xid null ê²€ì‚¬í•˜ëŠ” ë¶€ë¶„ì„ switch ì´í›„ì—ì„œ ì´ì „ìœ¼ë¡œ ì˜®ê¹€.
     IDE_TEST_RAISE(aXid == NULL, XidNotExist);
 
     switch (aXaContext->mSession->getXaAssocState())
@@ -808,7 +808,7 @@ void mmdXa::open(mmdXaContext *aXaContext)
 
     IDE_TEST(beginOpen(aXaContext) != IDE_SUCCESS);
 
-    /* xa¿¡ Âü¿©ÇÏ´Â rmµµ global tx·Î µ¿ÀÛÇØ¾ßÇÑ´Ù. */
+    /* xaì— ì°¸ì—¬í•˜ëŠ” rmë„ global txë¡œ ë™ì‘í•´ì•¼í•œë‹¤. */
     IDE_TEST( dkiSessionSetGlobalTransactionLevel(
                   aXaContext->mSession->getDatabaseLinkSession(), 2 )
               != IDE_SUCCESS );
@@ -816,7 +816,7 @@ void mmdXa::open(mmdXaContext *aXaContext)
 
     aXaContext->mSession->setXaSession(ID_TRUE);
     aXaContext->mSession->setXaAssocState(MMD_XA_ASSOC_STATE_NOTASSOCIATED);
-    /* BUG-20850 xa_open ¼¼¼Çµµ local transaction À¸·Î ¼­ºñ½º°¡ °¡´ÉÇÔ */
+    /* BUG-20850 xa_open ì„¸ì…˜ë„ local transaction ìœ¼ë¡œ ì„œë¹„ìŠ¤ê°€ ê°€ëŠ¥í•¨ */
     aXaContext->mSession->setSessionState(MMC_SESSION_STATE_SERVICE);
 
     return;
@@ -847,7 +847,7 @@ void mmdXa::close(mmdXaContext *aXaContext)
     iduListNode     *sIterator;
     iduListNode     *sNodeNext;
     mmdIdXidNode    *sXidNode;
-    //fix BUG-XA close½Ã record-lock dead-lockÀÌ ¹ß»ıÇÒ¼ö ÀÖÀ½.
+    //fix BUG-XA closeì‹œ record-lock dead-lockì´ ë°œìƒí• ìˆ˜ ìˆìŒ.
     mmcSessID       sAssocSessionID;
     mmcSessID       sSessionID;
 
@@ -865,7 +865,7 @@ void mmdXa::close(mmdXaContext *aXaContext)
     //fix BUG-21527
     sXidList   = aXaContext->mSession->getXidList();
 
-    //fix BUG-XA close½Ã record-lock dead-lockÀÌ ¹ß»ıÇÒ¼ö ÀÖÀ½.
+    //fix BUG-XA closeì‹œ record-lock dead-lockì´ ë°œìƒí• ìˆ˜ ìˆìŒ.
     sSessionID = aXaContext->mSession->getSessionID();
 
     IDU_LIST_ITERATE_SAFE(sXidList,sIterator,sNodeNext)
@@ -879,7 +879,7 @@ void mmdXa::close(mmdXaContext *aXaContext)
         if( sXid != NULL)
         {
             sXaState = sXid->getState();
-            //fix BUG-XA close½Ã record-lock dead-lockÀÌ ¹ß»ıÇÒ¼ö ÀÖÀ½.
+            //fix BUG-XA closeì‹œ record-lock dead-lockì´ ë°œìƒí• ìˆ˜ ìˆìŒ.
             sAssocSessionID = sXid->getAssocSessionID();
             //fix BUG-22349 XA need to handle state.
             sState = 0;
@@ -898,7 +898,7 @@ void mmdXa::close(mmdXaContext *aXaContext)
                 case MMD_XA_STATE_IDLE:
                 case MMD_XA_STATE_ACTIVE:
                 case MMD_XA_STATE_ROLLBACK_ONLY:  /* BUG-44976 */
-                     //fix BUG-XA close½Ã record-lock dead-lockÀÌ ¹ß»ıÇÒ¼ö ÀÖÀ½.
+                     //fix BUG-XA closeì‹œ record-lock dead-lockì´ ë°œìƒí• ìˆ˜ ìˆìŒ.
                     if( sSessionID  == sAssocSessionID)
                     {
                         rollback(aXaContext,sXidValue);
@@ -906,7 +906,7 @@ void mmdXa::close(mmdXaContext *aXaContext)
                     }
                     else
                     {
-                        //fix BUG-XA close½Ã record-lock dead-lockÀÌ ¹ß»ıÇÒ¼ö ÀÖÀ½.
+                        //fix BUG-XA closeì‹œ record-lock dead-lockì´ ë°œìƒí• ìˆ˜ ìˆìŒ.
                         IDU_LIST_REMOVE(&(sXidNode->mLstNode));
                         IDE_ASSERT(mmdXidManager::free(sXidNode) == IDE_SUCCESS);
                     }
@@ -953,9 +953,9 @@ void mmdXa::start(mmdXaContext *aXaContext, ID_XID *aXid)
 {
     mmcSession       *sSession   = aXaContext->mSession;
     mmdXid           *sXid       = NULL;
-    /* BUG-27968 XA Fix/Unfix Scalability¸¦ Çâ»ó½ÃÄÑ¾ß ÇÕ´Ï´Ù.
-     XaFixWithAdd latch durationÀ» ÁÙÀÌ±â À§ÇÏ¿© xid object¸¦ ¹Ì¸® ÇÒ´çÇÏ°í
-     BeginÇÕ´Ï´Ù. */
+    /* BUG-27968 XA Fix/Unfix Scalabilityë¥¼ í–¥ìƒì‹œì¼œì•¼ í•©ë‹ˆë‹¤.
+     XaFixWithAdd latch durationì„ ì¤„ì´ê¸° ìœ„í•˜ì—¬ xid objectë¥¼ ë¯¸ë¦¬ í• ë‹¹í•˜ê³ 
+     Beginí•©ë‹ˆë‹¤. */
     mmdXid           *sXid2Add   = NULL;
     mmdXaAssocState   sXaAssocState;
     //fix BUG-22349 XA need to handle state.
@@ -963,7 +963,7 @@ void mmdXa::start(mmdXaContext *aXaContext, ID_XID *aXid)
     //fix BUG-21795
     idBool            sNeed2RestoreLocalTx = ID_FALSE;
 
-    //BUG-25050 Xid Ãâ·Â
+    //BUG-25050 Xid ì¶œë ¥
     UChar             sXidString[XID_DATA_MAX_LEN];
     /* PROJ-2436 ADO.NET MSDTC */
     mmcTransEscalation sTransEscalation = sSession->getTransEscalation();
@@ -982,7 +982,7 @@ void mmdXa::start(mmdXaContext *aXaContext, ID_XID *aXid)
 
     ideLog::logLine(IDE_XA_1, "START (%d)(XID:%s)",
                 aXaContext->mSession->getSessionID(),
-                sXidString);    //BUG-25050 Xid Ãâ·Â
+                sXidString);    //BUG-25050 Xid ì¶œë ¥
 
     IDE_TEST(mmdXa::fix(&sXid, aXid, MMD_XA_DO_LOG) != IDE_SUCCESS);
     sState = 1;
@@ -999,7 +999,7 @@ reCheck:
     sXaAssocState = sSession->getXaAssocState();
     IDE_TEST(beginStart(aXaContext, sXid, sXaAssocState,&sState) != IDE_SUCCESS);
     
-    /* BUG-20850 global transation ½ÃÀÛÀü¿¡ local transaction ÀÇ »óÅÂ¸¦ Á¡°ËÇÑ´Ù. */
+    /* BUG-20850 global transation ì‹œì‘ì „ì— local transaction ì˜ ìƒíƒœë¥¼ ì ê²€í•œë‹¤. */
     if (sNeed2RestoreLocalTx != ID_TRUE)
     {
         if (sTransEscalation == MMC_TRANS_DO_NOT_ESCALATE)
@@ -1015,9 +1015,9 @@ reCheck:
 
     if (sXid == NULL)
     {
-        /* BUG-27968 XA Fix/Unfix Scalability¸¦ Çâ»ó½ÃÄÑ¾ß ÇÕ´Ï´Ù.
-           XaFixWithAdd latch durationÀ» ÁÙÀÌ±â À§ÇÏ¿© xid object¸¦ ¹Ì¸® ÇÒ´çÇÏ°í
-           BeginÇÕ´Ï´Ù. */
+        /* BUG-27968 XA Fix/Unfix Scalabilityë¥¼ í–¥ìƒì‹œì¼œì•¼ í•©ë‹ˆë‹¤.
+           XaFixWithAdd latch durationì„ ì¤„ì´ê¸° ìœ„í•˜ì—¬ xid objectë¥¼ ë¯¸ë¦¬ í• ë‹¹í•˜ê³ 
+           Beginí•©ë‹ˆë‹¤. */
         IDE_TEST(mmdXidManager::alloc(&sXid2Add, aXid, sTransToEscalate)
                 != IDE_SUCCESS);
 
@@ -1041,8 +1041,8 @@ reCheck:
 
         if (sXid2Add != sXid)
         {
-            /* BUG-27968 XA Fix/Unfix Scalability¸¦ Çâ»ó½ÃÄÑ¾ß ÇÕ´Ï´Ù.
-              ÀÌ¹Ì µî·ÏµÈ °æ¿ì¿¡´Â, ¹Ì¸®ÇÒ´çµÈ xid object¸¦ ÇØÁ¦ÇÑ´Ù  */
+            /* BUG-27968 XA Fix/Unfix Scalabilityë¥¼ í–¥ìƒì‹œì¼œì•¼ í•©ë‹ˆë‹¤.
+              ì´ë¯¸ ë“±ë¡ëœ ê²½ìš°ì—ëŠ”, ë¯¸ë¦¬í• ë‹¹ëœ xid objectë¥¼ í•´ì œí•œë‹¤  */
             sXid2Add->unlock();
 
             if (sTransEscalation == MMC_TRANS_DO_NOT_ESCALATE)
@@ -1084,17 +1084,17 @@ reCheck:
     }
 
     sXid->setState(MMD_XA_STATE_ACTIVE);
-    //fix BUG-22669 XID list¿¡ ´ëÇÑ performance view ÇÊ¿ä.
-    //fix BUG-23656 session,xid ,transactionÀ» ¿¬°èÇÑ performance view¸¦ Á¦°øÇÏ°í,
-    //±×µé°£ÀÇ °ü°è¸¦ Á¤È®È÷ À¯ÁöÇØ¾ß ÇÔ.
-    // XID¿Í sessionÀ» associate½ÃÅ´.
+    //fix BUG-22669 XID listì— ëŒ€í•œ performance view í•„ìš”.
+    //fix BUG-23656 session,xid ,transactionì„ ì—°ê³„í•œ performance viewë¥¼ ì œê³µí•˜ê³ ,
+    //ê·¸ë“¤ê°„ì˜ ê´€ê³„ë¥¼ ì •í™•íˆ ìœ ì§€í•´ì•¼ í•¨.
+    // XIDì™€ sessionì„ associateì‹œí‚´.
     sXid->associate( aXaContext->mSession);
     
     /*
-     * BUGBUG: IsolationLevelÀ» ¿©±â¼­ ¼¼ÆÃÇØµµ µÇ³ª?
+     * BUGBUG: IsolationLevelì„ ì—¬ê¸°ì„œ ì„¸íŒ…í•´ë„ ë˜ë‚˜?
      */
 
-    // Session Info Áß¿¡¼­ transaction ½ÃÀÛ ½Ã ÇÊ¿äÇÑ Á¤º¸ ¼³Á¤
+    // Session Info ì¤‘ì—ì„œ transaction ì‹œì‘ ì‹œ í•„ìš”í•œ ì •ë³´ ì„¤ì •
 
     sSession->setSessionInfoFlagForTx(sSession->getIsolationLevel(), /* BUG-39817 */
                                       SMI_TRANSACTION_REPL_DEFAULT,
@@ -1102,7 +1102,7 @@ reCheck:
                                       (idBool)mmuProperty::getCommitWriteWaitMode());
 
     sSession->setSessionState(MMC_SESSION_STATE_SERVICE);
-    /* BUG-20850 global transaction Àº NONAUTOCOMMIT ¸ğµå¿©¾ß ÇÔ */
+    /* BUG-20850 global transaction ì€ NONAUTOCOMMIT ëª¨ë“œì—¬ì•¼ í•¨ */
     sSession->setGlobalCommitMode(MMC_COMMITMODE_NONAUTOCOMMIT);
     sSession->setXaAssocState(MMD_XA_ASSOC_STATE_ASSOCIATED);
     sSession->setTransEscalation(MMC_TRANS_DO_NOT_ESCALATE);
@@ -1124,8 +1124,8 @@ reCheck:
     }
     IDE_EXCEPTION(errorFixWithAdd);
     {
-        /* BUG-27968 XA Fix/Unfix Scalability¸¦ Çâ»ó½ÃÄÑ¾ß ÇÕ´Ï´Ù.
-           ¿¡·¯°¡¹ß»ıÇÑ °æ¿ì¿¡´Â,¹Ì¸®ÇÒ´çµÈ xid object¸¦ ÇØÁ¦ÇÑ´Ù */
+        /* BUG-27968 XA Fix/Unfix Scalabilityë¥¼ í–¥ìƒì‹œì¼œì•¼ í•©ë‹ˆë‹¤.
+           ì—ëŸ¬ê°€ë°œìƒí•œ ê²½ìš°ì—ëŠ”,ë¯¸ë¦¬í• ë‹¹ëœ xid objectë¥¼ í•´ì œí•œë‹¤ */
         sState =1;
         sXid2Add->unlock();
 
@@ -1143,8 +1143,8 @@ reCheck:
     
     IDE_EXCEPTION_END;
     {
-        /* BUG-20850 xa_start ½ÇÆĞ½Ã, global transaction ¼öÇà ÀüÀÇ
-           local transaction »óÅÂ·Î º¹±¸ÇÑ´Ù. */
+        /* BUG-20850 xa_start ì‹¤íŒ¨ì‹œ, global transaction ìˆ˜í–‰ ì „ì˜
+           local transaction ìƒíƒœë¡œ ë³µêµ¬í•œë‹¤. */
         //fix BUG-21795
         if(sNeed2RestoreLocalTx == ID_TRUE)
         {
@@ -1172,7 +1172,7 @@ reCheck:
 
     ideLog::logLine(IDE_XA_0, "START ERROR -> %d(XID:%s)",
                 aXaContext->mReturnValue,
-                sXidString);        //BUG-25050 Xid Ãâ·Â
+                sXidString);        //BUG-25050 Xid ì¶œë ¥
 }
 
 /* BUG-18981 */
@@ -1187,22 +1187,22 @@ void mmdXa::end(mmdXaContext *aXaContext, ID_XID *aXid)
     UInt            sState = 0;
 
 
-    //BUG-25050 Xid Ãâ·Â
+    //BUG-25050 Xid ì¶œë ¥
     UChar          sXidString[XID_DATA_MAX_LEN];
 
     (void)idaXaConvertXIDToString(NULL, aXid, sXidString, XID_DATA_MAX_LEN);
 
     ideLog::logLine(IDE_XA_1, "END (%d)(XID:%s)",
                 sSession->getSessionID(),
-                sXidString);            //BUG-25050 Xid Ãâ·Â
+                sXidString);            //BUG-25050 Xid ì¶œë ¥
 
     IDE_TEST(mmdXa::fix(&sXid, aXid, MMD_XA_DO_LOG) != IDE_SUCCESS);
     sState = 1;
 
     //fix BUG-21527
     sXidValue = sSession->getLastXid();
-    //fix BUG-22561 xa_end½Ã¿¡ Transaction Branch AssocÇöÀç state°¡ suspendÀÏ¶§ »óÅÂÀüÀÌ°¡
-    //Àß¸øµÊ.
+    //fix BUG-22561 xa_endì‹œì— Transaction Branch Assocí˜„ì¬ stateê°€ suspendì¼ë•Œ ìƒíƒœì „ì´ê°€
+    //ì˜ëª»ë¨.
     IDE_TEST_RAISE(sXidValue == NULL, PROTO_ERROR);
     IDE_TEST(mmdXaSafeFind(&sSessionXid, sXidValue, MMD_XA_DO_LOG) != IDE_SUCCESS);
     sXaAssocState = sSession->getXaAssocState();
@@ -1213,8 +1213,8 @@ void mmdXa::end(mmdXaContext *aXaContext, ID_XID *aXid)
     }
     if(sSessionXid != NULL)
     {
-        //fix BUG-22561 xa_end½Ã¿¡ Transaction Branch AssocÇöÀç state°¡ suspendÀÏ¶§ »óÅÂÀüÀÌ°¡
-        //Àß¸øµÊ.
+        //fix BUG-22561 xa_endì‹œì— Transaction Branch Assocí˜„ì¬ stateê°€ suspendì¼ë•Œ ìƒíƒœì „ì´ê°€
+        //ì˜ëª»ë¨.
         IDE_TEST(beginEnd(aXaContext,sXid, sSessionXid,sXaAssocState) != IDE_SUCCESS);
     }
     else
@@ -1224,10 +1224,10 @@ void mmdXa::end(mmdXaContext *aXaContext, ID_XID *aXid)
          */
         IDE_TEST_RAISE(sSessionXid == NULL, XidNotExist)
     }
-    //fix BUG-22479 xa_end½Ã¿¡ fetchÁß¿¡ ÀÖ´Â statement¿¡ ´ëÇÏ¿©
-    //statement end¸¦ ÀÚµ¿À¸·ÎÃ³¸®ÇØ¾ß ÇÕ´Ï´Ù.
-    /* PROJ-1381 FAC : End ½ÃÁ¡¿¡´Â Non-Holdable Fetch¸¸ Á¤¸®ÇÑ´Ù.
-     * Holdable Fetch´Â Commit, Rollback ½ÃÁ¡¿¡ ¾î¶»°Ô Ã³¸®ÇÒÁö °áÁ¤µÈ´Ù. */
+    //fix BUG-22479 xa_endì‹œì— fetchì¤‘ì— ìˆëŠ” statementì— ëŒ€í•˜ì—¬
+    //statement endë¥¼ ìë™ìœ¼ë¡œì²˜ë¦¬í•´ì•¼ í•©ë‹ˆë‹¤.
+    /* PROJ-1381 FAC : End ì‹œì ì—ëŠ” Non-Holdable Fetchë§Œ ì •ë¦¬í•œë‹¤.
+     * Holdable FetchëŠ” Commit, Rollback ì‹œì ì— ì–´ë–»ê²Œ ì²˜ë¦¬í• ì§€ ê²°ì •ëœë‹¤. */
     IDE_ASSERT(sSession->closeAllCursor(ID_TRUE, MMC_CLOSEMODE_REMAIN_HOLD) == IDE_SUCCESS);
     IDE_TEST(sXid->addAssocFetchListItem(sSession) != IDE_SUCCESS);
 
@@ -1235,8 +1235,8 @@ void mmdXa::end(mmdXaContext *aXaContext, ID_XID *aXid)
                          StmtRemainError);
     IDE_TEST_RAISE(sSession->isAllStmtEndExceptHold() != ID_TRUE, StmtRemainError);
 
-    //fix BUG-22561 xa_end½Ã¿¡ Transaction Branch AssocÇöÀç state°¡ suspendÀÏ¶§
-    //»óÅÂÀüÀÌ°¡ Àß¸øµÊ.
+    //fix BUG-22561 xa_endì‹œì— Transaction Branch Assocí˜„ì¬ stateê°€ suspendì¼ë•Œ
+    //ìƒíƒœì „ì´ê°€ ì˜ëª»ë¨.
     if(sState == 2)
     {
         if (aXaContext->mFlag & TMFAIL )
@@ -1277,8 +1277,8 @@ void mmdXa::end(mmdXaContext *aXaContext, ID_XID *aXid)
             break;
 
         case MMD_XA_ASSOC_STATE_SUSPENDED:
-            //fix BUG-22561 xa_end½Ã¿¡ Transaction Branch AssocÇöÀç state°¡ suspendÀÏ¶§
-            //»óÅÂÀüÀÌ°¡ Àß¸øµÊ.
+            //fix BUG-22561 xa_endì‹œì— Transaction Branch Assocí˜„ì¬ stateê°€ suspendì¼ë•Œ
+            //ìƒíƒœì „ì´ê°€ ì˜ëª»ë¨.
             sSession->setXaAssocState(MMD_XA_ASSOC_STATE_NOTASSOCIATED);
             break;
 
@@ -1287,8 +1287,8 @@ void mmdXa::end(mmdXaContext *aXaContext, ID_XID *aXid)
             break;
     }
 
-    /* BUG-20850 global transaction Á¾·á ÈÄ, global transaction ¼öÇà ÀüÀÇ
-       local transaction »óÅÂ·Î º¹±¸ÇÑ´Ù. */
+    /* BUG-20850 global transaction ì¢…ë£Œ í›„, global transaction ìˆ˜í–‰ ì „ì˜
+       local transaction ìƒíƒœë¡œ ë³µêµ¬í•œë‹¤. */
     if(sXaAssocState != MMD_XA_ASSOC_STATE_SUSPENDED)
     {
 
@@ -1311,7 +1311,7 @@ void mmdXa::end(mmdXaContext *aXaContext, ID_XID *aXid)
         ideLog::logLine(IDE_XA_0, "XA-WARNING !! XA END ERROR(%d) Statement Remain !!!! -> %d(XID:%s)",
                     sSession->getSessionID(),
                     aXaContext->mReturnValue,
-                    sXidString);        //BUG-25050 Xid Ãâ·Â
+                    sXidString);        //BUG-25050 Xid ì¶œë ¥
     }
     IDE_EXCEPTION(XidNotExist);
     {
@@ -1338,13 +1338,13 @@ void mmdXa::end(mmdXaContext *aXaContext, ID_XID *aXid)
     ideLog::logLine(IDE_XA_0, "END ERROR(%d) -> %d(XID:%s)",
                 sSession->getSessionID(),
                 aXaContext->mReturnValue,
-                sXidString);        //BUG-25050 Xid Ãâ·Â
+                sXidString);        //BUG-25050 Xid ì¶œë ¥
 
 }
 
 /* BUG-29078
- * XA_ROLLBACKÀ» XA_ENDÀü¿¡ ¼ö½ÅÇßÀ» °æ¿ì¿¡ ¼öÇàÁßÀÎ Statement°¡ Á¸ÀçÇÒ °æ¿ì¿¡, 
- * ÇØ´ç XID¸¦ HeuristicÇÏ°Ô XA_END¸¦ ¼öÇàÇÑ´Ù.
+ * XA_ROLLBACKì„ XA_ENDì „ì— ìˆ˜ì‹ í–ˆì„ ê²½ìš°ì— ìˆ˜í–‰ì¤‘ì¸ Statementê°€ ì¡´ì¬í•  ê²½ìš°ì—, 
+ * í•´ë‹¹ XIDë¥¼ Heuristicí•˜ê²Œ XA_ENDë¥¼ ìˆ˜í–‰í•œë‹¤.
  */
 void mmdXa::heuristicEnd(mmcSession* aSession, ID_XID *aXid)
 {
@@ -1355,7 +1355,7 @@ void mmdXa::heuristicEnd(mmcSession* aSession, ID_XID *aXid)
     mmdXid          *sSessionXid = NULL;
     UInt            sState = 0;
 
-    //BUG-25050 Xid Ãâ·Â
+    //BUG-25050 Xid ì¶œë ¥
     UChar          sXidString[XID_DATA_MAX_LEN];
 
     (void)idaXaConvertXIDToString(NULL, aXid, sXidString, XID_DATA_MAX_LEN);
@@ -1371,7 +1371,7 @@ void mmdXa::heuristicEnd(mmcSession* aSession, ID_XID *aXid)
     
     ideLog::logLine(IDE_XA_1, "Heuristic END (%d)(XID:%s)",
                 sSession->getSessionID(),
-                sXidString);            //BUG-25050 Xid Ãâ·Â
+                sXidString);            //BUG-25050 Xid ì¶œë ¥
 
     //fix BUG-21527
     sXidValue = sSession->getLastXid();
@@ -1385,9 +1385,9 @@ void mmdXa::heuristicEnd(mmcSession* aSession, ID_XID *aXid)
         sState = 2;
     }
     
-    //fix BUG-22479 xa_end½Ã¿¡ fetchÁß¿¡ ÀÖ´Â statement¿¡ ´ëÇÏ¿©
-    //statement end¸¦ ÀÚµ¿À¸·ÎÃ³¸®ÇØ¾ß ÇÕ´Ï´Ù.
-    /* PROJ-1381 FAC : Rollback Ã³¸®¸¦ ÇÏ¹Ç·Î Commit ¾ÈµÈ Fetch¸¦ ¸ğµÎ ´İ´Â´Ù. */
+    //fix BUG-22479 xa_endì‹œì— fetchì¤‘ì— ìˆëŠ” statementì— ëŒ€í•˜ì—¬
+    //statement endë¥¼ ìë™ìœ¼ë¡œì²˜ë¦¬í•´ì•¼ í•©ë‹ˆë‹¤.
+    /* PROJ-1381 FAC : Rollback ì²˜ë¦¬ë¥¼ í•˜ë¯€ë¡œ Commit ì•ˆëœ Fetchë¥¼ ëª¨ë‘ ë‹«ëŠ”ë‹¤. */
     IDE_TEST(sSession->closeAllCursor(ID_TRUE, MMC_CLOSEMODE_NON_COMMITED) != IDE_SUCCESS);
 
     IDU_FIT_POINT_RAISE( "mmdXa::heuristicEnd::lock::isAllStmtEndExceptHold", 
@@ -1415,8 +1415,8 @@ void mmdXa::heuristicEnd(mmcSession* aSession, ID_XID *aXid)
 
     sSession->setXaAssocState(MMD_XA_ASSOC_STATE_NOTASSOCIATED);
 
-    /* BUG-20850 global transaction Á¾·á ÈÄ, global transaction ¼öÇà ÀüÀÇ
-       local transaction »óÅÂ·Î º¹±¸ÇÑ´Ù. */
+    /* BUG-20850 global transaction ì¢…ë£Œ í›„, global transaction ìˆ˜í–‰ ì „ì˜
+       local transaction ìƒíƒœë¡œ ë³µêµ¬í•œë‹¤. */
     restoreLocalTrans(sSession);
 
     return;
@@ -1425,7 +1425,7 @@ void mmdXa::heuristicEnd(mmcSession* aSession, ID_XID *aXid)
     {
         ideLog::logLine(IDE_XA_0, "Heuristic END ERROR(%d) -> (XID:%s)",
                         sSession->getSessionID(),
-                        sXidString);        //BUG-25050 Xid Ãâ·Â
+                        sXidString);        //BUG-25050 Xid ì¶œë ¥
     }
     IDE_EXCEPTION_END;
     {
@@ -1454,14 +1454,14 @@ void mmdXa::prepare(mmdXaContext *aXaContext, ID_XID *aXid)
     idBool  sReadOnly;
     UInt    sUnfixOpt = MMD_XA_NONE;
 
-    //BUG-25050 Xid Ãâ·Â
+    //BUG-25050 Xid ì¶œë ¥
     UChar          sXidString[XID_DATA_MAX_LEN];
 
     (void)idaXaConvertXIDToString(NULL, aXid, sXidString, XID_DATA_MAX_LEN);
 
     ideLog::logLine(IDE_XA_1, "PREPARE (%d)(XID:%s)",
                 aXaContext->mSession->getSessionID(),
-                sXidString);            //BUG-25050 Xid Ãâ·Â
+                sXidString);            //BUG-25050 Xid ì¶œë ¥
 
     IDE_TEST(mmdXa::fix(&sXid, aXid, MMD_XA_DO_LOG) != IDE_SUCCESS);
     //fix BUG-22349 XA need to handle state.
@@ -1480,7 +1480,7 @@ void mmdXa::prepare(mmdXaContext *aXaContext, ID_XID *aXid)
 
     if (sReadOnly == ID_TRUE)
     {
-        //dblink³ª shard·Î ÀÎÇØ commitÀÌ ÇÊ¿äÇÒ ¼ö ÀÖ´Ù.
+        //dblinkë‚˜ shardë¡œ ì¸í•´ commitì´ í•„ìš”í•  ìˆ˜ ìˆë‹¤.
         sReadOnly = dkiIsReadOnly( aXaContext->mSession->getDatabaseLinkSession() );
     }
 
@@ -1489,7 +1489,7 @@ void mmdXa::prepare(mmdXaContext *aXaContext, ID_XID *aXid)
         ideLog::logLine(IDE_XA_1, "PREPARE READ ONLY (%d) -> 0x%x(XID:%s)",
                     aXaContext->mSession->getSessionID(),
                     sXid,
-                    sXidString);        //BUG-25050 Xid Ãâ·Â
+                    sXidString);        //BUG-25050 Xid ì¶œë ¥
 
 
         IDU_FIT_POINT("mmdXa::prepare::lock::prepareTransReadOnly" );
@@ -1528,7 +1528,7 @@ void mmdXa::prepare(mmdXaContext *aXaContext, ID_XID *aXid)
             ideLog::logLine(IDE_XA_0, "PREPARE READ ONLY (%d) -> 0x%x(XID:%s)NOT FOUND",
                         aXaContext->mSession->getSessionID(),
                         sXid,
-                        sXidString);        //BUG-25050 Xid Ãâ·Â
+                        sXidString);        //BUG-25050 Xid ì¶œë ¥
         }
     }
     else
@@ -1582,7 +1582,7 @@ void mmdXa::prepare(mmdXaContext *aXaContext, ID_XID *aXid)
 
     ideLog::logLine(IDE_XA_0, "PREPARE ERROR -> %d(XID:%s)",
                 aXaContext->mReturnValue,
-                sXidString);            //BUG-25050 Xid Ãâ·Â
+                sXidString);            //BUG-25050 Xid ì¶œë ¥
 
 }
 
@@ -1591,21 +1591,21 @@ void mmdXa::commit(mmdXaContext *aXaContext, ID_XID *aXid)
 {
     mmdXid         *sXid = NULL;
     mmcSession     *sSession = aXaContext->mSession;
-    //fix BUG-22479 xa_end½Ã¿¡ fetchÁß¿¡ ÀÖ´Â statement¿¡ ´ëÇÏ¿©
-    //statement end¸¦ ÀÚµ¿À¸·ÎÃ³¸®ÇØ¾ß ÇÕ´Ï´Ù.
+    //fix BUG-22479 xa_endì‹œì— fetchì¤‘ì— ìˆëŠ” statementì— ëŒ€í•˜ì—¬
+    //statement endë¥¼ ìë™ìœ¼ë¡œì²˜ë¦¬í•´ì•¼ í•©ë‹ˆë‹¤.
     UInt           sErrorCode;
     SChar         *sErrorMsg;
     //fix BUG-22349 XA need to handle state.
     UInt            sState = 0;
 
-    //BUG-25050 Xid Ãâ·Â
+    //BUG-25050 Xid ì¶œë ¥
     UChar          sXidString[XID_DATA_MAX_LEN];
 
     (void)idaXaConvertXIDToString(NULL, aXid, sXidString, XID_DATA_MAX_LEN);
 
     ideLog::logLine(IDE_XA_1, "COMMIT (%d)(XID:%s)",
                 aXaContext->mSession->getSessionID(),
-                sXidString);            //BUG-25050 Xid Ãâ·Â
+                sXidString);            //BUG-25050 Xid ì¶œë ¥
 
     /* PROJ-2661 commit/rollback failure test of RM */
     dkiTxLogOfRM( aXid );
@@ -1625,8 +1625,8 @@ void mmdXa::commit(mmdXaContext *aXaContext, ID_XID *aXid)
 
     IDU_FIT_POINT_RAISE( "mmdXa::commit::lock::commitTrans", 
                          CommitError);
-    //fix BUG-22479 xa_end½Ã¿¡ fetchÁß¿¡ ÀÖ´Â statement¿¡ ´ëÇÏ¿©
-    //statement end¸¦ ÀÚµ¿À¸·ÎÃ³¸®ÇØ¾ß ÇÕ´Ï´Ù.
+    //fix BUG-22479 xa_endì‹œì— fetchì¤‘ì— ìˆëŠ” statementì— ëŒ€í•˜ì—¬
+    //statement endë¥¼ ìë™ìœ¼ë¡œì²˜ë¦¬í•´ì•¼ í•©ë‹ˆë‹¤.
     //fix BUG-22651 smrLogFileGroup::updateTransLSNInfo, server FATAL
     IDE_TEST_RAISE(sXid->commitTrans(aXaContext->mSession) != IDE_SUCCESS,CommitError);
 
@@ -1645,8 +1645,8 @@ void mmdXa::commit(mmdXaContext *aXaContext, ID_XID *aXid)
 
     IDE_EXCEPTION(CommitError);
     {
-        //fix BUG-22479 xa_end½Ã¿¡ fetchÁß¿¡ ÀÖ´Â statement¿¡ ´ëÇÏ¿©
-        //statement end¸¦ ÀÚµ¿À¸·ÎÃ³¸®ÇØ¾ß ÇÕ´Ï´Ù.
+        //fix BUG-22479 xa_endì‹œì— fetchì¤‘ì— ìˆëŠ” statementì— ëŒ€í•˜ì—¬
+        //statement endë¥¼ ìë™ìœ¼ë¡œì²˜ë¦¬í•´ì•¼ í•©ë‹ˆë‹¤.
         aXaContext->mReturnValue = XAER_RMERR;
         sErrorCode = ideGetErrorCode();
         sErrorMsg =  ideGetErrorMsg(sErrorCode);
@@ -1655,7 +1655,7 @@ void mmdXa::commit(mmdXaContext *aXaContext, ID_XID *aXid)
             ideLog::logLine(IDE_XA_0, "XA-WARNING !! XA COMMIT  ERROR(%d) : Reason %s (XID:%s)",
                         aXaContext->mSession->getSessionID(),
                         sErrorMsg,
-                        sXidString);        //BUG-25050 Xid Ãâ·Â
+                        sXidString);        //BUG-25050 Xid ì¶œë ¥
         }
     }
 
@@ -1680,7 +1680,7 @@ void mmdXa::commit(mmdXaContext *aXaContext, ID_XID *aXid)
 
     ideLog::logLine(IDE_XA_0, "COMMIT ERROR -> %d(XID:%s)",
                 aXaContext->mReturnValue,
-                sXidString);        //BUG-25050 Xid Ãâ·Â
+                sXidString);        //BUG-25050 Xid ì¶œë ¥
 }
 
 /* BUG-18981 */
@@ -1689,8 +1689,8 @@ void mmdXa::rollback(mmdXaContext *aXaContext, ID_XID *aXid)
     mmdXid        *sXid = NULL;
     mmcSession    *sSession = aXaContext->mSession;
     UInt           sCurSleepTime = 0;
-    //fix BUG-23776, XA ROLLBACK½Ã XID°¡ ACTIVEÀÏ¶§ ´ë±â½Ã°£À»
-    //QueryTime OutÀÌ ¾Æ´Ï¶ó,Property¸¦ Á¦°øÇØ¾ß ÇÔ.
+    //fix BUG-23776, XA ROLLBACKì‹œ XIDê°€ ACTIVEì¼ë•Œ ëŒ€ê¸°ì‹œê°„ì„
+    //QueryTime Outì´ ì•„ë‹ˆë¼,Propertyë¥¼ ì œê³µí•´ì•¼ í•¨.
     UInt           sMaxWaitTime =   mmuProperty::getXaRollbackTimeOut() ;
 
     mmdXaWaitMode  sWaitMode;
@@ -1699,7 +1699,7 @@ void mmdXa::rollback(mmdXaContext *aXaContext, ID_XID *aXid)
     UInt            sState = 0;
     UInt            sUnfixOpt = MMD_XA_NONE;
 
-    //BUG-25050 Xid Ãâ·Â
+    //BUG-25050 Xid ì¶œë ¥
     UChar          sXidString[XID_DATA_MAX_LEN];
     // BUG-25020
     mmcSession    *sAssocSession;
@@ -1709,7 +1709,7 @@ void mmdXa::rollback(mmdXaContext *aXaContext, ID_XID *aXid)
 
     ideLog::logLine(IDE_XA_1, "ROLLBACK (%d)(XID:%s)",
                 aXaContext->mSession->getSessionID(),
-                sXidString);        //BUG-25050 Xid Ãâ·Â
+                sXidString);        //BUG-25050 Xid ì¶œë ¥
 
     /* PROJ-2661 commit/rollback failure test of RM */
     dkiTxLogOfRM( aXid );
@@ -1731,8 +1731,8 @@ void mmdXa::rollback(mmdXaContext *aXaContext, ID_XID *aXid)
         {
             if ( sIsSetTimeout == ID_FALSE )
             {
-                // Fix BUG-25020 XA°¡ Active »óÅÂÀÎµ¥, rollbackÀÌ ¿À¸é
-                // °ğ¹Ù·Î Query TimeoutÀ¸·Î Ã³¸®ÇÏ¿© ÇØ´ç TransactionÀÌ Rollback µÇµµ·Ï ÇÔ.
+                // Fix BUG-25020 XAê°€ Active ìƒíƒœì¸ë°, rollbackì´ ì˜¤ë©´
+                // ê³§ë°”ë¡œ Query Timeoutìœ¼ë¡œ ì²˜ë¦¬í•˜ì—¬ í•´ë‹¹ Transactionì´ Rollback ë˜ë„ë¡ í•¨.
                 sAssocSession = sXid->getAssocSession();
 
                 //BUG-25323 Trace Code...
@@ -1748,10 +1748,10 @@ void mmdXa::rollback(mmdXaContext *aXaContext, ID_XID *aXid)
                                                             sAssocSession->getInfo()->mCurrStmtID);
                     sIsSetTimeout = ID_TRUE;
                     /* BUG-29078
-                     * ¸ğµç Statement°¡ Á¾·áµÈ ½ÃÁ¡ÀÌ¸é, XA_ROLLBACK_TIMEOUT½Ã±îÁö ´ë±âÇÏ°í,
-                     * Statement°¡ ³²¾ÆÀÖ´Â °æ¿ìÀÌ¸é, ÇØ´ç Statement°¡ Á¾·áµÈ ÈÄ¿¡ Heuristic XA_END¸¦ ¼öÇàÇÑ´Ù.
+                     * ëª¨ë“  Statementê°€ ì¢…ë£Œëœ ì‹œì ì´ë©´, XA_ROLLBACK_TIMEOUTì‹œê¹Œì§€ ëŒ€ê¸°í•˜ê³ ,
+                     * Statementê°€ ë‚¨ì•„ìˆëŠ” ê²½ìš°ì´ë©´, í•´ë‹¹ Statementê°€ ì¢…ë£Œëœ í›„ì— Heuristic XA_ENDë¥¼ ìˆ˜í–‰í•œë‹¤.
                      */
-                    /* PROJ-1381 FAC : Holdable Fetch´Â transaction¿¡ ¿µÇâÀ» ¹ŞÁö ¾Ê´Â´Ù. */
+                    /* PROJ-1381 FAC : Holdable FetchëŠ” transactionì— ì˜í–¥ì„ ë°›ì§€ ì•ŠëŠ”ë‹¤. */
                     if (sAssocSession->isAllStmtEndExceptHold() != ID_TRUE)
                     {
                         sXid->setHeuristicXaEnd(ID_TRUE);
@@ -1762,8 +1762,8 @@ void mmdXa::rollback(mmdXaContext *aXaContext, ID_XID *aXid)
             if( sXid->getHeuristicXaEnd() != ID_TRUE )
             {
                 /* BUG-29078
-                 * Statement°¡ ¸ğµÎ Á¾·áµÈ °æ¿ì, XA_ROLLBACK_TIMEOUT Property ½Ã°£¸¸Å­
-                 * XA_END°¡ ¼ö½ÅµÉ ¶§±îÁö ´ë±âÇÑ´Ù.
+                 * Statementê°€ ëª¨ë‘ ì¢…ë£Œëœ ê²½ìš°, XA_ROLLBACK_TIMEOUT Property ì‹œê°„ë§Œí¼
+                 * XA_ENDê°€ ìˆ˜ì‹ ë  ë•Œê¹Œì§€ ëŒ€ê¸°í•œë‹¤.
                  */
                 if(sCurSleepTime <  sMaxWaitTime)
                 {
@@ -1779,16 +1779,16 @@ void mmdXa::rollback(mmdXaContext *aXaContext, ID_XID *aXid)
                 }
                 else
                 {
-                    //fix BUG-22306 XA ROLLBACK½Ã ÇØ´ç XID°¡ ACTIVEÀÏ¶§
-                    //´ë±â ¿Ï·áÈÄ ÀÌ¿¡ ´ëÇÑ rollbackÃ³¸® Á¤Ã¥ÀÌ Àß¸øµÊ.
-                    // ¾ÆÁ÷ XID°¡ DML¼öÇàÁßÀÌ´Ù.
+                    //fix BUG-22306 XA ROLLBACKì‹œ í•´ë‹¹ XIDê°€ ACTIVEì¼ë•Œ
+                    //ëŒ€ê¸° ì™„ë£Œí›„ ì´ì— ëŒ€í•œ rollbackì²˜ë¦¬ ì •ì±…ì´ ì˜ëª»ë¨.
+                    // ì•„ì§ XIDê°€ DMLìˆ˜í–‰ì¤‘ì´ë‹¤.
                     aXaContext->mReturnValue =  XAER_RMERR;
                 }
             }
             else        // if getIsRollback is true..
             {
                 /* BUG-29078 
-                 * Statement°¡ ³²¾ÆÀÖ´Â °æ¿ì¿¡, Heuristic XA_END°¡ µÉ¶§±îÁö ´ë±âÇÑ´Ù.
+                 * Statementê°€ ë‚¨ì•„ìˆëŠ” ê²½ìš°ì—, Heuristic XA_ENDê°€ ë ë•Œê¹Œì§€ ëŒ€ê¸°í•œë‹¤.
                  */
                 sState = 1;
                 sXid->unlock();
@@ -1805,9 +1805,9 @@ void mmdXa::rollback(mmdXaContext *aXaContext, ID_XID *aXid)
             //nothing to do
         }
 
-        //fix BUG-22306 XA ROLLBACK½Ã ÇØ´ç XID°¡ ACTIVEÀÏ¶§
-        //´ë±â ¿Ï·áÈÄ ÀÌ¿¡ ´ëÇÑ rollbackÃ³¸® Á¤Ã¥ÀÌ Àß¸øµÊ.
-        // ¾ÆÁ÷ XID°¡ DML¼öÇàÁßÀÌ´Ù.
+        //fix BUG-22306 XA ROLLBACKì‹œ í•´ë‹¹ XIDê°€ ACTIVEì¼ë•Œ
+        //ëŒ€ê¸° ì™„ë£Œí›„ ì´ì— ëŒ€í•œ rollbackì²˜ë¦¬ ì •ì±…ì´ ì˜ëª»ë¨.
+        // ì•„ì§ XIDê°€ DMLìˆ˜í–‰ì¤‘ì´ë‹¤.
         IDE_TEST(sWaitMode == MMD_XA_WAIT);
 
         //BUG-25020
@@ -1867,7 +1867,7 @@ void mmdXa::rollback(mmdXaContext *aXaContext, ID_XID *aXid)
     ideLog::logLine(IDE_XA_0, "ROLLBACK ERROR(%d) -> %d(XID:%s)",
                 aXaContext->mSession->getSessionID(),
                 aXaContext->mReturnValue,
-                sXidString);            //BUG-25050 Xid Ãâ·Â
+                sXidString);            //BUG-25050 Xid ì¶œë ¥
 
 }
 
@@ -1878,7 +1878,7 @@ void mmdXa::forget(mmdXaContext *aXaContext, ID_XID *aXid)
     UInt    sState = 0;
     mmdXid *sXid = NULL;
 
-    //BUG-25050 Xid Ãâ·Â
+    //BUG-25050 Xid ì¶œë ¥
     UChar          sXidString[XID_DATA_MAX_LEN];
 
     /* PROJ-2446 */ 
@@ -1888,7 +1888,7 @@ void mmdXa::forget(mmdXaContext *aXaContext, ID_XID *aXid)
 
     ideLog::logLine(IDE_XA_0, "FORGET (%d)(XID:%s)",
                 aXaContext->mSession->getSessionID(),
-                sXidString);        //BUG-25050 Xid Ãâ·Â
+                sXidString);        //BUG-25050 Xid ì¶œë ¥
 
     IDE_TEST(mmdXa::fix(&sXid, aXid, MMD_XA_DO_LOG) != IDE_SUCCESS);
     sState = 1;
@@ -1937,7 +1937,7 @@ void mmdXa::forget(mmdXaContext *aXaContext, ID_XID *aXid)
 
     ideLog::logLine(IDE_XA_0, "FORGET ERROR -> %d(XID:%s)",
                 aXaContext->mReturnValue,
-                sXidString);            //BUG-25050 Xid Ãâ·Â
+                sXidString);            //BUG-25050 Xid ì¶œë ¥
 }
 
 /* BUG-18981 */
@@ -1952,7 +1952,7 @@ void mmdXa::recover(mmdXaContext  *aXaContext,
     smiCommitState sTxState;
     SInt           sSlotID = -1;
     SInt           i;
-    //fix BUG-22383  [XA] xa_recover¿¡¼­ xid ¸®½ºÆ® ÀúÀå°ø°£ ÇÒ´ç¹®Á¦.
+    //fix BUG-22383  [XA] xa_recoverì—ì„œ xid ë¦¬ìŠ¤íŠ¸ ì €ì¥ê³µê°„ í• ë‹¹ë¬¸ì œ.
     SInt           sPreparedMax = smiGetTransTblSize();
 
     ID_XID        *sXidList = NULL;
@@ -1966,7 +1966,7 @@ void mmdXa::recover(mmdXaContext  *aXaContext,
 
     // BUG-20668
     // select from SYSTEM_.SYS_XA_HEURISTIC_TRANS_
-     //fix BUG-27218 XA Load Heurisitc TransactionÇÔ¼ö ³»¿ëÀ» ¸íÈ®È÷ ÇØ¾ß ÇÑ´Ù.
+     //fix BUG-27218 XA Load Heurisitc Transactioní•¨ìˆ˜ ë‚´ìš©ì„ ëª…í™•íˆ í•´ì•¼ í•œë‹¤.
     IDE_TEST( mmdManager::loadHeuristicTrans( sSession->getStatSQL(),   /* PROJ-2446 */
                                               MMD_LOAD_HEURISTIC_XIDS_AT_XA_RECOVER, 
                                               aHeuristicXids, 
@@ -2095,7 +2095,7 @@ IDE_RC mmdXa::cleanupLocalTrans(mmcSession *aSession)
     idBool      sReadOnly;
     smiTrans   *sTrans = NULL;
 
-    /* BUG-20850 local transaction ÀÌ readOnly »óÅÂÀÌ¸é commit À» ÇØ ÁÜ */
+    /* BUG-20850 local transaction ì´ readOnly ìƒíƒœì´ë©´ commit ì„ í•´ ì¤Œ */
     if ( (aSession->getCommitMode() == MMC_COMMITMODE_NONAUTOCOMMIT) &&
          (aSession->isActivated() == ID_TRUE) )
     {
@@ -2105,7 +2105,7 @@ IDE_RC mmdXa::cleanupLocalTrans(mmcSession *aSession)
             IDE_ASSERT(sTrans->isReadOnly(&sReadOnly) == IDE_SUCCESS);
             if (sReadOnly == ID_TRUE)
             {
-                /* PROJ-1381 FAC : Commit ÇÏ¹Ç·Î Holdable Fetch´Â À¯ÁöÇÑ´Ù. */
+                /* PROJ-1381 FAC : Commit í•˜ë¯€ë¡œ Holdable FetchëŠ” ìœ ì§€í•œë‹¤. */
                 IDE_ASSERT(aSession->closeAllCursor(ID_TRUE, MMC_CLOSEMODE_REMAIN_HOLD) == IDE_SUCCESS);
                 aSession->lockForFetchList();
                 IDU_LIST_JOIN_LIST(aSession->getCommitedFetchList(), aSession->getFetchList());
@@ -2118,12 +2118,12 @@ IDE_RC mmdXa::cleanupLocalTrans(mmcSession *aSession)
             }
         }
     }
-    /* BUG-20850 local transaction ÀÌ active »óÅÂÀÌ¸é ¿¡·¯ ¹ß»ı */
+    /* BUG-20850 local transaction ì´ active ìƒíƒœì´ë©´ ì—ëŸ¬ ë°œìƒ */
     /* PROJ-1381 FAC */
     IDE_TEST_RAISE(aSession->isAllStmtEndExceptHold() != ID_TRUE, StmtRemainError);
     IDE_TEST_RAISE(aSession->isActivated() != ID_FALSE, AlreadyActiveError);
 
-    /* BUG-20850 global transaction ½ÃÀÛÀü¿¡ local transaction ÀÇ »óÅÂ¸¦ ÀúÀåÇØ µĞ´Ù. */
+    /* BUG-20850 global transaction ì‹œì‘ì „ì— local transaction ì˜ ìƒíƒœë¥¼ ì €ì¥í•´ ë‘”ë‹¤. */
     aSession->saveLocalCommitMode();
     aSession->saveLocalTrans();
 
@@ -2151,8 +2151,8 @@ void mmdXa::prepareLocalTrans(mmcSession *aSession)
 
 void mmdXa::restoreLocalTrans(mmcSession *aSession)
 {
-    /* BUG-20850 global transaction Á¾·á ÈÄ, global transaction ¼öÇà ÀüÀÇ
-       local transaction »óÅÂ·Î º¹±¸ÇÑ´Ù. */
+    /* BUG-20850 global transaction ì¢…ë£Œ í›„, global transaction ìˆ˜í–‰ ì „ì˜
+       local transaction ìƒíƒœë¡œ ë³µêµ¬í•œë‹¤. */
     aSession->setSessionState(MMC_SESSION_STATE_SERVICE);
     aSession->restoreLocalTrans();
     aSession->restoreLocalCommitMode();
@@ -2191,21 +2191,21 @@ void mmdXa::terminateSession(mmcSession *aSession)
         /* ------------------------------------------------
          * BUG-20662
          *
-         * mmcSession:finalize ·ÎºÎÅÍ XaSession ÀÏ °æ¿ì¿¡¸¸ È£ÃâµÊ.
-         * client ºñÁ¤»ó Á¾·á½Ã ¿Ï·áµÇÁö ¾ÊÀº(xa_end,xa_prepare ÇÏÁö ¾ÊÀº)
-         * transaction À» rollback Ã³¸®ÇØ¾ß ÇÑ´Ù.
+         * mmcSession:finalize ë¡œë¶€í„° XaSession ì¼ ê²½ìš°ì—ë§Œ í˜¸ì¶œë¨.
+         * client ë¹„ì •ìƒ ì¢…ë£Œì‹œ ì™„ë£Œë˜ì§€ ì•Šì€(xa_end,xa_prepare í•˜ì§€ ì•Šì€)
+         * transaction ì„ rollback ì²˜ë¦¬í•´ì•¼ í•œë‹¤.
          * ----------------------------------------------*/
         //fix BUG-21527
         IDE_ASSERT(mmdXa::fix(&sXid, sXidValue,MMD_XA_DO_LOG) == IDE_SUCCESS);
         //fix BUG-21527
         if(sXid != NULL)
         {
-            // fix BUG-23306 XA ¼¼¼Ç Á¾·á½Ã ÀÚ½ÅÀÌ »ı¼ºÇÑ XID¸¸ rollback Ã³¸® ÇØ¾ßÇÕ´Ï´Ù.
+            // fix BUG-23306 XA ì„¸ì…˜ ì¢…ë£Œì‹œ ìì‹ ì´ ìƒì„±í•œ XIDë§Œ rollback ì²˜ë¦¬ í•´ì•¼í•©ë‹ˆë‹¤.
             if (sXid->getAssocSessionID() == aSession->getSessionID())
             {
                 sXid->lock();
 
-                /* BUG-20662 xa_end ¸¦ ÇÏÁö ¾Ê¾ÒÀ» °æ¿ì */
+                /* BUG-20662 xa_end ë¥¼ í•˜ì§€ ì•Šì•˜ì„ ê²½ìš° */
                 if (aSession->getXaAssocState() == MMD_XA_ASSOC_STATE_ASSOCIATED)
                 {
                     if (sXid->getState() == MMD_XA_STATE_ACTIVE)
@@ -2215,12 +2215,12 @@ void mmdXa::terminateSession(mmcSession *aSession)
                 }
 
                 /*
-                * fix BUG-23656 session,xid ,transactionÀ» ¿¬°èÇÑ performance view¸¦ Á¦°øÇÏ°í,
-                * ±×µé°£ÀÇ °ü°è¸¦ Á¤È®È÷ À¯ÁöÇØ¾ß ÇÔ.
-                * XID¿Í sessionÀ» dis-associate ½ÃÅ´.
+                * fix BUG-23656 session,xid ,transactionì„ ì—°ê³„í•œ performance viewë¥¼ ì œê³µí•˜ê³ ,
+                * ê·¸ë“¤ê°„ì˜ ê´€ê³„ë¥¼ ì •í™•íˆ ìœ ì§€í•´ì•¼ í•¨.
+                * XIDì™€ sessionì„ dis-associate ì‹œí‚´.
                 *
-                * fix BUG-26164 Heuristic Commit/Rollback ÀÌÈÄ¿¡ ¼­¹ö ºñÁ¤»óÁ¾·á.
-                * Xid_state¿¡ µû¶ó¼­ Transaction Ã³¸®°¡ ´Ş¶óÁø´Ù.
+                * fix BUG-26164 Heuristic Commit/Rollback ì´í›„ì— ì„œë²„ ë¹„ì •ìƒì¢…ë£Œ.
+                * Xid_stateì— ë”°ë¼ì„œ Transaction ì²˜ë¦¬ê°€ ë‹¬ë¼ì§„ë‹¤.
                 */
                 sXid->disAssociate(sXid->getState());
 
@@ -2229,10 +2229,10 @@ void mmdXa::terminateSession(mmcSession *aSession)
                     case MMD_XA_STATE_IDLE:
                     case MMD_XA_STATE_ACTIVE:
                     case MMD_XA_STATE_ROLLBACK_ONLY:
-                        /* BUG-20662 xa_prepare ¸¦ ÇÏ±â ÀüÀÇ »óÅÂÀÌ¸é */
-                        //fix BUG-22479 xa_end½Ã¿¡ fetchÁß¿¡ ÀÖ´Â statement¿¡ ´ëÇÏ¿©
-                        //statement end¸¦ ÀÚµ¿À¸·ÎÃ³¸®ÇØ¾ß ÇÕ´Ï´Ù.
-                        /* PROJ-1381 FAC : Commit µÇÁö ¾ÊÀº Fetch¸¦ ¸ğµÎ ´İ´Â´Ù. */
+                        /* BUG-20662 xa_prepare ë¥¼ í•˜ê¸° ì „ì˜ ìƒíƒœì´ë©´ */
+                        //fix BUG-22479 xa_endì‹œì— fetchì¤‘ì— ìˆëŠ” statementì— ëŒ€í•˜ì—¬
+                        //statement endë¥¼ ìë™ìœ¼ë¡œì²˜ë¦¬í•´ì•¼ í•©ë‹ˆë‹¤.
+                        /* PROJ-1381 FAC : Commit ë˜ì§€ ì•Šì€ Fetchë¥¼ ëª¨ë‘ ë‹«ëŠ”ë‹¤. */
                         IDE_ASSERT(aSession->closeAllCursor(ID_TRUE, MMC_CLOSEMODE_NON_COMMITED) == IDE_SUCCESS);
                         IDE_ASSERT(aSession->isAllStmtEndExceptHold() == ID_TRUE);
 
@@ -2287,7 +2287,7 @@ void mmdXa::terminateSession(mmcSession *aSession)
     else
     {
         //nothing to do
-        // ÀÌ¹Ì disconect protocol¿¡ ÀÇÇÏ¿© endSessionÀÌ µÈ°æ¿ìÀÌ´Ù.
+        // ì´ë¯¸ disconect protocolì— ì˜í•˜ì—¬ endSessionì´ ëœê²½ìš°ì´ë‹¤.
     }
     aSession->setXaAssocState(MMD_XA_ASSOC_STATE_NOTASSOCIATED);
 }
@@ -2306,7 +2306,7 @@ IDE_RC convertStringToXid(SChar *aStr, UInt aStrLen, ID_XID *aXID)
     SChar             sXidString[XID_DATA_MAX_LEN];
 
     /* bug-36037: invalid xid
-       original stringÀ»  º¸Á¸ÇÏ±â À§ÇØ º¹»ç */
+       original stringì„  ë³´ì¡´í•˜ê¸° ìœ„í•´ ë³µì‚¬ */
     IDE_TEST_RAISE(aStrLen >= XID_DATA_MAX_LEN, ERR_INVALID_XID);
     idlOS::memcpy(sXidString, aStr, aStrLen);
     sXidString[aStrLen] = '\0';
@@ -2338,10 +2338,10 @@ IDE_RC convertStringToXid(SChar *aStr, UInt aStrLen, ID_XID *aXID)
     return IDE_FAILURE;
 }
 
-// fix BUG-23815 XA session level  self record lock dead-lockÀÌ ¹ß»ıÇÑ°æ¿ì¿¡
-// TP monitor¸¦ ºñÁ¤»ó Á¾·á½Ã¿¡ °­Á¦·Î XIDÃ³¸®ÇÒ ¸í·ÉÇÊ¿ä.
-// ¼Ò½º ÄÚµå ¼öÁ¤ÇÏ¸é¼­   commitForce¿Í RollbackForce ¿ªÇÒÀ» ¸íÈ®È÷ ÇÏ¸é¼­
-// ±âÁ¸ if¹®À» Á¦°Å.
+// fix BUG-23815 XA session level  self record lock dead-lockì´ ë°œìƒí•œê²½ìš°ì—
+// TP monitorë¥¼ ë¹„ì •ìƒ ì¢…ë£Œì‹œì— ê°•ì œë¡œ XIDì²˜ë¦¬í•  ëª…ë ¹í•„ìš”.
+// ì†ŒìŠ¤ ì½”ë“œ ìˆ˜ì •í•˜ë©´ì„œ   commitForceì™€ RollbackForce ì—­í• ì„ ëª…í™•íˆ í•˜ë©´ì„œ
+// ê¸°ì¡´ ifë¬¸ì„ ì œê±°.
 IDE_RC mmdXa::commitForce( idvSQL   *aStatistics,
                            SChar    *aXIDStr, 
                            UInt      aXIDStrSize )
@@ -2374,8 +2374,8 @@ IDE_RC mmdXa::commitForce( idvSQL   *aStatistics,
         IDE_TEST_RAISE(sXidObj->commitTrans(NULL) != IDE_SUCCESS,commitError);
 
         /* bug-36037: invalid xid
-           invalid xidÀÇ °æ¿ì insertHeuri ½ÇÆĞ¸¦ Çã¿ëÇÏ¹Ç·Î
-           ¼öÇà°á°ú Ã¼Å© ¾ÈÇÔ */
+           invalid xidì˜ ê²½ìš° insertHeuri ì‹¤íŒ¨ë¥¼ í—ˆìš©í•˜ë¯€ë¡œ
+           ìˆ˜í–‰ê²°ê³¼ ì²´í¬ ì•ˆí•¨ */
         mmdManager::insertHeuristicTrans( aStatistics,  /* PROJ-2446 */
                                           &sXID, 
                                           QCM_XA_COMMITTED );
@@ -2422,20 +2422,20 @@ IDE_RC mmdXa::commitForce( idvSQL   *aStatistics,
     return IDE_FAILURE;
 
 }
-// fix BUG-23815 XA session level  self record lock dead-lockÀÌ ¹ß»ıÇÑ°æ¿ì¿¡
-// TP monitor¸¦ ºñÁ¤»ó Á¾·á½Ã¿¡ °­Á¦·Î XIDÃ³¸®ÇÒ ¸í·ÉÇÊ¿ä.
-// ¼Ò½º ÄÚµå ¼öÁ¤ÇÏ¸é¼­   commitForce¿Í RollbackForce ¿ªÇÒÀ» ¸íÈ®È÷ ÇÏ¸é¼­
-// ±âÁ¸ if¹®À» Á¦°Å.
+// fix BUG-23815 XA session level  self record lock dead-lockì´ ë°œìƒí•œê²½ìš°ì—
+// TP monitorë¥¼ ë¹„ì •ìƒ ì¢…ë£Œì‹œì— ê°•ì œë¡œ XIDì²˜ë¦¬í•  ëª…ë ¹í•„ìš”.
+// ì†ŒìŠ¤ ì½”ë“œ ìˆ˜ì •í•˜ë©´ì„œ   commitForceì™€ RollbackForce ì—­í• ì„ ëª…í™•íˆ í•˜ë©´ì„œ
+// ê¸°ì¡´ ifë¬¸ì„ ì œê±°.
 /*
-    ¿©±â¼­ XID´Â Æ®·£Àè¼Ç branch¸¦ ÀÇ¹ÌÇÑ´Ù.
-    XA session A¿¡¼­ XID 100À» start
+    ì—¬ê¸°ì„œ XIDëŠ” íŠ¸ëœì­ì…˜ branchë¥¼ ì˜ë¯¸í•œë‹¤.
+    XA session Aì—ì„œ XID 100ì„ start
                       update t1 set C1=C1+1 WHERE C1=1;
                       xID 100 end.
 
-                      XID 200À» start
-                      update t1 set C1=C1+1 WHERE C1=1; <--- session level self recrod dead-lock¹ß»ı.
+                      XID 200ì„ start
+                      update t1 set C1=C1+1 WHERE C1=1; <--- session level self recrod dead-lockë°œìƒ.
                       xID 200 end.
-   ÀÌ·¯ÇÑ¹®Á¦¸¦ ÇØ°áÇÏ±â À§ÇÏ¿©  rollback force ¸í·É¾î·Î XID 100¹øÀ» rollback½ÃÄÑ¾ßÇÔ.
+   ì´ëŸ¬í•œë¬¸ì œë¥¼ í•´ê²°í•˜ê¸° ìœ„í•˜ì—¬  rollback force ëª…ë ¹ì–´ë¡œ XID 100ë²ˆì„ rollbackì‹œì¼œì•¼í•¨.
 
 */
 IDE_RC mmdXa::rollbackForce( idvSQL     *aStatistics,
@@ -2463,9 +2463,9 @@ IDE_RC mmdXa::rollbackForce( idvSQL     *aStatistics,
     sStage = 2;
     sXIDState = sXidObj->getState();
 
-    // fix BUG-23815 XA session level  self record lock dead-lockÀÌ ¹ß»ıÇÑ°æ¿ì¿¡
-    // TP monitor¸¦ ºñÁ¤»ó Á¾·á½Ã¿¡ °­Á¦·Î XIDÃ³¸®ÇÒ ¸í·ÉÇÊ¿ä.
-    // MMD_XA_STATE_ROLLBACK_ONLYµµ rollback°¡´ÉÇØ¾ßÇÔ.
+    // fix BUG-23815 XA session level  self record lock dead-lockì´ ë°œìƒí•œê²½ìš°ì—
+    // TP monitorë¥¼ ë¹„ì •ìƒ ì¢…ë£Œì‹œì— ê°•ì œë¡œ XIDì²˜ë¦¬í•  ëª…ë ¹í•„ìš”.
+    // MMD_XA_STATE_ROLLBACK_ONLYë„ rollbackê°€ëŠ¥í•´ì•¼í•¨.
     if ( (sXIDState == MMD_XA_STATE_PREPARED ) || (sXIDState == MMD_XA_STATE_ROLLBACK_ONLY))
     {
         //fix BUG-22651 smrLogFileGroup::updateTransLSNInfo, server FATAL
@@ -2480,18 +2480,18 @@ IDE_RC mmdXa::rollbackForce( idvSQL     *aStatistics,
     }
     else
     {
-      // fix BUG-23815 XA session level  self record lock dead-lockÀÌ ¹ß»ıÇÑ°æ¿ì¿¡
-      // TP monitor¸¦ ºñÁ¤»ó Á¾·á½Ã¿¡ °­Á¦·Î XIDÃ³¸®ÇÒ ¸í·ÉÇÊ¿ä.
+      // fix BUG-23815 XA session level  self record lock dead-lockì´ ë°œìƒí•œê²½ìš°ì—
+      // TP monitorë¥¼ ë¹„ì •ìƒ ì¢…ë£Œì‹œì— ê°•ì œë¡œ XIDì²˜ë¦¬í•  ëª…ë ¹í•„ìš”.
       /*
-           ¿©±â¼­ XID´Â Æ®·£Àè¼Ç branch¸¦ ÀÇ¹ÌÇÑ´Ù.
-           XA session A¿¡¼­ XID 100À» start
+           ì—¬ê¸°ì„œ XIDëŠ” íŠ¸ëœì­ì…˜ branchë¥¼ ì˜ë¯¸í•œë‹¤.
+           XA session Aì—ì„œ XID 100ì„ start
                       update t1 set C1=C1+1 WHERE C1=1;
                       xID 100 end.
 
-                      XID 200À» start
-                      update t1 set C1=C1+1 WHERE C1=1; <--- session level self recrod dead-lock¹ß»ı.
+                      XID 200ì„ start
+                      update t1 set C1=C1+1 WHERE C1=1; <--- session level self recrod dead-lockë°œìƒ.
                       xID 200 end.
-          ÀÌ·¯ÇÑ¹®Á¦¸¦ ÇØ°áÇÏ±â À§ÇÏ¿©  rollback force ¸í·É¾î·Î XID 100¹øÀ» rollback½ÃÄÑ¾ßÇÔ.
+          ì´ëŸ¬í•œë¬¸ì œë¥¼ í•´ê²°í•˜ê¸° ìœ„í•˜ì—¬  rollback force ëª…ë ¹ì–´ë¡œ XID 100ë²ˆì„ rollbackì‹œì¼œì•¼í•¨.
       */
         if( sXIDState == MMD_XA_STATE_IDLE)
         {
@@ -2540,7 +2540,7 @@ IDE_RC mmdXa::rollbackForce( idvSQL     *aStatistics,
 
 
 /* BUG-25999
-   Procedure¸¦ ÀÌ¿ëÇÏ¿© HeuristicÇÏ°Ô Ã³¸®µÈ, »ç¿ëÀÚ°¡ ÀÔ·ÂÇÑ XID¸¦ Á¦°ÅÇÔ
+   Procedureë¥¼ ì´ìš©í•˜ì—¬ Heuristicí•˜ê²Œ ì²˜ë¦¬ëœ, ì‚¬ìš©ìê°€ ì…ë ¥í•œ XIDë¥¼ ì œê±°í•¨
  */
 IDE_RC mmdXa::removeHeuristicXid( idvSQL    *aStatistics,
                                   SChar     *aXIDStr, 

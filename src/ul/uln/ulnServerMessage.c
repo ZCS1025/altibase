@@ -50,7 +50,7 @@ ACI_RC ulnCallbackMessage(cmiProtocolContext *aProtocolContext,
     {
         if (cmiGetLinkImpl(aProtocolContext) == CMI_LINK_IMPL_IPCDA)
         {
-            /* PROJ-2616 �޸𸮿� �ٷ� �����Ͽ� �����͸� �е��� �Ѵ�. */
+            /* PROJ-2616 메모리에 바로 접근하여 데이터를 읽도록 한다. */
             ACI_TEST( cmiSplitReadIPCDA(aProtocolContext,
                                         sRowSize,
                                         &sBuffer,
@@ -98,8 +98,8 @@ ACI_RC ulnCallbackMessage(cmiProtocolContext *aProtocolContext,
     }
 
     /* PROJ-2616
-     * IPC-DA�� �޸𸮿� �ٷ� �����Ͽ� �����͸� �е��� �Ѵ�.
-     * �׷��� �޸� ������ �ϸ� �� �ȴ�.
+     * IPC-DA는 메모리에 바로 접근하여 데이터를 읽도록 한다.
+     * 그래서 메모리 해제를 하면 안 된다.
      */
     ACI_TEST_RAISE(cmiGetLinkImpl(aProtocolContext) == CMI_LINK_IMPL_IPCDA
                    ,ContCallbackMsg);

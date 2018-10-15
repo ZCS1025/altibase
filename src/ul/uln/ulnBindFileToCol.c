@@ -61,12 +61,12 @@ static ACI_RC ulnBindFileToColCheckArgs(ulnFnContext  *aContext,
 }
 
 /*
- * »ç¿ëÀÚ ÆÄÀÏ¿¡ ´ëÇÑ Á¤º¸´Â ¸ðµÎ ARD record ¿¡ ÀúÀåÇÑ´Ù.
+ * ì‚¬ìš©ìž íŒŒì¼ì— ëŒ€í•œ ì •ë³´ëŠ” ëª¨ë‘ ARD record ì— ì €ìž¥í•œë‹¤.
  *
- * fetch ½Ã ÇØ´ç ÆÄÀÏÀ» open ÇÏ¿© ¼ö½ÅÇÑ µ¥ÀÌÅÍ¸¦ ¾´´Ù.
+ * fetch ì‹œ í•´ë‹¹ íŒŒì¼ì„ open í•˜ì—¬ ìˆ˜ì‹ í•œ ë°ì´í„°ë¥¼ ì“´ë‹¤.
  *
- * BUGBUG : descriptor record ÀÇ octet length ptr °ú indicator ptr ÀÇ ÀÇ¹Ì¸¦ È®½ÇÈ÷ ´Ù½ÃÇÑ¹ø
- *          Á¤¸®ÇØ¾ß ÇÑ´Ù.
+ * BUGBUG : descriptor record ì˜ octet length ptr ê³¼ indicator ptr ì˜ ì˜ë¯¸ë¥¼ í™•ì‹¤ížˆ ë‹¤ì‹œí•œë²ˆ
+ *          ì •ë¦¬í•´ì•¼ í•œë‹¤.
  */
 SQLRETURN ulnBindFileToCol(ulnStmt      *aStmt,
                            acp_sint16_t  aColumnNumber,
@@ -90,7 +90,7 @@ SQLRETURN ulnBindFileToCol(ulnStmt      *aStmt,
     sNeedExit = ACP_TRUE;
 
     sPtContext = &(aStmt->mParentDbc->mPtContext);
-    /* BUG-44125 [mm-cli] IPCDA ¸ðµå Å×½ºÆ® Áß hang - iloader CLOB */
+    /* BUG-44125 [mm-cli] IPCDA ëª¨ë“œ í…ŒìŠ¤íŠ¸ ì¤‘ hang - iloader CLOB */
     ACI_TEST_RAISE(cmiGetLinkImpl(&sPtContext->mCmiPtContext) == CMI_LINK_IMPL_IPCDA,
                    IPCDANotSupport);
     /*
@@ -104,14 +104,14 @@ SQLRETURN ulnBindFileToCol(ulnStmt      *aStmt,
                                        aValueLength) != ACI_SUCCESS);
 
     /*
-     * ARD record ÁØºñ
+     * ARD record ì¤€ë¹„
      */
     ACI_TEST_RAISE(ulnBindArrangeNewDescRec(aStmt->mAttrArd, aColumnNumber, &sDescRecArd)
                    != ACI_SUCCESS,
                    LABEL_NOT_ENOUGH_MEM);
 
     /*
-     * Note : aStrLenOrIndPtr ¿¡ aFileNameLengthArray ¸¦ ÀúÀåÇÑ´Ù´Âµ¥¿¡ ÁÖÀÇÇÑ´Ù.
+     * Note : aStrLenOrIndPtr ì— aFileNameLengthArray ë¥¼ ì €ìž¥í•œë‹¤ëŠ”ë°ì— ì£¼ì˜í•œë‹¤.
      */
     ACI_TEST(ulnBindColBody(&sFnContext,
                             sDescRecArd,
@@ -121,7 +121,7 @@ SQLRETURN ulnBindFileToCol(ulnStmt      *aStmt,
                             aFileNameLengthArray) != ACI_SUCCESS);
 
     /*
-     * file option ¹è¿­°ú indicator ¹è¿­À» ÁöÁ¤.
+     * file option ë°°ì—´ê³¼ indicator ë°°ì—´ì„ ì§€ì •.
      */
     sDescRecArd->mFileOptionsPtr = aFileOptionPtr;
     ulnDescRecSetOctetLengthPtr(sDescRecArd, aValueLength);

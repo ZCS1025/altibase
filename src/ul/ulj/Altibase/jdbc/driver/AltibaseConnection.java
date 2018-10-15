@@ -73,7 +73,7 @@ public final class AltibaseConnection implements Connection
     private SQLWarning               mWarning;
     private boolean                  mIsClosed                      = true;
     private LinkedList               mStatementList                 = new LinkedList();
-    private AutoCommitMode           mAutoCommit;   //PROJ-2190 client side autocommit ¸ğµå°¡ Ãß°¡µÇ¾ú±â ¶§¹®¿¡ enum Çü½ÄÀ¸·Î ¼±¾ğ
+    private AutoCommitMode           mAutoCommit;   //PROJ-2190 client side autocommit ëª¨ë“œê°€ ì¶”ê°€ë˜ì—ˆê¸° ë•Œë¬¸ì— enum í˜•ì‹ìœ¼ë¡œ ì„ ì–¸
     private int                      mDefaultResultSetType          = ResultSet.TYPE_FORWARD_ONLY;
     private int                      mDefaultResultSetConcurrency   = ResultSet.CONCUR_READ_ONLY;
     private int                      mDefaultResultSetHoldability   = ResultSet.CLOSE_CURSORS_AT_COMMIT;
@@ -137,7 +137,7 @@ public final class AltibaseConnection implements Connection
         loadDataSourceProps();
         loadDefaultValues();
         
-        // PROJ-2474 È¯°æº¯¼ö¿¡ ALTIBASE___SSL_TEST°¡ enableµÇ¾î ÀÖÀ» ¶© ¹«Á¶°Ç ssl ¿É¼ÇÀ» Ãß°¡ÇÑ´Ù.
+        // PROJ-2474 í™˜ê²½ë³€ìˆ˜ì— ALTIBASE___SSL_TESTê°€ enableë˜ì–´ ìˆì„ ë• ë¬´ì¡°ê±´ ssl ì˜µì…˜ì„ ì¶”ê°€í•œë‹¤.
         if (AltibaseEnvironmentVariables.isSet(AltibaseEnvironmentVariables.ENV_ALTIBASE_SSL_TEST) &&
                 AltibaseEnvironmentVariables.getSslTest())
         {
@@ -153,7 +153,7 @@ public final class AltibaseConnection implements Connection
         	mChannel.setPreferredIPv6();
         }
         
-        // PROJ-2474 ssl_enableÀÌ È°¼ºÈ­ µÇ¾î ÀÖ´Â °æ¿ì cmChannel¿¡ ¼ÂÆÃÇØ ÁØ´Ù.
+        // PROJ-2474 ssl_enableì´ í™œì„±í™” ë˜ì–´ ìˆëŠ” ê²½ìš° cmChannelì— ì…‹íŒ…í•´ ì¤€ë‹¤.
         if (mProp.isSslEnabled())
         {
             mChannel.setSslProps(mProp);
@@ -185,7 +185,7 @@ public final class AltibaseConnection implements Connection
     }
 
     /**
-     * ¼Ó¼º°ªÀÌ ¼ÂÆÃµÇ¾î ÀÖÁö ¾ÊÀ»¶§ default ¼Ó¼º°ªÀ» Àû¿ë½ÃÅ²´Ù.
+     * ì†ì„±ê°’ì´ ì…‹íŒ…ë˜ì–´ ìˆì§€ ì•Šì„ë•Œ default ì†ì„±ê°’ì„ ì ìš©ì‹œí‚¨ë‹¤.
      */
     private void loadDefaultValues()
     {
@@ -315,7 +315,7 @@ public final class AltibaseConnection implements Connection
     }
 
     /**
-     * BUG-39149 handshake ÇÁ·ÎÅäÄİÀ» ÀÌ¿ëÇØ Ä¿³Ø¼ÇÀÌ À¯È¿ÇÑÁö Ã¼Å©ÇÑ´Ù.
+     * BUG-39149 handshake í”„ë¡œí† ì½œì„ ì´ìš©í•´ ì»¤ë„¥ì…˜ì´ ìœ íš¨í•œì§€ ì²´í¬í•œë‹¤.
      */
     public void ping() throws SQLException
     {
@@ -359,9 +359,9 @@ public final class AltibaseConnection implements Connection
         mContext.addProperty(AltibaseProperties.PROP_CODE_CLIENT_PID, (long)Thread.currentThread().hashCode());
         mContext.addProperty(AltibaseProperties.PROP_CODE_CLIENT_TYPE, PROP_VALUE_CLIENT_TYPE);
         mContext.addProperty(AltibaseProperties.PROP_CODE_NLS, PROP_VALUE_NLS);
-        mContext.addProperty(AltibaseProperties.PROP_CODE_HEADER_DISPLAY_MODE, PROP_VALUE_HEADER_DISPLAY_MODE); // ¾ø¾Ù ¼öµµ ÀÖÀ½. BUG-33625
+        mContext.addProperty(AltibaseProperties.PROP_CODE_HEADER_DISPLAY_MODE, PROP_VALUE_HEADER_DISPLAY_MODE); // ì—†ì•¨ ìˆ˜ë„ ìˆìŒ. BUG-33625
 
-        // ºÎ°¡ÀûÀÎ ÇÁ·ÎÆÛÆ¼ ¼¼ÆÃ
+        // ë¶€ê°€ì ì¸ í”„ë¡œí¼í‹° ì„¸íŒ…
         setOptionalProperties(aProp);
 
         // PROJ-2331
@@ -414,8 +414,8 @@ public final class AltibaseConnection implements Connection
     }
 
     /* BUG-41908 Add processing the error 'mmERR_IGNORE_UNSUPPORTED_PROPERTY' in JDBC 
-     * Æ¯Á¤ property¿¡ ´ëÇØ¼­ ¼­¹ö¿¡¼­ Áö¿øÇÏÁö ¾Ê´Â´Ù´Â ÀÀ´äÀ» º¸³ÂÀ» °æ¿ì JDBC¿¡¼­µµ ÇØ´ç propertyÀ» off ÇÑ´Ù. 
-     * ÃßÈÄ¿¡ client¿Í server¿Í Áö¿øÇÏ´Â property°¡ ¸ÂÁö ¾ÊÀ»°æ¿ì Á¤È®È÷´Â client¸¸ Áö¿øÇÏ´Â property°¡ »ı±æ°æ¿ì ¾Æ·¡¿Í °°ÀÌ Ã³¸®ÇÑ´Ù. */
+     * íŠ¹ì • propertyì— ëŒ€í•´ì„œ ì„œë²„ì—ì„œ ì§€ì›í•˜ì§€ ì•ŠëŠ”ë‹¤ëŠ” ì‘ë‹µì„ ë³´ëƒˆì„ ê²½ìš° JDBCì—ì„œë„ í•´ë‹¹ propertyì„ off í•œë‹¤. 
+     * ì¶”í›„ì— clientì™€ serverì™€ ì§€ì›í•˜ëŠ” propertyê°€ ë§ì§€ ì•Šì„ê²½ìš° ì •í™•íˆëŠ” clientë§Œ ì§€ì›í•˜ëŠ” propertyê°€ ìƒê¸¸ê²½ìš° ì•„ë˜ì™€ ê°™ì´ ì²˜ë¦¬í•œë‹¤. */
     private void setOffUnsupportedProperty(CmErrorResult aCmErrorResult) throws SQLException
     {
         CmErrorResult sCmErrorResult = aCmErrorResult;
@@ -432,7 +432,7 @@ public final class AltibaseConnection implements Connection
                         mProp.setProperty(AltibaseProperties.PROP_LOB_CACHE_THRESHOLD, 0);
                         break;
                     default:
-                        /* ¹İµå½Ã ÇÊ¿äÇÑ propertyÀÏ °æ¿ì Á¢¼ÓÀ» ÇØÁ¦ÇÑ´Ù. */
+                        /* ë°˜ë“œì‹œ í•„ìš”í•œ propertyì¼ ê²½ìš° ì ‘ì†ì„ í•´ì œí•œë‹¤. */
                         Error.throwSQLException(ErrorDef.NOT_SUPPORTED_MANDATORY_PROPERTY);
                         break;
                 }
@@ -452,7 +452,7 @@ public final class AltibaseConnection implements Connection
             {
                 mAutoCommit = AutoCommitMode.CLIENT_SIDE_AUTOCOMMIT_ON;
             }
-            mDefaultResultSetHoldability = ResultSet.HOLD_CURSORS_OVER_COMMIT; // PROJ-2190 client side autocommitÀÌ È°¼ºÈ­ µÇ¾î ÀÖÀ»¶§´Â HOLD_CURSOR·Î ¹Ù²ãÁØ´Ù.
+            mDefaultResultSetHoldability = ResultSet.HOLD_CURSORS_OVER_COMMIT; // PROJ-2190 client side autocommitì´ í™œì„±í™” ë˜ì–´ ìˆì„ë•ŒëŠ” HOLD_CURSORë¡œ ë°”ê¿”ì¤€ë‹¤.
         }
 
         mContext.addProperty(AltibaseProperties.PROP_CODE_AUTOCOMMIT, isServerSideAutoCommit() ? true : false);
@@ -470,7 +470,7 @@ public final class AltibaseConnection implements Connection
         }
         else
         {
-            // µğÆúÆ®°¡ falseÀÌ¹Ç·Î ¼­¹ö¿¡ ±»ÀÌ ¾Ë¸± ÇÊ¿ä¾ø´Ù.
+            // ë””í´íŠ¸ê°€ falseì´ë¯€ë¡œ ì„œë²„ì— êµ³ì´ ì•Œë¦´ í•„ìš”ì—†ë‹¤.
         }
 
         setOptionalIntProperty(AltibaseProperties.PROP_CODE_MAX_STATEMENTS_PER_SESSION,
@@ -496,7 +496,7 @@ public final class AltibaseConnection implements Connection
             mContext.addProperty(AltibaseProperties.PROP_CODE_APP_INFO, sValue);
         }
 
-        /* BUG-31390 v$session¿¡ Á¤º¸ Ãâ·Â */
+        /* BUG-31390 v$sessionì— ì •ë³´ ì¶œë ¥ */
         sValue = aProp.getFailoverSource();
         if (sValue != null)
         {
@@ -641,9 +641,9 @@ public final class AltibaseConnection implements Connection
     }
 
     /**
-     * DB ¿¬°á Á¤º¸°¡ ´ã±ä Properties¸¦ ÀÌ¿ëÇØ URL stringÀ» ¾ò´Â´Ù.
+     * DB ì—°ê²° ì •ë³´ê°€ ë‹´ê¸´ Propertiesë¥¼ ì´ìš©í•´ URL stringì„ ì–»ëŠ”ë‹¤.
      * 
-     * @param aProps DB ¿¬°á Á¤º¸°¡ ´ã±ä Properties
+     * @param aProps DB ì—°ê²° ì •ë³´ê°€ ë‹´ê¸´ Properties
      * @return URL string
      */
     public static String getURL(Properties aProps)
@@ -765,8 +765,8 @@ public final class AltibaseConnection implements Connection
             return;
         }
 
-        // BUGBUG ÀÌ°Å ²À ÀÌ·¡¾ß µÇ³ª? synchronized Á¦°ÅÇÒ ¼ö ¾ø³ª?
-        // BUGBUG (1013-02-04) ºñ¿ëÀÌ Á» µé±ä ÇÏÁö¸¸, rollbkack ÇÒ ¶§ stmt ³²Àº°É È®ÀÎÇÏ¹Ç·Î ¸ğµÎ close ÇØÁÖ¾î¾ß ¾ÈÀüÇÏ´Ù.
+        // BUGBUG ì´ê±° ê¼­ ì´ë˜ì•¼ ë˜ë‚˜? synchronized ì œê±°í•  ìˆ˜ ì—†ë‚˜?
+        // BUGBUG (1013-02-04) ë¹„ìš©ì´ ì¢€ ë“¤ê¸´ í•˜ì§€ë§Œ, rollbkack í•  ë•Œ stmt ë‚¨ì€ê±¸ í™•ì¸í•˜ë¯€ë¡œ ëª¨ë‘ close í•´ì£¼ì–´ì•¼ ì•ˆì „í•˜ë‹¤.
         synchronized (mStatementList)
         {
             while (!mStatementList.isEmpty())
@@ -781,9 +781,9 @@ public final class AltibaseConnection implements Connection
 
         if (!isServerSideAutoCommit())
         {
-            // autocommitÀÌ ¾Æ´Ñ °æ¿ì ±×³É disconnect¸¦ ÇØ¼­
-            // rollback/commit ¿©ºÎ¸¦ ¼­¹ö¿¡ ¸Ã±â´Â°Ô ¿ÇÀº Á¤Ã¥ÀÌÁö¸¸,
-            // ÇÏÀ§ ¹öÀü°úÀÇ È£È¯¼ºÀ» À§ÇØ rollbackÀ» È£ÃâÇÑ´Ù.
+            // autocommitì´ ì•„ë‹Œ ê²½ìš° ê·¸ëƒ¥ disconnectë¥¼ í•´ì„œ
+            // rollback/commit ì—¬ë¶€ë¥¼ ì„œë²„ì— ë§¡ê¸°ëŠ”ê²Œ ì˜³ì€ ì •ì±…ì´ì§€ë§Œ,
+            // í•˜ìœ„ ë²„ì „ê³¼ì˜ í˜¸í™˜ì„±ì„ ìœ„í•´ rollbackì„ í˜¸ì¶œí•œë‹¤.
             rollback();
         }
 
@@ -796,13 +796,13 @@ public final class AltibaseConnection implements Connection
     }
 
     /**
-     * Disconnect¸¦ ¼öÇàÇÏ°í CM ¿¬°áÀ» ³¡´Â´Ù.
+     * Disconnectë¥¼ ìˆ˜í–‰í•˜ê³  CM ì—°ê²°ì„ ëëŠ”ë‹¤.
      * 
      * @throws SQLException
      */
     void disconnect() throws SQLException
     {
-        // RESPONSE_TIMEOUT µîÀ¸·Î channelÀÌ ´İÇû´Ù¸é Á¶¿ëÈ÷ ³Ñ¾î°£´Ù.
+        // RESPONSE_TIMEOUT ë“±ìœ¼ë¡œ channelì´ ë‹«í˜”ë‹¤ë©´ ì¡°ìš©íˆ ë„˜ì–´ê°„ë‹¤.
         if (!mContext.channel().isClosed())
         {
             if (! mIsClosed)
@@ -831,8 +831,8 @@ public final class AltibaseConnection implements Connection
     }
 
     /**
-     * ConnectionÀ» ´İ´Â´Ù.
-     * ÀÌ ¶§, ¿¹¿Ü°¡ ¹ß»ıÇÏ¸é LogWriter¿¡ ¸Ş¼¼Áö¸¦ ±â·ÏÇÑ´Ù.
+     * Connectionì„ ë‹«ëŠ”ë‹¤.
+     * ì´ ë•Œ, ì˜ˆì™¸ê°€ ë°œìƒí•˜ë©´ LogWriterì— ë©”ì„¸ì§€ë¥¼ ê¸°ë¡í•œë‹¤.
      */
     void quiteClose()
     {
@@ -847,7 +847,7 @@ public final class AltibaseConnection implements Connection
     }
 
     /**
-     * PROJ-2109 DriverManager.setLogWriter·Î ¼ÂÆÃÇÑ logWriter·Î ExceptionÀ» Ãâ·ÂÇÑ´Ù.
+     * PROJ-2109 DriverManager.setLogWriterë¡œ ì…‹íŒ…í•œ logWriterë¡œ Exceptionì„ ì¶œë ¥í•œë‹¤.
      * @param sEx
      */
     private void logExceptionToLogWriter(Exception sEx)
@@ -855,7 +855,7 @@ public final class AltibaseConnection implements Connection
         PrintWriter logWriter = getLogWriter();
         if (logWriter == null)
         {
-            return; // DriverManager ´Ü¿¡¼­ LogWriter¸¦ ¼³Á¤ÇÏÁö ¾ÊÀº °æ¿ì ±×³É ¸®ÅÏÇÑ´Ù.
+            return; // DriverManager ë‹¨ì—ì„œ LogWriterë¥¼ ì„¤ì •í•˜ì§€ ì•Šì€ ê²½ìš° ê·¸ëƒ¥ ë¦¬í„´í•œë‹¤.
         }
         logWriter.print(sEx.getMessage());
     }
@@ -863,7 +863,7 @@ public final class AltibaseConnection implements Connection
     public void commit() throws SQLException
     {
         throwErrorForClosed();
-        // BUG-23343 JDBC spec¿¡ µû¸£¸é ¿¹¿Ü¸¦ ³»¾ß ÇÏÁö¸¸, »ç¿ëÀÚ ÆíÀÇ¸¦ À§ÇØ ¹«½Ã.
+        // BUG-23343 JDBC specì— ë”°ë¥´ë©´ ì˜ˆì™¸ë¥¼ ë‚´ì•¼ í•˜ì§€ë§Œ, ì‚¬ìš©ì í¸ì˜ë¥¼ ìœ„í•´ ë¬´ì‹œ.
         if (isServerSideAutoCommit())
         {
             return;
@@ -981,7 +981,7 @@ public final class AltibaseConnection implements Connection
     public boolean isReadOnly() throws SQLException
     {
         throwErrorForClosed();
-        // read-only ¸ğµå¸¦ Áö¿øÇÏÁö ¾Ê´Â´Ù.
+        // read-only ëª¨ë“œë¥¼ ì§€ì›í•˜ì§€ ì•ŠëŠ”ë‹¤.
         return false;
     }
 
@@ -1051,8 +1051,8 @@ public final class AltibaseConnection implements Connection
         return sStatement;
     }
 
-    // BUGBUG (2012-11-06) Áö¿øÇÏ´Â °ÍÀÌ ½ºÆå¿¡¼­ ¼³¸íÇÏ´Â°Í°ú Á¶±İ ´Ù¸£´Ù.
-    // ÀÚ¼¼ÇÑ ³»¿ëÀº Statement.executeUpdate(String,int) Âü°í.
+    // BUGBUG (2012-11-06) ì§€ì›í•˜ëŠ” ê²ƒì´ ìŠ¤í™ì—ì„œ ì„¤ëª…í•˜ëŠ”ê²ƒê³¼ ì¡°ê¸ˆ ë‹¤ë¥´ë‹¤.
+    // ìì„¸í•œ ë‚´ìš©ì€ Statement.executeUpdate(String,int) ì°¸ê³ .
     public PreparedStatement prepareStatement(String aSql, int aAutoGeneratedKeys) throws SQLException
     {
         throwErrorForClosed();
@@ -1075,8 +1075,8 @@ public final class AltibaseConnection implements Connection
         return sStatement;
     }
 
-    // BUGBUG (2012-11-06) ½ºÆå°ú ´Ù¸£´Ù.
-    // ÀÚ¼¼ÇÑ ³»¿ëÀº Statement.executeUpdate(String,int[]) Âü°í.
+    // BUGBUG (2012-11-06) ìŠ¤í™ê³¼ ë‹¤ë¥´ë‹¤.
+    // ìì„¸í•œ ë‚´ìš©ì€ Statement.executeUpdate(String,int[]) ì°¸ê³ .
     public PreparedStatement prepareStatement(String aSql, int[] aColumnIndexes) throws SQLException
     {
         throwErrorForClosed();
@@ -1091,8 +1091,8 @@ public final class AltibaseConnection implements Connection
         return sStatement;
     }
 
-    // BUGBUG (2012-11-06) ½ºÆå°ú ´Ù¸£´Ù.
-    // ÀÚ¼¼ÇÑ ³»¿ëÀº Statement.executeUpdate(String,String[]) Âü°í.
+    // BUGBUG (2012-11-06) ìŠ¤í™ê³¼ ë‹¤ë¥´ë‹¤.
+    // ìì„¸í•œ ë‚´ìš©ì€ Statement.executeUpdate(String,String[]) ì°¸ê³ .
     public PreparedStatement prepareStatement(String aSql, String[] aColumnNames) throws SQLException
     {
         throwErrorForClosed();
@@ -1120,7 +1120,7 @@ public final class AltibaseConnection implements Connection
     {
         throwErrorForClosed();
         throwErrorForInvalidSavePoint(aSavepoint);
-        // BUG-23343 JDBC spec¿¡ µû¸£¸é ¿¹¿Ü¸¦ ³»¾ß ÇÏÁö¸¸, »ç¿ëÀÚ ÆíÀÇ¸¦ À§ÇØ ¹«½Ã.
+        // BUG-23343 JDBC specì— ë”°ë¥´ë©´ ì˜ˆì™¸ë¥¼ ë‚´ì•¼ í•˜ì§€ë§Œ, ì‚¬ìš©ì í¸ì˜ë¥¼ ìœ„í•´ ë¬´ì‹œ.
         if (isServerSideAutoCommit())
         {
         	return;
@@ -1132,7 +1132,7 @@ public final class AltibaseConnection implements Connection
     public void rollback() throws SQLException
     {
         throwErrorForClosed();
-        // BUG-23343 JDBC spec¿¡ µû¸£¸é ¿¹¿Ü¸¦ ³»¾ß ÇÏÁö¸¸, »ç¿ëÀÚ ÆíÀÇ¸¦ À§ÇØ ¹«½Ã.
+        // BUG-23343 JDBC specì— ë”°ë¥´ë©´ ì˜ˆì™¸ë¥¼ ë‚´ì•¼ í•˜ì§€ë§Œ, ì‚¬ìš©ì í¸ì˜ë¥¼ ìœ„í•´ ë¬´ì‹œ.
         if (isServerSideAutoCommit())
         {
             return;
@@ -1156,7 +1156,7 @@ public final class AltibaseConnection implements Connection
     {
         throwErrorForClosed();
         throwErrorForInvalidSavePoint(aSavepoint);
-        // BUG-23343 JDBC spec¿¡ µû¸£¸é ¿¹¿Ü¸¦ ³»¾ß ÇÏÁö¸¸, »ç¿ëÀÚ ÆíÀÇ¸¦ À§ÇØ ¹«½Ã.
+        // BUG-23343 JDBC specì— ë”°ë¥´ë©´ ì˜ˆì™¸ë¥¼ ë‚´ì•¼ í•˜ì§€ë§Œ, ì‚¬ìš©ì í¸ì˜ë¥¼ ìœ„í•´ ë¬´ì‹œ.
         if (isServerSideAutoCommit())
         {
             return;
@@ -1170,7 +1170,7 @@ public final class AltibaseConnection implements Connection
         throwErrorForClosed();
         if (mProp.isClientSideAutoCommit()) 
         {
-            /* PROJ-2190 ClientAutoCommitÀÌ È°¼ºÈ­ µÇ¾î ÀÖÀ» ¶§´Â ¼­¹ö·Î Ä¿¹ÔÁ¤º¸¸¦ Àü¼ÛÇÏÁö ¾Ê°í flag°ª¸¸ ¼ÂÆÃÇÑ´Ù. */
+            /* PROJ-2190 ClientAutoCommitì´ í™œì„±í™” ë˜ì–´ ìˆì„ ë•ŒëŠ” ì„œë²„ë¡œ ì»¤ë°‹ì •ë³´ë¥¼ ì „ì†¡í•˜ì§€ ì•Šê³  flagê°’ë§Œ ì…‹íŒ…í•œë‹¤. */
             
             if (!aAutoCommit)
             {
@@ -1188,7 +1188,7 @@ public final class AltibaseConnection implements Connection
             return;
         }
 
-        // BUGBUG spec¿¡¼± off ==> on ÀÏ ¶§¸¸ commitµÈ´Ù´Â ¸»ÀÌ ¾ø´Ù. ¹«Á¶°Ç commit ÇØÁà¾ß ÇÒ±î?
+        // BUGBUG specì—ì„  off ==> on ì¼ ë•Œë§Œ commitëœë‹¤ëŠ” ë§ì´ ì—†ë‹¤. ë¬´ì¡°ê±´ commit í•´ì¤˜ì•¼ í• ê¹Œ?
         if (isServerSideAutoCommit() == false)
         {
             commit();
@@ -1215,7 +1215,7 @@ public final class AltibaseConnection implements Connection
     public void setCatalog(String aCatalog) throws SQLException
     {
         throwErrorForClosed();
-        // ¾Æ¹«·± µ¿ÀÛÀ» ÇÏÁö ¾Ê´Â´Ù. dbnameÀ» ¹Ù²Ü ¼ö ¾ø´Ù.
+        // ì•„ë¬´ëŸ° ë™ì‘ì„ í•˜ì§€ ì•ŠëŠ”ë‹¤. dbnameì„ ë°”ê¿€ ìˆ˜ ì—†ë‹¤.
         mWarning = Error.createWarning(mWarning, ErrorDef.CANNOT_RENAME_DB_NAME);
     }
 
@@ -1231,7 +1231,7 @@ public final class AltibaseConnection implements Connection
     {
         throwErrorForClosed();
 
-        // ¾Æ¹«·± µ¿ÀÛÀ» ÇÏÁö ¾Ê´Â´Ù. read-only ¸ğµå¸¦ Áö¿øÇÏÁö ¾Ê´Â´Ù.
+        // ì•„ë¬´ëŸ° ë™ì‘ì„ í•˜ì§€ ì•ŠëŠ”ë‹¤. read-only ëª¨ë“œë¥¼ ì§€ì›í•˜ì§€ ì•ŠëŠ”ë‹¤.
         mWarning = (aReadOnly) ? Error.createWarning(mWarning, ErrorDef.READONLY_CONNECTION_NOT_SUPPORTED) : mWarning;
     }
     
@@ -1309,10 +1309,10 @@ public final class AltibaseConnection implements Connection
     }
     
     /**
-     * ¿¬°áµÈ DBÀÇ ÆĞÅ°Áö ¹öÀüÀ» ¾ò´Â´Ù.
+     * ì—°ê²°ëœ DBì˜ íŒ¨í‚¤ì§€ ë²„ì „ì„ ì–»ëŠ”ë‹¤.
      * 
-     * @return ¿¬°áµÈ DBÀÇ ÆĞÅ°Áö ¹öÀü ¹®ÀÚ¿­
-     * @throws SQLException ÆĞÅ°Áö ¹öÀü ¹®ÀÚ¿­À» ¾ò´Âµ¥ ½ÇÆĞÇßÀ» °æ¿ì
+     * @return ì—°ê²°ëœ DBì˜ íŒ¨í‚¤ì§€ ë²„ì „ ë¬¸ìì—´
+     * @throws SQLException íŒ¨í‚¤ì§€ ë²„ì „ ë¬¸ìì—´ì„ ì–»ëŠ”ë° ì‹¤íŒ¨í–ˆì„ ê²½ìš°
      */
     public String getDatabaseVersion() throws SQLException
     {
@@ -1338,8 +1338,8 @@ public final class AltibaseConnection implements Connection
     }
 
     /*
-     * JDBC ½ºÆå¿¡ ¾ø´Â public ¸Ş¼Òµå·Î¼­ ´ÙÀ½  ¸Ş¼Òµå¸¦ Á¦°øÇÑ´Ù.
-     * XAResultÀÇ getTransactionTimeoutÀ» À§ÇØ UTRANS_TIMEOUT ¼Ó¼ºÀ» ¾ò°í, ¼¼ÆÃÇÏ´Â ¸Ş¼Òµå¸¦ Á¦°øÇÑ´Ù.
+     * JDBC ìŠ¤í™ì— ì—†ëŠ” public ë©”ì†Œë“œë¡œì„œ ë‹¤ìŒ  ë©”ì†Œë“œë¥¼ ì œê³µí•œë‹¤.
+     * XAResultì˜ getTransactionTimeoutì„ ìœ„í•´ UTRANS_TIMEOUT ì†ì„±ì„ ì–»ê³ , ì„¸íŒ…í•˜ëŠ” ë©”ì†Œë“œë¥¼ ì œê³µí•œë‹¤.
      */
     public int getTransTimeout() throws SQLException
     {
@@ -1383,10 +1383,10 @@ public final class AltibaseConnection implements Connection
     // #region TimeZone
 
     /**
-     * ¼­¹ö¿¡ ¼³Á¤µÈ TimeZoneÀ» ¾ò´Â´Ù.
+     * ì„œë²„ì— ì„¤ì •ëœ TimeZoneì„ ì–»ëŠ”ë‹¤.
      *
-     * @return ¼­¹ö TimeZone °ª
-     * @throws SQLException DB TimeZoneÀ» ¾ò´Âµ¥ ½ÇÆĞÇßÀ» °æ¿ì
+     * @return ì„œë²„ TimeZone ê°’
+     * @throws SQLException DB TimeZoneì„ ì–»ëŠ”ë° ì‹¤íŒ¨í–ˆì„ ê²½ìš°
      */
     public String getDbTimeZone() throws SQLException
     {
@@ -1394,7 +1394,7 @@ public final class AltibaseConnection implements Connection
 
         if (mDbTimeZone == null)
         {
-            // ÇÁ·ÎÅäÄİÀÌ ¾øÀ¸´Ï Äõ¸®·Î ¾ò¾î¿Â´Ù.
+            // í”„ë¡œí† ì½œì´ ì—†ìœ¼ë‹ˆ ì¿¼ë¦¬ë¡œ ì–»ì–´ì˜¨ë‹¤.
             ResultSet sRS = mInternalStatement.executeQuery("SELECT db_timezone() FROM DUAL");
             if (sRS.next())
             {
@@ -1406,10 +1406,10 @@ public final class AltibaseConnection implements Connection
     }
 
     /**
-     * Session¿¡ ¼³Á¤µÈ TimeZoneÀ» ¾ò´Â´Ù.
+     * Sessionì— ì„¤ì •ëœ TimeZoneì„ ì–»ëŠ”ë‹¤.
      *
-     * @return ¼­¹ö TimeZone °ª
-     * @throws SQLException Session TimeZoneÀ» ¾ò´Âµ¥ ½ÇÆĞÇßÀ» °æ¿ì
+     * @return ì„œë²„ TimeZone ê°’
+     * @throws SQLException Session TimeZoneì„ ì–»ëŠ”ë° ì‹¤íŒ¨í–ˆì„ ê²½ìš°
      */
     public String getSessionTimeZone() throws SQLException
     {
@@ -1417,7 +1417,7 @@ public final class AltibaseConnection implements Connection
 
         if (mSessionTimeZone == null)
         {
-            // ÇÁ·ÎÅäÄİÀÌ ¾øÀ¸´Ï Äõ¸®·Î ¾ò¾î¿Â´Ù.
+            // í”„ë¡œí† ì½œì´ ì—†ìœ¼ë‹ˆ ì¿¼ë¦¬ë¡œ ì–»ì–´ì˜¨ë‹¤.
             ResultSet sRS = mInternalStatement.executeQuery("SELECT session_timezone() FROM DUAL");
             if (sRS.next())
             {
@@ -1429,10 +1429,10 @@ public final class AltibaseConnection implements Connection
     }
 
     /**
-     * Session TimeZoneÀ» ¹Ù²Û´Ù.
+     * Session TimeZoneì„ ë°”ê¾¼ë‹¤.
      *
-     * @param aTimeZone ¹Ù²Ü TimeZone °ª
-     * @throws SQLException TimeZoneÀ» ¹Ù²Ù´Âµ¥ ½ÇÆĞÇßÀ» °æ¿ì
+     * @param aTimeZone ë°”ê¿€ TimeZone ê°’
+     * @throws SQLException TimeZoneì„ ë°”ê¾¸ëŠ”ë° ì‹¤íŒ¨í–ˆì„ ê²½ìš°
      */
     public void setSessionTimeZone(String aTimeZone) throws SQLException
     {
@@ -1487,15 +1487,15 @@ public final class AltibaseConnection implements Connection
     }
 
     /**
-     * Explain Plan Mode¸¦ ¼³Á¤ÇÑ´Ù.
+     * Explain Plan Modeë¥¼ ì„¤ì •í•œë‹¤.
      *
-     * @param aExplainPlanMode Explain Plan Mode. ´ÙÀ½ °ª Áß ÇÏ³ª:
+     * @param aExplainPlanMode Explain Plan Mode. ë‹¤ìŒ ê°’ ì¤‘ í•˜ë‚˜:
      *                         {@link #EXPLAIN_PLAN_OFF},
      *                         {@link #EXPLAIN_PLAN_ON},
      *                         {@link #EXPLAIN_PLAN_ONLY}
      *
-     * @exception IllegalArgumentException Explain Plan Mode°¡ ¿Ã¹Ù¸£Áö ¾ÊÀ» °æ¿ì
-     * @exception SQLException Explain Plan ¼Ó¼º ¼³Á¤¿¡ ½ÇÆĞÇÑ °æ¿ì
+     * @exception IllegalArgumentException Explain Plan Modeê°€ ì˜¬ë°”ë¥´ì§€ ì•Šì„ ê²½ìš°
+     * @exception SQLException Explain Plan ì†ì„± ì„¤ì •ì— ì‹¤íŒ¨í•œ ê²½ìš°
      */
     public void setExplainPlan(byte aExplainPlanMode) throws SQLException
     {
@@ -1525,11 +1525,11 @@ public final class AltibaseConnection implements Connection
     }
 
     /**
-     * Explain PlanÀ» »ç¿ëÇÒÁö ¿©ºÎ¸¦ ¼³Á¤ÇÑ´Ù.
+     * Explain Planì„ ì‚¬ìš©í• ì§€ ì—¬ë¶€ë¥¼ ì„¤ì •í•œë‹¤.
      *
-     * @param aUseExplainPlan ExplainPlanÀ» »ç¿ëÇÒÁö ¿©ºÎ
+     * @param aUseExplainPlan ExplainPlanì„ ì‚¬ìš©í• ì§€ ì—¬ë¶€
      *
-     * @exception SQLException Explain Plan ¼Ó¼º ¼³Á¤¿¡ ½ÇÆĞÇÑ °æ¿ì
+     * @exception SQLException Explain Plan ì†ì„± ì„¤ì •ì— ì‹¤íŒ¨í•œ ê²½ìš°
      *
      * @deprecated Replaced by {@link #setExplainPlan(byte)}
      */
@@ -1569,8 +1569,8 @@ public final class AltibaseConnection implements Connection
     }
 
     /**
-     * DB Message ÇÁ·ÎÅäÄİÀ» Ã³¸®ÇÒ Äİ¹éÀ» µî·ÏÇÑ´Ù.
-     * @param aMessageCallback Äİ¹é °´Ã¼
+     * DB Message í”„ë¡œí† ì½œì„ ì²˜ë¦¬í•  ì½œë°±ì„ ë“±ë¡í•œë‹¤.
+     * @param aMessageCallback ì½œë°± ê°ì²´
      */
     public void registerMessageCallback(AltibaseMessageCallback aMessageCallback)
     {
@@ -1578,8 +1578,8 @@ public final class AltibaseConnection implements Connection
     }
 
     /**
-     * PROJ-2474 °¡´ÉÇÑ ciphersuite ¸®½ºÆ®¸¦ µ¹·ÁÁØ´Ù.</br>
-     * ssl_enableÀÌ trueÀÏ¶§¸¸ ¼ÒÄÏÀ» ÅëÇØ °ªÀ» °¡Á®¿À¸ç ±×¿Ü¿¡´Â nullÀ» ¸®ÅÏÇÑ´Ù.
+     * PROJ-2474 ê°€ëŠ¥í•œ ciphersuite ë¦¬ìŠ¤íŠ¸ë¥¼ ëŒë ¤ì¤€ë‹¤.</br>
+     * ssl_enableì´ trueì¼ë•Œë§Œ ì†Œì¼“ì„ í†µí•´ ê°’ì„ ê°€ì ¸ì˜¤ë©° ê·¸ì™¸ì—ëŠ” nullì„ ë¦¬í„´í•œë‹¤.
      */
     public String[] getCipherSuiteList()
     {
@@ -1597,7 +1597,7 @@ public final class AltibaseConnection implements Connection
     }
 
     /**
-     * STF¸¦ ¼öÇàÇÏ±â Àü¿¡, ¹«È¿È­µÈ StatementÀÇ »óÅÂ¸¦ Á¤¸®ÇÏ±â À§ÇØ¼­ ¼öÇàÇÑ´Ù.
+     * STFë¥¼ ìˆ˜í–‰í•˜ê¸° ì „ì—, ë¬´íš¨í™”ëœ Statementì˜ ìƒíƒœë¥¼ ì •ë¦¬í•˜ê¸° ìœ„í•´ì„œ ìˆ˜í–‰í•œë‹¤.
      */
     void clearStatements4STF()
     {
@@ -1615,8 +1615,8 @@ public final class AltibaseConnection implements Connection
             }
             catch (SQLException sEx)
             {
-                // Statement.close4STF()¿¡¼­ »ç¿ëÇÏ´Â ¸Ş¼ÒµåÀÇ ÀÎÅÍÆäÀÌ½º Á¤ÀÇ°¡
-                // SQLExceptionÀ» ´øÁú ¼ö ÀÖ°Ô µÇ¾îÀÖ¾î¼­ ±×·¸Áö ±¸Çö»ó Àı´ë ³¯ ÀÏÀÌ ¾ø´Ù.
+                // Statement.close4STF()ì—ì„œ ì‚¬ìš©í•˜ëŠ” ë©”ì†Œë“œì˜ ì¸í„°í˜ì´ìŠ¤ ì •ì˜ê°€
+                // SQLExceptionì„ ë˜ì§ˆ ìˆ˜ ìˆê²Œ ë˜ì–´ìˆì–´ì„œ ê·¸ë ‡ì§€ êµ¬í˜„ìƒ ì ˆëŒ€ ë‚  ì¼ì´ ì—†ë‹¤.
                 Error.throwInternalError(ErrorDef.INTERNAL_ASSERTION, sEx);
             }
             mUsedCIDSet.clear();
@@ -1636,8 +1636,8 @@ public final class AltibaseConnection implements Connection
 
 
     // #region for Savepoint ID
-    // BUGBUG (2013-02-06) ±»ÀÌ lockÀ¸·Î ÀÎÇÑ ¾à°£ÀÇ ¼º´ÉÀúÇÏ¸¦ °¨¼öÇÏ¸é¼­ ÀÌ·¸°Ô±îÁö ÇØ¾ßÇÏ³ª ½Í±âµµ ÇÏ´Ù.
-    // oracleÀº ±× ¼øÂ÷°ª¸¸ µ¿½Ã¿¡ °¡Á®¿Ã ¼ö ¾ø°Ô synchronizedÇÏ°í »±»±ÀÌ µ¹¸ç Àç»ç¿ëÇÏ°Ô Çß´øµ¥.. ÂÁ.
+    // BUGBUG (2013-02-06) êµ³ì´ lockìœ¼ë¡œ ì¸í•œ ì•½ê°„ì˜ ì„±ëŠ¥ì €í•˜ë¥¼ ê°ìˆ˜í•˜ë©´ì„œ ì´ë ‡ê²Œê¹Œì§€ í•´ì•¼í•˜ë‚˜ ì‹¶ê¸°ë„ í•˜ë‹¤.
+    // oracleì€ ê·¸ ìˆœì°¨ê°’ë§Œ ë™ì‹œì— ê°€ì ¸ì˜¬ ìˆ˜ ì—†ê²Œ synchronizedí•˜ê³  ëº‘ëº‘ì´ ëŒë©° ì¬ì‚¬ìš©í•˜ê²Œ í–ˆë˜ë°.. ì©.
 
     private static final int STMT_SPID_SEQ_BIT   = 16;
     private static final int STMT_SPID_SEQ_MAX   = (1 << STMT_SPID_SEQ_BIT);
@@ -1723,7 +1723,7 @@ public final class AltibaseConnection implements Connection
     // #endregion
 
     /**
-     * Asynchronous fetch ±â´ÉÀÌ µ¿ÀÛ ÁßÀÎ statement ¸¦ ÀúÀåÇÑ´Ù.
+     * Asynchronous fetch ê¸°ëŠ¥ì´ ë™ì‘ ì¤‘ì¸ statement ë¥¼ ì €ì¥í•œë‹¤.
      */
     protected boolean setAsyncPrefetchStatement(AltibaseStatement aStatement)
     {
@@ -1744,7 +1744,7 @@ public final class AltibaseConnection implements Connection
     }
 
     /**
-     * Asynchronous fetch ±â´ÉÀÌ µ¿ÀÛ ÁßÀÎ statement ¸¦ ÀúÀåÇÑ´Ù.
+     * Asynchronous fetch ê¸°ëŠ¥ì´ ë™ì‘ ì¤‘ì¸ statement ë¥¼ ì €ì¥í•œë‹¤.
      */
     protected void clearAsyncPrefetchStatement()
     {
@@ -1755,7 +1755,7 @@ public final class AltibaseConnection implements Connection
     }
 
     /**
-     * Asynchronous fetch ±â´ÉÀÌ µ¿ÀÛ ÁßÀÎ statement ¸¦ ¾ò´Â´Ù.
+     * Asynchronous fetch ê¸°ëŠ¥ì´ ë™ì‘ ì¤‘ì¸ statement ë¥¼ ì–»ëŠ”ë‹¤.
      */
     protected AltibaseStatement getAsyncPrefetchStatement()
     {

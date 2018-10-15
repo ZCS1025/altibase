@@ -80,7 +80,7 @@ struct ala_receiver_handle {
 
 
 /*
- * ALA_RECEIVER_HANDLEÀ» ¸¸µé°í, ALA ¶óÀÌºê·¯¸®¸¦ ÃÊ±âÈ­ ÇÕ´Ï´Ù.
+ * ALA_RECEIVER_HANDLEì„ ë§Œë“¤ê³ , ALA ë¼ì´ë¸ŒëŸ¬ë¦¬ë¥¼ ì´ˆê¸°í™” í•©ë‹ˆë‹¤.
  */
 ALA_RECEIVER_RC ala_receiver_initialize(ALA_RECEIVER_HANDLE **aHandle)
 {
@@ -504,8 +504,8 @@ static ALA_RECEIVER_RC ala_receiver_build_log_template(
 
 
 /*
- * AltibaseÀÇ ReplicationÀÇ Á¢¼ÓÀ» ±â´Ù¸³´Ï´Ù. Á¢¼ÓÀÌ µÇ¸é ReplicationÀÇ
- * Meta Á¤º¸¸¦ È®ÀÎÇÏ¿© Ã³¸® °¡´ÉÇÑÁö °Ë»çÇÕ´Ï´Ù.
+ * Altibaseì˜ Replicationì˜ ì ‘ì†ì„ ê¸°ë‹¤ë¦½ë‹ˆë‹¤. ì ‘ì†ì´ ë˜ë©´ Replicationì˜
+ * Meta ì •ë³´ë¥¼ í™•ì¸í•˜ì—¬ ì²˜ë¦¬ ê°€ëŠ¥í•œì§€ ê²€ì‚¬í•©ë‹ˆë‹¤.
  */
 ALA_RECEIVER_RC ala_receiver_do_handshake(ALA_RECEIVER_HANDLE *aHandle)
 {
@@ -632,7 +632,7 @@ static ALA_RECEIVER_BOOL ala_receiver_is_xlog_concerned(
 }
 
 /*
- * ·Î±× Ã³¸®°¡ ¿Ï·á µÇ¾úÀ½À» Replication¿¡ ¾Ë¸³´Ï´Ù.
+ * ë¡œê·¸ ì²˜ë¦¬ê°€ ì™„ë£Œ ë˜ì—ˆìŒì„ Replicationì— ì•Œë¦½ë‹ˆë‹¤.
  */
 ALA_RECEIVER_RC ala_receiver_send_ack(ALA_RECEIVER_HANDLE *aHandle)
 {
@@ -805,7 +805,7 @@ static DB_LOG_COLUMN_TYPE ala_receiver_convert_column_type(
 /*
  * convert to Oracle C Interface's DATE datatype.
  *
- * Date Å¸ÀÔ¿¡ ´ëÇØ¼­´Â ALA ¹®¼­¿Í OCI ¹®¼­ Âü°í.
+ * Date íƒ€ì…ì— ëŒ€í•´ì„œëŠ” ALA ë¬¸ì„œì™€ OCI ë¬¸ì„œ ì°¸ê³ .
  */
 static void ala_receiver_convert_date_column_value(ALA_Value *aAlaValue,
                                                    DB_LOG_COLUMN *aValue)
@@ -1130,8 +1130,8 @@ static ALA_RECEIVER_RC ala_receiver_convert_ala_log(
 }
 
 /*
- * Àü¼Û ¹ŞÀº ·Î±×¸¦ °¡Áö°í ¿É´Ï´Ù. ¹ŞÀº ·Î±×¸¦ Ã³¸®ÇßÀ¸¸é Replication
- * Sender¿¡°Ô ACK¸¦ Àü¼ÛÇÕ´Ï´Ù.
+ * ì „ì†¡ ë°›ì€ ë¡œê·¸ë¥¼ ê°€ì§€ê³  ì˜µë‹ˆë‹¤. ë°›ì€ ë¡œê·¸ë¥¼ ì²˜ë¦¬í–ˆìœ¼ë©´ Replication
+ * Senderì—ê²Œ ACKë¥¼ ì „ì†¡í•©ë‹ˆë‹¤.
  */
 ALA_RECEIVER_RC ala_receiver_get_log(ALA_RECEIVER_HANDLE *aHandle,
                                      DB_LOG **aLog)

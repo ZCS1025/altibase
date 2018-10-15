@@ -19,7 +19,7 @@
  * $Id$
  *
  * Description :
- *     ¸í½ÃÇÑ key ¿¡ ÇØ´ç ÇÏ´Â ¸Þ½ÃÁö Å¥¿¡ ¸Þ½ÃÁö¸¦ Àü¼Û(Enqueue) ÇÑ´Ù.
+ *     ëª…ì‹œí•œ key ì— í•´ë‹¹ í•˜ëŠ” ë©”ì‹œì§€ íì— ë©”ì‹œì§€ë¥¼ ì „ì†¡(Enqueue) í•œë‹¤.
  * Syntax :
  *     MSG_SND_QUEUE( key value, message );
  *     return INTEGER;
@@ -54,7 +54,7 @@ static IDE_RC mtfMsgSndQueueEstimate( mtcNode*     aNode,
 mtfModule mtfMsgSndQueue = {
     1 | MTC_NODE_OPERATOR_MISC | MTC_NODE_VARIABLE_TRUE | MTC_NODE_EAT_NULL_TRUE,
     ~0,
-    1.0,                    // default selectivity (ºñ±³ ¿¬»êÀÚ ¾Æ´Ô)
+    1.0,                    // default selectivity (ë¹„êµ ì—°ì‚°ìž ì•„ë‹˜)
     mtfFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -87,7 +87,7 @@ IDE_RC mtfMsgSndQueueEstimate( mtcNode*     aNode,
 {    
     const mtdModule* sModules[2];
 
-    /* BUG-44091 where Àý¿¡ round(), trunc() ¿À´Â °æ¿ì ºñÁ¤»ó Á¾·áÇÕ´Ï´Ù.  */    
+    /* BUG-44091 where ì ˆì— round(), trunc() ì˜¤ëŠ” ê²½ìš° ë¹„ì •ìƒ ì¢…ë£Œí•©ë‹ˆë‹¤.  */    
     IDE_TEST_RAISE( ( aNode->lflag & MTC_NODE_ARGUMENT_COUNT_MASK ) != 2,
                     ERR_INVALID_FUNCTION_ARGUMENT );
 

@@ -41,15 +41,15 @@ typedef struct ulpStructTNode
     // Scope link (list)
     ulpStructTNode   *mSLink;
     // bucket index
-    // bucket-list Ã³À½ nodeÀÏ °æ¿ì mPrev°¡ nullÀÌ±â ¶§¹®¿¡
-    // ulpStructDelScope()¿¡¼­ ´ÙÀ½ º¯¼ö°¡ »ç¿ëµÈ´Ù.
+    // bucket-list ì²˜ìŒ nodeì¼ ê²½ìš° mPrevê°€ nullì´ê¸° ë•Œë¬¸ì—
+    // ulpStructDelScope()ì—ì„œ ë‹¤ìŒ ë³€ìˆ˜ê°€ ì‚¬ìš©ëœë‹¤.
     UInt              mIndex;
 } ulpStructTNode;
 
 
 /******************************
  *
- * structure typeÀ» ÀúÀå, °ü¸®ÇÑ±â À§ÇÑ class
+ * structure typeì„ ì €ì¥, ê´€ë¦¬í•œê¸° ìœ„í•œ class
  ******************************/
 class ulpStructTable
 {
@@ -62,22 +62,22 @@ public:
 
     void ulpFinalize();
 
-    // struct table¿¡ »õ·Î¿î tag¸¦ ÀúÀåÇÑ´Ù.
+    // struct tableì— ìƒˆë¡œìš´ tagë¥¼ ì €ì¥í•œë‹¤.
     ulpStructTNode *ulpStructAdd ( SChar *aTag, SInt aScope );
 
-    // tag°¡ ¾ø´Â °æ¿ì struct table ¸¶Áö¸· buket¿¡ ÀúÀåÇÑ´Ù.
+    // tagê°€ ì—†ëŠ” ê²½ìš° struct table ë§ˆì§€ë§‰ buketì— ì €ì¥í•œë‹¤.
     ulpStructTNode *ulpNoTagStructAdd ( void );
 
-    // Æ¯Á¤ ÀÌ¸§À» °®´Â tag¸¦ struct table¿¡¼­ scope¸¦ ÁÙ¿©°¡¸é¼­ °Ë»öÇÑ´Ù.
+    // íŠ¹ì • ì´ë¦„ì„ ê°–ëŠ” tagë¥¼ struct tableì—ì„œ scopeë¥¼ ì¤„ì—¬ê°€ë©´ì„œ ê²€ìƒ‰í•œë‹¤.
     ulpStructTNode *ulpStructLookupAll( SChar *aTag, SInt aScope );
 
-    // Æ¯Á¤ ÀÌ¸§À» °®´Â tag¸¦ Æ¯Á¤ scope¿¡¼­ Á¸ÀçÇÏ´ÂÁö struct tableÀ» °Ë»öÇÑ´Ù.
+    // íŠ¹ì • ì´ë¦„ì„ ê°–ëŠ” tagë¥¼ íŠ¹ì • scopeì—ì„œ ì¡´ì¬í•˜ëŠ”ì§€ struct tableì„ ê²€ìƒ‰í•œë‹¤.
     ulpStructTNode *ulpStructLookup( SChar *aTag, SInt aScope );
 
-    // Æ¯Á¤ ÀÌ¸§À» °®´Â tag¸¦ struct table¿¡¼­ Á¦°ÅÇÑ´Ù.
+    // íŠ¹ì • ì´ë¦„ì„ ê°–ëŠ” tagë¥¼ struct tableì—ì„œ ì œê±°í•œë‹¤.
     //void            ulpStructDelete( SChar *aTag, SInt aScope );
 
-    // °°Àº scope»óÀÇ ¸ğµç º¯¼öÁ¤º¸¸¦ struct table¿¡¼­ Á¦°ÅÇÑ´Ù.
+    // ê°™ì€ scopeìƒì˜ ëª¨ë“  ë³€ìˆ˜ì •ë³´ë¥¼ struct tableì—ì„œ ì œê±°í•œë‹¤.
     void            ulpStructDelScope( SInt aScope );
 
     // print struct table for debug
@@ -85,7 +85,7 @@ public:
 
 /* ATTRIBUTES */
 public:
-    SInt mCnt;  // m_SymbolTable¿¡ ÀúÀåµÈ host variablesÀÇ °³¼ö
+    SInt mCnt;  // m_SymbolTableì— ì €ì¥ëœ host variablesì˜ ê°œìˆ˜
     SInt mSize; // max number of symbol table buckets
 
 private:

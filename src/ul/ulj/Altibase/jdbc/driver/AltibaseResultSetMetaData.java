@@ -71,8 +71,8 @@ public class AltibaseResultSetMetaData implements ResultSetMetaData
 
     public String getCatalogName(int aColumnIndex) throws SQLException
     {
-        // BUGBUG (2013-01-17) Áö±İÀº Ç×»ó nullÀÌ ¶³¾îÁø´Ù. ¾ÆÁ÷ catalog °³³äÀÌ Altibase¿¡ ¾ø±â ¶§¹®.
-        // BUG-32879¿¡ µû¶ó db_nameÀ» ±â¾ïÇØµ×´Ù°¡ ¹İÈ¯ÇØÁÖµµ·Ï ÇÑ´Ù.
+        // BUGBUG (2013-01-17) ì§€ê¸ˆì€ í•­ìƒ nullì´ ë–¨ì–´ì§„ë‹¤. ì•„ì§ catalog ê°œë…ì´ Altibaseì— ì—†ê¸° ë•Œë¬¸.
+        // BUG-32879ì— ë”°ë¼ db_nameì„ ê¸°ì–µí•´ë’€ë‹¤ê°€ ë°˜í™˜í•´ì£¼ë„ë¡ í•œë‹¤.
         //return columnInfo(aColumnIndex).getCatalogName();
         return mCatalogName;
     }
@@ -134,7 +134,7 @@ public class AltibaseResultSetMetaData implements ResultSetMetaData
 
     public boolean isAutoIncrement(int aColumnIndex) throws SQLException
     {
-        // auto increment ÄÃ·³À» Áö¿øÇÏÁö ¾Ê±â ¶§¹®¿¡ Ç×»ó false
+        // auto increment ì»¬ëŸ¼ì„ ì§€ì›í•˜ì§€ ì•Šê¸° ë•Œë¬¸ì— í•­ìƒ false
         return false;
     }
 
@@ -142,7 +142,7 @@ public class AltibaseResultSetMetaData implements ResultSetMetaData
     {
         if (column(aColumnIndex).isNumberType())
         {
-            // ¼ıÀÚ Å¸ÀÔÀÎ °æ¿ì case insensitive
+            // ìˆ«ì íƒ€ì…ì¸ ê²½ìš° case insensitive
             return false;
         }
         return true;
@@ -150,13 +150,13 @@ public class AltibaseResultSetMetaData implements ResultSetMetaData
 
     public boolean isCurrency(int aColumnIndex) throws SQLException
     {
-        // cash value À¯¹« Å¸ÀÔÀ» DB°¡ Áö¿øÇØÁÖÁö ¾Ê±â ¶§¹®¿¡ false
+        // cash value ìœ ë¬´ íƒ€ì…ì„ DBê°€ ì§€ì›í•´ì£¼ì§€ ì•Šê¸° ë•Œë¬¸ì— false
         return false;
     }
 
     public boolean isDefinitelyWritable(int aColumnIndex) throws SQLException
     {
-        // È®½ÇÇÑÁö´Â write ¿¬»ê ¼öÇàÀü±îÁö ¾Ë ¼ö ¾ø´Ù. ¿¹¸¦µé¸é, lockÀ» ¸øÀâÀ» ¼öµµ ÀÖ±â ¶§¹®.
+        // í™•ì‹¤í•œì§€ëŠ” write ì—°ì‚° ìˆ˜í–‰ì „ê¹Œì§€ ì•Œ ìˆ˜ ì—†ë‹¤. ì˜ˆë¥¼ë“¤ë©´, lockì„ ëª»ì¡ì„ ìˆ˜ë„ ìˆê¸° ë•Œë¬¸.
         return false;
     }
 
@@ -178,7 +178,7 @@ public class AltibaseResultSetMetaData implements ResultSetMetaData
 
     public boolean isSearchable(int aColumnIndex) throws SQLException
     {
-        // ¸ğµç ÄÃ·³Àº whereÀı¿¡ »ç¿ëµÉ ¼ö ÀÖ±â ¶§¹®¿¡ Ç×»ó true
+        // ëª¨ë“  ì»¬ëŸ¼ì€ whereì ˆì— ì‚¬ìš©ë  ìˆ˜ ìˆê¸° ë•Œë¬¸ì— í•­ìƒ true
         return true;
     }
 

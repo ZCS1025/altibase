@@ -59,7 +59,7 @@ void isqlDate::initDisplaySize()
 {
     SInt sDisplaySize = 0;
 
-    /* ÀÌÀü ¹öÀüÀÇ Ãâ·Â°ú µ¿ÀÏÇÏ°Ô ¸¸µé¾îÁÖ±â À§ÇØ Ãß°¡·Î 1 ´õÇØÁØ´Ù. */
+    /* ì´ì „ ë²„ì „ì˜ ì¶œë ¥ê³¼ ë™ì¼í•˜ê²Œ ë§Œë“¤ì–´ì£¼ê¸° ìœ„í•´ ì¶”ê°€ë¡œ 1 ë”í•´ì¤€ë‹¤. */
     if( gProgOption.IsATAF() == ID_TRUE )
     {
         sDisplaySize = DATE_DISPLAY_SIZE;

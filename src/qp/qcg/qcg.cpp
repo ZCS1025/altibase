@@ -105,12 +105,12 @@ qcg::allocStatement( qcStatement * aStatement,
 /***********************************************************************
  *
  * Description :
- *    qcStatementÀÇ ¸â¹ö¸¦ ÃÊ±âÈ­ÇÏ°í Memory °ø°£ÀÌ ÇÊ¿äÇÑ member¿¡
- *    ´ëÇÏ¿© memory¸¦ ÇÒ´çÇÑ´Ù.
+ *    qcStatementì˜ ë©¤ë²„ë¥¼ ì´ˆê¸°í™”í•˜ê³  Memory ê³µê°„ì´ í•„ìš”í•œ memberì—
+ *    ëŒ€í•˜ì—¬ memoryë¥¼ í• ë‹¹í•œë‹¤.
  *
- *    SQLCLIÀÇ °³³ä »ó SQLAllocStmt()¿¡ ÇØ´çÇÏ´Â Ã³¸® ºÎºĞÀÌ³ª,
- *    ½ÇÁ¦ CLI¿¡¼­´Â ÇØ´ç ÇÔ¼ö È£Ãâ½Ã Server·Î Á¢±ÙÇÏÁö ¾ÊÀ¸¸ç,
- *    ´ÙÀ½°ú °°Àº ÇÔ¼ö°¡ ÃÖÃÊ È£Ãâ ½Ã ½ÇÁ¦ Statement¸¦ ÇÒ´çÇÑ´Ù.
+ *    SQLCLIì˜ ê°œë… ìƒ SQLAllocStmt()ì— í•´ë‹¹í•˜ëŠ” ì²˜ë¦¬ ë¶€ë¶„ì´ë‚˜,
+ *    ì‹¤ì œ CLIì—ì„œëŠ” í•´ë‹¹ í•¨ìˆ˜ í˜¸ì¶œì‹œ Serverë¡œ ì ‘ê·¼í•˜ì§€ ì•Šìœ¼ë©°,
+ *    ë‹¤ìŒê³¼ ê°™ì€ í•¨ìˆ˜ê°€ ìµœì´ˆ í˜¸ì¶œ ì‹œ ì‹¤ì œ Statementë¥¼ í• ë‹¹í•œë‹¤.
  *        - SQLExecDirect() :
  *        - SQLPrepare() :
  *
@@ -141,8 +141,8 @@ qcg::allocStatement( qcStatement * aStatement,
     aStatement->myPlan->hints            = NULL;
     aStatement->myPlan->plan             = NULL;
     aStatement->myPlan->graph            = NULL;
-    // PROJ-1446 Host variableÀ» Æ÷ÇÔÇÑ ÁúÀÇ ÃÖÀûÈ­
-    // qcStatement¿¡ scanDecisionFactors ¸â¹ö°¡ Ãß°¡µÊ
+    // PROJ-1446 Host variableì„ í¬í•¨í•œ ì§ˆì˜ ìµœì í™”
+    // qcStatementì— scanDecisionFactors ë©¤ë²„ê°€ ì¶”ê°€ë¨
     aStatement->myPlan->scanDecisionFactors = NULL;
     aStatement->myPlan->procPlanList = NULL;
     aStatement->myPlan->mShardAnalysis = NULL;
@@ -189,7 +189,7 @@ qcg::allocStatement( qcStatement * aStatement,
     aStatement->mPRLQMemList = NULL;
     aStatement->mPRLQChdTemplateList = NULL;
 
-    // PROJ-2551 simple query ÃÖÀûÈ­
+    // PROJ-2551 simple query ìµœì í™”
     qciMisc::initSimpleInfo( &(aStatement->simpleInfo) );
     aStatement->mFlag = 0;
 
@@ -200,7 +200,7 @@ qcg::allocStatement( qcStatement * aStatement,
     aStatement->mRandomPlanInfo = NULL;
 
     //--------------------------------------------
-    // °¢Á¾ Memory Manager¸¦ À§ÇÑ Memory ÇÒ´ç
+    // ê°ì¢… Memory Managerë¥¼ ìœ„í•œ Memory í• ë‹¹
     //--------------------------------------------
 
     //------------------
@@ -218,7 +218,7 @@ qcg::allocStatement( qcStatement * aStatement,
     // prepare memory limit
     aStatement->myPlan->qmpMem = new (sAllocPtr) iduVarMemList;
 
-    /* BUG-33688 iduVarMemListÀÇ init ÀÌ ½ÇÆĞÇÒ¼ö ÀÖ½À´Ï´Ù. */
+    /* BUG-33688 iduVarMemListì˜ init ì´ ì‹¤íŒ¨í• ìˆ˜ ìˆìŠµë‹ˆë‹¤. */
     IDE_TEST( aStatement->myPlan->qmpMem->init( IDU_MEM_QMP,
                                                 iduProperty::getPrepareMemoryMax())
               != IDE_SUCCESS);
@@ -238,7 +238,7 @@ qcg::allocStatement( qcStatement * aStatement,
     // prepare memory limit
     aStatement->qmeMem = new (sAllocPtr) iduVarMemList;
 
-    /* BUG-33688 iduVarMemListÀÇ init ÀÌ ½ÇÆĞÇÒ¼ö ÀÖ½À´Ï´Ù. */
+    /* BUG-33688 iduVarMemListì˜ init ì´ ì‹¤íŒ¨í• ìˆ˜ ìˆìŠµë‹ˆë‹¤. */
     IDE_TEST( aStatement->qmeMem->init( IDU_MEM_QMP,
                                         iduProperty::getPrepareMemoryMax())
               != IDE_SUCCESS);
@@ -266,10 +266,10 @@ qcg::allocStatement( qcStatement * aStatement,
 
     /* PROJ-2109 : Remove the bottleneck of alloc/free stmts. */
     IDE_TEST(mIduVarMemListPool.alloc((void**)&sAllocPtr) != IDE_SUCCESS);
-    // fix BUG-10563, bind memory Ãà¼Ò
+    // fix BUG-10563, bind memory ì¶•ì†Œ
     aStatement->qmbMem = new (sAllocPtr) iduVarMemList;
 
-    /* BUG-33688 iduVarMemListÀÇ init ÀÌ ½ÇÆĞÇÒ¼ö ÀÖ½À´Ï´Ù. */
+    /* BUG-33688 iduVarMemListì˜ init ì´ ì‹¤íŒ¨í• ìˆ˜ ìˆìŠµë‹ˆë‹¤. */
     IDE_TEST( aStatement->qmbMem->init(IDU_MEM_QMB) != IDE_SUCCESS);
     sIsQmbInited = ID_TRUE;
 
@@ -314,7 +314,7 @@ qcg::allocStatement( qcStatement * aStatement,
                                  QCG_DEFAULT_BIND_MEM_SIZE );
 
     //------------------
-    // statement environment »ı¼º°ú ÃÊ±âÈ­
+    // statement environment ìƒì„±ê³¼ ì´ˆê¸°í™”
     //------------------
 
     IDU_FIT_POINT( "qcg::allocStatement::alloc::propertyEnv",
@@ -365,19 +365,19 @@ qcg::allocStatement( qcStatement * aStatement,
     //--------------------
     if( aSession != NULL )
     {
-        // ÀÏ¹İ sql±¸¹® Ã³¸®½Ã,
-        // mm¿¡¼­ session °´Ã¼¸¦ ³Ñ±è.
+        // ì¼ë°˜ sqlêµ¬ë¬¸ ì²˜ë¦¬ì‹œ,
+        // mmì—ì„œ session ê°ì²´ë¥¼ ë„˜ê¹€.
         aStatement->session = aSession;
     }
     else
     {
-        // connect protocol¿¡ ´ëÇÑ Ã³¸®¿Í
-        // ³»ºÎ¿¡¼­ Ã³¸®µÇ´Â sql¹®µé¿¡ ´ëÇØ¼­´Â session Á¤º¸°¡ ¾øÀ¸¹Ç·Î
-        // NULLÀÌ ³Ñ¾î¿È.
-        // ÀÌ¶§, ³»ºÎÀûÀ¸·Î session°´Ã¼¸¦ ÇÏ³ª ¸¸µé°í,
-        // mMmSession = NULL ·Î ÃÊ±âÈ­½ÃÄÑ,
-        // session Á¤º¸ Á¢±Ù½Ã default °ªµéÀ» ¾òµµ·Ï ÇÑ´Ù.
-        // ³»ºÎ¿¡¼­ Ã³¸®µÇ´Â sql¹® :
+        // connect protocolì— ëŒ€í•œ ì²˜ë¦¬ì™€
+        // ë‚´ë¶€ì—ì„œ ì²˜ë¦¬ë˜ëŠ” sqlë¬¸ë“¤ì— ëŒ€í•´ì„œëŠ” session ì •ë³´ê°€ ì—†ìœ¼ë¯€ë¡œ
+        // NULLì´ ë„˜ì–´ì˜´.
+        // ì´ë•Œ, ë‚´ë¶€ì ìœ¼ë¡œ sessionê°ì²´ë¥¼ í•˜ë‚˜ ë§Œë“¤ê³ ,
+        // mMmSession = NULL ë¡œ ì´ˆê¸°í™”ì‹œì¼œ,
+        // session ì •ë³´ ì ‘ê·¼ì‹œ default ê°’ë“¤ì„ ì–»ë„ë¡ í•œë‹¤.
+        // ë‚´ë¶€ì—ì„œ ì²˜ë¦¬ë˜ëŠ” sqlë¬¸ :
         //      qcg::runDMLforDDL()
         //      qcmCreate::runDDLforMETA()
         //      qcmCreate::upgradeMeta()
@@ -410,7 +410,7 @@ qcg::allocStatement( qcStatement * aStatement,
         sSession->mQPSpecific.mLastRowGRID = SC_NULL_GRID;
 
         // BUG-24470
-        // ³»ºÎ¿¡¼­ »ı¼ºµÈ session userID´Â qcg::mInternalUserID ÀÌ´Ù.
+        // ë‚´ë¶€ì—ì„œ ìƒì„±ëœ session userIDëŠ” qcg::mInternalUserID ì´ë‹¤.
         sSession->mUserID = qcg::mInternalUserID;
 
         /* BUG-37093 */
@@ -423,8 +423,8 @@ qcg::allocStatement( qcStatement * aStatement,
     /* If MMSession, qciStmtInfo have been already initailized,
        request a mutex from the mutex pool in mmcSession.
        If not, just use qcStatement.stmtMutex as before. */
-    /* Session Á¾¼ÓÀûÀÎ statement ÇÒ´ç½Ã¿¡´Â mMmSession, aStmtInfo°¡ NULLÀÌ ¾Æ´Ï¸ç,
-       session µ¶¸³ÀûÀÎ statement ÇÒ´ç½Ã¿¡´Â ¸ğµÎ, È¤Àº µÑÁßÇÏ³ª´Â NULLÀÌ´Ù. ex> trigger */
+    /* Session ì¢…ì†ì ì¸ statement í• ë‹¹ì‹œì—ëŠ” mMmSession, aStmtInfoê°€ NULLì´ ì•„ë‹ˆë©°,
+       session ë…ë¦½ì ì¸ statement í• ë‹¹ì‹œì—ëŠ” ëª¨ë‘, í˜¹ì€ ë‘˜ì¤‘í•˜ë‚˜ëŠ” NULLì´ë‹¤. ex> trigger */
     if( (aStatement->session->mMmSession != NULL) && (aStmtInfo != NULL) )
     {
         IDE_TEST( qci::mSessionCallback.mGetMutexFromPool(
@@ -494,7 +494,7 @@ qcg::allocStatement( qcStatement * aStatement,
     IDU_LIST_INIT(&aStatement->mThrMgr->mFreeList);
 
     //--------------------------------------------
-    // qcTemplateÀ» À§ÇÑ °ø°£ ÇÒ´ç
+    // qcTemplateì„ ìœ„í•œ ê³µê°„ í• ë‹¹
     //--------------------------------------------
 
     IDE_TEST( allocSharedTemplate( aStatement,
@@ -502,7 +502,7 @@ qcg::allocStatement( qcStatement * aStatement,
               != IDE_SUCCESS );
 
     //--------------------------------------------
-    // qcStatementÀÇ ¸â¹ö º¯¼ö ÃÊ±âÈ­
+    // qcStatementì˜ ë©¤ë²„ ë³€ìˆ˜ ì´ˆê¸°í™”
     //--------------------------------------------
 
     aStatement->mStatistics = aStatistics;
@@ -690,7 +690,7 @@ IDE_RC qcg::allocPrivateTemplate( qcStatement * aStatement,
 
     sTemplate = QC_PRIVATE_TMPLATE(aStatement);
 
-    // stackÀº ÃßÈÄ ¼³Á¤ÇÑ´Ù.
+    // stackì€ ì¶”í›„ ì„¤ì •í•œë‹¤.
     sTemplate->tmplate.stackBuffer     = NULL;
     sTemplate->tmplate.stack           = NULL;
     sTemplate->tmplate.stackCount      = 0;
@@ -722,7 +722,7 @@ IDE_RC qcg::allocPrivateTemplate( qcStatement * aStatement,
 
     sTemplate->tmplate.variableRow     = ID_USHORT_MAX;
 
-    // dateFormatÀº ÃßÈÄ ¼³Á¤ÇÑ´Ù.
+    // dateFormatì€ ì¶”í›„ ì„¤ì •í•œë‹¤.
     sTemplate->tmplate.dateFormat      = NULL;
     sTemplate->tmplate.dateFormatRef   = ID_FALSE;
 
@@ -742,7 +742,7 @@ IDE_RC qcg::allocPrivateTemplate( qcStatement * aStatement,
     sTemplate->tmplate.funcDataCnt = 0;
 
     // To Fix PR-12659
-    // Internal Tuple Set °ü·Ã ¸Ş¸ğ¸®´Â ÇÊ¿ä¿¡ ÇÒ´ç¹Şµµ·Ï ÇÔ.
+    // Internal Tuple Set ê´€ë ¨ ë©”ëª¨ë¦¬ëŠ” í•„ìš”ì— í• ë‹¹ë°›ë„ë¡ í•¨.
     sTemplate->tmplate.rowCount      = 0;
     sTemplate->tmplate.rowArrayCount = 0;
 
@@ -753,13 +753,13 @@ IDE_RC qcg::allocPrivateTemplate( qcStatement * aStatement,
 
     //-------------------------------------------------------
     // PROJ-1358
-    // Internal TupleÀÇ ÀÚµ¿È®Àå°ú °ü·ÃÇÏ¿©
-    // Internal TupleÀÇ °ø°£À» ÇÒ´çÇÏ°í,
-    // Table MapÀÇ °ø°£À» ÃÊ±âÈ­ÇÏ¿© ÇÒ´çÇÑ´Ù.
+    // Internal Tupleì˜ ìë™í™•ì¥ê³¼ ê´€ë ¨í•˜ì—¬
+    // Internal Tupleì˜ ê³µê°„ì„ í• ë‹¹í•˜ê³ ,
+    // Table Mapì˜ ê³µê°„ì„ ì´ˆê¸°í™”í•˜ì—¬ í• ë‹¹í•œë‹¤.
     //-------------------------------------------------------
 
     // To Fix PR-12659
-    // Internal Tuple Set °ü·Ã ¸Ş¸ğ¸®´Â ÇÊ¿ä¿¡ ÇÒ´ç¹Şµµ·Ï ÇÔ.
+    // Internal Tuple Set ê´€ë ¨ ë©”ëª¨ë¦¬ëŠ” í•„ìš”ì— í• ë‹¹ë°›ë„ë¡ í•¨.
     // sTemplate->tmplate.rowArrayCount = MTC_TUPLE_ROW_INIT_CNT;
 
     // IDE_TEST( allocInternalTuple( sTemplate,
@@ -787,11 +787,11 @@ IDE_RC qcg::allocPrivateTemplate( qcStatement * aStatement,
     sTemplate->sysdate = NULL;
     sTemplate->currentdate = NULL;
 
-    // PROJ-1413 tupleVarList ÃÊ±âÈ­
+    // PROJ-1413 tupleVarList ì´ˆê¸°í™”
     sTemplate->tupleVarGenNumber = 0;
     sTemplate->tupleVarList = NULL;
 
-    // BUG-16422 executeÁß ÀÓ½Ã »ı¼ºµÈ tableInfoÀÇ °ü¸®
+    // BUG-16422 executeì¤‘ ì„ì‹œ ìƒì„±ëœ tableInfoì˜ ê´€ë¦¬
     sTemplate->tableInfoMgr = NULL;
 
     // PROJ-1436
@@ -846,7 +846,7 @@ IDE_RC qcg::allocPrivateTemplate( qcStatement   * aStatement,
 
     sTemplate = QC_PRIVATE_TMPLATE(aStatement);
 
-    // stackÀº ÃßÈÄ ¼³Á¤ÇÑ´Ù.
+    // stackì€ ì¶”í›„ ì„¤ì •í•œë‹¤.
     sTemplate->tmplate.stackBuffer     = NULL;
     sTemplate->tmplate.stack           = NULL;
     sTemplate->tmplate.stackCount      = 0;
@@ -877,7 +877,7 @@ IDE_RC qcg::allocPrivateTemplate( qcStatement   * aStatement,
     sTemplate->tmplate.getECCInfo      = qcsModule::getECCInfoCallback;
     sTemplate->tmplate.getECCSize      = qcsModule::getECCSize;
 
-    // dateFormatÀº ÃßÈÄ ¼³Á¤ÇÑ´Ù.
+    // dateFormatì€ ì¶”í›„ ì„¤ì •í•œë‹¤.
     sTemplate->tmplate.dateFormat      = NULL;
     sTemplate->tmplate.dateFormatRef   = ID_FALSE;
 
@@ -901,7 +901,7 @@ IDE_RC qcg::allocPrivateTemplate( qcStatement   * aStatement,
         QCG_GET_SESSION_LANGUAGE( aStatement );
 
     // To Fix PR-12659
-    // Internal Tuple Set °ü·Ã ¸Ş¸ğ¸®´Â ÇÊ¿ä¿¡ ÇÒ´ç¹Şµµ·Ï ÇÔ.
+    // Internal Tuple Set ê´€ë ¨ ë©”ëª¨ë¦¬ëŠ” í•„ìš”ì— í• ë‹¹ë°›ë„ë¡ í•¨.
     sTemplate->tmplate.rowCount      = 0;
     sTemplate->tmplate.rowArrayCount = 0;
 
@@ -912,13 +912,13 @@ IDE_RC qcg::allocPrivateTemplate( qcStatement   * aStatement,
 
     //-------------------------------------------------------
     // PROJ-1358
-    // Internal TupleÀÇ ÀÚµ¿È®Àå°ú °ü·ÃÇÏ¿©
-    // Internal TupleÀÇ °ø°£À» ÇÒ´çÇÏ°í,
-    // Table MapÀÇ °ø°£À» ÃÊ±âÈ­ÇÏ¿© ÇÒ´çÇÑ´Ù.
+    // Internal Tupleì˜ ìë™í™•ì¥ê³¼ ê´€ë ¨í•˜ì—¬
+    // Internal Tupleì˜ ê³µê°„ì„ í• ë‹¹í•˜ê³ ,
+    // Table Mapì˜ ê³µê°„ì„ ì´ˆê¸°í™”í•˜ì—¬ í• ë‹¹í•œë‹¤.
     //-------------------------------------------------------
 
     // To Fix PR-12659
-    // Internal Tuple Set °ü·Ã ¸Ş¸ğ¸®´Â ÇÊ¿ä¿¡ ÇÒ´ç¹Şµµ·Ï ÇÔ.
+    // Internal Tuple Set ê´€ë ¨ ë©”ëª¨ë¦¬ëŠ” í•„ìš”ì— í• ë‹¹ë°›ë„ë¡ í•¨.
     // sTemplate->tmplate.rowArrayCount = MTC_TUPLE_ROW_INIT_CNT;
 
     // IDE_TEST( allocInternalTuple( sTemplate,
@@ -946,11 +946,11 @@ IDE_RC qcg::allocPrivateTemplate( qcStatement   * aStatement,
     sTemplate->sysdate = NULL;
     sTemplate->currentdate = NULL;
 
-    // PROJ-1413 tupleVarList ÃÊ±âÈ­
+    // PROJ-1413 tupleVarList ì´ˆê¸°í™”
     sTemplate->tupleVarGenNumber = 0;
     sTemplate->tupleVarList = NULL;
 
-    // BUG-16422 executeÁß ÀÓ½Ã »ı¼ºµÈ tableInfoÀÇ °ü¸®
+    // BUG-16422 executeì¤‘ ì„ì‹œ ìƒì„±ëœ tableInfoì˜ ê´€ë¦¬
     sTemplate->tableInfoMgr = NULL;
 
     // PROJ-1436
@@ -1075,7 +1075,7 @@ IDE_RC qcg::allocSharedTemplate( qcStatement * aStatement,
         QCG_GET_SESSION_LANGUAGE( aStatement );
 
     // To Fix PR-12659
-    // Internal Tuple Set °ü·Ã ¸Ş¸ğ¸®´Â ÇÊ¿ä¿¡ ÇÒ´ç¹Şµµ·Ï ÇÔ.
+    // Internal Tuple Set ê´€ë ¨ ë©”ëª¨ë¦¬ëŠ” í•„ìš”ì— í• ë‹¹ë°›ë„ë¡ í•¨.
     sTemplate->tmplate.rowCount      = 0;
     sTemplate->tmplate.rowArrayCount = 0;
 
@@ -1086,13 +1086,13 @@ IDE_RC qcg::allocSharedTemplate( qcStatement * aStatement,
 
     //-------------------------------------------------------
     // PROJ-1358
-    // Internal TupleÀÇ ÀÚµ¿È®Àå°ú °ü·ÃÇÏ¿©
-    // Internal TupleÀÇ °ø°£À» ÇÒ´çÇÏ°í,
-    // Table MapÀÇ °ø°£À» ÃÊ±âÈ­ÇÏ¿© ÇÒ´çÇÑ´Ù.
+    // Internal Tupleì˜ ìë™í™•ì¥ê³¼ ê´€ë ¨í•˜ì—¬
+    // Internal Tupleì˜ ê³µê°„ì„ í• ë‹¹í•˜ê³ ,
+    // Table Mapì˜ ê³µê°„ì„ ì´ˆê¸°í™”í•˜ì—¬ í• ë‹¹í•œë‹¤.
     //-------------------------------------------------------
 
     // To Fix PR-12659
-    // Internal Tuple Set °ü·Ã ¸Ş¸ğ¸®´Â ÇÊ¿ä¿¡ ÇÒ´ç¹Şµµ·Ï ÇÔ.
+    // Internal Tuple Set ê´€ë ¨ ë©”ëª¨ë¦¬ëŠ” í•„ìš”ì— í• ë‹¹ë°›ë„ë¡ í•¨.
     // sTemplate->tmplate.rowArrayCount = MTC_TUPLE_ROW_INIT_CNT;
 
     // IDE_TEST( allocInternalTuple( sTemplate,
@@ -1120,11 +1120,11 @@ IDE_RC qcg::allocSharedTemplate( qcStatement * aStatement,
     sTemplate->sysdate = NULL;
     sTemplate->currentdate = NULL;
 
-    // PROJ-1413 tupleVarList ÃÊ±âÈ­
+    // PROJ-1413 tupleVarList ì´ˆê¸°í™”
     sTemplate->tupleVarGenNumber = 0;
     sTemplate->tupleVarList = NULL;
 
-    // BUG-16422 executeÁß ÀÓ½Ã »ı¼ºµÈ tableInfoÀÇ °ü¸®
+    // BUG-16422 executeì¤‘ ì„ì‹œ ìƒì„±ëœ tableInfoì˜ ê´€ë¦¬
     sTemplate->tableInfoMgr = NULL;
 
     // PROJ-1436
@@ -1168,14 +1168,14 @@ IDE_RC qcg::freeStatement( qcStatement * aStatement )
 {
 /***********************************************************************
  *
- * Description : qcStatement¸¦ ÀÚ·á±¸Á¶ ¼±¾ğ½ÃÀÇ »óÅÂ·Î ¸¸µê.
+ * Description : qcStatementë¥¼ ìë£Œêµ¬ì¡° ì„ ì–¸ì‹œì˜ ìƒíƒœë¡œ ë§Œë“¦.
  *
  * Implementation :
  *
- *    template memberÃÊ±âÈ­ ( cursor close, temp table drop, ... )
- *    ÇÒ´ç¹ŞÀº °¢Á¾ ¸Ş¸ğ¸® ÇØÁ¦ ¹× º¯¼ö ÃÊ±âÈ­
+ *    template memberì´ˆê¸°í™” ( cursor close, temp table drop, ... )
+ *    í• ë‹¹ë°›ì€ ê°ì¢… ë©”ëª¨ë¦¬ í•´ì œ ë° ë³€ìˆ˜ ì´ˆê¸°í™”
  *
- *    iduMemMgr::free µµÁß ¿¡·¯°¡ ¹ß»ıÇÏ¸é IDE_ASSERT µÊ.
+ *    iduMemMgr::free ë„ì¤‘ ì—ëŸ¬ê°€ ë°œìƒí•˜ë©´ IDE_ASSERT ë¨.
  *
  ***********************************************************************/
 
@@ -1226,11 +1226,11 @@ IDE_RC qcg::freeStatement( qcStatement * aStatement )
 
         if( aStatement->sharedFlag == ID_FALSE )
         {
-            // °øÀ¯µÇÁö ¾ÊÀº planÀÎ °æ¿ì
-            // privatePlanÀ» ÇØÁ¦ÇÑ´Ù.
+            // ê³µìœ ë˜ì§€ ì•Šì€ planì¸ ê²½ìš°
+            // privatePlanì„ í•´ì œí•œë‹¤.
 
             // BUG-23050
-            // myPlanÀ» privatePlanÀ¸·Î ÃÊ±âÈ­ÇÑ´Ù.
+            // myPlanì„ privatePlanìœ¼ë¡œ ì´ˆê¸°í™”í•œë‹¤.
             aStatement->myPlan = & aStatement->privatePlan;
 
             /* PROJ-2462 Reuslt Cache */
@@ -1259,18 +1259,18 @@ IDE_RC qcg::freeStatement( qcStatement * aStatement )
         }
         else
         {
-            // °øÀ¯µÈ planÀÎ °æ¿ì
-            // ´Ù¸¥ statement°¡ »ı¼ºÇÑ planÀ» °øÀ¯ÇÑ °æ¿ì
-            // privatePlanÀº Á¸ÀçÇÏ°í ÇØÁ¦ÇØ¾ß ÇÑ´Ù.
+            // ê³µìœ ëœ planì¸ ê²½ìš°
+            // ë‹¤ë¥¸ statementê°€ ìƒì„±í•œ planì„ ê³µìœ í•œ ê²½ìš°
+            // privatePlanì€ ì¡´ì¬í•˜ê³  í•´ì œí•´ì•¼ í•œë‹¤.
             aStatement->myPlan = & aStatement->privatePlan;
 
             // BUG-44710
             sdi::clearDataInfo( aStatement,
                                 &(QC_PRIVATE_TMPLATE( aStatement )->shardExecData) );
 
-            // prepared private templateÀ» »ç¿ëÇÏ´Â °æ¿ì »ç¿ëÀÌ ³¡³µÀ½À» ¼³Á¤ÇÑ´Ù.
-            /* fix BUG-29965 SQL Plan Cache¿¡¼­ plan execution template °ü¸®°¡
-                Dynamic SQL È¯°æ¿¡¼­´Â °³¼±ÀÌ ÇÊ¿äÇÏ´Ù.
+            // prepared private templateì„ ì‚¬ìš©í•˜ëŠ” ê²½ìš° ì‚¬ìš©ì´ ëë‚¬ìŒì„ ì„¤ì •í•œë‹¤.
+            /* fix BUG-29965 SQL Plan Cacheì—ì„œ plan execution template ê´€ë¦¬ê°€
+                Dynamic SQL í™˜ê²½ì—ì„œëŠ” ê°œì„ ì´ í•„ìš”í•˜ë‹¤.
             */
             freePrepTemplate(aStatement,ID_FALSE);
 
@@ -1442,7 +1442,7 @@ IDE_RC qcg::freeStatement( qcStatement * aStatement )
         // BUG-36986
         aStatement->namedVarNode = NULL;
         
-        // PROJ-2551 simple query ÃÖÀûÈ­
+        // PROJ-2551 simple query ìµœì í™”
         qciMisc::initSimpleInfo( &(aStatement->simpleInfo) );
         aStatement->mFlag = 0;
 
@@ -1530,8 +1530,8 @@ IDE_RC qcg::clearStatement( qcStatement * aStatement, idBool aRebuild )
 {
 /***********************************************************************
  *
- * Description : qcStatement °¡
- *               allocStatement()È£Ãâ½ÃÀÇ »óÅÂ·Î ¸¸µê.
+ * Description : qcStatement ê°€
+ *               allocStatement()í˜¸ì¶œì‹œì˜ ìƒíƒœë¡œ ë§Œë“¦.
  *
  * Implementation :
  *
@@ -1559,8 +1559,8 @@ IDE_RC qcg::clearStatement( qcStatement * aStatement, idBool aRebuild )
 
     if( aStatement->sharedFlag == ID_FALSE )
     {
-        // °øÀ¯µÇÁö ¾ÊÀº planÀÎ °æ¿ì
-        // qmpMemÀ» qmpStackPosition±îÁö freeÇÑ´Ù.
+        // ê³µìœ ë˜ì§€ ì•Šì€ planì¸ ê²½ìš°
+        // qmpMemì„ qmpStackPositionê¹Œì§€ freeí•œë‹¤.
         aStatement->myPlan = & aStatement->privatePlan;
 
         /* PROJ-2462 Reuslt Cache */
@@ -1588,21 +1588,21 @@ IDE_RC qcg::clearStatement( qcStatement * aStatement, idBool aRebuild )
             /* Nothing to do */
         }
 
-        // prepared private templateÀ» ÃÊ±âÈ­ÇÑ´Ù.
+        // prepared private templateì„ ì´ˆê¸°í™”í•œë‹¤.
         aStatement->prepTemplateHeader = NULL;
         aStatement->prepTemplate = NULL;
 
         // initialize template
         if ( QC_PRIVATE_TMPLATE(aStatement) != NULL )
         {
-            // private templateÀÌ »ı¼ºµÈ °æ¿ì
+            // private templateì´ ìƒì„±ëœ ê²½ìš°
             QC_SHARED_TMPLATE(aStatement) = QC_PRIVATE_TMPLATE(aStatement);
             QC_PRIVATE_TMPLATE(aStatement) = NULL;
         }
         else
         {
-            // private templateÀÌ »ı¼ºµÇÁö ¾ÊÀº °æ¿ì
-            // (shared templateÀÌ »ı¼ºµÇ¾úÁö¸¸ ¾ÆÁ÷ °øÀ¯µÇÁö ¾ÊÀº °æ¿ì)
+            // private templateì´ ìƒì„±ë˜ì§€ ì•Šì€ ê²½ìš°
+            // (shared templateì´ ìƒì„±ë˜ì—ˆì§€ë§Œ ì•„ì§ ê³µìœ ë˜ì§€ ì•Šì€ ê²½ìš°)
 
             // Nothing to do.
         }
@@ -1612,7 +1612,7 @@ IDE_RC qcg::clearStatement( qcStatement * aStatement, idBool aRebuild )
         if ( ( QCU_EXECUTION_PLAN_MEMORY_CHECK == 1 ) &&
              ( QC_QMU_MEM(aStatement) != NULL ) )
         {
-            // °øÀ¯µÈ planÀ» ¿À¿°½ÃÄÑ¼­´Â ¾ÈµÈ´Ù.
+            // ê³µìœ ëœ planì„ ì˜¤ì—¼ì‹œì¼œì„œëŠ” ì•ˆëœë‹¤.
             if ( QC_QMP_MEM(aStatement)->compare( QC_QMU_MEM(aStatement) ) != 0 )
             {
                 ideLog::log( IDE_SERVER_0,"[Notify : SQL Plan Cache] Plan Pollution : Session ID = "
@@ -1632,24 +1632,24 @@ IDE_RC qcg::clearStatement( qcStatement * aStatement, idBool aRebuild )
             // Nothing to do.
         }
 
-        // °øÀ¯µÈ planÀÎ °æ¿ì
-        // ´Ù¸¥ statement°¡ »ı¼ºÇÑ planÀ» °øÀ¯ÇÑ °æ¿ì
-        // privatePlanÀ» ¿øº¹ÇÑ´Ù. ±×¸®°í
-        // privatePlanÀÇ qmpMemÀº ÀÌ¹Ì allocStatement »óÅÂÀÌ´Ù.
+        // ê³µìœ ëœ planì¸ ê²½ìš°
+        // ë‹¤ë¥¸ statementê°€ ìƒì„±í•œ planì„ ê³µìœ í•œ ê²½ìš°
+        // privatePlanì„ ì›ë³µí•œë‹¤. ê·¸ë¦¬ê³ 
+        // privatePlanì˜ qmpMemì€ ì´ë¯¸ allocStatement ìƒíƒœì´ë‹¤.
         aStatement->myPlan = & aStatement->privatePlan;
 
         // BUG-44710
         sdi::clearDataInfo( aStatement,
                             &(QC_PRIVATE_TMPLATE( aStatement )->shardExecData) );
 
-        // prepared private templateÀ» »ç¿ëÇÏ´Â °æ¿ì »ç¿ëÀÌ ³¡³µÀ½À» ¼³Á¤ÇÑ´Ù.
-        /* fix BUG-29965 SQL Plan Cache¿¡¼­ plan execution template °ü¸®°¡
-                Dynamic SQL È¯°æ¿¡¼­´Â °³¼±ÀÌ ÇÊ¿äÇÏ´Ù.
+        // prepared private templateì„ ì‚¬ìš©í•˜ëŠ” ê²½ìš° ì‚¬ìš©ì´ ëë‚¬ìŒì„ ì„¤ì •í•œë‹¤.
+        /* fix BUG-29965 SQL Plan Cacheì—ì„œ plan execution template ê´€ë¦¬ê°€
+                Dynamic SQL í™˜ê²½ì—ì„œëŠ” ê°œì„ ì´ í•„ìš”í•˜ë‹¤.
         */
         freePrepTemplate(aStatement,aRebuild);
 
-        // private templateÀº qmeMemÀ¸·Î »ı¼ºµÇ¾úÀ¸¹Ç·Î
-        // qmeMem°ú ÇÔ²² »èÁ¦µÈ´Ù.
+        // private templateì€ qmeMemìœ¼ë¡œ ìƒì„±ë˜ì—ˆìœ¼ë¯€ë¡œ
+        // qmeMemê³¼ í•¨ê»˜ ì‚­ì œëœë‹¤.
         QC_PRIVATE_TMPLATE(aStatement) = NULL;
     }
 
@@ -1684,14 +1684,14 @@ IDE_RC qcg::clearStatement( qcStatement * aStatement, idBool aRebuild )
     }
 
     // PROJ-2163
-    // ¹ÙÀÎµå ¸Ş¸ğ¸® À¯Áö
-    // qcg::clearStatement°¡ È£ÃâµÉ ¼ö ÀÖ´Â °æ¿ì´Â
-    // (1) client¿¡¼­ statement Àç»ç¿ë½Ã
-    // (2) rebuild, bind type º¯°æ µî¿¡ ÀÇÇÑ re-hardprepare ½Ã
+    // ë°”ì¸ë“œ ë©”ëª¨ë¦¬ ìœ ì§€
+    // qcg::clearStatementê°€ í˜¸ì¶œë  ìˆ˜ ìˆëŠ” ê²½ìš°ëŠ”
+    // (1) clientì—ì„œ statement ì¬ì‚¬ìš©ì‹œ
+    // (2) rebuild, bind type ë³€ê²½ ë“±ì— ì˜í•œ re-hardprepare ì‹œ
     if ( aRebuild == ID_FALSE )
     {
-        // Conversion memory´Â out parameter Ã³¸® ½Ã »ç¿ë µÇ¹Ç·Î
-        //  re-hardprepare ½Ã À¯ÁöÇØ¾ß ÇÑ´Ù.
+        // Conversion memoryëŠ” out parameter ì²˜ë¦¬ ì‹œ ì‚¬ìš© ë˜ë¯€ë¡œ
+        //  re-hardprepare ì‹œ ìœ ì§€í•´ì•¼ í•œë‹¤.
         if ( aStatement->qmsConvMem != NULL )
         {
             aStatement->qmsConvMem->freeAll(0);
@@ -1705,12 +1705,12 @@ IDE_RC qcg::clearStatement( qcStatement * aStatement, idBool aRebuild )
         aStatement->pBindParam        = NULL;
         aStatement->pBindParamCount   = 0;
 
-        // Plan °ú pBindParam ¸ğµÎ ÃÊ±âÈ­ µÇ¹Ç·Î flag ¸¦ ÃÊ±âÈ­ ÇÑ´Ù.
+        // Plan ê³¼ pBindParam ëª¨ë‘ ì´ˆê¸°í™” ë˜ë¯€ë¡œ flag ë¥¼ ì´ˆê¸°í™” í•œë‹¤.
         aStatement->pBindParamChangedFlag = ID_FALSE;
     }
     else
     {
-        // Plan ¸¸ ÃÊ±âÈ­ µÇ°í pBindParam Àº À¯ÁöµÇ¹Ç·Î ¼­·Î Å¸ÀÔÀÌ ´Ş¶óÁ³À» ¼ö ÀÖ´Ù.
+        // Plan ë§Œ ì´ˆê¸°í™” ë˜ê³  pBindParam ì€ ìœ ì§€ë˜ë¯€ë¡œ ì„œë¡œ íƒ€ì…ì´ ë‹¬ë¼ì¡Œì„ ìˆ˜ ìˆë‹¤.
         aStatement->pBindParamChangedFlag = ID_TRUE;
     }
 
@@ -1749,7 +1749,7 @@ IDE_RC qcg::clearStatement( qcStatement * aStatement, idBool aRebuild )
     // BUG-36986
     aStatement->namedVarNode = NULL;
 
-    // PROJ-2551 simple query ÃÖÀûÈ­
+    // PROJ-2551 simple query ìµœì í™”
     qciMisc::initSimpleInfo( &(aStatement->simpleInfo) );
     aStatement->mFlag = 0;
 
@@ -1773,8 +1773,8 @@ IDE_RC qcg::clearStatement( qcStatement * aStatement, idBool aRebuild )
     aStatement->mRandomPlanInfo = NULL;
 
     //----------------------------------
-    // qci::initializeStatement()½Ã¿¡ mmÀ¸·ÎºÎÅÍ ³Ñ°Ü¹ŞÀº
-    // session Á¤º¸·Î, freeStatement()ÀÌ¿Ü¿¡´Â ÃÊ±âÈ­½ÃÅ°¸é ¾ÈµÊ.
+    // qci::initializeStatement()ì‹œì— mmìœ¼ë¡œë¶€í„° ë„˜ê²¨ë°›ì€
+    // session ì •ë³´ë¡œ, freeStatement()ì´ì™¸ì—ëŠ” ì´ˆê¸°í™”ì‹œí‚¤ë©´ ì•ˆë¨.
     // aStatement->session = NULL;
     //----------------------------------
 
@@ -1817,18 +1817,18 @@ IDE_RC qcg::clearStatement( qcStatement * aStatement, idBool aRebuild )
         sTemplate->tempTableMgr = NULL;
         sTemplate->fixedTableAutomataStatus = 0;
 
-        // PROJ-1413 tupleVarList ÃÊ±âÈ­
+        // PROJ-1413 tupleVarList ì´ˆê¸°í™”
         sTemplate->tupleVarGenNumber = 0;
         sTemplate->tupleVarList = NULL;
 
-        // BUG-16422 executeÁß ÀÓ½Ã »ı¼ºµÈ tableInfoÀÇ °ü¸®
+        // BUG-16422 executeì¤‘ ì„ì‹œ ìƒì„±ëœ tableInfoì˜ ê´€ë¦¬
         sTemplate->tableInfoMgr = NULL;
 
         // PROJ-1436
         sTemplate->indirectRef = ID_FALSE;
 
         // To Fix PR-12659
-        // Internal Tuple Set °ü·Ã ¸Ş¸ğ¸®´Â ÇÊ¿ä¿¡ ÇÒ´ç¹Şµµ·Ï ÇÔ.
+        // Internal Tuple Set ê´€ë ¨ ë©”ëª¨ë¦¬ëŠ” í•„ìš”ì— í• ë‹¹ë°›ë„ë¡ í•¨.
         sTemplate->tmplate.rowCount = 0;
         sTemplate->tmplate.rowArrayCount = 0;
 
@@ -1863,15 +1863,15 @@ IDE_RC qcg::clearStatement( qcStatement * aStatement, idBool aRebuild )
 
         //-------------------------------------------------------
         // PROJ-1358
-        // ´ÙÀ½ ÁúÀÇ ¼öÇàÀ» À§ÇÏ¿© ±âº»ÀûÀÎ °ø°£À» ÇÒ´ç¹Ş¾ÆµĞ´Ù.
-        // BUGBUG - clearStatement() ÇÔ¼ö°¡ void ¸®ÅÏÀÌ¾î¼­
-        //          ÀÌ¸¦ À§ÇÑ MM ÄÚµå¸¦ ¼öÁ¤ÇÏ±â À§ÇÑ ºÎ´ãÀÌ Å©´Ù.
-        //        - ÇöÀç´Â Memory ÇØÁ¦ÈÄ ¹Ù·Î ÇÒ´çÇÏ´Â °æ¿ì
-        //          ½ÇÆĞ °¡´É¼ºÀÌ Àû±â¸¦ ¹Ù¶ö ¼ö ¹Û¿¡...
+        // ë‹¤ìŒ ì§ˆì˜ ìˆ˜í–‰ì„ ìœ„í•˜ì—¬ ê¸°ë³¸ì ì¸ ê³µê°„ì„ í• ë‹¹ë°›ì•„ë‘”ë‹¤.
+        // BUGBUG - clearStatement() í•¨ìˆ˜ê°€ void ë¦¬í„´ì´ì–´ì„œ
+        //          ì´ë¥¼ ìœ„í•œ MM ì½”ë“œë¥¼ ìˆ˜ì •í•˜ê¸° ìœ„í•œ ë¶€ë‹´ì´ í¬ë‹¤.
+        //        - í˜„ì¬ëŠ” Memory í•´ì œí›„ ë°”ë¡œ í• ë‹¹í•˜ëŠ” ê²½ìš°
+        //          ì‹¤íŒ¨ ê°€ëŠ¥ì„±ì´ ì ê¸°ë¥¼ ë°”ë„ ìˆ˜ ë°–ì—...
         //-------------------------------------------------------
 
         // To Fix PR-12659
-        // Internal Tuple Set °ü·Ã ¸Ş¸ğ¸®´Â ÇÊ¿ä¿¡ ÇÒ´ç¹Şµµ·Ï ÇÔ.
+        // Internal Tuple Set ê´€ë ¨ ë©”ëª¨ë¦¬ëŠ” í•„ìš”ì— í• ë‹¹ë°›ë„ë¡ í•¨.
         // sTmplate->tmplate.rowArrayCount = MTC_TUPLE_ROW_INIT_CNT;
 
         // (void) allocInternalTuple( sTemplate,
@@ -1914,8 +1914,8 @@ IDE_RC qcg::closeStatement( qcStatement * aStatement )
 {
 /***********************************************************************
  *
- * Description : Äõ¸® ¼öÇàÁß,
- *               execution¼öÇà¿¡ °üÇÑ Á¤º¸µéÀ» »èÁ¦ÇÑ´Ù.
+ * Description : ì¿¼ë¦¬ ìˆ˜í–‰ì¤‘,
+ *               executionìˆ˜í–‰ì— ê´€í•œ ì •ë³´ë“¤ì„ ì‚­ì œí•œë‹¤.
  *
  * Implementation :
  *
@@ -1935,7 +1935,7 @@ IDE_RC qcg::closeStatement( qcStatement * aStatement )
     {
         if ( aStatement->sharedFlag == ID_TRUE )
         {
-            // °øÀ¯µÈ planÀ» ¿À¿°½ÃÄÑ¼­´Â ¾ÈµÈ´Ù.
+            // ê³µìœ ëœ planì„ ì˜¤ì—¼ì‹œì¼œì„œëŠ” ì•ˆëœë‹¤.
             if ( QC_QMP_MEM(aStatement)->compare( QC_QMU_MEM(aStatement) ) != 0 )
             {
                 ideLog::log( IDE_SERVER_0,"[Notify : SQL Plan Cache] Plan Pollution : Session ID = "
@@ -1979,15 +1979,15 @@ IDE_RC qcg::closeStatement( qcStatement * aStatement )
     /* PROJ-2452 Caching for DETERMINISTIC Function */
     aStatement->qxcMem->freeAll(1);
 
-    // PROJ-2551 simple query ÃÖÀûÈ­
+    // PROJ-2551 simple query ìµœì í™”
     qciMisc::initSimpleInfo( &(aStatement->simpleInfo) );
 
     sPrivateTmplate = QC_PRIVATE_TMPLATE( aStatement );
 
     // PROJ-2462 ResultCache
-    // Äõ¸®°¡ ³¡³ª´Â ½ÃÁ¡¿¡ ResultCache°¡ MAXÅ©±â ¸¸Å­
-    // Å«Áö °Ë»çÇÏ°í ¸¸¾à MAXº¸´Ù Å©´Ù¸é Result Cache¸¦ freeÇÏ°í
-    // ÀÌÈÄ ¼öÇàºÎÅÍ´Â ResultCache¸¦ »ç¿ëÇÏÁö ¾Êµµ·Ï ÇÑ´Ù.
+    // ì¿¼ë¦¬ê°€ ëë‚˜ëŠ” ì‹œì ì— ResultCacheê°€ MAXí¬ê¸° ë§Œí¼
+    // í°ì§€ ê²€ì‚¬í•˜ê³  ë§Œì•½ MAXë³´ë‹¤ í¬ë‹¤ë©´ Result Cacheë¥¼ freeí•˜ê³ 
+    // ì´í›„ ìˆ˜í–‰ë¶€í„°ëŠ” ResultCacheë¥¼ ì‚¬ìš©í•˜ì§€ ì•Šë„ë¡ í•œë‹¤.
     qmxResultCache::checkResultCacheMax( sPrivateTmplate );
 
     // BUG-44710
@@ -1998,7 +1998,7 @@ IDE_RC qcg::closeStatement( qcStatement * aStatement )
                                   QC_QMX_MEM( aStatement ) )
               != IDE_SUCCESS );
 
-    /* BUG-44279 Simple Query´Â TemplateÀ» »ç¿ëÇÏÁö ¾Ê´Â´Ù. */
+    /* BUG-44279 Simple QueryëŠ” Templateì„ ì‚¬ìš©í•˜ì§€ ì•ŠëŠ”ë‹¤. */
     if ( ( ( aStatement->mFlag & QC_STMT_FAST_EXEC_MASK )
            == QC_STMT_FAST_EXEC_TRUE ) &&
          ( ( aStatement->mFlag & QC_STMT_FAST_BIND_MASK )
@@ -2008,24 +2008,24 @@ IDE_RC qcg::closeStatement( qcStatement * aStatement )
     }
     else
     {
-        // allocStatement½Ã »ı¼ºÇß´ø private template ¿µ¿ªÀ» °¡Á®¿Â´Ù.
+        // allocStatementì‹œ ìƒì„±í–ˆë˜ private template ì˜ì—­ì„ ê°€ì ¸ì˜¨ë‹¤.
         if ( QC_SHARED_TMPLATE(aStatement) != NULL )
         {
             sOrgTmplate = aStatement->privatePlan.sTmplate;
 
-            // stack ¼³Á¤
+            // stack ì„¤ì •
             sPrivateTmplate->tmplate.stackBuffer = sOrgTmplate->tmplate.stackBuffer;
             sPrivateTmplate->tmplate.stack       = sOrgTmplate->tmplate.stack;
             sPrivateTmplate->tmplate.stackCount  = sOrgTmplate->tmplate.stackCount;
             sPrivateTmplate->tmplate.stackRemain = sOrgTmplate->tmplate.stackRemain;
 
-            // date format ¼³Á¤
+            // date format ì„¤ì •
             sPrivateTmplate->tmplate.dateFormat  = sOrgTmplate->tmplate.dateFormat;
 
             /* PROJ-2208 Multi Currency */
             sPrivateTmplate->tmplate.nlsCurrency = sOrgTmplate->tmplate.nlsCurrency;
 
-            // stmt ¼³Á¤
+            // stmt ì„¤ì •
             sPrivateTmplate->stmt                = aStatement;
         }
         else
@@ -2033,7 +2033,7 @@ IDE_RC qcg::closeStatement( qcStatement * aStatement )
             // fix BUG-33660
             sPrivateTmplate = QC_PRIVATE_TMPLATE(aStatement);
 
-            // stack ¼³Á¤
+            // stack ì„¤ì •
             sPrivateTmplate->tmplate.stack       = sPrivateTmplate->tmplate.stackBuffer;
             sPrivateTmplate->tmplate.stackRemain = sPrivateTmplate->tmplate.stackCount;
         }
@@ -2072,19 +2072,19 @@ qcg::fixAfterValidation( qcStatement * aStatement )
               != IDE_SUCCESS );
 
     //---------------------------------------------------------
-    // [Cursor FlagÀÇ º¸Á¤]
-    // ValidationÀÌ ³¡³ª¸é ÁúÀÇ¹®ÀÌ Á¢±ÙÇÏ´Â TableÀÇ À¯Çü¿¡ µû¶ó
-    // Disk, Memory, Disk/Memory ÀÇ ¼¼ °¡Áö ÇüÅÂ·Î
-    // CursorÀÇ Á¢±Ù ÇüÅÂ°¡ °áÁ¤µÈ´Ù.
-    // ±×·¯³ª, Disk Table¿¡ ´ëÇÑ DDLÀÇ °æ¿ì Meta °»½ÅÀ» À§ÇÏ¿©
-    // Memory Table¿¡ ´ëÇÑ Á¢±ÙÀÌ ÇÊ¿äÇÏ°Ô µÈ´Ù.
-    // ÀÌ¸¦ À§ÇØ DDLÀÇ °æ¿ì Memory CursorÀÇ FlagÀ» ¹«Á¶°Ç ORingÇÑ´Ù.
+    // [Cursor Flagì˜ ë³´ì •]
+    // Validationì´ ëë‚˜ë©´ ì§ˆì˜ë¬¸ì´ ì ‘ê·¼í•˜ëŠ” Tableì˜ ìœ í˜•ì— ë”°ë¼
+    // Disk, Memory, Disk/Memory ì˜ ì„¸ ê°€ì§€ í˜•íƒœë¡œ
+    // Cursorì˜ ì ‘ê·¼ í˜•íƒœê°€ ê²°ì •ëœë‹¤.
+    // ê·¸ëŸ¬ë‚˜, Disk Tableì— ëŒ€í•œ DDLì˜ ê²½ìš° Meta ê°±ì‹ ì„ ìœ„í•˜ì—¬
+    // Memory Tableì— ëŒ€í•œ ì ‘ê·¼ì´ í•„ìš”í•˜ê²Œ ëœë‹¤.
+    // ì´ë¥¼ ìœ„í•´ DDLì˜ ê²½ìš° Memory Cursorì˜ Flagì„ ë¬´ì¡°ê±´ ORingí•œë‹¤.
     //---------------------------------------------------------
 
     if ( ( aStatement->myPlan->parseTree->stmtKind & QCI_STMT_MASK_MASK )
          == QCI_STMT_MASK_DDL )
     {
-        // DDLÀÏ °æ¿ì
+        // DDLì¼ ê²½ìš°
         QC_SHARED_TMPLATE(aStatement)->smiStatementFlag |= SMI_STATEMENT_MEMORY_CURSOR;
     }
     else
@@ -2210,24 +2210,24 @@ qcg::stepAfterPVO( qcStatement * aStatement )
                                   QC_QMX_MEM( aStatement ) )
               != IDE_SUCCESS );
 
-    // allocStatement½Ã »ı¼ºÇß´ø private template ¿µ¿ªÀ» °¡Á®¿Â´Ù.
+    // allocStatementì‹œ ìƒì„±í–ˆë˜ private template ì˜ì—­ì„ ê°€ì ¸ì˜¨ë‹¤.
     if ( QC_SHARED_TMPLATE(aStatement) != NULL )
     {
         sOrgTmplate = aStatement->privatePlan.sTmplate;
 
-        // stack ¼³Á¤
+        // stack ì„¤ì •
         sPrivateTmplate->tmplate.stackBuffer = sOrgTmplate->tmplate.stackBuffer;
         sPrivateTmplate->tmplate.stack       = sOrgTmplate->tmplate.stack;
         sPrivateTmplate->tmplate.stackCount  = sOrgTmplate->tmplate.stackCount;
         sPrivateTmplate->tmplate.stackRemain = sOrgTmplate->tmplate.stackRemain;
 
-        // date format ¼³Á¤
+        // date format ì„¤ì •
         sPrivateTmplate->tmplate.dateFormat     = sOrgTmplate->tmplate.dateFormat;
 
         /* PROJ-2208 Multi Currency */
         sPrivateTmplate->tmplate.nlsCurrency    = sOrgTmplate->tmplate.nlsCurrency;
 
-        // stmt ¼³Á¤
+        // stmt ì„¤ì •
         sPrivateTmplate->stmt = aStatement;
     }
     else
@@ -2235,7 +2235,7 @@ qcg::stepAfterPVO( qcStatement * aStatement )
         // fix BUG-33660
         sPrivateTmplate = QC_PRIVATE_TMPLATE(aStatement);
 
-        // stack ¼³Á¤
+        // stack ì„¤ì •
         sPrivateTmplate->tmplate.stack       = sPrivateTmplate->tmplate.stackBuffer;
         sPrivateTmplate->tmplate.stackRemain = sPrivateTmplate->tmplate.stackCount;
     }
@@ -2259,15 +2259,15 @@ qcg::stepAfterPVO( qcStatement * aStatement )
 IDE_RC
 qcg::setPrivateArea( qcStatement * aStatement )
 {
-    // private template ¼³Á¤
+    // private template ì„¤ì •
     QC_PRIVATE_TMPLATE(aStatement) = QC_SHARED_TMPLATE(aStatement);
     QC_SHARED_TMPLATE(aStatement) = NULL;
 
-    // prepared private template ¼³Á¤
+    // prepared private template ì„¤ì •
     aStatement->prepTemplateHeader = NULL;
     aStatement->prepTemplate = NULL;
 
-    // stmt ¼³Á¤
+    // stmt ì„¤ì •
     QC_PRIVATE_TMPLATE(aStatement)->stmt = aStatement;
 
     // bind parameter
@@ -2289,12 +2289,12 @@ qcg::setPrivateArea( qcStatement * aStatement )
 
             aStatement->pBindParamCount = aStatement->myPlan->sBindParamCount;
 
-            // pBindParam ÀÇ °ªÀÌ ¸ğµÎ ¹Ù²î¾úÀ¸¹Ç·Î flag ¸¦ ¼¼ÆÃÇÑ´Ù.
+            // pBindParam ì˜ ê°’ì´ ëª¨ë‘ ë°”ë€Œì—ˆìœ¼ë¯€ë¡œ flag ë¥¼ ì„¸íŒ…í•œë‹¤.
             aStatement->pBindParamChangedFlag = ID_TRUE;
         }
         else
         {
-            // »ç¿ëÀÚ°¡ ¹ÙÀÎµåÇÑ Á¤º¸´Â µ¤¾î¾²Áö ¾Ê´Â´Ù.
+            // ì‚¬ìš©ìê°€ ë°”ì¸ë“œí•œ ì •ë³´ëŠ” ë®ì–´ì“°ì§€ ì•ŠëŠ”ë‹¤.
             // Nothing to do.
         }
     }
@@ -2461,13 +2461,13 @@ IDE_RC qcg::setStmtText( qcStatement * aStatement,
 
 
 //--------------------------------------------------
-// ¾Æ·¡ session Á¤º¸¸¦ ±¸ÇÏ´Â ÇÔ¼öµé¿¡¼­
-// aStatement->session->mMmSessionÀÌ NULLÀÎ ºÎºĞÀº
-// qp³»ºÎÀûÀ¸·Î Ã³¸®ÇÏ´Â ÁúÀÇ¹®ÀÇ °æ¿ì,
-// session Á¤º¸°¡ µû·Î ¾ø±â ¶§¹®¿¡
-// default session Á¤º¸¸¦ ¾ò±â À§ÇÔÀÓ.
-// ( ÄÚµå³»¿¡¼­ qp³»ºÎ¿¡¼­ Ã³¸®ÇÏ´Â ÁúÀÇ¹®ÀÎÁö ¾Æ´ÑÁöÀÇ ¿©ºÎ¸¦
-//   µûÁöÁö ¾Ê°í, °øÅëÀ¸·Î »ç¿ëÇÏ±â À§ÇÔ. )
+// ì•„ë˜ session ì •ë³´ë¥¼ êµ¬í•˜ëŠ” í•¨ìˆ˜ë“¤ì—ì„œ
+// aStatement->session->mMmSessionì´ NULLì¸ ë¶€ë¶„ì€
+// qpë‚´ë¶€ì ìœ¼ë¡œ ì²˜ë¦¬í•˜ëŠ” ì§ˆì˜ë¬¸ì˜ ê²½ìš°,
+// session ì •ë³´ê°€ ë”°ë¡œ ì—†ê¸° ë•Œë¬¸ì—
+// default session ì •ë³´ë¥¼ ì–»ê¸° ìœ„í•¨ì„.
+// ( ì½”ë“œë‚´ì—ì„œ qpë‚´ë¶€ì—ì„œ ì²˜ë¦¬í•˜ëŠ” ì§ˆì˜ë¬¸ì¸ì§€ ì•„ë‹Œì§€ì˜ ì—¬ë¶€ë¥¼
+//   ë”°ì§€ì§€ ì•Šê³ , ê³µí†µìœ¼ë¡œ ì‚¬ìš©í•˜ê¸° ìœ„í•¨. )
 //--------------------------------------------------
 const mtlModule* qcg::getSessionLanguage( qcStatement * aStatement )
 {
@@ -2531,8 +2531,8 @@ void  qcg::setSessionUserID( qcStatement * aStatement,
     else
     {
         // BUG-24470
-        // ³»ºÎ¿¡¼­ »ı¼ºµÈ sessionÀÌ¶óµµ setSessionUserID°¡ È£ÃâµÇ´Â
-        // °æ¿ì´Â userID¸¦ º°µµ·Î ÀúÀåÇØ¾ß ÇÑ´Ù.
+        // ë‚´ë¶€ì—ì„œ ìƒì„±ëœ sessionì´ë¼ë„ setSessionUserIDê°€ í˜¸ì¶œë˜ëŠ”
+        // ê²½ìš°ëŠ” userIDë¥¼ ë³„ë„ë¡œ ì €ì¥í•´ì•¼ í•œë‹¤.
         aStatement->session->mUserID = aUserID;
     }
 }
@@ -2588,14 +2588,14 @@ UInt qcg::getSessionOptimizerMode( qcStatement * aStatement )
              == QC_SESSION_INTERNAL_LOAD_PROC_TRUE )
         {
             // BUG-26017
-            // [PSM] server restart½Ã ¼öÇàµÇ´Â
-            // psm load°úÁ¤¿¡¼­ °ü·ÃÇÁ·ÎÆÛÆ¼¸¦ ÂüÁ¶ÇÏÁö ¸øÇÏ´Â °æ¿ì ÀÖÀ½.
+            // [PSM] server restartì‹œ ìˆ˜í–‰ë˜ëŠ”
+            // psm loadê³¼ì •ì—ì„œ ê´€ë ¨í”„ë¡œí¼í‹°ë¥¼ ì°¸ì¡°í•˜ì§€ ëª»í•˜ëŠ” ê²½ìš° ìˆìŒ.
             sOptimizerMode = QCU_OPTIMIZER_MODE;
         }
         else
         {
-            // ³»ºÎ¿¡¼­ Ã³¸®µÇ´Â sql¹®µéÀº cost·Î Ã³¸®ÇÑ´Ù.
-            // ( metaÅ×ÀÌºí°ü·Ã )
+            // ë‚´ë¶€ì—ì„œ ì²˜ë¦¬ë˜ëŠ” sqlë¬¸ë“¤ì€ costë¡œ ì²˜ë¦¬í•œë‹¤.
+            // ( metaí…Œì´ë¸”ê´€ë ¨ )
             // optimizer mode = cost
             sOptimizerMode = QCG_INTERNAL_OPTIMIZER_MODE;
         }
@@ -2633,8 +2633,8 @@ UInt qcg::getSessionStackSize( qcStatement * aStatement )
     else
     {
         // BUG-26017
-        // [PSM] server restart½Ã ¼öÇàµÇ´Â
-        // psm load°úÁ¤¿¡¼­ °ü·ÃÇÁ·ÎÆÛÆ¼¸¦ ÂüÁ¶ÇÏÁö ¸øÇÏ´Â °æ¿ì ÀÖÀ½.
+        // [PSM] server restartì‹œ ìˆ˜í–‰ë˜ëŠ”
+        // psm loadê³¼ì •ì—ì„œ ê´€ë ¨í”„ë¡œí¼í‹°ë¥¼ ì°¸ì¡°í•˜ì§€ ëª»í•˜ëŠ” ê²½ìš° ìˆìŒ.
         sStackSize = QCU_QUERY_STACK_SIZE;
     }
 
@@ -2856,7 +2856,7 @@ UChar qcg::getSessionGetExplainPlan( qcStatement  * aStatement )
     return sExplainPlan;
 }
 
-// BUG-23780 TEMP_TBS_MEMORY ÈùÆ® Àû¿ë¿©ºÎ¸¦ property·Î Á¦°ø
+// BUG-23780 TEMP_TBS_MEMORY íŒíŠ¸ ì ìš©ì—¬ë¶€ë¥¼ propertyë¡œ ì œê³µ
 UInt qcg::getSessionOptimizerDefaultTempTbsType( qcStatement * aStatement )
 {
     UInt   sOptimizerDefaultTempTbsType;
@@ -2874,15 +2874,15 @@ UInt qcg::getSessionOptimizerDefaultTempTbsType( qcStatement * aStatement )
              == QC_SESSION_INTERNAL_LOAD_PROC_TRUE )
         {
             // BUG-26017
-            // [PSM] server restart½Ã ¼öÇàµÇ´Â
-            // psm load°úÁ¤¿¡¼­ °ü·ÃÇÁ·ÎÆÛÆ¼¸¦ ÂüÁ¶ÇÏÁö ¸øÇÏ´Â °æ¿ì ÀÖÀ½.
+            // [PSM] server restartì‹œ ìˆ˜í–‰ë˜ëŠ”
+            // psm loadê³¼ì •ì—ì„œ ê´€ë ¨í”„ë¡œí¼í‹°ë¥¼ ì°¸ì¡°í•˜ì§€ ëª»í•˜ëŠ” ê²½ìš° ìˆìŒ.
             sOptimizerDefaultTempTbsType = QCU_OPTIMIZER_DEFAULT_TEMP_TBS_TYPE;
         }
         else
         {
-            // ³»ºÎ¿¡¼­ Ã³¸®µÇ´Â sql¹®µéÀº 0À¸·Î Ã³¸®ÇÑ´Ù.
-            // ( metaÅ×ÀÌºí°ü·Ã )
-            // optimizer³»ºÎ¿¡¼­ ÆÇ´ÜÇØ¼­ Ã³¸®
+            // ë‚´ë¶€ì—ì„œ ì²˜ë¦¬ë˜ëŠ” sqlë¬¸ë“¤ì€ 0ìœ¼ë¡œ ì²˜ë¦¬í•œë‹¤.
+            // ( metaí…Œì´ë¸”ê´€ë ¨ )
+            // optimizerë‚´ë¶€ì—ì„œ íŒë‹¨í•´ì„œ ì²˜ë¦¬
             sOptimizerDefaultTempTbsType = QCG_INTERNAL_OPTIMIZER_DEFAULT_TEMP_TBS_TYPE;
         }
     }
@@ -2925,8 +2925,8 @@ UInt qcg::getSessionAutoRemoteExec( qcStatement * aStatement )
              == QC_SESSION_INTERNAL_LOAD_PROC_TRUE )
         {
             // BUG-26017
-            // [PSM] server restart½Ã ¼öÇàµÇ´Â
-            // psm load°úÁ¤¿¡¼­ °ü·ÃÇÁ·ÎÆÛÆ¼¸¦ ÂüÁ¶ÇÏÁö ¸øÇÏ´Â °æ¿ì ÀÖÀ½.
+            // [PSM] server restartì‹œ ìˆ˜í–‰ë˜ëŠ”
+            // psm loadê³¼ì •ì—ì„œ ê´€ë ¨í”„ë¡œí¼í‹°ë¥¼ ì°¸ì¡°í•˜ì§€ ëª»í•˜ëŠ” ê²½ìš° ìˆìŒ.
             sAutoRemoteExec = QCU_AUTO_REMOTE_EXEC;
         }
         else
@@ -3058,7 +3058,7 @@ UInt* qcg::getSessionRoleList( qcStatement * aStatement )
     }
     else
     {
-        /* internal user¿ë */
+        /* internal userìš© */
         sRoleList = sInternalRoleList;
     }
 
@@ -3264,8 +3264,8 @@ idBool qcg::isShardCoordinator( qcStatement * aStatement )
     idBool   sIsShard = ID_FALSE;
     SChar  * sNodeName;
 
-    // shard_meta enableÀÌ¾î¾ß ÇÏ°í
-    // data node connectionÀÌ ¾Æ´Ï¾î¾ß ÇÑ´Ù. (shard_node_nameÀÌ ¾ø¾î¾ß ÇÑ´Ù.)
+    // shard_meta enableì´ì–´ì•¼ í•˜ê³ 
+    // data node connectionì´ ì•„ë‹ˆì–´ì•¼ í•œë‹¤. (shard_node_nameì´ ì—†ì–´ì•¼ í•œë‹¤.)
     if ( QCU_SHARD_META_ENABLE == 1 )
     {
         sNodeName = getSessionShardNodeName( aStatement );
@@ -3331,7 +3331,7 @@ qcg::closeAllCursor( qcStatement * aStatement )
             // Nothing to do.
         }
 
-        // Temp Table Manager°¡ Á¸ÀçÇÏ´Â °æ¿ì ÇØ´ç Temp TableÀ» ¸ğµÎ Á¦°ÅÇÔ.
+        // Temp Table Managerê°€ ì¡´ì¬í•˜ëŠ” ê²½ìš° í•´ë‹¹ Temp Tableì„ ëª¨ë‘ ì œê±°í•¨.
         if ( ( sTemplate->tempTableMgr != NULL ) &&
              ( QC_SMI_STMT( aStatement ) != NULL ) )
         {
@@ -3372,7 +3372,7 @@ qcg::initTemplateMember( qcTemplate * aTemplate, iduMemory * aMemory )
         IDE_TEST( aTemplate->cursorMgr->init( aMemory )
                   != IDE_SUCCESS );
 
-        // Temp Table ManagerÀÇ ÃÊ±âÈ­
+        // Temp Table Managerì˜ ì´ˆê¸°í™”
         IDE_TEST( qmcTempTableMgr::init( aTemplate->tempTableMgr,
                                          aMemory )
                   != IDE_SUCCESS );
@@ -3436,23 +3436,23 @@ qcg::initTemplateMember( qcTemplate * aTemplate, iduMemory * aMemory )
 }
 
 // BUG-38290
-// Cursor manager mutex ÀÇ destroy ¸¦ À§ÇØ return type º¯°æ
+// Cursor manager mutex ì˜ destroy ë¥¼ ìœ„í•´ return type ë³€ê²½
 void qcg::resetTemplateMember( qcStatement * aStatement )
 {
     qcTemplate  * sTemplate;
 
     if ( aStatement->sharedFlag == ID_FALSE )
     {
-        // °øÀ¯µÇÁö ¾ÊÀº planÀÎ °æ¿ì
+        // ê³µìœ ë˜ì§€ ì•Šì€ planì¸ ê²½ìš°
 
         if ( QC_PRIVATE_TMPLATE(aStatement) != NULL )
         {
-            // private templateÀÌ »ı¼ºµÈ °æ¿ì
+            // private templateì´ ìƒì„±ëœ ê²½ìš°
             sTemplate = QC_PRIVATE_TMPLATE(aStatement);
         }
         else
         {
-            // private templateÀÌ »ı¼ºµÇÁö ¾ÊÀº °æ¿ì
+            // private templateì´ ìƒì„±ë˜ì§€ ì•Šì€ ê²½ìš°
             sTemplate = QC_SHARED_TMPLATE(aStatement);
         }
 
@@ -3460,7 +3460,7 @@ void qcg::resetTemplateMember( qcStatement * aStatement )
     }
     else
     {
-        // °øÀ¯µÈ planÀÎ °æ¿ì
+        // ê³µìœ ëœ planì¸ ê²½ìš°
 
         sTemplate = QC_PRIVATE_TMPLATE(aStatement);
     }
@@ -3515,10 +3515,10 @@ void qcg::resetTemplateMember( qcStatement * aStatement )
         }
 
         // PROJ-2527 WITHIN GROUP AGGR
-        // cloneTemplate½Ã »ı¼ºÇÑ °´Ã¼¸¦ ÇØÁ¦ÇÑ´Ù.
+        // cloneTemplateì‹œ ìƒì„±í•œ ê°ì²´ë¥¼ í•´ì œí•œë‹¤.
         mtc::finiTemplate( &(sTemplate->tmplate) );
 
-        // child template¿¡¼­ »ı¼ºÇÑ °´Ã¼¸¦ ÇØÁ¦ÇÑ´Ù.
+        // child templateì—ì„œ ìƒì„±í•œ ê°ì²´ë¥¼ í•´ì œí•œë‹¤.
         finiPRLQChildTemplate( aStatement );
         
         resetTupleSet( sTemplate );
@@ -3559,24 +3559,24 @@ qcg::allocInternalTuple( qcTemplate * aTemplate,
  *
  * Description :
  *     PROJ-1358
- *     Internal Tuple SetÀÇ ÀÚµ¿ È®ÀåÀ» À§ÇÏ¿© °ø°£À» ÇÒ´ç ¹Ş´Â´Ù.
+ *     Internal Tuple Setì˜ ìë™ í™•ì¥ì„ ìœ„í•˜ì—¬ ê³µê°„ì„ í• ë‹¹ ë°›ëŠ”ë‹¤.
  *
  * Implementation :
  *
  ***********************************************************************/
 
     //----------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //----------------------------------
 
     // PROJ-1075
-    // TYPESETÀº tuple count°¡ 0ÀÓ.
+    // TYPESETì€ tuple countê°€ 0ì„.
     if( aTupleCnt > 0 )
     {
         IDU_FIT_POINT( "qcg::allocInternalTuple::alloc::tmplateRows",
                         idERR_ABORT_InsufficientMemory );
 
-        // Internal Tuple SetÀÇ °ø°£ ÇÒ´ç
+        // Internal Tuple Setì˜ ê³µê°„ í• ë‹¹
         IDE_TEST( aMemory->alloc( ID_SIZEOF(mtcTuple) * aTupleCnt,
                                   (void**) & aTemplate->tmplate.rows )
                   != IDE_SUCCESS);
@@ -3584,7 +3584,7 @@ qcg::allocInternalTuple( qcTemplate * aTemplate,
         IDU_FIT_POINT( "qcg::allocInternalTuple::cralloc::tableMap",
                         idERR_ABORT_InsufficientMemory );
 
-        // Table Map °ü¸®¸¦ À§ÇÑ °ø°£ ÇÒ´ç
+        // Table Map ê´€ë¦¬ë¥¼ ìœ„í•œ ê³µê°„ í• ë‹¹
         IDE_TEST( aMemory->cralloc( ID_SIZEOF(qcTableMap) * aTupleCnt,
                                     (void**) & aTemplate->tableMap )
                   != IDE_SUCCESS);
@@ -3611,24 +3611,24 @@ qcg::allocInternalTuple( qcTemplate    * aTemplate,
  *
  * Description :
  *     PROJ-1358
- *     Internal Tuple SetÀÇ ÀÚµ¿ È®ÀåÀ» À§ÇÏ¿© °ø°£À» ÇÒ´ç ¹Ş´Â´Ù.
+ *     Internal Tuple Setì˜ ìë™ í™•ì¥ì„ ìœ„í•˜ì—¬ ê³µê°„ì„ í• ë‹¹ ë°›ëŠ”ë‹¤.
  *
  * Implementation :
  *
  ***********************************************************************/
 
     //----------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //----------------------------------
 
     // PROJ-1075
-    // TYPESETÀº tuple count°¡ 0ÀÓ.
+    // TYPESETì€ tuple countê°€ 0ì„.
     if( aTupleCnt > 0 )
     {
         IDU_FIT_POINT( "qcg::allocInternalTuple::alloc::tmplateRows",     
                         idERR_ABORT_InsufficientMemory );
 
-        // Internal Tuple SetÀÇ °ø°£ ÇÒ´ç
+        // Internal Tuple Setì˜ ê³µê°„ í• ë‹¹
         IDE_TEST( aMemory->alloc( ID_SIZEOF(mtcTuple) * aTupleCnt,
                                         (void**) & aTemplate->tmplate.rows )
                         != IDE_SUCCESS);
@@ -3636,7 +3636,7 @@ qcg::allocInternalTuple( qcTemplate    * aTemplate,
         IDU_FIT_POINT( "qcg::allocInternalTuple::cralloc::tableMap",
                         idERR_ABORT_InsufficientMemory );
 
-        // Table Map °ü¸®¸¦ À§ÇÑ °ø°£ ÇÒ´ç
+        // Table Map ê´€ë¦¬ë¥¼ ìœ„í•œ ê³µê°„ í• ë‹¹
         IDE_TEST( aMemory->cralloc( ID_SIZEOF(qcTableMap) * aTupleCnt,
                                           (void**) & aTemplate->tableMap )
                         != IDE_SUCCESS);
@@ -3674,7 +3674,7 @@ IDE_RC qcg::setBindColumn( qcStatement * aStatement,
 
     sColumn = & sTemplate->tmplate.rows[sBindTuple].columns[aId];
 
-    // mtcColumnÀÇ ÃÊ±âÈ­
+    // mtcColumnì˜ ì´ˆê¸°í™”
     IDE_TEST( mtc::initializeColumn( sColumn,
                                      aDataTypeId,
                                      aArguments,
@@ -3724,7 +3724,7 @@ UShort qcg::getBindCount( qcStatement * aStatement )
 
 /****************************************************/
 /* sungmin                                          */
-/* ´ÙÀ½ ÇÔ¼ö°¡ ¿Ã¹Ù·Î µ¿ÀÛÇÏ´ÂÁö È®ÀÎÇØ¾ß ÇÔ   */
+/* ë‹¤ìŒ í•¨ìˆ˜ê°€ ì˜¬ë°”ë¡œ ë™ì‘í•˜ëŠ”ì§€ í™•ì¸í•´ì•¼ í•¨   */
 /****************************************************/
 IDE_RC qcg::setBindData( qcStatement * aStatement,
                          UShort        aId,
@@ -3768,9 +3768,9 @@ IDE_RC qcg::setBindData( qcStatement * aStatement,
 }
 
 // prj-1697
-// BindParamData protocolÀÌ ºÒ¸®¸é µ¥ÀÌÅÍ°¡
-// CM buffer¿¡¼­ templateÀ¸·Î º¹»ç (¿¹Àü¿¡´Â heapÀ» °ÅÃÄ¼­ º¹»ç)
-// PROJ-2163 : CM buffer¿¡¼­ pBindParam À¸·Î º¹»ç
+// BindParamData protocolì´ ë¶ˆë¦¬ë©´ ë°ì´í„°ê°€
+// CM bufferì—ì„œ templateìœ¼ë¡œ ë³µì‚¬ (ì˜ˆì „ì—ëŠ” heapì„ ê±°ì³ì„œ ë³µì‚¬)
+// PROJ-2163 : CM bufferì—ì„œ pBindParam ìœ¼ë¡œ ë³µì‚¬
 IDE_RC
 qcg::setBindData( qcStatement  * aStatement,
                   UShort         aId,
@@ -3797,11 +3797,11 @@ qcg::setBindData( qcStatement  * aStatement,
          (aInOutType == CMP_DB_PARAM_INPUT_OUTPUT) )
     {
         // sTarget : aBindParam->data
-        // sTargetSize : aBindParam.type ÀÇ size
+        // sTargetSize : aBindParam.type ì˜ size
         sTarget     = (SChar*)aStatement->pBindParam[aId].param.data;
         sTargetSize = aStatement->pBindParam[aId].param.dataSize;
 
-        // CM buffer ÀÇ °ªÀ» pBindParam[].param.data ¿¡ º¹»ç
+        // CM buffer ì˜ ê°’ì„ pBindParam[].param.data ì— ë³µì‚¬
         IDE_TEST( ((qciSetParamDataCallback) aSetParamDataCallback) (
                       aStatement->mStatistics,
                       aBindParam,
@@ -3926,14 +3926,14 @@ IDE_RC qcg::runSelectOneRowforDDL( smiStatement * aSmiStmt,
 /***********************************************************************
  *
  * Description : PROJ-2207 Password policy support
- *              alter password ¼öÇà½Ã select ¸¦ ¼öÇà
- *              one row, one column ¸¸ °¡Á®¿Â´Ù. ´Ù¼öÀÇ row ½Ã ¸¶Áö¸·
- *              row¸¦ °¡Á®¿Â´Ù, ´Ù¼öÀÇ column ÀÌ¸é Ã¹¹øÂ° column °¡Á®¿È
- *              alter password¸¦ À§ÇØ ¸¸µç ÇÔ¼ö.
+ *              alter password ìˆ˜í–‰ì‹œ select ë¥¼ ìˆ˜í–‰
+ *              one row, one column ë§Œ ê°€ì ¸ì˜¨ë‹¤. ë‹¤ìˆ˜ì˜ row ì‹œ ë§ˆì§€ë§‰
+ *              rowë¥¼ ê°€ì ¸ì˜¨ë‹¤, ë‹¤ìˆ˜ì˜ column ì´ë©´ ì²«ë²ˆì§¸ column ê°€ì ¸ì˜´
+ *              alter passwordë¥¼ ìœ„í•´ ë§Œë“  í•¨ìˆ˜.
  *
  * Implementation :
- *            (1) execute ±îÁöÀÇ °úÁ¤Àº runDMLforDDL µ¿ÀÏ
- *            (2) fetch °úÁ¤ Ãß°¡
+ *            (1) execute ê¹Œì§€ì˜ ê³¼ì •ì€ runDMLforDDL ë™ì¼
+ *            (2) fetch ê³¼ì • ì¶”ê°€
  ***********************************************************************/
     qcStatement   sStatement;
     qmcRowFlag    sRowFlag = QMC_ROW_INITIALIZE;
@@ -3985,7 +3985,7 @@ IDE_RC qcg::runSelectOneRowforDDL( smiStatement * aSmiStmt,
     IDE_TEST(stepAfterPVO(&sStatement) != IDE_SUCCESS);
 
     /* BUG-43154
-       password_verify_functionÀÌ autonomous_transaction(AT) pragma°¡ ¼±¾ğµÈ functionÀÏ °æ¿ì ºñÁ¤»ó Á¾·á */
+       password_verify_functionì´ autonomous_transaction(AT) pragmaê°€ ì„ ì–¸ëœ functionì¼ ê²½ìš° ë¹„ì •ìƒ ì¢…ë£Œ */
     sStatement.spxEnv->mExecPWVerifyFunc = aCalledPWVerifyFunc;
 
     // execution
@@ -4019,7 +4019,7 @@ IDE_RC qcg::runSelectOneRowforDDL( smiStatement * aSmiStmt,
         *aRecordExist = ID_FALSE;
     }
 
-    /* DML ¼öÇà½Ã procedure ¼öÇà ½Ã lockÀ» Àâ±â ¶§¹®¿¡ unlock ÇÊ¿ä */
+    /* DML ìˆ˜í–‰ì‹œ procedure ìˆ˜í–‰ ì‹œ lockì„ ì¡ê¸° ë•Œë¬¸ì— unlock í•„ìš” */
     if ( sStatement.spvEnv->latched == ID_TRUE )
     {
         IDE_TEST( qsxRelatedProc::unlatchObjects( sStatement.spvEnv->procPlanList )
@@ -4081,8 +4081,8 @@ IDE_RC qcg::runSelectOneRowMultiColumnforDDL( smiStatement * aSmiStmt,
  *               mutil column result return
  *
  * Implementation :
- *            (1) execute ±îÁöÀÇ °úÁ¤Àº runDMLforDDL µ¿ÀÏ
- *            (2) fetch °úÁ¤ Ãß°¡
+ *            (1) execute ê¹Œì§€ì˜ ê³¼ì •ì€ runDMLforDDL ë™ì¼
+ *            (2) fetch ê³¼ì • ì¶”ê°€
  ***********************************************************************/
     qcStatement   sStatement;
     qmcRowFlag    sRowFlag    = QMC_ROW_INITIALIZE;
@@ -4170,7 +4170,7 @@ IDE_RC qcg::runSelectOneRowMultiColumnforDDL( smiStatement * aSmiStmt,
     
     va_end( sArgs );
     
-    /* DML ¼öÇà½Ã procedure ¼öÇà ½Ã lockÀ» Àâ±â ¶§¹®¿¡ unlock ÇÊ¿ä */
+    /* DML ìˆ˜í–‰ì‹œ procedure ìˆ˜í–‰ ì‹œ lockì„ ì¡ê¸° ë•Œë¬¸ì— unlock í•„ìš” */
     if ( sStatement.spvEnv->latched == ID_TRUE )
     {
         IDE_TEST( qsxRelatedProc::unlatchObjects( sStatement.spvEnv->procPlanList )
@@ -4226,8 +4226,8 @@ IDE_RC qcg::cloneTemplate( iduVarMemList * aMemory,
     UInt i;
 
     // PROJ-1358
-    // Template º¹»ç Àü¿¡ Internal Tuple Set°ø°£À»
-    // ÇÒ´çÇØ ÁÖ¾î¾ß ÇÔ.
+    // Template ë³µì‚¬ ì „ì— Internal Tuple Setê³µê°„ì„
+    // í• ë‹¹í•´ ì£¼ì–´ì•¼ í•¨.
     aDestination->tmplate.rowArrayCount = aSource->tmplate.rowArrayCount;
 
     IDE_TEST( allocInternalTuple( aDestination,
@@ -4243,7 +4243,7 @@ IDE_RC qcg::cloneTemplate( iduVarMemList * aMemory,
     // clone table map
     for (i = 0; i < aSource->tmplate.rowArrayCount; i++)
     {
-        // AssignÀ¸·Î º¯°æÇÑ´Ù. (¼º´É ÀÌ½´)
+        // Assignìœ¼ë¡œ ë³€ê²½í•œë‹¤. (ì„±ëŠ¥ ì´ìŠˆ)
         aDestination->tableMap[i] = aSource->tableMap[i];
     }
 
@@ -4285,12 +4285,12 @@ IDE_RC qcg::cloneTemplate( iduVarMemList * aMemory,
             aDestination->insOrUptRowValueCount[i] =
                 aSource->insOrUptRowValueCount[i];
 
-            // ÇÁ·Î½ÃÀú¿¡¼­ 0¹ø templateÀÇ insOrUptStmtCount °ªÀº 0º¸´Ù
-            // Å¬ ¼ö ÀÖ´Ù.
-            // ÇÏÁö¸¸ insOrUptRowValueCount[i]ÀÇ °ªÀº Ç×»ó 0ÀÌ´Ù.
-            // ÀÌÀ¯´Â statement º°·Î º°µµÀÇ templateÀÌ À¯ÁöµÇ±â ¶§¹®ÀÌ´Ù.
+            // í”„ë¡œì‹œì €ì—ì„œ 0ë²ˆ templateì˜ insOrUptStmtCount ê°’ì€ 0ë³´ë‹¤
+            // í´ ìˆ˜ ìˆë‹¤.
+            // í•˜ì§€ë§Œ insOrUptRowValueCount[i]ì˜ ê°’ì€ í•­ìƒ 0ì´ë‹¤.
+            // ì´ìœ ëŠ” statement ë³„ë¡œ ë³„ë„ì˜ templateì´ ìœ ì§€ë˜ê¸° ë•Œë¬¸ì´ë‹¤.
 
-            // ¿¹)
+            // ì˜ˆ)
             // create or replace procedure proc1 as
             // begin
             // insert into t1 values ( 1, 1 );
@@ -4318,11 +4318,11 @@ IDE_RC qcg::cloneTemplate( iduVarMemList * aMemory,
         aDestination->insOrUptRow = NULL;
     }
 
-    // PROJ-1413 tupleVarList ÃÊ±âÈ­
+    // PROJ-1413 tupleVarList ì´ˆê¸°í™”
     aDestination->tupleVarGenNumber = 0;
     aDestination->tupleVarList = NULL;
 
-    // BUG-16422 executeÁß ÀÓ½Ã »ı¼ºµÈ tableInfoÀÇ °ü¸®
+    // BUG-16422 executeì¤‘ ì„ì‹œ ìƒì„±ëœ tableInfoì˜ ê´€ë¦¬
     aDestination->tableInfoMgr = NULL;
 
     // PROJ-1436
@@ -4441,8 +4441,8 @@ IDE_RC qcg::cloneAndInitTemplate( iduMemory   * aMemory,
     UInt i;
 
     // PROJ-1358
-    // Template º¹»ç Àü¿¡ Internal Tuple Set°ø°£À»
-    // ÇÒ´çÇØ ÁÖ¾î¾ß ÇÔ.
+    // Template ë³µì‚¬ ì „ì— Internal Tuple Setê³µê°„ì„
+    // í• ë‹¹í•´ ì£¼ì–´ì•¼ í•¨.
     aDestination->tmplate.rowArrayCount = aSource->tmplate.rowArrayCount;
 
     IDE_TEST( allocInternalTuple( aDestination,
@@ -4468,7 +4468,7 @@ IDE_RC qcg::cloneAndInitTemplate( iduMemory   * aMemory,
     // clone table map
     for (i = 0; i < aSource->tmplate.rowArrayCount; i++)
     {
-        // AssignÀ¸·Î º¯°æÇÑ´Ù. (¼º´É ÀÌ½´)
+        // Assignìœ¼ë¡œ ë³€ê²½í•œë‹¤. (ì„±ëŠ¥ ì´ìŠˆ)
         aDestination->tableMap[i] = aSource->tableMap[i];
     }
 
@@ -4504,12 +4504,12 @@ IDE_RC qcg::cloneAndInitTemplate( iduMemory   * aMemory,
             aDestination->insOrUptRowValueCount[i] =
                 aSource->insOrUptRowValueCount[i];
 
-            // ÇÁ·Î½ÃÀú¿¡¼­ 0¹ø templateÀÇ insOrUptStmtCount °ªÀº 0º¸´Ù
-            // Å¬ ¼ö ÀÖ´Ù.
-            // ÇÏÁö¸¸ insOrUptRowValueCount[i]ÀÇ °ªÀº Ç×»ó 0ÀÌ´Ù.
-            // ÀÌÀ¯´Â statement º°·Î º°µµÀÇ templateÀÌ À¯ÁöµÇ±â ¶§¹®ÀÌ´Ù.
+            // í”„ë¡œì‹œì €ì—ì„œ 0ë²ˆ templateì˜ insOrUptStmtCount ê°’ì€ 0ë³´ë‹¤
+            // í´ ìˆ˜ ìˆë‹¤.
+            // í•˜ì§€ë§Œ insOrUptRowValueCount[i]ì˜ ê°’ì€ í•­ìƒ 0ì´ë‹¤.
+            // ì´ìœ ëŠ” statement ë³„ë¡œ ë³„ë„ì˜ templateì´ ìœ ì§€ë˜ê¸° ë•Œë¬¸ì´ë‹¤.
 
-            // ¿¹)
+            // ì˜ˆ)
             // create or replace procedure proc1 as
             // begin
             // insert into t1 values ( 1, 1 );
@@ -4537,11 +4537,11 @@ IDE_RC qcg::cloneAndInitTemplate( iduMemory   * aMemory,
         aDestination->insOrUptRow = NULL;
     }
 
-    // PROJ-1413 tupleVarList ÃÊ±âÈ­
+    // PROJ-1413 tupleVarList ì´ˆê¸°í™”
     aDestination->tupleVarGenNumber = 0;
     aDestination->tupleVarList = NULL;
 
-    // BUG-16422 executeÁß ÀÓ½Ã »ı¼ºµÈ tableInfoÀÇ °ü¸®
+    // BUG-16422 executeì¤‘ ì„ì‹œ ìƒì„±ëœ tableInfoì˜ ê´€ë¦¬
     aDestination->tableInfoMgr = NULL;
 
     // PROJ-1436
@@ -4662,7 +4662,7 @@ qcg::getQueryStackSize()
  *
  * Description :
  *    PROJ-1358
- *    SystemÀÇ Query Stack Size¸¦ È¹µæ
+ *    Systemì˜ Query Stack Sizeë¥¼ íšë“
  *
  * Implementation :
  *
@@ -4678,8 +4678,8 @@ qcg::getOptimizerMode()
 /***********************************************************************
  *
  * Description :
- *    BUG-26017 [PSM] server restart½Ã ¼öÇàµÇ´Â psm load°úÁ¤¿¡¼­
- *              °ü·ÃÇÁ·ÎÆÛÆ¼¸¦ ÂüÁ¶ÇÏÁö ¸øÇÏ´Â °æ¿ì ÀÖÀ½.
+ *    BUG-26017 [PSM] server restartì‹œ ìˆ˜í–‰ë˜ëŠ” psm loadê³¼ì •ì—ì„œ
+ *              ê´€ë ¨í”„ë¡œí¼í‹°ë¥¼ ì°¸ì¡°í•˜ì§€ ëª»í•˜ëŠ” ê²½ìš° ìˆìŒ.
  *    OPTIMIZER MODE
  *
  * Implementation :
@@ -4695,8 +4695,8 @@ qcg::getAutoRemoteExec()
 /***********************************************************************
  *
  * Description :
- *    BUG-26017 [PSM] server restart½Ã ¼öÇàµÇ´Â psm load°úÁ¤¿¡¼­
- *              °ü·ÃÇÁ·ÎÆÛÆ¼¸¦ ÂüÁ¶ÇÏÁö ¸øÇÏ´Â °æ¿ì ÀÖÀ½.
+ *    BUG-26017 [PSM] server restartì‹œ ìˆ˜í–‰ë˜ëŠ” psm loadê³¼ì •ì—ì„œ
+ *              ê´€ë ¨í”„ë¡œí¼í‹°ë¥¼ ì°¸ì¡°í•˜ì§€ ëª»í•˜ëŠ” ê²½ìš° ìˆìŒ.
  *    AUTO_REMOTE_EXEC
  *
  * Implementation :
@@ -4706,7 +4706,7 @@ qcg::getAutoRemoteExec()
     return QCU_AUTO_REMOTE_EXEC;
 }
 
-// BUG-23780 TEMP_TBS_MEMORY ÈùÆ® Àû¿ë¿©ºÎ¸¦ property·Î Á¦°ø
+// BUG-23780 TEMP_TBS_MEMORY íŒíŠ¸ ì ìš©ì—¬ë¶€ë¥¼ propertyë¡œ ì œê³µ
 UInt
 qcg::getOptimizerDefaultTempTbsType()
 {
@@ -4714,7 +4714,7 @@ qcg::getOptimizerDefaultTempTbsType()
  *
  * Description :
  *
- *     BUG-23780 TEMP_TBS_MEMORY ÈùÆ® Àû¿ë¿©ºÎ¸¦ property·Î Á¦°ø
+ *     BUG-23780 TEMP_TBS_MEMORY íŒíŠ¸ ì ìš©ì—¬ë¶€ë¥¼ propertyë¡œ ì œê³µ
  *
  * Implementation :
  *
@@ -4819,7 +4819,7 @@ IDE_RC qcg::startupPreProcess( idvSQL *aStatistics )
                                        ID_TRUE)							/* HWCacheLine */
              != IDE_SUCCESS);
 
-    // QP TRCLOG °ü·Ã Property Load
+    // QP TRCLOG ê´€ë ¨ Property Load
     IDE_TEST( qcuProperty::initProperty( aStatistics ) != IDE_SUCCESS );
 
     // PROJ-1075 array type member function Initialize
@@ -4842,14 +4842,14 @@ IDE_RC qcg::startupProcess()
 
 IDE_RC qcg::startupControl()
 {
-    // query ¼öÇà ±ÇÇÑ ¼³Á¤, DDL,DML ±İÁö
+    // query ìˆ˜í–‰ ê¶Œí•œ ì„¤ì •, DDL,DML ê¸ˆì§€
 
     return IDE_SUCCESS;
 }
 
 IDE_RC qcg::startupMeta()
 {
-    // open meta // alter database mydb upgrade meta SQL Ãß°¡·Î °¡´É. ±×¿Ü Ã³¸® ºÒ°¡.
+    // open meta // alter database mydb upgrade meta SQL ì¶”ê°€ë¡œ ê°€ëŠ¥. ê·¸ì™¸ ì²˜ë¦¬ ë¶ˆê°€.
     return IDE_SUCCESS;
 }
 
@@ -4947,7 +4947,7 @@ IDE_RC qcg::startupService( idvSQL * aStatistics )
     /* PROJ-2451 Concurrent Execute Package */
     IDE_TEST(initConcThrUseCnt() != IDE_SUCCESS);
 
-    /* BUG-41307 User Lock Áö¿ø */
+    /* BUG-41307 User Lock ì§€ì› */
     IDE_TEST( qcuSessionObj::initializeStatic() != IDE_SUCCESS );
 
     ideLog::log(IDE_SERVER_0, "  [SUCCESS]\n");
@@ -5009,7 +5009,7 @@ IDE_RC qcg::startupShutdown( idvSQL * aStatistics )
     /* PROJ-2451 Concurrent Execute Package */
     IDE_TEST(finiConcThrUseCnt() != IDE_SUCCESS);
 
-    /* BUG-41307 User Lock Áö¿ø */
+    /* BUG-41307 User Lock ì§€ì› */
     qcuSessionObj::finalizeStatic();
 
     /* PROJ-2109 : Remove the bottleneck of alloc/free stmts. */
@@ -5036,8 +5036,8 @@ IDE_RC qcg::startupDowngrade( idvSQL * aStatistics )
  *
  * Description :
  *    PROJ-2689 Downgrade meta
- *    alter database mydb downgrade; ¶Ç´Â
- *    startup downgrade ½Ã¿¡ ¼öÇàÇÑ´Ù.
+ *    alter database mydb downgrade; ë˜ëŠ”
+ *    startup downgrade ì‹œì— ìˆ˜í–‰í•œë‹¤.
  * Implementation :
  *
  ***********************************************************************/
@@ -5189,10 +5189,10 @@ idBool qcg::isFTnPV( qcStatement * aStatement )
 /***********************************************************************
  *
  * Description :
- *  ÇØ´ç Äõ¸®°¡ Fixed Table or Performance View¸¸À» refÇÏ´ÂÁö °Ë»ç
+ *  í•´ë‹¹ ì¿¼ë¦¬ê°€ Fixed Table or Performance Viewë§Œì„ refí•˜ëŠ”ì§€ ê²€ì‚¬
  *
  * Implementation :
- *  ¿¡·¯°¡ ³¯ ÀÏÀÌ ¾ø±â ¶§¹®¿¡ idBoolÀ» ¸®ÅÏÇÔ.
+ *  ì—ëŸ¬ê°€ ë‚  ì¼ì´ ì—†ê¸° ë•Œë¬¸ì— idBoolì„ ë¦¬í„´í•¨.
  *
  ***********************************************************************/
     return ( QC_SHARED_TMPLATE(aStatement)->fixedTableAutomataStatus == 1 ) ?
@@ -5204,10 +5204,10 @@ IDE_RC qcg::detectFTnPV( qcStatement * aStatement )
 /***********************************************************************
  *
  * Description :
- *  ÇØ´ç Äõ¸®°¡ selectÀÏ °æ¿ì FT³ª PV¸¸À» refÇÏ´ÂÁö detect
+ *  í•´ë‹¹ ì¿¼ë¦¬ê°€ selectì¼ ê²½ìš° FTë‚˜ PVë§Œì„ refí•˜ëŠ”ì§€ detect
  *
  * Implementation :
- *  qmv::detectDollarTablesÇÔ¼ö¸¦ ÀÌ¿ë.
+ *  qmv::detectDollarTablesí•¨ìˆ˜ë¥¼ ì´ìš©.
  *
  ***********************************************************************/
 
@@ -5227,10 +5227,10 @@ IDE_RC qcg::initSessionObjInfo( qcSessionObjInfo ** aSessionObj )
 /***********************************************************************
  *
  * Description :
- *  sessionÁ¾¼ÓÀûÀÎ object ÃÊ±âÈ­ ¹× ¸Ş¸ğ¸® ÇÒ´ç
+ *  sessionì¢…ì†ì ì¸ object ì´ˆê¸°í™” ë° ë©”ëª¨ë¦¬ í• ë‹¹
  *
  * Implementation :
- *  1. openµÈ ÆÄÀÏ¸®½ºÆ®¸¦ ÃÊ±âÈ­
+ *  1. openëœ íŒŒì¼ë¦¬ìŠ¤íŠ¸ë¥¼ ì´ˆê¸°í™”
  *
  ***********************************************************************/
 
@@ -5254,7 +5254,7 @@ IDE_RC qcg::initSessionObjInfo( qcSessionObjInfo ** aSessionObj )
     IDE_TEST( qcuSessionObj::initConnection( sSessionObj )
               != IDE_SUCCESS );
 
-    /* BUG-41307 User Lock Áö¿ø */
+    /* BUG-41307 User Lock ì§€ì› */
     qcuSessionObj::initializeUserLockList( sSessionObj );
 
     *aSessionObj = sSessionObj;
@@ -5281,10 +5281,10 @@ IDE_RC qcg::finalizeSessionObjInfo( qcSessionObjInfo ** aSessionObj )
 /***********************************************************************
  *
  * Description :
- *  sessionÁ¾¼ÓÀûÀÎ object »èÁ¦
+ *  sessionì¢…ì†ì ì¸ object ì‚­ì œ
  *
  * Implementation :
- *  1. openµÈ ÆÄÀÏ¸®½ºÆ®¸¦ close ÇÏ°í ¸Ş¸ğ¸® ÇØÁ¦
+ *  1. openëœ íŒŒì¼ë¦¬ìŠ¤íŠ¸ë¥¼ close í•˜ê³  ë©”ëª¨ë¦¬ í•´ì œ
  *
  ***********************************************************************/
 
@@ -5312,10 +5312,10 @@ IDE_RC qcg::resetSessionObjInfo( qcSessionObjInfo ** aSessionObj )
 /***********************************************************************
  *
  * Description :
- *  sessionÁ¾¼ÓÀûÀÎ object »èÁ¦
+ *  sessionì¢…ì†ì ì¸ object ì‚­ì œ
  *
  * Implementation :
- *  1. openµÈ ÆÄÀÏ¸®½ºÆ®¸¦ close
+ *  1. openëœ íŒŒì¼ë¦¬ìŠ¤íŠ¸ë¥¼ close
  *
  ***********************************************************************/
 
@@ -5330,7 +5330,7 @@ IDE_RC qcg::resetSessionObjInfo( qcSessionObjInfo ** aSessionObj )
         // BUG-40854
         (void)qcuSessionObj::closeAllConnection( sSessionObj );
 
-        /* BUG-41307 User Lock Áö¿ø */
+        /* BUG-41307 User Lock ì§€ì› */
         qcuSessionObj::finalizeUserLockList( sSessionObj );
     }
     else
@@ -5365,7 +5365,7 @@ ULong  qcg::getTotalCost(qcStatement * aStatement )
     if (aStatement->myPlan->graph != NULL)
     {
         // To fix BUG-14503
-        // totalAllCost°¡ SLongÀÇ MAXº¸´Ù Å©¸é º¸Á¤.
+        // totalAllCostê°€ SLongì˜ MAXë³´ë‹¤ í¬ë©´ ë³´ì •.
         if( aStatement->myPlan->graph->costInfo.totalAllCost > ID_SLONG_MAX )
         {
             sCost = ID_SLONG_MAX;
@@ -5390,16 +5390,16 @@ qcg::setBaseTableInfo( qcStatement * aStatement )
  *
  * Description :
  *     BUG-25109
- *     oledb, ado.net¿¡¼­ »ç¿ëÇÒ simple select query¿¡ ´ëÇØ
- *     base table nameÀ» ¾òÀ» ¼ö ÀÖ´Â ÇÔ¼ö°¡ ÇÊ¿äÇÔ
- *     query stringÀº mm¿¡¼­ °ü¸®ÇÏ°í, qp¿¡¼­´Â pointer¸¸ °¡Áø´Ù.
+ *     oledb, ado.netì—ì„œ ì‚¬ìš©í•  simple select queryì— ëŒ€í•´
+ *     base table nameì„ ì–»ì„ ìˆ˜ ìˆëŠ” í•¨ìˆ˜ê°€ í•„ìš”í•¨
+ *     query stringì€ mmì—ì„œ ê´€ë¦¬í•˜ê³ , qpì—ì„œëŠ” pointerë§Œ ê°€ì§„ë‹¤.
  *
  *     ex) select i1 from t1 a;
  *         --> T1, update enable
  *     ex) select i1 from v1 a;
  *         --> V1, update disable
  *     ex) select t1.i1 from t1, t2;
- *         --> ¸®ÅÏÇÒ ÇÊ¿ä¾øÀ½
+ *         --> ë¦¬í„´í•  í•„ìš”ì—†ìŒ
  *
  * Implementation :
  *
@@ -5411,7 +5411,7 @@ qcg::setBaseTableInfo( qcStatement * aStatement )
 
     sParseTree = (qmsParseTree*) aStatement->myPlan->parseTree;
     
-    // baseTableInfo ÃÊ±âÈ­
+    // baseTableInfo ì´ˆê¸°í™”
     idlOS::memset( (void*)&sParseTree->baseTableInfo,
                    0x00,
                    ID_SIZEOF(qmsBaseTableInfo) );
@@ -5448,7 +5448,7 @@ qcg::setBaseTableInfo( qcStatement * aStatement )
 
                 if ( sFrom->tableRef->view == NULL )
                 {
-                    // view°¡ ¾Æ´Ï¸é updateÇÒ ¼ö ÀÖ´Ù.
+                    // viewê°€ ì•„ë‹ˆë©´ updateí•  ìˆ˜ ìˆë‹¤.
                     sParseTree->baseTableInfo.isUpdatable = ID_TRUE;
                 }
                 else
@@ -5472,8 +5472,8 @@ qcg::setBaseTableInfo( qcStatement * aStatement )
     }
 }
 
-/* fix BUG-29965 SQL Plan Cache¿¡¼­ plan execution template °ü¸®°¡
-   Dynamic SQL È¯°æ¿¡¼­´Â °³¼±ÀÌ ÇÊ¿äÇÏ´Ù.
+/* fix BUG-29965 SQL Plan Cacheì—ì„œ plan execution template ê´€ë¦¬ê°€
+   Dynamic SQL í™˜ê²½ì—ì„œëŠ” ê°œì„ ì´ í•„ìš”í•˜ë‹¤.
 */
 void qcg::freePrepTemplate(qcStatement * aStatement,
                            idBool        aRebuild)
@@ -5483,14 +5483,14 @@ void qcg::freePrepTemplate(qcStatement * aStatement,
     if(aStatement->prepTemplateHeader != NULL)
     {
 
-        // ¹İÈ¯ÇÑ´Ù.
+        // ë°˜í™˜í•œë‹¤.
         IDE_ASSERT( aStatement->prepTemplateHeader->prepMutex.lock(NULL /* idvSQL* */)
                     == IDE_SUCCESS );
 
-        // used list¿¡¼­ »èÁ¦.
+        // used listì—ì„œ ì‚­ì œ.
         IDU_LIST_REMOVE(&(aStatement->prepTemplate->prepListNode));
-        /* rebuld°æ¿ì old planÀÌ±â¶§¹®¿¡ ÀÌ¿¡ ´ëÇÑ exection template ÀçÈ°¿ë È®·üÀÌ ¸Å¿ì ¶³¾îÁö±â
-         ¶§¹®¿¡ ¹Ù·Î ÇØÁ¦ ÇÏ¿©¾ß ÇÑ´Ù.*/
+        /* rebuldê²½ìš° old planì´ê¸°ë•Œë¬¸ì— ì´ì— ëŒ€í•œ exection template ì¬í™œìš© í™•ë¥ ì´ ë§¤ìš° ë–¨ì–´ì§€ê¸°
+         ë•Œë¬¸ì— ë°”ë¡œ í•´ì œ í•˜ì—¬ì•¼ í•œë‹¤.*/
         if( ((aStatement->prepTemplateHeader->freeCount) >= QCU_SQL_PLAN_CACHE_PREPARED_EXECUTION_CONTEXT_CNT) ||
             (aRebuild == ID_TRUE) )
         {
@@ -5499,9 +5499,9 @@ void qcg::freePrepTemplate(qcStatement * aStatement,
         else
         {
             aStatement->prepTemplateHeader->freeCount++;
-            //  free listÀ¸·Î move.
+            //  free listìœ¼ë¡œ move.
             IDU_LIST_ADD_LAST(&(aStatement->prepTemplateHeader->freeList),&(aStatement->prepTemplate->prepListNode));
-            // templateÀ» Àç»ç¿ëÇÏ±â À§ÇØ ¹Ì¸® ÃÊ±âÈ­ÇÑ´Ù.
+            // templateì„ ì¬ì‚¬ìš©í•˜ê¸° ìœ„í•´ ë¯¸ë¦¬ ì´ˆê¸°í™”í•œë‹¤.
             qcgPlan::initPrepTemplate4Reuse( QC_PRIVATE_TMPLATE(aStatement) );
             sNeedToFreePrepStmt  = ID_FALSE;
         }
@@ -5515,7 +5515,7 @@ void qcg::freePrepTemplate(qcStatement * aStatement,
         {
             //nothing to do.
         }
-        // prepared private templateÀ» ÃÊ±âÈ­ÇÑ´Ù.
+        // prepared private templateì„ ì´ˆê¸°í™”í•œë‹¤.
         aStatement->prepTemplateHeader = NULL;
         aStatement->prepTemplate = NULL;
     }
@@ -5554,13 +5554,13 @@ IDE_RC qcg::initBindParamData( qcStatement * aStatement )
 /***********************************************************************
  *
  * Description : PROJ-2163
- *      È£½ºÆ® º¯¼öÀÇ µ¥ÀÌÅÍ ¿µ¿ªÀ» ÇÒ´çÇÑ´Ù.
+ *      í˜¸ìŠ¤íŠ¸ ë³€ìˆ˜ì˜ ë°ì´í„° ì˜ì—­ì„ í• ë‹¹í•œë‹¤.
  *
  * Implementation :
- *      1. pBindParam ÀÇ data ¿¡ ÀÌ¹Ì ÇÒ´çµÈ ¸Ş¸ğ¸®¸¦ ÇØÁ¦
- *      2. È£½ºÆ® º¯¼öµéÀÇ »çÀÌÁî¸¦ ÇÕ»êÇÏ°í ¸Ş¸ğ¸®¸¦ ÇÒ´ç
- *      3. pBindParam ÀÇ data ¿¡ ¼³Á¤
- *      4. Variable tuple ÀÇ row ¿¡ ¼³Á¤ (BUG-34995)
+ *      1. pBindParam ì˜ data ì— ì´ë¯¸ í• ë‹¹ëœ ë©”ëª¨ë¦¬ë¥¼ í•´ì œ
+ *      2. í˜¸ìŠ¤íŠ¸ ë³€ìˆ˜ë“¤ì˜ ì‚¬ì´ì¦ˆë¥¼ í•©ì‚°í•˜ê³  ë©”ëª¨ë¦¬ë¥¼ í• ë‹¹
+ *      3. pBindParam ì˜ data ì— ì„¤ì •
+ *      4. Variable tuple ì˜ row ì— ì„¤ì • (BUG-34995)
  *
  ***********************************************************************/
 
@@ -5578,15 +5578,15 @@ IDE_RC qcg::initBindParamData( qcStatement * aStatement )
     {
         sParam = aStatement->pBindParam;
 
-        // 1. pBindParam ÀÇ data ¿¡ ÀÌ¹Ì ÇÒ´çµÈ ¸Ş¸ğ¸®¸¦ ÇØÁ¦
+        // 1. pBindParam ì˜ data ì— ì´ë¯¸ í• ë‹¹ëœ ë©”ëª¨ë¦¬ë¥¼ í•´ì œ
 
-        // Ã¹¹øÂ° È£½ºÆ® º¯¼öÀÇ data °¡ iduVarMemList ¿¡¼­ ¾ò¾î¿Â ÁÖ¼ÒÀÌ´Ù.
-        // µÎ¹øÂ° ÀÌÈÄÀÇ È£½ºÆ® º¯¼ö´Â ÀÌ ¸Ş¸ğ¸®¸¦ Àß¶ó¼­ »ç¿ëÇÏ´Â °ÍÀÌ¹Ç·Î
-        // Ã¹¹øÂ° È£½ºÆ® º¯¼öÀÇ data ¸¦ º¸°í ÇÒ´ç¿©ºÎ¸¦ ÆÇ´ÜÇÑ´Ù.
+        // ì²«ë²ˆì§¸ í˜¸ìŠ¤íŠ¸ ë³€ìˆ˜ì˜ data ê°€ iduVarMemList ì—ì„œ ì–»ì–´ì˜¨ ì£¼ì†Œì´ë‹¤.
+        // ë‘ë²ˆì§¸ ì´í›„ì˜ í˜¸ìŠ¤íŠ¸ ë³€ìˆ˜ëŠ” ì´ ë©”ëª¨ë¦¬ë¥¼ ì˜ë¼ì„œ ì‚¬ìš©í•˜ëŠ” ê²ƒì´ë¯€ë¡œ
+        // ì²«ë²ˆì§¸ í˜¸ìŠ¤íŠ¸ ë³€ìˆ˜ì˜ data ë¥¼ ë³´ê³  í• ë‹¹ì—¬ë¶€ë¥¼ íŒë‹¨í•œë‹¤.
         if( sParam[0].param.data != NULL )
         {
-            // iduVarMemList->free ÇÔ¼ö´Â EXCEPTION À» ¹ß»ı½ÃÅ°Áö ¾Ê´Â´Ù.
-            // µû¶ó¼­ IDE_TEST ·Î ºĞ±âÇÏÁö ¾Ê´Â´Ù.
+            // iduVarMemList->free í•¨ìˆ˜ëŠ” EXCEPTION ì„ ë°œìƒì‹œí‚¤ì§€ ì•ŠëŠ”ë‹¤.
+            // ë”°ë¼ì„œ IDE_TEST ë¡œ ë¶„ê¸°í•˜ì§€ ì•ŠëŠ”ë‹¤.
             QC_QMB_MEM(aStatement)->free( sParam[0].param.data );
 
             for( i = 0; i < aStatement->pBindParamCount; i++ )
@@ -5595,36 +5595,36 @@ IDE_RC qcg::initBindParamData( qcStatement * aStatement )
             }
         }
 
-        // 2. È£½ºÆ® º¯¼öµéÀÇ »çÀÌÁî¸¦ ÇÕ»êÇÏ°í ¸Ş¸ğ¸®¸¦ ÇÒ´ç
+        // 2. í˜¸ìŠ¤íŠ¸ ë³€ìˆ˜ë“¤ì˜ ì‚¬ì´ì¦ˆë¥¼ í•©ì‚°í•˜ê³  ë©”ëª¨ë¦¬ë¥¼ í• ë‹¹
         IDE_TEST( calculateVariableTupleSize( aStatement,
                                               sSize,
                                               sOffset,
                                               & sTupleSize )
                   != IDE_SUCCESS );
 
-        // ¸Ş¸ğ¸®¸¦ ÇÒ´ç
+        // ë©”ëª¨ë¦¬ë¥¼ í• ë‹¹
         IDU_FIT_POINT( "qcg::initBindParamData::cralloc::sTupleRow",
                         idERR_ABORT_InsufficientMemory );
 
         // PROJ-1362
-        // lobÀÌ out-bind µÇ¾úÀ» ¶§ executeÁß ¿¡·¯°¡ ¹ß»ıÇÏ´Â °æ¿ì
-        // (ex, updateÁß ¿¡·¯°¡ ³µÀ» °æ¿ì)
-        // ÀÌ¹Ì openµÈ locator¿¡ ´ëÇØ close ÇÏ±âÀ§ÇØ
-        // mmÀº Ç×»ó getBindParamData¸¦ È£ÃâÇÑ´Ù.
-        // variable tupleÀÇ row¸¦ ÃÊ±âÈ­ ÇÔÀ¸·Î½á
-        // mm¿¡¼­ locator°¡ openµÇ¾ú´ÂÁö¸¦ ÆÇÇÑÇÒ ¼ö ÀÖ°Ô ÇÑ´Ù.
+        // lobì´ out-bind ë˜ì—ˆì„ ë•Œ executeì¤‘ ì—ëŸ¬ê°€ ë°œìƒí•˜ëŠ” ê²½ìš°
+        // (ex, updateì¤‘ ì—ëŸ¬ê°€ ë‚¬ì„ ê²½ìš°)
+        // ì´ë¯¸ openëœ locatorì— ëŒ€í•´ close í•˜ê¸°ìœ„í•´
+        // mmì€ í•­ìƒ getBindParamDataë¥¼ í˜¸ì¶œí•œë‹¤.
+        // variable tupleì˜ rowë¥¼ ì´ˆê¸°í™” í•¨ìœ¼ë¡œì¨
+        // mmì—ì„œ locatorê°€ openë˜ì—ˆëŠ”ì§€ë¥¼ íŒí•œí•  ìˆ˜ ìˆê²Œ í•œë‹¤.
         IDE_TEST( aStatement->qmbMem->cralloc( sTupleSize,
                                                (void**)&(sTupleRow) )
                   != IDE_SUCCESS);
 
-        // 3. pBindParam ÀÇ data ¿¡ tuple ÁÖ¼Ò ¼³Á¤
+        // 3. pBindParam ì˜ data ì— tuple ì£¼ì†Œ ì„¤ì •
         for( i = 0; i < aStatement->pBindParamCount; i++ )
         {
             sParam[i].param.data     = (SChar*)sTupleRow + sOffset[i];
             sParam[i].param.dataSize = sSize[i];
         }
 
-        // 4. Variable tuple ÀÇ row ¿¡ »õ·Î ÇÒ´çÇÑ sTupleRow ¸¦ set (BUG-34995)
+        // 4. Variable tuple ì˜ row ì— ìƒˆë¡œ í• ë‹¹í•œ sTupleRow ë¥¼ set (BUG-34995)
         sTemplate  = QC_PRIVATE_TMPLATE(aStatement);
         sBindTuple = sTemplate->tmplate.variableRow;
 
@@ -5650,16 +5650,16 @@ IDE_RC qcg::calculateVariableTupleSize( qcStatement * aStatement,
 /***********************************************************************
  *
  * Description : PROJ-2163
- *      pBindParam Á¤º¸·Î °¢ È£½ºÆ® º¯¼öÀÇ size, offset °ú
- *      tuple size ¸¦ °è»êÇÑ´Ù.
- *      PROJ-2163 Àü¿£ type bind protocol ¿¡¼­ mtcColumn À» »ı¼ºÇÏ°í
- *      smiColumn ÀÇ size ¸¦ º¼ ¼ö ÀÖ¾úÁö¸¸
- *      ÀÌÁ¦ mtcColumn Àº prepare ´Ü°è¿¡¼­ »ı¼ºÇÏ¹Ç·Î Á÷Á¢ °è»êÇØ¾ß ÇÑ´Ù.
+ *      pBindParam ì •ë³´ë¡œ ê° í˜¸ìŠ¤íŠ¸ ë³€ìˆ˜ì˜ size, offset ê³¼
+ *      tuple size ë¥¼ ê³„ì‚°í•œë‹¤.
+ *      PROJ-2163 ì „ì—” type bind protocol ì—ì„œ mtcColumn ì„ ìƒì„±í•˜ê³ 
+ *      smiColumn ì˜ size ë¥¼ ë³¼ ìˆ˜ ìˆì—ˆì§€ë§Œ
+ *      ì´ì œ mtcColumn ì€ prepare ë‹¨ê³„ì—ì„œ ìƒì„±í•˜ë¯€ë¡œ ì§ì ‘ ê³„ì‚°í•´ì•¼ í•œë‹¤.
  *
  * Implementation :
- *      1. Type id ¿¡ ¸Â´Â mtdModule À» ¾ò´Â´Ù.
- *      2. Column size ¸¦ ¾ò±âÀ§ÇØ estimate ¸¦ ¼öÇàÇÑ´Ù.
- *      3. align À» °í·ÁÇØ tuple size ¸¦ ±¸ÇÑ´Ù.
+ *      1. Type id ì— ë§ëŠ” mtdModule ì„ ì–»ëŠ”ë‹¤.
+ *      2. Column size ë¥¼ ì–»ê¸°ìœ„í•´ estimate ë¥¼ ìˆ˜í–‰í•œë‹¤.
+ *      3. align ì„ ê³ ë ¤í•´ tuple size ë¥¼ êµ¬í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -5682,9 +5682,9 @@ IDE_RC qcg::calculateVariableTupleSize( qcStatement * aStatement,
         sArguments  = aStatement->pBindParam[i].param.arguments;
         sScale      = aStatement->pBindParam[i].param.scale;
 
-        // ÇØ´ç mtdModule Ã£¾Æ¼­ size calculate
+        // í•´ë‹¹ mtdModule ì°¾ì•„ì„œ size calculate
 
-        // 1. Type id ¿¡ ¸Â´Â mtdModule À» ¾ò´Â´Ù.
+        // 1. Type id ì— ë§ëŠ” mtdModule ì„ ì–»ëŠ”ë‹¤.
         IDE_TEST( mtd::moduleById( & sModule, sTypeId ) != IDE_SUCCESS);
 
         if ( sModule->id == MTD_NUMBER_ID )
@@ -5705,23 +5705,23 @@ IDE_RC qcg::calculateVariableTupleSize( qcStatement * aStatement,
             sRealModule = sModule;
         }
 
-        // 2. Column size ¸¦ ¾ò±âÀ§ÇØ estimate ¸¦ ¼öÇàÇÑ´Ù.
-        // estimate ´Â semantic °Ë»ç¿ë ÇÔ¼öÁö¸¸ size ÃøÁ¤À» À§ÇØ »ç¿ëÇÑ´Ù.
+        // 2. Column size ë¥¼ ì–»ê¸°ìœ„í•´ estimate ë¥¼ ìˆ˜í–‰í•œë‹¤.
+        // estimate ëŠ” semantic ê²€ì‚¬ìš© í•¨ìˆ˜ì§€ë§Œ size ì¸¡ì •ì„ ìœ„í•´ ì‚¬ìš©í•œë‹¤.
         IDE_TEST( sRealModule->estimate( & sSize,
                                          & sArguments,
                                          & sPrecision,
                                          & sScale )
                   != IDE_SUCCESS );
 
-        // 3. align À» °í·ÁÇØ tuple size ¸¦ ±¸ÇÑ´Ù.
+        // 3. align ì„ ê³ ë ¤í•´ tuple size ë¥¼ êµ¬í•œë‹¤.
 
-        // offset °è»ê. °¢ Å¸ÀÔÀÇ align ±îÁö °í·ÁÇØ¾ß ÇÑ´Ù.
+        // offset ê³„ì‚°. ê° íƒ€ì…ì˜ align ê¹Œì§€ ê³ ë ¤í•´ì•¼ í•œë‹¤.
         sOffset = idlOS::align( sOffset, sRealModule->align );
 
-        // 3.1. È£½ºÆ® º¯¼öÀÇ offset
+        // 3.1. í˜¸ìŠ¤íŠ¸ ë³€ìˆ˜ì˜ offset
         aOffset[i] = sOffset;
 
-        // 3.2. È£½ºÆ® º¯¼öÀÇ size
+        // 3.2. í˜¸ìŠ¤íŠ¸ ë³€ìˆ˜ì˜ size
         aSize[i] = sSize;
 
         sOffset += sSize;
@@ -5741,11 +5741,11 @@ IDE_RC qcg::fixOutBindParam( qcStatement * aStatement )
 /***********************************************************************
  *
  * Description : PROJ-2163
- *      Type binding Áß out bind parameter ºÎºĞÀ» Ã³¸®ÇÏ´Â ÇÔ¼ö
- *      ½ÇÁ¦ parameter Ã³¸®´Â qcg::setOutBindColumn4SP ÇÔ¼ö¿¡¼­ ¼öÇàÇÑ´Ù.
+ *      Type binding ì¤‘ out bind parameter ë¶€ë¶„ì„ ì²˜ë¦¬í•˜ëŠ” í•¨ìˆ˜
+ *      ì‹¤ì œ parameter ì²˜ë¦¬ëŠ” qcg::setOutBindColumn4SP í•¨ìˆ˜ì—ì„œ ìˆ˜í–‰í•œë‹¤.
  *
  * Implementation :
- *      Variable tuple ÀÇ row·Î »ı¼º ¹× data copy
+ *      Variable tuple ì˜ rowë¡œ ìƒì„± ë° data copy
  *
  ***********************************************************************/
 
@@ -5756,13 +5756,13 @@ IDE_RC qcg::fixOutBindParam( qcStatement * aStatement )
     SChar         * sParamData;
     UShort          sColumn;
 
-    // È£½ºÆ® º¯¼öÀÇ °³¼ö°¡ 0º¸´Ù Å©°í pBindParamÀÌ NULLÀÌ ¾Æ´Ï¸é
-    // reprepare, rebuild »óÈ²¿¡¼­ È£ÃâµÈ °æ¿ìÀÌ´Ù.
+    // í˜¸ìŠ¤íŠ¸ ë³€ìˆ˜ì˜ ê°œìˆ˜ê°€ 0ë³´ë‹¤ í¬ê³  pBindParamì´ NULLì´ ì•„ë‹ˆë©´
+    // reprepare, rebuild ìƒí™©ì—ì„œ í˜¸ì¶œëœ ê²½ìš°ì´ë‹¤.
     if( ( qcg::getBindCount( aStatement ) > 0 ) &&
         ( aStatement->pBindParam != NULL ) )
     {
-        // setPrivateTemplateÀÌ È£ÃâµÇ±â ÀÌÀüÀÌ´Ù.
-        // µû¶ó¼­ shared templateÀ» ÂüÁ¶ÇØ¾ß ÇÑ´Ù.
+        // setPrivateTemplateì´ í˜¸ì¶œë˜ê¸° ì´ì „ì´ë‹¤.
+        // ë”°ë¼ì„œ shared templateì„ ì°¸ì¡°í•´ì•¼ í•œë‹¤.
         sTemplate      = QC_SHARED_TMPLATE(aStatement);
         sVariableTuple = &sTemplate->tmplate.rows[sTemplate->tmplate.variableRow];
 
@@ -5909,7 +5909,7 @@ IDE_RC qcg::allocTemplate4Pkg( qcSessionPkgInfo * aSessionPkg, iduMemory * aMemo
                               (void**)&( sTemplate ) )
               != IDE_SUCCESS);
 
-    // stackÀº ÃßÈÄ ¼³Á¤ÇÑ´Ù.
+    // stackì€ ì¶”í›„ ì„¤ì •í•œë‹¤.
     sTemplate->tmplate.stackBuffer     = NULL;
     sTemplate->tmplate.stack           = NULL;
     sTemplate->tmplate.stackCount      = 0;
@@ -5939,7 +5939,7 @@ IDE_RC qcg::allocTemplate4Pkg( qcSessionPkgInfo * aSessionPkg, iduMemory * aMemo
     sTemplate->tmplate.getECCInfo      = qcsModule::getECCInfoCallback;
     sTemplate->tmplate.getECCSize      = qcsModule::getECCSize;
 
-    // dateFormatÀº ÃßÈÄ ¼³Á¤ÇÑ´Ù.
+    // dateFormatì€ ì¶”í›„ ì„¤ì •í•œë‹¤.
     sTemplate->tmplate.dateFormat      = NULL;
     sTemplate->tmplate.dateFormatRef   = ID_FALSE;
 
@@ -5962,7 +5962,7 @@ IDE_RC qcg::allocTemplate4Pkg( qcSessionPkgInfo * aSessionPkg, iduMemory * aMemo
     sTemplate->tmplate.nlsUse          = NULL;
 
     // To Fix PR-12659
-    // Internal Tuple Set °ü·Ã ¸Ş¸ğ¸®´Â ÇÊ¿ä¿¡ ÇÒ´ç¹Şµµ·Ï ÇÔ.
+    // Internal Tuple Set ê´€ë ¨ ë©”ëª¨ë¦¬ëŠ” í•„ìš”ì— í• ë‹¹ë°›ë„ë¡ í•¨.
     sTemplate->tmplate.rowCount      = 0;
     sTemplate->tmplate.rowArrayCount = 0;
 
@@ -5973,9 +5973,9 @@ IDE_RC qcg::allocTemplate4Pkg( qcSessionPkgInfo * aSessionPkg, iduMemory * aMemo
 
     //-------------------------------------------------------
     // PROJ-1358
-    // Internal TupleÀÇ ÀÚµ¿È®Àå°ú °ü·ÃÇÏ¿©
-    // Internal TupleÀÇ °ø°£À» ÇÒ´çÇÏ°í,
-    // Table MapÀÇ °ø°£À» ÃÊ±âÈ­ÇÏ¿© ÇÒ´çÇÑ´Ù.
+    // Internal Tupleì˜ ìë™í™•ì¥ê³¼ ê´€ë ¨í•˜ì—¬
+    // Internal Tupleì˜ ê³µê°„ì„ í• ë‹¹í•˜ê³ ,
+    // Table Mapì˜ ê³µê°„ì„ ì´ˆê¸°í™”í•˜ì—¬ í• ë‹¹í•œë‹¤.
     //-------------------------------------------------------
 
     sTemplate->planCount = 0;
@@ -5998,11 +5998,11 @@ IDE_RC qcg::allocTemplate4Pkg( qcSessionPkgInfo * aSessionPkg, iduMemory * aMemo
     sTemplate->sysdate = NULL;
     sTemplate->currentdate = NULL;
 
-    // PROJ-1413 tupleVarList ÃÊ±âÈ­
+    // PROJ-1413 tupleVarList ì´ˆê¸°í™”
     sTemplate->tupleVarGenNumber = 0;
     sTemplate->tupleVarList = NULL;
 
-    // BUG-16422 executeÁß ÀÓ½Ã »ı¼ºµÈ tableInfoÀÇ °ü¸®
+    // BUG-16422 executeì¤‘ ì„ì‹œ ìƒì„±ëœ tableInfoì˜ ê´€ë¦¬
     sTemplate->tableInfoMgr = NULL;
 
     // PROJ-1436
@@ -6111,8 +6111,8 @@ IDE_RC qcg::runProcforJob( UInt     aJobThreadIndex,
  * PROJ-1071 Parallel Query
  * ---------------------------------------------------------------------------
  * mPrlThrUseCnt
- * ÇöÀç ¼­¹ö¿¡¼­ ÃÑ ¸î°³ÀÇ parallel worker thread °¡ »ç¿ëÁßÀÎÁö¸¦ ³ªÅ¸³¿
- * ¸ğµç session ¿¡¼­ °øÀ¯
+ * í˜„ì¬ ì„œë²„ì—ì„œ ì´ ëª‡ê°œì˜ parallel worker thread ê°€ ì‚¬ìš©ì¤‘ì¸ì§€ë¥¼ ë‚˜íƒ€ëƒ„
+ * ëª¨ë“  session ì—ì„œ ê³µìœ 
  * ---------------------------------------------------------------------------
  */
 
@@ -6147,7 +6147,7 @@ IDE_RC qcg::reservePrlThr(UInt aRequire, UInt* aReserveCnt)
 
     if (mPrlThrUseCnt.mCnt + aRequire <= QCU_PARALLEL_QUERY_THREAD_MAX)
     {
-        // ¿äÃ»¹ŞÀº thread ¼ö ¸¸Å­ ¿¹¾àÇÒ ¼ö ÀÖÀ» ¶§
+        // ìš”ì²­ë°›ì€ thread ìˆ˜ ë§Œí¼ ì˜ˆì•½í•  ìˆ˜ ìˆì„ ë•Œ
         sReserve = aRequire;
         mPrlThrUseCnt.mCnt += sReserve;
     }
@@ -6155,14 +6155,14 @@ IDE_RC qcg::reservePrlThr(UInt aRequire, UInt* aReserveCnt)
     {
         if (mPrlThrUseCnt.mCnt < QCU_PARALLEL_QUERY_THREAD_MAX)
         {
-            // ¿äÃ»¹ŞÀº thread ¼ö ¸¸Å­Àº ¿¹¾àÇÒ ¼ö ¾øÁö¸¸
-            // º¸´Ù ÀûÀº ¼ö¶óµµ ¿¹¾àÇÒ ¼ö ÀÖÀ» ¶§ °¡´ÉÇÑ¸¸Å­ ¿¹¾àÇÑ´Ù
+            // ìš”ì²­ë°›ì€ thread ìˆ˜ ë§Œí¼ì€ ì˜ˆì•½í•  ìˆ˜ ì—†ì§€ë§Œ
+            // ë³´ë‹¤ ì ì€ ìˆ˜ë¼ë„ ì˜ˆì•½í•  ìˆ˜ ìˆì„ ë•Œ ê°€ëŠ¥í•œë§Œí¼ ì˜ˆì•½í•œë‹¤
             sReserve = QCU_PARALLEL_QUERY_THREAD_MAX - mPrlThrUseCnt.mCnt;
             mPrlThrUseCnt.mCnt += sReserve;
         }
         else
         {
-            // ÀÌ¹Ì ÃÖ´ëÄ¡±îÁö ¿¹¾à»óÅÂÀÏ ¶§
+            // ì´ë¯¸ ìµœëŒ€ì¹˜ê¹Œì§€ ì˜ˆì•½ìƒíƒœì¼ ë•Œ
             sReserve = 0;
         }
     }
@@ -6256,8 +6256,8 @@ IDE_RC qcg::finishAndReleaseThread(qcStatement* aStatement)
  * ------------------------------------------------------------------
  * PROJ-1071 Parallel Query
  *
- * worker thread ¸¦ ¸ğµÎ Á¾·áÇÑ´Ù (thread join)
- * close cursor ¸¦ ÇÏ±â Àü¿¡ ¹İµå½Ã ÀÌ ÀÛ¾÷À» ¼öÇàÇØ¾ßÇÔ
+ * worker thread ë¥¼ ëª¨ë‘ ì¢…ë£Œí•œë‹¤ (thread join)
+ * close cursor ë¥¼ í•˜ê¸° ì „ì— ë°˜ë“œì‹œ ì´ ì‘ì—…ì„ ìˆ˜í–‰í•´ì•¼í•¨
  * ------------------------------------------------------------------
  */
 IDE_RC qcg::joinThread(qcStatement* aStatement)
@@ -6289,7 +6289,7 @@ IDE_RC qcg::joinThread(qcStatement* aStatement)
  * ------------------------------------------------------------------
  * PROJ-1071 Parallel Query
  * ------------------------------------------------------------------
- * parallel worker thread ¿¡¼­ »ç¿ëÇÏ´Â template ÇÒ´çÀ» À§ÇÑ ÇÔ¼öµé
+ * parallel worker thread ì—ì„œ ì‚¬ìš©í•˜ëŠ” template í• ë‹¹ì„ ìœ„í•œ í•¨ìˆ˜ë“¤
  *
  * - cloneTemplate4Parallel()
  * - allocAndCloneTemplate4Parallel()
@@ -6302,14 +6302,14 @@ IDE_RC qcg::cloneTemplate4Parallel( iduMemory  * aMemory,
                                     qcTemplate * aSource,
                                     qcTemplate * aDestination )
 {
-    // mtcTemplate ÀÇ º¹»ç
+    // mtcTemplate ì˜ ë³µì‚¬
     IDE_TEST( mtc::cloneTemplate4Parallel( aMemory,
                                            &aSource->tmplate,
                                            &aDestination->tmplate )
               != IDE_SUCCESS );
 
-    // planFlag, data plan, execInfo ¸¦ clone ÇÏ°í
-    // cursor manager, temp table manager ¸¦ ¿¬°áÇÑ´Ù.
+    // planFlag, data plan, execInfo ë¥¼ clone í•˜ê³ 
+    // cursor manager, temp table manager ë¥¼ ì—°ê²°í•œë‹¤.
     cloneTemplateMember( aSource, aDestination );
 
     // initialize basic members
@@ -6333,8 +6333,8 @@ IDE_RC qcg::allocAndCloneTemplate4Parallel( iduMemory  * aMemory,
     UShort sTupleID;
 
     // PROJ-1358
-    // Template º¹»ç Àü¿¡ Internal Tuple Set°ø°£À»
-    // ÇÒ´çÇØ ÁÖ¾î¾ß ÇÔ.
+    // Template ë³µì‚¬ ì „ì— Internal Tuple Setê³µê°„ì„
+    // í• ë‹¹í•´ ì£¼ì–´ì•¼ í•¨.
     aDestination->tmplate.rowArrayCount = aSource->tmplate.rowArrayCount;
 
     IDE_TEST( allocInternalTuple( aDestination,
@@ -6342,18 +6342,18 @@ IDE_RC qcg::allocAndCloneTemplate4Parallel( iduMemory  * aMemory,
                                   aDestination->tmplate.rowArrayCount )
               != IDE_SUCCESS );
 
-    // mtcTemplate ÀÇ º¹»ç
+    // mtcTemplate ì˜ ë³µì‚¬
     IDE_TEST( mtc::cloneTemplate4Parallel( aMemory,
                                            &aSource->tmplate,
                                            &aDestination->tmplate )
               != IDE_SUCCESS );
 
-    // Intermediate tuple Àº row ¸¦ ÀçÇÒ´ç ÇØ¾ßÇÑ´Ù.
+    // Intermediate tuple ì€ row ë¥¼ ì¬í• ë‹¹ í•´ì•¼í•œë‹¤.
     for ( i = 0; i < aSource->tmplate.rowCount; i++ )
     {
         sMtcFlag = aSource->tmplate.rows[i].lflag;
 
-        // ROW ALLOC ÀÎ tuple Àº INTERMEDIATE ¹Û¿¡ ¾ø´Ù.
+        // ROW ALLOC ì¸ tuple ì€ INTERMEDIATE ë°–ì— ì—†ë‹¤.
         if ( (sMtcFlag & MTC_TUPLE_ROW_ALLOCATE_MASK)
              == MTC_TUPLE_ROW_ALLOCATE_TRUE )
         {
@@ -6375,9 +6375,9 @@ IDE_RC qcg::allocAndCloneTemplate4Parallel( iduMemory  * aMemory,
         }
     }
 
-    // ´ÙÀ½ ¿ä¼ÒµéÀ» ÇÒ´çÇÏ°í clone ÇÏ°Å³ª ¿øº» template °ú ¿¬°áÇÑ´Ù.
+    // ë‹¤ìŒ ìš”ì†Œë“¤ì„ í• ë‹¹í•˜ê³  clone í•˜ê±°ë‚˜ ì›ë³¸ template ê³¼ ì—°ê²°í•œë‹¤.
     // Clone : planCount, planFlag, tmplate.data, tmplate.execInfo
-    // ¿¬°á  : cursorMgr, tempTableMgr
+    // ì—°ê²°  : cursorMgr, tempTableMgr
     IDE_TEST( allocAndCloneTemplateMember( aMemory,
                                            aSource,
                                            aDestination )
@@ -6386,7 +6386,7 @@ IDE_RC qcg::allocAndCloneTemplate4Parallel( iduMemory  * aMemory,
     // clone table map
     for ( i = 0; i < aSource->tmplate.rowArrayCount; i++ )
     {
-        // AssignÀ¸·Î º¯°æÇÑ´Ù. (¼º´É ÀÌ½´)
+        // Assignìœ¼ë¡œ ë³€ê²½í•œë‹¤. (ì„±ëŠ¥ ì´ìŠˆ)
         aDestination->tableMap[i] = aSource->tableMap[i];
     }
 
@@ -6404,7 +6404,7 @@ IDE_RC qcg::allocAndCloneTemplate4Parallel( iduMemory  * aMemory,
 
     /*
      * BUG-38843 The procedure or function call depth has exceeded
-     * spxEnv ´Â °øÀ¯ÇÏÁö ¾Ê´Â´Ù.
+     * spxEnv ëŠ” ê³µìœ í•˜ì§€ ì•ŠëŠ”ë‹¤.
      */
     IDE_TEST(aMemory->alloc(ID_SIZEOF(qsxEnvInfo),
                             (void**)&aDestination->stmt->spxEnv)
@@ -6439,12 +6439,12 @@ IDE_RC qcg::allocAndCloneTemplate4Parallel( iduMemory  * aMemory,
             aDestination->insOrUptRowValueCount[i] =
                 aSource->insOrUptRowValueCount[i];
 
-            // ÇÁ·Î½ÃÀú¿¡¼­ 0¹ø templateÀÇ insOrUptStmtCount °ªÀº 0º¸´Ù
-            // Å¬ ¼ö ÀÖ´Ù.
-            // ÇÏÁö¸¸ insOrUptRowValueCount[i]ÀÇ °ªÀº Ç×»ó 0ÀÌ´Ù.
-            // ÀÌÀ¯´Â statement º°·Î º°µµÀÇ templateÀÌ À¯ÁöµÇ±â ¶§¹®ÀÌ´Ù.
+            // í”„ë¡œì‹œì €ì—ì„œ 0ë²ˆ templateì˜ insOrUptStmtCount ê°’ì€ 0ë³´ë‹¤
+            // í´ ìˆ˜ ìˆë‹¤.
+            // í•˜ì§€ë§Œ insOrUptRowValueCount[i]ì˜ ê°’ì€ í•­ìƒ 0ì´ë‹¤.
+            // ì´ìœ ëŠ” statement ë³„ë¡œ ë³„ë„ì˜ templateì´ ìœ ì§€ë˜ê¸° ë•Œë¬¸ì´ë‹¤.
 
-            // ¿¹)
+            // ì˜ˆ)
             // create or replace procedure proc1 as
             // begin
             // insert into t1 values ( 1, 1 );
@@ -6471,25 +6471,25 @@ IDE_RC qcg::allocAndCloneTemplate4Parallel( iduMemory  * aMemory,
         aDestination->insOrUptRow = NULL;
     }
 
-    // PROJ-1413 tupleVarList ÃÊ±âÈ­
+    // PROJ-1413 tupleVarList ì´ˆê¸°í™”
     aDestination->tupleVarGenNumber = aSource->tupleVarGenNumber;
     aDestination->tupleVarList      = aSource->tupleVarList;
 
-    // executeÁß ÀÓ½Ã »ı¼ºµÈ tableInfoÀÇ °ü¸®
+    // executeì¤‘ ì„ì‹œ ìƒì„±ëœ tableInfoì˜ ê´€ë¦¬
     aDestination->tableInfoMgr = aSource->tableInfoMgr;
 
     // PROJ-1436
     aDestination->indirectRef = aSource->indirectRef;
 
-    // Date ´Â ¿øº» template °ú µ¿ÀÏÇÑ ½Ã°£À» »ç¿ëÇØ¾ß ÇÑ´Ù.
+    // Date ëŠ” ì›ë³¸ template ê³¼ ë™ì¼í•œ ì‹œê°„ì„ ì‚¬ìš©í•´ì•¼ í•œë‹¤.
     aDestination->unixdate    = aSource->unixdate;
     aDestination->sysdate     = aSource->sysdate;
     aDestination->currentdate = aSource->currentdate;
 
     /*
      * BUG-38830 constant wrapper + sysdate
-     * date pseudo column Àº execute ½ÃÀÛ½Ã ÇÑ¹ø¸¸ setting µÈ´Ù.
-     * clone template ÇÒ¶§ ¿øº»¿¡¼­ copy ÇØ¿Â´Ù.
+     * date pseudo column ì€ execute ì‹œì‘ì‹œ í•œë²ˆë§Œ setting ëœë‹¤.
+     * clone template í• ë•Œ ì›ë³¸ì—ì„œ copy í•´ì˜¨ë‹¤.
      */
     if (aDestination->unixdate != NULL)
     {
@@ -6605,19 +6605,19 @@ IDE_RC qcg::allocAndCloneTemplateMember( iduMemory  * aMemory,
     aDestination->tmplate.execInfo = NULL;
     aDestination->tmplate.funcData = NULL;
 
-    // Cursor manager ¿Í temp table manager ´Â »õ·Î ÇÒ´çÇÏÁö ¾Ê´Â´Ù.
+    // Cursor manager ì™€ temp table manager ëŠ” ìƒˆë¡œ í• ë‹¹í•˜ì§€ ì•ŠëŠ”ë‹¤.
 
     // Link cursor manager
-    // Cursor manager ¸¦ °øÀ¯ÇÏ¿© statemnet Á¾·á ½Ã ÇÑ¹ø¿¡ ¸ğµç Ä¿¼­¸¦
-    // Á¾·áÇÏµµ·Ï ÇÑ´Ù.
+    // Cursor manager ë¥¼ ê³µìœ í•˜ì—¬ statemnet ì¢…ë£Œ ì‹œ í•œë²ˆì— ëª¨ë“  ì»¤ì„œë¥¼
+    // ì¢…ë£Œí•˜ë„ë¡ í•œë‹¤.
     aDestination->cursorMgr = aSource->cursorMgr;
 
     // Link temp table manager
-    // Temp table manager ¸¦ °øÀ¯ÇÏ¿© statemnet Á¾·á ½Ã ÇÑ¹ø¿¡ ¸ğµç
-    // temp table µéÀ» Á¤¸®ÇÏµµ·Ï ÇÑ´Ù.
+    // Temp table manager ë¥¼ ê³µìœ í•˜ì—¬ statemnet ì¢…ë£Œ ì‹œ í•œë²ˆì— ëª¨ë“ 
+    // temp table ë“¤ì„ ì •ë¦¬í•˜ë„ë¡ í•œë‹¤.
     aDestination->tempTableMgr = aSource->tempTableMgr;
 
-    // Data plan ÇÒ´ç
+    // Data plan í• ë‹¹
     if( aSource->tmplate.dataSize > 0 )
     {
         IDU_FIT_POINT( "qcg::allocAndCloneTemplateMember::alloc::tmplateData",
@@ -6707,8 +6707,8 @@ IDE_RC qcg::allocAndCloneTemplateMember( iduMemory  * aMemory,
     // BUG-44795
     aDestination->optimizerDBMSStatPolicy = QCU_OPTIMIZER_DBMS_STAT_POLICY;
 
-    // planFlag, data plan, execInfo ¸¦ clone ÇÏ°í
-    // cursor manager, temp table manager ¸¦ ¿¬°áÇÑ´Ù.
+    // planFlag, data plan, execInfo ë¥¼ clone í•˜ê³ 
+    // cursor manager, temp table manager ë¥¼ ì—°ê²°í•œë‹¤.
     cloneTemplateMember( aSource, aDestination );
 
     return IDE_SUCCESS;
@@ -6750,7 +6750,7 @@ void qcg::cloneTemplateMember( qcTemplate* aSource, qcTemplate* aDestination )
         // Nothing to do.
     }
 
-    // execInfo µµ º¹»çÇÑ´Ù.
+    // execInfo ë„ ë³µì‚¬í•œë‹¤.
     aDestination->tmplate.execInfoCnt = aSource->tmplate.execInfoCnt;
 
     for ( i = 0; i < aSource->tmplate.execInfoCnt; i++ )
@@ -6773,7 +6773,7 @@ void qcg::cloneTemplateMember( qcTemplate* aSource, qcTemplate* aDestination )
         // Nothing to do.
     }
     
-    // Tuple->modify ´Â ÃÊ±âÈ­ ÇØ¾ß ÇÑ´Ù.
+    // Tuple->modify ëŠ” ì´ˆê¸°í™” í•´ì•¼ í•œë‹¤.
     resetTupleSet( aDestination );
 }
 
@@ -6811,19 +6811,19 @@ void qcg::clearStmtListMgr( qcStmtListMgr * aStmtListMgr )
 /***********************************************************************
  *
  * Description : BUG-38294
- *    Parallel query ¿¡¼­ »ç¿ëÇÒ QMX, QXC ¸Ş¸ğ¸®¸¦ »ı¼ºÇÑ´Ù.
+ *    Parallel query ì—ì„œ ì‚¬ìš©í•  QMX, QXC ë©”ëª¨ë¦¬ë¥¼ ìƒì„±í•œë‹¤.
  *
- *    ¿©±â¼­ »ı¼ºµÈ QMX ¸Ş¸ğ¸®´Â PRLQ data plan ÀÇ template ¿¡ ¿¬°áµÈ´Ù.
- *    Worker thread ´Â PRLQ data plan ÀÇ template À» Àü´Ş¹Ş¾Æ »ç¿ëÇÏ¸ç
- *    ÀÌ¶§ ¿©±â¼­ »ı¼ºµÈ QMX ¸Ş¸ğ¸®¸¦ »ç¿ëÇÏ°Ô µÈ´Ù.
+ *    ì—¬ê¸°ì„œ ìƒì„±ëœ QMX ë©”ëª¨ë¦¬ëŠ” PRLQ data plan ì˜ template ì— ì—°ê²°ëœë‹¤.
+ *    Worker thread ëŠ” PRLQ data plan ì˜ template ì„ ì „ë‹¬ë°›ì•„ ì‚¬ìš©í•˜ë©°
+ *    ì´ë•Œ ì—¬ê¸°ì„œ ìƒì„±ëœ QMX ë©”ëª¨ë¦¬ë¥¼ ì‚¬ìš©í•˜ê²Œ ëœë‹¤.
  *
- *    QXC ¸Ş¸ğ¸®´Â cache ¼öÇàÀ» À§ÇØ »ç¿ëµÈ´Ù. (PROJ-2452)
+ *    QXC ë©”ëª¨ë¦¬ëŠ” cache ìˆ˜í–‰ì„ ìœ„í•´ ì‚¬ìš©ëœë‹¤. (PROJ-2452)
  *
- *    QMX, QXC ¸Ş¸ğ¸®´Â °¢ PRLQ ÀÇ firstInit ½Ã¿¡ ÇÑ¹ø ÇÒ´çµÇ¸ç
- *    ÇÒ´ç°ú µ¿½Ã¿¡ qcStatement ÀÇ mThrMemList ¿¡ Ãß°¡µÈ´Ù.
+ *    QMX, QXC ë©”ëª¨ë¦¬ëŠ” ê° PRLQ ì˜ firstInit ì‹œì— í•œë²ˆ í• ë‹¹ë˜ë©°
+ *    í• ë‹¹ê³¼ ë™ì‹œì— qcStatement ì˜ mThrMemList ì— ì¶”ê°€ëœë‹¤.
  *
- *    ¿©±â¼­ ÇÒ´çµÈ QMX, QXC ¸Ş¸ğ¸®´Â qcStatement ÀÇ QMX ¸Ş¸ğ¸®°¡ ÇØÁ¦µÇ±â Àü¿¡
- *    mThrMemList ¸¦ µû¶ó°¡¸ç ÇØÁ¦µÈ´Ù.
+ *    ì—¬ê¸°ì„œ í• ë‹¹ëœ QMX, QXC ë©”ëª¨ë¦¬ëŠ” qcStatement ì˜ QMX ë©”ëª¨ë¦¬ê°€ í•´ì œë˜ê¸° ì „ì—
+ *    mThrMemList ë¥¼ ë”°ë¼ê°€ë©° í•´ì œëœë‹¤.
  *        - SQLExecDirect() :
  *        - SQLPrepare() :
  *
@@ -6839,7 +6839,7 @@ IDE_RC qcg::allocPRLQExecutionMemory( qcStatement * aStatement,
 
     if (aStatement->mPRLQMemList == NULL)
     {
-        /* list »ı¼º */
+        /* list ìƒì„± */
         IDE_TEST(QC_QMX_MEM(aStatement)->alloc(ID_SIZEOF(iduList),
                                                (void**)&aStatement->mPRLQMemList)
                  != IDE_SUCCESS);
@@ -6850,12 +6850,12 @@ IDE_RC qcg::allocPRLQExecutionMemory( qcStatement * aStatement,
         /* nothing to do. */
     }
 
-    /* node »ı¼º */
+    /* node ìƒì„± */
     IDE_TEST(QC_QMX_MEM(aStatement)->alloc(ID_SIZEOF(qcPRLQMemObj),
                                            (void**)&sMemObj)
              != IDE_SUCCESS);
 
-    /* worker thread °¡ »ç¿ëÇÒ qmx memory »ı¼º */
+    /* worker thread ê°€ ì‚¬ìš©í•  qmx memory ìƒì„± */
     IDE_TEST(QC_QMX_MEM(aStatement)->alloc(ID_SIZEOF(iduMemory),
                                            (void**)&sMemObj->mMemory)
              != IDE_SUCCESS);
@@ -6873,7 +6873,7 @@ IDE_RC qcg::allocPRLQExecutionMemory( qcStatement * aStatement,
                                              (void**)&sCacheMemObj )
               != IDE_SUCCESS);
 
-    // worker thread °¡ »ç¿ëÇÒ qxc memory »ı¼º
+    // worker thread ê°€ ì‚¬ìš©í•  qxc memory ìƒì„±
     IDE_TEST( QC_QXC_MEM(aStatement)->alloc( ID_SIZEOF(iduMemory),
                                              (void**)&sCacheMemObj->mMemory )
               != IDE_SUCCESS);
@@ -6893,15 +6893,15 @@ IDE_RC qcg::allocPRLQExecutionMemory( qcStatement * aStatement,
 /***********************************************************************
  *
  * Description : BUG-38294
- *    Parallel query ¿¡¼­ »ç¿ëÇÑ QMX, QXC ¸Ş¸ğ¸®¸¦ ÇØÁ¦ÇÑ´Ù.
+ *    Parallel query ì—ì„œ ì‚¬ìš©í•œ QMX, QXC ë©”ëª¨ë¦¬ë¥¼ í•´ì œí•œë‹¤.
  *
- *    Parallel query ¿¡ ¾²ÀÌ´Â QMX ¸Ş¸ğ¸®´Â °¢ PRLQ ÀÇ firstInit ½Ã¿¡
- *    ÇÑ¹ø ÇÒ´çµÇ¸ç ÇÒ´ç°ú µ¿½Ã¿¡ qcStatement ÀÇ mThrMemList ¿¡ Ãß°¡µÈ´Ù.
+ *    Parallel query ì— ì“°ì´ëŠ” QMX ë©”ëª¨ë¦¬ëŠ” ê° PRLQ ì˜ firstInit ì‹œì—
+ *    í•œë²ˆ í• ë‹¹ë˜ë©° í• ë‹¹ê³¼ ë™ì‹œì— qcStatement ì˜ mThrMemList ì— ì¶”ê°€ëœë‹¤.
  *
- *    ÀÌ QMX ¸Ş¸ğ¸®¸¦ qcStatement ÀÇ QMX, QXC ¸Ş¸ğ¸®°¡ ÇØÁ¦µÇ±â Àü¿¡
- *    ÀÌ ÇÔ¼ö¸¦ ÅëÇØ ÇØÁ¦ÇÑ´Ù.
+ *    ì´ QMX ë©”ëª¨ë¦¬ë¥¼ qcStatement ì˜ QMX, QXC ë©”ëª¨ë¦¬ê°€ í•´ì œë˜ê¸° ì „ì—
+ *    ì´ í•¨ìˆ˜ë¥¼ í†µí•´ í•´ì œí•œë‹¤.
  *
- *    ÀÌ ÇÔ¼ö¸¦ È£ÃâÇÏ´Â °÷Àº ´ÙÀ½°ú °°´Ù.
+ *    ì´ í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•˜ëŠ” ê³³ì€ ë‹¤ìŒê³¼ ê°™ë‹¤.
  *        - qcg::clearStatement()
  *        - qcg::closeStatement()
  *        - qcg::freeStatement()
@@ -6982,7 +6982,7 @@ void qcg::finiPRLQChildTemplate( qcStatement * aStatement )
             sTemplate = (qcTemplate*)(sIter->mObj);
             
             // PROJ-2527 WITHIN GROUP AGGR
-            // cloneTemplate½Ã »ı¼ºÇÑ °´Ã¼¸¦ ÇØÁ¦ÇÑ´Ù.
+            // cloneTemplateì‹œ ìƒì„±í•œ ê°ì²´ë¥¼ í•´ì œí•œë‹¤.
             mtc::finiTemplate( &(sTemplate->tmplate) );
             
             IDU_LIST_REMOVE(sIter);
@@ -7030,7 +7030,7 @@ IDE_RC qcg::reserveConcThr(UInt aRequire, UInt* aReserveCnt)
 
     if (mConcThrUseCnt.mCnt + aRequire <= QCU_CONC_EXEC_DEGREE_MAX)
     {
-        // ¿äÃ»¹ŞÀº thread ¼ö ¸¸Å­ ¿¹¾àÇÒ ¼ö ÀÖÀ» ¶§
+        // ìš”ì²­ë°›ì€ thread ìˆ˜ ë§Œí¼ ì˜ˆì•½í•  ìˆ˜ ìˆì„ ë•Œ
         sReserve = aRequire;
         mConcThrUseCnt.mCnt += sReserve;
     }
@@ -7038,14 +7038,14 @@ IDE_RC qcg::reserveConcThr(UInt aRequire, UInt* aReserveCnt)
     {
         if (mConcThrUseCnt.mCnt < QCU_CONC_EXEC_DEGREE_MAX)
         {
-            // ¿äÃ»¹ŞÀº thread ¼ö ¸¸Å­Àº ¿¹¾àÇÒ ¼ö ¾øÁö¸¸
-            // º¸´Ù ÀûÀº ¼ö¶óµµ ¿¹¾àÇÒ ¼ö ÀÖÀ» ¶§ °¡´ÉÇÑ¸¸Å­ ¿¹¾àÇÑ´Ù
+            // ìš”ì²­ë°›ì€ thread ìˆ˜ ë§Œí¼ì€ ì˜ˆì•½í•  ìˆ˜ ì—†ì§€ë§Œ
+            // ë³´ë‹¤ ì ì€ ìˆ˜ë¼ë„ ì˜ˆì•½í•  ìˆ˜ ìˆì„ ë•Œ ê°€ëŠ¥í•œë§Œí¼ ì˜ˆì•½í•œë‹¤
             sReserve = QCU_CONC_EXEC_DEGREE_MAX - mConcThrUseCnt.mCnt;
             mConcThrUseCnt.mCnt += sReserve;
         }
         else
         {
-            // ÀÌ¹Ì ÃÖ´ëÄ¡±îÁö ¿¹¾à»óÅÂÀÏ ¶§
+            // ì´ë¯¸ ìµœëŒ€ì¹˜ê¹Œì§€ ì˜ˆì•½ìƒíƒœì¼ ë•Œ
             sReserve = 0;
         }
     }
@@ -7575,7 +7575,7 @@ IDE_RC qcg::lastErrorPosition( qcStatement * aStatement,
     return IDE_FAILURE;
 }
 
-/* BUG-44563 trigger »ı¼º ÈÄ server stopÇÏ¸é ºñÁ¤»ó Á¾·áÇÏ´Â °æ¿ì°¡ ¹ß»ıÇÕ´Ï´Ù. */
+/* BUG-44563 trigger ìƒì„± í›„ server stopí•˜ë©´ ë¹„ì •ìƒ ì¢…ë£Œí•˜ëŠ” ê²½ìš°ê°€ ë°œìƒí•©ë‹ˆë‹¤. */
 IDE_RC qcg::freeSession( qcStatement * aStatement )
 {
     if ( aStatement->session != NULL )

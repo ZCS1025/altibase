@@ -34,7 +34,7 @@ int main(int argc, char *argv[])
         return -1;
     }
 
-    /* ÇÁ·ÎÆÛÆ¼ ·Îµå */
+    /* í”„ë¡œí¼í‹° ë¡œë“œ */
     IDE_TEST( idp::initialize(NULL, NULL)
               != IDE_SUCCESS );
 

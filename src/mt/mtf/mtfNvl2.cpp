@@ -49,7 +49,7 @@ static IDE_RC mtfNvl2Estimate( mtcNode*     aNode,
 mtfModule mtfNvl2 = {
     1|MTC_NODE_OPERATOR_FUNCTION|MTC_NODE_EAT_NULL_TRUE,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
+    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìžê°€ ì•„ë‹˜)
     mtfNvl2FunctionName,
     NULL,
     mtf::initializeDefault,
@@ -130,7 +130,7 @@ IDE_RC mtfNvl2Estimate( mtcNode*     aNode,
                     ERR_CONVERSION_NOT_APPLICABLE );
 
     // PROJ-2002 Column Security
-    // º¸¾È ÄÃ·³ÀÎ °æ¿ì ¿øº» ÄÃ·³À¸·Î ¹Ù²Û´Ù.
+    // ë³´ì•ˆ ì»¬ëŸ¼ì¸ ê²½ìš° ì›ë³¸ ì»¬ëŸ¼ìœ¼ë¡œ ë°”ê¾¼ë‹¤.
     if( sTarget == &mtdEchar )
     {
         sModules[0] = aStack[1].column->module;
@@ -179,7 +179,7 @@ IDE_RC mtfNvl2Estimate( mtcNode*     aNode,
         }
         else
         {
-            /* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø */
+            /* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ìž… ì§€ì› */
             aTemplate->rows[aNode->table].execute[aNode->column] = mtfExecute;
         }
     }
@@ -194,7 +194,7 @@ IDE_RC mtfNvl2Estimate( mtcNode*     aNode,
     }
 
     // BUG-23102
-    // mtcColumnÀ¸·Î ÃÊ±âÈ­ÇÑ´Ù.
+    // mtcColumnìœ¼ë¡œ ì´ˆê¸°í™”í•œë‹¤.
     if( aStack[2].column->column.size > aStack[3].column->column.size )
     {
         mtc::initializeColumn( aStack[0].column, aStack[2].column );
@@ -318,7 +318,7 @@ IDE_RC mtfNvl2CalculateXlobColumn( mtcNode*     aNode,
                                                                     aTemplate )
               != IDE_SUCCESS );
 
-    // Lob Locator¸¦ ¾ò´Âµ¥ ÇÊ¿äÇÑ Ä¿¼­Á¤º¸¸¦ °¡Á®¿Â´Ù.
+    // Lob Locatorë¥¼ ì–»ëŠ”ë° í•„ìš”í•œ ì»¤ì„œì •ë³´ë¥¼ ê°€ì ¸ì˜¨ë‹¤.
     IDE_TEST( aTemplate->getOpenedCursor( aTemplate,
                                           sNode->table,
                                           & sCursor,

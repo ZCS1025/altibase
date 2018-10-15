@@ -70,7 +70,7 @@
  * 1st version of WIN32 porting
  *
  * Revision 1.5.6.1  2001/02/21 09:00:06  kmkim
- * win32 porting - ÄÄÆÄÀÏ¸¸ ¼º°ø
+ * win32 porting - ì»´íŒŒì¼ë§Œ ì„±ê³µ
  *
  * Revision 1.5  2001/01/02 06:58:50  sjkim
  * fix
@@ -88,7 +88,7 @@
  * Manual fix
  *
  * Revision 1.7  2000/10/11 02:10:07  sjkim
- * idlOS::Ãß°¡
+ * idlOS::ì¶”ê°€
  *
  * Revision 1.6  2000/10/04 02:13:39  sjkim
  * genErrMgr fix
@@ -115,24 +115,24 @@
  * change naming to id
  *
  * Revision 1.4  2000/05/23 01:14:22  sjkim
- * section ¼öÁ¤
+ * section ìˆ˜ì •
  *
  * Revision 1.3  2000/05/22 10:12:24  sjkim
- * ¿¡·¯ Ã³¸® ·çÆ¾ ¼öÁ¤ : ACTION Ãß°¡
+ * ì—ëŸ¬ ì²˜ë¦¬ ë£¨í‹´ ìˆ˜ì • : ACTION ì¶”ê°€
  *
  * Revision 1.2  2000/03/14 05:30:25  sjkim
- * ¿¡·¯ ÄÚµå È­ÀÏ include ±İÁö
+ * ì—ëŸ¬ ì½”ë“œ í™”ì¼ include ê¸ˆì§€
  *
  * Revision 1.1  2000/03/14 05:23:18  sjkim
- * ¿¡·¯ ¸Ş½ÃÁö Ã³¸® ·çÆ¾ Ãß°¡
+ * ì—ëŸ¬ ë©”ì‹œì§€ ì²˜ë¦¬ ë£¨í‹´ ì¶”ê°€
  *
  *
- * DESC : ¿¡·¯ÄÚµå ¿ø½Ã ½ºÅ©¸³Æ® È­ÀÏÀ» ÀÔ·Â ¹Ş¾Æ ¿¡·¯ÄÚµå semi-h Çì´õÈ­ÀÏ
- *        ¹× ¿¡·¯¸Ş½ÃÁö µ¥ÀÌÅ¸È­ÀÏ »ı¼º
+ * DESC : ì—ëŸ¬ì½”ë“œ ì›ì‹œ ìŠ¤í¬ë¦½íŠ¸ í™”ì¼ì„ ì…ë ¥ ë°›ì•„ ì—ëŸ¬ì½”ë“œ semi-h í—¤ë”í™”ì¼
+ *        ë° ì—ëŸ¬ë©”ì‹œì§€ ë°ì´íƒ€í™”ì¼ ìƒì„±
  *
  ****************************************************************************/
 
-// ¿¡·¯ ¸Ş½ÃÁö¸¦ »ı¼ºÇÒ ¶§ ¿¡·¯ÄÚµå È­ÀÏÀ» include ÇÏÁö ¾Ê´Â´Ù.
+// ì—ëŸ¬ ë©”ì‹œì§€ë¥¼ ìƒì„±í•  ë•Œ ì—ëŸ¬ì½”ë“œ í™”ì¼ì„ include í•˜ì§€ ì•ŠëŠ”ë‹¤.
 #define ID_ERROR_CODE_H
 
 #include <idl.h>
@@ -142,7 +142,7 @@
 #define E_ACTION_COMMENT 9999
 
 
-// MSB È­ÀÏ¿¡ ¿¡·¯ÄÚµå¸¦ Àû´Â´Ù.
+// MSB í™”ì¼ì— ì—ëŸ¬ì½”ë“œë¥¼ ì ëŠ”ë‹¤.
 //#define MSB_ECODE_ON
 
 
@@ -151,7 +151,7 @@ UInt gClientPart   = 0;
 
 /* ----------------------------------------------------------------------
  *
- * º¯¼ö Á¤ÀÇ
+ * ë³€ìˆ˜ ì •ì˜
  *
  * ----------------------------------------------------------------------*/
 
@@ -159,7 +159,7 @@ extern ideErrTypeInfo typeInfo[];
 
 idErrorMsbType msbHeader;
 
-FILE *ifp;  // ÀÔ·Â È­ÀÏ
+FILE *ifp;  // ì…ë ¥ í™”ì¼
 
 SChar *inFilename;
 
@@ -169,16 +169,16 @@ SChar *Usage =
 "         -i : specify ErrorCode and Message input file [.msg]\n"
 ;
 
-SInt Section     = -1;    // ¿µ¿ª ¹øÈ£
+SInt Section     = -1;    // ì˜ì—­ ë²ˆí˜¸
 SInt errIdxNum      =  0;
-SInt PrintNumber =  1; // ¿¡·¯°ªÀ» ±âÀÔÇÑ´Ù.
+SInt PrintNumber =  1; // ì—ëŸ¬ê°’ì„ ê¸°ì…í•œë‹¤.
 UInt HexErrorCode;
 
 SChar *Header =
 (SChar *)"/*   This File was created automatically by "PRODUCT_PREFIX"genErrMsg Utility */\n\n";
 
 SChar *StringError =
-(SChar *)" ¿¡·¯ ÄÚµå´Â ´ÙÀ½°ú °°ÀÌ ±¸¼ºµÇ¾î¾ß ÇÕ´Ï´Ù.\n"
+(SChar *)" ì—ëŸ¬ ì½”ë“œëŠ” ë‹¤ìŒê³¼ ê°™ì´ êµ¬ì„±ë˜ì–´ì•¼ í•©ë‹ˆë‹¤.\n"
 "\n"
 "      SubCode, [MODULE]ERR_[ACTION]_[NamingSpace]_[Description]\n"
 "          1           2          3            4\n"
@@ -190,17 +190,17 @@ SChar *StringError =
 "   Ex) idERR_FATAL_FATAL_smd_InvalidOidAddress \n\n";
 /* ----------------------------------------------------------------------
  *
- * ½ºÆ®¸µ Ã³¸® ÇÔ¼ö
+ * ìŠ¤íŠ¸ë§ ì²˜ë¦¬ í•¨ìˆ˜
  *
  * ----------------------------------------------------------------------*/
 
 #define MAX_ERR_STRING  512
 /* ----------------------------------------------------------------------
- * BUG-25815 genErrMsgManual ÀÌ core ·Î Á×½À´Ï´Ù. 
- * MAX_ERR_NUMÀÌ 512ÀÌ¸é ¿¡·¯ ¸Ş½ÃÁö °³¼öº¸´Ù ¹è¿­ÀÌ ÀÛ¾ÆÁ®¼­ µ¿ÀÛÁß¿¡
- * Á×´Â ¹®Á¦°¡ ÀÖ½À´Ï´Ù.
- * MAX_ERR_NUMÀ» 4096À¸·Î ¼³Á¤ÇÏ¸é ¸Ş¸ğ¸®¸¦ 1G¸¦ Â÷ÁöÇÏ¿©
- * ¸Ş¸ğ¸®°¡ ÀûÀº ¼­¹ö¿¡¼­ ºÎÇÏ°¡ Å®´Ï´Ù.
+ * BUG-25815 genErrMsgManual ì´ core ë¡œ ì£½ìŠµë‹ˆë‹¤. 
+ * MAX_ERR_NUMì´ 512ì´ë©´ ì—ëŸ¬ ë©”ì‹œì§€ ê°œìˆ˜ë³´ë‹¤ ë°°ì—´ì´ ì‘ì•„ì ¸ì„œ ë™ì‘ì¤‘ì—
+ * ì£½ëŠ” ë¬¸ì œê°€ ìˆìŠµë‹ˆë‹¤.
+ * MAX_ERR_NUMì„ 4096ìœ¼ë¡œ ì„¤ì •í•˜ë©´ ë©”ëª¨ë¦¬ë¥¼ 1Gë¥¼ ì°¨ì§€í•˜ì—¬
+ * ë©”ëª¨ë¦¬ê°€ ì ì€ ì„œë²„ì—ì„œ ë¶€í•˜ê°€ í½ë‹ˆë‹¤.
  * ----------------------------------------------------------------------*/
 // #define MAX_ERR_NUM     4096
 #define MAX_ERR_NUM     1024
@@ -226,23 +226,23 @@ SInt  fatalCount  = 0;
 SInt  retryCount  = 0;
 SInt  rebuildCount  = 0;
 
-/* ½ºÆ®¸µ ¾ÕµÚ¿¡ Á¸ÀçÇÏ´Â WHITE-SPACE¸¦ Á¦°Å */
+/* ìŠ¤íŠ¸ë§ ì•ë’¤ì— ì¡´ì¬í•˜ëŠ” WHITE-SPACEë¥¼ ì œê±° */
 static void eraseWhiteSpace(SChar *buffer)
 {
     SInt i;
     SInt len = idlOS::strlen(buffer);
-    SInt ValueRegion = 0; // ÇöÀç ¼öÇàÇÏ´Â ¹üÀ§´Â ? ÀÌ¸§¿µ¿ª=°ª¿µ¿ª
-    SInt firstAscii  = 0; // °ª¿µ¿ª¿¡¼­ Ã¹¹øÂ° ASCII¸¦ Ã£Àº ÈÄ..
+    SInt ValueRegion = 0; // í˜„ì¬ ìˆ˜í–‰í•˜ëŠ” ë²”ìœ„ëŠ” ? ì´ë¦„ì˜ì—­=ê°’ì˜ì—­
+    SInt firstAscii  = 0; // ê°’ì˜ì—­ì—ì„œ ì²«ë²ˆì§¸ ASCIIë¥¼ ì°¾ì€ í›„..
 
-    // 1. ¾Õ¿¡¼­ ºÎÅÍ °Ë»ç ½ÃÀÛ..
+    // 1. ì•ì—ì„œ ë¶€í„° ê²€ì‚¬ ì‹œì‘..
     for (i = 0; i < len && buffer[i]; i++)
     {
-        if (buffer[i] == '#') // ÁÖ¼® Ã³¸®
+        if (buffer[i] == '#') // ì£¼ì„ ì²˜ë¦¬
         {
             buffer[i]= 0;
             break;
         }
-        if (ValueRegion == 0) // ÀÌ¸§ ¿µ¿ª °Ë»ç
+        if (ValueRegion == 0) // ì´ë¦„ ì˜ì—­ ê²€ì‚¬
         {
             if (buffer[i] == '=')
             {
@@ -250,7 +250,7 @@ static void eraseWhiteSpace(SChar *buffer)
                 continue;
             }
 
-            if (idlOS::idlOS_isspace(buffer[i])) // ½ºÆäÀÌ½º ÀÓ
+            if (idlOS::idlOS_isspace(buffer[i])) // ìŠ¤í˜ì´ìŠ¤ ì„
             {
                 SInt j;
 
@@ -261,11 +261,11 @@ static void eraseWhiteSpace(SChar *buffer)
                 i--;
             }
         }
-        else // °ª¿µ¿ª °Ë»ç
+        else // ê°’ì˜ì—­ ê²€ì‚¬
         {
             if (firstAscii == 0)
             {
-                if (idlOS::idlOS_isspace(buffer[i])) // ½ºÆäÀÌ½º ÀÓ
+                if (idlOS::idlOS_isspace(buffer[i])) // ìŠ¤í˜ì´ìŠ¤ ì„
                 {
                     SInt j;
 
@@ -284,11 +284,11 @@ static void eraseWhiteSpace(SChar *buffer)
         }
     } // for
 
-    // 2. ³¡¿¡¼­ ºÎÅÍ °Ë»ç ½ÃÀÛ.. : ½ºÆäÀÌ½º ¾ø¾Ö±â
+    // 2. ëì—ì„œ ë¶€í„° ê²€ì‚¬ ì‹œì‘.. : ìŠ¤í˜ì´ìŠ¤ ì—†ì• ê¸°
     len = idlOS::strlen(buffer);
     for (i = len - 1; buffer[i] && len > 0; i--)
     {
-        if (idlOS::idlOS_isspace(buffer[i])) // ½ºÆäÀÌ½º ¾ø¾Ö±â
+        if (idlOS::idlOS_isspace(buffer[i])) // ìŠ¤í˜ì´ìŠ¤ ì—†ì• ê¸°
         {
             buffer[i]= 0;
             continue;
@@ -297,7 +297,7 @@ static void eraseWhiteSpace(SChar *buffer)
     }
 }
 
-// ÀÌ¸§°ú °ªÀ» ¾ò¾î¿È
+// ì´ë¦„ê³¼ ê°’ì„ ì–»ì–´ì˜´
 SInt parseBuffer(SChar *buffer,
                  SInt  *SubCode,
                  SChar **State,
@@ -319,12 +319,12 @@ SInt parseBuffer(SChar *buffer,
     }
 
     /* ------------------------
-     * [1] White Space Á¦°Å
+     * [1] White Space ì œê±°
      * ----------------------*/
     eraseWhiteSpace(buffer);
 
     /* ---------------------------------
-     * [2] ³»¿ëÀÌ ¾ø°Å³ª ÁÖ¼®ÀÌ¸é ¹«½Ã
+     * [2] ë‚´ìš©ì´ ì—†ê±°ë‚˜ ì£¼ì„ì´ë©´ ë¬´ì‹œ
      * -------------------------------*/
     SInt len = idlOS::strlen(buffer);
 
@@ -335,7 +335,7 @@ SInt parseBuffer(SChar *buffer,
 
 
     /* -------------------------
-     * [3] SubCode °ª ¾ò±â
+     * [3] SubCode ê°’ ì–»ê¸°
      * ------------------------*/
     buf = SubCodeBuffer;
     idlOS::memset(SubCodeBuffer, 0, 128);
@@ -343,11 +343,11 @@ SInt parseBuffer(SChar *buffer,
     {
         SChar c;
         c = buf[i] = buffer[i];
-        if (c == ',') // , ÃâÇö
+        if (c == ',') // , ì¶œí˜„
         {
             *SubCode = (SInt)idlOS::strtol(SubCodeBuffer, NULL, 10);
             buffer += i;
-            buffer ++; // [,] °Ç³Ê¶Ù±â
+            buffer ++; // [,] ê±´ë„ˆë›°ê¸°
 
             break;
         }
@@ -359,7 +359,7 @@ SInt parseBuffer(SChar *buffer,
     }
 
     /* -------------------------
-     * [4] ClientÀÇ °æ¿ì State  ¾ò±â
+     * [4] Clientì˜ ê²½ìš° State  ì–»ê¸°
      * ------------------------*/
     if (gClientPart == 1)
     {
@@ -370,12 +370,12 @@ SInt parseBuffer(SChar *buffer,
         {
             SChar c;
             c = buf[i] = buffer[i];
-            if (c == ',') // , ÃâÇö
+            if (c == ',') // , ì¶œí˜„
             {
                 *State = buf;
                 buffer += i;
-                *buffer = 0; //[,] Á¦°Å 
-                buffer ++; // [,] °Ç³Ê¶Ù±â
+                *buffer = 0; //[,] ì œê±° 
+                buffer ++; // [,] ê±´ë„ˆë›°ê¸°
                 break;
             }
             else
@@ -389,15 +389,15 @@ SInt parseBuffer(SChar *buffer,
     }
     
     /* --------------------------
-     * [4] Name = Value °ª ¾ò±â
+     * [4] Name = Value ê°’ ì–»ê¸°
      * -------------------------*/
     eraseWhiteSpace(buffer);
-    *Name = buffer; // ÀÌ¸§À» °áÁ¤
+    *Name = buffer; // ì´ë¦„ì„ ê²°ì •
     for (i = 0; i < len; i++)
     {
         if (buffer[i] == '=')
         {
-            // ±¸ºĞÀÚ°¡ Á¸ÀçÇÏ¸é,
+            // êµ¬ë¶„ìê°€ ì¡´ì¬í•˜ë©´,
             buffer[i] = 0;
 
             if (buffer[i + 1])
@@ -406,7 +406,7 @@ SInt parseBuffer(SChar *buffer,
 
                 if (idlOS::strlen(&buffer[i + 1]) > 512)
                 {
-                    // ¾²·¹±â°ªÀÌ ÀÖÀ½..
+                    // ì“°ë ˆê¸°ê°’ì´ ìˆìŒ..
                     return IDE_FAILURE;
                 }
             }
@@ -419,7 +419,7 @@ SInt parseBuffer(SChar *buffer,
 
 void ErrorOut(SChar *msg, SInt line, SChar *buffer)
 {
-    idlOS::printf("\n ÆÄ½Ì¿¡·¯ :: %s(%s:%d)\n\n",
+    idlOS::printf("\n íŒŒì‹±ì—ëŸ¬ :: %s(%s:%d)\n\n",
                   msg, buffer, line);
 
     idlOS::exit(0);
@@ -466,7 +466,7 @@ UInt getAction(SInt line, SChar *Name)
     {
         return E_ACTION_COMMENT;
     }
-    idlOS::printf("[%d:%s] ¿¡·¯ÄÚµåÀÇ ACTION ¿µ¿ª¿¡¼­ ¿¡·¯°¡ ¹ß»ıÇÏ¿´½À´Ï´Ù.\n%s", line, Name, StringError);
+    idlOS::printf("[%d:%s] ì—ëŸ¬ì½”ë“œì˜ ACTION ì˜ì—­ì—ì„œ ì—ëŸ¬ê°€ ë°œìƒí•˜ì˜€ìŠµë‹ˆë‹¤.\n%s", line, Name, StringError);
     eraseOutputFile();
     idlOS::exit(0);
 }
@@ -487,7 +487,7 @@ int main(int argc, char *argv[])
     SInt  line = 1;
 
 
-    // ¿É¼ÇÀ» ¹Ş´Â´Ù.
+    // ì˜µì…˜ì„ ë°›ëŠ”ë‹¤.
     while ( (opr = idlOS::getopt(argc, argv, "ni:o:c")) != EOF)
     {
         switch(opr)
@@ -506,7 +506,7 @@ int main(int argc, char *argv[])
         }
     }
 
-    // ¸Ş½ÃÁö Ãâ·Â
+    // ë©”ì‹œì§€ ì¶œë ¥
     if (inFilename == NULL)
     {
         idlOS::printf(Usage);
@@ -515,16 +515,16 @@ int main(int argc, char *argv[])
 
 
     idlOS::umask(0);
-    // ÀÌ¸§ÀÌ Á¤È®ÇÑÁö °Ë»çÇÑ´Ù.
+    // ì´ë¦„ì´ ì •í™•í•œì§€ ê²€ì‚¬í•œë‹¤.
 
     SInt len = idlOS::strlen(inFilename);
-    if ( idlOS::strstr(inFilename, ".msg") == NULL) // È®ÀåÀÚ°¡ ¾øÀÌ ÀÔ·Â
+    if ( idlOS::strstr(inFilename, ".msg") == NULL) // í™•ì¥ìê°€ ì—†ì´ ì…ë ¥
     {
         SChar *tmp;
-        // .msg°¡ ºÙÀº È®ÀåÀÚ È­ÀÏ·Î »ı¼ºÇÑ´Ù.
+        // .msgê°€ ë¶™ì€ í™•ì¥ì í™”ì¼ë¡œ ìƒì„±í•œë‹¤.
         tmp = (SChar *)idlOS::calloc(1, len + 5);
         idlOS::snprintf(tmp, len + 5, "%s.msg", inFilename);
-        inFilename = tmp; // inFilename¿¡´Â *.msg°¡ ºÙÀ½
+        inFilename = tmp; // inFilenameì—ëŠ” *.msgê°€ ë¶™ìŒ
     }
     else
     {
@@ -564,20 +564,20 @@ int main(int argc, char *argv[])
         idlOS::memset(buffer, 0, 1024);
         if (idlOS::fgets(buffer, 1024, ifp) == NULL)
         {
-            // È­ÀÏÀÇ ³¡±îÁö ÀĞÀ½
+            // í™”ì¼ì˜ ëê¹Œì§€ ì½ìŒ
             break;
         }
 
-        // buffer¿¡ ÇÑÁÙÀÇ Á¤º¸°¡ ÀÖÀ½
+        // bufferì— í•œì¤„ì˜ ì •ë³´ê°€ ìˆìŒ
         if (parseBuffer(buffer, &SubCode, &State, &Name, &Value) == -1)
         {
             idlOS::fclose(ifp);
-            idlOS::printf("¿¡·¯... ¶óÀÎ [%d]:%s\n", line, buffer);
+            idlOS::printf("ì—ëŸ¬... ë¼ì¸ [%d]:%s\n", line, buffer);
             idlOS::exit(0);
         }
 
 
-        if (Section == -1) // Section ¼³Á¤µÇÁö ¾Ê¾ÒÀ» °æ¿ì
+        if (Section == -1) // Section ì„¤ì •ë˜ì§€ ì•Šì•˜ì„ ê²½ìš°
         {
             if (Name)
             {
@@ -585,12 +585,12 @@ int main(int argc, char *argv[])
                 {
                     Section = (SInt)idlOS::strtol(Value, NULL, 10);
                     if (Section < 0 || Section > 15)
-                        ErrorOut((SChar *)"SectionÀÇ ¹üÀ§°¡ Æ²·È½À´Ï´Ù.",
+                        ErrorOut((SChar *)"Sectionì˜ ë²”ìœ„ê°€ í‹€ë ¸ìŠµë‹ˆë‹¤.",
                                  line, buffer);
                 }
             }
         }
-        else // SectionÀÌ ¼³Á¤µÇ¾úÀ½ : ¿©±âºÎÅÍ´Â Á¤È®ÇÑ N=V ¿ä±¸
+        else // Sectionì´ ì„¤ì •ë˜ì—ˆìŒ : ì—¬ê¸°ë¶€í„°ëŠ” ì •í™•í•œ N=V ìš”êµ¬
         {
             if ( (Name && Value == NULL) ||
                  (Name == NULL && Value))
@@ -604,13 +604,13 @@ int main(int argc, char *argv[])
                     }
                 }
 
-                ErrorOut((SChar *)"¿¡·¯ÄÚµå¿Í ¿¡·¯¸Ş½ÃÁö°¡ µ¿½Ã¿¡ Á¸ÀçÇÏÁö ¾Ê½À´Ï´Ù.",
+                ErrorOut((SChar *)"ì—ëŸ¬ì½”ë“œì™€ ì—ëŸ¬ë©”ì‹œì§€ê°€ ë™ì‹œì— ì¡´ì¬í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.",
                          line, buffer);
             }
             else
             {
 
-                if (Name && Value) // °ªÀÌ ¼³Á¤µÊ
+                if (Name && Value) // ê°’ì´ ì„¤ì •ë¨
                 {
                     SInt isComment = 0;
                     UInt Action    = getAction(line, Name);
@@ -718,7 +718,7 @@ int main(int argc, char *argv[])
                         if (oldAction != 99)
                         {
                             idlOS::fprintf(stderr, " Action Error");
-                            idlOS::exit(-1); // Á×¾î¶ù!
+                            idlOS::exit(-1); // ì£½ì–´ë!
                         }
                         break;
                     }

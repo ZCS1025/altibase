@@ -44,11 +44,11 @@
  *              or SQL_ATTR_TRACEFILE,
  *              and a value had not been set for the connection attribute.
  *
- *      BUGBUG : ÇØ¼®ÇÏ±â »ó´çÈ÷ ³­°¨ÇÏ´Ù-_-;
- *               ÀÏ´Ü, ¼Ó¼ºÀÌ À§¿¡¼­ ¿­°ÅÇÑ ¼Ó¼ºÀÌ ¾Æ´Ò ¶§¿¡´Â ¹«Á¶°Ç 08003 À» ¸®ÅÏÇØ º¸ÀÚ.
- *               ¾Æ¹«·¡µµ ¼Ó¼ºÀ» »ç¿ëÀÚ°¡ ¼¼ÆÃÇß´ÂÁö ¾ÈÇß´ÂÁö¸¦ ±¸ºÐÇÏ´Â ¹«¾ùÀÎ°¡¸¦
- *               °¡Áö°í ÀÖ¾î¾ß ÇÒ °Í °°Áö¸¸,
- *               ÀÏ´Ü, µå¶óÀÌ¹ö ¸Å´ÏÁ®°¡ ³»¾îÁà¾ß ÇÒ ¿¡·¯ÄÚµåÀÌ¹Ç·Î ¤»¤» ±×³É ¸ð¸¥Ã´ ÇÏÀÚ -_-;
+ *      BUGBUG : í•´ì„í•˜ê¸° ìƒë‹¹ížˆ ë‚œê°í•˜ë‹¤-_-;
+ *               ì¼ë‹¨, ì†ì„±ì´ ìœ„ì—ì„œ ì—´ê±°í•œ ì†ì„±ì´ ì•„ë‹ ë•Œì—ëŠ” ë¬´ì¡°ê±´ 08003 ì„ ë¦¬í„´í•´ ë³´ìž.
+ *               ì•„ë¬´ëž˜ë„ ì†ì„±ì„ ì‚¬ìš©ìžê°€ ì„¸íŒ…í–ˆëŠ”ì§€ ì•ˆí–ˆëŠ”ì§€ë¥¼ êµ¬ë¶„í•˜ëŠ” ë¬´ì—‡ì¸ê°€ë¥¼
+ *               ê°€ì§€ê³  ìžˆì–´ì•¼ í•  ê²ƒ ê°™ì§€ë§Œ,
+ *               ì¼ë‹¨, ë“œë¼ì´ë²„ ë§¤ë‹ˆì ¸ê°€ ë‚´ì–´ì¤˜ì•¼ í•  ì—ëŸ¬ì½”ë“œì´ë¯€ë¡œ ã…‹ã…‹ ê·¸ëƒ¥ ëª¨ë¥¸ì²™ í•˜ìž -_-;
  */
 ACI_RC ulnSFID_77(ulnFnContext *aFnContext)
 {
@@ -166,7 +166,7 @@ SQLRETURN ulnGetConnectAttr(ulnDbc       *aDbc,
     ACI_TEST_RAISE( aValPtr == NULL, ERR_IH000);
 
     /*
-     * BUGBUG : DBC ±¸Á¶Ã¼¿¡ ¹Ù·Î access ÇÏÁö ¸»°í, ÇÔ¼ö¸¦ »ç¿ëÇÏµµ·Ï ¼öÁ¤
+     * BUGBUG : DBC êµ¬ì¡°ì²´ì— ë°”ë¡œ access í•˜ì§€ ë§ê³ , í•¨ìˆ˜ë¥¼ ì‚¬ìš©í•˜ë„ë¡ ìˆ˜ì •
      */
     switch(aAttrCode)
     {
@@ -225,13 +225,13 @@ SQLRETURN ulnGetConnectAttr(ulnDbc       *aDbc,
             break;
 
         // PROJ-1579 NCHAR
-        // µ¥ÀÌÅÍº£ÀÌ½º Ä³¸¯ÅÍ ¼ÂÀ» ÀÇ¹ÌÇÑ´Ù.
+        // ë°ì´í„°ë² ì´ìŠ¤ ìºë¦­í„° ì…‹ì„ ì˜ë¯¸í•œë‹¤.
         case ALTIBASE_NLS_CHARACTERSET:
             (void)getString( ulnDbcGetNlsCharsetString(sDbc), aValPtr, aValLen, aIndPtr);
             break;
 
         case ALTIBASE_NLS_NCHAR_CHARACTERSET:
-            // ³»¼Å³Î Ä³¸¯ÅÍ ¼ÂÀ» ÀÇ¹ÌÇÑ´Ù.
+            // ë‚´ì…”ë„ ìºë¦­í„° ì…‹ì„ ì˜ë¯¸í•œë‹¤.
             (void)getString( ulnDbcGetNlsNcharCharsetString(sDbc), aValPtr, aValLen, aIndPtr);
             break;
 
@@ -368,8 +368,8 @@ SQLRETURN ulnGetConnectAttr(ulnDbc       *aDbc,
 
             /* bug-29379
              * sql_attr_connection_dead promptly detects dead conn
-             * before: ÇöÀç ÀúÀåµÈ ¿¬°á»óÅÂÁ¤º¸ ¹ÝÈ¯
-             * after : ÇöÀç ¿¬°á»óÅÂ¸¦ È®ÀÎÇÏ¿© °á°ú ¹ÝÈ¯
+             * before: í˜„ìž¬ ì €ìž¥ëœ ì—°ê²°ìƒíƒœì •ë³´ ë°˜í™˜
+             * after : í˜„ìž¬ ì—°ê²°ìƒíƒœë¥¼ í™•ì¸í•˜ì—¬ ê²°ê³¼ ë°˜í™˜
              */
             if (ulnDbcIsConnected(sDbc) == ACP_FALSE)
             {
@@ -548,20 +548,20 @@ ACI_RC ulnCallbackDBPropertyGetResult(cmiProtocolContext *aProtocolContext,
     sOrgCursor = sCtx->mReadBlock->mCursor;
 
     /*
-     * Note : uln ÀÇ function context ¾È¿¡¼­ ¾ðÁ¦µçÁö property get request ¸¦ ³¯¸± ¼ö ÀÖÀ»·Á¸é,
-     *        function context ÀÇ object °¡ stmt ÀÏ °æ¿ìµµ °í·ÁÇØ¾ß ÇÑ´Ù.
-     *        Æ¯È÷, date format À» °¡Á®¿Í¼­ µ¿±âÈ­½ÃÅ°´Â ºÎºÐ¿¡¼­ ±×·¸´Ù.
+     * Note : uln ì˜ function context ì•ˆì—ì„œ ì–¸ì œë“ ì§€ property get request ë¥¼ ë‚ ë¦´ ìˆ˜ ìžˆì„ë ¤ë©´,
+     *        function context ì˜ object ê°€ stmt ì¼ ê²½ìš°ë„ ê³ ë ¤í•´ì•¼ í•œë‹¤.
+     *        íŠ¹ížˆ, date format ì„ ê°€ì ¸ì™€ì„œ ë™ê¸°í™”ì‹œí‚¤ëŠ” ë¶€ë¶„ì—ì„œ ê·¸ë ‡ë‹¤.
      *
-     *        ¾È±×·¯¸é, ÇÚµé Å¸ÀÔÀÌ dbc °¡ ¾Æ´Ï¹Ç·Î ¿¡·¯°¡ ³ª´Âµ¥,
-     *        ÀÌ ¿¡·¯°¡ -_-;;;; 08s02, communication failure ·Î ³ª¿Â´Ù.
+     *        ì•ˆê·¸ëŸ¬ë©´, í•¸ë“¤ íƒ€ìž…ì´ dbc ê°€ ì•„ë‹ˆë¯€ë¡œ ì—ëŸ¬ê°€ ë‚˜ëŠ”ë°,
+     *        ì´ ì—ëŸ¬ê°€ -_-;;;; 08s02, communication failure ë¡œ ë‚˜ì˜¨ë‹¤.
      *
-     * BUGBUG : ÄÝ¹éÇÔ¼ö´Â ACI_FAILURE ¸¦ ¸®ÅÏÇÏ¸é ¾ÈµÈ´Ù.
-     *          ¿¡·¯¸¦ ¼¼ÆÃÇÏ°í, ACI_SUCCESS ¸¦ ¸®ÅÏÇØ¾ß ÇÑ´Ù.
+     * BUGBUG : ì½œë°±í•¨ìˆ˜ëŠ” ACI_FAILURE ë¥¼ ë¦¬í„´í•˜ë©´ ì•ˆëœë‹¤.
+     *          ì—ëŸ¬ë¥¼ ì„¸íŒ…í•˜ê³ , ACI_SUCCESS ë¥¼ ë¦¬í„´í•´ì•¼ í•œë‹¤.
      *
-     *          ±×·¯³ª ÀÌ ÇÔ¼ö¸¦ º¸¾ÆÇÏ´Ï, ¿¡·¯ÄÚµå ¼¼ÆÃÇÏ´Â ºÎºÐÀÌ ¾ø´Ù.
-     *          ÀûÀýÇÑ ¿¡·¯ÄÚµå¸¦ ¼¼ÆÃÇÏµµ·Ï ¼Ò½º¸¦ º¸°­ÇØ¾ß ÇÑ´Ù.
-     *          ÀÏ´Ü, ACI_FAILURE ¸¦ ¸®ÅÏÇÏµµ·Ï µÐ »óÅÂ·Î ¹«Á¶°Ç communication fail À» ¸®ÅÏÇÏµµ·Ï
-     *          ÇØ µÎ¾ú´Ù°¡ ¼Ò½º º¸°­ ÈÄ¿¡ ACI_SUCCESS ¸¦ ¸®ÅÏÇÏµµ·Ï °íÄ£´Ù.
+     *          ê·¸ëŸ¬ë‚˜ ì´ í•¨ìˆ˜ë¥¼ ë³´ì•„í•˜ë‹ˆ, ì—ëŸ¬ì½”ë“œ ì„¸íŒ…í•˜ëŠ” ë¶€ë¶„ì´ ì—†ë‹¤.
+     *          ì ì ˆí•œ ì—ëŸ¬ì½”ë“œë¥¼ ì„¸íŒ…í•˜ë„ë¡ ì†ŒìŠ¤ë¥¼ ë³´ê°•í•´ì•¼ í•œë‹¤.
+     *          ì¼ë‹¨, ACI_FAILURE ë¥¼ ë¦¬í„´í•˜ë„ë¡ ë‘” ìƒíƒœë¡œ ë¬´ì¡°ê±´ communication fail ì„ ë¦¬í„´í•˜ë„ë¡
+     *          í•´ ë‘ì—ˆë‹¤ê°€ ì†ŒìŠ¤ ë³´ê°• í›„ì— ACI_SUCCESS ë¥¼ ë¦¬í„´í•˜ë„ë¡ ê³ ì¹œë‹¤.
      */
     if(ULN_OBJ_GET_TYPE(sDbc) == ULN_OBJ_TYPE_STMT)
     {
@@ -707,8 +707,8 @@ ACI_RC ulnCallbackDBPropertyGetResult(cmiProtocolContext *aProtocolContext,
             break;
 
         /*
-         * Warning : ¾ÕÀ¸·Î Ãß°¡µÇ´Â ¼­¹ö-Å¬¶óÀÌ¾ðÆ® ÇÁ·ÎÆÛÆ¼´Â ¹Ýµå½Ã
-         *           ulnSetConnectAttrOff()¿¡ Ãß°¡µÇ¾î¾ß ÇÑ´Ù.
+         * Warning : ì•žìœ¼ë¡œ ì¶”ê°€ë˜ëŠ” ì„œë²„-í´ë¼ì´ì–¸íŠ¸ í”„ë¡œí¼í‹°ëŠ” ë°˜ë“œì‹œ
+         *           ulnSetConnectAttrOff()ì— ì¶”ê°€ë˜ì–´ì•¼ í•œë‹¤.
          */
 
         default:

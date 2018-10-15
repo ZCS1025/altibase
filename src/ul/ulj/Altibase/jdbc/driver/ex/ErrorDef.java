@@ -20,10 +20,10 @@ import javax.transaction.xa.XAException;
 
 public class ErrorDef
 {
-    // #region ¼­¹ö¿¡¼­ ¹Ş´Â ¿¡·¯ ÄÚµå
+    // #region ì„œë²„ì—ì„œ ë°›ëŠ” ì—ëŸ¬ ì½”ë“œ
 
-    /* ¼­¹ö¿¡¼­ ¹Ş´Â ¿¡·¯ ÄÚµåµµ ¿©±â ³õ¾ÆµÎÀÚ.
-     * ÀÌ °ªÀº mmErrorCode.ih µî¿¡ ÀÖ´Â°É ±×´ë·Î °¡Á®¿Â°Å´Ù. */
+    /* ì„œë²„ì—ì„œ ë°›ëŠ” ì—ëŸ¬ ì½”ë“œë„ ì—¬ê¸° ë†“ì•„ë‘ì.
+     * ì´ ê°’ì€ mmErrorCode.ih ë“±ì— ìˆëŠ”ê±¸ ê·¸ëŒ€ë¡œ ê°€ì ¸ì˜¨ê±°ë‹¤. */
     public static final int       IGNORE_NO_ERROR                                   = 0x42000;
     public static final int       IGNORE_NO_COLUMN                                  = 0x420A4;
     public static final int       IGNORE_NO_CURSOR                                  = 0x420A7;
@@ -54,14 +54,14 @@ public class ErrorDef
     public static final int       PASSWORD_GRACE_PERIOD                             = 0x420E1;
 
     /* BUG-41908 Add processing the error 'mmERR_IGNORE_UNSUPPORTED_PROPERTY' in JDBC 
-     * Server¿¡¼­ Áö¿øÇÏÁö ¾Ê´Â Property¿¡ ´ëÇÑ ¿äÃ»ÀÌ ¿ÔÀ» °æ¿ì Server´Â ÇØ´ç ¿¡·¯¸¦ ¸®ÅÏÇÑ´Ù. */
+     * Serverì—ì„œ ì§€ì›í•˜ì§€ ì•ŠëŠ” Propertyì— ëŒ€í•œ ìš”ì²­ì´ ì™”ì„ ê²½ìš° ServerëŠ” í•´ë‹¹ ì—ëŸ¬ë¥¼ ë¦¬í„´í•œë‹¤. */
     public static final int       UNSUPPORTED_PROPERTY                              = 0x420DB;
     
     // #endregion
 
-    // #region JDBC Àü¿ë ¿¡·¯ ÄÚµå
+    // #region JDBC ì „ìš© ì—ëŸ¬ ì½”ë“œ
 
-    /* JDBC¿¡¼­ÀÇ ¿¡·¯ ÄÚµå´Â 0x51A01 ~ 0x51AFF¸¦ »ç¿ëÇØ¾ß ÇÑ´Ù. */
+    /* JDBCì—ì„œì˜ ì—ëŸ¬ ì½”ë“œëŠ” 0x51A01 ~ 0x51AFFë¥¼ ì‚¬ìš©í•´ì•¼ í•œë‹¤. */
 
     private static final int      FIRST_ERROR_CODE                                  = 0x51A01;
 
@@ -173,7 +173,7 @@ public class ErrorDef
     public static final int       VALUE_LENGTH_EXCEEDS                              = 0x51A78;
     public static final int       PASSWORD_EXPIRATION_DATE_IS_COMING                = 0x51A79;
     
-    /* PROJ-2474 SSL °ü·Ã ¿¡·¯ÄÚµå */
+    /* PROJ-2474 SSL ê´€ë ¨ ì—ëŸ¬ì½”ë“œ */
     public static final int       UNSUPPORTED_KEYSTORE_ALGORITHM                    = 0x51A7A;
     public static final int       CAN_NOT_CREATE_KEYSTORE_INSTANCE                  = 0x51A7B;
     public static final int       CAN_NOT_LOAD_KEYSTORE                             = 0x51A7C;
@@ -184,7 +184,7 @@ public class ErrorDef
     public static final int       DEFAULT_ALGORITHM_DEFINITION_INVALID              = 0x51A81;
     
     /* BUG-41908 Add processing the error 'mmERR_IGNORE_UNSUPPORTED_PROPERTY' in JDBC 
-      * ¹İµå½Ã ÇÊ¿äÇÑ Property¸¦ Server¿¡¼­ Áö¿øÇÏÁö ¸øÇÒ °æ¿ì ÇØ´ç ¿¡·¯¸¦ ¸®ÅÏÇÑ´Ù. ¶ÇÇÑ Á¢¼Óµµ ÇØÁ¦ÇÑ´Ù. */
+      * ë°˜ë“œì‹œ í•„ìš”í•œ Propertyë¥¼ Serverì—ì„œ ì§€ì›í•˜ì§€ ëª»í•  ê²½ìš° í•´ë‹¹ ì—ëŸ¬ë¥¼ ë¦¬í„´í•œë‹¤. ë˜í•œ ì ‘ì†ë„ í•´ì œí•œë‹¤. */
     public static final int       NOT_SUPPORTED_MANDATORY_PROPERTY                  = 0x51A82;
 
     public static final int       OPENED_CONNECTION                                 = 0x51A83;
@@ -224,7 +224,7 @@ public class ErrorDef
         register(READONLY_CONNECTION_NOT_SUPPORTED                 , "0AC02" , "setReadOnly: Read-only connections are not supported." );
         register(INVALID_PROPERTY_VALUE                            , "01S00" , "Invalid property value: <%s> expected, but <%s>" );
         register(CLOSED_STATEMENT                                  , "01C01" , "Statement already closed." );
-        register(NO_BATCH_JOB                                      , "01B01" , "executeBatch: no batch job to execute." ); // oracleÀº ¿¹¿Ü¸¦ ¹ß»ıÇÏÁö ¾ÊÀ½?
+        register(NO_BATCH_JOB                                      , "01B01" , "executeBatch: no batch job to execute." ); // oracleì€ ì˜ˆì™¸ë¥¼ ë°œìƒí•˜ì§€ ì•ŠìŒ?
         register(SOME_BATCH_JOB                                    , "01B02" , "%s: Cannot execute the method because some batch jobs were added." );
         register(SOME_RESULTSET_RETURNED                           , "07R01" , "The given SQL statement returns some ResultSet" );
         register(NOT_SUPPORTED_OPERATION_ON_FORWARD_ONLY           , "0AT01" , "Not supported operation on the forward-only ResultSet." );
@@ -327,7 +327,7 @@ public class ErrorDef
     {
         if (aErrorCode < FIRST_ERROR_CODE || aErrorCode > LAST_ERROR_CODE)
         {
-            // Á¤ÀÇµÈ JDBC ¿¡·¯°¡ ¾Æ´Ï¸é 08000À» ÁØ´Ù.
+            // ì •ì˜ëœ JDBC ì—ëŸ¬ê°€ ì•„ë‹ˆë©´ 08000ì„ ì¤€ë‹¤.
             return "08000";
         }
         return ERROR_MAP_SQLSTATE[aErrorCode - FIRST_ERROR_CODE];

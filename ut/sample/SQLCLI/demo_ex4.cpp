@@ -194,7 +194,7 @@ SQLRETURN execute_insert(SQLHDBC dbc)
                           SQL_CHAR,                /* SQL data type of the parameter : char(8)*/
                           8,                       /* size of the column or expression, precision */
                           0,                       /* The decimal digits, scale */
-                          bind_data[0].id,         /* A pointer to a buffer for the parameter¡¯s data */
+                          bind_data[0].id,         /* A pointer to a buffer for the parameterâ€™s data */
                           sizeof(bind_data[0].id), /* Length of the ParameterValuePtr buffer in bytes */
                           &bind_data[0].id_ind);   /* indicator */
     if (!SQL_SUCCEEDED(rc))

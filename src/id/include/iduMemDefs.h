@@ -26,7 +26,7 @@
 
 #define IDU_MEM_PREPARE_STMT_MUTEX_COUNT    256
 
-/// ¸Þ¸ð¸® ÇÒ´çÀ» ¿äÃ»ÇÏ´Â ¸ðµâÀ» ±¸ºÐÇÏ±â À§ÇÑ ¹øÈ£
+/// ë©”ëª¨ë¦¬ í• ë‹¹ì„ ìš”ì²­í•˜ëŠ” ëª¨ë“ˆì„ êµ¬ë¶„í•˜ê¸° ìœ„í•œ ë²ˆí˜¸
 typedef enum
 {
     IDU_MIN_CLIENT_COUNT = 0,
@@ -43,7 +43,7 @@ typedef enum
     IDU_MEM_MMU,
     IDU_MEM_MMPLAN_CACHE_CONTROL,
     IDU_MEM_ST_STD,
-    IDU_MEM_ST_STN, // TODO: Áß°£¿¡ ³Ö¾îµµ µÇ´ÂÁö È®ÀÎÇÒ °Í
+    IDU_MEM_ST_STN, // TODO: ì¤‘ê°„ì— ë„£ì–´ë„ ë˜ëŠ”ì§€ í™•ì¸í•  ê²ƒ
     IDU_MEM_ST_STF,
     IDU_MEM_ST_TEMP,
     IDU_MEM_QCI,
@@ -52,8 +52,8 @@ typedef enum
     IDU_MEM_QMSEQ,
     IDU_MEM_QSC,
 //BUG-22355 
-//Replication Module IDU_MEM_QRX --> RPC, RPD, RPN, RPR, RPS, RPX ºÐ·ù
-//RPD, RPX´Â ±â´ÉÀ¸·Î META, SENDER, RECEIVER, SYNC·Î ºÐ·ù
+//Replication Module IDU_MEM_QRX --> RPC, RPD, RPN, RPR, RPS, RPX ë¶„ë¥˜
+//RPD, RPXëŠ” ê¸°ëŠ¥ìœ¼ë¡œ META, SENDER, RECEIVER, SYNCë¡œ ë¶„ë¥˜
     IDU_MEM_RP,
     IDU_MEM_RP_RPC,
     IDU_MEM_RP_RPD,
@@ -116,7 +116,7 @@ typedef enum
     IDU_MEM_SM_LOG,
     IDU_MEM_SM_IN_MEMORY_RECOVERY,
     IDU_MEM_SM_SCC,
-    /* BUG-22352: [ID] Memory ºÐ·ù°¡ µÇÁö ¾Ê°í ÅëÀ¸·Î °ü¸®µÇ°í ÀÖ½À´Ï´Ù. */
+    /* BUG-22352: [ID] Memory ë¶„ë¥˜ê°€ ë˜ì§€ ì•Šê³  í†µìœ¼ë¡œ ê´€ë¦¬ë˜ê³  ìžˆìŠµë‹ˆë‹¤. */
     IDU_MEM_ID,
     IDU_MEM_ID_IDU,
     IDU_MEM_ID_ASYNC_IO_MANAGER,
@@ -157,12 +157,12 @@ typedef enum
     IDU_MEM_UPPERLIMIT
 } iduMemoryClientIndex;
 
-// Altibase³»ÀÇ °¢ ¸ðµâº°·Î ÇÒ´ç¹ÞÀº ¸Þ¸ð¸®ÀÇ Å©±â¸¦ °ü¸®ÇÏ´Â ÀÚ·á±¸Á¶
+// Altibaseë‚´ì˜ ê° ëª¨ë“ˆë³„ë¡œ í• ë‹¹ë°›ì€ ë©”ëª¨ë¦¬ì˜ í¬ê¸°ë¥¼ ê´€ë¦¬í•˜ëŠ” ìžë£Œêµ¬ì¡°
 typedef struct iduMemClientInfo
 {
-    // To Fix BUG-16821 select name from v$memstat ½Ã °ø¹é ÇàÀÌ ³ª¿È
-    //   => iduMemoryClientIndex ¸¸ Ãß°¡ÇÏ°í mClientInfo¸¦ Ãß°¡ÇÏÁö ¾ÊÀº °æ¿ì¸¦
-    //      IDE_DASSERT·Î DetectÇÏ±â À§ÇÔ
+    // To Fix BUG-16821 select name from v$memstat ì‹œ ê³µë°± í–‰ì´ ë‚˜ì˜´
+    //   => iduMemoryClientIndex ë§Œ ì¶”ê°€í•˜ê³  mClientInfoë¥¼ ì¶”ê°€í•˜ì§€ ì•Šì€ ê²½ìš°ë¥¼
+    //      IDE_DASSERTë¡œ Detectí•˜ê¸° ìœ„í•¨
     iduMemoryClientIndex    mClientIndex;
     SLong                   mAllocSize;
     SLong                   mAllocCount;
@@ -346,7 +346,7 @@ public:
 
         //===================================================================
         // To Fix PR-13959
-        // ÇöÀç±îÁö »ç¿ëÇÑ ÃÖ´ë ¸Þ¸ð¸® »ç¿ë·®
+        // í˜„ìž¬ê¹Œì§€ ì‚¬ìš©í•œ ìµœëŒ€ ë©”ëª¨ë¦¬ ì‚¬ìš©ëŸ‰
         //===================================================================
         sMaxTotalSize = mMemInfo[aIndex].mMaxTotSize;
         if ( sCurTotalSize > sMaxTotalSize )

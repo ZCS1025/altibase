@@ -1297,7 +1297,7 @@ IDE_RC mtvCalculate_Undef2All( mtcNode*,
                              void*,
                              mtcTemplate* )
 {
-    // undef Å¸ÀÔÀº ½ÇÁ¦ conversion ÀÌ ½ÇÇàµÇ¸é ¾ÈµÇ¹Ç·Î ASSERT Ã³¸®ÇÑ´Ù.
+    // undef íƒ€ì…ì€ ì‹¤ì œ conversion ì´ ì‹¤í–‰ë˜ë©´ ì•ˆë˜ë¯€ë¡œ ASSERT ì²˜ë¦¬í•œë‹¤.
     IDE_ASSERT(0);
 
     return IDE_SUCCESS;

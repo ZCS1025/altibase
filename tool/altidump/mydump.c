@@ -138,7 +138,7 @@ int main(int argc, char **argv)
             
             qsort((void *)minisyms, symcount, size, compare);
             
-            /* mode ¿¡ µû¸¥ Ãâ·Â ±æÀÌ 32/64 bit => 8/16 byte */
+            /* mode ì— ë”°ë¥¸ ì¶œë ¥ ê¸¸ì´ 32/64 bit => 8/16 byte */
             bfd_sprintf_vma (file, buf, (bfd_vma) -1);
             print_width = strlen (buf);
             {
@@ -204,12 +204,12 @@ void print_symbol(bfd *file, symbol_info *info)
     bfd_byte *from, *fromend, *to;
     asymbol *store;
 
-    /* ºó °ø°£ ÇÏ³ª »ı¼º */
+    /* ë¹ˆ ê³µê°„ í•˜ë‚˜ ìƒì„± */
     store = bfd_make_empty_symbol (file);
     if (store == NULL)
         bfd_fatal (bfd_get_filename (file));
 
-                 /* Ã³À½ ¹× ³¡ symbol À§Ä¡ ¿¬»ê */
+                 /* ì²˜ìŒ ë° ë symbol ìœ„ì¹˜ ì—°ì‚° */
     from = (bfd_byte *) minisyms;
     fromend = from + (symcount * size);
     to = (bfd_byte *) minisyms;
@@ -219,8 +219,8 @@ void print_symbol(bfd *file, symbol_info *info)
         int keep = 0;
         asymbol *sym;
 
-        /* fromÀÌ À§Ä¡ÇÏ°í ÀÖ´Â minisymbol·Î ºÎÅÍ
-           ½ÇÁ¦ symbolÀÇ Á¤º¸¸¦ ±¸ÇÑ´Ù.(symÀÌ ±¸Á¶Ã¼ °¡¸®Å´)
+        /* fromì´ ìœ„ì¹˜í•˜ê³  ìˆëŠ” minisymbolë¡œ ë¶€í„°
+           ì‹¤ì œ symbolì˜ ì •ë³´ë¥¼ êµ¬í•œë‹¤.(symì´ êµ¬ì¡°ì²´ ê°€ë¦¬í‚´)
            */
                     
         sym = bfd_minisymbol_to_symbol (file,

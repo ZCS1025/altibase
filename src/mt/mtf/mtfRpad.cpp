@@ -47,7 +47,7 @@ static IDE_RC mtfRpadEstimate( mtcNode*     aNode,
 mtfModule mtfRpad = {
     1|MTC_NODE_OPERATOR_FUNCTION,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
+    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìê°€ ì•„ë‹˜)
     mtfRpadFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -230,10 +230,10 @@ IDE_RC mtfRpadEstimate( mtcNode*     aNode,
     {
         // RPAD( 123, 10, '0' ) or
         // RPAD( 123, 10+1, '0' ) or
-        // RPAD( 123, to_number('10' ) ) °ú °°ÀÌ
-        // validation ´Ü°è¿¡¼­ constant expressionÀÌ ¼öÇàµÇ¾î
-        // length °ªÀ» ¾Ë ¼ö ÀÖ´Â °æ¿ì´Â
-        // RPAD ÄÃ·³ÀÇ precisionÀ» °è»êµÈ ½ÇÁ¦°ªÀ¸·Î º¯°æÇÑ´Ù.
+        // RPAD( 123, to_number('10' ) ) ê³¼ ê°™ì´
+        // validation ë‹¨ê³„ì—ì„œ constant expressionì´ ìˆ˜í–‰ë˜ì–´
+        // length ê°’ì„ ì•Œ ìˆ˜ ìˆëŠ” ê²½ìš°ëŠ”
+        // RPAD ì»¬ëŸ¼ì˜ precisionì„ ê³„ì‚°ëœ ì‹¤ì œê°’ìœ¼ë¡œ ë³€ê²½í•œë‹¤.
         //
         //  RPAD
         //   |
@@ -270,8 +270,8 @@ IDE_RC mtfRpadEstimate( mtcNode*     aNode,
                 sPrecision = *(mtdIntegerType *) sValueTemp;
             }
 
-            // À§¿¡¼­ ±¸ÇÑ sPrecisionÀº ¹®ÀÚ°¹¼ö¸¦ ÀÇ¹Ì
-            // sPrecision¿¡ °¢ languageº°·Î ÃÖ´ë ¹®ÀÚÅ©±â¸¦ ±¸ÇÑ´Ù.
+            // ìœ„ì—ì„œ êµ¬í•œ sPrecisionì€ ë¬¸ìê°¯ìˆ˜ë¥¼ ì˜ë¯¸
+            // sPrecisionì— ê° languageë³„ë¡œ ìµœëŒ€ ë¬¸ìí¬ê¸°ë¥¼ êµ¬í•œë‹¤.
 
             if( sPrecision < 0 )
             {
@@ -279,22 +279,22 @@ IDE_RC mtfRpadEstimate( mtcNode*     aNode,
             }
             else
             {
-                // rpad( 123, 10, '0' ) ÀÏ °æ¿ì
-                // 123ÀÇ language¸¦ µû¸¥´Ù.
+                // rpad( 123, 10, '0' ) ì¼ ê²½ìš°
+                // 123ì˜ languageë¥¼ ë”°ë¥¸ë‹¤.
 
                 // PROJ-1579 NCHAR
                 if( (sModules[0]->id == MTD_NCHAR_ID) ||
                     (sModules[0]->id == MTD_NVARCHAR_ID) )
                 {
                     // Nothing to do
-                    // ¹®ÀÚ °³¼ö ±×´ë·Î precisionÀÌ µÈ´Ù.
+                    // ë¬¸ì ê°œìˆ˜ ê·¸ëŒ€ë¡œ precisionì´ ëœë‹¤.
                 }
                 else
                 {
                     /* BUG-34165 
-                     * RPAD( A, 20, 'f' ) ¿Í °°ÀÌ 3¹øÂ° ÀÎÀÚ°¡ ÀÖ°í, 
-                     * validation ´Ü°è¿¡¼­ °ªÀ» ¾Ë ¼ö ÀÖ´Â °æ¿ì 
-                     * Á» ´õ Á¤È®ÇÑ precisionÀ» °è»êÇÏµµ·Ï ¼öÁ¤. */ 
+                     * RPAD( A, 20, 'f' ) ì™€ ê°™ì´ 3ë²ˆì§¸ ì¸ìê°€ ìˆê³ , 
+                     * validation ë‹¨ê³„ì—ì„œ ê°’ì„ ì•Œ ìˆ˜ ìˆëŠ” ê²½ìš° 
+                     * ì¢€ ë” ì •í™•í•œ precisionì„ ê³„ì‚°í•˜ë„ë¡ ìˆ˜ì •. */ 
 
                     if ( ( aNode->lflag & MTC_NODE_ARGUMENT_COUNT_MASK ) == 3 )
                     {
@@ -305,7 +305,7 @@ IDE_RC mtfRpadEstimate( mtcNode*     aNode,
                             ( ( aTemplate->rows[sPadCharNode->table].lflag & MTC_TUPLE_TYPE_MASK ) 
                              == MTC_TUPLE_TYPE_CONSTANT ) )
                         {
-                            /* sCount´Â ÆĞµù¹®ÀÚ°¡ ÃÖ´ë·Î µé¾î°¥ ¼ö ÀÖ´Â ¼ö¸¦ ³ªÅ¸³½´Ù. */
+                            /* sCountëŠ” íŒ¨ë”©ë¬¸ìê°€ ìµœëŒ€ë¡œ ë“¤ì–´ê°ˆ ìˆ˜ ìˆëŠ” ìˆ˜ë¥¼ ë‚˜íƒ€ë‚¸ë‹¤. */
                             sCount = (mtdIntegerType) idlOS::ceil( (double) aStack[1].column->precision / 
                                      aStack[1].column->language->maxPrecision(1) );
 
@@ -328,7 +328,7 @@ IDE_RC mtfRpadEstimate( mtcNode*     aNode,
                             /* BUG-36354 valgrind warning lpad('abc',10,'') */
                             if( sPadCharColumn->module->isNull( sPadCharColumn, sValueTemp ) != ID_TRUE )
                             {
-                                /* ÆĞµù¹®ÀÚ°¡ ÃÖ´ë·Î µé¾î°¡´Â °æ¿ì¿¡ ¸î ¹ÙÀÌÆ®°¡ ´õ ÇÊ¿äÇÑÁö¸¦ °è»ê */
+                                /* íŒ¨ë”©ë¬¸ìê°€ ìµœëŒ€ë¡œ ë“¤ì–´ê°€ëŠ” ê²½ìš°ì— ëª‡ ë°”ì´íŠ¸ê°€ ë” í•„ìš”í•œì§€ë¥¼ ê³„ì‚° */
                                 for( i = 0 ; i < sCount ; i++ )
                                 {
                                     sPrecision2 += mtl::getOneCharSize( sPadIndex, 
@@ -390,10 +390,10 @@ IDE_RC mtfRpadEstimate( mtcNode*     aNode,
     }
 
     // fix BUG-13830
-    // ¿¹ : RPAD( 123, 10, '0' ) or RPAD( 123, 10+1, '0' )°ú °°ÀÌ
-    // length °¡ 
-    // validation´Ü°è¿¡¼­ constant expressionÀÌ ¼öÇàµÇ´Â °æ¿ì´Â
-    // RPAD ÀÇ °á°úÀúÀåÄÃ·³ÀÇ precisionÀ» length ±æÀÌ·Î °è»êÇÑ´Ù.
+    // ì˜ˆ : RPAD( 123, 10, '0' ) or RPAD( 123, 10+1, '0' )ê³¼ ê°™ì´
+    // length ê°€ 
+    // validationë‹¨ê³„ì—ì„œ constant expressionì´ ìˆ˜í–‰ë˜ëŠ” ê²½ìš°ëŠ”
+    // RPAD ì˜ ê²°ê³¼ì €ì¥ì»¬ëŸ¼ì˜ precisionì„ length ê¸¸ì´ë¡œ ê³„ì‚°í•œë‹¤.
     if( ( MTC_NODE_IS_DEFINED_VALUE( aNode->arguments->next ) == ID_TRUE )
         &&
         ( ( ( aTemplate->rows[aNode->arguments->next->table].lflag
@@ -406,7 +406,7 @@ IDE_RC mtfRpadEstimate( mtcNode*     aNode,
         aNode->lflag &= ~MTC_NODE_REESTIMATE_MASK;
         aNode->lflag |= MTC_NODE_REESTIMATE_TRUE;
             
-        // BUG-38070 undef typeÀ¸·Î re-estimateÇÏÁö ¾Ê´Â´Ù.
+        // BUG-38070 undef typeìœ¼ë¡œ re-estimateí•˜ì§€ ì•ŠëŠ”ë‹¤.
         if ( ( aTemplate->variableRow != ID_USHORT_MAX ) &&
              ( ( aNode->lflag & MTC_NODE_BIND_MASK ) == MTC_NODE_BIND_EXIST ) )
         {
@@ -472,14 +472,14 @@ IDE_RC mtfRightPad( const mtlModule * aLanguage,
     UChar            * sPadFence;
 
     // To Fix BUG-12688
-    // SourceÀÇ ¹®ÀÚ¿­ÀÇ ±æÀÌ( = ¹®ÀÚ°³¼ö )¸¦ ±¸ÇÔ
+    // Sourceì˜ ë¬¸ìì—´ì˜ ê¸¸ì´( = ë¬¸ìê°œìˆ˜ )ë¥¼ êµ¬í•¨
     sSourceCharCount = 0;
     sSourceIndex = aSource;
     sSourceFence = sSourceIndex + aSourceLen;
 
     while ( sSourceIndex < sSourceFence )
     {
-        // TASK-3420 ¹®ÀÚ¿­ Ã³¸® Á¤Ã¥ °³¼±
+        // TASK-3420 ë¬¸ìì—´ ì²˜ë¦¬ ì •ì±… ê°œì„ 
         (void)aLanguage->nextCharPtr( & sSourceIndex, sSourceFence );
 
         ++sSourceCharCount;
@@ -497,8 +497,8 @@ IDE_RC mtfRightPad( const mtlModule * aLanguage,
         if( aLength <= sSourceCharCount )
         {
             //----------------------------------------------------------
-            // SourceÀÇ ¹®ÀÚ °³¼ö°¡ ÁÖ¾îÁø °á°ú ¹®ÀÚ¿­ ±æÀÌº¸´Ù Å« °æ¿ì,
-            // °á°ú ¹®ÀÚ¿­ ±æÀÌ¸¸Å­ source¿¡¼­ result·Î ¹®ÀÚ¿­ copy
+            // Sourceì˜ ë¬¸ì ê°œìˆ˜ê°€ ì£¼ì–´ì§„ ê²°ê³¼ ë¬¸ìì—´ ê¸¸ì´ë³´ë‹¤ í° ê²½ìš°,
+            // ê²°ê³¼ ë¬¸ìì—´ ê¸¸ì´ë§Œí¼ sourceì—ì„œ resultë¡œ ë¬¸ìì—´ copy
             //----------------------------------------------------------
         
             sSourceIndex = aSource;
@@ -506,7 +506,7 @@ IDE_RC mtfRightPad( const mtlModule * aLanguage,
             
             while ( 1 )
             {
-                // TASK-3420 ¹®ÀÚ¿­ Ã³¸® Á¤Ã¥ °³¼±
+                // TASK-3420 ë¬¸ìì—´ ì²˜ë¦¬ ì •ì±… ê°œì„ 
                 (void)aLanguage->nextCharPtr( & sSourceIndex, sSourceFence );
 
                 ++sCurCharCount;
@@ -530,12 +530,12 @@ IDE_RC mtfRightPad( const mtlModule * aLanguage,
         else
         {
             //----------------------------------------------------------
-            // SourceÀÇ ¹®ÀÚ °³¼ö°¡ ÁÖ¾îÁø °á°ú ¹®ÀÚ¿­ ±æÀÌº¸´Ù ÀÛÀº °æ¿ì,
-            // ( °á°ú ¹®ÀÚ¿­ - source ¹®ÀÚ¿­ ) ¸¸Å­ padding ¹®ÀÚ¸¦ ¿À¸¥ÂÊ¿¡
-            // Ã¤¿î ÈÄ, source ¹®ÀÚ¿­À» °á°ú¿¡ ÀúÀåÇÑ´Ù.
+            // Sourceì˜ ë¬¸ì ê°œìˆ˜ê°€ ì£¼ì–´ì§„ ê²°ê³¼ ë¬¸ìì—´ ê¸¸ì´ë³´ë‹¤ ì‘ì€ ê²½ìš°,
+            // ( ê²°ê³¼ ë¬¸ìì—´ - source ë¬¸ìì—´ ) ë§Œí¼ padding ë¬¸ìë¥¼ ì˜¤ë¥¸ìª½ì—
+            // ì±„ìš´ í›„, source ë¬¸ìì—´ì„ ê²°ê³¼ì— ì €ì¥í•œë‹¤.
             //----------------------------------------------------------
 
-            // Pad ¹®ÀÚ¿­ÀÇ ±æÀÌ
+            // Pad ë¬¸ìì—´ì˜ ê¸¸ì´
             sPadCharCount = 0;
 
             sPadIndex = aPad;
@@ -543,20 +543,20 @@ IDE_RC mtfRightPad( const mtlModule * aLanguage,
 
             while( sPadIndex < sPadFence )
             {
-                // TASK-3420 ¹®ÀÚ¿­ Ã³¸® Á¤Ã¥ °³¼±
+                // TASK-3420 ë¬¸ìì—´ ì²˜ë¦¬ ì •ì±… ê°œì„ 
                 (void)aLanguage->nextCharPtr( & sPadIndex, sPadFence );
 
                 ++sPadCharCount;
             }
 
-            // Source ¹®ÀÚ¿­À» °á°ú¿¡ ÀúÀå
+            // Source ë¬¸ìì—´ì„ ê²°ê³¼ì— ì €ì¥
             idlOS::memcpy( aResult, 
                            aSource,
                            aSourceLen );
 
             sCurCharCount = sSourceCharCount;
 
-            // Pad ¹®ÀÚ¿­À» °á°ú¿¡ ÀúÀå
+            // Pad ë¬¸ìì—´ì„ ê²°ê³¼ì— ì €ì¥
             sResultIndex = aSourceLen;
 
             if ( sPadCharCount < aLength - sSourceCharCount )
@@ -572,7 +572,7 @@ IDE_RC mtfRightPad( const mtlModule * aLanguage,
 
                     if ( ( sCurCharCount + sPadCharCount ) >= aLength  )
                     {
-                        // ³²Àº Padding °ø°£ÀÌ pad ¹®ÀÚ¿­º¸´Ù ÀÛÀº °æ¿ì
+                        // ë‚¨ì€ Padding ê³µê°„ì´ pad ë¬¸ìì—´ë³´ë‹¤ ì‘ì€ ê²½ìš°
                         break;
                     }
                     else
@@ -586,14 +586,14 @@ IDE_RC mtfRightPad( const mtlModule * aLanguage,
                 // nothing to do
             }
 
-            // ³²Àº padding °ø°£¸¸Å­ pad ¹®ÀÚ »ğÀÔ
+            // ë‚¨ì€ padding ê³µê°„ë§Œí¼ pad ë¬¸ì ì‚½ì…
             if ( sCurCharCount <= aLength )
             {
                 sPadIndex = aPad;
 
                 while ( sCurCharCount < aLength )
                 {
-                    // TASK-3420 ¹®ÀÚ¿­ Ã³¸® Á¤Ã¥ °³¼±
+                    // TASK-3420 ë¬¸ìì—´ ì²˜ë¦¬ ì •ì±… ê°œì„ 
                     (void)aLanguage->nextCharPtr( & sPadIndex, sPadFence );
 
                     ++sCurCharCount;
@@ -630,10 +630,10 @@ IDE_RC mtfRpadCalculateFor2Args( mtcNode*     aNode,
  * Implementation :
  *    RPAD( char, n )
  *
- *    aStack[0] : ¹®ÀÚ¿­ charÀÇ ¿À¸¥ÂÊ¿¡ ÁöÁ¤ÇÑ ±æÀÌ nÀÌ µÉ¶§±îÁö
- *                °ø¹éÀ» »ğÀÔÇÑ´Ù.
- *    aStack[1] : char ( ÀÔ·Â ¹®ÀÚ¿­ ) 
- *    aStack[2] : n ( ÁöÁ¤ÇÑ ±æÀÌ ) 
+ *    aStack[0] : ë¬¸ìì—´ charì˜ ì˜¤ë¥¸ìª½ì— ì§€ì •í•œ ê¸¸ì´ nì´ ë ë•Œê¹Œì§€
+ *                ê³µë°±ì„ ì‚½ì…í•œë‹¤.
+ *    aStack[1] : char ( ì…ë ¥ ë¬¸ìì—´ ) 
+ *    aStack[2] : n ( ì§€ì •í•œ ê¸¸ì´ ) 
  *
  *    ex) RPAD( 'AAA', 5 ) ==> 'AAA  '
  *
@@ -664,13 +664,13 @@ IDE_RC mtfRpadCalculateFor2Args( mtcNode*     aNode,
         sSource = (mtdCharType*)aStack[1].value;
         sLength = *(mtdIntegerType*)aStack[2].value;
 
-        // BUG-25914 : rpadÀÇ ±æÀÌ°¡ °á°ú³ëµåÀÇ precisionÀ» ³ÑÀ» ¼ö ¾ø´Ù.
+        // BUG-25914 : rpadì˜ ê¸¸ì´ê°€ ê²°ê³¼ë…¸ë“œì˜ precisionì„ ë„˜ì„ ìˆ˜ ì—†ë‹¤.
         IDE_TEST_RAISE( (sLength > 0) &&
                         (aStack[0].column->precision < sLength),
                         ERR_INVALID_LENGTH );
 
         // ------------------------------
-        // RightPad °øÅë ÇÔ¼ö
+        // RightPad ê³µí†µ í•¨ìˆ˜
         // ------------------------------
 
         IDE_TEST( mtfRightPad( aStack[1].column->language,
@@ -709,11 +709,11 @@ IDE_RC mtfRpadCalculateFor3Args( mtcNode*     aNode,
  * Implementation :
  *    RPAD( char1, n, char2 )
  *
- *    aStack[0] : ¹®ÀÚ¿­ charÀÇ ¿À¸¥ÂÊ¿¡ ÁöÁ¤ÇÑ ±æÀÌ nÀÌ µÉ¶§±îÁö
- *                °ø¹éÀ» »ğÀÔÇÑ´Ù.
- *    aStack[1] : char1 ( ÀÔ·Â ¹®ÀÚ¿­ ) 
- *    aStack[2] : n ( ÁöÁ¤ÇÑ ±æÀÌ )
- *    aStack[3] : char2 ( »ğÀÔ ¹®ÀÚ ) 
+ *    aStack[0] : ë¬¸ìì—´ charì˜ ì˜¤ë¥¸ìª½ì— ì§€ì •í•œ ê¸¸ì´ nì´ ë ë•Œê¹Œì§€
+ *                ê³µë°±ì„ ì‚½ì…í•œë‹¤.
+ *    aStack[1] : char1 ( ì…ë ¥ ë¬¸ìì—´ ) 
+ *    aStack[2] : n ( ì§€ì •í•œ ê¸¸ì´ )
+ *    aStack[3] : char2 ( ì‚½ì… ë¬¸ì ) 
  *
  *    ex) RPAD( 'AAA', 5, 'BB' ) ==> 'AAABB'
  *
@@ -748,13 +748,13 @@ IDE_RC mtfRpadCalculateFor3Args( mtcNode*     aNode,
         sLength   = *(mtdIntegerType*)aStack[2].value;
         sPad      = (mtdCharType*)aStack[3].value;
 
-        // BUG-25914 : rpadÀÇ ±æÀÌ°¡ °á°ú³ëµåÀÇ precisionÀ» ³ÑÀ» ¼ö ¾ø´Ù.
+        // BUG-25914 : rpadì˜ ê¸¸ì´ê°€ ê²°ê³¼ë…¸ë“œì˜ precisionì„ ë„˜ì„ ìˆ˜ ì—†ë‹¤.
         IDE_TEST_RAISE( (sLength > 0) &&
                         (aStack[0].column->precision < sLength),
                         ERR_INVALID_LENGTH );
 
         // ------------------------------
-        // RightPad °øÅë ÇÔ¼ö
+        // RightPad ê³µí†µ í•¨ìˆ˜
         // ------------------------------
 
         IDE_TEST( mtfRightPad( aStack[1].column->language,
@@ -793,10 +793,10 @@ IDE_RC mtfRpadCalculateNcharFor2Args( mtcNode*     aNode,
  * Implementation :
  *    RPAD( char, n )
  *
- *    aStack[0] : ¹®ÀÚ¿­ charÀÇ ¿À¸¥ÂÊ¿¡ ÁöÁ¤ÇÑ ±æÀÌ nÀÌ µÉ¶§±îÁö
- *                °ø¹éÀ» »ğÀÔÇÑ´Ù.
- *    aStack[1] : char ( ÀÔ·Â ¹®ÀÚ¿­ ) 
- *    aStack[2] : n ( ÁöÁ¤ÇÑ ±æÀÌ ) 
+ *    aStack[0] : ë¬¸ìì—´ charì˜ ì˜¤ë¥¸ìª½ì— ì§€ì •í•œ ê¸¸ì´ nì´ ë ë•Œê¹Œì§€
+ *                ê³µë°±ì„ ì‚½ì…í•œë‹¤.
+ *    aStack[1] : char ( ì…ë ¥ ë¬¸ìì—´ ) 
+ *    aStack[2] : n ( ì§€ì •í•œ ê¸¸ì´ ) 
  *
  *    ex) RPAD( 'AAA', 5 ) ==> 'AAA  '
  *
@@ -834,7 +834,7 @@ IDE_RC mtfRpadCalculateNcharFor2Args( mtcNode*     aNode,
                         ERR_INVALID_LENGTH );
 
         // ------------------------------
-        // RightPad °øÅë ÇÔ¼ö
+        // RightPad ê³µí†µ í•¨ìˆ˜
         // ------------------------------
 
         if( sLanguage->id == MTL_UTF16_ID )
@@ -890,11 +890,11 @@ IDE_RC mtfRpadCalculateNcharFor3Args( mtcNode*     aNode,
  * Implementation :
  *    RPAD( char1, n, char2 )
  *
- *    aStack[0] : ¹®ÀÚ¿­ charÀÇ ¿À¸¥ÂÊ¿¡ ÁöÁ¤ÇÑ ±æÀÌ nÀÌ µÉ¶§±îÁö
- *                °ø¹éÀ» »ğÀÔÇÑ´Ù.
- *    aStack[1] : char1 ( ÀÔ·Â ¹®ÀÚ¿­ ) 
- *    aStack[2] : n ( ÁöÁ¤ÇÑ ±æÀÌ )
- *    aStack[3] : char2 ( »ğÀÔ ¹®ÀÚ ) 
+ *    aStack[0] : ë¬¸ìì—´ charì˜ ì˜¤ë¥¸ìª½ì— ì§€ì •í•œ ê¸¸ì´ nì´ ë ë•Œê¹Œì§€
+ *                ê³µë°±ì„ ì‚½ì…í•œë‹¤.
+ *    aStack[1] : char1 ( ì…ë ¥ ë¬¸ìì—´ ) 
+ *    aStack[2] : n ( ì§€ì •í•œ ê¸¸ì´ )
+ *    aStack[3] : char2 ( ì‚½ì… ë¬¸ì ) 
  *
  *    ex) RPAD( 'AAA', 5, 'BB' ) ==> 'AAABB'
  *
@@ -933,7 +933,7 @@ IDE_RC mtfRpadCalculateNcharFor3Args( mtcNode*     aNode,
                         ERR_INVALID_LENGTH );
 
         // ------------------------------
-        // RightPad °øÅë ÇÔ¼ö
+        // RightPad ê³µí†µ í•¨ìˆ˜
         // ------------------------------
 
         IDE_TEST( mtfRightPad( aStack[1].column->language,

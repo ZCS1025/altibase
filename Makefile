@@ -297,7 +297,7 @@ sure_shared:
 	$(Q) $(MAKE) $(S) build_all
 	#$(Q) make $(S) a3_test
 
-# Task-1994 ÃÊ°í¼Ó CoverageÃøÁ¤¹æ¹ı °í¾È
+# Task-1994 ì´ˆê³ ì† Coverageì¸¡ì •ë°©ë²• ê³ ì•ˆ
 suregcov:
 	cd $(DEV_DIR); $(CONFIGURE)  --enable-gcc --enable-gcov --with-build_mode=debug
 	$(MAKE) build_all
@@ -507,7 +507,7 @@ build_codesonar_server:
 #
 # BUILD FOR ATAF
 #
-# ATAF build¸¦ À§ÇØ¼­ altibase¸¦ ÃÖ¼ÒÇÑÀ¸·Î ºôµåÇÑ´Ù.
+# ATAF buildë¥¼ ìœ„í•´ì„œ altibaseë¥¼ ìµœì†Œí•œìœ¼ë¡œ ë¹Œë“œí•œë‹¤.
 ###################################################################
 
 build_ataf:

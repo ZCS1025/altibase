@@ -178,7 +178,7 @@ void CTransaction::run()
 
     return;
     
-    //Fatal ·Î ¿¡·¯Ã³¸®
+    //Fatal ë¡œ ì—ëŸ¬ì²˜ë¦¬
     IDE_EXCEPTION(err_cond_wait);
     {
 	IDE_SET(ideSetErrorCode(smERR_FATAL_ThrCondWait));

@@ -32,7 +32,7 @@
 #include <qdtCommon.h>
 #include <smiStatement.h>
 
-// ÆÄÆ¼¼Ç °ü·Ã ¸ŞÅ¸ Å×ÀÌºí ÇÚµé ¹× ÀÎµ¦½º ÇÚµé
+// íŒŒí‹°ì…˜ ê´€ë ¨ ë©”íƒ€ í…Œì´ë¸” í•¸ë“¤ ë° ì¸ë±ìŠ¤ í•¸ë“¤
 const void * gQcmPartTables;
 const void * gQcmPartIndices;
 const void * gQcmTablePartitions;
@@ -55,7 +55,7 @@ IDE_RC qcmPartition::getNextTablePartitionID(
 /***********************************************************************
  *
  *  Description : PROJ-1502 Partitioned Disk Table
- *                Table PartitionÀÇ ID¸¦ sequencialÇÏ°Ô ±¸ÇÑ´Ù.
+ *                Table Partitionì˜ IDë¥¼ sequencialí•˜ê²Œ êµ¬í•œë‹¤.
  *
  *  Implementation :
  *
@@ -87,9 +87,9 @@ IDE_RC qcmPartition::getNextTablePartitionID(
                      NULL)
                  != IDE_SUCCESS);
 
-        // sSeqValÀº ºñ·Ï SLongÀÌÁö¸¸, sequence¸¦ »ı¼ºÇÒ ¶§
-        // max¸¦ integer max¸¦ ¾È³Ñµµ·Ï ÇÏ¿´±â ¶§¹®¿¡
-        // ¿©±â¼­ overflowÃ¼Å©´Â ÇÏÁö ¾Ê´Â´Ù.
+        // sSeqValì€ ë¹„ë¡ SLongì´ì§€ë§Œ, sequenceë¥¼ ìƒì„±í•  ë•Œ
+        // maxë¥¼ integer maxë¥¼ ì•ˆë„˜ë„ë¡ í•˜ì˜€ê¸° ë•Œë¬¸ì—
+        // ì—¬ê¸°ì„œ overflowì²´í¬ëŠ” í•˜ì§€ ì•ŠëŠ”ë‹¤.
         IDE_TEST( searchTablePartitionID( QC_SMI_STMT( aStatement ),
                                           (SInt)sSeqVal,
                                           &sExist )
@@ -102,8 +102,8 @@ IDE_RC qcmPartition::getNextTablePartitionID(
         }
         else
         {
-            // Ã£´ÙÃ£´Ù ÇÑ¹ÙÄû µ· °æ¿ì.
-            // ÀÌ´Â object°¡ ²Ë Âù °ÍÀ» ÀÇ¹ÌÇÔ.
+            // ì°¾ë‹¤ì°¾ë‹¤ í•œë°”í€´ ëˆ ê²½ìš°.
+            // ì´ëŠ” objectê°€ ê½‰ ì°¬ ê²ƒì„ ì˜ë¯¸í•¨.
             IDE_TEST_RAISE( sSeqVal == sSeqValFirst, ERR_OBJECTS_OVERFLOW );
         }        
     }    
@@ -130,7 +130,7 @@ IDE_RC qcmPartition::getNextIndexPartitionID( qcStatement *aStatement,
 /***********************************************************************
  *
  *  Description : PROJ-1502 Partitioned Disk Table
- *                Index PartitionÀÇ ID¸¦ sequencialÇÏ°Ô ±¸ÇÑ´Ù.
+ *                Index Partitionì˜ IDë¥¼ sequencialí•˜ê²Œ êµ¬í•œë‹¤.
  *
  *  Implementation :
  *
@@ -163,9 +163,9 @@ IDE_RC qcmPartition::getNextIndexPartitionID( qcStatement *aStatement,
                      NULL)
                  != IDE_SUCCESS);
 
-        // sSeqValÀº ºñ·Ï SLongÀÌÁö¸¸, sequence¸¦ »ı¼ºÇÒ ¶§
-        // max¸¦ integer max¸¦ ¾È³Ñµµ·Ï ÇÏ¿´±â ¶§¹®¿¡
-        // ¿©±â¼­ overflowÃ¼Å©´Â ÇÏÁö ¾Ê´Â´Ù.
+        // sSeqValì€ ë¹„ë¡ SLongì´ì§€ë§Œ, sequenceë¥¼ ìƒì„±í•  ë•Œ
+        // maxë¥¼ integer maxë¥¼ ì•ˆë„˜ë„ë¡ í•˜ì˜€ê¸° ë•Œë¬¸ì—
+        // ì—¬ê¸°ì„œ overflowì²´í¬ëŠ” í•˜ì§€ ì•ŠëŠ”ë‹¤.
         IDE_TEST( searchIndexPartitionID( QC_SMI_STMT( aStatement ),
                                 (SInt)sSeqVal,
                                 &sExist )
@@ -178,8 +178,8 @@ IDE_RC qcmPartition::getNextIndexPartitionID( qcStatement *aStatement,
         }
         else
         {
-            // Ã£´ÙÃ£´Ù ÇÑ¹ÙÄû µ· °æ¿ì.
-            // ÀÌ´Â object°¡ ²Ë Âù °ÍÀ» ÀÇ¹ÌÇÔ.
+            // ì°¾ë‹¤ì°¾ë‹¤ í•œë°”í€´ ëˆ ê²½ìš°.
+            // ì´ëŠ” objectê°€ ê½‰ ì°¬ ê²ƒì„ ì˜ë¯¸í•¨.
             IDE_TEST_RAISE( sSeqVal == sSeqValFirst, ERR_OBJECTS_OVERFLOW );
         }        
     }
@@ -216,7 +216,7 @@ IDE_RC qcmPartition::makeQcmPartitionInfoByTableID(
     smSCN                 sSCN;
     void                * sTableHandle;
     smiTableCursor        sCursor;
-    scGRID                sRid; // Disk TableÀ» À§ÇÑ Record IDentifier
+    scGRID                sRid; // Disk Tableì„ ìœ„í•œ Record IDentifier
     SInt                  sStage  = 0;
     const void          * sTableRow;
     const void          * sRow;
@@ -266,7 +266,7 @@ IDE_RC qcmPartition::makeQcmPartitionInfoByTableID(
 
         SMI_CURSOR_PROP_INIT_FOR_META_INDEX_SCAN(&sCursorProperty, NULL);
 
-        // row¸¦ ÇÏ³ª¾¿ ÀĞ¾î¿Í¼­ partitionInfo¸¦ »ı¼ºÇØÁØ´Ù.
+        // rowë¥¼ í•˜ë‚˜ì”© ì½ì–´ì™€ì„œ partitionInfoë¥¼ ìƒì„±í•´ì¤€ë‹¤.
         IDE_TEST(sCursor.open(
                      aSmiStmt,
                      gQcmTablePartitions,
@@ -328,10 +328,10 @@ IDE_RC qcmPartition::destroyQcmPartitionInfoByTableID(
 /***********************************************************************
  *
  *  Description : PROJ-1502 PARTITIONED DISK TABLE
- *                ¼­¹ö ¼Ë´Ù¿î½Ã ¸ŞÅ¸ Ä³½Ã Á¤¸®¸¦ À§ÇØ È£ÃâÇÑ´Ù.
+ *                ì„œë²„ ì…§ë‹¤ìš´ì‹œ ë©”íƒ€ ìºì‹œ ì •ë¦¬ë¥¼ ìœ„í•´ í˜¸ì¶œí•œë‹¤.
  *
- *  Implementation : Å×ÀÌºí/ÆÄÆ¼¼Ç¿¡ ´ëÇØ lockÀº ÀâÁö ¾Ê´Â´Ù.
- *                   lockÀ» ÀâÀ» ÇÊ¿ä°¡ ¾ø±â ¶§¹®ÀÓ.
+ *  Implementation : í…Œì´ë¸”/íŒŒí‹°ì…˜ì— ëŒ€í•´ lockì€ ì¡ì§€ ì•ŠëŠ”ë‹¤.
+ *                   lockì„ ì¡ì„ í•„ìš”ê°€ ì—†ê¸° ë•Œë¬¸ì„.
  *
  ***********************************************************************/
 
@@ -347,7 +347,7 @@ IDE_RC qcmPartition::destroyQcmPartitionInfoByTableID(
     void                * sTableHandle;
     void                * sPartitionHandle;
     smiTableCursor        sCursor;
-    scGRID                sRid; // Disk TableÀ» À§ÇÑ Record IDentifier
+    scGRID                sRid; // Disk Tableì„ ìœ„í•œ Record IDentifier
     SInt                  sStage  = 0;
     const void          * sTableRow;
     const void          * sRow;
@@ -364,7 +364,7 @@ IDE_RC qcmPartition::destroyQcmPartitionInfoByTableID(
                                     (void**)&sTableInfo )
                != IDE_SUCCESS );
 
-    // ÀûÇÕ¼º °Ë»ç. ÆÄÆ¼¼ÇÀÌ¸é ¾ÈµÊ
+    // ì í•©ì„± ê²€ì‚¬. íŒŒí‹°ì…˜ì´ë©´ ì•ˆë¨
     IDE_DASSERT( sTableInfo->tablePartitionType != QCM_TABLE_PARTITION );
 
     switch( sTableInfo->tablePartitionType )
@@ -395,7 +395,7 @@ IDE_RC qcmPartition::destroyQcmPartitionInfoByTableID(
 
                 SMI_CURSOR_PROP_INIT_FOR_META_INDEX_SCAN(&sCursorProperty, NULL);
 
-                // row¸¦ ÇÏ³ª¾¿ ÀĞ¾î¿Í¼­ partitionInfo¸¦ »ı¼ºÇØÁØ´Ù.
+                // rowë¥¼ í•˜ë‚˜ì”© ì½ì–´ì™€ì„œ partitionInfoë¥¼ ìƒì„±í•´ì¤€ë‹¤.
                 IDE_TEST(sCursor.open(
                              aSmiStmt,
                              gQcmTablePartitions,
@@ -440,7 +440,7 @@ IDE_RC qcmPartition::destroyQcmPartitionInfoByTableID(
 
         case QCM_TABLE_PARTITION:
         default:
-            IDE_DASSERT(0); // Å×ÀÌºí ÆÄÆ¼¼ÇÀÌ°Å³ª ¾Ë¼ö¾ø´Â Å¸ÀÔÀÎ °æ¿ì
+            IDE_DASSERT(0); // í…Œì´ë¸” íŒŒí‹°ì…˜ì´ê±°ë‚˜ ì•Œìˆ˜ì—†ëŠ” íƒ€ì…ì¸ ê²½ìš°
             break;
     }
 
@@ -602,8 +602,8 @@ IDE_RC qcmPartition::getPartCondVal( qcStatement        * aStatement,
 
         if( QC_SHARED_TMPLATE(sPartCondValStatement) == NULL )
         {
-            // execute½Ã¿¡ È£ÃâµÇ´Â °æ¿ì shared tmplateÀ»
-            // private tmplateÀ¸·Î ¿¬°áÇÑ´Ù.
+            // executeì‹œì— í˜¸ì¶œë˜ëŠ” ê²½ìš° shared tmplateì„
+            // private tmplateìœ¼ë¡œ ì—°ê²°í•œë‹¤.
             QC_SHARED_TMPLATE(sPartCondValStatement) =
                 QC_PRIVATE_TMPLATE(sPartCondValStatement);
             QC_PRIVATE_TMPLATE(sPartCondValStatement) = NULL;
@@ -639,7 +639,7 @@ IDE_RC qcmPartition::getPartCondVal( qcStatement        * aStatement,
 
         if( QC_SHARED_TMPLATE(aStatement) == NULL )
         {
-            // execute½Ã¿¡ È£ÃâµÇ´Â °æ¿ì
+            // executeì‹œì— í˜¸ì¶œë˜ëŠ” ê²½ìš°
             IDE_TEST( qdbCommon::makePartKeyCondValues(
                           aStatement,
                           QC_PRIVATE_TMPLATE(aStatement),
@@ -651,7 +651,7 @@ IDE_RC qcmPartition::getPartCondVal( qcStatement        * aStatement,
         }
         else
         {
-            // prepare½Ã¿¡ È£ÃâµÇ´Â °æ¿ì
+            // prepareì‹œì— í˜¸ì¶œë˜ëŠ” ê²½ìš°
             IDE_TEST( qdbCommon::makePartKeyCondValues(
                           aStatement,
                           QC_SHARED_TMPLATE(aStatement),
@@ -664,7 +664,7 @@ IDE_RC qcmPartition::getPartCondVal( qcStatement        * aStatement,
     }
     else
     {
-        // nullÀÎ °æ¿ìÀÓ.
+        // nullì¸ ê²½ìš°ì„.
         aPartCondVal->partCondValCount = 0;
         sPartCondValNode = NULL;
     }
@@ -709,16 +709,16 @@ IDE_RC qcmPartition::setPartitionRef(
         if( ( sTableRef->flag & QMS_TABLE_REF_PARTITION_MADE_MASK ) ==
             QMS_TABLE_REF_PARTITION_MADE_FALSE )
         {
-            // ¼±Çà ÇÁ·ç´×ÀÌ µÇ¾î ÀÖ°í, ÃÖÃÊ·Î »ı¼ºÇÏ´Â °æ¿ì,
-            // ÀÌ¹Ì tableRef¿¡ partitionRef°¡ Á¸ÀçÇÑ´Ù.
+            // ì„ í–‰ í”„ë£¨ë‹ì´ ë˜ì–´ ìˆê³ , ìµœì´ˆë¡œ ìƒì„±í•˜ëŠ” ê²½ìš°,
+            // ì´ë¯¸ tableRefì— partitionRefê°€ ì¡´ì¬í•œë‹¤.
             IDE_DASSERT( sTableRef->partitionRef != NULL );
 
             sPartitionRef = sTableRef->partitionRef;
         }
         else
         {
-            // ÃÖÃÊ·Î »ı¼ºÇÏ´Â °æ¿ì°¡ ¾Æ´Ñ°æ¿ì
-            // CNF/DNF optimizingÀ» À§ÇÑ °ÍÀÌ¹Ç·Î, »õ·Î »ı¼ºÇØ¼­ ºÙ¿©¾ß ÇÑ´Ù.
+            // ìµœì´ˆë¡œ ìƒì„±í•˜ëŠ” ê²½ìš°ê°€ ì•„ë‹Œê²½ìš°
+            // CNF/DNF optimizingì„ ìœ„í•œ ê²ƒì´ë¯€ë¡œ, ìƒˆë¡œ ìƒì„±í•´ì„œ ë¶™ì—¬ì•¼ í•œë‹¤.
             IDE_DASSERT( sTableRef->partitionRef == NULL );
 
             IDU_LIMITPOINT("qcmPartition::setPartitionRef::malloc1");
@@ -733,8 +733,8 @@ IDE_RC qcmPartition::setPartitionRef(
     }
     else
     {
-        // ¼±Çà ÇÁ·ç´×ÀÌ µÇ¾î ÀÖÁö ¾ÊÀº °æ¿ì
-        // »õ·Î ¸¸µé¾î¼­ ºÙ¿©Áà¾ß ÇÑ´Ù.
+        // ì„ í–‰ í”„ë£¨ë‹ì´ ë˜ì–´ ìˆì§€ ì•Šì€ ê²½ìš°
+        // ìƒˆë¡œ ë§Œë“¤ì–´ì„œ ë¶™ì—¬ì¤˜ì•¼ í•œë‹¤.
         IDU_LIMITPOINT("qcmPartition::setPartitionRef::malloc2");
         IDE_TEST( QC_QMP_MEM(sStatement)->cralloc(
                       ID_SIZEOF(qmsPartitionRef),
@@ -753,7 +753,7 @@ IDE_RC qcmPartition::setPartitionRef(
         }
     }
 
-    // partition id¸¦ ¼¼ÆÃ.
+    // partition idë¥¼ ì„¸íŒ….
     IDE_TEST( smiGetTableColumns( gQcmTablePartitions,
                                   QCM_TABLE_PARTITIONS_PARTITION_ID_COL_ORDER,
                                   (const smiColumn**)&sPartIDMtcColumn )
@@ -764,7 +764,7 @@ IDE_RC qcmPartition::setPartitionRef(
         sPartIDMtcColumn,
         & sPartitionRef->partitionID );
 
-    // partition oid¸¦ ¼¼ÆÃ
+    // partition oidë¥¼ ì„¸íŒ…
     IDE_TEST( smiGetTableColumns( gQcmTablePartitions,
                                   QCM_TABLE_PARTITIONS_PARTITION_OID_COL_ORDER,
                                   (const smiColumn**)&sTableOIDColumn )
@@ -782,9 +782,9 @@ IDE_RC qcmPartition::setPartitionRef(
     IDE_DASSERT( sTableRef->tableInfo->tablePartitionType ==
                  QCM_PARTITIONED_TABLE );
 
-    // range´Â min,max¸¦ ´Ù ±¸ÇÔ.
-    // list´Â max¸¸ ±¸ÇÔ.
-    // hash´Â partition order¸¦ ±¸ÇÔ.
+    // rangeëŠ” min,maxë¥¼ ë‹¤ êµ¬í•¨.
+    // listëŠ” maxë§Œ êµ¬í•¨.
+    // hashëŠ” partition orderë¥¼ êµ¬í•¨.
     switch( sTableRef->tableInfo->partitionMethod )
     {
         case QCM_PARTITION_METHOD_RANGE:
@@ -794,7 +794,7 @@ IDE_RC qcmPartition::setPartitionRef(
                                           (const smiColumn**)&sPartMinValueMtcColumn )
                       != IDE_SUCCESS );
 
-            // minÀ» ±¸ÇÔ.
+            // minì„ êµ¬í•¨.
             sPartKeyCondValueStr = (mtdCharType *)
                 mtc::value( sPartMinValueMtcColumn,
                             aRow,
@@ -825,7 +825,7 @@ IDE_RC qcmPartition::setPartitionRef(
                                               (const smiColumn**)&sPartMaxValueMtcColumn )
                           != IDE_SUCCESS );
 
-                // max¸¦ ±¸ÇÔ.
+                // maxë¥¼ êµ¬í•¨.
                 sPartKeyCondValueStr = (mtdCharType *)
                     mtc::value( sPartMaxValueMtcColumn,
                                 aRow,
@@ -860,7 +860,7 @@ IDE_RC qcmPartition::setPartitionRef(
                                           (const smiColumn**)&sPartMaxValueMtcColumn )
                       != IDE_SUCCESS );
 
-            // max¸¦ ±¸ÇÔ.
+            // maxë¥¼ êµ¬í•¨.
             sPartKeyCondValueStr = (mtdCharType *)
                 mtc::value( sPartMaxValueMtcColumn,
                             aRow,
@@ -1006,7 +1006,7 @@ IDE_RC qcmPartition::makeMaxCondValListDefaultPart( qcStatement     * aStatement
                                       QCM_TABLE_PARTITIONS_PARTITION_MAX_VALUE_COL_ORDER,
                                       (const smiColumn**)&sPartMaxValueMtcColumn )
                   != IDE_SUCCESS );
-        // max¸¦ ±¸ÇÔ.
+        // maxë¥¼ êµ¬í•¨.
         sPartKeyCondValueStr = (mtdCharType *)
             mtc::value( sPartMaxValueMtcColumn,
                         sRow,
@@ -1070,7 +1070,7 @@ IDE_RC qcmPartition::getPrePruningPartitionRef( qcStatement * aStatement,
 /***********************************************************************
  *
  *  Description : PROJ-1502 PARTITIONED DISK TABLE
- *           ¼±Çà ÇÁ·ç´× µÈ ÆÄÆ¼¼Ç¿¡ ´ëÇÑ Á¤º¸¸¸ °¡Á®¿Â´Ù.
+ *           ì„ í–‰ í”„ë£¨ë‹ ëœ íŒŒí‹°ì…˜ì— ëŒ€í•œ ì •ë³´ë§Œ ê°€ì ¸ì˜¨ë‹¤.
  *
  *  Implementation :
  *
@@ -1124,7 +1124,7 @@ IDE_RC qcmPartition::getAllPartitionRef( qcStatement * aStatement,
 /***********************************************************************
  *
  *  Description : PROJ-1502 PARTITIONED DISK TABLE
- *           ÇØ´ç Å×ÀÌºí¿¡ ¼ÓÇÑ ¸ğµç ÆÄÆ¼¼Ç ¸ŞÅ¸ Ä³½Ã¸¦ ±¸ÇÑ´Ù.
+ *           í•´ë‹¹ í…Œì´ë¸”ì— ì†í•œ ëª¨ë“  íŒŒí‹°ì…˜ ë©”íƒ€ ìºì‹œë¥¼ êµ¬í•œë‹¤.
  *
  *  Implementation :
  *
@@ -1203,10 +1203,10 @@ IDE_RC qcmPartition::validateAndLockPartitions( qcStatement      * aStatement,
         IDE_TEST( smiValidateAndLockObjects( (QC_SMI_STMT(aStatement))->getTrans(),
                                              sPartitionRef->partitionHandle,
                                              sPartitionRef->partitionSCN,
-                                             SMI_TBSLV_DDL_DML, // TBS Validation ¿É¼Ç
+                                             SMI_TBSLV_DDL_DML, // TBS Validation ì˜µì…˜
                                              aLockMode,
                                              sTimeout,
-                                             ID_FALSE ) // BUG-28752 ¸í½ÃÀû Lock°ú ³»ÀçÀû LockÀ» ±¸ºĞÇÕ´Ï´Ù.
+                                             ID_FALSE ) // BUG-28752 ëª…ì‹œì  Lockê³¼ ë‚´ì¬ì  Lockì„ êµ¬ë¶„í•©ë‹ˆë‹¤.
                   != IDE_SUCCESS );
     }
 
@@ -1225,7 +1225,7 @@ IDE_RC qcmPartition::getPartitionInfoByID( qcStatement   * aStatement,
 {
 /***********************************************************************
  *
- *  Description : PROJ-1502 ÆÄÆ¼¼Ç ID·Î ÆÄÆ¼¼Ç¸ŞÅ¸Ä³½Ã¸¦ ±¸ÇÑ´Ù.
+ *  Description : PROJ-1502 íŒŒí‹°ì…˜ IDë¡œ íŒŒí‹°ì…˜ë©”íƒ€ìºì‹œë¥¼ êµ¬í•œë‹¤.
  *
  *  Implementation :
  *
@@ -1279,17 +1279,17 @@ IDE_RC qcmPartition::checkIndexPartitionByUser( qcStatement    *aStatement,
 /***********************************************************************
  *
  * Description :
- *    userName.indexName À» Ã¼Å©ÇÑ´Ù.
+ *    userName.indexName ì„ ì²´í¬í•œë‹¤.
  *
  * Implementation :
- *    1. user °¡ ÀÖ´ÂÁö Ã¼Å©ÇØ¼­ userID ¸¦ ±¸ÇÑ´Ù.
- *    2. SYS_INDEX_PARTITIONS_ Ä³½¬·ÎºÎÅÍ USER_ID, INDEX_NAME ÄÃ·³À» ±¸ÇØ µĞ´Ù.
- *    3. 2°¡ ¾øÀ¸¸é META_CRASH ¿¡·¯ ¹İÈ¯
- *    4. SYS_INDEX_PARTITIONS_ ¸ŞÅ¸ Å×ÀÌºí¿¡ USERID_INDEXNAME ¿¡ ÀÎµ¦½º°¡ ÀÖÀ¸¸é,
- *       userID, indexName À¸·Î keyRange ¸¦ ¸¸µç´Ù.
- *    5. ÇÑ Row ¾¿ ÀĞÀ¸¸é¼­(4¿¡¼­ ÀÎµ¦½º°¡ ¾øÀ¸¸é, userID, indexNameÀ»
- *       ºñ±³ÇØ¼­ ÀÏÄ¡ÇÏ´Â °Í¸¸) tableID, indexID ¸¦ ±¸ÇÑ´Ù.
- *    6. ÀÏÄ¡ÇÏ´Â ÀÎµ¦½º°¡ ¾øÀ¸¸é ¿¡·¯¸¦ ¹İÈ¯ÇÑ´Ù.
+ *    1. user ê°€ ìˆëŠ”ì§€ ì²´í¬í•´ì„œ userID ë¥¼ êµ¬í•œë‹¤.
+ *    2. SYS_INDEX_PARTITIONS_ ìºì‰¬ë¡œë¶€í„° USER_ID, INDEX_NAME ì»¬ëŸ¼ì„ êµ¬í•´ ë‘”ë‹¤.
+ *    3. 2ê°€ ì—†ìœ¼ë©´ META_CRASH ì—ëŸ¬ ë°˜í™˜
+ *    4. SYS_INDEX_PARTITIONS_ ë©”íƒ€ í…Œì´ë¸”ì— USERID_INDEXNAME ì— ì¸ë±ìŠ¤ê°€ ìˆìœ¼ë©´,
+ *       userID, indexName ìœ¼ë¡œ keyRange ë¥¼ ë§Œë“ ë‹¤.
+ *    5. í•œ Row ì”© ì½ìœ¼ë©´ì„œ(4ì—ì„œ ì¸ë±ìŠ¤ê°€ ì—†ìœ¼ë©´, userID, indexNameì„
+ *       ë¹„êµí•´ì„œ ì¼ì¹˜í•˜ëŠ” ê²ƒë§Œ) tableID, indexID ë¥¼ êµ¬í•œë‹¤.
+ *    6. ì¼ì¹˜í•˜ëŠ” ì¸ë±ìŠ¤ê°€ ì—†ìœ¼ë©´ ì—ëŸ¬ë¥¼ ë°˜í™˜í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -1308,7 +1308,7 @@ IDE_RC qcmPartition::checkIndexPartitionByUser( qcStatement    *aStatement,
 
     const void            * sRow;
     smiCursorProperties     sCursorProperty;
-    scGRID                  sRid; // Disk TableÀ» À§ÇÑ Record IDentifier
+    scGRID                  sRid; // Disk Tableì„ ìœ„í•œ Record IDentifier
 
     IDE_ASSERT( gQcmIndexPartitions != NULL );
 
@@ -1431,8 +1431,8 @@ IDE_RC qcmPartition::getPartitionInfo( qcStatement   * aStatement,
 {
 /***********************************************************************
  *
- *  Description : PROJ-1502 Å×ÀÌºíID, ÆÄÆ¼¼Ç ÀÌ¸§(UChar)À¸·Î
- *                ÆÄÆ¼¼Ç ¸ŞÅ¸ Ä³½Ã¸¦ ±¸ÇÑ´Ù.
+ *  Description : PROJ-1502 í…Œì´ë¸”ID, íŒŒí‹°ì…˜ ì´ë¦„(UChar)ìœ¼ë¡œ
+ *                íŒŒí‹°ì…˜ ë©”íƒ€ ìºì‹œë¥¼ êµ¬í•œë‹¤.
  *
  *  Implementation :
  *
@@ -1484,8 +1484,8 @@ IDE_RC qcmPartition::getPartitionInfo( qcStatement     * aStatement,
 {
 /***********************************************************************
  *
- *  Description : PROJ-1502 Å×ÀÌºíID, ÆÄÆ¼¼Ç ÀÌ¸§(position)À¸·Î
- *                ÆÄÆ¼¼Ç ¸ŞÅ¸ Ä³½Ã¸¦ ±¸ÇÑ´Ù.
+ *  Description : PROJ-1502 í…Œì´ë¸”ID, íŒŒí‹°ì…˜ ì´ë¦„(position)ìœ¼ë¡œ
+ *                íŒŒí‹°ì…˜ ë©”íƒ€ ìºì‹œë¥¼ êµ¬í•œë‹¤.
  *
  *  Implementation :
  *
@@ -1519,8 +1519,8 @@ IDE_RC qcmPartition::getPartitionHandleByName( smiStatement * aSmiStmt,
 {
 /***********************************************************************
  *
- *  Description : PROJ-1502 Å×ÀÌºíID, ÆÄÆ¼¼Ç ÀÌ¸§(UChar)À¸·Î
- *                ÆÄÆ¼¼Ç ÇÚµéÀ» ±¸ÇÑ´Ù.
+ *  Description : PROJ-1502 í…Œì´ë¸”ID, íŒŒí‹°ì…˜ ì´ë¦„(UChar)ìœ¼ë¡œ
+ *                íŒŒí‹°ì…˜ í•¸ë“¤ì„ êµ¬í•œë‹¤.
  *
  *  Implementation :
  *
@@ -1541,7 +1541,7 @@ IDE_RC qcmPartition::getPartitionHandleByName( smiStatement * aSmiStmt,
     qcNameCharBuffer      sPartitionNameBuffer;
     mtdCharType         * sPartitionName = ( mtdCharType * ) & sPartitionNameBuffer;
 
-    scGRID                sRid; // Disk TableÀ» À§ÇÑ Record IDentifier
+    scGRID                sRid; // Disk Tableì„ ìœ„í•œ Record IDentifier
     smiCursorProperties   sCursorProperty;
 
     sCursor.initialize();
@@ -1629,7 +1629,7 @@ IDE_RC qcmPartition::getQcmPartKeyColumns( smiStatement * aSmiStmt,
 {
 /***********************************************************************
  *
- *  Description : PROJ-1502 ÆÄÆ¼¼Ç Å° ÄÃ·³Á¤º¸ ±¸Ãà
+ *  Description : PROJ-1502 íŒŒí‹°ì…˜ í‚¤ ì»¬ëŸ¼ì •ë³´ êµ¬ì¶•
  *
  *  Implementation :
  *
@@ -1789,8 +1789,8 @@ IDE_RC qcmPartition::getQcmPartitionedTableInfo( smiStatement * aSmiStmt,
 {
 /***********************************************************************
  *
- *  Description : PROJ-1502 Partitioned Table¿¡ ´ëÇÑ Á¤º¸¸¦
- *                Å×ÀÌºí ¸ŞÅ¸ Ä³½Ã¿¡ ±¸Ãà
+ *  Description : PROJ-1502 Partitioned Tableì— ëŒ€í•œ ì •ë³´ë¥¼
+ *                í…Œì´ë¸” ë©”íƒ€ ìºì‹œì— êµ¬ì¶•
  *
  *  Implementation :
  *
@@ -1808,7 +1808,7 @@ IDE_RC qcmPartition::getQcmPartitionedTableInfo( smiStatement * aSmiStmt,
 
     qtcMetaRangeColumn  sRangeColumn;
 
-    scGRID              sRid; // Disk TableÀ» À§ÇÑ Record IDentifier
+    scGRID              sRid; // Disk Tableì„ ìœ„í•œ Record IDentifier
     smiCursorProperties sCursorProperty;
 
     sCursor.initialize();
@@ -1911,8 +1911,8 @@ IDE_RC qcmPartition::getQcmPartitionedIndexInfo( smiStatement * aSmiStmt,
 {
 /***********************************************************************
  *
- *  Description : PROJ-1502 Partitioned Index¿¡ ´ëÇÑ Á¤º¸¸¦
- *                ÀÎµ¦½º ¸ŞÅ¸ Ä³½Ã¿¡ ±¸Ãà
+ *  Description : PROJ-1502 Partitioned Indexì— ëŒ€í•œ ì •ë³´ë¥¼
+ *                ì¸ë±ìŠ¤ ë©”íƒ€ ìºì‹œì— êµ¬ì¶•
  *
  *  Implementation :
  *
@@ -1929,7 +1929,7 @@ IDE_RC qcmPartition::getQcmPartitionedIndexInfo( smiStatement * aSmiStmt,
 
     qtcMetaRangeColumn  sRangeColumn;
 
-    scGRID              sRid; // Disk TableÀ» À§ÇÑ Record IDentifier
+    scGRID              sRid; // Disk Tableì„ ìœ„í•œ Record IDentifier
     smiCursorProperties sCursorProperty;
 
     sCursor.initialize();
@@ -2000,7 +2000,7 @@ IDE_RC qcmPartition::getQcmPartitionedIndexInfo( smiStatement * aSmiStmt,
 
     if( aIndex->indexPartitionType == QCM_GLOBAL_PREFIXED_PARTITIONED_INDEX )
     {
-        // ÇöÀç ±Û·Î¹ú ÀÎµ¦½º´Â Áö¿øÇÏÁö ¾ÊÀ½.
+        // í˜„ì¬ ê¸€ë¡œë²Œ ì¸ë±ìŠ¤ëŠ” ì§€ì›í•˜ì§€ ì•ŠìŒ.
         IDE_ASSERT(0);
     }
     else
@@ -2029,11 +2029,11 @@ IDE_RC qcmPartition::destroyQcmPartitionInfo( qcmTableInfo * aInfo )
 {
 /***********************************************************************
  *
- *  Description : PROJ-1502 ÆÄÆ¼¼Ç ¸ŞÅ¸ Ä³½Ã »èÁ¦
+ *  Description : PROJ-1502 íŒŒí‹°ì…˜ ë©”íƒ€ ìºì‹œ ì‚­ì œ
  *
  *  Implementation :
  *             (1) localIndices free
- *             (2) ±¸Á¶Ã¼ free
+ *             (2) êµ¬ì¡°ì²´ free
  ***********************************************************************/
 
     UInt i;
@@ -2164,7 +2164,7 @@ IDE_RC qcmPartition::destroyQcmPartitionInfo( qcmTableInfo * aInfo )
         }
 
         //------------------------------------------
-        // (2) ±¸Á¶Ã¼ free
+        // (2) êµ¬ì¡°ì²´ free
         //------------------------------------------
         IDE_TEST(iduMemMgr::free(aInfo) != IDE_SUCCESS);
     }
@@ -2187,7 +2187,7 @@ IDE_RC qcmPartition::destroyQcmPartitionInfoList( qcmPartitionInfoList * aPartIn
  * Description :
  *      PROJ-2465 Tablespace Alteration for Table
  *
- *      Partition Info ListÀÇ Meta Cache¸¦ Á¦°ÅÇÑ´Ù.
+ *      Partition Info Listì˜ Meta Cacheë¥¼ ì œê±°í•œë‹¤.
  *
  * Implementation :
  *
@@ -2349,30 +2349,30 @@ IDE_RC qcmPartition::getQcmPartitionColumn( qcmTableInfo * aTableInfo,
                            &aTableInfo->columns[i],
                            ID_SIZEOF(qcmColumn) );
 
-            /* Memory¸¦ ÇÒ´çÇÏ±â Àü¿¡ ¹®Á¦°¡ ¹ß»ıÇÏ¸é, Partition°ú Partitioned¿¡¼­ °¢°¢ free¸¦ ¼öÇàÇÑ´Ù.
-             * µû¶ó¼­, Memory¸¦ ÇÒ´çÇÒ Pointer Æ÷ÀÎÅÍ¸¦ ¹Ì¸® ÃÊ±âÈ­ÇØ¾ß ÇÑ´Ù.
+            /* Memoryë¥¼ í• ë‹¹í•˜ê¸° ì „ì— ë¬¸ì œê°€ ë°œìƒí•˜ë©´, Partitionê³¼ Partitionedì—ì„œ ê°ê° freeë¥¼ ìˆ˜í–‰í•œë‹¤.
+             * ë”°ë¼ì„œ, Memoryë¥¼ í• ë‹¹í•  Pointer í¬ì¸í„°ë¥¼ ë¯¸ë¦¬ ì´ˆê¸°í™”í•´ì•¼ í•œë‹¤.
              */
             aPartitionInfo->columns[i].basicInfo       = NULL;
             aPartitionInfo->columns[i].defaultValueStr = NULL;
 
             // BUG-25886
-            // table headerÀÇ ÄÃ·³Á¤º¸¿¡µµ module°ú language¸¦ ¼³Á¤ÇÑ´Ù.
+            // table headerì˜ ì»¬ëŸ¼ì •ë³´ì—ë„ moduleê³¼ languageë¥¼ ì„¤ì •í•œë‹¤.
             IDE_TEST( smiGetTableColumns( aPartitionInfo->tableHandle,
                                           i,
                                           (const smiColumn**)&sColumn )
                       != IDE_SUCCESS );
 
-            // mtdModule ¼³Á¤
+            // mtdModule ì„¤ì •
             IDE_TEST( mtd::moduleById( &(sColumn->module),
                                        sColumn->type.dataTypeId )
                       != IDE_SUCCESS );
 
-            // mtlModule ¼³Á¤
+            // mtlModule ì„¤ì •
             IDE_TEST( mtl::moduleById( &(sColumn->language),
                                        sColumn->type.languageId )
                       != IDE_SUCCESS );
 
-            // PROJ-1877 basicInfo¸¦ º¹»ç »ı¼ºÇÑ´Ù.
+            // PROJ-1877 basicInfoë¥¼ ë³µì‚¬ ìƒì„±í•œë‹¤.
             IDU_LIMITPOINT("qcmPartition::getQcmPartitionColumn::malloc2");
             IDE_TEST(
                 iduMemMgr::malloc(IDU_MEM_QCM,
@@ -2384,21 +2384,21 @@ IDE_RC qcmPartition::getQcmPartitionColumn( qcmTableInfo * aTableInfo,
                            sColumn,
                            ID_SIZEOF(mtcColumn) );
 
-            // mtdModule ¼³Á¤
+            // mtdModule ì„¤ì •
             IDE_TEST(
                 mtd::moduleById(
                     &(aPartitionInfo->columns[i].basicInfo->module),
                     (aPartitionInfo->columns[i].basicInfo->type.dataTypeId))
                 != IDE_SUCCESS);
 
-            // mtlModule ¼³Á¤
+            // mtlModule ì„¤ì •
             IDE_TEST(
                 mtl::moduleById(
                     &(aPartitionInfo->columns[i].basicInfo->language),
                     (aPartitionInfo->columns[i].basicInfo->type.languageId))
                 != IDE_SUCCESS);
 
-            /* PROJ-2464 hybrid partitioned table Áö¿ø */
+            /* PROJ-2464 hybrid partitioned table ì§€ì› */
             aPartitionInfo->columns[i].basicInfo->flag &= ~MTC_COLUMN_NOTNULL_MASK;
             aPartitionInfo->columns[i].basicInfo->flag |= aTableInfo->columns[i].basicInfo->flag
                 & MTC_COLUMN_NOTNULL_MASK;
@@ -2561,7 +2561,7 @@ IDE_RC qcmPartition::getQcmPartitionConstraints( qcmTableInfo * aTableInfo,
         /* Nothing to do */
     }
 
-    /* PROJ-1107 Check Constraint Áö¿ø */
+    /* PROJ-1107 Check Constraint ì§€ì› */
     aPartitionInfo->checkCount = aTableInfo->checkCount;
     aPartitionInfo->checks     = NULL;
 
@@ -2632,7 +2632,7 @@ IDE_RC qcmPartition::getQcmPartitionConstraints( qcmTableInfo * aTableInfo,
         /* Nothing to do */
     }
 
-    // PartitionÀÇ ±ÇÇÑÀº Á¸ÀçÇÏÁö ¾ÊÀ¸¸ç, Partitioned Table¿¡¸¸ ±ÇÇÑÀ» °Ë»çÇÑ´Ù.
+    // Partitionì˜ ê¶Œí•œì€ ì¡´ì¬í•˜ì§€ ì•Šìœ¼ë©°, Partitioned Tableì—ë§Œ ê¶Œí•œì„ ê²€ì‚¬í•œë‹¤.
     aPartitionInfo->privilegeCount = 0;
     aPartitionInfo->privilegeInfo  = NULL;
 
@@ -2709,8 +2709,8 @@ IDE_RC qcmPartition::getQcmLocalIndices( smiStatement * aSmiStmt,
 {
 /***********************************************************************
  *
- *  Description : PROJ-1502 makeAndSetQcmPartitionInfo·ÎºÎÅÍ È£ÃâÀÌ µÊ.
- *                ÆÄÆ¼¼ÇÀÇ ·ÎÄÃ ÀÎµ¦½º Ä³½¬¸¦ ¸¸µç´Ù.
+ *  Description : PROJ-1502 makeAndSetQcmPartitionInfoë¡œë¶€í„° í˜¸ì¶œì´ ë¨.
+ *                íŒŒí‹°ì…˜ì˜ ë¡œì»¬ ì¸ë±ìŠ¤ ìºì‰¬ë¥¼ ë§Œë“ ë‹¤.
  *
  *  Implementation :
  *
@@ -2732,7 +2732,7 @@ IDE_RC qcmPartition::getQcmLocalIndices( smiStatement * aSmiStmt,
     UInt                    j       = 0;
     UInt                    c       = 0;
     smiTableSpaceAttr       sTBSAttr;
-    scGRID                  sRid; // Disk TableÀ» À§ÇÑ Record IDentifier
+    scGRID                  sRid; // Disk Tableì„ ìœ„í•œ Record IDentifier
     UInt                  * sKeyCols;
     UInt                    sOffset = 0;
     UInt                    sTableType;
@@ -2743,7 +2743,7 @@ IDE_RC qcmPartition::getQcmLocalIndices( smiStatement * aSmiStmt,
     IDE_ASSERT( gQcmIndexPartitions != NULL );
     IDE_ASSERT( aPartitionInfo != NULL );
 
-    // index°¡ ¾øÀ¸¸é ¾È¸¸µë
+    // indexê°€ ì—†ìœ¼ë©´ ì•ˆë§Œë“¬
     if(aPartitionInfo->indexCount == 0)
     {
         aPartitionInfo->indices = NULL;
@@ -2961,7 +2961,7 @@ IDE_RC qcmPartition::getQcmLocalIndices( smiStatement * aSmiStmt,
     sStage = 0;
     IDE_TEST(sCursor.close() != IDE_SUCCESS);
 
-    // indexCount¿Í i´Â °°¾Æ¾ß ÇÑ´Ù.
+    // indexCountì™€ iëŠ” ê°™ì•„ì•¼ í•œë‹¤.
     IDE_DASSERT( aPartitionInfo->indexCount == (UInt)i );
 
     return IDE_SUCCESS;
@@ -2993,8 +2993,8 @@ IDE_RC qcmPartition::getPartitionIdByIndexName(
  *  Description :
  *  PROJ-1502 PARTITIONED DISK TABLE
  *
- *  ÆÄÆ¼¼Çµå ÀÎµ¦½ºÀÇ IndexID¿Í ÀÎµ¦½º ÆÄÆ¼¼ÇÀÇ IndexNameÀ¸·Î
- *  tablePartID¸¦ °¡Á®¿Â´Ù.
+ *  íŒŒí‹°ì…˜ë“œ ì¸ë±ìŠ¤ì˜ IndexIDì™€ ì¸ë±ìŠ¤ íŒŒí‹°ì…˜ì˜ IndexNameìœ¼ë¡œ
+ *  tablePartIDë¥¼ ê°€ì ¸ì˜¨ë‹¤.
  *
  *  Implementation :
  *
@@ -3095,7 +3095,7 @@ IDE_RC qcmPartition::getPartitionHandleByID( smiStatement  * aSmiStmt,
 {
 /***********************************************************************
  *
- *  Description : PROJ-1502 ÆÄÆ¼¼Ç ID·Î ÆÄÆ¼¼Ç ÇÚµéÀ» ±¸ÇÑ´Ù.
+ *  Description : PROJ-1502 íŒŒí‹°ì…˜ IDë¡œ íŒŒí‹°ì…˜ í•¸ë“¤ì„ êµ¬í•œë‹¤.
  *
  *  Implementation :
  *
@@ -3112,7 +3112,7 @@ IDE_RC qcmPartition::getPartitionHandleByID( smiStatement  * aSmiStmt,
     mtcColumn           *sPartitionOIDColInfo;
     qtcMetaRangeColumn  sRangeColumn;
 
-    scGRID               sRid; // Disk TableÀ» À§ÇÑ Record IDentifier
+    scGRID               sRid; // Disk Tableì„ ìœ„í•œ Record IDentifier
     smiCursorType        sCursorType;
     smiCursorProperties  sCursorProperty;
 
@@ -3135,8 +3135,8 @@ IDE_RC qcmPartition::getPartitionHandleByID( smiStatement  * aSmiStmt,
         &sRange);
 
     // To fix BUG-17593
-    // touchPartitionÀ» ÇÒ ¶§´Â update cursor type
-    // touchPartitionÀ» ¾È ÇÒ ¶§´Â select cursor type
+    // touchPartitionì„ í•  ë•ŒëŠ” update cursor type
+    // touchPartitionì„ ì•ˆ í•  ë•ŒëŠ” select cursor type
     if (aTouchPartition == ID_TRUE)
     {
         sFlag = (SMI_LOCK_WRITE|SMI_TRAVERSE_FORWARD|SMI_PREVIOUS_DISABLE);
@@ -3214,7 +3214,7 @@ IDE_RC qcmPartition::makeAndSetQcmPartitionInfo( smiStatement * aSmiStmt,
 {
 /***********************************************************************
  *
- *  Description : PROJ-1502 ÆÄÆ¼¼Ç ¸ŞÅ¸ Ä³½Ã »ı¼º
+ *  Description : PROJ-1502 íŒŒí‹°ì…˜ ë©”íƒ€ ìºì‹œ ìƒì„±
  *
  *  Implementation :
  *
@@ -3254,7 +3254,7 @@ IDE_RC qcmPartition::makeAndSetQcmPartitionInfo( smiStatement * aSmiStmt,
     sPartitionInfo->partitionID = aPartitionID;
 
     // in create db
-    // create dbÇÒ ¶§´Â partitionÀº ¾ø´Ù.
+    // create dbí•  ë•ŒëŠ” partitionì€ ì—†ë‹¤.
     IDE_ASSERT(gQcmTablePartitionsIndex[QCM_TABLE_PARTITIONS_IDX1_ORDER] != NULL);
 
 
@@ -3306,10 +3306,10 @@ IDE_RC qcmPartition::makeAndSetQcmPartitionInfo( smiStatement * aSmiStmt,
     sPartitionInfo->tableOwnerID = aTableInfo->tableOwnerID;
 
     // maxrows
-    // »ç¿ëÇÏÁö ¾ÊÀ½
+    // ì‚¬ìš©í•˜ì§€ ì•ŠìŒ
 
     // PCTFREE, PCTUSED
-    // »ç¿ëÇÏÁö ¾ÊÀ½
+    // ì‚¬ìš©í•˜ì§€ ì•ŠìŒ
 
     // PROJ-1071 Parallel query
     sPartitionInfo->parallelDegree = aTableInfo->parallelDegree;
@@ -3381,7 +3381,7 @@ IDE_RC qcmPartition::makeAndSetQcmPartitionInfo( smiStatement * aSmiStmt,
     // partition handle
     sPartitionInfo->tableHandle = (void *)smiGetTable( aPartitionOID );
 
-    // ±âÅ¸ ÀÚÁÖ »ç¿ëÇÏ´Â Á¤º¸
+    // ê¸°íƒ€ ìì£¼ ì‚¬ìš©í•˜ëŠ” ì •ë³´
     sPartitionInfo->tableOID     = aPartitionOID;
     sPartitionInfo->tableFlag    = smiGetTableFlag( sPartitionInfo->tableHandle );
     sPartitionInfo->isDictionary = smiIsDictionaryTable( sPartitionInfo->tableHandle );
@@ -3389,7 +3389,7 @@ IDE_RC qcmPartition::makeAndSetQcmPartitionInfo( smiStatement * aSmiStmt,
 
     sPartitionInfo->columnCount = aTableInfo->columnCount;
 
-    // partitionÀÇ columnÁ¤º¸ ¼¼ÆÃ
+    // partitionì˜ columnì •ë³´ ì„¸íŒ…
     IDE_TEST( getQcmPartitionColumn( aTableInfo, sPartitionInfo )
               != IDE_SUCCESS );
 
@@ -3478,7 +3478,7 @@ IDE_RC qcmPartition::makeAndSetAndGetQcmPartitionInfoList( qcStatement          
  * Description :
  *      PROJ-2465 Tablespace Alteration for Table
  *
- *      Partition Info List¿¡ ´ëÇØ Meta Cache¸¦ °»½ÅÇÑ´Ù. (Touch Á¦¿Ü)
+ *      Partition Info Listì— ëŒ€í•´ Meta Cacheë¥¼ ê°±ì‹ í•œë‹¤. (Touch ì œì™¸)
  *
  * Implementation :
  *
@@ -3575,10 +3575,10 @@ IDE_RC qcmPartition::getPartitionInfoList(
  * Description :
  *      PROJ-1502 PARTITIONED DISK TABLE
  *
- *     Å×ÀÌºí ID¸¦ ÀÌ¿ëÇØ¼­ ÇØ´çÇÏ´Â ¸ğµç Å×ÀÌºí ÆÄÆ¼¼Ç ID¸¦ Ã£°í,
- *     ±× ID·Î ÆÄÆ¼¼Ç ¸ŞÅ¸ Á¤º¸¸¦ °¡Á®¿Â´Ù.
+ *     í…Œì´ë¸” IDë¥¼ ì´ìš©í•´ì„œ í•´ë‹¹í•˜ëŠ” ëª¨ë“  í…Œì´ë¸” íŒŒí‹°ì…˜ IDë¥¼ ì°¾ê³ ,
+ *     ê·¸ IDë¡œ íŒŒí‹°ì…˜ ë©”íƒ€ ì •ë³´ë¥¼ ê°€ì ¸ì˜¨ë‹¤.
  *
- *     ÆÄÆ¼¼Ç Handle°ú SCNµµ PartInfoList¿¡ ´Ş¾Æ³õ´Â´Ù.
+ *     íŒŒí‹°ì…˜ Handleê³¼ SCNë„ PartInfoListì— ë‹¬ì•„ë†“ëŠ”ë‹¤.
  *
  * Implementation :
  *
@@ -3593,7 +3593,7 @@ IDE_RC qcmPartition::getPartitionInfoList(
     smSCN                     sSCN;
     void                    * sTableHandle;
     smiTableCursor            sCursor;
-    scGRID                    sRid; // Disk TableÀ» À§ÇÑ Record IDentifier
+    scGRID                    sRid; // Disk Tableì„ ìœ„í•œ Record IDentifier
     SInt                      sStage  = 0;
     const void              * sTableRow;
     const void              * sRow;
@@ -3635,7 +3635,7 @@ IDE_RC qcmPartition::getPartitionInfoList(
 
     SMI_CURSOR_PROP_INIT_FOR_META_INDEX_SCAN(&sCursorProperty, NULL);
 
-    // row¸¦ ÇÏ³ª¾¿ ÀĞ¾î¿Í¼­ partitionInfo¸¦ »ı¼ºÇØÁØ´Ù.
+    // rowë¥¼ í•˜ë‚˜ì”© ì½ì–´ì™€ì„œ partitionInfoë¥¼ ìƒì„±í•´ì¤€ë‹¤.
     IDE_TEST(sCursor.open(
                  aSmiStmt,
                  gQcmTablePartitions,
@@ -3659,7 +3659,7 @@ IDE_RC qcmPartition::getPartitionInfoList(
         sPartitionID = *(UInt *)((UChar*) sRow +
                                  sPartitionIDCol->column.offset);
 
-        // ÆÄÆ¼¼Ç ID·Î ÆÄÆ¼¼Ç ¸ŞÅ¸ Á¤º¸¸¦ °¡Á®¿Â´Ù.
+        // íŒŒí‹°ì…˜ IDë¡œ íŒŒí‹°ì…˜ ë©”íƒ€ ì •ë³´ë¥¼ ê°€ì ¸ì˜¨ë‹¤.
         IDE_TEST( qcmPartition::getPartitionInfoByID( aStatement,
                                                       sPartitionID,
                                                       & sPartitionInfo,
@@ -3667,14 +3667,14 @@ IDE_RC qcmPartition::getPartitionInfoList(
                                                       & sPartitionHandle )
                   != IDE_SUCCESS );
 
-        // ÆÄÆ¼¼Ç ¸ŞÅ¸ Á¤º¸ ¸®½ºÆ® ±¸Ãà
+        // íŒŒí‹°ì…˜ ë©”íƒ€ ì •ë³´ ë¦¬ìŠ¤íŠ¸ êµ¬ì¶•
         IDU_LIMITPOINT("qcmPartition::getPartitionInfoList::malloc1");
         IDE_TEST(aMem->alloc(ID_SIZEOF(qcmPartitionInfoList),
                              (void**)&(sPartInfoList))
                  != IDE_SUCCESS);
 
         // -------------------------------------------
-        // sPartInfoList ±¸¼º
+        // sPartInfoList êµ¬ì„±
         // -------------------------------------------
         sPartInfoList->partitionInfo = sPartitionInfo;
         sPartInfoList->partHandle = sPartitionHandle;
@@ -3733,10 +3733,10 @@ IDE_RC qcmPartition::getPartitionInfoList(
  * Description :
  *      PROJ-1502 PARTITIONED DISK TABLE
  *
- *     Å×ÀÌºí ID¸¦ ÀÌ¿ëÇØ¼­ ÇØ´çÇÏ´Â ¸ğµç Å×ÀÌºí ÆÄÆ¼¼Ç ID¸¦ Ã£°í,
- *     ±× ID·Î ÆÄÆ¼¼Ç ¸ŞÅ¸ Á¤º¸¸¦ °¡Á®¿Â´Ù.
+ *     í…Œì´ë¸” IDë¥¼ ì´ìš©í•´ì„œ í•´ë‹¹í•˜ëŠ” ëª¨ë“  í…Œì´ë¸” íŒŒí‹°ì…˜ IDë¥¼ ì°¾ê³ ,
+ *     ê·¸ IDë¡œ íŒŒí‹°ì…˜ ë©”íƒ€ ì •ë³´ë¥¼ ê°€ì ¸ì˜¨ë‹¤.
  *
- *     ÆÄÆ¼¼Ç Handle°ú SCNµµ PartInfoList¿¡ ´Ş¾Æ³õ´Â´Ù.
+ *     íŒŒí‹°ì…˜ Handleê³¼ SCNë„ PartInfoListì— ë‹¬ì•„ë†“ëŠ”ë‹¤.
  *
  * Implementation :
  *
@@ -3751,7 +3751,7 @@ IDE_RC qcmPartition::getPartitionInfoList(
     smSCN                     sSCN;
     void                    * sTableHandle;
     smiTableCursor            sCursor;
-    scGRID                    sRid; // Disk TableÀ» À§ÇÑ Record IDentifier
+    scGRID                    sRid; // Disk Tableì„ ìœ„í•œ Record IDentifier
     SInt                      sStage  = 0;
     const void              * sTableRow;
     const void              * sRow;
@@ -3793,7 +3793,7 @@ IDE_RC qcmPartition::getPartitionInfoList(
 
     SMI_CURSOR_PROP_INIT_FOR_META_INDEX_SCAN(&sCursorProperty, NULL);
 
-    // row¸¦ ÇÏ³ª¾¿ ÀĞ¾î¿Í¼­ partitionInfo¸¦ »ı¼ºÇØÁØ´Ù.
+    // rowë¥¼ í•˜ë‚˜ì”© ì½ì–´ì™€ì„œ partitionInfoë¥¼ ìƒì„±í•´ì¤€ë‹¤.
     IDE_TEST(sCursor.open(
                  aSmiStmt,
                  gQcmTablePartitions,
@@ -3817,7 +3817,7 @@ IDE_RC qcmPartition::getPartitionInfoList(
         sPartitionID = *(UInt *)((UChar*) sRow +
                                  sPartitionIDCol->column.offset);
 
-        // ÆÄÆ¼¼Ç ID·Î ÆÄÆ¼¼Ç ¸ŞÅ¸ Á¤º¸¸¦ °¡Á®¿Â´Ù.
+        // íŒŒí‹°ì…˜ IDë¡œ íŒŒí‹°ì…˜ ë©”íƒ€ ì •ë³´ë¥¼ ê°€ì ¸ì˜¨ë‹¤.
         IDE_TEST( qcmPartition::getPartitionInfoByID( aStatement,
                                                       sPartitionID,
                                                       & sPartitionInfo,
@@ -3825,14 +3825,14 @@ IDE_RC qcmPartition::getPartitionInfoList(
                                                       & sPartitionHandle )
                   != IDE_SUCCESS );
 
-        // ÆÄÆ¼¼Ç ¸ŞÅ¸ Á¤º¸ ¸®½ºÆ® ±¸Ãà
+        // íŒŒí‹°ì…˜ ë©”íƒ€ ì •ë³´ ë¦¬ìŠ¤íŠ¸ êµ¬ì¶•
         IDU_LIMITPOINT("qcmPartition::getPartitionInfoList::malloc2");
         IDE_TEST(aMem->alloc(ID_SIZEOF(qcmPartitionInfoList),
                              (void**)&(sPartInfoList))
                  != IDE_SUCCESS);
 
         // -------------------------------------------
-        // sPartInfoList ±¸¼º
+        // sPartInfoList êµ¬ì„±
         // -------------------------------------------
         sPartInfoList->partitionInfo = sPartitionInfo;
         sPartInfoList->partHandle = sPartitionHandle;
@@ -3890,8 +3890,8 @@ IDE_RC qcmPartition::getPartitionIdList(
  * Description :
  *      PROJ-1502 PARTITIONED DISK TABLE
  *
- *     Å×ÀÌºí ID¸¦ ÀÌ¿ëÇØ¼­ ÇØ´çÇÏ´Â ¸ğµç Å×ÀÌºí ÆÄÆ¼¼Ç IDÀÇ ¸®½ºÆ®¸¦
- *     °¡Á®¿Â´Ù.
+ *     í…Œì´ë¸” IDë¥¼ ì´ìš©í•´ì„œ í•´ë‹¹í•˜ëŠ” ëª¨ë“  í…Œì´ë¸” íŒŒí‹°ì…˜ IDì˜ ë¦¬ìŠ¤íŠ¸ë¥¼
+ *     ê°€ì ¸ì˜¨ë‹¤.
  *
  * Implementation :
  *
@@ -3905,7 +3905,7 @@ IDE_RC qcmPartition::getPartitionIdList(
     smSCN                     sSCN;
     void                    * sTableHandle;
     smiTableCursor            sCursor;
-    scGRID                    sRid; // Disk TableÀ» À§ÇÑ Record IDentifier
+    scGRID                    sRid; // Disk Tableì„ ìœ„í•œ Record IDentifier
     SInt                      sStage  = 0;
     const void              * sTableRow;
     const void              * sRow;
@@ -3940,7 +3940,7 @@ IDE_RC qcmPartition::getPartitionIdList(
 
     SMI_CURSOR_PROP_INIT_FOR_META_INDEX_SCAN(&sCursorProperty, NULL);
 
-    // row¸¦ ÇÏ³ª¾¿ ÀĞ¾î¿Í¼­ partitionInfo¸¦ »ı¼ºÇØÁØ´Ù.
+    // rowë¥¼ í•˜ë‚˜ì”© ì½ì–´ì™€ì„œ partitionInfoë¥¼ ìƒì„±í•´ì¤€ë‹¤.
     IDE_TEST(sCursor.open(
                  aSmiStmt,
                  gQcmTablePartitions,
@@ -3977,7 +3977,7 @@ IDE_RC qcmPartition::getPartitionIdList(
                  != IDE_SUCCESS);
 
         // -------------------------------------------
-        // aPartIdList ±¸¼º
+        // aPartIdList êµ¬ì„±
         // -------------------------------------------
         sPartIdList->partId = sPartitionID;
 
@@ -4024,9 +4024,9 @@ IDE_RC qcmPartition::getPartMinMaxValue(
  * Description :
  *      PROJ-1502 PARTITIONED DISK TABLE
  *
- *      ALTER TABLE ... PARTITION ... ·ÎºÎÅÍ È£ÃâµÈ´Ù.
+ *      ALTER TABLE ... PARTITION ... ë¡œë¶€í„° í˜¸ì¶œëœë‹¤.
  *
- *      ÇØ´ç ÆÄÆ¼¼ÇÀÇ PARTITION_MIN_VALUE¿Í PARTITION_MAX_VALUE¸¦ ¾ò´Â´Ù.
+ *      í•´ë‹¹ íŒŒí‹°ì…˜ì˜ PARTITION_MIN_VALUEì™€ PARTITION_MAX_VALUEë¥¼ ì–»ëŠ”ë‹¤.
  *
  * Implementation :
  *
@@ -4036,7 +4036,7 @@ IDE_RC qcmPartition::getPartMinMaxValue(
     qtcMetaRangeColumn    sRangeColumn;
     mtcColumn           * sPartitionIDCol;
     smiTableCursor        sCursor;
-    scGRID                sRid; // Disk TableÀ» À§ÇÑ Record IDentifier
+    scGRID                sRid; // Disk Tableì„ ìœ„í•œ Record IDentifier
     SInt                  sStage  = 0;
     const void          * sRow;
     const mtdCharType   * sPartCondMinVal;
@@ -4109,7 +4109,7 @@ IDE_RC qcmPartition::getPartMinMaxValue(
         IDE_ASSERT( sPartCondMinVal->length <= QC_MAX_PARTKEY_COND_VALUE_LEN );
         IDE_ASSERT( sPartCondMaxVal->length <= QC_MAX_PARTKEY_COND_VALUE_LEN );
 
-        // º¹»çÇÑ´Ù.
+        // ë³µì‚¬í•œë‹¤.
         if ( sPartCondMinVal->length > 0 )
         {
             idlOS::memcpy( aPartKeyCondMinValue->value,
@@ -4168,9 +4168,9 @@ IDE_RC qcmPartition::getPartMinMaxValue(
  * Description :
  *      PROJ-1502 PARTITIONED DISK TABLE
  *
- *      ALTER TABLE ... PARTITION ... ·ÎºÎÅÍ È£ÃâµÈ´Ù.
+ *      ALTER TABLE ... PARTITION ... ë¡œë¶€í„° í˜¸ì¶œëœë‹¤.
  *
- *      ÇØ´ç ÆÄÆ¼¼ÇÀÇ PARTITION_MIN_VALUE¿Í PARTITION_MAX_VALUE¸¦ ¾ò´Â´Ù.
+ *      í•´ë‹¹ íŒŒí‹°ì…˜ì˜ PARTITION_MIN_VALUEì™€ PARTITION_MAX_VALUEë¥¼ ì–»ëŠ”ë‹¤.
  *
  * Implementation :
  *
@@ -4180,7 +4180,7 @@ IDE_RC qcmPartition::getPartMinMaxValue(
     qtcMetaRangeColumn    sRangeColumn;
     mtcColumn           * sPartitionIDCol;
     smiTableCursor        sCursor;
-    scGRID                sRid; // Disk TableÀ» À§ÇÑ Record IDentifier
+    scGRID                sRid; // Disk Tableì„ ìœ„í•œ Record IDentifier
     SInt                  sStage  = 0;
     const void          * sRow;
     const mtdCharType   * sPartCondMinVal;
@@ -4253,7 +4253,7 @@ IDE_RC qcmPartition::getPartMinMaxValue(
         IDE_ASSERT( sPartCondMinVal->length <= QC_MAX_PARTKEY_COND_VALUE_LEN );
         IDE_ASSERT( sPartCondMaxVal->length <= QC_MAX_PARTKEY_COND_VALUE_LEN );
         
-        // º¹»çÇÑ´Ù.
+        // ë³µì‚¬í•œë‹¤.
         if( sPartCondMinVal->length > 0 )
         {
             idlOS::memcpy( aPartKeyCondMinValueStr,
@@ -4314,10 +4314,10 @@ IDE_RC qcmPartition::validateAndLockTableAndPartitions(
  * Description :
  *      PROJ-1502 PARTITIONED DISK TABLE
  *
- *      ÆÄÆ¼¼Çµå Å×ÀÌºí¿¡ LOCK(IX), BUG-42329:( SPLIT, MERGE LOCK(X) )
- *      aPartInfoList¿¡ ÀÖ´Â ¸ğµç ÆÄÆ¼¼Ç¿¡ LOCK(X)
+ *      íŒŒí‹°ì…˜ë“œ í…Œì´ë¸”ì— LOCK(IX), BUG-42329:( SPLIT, MERGE LOCK(X) )
+ *      aPartInfoListì— ìˆëŠ” ëª¨ë“  íŒŒí‹°ì…˜ì— LOCK(X)
  *
- *      ÀÌ ÇÔ¼ö°¡ È£ÃâµÇ´Â °æ¿ì´Â
+ *      ì´ í•¨ìˆ˜ê°€ í˜¸ì¶œë˜ëŠ” ê²½ìš°ëŠ”
  *          ALTER TABLE ~ SPLIT     PARTITION
  *          ALTER TABLE ~ MERGE     PARTITIONS
  *          ALTER TABLE ~ DROP      PARTITION
@@ -4328,8 +4328,8 @@ IDE_RC qcmPartition::validateAndLockTableAndPartitions(
  *          ALTER TABLE ~ COMPACT   PARTITION
  *          ALTER TABLE ~ AGING     PARTITION
  *          ALTER INDEX ~ REBUILD   PARTITION
- *      °ú °°ÀÌ ÆÄÆ¼¼Çµå Å×ÀÌºí¿¡ LOCK(IX)ÀÌ ÀâÈ÷°í,
- *      ÆÄÆ¼¼Ç¿¡ LOCK(X)ÀÌ ÀâÈ÷´Â °æ¿ìÀÌ´Ù.
+ *      ê³¼ ê°™ì´ íŒŒí‹°ì…˜ë“œ í…Œì´ë¸”ì— LOCK(IX)ì´ ì¡íˆê³ ,
+ *      íŒŒí‹°ì…˜ì— LOCK(X)ì´ ì¡íˆëŠ” ê²½ìš°ì´ë‹¤.
  *
  *
  * Implementation :
@@ -4351,18 +4351,18 @@ IDE_RC qcmPartition::validateAndLockTableAndPartitions(
     IDE_TEST(smiValidateAndLockObjects( (QC_SMI_STMT( aStatement ))->getTrans(),
                                         aPartTableHandle,
                                         aPartTableSCN,
-                                        SMI_TBSLV_DDL_DML, // TBS Validation ¿É¼Ç
+                                        SMI_TBSLV_DDL_DML, // TBS Validation ì˜µì…˜
                                         sPartTableLockMode,
                                         ((smiGetDDLLockTimeOut() == -1) ?
                                          ID_ULONG_MAX :
                                          smiGetDDLLockTimeOut()*1000000),
-                                        ID_FALSE ) // BUG-28752 ¸í½ÃÀû Lock°ú ³»ÀçÀû LockÀ» ±¸ºĞÇÕ´Ï´Ù.
+                                        ID_FALSE ) // BUG-28752 ëª…ì‹œì  Lockê³¼ ë‚´ì¬ì  Lockì„ êµ¬ë¶„í•©ë‹ˆë‹¤.
              != IDE_SUCCESS);
     
-    // °¢ ÆÄÆ¼¼Ç¿¡ LOCK(X)
+    // ê° íŒŒí‹°ì…˜ì— LOCK(X)
     IDE_TEST( qcmPartition::validateAndLockPartitionInfoList( aStatement,
                                                               aPartInfoList,
-                                                              SMI_TBSLV_DDL_DML, // TBS Validation ¿É¼Ç
+                                                              SMI_TBSLV_DDL_DML, // TBS Validation ì˜µì…˜
                                                               SMI_TABLE_LOCK_X,
                                                               ( ( smiGetDDLLockTimeOut() == -1 ) ?
                                                                 ID_ULONG_MAX :
@@ -4370,7 +4370,7 @@ IDE_RC qcmPartition::validateAndLockTableAndPartitions(
               != IDE_SUCCESS );
 
     // BUG-43292 DDL / DDL partiton(SPLIT, MERGE ADD, COALESCE)
-    // ¿¬»ê½Ã ÃÖ½Å viewSCNÀ» º¸Áö ¸øÇÔ
+    // ì—°ì‚°ì‹œ ìµœì‹  viewSCNì„ ë³´ì§€ ëª»í•¨
     if ( aIsSetViewSCN == ID_TRUE )
     {
         IDE_TEST( smiStatement::setViewSCNOfAllStmt( QC_SMI_STMT( aStatement ) )
@@ -4416,7 +4416,7 @@ IDE_RC qcmPartition::getPartitionOrder( smiStatement * aSmiStmt,
     qcNameCharBuffer      sPartitionNameBuffer;
     mtdCharType         * sPartitionName = ( mtdCharType * ) & sPartitionNameBuffer;
 
-    scGRID                sRid; // Disk TableÀ» À§ÇÑ Record IDentifier
+    scGRID                sRid; // Disk Tableì„ ìœ„í•œ Record IDentifier
     smiCursorProperties   sCursorProperty;
 
     sCursor.initialize();
@@ -4500,7 +4500,7 @@ IDE_RC qcmPartition::getTableIDByPartitionID(
  * Description :
  *      PROJ-1502 PARTITIONED DISK TABLE
  *
- *      ÆÄÆ¼¼Ç ÀÌ¸§À¸·Î ÆÄÆ¼¼Çµå Å×ÀÌºíÀÇ ID¸¦ Ã£¾Æ¿Â´Ù.
+ *      íŒŒí‹°ì…˜ ì´ë¦„ìœ¼ë¡œ íŒŒí‹°ì…˜ë“œ í…Œì´ë¸”ì˜ IDë¥¼ ì°¾ì•„ì˜¨ë‹¤.
  *
  * Implementation :
  *
@@ -4615,7 +4615,7 @@ IDE_RC qcmPartition::touchPartitionInfoList( smiStatement         * aSmiStmt,
  * Description :
  *      PROJ-2465 Tablespace Alteration for Table
  *
- *      Partition Info List¿¡ ´ëÇØ Touch¸¦ ¼öÇàÇÑ´Ù.
+ *      Partition Info Listì— ëŒ€í•´ Touchë¥¼ ìˆ˜í–‰í•œë‹¤.
  *
  * Implementation :
  *
@@ -4646,7 +4646,7 @@ IDE_RC qcmPartition::getPartIdxFromIdxId( UInt           aIndexId,
 /***********************************************************************
  *
  * Description : PROJ-1502 PARTITIONED DISK TABLE
- *     Index ID·Î Partitioned Index¸¦ Ã£¾Æ¼­ ¸®ÅÏ.
+ *     Index IDë¡œ Partitioned Indexë¥¼ ì°¾ì•„ì„œ ë¦¬í„´.
  *
  * Implementation :
  *
@@ -4686,7 +4686,7 @@ qcmPartition::searchTablePartitionID( smiStatement * aSmiStmt,
 {
 /***********************************************************************
  *
- * Description : table partition id°¡ Á¸ÀçÇÏ´ÂÁö °Ë»ç.
+ * Description : table partition idê°€ ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬.
  *
  * Implementation :
  *
@@ -4700,13 +4700,13 @@ qcmPartition::searchTablePartitionID( smiStatement * aSmiStmt,
     mtcColumn           *sQcmIndexColumn;
     qtcMetaRangeColumn  sRangeColumn;
 
-    scGRID              sRid; // Disk TableÀ» À§ÇÑ Record IDentifier
+    scGRID              sRid; // Disk Tableì„ ìœ„í•œ Record IDentifier
     smiCursorProperties sCursorProperty;
 
     if( gQcmTablePartitionsIndex[QCM_TABLE_PARTITIONS_IDX1_ORDER] == NULL )
     {
-        // createdbÇÏ´Â °æ¿ìÀÓ.
-        // ÀÌ¶§´Â °Ë»ç ÇÒ ÇÊ¿ä°¡ ¾ø´Ù
+        // createdbí•˜ëŠ” ê²½ìš°ì„.
+        // ì´ë•ŒëŠ” ê²€ì‚¬ í•  í•„ìš”ê°€ ì—†ë‹¤
         *aExist = ID_FALSE;
     }
     else
@@ -4778,7 +4778,7 @@ qcmPartition::searchIndexPartitionID( smiStatement * aSmiStmt,
 {
 /***********************************************************************
  *
- * Description : index partition id°¡ Á¸ÀçÇÏ´ÂÁö °Ë»ç.
+ * Description : index partition idê°€ ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬.
  *
  * Implementation :
  *
@@ -4792,13 +4792,13 @@ qcmPartition::searchIndexPartitionID( smiStatement * aSmiStmt,
     mtcColumn           *sQcmIndexColumn;
     qtcMetaRangeColumn  sRangeColumn;
 
-    scGRID              sRid; // Disk TableÀ» À§ÇÑ Record IDentifier
+    scGRID              sRid; // Disk Tableì„ ìœ„í•œ Record IDentifier
     smiCursorProperties sCursorProperty;
 
     if( gQcmIndexPartitionsIndex[QCM_INDEX_PARTITIONS_IDX1_ORDER] == NULL )
     {
-        // createdbÇÏ´Â °æ¿ìÀÓ.
-        // ÀÌ¶§´Â °Ë»ç ÇÒ ÇÊ¿ä°¡ ¾ø´Ù
+        // createdbí•˜ëŠ” ê²½ìš°ì„.
+        // ì´ë•ŒëŠ” ê²€ì‚¬ í•  í•„ìš”ê°€ ì—†ë‹¤
         *aExist = ID_FALSE;
     }
     else
@@ -4868,7 +4868,7 @@ qcmPartition::copyPartitionRef( qcStatement      * aStatement,
 {
 /***********************************************************************
  *
- * Description : partitionRef listÀÇ º¹»ç
+ * Description : partitionRef listì˜ ë³µì‚¬
  *
  * Implementation :
  *
@@ -4917,7 +4917,7 @@ qcmPartition::copyPartitionRef( qcStatement      * aStatement,
 
 /***********************************************************************
  *
- * Description : Partition ¿ä¾à Á¤º¸¸¦ ¸¸µç´Ù.
+ * Description : Partition ìš”ì•½ ì •ë³´ë¥¼ ë§Œë“ ë‹¤.
  *
  * Implementation :
  *
@@ -5056,10 +5056,10 @@ IDE_RC qcmPartition::checkPartitionCount4Execute( qcStatement          * aStatem
           sPartInfo != NULL;
           sPartInfo = sPartInfo->next, sNewCount++ );
 
-    /* BUG-42681 valgrind split Áß add column µ¿½Ã¼º ¹®Á¦
+    /* BUG-42681 valgrind split ì¤‘ add column ë™ì‹œì„± ë¬¸ì œ
      *
-     * validate½Ã¿¡ °¡Á®¿Â parttion list¿Í execute ½Ã¿¡ °¡Á®¿Â
-     * partition list ¼ıÀÚ°¡ ´Ù¸£´Ù¸é error¸¦ ¹ß»ı½ÃÅ²´Ù.
+     * validateì‹œì— ê°€ì ¸ì˜¨ parttion listì™€ execute ì‹œì— ê°€ì ¸ì˜¨
+     * partition list ìˆ«ìê°€ ë‹¤ë¥´ë‹¤ë©´ errorë¥¼ ë°œìƒì‹œí‚¨ë‹¤.
      */
     IDE_TEST_RAISE( sOrgCount != sNewCount, ERR_UNEXPECTED );
 

@@ -256,8 +256,8 @@ primary_expr
 id_or_function
     : IDENTIFIER
     {
-        // parser¿¡¼­ ID¸¦ ½ÉºíÅ×ÀÌºí¿¡¼­ Ã£¾Æº»´Ù.
-        // ¼ýÀÚ°ªÀÌ³Ä ÀÌ¸§ÀÌ³Ä¿¡ µû¸¥ º¹ÀâÇÑ Ã³¸®°¡ ÇÊ¿äÇÔ
+        // parserì—ì„œ IDë¥¼ ì‹¬ë¸”í…Œì´ë¸”ì—ì„œ ì°¾ì•„ë³¸ë‹¤.
+        // ìˆ«ìžê°’ì´ëƒ ì´ë¦„ì´ëƒì— ë”°ë¥¸ ë³µìž¡í•œ ì²˜ë¦¬ê°€ í•„ìš”í•¨
         //$<intval>$ = $<intval>1;
     }
     | IDENTIFIER_FUNC

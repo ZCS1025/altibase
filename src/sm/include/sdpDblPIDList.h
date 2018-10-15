@@ -20,28 +20,28 @@
  *
  * Description :
  *
- * File Based PID Linked-list °ü¸®ÀÚ
+ * File Based PID Linked-list ê´€ë¦¬ì
  *
  *
- * # °³³ä
+ * # ê°œë…
  *
- * °¢Á¾ tablespaceÀÇ ³í¸®ÀûÀÎ page list¸¦ °ü¸®ÇÏ±â À§ÇÑ
- * ÀÎÅÍÆäÀÌ½º
+ * ê°ì¢… tablespaceì˜ ë…¼ë¦¬ì ì¸ page listë¥¼ ê´€ë¦¬í•˜ê¸° ìœ„í•œ
+ * ì¸í„°í˜ì´ìŠ¤
  *
- * # ¸ñÀû
+ * # ëª©ì 
  *  
- *  + tablespace¿¡ ÀúÀåµÇ´Â °¢Á¾ ³í¸®ÀûÀÎ page list °ü¸®
+ *  + tablespaceì— ì €ì¥ë˜ëŠ” ê°ì¢… ë…¼ë¦¬ì ì¸ page list ê´€ë¦¬
  * 
- *      - tablespaceÀÇ seg.dir full list (base)
- *      - tablespaceÀÇ seg.dir free list (base)
- *      - tablespaceÀÇ ext.dir full list (base)
- *      - segment dirÀÇ seg.dir list     (node)
- *      - segment descÀÇ used page list  (base)
- *      - extent  dirÀÇ ext.dir list     (node)
- *      - persistent pageÀÇ page list    (node)
+ *      - tablespaceì˜ seg.dir full list (base)
+ *      - tablespaceì˜ seg.dir free list (base)
+ *      - tablespaceì˜ ext.dir full list (base)
+ *      - segment dirì˜ seg.dir list     (node)
+ *      - segment descì˜ used page list  (base)
+ *      - extent  dirì˜ ext.dir list     (node)
+ *      - persistent pageì˜ page list    (node)
  *
  *
- * # ±¸Á¶
+ * # êµ¬ì¡°
  *              sdpPageListBase
  *                  ______________
  *                  |____len_____|        
@@ -53,15 +53,15 @@
  *
  *         sdpPageListNode
  *
- * PID ¸®½ºÆ®´Â µ¿ÀÏÇÑ tablespace¿¡¼­¸¸ À¯Áö °ü¸®°¡ °¡´ÉÇÏ¸ç, À§¿Í°°Àº
- * circular double linked-listÀÇ ±¸Á¶¸¦ À¯ÁöÇÑ´Ù. ¸®½ºÆ®¿¡ ´ëÇÑ º¯°æ¿¬»êÀº
- * base ³ëµå¸¦ fixÇÑ »óÅÂ¿¡¼­ ÀÌ·ç¾îÁ®¾ßÇÑ´Ù.
- * µ¿ÀÏÇÑ page³»¿¡ ¸®½ºÆ®ÀÇ ¿©·¯ ³ëµå°¡ Á¸ÀçÇÒ ¼ö ¾ø´Ù(ASSERT Ã³¸®)
+ * PID ë¦¬ìŠ¤íŠ¸ëŠ” ë™ì¼í•œ tablespaceì—ì„œë§Œ ìœ ì§€ ê´€ë¦¬ê°€ ê°€ëŠ¥í•˜ë©°, ìœ„ì™€ê°™ì€
+ * circular double linked-listì˜ êµ¬ì¡°ë¥¼ ìœ ì§€í•œë‹¤. ë¦¬ìŠ¤íŠ¸ì— ëŒ€í•œ ë³€ê²½ì—°ì‚°ì€
+ * base ë…¸ë“œë¥¼ fixí•œ ìƒíƒœì—ì„œ ì´ë£¨ì–´ì ¸ì•¼í•œë‹¤.
+ * ë™ì¼í•œ pageë‚´ì— ë¦¬ìŠ¤íŠ¸ì˜ ì—¬ëŸ¬ ë…¸ë“œê°€ ì¡´ì¬í•  ìˆ˜ ì—†ë‹¤(ASSERT ì²˜ë¦¬)
  *
  * # Releate data structure
  *
- * sdpDblPIDListBase ±¸Á¶Ã¼
- * sdpDblPIDListNode ±¸Á¶Ã¼
+ * sdpDblPIDListBase êµ¬ì¡°ì²´
+ * sdpDblPIDListNode êµ¬ì¡°ì²´
  *
  **********************************************************************/
 
@@ -75,23 +75,23 @@ class sdpDblPIDList
 {
 public:
 
-    /* page listÀÇ base ³ëµå¸¦ ÃÊ±âÈ­ */
+    /* page listì˜ base ë…¸ë“œë¥¼ ì´ˆê¸°í™” */
     static IDE_RC initBaseNode(sdpDblPIDListBase*    aBaseNode,  
                                sdrMtx*               aMtx);
     
-    /* page listÀÇ head¿¡ ³ëµå¸¦ Ãß°¡ */
+    /* page listì˜ headì— ë…¸ë“œë¥¼ ì¶”ê°€ */
     static IDE_RC insertHeadNode(idvSQL           *aStatistics,
                                  sdpDblPIDListBase*   aBaseNode, 
                                  sdpDblPIDListNode*   aNewNode,
                                  sdrMtx*           aMtx);
 
-    /* page listÀÇ tail¿¡ ³ëµå¸¦ Ãß°¡ */
+    /* page listì˜ tailì— ë…¸ë“œë¥¼ ì¶”ê°€ */
     static IDE_RC insertTailNode(idvSQL           *aStatistics,
                                  sdpDblPIDListBase*   aBaseNode, 
                                  sdpDblPIDListNode*   aNewNode,
                                  sdrMtx*           aMtx);
 
-    /* page listÀÇ tail¿¡ list¸¦ Ãß°¡ */
+    /* page listì˜ tailì— listë¥¼ ì¶”ê°€ */
     static IDE_RC insertTailList(idvSQL              *aStatistics,
                                  sdpDblPIDListBase   *aBaseNode, 
                                  sdpDblPIDListNode   *aFstNode,
@@ -99,14 +99,14 @@ public:
                                  ULong                aListLen,
                                  sdrMtx*              aMtx);
     
-    /* page listÀÇ Æ¯Á¤ ³ëµå µÚ¿¡ »õ·Î¿î ³ëµå Ãß°¡ */
+    /* page listì˜ íŠ¹ì • ë…¸ë“œ ë’¤ì— ìƒˆë¡œìš´ ë…¸ë“œ ì¶”ê°€ */
     static IDE_RC insertNodeAfter(idvSQL*           aStatistics,
                                   sdpDblPIDListBase*   aBaseNode,
                                   sdpDblPIDListNode*   aNode,
                                   sdpDblPIDListNode*   aNewNode,
                                   sdrMtx*           aMtx);
     
-    /* page listÀÇ Æ¯Á¤ ³ëµå ¾Õ¿¡ »õ·Î¿î ³ëµå Ãß°¡ */
+    /* page listì˜ íŠ¹ì • ë…¸ë“œ ì•ì— ìƒˆë¡œìš´ ë…¸ë“œ ì¶”ê°€ */
     static IDE_RC insertNodeBefore(idvSQL*           aStatistics,
                                    sdpDblPIDListBase*   aBaseNode,
                                    sdpDblPIDListNode*   aNode,
@@ -126,7 +126,7 @@ public:
                                       sdrMtx*          aMtx,
                                       idBool           aNeedGetPage);
     
-    /* page list¿¡¼­ Æ¯Á¤³ëµå Á¦°Å */
+    /* page listì—ì„œ íŠ¹ì •ë…¸ë“œ ì œê±° */
     static IDE_RC removeNode(idvSQL                *aStatistics,
                              sdpDblPIDListBase*     aBaseNode,
                              sdpDblPIDListNode*     aNode,
@@ -147,36 +147,36 @@ public:
                              scSpaceID           aSpaceID,
                              scPageID            aPageID );
 
-    /* base ³ëµåÀÇ length ¾ò±â */
+    /* base ë…¸ë“œì˜ length ì–»ê¸° */
     static inline ULong getNodeCnt(sdpDblPIDListBase*   aBaseNode);
     
-    /* base ³ëµåÀÇ head ³ëµå ¾ò±â */
+    /* base ë…¸ë“œì˜ head ë…¸ë“œ ì–»ê¸° */
     static inline scPageID getListHeadNode(sdpDblPIDListBase*   aBaseNode);
     
-    /* base ³ëµåÀÇ tail ³ëµå ¾ò±â */
+    /* base ë…¸ë“œì˜ tail ë…¸ë“œ ì–»ê¸° */
     static inline scPageID getListTailNode(sdpDblPIDListBase*   aBaseNode);
     
-    /* ³ëµåÀÇ next ³ëµå ¾ò±â */
+    /* ë…¸ë“œì˜ next ë…¸ë“œ ì–»ê¸° */
     static inline scPageID getNxtOfNode(sdpDblPIDListNode*   aNode);
     
-    /* ³ëµåÀÇ prev ³ëµå ¾ò±â */
+    /* ë…¸ë“œì˜ prev ë…¸ë“œ ì–»ê¸° */
     static inline scPageID getPrvOfNode(sdpDblPIDListNode*   aNode);
     
-    /* listÀÇ ¸ğµç ³ëµå Ãâ·Â */
+    /* listì˜ ëª¨ë“  ë…¸ë“œ ì¶œë ¥ */
     static IDE_RC dumpList( scSpaceID aSpaceID,
                             sdRID     aBaseNodeRID );
     
-    /* ³ëµåÀÇ Æ¯Á¤ prev page ID ¼³Á¤ ¹× logging */
+    /* ë…¸ë“œì˜ íŠ¹ì • prev page ID ì„¤ì • ë° logging */
     static IDE_RC setPrvOfNode(sdpDblPIDListNode*  aNode,
                                scPageID            aPageID,
                                sdrMtx*             aMtx);
     
-    /* ³ëµåÀÇ Æ¯Á¤ next page ID ¼³Á¤ ¹× logging */
+    /* ë…¸ë“œì˜ íŠ¹ì • next page ID ì„¤ì • ë° logging */
     static IDE_RC setNxtOfNode(sdpDblPIDListNode*  aNode,
                                scPageID            aPageID,
                                sdrMtx*             aMtx);
     
-    /* base ³ëµåÀÇ length ¼³Á¤ ¹× logging */
+    /* base ë…¸ë“œì˜ length ì„¤ì • ë° logging */
     static IDE_RC setNodeCnt(sdpDblPIDListBase  *aBaseNode,
                              ULong               aLen,
                              sdrMtx             *aMtx);
@@ -184,7 +184,7 @@ public:
 
 
 /***********************************************************************
- * Description : Base ³ëµåÀÇ length ¹İÈ¯
+ * Description : Base ë…¸ë“œì˜ length ë°˜í™˜
  ***********************************************************************/
 inline ULong sdpDblPIDList::getNodeCnt(sdpDblPIDListBase*   aBaseNode)
 {
@@ -194,7 +194,7 @@ inline ULong sdpDblPIDList::getNodeCnt(sdpDblPIDListBase*   aBaseNode)
 }
 
 /***********************************************************************
- * Description : ³ëµåÀÇ next ³ëµå ¹İÈ¯ È¤Àº base ³ëµåÀÇ tail ³ëµå ¹İÈ¯
+ * Description : ë…¸ë“œì˜ next ë…¸ë“œ ë°˜í™˜ í˜¹ì€ base ë…¸ë“œì˜ tail ë…¸ë“œ ë°˜í™˜
  ***********************************************************************/
 inline scPageID sdpDblPIDList::getNxtOfNode(sdpDblPIDListNode*  aNode)
 {
@@ -206,7 +206,7 @@ inline scPageID sdpDblPIDList::getNxtOfNode(sdpDblPIDListNode*  aNode)
 }
 
 /***********************************************************************
- * Description : ³ëµåÀÇ prev ³ëµå ¹İÈ¯ È¤Àº base ³ëµåÀÇ head ³ëµå ¹İÈ¯
+ * Description : ë…¸ë“œì˜ prev ë…¸ë“œ ë°˜í™˜ í˜¹ì€ base ë…¸ë“œì˜ head ë…¸ë“œ ë°˜í™˜
  ***********************************************************************/
 inline scPageID sdpDblPIDList::getPrvOfNode(sdpDblPIDListNode* aNode)
 {
@@ -218,7 +218,7 @@ inline scPageID sdpDblPIDList::getPrvOfNode(sdpDblPIDListNode* aNode)
 }
 
 /***********************************************************************
- * Description : base ³ëµåÀÇ head ³ëµå ¹İÈ¯
+ * Description : base ë…¸ë“œì˜ head ë…¸ë“œ ë°˜í™˜
  ***********************************************************************/
 inline scPageID sdpDblPIDList::getListHeadNode(sdpDblPIDListBase* aBaseNode)
 {
@@ -230,7 +230,7 @@ inline scPageID sdpDblPIDList::getListHeadNode(sdpDblPIDListBase* aBaseNode)
 }
     
 /***********************************************************************
- * Description : base ³ëµåÀÇ tail ³ëµå ¹İÈ¯
+ * Description : base ë…¸ë“œì˜ tail ë…¸ë“œ ë°˜í™˜
  ***********************************************************************/
 inline scPageID sdpDblPIDList::getListTailNode(sdpDblPIDListBase* aBaseNode)
 {

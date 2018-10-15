@@ -15,13 +15,13 @@
 /*
  *       initializeStatic();
  *
- *   ���� CPU ȯ�濡���� LATCH ���� ó����.
- *   ���� CPU ȯ�濡���� spin lock�� �ǹ̰� ����.
+ *   다중 CPU 환경에서만 LATCH 인자 처리함.
+ *   단일 CPU 환경에서는 spin lock이 의미가 없음.
  *
- *   ��  ���� �Ʒ��� ȯ�溯������ ��´�.
+ *   그  값은 아래의 환경변수에서 얻는다.
  *
  *   ALTIBASE_LATCH_SPINLOCK_COUNT = VALUE;
- *  Latch ��ü�� �ʱ�ȭ�Ѵ�.
+ *  Latch 객체를 초기화한다.
  */
 
 SInt            iduLatch::mLatchSpinCount;
@@ -39,7 +39,7 @@ IDE_RC iduLatch::initializeStatic(iduPeerType aType)
 
     if (idlVA::getProcessorCount() <= 1)
     {
-        /* ���� CPU������ 1�� ����. */
+        /* 단일 CPU에서는 1로 고정. */
         mLatchSpinCount = 1;
     }
     else
@@ -116,7 +116,7 @@ IDE_RC iduLatch::initializeStatic(iduPeerType aType)
 
 /*
  *  destroyStatic();
- *  Latch ��ü�� �Ҹ��Ų��..
+ *  Latch 객체를 소멸시킨다..
  */
 IDE_RC iduLatch::destroyStatic()
 {
@@ -208,7 +208,7 @@ IDE_RC iduLatch::destroyStatic()
 
 /*
  *  initialize();
- *  Latch ��ü�� �ʱ�ȭ�Ѵ�.
+ *  Latch 객체를 초기화한다.
  */
 
 IDE_RC iduLatch::initialize(SChar *aName)
@@ -308,8 +308,8 @@ IDE_RC iduLatch::initialize(SChar       *aName,
 
 /*
  *  destroy(); 
- *  Server Mode : Latch ��ü�� IDLE ����Ʈ�� �ִ´�.
- *  Client Mode : Latch ��ü�� �Ҹ��Ų��..
+ *  Server Mode : Latch 객체를 IDLE 리스트에 넣는다.
+ *  Client Mode : Latch 객체를 소멸시킨다..
  */
 IDE_RC iduLatch::destroy()
 {
@@ -338,7 +338,7 @@ IDE_RC iduLatch::destroy()
 
 
 /* --------------------------------------------------------------------
- * latch�� dump�Ѵ�.
+ * latch를 dump한다.
  * ----------------------------------------------------------------- */
 IDE_RC iduLatch::dump()
 {

@@ -20,13 +20,13 @@
  *
  * Description :
  *
- *     Subquery ¿¬»êÀ» ¼öÇàÇÏ´Â Node
- *     One Column Çü Subquery ¿Í List(Multi-Column)Çü Subquery¸¦
- *     ±¸ºĞÇÏ¿© Ã³¸®ÇÏ¿©¾ß ÇÑ´Ù.
+ *     Subquery ì—°ì‚°ì„ ìˆ˜í–‰í•˜ëŠ” Node
+ *     One Column í˜• Subquery ì™€ List(Multi-Column)í˜• Subqueryë¥¼
+ *     êµ¬ë¶„í•˜ì—¬ ì²˜ë¦¬í•˜ì—¬ì•¼ í•œë‹¤.
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  **********************************************************************/
 
@@ -80,22 +80,22 @@ static IDE_RC qtcSubqueryCalculateListTwice( mtcNode*     aNode,
 
 static idBool qtcSubqueryIs1RowSure(qcStatement* aStatement);
 
-/* Subquery ¿¬»êÀÚÀÇ ÀÌ¸§¿¡ ´ëÇÑ Á¤º¸ */
+/* Subquery ì—°ì‚°ìì˜ ì´ë¦„ì— ëŒ€í•œ ì •ë³´ */
 static mtcName mtfFunctionName[1] = {
     { NULL, 8, (void*)"SUBQUERY" }
 };
 
-/* Subquery ¿¬»êÀÚÀÇ Module ¿¡ ´ëÇÑ Á¤º¸ */
+/* Subquery ì—°ì‚°ìì˜ Module ì— ëŒ€í•œ ì •ë³´ */
 mtfModule qtc::subqueryModule = {
-    1|                          // ÇÏ³ªÀÇ Column °ø°£
-    MTC_NODE_OPERATOR_SUBQUERY | MTC_NODE_HAVE_SUBQUERY_TRUE, // Subquery ¿¬»êÀÚ
-    ~(MTC_NODE_INDEX_MASK),     // Indexable Mask : Column Á¤º¸°¡ ¾Æ´Ô.
-    1.0,                        // default selectivity (ºñ±³ ¿¬»êÀÚ ¾Æ´Ô)
-    mtfFunctionName,            // ÀÌ¸§ Á¤º¸
-    NULL,                       // Counter ¿¬»êÀÚ ¾øÀ½
-    mtf::initializeDefault,     // ¼­¹ö ±¸µ¿½Ã ÃÊ±âÈ­ ÇÔ¼ö, ¾øÀ½
-    mtf::finalizeDefault,       // ¼­¹ö Á¾·á½Ã Á¾·á ÇÔ¼ö, ¾øÀ½
-    qtcSubqueryEstimate         // Estimate ÇÒ ÇÔ¼ö
+    1|                          // í•˜ë‚˜ì˜ Column ê³µê°„
+    MTC_NODE_OPERATOR_SUBQUERY | MTC_NODE_HAVE_SUBQUERY_TRUE, // Subquery ì—°ì‚°ì
+    ~(MTC_NODE_INDEX_MASK),     // Indexable Mask : Column ì •ë³´ê°€ ì•„ë‹˜.
+    1.0,                        // default selectivity (ë¹„êµ ì—°ì‚°ì ì•„ë‹˜)
+    mtfFunctionName,            // ì´ë¦„ ì •ë³´
+    NULL,                       // Counter ì—°ì‚°ì ì—†ìŒ
+    mtf::initializeDefault,     // ì„œë²„ êµ¬ë™ì‹œ ì´ˆê¸°í™” í•¨ìˆ˜, ì—†ìŒ
+    mtf::finalizeDefault,       // ì„œë²„ ì¢…ë£Œì‹œ ì¢…ë£Œ í•¨ìˆ˜, ì—†ìŒ
+    qtcSubqueryEstimate         // Estimate í•  í•¨ìˆ˜
 };
 
 static IDE_RC qtcSubqueryEstimate( mtcNode     * aNode,
@@ -107,14 +107,14 @@ static IDE_RC qtcSubqueryEstimate( mtcNode     * aNode,
 /***********************************************************************
  *
  * Description :
- *    Subquery ¿¬»êÀÚ¿¡ ´ëÇÏ¿© Estimate ¸¦ ¼öÇàÇÔ.
- *    Subquery Node¿¡ ´ëÇÑ Column Á¤º¸ ¹× Execute Á¤º¸¸¦ SettingÇÑ´Ù.
+ *    Subquery ì—°ì‚°ìì— ëŒ€í•˜ì—¬ Estimate ë¥¼ ìˆ˜í–‰í•¨.
+ *    Subquery Nodeì— ëŒ€í•œ Column ì •ë³´ ë° Execute ì •ë³´ë¥¼ Settingí•œë‹¤.
  *
  * Implementation :
  *
- *    SubqueryÀÇ Target ColumnÀÇ °³¼ö¸¦ ¼¼¾î,
- *    One-Column / List Subquery ÀÇ ¿©ºÎ¸¦ ÆÇ´ÜÇÏ°í, ÀÌ¿¡ ´ëÇÑ
- *    Ã³¸®¸¦ ¼öÇàÇÑ´Ù.
+ *    Subqueryì˜ Target Columnì˜ ê°œìˆ˜ë¥¼ ì„¸ì–´,
+ *    One-Column / List Subquery ì˜ ì—¬ë¶€ë¥¼ íŒë‹¨í•˜ê³ , ì´ì— ëŒ€í•œ
+ *    ì²˜ë¦¬ë¥¼ ìˆ˜í–‰í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -151,8 +151,8 @@ static IDE_RC qtcSubqueryEstimate( mtcNode     * aNode,
     // set member of qcStatement
     sStatement->myPlan->parseTree->stmtKind = QCI_STMT_SELECT;
 
-    // BUG-41104 statement °¡ null ÀÏ¶§´Â skip ÇØµµ µÈ´Ù.
-    // validate ´Ü°è¿¡¼­ ÀÌ¹Ì ¼³Á¤µÇ¾î ÀÖ´Ù.
+    // BUG-41104 statement ê°€ null ì¼ë•ŒëŠ” skip í•´ë„ ëœë‹¤.
+    // validate ë‹¨ê³„ì—ì„œ ì´ë¯¸ ì„¤ì •ë˜ì–´ ìˆë‹¤.
     if ( sCallBackInfo->statement != NULL )
     {
         sStatement->myPlan->planEnv = sCallBackInfo->statement->myPlan->planEnv;
@@ -186,7 +186,7 @@ static IDE_RC qtcSubqueryEstimate( mtcNode     * aNode,
     // BUG-41311
     IDE_TEST( qmv::validateLoop( sStatement ) != IDE_SUCCESS );
 
-    // shard viewÀÇ ÇÏÀ§ statement¿¡¼­´Â shard tableÀÌ ¿Ã ¼ö ÀÖ´Ù.
+    // shard viewì˜ í•˜ìœ„ statementì—ì„œëŠ” shard tableì´ ì˜¬ ìˆ˜ ìˆë‹¤.
     if ( sCallBackInfo->statement != NULL )
     {
         if ( ( ( sTemplate->flag & QC_TMP_SHARD_TRANSFORM_MASK )
@@ -209,7 +209,7 @@ static IDE_RC qtcSubqueryEstimate( mtcNode     * aNode,
         // Nothing to do.
     }
 
-    // Query Set¿¡ ´ëÇÑ Validation ¼öÇà
+    // Query Setì— ëŒ€í•œ Validation ìˆ˜í–‰
     IDE_TEST( qmvQuerySet::validate(
                   sStatement,
                   ((qmsParseTree*)sStatement->myPlan->parseTree)->querySet,
@@ -230,7 +230,7 @@ static IDE_RC qtcSubqueryEstimate( mtcNode     * aNode,
     }
 
     // PROJ-2462 Result Cache
-    // SubQueryÀÇ Reulst Cache°¡¾Ê¾²¿´´ÂÁö¸¦ »óÀ§ QuerySet¿¡ Ç¥½ÃÇÑ´Ù.
+    // SubQueryì˜ Reulst Cacheê°€ì•Šì“°ì˜€ëŠ”ì§€ë¥¼ ìƒìœ„ QuerySetì— í‘œì‹œí•œë‹¤.
     if ( sCallBackInfo->querySet != NULL )
     {
         sCallBackInfo->querySet->flag |= ((qmsParseTree*)sStatement->myPlan->parseTree)->querySet->flag
@@ -253,7 +253,7 @@ static IDE_RC qtcSubqueryEstimate( mtcNode     * aNode,
         // Nothing to do.
     }
 
-    // Subquery¿¡´Â Sequence¸¦ »ç¿ëÇÒ ¼ö ¾øÀ½
+    // Subqueryì—ëŠ” Sequenceë¥¼ ì‚¬ìš©í•  ìˆ˜ ì—†ìŒ
     if (sStatement->myPlan->parseTree->currValSeqs != NULL)
     {
         sqlInfo.setSourceInfo(
@@ -272,20 +272,20 @@ static IDE_RC qtcSubqueryEstimate( mtcNode     * aNode,
         IDE_RAISE(ERR_USE_SEQUENCE_IN_SUBQUERY);
     }
 
-    // Subquery Node ¿¡ ´ëÇÑ dependencies¸¦ ¼³Á¤ÇÔ
+    // Subquery Node ì— ëŒ€í•œ dependenciesë¥¼ ì„¤ì •í•¨
     // set dependencies
     qtc::dependencySetWithDep(
         & ((qtcNode *)aNode)->depInfo,
         & ((qmsParseTree*)sStatement->myPlan->parseTree)->querySet->outerDepInfo );
 
-    // Subquery Node¿¡ ´ëÇÑ Argument¸¦ ¿¬°áÇÔ
-    // Áï, Subquery TargetÀÌ Subquery NodeÀÇ argument°¡ µÈ´Ù.
+    // Subquery Nodeì— ëŒ€í•œ Argumentë¥¼ ì—°ê²°í•¨
+    // ì¦‰, Subquery Targetì´ Subquery Nodeì˜ argumentê°€ ëœë‹¤.
     sTarget = ((qmsParseTree*)sStatement->myPlan->parseTree)->querySet->target;
 
     aNode->arguments = (mtcNode*)sTarget->targetColumn;
 
-    // Target ColumnÀÇ °³¼ö¸¦ ¼¼¾î
-    // one-column subqueryÀÎÁö, List SubqueryÀÎÁö¸¦ ÆÇ´ÜÇÑ´Ù.
+    // Target Columnì˜ ê°œìˆ˜ë¥¼ ì„¸ì–´
+    // one-column subqueryì¸ì§€, List Subqueryì¸ì§€ë¥¼ íŒë‹¨í•œë‹¤.
     for ( sNode   = aNode->arguments, sFence  = 0;
           sNode  != NULL;
           sNode   = sNode->next, sFence++ )
@@ -301,39 +301,39 @@ static IDE_RC qtcSubqueryEstimate( mtcNode     * aNode,
     IDE_TEST_RAISE( sFence > MTC_NODE_ARGUMENT_COUNT_MAXIMUM,
                     ERR_INVALID_FUNCTION_ARGUMENT );
 
-    // Subquery Node¿¡ ArgumentÀÇ °³¼ö¸¦ ¼³Á¤ÇÔ
+    // Subquery Nodeì— Argumentì˜ ê°œìˆ˜ë¥¼ ì„¤ì •í•¨
     aNode->lflag &= ~(MTC_NODE_ARGUMENT_COUNT_MASK);
     aNode->lflag |= sFence;
 
     // To fix PR-7904
-    // Subquery°¡ Á¸ÀçÇÔÀ» ¼³Á¤ÇÔ
+    // Subqueryê°€ ì¡´ì¬í•¨ì„ ì„¤ì •í•¨
     sQtcNode = (qtcNode*) aNode;
     sQtcNode->lflag &= ~QTC_NODE_SUBQUERY_MASK;
     sQtcNode->lflag |= QTC_NODE_SUBQUERY_EXIST;
 
-    /* PROJ-2283 Single-Row Subquery °³¼± */
+    /* PROJ-2283 Single-Row Subquery ê°œì„  */
     sIs1RowSure = qtcSubqueryIs1RowSure(sStatement);
 
     //---------------------------------------------------------
-    // ArgumentÀÇ °³¼ö¿¡ µû¶ó Ã³¸® ¹æ½ÄÀ» ´Ş¸®ÇÑ´Ù.
-    // Áï, One-Column Subquery (sFence == 1)¿Í
-    // List Subquery (sFence > 1)ÀÎ °æ¿ì¿¡ µû¶ó Ã³¸® ¹æ½ÄÀÌ ´Ù¸£´Ù.
-    // One-Column SubqueryÀÇ °æ¿ì,
-    //    - Indirection ¹æ½ÄÀ¸·Î Ã³¸®
-    // List SubqueryÀÇ °æ¿ì,
-    //    - List ¹æ½ÄÀ¸·Î Ã³¸®
+    // Argumentì˜ ê°œìˆ˜ì— ë”°ë¼ ì²˜ë¦¬ ë°©ì‹ì„ ë‹¬ë¦¬í•œë‹¤.
+    // ì¦‰, One-Column Subquery (sFence == 1)ì™€
+    // List Subquery (sFence > 1)ì¸ ê²½ìš°ì— ë”°ë¼ ì²˜ë¦¬ ë°©ì‹ì´ ë‹¤ë¥´ë‹¤.
+    // One-Column Subqueryì˜ ê²½ìš°,
+    //    - Indirection ë°©ì‹ìœ¼ë¡œ ì²˜ë¦¬
+    // List Subqueryì˜ ê²½ìš°,
+    //    - List ë°©ì‹ìœ¼ë¡œ ì²˜ë¦¬
     //---------------------------------------------------------
 
     if( sFence == 1 )
     {
         //---------------------------------------------------------
-        // One Column Subquery ¿¡ ´ëÇÑ Ã³¸®¸¦ ¼öÇàÇÔ.
+        // One Column Subquery ì— ëŒ€í•œ ì²˜ë¦¬ë¥¼ ìˆ˜í–‰í•¨.
         //---------------------------------------------------------
 
-        // Subquery Node¸¦ IndirectionÀÌ °¡´ÉÇÏµµ·Ï ÇÔ.
+        // Subquery Nodeë¥¼ Indirectionì´ ê°€ëŠ¥í•˜ë„ë¡ í•¨.
         aNode->lflag |= MTC_NODE_INDIRECT_TRUE;
 
-        // Column Á¤º¸·Î skipModuleÀ» »ç¿ëÇÔ.
+        // Column ì •ë³´ë¡œ skipModuleì„ ì‚¬ìš©í•¨.
         IDE_TEST( mtc::initializeColumn( aTemplate->rows[aNode->table].columns
                                          + aNode->column,
                                          & qtc::skipModule,
@@ -342,8 +342,8 @@ static IDE_RC qtcSubqueryEstimate( mtcNode     * aNode,
                                          0 )
                   != IDE_SUCCESS );
 
-        // ArgumentÀÇ Column Á¤º¸¸¦ Stack¿¡ ¼³Á¤ÇÏ¿©
-        // »óÀ§ Node¿¡¼­ÀÇ estimate °¡ °¡´ÉÇÏµµ·Ï ÇÔ.
+        // Argumentì˜ Column ì •ë³´ë¥¼ Stackì— ì„¤ì •í•˜ì—¬
+        // ìƒìœ„ Nodeì—ì„œì˜ estimate ê°€ ê°€ëŠ¥í•˜ë„ë¡ í•¨.
         sConvertedNode = aNode->arguments;
         sConvertedNode = mtf::convertedNode( sConvertedNode,
                                              &sTemplate->tmplate );
@@ -351,7 +351,7 @@ static IDE_RC qtcSubqueryEstimate( mtcNode     * aNode,
         aStack[0].column = aTemplate->rows[sConvertedNode->table].columns
             + sConvertedNode->column;
 
-        // One ColumnÇü SubqueryÀÇ ¼öÇà ÇÔ¼ö¸¦ ¼³Á¤ÇÔ.
+        // One Columní˜• Subqueryì˜ ìˆ˜í–‰ í•¨ìˆ˜ë¥¼ ì„¤ì •í•¨.
         aTemplate->rows[aNode->table].execute[aNode->column].initialize    = mtf::calculateNA;
         aTemplate->rows[aNode->table].execute[aNode->column].aggregate     = mtf::calculateNA;
         aTemplate->rows[aNode->table].execute[aNode->column].finalize      = mtf::calculateNA;
@@ -373,24 +373,24 @@ static IDE_RC qtcSubqueryEstimate( mtcNode     * aNode,
     else
     {
         //---------------------------------------------------------
-        // List Subquery ¿¡ ´ëÇÑ Ã³¸®¸¦ ¼öÇàÇÔ.
+        // List Subquery ì— ëŒ€í•œ ì²˜ë¦¬ë¥¼ ìˆ˜í–‰í•¨.
         //---------------------------------------------------------
 
         aStack[0].column =
             aTemplate->rows[aNode->table].columns + aNode->column;
 
         //---------------------------------------------------------
-        // Subquery NodeÀÇ Column Á¤º¸¸¦ listÇü Data TypeÀ¸·Î ¼³Á¤ÇÔ.
-        // ListÇü Å¸ÀÔÀÇ estimationÀ» À§ÇÑ ÀÎÀÚ Á¤º¸´Â ´ÙÀ½°ú °°ÀÌ °áÁ¤µÈ´Ù.
+        // Subquery Nodeì˜ Column ì •ë³´ë¥¼ listí˜• Data Typeìœ¼ë¡œ ì„¤ì •í•¨.
+        // Listí˜• íƒ€ì…ì˜ estimationì„ ìœ„í•œ ì¸ì ì •ë³´ëŠ” ë‹¤ìŒê³¼ ê°™ì´ ê²°ì •ëœë‹¤.
         //
         // Ex) (I1, I2) IN ( (1,1), (2,1), (3,2) )
-        //    Argument °³¼ö : 3
-        //    ArguemntÀÇ Column °³¼ö : 2
+        //    Argument ê°œìˆ˜ : 3
+        //    Arguemntì˜ Column ê°œìˆ˜ : 2
         //
-        // SubqueryÀÇ List Á¤º¸
+        // Subqueryì˜ List ì •ë³´
         //    (I1, I2) IN ( SELECT A1, A2 FROM ... )
-        //    Argument °³¼ö : 1
-        //    ArguemntÀÇ Column °³¼ö : sFence
+        //    Argument ê°œìˆ˜ : 1
+        //    Arguemntì˜ Column ê°œìˆ˜ : sFence
         //---------------------------------------------------------
         //IDE_TEST( mtdList.estimate( aStack[0].column, 1, sFence, 0 )
         //          != IDE_SUCCESS );
@@ -403,17 +403,17 @@ static IDE_RC qtcSubqueryEstimate( mtcNode     * aNode,
                   != IDE_SUCCESS );
 
         //-------------------------------------------------------------
-        // »óÀ§¿¡¼­ÀÇ estimate ¸¦ À§ÇØ Target °³¼ö¸¸Å­ÀÇ Ã³¸®¸¦ ¼öÇàÇÑ´Ù.
+        // ìƒìœ„ì—ì„œì˜ estimate ë¥¼ ìœ„í•´ Target ê°œìˆ˜ë§Œí¼ì˜ ì²˜ë¦¬ë¥¼ ìˆ˜í–‰í•œë‹¤.
         //-------------------------------------------------------------
 
-        // ¿©·¯ ColumnÀÇ Ã³¸®¸¦ À§ÇÑ º°µµÀÇ Stack °ø°£ ÇÒ´ç
+        // ì—¬ëŸ¬ Columnì˜ ì²˜ë¦¬ë¥¼ ìœ„í•œ ë³„ë„ì˜ Stack ê³µê°„ í• ë‹¹
         IDU_FIT_POINT( "qtcSubquery::qtcSubqueryEstimate::alloc::Stack" );
         IDE_TEST(aCallBack->alloc( aCallBack->info,
                                    aStack[0].column->column.size,
                                    (void**)&(aStack[0].value))
                  != IDE_SUCCESS);
 
-        // º°µµ·Î ÇÒ´çµÈ °ø°£¿¡ ¿©·¯ ColumnÀÇ Á¤º¸¸¦ ¼³Á¤ÇÑ´Ù.
+        // ë³„ë„ë¡œ í• ë‹¹ëœ ê³µê°„ì— ì—¬ëŸ¬ Columnì˜ ì •ë³´ë¥¼ ì„¤ì •í•œë‹¤.
         sStack2 = (mtcStack*)aStack[0].value;
 
         for( sCount = 0, sNode = aNode->arguments;
@@ -429,7 +429,7 @@ static IDE_RC qtcSubqueryEstimate( mtcNode     * aNode,
                 + sConvertedNode->column;
         }
 
-        // List Çü SubqueryÀÇ ¼öÇà ÇÔ¼ö¸¦ ¼³Á¤ÇÔ.
+        // List í˜• Subqueryì˜ ìˆ˜í–‰ í•¨ìˆ˜ë¥¼ ì„¤ì •í•¨.
         aTemplate->rows[aNode->table].execute[aNode->column].initialize    = mtf::calculateNA;
         aTemplate->rows[aNode->table].execute[aNode->column].aggregate     = mtf::calculateNA;
         aTemplate->rows[aNode->table].execute[aNode->column].finalize      = mtf::calculateNA;
@@ -533,19 +533,19 @@ static IDE_RC qtcSubqueryCalculateSure( mtcNode     * aNode,
  *
  * Description :
  *
- *    One Column SubqueryÀÇ ¿¬»êÀ» ¼öÇàÇÑ´Ù.
- *    º» ÇÔ¼ö´Â One Row¸¦ »ı¼ºÇÏ´Â SubqueryÀÇ ¼öÇà¿¡¼­¸¸ È£ÃâµÈ´Ù.
- *    Áï, ´ÙÀ½°ú °°Àº SubqueryÀÇ ¼öÇà¿¡¼­¸¸ È£ÃâµÈ´Ù.
+ *    One Column Subqueryì˜ ì—°ì‚°ì„ ìˆ˜í–‰í•œë‹¤.
+ *    ë³¸ í•¨ìˆ˜ëŠ” One Rowë¥¼ ìƒì„±í•˜ëŠ” Subqueryì˜ ìˆ˜í–‰ì—ì„œë§Œ í˜¸ì¶œëœë‹¤.
+ *    ì¦‰, ë‹¤ìŒê³¼ ê°™ì€ Subqueryì˜ ìˆ˜í–‰ì—ì„œë§Œ í˜¸ì¶œëœë‹¤.
  *       - ex1) INSERT INTO T1 VALUES ( one_row_subquery );
  *       - ex2) SELECT * FROM T1 WHERE i1 = one_row_subquery;
- *    ¹İ´ëµÇ´Â ¿¹·Î´Â ´ÙÀ½°ú °°Àº °ÍµéÀÌ ÀÖ´Ù.
+ *    ë°˜ëŒ€ë˜ëŠ” ì˜ˆë¡œëŠ” ë‹¤ìŒê³¼ ê°™ì€ ê²ƒë“¤ì´ ìˆë‹¤.
  *       - ex1) INSERT INTO T1 multi_row_subquery;
  *       - ex2) SELECT * FROM T1 WHERE I1 in ( multi_row_subquery );
  *
- *    <PROJ-2283 Single-Row Subquery °³¼±>
- *    single-row sure subquery ÀÎ °æ¿ì¸¸ È£ÃâµÈ´Ù.
- *    subqueryÀÇ °á°ú´Â Ç×»ó 1°³ ÀÌÇÏÀÌ´Ù.
- *    µû¶ó¼­ ÇØ´ç subquery¸¦ ÇÑ¹ø¸¸ ¼öÇàÇÑ´Ù.
+ *    <PROJ-2283 Single-Row Subquery ê°œì„ >
+ *    single-row sure subquery ì¸ ê²½ìš°ë§Œ í˜¸ì¶œëœë‹¤.
+ *    subqueryì˜ ê²°ê³¼ëŠ” í•­ìƒ 1ê°œ ì´í•˜ì´ë‹¤.
+ *    ë”°ë¼ì„œ í•´ë‹¹ subqueryë¥¼ í•œë²ˆë§Œ ìˆ˜í–‰í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -566,12 +566,12 @@ static IDE_RC qtcSubqueryCalculateSure( mtcNode     * aNode,
 
     /* PROJ-2448 Subquery caching */
 
-    // BUG-43696 outerColumn À» ¾ò¾î¿À±â À§ÇÑ stack Á¶Á¤
+    // BUG-43696 outerColumn ì„ ì–»ì–´ì˜¤ê¸° ìœ„í•œ stack ì¡°ì •
     aTemplate->stack       = aStack  + 1;
     aTemplate->stackRemain = aRemain - 1;
     IDE_TEST_RAISE(aTemplate->stackRemain < 1, ERR_STACK_OVERFLOW);
 
-    // ÇØ´ç SubqueryÀÇ planÀ» ÃÊ±âÈ­ÇÑ´Ù.
+    // í•´ë‹¹ Subqueryì˜ planì„ ì´ˆê¸°í™”í•œë‹¤.
     IDE_TEST( sPlan->init( (qcTemplate*)aTemplate, sPlan ) != IDE_SUCCESS );
 
     IDE_TEST( qtcCache::searchCache( (qcTemplate *)aTemplate,
@@ -583,7 +583,7 @@ static IDE_RC qtcSubqueryCalculateSure( mtcNode     * aNode,
                                      &sState )
               != IDE_SUCCESS );
 
-    // °á°ú°ªÀ» ¾ò¾î¿À±â À§ÇÑ stack ÀçÁ¶Á¤
+    // ê²°ê³¼ê°’ì„ ì–»ì–´ì˜¤ê¸° ìœ„í•œ stack ì¬ì¡°ì •
     aTemplate->stack       = aStack  + 1 + sParamCnt;
     aTemplate->stackRemain = aRemain - 1 - sParamCnt;
     IDE_TEST_RAISE( aTemplate->stackRemain < 1, ERR_STACK_OVERFLOW );
@@ -593,7 +593,7 @@ static IDE_RC qtcSubqueryCalculateSure( mtcNode     * aNode,
         case QTC_CACHE_STATE_INVOKE_MAKE_RECORD:
         case QTC_CACHE_STATE_RETURN_INVOKE:
 
-            /* subquery ¼öÇà */
+            /* subquery ìˆ˜í–‰ */
             IDE_TEST( sPlan->doIt( (qcTemplate*)aTemplate, sPlan, &sFlag )
                       != IDE_SUCCESS );
 
@@ -603,7 +603,7 @@ static IDE_RC qtcSubqueryCalculateSure( mtcNode     * aNode,
             }
             else
             {
-                /* °á°ú°¡ ¾øÀ» °æ¿ì null padding */
+                /* ê²°ê³¼ê°€ ì—†ì„ ê²½ìš° null padding */
                 IDE_TEST( sPlan->padNull( (qcTemplate*)aTemplate, sPlan )
                           != IDE_SUCCESS );
             }
@@ -617,7 +617,7 @@ static IDE_RC qtcSubqueryCalculateSure( mtcNode     * aNode,
                                               sState )
                       != IDE_SUCCESS );
 
-            // SubqueryÀÇ °á°ú¸¦ ³ªÀÇ Stack¿¡ ½×°í, SubqueryÀÇ PlanÀ» Á¾·áÇÑ´Ù.
+            // Subqueryì˜ ê²°ê³¼ë¥¼ ë‚˜ì˜ Stackì— ìŒ“ê³ , Subqueryì˜ Planì„ ì¢…ë£Œí•œë‹¤.
             aStack[0] = aStack[1+sParamCnt];
             break;
 
@@ -669,19 +669,19 @@ static IDE_RC qtcSubqueryCalculateUnknown( mtcNode     * aNode,
  *
  * Description :
  *
- *    One Column SubqueryÀÇ ¿¬»êÀ» ¼öÇàÇÑ´Ù.
- *    º» ÇÔ¼ö´Â One Row¸¦ »ı¼ºÇÏ´Â SubqueryÀÇ ¼öÇà¿¡¼­¸¸ È£ÃâµÈ´Ù.
- *    Áï, ´ÙÀ½°ú °°Àº SubqueryÀÇ ¼öÇà¿¡¼­¸¸ È£ÃâµÈ´Ù.
+ *    One Column Subqueryì˜ ì—°ì‚°ì„ ìˆ˜í–‰í•œë‹¤.
+ *    ë³¸ í•¨ìˆ˜ëŠ” One Rowë¥¼ ìƒì„±í•˜ëŠ” Subqueryì˜ ìˆ˜í–‰ì—ì„œë§Œ í˜¸ì¶œëœë‹¤.
+ *    ì¦‰, ë‹¤ìŒê³¼ ê°™ì€ Subqueryì˜ ìˆ˜í–‰ì—ì„œë§Œ í˜¸ì¶œëœë‹¤.
  *       - ex1) INSERT INTO T1 VALUES ( one_row_subquery );
  *       - ex2) SELECT * FROM T1 WHERE i1 = one_row_subquery;
- *    ¹İ´ëµÇ´Â ¿¹·Î´Â ´ÙÀ½°ú °°Àº °ÍµéÀÌ ÀÖ´Ù.
+ *    ë°˜ëŒ€ë˜ëŠ” ì˜ˆë¡œëŠ” ë‹¤ìŒê³¼ ê°™ì€ ê²ƒë“¤ì´ ìˆë‹¤.
  *       - ex1) INSERT INTO T1 multi_row_subquery;
  *       - ex2) SELECT * FROM T1 WHERE I1 in ( multi_row_subquery );
  *
  * Implementation :
  *
- *    SubqueryÀÇ °á°ú°¡ one rowÀÎÁö¸¦ È®ÀÎÇÏ¿©¾ß ÇÑ´Ù.
- *    µû¶ó¼­, ÇØ´ç Subquery¸¦ µÎ ¹ø ¼öÇàÇÏ°Ô µÈ´Ù.
+ *    Subqueryì˜ ê²°ê³¼ê°€ one rowì¸ì§€ë¥¼ í™•ì¸í•˜ì—¬ì•¼ í•œë‹¤.
+ *    ë”°ë¼ì„œ, í•´ë‹¹ Subqueryë¥¼ ë‘ ë²ˆ ìˆ˜í–‰í•˜ê²Œ ëœë‹¤.
  *
  ***********************************************************************/
 
@@ -702,12 +702,12 @@ static IDE_RC qtcSubqueryCalculateUnknown( mtcNode     * aNode,
 
     /* PROJ-2448 Subquery caching */
 
-    // BUG-43696 outerColumn À» ¾ò¾î¿À±â À§ÇÑ stack Á¶Á¤
+    // BUG-43696 outerColumn ì„ ì–»ì–´ì˜¤ê¸° ìœ„í•œ stack ì¡°ì •
     aTemplate->stack       = aStack  + 1;
     aTemplate->stackRemain = aRemain - 1;
     IDE_TEST_RAISE(aTemplate->stackRemain < 1, ERR_STACK_OVERFLOW);
 
-    // ÇØ´ç SubqueryÀÇ planÀ» ÃÊ±âÈ­ÇÑ´Ù.
+    // í•´ë‹¹ Subqueryì˜ planì„ ì´ˆê¸°í™”í•œë‹¤.
     IDE_TEST( sPlan->init( (qcTemplate*)aTemplate, sPlan ) != IDE_SUCCESS );
 
     IDE_TEST( qtcCache::searchCache( (qcTemplate *)aTemplate,
@@ -719,7 +719,7 @@ static IDE_RC qtcSubqueryCalculateUnknown( mtcNode     * aNode,
                                      &sState )
               != IDE_SUCCESS );
 
-    // °á°ú°ªÀ» ¾ò¾î¿À±â À§ÇÑ stack ÀçÁ¶Á¤
+    // ê²°ê³¼ê°’ì„ ì–»ì–´ì˜¤ê¸° ìœ„í•œ stack ì¬ì¡°ì •
     aTemplate->stack       = aStack  + 1 + sParamCnt;
     aTemplate->stackRemain = aRemain - 1 - sParamCnt;
     IDE_TEST_RAISE(aTemplate->stackRemain < 1, ERR_STACK_OVERFLOW);
@@ -729,20 +729,20 @@ static IDE_RC qtcSubqueryCalculateUnknown( mtcNode     * aNode,
         case QTC_CACHE_STATE_INVOKE_MAKE_RECORD:
         case QTC_CACHE_STATE_RETURN_INVOKE:
 
-            // ÇØ´ç SubqueryÀÇ planÀ» ¼öÇàÇÑ´Ù.
+            // í•´ë‹¹ Subqueryì˜ planì„ ìˆ˜í–‰í•œë‹¤.
             IDE_TEST( sPlan->doIt( (qcTemplate*)aTemplate, sPlan, &sFlag )
                       != IDE_SUCCESS );
 
-            // °á°ú°¡ ÀÖÀ» °æ¿ì, One Row SubqueryÀÎÁö È®ÀÎÇÏ¿©¾ß ÇÏ¸ç,
-            // °á°ú°¡ ¾øÀ» °æ¿ì, Null PaddingÇÑ´Ù.
+            // ê²°ê³¼ê°€ ìˆì„ ê²½ìš°, One Row Subqueryì¸ì§€ í™•ì¸í•˜ì—¬ì•¼ í•˜ë©°,
+            // ê²°ê³¼ê°€ ì—†ì„ ê²½ìš°, Null Paddingí•œë‹¤.
             if ( ( sFlag & QMC_ROW_DATA_MASK ) == QMC_ROW_DATA_EXIST )
             {
                 /*
-                 * BUG-41784 subquery ¼öÇà¹æ½ÄÀ» PROJ-2283 ÀÌÀüÀ¸·Î º¹¿ø
+                 * BUG-41784 subquery ìˆ˜í–‰ë°©ì‹ì„ PROJ-2283 ì´ì „ìœ¼ë¡œ ë³µì›
                  */
 
-                // °á°ú°¡ One RowÀÎÁö¸¦ È®ÀÎÇÑ´Ù.
-                // Áï, µÎ ¹øÂ° ¼öÇàÇØ¼­ °á°ú°¡ ¾ø´Â Áö¸¦ È®ÀÎÇÑ´Ù.
+                // ê²°ê³¼ê°€ One Rowì¸ì§€ë¥¼ í™•ì¸í•œë‹¤.
+                // ì¦‰, ë‘ ë²ˆì§¸ ìˆ˜í–‰í•´ì„œ ê²°ê³¼ê°€ ì—†ëŠ” ì§€ë¥¼ í™•ì¸í•œë‹¤.
                 IDE_TEST( sPlan->doIt( (qcTemplate*)aTemplate, sPlan, &sFlag )
                           != IDE_SUCCESS );
                 IDE_TEST_RAISE( ( sFlag & QMC_ROW_DATA_MASK ) == QMC_ROW_DATA_EXIST,
@@ -772,7 +772,7 @@ static IDE_RC qtcSubqueryCalculateUnknown( mtcNode     * aNode,
                                               sState )
                       != IDE_SUCCESS );
 
-            // SubqueryÀÇ °á°ú¸¦ ³ªÀÇ Stack¿¡ ½×°í, SubqueryÀÇ PlanÀ» Á¾·áÇÑ´Ù.
+            // Subqueryì˜ ê²°ê³¼ë¥¼ ë‚˜ì˜ Stackì— ìŒ“ê³ , Subqueryì˜ Planì„ ì¢…ë£Œí•œë‹¤.
             aStack[0] = aStack[1+sParamCnt];
             break;
 
@@ -832,13 +832,13 @@ static IDE_RC qtcSubqueryCalculateListSure( mtcNode     * aNode,
  *
  * Description :
  *
- *    List SubqueryÀÇ ¿¬»êÀ» ¼öÇàÇÑ´Ù.
- *    º» ÇÔ¼ö´Â One Row¸¦ »ı¼ºÇÏ´Â SubqueryÀÇ ¼öÇà¿¡¼­¸¸ È£ÃâµÈ´Ù.
+ *    List Subqueryì˜ ì—°ì‚°ì„ ìˆ˜í–‰í•œë‹¤.
+ *    ë³¸ í•¨ìˆ˜ëŠ” One Rowë¥¼ ìƒì„±í•˜ëŠ” Subqueryì˜ ìˆ˜í–‰ì—ì„œë§Œ í˜¸ì¶œëœë‹¤.
  *
- *    <PROJ-2283 Single-Row Subquery °³¼±>
- *    single-row sure subquery ÀÎ °æ¿ì¸¸ È£ÃâµÈ´Ù.
- *    subqueryÀÇ °á°ú´Â Ç×»ó 1°³ ÀÌÇÏÀÌ´Ù.
- *    µû¶ó¼­ ÇØ´ç subquery¸¦ ÇÑ¹ø¸¸ ¼öÇàÇÑ´Ù.
+ *    <PROJ-2283 Single-Row Subquery ê°œì„ >
+ *    single-row sure subquery ì¸ ê²½ìš°ë§Œ í˜¸ì¶œëœë‹¤.
+ *    subqueryì˜ ê²°ê³¼ëŠ” í•­ìƒ 1ê°œ ì´í•˜ì´ë‹¤.
+ *    ë”°ë¼ì„œ í•´ë‹¹ subqueryë¥¼ í•œë²ˆë§Œ ìˆ˜í–‰í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -859,12 +859,12 @@ static IDE_RC qtcSubqueryCalculateListSure( mtcNode     * aNode,
 
     /* PROJ-2448 Subquery caching */
 
-    // BUG-43696 outerColumn À» ¾ò¾î¿À±â À§ÇÑ stack Á¶Á¤
+    // BUG-43696 outerColumn ì„ ì–»ì–´ì˜¤ê¸° ìœ„í•œ stack ì¡°ì •
     aTemplate->stack       = aStack  + 1;
     aTemplate->stackRemain = aRemain - 1;
     IDE_TEST_RAISE(aTemplate->stackRemain < 1, ERR_STACK_OVERFLOW);
 
-    // ÇØ´ç SubqueryÀÇ planÀ» ÃÊ±âÈ­ÇÑ´Ù.
+    // í•´ë‹¹ Subqueryì˜ planì„ ì´ˆê¸°í™”í•œë‹¤.
     IDE_TEST( sPlan->init( (qcTemplate*)aTemplate, sPlan ) != IDE_SUCCESS );
 
     IDE_TEST( qtcCache::searchCache( (qcTemplate *)aTemplate,
@@ -876,13 +876,13 @@ static IDE_RC qtcSubqueryCalculateListSure( mtcNode     * aNode,
                                      &sState )
               != IDE_SUCCESS );
 
-    // °á°ú°ªÀ» ¾ò¾î¿À±â À§ÇÑ stack ÀçÁ¶Á¤
+    // ê²°ê³¼ê°’ì„ ì–»ì–´ì˜¤ê¸° ìœ„í•œ stack ì¬ì¡°ì •
     aTemplate->stack       = aStack  + 1 + sParamCnt;
     aTemplate->stackRemain = aRemain - 1 - sParamCnt;
     IDE_TEST_RAISE( aTemplate->stackRemain < 1, ERR_STACK_OVERFLOW );
 
-    // ¿©·¯ ColumnÀÇ µ¥ÀÌÅÍ¸¦ ¾ò±â À§ÇØ
-    // estimate ½ÃÁ¡¿¡ ÇÒ´çµÈ ¿µ¿ªÀ» Stack¿¡ ÁöÁ¤ÇÑ´Ù.
+    // ì—¬ëŸ¬ Columnì˜ ë°ì´í„°ë¥¼ ì–»ê¸° ìœ„í•´
+    // estimate ì‹œì ì— í• ë‹¹ëœ ì˜ì—­ì„ Stackì— ì§€ì •í•œë‹¤.
     aStack[0].column = aTemplate->rows[aNode->table].columns + aNode->column;
     aStack[0].value  = (void*)((UChar*) aTemplate->rows[aNode->table].row
                                + aStack[0].column->column.offset);
@@ -892,7 +892,7 @@ static IDE_RC qtcSubqueryCalculateListSure( mtcNode     * aNode,
         case QTC_CACHE_STATE_INVOKE_MAKE_RECORD:
         case QTC_CACHE_STATE_RETURN_INVOKE:
 
-            // ÇØ´ç SubqueryÀÇ planÀ» ¼öÇàÇÑ´Ù.
+            // í•´ë‹¹ Subqueryì˜ planì„ ìˆ˜í–‰í•œë‹¤.
             IDE_TEST( sPlan->doIt( (qcTemplate*)aTemplate, sPlan, &sFlag )
                       != IDE_SUCCESS );
 
@@ -914,7 +914,7 @@ static IDE_RC qtcSubqueryCalculateListSure( mtcNode     * aNode,
                                               sState )
                       != IDE_SUCCESS );
 
-            // SubqueryÀÇ Target Á¤º¸°¡ »ı¼ºµÈ StackÀ» ÅëÂ°·Î ÁöÁ¤ÇÑ ¿µ¿ª¿¡ º¹»çÇÑ´Ù.
+            // Subqueryì˜ Target ì •ë³´ê°€ ìƒì„±ëœ Stackì„ í†µì§¸ë¡œ ì§€ì •í•œ ì˜ì—­ì— ë³µì‚¬í•œë‹¤.
             idlOS::memcpy( aStack[0].value,
                            aStack + 1 + sParamCnt,
                            aStack[0].column->column.size );
@@ -959,9 +959,9 @@ static IDE_RC qtcSubqueryCalculateListSure( mtcNode     * aNode,
 }
 
 /*
- * subquery ÀÇ target °³¼ö°¡ ³Ê¹« ¸¹¾Æ¼­
- * single-row tuple À» ÇÒ´ç¹ŞÀ» ¼ö ¾ø´Â °æ¿ì
- * ¾îÂ¿¼ö ¾øÀÌ ¿¾³¯ ¹æ½Ä´ë·Î subquery ¸¦ µÎ¹ø ¼öÇàÇÑ´Ù.
+ * subquery ì˜ target ê°œìˆ˜ê°€ ë„ˆë¬´ ë§ì•„ì„œ
+ * single-row tuple ì„ í• ë‹¹ë°›ì„ ìˆ˜ ì—†ëŠ” ê²½ìš°
+ * ì–´ì©”ìˆ˜ ì—†ì´ ì˜›ë‚  ë°©ì‹ëŒ€ë¡œ subquery ë¥¼ ë‘ë²ˆ ìˆ˜í–‰í•œë‹¤.
  */
 IDE_RC qtcSubqueryCalculateListTwice( mtcNode     * aNode,
                                       mtcStack    * aStack,
@@ -986,12 +986,12 @@ IDE_RC qtcSubqueryCalculateListTwice( mtcNode     * aNode,
 
     /* PROJ-2448 Subquery caching */
 
-    // BUG-43696 outerColumn À» ¾ò¾î¿À±â À§ÇÑ stack Á¶Á¤
+    // BUG-43696 outerColumn ì„ ì–»ì–´ì˜¤ê¸° ìœ„í•œ stack ì¡°ì •
     aTemplate->stack       = aStack  + 1;
     aTemplate->stackRemain = aRemain - 1;
     IDE_TEST_RAISE(aTemplate->stackRemain < 1, ERR_STACK_OVERFLOW);
 
-    // ÇØ´ç SubqueryÀÇ planÀ» ÃÊ±âÈ­ÇÑ´Ù.
+    // í•´ë‹¹ Subqueryì˜ planì„ ì´ˆê¸°í™”í•œë‹¤.
     IDE_TEST( sPlan->init( (qcTemplate*)aTemplate, sPlan ) != IDE_SUCCESS );
 
     IDE_TEST( qtcCache::searchCache( (qcTemplate *)aTemplate,
@@ -1003,13 +1003,13 @@ IDE_RC qtcSubqueryCalculateListTwice( mtcNode     * aNode,
                                      &sState )
               != IDE_SUCCESS );
 
-    // °á°ú°ªÀ» ¾ò¾î¿À±â À§ÇÑ stack ÀçÁ¶Á¤
+    // ê²°ê³¼ê°’ì„ ì–»ì–´ì˜¤ê¸° ìœ„í•œ stack ì¬ì¡°ì •
     aTemplate->stack       = aStack  + 1 + sParamCnt;
     aTemplate->stackRemain = aRemain - 1 - sParamCnt;
     IDE_TEST_RAISE( aTemplate->stackRemain < 1, ERR_STACK_OVERFLOW );
 
-    // ¿©·¯ ColumnÀÇ µ¥ÀÌÅÍ¸¦ ¾ò±â À§ÇØ
-    // Unbound ½ÃÁ¡¿¡ ÇÒ´çµÈ ¿µ¿ªÀ» Stack¿¡ ÁöÁ¤ÇÑ´Ù.
+    // ì—¬ëŸ¬ Columnì˜ ë°ì´í„°ë¥¼ ì–»ê¸° ìœ„í•´
+    // Unbound ì‹œì ì— í• ë‹¹ëœ ì˜ì—­ì„ Stackì— ì§€ì •í•œë‹¤.
     aStack[0].column = aTemplate->rows[aNode->table].columns + aNode->column;
     aStack[0].value  = (void*)((UChar*) aTemplate->rows[aNode->table].row
                                + aStack[0].column->column.offset);
@@ -1019,21 +1019,21 @@ IDE_RC qtcSubqueryCalculateListTwice( mtcNode     * aNode,
         case QTC_CACHE_STATE_INVOKE_MAKE_RECORD:
         case QTC_CACHE_STATE_RETURN_INVOKE:
 
-            // ÇØ´ç SubqueryÀÇ planÀ» ¼öÇàÇÑ´Ù.
+            // í•´ë‹¹ Subqueryì˜ planì„ ìˆ˜í–‰í•œë‹¤.
             IDE_TEST( sPlan->doIt( (qcTemplate*)aTemplate, sPlan, &sFlag )
                       != IDE_SUCCESS );
 
             if ( ( sFlag & QMC_ROW_DATA_MASK ) == QMC_ROW_DATA_EXIST )
             {
-                // °á°ú°¡ One RowÀÎÁö¸¦ È®ÀÎÇÑ´Ù.
-                // Áï, µÎ ¹øÂ° ¼öÇàÇØ¼­ °á°ú°¡ ¾ø´Â Áö¸¦ È®ÀÎÇÑ´Ù.
+                // ê²°ê³¼ê°€ One Rowì¸ì§€ë¥¼ í™•ì¸í•œë‹¤.
+                // ì¦‰, ë‘ ë²ˆì§¸ ìˆ˜í–‰í•´ì„œ ê²°ê³¼ê°€ ì—†ëŠ” ì§€ë¥¼ í™•ì¸í•œë‹¤.
                 IDE_TEST( sPlan->doIt( (qcTemplate*)aTemplate, sPlan, &sFlag )
                           != IDE_SUCCESS );
                 IDE_TEST_RAISE( ( sFlag & QMC_ROW_DATA_MASK ) == QMC_ROW_DATA_EXIST,
                                 ERR_MULTIPLE_ROWS );
 
-                // µÎ ¹øÂ° ¼öÇàÀ¸·Î Tuple SetÀÌ º¯°æµÇ¹Ç·Î,
-                // ´Ù½Ã ÇÑ ¹ø ¼öÇàÇÏ¿©¾ß ÇÑ´Ù.
+                // ë‘ ë²ˆì§¸ ìˆ˜í–‰ìœ¼ë¡œ Tuple Setì´ ë³€ê²½ë˜ë¯€ë¡œ,
+                // ë‹¤ì‹œ í•œ ë²ˆ ìˆ˜í–‰í•˜ì—¬ì•¼ í•œë‹¤.
 
                 IDE_TEST( sPlan->init( (qcTemplate*)aTemplate, sPlan )
                           != IDE_SUCCESS );
@@ -1058,7 +1058,7 @@ IDE_RC qtcSubqueryCalculateListTwice( mtcNode     * aNode,
                                               sState )
                       != IDE_SUCCESS );
 
-            // SubqueryÀÇ Target Á¤º¸°¡ »ı¼ºµÈ StackÀ» ÅëÂ°·Î ÁöÁ¤ÇÑ ¿µ¿ª¿¡ º¹»çÇÑ´Ù.
+            // Subqueryì˜ Target ì •ë³´ê°€ ìƒì„±ëœ Stackì„ í†µì§¸ë¡œ ì§€ì •í•œ ì˜ì—­ì— ë³µì‚¬í•œë‹¤.
             idlOS::memcpy( aStack[0].value,
                            aStack + 1 + sParamCnt,
                            aStack[0].column->column.size );
@@ -1124,13 +1124,13 @@ static idBool qtcSubqueryIs1RowSure(qcStatement* aStatement)
 
     if (sQuerySet->analyticFuncList != NULL)
     {
-        /* analytic function Á¸ÀçÇÏ¸é Ç×»ó false */
+        /* analytic function ì¡´ì¬í•˜ë©´ í•­ìƒ false */
         return ID_FALSE;
     }
 
     if (sQuerySet->SFWGH == NULL)
     {
-        /* subquery °¡ set operation À¸·Î ¿¬°áµÈ °æ¿ì Ç×»ó false */
+        /* subquery ê°€ set operation ìœ¼ë¡œ ì—°ê²°ëœ ê²½ìš° í•­ìƒ false */
         return ID_FALSE;
     }
 
@@ -1138,7 +1138,7 @@ static idBool qtcSubqueryIs1RowSure(qcStatement* aStatement)
     {
         if (sQuerySet->SFWGH->aggsDepth1 != NULL)
         {
-            /* group by °¡ ¾ø°í aggregation ÀÌ ÀÖ´Â °æ¿ì */
+            /* group by ê°€ ì—†ê³  aggregation ì´ ìˆëŠ” ê²½ìš° */
             return ID_TRUE;
         }
         else
@@ -1150,7 +1150,7 @@ static idBool qtcSubqueryIs1RowSure(qcStatement* aStatement)
     {
         if (sQuerySet->SFWGH->aggsDepth2 != NULL)
         {
-            /* group by °¡ ÀÖ°í nested aggregation ÀÌ ÀÖ´Â °æ¿ì */
+            /* group by ê°€ ìˆê³  nested aggregation ì´ ìˆëŠ” ê²½ìš° */
             return ID_TRUE;
         }
         else
@@ -1170,11 +1170,11 @@ IDE_RC qtcSubqueryCalculateExists( mtcNode     * aNode,
  *
  * Description : PROJ-2448 Subquery caching
  *
- *               EXISTS ÀÇ ÀÎÀÚ·Î »ç¿ëµÈ subquery ÀÇ calculation
+ *               EXISTS ì˜ ì¸ìë¡œ ì‚¬ìš©ëœ subquery ì˜ calculation
  *
  * Implementation :
  *
- *               aStack[0] Àº EXISTS ÀÇ stack À¸·Î true/false ¸¦ ´ã´Â´Ù.
+ *               aStack[0] ì€ EXISTS ì˜ stack ìœ¼ë¡œ true/false ë¥¼ ë‹´ëŠ”ë‹¤.
  *
  ***********************************************************************/
 
@@ -1196,12 +1196,12 @@ IDE_RC qtcSubqueryCalculateExists( mtcNode     * aNode,
 
     /* PROJ-2448 Subquery caching */
 
-    // BUG-43696 outerColumn À» ¾ò¾î¿À±â À§ÇÑ stack Á¶Á¤
+    // BUG-43696 outerColumn ì„ ì–»ì–´ì˜¤ê¸° ìœ„í•œ stack ì¡°ì •
     aTemplate->stack       = aStack  + 1;
     aTemplate->stackRemain = aRemain - 1;
     IDE_TEST_RAISE(aTemplate->stackRemain < 1, ERR_STACK_OVERFLOW);
 
-    // ÇØ´ç SubqueryÀÇ planÀ» ÃÊ±âÈ­ÇÑ´Ù.
+    // í•´ë‹¹ Subqueryì˜ planì„ ì´ˆê¸°í™”í•œë‹¤.
     IDE_TEST( sPlan->init( (qcTemplate*)aTemplate, sPlan ) != IDE_SUCCESS );
 
     IDE_TEST( qtcCache::searchCache( (qcTemplate *)aTemplate,
@@ -1213,7 +1213,7 @@ IDE_RC qtcSubqueryCalculateExists( mtcNode     * aNode,
                                      &sState )
               != IDE_SUCCESS );
 
-    // °á°ú°ªÀ» ¾ò¾î¿À±â À§ÇÑ stack ÀçÁ¶Á¤
+    // ê²°ê³¼ê°’ì„ ì–»ì–´ì˜¤ê¸° ìœ„í•œ stack ì¬ì¡°ì •
     aTemplate->stack       = aStack  + 1 + sParamCnt;
     aTemplate->stackRemain = aRemain - 1 - sParamCnt;
     IDE_TEST_RAISE( aTemplate->stackRemain < 1, ERR_STACK_OVERFLOW );
@@ -1290,11 +1290,11 @@ IDE_RC qtcSubqueryCalculateNotExists( mtcNode     * aNode,
  *
  * Description : PROJ-2448 Subquery caching
  *
- *               NOT EXISTS ÀÇ ÀÎÀÚ·Î »ç¿ëµÈ subquery ÀÇ calculation
+ *               NOT EXISTS ì˜ ì¸ìë¡œ ì‚¬ìš©ëœ subquery ì˜ calculation
  *
  * Implementation :
  *
- *               aStack[0] Àº NOT EXISTS ÀÇ stack À¸·Î true/false ¸¦ ´ã´Â´Ù.
+ *               aStack[0] ì€ NOT EXISTS ì˜ stack ìœ¼ë¡œ true/false ë¥¼ ë‹´ëŠ”ë‹¤.
  *
  ***********************************************************************/
 
@@ -1316,12 +1316,12 @@ IDE_RC qtcSubqueryCalculateNotExists( mtcNode     * aNode,
 
     /* PROJ-2448 Subquery caching */
 
-    // BUG-43696 outerColumn À» ¾ò¾î¿À±â À§ÇÑ stack Á¶Á¤
+    // BUG-43696 outerColumn ì„ ì–»ì–´ì˜¤ê¸° ìœ„í•œ stack ì¡°ì •
     aTemplate->stack       = aStack  + 1;
     aTemplate->stackRemain = aRemain - 1;
     IDE_TEST_RAISE(aTemplate->stackRemain < 1, ERR_STACK_OVERFLOW);
 
-    // ÇØ´ç SubqueryÀÇ planÀ» ÃÊ±âÈ­ÇÑ´Ù.
+    // í•´ë‹¹ Subqueryì˜ planì„ ì´ˆê¸°í™”í•œë‹¤.
     IDE_TEST( sPlan->init( (qcTemplate*)aTemplate, sPlan ) != IDE_SUCCESS );
 
     IDE_TEST( qtcCache::searchCache( (qcTemplate *)aTemplate,
@@ -1333,7 +1333,7 @@ IDE_RC qtcSubqueryCalculateNotExists( mtcNode     * aNode,
                                      &sState )
               != IDE_SUCCESS );
 
-    // °á°ú°ªÀ» ¾ò¾î¿À±â À§ÇÑ stack ÀçÁ¶Á¤
+    // ê²°ê³¼ê°’ì„ ì–»ì–´ì˜¤ê¸° ìœ„í•œ stack ì¬ì¡°ì •
     aTemplate->stack       = aStack  + 1 + sParamCnt;
     aTemplate->stackRemain = aRemain - 1 - sParamCnt;
     IDE_TEST_RAISE( aTemplate->stackRemain < 1, ERR_STACK_OVERFLOW );

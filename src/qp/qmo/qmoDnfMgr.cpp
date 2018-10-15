@@ -21,12 +21,12 @@
  * Description :
  *     DNF Critical Path Manager
  *
- *     DNF Normalized Form¿¡ ´ëÇÑ ÃÖÀûÈ­¸¦ ¼öÇàÇÏ°í
- *     ÇØ´ç Graph¸¦ »ı¼ºÇÑ´Ù.
+ *     DNF Normalized Formì— ëŒ€í•œ ìµœì í™”ë¥¼ ìˆ˜í–‰í•˜ê³ 
+ *     í•´ë‹¹ Graphë¥¼ ìƒì„±í•œë‹¤.
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  **********************************************************************/
 
@@ -46,12 +46,12 @@ qmoDnfMgr::init( qcStatement * aStatement,
 {
 /***********************************************************************
  *
- * Description : qmoDnfÀÇ ÃÊ±âÈ­
+ * Description : qmoDnfì˜ ì´ˆê¸°í™”
  *
  * Implementation :
- *    (1) aNormalDNF¸¦ qmoDNF::normalDNF¿¡ ¿¬°áÇÑ´Ù.
- *    (2) AND °³¼ö¸¸Å­ cnfCnt¸¦ ¼³Á¤ÇÑ´Ù.
- *    (3) cnfCnt °³¼ö¸¸Å­ qmoCnf¸¦ À§ÇÑ ¹è¿­ °ø°£À» ÇÒ´ç¹Ş´Â´Ù.
+ *    (1) aNormalDNFë¥¼ qmoDNF::normalDNFì— ì—°ê²°í•œë‹¤.
+ *    (2) AND ê°œìˆ˜ë§Œí¼ cnfCntë¥¼ ì„¤ì •í•œë‹¤.
+ *    (3) cnfCnt ê°œìˆ˜ë§Œí¼ qmoCnfë¥¼ ìœ„í•œ ë°°ì—´ ê³µê°„ì„ í• ë‹¹ë°›ëŠ”ë‹¤.
  *
  ***********************************************************************/
 
@@ -63,7 +63,7 @@ qmoDnfMgr::init( qcStatement * aStatement,
     IDU_FIT_POINT_FATAL( "qmoDnfMgr::init::__FT__" );
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -72,14 +72,14 @@ qmoDnfMgr::init( qcStatement * aStatement,
     IDE_DASSERT( aNormalDNF != NULL );
 
     //------------------------------------------
-    // ±âº» ÃÊ±âÈ­
+    // ê¸°ë³¸ ì´ˆê¸°í™”
     //------------------------------------------
 
     sQuerySet = aQuerySet;
     sCnfCnt   = 0;
 
     //------------------------------------------
-    // DNF ÃÊ±âÈ­
+    // DNF ì´ˆê¸°í™”
     //------------------------------------------
 
     sDNF = aDNF;
@@ -91,20 +91,20 @@ qmoDnfMgr::init( qcStatement * aStatement,
 
     //------------------------------------------
     // PROJ-1405
-    // Rownum Predicate Ã³¸®
+    // Rownum Predicate ì²˜ë¦¬
     //------------------------------------------
 
     if ( ( aNormalDNF->lflag & QTC_NODE_ROWNUM_MASK )
          == QTC_NODE_ROWNUM_EXIST )
     {
-        // rownum predicateÀÎ °æ¿ì critical path·Î º¹»çÇØ¼­ ¿Ã¸°´Ù.
+        // rownum predicateì¸ ê²½ìš° critical pathë¡œ ë³µì‚¬í•´ì„œ ì˜¬ë¦°ë‹¤.
         IDE_TEST( qmoCrtPathMgr::addRownumPredicateForNode( aStatement,
                                                             sQuerySet,
                                                             aNormalDNF,
                                                             ID_TRUE )
                   != IDE_SUCCESS );
 
-        // rownum predicateÀ» Á¦°ÅÇÑ´Ù.
+        // rownum predicateì„ ì œê±°í•œë‹¤.
         IDE_TEST( removeRownumPredicate( aStatement, sDNF )
                   != IDE_SUCCESS );
     }
@@ -114,7 +114,7 @@ qmoDnfMgr::init( qcStatement * aStatement,
     }
 
     //------------------------------------------
-    // CNF °³¼ö °è»ê
+    // CNF ê°œìˆ˜ ê³„ì‚°
     //------------------------------------------
 
     if ( aNormalDNF->node.arguments != NULL )
@@ -126,8 +126,8 @@ qmoDnfMgr::init( qcStatement * aStatement,
     else
     {
         // BUG-17950
-        // ºó AND±×·ìÀÌ ¹ß»ıÇÏ¿© full(?) selectionÀ» ¼öÇàÇÏ´Â AND ±×·ìÀ»
-        // ÇÑ°³ »ı¼ºÇÑ´Ù.
+        // ë¹ˆ ANDê·¸ë£¹ì´ ë°œìƒí•˜ì—¬ full(?) selectionì„ ìˆ˜í–‰í•˜ëŠ” AND ê·¸ë£¹ì„
+        // í•œê°œ ìƒì„±í•œë‹¤.
         sCnfCnt = 1;
     }
 
@@ -135,7 +135,7 @@ qmoDnfMgr::init( qcStatement * aStatement,
     sDNF->dnfGraphCnt = sCnfCnt - 1;
 
     //------------------------------------------
-    // CNF °³¼ö¸¸Å­ qmoCNF¸¦ À§ÇÑ ¹è¿­ °ø°£ ÇÒ´ç ¹ŞÀ½
+    // CNF ê°œìˆ˜ë§Œí¼ qmoCNFë¥¼ ìœ„í•œ ë°°ì—´ ê³µê°„ í• ë‹¹ ë°›ìŒ
     //------------------------------------------
 
     IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF( qmoCNF ) * sCnfCnt,
@@ -156,16 +156,16 @@ qmoDnfMgr::optimize( qcStatement * aStatement,
 {
 /***********************************************************************
  *
- * Description : DNF ProcessorÀÇ ÃÖÀûÈ­( Áï, qmoDNFÀÇ ÃÖÀûÈ­)
+ * Description : DNF Processorì˜ ìµœì í™”( ì¦‰, qmoDNFì˜ ìµœì í™”)
  *
  * Implementation :
- *    (1) °¢ qmoCNF(µé)ÀÇ ÃÊ±âÈ­, ÃÖÀûÈ­ ÇÔ¼ö È£Ãâ
- *        - aCnfCost != 0 : DNF Prunning ¼öÇà
- *        - aCnfCost == 0 : DNF Prunning ¼öÇàÇÏÁö ¾ÊÀ½
- *    (2)(cnfCnt - 1)°³¼ö¸¸Å­ dnfGraph¸¦ À§ÇÑ ¹è¿­ °ø°£À» ÇÒ´ç¹ŞÀ½
- *    (3) dnfNotNormalFormÀÇ »ı¼º
- *    (4) °¢ dnfÀÇ ÃÊ±âÈ­
- *    (5) °¢ dnfÀÇ ÃÖÀûÈ­
+ *    (1) ê° qmoCNF(ë“¤)ì˜ ì´ˆê¸°í™”, ìµœì í™” í•¨ìˆ˜ í˜¸ì¶œ
+ *        - aCnfCost != 0 : DNF Prunning ìˆ˜í–‰
+ *        - aCnfCost == 0 : DNF Prunning ìˆ˜í–‰í•˜ì§€ ì•ŠìŒ
+ *    (2)(cnfCnt - 1)ê°œìˆ˜ë§Œí¼ dnfGraphë¥¼ ìœ„í•œ ë°°ì—´ ê³µê°„ì„ í• ë‹¹ë°›ìŒ
+ *    (3) dnfNotNormalFormì˜ ìƒì„±
+ *    (4) ê° dnfì˜ ì´ˆê¸°í™”
+ *    (5) ê° dnfì˜ ìµœì í™”
  *
  ***********************************************************************/
 
@@ -182,14 +182,14 @@ qmoDnfMgr::optimize( qcStatement * aStatement,
     IDU_FIT_POINT_FATAL( "qmoDnfMgr::optimize::__FT__" );
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aDNF != NULL );
 
     //------------------------------------------
-    // ±âº» ÃÊ±âÈ­
+    // ê¸°ë³¸ ì´ˆê¸°í™”
     //------------------------------------------
 
     sDNF         = aDNF;
@@ -198,12 +198,12 @@ qmoDnfMgr::optimize( qcStatement * aStatement,
     sCnfCnt      = sDNF->cnfCnt;
     sDnfGraphCnt = sDNF->dnfGraphCnt;
 
-    // PROJ-1446 Host variableÀ» Æ÷ÇÔÇÑ ÁúÀÇ ÃÖÀûÈ­
-    // dnf optimization½Ã »ı¼ºµÈ cnfÀÇ °³¼ö¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+    // PROJ-1446 Host variableì„ í¬í•¨í•œ ì§ˆì˜ ìµœì í™”
+    // dnf optimizationì‹œ ìƒì„±ëœ cnfì˜ ê°œìˆ˜ë¥¼ ì´ˆê¸°í™”í•œë‹¤.
     sDNF->madeCnfCnt = 0;
 
     //------------------------------------------
-    // °¢ CNFµéÀÇ ÃÊ±âÈ­, ÃÖÀûÈ­
+    // ê° CNFë“¤ì˜ ì´ˆê¸°í™”, ìµœì í™”
     //------------------------------------------
 
     sAndNode = (qtcNode *)sDNF->normalDNF->node.arguments;
@@ -221,13 +221,13 @@ qmoDnfMgr::optimize( qcStatement * aStatement,
 
         IDE_TEST( qmoCnfMgr::optimize( aStatement, sCNF ) != IDE_SUCCESS );
 
-        // PROJ-1446 Host variableÀ» Æ÷ÇÔÇÑ ÁúÀÇ ÃÖÀûÈ­
-        // dnf optimization½Ã »ı¼ºµÈ cnfÀÇ °³¼ö¸¦ Áõ°¡½ÃÅ²´Ù.
+        // PROJ-1446 Host variableì„ í¬í•¨í•œ ì§ˆì˜ ìµœì í™”
+        // dnf optimizationì‹œ ìƒì„±ëœ cnfì˜ ê°œìˆ˜ë¥¼ ì¦ê°€ì‹œí‚¨ë‹¤.
         sDNF->madeCnfCnt++;
 
         sDnfCost += sCNF->cost;
 
-        // JoinÀ» DNF·Î Ã³¸®ÇÒ °æ¿ì¿¡ ´ëÇÑ Penalty ºÎ¿©
+        // Joinì„ DNFë¡œ ì²˜ë¦¬í•  ê²½ìš°ì— ëŒ€í•œ Penalty ë¶€ì—¬
         switch ( sCNF->myGraph->type )
         {
             case QMG_INNER_JOIN:
@@ -243,10 +243,10 @@ qmoDnfMgr::optimize( qcStatement * aStatement,
         if (QMO_COST_IS_EQUAL(aCnfCost, 0.0) == ID_FALSE)
         {
             //------------------------------------------
-            // DNF Prunning ¼öÇà
+            // DNF Prunning ìˆ˜í–‰
             //------------------------------------------
 
-            // BUG-42400 cost ºñ±³½Ã ¸ÅÅ©·Î¸¦ »ç¿ëÇØ¾ß ÇÕ´Ï´Ù.
+            // BUG-42400 cost ë¹„êµì‹œ ë§¤í¬ë¡œë¥¼ ì‚¬ìš©í•´ì•¼ í•©ë‹ˆë‹¤.
             if ( QMO_COST_IS_GREATER(aCnfCost, sDnfCost) == ID_TRUE )
             {
                 // nothing to do
@@ -261,7 +261,7 @@ qmoDnfMgr::optimize( qcStatement * aStatement,
         else
         {
             //------------------------------------------
-            // DNF Prunning ¼öÇàÇÏÁö ¾ÊÀ½
+            // DNF Prunning ìˆ˜í–‰í•˜ì§€ ì•ŠìŒ
             //------------------------------------------
 
             // nothing to do
@@ -283,14 +283,14 @@ qmoDnfMgr::optimize( qcStatement * aStatement,
     if ( sIsPrunning == ID_FALSE )
     {
         // To Fix PR-8727
-        // »ç¿ëÀÚ Hint³ª CNF Only PredicateÀ¸·Î ÆÇ´ÜµÇÁö ¾Ê´Â
-        // CNF Only PredicateÀÇ °æ¿ì DNF GraphÀÇ °³¼ö°¡ 0ÀÏ ¼ö ÀÖÀ½.
-        // µû¶ó¼­, 0º¸´Ù Å¬ °æ¿ì¿¡¸¸ DNF Graph¸¦ »ı¼ºÇØ¾ß ÇÔ.
+        // ì‚¬ìš©ì Hintë‚˜ CNF Only Predicateìœ¼ë¡œ íŒë‹¨ë˜ì§€ ì•ŠëŠ”
+        // CNF Only Predicateì˜ ê²½ìš° DNF Graphì˜ ê°œìˆ˜ê°€ 0ì¼ ìˆ˜ ìˆìŒ.
+        // ë”°ë¼ì„œ, 0ë³´ë‹¤ í´ ê²½ìš°ì—ë§Œ DNF Graphë¥¼ ìƒì„±í•´ì•¼ í•¨.
 
         if ( sDnfGraphCnt > 0 )
         {
             //------------------------------------------
-            // dnf Graph¸¦ À§ÇÑ ¹è¿­ °ø°£À» ÇÒ´ç ¹ŞÀ½
+            // dnf Graphë¥¼ ìœ„í•œ ë°°ì—´ ê³µê°„ì„ í• ë‹¹ ë°›ìŒ
             //------------------------------------------
 
             IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF(qmgDNF) * sDnfGraphCnt,
@@ -298,7 +298,7 @@ qmoDnfMgr::optimize( qcStatement * aStatement,
                 != IDE_SUCCESS );
 
             //------------------------------------------
-            // dnfNotNormalForm ¹è¿­ »ı¼º
+            // dnfNotNormalForm ë°°ì—´ ìƒì„±
             //------------------------------------------
 
             IDE_TEST( makeNotNormal( aStatement, sDNF ) != IDE_SUCCESS );
@@ -306,8 +306,8 @@ qmoDnfMgr::optimize( qcStatement * aStatement,
         else
         {
             // Nothing To Do
-            // »ç¿ëÀÚ Hint³ª CNF Only PredicateÀ¸·Î ÆÇ´ÜµÇÁö ¾Ê´Â
-            // CNF Only PredicateÀÇ °æ¿ì DNF Graph°¡ ÇÊ¿äÇÏÁö ¾Ê´Ù.
+            // ì‚¬ìš©ì Hintë‚˜ CNF Only Predicateìœ¼ë¡œ íŒë‹¨ë˜ì§€ ì•ŠëŠ”
+            // CNF Only Predicateì˜ ê²½ìš° DNF Graphê°€ í•„ìš”í•˜ì§€ ì•Šë‹¤.
         }
 
         for ( i = 0; i < sCnfCnt ; i++ )
@@ -319,7 +319,7 @@ qmoDnfMgr::optimize( qcStatement * aStatement,
             else
             {
                 //------------------------------------------
-                // °¢ Dnf GraphÀÇ ÃÊ±âÈ­
+                // ê° Dnf Graphì˜ ì´ˆê¸°í™”
                 //------------------------------------------
 
                 IDE_TEST( qmgDnf::init( aStatement,
@@ -332,7 +332,7 @@ qmoDnfMgr::optimize( qcStatement * aStatement,
                 sResultGraph = & sDNF->dnfGraph[i-1].graph;
 
                 //------------------------------------------
-                // °¢ Dnf GraphÀÇ ÃÖÀûÈ­
+                // ê° Dnf Graphì˜ ìµœì í™”
                 //------------------------------------------
 
                 IDE_TEST( qmgDnf::optimize( aStatement,
@@ -343,7 +343,7 @@ qmoDnfMgr::optimize( qcStatement * aStatement,
     }
     else
     {
-        // Prunning µÇ¾úÀ¸¹Ç·Î Dnf Graph »ı¼ºÇÒ ÇÊ¿ä ¾øÀ½
+        // Prunning ë˜ì—ˆìœ¼ë¯€ë¡œ Dnf Graph ìƒì„±í•  í•„ìš” ì—†ìŒ
         // Nothing to do...
     }
 
@@ -389,19 +389,19 @@ qmoDnfMgr::makeNotNormal( qcStatement * aStatement,
 {
 /***********************************************************************
  *
- * Description : Dnf Not Normal FormµéÀ» ¸¸µç´Ù.
+ * Description : Dnf Not Normal Formë“¤ì„ ë§Œë“ ë‹¤.
  *
  * Implementation :
  *
- *    ´ÙÀ½°ú °°Àº DNF Normal FormÀÌ ÀÖ´Ù°í °¡Á¤ÇÏÀÚ
+ *    ë‹¤ìŒê³¼ ê°™ì€ DNF Normal Formì´ ìˆë‹¤ê³  ê°€ì •í•˜ì
  *
  *           [OR]
  *            |
  *           [AND1]-->[AND2]-->[AND3]
  *
- *   Ã¹¹øÂ° DNF Not Normal FormÀ» ÀÛ¼º
+ *   ì²«ë²ˆì§¸ DNF Not Normal Formì„ ì‘ì„±
  *
- *       1.  makeDnfNotNormal()              2.  AND ³ëµå·Î ¿¬°á
+ *       1.  makeDnfNotNormal()              2.  AND ë…¸ë“œë¡œ ì—°ê²°
  *
  *                                              [AND]
  *                                                 |
@@ -409,9 +409,9 @@ qmoDnfMgr::makeNotNormal( qcStatement * aStatement,
  *              |                   ==>            |
  *           [AND1]'                            [AND1]'
  *
- *    µÎ¹øÂ° DNF Not Normal FormÀ» ÀÛ¼º
+ *    ë‘ë²ˆì§¸ DNF Not Normal Formì„ ì‘ì„±
  *
- *       3. qtc::copyAndForDnfFilter() ·Î 2¸¦ º¹»ç
+ *       3. qtc::copyAndForDnfFilter() ë¡œ 2ë¥¼ ë³µì‚¬
  *
  *           [AND]'
  *              |
@@ -419,13 +419,13 @@ qmoDnfMgr::makeNotNormal( qcStatement * aStatement,
  *              |
  *           [AND1]''
  *
- *       4.  [AND2]¿¡ ´ëÇÑ DNF Not Normal FormÀ» ÀÛ¼º
+ *       4.  [AND2]ì— ëŒ€í•œ DNF Not Normal Formì„ ì‘ì„±
  *
  *           [LNNVL]
  *              |
  *           [AND2]'
  *
- *       5.  3°ú 4¸¦ ¿¬°á
+ *       5.  3ê³¼ 4ë¥¼ ì—°ê²°
  *
  *           [AND]'
  *              |
@@ -449,25 +449,25 @@ qmoDnfMgr::makeNotNormal( qcStatement * aStatement,
     IDU_FIT_POINT_FATAL( "qmoDnfMgr::makeNotNormal::__FT__" );
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aDNF != NULL );
 
     //------------------------------------------
-    // ±âº» ÃÊ±âÈ­
+    // ê¸°ë³¸ ì´ˆê¸°í™”
     //------------------------------------------
 
     sNotNormalFormCnt = aDNF->dnfGraphCnt;
     SET_EMPTY_POSITION(sNullPosition);
 
-    // °ø°£ ÇÒ´ç
+    // ê³µê°„ í• ë‹¹
     IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF(qtcNode *) * sNotNormalFormCnt,
                                              (void **) & sNotNormalForm )
               != IDE_SUCCESS );
 
-    // °¢ not normal form »ı¼º
+    // ê° not normal form ìƒì„±
     for ( i = 0, sNormalForm = (qtcNode *)aDNF->normalDNF->node.arguments;
           i < sNotNormalFormCnt;
           i++, sNormalForm = (qtcNode *)sNormalForm->node.next )
@@ -479,7 +479,7 @@ qmoDnfMgr::makeNotNormal( qcStatement * aStatement,
                                         & sDnfNotNode )
                       != IDE_SUCCESS );
 
-            // And Node »ı¼º
+            // And Node ìƒì„±
             IDE_TEST( qtc::makeNode( aStatement,
                                      sAndNode,
                                      & sNullPosition,
@@ -538,7 +538,7 @@ qmoDnfMgr::makeDnfNotNormal( qcStatement * aStatement,
 {
 /***********************************************************************
  *
- * Description : Dnf Not Normal FormÀ» ¸¸µç´Ù.
+ * Description : Dnf Not Normal Formì„ ë§Œë“ ë‹¤.
  *
  * Implementation :
  *
@@ -549,14 +549,14 @@ qmoDnfMgr::makeDnfNotNormal( qcStatement * aStatement,
     IDU_FIT_POINT_FATAL( "qmoDnfMgr::makeDnfNotNormal::__FT__" );
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aNormalForm != NULL );
 
     //------------------------------------------
-    // Normal Form º¹»ç
+    // Normal Form ë³µì‚¬
     //------------------------------------------
     IDE_TEST( qtc::cloneQTCNodeTree( QC_QMP_MEM( aStatement ),
                                      aNormalForm,
@@ -595,18 +595,18 @@ qmoDnfMgr::removeRownumPredicate( qcStatement * aStatement,
 /***********************************************************************
  *
  * Description :
- *     °¢ AND ±×·ì¿¡¼­ rownum predicateÀ» Á¦°ÅÇÑ´Ù.
+ *     ê° AND ê·¸ë£¹ì—ì„œ rownum predicateì„ ì œê±°í•œë‹¤.
  *
- *     rownum predicateÀÌ Á¦°ÅÇÏ°Ô µÇ¸é predicateÀÌ ¾ø´Â AND ±×·ìÀÌ
- *     ¸¸µé¾îÁú ¼ö ÀÖ´Âµ¥, ÀÌ AND ±×·ìÀº ¸ğµç ·¹ÄÚµå°¡ ¿Ã¶ó¿Í¾ß
- *     ÇÏ´Â selectionÀ» ¼öÇàÇÑ´Ù.
+ *     rownum predicateì´ ì œê±°í•˜ê²Œ ë˜ë©´ predicateì´ ì—†ëŠ” AND ê·¸ë£¹ì´
+ *     ë§Œë“¤ì–´ì§ˆ ìˆ˜ ìˆëŠ”ë°, ì´ AND ê·¸ë£¹ì€ ëª¨ë“  ë ˆì½”ë“œê°€ ì˜¬ë¼ì™€ì•¼
+ *     í•˜ëŠ” selectionì„ ìˆ˜í–‰í•œë‹¤.
  *
- *     ±×·¯³ª, ÀÌ·± ±×·ìÀº ÇÏ³ª ÀÌ»óÀÏ ¼ö ÀÖ¾î predicateÀÌ ¾ø´Â
- *     AND ±×·ìÀº ¸ğµÎ Á¦°ÅÇÏ°í, ÈÄ¿¡ ºó AND ±×·ìÀ» ÇÏ³ª Ãß°¡ÇÒ ¼ö
- *     ÀÖµµ·Ï flag¸¦ ¹İÈ¯ÇÑ´Ù.
+ *     ê·¸ëŸ¬ë‚˜, ì´ëŸ° ê·¸ë£¹ì€ í•˜ë‚˜ ì´ìƒì¼ ìˆ˜ ìˆì–´ predicateì´ ì—†ëŠ”
+ *     AND ê·¸ë£¹ì€ ëª¨ë‘ ì œê±°í•˜ê³ , í›„ì— ë¹ˆ AND ê·¸ë£¹ì„ í•˜ë‚˜ ì¶”ê°€í•  ìˆ˜
+ *     ìˆë„ë¡ flagë¥¼ ë°˜í™˜í•œë‹¤.
  *
  *
- *     ¿¹1) where ROWNUM < 1 and ( i2 = 2 or ROWNUM < 3 );
+ *     ì˜ˆ1) where ROWNUM < 1 and ( i2 = 2 or ROWNUM < 3 );
  *
  *     [where]
  *
@@ -623,7 +623,7 @@ qmoDnfMgr::removeRownumPredicate( qcStatement * aStatement,
  *
  *     [where]
  *
- *     [AND±×·ì 1]            [AND±×·ì 2]
+ *     [ANDê·¸ë£¹ 1]            [ANDê·¸ë£¹ 2]
  *
  *      AND                   AND
  *       |                     |
@@ -636,7 +636,7 @@ qmoDnfMgr::removeRownumPredicate( qcStatement * aStatement,
  *
  *     [where]
  *
- *     [AND±×·ì 1]            [AND±×·ì 2]
+ *     [ANDê·¸ë£¹ 1]            [ANDê·¸ë£¹ 2]
  *
  *      AND                   AND
  *       |
@@ -649,16 +649,16 @@ qmoDnfMgr::removeRownumPredicate( qcStatement * aStatement,
  *
  *     [where]
  *
- *     [AND±×·ì 1]            [AND±×·ì 2]
+ *     [ANDê·¸ë£¹ 1]            [ANDê·¸ë£¹ 2]
  *
- *      AND                   ºó AND ±×·ì
+ *      AND                   ë¹ˆ AND ê·¸ë£¹
  *       |
  *       =
  *       |
  *      i2 - 2
  *
  *
- *    ¿¹2) where ROWNUM < 1 or ROWNUM < 3;
+ *    ì˜ˆ2) where ROWNUM < 1 or ROWNUM < 3;
  *
  *     [where]
  *
@@ -675,7 +675,7 @@ qmoDnfMgr::removeRownumPredicate( qcStatement * aStatement,
  *
  *     [where]
  *
- *     [AND±×·ì 1]            [AND±×·ì 2]
+ *     [ANDê·¸ë£¹ 1]            [ANDê·¸ë£¹ 2]
  *
  *      AND                   AND
  *       |                     |
@@ -688,7 +688,7 @@ qmoDnfMgr::removeRownumPredicate( qcStatement * aStatement,
  *
  *     [where]
  *
- *     [AND±×·ì 1]            [AND±×·ì 2]
+ *     [ANDê·¸ë£¹ 1]            [ANDê·¸ë£¹ 2]
  *
  *      AND                   AND
  *
@@ -697,14 +697,14 @@ qmoDnfMgr::removeRownumPredicate( qcStatement * aStatement,
  *
  *     [where]
  *
- *     [AND±×·ì 1]
+ *     [ANDê·¸ë£¹ 1]
  *
- *     ºó AND ±×·ì
+ *     ë¹ˆ AND ê·¸ë£¹
  *
  *
  * Implementation :
- *     1. AND ±×·ì³»ÀÇ rownum predicateÀ» Á¦°ÅÇÑ´Ù.
- *     2. predicateÀÌ ¾ø´Â AND ±×·ìÀ» Á¦°ÅÇÑ´Ù.
+ *     1. AND ê·¸ë£¹ë‚´ì˜ rownum predicateì„ ì œê±°í•œë‹¤.
+ *     2. predicateì´ ì—†ëŠ” AND ê·¸ë£¹ì„ ì œê±°í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -719,21 +719,21 @@ qmoDnfMgr::removeRownumPredicate( qcStatement * aStatement,
     IDU_FIT_POINT_FATAL( "qmoDnfMgr::removeRownumPredicate::__FT__" );
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aDNF != NULL );
 
     //------------------------------------------
-    // ±âº» ÃÊ±âÈ­
+    // ê¸°ë³¸ ì´ˆê¸°í™”
     //------------------------------------------
 
     sNormalDNF = aDNF->normalDNF;
     sEmptyAndGroup = ID_FALSE;
 
     //------------------------------------------
-    // AND ±×·ì ³»ÀÇ rownum predicateÀ» Á¦°ÅÇÑ´Ù.
+    // AND ê·¸ë£¹ ë‚´ì˜ rownum predicateì„ ì œê±°í•œë‹¤.
     //------------------------------------------
 
     for ( sAndNode = (qtcNode *)sNormalDNF->node.arguments;
@@ -750,7 +750,7 @@ qmoDnfMgr::removeRownumPredicate( qcStatement * aStatement,
             if ( ( sCompareNode->lflag & QTC_NODE_ROWNUM_MASK )
                  == QTC_NODE_ROWNUM_EXIST )
             {
-                // rownum predicateÀº Á¦°ÅµÈ´Ù.
+                // rownum predicateì€ ì œê±°ëœë‹¤.
 
                 // Nothing to do.
             }
@@ -781,7 +781,7 @@ qmoDnfMgr::removeRownumPredicate( qcStatement * aStatement,
     }
 
     //------------------------------------------
-    // predicateÀÌ ¾ø´Â AND ±×·ìÀ» Á¦°ÅÇÑ´Ù.
+    // predicateì´ ì—†ëŠ” AND ê·¸ë£¹ì„ ì œê±°í•œë‹¤.
     //------------------------------------------
 
     for ( sAndNode = (qtcNode *)sNormalDNF->node.arguments;
@@ -791,8 +791,8 @@ qmoDnfMgr::removeRownumPredicate( qcStatement * aStatement,
         if ( sAndNode->node.arguments == NULL )
         {
             // BUG-17950
-            // predicateÀÌ ¾ø´Â ºó AND ±×·ìÀÌ ÀÖ´Â °æ¿ì
-            // ³ª¸ÓÁö AND ±×·ìÀº Á¦°ÅÇÒ ¼ö ÀÖ´Ù.
+            // predicateì´ ì—†ëŠ” ë¹ˆ AND ê·¸ë£¹ì´ ìˆëŠ” ê²½ìš°
+            // ë‚˜ë¨¸ì§€ AND ê·¸ë£¹ì€ ì œê±°í•  ìˆ˜ ìˆë‹¤.
             sEmptyAndGroup = ID_TRUE;
             break;
         }
@@ -804,8 +804,8 @@ qmoDnfMgr::removeRownumPredicate( qcStatement * aStatement,
 
     if ( sEmptyAndGroup == ID_TRUE )
     {
-        // ºó AND±×·ìÀÌ »ı¼ºµÇ¾î¾ß ÇÔÀ» normalDNFÀÇ arguments°¡
-        // NULLÀÎ°ÍÀ¸·Î ¾Ë¸°´Ù.
+        // ë¹ˆ ANDê·¸ë£¹ì´ ìƒì„±ë˜ì–´ì•¼ í•¨ì„ normalDNFì˜ argumentsê°€
+        // NULLì¸ê²ƒìœ¼ë¡œ ì•Œë¦°ë‹¤.
         aDNF->normalDNF->node.arguments = NULL;
     }
     else

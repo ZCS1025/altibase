@@ -120,10 +120,10 @@ typedef struct qmmInsParseTree
     void               * queueMsgIDSeq;
 
     // PROJ-1566
-    // Insert ¹æ½ÄÀ» APPEND·Î ÇÒ°ÍÀÎÁö ¸»°ÍÀÎÁö¿¡ ´ëÇÑ Hint
-    // APPEND ¹æ½Ä ÀÏ °æ¿ì, Page¿¡ insertµÉ¶§ ¸¶Áö¸·¿¡ insertµÈ
-    // record ´ÙÀ½¿¡ appendµÇ´Â ¹æ½Ä
-    // ( ÀÌ¶§ ³»ºÎÀûÀ¸·Î direct-path INSERT ¹æ½ÄÀ¸·Î Ã³¸®µÊ )
+    // Insert ë°©ì‹ì„ APPENDë¡œ í• ê²ƒì¸ì§€ ë§ê²ƒì¸ì§€ì— ëŒ€í•œ Hint
+    // APPEND ë°©ì‹ ì¼ ê²½ìš°, Pageì— insertë ë•Œ ë§ˆì§€ë§‰ì— insertëœ
+    // record ë‹¤ìŒì— appendë˜ëŠ” ë°©ì‹
+    // ( ì´ë•Œ ë‚´ë¶€ì ìœ¼ë¡œ direct-path INSERT ë°©ì‹ìœ¼ë¡œ ì²˜ë¦¬ë¨ )
     qmsHints           * hints;
 
     // instead of trigger
@@ -135,7 +135,7 @@ typedef struct qmmInsParseTree
     /* PROJ-1988 MERGE statement */
     qmsQuerySet        * outerQuerySet;
 
-    /* PROJ-1107 Check Constraint Áö¿ø */
+    /* PROJ-1107 Check Constraint ì§€ì› */
     qdConstraintSpec   * checkConstrList;
     
     /* PROJ-1090 Function-based Index */
@@ -221,7 +221,7 @@ typedef struct qmmUptParseTree
     // PROJ-1888 INSTEAD OF TRIGGER
     idBool               insteadOfTrigger;
 
-    /* PROJ-1107 Check Constraint Áö¿ø */
+    /* PROJ-1107 Check Constraint ì§€ì› */
     qdConstraintSpec   * checkConstrList;
     
     /* PROJ-1090 Function-based Index */
@@ -250,7 +250,7 @@ typedef struct qmmMoveParseTree
    
     struct qmsLimit    * limit;
 
-    /* PROJ-1107 Check Constraint Áö¿ø */
+    /* PROJ-1107 Check Constraint ì§€ì› */
     qdConstraintSpec   * checkConstrList;
     
     /* PROJ-1090 Function-based Index */
@@ -269,7 +269,7 @@ typedef struct qmmLockParseTree
     smiTableLockMode     tableLockMode;
     ULong                lockWaitMicroSec;
 
-    /* BUG-42853 LOCK TABLE¿¡ UNTIL NEXT DDL ±â´É Ãß°¡ */
+    /* BUG-42853 LOCK TABLEì— UNTIL NEXT DDL ê¸°ëŠ¥ ì¶”ê°€ */
     idBool               untilNextDDL;
 
     // validation information

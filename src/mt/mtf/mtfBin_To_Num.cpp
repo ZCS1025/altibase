@@ -45,7 +45,7 @@ static IDE_RC mtfBin_To_NumEstimate( mtcNode*     aNode,
 mtfModule mtfBin_To_Num = {
     1|MTC_NODE_OPERATOR_FUNCTION,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
+    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìžê°€ ì•„ë‹˜)
     mtfBin_To_NumFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -135,8 +135,8 @@ IDE_RC mtfBin_To_NumCalculate( mtcNode*     aNode,
  * Implementation :
  *    BIN_TO_NUM ( char )
  *
- *    aStack[0] : ÁÖ¾îÁø 2Áø¼ö ÇüÅÂÀÇ char¸¦ 10Áø¼ö·Î º¯È¯ÇÑ °ª
- *    aStack[1] : char (¹®ÀÚ´Â 32°³±îÁö ¿Ã ¼ö ÀÖ´Ù.) 
+ *    aStack[0] : ì£¼ì–´ì§„ 2ì§„ìˆ˜ í˜•íƒœì˜ charë¥¼ 10ì§„ìˆ˜ë¡œ ë³€í™˜í•œ ê°’
+ *    aStack[1] : char (ë¬¸ìžëŠ” 32ê°œê¹Œì§€ ì˜¬ ìˆ˜ ìžˆë‹¤.) 
  *
  *    ex) BIN_TO_NUM ('10110') ==> 22
  *

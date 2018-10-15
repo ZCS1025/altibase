@@ -32,12 +32,12 @@ IDL_EXTERN_C_BEGIN
 
 /*******************************************************
  * Description:
- *  isql pty °æ·Î Á¤º¸¸¦ ÀúÀåÇÏ°í ÀÖ´Â ÆÄÀÏÀÇ Àı´ë°æ·Î¸¦ 
- *  È¹µæÇÏ´Â ÇÔ¼ö. 
- *  ÆÄÀÏÀÇ °æ·Î´Â $ALTIBASE_XDB_HOME/conf/isql_terminal_info
+ *  isql pty ê²½ë¡œ ì •ë³´ë¥¼ ì €ì¥í•˜ê³  ìˆëŠ” íŒŒì¼ì˜ ì ˆëŒ€ê²½ë¡œë¥¼ 
+ *  íšë“í•˜ëŠ” í•¨ìˆ˜. 
+ *  íŒŒì¼ì˜ ê²½ë¡œëŠ” $ALTIBASE_XDB_HOME/conf/isql_terminal_info
  *
- * aFileNameBufLen - [IN]  ÆÄÀÏÀÌ¸§À» ÀúÀåÇÒ ¹öÆÛÀÇ ±æÀÌ
- * aFileNameBuf    - [OUT] ÆÄÀÏ ÀÌ¸§À» ÀúÀåÇÏ´Â ¹öÆÛ
+ * aFileNameBufLen - [IN]  íŒŒì¼ì´ë¦„ì„ ì €ì¥í•  ë²„í¼ì˜ ê¸¸ì´
+ * aFileNameBuf    - [OUT] íŒŒì¼ ì´ë¦„ì„ ì €ì¥í•˜ëŠ” ë²„í¼
  *******************************************************/
 static void iduGetISQLTerminalInfoFilePath( SInt   aFileNameBufLen,
                                             SChar *aFileNameBuf )
@@ -53,8 +53,8 @@ static void iduGetISQLTerminalInfoFilePath( SInt   aFileNameBufLen,
 
 /*******************************************************
  * Description:
- *    isql¿¡¼­ È£ÃâÇÏ¿© isqlÀÇ PID, PTY¸¦
- *    Æ¯Á¤ ÆÄÀÏ¿¡ ±â·ÏÇÑ´Ù.
+ *    isqlì—ì„œ í˜¸ì¶œí•˜ì—¬ isqlì˜ PID, PTYë¥¼
+ *    íŠ¹ì • íŒŒì¼ì— ê¸°ë¡í•œë‹¤.
  *******************************************************/
 IDE_RC iduSetISQLTerminalInfo( idBool * aIsCreatePtyFile )
 {
@@ -113,10 +113,10 @@ IDE_RC iduSetISQLTerminalInfo( idBool * aIsCreatePtyFile )
 
 /*******************************************************
  * Description:
- *   isqlÀÇ pty °æ·Î¸¦ È¹µæÇÏ´Â ÇÔ¼öÀÌ´Ù.   
+ *   isqlì˜ pty ê²½ë¡œë¥¼ íšë“í•˜ëŠ” í•¨ìˆ˜ì´ë‹¤.   
  *
- * aIsqlPtyNameLen - [IN]  °æ·Î¸¦ ÀúÀåÇÒ ¹öÆÛÀÇ ±æÀÌ
- * aIsqlPtyName    - [OUT] °æ·Î¸¦ ÀúÀåÇÏ´Â ¹öÆÛ
+ * aIsqlPtyNameLen - [IN]  ê²½ë¡œë¥¼ ì €ì¥í•  ë²„í¼ì˜ ê¸¸ì´
+ * aIsqlPtyName    - [OUT] ê²½ë¡œë¥¼ ì €ì¥í•˜ëŠ” ë²„í¼
  * aPID            - [OUT]
  *******************************************************/
 IDE_RC iduGetISQLTerminalInfo( SInt     aIsqlPtyNameLen,
@@ -169,7 +169,7 @@ IDE_RC iduGetISQLTerminalInfo( SInt     aIsqlPtyNameLen,
 
 /*******************************************************
  * Description:
- *    $ALTIBASE_XDB_HOME/conf/isql_terminal_info »èÁ¦
+ *    $ALTIBASE_XDB_HOME/conf/isql_terminal_info ì‚­ì œ
  *******************************************************/
 void iduRemoveISQLTerminalInfoFile( void )
 {

@@ -17,20 +17,20 @@
 package Altibase.jdbc.driver.logging;
 
 /**
- * FINEST·¹º§·Î ³×Æ®¿öÅ© ÆĞÅ¶Á¤º¸¸¦ ³²±æ¶§ ¹ÙÀÌÆ® Á¤º¸¸¦ Ãâ·ÂÇÏ±â À§ÇÑ ¸ÊÇÎÅ¬·¡½º
+ * FINESTë ˆë²¨ë¡œ ë„¤íŠ¸ì›Œí¬ íŒ¨í‚·ì •ë³´ë¥¼ ë‚¨ê¸¸ë•Œ ë°”ì´íŠ¸ ì •ë³´ë¥¼ ì¶œë ¥í•˜ê¸° ìœ„í•œ ë§µí•‘í´ë˜ìŠ¤
  * 
  * @author yjpark
  * 
  */
 public final class DumpByteUtil
 {
-    // cm protocolÀÇ headerÆĞÅ¶ Å©±â°¡ 16ÀÌ±â¶§¹®¿¡ ±âº»°ªÀ» 16À¸·Î ÇÑ´Ù.
+    // cm protocolì˜ headeríŒ¨í‚· í¬ê¸°ê°€ 16ì´ê¸°ë•Œë¬¸ì— ê¸°ë³¸ê°’ì„ 16ìœ¼ë¡œ í•œë‹¤.
     private static final int     DEFAULT_BYTES_PER_LINE = 16;
     private static final int     HEX_LIST_SIZE          = 256;
     public static final String[] HEX_VALUES             = makeHexValues();
     public static final char[]   CHAR_VALUES            = makeCharValues();
     
-    // utility classÀÌ±â¶§¹®¿¡ »ı¼ºÀÚ¸¦ privateÀ¸·Î ¼±¾ğ
+    // utility classì´ê¸°ë•Œë¬¸ì— ìƒì„±ìë¥¼ privateìœ¼ë¡œ ì„ ì–¸
     private DumpByteUtil()
     {
     }
@@ -64,7 +64,7 @@ public final class DumpByteUtil
         char[] sCharValues = new char[HEX_LIST_SIZE];
         for (int i=0; i < sCharValues.length; i++)
         {
-            if (i < (int)' ' || i > (int)'~') // È­¸é¿¡ Ç¥½ÃÇÒ ¼ö ¾ø´Â ¹®ÀÚ´Â ±×³É '.'À¸·Î Ç¥½ÃÇÑ´Ù.
+            if (i < (int)' ' || i > (int)'~') // í™”ë©´ì— í‘œì‹œí•  ìˆ˜ ì—†ëŠ” ë¬¸ìëŠ” ê·¸ëƒ¥ '.'ìœ¼ë¡œ í‘œì‹œí•œë‹¤.
             {
                 sCharValues[i] = '.';
             }

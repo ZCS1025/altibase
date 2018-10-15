@@ -35,10 +35,10 @@ ACI_RC ulncCHAR_UBIGINT(ulnFnContext  *aFnContext,
                    LABEL_INVALID_LITERAL);
 
     /*
-     * BUGBUG : ¾Æ·¡ÀÇ ÇÔ¼ö´Â signed long À» ¸®ÅÏÇÑ´Ù.
-     *          ±×·¯³ª ¼­¹öÀÇ 64bit integer °¡ signed ÀÌ¹Ç·Î º° ¹®Á¦ ¾øÀ» °ÍÀÌ´Ù.
-     *          ID_ULONG_MAX ¸¦ ÃÊ°úÇÏ´ÂÁöµµ Ã¼Å©ÇÒ ÇÊ¿ä ¾ø´Ù.
-     *          ´ÜÁö À½¼ö¿Í ¼Ò¼ýÁ¡ ÀÌÇÏ°¡ Â©·È´ÂÁö¸¸ Ã¼Å©ÇÏ¸é µÈ´Ù.
+     * BUGBUG : ì•„ëž˜ì˜ í•¨ìˆ˜ëŠ” signed long ì„ ë¦¬í„´í•œë‹¤.
+     *          ê·¸ëŸ¬ë‚˜ ì„œë²„ì˜ 64bit integer ê°€ signed ì´ë¯€ë¡œ ë³„ ë¬¸ì œ ì—†ì„ ê²ƒì´ë‹¤.
+     *          ID_ULONG_MAX ë¥¼ ì´ˆê³¼í•˜ëŠ”ì§€ë„ ì²´í¬í•  í•„ìš” ì—†ë‹¤.
+     *          ë‹¨ì§€ ìŒìˆ˜ì™€ ì†Œìˆ«ì  ì´í•˜ê°€ ì§¤ë ¸ëŠ”ì§€ë§Œ ì²´í¬í•˜ë©´ ëœë‹¤.
      */
     errno = 0;
     sBigIntValue = ulncStrToSLong((const acp_char_t *)aColumn->mBuffer, (acp_char_t **)NULL, 10);
@@ -381,8 +381,8 @@ ACI_RC ulncINTERVAL_UBIGINT(ulnFnContext  *aFnContext,
     ACP_UNUSED(aLength);
 
     /*
-     * BUGBUG : ¿ø·¡´Â inteval Å¸ÀÔ¿¡ single field ¸¸ ÀÖÀ¸¸é °¡´ÉÇÏµµ·Ï ÇØ¾ß ÇÏ´Âµ¥,
-     *          ÀÏ´Ü ÀÌ·¸°Ô µÎÀÚ.
+     * BUGBUG : ì›ëž˜ëŠ” inteval íƒ€ìž…ì— single field ë§Œ ìžˆìœ¼ë©´ ê°€ëŠ¥í•˜ë„ë¡ í•´ì•¼ í•˜ëŠ”ë°,
+     *          ì¼ë‹¨ ì´ë ‡ê²Œ ë‘ìž.
      */
 
     /*
@@ -412,8 +412,8 @@ ACI_RC ulncNUMERIC_UBIGINT(ulnFnContext  *aFnContext,
     ACI_TEST_RAISE(sCmNumeric->mSign == 0, LABEL_OUT_OF_RANGE_MINUS);
 
     /*
-     * cmtNumeric ¿¡¼­ °ðÀå ULong À¸·Î °¡´Ï±î overflow µðÅØÆ®°¡ ³Ê¹« ¸Ó¸®¾ÆÆÄ¼­
-     * ÀÏ´Ü ulncDecimal ÀÇ 10Áø¼ö·Î º¯È¯ ÇÑ ÈÄ ULong À¸·Î °¡µµ·Ï ÇÑ´Ù.
+     * cmtNumeric ì—ì„œ ê³§ìž¥ ULong ìœ¼ë¡œ ê°€ë‹ˆê¹Œ overflow ë””í…íŠ¸ê°€ ë„ˆë¬´ ë¨¸ë¦¬ì•„íŒŒì„œ
+     * ì¼ë‹¨ ulncDecimal ì˜ 10ì§„ìˆ˜ë¡œ ë³€í™˜ í•œ í›„ ULong ìœ¼ë¡œ ê°€ë„ë¡ í•œë‹¤.
      */
     ulncNumericInitialize(&sDecimal, 10, ULNC_ENDIAN_BIG, sBuffer, ULNC_NUMERIC_ALLOCSIZE);
     ulncCmtNumericToDecimal((cmtNumeric *)aColumn->mBuffer, &sDecimal);
@@ -502,10 +502,10 @@ ACI_RC ulncNCHAR_UBIGINT(ulnFnContext  *aFnContext,
                    LABEL_INVALID_LITERAL);
 
     /*
-     * BUGBUG : ¾Æ·¡ÀÇ ÇÔ¼ö´Â signed long À» ¸®ÅÏÇÑ´Ù.
-     *          ±×·¯³ª ¼­¹öÀÇ 64bit integer °¡ signed ÀÌ¹Ç·Î º° ¹®Á¦ ¾øÀ» °ÍÀÌ´Ù.
-     *          ACP_UINT64_MAX ¸¦ ÃÊ°úÇÏ´ÂÁöµµ Ã¼Å©ÇÒ ÇÊ¿ä ¾ø´Ù.
-     *          ´ÜÁö À½¼ö¿Í ¼Ò¼ýÁ¡ ÀÌÇÏ°¡ Â©·È´ÂÁö¸¸ Ã¼Å©ÇÏ¸é µÈ´Ù.
+     * BUGBUG : ì•„ëž˜ì˜ í•¨ìˆ˜ëŠ” signed long ì„ ë¦¬í„´í•œë‹¤.
+     *          ê·¸ëŸ¬ë‚˜ ì„œë²„ì˜ 64bit integer ê°€ signed ì´ë¯€ë¡œ ë³„ ë¬¸ì œ ì—†ì„ ê²ƒì´ë‹¤.
+     *          ACP_UINT64_MAX ë¥¼ ì´ˆê³¼í•˜ëŠ”ì§€ë„ ì²´í¬í•  í•„ìš” ì—†ë‹¤.
+     *          ë‹¨ì§€ ìŒìˆ˜ì™€ ì†Œìˆ«ì  ì´í•˜ê°€ ì§¤ë ¸ëŠ”ì§€ë§Œ ì²´í¬í•˜ë©´ ëœë‹¤.
      */
     errno = 0;
     sBigIntValue = ulncStrToSLong((const acp_char_t *)ulnCharSetGetConvertedText(&sCharSet), (acp_char_t **)NULL, 10);

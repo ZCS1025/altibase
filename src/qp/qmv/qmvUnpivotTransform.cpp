@@ -20,18 +20,18 @@
  *
  * PROJ-2523 Unpivot clause
  *
- * [ Unpivot TransformationÀº 2´Ü°è·Î ³ª´¶´Ù. ]
+ * [ Unpivot Transformationì€ 2ë‹¨ê³„ë¡œ ë‚˜ë‰œë‹¤. ]
  *
- *   1. validateQmsTableRef ÃÊ±â ´Ü°è¿¡¼­ unpivot ±¸¹®À» ÇØ¼®ÇÏ¿© TableRef->view¸¦
- *      unpivot transformed view·Î »ı¼º ¶Ç´Â º¯°æÇÏ´Â ºÎºĞÀÌ´Ù.
- *      »õ·Î »ı¼ºµÇ´Â unpivot transformed view¿¡´Â loop clause°¡ Ãß°¡ µÇ´Âµ¥,
- *      ÀÌ loop clause¸¦ ÅëÇØ ¿­·Î º¯È¯µÇ´Â ÇàÀÇ °³¼ö¸¸Å­ recordÀÇ ¼ö°¡ º¹Á¦µÈ´Ù.
- *      ÀÌ ¶§, unpivot transformed viewÀÇ targetÀº unpivot ±¸¹®¿¡ Á¤ÀÇµÈ columnµéÀ» ÀÎÀÚ·Î ÇÏ´Â
- *      DECODE_OFFSET ÇÔ¼öµé·Î ±¸¼ºµÇ¸ç, loop_level pseudo columnÀ» ÅëÇØ ÇØ´çÇÏ´Â ¼ø¹øÀÇ columnÀÌ ±¸ÇØÁö°Ô µÈ´Ù.
+ *   1. validateQmsTableRef ì´ˆê¸° ë‹¨ê³„ì—ì„œ unpivot êµ¬ë¬¸ì„ í•´ì„í•˜ì—¬ TableRef->viewë¥¼
+ *      unpivot transformed viewë¡œ ìƒì„± ë˜ëŠ” ë³€ê²½í•˜ëŠ” ë¶€ë¶„ì´ë‹¤.
+ *      ìƒˆë¡œ ìƒì„±ë˜ëŠ” unpivot transformed viewì—ëŠ” loop clauseê°€ ì¶”ê°€ ë˜ëŠ”ë°,
+ *      ì´ loop clauseë¥¼ í†µí•´ ì—´ë¡œ ë³€í™˜ë˜ëŠ” í–‰ì˜ ê°œìˆ˜ë§Œí¼ recordì˜ ìˆ˜ê°€ ë³µì œëœë‹¤.
+ *      ì´ ë•Œ, unpivot transformed viewì˜ targetì€ unpivot êµ¬ë¬¸ì— ì •ì˜ëœ columnë“¤ì„ ì¸ìë¡œ í•˜ëŠ”
+ *      DECODE_OFFSET í•¨ìˆ˜ë“¤ë¡œ êµ¬ì„±ë˜ë©°, loop_level pseudo columnì„ í†µí•´ í•´ë‹¹í•˜ëŠ” ìˆœë²ˆì˜ columnì´ êµ¬í•´ì§€ê²Œ ëœë‹¤.
  *
- *   2. TargetÀ» validationÇÏ±â Àü Áï qmsValidateTarget ÇÔ¼ö°¡ È£ÃâµÇ±â Àü¿¡
- *      À§ÀÇ 1. ¹ø transform ¼öÇà ½Ã DECODE_OFFSET target »ı¼º°úÁ¤¿¡
- *      ÀÎÀÚ·Î »ç¿ë µÇÁö ¾ÊÀº columnµé À» expandÇÑ´Ù.
+ *   2. Targetì„ validationí•˜ê¸° ì „ ì¦‰ qmsValidateTarget í•¨ìˆ˜ê°€ í˜¸ì¶œë˜ê¸° ì „ì—
+ *      ìœ„ì˜ 1. ë²ˆ transform ìˆ˜í–‰ ì‹œ DECODE_OFFSET target ìƒì„±ê³¼ì •ì—
+ *      ì¸ìë¡œ ì‚¬ìš© ë˜ì§€ ì•Šì€ columnë“¤ ì„ expandí•œë‹¤.
  *
  * [ Unpivot transformation ]
  *
@@ -87,15 +87,15 @@ IDE_RC qmvUnpivotTransform::checkUnpivotSyntax( qmsUnpivot * aUnpivot )
 /***********************************************************************
  *
  * Description :
- *     Unpivot ±¸¹®¿¡ ´ëÇÑ validation °Ë»ç¸¦ ¼öÇàÇÑ´Ù.
+ *     Unpivot êµ¬ë¬¸ì— ëŒ€í•œ validation ê²€ì‚¬ë¥¼ ìˆ˜í–‰í•œë‹¤.
  *
- *     unpivot_value_column, unpivot_measure_column, unpivot_in_column, unpivot_in_alias ¿¡ Á¤ÀÇµÈ
- *     columnÀÇ °³¼ö´Â µ¿ÀÏÇØ¾ß ÇÑ´Ù.
+ *     unpivot_value_column, unpivot_measure_column, unpivot_in_column, unpivot_in_alias ì— ì •ì˜ëœ
+ *     columnì˜ ê°œìˆ˜ëŠ” ë™ì¼í•´ì•¼ í•œë‹¤.
  *
  * Implementation :
- *     1. Unpivot value columnÀÇ °³¼ö¸¦ ±¸ÇÑ´Ù.
- *     2. Unpivot measure columnÀÇ °³¼ö¸¦ ±¸ÇÏ°í, value columnsÀÇ °³¼ö¿Í ´Ù¸£¸é ¿¡·¯
- *     3. Unpivot_in_clauseÀÇ column°³¼ö¿Í alias °³¼ö¸¦ ±¸ÇÏ°í, value columnÀÇ °³¼ö¿Í ´Ù¸£¸é ¿¡·¯
+ *     1. Unpivot value columnì˜ ê°œìˆ˜ë¥¼ êµ¬í•œë‹¤.
+ *     2. Unpivot measure columnì˜ ê°œìˆ˜ë¥¼ êµ¬í•˜ê³ , value columnsì˜ ê°œìˆ˜ì™€ ë‹¤ë¥´ë©´ ì—ëŸ¬
+ *     3. Unpivot_in_clauseì˜ columnê°œìˆ˜ì™€ alias ê°œìˆ˜ë¥¼ êµ¬í•˜ê³ , value columnì˜ ê°œìˆ˜ì™€ ë‹¤ë¥´ë©´ ì—ëŸ¬
  *
  * Arguments :
  *
@@ -130,7 +130,7 @@ IDE_RC qmvUnpivotTransform::checkUnpivotSyntax( qmsUnpivot * aUnpivot )
         /* Nothing to do */
     }
 
-    /* Value_columnÀÇ count¿Í measure columnÀÇ count°¡ ´Ù¸£¸é ¾ÈµÈ´Ù. */
+    /* Value_columnì˜ countì™€ measure columnì˜ countê°€ ë‹¤ë¥´ë©´ ì•ˆëœë‹¤. */
     IDE_TEST_RAISE( sValueColumnCnt != sMeasureColumnCnt, ERR_INVALID_UNPIVOT_ARGUMENT );
 
     for ( sInColInfo  = aUnpivot->inColInfo;
@@ -144,7 +144,7 @@ IDE_RC qmvUnpivotTransform::checkUnpivotSyntax( qmsUnpivot * aUnpivot )
             /* Nothing to do */
         }
 
-        /* Value_columnÀÇ count¿Í in_clauseÀÇ column count°¡ ´Ù¸£¸é ¾ÈµÈ´Ù. */
+        /* Value_columnì˜ countì™€ in_clauseì˜ column countê°€ ë‹¤ë¥´ë©´ ì•ˆëœë‹¤. */
         IDE_TEST_RAISE( sValueColumnCnt != sInColumnCnt, ERR_INVALID_UNPIVOT_ARGUMENT );
 
         for ( sInAlias  = sInColInfo->inAlias, sInAliasCnt = 0;
@@ -154,7 +154,7 @@ IDE_RC qmvUnpivotTransform::checkUnpivotSyntax( qmsUnpivot * aUnpivot )
             /* Nothing to do */
         }
 
-        /* Value_columnÀÇ count¿Í in_clauseÀÇ alias count°¡ ´Ù¸£¸é ¾ÈµÈ´Ù. */
+        /* Value_columnì˜ countì™€ in_clauseì˜ alias countê°€ ë‹¤ë¥´ë©´ ì•ˆëœë‹¤. */
         IDE_TEST_RAISE( sValueColumnCnt != sInAliasCnt, ERR_INVALID_UNPIVOT_ARGUMENT );
     }
 
@@ -175,17 +175,17 @@ IDE_RC qmvUnpivotTransform::makeViewForUnpivot( qcStatement * aStatement,
 /***********************************************************************
  *
  * Description :
- *     Unpivot ´ë»ó table( ¶Ç´Â view )¿¡ ´ëÇØ¼­
- *     Parse tree¸¦ º¯°æÇÏ´Â TransformationÀ» ¼öÇàÇÑ´Ù.
+ *     Unpivot ëŒ€ìƒ table( ë˜ëŠ” view )ì— ëŒ€í•´ì„œ
+ *     Parse treeë¥¼ ë³€ê²½í•˜ëŠ” Transformationì„ ìˆ˜í–‰í•œë‹¤.
  *
  * Implementation :
- *     1. Transformed view statement¸¦ »ı¼º
- *     2. Transformed view parse tree »ı¼º
- *     3. Transformed view query set »ı¼º
- *     4. Transformed view SFWGH »ı¼º
- *     5. Transformed view from »ı¼º
- *     7. Original tableRefÀÇ table ( ¶Ç´Â view )¸¦ »ı¼º µÈ transformed view from¿¡ ¿¬°á
- *     8. Original tableRef¿¡ transformed view statement¸¦ in-line view·Î ¿¬°á
+ *     1. Transformed view statementë¥¼ ìƒì„±
+ *     2. Transformed view parse tree ìƒì„±
+ *     3. Transformed view query set ìƒì„±
+ *     4. Transformed view SFWGH ìƒì„±
+ *     5. Transformed view from ìƒì„±
+ *     7. Original tableRefì˜ table ( ë˜ëŠ” view )ë¥¼ ìƒì„± ëœ transformed view fromì— ì—°ê²°
+ *     8. Original tableRefì— transformed view statementë¥¼ in-line viewë¡œ ì—°ê²°
  *
  * Arguments :
  *
@@ -329,22 +329,22 @@ IDE_RC qmvUnpivotTransform::makeArgsForDecodeOffset( qcStatement         * aStat
 /***********************************************************************
  *
  * Description :
- *     Unpivot transfored viewÀÇ targetÀÎ DECODE_OFFSET ÇÔ¼öÀÇ ÀÎÀÚµéÀ» »ı¼ºÇÑ´Ù.
+ *     Unpivot transfored viewì˜ targetì¸ DECODE_OFFSET í•¨ìˆ˜ì˜ ì¸ìë“¤ì„ ìƒì„±í•œë‹¤.
  *
  * Implementation :
- *     1. LOOP_LEVEL pseudo column »ı¼º
- *     2. DECODE_OFFSET ÇÔ¼öÀÇ Ã¹ ¹ø Â° ÀÎÀÚ·Î LOOP_LEVEL pseudo columnÀ» µî·Ï
- *     3. unpivot_in_clauseÀÇ column ¶Ç´Â aliasÀÇ nodes¸¦
- *        DECODE_OFFSET ÇÔ¼öÀÇ search parameter·Î µî·Ï
- *     4. DECODE_OFFSET ÇÔ¼öÀÇ ÀÎÀÚ °³¼ö¸¦ flag¿¡ ¼¼ÆÃ
+ *     1. LOOP_LEVEL pseudo column ìƒì„±
+ *     2. DECODE_OFFSET í•¨ìˆ˜ì˜ ì²« ë²ˆ ì§¸ ì¸ìë¡œ LOOP_LEVEL pseudo columnì„ ë“±ë¡
+ *     3. unpivot_in_clauseì˜ column ë˜ëŠ” aliasì˜ nodesë¥¼
+ *        DECODE_OFFSET í•¨ìˆ˜ì˜ search parameterë¡œ ë“±ë¡
+ *     4. DECODE_OFFSET í•¨ìˆ˜ì˜ ì¸ì ê°œìˆ˜ë¥¼ flagì— ì„¸íŒ…
  *
  * Arguments :
- *     aIsValueColumn - ÀÌ ÇÔ¼ö´Â unpivot_value_column¿¡ ´ëÇØ ¼öÇà µÉ ¶§( ID_TRUE )´Â
- *                      unpivot_in_clauseÀÇ column nodes¸¦ DECODE_OFFSET ÇÔ¼öÀÇ search parameter·Î µî·ÏÇÏ°í,
- *                      unpivot_measure_column¿¡ ´ëÇØ ¼öÇà µÉ ¶§( ID_FALSE )´Â
- *                      unpivot_in_clauseÀÇ alias nodes¸¦ search parameter·Î µî·ÏÇÑ´Ù.
+ *     aIsValueColumn - ì´ í•¨ìˆ˜ëŠ” unpivot_value_columnì— ëŒ€í•´ ìˆ˜í–‰ ë  ë•Œ( ID_TRUE )ëŠ”
+ *                      unpivot_in_clauseì˜ column nodesë¥¼ DECODE_OFFSET í•¨ìˆ˜ì˜ search parameterë¡œ ë“±ë¡í•˜ê³ ,
+ *                      unpivot_measure_columnì— ëŒ€í•´ ìˆ˜í–‰ ë  ë•Œ( ID_FALSE )ëŠ”
+ *                      unpivot_in_clauseì˜ alias nodesë¥¼ search parameterë¡œ ë“±ë¡í•œë‹¤.
  * 
- *     aOrder - unpivotÀÌ multiple unpivotted columns¸¦ »ı¼º ÇÒ °æ¿ì
+ *     aOrder - unpivotì´ multiple unpivotted columnsë¥¼ ìƒì„± í•  ê²½ìš°
  *
  *             ex ) unpivot (    value1,   value2,   value3
  *                      for    measure1, measure2, measure3
@@ -354,10 +354,10 @@ IDE_RC qmvUnpivotTransform::makeArgsForDecodeOffset( qcStatement         * aStat
  *                         as (  alias4,   alias5,   alias6 )
  *                         ... ) )
  *
- *               value1¿¡ ´ëÇØ¼­ ¼öÇà µÉ¶§´Â column1, column 4
- *               measure2¿¡ ´ëÇØ¼­ ¼öÇà µÉ ¶§´Â alias2, alias5 °¡
- *               DECODE_OFFSETÀÇ search parameter·Î µî·ÏµÈ´Ù.
- *               ÀÚ½Å¿¡°Ô ÇØ´çÇÏ´Â ¼ø¹øÀÇ nodes¸¦ µî·ÏÇÏ±â À§ÇØ aOrder¸¦ Àü´Ş ¹Ş´Â´Ù.
+ *               value1ì— ëŒ€í•´ì„œ ìˆ˜í–‰ ë ë•ŒëŠ” column1, column 4
+ *               measure2ì— ëŒ€í•´ì„œ ìˆ˜í–‰ ë  ë•ŒëŠ” alias2, alias5 ê°€
+ *               DECODE_OFFSETì˜ search parameterë¡œ ë“±ë¡ëœë‹¤.
+ *               ìì‹ ì—ê²Œ í•´ë‹¹í•˜ëŠ” ìˆœë²ˆì˜ nodesë¥¼ ë“±ë¡í•˜ê¸° ìœ„í•´ aOrderë¥¼ ì „ë‹¬ ë°›ëŠ”ë‹¤.
  *
  **********************************************************************/
 
@@ -458,23 +458,23 @@ IDE_RC qmvUnpivotTransform::makeUnpivotTarget( qcStatement * aStatement,
 /***********************************************************************
  *
  * Description :
- *     Unpivot transfored viewÀÇ targetÀ¸·Î DECODE_OFFSET ÇÔ¼öµéÀ» »ı¼ºÇÑ´Ù.
- *     unpivot_value_column°ú unpivot_measure_column ÇÏ³ª´ç ÇÏ³ª¾¿
- *     DECODE_OFFSET ÇÔ¼ö°¡ »ı¼ºµÈ´Ù.
+ *     Unpivot transfored viewì˜ targetìœ¼ë¡œ DECODE_OFFSET í•¨ìˆ˜ë“¤ì„ ìƒì„±í•œë‹¤.
+ *     unpivot_value_columnê³¼ unpivot_measure_column í•˜ë‚˜ë‹¹ í•˜ë‚˜ì”©
+ *     DECODE_OFFSET í•¨ìˆ˜ê°€ ìƒì„±ëœë‹¤.
  *
  * Implementation :
- *     1. unpivot_measure_column¿¡ ´ëÇÑ targetÀ» »ı¼ºÇÑ´Ù.
- *        1-a. qmsTarget »ı¼º
- *        1-b. target expand½Ã Á¦¿ÜÇÒ °Í À» flag( QMS_TARGET_UNPIVOT_COLUMN_TRUE ) Ã³¸® 
- *        1-c. unpivot_measure_column¿¡ µî·ÏµÈ ÀÌ¸§À» »ı¼ºµÈ targetÀÇ alias·Î ÁöÁ¤
- *        1-d. DECODE_OFFSET functionÀ» »ı¼ºÇØ¼­ targetColumn¿¡ µî·Ï
- *        1-e. DECODE_OFFSET¿¡ ´ëÇÑ INTERMEDIATE tupleÀ» ÇÒ´ç
- *     2. unpivot_value_column¿¡ ´ëÇÑ targetÀ» »ı¼ºÇÑ´Ù.
- *        1-a. qmsTarget »ı¼º
- *        1-b. target expand½Ã Á¦¿ÜÇÒ °Í À» flag( QMS_TARGET_UNPIVOT_COLUMN_TRUE ) Ã³¸® 
- *        1-c. unpivot_value_column¿¡ µî·ÏµÈ ÀÌ¸§À» »ı¼ºµÈ targetÀÇ alias·Î ÁöÁ¤
- *        1-d. DECODE_OFFSET functionÀ» »ı¼ºÇØ¼­ targetColumn¿¡ µî·Ï
- *        1-e. DECODE_OFFSET¿¡ ´ëÇÑ INTERMEDIATE tupleÀ» ÇÒ´ç
+ *     1. unpivot_measure_columnì— ëŒ€í•œ targetì„ ìƒì„±í•œë‹¤.
+ *        1-a. qmsTarget ìƒì„±
+ *        1-b. target expandì‹œ ì œì™¸í•  ê²ƒ ì„ flag( QMS_TARGET_UNPIVOT_COLUMN_TRUE ) ì²˜ë¦¬ 
+ *        1-c. unpivot_measure_columnì— ë“±ë¡ëœ ì´ë¦„ì„ ìƒì„±ëœ targetì˜ aliasë¡œ ì§€ì •
+ *        1-d. DECODE_OFFSET functionì„ ìƒì„±í•´ì„œ targetColumnì— ë“±ë¡
+ *        1-e. DECODE_OFFSETì— ëŒ€í•œ INTERMEDIATE tupleì„ í• ë‹¹
+ *     2. unpivot_value_columnì— ëŒ€í•œ targetì„ ìƒì„±í•œë‹¤.
+ *        1-a. qmsTarget ìƒì„±
+ *        1-b. target expandì‹œ ì œì™¸í•  ê²ƒ ì„ flag( QMS_TARGET_UNPIVOT_COLUMN_TRUE ) ì²˜ë¦¬ 
+ *        1-c. unpivot_value_columnì— ë“±ë¡ëœ ì´ë¦„ì„ ìƒì„±ëœ targetì˜ aliasë¡œ ì§€ì •
+ *        1-d. DECODE_OFFSET functionì„ ìƒì„±í•´ì„œ targetColumnì— ë“±ë¡
+ *        1-e. DECODE_OFFSETì— ëŒ€í•œ INTERMEDIATE tupleì„ í• ë‹¹
  *
  * Arguments :
  *
@@ -652,12 +652,12 @@ IDE_RC qmvUnpivotTransform::makeLoopClause( qcStatement         * aStatement,
 /***********************************************************************
  *
  * Description :
- *     Unpivot transfored viewÀÇ parse tree¿¡ loop node¸¦ Ãß°¡ÇÑ´Ù.
+ *     Unpivot transfored viewì˜ parse treeì— loop nodeë¥¼ ì¶”ê°€í•œë‹¤.
  *
  * Implementation :
  *
  * Arguments :
- *     aInColInfo - unpivot_inÀÇ element°³¼ö
+ *     aInColInfo - unpivot_inì˜ elementê°œìˆ˜
  *
  **********************************************************************/
     qtcNode             * sLoopNode[2];
@@ -707,9 +707,9 @@ IDE_RC qmvUnpivotTransform::expandUnpivotTarget( qcStatement * aStatement,
 /***********************************************************************
  *
  * Description :
- *     Validate phaseÀÇ validateQmsTarget Á÷Àü¿¡ È£Ãâ µÇ¾î
- *     Unpivot clause¿¡ »ç¿ëµÇÁö ¾ÊÀº columnµéÀ» target¿¡ È®ÀåÇÑ´Ù.
- *     ÀÌ ¶§, ¾Õ ¼­ transformation ´Ü°è¿¡¼­ »ı¼ºµÈ DECODE_OFFSET targetº¸´Ù ¾Õ ÂÊ targetÀ¸·Î µî·ÏµÈ´Ù.
+ *     Validate phaseì˜ validateQmsTarget ì§ì „ì— í˜¸ì¶œ ë˜ì–´
+ *     Unpivot clauseì— ì‚¬ìš©ë˜ì§€ ì•Šì€ columnë“¤ì„ targetì— í™•ì¥í•œë‹¤.
+ *     ì´ ë•Œ, ì• ì„œ transformation ë‹¨ê³„ì—ì„œ ìƒì„±ëœ DECODE_OFFSET targetë³´ë‹¤ ì• ìª½ targetìœ¼ë¡œ ë“±ë¡ëœë‹¤.
  *     ex ) t1 := c1, c2, c3, c4, c5
  *
  *     select *
@@ -726,9 +726,9 @@ IDE_RC qmvUnpivotTransform::expandUnpivotTarget( qcStatement * aStatement,
  *            );
  *
  * Implementation :
- *     1. TableRefÀÇ columnCount¸¸Å­ ¹İº¹ÇÏ¸ç, tableInfo¿¡ ÀÖ´Â columnµéÀ» target¿¡ µî·ÏÇÑ´Ù.
- *        ÀÌ ¶§,  TableInfoÀÇ columnÁß¿¡ ¾Õ¼± transformation ´Ü°è¿¡¼­ DECODE_OFFSET ÇÔ¼öÀÇ ÀÎÀÚ·Î »ç¿ë µÈ
- *        columnµéÀº expandÇÏÁö ¾Ê´Â´Ù.
+ *     1. TableRefì˜ columnCountë§Œí¼ ë°˜ë³µí•˜ë©°, tableInfoì— ìˆëŠ” columnë“¤ì„ targetì— ë“±ë¡í•œë‹¤.
+ *        ì´ ë•Œ,  TableInfoì˜ columnì¤‘ì— ì•ì„  transformation ë‹¨ê³„ì—ì„œ DECODE_OFFSET í•¨ìˆ˜ì˜ ì¸ìë¡œ ì‚¬ìš© ëœ
+ *        columnë“¤ì€ expandí•˜ì§€ ì•ŠëŠ”ë‹¤.
  *
  * Arguments :
  *
@@ -767,7 +767,7 @@ IDE_RC qmvUnpivotTransform::expandUnpivotTarget( qcStatement * aStatement,
     {
         sIsFound = ID_FALSE;
 
-        /* ÇØ´ç columnÀ» unpivot transformed view target¿¡ »ç¿ë µÇ¾ú´ÂÁö È®ÀÎ */
+        /* í•´ë‹¹ columnì„ unpivot transformed view targetì— ì‚¬ìš© ë˜ì—ˆëŠ”ì§€ í™•ì¸ */
         for ( sUnpivotTarget  = sDecodeOffsetTarget;
               sUnpivotTarget != NULL;
               sUnpivotTarget  = sUnpivotTarget->next )
@@ -777,7 +777,7 @@ IDE_RC qmvUnpivotTransform::expandUnpivotTarget( qcStatement * aStatement,
             {
                 IDE_DASSERT( sUnpivotTarget->targetColumn->node.module == &mtfDecodeOffset );
 
-                /* DECODE_OFFSETÀÇ search parameterÀÎ 2¹ø Â° argumentºÎÅÍ Á¶»çÇÑ´Ù. */
+                /* DECODE_OFFSETì˜ search parameterì¸ 2ë²ˆ ì§¸ argumentë¶€í„° ì¡°ì‚¬í•œë‹¤. */
                 for ( sMtcNode  = sUnpivotTarget->targetColumn->node.arguments->next;
                       sMtcNode != NULL;
                       sMtcNode  = sMtcNode->next )
@@ -791,7 +791,7 @@ IDE_RC qmvUnpivotTransform::expandUnpivotTarget( qcStatement * aStatement,
                                           sName,
                                           sSize ) == 0 )
                     {
-                        /* Unpivot transformed view target¿¡ »ç¿ë µÈ columnÀÌ´Ù. */
+                        /* Unpivot transformed view targetì— ì‚¬ìš© ëœ columnì´ë‹¤. */
                         sIsFound = ID_TRUE;
                         break;
                     }
@@ -816,7 +816,7 @@ IDE_RC qmvUnpivotTransform::expandUnpivotTarget( qcStatement * aStatement,
             }
         }
 
-        /* Unpivot ¿¡ »ç¿ëµÈ columnÀº target expand¿¡¼­ Á¦¿ÜÇÑ´Ù. */
+        /* Unpivot ì— ì‚¬ìš©ëœ columnì€ target expandì—ì„œ ì œì™¸í•œë‹¤. */
         if ( sIsFound == ID_TRUE )
         {
             continue;
@@ -911,24 +911,24 @@ IDE_RC qmvUnpivotTransform::makeNotNullPredicate( qcStatement * aStatement,
 /***********************************************************************
  *
  * Description :
- *     Unpivot clause¿¡ EXCLUDE NULLS option(DEFAULT)ÀÌ »ç¿ë µÇ¾úÀ» °æ¿ì,
- *     Original query setÀÇ WHERE predicate¿¡
- *     value_columnÀÇ not null predicateµéÀ» Ãß°¡ ÇØ ÁØ´Ù.
+ *     Unpivot clauseì— EXCLUDE NULLS option(DEFAULT)ì´ ì‚¬ìš© ë˜ì—ˆì„ ê²½ìš°,
+ *     Original query setì˜ WHERE predicateì—
+ *     value_columnì˜ not null predicateë“¤ì„ ì¶”ê°€ í•´ ì¤€ë‹¤.
  *
- *     ( rownumÀÇ °æ¿ì COUNTER³ª STOPKEY operator·Î ´Ù¸¥ predicateÀÌÈÄ¿¡
- *       ¼öÇà µÇ±â ¶§¹®¿¡ Á¤»óÀûÀ¸·Î  µ¿ÀÛÇÑ´Ù. )
+ *     ( rownumì˜ ê²½ìš° COUNTERë‚˜ STOPKEY operatorë¡œ ë‹¤ë¥¸ predicateì´í›„ì—
+ *       ìˆ˜í–‰ ë˜ê¸° ë•Œë¬¸ì— ì •ìƒì ìœ¼ë¡œ  ë™ì‘í•œë‹¤. )
  *
  * Implementation :
- *     1. Unpivot_value_column À» º¹Á¦ÇÑ´Ù.
- *     2. Not null predicate node¸¦ »ı¼ºÇÑ´Ù.
- *     3. Not null predicate node¿¡ º¹Á¦ÇÑ unpivot_value_columnÀ» argument·Î µî·ÏÇÑ´Ù.
- *     4. ÀÌÀü¿¡ »ı¼ºµÈ not null predicate°¡ ÀÖÀ¸¸é Or node¸¦ »ı¼º ÇØ ¿¬°áÇÏ¿©
- *        Predicate tree¸¦ ±¸¼ºÇÑ´Ù.
- *     5. Not null predicate treeÀÇ ±¸¼ºÀÌ ³¡³ª°í, original query setÀÇ where¿¡
- *        ´Ù¸¥ predicateÀÌ ¾øÀ¸¸é, where¿¡ not null predicate tree¸¦ ¿¬°á ÇØ ÁÖ°í,
- *        ´Ù¸¥ predicateÀÌ ÀÖÀ¸¸é, And node¸¦ Ãß°¡·Î »ı¼ºÇØ
- *        Ãß°¡·Î »ı¼ºÇÑ not null predicate tree¿Í ±âÁ¸ predicateµéÀ» And·Î ¹­¾î
- *        Where¿¡ ±× And node¸¦ ¿¬°áÇÑ´Ù.
+ *     1. Unpivot_value_column ì„ ë³µì œí•œë‹¤.
+ *     2. Not null predicate nodeë¥¼ ìƒì„±í•œë‹¤.
+ *     3. Not null predicate nodeì— ë³µì œí•œ unpivot_value_columnì„ argumentë¡œ ë“±ë¡í•œë‹¤.
+ *     4. ì´ì „ì— ìƒì„±ëœ not null predicateê°€ ìˆìœ¼ë©´ Or nodeë¥¼ ìƒì„± í•´ ì—°ê²°í•˜ì—¬
+ *        Predicate treeë¥¼ êµ¬ì„±í•œë‹¤.
+ *     5. Not null predicate treeì˜ êµ¬ì„±ì´ ëë‚˜ê³ , original query setì˜ whereì—
+ *        ë‹¤ë¥¸ predicateì´ ì—†ìœ¼ë©´, whereì— not null predicate treeë¥¼ ì—°ê²° í•´ ì£¼ê³ ,
+ *        ë‹¤ë¥¸ predicateì´ ìˆìœ¼ë©´, And nodeë¥¼ ì¶”ê°€ë¡œ ìƒì„±í•´
+ *        ì¶”ê°€ë¡œ ìƒì„±í•œ not null predicate treeì™€ ê¸°ì¡´ predicateë“¤ì„ Andë¡œ ë¬¶ì–´
+ *        Whereì— ê·¸ And nodeë¥¼ ì—°ê²°í•œë‹¤.
  *
  * Arguments :
  *
@@ -968,7 +968,7 @@ IDE_RC qmvUnpivotTransform::makeNotNullPredicate( qcStatement * aStatement,
               sValueColumn  = sValueColumn->next )
         {
             // BUG-41878
-            // Unpivotted table¿¡ tuple variableÀÌ ÀÖÀ» °æ¿ì, ÇØ´ç tuple variableÀ» ÁöÁ¤ÇÏ¿© »ı¼ºÇÑ´Ù.
+            // Unpivotted tableì— tuple variableì´ ìˆì„ ê²½ìš°, í•´ë‹¹ tuple variableì„ ì§€ì •í•˜ì—¬ ìƒì„±í•œë‹¤.
             IDE_TEST( qtc::makeColumn( aStatement,
                                        sNode,
                                        NULL,
@@ -1018,13 +1018,13 @@ IDE_RC qmvUnpivotTransform::makeNotNullPredicate( qcStatement * aStatement,
 
         if ( aSFWGH->where == NULL )
         {
-            /* Original querySet¿¡ ´Ù¸¥ predicate°¡ ¾ø´Â °æ¿ì */
+            /* Original querySetì— ë‹¤ë¥¸ predicateê°€ ì—†ëŠ” ê²½ìš° */
             aSFWGH->where = sNotNullHead;
         }
         else
         {
-            /* Original querySet¿¡ ´Ù¸¥ predicate°¡ ÀÖ´Â °æ¿ì */
-            /* ´Ù¸¥ predicate¿Í À§¿¡¼­ »ı¼ºÇÑ not null predicateµéÀ» and·Î ¿¬°á ÇØ ÁØ´Ù. */
+            /* Original querySetì— ë‹¤ë¥¸ predicateê°€ ìˆëŠ” ê²½ìš° */
+            /* ë‹¤ë¥¸ predicateì™€ ìœ„ì—ì„œ ìƒì„±í•œ not null predicateë“¤ì„ andë¡œ ì—°ê²° í•´ ì¤€ë‹¤. */
             IDE_TEST(qtc::makeNode(aStatement,
                                    sAndNode,
                                    &sNullName,
@@ -1057,8 +1057,8 @@ IDE_RC qmvUnpivotTransform::doTransform( qcStatement * aStatement,
 /***********************************************************************
  *
  * Description :
- *     ÇÏ³ªÀÇ TableRef¿¡ °ü·ÃµÈ Unpivot ±¸¹®¿¡ ´ëÇØ TransformationÀ» ¼öÇàÇÑ´Ù.
- *     Validation PhaseÀÎ validateQmsTableRef¿¡¼­ È£Ãâ µÈ´Ù.
+ *     í•˜ë‚˜ì˜ TableRefì— ê´€ë ¨ëœ Unpivot êµ¬ë¬¸ì— ëŒ€í•´ Transformationì„ ìˆ˜í–‰í•œë‹¤.
+ *     Validation Phaseì¸ validateQmsTableRefì—ì„œ í˜¸ì¶œ ëœë‹¤.
  *
  * Implementation :
  *     1. Check unpivot syntax.

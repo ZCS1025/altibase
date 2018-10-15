@@ -41,29 +41,29 @@ public:
     static IDE_RC parseIt( qcStatement * aStatement );
 
     // PROJ-1988 merge query
-    // stmtText¿¡¼­ ÀÏºÎºĞÀ» parsing ÇÑ´Ù. subquery¸¦ parse tree¸¦
-    // º¹»çÇÏ´Âµ¥ »ç¿ëµÇ¸ç, lexer¿¡¼­ Ç×»ó Ã¹¹øÂ° tokenÀ¸·Î TR_RETURNÀ»
-    // ¹İÈ¯ÇÏ¿© get_condition_statement rule·Î parsingµÈ´Ù.
+    // stmtTextì—ì„œ ì¼ë¶€ë¶„ì„ parsing í•œë‹¤. subqueryë¥¼ parse treeë¥¼
+    // ë³µì‚¬í•˜ëŠ”ë° ì‚¬ìš©ë˜ë©°, lexerì—ì„œ í•­ìƒ ì²«ë²ˆì§¸ tokenìœ¼ë¡œ TR_RETURNì„
+    // ë°˜í™˜í•˜ì—¬ get_condition_statement ruleë¡œ parsingëœë‹¤.
     static IDE_RC parsePartialForSubquery( qcStatement * aStatement,
                                            SChar       * aText,
                                            SInt          aStart,
                                            SInt          aSize );
     
     // PROJ-2415 Grouping Sets Clause
-    // stmtText¿¡¼­ ÀÏºÎºĞÀ» parsing ÇÑ´Ù.
-    // Grouping SetsÀÇ Transform ½Ã querySet ÀÇ º¹Á¦¸¦ À§ÇØ »ç¿ëµÇ¸ç,
-    // lexer¿¡¼­ Ç×»ó Ã¹¹øÂ° tokenÀ¸·Î TR_MODIFY¸¦ ¹İÈ¯ÇÏ¿©
-    // get_queryset_statement rule·Î parsingµÈ´Ù. 
+    // stmtTextì—ì„œ ì¼ë¶€ë¶„ì„ parsing í•œë‹¤.
+    // Grouping Setsì˜ Transform ì‹œ querySet ì˜ ë³µì œë¥¼ ìœ„í•´ ì‚¬ìš©ë˜ë©°,
+    // lexerì—ì„œ í•­ìƒ ì²«ë²ˆì§¸ tokenìœ¼ë¡œ TR_MODIFYë¥¼ ë°˜í™˜í•˜ì—¬
+    // get_queryset_statement ruleë¡œ parsingëœë‹¤. 
     static IDE_RC parsePartialForQuerySet( qcStatement * aStatement,
                                            SChar       * aText,
                                            SInt          aStart,
                                            SInt          aSize );
 
     // PROJ-2415 Grouping Sets Clause
-    // stmtText¿¡¼­ ÀÏºÎºĞÀ» parsing ÇÑ´Ù.
-    // Grouping SetsÀÇ Transform½Ã OrderByÀÇ Node¸¦ Target Node·Î º¯È¯ ÇÏ´Âµ¥ »ç¿ëµÇ¸ç,
-    // lexer¿¡¼­ Ç×»ó Ã¹¹øÂ° tokenÀ¸·Î TR_BACKUP¸¦ ¹İÈ¯ÇÏ¿©
-    // get_target_list_statement rule·Î parsingµÈ´Ù.     
+    // stmtTextì—ì„œ ì¼ë¶€ë¶„ì„ parsing í•œë‹¤.
+    // Grouping Setsì˜ Transformì‹œ OrderByì˜ Nodeë¥¼ Target Nodeë¡œ ë³€í™˜ í•˜ëŠ”ë° ì‚¬ìš©ë˜ë©°,
+    // lexerì—ì„œ í•­ìƒ ì²«ë²ˆì§¸ tokenìœ¼ë¡œ TR_BACKUPë¥¼ ë°˜í™˜í•˜ì—¬
+    // get_target_list_statement ruleë¡œ parsingëœë‹¤.     
     static IDE_RC parsePartialForOrderBy( qcStatement * aStatement,
                                           SChar       * aText,
                                           SInt          aStart,

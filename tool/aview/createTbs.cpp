@@ -73,7 +73,7 @@ int dbConnect9(AnsiString DSN)
 		ShowMessage("Already Connected !!");
 		return 0;    
 	}
-	// ¿¬°áÀ» À§ÇÑ ¸Þ¸ð¸® ÇÒ´ç.
+	// ì—°ê²°ì„ ìœ„í•œ ë©”ëª¨ë¦¬ í• ë‹¹.
 	if (SQLAllocEnv(&env9) != SQL_SUCCESS)
 	{
 		ShowMessage("SQLAllocEnv Fail");
@@ -87,7 +87,7 @@ int dbConnect9(AnsiString DSN)
 		return 0;
 	}
 
-	// Á¢¼ÓÁ¤º¸¸¦ °¡Á®¿É´Ï´ç..
+	// ì ‘ì†ì •ë³´ë¥¼ ê°€ì ¸ì˜µë‹ˆë‹¹..
 	if (!Form5->getDsnInfo(DSN, "User",     USER))
 	{
 		ShowMessage("Can't Get User");
@@ -99,7 +99,7 @@ int dbConnect9(AnsiString DSN)
 		return 0;
 	}
 
-	// ÁøÂ¥ ¿¬°áÇØº¾´Ï´Ù.
+	// ì§„ì§œ ì—°ê²°í•´ë´…ë‹ˆë‹¤.
 	if (SQLConnect(dbc9, DSN.c_str(), SQL_NTS, USER, SQL_NTS, PASSWD, SQL_NTS) != SQL_SUCCESS)
 	{
 		dbErrMsg9(env9, dbc9, SQL_NULL_HSTMT);
@@ -166,8 +166,8 @@ void __fastcall TForm9::Button1Click(TObject *Sender)
 		return ;
 	}
 
-	// datafileÀÌ ¿©·¯°³ÀÏ¼öµµ ÀÖ°í
-	// autoextend on/off¿¡ µû¶ó¼­´Â nextsize, maxsize°¡ ÇÊ¿ä¾ø±â ¶§¹®¿¡ .
+	// datafileì´ ì—¬ëŸ¬ê°œì¼ìˆ˜ë„ ìžˆê³ 
+	// autoextend on/offì— ë”°ë¼ì„œëŠ” nextsize, maxsizeê°€ í•„ìš”ì—†ê¸° ë•Œë¬¸ì— .
 	if (ListBox1->Items->Count == 0 ) {
 		sprintf(query, "create tablespace %s datafile '%s' size %sM autoextend %s ",
 					SPACENAME->Text.c_str(),
@@ -175,7 +175,7 @@ void __fastcall TForm9::Button1Click(TObject *Sender)
 					INITSIZE->Text.c_str(),
 					ONOFF );
 
-		 // autoextend ¿©ºÎ¿¡ µû¶ó.
+		 // autoextend ì—¬ë¶€ì— ë”°ë¼.
 		 sprintf(temp, " NEXT %sK MAXSIZE %sM ",
 					EXTENDSIZE->Text.c_str(),
 					MAXSIZE->Text.c_str());

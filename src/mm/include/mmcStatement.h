@@ -85,7 +85,7 @@ typedef struct mmcStatementInfo
     /* PROJ-2177 User Interface - Cancel */
 
     mmcStmtCID           mStmtCID;     /**< Client side Statement ID */
-    idBool               mIsExecuting; /**< Execute ¸í·ÉÀ» ¼öÇàÁßÀÎÁö ¿©ºÎ. ExecuteFlag¿Í´Â ³ªÅ¸³»´Â¹Ù°¡ ´Ù¸£¹Ç·Î »õ º¯¼ö·Î »ç¿ë */
+    idBool               mIsExecuting; /**< Execute ëª…ë ¹ì„ ìˆ˜í–‰ì¤‘ì¸ì§€ ì—¬ë¶€. ExecuteFlagì™€ëŠ” ë‚˜íƒ€ë‚´ëŠ”ë°”ê°€ ë‹¤ë¥´ë¯€ë¡œ ìƒˆ ë³€ìˆ˜ë¡œ ì‚¬ìš© */
 
     /* PROJ-1381 Fetech Across Commits */
 
@@ -111,7 +111,7 @@ typedef struct mmcGetSmiStmt4PrepareContext
 
 typedef struct mmcAtomicInfo
 {
-    idBool                mAtomicExecuteSuccess; // ¼öÇàÁß ½ÇÆĞ½Ã FALSE
+    idBool                mAtomicExecuteSuccess; // ìˆ˜í–‰ì¤‘ ì‹¤íŒ¨ì‹œ FALSE
     // BUG-21489
     UInt                  mAtomicLastErrorCode;
     SChar                 mAtomicErrorMsg[MAX_ERROR_MSG_LEN+256];
@@ -148,7 +148,7 @@ private:
     idBool            mPlanPrinted;
 
     // BUG-17544
-    idBool            mSendBindColumnInfo; // Prepare ÈÄ ÄÃ·³ Á¤º¸ Àü´Ş ¿©ºÎ ÇÃ·¡±×
+    idBool            mSendBindColumnInfo; // Prepare í›„ ì»¬ëŸ¼ ì •ë³´ ì „ë‹¬ ì—¬ë¶€ í”Œë˜ê·¸
 
     /* BUG-38472 Query timeout applies to one statement. */
     idBool            mTimeoutEventOccured;
@@ -197,14 +197,14 @@ public:
     idBool isSimpleQuerySelectExecuted(){return mIsSimpleQuerySelectExecuted;}
 
     /*
-     * Execute°úÁ¤
+     * Executeê³¼ì •
      *
      * beginStmt -> execute -> [ beginFetch -> endFetch ] -> clearStmt -> endStmt
      */
 
     IDE_RC beginStmt();
     // fix BUG-30990
-    // clearStmt()ÀÇ »óÅÂ¸¦ ¸íÈ®ÇÏ°Ô ÇÑ´Ù.
+    // clearStmt()ì˜ ìƒíƒœë¥¼ ëª…í™•í•˜ê²Œ í•œë‹¤.
     IDE_RC clearStmt(mmcStmtBindState aBindState);
     IDE_RC endStmt(mmcExecutionFlag aExecutionFlag);
 
@@ -294,7 +294,7 @@ public:
 
     iduList          *getChildStmtList();
 
-    // bug-23991: prepared ÈÄ execute ¸¶´Ù PVO time °ªÀÌ ±×´ë·Î ³²À½
+    // bug-23991: prepared í›„ execute ë§ˆë‹¤ PVO time ê°’ì´ ê·¸ëŒ€ë¡œ ë‚¨ìŒ
     IDE_RC            clearStatisticsTime();
     idBool            getPreparedTimeExist();
     void              setPreparedTimeExist(idBool aPreparedTimeExist);
@@ -386,12 +386,12 @@ public:
     IDE_RC initializeResultSet(UShort aResultSetCount);
    
     void                applyOpTimeToSession();
-    //fix BUG-24364 valgrind direct executeÀ¸·Î ¼öÇà½ÃÅ² statementÀÇ  plan cacheÁ¤º¸¸¦ reset½ÃÄÑ¾ßÇÔ.
+    //fix BUG-24364 valgrind direct executeìœ¼ë¡œ ìˆ˜í–‰ì‹œí‚¨ statementì˜  plan cacheì •ë³´ë¥¼ resetì‹œì¼œì•¼í•¨.
     inline void         releasePlanCacheObject();
 
     /*
-     * [BUG-24187] RollbackµÉ statement´Â Internal CloseCurosr¸¦
-     * ¼öÇàÇÒ ÇÊ¿ä°¡ ¾ø½À´Ï´Ù.
+     * [BUG-24187] Rollbackë  statementëŠ” Internal CloseCurosrë¥¼
+     * ìˆ˜í–‰í•  í•„ìš”ê°€ ì—†ìŠµë‹ˆë‹¤.
      */
     void                setSkipCursorClose();
     
@@ -595,7 +595,7 @@ inline void mmcStatement::setAtomicLastErrorCode(UInt aErrorCode)
 {
     SChar * sErrorMsg = NULL;
 
-    // 1°³ÀÇ ¿¡·¯ ÄÚµå¸¸ ÀúÀåÇÏµµ·Ï ÇÑ´Ù.
+    // 1ê°œì˜ ì—ëŸ¬ ì½”ë“œë§Œ ì €ì¥í•˜ë„ë¡ í•œë‹¤.
     if(mAtomicInfo.mAtomicLastErrorCode == idERR_IGNORE_NoError)
     {
         mAtomicInfo.mAtomicLastErrorCode = aErrorCode;
@@ -895,7 +895,7 @@ inline iduList* mmcStatement::getChildStmtList()
     return &mChildStmtList;
 }
 
-// bug-23991: prepared ÈÄ execute ¸¶´Ù PVO time °ªÀÌ ±×´ë·Î ³²À½
+// bug-23991: prepared í›„ execute ë§ˆë‹¤ PVO time ê°’ì´ ê·¸ëŒ€ë¡œ ë‚¨ìŒ
 inline idBool mmcStatement::getPreparedTimeExist()
 {
     return mInfo.mPreparedTimeExist;
@@ -906,7 +906,7 @@ inline void mmcStatement::setPreparedTimeExist(idBool aPreparedTimeExist)
     mInfo.mPreparedTimeExist = aPreparedTimeExist;
 }
 
-//fix BUG-24364 valgrind direct executeÀ¸·Î ¼öÇà½ÃÅ² statementÀÇ  plan cacheÁ¤º¸¸¦ reset½ÃÄÑ¾ßÇÔ.
+//fix BUG-24364 valgrind direct executeìœ¼ë¡œ ìˆ˜í–‰ì‹œí‚¨ statementì˜  plan cacheì •ë³´ë¥¼ resetì‹œì¼œì•¼í•¨.
 inline void mmcStatement::releasePlanCacheObject()
 {
     mInfo.mSQLPlanCacheTextIdStr = (SChar*)(mmcStatement::mNoneSQLCacheTextID);
@@ -916,8 +916,8 @@ inline void mmcStatement::releasePlanCacheObject()
 }
 
 /*
- * [BUG-24187] RollbackµÉ statement´Â Internal CloseCurosr¸¦
- * ¼öÇàÇÒ ÇÊ¿ä°¡ ¾ø½À´Ï´Ù.
+ * [BUG-24187] Rollbackë  statementëŠ” Internal CloseCurosrë¥¼
+ * ìˆ˜í–‰í•  í•„ìš”ê°€ ì—†ìŠµë‹ˆë‹¤.
  */
 inline void mmcStatement::setSkipCursorClose()
 {
@@ -999,9 +999,9 @@ inline IDE_RC mmcStatement::freeBaseRow( mmcBaseRow *aBaseRow )
 /* PROJ-2177 User Interface - Cancel */
 
 /**
- * EXECUTE ÁßÀÎÁö ¿©ºÎ¸¦ È®ÀÎÇÑ´Ù.
+ * EXECUTE ì¤‘ì¸ì§€ ì—¬ë¶€ë¥¼ í™•ì¸í•œë‹¤.
  *
- * @return EXECUTE ÁßÀÌ¸é ID_TRUE, ¾Æ´Ï¸é ID_FALSE
+ * @return EXECUTE ì¤‘ì´ë©´ ID_TRUE, ì•„ë‹ˆë©´ ID_FALSE
  */
 inline idBool mmcStatement::isExecuting()
 {
@@ -1009,9 +1009,9 @@ inline idBool mmcStatement::isExecuting()
 }
 
 /**
- * EXECUTE ÁßÀÎÁö ¿©ºÎ¸¦ ¼³Á¤ÇÑ´Ù.
+ * EXECUTE ì¤‘ì¸ì§€ ì—¬ë¶€ë¥¼ ì„¤ì •í•œë‹¤.
  *
- * @param aExecuting EXECUTE ÁßÀÎÁö ¿©ºÎ
+ * @param aExecuting EXECUTE ì¤‘ì¸ì§€ ì—¬ë¶€
  */
 inline void mmcStatement::setExecuting(idBool aIsExecuting)
 {
@@ -1019,9 +1019,9 @@ inline void mmcStatement::setExecuting(idBool aIsExecuting)
 }
 
 /**
- * StmtCID¸¦ ¾ò´Â´Ù.
+ * StmtCIDë¥¼ ì–»ëŠ”ë‹¤.
  *
- * @return StmtCID. ¼³Á¤µÈ °ªÀÌ ¾øÀ¸¸é MMC_STMT_CID_NONE
+ * @return StmtCID. ì„¤ì •ëœ ê°’ì´ ì—†ìœ¼ë©´ MMC_STMT_CID_NONE
  */
 inline mmcStmtCID mmcStatement::getStmtCID()
 {
@@ -1029,7 +1029,7 @@ inline mmcStmtCID mmcStatement::getStmtCID()
 }
 
 /**
- * StmtCID¸¦ ¼³Á¤ÇÑ´Ù.
+ * StmtCIDë¥¼ ì„¤ì •í•œë‹¤.
  *
  * @param aStmtCID StmtCID
  */
@@ -1041,7 +1041,7 @@ inline void mmcStatement::setStmtCID(mmcStmtCID aStmtCID)
 /* PROJ-1381 Fetch Across Commits */
 
 /**
- * Cursor holdability¸¦ ¼³Á¤ÇÑ´Ù.
+ * Cursor holdabilityë¥¼ ì„¤ì •í•œë‹¤.
  *
  * @param aCursorHold[IN] Cursor holdability
  */
@@ -1051,7 +1051,7 @@ inline void mmcStatement::setCursorHold(mmcStmtCursorHold aCursorHold)
 }
 
 /**
- * Cursor holdability ¼³Á¤À» ¾ò´Â´Ù.
+ * Cursor holdability ì„¤ì •ì„ ì–»ëŠ”ë‹¤.
  *
  * @return Cursor holdability. MMC_STMT_CURSOR_HOLD_ON or MMC_STMT_CURSOR_HOLD_OFF
  */
@@ -1063,7 +1063,7 @@ inline mmcStmtCursorHold mmcStatement::getCursorHold(void)
 /* PROJ-1789 Updatalbe Scrollable Cursor */
 
 /**
- * Keyset mode ¼³Á¤À» ¾ò´Â´Ù.
+ * Keyset mode ì„¤ì •ì„ ì–»ëŠ”ë‹¤.
  *
  * @return Keyset mode
  */
@@ -1073,7 +1073,7 @@ inline mmcStmtKeysetMode mmcStatement::getKeysetMode(void)
 }
 
 /**
- * Keyset mode¸¦ ¼³Á¤ÇÑ´Ù.
+ * Keyset modeë¥¼ ì„¤ì •í•œë‹¤.
  *
  * @param[in] aKeysetMode Keyset mode
  */
@@ -1083,7 +1083,7 @@ inline void mmcStatement::setKeysetMode(mmcStmtKeysetMode aKeysetMode)
 }
 
 /**
- * SimpleQuery »óÅÂ¸¦ ¼³Á¤ÇÑ´Ù. ÀÌ °ªÀº qci¿¡¼­ ¹Ş´Â´Ù.
+ * SimpleQuery ìƒíƒœë¥¼ ì„¤ì •í•œë‹¤. ì´ ê°’ì€ qciì—ì„œ ë°›ëŠ”ë‹¤.
  *
  * @param[in] aIsSimpleQuery  : state of SimpleQuery
  */
@@ -1093,7 +1093,7 @@ inline void mmcStatement::setSimpleQuery(idBool aIsSimpleQuery)
 }
 
 /**
- * SimpleQuery »óÅÂ¸¦ °¡Á®¿Â´Ù.
+ * SimpleQuery ìƒíƒœë¥¼ ê°€ì ¸ì˜¨ë‹¤.
  *
  * @return mIsSimpleQuery
  */
@@ -1103,9 +1103,9 @@ inline idBool mmcStatement::isSimpleQuery()
 }
 
 /**
- * FetchEnd ¶§ Ä¿¼­¸¦ ´İ¾Æµµ µÇ´ÂÁö ¿©ºÎ¸¦ ¾ò´Â´Ù.
+ * FetchEnd ë•Œ ì»¤ì„œë¥¼ ë‹«ì•„ë„ ë˜ëŠ”ì§€ ì—¬ë¶€ë¥¼ ì–»ëŠ”ë‹¤.
  *
- * @return FetchEnd ¶§ Ä¿¼­¸¦ ´İ¾Æµµ µÇ´ÂÁö ¿©ºÎ
+ * @return FetchEnd ë•Œ ì»¤ì„œë¥¼ ë‹«ì•„ë„ ë˜ëŠ”ì§€ ì—¬ë¶€
  */
 inline idBool mmcStatement::isClosableWhenFetchEnd(void)
 {

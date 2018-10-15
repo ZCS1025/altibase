@@ -43,7 +43,7 @@ static IDE_RC mtfOct_To_NumEstimate( mtcNode*     aNode,
 mtfModule mtfOct_To_Num = {
     1|MTC_NODE_OPERATOR_FUNCTION,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
+    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìžê°€ ì•„ë‹˜)
     mtfOct_To_NumFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -135,8 +135,8 @@ IDE_RC mtfOct_To_NumCalculate( mtcNode*     aNode,
  * Implementation :
  *    OCT_TO_NUM ( char )
  *
- *    aStack[0] : ÁÖ¾îÁø 8Áø¼ö ÇüÅÂÀÇ char¸¦ 10Áø¼ö·Î º¯È¯ÇÑ °ª
- *    aStack[1] : char (¹®ÀÚ´Â 11°³±îÁö ¿Ã ¼ö ÀÖ´Ù.) 
+ *    aStack[0] : ì£¼ì–´ì§„ 8ì§„ìˆ˜ í˜•íƒœì˜ charë¥¼ 10ì§„ìˆ˜ë¡œ ë³€í™˜í•œ ê°’
+ *    aStack[1] : char (ë¬¸ìžëŠ” 11ê°œê¹Œì§€ ì˜¬ ìˆ˜ ìžˆë‹¤.) 
  *
  *    ex) OCT_TO_NUM ('7604') ==> 32644
  *
@@ -188,7 +188,7 @@ IDE_RC mtfOct_To_NumCalculate( mtcNode*     aNode,
                 IDE_RAISE ( ERR_INVALID_LITERAL );
             }
 
-            // 32bit¸¦ ÃÊ°úÇÏ´Â 33¹øÂ° ºñÆ®´Â ¹ö¸°´Ù.
+            // 32bitë¥¼ ì´ˆê³¼í•˜ëŠ” 33ë²ˆì§¸ ë¹„íŠ¸ëŠ” ë²„ë¦°ë‹¤.
             if ( sIndex == 10 )
             {
                 sCnt += 4;

@@ -48,7 +48,7 @@ static IDE_RC mtfGroupConcatEstimate( mtcNode     * aNode,
 mtfModule mtfGroupConcat = {
     2 | MTC_NODE_OPERATOR_AGGREGATION | MTC_NODE_FUNCTION_WINDOWING_TRUE,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
+    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìžê°€ ì•„ë‹˜)
     mtfGroupConcatFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -240,7 +240,7 @@ IDE_RC mtfGroupConcatAggregate( mtcNode     * aNode,
         if ( *sIsFirst == MTD_BOOLEAN_NULL )
         {
             // BUG-38046
-            // max precisionÀ» ³ÑÀº °æ¿ì ´õÀÌ»ó ¼öÇàÇÏÁö ¾Ê´Â´Ù.
+            // max precisionì„ ë„˜ì€ ê²½ìš° ë”ì´ìƒ ìˆ˜í–‰í•˜ì§€ ì•ŠëŠ”ë‹¤.
             
             // Nothing to do.
         }
@@ -253,7 +253,7 @@ IDE_RC mtfGroupConcatAggregate( mtcNode     * aNode,
             else
             {
                 //-----------------------------------------
-                // µÎ¹øÂ° ÀÎÀÚ °è»ê (seperator)
+                // ë‘ë²ˆì§¸ ì¸ìž ê³„ì‚° (seperator)
                 //-----------------------------------------
                 sNode = sNode->next;
                 if ( sNode != NULL )

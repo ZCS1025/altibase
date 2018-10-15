@@ -23,7 +23,7 @@ static iduMemPool *gCmtVariablePiecePool = NULL;
 IDE_RC cmtVariableInitializeStatic()
 {
     /*
-     * Pool ¸Þ¸ð¸® ÇÒ´ç
+     * Pool ë©”ëª¨ë¦¬ í• ë‹¹
      */
     IDU_FIT_POINT("cmtVariable::cmtVariableInitializeStatic::malloc::CmtVariablePiecePool");
     IDE_TEST(iduMemMgr::malloc(IDU_MEM_CMT,
@@ -32,7 +32,7 @@ IDE_RC cmtVariableInitializeStatic()
                                IDU_MEM_IMMEDIATE) != IDE_SUCCESS);
 
     /*
-     * Pool ÃÊ±âÈ­
+     * Pool ì´ˆê¸°í™”
      */
     gCmtVariablePiecePool = new (gCmtVariablePiecePool) iduMemPool();
 
@@ -58,12 +58,12 @@ IDE_RC cmtVariableInitializeStatic()
 IDE_RC cmtVariableFinalizeStatic()
 {
     /*
-     * Pool »èÁ¦
+     * Pool ì‚­ì œ
      */
     IDE_TEST(gCmtVariablePiecePool->destroy() != IDE_SUCCESS);
 
     /*
-     * Pool ¸Þ¸ð¸® ÇØÁ¦
+     * Pool ë©”ëª¨ë¦¬ í•´ì œ
      */
     IDE_TEST(iduMemMgr::free(gCmtVariablePiecePool) != IDE_SUCCESS);
 
@@ -76,7 +76,7 @@ IDE_RC cmtVariableFinalizeStatic()
 IDE_RC cmtVariableInitialize(cmtVariable *aVariable)
 {
     /*
-     * ¸â¹ö ÃÊ±âÈ­
+     * ë©¤ë²„ ì´ˆê¸°í™”
      */
     aVariable->mTotalSize   = 0;
     aVariable->mCurrentSize = 0;
@@ -94,14 +94,14 @@ IDE_RC cmtVariableFinalize(cmtVariable *aVariable)
     iduListNode      *sNodeNext;
 
     /*
-     * Piece ListÀÇ PieceµéÀ» Free
+     * Piece Listì˜ Pieceë“¤ì„ Free
      */
     IDU_LIST_ITERATE_SAFE(&aVariable->mPieceList, sIterator, sNodeNext)
     {
         sPiece = (cmtVariablePiece *)sIterator->mObj;
 
         /*
-         * ±âº» Piece´Â Free ÇÒ ¼ö ¾øÀ½
+         * ê¸°ë³¸ PieceëŠ” Free í•  ìˆ˜ ì—†ìŒ
          */
         if (sPiece != &aVariable->mPiece)
         {
@@ -110,7 +110,7 @@ IDE_RC cmtVariableFinalize(cmtVariable *aVariable)
     }
 
     /*
-     * ÃÊ±âÈ­
+     * ì´ˆê¸°í™”
      */
     IDE_TEST(cmtVariableInitialize(aVariable) != IDE_SUCCESS);
 
@@ -130,17 +130,17 @@ IDE_RC cmtVariableGetData(cmtVariable *aVariable, UChar *aBuffer, UInt aBufferSi
     cmtVariablePiece *sPiece;
 
     /*
-     * Variable Data°¡ ¸ðµÎ Ã¤¿öÁ®ÀÖ´ÂÁö °Ë»ç
+     * Variable Dataê°€ ëª¨ë‘ ì±„ì›Œì ¸ìžˆëŠ”ì§€ ê²€ì‚¬
      */
     IDE_TEST_RAISE(aVariable->mTotalSize != aVariable->mCurrentSize, IncompleteVariable);
 
     /*
-     * º¹»çÇÒ ±æÀÌ °è»ê
+     * ë³µì‚¬í•  ê¸¸ì´ ê³„ì‚°
      */
     aBufferSize = IDL_MIN(aBufferSize, aVariable->mTotalSize);
 
     /*
-     * Piece List¸¦ ¹æ¹®ÇÏ¿© Data º¹»ç
+     * Piece Listë¥¼ ë°©ë¬¸í•˜ì—¬ Data ë³µì‚¬
      */
     IDU_LIST_ITERATE(&aVariable->mPieceList, sIterator)
     {
@@ -173,12 +173,12 @@ IDE_RC cmtVariableGetDataWithCallback(cmtVariable                *aVariable,
     cmtVariablePiece *sPiece;
 
     /*
-     * Variable Data°¡ ¸ðµÎ Ã¤¿öÁ®ÀÖ´ÂÁö °Ë»ç
+     * Variable Dataê°€ ëª¨ë‘ ì±„ì›Œì ¸ìžˆëŠ”ì§€ ê²€ì‚¬
      */
     IDE_TEST_RAISE(aVariable->mTotalSize != aVariable->mCurrentSize, IncompleteVariable);
 
     /*
-     * Piece List¸¦ ¹æ¹®ÇÏ¸ç GetDataCallback È£Ãâ
+     * Piece Listë¥¼ ë°©ë¬¸í•˜ë©° GetDataCallback í˜¸ì¶œ
      */
     IDU_LIST_ITERATE(&aVariable->mPieceList, sIterator)
     {
@@ -205,19 +205,19 @@ IDE_RC cmtVariableGetDataWithCallback(cmtVariable                *aVariable,
 IDE_RC cmtVariableSetData(cmtVariable *aVariable, UChar *aBuffer, UInt aBufferSize)
 {
     /*
-     * ºó VariableÀÎÁö °Ë»ç
+     * ë¹ˆ Variableì¸ì§€ ê²€ì‚¬
      */
     IDE_TEST_RAISE(aVariable->mPieceCount > 0, VariableNotEmpty);
 
     /*
-     * ¸â¹ö ¼¼ÆÃ
+     * ë©¤ë²„ ì„¸íŒ…
      */
     aVariable->mTotalSize     = aBufferSize;
     aVariable->mCurrentSize   = aBufferSize;
     aVariable->mPieceCount    = 1;
 
     /*
-     * ±âº» Piece ¼¼ÆÃ
+     * ê¸°ë³¸ Piece ì„¸íŒ…
      */
     aVariable->mPiece.mOffset = 0;
     aVariable->mPiece.mSize   = aBufferSize;
@@ -226,7 +226,7 @@ IDE_RC cmtVariableSetData(cmtVariable *aVariable, UChar *aBuffer, UInt aBufferSi
     IDU_LIST_INIT_OBJ(&aVariable->mPiece.mPieceListNode, &aVariable->mPiece);
 
     /*
-     * Piece Ãß°¡
+     * Piece ì¶”ê°€
      */
     IDU_LIST_ADD_LAST(&aVariable->mPieceList, &aVariable->mPiece.mPieceListNode);
 
@@ -248,7 +248,7 @@ IDE_RC cmtVariableSetVarString(cmtVariable *aVariable, iduVarString *aString)
     UInt               sOffset = 0;
 
     /*
-     * ºó VariableÀÎÁö °Ë»ç
+     * ë¹ˆ Variableì¸ì§€ ê²€ì‚¬
      */
     IDE_TEST_RAISE(aVariable->mPieceCount > 0, VariableNotEmpty);
 
@@ -293,18 +293,18 @@ IDE_RC cmtVariableAddPiece(cmtVariable *aVariable, UInt aOffset, UInt aSize, UCh
     cmtVariablePiece *sPiece;
 
     /*
-     * Piece Offset °Ë»ç
+     * Piece Offset ê²€ì‚¬
      */
     IDE_TEST_RAISE(aVariable->mCurrentSize != aOffset, VariablePieceRangeMismatch);
 
     /*
-     * Size °»½Å
+     * Size ê°±ì‹ 
      */
     aVariable->mCurrentSize += aSize;
     aVariable->mTotalSize    = aVariable->mCurrentSize;
 
     /*
-     * Piece°¡ ÇÏ³ªµµ ¾ø´Â »óÅÂÀÌ¸é ±âº» Piece ÀÌ¿ë, ±×·¸Áö ¾ÊÀ¸¸é Pool·ÎºÎÅÍ ÇÒ´ç
+     * Pieceê°€ í•˜ë‚˜ë„ ì—†ëŠ” ìƒíƒœì´ë©´ ê¸°ë³¸ Piece ì´ìš©, ê·¸ë ‡ì§€ ì•Šìœ¼ë©´ Poolë¡œë¶€í„° í• ë‹¹
      */
     if (aVariable->mPieceCount == 0)
     {
@@ -317,7 +317,7 @@ IDE_RC cmtVariableAddPiece(cmtVariable *aVariable, UInt aOffset, UInt aSize, UCh
     }
 
     /*
-     * Piece ¼¼ÆÃ
+     * Piece ì„¸íŒ…
      */
     sPiece->mOffset = aOffset;
     sPiece->mSize   = aSize;
@@ -326,7 +326,7 @@ IDE_RC cmtVariableAddPiece(cmtVariable *aVariable, UInt aOffset, UInt aSize, UCh
     IDU_LIST_INIT_OBJ(&sPiece->mPieceListNode, sPiece);
 
     /*
-     * Piece Ãß°¡
+     * Piece ì¶”ê°€
      */
     aVariable->mPieceCount++;
 
@@ -398,7 +398,7 @@ IDE_RC cmtVariableCopy(cmtVariable *aVariable, UChar *aBuffer, UInt aOffset, UIn
 UChar *cmtVariableGetPieceData(cmtVariable *aVariable)
 {
     /*
-     * Piece°¡ 1ÀÎ °æ¿ì¿¡¸¸ Data Æ÷ÀÎÅÍ¸¦ ¸®ÅÏ
+     * Pieceê°€ 1ì¸ ê²½ìš°ì—ë§Œ Data í¬ì¸í„°ë¥¼ ë¦¬í„´
      */
     if (aVariable->mPieceCount == 1)
     {

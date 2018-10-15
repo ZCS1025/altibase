@@ -36,10 +36,10 @@
 // BUG-22162
 #define ISQL_INDEX_MAX_COUNT    (64)
 
-/* PROJ-1107 Check Constraint Áö¿ø */
+/* PROJ-1107 Check Constraint ì§€ì› */
 #define UT_MAX_CHECK_CONDITION_LEN  (4000)
 
-/* FLOAT_SIZE´Â 175¹ÙÀÌÆ®¸é µÇ³ª ³Ë³ËÇÏ°Ô ÀâÀº °ÍÀÓ. */
+/* FLOAT_SIZEëŠ” 175ë°”ì´íŠ¸ë©´ ë˜ë‚˜ ë„‰ë„‰í•˜ê²Œ ì¡ì€ ê²ƒì„. */
 #define FLOAT_SIZE              191
 #define SMALLINT_SIZE           6
 #define INTEGER_SIZE            11

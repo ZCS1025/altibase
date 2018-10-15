@@ -20,9 +20,9 @@
  *
  * Description :
  *
- *     [PROJ-2059] DB Upgrade ±â´É DataPort
+ *     [PROJ-2059] DB Upgrade ê¸°ëŠ¥ DataPort
  *
- *     DataPort¸¦ À§ÇÑ ¸ŞÅ¸ °ü¸®
+ *     DataPortë¥¼ ìœ„í•œ ë©”íƒ€ ê´€ë¦¬
  *
  **********************************************************************/
 
@@ -45,11 +45,11 @@ IDE_RC qcmDataPort::getDataPortByName(
 /***********************************************************************
  *
  * Description :
- *      meta¿¡¼­ ÀÌ¸§À¸·Î DataPort¸¦ ¾ò¾î¿È
+ *      metaì—ì„œ ì´ë¦„ìœ¼ë¡œ DataPortë¥¼ ì–»ì–´ì˜´
  *
  * Implementation :
- *      1. nameÀ¸·Î meta range±¸¼º
- *      2. qcmDataPortInfo±¸Á¶Ã¼¿¡ °á°ú ÀúÀå
+ *      1. nameìœ¼ë¡œ meta rangeêµ¬ì„±
+ *      2. qcmDataPortInfoêµ¬ì¡°ì²´ì— ê²°ê³¼ ì €ì¥
  *
  ***********************************************************************/
     vSLong             sRowCount;
@@ -127,7 +127,7 @@ IDE_RC qcmDataPort::addMetaInfo( smiStatement * aStatement,
 /***********************************************************************
  *
  * Description :
- *      meta DataPort¿¡ »õ Record »ğÀÔ
+ *      meta DataPortì— ìƒˆ Record ì‚½ì…
  *
  * Implementation :
  *
@@ -136,7 +136,7 @@ IDE_RC qcmDataPort::addMetaInfo( smiStatement * aStatement,
     SChar          sBuffer[QD_MAX_SQL_LENGTH];
     vSLong         sRowCnt;
 
-    // Parameter °ËÁõ
+    // Parameter ê²€ì¦
     IDE_DASSERT( aStatement     != NULL );
     IDE_DASSERT( aJobName       != NULL );
     IDE_DASSERT( aUserName      != NULL );
@@ -231,17 +231,17 @@ IDE_RC qcmDataPort::updateState( smiStatement * aStatement,
 /***********************************************************************
  *
  * Description :
- *      meta DataPort¿¡ »óÅÂ¸¦ °»½Å
+ *      meta DataPortì— ìƒíƒœë¥¼ ê°±ì‹ 
  *
  * Implementation :
- *      JobName°ú srcState°¡ Á¸ÀçÇÒ °æ¿ì WhereÀı ·Î½á Filtering
+ *      JobNameê³¼ srcStateê°€ ì¡´ì¬í•  ê²½ìš° Whereì ˆ ë¡œì¨ Filtering
  *
  ***********************************************************************/
 
     SChar          sBuffer[QD_MAX_SQL_LENGTH];
     vSLong         sRowCnt;
 
-    // Parameter °ËÁõ
+    // Parameter ê²€ì¦
     IDE_DASSERT( aStatement     != NULL );
     IDE_DASSERT( aJobName       != NULL );
     IDE_DASSERT( aDstState      != NULL );
@@ -278,7 +278,7 @@ IDE_RC qcmDataPort::updateProcessedRowCnt( smiStatement * aStatement,
 /***********************************************************************
  *
  * Description :
- *      meta DataPortÀÇ Ã³¸®µÈ Row°³¼ö¸¦ °»½Å
+ *      meta DataPortì˜ ì²˜ë¦¬ëœ Rowê°œìˆ˜ë¥¼ ê°±ì‹ 
  *
  * Implementation :
  *
@@ -287,7 +287,7 @@ IDE_RC qcmDataPort::updateProcessedRowCnt( smiStatement * aStatement,
     SChar       sBuffer[ QD_MAX_SQL_LENGTH ];
     vSLong      sRowCnt;
 
-    // Parameter °ËÁõ
+    // Parameter ê²€ì¦
     IDE_DASSERT( aStatement     != NULL );
     IDE_DASSERT( aJobName       != NULL );
 
@@ -325,7 +325,7 @@ IDE_RC qcmDataPort::removeMetaInfo( smiStatement * aStatement,
 /***********************************************************************
  *
  * Description :
- *      meta¿¡¼­ DataPort¸¦ »èÁ¦
+ *      metaì—ì„œ DataPortë¥¼ ì‚­ì œ
  *
  * Implementation :
  *
@@ -338,12 +338,12 @@ IDE_RC qcmDataPort::removeMetaInfo( smiStatement * aStatement,
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aJobName   != NULL );
 
-    // SMÀ¸·ÎºÎÅÍ °´Ã¼¸¦ °¡Á®¿Â´Ù.
+    // SMìœ¼ë¡œë¶€í„° ê°ì²´ë¥¼ ê°€ì ¸ì˜¨ë‹¤.
     IDE_TEST( smiDataPort::findHandle( aJobName,
                                        &sHandle )
               != IDE_SUCCESS );
 
-    // °´Ã¼°¡ ¾ø¾î¾ß, Áï µ¿ÀÛÁßÀÌÁö ¾Ê¾Æ¾ß Áö¿ï ¼ö ÀÖ´Ù.
+    // ê°ì²´ê°€ ì—†ì–´ì•¼, ì¦‰ ë™ì‘ì¤‘ì´ì§€ ì•Šì•„ì•¼ ì§€ìš¸ ìˆ˜ ìˆë‹¤.
     IDE_TEST_RAISE( sHandle != NULL,
                     ERR_RUNNING_JOB );
 
@@ -379,7 +379,7 @@ IDE_RC qcmDataPort::refineMetaInfo( smiStatement * aStatement,
 /***********************************************************************
  *
  * Description :
- *       ÇØ´ç JobÀ» SM¿¡¼­ Ã£¾Æ º¸°í, ½ÇÁ¦ »óÅÂ¿¡ µû¶ó ¸ÂÃã
+ *       í•´ë‹¹ Jobì„ SMì—ì„œ ì°¾ì•„ ë³´ê³ , ì‹¤ì œ ìƒíƒœì— ë”°ë¼ ë§ì¶¤
  *
  * Implementation :
  *
@@ -395,15 +395,15 @@ IDE_RC qcmDataPort::refineMetaInfo( smiStatement * aStatement,
                                        &sExist )
               != IDE_SUCCESS );
 
-    // Meta¿¡ µî·ÏµÇÁö ¾ÊÀº °æ¿ì´Â, ´Ù¸¥ Ã³¸®ÇÒ °ÍÀÌ ¾ø´Ù
+    // Metaì— ë“±ë¡ë˜ì§€ ì•Šì€ ê²½ìš°ëŠ”, ë‹¤ë¥¸ ì²˜ë¦¬í•  ê²ƒì´ ì—†ë‹¤
     IDE_TEST_CONT( sExist == ID_FALSE, NORMAL_EXIT );
 
-    // SMÀ¸·ÎºÎÅÍ °´Ã¼¸¦ °¡Á®¿Â´Ù.
+    // SMìœ¼ë¡œë¶€í„° ê°ì²´ë¥¼ ê°€ì ¸ì˜¨ë‹¤.
     IDE_TEST( smiDataPort::findHandle( aJobName,
                                        &sHandle )
               != IDE_SUCCESS );
 
-    // Meta¿¡ ÀÌ»óÇÑ °ªÀÌ ÀÖ´Â °æ¿ì
+    // Metaì— ì´ìƒí•œ ê°’ì´ ìˆëŠ” ê²½ìš°
     IDE_TEST_RAISE( ( ( idlOS::strMatch( sInfo.mOperation,
                                          idlOS::strlen( sInfo.mOperation ),
                                          QCM_DATA_PORT_OPERATION_EXPORT,
@@ -433,7 +433,7 @@ IDE_RC qcmDataPort::refineMetaInfo( smiStatement * aStatement,
                                        idlOS::strlen( QCM_DATA_PORT_STATE_START ) ) == 0 ), 
                     ERR_SUSPENDED_JOB );
 
-    // ExportÁßÀÌ¶ó ±â·ÏµÇ¾ú´Âµ¥, µ¿ÀÛÁßÀÌÁö ¾ÊÀ» °æ¿ì
+    // Exportì¤‘ì´ë¼ ê¸°ë¡ë˜ì—ˆëŠ”ë°, ë™ì‘ì¤‘ì´ì§€ ì•Šì„ ê²½ìš°
     if ( ( sHandle == NULL ) &&
          ( idlOS::strMatch( sInfo.mOperation,
                             idlOS::strlen( sInfo.mOperation ),
@@ -444,7 +444,7 @@ IDE_RC qcmDataPort::refineMetaInfo( smiStatement * aStatement,
                   != IDE_SUCCESS );
     }
 
-    // µ¿ÀÛÁßÀÌÁö ¾ÊÀºµ¥, ¿Ï·áÇÑ Import ÀÛ¾÷ÀÏ °æ¿ì
+    // ë™ì‘ì¤‘ì´ì§€ ì•Šì€ë°, ì™„ë£Œí•œ Import ì‘ì—…ì¼ ê²½ìš°
     if ( ( sHandle == NULL ) &&
          ( idlOS::strMatch( sInfo.mOperation,
                             idlOS::strlen( sInfo.mOperation ),

@@ -21,9 +21,9 @@
  * Description :
  *     PROJ-1718 Subquery Unnesting
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  **********************************************************************/
 
@@ -34,7 +34,7 @@
 #include <qmsParseTree.h>
 #include <qmoDependency.h>
 
-// Subquery unnesting°ú °ü·ÃµÇ¾î ³»ºÎÀûÀ¸·Î »ç¿ëÇÒ ÀÚ·á±¸Á¶
+// Subquery unnestingê³¼ ê´€ë ¨ë˜ì–´ ë‚´ë¶€ì ìœ¼ë¡œ ì‚¬ìš©í•  ìë£Œêµ¬ì¡°
 typedef struct qmoPredList
 {
     qtcNode     * predicate;
@@ -47,7 +47,7 @@ class qmoUnnesting
 public:
 
     //------------------------------------------
-    // Subquery unnestingÀÇ ¼öÇà
+    // Subquery unnestingì˜ ìˆ˜í–‰
     //------------------------------------------
     
     static IDE_RC  doTransform( qcStatement  * aStatement,

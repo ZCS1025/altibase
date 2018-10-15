@@ -126,20 +126,20 @@ IDE_RC mmcPlanCache::finalize()
 
 
 /**********************************************************************
- * Description: statementÀÇ SQL¹®ÀåÀ» °¡Áö°í SQL Plan cache¿¡¼­ SQL¹®Àå°ú
- * µ¿ÀÏÇÑ ¹®ÀåÀ» °¡Áö°í ÀÖ´Â Parent PCO Object¸¦ Ã£´Â´Ù.
- * Parent PCO¸¦ Ã£À¸¸é,  ÇØ´ç Parent PCO¿¡ ÀÖ´Â child PCO¸®½ºÆ®¸¦ ¼øÈ¸
- * ÇÏ¸é¼­  environment¿Í ¸ÅÄ¡µÇ´Â chold PCO¸¦ Ã£°í child PCOÀÇ handleÀÎ
- * PCB¸¦ assignÇÑ´Ù.
+ * Description: statementì˜ SQLë¬¸ì¥ì„ ê°€ì§€ê³  SQL Plan cacheì—ì„œ SQLë¬¸ì¥ê³¼
+ * ë™ì¼í•œ ë¬¸ì¥ì„ ê°€ì§€ê³  ìˆëŠ” Parent PCO Objectë¥¼ ì°¾ëŠ”ë‹¤.
+ * Parent PCOë¥¼ ì°¾ìœ¼ë©´,  í•´ë‹¹ Parent PCOì— ìˆëŠ” child PCOë¦¬ìŠ¤íŠ¸ë¥¼ ìˆœíšŒ
+ * í•˜ë©´ì„œ  environmentì™€ ë§¤ì¹˜ë˜ëŠ” chold PCOë¥¼ ì°¾ê³  child PCOì˜ handleì¸
+ * PCBë¥¼ assigní•œë‹¤.
  *
- * Action: SQL¹®ÀÚÀÇ hash key value¸¦ °è»êÇÏ°í , ¶ÇÇÑ bucketÀ» Á¤ÇÑ´Ù.
- *         bucket latch¿¡ s-latch¸¦ °Ç´Ù.
- *         ÇØ´ç bucket chain¸¦  µû¶ó°¡¸é¼­ HashKey value°ú ¹®ÀÚ¿­ÀÌ °°Àº
- *         Parent PCO¸¦ Å½»öÇÏ¸ç,Ã£Àº parent PCO¿¡¼­ ´ëÇÏ¿© prepare-latch¸¦
- *         s-latch¸¦ °Ç´Ù.
- *         Parent PCO¸¦ Ã£¾Ò°Å³ª Å½»öÀÌ ¿Ï·áµÇ¸é  bucketLatch¸¦ Ç¬´Ù.
- *         Parent PCOÀÇ used child list¿¡¼­  environment¿Í matchµÇ´Â
- *         child PCO¸¦ °Ë»öÇÑ´Ù.
+ * Action: SQLë¬¸ìì˜ hash key valueë¥¼ ê³„ì‚°í•˜ê³  , ë˜í•œ bucketì„ ì •í•œë‹¤.
+ *         bucket latchì— s-latchë¥¼ ê±´ë‹¤.
+ *         í•´ë‹¹ bucket chainë¥¼  ë”°ë¼ê°€ë©´ì„œ HashKey valueê³¼ ë¬¸ìì—´ì´ ê°™ì€
+ *         Parent PCOë¥¼ íƒìƒ‰í•˜ë©°,ì°¾ì€ parent PCOì—ì„œ ëŒ€í•˜ì—¬ prepare-latchë¥¼
+ *         s-latchë¥¼ ê±´ë‹¤.
+ *         Parent PCOë¥¼ ì°¾ì•˜ê±°ë‚˜ íƒìƒ‰ì´ ì™„ë£Œë˜ë©´  bucketLatchë¥¼ í‘¼ë‹¤.
+ *         Parent PCOì˜ used child listì—ì„œ  environmentì™€ matchë˜ëŠ”
+ *         child PCOë¥¼ ê²€ìƒ‰í•œë‹¤.
  *       
  ***********************************************************************/
 void  mmcPlanCache::searchSQLText(mmcStatement     *aStatement,
@@ -170,11 +170,11 @@ void  mmcPlanCache::searchSQLText(mmcStatement     *aStatement,
                                            (const UChar*)aStatement->getQueryString(),
                                            sQueryLen );
     sBucket = mmcSQLTextHash::hash(*aHashKeyVal);
-    //ÇØ´ç bucket¿¡ ´ëÇÏ¿© s-latch¸¦ °Ç´Ù.
+    //í•´ë‹¹ bucketì— ëŒ€í•˜ì—¬ s-latchë¥¼ ê±´ë‹¤.
     mmcSQLTextHash::latchBucketAsShared(aStatement->getStatistics(),
                                         sBucket);
-    //bucket chainÀ» µû¶ó°¡¸é¼­ SQLText¿¡ ÇØ´çÇÏ´Â Parent PCO¸¦ Ã£°í,
-    // Ã£Àº Parent PCO¿¡ ´ëÇÏ¿©  prepare-latch¸¦ s-latch·Î °É°í ºüÁ®³ª¿Â´Ù.
+    //bucket chainì„ ë”°ë¼ê°€ë©´ì„œ SQLTextì— í•´ë‹¹í•˜ëŠ” Parent PCOë¥¼ ì°¾ê³ ,
+    // ì°¾ì€ Parent PCOì— ëŒ€í•˜ì—¬  prepare-latchë¥¼ s-latchë¡œ ê±¸ê³  ë¹ ì ¸ë‚˜ì˜¨ë‹¤.
     mmcSQLTextHash::searchParentPCO(aStatement->getStatistics(),
                                     sBucket,
                                     aStatement->getQueryString(),
@@ -187,11 +187,11 @@ void  mmcPlanCache::searchSQLText(mmcStatement     *aStatement,
     
 }
 
-//SQL Text¿¡ ÇØ´çÇÏ´Â Parent PCO  insert½Ãµµ¸¦ÇÑ´Ù.
-// ÃÖÁ¶·Î insert ¿¡ ¼º°øÇÏ´Â statement´Â
-// Parent PCO, child PCO, PCB¸¦ »ı¼ºÇÏ°í,
-// child PCOÀÇ prepare-latch¸¦ x-latch·Î °É°í
-// chain¿¡ Parent PCO¸¦ Ãß°¡ÇÑ´Ù.
+//SQL Textì— í•´ë‹¹í•˜ëŠ” Parent PCO  insertì‹œë„ë¥¼í•œë‹¤.
+// ìµœì¡°ë¡œ insert ì— ì„±ê³µí•˜ëŠ” statementëŠ”
+// Parent PCO, child PCO, PCBë¥¼ ìƒì„±í•˜ê³ ,
+// child PCOì˜ prepare-latchë¥¼ x-latchë¡œ ê±¸ê³ 
+// chainì— Parent PCOë¥¼ ì¶”ê°€í•œë‹¤.
 IDE_RC  mmcPlanCache::tryInsertSQLText(idvSQL         *aStatistics,
                                        SChar          *aSQLText,
                                        UInt            aSQLTextLen,
@@ -211,8 +211,8 @@ IDE_RC  mmcPlanCache::tryInsertSQLText(idvSQL         *aStatistics,
     mmcSQLTextHash::latchBucketAsExeclusive(aStatistics,
                                             sBucket);
     sState =1;
-    //bucket chainÀ» µû¶ó°¡¸é¼­ SQLText¿¡ ÇØ´çÇÏ´Â Parent PCO¸¦ Ã£°í,
-    // Ã£Àº Parent PCO¿¡ ´ëÇÏ¿©  prepare-latch¸¦ s-latch·Î °É°í ºüÁ®³ª¿Â´Ù.
+    //bucket chainì„ ë”°ë¼ê°€ë©´ì„œ SQLTextì— í•´ë‹¹í•˜ëŠ” Parent PCOë¥¼ ì°¾ê³ ,
+    // ì°¾ì€ Parent PCOì— ëŒ€í•˜ì—¬  prepare-latchë¥¼ s-latchë¡œ ê±¸ê³  ë¹ ì ¸ë‚˜ì˜¨ë‹¤.
     mmcSQLTextHash::searchParentPCO(aStatistics,
                                     sBucket,
                                     aSQLText,
@@ -223,7 +223,7 @@ IDE_RC  mmcPlanCache::tryInsertSQLText(idvSQL         *aStatistics,
                                     aPCOLatchState);
     if((*aFoundedParentPCO) != NULL)
     {
-        //SQL Text¿¡ ÇØ´çÇÏ´Â Parent PCO°¡ ÀÖ´Â °æ¿ì.
+        //SQL Textì— í•´ë‹¹í•˜ëŠ” Parent PCOê°€ ìˆëŠ” ê²½ìš°.
         *aSuccess = ID_FALSE;
     }
     else
@@ -232,14 +232,14 @@ IDE_RC  mmcPlanCache::tryInsertSQLText(idvSQL         *aStatistics,
 
         IDU_FIT_POINT( "mmcPlanCache::tryInsertSQLText::alloc::ParentPCO" );
 
-        // ÃÖÃÊ·Î SQLText¿¡ ÇØ´çÇÏ´Â Parent PCO¸¦ insertÇÏ´Â statement.
-        // parent PCO¸¦ ÇÒ´çÇÑ´Ù.
+        // ìµœì´ˆë¡œ SQLTextì— í•´ë‹¹í•˜ëŠ” Parent PCOë¥¼ insertí•˜ëŠ” statement.
+        // parent PCOë¥¼ í• ë‹¹í•œë‹¤.
         IDE_TEST(mParentPCOMemPool.alloc((void**)&sParentPCO) != IDE_SUCCESS);
         sState = 2;
 
         IDU_FIT_POINT( "mmcPlanCache::tryInsertSQLText::alloc::PCB" );
 
-        // PCB¿Í child PCO¸¦ ÇÒ´ç¹Ş´Â´Ù.
+        // PCBì™€ child PCOë¥¼ í• ë‹¹ë°›ëŠ”ë‹¤.
         IDE_TEST( mPCBMemPool.alloc((void**)aPCB) != IDE_SUCCESS);
         sState = 3;
 
@@ -248,9 +248,9 @@ IDE_RC  mmcPlanCache::tryInsertSQLText(idvSQL         *aStatistics,
         IDE_TEST( mChildPCOMemPool.alloc((void**)&sChildPCO) != IDE_SUCCESS);
         sState = 4;
 
-        //parent PCO¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+        //parent PCOë¥¼ ì´ˆê¸°í™”í•œë‹¤.
         /* BUG-29865
-         * ¸Ş¸ğ¸® ÇÑ°è»óÈ²¿¡¼­ ParentPCO->initialize°¡ ½ÇÆĞÇÒ ¼ö ÀÖ½À´Ï´Ù.
+         * ë©”ëª¨ë¦¬ í•œê³„ìƒí™©ì—ì„œ ParentPCO->initializeê°€ ì‹¤íŒ¨í•  ìˆ˜ ìˆìŠµë‹ˆë‹¤.
          */
         IDE_TEST(sParentPCO->initialize(mmcSQLTextHash::getSQLTextId(sBucket),
                                        aSQLText,
@@ -261,7 +261,7 @@ IDE_RC  mmcPlanCache::tryInsertSQLText(idvSQL         *aStatistics,
         mmcSQLTextHash::incSQLTextId(sBucket);
         
         sState = 5;
-        // PCB¿Í child PCO¸¦ ÃÊ±âÈ­ ÇÑ´Ù.
+        // PCBì™€ child PCOë¥¼ ì´ˆê¸°í™” í•œë‹¤.
         //fix BUG-21429
         (*aPCB)->initialize((SChar*)(sParentPCO->mSQLTextIdString),
                             0);
@@ -275,17 +275,17 @@ IDE_RC  mmcPlanCache::tryInsertSQLText(idvSQL         *aStatistics,
         (*aPCB)->assignPCO(aStatistics,
                         sParentPCO,
                         sChildPCO);
-        // PVO¸¦ À§ÇÏ¿©  child PCOÀÇ prepare-latch¸¦ x-mode·Î °Ç´Ù.
+        // PVOë¥¼ ìœ„í•˜ì—¬  child PCOì˜ prepare-latchë¥¼ x-modeë¡œ ê±´ë‹¤.
         sChildPCO->latchPrepareAsExclusive(aStatistics);
-        // parent PCOÀÇ used child listÀÇ  child PCO¸¦  appendÇÑ´Ù.
+        // parent PCOì˜ used child listì˜  child PCOë¥¼  appendí•œë‹¤.
         sParentPCO->incChildCreateCnt();
         sParentPCO->addPCBOfChild(*aPCB);
-        // last¿¡ ´Ş¸®´Â node , max hash value update.
+        // lastì— ë‹¬ë¦¬ëŠ” node , max hash value update.
         mmcSQLTextHash::tryUpdateBucketMaxHashVal(sBucket,
                                                   sInsertAfterNode,
                                                   aHashKeyVal);
         
-        // bucket chain¿¡ add.
+        // bucket chainì— add.
         IDU_LIST_ADD_AFTER(sInsertAfterNode,sParentPCO->getBucketChainNode());
     }
     
@@ -332,8 +332,8 @@ IDE_RC mmcPlanCache::freePCO(mmcChildPCO* aPCO)
     return mChildPCOMemPool.memfree(aPCO);
 }
 
-// BUG-23144 ÀÎ¶óÀÎ ÇÔ¼ö¿¡¼­ µ¿½Ã¼º Á¦¾î¸¦ ÇÏ¸é °£È¤ Á×½À´Ï´Ù.
-// ÀÎ¶óÀÎÀ» Ã³¸®ÇÏÁö ¾Ê½À´Ï´Ù.
+// BUG-23144 ì¸ë¼ì¸ í•¨ìˆ˜ì—ì„œ ë™ì‹œì„± ì œì–´ë¥¼ í•˜ë©´ ê°„í˜¹ ì£½ìŠµë‹ˆë‹¤.
+// ì¸ë¼ì¸ì„ ì²˜ë¦¬í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
 void mmcPlanCache::incCacheMissCnt(idvSQL  *aStatSQL)
 {
     // PROJ-2408
@@ -389,9 +389,9 @@ void mmcPlanCache::incCacheSize(ULong    aAddedSize)
     mPlanCacheSystemInfo.mCurrentCacheSize += aAddedSize;
 }
 
-//parent PCO´Â plan cache¿¡ ÀÖÁö¸¸
-//environment°¡ ¸Â´Â child PCO°¡ ¾ø´Â °æ¿ì¿¡
-//child PCOÀÇ Áßº¹»ı¼ºÀ» ¸·±âÀ§ÇÑ ÇÔ¼ö.
+//parent PCOëŠ” plan cacheì— ìˆì§€ë§Œ
+//environmentê°€ ë§ëŠ” child PCOê°€ ì—†ëŠ” ê²½ìš°ì—
+//child PCOì˜ ì¤‘ë³µìƒì„±ì„ ë§‰ê¸°ìœ„í•œ í•¨ìˆ˜.
 IDE_RC  mmcPlanCache::preventDupPlan(idvSQL               *aStatistics,
                                      mmcParentPCO         *aParentPCO,
                                      mmcPCB               *aSafeGuardPCB,
@@ -405,24 +405,24 @@ IDE_RC  mmcPlanCache::preventDupPlan(idvSQL               *aStatistics,
     UChar          sState = 0;
 
     IDE_DASSERT(*aPCOLatchState == MMC_PCO_LOCK_ACQUIRED_SHARED);
-    //»õ·Î¿î child PCO»ı¼º½Ãµµ.
+    //ìƒˆë¡œìš´ child PCOìƒì„±ì‹œë„.
     aParentPCO->getChildCreateCnt(&sPrevChildCreateCnt);
-    // parent PCOÀÇ s-latch·Î ÀâÇû´ø prepare-latch¸¦ Ç¬´Ù.
-    // parent PCO prepare-latch¸¦ release ÇÏ±â Àü¿¡ safeguard PCB¸¦ plan-Fix¸¦ ÇÔ.
-    // ±×·¸Áö ¾ÊÀ¸¸é parent PCO°¡ victimÀÌ µÉ ¼ö ÀÖ´Ù.
+    // parent PCOì˜ s-latchë¡œ ì¡í˜”ë˜ prepare-latchë¥¼ í‘¼ë‹¤.
+    // parent PCO prepare-latchë¥¼ release í•˜ê¸° ì „ì— safeguard PCBë¥¼ plan-Fixë¥¼ í•¨.
+    // ê·¸ë ‡ì§€ ì•Šìœ¼ë©´ parent PCOê°€ victimì´ ë  ìˆ˜ ìˆë‹¤.
     aSafeGuardPCB->planFix(aStatistics);
     aParentPCO->releasePrepareLatch();
     *aPCOLatchState = MMC_PCO_LOCK_RELEASED;
     aParentPCO->getChildCreateCnt(&sCurChildCreateCnt);
     if(sCurChildCreateCnt != sPrevChildCreateCnt)
     {
-        //ÀÌ¹Ì ´Ù¸¥ statment°¡ recompileÇÑ°æ¿ìÀÌ´Ù.
+        //ì´ë¯¸ ë‹¤ë¥¸ statmentê°€ recompileí•œê²½ìš°ì´ë‹¤.
         *aNewPCB = (mmcPCB*)NULL;
         aSafeGuardPCB->planUnFix(aStatistics);
     }
     else
     {        
-        // parent PCOÀÇ prepare-latch¸¦ x-mode·Î °Ç´Ù.
+        // parent PCOì˜ prepare-latchë¥¼ x-modeë¡œ ê±´ë‹¤.
         aParentPCO->latchPrepareAsExclusive(aStatistics);
         aSafeGuardPCB->planUnFix(aStatistics);
         *aPCOLatchState = MMC_PCO_LOCK_ACQUIRED_EXECL;
@@ -444,19 +444,19 @@ IDE_RC  mmcPlanCache::preventDupPlan(idvSQL               *aStatistics,
                                         &sNewChildPCO,
                                         &sState)
                  != IDE_SUCCESS);
-            // PVO¸¦ À§ÇÏ¿©  child PCOÀÇ prepare-latch¸¦ x-mode·Î °Ç´Ù.
+            // PVOë¥¼ ìœ„í•˜ì—¬  child PCOì˜ prepare-latchë¥¼ x-modeë¡œ ê±´ë‹¤.
             sNewChildPCO->latchPrepareAsExclusive(aStatistics);
-            // parent PCOÀÇ used child listÀÇ  child PCO¸¦  appendÇÑ´Ù.
+            // parent PCOì˜ used child listì˜  child PCOë¥¼  appendí•œë‹¤.
             aParentPCO->addPCBOfChild(sNewPCB);
-            // parent PCOÀÇ x-latch·Î ÀâÇû´ø prepare-latch¸¦ Ç¬´Ù.
+            // parent PCOì˜ x-latchë¡œ ì¡í˜”ë˜ prepare-latchë¥¼ í‘¼ë‹¤.
             aParentPCO->releasePrepareLatch();
             *aPCOLatchState = MMC_PCO_LOCK_RELEASED;
             *aNewPCB = sNewPCB;
         }
         else
         {
-            // ÇØ´ç Parent PCOºÎÅÍ soft-prepare¸¦ ÇÏ±â À§ÇÏ¿© latch¸¦ Ç¬´Ù.
-            // parent PCOÀÇ x-latch·Î ÀâÇû´ø prepare-latch¸¦ Ç¬´Ù.
+            // í•´ë‹¹ Parent PCOë¶€í„° soft-prepareë¥¼ í•˜ê¸° ìœ„í•˜ì—¬ latchë¥¼ í‘¼ë‹¤.
+            // parent PCOì˜ x-latchë¡œ ì¡í˜”ë˜ prepare-latchë¥¼ í‘¼ë‹¤.
             aParentPCO->releasePrepareLatch();
             *aPCOLatchState = MMC_PCO_LOCK_RELEASED;
             *aNewPCB = (mmcPCB*)NULL;
@@ -495,9 +495,9 @@ IDE_RC  mmcPlanCache::preventDupPlan(idvSQL               *aStatistics,
     return IDE_FAILURE;
 }
 
-//environement°¡ ¸Â´Â child PCO°¡ ÀÖÁö¸¸,
-//planÀÌ validÇÏÁö ¾Ê¾Æ,»õ·Î¿î child PCOÀÇ
-//Áßº¹»ı¼ºÀ» ¸·±âÀ§ÇÑ ÇÔ¼ö.
+//environementê°€ ë§ëŠ” child PCOê°€ ìˆì§€ë§Œ,
+//planì´ validí•˜ì§€ ì•Šì•„,ìƒˆë¡œìš´ child PCOì˜
+//ì¤‘ë³µìƒì„±ì„ ë§‰ê¸°ìœ„í•œ í•¨ìˆ˜.
 IDE_RC  mmcPlanCache::preventDupPlan(idvSQL                 *aStatistics,
                                      mmcStatement           *aStatement,
                                      mmcParentPCO           *aParentPCO,
@@ -527,13 +527,13 @@ IDE_RC  mmcPlanCache::preventDupPlan(idvSQL                 *aStatistics,
         aParentPCO->getChildCreateCnt(&sCurChildCreateCnt);
         if(sCurChildCreateCnt != aPrevChildCreateCnt)
         {
-            //ÀÌ¹Ì ´Ù¸¥ statment°¡ recompileÇÑ°æ¿ìÀÌ´Ù.
+            //ì´ë¯¸ ë‹¤ë¥¸ statmentê°€ recompileí•œê²½ìš°ì´ë‹¤.
             *aNewPCB = (mmcPCB*)NULL;
             IDE_CONT(You_Are_Looser);
         }
         else
         {
-            // parent PCOÀÇ prepare-latch¸¦ x-mode·Î °Ç´Ù.
+            // parent PCOì˜ prepare-latchë¥¼ x-modeë¡œ ê±´ë‹¤.
             aParentPCO->latchPrepareAsExclusive(aStatistics);
             *aPCOLatchState = MMC_PCO_LOCK_ACQUIRED_EXECL;
             aParentPCO->getChildCreateCnt(&sCurChildCreateCnt);
@@ -549,15 +549,15 @@ IDE_RC  mmcPlanCache::preventDupPlan(idvSQL                 *aStatistics,
         sUnusedChildPCO->getPlanState(&sPlanState);
         if(sPlanState == MMC_CHILD_PCO_PLAN_IS_UNUSED)
         {
-            //ÀÌ¹Ì ´Ù¸¥ statment°¡ recompileÇÑ°æ¿ìÀÌ´Ù.
+            //ì´ë¯¸ ë‹¤ë¥¸ statmentê°€ recompileí•œê²½ìš°ì´ë‹¤.
             *aNewPCB = (mmcPCB*)NULL;
             IDE_CONT(You_Are_Looser);
         }
         else
         {
-            // parent PCOÀÇ prepare-latch¸¦ x-mode·Î °Ç´Ù.
+            // parent PCOì˜ prepare-latchë¥¼ x-modeë¡œ ê±´ë‹¤.
             aParentPCO->latchPrepareAsExclusive(aStatistics);
-            //fix BUG-22570 [valgrind] mmcPCB::initialze¿¡¼­ UMR
+            //fix BUG-22570 [valgrind] mmcPCB::initialzeì—ì„œ UMR
             aParentPCO->getChildCreateCnt(&sCurChildCreateCnt);
             *aPCOLatchState = MMC_PCO_LOCK_ACQUIRED_EXECL;
             sUnusedChildPCO->getPlanState(&sPlanState);
@@ -569,7 +569,7 @@ IDE_RC  mmcPlanCache::preventDupPlan(idvSQL                 *aStatistics,
     if( sWinner == ID_TRUE)
     {
         aParentPCO->incChildCreateCnt();
-        // PCB¿Í child PCO¸¦ ÇÒ´ç¹Ş´Â´Ù.
+        // PCBì™€ child PCOë¥¼ í• ë‹¹ë°›ëŠ”ë‹¤.
         /* fix BUG-31232  Reducing x-latch duration of parent PCO
            while perform soft prepare .
         */
@@ -585,24 +585,24 @@ IDE_RC  mmcPlanCache::preventDupPlan(idvSQL                 *aStatistics,
                                     &sState)
                  != IDE_SUCCESS);
 
-        // PVO¸¦ À§ÇÏ¿©  child PCOÀÇ prepare-latch¸¦ x-mode·Î °Ç´Ù.
+        // PVOë¥¼ ìœ„í•˜ì—¬  child PCOì˜ prepare-latchë¥¼ x-modeë¡œ ê±´ë‹¤.
         sNewChildPCO->latchPrepareAsExclusive(aStatistics);
-        // parent PCOÀÇ used child listÀÇ  child PCO¸¦  appendÇÑ´Ù.
+        // parent PCOì˜ used child listì˜  child PCOë¥¼  appendí•œë‹¤.
         aParentPCO->addPCBOfChild(*aNewPCB);
         aUnUsedPCB->getFixCount(aStatistics,
                                 &sFixCount);
         aParentPCO->movePCBOfChildToUnUsedLst(aUnUsedPCB);
-        // fix BUG-27360, mmcStatement::softPrepare¿¡¼­ preventDupPlan fixÇÏ¸é¼­
-        // °°ÀÌ ¼öÁ¤ÇÕ´Ï´Ù.
+        // fix BUG-27360, mmcStatement::softPrepareì—ì„œ preventDupPlan fixí•˜ë©´ì„œ
+        // ê°™ì´ ìˆ˜ì •í•©ë‹ˆë‹¤.
         sUnusedChildPCO->updatePlanState(MMC_CHILD_PCO_PLAN_IS_UNUSED);
         /*fix BUG-31403,
           It would be better to free an old plan cache object immediately
           which is only referenced by a statement while the statement do soft-prepare.
-         old  PCO¿¡ ´ëÇÏ¿© caller°¡ plan-FixÇÏ¿© callÇÏ±â ¶§¹®¿¡
-         fix count°¡ 1ÀÎ case´Â  ³ª ÀÌ¿Ü¿¡ ÂüÁ¶ÇÏ´Â statement°¡ ¾ø´Â°ÍÀÌ´Ù.. */
+         old  PCOì— ëŒ€í•˜ì—¬ callerê°€ plan-Fixí•˜ì—¬ callí•˜ê¸° ë•Œë¬¸ì—
+         fix countê°€ 1ì¸ caseëŠ”  ë‚˜ ì´ì™¸ì— ì°¸ì¡°í•˜ëŠ” statementê°€ ì—†ëŠ”ê²ƒì´ë‹¤.. */
         if(sFixCount <= 1)
         {
-            //child PCO null·Î update.
+            //child PCO nullë¡œ update.
             aUnUsedPCB->assignPCO(aStatistics,
                                   aParentPCO,
                                   NULL);
@@ -612,15 +612,15 @@ IDE_RC  mmcPlanCache::preventDupPlan(idvSQL                 *aStatistics,
             */            
             *aPCOLatchState = MMC_PCO_LOCK_RELEASED;
 
-            //child PCO ÇØÁ¦
+            //child PCO í•´ì œ
             sUnusedChildPCO->finalize();
             mmcPlanCache::freePCO(sUnusedChildPCO);
 
             /* BUG-35673 the instruction ordering serialization */
             IDL_MEM_BARRIER;
 
-            //PCBÇØÁ¦´Â fixCount¹× µ¿½Ã¼º¹®Á¦·Î
-            //¿©±â¼­ ¹Ù·Î ÇÒ¼ö ¾ø°í, LRU replace¿¡ ÀÇÇÏ¿© ÇàÇÏ¿© Áø´Ù.
+            //PCBí•´ì œëŠ” fixCountë° ë™ì‹œì„±ë¬¸ì œë¡œ
+            //ì—¬ê¸°ì„œ ë°”ë¡œ í• ìˆ˜ ì—†ê³ , LRU replaceì— ì˜í•˜ì—¬ í–‰í•˜ì—¬ ì§„ë‹¤.
             updateCacheSize(aStatistics,
                             sChildPCOSize,
                             aUnUsedPCB);
@@ -628,10 +628,10 @@ IDE_RC  mmcPlanCache::preventDupPlan(idvSQL                 *aStatistics,
         else
         {
             /* BUG-35673 the instruction ordering serialization */
-            //child PCO¸¦ ¹Ù·Î Áö¿ï¼ö ¾øÀ½.
+            //child PCOë¥¼ ë°”ë¡œ ì§€ìš¸ìˆ˜ ì—†ìŒ.
             ID_SERIAL_BEGIN(aParentPCO->releasePrepareLatch());
             ID_SERIAL_EXEC(*aPCOLatchState = MMC_PCO_LOCK_RELEASED, 1);
-            // unused PCB ¸¦parent¿¡¼­ unused child listÀ¸·Î move.
+            // unused PCB ë¥¼parentì—ì„œ unused child listìœ¼ë¡œ move.
             ID_SERIAL_END(mmcPlanCacheLRUList::moveToColdRegionTail(aStatistics,
                                                                     aUnUsedPCB));
 
@@ -639,8 +639,8 @@ IDE_RC  mmcPlanCache::preventDupPlan(idvSQL                 *aStatistics,
     }
     else
     {
-        // ÇØ´ç Parent PCOºÎÅÍ soft-prepare¸¦ ÇÏ±â À§ÇÏ¿© latch¸¦ Ç¬´Ù.
-        // parent PCOÀÇ x-latch·Î ÀâÇû´ø prepare-latch¸¦ Ç¬´Ù.
+        // í•´ë‹¹ Parent PCOë¶€í„° soft-prepareë¥¼ í•˜ê¸° ìœ„í•˜ì—¬ latchë¥¼ í‘¼ë‹¤.
+        // parent PCOì˜ x-latchë¡œ ì¡í˜”ë˜ prepare-latchë¥¼ í‘¼ë‹¤.
         aParentPCO->releasePrepareLatch();
         *aNewPCB = (mmcPCB*)NULL;
 
@@ -700,7 +700,7 @@ IDE_RC mmcPlanCache::allocPlanCacheObjs(idvSQL          *aStatistics,
 
     IDU_FIT_POINT( "mmcPlanCache::allocPlanCacheObjs::alloc::NewPCB" );
 
-    // PCB¿Í child PCO¸¦ ÇÒ´ç¹Ş´Â´Ù.
+    // PCBì™€ child PCOë¥¼ í• ë‹¹ë°›ëŠ”ë‹¤.
     IDE_TEST( mPCBMemPool.alloc((void**)aNewPCB) != IDE_SUCCESS);
     (*aState)++;
 
@@ -709,7 +709,7 @@ IDE_RC mmcPlanCache::allocPlanCacheObjs(idvSQL          *aStatistics,
     IDE_TEST( mChildPCOMemPool.alloc((void**)aNewChildPCO) != IDE_SUCCESS);
     (*aState)++;
 
-    // PCB¿Í child PCO¸¦ ÃÊ±âÈ­ ÇÑ´Ù.
+    // PCBì™€ child PCOë¥¼ ì´ˆê¸°í™” í•œë‹¤.
     // fix BUG-21429
     // fix BUG-29116,There is needless +1 operation in numbering child PCO.
     (*aNewPCB)->initialize((SChar*)(aParentPCO->mSQLTextIdString),
@@ -722,7 +722,7 @@ IDE_RC mmcPlanCache::allocPlanCacheObjs(idvSQL          *aStatistics,
                                 aRebuildCount,
                                 (*aNewPCB)->getFrequencyPtr());
     (*aState)++;
-    // PCB¿¡¼­ parent ,child PCO¸¦ assignÇÑ´Ù.
+    // PCBì—ì„œ parent ,child PCOë¥¼ assigní•œë‹¤.
     (*aNewPCB)->assignPCO(aStatistics,
                           aParentPCO,
                           *aNewChildPCO);
@@ -802,7 +802,7 @@ void mmcPlanCache::tryFreeParentPCO(idvSQL  *aStatSQL,
     
     sBucket = aParentPCO->getBucket();
     
-    // bucket¿¡ x-latch¸¦ °Ç´Ù.
+    // bucketì— x-latchë¥¼ ê±´ë‹¤.
     mmcSQLTextHash::latchBucketAsExeclusive(aStatSQL,
                                             sBucket);
     
@@ -812,11 +812,11 @@ void mmcPlanCache::tryFreeParentPCO(idvSQL  *aStatSQL,
         
         mmcSQLTextHash::tryUpdateBucketMaxHashVal(sBucket,
                                                   aParentPCO->getBucketChainNode());
-        //bucket chain¿¡¼­ Á¦°Å.
+        //bucket chainì—ì„œ ì œê±°.
         IDU_LIST_REMOVE(aParentPCO->getBucketChainNode());
         aParentPCO->releasePrepareLatch();
         mmcSQLTextHash::releaseBucketLatch(sBucket);
-        //parent PCO ÀÚ¿ø ÇØÁ¦.
+        //parent PCO ìì› í•´ì œ.
         aParentPCO->finalize();
         IDE_ASSERT(mParentPCOMemPool.memfree(aParentPCO) == IDE_SUCCESS);
     }
@@ -842,7 +842,7 @@ idBool  mmcPlanCache::isCacheAbleSQLText(SChar        *aSQLText)
 
     while (1)
     {
-        // °ø¹é, tab, new line Á¦°Å
+        // ê³µë°±, tab, new line ì œê±°
         //fix BUG-21427
         for ( ;
               ( ( *sTokenPtr == ' ' )  || ( *sTokenPtr == '\t' ) ||
@@ -913,7 +913,7 @@ idBool  mmcPlanCache::isCacheAbleSQLText(SChar        *aSQLText)
         }
     }
 
-    // token ±¸¼º.
+    // token êµ¬ì„±.
     for(sTokenLen =0;((*sTokenPtr != ' ' ) && (*sTokenPtr != '\t' ) && (*sTokenPtr != '\r') && (*sTokenPtr != '\n' ) &&(*sTokenPtr !='\0' ));
         sTokenPtr++)
     {
@@ -1142,34 +1142,34 @@ IDE_RC mmcPlanCache::movePCBOfChildToUnUsedLst(idvSQL *aStatistics,
 /***********************************************************************
  *
  * Description : PROJ-2163
- *      Plan À» plan cache ¿¡ µî·ÏÇÒ ¼ö ¾ø°Ô µÆÀ» ¶§ PCB ¿Í child PCO ¸¦
- *      ¾ÈÀüÇÏ°Ô Á¦°ÅÇÏ´Â ÇÔ¼öÀÌ´Ù.
+ *      Plan ì„ plan cache ì— ë“±ë¡í•  ìˆ˜ ì—†ê²Œ ëì„ ë•Œ PCB ì™€ child PCO ë¥¼
+ *      ì•ˆì „í•˜ê²Œ ì œê±°í•˜ëŠ” í•¨ìˆ˜ì´ë‹¤.
  *
- *      Plan cache ¿¡ µî·ÏÇÏ±â À§ÇØ plan À» ¸¸µé ¶§¿¡´Â child PCO ¿¡
- *      X latch ¸¦ Àâ¾Æ¼­ ´Ù¸¥ ¼¼¼ÇÀÌ °°Àº plan À» Áßº¹À¸·Î »ı¼ºÇÒ ¼ö
- *      ¾ø°Ô ÇÑ´Ù.
- *      ÇÏÁö¸¸ »ı¼ºÇÑ plan ÀÌ plan cache ¿¡ µî·ÏÇÒ ¼ö ¾ø´Ù¸é
- *      ´Ù¸¥ ¼¼¼ÇµéÀ» À§ÇØ PCB ¿Í child PCO ¸¦ ¾ÈÀüÇÏ°Ô Á¦°ÅÇØ¾ß ÇÑ´Ù.
+ *      Plan cache ì— ë“±ë¡í•˜ê¸° ìœ„í•´ plan ì„ ë§Œë“¤ ë•Œì—ëŠ” child PCO ì—
+ *      X latch ë¥¼ ì¡ì•„ì„œ ë‹¤ë¥¸ ì„¸ì…˜ì´ ê°™ì€ plan ì„ ì¤‘ë³µìœ¼ë¡œ ìƒì„±í•  ìˆ˜
+ *      ì—†ê²Œ í•œë‹¤.
+ *      í•˜ì§€ë§Œ ìƒì„±í•œ plan ì´ plan cache ì— ë“±ë¡í•  ìˆ˜ ì—†ë‹¤ë©´
+ *      ë‹¤ë¥¸ ì„¸ì…˜ë“¤ì„ ìœ„í•´ PCB ì™€ child PCO ë¥¼ ì•ˆì „í•˜ê²Œ ì œê±°í•´ì•¼ í•œë‹¤.
  *
- *      ÀÌ ÇÔ¼ö¿¡¼­´Â PCB °¡ ¾ÈÀüÇÏ°Ô Á¦°ÅµÉ ¼ö ÀÖµµ·Ï parent PCO ÀÇ
- *      unused list ·Î ÀÌµ¿ÇÏ°í LRU list ÀÇ cold region µÚ·Î ÀÌµ¿½ÃÅ²´Ù.
- *      Child PCO ´Â NEED_HARD_PREPARE »óÅÂ·Î º¯°æÇÏ¿© ´ë±âÁßÀÎ ¼¼¼ÇÀº
- *      ¹Ù·Î hard prepare ¸¦ ¼öÇàÇÏ°Ô ÇÑ´Ù.
- *      ¸¸¾à ´ë±âÁßÀÎ ¼¼¼ÇÀÌ ¾ø´Ù¸é child PCO ¸¦ ¹Ù·Î »èÁ¦ÇÑ´Ù.
+ *      ì´ í•¨ìˆ˜ì—ì„œëŠ” PCB ê°€ ì•ˆì „í•˜ê²Œ ì œê±°ë  ìˆ˜ ìˆë„ë¡ parent PCO ì˜
+ *      unused list ë¡œ ì´ë™í•˜ê³  LRU list ì˜ cold region ë’¤ë¡œ ì´ë™ì‹œí‚¨ë‹¤.
+ *      Child PCO ëŠ” NEED_HARD_PREPARE ìƒíƒœë¡œ ë³€ê²½í•˜ì—¬ ëŒ€ê¸°ì¤‘ì¸ ì„¸ì…˜ì€
+ *      ë°”ë¡œ hard prepare ë¥¼ ìˆ˜í–‰í•˜ê²Œ í•œë‹¤.
+ *      ë§Œì•½ ëŒ€ê¸°ì¤‘ì¸ ì„¸ì…˜ì´ ì—†ë‹¤ë©´ child PCO ë¥¼ ë°”ë¡œ ì‚­ì œí•œë‹¤.
  *
  * Implementation :
- *      1. Parent PCO ¿¡ X latch °É°í PCB ¸¦ unused list ·Î ÀÌµ¿
- *      2. Child PCO ¸¦ NEED_HARD_PREPARE ·Î º¯°æ
- *      3. PCB ÀÇ fix Ä«¿îÆ®(´ë±âÁßÀÎ ¼¼¼Ç ¼ö)·Î ºĞ±â
- *        a. (fix count == 0; ´ë±âÁßÀÎ ¼¼¼ÇÀÌ ¾øÀ½)
- *           PCB ÀÇ child PCO ¿¬°áÀ» ²÷À½ (null ·Î ¼¼ÆÃ)
- *           Parent PCO ÀÇ latch ¸¦ ÇØÁ¦
- *           PCB ¸¦ cold region ³¡À¸·Î ÀÌµ¿
- *           Child PCO ¸¦ »èÁ¦
- *        b. (fix count > 0; ´ë±âÁßÀÎ ¼¼¼ÇÀÌ ÀÖÀ½)
- *           Parent PCO ÀÇ latch ¸¦ ÇØÁ¦
- *           PCB ¸¦ cold region ³¡À¸·Î ÀÌµ¿
- *           Child PCO ÀÇ latch ¸¦ ÇØÁ¦
+ *      1. Parent PCO ì— X latch ê±¸ê³  PCB ë¥¼ unused list ë¡œ ì´ë™
+ *      2. Child PCO ë¥¼ NEED_HARD_PREPARE ë¡œ ë³€ê²½
+ *      3. PCB ì˜ fix ì¹´ìš´íŠ¸(ëŒ€ê¸°ì¤‘ì¸ ì„¸ì…˜ ìˆ˜)ë¡œ ë¶„ê¸°
+ *        a. (fix count == 0; ëŒ€ê¸°ì¤‘ì¸ ì„¸ì…˜ì´ ì—†ìŒ)
+ *           PCB ì˜ child PCO ì—°ê²°ì„ ëŠìŒ (null ë¡œ ì„¸íŒ…)
+ *           Parent PCO ì˜ latch ë¥¼ í•´ì œ
+ *           PCB ë¥¼ cold region ëìœ¼ë¡œ ì´ë™
+ *           Child PCO ë¥¼ ì‚­ì œ
+ *        b. (fix count > 0; ëŒ€ê¸°ì¤‘ì¸ ì„¸ì…˜ì´ ìˆìŒ)
+ *           Parent PCO ì˜ latch ë¥¼ í•´ì œ
+ *           PCB ë¥¼ cold region ëìœ¼ë¡œ ì´ë™
+ *           Child PCO ì˜ latch ë¥¼ í•´ì œ
  *
  ***********************************************************************/
 
@@ -1177,26 +1177,26 @@ IDE_RC mmcPlanCache::movePCBOfChildToUnUsedLst(idvSQL *aStatistics,
     mmcChildPCO      * sUnusedChildPCO = aUnUsedPCB->getChildPCO();
     mmcPCBLRURegion    sPCBLruRegion;
  
-    // parent PCOÀÇ prepare-latch¸¦ x-mode·Î °Ç´Ù.
+    // parent PCOì˜ prepare-latchë¥¼ x-modeë¡œ ê±´ë‹¤.
     aUnUsedPCB->getParentPCO()->latchPrepareAsExclusive(aStatistics);
     
     aUnUsedPCB->getParentPCO()->movePCBOfChildToUnUsedLst(aUnUsedPCB);
 
-    // fix BUG-27360, mmcStatement::softPrepare¿¡¼­ preventDupPlan fixÇÏ¸é¼­
-    // °°ÀÌ ¼öÁ¤ÇÕ´Ï´Ù.
+    // fix BUG-27360, mmcStatement::softPrepareì—ì„œ preventDupPlan fixí•˜ë©´ì„œ
+    // ê°™ì´ ìˆ˜ì •í•©ë‹ˆë‹¤.
     sUnusedChildPCO->updatePlanState(MMC_CHILD_PCO_PLAN_NEED_HARD_PREPARE);
 
     /*fix BUG-31403,
       It would be better to free an old plan cache object immediately
       which is only referenced by a statement while the statement do soft-prepare.
-      old  PCO¿¡ ´ëÇÏ¿© caller°¡ plan-FixÇÏ¿© callÇÏ±â ¶§¹®¿¡
-     fix count°¡ 1ÀÎ case´Â  ³ª ÀÌ¿Ü¿¡ ÂüÁ¶ÇÏ´Â statement°¡ ¾ø´Â°ÍÀÌ´Ù.. */
+      old  PCOì— ëŒ€í•˜ì—¬ callerê°€ plan-Fixí•˜ì—¬ callí•˜ê¸° ë•Œë¬¸ì—
+     fix countê°€ 1ì¸ caseëŠ”  ë‚˜ ì´ì™¸ì— ì°¸ì¡°í•˜ëŠ” statementê°€ ì—†ëŠ”ê²ƒì´ë‹¤.. */
     aUnUsedPCB->getFixCount(aStatistics,
                             &sFixCount);
       
     if(sFixCount <= 0)
     {
-        //child PCO null·Î update.
+        //child PCO nullë¡œ update.
         aUnUsedPCB->assignPCO(aStatistics,
                               aUnUsedPCB->getParentPCO(),
                               NULL);
@@ -1204,11 +1204,11 @@ IDE_RC mmcPlanCache::movePCBOfChildToUnUsedLst(idvSQL *aStatistics,
         /* BUG-35673 the instruction ordering serialization */
         ID_SERIAL_BEGIN(aUnUsedPCB->getParentPCO()->releasePrepareLatch());
 
-        // unused PCB ¸¦parent¿¡¼­ unused child listÀ¸·Î move.
+        // unused PCB ë¥¼parentì—ì„œ unused child listìœ¼ë¡œ move.
         ID_SERIAL_EXEC(mmcPlanCacheLRUList::moveToColdRegionTail(aStatistics,
                                                                  aUnUsedPCB), 1);
 
-        //child PCO ÇØÁ¦
+        //child PCO í•´ì œ
         /* BUG-38955 Destroying a Latch Held as Exclusive */
         ID_SERIAL_EXEC(aUnUsedPCB->getLRURegion(aStatistics, &sPCBLruRegion), 2);
         ID_SERIAL_EXEC(sPCBLruRegion == MMC_PCB_IN_NONE_LRU_REGION ?
@@ -1219,10 +1219,10 @@ IDE_RC mmcPlanCache::movePCBOfChildToUnUsedLst(idvSQL *aStatistics,
     else
     {
         /* BUG-35673 the instruction ordering serialization */
-        //child PCO¸¦ ¹Ù·Î Áö¿ï¼ö ¾øÀ½.
+        //child PCOë¥¼ ë°”ë¡œ ì§€ìš¸ìˆ˜ ì—†ìŒ.
         ID_SERIAL_BEGIN(aUnUsedPCB->getParentPCO()->releasePrepareLatch());
  
-        // unused PCB ¸¦parent¿¡¼­ unused child listÀ¸·Î move.
+        // unused PCB ë¥¼parentì—ì„œ unused child listìœ¼ë¡œ move.
         ID_SERIAL_EXEC(mmcPlanCacheLRUList::moveToColdRegionTail(aStatistics,
                                                                  aUnUsedPCB), 1);
 

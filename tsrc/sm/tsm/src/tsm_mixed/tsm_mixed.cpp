@@ -58,9 +58,9 @@ IDE_RC abnormalExit()
 }
 
 /* ------------------------------------------------
- *  [] Å×½ºÆÃ ¸ğµâ ¾î·¹ÀÌ ¸®½ºÆ®
- *     Ãß°¡¿µ¿ª : 1. ÇÔ¼ö ÇÁ·ÎÅäÅ¸ÀÔ
- *                2. ÇÔ¼ö Æ÷ÀÎÅÍ ¹è¿­
+ *  [] í…ŒìŠ¤íŒ… ëª¨ë“ˆ ì–´ë ˆì´ ë¦¬ìŠ¤íŠ¸
+ *     ì¶”ê°€ì˜ì—­ : 1. í•¨ìˆ˜ í”„ë¡œí† íƒ€ì…
+ *                2. í•¨ìˆ˜ í¬ì¸í„° ë°°ì—´
  * ----------------------------------------------*/
 
 IDE_RC testInit();
@@ -104,23 +104,23 @@ struct tsmFuncInfo gTestFuncArray[] =
         ID_TRUE, "attach1", testAttach1 
     },
     {
-        ID_TRUE, "normal_shutdown", NULL  // Á¤»óÁ¾·á 
+        ID_TRUE, "normal_shutdown", NULL  // ì •ìƒì¢…ë£Œ 
     },
 
     { 
         ID_TRUE, "attach2", testAttach2
     },
     {
-        ID_TRUE, "normal_shutdown", NULL  // Á¤»óÁ¾·á 
+        ID_TRUE, "normal_shutdown", NULL  // ì •ìƒì¢…ë£Œ 
     },
 
 #endif    
-    /* ------------- shutdown µÇÁö ¾Ê´Â Å×½ºÆ® ½ÃÀÛ ------------
-     *  - ÁÖÀÇ : ÀÌ ÀÌÈÄ¿¡ Ãß°¡µÇ´Â Å×½ºÆ®´Â Àı´ë·Î exit ÇÒ ¼ö ¾øÀ½!!
+    /* ------------- shutdown ë˜ì§€ ì•ŠëŠ” í…ŒìŠ¤íŠ¸ ì‹œì‘ ------------
+     *  - ì£¼ì˜ : ì´ ì´í›„ì— ì¶”ê°€ë˜ëŠ” í…ŒìŠ¤íŠ¸ëŠ” ì ˆëŒ€ë¡œ exit í•  ìˆ˜ ì—†ìŒ!!
      * ---------------------------------------------------------*/
     
     /* --------
-     * [1] ddl & dml & etc Test : ¼ºÁØÈ­
+     * [1] ddl & dml & etc Test : ì„±ì¤€í™”
      * -------*/
     { 
         ID_TRUE, "tsm_cursor", testCursor
@@ -193,31 +193,31 @@ struct tsmFuncInfo gTestFuncArray[] =
         ID_TRUE, "tsm_delete_rollback_2", testRefineDB2
     },
     /* --------
-     * [2] Ager Test : ÃÖÇö¼ö
+     * [2] Ager Test : ìµœí˜„ìˆ˜
      * -------*/
     {
         ID_TRUE, "tsm_ager", testAger
     },
     /* --------
-     * [3] Index Rebuild Test : ÃÖÇö¼ö
+     * [3] Index Rebuild Test : ìµœí˜„ìˆ˜
      * -------*/
     {
         ID_TRUE, "tsm_rebuild_index_stage1", testRebuildIndexStage1
     },
     {
-        ID_TRUE, "normal_shutdown", NULL  // Á¤»óÁ¾·á 
+        ID_TRUE, "normal_shutdown", NULL  // ì •ìƒì¢…ë£Œ 
     },
     {
         ID_TRUE, "tsm_rebuild_index_stage2", testRebuildIndexStage2
     },
     /* --------
-     * [4] Selective Loading : ±è¼ºÁø
+     * [4] Selective Loading : ê¹€ì„±ì§„
      * -------*/
     { 
         ID_TRUE, "tsm_selective_loading", testSelectiveLoading 
     },
     /* --------
-     * [6] sequence : ±è´ëÀÏ
+     * [6] sequence : ê¹€ëŒ€ì¼
      * -------*/
     { 
         ID_TRUE, "tsm_sequence1", testSequence1 
@@ -232,7 +232,7 @@ struct tsmFuncInfo gTestFuncArray[] =
         ID_TRUE, "tsm_sequence_multi", testSequenceMulti
     },
     {
-        ID_TRUE, "normal_shutdown", NULL  // Á¤»óÁ¾·á 
+        ID_TRUE, "normal_shutdown", NULL  // ì •ìƒì¢…ë£Œ 
     },
     /* --------
      * [5] Global Transaction : msjung
@@ -336,9 +336,9 @@ struct tsmFuncInfo gTestFuncArray[] =
     },
 
     /* --------
-     * [7] Recovery : ±è´ëÀÏ
+     * [7] Recovery : ê¹€ëŒ€ì¼
      * -------*/
-    // ¾Æ·¡ lineÀ» »èÁ¦ÇÒ ¼ö ¾øÀ½ : find ÇÒ °æ¿ì name == NULLÀ» ³¡À¸·Î ÀÎ½Ä!
+    // ì•„ë˜ lineì„ ì‚­ì œí•  ìˆ˜ ì—†ìŒ : find í•  ê²½ìš° name == NULLì„ ëìœ¼ë¡œ ì¸ì‹!
     {
         ID_TRUE, NULL, NULL
     }
@@ -348,7 +348,7 @@ struct tsmFuncInfo gTestFuncArray_dura[] =
 {
 
     /* --------
-     * [1] ddl & dml & etc Test : ¼ºÁØÈ­
+     * [1] ddl & dml & etc Test : ì„±ì¤€í™”
      * -------*/
     {
         ID_TRUE, "tsm_cursor", testCursor
@@ -383,19 +383,19 @@ struct tsmFuncInfo gTestFuncArray_dura[] =
         ID_TRUE, "tsm_delete_rollback_1", testDeleteRollbackRefineDB1
     },
     /* --------
-     * [2] Ager Test : ÃÖÇö¼ö
+     * [2] Ager Test : ìµœí˜„ìˆ˜
      * -------*/
     {
         ID_TRUE, "tsm_ager", testAger
     },
     /* --------                                                       
-     * [3] Index Rebuild Test : ÃÖÇö¼ö                                
+     * [3] Index Rebuild Test : ìµœí˜„ìˆ˜                                
      * ------- */
     {
         ID_TRUE, "tsm_rebuild_index_stage1", testRebuildIndexStage1
     },
     /* --------
-     * [6] sequence : ±è´ëÀÏ
+     * [6] sequence : ê¹€ëŒ€ì¼
      * -------*/
     {
         ID_TRUE, "tsm_sequence1", testSequence1
@@ -413,9 +413,9 @@ struct tsmFuncInfo gTestFuncArray_dura[] =
         ID_TRUE, "normal_shutdown", abnormalExit
     },
     /* --------
-     * [7] Recovery : ±è´ëÀÏ
+     * [7] Recovery : ê¹€ëŒ€ì¼
      * -------*/
-    // ¾Æ·¡ lineÀ» »èÁ¦ÇÒ ¼ö ¾øÀ½ : find ÇÒ °æ¿ì name == NULLÀ» ³¡À¸·Î ÀÎ½Ä!
+    // ì•„ë˜ lineì„ ì‚­ì œí•  ìˆ˜ ì—†ìŒ : find í•  ê²½ìš° name == NULLì„ ëìœ¼ë¡œ ì¸ì‹!
     {
         ID_TRUE, NULL, NULL
     }
@@ -493,7 +493,7 @@ static SInt  findTestStartIndex(tsmFuncInfo aTestFuncArray[],
 }
 
 /* ------------------------------------------------
- *  [] Mixed ¸®½ºÆ®
+ *  [] Mixed ë¦¬ìŠ¤íŠ¸
  * ----------------------------------------------*/
 
 int main(SInt argc, SChar **argv)
@@ -527,7 +527,7 @@ int main(SInt argc, SChar **argv)
              }
              break;
          }
-         case 's':  // Å×½ºÆÃ ÁÖÁ¦ ¼³Á¤
+         case 's':  // í…ŒìŠ¤íŒ… ì£¼ì œ ì„¤ì •
              idlOS::strncpy(sStartFuncName, optarg, 255);
 //               idlOS::strncpy(sStartFuncName, argv[2], 255);
             break;
@@ -559,7 +559,7 @@ int main(SInt argc, SChar **argv)
 
     if ( sEnvStr == NULL || strcmp(sEnvStr, "1") != 0 )               
     { 
-        if (sStartFuncName[0] != 0) // ½ÃÀÛµÉ ÇÔ¼ö°¡ ÀÔ·ÂµÊ
+        if (sStartFuncName[0] != 0) // ì‹œì‘ë  í•¨ìˆ˜ê°€ ì…ë ¥ë¨
         {
             sStartIndex = findTestStartIndex(gTestFuncArray,
                                              sStartFuncName);                                             
@@ -572,7 +572,7 @@ int main(SInt argc, SChar **argv)
     }//if sEnvStr == NULL || strcmp(sEnvStr, "1") != 0
     else
     {
-        if (sStartFuncName[0] != 0) // ½ÃÀÛµÉ ÇÔ¼ö°¡ ÀÔ·ÂµÊ
+        if (sStartFuncName[0] != 0) // ì‹œì‘ë  í•¨ìˆ˜ê°€ ì…ë ¥ë¨
         {
             sStartIndex = findTestStartIndex(gTestFuncArray_dura,
                                              sStartFuncName);

@@ -71,12 +71,12 @@ ACI_RC cmbPoolAlloc(cmbPool **aPool, acp_uint8_t aImpl, acp_uint16_t aBlockSize,
     ACP_UNUSED(aBlockCount);
 
     /*
-     * ÆÄ¶ó¹ÌÅÍ ¹üÀ§ °Ë»ç
+     * íŒŒë¼ë¯¸í„° ë²”ìœ„ ê²€ì‚¬
      */
     ACE_ASSERT(aImpl < CMB_POOL_IMPL_MAX);
 
     /*
-     * AllocInfo È¹µæ
+     * AllocInfo íšë“
      */
     sAllocInfo = &gCmbPoolAllocInfoClient[aImpl];
 
@@ -84,22 +84,22 @@ ACI_RC cmbPoolAlloc(cmbPool **aPool, acp_uint8_t aImpl, acp_uint16_t aBlockSize,
     ACE_ASSERT(sAllocInfo->mSize != NULL);
 
     /*
-     * ¸Þ¸ð¸® ÇÒ´ç
+     * ë©”ëª¨ë¦¬ í• ë‹¹
      */
     ACI_TEST(acpMemAlloc((void **)aPool, sAllocInfo->mSize()) != ACP_RC_SUCCESS);
 
     /*
-     * ¸â¹ö ÃÊ±âÈ­
+     * ë©¤ë²„ ì´ˆê¸°í™”
      */
     (*aPool)->mBlockSize = aBlockSize;
 
     /*
-     * ÇÔ¼ö Æ÷ÀÎÅÍ ¸ÅÇÎ
+     * í•¨ìˆ˜ í¬ì¸í„° ë§¤í•‘
      */
     ACI_TEST_RAISE(sAllocInfo->mMap(*aPool) != ACI_SUCCESS, InitializeFail);
 
     /*
-     * ÃÊ±âÈ­
+     * ì´ˆê¸°í™”
      */
     ACI_TEST_RAISE((*aPool)->mOp->mInitialize(*aPool) != ACI_SUCCESS, InitializeFail);
 
@@ -117,12 +117,12 @@ ACI_RC cmbPoolAlloc(cmbPool **aPool, acp_uint8_t aImpl, acp_uint16_t aBlockSize,
 ACI_RC cmbPoolFree(cmbPool *aPool)
 {
     /*
-     * Á¤¸®
+     * ì •ë¦¬
      */
     ACI_TEST(aPool->mOp->mFinalize(aPool) != ACI_SUCCESS);
 
     /*
-     * ¸Þ¸ð¸® ÇØÁ¦
+     * ë©”ëª¨ë¦¬ í•´ì œ
      */
     acpMemFree(aPool);
 
@@ -134,7 +134,7 @@ ACI_RC cmbPoolFree(cmbPool *aPool)
 ACI_RC cmbPoolSetSharedPool(cmbPool *aPool, acp_uint8_t aImpl)
 {
     /*
-     * ÆÄ¶ó¹ÌÅÍ ¹üÀ§ °Ë»ç
+     * íŒŒë¼ë¯¸í„° ë²”ìœ„ ê²€ì‚¬
      */
     ACE_ASSERT(aImpl > CMB_POOL_IMPL_NONE);
     ACE_ASSERT(aImpl < CMB_POOL_IMPL_MAX);
@@ -147,7 +147,7 @@ ACI_RC cmbPoolSetSharedPool(cmbPool *aPool, acp_uint8_t aImpl)
 ACI_RC cmbPoolGetSharedPool(cmbPool **aPool, acp_uint8_t aImpl)
 {
     /*
-     * ÆÄ¶ó¹ÌÅÍ ¹üÀ§ °Ë»ç
+     * íŒŒë¼ë¯¸í„° ë²”ìœ„ ê²€ì‚¬
      */
     ACE_ASSERT(aImpl < CMB_POOL_IMPL_MAX);
 

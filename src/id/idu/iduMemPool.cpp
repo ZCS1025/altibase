@@ -22,7 +22,7 @@
 extern const vULong gFence;
 
 /*
- * ÇØ´ç mem poolÀÌ mem pool mgr¿¡ ÀÇÇØ¼­ °ü¸®µÇ¾îÁú¼ö ÀÖ´Â°¡?
+ * í•´ë‹¹ mem poolì´ mem pool mgrì— ì˜í•´ì„œ ê´€ë¦¬ë˜ì–´ì§ˆìˆ˜ ìˆëŠ”ê°€?
  */
 #define IDU_ADD_OR_DEL_MEMPOOL ( (iduMemMgr::isServerMemType() == ID_TRUE) &&\
                                  (mFlag & IDU_MEMPOOL_GARBAGE_COLLECT )    &&\
@@ -33,26 +33,26 @@ extern const vULong gFence;
 
 /* ------------------------------------------------
 
-   MemPool °£·«ÇÑ ¼³¸í ( 2005.3.30 by lons )
+   MemPool ê°„ëµí•œ ì„¤ëª… ( 2005.3.30 by lons )
 
 
-   °³¿ä
-   mempoolÀº ¸Å¹ø malloc system callÀ» È£ÃâÇÏÁö ¾Ê°í
-   memory¸¦ ÇÒ´çÇÏ±â À§ÇÑ ¸ñÀûÀ» °¡Áø Å¬·¡½ºÀÌ´Ù.
-   ÇÏ³ªÀÇ mempool¿¡¼­ ÇÒ´çÇØ ÁÙ ¼ö ÀÖ´Â ¸Ş¸ğ¸®ÀÇ Å©±â´Â Ç×»ó °íÁ¤µÈ´Ù.
-   ¿©·¯ ¸Ş¸ğ¸® Å©±â¸¦ ÇÒ´çÇÏ°íÀÚ ÇÑ´Ù¸é ´Ù¸¥ Å©±â·Î
-   initµÈ mempoolÀ» 2°³ ÀÌ»ó ¸¸µé¾î¾ß ÇÑ´Ù.
+   ê°œìš”
+   mempoolì€ ë§¤ë²ˆ malloc system callì„ í˜¸ì¶œí•˜ì§€ ì•Šê³ 
+   memoryë¥¼ í• ë‹¹í•˜ê¸° ìœ„í•œ ëª©ì ì„ ê°€ì§„ í´ë˜ìŠ¤ì´ë‹¤.
+   í•˜ë‚˜ì˜ mempoolì—ì„œ í• ë‹¹í•´ ì¤„ ìˆ˜ ìˆëŠ” ë©”ëª¨ë¦¬ì˜ í¬ê¸°ëŠ” í•­ìƒ ê³ ì •ëœë‹¤.
+   ì—¬ëŸ¬ ë©”ëª¨ë¦¬ í¬ê¸°ë¥¼ í• ë‹¹í•˜ê³ ì í•œë‹¤ë©´ ë‹¤ë¥¸ í¬ê¸°ë¡œ
+   initëœ mempoolì„ 2ê°œ ì´ìƒ ë§Œë“¤ì–´ì•¼ í•œë‹¤.
 
 
-   ±¸¼º¿ä¼Ò( class )
-   iduMemPool : mem list¸¦ °ü¸®ÇÑ´Ù. ÇÏ³ªÀÇ mem pool¿¡¼­ mem list´Â
-                ´Ù¼ö°³ÀÏ ¼ö ÀÖ´Ù. ÀÌ°ÍÀº system cpu °³¼ö¿Í °ü°èÀÖÀ½.
-   iduMemList : ½ÇÁ¦ memory¸¦ ÇÒ´çÇÏ¿© È®º¸ÇÏ°í ÀÖ´Â list
-                memChunkÀÇ ¸®½ºÆ®·Î ±¸¼ºµÈ´Ù.
-   iduMemChunk : iduMemSlot list¸¦ À¯ÁöÇÑ´Ù. mempool¿¡¼­ ÇÒ´çÇØÁÙ
-                 ¸Ş¸ğ¸®°¡ ¸ğÀÚ¶ö¶§¸¶´Ù ÇÏ³ª¾¿ Ãß°¡µÈ´Ù.
-                 iduMemSlotÀÇ free count, max count¸¦ À¯ÁöÇÑ´Ù.
-   iduMemSlot : ½ÇÁ¦ ÇÒ´çÇØÁÙ ¸Ş¸ğ¸®
+   êµ¬ì„±ìš”ì†Œ( class )
+   iduMemPool : mem listë¥¼ ê´€ë¦¬í•œë‹¤. í•˜ë‚˜ì˜ mem poolì—ì„œ mem listëŠ”
+                ë‹¤ìˆ˜ê°œì¼ ìˆ˜ ìˆë‹¤. ì´ê²ƒì€ system cpu ê°œìˆ˜ì™€ ê´€ê³„ìˆìŒ.
+   iduMemList : ì‹¤ì œ memoryë¥¼ í• ë‹¹í•˜ì—¬ í™•ë³´í•˜ê³  ìˆëŠ” list
+                memChunkì˜ ë¦¬ìŠ¤íŠ¸ë¡œ êµ¬ì„±ëœë‹¤.
+   iduMemChunk : iduMemSlot listë¥¼ ìœ ì§€í•œë‹¤. mempoolì—ì„œ í• ë‹¹í•´ì¤„
+                 ë©”ëª¨ë¦¬ê°€ ëª¨ìë„ë•Œë§ˆë‹¤ í•˜ë‚˜ì”© ì¶”ê°€ëœë‹¤.
+                 iduMemSlotì˜ free count, max countë¥¼ ìœ ì§€í•œë‹¤.
+   iduMemSlot : ì‹¤ì œ í• ë‹¹í•´ì¤„ ë©”ëª¨ë¦¬
 
     -------      -------
    | chunk | -  | chunk | - ...
@@ -64,9 +64,9 @@ extern const vULong gFence;
 
     (eg.)
 
-    iduMemPool::initialize( cpu°³¼ö, ID_SIZEOF(UInt), 5 )À» ¼öÇàÇÏ¸é
-    ÇÏ³ªÀÇ chunk¿Í 5°³ÀÇ element°¡ »ı±ä´Ù.
-    elementÀÇ °³¼ö´Â ¸î°³ ¸¸Å­ÀÇ ¸Ş¸ğ¸®¸¦ ¹Ì¸® ÇÒ´çÇÏ´À³Ä¸¦ °áÁ¤ÇÑ´Ù.
+    iduMemPool::initialize( cpuê°œìˆ˜, ID_SIZEOF(UInt), 5 )ì„ ìˆ˜í–‰í•˜ë©´
+    í•˜ë‚˜ì˜ chunkì™€ 5ê°œì˜ elementê°€ ìƒê¸´ë‹¤.
+    elementì˜ ê°œìˆ˜ëŠ” ëª‡ê°œ ë§Œí¼ì˜ ë©”ëª¨ë¦¬ë¥¼ ë¯¸ë¦¬ í• ë‹¹í•˜ëŠëƒë¥¼ ê²°ì •í•œë‹¤.
 
     -------
    | chunk |
@@ -76,28 +76,28 @@ extern const vULong gFence;
    | element |  - | element | - ...
     ---------      ---------
 
-    iduMemPool::allocÀ» ¼öÇàÇÏ¸é
-    element ÇÏ³ª°¡ return µÈ´Ù.
-    ¸¸¾à element°¡ ºÎÁ·ÇÏ¸é chunk ÇÏ³ª¿Í element 5°³¸¦ ´õ ÇÒ´çÇÑ´Ù.
+    iduMemPool::allocì„ ìˆ˜í–‰í•˜ë©´
+    element í•˜ë‚˜ê°€ return ëœë‹¤.
+    ë§Œì•½ elementê°€ ë¶€ì¡±í•˜ë©´ chunk í•˜ë‚˜ì™€ element 5ê°œë¥¼ ë” í• ë‹¹í•œë‹¤.
  * ----------------------------------------------*/
 /*-----------------------------------------------------------
- * Description: iduMemPoolÀ» ÃÊ±âÈ­ ÇÑ´Ù.
+ * Description: iduMemPoolì„ ì´ˆê¸°í™” í•œë‹¤.
  *
- * aIndex            - [IN] ÀÌ ÇÔ¼ö¸¦ È£ÃâÇÑ ¸ğµâ
- *                        (¾îµğ¼­ È£ÃâÇÏ´ÂÁö Á¤º¸¸¦ À¯ÁöÇÏ±â À§ÇØ ÇÊ¿ä)
- * aName             - [IN] iduMemPoolÀÇ ½Äº° ÀÌ¸§
+ * aIndex            - [IN] ì´ í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•œ ëª¨ë“ˆ
+ *                        (ì–´ë””ì„œ í˜¸ì¶œí•˜ëŠ”ì§€ ì •ë³´ë¥¼ ìœ ì§€í•˜ê¸° ìœ„í•´ í•„ìš”)
+ * aName             - [IN] iduMemPoolì˜ ì‹ë³„ ì´ë¦„
  * aListCount
- * aElemSize         - [IN] ÇÒ´çÇÒ ¸Ş¸ğ¸®ÀÇ ´ÜÀ§Å©±â
+ * aElemSize         - [IN] í• ë‹¹í•  ë©”ëª¨ë¦¬ì˜ ë‹¨ìœ„í¬ê¸°
  * aElemCount        - [IN] element count
- * aChunkLimit       - [IN] memPool¿¡¼­ À¯ÁöÇÒ chunk°³¼öÀÇ ÃÖ´ëÄ¡.
- *             (´Ü ¸ğµç chunk°¡ ´Ù ÇÒ´çÁßÀÎ °æ¿ì¿¡´Â ÀÌ °³¼ö¿¡ Æ÷ÇÔµÇÁö ¾Ê´Â´Ù.)
- * aUseMutex         - [IN] mutex»ç¿ë ¿©ºÎ
- * aAlignByte        - [IN] Align ÇÒ Byte ´ÜÀ§.
- * aForcePooling     - [IN] property¿¡¼­ mem poolÀ» »ç¿ëÇÏÁö ¾Êµµ·Ï ¼³Á¤Çß´õ¶óµµ 
- *                          °­Á¦·Î »ı¼º.(BUG-21547)
- * aGarbageCollection - [IN] Garbage collection¿¡ ±â¿©ÇÏµµ·Ï ÇÒ°ÍÀÎ°¡ °áÁ¤.
- *                           ID_TRUEÀÏ¶§ mem pool manager¿¡ ÀÇÇØ¼­ °ü¸®µÇ¾îÁü
- * aHWCacheLIne       - [IN] H/W cache line align À» »ç¿ëÇÒ°ÍÀÎ°¡
+ * aChunkLimit       - [IN] memPoolì—ì„œ ìœ ì§€í•  chunkê°œìˆ˜ì˜ ìµœëŒ€ì¹˜.
+ *             (ë‹¨ ëª¨ë“  chunkê°€ ë‹¤ í• ë‹¹ì¤‘ì¸ ê²½ìš°ì—ëŠ” ì´ ê°œìˆ˜ì— í¬í•¨ë˜ì§€ ì•ŠëŠ”ë‹¤.)
+ * aUseMutex         - [IN] mutexì‚¬ìš© ì—¬ë¶€
+ * aAlignByte        - [IN] Align í•  Byte ë‹¨ìœ„.
+ * aForcePooling     - [IN] propertyì—ì„œ mem poolì„ ì‚¬ìš©í•˜ì§€ ì•Šë„ë¡ ì„¤ì •í–ˆë”ë¼ë„ 
+ *                          ê°•ì œë¡œ ìƒì„±.(BUG-21547)
+ * aGarbageCollection - [IN] Garbage collectionì— ê¸°ì—¬í•˜ë„ë¡ í• ê²ƒì¸ê°€ ê²°ì •.
+ *                           ID_TRUEì¼ë•Œ mem pool managerì— ì˜í•´ì„œ ê´€ë¦¬ë˜ì–´ì§
+ * aHWCacheLIne       - [IN] H/W cache line align ì„ ì‚¬ìš©í• ê²ƒì¸ê°€
  * ---------------------------------------------------------*/
 IDE_RC iduMemPool::initialize(iduMemoryClientIndex aIndex,
                               SChar*               aName,
@@ -406,7 +406,7 @@ IDE_RC iduMemPool::memfree(void *aMem)
 
 #else
 
-        // Memory Check Option¿¡¼­´Â ÀÌ °úÁ¤À» »ı·«ÇØ¾ß ÇÔ.
+        // Memory Check Optionì—ì„œëŠ” ì´ ê³¼ì •ì„ ìƒëµí•´ì•¼ í•¨.
 # ifdef MEMORY_ASSERT
         sCurChunk         = *((iduMemChunk **)((UChar *)aMem + mElemSize +
                                            ID_SIZEOF(vULong)));
@@ -455,7 +455,7 @@ IDE_RC iduMemPool::memfree(void *aMem)
 /*
  * PROJ-2065 Garbage collection 
  *
- * »ç¿ëÇÏÁö ¾Ê´Â free chunkµéÀ» OS¿¡ ¹İ³³ÇÏ¿© ¸Ş¸ğ¸®°ø°£À» È®º¸ÇÑ´Ù.
+ * ì‚¬ìš©í•˜ì§€ ì•ŠëŠ” free chunkë“¤ì„ OSì— ë°˜ë‚©í•˜ì—¬ ë©”ëª¨ë¦¬ê³µê°„ì„ í™•ë³´í•œë‹¤.
  */
 IDE_RC iduMemPool::shrink(UInt *aSize )
 {

@@ -60,7 +60,7 @@ IDE_RC callbackBeforeUpdateLicense(
     return IDE_FAILURE;
 }
 
-// BUGBUG : ¶óÀÌ¼¾½º ¾øÀ» ¶§ ¾î¶²Çö»óÀÎÁö È®ÀÎ ÇÊ¿ä
+// BUGBUG : ë¼ì´ì„¼ìŠ¤ ì—†ì„ ë•Œ ì–´ë–¤í˜„ìƒì¸ì§€ í™•ì¸ í•„ìš”
 static IDE_RC mmmPhaseActionCheckLicense(mmmPhase         /*aPhase*/,
                                          UInt             /*aOptionflag*/,
                                          mmmPhaseAction * /*aAction*/)

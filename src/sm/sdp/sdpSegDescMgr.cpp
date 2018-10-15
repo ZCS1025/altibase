@@ -42,7 +42,7 @@ IDE_RC sdpSegDescMgr::initSegDesc( sdpSegmentDesc  * aSegmentDesc,
     aSegmentDesc->mSegMgmtOp   = getSegMgmtOp(aSegmentDesc->mSegMgmtType);
 
     aSegmentDesc->mSegHandle.mSpaceID = aSpaceID;
-    // Segment RID´Â »ı¼ºÀü¿¡´Â SD_NULL_RIDÀÏ ¼ö ÀÖ´Ù.
+    // Segment RIDëŠ” ìƒì„±ì „ì—ëŠ” SD_NULL_RIDì¼ ìˆ˜ ìˆë‹¤.
     aSegmentDesc->mSegHandle.mSegPID = aSegPID;
 
     if ( aSegmentDesc->mSegHandle.mSegPID != SD_NULL_PID )
@@ -64,8 +64,8 @@ IDE_RC sdpSegDescMgr::initSegDesc( sdpSegmentDesc  * aSegmentDesc,
     }
     else
     {
-        // Segment»ı¼º½Ã ¾ÆÁ÷ Segment PID°¡ °áÁ¤µÇÁö ¾ÊÀº °æ¿ì
-        // Segment PID°¡ ¼³Á¤µÇÁö ¾ÊÀº °æ¿ì¿¡´Â Segment ÃÊ±âÈ­¸¦ Skip ÇÑ´Ù.
+        // Segmentìƒì„±ì‹œ ì•„ì§ Segment PIDê°€ ê²°ì •ë˜ì§€ ì•Šì€ ê²½ìš°
+        // Segment PIDê°€ ì„¤ì •ë˜ì§€ ì•Šì€ ê²½ìš°ì—ëŠ” Segment ì´ˆê¸°í™”ë¥¼ Skip í•œë‹¤.
     }
 
     if( aSegmentDesc->mSegMgmtType != SMI_SEGMENT_MGMT_NULL_TYPE )
@@ -83,7 +83,7 @@ IDE_RC sdpSegDescMgr::initSegDesc( sdpSegmentDesc  * aSegmentDesc,
     }
     else
     {
-        /* TableÀÌ ¼ÓÇØÀÖ´Â TableSpace°¡ ÀÌ¹Ì DropµÇ¾úÀ»¶§ */
+        /* Tableì´ ì†í•´ìˆëŠ” TableSpaceê°€ ì´ë¯¸ Dropë˜ì—ˆì„ë•Œ */
     }
 
     return IDE_SUCCESS;
@@ -112,7 +112,7 @@ IDE_RC sdpSegDescMgr::destSegDesc( sdpSegmentDesc * aSegmentDesc )
 
 /***********************************************************************
  * Description :
- *  segment attribute default°ªÀ» ¼³Á¤ÇÑ´Ù.
+ *  segment attribute defaultê°’ì„ ì„¤ì •í•œë‹¤.
  *
  *  aSegmentAttr - [OUT] segment attribute
  *  aSegType     - [IN]  segment type
@@ -161,13 +161,13 @@ void sdpSegDescMgr::setDefaultSegStoAttr( smiSegStorageAttr  * aSegmentStoAttr )
 }
 
 /*******************************************************************************
- * Description : sdpSegmentDescÀÇ ³»¿ëÀ» dumpÇÑ´Ù.
+ * Description : sdpSegmentDescì˜ ë‚´ìš©ì„ dumpí•œë‹¤.
  *
- * Implementation : mCache¿¡ ¹ÙÀÎµùµÇ´Â °´Ã¼´Â ÇüÀÌ Æ¯Á¤µÇ¾î ÀÖÁö ¾ÊÀ¸¹Ç·Î
- *          º» dump ÇÔ¼ö¿¡¼­´Â Á¦¿ÜÇÑ´Ù.
+ * Implementation : mCacheì— ë°”ì¸ë”©ë˜ëŠ” ê°ì²´ëŠ” í˜•ì´ íŠ¹ì •ë˜ì–´ ìˆì§€ ì•Šìœ¼ë¯€ë¡œ
+ *          ë³¸ dump í•¨ìˆ˜ì—ì„œëŠ” ì œì™¸í•œë‹¤.
  *
  * Parameters :
- *      aSegDesc    - [IN] dump ÇÒ sdpSegmentDesc
+ *      aSegDesc    - [IN] dump í•  sdpSegmentDesc
  ******************************************************************************/
 IDE_RC sdpSegDescMgr::dumpSegDesc( sdpSegmentDesc* aSegDesc )
 {

@@ -145,7 +145,7 @@ ACI_RC ulnSF_NotImplemented(ulnFnContext * aFnContext)
  * ULN_SFID_00
  * Common Function.
  *
- * ¿¡·¯ È¤Àº »óÅÂÀüÀÌ ¾øÀÌ ±×³É Åë°úÇÏ´Â ÇÔ¼ö.
+ * ì—ëŸ¬ í˜¹ì€ ìƒíƒœì „ì´ ì—†ì´ ê·¸ëƒ¥ í†µê³¼í•˜ëŠ” í•¨ìˆ˜.
  */
 ACI_RC ulnSFID_00(ulnFnContext *aFnContext)
 {
@@ -159,7 +159,7 @@ ACI_RC ulnSFID_00(ulnFnContext *aFnContext)
             break;
 
             /*
-             * BUGBUG : »óÅÂ¸Ó½Å¿¡¼­ ¹ß»ýÇÒ ¼ö ÀÖ´Â ¿¡·¯µéÀ» ÀÏÀÏÀÌ Ã¼Å©ÇØ ÁÖ¾î¾ß ÇÑ´Ù.
+             * BUGBUG : ìƒíƒœë¨¸ì‹ ì—ì„œ ë°œìƒí•  ìˆ˜ ìžˆëŠ” ì—ëŸ¬ë“¤ì„ ì¼ì¼ì´ ì²´í¬í•´ ì£¼ì–´ì•¼ í•œë‹¤.
              */
         default:
             ACI_TEST(ulnError(aFnContext, aFnContext->mUlErrorCode) != ACI_SUCCESS);
@@ -187,7 +187,7 @@ ACI_RC ulnSFID_00(ulnFnContext *aFnContext)
  *      [c] Current function. The current function was executing asynchronously.
  *      [o] Other function. Another function was executing asynchronously.
  *
- * STMT »óÅÂÀüÀÌ Å×ÀÌºíÀÇ S11-S12 ÄÃ·³¿¡ ÀÖ´Ù.
+ * STMT ìƒíƒœì „ì´ í…Œì´ë¸”ì˜ S11-S12 ì»¬ëŸ¼ì— ìžˆë‹¤.
  */
 ACI_RC ulnSFID_01(ulnFnContext *aFnContext)
 {
@@ -221,19 +221,19 @@ ACI_RC ulnSFID_07(ulnFnContext *aFnContext)
  * These functions check the conditions stipulated in the ODBC state transition tables
  * and then move the object's state to the next state accordingly.
  *
- * »óÅÂÀüÀÌ ÇÔ¼öµéÀÇ ¸ñ·ÏÀÓ.
+ * ìƒíƒœì „ì´ í•¨ìˆ˜ë“¤ì˜ ëª©ë¡ìž„.
  *
- * »õ·Î¿î »óÅÂÀüÀÌ ÇÔ¼ö¸¦ Ãß°¡ÇÏ´Â ¹ý :
- *      ºñ¾î ÀÖ´Â ½½·ÔÀ» Ã£¾Æ¼­ ÇÔ¼ö¸íÀ» Àû´Â´Ù.
- *      ulnStateMachine.h ¿¡ Á¤ÀÇµÇ¾î ÀÖ´Â
- *      ulnStateFuncId enumeration ¿¡ ÇØ´çÇÏ´Â ULN_SFID_XXX »ó¼ö¸¦ Ãß°¡ÇÑ´Ù.
- *      enum À» Ãß°¡ÇÑ À§Ä¡¿Í ÀÌ°÷¿¡¼­ ÇÔ¼ö Æ÷ÀÎÅÍ¸¦ Ãß°¡ÇÑ À§Ä¡´Â
- *      Á¤È®È÷ ÀÏÄ¡ÇØ¾ß ÇÑ´Ù.
+ * ìƒˆë¡œìš´ ìƒíƒœì „ì´ í•¨ìˆ˜ë¥¼ ì¶”ê°€í•˜ëŠ” ë²• :
+ *      ë¹„ì–´ ìžˆëŠ” ìŠ¬ë¡¯ì„ ì°¾ì•„ì„œ í•¨ìˆ˜ëª…ì„ ì ëŠ”ë‹¤.
+ *      ulnStateMachine.h ì— ì •ì˜ë˜ì–´ ìžˆëŠ”
+ *      ulnStateFuncId enumeration ì— í•´ë‹¹í•˜ëŠ” ULN_SFID_XXX ìƒìˆ˜ë¥¼ ì¶”ê°€í•œë‹¤.
+ *      enum ì„ ì¶”ê°€í•œ ìœ„ì¹˜ì™€ ì´ê³³ì—ì„œ í•¨ìˆ˜ í¬ì¸í„°ë¥¼ ì¶”ê°€í•œ ìœ„ì¹˜ëŠ”
+ *      ì •í™•ížˆ ì¼ì¹˜í•´ì•¼ í•œë‹¤.
  *
- *      ulnStateFuncTbl[] ¹è¿­¿¡ ÇØ´çÇÏ´Â ÇÔ¼öÀÇ Æ÷ÀÎÅÍ°¡ ¼¼ÆÃµÇ¾î ÀÖ´Â°ÍÀ» È®ÀÎÇÏ¿©
- *      double check ÇØ¾ß ÇÑ´Ù.
+ *      ulnStateFuncTbl[] ë°°ì—´ì— í•´ë‹¹í•˜ëŠ” í•¨ìˆ˜ì˜ í¬ì¸í„°ê°€ ì„¸íŒ…ë˜ì–´ ìžˆëŠ”ê²ƒì„ í™•ì¸í•˜ì—¬
+ *      double check í•´ì•¼ í•œë‹¤.
  *
- * »õ·Î¿î SQL ÇÔ¼ö Ãß°¡¿Í´Â º°°³ÀÇ ¹®Á¦ÀÓÀ» ¸í½ÉÇÒ °Í.
+ * ìƒˆë¡œìš´ SQL í•¨ìˆ˜ ì¶”ê°€ì™€ëŠ” ë³„ê°œì˜ ë¬¸ì œìž„ì„ ëª…ì‹¬í•  ê²ƒ.
  */
 ulnStateFunc *ulnStateFuncTbl[ULN_SFID_MAX] =
 {
@@ -242,7 +242,7 @@ ulnStateFunc *ulnStateFuncTbl[ULN_SFID_MAX] =
     /*
      * STMT
      */
-    ulnSFID_01,             /* °øÅëÇÔ¼ö NS[c], (HY010)[o], S11,S12 */
+    ulnSFID_01,             /* ê³µí†µí•¨ìˆ˜ NS[c], (HY010)[o], S11,S12 */
 
     ulnSFID_02,             /* SQLBulkOperations S5,S6 */
     ulnSFID_03,             /* SQLCancel S8-S10 */
@@ -250,7 +250,7 @@ ulnStateFunc *ulnStateFuncTbl[ULN_SFID_MAX] =
     ulnSFID_05,             /* SQLCloseCursor S5-S7 */
     ulnSF_NotImplemented,   /* SQLColAttribute S2 */
 
-    ulnSFID_07,             /* °øÅëÇÔ¼ö --[s], S11[x] */
+    ulnSFID_07,             /* ê³µí†µí•¨ìˆ˜ --[s], S11[x] */
 
     /*
      * SFID_08 - SFID_10
@@ -414,7 +414,7 @@ ulnStateTblEntry ulnStateEnvTbl[ULN_FID_MAX][ULN_MAX_ENV_STATE] =
     {
         /* ULN_FID_ENDTRAN */
         /*
-         * BUGBUG : ¸¸µé¾î¾ß ÇÑ´Ù.
+         * BUGBUG : ë§Œë“¤ì–´ì•¼ í•œë‹¤.
          */
         {ULN_SFID_00, ULN_EI_00000}, {ULN_SFID_92, ULN_EI_00000}, {ULN_SFID_93, ULN_EI_00000}
     },
@@ -552,7 +552,7 @@ ulnStateTblEntry ulnStateDbcTbl[ULN_FID_MAX][ULN_MAX_DBC_STATE] =
     {
         /* ULN_FID_ENDTRAN */
         /*
-         * BUGBUG : ¸¸µé¾î¾ß ÇÑ´Ù.
+         * BUGBUG : ë§Œë“¤ì–´ì•¼ í•œë‹¤.
          */
         {ULN_SFID_00, ULN_EI_00000}, {ULN_SFID_00, ULN_EI_00000}, {ULN_SFID_00, ULN_EI_00000},
         {ULN_SFID_00, ULN_EI_00000}, {ULN_SFID_00, ULN_EI_00000}, {ULN_SFID_70, ULN_EI_00000},
@@ -828,12 +828,12 @@ ulnStateTblEntry ulnStateStmtTbl[ULN_FID_MAX][ULN_MAX_STMT_STATE] =
         {ULN_SFID_01, ULN_EI_00000}, {ULN_SFID_01, ULN_EI_00000},
     },
 
-    { ULN_STMT_NOT_IMPLEMENTED }, /* ULN_FID_DISCONNECT : Æ¯ÀÌÄÉÀÌ½º. ulnSFID_67() ÀÇ Note ÂüÁ¶ */
+    { ULN_STMT_NOT_IMPLEMENTED }, /* ULN_FID_DISCONNECT : íŠ¹ì´ì¼€ì´ìŠ¤. ulnSFID_67() ì˜ Note ì°¸ì¡° */
 
     {
         /* ULN_FID_ENDTRAN */
         /*
-         * BUGBUG : ¸¸µé¾î¾ß ÇÑ´Ù.
+         * BUGBUG : ë§Œë“¤ì–´ì•¼ í•œë‹¤.
          */
         {ULN_SFID_00, ULN_EI_00000}, {ULN_SFID_00, ULN_EI_00000}, {ULN_SFID_00, ULN_EI_00000},
         {ULN_SFID_00, ULN_EI_00000}, {ULN_SFID_00, ULN_EI_00000}, {ULN_SFID_00, ULN_EI_00000},
@@ -860,7 +860,7 @@ ulnStateTblEntry ulnStateStmtTbl[ULN_FID_MAX][ULN_MAX_STMT_STATE] =
     },
 
     {
-        /* ULN_FID_FETCH, SQLFetchScroll °ú ¶È°°À½. */
+        /* ULN_FID_FETCH, SQLFetchScroll ê³¼ ë˜‘ê°™ìŒ. */
         {ULN_SFID_00, ULN_EI_IH000}, {ULN_SFID_00, ULN_EI_HY010}, {ULN_SFID_00, ULN_EI_HY010},
         {ULN_SFID_00, ULN_EI_HY010}, {ULN_SFID_00, ULN_EI_24000}, {ULN_SFID_24, ULN_EI_00000},
         {ULN_SFID_25, ULN_EI_00000}, {ULN_SFID_00, ULN_EI_HY010}, {ULN_SFID_00, ULN_EI_HY010},
@@ -869,7 +869,7 @@ ulnStateTblEntry ulnStateStmtTbl[ULN_FID_MAX][ULN_MAX_STMT_STATE] =
     },
 
     {
-        /* ULN_FID_FETCHSCROLL, SQLFetch ¿Í ¶È°°À½. */
+        /* ULN_FID_FETCHSCROLL, SQLFetch ì™€ ë˜‘ê°™ìŒ. */
         {ULN_SFID_00, ULN_EI_IH000}, {ULN_SFID_00, ULN_EI_HY010}, {ULN_SFID_00, ULN_EI_HY010},
         {ULN_SFID_00, ULN_EI_HY010}, {ULN_SFID_00, ULN_EI_24000}, {ULN_SFID_24, ULN_EI_00000},
         {ULN_SFID_25, ULN_EI_00000}, {ULN_SFID_00, ULN_EI_HY010}, {ULN_SFID_00, ULN_EI_HY010},
@@ -1056,9 +1056,9 @@ ulnStateTblEntry ulnStateStmtTbl[ULN_FID_MAX][ULN_MAX_STMT_STATE] =
         {ULN_SFID_00, ULN_EI_HY010}, {ULN_SFID_00, ULN_EI_HY010}
     },
 
-    /* SetConnectAttr() ÇÔ¼öÀÇ STMT »óÅÂÀüÀÌÇ¥´Â ul ±¸Çö»ó Å¸Áö ¾Ê´Â´Ù.
-     * ±¸Á¶»ó ¹®Á¦´Â ¾Æ´Ï°í, ¾ÖÃÊ¿¡ DBC ÇÔ¼ö°¡ STMT »óÅÂÀüÀÌÇ¥¸¦ °¡Áø°Ô Á» ÀÌ»óÇÑ µí.
-     * ÃßÈÄ ÇÊ¿äÇÏ¸é DBC »óÅÂÀüÀÌÇ¥ C5¿¡¼­ Ã³¸®ÇÏ¸é µÈ´Ù. */
+    /* SetConnectAttr() í•¨ìˆ˜ì˜ STMT ìƒíƒœì „ì´í‘œëŠ” ul êµ¬í˜„ìƒ íƒ€ì§€ ì•ŠëŠ”ë‹¤.
+     * êµ¬ì¡°ìƒ ë¬¸ì œëŠ” ì•„ë‹ˆê³ , ì• ì´ˆì— DBC í•¨ìˆ˜ê°€ STMT ìƒíƒœì „ì´í‘œë¥¼ ê°€ì§„ê²Œ ì¢€ ì´ìƒí•œ ë“¯.
+     * ì¶”í›„ í•„ìš”í•˜ë©´ DBC ìƒíƒœì „ì´í‘œ C5ì—ì„œ ì²˜ë¦¬í•˜ë©´ ëœë‹¤. */
     { ULN_STMT_NOT_IMPLEMENTED }, /* ULN_FID_SETCONNECTATTR */
 
     { ULN_STMT_NOT_IMPLEMENTED }, /* ULN_FID_SETCURSORNAME */
@@ -1075,8 +1075,8 @@ ulnStateTblEntry ulnStateStmtTbl[ULN_FID_MAX][ULN_MAX_STMT_STATE] =
     { ULN_STMT_NOT_IMPLEMENTED }, /* ULN_FID_SETDESCREC */
 #if 0
     {
-        /* ULN_FID_SETDESCREC : ULN_FID_SETDESCFIELD ¿Í ¿ÏÀüÈ÷ °°À½. ÇÔ¼ö ±¸ÇöÇÏ¸é ÁÖ¼® Ç®°í,
-         * À­ÁÙ Áö¿ì±â. */
+        /* ULN_FID_SETDESCREC : ULN_FID_SETDESCFIELD ì™€ ì™„ì „ížˆ ê°™ìŒ. í•¨ìˆ˜ êµ¬í˜„í•˜ë©´ ì£¼ì„ í’€ê³ ,
+         * ìœ—ì¤„ ì§€ìš°ê¸°. */
         {ULN_SFID_00, ULN_EI_IH000}, {ULN_SFID_00, ULN_EI_00000}, {ULN_SFID_00, ULN_EI_00000},
         {ULN_SFID_00, ULN_EI_00000}, {ULN_SFID_00, ULN_EI_00000}, {ULN_SFID_00, ULN_EI_00000},
         {ULN_SFID_00, ULN_EI_00000}, {ULN_SFID_00, ULN_EI_00000}, {ULN_SFID_00, ULN_EI_HY010},
@@ -1212,7 +1212,7 @@ ulnStateTblEntry ulnStateStmtTbl[ULN_FID_MAX][ULN_MAX_STMT_STATE] =
     },
 
     {
-        /* ULN_FID_GETPLAN : BUGBUG ¿ì¼± ¹«Á¶°Ç Åë°ú */
+        /* ULN_FID_GETPLAN : BUGBUG ìš°ì„  ë¬´ì¡°ê±´ í†µê³¼ */
         {ULN_SFID_00, ULN_EI_IH000}, {ULN_SFID_00, ULN_EI_00000}, {ULN_SFID_00, ULN_EI_00000},
         {ULN_SFID_00, ULN_EI_00000}, {ULN_SFID_00, ULN_EI_00000}, {ULN_SFID_00, ULN_EI_00000},
         {ULN_SFID_00, ULN_EI_00000}, {ULN_SFID_00, ULN_EI_00000}, {ULN_SFID_00, ULN_EI_00000},
@@ -1263,8 +1263,8 @@ ulnStateFunc *ulnStateGetStateFunc(ulnFnContext *aFnContext)
 
         case ULN_OBJ_TYPE_DESC:
             /*
-             * Note : DESC ÀÇ °æ¿ì´Â »óÅÂÀüÀÌ ÇÊ¿ä¾ø´Ù. ±×³É Á×Á× Åë°ú½ÃÅ°°í,
-             *        SQLFreeHandle() ½Ã¿¡¸¸ ¼öÀÛ¾÷À¸·Î Á» ¼öÁ¤ÇØ ÁÖÀÚ.
+             * Note : DESC ì˜ ê²½ìš°ëŠ” ìƒíƒœì „ì´ í•„ìš”ì—†ë‹¤. ê·¸ëƒ¥ ì£½ì£½ í†µê³¼ì‹œí‚¤ê³ ,
+             *        SQLFreeHandle() ì‹œì—ë§Œ ìˆ˜ìž‘ì—…ìœ¼ë¡œ ì¢€ ìˆ˜ì •í•´ ì£¼ìž.
              */
             sStateFuncID             = ULN_SFID_00;
             aFnContext->mUlErrorCode = ulERR_IGNORE_NO_ERROR;
@@ -1308,7 +1308,7 @@ ACI_RC ulnEnter(ulnFnContext *aFnContext, void *aArgs)
     ulnDbc *sDbc = NULL;
 
     /*
-     * BUGBUG : »óÀ§ °´Ã¼ÀÇ »óÅÂÀüÀÌ¸¦ °í·ÁÇØ¾ß ÇÑ´Ù.
+     * BUGBUG : ìƒìœ„ ê°ì²´ì˜ ìƒíƒœì „ì´ë¥¼ ê³ ë ¤í•´ì•¼ í•œë‹¤.
      */
 
     aFnContext->mArgs = aArgs;
@@ -1316,10 +1316,10 @@ ACI_RC ulnEnter(ulnFnContext *aFnContext, void *aArgs)
     ACI_TEST_RAISE(aFnContext->mHandle.mObj == NULL, LABEL_INVALID_HANDLE);
 
     /*
-     * ¾Æ·¡ÀÇ µÎ °ªÀÌ ÀÏÄ¡ÇÏ´Â°¡ÀÇ Ã¼Å©¸¸À¸·Î INVALID HANDLE ÆÇ´ÜÀº ÃæºÐÇÏ´Ù :
+     * ì•„ëž˜ì˜ ë‘ ê°’ì´ ì¼ì¹˜í•˜ëŠ”ê°€ì˜ ì²´í¬ë§Œìœ¼ë¡œ INVALID HANDLE íŒë‹¨ì€ ì¶©ë¶„í•˜ë‹¤ :
      *
-     *      a. ÁÖ¾îÁø °´Ã¼ÀÇ   object type (sObjectType)
-     *      b. ÇÔ¼ö°¡ ±â´ëÇÏ´Â object type (aFnContext->mObjType)
+     *      a. ì£¼ì–´ì§„ ê°ì²´ì˜   object type (sObjectType)
+     *      b. í•¨ìˆ˜ê°€ ê¸°ëŒ€í•˜ëŠ” object type (aFnContext->mObjType)
      */
 
     sObjectType = aFnContext->mHandle.mObj->mType;
@@ -1356,8 +1356,8 @@ ACI_RC ulnEnter(ulnFnContext *aFnContext, void *aArgs)
      */
 
     /* PROJ-2177 User Interface - Cancel
-     * CancelÀº Execute Áß¿¡µµ ¾µ ¼ö ÀÖ¾î¾ß ÇÏ¹Ç·Î LockÀ» ÀâÁö ¾Ê´Â´Ù.
-     * ´Ü, NEED DATA Ã³¸® ÁßÀÏ¶§´Â »óÅÂ°¡ ²¿ÀÌ´Â°É ¸·±â À§ÇØ¼­ LockÀ» Àâ´Â´Ù. */
+     * Cancelì€ Execute ì¤‘ì—ë„ ì“¸ ìˆ˜ ìžˆì–´ì•¼ í•˜ë¯€ë¡œ Lockì„ ìž¡ì§€ ì•ŠëŠ”ë‹¤.
+     * ë‹¨, NEED DATA ì²˜ë¦¬ ì¤‘ì¼ë•ŒëŠ” ìƒíƒœê°€ ê¼¬ì´ëŠ”ê±¸ ë§‰ê¸° ìœ„í•´ì„œ Lockì„ ìž¡ëŠ”ë‹¤. */
     if ((aFnContext->mFuncID != ULN_FID_CANCEL)
      || (ulnStmtGetNeedDataFuncID(aFnContext->mHandle.mStmt) != ULN_FID_NONE))
     {
@@ -1375,7 +1375,7 @@ ACI_RC ulnEnter(ulnFnContext *aFnContext, void *aArgs)
 
     /*
      * ===============================
-     * Enter »óÅÂÀüÀÌ BEGIN
+     * Enter ìƒíƒœì „ì´ BEGIN
      * ===============================
      */
 
@@ -1385,7 +1385,7 @@ ACI_RC ulnEnter(ulnFnContext *aFnContext, void *aArgs)
 
     /*
      * ===============================
-     * Enter »óÅÂÀüÀÌ END
+     * Enter ìƒíƒœì „ì´ END
      * ===============================
      */
 
@@ -1425,13 +1425,13 @@ ACI_RC ulnExit(ulnFnContext *aFnContext)
     ulnFunctionId sExecFuncID;
 
     /*
-     * Note : exit point ¿¡¼­ state function Àº ¿¡·¯¸¦ ¸®ÅÏÇÏÁö ¾Ê´Â´Ù.
-     *        ACI_TEST() ¸¦ ¾ø¾Öµµ µÉ ÅÙµ¥..
+     * Note : exit point ì—ì„œ state function ì€ ì—ëŸ¬ë¥¼ ë¦¬í„´í•˜ì§€ ì•ŠëŠ”ë‹¤.
+     *        ACI_TEST() ë¥¼ ì—†ì• ë„ ë  í…ë°..
      */
 
     /*
      * ===============================
-     * Exit »óÅÂÀüÀÌ BEGIN
+     * Exit ìƒíƒœì „ì´ BEGIN
      * ===============================
      */
 
@@ -1440,11 +1440,11 @@ ACI_RC ulnExit(ulnFnContext *aFnContext)
 
     /*
      * ===============================
-     * Exit »óÅÂÀüÀÌ END
+     * Exit ìƒíƒœì „ì´ END
      * ===============================
      */
 
-    /* PROJ-2177: CancelÀÏ ¶§´Â LockÀ» ¾ÈÀâÀ» ¶§µµ ÀÖ´Ù. */
+    /* PROJ-2177: Cancelì¼ ë•ŒëŠ” Lockì„ ì•ˆìž¡ì„ ë•Œë„ ìžˆë‹¤. */
     ULN_IS_FLAG_UP(aFnContext->mNeedUnlock)
     {
         aFnContext->mHandle.mObj->mExecFuncID = ULN_FID_NONE;
@@ -1466,7 +1466,7 @@ ACI_RC ulnExit(ulnFnContext *aFnContext)
     sExecFuncID                           = aFnContext->mHandle.mObj->mExecFuncID;
     aFnContext->mHandle.mObj->mExecFuncID = ULN_FID_NONE;
 
-    /* PROJ-2177: CancelÀÏ ¶§´Â LockÀ» ¾ÈÀâÀ» ¶§µµ ÀÖ´Ù. */
+    /* PROJ-2177: Cancelì¼ ë•ŒëŠ” Lockì„ ì•ˆìž¡ì„ ë•Œë„ ìžˆë‹¤. */
     ULN_IS_FLAG_UP(aFnContext->mNeedUnlock)
     {
         ULN_FLAG_DOWN(aFnContext->mNeedUnlock);

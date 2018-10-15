@@ -20,7 +20,7 @@
  *
  * Description :
  *     PROJ-1371 PSM File Handling
- *     FILEÀ» openÇÏ´Â ÇÔ¼ö
+ *     FILEì„ opení•˜ëŠ” í•¨ìˆ˜
  *
  * Syntax :
  *    FILE_OPEN( path VARCHAR, filename VARCHAR, openmode VARCHAR );
@@ -52,7 +52,7 @@ static IDE_RC qsfEstimate( mtcNode*     aNode,
 mtfModule qsfFOpenModule = {
     1|MTC_NODE_OPERATOR_MISC|MTC_NODE_VARIABLE_TRUE,
     ~0,
-    1.0,                    // default selectivity (ºñ±³ ¿¬»êÀÚ ¾Æ´Ô)
+    1.0,                    // default selectivity (ë¹„êµ ì—°ì‚°ìž ì•„ë‹˜)
     qsfFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -149,13 +149,13 @@ IDE_RC qsfCalculate_FOpen( mtcNode*     aNode,
  *     file_open calculate
  *
  * Implementation :
- *     1. argument°¡ nullÀÎ °æ¿ì  error
- *     2. openmode°¡ 'r', 'w', 'a' °¡ ¾Æ´Ñ °æ¿ì error
- *     3. directory path¸¦ ¾ò¾î¿È
- *     4. open mode¿¡ µû¶ó read, write ±ÇÇÑ °Ë»ç
- *     5. path, filename, directory indicator¸¦ Á¶ÇÕÇÏ¿© path»ý¼º
- *     6. fileÀ» openÇÏ°í, return value¿¡ ¼¼ÆÃ
- *     7. filelist¿¡ openµÈ filehandle »ðÀÔ
+ *     1. argumentê°€ nullì¸ ê²½ìš°  error
+ *     2. openmodeê°€ 'r', 'w', 'a' ê°€ ì•„ë‹Œ ê²½ìš° error
+ *     3. directory pathë¥¼ ì–»ì–´ì˜´
+ *     4. open modeì— ë”°ë¼ read, write ê¶Œí•œ ê²€ì‚¬
+ *     5. path, filename, directory indicatorë¥¼ ì¡°í•©í•˜ì—¬ pathìƒì„±
+ *     6. fileì„ opení•˜ê³ , return valueì— ì„¸íŒ…
+ *     7. filelistì— openëœ filehandle ì‚½ìž…
  *
  ***********************************************************************/
     
@@ -204,11 +204,11 @@ IDE_RC qsfCalculate_FOpen( mtcNode*     aNode,
         // mode
         sOpenmodeValue = (mtdCharType*)aStack[3].value;
 
-        // ±æÀÌ°¡ 1ÀÌ ¾Æ´Ï¸é ¿¡·¯ ex) r, w, a, R, W, A Áß ÇÏ³ª¿©¾ß ÇÔ
+        // ê¸¸ì´ê°€ 1ì´ ì•„ë‹ˆë©´ ì—ëŸ¬ ex) r, w, a, R, W, A ì¤‘ í•˜ë‚˜ì—¬ì•¼ í•¨
         if( sOpenmodeValue->length == 1 )
         {
             /* BUG-39273
-               open mode ´ë¼Ò¹®ÀÚ ¸ðµÎ Áö¿ø */
+               open mode ëŒ€ì†Œë¬¸ìž ëª¨ë‘ ì§€ì› */
             if( ( sOpenmodeValue->value[0] == 'r' ) ||
                 ( sOpenmodeValue->value[0] == 'w' ) ||
                 ( sOpenmodeValue->value[0] == 'a' ) )
@@ -243,7 +243,7 @@ IDE_RC qsfCalculate_FOpen( mtcNode*     aNode,
         // path
         sPathValue = (mtdCharType*)aStack[1].value;
         
-        // ¸ÞÅ¸¿¡¼­ ½ÇÁ¦ path¸¦ ¾ò¾î¿È
+        // ë©”íƒ€ì—ì„œ ì‹¤ì œ pathë¥¼ ì–»ì–´ì˜´
         sDummyStmt = QC_SMI_STMT(sStatement);
 
         sSmiStmtFlag &= ~SMI_STATEMENT_MASK;
@@ -302,7 +302,7 @@ IDE_RC qsfCalculate_FOpen( mtcNode*     aNode,
                                      sFilenameValue )
                   != IDE_SUCCESS );
         
-        // iduFileStream::openfileÈ£Ãâ
+        // iduFileStream::openfileí˜¸ì¶œ
         IDE_TEST( iduFileStream::openFile( &sFileType->fp,
                                            sFilePath,
                                            sFileType->mode )

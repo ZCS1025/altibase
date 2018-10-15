@@ -33,7 +33,7 @@
 #include <smmTBSMultiPhase.h>
 
 /*
-  »ý¼ºÀÚ (¾Æ¹«°Íµµ ¾ÈÇÔ)
+  ìƒì„±ìž (ì•„ë¬´ê²ƒë„ ì•ˆí•¨)
 */
 smmTBSAlterDiscard::smmTBSAlterDiscard()
 {
@@ -42,20 +42,20 @@ smmTBSAlterDiscard::smmTBSAlterDiscard()
 
 
 /*
-    Tablespace¸¦ DISCARDED»óÅÂ·Î ¹Ù²Ù°í, Loganchor¿¡ FlushÇÑ´Ù.
+    Tablespaceë¥¼ DISCARDEDìƒíƒœë¡œ ë°”ê¾¸ê³ , Loganchorì— Flushí•œë‹¤.
 
-    DiscardÀÇ Á¤ÀÇ :
-       - ´õ ÀÌ»ó »ç¿ëÇÒ ¼ö ¾ø´Â Tablespace
-       - ¿ÀÁ÷ Drop¸¸ÀÌ °¡´É
+    Discardì˜ ì •ì˜ :
+       - ë” ì´ìƒ ì‚¬ìš©í•  ìˆ˜ ì—†ëŠ” Tablespace
+       - ì˜¤ì§ Dropë§Œì´ ê°€ëŠ¥
 
-    »ç¿ë¿¹ :
-       - Disk°¡ ¿ÏÀüÈ÷ ¸À°¡¼­ ´õÀÌ»ó »ç¿ëºÒ°¡ÇÒ ¶§
-         ÇØ´ç Tablespace¸¸ discardÇÏ°í ³ª¸ÓÁö Tablespace¸¸ÀÌ¶óµµ
-         ¿î¿µÇÏ°í ½ÍÀ»¶§, CONTROL´Ü°è¿¡¼­ Tablespace¸¦ DISCARDÇÑ´Ù.
+    ì‚¬ìš©ì˜ˆ :
+       - Diskê°€ ì™„ì „ížˆ ë§›ê°€ì„œ ë”ì´ìƒ ì‚¬ìš©ë¶ˆê°€í•  ë•Œ
+         í•´ë‹¹ Tablespaceë§Œ discardí•˜ê³  ë‚˜ë¨¸ì§€ Tablespaceë§Œì´ë¼ë„
+         ìš´ì˜í•˜ê³  ì‹¶ì„ë•Œ, CONTROLë‹¨ê³„ì—ì„œ Tablespaceë¥¼ DISCARDí•œë‹¤.
 
-     µ¿½Ã¼ºÁ¦¾î :
-       - CONTROL´Ü°è¿¡¼­¸¸ È£ÃâµÇ±â ¶§¹®¿¡, sctTableSpaceMgr¿¡
-         Mutex¸¦ ÀâÀ» ÇÊ¿ä°¡ ¾ø´Ù.
+     ë™ì‹œì„±ì œì–´ :
+       - CONTROLë‹¨ê³„ì—ì„œë§Œ í˜¸ì¶œë˜ê¸° ë•Œë¬¸ì—, sctTableSpaceMgrì—
+         Mutexë¥¼ ìž¡ì„ í•„ìš”ê°€ ì—†ë‹¤.
  */
 IDE_RC smmTBSAlterDiscard::alterTBSdiscard( smmTBSNode * aTBSNode )
 {
@@ -64,10 +64,10 @@ IDE_RC smmTBSAlterDiscard::alterTBSdiscard( smmTBSNode * aTBSNode )
     IDE_TEST_RAISE ( SMI_TBS_IS_DISCARDED( aTBSNode->mHeader.mState),
                      error_already_discarded );
 
-    // Discard Tablespace¿¡ ÇØ´çµÇ´Â ´Ù´Ü°è ÃÊ±âÈ­ ´Ü°èÀÎ
-    // MEDIA´Ü°è·Î ÀüÀÌÇÑ´Ù.
+    // Discard Tablespaceì— í•´ë‹¹ë˜ëŠ” ë‹¤ë‹¨ê³„ ì´ˆê¸°í™” ë‹¨ê³„ì¸
+    // MEDIAë‹¨ê³„ë¡œ ì „ì´í•œë‹¤.
     //
-    // => ONLINE Tablespace¸¦ DiscardÇÏ´Â °æ¿ì PAGE ´Ü°è¸¦ ÇØÁ¦ÇØ¾ßÇÔ
+    // => ONLINE Tablespaceë¥¼ Discardí•˜ëŠ” ê²½ìš° PAGE ë‹¨ê³„ë¥¼ í•´ì œí•´ì•¼í•¨
     IDE_TEST( smmTBSMultiPhase::finiToMediaPhase( aTBSNode->mHeader.mState,
                                                   aTBSNode )
               != IDE_SUCCESS );

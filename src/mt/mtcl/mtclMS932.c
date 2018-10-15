@@ -23,7 +23,7 @@
 #include <mtcl.h>
 #include <mtcdTypes.h>
 
-/* PROJ-2590 [±â´É¼º] CP932 database character set Áö¿ø */
+/* PROJ-2590 [ê¸°ëŠ¥ì„±] CP932 database character set ì§€ì› */
 
 #define mtlMS932_1BYTE_TYPE(c)        ( ( (c) <= 0x7F ) || \
                                         ( ( (c) >= 0xA1 ) && ( (c) <= 0xDF ) ) )
@@ -72,10 +72,10 @@ mtlNCRet mtlMS932NextChar( acp_uint8_t ** aSource, acp_uint8_t * aFence )
 {
 /***********************************************************************
  *
- * Description : PROJ-2590 [±â´É¼º] CP932 database character set Áö¿ø
+ * Description : PROJ-2590 [ê¸°ëŠ¥ì„±] CP932 database character set ì§€ì›
  *
  * Implementation :
- *    ´ÙÀ½ ¹®ÀÚ À§Ä¡·Î pointer ÀÌµ¿
+ *    ë‹¤ìŒ ë¬¸ì ìœ„ì¹˜ë¡œ pointer ì´ë™
  *
  ***********************************************************************/
     mtlNCRet sRet;
@@ -122,14 +122,14 @@ static acp_sint32_t mtlMS932MaxPrecision( acp_sint32_t aLength )
 {
 /***********************************************************************
  *
- * Description : ¹®ÀÚ°¹¼ö(aLength)ÀÇ MS932ÀÇ ÃÖ´ë precision °è»ê
+ * Description : ë¬¸ìê°¯ìˆ˜(aLength)ì˜ MS932ì˜ ìµœëŒ€ precision ê³„ì‚°
  *
  * Implementation :
  *
- *    ÀÎÀÚ·Î ¹ŞÀº aLength¿¡
- *    MS932 ÇÑ¹®ÀÚÀÇ ÃÖ´ë Å©±â¸¦ °öÇÑ °ªÀ» ¸®ÅÏÇÔ.
+ *    ì¸ìë¡œ ë°›ì€ aLengthì—
+ *    MS932 í•œë¬¸ìì˜ ìµœëŒ€ í¬ê¸°ë¥¼ ê³±í•œ ê°’ì„ ë¦¬í„´í•¨.
  *
- *    aLength´Â ¹®ÀÚ°¹¼öÀÇ ÀÇ¹Ì°¡ ÀÖÀ½.
+ *    aLengthëŠ” ë¬¸ìê°¯ìˆ˜ì˜ ì˜ë¯¸ê°€ ìˆìŒ.
  *
  ***********************************************************************/
     return aLength * MTL_MS932_PRECISION;

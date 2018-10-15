@@ -9,8 +9,8 @@
 
 
 /* ------------------------------------------------
- *  Process°£ÀÇ Semaphore¿¬»êÀ»
- *  Simulation ÇÏ´Â ÄÚµåÀÓ. excerpted from OS.h
+ *  Processê°„ì˜ Semaphoreì—°ì‚°ì„
+ *  Simulation í•˜ëŠ” ì½”ë“œì„. excerpted from OS.h
  * ----------------------------------------------*/
 
 #ifndef _O_IDU_SEMA_H_

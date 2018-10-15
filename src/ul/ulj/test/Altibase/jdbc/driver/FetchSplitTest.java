@@ -339,7 +339,7 @@ public class FetchSplitTest extends AltibaseTestCase
                 sb.append("C1 VARCHAR(32000), C2 VARCHAR(")
                 .append(s3rdColumnLength)
                 .append("), C3 ")
-                .append("NCHAR(8000") // utf8¿ª ∞Ì∑¡
+                .append("NCHAR(8000") // utf8ÏùÑ Í≥†Î†§
                 .append("))");
             }
             else if(aFragmentationTypeName.equals(TYPE_NVARCHAR))
@@ -347,7 +347,7 @@ public class FetchSplitTest extends AltibaseTestCase
                 sb.append("C1 VARCHAR(32000), C2 VARCHAR(")
                 .append(s3rdColumnLength)
                 .append("), C3 ")
-                .append("NVARCHAR(8000") // utf8¿ª ∞Ì∑¡
+                .append("NVARCHAR(8000") // utf8ÏùÑ Í≥†Î†§
                 .append("))");
             }            
             else if(aFragmentationTypeName.equals(TYPE_NIBBLE))
@@ -628,7 +628,7 @@ public class FetchSplitTest extends AltibaseTestCase
         StringBuffer sStrBuf = new StringBuffer();
         while (sStrBuf.length() < 16000)
         {
-            sStrBuf.append("∞°"); // «—±€∑Œ √§øˆº≠ 1πÆ¿⁄∞° ¬…∞≥¡˙ ºˆ ¿÷µµ∑œ «—¥Ÿ.
+            sStrBuf.append("Í∞Ä"); // ÌïúÍ∏ÄÎ°ú Ï±ÑÏõåÏÑú 1Î¨∏ÏûêÍ∞Ä Ï™ºÍ∞úÏßà Ïàò ÏûàÎèÑÎ°ù ÌïúÎã§.
         }
         String sVal1 = sStrBuf.toString();
         String sVal2 = sStrBuf.toString();

@@ -17,8 +17,8 @@
 /***********************************************************************
  * $Id: sdptbGroup.cpp 27228 2008-07-23 17:36:52Z newdaily $
  *
- * Bitmap based TBS¿¡¼­ Global Group( Space Header) °ú Local GroupÀ»
- * °ü¸®ÇÏ±â À§ÇÑ ÇÔ¼öµéÀÌ´Ù.
+ * Bitmap based TBSì—ì„œ Global Group( Space Header) ê³¼ Local Groupì„
+ * ê´€ë¦¬í•˜ê¸° ìœ„í•œ í•¨ìˆ˜ë“¤ì´ë‹¤.
  **********************************************************************/
 
 #include <smErrorCode.h>
@@ -29,7 +29,7 @@
 
 /***********************************************************************
  * Description:
- *  Å×ÀÌºí½ºÆäÀÌ½º ³ëµå¿¡ Space Cache¸¦ ÇÒ´çÇÏ°í ÃÊ±âÈ­ÇÑ´Ù.
+ *  í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ë…¸ë“œì— Space Cacheë¥¼ í• ë‹¹í•˜ê³  ì´ˆê¸°í™”í•œë‹¤.
  ***********************************************************************/
 IDE_RC sdptbGroup::allocAndInitSpaceCache( scSpaceID         aSpaceID,
                                            smiExtMgmtType    aExtMgmtType,
@@ -52,46 +52,46 @@ IDE_RC sdptbGroup::allocAndInitSpaceCache( scSpaceID         aSpaceID,
 
     idlOS::memset( sSpaceCache, 0x00 , ID_SIZEOF(sdptbSpaceCache));
 
-    /* TablespaceÀÇ ID */
+    /* Tablespaceì˜ ID */
     sSpaceCache->mCommon.mSpaceID       = aSpaceID;
 
-    /* Extent °ü¸® ¹æ½Ä ¼³Á¤ */
+    /* Extent ê´€ë¦¬ ë°©ì‹ ì„¤ì • */
     sSpaceCache->mCommon.mExtMgmtType   = aExtMgmtType;
     sSpaceCache->mCommon.mSegMgmtType   = aSegMgmtType;
 
-    /* ExtentÀÇ ÆäÀÌÁö °³¼ö ¼³Á¤ */
+    /* Extentì˜ í˜ì´ì§€ ê°œìˆ˜ ì„¤ì • */
     sSpaceCache->mCommon.mPagesPerExt   = aExtPageCount;
 
 
-    /* TBS °ø°£È®ÀåÀ» À§ÇÑ Mutex*/
+    /* TBS ê³µê°„í™•ì¥ì„ ìœ„í•œ Mutex*/
     IDE_ASSERT( sSpaceCache->mMutexForExtend.initialize(
                                         (SChar*)"FEBT_EXTEND_MUTEX",
                                         IDU_MUTEX_KIND_POSIX,
                                         IDV_WAIT_INDEX_NULL ) == IDE_SUCCESS );
 
-    // Condition Variable ÃÊ±âÈ­
+    // Condition Variable ì´ˆê¸°í™”
     IDE_TEST_RAISE( sSpaceCache->mCondVar.initialize((SChar *)"FEBT_EXTEND_COND") != IDE_SUCCESS,
                     error_cond_init );
 
     sSpaceCache->mWaitThr4Extend = 0;
 
     /* BUG-31608 [sm-disk-page] add datafile during DML
-     * TBS Add DatafileÀ» À§ÇÑ Mutex */
+     * TBS Add Datafileì„ ìœ„í•œ Mutex */
     IDE_ASSERT( sSpaceCache->mMutexForAddDataFile.initialize(
                                         (SChar*)"FEBT_ADD_DATAFILE_MUTEX",
                                         IDU_MUTEX_KIND_POSIX,
                                         IDV_WAIT_INDEX_NULL ) == IDE_SUCCESS );
 
-    /* FELT °ø°£¿¬»ê ÀÎÅÍÆäÀÌ½º ¼³Á¤ */
+    /* FELT ê³µê°„ì—°ì‚° ì¸í„°í˜ì´ìŠ¤ ì„¤ì • */
     sSpaceCache->mCommon.mExtMgmtOp = &gSdptbOp;
 
     sSpaceCache->mArrIsFreeExtDir[ SDP_TSS_FREE_EXTDIR_LIST ] = ID_TRUE;
     sSpaceCache->mArrIsFreeExtDir[ SDP_UDS_FREE_EXTDIR_LIST ] = ID_TRUE;
 
-    /* Tablespace ³ëµå¿¡ Space Cache ¼³Á¤ */
+    /* Tablespace ë…¸ë“œì— Space Cache ì„¤ì • */
     sddDiskMgr::setSpaceCache( aSpaceID, (void*)sSpaceCache );
 
-    /* Extent Pool ÃÊ±âÈ­ */
+    /* Extent Pool ì´ˆê¸°í™” */
     IDE_TEST( sSpaceCache->mFreeExtPool.initialize(
                                       IDU_MEM_SM_TBS_FREE_EXTENT_POOL,
                                       ID_SIZEOF( scPageID ) )
@@ -115,13 +115,13 @@ IDE_RC sdptbGroup::allocAndInitSpaceCache( scSpaceID         aSpaceID,
 
 /***********************************************************************
  * Description:
- *  Å×ÀÌºí½ºÆäÀÌ½º ³ëµå¿¡¼­ Space Cache¸¦ ¸Ş¸ğ¸®¸¦ ÇØÁ¦ÇÑ´Ù.
+ *  í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ë…¸ë“œì—ì„œ Space Cacheë¥¼ ë©”ëª¨ë¦¬ë¥¼ í•´ì œí•œë‹¤.
  ***********************************************************************/
 IDE_RC sdptbGroup::destroySpaceCache( scSpaceID  aSpaceID )
 {
     sdptbSpaceCache  * sSpaceCache;
 
-    /* Tablespace ³ëµå·ÎºÎÅÍ Space Cache Ptr ¹İÈ¯ */
+    /* Tablespace ë…¸ë“œë¡œë¶€í„° Space Cache Ptr ë°˜í™˜ */
     sSpaceCache = (sdptbSpaceCache*)sddDiskMgr::getSpaceCache( aSpaceID );
     IDE_ASSERT( sSpaceCache != NULL );
 
@@ -130,15 +130,15 @@ IDE_RC sdptbGroup::destroySpaceCache( scSpaceID  aSpaceID )
     IDE_TEST_RAISE( sSpaceCache->mCondVar.destroy() != IDE_SUCCESS,
                     error_cond_destroy );
 
-    /* TBS Extend Mutex¸¦ ÇØÁ¦ÇÑ´Ù. */
+    /* TBS Extend Mutexë¥¼ í•´ì œí•œë‹¤. */
     IDE_ASSERT( sSpaceCache->mMutexForExtend.destroy() == IDE_SUCCESS );
     /* BUG-31608 [sm-disk-page] add datafile duringDML
-     * AddDataFileÀ» ÇÏ±â À§ÇÑ Mutex¸¦ ÇØÁ¦ÇÑ´Ù. */
+     * AddDataFileì„ í•˜ê¸° ìœ„í•œ Mutexë¥¼ í•´ì œí•œë‹¤. */
     IDE_ASSERT( sSpaceCache->mMutexForAddDataFile.destroy() == IDE_SUCCESS );
 
     IDE_ASSERT( iduMemMgr::free( sSpaceCache ) == IDE_SUCCESS );
 
-    /* ¸Ş¸ğ¸® ÇØÁ¦ÇßÀ¸¹Ç·Î NULL ptr ¼³Á¤ÇÑ´Ù. */
+    /* ë©”ëª¨ë¦¬ í•´ì œí–ˆìœ¼ë¯€ë¡œ NULL ptr ì„¤ì •í•œë‹¤. */
     sddDiskMgr::setSpaceCache( aSpaceID, NULL );
 
     return IDE_SUCCESS;
@@ -154,7 +154,7 @@ IDE_RC sdptbGroup::destroySpaceCache( scSpaceID  aSpaceID )
 
 /***********************************************************************
  * Description:
- *  TBS È®Àå¿¡ ´ëÇÑ  MutexÀ» È¹µæ È¤Àº ´ë±â
+ *  TBS í™•ì¥ì— ëŒ€í•œ  Mutexì„ íšë“ í˜¹ì€ ëŒ€ê¸°
  ***********************************************************************/
 IDE_RC sdptbGroup::prepareExtendFileOrWait( idvSQL            * aStatistics,
                                             sdptbSpaceCache   * aCache,
@@ -165,14 +165,14 @@ IDE_RC sdptbGroup::prepareExtendFileOrWait( idvSQL            * aStatistics,
 
     lockForExtend( aStatistics, aCache );
 
-    // Extent ÁøÇà ¿©ºÎ¸¦ ÆÇ´ÜÇÑ´Ù.
+    // Extent ì§„í–‰ ì—¬ë¶€ë¥¼ íŒë‹¨í•œë‹¤.
     if ( isOnExtend( aCache ) == ID_TRUE )
     {
-        /* BUG-44834 Æ¯Á¤ Àåºñ¿¡¼­ sprious wakeup Çö»óÀÌ ¹ß»ıÇÏ¹Ç·Î 
-                     wakeup ÈÄ¿¡µµ ´Ù½Ã È®ÀÎ ÇÏµµ·Ï while¹®À¸·Î Ã¼Å©ÇÑ´Ù.*/
+        /* BUG-44834 íŠ¹ì • ì¥ë¹„ì—ì„œ sprious wakeup í˜„ìƒì´ ë°œìƒí•˜ë¯€ë¡œ 
+                     wakeup í›„ì—ë„ ë‹¤ì‹œ í™•ì¸ í•˜ë„ë¡ whileë¬¸ìœ¼ë¡œ ì²´í¬í•œë‹¤.*/
         while ( isOnExtend( aCache ) == ID_TRUE )
         {
-            // ExrExt Mutex¸¦ È¹µæÇÑ »óÅÂ¿¡¼­ ´ë±âÀÚ¸¦ Áõ°¡½ÃÅ²´Ù.
+            // ExrExt Mutexë¥¼ íšë“í•œ ìƒíƒœì—ì„œ ëŒ€ê¸°ìë¥¼ ì¦ê°€ì‹œí‚¨ë‹¤.
             aCache->mWaitThr4Extend++;
 
             IDE_TEST_RAISE( aCache->mCondVar.wait(&(aCache->mMutexForExtend))
@@ -180,13 +180,13 @@ IDE_RC sdptbGroup::prepareExtendFileOrWait( idvSQL            * aStatistics,
 
             aCache->mWaitThr4Extend--;
         }
-        // ÀÌ¹Ì Extend°¡ ¿Ï·áµÇ¾ú±â ¶§¹®¿¡ Extent È®ÀåÀ»
-        // ¿¬ÀÌ¾î ÇÒÇÊ¿ä¾øÀÌ °¡¿ë°ø°£ Å½»öÀ» ÁøÇàÇÑ´Ù.
+        // ì´ë¯¸ Extendê°€ ì™„ë£Œë˜ì—ˆê¸° ë•Œë¬¸ì— Extent í™•ì¥ì„
+        // ì—°ì´ì–´ í• í•„ìš”ì—†ì´ ê°€ìš©ê³µê°„ íƒìƒ‰ì„ ì§„í–‰í•œë‹¤.
         *aDoExtend = ID_FALSE;
     }
     else
     {
-        // Á÷Á¢ ÆÄÀÏ È®ÀåÀ» ¼öÇàÇÏ±â À§ÇØ OnExtend¸¦ On½ÃÅ²´Ù.
+        // ì§ì ‘ íŒŒì¼ í™•ì¥ì„ ìˆ˜í–‰í•˜ê¸° ìœ„í•´ OnExtendë¥¼ Onì‹œí‚¨ë‹¤.
         aCache->mOnExtend = ID_TRUE;
         *aDoExtend = ID_TRUE;
     }
@@ -196,8 +196,8 @@ IDE_RC sdptbGroup::prepareExtendFileOrWait( idvSQL            * aStatistics,
     /* BUG-31608 [sm-disk-page] add datafile during DML */
     if ( *aDoExtend == ID_TRUE )
     {
-        /* ½º½º·Î È®ÀåÀ» ¼öÇàÇÏ´Â TransactionÀÏ °æ¿ì, ( DoExtend == true )
-         * µ¿½Ã¼º Ã³¸®¸¦ À§ÇØ AddDataFileÀ» ¸·´Â´Ù. */
+        /* ìŠ¤ìŠ¤ë¡œ í™•ì¥ì„ ìˆ˜í–‰í•˜ëŠ” Transactionì¼ ê²½ìš°, ( DoExtend == true )
+         * ë™ì‹œì„± ì²˜ë¦¬ë¥¼ ìœ„í•´ AddDataFileì„ ë§‰ëŠ”ë‹¤. */
          lockForAddDataFile( aStatistics, aCache );
     }
 
@@ -215,8 +215,8 @@ IDE_RC sdptbGroup::prepareExtendFileOrWait( idvSQL            * aStatistics,
 
 /***********************************************************************
  * Description:
- *  TBS È®Àå¿¡ ´ëÇÑ MutexÀ» ÇØÁ¦¿Í ÇÔ²² ´ë±âÇÏ´Â Æ®·£Àè¼Ç ±ú¿î´Ù.
- *  (sdpst·çÆ¾ Âü°íÇÔ)
+ *  TBS í™•ì¥ì— ëŒ€í•œ Mutexì„ í•´ì œì™€ í•¨ê»˜ ëŒ€ê¸°í•˜ëŠ” íŠ¸ëœì­ì…˜ ê¹¨ìš´ë‹¤.
+ *  (sdpstë£¨í‹´ ì°¸ê³ í•¨)
  ***********************************************************************/
 IDE_RC sdptbGroup::completeExtendFileAndWakeUp( idvSQL          * aStatistics,
                                                 sdptbSpaceCache * aCache )
@@ -225,19 +225,19 @@ IDE_RC sdptbGroup::completeExtendFileAndWakeUp( idvSQL          * aStatistics,
     IDE_ASSERT( isOnExtend(aCache) == ID_TRUE );
 
     /* BUG-31608 [sm-disk-page] add datafile during DML 
-     * È®ÀåÀ» ¿Ï·áÇÏ¿´±â ¶§¹®¿¡ addDataFileÀ» Çã¿ëÇÑ´Ù */
+     * í™•ì¥ì„ ì™„ë£Œí•˜ì˜€ê¸° ë•Œë¬¸ì— addDataFileì„ í—ˆìš©í•œë‹¤ */
     unlockForAddDataFile( aCache );
 
     lockForExtend( aStatistics, aCache );
 
     if ( aCache->mWaitThr4Extend > 0 )
     {
-        // ´ë±â Æ®·£Àè¼ÇÀ» ¸ğµÎ ±ú¿î´Ù.
+        // ëŒ€ê¸° íŠ¸ëœì­ì…˜ì„ ëª¨ë‘ ê¹¨ìš´ë‹¤.
         IDE_TEST_RAISE( aCache->mCondVar.broadcast() != IDE_SUCCESS,
                         error_cond_signal );
     }
 
-    // Segment È®Àå ÁøÇàÀ» ¿Ï·áÇÏ¿´À½À» ¼³Á¤ÇÑ´Ù.
+    // Segment í™•ì¥ ì§„í–‰ì„ ì™„ë£Œí•˜ì˜€ìŒì„ ì„¤ì •í•œë‹¤.
     aCache->mOnExtend = ID_FALSE;
 
     unlockForExtend( aCache );
@@ -256,10 +256,10 @@ IDE_RC sdptbGroup::completeExtendFileAndWakeUp( idvSQL          * aStatistics,
 
 /***********************************************************************
  * Description:
- *  AddDataFileÀ» ÇÏ±â À§ÇÑ Mutex¸¦ È¹µæÇÏ°í ´ë±âÇÑ´Ù.
+ *  AddDataFileì„ í•˜ê¸° ìœ„í•œ Mutexë¥¼ íšë“í•˜ê³  ëŒ€ê¸°í•œë‹¤.
  *
- * aStatistics    - [IN] Åë°èÁ¤º¸
- * aCache         - [IN] Å×ÀÌºí½ºÆäÀÌ½º ·±Å¸ÀÓ Cache*
+ * aStatistics    - [IN] í†µê³„ì •ë³´
+ * aCache         - [IN] í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ëŸ°íƒ€ì„ Cache*
  ***********************************************************************/
 void sdptbGroup::prepareAddDataFile( idvSQL          * aStatistics,
                                      sdptbSpaceCache * aCache )
@@ -270,9 +270,9 @@ void sdptbGroup::prepareAddDataFile( idvSQL          * aStatistics,
 }
 /***********************************************************************
  * Description:
- *  AddDataFile ÀÛ¾÷À» Á¾·áÇÏ¿´À¸¹Ç·Î, mutex¸¦ ÇØÁ¦ÇÑ´Ù.
+ *  AddDataFile ì‘ì—…ì„ ì¢…ë£Œí•˜ì˜€ìœ¼ë¯€ë¡œ, mutexë¥¼ í•´ì œí•œë‹¤.
  *
- * aCache         - [IN] Å×ÀÌºí½ºÆäÀÌ½º ·±Å¸ÀÓ Cache*
+ * aCache         - [IN] í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ëŸ°íƒ€ì„ Cache*
  ***********************************************************************/
 void sdptbGroup::completeAddDataFile( sdptbSpaceCache * aCache )
 {
@@ -283,14 +283,14 @@ void sdptbGroup::completeAddDataFile( sdptbSpaceCache * aCache )
 
 /***********************************************************************
  *
- * Description:  GG(Global Group) ¹× LG(Local Group) headerµé¸¦ »ı¼ºÇÑ´Ù.
+ * Description:  GG(Global Group) ë° LG(Local Group) headerë“¤ë¥¼ ìƒì„±í•œë‹¤.
  *
- * aStatistics    - [IN] Åë°èÁ¤º¸
- * aStartInfo     - [IN] Mtx ½ÃÀÛ Á¤º¸
- * aSpaceID       - [IN] Å×ÀÌºí½ºÆäÀÌ½º ID
- * aCache         - [IN] Å×ÀÌºí½ºÆäÀÌ½º ·±Å¸ÀÓ Cache
- * aFileAttr      - [IN] µ¥ÀÌÅ¸ÆÄÀÏ ¼Ó¼º Array
- * aFileAttrCount - [IN] µ¥ÀÌÅ¸ÆÄÀÏ ¼Ó¼º °³¼ö
+ * aStatistics    - [IN] í†µê³„ì •ë³´
+ * aStartInfo     - [IN] Mtx ì‹œì‘ ì •ë³´
+ * aSpaceID       - [IN] í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ID
+ * aCache         - [IN] í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ëŸ°íƒ€ì„ Cache
+ * aFileAttr      - [IN] ë°ì´íƒ€íŒŒì¼ ì†ì„± Array
+ * aFileAttrCount - [IN] ë°ì´íƒ€íŒŒì¼ ì†ì„± ê°œìˆ˜
  ***********************************************************************/
 IDE_RC sdptbGroup::makeMetaHeaders( idvSQL            * aStatistics,
                                     sdrMtxStartInfo   * aStartInfo,
@@ -300,8 +300,8 @@ IDE_RC sdptbGroup::makeMetaHeaders( idvSQL            * aStatistics,
                                     UInt                aFileAttrCount )
 {
     UInt            i;
-    UInt            sPageCnt;  //ÇÒ´çÀ» °í·ÁÇÒ ÆäÀÌÁö °¹¼ö
-    UInt            sLGCnt;    //local group °¹¼ö
+    UInt            sPageCnt;  //í• ë‹¹ì„ ê³ ë ¤í•  í˜ì´ì§€ ê°¯ìˆ˜
+    UInt            sLGCnt;    //local group ê°¯ìˆ˜
     sdrMtx          sMtx;
     UInt            sPagesPerExt    = aCache->mCommon.mPagesPerExt;
     UInt            sState  = 0;
@@ -309,7 +309,7 @@ IDE_RC sdptbGroup::makeMetaHeaders( idvSQL            * aStatistics,
     sdptbGGHdr    * sGGHdrPtr;
     UChar         * sPagePtr;
     UInt            sGGID;
-    idBool          sIsExtraLG; // ¸ğµç ºñÆ®°¡ Ã¤¿öÁöÁö¾ÊÀº extra LG°¡ Á¸ÀçÇÏ´À³Ä
+    idBool          sIsExtraLG; // ëª¨ë“  ë¹„íŠ¸ê°€ ì±„ì›Œì§€ì§€ì•Šì€ extra LGê°€ ì¡´ì¬í•˜ëŠëƒ
     sctPendingOp  * sPendingOp;
 
     IDE_ASSERT( aCache              != NULL );
@@ -328,20 +328,20 @@ IDE_RC sdptbGroup::makeMetaHeaders( idvSQL            * aStatistics,
                   != IDE_SUCCESS );
         sState = 1;
 
-        /* BUG-24369 Undo Tablespace Reset½Ã DataFileÀÇ CurrSize ±âÁØÀ¸·Î
-         *           Reset ÇØ¾ßÇÔ.
-         * Create Tablespace/Alter Add DataFile/Reset½Ã¿¡ makeMetaHeaders
-         * °¡ È£ÃâµÈ´Ù. Ã³À½ »ı¼ºÇÏ´Â °æ¿ì¿¡´Â mCurrSize¿Í mInitSize°¡ µ¿ÀÏÇÏ°í,
-         * Reset ½Ã¿¡´Â mCurrSize ¿Í mInitSize ´Ù¸£±â ¶§¹®¿¡ ±âÁØÀ¸·Î
-         * MetaHeader¸¦ mCurrSize·Î ¼öÁ¤ÇÑ´Ù. */
+        /* BUG-24369 Undo Tablespace Resetì‹œ DataFileì˜ CurrSize ê¸°ì¤€ìœ¼ë¡œ
+         *           Reset í•´ì•¼í•¨.
+         * Create Tablespace/Alter Add DataFile/Resetì‹œì— makeMetaHeaders
+         * ê°€ í˜¸ì¶œëœë‹¤. ì²˜ìŒ ìƒì„±í•˜ëŠ” ê²½ìš°ì—ëŠ” mCurrSizeì™€ mInitSizeê°€ ë™ì¼í•˜ê³ ,
+         * Reset ì‹œì—ëŠ” mCurrSize ì™€ mInitSize ë‹¤ë¥´ê¸° ë•Œë¬¸ì— ê¸°ì¤€ìœ¼ë¡œ
+         * MetaHeaderë¥¼ mCurrSizeë¡œ ìˆ˜ì •í•œë‹¤. */
         sPageCnt = aFileAttr[i]->mCurrSize;
        
         sGGID     = aFileAttr[i]->mID;
    
         IDE_ASSERT( sGGID < SD_MAX_FID_COUNT ) ; 
 
-        //ÆÄÀÏÀÇ Å©±â´Â ÃÖ¼ÒÇÑ ÇÏ³ªÀÇ extent¸¦ ÇÒ´ç¹ŞÀ» ¼ö ÀÖ´Â Á¤µµ´Â µÇ¾ßÇÑ´Ù.
-        //ÆÄÀÏÀ» »ı¼ºÇÏ´Â ÁßÀÌ¹Ç·Î ¸¸¾à ¿ä±¸Á¶°ÇÀÌ ÃæÁ·µÇÁö ¾ÊÀ¸¸é assert
+        //íŒŒì¼ì˜ í¬ê¸°ëŠ” ìµœì†Œí•œ í•˜ë‚˜ì˜ extentë¥¼ í• ë‹¹ë°›ì„ ìˆ˜ ìˆëŠ” ì •ë„ëŠ” ë˜ì•¼í•œë‹¤.
+        //íŒŒì¼ì„ ìƒì„±í•˜ëŠ” ì¤‘ì´ë¯€ë¡œ ë§Œì•½ ìš”êµ¬ì¡°ê±´ì´ ì¶©ì¡±ë˜ì§€ ì•Šìœ¼ë©´ assert
         IDE_ASSERT( sPageCnt >=
                     (sPagesPerExt+SDPTB_GG_HDR_PAGE_CNT+ SDPTB_LG_HDR_PAGE_CNT) );
 
@@ -352,7 +352,7 @@ IDE_RC sdptbGroup::makeMetaHeaders( idvSQL            * aStatistics,
         IDE_ASSERT( ( 0 < sLGCnt ) && ( sLGCnt <= SDPTB_LG_CNT_MAX ) );
 
         /*********************************************
-         * GG header¸¦ ¸¸µç´Ù.
+         * GG headerë¥¼ ë§Œë“ ë‹¤.
          *********************************************/
         sGGHdrPID = SDPTB_GLOBAL_GROUP_HEADER_PID( sGGID ); // GGID
 
@@ -378,7 +378,7 @@ IDE_RC sdptbGroup::makeMetaHeaders( idvSQL            * aStatistics,
 
         IDE_ASSERT( sGGHdrPtr != NULL);
 
-        /* GG header¸¦ ÀûÀıÇÑ °ªÀ¸·Î Ã¤¿î´Ù. & LOGGING */
+        /* GG headerë¥¼ ì ì ˆí•œ ê°’ìœ¼ë¡œ ì±„ìš´ë‹¤. & LOGGING */
         IDE_TEST( logAndInitGGHdrPage( &sMtx,
                                        aSpaceID,
                                        sGGHdrPtr,
@@ -390,7 +390,7 @@ IDE_RC sdptbGroup::makeMetaHeaders( idvSQL            * aStatistics,
                   != IDE_SUCCESS );
 
         /*********************************************
-         * LG headerµéÀ» ¸¸µç´Ù.
+         * LG headerë“¤ì„ ë§Œë“ ë‹¤.
          *********************************************/
         IDE_TEST( makeNewLGHdrs( aStatistics,
                                  &sMtx,
@@ -403,15 +403,15 @@ IDE_RC sdptbGroup::makeMetaHeaders( idvSQL            * aStatistics,
                                  sPageCnt)  
                   != IDE_SUCCESS );
 
-        /* To Fix BUG-23874 [AT-F5 ART] alter tablespace add datafile ¿¡
-         * ´ëÇÑ º¹¿øÀÌ ¾ÈµÇ´Â °Í °°À½.
+        /* To Fix BUG-23874 [AT-F5 ART] alter tablespace add datafile ì—
+         * ëŒ€í•œ ë³µì›ì´ ì•ˆë˜ëŠ” ê²ƒ ê°™ìŒ.
          *
-         * »ı¼ºµÈ ÆÄÀÏ¿¡ ´ëÇÑ °¡¿ëµµ¸¦ SpaceNode¿¡ ¹İ¿µÇÒ¶§´Â
-         * Æ®·£Àè¼Ç Commit PendingÀ¸·Î Ã³¸®ÇØ¾ß ÇÑ´Ù. */
+         * ìƒì„±ëœ íŒŒì¼ì— ëŒ€í•œ ê°€ìš©ë„ë¥¼ SpaceNodeì— ë°˜ì˜í• ë•ŒëŠ”
+         * íŠ¸ëœì­ì…˜ Commit Pendingìœ¼ë¡œ ì²˜ë¦¬í•´ì•¼ í•œë‹¤. */
         IDE_TEST( sctTableSpaceMgr::addPendingOperation(
                                                   sMtx.mTrans,
                                                   aSpaceID,
-                                                  ID_TRUE, /* Pending ¿¬»ê ¼öÇà ½ÃÁ¡ : Commit ½Ã */
+                                                  ID_TRUE, /* Pending ì—°ì‚° ìˆ˜í–‰ ì‹œì  : Commit ì‹œ */
                                                   SCT_POP_UPDATE_SPACECACHE,
                                                   &sPendingOp ) 
                   != IDE_SUCCESS );
@@ -441,7 +441,7 @@ IDE_RC sdptbGroup::makeMetaHeaders( idvSQL            * aStatistics,
 
 /***********************************************************************
  * Description:
- *  Ondemand·Î ÆÄÀÏ Å©±â¸¦ ´Ã¸±¶§ ¸ŞÅ¸Çì´õ¸¦ ¸¸µç´Ù
+ *  Ondemandë¡œ íŒŒì¼ í¬ê¸°ë¥¼ ëŠ˜ë¦´ë•Œ ë©”íƒ€í—¤ë”ë¥¼ ë§Œë“ ë‹¤
  ***********************************************************************/
 IDE_RC sdptbGroup::makeMetaHeadersForAutoExtend(
                                               idvSQL           *aStatistics,
@@ -475,15 +475,15 @@ IDE_RC sdptbGroup::makeMetaHeadersForAutoExtend(
               != IDE_SUCCESS );
     IDE_ASSERT( sSpaceNode != NULL );
 
-    //È®ÀåÀÌ °¡´ÉÇÑ °¡ÀåÀÛÀº ÆÄÀÏÀ» Ã£´Â´Ù. (void return)
+    //í™•ì¥ì´ ê°€ëŠ¥í•œ ê°€ì¥ì‘ì€ íŒŒì¼ì„ ì°¾ëŠ”ë‹¤. (void return)
     sddDiskMgr::getExtendableSmallestFileNode( sSpaceNode,
                                                &sFileNode );
     /*
-     * ¸¸¾à sFileNode°¡ NULL ÀÌ¶ó¸é ÆÄÀÏÈ®ÀåÀÌ ºÒ°¡´ÉÇÑ »óÅÂÀÌ´Ù.
+     * ë§Œì•½ sFileNodeê°€ NULL ì´ë¼ë©´ íŒŒì¼í™•ì¥ì´ ë¶ˆê°€ëŠ¥í•œ ìƒíƒœì´ë‹¤.
      */
     IDE_TEST_RAISE( sFileNode == NULL, error_not_enough_space );
 
-    //¹°¸®ÀûÈ®Àå ÀÌÀüÀÇ ÆäÀÌÁö°¹¼ö¸¦ ÀúÀåÇØµĞ´Ù.
+    //ë¬¼ë¦¬ì í™•ì¥ ì´ì „ì˜ í˜ì´ì§€ê°¯ìˆ˜ë¥¼ ì €ì¥í•´ë‘”ë‹¤.
     sPageCntOld = sFileNode->mCurrSize;
 
     sOldLGCnt = getNGroups( sFileNode->mCurrSize,
@@ -495,25 +495,25 @@ IDE_RC sdptbGroup::makeMetaHeadersForAutoExtend(
                             &sDummy);
 
     /*
-     *( aNeededPageCnt / sPagesPerExt )´Â ¿äÃ»ÇÑ extentÀÇ °¹¼öÀÌ´Ù.
-     * ÆÄÀÏÀÌ È®ÀåµÇ¾úÀ»¶§ LG Çì´õµéÀ» ¸¸µé¾îÁÖ¾î¾ßÇÑ´Ù¸é ¾Æ·¡Á¶°ÇÀÌ ÂüÀÌµÉ ¼ö
-     * ÀÖ´Ù.
+     *( aNeededPageCnt / sPagesPerExt )ëŠ” ìš”ì²­í•œ extentì˜ ê°¯ìˆ˜ì´ë‹¤.
+     * íŒŒì¼ì´ í™•ì¥ë˜ì—ˆì„ë•Œ LG í—¤ë”ë“¤ì„ ë§Œë“¤ì–´ì£¼ì–´ì•¼í•œë‹¤ë©´ ì•„ë˜ì¡°ê±´ì´ ì°¸ì´ë  ìˆ˜
+     * ìˆë‹¤.
      */
 
 
     if ( sOldLGCnt < sNewLGCnt )
     {
-        //»õ·Ó°Ô ¸¸µé¾îÁö´Â LGÀÇ °¹¼ö¸¸Å­ LGÇì´õ¸¦ ¸¸µé¾î¾ßÇÑ´Ù.
+        //ìƒˆë¡­ê²Œ ë§Œë“¤ì–´ì§€ëŠ” LGì˜ ê°¯ìˆ˜ë§Œí¼ LGí—¤ë”ë¥¼ ë§Œë“¤ì–´ì•¼í•œë‹¤.
         aNeededPageCnt +=  SDPTB_LG_HDR_PAGE_CNT*( sOldLGCnt - sNewLGCnt ) ;
     }
 
     /*
-     * ÀÌÁ¦ page layer¿¡¼­ ÇÊ¿äÇÑ ÆäÀÌÁöÀÇ °¹¼ö´Â ¸ğµÎ ±¸ÇØÁ³´Ù.
-     * ±×´ÙÀ½¿¡´Â sdd¿¡ ÀÌ Å©±âÀÇ ÆÄÀÏÈ®ÀåÀ» ¿äÃ»ÇÑ´Ù.
+     * ì´ì œ page layerì—ì„œ í•„ìš”í•œ í˜ì´ì§€ì˜ ê°¯ìˆ˜ëŠ” ëª¨ë‘ êµ¬í•´ì¡Œë‹¤.
+     * ê·¸ë‹¤ìŒì—ëŠ” sddì— ì´ í¬ê¸°ì˜ íŒŒì¼í™•ì¥ì„ ìš”ì²­í•œë‹¤.
      *
-     * getSmallestFileNode·çÆ¾¿¡¼­ "ÀÌ¹Ì"  extend mode,
-     * mNextSize,  mMaxSizeµîÀ» °í·ÁÇÏ¿´´Ù.±×·¯¹Ç·Î ¿©±â¼­´Â ÇØ´çÆÄÀÏÀ»
-     * ¹°¸®ÀûÀ¸·Î È®Àå¸¸ÇÏ¸é µÈ´Ù.
+     * getSmallestFileNodeë£¨í‹´ì—ì„œ "ì´ë¯¸"  extend mode,
+     * mNextSize,  mMaxSizeë“±ì„ ê³ ë ¤í•˜ì˜€ë‹¤.ê·¸ëŸ¬ë¯€ë¡œ ì—¬ê¸°ì„œëŠ” í•´ë‹¹íŒŒì¼ì„
+     * ë¬¼ë¦¬ì ìœ¼ë¡œ í™•ì¥ë§Œí•˜ë©´ ëœë‹¤.
      */
     IDE_TEST( sddDiskMgr::extendDataFileFEBT(
                                           aStatistics,
@@ -524,22 +524,22 @@ IDE_RC sdptbGroup::makeMetaHeadersForAutoExtend(
                 != IDE_SUCCESS );
 
     /*
-     * sFileNode°¡ ¼º°øÀûÀ¸·Î ¾ò¾îÁ³°í ¸ğµçÁ¶°ÇÀÌ ¿Ïº®ÇÒ¶§ ÀÌÇÏÀÇ ÄÚµå°¡ ½ÇÇàµÊ.
-     * ¿©±â¼­´Â º»°İÀûÀ¸·Î ÆÄÀÏ Å©±â¿¡ µû¶ó ÇÊ¿äÇÑ LGÇì´õ¸¦ ¼öÁ¤ÇÏ°í,»õ·Ó°Ô
-     * ¸¸µç´Ù.
+     * sFileNodeê°€ ì„±ê³µì ìœ¼ë¡œ ì–»ì–´ì¡Œê³  ëª¨ë“ ì¡°ê±´ì´ ì™„ë²½í• ë•Œ ì´í•˜ì˜ ì½”ë“œê°€ ì‹¤í–‰ë¨.
+     * ì—¬ê¸°ì„œëŠ” ë³¸ê²©ì ìœ¼ë¡œ íŒŒì¼ í¬ê¸°ì— ë”°ë¼ í•„ìš”í•œ LGí—¤ë”ë¥¼ ìˆ˜ì •í•˜ê³ ,ìƒˆë¡­ê²Œ
+     * ë§Œë“ ë‹¤.
      */
     IDE_TEST( resizeGG( aStatistics,
                         &sMtx,
                         aSpaceID,
                         sFileNode->mID,         //aGGID
-                        sFileNode->mCurrSize )  //½ÇÁ¦·ÎÈ®ÀåµÈÅ©±âÀÓ
+                        sFileNode->mCurrSize )  //ì‹¤ì œë¡œí™•ì¥ëœí¬ê¸°ì„
               != IDE_SUCCESS );
 
     sState = 0;
     IDE_TEST( sdrMiniTrans::commit( &sMtx ) != IDE_SUCCESS );
 
     /*
-     * ¸¸¾à È®ÀåÀ» Çß´Ù¸é cacheÀÇ FIDºñÆ®¸¦ ÄÑÁØ´Ù.
+     * ë§Œì•½ í™•ì¥ì„ í–ˆë‹¤ë©´ cacheì˜ FIDë¹„íŠ¸ë¥¼ ì¼œì¤€ë‹¤.
      */
     if ( sFileNode->mCurrSize > sPageCntOld )
     {
@@ -558,8 +558,8 @@ IDE_RC sdptbGroup::makeMetaHeadersForAutoExtend(
         IDE_SET( ideSetErrorCode( smERR_ABORT_NOT_ENOUGH_SPACE,
                                   sSpaceNode->mHeader.mName ));
         
-        /* BUG-40980 : AUTOEXTEND OFF»óÅÂ¿¡¼­ TBS max size¿¡ µµ´ŞÇÏ¿© extend ºÒ°¡´É
-         *             error ¸Ş½ÃÁö¸¦ altibase_sm.log¿¡µµ Ãâ·ÂÇÑ´Ù. */
+        /* BUG-40980 : AUTOEXTEND OFFìƒíƒœì—ì„œ TBS max sizeì— ë„ë‹¬í•˜ì—¬ extend ë¶ˆê°€ëŠ¥
+         *             error ë©”ì‹œì§€ë¥¼ altibase_sm.logì—ë„ ì¶œë ¥í•œë‹¤. */
         ideLog::log( IDE_SM_0, 
                      "The tablespace does not have enough free space ( TBS Name :<%s> ).",
                      sSpaceNode->mHeader.mName );
@@ -577,11 +577,11 @@ IDE_RC sdptbGroup::makeMetaHeadersForAutoExtend(
 
 /***********************************************************************
  * Description:
- *  ÀÌÀüÆäÀÌÁö °¹¼ö¿Í Áö±İÆäÀÌÁö°¹¼ö¸¦ °®°í¼­ resize¸¦ ¼öÇàÇÑ´Ù.
- *  ÀÌÀüÆäÀÌÁö °¹¼ö´Â ÀÎÀÚ·Î ¹ŞÀº GG¸¦ »ç¿ëÇÏ¸é ½±°Ô ¾ò´Â´Ù.
+ *  ì´ì „í˜ì´ì§€ ê°¯ìˆ˜ì™€ ì§€ê¸ˆí˜ì´ì§€ê°¯ìˆ˜ë¥¼ ê°–ê³ ì„œ resizeë¥¼ ìˆ˜í–‰í•œë‹¤.
+ *  ì´ì „í˜ì´ì§€ ê°¯ìˆ˜ëŠ” ì¸ìë¡œ ë°›ì€ GGë¥¼ ì‚¬ìš©í•˜ë©´ ì‰½ê²Œ ì–»ëŠ”ë‹¤.
  * 
- *  HWM¿¡ ´ëÇÑ °Ë»ç°¡ ³¡³­»óÅÂ¿¡¼­ ÀÌ ÇÔ¼ö°¡ È£ÃâµÈ´Ù.
- *  ÀÌ ÇÔ¼ö´Â ¸ŞÅ¸Çì´õµéÀ» ¼öÁ¤ÇÏ°Å³ª »õ·Î ¸¸µç´Ù.
+ *  HWMì— ëŒ€í•œ ê²€ì‚¬ê°€ ëë‚œìƒíƒœì—ì„œ ì´ í•¨ìˆ˜ê°€ í˜¸ì¶œëœë‹¤.
+ *  ì´ í•¨ìˆ˜ëŠ” ë©”íƒ€í—¤ë”ë“¤ì„ ìˆ˜ì •í•˜ê±°ë‚˜ ìƒˆë¡œ ë§Œë“ ë‹¤.
  ***********************************************************************/
 IDE_RC sdptbGroup::resizeGG( idvSQL             * aStatistics,
                              sdrMtx             * aMtx,
@@ -628,7 +628,7 @@ IDE_RC sdptbGroup::resizeGG( idvSQL             * aStatistics,
 
 /***********************************************************************
  * Description:
- *  GG ptrÀ» ¹Ş¾Æ¼­ Ã³¸®ÇÑ´Ù.
+ *  GG ptrì„ ë°›ì•„ì„œ ì²˜ë¦¬í•œë‹¤.
  ***********************************************************************/
 IDE_RC sdptbGroup::resizeGGCore( idvSQL         * aStatistics,
                                  sdrMtx         * aMtx,
@@ -641,7 +641,7 @@ IDE_RC sdptbGroup::resizeGGCore( idvSQL         * aStatistics,
     idBool              sHasExtraBefore = ID_FALSE;
     UInt                sExtCntOfLastLGOld;
     UInt                sExtCntOfLastLGNew;
-    UInt                sOldPageCnt; //È®ÀåÀüÀÇ ÆÄÀÏÅ©±â ´ÜÀ§(page°¹¼ö)
+    UInt                sOldPageCnt; //í™•ì¥ì „ì˜ íŒŒì¼í¬ê¸° ë‹¨ìœ„(pageê°¯ìˆ˜)
     UInt                sLGCntBefore;
     UInt                sLGCntNow;
     UInt                sExtCntBefore;
@@ -663,8 +663,8 @@ IDE_RC sdptbGroup::resizeGGCore( idvSQL         * aStatistics,
     sPagesPerExt = sCache->mCommon.mPagesPerExt;
 
     /*
-     *   HWM º¸´Ù ÀÛ°Ô ÆÄÀÏÀ» ÁÙÀÏ¼ö´Â ¾ø´Ù.
-     *   ¾Õ¿¡¼­ Ã¼Å©ÇßÀ½. ¿©±â¼­´Â assert¸¸.
+     *   HWM ë³´ë‹¤ ì‘ê²Œ íŒŒì¼ì„ ì¤„ì¼ìˆ˜ëŠ” ì—†ë‹¤.
+     *   ì•ì—ì„œ ì²´í¬í–ˆìŒ. ì—¬ê¸°ì„œëŠ” assertë§Œ.
      */
     IDE_ASSERT( SD_MAKE_FPID( aGGHdr->mHWM ) < aNewPageCnt )
 
@@ -674,7 +674,7 @@ IDE_RC sdptbGroup::resizeGGCore( idvSQL         * aStatistics,
                                sCache,
                                &sHasExtraBefore );
 
-    //´ç¿¬È÷ ¶È°°¾Æ¾ß¸¸ ÇÔ.
+    //ë‹¹ì—°íˆ ë˜‘ê°™ì•„ì•¼ë§Œ í•¨.
     IDE_ASSERT( sLGCntBefore == aGGHdr->mLGCnt );
 
     sLGCntNow = getNGroups( aNewPageCnt,
@@ -700,53 +700,53 @@ IDE_RC sdptbGroup::resizeGGCore( idvSQL         * aStatistics,
 
     IDE_TEST_CONT( sOldPageCnt == aNewPageCnt, return_anyway );
 
-    /* BUG-29763 DB FileSize º¯°æ½Ã Size°¡ ÀÛ¾Æ¼­ ExtentÀÇ º¯°æÀÌ ¾øÀ» °æ¿ì
-     * ºñÁ¤»ó Á¾·áÇÕ´Ï´Ù.
+    /* BUG-29763 DB FileSize ë³€ê²½ì‹œ Sizeê°€ ì‘ì•„ì„œ Extentì˜ ë³€ê²½ì´ ì—†ì„ ê²½ìš°
+     * ë¹„ì •ìƒ ì¢…ë£Œí•©ë‹ˆë‹¤.
      *
-     * Extent °³¼ö¿¡ º¯°æÀÌ ¾ø´Â °æ¿ì LGHdrµµ º¯°æµÉ ÇÊ¿ä°¡ ¾ø´Ù. 
-     * GGHdrÀÇ mTotalPages ¸¸ º¯°æÇØÁÖ¸é µÈ´Ù. */
+     * Extent ê°œìˆ˜ì— ë³€ê²½ì´ ì—†ëŠ” ê²½ìš° LGHdrë„ ë³€ê²½ë  í•„ìš”ê°€ ì—†ë‹¤. 
+     * GGHdrì˜ mTotalPages ë§Œ ë³€ê²½í•´ì£¼ë©´ ëœë‹¤. */
     IDE_TEST_CONT( sExtCntBefore == sExtCntNow, skip_resize_lghdr );
 
     IDE_ASSERT( sOldPageCnt != aNewPageCnt );
 
-    /*  ÀÌÀüÆäÀÌÁö°¹¼ö°¡ ¹Ù²ïÆÄÀÏÀÇ ÆäÀÌÁö°¹¼öº¸´Ù ¸¹´Ù¸é Ãà¼ÒÀÌ´Ù.
-     *  ÀÌ¶§¼öÁ¤ÇØ¾ßÇÏ´Â ¸ŞÅ¸ÆäÀÌÁö´Â GG¿Í Ãà¼ÒµÈÆÄÀÏÀÇ °¡Àå ¸¶Áö¸· LGÀÌ´Ù.
+    /*  ì´ì „í˜ì´ì§€ê°¯ìˆ˜ê°€ ë°”ë€íŒŒì¼ì˜ í˜ì´ì§€ê°¯ìˆ˜ë³´ë‹¤ ë§ë‹¤ë©´ ì¶•ì†Œì´ë‹¤.
+     *  ì´ë•Œìˆ˜ì •í•´ì•¼í•˜ëŠ” ë©”íƒ€í˜ì´ì§€ëŠ” GGì™€ ì¶•ì†ŒëœíŒŒì¼ì˜ ê°€ì¥ ë§ˆì§€ë§‰ LGì´ë‹¤.
      *
-     *  ÀÌÀüÆäÀÌÁö°¹¼ö°¡ ¹Ù²ïÆÄÀÏÀÇ ÆäÀÌÁö°¹¼öº¸´Ù ÀÛ´Ù¸é È®ÀåÀÌ´Ù.
-     *  ÀÌ¶§¼öÁ¤ÇØ¾ßÇÏ´Â ¸ŞÅ¸ÆäÀÌÁö´Â GG¿Í ÀÌÀüÆÄÀÏÅ©±â¿¡¼­ÀÇ ¸¶Áö¸· LG ±×¸®°í
-     *  È®ÀåµÇ¸é¼­ »õ·Ó°Ô ¸¸µé¾îÁø LGµéÀÌ´Ù.
+     *  ì´ì „í˜ì´ì§€ê°¯ìˆ˜ê°€ ë°”ë€íŒŒì¼ì˜ í˜ì´ì§€ê°¯ìˆ˜ë³´ë‹¤ ì‘ë‹¤ë©´ í™•ì¥ì´ë‹¤.
+     *  ì´ë•Œìˆ˜ì •í•´ì•¼í•˜ëŠ” ë©”íƒ€í˜ì´ì§€ëŠ” GGì™€ ì´ì „íŒŒì¼í¬ê¸°ì—ì„œì˜ ë§ˆì§€ë§‰ LG ê·¸ë¦¬ê³ 
+     *  í™•ì¥ë˜ë©´ì„œ ìƒˆë¡­ê²Œ ë§Œë“¤ì–´ì§„ LGë“¤ì´ë‹¤.
      *
-     * [Ãà¼Ò¹× È®Àå½Ã ¼öÁ¤À» °í·ÁÇØ¾ßÇÏ´Â GGÇÊµå]
+     * [ì¶•ì†Œë° í™•ì¥ì‹œ ìˆ˜ì •ì„ ê³ ë ¤í•´ì•¼í•˜ëŠ” GGí•„ë“œ]
      *   - mLGCnt
      *   - mTotalPages
-     *   - alloc LGµé¿¡´ëÇÑ LG free info ¿¡¼­ mLGFreeness.mFreeExts &
+     *   - alloc LGë“¤ì—ëŒ€í•œ LG free info ì—ì„œ mLGFreeness.mFreeExts &
      *                                        mLGFreeness.mBits
-     *   - dealloc LGµé¿¡´ëÇÑ LG free info ¿¡¼­ mLGFreeness.mBits
-     *      (dealloc LGµéÀÇ mFreeExts´Â º¯È­°¡ ¾ø±â ¶§¹®¿¡ È£ÃâÇÒ ÇÊ¿ä¾øÀ½.)
+     *   - dealloc LGë“¤ì—ëŒ€í•œ LG free info ì—ì„œ mLGFreeness.mBits
+     *      (dealloc LGë“¤ì˜ mFreeExtsëŠ” ë³€í™”ê°€ ì—†ê¸° ë•Œë¬¸ì— í˜¸ì¶œí•  í•„ìš”ì—†ìŒ.)
      *
-     * Âü°í»çÇ×:
-     *   - ÇöÀç Ãà¼ÒÁßÀÌ°í mbitsÁß mLGCnt°¹¼ö¸¸Å­¸¸ »ç¿ëµÇ¾îÁö±â ¶§¹®¿¡
-     *     mLGFreenessÀÇ mBits´Â ¼öÁ¤ÇÒÇÊ¿ä°¡ ¾ø´Ù°í »ı°¢ÇÒ¼öÀÖÀ¸³ª..
-     *     NO. ¼öÁ¤ÇØ¾ßÇÒ¼öµµ ÀÖ´Ù. ¸¸¾à ¸¶Áö¸· LG¿¡¼­ HWM¾ÕºÎºĞÀº ÀüºÎ
-     *     »ç¿ëÁßÀÌ¾úÀ»¶§ HWM·Î Àß·ÁÁú°æ¿ìÀÌ´Ù.
+     * ì°¸ê³ ì‚¬í•­:
+     *   - í˜„ì¬ ì¶•ì†Œì¤‘ì´ê³  mbitsì¤‘ mLGCntê°¯ìˆ˜ë§Œí¼ë§Œ ì‚¬ìš©ë˜ì–´ì§€ê¸° ë•Œë¬¸ì—
+     *     mLGFreenessì˜ mBitsëŠ” ìˆ˜ì •í• í•„ìš”ê°€ ì—†ë‹¤ê³  ìƒê°í• ìˆ˜ìˆìœ¼ë‚˜..
+     *     NO. ìˆ˜ì •í•´ì•¼í• ìˆ˜ë„ ìˆë‹¤. ë§Œì•½ ë§ˆì§€ë§‰ LGì—ì„œ HWMì•ë¶€ë¶„ì€ ì „ë¶€
+     *     ì‚¬ìš©ì¤‘ì´ì—ˆì„ë•Œ HWMë¡œ ì˜ë ¤ì§ˆê²½ìš°ì´ë‹¤.
      *
-     *   - dealloc LGµé¿¡´ëÇÑ logAndModifyFreeExtsOfGG´Â È£ÃâºÒÇÊ¿ä.
-     *     ¾îÂ÷ÇÇ freeExts°ª¿¡´Â ¿µÇâÀ» ¹ÌÄ¡Áö ¾ÊÀ¸¹Ç·Î
+     *   - dealloc LGë“¤ì—ëŒ€í•œ logAndModifyFreeExtsOfGGëŠ” í˜¸ì¶œë¶ˆí•„ìš”.
+     *     ì–´ì°¨í”¼ freeExtsê°’ì—ëŠ” ì˜í–¥ì„ ë¯¸ì¹˜ì§€ ì•Šìœ¼ë¯€ë¡œ
      */
-    if ( sOldPageCnt > aNewPageCnt ) // Ãà¼Ò
+    if ( sOldPageCnt > aNewPageCnt ) // ì¶•ì†Œ
     {
         IDE_ASSERT( sLGCntBefore >= sLGCntNow );
 
-        /****** GG header log&¼öÁ¤. *************************************/
+        /****** GG header log&ìˆ˜ì •. *************************************/
 
         /*
-         * (±âÁ¸ ext°¹¼ö - ¹Ù²ï ext°¹¼ö)  ¸¸Å­ GGÀÇ free¿¡¼­ »©ÁØ´Ù.
-         * ÁÙ¾îµç free extentÀÇ °¹¼ö¸¦ °è»êÇÑ´Ù.
-         * HWMÀÌÈÄ´Â ¸ğµÎ freeÀÌ¹Ç·Î. ´Ü¼øÇÏ°Ô °è»êÀÌ °¡´ÉÇÏ´Ù.
+         * (ê¸°ì¡´ extê°¯ìˆ˜ - ë°”ë€ extê°¯ìˆ˜)  ë§Œí¼ GGì˜ freeì—ì„œ ë¹¼ì¤€ë‹¤.
+         * ì¤„ì–´ë“  free extentì˜ ê°¯ìˆ˜ë¥¼ ê³„ì‚°í•œë‹¤.
+         * HWMì´í›„ëŠ” ëª¨ë‘ freeì´ë¯€ë¡œ. ë‹¨ìˆœí•˜ê²Œ ê³„ì‚°ì´ ê°€ëŠ¥í•˜ë‹¤.
          */
         sReducedFreeExtCnt = (sExtCntBefore - sExtCntNow) ;
 
-        //GG hdr¿¡¼­ alloc LG¿¡ ´ëÇÑ  Free¸¦ º¯°æ½ÃÅ²´Ù.
+        //GG hdrì—ì„œ alloc LGì— ëŒ€í•œ  Freeë¥¼ ë³€ê²½ì‹œí‚¨ë‹¤.
         IDE_TEST( logAndModifyFreeExtsOfGG( aMtx,
                                             aGGHdr,
                                             -sReducedFreeExtCnt )
@@ -754,8 +754,8 @@ IDE_RC sdptbGroup::resizeGGCore( idvSQL         * aStatistics,
 
         sLastLGID = sLGCntNow -1;
 
-        //Ãà¼Ò°¡ µÇ¾î¼­ ±âÁ¸ÀÇ ¸¶Áö¸· LGÀÇ ¸ğµç extent°¡ Àß·ÁÁú¶§¿¡´Â
-        //resizeLGHdrÀ» È£ÃâÇÒ ÇÊ¿ä°¡ ¾ø´Ù.
+        //ì¶•ì†Œê°€ ë˜ì–´ì„œ ê¸°ì¡´ì˜ ë§ˆì§€ë§‰ LGì˜ ëª¨ë“  extentê°€ ì˜ë ¤ì§ˆë•Œì—ëŠ”
+        //resizeLGHdrì„ í˜¸ì¶œí•  í•„ìš”ê°€ ì—†ë‹¤.
 
         if ( sPartialEGNow == ID_TRUE )
         {
@@ -766,15 +766,15 @@ IDE_RC sdptbGroup::resizeGGCore( idvSQL         * aStatistics,
             IDE_TEST( resizeLGHdr( aStatistics,
                                    aMtx,
                                    aSpaceID,
-                                   sExtCntOfLastLGNew, //¼öÁ¤µÈ Ext Cnt
+                                   sExtCntOfLastLGNew, //ìˆ˜ì •ëœ Ext Cnt
                                    sAllocLGHdrPID,
                                    sDeallocLGHdrPID,
                                    &sFreeInLG ) != IDE_SUCCESS );
 
 
-            /*  (HWM¹Ù·Î ´ÙÀ½ ÆäÀÌÁö·ÎºÎÅÍÀÇ)
-             * Ãà¼Ò·Î ÀÎÇÏ¿© LG hdr¿¡ free°¡ ¾ø´Ù¸é
-             * GGÀÇ mLGFreeness¸¦ ¼öÁ¤ÇØ¾ßÇÑ´Ù
+            /*  (HWMë°”ë¡œ ë‹¤ìŒ í˜ì´ì§€ë¡œë¶€í„°ì˜)
+             * ì¶•ì†Œë¡œ ì¸í•˜ì—¬ LG hdrì— freeê°€ ì—†ë‹¤ë©´
+             * GGì˜ mLGFreenessë¥¼ ìˆ˜ì •í•´ì•¼í•œë‹¤
              */
             if ( sFreeInLG == 0 )
             {
@@ -782,7 +782,7 @@ IDE_RC sdptbGroup::resizeGGCore( idvSQL         * aStatistics,
                 IDE_TEST( logAndSetLGFNBitsOfGG( aMtx,
                                                  aGGHdr,
                                                  sLastLGID,
-                                                 0 ) //ÇØ´çºñÆ®¸¦ 0À¸·Î ¼¼Æ®ÇÑ´Ù
+                                                 0 ) //í•´ë‹¹ë¹„íŠ¸ë¥¼ 0ìœ¼ë¡œ ì„¸íŠ¸í•œë‹¤
                           != IDE_SUCCESS );
 
             }
@@ -795,19 +795,19 @@ IDE_RC sdptbGroup::resizeGGCore( idvSQL         * aStatistics,
         {
             /*
              * nothing to do
-             * partial EG°¡ ¾ø´Ù¸é, LGµµ ¼öÁ¤ÇÒ ÇÊ¿ä°¡ ¾ø°í EGÀÇ LGFNµµ
-             * ¼öÁ¤ºÒÇÊ¿äÇÏ´Ù.
+             * partial EGê°€ ì—†ë‹¤ë©´, LGë„ ìˆ˜ì •í•  í•„ìš”ê°€ ì—†ê³  EGì˜ LGFNë„
+             * ìˆ˜ì •ë¶ˆí•„ìš”í•˜ë‹¤.
              */
         }
 
 
     }
-    else         // if ( sOldPageCnt < aNewPageCnt )    //È®Àå
+    else         // if ( sOldPageCnt < aNewPageCnt )    //í™•ì¥
     {
-        //LG°¹¼ö°¡ ´õ ÀÛ¾ÆÁú¼ö´Â ¾ø´Ù. Áö±İÀº È®ÀåÁßÀÌ¹Ç·Î.
+        //LGê°¯ìˆ˜ê°€ ë” ì‘ì•„ì§ˆìˆ˜ëŠ” ì—†ë‹¤. ì§€ê¸ˆì€ í™•ì¥ì¤‘ì´ë¯€ë¡œ.
         IDE_ASSERT( sLGCntBefore <= sLGCntNow );
 
-        //È®ÀåÀÎµ¥ LGCnt°¡ °°´Ù´Â°ÍÀº ±âÁ¸¿¡ extra LG°¡ ÀÖ¾ú´Ù´Â ¶æÀÌ´Ù.
+        //í™•ì¥ì¸ë° LGCntê°€ ê°™ë‹¤ëŠ”ê²ƒì€ ê¸°ì¡´ì— extra LGê°€ ìˆì—ˆë‹¤ëŠ” ëœ»ì´ë‹¤.
         if ( sLGCntBefore == sLGCntNow )
         {
           IDE_ASSERT ( sHasExtraBefore == ID_TRUE );// MUST!!!
@@ -815,9 +815,9 @@ IDE_RC sdptbGroup::resizeGGCore( idvSQL         * aStatistics,
 
         if ( sHasExtraBefore == ID_TRUE )
         {
-            sLastLGID = aGGHdr->mLGCnt -1;  //±âÁ¸ÀÇ ¸¶Áö¸· LGID
+            sLastLGID = aGGHdr->mLGCnt -1;  //ê¸°ì¡´ì˜ ë§ˆì§€ë§‰ LGID
 
-            //±âÁ¸¿¡ extra LG°¡ Á¸ÀçÇß´Ù¸é Áö±İ È®ÀåÁßÀÌ¹Ç·Î ±× LG¸¦ ¼öÁ¤ÇÑ´Ù.
+            //ê¸°ì¡´ì— extra LGê°€ ì¡´ì¬í–ˆë‹¤ë©´ ì§€ê¸ˆ í™•ì¥ì¤‘ì´ë¯€ë¡œ ê·¸ LGë¥¼ ìˆ˜ì •í•œë‹¤.
             sAllocLGHdrPID = getAllocLGHdrPID(aGGHdr, sLastLGID);
 
             sDeallocLGHdrPID =getDeallocLGHdrPID( aGGHdr,sLastLGID);
@@ -840,8 +840,8 @@ IDE_RC sdptbGroup::resizeGGCore( idvSQL         * aStatistics,
                                    &sFreeInLG )
                         != IDE_SUCCESS );
             /*
-             * ¸¸¾à È®Àå¿¡ ¼º°øÇß´Ù¸é~~~
-             * GG¿¡¼­ LGFreenessºñÆ®¸¦ ÄÑÁÖ¾î¾ß ÇÑ´Ù.
+             * ë§Œì•½ í™•ì¥ì— ì„±ê³µí–ˆë‹¤ë©´~~~
+             * GGì—ì„œ LGFreenessë¹„íŠ¸ë¥¼ ì¼œì£¼ì–´ì•¼ í•œë‹¤.
              */
             if ( sFreeInLG > 0 )
             {
@@ -852,17 +852,17 @@ IDE_RC sdptbGroup::resizeGGCore( idvSQL         * aStatistics,
                 IDE_TEST( logAndSetLGFNBitsOfGG( aMtx,
                                                  aGGHdr,
                                                  sBitIdx,
-                                                 1 ) //ÇØ´çLG¿¡¼­ ÇÒ´ç¹Şµµ·Ï~
+                                                 1 ) //í•´ë‹¹LGì—ì„œ í• ë‹¹ë°›ë„ë¡~
                             != IDE_SUCCESS );
             }
             else
             {
-                // sFreeInLG°¡ 0ÀÎ °æ¿ì´Â ¹ß»ıÇÏÁö ¾ÊÀ½.( È®ÀåÁßÀÌ¹Ç·Î)
+                // sFreeInLGê°€ 0ì¸ ê²½ìš°ëŠ” ë°œìƒí•˜ì§€ ì•ŠìŒ.( í™•ì¥ì¤‘ì´ë¯€ë¡œ)
             }
         }
 
-        //È®ÀåÀÌ±â´Â ÇÏ³ª ±× º¯È­°¡ ±âÁ¸ÀÇ ¸¶Áö¸· LG·Î ³¡³­´Ù¸é ÀÌ ·çÇÁ¿¡
-        //µé¾î°¥ ÇÊ¿ä°¡ ¾øÀ½.
+        //í™•ì¥ì´ê¸°ëŠ” í•˜ë‚˜ ê·¸ ë³€í™”ê°€ ê¸°ì¡´ì˜ ë§ˆì§€ë§‰ LGë¡œ ëë‚œë‹¤ë©´ ì´ ë£¨í”„ì—
+        //ë“¤ì–´ê°ˆ í•„ìš”ê°€ ì—†ìŒ.
         if ( sLGCntBefore < sLGCntNow )
         {
             IDE_TEST( makeNewLGHdrs( aStatistics,
@@ -879,7 +879,7 @@ IDE_RC sdptbGroup::resizeGGCore( idvSQL         * aStatistics,
 
         sAddedFreeExtCnt = sExtCntNow - sExtCntBefore;
 
-        //GG hdr¿¡¼­ alloc LG¿¡ ´ëÇÑ  Free¸¦ º¯°æ½ÃÅ²´Ù.
+        //GG hdrì—ì„œ alloc LGì— ëŒ€í•œ  Freeë¥¼ ë³€ê²½ì‹œí‚¨ë‹¤.
         IDE_TEST( logAndModifyFreeExtsOfGG( aMtx,
                                             aGGHdr,
                                             sAddedFreeExtCnt )
@@ -918,11 +918,11 @@ IDE_RC sdptbGroup::resizeGGCore( idvSQL         * aStatistics,
 
 /***********************************************************************
  * Description:
- *  »õ·Î¿î LG header¸¦ ¸¸µç´Ù.
- *  aStartLGID ·ÎºÎÅÍ aEndLGID¸¦  ¸¸µç´Ù.
+ *  ìƒˆë¡œìš´ LG headerë¥¼ ë§Œë“ ë‹¤.
+ *  aStartLGID ë¡œë¶€í„° aEndLGIDë¥¼  ë§Œë“ ë‹¤.
  * 
- *  aStartLGID : »ı¼ºÇÒ LG IDÀÇ ½ÃÀÛ
- *  aLGCntOfGG : GG¿¡¼­ÀÇ LG count (Áï, GGÀÇ mLGCnt¿¡ µé¾î°¡´Â °ªÀÓ)
+ *  aStartLGID : ìƒì„±í•  LG IDì˜ ì‹œì‘
+ *  aLGCntOfGG : GGì—ì„œì˜ LG count (ì¦‰, GGì˜ mLGCntì— ë“¤ì–´ê°€ëŠ” ê°’ì„)
  ***********************************************************************/
 IDE_RC sdptbGroup::makeNewLGHdrs( idvSQL          * aStatistics,
                                   sdrMtx          * aMtx,
@@ -948,7 +948,7 @@ IDE_RC sdptbGroup::makeNewLGHdrs( idvSQL          * aStatistics,
         {
             sValidBits = sdptbGroup::nBitsPerLG();
         }
-        else //¸¶Áö¸· LG groupÀÌ¶ó¸é.
+        else //ë§ˆì§€ë§‰ LG groupì´ë¼ë©´.
         {
             sValidBits = getExtCntOfLastLG( aPageCntOfGG, aPagesPerExt );
         }
@@ -981,7 +981,7 @@ IDE_RC sdptbGroup::makeNewLGHdrs( idvSQL          * aStatistics,
             IDE_TEST( logAndSetLGFNBitsOfGG( aMtx,
                                              aGGHdrPtr,
                                              sLGID,  //bit index~
-                                             1 ) //ÇØ´çLG¿¡¼­ ÇÒ´ç¹Şµµ·Ï1¼¼Æ®
+                                             1 ) //í•´ë‹¹LGì—ì„œ í• ë‹¹ë°›ë„ë¡1ì„¸íŠ¸
                       != IDE_SUCCESS );
         }
         else
@@ -999,25 +999,25 @@ IDE_RC sdptbGroup::makeNewLGHdrs( idvSQL          * aStatistics,
 
 /***********************************************************************
  * Description:
- *  LG hdeaer ÇÏ³ª¸¦ ¼öÁ¤ÇÏ´Â ÇÔ¼ö
- *  È®Àå°ú Ãà¼Ò ¸ğµÎ¿¡ »ç¿ëµÇ¾îÁú¼ö ÀÖ´Ù.
+ *  LG hdeaer í•˜ë‚˜ë¥¼ ìˆ˜ì •í•˜ëŠ” í•¨ìˆ˜
+ *  í™•ì¥ê³¼ ì¶•ì†Œ ëª¨ë‘ì— ì‚¬ìš©ë˜ì–´ì§ˆìˆ˜ ìˆë‹¤.
  * 
- *  resizeLG¸¦ ÇÒ¶§ LG¿¡¼­ ¼öÁ¤ÇÒ ÇÊµå
+ *  resizeLGë¥¼ í• ë•Œ LGì—ì„œ ìˆ˜ì •í•  í•„ë“œ
  * 
  *  for alloc LG
  *     - mValidBits
  *     - mFree
- *     - mBitmap : 0À¸·Î Ã¤¿ò
+ *     - mBitmap : 0ìœ¼ë¡œ ì±„ì›€
  * 
  *  for dealloc LG
  *     - mValidBits
- *     //- mFree ºÒÇÊ¿ä. free°¡ ´ÃÁö ¾ÊÀ¸¹Ç·Î.
- *     - mBitmap : 1·Î Ã¤¿ò
+ *     //- mFree ë¶ˆí•„ìš”. freeê°€ ëŠ˜ì§€ ì•Šìœ¼ë¯€ë¡œ.
+ *     - mBitmap : 1ë¡œ ì±„ì›€
  ***********************************************************************/
 IDE_RC sdptbGroup::resizeLGHdr( idvSQL     * aStatistics,
                                 sdrMtx     * aMtx,
                                 scSpaceID    aSpaceID,
-                                ULong        aValidBitsNew, //¼öÁ¤µÈ Ext Cnt
+                                ULong        aValidBitsNew, //ìˆ˜ì •ëœ Ext Cnt
                                 scPageID     aAllocLGPID,
                                 scPageID     aDeallocLGPID,
                                 UInt       * aFreeInLG )
@@ -1033,7 +1033,7 @@ IDE_RC sdptbGroup::resizeLGHdr( idvSQL     * aStatistics,
                 ( aValidBitsNew  <= sdptbGroup::nBitsPerLG() ) );
 
     /*
-     * alloc LG header°ü·Ã log&¼öÁ¤.
+     * alloc LG headerê´€ë ¨ log&ìˆ˜ì •.
      */
     IDE_TEST( sdbBufferMgr::getPageByPID( aStatistics,
                                           aSpaceID,
@@ -1050,17 +1050,17 @@ IDE_RC sdptbGroup::resizeLGHdr( idvSQL     * aStatistics,
 
     sDifference = aValidBitsNew - sLGHdr->mValidBits;
 
-    //ÆÄÀÏÅ©±â°¡ ¹Ù²îÁö ¾Ê¾Ò´Âµ¥ È£ÃâµÇ¾ú´Ù¸é ¿¡·¯.
+    //íŒŒì¼í¬ê¸°ê°€ ë°”ë€Œì§€ ì•Šì•˜ëŠ”ë° í˜¸ì¶œë˜ì—ˆë‹¤ë©´ ì—ëŸ¬.
     IDE_ASSERT( sDifference != 0 );
 
     /*
-     * sFreeExts = ±âÁ¸ free +  ( Áö±İ LGÀÇ ext°¹¼ö - ±âÁ¸ ext°¹¼ö )
+     * sFreeExts = ê¸°ì¡´ free +  ( ì§€ê¸ˆ LGì˜ extê°¯ìˆ˜ - ê¸°ì¡´ extê°¯ìˆ˜ )
      */
     sFreeExts = sLGHdr->mFree + sDifference;
 
     /*
-     * ¸¶Áö¸· LG°¡ ÀüºÎÇÒ´çµÇ¾îÁ® ÀÖ°í, HWM°¡ ±× LG ¸¶Áö¸· page¸¦
-     * °¡¸£Å°°í ÀÖÀ»¶§  sFreeExts´Â  0ÀÌ µÉ¼öµµ ÀÖ´Ù.
+     * ë§ˆì§€ë§‰ LGê°€ ì „ë¶€í• ë‹¹ë˜ì–´ì ¸ ìˆê³ , HWMê°€ ê·¸ LG ë§ˆì§€ë§‰ pageë¥¼
+     * ê°€ë¥´í‚¤ê³  ìˆì„ë•Œ  sFreeExtsëŠ”  0ì´ ë ìˆ˜ë„ ìˆë‹¤.
      */
     IDE_ASSERT( sFreeExts <= sdptbGroup::nBitsPerLG() );
 
@@ -1069,12 +1069,12 @@ IDE_RC sdptbGroup::resizeLGHdr( idvSQL     * aStatistics,
                                  sFreeExts ) != IDE_SUCCESS );
 
      /*
-      * ¸¸¾à È®ÀåÀÌ¶ó¸é ºñÆ®¸ãÀ» º¯°æÇÑ´Ù.
+      * ë§Œì•½ í™•ì¥ì´ë¼ë©´ ë¹„íŠ¸ë©¥ì„ ë³€ê²½í•œë‹¤.
       */
-    if ( sDifference > 0 ) //È®ÀåÀÌ¶ó´Â ¶æ
+    if ( sDifference > 0 ) //í™•ì¥ì´ë¼ëŠ” ëœ»
     {
         sData4InitLGHdr.mBitVal   = 0;
-        sData4InitLGHdr.mStartIdx = sLGHdr->mValidBits; //±âÁ¸ LGÀÇ valid bits¸¦ »ç¿ë
+        sData4InitLGHdr.mStartIdx = sLGHdr->mValidBits; //ê¸°ì¡´ LGì˜ valid bitsë¥¼ ì‚¬ìš©
         sData4InitLGHdr.mCount    = sDifference;
 
         IDE_ASSERT( (sLGHdr->mValidBits + sDifference ) <=
@@ -1093,20 +1093,20 @@ IDE_RC sdptbGroup::resizeLGHdr( idvSQL     * aStatistics,
                   != IDE_SUCCESS );
     }
 
-    //À§¿¡¼­ writeLogRecÀ» ÇÑ´ÙÀ½¿¡ ValidBitsÀ» ¹Ù²Ü°Í.
+    //ìœ„ì—ì„œ writeLogRecì„ í•œë‹¤ìŒì— ValidBitsì„ ë°”ê¿€ê²ƒ.
     IDE_TEST( logAndSetValidBitsOfLG( aMtx,
                                       sLGHdr,
                                       aValidBitsNew )
               != IDE_SUCCESS );
 
     /*
-     * output°ªÀº ´ç¿¬È÷ alloc LGÀÇ freeÀÌ¾î¾ß ÇÑ´Ù.
+     * outputê°’ì€ ë‹¹ì—°íˆ alloc LGì˜ freeì´ì–´ì•¼ í•œë‹¤.
      */
 
     *aFreeInLG = sLGHdr->mFree;
 
     /*
-     * dealloc LG header log&¼öÁ¤.
+     * dealloc LG header log&ìˆ˜ì •.
      */
     IDE_TEST( sdbBufferMgr::getPageByPID( aStatistics,
                                           aSpaceID,
@@ -1122,12 +1122,12 @@ IDE_RC sdptbGroup::resizeLGHdr( idvSQL     * aStatistics,
     sLGHdr = getLGHdr(sPagePtr);
 
      /*
-      * ¸¸¾à È®ÀåÀÌ¶ó¸é ºñÆ®¸ÊÀ» º¯°æÇÑ´Ù.
+      * ë§Œì•½ í™•ì¥ì´ë¼ë©´ ë¹„íŠ¸ë§µì„ ë³€ê²½í•œë‹¤.
       */
-    if ( sDifference > 0  ) //È®ÀåÀÌ¶ó´Â ¶æ
+    if ( sDifference > 0  ) //í™•ì¥ì´ë¼ëŠ” ëœ»
     {
         sData4InitLGHdr.mBitVal   = 1;
-        sData4InitLGHdr.mStartIdx = sLGHdr->mValidBits; //±âÁ¸ LGÀÇ valid bits¸¦ »ç¿ë
+        sData4InitLGHdr.mStartIdx = sLGHdr->mValidBits; //ê¸°ì¡´ LGì˜ valid bitsë¥¼ ì‚¬ìš©
         sData4InitLGHdr.mCount    = sDifference;
 
         IDE_ASSERT( (sLGHdr->mValidBits + sDifference ) <=
@@ -1163,25 +1163,25 @@ IDE_RC sdptbGroup::resizeLGHdr( idvSQL     * aStatistics,
 
 /***********************************************************************
  * Description:
- *  ÇÑ°³ÀÇ GG¿¡ µé¾î°¡´Â LGÀÇ °¹¼ö¸¦ »êÁ¤ÇÑ´Ù.
- *  ÆÄÀÏÀÇ Å©±â¸¦ page´ÜÀ§·Î ¹Ş¾Æ¼­ ¸î°³ÀÇ LG¸¦ ¸¸µé¼öÀÖ´ÂÁö °è»êÇÑ´Ù
+ *  í•œê°œì˜ GGì— ë“¤ì–´ê°€ëŠ” LGì˜ ê°¯ìˆ˜ë¥¼ ì‚°ì •í•œë‹¤.
+ *  íŒŒì¼ì˜ í¬ê¸°ë¥¼ pageë‹¨ìœ„ë¡œ ë°›ì•„ì„œ ëª‡ê°œì˜ LGë¥¼ ë§Œë“¤ìˆ˜ìˆëŠ”ì§€ ê³„ì‚°í•œë‹¤
  * 
- *  aPageCnt   : page´ÜÀ§ÀÇ ÆÄÀÏÅ©±â (´ç¿¬È÷ GG header±îÁö Æ÷ÇÔµÈÅ©±âÀÓ)
- *  aIsExtraLG : ºÎºĞÀûÀ¸·Î »ç¿ëÇÏ´Â LG°¡ Á¸ÀçÇÏ´Â³Ä
+ *  aPageCnt   : pageë‹¨ìœ„ì˜ íŒŒì¼í¬ê¸° (ë‹¹ì—°íˆ GG headerê¹Œì§€ í¬í•¨ëœí¬ê¸°ì„)
+ *  aIsExtraLG : ë¶€ë¶„ì ìœ¼ë¡œ ì‚¬ìš©í•˜ëŠ” LGê°€ ì¡´ì¬í•˜ëŠ”ëƒ
  ***********************************************************************/
 UInt sdptbGroup::getNGroups( ULong            aPageCnt,
                              sdptbSpaceCache *aCache,
                              idBool          *aIsExtraLG )
 {
     UInt sNum;
-    ULong sLGSizeInByte;   //´ÜÀ§´Â byte
-    ULong sSizeInByte;     //´ÜÀ§´Â byte
+    ULong sLGSizeInByte;   //ë‹¨ìœ„ëŠ” byte
+    ULong sSizeInByte;     //ë‹¨ìœ„ëŠ” byte
     ULong sRest;
 
     IDE_ASSERT( aCache != NULL);
     IDE_ASSERT( aIsExtraLG != NULL);
 
-    aPageCnt -=  SDPTB_GG_HDR_PAGE_CNT;  //GG header¸¦ Á¦¿ÜÇÏ°í °è»êÇØ¾ß¸¸ ÇÑ´Ù
+    aPageCnt -=  SDPTB_GG_HDR_PAGE_CNT;  //GG headerë¥¼ ì œì™¸í•˜ê³  ê³„ì‚°í•´ì•¼ë§Œ í•œë‹¤
 
     sSizeInByte = aPageCnt * SD_PAGE_SIZE;
 
@@ -1192,8 +1192,8 @@ UInt sdptbGroup::getNGroups( ULong            aPageCnt,
 
     sRest = sSizeInByte % sLGSizeInByte;
 
-    //%¿¬»êÀ¸·Î ³ª¸ÓÁö°¡ ÀÖ´Ù°í ÇØ¼­ ¹«Á¶°Ç LG°¹¼ö¸¦ Áõ°¡½ÃÅ°¸é ¾ÈµÈ´Ù.
-    //¿Ö³ÄÇÏ¸é ±Ø´ÜÀûÀÎ ¿¹·Î ÇÑ¹ÙÀÌÆ®°¡ ³²¾ÒÀ»¼öµµ ÀÖ±â ¶§¹®ÀÌ´Ù.
+    //%ì—°ì‚°ìœ¼ë¡œ ë‚˜ë¨¸ì§€ê°€ ìˆë‹¤ê³  í•´ì„œ ë¬´ì¡°ê±´ LGê°¯ìˆ˜ë¥¼ ì¦ê°€ì‹œí‚¤ë©´ ì•ˆëœë‹¤.
+    //ì™œëƒí•˜ë©´ ê·¹ë‹¨ì ì¸ ì˜ˆë¡œ í•œë°”ì´íŠ¸ê°€ ë‚¨ì•˜ì„ìˆ˜ë„ ìˆê¸° ë•Œë¬¸ì´ë‹¤.
     if ( (sRest/SD_PAGE_SIZE) >=
                 (SDPTB_LG_HDR_PAGE_CNT + aCache->mCommon.mPagesPerExt) )
     {
@@ -1209,10 +1209,10 @@ UInt sdptbGroup::getNGroups( ULong            aPageCnt,
 
 /***********************************************************************
  * Description:
- *  GGÇì´õ¿¡´ëÇÑ ·Î±×Ã³¸®¸¦ ÇÑ´Ù.
+ *  GGí—¤ë”ì—ëŒ€í•œ ë¡œê·¸ì²˜ë¦¬ë¥¼ í•œë‹¤.
  *
- *  ÀÌÇÔ¼ö´Â TBS¸¦ ¸¸µé¶§ È£ÃâµÇ´Â sdptbGroup::makeMetaHeaders¿¡ ÀÇÇØ¼­¸¸ 
- *  È£ÃâµÈ´Ù. 
+ *  ì´í•¨ìˆ˜ëŠ” TBSë¥¼ ë§Œë“¤ë•Œ í˜¸ì¶œë˜ëŠ” sdptbGroup::makeMetaHeadersì— ì˜í•´ì„œë§Œ 
+ *  í˜¸ì¶œëœë‹¤. 
  ***********************************************************************/
 IDE_RC sdptbGroup::logAndInitGGHdrPage( sdrMtx        * aMtx,
                                         UInt            aSpaceID,
@@ -1269,21 +1269,21 @@ IDE_RC sdptbGroup::logAndInitGGHdrPage( sdrMtx        * aMtx,
                                          ID_SIZEOF( sVal ) )
               != IDE_SUCCESS );
 
-    if ( aIsExtraLG == ID_TRUE ) //ÀÏºÎ ºñÆ®¸¸ »ç¿ëÁßÀÎ  LG°¡ Á¸ÀçÇÏ´Â°¡
+    if ( aIsExtraLG == ID_TRUE ) //ì¼ë¶€ ë¹„íŠ¸ë§Œ ì‚¬ìš©ì¤‘ì¸  LGê°€ ì¡´ì¬í•˜ëŠ”ê°€
     {
-        //¸ğµçºñÆ®¸¦ ¾²´Â LGÀÇ ºñÆ®¼ö + ¸¶Áö¸· LGÀÇ ºñÆ®¼ö
+        //ëª¨ë“ ë¹„íŠ¸ë¥¼ ì“°ëŠ” LGì˜ ë¹„íŠ¸ìˆ˜ + ë§ˆì§€ë§‰ LGì˜ ë¹„íŠ¸ìˆ˜
         sLongVal = ( sdptbGroup::nBitsPerLG() * (aLGCnt-1)) +
                    getExtCntOfLastLG( aPageCnt, aPagesPerExt );
 
     }
     else
     {
-        //¸ğµçºñÆ®¸¦ ¾²´Â LGÀÇ ºñÆ®¼ö
+        //ëª¨ë“ ë¹„íŠ¸ë¥¼ ì“°ëŠ” LGì˜ ë¹„íŠ¸ìˆ˜
         sLongVal = sdptbGroup::nBitsPerLG() * aLGCnt;
     }
 
     /*
-     * GG¿¡¼­ alloc LG¿¡´ëÇÑ ÇÊµå ·Î±ë.
+     * GGì—ì„œ alloc LGì—ëŒ€í•œ í•„ë“œ ë¡œê¹….
      */
     IDE_TEST( sdrMiniTrans::writeNBytes(
                                    aMtx,
@@ -1292,12 +1292,12 @@ IDE_RC sdptbGroup::logAndInitGGHdrPage( sdrMtx        * aMtx,
                                    ID_SIZEOF( sLongVal ) ) != IDE_SUCCESS );
 
     /*
-     * alloc LG ·Î±ë.
+     * alloc LG ë¡œê¹….
      *
      */
     /*
-     * LGFreeness¿¡´ëÇÑ ¼¼ÆÃÀº ¿©±â¼­ ÇÏÁö¾Ê°í makeNewLGHdrs¿¡¼­ ¼öÇàÇÑ´Ù.
-     * ¿©±â¼­´Â ÀÏ´Ü 0À¸·Î¸¸ ¼¼Æ®ÇÑ´Ù.
+     * LGFreenessì—ëŒ€í•œ ì„¸íŒ…ì€ ì—¬ê¸°ì„œ í•˜ì§€ì•Šê³  makeNewLGHdrsì—ì„œ ìˆ˜í–‰í•œë‹¤.
+     * ì—¬ê¸°ì„œëŠ” ì¼ë‹¨ 0ìœ¼ë¡œë§Œ ì„¸íŠ¸í•œë‹¤.
      */
     sLongVal = 0;
     IDE_TEST( sdrMiniTrans::writeNBytes(
@@ -1313,8 +1313,8 @@ IDE_RC sdptbGroup::logAndInitGGHdrPage( sdrMtx        * aMtx,
                                 ID_SIZEOF( sLongVal ) ) != IDE_SUCCESS );
 
     /*
-     * GG¿¡¼­ dealloc LG¿¡´ëÇÑ ÇÊµå ·Î±ë.
-     * dealloc LG´Â Ã³À½¸¸µé¶§ free extent°¡ ¾øÀ¸¹Ç·Î ¸ğµÎ 0À¸·Î ¼¼ÆÃÇÏ¸é µÈ´Ù.
+     * GGì—ì„œ dealloc LGì—ëŒ€í•œ í•„ë“œ ë¡œê¹….
+     * dealloc LGëŠ” ì²˜ìŒë§Œë“¤ë•Œ free extentê°€ ì—†ìœ¼ë¯€ë¡œ ëª¨ë‘ 0ìœ¼ë¡œ ì„¸íŒ…í•˜ë©´ ëœë‹¤.
      */
     IDE_TEST( sdrMiniTrans::writeNBytes(
                                   aMtx,
@@ -1335,7 +1335,7 @@ IDE_RC sdptbGroup::logAndInitGGHdrPage( sdrMtx        * aMtx,
                                   ID_SIZEOF( sLongVal ) ) != IDE_SUCCESS );
 
     /* PROJ-1704 Disk MVCC Renewal
-     * Undo TBSÀÇ Ã¹¹øÂ° FGH¿¡´Â Free Extent Dir List°¡ Á¸ÀçÇÑ´Ù.
+     * Undo TBSì˜ ì²«ë²ˆì§¸ FGHì—ëŠ” Free Extent Dir Listê°€ ì¡´ì¬í•œë‹¤.
      */
     if ( ( aSpaceID == SMI_ID_TABLESPACE_SYSTEM_DISK_UNDO ) &&
          ( aGGID == 0 ) )
@@ -1364,7 +1364,7 @@ IDE_RC sdptbGroup::logAndInitGGHdrPage( sdrMtx        * aMtx,
 
 /***********************************************************************
  * Description:
- *  mLGFreenessÀÇ mBits¿¡¼­ aBitIdx¹øÂ° ÀÎµ¦½º°ªÀ» aVal·Î ¼öÁ¤ÇÏ´Â ÇÔ¼öÀÌ´Ù.
+ *  mLGFreenessì˜ mBitsì—ì„œ aBitIdxë²ˆì§¸ ì¸ë±ìŠ¤ê°’ì„ aValë¡œ ìˆ˜ì •í•˜ëŠ” í•¨ìˆ˜ì´ë‹¤.
  ***********************************************************************/
 IDE_RC sdptbGroup::logAndSetLGFNBitsOfGG( sdrMtx           * aMtx,
                                           sdptbGGHdr       * aGGHdr,
@@ -1418,7 +1418,7 @@ IDE_RC sdptbGroup::logAndSetLGFNBitsOfGG( sdrMtx           * aMtx,
 
 /***********************************************************************
  * Description:
- *  LGÇì´õ¿¡´ëÇÑ ·Î±×Ã³¸®¸¦ ÇÑ´Ù.
+ *  LGí—¤ë”ì—ëŒ€í•œ ë¡œê·¸ì²˜ë¦¬ë¥¼ í•œë‹¤.
  ***********************************************************************/
 IDE_RC sdptbGroup::logAndInitLGHdrPage( idvSQL          *  aStatistics,
                                         sdrMtx          *  aMtx,
@@ -1499,7 +1499,7 @@ IDE_RC sdptbGroup::logAndInitLGHdrPage( idvSQL          *  aStatistics,
 
     if ( aLGType == SDPTB_ALLOC_LG )
     {
-        //alloc page LGÀÎ °æ¿ì freeÀÇ ÃÊ±â°ªÀº ´ç¿¬È÷ mValidBits¿Í °°´Ù.
+        //alloc page LGì¸ ê²½ìš° freeì˜ ì´ˆê¸°ê°’ì€ ë‹¹ì—°íˆ mValidBitsì™€ ê°™ë‹¤.
         IDE_TEST( sdrMiniTrans::writeNBytes( aMtx,
                                              (UChar*)&sLGHdrPtr->mFree,
                                              &aValidBits,
@@ -1512,7 +1512,7 @@ IDE_RC sdptbGroup::logAndInitLGHdrPage( idvSQL          *  aStatistics,
                         aValidBits);
 
         /*
-         * alloc LG ÀÎ°æ¿ì´Â validÇÑ ºñÆ®¸ÊÀ» 0À¸·Î ¸¸µå´Â ·çÆ¾ÀÌ ÇÊ¿äÇÏ´Ù.
+         * alloc LG ì¸ê²½ìš°ëŠ” validí•œ ë¹„íŠ¸ë§µì„ 0ìœ¼ë¡œ ë§Œë“œëŠ” ë£¨í‹´ì´ í•„ìš”í•˜ë‹¤.
          */
         sData4InitLGHdr.mBitVal   = 0;
         sData4InitLGHdr.mStartIdx = 0;
@@ -1542,7 +1542,7 @@ IDE_RC sdptbGroup::logAndInitLGHdrPage( idvSQL          *  aStatistics,
                         0,         //aStartIdx,
                         aValidBits);
         /*
-         * dealloc LG ÀÎ°æ¿ì´Â validÇÑ ºñÆ®¸ÊÀ» 1·Î ¸¸µå´Â ·çÆ¾ÀÌ ÇÊ¿äÇÏ´Ù.
+         * dealloc LG ì¸ê²½ìš°ëŠ” validí•œ ë¹„íŠ¸ë§µì„ 1ë¡œ ë§Œë“œëŠ” ë£¨í‹´ì´ í•„ìš”í•˜ë‹¤.
          */
         sData4InitLGHdr.mBitVal   = 1;
         sData4InitLGHdr.mStartIdx = 0;
@@ -1555,7 +1555,7 @@ IDE_RC sdptbGroup::logAndInitLGHdrPage( idvSQL          *  aStatistics,
           != IDE_SUCCESS );
 
         /*
-         * Dealloc LG ÀÎ°æ¿ì´Â  hint¸¦ (ÃÖ´ë extent id +1 )·Î ¼³Á¤ÇÏµµ·Ï ÇÑ´Ù.
+         * Dealloc LG ì¸ê²½ìš°ëŠ”  hintë¥¼ (ìµœëŒ€ extent id +1 )ë¡œ ì„¤ì •í•˜ë„ë¡ í•œë‹¤.
          */
         IDE_TEST( sdrMiniTrans::writeNBytes( aMtx,
                                              (UChar*)&sLGHdrPtr->mHint,
@@ -1573,8 +1573,8 @@ IDE_RC sdptbGroup::logAndInitLGHdrPage( idvSQL          *  aStatistics,
 
 /***********************************************************************
  * Description:
- *  TBSÀÇ ¸ğµçÆÄÀÏÀ» µ¹¸é¼­ »ç¿ë°¡´ÉÇÑ fileÀ» Ã£¾Æ¼­ space cache¸¦ »ı¼ºÇÏ°í
- *  avail ºñÆ®¸¦ ¼¼Æ®ÇÑ´Ù.
+ *  TBSì˜ ëª¨ë“ íŒŒì¼ì„ ëŒë©´ì„œ ì‚¬ìš©ê°€ëŠ¥í•œ fileì„ ì°¾ì•„ì„œ space cacheë¥¼ ìƒì„±í•˜ê³ 
+ *  avail ë¹„íŠ¸ë¥¼ ì„¸íŠ¸í•œë‹¤.
  ***********************************************************************/
 IDE_RC sdptbGroup::doRefineSpaceCacheCore( sddTableSpaceNode * aSpaceNode )
 
@@ -1605,7 +1605,7 @@ IDE_RC sdptbGroup::doRefineSpaceCacheCore( sddTableSpaceNode * aSpaceNode )
         
         idlOS::memset( sCache->mFreenessOfGGs, 0x00 , ID_SIZEOF(sCache->mFreenessOfGGs) );
         
-        //TBSÀÇ ¸ğµç ÆÄÀÏÀ» µ¹¸é¼­ »ç¿ë°¡´ÉÇÑ FileÀ» Ã£Àº´ÙÀ½ ºñÆ®¼¼Æ®.
+        //TBSì˜ ëª¨ë“  íŒŒì¼ì„ ëŒë©´ì„œ ì‚¬ìš©ê°€ëŠ¥í•œ Fileì„ ì°¾ì€ë‹¤ìŒ ë¹„íŠ¸ì„¸íŠ¸.
         for ( i=0 ; i < aSpaceNode->mNewFileID ; i++ )
         {
             sFileNode = aSpaceNode->mFileNodeArr[i] ;
@@ -1614,7 +1614,7 @@ IDE_RC sdptbGroup::doRefineSpaceCacheCore( sddTableSpaceNode * aSpaceNode )
             {
                 if ( SMI_FILE_STATE_IS_NOT_DROPPED( sFileNode->mState ) )
                 {
-                    /* ¸¸¾à¿¡ GGid¿¡ free extent°¡ ¾ø´Ù¸é ¼¼Æ®ÇÏÁö ¸»°Í */
+                    /* ë§Œì•½ì— GGidì— free extentê°€ ì—†ë‹¤ë©´ ì„¸íŠ¸í•˜ì§€ ë§ê²ƒ */
                     IDE_TEST( sdbBufferMgr::fixPageByPID( NULL,
                                                           sSpaceNode->mID,
                                                           SDPTB_GET_GGHDR_PID_BY_FID( sFileNode->mID),
@@ -1642,7 +1642,7 @@ IDE_RC sdptbGroup::doRefineSpaceCacheCore( sddTableSpaceNode * aSpaceNode )
                 }
 
                 // PROJ-1704 Disk MVCC Renewal
-                // Undo TBS¿¡¼­ ÇÊ¿äÇÑ Free ExtDir List Á¤º¸¸¦ È®ÀÎÇÑ´Ù
+                // Undo TBSì—ì„œ í•„ìš”í•œ Free ExtDir List ì •ë³´ë¥¼ í™•ì¸í•œë‹¤
                 if ( ( sSpaceNode->mID == SMI_ID_TABLESPACE_SYSTEM_DISK_UNDO )&& 
                      ( sFileNode->mID == 0 ) )
                 {
@@ -1675,7 +1675,7 @@ IDE_RC sdptbGroup::doRefineSpaceCacheCore( sddTableSpaceNode * aSpaceNode )
                 sdptbBit::setBit( sCache->mFreenessOfGGs, i );
 
 
-                //ÇÒ´çÀ» °í·ÁÇÒ Ã¹¹øÂ° GG ID¸¦ ¼¼Æ®ÇÑ´Ù.
+                //í• ë‹¹ì„ ê³ ë ¤í•  ì²«ë²ˆì§¸ GG IDë¥¼ ì„¸íŠ¸í•œë‹¤.
                 if ( sIsFirstLoop == ID_TRUE )
                 {
                     sCache->mGGIDHint = i;
@@ -1688,8 +1688,8 @@ IDE_RC sdptbGroup::doRefineSpaceCacheCore( sddTableSpaceNode * aSpaceNode )
             }
         }
 
-        //ÇÒ´ç°¡´ÉÇÑ °¡ÀåÅ« GG ID¸¦ ¼¼Æ®ÇÑ´Ù.
-        //°¡Àå¸¶Áö¸· ÆÄÀÏÀÌ DROPµÈ°æ¿ìµµ ÀÖÀ»°ÍÀÌ¹Ç·Î ÀÌ·¸°Ô ÇÑ´Ù.
+        //í• ë‹¹ê°€ëŠ¥í•œ ê°€ì¥í° GG IDë¥¼ ì„¸íŠ¸í•œë‹¤.
+        //ê°€ì¥ë§ˆì§€ë§‰ íŒŒì¼ì´ DROPëœê²½ìš°ë„ ìˆì„ê²ƒì´ë¯€ë¡œ ì´ë ‡ê²Œ í•œë‹¤.
         sCache->mMaxGGID = sMaxGGID;
     }
 
@@ -1701,12 +1701,12 @@ IDE_RC sdptbGroup::doRefineSpaceCacheCore( sddTableSpaceNode * aSpaceNode )
 }
 
 /////////////////////////////////////////////////////////////
-//     GG       Logging °ü·Ã ÇÔ¼öµé.(±¸Çö)
+//     GG       Logging ê´€ë ¨ í•¨ìˆ˜ë“¤.(êµ¬í˜„)
 /////////////////////////////////////////////////////////////
 
 /***********************************************************************
  * Description:
- *  GGÀÇ HWM ÇÊµå¸¦ ·Î±ëÇÏ°í ¼¼Æ®ÇÑ´Ù.
+ *  GGì˜ HWM í•„ë“œë¥¼ ë¡œê¹…í•˜ê³  ì„¸íŠ¸í•œë‹¤.
  ***********************************************************************/
 IDE_RC sdptbGroup::logAndSetHWMOfGG( sdrMtx      * aMtx,
                                      sdptbGGHdr  * aGGHdr,
@@ -1730,7 +1730,7 @@ IDE_RC sdptbGroup::logAndSetHWMOfGG( sdrMtx      * aMtx,
 
 /***********************************************************************
  * Description:
- *  GGÀÇ mLGCnt ÇÊµå¸¦ ·Î±ëÇÏ°í ¼¼Æ®ÇÑ´Ù.
+ *  GGì˜ mLGCnt í•„ë“œë¥¼ ë¡œê¹…í•˜ê³  ì„¸íŠ¸í•œë‹¤.
  ***********************************************************************/
 IDE_RC sdptbGroup::logAndSetLGCntOfGG( sdrMtx      * aMtx,
                                        sdptbGGHdr  * aGGHdr,
@@ -1754,7 +1754,7 @@ IDE_RC sdptbGroup::logAndSetLGCntOfGG( sdrMtx      * aMtx,
 
 /***********************************************************************
  * Description:
- *  GGÀÇ mTotalPages ÇÊµå¸¦ ·Î±ëÇÏ°í ¼¼Æ®ÇÑ´Ù.
+ *  GGì˜ mTotalPages í•„ë“œë¥¼ ë¡œê¹…í•˜ê³  ì„¸íŠ¸í•œë‹¤.
  ***********************************************************************/
 IDE_RC sdptbGroup::logAndSetPagesOfGG( sdrMtx     *  aMtx,
                                        sdptbGGHdr  * aGGHdr,
@@ -1778,7 +1778,7 @@ IDE_RC sdptbGroup::logAndSetPagesOfGG( sdrMtx     *  aMtx,
 
 /***********************************************************************
  * Description:
- *  GGÀÇ mAllocLGIdx ÇÊµå¸¦ ·Î±ëÇÏ°í ¼¼Æ®ÇÑ´Ù.
+ *  GGì˜ mAllocLGIdx í•„ë“œë¥¼ ë¡œê¹…í•˜ê³  ì„¸íŠ¸í•œë‹¤.
  ***********************************************************************/
 IDE_RC sdptbGroup::logAndSetLGTypeOfGG( sdrMtx       * aMtx,
                                         sdptbGGHdr   * aGGHdr,
@@ -1802,9 +1802,9 @@ IDE_RC sdptbGroup::logAndSetLGTypeOfGG( sdrMtx       * aMtx,
 
 /***********************************************************************
  * Description:
- *  GGÀÇ mFree ÇÊµå¸¦ ·Î±ëÇÏ°í ¼¼Æ®ÇÑ´Ù.
- *  aVal¸¸Å­ °ªÀ» º¯È­½ÃÅ²´Ù. aVal Àº ¾ç¼öÀ½¼ö ¸ğµÎ °¡´ÉÇÏ´Ù.
- *  ÀÌÇÔ¼ö´Â Áö±İ È°¼ºÈ­µÇ¾îÀÖ´Â alloc LGÀÇ °ªÀ» º¯È­½ÃÅ²´Ù.
+ *  GGì˜ mFree í•„ë“œë¥¼ ë¡œê¹…í•˜ê³  ì„¸íŠ¸í•œë‹¤.
+ *  aValë§Œí¼ ê°’ì„ ë³€í™”ì‹œí‚¨ë‹¤. aVal ì€ ì–‘ìˆ˜ìŒìˆ˜ ëª¨ë‘ ê°€ëŠ¥í•˜ë‹¤.
+ *  ì´í•¨ìˆ˜ëŠ” ì§€ê¸ˆ í™œì„±í™”ë˜ì–´ìˆëŠ” alloc LGì˜ ê°’ì„ ë³€í™”ì‹œí‚¨ë‹¤.
  ***********************************************************************/
 IDE_RC sdptbGroup::logAndModifyFreeExtsOfGG( sdrMtx          * aMtx,
                                              sdptbGGHdr      * aGGHdr,
@@ -1833,11 +1833,11 @@ IDE_RC sdptbGroup::logAndModifyFreeExtsOfGG( sdrMtx          * aMtx,
 
 /***********************************************************************
  * Description:
- *  GGÀÇ mFree ÇÊµå¸¦ ·Î±ëÇÏ°í ¼¼Æ®ÇÑ´Ù.
- *  aVal¸¸Å­ °ªÀ» º¯È­½ÃÅ²´Ù. aVal Àº ¾ç¼öÀ½¼ö ¸ğµÎ °¡´ÉÇÏ´Ù.
+ *  GGì˜ mFree í•„ë“œë¥¼ ë¡œê¹…í•˜ê³  ì„¸íŠ¸í•œë‹¤.
+ *  aValë§Œí¼ ê°’ì„ ë³€í™”ì‹œí‚¨ë‹¤. aVal ì€ ì–‘ìˆ˜ìŒìˆ˜ ëª¨ë‘ ê°€ëŠ¥í•˜ë‹¤.
  *
- *  ÀÌÇÔ¼ö´Â LG typeÀ» ÀÎÀÚ·Î ¹Ş¾Æ¼­ Ã³¸®ÇÏ´Â°ÍÀ» »©°í´Â
- *  logAndModifyFreeExtsOfGG°ú °°´Ù.
+ *  ì´í•¨ìˆ˜ëŠ” LG typeì„ ì¸ìë¡œ ë°›ì•„ì„œ ì²˜ë¦¬í•˜ëŠ”ê²ƒì„ ë¹¼ê³ ëŠ”
+ *  logAndModifyFreeExtsOfGGê³¼ ê°™ë‹¤.
  ***********************************************************************/
 IDE_RC sdptbGroup::logAndModifyFreeExtsOfGGByLGType( sdrMtx       * aMtx,
                                                      sdptbGGHdr   * aGGHdr,
@@ -1866,7 +1866,7 @@ IDE_RC sdptbGroup::logAndModifyFreeExtsOfGGByLGType( sdrMtx       * aMtx,
 
 /***********************************************************************
  * Description:
- *  GGÀÇ mLGFreeness¿¡¼­ ULong¹è¿­ÀÇ 0¹øÂ°¿ä¼Ò¸¦ ¼¼Æ®ÇÑ´Ù.
+ *  GGì˜ mLGFreenessì—ì„œ ULongë°°ì—´ì˜ 0ë²ˆì§¸ìš”ì†Œë¥¼ ì„¸íŠ¸í•œë‹¤.
  ***********************************************************************/
 IDE_RC sdptbGroup::logAndSetLowBitsOfGG( sdrMtx     * aMtx,
                                          sdptbGGHdr * aGGHdr,
@@ -1891,7 +1891,7 @@ IDE_RC sdptbGroup::logAndSetLowBitsOfGG( sdrMtx     * aMtx,
 
 /***********************************************************************
  * Description:
- *  GGÀÇ mLGFreeness¿¡¼­ ULong¹è¿­ÀÇ 1¹øÂ°¿ä¼Ò¸¦ ¼¼Æ®ÇÑ´Ù.
+ *  GGì˜ mLGFreenessì—ì„œ ULongë°°ì—´ì˜ 1ë²ˆì§¸ìš”ì†Œë¥¼ ì„¸íŠ¸í•œë‹¤.
  ***********************************************************************/
 IDE_RC sdptbGroup::logAndSetHighBitsOfGG( sdrMtx           * aMtx,
                                           sdptbGGHdr       * aGGHdr,
@@ -1916,12 +1916,12 @@ IDE_RC sdptbGroup::logAndSetHighBitsOfGG( sdrMtx           * aMtx,
 
 
 /////////////////////////////////////////////////////////////
-//     LG       Logging °ü·Ã ÇÔ¼öµé.(±¸Çö)
+//     LG       Logging ê´€ë ¨ í•¨ìˆ˜ë“¤.(êµ¬í˜„)
 /////////////////////////////////////////////////////////////
 
 /***********************************************************************
  * Description:
- *  LGÀÇ mStartPID(ÃÖÃÊ extentÀÇ pid°ª)À» ·Î±ëÇÏ°í ¼¼Æ®ÇÑ´Ù.
+ *  LGì˜ mStartPID(ìµœì´ˆ extentì˜ pidê°’)ì„ ë¡œê¹…í•˜ê³  ì„¸íŠ¸í•œë‹¤.
  ***********************************************************************/
 IDE_RC sdptbGroup::logAndSetStartPIDOfLG( sdrMtx     * aMtx,
                                           sdptbLGHdr * aLGHdr,
@@ -1945,7 +1945,7 @@ IDE_RC sdptbGroup::logAndSetStartPIDOfLG( sdrMtx     * aMtx,
 
 /***********************************************************************
  * Description:
- *  LGÀÇ mHint°ªÀ» ·Î±ëÇÏ°í ¼¼Æ®ÇÑ´Ù.
+ *  LGì˜ mHintê°’ì„ ë¡œê¹…í•˜ê³  ì„¸íŠ¸í•œë‹¤.
  ***********************************************************************/
 IDE_RC sdptbGroup::logAndSetHintOfLG( sdrMtx        * aMtx,
                                       sdptbLGHdr    * aLGHdr,
@@ -1969,7 +1969,7 @@ IDE_RC sdptbGroup::logAndSetHintOfLG( sdrMtx        * aMtx,
 
 /***********************************************************************
  * Description:
- *  LGÀÇ mValidBits°ªÀ» ·Î±ëÇÏ°í ¼¼Æ®ÇÑ´Ù.
+ *  LGì˜ mValidBitsê°’ì„ ë¡œê¹…í•˜ê³  ì„¸íŠ¸í•œë‹¤.
  ***********************************************************************/
 IDE_RC sdptbGroup::logAndSetValidBitsOfLG( sdrMtx       * aMtx,
                                            sdptbLGHdr   * aLGHdr,
@@ -1993,7 +1993,7 @@ IDE_RC sdptbGroup::logAndSetValidBitsOfLG( sdrMtx       * aMtx,
 
 /***********************************************************************
  * Description:
- *  LGÀÇ mFree°ªÀ» ·Î±ëÇÏ°í ¼¼Æ®ÇÑ´Ù.
+ *  LGì˜ mFreeê°’ì„ ë¡œê¹…í•˜ê³  ì„¸íŠ¸í•œë‹¤.
  ***********************************************************************/
 IDE_RC sdptbGroup::logAndSetFreeOfLG( sdrMtx            * aMtx,
                                       sdptbLGHdr        * aLGHdr,
@@ -2018,9 +2018,9 @@ IDE_RC sdptbGroup::logAndSetFreeOfLG( sdrMtx            * aMtx,
 /***********************************************************************
  * Description:
  *  [ redo routine ]
- *  GG header¿¡ ´ëÇÑ redo ·çÆ¾ÀÌ´Ù.
- *  ÇöÀç ±¸Á¶¿¡¼­ GG header¿¡´ëÇÑ ÃÊ±âÈ­´Â writeNBytes¸¦ »ç¿ëÇØ¼­ ±¸ÇöÇÏ¿´À¸¹Ç·Î
- *  ÀÌ ÇÔ¼ö´Â »ç½Ç»ó ºÒÇÊ¿äÇÏ´Ù. ÇÏÁö¸¸, ¸¸¾àÀ» ´ëºñÇÏ¿© ¸¸µé¾î ³õ¾Ò´Ù.
+ *  GG headerì— ëŒ€í•œ redo ë£¨í‹´ì´ë‹¤.
+ *  í˜„ì¬ êµ¬ì¡°ì—ì„œ GG headerì—ëŒ€í•œ ì´ˆê¸°í™”ëŠ” writeNBytesë¥¼ ì‚¬ìš©í•´ì„œ êµ¬í˜„í•˜ì˜€ìœ¼ë¯€ë¡œ
+ *  ì´ í•¨ìˆ˜ëŠ” ì‚¬ì‹¤ìƒ ë¶ˆí•„ìš”í•˜ë‹¤. í•˜ì§€ë§Œ, ë§Œì•½ì„ ëŒ€ë¹„í•˜ì—¬ ë§Œë“¤ì–´ ë†“ì•˜ë‹¤.
  ***********************************************************************/
 IDE_RC sdptbGroup::initGG( sdrMtx      * aMtx,
                            UChar       * aPagePtr )
@@ -2034,13 +2034,13 @@ IDE_RC sdptbGroup::initGG( sdrMtx      * aMtx,
 /***********************************************************************
  * Description:
  *  [ redo routine ]
- *  LG header¿¡ ´ëÇÑ redo ·çÆ¾ÀÌ´Ù.
+ *  LG headerì— ëŒ€í•œ redo ë£¨í‹´ì´ë‹¤.
  * 
- *  aPagePtr  : LG header¿¡ ´ëÇÑ Æ÷ÀÎÅÍ°¡ ³Ñ¾î¿Â´Ù.
- *  aBitVal   : ÃÊ±âÈ­ÇÒ ºñÆ®°ª
- *              (0ÀÌ¸é 0À¸·Î ÃÊ±âÈ­ÇÏ°í 1ÀÌ¸é ¸ğµçºñÆ®¸¦ 1·Î ÃÊ±âÈ­ÇÑ´Ù.)
- *  aStartIdx : mBitmapÀ¸·ÎºÎÅÍÀÇ ºñÆ®¸¦ ¼¼Æ®ÇØ¾ßÇÏ´Â ½ÃÀÛÁöÁ¡ÀÎµ¦½º
- *  aCount    : ¼¼Æ®ÇÒ ºñÆ®ÀÇ °¹¼ö
+ *  aPagePtr  : LG headerì— ëŒ€í•œ í¬ì¸í„°ê°€ ë„˜ì–´ì˜¨ë‹¤.
+ *  aBitVal   : ì´ˆê¸°í™”í•  ë¹„íŠ¸ê°’
+ *              (0ì´ë©´ 0ìœ¼ë¡œ ì´ˆê¸°í™”í•˜ê³  1ì´ë©´ ëª¨ë“ ë¹„íŠ¸ë¥¼ 1ë¡œ ì´ˆê¸°í™”í•œë‹¤.)
+ *  aStartIdx : mBitmapìœ¼ë¡œë¶€í„°ì˜ ë¹„íŠ¸ë¥¼ ì„¸íŠ¸í•´ì•¼í•˜ëŠ” ì‹œì‘ì§€ì ì¸ë±ìŠ¤
+ *  aCount    : ì„¸íŠ¸í•  ë¹„íŠ¸ì˜ ê°¯ìˆ˜
  ***********************************************************************/
 void sdptbGroup::initBitmapOfLG( UChar       * aPagePtr,
                                  UChar         aBitVal,
@@ -2054,20 +2054,20 @@ void sdptbGroup::initBitmapOfLG( UChar       * aPagePtr,
     UChar                   *    sStartBitmap =NULL;
     UChar                        sByteForMemset;
 
-    //extent°¡  ÇÏ³ªµµ ¾ø´Â LG¸¦ ¸¸µå´Â°ÍÀº ºÒ°¡
+    //extentê°€  í•˜ë‚˜ë„ ì—†ëŠ” LGë¥¼ ë§Œë“œëŠ”ê²ƒì€ ë¶ˆê°€
     IDE_ASSERT( aCount != 0 );
     IDE_ASSERT( (aBitVal == 0) || (aBitVal == 1) );
     IDE_ASSERT( aStartIdx < sdptbGroup::nBitsPerLG() );
 
-    //aLGHdrPtr¿¡´Â LG headerÀÇ Æ÷ÀÎÅÍ°¡ ³Ñ¾î¿Â´Ù.
+    //aLGHdrPtrì—ëŠ” LG headerì˜ í¬ì¸í„°ê°€ ë„˜ì–´ì˜¨ë‹¤.
     sLGHdrPtr = (sdptbLGHdr *)aPagePtr;
 
     /*
-     * free°¡ ¾ø´Ù ÇÒÁö¶óµµ ºñÆ®¿­ °Ë»öÀÌ ³¡³¯¼öÀÖµµ·Ï ÇÏ´Â Æ®¸¯ÀÌ´Ù.
-     * mBitmap¿¡ ÇØ´çµÇ´Â ºñÆ® ¹Ù·Î´ÙÀ½À» 0À¸·Î Ã¤¿òÀ¸·Î¼­
-     * ºñÆ®¿­À» °Ë»öÇÒ¶§¸¶´Ù index¹øÈ£¸¦ °Ë»çÇÏ´Â ºñ¿ëÀ» ÁÙÀÎ´Ù.
+     * freeê°€ ì—†ë‹¤ í• ì§€ë¼ë„ ë¹„íŠ¸ì—´ ê²€ìƒ‰ì´ ëë‚ ìˆ˜ìˆë„ë¡ í•˜ëŠ” íŠ¸ë¦­ì´ë‹¤.
+     * mBitmapì— í•´ë‹¹ë˜ëŠ” ë¹„íŠ¸ ë°”ë¡œë‹¤ìŒì„ 0ìœ¼ë¡œ ì±„ì›€ìœ¼ë¡œì„œ
+     * ë¹„íŠ¸ì—´ì„ ê²€ìƒ‰í• ë•Œë§ˆë‹¤ indexë²ˆí˜¸ë¥¼ ê²€ì‚¬í•˜ëŠ” ë¹„ìš©ì„ ì¤„ì¸ë‹¤.
      *
-     * ÀÌµ¿ÀÛÀº ¸Å¹øÇÒÇÊ¿ä´Â ¾ø°í Ã³À½ LGÇì´õ°¡ ¸¸µå¾îÁú¶§¸¸ ÇÏ¸é µÈ´Ù.
+     * ì´ë™ì‘ì€ ë§¤ë²ˆí• í•„ìš”ëŠ” ì—†ê³  ì²˜ìŒ LGí—¤ë”ê°€ ë§Œë“œì–´ì§ˆë•Œë§Œ í•˜ë©´ ëœë‹¤.
      */
     if ( aStartIdx == 0 )
     {
@@ -2085,8 +2085,8 @@ void sdptbGroup::initBitmapOfLG( UChar       * aPagePtr,
                 == SDPTB_LG_BITMAP_MAGIC );
 
     /*
-     * aStartIdx°¡ byte¿¡ Á¤·ÄµÇ¼­ ³Ñ¾î¿Â´Ù´Â º¸ÀåÀº ¾ø´Ù.
-     * ÀÏ´Ü, ¹ÙÀÌÆ®¿¡ Á¤·ÄµÉ¶§±îÁö Â¥Åõ¸®ºñÆ®¸¦ ¼¼Æ®ÇÑ´Ù.
+     * aStartIdxê°€ byteì— ì •ë ¬ë˜ì„œ ë„˜ì–´ì˜¨ë‹¤ëŠ” ë³´ì¥ì€ ì—†ë‹¤.
+     * ì¼ë‹¨, ë°”ì´íŠ¸ì— ì •ë ¬ë ë•Œê¹Œì§€ ì§œíˆ¬ë¦¬ë¹„íŠ¸ë¥¼ ì„¸íŠ¸í•œë‹¤.
      */
     while( ((aStartIdx % SDPTB_BITS_PER_BYTE) != 0) && (aCount > 0) )
     {
@@ -2109,8 +2109,8 @@ void sdptbGroup::initBitmapOfLG( UChar       * aPagePtr,
     sStartBitmap = (UChar*)sLGHdrPtr->mBitmap + aStartIdx/SDPTB_BITS_PER_BYTE ;
 
     /*
-     * ÀÌÁ¦ start index°¡ byte¿¡ Á¤·ÄµÇ¾ú´Ù.
-     * ¸¸¾à ¹ÙÀÌÆ®´ÜÀ§·Î ¼¼Æ®ÇÒ °ÍÀÌ ÇÏ³ª¶óµµ ÀÖ´Ù¸é ¼¼Æ®ÇÑ´Ù.
+     * ì´ì œ start indexê°€ byteì— ì •ë ¬ë˜ì—ˆë‹¤.
+     * ë§Œì•½ ë°”ì´íŠ¸ë‹¨ìœ„ë¡œ ì„¸íŠ¸í•  ê²ƒì´ í•˜ë‚˜ë¼ë„ ìˆë‹¤ë©´ ì„¸íŠ¸í•œë‹¤.
      */
     if ( sNrBytes > 0 )
     {
@@ -2132,7 +2132,7 @@ void sdptbGroup::initBitmapOfLG( UChar       * aPagePtr,
     }
 
     /*
-     * ¸¶Áö¸·À¸·Î Â¥Åõ¸® ºñÆ®µéÀÌ Á¸ÀçÇÑ´Ù¸é ±× ºñÆ®µéÀ» ¼¼Æ®ÇÑ´Ù.
+     * ë§ˆì§€ë§‰ìœ¼ë¡œ ì§œíˆ¬ë¦¬ ë¹„íŠ¸ë“¤ì´ ì¡´ì¬í•œë‹¤ë©´ ê·¸ ë¹„íŠ¸ë“¤ì„ ì„¸íŠ¸í•œë‹¤.
      */
     if ( sRest != 0 )
     {
@@ -2162,11 +2162,11 @@ void sdptbGroup::initBitmapOfLG( UChar       * aPagePtr,
 
 /***********************************************************************
  * Description:
- *  TBS¿¡¼­ ½ÇÁ¦·Î »ç¿ëµÇ¾îÁö´Â ÇÒ´çµÈ(free°¡ ¾Æ´Ñ)ÆäÀÌÁö°¹¼ö¸¦ °è»êÇÑ´Ù.
+ *  TBSì—ì„œ ì‹¤ì œë¡œ ì‚¬ìš©ë˜ì–´ì§€ëŠ” í• ë‹¹ëœ(freeê°€ ì•„ë‹Œ)í˜ì´ì§€ê°¯ìˆ˜ë¥¼ ê³„ì‚°í•œë‹¤.
  *
- *  aStatistics     - [IN] Åë°èÁ¤º¸
+ *  aStatistics     - [IN] í†µê³„ì •ë³´
  *  aSpaceID        - [IN] Space ID
- *  aAllocPageCount - [OUT] ÇÒ´çµÈ ÆäÀÌÁö °¹¼ö¸¦ ¸®ÅÏ
+ *  aAllocPageCount - [OUT] í• ë‹¹ëœ í˜ì´ì§€ ê°¯ìˆ˜ë¥¼ ë¦¬í„´
  **********************************************************************/
 IDE_RC sdptbGroup::getAllocPageCount( idvSQL   *aStatistics,
                                       scSpaceID aSpaceID,
@@ -2179,8 +2179,8 @@ IDE_RC sdptbGroup::getAllocPageCount( idvSQL   *aStatistics,
     sddTableSpaceNode   * sSpaceNode=NULL;
     sddDataFileNode     * sFileNode;
     UInt                  sGGPID;
-    UInt                  sFreePages=0; //TBS¿¡¼­ »ç¿ëÇÏÁö ¾Ê´Â free page°¹¼ö
-    UInt                  sTotalPages=0;//TBSÀÇ ÀüÃ¼ page°¹¼ö 
+    UInt                  sFreePages=0; //TBSì—ì„œ ì‚¬ìš©í•˜ì§€ ì•ŠëŠ” free pageê°¯ìˆ˜
+    UInt                  sTotalPages=0;//TBSì˜ ì „ì²´ pageê°¯ìˆ˜ 
 
     IDE_ASSERT( aAllocPageCount != NULL );
 
@@ -2203,9 +2203,9 @@ IDE_RC sdptbGroup::getAllocPageCount( idvSQL   *aStatistics,
 
         /* BUG-33919 - [SM] when selecting the X$TABLESPACES and adding datafiles
          *             in tablespace are executed concurrently, server can be aborted
-         * »èÁ¦µÈ datafile »Ó¸¸ ¾Æ´Ï¶ó »ı¼ºÁßÀÎ datafile µµ »ç¿ëÇÏ¸é ¾ÈµÈ´Ù.
-         * ¿Ö³ªÇÏ¸é, ¾ÆÁ÷ »ı¼ºÁßÀÌ±â ¶§¹®¿¡ GG Çì´õ°¡ ÃÊ±âÈ­µÇÁö
-         * ¾Ê¾ÒÀ» ¼ö ÀÖ±â ¶§¹®ÀÌ´Ù. */
+         * ì‚­ì œëœ datafile ë¿ë§Œ ì•„ë‹ˆë¼ ìƒì„±ì¤‘ì¸ datafile ë„ ì‚¬ìš©í•˜ë©´ ì•ˆëœë‹¤.
+         * ì™œë‚˜í•˜ë©´, ì•„ì§ ìƒì„±ì¤‘ì´ê¸° ë•Œë¬¸ì— GG í—¤ë”ê°€ ì´ˆê¸°í™”ë˜ì§€
+         * ì•Šì•˜ì„ ìˆ˜ ìˆê¸° ë•Œë¬¸ì´ë‹¤. */
         if ( SMI_FILE_STATE_IS_DROPPED( sFileNode->mState ) ||
              SMI_FILE_STATE_IS_CREATING( sFileNode->mState ) )
         {
@@ -2232,8 +2232,8 @@ IDE_RC sdptbGroup::getAllocPageCount( idvSQL   *aStatistics,
         sTotalPages += sGGHdr->mTotalPages;
 
         /* 
-         * °¢ FSB¿¡¼­ Alloc EG¿Í Free EGÀÇ free extent°¹¼ö¸¦ ´õÇÏ¸é
-         * ÇØ´ç TBSÀÇ free extent°¹¼ö°¡ ¾ò¾îÁø´Ù.
+         * ê° FSBì—ì„œ Alloc EGì™€ Free EGì˜ free extentê°¯ìˆ˜ë¥¼ ë”í•˜ë©´
+         * í•´ë‹¹ TBSì˜ free extentê°¯ìˆ˜ê°€ ì–»ì–´ì§„ë‹¤.
          */
         sFreePages += sGGHdr->mLGFreeness[0].mFreeExts * sGGHdr->mPagesPerExt;
         sFreePages += sGGHdr->mLGFreeness[1].mFreeExts * sGGHdr->mPagesPerExt;
@@ -2259,7 +2259,7 @@ IDE_RC sdptbGroup::getAllocPageCount( idvSQL   *aStatistics,
 
 /***********************************************************************
  * Description:
- *  Tablespace¿¡¼­ CachedµÈ Free Extent°¹¼ö¸¦ ReturnÇÑ´Ù.
+ *  Tablespaceì—ì„œ Cachedëœ Free Extentê°¯ìˆ˜ë¥¼ Returní•œë‹¤.
  *
  * aSpaceID - [IN] Space ID
  *

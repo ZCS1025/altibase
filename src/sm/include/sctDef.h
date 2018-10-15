@@ -20,7 +20,7 @@
  *
  * Description :
  *
- * TableSpace Manager ÀÚ·á ±¸Á¶
+ * TableSpace Manager ìë£Œ êµ¬ì¡°
  *
  *
  **********************************************************************/
@@ -32,8 +32,8 @@
 #include <smriDef.h>
 
 
-// LOGANCHOR¿¡ ÀúÀåµÇÁö ¾ÊÀº TBS/DBF Attribute´Â
-// ¿¡ ´ëÇÑ °ªÀ»
+// LOGANCHORì— ì €ì¥ë˜ì§€ ì•Šì€ TBS/DBF AttributeëŠ”
+// ì— ëŒ€í•œ ê°’ì„
 # define  SCT_UNSAVED_ATTRIBUTE_OFFSET (0)
 
 
@@ -44,25 +44,25 @@
 }
 
 /*
-  Memory/ Disk Tablespace°¡ °øÅëÀ¸·Î °¡Áö´Â Á¤º¸
+  Memory/ Disk Tablespaceê°€ ê³µí†µìœ¼ë¡œ ê°€ì§€ëŠ” ì •ë³´
 
 [ PROJ-1548 User Memory Tablespace ]
 
-- mStatus : TBSÀÇ ÇöÀç »óÅÂ¸¦ Áö´Ô
-  - Disk/Memory Tablespace¸ğµÎ °°Àº ¹æ½ÄÀ¸·Î Ã³¸®ÇÔ¤¼
+- mStatus : TBSì˜ í˜„ì¬ ìƒíƒœë¥¼ ì§€ë‹˜
+  - Disk/Memory Tablespaceëª¨ë‘ ê°™ì€ ë°©ì‹ìœ¼ë¡œ ì²˜ë¦¬í•¨ã…Œ
   - Values
     - Creating :
-      - TBS¸¦ CREATEÇÏ´Â TX°¡ ¾ÆÁ÷ COMMITÇÏÁö ¾ÊÀº »óÅÂ
+      - TBSë¥¼ CREATEí•˜ëŠ” TXê°€ ì•„ì§ COMMITí•˜ì§€ ì•Šì€ ìƒíƒœ
     - Online :
-      - TBS¸¦ CREATEÇÏ´Â TX°¡ COMMITÇÑ »óÅÂ
+      - TBSë¥¼ CREATEí•˜ëŠ” TXê°€ COMMITí•œ ìƒíƒœ
     - Offline :
     - Dropping :
-      - TBS¸¦ DROPÇÏ´Â TX°¡ ¾ÆÁ÷ COMMITÇÏÁö ¾ÊÀº »óÅÂ
+      - TBSë¥¼ DROPí•˜ëŠ” TXê°€ ì•„ì§ COMMITí•˜ì§€ ì•Šì€ ìƒíƒœ
     - Dropped :
-      - TBS¸¦ DROPÇÏ´Â TX°¡ ¾ÆÁ÷ COMMITÇÑ »óÅÂ
-  - »óÅÂÀüÀÌ
-      - ÇÏ³ªÀÇ TablespaceÀÇ »óÅÂ´Â ´ÙÀ½°ú °°ÀÌ ÀüÀÌµÈ´Ù.
-      (  ==>´Â Commit Pending ÀÛ¾÷¿¡ ÀÇÇØ ÀüÀÌµÊÀ» µµ½Ä )
+      - TBSë¥¼ DROPí•˜ëŠ” TXê°€ ì•„ì§ COMMITí•œ ìƒíƒœ
+  - ìƒíƒœì „ì´
+      - í•˜ë‚˜ì˜ Tablespaceì˜ ìƒíƒœëŠ” ë‹¤ìŒê³¼ ê°™ì´ ì „ì´ëœë‹¤.
+      (  ==>ëŠ” Commit Pending ì‘ì—…ì— ì˜í•´ ì „ì´ë¨ì„ ë„ì‹ )
 
       Creating ==> Online <-> Offline
                      \         |
@@ -71,78 +71,78 @@
                         \-> Online | Dropping ==> Dropped
 
 - SyncMutex
-  - ÇØ´ç Tablespace¾ÈÀÇ Dirty Page¸¦ Disk·Î Sync(Flush)ÇÒ ¶§
-    Àâ´Â MutexÀÌ´Ù.
-  - Checkpoint¿Í Drop Tablespace°£ÀÇ µ¿½Ã¼ºÁ¦¾î¸¦ ´ã´çÇÑ´Ù.
-    - Checkpoint´Â ÀÌ Mutex¸¦ Àâ°í TablespaceÀÇ Status¸¦ °Ë»çÇÑ´Ù.
-    - Drop Tablespace¸¦ ¼öÇàÇÏ´Â Tx´Â ÀÌ Mutex¸¦ Àâ°í
-      TablespaceÀÇ Status¸¦ º¯°æÇÑ´Ù.
-      - ½ÇÁ¦ Tablespace°ü·Ã MemoryÇØÁ¦¹× ÆÄÀÏ»èÁ¦´Â ÀÌ Mutex¸¦
-        ÀâÁö ¾ÊÀº Ã¤·Î ¼öÇàÇÑ´Ù.
-        ( Checkpoint°¡ MutexÀâ°í TablespaceÀÇ »óÅÂ¸¦ °Ë»çÇÏ±â ¶§¹®)
-    - ¸ñÀû
-      - CheckpointÁßÀÎ Tablespace¿¡ ´ëÇØ Drop Tablespace Tx°¡
-        ±â´Ù¸®µµ·Ï ÇÑ´Ù.
-      - DropÁßÀÎ Tablespace¿¡ ´ëÇØ Checkpoint°¡ ±â´Ù¸®µµ·Ï ÇÑ´Ù.
+  - í•´ë‹¹ Tablespaceì•ˆì˜ Dirty Pageë¥¼ Diskë¡œ Sync(Flush)í•  ë•Œ
+    ì¡ëŠ” Mutexì´ë‹¤.
+  - Checkpointì™€ Drop Tablespaceê°„ì˜ ë™ì‹œì„±ì œì–´ë¥¼ ë‹´ë‹¹í•œë‹¤.
+    - CheckpointëŠ” ì´ Mutexë¥¼ ì¡ê³  Tablespaceì˜ Statusë¥¼ ê²€ì‚¬í•œë‹¤.
+    - Drop Tablespaceë¥¼ ìˆ˜í–‰í•˜ëŠ” TxëŠ” ì´ Mutexë¥¼ ì¡ê³ 
+      Tablespaceì˜ Statusë¥¼ ë³€ê²½í•œë‹¤.
+      - ì‹¤ì œ Tablespaceê´€ë ¨ Memoryí•´ì œë° íŒŒì¼ì‚­ì œëŠ” ì´ Mutexë¥¼
+        ì¡ì§€ ì•Šì€ ì±„ë¡œ ìˆ˜í–‰í•œë‹¤.
+        ( Checkpointê°€ Mutexì¡ê³  Tablespaceì˜ ìƒíƒœë¥¼ ê²€ì‚¬í•˜ê¸° ë•Œë¬¸)
+    - ëª©ì 
+      - Checkpointì¤‘ì¸ Tablespaceì— ëŒ€í•´ Drop Tablespace Txê°€
+        ê¸°ë‹¤ë¦¬ë„ë¡ í•œë‹¤.
+      - Dropì¤‘ì¸ Tablespaceì— ëŒ€í•´ Checkpointê°€ ê¸°ë‹¤ë¦¬ë„ë¡ í•œë‹¤.
 */
 
 typedef struct sctTableSpaceNode
 {
-    // Å×ÀÌºí½ºÆäÀÌ½º ¾ÆÀÌµğ
+    // í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ì•„ì´ë””
     scSpaceID            mID;
-    // Å×ÀÌºí½ºÆäÀÌ½º Á¾·ù
+    // í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ì¢…ë¥˜
     // User || System, Disk || Memory, Data || Temp || Undo
     smiTableSpaceType    mType;
 
-    // Å×ÀÌºí½ºÆäÀÌ½º ÀÌ¸§
+    // í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ì´ë¦„
     SChar               *mName;
-    // Å×ÀÌºí½ºÆäÀÌ½º »óÅÂ(Creating, Droppping, Online, Offline...)
+    // í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ìƒíƒœ(Creating, Droppping, Online, Offline...)
     UInt                 mState;
-    // Å×ÀÌºí½ºÆäÀÌ½ºÀÇ Page¸¦ Disk·Î SyncÇÏ±â Àü¿¡ Àâ¾Æ¾ß ÇÏ´Â Mutex
+    // í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì˜ Pageë¥¼ Diskë¡œ Syncí•˜ê¸° ì „ì— ì¡ì•„ì•¼ í•˜ëŠ” Mutex
     iduMutex             mSyncMutex;
-    // Å×ÀÌºí½ºÆäÀÌ½º¸¦ À§ÇÑ Commit-Duration lock item
+    // í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ë¥¼ ìœ„í•œ Commit-Duration lock item
     void                *mLockItem4TBS;
 
-    /* Alter Tablespace OfflineÀÇ °úÁ¤Áß Aging¿Ï·áÈÄ¿¡
-       ¼³Á¤ÇÑ SystemÀÇ SCN
+    /* Alter Tablespace Offlineì˜ ê³¼ì •ì¤‘ Agingì™„ë£Œí›„ì—
+       ì„¤ì •í•œ Systemì˜ SCN
 
-       Alter Tablespace OfflineÀÌ Aging¿Ï·áµÇ°í AbortµÉ °æ¿ì,
-       Aging¿Ï·áµÈ ½ÃÁ¡ÀÌÀüÀÇ SCNÀ» º¸·Á°í ÇÏ´Â
-       ´Ù¸¥ TransactionµéÀ» Abort½ÃÅ°´Âµ¥ »ç¿ëÇÑ´Ù.
+       Alter Tablespace Offlineì´ Agingì™„ë£Œë˜ê³  Abortë  ê²½ìš°,
+       Agingì™„ë£Œëœ ì‹œì ì´ì „ì˜ SCNì„ ë³´ë ¤ê³  í•˜ëŠ”
+       ë‹¤ë¥¸ Transactionë“¤ì„ Abortì‹œí‚¤ëŠ”ë° ì‚¬ìš©í•œë‹¤.
     */
     smSCN                mOfflineSCN;
 
-    /* BUG-18279: Drop Table Space½Ã¿¡ »ı¼ºµÈ TableÀ» ºü¶ß¸®°í
-     *            DropÀÌ ¼öÇàµË´Ï´Ù.
+    /* BUG-18279: Drop Table Spaceì‹œì— ìƒì„±ëœ Tableì„ ë¹ ëœ¨ë¦¬ê³ 
+     *            Dropì´ ìˆ˜í–‰ë©ë‹ˆë‹¤.
      *
-     * Å×ÀÌºíÀ» »ı¼ºÇÑ TransactionÀÇ CommitSCNÀÌ ¼³Á¤µÈ´Ù.
-     * ÀÌ°ªÀº Server ½ÃÀÛ½Ã¿¡ 0À¸·Î ÃÊ±âÈ­µÈ´Ù.
-     * (ÀÌ Tablespace¿¡ DDLÀ» ÇÏ´Â TransactionÀÇ ViewSCNÀº
-     * Ç×»ó ÀÌ SCNº¸´Ù ÀÛÁö ¾Ê¾Æ¾ß ÇÑ´Ù. ÀÛÀ¸¸é Rebuild¿¡·¯¸¦
-     * ¿Ã¸°´Ù. */
+     * í…Œì´ë¸”ì„ ìƒì„±í•œ Transactionì˜ CommitSCNì´ ì„¤ì •ëœë‹¤.
+     * ì´ê°’ì€ Server ì‹œì‘ì‹œì— 0ìœ¼ë¡œ ì´ˆê¸°í™”ëœë‹¤.
+     * (ì´ Tablespaceì— DDLì„ í•˜ëŠ” Transactionì˜ ViewSCNì€
+     * í•­ìƒ ì´ SCNë³´ë‹¤ ì‘ì§€ ì•Šì•„ì•¼ í•œë‹¤. ì‘ìœ¼ë©´ Rebuildì—ëŸ¬ë¥¼
+     * ì˜¬ë¦°ë‹¤. */
     smSCN                mMaxTblDDLCommitSCN;
 } sctTableSpaceNode;
 
 
-// Å×ÀÌºí½ºÆäÀÌ½º¸®½ºÆ®, Å×ÀÌºí½ºÆäÀÌ½º³ëµå¿¡
-// ´ëÇÑ Àá±İ½½·Ô ÀúÀå ±¸Á¶Ã¼
+// í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ë¦¬ìŠ¤íŠ¸, í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ë…¸ë“œì—
+// ëŒ€í•œ ì ê¸ˆìŠ¬ë¡¯ ì €ì¥ êµ¬ì¡°ì²´
 typedef struct sctLockHier
 {
     void *mTBSListSlot;
     void *mTBSNodeSlot;
 } sctLockHier;
 
-// X$TABLESPACES_HEADER¿¡¼­ »ç¿ëÀÚ¿¡°Ô º¸¿©Áú Á¤º¸
+// X$TABLESPACES_HEADERì—ì„œ ì‚¬ìš©ìì—ê²Œ ë³´ì—¬ì§ˆ ì •ë³´
 typedef struct sctTbsHeaderInfo
 {
     scSpaceID          mSpaceID;
     SChar             *mName;
     smiTableSpaceType  mType;
-    // Tablespace »óÅÂÁ¤º¸ÀÇ bitset
+    // Tablespace ìƒíƒœì •ë³´ì˜ bitset
     UInt               mStateBitset;
-    // »óÅÂÁ¤º¸ Ãâ·Â ¹®ÀÚ¿­
+    // ìƒíƒœì •ë³´ ì¶œë ¥ ë¬¸ìì—´
     UChar              mStateName[SM_DUMP_VALUE_LENGTH + 1];
-    // Tablespace¾ÈÀÇ µ¥ÀÌÅÍ¿¡ ´ëÇÑ LogÀÇ ¾ĞÃà ¿©ºÎ
+    // Tablespaceì•ˆì˜ ë°ì´í„°ì— ëŒ€í•œ Logì˜ ì••ì¶• ì—¬ë¶€
     UInt               mAttrLogCompress;
 } sctTbsHeaderInfo;
 
@@ -156,17 +156,17 @@ typedef struct sctTbsInfo
     ULong              mTotalPageCount;
     UInt               mExtPageCount;
     // BUG-15564
-    // mUsedPageLimit¿¡¼­ mAllocPageCount·Î ÀÌ¸§À» ¹Ù²Û´Ù.
-    // »ç¿ëÁßÀÎ ÆäÀÌÁö°¡ ¾Æ´Ï¶ó ÇÒ´çµÈ ÆäÀÌÁö ¼ö¸¦ ³ªÅ¸³»±â
-    // ¶§¹®ÀÌ´Ù.
+    // mUsedPageLimitì—ì„œ mAllocPageCountë¡œ ì´ë¦„ì„ ë°”ê¾¼ë‹¤.
+    // ì‚¬ìš©ì¤‘ì¸ í˜ì´ì§€ê°€ ì•„ë‹ˆë¼ í• ë‹¹ëœ í˜ì´ì§€ ìˆ˜ë¥¼ ë‚˜íƒ€ë‚´ê¸°
+    // ë•Œë¬¸ì´ë‹¤.
     ULong              mAllocPageCount;
 
-    /* BUG-18115 v$tablespacesÀÇ page_size°¡ ¸Ş¸ğ¸® °æ¿ìµµ 8192·Î ³ª¿É´Ï´Ù.
+    /* BUG-18115 v$tablespacesì˜ page_sizeê°€ ë©”ëª¨ë¦¬ ê²½ìš°ë„ 8192ë¡œ ë‚˜ì˜µë‹ˆë‹¤.
      *
-     * TableSpaceº°·Î PageSize°¡ ³ª¿Àµµ·Ï ¼öÁ¤ÇÏ¿´½À´Ï´Ù.*/
+     * TableSpaceë³„ë¡œ PageSizeê°€ ë‚˜ì˜¤ë„ë¡ ìˆ˜ì •í•˜ì˜€ìŠµë‹ˆë‹¤.*/
     UInt               mPageSize;
 
-    /* FreeµÈ ExtentÁß Free Extent Pool¿¡ Á¸ÀçÇÏ´Â Extent°¹¼ö */
+    /* Freeëœ Extentì¤‘ Free Extent Poolì— ì¡´ì¬í•˜ëŠ” Extentê°¯ìˆ˜ */
     ULong              mCachedFreeExtCount;
 } sctTbsInfo;
 
@@ -187,9 +187,9 @@ typedef enum sctPendingOpType
 
 struct sctPendingOp;
 
-// Disk ¹× Memory TablespaceÆ¯¼º¿¡ µû¶ó ´Ù¸£°Ô Ã³¸®ÇØ¾ß ÇÏ´Â
-// ÀÛ¾÷À» ¼öÇàÇÒ Pening Function Pointer
-// Âü°í : sctTableSpaceMgr::executePendingOperation - ÁÖ¼®
+// Disk ë° Memory TablespaceíŠ¹ì„±ì— ë”°ë¼ ë‹¤ë¥´ê²Œ ì²˜ë¦¬í•´ì•¼ í•˜ëŠ”
+// ì‘ì—…ì„ ìˆ˜í–‰í•  Pening Function Pointer
+// ì°¸ê³  : sctTableSpaceMgr::executePendingOperation - ì£¼ì„
 typedef IDE_RC (*sctPendingOpFunc) ( idvSQL            * aStatistics,
                                      sctTableSpaceNode * aTBSNode,
                                      sctPendingOp      * aPendingOp );
@@ -199,42 +199,42 @@ typedef IDE_RC (*sctPendingOpFunc) ( idvSQL            * aStatistics,
    To implement TASK-1842.
 
    PROJ-1548 User Memory Tablespace ---------------------------------------
-   Disk/Memory Tablespace¹× Disk DBF¿¡ °ü·ÃµÈ PendingÀÛ¾÷¿¡ ´ëÇÑ
-   Á¤º¸¸¦ Áö´Ñ´Ù.
-   TransactionÀº ÀÌ ±¸Á¶Ã¼¸¦ ¿©·¯ °³ Linked List·Î °¡Áö°í ÀÖ´Ù°¡
-   CommitÀÌ³ª Rollback½Ã¿¡
-   sctTableSpaceMgr::executePendingOperationÀ» È£ÃâÇÏ¿©
-   PendingµÈ ÀÛ¾÷À» ¼öÇàÇÑ´Ù.
+   Disk/Memory Tablespaceë° Disk DBFì— ê´€ë ¨ëœ Pendingì‘ì—…ì— ëŒ€í•œ
+   ì •ë³´ë¥¼ ì§€ë‹Œë‹¤.
+   Transactionì€ ì´ êµ¬ì¡°ì²´ë¥¼ ì—¬ëŸ¬ ê°œ Linked Listë¡œ ê°€ì§€ê³  ìˆë‹¤ê°€
+   Commitì´ë‚˜ Rollbackì‹œì—
+   sctTableSpaceMgr::executePendingOperationì„ í˜¸ì¶œí•˜ì—¬
+   Pendingëœ ì‘ì—…ì„ ìˆ˜í–‰í•œë‹¤.
 
-   Ex> DROP TABLESPACE TBS1 ¼öÇà½Ã
-       Tablespace¿¡ ¼ÓÇÑ ÆÄÀÏÀ» »èÁ¦ÇÏ´Â OperationÀº UNDO°¡ ºÒ°¡ÇÏ¹Ç·Î
-       Commit½Ã¿¡ PendingÀ¸·Î Ã³¸®ÇÏ¿©¾ß ÇÑ´Ù.
-       "Tablespace¿¡ ¼ÓÇÑ ÆÄÀÏÀ» »èÁ¦"ÇÏ´Â Pending OperationÀ»
-       sctPendingOp±¸Á¶Ã¼¿¡ ¼³Á¤ÇÏ¿© Transaction¿¡ ´Ş¾Æ³õ°í ÀÖ´Ù°¡
-       Transaction Commit½Ã¿¡ sctPendingOp±¸Á¶Ã¼¸¦ º¸°í
-       Tablespace¿¡ ¼ÓÇÑ ÆÄÀÏÀ» »èÁ¦ÇÏ´Â ÀÛ¾÷À» ¼öÇàÇÑ´Ù.
+   Ex> DROP TABLESPACE TBS1 ìˆ˜í–‰ì‹œ
+       Tablespaceì— ì†í•œ íŒŒì¼ì„ ì‚­ì œí•˜ëŠ” Operationì€ UNDOê°€ ë¶ˆê°€í•˜ë¯€ë¡œ
+       Commitì‹œì— Pendingìœ¼ë¡œ ì²˜ë¦¬í•˜ì—¬ì•¼ í•œë‹¤.
+       "Tablespaceì— ì†í•œ íŒŒì¼ì„ ì‚­ì œ"í•˜ëŠ” Pending Operationì„
+       sctPendingOpêµ¬ì¡°ì²´ì— ì„¤ì •í•˜ì—¬ Transactionì— ë‹¬ì•„ë†“ê³  ìˆë‹¤ê°€
+       Transaction Commitì‹œì— sctPendingOpêµ¬ì¡°ì²´ë¥¼ ë³´ê³ 
+       Tablespaceì— ì†í•œ íŒŒì¼ì„ ì‚­ì œí•˜ëŠ” ì‘ì—…ì„ ìˆ˜í–‰í•œë‹¤.
 */
 typedef struct sctPendingOp
 {
     scSpaceID        mSpaceID;
     sdFileID         mFileID;
-    idBool           mIsCommit;        /* µ¿ÀÛ ½Ã±â(commit or abort)¸¦ ¼³Á¤ */
-    smiTouchMode     mTouchMode;       /* ÆÄÀÏÀÇ ¹°¸®Àû »èÁ¦ ¿©ºÎ °áÁ¤ */
-    SLong            mResizePageSize;  /* ALTER RESIZE ¿¬»ê½Ã º¯°æ·®   */
-    ULong            mResizeSizeWanted;/* ALTER RESIZE ¿¬»ê½Ã
-                                        * º¯°æÇÒ ÆÄÀÏ Àı´ëÅ©±â   */
-    UInt             mNewTBSState;     /* pending½Ã º¯°æÇÒ TBS »óÅÂ°ª  */
-    UInt             mNewDBFState;     /* pending½Ã º¯°æÇÒ DBF »óÅÂ°ª  */
-    smLSN            mOnlineTBSLSN;    /* online TBS ·Î±×ÀÇ Begin LSN */
+    idBool           mIsCommit;        /* ë™ì‘ ì‹œê¸°(commit or abort)ë¥¼ ì„¤ì • */
+    smiTouchMode     mTouchMode;       /* íŒŒì¼ì˜ ë¬¼ë¦¬ì  ì‚­ì œ ì—¬ë¶€ ê²°ì • */
+    SLong            mResizePageSize;  /* ALTER RESIZE ì—°ì‚°ì‹œ ë³€ê²½ëŸ‰   */
+    ULong            mResizeSizeWanted;/* ALTER RESIZE ì—°ì‚°ì‹œ
+                                        * ë³€ê²½í•  íŒŒì¼ ì ˆëŒ€í¬ê¸°   */
+    UInt             mNewTBSState;     /* pendingì‹œ ë³€ê²½í•  TBS ìƒíƒœê°’  */
+    UInt             mNewDBFState;     /* pendingì‹œ ë³€ê²½í•  DBF ìƒíƒœê°’  */
+    smLSN            mOnlineTBSLSN;    /* online TBS ë¡œê·¸ì˜ Begin LSN */
     sctPendingOpType mPendingOpType;
     sctPendingOpFunc mPendingOpFunc;
     void*            mPendingOpParam;  /* Pending Parameter */
 } sctPendingOp;
 
 // PRJ-1548 User Memory Tablespace
-// Å×ÀÌºí½ºÆäÀÌ½º DDL°ü·Ã Å×ÀÌºí½ºÆäÀÌ½º ·Î±×ÀÇ Update Å¸ÀÔ
-// SDD ¸ğµâ¿¡ Á¤ÀÇµÇ¾î ÀÖ¾úÁö¸¸, ¸Ş¸ğ¸® Å×ÀÌºí½ºÆäÀÌ½º¿Í
-// °øÀ¯µÇ¾î¾ß ÇÏ´Â Å¸ÀÔÀÌ±â ¶§¹®¿¡ SCT ¸ğµâ¿¡ ÀçÁ¤ÀÇ ÇÑ´Ù
+// í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ DDLê´€ë ¨ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ë¡œê·¸ì˜ Update íƒ€ì…
+// SDD ëª¨ë“ˆì— ì •ì˜ë˜ì–´ ìˆì—ˆì§€ë§Œ, ë©”ëª¨ë¦¬ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì™€
+// ê³µìœ ë˜ì–´ì•¼ í•˜ëŠ” íƒ€ì…ì´ê¸° ë•Œë¬¸ì— SCT ëª¨ë“ˆì— ì¬ì •ì˜ í•œë‹¤
 typedef enum sctUpdateType
 {
     SCT_UPDATE_MRDB_CREATE_TBS = 0,      // DDL
@@ -262,8 +262,8 @@ typedef enum sctUpdateType
 } sctUpdateType;
 
 // PRJ-1548 User Memory Tablespace
-// BACKUP ¼öÇà°úÁ¤¿¡¼­ Å×ÀÌºí½ºÆäÀÌ½º doAction ÇÔ¼ö¿¡
-// Àü´ŞÇÒ ÀÎÀÚµéÀ» Á¤ÀÇÇÑ´Ù. [IN] ÀÎÀÚ
+// BACKUP ìˆ˜í–‰ê³¼ì •ì—ì„œ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ doAction í•¨ìˆ˜ì—
+// ì „ë‹¬í•  ì¸ìë“¤ì„ ì •ì˜í•œë‹¤. [IN] ì¸ì
 typedef struct sctActBackupArgs
 {
     void          * mTrans;
@@ -274,26 +274,26 @@ typedef struct sctActBackupArgs
 } sctActBackupArgs;
 
 // PRJ-1548 User Memory Tablespace
-// ¼­¹ö±¸µ¿°úÁ¤¿¡¼­ÀÇ µ¥ÀÌÅ¸º£ÀÌ½º °ËÁõ°ú Ã¼Å©Æ÷ÀÎÆ®
-// °úÁ¤¿¡¼­ÀÇ µ¥ÀÌÅ¸º£ÀÌ½º °ËÁõ½Ã doAction ÇÔ¼ö¿¡
-// Àü´ŞÇÒ ÀÎÀÚµéÀ» Á¤ÀÇÇÑ´Ù. [OUT] ÀÎÀÚ
+// ì„œë²„êµ¬ë™ê³¼ì •ì—ì„œì˜ ë°ì´íƒ€ë² ì´ìŠ¤ ê²€ì¦ê³¼ ì²´í¬í¬ì¸íŠ¸
+// ê³¼ì •ì—ì„œì˜ ë°ì´íƒ€ë² ì´ìŠ¤ ê²€ì¦ì‹œ doAction í•¨ìˆ˜ì—
+// ì „ë‹¬í•  ì¸ìë“¤ì„ ì •ì˜í•œë‹¤. [OUT] ì¸ì
 typedef struct sctActIdentifyDBArgs
 {
-    idBool    mIsValidDBF;    // ¹Ìµğ¾î º¹±¸ ÇÊ¿ä¿©ºÎ
-    idBool    mIsFileExist;     // µ¥ÀÌÅ¸ÆÄÀÏÀÌ Á¸ÀçÇÔ
+    idBool    mIsValidDBF;    // ë¯¸ë””ì–´ ë³µêµ¬ í•„ìš”ì—¬ë¶€
+    idBool    mIsFileExist;     // ë°ì´íƒ€íŒŒì¼ì´ ì¡´ì¬í•¨
 } sctActIdentifyDBArgs;
 
 // PRJ-1548 User Memory Tablespace
-// ¸Ş¸ğ¸® Å×ÀÌºí½ºÆäÀÌ½º ¹Ìµğ¾î º¹±¸¿Ï·á°úÁ¤¿¡¼­
-// ÆÄÀÏÇì´õ º¹±¸ÇÒ¶§ Àü´ŞÇÏ´Â ÀÎÀÚ
+// ë©”ëª¨ë¦¬ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ë¯¸ë””ì–´ ë³µêµ¬ì™„ë£Œê³¼ì •ì—ì„œ
+// íŒŒì¼í—¤ë” ë³µêµ¬í• ë•Œ ì „ë‹¬í•˜ëŠ” ì¸ì
 typedef struct sctActRepairArgs
 {
     smLSN*     mResetLogsLSN;
 } sctActRepairArgs;
 
 /*
-   °¢°¢ÀÇ TBS¿¡ ´ëÇØ ActionÀ» ¼öÇàÇÏ´Â lockAndRun4EachTBS ¿¡¼­ »ç¿ëÇÏ´Â
-   Function Typeµé
+   ê°ê°ì˜ TBSì— ëŒ€í•´ Actionì„ ìˆ˜í–‰í•˜ëŠ” lockAndRun4EachTBS ì—ì„œ ì‚¬ìš©í•˜ëŠ”
+   Function Typeë“¤
 */
 
 // Action Function
@@ -302,90 +302,90 @@ typedef IDE_RC (*sctAction4TBS)( idvSQL            * aStatistics,
 
 typedef enum sctActionExecMode {
     SCT_ACT_MODE_NONE  = 0x0000,
-    // Action¼öÇàÇÏ´Â µ¿¾È lock() °ú unlock() È£Ãâ
+    // Actionìˆ˜í–‰í•˜ëŠ” ë™ì•ˆ lock() ê³¼ unlock() í˜¸ì¶œ
     SCT_ACT_MODE_LATCH = 0x0001
 } sctActionExecMode ;
 
 
 typedef enum sctStateSet {
-    SCT_SS_INVALID         = 0x0000, /* ÀÌ °ªÀº Àı´ë »ç¿ëµÉ ¼ö ¾ø´Â °ª */
-    // TablespaceÀÇ ´Ü°èº° ÃÊ±âÈ­¸¦ ¼öÇàÇØ¾ßÇÏ´Â TablespaceÀÇ »óÅÂ
-    // ( ÀÚ¼¼ÇÑ ³»¿ëÀº smmTBSMultiState.h¸¦ Âü°í )
+    SCT_SS_INVALID         = 0x0000, /* ì´ ê°’ì€ ì ˆëŒ€ ì‚¬ìš©ë  ìˆ˜ ì—†ëŠ” ê°’ */
+    // Tablespaceì˜ ë‹¨ê³„ë³„ ì´ˆê¸°í™”ë¥¼ ìˆ˜í–‰í•´ì•¼í•˜ëŠ” Tablespaceì˜ ìƒíƒœ
+    // ( ìì„¸í•œ ë‚´ìš©ì€ smmTBSMultiState.hë¥¼ ì°¸ê³  )
     //
-    // ex> DROPPED, DISCARDED, ONLINE, OFFLINE »óÅÂÀÎ Tablespace´Â
-    //     STATE´Ü°è±îÁö Tablespace¸¦ ÃÊ±âÈ­ÇØ¾ßÇÔ
+    // ex> DROPPED, DISCARDED, ONLINE, OFFLINE ìƒíƒœì¸ TablespaceëŠ”
+    //     STATEë‹¨ê³„ê¹Œì§€ Tablespaceë¥¼ ì´ˆê¸°í™”í•´ì•¼í•¨
     SCT_SS_NEED_STATE_PHASE = (SMI_TBS_DROPPED | SMI_TBS_DISCARDED | SMI_TBS_ONLINE | SMI_TBS_OFFLINE ),
     SCT_SS_NEED_MEDIA_PHASE = ( SMI_TBS_DISCARDED | SMI_TBS_OFFLINE | SMI_TBS_ONLINE),
     SCT_SS_NEED_PAGE_PHASE  = ( SMI_TBS_ONLINE ),
 
-    // °¢ ¸ğµâº° ¼öÇàÀ» SKIPÇÒ TablespaceÀÇ »óÅÂ
-    // TablespaceÀÇ »ı¼ºµµÁß »ç¸ÁÇÑ °æ¿ì SMI_TBS_INCONSISTENT»óÅÂ°¡ µÈ´Ù.
+    // ê° ëª¨ë“ˆë³„ ìˆ˜í–‰ì„ SKIPí•  Tablespaceì˜ ìƒíƒœ
+    // Tablespaceì˜ ìƒì„±ë„ì¤‘ ì‚¬ë§í•œ ê²½ìš° SMI_TBS_INCONSISTENTìƒíƒœê°€ ëœë‹¤.
     SCT_SS_SKIP_LOAD_FROM_ANCHOR = (SMI_TBS_DROPPED),
     SCT_SS_SKIP_REFINE     = ( SMI_TBS_DROPPED | SMI_TBS_DISCARDED | SMI_TBS_OFFLINE),
-    // Drop Pending¼öÇàµµÁß »ç¸ÁÇÑ °æ¿ì,
-    // ¾îÂ¥ÇÇ Drop µÉ TablespaceÀÌ¹Ç·Î Redo, Undo SkipÇÔ.
-    // ´Ü, Tablespace°ü·Ã DDLÀº Redo,UndoµÊ.
+    // Drop Pendingìˆ˜í–‰ë„ì¤‘ ì‚¬ë§í•œ ê²½ìš°,
+    // ì–´ì§œí”¼ Drop ë  Tablespaceì´ë¯€ë¡œ Redo, Undo Skipí•¨.
+    // ë‹¨, Tablespaceê´€ë ¨ DDLì€ Redo,Undoë¨.
     SCT_SS_SKIP_MEDIA_REDO = (SMI_TBS_INCONSISTENT | SMI_TBS_DROP_PENDING | SMI_TBS_DROPPED | SMI_TBS_DISCARDED ),
     SCT_SS_SKIP_REDO       = (SMI_TBS_INCONSISTENT | SMI_TBS_DROP_PENDING | SMI_TBS_DROPPED | SMI_TBS_DISCARDED | SMI_TBS_OFFLINE ),
     SCT_SS_SKIP_UNDO       = (SMI_TBS_INCONSISTENT | SMI_TBS_DROP_PENDING | SMI_TBS_DROPPED | SMI_TBS_DISCARDED | SMI_TBS_OFFLINE ),
-    // Drop Pending¼öÇàµµÁß »ç¸ÁÇÑ °æ¿ì,
-    // Checkpoint ImageÀÏºÎ°¡ ¾øÀ» ¼ö ÀÖÀ¸¹Ç·Î, Prepare,Restore¾ÈÇÔ
+    // Drop Pendingìˆ˜í–‰ë„ì¤‘ ì‚¬ë§í•œ ê²½ìš°,
+    // Checkpoint Imageì¼ë¶€ê°€ ì—†ì„ ìˆ˜ ìˆìœ¼ë¯€ë¡œ, Prepare,Restoreì•ˆí•¨
     SCT_SS_SKIP_PREPARE    = (SMI_TBS_INCONSISTENT | SMI_TBS_DROP_PENDING | SMI_TBS_DROPPED | SMI_TBS_DISCARDED | SMI_TBS_OFFLINE ),
     SCT_SS_SKIP_RESTORE    = (SMI_TBS_INCONSISTENT | SMI_TBS_DROP_PENDING | SMI_TBS_DROPPED | SMI_TBS_DISCARDED | SMI_TBS_OFFLINE ),
-    // Drop Tablespace PendingÀ» ¼öÇàÁßÀÎ °æ¿ì¿¡µµ
-    // Checkpoint¸¦ SkipÇÑ´Ù.
+    // Drop Tablespace Pendingì„ ìˆ˜í–‰ì¤‘ì¸ ê²½ìš°ì—ë„
+    // Checkpointë¥¼ Skipí•œë‹¤.
     SCT_SS_SKIP_CHECKPOINT = (SMI_TBS_DROPPED | SMI_TBS_DROP_PENDING | SMI_TBS_DISCARDED | SMI_TBS_OFFLINE),
     SCT_SS_SKIP_INDEXBUILD = (SMI_TBS_DROPPED | SMI_TBS_DISCARDED | SMI_TBS_OFFLINE),
     SCT_SS_SKIP_DROP_TABLE_CONTENT = ( SMI_TBS_DROPPED | SMI_TBS_DISCARDED | SMI_TBS_OFFLINE),
-    /* PAGE´Ü°è destroy½Ã °øÀ¯¸Ş¸ğ¸® Page¹× PoolÀ» ÇØÁ¦ÇÒ TablespaceÀÇ »óÅÂ
-     * BUG-30547 SMI_TBS_DROP_PENDING »óÅÂ¿¡¼­µµ °øÀ¯¸Ş¸ğ¸® Á¦°Å */
+    /* PAGEë‹¨ê³„ destroyì‹œ ê³µìœ ë©”ëª¨ë¦¬ Pageë° Poolì„ í•´ì œí•  Tablespaceì˜ ìƒíƒœ
+     * BUG-30547 SMI_TBS_DROP_PENDING ìƒíƒœì—ì„œë„ ê³µìœ ë©”ëª¨ë¦¬ ì œê±° */
     SCT_SS_FREE_SHM_PAGE_ON_DESTROY = ( SMI_TBS_DROP_PENDING
                                         | SMI_TBS_DROPPED
                                         | SMI_TBS_OFFLINE ),
-    // Drop °¡´ÉÇÑ TableSpace »óÅÂ
+    // Drop ê°€ëŠ¥í•œ TableSpace ìƒíƒœ
     SCT_SS_HAS_DROP_TABLESPACE = ( SMI_TBS_DISCARDED | SMI_TBS_OFFLINE | SMI_TBS_ONLINE ),
-    // Media Recovery ºÒ°¡´ÉÇÑ TableSpace »óÅÂ
+    // Media Recovery ë¶ˆê°€ëŠ¥í•œ TableSpace ìƒíƒœ
     SCT_SS_UNABLE_MEDIA_RECOVERY = ( SMI_TBS_INCONSISTENT |  SMI_TBS_DROPPED | SMI_TBS_DISCARDED | SMI_TBS_DROP_PENDING ),
-    // Checkpoint½Ã DBF Çì´õ¸¦ °»½ÅÇÏÁö ¾Ê´Â °æ¿ì
+    // Checkpointì‹œ DBF í—¤ë”ë¥¼ ê°±ì‹ í•˜ì§€ ì•ŠëŠ” ê²½ìš°
     SCT_SS_SKIP_UPDATE_DBFHDR = ( SMI_TBS_DROPPED | SMI_TBS_DROP_PENDING | SMI_TBS_DISCARDED ),
-    // Identify Database °úÁ¤¿¡¼­ Check ÇÏÁö ¾ÊÀº °æ¿ì
+    // Identify Database ê³¼ì •ì—ì„œ Check í•˜ì§€ ì•Šì€ ê²½ìš°
     SCT_SS_SKIP_IDENTIFY_DB = ( SMI_TBS_INCONSISTENT | SMI_TBS_DROPPED | SMI_TBS_DROP_PENDING | SMI_TBS_DISCARDED ),
     SCT_SS_SKIP_SYNC_DISK_TBS = ( SMI_TBS_DROPPED | SMI_TBS_DISCARDED ),
     SCT_SS_SKIP_SHMUTIL_OPER = ( SMI_TBS_DROPPED | SMI_TBS_DROP_PENDING | SMI_TBS_DISCARDED | SMI_TBS_OFFLINE ),
     SCT_SS_SKIP_COUNTING_TOTAL_PAGES = ( SMI_TBS_DROPPED | SMI_TBS_DROP_PENDING | SMI_TBS_DISCARDED ),
-    // ÀÌÁ¦´Â ´õÀÌ»ó Valid ÇÏÁö ¾ÊÀº Disk TBS »óÅÂ
+    // ì´ì œëŠ” ë”ì´ìƒ Valid í•˜ì§€ ì•Šì€ Disk TBS ìƒíƒœ
     SCT_SS_INVALID_DISK_TBS = ( SMI_TBS_DROPPED | SMI_TBS_DISCARDED ),
-    // DISCARDED µÈ DISK TBS¿¡ ´ëÇÑ Row AgingÀ» SkipÇÏ´Â °æ¿ì
+    // DISCARDED ëœ DISK TBSì— ëŒ€í•œ Row Agingì„ Skipí•˜ëŠ” ê²½ìš°
     SCT_SS_SKIP_AGING_DISK_TBS = ( SMI_TBS_DISCARDED ),
 
     // fix BUG-8132
-    // table/index segment free¸¦ skip ÇÑ´Ù.
+    // table/index segment freeë¥¼ skip í•œë‹¤.
     SCT_SS_SKIP_FREE_SEG_DISK_TBS = ( SMI_TBS_OFFLINE )
 } sctStateSet;
 
 
-// Tablespace¿¡ LockÀ» È¹µæÇÑ ÈÄ ¼öÇàÇÒ Validation
+// Tablespaceì— Lockì„ íšë“í•œ í›„ ìˆ˜í–‰í•  Validation
 typedef enum sctTBSLockValidOpt
 {
-    SCT_VAL_INVALID         = 0x0000, /* ÀÌ °ªÀº Àı´ë »ç¿ëµÉ ¼ö ¾ø´Â °ª */
-    SCT_VAL_CHECK_DROPPED   = 0x0001, /* TBS°¡ DROPPEDÀÌ¸é ¿¡·¯ */
-    SCT_VAL_CHECK_DISCARDED = 0x0002, /* TBS°¡ DROPPEDÀÌ¸é ¿¡·¯ */
-    SCT_VAL_CHECK_OFFLINE   = 0x0004, /* TBS°¡ DROPPEDÀÌ¸é ¿¡·¯ */
+    SCT_VAL_INVALID         = 0x0000, /* ì´ ê°’ì€ ì ˆëŒ€ ì‚¬ìš©ë  ìˆ˜ ì—†ëŠ” ê°’ */
+    SCT_VAL_CHECK_DROPPED   = 0x0001, /* TBSê°€ DROPPEDì´ë©´ ì—ëŸ¬ */
+    SCT_VAL_CHECK_DISCARDED = 0x0002, /* TBSê°€ DROPPEDì´ë©´ ì—ëŸ¬ */
+    SCT_VAL_CHECK_OFFLINE   = 0x0004, /* TBSê°€ DROPPEDì´ë©´ ì—ëŸ¬ */
 
-    // TablespaceÀÚÃ¼¿¡ DDLÀ» ¼öÇàÇÏ´Â °æ¿ì (ex> ALTER TABLESPACE)
-    // Tablespace¾ÈÀÇ Table/Index¿¡ Insert/Update/Delete/SelectÇÏ´Â °æ¿ì
-    // => DROPPED, DISCARDED, OFFLINEÀÌ¸é ¿¡·¯¹ß»ı
+    // Tablespaceìì²´ì— DDLì„ ìˆ˜í–‰í•˜ëŠ” ê²½ìš° (ex> ALTER TABLESPACE)
+    // Tablespaceì•ˆì˜ Table/Indexì— Insert/Update/Delete/Selectí•˜ëŠ” ê²½ìš°
+    // => DROPPED, DISCARDED, OFFLINEì´ë©´ ì—ëŸ¬ë°œìƒ
     SCT_VAL_DDL_DML   =
         (SCT_VAL_CHECK_DROPPED|SCT_VAL_CHECK_DISCARDED|SCT_VAL_CHECK_OFFLINE),
-    // DROP TBSÀÇ °æ¿ì
-    // => DROPPED ÀÌ¸é ¿¡·¯¹ß»ı
-    // => Tablespace°¡  DISCARDED»óÅÂ¿©µµ ¿¡·¯¸¦ ¹ß»ı½ÃÅ°Áö ¾Ê´Â´Ù.
+    // DROP TBSì˜ ê²½ìš°
+    // => DROPPED ì´ë©´ ì—ëŸ¬ë°œìƒ
+    // => Tablespaceê°€  DISCARDEDìƒíƒœì—¬ë„ ì—ëŸ¬ë¥¼ ë°œìƒì‹œí‚¤ì§€ ì•ŠëŠ”ë‹¤.
     SCT_VAL_DROP_TBS =
         (SCT_VAL_CHECK_DROPPED),
 
-    // ALTER TBS ONLINE/OFFLINEÀÇ °æ¿ì
-    // => DROPPED, DISCARDEDÀÌ¸é ¿¡·¯¹ß»ı
-    // => Tablespace°¡ OFFLINE»óÅÂ¿©µµ ¿¡·¯¸¦ ¹ß»ı½ÃÅ°Áö ¾Ê´Â´Ù.
+    // ALTER TBS ONLINE/OFFLINEì˜ ê²½ìš°
+    // => DROPPED, DISCARDEDì´ë©´ ì—ëŸ¬ë°œìƒ
+    // => Tablespaceê°€ OFFLINEìƒíƒœì—¬ë„ ì—ëŸ¬ë¥¼ ë°œìƒì‹œí‚¤ì§€ ì•ŠëŠ”ë‹¤.
     SCT_VAL_ALTER_TBS_ONOFF =
         (SCT_VAL_CHECK_DROPPED|SCT_VAL_CHECK_DISCARDED)
 } sctTBSLockValidOpt;

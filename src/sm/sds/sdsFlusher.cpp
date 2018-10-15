@@ -21,8 +21,8 @@
 
 /***********************************************************************
  * PROJ-2102 The Fast Secondary Buffer
-   sdbFlusher.cpp¸¦ ±âº»À¸·Î ¸¸µç ÆÄÀÏ ÀÌ¹Ç·Î
-   sdbFlusher¿¡ ¼öÁ¤ÀÌ »ı±â¸é ÀÌ ÆÄÀÏ¿¡µµ Àû¿ë °ËÅä!!! 
+   sdbFlusher.cppë¥¼ ê¸°ë³¸ìœ¼ë¡œ ë§Œë“  íŒŒì¼ ì´ë¯€ë¡œ
+   sdbFlusherì— ìˆ˜ì •ì´ ìƒê¸°ë©´ ì´ íŒŒì¼ì—ë„ ì ìš© ê²€í† !!! 
  **********************************************************************/
 
 #include <idu.h>
@@ -72,12 +72,12 @@ sdsFlusher::~sdsFlusher()
 }
 
 /************************************************************************
- * Description : flusher °´Ã¼¸¦ ÃÊ±âÈ­ÇÑ´Ù. 
- *  aFlusherID      - [IN]  ÀÌ °´Ã¼ÀÇ °íÀ¯ ID. 
- *  aPageSize       - [IN]  ÆäÀÌÁö Å©±â. 
- *  aIOBPageCount   - [IN]  flusherÀÇ IOB Å©±â·Î¼­ ´ÜÀ§´Â page °³¼öÀÌ´Ù.
- *  aCPListSet      - [IN]  ÇÃ·¯½Ã ÇØ¾ß ÇÏ´Â FlushList°¡ ¼ÓÇØÀÖ´Â buffer pool
- *                          ¿¡ ¼ÓÇÑ checkpoint set
+ * Description : flusher ê°ì²´ë¥¼ ì´ˆê¸°í™”í•œë‹¤. 
+ *  aFlusherID      - [IN]  ì´ ê°ì²´ì˜ ê³ ìœ  ID. 
+ *  aPageSize       - [IN]  í˜ì´ì§€ í¬ê¸°. 
+ *  aIOBPageCount   - [IN]  flusherì˜ IOB í¬ê¸°ë¡œì„œ ë‹¨ìœ„ëŠ” page ê°œìˆ˜ì´ë‹¤.
+ *  aCPListSet      - [IN]  í”ŒëŸ¬ì‹œ í•´ì•¼ í•˜ëŠ” FlushListê°€ ì†í•´ìˆëŠ” buffer pool
+ *                          ì— ì†í•œ checkpoint set
  ************************************************************************/
 IDE_RC sdsFlusher::initialize ( UInt  aFlusherID,
                                 UInt  aPageSize,
@@ -102,8 +102,8 @@ IDE_RC sdsFlusher::initialize ( UInt  aFlusherID,
     SM_LSN_MAX( mMinRecoveryLSN );
     SM_LSN_INIT( mMaxPageLSN );
 
-    // Åë°è Á¤º¸¸¦ À§ÇÑ session Á¤º¸ ÃÊ±âÈ­
-    // BUG-21155 : current sessionÀ» ÃÊ±âÈ­
+    // í†µê³„ ì •ë³´ë¥¼ ìœ„í•œ session ì •ë³´ ì´ˆê¸°í™”
+    // BUG-21155 : current sessionì„ ì´ˆê¸°í™”
     idvManager::initSession(&mCurrSess, 0 /* unused */, NULL /* unused */);
 
     idvManager::initSQL( &mStatistics,
@@ -143,7 +143,7 @@ IDE_RC sdsFlusher::initialize ( UInt  aFlusherID,
     IDU_FIT_POINT_RAISE( "sdsFlusher::initialize::malloc1", 
                           ERR_INSUFFICIENT_MEMORY );
 
-    // IOB ÃÊ±âÈ­
+    // IOB ì´ˆê¸°í™”
     IDE_TEST_RAISE( iduMemMgr::malloc( IDU_MEM_SM_SDS,
                                        mPageSize * (mIOBPageCount + 1),
                                        (void**)&mIOBSpace ) 
@@ -188,8 +188,8 @@ IDE_RC sdsFlusher::initialize ( UInt  aFlusherID,
                     != IDE_SUCCESS,
                     ERR_INSUFFICIENT_MEMORY );
     sState = 6;
-    // condition variable ÃÊ±âÈ­
-    // flusher°¡ ½¬´Â µ¿¾È ¿©±â¿¡ ´ë±â¸¦ ÇÑ´Ù.
+    // condition variable ì´ˆê¸°í™”
+    // flusherê°€ ì‰¬ëŠ” ë™ì•ˆ ì—¬ê¸°ì— ëŒ€ê¸°ë¥¼ í•œë‹¤.
     idlOS::snprintf( sTmpName,
                      ID_SIZEOF( sTmpName ),
                      "SECONDARY_BUFFER_FLUSHER_COND_%"ID_UINT32_FMT,
@@ -251,7 +251,7 @@ IDE_RC sdsFlusher::initialize ( UInt  aFlusherID,
 }
 
 /****************************************************************************
- * Description : flusher °´Ã¼
+ * Description : flusher ê°ì²´
  ****************************************************************************/
 IDE_RC sdsFlusher::destroy()
 {
@@ -308,10 +308,10 @@ IDE_RC sdsFlusher::start()
 
 /****************************************************************************
  * Description :
- *    flusher ¾²·¹µåÀÇ ½ÇÇàÀ» µ¿±âÀûÀ¸·Î Á¾·á½ÃÅ²´Ù.
- *  aStatistics - [IN]  Åë°èÁ¤º¸
- *  aNotStarted - [OUT] flusher°¡ ¾ÆÁ÷ ½ÃÀÛµÇÁö ¾Ê¾Ò´Ù¸é ID_TRUE¸¦ ¸®ÅÏ. ±× ¿Ü¿£
- *                      ID_FALSE¸¦ ¸®ÅÏ
+ *    flusher ì“°ë ˆë“œì˜ ì‹¤í–‰ì„ ë™ê¸°ì ìœ¼ë¡œ ì¢…ë£Œì‹œí‚¨ë‹¤.
+ *  aStatistics - [IN]  í†µê³„ì •ë³´
+ *  aNotStarted - [OUT] flusherê°€ ì•„ì§ ì‹œì‘ë˜ì§€ ì•Šì•˜ë‹¤ë©´ ID_TRUEë¥¼ ë¦¬í„´. ê·¸ ì™¸ì—”
+ *                      ID_FALSEë¥¼ ë¦¬í„´
  ****************************************************************************/
 IDE_RC sdsFlusher::finish( idvSQL *aStatistics, idBool *aNotStarted )
 {
@@ -353,7 +353,7 @@ IDE_RC sdsFlusher::finish( idvSQL *aStatistics, idBool *aNotStarted )
 }
 
 /****************************************************************************
- * Description : flusher ¾²·¹µå°¡ startµÇ¸é ºÒ¸®´Â ÇÔ¼öÀÌ´Ù.
+ * Description : flusher ì“°ë ˆë“œê°€ startë˜ë©´ ë¶ˆë¦¬ëŠ” í•¨ìˆ˜ì´ë‹¤.
  ****************************************************************************/
 void sdsFlusher::run()
 {
@@ -424,7 +424,7 @@ void sdsFlusher::run()
 
         if( sJob.mType == SDB_FLUSH_JOB_REPLACEMENT_FLUSH )
         {   
-            /* flush ´ÙÇÑ Extent¸¦ sdbFlusher°¡ movedownÇÒ¼öÀÖµµ·Ï »óÅÂº¯°æ */ 
+            /* flush ë‹¤í•œ Extentë¥¼ sdbFlusherê°€ movedowní• ìˆ˜ìˆë„ë¡ ìƒíƒœë³€ê²½ */ 
             mBufferArea->changeStateFlushDone( sReplaceJobParam->mExtentIndex );
         } 
 
@@ -437,7 +437,7 @@ void sdsFlusher::run()
         }
 
         sBeforeWait = idlOS::time( NULL );
-        // sdsFlushMgr·ÎºÎÅÍ ¾ó¸¶³ª ½¯Áö ¾Ë¾Æ¿Í¼­ time value¿¡ ¼³Á¤ÇÑ´Ù.
+        // sdsFlushMgrë¡œë¶€í„° ì–¼ë§ˆë‚˜ ì‰´ì§€ ì•Œì•„ì™€ì„œ time valueì— ì„¤ì •í•œë‹¤.
         sTimeValue.set( sBeforeWait + sWaitSec );
         sRC = mCondVar.timedwait(&mRunningMutex, &sTimeValue);
         sAfterWait = idlOS::time( NULL );
@@ -446,19 +446,19 @@ void sdsFlusher::run()
 
         if( sRC == IDE_SUCCESS )
         {
-            // cond_signalÀ» ¹Ş°í ±ú¾î³­ °æ¿ì
+            // cond_signalì„ ë°›ê³  ê¹¨ì–´ë‚œ ê²½ìš°
             mFlusherStat.applyWakeUpsBySignal();
         }
         else
         {
             if(mCondVar.isTimedOut() == ID_TRUE)
             {
-                // timeout¿¡ ÀÇ¾Ö ±ú¾î³­ °æ¿ì
+                // timeoutì— ì˜ì•  ê¹¨ì–´ë‚œ ê²½ìš°
                 mFlusherStat.applyWakeUpsByTimeout();
             }
             else
             {
-                // ±×¿ÜÀÇ °æ¿ì¿¡´Â ¿¡·¯·Î Ã³¸®¸¦ ÇÑ´Ù.
+                // ê·¸ì™¸ì˜ ê²½ìš°ì—ëŠ” ì—ëŸ¬ë¡œ ì²˜ë¦¬ë¥¼ í•œë‹¤.
                 ideLog::log( IDE_SERVER_0, 
                              "Secondary Flusher Dead [RC:%d, ERRNO:%d]", 
                              sRC, errno );
@@ -493,12 +493,12 @@ void sdsFlusher::run()
 
 /****************************************************************************
  * Description :
- *    flush list¿¡ ´ëÇØ flushÀÛ¾÷À» ¼öÇàÇÑ´Ù.
- *  aStatistics     - [IN]  °¢ list ÀÌµ¿½Ã mutex È¹µæÀÌ ÇÊ¿äÇÏ±â ¶§¹®¿¡
- *                          Åë°èÁ¤º¸°¡ ÇÊ¿äÇÏ´Ù.
- *  aReqFlushCount  - [IN]  »ç¿ëÀÚ°¡ ¿äÃ»ÇÑ flush°³¼ö
- *                          X-latch°¡ ÀâÇôÀÖ´Â ¹öÆÛµéÀ» ¿Å±æ LRU list
- *  aRetFlushedCount- [OUT] ½ÇÁ¦ flushÇÑ page °¹¼ö
+ *    flush listì— ëŒ€í•´ flushì‘ì—…ì„ ìˆ˜í–‰í•œë‹¤.
+ *  aStatistics     - [IN]  ê° list ì´ë™ì‹œ mutex íšë“ì´ í•„ìš”í•˜ê¸° ë•Œë¬¸ì—
+ *                          í†µê³„ì •ë³´ê°€ í•„ìš”í•˜ë‹¤.
+ *  aReqFlushCount  - [IN]  ì‚¬ìš©ìê°€ ìš”ì²­í•œ flushê°œìˆ˜
+ *                          X-latchê°€ ì¡í˜€ìˆëŠ” ë²„í¼ë“¤ì„ ì˜®ê¸¸ LRU list
+ *  aRetFlushedCount- [OUT] ì‹¤ì œ flushí•œ page ê°¯ìˆ˜
  ***************************************************************************/
 IDE_RC sdsFlusher::flushForReplacement( idvSQL         * aStatistics,
                                         ULong            aReqFlushCount,
@@ -513,12 +513,12 @@ IDE_RC sdsFlusher::flushForReplacement( idvSQL         * aStatistics,
     IDE_ERROR( aReqFlushCount > 0 );
 
     *aRetFlushedCount = 0;
-    /* ÇÑ Extent¾¿ flush ÇÑ´Ù. ÇÑ Extent´Â IOBPage °³¼ö ¸¸Å­ÀÇ  ÆäÀÌÁö·Î ±¸¼º */
+    /* í•œ Extentì”© flush í•œë‹¤. í•œ ExtentëŠ” IOBPage ê°œìˆ˜ ë§Œí¼ì˜  í˜ì´ì§€ë¡œ êµ¬ì„± */
     sReqFlushCount = aReqFlushCount*mIOBPageCount;
     
     sSBCBIndex = aExtentIndex * mIOBPageCount ;
 
-    // sReqFlushCount¸¸Å­ flushÇÑ´Ù.
+    // sReqFlushCountë§Œí¼ flushí•œë‹¤.
     while( sReqFlushCount-- )
     {
         sSBCB = mBufferArea->getBCB( sSBCBIndex );
@@ -526,7 +526,7 @@ IDE_RC sdsFlusher::flushForReplacement( idvSQL         * aStatistics,
 
         IDE_ASSERT( sSBCB != NULL )
 
-       // BCB state °Ë»ç¸¦ ÇÏ±â À§ÇØ BCBMutex¸¦ È¹µæÇÑ´Ù.
+       // BCB state ê²€ì‚¬ë¥¼ í•˜ê¸° ìœ„í•´ BCBMutexë¥¼ íšë“í•œë‹¤.
         sSBCB->lockBCBMutex( aStatistics );
 
         if( (sSBCB->mState == SDS_SBCB_OLD ) ||
@@ -534,7 +534,7 @@ IDE_RC sdsFlusher::flushForReplacement( idvSQL         * aStatistics,
             (sSBCB->mState == SDS_SBCB_CLEAN ) ||
             (sSBCB->mState == SDS_SBCB_FREE) )
         {
-            // REDIRTY, INIOB, CLEANÀÎ ¹öÆÛ´Â  skip
+            // REDIRTY, INIOB, CLEANì¸ ë²„í¼ëŠ”  skip
             sSBCB->unlockBCBMutex();
 
             mFlusherStat.applyReplaceSkipPages();
@@ -545,15 +545,15 @@ IDE_RC sdsFlusher::flushForReplacement( idvSQL         * aStatistics,
             IDE_ASSERT( sSBCB->mState == SDS_SBCB_DIRTY );
         }
 
-        // flush Á¶°ÇÀ» ¸ğµÎ ¸¸Á·Çß´Ù.
-        // ÀÌÁ¦ flush¸¦ ÇÏÀÚ.
+        // flush ì¡°ê±´ì„ ëª¨ë‘ ë§Œì¡±í–ˆë‹¤.
+        // ì´ì œ flushë¥¼ í•˜ì.
         sSBCB->mState = SDS_SBCB_INIOB;
         sSBCB->unlockBCBMutex();
 
         if( SM_IS_LSN_INIT(sSBCB->mRecoveryLSN) )
         {
-            // temp pageÀÎ °æ¿ì double write¸¦ ÇÒ ÇÊ¿ä°¡ ¾ø±â¶§¹®¿¡
-            // IOB¿¡ º¹»çÇÑ ÈÄ ¹Ù·Î ±× ÆäÀÌÁö¸¸ disk¿¡ ³»¸°´Ù.
+            // temp pageì¸ ê²½ìš° double writeë¥¼ í•  í•„ìš”ê°€ ì—†ê¸°ë•Œë¬¸ì—
+            // IOBì— ë³µì‚¬í•œ í›„ ë°”ë¡œ ê·¸ í˜ì´ì§€ë§Œ diskì— ë‚´ë¦°ë‹¤.
             IDE_TEST( flushTempPage( aStatistics,
                                      sSBCB )
                       != IDE_SUCCESS );
@@ -569,7 +569,7 @@ IDE_RC sdsFlusher::flushForReplacement( idvSQL         * aStatistics,
         sFlushCount++;
     }
 
-    // IOB¿¡ ³²Àº ÆäÀÌÁöµéÀ» µğ½ºÅ©¿¡ ³»¸°´Ù.
+    // IOBì— ë‚¨ì€ í˜ì´ì§€ë“¤ì„ ë””ìŠ¤í¬ì— ë‚´ë¦°ë‹¤.
     IDE_TEST( writeIOB( aStatistics ) != IDE_SUCCESS );
 
     *aRetFlushedCount = sFlushCount;
@@ -583,14 +583,14 @@ IDE_RC sdsFlusher::flushForReplacement( idvSQL         * aStatistics,
 
 /****************************************************************************
  * Description :
- *    CPListSetÀÇ ¹öÆÛµéÀ» recovery LSNÀÌ ÀÛÀº ¼øÀ¸·Î flush¸¦ ¼öÇàÇÑ´Ù.
+ *    CPListSetì˜ ë²„í¼ë“¤ì„ recovery LSNì´ ì‘ì€ ìˆœìœ¼ë¡œ flushë¥¼ ìˆ˜í–‰í•œë‹¤.
  *
- *  aStatistics         - [IN]  Åë°èÁ¤º¸
- *  aMinFlushCount      - [IN]  flushÇÒ ÃÖ¼Ò Page ¼ö
- *  aRedoDirtyPageCnt   - [IN]  Restart Recovery½Ã¿¡ RedoÇÒ Page ¼ö,
- *                              ¹İ´ë·Î ¸»ÇÏ¸é CP List¿¡ ³²°ÜµÑ Dirty PageÀÇ ¼ö
- *  aRedoLogFileCount   - [IN]  Restart Recovery½Ã¿¡ redoÇÒ LogFile ¼ö
- *  aRetFlushedCount    - [OUT] ½ÇÁ¦ flushÇÑ page °¹¼ö
+ *  aStatistics         - [IN]  í†µê³„ì •ë³´
+ *  aMinFlushCount      - [IN]  flushí•  ìµœì†Œ Page ìˆ˜
+ *  aRedoDirtyPageCnt   - [IN]  Restart Recoveryì‹œì— Redoí•  Page ìˆ˜,
+ *                              ë°˜ëŒ€ë¡œ ë§í•˜ë©´ CP Listì— ë‚¨ê²¨ë‘˜ Dirty Pageì˜ ìˆ˜
+ *  aRedoLogFileCount   - [IN]  Restart Recoveryì‹œì— redoí•  LogFile ìˆ˜
+ *  aRetFlushedCount    - [OUT] ì‹¤ì œ flushí•œ page ê°¯ìˆ˜
  ****************************************************************************/
 IDE_RC sdsFlusher::flushForCheckpoint( idvSQL      * aStatistics,
                                        ULong         aMinFlushCount,
@@ -609,10 +609,10 @@ IDE_RC sdsFlusher::flushForCheckpoint( idvSQL      * aStatistics,
     IDE_ASSERT( aRetFlushedCount != NULL );
 
     *aRetFlushedCount = 0;
-    // checkpoint list¿¡¼­ °¡Àå Å« recoveryLSN -> ÃÖ´ë flush ÇÒ¼ö ÀÖ´Â LSN
+    // checkpoint listì—ì„œ ê°€ì¥ í° recoveryLSN -> ìµœëŒ€ flush í• ìˆ˜ ìˆëŠ” LSN
     mCPListSet->getMaxRecoveryLSN( aStatistics, &sMaxFlushLSN );
 
-    //DISKÀÇ ¸¶Áö¸· LSN°ªÀ» ±¸ÇÑ´Ù.
+    //DISKì˜ ë§ˆì§€ë§‰ LSNê°’ì„ êµ¬í•œë‹¤.
     (void)smLayerCallback::getLstLSN( &sReqFlushLSN );
 
     if ( sReqFlushLSN.mFileNo >= aRedoLogFileCount )
@@ -624,16 +624,16 @@ IDE_RC sdsFlusher::flushForCheckpoint( idvSQL      * aStatistics,
         SM_LSN_INIT( sReqFlushLSN );
     }
 
-    // flush ¿äÃ»ÇÒ pageÀÇ ¼ö¸¦ °è»êÇÑ´Ù.
+    // flush ìš”ì²­í•  pageì˜ ìˆ˜ë¥¼ ê³„ì‚°í•œë‹¤.
     sReqFlushCount = mCPListSet->getTotalBCBCnt();
 
     if( sReqFlushCount > aRedoPageCount )
     {
-        // CP listÀÇ Dirty Page¼ö°¡ Restart Recovery½Ã¿¡
-        // Redo ÇÒ Page º¸´Ù ¸¹¾ÆÁ³À¸¹Ç·Î ±× Â÷ÀÌ¸¦ flushÇÑ´Ù.
+        // CP listì˜ Dirty Pageìˆ˜ê°€ Restart Recoveryì‹œì—
+        // Redo í•  Page ë³´ë‹¤ ë§ì•„ì¡Œìœ¼ë¯€ë¡œ ê·¸ ì°¨ì´ë¥¼ flushí•œë‹¤.
         sReqFlushCount -= aRedoPageCount;
 
-        // flushÇÒ page¸¦ ÀÛµ¿ÁßÀÎ flusher¼ö(n)·Î 1/n·Î ³ª´«´Ù.
+        // flushí•  pageë¥¼ ì‘ë™ì¤‘ì¸ flusherìˆ˜(n)ë¡œ 1/në¡œ ë‚˜ëˆˆë‹¤.
         sActiveFlusherCount = sdsFlushMgr::getActiveFlusherCount();
         IDE_ASSERT( sActiveFlusherCount > 0 );
         sReqFlushCount /= sActiveFlusherCount;
@@ -645,11 +645,11 @@ IDE_RC sdsFlusher::flushForCheckpoint( idvSQL      * aStatistics,
     }
     else
     {
-        // CP listÀÇ Dirty Page¼ö°¡ Restart Recovery½Ã¿¡
-        // Redo ÇÒ Page º¸´Ù ÀÛ´Ù. MinFlushCount ¸¸Å­¸¸ flushÇÑ´Ù.
+        // CP listì˜ Dirty Pageìˆ˜ê°€ Restart Recoveryì‹œì—
+        // Redo í•  Page ë³´ë‹¤ ì‘ë‹¤. MinFlushCount ë§Œí¼ë§Œ flushí•œë‹¤.
         sReqFlushCount = aMinFlushCount;
     }
-    // CPListSet¿¡¼­ recovery LSNÀÌ °¡Àå ÀÛÀº BCB¸¦ º»´Ù.
+    // CPListSetì—ì„œ recovery LSNì´ ê°€ì¥ ì‘ì€ BCBë¥¼ ë³¸ë‹¤.
     sSBCB = (sdsBCB*)mCPListSet->getMin();
 
     while( sSBCB != NULL )
@@ -658,7 +658,7 @@ IDE_RC sdsFlusher::flushForCheckpoint( idvSQL      * aStatistics,
                                        &sSBCB->mRecoveryLSN )
              == ID_TRUE)
         {
-            // RecoveryLSNÀÌ ÃÖ´ë flush ÇÏ·Á´Â LSNº¸´Ù Å©¹Ç·Î ¶¯. 
+            // RecoveryLSNì´ ìµœëŒ€ flush í•˜ë ¤ëŠ” LSNë³´ë‹¤ í¬ë¯€ë¡œ ë•¡. 
             break;
         }
 
@@ -666,8 +666,8 @@ IDE_RC sdsFlusher::flushForCheckpoint( idvSQL      * aStatistics,
              ( smLayerCallback::isLSNGT( &sSBCB->mRecoveryLSN, &sReqFlushLSN ) 
                == ID_TRUE) )
         {
-            // sReqFlushCount ÀÌ»ó flushÇÏ¿´°í
-            // sReqFlushLSN±îÁö flushÇÏ¿´À¸¸é flush ÀÛ¾÷À» Áß´ÜÇÑ´Ù.
+            // sReqFlushCount ì´ìƒ flushí•˜ì˜€ê³ 
+            // sReqFlushLSNê¹Œì§€ flushí•˜ì˜€ìœ¼ë©´ flush ì‘ì—…ì„ ì¤‘ë‹¨í•œë‹¤.
             break;
         }
 
@@ -675,8 +675,8 @@ IDE_RC sdsFlusher::flushForCheckpoint( idvSQL      * aStatistics,
 
         if( sSBCB->mState != SDS_SBCB_DIRTY )
         {
-            // DIRTY°¡ ¾Æ´Ñ ¹öÆÛ´Â skipÇÑ´Ù.
-            // ´ÙÀ½ BCB¸¦ ÂüÁ¶ÇÑ´Ù.
+            // DIRTYê°€ ì•„ë‹Œ ë²„í¼ëŠ” skipí•œë‹¤.
+            // ë‹¤ìŒ BCBë¥¼ ì°¸ì¡°í•œë‹¤.
             sSBCB->unlockBCBMutex();
 
             sNotDirtyCount++;
@@ -685,29 +685,29 @@ IDE_RC sdsFlusher::flushForCheckpoint( idvSQL      * aStatistics,
                 IDE_TEST( writeIOB( aStatistics ) != IDE_SUCCESS );
                 sNotDirtyCount = 0;
             }
-            // nextBCB()¸¦ ÅëÇØ¼­ ¾òÀº BCB¿ª½Ã ÂüÁ¶ÇÏ´Â µ¿¾È
-            // CPListSet¿¡¼­ ºüÁú ¼ö ÀÖ´Ù.
-            // ¶ÇÇÑ nextBCB()ÀÇ ÀÎÀÚ·Î »ç¿ëµÈ sSBCB¿ª½Ã
-            // ÀÌ ½ÃÁ¡¿¡¼­ CPList¿¡¼­ ºüÁú ¼ö ÀÖ´Ù.
-            // ¸¸¾à ±×·± °æ¿ì¶ó¸é nextBCB´Â minBCB¸¦ ¸®ÅÏÇÒ °ÍÀÌ´Ù.
+            // nextBCB()ë¥¼ í†µí•´ì„œ ì–»ì€ BCBì—­ì‹œ ì°¸ì¡°í•˜ëŠ” ë™ì•ˆ
+            // CPListSetì—ì„œ ë¹ ì§ˆ ìˆ˜ ìˆë‹¤.
+            // ë˜í•œ nextBCB()ì˜ ì¸ìë¡œ ì‚¬ìš©ëœ sSBCBì—­ì‹œ
+            // ì´ ì‹œì ì—ì„œ CPListì—ì„œ ë¹ ì§ˆ ìˆ˜ ìˆë‹¤.
+            // ë§Œì•½ ê·¸ëŸ° ê²½ìš°ë¼ë©´ nextBCBëŠ” minBCBë¥¼ ë¦¬í„´í•  ê²ƒì´ë‹¤.
             sSBCB = (sdsBCB*)mCPListSet->getNextOf( sSBCB );
             mFlusherStat.applyCheckpointSkipPages();
             continue;
         }
         sNotDirtyCount = 0;
-        // ´Ù¸¥ flusherµéÀÌ flush¸¦ ¸øÇÏ°Ô ÇÏ±â À§ÇØ
-        // INIOB»óÅÂ·Î º¯°æÇÑ´Ù.
+        // ë‹¤ë¥¸ flusherë“¤ì´ flushë¥¼ ëª»í•˜ê²Œ í•˜ê¸° ìœ„í•´
+        // INIOBìƒíƒœë¡œ ë³€ê²½í•œë‹¤.
         sSBCB->mState = SDS_SBCB_INIOB;
         sSBCB->unlockBCBMutex();
 
         if( SM_IS_LSN_INIT( sSBCB->mRecoveryLSN ) )
         {
-            // TEMP PAGE°¡ check point ¸®½ºÆ®¿¡ ´Ş·Á ÀÖÀ¸¸é ¾ÈµÈ´Ù.
-            // ±×·¸Áö¸¸ ¹®Á¦°¡ µÇÁö´Â ¾Ê±â ¶§¹®¿¡, release½Ã¿¡ ¹ß°ßµÇ´õ¶óµµ
-            // Á×ÀÌÁö ¾Êµµ·Ï ÇÑ´Ù.
-            // TEMP PAGE°¡ ¾Æ´Ï´õ¶óµµ, mRecoveryLSNÀÌ init°ªÀÌ¶ó´Â °ÍÀº
-            // recovery¿Í »ó°ü¾ø´Â ÆäÀÌÁö¶ó´Â ¶æÀÌ´Ù.
-            // recovery¿Í »ó°ü¾ø´Â ÆäÀÌÁö´Â checkpoint¸¦ ÇÏÁö ¾Ê¾Æµµ µÈ´Ù.
+            // TEMP PAGEê°€ check point ë¦¬ìŠ¤íŠ¸ì— ë‹¬ë ¤ ìˆìœ¼ë©´ ì•ˆëœë‹¤.
+            // ê·¸ë ‡ì§€ë§Œ ë¬¸ì œê°€ ë˜ì§€ëŠ” ì•Šê¸° ë•Œë¬¸ì—, releaseì‹œì— ë°œê²¬ë˜ë”ë¼ë„
+            // ì£½ì´ì§€ ì•Šë„ë¡ í•œë‹¤.
+            // TEMP PAGEê°€ ì•„ë‹ˆë”ë¼ë„, mRecoveryLSNì´ initê°’ì´ë¼ëŠ” ê²ƒì€
+            // recoveryì™€ ìƒê´€ì—†ëŠ” í˜ì´ì§€ë¼ëŠ” ëœ»ì´ë‹¤.
+            // recoveryì™€ ìƒê´€ì—†ëŠ” í˜ì´ì§€ëŠ” checkpointë¥¼ í•˜ì§€ ì•Šì•„ë„ ëœë‹¤.
             IDE_DASSERT( 0 );
             IDE_TEST( flushTempPage( aStatistics, sSBCB ) != IDE_SUCCESS );
         }
@@ -719,13 +719,13 @@ IDE_RC sdsFlusher::flushForCheckpoint( idvSQL      * aStatistics,
 
         sFlushCount++;
 
-        // ´ÙÀ½ flushÇÒ BCB¸¦ ±¸ÇÑ´Ù.
+        // ë‹¤ìŒ flushí•  BCBë¥¼ êµ¬í•œë‹¤.
         sSBCB = (sdsBCB*)mCPListSet->getMin();
     }
 
     *aRetFlushedCount = sFlushCount;
 
-    // IOB¿¡ ³²¾Æ ÀÖ´Â ¹öÆÛµéÀ» ¸ğµÎ disk¿¡ ±â·ÏÇÑ´Ù.
+    // IOBì— ë‚¨ì•„ ìˆëŠ” ë²„í¼ë“¤ì„ ëª¨ë‘ diskì— ê¸°ë¡í•œë‹¤.
     IDE_TEST( writeIOB( aStatistics ) != IDE_SUCCESS );
 
     return IDE_SUCCESS;
@@ -737,12 +737,12 @@ IDE_RC sdsFlusher::flushForCheckpoint( idvSQL      * aStatistics,
 
 /****************************************************************************
  * Description :
- *  aBCBQueue¿¡ µé¾îÀÖ´Â BCB¸¦ ´ë»óÀ¸·Î flush¸¦ ¼öÇàÇÑ´Ù.
- *  aStatistics     - [IN]  Åë°èÁ¤º¸.
- *  aFiltFunc       - [IN]  ÇÃ·¯½Ã ÇÒÁö ¸»Áö Á¶°Ç ÇÔ¼ö.
- *  aFiltObj        - [IN]  aFiltFunc¿¡ ³Ñ°ÜÁÙ ÀÎÀÚ.
- *  aBCBQueue       - [IN]  ÇÃ·¯½Ã ÇØ¾ßÇÒ BCBµéÀÇ Æ÷ÀÎÅÍ°¡ µé¾îÀÖ´Â Å¥.
- *  aRetFlushedCount- [OUT] ½ÇÁ¦ ÇÃ·¯½Ã ÇÑ ÆäÀÌÁö °³¼ö.
+ *  aBCBQueueì— ë“¤ì–´ìˆëŠ” BCBë¥¼ ëŒ€ìƒìœ¼ë¡œ flushë¥¼ ìˆ˜í–‰í•œë‹¤.
+ *  aStatistics     - [IN]  í†µê³„ì •ë³´.
+ *  aFiltFunc       - [IN]  í”ŒëŸ¬ì‹œ í• ì§€ ë§ì§€ ì¡°ê±´ í•¨ìˆ˜.
+ *  aFiltObj        - [IN]  aFiltFuncì— ë„˜ê²¨ì¤„ ì¸ì.
+ *  aBCBQueue       - [IN]  í”ŒëŸ¬ì‹œ í•´ì•¼í•  BCBë“¤ì˜ í¬ì¸í„°ê°€ ë“¤ì–´ìˆëŠ” í.
+ *  aRetFlushedCount- [OUT] ì‹¤ì œ í”ŒëŸ¬ì‹œ í•œ í˜ì´ì§€ ê°œìˆ˜.
  ****************************************************************************/
 IDE_RC sdsFlusher::flushForObject( idvSQL       * aStatistics,
                                    sdsFiltFunc    aFiltFunc,
@@ -757,14 +757,14 @@ IDE_RC sdsFlusher::flushForObject( idvSQL       * aStatistics,
 
     while (1)
     {
-        IDE_ASSERT( aBCBQueue->dequeue( ID_FALSE, //mutex ÀâÁö ¾Ê´Â´Ù.
+        IDE_ASSERT( aBCBQueue->dequeue( ID_FALSE, //mutex ì¡ì§€ ì•ŠëŠ”ë‹¤.
                                         (void*)&sSBCB,
                                         &sEmpty )
                     == IDE_SUCCESS );
 
         if ( sEmpty == ID_TRUE )
         {
-            // ´õÀÌ»ó flushÇÒ BCB°¡ ¾øÀ¸¹Ç·Î ·çÇÁ¸¦ ºüÁ®³ª°£´Ù.
+            // ë”ì´ìƒ flushí•  BCBê°€ ì—†ìœ¼ë¯€ë¡œ ë£¨í”„ë¥¼ ë¹ ì ¸ë‚˜ê°„ë‹¤.
             break;
         }
 retry:
@@ -774,7 +774,7 @@ retry:
             continue;
         }
         
-        // BCB state °Ë»ç¸¦ ÇÏ±â À§ÇØ BCBMutex¸¦ È¹µæÇÑ´Ù.
+        // BCB state ê²€ì‚¬ë¥¼ í•˜ê¸° ìœ„í•´ BCBMutexë¥¼ íšë“í•œë‹¤.
         sSBCB->lockBCBMutex(aStatistics);
 
         if( (sSBCB->mState == SDS_SBCB_CLEAN) ||
@@ -787,14 +787,14 @@ retry:
 
         if( aFiltFunc( sSBCB, aFiltObj ) == ID_FALSE )
         {
-            // BCB°¡ aFiltFuncÁ¶°ÇÀ» ¸¸Á·ÇÏÁö ¸øÇÏ¸é ÇÃ·¯½Ã ÇÏÁö ¾Ê´Â´Ù.
+            // BCBê°€ aFiltFuncì¡°ê±´ì„ ë§Œì¡±í•˜ì§€ ëª»í•˜ë©´ í”ŒëŸ¬ì‹œ í•˜ì§€ ì•ŠëŠ”ë‹¤.
             sSBCB->unlockBCBMutex();
             mFlusherStat.applyObjectSkipPages();
             continue;
         }
 
-        // BUG-21135 flusher°¡ flushÀÛ¾÷À» ¿Ï·áÇÏ±â À§ÇØ¼­´Â
-        // INIOB»óÅÂÀÇ BCB»óÅÂ°¡ º¯°æµÇ±æ ±â´Ù·Á¾ß ÇÕ´Ï´Ù.
+        // BUG-21135 flusherê°€ flushì‘ì—…ì„ ì™„ë£Œí•˜ê¸° ìœ„í•´ì„œëŠ”
+        // INIOBìƒíƒœì˜ BCBìƒíƒœê°€ ë³€ê²½ë˜ê¸¸ ê¸°ë‹¤ë ¤ì•¼ í•©ë‹ˆë‹¤.
         if( (sSBCB->mState == SDS_SBCB_INIOB) ||
             (sSBCB->mState == SDS_SBCB_OLD ) )
         {
@@ -803,15 +803,15 @@ retry:
             idlOS::sleep(sTV);
             goto retry;
         }
-        // flush Á¶°ÇÀ» ¸ğµÎ ¸¸Á·Çß´Ù.
-        // ÀÌÁ¦ flush¸¦ ÇÏÀÚ.
+        // flush ì¡°ê±´ì„ ëª¨ë‘ ë§Œì¡±í–ˆë‹¤.
+        // ì´ì œ flushë¥¼ í•˜ì.
         sSBCB->mState = SDS_SBCB_INIOB;
         sSBCB->unlockBCBMutex();
 
         if( SM_IS_LSN_INIT(sSBCB->mRecoveryLSN) )
         {
-            // temp pageÀÎ °æ¿ì double write¸¦ ÇÒ ÇÊ¿ä°¡ ¾ø±â¶§¹®¿¡
-            // IOB¿¡ º¹»çÇÑ ÈÄ ¹Ù·Î ±× ÆäÀÌÁö¸¸ disk¿¡ ³»¸°´Ù.
+            // temp pageì¸ ê²½ìš° double writeë¥¼ í•  í•„ìš”ê°€ ì—†ê¸°ë•Œë¬¸ì—
+            // IOBì— ë³µì‚¬í•œ í›„ ë°”ë¡œ ê·¸ í˜ì´ì§€ë§Œ diskì— ë‚´ë¦°ë‹¤.
             IDE_TEST( flushTempPage( aStatistics, sSBCB )
                       != IDE_SUCCESS );
         }
@@ -824,7 +824,7 @@ retry:
         sRetFlushedCount++;
     }
 
-    // IOB¸¦ µğ½ºÅ©¿¡ ±â·ÏÇÑ´Ù.
+    // IOBë¥¼ ë””ìŠ¤í¬ì— ê¸°ë¡í•œë‹¤.
     IDE_TEST( writeIOB( aStatistics )
               != IDE_SUCCESS);
 
@@ -841,9 +841,9 @@ retry:
 
 /****************************************************************************
  * Description :
- *    temp pageÀÎ °æ¿ì copyToIOB()´ë½Å ÀÌ ÇÔ¼ö¸¦ »ç¿ëÇÑ´Ù.
- *  aStatistics     - [IN]  Åë°èÁ¤º¸
- *  aBCB            - [IN]  flushÇÒ BCB
+ *    temp pageì¸ ê²½ìš° copyToIOB()ëŒ€ì‹  ì´ í•¨ìˆ˜ë¥¼ ì‚¬ìš©í•œë‹¤.
+ *  aStatistics     - [IN]  í†µê³„ì •ë³´
+ *  aBCB            - [IN]  flushí•  BCB
  ****************************************************************************/
 IDE_RC sdsFlusher::flushTempPage( idvSQL    * aStatistics,
                                   sdsBCB    * aSBCB )
@@ -865,8 +865,8 @@ IDE_RC sdsFlusher::flushTempPage( idvSQL    * aStatistics,
 
     if( aSBCB->mState == SDS_SBCB_INIOB )
     {
-        /* PBuffer¿¡ ÀÖ´Â »óÅÂ¸¦ º¸°í º¹»çÇÏ°Å³ª PBuffer »óÅÂ¸¦ ¹Ù²ã¾ß ÇÏ³ª 
-           Mutex Àâ°í ÇÏ´Âµ¥ ¹«¸®°¡ ÀÖ´Âµí.  ÇÏÁö ¸»ÀÚ. */
+        /* PBufferì— ìˆëŠ” ìƒíƒœë¥¼ ë³´ê³  ë³µì‚¬í•˜ê±°ë‚˜ PBuffer ìƒíƒœë¥¼ ë°”ê¿”ì•¼ í•˜ë‚˜ 
+           Mutex ì¡ê³  í•˜ëŠ”ë° ë¬´ë¦¬ê°€ ìˆëŠ”ë“¯.  í•˜ì§€ ë§ì. */
         IDE_TEST_RAISE( mSBufferFile->open( aStatistics ) != IDE_SUCCESS,
                         ERR_READ_SECONDARY_BUFFER );
 
@@ -910,7 +910,7 @@ IDE_RC sdsFlusher::flushTempPage( idvSQL    * aStatistics,
 
         /* BUG-32670    [sm-disk-resource] add IO Stat information
          * for analyzing storage performance.
-         * ÇöÀç TempPage´Â ÇÑ¹ø¿¡ ÇÑ Page¾¿ WriteÇÔ. */
+         * í˜„ì¬ TempPageëŠ” í•œë²ˆì— í•œ Pageì”© Writeí•¨. */
         mFlusherStat.applyTotalFlushTempPages( 1 );
         mFlusherStat.applyTotalTempWriteTimeUSec( sTempWriteTime );
     }
@@ -923,7 +923,7 @@ IDE_RC sdsFlusher::flushTempPage( idvSQL    * aStatistics,
 
     /* BUG-32670    [sm-disk-resource] add IO Stat information
      * for analyzing storage performance.
-     * ÇöÀç TempPage´Â ÇÑ¹ø¿¡ ÇÑ Page¾¿ WriteÇÔ. */
+     * í˜„ì¬ TempPageëŠ” í•œë²ˆì— í•œ Pageì”© Writeí•¨. */
     mFlusherStat.applyTotalFlushTempPages( 1 );
     mFlusherStat.applyTotalTempWriteTimeUSec( sTempWriteTime );
 
@@ -945,8 +945,8 @@ IDE_RC sdsFlusher::flushTempPage( idvSQL    * aStatistics,
 }
 
 /****************************************************************************
- * Description : BCBÀÇ frame ³»¿ëÀ» IOB¿¡ º¹»çÇÑ´Ù.
- *  aStatistics     - [IN]  Åë°èÁ¤º¸
+ * Description : BCBì˜ frame ë‚´ìš©ì„ IOBì— ë³µì‚¬í•œë‹¤.
+ *  aStatistics     - [IN]  í†µê³„ì •ë³´
  *  aBCB            - [IN]  BCB
  ****************************************************************************/
 IDE_RC sdsFlusher::copyToIOB( idvSQL  * aStatistics,
@@ -959,17 +959,17 @@ IDE_RC sdsFlusher::copyToIOB( idvSQL  * aStatistics,
     IDE_ASSERT( aSBCB->mCPListNo != SDB_CP_LIST_NONE );
 
     /* PROJ-2162 RestartRiskReduction
-     * Consistency ÇÏÁö ¾ÊÀ¸¸é, Flush¸¦ ¸·´Â´Ù.  */
+     * Consistency í•˜ì§€ ì•Šìœ¼ë©´, Flushë¥¼ ë§‰ëŠ”ë‹¤.  */
     if( ( smrRecoveryMgr::getConsistency() == ID_FALSE ) &&
         ( smuProperty::getCrashTolerance() != 2 ) )
     {
-        /* Checkpoint Linst¿¡¼­ BCB¸¦ Á¦°ÅÇÏ°í Mutex¸¦
-         * Ç®¾îÁÖ±â¸¸ ÇÑ´Ù. Flush³ª IOB »ç¿ëÀº ¾ÈÇÔ */
+        /* Checkpoint Linstì—ì„œ BCBë¥¼ ì œê±°í•˜ê³  Mutexë¥¼
+         * í’€ì–´ì£¼ê¸°ë§Œ í•œë‹¤. Flushë‚˜ IOB ì‚¬ìš©ì€ ì•ˆí•¨ */
         mCPListSet->remove( aStatistics, aSBCB );
     }
     else
     {
-        // IOBÀÇ minRecoveryLSNÀ» °»½ÅÇÏ±â À§ÇØ¼­ mMinRecoveryLSNMutex¸¦ È¹µæÇÑ´Ù.
+        // IOBì˜ minRecoveryLSNì„ ê°±ì‹ í•˜ê¸° ìœ„í•´ì„œ mMinRecoveryLSNMutexë¥¼ íšë“í•œë‹¤.
         IDE_ASSERT( mMinRecoveryLSNMutex.lock(aStatistics) == IDE_SUCCESS );
 
         if ( smLayerCallback::isLSNLT( &aSBCB->mRecoveryLSN, 
@@ -987,8 +987,8 @@ IDE_RC sdsFlusher::copyToIOB( idvSQL  * aStatistics,
 
         sIOBPtr = mIOBPtr[ mIOBPos ];
 
-        /* ¿©±â¼­  PBufferÀÇ »óÅÂ¸¦ º¸°í PBufferÀÇ »óÅÂ¸¦ ¹Ù²Ù°Å³ª º¹»çÇØ¾ßÇÏ´Âµ¥ 
-          mutex Àâ´Â°Ô º´¸ñÀÌ µÇ´Âµí ÇÏ´Ù. ÇÏÁö ¸»ÀÚ. */
+        /* ì—¬ê¸°ì„œ  PBufferì˜ ìƒíƒœë¥¼ ë³´ê³  PBufferì˜ ìƒíƒœë¥¼ ë°”ê¾¸ê±°ë‚˜ ë³µì‚¬í•´ì•¼í•˜ëŠ”ë° 
+          mutex ì¡ëŠ”ê²Œ ë³‘ëª©ì´ ë˜ëŠ”ë“¯ í•˜ë‹¤. í•˜ì§€ ë§ì. */
 
         IDE_TEST_RAISE( mSBufferFile->open( aStatistics ) != IDE_SUCCESS,
                         ERR_READ_SECONDARY_BUFFER );
@@ -1003,8 +1003,8 @@ IDE_RC sdsFlusher::copyToIOB( idvSQL  * aStatistics,
 
         mIOBBCBArray[mIOBPos] = aSBCB;
 
-        // IOB¿¡ ±â·ÏµÈ BCBµéÀÇ pageLSNÁß¿¡ °¡Àå Å« LSNÀ» ¼³Á¤ÇÑ´Ù.
-        // ÀÌ °ªÀº ³ªÁß¿¡ WALÀ» ÁöÅ°±â À§ÇØ »ç¿ëµÈ´Ù.
+        // IOBì— ê¸°ë¡ëœ BCBë“¤ì˜ pageLSNì¤‘ì— ê°€ì¥ í° LSNì„ ì„¤ì •í•œë‹¤.
+        // ì´ ê°’ì€ ë‚˜ì¤‘ì— WALì„ ì§€í‚¤ê¸° ìœ„í•´ ì‚¬ìš©ëœë‹¤.
         if ( smLayerCallback::isLSNGT( &sPageLSN, &mMaxPageLSN )
              == ID_TRUE )
         {
@@ -1017,7 +1017,7 @@ IDE_RC sdsFlusher::copyToIOB( idvSQL  * aStatistics,
         mIOBPos++;
         mFlusherStat.applyINIOBCount( mIOBPos );
 
-        // IOB°¡ °¡µæÃ¡À¸¸é IOB¸¦ µğ½ºÅ©¿¡ ³»¸°´Ù.
+        // IOBê°€ ê°€ë“ì°¼ìœ¼ë©´ IOBë¥¼ ë””ìŠ¤í¬ì— ë‚´ë¦°ë‹¤.
         if( mIOBPos == mIOBPageCount )
         {
             IDE_TEST( writeIOB( aStatistics ) != IDE_SUCCESS );
@@ -1038,13 +1038,13 @@ IDE_RC sdsFlusher::copyToIOB( idvSQL  * aStatistics,
 
 /****************************************************************************
  * Description :
- *    IOB¸¦ µğ½ºÅ©¿¡ ³»¸°´Ù.
- *  aStatistics     - [IN]  Åë°èÁ¤º¸
+ *    IOBë¥¼ ë””ìŠ¤í¬ì— ë‚´ë¦°ë‹¤.
+ *  aStatistics     - [IN]  í†µê³„ì •ë³´
  ****************************************************************************/
 IDE_RC sdsFlusher::writeIOB( idvSQL *aStatistics )
 {
     UInt        i;
-    UInt        sDummySyncedLFCnt; // ³ªÁß¿¡ Áö¿ìÀÚ.
+    UInt        sDummySyncedLFCnt; // ë‚˜ì¤‘ì— ì§€ìš°ì.
     idvWeArgs   sWeArgs;
     SInt        sWaitEventState = 0;
     sdsBCB    * sSBCB;
@@ -1063,7 +1063,7 @@ IDE_RC sdsFlusher::writeIOB( idvSQL *aStatistics )
                      ( smuProperty::getCrashTolerance() == 2 ) );
         sErrState = 1;
         // WAL
-        // ÇÏÁö¸¸ ÀÖÀ»¸® ¾ø´Ù.;;;;
+        // í•˜ì§€ë§Œ ìˆì„ë¦¬ ì—†ë‹¤.;;;;
         IDE_TEST( smLayerCallback::sync4BufferFlush( &mMaxPageLSN,
                                                      &sDummySyncedLFCnt )
                   != IDE_SUCCESS);
@@ -1153,7 +1153,7 @@ IDE_RC sdsFlusher::writeIOB( idvSQL *aStatistics )
 
         mFlusherStat.applyTotalFlushPages( mIOBPos );
 
-        // IOB¸¦ ¸ğµÎ disk¿¡ ³»·ÈÀ¸¹Ç·Î IOB¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+        // IOBë¥¼ ëª¨ë‘ diskì— ë‚´ë ¸ìœ¼ë¯€ë¡œ IOBë¥¼ ì´ˆê¸°í™”í•œë‹¤.
         mIOBPos = 0;
         mFlusherStat.applyINIOBCount( mIOBPos );
 
@@ -1165,14 +1165,14 @@ IDE_RC sdsFlusher::writeIOB( idvSQL *aStatistics )
 
         /* BUG-32670    [sm-disk-resource] add IO Stat information
          * for analyzing storage performance.
-         * Flush¿¡ °É¸° ½Ã°£µéÀ» ÀúÀåÇÔ. */
+         * Flushì— ê±¸ë¦° ì‹œê°„ë“¤ì„ ì €ì¥í•¨. */
         mFlusherStat.applyTotalWriteTimeUSec( sWriteTime );
         mFlusherStat.applyTotalSyncTimeUSec( sSyncTime );
         mFlusherStat.applyTotalDWTimeUSec( sDWTime );
     }
     else
     {
-        // IOB°¡ ºñ¾îÀÖÀ¸¹Ç·Î ÇÒ°Ô ¾ø´Ù.
+        // IOBê°€ ë¹„ì–´ìˆìœ¼ë¯€ë¡œ í• ê²Œ ì—†ë‹¤.
     }
 
     return IDE_SUCCESS;
@@ -1190,9 +1190,9 @@ IDE_RC sdsFlusher::writeIOB( idvSQL *aStatistics )
 }
 
 /****************************************************************************
- * Description : aTBSIDArray¿¡ ÀÖ´Â TBSIDµéÀ» SortÇÑÈÄ¿¡  SyncÇÑ´Ù.
- *  aStatistics     - [IN] Åë°èÁ¤º¸
- *  aTBSIDAttay     - [IN] write µÈ TSB ID array
+ * Description : aTBSIDArrayì— ìˆëŠ” TBSIDë“¤ì„ Sortí•œí›„ì—  Syncí•œë‹¤.
+ *  aStatistics     - [IN] í†µê³„ì •ë³´
+ *  aTBSIDAttay     - [IN] write ëœ TSB ID array
  *  a
  ****************************************************************************/ 
 IDE_RC sdsFlusher::syncAllTBS4Flush( idvSQL       * aStatistics,
@@ -1214,7 +1214,7 @@ IDE_RC sdsFlusher::syncAllTBS4Flush( idvSQL       * aStatistics,
     {
         sCurSpaceID = aArrSyncTBSID[i];
 
-        /* µ¿ÀÏ TableSpace¿¡ ´ëÇØ¼­ µÎ¹ø SyncÇÏÁö ¾Ê°í ÇÑ¹ø¸¸ ÇÑ´Ù. */
+        /* ë™ì¼ TableSpaceì— ëŒ€í•´ì„œ ë‘ë²ˆ Syncí•˜ì§€ ì•Šê³  í•œë²ˆë§Œ í•œë‹¤. */
         if( sLstSyncSpaceID != sCurSpaceID )
         {
             IDE_ASSERT( sCurSpaceID != SC_NULL_SPACEID );
@@ -1235,8 +1235,8 @@ IDE_RC sdsFlusher::syncAllTBS4Flush( idvSQL       * aStatistics,
 }
 
 /****************************************************************************
- * Description : ÇöÀç ÇÏ°í ÀÖ´Â ÀÛ¾÷ÀÌ ÀÖ´Ù¸é ÀÛ¾÷ÁßÀÎ ÀÛ¾÷ÀÌ Á¾·áµÇ´Â °ÍÀ» ±â´Ù
- *               ¸°´Ù. ¸¸¾à ¾ø´Ù¸é ¹Ù·Î ¸®ÅÏÇÑ´Ù.
+ * Description : í˜„ì¬ í•˜ê³  ìˆëŠ” ì‘ì—…ì´ ìˆë‹¤ë©´ ì‘ì—…ì¤‘ì¸ ì‘ì—…ì´ ì¢…ë£Œë˜ëŠ” ê²ƒì„ ê¸°ë‹¤
+ *               ë¦°ë‹¤. ë§Œì•½ ì—†ë‹¤ë©´ ë°”ë¡œ ë¦¬í„´í•œë‹¤.
  ****************************************************************************/
 void sdsFlusher::wait4OneJobDone()
 {
@@ -1246,13 +1246,13 @@ void sdsFlusher::wait4OneJobDone()
 
 /****************************************************************************
  * Description :
- *    ÀÌ flusher°¡ ½¬°í ÀÖÀ¸¸é ±ú¿î´Ù. ÀÛ¾÷ÁßÀÌ¸é ¾Æ¹«·± ¿µÇâÀ» ÁÖÁö ¾Ê´Â´Ù.
- *    ±ú¿ü´ÂÁöÀÇ À¯¹«´Â aWakenÀ¸·Î ¹İÈ¯µÈ´Ù.
+ *    ì´ flusherê°€ ì‰¬ê³  ìˆìœ¼ë©´ ê¹¨ìš´ë‹¤. ì‘ì—…ì¤‘ì´ë©´ ì•„ë¬´ëŸ° ì˜í–¥ì„ ì£¼ì§€ ì•ŠëŠ”ë‹¤.
+ *    ê¹¨ì› ëŠ”ì§€ì˜ ìœ ë¬´ëŠ” aWakenìœ¼ë¡œ ë°˜í™˜ëœë‹¤.
  * Implementation :
- *    flusher°¡ ÀÛ¾÷ÁßÀÌ¾úÀ¸¸é mRunningMutex¸¦ Àâ´Âµ¥ ½ÇÆĞÇÒ °ÍÀÌ´Ù.
+ *    flusherê°€ ì‘ì—…ì¤‘ì´ì—ˆìœ¼ë©´ mRunningMutexë¥¼ ì¡ëŠ”ë° ì‹¤íŒ¨í•  ê²ƒì´ë‹¤.
  *
- *  aWaken  - [OUT] flusher°¡ ½¬°í ÀÖ¾î¼­ ±ú¿ü´Ù¸é ID_TRUE¸¦,
- *                  flusher°¡ ÀÛ¾÷ÁßÀÌ¾úÀ¸¸é ID_FALSE¸¦ ¹İÈ¯ÇÑ´Ù.
+ *  aWaken  - [OUT] flusherê°€ ì‰¬ê³  ìˆì–´ì„œ ê¹¨ì› ë‹¤ë©´ ID_TRUEë¥¼,
+ *                  flusherê°€ ì‘ì—…ì¤‘ì´ì—ˆìœ¼ë©´ ID_FALSEë¥¼ ë°˜í™˜í•œë‹¤.
  ****************************************************************************/
 IDE_RC sdsFlusher::wakeUpSleeping( idBool *aWaken )
 {
@@ -1288,13 +1288,13 @@ IDE_RC sdsFlusher::wakeUpSleeping( idBool *aWaken )
 
 /*****************************************************************************
  * Description :
- *    IOB¿¡ º¹»çµÈ BCBµé Áß recoveryLSNÀÌ °¡Àå ÀÛÀº °ÍÀ» ¾ò´Â´Ù.
- *    ÀÌ °ªÀº checkpoint½Ã »ç¿ëµÈ´Ù.
- *    restart redo LSNÀº ÀÌ °ª°ú CPListSetÀÇ minRecoveryLSNÁß ÀÛÀº °ªÀ¸·Î
- *    °áÁ¤µÈ´Ù.
+ *    IOBì— ë³µì‚¬ëœ BCBë“¤ ì¤‘ recoveryLSNì´ ê°€ì¥ ì‘ì€ ê²ƒì„ ì–»ëŠ”ë‹¤.
+ *    ì´ ê°’ì€ checkpointì‹œ ì‚¬ìš©ëœë‹¤.
+ *    restart redo LSNì€ ì´ ê°’ê³¼ CPListSetì˜ minRecoveryLSNì¤‘ ì‘ì€ ê°’ìœ¼ë¡œ
+ *    ê²°ì •ëœë‹¤.
  *
- *  aStatistics - [IN]  Åë°èÁ¤º¸
- *  aRet        - [OUT] ÃÖ¼Ò recoveryLSN
+ *  aStatistics - [IN]  í†µê³„ì •ë³´
+ *  aRet        - [OUT] ìµœì†Œ recoveryLSN
  ****************************************************************************/
 void sdsFlusher::getMinRecoveryLSN( idvSQL *aStatistics,
                                     smLSN  *aRet )
@@ -1308,9 +1308,9 @@ void sdsFlusher::getMinRecoveryLSN( idvSQL *aStatistics,
 
 /*****************************************************************************
  * Description :
- *  ÇÏ³ªÀÇ ÀÛ¾÷À» ³¡¸¶Ä£ flusher°¡ ½¬¾î¾ß ÇÒ ½Ã°£À» ÁöÁ¤ÇØ ÁØ´Ù.
+ *  í•˜ë‚˜ì˜ ì‘ì—…ì„ ëë§ˆì¹œ flusherê°€ ì‰¬ì–´ì•¼ í•  ì‹œê°„ì„ ì§€ì •í•´ ì¤€ë‹¤.
  *
- *  aFlushedCount   - [IN]  flusher°¡ ¹Ù·ÎÀü flushÇÑ ÆäÀÌÁö °³¼ö
+ *  aFlushedCount   - [IN]  flusherê°€ ë°”ë¡œì „ flushí•œ í˜ì´ì§€ ê°œìˆ˜
  ****************************************************************************/
 UInt sdsFlusher::getWaitInterval( ULong aFlushedCount )
 {
@@ -1326,7 +1326,7 @@ UInt sdsFlusher::getWaitInterval( ULong aFlushedCount )
         }
         else
         {
-            // ±âÁ¸¿¡ ÇÑ°Çµµ flushÇÏÁö ¾Ê¾Ò´Ù¸é, Ç« ½®´Ù.
+            // ê¸°ì¡´ì— í•œê±´ë„ flushí•˜ì§€ ì•Šì•˜ë‹¤ë©´, í‘¹ ì‰°ë‹¤.
             if( mWaitTime < smuProperty::getMaxFlusherWaitSec() )
             {
                 mWaitTime++;

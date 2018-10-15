@@ -48,15 +48,15 @@ typedef enum iduShmHashCompFuncID
 
 /*
  * Hash
- * »ç¿ëÀÚ´Â ÇØ½¬ °´Ã¼¸¦ »ç¿ëÇÏ±â À§ÇØ ¾Æ·¡ÀÇ ¼Ó¼ºÀ» initialize()½Ã ³Ñ°Ü¾ß ÇÑ´Ù.
+ * ì‚¬ìš©ìëŠ” í•´ì‰¬ ê°ì²´ë¥¼ ì‚¬ìš©í•˜ê¸° ìœ„í•´ ì•„ë˜ì˜ ì†ì„±ì„ initialize()ì‹œ ë„˜ê²¨ì•¼ í•œë‹¤.
  *
- *  - ¹öÄÏ °¹¼ö   : ÀÔ·ÂµÉ ³ëµåÀÇ ÃÖ´ë °¹¼ö¸¦ °í·ÁÇØ °áÁ¤µÇ¾î¾ß ÇÔ.
- *  - µ¿½Ã¼º ·¹º§ : ´ÜÀÏ °´Ã¼°¡ ÀÌ¿ëÇÏ´Â °ÍÀÎÁö, ´Ù¼ö ¾²·¹µå°¡ µ¿½Ã¿¡ ÀÌ¿ëÇÏ´Â
- *                  °ÍÀÎÁö¿¡ µû¸¥ ¼öÄ¡ (ÀÌ °æ¿ì ÀÏ¹İÀûÀ¸·Î CPU°¹¼ö * 2)
- *  - Mutex¸¦ »ç¿ëÇÒ °ÍÀÎÁö¿¡ ´ëÇÑ Flag
- *  - »ç¿ëµÉ Å°ÀÇ ±æÀÌ
- *  - Å°·ÎºÎÅÍ ¾ò´Â ÇØ½¬ ÇÔ¼ö
- *  - Å°°£ÀÇ ºñ±³ ÇÔ¼ö
+ *  - ë²„ì¼“ ê°¯ìˆ˜   : ì…ë ¥ë  ë…¸ë“œì˜ ìµœëŒ€ ê°¯ìˆ˜ë¥¼ ê³ ë ¤í•´ ê²°ì •ë˜ì–´ì•¼ í•¨.
+ *  - ë™ì‹œì„± ë ˆë²¨ : ë‹¨ì¼ ê°ì²´ê°€ ì´ìš©í•˜ëŠ” ê²ƒì¸ì§€, ë‹¤ìˆ˜ ì“°ë ˆë“œê°€ ë™ì‹œì— ì´ìš©í•˜ëŠ”
+ *                  ê²ƒì¸ì§€ì— ë”°ë¥¸ ìˆ˜ì¹˜ (ì´ ê²½ìš° ì¼ë°˜ì ìœ¼ë¡œ CPUê°¯ìˆ˜ * 2)
+ *  - Mutexë¥¼ ì‚¬ìš©í•  ê²ƒì¸ì§€ì— ëŒ€í•œ Flag
+ *  - ì‚¬ìš©ë  í‚¤ì˜ ê¸¸ì´
+ *  - í‚¤ë¡œë¶€í„° ì–»ëŠ” í•´ì‰¬ í•¨ìˆ˜
+ *  - í‚¤ê°„ì˜ ë¹„êµ í•¨ìˆ˜
  */
 
 typedef struct iduStShmHashChain
@@ -64,15 +64,15 @@ typedef struct iduStShmHashChain
     idShmAddr       mAddrSelf;
     iduShmListNode  mList;      /* for double-linked list  */
     idShmAddr       mAddrNode;  /* real Hash Target Node   */
-    ULong           mKey[1];    /* ³ëµå¿¡ ´ëÇÑ Å°ÀÇ Æ÷ÀÎÅÍ°¡ ÀúÀå : 8·Î alignÀ»  */
+    ULong           mKey[1];    /* ë…¸ë“œì— ëŒ€í•œ í‚¤ì˜ í¬ì¸í„°ê°€ ì €ì¥ : 8ë¡œ alignì„  */
 }iduStShmHashChain;
 
 typedef struct iduStShmHashBucket
 {
     idShmAddr       mAddrSelf;
-    iduShmSXLatch      mLatch;     /* bucket¿¡ ´ëÇÑ µ¿½Ã¼º Á¦¾î */
-    UInt            mCount;     /* ÇöÀç bucket¿¡ ÀúÀåµÈ ³ëµå °¹¼ö */
-    iduShmListNode  mBaseList;  /* double-link listÀÇ base list */
+    iduShmSXLatch      mLatch;     /* bucketì— ëŒ€í•œ ë™ì‹œì„± ì œì–´ */
+    UInt            mCount;     /* í˜„ì¬ bucketì— ì €ì¥ëœ ë…¸ë“œ ê°¯ìˆ˜ */
+    iduShmListNode  mBaseList;  /* double-link listì˜ base list */
 }iduStShmHashBucket;
 
 struct iduLtShmHashBase;
@@ -106,18 +106,18 @@ typedef struct iduShmHashLatchFunc
 typedef struct iduStShmHashBase
 {
     idShmAddr          mAddrSelf;
-    iduShmLatch        mLatch;          /* Hash ÀüÃ¼ÀÇ Latch */
+    iduShmLatch        mLatch;          /* Hash ì „ì²´ì˜ Latch */
 
-    iduStShmMemPool    mShmMemPool;     /* ChainÀÇ ¸Ş¸ğ¸® °ü¸®ÀÚ :
-                                           Struct³»ºÎ Class »ç¿ë ºÒ°¡. so, void */
+    iduStShmMemPool    mShmMemPool;     /* Chainì˜ ë©”ëª¨ë¦¬ ê´€ë¦¬ì :
+                                           Structë‚´ë¶€ Class ì‚¬ìš© ë¶ˆê°€. so, void */
     UInt               mKeyLength;
     UInt               mBucketCount;
     idShmAddr          mAddrBucketLst;  /* Bucket List */
 
     /* For Traverse  */
-    idBool             mOpened;         /* TraverseÀÇ Open À¯¹«   */
-    UInt               mCurBucket;      /* Á¢±ÙÁßÀÎ   Bucket ¹øÈ£  */
-    idShmAddr          mAddrCurChain;   /* Á¢±Ù ÁßÀÎ  Chain Addr  */
+    idBool             mOpened;         /* Traverseì˜ Open ìœ ë¬´   */
+    UInt               mCurBucket;      /* ì ‘ê·¼ì¤‘ì¸   Bucket ë²ˆí˜¸  */
+    idShmAddr          mAddrCurChain;   /* ì ‘ê·¼ ì¤‘ì¸  Chain Addr  */
 
     /* fix BUG-21311 */
     idBool             mDidAllocChain;
@@ -138,8 +138,8 @@ typedef struct iduLtShmHashBase
     iduShmHashLatchFunc    * mLatchVector;
     iduStShmMemPool        * mStShmMemPool;
     iduStShmHashBucket     * mBucket;
-    iduShmHashGenFunc        mHashFunc;    /* HASH ÇÔ¼ö : callback */
-    iduShmHashCompFunc       mCompFunc;    /* ºñ±³ ÇÔ¼ö : callback */
+    iduShmHashGenFunc        mHashFunc;    /* HASH í•¨ìˆ˜ : callback */
+    iduShmHashCompFunc       mCompFunc;    /* ë¹„êµ í•¨ìˆ˜ : callback */
 } iduLtShmHashBase;
 
 class iduShmHash
@@ -192,14 +192,14 @@ public:
                               void             ** aNode );
 
     /*
-     * !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! ÁÖÀÇ !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+     * !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! ì£¼ì˜ !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
      *
-     *  lock(), unlock() ÇÔ¼ö´Â findNode(), deleteNode(), insertNode() µîÀÇ
-     *  ¿¬»êÇÔ¼ö¿Í ¹«°üÇÏ±â ¶§¹®¿¡
-     *  lock(), unlock() ÇÔ¼ö¸¦ »ç¿ëÇÑ´Ù°í ÇØ¼­ ÀÌ·¯ÇÑ
-     *  ¿¬»êÇÔ¼öÀÇ µ¿ÀÛÀ» Á¦¾îÇÒ ¼ö ÀÖ´Ù°í »ı°¢ÇØ¼­´Â ¾ÈµÈ´Ù!!!!
-     *  ÀÌ ÇÔ¼öÀÇ ¸ñÀûÀº ¿ÜºÎ¿¡¼­ ¾î¶°ÇÑ ÀÇµµ·Î »ç¿ëµÇ´Â Mutex ÀÇ¹Ì¸¦ À§ÇÑ
-     *  ¼­ºñ½º ÇÔ¼ö ÀÌ»ó ¾Æ¹« °Íµµ ¾Æ´Ï´Ù.
+     *  lock(), unlock() í•¨ìˆ˜ëŠ” findNode(), deleteNode(), insertNode() ë“±ì˜
+     *  ì—°ì‚°í•¨ìˆ˜ì™€ ë¬´ê´€í•˜ê¸° ë•Œë¬¸ì—
+     *  lock(), unlock() í•¨ìˆ˜ë¥¼ ì‚¬ìš©í•œë‹¤ê³  í•´ì„œ ì´ëŸ¬í•œ
+     *  ì—°ì‚°í•¨ìˆ˜ì˜ ë™ì‘ì„ ì œì–´í•  ìˆ˜ ìˆë‹¤ê³  ìƒê°í•´ì„œëŠ” ì•ˆëœë‹¤!!!!
+     *  ì´ í•¨ìˆ˜ì˜ ëª©ì ì€ ì™¸ë¶€ì—ì„œ ì–´ë– í•œ ì˜ë„ë¡œ ì‚¬ìš©ë˜ëŠ” Mutex ì˜ë¯¸ë¥¼ ìœ„í•œ
+     *  ì„œë¹„ìŠ¤ í•¨ìˆ˜ ì´ìƒ ì•„ë¬´ ê²ƒë„ ì•„ë‹ˆë‹¤.
      */
     static void lock( idvSQL            * aStatistics,
                       iduShmTxInfo      * aShmTxInfo,
@@ -208,18 +208,18 @@ public:
     static void unlock( iduShmTxInfo *aShmTxInfo, iduLtShmHashBase  * aBase );
 
     /*
-     * !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! ÁÖÀÇ !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+     * !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! ì£¼ì˜ !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
      *
-     *  ¾Æ·¡ÀÇ ÇÔ¼ö¸¦ È£ÃâÇÒ °æ¿ì¿¡´Â ¾Æ¹«·± Concurrency ControlÀ»
-     *  ÇÏÁö ¾Ê±â ¶§¹®¿¡, È£ÃâÀÚ´Â ¾Æ·¡ÀÇ cutÇÔ¼öÀÇ »ç¿ë¿¡ ÀÖ¾î¼­
-     *  Á¶½ÉÇØ¾ß ÇÑ´Ù.
-     *  ¸¸ÀÏ, open(), cutNode() °úÁ¤¿¡¼­ ´Ù¸¥ ¾²·¹µå°¡ Insert È¤Àº delete¸¦
-     *  ÇÑ´Ù¸é, ¿¹±âÄ¡ ¸øÇÑ »óÈ²ÀÌ ¹ß»ıÇÒ ¼ö ÀÖÀ¸¹Ç·Î,
-     *  ¸â¹ö ÇÔ¼ö lock(), unlock()À» ÀÌ¿ëÇØ¼­ ¿ÜºÎ È£Ãâ ¿µ¿ª¿¡¼­ ¸í½ÃÀûÀ¸·Î
-     *  ¸ğµç Á¢±Ù ÇÔ¼ö¿¡ ´ëÇÑ Ã³¸®¸¦ ÇØ ÁÖ¾î¾ß ÇÑ´Ù.
+     *  ì•„ë˜ì˜ í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•  ê²½ìš°ì—ëŠ” ì•„ë¬´ëŸ° Concurrency Controlì„
+     *  í•˜ì§€ ì•Šê¸° ë•Œë¬¸ì—, í˜¸ì¶œìëŠ” ì•„ë˜ì˜ cutí•¨ìˆ˜ì˜ ì‚¬ìš©ì— ìˆì–´ì„œ
+     *  ì¡°ì‹¬í•´ì•¼ í•œë‹¤.
+     *  ë§Œì¼, open(), cutNode() ê³¼ì •ì—ì„œ ë‹¤ë¥¸ ì“°ë ˆë“œê°€ Insert í˜¹ì€ deleteë¥¼
+     *  í•œë‹¤ë©´, ì˜ˆê¸°ì¹˜ ëª»í•œ ìƒí™©ì´ ë°œìƒí•  ìˆ˜ ìˆìœ¼ë¯€ë¡œ,
+     *  ë©¤ë²„ í•¨ìˆ˜ lock(), unlock()ì„ ì´ìš©í•´ì„œ ì™¸ë¶€ í˜¸ì¶œ ì˜ì—­ì—ì„œ ëª…ì‹œì ìœ¼ë¡œ
+     *  ëª¨ë“  ì ‘ê·¼ í•¨ìˆ˜ì— ëŒ€í•œ ì²˜ë¦¬ë¥¼ í•´ ì£¼ì–´ì•¼ í•œë‹¤.
      */
 
-    // ³»ºÎ Traverse & Node Á¦°Å ÀÛ¾÷
+    // ë‚´ë¶€ Traverse & Node ì œê±° ì‘ì—…
     // Fix BUG-21311
     static inline IDE_RC open( iduShmTxInfo     * aShmTxInfo,
                                iduLtShmHashBase * aBase );

@@ -43,7 +43,7 @@ typedef struct cmnIPCDAMessageQ
     acp_char_t     mName[CMN_IPCDA_MESSAGEQ_NAME_SIZE]; /* message queue name */
     struct mq_attr mAttr;                               /* message queue attribute */
     mqd_t          mMessageQID;                         /* message queue id */
-    acp_bool_t     mUseMessageQ;                        /* message queue »ç¿ë¿©ºÎ */
+    acp_bool_t     mUseMessageQ;                        /* message queue ì‚¬ìš©ì—¬ë¶€ */
     acp_uint32_t   mMessageQTimeout;                    /* message queue timeout */
 } cmnIPCDAMessageQ;
 #endif
@@ -53,7 +53,7 @@ typedef struct cmnLinkPeerIPCDA
 {
     cmnLinkPeer       mLinkPeer;
     cmnLinkDescIPCDA  mDesc;
-    acp_uint32_t      mClientPID;       // IPCDA·Î Á¢¼ÓÇÑ clientÀÇ process ID
+    acp_uint32_t      mClientPID;       // IPCDAë¡œ ì ‘ì†í•œ clientì˜ process ID
 
 #if defined(ALTI_CFG_OS_LINUX)
     cmnIPCDAMessageQ  mMessageQ;
@@ -62,7 +62,7 @@ typedef struct cmnLinkPeerIPCDA
 
 /*
  * bug-28277 ipc: server stop failed when idle clis exist
- * cmnLinkPeerOP mShutdown ÇÔ¼ö¿¡¼­ 3¹øÂ° ÀÎÀÚ·Î Ãß°¡ÇÏ¿© »ç¿ëµÊ.
+ * cmnLinkPeerOP mShutdown í•¨ìˆ˜ì—ì„œ 3ë²ˆì§¸ ì¸ìë¡œ ì¶”ê°€í•˜ì—¬ ì‚¬ìš©ë¨.
  */
 typedef enum
 {
@@ -123,7 +123,7 @@ struct cmnLinkPeerOP
 
 void  *cmnLinkPeerGetUserPtr(cmnLinkPeer *aLink);
 void   cmnLinkPeerSetUserPtr(cmnLinkPeer *aLink, void *aUserPtr);
-/* BUG-44530 SSL¿¡¼­ ALTIBASE_SOCK_BIND_ADDR Áö¿ø */
+/* BUG-44530 SSLì—ì„œ ALTIBASE_SOCK_BIND_ADDR ì§€ì› */
 ACI_RC cmnGetAddrInfo(acp_inet_addr_info_t **aAddr,
                       acp_bool_t            *aIsIPAddr,
                       const acp_char_t      *aServer,

@@ -79,7 +79,7 @@ acp_bool_t ulnBindIsFixedLengthColumn(ulnDescRec *aAppDescRec, ulnDescRec *aImpD
     ulnCTypeID sCTYPE;
 
     /*
-     * Memory bound LOB ÀÌ ¾Æ´Ï¸é¼­ BINARY ³ª CHAR °¡ ¾Æ´Ñ ³à¼®µéÀÌ °íÁ¤Æø ÄÃ·³ÀÌ´Ù.
+     * Memory bound LOB ì´ ì•„ë‹ˆë©´ì„œ BINARY ë‚˜ CHAR ê°€ ì•„ë‹Œ ë…€ì„ë“¤ì´ ê³ ì •í­ ì»¬ëŸ¼ì´ë‹¤.
      */
     if (ulnTypeIsMemBoundLob(aImpDescRec->mMeta.mMTYPE,
                              aAppDescRec->mMeta.mCTYPE) != ACP_TRUE)
@@ -87,8 +87,8 @@ acp_bool_t ulnBindIsFixedLengthColumn(ulnDescRec *aAppDescRec, ulnDescRec *aImpD
         sCTYPE = aAppDescRec->mMeta.mCTYPE;
 
         /*
-         * BUGBUG : °ú¿¬ BIT °¡ variable length ÀÎ°¡? ODBC ½ºÆå¿¡¼­´Â ¾Æ´Ï´Ù.
-         *          ±×·¯³ª, SQL 92 Ç¥ÁØ¿¡¼­´Â ±â´Ù.
+         * BUGBUG : ê³¼ì—° BIT ê°€ variable length ì¸ê°€? ODBC ìŠ¤í™ì—ì„œëŠ” ì•„ë‹ˆë‹¤.
+         *          ê·¸ëŸ¬ë‚˜, SQL 92 í‘œì¤€ì—ì„œëŠ” ê¸°ë‹¤.
          */
         if (sCTYPE == ULN_CTYPE_BINARY ||
             sCTYPE == ULN_CTYPE_CHAR ||
@@ -102,13 +102,13 @@ acp_bool_t ulnBindIsFixedLengthColumn(ulnDescRec *aAppDescRec, ulnDescRec *aImpD
 }
 
 /*
- * Descriptor ¿¡¼­ ÁÖ¾îÁø index ¸¦ °®´Â desc record ¸¦ Ã£¾Æ¼­
+ * Descriptor ì—ì„œ ì£¼ì–´ì§„ index ë¥¼ ê°–ëŠ” desc record ë¥¼ ì°¾ì•„ì„œ
  *
- *  1. Á¸ÀçÇÒ °æ¿ì
- *      Descriptor ¿¡¼­ »èÁ¦ÇÏ°í, ÃÊ±âÈ­ÇÑ ÈÄ ¸®ÅÏÇÑ´Ù.
+ *  1. ì¡´ì¬í•  ê²½ìš°
+ *      Descriptor ì—ì„œ ì‚­ì œí•˜ê³ , ì´ˆê¸°í™”í•œ í›„ ë¦¬í„´í•œë‹¤.
  *
- *  2. Á¸ÀçÇÏÁö ¾ÊÀ» °æ¿ì
- *      ÇÏ³ª¸¦ »ı¼ºÇÑ ÈÄ ¸®ÅÏÇÑ´Ù.
+ *  2. ì¡´ì¬í•˜ì§€ ì•Šì„ ê²½ìš°
+ *      í•˜ë‚˜ë¥¼ ìƒì„±í•œ í›„ ë¦¬í„´í•œë‹¤.
  */
 
 ACI_RC ulnBindArrangeNewDescRec(ulnDesc *aDesc, acp_uint16_t aIndex, ulnDescRec **aOutputDescRec)
@@ -131,16 +131,16 @@ ACI_RC ulnBindArrangeNewDescRec(ulnDesc *aDesc, acp_uint16_t aIndex, ulnDescRec 
         else
         {
             /*
-             * re-bind ÇÒ °æ¿ì ±âÁ¸¿¡ Á¸ÀçÇÏ´ø °Í¿¡ µ¤¾î¾´´Ù.
+             * re-bind í•  ê²½ìš° ê¸°ì¡´ì— ì¡´ì¬í•˜ë˜ ê²ƒì— ë®ì–´ì“´ë‹¤.
              */
             ACI_TEST(ulnDescRemoveDescRec(aDesc, sDescRec, ACP_FALSE) != ACI_SUCCESS);
 
             /*
-             * Note : re-bind ÀÏ °æ¿ì¿¡´Â BindInfo ¸¦ ÃÊ±âÈ­ ¾ÈÇÑ´Ù.
-             *        ¸¸¾à BindInfo °¡ °°À» °æ¿ì ¼­¹ö·Î º¸³»´Â BindInfoSet À» ÇÏ³ª ÁÙÀÌ±â À§ÇÔÀÌ´Ù.
+             * Note : re-bind ì¼ ê²½ìš°ì—ëŠ” BindInfo ë¥¼ ì´ˆê¸°í™” ì•ˆí•œë‹¤.
+             *        ë§Œì•½ BindInfo ê°€ ê°™ì„ ê²½ìš° ì„œë²„ë¡œ ë³´ë‚´ëŠ” BindInfoSet ì„ í•˜ë‚˜ ì¤„ì´ê¸° ìœ„í•¨ì´ë‹¤.
              *
-             *        LobArray µµ ÃÊ±âÈ­ ÇØ¼­´Â ¾ÈµÈ´Ù.
-             *        LobArray ¸¦ BindInfoSet ¿¡¼­ ÇÒ´çÇÏ¹Ç·Î ÃÊ±âÈ­ÇÏ¸é NULL ÀÌ µÇ¾î¹ö¸®±â ¶§¹®.
+             *        LobArray ë„ ì´ˆê¸°í™” í•´ì„œëŠ” ì•ˆëœë‹¤.
+             *        LobArray ë¥¼ BindInfoSet ì—ì„œ í• ë‹¹í•˜ë¯€ë¡œ ì´ˆê¸°í™”í•˜ë©´ NULL ì´ ë˜ì–´ë²„ë¦¬ê¸° ë•Œë¬¸.
              */
 
             ulnDescRecInitialize(aDesc, sDescRec, aIndex);
@@ -168,15 +168,15 @@ ACI_RC ulnBindArrangeNewDescRec(ulnDesc *aDesc, acp_uint16_t aIndex, ulnDescRec 
 ulvSLen ulnBindGetUserIndLenValue(ulnIndLenPtrPair *aIndLenPair)
 {
     /*
-     * SQL_DESC_INDICATOR_POINTER ¿Í SQL_DESC_OCTET_LENGTH_PTR ÀÌ
-     * °¡¸®Å°´Â °÷ÀÇ °ªÀ» ÀĞ°í ºñ±³ÇØ¼­ ÀûÀıÇÑ °ªÀ» ¸¸µé¾î¼­ ¸®ÅÏÇÏ´Â ÇÔ¼ö
+     * SQL_DESC_INDICATOR_POINTER ì™€ SQL_DESC_OCTET_LENGTH_PTR ì´
+     * ê°€ë¦¬í‚¤ëŠ” ê³³ì˜ ê°’ì„ ì½ê³  ë¹„êµí•´ì„œ ì ì ˆí•œ ê°’ì„ ë§Œë“¤ì–´ì„œ ë¦¬í„´í•˜ëŠ” í•¨ìˆ˜
      *
-     * ÁÖÀÇ»çÇ× : aIndLenPair Àº ½ÇÁ¦ Æ÷ÀÎÅÍ °ªÀÌ offset µîÀ» ´õÇØ¼­ °è»êµÈ
-     *            ½Ç ÁÖ¼Ò¶ó¾ß¸¸ ÇÑ´Ù.
+     * ì£¼ì˜ì‚¬í•­ : aIndLenPair ì€ ì‹¤ì œ í¬ì¸í„° ê°’ì´ offset ë“±ì„ ë”í•´ì„œ ê³„ì‚°ëœ
+     *            ì‹¤ ì£¼ì†Œë¼ì•¼ë§Œ í•œë‹¤.
      *
-     * Note : SQL_DESC_INDICATOR_POINTER °ú SQL_DESC_OCTET_LENGTH_PTR °úÀÇ °ü°è
-     *        odbc ÀÇ ¹®ÀåÀ» ÀĞ¾î º¸¸é, SQL_DESC_INDICATOR_POINTER ´Â ´ÜÁö NULL_DATA ¸¦
-     *        Ç¥½ÃÇÏ´Â ¿ëµµ·Î¸¸ »ç¿ëµÇ´Â µí ÇÏ´Ù.
+     * Note : SQL_DESC_INDICATOR_POINTER ê³¼ SQL_DESC_OCTET_LENGTH_PTR ê³¼ì˜ ê´€ê³„
+     *        odbc ì˜ ë¬¸ì¥ì„ ì½ì–´ ë³´ë©´, SQL_DESC_INDICATOR_POINTER ëŠ” ë‹¨ì§€ NULL_DATA ë¥¼
+     *        í‘œì‹œí•˜ëŠ” ìš©ë„ë¡œë§Œ ì‚¬ìš©ë˜ëŠ” ë“¯ í•˜ë‹¤.
      */
 
     if (aIndLenPair->mIndicatorPtr == aIndLenPair->mLengthPtr)
@@ -220,28 +220,28 @@ ulvSLen ulnBindGetUserIndLenValue(ulnIndLenPtrPair *aIndLenPair)
 acp_uint16_t ulnBindCalcNumberOfParamsToSend(ulnStmt *aStmt)
 {
     /*
-     * BUG-16106 : array execute (stmt), FreeStmt(SQL_RESET_PARAMS) ¸¦ ÇÑ ÈÄ
+     * BUG-16106 : array execute (stmt), FreeStmt(SQL_RESET_PARAMS) ë¥¼ í•œ í›„
      *             "select count(*) from t1"
-     *             µîÀ» ¼öÇàÇÏ¸é ¿©±â¼­ some of parameters are not bound ¿¡·¯°¡ ¹ß»ıÇÑ´Ù.
-     *             ¹ß»ıÇÏ¸é ¾ÈµÈ´Ù.
+     *             ë“±ì„ ìˆ˜í–‰í•˜ë©´ ì—¬ê¸°ì„œ some of parameters are not bound ì—ëŸ¬ê°€ ë°œìƒí•œë‹¤.
+     *             ë°œìƒí•˜ë©´ ì•ˆëœë‹¤.
      *
-     *             ÆÄ¶ó¹ÌÅÍ °¹¼ö¸¦ ÀâÀº ÈÄ¿¡ Ã¼Å©ÇÑ ÈÄ ÁøÇàÇÑ´Ù.
+     *             íŒŒë¼ë¯¸í„° ê°¯ìˆ˜ë¥¼ ì¡ì€ í›„ì— ì²´í¬í•œ í›„ ì§„í–‰í•œë‹¤.
      *
-     * »ç¿ëÀÚ°¡ ¹ÙÀÎµå¸¦ ÇÏ³ªµµ ¾ÈÇÑ »óÅÂ¿¡¼­ Execute ÇÏ¸é ±×³É ¼­¹ö·Î Execute ¸¦ ¹Ù·Î
-     * º¸³»¹ö¸®°Ô µÈ´Ù. ±×·¡¼­, ¼­¹ö¿¡¼­ º¸³» ÁØ ÆÄ¶ó¹ÌÅÍ °¹¼ö¿Í »ç¿ëÀÚ°¡ ¹ÙÀÎµåÇÑ ÆÄ¶ó¹ÌÅÍ
-     * °¹¼ö¸¦ ºñ±³ÇØ¼­ Å« ³à¼®¸¸Å­ µ¹¾Æ¾ß ÇÑ´Ù.
+     * ì‚¬ìš©ìê°€ ë°”ì¸ë“œë¥¼ í•˜ë‚˜ë„ ì•ˆí•œ ìƒíƒœì—ì„œ Execute í•˜ë©´ ê·¸ëƒ¥ ì„œë²„ë¡œ Execute ë¥¼ ë°”ë¡œ
+     * ë³´ë‚´ë²„ë¦¬ê²Œ ëœë‹¤. ê·¸ë˜ì„œ, ì„œë²„ì—ì„œ ë³´ë‚´ ì¤€ íŒŒë¼ë¯¸í„° ê°¯ìˆ˜ì™€ ì‚¬ìš©ìê°€ ë°”ì¸ë“œí•œ íŒŒë¼ë¯¸í„°
+     * ê°¯ìˆ˜ë¥¼ ë¹„êµí•´ì„œ í° ë…€ì„ë§Œí¼ ëŒì•„ì•¼ í•œë‹¤.
      *
      *          ulnExecExecuteCore,
      *          ulnExecLobPhase,
-     *          ulnBindDataWriteRow, ÇÔ¼ö¿¡¼­ È£ÃâÇÑ´Ù.
+     *          ulnBindDataWriteRow, í•¨ìˆ˜ì—ì„œ í˜¸ì¶œí•œë‹¤.
      *
-     * »ç¿ëÀÚ°¡ ¹ÙÀÎµå¸¦ ÇÏ³ªµµ ¾ÈÇÑ »óÅÂ¿¡¼­ Execute ÇÏ¸é ±×³É ¼­¹ö·Î Execute ¸¦ ¹Ù·Î
-     * º¸³»¹ö¸®°Ô µÈ´Ù. ±×·¡¼­, ¼­¹ö¿¡¼­ º¸³» ÁØ ÆÄ¶ó¹ÌÅÍ °¹¼ö¿Í »ç¿ëÀÚ°¡ ¹ÙÀÎµåÇÑ ÆÄ¶ó¹ÌÅÍ
-     * °¹¼ö¸¦ ºñ±³ÇØ¼­ Å« ³à¼®¸¸Å­ µ¹¾Æ¾ß ÇÑ´Ù.
+     * ì‚¬ìš©ìê°€ ë°”ì¸ë“œë¥¼ í•˜ë‚˜ë„ ì•ˆí•œ ìƒíƒœì—ì„œ Execute í•˜ë©´ ê·¸ëƒ¥ ì„œë²„ë¡œ Execute ë¥¼ ë°”ë¡œ
+     * ë³´ë‚´ë²„ë¦¬ê²Œ ëœë‹¤. ê·¸ë˜ì„œ, ì„œë²„ì—ì„œ ë³´ë‚´ ì¤€ íŒŒë¼ë¯¸í„° ê°¯ìˆ˜ì™€ ì‚¬ìš©ìê°€ ë°”ì¸ë“œí•œ íŒŒë¼ë¯¸í„°
+     * ê°¯ìˆ˜ë¥¼ ë¹„êµí•´ì„œ í° ë…€ì„ë§Œí¼ ëŒì•„ì•¼ í•œë‹¤.
      */
 
-    acp_uint16_t sNumberOfBoundParams; /* »ç¿ëÀÚ°¡ ¹ÙÀÎµåÇÑ ÆÄ¶ó¹ÌÅÍÀÇ °¹¼ö */
-    acp_uint16_t sNumberOfParams;      /* ParamSet ¿¡ ÀÖ´Â paramÀÇ °¹¼ö - X ÃàÀÇ ¿ø¼Ò°¹¼ö */
+    acp_uint16_t sNumberOfBoundParams; /* ì‚¬ìš©ìê°€ ë°”ì¸ë“œí•œ íŒŒë¼ë¯¸í„°ì˜ ê°¯ìˆ˜ */
+    acp_uint16_t sNumberOfParams;      /* ParamSet ì— ìˆëŠ” paramì˜ ê°¯ìˆ˜ - X ì¶•ì˜ ì›ì†Œê°¯ìˆ˜ */
 
     sNumberOfBoundParams = ulnDescGetHighestBoundIndex(aStmt->mAttrApd);
     sNumberOfParams      = ulnStmtGetParamCount(aStmt);
@@ -257,7 +257,7 @@ acp_uint16_t ulnBindCalcNumberOfParamsToSend(ulnStmt *aStmt)
 ACI_RC ulnBindAdjustStmtInfo( ulnStmt *aStmt )
 {
     acp_uint32_t  sParamNumber;
-    acp_uint16_t  sNumberOfParams;      /* ÆÄ¶ó¹ÌÅÍÀÇ °¹¼ö */
+    acp_uint16_t  sNumberOfParams;      /* íŒŒë¼ë¯¸í„°ì˜ ê°¯ìˆ˜ */
     ulnCTypeID    sMetaCTYPE;
     ulnMTypeID    sMetaMTYPE;
     ulnMTypeID    sMTYPE                = ULN_MTYPE_MAX;
@@ -313,16 +313,16 @@ ACI_RC ulnBindAdjustStmtInfo( ulnStmt *aStmt )
         }
     }
 
-    // 1. ¹ÙÀÌµåÇÒ ÃÖ´ë µ¥ÀÌÅÍ »çÀÌÁî¸¦ ¼³Á¤ÇÑ´Ù.
+    // 1. ë°”ì´ë“œí•  ìµœëŒ€ ë°ì´í„° ì‚¬ì´ì¦ˆë¥¼ ì„¤ì •í•œë‹¤.
     aStmt->mMaxBindDataSize = sMaxBindDataSize;
 
-    // 2. ¹ÙÀÎµå ÄÃ·³µéÀÇ ÀüÃ¼ IN/OUT Å¸ÀÔÀ» ¼³Á¤ÇÑ´Ù.
+    // 2. ë°”ì¸ë“œ ì»¬ëŸ¼ë“¤ì˜ ì „ì²´ IN/OUT íƒ€ì…ì„ ì„¤ì •í•œë‹¤.
     aStmt->mInOutType = sInOutType;
 
-    // 3. BLOBÅ¸ÀÔÀ» Á¦¿ÜÇÑ ¹ÙÀÎµå ÄÃ·³µéÀÇ ÀüÃ¼ IN/OUT Å¸ÀÔÀ» ¼³Á¤ÇÑ´Ù.
+    // 3. BLOBíƒ€ì…ì„ ì œì™¸í•œ ë°”ì¸ë“œ ì»¬ëŸ¼ë“¤ì˜ ì „ì²´ IN/OUT íƒ€ì…ì„ ì„¤ì •í•œë‹¤.
     aStmt->mInOutTypeWithoutBLOB = sInOutTypeWithoutBLOB;
 
-    // 4. Bind Param InfoÀÇ Àçºôµå¸¦ °­¿äÇÑ´Ù.
+    // 4. Bind Param Infoì˜ ì¬ë¹Œë“œë¥¼ ê°•ìš”í•œë‹¤.
     ulnStmtSetBuildBindInfo(aStmt, ACP_TRUE);
 
     return ACI_SUCCESS;

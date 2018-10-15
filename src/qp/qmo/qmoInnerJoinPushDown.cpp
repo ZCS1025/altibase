@@ -21,9 +21,9 @@
  * Description :
  *     BUG-43039 inner join push down
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  **********************************************************************/
 
@@ -79,7 +79,7 @@ IDE_RC qmoInnerJoinPushDown::pushInnerJoin( qcStatement * aStatement,
     qcDepInfo     sPushDep;
 
     //-------------------------------------------------
-    // pushInnerJoin ÇÒ À§Ä¡¸¦ Ã£À½
+    // pushInnerJoin í•  ìœ„ì¹˜ë¥¼ ì°¾ìŒ
     //-------------------------------------------------
 
     for( sTemp = aQuerySet->SFWGH->from;
@@ -130,11 +130,11 @@ IDE_RC qmoInnerJoinPushDown::pushInnerJoin( qcStatement * aStatement,
 
 
     //-------------------------------------------------
-    // pushInnerJoin ´ë»ó°ú ¿¬°üµÈ Á¶ÀÎ ÇÁ¸®µðÅ¶À» Ã£À½
-    // ´Ù¸¥ ÇÑÂÊ Å×ÀÌºíÀÇ µðÆæ´ø½Ã¸¦ ±¸ÇÔ
+    // pushInnerJoin ëŒ€ìƒê³¼ ì—°ê´€ëœ ì¡°ì¸ í”„ë¦¬ë””í‚·ì„ ì°¾ìŒ
+    // ë‹¤ë¥¸ í•œìª½ í…Œì´ë¸”ì˜ ë””íŽœë˜ì‹œë¥¼ êµ¬í•¨
     //-------------------------------------------------
 
-    // BUG-43920 orÀÌ ÀÖÀ»¶§´Â Çã¿ëÇÏÁö ¾ÊÀ½
+    // BUG-43920 orì´ ìžˆì„ë•ŒëŠ” í—ˆìš©í•˜ì§€ ì•ŠìŒ
     IDE_TEST_CONT( (sNode->node.lflag & MTC_NODE_OPERATOR_MASK) != MTC_NODE_OPERATOR_AND, skip );
 
     qtc::dependencyClear( &sPushDep );
@@ -145,7 +145,7 @@ IDE_RC qmoInnerJoinPushDown::pushInnerJoin( qcStatement * aStatement,
           sPrevNode = (qtcNode**)&(sNode->node.next),
           sNode = (qtcNode*)(sNode->node.next) )
     {
-        // semi, anti Á¶ÀÎÀº Á¦¿ÜÇÑ´Ù.
+        // semi, anti ì¡°ì¸ì€ ì œì™¸í•œë‹¤.
         if ( (sNode->lflag & QTC_NODE_JOIN_TYPE_MASK) != QTC_NODE_JOIN_TYPE_INNER )
         {
             continue;
@@ -155,7 +155,7 @@ IDE_RC qmoInnerJoinPushDown::pushInnerJoin( qcStatement * aStatement,
             // Nothing to do.
         }
 
-        // BUG-43079 Á¶ÀÎ ÇÁ¸®µðÅ¶ÀÌ ¾Æ´Ñ °æ¿ì¿¡´Â skip ÇØ¾ß ÇÕ´Ï´Ù.
+        // BUG-43079 ì¡°ì¸ í”„ë¦¬ë””í‚·ì´ ì•„ë‹Œ ê²½ìš°ì—ëŠ” skip í•´ì•¼ í•©ë‹ˆë‹¤.
         if ( qtc::getCountBitSet( &(sNode->depInfo) ) != 2 )
         {
             continue;
@@ -193,7 +193,7 @@ IDE_RC qmoInnerJoinPushDown::pushInnerJoin( qcStatement * aStatement,
 
 
     //-------------------------------------------------
-    // pushÇÒ Å×ÀÌºíÀ» Ã£¾Æ³¿
+    // pushí•  í…Œì´ë¸”ì„ ì°¾ì•„ëƒ„
     //-------------------------------------------------
     for( sPrevFrom = &(aQuerySet->SFWGH->from),
          sPushFrom = aQuerySet->SFWGH->from;
@@ -201,7 +201,7 @@ IDE_RC qmoInnerJoinPushDown::pushInnerJoin( qcStatement * aStatement,
          sPrevFrom = &(sPushFrom->next),
          sPushFrom = sPushFrom->next )
     {
-        // semi, anti Á¶ÀÎÀº Á¦¿ÜÇÑ´Ù.
+        // semi, anti ì¡°ì¸ì€ ì œì™¸í•œë‹¤.
         if( qtc::haveDependencies( &(sPushFrom->semiAntiJoinDepInfo) ) == ID_TRUE )
         {
             continue;
@@ -234,7 +234,7 @@ IDE_RC qmoInnerJoinPushDown::pushInnerJoin( qcStatement * aStatement,
 
 
     //-------------------------------------------------
-    // ±âÁ¸ ¿¬°áÀ» Àß¶ó³½´Ù.
+    // ê¸°ì¡´ ì—°ê²°ì„ ìž˜ë¼ë‚¸ë‹¤.
     //-------------------------------------------------
     *sPrevNode       = (qtcNode*)sNode->node.next;
     sNode->node.next = NULL;
@@ -243,7 +243,7 @@ IDE_RC qmoInnerJoinPushDown::pushInnerJoin( qcStatement * aStatement,
     sPushFrom->next  = NULL;
 
     //-------------------------------------------------
-    // INNER Á¶ÀÎ »ý¼º
+    // INNER ì¡°ì¸ ìƒì„±
     //-------------------------------------------------
     sFind = ID_FALSE;
 
@@ -310,8 +310,8 @@ IDE_RC qmoInnerJoinPushDown::pushInnerJoin( qcStatement * aStatement,
                                  &(sFindFrom->depInfo),
                                  &(sTemp->depInfo) ) != IDE_SUCCESS );
 
-    // sPushFromÀº ¾ðÁ¦³ª ¿ÞÂÊ¿¡ ³Ö¾î¾ß ÇÑ´Ù.
-    // Å½»öÇÒ¶§ ¾ðÁ¦³ª ¿ÞÂÊ¸¸ Å½»öÇÏ±â ¶§¹®ÀÌ´Ù.
+    // sPushFromì€ ì–¸ì œë‚˜ ì™¼ìª½ì— ë„£ì–´ì•¼ í•œë‹¤.
+    // íƒìƒ‰í• ë•Œ ì–¸ì œë‚˜ ì™¼ìª½ë§Œ íƒìƒ‰í•˜ê¸° ë•Œë¬¸ì´ë‹¤.
     sTemp->left         = sPushFrom;
     sTemp->right        = sFindFrom;
     sParent->left       = sTemp;

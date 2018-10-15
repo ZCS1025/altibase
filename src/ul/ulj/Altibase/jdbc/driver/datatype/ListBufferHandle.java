@@ -25,14 +25,14 @@ import Altibase.jdbc.driver.cm.CmBufferWriter;
 //PROJ-2368
 /**
  * @author pss4you
- * Batch Operation - List Protocol »ç¿ë½Ã¿¡ Àü¼ÛÇÒ Data ¸¦ ´ã¾ÆµÑ ByteBuffer Handler 
+ * Batch Operation - List Protocol ì‚¬ìš©ì‹œì— ì „ì†¡í•  Data ë¥¼ ë‹´ì•„ë‘˜ ByteBuffer Handler 
  */
 
 public class ListBufferHandle extends CmBufferWriter implements BatchDataHandle
 {
-    // Buffer ÃÊ±â  Å©±â    
+    // Buffer ì´ˆê¸°  í¬ê¸°    
     private static final int BUFFER_INIT_SIZE  = 524288;
-    // Buffer Áõ°¡·® ´ÜÀ§
+    // Buffer ì¦ê°€ëŸ‰ ë‹¨ìœ„
     private static final int BUFFER_ALLOC_UNIT = 524288;
     private List<Column> mColumns;
     private int mBatchedRowCount;
@@ -96,12 +96,12 @@ public class ListBufferHandle extends CmBufferWriter implements BatchDataHandle
 
     public void checkWritable(int aNeedToWrite)
     {
-        // ¸¸¾à, Data ¸¦ ±â·ÏÇÒ °ø°£ÀÌ ÃæºĞÇÏÁö ¾Ê´Ù¸é, BUFFER_ALLOC_UNIT ¸¸Å­ Áõ°¡µÈ Å©±âÀÇ Buffer ¸¦ »õ·Î ÇÒ´ç 
+        // ë§Œì•½, Data ë¥¼ ê¸°ë¡í•  ê³µê°„ì´ ì¶©ë¶„í•˜ì§€ ì•Šë‹¤ë©´, BUFFER_ALLOC_UNIT ë§Œí¼ ì¦ê°€ëœ í¬ê¸°ì˜ Buffer ë¥¼ ìƒˆë¡œ í• ë‹¹ 
         if (mBuffer.remaining() < aNeedToWrite)
         {
             int sPosition = mBuffer.position();
             ByteBuffer sNewBuf = ByteBuffer.allocateDirect(mBuffer.limit() + BUFFER_ALLOC_UNIT);
-            // »õ·Î¿î Buffer ¿¡ ±âÁ¸ Buffer ³»¿ë »ğÀÔ
+            // ìƒˆë¡œìš´ Buffer ì— ê¸°ì¡´ Buffer ë‚´ìš© ì‚½ì…
             mBuffer.position(0);
             sNewBuf.put(mBuffer);
             // Position Recovery

@@ -19,7 +19,7 @@
  *
  * $Id: sdpstLfBMP.h 27220 2008-07-23 14:56:22Z newdaily $
  *
- * º» ÆÄÀÏÀº Treelist Managed SegmentÀÇ Leaf Bitmap ÆäÀÌÁöÀÇ Çì´õÆÄÀÏÀÌ´Ù.
+ * ë³¸ íŒŒì¼ì€ Treelist Managed Segmentì˜ Leaf Bitmap íŽ˜ì´ì§€ì˜ í—¤ë”íŒŒì¼ì´ë‹¤.
  *
  ***********************************************************************/
 
@@ -228,7 +228,7 @@ public:
     static sdpstBMPOps  mLfBMPOps;
 };
 
-/* page index·Î range slot idx¸¦ ±¸ÇÑ´Ù. */
+/* page indexë¡œ range slot idxë¥¼ êµ¬í•œë‹¤. */
 inline SShort sdpstLfBMP::getRangeSlotNoByPBSNo( sdpstRangeMap  * aMapPtr,
                                                  SShort           aPBSNo )
 {
@@ -236,8 +236,8 @@ inline SShort sdpstLfBMP::getRangeSlotNoByPBSNo( sdpstRangeMap  * aMapPtr,
 }
 
 /*
- * src bitset¿¡¼­ PAGETYPE bitsetÀ» Á¦°ÅÇÏ°í, °¡¿ëµµ Bitset¿¡¼­
- * dest bitsetÀÇ °¡¿ëµµ ·¹º§À» °Ë»çÇÑ´Ù.
+ * src bitsetì—ì„œ PAGETYPE bitsetì„ ì œê±°í•˜ê³ , ê°€ìš©ë„ Bitsetì—ì„œ
+ * dest bitsetì˜ ê°€ìš©ë„ ë ˆë²¨ì„ ê²€ì‚¬í•œë‹¤.
  */
 inline idBool sdpstLfBMP::isGtFN( sdpstPBS aSrcBitSet, sdpstPBS aDestBitSet )
 {
@@ -246,8 +246,8 @@ inline idBool sdpstLfBMP::isGtFN( sdpstPBS aSrcBitSet, sdpstPBS aDestBitSet )
 }
 
 /*
- * src bitset¿¡¼­ PAGETYPE bitsetÀ» Á¦°ÅÇÏ°í, °¡¿ëµµ Bitset¿¡¼­
- * dest bitsetÀÇ °¡¿ëµµ ·¹º§À» °Ë»çÇÑ´Ù.
+ * src bitsetì—ì„œ PAGETYPE bitsetì„ ì œê±°í•˜ê³ , ê°€ìš©ë„ Bitsetì—ì„œ
+ * dest bitsetì˜ ê°€ìš©ë„ ë ˆë²¨ì„ ê²€ì‚¬í•œë‹¤.
  */
 inline idBool sdpstLfBMP::isEqFN( sdpstPBS aSrcBitSet, sdpstPBS aDestBitSet )
 {
@@ -255,7 +255,7 @@ inline idBool sdpstLfBMP::isEqFN( sdpstPBS aSrcBitSet, sdpstPBS aDestBitSet )
     return ((sSrcBitSet == aDestBitSet) ? ID_TRUE : ID_FALSE);
 }
 
-/* ÇØ´ç ÆäÀÌÁö°¡ ÈÄº¸ÆäÀÌÁöÀÎÁö È®ÀÎÇÑ´Ù. */
+/* í•´ë‹¹ íŽ˜ì´ì§€ê°€ í›„ë³´íŽ˜ì´ì§€ì¸ì§€ í™•ì¸í•œë‹¤. */
 inline idBool sdpstLfBMP::isCandidatePage( UChar     * aPagePtr,
                                            SShort      aPBSNo,
                                            sdpstMFNL   aTargetMFNL )
@@ -299,7 +299,7 @@ inline SShort sdpstLfBMP::getFstFreePBSNo( UChar    * aPagePtr )
     return getHdrPtr( aPagePtr )->mFstDataPagePBSNo;
 }
 
-/* aArray¿¡ ÈÄº¸ ÆäÀÌÁö¸¦ Ãß°¡ÇÑ´Ù. */
+/* aArrayì— í›„ë³´ íŽ˜ì´ì§€ë¥¼ ì¶”ê°€í•œë‹¤. */
 inline void sdpstLfBMP::setCandidateArray( UChar     * aPagePtr,
                                            UShort      aPBSNo,
                                            UShort      aArrIdx,
@@ -327,7 +327,7 @@ inline void sdpstLfBMP::setCandidateArray( UChar     * aPagePtr,
     sArray[aArrIdx].mRangeSlotNo = sRangeSlotNo;
 }
 
-/* leaf-bmp ÆäÀÌÁö¿¡¼­ÀÇ Å½»ö ½ÃÀÛ À§Ä¡¸¦ Hash ÇÏ¿© ¾ò´Â´Ù */
+/* leaf-bmp íŽ˜ì´ì§€ì—ì„œì˜ íƒìƒ‰ ì‹œìž‘ ìœ„ì¹˜ë¥¼ Hash í•˜ì—¬ ì–»ëŠ”ë‹¤ */
 inline UShort sdpstLfBMP::getStartPBSNo( UChar     * aPagePtr,
                                          UShort      aHintIdx )
 {
@@ -337,7 +337,7 @@ inline UShort sdpstLfBMP::getStartPBSNo( UChar     * aPagePtr,
     return sdpstBMP::doHash( aHintIdx, sLfBMPHdr->mTotPageCnt );
 }
 
-/* leaf-bmp ÆäÀÌÁö¿¡¼­ÀÇ Å½»ö ½ÃÀÛ À§Ä¡¸¦ Hash ÇÏ¿© ¾ò´Â´Ù */
+/* leaf-bmp íŽ˜ì´ì§€ì—ì„œì˜ íƒìƒ‰ ì‹œìž‘ ìœ„ì¹˜ë¥¼ Hash í•˜ì—¬ ì–»ëŠ”ë‹¤ */
 inline SShort sdpstLfBMP::getTotPageCnt( UChar      * aPagePtr,
                                          sdpstWM    * aHWM )
 {
@@ -371,7 +371,7 @@ inline SShort sdpstLfBMP::getTotPageCnt( UChar      * aPagePtr,
     return sTotPageCnt;
 }
 
-/* page index·Î page id¸¦ ±¸ÇÑ´Ù. */
+/* page indexë¡œ page idë¥¼ êµ¬í•œë‹¤. */
 inline scPageID sdpstLfBMP::getPageIDByPBSNo( sdpstRangeSlot * aRangeSlot,
                                               SShort           aPBSNo )
 {
@@ -381,7 +381,7 @@ inline scPageID sdpstLfBMP::getPageIDByPBSNo( sdpstRangeSlot * aRangeSlot,
 }
 
 
-/* ÇØ´ç PBS°¡ µ¥ÀÌÅÍ ÆäÀÌÁö ÀÎÁö È®ÀÎÇÑ´Ù. */
+/* í•´ë‹¹ PBSê°€ ë°ì´í„° íŽ˜ì´ì§€ ì¸ì§€ í™•ì¸í•œë‹¤. */
 inline idBool sdpstLfBMP::isDataPage( sdpstPBS aPBS )
 {
     if ( ( aPBS & SDPST_BITSET_PAGETP_MASK ) == SDPST_BITSET_PAGETP_DATA )
@@ -394,7 +394,7 @@ inline idBool sdpstLfBMP::isDataPage( sdpstPBS aPBS )
     }
 }
 
-/* rangeslot idx·Î Page Range SlotÀ» ¹ÝÈ¯ÇÑ´Ù. */
+/* rangeslot idxë¡œ Page Range Slotì„ ë°˜í™˜í•œë‹¤. */
 inline sdpstRangeSlot * sdpstLfBMP::getRangeSlotBySlotNo(
                                            sdpstRangeMap * aMapPtr,
                                            SShort              aSlotNo )
@@ -404,7 +404,7 @@ inline sdpstRangeSlot * sdpstLfBMP::getRangeSlotBySlotNo(
     return (sdpstRangeSlot*) &(aMapPtr->mRangeSlot[ aSlotNo ]);
 }
 
-/* PBSNo·Î Page Range SlotÀ» ¹ÝÈ¯ÇÑ´Ù. */
+/* PBSNoë¡œ Page Range Slotì„ ë°˜í™˜í•œë‹¤. */
 inline sdpstRangeSlot * sdpstLfBMP::getRangeSlotByPBSNo(
                                            sdpstRangeMap * aMapPtr,
                                            SShort          aSlotCnt,
@@ -430,7 +430,7 @@ inline sdpstRangeSlot * sdpstLfBMP::getRangeSlotByPBSNo(
     return getRangeSlotBySlotNo( aMapPtr, sSlotNo );
 }
 
-/* PBSNo·Î Page Range SlotÀ» ¹ÝÈ¯ÇÑ´Ù. */
+/* PBSNoë¡œ Page Range Slotì„ ë°˜í™˜í•œë‹¤. */
 inline sdpstRangeSlot * sdpstLfBMP::getRangeSlotByPBSNo(
                                            sdpstLfBMPHdr * aLfBMPHdr,
                                            SShort          aPBSNo )
@@ -444,7 +444,7 @@ inline sdpstRangeSlot * sdpstLfBMP::getRangeSlotByPBSNo(
     return getRangeSlotByPBSNo( sMapPtr, aLfBMPHdr->mBMPHdr.mSlotCnt, aPBSNo );
 }
 
-/* ÆäÀÌÁöÀÇ PID·Î Leaf Bitmap ÆäÀÌÁö¿¡¼­ÀÇ Page ¼ø¹øÀ» ¹ÝÈ¯ÇÑ´Ù. */
+/* íŽ˜ì´ì§€ì˜ PIDë¡œ Leaf Bitmap íŽ˜ì´ì§€ì—ì„œì˜ Page ìˆœë²ˆì„ ë°˜í™˜í•œë‹¤. */
 inline SShort sdpstLfBMP::findPBSNoByPID( sdpstRangeMap      * aMapPtr,
                                          SShort               aSlotCnt,
                                          scPageID             aPageID )
@@ -477,7 +477,7 @@ inline SShort sdpstLfBMP::findPBSNoByPID( sdpstRangeMap      * aMapPtr,
     return sPBSNo;
 }
 
-/* ÆäÀÌÁöÀÇ PID·Î Leaf Bitmap ÆäÀÌÁö¿¡¼­ÀÇ Page ¼ø¹øÀ» ¹ÝÈ¯ÇÑ´Ù. */
+/* íŽ˜ì´ì§€ì˜ PIDë¡œ Leaf Bitmap íŽ˜ì´ì§€ì—ì„œì˜ Page ìˆœë²ˆì„ ë°˜í™˜í•œë‹¤. */
 inline SShort sdpstLfBMP::findPBSNoByPID( sdpstLfBMPHdr  * aLfBMPHdr,
                                          scPageID         aPageID )
 {
@@ -491,7 +491,7 @@ inline SShort sdpstLfBMP::findPBSNoByPID( sdpstLfBMPHdr  * aLfBMPHdr,
 
 
 
-/* Leaf Bitmap ÆäÀÌÁöÀÇ map ptrÀ» ¹ÝÈ¯ÇÑ´Ù. */
+/* Leaf Bitmap íŽ˜ì´ì§€ì˜ map ptrì„ ë°˜í™˜í•œë‹¤. */
 inline sdpstRangeMap * sdpstLfBMP::getMapPtr( sdpstLfBMPHdr * aLfBMPHdr )
 {
     IDE_ASSERT( aLfBMPHdr->mBMPHdr.mBodyOffset != 0 );
@@ -500,7 +500,7 @@ inline sdpstRangeMap * sdpstLfBMP::getMapPtr( sdpstLfBMPHdr * aLfBMPHdr )
          aLfBMPHdr->mBMPHdr.mBodyOffset);
 }
 
-/* ¸¶Áö¸· PBSNo ÀÎÁö È®ÀÎÇÑ´Ù. */
+/* ë§ˆì§€ë§‰ PBSNo ì¸ì§€ í™•ì¸í•œë‹¤. */
 inline idBool sdpstLfBMP::isLstPBSNo( UChar * aPagePtr, SShort aIndex )
 {
     return (aIndex == getHdrPtr(aPagePtr)->mTotPageCnt - 1) ?
@@ -508,7 +508,7 @@ inline idBool sdpstLfBMP::isLstPBSNo( UChar * aPagePtr, SShort aIndex )
 }
 
 /*
- * Leaf Bitmap Page¿¡¼­ Leaf Control HeaderÀÇ Ptr ¹ÝÈ¯
+ * Leaf Bitmap Pageì—ì„œ Leaf Control Headerì˜ Ptr ë°˜í™˜
  */
 inline sdpstLfBMPHdr * sdpstLfBMP::getHdrPtr( UChar   * aPagePtr )
 {
@@ -524,7 +524,7 @@ inline sdpstLfBMPHdr * sdpstLfBMP::getHdrPtr( sdpstBMPHdr * aBMPHdr )
 }
 
 /*
- * Leaf Bitmap Page¿¡¼­ BMP HeaderÀÇ Ptr ¹ÝÈ¯
+ * Leaf Bitmap Pageì—ì„œ BMP Headerì˜ Ptr ë°˜í™˜
  */
 inline sdpstBMPHdr * sdpstLfBMP::getBMPHdrPtr( UChar   * aPagePtr )
 {
@@ -532,7 +532,7 @@ inline sdpstBMPHdr * sdpstLfBMP::getBMPHdrPtr( UChar   * aPagePtr )
 }
 
 /*
- * Leaf Bitmap Page¿¡¼­ BMP HeaderÀÇ Ptr ¹ÝÈ¯
+ * Leaf Bitmap Pageì—ì„œ BMP Headerì˜ Ptr ë°˜í™˜
  */
 inline sdpstBMPHdr * sdpstLfBMP::getBMPHdrPtr( sdpstLfBMPHdr * aLfBMPHdr )
 {
@@ -540,7 +540,7 @@ inline sdpstBMPHdr * sdpstLfBMP::getBMPHdrPtr( sdpstLfBMPHdr * aLfBMPHdr )
 }
 
 /*
- * Leaf BMP ÆäÀÌÁö¿¡¼­ÀÇ °¡¿ëÇÑ Range Slot °³¼ö ¹ÝÈ¯
+ * Leaf BMP íŽ˜ì´ì§€ì—ì„œì˜ ê°€ìš©í•œ Range Slot ê°œìˆ˜ ë°˜í™˜
  */
 inline UShort sdpstLfBMP::getFreeSlotCnt( sdpstLfBMPHdr * aLfBMPHdr )
 {
@@ -548,7 +548,7 @@ inline UShort sdpstLfBMP::getFreeSlotCnt( sdpstLfBMPHdr * aLfBMPHdr )
 }
 
 /*
- * Leaf BMP ÆäÀÌÁö¿¡¼­ÀÇ °¡¿ëÇÑ PBS °³¼ö ¹ÝÈ¯
+ * Leaf BMP íŽ˜ì´ì§€ì—ì„œì˜ ê°€ìš©í•œ PBS ê°œìˆ˜ ë°˜í™˜
  */
 inline UShort sdpstLfBMP::getFreePBSCnt( sdpstLfBMPHdr * aBMPHdr )
 {
@@ -556,7 +556,7 @@ inline UShort sdpstLfBMP::getFreePBSCnt( sdpstLfBMPHdr * aBMPHdr )
     return (UShort)(aBMPHdr->mBMPHdr.mMaxSlotCnt - aBMPHdr->mBMPHdr.mSlotCnt);
 }
 
-/* Extent Ã¹¹øÂ° ÆäÀÌÁöÀÇ PID·Î Extent Slot ¼ø¹ø Å½»ö */
+/* Extent ì²«ë²ˆì§¸ íŽ˜ì´ì§€ì˜ PIDë¡œ Extent Slot ìˆœë²ˆ íƒìƒ‰ */
 inline SShort sdpstLfBMP::findSlotNoByExtPID( sdpstLfBMPHdr  * aLfBMPHdr,
                                               scPageID         aExtFstPID )
 {
@@ -581,7 +581,7 @@ inline SShort sdpstLfBMP::findSlotNoByExtPID( sdpstLfBMPHdr  * aLfBMPHdr,
     return sSlotNo;
 }
 
-/* PageBitSetÀ» ÇØ´çÇÏ´Â MFNL·Î º¯°æÇÑ´Ù. */
+/* PageBitSetì„ í•´ë‹¹í•˜ëŠ” MFNLë¡œ ë³€ê²½í•œë‹¤. */
 inline sdpstMFNL sdpstLfBMP::convertPBSToMFNL( sdpstPBS  aPBS )
 {
     sdpstMFNL        sMFNL;
@@ -608,8 +608,8 @@ inline sdpstMFNL sdpstLfBMP::convertPBSToMFNL( sdpstPBS  aPBS )
     return sMFNL;
 }
 
-/* LfBMPÀÇ Page Range ¿¡¼­ °ü¸®ÁßÀÎ ÆäÀÌÁö °³¼ö¸¦ »«°ª.
- * Áï, °ü¸®ÇÒ ¼ö ÀÖ´Â Page°³¼ö */
+/* LfBMPì˜ Page Range ì—ì„œ ê´€ë¦¬ì¤‘ì¸ íŽ˜ì´ì§€ ê°œìˆ˜ë¥¼ ëº€ê°’.
+ * ì¦‰, ê´€ë¦¬í•  ìˆ˜ ìžˆëŠ” Pageê°œìˆ˜ */
 inline UShort sdpstLfBMP::getFreePageRangeCnt( sdpstLfBMPHdr *aLfBMPHdr )
 {
     return (UShort)(aLfBMPHdr->mPageRange - aLfBMPHdr->mTotPageCnt);

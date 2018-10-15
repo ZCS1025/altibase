@@ -20,7 +20,7 @@
 #include <smDef.h>
 #include <svrLogMgr.h>
 
-/* ÃÖ´ë 8¹ÙÀÌÆ®±îÁö physical loggingÀ» ÇÒ ¼ö ÀÖ´Ù. */
+/* ìµœëŒ€ 8ë°”ì´íŠ¸ê¹Œì§€ physical loggingì„ í•  ìˆ˜ ìžˆë‹¤. */
 typedef struct svcPhysical8Log
 {
     svrUndoFunc mUndo;
@@ -72,7 +72,7 @@ class svcRecordUndo
 
 /******************************************************************************
  * Description:
- *     physical log¸¦ ±â·ÏÇÑ´Ù.
+ *     physical logë¥¼ ê¸°ë¡í•œë‹¤.
  ******************************************************************************/
 inline IDE_RC svcRecordUndo::logPhysical8( svrLogEnv  * aEnv,
                                            SChar      * aRow,
@@ -96,7 +96,7 @@ inline IDE_RC svcRecordUndo::logPhysical8( svrLogEnv  * aEnv,
 
 /******************************************************************************
  * Description:
- *    physical log·Î undo¸¦ ¼öÇàÇÑ´Ù. µ¥ÀÌÅÍÀÇ ±æÀÌ´Â 8ÀÌÇÏÀÌ´Ù.
+ *    physical logë¡œ undoë¥¼ ìˆ˜í–‰í•œë‹¤. ë°ì´í„°ì˜ ê¸¸ì´ëŠ” 8ì´í•˜ì´ë‹¤.
  ******************************************************************************/
 inline IDE_RC svcRecordUndo::undoPhysical8( svrLogEnv * /*aLogEnv*/,
                                             svrLog    * aPhyLog,

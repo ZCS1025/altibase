@@ -119,7 +119,7 @@ IDE_RC smmFixedMemoryMgr::checkExist(key_t         aShmKey,
 #endif
     aExist     = ID_FALSE;
 
-    /* [1] shmid ¾ò±â */
+    /* [1] shmid ì–»ê¸° */
     sShmID = idlOS::shmget( aShmKey, SMM_CACHE_ALIGNED_SHM_HEADER_SIZE, sFlag );
 
 
@@ -127,9 +127,9 @@ IDE_RC smmFixedMemoryMgr::checkExist(key_t         aShmKey,
     {
         switch(errno)
         {
-        case ENOENT: // ÇØ´ç Key¿¡ ´ëÇÑ ID ½ÇÆĞ : ¾øÀ½ => Á¤»ó
+        case ENOENT: // í•´ë‹¹ Keyì— ëŒ€í•œ ID ì‹¤íŒ¨ : ì—†ìŒ => ì •ìƒ
             break;
-        case EACCES: // Á¸ÀçÇÏÁö¸¸, ±ÇÇÑÀÌ ¾øÀ½ : ¿¡·¯!
+        case EACCES: // ì¡´ì¬í•˜ì§€ë§Œ, ê¶Œí•œì´ ì—†ìŒ : ì—ëŸ¬!
             IDE_RAISE(no_permission_error);
         default:
             IDE_RAISE(shmget_error);
@@ -137,7 +137,7 @@ IDE_RC smmFixedMemoryMgr::checkExist(key_t         aShmKey,
     }
     else
     {
-        /* [2] attach ¼öÇà  */
+        /* [2] attach ìˆ˜í–‰  */
         sShmHeader = (smmShmHeader *)idlOS::shmat(sShmID, 0, sFlag);
         IDE_TEST_RAISE(sShmHeader == (smmShmHeader *)-1, shmat_error);
 
@@ -154,9 +154,9 @@ IDE_RC smmFixedMemoryMgr::checkExist(key_t         aShmKey,
         IDE_TEST_RAISE(idlOS::shmdt( (char*)sShmHeader ) < 0, shmdt_error);
 
 #if !defined (NTO_QNX) && !defined (VC_WIN32)
-        aExist = ID_TRUE; // ÀÌ¹Ì °øÀ¯ ¸Ş¸ğ¸®°¡ Á¸ÀçÇÔ. OK
+        aExist = ID_TRUE; // ì´ë¯¸ ê³µìœ  ë©”ëª¨ë¦¬ê°€ ì¡´ì¬í•¨. OK
 #elif defined (USE_WIN32IPC_DAEMON)
-        aExist = ID_TRUE; // ÀÌ¹Ì °øÀ¯ ¸Ş¸ğ¸®°¡ Á¸ÀçÇÔ. OK
+        aExist = ID_TRUE; // ì´ë¯¸ ê³µìœ  ë©”ëª¨ë¦¬ê°€ ì¡´ì¬í•¨. OK
 #else
         aExist = ID_FALSE;
 #endif
@@ -186,17 +186,17 @@ IDE_RC smmFixedMemoryMgr::checkExist(key_t         aShmKey,
 
 /*
  ----------------------------------------------------------------------------
-    checkExist() ÀÌÈÄ¿¡ È£ÃâµÇ¹Ç·Î, º°µµÀÇ errno °Ë»ç ÇÊ¿ä ¾øÀ½!
+    checkExist() ì´í›„ì— í˜¸ì¶œë˜ë¯€ë¡œ, ë³„ë„ì˜ errno ê²€ì‚¬ í•„ìš” ì—†ìŒ!
     attach for creation whole database size
  
  ----------------------------------------------------------------------------
  -  PROJ-1548 Memory Tablespace
-   - ´Ù¸¥ TablespaceÀÇ °øÀ¯¸Ş¸ğ¸® Chunk·Î AttachµÇ´Â »óÈ² Detect
-     - ½ÇÁ¦·Î ´Ù¸¥ TablespaceÀÇ °øÀ¯¸Ş¸ğ¸®¸¦ AttachÇÒ ¼ö´Â ¾ø´Ù.
-     - ÇÏÁö¸¸ È®½ÇÈ÷ Ã¼Å©ÇÏ´Â ÀÇ¹Ì·Î °øÀ¯¸Ş¸ğ¸® Attach½Ã
-       Tablespace ID¸¦ Ã¼Å©ÇÑ´Ù.
-     - ¹æ¹ı : °øÀ¯¸Ş¸ğ¸®Çì´õ(smmShmHeader)¿¡ TBSID¸¦ ³Ö¾î 
-       AttachÇÏ·Á´Â TBSID¿Í °øÀ¯¸Ş¸ğ¸®ÀÇ TBSID°¡ °°ÀºÁö Ã¼Å©ÇÑ´Ù.
+   - ë‹¤ë¥¸ Tablespaceì˜ ê³µìœ ë©”ëª¨ë¦¬ Chunkë¡œ Attachë˜ëŠ” ìƒí™© Detect
+     - ì‹¤ì œë¡œ ë‹¤ë¥¸ Tablespaceì˜ ê³µìœ ë©”ëª¨ë¦¬ë¥¼ Attachí•  ìˆ˜ëŠ” ì—†ë‹¤.
+     - í•˜ì§€ë§Œ í™•ì‹¤íˆ ì²´í¬í•˜ëŠ” ì˜ë¯¸ë¡œ ê³µìœ ë©”ëª¨ë¦¬ Attachì‹œ
+       Tablespace IDë¥¼ ì²´í¬í•œë‹¤.
+     - ë°©ë²• : ê³µìœ ë©”ëª¨ë¦¬í—¤ë”(smmShmHeader)ì— TBSIDë¥¼ ë„£ì–´ 
+       Attachí•˜ë ¤ëŠ” TBSIDì™€ ê³µìœ ë©”ëª¨ë¦¬ì˜ TBSIDê°€ ê°™ì€ì§€ ì²´í¬í•œë‹¤.
 */
 
 IDE_RC smmFixedMemoryMgr::attach(smmTBSNode * aTBSNode,
@@ -221,7 +221,7 @@ IDE_RC smmFixedMemoryMgr::attach(smmTBSNode * aTBSNode,
 
     
     /* ------------------------------------------------
-     * [1] Base SHM Chunk¿¡ ´ëÇÑ attach
+     * [1] Base SHM Chunkì— ëŒ€í•œ attach
      * ----------------------------------------------*/
     sCurKey = aTBSNode->mTBSAttr.mMemAttr.mShmKey;
     
@@ -233,7 +233,7 @@ IDE_RC smmFixedMemoryMgr::attach(smmTBSNode * aTBSNode,
     sNewShmHeader  = (smmShmHeader *)idlOS::shmat(sShmID, 0, sFlag);
     IDE_TEST_RAISE(sNewShmHeader == (smmShmHeader *)-1, shmat_error);
 
-    // °øÀ¯¸Ş¸ğ¸® Key°ü¸®ÀÚ¿¡°Ô ÇöÀç »ç¿ëÁßÀÎ Key¸¦ ¾Ë·ÁÁØ´Ù.
+    // ê³µìœ ë©”ëª¨ë¦¬ Keyê´€ë¦¬ìì—ê²Œ í˜„ì¬ ì‚¬ìš©ì¤‘ì¸ Keyë¥¼ ì•Œë ¤ì¤€ë‹¤.
     IDE_TEST( smmShmKeyMgr::notifyUsedKey( sCurKey )
               != IDE_SUCCESS );
     
@@ -251,17 +251,17 @@ IDE_RC smmFixedMemoryMgr::attach(smmTBSNode * aTBSNode,
                    invalid_shm_error);
 
     //  PROJ-1548 Memory Tablespace
-    // ´Ù¸¥ TablespaceÀÇ °øÀ¯¸Ş¸ğ¸® Chunk·Î AttachµÇ´Â »óÈ² Detect
+    // ë‹¤ë¥¸ Tablespaceì˜ ê³µìœ ë©”ëª¨ë¦¬ Chunkë¡œ Attachë˜ëŠ” ìƒí™© Detect
     IDE_TEST_RAISE(sNewShmHeader->mTBSID != aTBSNode->mHeader.mID,
                    tbsid_mismatch_error);
     
 
     /* ------------------------------------------------
      * [2] Sub SHM Chunk attach
-     * smmShmHeader ÀÇ ³»¿ëÀº °øÀ¯¸Ş¸ğ¸®¿¡ Á¸ÀçÇÏ´Â ³»¿ëÀÌ°í,
-     * ÀÌ°Í¿¡ ´ÙÀ½ °øÀ¯¸Ş¸ğ¸®ÀÇ key°¡ ÀúÀåµÇ¾îÀÖ´Ù.
-     * ÀÌ Å°¸¦ ¹ÙÅÁÀ¸·Î ´ÙÀ½ °øÀ¯ ¸Ş¸ğ¸®ÀÇ À§Ä¡¸¦ Á¤È®ÇÏ°Ô attachÇÒ ¼ö ÀÖ´Ù.
-     * smmSCHÀÇ ³»¿ëÀº µ¿ÀûÀÎ ³»¿ëÀ¸·Î »õ·Î settingÇÏ¸é¼­ ÁøÇàÇÑ´Ù.
+     * smmShmHeader ì˜ ë‚´ìš©ì€ ê³µìœ ë©”ëª¨ë¦¬ì— ì¡´ì¬í•˜ëŠ” ë‚´ìš©ì´ê³ ,
+     * ì´ê²ƒì— ë‹¤ìŒ ê³µìœ ë©”ëª¨ë¦¬ì˜ keyê°€ ì €ì¥ë˜ì–´ìˆë‹¤.
+     * ì´ í‚¤ë¥¼ ë°”íƒ•ìœ¼ë¡œ ë‹¤ìŒ ê³µìœ  ë©”ëª¨ë¦¬ì˜ ìœ„ì¹˜ë¥¼ ì •í™•í•˜ê²Œ attachí•  ìˆ˜ ìˆë‹¤.
+     * smmSCHì˜ ë‚´ìš©ì€ ë™ì ì¸ ë‚´ìš©ìœ¼ë¡œ ìƒˆë¡œ settingí•˜ë©´ì„œ ì§„í–‰í•œë‹¤.
      * ----------------------------------------------*/
     while (aTBSNode->mTailSCH->m_header->m_next_key != 0)
     {
@@ -278,7 +278,7 @@ IDE_RC smmFixedMemoryMgr::attach(smmTBSNode * aTBSNode,
         IDU_FIT_POINT("smmFixedMemoryMgr::attach::alloc::NewSCH");
         IDE_TEST(mSCHMemList.alloc((void **)&sNewSCH)
                  != IDE_SUCCESS);
-        // Á¸ÀçÇÔ.
+        // ì¡´ì¬í•¨.
         sCurKey = aTBSNode->mTailSCH->m_header->m_next_key;
         sShmID  = idlOS::shmget(aTBSNode->mTailSCH->m_header->m_next_key,
                                 SMM_SHM_DB_SIZE(sTempShmHeader.m_page_count),
@@ -326,7 +326,7 @@ IDE_RC smmFixedMemoryMgr::attach(smmTBSNode * aTBSNode,
                                 (UInt)sNewShmHeader->mTBSID,
                                 (UInt)aTBSNode->mHeader.mID));
     }
-    IDE_EXCEPTION(not_exist_error); // ÀÏºÎ ¸µÅ©°¡ ²÷¾îÁø °ÍÀÓ.
+    IDE_EXCEPTION(not_exist_error); // ì¼ë¶€ ë§í¬ê°€ ëŠì–´ì§„ ê²ƒì„.
     {
         IDE_SET(ideSetErrorCode(smERR_FATAL_Shm_Link_Not_Exist));
     }
@@ -385,12 +385,12 @@ inline void smmFixedMemoryMgr::linkShmPage(smmTBSNode *   aTBSNode,
 
 
 /* ------------------------------------------------
- * [] ÀÌ ÇÔ¼öÀÇ ¸ñÀûÀº °øÀ¯¸Ş¸ğ¸® DB¿¡¼­
- *    ºñÁ¤»óÀûÀÎ Á¾·á¸¦ ÇßÀ» °æ¿ì, ÇØ´ç
- *    °øÀ¯¸Ş¸ğ¸®ÀÇ ¸µÅ©°¡ ¿Ã¹Ù¸¥Áö¸¦ ³ªÅ¸³»´Â
- *    ÇÃ·¡±×¸¦ ¼³Á¤ÇÏ´Â °ÍÀÌ´Ù.
- *    restart½Ã attach()¸¦ ¼öÇàÇÒ ¶§
- *    validate flag°¡ °Ë»çµÈ´Ù.
+ * [] ì´ í•¨ìˆ˜ì˜ ëª©ì ì€ ê³µìœ ë©”ëª¨ë¦¬ DBì—ì„œ
+ *    ë¹„ì •ìƒì ì¸ ì¢…ë£Œë¥¼ í–ˆì„ ê²½ìš°, í•´ë‹¹
+ *    ê³µìœ ë©”ëª¨ë¦¬ì˜ ë§í¬ê°€ ì˜¬ë°”ë¥¸ì§€ë¥¼ ë‚˜íƒ€ë‚´ëŠ”
+ *    í”Œë˜ê·¸ë¥¼ ì„¤ì •í•˜ëŠ” ê²ƒì´ë‹¤.
+ *    restartì‹œ attach()ë¥¼ ìˆ˜í–‰í•  ë•Œ
+ *    validate flagê°€ ê²€ì‚¬ëœë‹¤.
  * ----------------------------------------------*/
 
 void smmFixedMemoryMgr::setValidation(smmTBSNode * aTBSNode, idBool aFlag)
@@ -408,27 +408,27 @@ void smmFixedMemoryMgr::setValidation(smmTBSNode * aTBSNode, idBool aFlag)
 
 
 /*
-   TablespaceÀÇ Ã¹¹øÂ° °øÀ¯¸Ş¸ğ¸® Chunk¸¦ »ı¼ºÇÑ´Ù.
+   Tablespaceì˜ ì²«ë²ˆì§¸ ê³µìœ ë©”ëª¨ë¦¬ Chunkë¥¼ ìƒì„±í•œë‹¤.
 
-   [IN] aTBSNode   - °øÀ¯¸Ş¸ğ¸® °ü¸®ÀÚ¸¦ °¡Áö´Â Tablespace Node
-   [IN] aPageCount - Ã¹¹øÂ° ChunkÀÇ Å©±â ( ´ÜÀ§:Page¼ö )
-                     - 0 ÀÌ¸é SHM_PAGE_COUNT_PER_KEYÇÁ·ÎÆÛÆ¼¿¡
-                       ÁöÁ¤ÇÑ Page¼ö¸¸Å­ ÇÒ´ç 
+   [IN] aTBSNode   - ê³µìœ ë©”ëª¨ë¦¬ ê´€ë¦¬ìë¥¼ ê°€ì§€ëŠ” Tablespace Node
+   [IN] aPageCount - ì²«ë²ˆì§¸ Chunkì˜ í¬ê¸° ( ë‹¨ìœ„:Pageìˆ˜ )
+                     - 0 ì´ë©´ SHM_PAGE_COUNT_PER_KEYí”„ë¡œí¼í‹°ì—
+                       ì§€ì •í•œ Pageìˆ˜ë§Œí¼ í• ë‹¹ 
    
    - Use Case
-     - Startup½Ã °øÀ¯¸Ş¸ğ¸® »ı¼ºÈÄ RestoreÇÏ´Â °æ¿ì 
-     - ¿î¿µ µµÁß ½Å±Ô Tablespace»ı¼º½Ã
+     - Startupì‹œ ê³µìœ ë©”ëª¨ë¦¬ ìƒì„±í›„ Restoreí•˜ëŠ” ê²½ìš° 
+     - ìš´ì˜ ë„ì¤‘ ì‹ ê·œ Tablespaceìƒì„±ì‹œ
    
    - PROJ-1548 User Memory Tablespace ======================================
      - [Design]
      
-       - °øÀ¯¸Ş¸ğ¸® Key °ü¸®ÀÚ·ÎºÎÅÍ ÈÄº¸ °øÀ¯¸Ş¸ğ¸® Key¸¦ ÇÒ´ç¹Ş¾Æ
-         °øÀ¯¸Ş¸ğ¸® »ı¼ºÀ» ½ÃµµÇÑ´Ù.
+       - ê³µìœ ë©”ëª¨ë¦¬ Key ê´€ë¦¬ìë¡œë¶€í„° í›„ë³´ ê³µìœ ë©”ëª¨ë¦¬ Keyë¥¼ í• ë‹¹ë°›ì•„
+         ê³µìœ ë©”ëª¨ë¦¬ ìƒì„±ì„ ì‹œë„í•œë‹¤.
          
-       - °øÀ¯¸Ş¸ğ¸® »ı¼º ¼º°ø½Ã °øÀ¯¸Ş¸ğ¸® Key¸¦
-         Log Anchor¿¡ ÀúÀåÇÑ´Ù.
+       - ê³µìœ ë©”ëª¨ë¦¬ ìƒì„± ì„±ê³µì‹œ ê³µìœ ë©”ëª¨ë¦¬ Keyë¥¼
+         Log Anchorì— ì €ì¥í•œë‹¤.
          
-       - Log Anchor¸¦ Flush´Â ÀÌ ÇÔ¼öÀÇ È£ÃâÇÑ ÇÔ¼ö°¡ Ã³¸®ÇØ¾ßÇÑ´Ù.
+       - Log Anchorë¥¼ FlushëŠ” ì´ í•¨ìˆ˜ì˜ í˜¸ì¶œí•œ í•¨ìˆ˜ê°€ ì²˜ë¦¬í•´ì•¼í•œë‹¤.
  */
 IDE_RC smmFixedMemoryMgr::createFirstChunk( smmTBSNode * aTBSNode,
                                             scPageID     aPageCount /* = 0 */ )
@@ -437,16 +437,16 @@ IDE_RC smmFixedMemoryMgr::createFirstChunk( smmTBSNode * aTBSNode,
 
     IDE_DASSERT( aTBSNode != NULL );
 
-    // °øÀ¯¸Ş¸ğ¸® Chunk¸¦ ÇÒ´ç¹Ş°í °øÀ¯¸Ş¸ğ¸® Key¸¦ sChunkShmKey¿¡ ¼³Á¤
+    // ê³µìœ ë©”ëª¨ë¦¬ Chunkë¥¼ í• ë‹¹ë°›ê³  ê³µìœ ë©”ëª¨ë¦¬ Keyë¥¼ sChunkShmKeyì— ì„¤ì •
     IDE_TEST( extendShmPage(aTBSNode,
                             aPageCount,
                             & sChunkShmKey ) != IDE_SUCCESS );
 
-    // Ã¹¹øÂ° °øÀ¯¸Ş¸ğ¸® ChunkÀÇ Key¸¦ TBSNode¿¡ ¼³Á¤
+    // ì²«ë²ˆì§¸ ê³µìœ ë©”ëª¨ë¦¬ Chunkì˜ Keyë¥¼ TBSNodeì— ì„¤ì •
     aTBSNode->mTBSAttr.mMemAttr.mShmKey = sChunkShmKey ;
 
-    // Restore¸¶Ä¡°í Resatrt Redo/Undo±îÁö ¿Ï·áÈÄ
-    // °øÀ¯¸Ş¸ğ¸® Key¸¦ Log Anchor¿¡ FlushÇÑ´Ù.
+    // Restoreë§ˆì¹˜ê³  Resatrt Redo/Undoê¹Œì§€ ì™„ë£Œí›„
+    // ê³µìœ ë©”ëª¨ë¦¬ Keyë¥¼ Log Anchorì— Flushí•œë‹¤.
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
@@ -473,7 +473,7 @@ IDE_RC smmFixedMemoryMgr::allocNewChunk(smmTBSNode * aTBSNode,
     IDE_DASSERT( aShmKey != 0 );
     IDE_DASSERT( aPageCount > 0 );
     
-    /* [0] arg °è»ê */
+    /* [0] arg ê³„ì‚° */
     sFlag   = 0600 | IPC_CREAT | IPC_EXCL;
     sPersSize = SMM_SHM_DB_SIZE(aPageCount);
 
@@ -482,7 +482,7 @@ IDE_RC smmFixedMemoryMgr::allocNewChunk(smmTBSNode * aTBSNode,
     IDE_TEST(mSCHMemList.alloc((void **)&sSCH) != IDE_SUCCESS);
     sState = 1;
 
-    /* [1] shmid ¾ò±â */
+    /* [1] shmid ì–»ê¸° */
     sShmID = idlOS::shmget(aShmKey, sPersSize, sFlag );
     if (sShmID == PDL_INVALID_HANDLE)
     {
@@ -490,7 +490,7 @@ IDE_RC smmFixedMemoryMgr::allocNewChunk(smmTBSNode * aTBSNode,
         IDE_TEST_RAISE(errno == ENOSPC, no_space_error);
         IDE_RAISE(shmget_error);
     }
-    /* [1] attach ¼öÇà  */
+    /* [1] attach ìˆ˜í–‰  */
     sShmHeader  = (smmShmHeader *)idlOS::shmat(sShmID, 0, sFlag);
     IDE_TEST_RAISE(sShmHeader == (smmShmHeader *)-1, shmat_error);
     idlOS::memset(sShmHeader, 0, sPersSize);
@@ -504,20 +504,20 @@ IDE_RC smmFixedMemoryMgr::allocNewChunk(smmTBSNode * aTBSNode,
     sShmHeader->m_versionID   = smVersionID;
     sShmHeader->m_page_count  = aPageCount;
     // PROJ-1548 Memory Tablespace
-    // ´Ù¸¥ TablespaceÀÇ °øÀ¯¸Ş¸ğ¸® Chunk·Î AttachµÇ´Â »óÈ² DetectÀ§ÇØ ÇÊ¿ä
+    // ë‹¤ë¥¸ Tablespaceì˜ ê³µìœ ë©”ëª¨ë¦¬ Chunkë¡œ Attachë˜ëŠ” ìƒí™© Detectìœ„í•´ í•„ìš”
     sShmHeader->mTBSID        = aTBSNode->mHeader.mID;
     sShmHeader->m_next_key    = (key_t)0;
     sPersPage                 = ((UChar *)(sShmHeader)
                                           + SMM_CACHE_ALIGNED_SHM_HEADER_SIZE);
 
-    // Free List·Î ÀÔ·Â
+    // Free Listë¡œ ì…ë ¥
     for (i = 0; i < aPageCount; i++)
     {
         linkShmPage(aTBSNode, (smmTempPage *)(sPersPage + (i * SM_PAGE_SIZE)));
     }
 
     /* ------------------------------------------------
-     * [¸µÅ© ¿¬°á] Tail <--> New
+     * [ë§í¬ ì—°ê²°] Tail <--> New
      * ----------------------------------------------*/
 
     if (aTBSNode->mTailSCH == NULL)
@@ -534,8 +534,8 @@ IDE_RC smmFixedMemoryMgr::allocNewChunk(smmTBSNode * aTBSNode,
         
         // To Fix PR-12974
         // SBUG-5
-        // Code ¼ø¼­°¡ º¯°æµÉ °æ¿ì, server restart ½Ã
-        // Àß¸øµÈ Shared Memory ¹öÀüÀÇ ³»¿ëÀ» ÀĞÀ» ¼ö ÀÖ´Ù. 
+        // Code ìˆœì„œê°€ ë³€ê²½ë  ê²½ìš°, server restart ì‹œ
+        // ì˜ëª»ëœ Shared Memory ë²„ì „ì˜ ë‚´ìš©ì„ ì½ì„ ìˆ˜ ìˆë‹¤. 
         IDL_MEM_BARRIER;
         {
             sTempTail->m_header->m_next_key = aShmKey;
@@ -549,7 +549,7 @@ IDE_RC smmFixedMemoryMgr::allocNewChunk(smmTBSNode * aTBSNode,
     aTBSNode->mTempMemBase.m_alloc_temp_page_count += aPageCount;
     
     // To Fix PR-12974
-    // SBUG-5 kmkim ÀÇ ÀÇ°ßÀ» µû¸§.
+    // SBUG-5 kmkim ì˜ ì˜ê²¬ì„ ë”°ë¦„.
     IDL_MEM_BARRIER;
     aTBSNode->mTailSCH->m_header->m_valid_state    = ID_TRUE;
 
@@ -587,11 +587,11 @@ IDE_RC smmFixedMemoryMgr::allocNewChunk(smmTBSNode * aTBSNode,
 }
 
 /*
-   TBSNodeÀÇ Á¤º¸Áß °øÀ¯¸Ş¸ğ¸® °ü¸®ÀÚ °ü·Ã ºÎºĞÀ» ÇØÁ¦ÇÑ´Ù.
+   TBSNodeì˜ ì •ë³´ì¤‘ ê³µìœ ë©”ëª¨ë¦¬ ê´€ë¦¬ì ê´€ë ¨ ë¶€ë¶„ì„ í•´ì œí•œë‹¤.
  */
 IDE_RC smmFixedMemoryMgr::destroy(smmTBSNode * aTBSNode)
 {
-    // ÀÌ¹Ì detachµÇ°Å³ª removeµÈ »óÅÂ¿©¾ß ÇÑ´Ù.
+    // ì´ë¯¸ detachë˜ê±°ë‚˜ removeëœ ìƒíƒœì—¬ì•¼ í•œë‹¤.
     IDE_ASSERT( aTBSNode->mBaseSCH.m_next == NULL );
     IDE_ASSERT( aTBSNode->mTailSCH == NULL );
 
@@ -604,22 +604,22 @@ IDE_RC smmFixedMemoryMgr::destroy(smmTBSNode * aTBSNode)
 }
 
 /*
-   °øÀ¯¸Ş¸ğ¸®¸¦ Á¦°ÅÇÑ´Ù.
+   ê³µìœ ë©”ëª¨ë¦¬ë¥¼ ì œê±°í•œë‹¤.
 
-   aTBSNode [IN] °øÀ¯¸Ş¸ğ¸®¸¦ Á¦°ÅÇÒ Tablespace
+   aTBSNode [IN] ê³µìœ ë©”ëª¨ë¦¬ë¥¼ ì œê±°í•  Tablespace
 
    - [ PROJ-1548 ] User Memory Tablespace -------------------------------
    
-   Tablespace drop½Ã¿¡ Tablespace¿¡¼­ »ç¿ëÁßÀÌ´ø °øÀ¯¸Ş¸ğ¸® Key¸¦
-   ´Ù¸¥ Tablespace¿¡¼­ ÀçÈ°¿ëÇÒ ¼ö ÀÖ¾î¾ß ÇÑ´Ù.
+   Tablespace dropì‹œì— Tablespaceì—ì„œ ì‚¬ìš©ì¤‘ì´ë˜ ê³µìœ ë©”ëª¨ë¦¬ Keyë¥¼
+   ë‹¤ë¥¸ Tablespaceì—ì„œ ì¬í™œìš©í•  ìˆ˜ ìˆì–´ì•¼ í•œë‹¤.
 
-   ¹®Á¦ : Tablespace °¡ dropµÉ¶§ ÇØ´ç Tablespace¿¡¼­ »ç¿ëÁßÀÌ´ø
-          °øÀ¯¸Ş¸ğ¸® Key¸¦ ÀçÈ°¿ëÇÏÁö ¾ÊÀ» °æ¿ì
-          Tablespace create/dropÀ» ¹İº¹ÇÏ¸é °øÀ¯¸Ş¸ğ¸® Key°¡
-          °í°¥µÇ´Â ¹®Á¦°¡ »ı±è
+   ë¬¸ì œ : Tablespace ê°€ dropë ë•Œ í•´ë‹¹ Tablespaceì—ì„œ ì‚¬ìš©ì¤‘ì´ë˜
+          ê³µìœ ë©”ëª¨ë¦¬ Keyë¥¼ ì¬í™œìš©í•˜ì§€ ì•Šì„ ê²½ìš°
+          Tablespace create/dropì„ ë°˜ë³µí•˜ë©´ ê³µìœ ë©”ëª¨ë¦¬ Keyê°€
+          ê³ ê°ˆë˜ëŠ” ë¬¸ì œê°€ ìƒê¹€
 
-   ÇØ°áÃ¥ : Tablespace°¡ dropµÉ¶§ ÇØ´ç Tablespace¿¡¼­ »ç¿ëÁßÀÌ´ø
-             °øÀ¯¸Ş¸ğ¸® Key¸¦ ÀçÈ°¿ëÇÑ´Ù.
+   í•´ê²°ì±… : Tablespaceê°€ dropë ë•Œ í•´ë‹¹ Tablespaceì—ì„œ ì‚¬ìš©ì¤‘ì´ë˜
+             ê³µìœ ë©”ëª¨ë¦¬ Keyë¥¼ ì¬í™œìš©í•œë‹¤.
   
  */
 IDE_RC smmFixedMemoryMgr::remove(smmTBSNode * aTBSNode)
@@ -629,12 +629,12 @@ IDE_RC smmFixedMemoryMgr::remove(smmTBSNode * aTBSNode)
     IDE_DASSERT( aTBSNode != NULL );
     
     // PROJ-1548
-    // ´õ ÀÌ»ó »ç¿ëÇÏÁö ¾Ê´Â °øÀ¯¸Ş¸ğ¸® Key°¡ ÀçÈ°¿ëµÉ ¼ö ÀÖµµ·Ï
-    // °øÀ¯¸Ş¸ğ¸® Å° °ü¸®ÀÚ¿¡°Ô ¾Ë·ÁÁÖ¾î¾ß ÇÑ´Ù.
+    // ë” ì´ìƒ ì‚¬ìš©í•˜ì§€ ì•ŠëŠ” ê³µìœ ë©”ëª¨ë¦¬ Keyê°€ ì¬í™œìš©ë  ìˆ˜ ìˆë„ë¡
+    // ê³µìœ ë©”ëª¨ë¦¬ í‚¤ ê´€ë¦¬ìì—ê²Œ ì•Œë ¤ì£¼ì–´ì•¼ í•œë‹¤.
 
     IDE_DASSERT( aTBSNode->mTBSAttr.mMemAttr.mShmKey != 0 );
     
-    // Ã¹ ¹øÂ° °øÀ¯¸Ş¸ğ¸® Key¸¦ ¹İ³³
+    // ì²« ë²ˆì§¸ ê³µìœ ë©”ëª¨ë¦¬ Keyë¥¼ ë°˜ë‚©
     IDE_TEST( smmShmKeyMgr::notifyUnusedKey(
                   aTBSNode->mTBSAttr.mMemAttr.mShmKey )
               != IDE_SUCCESS );
@@ -704,8 +704,8 @@ IDE_RC smmFixedMemoryMgr::allocShmPage(smmTBSNode *  aTBSNode,
 
     if (aTBSNode->mTempMemBase.m_first_free_temp_page == NULL)
     {
-        // °øÀ¯¸Ş¸ğ¸® Key ÇÏ³ª´ç SHM_PAGE_COUNT_PER_KEY ÇÁ·ÎÆÛÆ¼¸¸Å­ÀÇ
-        // Page¸¦ ÇÒ´çÇÏµµ·Ï ÇÑ´Ù.
+        // ê³µìœ ë©”ëª¨ë¦¬ Key í•˜ë‚˜ë‹¹ SHM_PAGE_COUNT_PER_KEY í”„ë¡œí¼í‹°ë§Œí¼ì˜
+        // Pageë¥¼ í• ë‹¹í•˜ë„ë¡ í•œë‹¤.
         IDE_TEST(extendShmPage(
                      aTBSNode,
                      (scPageID)smuProperty::getShmPageCountPerKey() )
@@ -736,14 +736,14 @@ IDE_RC smmFixedMemoryMgr::allocShmPage(smmTBSNode *  aTBSNode,
 }
 
 /*
-     °øÀ¯¸Ş¸ğ¸® Chunk¸¦ ÇÏ³ª »õ·Î »ı¼ºÇÏ¿© ÆäÀÌÁö ¸Ş¸ğ¸®¸¦ È®º¸ÇÑ´Ù
+     ê³µìœ ë©”ëª¨ë¦¬ Chunkë¥¼ í•˜ë‚˜ ìƒˆë¡œ ìƒì„±í•˜ì—¬ í˜ì´ì§€ ë©”ëª¨ë¦¬ë¥¼ í™•ë³´í•œë‹¤
 
-     aTBSNode       [IN]  °øÀ¯¸Ş¸ğ¸® Chunk¸¦ »ı¼ºÇÒ Tablespace
-     aCount         [IN]  È®º¸ÇÒ DB PageÀÇ ¼ö
-     aCreatedShmKey [OUT] »ı¼ºÇÑ °øÀ¯¸Ş¸ğ¸® ChunkÀÇ Key°ª
-                          NULLÀÌ ¾Æ´Ñ °æ¿ì¿¡¸¸ ¼¼ÆÃÇÑ´Ù.
+     aTBSNode       [IN]  ê³µìœ ë©”ëª¨ë¦¬ Chunkë¥¼ ìƒì„±í•  Tablespace
+     aCount         [IN]  í™•ë³´í•  DB Pageì˜ ìˆ˜
+     aCreatedShmKey [OUT] ìƒì„±í•œ ê³µìœ ë©”ëª¨ë¦¬ Chunkì˜ Keyê°’
+                          NULLì´ ì•„ë‹Œ ê²½ìš°ì—ë§Œ ì„¸íŒ…í•œë‹¤.
  */
-// BUGBUG : Á¤±³ÇÑ ¿¡·¯Ã³¸® ÇÊ¿äÇÔ.
+// BUGBUG : ì •êµí•œ ì—ëŸ¬ì²˜ë¦¬ í•„ìš”í•¨.
 IDE_RC smmFixedMemoryMgr::extendShmPage(smmTBSNode * aTBSNode,
                                         scPageID     aCount,
                                         key_t      * aCreatedShmKey /* =NULL*/)
@@ -753,7 +753,7 @@ IDE_RC smmFixedMemoryMgr::extendShmPage(smmTBSNode * aTBSNode,
     
     while(1)
     {
-        // °øÀ¯¸Ş¸ğ¸® Key ÈÄº¸¸¦ °¡Á®¿Â´Ù.
+        // ê³µìœ ë©”ëª¨ë¦¬ Key í›„ë³´ë¥¼ ê°€ì ¸ì˜¨ë‹¤.
         IDE_TEST( smmShmKeyMgr::getShmKeyCandidate( & sShmKeyCandidate)
                   != IDE_SUCCESS );
 

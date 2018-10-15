@@ -126,7 +126,7 @@ IDE_RC mtfNotRegExpLikeEstimate( mtcNode*     aNode,
                                         sModules )
               != IDE_SUCCESS );
 
-    // regexp_likeÀÇ °á°ú¸¦ ÀúÀåÇÔ
+    // regexp_likeì˜ ê²°ê³¼ë¥¼ ì €ìž¥í•¨
     IDE_TEST( mtc::initializeColumn( aStack[0].column,
                                      & mtdBoolean,
                                      0,
@@ -134,7 +134,7 @@ IDE_RC mtfNotRegExpLikeEstimate( mtcNode*     aNode,
                                      0 )
               != IDE_SUCCESS );
     
-    /* regexp_likeÀÇ compiled patternÀ» ÀúÀåÇÔ */
+    /* regexp_likeì˜ compiled patternì„ ì €ìž¥í•¨ */
     sPrecision = MTF_REG_EXPRESSION_SIZE( aStack[2].column->precision );
     
     IDE_TEST( mtc::initializeColumn( aStack[0].column + 1,
@@ -173,7 +173,7 @@ IDE_RC mtfNotRegExpLikeEstimate( mtcNode*     aNode,
             aTemplate->rows[aNode->table].execute[aNode->column].calculateInfo =
                 sCompiledExpression;
 
-            // ´õÀÌ»ó »ç¿ëÇÏÁö ¾ÊÀ½
+            // ë”ì´ìƒ ì‚¬ìš©í•˜ì§€ ì•ŠìŒ
             IDE_TEST( mtc::initializeColumn( aStack[0].column + 1,
                                             & mtdBinary,
                                             1,
@@ -199,7 +199,7 @@ IDE_RC mtfNotRegExpLikeEstimate( mtcNode*     aNode,
         aNode->lflag &= ~MTC_NODE_REESTIMATE_MASK;
         aNode->lflag |= MTC_NODE_REESTIMATE_TRUE;
 
-        // BUG-38070 undef typeÀ¸·Î re-estimateÇÏÁö ¾Ê´Â´Ù.
+        // BUG-38070 undef typeìœ¼ë¡œ re-estimateí•˜ì§€ ì•ŠëŠ”ë‹¤.
         if ( ( aTemplate->variableRow != ID_USHORT_MAX ) &&
              ( ( aNode->lflag & MTC_NODE_BIND_MASK ) == MTC_NODE_BIND_EXIST ) )
         {
@@ -225,7 +225,7 @@ IDE_RC mtfNotRegExpLikeEstimate( mtcNode*     aNode,
         aNode->lflag |= MTC_NODE_REESTIMATE_FALSE;
     }
 
-    /* BUG-44740 mtfRegExpression Àç»ç¿ëÀ» À§ÇØ Tuple Row¸¦ ÃÊ±âÈ­ÇÑ´Ù. */
+    /* BUG-44740 mtfRegExpression ìž¬ì‚¬ìš©ì„ ìœ„í•´ Tuple Rowë¥¼ ì´ˆê¸°í™”í•œë‹¤. */
     aTemplate->rows[aNode->table].lflag &= ~MTC_TUPLE_ROW_MEMSET_MASK;
     aTemplate->rows[aNode->table].lflag |= MTC_TUPLE_ROW_MEMSET_TRUE;
 

@@ -44,7 +44,7 @@ static IDE_RC mtfRawConcatEstimate( mtcNode*     aNode,
 mtfModule mtfRawConcat = {
     1|MTC_NODE_OPERATOR_FUNCTION,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
+    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìžê°€ ì•„ë‹˜)
     mtfRawConcatFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -146,9 +146,9 @@ IDE_RC mtfRawConcatCalculate( mtcNode*     aNode,
  * Implementation :
  *    RAW_CONCAT( byte1, byte2 )
  *
- *    aStack[0] : Ã¹¹øÂ° byte°ª¿¡ µÎ¹øÂ° byte°ªÀ» ¿¬°áÇÑ °ª
- *    aStack[1] : byte1 ( Ã¹¹øÂ° byte°ª )
- *    aStack[2] : byte2 ( µÎ¹øÂ° byte°ª )
+ *    aStack[0] : ì²«ë²ˆì§¸ byteê°’ì— ë‘ë²ˆì§¸ byteê°’ì„ ì—°ê²°í•œ ê°’
+ *    aStack[1] : byte1 ( ì²«ë²ˆì§¸ byteê°’ )
+ *    aStack[2] : byte2 ( ë‘ë²ˆì§¸ byteê°’ )
  *
  ***********************************************************************/
     
@@ -171,12 +171,12 @@ IDE_RC mtfRawConcatCalculate( mtcNode*     aNode,
                     aStack[0].column->precision,
                     ERR_INVALID_LENGTH );
 
-    // Ã¹¹øÂ° byte°ªÀ» °á°ú¿¡ º¹»ç
+    // ì²«ë²ˆì§¸ byteê°’ì„ ê²°ê³¼ì— ë³µì‚¬
     idlOS::memcpy( sResult->value,
                    sFirstString->value,
                    sFirstString->length );
 
-    // Ã¹¹øÂ° byte°ª º¹»çÇÑ ´ÙÀ½ À§Ä¡¿¡ µÎ¹øÂ° byte°ª º¹»ç
+    // ì²«ë²ˆì§¸ byteê°’ ë³µì‚¬í•œ ë‹¤ìŒ ìœ„ì¹˜ì— ë‘ë²ˆì§¸ byteê°’ ë³µì‚¬
     idlOS::memcpy( sResult->value + sFirstString->length,
                    sSecondString->value,
                    sSecondString->length );

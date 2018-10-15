@@ -40,7 +40,7 @@ public class XAForgetResultOp extends ResultOperation
         
         fillCommonHeader(aCommonHeader);
 
-//      DK¿¡¼­ Ã¹¹øÂ° Error¸¦ ·Î±×¿¡ Âï¾î ÁÖ¹Ç·Î Ã¹¹øÂ° Error¸¸ º¸³½´Ù.
+//      DKì—ì„œ ì²«ë²ˆì§¸ Errorë¥¼ ë¡œê·¸ì— ì°ì–´ ì£¼ë¯€ë¡œ ì²«ë²ˆì§¸ Errorë§Œ ë³´ë‚¸ë‹¤.
 //      writeInt( aOpPayload, mFailXidList.size() );
         if ( mFailXidList.size() > 0 )
         {

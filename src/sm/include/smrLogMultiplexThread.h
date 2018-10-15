@@ -106,8 +106,8 @@ public:
                         smrLogFile ** aLogFile,
                         idBool      * aIsExist );
 
-    /* BUG-35051 ¼­¹ö »ı¼ºÀÌÈÄ ¹Ù·Î ·Î±× ´ÙÁßÈ­ ÇÁ·ÎÆÛÆ¼¸¦ ¼³Á¤ÇÏ¸é ºñÁ¤»ó
-     * Á¾·áÇÕ´Ï´Ù. */
+    /* BUG-35051 ì„œë²„ ìƒì„±ì´í›„ ë°”ë¡œ ë¡œê·¸ ë‹¤ì¤‘í™” í”„ë¡œí¼í‹°ë¥¼ ì„¤ì •í•˜ë©´ ë¹„ì •ìƒ
+     * ì¢…ë£Œí•©ë‹ˆë‹¤. */
     IDE_RC preOpenLogFile( UInt    aLogFileNo,
                            SChar * aLogFileInitBuffer,
                            UInt    aLogFileSize );
@@ -277,7 +277,7 @@ inline IDE_RC smrLogMultiplexThread::startThread()
 {
     IDE_TEST( start() != IDE_SUCCESS );
 
-    IDE_TEST( waitToStart(0/*½ÃÀÛÀÌ ¿Ï·á µÉ¶§±îÁö ´ë±â*/) != IDE_SUCCESS );
+    IDE_TEST( waitToStart(0/*ì‹œì‘ì´ ì™„ë£Œ ë ë•Œê¹Œì§€ ëŒ€ê¸°*/) != IDE_SUCCESS );
 
     return IDE_SUCCESS;
 

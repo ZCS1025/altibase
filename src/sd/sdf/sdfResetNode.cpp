@@ -52,7 +52,7 @@ static IDE_RC sdfEstimate( mtcNode*        aNode,
 mtfModule sdfResetNodeModule = {
     1|MTC_NODE_OPERATOR_MISC|MTC_NODE_VARIABLE_TRUE,
     ~0,
-    1.0,                    // default selectivity (ºñ±³ ¿¬»êÀÚ ¾Æ´Ô)
+    1.0,                    // default selectivity (ë¹„êµ ì—°ì‚°ì ì•„ë‹˜)
     sdfFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -212,7 +212,7 @@ IDE_RC sdfCalculate_ResetNode( mtcNode*     aNode,
         }
         else
         {
-            // alternateÀÎ °æ¿ì ip/port°¡ nullÀÏ ¼ö ÀÖÀ½
+            // alternateì¸ ê²½ìš° ip/portê°€ nullì¼ ìˆ˜ ìˆìŒ
             // Nothing to do.
         }
 

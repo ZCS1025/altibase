@@ -48,7 +48,7 @@ static IDE_RC mtfStddevEstimate( mtcNode*     aNode,
 mtfModule mtfStddev = {
     4|MTC_NODE_OPERATOR_AGGREGATION|MTC_NODE_FUNCTION_WINDOWING_TRUE,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
+    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìê°€ ì•„ë‹˜)
     mtfStddevFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -278,7 +278,7 @@ IDE_RC mtfStddevMerge( mtcNode*     aNode,
     sColumn = aTemplate->rows[aNode->table].columns + aNode->column;
 
     //----------------------------------------
-    // Merge ÀÛ¾÷À» ¼öÇàÇÑ´Ù.
+    // Merge ì‘ì—…ì„ ìˆ˜í–‰í•œë‹¤.
     //----------------------------------------
 
     // Pow

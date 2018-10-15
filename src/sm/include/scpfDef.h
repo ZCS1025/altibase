@@ -46,7 +46,7 @@
        ( (*(src)) < SCPF_VARINT_2BYTE_THRESHOLD ) ? 2 :     \
        ( (*(src)) < SCPF_VARINT_3BYTE_THRESHOLD ) ? 3 : 4 )
 
-/* UIntÀ» BigEndianÀ¸·Î WriteÇÑ´Ù. */
+/* UIntì„ BigEndianìœ¼ë¡œ Writeí•œë‹¤. */
 #define SCPF_WRITE_VARINT(src, dst){                                 \
      if( (*(UInt*)(src)) < SCPF_VARINT_1BYTE_THRESHOLD )             \
      {                                                               \
@@ -75,7 +75,7 @@
      }                                                               \
 }
 
-/* UIntÀ» BigEndianÀ¸·Î WriteÇÑ´Ù. */
+/* UIntì„ BigEndianìœ¼ë¡œ Writeí•œë‹¤. */
 #define SCPF_READ_VARINT(src, dst){                    \
     switch( (((UChar*)(src))[0]) >> 6 )                \
     {                                                  \
@@ -108,134 +108,134 @@
 #define SCPF_LOB_LEN_SIZE     ID_SIZEOF( UInt )
 
 
-//FileÀÇ Version
+//Fileì˜ Version
 #define SCPF_VERSION_1        (1)
 #define SCPF_VERSION_LATEST   SCPF_VERSION_1
 
 #define SCPF_DPFILE_EXT       ((SChar*)".dpf")
 #define SCPF_DPFILE_SEPARATOR '_'
 
-// BlockInfo´Â File·ÎºÎÅÍ ÀĞÀº BlockÀ» ¿Ã·Á³õÀ½ ¸Ş¸ğ¸®»óÀÇ
-// °´Ã¼·Î, Export½Ã 1°³, Import½Ã ÃÖ¼Ò 2°³¸¦ »ç¿ëÇÑ´Ù.
+// BlockInfoëŠ” Fileë¡œë¶€í„° ì½ì€ Blockì„ ì˜¬ë ¤ë†“ìŒ ë©”ëª¨ë¦¬ìƒì˜
+// ê°ì²´ë¡œ, Exportì‹œ 1ê°œ, Importì‹œ ìµœì†Œ 2ê°œë¥¼ ì‚¬ìš©í•œë‹¤.
 #define SCPF_MIN_BLOCKINFO_COUNT   (2)
 
 #define SCPF_OFFSET_NULL           (0)
 
-// ÇöÀç ÁøÇàÁßÀÎ ÀÏÀÇ BlockBuffer³» Position
+// í˜„ì¬ ì§„í–‰ì¤‘ì¸ ì¼ì˜ BlockBufferë‚´ Position
 typedef struct scpfBlockBufferPosition
 {
-    UInt  mSeq;         // ÀĞ°íÀÖ´Â Block Info³» Block Sequence.
-    UInt  mID;          // ÇöÀç ÀĞ°íÀÖ´Â BlockÀÇ File³» ¹øÈ£.
-    UInt  mOffset;      // Block³» Offset 
-    UInt  mSlotSeq;     // Block³» Slot¹øÈ£
+    UInt  mSeq;         // ì½ê³ ìˆëŠ” Block Infoë‚´ Block Sequence.
+    UInt  mID;          // í˜„ì¬ ì½ê³ ìˆëŠ” Blockì˜ Fileë‚´ ë²ˆí˜¸.
+    UInt  mOffset;      // Blockë‚´ Offset 
+    UInt  mSlotSeq;     // Blockë‚´ Slotë²ˆí˜¸
 } scpfBlockBufferPosition;
 
-// ÇöÀç ÁøÇàÁßÀÎ ÀÏÀÇ File³» À§Ä¡
+// í˜„ì¬ ì§„í–‰ì¤‘ì¸ ì¼ì˜ Fileë‚´ ìœ„ì¹˜
 typedef struct scpfFilePosition
 {
-    UInt       mIdx;      // ÇöÀç ´Ù·ç°í ÀÖ´Â ÆÄÀÏÀÇ ¹øÈ£
-    ULong      mOffset;   // ÇöÀç±îÁö ÀĞ°Å³ª ¾´ FileOffset
+    UInt       mIdx;      // í˜„ì¬ ë‹¤ë£¨ê³  ìˆëŠ” íŒŒì¼ì˜ ë²ˆí˜¸
+    ULong      mOffset;   // í˜„ì¬ê¹Œì§€ ì½ê±°ë‚˜ ì“´ FileOffset
 } scpfFilePosition;
 
-// ÇÏ³ªÀÇ Block¿¡ °üÇÑ Á¾ÇÕÀûÀÎ Á¤º¸
+// í•˜ë‚˜ì˜ Blockì— ê´€í•œ ì¢…í•©ì ì¸ ì •ë³´
 typedef struct scpfBlockInfo
 {
     //Store
     UInt       mCheckSum;             // Checksum
-    UInt       mBlockID;              // ÀÌ BlockÀÇ File ³» Seq
-    SLong      mRowSeqOfFirstSlot;    // Block³» Ã¹¹øÂ° SlotÀÇ RowSeq
-    SLong      mRowSeqOfLastSlot;     // Block³» ¸¶Áö¸· Slot RowSeq
+    UInt       mBlockID;              // ì´ Blockì˜ File ë‚´ Seq
+    SLong      mRowSeqOfFirstSlot;    // Blockë‚´ ì²«ë²ˆì§¸ Slotì˜ RowSeq
+    SLong      mRowSeqOfLastSlot;     // Blockë‚´ ë§ˆì§€ë§‰ Slot RowSeq
 
-    UInt       mFirstRowSlotSeq;      // Block³» Ã¹¹øÂ° RowÀÇ SlotSeq 
-    UInt       mFirstRowOffset;       // Block³» Ã¹¹øÂ° RowÀÇ Offset
-    idBool     mHasLastChainedSlot;   // Block³» ¸¶Áö¸· SlotÀÌ ´ÙÀ½ Block¿¡
-                                      // ChainedµÅ¾î ÀÖ´ÂÁö ¿©ºÎ
-    UInt       mSlotCount ;           // Block³» ÃÑ SlotÀÇ °³¼ö
+    UInt       mFirstRowSlotSeq;      // Blockë‚´ ì²«ë²ˆì§¸ Rowì˜ SlotSeq 
+    UInt       mFirstRowOffset;       // Blockë‚´ ì²«ë²ˆì§¸ Rowì˜ Offset
+    idBool     mHasLastChainedSlot;   // Blockë‚´ ë§ˆì§€ë§‰ Slotì´ ë‹¤ìŒ Blockì—
+                                      // Chainedë¼ì–´ ìˆëŠ”ì§€ ì—¬ë¶€
+    UInt       mSlotCount ;           // Blockë‚´ ì´ Slotì˜ ê°œìˆ˜
  
     //Runtime
-    UChar    * mBlockPtr;             // ÀÌ Block¿¡ ´ëÇÑ ½ÇÁ¦ µ¥ÀÌÅÍ
+    UChar    * mBlockPtr;             // ì´ Blockì— ëŒ€í•œ ì‹¤ì œ ë°ì´í„°
 } scpfBlockInfo;
 
 extern smiDataPortHeaderDesc  gSCPfBlockHeaderEncDesc[];
 
-//FileÀÇ Header¿¡ ±â·ÏµÈ´Ù.
+//Fileì˜ Headerì— ê¸°ë¡ëœë‹¤.
 typedef struct scpfHeader
 {
-    UInt  mFileHeaderSize;     // FileÀÇ Çì´õ ºÎºĞÀÇ Å©±â
-    UInt  mBlockHeaderSize;    // BlockÀÇ HeaderÀÇ Å©±â
-    UInt  mBlockSize;          // Block ÇÏ³ªÀÇ Å©±â
-    UInt  mBlockInfoCount;     // ImportÇÏ´Âµ¥ ÇÊ¿äÇÑ BlockInfoÀÇ °³¼ö
-    UInt  mMaxRowCountInBlock; // ÇÏ³ªÀÇ BlockÀÌ °¡Áø RowÀÇ ÃÖ´ë °³¼ö. 
-                               // smiRow4DPÀÇ Å©±â °áÁ¤¿¡ »ç¿ëµÊ.
-                               // Block³» Row´Â UInt°³¸¦ ³ÑÀ» ¼ö ¾ø´Ù
-                               //     (BlockÀÇ Å©±â°¡ UInt°¡ ÇÑ°èÀÌ±â )
-    UInt  mBlockCount;         // ÀÌ FileÀÇ ÃÑ Block °³¼ö.
-                               // Export½Ã¿¡´Â ÇöÀç±îÁö »ı¼ºµÈ BlockÀÇ °³¼ö
-                               // Import½Ã¿¡´Â FileÀÌ °¡Áö°í ÀÖ´Â BlockÀÇ °³¼ö
-    SLong mRowCount;           // ÀÌ FileÀÌ °¡Áø RowÀÇ °³¼ö
-    SLong mFirstRowSeqInFile;  // File³» Ã¹¹øÂ° Row
-    SLong mLastRowSeqInFile;   // File³» ¹ÌÀÚ¹Í Row
+    UInt  mFileHeaderSize;     // Fileì˜ í—¤ë” ë¶€ë¶„ì˜ í¬ê¸°
+    UInt  mBlockHeaderSize;    // Blockì˜ Headerì˜ í¬ê¸°
+    UInt  mBlockSize;          // Block í•˜ë‚˜ì˜ í¬ê¸°
+    UInt  mBlockInfoCount;     // Importí•˜ëŠ”ë° í•„ìš”í•œ BlockInfoì˜ ê°œìˆ˜
+    UInt  mMaxRowCountInBlock; // í•˜ë‚˜ì˜ Blockì´ ê°€ì§„ Rowì˜ ìµœëŒ€ ê°œìˆ˜. 
+                               // smiRow4DPì˜ í¬ê¸° ê²°ì •ì— ì‚¬ìš©ë¨.
+                               // Blockë‚´ RowëŠ” UIntê°œë¥¼ ë„˜ì„ ìˆ˜ ì—†ë‹¤
+                               //     (Blockì˜ í¬ê¸°ê°€ UIntê°€ í•œê³„ì´ê¸° )
+    UInt  mBlockCount;         // ì´ Fileì˜ ì´ Block ê°œìˆ˜.
+                               // Exportì‹œì—ëŠ” í˜„ì¬ê¹Œì§€ ìƒì„±ëœ Blockì˜ ê°œìˆ˜
+                               // Importì‹œì—ëŠ” Fileì´ ê°€ì§€ê³  ìˆëŠ” Blockì˜ ê°œìˆ˜
+    SLong mRowCount;           // ì´ Fileì´ ê°€ì§„ Rowì˜ ê°œìˆ˜
+    SLong mFirstRowSeqInFile;  // Fileë‚´ ì²«ë²ˆì§¸ Row
+    SLong mLastRowSeqInFile;   // Fileë‚´ ë¯¸ìë¯¹ Row
 } scpfHeader;
 
 extern smiDataPortHeaderDesc  gSCPfFileHeaderEncDesc[];
 
-// Data¸¦ ÀúÀåÇÒ FileÀÇ Handle
+// Dataë¥¼ ì €ì¥í•  Fileì˜ Handle
 typedef struct scpfHandle
 {
     scpHandle               mCommonHandle;
     scpfHeader              mFileHeader;       // FileHeader
 
-    scpfBlockBufferPosition mBlockBufferPosition;    // ÁøÇàÁßÀÎ Block À§Ä¡
-    scpfFilePosition        mFilePosition;           // ÁøÇàÁßÀÎ ÆÄÀÏ À§Ä¡
+    scpfBlockBufferPosition mBlockBufferPosition;    // ì§„í–‰ì¤‘ì¸ Block ìœ„ì¹˜
+    scpfFilePosition        mFilePosition;           // ì§„í–‰ì¤‘ì¸ íŒŒì¼ ìœ„ì¹˜
 
 
-    /* ¿¹)    ÃÊ±â»óÅÂ
+    /* ì˜ˆ)    ì´ˆê¸°ìƒíƒœ
      *        BlockMap 0,1,2,3     
      *
-     *     => 0,1¹ø BlockÀÇ Row´Â ¸ğµÎ Ã³¸®ÇÏ¿´À½
-     *        (BlockBufferPosition.mSeq°¡ 2¸¦ °¡¸®Å´)
+     *     => 0,1ë²ˆ Blockì˜ RowëŠ” ëª¨ë‘ ì²˜ë¦¬í•˜ì˜€ìŒ
+     *        (BlockBufferPosition.mSeqê°€ 2ë¥¼ ê°€ë¦¬í‚´)
      *
-     *     => 2°³ ¸¸Å­ Shift½ÃÅ´
+     *     => 2ê°œ ë§Œí¼ Shiftì‹œí‚´
      *        BlockMap  2,3,0,1    
      *
-     *     => ÀÌÈÄ 0,1¹ø¿¡ 4,5¹ø BlockÀ» ¿Ã¸²
+     *     => ì´í›„ 0,1ë²ˆì— 4,5ë²ˆ Blockì„ ì˜¬ë¦¼
      *        BlockMap  2,3,4,5    
      */    
-    scpfBlockInfo     ** mBlockMap;         // ÀĞ°í¾²´Â ¸Ş¸ğ¸®»óÀÇ Buffer.
-                                            // CircularÇÏ°Ô ¼øÈ¯µÈ´Ù.
+    scpfBlockInfo     ** mBlockMap;         // ì½ê³ ì“°ëŠ” ë©”ëª¨ë¦¬ìƒì˜ Buffer.
+                                            // Circularí•˜ê²Œ ìˆœí™˜ëœë‹¤.
                   
-    smiRow4DP          * mRowList;          // Import½Ã º¸³¾ Rowµé(Imp)
+    smiRow4DP          * mRowList;          // Importì‹œ ë³´ë‚¼ Rowë“¤(Imp)
 
-    /*  BlockÀ» ÀĞ°í ¾²´Âµ¥ ÇÊ¿äÇÑ µ¿Àû ¸Ş¸ğ¸® °ø°£À» Block¸¶´Ù ÇÏ³ªÇÏ³ª
-     * ÇÒ´çÇÏÁö ¾Ê°í, ÇÑ¹ø¿¡ N°³¾¿ ÇÒ´çÇÑ ÈÄ BlockMap¿¡ ºĞ¹èÇÑ´Ù.
-     *  µû¶ó¼­ ÇÒ´çÇÑ ¸Ş¸ğ¸®¸¦ ÇØÁ¦ÇÒ¶§¸¦ À§ÇØ ÇÒ´ç¹ŞÀ» ´ç½ÃÀÇ Pointer
-     * ¸¦ °¡Áö°í ÀÖ¾î¾ß ÇÑ´Ù. ´ÙÀ½ ¼¼ º¯¼ö´Â ±× PointerÀÌ´Ù. */
-    scpfBlockInfo      * mBlockBuffer;      // BlockInfoÀÇ Buffer
-    smiValue           * mValueBuffer;      // RowList³» ValueList(Imp)
-    UChar              * mAllocatedBlock;   // ÇÒ´çÇÑ Block
-    UInt               * mColumnMap;        // columnHeaderÀÇ ColumnMap¸ñ·Ï
-                                            // À» ÀÓ½Ã·Î ÀúÀåÇØµĞ´Ù
+    /*  Blockì„ ì½ê³  ì“°ëŠ”ë° í•„ìš”í•œ ë™ì  ë©”ëª¨ë¦¬ ê³µê°„ì„ Blockë§ˆë‹¤ í•˜ë‚˜í•˜ë‚˜
+     * í• ë‹¹í•˜ì§€ ì•Šê³ , í•œë²ˆì— Nê°œì”© í• ë‹¹í•œ í›„ BlockMapì— ë¶„ë°°í•œë‹¤.
+     *  ë”°ë¼ì„œ í• ë‹¹í•œ ë©”ëª¨ë¦¬ë¥¼ í•´ì œí• ë•Œë¥¼ ìœ„í•´ í• ë‹¹ë°›ì„ ë‹¹ì‹œì˜ Pointer
+     * ë¥¼ ê°€ì§€ê³  ìˆì–´ì•¼ í•œë‹¤. ë‹¤ìŒ ì„¸ ë³€ìˆ˜ëŠ” ê·¸ Pointerì´ë‹¤. */
+    scpfBlockInfo      * mBlockBuffer;      // BlockInfoì˜ Buffer
+    smiValue           * mValueBuffer;      // RowListë‚´ ValueList(Imp)
+    UChar              * mAllocatedBlock;   // í• ë‹¹í•œ Block
+    UInt               * mColumnMap;        // columnHeaderì˜ ColumnMapëª©ë¡
+                                            // ì„ ì„ì‹œë¡œ ì €ì¥í•´ë‘”ë‹¤
 
-    UInt       mColumnChainingThreshold;// ColumnÀÌ ChainningµÇ´Â Å©±â
+    UInt       mColumnChainingThreshold;// Columnì´ Chainningë˜ëŠ” í¬ê¸°
 
-    SLong      mRowSeq;                 // Import/ExportÁøÇàÁßÀÎ Row
-    SLong      mLimitRowSeq;            // ImportÇÏ·Á´Â ¸¶Áö¸· Row(Imp)
-    SLong      mSplit;                  // ÆÄÀÏÀÌ ÂÉ°³Áö´Â ºĞ±âÁ¡
+    SLong      mRowSeq;                 // Import/Exportì§„í–‰ì¤‘ì¸ Row
+    SLong      mLimitRowSeq;            // Importí•˜ë ¤ëŠ” ë§ˆì§€ë§‰ Row(Imp)
+    SLong      mSplit;                  // íŒŒì¼ì´ ìª¼ê°œì§€ëŠ” ë¶„ê¸°ì 
 
-    UChar    * mChainedSlotBuffer;      // ChainedµÈ Row¸¦ ±â·ÏÇÏ´Â °ø°£(Imp)
-    UInt       mUsedChainedSlotBufSize; // »ç¿ëµÈ ChainedRowBuf Å©±â (Imp)
+    UChar    * mChainedSlotBuffer;      // Chainedëœ Rowë¥¼ ê¸°ë¡í•˜ëŠ” ê³µê°„(Imp)
+    UInt       mUsedChainedSlotBufSize; // ì‚¬ìš©ëœ ChainedRowBuf í¬ê¸° (Imp)
 
-    idBool     mIsFirstSlotInRow;       // RowÀÇ Ã¹ SlotÀÎ°¡ (Exp)
+    idBool     mIsFirstSlotInRow;       // Rowì˜ ì²« Slotì¸ê°€ (Exp)
 
-    UInt       mAllocatedLobSlotSize;   // ±â·Ï ¿¹¾àÇØµĞ Lob¿µ¿ªÀÇ Å©±â
-    UInt       mRemainLobLength;        // ÇöÀç ±â·ÏÇÏ´Â LobÀÇ ³²Àº ±æÀÌ
-    UInt       mRemainLobColumnCount;   // ±â·ÏÇØ¾ß ÇÏ´Â ³²Àº LobColumn°³¼ö
+    UInt       mAllocatedLobSlotSize;   // ê¸°ë¡ ì˜ˆì•½í•´ë‘” Lobì˜ì—­ì˜ í¬ê¸°
+    UInt       mRemainLobLength;        // í˜„ì¬ ê¸°ë¡í•˜ëŠ” Lobì˜ ë‚¨ì€ ê¸¸ì´
+    UInt       mRemainLobColumnCount;   // ê¸°ë¡í•´ì•¼ í•˜ëŠ” ë‚¨ì€ LobColumnê°œìˆ˜
 
     idBool     mOpenFile;
     iduFile    mFile;      
-    SChar      mDirectory[SM_MAX_FILE_NAME];  // DirectoryÀÌ¸§
-    SChar      mObjName[SM_MAX_FILE_NAME];    // ObjectÀÌ¸§
-    SChar      mFileName[SM_MAX_FILE_NAME];   // ÆÄÀÏÀÇ ÀÌ¸§
+    SChar      mDirectory[SM_MAX_FILE_NAME];  // Directoryì´ë¦„
+    SChar      mObjName[SM_MAX_FILE_NAME];    // Objectì´ë¦„
+    SChar      mFileName[SM_MAX_FILE_NAME];   // íŒŒì¼ì˜ ì´ë¦„
 
 } scpfHandle;
 

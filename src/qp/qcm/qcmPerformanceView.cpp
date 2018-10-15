@@ -19,7 +19,7 @@
  *
  * Description :
  *
- *     FT Å×ÀÌºíµé¿¡ ´ëÇÏ¿©
+ *     FT í…Œì´ë¸”ë“¤ì— ëŒ€í•˜ì—¬
  *
  *        [BUG-16437]
  *
@@ -29,12 +29,12 @@
  *           A1, A2, A3
  *        FROM X$TABLE;
  *
- *     °ú °°ÀÌ view¸¦ Á¤ÀÇÇÏ¿© ÀÏ¹İ »ç¿ëÀÚ¿¡°Ô´Â  ÀÌ view¿¡ ´ëÇÑ ¿¬»ê¸¸À»
- *     °³¹æÇÏµµ·Ï ÇÑ´Ù.
+ *     ê³¼ ê°™ì´ viewë¥¼ ì •ì˜í•˜ì—¬ ì¼ë°˜ ì‚¬ìš©ìì—ê²ŒëŠ”  ì´ viewì— ëŒ€í•œ ì—°ì‚°ë§Œì„
+ *     ê°œë°©í•˜ë„ë¡ í•œë‹¤.
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  **********************************************************************/
 
 #include <idl.h>
@@ -54,13 +54,13 @@
 
 
 // PROJ-1726
-// µ¿Àû ¸ğµâÈ­°¡ ÁøÇàµÈ ¸ğµâÀÇ °æ¿ì ÆÛÆ÷¸Õ½º ºäÀÇ Á¤ÀÇ°¡
-// <¸ğµâ>i.h ¿¡ define À¸·Î Á¤ÀÇµÇ¾îÀÖ´Ù.
+// ë™ì  ëª¨ë“ˆí™”ê°€ ì§„í–‰ëœ ëª¨ë“ˆì˜ ê²½ìš° í¼í¬ë¨¼ìŠ¤ ë·°ì˜ ì •ì˜ê°€
+// <ëª¨ë“ˆ>i.h ì— define ìœ¼ë¡œ ì •ì˜ë˜ì–´ìˆë‹¤.
 #include <rpi.h>
 #include <sti.h>
 
-// PROJ-1726 - qcmPerformanceViewManager ¿¡¼­ »ç¿ëÇÏ´Â
-// static º¯¼ö ¼±¾ğ.
+// PROJ-1726 - qcmPerformanceViewManager ì—ì„œ ì‚¬ìš©í•˜ëŠ”
+// static ë³€ìˆ˜ ì„ ì–¸.
 SChar ** qcmPerformanceViewManager::mPreViews;
 SInt     qcmPerformanceViewManager::mNumOfPreViews;
 SInt     qcmPerformanceViewManager::mNumOfAddedViews;
@@ -75,7 +75,7 @@ SChar * gQcmPerformanceViews[] =
                "NAME, SLOTSIZE, COLUMNCOUNT "
             "FROM X$TABLE",
 
-    //[TASK-6757]LFG,SN Á¦°Å : LFG_ID ´Â 0 À¸·Î Ãâ·ÂÇÔ
+    //[TASK-6757]LFG,SN ì œê±° : LFG_ID ëŠ” 0 ìœ¼ë¡œ ì¶œë ¥í•¨
     (SChar*)"CREATE VIEW V$DISK_RTREE_HEADER "
            "(INDEX_NAME, INDEX_ID, INDEX_TBS_ID, TABLE_TBS_ID,"
            "IS_CONSISTENT, "
@@ -92,7 +92,7 @@ SChar * gQcmPerformanceViews[] =
            "INITEXTENTS, NEXTEXTENTS, MINEXTENTS, MAXEXTENTS "
         "FROM X$DISK_RTREE_HEADER",
 
-    //[TASK-6757]LFG,SN Á¦°Å : LFG_ID ´Â 0 À¸·Î Ãâ·ÂÇÔ
+    //[TASK-6757]LFG,SN ì œê±° : LFG_ID ëŠ” 0 ìœ¼ë¡œ ì¶œë ¥í•¨
     (SChar*)"CREATE VIEW V$DISK_BTREE_HEADER "
                "(INDEX_NAME, INDEX_ID, INDEX_TBS_ID, TABLE_TBS_ID,"
                "IS_UNIQUE, COLLENINFO_LIST, IS_CONSISTENT, "
@@ -119,7 +119,7 @@ SChar * gQcmPerformanceViews[] =
                "BUILT_TYPE "
             "FROM X$MEM_BTREE_HEADER",
 
-    // BUG-18122 : MEM_BTREE_NODEPOOL performance view Ãß°¡
+    // BUG-18122 : MEM_BTREE_NODEPOOL performance view ì¶”ê°€
     (SChar*)"CREATE VIEW V$MEM_BTREE_NODEPOOL "
                "(TOTAL_PAGE_COUNT, TOTAL_NODE_COUNT, FREE_NODE_COUNT, USED_NODE_COUNT, "
                "NODE_SIZE, TOTAL_ALLOC_REQ, TOTAL_FREE_REQ, FREE_REQ_COUNT ) "
@@ -150,8 +150,8 @@ SChar * gQcmPerformanceViews[] =
             "FROM X$TABLESPACES A, X$TABLESPACES_HEADER B "
             "WHERE A.ID=B.ID",
 
-    // archive Á¤º¸µî ¹é¾÷¿¡¼­ »ç¿ëµÇ´Â performance view.
-    //[TASK-6757]LFG,SN Á¦°Å : LFG_ID ´Â 0À¸·Î Ãâ·ÂÇÔ  
+    // archive ì •ë³´ë“± ë°±ì—…ì—ì„œ ì‚¬ìš©ë˜ëŠ” performance view.
+    //[TASK-6757]LFG,SN ì œê±° : LFG_ID ëŠ” 0ìœ¼ë¡œ ì¶œë ¥í•¨  
     (SChar*)"CREATE VIEW V$ARCHIVE "
                 "(LFG_ID, ARCHIVE_MODE, ARCHIVE_THR_RUNNING, ARCHIVE_DEST, "
                 "NEXTLOGFILE_TO_ARCH, OLDEST_ACTIVE_LOGFILE,CURRENT_LOGFILE) "
@@ -160,7 +160,7 @@ SChar * gQcmPerformanceViews[] =
                 "NEXTLOGFILE_TO_ARCH, OLDEST_ACTIVE_LOGFILE,CURRENT_LOGFILE "
             "FROM X$ARCHIVE",
 
-    // buffer pool Åë°è¸¦ º¸¿©ÁÖ´Â performance view.
+    // buffer pool í†µê³„ë¥¼ ë³´ì—¬ì£¼ëŠ” performance view.
     (SChar*)"CREATE VIEW V$BUFFPOOL_STAT"
                 "(ID, POOL_SIZE, PAGE_SIZE, HASH_BUCKET_COUNT, HASH_CHAIN_LATCH_COUNT, "
                 "LRU_LIST_COUNT, PREPARE_LIST_COUNT, FLUSH_LIST_COUNT, CHECKPOINT_LIST_COUNT, "
@@ -198,7 +198,7 @@ SChar * gQcmPerformanceViews[] =
                 "FIX_PAGES,CREATE_PAGES,HIT_RATIO "
             "FROM X$BUFFER_PAGE_INFO WHERE PAGE_TYPE = 10",
 
-    // memory GC»óÅÂ¸¦ º¸¿©ÁÖ´Â fixed table.
+    // memory GCìƒíƒœë¥¼ ë³´ì—¬ì£¼ëŠ” fixed table.
     (SChar*)"CREATE VIEW V$MEMGC "
                 "(GC_NAME, CURRSYSTEMVIEWSCN, MINMEMSCNINTXS, OLDESTTX, SCNOFTAIL, "
                 "IS_EMPTY_OIDLIST, ADD_OID_CNT, GC_OID_CNT, "
@@ -215,7 +215,7 @@ SChar * gQcmPerformanceViews[] =
                 "AGING_REQUEST_OID_CNT, AGING_PROCESSED_OID_CNT, THREAD_COUNT "
             "FROM X$MEMGC_DELTHR",
 
-    // disk GC»óÅÂ¸¦ º¸¿©ÁÖ´Â fixed table.
+    // disk GCìƒíƒœë¥¼ ë³´ì—¬ì£¼ëŠ” fixed table.
     /* xxxxxxxxxxxxxxxxxxxxxxxxxx
     (SChar*)"CREATE VIEW V$DISKGC "
                 "(GC_NAME, THREAD_COUNT, CURR_SYSTEMVIEWSCN, MINDISKSCN_INTXS, SCNOFTAIL, "
@@ -234,8 +234,8 @@ SChar * gQcmPerformanceViews[] =
             "FROM  X$DISK_DEL_THR",
             */
 
-    // aliasµÇ¾î performace view·Î º¸¿©Áö´Â fixed table.
-    //[TASK-6757]LFG,SN Á¦°Å : LFG_ID ´Â 0À¸·Î Ãâ·ÂÇÔ  
+    // aliasë˜ì–´ performace viewë¡œ ë³´ì—¬ì§€ëŠ” fixed table.
+    //[TASK-6757]LFG,SN ì œê±° : LFG_ID ëŠ” 0ìœ¼ë¡œ ì¶œë ¥í•¨  
     (SChar*)"CREATE VIEW V$DATAFILES "
                 "( ID, NAME, SPACEID, "
                 "OLDEST_LSN_LFGID, OLDEST_LSN_FILENO, OLDEST_LSN_OFFSET, "
@@ -252,8 +252,8 @@ SChar * gQcmPerformanceViews[] =
                 "MAX_OPEN_FD_COUNT, CUR_OPEN_FD_COUNT "
             "FROM X$DATAFILES",
 
-    // PR-13911 [PROJ-1490] DB Free Page List Performance View±¸Çö
-    // MEM_DBFILE_SIZE¿Í MEM_FREE_PAGE_COUNTÀ» °è»êÇÏ¿© selectÇÏµµ·Ï ¼öÁ¤
+    // PR-13911 [PROJ-1490] DB Free Page List Performance Viewêµ¬í˜„
+    // MEM_DBFILE_SIZEì™€ MEM_FREE_PAGE_COUNTì„ ê³„ì‚°í•˜ì—¬ selectí•˜ë„ë¡ ìˆ˜ì •
     (SChar*)"CREATE VIEW V$DATABASE "
                 "(DB_NAME, PRODUCT_SIGNATURE, DB_SIGNATURE, VERSION_ID, "
                 "COMPILE_BIT, ENDIAN, LOGFILE_SIZE, TX_TBL_SIZE, "
@@ -318,7 +318,7 @@ SChar * gQcmPerformanceViews[] =
 
     /* BUG-31080 - [SM] need the checking method about the amount of
      *             volatile tablespace.
-     * V$VOL_TABLESPACES¿¡ ALLOC_PAGE_COUNT, FREE_PAGE_COUNT Ä®·³À» Ãß°¡ÇÔ. */
+     * V$VOL_TABLESPACESì— ALLOC_PAGE_COUNT, FREE_PAGE_COUNT ì¹¼ëŸ¼ì„ ì¶”ê°€í•¨. */
     (SChar*)"CREATE VIEW V$VOL_TABLESPACES "
                 "(SPACE_ID, "
                 "SPACE_NAME, "
@@ -366,8 +366,8 @@ SChar * gQcmPerformanceViews[] =
                 " CAST(POOL_SIZE-USED_SIZE AS BIGINT) AS FREE_SIZE "
             "FROM X$MEMALLOC",
 
-    /* Local SID¸¦ ¾ò¾î¿À´Â ÁúÀÇ, ´Ù¸¥ ³ëµåÀÇ SID´Â ¼³Á¤µÉ ¼ö ¾øÀ¸¹Ç·Î,
-     * X$Property¿¡´Â ÀÚ½ÅÀÇ SID¸¸ Á¸ÀçÇÑ´Ù. */
+    /* Local SIDë¥¼ ì–»ì–´ì˜¤ëŠ” ì§ˆì˜, ë‹¤ë¥¸ ë…¸ë“œì˜ SIDëŠ” ì„¤ì •ë  ìˆ˜ ì—†ìœ¼ë¯€ë¡œ,
+     * X$Propertyì—ëŠ” ìì‹ ì˜ SIDë§Œ ì¡´ì¬í•œë‹¤. */
     (SChar*)"CREATE VIEW V$PROPERTY "
                 "( NAME, STOREDCOUNT, ATTR, MIN, MAX, "
                 "VALUE1, VALUE2, VALUE3, VALUE4, VALUE5, VALUE6, "
@@ -382,7 +382,7 @@ SChar * gQcmPerformanceViews[] =
     (SChar*)"CREATE VIEW V$SPROPERTY "
         "( SID, NAME, STOREDCOUNT, ATTR, MIN, MAX, ISSPECIFIED, "
         "VALUE1, VALUE2, VALUE3, VALUE4, VALUE5, VALUE6, VALUE7, VALUE8 ) "
-        /* asterisk·Î ¼³Á¤µÈ °ªÀÌ ÀÖ´Â °æ¿ì ÇÁ·ÎÆÛÆ¼ ¸¶´Ù ÇÏ³ª¾¿(LOCAL SID¸¦ °®´Â ÇÁ·ÎÆÛÆ¼) º¸¿©ÁØ´Ù. */
+        /* asteriskë¡œ ì„¤ì •ëœ ê°’ì´ ìˆëŠ” ê²½ìš° í”„ë¡œí¼í‹° ë§ˆë‹¤ í•˜ë‚˜ì”©(LOCAL SIDë¥¼ ê°–ëŠ” í”„ë¡œí¼í‹°) ë³´ì—¬ì¤€ë‹¤. */
         "AS SELECT '*', A.NAME, A.SPFILE_BY_ASTERISK_VALUE_COUNT, "
                 "A.ATTR, A.MIN, A.MAX, 'TRUE', "
                 "A.SPFILE_BY_ASTERISK_VALUE1, A.SPFILE_BY_ASTERISK_VALUE2, "
@@ -393,7 +393,7 @@ SChar * gQcmPerformanceViews[] =
             "WHERE A.SID = B.SID AND B.NAME = 'SID' "
                 "AND A.SPFILE_BY_ASTERISK_VALUE_COUNT > 0 AND MOD(A.ATTR,2)=0 "
         "UNION ALL "
-        /* "SID"·Î ¼³Á¤µÈ °ªÀº ¸ğµç SID, NAME¿¡ ´ëÇØ º¸¿©ÁØ´Ù. */
+        /* "SID"ë¡œ ì„¤ì •ëœ ê°’ì€ ëª¨ë“  SID, NAMEì— ëŒ€í•´ ë³´ì—¬ì¤€ë‹¤. */
             "SELECT SID, NAME, SPFILE_BY_SID_VALUE_COUNT, "
                 "ATTR, MIN, MAX, 'TRUE', "
                 "SPFILE_BY_SID_VALUE1, SPFILE_BY_SID_VALUE2, "
@@ -403,10 +403,10 @@ SChar * gQcmPerformanceViews[] =
             "FROM X$PROPERTY "
             "WHERE MOD(ATTR,2)=0 AND SPFILE_BY_SID_VALUE_COUNT > 0 "
         "UNION ALL "
-        /* ÇÏ³ªÀÇ ÇÁ·ÎÆÛÆ¼ ¸®½ºÆ®¿¡¼­ asterisk¿Í "SID" µÎ °¡Áö Áß ÇÏ³ªµµ
-         * ¼³Á¤µÈ °ÍÀÌ ¾øÀ¸¸é asterisk¿Í nullÀ» °®´Â °ªÀ» ¹İÈ¯ÇÑ´Ù.
-         * v$property¸¦ v·Î »ç¿ëÇÏ¿© ÇÁ·ÎÆÛÆ¼ ¸ñ·Ï¿¡¼­
-         * '*'³ª'sid'·Î ¼³Á¤µÇÁö ¾ÊÀº ÇÁ·ÎÆÛÆ¼¸¦ Ã£À½. */
+        /* í•˜ë‚˜ì˜ í”„ë¡œí¼í‹° ë¦¬ìŠ¤íŠ¸ì—ì„œ asteriskì™€ "SID" ë‘ ê°€ì§€ ì¤‘ í•˜ë‚˜ë„
+         * ì„¤ì •ëœ ê²ƒì´ ì—†ìœ¼ë©´ asteriskì™€ nullì„ ê°–ëŠ” ê°’ì„ ë°˜í™˜í•œë‹¤.
+         * v$propertyë¥¼ vë¡œ ì‚¬ìš©í•˜ì—¬ í”„ë¡œí¼í‹° ëª©ë¡ì—ì„œ
+         * '*'ë‚˜'sid'ë¡œ ì„¤ì •ë˜ì§€ ì•Šì€ í”„ë¡œí¼í‹°ë¥¼ ì°¾ìŒ. */
             "SELECT '*', V.NAME, 0, ATTR, MIN, MAX, 'FALSE', "
                 "VARCHAR'', VARCHAR'', VARCHAR'', VARCHAR'', VARCHAR'', VARCHAR'', VARCHAR'', VARCHAR'' "
             "FROM "
@@ -548,7 +548,7 @@ SChar * gQcmPerformanceViews[] =
             "FROM X$STATEMENT A, X$WAIT_EVENT_NAME B "
             "WHERE A.SEQNUM = B.EVENT_ID ",
 
-    //[TASK-6757]LFG,SN Á¦°Å : LFG_ID ´Â 0À¸·Î Ãâ·ÂÇÔ  
+    //[TASK-6757]LFG,SN ì œê±° : LFG_ID ëŠ” 0ìœ¼ë¡œ ì¶œë ¥í•¨  
     (SChar*)"CREATE VIEW V$TRANSACTION "
                 "( ID, SESSION_ID, MEMORY_VIEW_SCN, MIN_MEMORY_LOB_VIEW_SCN, "
                 "DISK_VIEW_SCN, MIN_DISK_LOB_VIEW_SCN, COMMIT_SCN, "
@@ -895,7 +895,7 @@ SChar * gQcmPerformanceViews[] =
                 "A. REMOVE_THR_COUNT "
             "FROM  X$SERVICE_THREAD_MGR  A",
 
-    //[TASK-6757]LFG,SN Á¦°Å : LFG_ID ´Â 0À¸·Î Ãâ·ÂÇÔ  
+    //[TASK-6757]LFG,SN ì œê±° : LFG_ID ëŠ” 0ìœ¼ë¡œ ì¶œë ¥í•¨  
     (SChar*)"CREATE VIEW V$LOG"
                 "( BEGIN_CHKPT_LFGID, BEGIN_CHKPT_FILE_NO, "
                 "BEGIN_CHKPT_FILE_OFFSET, END_CHKPT_LFGID, END_CHKPT_FILE_NO, "
@@ -1072,9 +1072,9 @@ SChar * gQcmPerformanceViews[] =
             "FROM X$PKGTEXT",
 
     // BUG-17202
-    // ODBC SPEC¿¡ ¸Â´Â °á°ú¸¦ º¸¿©ÁÖ±â À§ÇØ
-    // ODBC_DATA_TYPE°ú ODBC_SQL_DATA_TYPE¸¦ DATA_TYPE, SQL_DATA_TYPEÀ¸·Î º¯È¯
-    // BUG-17684 V$DATATYPE ¿¡ DATA_TYPE(server type), ODBC_DATA_TYPE ºĞ¸®
+    // ODBC SPECì— ë§ëŠ” ê²°ê³¼ë¥¼ ë³´ì—¬ì£¼ê¸° ìœ„í•´
+    // ODBC_DATA_TYPEê³¼ ODBC_SQL_DATA_TYPEë¥¼ DATA_TYPE, SQL_DATA_TYPEìœ¼ë¡œ ë³€í™˜
+    // BUG-17684 V$DATATYPE ì— DATA_TYPE(server type), ODBC_DATA_TYPE ë¶„ë¦¬
 
     (SChar*)"CREATE VIEW V$DATATYPE "
                 "( TYPE_NAME, DATA_TYPE, ODBC_DATA_TYPE, COLUMN_SIZE, LITERAL_PREFIX, "
@@ -1100,8 +1100,8 @@ SChar * gQcmPerformanceViews[] =
                 "DECODE(INDEX_TYPE,2, 'PRIMARY','NORMAL') INDEXTYPE "
             "FROM X$INDEX",
 
-    /* BUG-24577 V$SEGMENT¿¡ UDSEG ¿Í TSSEG Á¤º¸¸¦ Ãâ·ÂÇÑ´Ù */
-    /* BUG-44171 V$SEGMENT.SEGMENT_TYPE ¿¡ LOBÀ» Ãß°¡ */
+    /* BUG-24577 V$SEGMENTì— UDSEG ì™€ TSSEG ì •ë³´ë¥¼ ì¶œë ¥í•œë‹¤ */
+    /* BUG-44171 V$SEGMENT.SEGMENT_TYPE ì— LOBì„ ì¶”ê°€ */
     (SChar*)"CREATE VIEW V$SEGMENT "
                 "( SPACE_ID, TABLE_OID, SEGMENT_PID, SEGMENT_TYPE, "
                 "SEGMENT_STATE, EXTENT_TOTAL_COUNT ) "
@@ -1124,7 +1124,7 @@ SChar * gQcmPerformanceViews[] =
                 "TOTAL_EXTENT_COUNT "
                 "FROM X$TSSEGS ",
 
-    //[TASK-6757]LFG,SN Á¦°Å : LFG_ID ´Â 0À¸·Î Ãâ·ÂÇÔ  
+    //[TASK-6757]LFG,SN ì œê±° : LFG_ID ëŠ” 0ìœ¼ë¡œ ì¶œë ¥í•¨  
     (SChar*)"CREATE VIEW V$LFG "
                 "( LFG_ID, CUR_WRITE_LF_NO, CUR_WRITE_LF_OFFSET, "
                 "LF_OPEN_COUNT, LF_PREPARE_COUNT, LF_PREPARE_WAIT_COUNT, "
@@ -1163,10 +1163,10 @@ SChar * gQcmPerformanceViews[] =
                 "INDEX_CNT, INDEX_VAR_SLOT_CNT "
             "FROM X$CATALOG",
 
-    /* TASK-4007 [SM] PBT¸¦ À§ÇÑ ±â´É Ãß°¡
-     * V$BUFFPAGEINFOÀÇ HITRATIO°è»êÀÌ Àß¸øµÇ´Â ¹ö±×¸¦ ¼öÁ¤ÇÕ´Ï´Ù.*/
-    /*BUG-30429     v$buffpageinfo ÀÇ ³»¿ëÀÇ HIT-RATIO °è»ê½Ã
-                    FIX_PAGE_COUNT¸¦ ´©¶ôÇÏ°í ÀÖ½À´Ï´Ù*/
+    /* TASK-4007 [SM] PBTë¥¼ ìœ„í•œ ê¸°ëŠ¥ ì¶”ê°€
+     * V$BUFFPAGEINFOì˜ HITRATIOê³„ì‚°ì´ ì˜ëª»ë˜ëŠ” ë²„ê·¸ë¥¼ ìˆ˜ì •í•©ë‹ˆë‹¤.*/
+    /*BUG-30429     v$buffpageinfo ì˜ ë‚´ìš©ì˜ HIT-RATIO ê³„ì‚°ì‹œ
+                    FIX_PAGE_COUNTë¥¼ ëˆ„ë½í•˜ê³  ìˆìŠµë‹ˆë‹¤*/
     (SChar*)"CREATE VIEW V$BUFFPAGEINFO "
                 "( PAGE_TYPE, READ_PAGE_COUNT, "
                 "GET_PAGE_COUNT, FIX_PAGE_COUNT, CREATE_PAGE_COUNT, HIT_RATIO ) "
@@ -1359,7 +1359,7 @@ SChar * gQcmPerformanceViews[] =
 
     /* PROJ-2102 Secondary Buffer */
 
-    /* Secondary Buffer Pool  Åë°è¸¦ º¸¿©ÁÖ´Â performance view. */
+    /* Secondary Buffer Pool  í†µê³„ë¥¼ ë³´ì—¬ì£¼ëŠ” performance view. */
     (SChar*)"CREATE VIEW V$SBUFFER_STAT "
                 "(PAGE_COUNT, HASH_BUCKET_COUNT,HASH_CHAIN_LATCH_COUNT, "
                 "CHECKPOINT_LIST_COUNT, HASH_PAGES, FLUSH_PAGES, CHECKPOINT_LIST_PAGES,"
@@ -1381,7 +1381,7 @@ SChar * gQcmPerformanceViews[] =
                 "/ ( MPR_READ_USEC/1000/1000 ) END AS DOUBLE) "
             "FROM X$SBUFFER_STAT",
 
-    /* Secondary Buffer Flusher °¢°¢ÀÇ Åë°è¸¦ º¸¿©ÁÖ´Â performance view. */
+    /* Secondary Buffer Flusher ê°ê°ì˜ í†µê³„ë¥¼ ë³´ì—¬ì£¼ëŠ” performance view. */
     (SChar*)"CREATE VIEW V$SFLUSHER "
                 "( ID, ALIVE, CURRENT_JOB, DOING_IO, INIOB_COUNT,"
                 "REPLACE_FLUSH_JOBS, REPLACE_FLUSH_PAGES, REPLACE_SKIP_PAGES,"
@@ -1410,7 +1410,7 @@ SChar * gQcmPerformanceViews[] =
                 "/ ( (TOTAL_TEMP_WRITE_USec )/1000/1000 ) END AS DOUBLE) "
                 "FROM X$SBUFFER_FLUSHER",
  
-    /* Secondary Buffer FlushMgrÀÇ Åë°è¸¦ º¸¿©ÁÖ´Â performance view. */
+    /* Secondary Buffer FlushMgrì˜ í†µê³„ë¥¼ ë³´ì—¬ì£¼ëŠ” performance view. */
     (SChar*)"CREATE VIEW V$SFLUSHINFO "
                 "( FLUSHER_COUNT, CHECKPOINT_LIST_COUNT, REQ_JOB_COUNT, "
                 "REPLACE_PAGES,  CHECKPOINT_PAGES, "
@@ -1463,7 +1463,7 @@ SChar * gQcmPerformanceViews[] =
                 "                               1, 'TRUE', "
                 "                               'UNKNOWN') QUERY_REWRITE_ENABLE "
             "FROM X$INTERNAL_SESSION A",
-    /* PROJ-2624 [±â´É¼º] MM - À¯¿¬ÇÑ access_list °ü¸®¹æ¹ı Á¦°ø */
+    /* PROJ-2624 [ê¸°ëŠ¥ì„±] MM - ìœ ì—°í•œ access_list ê´€ë¦¬ë°©ë²• ì œê³µ */
     (SChar*)"CREATE VIEW V$ACCESS_LIST "
                 "( ID, OPERATION, ADDRESS, MASK )"
             "AS SELECT "
@@ -1503,8 +1503,8 @@ IDE_RC qcmPerformanceView::makeParseTreeForViewInSelect(
 /***********************************************************************
  *
  * Description :
- *  select * from v$table °ú °°Àº ÁúÀÇ¿¡ ´ëÇØ¼­
- *  v$tableÀÇ parseTree¸¦ »ı¼ºÇÑ´Ù.
+ *  select * from v$table ê³¼ ê°™ì€ ì§ˆì˜ì— ëŒ€í•´ì„œ
+ *  v$tableì˜ parseTreeë¥¼ ìƒì„±í•œë‹¤.
  *
  * Implementation :
  *
@@ -1527,15 +1527,15 @@ IDE_RC qcmPerformanceView::makeParseTreeForViewInSelect(
     // set meber of qcStatement
     idlOS::memcpy( sStatement, aStatement, ID_SIZEOF(qcStatement) );
 
-    // myPlanÀ» Àç¼³Á¤ÇÑ´Ù.
+    // myPlanì„ ì¬ì„¤ì •í•œë‹¤.
     sStatement->myPlan = & sStatement->privatePlan;
     sStatement->myPlan->planEnv = NULL;
 
-    // PROJ-1726 - performance view ½ºÆ®¸µÀ» ¾ò±â À§ÇØ¼­
-    // gQcmPerformanceViews ¸¦ Á÷Á¢Á¢±ÙÇÏ´Â ´ë½Å
-    // qcmPerformanceViewManager::get(idx) À» ÀÌ¿ë, °£Á¢Á¢±ÙÀ» ÇÑ´Ù.
-    // ÀÌ´Â gQcmPerformanceViews ¿Ü¿¡ µ¿Àû¸ğµâÀÌ ·ÎµåµÉ ¶§
-    // Ãß°¡·Î µî·ÏµÇ´Â performance view ¸¦ À§ÇÑ °ÍÀÌ´Ù.
+    // PROJ-1726 - performance view ìŠ¤íŠ¸ë§ì„ ì–»ê¸° ìœ„í•´ì„œ
+    // gQcmPerformanceViews ë¥¼ ì§ì ‘ì ‘ê·¼í•˜ëŠ” ëŒ€ì‹ 
+    // qcmPerformanceViewManager::get(idx) ì„ ì´ìš©, ê°„ì ‘ì ‘ê·¼ì„ í•œë‹¤.
+    // ì´ëŠ” gQcmPerformanceViews ì™¸ì— ë™ì ëª¨ë“ˆì´ ë¡œë“œë  ë•Œ
+    // ì¶”ê°€ë¡œ ë“±ë¡ë˜ëŠ” performance view ë¥¼ ìœ„í•œ ê²ƒì´ë‹¤.
     sStmtText = qcmPerformanceViewManager::get(aTableRef->tableInfo->viewArrayNo);
     IDE_TEST_RAISE( sStmtText == NULL, ERR_PERFORMANCE_VIEW );
     sStmtTextLen = idlOS::strlen( sStmtText );
@@ -1548,9 +1548,9 @@ IDE_RC qcmPerformanceView::makeParseTreeForViewInSelect(
             (void **)(&(sStatement->myPlan->stmtText)) )
         != IDE_SUCCESS);
 
-    // PROJ-1726 - performance view ½ºÆ®¸µÀ» ¾ò±â À§ÇØ¼­
-    // gQcmPerformanceViews ¸¦ Á÷Á¢Á¢±ÙÇÏ´Â ´ë½Å
-    // qcmPerformanceViewManager::get(idx) À» ÀÌ¿ë, °£Á¢Á¢±ÙÀ» ÇÑ´Ù.
+    // PROJ-1726 - performance view ìŠ¤íŠ¸ë§ì„ ì–»ê¸° ìœ„í•´ì„œ
+    // gQcmPerformanceViews ë¥¼ ì§ì ‘ì ‘ê·¼í•˜ëŠ” ëŒ€ì‹ 
+    // qcmPerformanceViewManager::get(idx) ì„ ì´ìš©, ê°„ì ‘ì ‘ê·¼ì„ í•œë‹¤.
     idlOS::memcpy(sStatement->myPlan->stmtText,
                   sStmtText,
                   sStmtTextLen);
@@ -1568,7 +1568,7 @@ IDE_RC qcmPerformanceView::makeParseTreeForViewInSelect(
     // set parse tree
     aTableRef->view = sCreateViewParseTree->select;
 
-    // planEnv¸¦ Àç¼³Á¤ÇÑ´Ù.
+    // planEnvë¥¼ ì¬ì„¤ì •í•œë‹¤.
     aTableRef->view->myPlan->planEnv = aStatement->myPlan->planEnv;
 
     return IDE_SUCCESS;
@@ -1589,8 +1589,8 @@ IDE_RC qcmPerformanceView::registerPerformanceView( idvSQL * aStatistics )
 /***********************************************************************
  *
  * Description :
- *  fixedTableÀ» ±â¹İÀ¸·Î gQcmPerformanceViews[]¿¡ Á¤ÀÇµÈ
- *  performanceView¸¦ Á¤ÀÇÇÑ´Ù.
+ *  fixedTableì„ ê¸°ë°˜ìœ¼ë¡œ gQcmPerformanceViews[]ì— ì •ì˜ëœ
+ *  performanceViewë¥¼ ì •ì˜í•œë‹¤.
  *
  * Implementation :
  *
@@ -1613,7 +1613,7 @@ IDE_RC qcmPerformanceView::executeDDL(
 /***********************************************************************
  *
  * Description :
- *  create view V$...  statementÀÇ P/V/O/E ¼öÇà
+ *  create view V$...  statementì˜ P/V/O/E ìˆ˜í–‰
  *
  * Implementation :
  *
@@ -1694,8 +1694,8 @@ IDE_RC qcmPerformanceView::registerOnIduFixedTableDesc(
 /***********************************************************************
  *
  * Description :
- *  »õ·Î »ı¼ºµÈ create view V$... ÀÇ ³»¿ëÀ» fixedTable¿¡ µî·Ï
- *  ÀÌ ÀÛ¾÷Àº create view vXXX ¸¦ SYS_TABLES_ ¿¡ µî·ÏÇÏ´Â °úÁ¤°ú À¯»ç
+ *  ìƒˆë¡œ ìƒì„±ëœ create view V$... ì˜ ë‚´ìš©ì„ fixedTableì— ë“±ë¡
+ *  ì´ ì‘ì—…ì€ create view vXXX ë¥¼ SYS_TABLES_ ì— ë“±ë¡í•˜ëŠ” ê³¼ì •ê³¼ ìœ ì‚¬
  *
  * Implementation :
  *
@@ -1994,12 +1994,12 @@ SChar* qcmPerformanceViewManager::get(int aIdx)
 {
     SChar* sRetStr = NULL;
 
-    // ¸¸ÀÏ gQcmPerformanceViews ¿¡ µî·ÏµÈ performance view ÀÎ °æ¿ì
+    // ë§Œì¼ gQcmPerformanceViews ì— ë“±ë¡ëœ performance view ì¸ ê²½ìš°
     if(mNumOfPreViews > aIdx)
     {
         sRetStr = mPreViews[aIdx];
     }
-    // µ¿Àû¸ğµâ¿¡¼­ µî·ÏµÈ performance view ÀÎ °æ¿ì
+    // ë™ì ëª¨ë“ˆì—ì„œ ë“±ë¡ëœ performance view ì¸ ê²½ìš°
     else
     {
         if(aIdx < getTotalViewCount())
@@ -2016,7 +2016,7 @@ IDE_RC qcmPerformanceView::runDDLforPV( idvSQL * aStatistics )
 /***********************************************************************
  *
  * Description :
- *  gQcmPerformanceViews[i] À» fixedTableÀ» ±â¹İÀ¸·Î DDL ¼öÇà
+ *  gQcmPerformanceViews[i] ì„ fixedTableì„ ê¸°ë°˜ìœ¼ë¡œ DDL ìˆ˜í–‰
  *
  * Implementation :
  *
@@ -2073,18 +2073,18 @@ IDE_RC qcmPerformanceView::runDDLforPV( idvSQL * aStatistics )
               != IDE_SUCCESS );
     sStage = 2;
 
-    // PROJ-1726 - performance view ½ºÆ®¸µÀ» ¾ò±â À§ÇØ¼­
-    // gQcmPerformanceViews ¸¦ Á÷Á¢Á¢±ÙÇÏ´Â ´ë½Å
-    // qcmPerformanceViewManager::get(idx) À» ÀÌ¿ë, °£Á¢Á¢±ÙÀ» ÇÑ´Ù.
+    // PROJ-1726 - performance view ìŠ¤íŠ¸ë§ì„ ì–»ê¸° ìœ„í•´ì„œ
+    // gQcmPerformanceViews ë¥¼ ì§ì ‘ì ‘ê·¼í•˜ëŠ” ëŒ€ì‹ 
+    // qcmPerformanceViewManager::get(idx) ì„ ì´ìš©, ê°„ì ‘ì ‘ê·¼ì„ í•œë‹¤.
     for (i = 0; i < qcmPerformanceViewManager::getTotalViewCount(); i++)
     {
         IDE_TEST( sSmiStmt.begin( aStatistics, sDummySmiStmt, sSmiStmtFlag )
                   != IDE_SUCCESS );
         sStage = 3;
 
-        // PROJ-1726 - performance view ½ºÆ®¸µÀ» ¾ò±â À§ÇØ¼­
-        // gQcmPerformanceViews ¸¦ Á÷Á¢Á¢±ÙÇÏ´Â ´ë½Å
-        // qcmPerformanceViewManager::get(idx) À» ÀÌ¿ë, °£Á¢Á¢±ÙÀ» ÇÑ´Ù.
+        // PROJ-1726 - performance view ìŠ¤íŠ¸ë§ì„ ì–»ê¸° ìœ„í•´ì„œ
+        // gQcmPerformanceViews ë¥¼ ì§ì ‘ì ‘ê·¼í•˜ëŠ” ëŒ€ì‹ 
+        // qcmPerformanceViewManager::get(idx) ì„ ì´ìš©, ê°„ì ‘ì ‘ê·¼ì„ í•œë‹¤.
         sStmtText = qcmPerformanceViewManager::get(i);
         IDE_TEST_RAISE( sStmtText == NULL, ERR_PERFORMANCE_VIEW );
         
@@ -2145,8 +2145,8 @@ IDE_RC qcmPerformanceView::parseCreate(qcStatement * aStatement)
 /***********************************************************************
  *
  * Description :
- *  parseTree¸¦ ÀüÃ¼¸¦ Å½»öÇÏ¸é¼­ V$¸¦ Á¤ÀÇÇÒ ¶§ X$°¡ ¾Æ´Ñ ÀÏ¹İ table·Î
- *  Á¤ÀÇµÇÁö ¾Êµµ·Ï validation ¼öÇà.
+ *  parseTreeë¥¼ ì „ì²´ë¥¼ íƒìƒ‰í•˜ë©´ì„œ V$ë¥¼ ì •ì˜í•  ë•Œ X$ê°€ ì•„ë‹Œ ì¼ë°˜ tableë¡œ
+ *  ì •ì˜ë˜ì§€ ì•Šë„ë¡ validation ìˆ˜í–‰.
  *
  * Implementation :
  *
@@ -2165,7 +2165,7 @@ IDE_RC qcmPerformanceView::parseCreate(qcStatement * aStatement)
     *    --> in case of "X$" or "V$" : 3
     *    --> in case of normal table : 2
     *
-    *  BUGBUG      , jhseong, defineÇÏÀÚ.
+    *  BUGBUG      , jhseong, defineí•˜ì.
     *  if   1      : special tables for FixedTable, Performance View
     *  else 2      : normal tables
     *  else 0 or 3 : ERROR
@@ -2183,7 +2183,7 @@ IDE_RC qcmPerformanceView::parseCreate(qcStatement * aStatement)
 
     if( QC_SHARED_TMPLATE(aStatement)->fixedTableAutomataStatus == 1 )
     {
-        // PVÀÌ¸é functionÀ» overrideÇØ¼­ ÀÏ¹İ Å×ÀÌºí°ú ±¸ºĞÁş´Â´Ù.
+        // PVì´ë©´ functionì„ overrideí•´ì„œ ì¼ë°˜ í…Œì´ë¸”ê³¼ êµ¬ë¶„ì§“ëŠ”ë‹¤.
         aStatement->myPlan->parseTree->validate =
             qcmPerformanceView::validateCreate;
         aStatement->myPlan->parseTree->execute =
@@ -2207,7 +2207,7 @@ IDE_RC qcmPerformanceView::validateCreate(qcStatement * aStatement)
 /***********************************************************************
  *
  * Description :
- *  create view v$XXX ... ±¸¹®À» validationÇÔ.
+ *  create view v$XXX ... êµ¬ë¬¸ì„ validationí•¨.
  *
  * Implementation :
  *
@@ -2298,8 +2298,8 @@ IDE_RC qcmPerformanceView::executeCreate(qcStatement * aStatement)
 /***********************************************************************
  *
  * Description :
- *  create view v$XXX ... ±¸¹®À» ½ÇÇàÇÔ.
- *  ½ÇÇà °á°ú´Â iduFixedTableDesc ÀÚ·á±¸Á¶·Î fixedTable¿¡ view°¡ µî·ÏµÊ.
+ *  create view v$XXX ... êµ¬ë¬¸ì„ ì‹¤í–‰í•¨.
+ *  ì‹¤í–‰ ê²°ê³¼ëŠ” iduFixedTableDesc ìë£Œêµ¬ì¡°ë¡œ fixedTableì— viewê°€ ë“±ë¡ë¨.
  *
  * Implementation :
  *
@@ -2329,7 +2329,7 @@ qcmPerformanceView::nullBuildRecord( idvSQL              * /* aStatistics */,
 /***********************************************************************
  *
  * Description :
- *  iduFixedTableDesc ¿¡¼­ »ç¿ëµÇ´Â null function pointer
+ *  iduFixedTableDesc ì—ì„œ ì‚¬ìš©ë˜ëŠ” null function pointer
  *
  * Implementation :
  *

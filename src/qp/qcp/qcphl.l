@@ -47,9 +47,9 @@
 #include "qcphl.h"
 
 // To Fix PR-11793 To Remove Warning
-// Linux¿« ∞ÊøÏ /usr/include/bits/termios.h ø° ECHO∞° ¡§¿«µ«æÓ ¿÷¿Ω.'
-// Flex∞° ECHO∏¶ define«œø© ªÁøÎ«œπ«∑Œ, undef«ÿæﬂ «‘.
-// ¬¸¡∂) Flex∞° ª˝º∫«œ¥¬ qcphl.cpp ø°¥¬ ¥Ÿ¿Ω∞˙ ∞∞¿∫ Code∞° ª˝º∫µ .
+// LinuxÏùò Í≤ΩÏö∞ /usr/include/bits/termios.h Ïóê ECHOÍ∞Ä Ï†ïÏùòÎêòÏñ¥ ÏûàÏùå.'
+// FlexÍ∞Ä ECHOÎ•º defineÌïòÏó¨ ÏÇ¨Ïö©ÌïòÎØÄÎ°ú, undefÌï¥Ïïº Ìï®.
+// Ï∞∏Ï°∞) FlexÍ∞Ä ÏÉùÏÑ±ÌïòÎäî qcphl.cpp ÏóêÎäî Îã§ÏùåÍ≥º Í∞ôÏùÄ CodeÍ∞Ä ÏÉùÏÑ±Îê®.
 //       #ifndef ECHO
 //       #define ECHO LexerOutput( yytext, yyleng )
 //       #endif
@@ -265,7 +265,7 @@ SChar * qcphLexer::getLexLastError( SChar * aMessage )
 
 void qcphLexer::getPosition( qcNamePosition* aPosition )
 {
-    // mBuffer¥¬ ∫πªÁµ» πˆ∆€¿Ãπ«∑Œ mStatement->stmtText∏¶ ¿˙¿Â«ÿæﬂ «—¥Ÿ.
+    // mBufferÎäî Î≥µÏÇ¨Îêú Î≤ÑÌçºÏù¥ÎØÄÎ°ú mStatement->stmtTextÎ•º Ï†ÄÏû•Ìï¥Ïïº ÌïúÎã§.
     aPosition->stmtText = mStatement->myPlan->stmtText;
     aPosition->offset   = (mBufferLast-mBuffer)+(YYText()-mBufferInput);
     aPosition->size     = YYLeng();
@@ -284,7 +284,7 @@ void qcphLexer::strUpper( qcNamePosition* aPosition )
     }
     
     // BUG-9020
-    // mBuffer¥¬ ∫πªÁµ» πˆ∆€¿Ãπ«∑Œ mStatement->stmtTextø°µµ π›øµ«ÿæﬂ«—¥Ÿ.
+    // mBufferÎäî Î≥µÏÇ¨Îêú Î≤ÑÌçºÏù¥ÎØÄÎ°ú mStatement->stmtTextÏóêÎèÑ Î∞òÏòÅÌï¥ÏïºÌïúÎã§.
     sIndex = mStatement->myPlan->stmtText + mTextOffset + aPosition->offset;
     sFence = sIndex + aPosition->size;
 
@@ -323,7 +323,7 @@ void qcphLexer::setInitState( void )
         switch(mMtlModule->id)
         {
             case MTL_SHIFTJIS_ID:
-            /* PROJ-2590 [±‚¥…º∫] CP932 database character set ¡ˆø¯ */ 
+            /* PROJ-2590 [Í∏∞Îä•ÏÑ±] CP932 database character set ÏßÄÏõê */ 
             case MTL_MS932_ID:
             {
                 gCharType = IDN_CF_SJIS;
@@ -331,7 +331,7 @@ void qcphLexer::setInitState( void )
             }
             case MTL_BIG5_ID:
             case MTL_GB231280_ID:
-            /* PROJ-2414 [±‚¥…º∫] GBK, CP936 character set √ﬂ∞° */
+            /* PROJ-2414 [Í∏∞Îä•ÏÑ±] GBK, CP936 character set Ï∂îÍ∞Ä */
             case MTL_MS936_ID:
             case MTL_MS949_ID:
             {

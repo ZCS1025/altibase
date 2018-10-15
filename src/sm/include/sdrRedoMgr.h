@@ -20,30 +20,30 @@
  *
  * Description :
  *
- * º» ÆÄÀÏÀº DRDB º¹±¸°úÁ¤¿¡¼­ÀÇ Àç¼öÇà °ü¸®ÀÚ¿¡ ´ëÇÑ Çì´õ ÆÄÀÏÀÌ´Ù.
+ * ë³¸ íŒŒì¼ì€ DRDB ë³µêµ¬ê³¼ì •ì—ì„œì˜ ì¬ìˆ˜í–‰ ê´€ë¦¬ìì— ëŒ€í•œ í—¤ë” íŒŒì¼ì´ë‹¤.
  *
- * # °³³ä
+ * # ê°œë…
  *
- * DRDB¿¡ ´ëÇÑ restart recovery °úÁ¤Áß redoAll °úÁ¤À» È¿À²ÀûÀ¸·Î
- * Ã³¸®ÇÏ±â À§ÇÑ ÀÚ·á±¸Á¶ÀÌ´Ù.
+ * DRDBì— ëŒ€í•œ restart recovery ê³¼ì •ì¤‘ redoAll ê³¼ì •ì„ íš¨ìœ¨ì ìœ¼ë¡œ
+ * ì²˜ë¦¬í•˜ê¸° ìœ„í•œ ìë£Œêµ¬ì¡°ì´ë‹¤.
  *
- * - redoAll °úÁ¤¿¡¼­´Â ÆÇµ¶µÈ DRDB°ü·Ã redo ·Î±×µéÀ» ÆÄ½ÌÇÏ¿© Àû´çÇÑ
- *   tablespaceÀÇ page¿¡ ¹İ¿µÇØ¾ß ÇÑ´Ù.
- *   (physiological ·Î±ë)
+ * - redoAll ê³¼ì •ì—ì„œëŠ” íŒë…ëœ DRDBê´€ë ¨ redo ë¡œê·¸ë“¤ì„ íŒŒì‹±í•˜ì—¬ ì ë‹¹í•œ
+ *   tablespaceì˜ pageì— ë°˜ì˜í•´ì•¼ í•œë‹¤.
+ *   (physiological ë¡œê¹…)
  *
- * - µ¿ÀÏÇÑ tablespaceÀÇ °°Àº page¿¡ ÇØ´çÇÏ´Â redo ·Î±×¸¦
- *   ¸ğ¾Æ¼­ ÇÑ²¨¹ø¿¡ ¹İ¿µÇÏ´Â °ÍÀÌ buffer ¸Å´ÏÀúÀÇ I/O¸¦ ÁÙÀÏ ¼ö ÀÖ´Â
- *   ÀåÁ¡À» °¡Áö°Ô µÈ´Ù.
- *   (hash table »ç¿ëÀ¸·Î °¡´É)
+ * - ë™ì¼í•œ tablespaceì˜ ê°™ì€ pageì— í•´ë‹¹í•˜ëŠ” redo ë¡œê·¸ë¥¼
+ *   ëª¨ì•„ì„œ í•œêº¼ë²ˆì— ë°˜ì˜í•˜ëŠ” ê²ƒì´ buffer ë§¤ë‹ˆì €ì˜ I/Oë¥¼ ì¤„ì¼ ìˆ˜ ìˆëŠ”
+ *   ì¥ì ì„ ê°€ì§€ê²Œ ëœë‹¤.
+ *   (hash table ì‚¬ìš©ìœ¼ë¡œ ê°€ëŠ¥)
  *
- * # Àç¼öÇà °ü¸®ÀÚ ±¸Á¶
+ * # ì¬ìˆ˜í–‰ ê´€ë¦¬ì êµ¬ì¡°
  *
- *     Àç¼öÇà °ü¸®ÀÚ
+ *     ì¬ìˆ˜í–‰ ê´€ë¦¬ì
  *     ________________       ______
- *     |_______________| -----|_____| ·Î±×ÆÄ½Ì¹öÆÛ
+ *     |_______________| -----|_____| ë¡œê·¸íŒŒì‹±ë²„í¼
  *
  *
- *    restart recovery   1Â÷ Hash
+ *    restart recovery   1ì°¨ Hash
  *                       smuHash  sdrRedoRecvNode
  *                     ______|____  _________ __________ __________
  *                     |_________|--|(0,5)  |-| (2,10) |-| (3,25) |
@@ -52,11 +52,11 @@
  *                     |_________|      O          O sdrHashLogData
  *                     |_________|      O          O
  *                     |_________|                 O
- *                     |_________|--¤±-¤±
+ *                     |_________|--ã…-ã…
  *                     |_________|
- *                     |_________|--¤±-¤±-¤±-¤±
+ *                     |_________|--ã…-ã…-ã…-ã…
  *
- *    media recovery     2Â÷ hash (spaceID, fileID)
+ *    media recovery     2ì°¨ hash (spaceID, fileID)
  *                       smuHash  sdrRecvFileHashNode
  *                     ____|______  _________ _________
  *                     |_________|--| (1,0) |-| (2,0) |
@@ -65,31 +65,31 @@
  *                     |_________|
  *                     |_________|
  *                     |_________|
- *                     |_________|--¤±-¤±
+ *                     |_________|--ã…-ã…
  *                     |_________|
- *                     |_________|--¤±-¤±-¤±-¤±
+ *                     |_________|--ã…-ã…-ã…-ã…
  *
- *  - Àç¼öÇà °ü¸®ÀÚ
- *    DRDB¿¡ ´ëÇÑ redoAll°úÁ¤À» °ü¸®ÇÏ´Â ÀÚ·á±¸Á¶
- *    redoAll ´Ü°è¿¡ ÇÊ¿äÇÑ °¢Á¾ Á¤º¸ µéÀ» Æ÷ÇÔÇÑ´Ù.
+ *  - ì¬ìˆ˜í–‰ ê´€ë¦¬ì
+ *    DRDBì— ëŒ€í•œ redoAllê³¼ì •ì„ ê´€ë¦¬í•˜ëŠ” ìë£Œêµ¬ì¡°
+ *    redoAll ë‹¨ê³„ì— í•„ìš”í•œ ê°ì¢… ì •ë³´ ë“¤ì„ í¬í•¨í•œë‹¤.
  *
- *  - 1 Â÷ Hash : ¸®µÎ·Î±× ÀúÀå
- *    restart recover ¹× media recovery½Ã »ç¿ëÇÏ´Â hashÀÌ¸ç, hashkey´Â (space ID, page ID) ÀÌ´Ù
+ *  - 1 ì°¨ Hash : ë¦¬ë‘ë¡œê·¸ ì €ì¥
+ *    restart recover ë° media recoveryì‹œ ì‚¬ìš©í•˜ëŠ” hashì´ë©°, hashkeyëŠ” (space ID, page ID) ì´ë‹¤
  *
- *  - 2 Â÷ Hash : º¹±¸ÆÄÀÏÁ¤º¸ ÀúÀå
- *    media recovery½Ã »ç¿ëÇÏ´Â hashÀÌ¸ç, hashkey´Â (space ID, file ID) ÀÌ´Ù.
+ *  - 2 ì°¨ Hash : ë³µêµ¬íŒŒì¼ì •ë³´ ì €ì¥
+ *    media recoveryì‹œ ì‚¬ìš©í•˜ëŠ” hashì´ë©°, hashkeyëŠ” (space ID, file ID) ì´ë‹¤.
  *
  *  - sdrRedoHashNode
- *    hash ¹öÄÏ¿¡ chainÀ¸·Î ¿¬°áµÈ ÀÚ·á±¸Á¶ÀÌ¸ç,Æ¯Á¤ (space ID, pageID)
- *    ¿¡ ´ëÇÑ redo logÀÇ ¿¬°á¸®½ºÆ®¸¦ Æ÷ÇÔÇÑ´Ù.
+ *    hash ë²„ì¼“ì— chainìœ¼ë¡œ ì—°ê²°ëœ ìë£Œêµ¬ì¡°ì´ë©°,íŠ¹ì • (space ID, pageID)
+ *    ì— ëŒ€í•œ redo logì˜ ì—°ê²°ë¦¬ìŠ¤íŠ¸ë¥¼ í¬í•¨í•œë‹¤.
  *
  *  - sdrRedoLogData
- *    redo ·Î±× Á¤º¸¿Í ½ÇÁ¦ ·Î±×·¹ÄÚµå¸¦ Æ÷ÇÔÇÑ´Ù.
+ *    redo ë¡œê·¸ ì •ë³´ì™€ ì‹¤ì œ ë¡œê·¸ë ˆì½”ë“œë¥¼ í¬í•¨í•œë‹¤.
  *
  *  - sdrRecvFileHashNode
- *    º¹±¸ ´ë»óÀÇ µ¥ÀÌÅ¸ÆÄÀÏ¿¡ ´ëÇÑ º¹±¸Á¤º¸¸¦ °¡Áø´Ù. 1Â÷ ÇØ½¬ÀÇ
- *    HashNode°¡ ÇØ´ç ³ëµåÀÇ Æ÷ÀÌÅÍ¸¦ À¯ÁöÇÏ¿©, Media recovery¸¦ ¼öÇà
- *    ÇÑ´Ù.
+ *    ë³µêµ¬ ëŒ€ìƒì˜ ë°ì´íƒ€íŒŒì¼ì— ëŒ€í•œ ë³µêµ¬ì •ë³´ë¥¼ ê°€ì§„ë‹¤. 1ì°¨ í•´ì‰¬ì˜
+ *    HashNodeê°€ í•´ë‹¹ ë…¸ë“œì˜ í¬ì´í„°ë¥¼ ìœ ì§€í•˜ì—¬, Media recoveryë¥¼ ìˆ˜í–‰
+ *    í•œë‹¤.
  **********************************************************************/
 
 #ifndef _O_SDR_REDO_MGR_H_
@@ -103,15 +103,15 @@ class sdrRedoMgr
 {
 public:
 
-    /* mutex, ÇØ½ÃÅ×ÀÌºíµîÀ» ÃÊ±âÈ­ÇÏ´Â ÇÔ¼ö */
+    /* mutex, í•´ì‹œí…Œì´ë¸”ë“±ì„ ì´ˆê¸°í™”í•˜ëŠ” í•¨ìˆ˜ */
     static IDE_RC initialize(UInt            aHashTableSize,
                              smiRecoverType  aRecvType);
 
-    /* Àç¼öÇà °ü¸®ÀÚÀÇ ÇØÁ¦ */
+    /* ì¬ìˆ˜í–‰ ê´€ë¦¬ìì˜ í•´ì œ */
     static IDE_RC destroy();
 
     /* PROJ-2162 RestartRiskReduction
-     * RedoLogBody¸¦ ¼øÈ¸ÇÏ¸ç sdrRedoLogDataList¸¦ ¸¸µé¾î ¹İÈ¯ÇÔ */
+     * RedoLogBodyë¥¼ ìˆœíšŒí•˜ë©° sdrRedoLogDataListë¥¼ ë§Œë“¤ì–´ ë°˜í™˜í•¨ */
     static IDE_RC generateRedoLogDataList( smTID             aTransID,
                                            SChar           * aLogBuffer,
                                            UInt              aLogBufferSize,
@@ -119,11 +119,11 @@ public:
                                            smLSN           * aEndLSN,
                                            void           ** aLogDataList );
 
-    /* RedoLogList¸¦ FreeÇÔ */
+    /* RedoLogListë¥¼ Freeí•¨ */
     static IDE_RC freeRedoLogDataList( void            * aLogDataList );
 
     /* PROJ-2162 RestartRiskReduction
-     * OnlineREDO¸¦ ÅëÇØ DRDB Page¸¦ »õ·Î »ı¼ºÇÔ */
+     * OnlineREDOë¥¼ í†µí•´ DRDB Pageë¥¼ ìƒˆë¡œ ìƒì„±í•¨ */
     static IDE_RC generatePageUsingOnlineRedo( idvSQL     * aStatistics,
                                                scSpaceID    aSpaceID,
                                                scPageID     aPageID,
@@ -134,12 +134,12 @@ public:
 
     static IDE_RC addRedoLogToHashTable( void * aLogDataList );
 
-    /* ÇØ½Ã Å×ÀÌºí¿¡ ÀúÀåµÈ redo log¸¦
-       Àû´çÇÑ ÆäÀÌÁö¿¡ ¹İ¿µ */
+    /* í•´ì‹œ í…Œì´ë¸”ì— ì €ì¥ëœ redo logë¥¼
+       ì ë‹¹í•œ í˜ì´ì§€ì— ë°˜ì˜ */
     static IDE_RC applyHashedLogRec(idvSQL * aStatistics);
 
     /* PROJ-2162 RestartRiskReduction
-     * List·Î ¿¬°áµÈ LogµéÀ» ¸ğµÎ ¹İ¿µÇÑ´Ù. */
+     * Listë¡œ ì—°ê²°ëœ Logë“¤ì„ ëª¨ë‘ ë°˜ì˜í•œë‹¤. */
     static IDE_RC applyListedLogRec( sdrMtx         * aMtx,
                                      scSpaceID        aTargetSID,
                                      scPageID         aTargetPID,
@@ -148,7 +148,7 @@ public:
                                      sdrRedoLogData * aLogDataList );
 
 
-    /* BUGBUG - 9640 FILE ¿¬»ê¿¡ ´ëÇÑ redo */
+    /* BUGBUG - 9640 FILE ì—°ì‚°ì— ëŒ€í•œ redo */
     static IDE_RC  redoFILEOPER(smTID        aTransID,
                                 scSpaceID    aSpaceID,
                                 UInt         aFileID,
@@ -156,28 +156,28 @@ public:
                                 UInt         aAImgSize,
                                 SChar*       aLogRec);
 
-    /* BUGBUG - 7983 MRDB runtime memory¿¡ ´ëÇÑ redo */
+    /* BUGBUG - 7983 MRDB runtime memoryì— ëŒ€í•œ redo */
     static void redoRuntimeMRDB( void   * aTrans,
                                  SChar  * aLogRec );
 
-    // Redo Log List»óÀÇ Redo Log Data¸¦ ¸ğµÎ Á¦°ÅÇÑ´Ù.
+    // Redo Log Listìƒì˜ Redo Log Dataë¥¼ ëª¨ë‘ ì œê±°í•œë‹¤.
     static IDE_RC clearRedoLogList( sdrRedoHashNode*  aRedoHashNode );
 
-    /* º¹±¸ÇÒ datafileÀ» ºĞ¼®ÇÏ¿© hash¿¡ »ğÀÔ */
+    /* ë³µêµ¬í•  datafileì„ ë¶„ì„í•˜ì—¬ hashì— ì‚½ì… */
     static IDE_RC addRecvFileToHash( sddDataFileHdr*   aDBFileHdr,
                                      SChar*            aFileName,
                                      smLSN*            aRedoFromLSN,
                                      smLSN*            aRedoToLSN );
 
-    /* º¹±¸ hash³ëµå¿¡ ÇØ´çÇÏ´Â redo ·Î±×ÀÎÁö °Ë»ç */
+    /* ë³µêµ¬ hashë…¸ë“œì— í•´ë‹¹í•˜ëŠ” redo ë¡œê·¸ì¸ì§€ ê²€ì‚¬ */
     static IDE_RC filterRecvRedoLog( sdrRecvFileHashNode* aHashNode,
                                      smLSN*               aBeginLSN,
                                      idBool*              aIsRedo );
 
-    /* º¹±¸ ÆÄÀÏÇì´õ¸¦ °»½ÅÇÏ°í Hash Node Á¦°Å */
+    /* ë³µêµ¬ íŒŒì¼í—¤ë”ë¥¼ ê°±ì‹ í•˜ê³  Hash Node ì œê±° */
     static IDE_RC repairFailureDBFHdr( smLSN* aResetLogsLSN );
 
-    /* º¹±¸ ÆÄÀÏÀÇ Hash Node¸¦ Á¦°Å */
+    /* ë³µêµ¬ íŒŒì¼ì˜ Hash Nodeë¥¼ ì œê±° */
     static IDE_RC removeAllRecvDBFHashNodes();
 
     static smiRecoverType getRecvType()
@@ -185,7 +185,7 @@ public:
 
     static void writeDebugInfo();
 
-    /* PROJ-1923 private -> public ÀüÈ¯ */
+    /* PROJ-1923 private -> public ì „í™˜ */
     static idBool validateLogRec( sdrLogHdr * aLogHdr );
 
 private:
@@ -193,8 +193,8 @@ private:
     static IDE_RC lock() { return mMutex.lock( NULL ); }
     static IDE_RC unlock() { return mMutex.unlock(); }
 
-    /* ½ÇÁ¦·Î  mParseBufferÀÇ ÀúÀåµÈ ·Î±×¸¦ ÆÄ½ÌÇÑ ÈÄ,
-       ÇØ½Ã Å×ÀÌºí¿¡ ÀúÀå */
+    /* ì‹¤ì œë¡œ  mParseBufferì˜ ì €ì¥ëœ ë¡œê·¸ë¥¼ íŒŒì‹±í•œ í›„,
+       í•´ì‹œ í…Œì´ë¸”ì— ì €ì¥ */
     static void parseRedoLogHdr( SChar       * aLogRec,
                                  sdrLogType  * aLogType,
                                  scGRID      * aLogGRID,
@@ -205,40 +205,40 @@ private:
                                UChar          * aPagePtr,
                                sdrRedoLogData * aLogData );
 
-    /* BUGBUG - 7983 runtime memory¿¡ ´ëÇÑ redo */
+    /* BUGBUG - 7983 runtime memoryì— ëŒ€í•œ redo */
     static void applyLogRecToRuntimeMRDB( void*      aTrans,
                                           sdrLogType aLogType,
                                           SChar*     aValue,
                                           UInt       aValueLen );
 
-    /* ÇØ½¬ ÇÔ¼ö */
+    /* í•´ì‰¬ í•¨ìˆ˜ */
     static UInt genHashValueFunc( void* aRID );
 
-    /* ºñ±³ ÇÔ¼ö */
+    /* ë¹„êµ í•¨ìˆ˜ */
     static SInt compareFunc(void* aLhs, void* aRhs);
 
 private:
 
-    /* hashed log¸¦ ÆäÀÌÁö¿¡ ¹İ¿µÇÒ °æ¿ì Ã³¸®µÈ ¹öÄÏ °³¼ö¸¦ º¯°æÇÏ´Â µîÀÇ
-       ÇØ½Ã¿¡ Á¢±ÙÀ» Á¦¾îÇÏ±â À§ÇØ Á¤ÀÇ */
+    /* hashed logë¥¼ í˜ì´ì§€ì— ë°˜ì˜í•  ê²½ìš° ì²˜ë¦¬ëœ ë²„ì¼“ ê°œìˆ˜ë¥¼ ë³€ê²½í•˜ëŠ” ë“±ì˜
+       í•´ì‹œì— ì ‘ê·¼ì„ ì œì–´í•˜ê¸° ìœ„í•´ ì •ì˜ */
     static iduMutex          mMutex;
     static smiRecoverType    mRecvType;
 
-    /* ÆÄ½ÌµÈ redo log¸¦ ÀúÀåÇÏ´Â ÇØ½Ã ±¸Á¶Ã¼ (1Â÷ hash)*/
+    /* íŒŒì‹±ëœ redo logë¥¼ ì €ì¥í•˜ëŠ” í•´ì‹œ êµ¬ì¡°ì²´ (1ì°¨ hash)*/
     static smuHashBase   mHash;
 
-    /* º¹±¸ÇÒ µ¥ÀÌÅ¸ÆÄÀÏ³ëµå¸¦ ÀúÀåÇÏ´Â ÇØ½Ã (2Â÷ hash) */
+    /* ë³µêµ¬í•  ë°ì´íƒ€íŒŒì¼ë…¸ë“œë¥¼ ì €ì¥í•˜ëŠ” í•´ì‹œ (2ì°¨ hash) */
     static smuHashBase   mRecvFileHash;
 
-    /* ÇØ½Ã Å©±â */
+    /* í•´ì‹œ í¬ê¸° */
     static UInt          mHashTableSize;
 
-    static UInt          mApplyPageCount; /* Àû¿ëÇÑ Page °³¼ö */
+    static UInt          mApplyPageCount; /* ì ìš©í•œ Page ê°œìˆ˜ */
 
-    /* 1Â÷ÇØ½ÃÀÇ hash nodeÁß Àû¿ëÇÒ ÇÊ¿ä¾ø´Â ³ëµåÀÇ °³¼ö
-       Æ¯Á¤ ÀÓ°èÄ¡¿¡ ´Ù´Ù¸£¸é ¸ğµÎ ÇØÁ¦ÇÏ°Ô µÈ´Ù */
+    /* 1ì°¨í•´ì‹œì˜ hash nodeì¤‘ ì ìš©í•  í•„ìš”ì—†ëŠ” ë…¸ë“œì˜ ê°œìˆ˜
+       íŠ¹ì • ì„ê³„ì¹˜ì— ë‹¤ë‹¤ë¥´ë©´ ëª¨ë‘ í•´ì œí•˜ê²Œ ëœë‹¤ */
     static UInt          mNoApplyPageCnt;
-    static UInt          mRecvFileCnt;    /* º¹±¸ÇÒ µ¥ÀÌÅ¸ÆÄÀÏ hash node °³¼ö */
+    static UInt          mRecvFileCnt;    /* ë³µêµ¬í•  ë°ì´íƒ€íŒŒì¼ hash node ê°œìˆ˜ */
 
     /* for properties */
     static UInt          mMaxRedoHeapSize;    /* maximum heap memory */

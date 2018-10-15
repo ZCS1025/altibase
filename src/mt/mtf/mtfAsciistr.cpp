@@ -44,7 +44,7 @@ static IDE_RC mtfAsciistrEstimate( mtcNode*     aNode,
 mtfModule mtfAsciistr = {
     1|MTC_NODE_OPERATOR_FUNCTION,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
+    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìžê°€ ì•„ë‹˜)
     mtfAsciistrFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -104,18 +104,18 @@ IDE_RC mtfAsciistrEstimate( mtcNode*     aNode,
     {
         aTemplate->rows[aNode->table].execute[aNode->column] = mtfExecute;
 
-        // ASCII ¿ÜÀÇ ¹®ÀÚ°¡ ÀÖÀ» °æ¿ì À¯´ÏÄÚµå Æ÷ÀÎÆ®·Î Ç¥ÇöµÇ±â ¶§¹®¿¡ 
-        // ´ë·« ÃÖ´ë 5¹è·Î precisionÀÌ Áõ°¡ÇÑ´Ù.(°á°ú Å¸ÀÔÀÌ varcharÀÌ±â ¶§¹®)
-        // ex) '¾È' => '\C548'
+        // ASCII ì™¸ì˜ ë¬¸ìžê°€ ìžˆì„ ê²½ìš° ìœ ë‹ˆì½”ë“œ í¬ì¸íŠ¸ë¡œ í‘œí˜„ë˜ê¸° ë•Œë¬¸ì— 
+        // ëŒ€ëžµ ìµœëŒ€ 5ë°°ë¡œ precisionì´ ì¦ê°€í•œë‹¤.(ê²°ê³¼ íƒ€ìž…ì´ varcharì´ê¸° ë•Œë¬¸)
+        // ex) 'ì•ˆ' => '\C548'
         sPrecision = aStack[1].column->precision * 5;
     }
     else
     {
         aTemplate->rows[aNode->table].execute[aNode->column] = mtfExecute;
 
-        // ASCII ¿ÜÀÇ ¹®ÀÚ°¡ ÀÖÀ» °æ¿ì À¯´ÏÄÚµå Æ÷ÀÎÆ®·Î Ç¥ÇöµÇ±â ¶§¹®¿¡ 
-        // ´ë·« ÃÖ´ë 3¹è·Î precisionÀÌ Áõ°¡ÇÑ´Ù.(°á°ú Å¸ÀÔÀÌ varcharÀÌ±â ¶§¹®)
-        // ex) '¾È' => '\C548'
+        // ASCII ì™¸ì˜ ë¬¸ìžê°€ ìžˆì„ ê²½ìš° ìœ ë‹ˆì½”ë“œ í¬ì¸íŠ¸ë¡œ í‘œí˜„ë˜ê¸° ë•Œë¬¸ì— 
+        // ëŒ€ëžµ ìµœëŒ€ 3ë°°ë¡œ precisionì´ ì¦ê°€í•œë‹¤.(ê²°ê³¼ íƒ€ìž…ì´ varcharì´ê¸° ë•Œë¬¸)
+        // ex) 'ì•ˆ' => '\C548'
         sPrecision = aStack[1].column->precision * 3;
     }
 
@@ -152,11 +152,11 @@ IDE_RC mtfAsciistrCalculate( mtcNode*     aNode,
  * Implementation :
  *    ASCIISTR( char )
  *
- *    aStack[0] : ASCII ÀÌ¿ÜÀÇ ¹®ÀÚÀÇ °æ¿ì, 
- *                ÇØ´ç ¹®ÀÚÀÇ À¯´ÏÄÚµå Æ÷ÀÎÆ®¸¦ ¹ÝÈ¯ÇÑ´Ù.
- *    aStack[1] : char ( ÁÖ¾îÁø ¹®ÀÚ¿­ )
+ *    aStack[0] : ASCII ì´ì™¸ì˜ ë¬¸ìžì˜ ê²½ìš°, 
+ *                í•´ë‹¹ ë¬¸ìžì˜ ìœ ë‹ˆì½”ë“œ í¬ì¸íŠ¸ë¥¼ ë°˜í™˜í•œë‹¤.
+ *    aStack[1] : char ( ì£¼ì–´ì§„ ë¬¸ìžì—´ )
  *
- *    ex) ASCIISTR( 'AB¾ÈCD' ) ==> result : AB\C548CD
+ *    ex) ASCIISTR( 'ABì•ˆCD' ) ==> result : AB\C548CD
  *
  ***********************************************************************/
     

@@ -247,8 +247,8 @@ public:
 
     static UInt getCountOfCTS( sdpPhyPageHdr  * aPageHdrPtr );
 
-    /* TASK-4007 [SM] PBT¸¦ À§ÇÑ ±â´É Ãß°¡
-     * CTS DumpÇÒ ¼ö ÀÖ´Â ±â´É Ãß°¡*/
+    /* TASK-4007 [SM] PBTë¥¼ ìœ„í•œ ê¸°ëŠ¥ ì¶”ê°€
+     * CTS Dumpí•  ìˆ˜ ìžˆëŠ” ê¸°ëŠ¥ ì¶”ê°€*/
     static IDE_RC dump( UChar *aPage ,
                         SChar *aOutBuf ,
                         UInt   aOutSize );
@@ -319,9 +319,9 @@ private:
 
 /***********************************************************************
  *
- * Description : CTLÇì´õ·ÎºÎÅÍ ÃÑ CTS °³¼ö ¹ÝÈ¯
+ * Description : CTLí—¤ë”ë¡œë¶€í„° ì´ CTS ê°œìˆ˜ ë°˜í™˜
  *
- * aCTL  - [IN] CTL Çì´õ Æ÷ÀÎÅÍ
+ * aCTL  - [IN] CTL í—¤ë” í¬ì¸í„°
  *
  ***********************************************************************/
 inline UInt sdcTableCTL::getCnt( sdpCTL * aCTL )
@@ -331,9 +331,9 @@ inline UInt sdcTableCTL::getCnt( sdpCTL * aCTL )
 
 /***********************************************************************
  *
- * Description : ÆäÀÌÁö Æ÷ÀÎÅÍ·ÎºÎÅÍ CTL Çì´õ ¹ÝÈ¯
+ * Description : íŽ˜ì´ì§€ í¬ì¸í„°ë¡œë¶€í„° CTL í—¤ë” ë°˜í™˜
  *
- * aPageHdrPtr - [IN] ÆäÀÌÁö Çì´õ ½ÃÀÛ Æ÷ÀÎÅÍ
+ * aPageHdrPtr - [IN] íŽ˜ì´ì§€ í—¤ë” ì‹œìž‘ í¬ì¸í„°
  *
  ***********************************************************************/
 inline sdpCTL* sdcTableCTL::getCTL( sdpPhyPageHdr  * aPageHdrPtr )
@@ -343,10 +343,10 @@ inline sdpCTL* sdcTableCTL::getCTL( sdpPhyPageHdr  * aPageHdrPtr )
 
 /***********************************************************************
  *
- * Description : ÆäÀÌÁö Æ÷ÀÎÅÍ·ÎºÎÅÍ CTS Æ÷ÀÎÅÍ ¹ÝÈ¯
+ * Description : íŽ˜ì´ì§€ í¬ì¸í„°ë¡œë¶€í„° CTS í¬ì¸í„° ë°˜í™˜
  *
- * aPageHdrPtr   - [IN] ÆäÀÌÁö Çì´õ ½ÃÀÛ Æ÷ÀÎÅÍ
- * aCTSlotIdx - [IN] ¹ÝÈ¯ÇÒ CTSÀÇ ¹øÈ£
+ * aPageHdrPtr   - [IN] íŽ˜ì´ì§€ í—¤ë” ì‹œìž‘ í¬ì¸í„°
+ * aCTSlotIdx - [IN] ë°˜í™˜í•  CTSì˜ ë²ˆí˜¸
  *
  ***********************************************************************/
 inline sdpCTS * sdcTableCTL::getCTS( sdpPhyPageHdr  * aPageHdrPtr,
@@ -357,14 +357,14 @@ inline sdpCTS * sdcTableCTL::getCTS( sdpPhyPageHdr  * aPageHdrPtr,
 
 /***********************************************************************
  *
- * Description : CTL Çì´õ·ÎºÎÅÍ CTS Æ÷ÀÎÅÍ ¹ÝÈ¯
+ * Description : CTL í—¤ë”ë¡œë¶€í„° CTS í¬ì¸í„° ë°˜í™˜
  *
- * aCTL       - [IN] CTL Çì´õ Æ÷ÀÎÅÍ
- * aCTSlotIdx - [IN] ¹ÝÈ¯ÇÒ CTSÀÇ ¹øÈ£
+ * aCTL       - [IN] CTL í—¤ë” í¬ì¸í„°
+ * aCTSlotIdx - [IN] ë°˜í™˜í•  CTSì˜ ë²ˆí˜¸
  *
- * [ ¹ÝÈ¯°ª ]
+ * [ ë°˜í™˜ê°’ ]
  *
- * aCTSlotIdx ¿¡ ÇØ´çÇÏ´Â CTS Æ÷ÀÎÅÍ ¹ÝÈ¯
+ * aCTSlotIdx ì— í•´ë‹¹í•˜ëŠ” CTS í¬ì¸í„° ë°˜í™˜
  *
  ***********************************************************************/
 inline sdpCTS * sdcTableCTL::getCTS( sdpCTL * aHdrPtr,
@@ -376,19 +376,19 @@ inline sdpCTS * sdcTableCTL::getCTS( sdpCTL * aHdrPtr,
 
 /***********************************************************************
  *
- * Description : CTSÀÇ »óÅÂ È®ÀÎ
+ * Description : CTSì˜ ìƒíƒœ í™•ì¸
  *
- * aState     - [IN] CTSÀÇ »óÅÂ
- * aStateSet  - [IN] È®ÀÎÇØº¼ »óÅÂÀÇ ÁýÇÕ
+ * aState     - [IN] CTSì˜ ìƒíƒœ
+ * aStateSet  - [IN] í™•ì¸í•´ë³¼ ìƒíƒœì˜ ì§‘í•©
  *
- * [ ¹ÝÈ¯°ª ]
+ * [ ë°˜í™˜ê°’ ]
  *
- * CTSÀÇ »óÅÂ°ªÀÌ ÁýÇÕÁß¿¡ ÇÏ³ª¶óµµ ÀÏÄ¡ÇÑ´Ù¸é ID_TRUE¸¦ ¹ÝÈ¯ÇÏ°í
- * ±×·¸Áö ¾Ê´Ù¸é, ID_FALSE¸¦ ¹ÝÈ¯ÇÑ´Ù.
+ * CTSì˜ ìƒíƒœê°’ì´ ì§‘í•©ì¤‘ì— í•˜ë‚˜ë¼ë„ ì¼ì¹˜í•œë‹¤ë©´ ID_TRUEë¥¼ ë°˜í™˜í•˜ê³ 
+ * ê·¸ë ‡ì§€ ì•Šë‹¤ë©´, ID_FALSEë¥¼ ë°˜í™˜í•œë‹¤.
  *
- * ¿¹¸¦µé¾î, CTSÀÇ »óÅÂ°¡ SDP_CTS_STAT_RTS¶ó°í ÇÒ¶§,
- *         È®ÀÎÇÏ°íÀÚÇÏ´Â StateSetÀÌ (SDP_CTS_STAT_RTS|SDC_CTS_STAT_CTS)
- *         ¶ó°í ÇÑ´Ù¸é ÇÏ³ªÀÇ »óÅÂ°¡ ÀÏÄ¡ÇÏ±â ¶§¹®¿¡ TRUE¸¦ ¹ÝÈ¯ÇÑ´Ù.
+ * ì˜ˆë¥¼ë“¤ì–´, CTSì˜ ìƒíƒœê°€ SDP_CTS_STAT_RTSë¼ê³  í• ë•Œ,
+ *         í™•ì¸í•˜ê³ ìží•˜ëŠ” StateSetì´ (SDP_CTS_STAT_RTS|SDC_CTS_STAT_CTS)
+ *         ë¼ê³  í•œë‹¤ë©´ í•˜ë‚˜ì˜ ìƒíƒœê°€ ì¼ì¹˜í•˜ê¸° ë•Œë¬¸ì— TRUEë¥¼ ë°˜í™˜í•œë‹¤.
  *
  ***********************************************************************/
 inline idBool sdcTableCTL::hasState( UChar    aState,
@@ -410,16 +410,16 @@ inline idBool sdcTableCTL::hasState( UChar    aState,
 
 /***********************************************************************
  *
- * Description : CTSÀÇ Free Space Credit °ªÀ» Áõ°¡
+ * Description : CTSì˜ Free Space Credit ê°’ì„ ì¦ê°€
  *
- * Æ®·£Àè¼ÇÀÇ ·Ñ¹éÀ» ´ëºñÇÏ¿© Æ®·£Àè¼Ç ¿Ï·áÀü±îÁö ¹Ýµå½Ã È®º¸ÇØ µÎ¾î¾ß ÇÏ´Â ÆäÀÌÁö
- * °¡¿ë°ø°£À» ´©Àû½ÃÄÑµÐ´Ù. ÇØ´ç Æ®·£Àè¼ÇÀÌ ¿Ï·áµÇ±â Àü±îÁö´Â ÇØ´ç ÆäÀÌÁö¿¡¼­ ´©ÀûµÈ
- * °¡¿ë°ø°£ÀÌ ÇØÁ¦µÇ¾î ´Ù¸¥ Æ®·£Àè¼Ç¿¡ ÀÇÇØ¼­ ÇÒ´çµÇÁö ¸øÇÏµµ·Ï ÇÑ´Ù.
+ * íŠ¸ëžœìž­ì…˜ì˜ ë¡¤ë°±ì„ ëŒ€ë¹„í•˜ì—¬ íŠ¸ëžœìž­ì…˜ ì™„ë£Œì „ê¹Œì§€ ë°˜ë“œì‹œ í™•ë³´í•´ ë‘ì–´ì•¼ í•˜ëŠ” íŽ˜ì´ì§€
+ * ê°€ìš©ê³µê°„ì„ ëˆ„ì ì‹œì¼œë‘”ë‹¤. í•´ë‹¹ íŠ¸ëžœìž­ì…˜ì´ ì™„ë£Œë˜ê¸° ì „ê¹Œì§€ëŠ” í•´ë‹¹ íŽ˜ì´ì§€ì—ì„œ ëˆ„ì ëœ
+ * ê°€ìš©ê³µê°„ì´ í•´ì œë˜ì–´ ë‹¤ë¥¸ íŠ¸ëžœìž­ì…˜ì— ì˜í•´ì„œ í• ë‹¹ë˜ì§€ ëª»í•˜ë„ë¡ í•œë‹¤.
  *
- * Áï, Æ®·£Àè¼ÇÀÌ ·Ñ¹éÇÏ´Â °æ¿ì¿¡ ¹Ýµå½Ã ·Ñ¹éÀÌ ¼º°øÇØ¾ßÇÏ±â ¶§¹®ÀÌ´Ù.
+ * ì¦‰, íŠ¸ëžœìž­ì…˜ì´ ë¡¤ë°±í•˜ëŠ” ê²½ìš°ì— ë°˜ë“œì‹œ ë¡¤ë°±ì´ ì„±ê³µí•´ì•¼í•˜ê¸° ë•Œë¬¸ì´ë‹¤.
  *
- * aCTS       - [IN] CTS Æ÷ÀÎÅÍ
- * aFSCredit  - [IN] Áõ°¡½ÃÅ³ FreeSpaceCredit Å©±â (>0)
+ * aCTS       - [IN] CTS í¬ì¸í„°
+ * aFSCredit  - [IN] ì¦ê°€ì‹œí‚¬ FreeSpaceCredit í¬ê¸° (>0)
  *
  ***********************************************************************/
 inline void sdcTableCTL::incFSCreditOfCTS( sdpCTS   * aCTS,
@@ -433,16 +433,16 @@ inline void sdcTableCTL::incFSCreditOfCTS( sdpCTS   * aCTS,
 
 /***********************************************************************
  *
- * Description : CTSÀÇ Free Space Credit °ªÀ» °¨¼Ò½ÃÅ´
+ * Description : CTSì˜ Free Space Credit ê°’ì„ ê°ì†Œì‹œí‚´
  *
- * Æ®·£Àè¼ÇÀÇ ·Ñ¹éÀ» ´ëºñÇÏ¿© Æ®·£Àè¼Ç ¿Ï·áÀü±îÁö ¹Ýµå½Ã È®º¸ÇØ µÎ¾î¾ß ÇÏ´Â
- * ÆäÀÌÁö °¡¿ë°ø°£À» ÇØÁ¦ÇÑ¸¸Å­ CTSÀÇ Free Space Credit¸¦ »©ÁØ´Ù.
+ * íŠ¸ëžœìž­ì…˜ì˜ ë¡¤ë°±ì„ ëŒ€ë¹„í•˜ì—¬ íŠ¸ëžœìž­ì…˜ ì™„ë£Œì „ê¹Œì§€ ë°˜ë“œì‹œ í™•ë³´í•´ ë‘ì–´ì•¼ í•˜ëŠ”
+ * íŽ˜ì´ì§€ ê°€ìš©ê³µê°„ì„ í•´ì œí•œë§Œí¼ CTSì˜ Free Space Creditë¥¼ ë¹¼ì¤€ë‹¤.
  *
- * Æ®·£Àè¼ÇÀÌ ·Ñ¹éÀ» ÇÏ°Å³ª Ä¿¹ÔÀÌÈÄ¿¡ RowStamping °úÁ¤¿¡¼­ Free Space Credit´Â
- * ÇØÁ¦µÈ´Ù.
+ * íŠ¸ëžœìž­ì…˜ì´ ë¡¤ë°±ì„ í•˜ê±°ë‚˜ ì»¤ë°‹ì´í›„ì— RowStamping ê³¼ì •ì—ì„œ Free Space CreditëŠ”
+ * í•´ì œëœë‹¤.
  *
- * aCTS       - [IN] CTS Æ÷ÀÎÅÍ
- * aFSCredit  - [IN] °¨¼Ò½ÃÅ³ FreeSpaceCredit Å©±â (>0)
+ * aCTS       - [IN] CTS í¬ì¸í„°
+ * aFSCredit  - [IN] ê°ì†Œì‹œí‚¬ FreeSpaceCredit í¬ê¸° (>0)
  *
  ***********************************************************************/
 inline void sdcTableCTL::decFSCreditOfCTS( sdpCTS  * aCTS,
@@ -456,12 +456,12 @@ inline void sdcTableCTL::decFSCreditOfCTS( sdpCTS  * aCTS,
 
 /***********************************************************************
  *
- * Description : CTLÀÇ DeleteÁßÀÎ È¤Àº DeleteµÈ Row PieceÀÇ °³¼ö¸¦ Áõ°¡
+ * Description : CTLì˜ Deleteì¤‘ì¸ í˜¹ì€ Deleteëœ Row Pieceì˜ ê°œìˆ˜ë¥¼ ì¦ê°€
  *
- * ÇØ´ç µ¥ÀÌÅ¸ ÆäÀÌÁö¿¡ Self-AgingÀÌ ÇÊ¿äÇÒÁöµµ ¸ð¸£´Â Deleted Row
- * Piece °³¼ö¸¦ Áõ°¡½ÃÅ²´Ù
+ * í•´ë‹¹ ë°ì´íƒ€ íŽ˜ì´ì§€ì— Self-Agingì´ í•„ìš”í• ì§€ë„ ëª¨ë¥´ëŠ” Deleted Row
+ * Piece ê°œìˆ˜ë¥¼ ì¦ê°€ì‹œí‚¨ë‹¤
  *
- * aCTL       - [IN] CTL Æ÷ÀÎÅÍ
+ * aCTL       - [IN] CTL í¬ì¸í„°
  *
  ***********************************************************************/
 inline void sdcTableCTL::incDelRowCntOfCTL( sdpCTL * aCTL )
@@ -472,12 +472,12 @@ inline void sdcTableCTL::incDelRowCntOfCTL( sdpCTL * aCTL )
 
 /***********************************************************************
  *
- * Description : CTLÀÇ DeleteÁßÀÎ È¤Àº DeleteµÈ Row PieceÀÇ °³¼ö¸¦ °¨¼Ò
+ * Description : CTLì˜ Deleteì¤‘ì¸ í˜¹ì€ Deleteëœ Row Pieceì˜ ê°œìˆ˜ë¥¼ ê°ì†Œ
  *
- * ÇØ´ç µ¥ÀÌÅ¸ ÆäÀÌÁö¿¡ Self-AgingÀ» Ã³¸®ÇÏ°í ³ª¼­ È¤Àº Delete ¿¬»êÀÌ ·Ñ¹éÇÏ´Â °æ¿ì¿¡
- * Piece °³¼ö¸¦ °¨¼Ò½ÃÅ²´Ù.
+ * í•´ë‹¹ ë°ì´íƒ€ íŽ˜ì´ì§€ì— Self-Agingì„ ì²˜ë¦¬í•˜ê³  ë‚˜ì„œ í˜¹ì€ Delete ì—°ì‚°ì´ ë¡¤ë°±í•˜ëŠ” ê²½ìš°ì—
+ * Piece ê°œìˆ˜ë¥¼ ê°ì†Œì‹œí‚¨ë‹¤.
  *
- * aCTL       - [IN] CTL Æ÷ÀÎÅÍ
+ * aCTL       - [IN] CTL í¬ì¸í„°
  *
  ***********************************************************************/
 inline void sdcTableCTL::decDelRowCntOfCTL( sdpCTL * aCTL )
@@ -488,9 +488,9 @@ inline void sdcTableCTL::decDelRowCntOfCTL( sdpCTL * aCTL )
 
 /***********************************************************************
  *
- * Description : CTLÀÇ ¹ÙÀÎµù µÈ CTSÀÇ °³¼ö¸¦ 1Áõ°¡½ÃÅ²´Ù.
+ * Description : CTLì˜ ë°”ì¸ë”© ëœ CTSì˜ ê°œìˆ˜ë¥¼ 1ì¦ê°€ì‹œí‚¨ë‹¤.
  *
- * aCTL       - [IN] CTL Æ÷ÀÎÅÍ
+ * aCTL       - [IN] CTL í¬ì¸í„°
  *
  ************************************************************************/
 inline void sdcTableCTL::incBindCTSCntOfCTL( sdpCTL * aCTL )
@@ -501,10 +501,10 @@ inline void sdcTableCTL::incBindCTSCntOfCTL( sdpCTL * aCTL )
 
 /***********************************************************************
  *
- * Description : CTLÀÇ ¹ÙÀÎµù µÈ CTSÀÇ °³¼ö¸¦ 1°¨¼Ò½ÃÅ²´Ù.
+ * Description : CTLì˜ ë°”ì¸ë”© ëœ CTSì˜ ê°œìˆ˜ë¥¼ 1ê°ì†Œì‹œí‚¨ë‹¤.
  *
- * aCTL       - [IN] CTL Æ÷ÀÎÅÍ
- * aCTS       - [IN] CTS Æ÷ÀÎÅÍ
+ * aCTL       - [IN] CTL í¬ì¸í„°
+ * aCTS       - [IN] CTS í¬ì¸í„°
  *
  ************************************************************************/
 inline void sdcTableCTL::decBindCTSCntOfCTL( sdpCTL * aCTL,
@@ -536,9 +536,9 @@ inline void sdcTableCTL::decBindCTSCntOfCTL( sdpCTL * aCTL,
 
 /***********************************************************************
  *
- * Description : CTLÀÇ Row¿¡ ¹ÙÀÎµù µÈ CTSÀÇ °³¼ö¸¦ 1Áõ°¡½ÃÅ²´Ù.
+ * Description : CTLì˜ Rowì— ë°”ì¸ë”© ëœ CTSì˜ ê°œìˆ˜ë¥¼ 1ì¦ê°€ì‹œí‚¨ë‹¤.
  *
- * aCTL       - [IN] CTL Æ÷ÀÎÅÍ
+ * aCTL       - [IN] CTL í¬ì¸í„°
  *
  ************************************************************************/
 inline void sdcTableCTL::incBindRowCTSCntOfCTL( sdpCTL * aCTL )
@@ -549,10 +549,10 @@ inline void sdcTableCTL::incBindRowCTSCntOfCTL( sdpCTL * aCTL )
 
 /***********************************************************************
  *
- * Description : CTLÀÇ Row¹ÙÀÎµù µÈ CTSÀÇ °³¼ö¸¦ 1°¨¼Ò½ÃÅ²´Ù.
+ * Description : CTLì˜ Rowë°”ì¸ë”© ëœ CTSì˜ ê°œìˆ˜ë¥¼ 1ê°ì†Œì‹œí‚¨ë‹¤.
  *
- * aCTL       - [IN] CTL Æ÷ÀÎÅÍ
- * aCTS       - [IN] CTS Æ÷ÀÎÅÍ
+ * aCTL       - [IN] CTL í¬ì¸í„°
+ * aCTS       - [IN] CTS í¬ì¸í„°
  *
  ************************************************************************/
 inline void sdcTableCTL::decBindRowCTSCntOfCTL( sdpCTL * aCTL )

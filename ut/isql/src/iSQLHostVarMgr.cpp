@@ -113,7 +113,7 @@ iSQLHostVarMgr::add( SChar       * a_name,
 
     if ( (t_node = getVar(a_name)) == NULL )
     {
-        // memory alloc error °¡ ¹ß»ýÇÑ °æ¿ì
+        // memory alloc error ê°€ ë°œìƒí•œ ê²½ìš°
         t_node = (HostVarNode*) idlOS::malloc(ID_SIZEOF(HostVarNode));
         IDE_TEST_RAISE( t_node == NULL, mem_alloc_error );
         idlOS::memset(t_node, 0x00, ID_SIZEOF(HostVarNode));
@@ -169,7 +169,7 @@ iSQLHostVarMgr::add( SChar       * a_name,
         IDE_TEST_RAISE(t_node->element.size < 0 , invalidAllocSize);
         break;
     default :
-        // BUG-25315 [CodeSonar] ¸Þ¸ð¸® ¸¯
+        // BUG-25315 [CodeSonar] ë©”ëª¨ë¦¬ ë¦­
         idlOS::free(t_node);
         t_node = NULL;
         IDE_RAISE( invalid_datatype );
@@ -259,7 +259,7 @@ iSQLHostVarMgr::setValue( SChar * a_name )
 {
     HostVarNode *t_node;
 
-    // ¼±¾ðµÇÁö ¾ÊÀº È£½ºÆ® º¯¼ö
+    // ì„ ì–¸ë˜ì§€ ì•Šì€ í˜¸ìŠ¤íŠ¸ ë³€ìˆ˜
     IDE_TEST_RAISE((t_node = getVar(a_name)) == NULL, not_defined);
     t_node->element.mInd = SQL_NULL_DATA;
 
@@ -289,7 +289,7 @@ iSQLHostVarMgr::setValue( SChar * a_name,
     SChar       *begin_pos = NULL;
     SChar       *end_pos = NULL;
 
-    // ¼±¾ðµÇÁö ¾ÊÀº È£½ºÆ® º¯¼ö
+    // ì„ ì–¸ë˜ì§€ ì•Šì€ í˜¸ìŠ¤íŠ¸ ë³€ìˆ˜
     IDE_TEST_RAISE((t_node = getVar(a_name)) == NULL, not_defined);
 
     if ( idlOS::strcasecmp(a_value, "NULL") == 0 )
@@ -306,13 +306,13 @@ iSQLHostVarMgr::setValue( SChar * a_name,
     case iSQL_BYTE       :
     case iSQL_VARBYTE    :
     case iSQL_NIBBLE     :
-    case iSQL_VARCHAR    :  // value°¡ const string('...') ÀÌ¾î¾ß ÇÑ´Ù.
+    case iSQL_VARCHAR    :  // valueê°€ const string('...') ì´ì–´ì•¼ í•œë‹¤.
         begin_pos = idlOS::strchr(a_value, '\'');
-        IDE_TEST_RAISE(begin_pos == NULL, type_mismatch); // value°¡ const stringÀÌ ¾Æ´Ñ°æ¿ì
+        IDE_TEST_RAISE(begin_pos == NULL, type_mismatch); // valueê°€ const stringì´ ì•„ë‹Œê²½ìš°
 
         end_pos = idlOS::strrchr(begin_pos+1, '\'');
-        IDE_TEST_RAISE(end_pos == NULL, type_mismatch);   // value°¡ '·Î ³¡³ªÁö ¾ÊÀº °æ¿ì, Àý´ë µé¾î¿Ã ¼ö ¾ø´Â °æ¿ì
-        // value°¡ null string ÀÎ °æ¿ì
+        IDE_TEST_RAISE(end_pos == NULL, type_mismatch);   // valueê°€ 'ë¡œ ëë‚˜ì§€ ì•Šì€ ê²½ìš°, ì ˆëŒ€ ë“¤ì–´ì˜¬ ìˆ˜ ì—†ëŠ” ê²½ìš°
+        // valueê°€ null string ì¸ ê²½ìš°
         IDE_TEST_RAISE(end_pos-begin_pos == 1, null_value);
 
         idlOS::memset(t_node->element.c_value, 0x00,
@@ -330,14 +330,14 @@ iSQLHostVarMgr::setValue( SChar * a_name,
     case iSQL_INTEGER  :
     case iSQL_SMALLINT :
         begin_pos = idlOS::strchr(a_value, '\'');
-        if (begin_pos != NULL)    // value°¡ const stringÀÌ ¾Æ´Ñ°æ¿ì
+        if (begin_pos != NULL)    // valueê°€ const stringì´ ì•„ë‹Œê²½ìš°
         {
             end_pos = idlOS::strrchr(begin_pos+1, '\'');
-            IDE_TEST_RAISE(end_pos == NULL, type_mismatch); // value°¡ '·Î ³¡³ªÁö ¾ÊÀº °æ¿ì, Àý´ë µé¾î¿Ã ¼ö ¾ø´Â °æ¿ì
-            // value°¡ null string ÀÎ °æ¿ì
+            IDE_TEST_RAISE(end_pos == NULL, type_mismatch); // valueê°€ 'ë¡œ ëë‚˜ì§€ ì•Šì€ ê²½ìš°, ì ˆëŒ€ ë“¤ì–´ì˜¬ ìˆ˜ ì—†ëŠ” ê²½ìš°
+            // valueê°€ null string ì¸ ê²½ìš°
             IDE_TEST_RAISE(end_pos-begin_pos == 1, null_value);
 
-            // value°¡ const stringÀÎ °æ¿ì
+            // valueê°€ const stringì¸ ê²½ìš°
             IDE_RAISE(type_mismatch);
         }
 
@@ -364,14 +364,14 @@ iSQLHostVarMgr::setValue( SChar * a_name,
         break;
     case iSQL_DOUBLE :
         begin_pos = idlOS::strchr(a_value, '\'');
-        if (begin_pos != NULL)    // value°¡ const stringÀÌ ¾Æ´Ñ°æ¿ì
+        if (begin_pos != NULL)    // valueê°€ const stringì´ ì•„ë‹Œê²½ìš°
         {
             end_pos = idlOS::strrchr(begin_pos+1, '\'');
-            IDE_TEST_RAISE(end_pos == NULL, type_mismatch); // value°¡ '·Î ³¡³ªÁö ¾ÊÀº °æ¿ì, Àý´ë µé¾î¿Ã ¼ö ¾ø´Â °æ¿ì
-            // value°¡ null string ÀÎ °æ¿ì
+            IDE_TEST_RAISE(end_pos == NULL, type_mismatch); // valueê°€ 'ë¡œ ëë‚˜ì§€ ì•Šì€ ê²½ìš°, ì ˆëŒ€ ë“¤ì–´ì˜¬ ìˆ˜ ì—†ëŠ” ê²½ìš°
+            // valueê°€ null string ì¸ ê²½ìš°
             IDE_TEST_RAISE(end_pos-begin_pos == 1, null_value);
 
-            // value°¡ const stringÀÎ °æ¿ì
+            // valueê°€ const stringì¸ ê²½ìš°
             IDE_RAISE(type_mismatch);
         }
 
@@ -379,15 +379,15 @@ iSQLHostVarMgr::setValue( SChar * a_name,
         break;
     case iSQL_REAL :
         begin_pos = idlOS::strchr(a_value, '\'');
-        if (begin_pos != NULL)    // value°¡ const stringÀÌ ¾Æ´Ñ°æ¿ì
+        if (begin_pos != NULL)    // valueê°€ const stringì´ ì•„ë‹Œê²½ìš°
         {
             end_pos = idlOS::strrchr(begin_pos+1, '\'');
-            IDE_TEST_RAISE(end_pos == NULL, type_mismatch); // value°¡ '·Î ³¡³ªÁö ¾ÊÀº °æ¿ì, Àý´ë µé¾î¿Ã ¼ö ¾ø´Â °æ¿ì
+            IDE_TEST_RAISE(end_pos == NULL, type_mismatch); // valueê°€ 'ë¡œ ëë‚˜ì§€ ì•Šì€ ê²½ìš°, ì ˆëŒ€ ë“¤ì–´ì˜¬ ìˆ˜ ì—†ëŠ” ê²½ìš°
 
-            // value°¡ null string ÀÎ °æ¿ì
+            // valueê°€ null string ì¸ ê²½ìš°
             IDE_TEST_RAISE(end_pos-begin_pos == 1, null_value);
 
-            // value°¡ const stringÀÎ °æ¿ì
+            // valueê°€ const stringì¸ ê²½ìš°
             IDE_RAISE(type_mismatch);
         }
 
@@ -708,10 +708,10 @@ iSQLHostVarMgr::putBindList( SChar * a_name )
     HostVarNode *t_node = NULL;
     HostVarNode *s_node = NULL;
 
-    // ¼±¾ðµÇÁö ¾ÊÀº È£½ºÆ® º¯¼ö
+    // ì„ ì–¸ë˜ì§€ ì•Šì€ í˜¸ìŠ¤íŠ¸ ë³€ìˆ˜
     IDE_TEST_RAISE((t_node = getVar(a_name)) == NULL, not_defined);
 
-    // memory alloc error °¡ ¹ß»ýÇÑ °æ¿ì
+    // memory alloc error ê°€ ë°œìƒí•œ ê²½ìš°
     IDE_TEST_RAISE( (s_node = (HostVarNode*)
                               idlOS::malloc(ID_SIZEOF(HostVarNode)))
                     == NULL, mem_alloc_error);
@@ -911,8 +911,8 @@ iSQLHostVarMgr::setHostVar( idBool aIsFunc, HostVarNode * /*a_host_var_list*/ )
     HostVarNode *s_node;
     HostVarNode *sHeadNode;
 
-    /* BUG-37224: ÇÔ¼öÀÇ °æ¿ì ¸®ÅÏ°ªÀ» ¹Þ´Â È£½ºÆ® º¯¼ö¿¡ ÃÖ¿ì¼±À¸·Î °ªÀÌ
-     * ÇÒ´çµÇ¾î¾ß ÇÔ. µû¶ó¼­ m_Head°¡ m_TailÀÌ µÇµµ·Ï ¸®½ºÆ®¸¦ º¯°æÇÔ */
+    /* BUG-37224: í•¨ìˆ˜ì˜ ê²½ìš° ë¦¬í„´ê°’ì„ ë°›ëŠ” í˜¸ìŠ¤íŠ¸ ë³€ìˆ˜ì— ìµœìš°ì„ ìœ¼ë¡œ ê°’ì´
+     * í• ë‹¹ë˜ì–´ì•¼ í•¨. ë”°ë¼ì„œ m_Headê°€ m_Tailì´ ë˜ë„ë¡ ë¦¬ìŠ¤íŠ¸ë¥¼ ë³€ê²½í•¨ */
     if (aIsFunc == ID_TRUE)
     {
         m_Tail->host_var_next = m_Head;

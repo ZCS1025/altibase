@@ -34,10 +34,10 @@ public class ColumnFactory
     
     static
     {
-        // BUGBUG (2012-11-15) MTD Type ¶Ç´Â JDBC TypeÀÌ °ãÄ¡´Â °ÍµéÀº ´ëÇ¥ Å¸ÀÔÀÌ ³ªÁß¿¡ µî·ÏµÇ¾î¾ß ÇÑ´Ù.
+        // BUGBUG (2012-11-15) MTD Type ë˜ëŠ” JDBC Typeì´ ê²¹ì¹˜ëŠ” ê²ƒë“¤ì€ ëŒ€í‘œ íƒ€ì…ì´ ë‚˜ì¤‘ì— ë“±ë¡ë˜ì–´ì•¼ í•œë‹¤.
 
-        // Altibase´Â DATE, TIMEÀ» Áö¿øÇÏÁö ¾Ê´Â´Ù. (DATE´Â ½ÇÁ¦·Ğ TIMESTAMPÀÓ)
-        // ±×·¡¼­, ¾Æ·¡ ¼¼ ÄÃ·³Àº ¸ğµÎ MTD TypeÀÌ °°´Ù. TIMESTAMP°¡ ´ëÇ¥.
+        // AltibaseëŠ” DATE, TIMEì„ ì§€ì›í•˜ì§€ ì•ŠëŠ”ë‹¤. (DATEëŠ” ì‹¤ì œë¡  TIMESTAMPì„)
+        // ê·¸ë˜ì„œ, ì•„ë˜ ì„¸ ì»¬ëŸ¼ì€ ëª¨ë‘ MTD Typeì´ ê°™ë‹¤. TIMESTAMPê°€ ëŒ€í‘œ.
         register(new DateColumn()); 
         register(new TimeColumn());
         register(new TimestampColumn());
@@ -92,10 +92,10 @@ public class ColumnFactory
     }
 
     /**
-     * DB Type¿¡ ÇØ´çÇÏ´Â Column °´Ã¼¸¦ ¾ò´Â´Ù.
+     * DB Typeì— í•´ë‹¹í•˜ëŠ” Column ê°ì²´ë¥¼ ì–»ëŠ”ë‹¤.
      * 
-     * @param aDBType {@link AltibaseTypes}¿¡ Á¤ÀÇµÈ type »ó¼ö
-     * @return Column °´Ã¼
+     * @param aDBType {@link AltibaseTypes}ì— ì •ì˜ëœ type ìƒìˆ˜
+     * @return Column ê°ì²´
      */
     private Column getRepresentativeColumn(int aDBType)
     {
@@ -110,10 +110,10 @@ public class ColumnFactory
                 case ColumnTypes.NVARCHAR :
                 case ColumnTypes.NCHAR :
                     CommonCharVarcharColumn sVarcharColumn = ((CommonCharVarcharColumn)sColumn);
-                    // PROJ-2427 getBytes½Ã »ç¿ëÇÏ±â À§ÇÑ Encoder¸¦ setter¸Ş¼Òµå¸¦ ÀÌ¿ëÇØ Àü´ŞÇÑ´Ù.
+                    // PROJ-2427 getBytesì‹œ ì‚¬ìš©í•˜ê¸° ìœ„í•œ Encoderë¥¼ setterë©”ì†Œë“œë¥¼ ì´ìš©í•´ ì „ë‹¬í•œë‹¤.
                     sVarcharColumn.setDBEncoder(mDBEncoder);
                     sVarcharColumn.setNCharEncoder(mNCharEncoder);
-                    // BUG-43807 ColumnReader¸¦ »èÁ¦ÇÏ°í ¹Ù·Î Column°´Ã¼¿¡ redundant°ü·Ã ÇÃ·¡±×¸¦ ¼ÂÆÃÇÑ´Ù.
+                    // BUG-43807 ColumnReaderë¥¼ ì‚­ì œí•˜ê³  ë°”ë¡œ Columnê°ì²´ì— redundantê´€ë ¨ í”Œë˜ê·¸ë¥¼ ì…‹íŒ…í•œë‹¤.
                     sVarcharColumn.setRemoveRedundantMode(mProps.isOnRedundantDataTransmission());
                     break;
                 default :
@@ -129,10 +129,10 @@ public class ColumnFactory
     }
 
     /**
-     * JDBC Type¿¡ ÇØ´çÇÏ´Â Column °´Ã¼¸¦ ¾ò´Â´Ù.
+     * JDBC Typeì— í•´ë‹¹í•˜ëŠ” Column ê°ì²´ë¥¼ ì–»ëŠ”ë‹¤.
      * 
-     * @param aJDBCType {@link java.sql.Types}¿¡ Á¤ÀÇµÈ type »ó¼ö
-     * @return Column °´Ã¼
+     * @param aJDBCType {@link java.sql.Types}ì— ì •ì˜ëœ type ìƒìˆ˜
+     * @return Column ê°ì²´
      */
     public Column getMappedColumn(int aJDBCType)
     {
@@ -151,7 +151,7 @@ public class ColumnFactory
                 case AltibaseTypes.CHAR :
                 case AltibaseTypes.NVARCHAR :
                 case AltibaseTypes.NCHAR :
-                    // BUG-43807 ColumnReader¸¦ »èÁ¦ÇÏ°í ¹Ù·Î Column°´Ã¼¿¡ redundant°ü·Ã ÇÃ·¡±×¸¦ ¼ÂÆÃÇÑ´Ù.
+                    // BUG-43807 ColumnReaderë¥¼ ì‚­ì œí•˜ê³  ë°”ë¡œ Columnê°ì²´ì— redundantê´€ë ¨ í”Œë˜ê·¸ë¥¼ ì…‹íŒ…í•œë‹¤.
                     ((CommonCharVarcharColumn)sColumn).setRemoveRedundantMode(mProps.isOnRedundantDataTransmission());
                     break;
                 default :
@@ -179,7 +179,7 @@ public class ColumnFactory
     }
     
     /**
-     * BUG-39149 ping Äõ¸®¿¡¼­ SmallIntColumnÀ» ¼öµ¿À¸·Î »ı¼ºÇÏ±â À§ÇØ ¸Ş¼Òµå Ãß°¡
+     * BUG-39149 ping ì¿¼ë¦¬ì—ì„œ SmallIntColumnì„ ìˆ˜ë™ìœ¼ë¡œ ìƒì„±í•˜ê¸° ìœ„í•´ ë©”ì†Œë“œ ì¶”ê°€
      */
     public static SmallIntColumn createSmallintColumn()
     {

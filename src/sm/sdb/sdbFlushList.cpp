@@ -25,9 +25,9 @@
 
 /***********************************************************************
  * Description :
- *    ¹öÆÛÇ®¿¡¼­ »ç¿ëÇÏ´Â flush list¸¦ ±¸ÇöÇÑ ÆÄÀÏÀÌ´Ù.
- *    flush list´Â LRU list¿¡¼­ dirtyµÈ BCBµéÀÌ victimÀ» Ã£´Â °úÁ¤¿¡¼­
- *    ¿Å°ÜÁö´Â listÀÌ´Ù.
+ *    ë²„í¼í’€ì—ì„œ ì‚¬ìš©í•˜ëŠ” flush listë¥¼ êµ¬í˜„í•œ íŒŒì¼ì´ë‹¤.
+ *    flush listëŠ” LRU listì—ì„œ dirtyëœ BCBë“¤ì´ victimì„ ì°¾ëŠ” ê³¼ì •ì—ì„œ
+ *    ì˜®ê²¨ì§€ëŠ” listì´ë‹¤.
  *
  ***********************************************************************/
 
@@ -36,9 +36,9 @@
 
 /***********************************************************************
  * Description :
- *  flushList ÃÊ±âÈ­
+ *  flushList ì´ˆê¸°í™”
  *
- *  aListID     - [IN]  flushList ½Äº°ÀÚ  
+ *  aListID     - [IN]  flushList ì‹ë³„ì  
  ***********************************************************************/
 IDE_RC sdbFlushList::initialize( UInt aListID, sdbBCBListType aListType )
 {
@@ -85,13 +85,13 @@ IDE_RC sdbFlushList::destroy()
 
 /***********************************************************************
  * Description :
- *    flush list¿¡ ´ëÇØ mCurrentºÎÅÍ Å½»öÀ» ¿äÃ»ÇÑ´Ù. 
- *    flush listÀÇ BCB¸¦ º¸±âÀ§ÇØ¼­´Â ÀÌ ÇÔ¼öÀÇ È£ÃâÀÌ ¼±ÇàµÇ¾î¾ß ÇÑ´Ù.
- *    ³»ºÎÀûÀ¸·Î mExploringCount¸¦ ÇÏ³ª Áõ°¡½ÃÅ²´Ù.
- *    ÀÌ °ªÀÌ 1ÀÌ»óÀÌ¶ó¸é ´©±º°¡ Å½»öÇÏ°í ÀÖ´Ù´Â ÀÇ¹ÌÀÌ´Ù.
- *    Å½»öÀ» ¸¶ÃÆÀ» ¶© endExploring()À» È£ÃâÇØ¾ß ÇÑ´Ù.
+ *    flush listì— ëŒ€í•´ mCurrentë¶€í„° íƒìƒ‰ì„ ìš”ì²­í•œë‹¤. 
+ *    flush listì˜ BCBë¥¼ ë³´ê¸°ìœ„í•´ì„œëŠ” ì´ í•¨ìˆ˜ì˜ í˜¸ì¶œì´ ì„ í–‰ë˜ì–´ì•¼ í•œë‹¤.
+ *    ë‚´ë¶€ì ìœ¼ë¡œ mExploringCountë¥¼ í•˜ë‚˜ ì¦ê°€ì‹œí‚¨ë‹¤.
+ *    ì´ ê°’ì´ 1ì´ìƒì´ë¼ë©´ ëˆ„êµ°ê°€ íƒìƒ‰í•˜ê³  ìˆë‹¤ëŠ” ì˜ë¯¸ì´ë‹¤.
+ *    íƒìƒ‰ì„ ë§ˆì³¤ì„ ë• endExploring()ì„ í˜¸ì¶œí•´ì•¼ í•œë‹¤.
  *    
- *  aStatistics - [IN]  Åë°èÁ¤º¸
+ *  aStatistics - [IN]  í†µê³„ì •ë³´
  ***********************************************************************/
 void sdbFlushList::beginExploring(idvSQL *aStatistics)
 {
@@ -102,14 +102,14 @@ void sdbFlushList::beginExploring(idvSQL *aStatistics)
     mExplorerCount++;
     if (mExplorerCount == 1)
     {
-        // ÀÌ flush list¿¡ ´ëÇØ beginExploring()À» ¾Æ¹«µµ È£Ãâ¾ÈÇÑ
-        // »óÅÂÀÌ´Ù. ÀÌ °æ¿ì mExploringÀ» ¼¼ÆÃÇÑ´Ù.
+        // ì´ flush listì— ëŒ€í•´ beginExploring()ì„ ì•„ë¬´ë„ í˜¸ì¶œì•ˆí•œ
+        // ìƒíƒœì´ë‹¤. ì´ ê²½ìš° mExploringì„ ì„¸íŒ…í•œë‹¤.
         mCurrent = SMU_LIST_GET_LAST(mBase);
     }
     else
     {
-        // ´©±º°¡ exploringÀ» ÇÏ°í ÀÖ´Ù.
-        // mExploringÀ» ¼¼ÆÃÇÏÁö ¾Ê´Â´Ù.
+        // ëˆ„êµ°ê°€ exploringì„ í•˜ê³  ìˆë‹¤.
+        // mExploringì„ ì„¸íŒ…í•˜ì§€ ì•ŠëŠ”ë‹¤.
     }
 
     IDE_ASSERT(mMutex.unlock() == IDE_SUCCESS);
@@ -117,24 +117,24 @@ void sdbFlushList::beginExploring(idvSQL *aStatistics)
 
 /***********************************************************************
  * Description :
- *    flush list¿¡ ´ëÇÑ Å½»öÀ» ¸¶ÃÆÀ½À» ¾Ë¸°´Ù.
- *    beginExploring È£ÃâÇß´Ù¸é, ¹İµå½Ã endExploringÀ» È£ÃâÇØ¾ß ÇÑ´Ù.
- *    mExploringCount¸¦ ÇÏ³ª °¨¼Ò½ÃÅ²´Ù.
+ *    flush listì— ëŒ€í•œ íƒìƒ‰ì„ ë§ˆì³¤ìŒì„ ì•Œë¦°ë‹¤.
+ *    beginExploring í˜¸ì¶œí–ˆë‹¤ë©´, ë°˜ë“œì‹œ endExploringì„ í˜¸ì¶œí•´ì•¼ í•œë‹¤.
+ *    mExploringCountë¥¼ í•˜ë‚˜ ê°ì†Œì‹œí‚¨ë‹¤.
  *
- *  aStatistics - [IN]  Åë°èÁ¤º¸
+ *  aStatistics - [IN]  í†µê³„ì •ë³´
  ***********************************************************************/
 void sdbFlushList::endExploring(idvSQL *aStatistics)
 {
     IDE_ASSERT(mMutex.lock(aStatistics) == IDE_SUCCESS);
 
-    // endExploring()ÀÌ È£ÃâµÇ±â Àü¿¡ ¹İµå½Ã ÃÖ¼ÒÇÑ ÇÑ¹øÀº
-    // beginExploring()ÀÌ È£ÃâµÇ¾î¾ß ÇÑ´Ù.
+    // endExploring()ì´ í˜¸ì¶œë˜ê¸° ì „ì— ë°˜ë“œì‹œ ìµœì†Œí•œ í•œë²ˆì€
+    // beginExploring()ì´ í˜¸ì¶œë˜ì–´ì•¼ í•œë‹¤.
     IDE_DASSERT(mExplorerCount >= 1);
 
     mExplorerCount--;
     if (mExplorerCount == 0)
     {
-        // ´õÀÌ»ó ¾Æ¹«µµ exploringÇÏÁö ¾Ê´Â »óÅÂÀÌ´Ù.
+        // ë”ì´ìƒ ì•„ë¬´ë„ exploringí•˜ì§€ ì•ŠëŠ” ìƒíƒœì´ë‹¤.
         mCurrent = NULL;
     }
     else
@@ -147,17 +147,17 @@ void sdbFlushList::endExploring(idvSQL *aStatistics)
 
 /***********************************************************************
  * Description :
- *    ÇöÀç Å½»ö À§Ä¡ÀÇ BCB¸¦ ¾ò¾î¿Â´Ù. BCB¸¦ ¸®½ºÆ®¿¡¼­ »©Áø ¾Ê´Â´Ù.
- *    ±×¸®°í Å½»ö À§Ä¡¸¦ ¾ÕÀ¸·Î ÇÏ³ª ´ç°Ü À§Ä¡½ÃÅ²´Ù.
- *    ÇöÀç Å½»ö À§Ä¡°¡ mFirstÀÌ¸é NULLÀ» ¹İÈ¯ÇÑ´Ù.
- *    ¸®½ºÆ®¿¡ BCB°¡ ÇÏ³ªµµ ¾øÀ» ¶§µµ NULLÀ» ¹İÈ¯ÇÑ´Ù.
- *    ÀÌ ÇÔ¼ö¸¦ È£ÃâÇÏ±â À§ÇØ¼­´Â ¸ÕÀú beginExploring()À» È£ÃâÇØ¾ß ÇÑ´Ù.
+ *    í˜„ì¬ íƒìƒ‰ ìœ„ì¹˜ì˜ BCBë¥¼ ì–»ì–´ì˜¨ë‹¤. BCBë¥¼ ë¦¬ìŠ¤íŠ¸ì—ì„œ ë¹¼ì§„ ì•ŠëŠ”ë‹¤.
+ *    ê·¸ë¦¬ê³  íƒìƒ‰ ìœ„ì¹˜ë¥¼ ì•ìœ¼ë¡œ í•˜ë‚˜ ë‹¹ê²¨ ìœ„ì¹˜ì‹œí‚¨ë‹¤.
+ *    í˜„ì¬ íƒìƒ‰ ìœ„ì¹˜ê°€ mFirstì´ë©´ NULLì„ ë°˜í™˜í•œë‹¤.
+ *    ë¦¬ìŠ¤íŠ¸ì— BCBê°€ í•˜ë‚˜ë„ ì—†ì„ ë•Œë„ NULLì„ ë°˜í™˜í•œë‹¤.
+ *    ì´ í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•˜ê¸° ìœ„í•´ì„œëŠ” ë¨¼ì € beginExploring()ì„ í˜¸ì¶œí•´ì•¼ í•œë‹¤.
  *
- *    º¸Åë getNext¸¦ ¼öÇàÇÏ¿© ¾ò¾î¿Â BCB¿¡ ´ëÇØ¼­ remove¸¦ Àû¿ëÇØ¼­ »èÁ¦ÇÏ°Ô
- *    µÇ´Âµ¥, ¸ğµç BCB¿¡ ´ëÇØ remove¸¦ Àû¿ëÇÏÁö ¾Ê°í, ±×³É flushList¿¡ ³²°Ü
- *    ³õ´Â °æ¿ìµµ ÀÖ´Ù. ÀÌ¶§´Â remove¸¦ È£ÃâÇÏÁö ¾Ê°í, ´Ù½Ã getNext¸¦ È£ÃâÇÑ´Ù.
+ *    ë³´í†µ getNextë¥¼ ìˆ˜í–‰í•˜ì—¬ ì–»ì–´ì˜¨ BCBì— ëŒ€í•´ì„œ removeë¥¼ ì ìš©í•´ì„œ ì‚­ì œí•˜ê²Œ
+ *    ë˜ëŠ”ë°, ëª¨ë“  BCBì— ëŒ€í•´ removeë¥¼ ì ìš©í•˜ì§€ ì•Šê³ , ê·¸ëƒ¥ flushListì— ë‚¨ê²¨
+ *    ë†“ëŠ” ê²½ìš°ë„ ìˆë‹¤. ì´ë•ŒëŠ” removeë¥¼ í˜¸ì¶œí•˜ì§€ ì•Šê³ , ë‹¤ì‹œ getNextë¥¼ í˜¸ì¶œí•œë‹¤.
  *    
- *  aStatistics - [IN]  Åë°èÁ¤º¸
+ *  aStatistics - [IN]  í†µê³„ì •ë³´
  ***********************************************************************/
 sdbBCB* sdbFlushList::getNext(idvSQL *aStatistics)
 {
@@ -169,7 +169,7 @@ sdbBCB* sdbFlushList::getNext(idvSQL *aStatistics)
 
     if (mCurrent == mBase)
     {
-        // sRet°¡ NULLÀÌ ¶ó°í mListLength°¡ 0À» ¶æÇÏÁø ¾Ê´Â´Ù.
+        // sRetê°€ NULLì´ ë¼ê³  mListLengthê°€ 0ì„ ëœ»í•˜ì§„ ì•ŠëŠ”ë‹¤.
         sRet = NULL;
     }
     else
@@ -185,12 +185,12 @@ sdbBCB* sdbFlushList::getNext(idvSQL *aStatistics)
 
 /***********************************************************************
  * Description :
- *    ¸®½ºÆ®¿¡¼­ ÇØ´ç BCB¸¦ Á¦°ÅÇÑ´Ù.
- *    ÀÎÀÚ·Î ÁÖ¾îÁö´Â BCB´Â ¹İµå½Ã next()·Î ¾òÀº
- *    BCBÀÌ¾î¾ß ÇÑ´Ù.
+ *    ë¦¬ìŠ¤íŠ¸ì—ì„œ í•´ë‹¹ BCBë¥¼ ì œê±°í•œë‹¤.
+ *    ì¸ìë¡œ ì£¼ì–´ì§€ëŠ” BCBëŠ” ë°˜ë“œì‹œ next()ë¡œ ì–»ì€
+ *    BCBì´ì–´ì•¼ í•œë‹¤.
  *
- *  aStatistics - [IN]  Åë°èÁ¤º¸
- *  aTargetBCB  - [IN]  ÇØ´ç BCB
+ *  aStatistics - [IN]  í†µê³„ì •ë³´
+ *  aTargetBCB  - [IN]  í•´ë‹¹ BCB
  ***********************************************************************/
 void sdbFlushList::remove(idvSQL *aStatistics, sdbBCB *aTargetBCB)
 {
@@ -200,8 +200,8 @@ void sdbFlushList::remove(idvSQL *aStatistics, sdbBCB *aTargetBCB)
 
     sTarget = &aTargetBCB->mBCBListItem;
 
-    // mCurrent´Â Ç×»ó getNextº¸´Ù prevBCB¸¦ °¡¸®Å°°í ÀÖ±â¶§¹®¿¡,
-    // Á¦°Å ´ë»ó°ú °°Áö ¾Ê´Ù.
+    // mCurrentëŠ” í•­ìƒ getNextë³´ë‹¤ prevBCBë¥¼ ê°€ë¦¬í‚¤ê³  ìˆê¸°ë•Œë¬¸ì—,
+    // ì œê±° ëŒ€ìƒê³¼ ê°™ì§€ ì•Šë‹¤.
     IDE_ASSERT(sTarget != mCurrent);
 
     IDE_ASSERT(mMutex.lock(aStatistics) == IDE_SUCCESS);
@@ -221,10 +221,10 @@ void sdbFlushList::remove(idvSQL *aStatistics, sdbBCB *aTargetBCB)
 
 /***********************************************************************
  * Description :
- *    flush listÀÇ ¸Ç ¾Õ¿¡ BCB¸¦ ÇÏ³ª Ãß°¡ÇÑ´Ù.
+ *    flush listì˜ ë§¨ ì•ì— BCBë¥¼ í•˜ë‚˜ ì¶”ê°€í•œë‹¤.
  *    
- *  aStatistics - [IN]  Åë°èÁ¤º¸
- *  aBCB        - [IN]  ÇØ´ç BCB
+ *  aStatistics - [IN]  í†µê³„ì •ë³´
+ *  aBCB        - [IN]  í•´ë‹¹ BCB
  ***********************************************************************/
 void sdbFlushList::add(idvSQL *aStatistics, sdbBCB *aBCB)
 {
@@ -246,9 +246,9 @@ void sdbFlushList::add(idvSQL *aStatistics, sdbBCB *aBCB)
 
 /***********************************************************************
  * Description :
- *  sdbFlushListÀÇ ¸ğµç BCBµéÀÌ Á¦´ë·Î ¿¬°áµÇ¾î ÀÖ´ÂÁö È®ÀÎÇÑ´Ù.
+ *  sdbFlushListì˜ ëª¨ë“  BCBë“¤ì´ ì œëŒ€ë¡œ ì—°ê²°ë˜ì–´ ìˆëŠ”ì§€ í™•ì¸í•œë‹¤.
  *  
- *  aStatistics - [IN]  Åë°èÁ¤º¸
+ *  aStatistics - [IN]  í†µê³„ì •ë³´
  ***********************************************************************/
 IDE_RC sdbFlushList::checkValidation(idvSQL *aStatistics)
 {

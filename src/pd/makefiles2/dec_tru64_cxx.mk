@@ -3,12 +3,12 @@
 # CVS Info : $Id: dec_tru64_cxx.mk 26440 2008-06-10 04:02:48Z jdlee $
 #
 
-# Àü´ŞµÇ´Â ¿ÜºÎ º¯¼öµé
+# ì „ë‹¬ë˜ëŠ” ì™¸ë¶€ ë³€ìˆ˜ë“¤
 
-# ID_DIR      : ID µğ·ºÅä¸® 
-# ID_ACE_ROOT : ¶óÀÌºê·¯¸® ÆĞ½º
-# compile64   : ÄÄÆÄÀÏ È¯°æ
-# compat5     : CC 5.0 À¸·Î?
+# ID_DIR      : ID ë””ë ‰í† ë¦¬ 
+# ID_ACE_ROOT : ë¼ì´ë¸ŒëŸ¬ë¦¬ íŒ¨ìŠ¤
+# compile64   : ì»´íŒŒì¼ í™˜ê²½
+# compat5     : CC 5.0 ìœ¼ë¡œ?
 # compat4     : 
 
 ifndef	BUILD_MODE
@@ -34,9 +34,9 @@ PURECOV		= purecov
 PURIFYCOV   = $(PURIFY) $(PURECOV)
 PURIFY = purify64 -chain-length=100
 
-# Library : static library Ã³¸® 
+# Library : static library ì²˜ë¦¬ 
 
-# readline library ¼³Á¤
+# readline library ì„¤ì •
 
 ifeq "$(USE_READLINE)" "1"
 READLINE_INCLUDES = -I/usr/local/include/readline
@@ -57,17 +57,17 @@ LIBS     =   $(READLINE_LIBRARY) -ltli -lrt -lpthread -lm $(LD_CC)
 endif
 LIBS_SHIP	= $(LIBS)
 
-# ¸ÅÅ©·Î ¼±¾ğ
+# ë§¤í¬ë¡œ ì„ ì–¸
 CLASSIC_LIB = 
 LIB64_DIRS  = 
 LIB32_DIRS  = 
 
-# compile mode ÀÇ Á¾·ù
+# compile mode ì˜ ì¢…ë¥˜
 #	compat4		:
 #       compat5		:
 #	compile64	:
 #
-#64bit ÄÄÆÄÀÏ ¸ğµå 
+#64bit ì»´íŒŒì¼ ëª¨ë“œ 
 ifeq ($(compile64),1)
 
 #EXTRA_CXXOPT += +DA2.0 +DS2.0 $(CLASSIC_LIB) $(TEMPLATE) $(COMPAT64_ACE_FLAG) 
@@ -76,7 +76,7 @@ EXTRA_CXXOPT += $(CLASSIC_LIB) $(TEMPLATE) $(COMPAT64_ACE_FLAG)
 EXTRA_LOPT += $(CLASSIC_LIB) $(LIB64_DIRS)
 
 else 
-#32ºñÆ®  ¸ğµå
+#32ë¹„íŠ¸  ëª¨ë“œ
 #EXTRA_CXXOPT += +DA1.1 +DS1.1 $(TEMPLATE) $(COMPAT4_ACE_FLAG)
 #EXTRA_LOPT += +DA1.1 +DS1.1
 EXTRA_CXXOPT += $(TEMPLATE) $(ACE_FLAG)
@@ -106,12 +106,12 @@ endif
 #CXXOPT_DEPENDANCY = -xM1
 
 
-# BUILD_MODEÀÇ Á¾·ù
-#	debug		: Debug ¸ğµå
+# BUILD_MODEì˜ ì¢…ë¥˜
+#	debug		: Debug ëª¨ë“œ
 #   prerelease      : -DDEBUG(x) -g (o)
-#	release		: release ¹öÁ¯, ½ÇÁ¦ product¿¡ ÇØ´ç
+#	release		: release ë²„ì ¼, ì‹¤ì œ productì— í•´ë‹¹
 
-# LINK MODE Á¾·ù 
+# LINK MODE ì¢…ë¥˜ 
 #	purify		: purify version
 #	quantify	: quantify version
 #	purecov		: purecov version

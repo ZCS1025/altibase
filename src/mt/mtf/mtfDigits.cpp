@@ -47,7 +47,7 @@ static IDE_RC mtfDigitsEstimate( mtcNode*     aNode,
 mtfModule mtfDigits = {
     1|MTC_NODE_OPERATOR_FUNCTION,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
+    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìê°€ ì•„ë‹˜)
     mtfDigitsFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -144,8 +144,8 @@ IDE_RC mtfDigitsCalculate( mtcNode*     aNode,
  * Implementation :
  *    BINARY_LENGTH( char )
  *
- *    aStack[0] : ÀÔ·ÂµÈ ¹®ÀÚ¿­ÀÇ ±æÀÌ 
- *    aStack[1] : char ( ÀÔ·ÂµÈ ¹®ÀÚ¿­ )
+ *    aStack[0] : ì…ë ¥ëœ ë¬¸ìì—´ì˜ ê¸¸ì´ 
+ *    aStack[1] : char ( ì…ë ¥ëœ ë¬¸ìì—´ )
  *
  ***********************************************************************/
 

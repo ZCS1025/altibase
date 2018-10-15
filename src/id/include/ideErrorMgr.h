@@ -14,8 +14,8 @@
  *
  *    Related Files    :
  *
- *    Description        :    ID ¿¡·¯ Ã³¸® ¸ğµâ Çìµ¢È­ÀÏ
- *                      !! ¿¡·¯¸Ş½ÃÁö ·çÆ¾Àº ¾øÀ½ (¿¡·¯ÄÚµå °áÁ¤ÈÄ »ç¿ë)
+ *    Description        :    ID ì—ëŸ¬ ì²˜ë¦¬ ëª¨ë“ˆ í—¤ë©í™”ì¼
+ *                      !! ì—ëŸ¬ë©”ì‹œì§€ ë£¨í‹´ì€ ì—†ìŒ (ì—ëŸ¬ì½”ë“œ ê²°ì •í›„ ì‚¬ìš©)
  *
  **********************************************************************/
 
@@ -26,7 +26,7 @@
 #include <ideFaultMgr.h> /* PROJ-2617 */
 
 /* ------------------------------------------------------------
- *                  ¿¡·¯ ÄÚµåÀÇ ±¸¼º
+ *                  ì—ëŸ¬ ì½”ë“œì˜ êµ¬ì„±
  *
  *      [MODULE]ERR_[ACTION]_[NamingSpace]_[Description]
  *          1           2          3            4
@@ -61,7 +61,7 @@
 
 #define E_MESSAGE_MASK   0x00FFFFFF   // real Error message  // useless...
 
-#define E_MODULE_COUNT   16           // ¸ğµâ °¹¼ö
+#define E_MODULE_COUNT   16           // ëª¨ë“ˆ ê°¯ìˆ˜
 #define E_MODULE_ID      0x00000000
 #define E_MODULE_SM      0x10000000
 #define E_MODULE_MT      0x20000000
@@ -87,11 +87,11 @@
 
 /* ----------------------------------------------------------------------
  *
- *  ¿¡·¯ °¡º¯ÀÎÀÚ Ã³¸®¸¦ À§ÇÑ µ¥ÀÌÅ¸ ±¸Á¶
+ *  ì—ëŸ¬ ê°€ë³€ì¸ì ì²˜ë¦¬ë¥¼ ìœ„í•œ ë°ì´íƒ€ êµ¬ì¡°
  *
  * ----------------------------------------------------------------------*/
 
-#define MAX_ARGUMENT  32  // ¿¡·¯ ¸Ş½ÃÁö »ı¼º½Ã ÃÖ´ë °¡º¯ÀÎÀÚ °¹¼ö
+#define MAX_ARGUMENT  32  // ì—ëŸ¬ ë©”ì‹œì§€ ìƒì„±ì‹œ ìµœëŒ€ ê°€ë³€ì¸ì ê°¯ìˆ˜
 
 typedef enum
 {
@@ -113,15 +113,15 @@ typedef enum
 typedef struct
 {
     IDE_ERR_DATATYPE    type;
-    const SChar       * tmpSpecStr; // ¿¡·¯ ¸Ş½ÃÁö¿¡¼­ ¾²ÀÓ
-    const SChar       * realSpecStr; // ½ÇÁ¦ printf¿¡¼­ ¾²ÀÓ
+    const SChar       * tmpSpecStr; // ì—ëŸ¬ ë©”ì‹œì§€ì—ì„œ ì“°ì„
+    const SChar       * realSpecStr; // ì‹¤ì œ printfì—ì„œ ì“°ì„
     SChar               len;
 } ideErrTypeInfo;
 
 typedef struct ideArgInfo
 {
     ideErrTypeInfo *type_info;
-    ideArgInfo         *outputOrder; // Ãâ·ÂÇÒ ¶§ÀÇ ÀÎÀÚ °¡¸®Å´
+    ideArgInfo         *outputOrder; // ì¶œë ¥í•  ë•Œì˜ ì¸ì ê°€ë¦¬í‚´
     union
     {
         SChar *string;
@@ -143,7 +143,7 @@ typedef struct ideArgInfo
 
 /* ----------------------------------------------------------------------
  *
- *  SM ¿¡·¯ ÄÚµå µ¥ÀÌÅ¸ ±¸Á¶ ¹× Àü¿ªº¯¼ö
+ *  SM ì—ëŸ¬ ì½”ë“œ ë°ì´íƒ€ êµ¬ì¡° ë° ì „ì—­ë³€ìˆ˜
  *
  * ----------------------------------------------------------------------*/
 
@@ -192,12 +192,12 @@ struct ideErrorMgr
 
 typedef struct
 {
-    UInt  AltiVersionId; // MSBÆÄÀÏ¿¡ ¾ËÆ¼º£ÀÌ½º ¹öÀü ±â·Ï (2003/10/31, by kumdory)
-    UInt  Section;    // ¿¡·¯ ±¸ºĞ ¹øÈ£
-    ULong ErrorCount; // ¿¡·¯ ¸Ş½ÃÁö °¹¼ö, ÇÃ·§Æû°£ »óÀÌÇÑ align¹®Á¦¶§¹®¿¡ ErrorCount¸¦ SectionµÚ·Î ¿Å±è
+    UInt  AltiVersionId; // MSBíŒŒì¼ì— ì•Œí‹°ë² ì´ìŠ¤ ë²„ì „ ê¸°ë¡ (2003/10/31, by kumdory)
+    UInt  Section;    // ì—ëŸ¬ êµ¬ë¶„ ë²ˆí˜¸
+    ULong ErrorCount; // ì—ëŸ¬ ë©”ì‹œì§€ ê°¯ìˆ˜, í”Œë«í¼ê°„ ìƒì´í•œ alignë¬¸ì œë•Œë¬¸ì— ErrorCountë¥¼ Sectionë’¤ë¡œ ì˜®ê¹€
 } MsbHeader;
 
-// ¼³¸í : genErrMsg¿¡ ÀÇÇØ »ı¼ºµÈ *.msb È­ÀÏÀÇ Çì´õ ±¸Á¶
+// ì„¤ëª… : genErrMsgì— ì˜í•´ ìƒì„±ëœ *.msb í™”ì¼ì˜ í—¤ë” êµ¬ì¡°
 typedef struct
 {
     union
@@ -208,7 +208,7 @@ typedef struct
 
 } idErrorMsbType;
 
-// formatted string ÀúÀå
+// formatted string ì €ì¥
 typedef struct
 {
     idErrorMsbType MsbHeader;
@@ -219,7 +219,7 @@ typedef struct
 //# endif /* SERVER COMPILE */
 
 /* ----------------------------------------------------------------------
- *  ID ¿¡·¯ ÄÚµå Get, Set
+ *  ID ì—ëŸ¬ ì½”ë“œ Get, Set
  * ----------------------------------------------------------------------*/
 
 /* Project 2514 - Log IDE_TEST failures */
@@ -231,10 +231,10 @@ IDL_EXTERN_C void ideLogError(const SChar* aErrInfo,
                               const SChar* aMsg, ...);
 void   ideTestFlush(void);
 
-/* TASK-6739 Altibase 710 ¼º´É °³¼± */
+/* TASK-6739 Altibase 710 ì„±ëŠ¥ ê°œì„  */
 IDL_EXTERN_C IDTHREAD ideErrorMgr gIdeErrorMgr;
 
-/* TASK-6739 Altibase 710 ¼º´É °³¼± */
+/* TASK-6739 Altibase 710 ì„±ëŠ¥ ê°œì„  */
 inline struct ideErrorMgr* ideGetErrorMgr()
 {
     return &gIdeErrorMgr;
@@ -262,7 +262,7 @@ SInt   ideIsIgnore();
 SInt   ideIsRetry();
 SInt   ideIsRebuild();
 
-// ¿¡·¯ ÄÚµå ¼³Á¤
+// ì—ëŸ¬ ì½”ë“œ ì„¤ì •
 ideErrorMgr* ideSetErrorCode(UInt ErrorCode, ...);
 
 #ifdef ALTIBASE_FIT_CHECK
@@ -273,7 +273,7 @@ ideErrorMgr* ideFitSetErrorCode( UInt aErrorCode, va_list aArgs );
 SInt   ideSetDebugInfo(SChar *File, UInt Line, SChar *testline);
 #endif
 
-// PROJ-1335 errorcode, errmsg Á÷Á¢ ¼³Á¤
+// PROJ-1335 errorcode, errmsg ì§ì ‘ ì„¤ì •
 ideErrorMgr* ideSetErrorCodeAndMsg( UInt   ErrorCode,
                                     SChar* ErrorMsg );
 
@@ -281,12 +281,12 @@ ideErrorMgr* ideSetErrorCodeAndMsg( UInt   ErrorCode,
 void ideCopyErrorInfo(ideErrorMgr       *aDestErrorMgr,
                       const ideErrorMgr *aSrcErrorMgr);
 
-IDL_EXTERN_C void ideClearError(); // ÀÎµ¦½º ÃÊ±âÈ­
+IDL_EXTERN_C void ideClearError(); // ì¸ë±ìŠ¤ ì´ˆê¸°í™”
 SInt idePopErrorCode();
 void ideDump();
 
 /* ------------------------------------------------------------------
- * ¿¡·¯ ¸Ş½ÃÁö Ã³¸® (MSB)
+ * ì—ëŸ¬ ë©”ì‹œì§€ ì²˜ë¦¬ (MSB)
  * ----------------------------------------------------------------*/
 
 SInt    ideRegistErrorMsb(SChar *fn);
@@ -298,7 +298,7 @@ UInt   ideGetErrorArgCount(UInt ErrorCode);
 
 /* ----------------------------------------------------------------------
  *
- *  IDE ¿¡·¯ Handling ¸ÅÅ©·Î
+ *  IDE ì—ëŸ¬ Handling ë§¤í¬ë¡œ
  *
  * ----------------------------------------------------------------------*/
 
@@ -309,17 +309,17 @@ UInt   ideGetErrorArgCount(UInt ErrorCode);
  * New features of error manager
  * With property turned on, every IDE_TEST failures will be recorded
  * PROJ-2617
- * FATALÀ» ±Øº¹ÇÏ±â À§ÇØ IDE_FT_BEGIN(), IDE_FT_END(), IDE_FT_END_FAILURE(), µî
- * ¸ÅÅ©·Î »ç¿ë. ÀÚ¼¼ÇÑ ¼³¸íÀº 'http://nok.altibase.com/x/LGEUAg' ÂüÁ¶ÇØ ÁÖ¼¼¿ä.
+ * FATALì„ ê·¹ë³µí•˜ê¸° ìœ„í•´ IDE_FT_BEGIN(), IDE_FT_END(), IDE_FT_END_FAILURE(), ë“±
+ * ë§¤í¬ë¡œ ì‚¬ìš©. ìì„¸í•œ ì„¤ëª…ì€ 'http://nok.altibase.com/x/LGEUAg' ì°¸ì¡°í•´ ì£¼ì„¸ìš”.
  *****************************************************************************/
 
 /**
- * FATAL ±Øº¹ ±¸°£À» ½ÃÀÛÇÏ±â À§ÇØ IDE_FT_BEGIN() ¸ÅÅ©·Î »ç¿ë.
- * ÀÌ ±¸°£ ³»¿¡¼­´Â Æ¯Á¤ UNIX signal ¹ß»ı½Ã FATAL ±Øº¹ °¡´ÉÇÏ´Ù.
- * Signal handler¿¡¼­ setjmp() ÇÔ¼ö·Î non-local jump µÇ°í ¹İÈ¯ °ªÀº 1·Î
- * ¹İÈ¯µÈ´Ù. ÀÌÈÄ, IDE_EXCEPTION_SIGNAL_LABEL label·Î local jump µÇ¾î
- * ¿¹¿ÜÃ³¸® ÄÚµå¸¦ ½ÇÇàÇÏ°Ô µÈ´Ù. ¸¸¾à, FT call-stack¿¡ overflow ¹ß»ıÇÑ´Ù¸é,
- * IDE_FT_ROOT_BEGIN()À» ½ÇÇàÇÏ±â Àü±îÁö FATAL ±Øº¹ ºÒ°¡´ÉÇÏ´Ù.
+ * FATAL ê·¹ë³µ êµ¬ê°„ì„ ì‹œì‘í•˜ê¸° ìœ„í•´ IDE_FT_BEGIN() ë§¤í¬ë¡œ ì‚¬ìš©.
+ * ì´ êµ¬ê°„ ë‚´ì—ì„œëŠ” íŠ¹ì • UNIX signal ë°œìƒì‹œ FATAL ê·¹ë³µ ê°€ëŠ¥í•˜ë‹¤.
+ * Signal handlerì—ì„œ setjmp() í•¨ìˆ˜ë¡œ non-local jump ë˜ê³  ë°˜í™˜ ê°’ì€ 1ë¡œ
+ * ë°˜í™˜ëœë‹¤. ì´í›„, IDE_EXCEPTION_SIGNAL_LABEL labelë¡œ local jump ë˜ì–´
+ * ì˜ˆì™¸ì²˜ë¦¬ ì½”ë“œë¥¼ ì‹¤í–‰í•˜ê²Œ ëœë‹¤. ë§Œì•½, FT call-stackì— overflow ë°œìƒí•œë‹¤ë©´,
+ * IDE_FT_ROOT_BEGIN()ì„ ì‹¤í–‰í•˜ê¸° ì „ê¹Œì§€ FATAL ê·¹ë³µ ë¶ˆê°€ëŠ¥í•˜ë‹¤.
  */
 #ifdef DEBUG
 
@@ -368,10 +368,10 @@ UInt   ideGetErrorArgCount(UInt ErrorCode);
 #endif /* DEBUG */
 
 /**
- * FATAL ±Øº¹ ±¸°£À» Á¾·áÇÏ±â À§ÇØ IDE_FT_END() ¸ÅÅ©·Î »ç¿ë.
- * ÀÌ ¸ÅÅ©·Î ÀÌÈÄÀÇ FATAL ±Øº¹ ¿©ºÎ´Â caller¿¡ ÀÇÁ¸ÇÑ´Ù. ¸¸¾à, FT call-stack¿¡
- * underflow ¹ß»ıÇÑ´Ù¸é, IDE_FT_ROOT_BEGIN()À» ½ÇÇàÇÏ±â Àü±îÁö FATAL ±Øº¹
- * ºÒ°¡´ÉÇÏ´Ù.
+ * FATAL ê·¹ë³µ êµ¬ê°„ì„ ì¢…ë£Œí•˜ê¸° ìœ„í•´ IDE_FT_END() ë§¤í¬ë¡œ ì‚¬ìš©.
+ * ì´ ë§¤í¬ë¡œ ì´í›„ì˜ FATAL ê·¹ë³µ ì—¬ë¶€ëŠ” callerì— ì˜ì¡´í•œë‹¤. ë§Œì•½, FT call-stackì—
+ * underflow ë°œìƒí•œë‹¤ë©´, IDE_FT_ROOT_BEGIN()ì„ ì‹¤í–‰í•˜ê¸° ì „ê¹Œì§€ FATAL ê·¹ë³µ
+ * ë¶ˆê°€ëŠ¥í•˜ë‹¤.
  */
 #ifdef DEBUG
 
@@ -412,9 +412,9 @@ UInt   ideGetErrorArgCount(UInt ErrorCode);
 #endif /* DEBUG */
 
 /**
- * FATAL ±Øº¹ ±¸°£À» ½ÃÀÛÇÏ±â Àü, call root¿¡¼­ IDE_FT_ROOT_BEGIN() ¸ÅÅ©·Î »ç¿ë.
- * struct ideFaultMgr ÀÚ·á±¸Á¶¸¦ ÃÊ±âÈ­ÇÑ´Ù. ¸¸¾à, FT call-stack¿¡ overflow ¶Ç´Â
- * underflow ¹ß»ı½Ã »õ·Î¿î call path¿¡ ´ëÇØ FATAL ±Øº¹ÇÒ ¼ö ÀÖµµ·Ï ÃÊ±âÈ­ÇØÁØ´Ù.
+ * FATAL ê·¹ë³µ êµ¬ê°„ì„ ì‹œì‘í•˜ê¸° ì „, call rootì—ì„œ IDE_FT_ROOT_BEGIN() ë§¤í¬ë¡œ ì‚¬ìš©.
+ * struct ideFaultMgr ìë£Œêµ¬ì¡°ë¥¼ ì´ˆê¸°í™”í•œë‹¤. ë§Œì•½, FT call-stackì— overflow ë˜ëŠ”
+ * underflow ë°œìƒì‹œ ìƒˆë¡œìš´ call pathì— ëŒ€í•´ FATAL ê·¹ë³µí•  ìˆ˜ ìˆë„ë¡ ì´ˆê¸°í™”í•´ì¤€ë‹¤.
  */
 #ifdef DEBUG
 
@@ -436,9 +436,9 @@ UInt   ideGetErrorArgCount(UInt ErrorCode);
 #endif /* DEBUG */
 
 /**
- * Call root¿¡¼­ IDE_FT_ROOT_BEGIN() ´ëºñÇÏ¿© IDE_FT_ROOT_END() ¸ÅÅ©·Î »ç¿ë.
- * ¸¸¾à, FT call-stack¿¡ overflow ¶Ç´Â underflow ¹ß»ı½Ã debug ¸ğµå¿¡¼­
- * assertion ¹ß»ı½ÃÅ²´Ù.
+ * Call rootì—ì„œ IDE_FT_ROOT_BEGIN() ëŒ€ë¹„í•˜ì—¬ IDE_FT_ROOT_END() ë§¤í¬ë¡œ ì‚¬ìš©.
+ * ë§Œì•½, FT call-stackì— overflow ë˜ëŠ” underflow ë°œìƒì‹œ debug ëª¨ë“œì—ì„œ
+ * assertion ë°œìƒì‹œí‚¨ë‹¤.
  */
 #ifdef DEBUG
 
@@ -461,9 +461,9 @@ UInt   ideGetErrorArgCount(UInt ErrorCode);
 #endif /* DEBUG */
 
 /**
- * FT macro¿Í ÇÔ²² trace logging À§ÇØ IDE_FT_TRACE() ¸ÅÅ©·Î »ç¿ë.
- * Runtime »ó¿¡¼­ FT macro ½ÇÇà¿¡ ´ëÇØ µ¿ÀûÀ¸·Î ºĞ¼®ÇÒ ¼ö ÀÖ´Â µµ±¸·Î Á¦°øÇÑ´Ù.
- * ´Ü, __FAULT_TOLERANCE_TRACE property °ªÀÌ 1 ÀÌ°í debug mode¿¡¼­¸¸ µ¿ÀÛÇÑ´Ù.
+ * FT macroì™€ í•¨ê»˜ trace logging ìœ„í•´ IDE_FT_TRACE() ë§¤í¬ë¡œ ì‚¬ìš©.
+ * Runtime ìƒì—ì„œ FT macro ì‹¤í–‰ì— ëŒ€í•´ ë™ì ìœ¼ë¡œ ë¶„ì„í•  ìˆ˜ ìˆëŠ” ë„êµ¬ë¡œ ì œê³µí•œë‹¤.
+ * ë‹¨, __FAULT_TOLERANCE_TRACE property ê°’ì´ 1 ì´ê³  debug modeì—ì„œë§Œ ë™ì‘í•œë‹¤.
  */
 #ifdef DEBUG
 
@@ -483,7 +483,7 @@ UInt   ideGetErrorArgCount(UInt ErrorCode);
 #endif /* DEBUG */
 
 /**
- * FT macro ³»ºÎ¿¡¼­ »ç¿ëµÇ´Â IDE_FT_TRACE_MACRO() ¸ÅÅ©·Î.
+ * FT macro ë‚´ë¶€ì—ì„œ ì‚¬ìš©ë˜ëŠ” IDE_FT_TRACE_MACRO() ë§¤í¬ë¡œ.
  */
 #ifdef DEBUG
 
@@ -554,8 +554,8 @@ UInt   ideGetErrorArgCount(UInt ErrorCode);
 #endif
 
 /**
- * FATAL ±Øº¹ ±¸°£ ³»¿¡¼­ ÀÏ½ÃÀûÀ¸·Î ºñÈ°¼ºÈ­ÇÏ±â À§ÇØ IDE_TEST_RAISE()
- * ´ëºñµÇ´Â IDE_NOFT_TEST_RAISE() ¸ÅÅ©·Î »ç¿ë.
+ * FATAL ê·¹ë³µ êµ¬ê°„ ë‚´ì—ì„œ ì¼ì‹œì ìœ¼ë¡œ ë¹„í™œì„±í™”í•˜ê¸° ìœ„í•´ IDE_TEST_RAISE()
+ * ëŒ€ë¹„ë˜ëŠ” IDE_NOFT_TEST_RAISE() ë§¤í¬ë¡œ ì‚¬ìš©.
  */
 #ifdef DEBUG
 
@@ -620,8 +620,8 @@ UInt   ideGetErrorArgCount(UInt ErrorCode);
 #endif /* DEBUG */
 
 /**
- * FATAL ±Øº¹ ±¸°£ ³»¿¡¼­ ÀÏ½ÃÀûÀ¸·Î ºñÈ°¼ºÈ­ÇÏ±â À§ÇØ IDE_TEST()
- * ´ëºñµÇ´Â IDE_NOFT_TEST() ¸ÅÅ©·Î »ç¿ë.
+ * FATAL ê·¹ë³µ êµ¬ê°„ ë‚´ì—ì„œ ì¼ì‹œì ìœ¼ë¡œ ë¹„í™œì„±í™”í•˜ê¸° ìœ„í•´ IDE_TEST()
+ * ëŒ€ë¹„ë˜ëŠ” IDE_NOFT_TEST() ë§¤í¬ë¡œ ì‚¬ìš©.
  */
 #ifdef DEBUG
 
@@ -686,9 +686,9 @@ UInt   ideGetErrorArgCount(UInt ErrorCode);
 #endif /* DEBUG */
 
 /**
- * FATAL ±Øº¹ ±¸°£ ³»¿¡¼­ ÀÏ½ÃÀûÀ¸·Î ºñÈ°¼ºÈ­ÇÏ±â À§ÇØ IDE_NOFT() ¸ÅÅ©·Î »ç¿ë.
- * Á¶°Ç ÇÏ¿¡ exception sectionÀ¸·Î jump µÇ¾î¾ß ÇÑ´Ù¸é, IDE_NOFT_TEST_RAISE()
- * ¶Ç´Â IDE_NOFT_TEST() ¸ÅÅ©·Î¸¦ »ç¿ëÇØ¾ß ÇÑ´Ù.
+ * FATAL ê·¹ë³µ êµ¬ê°„ ë‚´ì—ì„œ ì¼ì‹œì ìœ¼ë¡œ ë¹„í™œì„±í™”í•˜ê¸° ìœ„í•´ IDE_NOFT() ë§¤í¬ë¡œ ì‚¬ìš©.
+ * ì¡°ê±´ í•˜ì— exception sectionìœ¼ë¡œ jump ë˜ì–´ì•¼ í•œë‹¤ë©´, IDE_NOFT_TEST_RAISE()
+ * ë˜ëŠ” IDE_NOFT_TEST() ë§¤í¬ë¡œë¥¼ ì‚¬ìš©í•´ì•¼ í•œë‹¤.
  */
 
 /* To prevent re-ordering instruction in IDE_NOFT() macro under AIX/PowerPC or Linux environment */
@@ -745,8 +745,8 @@ UInt   ideGetErrorArgCount(UInt ErrorCode);
 #endif /* DEBUG */
 
 /**
- * FATAL ±Øº¹ ±¸°£ ³»¿¡¼­ ÀÏ½ÃÀûÀ¸·Î ºñÈ°¼ºÈ­ ±¸°£À» ½ÃÀÛÇÏ±â À§ÇØ
- * IDE_NOFT_BEGIN() ¸ÅÅ©·Î »ç¿ë.
+ * FATAL ê·¹ë³µ êµ¬ê°„ ë‚´ì—ì„œ ì¼ì‹œì ìœ¼ë¡œ ë¹„í™œì„±í™” êµ¬ê°„ì„ ì‹œì‘í•˜ê¸° ìœ„í•´
+ * IDE_NOFT_BEGIN() ë§¤í¬ë¡œ ì‚¬ìš©.
  */
 #ifdef DEBUG
 
@@ -785,9 +785,9 @@ UInt   ideGetErrorArgCount(UInt ErrorCode);
 #endif /* DEBUG */
 
 /**
- * FATAL ±Øº¹ ±¸°£ ³»¿¡¼­ ÀÏ½ÃÀûÀ¸·Î ºñÈ°¼ºÈ­ ±¸°£À» Á¾·áÇÏ±â À§ÇØ
- * IDE_NOFT_END() ¸ÅÅ©·Î »ç¿ë. IDE_FT_END_FAILURE()¿Í ´Ù¸£°Ô
- * exception section¿¡¼­ ÀÌ ¸ÅÅ©·Î¸¦ ½ÇÇàÇÏÁö ¾Ê¾Æµµ µÈ´Ù.
+ * FATAL ê·¹ë³µ êµ¬ê°„ ë‚´ì—ì„œ ì¼ì‹œì ìœ¼ë¡œ ë¹„í™œì„±í™” êµ¬ê°„ì„ ì¢…ë£Œí•˜ê¸° ìœ„í•´
+ * IDE_NOFT_END() ë§¤í¬ë¡œ ì‚¬ìš©. IDE_FT_END_FAILURE()ì™€ ë‹¤ë¥´ê²Œ
+ * exception sectionì—ì„œ ì´ ë§¤í¬ë¡œë¥¼ ì‹¤í–‰í•˜ì§€ ì•Šì•„ë„ ëœë‹¤.
  */
 #ifdef DEBUG
 
@@ -828,7 +828,7 @@ UInt   ideGetErrorArgCount(UInt ErrorCode);
 
 /******************************************************************************
  * PROJ-2514 Error Manager
- * ERROR Message ¸ÅÅ©·Î Ãß°¡.
+ * ERROR Message ë§¤í¬ë¡œ ì¶”ê°€.
  *****************************************************************************/
 #define IDE_ERROR( a )                                          \
     if( !(a) )                                                  \
@@ -925,9 +925,9 @@ UInt   ideGetErrorArgCount(UInt ErrorCode);
 #define IDE_EXCEPTION_END IDE_EXCEPTION_END_LABEL:;
 #endif
 
-/* PROJ-2662 PVO ¾ÈÁ¤¼º °³¼± */
+/* PROJ-2662 PVO ì•ˆì •ì„± ê°œì„  */
 /**
- * Exception section¿¡¼­ IDE_FT_EXCEPTION_BEGIN()À¸·Î FATAL ±Øº¹ ±¸°£À» ÇØÁ¦ÇÔ.
+ * Exception sectionì—ì„œ IDE_FT_EXCEPTION_BEGIN()ìœ¼ë¡œ FATAL ê·¹ë³µ êµ¬ê°„ì„ í•´ì œí•¨.
  */
 #define IDE_FT_EXCEPTION_BEGIN()                                        \
     do {                                                                \
@@ -951,7 +951,7 @@ UInt   ideGetErrorArgCount(UInt ErrorCode);
     } while (0)
 
 /**
- * Exception section¿¡¼­ IDE_FT_EXCEPTION_BEGIN()¿¡ ´ëÇÑ Á¾·á·Î IDE_FT_EXCEPTION_END() ¸ÅÅ©·Î »ç¿ë. 
+ * Exception sectionì—ì„œ IDE_FT_EXCEPTION_BEGIN()ì— ëŒ€í•œ ì¢…ë£Œë¡œ IDE_FT_EXCEPTION_END() ë§¤í¬ë¡œ ì‚¬ìš©. 
  */
 #ifdef DEBUG
 
@@ -980,7 +980,7 @@ UInt   ideGetErrorArgCount(UInt ErrorCode);
 #endif /* DEBUG */
 
 /**
- * Exception section¿¡¼­ IDE_NOFT_EXCEPTION_BEGIN()À¸·Î FATAL ±Øº¹ ÇØÁ¦ ±¸°£À» Á¤¸®ÇÔ.
+ * Exception sectionì—ì„œ IDE_NOFT_EXCEPTION_BEGIN()ìœ¼ë¡œ FATAL ê·¹ë³µ í•´ì œ êµ¬ê°„ì„ ì •ë¦¬í•¨.
  */
 #define IDE_NOFT_EXCEPTION_BEGIN()                                      \
     do {                                                                \
@@ -1004,7 +1004,7 @@ UInt   ideGetErrorArgCount(UInt ErrorCode);
     } while (0)
 
 /**
- * Exception section¿¡¼­ IDE_NOFT_EXCEPTION_BEGIN()¿¡ ´ëÇÑ Á¾·á·Î IDE_NOFT_EXCEPTION_END() ¸ÅÅ©·Î »ç¿ë. 
+ * Exception sectionì—ì„œ IDE_NOFT_EXCEPTION_BEGIN()ì— ëŒ€í•œ ì¢…ë£Œë¡œ IDE_NOFT_EXCEPTION_END() ë§¤í¬ë¡œ ì‚¬ìš©. 
  */
 #ifdef DEBUG
 
@@ -1061,7 +1061,7 @@ UInt   ideGetErrorArgCount(UInt ErrorCode);
 }
 #endif
 
-/* BUG-18657: ID¿µ¿ª¿¡¼­ FATAL¹ß»ı½Ã ¼­¹ö¸¦ ¹Ù·Î Á×¿©¾ß ÇÕ´Ï´Ù. */
+/* BUG-18657: IDì˜ì—­ì—ì„œ FATALë°œìƒì‹œ ì„œë²„ë¥¼ ë°”ë¡œ ì£½ì—¬ì•¼ í•©ë‹ˆë‹¤. */
 #define IDE_SET_AND_DIE(setFunc) \
 {\
      IDE_SET( setFunc ); \
@@ -1071,9 +1071,9 @@ UInt   ideGetErrorArgCount(UInt ErrorCode);
 
 
 /* ------------------------------------------------------------------
- *          ¿¡·¯ ÄÚµå Conversion Matrix
- *       (¿¡·¯ÄÚµå°¡ º¯°æµÇ¾úÀ» °æ¿ì µ¿ÀÛ)
- *       (X => º¯°æÇÊ¿ä ¾øÀ½ O=> º¯°æ¿ä¸Á)
+ *          ì—ëŸ¬ ì½”ë“œ Conversion Matrix
+ *       (ì—ëŸ¬ì½”ë“œê°€ ë³€ê²½ë˜ì—ˆì„ ê²½ìš° ë™ì‘)
+ *       (X => ë³€ê²½í•„ìš” ì—†ìŒ O=> ë³€ê²½ìš”ë§)
  *   --------------+-------------------------------------------------------------
  *                 |                         NEW CODE
  *     OLD CODE    +-------------------------------------------------------------
@@ -1090,7 +1090,7 @@ UInt   ideGetErrorArgCount(UInt ErrorCode);
  *     FATAL       |     X     |     X     |     X     |     X     |      X
  *   --------------+-----------+-----------+-----------+-----------+-------------
  *
- *   IDE_PUSH() ¿Í IDE_POP()Àº pair·Î »ç¿ëÇØ¾ß ÇÔ.
+ *   IDE_PUSH() ì™€ IDE_POP()ì€ pairë¡œ ì‚¬ìš©í•´ì•¼ í•¨.
  * ----------------------------------------------*/
 
 extern const idBool ideErrorConversionMatrix[IDE_MAX_ERROR_ACTION][IDE_MAX_ERROR_ACTION];
@@ -1098,7 +1098,7 @@ extern const idBool ideErrorConversionMatrix[IDE_MAX_ERROR_ACTION][IDE_MAX_ERROR
 
 /******************************************************************************
  * PROJ-2514 Error Manager New Features
- * IDE_PUSH¿Í IDE_POP °£·«È­
+ * IDE_PUSHì™€ IDE_POP ê°„ëµí™”
  *****************************************************************************/
 #define IDE_PUSH() {                                                        \
     ideErrorMgrStack sStack;                                                \

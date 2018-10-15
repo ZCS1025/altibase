@@ -48,19 +48,19 @@ IDE_RC qmvShardTransform::doTransform( qcStatement  * aStatement )
 /***********************************************************************
  *
  * Description : Shard View Transform
- *     shard tableÀÌ Æ÷ÇÔµÈ Äõ¸®¿¡¼­ ¸í½ÃÀûÀÎ shard view°¡ ¾Æ´Ï°Å³ª,
- *     shard Å°¿öµå°¡ ¾ø´Â Äõ¸®¸¦ shard view³ª shard Äõ¸®·Î
- *     º¯È¯ÇÑ´Ù.
+ *     shard tableì´ í¬í•¨ëœ ì¿¼ë¦¬ì—ì„œ ëª…ì‹œì ì¸ shard viewê°€ ì•„ë‹ˆê±°ë‚˜,
+ *     shard í‚¤ì›Œë“œê°€ ì—†ëŠ” ì¿¼ë¦¬ë¥¼ shard viewë‚˜ shard ì¿¼ë¦¬ë¡œ
+ *     ë³€í™˜í•œë‹¤.
  *
- *     ¿¹1) top query, query ÀüÃ¼°¡ shard queryÀÎ °æ¿ì
+ *     ì˜ˆ1) top query, query ì „ì²´ê°€ shard queryì¸ ê²½ìš°
  *          select * from t1 where i1=1 order by i1;
  *          --> select * from shard(select * from t1 where i1=1 order by i1);
  *
- *     ¿¹2) view°¡ shard queryÀÎ °æ¿ì
+ *     ì˜ˆ2) viewê°€ shard queryì¸ ê²½ìš°
  *          select * from (select * from t1 where i1=1);
  *          --> select * from shard(select * from t1 where i1=1);
  *
- *     ¿¹3) querySetÀÌ shard queryÀÎ °æ¿ì
+ *     ì˜ˆ3) querySetì´ shard queryì¸ ê²½ìš°
  *          select * from t1 where i1=1 order by i2 loop 2;
  *          --> select * from shard(select * from t1 where i1=1) order by i2 loop 2;
  *
@@ -71,18 +71,18 @@ IDE_RC qmvShardTransform::doTransform( qcStatement  * aStatement )
  *              union all
  *              select * from t2 where i2=1;
  *
- *     ¿¹4) from-where°¡ shard queryÀÎ °æ¿ì (¹Ì±¸Çö)
+ *     ì˜ˆ4) from-whereê°€ shard queryì¸ ê²½ìš° (ë¯¸êµ¬í˜„)
  *          select func1(i1) from t1 where i1=1;
  *          --> select func1(i1) from (select * from t1 where i1=1);
  *
  *          select * from t1, t2 where t1.i1=t2.i1 and t1.i1=1;
  *          --> select * from (select * from t1 where t1.i1=1) v1, t2 where v1.i1=t2.i1;
  *
- *     ¿¹5) from¸¸ shard tableÀÎ °æ¿ì (¹Ì±¸Çö)
+ *     ì˜ˆ5) fromë§Œ shard tableì¸ ê²½ìš° (ë¯¸êµ¬í˜„)
  *          select * from t1, t2 where t1.i1=t2.i1 and t1.i1=1;
  *          --> select * from (select * from t1) v1, t2 where v1.i1=t2.i1 and v1.i1=1;
  *
- *     ¿¹6) DML, query ÀüÃ¼°¡ shard queryÀÎ °æ¿ì
+ *     ì˜ˆ6) DML, query ì „ì²´ê°€ shard queryì¸ ê²½ìš°
  *          insert into t1 values (1, 2);
  *          --> shard insert into t1 values (1, 2);
  *
@@ -99,16 +99,16 @@ IDE_RC qmvShardTransform::doTransform( qcStatement  * aStatement )
     IDU_FIT_POINT_FATAL( "qmvShardTransform::doTransform::__FT__" );
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_FT_ASSERT( aStatement != NULL );
 
     //------------------------------------------
-    // Shard View Transform ¼öÇà
+    // Shard View Transform ìˆ˜í–‰
     //------------------------------------------
 
-    // shard_meta´Â º¯È¯ÇÏÁö ¾Ê´Â´Ù.
+    // shard_metaëŠ” ë³€í™˜í•˜ì§€ ì•ŠëŠ”ë‹¤.
     if ( ( ( QC_SHARED_TMPLATE(aStatement)->flag & QC_TMP_SHARD_TRANSFORM_MASK )
            == QC_TMP_SHARD_TRANSFORM_ENABLE ) &&
          ( ( ( aStatement->mFlag & QC_STMT_SHARD_OBJ_MASK ) == QC_STMT_SHARD_OBJ_EXIST ) ||
@@ -155,7 +155,7 @@ IDE_RC qmvShardTransform::processTransform( qcStatement  * aStatement )
  * Description : Shard View Transform
  *
  * Implementation :
- *     top query blockÀÌ³ª subqueryÀÇ °æ¿ì inline view¸¦ ÇÑ¹ø ´õ ¾º¿ö¾ß ÇÑ´Ù.
+ *     top query blockì´ë‚˜ subqueryì˜ ê²½ìš° inline viewë¥¼ í•œë²ˆ ë” ì”Œì›Œì•¼ í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -170,19 +170,19 @@ IDE_RC qmvShardTransform::processTransform( qcStatement  * aStatement )
     IDU_FIT_POINT_FATAL( "qmvShardTransform::processTransform::__FT__" );
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_FT_ASSERT( aStatement != NULL );
 
     //------------------------------------------
-    // ÃÊ±âÈ­
+    // ì´ˆê¸°í™”
     //------------------------------------------
 
     sParseTree = (qmsParseTree *) aStatement->myPlan->parseTree;
 
     //------------------------------------------
-    // Shard View TransformÀÇ ¼öÇà
+    // Shard View Transformì˜ ìˆ˜í–‰
     //------------------------------------------
 
     switch ( sParseTree->common.stmtShard )
@@ -191,7 +191,7 @@ IDE_RC qmvShardTransform::processTransform( qcStatement  * aStatement )
         {
             if ( QC_IS_NULL_NAME( sParseTree->common.stmtPos ) == ID_FALSE )
             {
-                // shard queryÀÎÁö °Ë»çÇÑ´Ù.
+                // shard queryì¸ì§€ ê²€ì‚¬í•œë‹¤.
                 IDE_TEST( isShardQuery( aStatement,
                                         & sParseTree->common.stmtPos,
                                         & sIsShardQuery,
@@ -204,17 +204,17 @@ IDE_RC qmvShardTransform::processTransform( qcStatement  * aStatement )
                 {
                     if ( sParseTree->isView == ID_TRUE )
                     {
-                        // viewÀÎ °æ¿ì shard view·Î º¯°æÇÑ´Ù.
+                        // viewì¸ ê²½ìš° shard viewë¡œ ë³€ê²½í•œë‹¤.
                         sParseTree->common.stmtShard = QC_STMT_SHARD_ANALYZE;
 
-                        // ºĞ¼®°á°ú¸¦ ±â·ÏÇÑ´Ù.
+                        // ë¶„ì„ê²°ê³¼ë¥¼ ê¸°ë¡í•œë‹¤.
                         aStatement->myPlan->mShardAnalysis = sShardAnalysis;
                         aStatement->myPlan->mShardParamOffset = sShardParamOffset;
                         aStatement->myPlan->mShardParamCount = sShardParamCount;
                     }
                     else
                     {
-                        // top queryÀÌ°Å³ª subqueryÀÎ °æ¿ì shard view¸¦ »ı¼ºÇÑ´Ù.
+                        // top queryì´ê±°ë‚˜ subqueryì¸ ê²½ìš° shard viewë¥¼ ìƒì„±í•œë‹¤.
                         IDE_TEST( makeShardStatement( aStatement,
                                                       & sParseTree->common.stmtPos,
                                                       QC_STMT_SHARD_ANALYZE,
@@ -258,7 +258,7 @@ IDE_RC qmvShardTransform::processTransform( qcStatement  * aStatement )
                     }
                 }
 
-                // loop (subquery°¡ Çã¿ëµÇÁö´Â ¾ÊÀ¸³ª ¿¡·¯°¡ Àß¸ø¹ß»ıÇÑ´Ù.)
+                // loop (subqueryê°€ í—ˆìš©ë˜ì§€ëŠ” ì•Šìœ¼ë‚˜ ì—ëŸ¬ê°€ ì˜ëª»ë°œìƒí•œë‹¤.)
                 if ( sParseTree->loopNode != NULL)
                 {
                     IDE_TEST( processTransformForExpr( aStatement,
@@ -280,8 +280,8 @@ IDE_RC qmvShardTransform::processTransform( qcStatement  * aStatement )
 
         case QC_STMT_SHARD_ANALYZE:
         {
-            // select¿¡¼­ ¸í½ÃÀûÀ¸·Î »ç¿ëµÈ shard view´Â
-            // shard query°¡ ¾Æ´Ï´õ¶óµµ Çã¿ëÇÑ´Ù.
+            // selectì—ì„œ ëª…ì‹œì ìœ¼ë¡œ ì‚¬ìš©ëœ shard viewëŠ”
+            // shard queryê°€ ì•„ë‹ˆë”ë¼ë„ í—ˆìš©í•œë‹¤.
             if ( aStatement->myPlan->mShardAnalysis == NULL )
             {
                 IDE_FT_ASSERT( sParseTree->common.stmtPos.size > 0 );
@@ -294,7 +294,7 @@ IDE_RC qmvShardTransform::processTransform( qcStatement  * aStatement )
                                         & sShardParamCount )
                           != IDE_SUCCESS );
 
-                // ¸í½ÃÀûÀÎ shard queryÀÌ³ª analysis¸¦ »ı¼ºÇÏÁö ¸øÇÑ °æ¿ì, ¿¡·¯Ã³¸®ÇÑ´Ù.
+                // ëª…ì‹œì ì¸ shard queryì´ë‚˜ analysisë¥¼ ìƒì„±í•˜ì§€ ëª»í•œ ê²½ìš°, ì—ëŸ¬ì²˜ë¦¬í•œë‹¤.
                 if ( sShardAnalysis == NULL )
                 {
                     sqlInfo.setSourceInfo( aStatement,
@@ -323,7 +323,7 @@ IDE_RC qmvShardTransform::processTransform( qcStatement  * aStatement )
                 }
                 else
                 {
-                    // top queryÀÎ °æ¿ì shard view¸¦ »ı¼ºÇÑ´Ù.
+                    // top queryì¸ ê²½ìš° shard viewë¥¼ ìƒì„±í•œë‹¤.
                     IDE_TEST( makeShardStatement( aStatement,
                                                   & sParseTree->common.stmtPos,
                                                   QC_STMT_SHARD_ANALYZE,
@@ -343,8 +343,8 @@ IDE_RC qmvShardTransform::processTransform( qcStatement  * aStatement )
 
         case QC_STMT_SHARD_DATA:
         {
-            // select¿¡¼­ ¸í½ÃÀûÀ¸·Î »ç¿ëµÈ shard view´Â
-            // shard query°¡ ¾Æ´Ï´õ¶óµµ Çã¿ëÇÑ´Ù.
+            // selectì—ì„œ ëª…ì‹œì ìœ¼ë¡œ ì‚¬ìš©ëœ shard viewëŠ”
+            // shard queryê°€ ì•„ë‹ˆë”ë¼ë„ í—ˆìš©í•œë‹¤.
             if ( aStatement->myPlan->mShardAnalysis == NULL )
             {
                 IDE_FT_ASSERT( sParseTree->common.stmtPos.size > 0 );
@@ -359,7 +359,7 @@ IDE_RC qmvShardTransform::processTransform( qcStatement  * aStatement )
 
                 if ( sParseTree->common.nodes == NULL )
                 {
-                    // ºĞ¼®°á°ú¿¡ »ó°ü¾øÀÌ Àü³ëµå ºĞ¼®°á°ú·Î ±³Ã¼ÇÑ´Ù.
+                    // ë¶„ì„ê²°ê³¼ì— ìƒê´€ì—†ì´ ì „ë…¸ë“œ ë¶„ì„ê²°ê³¼ë¡œ êµì²´í•œë‹¤.
                     sShardAnalysis = sdi::getAnalysisResultForAllNodes();
                 }
                 else
@@ -381,7 +381,7 @@ IDE_RC qmvShardTransform::processTransform( qcStatement  * aStatement )
                     }
 
                     // BUG-45359
-                    // Æ¯Á¤ µ¥ÀÌÅÍ ³ëµå·Î ºĞ¼®°á°ú¸¦ »ı¼ºÇÑ´Ù.
+                    // íŠ¹ì • ë°ì´í„° ë…¸ë“œë¡œ ë¶„ì„ê²°ê³¼ë¥¼ ìƒì„±í•œë‹¤.
                     SDI_INIT_ANALYZE_INFO( sShardAnalysis );
 
                     sShardAnalysis->mSplitMethod = SDI_SPLIT_NODES;
@@ -396,7 +396,7 @@ IDE_RC qmvShardTransform::processTransform( qcStatement  * aStatement )
                 }
                 else
                 {
-                    // top queryÀÎ °æ¿ì shard view¸¦ »ı¼ºÇÑ´Ù.
+                    // top queryì¸ ê²½ìš° shard viewë¥¼ ìƒì„±í•œë‹¤.
                     IDE_TEST( makeShardStatement( aStatement,
                                                   & sParseTree->common.stmtPos,
                                                   QC_STMT_SHARD_DATA,
@@ -443,7 +443,7 @@ IDE_RC qmvShardTransform::processTransformForQuerySet( qcStatement  * aStatement
 /***********************************************************************
  *
  * Description : Shard View Transform
- *     query set¿¡ ´ëÇÏ¿© top-upÀ¸·Î ¼øÈ¸ÇÏ¸ç Shard View TransformÀ» ¼öÇàÇÑ´Ù.
+ *     query setì— ëŒ€í•˜ì—¬ top-upìœ¼ë¡œ ìˆœíšŒí•˜ë©° Shard View Transformì„ ìˆ˜í–‰í•œë‹¤.
  *
  * Implementation :
  *
@@ -464,28 +464,28 @@ IDE_RC qmvShardTransform::processTransformForQuerySet( qcStatement  * aStatement
     IDU_FIT_POINT_FATAL( "qmvShardTransform::processTransformForQuerySet::__FT__" );
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_FT_ASSERT( aStatement != NULL );
     IDE_FT_ASSERT( aQuerySet  != NULL );
 
     //------------------------------------------
-    // ÃÊ±âÈ­
+    // ì´ˆê¸°í™”
     //------------------------------------------
 
     sQuerySet = aQuerySet;
 
     //------------------------------------------
-    // Shard View TransformÀÇ ¼öÇà
+    // Shard View Transformì˜ ìˆ˜í–‰
     //------------------------------------------
 
-    // shard querySetÀÎÁö °Ë»çÇÑ´Ù.
+    // shard querySetì¸ì§€ ê²€ì‚¬í•œë‹¤.
     if ( ( QC_IS_NULL_NAME( sQuerySet->startPos ) == ID_FALSE ) &&
          ( QC_IS_NULL_NAME( sQuerySet->endPos ) == ID_FALSE ) )
     {
-        // startPos´Â Ã¹¹øÂ° token
-        // endPos´Â ¸¶Áö¸· token
+        // startPosëŠ” ì²«ë²ˆì§¸ token
+        // endPosëŠ” ë§ˆì§€ë§‰ token
         sParsePosition.stmtText = sQuerySet->startPos.stmtText;
         sParsePosition.offset   = sQuerySet->startPos.offset;
         sParsePosition.size     =
@@ -697,7 +697,7 @@ IDE_RC qmvShardTransform::processTransformForDML( qcStatement  * aStatement )
 /***********************************************************************
  *
  * Description : Shard View Transform
- *     DMLÀÇ °æ¿ì Äõ¸® ÀüÃ¼¸¦ °Ë»çÇÑ´Ù.
+ *     DMLì˜ ê²½ìš° ì¿¼ë¦¬ ì „ì²´ë¥¼ ê²€ì‚¬í•œë‹¤.
  *
  * Implementation :
  *
@@ -717,7 +717,7 @@ IDE_RC qmvShardTransform::processTransformForDML( qcStatement  * aStatement )
     IDU_FIT_POINT_FATAL( "qmvShardTransform::processTransformForDML::__FT__" );
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_FT_ASSERT( aStatement != NULL );
@@ -751,7 +751,7 @@ IDE_RC qmvShardTransform::processTransformForDML( qcStatement  * aStatement )
     }
 
     //------------------------------------------
-    // Shard View TransformÀÇ ¼öÇà
+    // Shard View Transformì˜ ìˆ˜í–‰
     //------------------------------------------
 
     switch ( aStatement->myPlan->parseTree->stmtShard )
@@ -762,7 +762,7 @@ IDE_RC qmvShardTransform::processTransformForDML( qcStatement  * aStatement )
             {
                 IDE_FT_ASSERT( aStatement->myPlan->parseTree->stmtPos.size > 0 );
 
-                // shard objectÀÎ °æ¿ì ºĞ¼®°á°ú°¡ ÇÊ¿äÇÏ´Ù.
+                // shard objectì¸ ê²½ìš° ë¶„ì„ê²°ê³¼ê°€ í•„ìš”í•˜ë‹¤.
                 IDE_TEST( isShardQuery( aStatement,
                                         & aStatement->myPlan->parseTree->stmtPos,
                                         & sIsShardQuery,
@@ -777,7 +777,7 @@ IDE_RC qmvShardTransform::processTransformForDML( qcStatement  * aStatement )
                     {
                         sInsParseTree = (qmmInsParseTree*) aStatement->myPlan->parseTree;
 
-                        // multi-table insert°¡ ¾Æ´Ï¶ó¸é shardInsert·Î º¯°æÇÑ´Ù.
+                        // multi-table insertê°€ ì•„ë‹ˆë¼ë©´ shardInsertë¡œ ë³€ê²½í•œë‹¤.
                         if ( ( sInsParseTree->flag & QMM_MULTI_INSERT_MASK )
                              == QMM_MULTI_INSERT_FALSE )
                         {
@@ -800,7 +800,7 @@ IDE_RC qmvShardTransform::processTransformForDML( qcStatement  * aStatement )
                 }
                 else
                 {
-                    // analysis¸¦ »ı¼ºÇÏÁö ¸øÇÑ °æ¿ì, ¿¡·¯Ã³¸®ÇÑ´Ù.
+                    // analysisë¥¼ ìƒì„±í•˜ì§€ ëª»í•œ ê²½ìš°, ì—ëŸ¬ì²˜ë¦¬í•œë‹¤.
                     if ( sShardAnalysis == NULL )
                     {
                         sqlInfo.setSourceInfo( aStatement,
@@ -821,22 +821,22 @@ IDE_RC qmvShardTransform::processTransformForDML( qcStatement  * aStatement )
                         }
                     }
 
-                    // ÇÔ¼ö¸¦ º¯°æÇÑ´Ù.
+                    // í•¨ìˆ˜ë¥¼ ë³€ê²½í•œë‹¤.
                     aStatement->myPlan->parseTree->optimize = qmo::optimizeShardDML;
                     aStatement->myPlan->parseTree->execute  = qmx::executeShardDML;
                 }
 
-                // shard statement·Î º¯°æÇÑ´Ù.
+                // shard statementë¡œ ë³€ê²½í•œë‹¤.
                 aStatement->myPlan->parseTree->stmtShard = QC_STMT_SHARD_ANALYZE;
 
-                // ºĞ¼®°á°ú¸¦ ±â·ÏÇÑ´Ù.
+                // ë¶„ì„ê²°ê³¼ë¥¼ ê¸°ë¡í•œë‹¤.
                 aStatement->myPlan->mShardAnalysis = sShardAnalysis;
                 aStatement->myPlan->mShardParamOffset = sShardParamOffset;
                 aStatement->myPlan->mShardParamCount = sShardParamCount;
             }
             else
             {
-                // shard object°¡ ¾Æ´Ñ °æ¿ì
+                // shard objectê°€ ì•„ë‹Œ ê²½ìš°
                 // Nothing to do.
             }
 
@@ -845,10 +845,10 @@ IDE_RC qmvShardTransform::processTransformForDML( qcStatement  * aStatement )
 
         case QC_STMT_SHARD_ANALYZE:
         {
-            // shard object°¡ ¾Æ´Ñ°æ¿ì SHARD keyword¸¦ »ç¿ëÇÒ ¼ö ¾ø´Ù.
+            // shard objectê°€ ì•„ë‹Œê²½ìš° SHARD keywordë¥¼ ì‚¬ìš©í•  ìˆ˜ ì—†ë‹¤.
             IDE_TEST_RAISE( sShardObjInfo == NULL, ERR_NOT_SHARD_OBJECT );
 
-            // insert DML¿¡¼­´Â ¸í½ÃÀûÀ¸·Î »ç¿ëÇÑ shardÀÎ °æ¿ì¶óµµ shard query¸¦ °Ë»çÇÑ´Ù.
+            // insert DMLì—ì„œëŠ” ëª…ì‹œì ìœ¼ë¡œ ì‚¬ìš©í•œ shardì¸ ê²½ìš°ë¼ë„ shard queryë¥¼ ê²€ì‚¬í•œë‹¤.
             if ( aStatement->myPlan->mShardAnalysis == NULL )
             {
                 IDE_FT_ASSERT( aStatement->myPlan->parseTree->stmtPos.size > 0 );
@@ -863,12 +863,12 @@ IDE_RC qmvShardTransform::processTransformForDML( qcStatement  * aStatement )
 
                 if ( sIsShardQuery == ID_FALSE )
                 {
-                    // insert´Â º°µµ·Î Ã³¸®ÇÑ´Ù.
+                    // insertëŠ” ë³„ë„ë¡œ ì²˜ë¦¬í•œë‹¤.
                     if ( aStatement->myPlan->parseTree->stmtKind == QCI_STMT_INSERT )
                     {
                         sInsParseTree = (qmmInsParseTree*) aStatement->myPlan->parseTree;
 
-                        // multi-table insert´Â Á¦¿Ü
+                        // multi-table insertëŠ” ì œì™¸
                         if ( ( sInsParseTree->flag & QMM_MULTI_INSERT_MASK )
                              == QMM_MULTI_INSERT_FALSE )
                         {
@@ -882,7 +882,7 @@ IDE_RC qmvShardTransform::processTransformForDML( qcStatement  * aStatement )
                             IDE_RAISE( ERR_INVALID_SHARD_QUERY );
                         }
                     }
-                    // exec proc´Â insertÃ³·³ ¹İµå½Ã ½ÇÇà³ëµå°¡ °áÁ¤µÇ¾î¾ßÇÏ´Â °ÍÀ¸·Î º»´Ù.
+                    // exec procëŠ” insertì²˜ëŸ¼ ë°˜ë“œì‹œ ì‹¤í–‰ë…¸ë“œê°€ ê²°ì •ë˜ì–´ì•¼í•˜ëŠ” ê²ƒìœ¼ë¡œ ë³¸ë‹¤.
                     else if ( aStatement->myPlan->parseTree->stmtKind == QCI_STMT_EXEC_PROC )
                     {
                         sqlInfo.setSourceInfo( aStatement,
@@ -891,7 +891,7 @@ IDE_RC qmvShardTransform::processTransformForDML( qcStatement  * aStatement )
                     }
                     else
                     {
-                        // analysis¸¦ »ı¼ºÇÏÁö ¸øÇÑ °æ¿ì, ¿¡·¯Ã³¸®ÇÑ´Ù.
+                        // analysisë¥¼ ìƒì„±í•˜ì§€ ëª»í•œ ê²½ìš°, ì—ëŸ¬ì²˜ë¦¬í•œë‹¤.
                         if ( sShardAnalysis == NULL )
                         {
                             sqlInfo.setSourceInfo( aStatement,
@@ -912,19 +912,19 @@ IDE_RC qmvShardTransform::processTransformForDML( qcStatement  * aStatement )
                             }
                         }
 
-                        // ÇÔ¼ö¸¦ º¯°æÇÑ´Ù.
+                        // í•¨ìˆ˜ë¥¼ ë³€ê²½í•œë‹¤.
                         aStatement->myPlan->parseTree->optimize = qmo::optimizeShardDML;
                         aStatement->myPlan->parseTree->execute  = qmx::executeShardDML;
                     }
                 }
                 else
                 {
-                    // ÇÔ¼ö¸¦ º¯°æÇÑ´Ù.
+                    // í•¨ìˆ˜ë¥¼ ë³€ê²½í•œë‹¤.
                     aStatement->myPlan->parseTree->optimize = qmo::optimizeShardDML;
                     aStatement->myPlan->parseTree->execute  = qmx::executeShardDML;
                 }
 
-                // ºĞ¼®°á°ú¸¦ ±â·ÏÇÑ´Ù.
+                // ë¶„ì„ê²°ê³¼ë¥¼ ê¸°ë¡í•œë‹¤.
                 aStatement->myPlan->mShardAnalysis = sShardAnalysis;
                 aStatement->myPlan->mShardParamOffset = sShardParamOffset;
                 aStatement->myPlan->mShardParamCount = sShardParamCount;
@@ -939,10 +939,10 @@ IDE_RC qmvShardTransform::processTransformForDML( qcStatement  * aStatement )
 
         case QC_STMT_SHARD_DATA:
         {
-            // ÀÏ´Ü DMLÀº Áö¿øÇÏÁö ¾Ê´Â´Ù.
+            // ì¼ë‹¨ DMLì€ ì§€ì›í•˜ì§€ ì•ŠëŠ”ë‹¤.
             IDE_RAISE( ERR_UNSUPPORTED_SHARD_DATA_IN_DML );
 
-            // shard object°¡ ¾Æ´Ñ°æ¿ì SHARD keyword¸¦ »ç¿ëÇÒ ¼ö ¾ø´Ù.
+            // shard objectê°€ ì•„ë‹Œê²½ìš° SHARD keywordë¥¼ ì‚¬ìš©í•  ìˆ˜ ì—†ë‹¤.
             IDE_TEST_RAISE( sShardObjInfo == NULL, ERR_NOT_SHARD_OBJECT );
 
             if ( aStatement->myPlan->mShardAnalysis == NULL )
@@ -959,7 +959,7 @@ IDE_RC qmvShardTransform::processTransformForDML( qcStatement  * aStatement )
 
                 if ( aStatement->myPlan->parseTree->nodes == NULL )
                 {
-                    // ºĞ¼®°á°ú¿¡ »ó°ü¾øÀÌ Àü³ëµå ºĞ¼®°á°ú·Î ±³Ã¼ÇÑ´Ù.
+                    // ë¶„ì„ê²°ê³¼ì— ìƒê´€ì—†ì´ ì „ë…¸ë“œ ë¶„ì„ê²°ê³¼ë¡œ êµì²´í•œë‹¤.
                     sShardAnalysis = sdi::getAnalysisResultForAllNodes();
                 }
                 else
@@ -981,18 +981,18 @@ IDE_RC qmvShardTransform::processTransformForDML( qcStatement  * aStatement )
                     }
 
                     // BUG-45359
-                    // Æ¯Á¤ µ¥ÀÌÅÍ ³ëµå·Î ºĞ¼®°á°ú¸¦ »ı¼ºÇÑ´Ù.
+                    // íŠ¹ì • ë°ì´í„° ë…¸ë“œë¡œ ë¶„ì„ê²°ê³¼ë¥¼ ìƒì„±í•œë‹¤.
                     SDI_INIT_ANALYZE_INFO( sShardAnalysis );
 
                     sShardAnalysis->mSplitMethod = SDI_SPLIT_NODES;
                     sShardAnalysis->mNodeNames = aStatement->myPlan->parseTree->nodes;
                 }
 
-                // ÇÔ¼ö¸¦ º¯°æÇÑ´Ù.
+                // í•¨ìˆ˜ë¥¼ ë³€ê²½í•œë‹¤.
                 aStatement->myPlan->parseTree->optimize = qmo::optimizeShardDML;
                 aStatement->myPlan->parseTree->execute  = qmx::executeShardDML;
 
-                // ºĞ¼®°á°ú¸¦ ±â·ÏÇÑ´Ù.
+                // ë¶„ì„ê²°ê³¼ë¥¼ ê¸°ë¡í•œë‹¤.
                 aStatement->myPlan->mShardAnalysis = sShardAnalysis;
                 aStatement->myPlan->mShardParamOffset = sShardParamOffset;
                 aStatement->myPlan->mShardParamCount = sShardParamCount;
@@ -1046,7 +1046,7 @@ IDE_RC qmvShardTransform::isShardQuery( qcStatement     * aStatement,
 /***********************************************************************
  *
  * Description : Shard View Transform
- *     Shard QueryÀÎÁö °Ë»çÇÑ´Ù.
+ *     Shard Queryì¸ì§€ ê²€ì‚¬í•œë‹¤.
  *
  * Implementation :
  *
@@ -1069,10 +1069,10 @@ IDE_RC qmvShardTransform::isShardQuery( qcStatement     * aStatement,
     IDU_FIT_POINT_FATAL( "qmvShardTransform::isShardQuery::__FT__" );
 
     //-----------------------------------------
-    // ÁØºñ
+    // ì¤€ë¹„
     //-----------------------------------------
 
-    // resolve¸¦ À§ÇØ aStatementÀÇ sessionÀÌ ÇÊ¿äÇÏ´Ù.
+    // resolveë¥¼ ìœ„í•´ aStatementì˜ sessionì´ í•„ìš”í•˜ë‹¤.
     IDE_TEST( qcg::allocStatement( & sStatement,
                                    aStatement->session,
                                    NULL,
@@ -1089,7 +1089,7 @@ IDE_RC qmvShardTransform::isShardQuery( qcStatement     * aStatement,
     // PARSING
     //-----------------------------------------
 
-    // FT_END ÀÌÀüÀ¸·Î ÀÌµ¿ÇÒ¶§´Â IDE ¸ÅÅ©·Î¸¦ »ç¿ëÇØµµ µÈ´Ù.
+    // FT_END ì´ì „ìœ¼ë¡œ ì´ë™í• ë•ŒëŠ” IDE ë§¤í¬ë¡œë¥¼ ì‚¬ìš©í•´ë„ ëœë‹¤.
     IDE_TEST_CONT( qcpManager::parsePartialForAnalyze(
                        &sStatement,
                        aParsePosition->stmtText,
@@ -1097,7 +1097,7 @@ IDE_RC qmvShardTransform::isShardQuery( qcStatement     * aStatement,
                        aParsePosition->size ) != IDE_SUCCESS,
                    NORMAL_EXIT );
 
-    // ºĞ¼®´ë»óÀÎÁö ¸ÕÀú È®ÀÎÇÑ´Ù.
+    // ë¶„ì„ëŒ€ìƒì¸ì§€ ë¨¼ì € í™•ì¸í•œë‹¤.
     IDE_TEST_CONT( sdi::checkStmt( &sStatement ) != IDE_SUCCESS,
                    NORMAL_EXIT );
 
@@ -1143,7 +1143,7 @@ IDE_RC qmvShardTransform::isShardQuery( qcStatement     * aStatement,
     QC_SHARED_TMPLATE(&sStatement)->flag |= QC_TMP_SHARD_TRANSFORM_ENABLE;
 
     // PROJ-2653
-    // bind parameter ID È¹µæ
+    // bind parameter ID íšë“
     if ( sShardParamCount > 0 )
     {
         sAllParamCount = qcg::getBindCount( aStatement );
@@ -1185,7 +1185,7 @@ IDE_RC qmvShardTransform::isShardQuery( qcStatement     * aStatement,
 
     IDE_EXCEPTION_CONT( NORMAL_EXIT );
 
-    // setAnalysisResult°¡ ½ÇÆĞÇÏ´õ¶óµµ mShardAnalysis´Â »ı¼ºµÉ ¼ö ÀÖ´Ù.
+    // setAnalysisResultê°€ ì‹¤íŒ¨í•˜ë”ë¼ë„ mShardAnalysisëŠ” ìƒì„±ë  ìˆ˜ ìˆë‹¤.
     if ( sStatement.myPlan->mShardAnalysis != NULL )
     {
         IDE_TEST( STRUCT_ALLOC( QC_QMP_MEM(aStatement),
@@ -1266,7 +1266,7 @@ IDE_RC qmvShardTransform::isShardQuery( qcStatement     * aStatement,
     }
 
     //-----------------------------------------
-    // ¸¶¹«¸®
+    // ë§ˆë¬´ë¦¬
     //-----------------------------------------
 
     if( sStatement.spvEnv->latched == ID_TRUE )
@@ -1280,7 +1280,7 @@ IDE_RC qmvShardTransform::isShardQuery( qcStatement     * aStatement,
         // Nothing To Do
     }
 
-    // sessionÀº ³»°ÍÀÌ ¾Æ´Ï´Ù.
+    // sessionì€ ë‚´ê²ƒì´ ì•„ë‹ˆë‹¤.
     sStatement.session = NULL;
 
     (void) qcg::freeStatement(&sStatement);
@@ -1332,7 +1332,7 @@ IDE_RC qmvShardTransform::makeShardStatement( qcStatement    * aStatement,
  *
  * Description : Shard View Transform
  *
- *     statement ÀüÃ¼¸¦ shard view·Î »ı¼ºÇÑ´Ù.
+ *     statement ì „ì²´ë¥¼ shard viewë¡œ ìƒì„±í•œë‹¤.
  *
  *     select i1, i2 from t1 where i1=1 order by i1;
  *     --------------------------------------------
@@ -1395,9 +1395,9 @@ IDE_RC qmvShardTransform::makeShardStatement( qcStatement    * aStatement,
               != IDE_SUCCESS );
     QCP_SET_INIT_QMS_TABLE_REF( sTableRef );
 
-    // aStatement¸¦ ±³Ã¼ÇÒ ¼ö ¾øÀ¸¹Ç·Î sStatement¸¦ º¹»ç »ı¼ºÇÑ´Ù.
+    // aStatementë¥¼ êµì²´í•  ìˆ˜ ì—†ìœ¼ë¯€ë¡œ sStatementë¥¼ ë³µì‚¬ ìƒì„±í•œë‹¤.
     idlOS::memcpy( sStatement, aStatement, ID_SIZEOF(qcStatement) );
-    // myPlanÀ» Àç¼³Á¤ÇÑ´Ù.
+    // myPlanì„ ì¬ì„¤ì •í•œë‹¤.
     sStatement->myPlan = & sStatement->privatePlan;
 
     sTableRef->view      = sStatement;
@@ -1406,7 +1406,7 @@ IDE_RC qmvShardTransform::makeShardStatement( qcStatement    * aStatement,
     sSFWGH->thisQuerySet = sQuerySet;
     sQuerySet->SFWGH     = sSFWGH;
 
-    // parseTree¸¦ »ı¼ºÇÑ´Ù.
+    // parseTreeë¥¼ ìƒì„±í•œë‹¤.
     sParseTree->withClause         = NULL;
     sParseTree->querySet           = sQuerySet;
     sParseTree->orderBy            = NULL;
@@ -1424,16 +1424,16 @@ IDE_RC qmvShardTransform::makeShardStatement( qcStatement    * aStatement,
     sParseTree->common.optimize    = qmo::optimizeSelect;
     sParseTree->common.execute     = qmx::executeSelect;
 
-    // aStatementÀÇ parseTree¸¦ º¯°æÇÑ´Ù.
+    // aStatementì˜ parseTreeë¥¼ ë³€ê²½í•œë‹¤.
     aStatement->myPlan->parseTree = (qcParseTree*) sParseTree;
     aStatement->myPlan->parseTree->stmtKind =
         sStatement->myPlan->parseTree->stmtKind;
 
-    // sStatement¸¦ shard view·Î º¯°æÇÑ´Ù.
+    // sStatementë¥¼ shard viewë¡œ ë³€ê²½í•œë‹¤.
     SET_POSITION( sStatement->myPlan->parseTree->stmtPos, *aParsePosition );
     sStatement->myPlan->parseTree->stmtShard = aShardStmtType;
 
-    // ºĞ¼®°á°ú¸¦ ±â·ÏÇÑ´Ù.
+    // ë¶„ì„ê²°ê³¼ë¥¼ ê¸°ë¡í•œë‹¤.
     sStatement->myPlan->mShardAnalysis = aShardAnalysis;
     sStatement->myPlan->mShardParamOffset = aShardParamOffset;
     sStatement->myPlan->mShardParamCount = aShardParamCount;
@@ -1456,7 +1456,7 @@ IDE_RC qmvShardTransform::makeShardQuerySet( qcStatement    * aStatement,
  *
  * Description : Shard View Transform
  *
- *     query setÀ» shard view·Î »ı¼ºÇÑ´Ù.
+ *     query setì„ shard viewë¡œ ìƒì„±í•œë‹¤.
  *
  *     select i1, i2 from t1 where i1=1 order by i1;
  *     --------------------------------
@@ -1523,7 +1523,7 @@ IDE_RC qmvShardTransform::makeShardQuerySet( qcStatement    * aStatement,
               != IDE_SUCCESS );
     QCP_SET_INIT_QMS_TABLE_REF( sTableRef );
 
-    // aQuerySet¸¦ ±³Ã¼ÇÒ ¼ö ¾øÀ¸¹Ç·Î sQuerySet¸¦ º¹»ç »ı¼ºÇÑ´Ù.
+    // aQuerySetë¥¼ êµì²´í•  ìˆ˜ ì—†ìœ¼ë¯€ë¡œ sQuerySetë¥¼ ë³µì‚¬ ìƒì„±í•œë‹¤.
     idlOS::memcpy( sQuerySet, aQuerySet, ID_SIZEOF(qmsQuerySet) );
     QCP_SET_INIT_QMS_QUERY_SET( aQuerySet );
 
@@ -1547,11 +1547,11 @@ IDE_RC qmvShardTransform::makeShardQuerySet( qcStatement    * aStatement,
     QC_SET_STATEMENT( sStatement, aStatement, sParseTree );
     sStatement->myPlan->parseTree->stmtKind = QCI_STMT_SELECT;
 
-    // sStatement¸¦ shard view·Î º¯°æÇÑ´Ù.
+    // sStatementë¥¼ shard viewë¡œ ë³€ê²½í•œë‹¤.
     SET_POSITION( sStatement->myPlan->parseTree->stmtPos, *aParsePosition );
     sStatement->myPlan->parseTree->stmtShard = QC_STMT_SHARD_ANALYZE;
 
-    // ºĞ¼®°á°ú¸¦ ±â·ÏÇÑ´Ù.
+    // ë¶„ì„ê²°ê³¼ë¥¼ ê¸°ë¡í•œë‹¤.
     sStatement->myPlan->mShardAnalysis = aShardAnalysis;
     sStatement->myPlan->mShardParamOffset = aShardParamOffset;
     sStatement->myPlan->mShardParamCount = aShardParamCount;
@@ -1577,7 +1577,7 @@ IDE_RC qmvShardTransform::makeShardView( qcStatement    * aStatement,
  *
  * Description : Shard View Transform
  *
- *     tableÀ» shard view·Î »ı¼ºÇÑ´Ù.
+ *     tableì„ shard viewë¡œ ìƒì„±í•œë‹¤.
  *
  *     select * from sys.t1, t2 where t1.i1=t2.i1;
  *                   ------
@@ -1764,7 +1764,7 @@ IDE_RC qmvShardTransform::makeShardView( qcStatement    * aStatement,
     }
     SET_POSITION( sStatement->myPlan->parseTree->stmtPos, sQueryPosition );
 
-    // ºĞ¼®°á°ú¸¦ ±â·ÏÇÑ´Ù.
+    // ë¶„ì„ê²°ê³¼ë¥¼ ê¸°ë¡í•œë‹¤.
     sStatement->myPlan->mShardAnalysis = aShardAnalysis;
 
     /* Set transformed inline view */
@@ -1790,7 +1790,7 @@ IDE_RC qmvShardTransform::isTransformAbleQuery( qcStatement     * aStatement,
 /***********************************************************************
  *
  * Description : PROJ-2687 Shard aggregation transform
- *               From + Where°¡ Shard QueryÀÎÁö °Ë»çÇÑ´Ù.
+ *               From + Whereê°€ Shard Queryì¸ì§€ ê²€ì‚¬í•œë‹¤.
  *
  * Implementation :
  *
@@ -1809,10 +1809,10 @@ IDE_RC qmvShardTransform::isTransformAbleQuery( qcStatement     * aStatement,
     IDU_FIT_POINT_FATAL( "qmvShardTransform::isTransformAbleQuery::__FT__" );
 
     //-----------------------------------------
-    // ÁØºñ
+    // ì¤€ë¹„
     //-----------------------------------------
 
-    // resolve¸¦ À§ÇØ aStatementÀÇ sessionÀÌ ÇÊ¿äÇÏ´Ù.
+    // resolveë¥¼ ìœ„í•´ aStatementì˜ sessionì´ í•„ìš”í•˜ë‹¤.
     IDE_TEST( qcg::allocStatement( & sStatement,
                                    aStatement->session,
                                    NULL,
@@ -1829,7 +1829,7 @@ IDE_RC qmvShardTransform::isTransformAbleQuery( qcStatement     * aStatement,
     // PARSING
     //-----------------------------------------
 
-    // FT_END ÀÌÀüÀ¸·Î ÀÌµ¿ÇÒ¶§´Â IDE ¸ÅÅ©·Î¸¦ »ç¿ëÇØµµ µÈ´Ù.
+    // FT_END ì´ì „ìœ¼ë¡œ ì´ë™í• ë•ŒëŠ” IDE ë§¤í¬ë¡œë¥¼ ì‚¬ìš©í•´ë„ ëœë‹¤.
     IDE_TEST_CONT( qcpManager::parsePartialForAnalyze(
                        &sStatement,
                        aParsePosition->stmtText,
@@ -1837,7 +1837,7 @@ IDE_RC qmvShardTransform::isTransformAbleQuery( qcStatement     * aStatement,
                        aParsePosition->size ) != IDE_SUCCESS,
                    NORMAL_EXIT );
 
-    // ºĞ¼®´ë»óÀÎÁö ¸ÕÀú È®ÀÎÇÑ´Ù.
+    // ë¶„ì„ëŒ€ìƒì¸ì§€ ë¨¼ì € í™•ì¸í•œë‹¤.
     IDE_TEST_CONT( sdi::checkStmt( &sStatement ) != IDE_SUCCESS,
                    NORMAL_EXIT );
 
@@ -1898,7 +1898,7 @@ IDE_RC qmvShardTransform::isTransformAbleQuery( qcStatement     * aStatement,
 
     IDE_EXCEPTION_CONT( NORMAL_EXIT );
 
-    // setAnalysisResult°¡ ½ÇÆĞÇÏ´õ¶óµµ mShardAnalysis´Â »ı¼ºµÉ ¼ö ÀÖ´Ù.
+    // setAnalysisResultê°€ ì‹¤íŒ¨í•˜ë”ë¼ë„ mShardAnalysisëŠ” ìƒì„±ë  ìˆ˜ ìˆë‹¤.
     if ( sStatement.myPlan->mShardAnalysis != NULL )
     {
         if ( sStatement.myPlan->mShardAnalysis->mIsCanMerge == 1 )
@@ -1916,7 +1916,7 @@ IDE_RC qmvShardTransform::isTransformAbleQuery( qcStatement     * aStatement,
     }
 
     //-----------------------------------------
-    // ¸¶¹«¸®
+    // ë§ˆë¬´ë¦¬
     //-----------------------------------------
 
     if ( sStatement.spvEnv->latched == ID_TRUE )
@@ -1930,7 +1930,7 @@ IDE_RC qmvShardTransform::isTransformAbleQuery( qcStatement     * aStatement,
         // Nothing To Do
     }
 
-    // sessionÀº ³»°ÍÀÌ ¾Æ´Ï´Ù.
+    // sessionì€ ë‚´ê²ƒì´ ì•„ë‹ˆë‹¤.
     sStatement.session = NULL;
 
     (void) qcg::freeStatement(&sStatement);
@@ -1980,8 +1980,8 @@ IDE_RC qmvShardTransform::processAggrTransform( qcStatement    * aStatement,
  *
  * Description : PROJ-2687 Shard aggregation transform
  *
- *     Aggregate functionÀ¸·Î ÀÎÇØ non-shard query·Î ÆÇº°µÈ query set¿¡ ´ëÇÏ¿©
- *     ºĞ»ê/ÅëÇÕºÎ ·Î query setÀ» ³ª´©´Â transformationÀ» ÅëÇÏ¿© shard query·Î º¯ÇüÇÑ´Ù.
+ *     Aggregate functionìœ¼ë¡œ ì¸í•´ non-shard queryë¡œ íŒë³„ëœ query setì— ëŒ€í•˜ì—¬
+ *     ë¶„ì‚°/í†µí•©ë¶€ ë¡œ query setì„ ë‚˜ëˆ„ëŠ” transformationì„ í†µí•˜ì—¬ shard queryë¡œ ë³€í˜•í•œë‹¤.
  *
  *     select sum(i1), i2 from t1 where i1=1 order by 1;
  *     --------------------------------
@@ -2053,8 +2053,8 @@ IDE_RC qmvShardTransform::processAggrTransform( qcStatement    * aStatement,
           sGroup  = sGroup->next )
     {
         /*
-         * sGroup->arithmeticOrList == NULL ÀÎ °æ¿ì(ROLLUP, CUBE, GROUPING SETS)´Â
-         * ¾Õ¼­ ¼öÇàµÈ shard analysis¿¡¼­ °É·¯Áø´Ù.
+         * sGroup->arithmeticOrList == NULL ì¸ ê²½ìš°(ROLLUP, CUBE, GROUPING SETS)ëŠ”
+         * ì•ì„œ ìˆ˜í–‰ëœ shard analysisì—ì„œ ê±¸ëŸ¬ì§„ë‹¤.
          */
         IDE_TEST( addColumnListToText( sGroup->arithmeticOrList,
                                        sQueryBuf,
@@ -2102,7 +2102,7 @@ IDE_RC qmvShardTransform::processAggrTransform( qcStatement    * aStatement,
 
         sFromWhereStart = aQuerySet->SFWGH->from->fromPosition.offset;
 
-        /* Where clause°¡ Á¸ÀçÇÏ¸é whereÀÇ ¸¶Áö¸· nodeÀÇ end offsetÀ» Ã£´Â´Ù. */
+        /* Where clauseê°€ ì¡´ì¬í•˜ë©´ whereì˜ ë§ˆì§€ë§‰ nodeì˜ end offsetì„ ì°¾ëŠ”ë‹¤. */
         if ( aQuerySet->SFWGH->where != NULL )
         {
             for ( sNode  = aQuerySet->SFWGH->where;
@@ -2131,7 +2131,7 @@ IDE_RC qmvShardTransform::processAggrTransform( qcStatement    * aStatement,
         }
         else
         {
-            /* Where clause°¡ Á¸ÀçÇÏÁö ¾ÊÀ¸¸é from¸¦ ¼øÈ¸ÇÏ¸ç fromÀÇ end offsetÀ» Ã£´Â´Ù. */
+            /* Where clauseê°€ ì¡´ì¬í•˜ì§€ ì•Šìœ¼ë©´ fromë¥¼ ìˆœíšŒí•˜ë©° fromì˜ end offsetì„ ì°¾ëŠ”ë‹¤. */
             for ( sMyFrom  = aQuerySet->SFWGH->from;
                   sMyFrom != NULL;
                   sMyFrom  = sMyFrom->next )
@@ -2271,8 +2271,8 @@ IDE_RC qmvShardTransform::processAggrTransform( qcStatement    * aStatement,
     else
     {
         /*
-         * Áö¿øÇÏÁö ¾Ê´Â aggregate functionÀÇ µîÀåÀ¸·Î aggr transformÀ» ¼öÇàÇÒ ¼ö ¾ø´Ù.
-         * ÇÏÀ§ ´Ü°è transformation(from transformation)À» ¼öÇà ½ÃÅ°±â À§ÇØ¼­ ¼³Á¤
+         * ì§€ì›í•˜ì§€ ì•ŠëŠ” aggregate functionì˜ ë“±ì¥ìœ¼ë¡œ aggr transformì„ ìˆ˜í–‰í•  ìˆ˜ ì—†ë‹¤.
+         * í•˜ìœ„ ë‹¨ê³„ transformation(from transformation)ì„ ìˆ˜í–‰ ì‹œí‚¤ê¸° ìœ„í•´ì„œ ì„¤ì •
          */
         *aIsTransformed = ID_FALSE;
     }
@@ -2295,8 +2295,8 @@ IDE_RC qmvShardTransform::addColumnListToText( qtcNode        * aNode,
  *
  * Description : PROJ-2687 Shard aggregation transform
  *
- *               Node tree¸¦ ¼øÈ¸ÇÏ¸é¼­
- *               ¼ø¼ö columnÀÇ positionÀ» string¿¡ ±â·ÏÇÑ´Ù.
+ *               Node treeë¥¼ ìˆœíšŒí•˜ë©´ì„œ
+ *               ìˆœìˆ˜ columnì˜ positionì„ stringì— ê¸°ë¡í•œë‹¤.
  *
  * Implementation :
  *
@@ -2391,8 +2391,8 @@ IDE_RC qmvShardTransform::addAggrListToText( qtcNode        * aNode,
  *
  * Description : PROJ-2687 Shard aggregation transform
  *
- *               Node tree¸¦ ¼øÈ¸ÇÏ¸é¼­
- *               Aggregate functionÀÇ real positionÀ» string¿¡ ±â·ÏÇÑ´Ù.
+ *               Node treeë¥¼ ìˆœíšŒí•˜ë©´ì„œ
+ *               Aggregate functionì˜ real positionì„ stringì— ê¸°ë¡í•œë‹¤.
  *
  * Implementation :
  *
@@ -2468,7 +2468,7 @@ IDE_RC qmvShardTransform::addAggrListToText( qtcNode        * aNode,
     }
     else if ( ( aNode->node.lflag & MTC_NODE_OPERATOR_MASK ) == MTC_NODE_OPERATOR_SUBQUERY )
     {
-        // Sub-query¸¦ °¡Áø query setÀÌ ¿©±â±îÁö ¿Ã ¼ö ¾ø´Ù.
+        // Sub-queryë¥¼ ê°€ì§„ query setì´ ì—¬ê¸°ê¹Œì§€ ì˜¬ ìˆ˜ ì—†ë‹¤.
         IDE_RAISE(ERR_SUBQ_EXISTS);
     }
     else
@@ -2511,8 +2511,8 @@ IDE_RC qmvShardTransform::addSumMinMaxCountToText( qtcNode        * aNode,
  *
  * Description : PROJ-2687 Shard aggregation transform
  *
- *               Aggregate functionÀÇ º¯Çü ¾øÀÌ ºĞ»êºÎ¸¦ ÀÌ·ç´Â 4°³ function¿¡ ´ëÇØ¼­
- *               Query text¸¦ »ı¼ºÇÑ´Ù.
+ *               Aggregate functionì˜ ë³€í˜• ì—†ì´ ë¶„ì‚°ë¶€ë¥¼ ì´ë£¨ëŠ” 4ê°œ functionì— ëŒ€í•´ì„œ
+ *               Query textë¥¼ ìƒì„±í•œë‹¤.
  *
  *
  * Implementation :
@@ -2524,7 +2524,7 @@ IDE_RC qmvShardTransform::addSumMinMaxCountToText( qtcNode        * aNode,
 
     IDU_FIT_POINT_FATAL( "qmvShardTransform::addSumMinMaxToText::__FT__" );
 
-    // Á¤ÇÕ¼º °Ë»ç
+    // ì •í•©ì„± ê²€ì‚¬
     IDE_FT_ASSERT ( ( aNode->node.module == &mtfSum ) ||
                     ( aNode->node.module == &mtfMin ) ||
                     ( aNode->node.module == &mtfMax ) ||
@@ -2549,8 +2549,8 @@ IDE_RC qmvShardTransform::addAvgToText( qtcNode        * aNode,
  *
  * Description : PROJ-2687 Shard aggregation transform
  *
- *               Aggregate functionÀÇ º¯ÇüÀÌ ÇÊ¿äÇÑ AVG(arg)¿¡ ´ëÇØ¼­
- *               SUM(arg),COUNT(arg) ·Î º¯Çü µÈ query text¸¦ »ı¼ºÇÑ´Ù.
+ *               Aggregate functionì˜ ë³€í˜•ì´ í•„ìš”í•œ AVG(arg)ì— ëŒ€í•´ì„œ
+ *               SUM(arg),COUNT(arg) ë¡œ ë³€í˜• ëœ query textë¥¼ ìƒì„±í•œë‹¤.
  *
  * Implementation :
  *
@@ -2561,7 +2561,7 @@ IDE_RC qmvShardTransform::addAvgToText( qtcNode        * aNode,
 
     IDU_FIT_POINT_FATAL( "qmvShardTransform::addAvgToText::__FT__" );
 
-    // Á¤ÇÕ¼º °Ë»ç
+    // ì •í•©ì„± ê²€ì‚¬
     IDE_FT_ASSERT ( aNode->node.module == &mtfAvg );
 
     sArg = (qtcNode*)aNode->node.arguments;
@@ -2658,8 +2658,8 @@ IDE_RC qmvShardTransform::getFromEnd( qmsFrom * aFrom,
  *
  * Description : PROJ-2687 Shard aggregation transform
  *
- *               From tree¸¦ ¼øÈ¸ÇÏ¸ç query stringÀÇ ¸¶Áö¸· À§Ä¡¿¡ ÇØ´çÇÏ´Â fromÀÇ
- *               End positionÀ» Ã£¾Æ ¹İÈ¯ÇÑ´Ù.
+ *               From treeë¥¼ ìˆœíšŒí•˜ë©° query stringì˜ ë§ˆì§€ë§‰ ìœ„ì¹˜ì— í•´ë‹¹í•˜ëŠ” fromì˜
+ *               End positionì„ ì°¾ì•„ ë°˜í™˜í•œë‹¤.
  *
  * Implementation :
  *
@@ -2670,7 +2670,7 @@ IDE_RC qmvShardTransform::getFromEnd( qmsFrom * aFrom,
 
     if ( aFrom != NULL )
     {
-        /* ON clause°¡ Á¸ÀçÇÏ¸é on clauseÀÇ end positionÀ» ±â·ÏÇÑ´Ù. */
+        /* ON clauseê°€ ì¡´ì¬í•˜ë©´ on clauseì˜ end positionì„ ê¸°ë¡í•œë‹¤. */
         if ( aFrom->onCondition != NULL )
         {
             sThisIsTheEnd = aFrom->onCondition->position.offset + aFrom->onCondition->position.size;
@@ -2687,8 +2687,8 @@ IDE_RC qmvShardTransform::getFromEnd( qmsFrom * aFrom,
             if ( *aFromWhereEnd < sThisIsTheEnd )
             {
                 /*
-                 * From tree¸¦ ¼øÈ¸ÇÏ´ø µµÁß ±â·ÏµÈ fromÀÇ end positionº¸´Ù
-                 * ´õ Å«(´õ µÚ¿¡ µîÀåÇÏ´Â) end positionÀÏ °æ¿ì °ªÀ» °»½Å
+                 * From treeë¥¼ ìˆœíšŒí•˜ë˜ ë„ì¤‘ ê¸°ë¡ëœ fromì˜ end positionë³´ë‹¤
+                 * ë” í°(ë” ë’¤ì— ë“±ì¥í•˜ëŠ”) end positionì¼ ê²½ìš° ê°’ì„ ê°±ì‹ 
                  */
                 *aFromWhereEnd = sThisIsTheEnd;
             }
@@ -2699,7 +2699,7 @@ IDE_RC qmvShardTransform::getFromEnd( qmsFrom * aFrom,
         }
         else
         {
-            /* ON clause°¡ Á¸ÀçÇÏÁö ¾ÊÀ¸¸é tableRefÀÇ end positionÀ» Ã£´Â´Ù. */
+            /* ON clauseê°€ ì¡´ì¬í•˜ì§€ ì•Šìœ¼ë©´ tableRefì˜ end positionì„ ì°¾ëŠ”ë‹¤. */
             IDE_DASSERT( aFrom->tableRef != NULL );
 
             if ( QC_IS_NULL_NAME(aFrom->tableRef->aliasName) == ID_FALSE )
@@ -2780,9 +2780,9 @@ IDE_RC qmvShardTransform::modifyOrgAggr( qcStatement  * aStatement,
  *
  * Description : PROJ-2687 Shard aggregation transform
  *
- *               Original query blockÀÇ
- *               SELECT, HAVING clause¿¡ Á¸ÀçÇÏ´Â aggregate function¿¡ ´ëÇØ¼­
- *               ÅëÇÕºÎ(coord-aggregation) aggregate functionÀ¸·Î º¯ÇüÇÑ´Ù.
+ *               Original query blockì˜
+ *               SELECT, HAVING clauseì— ì¡´ì¬í•˜ëŠ” aggregate functionì— ëŒ€í•´ì„œ
+ *               í†µí•©ë¶€(coord-aggregation) aggregate functionìœ¼ë¡œ ë³€í˜•í•œë‹¤.
  *
  * Implementation :
  *
@@ -2826,7 +2826,7 @@ IDE_RC qmvShardTransform::changeAggrExpr( qcStatement  * aStatement,
  *
  * Description : PROJ-2687 Shard aggregation transform
  *
- *               Aggregate functionÀÇ transformationÀ» ¼öÇà
+ *               Aggregate functionì˜ transformationì„ ìˆ˜í–‰
  *
  *               SUM(expression)   ->  SUM(column_module)
  *                                         -------------
@@ -2848,10 +2848,10 @@ IDE_RC qmvShardTransform::changeAggrExpr( qcStatement  * aStatement,
  *                                         -------------        -------------
  *                                          for SUM(arg)         for COUNT(arg)
  *
- *               * column_moduleÀº makeNode¸¦ ÅëÇØ ÀÓÀÇ·Î »ı¼ºÇÑ´Ù.
- *                 column_module·Î »ı¼ºµÈ node´Â
- *                 ºĞ»êºÎÀÇ ÇØ´ç aggr¿¡ ´ëÇÑ column order¸¦
- *                 shardViewTargetPos¿¡ ±â·ÏÇÑ´Ù.
+ *               * column_moduleì€ makeNodeë¥¼ í†µí•´ ì„ì˜ë¡œ ìƒì„±í•œë‹¤.
+ *                 column_moduleë¡œ ìƒì„±ëœ nodeëŠ”
+ *                 ë¶„ì‚°ë¶€ì˜ í•´ë‹¹ aggrì— ëŒ€í•œ column orderë¥¼
+ *                 shardViewTargetPosì— ê¸°ë¡í•œë‹¤.
  *
  * Implementation :
  *
@@ -2873,7 +2873,7 @@ IDE_RC qmvShardTransform::changeAggrExpr( qcStatement  * aStatement,
 
     sOrgNode = *aNode;
 
-    // Á¤ÇÕ¼º °Ë»ç
+    // ì •í•©ì„± ê²€ì‚¬
     IDE_FT_ASSERT ( ( sOrgNode->node.module == &mtfSum ) ||
                     ( sOrgNode->node.module == &mtfMin ) ||
                     ( sOrgNode->node.module == &mtfMax ) ||
@@ -3084,7 +3084,7 @@ IDE_RC qmvShardTransform::doTransformForExpr( qcStatement  * aStatement,
 /***********************************************************************
  *
  * Description : Shard View Transform
- *     expression¿¡ shard tableÀÌ Æ÷ÇÔµÈ subquery°¡ ÀÖ´Â °æ¿ì º¯È¯ÇÑ´Ù.
+ *     expressionì— shard tableì´ í¬í•¨ëœ subqueryê°€ ìˆëŠ” ê²½ìš° ë³€í™˜í•œë‹¤.
  *
  * Implementation :
  *
@@ -3100,13 +3100,13 @@ IDE_RC qmvShardTransform::doTransformForExpr( qcStatement  * aStatement,
     IDU_FIT_POINT_FATAL( "qmvShardTransform::doTransformForExpr::__FT__" );
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_FT_ASSERT( aStatement != NULL );
 
     //------------------------------------------
-    // Shard View Transform ¼öÇà
+    // Shard View Transform ìˆ˜í–‰
     //------------------------------------------
 
     if ( ( ( QC_SHARED_TMPLATE(aStatement)->flag & QC_TMP_SHARD_TRANSFORM_MASK )
@@ -3191,8 +3191,8 @@ IDE_RC qmvShardTransform::doTransformForExpr( qcStatement  * aStatement,
                 break;
         }
 
-        // shardInsert·Î º¯È¯µÈ °æ¿ìÀÇ value¿¡ subquery°¡ »ç¿ëµÈ °æ¿ì
-        // DMLÀÇ set, whereÀı µî¿¡¼­ subquery°¡ »ç¿ëµÈ °æ¿ì
+        // shardInsertë¡œ ë³€í™˜ëœ ê²½ìš°ì˜ valueì— subqueryê°€ ì‚¬ìš©ëœ ê²½ìš°
+        // DMLì˜ set, whereì ˆ ë“±ì—ì„œ subqueryê°€ ì‚¬ìš©ëœ ê²½ìš°
         if ( sTransform == ID_TRUE )
         {
             IDE_TEST( processTransformForExpr( aStatement,
@@ -3222,7 +3222,7 @@ IDE_RC qmvShardTransform::processTransformForFrom( qcStatement  * aStatement,
 /***********************************************************************
  *
  * Description : Shard View Transform
- *     fromÀıÀÇ shard tableÀ» shard view·Î º¯È¯ÇÑ´Ù.
+ *     fromì ˆì˜ shard tableì„ shard viewë¡œ ë³€í™˜í•œë‹¤.
  *
  * Implementation :
  *
@@ -3252,13 +3252,13 @@ IDE_RC qmvShardTransform::processTransformForFrom( qcStatement  * aStatement,
                                         &sShardAnalysis )
                           != IDE_SUCCESS );
 
-                // analyzer¸¦ ÅëÇÏÁö ¾Ê°í Á÷Á¢ analyze Á¤º¸¸¦ »ı¼ºÇÑ´Ù.
+                // analyzerë¥¼ í†µí•˜ì§€ ì•Šê³  ì§ì ‘ analyze ì •ë³´ë¥¼ ìƒì„±í•œë‹¤.
                 IDE_TEST( sdi::setAnalysisResultForTable( aStatement,
                                                           sShardAnalysis,
                                                           sTableRef->mShardObjInfo )
                           != IDE_SUCCESS );
 
-                // tableÀ» shard view·Î º¯È¯ÇÑ´Ù.
+                // tableì„ shard viewë¡œ ë³€í™˜í•œë‹¤.
                 IDE_TEST( makeShardView( aStatement,
                                          sTableRef,
                                          sShardAnalysis )
@@ -3298,7 +3298,7 @@ IDE_RC qmvShardTransform::processTransformForExpr( qcStatement  * aStatement,
 /***********************************************************************
  *
  * Description : Shard View Transform
- *     expressionÀÇ subquery¸¦ shard view·Î º¯È¯ÇÑ´Ù.
+ *     expressionì˜ subqueryë¥¼ shard viewë¡œ ë³€í™˜í•œë‹¤.
  *
  * Implementation :
  *
@@ -3339,7 +3339,7 @@ IDE_RC qmvShardTransform::raiseInvalidShardQuery( qcStatement  * aStatement )
 {
 /***********************************************************************
  *
- * Description : Shard Transform ¿¡·¯¸¦ Ãâ·ÂÇÑ´Ù.
+ * Description : Shard Transform ì—ëŸ¬ë¥¼ ì¶œë ¥í•œë‹¤.
  *
  * Implementation :
  *

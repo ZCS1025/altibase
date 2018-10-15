@@ -68,10 +68,10 @@ mtlNCRet mtlUTF8NextChar( UChar ** aSource, UChar * aFence )
 {
 /***********************************************************************
  *
- * Description : PROJ-1755 Next Char ÃÖÀûÈ­
+ * Description : PROJ-1755 Next Char ìµœì í™”
  *
  * Implementation :
- *    ´ÙÀ½ ¹®ÀÚ À§Ä¡·Î pointer ÀÌµ¿
+ *    ë‹¤ìŒ ë¬¸ì ìœ„ì¹˜ë¡œ pointer ì´ë™
  *
  ***********************************************************************/    
 
@@ -138,14 +138,14 @@ static SInt mtlUTF8MaxPrecision( SInt aLength )
 {
 /***********************************************************************
  *
- * Description : ¹®ÀÚ°¹¼ö(aLength)ÀÇ UTF8ÀÇ ÃÖ´ë precision °è»ê
+ * Description : ë¬¸ìê°¯ìˆ˜(aLength)ì˜ UTF8ì˜ ìµœëŒ€ precision ê³„ì‚°
  *
  * Implementation :
  *
- *    ÀÎÀÚ·Î ¹ŞÀº aLength¿¡
- *    UTF8 ÇÑ¹®ÀÚÀÇ ÃÖ´ë Å©±â¸¦ °öÇÑ °ªÀ» ¸®ÅÏÇÔ.
+ *    ì¸ìë¡œ ë°›ì€ aLengthì—
+ *    UTF8 í•œë¬¸ìì˜ ìµœëŒ€ í¬ê¸°ë¥¼ ê³±í•œ ê°’ì„ ë¦¬í„´í•¨.
  *
- *    aLength´Â ¹®ÀÚ°¹¼öÀÇ ÀÇ¹Ì°¡ ÀÖÀ½.
+ *    aLengthëŠ” ë¬¸ìê°¯ìˆ˜ì˜ ì˜ë¯¸ê°€ ìˆìŒ.
  *
  ***********************************************************************/
     
@@ -159,8 +159,8 @@ mtlNCRet mtlUTF8NextCharClobForClient( UChar ** aSource, UChar * aFence )
  * Description : BUG-45608 JDBC 4Byte char length
  *
  * Implementation :
- *    ´ÙÀ½ ¹®ÀÚ À§Ä¡·Î pointer ÀÌµ¿
- *    JDBC CLOBÀÇ °æ¿ì 4¹ÙÀÌÆ® ¹®ÀÚ¿¡´ëÇÑ length (1) return ÇÏµµ·Ï Ãß°¡.
+ *    ë‹¤ìŒ ë¬¸ì ìœ„ì¹˜ë¡œ pointer ì´ë™
+ *    JDBC CLOBì˜ ê²½ìš° 4ë°”ì´íŠ¸ ë¬¸ìì—ëŒ€í•œ length (1) return í•˜ë„ë¡ ì¶”ê°€.
  *
  ***********************************************************************/    
 

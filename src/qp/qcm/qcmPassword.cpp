@@ -36,7 +36,7 @@ IDE_RC qcmReuseVerify::addPasswHistory( qcStatement * aStatement,
 /***********************************************************************
  *
  * Description : PROJ-2207 Password policy support
- *      SYS_PASSWORD_HISTROY_ Record »ğÀÔ
+ *      SYS_PASSWORD_HISTROY_ Record ì‚½ì…
  *
  * Implementation :
  *
@@ -84,7 +84,7 @@ IDE_RC  qcmReuseVerify::updatePasswdDate( qcStatement * aStatement,
  *
  * Implementation :
  *        
- *         SYS_PASSWORD_HISTORY_ ÀÇ PASSWORD_DATE °»½Å
+ *         SYS_PASSWORD_HISTORY_ ì˜ PASSWORD_DATE ê°±ì‹ 
  *         
  ***********************************************************************/
 
@@ -128,7 +128,7 @@ IDE_RC qcmReuseVerify::checkReusePasswd( qcStatement * aStatement,
 /***********************************************************************
  *
  * Description : PROJ-2207 Password policy support
- *           SYS_PASSWORD_HISTORY_¿¡ ÆĞ½º¿öµå Á¸Àç ¿©ºÎ Ã¼Å©         
+ *           SYS_PASSWORD_HISTORY_ì— íŒ¨ìŠ¤ì›Œë“œ ì¡´ì¬ ì—¬ë¶€ ì²´í¬         
  *        
  * Implementation :
  *
@@ -143,7 +143,7 @@ IDE_RC qcmReuseVerify::checkReusePasswd( qcStatement * aStatement,
     mtcColumn         * sFirstMtcColumn;
     mtcColumn         * sSceondMtcColumn;
 
-    // ÃÊ±âÈ­
+    // ì´ˆê¸°í™”
     sUserPasswd = (mtdCharType *) sUserPasswdBuffer;
     sUserID     = (mtdIntegerType ) aUserID;
 
@@ -162,7 +162,7 @@ IDE_RC qcmReuseVerify::checkReusePasswd( qcStatement * aStatement,
                                   (const smiColumn**)&sSceondMtcColumn )
               != IDE_SUCCESS );
 
-    // °Ë»ö Á¶°Ç
+    // ê²€ìƒ‰ ì¡°ê±´
     qcm::makeMetaRangeDoubleColumn(
         &sFirstMetaRange,
         &sSecondMetaRange,
@@ -172,7 +172,7 @@ IDE_RC qcmReuseVerify::checkReusePasswd( qcStatement * aStatement,
         (const void*) sUserPasswd,
         &sRange);
         
-    // Á¶È¸
+    // ì¡°íšŒ
     IDE_TEST( qcm::selectCount( QC_SMI_STMT(aStatement),
                                 gQcmPasswordHistory,
                                 &sRowCount,
@@ -206,7 +206,7 @@ IDE_RC qcmReuseVerify::actionVerifyFunction( qcStatement * aStatement,
 /***********************************************************************
  *
  * Description : PROJ-2207 Password policy support
- *      password_verify_function ¼³Á¤ÇÑ functionÀ» ¼öÇà
+ *      password_verify_function ì„¤ì •í•œ functionì„ ìˆ˜í–‰
  *
  * Implementation :
  *
@@ -285,18 +285,18 @@ IDE_RC qcmReuseVerify::actionPasswordReuse( qcStatement  * aStatement,
  *      PASSWORD_REUSE_TIME CHECK
  *    
  * Implementation :
- *      BUG-37433 ¿¡¼­ Á¤Ã¥ º¯°æ.
- *      ±âÁ¸:
- *         PASSWORD_REUSE_MAX ¼³Á¤µÈ °ª¸¸ Å­ ÆĞ½º¿öµå Àç»ç¿ë °¡´É.
- *         PASSWORD_REUSE_TIME PASSWORD_REUSE_MAX °ª ¸¸Å­ »ç¿ë µÇ¾úÀ» ¶§ ±âÁØÀ¸·Î
- *         PASSWORD_REUSE_TIME ´õÇÑ ³¯ÀÚ¿¡ ÆĞ½º¿öµå¸¦ Àç»ç¿ë ÇÒ¼ö ÀÖ´Ù.
- *      º¯°æ:
- *         PASSWORD_REUSE_MAX ¼³Á¤ÇÑ °ª ¸¸Å­ ÆĞ½º¿öµå¸¦ º¯°æ ÇÏ¸é ÆĞ½º¿öµå¸¦ Àç»ç¿ë
- *         ÇÒ ¼ö ÀÖ´Ù.
- *         PASSWORD_REUSE_TIME ÆĞ½º¿öµå¸¦ Àç»ç¿ë ÇÒ¼ö ÀÖ´Â ³¯ÀÚ.
- *      ¿É¼Ç:
- *         µÎ°³ÀÇ ¿É¼ÇÀÌ ´Ù Á¸Àç ÇØ¾ß ¿É¼Ç Àû¿ë °¡´É.
- *         ÇÏ³ª¸¸ ÀÖÀ» °æ¿ì ¹«Á¶°Ç ÆĞ½º¿öµå Àç»ç¿ë ºÒ°¡.
+ *      BUG-37433 ì—ì„œ ì •ì±… ë³€ê²½.
+ *      ê¸°ì¡´:
+ *         PASSWORD_REUSE_MAX ì„¤ì •ëœ ê°’ë§Œ í¼ íŒ¨ìŠ¤ì›Œë“œ ì¬ì‚¬ìš© ê°€ëŠ¥.
+ *         PASSWORD_REUSE_TIME PASSWORD_REUSE_MAX ê°’ ë§Œí¼ ì‚¬ìš© ë˜ì—ˆì„ ë•Œ ê¸°ì¤€ìœ¼ë¡œ
+ *         PASSWORD_REUSE_TIME ë”í•œ ë‚ ìì— íŒ¨ìŠ¤ì›Œë“œë¥¼ ì¬ì‚¬ìš© í• ìˆ˜ ìˆë‹¤.
+ *      ë³€ê²½:
+ *         PASSWORD_REUSE_MAX ì„¤ì •í•œ ê°’ ë§Œí¼ íŒ¨ìŠ¤ì›Œë“œë¥¼ ë³€ê²½ í•˜ë©´ íŒ¨ìŠ¤ì›Œë“œë¥¼ ì¬ì‚¬ìš©
+ *         í•  ìˆ˜ ìˆë‹¤.
+ *         PASSWORD_REUSE_TIME íŒ¨ìŠ¤ì›Œë“œë¥¼ ì¬ì‚¬ìš© í• ìˆ˜ ìˆëŠ” ë‚ ì.
+ *      ì˜µì…˜:
+ *         ë‘ê°œì˜ ì˜µì…˜ì´ ë‹¤ ì¡´ì¬ í•´ì•¼ ì˜µì…˜ ì ìš© ê°€ëŠ¥.
+ *         í•˜ë‚˜ë§Œ ìˆì„ ê²½ìš° ë¬´ì¡°ê±´ íŒ¨ìŠ¤ì›Œë“œ ì¬ì‚¬ìš© ë¶ˆê°€.
  ***********************************************************************/
 
     idBool sExist = ID_FALSE;
@@ -305,7 +305,7 @@ IDE_RC qcmReuseVerify::actionPasswordReuse( qcStatement  * aStatement,
     if ( ( aUserPasswOpts->mAccLimitOpts.mPasswReuseMax != 0 ) &&
          ( aUserPasswOpts->mAccLimitOpts.mPasswReuseTime != 0 ) )
     {            
-        /* SYS_PASSWORD_HISTORY_¿¡ ÆĞ½º¿öµå Á¸Àç ¿©ºÎ Ã¼Å© */
+        /* SYS_PASSWORD_HISTORY_ì— íŒ¨ìŠ¤ì›Œë“œ ì¡´ì¬ ì—¬ë¶€ ì²´í¬ */
         IDE_TEST( qcmReuseVerify::checkReusePasswd( aStatement,
                                                     aUserPasswOpts->userID,
                                                     aUserPasswd,
@@ -314,7 +314,7 @@ IDE_RC qcmReuseVerify::actionPasswordReuse( qcStatement  * aStatement,
     
         if ( sExist == ID_FALSE )
         {
-            /* SYS_PASSWORD_HISTORY_  ÆĞ½º¿öµå ±â·Ï */
+            /* SYS_PASSWORD_HISTORY_  íŒ¨ìŠ¤ì›Œë“œ ê¸°ë¡ */
             IDE_TEST( qcmReuseVerify::addPasswHistory( aStatement,
                                                        aUserPasswd,
                                                        aUserPasswOpts->userID )
@@ -322,22 +322,22 @@ IDE_RC qcmReuseVerify::actionPasswordReuse( qcStatement  * aStatement,
         }
         else
         {
-            /* SYS_PASSWORD_HISTORY¿¡¼­ º¯°æ ÇÏ°íÀÚ ÇÏ´Â PASSWORD DATE ¸¦ ±¸ÇÑ´Ù. */
+            /* SYS_PASSWORD_HISTORYì—ì„œ ë³€ê²½ í•˜ê³ ì í•˜ëŠ” PASSWORD DATE ë¥¼ êµ¬í•œë‹¤. */
             IDE_TEST( qcmReuseVerify::getPasswordDate( aStatement,
                                                        aUserPasswOpts->userID,
                                                        aUserPasswd,
                                                        &sPasswordDate )
                       != IDE_SUCCESS );
 
-            /* sExist TRUE ÀÎ ÆĞ½º¿öµå´Â PASSWORD_REUSE_TIME¿¡ µû¶ó Àç»ç¿ë ¿©ºÎ °áÁ¤.
-             * º¯°æ ÇÏ°íÀÚ ÇÏ´Â ÆĞ½º¿öµåÀÇ PASSWORD DATE + PASSWORD_REUSE_TIME ±â°£ÀÌ
-             * Áö³µ°Å³ª °°À»¶§ ÆĞ½º¿öµå reuse count Ã¤Å© */
+            /* sExist TRUE ì¸ íŒ¨ìŠ¤ì›Œë“œëŠ” PASSWORD_REUSE_TIMEì— ë”°ë¼ ì¬ì‚¬ìš© ì—¬ë¶€ ê²°ì •.
+             * ë³€ê²½ í•˜ê³ ì í•˜ëŠ” íŒ¨ìŠ¤ì›Œë“œì˜ PASSWORD DATE + PASSWORD_REUSE_TIME ê¸°ê°„ì´
+             * ì§€ë‚¬ê±°ë‚˜ ê°™ì„ë•Œ íŒ¨ìŠ¤ì›Œë“œ reuse count ì±„í¬ */
             if ( aUserPasswOpts->mAccLimitOpts.mCurrentDate >=
                  ( aUserPasswOpts->mAccLimitOpts.mPasswReuseTime + sPasswordDate ) ) 
             {
-                /* SYS_PASSWORD_HISTORY¿¡¼­ º¯°æ ÇÏ°íÀÚ ÇÏ´Â PASSWORD ÀÌÈÄ º¯°æ µÈ
-                 * ÆĞ½º¿öµåÀÇ count ¿Í reuse max °ªÀ» ºñ±³ÇÏ¿© Àç»ç¿ë °¡´ÉÇÑ
-                 * ÆĞ½º¿öµåÀÎÁö ±¸ÇÑ´Ù. */
+                /* SYS_PASSWORD_HISTORYì—ì„œ ë³€ê²½ í•˜ê³ ì í•˜ëŠ” PASSWORD ì´í›„ ë³€ê²½ ëœ
+                 * íŒ¨ìŠ¤ì›Œë“œì˜ count ì™€ reuse max ê°’ì„ ë¹„êµí•˜ì—¬ ì¬ì‚¬ìš© ê°€ëŠ¥í•œ
+                 * íŒ¨ìŠ¤ì›Œë“œì¸ì§€ êµ¬í•œë‹¤. */
                 IDE_TEST( qcmReuseVerify::checkPasswordReuseCount(
                               aStatement,
                               aUserPasswOpts->userID,
@@ -347,15 +347,15 @@ IDE_RC qcmReuseVerify::actionPasswordReuse( qcStatement  * aStatement,
             }
             else
             {
-                /* º¯°æ ÇÏ°íÀÚ ÇÏ´Â ÆĞ½º¿öµå°¡ PASSWORD_REUSE_TIMEÀÌ ÀüÀÎ °ÍÀº
-                 * Àç »ç¿ë ÆĞ½º¿öµå ÀÎ°æ¿ì ERROR */
+                /* ë³€ê²½ í•˜ê³ ì í•˜ëŠ” íŒ¨ìŠ¤ì›Œë“œê°€ PASSWORD_REUSE_TIMEì´ ì „ì¸ ê²ƒì€
+                 * ì¬ ì‚¬ìš© íŒ¨ìŠ¤ì›Œë“œ ì¸ê²½ìš° ERROR */
                 IDE_RAISE( ERR_REUSE_COUNT );
             }
         }
     }
     else
     {
-        /* SYS_PASSWORD_HISTORY_¿¡ ÆĞ½º¿öµå Á¸Àç ¿©ºÎ Ã¼Å© */
+        /* SYS_PASSWORD_HISTORY_ì— íŒ¨ìŠ¤ì›Œë“œ ì¡´ì¬ ì—¬ë¶€ ì²´í¬ */
         IDE_TEST( qcmReuseVerify::checkReusePasswd( aStatement,
                                                     aUserPasswOpts->userID,
                                                     aUserPasswd,
@@ -364,7 +364,7 @@ IDE_RC qcmReuseVerify::actionPasswordReuse( qcStatement  * aStatement,
     
         if ( sExist == ID_FALSE )
         {
-            /* SYS_PASSWORD_HISTORY_  ÆĞ½º¿öµå ±â·Ï */
+            /* SYS_PASSWORD_HISTORY_  íŒ¨ìŠ¤ì›Œë“œ ê¸°ë¡ */
             IDE_TEST( qcmReuseVerify::addPasswHistory( aStatement,
                                                        aUserPasswd,
                                                        aUserPasswOpts->userID )
@@ -372,7 +372,7 @@ IDE_RC qcmReuseVerify::actionPasswordReuse( qcStatement  * aStatement,
         }
         else
         {
-            /* Àç »ç¿ë ÆĞ½º¿öµå ÀÎ°æ¿ì ERROR */
+            /* ì¬ ì‚¬ìš© íŒ¨ìŠ¤ì›Œë“œ ì¸ê²½ìš° ERROR */
             IDE_RAISE( ERR_REUSE_COUNT );
         }
     }
@@ -397,8 +397,8 @@ IDE_RC qcmReuseVerify::getPasswordDate( qcStatement * aStatement,
  *
  * Description : PROJ-2207 Password policy support
  *     BUG-37443
- *           SYS_PASSWORD_HISTORY_ ¿¡¼­ º¯°æ ÇÏ°íÀÚ ÇÏ´Â ÆĞ½º¿öµåÀÇ
- *           ÀÏ¼ö¸¦ ±¸ÇÑ´Ù.
+ *           SYS_PASSWORD_HISTORY_ ì—ì„œ ë³€ê²½ í•˜ê³ ì í•˜ëŠ” íŒ¨ìŠ¤ì›Œë“œì˜
+ *           ì¼ìˆ˜ë¥¼ êµ¬í•œë‹¤.
  *        
  * Implementation :
  *
@@ -422,7 +422,7 @@ IDE_RC qcmReuseVerify::getPasswordDate( qcStatement * aStatement,
     mtcColumn             * sFirstMtcColumn;
     mtcColumn             * sSceondMtcColumn;
 
-    // ÃÊ±âÈ­
+    // ì´ˆê¸°í™”
     sUserPasswd = (mtdCharType *) sUserPasswdBuffer;
     sUserID     = (mtdIntegerType ) aUserID;
 
@@ -452,7 +452,7 @@ IDE_RC qcmReuseVerify::getPasswordDate( qcStatement * aStatement,
                                   (const smiColumn**)&sSceondMtcColumn )
               != IDE_SUCCESS );
 
-    // °Ë»ö Á¶°Ç
+    // ê²€ìƒ‰ ì¡°ê±´
     qcm::makeMetaRangeDoubleColumn(
         &sFirstMetaRange,
         &sSecondMetaRange,
@@ -533,9 +533,9 @@ IDE_RC qcmReuseVerify::checkPasswordReuseCount( qcStatement * aStatement,
  *
  * Description : PROJ-2207 Password policy support
  *   BUG-37443
- *           SYS_PASSWORD_HISTORY_¿¡¼­ º¯°æ ÇÏ°íÁö ÇÏ´Â ÆĞ½º¿öµå
- *           ÀÌÈÄ ÆĞ½º¿öµå º¯°æ µÈ È½ ¼ö¸¦ ±¸ÇÏ¿©  PASSWORD_REUSE_MAX¿Í ºñ±³
- *           ÇÏ¿© ÆĞ½º¿öµå Àç»ç¿ë °¡´É ¿©ºÎ¸¦ Ã¼Å©ÇÑ´Ù.
+ *           SYS_PASSWORD_HISTORY_ì—ì„œ ë³€ê²½ í•˜ê³ ì§€ í•˜ëŠ” íŒ¨ìŠ¤ì›Œë“œ
+ *           ì´í›„ íŒ¨ìŠ¤ì›Œë“œ ë³€ê²½ ëœ íšŸ ìˆ˜ë¥¼ êµ¬í•˜ì—¬  PASSWORD_REUSE_MAXì™€ ë¹„êµ
+ *           í•˜ì—¬ íŒ¨ìŠ¤ì›Œë“œ ì¬ì‚¬ìš© ê°€ëŠ¥ ì—¬ë¶€ë¥¼ ì²´í¬í•œë‹¤.
  *        
  * Implementation :
  *
@@ -559,7 +559,7 @@ IDE_RC qcmReuseVerify::checkPasswordReuseCount( qcStatement * aStatement,
 
     IDE_DASSERT( aUserPasswd != NULL );
     
-    // ÃÊ±âÈ­
+    // ì´ˆê¸°í™”
     sUserID = (mtdIntegerType) aUserID;
     sUserPasswdLen = idlOS::strlen((SChar*)aUserPasswd);
 
@@ -568,7 +568,7 @@ IDE_RC qcmReuseVerify::checkPasswordReuseCount( qcStatement * aStatement,
                                   (const smiColumn**)&sFirstMtcColumn )
               != IDE_SUCCESS );
 
-    // °Ë»ö Á¶°Ç
+    // ê²€ìƒ‰ ì¡°ê±´
     qcm::makeMetaRangeSingleColumn(
         &sRangeColumn,
         (const mtcColumn *)
@@ -615,7 +615,7 @@ IDE_RC qcmReuseVerify::checkPasswordReuseCount( qcStatement * aStatement,
                                   (SChar*)sPasswdStr->value,
                                   sPasswdStr->length ) == 0 ) 
             {
-                /* º¯°æ ÇÏ°íÀÚ ÇÏ´Â ÆĞ½º¿öµå ½ÃÁ¡ ºÎÅÍ reuse count ÇÏ±âÀ§ÇØ ÃÊ±âÈ­ */
+                /* ë³€ê²½ í•˜ê³ ì í•˜ëŠ” íŒ¨ìŠ¤ì›Œë“œ ì‹œì  ë¶€í„° reuse count í•˜ê¸°ìœ„í•´ ì´ˆê¸°í™” */
                 sIsExist = ID_TRUE;
             }
             else
@@ -627,7 +627,7 @@ IDE_RC qcmReuseVerify::checkPasswordReuseCount( qcStatement * aStatement,
         {
             sReuseCount++;
 
-            /* ÆĞ½º¿öµå Àç»ç¿ëÀÌ °¡´ÉÇÑÁö ºñ±³ */
+            /* íŒ¨ìŠ¤ì›Œë“œ ì¬ì‚¬ìš©ì´ ê°€ëŠ¥í•œì§€ ë¹„êµ */
             if ( aPasswdReuseMax == sReuseCount )
             {
                 sIsPasswdReuse = ID_TRUE;
@@ -648,7 +648,7 @@ IDE_RC qcmReuseVerify::checkPasswordReuseCount( qcStatement * aStatement,
 
     if ( sIsPasswdReuse == ID_TRUE )
     {
-        /* ÆĞ½º¿öµå Àç»ç¿ë µÇ´Â ÆĞ½º¿öµåÀÇ PASSWORD_DATE °»½Å */
+        /* íŒ¨ìŠ¤ì›Œë“œ ì¬ì‚¬ìš© ë˜ëŠ” íŒ¨ìŠ¤ì›Œë“œì˜ PASSWORD_DATE ê°±ì‹  */
         IDE_TEST( qcmReuseVerify::updatePasswdDate( aStatement,
                                                     aUserPasswd,
                                                     aUserID )
@@ -656,7 +656,7 @@ IDE_RC qcmReuseVerify::checkPasswordReuseCount( qcStatement * aStatement,
     }
     else
     {
-        /* ÆĞ½º¿öµå REUSE COUNT º¯°æ È½¼ö°¡ ÀÛÀ» °æ¿ì */
+        /* íŒ¨ìŠ¤ì›Œë“œ REUSE COUNT ë³€ê²½ íšŸìˆ˜ê°€ ì‘ì„ ê²½ìš° */
         IDE_RAISE( ERR_REUSE_COUNT );
     }
 

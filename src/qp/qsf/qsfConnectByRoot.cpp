@@ -19,11 +19,11 @@
  * $Id: qsfConnectByRoot.cpp 82075 2018-01-17 06:39:52Z jina.kim $
  *
  * CONNECT_BY_ROOT ( ColumName )
- *  ÁöÁ¤µÈ ÄÃ·³ÀÇ Hierarchy¿¡¼­ ·¹º§ 1ÀÎ Root NodeÀÇ °ªÀ» º¸¿©ÁØ´Ù.
- *  Column_Name¿¡ Ç×»ó ¼ø¼ö ÄÃ·³¸¸ ¿Ã ¼ö ÀÖ´Ù.
- *  CONNECT BY ±¸¹®ÀÌ Ç×»ó ³ª¿Í¾ßÇÑ´Ù.
- *  sSFWGH->hierStack ÀÇ Pseudo Column¿¡ Hierarchy QueryÀÇ Stack
- *  Æ÷ÀÎÅÍ°¡ ÀÖ´Ù. ÀÌ¸¦ ÅëÇØ¼­ Root NodeÀÇ Row¸¦ ¾ò´Â´Ù.
+ *  ì§€ì •ëœ ì»¬ëŸ¼ì˜ Hierarchyì—ì„œ ë ˆë²¨ 1ì¸ Root Nodeì˜ ê°’ì„ ë³´ì—¬ì¤€ë‹¤.
+ *  Column_Nameì— í•­ìƒ ìˆœìˆ˜ ì»¬ëŸ¼ë§Œ ì˜¬ ìˆ˜ ìˆë‹¤.
+ *  CONNECT BY êµ¬ë¬¸ì´ í•­ìƒ ë‚˜ì™€ì•¼í•œë‹¤.
+ *  sSFWGH->hierStack ì˜ Pseudo Columnì— Hierarchy Queryì˜ Stack
+ *  í¬ì¸í„°ê°€ ìˆë‹¤. ì´ë¥¼ í†µí•´ì„œ Root Nodeì˜ Rowë¥¼ ì–»ëŠ”ë‹¤.
  ***********************************************************************/
 
 #include <qsf.h>
@@ -187,9 +187,9 @@ IDE_RC qsfConnectByRootCalculate( mtcNode     * aNode,
     sOrgColumns = aTemplate->rows[sStack->myRowID].columns;
     sOrgRow = aTemplate->rows[sStack->myRowID].row;
     
-    // PROJ-2362 memory temp ÀúÀå È¿À²¼º °³¼±
+    // PROJ-2362 memory temp ì €ì¥ íš¨ìœ¨ì„± ê°œì„ 
     /* PROJ-2641 Hierarchy Query Index
-     * Table¿¡ ´ëÇÑ Hierarchy query´Â baseMTRÀÌ NULL ÀÌ´Ù.
+     * Tableì— ëŒ€í•œ Hierarchy queryëŠ” baseMTRì´ NULL ì´ë‹¤.
      */
     if ( ( QCU_REDUCE_TEMP_MEMORY_ENABLE == 1 ) &&
          ( sStack->baseMTR != NULL ) )
@@ -213,7 +213,7 @@ IDE_RC qsfConnectByRootCalculate( mtcNode     * aNode,
         }
         
         /* BUG-40027
-         * temp typeÀÌ ÀÖÀ¸¹Ç·Î columnÁ¤º¸±îÁö º¯°æÇØ¾ß ÇÑ´Ù.
+         * temp typeì´ ìˆìœ¼ë¯€ë¡œ columnì •ë³´ê¹Œì§€ ë³€ê²½í•´ì•¼ í•œë‹¤.
          */
         aTemplate->rows[sStack->myRowID].columns =
             aTemplate->rows[sStack->baseRowID].columns;
@@ -224,16 +224,16 @@ IDE_RC qsfConnectByRootCalculate( mtcNode     * aNode,
     }
 
     /* BUG-39848
-     * arguments¿¡ ¿ÜºÎ ÂüÁ¶ÄÃ·³ÀÌ ÀÖ´Â subquery°¡ ÀÖ°í, storeµÇ´Â °æ¿ì
-     * connect by¸¦ referenceÇÏ°í ÀÖ±â¶§¹®¿¡ modify count¸¦ º¯°æÇØ¾ßÇÑ´Ù.
+     * argumentsì— ì™¸ë¶€ ì°¸ì¡°ì»¬ëŸ¼ì´ ìˆëŠ” subqueryê°€ ìˆê³ , storeë˜ëŠ” ê²½ìš°
+     * connect byë¥¼ referenceí•˜ê³  ìˆê¸°ë•Œë¬¸ì— modify countë¥¼ ë³€ê²½í•´ì•¼í•œë‹¤.
      */
     aTemplate->rows[sStack->myRowID].row = sItem->rowPtr;
     aTemplate->rows[sStack->myRowID].modify++;
 
     if ( sStack->myRowID != sStack->baseRowID )
     {
-        /* BUG-39611 baseTuple¿¡ row Pointer¸¦ ÀúÀåÈÄ arguments¿¡
-         * ´ëÇÑ calculate ¸¦ ¼öÇàÇÑ´Ù.
+        /* BUG-39611 baseTupleì— row Pointerë¥¼ ì €ì¥í›„ argumentsì—
+         * ëŒ€í•œ calculate ë¥¼ ìˆ˜í–‰í•œë‹¤.
          */
         aTemplate->rows[sStack->baseRowID].row = sItem->rowPtr;
         aTemplate->rows[sStack->baseRowID].modify++;

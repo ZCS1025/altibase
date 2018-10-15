@@ -33,12 +33,12 @@
 #include <idnEuckr.h>
 #include <idnSjis.h>
 #include <idnCp949.h>
-/* PROJ-2414 [±â´É¼º] GBK, CP936 character set Ãß°¡ */
+/* PROJ-2414 [ê¸°ëŠ¥ì„±] GBK, CP936 character set ì¶”ê°€ */
 #include <idnCp936.h>
-/* PROJ-2590 [±â´É¼º] CP932 database character set Áö¿ø */
+/* PROJ-2590 [ê¸°ëŠ¥ì„±] CP932 database character set ì§€ì› */
 #include <idnCp932.h>
 
-// mtcDef.hÀÇ MTL_MAX_PRECISION°ú µ¿ÀÏÇØ¾ß ÇÔ
+// mtcDef.hì˜ MTL_MAX_PRECISIONê³¼ ë™ì¼í•´ì•¼ í•¨
 #define IDN_CHAR_MAX_PRECISION 4
 
 static const UChar gNlsReplaceCharMap[IDN_NLS_REPLACE_UNICODE_MAX] =
@@ -1745,13 +1745,13 @@ static const UChar gNlsReplaceCharMap[IDN_NLS_REPLACE_UNICODE_MAX] =
 };
 
 //-----------------------------------------------------------------------
-// ¸ðµç Ä³¸¯ÅÍ ¼Â¿¡ ´ëÇØ¼­ N X N ÇüÅÂÀÇ 2Â÷¿ø ¹è¿­·Î ±¸¼ºµÇ¾î ÀÖ´Ù.
-// { ÇÊ¿äÇÑ º¯È¯ ÆÐ½º, 1¹øÂ° º¯È¯ ÇÔ¼öÆ÷ÀÎÅÍ, 2¹øÂ° º¯È¯ ÇÔ¼öÆ÷ÀÎÅÍ}
+// ëª¨ë“  ìºë¦­í„° ì…‹ì— ëŒ€í•´ì„œ N X N í˜•íƒœì˜ 2ì°¨ì› ë°°ì—´ë¡œ êµ¬ì„±ë˜ì–´ ìžˆë‹¤.
+// { í•„ìš”í•œ ë³€í™˜ íŒ¨ìŠ¤, 1ë²ˆì§¸ ë³€í™˜ í•¨ìˆ˜í¬ì¸í„°, 2ë²ˆì§¸ ë³€í™˜ í•¨ìˆ˜í¬ì¸í„°}
 // 
-// ¿ø ÆÐ½ºÀÎ °æ¿ì´Â Src Ä³¸¯ÅÍ ¼ÂÀÌ Dest Ä³¸¯ÅÍ ¼Â¿¡ ¿ÏÀüÈ÷ Æ÷ÇÔ °ü°è¿¡
-// ÀÖ¾î¼­ Æ¯º°ÇÑ º¯È¯ÀÌ ÇÊ¿ä¾ø´Â °æ¿ìÀÌ´Ù.
+// ì› íŒ¨ìŠ¤ì¸ ê²½ìš°ëŠ” Src ìºë¦­í„° ì…‹ì´ Dest ìºë¦­í„° ì…‹ì— ì™„ì „ížˆ í¬í•¨ ê´€ê³„ì—
+// ìžˆì–´ì„œ íŠ¹ë³„í•œ ë³€í™˜ì´ í•„ìš”ì—†ëŠ” ê²½ìš°ì´ë‹¤.
 //
-// Åõ ÆÐ½ºÀÎ °æ¿ì´Â Src=>UTF16=>DestÀÇ °úÁ¤À» °ÅÄ£´Ù.
+// íˆ¬ íŒ¨ìŠ¤ì¸ ê²½ìš°ëŠ” Src=>UTF16=>Destì˜ ê³¼ì •ì„ ê±°ì¹œë‹¤.
 //-----------------------------------------------------------------------
 static const 
 idnCharSetConvModule gConvModule[IDN_MAX_CHARSET_ID][IDN_MAX_CHARSET_ID] =
@@ -1762,11 +1762,11 @@ idnCharSetConvModule gConvModule[IDN_MAX_CHARSET_ID][IDN_MAX_CHARSET_ID] =
         /* MS949     */ { 1, copyAscii, NULL },
         /* EUCJP     */ { 1, copyAscii, NULL },
         /* SHIFTJIS  */ { 1, copyAscii, NULL },
-        /* PROJ-2590 [±â´É¼º] CP932 database character set Áö¿ø */
+        /* PROJ-2590 [ê¸°ëŠ¥ì„±] CP932 database character set ì§€ì› */
         /* MS932     */ { 1, copyAscii, NULL },
         /* BIG5      */ { 1, copyAscii, NULL },
         /* GB231280  */ { 1, copyAscii, NULL },
-        /* PROJ-2414 [±â´É¼º] GBK, CP936 character set Ãß°¡ */
+        /* PROJ-2414 [ê¸°ëŠ¥ì„±] GBK, CP936 character set ì¶”ê°€ */
         /* MS936     */ { 1, copyAscii, NULL },
         /* UTF8      */ { 1, copyAscii, NULL },
         /* UTF16     */ { 1, convertMbToWc4Ascii, NULL }
@@ -1777,11 +1777,11 @@ idnCharSetConvModule gConvModule[IDN_MAX_CHARSET_ID][IDN_MAX_CHARSET_ID] =
         /* MS949     */ { 1, copyEuckr, NULL },
         /* EUCJP     */ { 2, convertMbToWc4Euckr, convertWcToMb4Eucjp },
         /* SHIFTJIS  */ { 2, convertMbToWc4Euckr, convertWcToMb4Sjis },
-        /* PROJ-2590 [±â´É¼º] CP932 database character set Áö¿ø */
+        /* PROJ-2590 [ê¸°ëŠ¥ì„±] CP932 database character set ì§€ì› */
         /* MS932     */ { 2, convertMbToWc4Euckr, convertWcToMb4Cp932 },
         /* BIG5      */ { 2, convertMbToWc4Euckr, convertWcToMb4Big5 },
         /* GB231280  */ { 2, convertMbToWc4Euckr, convertWcToMb4Gb2312 },
-        /* PROJ-2414 [±â´É¼º] GBK, CP936 character set Ãß°¡ */
+        /* PROJ-2414 [ê¸°ëŠ¥ì„±] GBK, CP936 character set ì¶”ê°€ */
         /* MS936     */ { 2, convertMbToWc4Euckr, convertWcToMb4Cp936 },
         /* UTF8      */ { 2, convertMbToWc4Euckr, convertWcToMb4Utf8 },
         /* UTF16     */ { 1, convertMbToWc4Euckr, NULL }
@@ -1792,11 +1792,11 @@ idnCharSetConvModule gConvModule[IDN_MAX_CHARSET_ID][IDN_MAX_CHARSET_ID] =
         /* MS949     */ { 0, NULL, NULL },
         /* EUCJP     */ { 2, convertMbToWc4Cp949, convertWcToMb4Eucjp },
         /* SHIFTJIS  */ { 2, convertMbToWc4Cp949, convertWcToMb4Sjis },
-        /* PROJ-2590 [±â´É¼º] CP932 database character set Áö¿ø */
+        /* PROJ-2590 [ê¸°ëŠ¥ì„±] CP932 database character set ì§€ì› */
         /* MS932     */ { 2, convertMbToWc4Cp949, convertWcToMb4Cp932 },
         /* BIG5      */ { 2, convertMbToWc4Cp949, convertWcToMb4Big5 },
         /* GB231280  */ { 2, convertMbToWc4Cp949, convertWcToMb4Gb2312 },
-        /* PROJ-2414 [±â´É¼º] GBK, CP936 character set Ãß°¡ */
+        /* PROJ-2414 [ê¸°ëŠ¥ì„±] GBK, CP936 character set ì¶”ê°€ */
         /* MS936     */ { 2, convertMbToWc4Cp949, convertWcToMb4Cp936 },
         /* UTF8      */ { 2, convertMbToWc4Cp949, convertWcToMb4Utf8 },
         /* UTF16     */ { 1, convertMbToWc4Cp949, NULL  }
@@ -1807,11 +1807,11 @@ idnCharSetConvModule gConvModule[IDN_MAX_CHARSET_ID][IDN_MAX_CHARSET_ID] =
         /* MS949     */ { 2, convertMbToWc4Eucjp, convertWcToMb4Cp949 },
         /* EUCJP     */ { 0, NULL, NULL },
         /* SHIFTJIS  */ { 2, convertMbToWc4Eucjp, convertWcToMb4Sjis },
-        /* PROJ-2590 [±â´É¼º] CP932 database character set Áö¿ø */
+        /* PROJ-2590 [ê¸°ëŠ¥ì„±] CP932 database character set ì§€ì› */
         /* MS932     */ { 2, convertMbToWc4Eucjp, convertWcToMb4Cp932 },
         /* BIG5      */ { 2, convertMbToWc4Eucjp, convertWcToMb4Big5 },
         /* GB231280  */ { 2, convertMbToWc4Eucjp, convertWcToMb4Gb2312 },
-        /* PROJ-2414 [±â´É¼º] GBK, CP936 character set Ãß°¡ */
+        /* PROJ-2414 [ê¸°ëŠ¥ì„±] GBK, CP936 character set ì¶”ê°€ */
         /* MS936     */ { 2, convertMbToWc4Eucjp, convertWcToMb4Cp936 },
         /* UTF8      */ { 2, convertMbToWc4Eucjp, convertWcToMb4Utf8 },
         /* UTF16     */ { 1, convertMbToWc4Eucjp, NULL }
@@ -1822,11 +1822,11 @@ idnCharSetConvModule gConvModule[IDN_MAX_CHARSET_ID][IDN_MAX_CHARSET_ID] =
         /* MS949     */ { 2, convertMbToWc4Sjis, convertWcToMb4Cp949 },
         /* EUCJP     */ { 2, convertMbToWc4Sjis, convertWcToMb4Eucjp },
         /* SHIFTJIS  */ { 0, NULL, NULL },
-        /* PROJ-2590 [±â´É¼º] CP932 database character set Áö¿ø */
+        /* PROJ-2590 [ê¸°ëŠ¥ì„±] CP932 database character set ì§€ì› */
         /* MS932     */ { 2, convertMbToWc4Sjis, convertWcToMb4Cp932 },
         /* BIG5      */ { 2, convertMbToWc4Sjis, convertWcToMb4Big5 },
         /* GB231280  */ { 2, convertMbToWc4Sjis, convertWcToMb4Gb2312 },
-        /* PROJ-2414 [±â´É¼º] GBK, CP936 character set Ãß°¡ */
+        /* PROJ-2414 [ê¸°ëŠ¥ì„±] GBK, CP936 character set ì¶”ê°€ */
         /* MS936     */ { 2, convertMbToWc4Sjis, convertWcToMb4Cp936 },
         /* UTF8      */ { 2, convertMbToWc4Sjis, convertWcToMb4Utf8 },
         /* UTF16     */ { 1, convertMbToWc4Sjis, NULL }
@@ -1837,11 +1837,11 @@ idnCharSetConvModule gConvModule[IDN_MAX_CHARSET_ID][IDN_MAX_CHARSET_ID] =
         /* MS949     */ { 2, convertMbToWc4Cp932, convertWcToMb4Cp949 },
         /* EUCJP     */ { 2, convertMbToWc4Cp932, convertWcToMb4Eucjp },
         /* SHIFTJIS  */ { 2, convertMbToWc4Cp932, convertWcToMb4Sjis },
-        /* PROJ-2590 [±â´É¼º] CP932 database character set Áö¿ø */
+        /* PROJ-2590 [ê¸°ëŠ¥ì„±] CP932 database character set ì§€ì› */
         /* MS932     */ { 0, NULL, NULL },
         /* BIG5      */ { 2, convertMbToWc4Cp932, convertWcToMb4Big5 },
         /* GB231280  */ { 2, convertMbToWc4Cp932, convertWcToMb4Gb2312 },
-        /* PROJ-2414 [±â´É¼º] GBK, CP936 character set Ãß°¡ */
+        /* PROJ-2414 [ê¸°ëŠ¥ì„±] GBK, CP936 character set ì¶”ê°€ */
         /* MS936     */ { 2, convertMbToWc4Cp932, convertWcToMb4Cp936 },
         /* UTF8      */ { 2, convertMbToWc4Cp932, convertWcToMb4Utf8 },
         /* UTF16     */ { 1, convertMbToWc4Cp932, NULL }
@@ -1852,11 +1852,11 @@ idnCharSetConvModule gConvModule[IDN_MAX_CHARSET_ID][IDN_MAX_CHARSET_ID] =
         /* MS949     */ { 2, convertMbToWc4Big5, convertWcToMb4Cp949 },
         /* EUCJP     */ { 2, convertMbToWc4Big5, convertWcToMb4Eucjp },
         /* SHIFTJIS  */ { 2, convertMbToWc4Big5, convertWcToMb4Sjis },
-        /* PROJ-2590 [±â´É¼º] CP932 database character set Áö¿ø */
+        /* PROJ-2590 [ê¸°ëŠ¥ì„±] CP932 database character set ì§€ì› */
         /* MS932     */ { 2, convertMbToWc4Big5, convertWcToMb4Cp932 },
         /* BIG5      */ { 0, NULL, NULL },
         /* GB231280  */ { 2, convertMbToWc4Big5, convertWcToMb4Gb2312 },
-        /* PROJ-2414 [±â´É¼º] GBK, CP936 character set Ãß°¡ */
+        /* PROJ-2414 [ê¸°ëŠ¥ì„±] GBK, CP936 character set ì¶”ê°€ */
         /* MS936     */ { 2, convertMbToWc4Big5, convertWcToMb4Cp936 },
         /* UTF8      */ { 2, convertMbToWc4Big5, convertWcToMb4Utf8 },
         /* UTF16     */ { 1, convertMbToWc4Big5, NULL }
@@ -1867,23 +1867,23 @@ idnCharSetConvModule gConvModule[IDN_MAX_CHARSET_ID][IDN_MAX_CHARSET_ID] =
         /* MS949     */ { 2, convertMbToWc4Gb2312, convertWcToMb4Cp949 },
         /* EUCJP     */ { 2, convertMbToWc4Gb2312, convertWcToMb4Eucjp },
         /* SHIFTJIS  */ { 2, convertMbToWc4Gb2312, convertWcToMb4Sjis },
-        /* PROJ-2590 [±â´É¼º] CP932 database character set Áö¿ø */
+        /* PROJ-2590 [ê¸°ëŠ¥ì„±] CP932 database character set ì§€ì› */
         /* MS932     */ { 2, convertMbToWc4Gb2312, convertWcToMb4Cp932 },
         /* BIG5      */ { 2, convertMbToWc4Gb2312, convertWcToMb4Big5 },
         /* GB231280  */ { 0, NULL, NULL },
-        /* PROJ-2414 [±â´É¼º] GBK, CP936 character set Ãß°¡ */
+        /* PROJ-2414 [ê¸°ëŠ¥ì„±] GBK, CP936 character set ì¶”ê°€ */
         /* MS936     */ { 1, copyGb2312, NULL },
         /* UTF8      */ { 2, convertMbToWc4Gb2312, convertWcToMb4Utf8},
         /* UTF16     */ { 1, convertMbToWc4Gb2312, NULL }
     },
-    /* PROJ-2414 [±â´É¼º] GBK, CP936 character set Ãß°¡ */
+    /* PROJ-2414 [ê¸°ëŠ¥ì„±] GBK, CP936 character set ì¶”ê°€ */
     { /* MS936 to    */
         /* ASCII     */ { 2, convertMbToWc4Cp936, convertWcToMb4Ascii },
         /* KSC5601   */ { 2, convertMbToWc4Cp936, convertWcToMb4Euckr },
         /* MS949     */ { 2, convertMbToWc4Cp936, convertWcToMb4Cp949 },
         /* EUCJP     */ { 2, convertMbToWc4Cp936, convertWcToMb4Eucjp },
         /* SHIFTJIS  */ { 2, convertMbToWc4Cp936, convertWcToMb4Sjis },
-        /* PROJ-2590 [±â´É¼º] CP932 database character set Áö¿ø */
+        /* PROJ-2590 [ê¸°ëŠ¥ì„±] CP932 database character set ì§€ì› */
         /* MS932     */ { 2, convertMbToWc4Cp936, convertWcToMb4Cp932 },
         /* BIG5      */ { 2, convertMbToWc4Cp936, convertWcToMb4Big5 },
         /* GB231280  */ { 2, convertMbToWc4Cp936, convertWcToMb4Gb2312 },
@@ -1897,11 +1897,11 @@ idnCharSetConvModule gConvModule[IDN_MAX_CHARSET_ID][IDN_MAX_CHARSET_ID] =
         /* MS949     */ { 2, convertMbToWc4Utf8, convertWcToMb4Cp949 },
         /* EUCJP     */ { 2, convertMbToWc4Utf8, convertWcToMb4Eucjp },
         /* SHIFTJIS  */ { 2, convertMbToWc4Utf8, convertWcToMb4Sjis },
-        /* PROJ-2590 [±â´É¼º] CP932 database character set Áö¿ø */
+        /* PROJ-2590 [ê¸°ëŠ¥ì„±] CP932 database character set ì§€ì› */
         /* MS932     */ { 2, convertMbToWc4Utf8, convertWcToMb4Cp932 },
         /* BIG5      */ { 2, convertMbToWc4Utf8, convertWcToMb4Big5 },
         /* GB231280  */ { 2, convertMbToWc4Utf8, convertWcToMb4Gb2312 },
-        /* PROJ-2414 [±â´É¼º] GBK, CP936 character set Ãß°¡ */
+        /* PROJ-2414 [ê¸°ëŠ¥ì„±] GBK, CP936 character set ì¶”ê°€ */
         /* MS936     */ { 2, convertMbToWc4Utf8, convertWcToMb4Cp936 },
         /* UTF8      */ { 0, NULL, NULL },
         /* UTF16     */ { 1, convertMbToWc4Utf8, NULL }
@@ -1912,11 +1912,11 @@ idnCharSetConvModule gConvModule[IDN_MAX_CHARSET_ID][IDN_MAX_CHARSET_ID] =
         /* MS949     */ { 1, convertWcToMb4Cp949, NULL },
         /* EUCJP     */ { 1, convertWcToMb4Eucjp, NULL },
         /* SHIFTJIS  */ { 1, convertWcToMb4Sjis, NULL },
-        /* PROJ-2590 [±â´É¼º] CP932 database character set Áö¿ø */
+        /* PROJ-2590 [ê¸°ëŠ¥ì„±] CP932 database character set ì§€ì› */
         /* MS932     */ { 1, convertWcToMb4Cp932, NULL },
         /* BIG5      */ { 1, convertWcToMb4Big5, NULL },
         /* GB231280  */ { 1, convertWcToMb4Gb2312, NULL },
-        /* PROJ-2414 [±â´É¼º] GBK, CP936 character set Ãß°¡ */
+        /* PROJ-2414 [ê¸°ëŠ¥ì„±] GBK, CP936 character set ì¶”ê°€ */
         /* MS936     */ { 1, convertWcToMb4Cp936, NULL },
         /* UTF8      */ { 1, convertWcToMb4Utf8, NULL },
         /* UTF16     */ { 0, NULL, NULL }
@@ -1935,33 +1935,33 @@ convertCharSet( idnCharSetList   aSrcCharSet,
 /***********************************************************************
  *
  * Description :
- *      Ä³¸¯ÅÍ ¼Â º¯È¯À» ÇÏ´Â ¸ÞÀÎ ÇÔ¼ö
+ *      ìºë¦­í„° ì…‹ ë³€í™˜ì„ í•˜ëŠ” ë©”ì¸ í•¨ìˆ˜
  *
  * Implementation :
  *
- *      1. º¯È¯
- *          1-1. convPass¸¦ º¸°í 1, 2 pass¿¡ ¸Â´Â ÇÔ¼ö¸¦ È£ÃâÇØ¼­ º¯È¯ÇÑ´Ù.
- *      2. ¿¡·¯ Ã³¸®
- *          MB=>WC ¿¡¼­ ¹ß»ýÇÏ´Â ¿¡·¯(RET_ILSEQ, RET_TOOFEW)
- *          WC=>MB ¿¡¼­ ¹ß»ýÇÏ´Â ¿¡·¯(RET_ILUNI, RET_TOOSMALL)
- *          TASK-3420¿¡¼­ Á¤Ã¥ÀÌ RET_TOOSMALL¿¡¼­¸¸ ¿¡·¯³ªµµ·Ï ¼öÁ¤ÇÏ¿´´Ù.
- *          NCHAR_CONV_EXCPÃ³¸®¿¡ ´ëÇÑ ºÎºÐÀÌ dataloss°¡ ³ª´Â °æ¿ì ¹ß»ýÇÒ ¼ö ÀÖ´Ù.
- *          2-1. RET_TOOSMALL Ã³¸®
- *              ABORT ¿¡·¯¸¦ ¿Ã¸°´Ù.
- *          2-2.RET_ILSEQ : ´ëÃ¼¹®ÀÚ ?·Î º¯È¯ÇÑ´Ù.
- *              RET_TOOFEW : ¾Æ¹«·± º¯È¯À» ÇÏÁö ¾Ê´Â´Ù.
- *              RET_ILUNIÀÇ Ã³¸®
- *              ´ëÃ¼ ¹®ÀÚ¸¦ Ã³¸®ÇÏ´Â ºÎºÐÀÌ ÇÊ¿äÇÏ´Ù.
+ *      1. ë³€í™˜
+ *          1-1. convPassë¥¼ ë³´ê³  1, 2 passì— ë§žëŠ” í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•´ì„œ ë³€í™˜í•œë‹¤.
+ *      2. ì—ëŸ¬ ì²˜ë¦¬
+ *          MB=>WC ì—ì„œ ë°œìƒí•˜ëŠ” ì—ëŸ¬(RET_ILSEQ, RET_TOOFEW)
+ *          WC=>MB ì—ì„œ ë°œìƒí•˜ëŠ” ì—ëŸ¬(RET_ILUNI, RET_TOOSMALL)
+ *          TASK-3420ì—ì„œ ì •ì±…ì´ RET_TOOSMALLì—ì„œë§Œ ì—ëŸ¬ë‚˜ë„ë¡ ìˆ˜ì •í•˜ì˜€ë‹¤.
+ *          NCHAR_CONV_EXCPì²˜ë¦¬ì— ëŒ€í•œ ë¶€ë¶„ì´ datalossê°€ ë‚˜ëŠ” ê²½ìš° ë°œìƒí•  ìˆ˜ ìžˆë‹¤.
+ *          2-1. RET_TOOSMALL ì²˜ë¦¬
+ *              ABORT ì—ëŸ¬ë¥¼ ì˜¬ë¦°ë‹¤.
+ *          2-2.RET_ILSEQ : ëŒ€ì²´ë¬¸ìž ?ë¡œ ë³€í™˜í•œë‹¤.
+ *              RET_TOOFEW : ì•„ë¬´ëŸ° ë³€í™˜ì„ í•˜ì§€ ì•ŠëŠ”ë‹¤.
+ *              RET_ILUNIì˜ ì²˜ë¦¬
+ *              ëŒ€ì²´ ë¬¸ìžë¥¼ ì²˜ë¦¬í•˜ëŠ” ë¶€ë¶„ì´ í•„ìš”í•˜ë‹¤.
  *
- *              NLS_NCHAR_CONV_EXCP = 1 => ¿¡·¯ Ã³¸®
- *              1) MTV ¸ðµâ¿¡¼­ È£ÃâÇÑ °æ¿ì¿¡¸¸ ´ëÃ¼ ¹®ÀÚ¸¦ Ã³¸®ÇÑ´Ù.
- *              2) DEST CHARSETÀÌ ASCIIÀÎ °æ¿ì¿¡¸¸ ´ëÃ¼ ¹®ÀÚ¸¦ Ã³¸®ÇÑ´Ù.
- *              3) ´ëÃ¼ ¹®ÀÚ º¯È¯Ç¥ Àû¿ë ¹üÀ§(U+212B)¿¡ ¼ÓÇÒ °æ¿ì¿¡¸¸ Ã³¸®
- *              4) Ã³¸® °á°ú°¡ 0x00ÀÎ °æ¿ì
- *                 '?'·Î ±³Ã¼ 
- *              5) Ã³¸® °á°ú°¡ 0x00ÀÌ ¾Æ´Ñ °æ¿ì
- *                 ´ëÃ¼ ¹®ÀÚ·Î Ã³¸®
- *              6) ±× ¿ÜÀÇ °æ¿ì '?'·Î Ã³¸®
+ *              NLS_NCHAR_CONV_EXCP = 1 => ì—ëŸ¬ ì²˜ë¦¬
+ *              1) MTV ëª¨ë“ˆì—ì„œ í˜¸ì¶œí•œ ê²½ìš°ì—ë§Œ ëŒ€ì²´ ë¬¸ìžë¥¼ ì²˜ë¦¬í•œë‹¤.
+ *              2) DEST CHARSETì´ ASCIIì¸ ê²½ìš°ì—ë§Œ ëŒ€ì²´ ë¬¸ìžë¥¼ ì²˜ë¦¬í•œë‹¤.
+ *              3) ëŒ€ì²´ ë¬¸ìž ë³€í™˜í‘œ ì ìš© ë²”ìœ„(U+212B)ì— ì†í•  ê²½ìš°ì—ë§Œ ì²˜ë¦¬
+ *              4) ì²˜ë¦¬ ê²°ê³¼ê°€ 0x00ì¸ ê²½ìš°
+ *                 '?'ë¡œ êµì²´ 
+ *              5) ì²˜ë¦¬ ê²°ê³¼ê°€ 0x00ì´ ì•„ë‹Œ ê²½ìš°
+ *                 ëŒ€ì²´ ë¬¸ìžë¡œ ì²˜ë¦¬
+ *              6) ê·¸ ì™¸ì˜ ê²½ìš° '?'ë¡œ ì²˜ë¦¬
  *
  ***********************************************************************/
 
@@ -1974,13 +1974,13 @@ convertCharSet( idnCharSetList   aSrcCharSet,
     sConv = gConvModule[aSrcCharSet][aDestCharSet];
 
     // ---------------------------------
-    // º¯È¯
+    // ë³€í™˜
     // ---------------------------------
 
     if( sConv.convPass == 0 )
     {
         // Nothing to do
-        // ÀÌ ÇÔ¼ö ÀÚÃ¼°¡ È£ÃâµÇ¸é ¾ÈµÊ
+        // ì´ í•¨ìˆ˜ ìžì²´ê°€ í˜¸ì¶œë˜ë©´ ì•ˆë¨
         // BUGBUG
         IDE_ASSERT(0);
     }
@@ -1995,7 +1995,7 @@ convertCharSet( idnCharSetList   aSrcCharSet,
         if( sRet < 0 )
         {
             // Nothing to do
-            // ¿¡·¯Ã³¸® µÈ´Ù.
+            // ì—ëŸ¬ì²˜ë¦¬ ëœë‹¤.
         }
         else
         {
@@ -2009,14 +2009,14 @@ convertCharSet( idnCharSetList   aSrcCharSet,
     }
 
     // ---------------------------------
-    // ¿¡·¯ Ã³¸®
+    // ì—ëŸ¬ ì²˜ë¦¬
     // ---------------------------------
 
     switch( sRet )
     {
-        // MB => WC ½Ã ¿¡·¯
+        // MB => WC ì‹œ ì—ëŸ¬
         case RET_TOOFEW:
-        // MB => WC ½Ã ¿¡·¯
+        // MB => WC ì‹œ ì—ëŸ¬
         case RET_ILSEQ:
 
             IDE_TEST_RAISE( aNlsNcharConvExcp == 1,
@@ -2024,8 +2024,8 @@ convertCharSet( idnCharSetList   aSrcCharSet,
             
             if( aDestCharSet == IDN_UTF16_ID )
             {
-                //0xfffd´Â unicodeÀÇ ´ëÃ¼¹®ÀÚ '?'·Î »ç¿ëµÊ.
-                //³ªÁß¿¡ UTF16LE°¡ Ãß°¡µÇ¸é ¹Ù²ð ¼ö ÀÖÀ½.
+                //0xfffdëŠ” unicodeì˜ ëŒ€ì²´ë¬¸ìž '?'ë¡œ ì‚¬ìš©ë¨.
+                //ë‚˜ì¤‘ì— UTF16LEê°€ ì¶”ê°€ë˜ë©´ ë°”ë€” ìˆ˜ ìžˆìŒ.
                 *(UChar *)aDest = 0xff;
                 *((UChar *)aDest+1) = 0xfd;
                 *aDestRemain -= ID_SIZEOF(UShort);
@@ -2039,8 +2039,8 @@ convertCharSet( idnCharSetList   aSrcCharSet,
             }
             
             break;
-        // WC => MB ·Î º¯È¯ ½Ã, º¯È¯ÇÒ ¼ö ¾ø´Â °æ¿ì ´ëÃ¼ ¹®ÀÚ ¶Ç´Â '?'·Î
-        // ³ªÅ¸³½´Ù.
+        // WC => MB ë¡œ ë³€í™˜ ì‹œ, ë³€í™˜í•  ìˆ˜ ì—†ëŠ” ê²½ìš° ëŒ€ì²´ ë¬¸ìž ë˜ëŠ” '?'ë¡œ
+        // ë‚˜íƒ€ë‚¸ë‹¤.
         case RET_ILUNI:
             
             IDE_TEST_RAISE( aNlsNcharConvExcp == 1,
@@ -2060,44 +2060,44 @@ convertCharSet( idnCharSetList   aSrcCharSet,
             }
 
             //-----------------------------------------
-            // ´ëÃ¼ ¹®ÀÚ Ã³¸®
+            // ëŒ€ì²´ ë¬¸ìž ì²˜ë¦¬
             //-----------------------------------------
 
-            // DestCharSetÀÌ ASCIIÀÌ°í,
-            // º¯È¯Ç¥ Àû¿ë ¹üÀ§¾È¿¡ ÀÖ´Â ¹®ÀÚÀÇ °æ¿ì¿¡¸¸ ´ëÃ¼ ¹®ÀÚÇ¥¸¦ 
-            // Àû¿ëÇÒ ¼ö ÀÖ´Ù.  (U+xxxx < U+212B)
+            // DestCharSetì´ ASCIIì´ê³ ,
+            // ë³€í™˜í‘œ ì ìš© ë²”ìœ„ì•ˆì— ìžˆëŠ” ë¬¸ìžì˜ ê²½ìš°ì—ë§Œ ëŒ€ì²´ ë¬¸ìží‘œë¥¼ 
+            // ì ìš©í•  ìˆ˜ ìžˆë‹¤.  (U+xxxx < U+212B)
             if( (aDestCharSet == IDN_ASCII_ID) &&
                 (sSource < IDN_NLS_REPLACE_UNICODE_MAX) )
             {
-                // ´ëÃ¼ ¹®ÀÚ¸¦ Ã£´Â´Ù.
+                // ëŒ€ì²´ ë¬¸ìžë¥¼ ì°¾ëŠ”ë‹¤.
                 sReplaceChar = gNlsReplaceCharMap[sSource];
 
                 if( sReplaceChar == 0x00 )
                 {
-                    // º¯È¯ÇÒ ¼ö ¾ø´Â °æ¿ì '?'·Î ³ªÅ¸³½´Ù.
+                    // ë³€í™˜í•  ìˆ˜ ì—†ëŠ” ê²½ìš° '?'ë¡œ ë‚˜íƒ€ë‚¸ë‹¤.
                     *(UChar *)aDest = 
                         IDN_ASCII_DEFAULT_REPLACE_CHARACTER;
                 }
                 else
                 {
-                    // ´ëÃ¼ ¹®ÀÚ·Î ³ªÅ¸³¿
+                    // ëŒ€ì²´ ë¬¸ìžë¡œ ë‚˜íƒ€ëƒ„
                     *(UChar *)aDest = sReplaceChar;
                 }
             }
             else
             {
-                // º¯È¯ÇÒ ¼ö ¾ø´Â °æ¿ì '?'·Î ³ªÅ¸³½´Ù.
+                // ë³€í™˜í•  ìˆ˜ ì—†ëŠ” ê²½ìš° '?'ë¡œ ë‚˜íƒ€ë‚¸ë‹¤.
                 *(UChar *)aDest = IDN_ASCII_DEFAULT_REPLACE_CHARACTER;
             }
 
             *aDestRemain -= ID_SIZEOF(UChar);
             break;
-        // WC => MB ½Ã ¿¡·¯
+        // WC => MB ì‹œ ì—ëŸ¬
         case RET_TOOSMALL:
             IDE_RAISE( ERR_BUFFER_SIZE_TOO_SMALL );
             break;
         default:
-            IDE_ASSERT( sRet >= 0 ); // -1~-4ÀÇ °ªÀº case¿¡¼­ °É·¯Áö¸ç, -4¹Ì¸¸ÀÇ °ªÀÌ ¿Ã ¼ö ¾ø´Ù.
+            IDE_ASSERT( sRet >= 0 ); // -1~-4ì˜ ê°’ì€ caseì—ì„œ ê±¸ëŸ¬ì§€ë©°, -4ë¯¸ë§Œì˜ ê°’ì´ ì˜¬ ìˆ˜ ì—†ë‹¤.
             *aDestRemain -= sRet;
             break;
     }

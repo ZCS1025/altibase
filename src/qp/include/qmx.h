@@ -23,7 +23,7 @@
 #define _Q_QMX_H_ 1
 
 // PROJ-1350
-// Æ¯Á¤ ºñÀ²ÀÇ Data º¯°æÀÌ ¹ß»ıÇÏ¸é ÀÌ¹Ì »ı¼ºµÈ Plan Tree¸¦ Àç±¸¼ºÇÔ.
+// íŠ¹ì • ë¹„ìœ¨ì˜ Data ë³€ê²½ì´ ë°œìƒí•˜ë©´ ì´ë¯¸ ìƒì„±ëœ Plan Treeë¥¼ ì¬êµ¬ì„±í•¨.
 #define  QMC_AUTO_REBUILD_PLAN_PLUS_RATIO                      (0.3)
 #define  QMC_AUTO_REBUILD_PLAN_MINUS_RATIO                    (-0.3)
 
@@ -54,7 +54,7 @@ typedef struct qmxLobInfo
     idBool                outFirst;
     idBool                outCallback;
     /* BUG-30351
-     * insert into select¿¡¼­ °¢ Row Insert ÈÄ ÇØ´ç Lob Cursor¸¦ ¹Ù·Î ÇØÁ¦ÇßÀ¸¸é ÇÕ´Ï´Ù.
+     * insert into selectì—ì„œ ê° Row Insert í›„ í•´ë‹¹ Lob Cursorë¥¼ ë°”ë¡œ í•´ì œí–ˆìœ¼ë©´ í•©ë‹ˆë‹¤.
      */
     idBool                mImmediateClose;
 
@@ -163,7 +163,7 @@ public:
                                        smiValue    * aValues,
                                        void        * aRow );
 
-    /* PROJ-2464 hybrid partitioned table Áö¿ø */
+    /* PROJ-2464 hybrid partitioned table ì§€ì› */
     static IDE_RC makeSmiValueWithSmiValue( qcmTableInfo * aSrcTableInfo,
                                             qcmTableInfo * aDstTableInfo,
                                             qcmColumn    * aQcmColumn,
@@ -171,7 +171,7 @@ public:
                                             smiValue     * aSrcValueArr,
                                             smiValue     * aDstValueArr );
 
-    /* BUG-45680 insert ¼öÇà½Ã not null column¿¡ ´ëÇÑ ¿¡·¯¸Ş½ÃÁö Á¤º¸¿¡ column Á¤º¸ Ãâ·Â. */
+    /* BUG-45680 insert ìˆ˜í–‰ì‹œ not null columnì— ëŒ€í•œ ì—ëŸ¬ë©”ì‹œì§€ ì •ë³´ì— column ì •ë³´ ì¶œë ¥. */
     static IDE_RC checkNotNullColumnForInsert( qcmColumn  * aColumn,
                                                smiValue   * aInsertedRow,
                                                qmxLobInfo * aLobInfo,
@@ -214,7 +214,7 @@ public:
                                         UShort        aBindId );
 
     /* BUG-30351
-     * insert into select¿¡¼­ °¢ Row Insert ÈÄ ÇØ´ç Lob Cursor¸¦ ¹Ù·Î ÇØÁ¦ÇßÀ¸¸é ÇÕ´Ï´Ù.
+     * insert into selectì—ì„œ ê° Row Insert í›„ í•´ë‹¹ Lob Cursorë¥¼ ë°”ë¡œ í•´ì œí–ˆìœ¼ë©´ í•©ë‹ˆë‹¤.
      */
     static void setImmediateCloseLobInfo( qmxLobInfo  * aLobInfo,
                                           idBool        aImmediateClose );
@@ -241,8 +241,8 @@ public:
     static idBool existLobInfo( qmxLobInfo * aLobInfo,
                                 UInt         aColumnID );
     
-    // PROJ-1350 Plan Tree ÀÚµ¿ Àç±¸¼º
-    // Plan Tree°¡ À¯È¿ÇÑÁö¸¦ °Ë»ç
+    // PROJ-1350 Plan Tree ìë™ ì¬êµ¬ì„±
+    // Plan Treeê°€ ìœ íš¨í•œì§€ë¥¼ ê²€ì‚¬
     static IDE_RC checkPlanTreeOld( qcStatement * aStatement,
                                     idBool      * aIsOld );
 
@@ -267,7 +267,7 @@ public:
         qmcInsertCursor  * aInsertCursorMgr,
         scGRID             aInsertGRID,
         qmmReturnInto    * aReturnInto,
-        qdConstraintSpec * aCheckConstrList,    /* PROJ-1107 Check Constraint Áö¿ø */
+        qdConstraintSpec * aCheckConstrList,    /* PROJ-1107 Check Constraint ì§€ì› */
         vSLong             aRowCnt,
         idBool             aNeedNewRow );
 
@@ -283,19 +283,19 @@ public:
     static  IDE_RC normalReturnToInto( qcTemplate      * aTemplate,
                                        qmmReturnInto   * aReturnInto );
 
-    /* PROJ-2464 hybrid partitioned table Áö¿ø */
+    /* PROJ-2464 hybrid partitioned table ì§€ì› */
     static void copyMtcTupleForPartitionedTable( mtcTuple * aDstTuple,
                                                  mtcTuple * aSrcTuple );
 
-    /* PROJ-2464 hybrid partitioned table Áö¿ø */
+    /* PROJ-2464 hybrid partitioned table ì§€ì› */
     static void copyMtcTupleForPartitionDML( mtcTuple * aDstTuple,
                                              mtcTuple * aSrcTuple );
 
-    /* PROJ-2464 hybrid partitioned table Áö¿ø */
+    /* PROJ-2464 hybrid partitioned table ì§€ì› */
     static void adjustMtcTupleForPartitionDML( mtcTuple * aDstTuple,
                                                mtcTuple * aSrcTuple );
 
-    /* PROJ-2464 hybrid partitioned table Áö¿ø */
+    /* PROJ-2464 hybrid partitioned table ì§€ì› */
     static UInt getMaxRowOffset( mtcTemplate * aTemplate,
                                  qmsTableRef * aTableRef );
 
@@ -317,8 +317,8 @@ public:
 
 private:
 
-    // delete on cascade ¿É¼Ç¿¡ ÀÇÇØ »èÁ¦µÇ´Â child table¿¡ ´ëÇÑ
-    // statement trigger ¼öÇà.
+    // delete on cascade ì˜µì…˜ì— ì˜í•´ ì‚­ì œë˜ëŠ” child tableì— ëŒ€í•œ
+    // statement trigger ìˆ˜í–‰.
     static IDE_RC fireStatementTriggerOnDeleteCascade(
         qcStatement         * aStatement,
         qmsTableRef         * aParentTableRef,  // BUG-28049

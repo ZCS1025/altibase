@@ -100,7 +100,7 @@ public abstract class LobLocatorColumn extends AbstractColumn
 
     protected boolean isNullValueSet()
     {
-        // BUG-37418 ±æÀÌ°¡ 0ÀÏ¶§µµ null·Î º¸¾Æ¾ßÇÑ´Ù.
+        // BUG-37418 ê¸¸ì´ê°€ 0ì¼ë•Œë„ nullë¡œ ë³´ì•„ì•¼í•œë‹¤.
         return isNullLocator()
             || (NULL_LENGTH.compareTo(mLength) == 0);
     }

@@ -70,12 +70,12 @@ IDE_RC cmbPoolAlloc(cmbPool **aPool, UChar aImpl, UShort aBlockSize, UInt /*aBlo
 
     
     /*
-     * ÆÄ¶ó¹ÌÅÍ ¹üÀ§ °Ë»ç
+     * íŒŒë¼ë¯¸í„° ë²”ìœ„ ê²€ì‚¬
      */
     IDE_ASSERT(aImpl < CMB_POOL_IMPL_MAX);
 
     /*
-     * AllocInfo È¹µæ
+     * AllocInfo íšë“
      */
     sAllocInfo = &gCmbPoolAllocInfo[aImpl];
 
@@ -85,7 +85,7 @@ IDE_RC cmbPoolAlloc(cmbPool **aPool, UChar aImpl, UShort aBlockSize, UInt /*aBlo
     IDU_FIT_POINT_RAISE( "cmbPool::cmbPoolAlloc::malloc::Pool",
                           InsufficientMemory );
     /*
-     * ¸Þ¸ð¸® ÇÒ´ç
+     * ë©”ëª¨ë¦¬ í• ë‹¹
      */
     IDE_TEST_RAISE(iduMemMgr::malloc(IDU_MEM_CMB,
                                      sAllocInfo->mSize(),
@@ -93,17 +93,17 @@ IDE_RC cmbPoolAlloc(cmbPool **aPool, UChar aImpl, UShort aBlockSize, UInt /*aBlo
                                      IDU_MEM_IMMEDIATE) != IDE_SUCCESS, InsufficientMemory );
 
     /*
-     * ¸â¹ö ÃÊ±âÈ­
+     * ë©¤ë²„ ì´ˆê¸°í™”
      */
     (*aPool)->mBlockSize     = aBlockSize;
 
     /*
-     * ÇÔ¼ö Æ÷ÀÎÅÍ ¸ÅÇÎ
+     * í•¨ìˆ˜ í¬ì¸í„° ë§¤í•‘
      */
     IDE_TEST_RAISE(sAllocInfo->mMap(*aPool) != IDE_SUCCESS, InitializeFail);
 
     /*
-     * ÃÊ±âÈ­
+     * ì´ˆê¸°í™”
      */
     IDE_TEST_RAISE((*aPool)->mOp->mInitialize(*aPool) != IDE_SUCCESS, InitializeFail);
 
@@ -125,12 +125,12 @@ IDE_RC cmbPoolAlloc(cmbPool **aPool, UChar aImpl, UShort aBlockSize, UInt /*aBlo
 IDE_RC cmbPoolFree(cmbPool *aPool)
 {
     /*
-     * Á¤¸®
+     * ì •ë¦¬
      */
     IDE_TEST(aPool->mOp->mFinalize(aPool) != IDE_SUCCESS);
 
     /*
-     * ¸Þ¸ð¸® ÇØÁ¦
+     * ë©”ëª¨ë¦¬ í•´ì œ
      */
     IDE_TEST(iduMemMgr::free(aPool) != IDE_SUCCESS);
 
@@ -142,7 +142,7 @@ IDE_RC cmbPoolFree(cmbPool *aPool)
 IDE_RC cmbPoolSetSharedPool(cmbPool *aPool, UChar aImpl)
 {
     /*
-     * ÆÄ¶ó¹ÌÅÍ ¹üÀ§ °Ë»ç
+     * íŒŒë¼ë¯¸í„° ë²”ìœ„ ê²€ì‚¬
      */
     IDE_ASSERT(aImpl > CMB_POOL_IMPL_NONE);
     IDE_ASSERT(aImpl < CMB_POOL_IMPL_MAX);
@@ -155,7 +155,7 @@ IDE_RC cmbPoolSetSharedPool(cmbPool *aPool, UChar aImpl)
 IDE_RC cmbPoolGetSharedPool(cmbPool **aPool, UChar aImpl)
 {
     /*
-     * ÆÄ¶ó¹ÌÅÍ ¹üÀ§ °Ë»ç
+     * íŒŒë¼ë¯¸í„° ë²”ìœ„ ê²€ì‚¬
      */
     IDE_ASSERT(aImpl < CMB_POOL_IMPL_MAX);
 

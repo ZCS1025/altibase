@@ -35,13 +35,13 @@
 # include <sdpSegDescMgr.h>
 
 /***********************************************************************
- * Description : Direct-Path ¿¬»ê°úÁ¤Áß¿¡ Intenal Bitmap ÆäÀÌÁöÀÇ
- *               BitmapÀ» º¯°æÇÏ´Â ¿¬»êÀÇ Undo ÇÔ¼öÀÌ´Ù.
+ * Description : Direct-Path ì—°ì‚°ê³¼ì •ì¤‘ì— Intenal Bitmap í˜ì´ì§€ì˜
+ *               Bitmapì„ ë³€ê²½í•˜ëŠ” ì—°ì‚°ì˜ Undo í•¨ìˆ˜ì´ë‹¤.
  *
- * aStatistics  - [IN] Åë°èÁ¤º¸
+ * aStatistics  - [IN] í†µê³„ì •ë³´
  * aMtx         - [IN] Mini Transaction Pointer
  * aSpaceID     - [IN] SpaceID
- * aBMP         - [IN] BMP ÆäÀÌÁöÀÇ PID
+ * aBMP         - [IN] BMP í˜ì´ì§€ì˜ PID
  * aFmPBSNo     - [IN] From Slot Idx
  * aToPBSNo     - [IN] To Slot Idx
  * aFmMFNL      - [IN] From MFNL
@@ -135,15 +135,15 @@ IDE_RC sdpstUpdate::undo_SDPST_UPDATE_BMP_4DPATH( idvSQL    * aStatistics,
 
 
 /***********************************************************************
- * Description : Direct-Path ¿¬»ê°úÁ¤Áß¿¡ Leaf Bitmap ÆäÀÌÁöÀÇ BitmapÀ»
- *               º¯°æÇÏ´Â ¿¬»êÀÇ Undo ÇÔ¼öÀÌ´Ù.
+ * Description : Direct-Path ì—°ì‚°ê³¼ì •ì¤‘ì— Leaf Bitmap í˜ì´ì§€ì˜ Bitmapì„
+ *               ë³€ê²½í•˜ëŠ” ì—°ì‚°ì˜ Undo í•¨ìˆ˜ì´ë‹¤.
  *
- * aStatistics  - [IN] Åë°èÁ¤º¸
+ * aStatistics  - [IN] í†µê³„ì •ë³´
  * aSpaceID     - [IN] SpaceID
- * aLfBMP       - [IN] Leaf BMP ÆäÀÌÁöÀÇ PID
+ * aLfBMP       - [IN] Leaf BMP í˜ì´ì§€ì˜ PID
  * aFmPBSNo     - [IN] From Page Idx
  * aToPBSNo     - [IN] To Page Idx
- * aPrvMFNL     - [IN] ÀÌÀü MFNL
+ * aPrvMFNL     - [IN] ì´ì „ MFNL
  * aMtx         - [IN] Mini Transaction Pointer
  ***********************************************************************/
 IDE_RC sdpstUpdate::undo_SDPST_UPDATE_MFNL_4DPATH( idvSQL    * aStatistics,
@@ -183,7 +183,7 @@ IDE_RC sdpstUpdate::undo_SDPST_UPDATE_MFNL_4DPATH( idvSQL    * aStatistics,
     sLfBMPHdr = sdpstLfBMP::getHdrPtr( sPagePtr );
     sPageCnt  = aToPBSNo - aFmPBSNo + 1;
 
-    // From ¿¡¼­ To±îÁö ÆäÀÌÁö bitsetÀ» °»½ÅÇÑ´Ù.
+    // From ì—ì„œ Toê¹Œì§€ í˜ì´ì§€ bitsetì„ ê°±ì‹ í•œë‹¤.
     sdpstLfBMP::updatePBS( sdpstLfBMP::getMapPtr( sLfBMPHdr ),
                            aFmPBSNo,
                            (sdpstPBS)(SDPST_BITSET_PAGETP_DATA |
@@ -208,14 +208,14 @@ IDE_RC sdpstUpdate::undo_SDPST_UPDATE_MFNL_4DPATH( idvSQL    * aStatistics,
 
 
 /***********************************************************************
- * Description : SegDescÀÇ AllocExtRID, HWMÀ» ¿øº¹ÇÑ´Ù.
+ * Description : SegDescì˜ AllocExtRID, HWMì„ ì›ë³µí•œë‹¤.
  *
- * aStatistics    - [IN] Åë°èÁ¤º¸
+ * aStatistics    - [IN] í†µê³„ì •ë³´
  * aSpaceID       - [IN] SpaceID
- * aSegRID        - [IN] SegÀÇ RID
- * aNewFmtPageCnt - [IN] DPath·Î ÇÒ´çµÈ ÆäÀÌÁö °³¼ö
- * aHWMExtRID    - [IN] ÀÌÀü HWMÀÇ ExtRID
- * aHWMPID       - [IN] ÀÌÀü HWMÀÇ PID
+ * aSegRID        - [IN] Segì˜ RID
+ * aNewFmtPageCnt - [IN] DPathë¡œ í• ë‹¹ëœ í˜ì´ì§€ ê°œìˆ˜
+ * aHWMExtRID    - [IN] ì´ì „ HWMì˜ ExtRID
+ * aHWMPID       - [IN] ì´ì „ HWMì˜ PID
  * aMtx           - [IN] Mini Transaction Pointer
  ***********************************************************************/
 IDE_RC sdpstUpdate::undo_SDPST_UPDATE_WM_4DPATH( idvSQL    * aStatistics,
@@ -257,7 +257,7 @@ IDE_RC sdpstUpdate::undo_SDPST_UPDATE_WM_4DPATH( idvSQL    * aStatistics,
                                                     aSegPID,
                                                     aHWMPID,
                                                     &sStack ) != IDE_SUCCESS );
-    // HWM¸¦ ÀÌÀü HWM ·Î °»½ÅÇÑ´Ù.
+    // HWMë¥¼ ì´ì „ HWM ë¡œ ê°±ì‹ í•œë‹¤.
     IDE_TEST( sdpstSH::logAndUpdateWM( aMtx,
                                         &(sSegHdr->mHWM),
                                          aHWMPID,
@@ -271,13 +271,13 @@ IDE_RC sdpstUpdate::undo_SDPST_UPDATE_WM_4DPATH( idvSQL    * aStatistics,
 }
 
 /***********************************************************************
- * Description : Segment Header ÃÊ±âÈ­¸¦ REDOÇÑ´Ù.
+ * Description : Segment Header ì´ˆê¸°í™”ë¥¼ REDOí•œë‹¤.
  *
- * aStatistics    - [IN] Åë°èÁ¤º¸
+ * aStatistics    - [IN] í†µê³„ì •ë³´
  * aData          - [IN] Log Pointer
- * aLength        - [IN] Log ±æÀÌ
- * aPagePtr       - [IN] ÆäÀÌÁö Pointer
- * aRedoInfo      - [IN] Redo Á¤º¸
+ * aLength        - [IN] Log ê¸¸ì´
+ * aPagePtr       - [IN] í˜ì´ì§€ Pointer
+ * aRedoInfo      - [IN] Redo ì •ë³´
  * aMtx           - [IN] Mini Transaction Pointer
  ***********************************************************************/
 IDE_RC sdpstUpdate::redo_SDPST_INIT_SEGHDR( SChar       * aData,
@@ -308,13 +308,13 @@ IDE_RC sdpstUpdate::redo_SDPST_INIT_SEGHDR( SChar       * aData,
 }
 
 /***********************************************************************
- * Description : Leaf Bitmap ÆäÀÌÁö ÃÊ±âÈ­¸¦ REDOÇÑ´Ù.
+ * Description : Leaf Bitmap í˜ì´ì§€ ì´ˆê¸°í™”ë¥¼ REDOí•œë‹¤.
  *
- * aStatistics    - [IN] Åë°èÁ¤º¸
+ * aStatistics    - [IN] í†µê³„ì •ë³´
  * aData          - [IN] Log Pointer
- * aLength        - [IN] Log ±æÀÌ
- * aPagePtr       - [IN] ÆäÀÌÁö Pointer
- * aRedoInfo      - [IN] Redo Á¤º¸
+ * aLength        - [IN] Log ê¸¸ì´
+ * aPagePtr       - [IN] í˜ì´ì§€ Pointer
+ * aRedoInfo      - [IN] Redo ì •ë³´
  * aMtx           - [IN] Mini Transaction Pointer
  ***********************************************************************/
 IDE_RC sdpstUpdate::redo_SDPST_INIT_LFBMP( SChar       * aData,
@@ -333,7 +333,7 @@ IDE_RC sdpstUpdate::redo_SDPST_INIT_LFBMP( SChar       * aData,
 
     idlOS::memcpy( &sLogData, aData, ID_SIZEOF(sLogData) );
 
-    /* page range slotÃÊ±âÈ­µµ ÇØÁØ´Ù. */
+    /* page range slotì´ˆê¸°í™”ë„ í•´ì¤€ë‹¤. */
     sdpstLfBMP::initBMPHdr( (sdpstLfBMPHdr*)aPagePtr,
                             sLogData.mPageRange,
                             sLogData.mParentInfo.mParentPID,
@@ -352,13 +352,13 @@ IDE_RC sdpstUpdate::redo_SDPST_INIT_LFBMP( SChar       * aData,
 }
 
 /***********************************************************************
- * Description : Internal Bitmap ÆäÀÌÁö ÃÊ±âÈ­¸¦ REDOÇÑ´Ù.
+ * Description : Internal Bitmap í˜ì´ì§€ ì´ˆê¸°í™”ë¥¼ REDOí•œë‹¤.
  *
- * aStatistics    - [IN] Åë°èÁ¤º¸
+ * aStatistics    - [IN] í†µê³„ì •ë³´
  * aData          - [IN] Log Pointer
- * aLength        - [IN] Log ±æÀÌ
- * aPagePtr       - [IN] ÆäÀÌÁö Pointer
- * aRedoInfo      - [IN] Redo Á¤º¸
+ * aLength        - [IN] Log ê¸¸ì´
+ * aPagePtr       - [IN] í˜ì´ì§€ Pointer
+ * aRedoInfo      - [IN] Redo ì •ë³´
  * aMtx           - [IN] Mini Transaction Pointer
  ***********************************************************************/
 IDE_RC sdpstUpdate::redo_SDPST_INIT_BMP( SChar       * aData,
@@ -393,13 +393,13 @@ IDE_RC sdpstUpdate::redo_SDPST_INIT_BMP( SChar       * aData,
 }
 
 /***********************************************************************
- * Description : ExtDir ÆäÀÌÁö ÃÊ±âÈ­¸¦ REDOÇÑ´Ù.
+ * Description : ExtDir í˜ì´ì§€ ì´ˆê¸°í™”ë¥¼ REDOí•œë‹¤.
  *
- * aStatistics    - [IN] Åë°èÁ¤º¸
+ * aStatistics    - [IN] í†µê³„ì •ë³´
  * aData          - [IN] Log Pointer
- * aLength        - [IN] Log ±æÀÌ
- * aPagePtr       - [IN] ÆäÀÌÁö Pointer
- * aRedoInfo      - [IN] Redo Á¤º¸
+ * aLength        - [IN] Log ê¸¸ì´
+ * aPagePtr       - [IN] í˜ì´ì§€ Pointer
+ * aRedoInfo      - [IN] Redo ì •ë³´
  * aMtx           - [IN] Mini Transaction Pointer
  ***********************************************************************/
 IDE_RC sdpstUpdate::redo_SDPST_INIT_EXTDIR( SChar       * aData,
@@ -427,13 +427,13 @@ IDE_RC sdpstUpdate::redo_SDPST_INIT_EXTDIR( SChar       * aData,
 }
 
 /***********************************************************************
- * Description : RangeSlotÀ» Leaf BMP ÆäÀÌÁö¿¡ Ãß°¡ÇÑ´Ù.
+ * Description : RangeSlotì„ Leaf BMP í˜ì´ì§€ì— ì¶”ê°€í•œë‹¤.
  *
- * aStatistics    - [IN] Åë°èÁ¤º¸
+ * aStatistics    - [IN] í†µê³„ì •ë³´
  * aData          - [IN] Log Pointer
- * aLength        - [IN] Log ±æÀÌ
- * aPagePtr       - [IN] ÆäÀÌÁö Pointer
- * aRedoInfo      - [IN] Redo Á¤º¸
+ * aLength        - [IN] Log ê¸¸ì´
+ * aPagePtr       - [IN] í˜ì´ì§€ Pointer
+ * aRedoInfo      - [IN] Redo ì •ë³´
  * aMtx           - [IN] Mini Transaction Pointer
  ***********************************************************************/
 IDE_RC sdpstUpdate::redo_SDPST_ADD_RANGESLOT( SChar       * aData,
@@ -468,13 +468,13 @@ IDE_RC sdpstUpdate::redo_SDPST_ADD_RANGESLOT( SChar       * aData,
 }
 
 /***********************************************************************
- * Description : rt/itslotÀ» rt/it BMP ÆäÀÌÁö¿¡ Ãß°¡ÇÑ´Ù.
+ * Description : rt/itslotì„ rt/it BMP í˜ì´ì§€ì— ì¶”ê°€í•œë‹¤.
  *
- * aStatistics    - [IN] Åë°èÁ¤º¸
+ * aStatistics    - [IN] í†µê³„ì •ë³´
  * aData          - [IN] Log Pointer
- * aLength        - [IN] Log ±æÀÌ
- * aPagePtr       - [IN] ÆäÀÌÁö Pointer
- * aRedoInfo      - [IN] Redo Á¤º¸
+ * aLength        - [IN] Log ê¸¸ì´
+ * aPagePtr       - [IN] í˜ì´ì§€ Pointer
+ * aRedoInfo      - [IN] Redo ì •ë³´
  * aMtx           - [IN] Mini Transaction Pointer
  ***********************************************************************/
 IDE_RC sdpstUpdate::redo_SDPST_ADD_SLOTS( SChar       * aData,
@@ -508,13 +508,13 @@ IDE_RC sdpstUpdate::redo_SDPST_ADD_SLOTS( SChar       * aData,
 
 
 /***********************************************************************
- * Description : EXTDESCÀ» ExtDir ÆäÀÌÁö¿¡ Ãß°¡ÇÑ´Ù.
+ * Description : EXTDESCì„ ExtDir í˜ì´ì§€ì— ì¶”ê°€í•œë‹¤.
  *
- * aStatistics    - [IN] Åë°èÁ¤º¸
+ * aStatistics    - [IN] í†µê³„ì •ë³´
  * aData          - [IN] Log Pointer
- * aLength        - [IN] Log ±æÀÌ
- * aPagePtr       - [IN] ÆäÀÌÁö Pointer
- * aRedoInfo      - [IN] Redo Á¤º¸
+ * aLength        - [IN] Log ê¸¸ì´
+ * aPagePtr       - [IN] í˜ì´ì§€ Pointer
+ * aRedoInfo      - [IN] Redo ì •ë³´
  * aMtx           - [IN] Mini Transaction Pointer
  ***********************************************************************/
 IDE_RC sdpstUpdate::redo_SDPST_ADD_EXTDESC( SChar       * aData,
@@ -548,13 +548,13 @@ IDE_RC sdpstUpdate::redo_SDPST_ADD_EXTDESC( SChar       * aData,
 }
 
 /***********************************************************************
- * Description : EXTDESCÀ» ExtDir ÆäÀÌÁö¿¡ Ãß°¡ÇÑ´Ù.
+ * Description : EXTDESCì„ ExtDir í˜ì´ì§€ì— ì¶”ê°€í•œë‹¤.
  *
- * aStatistics    - [IN] Åë°èÁ¤º¸
+ * aStatistics    - [IN] í†µê³„ì •ë³´
  * aData          - [IN] Log Pointer
- * aLength        - [IN] Log ±æÀÌ
- * aPagePtr       - [IN] ÆäÀÌÁö Pointer
- * aRedoInfo      - [IN] Redo Á¤º¸
+ * aLength        - [IN] Log ê¸¸ì´
+ * aPagePtr       - [IN] í˜ì´ì§€ Pointer
+ * aRedoInfo      - [IN] Redo ì •ë³´
  * aMtx           - [IN] Mini Transaction Pointer
  ***********************************************************************/
 IDE_RC sdpstUpdate::redo_SDPST_ADD_EXT_TO_SEGHDR( SChar       * aData,
@@ -585,13 +585,13 @@ IDE_RC sdpstUpdate::redo_SDPST_ADD_EXT_TO_SEGHDR( SChar       * aData,
     return IDE_FAILURE;
 }
 /***********************************************************************
- * Description : HWM¸¦ °»½ÅÇÑ´Ù.
+ * Description : HWMë¥¼ ê°±ì‹ í•œë‹¤.
  *
- * aStatistics    - [IN] Åë°èÁ¤º¸
+ * aStatistics    - [IN] í†µê³„ì •ë³´
  * aData          - [IN] Log Pointer
- * aLength        - [IN] Log ±æÀÌ
- * aPagePtr       - [IN] ÆäÀÌÁö Pointer
- * aRedoInfo      - [IN] Redo Á¤º¸
+ * aLength        - [IN] Log ê¸¸ì´
+ * aPagePtr       - [IN] í˜ì´ì§€ Pointer
+ * aRedoInfo      - [IN] Redo ì •ë³´
  * aMtx           - [IN] Mini Transaction Pointer
  ***********************************************************************/
 IDE_RC sdpstUpdate::redo_SDPST_UPDATE_WM( SChar       * aData,
@@ -621,13 +621,13 @@ IDE_RC sdpstUpdate::redo_SDPST_UPDATE_WM( SChar       * aData,
 }
 
 /***********************************************************************
- * Description : BMP SlotÀÇ MFNLÀ» °»½ÅÇÑ´Ù.
+ * Description : BMP Slotì˜ MFNLì„ ê°±ì‹ í•œë‹¤.
  *
- * aStatistics    - [IN] Åë°èÁ¤º¸
+ * aStatistics    - [IN] í†µê³„ì •ë³´
  * aData          - [IN] Log Pointer
- * aLength        - [IN] Log ±æÀÌ
- * aPagePtr       - [IN] ÆäÀÌÁö Pointer
- * aRedoInfo      - [IN] Redo Á¤º¸
+ * aLength        - [IN] Log ê¸¸ì´
+ * aPagePtr       - [IN] í˜ì´ì§€ Pointer
+ * aRedoInfo      - [IN] Redo ì •ë³´
  * aMtx           - [IN] Mini Transaction Pointer
  ***********************************************************************/
 IDE_RC sdpstUpdate::redo_SDPST_UPDATE_MFNL( SChar       * aData,
@@ -662,13 +662,13 @@ IDE_RC sdpstUpdate::redo_SDPST_UPDATE_MFNL( SChar       * aData,
 }
 
 /***********************************************************************
- * Description : LfBMPÆäÀÌÁöÀÇ PBS¸¦ °»½ÅÇÑ´Ù.
+ * Description : LfBMPí˜ì´ì§€ì˜ PBSë¥¼ ê°±ì‹ í•œë‹¤.
  *
- * aStatistics    - [IN] Åë°èÁ¤º¸
+ * aStatistics    - [IN] í†µê³„ì •ë³´
  * aData          - [IN] Log Pointer
- * aLength        - [IN] Log ±æÀÌ
- * aPagePtr       - [IN] ÆäÀÌÁö Pointer
- * aRedoInfo      - [IN] Redo Á¤º¸
+ * aLength        - [IN] Log ê¸¸ì´
+ * aPagePtr       - [IN] í˜ì´ì§€ Pointer
+ * aRedoInfo      - [IN] Redo ì •ë³´
  * aMtx           - [IN] Mini Transaction Pointer
  ***********************************************************************/
 IDE_RC sdpstUpdate::redo_SDPST_UPDATE_PBS( SChar       * aData,
@@ -699,14 +699,14 @@ IDE_RC sdpstUpdate::redo_SDPST_UPDATE_PBS( SChar       * aData,
 }
 
 /***********************************************************************
- * Description : Direct-Path Insert Merge °úÁ¤¿¡¼­ Leaf Bitmap ÆäÀÌÁöÀÇ
- *               PageBitSetÀ» FULL·Î °»½ÅÇÑ´Ù.
+ * Description : Direct-Path Insert Merge ê³¼ì •ì—ì„œ Leaf Bitmap í˜ì´ì§€ì˜
+ *               PageBitSetì„ FULLë¡œ ê°±ì‹ í•œë‹¤.
  *
- * aStatistics    - [IN] Åë°èÁ¤º¸
+ * aStatistics    - [IN] í†µê³„ì •ë³´
  * aData          - [IN] Log Pointer
- * aLength        - [IN] Log ±æÀÌ
- * aPagePtr       - [IN] ÆäÀÌÁö Pointer
- * aRedoInfo      - [IN] Redo Á¤º¸
+ * aLength        - [IN] Log ê¸¸ì´
+ * aPagePtr       - [IN] í˜ì´ì§€ Pointer
+ * aRedoInfo      - [IN] Redo ì •ë³´
  * aMtx           - [IN] Mini Transaction Pointer
  ***********************************************************************/
 IDE_RC sdpstUpdate::redo_SDPST_UPDATE_LFBMP_4DPATH( SChar       * aData,
@@ -793,7 +793,7 @@ IDE_RC sdpstUpdate::undo_SDPST_ALLOC_PAGE( idvSQL    * aStatistics,
             break;
             
         default:
-            /* ´Ù¸¥ ÆäÀÌÁöÀÇ Å¸ÀÔÀÇ °æ¿ì undo ÇÏÁö ¾Ê´Â´Ù */
+            /* ë‹¤ë¥¸ í˜ì´ì§€ì˜ íƒ€ì…ì˜ ê²½ìš° undo í•˜ì§€ ì•ŠëŠ”ë‹¤ */
             IDE_ASSERT( 0 );
     }
 

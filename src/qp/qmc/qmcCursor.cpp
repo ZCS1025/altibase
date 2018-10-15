@@ -35,11 +35,11 @@ qmcCursor::init( iduMemory * aMemory )
     mTop = NULL;
     mCurrent = NULL;
 
-    // BUG-40427 Opened LOB Cursor ÃÊ±âÈ­
+    // BUG-40427 Opened LOB Cursor ì´ˆê¸°í™”
     mOpenedLob = MTD_LOCATOR_NULL;
 
     //---------------------------------
-    // table cursor¸¦ ±â·ÏÇÒ memroy
+    // table cursorë¥¼ ê¸°ë¡í•  memroy
     //---------------------------------
     IDU_FIT_POINT( "qmcCursor::init::alloc::mMemory",
                     idERR_ABORT_InsufficientMemory );
@@ -95,8 +95,8 @@ IDE_RC qmcCursor::addOpenedCursor( iduMemory      * aMemory,
     IDE_EXCEPTION_END;
 
     // To fix BUG-14911
-    // memory alloc ½ÇÆÐÇÏ¸é openedCursor¿¡ ¿¬°áÇÒ ¼ö ¾ø±â ¶§¹®¿¡
-    // cursor¸¦ closeÇÒ ¼ö ¾ø´Ù.
+    // memory alloc ì‹¤íŒ¨í•˜ë©´ openedCursorì— ì—°ê²°í•  ìˆ˜ ì—†ê¸° ë•Œë¬¸ì—
+    // cursorë¥¼ closeí•  ìˆ˜ ì—†ë‹¤.
     (void)aCursor->close();
 
     return IDE_FAILURE;
@@ -144,9 +144,9 @@ IDE_RC qmcCursor::addOpenedLobCursor( smLobLocator aLocator )
  *
  * Implementation :
  *
- *    qmcCursor¿¡ openµÈ lob locator 1°³¸¦ µî·ÏÇÑ´Ù.
- *    ÃÖÃÊ·Î openµÈ lob locator 1°³¸¸ ÇÊ¿äÇÏ¹Ç·Î, 
- *    ÀÌ¹Ì µî·ÏµÈ °æ¿ì qmcCursor¿¡¼­´Â ¾Æ¹« ÀÏµµ ÇÏÁö ¾Ê´Â´Ù.
+ *    qmcCursorì— openëœ lob locator 1ê°œë¥¼ ë“±ë¡í•œë‹¤.
+ *    ìµœì´ˆë¡œ openëœ lob locator 1ê°œë§Œ í•„ìš”í•˜ë¯€ë¡œ, 
+ *    ì´ë¯¸ ë“±ë¡ëœ ê²½ìš° qmcCursorì—ì„œëŠ” ì•„ë¬´ ì¼ë„ í•˜ì§€ ì•ŠëŠ”ë‹¤.
  *
  ***********************************************************************/
 
@@ -171,15 +171,15 @@ qmcCursor::closeAllCursor()
     smLobLocator         sOpenedLob;
  
     /* BUG-40427
-     * ³»ºÎÀûÀ¸·Î »ç¿ëÇÏ´Â LOB Cursor ÇÏ³ª¾¿ closeLobCursor() ¸¦ È£ÃâÇÏ´Â ¹æ½ÄÀº, 
-     * SM Module¿¡ ÀÖ´Â LOB Cursor List¿¡¼­ÀÇ Å½»ö ºñ¿ëÀ» °í·ÁÇÏÁö ¾ÊÀº ¹æ½ÄÀÌ´Ù.
-     * ±×·¡¼­ CLIENT_TRUE ¸¦ °¡ÁöÁö ¾ÊÀº LOB Cursor¸¸ List¸¦ µû¶ó°¡¸ç ¸ðµÎ ´Ýµµ·Ï ÇÑ´Ù.
-     * ´Ü, ÀÌ¹Ì open ÇÑ LOB Cursor°¡ Á¸ÀçÇÏ´Â °æ¿ì¿¡ ÇÑÇØ¼­ È£ÃâÇÑ´Ù. */
+     * ë‚´ë¶€ì ìœ¼ë¡œ ì‚¬ìš©í•˜ëŠ” LOB Cursor í•˜ë‚˜ì”© closeLobCursor() ë¥¼ í˜¸ì¶œí•˜ëŠ” ë°©ì‹ì€, 
+     * SM Moduleì— ìžˆëŠ” LOB Cursor Listì—ì„œì˜ íƒìƒ‰ ë¹„ìš©ì„ ê³ ë ¤í•˜ì§€ ì•Šì€ ë°©ì‹ì´ë‹¤.
+     * ê·¸ëž˜ì„œ CLIENT_TRUE ë¥¼ ê°€ì§€ì§€ ì•Šì€ LOB Cursorë§Œ Listë¥¼ ë”°ë¼ê°€ë©° ëª¨ë‘ ë‹«ë„ë¡ í•œë‹¤.
+     * ë‹¨, ì´ë¯¸ open í•œ LOB Cursorê°€ ì¡´ìž¬í•˜ëŠ” ê²½ìš°ì— í•œí•´ì„œ í˜¸ì¶œí•œë‹¤. */
 
     if ( mOpenedLob != MTD_LOCATOR_NULL )
     {
-        // smiLob::closeAllLobCursors()°¡ ½ÇÆÐÇÏ´Â °æ¿ì 
-        // mOpenedLobÀÌ ÃÊ±âÈ­µÇÁö ¾ÊÀ¸¹Ç·Î, sOpenedLobÀ¸·Î °ªÀ» ³Ñ±â°í ¹Ì¸® ÃÊ±âÈ­ÇÑ´Ù.
+        // smiLob::closeAllLobCursors()ê°€ ì‹¤íŒ¨í•˜ëŠ” ê²½ìš° 
+        // mOpenedLobì´ ì´ˆê¸°í™”ë˜ì§€ ì•Šìœ¼ë¯€ë¡œ, sOpenedLobìœ¼ë¡œ ê°’ì„ ë„˜ê¸°ê³  ë¯¸ë¦¬ ì´ˆê¸°í™”í•œë‹¤.
         sOpenedLob = mOpenedLob;
         mOpenedLob = MTD_LOCATOR_NULL;
 
@@ -191,7 +191,7 @@ qmcCursor::closeAllCursor()
     }
 
     //---------------------------------
-    // table cursorÀÇ close
+    // table cursorì˜ close
     //---------------------------------
 
     for ( sCursor = mTop; sCursor != NULL; sCursor = sCursor->next )
@@ -204,9 +204,9 @@ qmcCursor::closeAllCursor()
     if ( mMemory != NULL )
     {
         // To fix BUG-17591
-        // closeAllCursor°¡ È£ÃâµÇ´Â ½ÃÁ¡Àº
-        // qmcMemory¿¡¼­ »ç¿ëÇÏ´Â qmxMemory°¡ ½ÇÇà ÀÌÀü ½ÃÁ¡À¸·Î µ¹¾Æ°¡´Â
-        // ½ÃÁ¡ÀÌ¹Ç·Î, qmcMemory::clear¸¦ »ç¿ëÇÑ´Ù.
+        // closeAllCursorê°€ í˜¸ì¶œë˜ëŠ” ì‹œì ì€
+        // qmcMemoryì—ì„œ ì‚¬ìš©í•˜ëŠ” qmxMemoryê°€ ì‹¤í–‰ ì´ì „ ì‹œì ìœ¼ë¡œ ëŒì•„ê°€ëŠ”
+        // ì‹œì ì´ë¯€ë¡œ, qmcMemory::clearë¥¼ ì‚¬ìš©í•œë‹¤.
         mMemory->clear( idlOS::align8((UInt)ID_SIZEOF(qmcOpenedCursor) ) );
     }
 
@@ -237,9 +237,9 @@ qmcCursor::closeAllCursor()
         if ( mMemory != NULL )
         {
             // To fix BUG-17591
-            // closeAllCursor°¡ È£ÃâµÇ´Â ½ÃÁ¡Àº
-            // qmcMemory¿¡¼­ »ç¿ëÇÏ´Â qmxMemory°¡ ½ÇÇà ÀÌÀü ½ÃÁ¡À¸·Î µ¹¾Æ°¡´Â
-            // ½ÃÁ¡ÀÌ¹Ç·Î, qmcMemory::clear¸¦ »ç¿ëÇÑ´Ù.
+            // closeAllCursorê°€ í˜¸ì¶œë˜ëŠ” ì‹œì ì€
+            // qmcMemoryì—ì„œ ì‚¬ìš©í•˜ëŠ” qmxMemoryê°€ ì‹¤í–‰ ì´ì „ ì‹œì ìœ¼ë¡œ ëŒì•„ê°€ëŠ”
+            // ì‹œì ì´ë¯€ë¡œ, qmcMemory::clearë¥¼ ì‚¬ìš©í•œë‹¤.
             mMemory->clear( idlOS::align8((UInt)ID_SIZEOF(qmcOpenedCursor) ) );
         }
         else

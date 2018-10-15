@@ -20,13 +20,13 @@
  *
  * Description :
  *
- *     ID, SM¿¡ ÀÇÇØ Á¤ÀÇµÈ fixedTable¿¡ ´ëÇØ¼­
- *     QP¸¦ ±â¹İÀ¸·Î selection À» ÇÏ±â À§ÇØ¼­´Â meta cache°¡ ÇÊ¿äÇÏ¸ç,
- *     ÀÌ¿¡ ´ëÇÑ Á¤º¸ ±¸Ãà, Á¤º¸ È¹µæµîÀ» °ü¸®ÇÑ´Ù.
+ *     ID, SMì— ì˜í•´ ì •ì˜ëœ fixedTableì— ëŒ€í•´ì„œ
+ *     QPë¥¼ ê¸°ë°˜ìœ¼ë¡œ selection ì„ í•˜ê¸° ìœ„í•´ì„œëŠ” meta cacheê°€ í•„ìš”í•˜ë©°,
+ *     ì´ì— ëŒ€í•œ ì •ë³´ êµ¬ì¶•, ì •ë³´ íšë“ë“±ì„ ê´€ë¦¬í•œë‹¤.
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  *
  **********************************************************************/
@@ -43,7 +43,7 @@ class qcmFixedTable
 {
 
 private:
-    // meta cacheÁ¤º¸ ±¸Ãà½Ã¿¡ »ç¿ë.
+    // meta cacheì •ë³´ êµ¬ì¶•ì‹œì— ì‚¬ìš©.
     static IDE_RC getQcmColumn( qcmTableInfo  * aTableInfo );
 
     static IDE_RC createColumn( qcmTableInfo * aTableInfo,

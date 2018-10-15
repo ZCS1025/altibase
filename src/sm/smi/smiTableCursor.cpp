@@ -150,7 +150,7 @@ IDE_RC (*smiTableCursor::readNewRowRemoteQuery)(smiTableCursor * aCursor,
 
 smiGetRemoteTableNullRowFunc smiTableCursor::mGetRemoteTableNullRowFunc;
 
-// Transaction Isolation Level¿¡ µû¶ó¼­ Table Lock Mode°áÁ¤.
+// Transaction Isolation Levelì— ë”°ë¼ì„œ Table Lock Modeê²°ì •.
 static const UInt smiTableCursorIsolationLock[4][8] =
 {
     {/* SMI_ISOLATION_CONSISTENT                              */
@@ -195,7 +195,7 @@ static const UInt smiTableCursorIsolationLock[4][8] =
     }
 };
 
-// SMI InterfaceÀÇ Lock Mode¸¦ smlLockMgrÀÇ LockMode·Î º¯È¯
+// SMI Interfaceì˜ Lock Modeë¥¼ smlLockMgrì˜ LockModeë¡œ ë³€í™˜
 static const  smlLockMode smiTableCursorLockMode[5] =
 {
     SML_ISLOCK, /* SMI_LOCK_READ            */
@@ -205,7 +205,7 @@ static const  smlLockMode smiTableCursorLockMode[5] =
     SML_XLOCK   /* SMI_LOCK_TABLE_EXCLUSIVE */
 };
 
-// Table¿¡ °É·Á ÀÖ´Â Lock Mode¿¡ µû¶ó¼­ CursorÀÇ µ¿ÀÛÀ» °áÁ¤.
+// Tableì— ê±¸ë ¤ ìˆëŠ” Lock Modeì— ë”°ë¼ì„œ Cursorì˜ ë™ì‘ì„ ê²°ì •.
 static const UInt smiTableCursorLock[6][5] =
 {
     {/* SML_NLOCK                                             */
@@ -484,7 +484,7 @@ static IDE_RC smiTableCursorDefaultCallBackFunction( idBool     * aResult,
 }
 
 /***********************************************************************
- * Description : CursorÀÇ Member¸¦ ÃÊ±âÈ­
+ * Description : Cursorì˜ Memberë¥¼ ì´ˆê¸°í™”
  **********************************************************************/
 void smiTableCursor::init( void )
 {
@@ -501,7 +501,7 @@ void smiTableCursor::init( void )
 }
 
 /***********************************************************************
- * Description : CursorÀÇ Member¸¦ ÃÊ±âÈ­
+ * Description : Cursorì˜ Memberë¥¼ ì´ˆê¸°í™”
  **********************************************************************/
 void smiTableCursor::initialize()
 {
@@ -545,31 +545,31 @@ void smiTableCursor::initialize()
  * Description :
  *   FOR A4 :
  *
- *   1. TableÀÇ type¿¡µû¶ó table specific functionÀ» settingÇÑ´Ù.
- *      - mOps (Table Type¿¡ µû¶ó¼­ open, close, update, delete ...µîÀ» setting)
+ *   1. Tableì˜ typeì—ë”°ë¼ table specific functionì„ settingí•œë‹¤.
+ *      - mOps (Table Typeì— ë”°ë¼ì„œ open, close, update, delete ...ë“±ì„ setting)
  *
- *   2. TableCursorÀÇ ¸â¹ö º¯¼ö ÃÊ±âÈ­
+ *   2. TableCursorì˜ ë©¤ë²„ ë³€ìˆ˜ ì´ˆê¸°í™”
  *      - Trans, Table header, Index module(Sequential Iterator)
  *
- *   3. 1¹ø°úÁ¤¿¡¼­ settingµÈ cursor open ÇÔ¼ö¸¦ È£ÃâÇÑ´Ù.
+ *   3. 1ë²ˆê³¼ì •ì—ì„œ settingëœ cursor open í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•œë‹¤.
  *
- *   aStatement  - [IN] Cursor°¡ ¼ÓÇØ ÀÖ´Â Statement
- *   aTable      - [IN] Cursor°¡ OpenÇÒ Table Handle(Table Header Row Pointer
- *   aIndex      - [IN] Cursor°¡ ÀÌ¿ëÇÒ Index Handle(Index Header Pointer)
- *   aSCN        - [IN] Table RowÀÇ SCNÀ¸·Î¼­ ValidÇÒ¶§ TableÀÇ SCNÀ» ±â·ÏÇØµÎ¾ú´Ù°¡
- *                      openÇÒ¶§ TableÀÇ RowÀÇ SCN°ú ºñ±³ÇØ¼­ Table¿¡ º¯°æ¿¬»êÀÌ
- *                      ¹ß»ıÇß´ÂÁö Check.
- *   aColumns    - [IN] Cursor°¡ Update CursorÀÏ °Ü¿ì UpdateÇÒ Column List¸¦ ³Ñ±è.
+ *   aStatement  - [IN] Cursorê°€ ì†í•´ ìˆëŠ” Statement
+ *   aTable      - [IN] Cursorê°€ Opení•  Table Handle(Table Header Row Pointer
+ *   aIndex      - [IN] Cursorê°€ ì´ìš©í•  Index Handle(Index Header Pointer)
+ *   aSCN        - [IN] Table Rowì˜ SCNìœ¼ë¡œì„œ Validí• ë•Œ Tableì˜ SCNì„ ê¸°ë¡í•´ë‘ì—ˆë‹¤ê°€
+ *                      opení• ë•Œ Tableì˜ Rowì˜ SCNê³¼ ë¹„êµí•´ì„œ Tableì— ë³€ê²½ì—°ì‚°ì´
+ *                      ë°œìƒí–ˆëŠ”ì§€ Check.
+ *   aColumns    - [IN] Cursorê°€ Update Cursorì¼ ê²¨ìš° Updateí•  Column Listë¥¼ ë„˜ê¹€.
  *   aKeyRange   - [IN] Key Range
- *   aKeyFilter  - [IN] Key Filter : DRDB¸¦ À§ÇØ Ãß°¡ µÇ¾ú½À´Ï´Ù. KeyRange¸¦ Á¦¿ÜÇÑ
- *                      ¸ğµç Á¶°Ç¹®Àº Filter·Î ¼±¾ğµÇÁö¸¸ ¸¸¾à FilterÁß¿¡ IndexÀÇ Column¿¡
- *                      ¿¡ ÇØ´çÇÏ´Â Á¶°ÇÀÌ ÀÖ´Ù¸é ÀÌ Á¶°ÇÀº ´ëÇÑ °Ë»ç´Â Index NodeÀÇ Key°ªÀ»
- *                      ÀÌ¿ëÇÔÀ¸·Î½á ÂüÁ¶ÇØ¾ßÇÏ´Â BlockÀÇ °¹¼ö Disk I/O¸¦ ÁÙÀÏ ¼ö ÀÖ´Ù. ¶§¹®¿¡
- *                      FilterÁß¿¡ Index Key¿¡ ÇØ´çÇÏ´Â Filter´Â Key FilterºĞ¸®ÇÏ¿´´Ù.
+ *   aKeyFilter  - [IN] Key Filter : DRDBë¥¼ ìœ„í•´ ì¶”ê°€ ë˜ì—ˆìŠµë‹ˆë‹¤. KeyRangeë¥¼ ì œì™¸í•œ
+ *                      ëª¨ë“  ì¡°ê±´ë¬¸ì€ Filterë¡œ ì„ ì–¸ë˜ì§€ë§Œ ë§Œì•½ Filterì¤‘ì— Indexì˜ Columnì—
+ *                      ì— í•´ë‹¹í•˜ëŠ” ì¡°ê±´ì´ ìˆë‹¤ë©´ ì´ ì¡°ê±´ì€ ëŒ€í•œ ê²€ì‚¬ëŠ” Index Nodeì˜ Keyê°’ì„
+ *                      ì´ìš©í•¨ìœ¼ë¡œì¨ ì°¸ì¡°í•´ì•¼í•˜ëŠ” Blockì˜ ê°¯ìˆ˜ Disk I/Oë¥¼ ì¤„ì¼ ìˆ˜ ìˆë‹¤. ë•Œë¬¸ì—
+ *                      Filterì¤‘ì— Index Keyì— í•´ë‹¹í•˜ëŠ” FilterëŠ” Key Filterë¶„ë¦¬í•˜ì˜€ë‹¤.
  *   aRowFilter  - [IN] Filter
- *   aFlag       - [IN] 1. CursorÀÇ °¡ Table¿¡ ´ëÇØ¼­ ÇÊ¿ä·Î ÇÏ´Â Lock Mode
+ *   aFlag       - [IN] 1. Cursorì˜ ê°€ Tableì— ëŒ€í•´ì„œ í•„ìš”ë¡œ í•˜ëŠ” Lock Mode
  *                         ( SMI_LOCK_ ... )
- *                      2. CursorÀÇ µ¿ÀÛ¼Ó¼º
+ *                      2. Cursorì˜ ë™ì‘ì†ì„±
  *                         ( SMI_PREVIOUS ... , SMI_TRAVERSE ... )
  *   aProperties - [IN]
  **********************************************************************/
@@ -606,22 +606,22 @@ IDE_RC smiTableCursor::open( smiStatement*        aStatement,
     mCursorType = aCursorType;
     mIndexModule = &smDefaultModule;
 
-    /* Table Header¸¦ mTable¿¡ SettingÇÑ´Ù. */
+    /* Table Headerë¥¼ mTableì— Settingí•œë‹¤. */
     mTable = (void*)((UChar*)aTable + SMP_SLOT_HEADER_SIZE );
 
 
     IDU_FIT_POINT_RAISE( "smiTableCursor::open::ERROR_INCONSISTENT_TABLE", ERROR_INCONSISTENT_TABLE );
 
     // PROJ-1665
-    // DMLÀ» À§ÇØ LockÀ» Àâ´Â °æ¿ì, TableÀÇ Consistent »óÅÂ °Ë»ç
+    // DMLì„ ìœ„í•´ Lockì„ ì¡ëŠ” ê²½ìš°, Tableì˜ Consistent ìƒíƒœ ê²€ì‚¬
     IDE_TEST_RAISE( ( smcTable::isTableConsistent( mTable ) != ID_TRUE) &&
                     ( smuProperty::getCrashTolerance() == 0 ),
                     ERROR_INCONSISTENT_TABLE );
 
-    /* Direct Path Insert ¼öÇà Áß¿¡ ´Ù¸¥ DMLÀÇ ½ÇÇàÀ» ¸·´Â´Ù.
-     * SELECT CURSORµµ Çã¿ëÇÏÁö ¾Ê´Â ÀÌÀ¯´Â commit Àü±îÁö HWM¸¦ °»½ÅÇÏÁö ¾Ê±â
-     * ¶§¹®¿¡ ÀÚ½ÅÀÌ INSERTÇÑ µ¥ÀÌÅÍ¸¦ ÀÚ½ÅÀÌ º¼ ¼ö ¾øÀ¸¹Ç·Î, ³í¸®ÀûÀÎ ¹«°á¼ºÀ»
-     * ÁöÅ°±â À§ÇØ SELECT CURSORµµ Çã¿ëÇÏÁö ¾Ê´Â´Ù. */
+    /* Direct Path Insert ìˆ˜í–‰ ì¤‘ì— ë‹¤ë¥¸ DMLì˜ ì‹¤í–‰ì„ ë§‰ëŠ”ë‹¤.
+     * SELECT CURSORë„ í—ˆìš©í•˜ì§€ ì•ŠëŠ” ì´ìœ ëŠ” commit ì „ê¹Œì§€ HWMë¥¼ ê°±ì‹ í•˜ì§€ ì•Šê¸°
+     * ë•Œë¬¸ì— ìì‹ ì´ INSERTí•œ ë°ì´í„°ë¥¼ ìì‹ ì´ ë³¼ ìˆ˜ ì—†ìœ¼ë¯€ë¡œ, ë…¼ë¦¬ì ì¸ ë¬´ê²°ì„±ì„
+     * ì§€í‚¤ê¸° ìœ„í•´ SELECT CURSORë„ í—ˆìš©í•˜ì§€ ì•ŠëŠ”ë‹¤. */
     if( (aFlag & SMI_INSERT_METHOD_MASK) != SMI_INSERT_METHOD_APPEND
         && ( ((smcTableHeader*)mTable)->mSelfOID != SM_NULL_OID ) )
     {
@@ -632,7 +632,7 @@ IDE_RC smiTableCursor::open( smiStatement*        aStatement,
 
         if( sTableInfo == NULL )
         {
-            /* table info¸¦ Ã£À» ¼ö ¾øÀ¸¸é DPath INSERT¸¦ ¼öÇàÇßÀ»¸® ¾ø´Ù. */
+            /* table infoë¥¼ ì°¾ì„ ìˆ˜ ì—†ìœ¼ë©´ DPath INSERTë¥¼ ìˆ˜í–‰í–ˆì„ë¦¬ ì—†ë‹¤. */
         }
         else
         {
@@ -646,7 +646,7 @@ IDE_RC smiTableCursor::open( smiStatement*        aStatement,
         /* do nothing */
     }
 
-    /* Table TypeÀ» ¾ò¾î¿Â´Ù.*/
+    /* Table Typeì„ ì–»ì–´ì˜¨ë‹¤.*/
     sTableType = SMI_GET_TABLE_TYPE( (smcTableHeader*)mTable );
 
     //PROJ-1677
@@ -665,7 +665,7 @@ IDE_RC smiTableCursor::open( smiStatement*        aStatement,
     }
 
 
-    /* Table Type¿¡ µû¶ó¼­ ¿¬»êÀÚ¸¦ °áÁ¤ÇÑ´Ù. */
+    /* Table Typeì— ë”°ë¼ì„œ ì—°ì‚°ìë¥¼ ê²°ì •í•œë‹¤. */
     switch(sTableType)
     {
         case SMI_TABLE_DISK:
@@ -743,18 +743,18 @@ IDE_RC smiTableCursor::open( smiStatement*        aStatement,
     if ((( aFlag & SMI_INSERT_METHOD_MASK) == SMI_INSERT_METHOD_APPEND ) &&
         ( smuProperty::getDPathInsertEnable() == ID_TRUE ))
     {
-        // Direct-Path INSERTÀÎ °æ¿ì
+        // Direct-Path INSERTì¸ ê²½ìš°
         mOps.insertRowFunc = smiTableCursor::dpathInsertRow;
     }
     else
     {
-        // ±× ¿ÜÀÇ °æ¿ì
+        // ê·¸ ì™¸ì˜ ê²½ìš°
         mOps.insertRowFunc = smiTableCursor::normalInsertRow;
     }
 
     /*
       Table Type Independent Function Call
-       - TableCursorÀÇ ¸â¹ö º¯¼ö ÃÊ±âÈ­
+       - TableCursorì˜ ë©¤ë²„ ë³€ìˆ˜ ì´ˆê¸°í™”
          - Trans, Table header, index module...
     */
     IDE_TEST( doCommonJobs4Open(aStatement,
@@ -777,7 +777,7 @@ IDE_RC smiTableCursor::open( smiStatement*        aStatement,
                              sCurLockSlotPtr) != IDE_SUCCESS );
 
     /* PROJ-2162 RestartRiskReductino
-     * DB°¡ Inconsistency ÇÑµ¥,  METAµîµµ ¾Æ´Ñµ¥ Á¢±ÙÇÏ·Á ÇÑ´Ù¸é */
+     * DBê°€ Inconsistency í•œë°,  METAë“±ë„ ì•„ë‹Œë° ì ‘ê·¼í•˜ë ¤ í•œë‹¤ë©´ */
     IDE_ERROR( sTableType != SMI_TABLE_TEMP_LEGACY );
     IDE_TEST_RAISE( ( smrRecoveryMgr::getConsistency() == ID_FALSE ) &&
                     ( smuProperty::getCrashTolerance() == 0 ) &&
@@ -848,11 +848,11 @@ IDE_RC smiTableCursor::open( smiStatement*        aStatement,
     {
         mStatement->closeCursor( this );
         // To Fix PR-13919
-        // mOps.openFunc() ¿¡¼­ error°¡ ¹ß»ıÇÏ¸é
-        // mIterator ¸Ş¸ğ¸®°¡ ÇØÁ¦µÇÁö ¾Ê´Â´Ù.
+        // mOps.openFunc() ì—ì„œ errorê°€ ë°œìƒí•˜ë©´
+        // mIterator ë©”ëª¨ë¦¬ê°€ í•´ì œë˜ì§€ ì•ŠëŠ”ë‹¤.
         if(mIterator != NULL)
         {
-            // ÇÒ´çµÈ Iterator¸¦ FreeÇÑ´Ù.
+            // í• ë‹¹ëœ Iteratorë¥¼ Freeí•œë‹¤.
             IDE_ASSERT( ((smnIndexModule*)mIndexModule)->mFreeIterator((void*)mIterator)
                         == IDE_SUCCESS );
             mIterator = NULL;
@@ -871,14 +871,14 @@ IDE_RC smiTableCursor::open( smiStatement*        aStatement,
 }
 
 /*
-    Hybrid Transaction °Ë»ç ½Ç½Ã
+    Hybrid Transaction ê²€ì‚¬ ì‹¤ì‹œ
 
-    => Disk, MemoryÅ×ÀÌºí Á¢±Ù(Read/Write)½Ã Transaction¿¡ Flag¼³Á¤
-       => µÎ°¡Áö ´Ù Á¢±ÙµÈ TransactionÀÌ Hybrid Transaction
+    => Disk, Memoryí…Œì´ë¸” ì ‘ê·¼(Read/Write)ì‹œ Transactionì— Flagì„¤ì •
+       => ë‘ê°€ì§€ ë‹¤ ì ‘ê·¼ëœ Transactionì´ Hybrid Transaction
 
-    => Meta Å×ÀÌºí º¯°æ½Ã Transaction¿¡ Flag¼³Á¤
-       => ÃßÈÄ Commit½Ã Log Flush½Ç½Ã
-       => ÀÌÀ¯: smiDef.hÀÇ SMI_TABLE_META_LOG_FLUSH_MASK ºÎºĞ ÁÖ¼® Âü°í
+    => Meta í…Œì´ë¸” ë³€ê²½ì‹œ Transactionì— Flagì„¤ì •
+       => ì¶”í›„ Commitì‹œ Log Flushì‹¤ì‹œ
+       => ì´ìœ : smiDef.hì˜ SMI_TABLE_META_LOG_FLUSH_MASK ë¶€ë¶„ ì£¼ì„ ì°¸ê³ 
  */
 IDE_RC smiTableCursor::checkHybridTrans( UInt             aTableType,
                                          smiCursorType    aCursorType )
@@ -899,12 +899,12 @@ IDE_RC smiTableCursor::checkHybridTrans( UInt             aTableType,
         case SMI_TABLE_META:
             if (aCursorType != SMI_SELECT_CURSOR )
             {
-                // Meta TableÀÇ º¯°æÀÌ µÇ¾úÀ» ¶§ Log¸¦ FlushÇÒÁö ¿©ºÎ¸¦
-                // È®ÀÎ.
+                // Meta Tableì˜ ë³€ê²½ì´ ë˜ì—ˆì„ ë•Œ Logë¥¼ Flushí• ì§€ ì—¬ë¶€ë¥¼
+                // í™•ì¸.
                 //
-                // ÀÌ Flag°¡ ÄÑÁ® ÀÖ´Â °æ¿ì¿¡¸¸
-                // Meta Tableº¯°æÇÑ TransactionÀÇ
-                // Commit½Ã¿¡ ·Î±×¸¦ FlushÇÏµµ·Ï ÇÑ´Ù.
+                // ì´ Flagê°€ ì¼œì ¸ ìˆëŠ” ê²½ìš°ì—ë§Œ
+                // Meta Tableë³€ê²½í•œ Transactionì˜
+                // Commitì‹œì— ë¡œê·¸ë¥¼ Flushí•˜ë„ë¡ í•œë‹¤.
                 if ( (((smcTableHeader*)mTable)->mFlag & SMI_TABLE_META_LOG_FLUSH_MASK )
                      == SMI_TABLE_META_LOG_FLUSH_TRUE )
                 {
@@ -922,25 +922,25 @@ IDE_RC smiTableCursor::checkHybridTrans( UInt             aTableType,
 }
 
 /***********************************************************************
- * Description : Table Type¿¡ µû¶ó¼­ open¿¬»êÀÌ °øÅëµÇ´Â ºÎºĞ°ú ´Ù¸¥ ºÎºĞÀÌ ÀÖ´Âµ¥
- *               ¿©±â¼­´Â °øÅëµÇ´Â ºÎºĞÀ» Ã³¸®ÇÑ´Ù.
+ * Description : Table Typeì— ë”°ë¼ì„œ openì—°ì‚°ì´ ê³µí†µë˜ëŠ” ë¶€ë¶„ê³¼ ë‹¤ë¥¸ ë¶€ë¶„ì´ ìˆëŠ”ë°
+ *               ì—¬ê¸°ì„œëŠ” ê³µí†µë˜ëŠ” ë¶€ë¶„ì„ ì²˜ë¦¬í•œë‹¤.
  *
- *               1. °øÅë Member ÃÊ±âÈ­
- *               2. Table Lock ¼öÇà.
- *               3. Statement¿¡ Cursor µî·Ï
+ *               1. ê³µí†µ Member ì´ˆê¸°í™”
+ *               2. Table Lock ìˆ˜í–‰.
+ *               3. Statementì— Cursor ë“±ë¡
  *
- * aStatement  - [IN] Cursor°¡ ¼ÓÇÑ Statement
+ * aStatement  - [IN] Cursorê°€ ì†í•œ Statement
  * aIndex      - [IN] Index Handle (Index Header Pointer)
- * aColumns    - [IN] Update CursorÀÏ °æ¿ì UpdateµÉ Column List
- * aFlag       - [IN] 1. CursorÀÇ °¡ Table¿¡ ´ëÇØ¼­ ÇÊ¿ä·Î ÇÏ´Â Lock Mode
+ * aColumns    - [IN] Update Cursorì¼ ê²½ìš° Updateë  Column List
+ * aFlag       - [IN] 1. Cursorì˜ ê°€ Tableì— ëŒ€í•´ì„œ í•„ìš”ë¡œ í•˜ëŠ” Lock Mode
  *                      ( SMI_LOCK_ ... )
- *                    2. CursorÀÇ µ¿ÀÛ¼Ó¼º
+ *                    2. Cursorì˜ ë™ì‘ì†ì„±
  *                      ( SMI_PREVIOUS ... , SMI_TRAVERSE ... )
  *
  * aProperties     - [IN]
- * aCurLockNodePtr - [OUT] Table¿¡ Lock¼öÇà½Ã ÀÌ TableÀÇ Lock Item¿¡  Lock
- *                         Node°¡ »ı±ä´Ù. ÀÌ Lock Node¿¡ ´ëÇÑ Pointer
- * aCurLockSlotPtr - [OUT] Lock NodeÀÇ Lock Slot Pointer
+ * aCurLockNodePtr - [OUT] Tableì— Lockìˆ˜í–‰ì‹œ ì´ Tableì˜ Lock Itemì—  Lock
+ *                         Nodeê°€ ìƒê¸´ë‹¤. ì´ Lock Nodeì— ëŒ€í•œ Pointer
+ * aCurLockSlotPtr - [OUT] Lock Nodeì˜ Lock Slot Pointer
  *
  **********************************************************************/
 IDE_RC smiTableCursor::doCommonJobs4Open( smiStatement*        aStatement,
@@ -992,7 +992,7 @@ IDE_RC smiTableCursor::doCommonJobs4Open( smiStatement*        aStatement,
 
         IDE_TEST_RAISE( sIndexModule == NULL, err_disabled_index );
 
-        /* index moduleÀÌ ¿Ã¹Ù·Î ¼³Á¤ µÇ¾ú´ÂÁö index¿Í table typeÀ¸·Î °ËÁõ */
+        /* index moduleì´ ì˜¬ë°”ë¡œ ì„¤ì • ë˜ì—ˆëŠ”ì§€ indexì™€ table typeìœ¼ë¡œ ê²€ì¦ */
         IDE_ERROR( SMN_MAKE_INDEX_TYPE_ID(sIndexModule->mType) ==
                    (UInt)aProperties->mIndexTypeID );
         IDE_ERROR( SMN_MAKE_TABLE_TYPE_ID(sIndexModule->mType) ==
@@ -1002,13 +1002,13 @@ IDE_RC smiTableCursor::doCommonJobs4Open( smiStatement*        aStatement,
     }
 
     /* FOR A4 :
-       Iterator ¸Ş¸ğ¸® ÇÒ´çÀ» Index Module·Î ³Ñ±è
-       InsertÀÇ °æ¿ì¿¡´Â mIsertIterator¸¦ »ç¿ë -- ³ªÁß¿¡...
+       Iterator ë©”ëª¨ë¦¬ í• ë‹¹ì„ Index Moduleë¡œ ë„˜ê¹€
+       Insertì˜ ê²½ìš°ì—ëŠ” mIsertIteratorë¥¼ ì‚¬ìš© -- ë‚˜ì¤‘ì—...
 
-       if flag¿¡ Insert  OP°¡ ¼¼ÆÃµÇ¾î ÀÖÀ¸¸é
-       mIterator¿¡ mInsertIteratorÀÇ ÁÖ¼Ò¸¦ ¼¼ÆÃ
+       if flagì— Insert  OPê°€ ì„¸íŒ…ë˜ì–´ ìˆìœ¼ë©´
+       mIteratorì— mInsertIteratorì˜ ì£¼ì†Œë¥¼ ì„¸íŒ…
        else
-       mIterator¿¡ mIndexModule->allocIterator()ÀÇ °ªÀ» ¼¼ÆÃ
+       mIteratorì— mIndexModule->allocIterator()ì˜ ê°’ì„ ì„¸íŒ…
        endif
     */
     /* BUG-43408, BUG-45368 */
@@ -1020,17 +1020,17 @@ IDE_RC smiTableCursor::doCommonJobs4Open( smiStatement*        aStatement,
     mColumns       = aColumns;
     mFlag          = aFlag;
 
-    /* BUG-21738: smiTableCursor¿¡¼­ Åë°è Á¤º¸ ÀÎÀÚ·Î mQPProp->mStatistics¸¦
-     * Àß¸ø»ç¿ëÇÏ°í ÀÖÀ½. */
+    /* BUG-21738: smiTableCursorì—ì„œ í†µê³„ ì •ë³´ ì¸ìë¡œ mQPProp->mStatisticsë¥¼
+     * ì˜ëª»ì‚¬ìš©í•˜ê³  ìˆìŒ. */
     mOrgCursorProp = *aProperties;
     mCursorProp    = mOrgCursorProp;
 
     /*
-        FOR A4 : FirstReadPos¿Í ReadRecordCount¸¦ QP¿¡¼­ °è»êÇØ¼­ ³»·ÁÁÖ±â·Î ÇÔ.
-        Replication¿¡¼­µµ QP¿Í °°ÀÌ ÀÏ°üµÈ °ªÀ» ³»·ÁÁÜ
-        isRepl ÀÎÀÚ°¡ ÇÊ¿ä¾ø¾îÁü.
+        FOR A4 : FirstReadPosì™€ ReadRecordCountë¥¼ QPì—ì„œ ê³„ì‚°í•´ì„œ ë‚´ë ¤ì£¼ê¸°ë¡œ í•¨.
+        Replicationì—ì„œë„ QPì™€ ê°™ì´ ì¼ê´€ëœ ê°’ì„ ë‚´ë ¤ì¤Œ
+        isRepl ì¸ìê°€ í•„ìš”ì—†ì–´ì§.
     */
-    /* Fixed TableÀÏ °æ¿ì Lock Table È£ÃâÇÒ ÇÊ¿ä ¾øÀ½. */
+    /* Fixed Tableì¼ ê²½ìš° Lock Table í˜¸ì¶œí•  í•„ìš” ì—†ìŒ. */
     if ( (sTableType == SMI_TABLE_META) || (sTableType == SMI_TABLE_FIXED) ||
          (sTableType == SMI_TABLE_REMOTE))
     {
@@ -1043,8 +1043,8 @@ IDE_RC smiTableCursor::doCommonJobs4Open( smiStatement*        aStatement,
     }
 
     /*
-       Meta TableÀº CreateµÈ ÀÌÈÄ¿¡ DDLÀÌ ¹ß»ıÇÏÁö ¾Ê±â ¶§¹®¿¡ Table¿¡ Lock
-       À» °ÉÁö ¾Ê´Â´Ù.
+       Meta Tableì€ Createëœ ì´í›„ì— DDLì´ ë°œìƒí•˜ì§€ ì•Šê¸° ë•Œë¬¸ì— Tableì— Lock
+       ì„ ê±¸ì§€ ì•ŠëŠ”ë‹¤.
     */
     if ( sIsMetaTable == ID_FALSE )
     {
@@ -1054,12 +1054,12 @@ IDE_RC smiTableCursor::doCommonJobs4Open( smiStatement*        aStatement,
         sIsExclusive = smlLockMgr::isNotISorS(
                        smiTableCursorLockMode[mFlag&SMI_LOCK_MASK]);
 
-        // Å×ÀÌºí°ú °ü·ÃµÈ Å×ÀÌºí½ºÆäÀÌ½ºµé¿¡ ´ëÇÏ¿© INTENTION Àá±İÀ» È¹µæÇÑ´Ù.
+        // í…Œì´ë¸”ê³¼ ê´€ë ¨ëœ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ë“¤ì— ëŒ€í•˜ì—¬ INTENTION ì ê¸ˆì„ íšë“í•œë‹¤.
         IDE_TEST( sctTableSpaceMgr::lockAndValidateTBS(
                           (void*)mTrans,
                           smcTable::getTableSpaceID((void*)mTable),
                           SCT_VAL_DDL_DML,
-                          ID_TRUE,   /* intent lock  ¿©ºÎ */
+                          ID_TRUE,   /* intent lock  ì—¬ë¶€ */
                           sIsExclusive, /* exclusive lock */
                           mCursorProp.mLockWaitMicroSec)
                   != IDE_SUCCESS );
@@ -1074,7 +1074,7 @@ IDE_RC smiTableCursor::doCommonJobs4Open( smiStatement*        aStatement,
              sLockMode = smiTableCursorLockMode[mFlag&SMI_LOCK_MASK];
          }
 
-        /* Table Lock ¼öÇà */
+        /* Table Lock ìˆ˜í–‰ */
         IDE_TEST(smlLockMgr::lockTable(
                         mTrans->mSlotN,
                         (smlLockItem *)( SMC_TABLE_LOCK( (smcTableHeader *)mTable ) ),
@@ -1087,28 +1087,28 @@ IDE_RC smiTableCursor::doCommonJobs4Open( smiStatement*        aStatement,
 
         IDE_TEST(sLocked != ID_TRUE);
 
-        // Å×ÀÌºí°ú °ü·ÃµÈ Index, Blob Å×ÀÌºí½ºÆäÀÌ½ºµé¿¡ ´ëÇÏ¿©
-        // INTENTION Àá±İÀ» È¹µæÇÑ´Ù.
+        // í…Œì´ë¸”ê³¼ ê´€ë ¨ëœ Index, Blob í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ë“¤ì— ëŒ€í•˜ì—¬
+        // INTENTION ì ê¸ˆì„ íšë“í•œë‹¤.
         IDE_TEST( sctTableSpaceMgr::lockAndValidateRelTBSs(
                           (void*)mTrans,
                           (void*)mTable,
                           SCT_VAL_DDL_DML,
-                          ID_TRUE,   /* intent lock  ¿©ºÎ */
+                          ID_TRUE,   /* intent lock  ì—¬ë¶€ */
                           sIsExclusive, /* exclusive lock */
                           mCursorProp.mLockWaitMicroSec)
                   != IDE_SUCCESS );
 
         /*
-           Table¿¡ ¿äÃ»ÇÑ Lock Mode¿Í ´Ù¸£°Ô LockÀÌ °áÁ¤µÉ ¼ö ÀÖ´Ù.
-           ¿Ö³ÄÇÏ¸é ¿©·¯°³ÀÇ TransactionÀÌ Table¿¡ ´Ù¾çÇÑ LockÀ» Àâ°í
-           ¶ÇÇÑ ÇÏ³ªÀÇ Transaction ¶ÇÇÑ ¿©·¯ Mode·Î LockÀ» ¼öÇàÇÒ ¼ö ÀÖ±â
-           ¶§¹®ÀÌ´Ù.
-           ¶§¹®¿¡ mFlag¿¡ Table¿¡ °É·ÁÀÖ´Â Lock Mode·Î º¯È­½ÃÄÑÁà¾ß ÇÑ´Ù.
+           Tableì— ìš”ì²­í•œ Lock Modeì™€ ë‹¤ë¥´ê²Œ Lockì´ ê²°ì •ë  ìˆ˜ ìˆë‹¤.
+           ì™œëƒí•˜ë©´ ì—¬ëŸ¬ê°œì˜ Transactionì´ Tableì— ë‹¤ì–‘í•œ Lockì„ ì¡ê³ 
+           ë˜í•œ í•˜ë‚˜ì˜ Transaction ë˜í•œ ì—¬ëŸ¬ Modeë¡œ Lockì„ ìˆ˜í–‰í•  ìˆ˜ ìˆê¸°
+           ë•Œë¬¸ì´ë‹¤.
+           ë•Œë¬¸ì— mFlagì— Tableì— ê±¸ë ¤ìˆëŠ” Lock Modeë¡œ ë³€í™”ì‹œì¼œì¤˜ì•¼ í•œë‹¤.
 
-           Ex) Table T1ÀÌ ÀÖ´Ù°í ÇÏÀÚ.
-               Tx2ÀÌ Lock Table T1 In S Mode À» ¼öÇà ÈÄ
-               Tx1ÀÌ Lock Table T1 In IS Mode À» ÇÏ¸é
-               ÀÌ¸é Tx1ÀÇ ¿äÃ»ÇÑ Lock Mode´Â S Mode·Î °áÁ¤µÈ´Ù.
+           Ex) Table T1ì´ ìˆë‹¤ê³  í•˜ì.
+               Tx2ì´ Lock Table T1 In S Mode ì„ ìˆ˜í–‰ í›„
+               Tx1ì´ Lock Table T1 In IS Mode ì„ í•˜ë©´
+               ì´ë©´ Tx1ì˜ ìš”ì²­í•œ Lock ModeëŠ” S Modeë¡œ ê²°ì •ëœë‹¤.
         */
         mFlag = (mFlag & (~SMI_LOCK_MASK)) |
             smiTableCursorLock[mLockMode][mFlag&SMI_LOCK_MASK];
@@ -1121,9 +1121,9 @@ IDE_RC smiTableCursor::doCommonJobs4Open( smiStatement*        aStatement,
     if( ((mFlag & SMI_LOCK_MASK) == SMI_LOCK_WRITE ) ||
         ((mFlag & SMI_LOCK_MASK) == SMI_LOCK_TABLE_EXCLUSIVE ) )
     {
-        /* Change¿¬»ê(Insert, Update, Delete)À» ¼öÇàÇÏ´Â Cursor */
-        // PROJ-2199 SELECT func() FOR UPDATE Áö¿ø
-        // SMI_STATEMENT_FORUPDATE Ãß°¡
+        /* Changeì—°ì‚°(Insert, Update, Delete)ì„ ìˆ˜í–‰í•˜ëŠ” Cursor */
+        // PROJ-2199 SELECT func() FOR UPDATE ì§€ì›
+        // SMI_STATEMENT_FORUPDATE ì¶”ê°€
         if( ((mStatement->mFlag & SMI_STATEMENT_MASK) == SMI_STATEMENT_NORMAL) ||
             ((mStatement->mFlag & SMI_STATEMENT_MASK) == SMI_STATEMENT_FORUPDATE) )
         {
@@ -1164,18 +1164,18 @@ IDE_RC smiTableCursor::doCommonJobs4Open( smiStatement*        aStatement,
 
         if( smxTableInfoMgr::isExistDPathIns(mTableInfo) == ID_TRUE )
         {
-            /* ÀÌ¹Ì DPath INSERT¸¦ ¼öÇàÇÑ table·Î Ç¥½ÃµÇ¾î ÀÖÀ½. */
+            /* ì´ë¯¸ DPath INSERTë¥¼ ìˆ˜í–‰í•œ tableë¡œ í‘œì‹œë˜ì–´ ìˆìŒ. */
         }
         else
         {
-            /* ´ë»ó table¿¡ ´ëÇØ ÃÖÃÊÀÇ DPath INSERT¸¦ ¼öÇàÇÒ ¶§, table info¿¡
-             * DPath INSERT¸¦ ¼öÇàÇÑ tableÀÌ¶ó°í Ç¥½ÃÇÏ°í, abort½Ã ÀÌ Ç¥½Ã¸¦
-             * µÇµ¹¸± NTA log¸¦ ³²°ÜµĞ´Ù. */
+            /* ëŒ€ìƒ tableì— ëŒ€í•´ ìµœì´ˆì˜ DPath INSERTë¥¼ ìˆ˜í–‰í•  ë•Œ, table infoì—
+             * DPath INSERTë¥¼ ìˆ˜í–‰í•œ tableì´ë¼ê³  í‘œì‹œí•˜ê³ , abortì‹œ ì´ í‘œì‹œë¥¼
+             * ë˜ëŒë¦´ NTA logë¥¼ ë‚¨ê²¨ë‘”ë‹¤. */
             smxTableInfoMgr::setExistDPathIns( mTableInfo,
                                                ID_TRUE ); /* aExistDPathIns */
 
-            /* rollback µÇ¸é mExistDPathIns ÇÃ·¡±×¸¦ ID_FALSE·Î º¯°æÇØ ÁÖ±â
-             * À§ÇÑ NTA log¸¦ ³²±ä´Ù. */
+            /* rollback ë˜ë©´ mExistDPathIns í”Œë˜ê·¸ë¥¼ ID_FALSEë¡œ ë³€ê²½í•´ ì£¼ê¸°
+             * ìœ„í•œ NTA logë¥¼ ë‚¨ê¸´ë‹¤. */
             IDE_TEST( smrLogMgr::writeNTALogRec(
                                 mTrans->mStatistics,
                                 mTrans,
@@ -1187,13 +1187,13 @@ IDE_RC smiTableCursor::doCommonJobs4Open( smiStatement*        aStatement,
         }
     }
 
-    /* Statement¿¡ cursor¸¦ µî·ÏÇÏ°í infinite SCN °ú undo no¸¦ ¾ò¾î¿Â´Ù. */
+    /* Statementì— cursorë¥¼ ë“±ë¡í•˜ê³  infinite SCN ê³¼ undo noë¥¼ ì–»ì–´ì˜¨ë‹¤. */
     IDE_TEST( mStatement->openCursor( this, &mIsSoloCursor )
               != IDE_SUCCESS );
 
     return IDE_SUCCESS;
 
-    /* Ä¿¼­°¡ ÀÌ¹Ì ¿ÀÇÂµÇ¾î ÀÖ½À´Ï´Ù. */
+    /* ì»¤ì„œê°€ ì´ë¯¸ ì˜¤í”ˆë˜ì–´ ìˆìŠµë‹ˆë‹¤. */
     IDE_EXCEPTION( ERR_ALREADY_OPENED );
     {
         IDE_SET( ideSetErrorCode( smERR_ABORT_smiCursorOpened ) );
@@ -1222,12 +1222,12 @@ IDE_RC smiTableCursor::doCommonJobs4Open( smiStatement*        aStatement,
 }
 
 /***********************************************************************
- * Description : ÇöÀç OpenµÈ Cursor¸¦ CloseÇÏÁö ¾Ê°í Key Range,Fileter¸¦ ¹Ù²ã¼­
- *               Àç»ç¿ëÇÏ±â À§ÇØ Á¦¾ÈµÇ¾ú´Ù.½ÇÁ¦ µ¥ÀÌÅ¸¸¦ ÀĞ¾îµéÀÌ°í Ã£´Â°ÍÀº Iterator°¡
- *               ÇÏ±â ¶§¹®¿¡ »õ·Î¿î Key Range¿Í Filter¸¦ ÀÌ¿ëÇØ Iterator¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+ * Description : í˜„ì¬ Openëœ Cursorë¥¼ Closeí•˜ì§€ ì•Šê³  Key Range,Fileterë¥¼ ë°”ê¿”ì„œ
+ *               ì¬ì‚¬ìš©í•˜ê¸° ìœ„í•´ ì œì•ˆë˜ì—ˆë‹¤.ì‹¤ì œ ë°ì´íƒ€ë¥¼ ì½ì–´ë“¤ì´ê³  ì°¾ëŠ”ê²ƒì€ Iteratorê°€
+ *               í•˜ê¸° ë•Œë¬¸ì— ìƒˆë¡œìš´ Key Rangeì™€ Filterë¥¼ ì´ìš©í•´ Iteratorë¥¼ ì´ˆê¸°í™”í•œë‹¤.
  *
- * aKeyRange   - [IN] »õ·Î¿î Key Range
- * aKeyFilter  - [IN] »õ·Î¿î Key Filter
+ * aKeyRange   - [IN] ìƒˆë¡œìš´ Key Range
+ * aKeyFilter  - [IN] ìƒˆë¡œìš´ Key Filter
  * aRowFilter  - [IN] Filter
  *
  **********************************************************************/
@@ -1257,7 +1257,7 @@ IDE_RC smiTableCursor::restart( const smiRange *    aKeyRange,
         // Nothing to do.
     }
 
-    /* FOR A4 : smiCursorProperties¿Í Iterator°ü·Ã ºÎºĞ º¯°æ */
+    /* FOR A4 : smiCursorPropertiesì™€ Iteratorê´€ë ¨ ë¶€ë¶„ ë³€ê²½ */
     IDE_TEST( ((smnIndexModule*)mIndexModule)->mInitIterator( NULL, // PROJ-2446 bugbug
                                                               mIterator,
                                                               mTrans,
@@ -1292,7 +1292,7 @@ IDE_RC smiTableCursor::restart( const smiRange *    aKeyRange,
 }
 
 /***********************************************************************
- * Description : Cursor¸¦ CloseÇÏ°í ÇÒ´çµÈ Iterator¸¦ FreeÇÑ´Ù.
+ * Description : Cursorë¥¼ Closeí•˜ê³  í• ë‹¹ëœ Iteratorë¥¼ Freeí•œë‹¤.
  *
  **********************************************************************/
 IDE_RC smiTableCursor::close( void )
@@ -1308,13 +1308,13 @@ IDE_RC smiTableCursor::close( void )
     {
         IDU_FIT_POINT( "smiTableCursor::close::closeFunc" );
 
-        // Cursor¸¦ CloseÇÑ´Ù.
+        // Cursorë¥¼ Closeí•œë‹¤.
         IDE_TEST( mOps.closeFunc(this) != IDE_SUCCESS );
     }
 
     if(mStatement != NULL)
     {
-        // Statement¿¡¼­ Cursor¸¦ Á¦°ÅÇÑ´Ù.
+        // Statementì—ì„œ Cursorë¥¼ ì œê±°í•œë‹¤.
         mStatement->closeCursor( this );
     }
 
@@ -1322,7 +1322,7 @@ IDE_RC smiTableCursor::close( void )
 
     if(mIterator != NULL)
     {
-        // ÇÒ´çµÈ Iterator¸¦ FreeÇÑ´Ù.
+        // í• ë‹¹ëœ Iteratorë¥¼ Freeí•œë‹¤.
         IDE_TEST(((smnIndexModule*)mIndexModule)->mFreeIterator((void*)mIterator)
                  != IDE_SUCCESS );
         mIterator = NULL;
@@ -1367,8 +1367,8 @@ IDE_RC smiTableCursor::close( void )
 }
 
 /***********************************************************************
- * Description : Cursor Key Range, Key Filter Á¶°ÇÀ» ¸¸Á·ÇÏ´Â Ã¹¹øÂ° Data¸¦ Ã£¾Æ¼­
- *               Cursor¸¦ À§Ä¡½ÃÅ²´Ù.
+ * Description : Cursor Key Range, Key Filter ì¡°ê±´ì„ ë§Œì¡±í•˜ëŠ” ì²«ë²ˆì§¸ Dataë¥¼ ì°¾ì•„ì„œ
+ *               Cursorë¥¼ ìœ„ì¹˜ì‹œí‚¨ë‹¤.
  *
  **********************************************************************/
 IDE_RC smiTableCursor::beforeFirst( void )
@@ -1392,8 +1392,8 @@ IDE_RC smiTableCursor::beforeFirst( void )
 }
 
 /***********************************************************************
- * Description : Cursor Key Range, Key Filter Á¶°ÇÀ» ¸¸Á·ÇÏ´Â ¸¶Áö¸· Data¸¦ Ã£¾Æ¼­
- *               Cursor¸¦ À§Ä¡½ÃÅ²´Ù.
+ * Description : Cursor Key Range, Key Filter ì¡°ê±´ì„ ë§Œì¡±í•˜ëŠ” ë§ˆì§€ë§‰ Dataë¥¼ ì°¾ì•„ì„œ
+ *               Cursorë¥¼ ìœ„ì¹˜ì‹œí‚¨ë‹¤.
  *
  **********************************************************************/
 IDE_RC smiTableCursor::afterLast( void )
@@ -1417,18 +1417,18 @@ IDE_RC smiTableCursor::afterLast( void )
 }
 
 /***********************************************************************
- * Description : Cursor Key Range, Key Filter Á¶°ÇÀ» ¸¸Á·ÇÏ´Â ´ÙÀ½ Row¸¦
- *               ÀĞ¾î¿Â´Ù.MMDBÀÏ °æ¿ì¿¡´Â Row Pointer¸¦, DRDBÀÏ °æ¿ì¿¡´Â
- *               aRow¿¡ ÇÒ´çµÈ Buffer¿¡ Row¸¦ º¹»çÇÏ¿© ÁØ´Ù.
+ * Description : Cursor Key Range, Key Filter ì¡°ê±´ì„ ë§Œì¡±í•˜ëŠ” ë‹¤ìŒ Rowë¥¼
+ *               ì½ì–´ì˜¨ë‹¤.MMDBì¼ ê²½ìš°ì—ëŠ” Row Pointerë¥¼, DRDBì¼ ê²½ìš°ì—ëŠ”
+ *               aRowì— í• ë‹¹ëœ Bufferì— Rowë¥¼ ë³µì‚¬í•˜ì—¬ ì¤€ë‹¤.
  *
- * aRow  - [OUT] if DRDB, rowÀÇ µ¥ÀÌÅ¸¸¦ aRow¿¡ º¹»çÇÏ¿© ÁØ´Ù.MMDB¸é
- *                  RowÀÇ Pointer¸¦ ³Ö¾îÁØ´Ù.
- * aGRID  - [OUT] RowÀÇ RID¸¦ SettingÇÑ´Ù.
- * aFlag - ÇöÀç À§Ä¡¿¡¼­ ÇöÀç, ´ÙÀ½, ÀÌÀüµ¥ÀÌÅ¸¸¦ °¡Á®¿À´Â °ÍÀ» °áÁ¤ÇÑ´Ù.
+ * aRow  - [OUT] if DRDB, rowì˜ ë°ì´íƒ€ë¥¼ aRowì— ë³µì‚¬í•˜ì—¬ ì¤€ë‹¤.MMDBë©´
+ *                  Rowì˜ Pointerë¥¼ ë„£ì–´ì¤€ë‹¤.
+ * aGRID  - [OUT] Rowì˜ RIDë¥¼ Settingí•œë‹¤.
+ * aFlag - í˜„ì¬ ìœ„ì¹˜ì—ì„œ í˜„ì¬, ë‹¤ìŒ, ì´ì „ë°ì´íƒ€ë¥¼ ê°€ì ¸ì˜¤ëŠ” ê²ƒì„ ê²°ì •í•œë‹¤.
  *
- *          1.SMI_FIND_NEXT : ´ÙÀ½ Row¸¦ Fetch
- *          2.SMI_FIND_PREV : ÀÌÀü Row¸¦ Fetch
- *          3.SMI_FIND_CURR : ÇöÀç Row¸¦ Fetch
+ *          1.SMI_FIND_NEXT : ë‹¤ìŒ Rowë¥¼ Fetch
+ *          2.SMI_FIND_PREV : ì´ì „ Rowë¥¼ Fetch
+ *          3.SMI_FIND_CURR : í˜„ì¬ Rowë¥¼ Fetch
  *
  **********************************************************************/
 IDE_RC smiTableCursor::readRow( const void  ** aRow,
@@ -1454,11 +1454,11 @@ IDE_RC smiTableCursor::readRow( const void  ** aRow,
 }
 
 /***********************************************************************
- * Description: ÁÖ¾îÁø GRID¿¡ ÇØ´çÇÏ´Â row¸¦ fetchÇÑ´Ù.
+ * Description: ì£¼ì–´ì§„ GRIDì— í•´ë‹¹í•˜ëŠ” rowë¥¼ fetchí•œë‹¤.
  *
  * Parameters:
- *  aRow        - [IN] row¸¦ ÀúÀåÇÒ buffer
- *  aRowGRID    - [IN] fetch ´ë»ó rowÀÇ GRID
+ *  aRow        - [IN] rowë¥¼ ì €ì¥í•  buffer
+ *  aRowGRID    - [IN] fetch ëŒ€ìƒ rowì˜ GRID
  **********************************************************************/
 IDE_RC smiTableCursor::readRowFromGRID( const void  ** aRow,
                                         scGRID         aRowGRID )
@@ -1560,11 +1560,11 @@ IDE_RC smiTableCursor::readRowFromGRID( const void  ** aRow,
 }
 
 /***********************************************************************
- * Description: ÁÖ¾îÁø row, GRID¿¡ ÇØ´çÇÏ´Â ·¹ÄÚµå¸¦ À§Ä¡½ÃÅ²´Ù.
+ * Description: ì£¼ì–´ì§„ row, GRIDì— í•´ë‹¹í•˜ëŠ” ë ˆì½”ë“œë¥¼ ìœ„ì¹˜ì‹œí‚¨ë‹¤.
  *
  * Parameters:
- *  aRow     - [IN] fetch ´ë»ó rowÀÇ pointer
- *  aRowGRID - [IN] fetch ´ë»ó rowÀÇ GRID
+ *  aRow     - [IN] fetch ëŒ€ìƒ rowì˜ pointer
+ *  aRowGRID - [IN] fetch ëŒ€ìƒ rowì˜ GRID
  **********************************************************************/
 IDE_RC smiTableCursor::setRowPosition( void   * aRow,
                                        scGRID   aRowGRID )
@@ -1590,10 +1590,10 @@ IDE_RC smiTableCursor::setRowPosition( void   * aRow,
 }
 
 /***********************************************************************
- * Description : Á¶°ÇÀ» ¸¸Á·ÇÏ´Â TableÀÇ Record °¹¼ö¸¦ ±¸ÇÑ´Ù.
+ * Description : ì¡°ê±´ì„ ë§Œì¡±í•˜ëŠ” Tableì˜ Record ê°¯ìˆ˜ë¥¼ êµ¬í•œë‹¤.
  *
- * aRow       - [IN]  if DRDB, aRow¿¡ Buffer¸¦ ÇÒ´çÇØ¼­ ³Ñ°ÜÁÖ¾î¾ß ÇÑ´Ù.
- * aRowCount  - [OUT] Iterator¿¡ ¼³Á¤µÈ Á¶°ÇÀ» ¸¸Á·ÇÏ´Â Record°¹¼ö¸¦ ±¸ÇÑ´Ù.
+ * aRow       - [IN]  if DRDB, aRowì— Bufferë¥¼ í• ë‹¹í•´ì„œ ë„˜ê²¨ì£¼ì–´ì•¼ í•œë‹¤.
+ * aRowCount  - [OUT] Iteratorì— ì„¤ì •ëœ ì¡°ê±´ì„ ë§Œì¡±í•˜ëŠ” Recordê°¯ìˆ˜ë¥¼ êµ¬í•œë‹¤.
  **********************************************************************/
 IDE_RC smiTableCursor::countRow( const void ** aRow,
                                  SLong *       aRowCount )
@@ -1612,7 +1612,7 @@ IDE_RC smiTableCursor::countRow( const void ** aRow,
         }
 
         // To Fix PR-8113
-        // ¿¬»êÀÚ ¿ì¼± ¼øÀ§ ¿À·ù ¼öÁ¤ÇÔ.
+        // ì—°ì‚°ì ìš°ì„  ìˆœìœ„ ì˜¤ë¥˜ ìˆ˜ì •í•¨.
         (*aRowCount)++;
     }
 
@@ -1631,16 +1631,16 @@ IDE_RC smiTableCursor::countRow( const void ** aRow,
 
 
 /***********************************************************************
- * Description : aValue¿¡ ÇØ´çÇÏ´Â Row¸¦ Table¿¡ InsertÇÑ´Ù.
+ * Description : aValueì— í•´ë‹¹í•˜ëŠ” Rowë¥¼ Tableì— Insertí•œë‹¤.
  * Implementation :
- *    mOps.insertRowFunc¿¡ ÀÏ¹İ insert´Â normalInsertRow() ÇÔ¼ö°¡
- *    direct-path insert´Â dpathInsertRow() ÇÔ¼ö°¡ ¿¬°áµÇ¾î ÀÖÀ½
+ *    mOps.insertRowFuncì— ì¼ë°˜ insertëŠ” normalInsertRow() í•¨ìˆ˜ê°€
+ *    direct-path insertëŠ” dpathInsertRow() í•¨ìˆ˜ê°€ ì—°ê²°ë˜ì–´ ìˆìŒ
  *    - Input
- *      aValueList : insert ÇÒ value
- *      aFlag      : flag Á¤º¸
+ *      aValueList : insert í•  value
+ *      aFlag      : flag ì •ë³´
  *    - Output
- *      aRow       : insert µÈ record pointer
- *      aGRID      : insert µÈ record GRID
+ *      aRow       : insert ëœ record pointer
+ *      aGRID      : insert ëœ record GRID
  **********************************************************************/
 IDE_RC smiTableCursor::insertRow( const smiValue  * aValueList,
                                   void           ** aRow,
@@ -1662,16 +1662,16 @@ IDE_RC smiTableCursor::insertRow( const smiValue  * aValueList,
 }
 
 /***********************************************************************
- * Description : ÀÏ¹İ Insert Row ÇÔ¼ö
+ * Description : ì¼ë°˜ Insert Row í•¨ìˆ˜
  * Implementation :
- *    cursor¸¦ ÅëÇØ insert¸¦ ¼öÇàÇÔ
+ *    cursorë¥¼ í†µí•´ insertë¥¼ ìˆ˜í–‰í•¨
  *
  *    - Input
- *      aValueList : insert ÇÒ value
- *      aFlag      : flag Á¤º¸
+ *      aValueList : insert í•  value
+ *      aFlag      : flag ì •ë³´
  *    - Output
- *      aRow       : insert µÈ record pointer
- *      aGRID      : insert µÈ record GRID
+ *      aRow       : insert ëœ record pointer
+ *      aGRID      : insert ëœ record GRID
  **********************************************************************/
 IDE_RC smiTableCursor::normalInsertRow(smiTableCursor  * aCursor,
                                        const smiValue  * aValueList,
@@ -1709,7 +1709,7 @@ IDE_RC smiTableCursor::normalInsertRow(smiTableCursor  * aCursor,
         sFlag |= SM_INSERT_NEED_INSERT_UNDOREC_NO;
     }
 
-    // mInfinite´Â smiStatement¿¡¼­ ¼¼ÆÃµÈ´Ù.
+    // mInfiniteëŠ” smiStatementì—ì„œ ì„¸íŒ…ëœë‹¤.
     IDE_TEST( aCursor->mInsert( aCursor->mCursorProp.mStatistics,
                                 aCursor->mTrans,
                                 aCursor->mTableInfo,
@@ -1796,16 +1796,16 @@ IDE_RC smiTableCursor::normalInsertRow(smiTableCursor  * aCursor,
 }
 
 /*******************************************************************************
- * Description : Direct-Path Insert Row ÇÔ¼ö
+ * Description : Direct-Path Insert Row í•¨ìˆ˜
  *
  * Implementation :
- *      (1) DPath Insert°¡ µ¿ÀÏ TX ³»¿¡¼­ ÇÑ¹øµµ ÃÊ±âÈ­ µÇÁö ¾Ê¾ÒÀ¸¸é,
- *          ÃÊ±âÈ­ ºÎÅÍ ¼öÇàÇÑ´Ù.
- *      (2) DPath Insert¸¦ ¼öÇàÇÑ´Ù.
+ *      (1) DPath Insertê°€ ë™ì¼ TX ë‚´ì—ì„œ í•œë²ˆë„ ì´ˆê¸°í™” ë˜ì§€ ì•Šì•˜ìœ¼ë©´,
+ *          ì´ˆê¸°í™” ë¶€í„° ìˆ˜í–‰í•œë‹¤.
+ *      (2) DPath Insertë¥¼ ìˆ˜í–‰í•œë‹¤.
  *
  * Parameters
- *      aCursor     - [IN] insert ¼öÇàÇÒ cursor
- *      aValueList  - [IN] insert ÇÒ value
+ *      aCursor     - [IN] insert ìˆ˜í–‰í•  cursor
+ *      aValueList  - [IN] insert í•  value
  ******************************************************************************/
 IDE_RC smiTableCursor::dpathInsertRow(smiTableCursor  * aCursor,
                                       const smiValue  * aValueList,
@@ -1823,7 +1823,7 @@ IDE_RC smiTableCursor::dpathInsertRow(smiTableCursor  * aCursor,
 
     sStatistics = aCursor->mCursorProp.mStatistics;
 
-    // TSS ÇÒ´ç
+    // TSS í• ë‹¹
     sStartInfo.mTrans   = aCursor->mTrans;
     sStartInfo.mLogMode = SDR_MTX_LOGGING;
 
@@ -1831,11 +1831,11 @@ IDE_RC smiTableCursor::dpathInsertRow(smiTableCursor  * aCursor,
                                          &sStartInfo )
               != IDE_SUCCESS );
 
-    // DPathEntry¸¦ ÇÒ´ç¹Ş¾Æ¼­ Transaction¿¡ ´Ş¾ÆµĞ´Ù.
+    // DPathEntryë¥¼ í• ë‹¹ë°›ì•„ì„œ Transactionì— ë‹¬ì•„ë‘”ë‹¤.
     IDE_TEST( smxTrans::allocDPathEntry( aCursor->mTrans )
               != IDE_SUCCESS );
 
-    // DPathSegInfo¸¦ ¹Ş¾Æ¿Â´Ù.
+    // DPathSegInfoë¥¼ ë°›ì•„ì˜¨ë‹¤.
     if( aCursor->mDPathSegInfo == NULL )
     {
         sTableOID = smcTable::getTableOID( aCursor->mTable );
@@ -1848,7 +1848,7 @@ IDE_RC smiTableCursor::dpathInsertRow(smiTableCursor  * aCursor,
     }
 
     //------------------------------------------
-    // insert¸¦ ¼öÇà
+    // insertë¥¼ ìˆ˜í–‰
     //------------------------------------------
     IDE_TEST( sdcRow::insertAppend( sStatistics,
                                     aCursor->mTrans,
@@ -1861,7 +1861,7 @@ IDE_RC smiTableCursor::dpathInsertRow(smiTableCursor  * aCursor,
 
     
     //------------------------------------------
-    // iterator Áõ°¡
+    // iterator ì¦ê°€
     //------------------------------------------
     SC_COPY_GRID( sRowGRID, aCursor->mLstInsRowGRID );
 
@@ -1906,7 +1906,7 @@ IDE_RC smiTableCursor::insertRowWithIgnoreUniqueError( smiTableCursor  * aCursor
     sColumn    = smcTable::getColumn(aTableHeader, 0);
 
     // BUG-39378
-    // setImpSavepoint4RetryÇÔ¼ö¸¦ ÀÌ¿ëÇØ ImpSavepoint¸¦ ¼³Á¤ ÇÑ´Ù.
+    // setImpSavepoint4Retryí•¨ìˆ˜ë¥¼ ì´ìš©í•´ ImpSavepointë¥¼ ì„¤ì • í•œë‹¤.
     IDE_TEST( smxTrans::setImpSavepoint4Retry( aCursor->mTrans,
                                                (void**)&sISavepoint ) 
               != IDE_SUCCESS );
@@ -1976,10 +1976,10 @@ IDE_RC smiTableCursor::insertRowWithIgnoreUniqueError( smiTableCursor  * aCursor
                 // if insert index success
 
                 // PROJ-2429 Dictionary based data compress for on-disk DB
-                // disk dictionary compression columnÀÎ °æ¿ì dictionary table¿¡ 
-                // »ğÀÔÀ» ¼º°øÇßÀ¸¸é ÇØ´ç record°¡ rollbackµÇ¸é ¾ÈµÈ´Ù. 
-                // µû¶ó¼­ rollback½Ã agingµÇÁö ¾Êµµ·Ï ¸·°í ´Ù¸¥ Tx°¡ ÇØ´ç record¸¦ 
-                // º¼ ¼öÀÖ°Ô ÇÏ±â À§ÇØ recordÀÇ createSCNÀ» 0À¸·Î ¼³Á¤ ÇÑ´Ù.
+                // disk dictionary compression columnì¸ ê²½ìš° dictionary tableì— 
+                // ì‚½ì…ì„ ì„±ê³µí–ˆìœ¼ë©´ í•´ë‹¹ recordê°€ rollbackë˜ë©´ ì•ˆëœë‹¤. 
+                // ë”°ë¼ì„œ rollbackì‹œ agingë˜ì§€ ì•Šë„ë¡ ë§‰ê³  ë‹¤ë¥¸ Txê°€ í•´ë‹¹ recordë¥¼ 
+                // ë³¼ ìˆ˜ìˆê²Œ í•˜ê¸° ìœ„í•´ recordì˜ createSCNì„ 0ìœ¼ë¡œ ì„¤ì • í•œë‹¤.
                 if ( (sColumn->flag & SMI_COLUMN_COMPRESSION_TARGET_MASK)
                      == SMI_COLUMN_COMPRESSION_TARGET_DISK  )
                 {
@@ -2049,7 +2049,7 @@ IDE_RC smiTableCursor::insertRowWithIgnoreUniqueError( smiTableCursor  * aCursor
 }
 
 /***********************************************************************
- * Description : ¸¶Áö¸·À¸·Î InsertµÈ Record ID¸¦ °¡Á®¿Â´Ù.
+ * Description : ë§ˆì§€ë§‰ìœ¼ë¡œ Insertëœ Record IDë¥¼ ê°€ì ¸ì˜¨ë‹¤.
  **********************************************************************/
 scGRID  smiTableCursor::getLastInsertedRID( )
 {
@@ -2060,10 +2060,10 @@ scGRID  smiTableCursor::getLastInsertedRID( )
 }
 
 /***********************************************************************
- * Description : ÇöÀç CursorÀÇ Iterator°¡ °¡¸®Å°´Â Row¸¦ updateÇÑ´Ù.
+ * Description : í˜„ì¬ Cursorì˜ Iteratorê°€ ê°€ë¦¬í‚¤ëŠ” Rowë¥¼ updateí•œë‹¤.
  *
- * aValueList - [IN] ¾÷µ¥ÀÌÇÒ ColumnÀÇ Value List
- * aRetryInfo - [IN] retry Á¤º¸
+ * aValueList - [IN] ì—…ë°ì´í•  Columnì˜ Value List
+ * aRetryInfo - [IN] retry ì •ë³´
  **********************************************************************/
 IDE_RC smiTableCursor::updateRow( const smiValue        * aValueList,
                                   const smiDMLRetryInfo * aRetryInfo )
@@ -2089,9 +2089,9 @@ IDE_RC smiTableCursor::updateRow( const smiValue        * aValueList,
 
     if( ideGetErrorCode() != smERR_RETRY_Row_Retry )
     {
-        /* Row Retry´Â cursor°¡ closeµÇÁö ¾Ê°í,
-         * ¸¶Áö¸· row¸¸ retryÇÏ´Â°ÍÀÌ´Ù..
-         * Cursor°¡ °è¼Ó »ç¿ëµÇ¹Ç·Î init()ÇÏ¸é ¾ÈµÈ´Ù. */
+        /* Row RetryëŠ” cursorê°€ closeë˜ì§€ ì•Šê³ ,
+         * ë§ˆì§€ë§‰ rowë§Œ retryí•˜ëŠ”ê²ƒì´ë‹¤..
+         * Cursorê°€ ê³„ì† ì‚¬ìš©ë˜ë¯€ë¡œ init()í•˜ë©´ ì•ˆëœë‹¤. */
         init();
     }
 
@@ -2100,15 +2100,15 @@ IDE_RC smiTableCursor::updateRow( const smiValue        * aValueList,
 
 /***********************************************************************
  * Description : BUG-39399
- *              ÇöÀç CursorÀÇ Iterator°¡ °¡¸®Å°´Â Row¸¦
- *              ³»°¡ ÀÌ¹Ì update Çß´ÂÁö ¿©ºÎ¸¦ È®ÀÎ.
+ *              í˜„ì¬ Cursorì˜ Iteratorê°€ ê°€ë¦¬í‚¤ëŠ” Rowë¥¼
+ *              ë‚´ê°€ ì´ë¯¸ update í–ˆëŠ”ì§€ ì—¬ë¶€ë¥¼ í™•ì¸.
  *
- * aValueList - [IN]  ¾÷µ¥ÀÌÇÒ ColumnÀÇ Value List
- * aRetryInfo - [IN]  retry Á¤º¸
- * aRow       - [OUT] update µÈ rowÀÇ pointer
- * aGRID      - [OUT] update µÈ rowÀÇ GRID
- * aIsUpdatedByMe   - [OUT] ID_TRUE ÀÌ¸é, aRow°¡ ÀÌ¹Ì °°Àº statement¿¡¼­
- *                          ³»°¡ ÀÌ¹Ì update ÇÑ rowÀÌ´Ù.
+ * aValueList - [IN]  ì—…ë°ì´í•  Columnì˜ Value List
+ * aRetryInfo - [IN]  retry ì •ë³´
+ * aRow       - [OUT] update ëœ rowì˜ pointer
+ * aGRID      - [OUT] update ëœ rowì˜ GRID
+ * aIsUpdatedByMe   - [OUT] ID_TRUE ì´ë©´, aRowê°€ ì´ë¯¸ ê°™ì€ statementì—ì„œ
+ *                          ë‚´ê°€ ì´ë¯¸ update í•œ rowì´ë‹¤.
  **********************************************************************/
 IDE_RC smiTableCursor::isUpdatedRowBySameStmt( idBool   * aIsUpdatedBySameStmt )
 {
@@ -2175,9 +2175,9 @@ IDE_RC smiTableCursor::isUpdatedRowBySameStmt( idBool   * aIsUpdatedBySameStmt )
 
     if( ideGetErrorCode() != smERR_RETRY_Row_Retry )
     {
-        /* Row Retry´Â cursor°¡ closeµÇÁö ¾Ê°í,
-         * ¸¶Áö¸· row¸¸ retryÇÏ´Â°ÍÀÌ´Ù..
-         * Cursor°¡ °è¼Ó »ç¿ëµÇ¹Ç·Î init()ÇÏ¸é ¾ÈµÈ´Ù. */
+        /* Row RetryëŠ” cursorê°€ closeë˜ì§€ ì•Šê³ ,
+         * ë§ˆì§€ë§‰ rowë§Œ retryí•˜ëŠ”ê²ƒì´ë‹¤..
+         * Cursorê°€ ê³„ì† ì‚¬ìš©ë˜ë¯€ë¡œ init()í•˜ë©´ ì•ˆëœë‹¤. */
         init();
     }
 
@@ -2186,12 +2186,12 @@ IDE_RC smiTableCursor::isUpdatedRowBySameStmt( idBool   * aIsUpdatedBySameStmt )
 
 //PROJ-1362 Internal LOB
 /***********************************************************************
- * Description : ÇöÀç CursorÀÇ Iterator°¡ °¡¸®Å°´Â Row¸¦ updateÇÑ´Ù.
+ * Description : í˜„ì¬ Cursorì˜ Iteratorê°€ ê°€ë¦¬í‚¤ëŠ” Rowë¥¼ updateí•œë‹¤.
  *
- * aValueList - [IN]  ¾÷µ¥ÀÌÇÒ ColumnÀÇ Value List
- * aRetryInfo - [IN]  retry Á¤º¸
- * aRow       - [OUT] update µÈ rowÀÇ pointer
- * aGRID      - [OUT] update µÈ rowÀÇ GRID
+ * aValueList - [IN]  ì—…ë°ì´í•  Columnì˜ Value List
+ * aRetryInfo - [IN]  retry ì •ë³´
+ * aRow       - [OUT] update ëœ rowì˜ pointer
+ * aGRID      - [OUT] update ëœ rowì˜ GRID
  **********************************************************************/
 IDE_RC smiTableCursor::updateRow(const smiValue        * aValueList,
                                  const smiDMLRetryInfo * aRetryInfo,
@@ -2207,7 +2207,7 @@ IDE_RC smiTableCursor::updateRow(const smiValue        * aValueList,
                                   aRetryInfo )
               != IDE_SUCCESS );
 
-    // mIteratorÀÇ curRecPtr, RowRID°¡ ¼³Á¤µÇ¾î ÀÖ´Ù.
+    // mIteratorì˜ curRecPtr, RowRIDê°€ ì„¤ì •ë˜ì–´ ìˆë‹¤.
     if( aRow != NULL)
     {
         *aRow = mIterator->curRecPtr;
@@ -2230,9 +2230,9 @@ IDE_RC smiTableCursor::updateRow(const smiValue        * aValueList,
 
     if( ideGetErrorCode() != smERR_RETRY_Row_Retry )
     {
-        /* Row Retry´Â cursor°¡ closeµÇÁö ¾Ê°í,
-         * ¸¶Áö¸· row¸¸ retryÇÏ´Â°ÍÀÌ´Ù..
-         * Cursor°¡ °è¼Ó »ç¿ëµÇ¹Ç·Î init()ÇÏ¸é ¾ÈµÈ´Ù. */
+        /* Row RetryëŠ” cursorê°€ closeë˜ì§€ ì•Šê³ ,
+         * ë§ˆì§€ë§‰ rowë§Œ retryí•˜ëŠ”ê²ƒì´ë‹¤..
+         * Cursorê°€ ê³„ì† ì‚¬ìš©ë˜ë¯€ë¡œ init()í•˜ë©´ ì•ˆëœë‹¤. */
         init();
     }
 
@@ -2241,9 +2241,9 @@ IDE_RC smiTableCursor::updateRow(const smiValue        * aValueList,
 
 
 /***********************************************************************
- * Description : ÇöÀç CursorÀÇ Iterator°¡ °¡¸®Å°´Â Row¸¦ »èÁ¦ÇÑ´Ù.
+ * Description : í˜„ì¬ Cursorì˜ Iteratorê°€ ê°€ë¦¬í‚¤ëŠ” Rowë¥¼ ì‚­ì œí•œë‹¤.
  *
- * aRetryInfo - [IN] retry Á¤º¸
+ * aRetryInfo - [IN] retry ì •ë³´
  **********************************************************************/
 IDE_RC smiTableCursor::deleteRow( const smiDMLRetryInfo * aRetryInfo )
 {
@@ -2284,9 +2284,9 @@ IDE_RC smiTableCursor::deleteRow( const smiDMLRetryInfo * aRetryInfo )
     {
         if( ideGetErrorCode() != smERR_RETRY_Row_Retry )
         {
-            /* Row Retry´Â cursor°¡ closeµÇÁö ¾Ê°í,
-             * ¸¶Áö¸· row¸¸ retryÇÏ´Â°ÍÀÌ´Ù..
-             * Cursor°¡ °è¼Ó »ç¿ëµÇ¹Ç·Î init()ÇÏ¸é ¾ÈµÈ´Ù. */
+            /* Row RetryëŠ” cursorê°€ closeë˜ì§€ ì•Šê³ ,
+             * ë§ˆì§€ë§‰ rowë§Œ retryí•˜ëŠ”ê²ƒì´ë‹¤..
+             * Cursorê°€ ê³„ì† ì‚¬ìš©ë˜ë¯€ë¡œ init()í•˜ë©´ ì•ˆëœë‹¤. */
             init();
         }
     }
@@ -2295,9 +2295,9 @@ IDE_RC smiTableCursor::deleteRow( const smiDMLRetryInfo * aRetryInfo )
 }
 
 /***********************************************************************
- * Description : ¸¶Áö¸·À¸·Î updateÇÑ rowÀÇ ÃÖ½Å ¹öÀüÀ» °¡Á®¿Â´Ù.
+ * Description : ë§ˆì§€ë§‰ìœ¼ë¡œ updateí•œ rowì˜ ìµœì‹  ë²„ì „ì„ ê°€ì ¸ì˜¨ë‹¤.
  *
- *   aRow     - [OUT] ÃÖ½Å ¹öÀüÀÇ row
+ *   aRow     - [OUT] ìµœì‹  ë²„ì „ì˜ row
  *   aRowGRID - [OUT] disk GRID
  **********************************************************************/
 IDE_RC smiTableCursor::getLastRow( const void ** aRow,
@@ -2366,12 +2366,12 @@ IDE_RC smiTableCursor::getLastRow( const void ** aRow,
                   != IDE_SUCCESS );
 
         /* BUG-23319
-         * [SD] ÀÎµ¦½º Scan½Ã sdcRow::fetch ÇÔ¼ö¿¡¼­ Deadlock ¹ß»ı°¡´É¼ºÀÌ ÀÖÀ½. */
-        /* row fetch¸¦ ÇÏ´ÂÁß¿¡ next rowpiece·Î ÀÌµ¿ÇØ¾ß ÇÏ´Â °æ¿ì,
-         * ±âÁ¸ pageÀÇ latch¸¦ Ç®Áö ¾ÊÀ¸¸é deadlock ¹ß»ı°¡´É¼ºÀÌ ÀÖ´Ù.
-         * ±×·¡¼­ page latch¸¦ Ç¬ ´ÙÀ½ next rowpiece·Î ÀÌµ¿ÇÏ´Âµ¥,
-         * »óÀ§ ÇÔ¼ö¿¡¼­´Â page latch¸¦ Ç®¾ú´ÂÁö ¿©ºÎ¸¦ output parameter·Î È®ÀÎÇÏ°í
-         * »óÈ²¿¡ µû¶ó ÀûÀıÇÑ Ã³¸®¸¦ ÇØ¾ß ÇÑ´Ù. */
+         * [SD] ì¸ë±ìŠ¤ Scanì‹œ sdcRow::fetch í•¨ìˆ˜ì—ì„œ Deadlock ë°œìƒê°€ëŠ¥ì„±ì´ ìˆìŒ. */
+        /* row fetchë¥¼ í•˜ëŠ”ì¤‘ì— next rowpieceë¡œ ì´ë™í•´ì•¼ í•˜ëŠ” ê²½ìš°,
+         * ê¸°ì¡´ pageì˜ latchë¥¼ í’€ì§€ ì•Šìœ¼ë©´ deadlock ë°œìƒê°€ëŠ¥ì„±ì´ ìˆë‹¤.
+         * ê·¸ë˜ì„œ page latchë¥¼ í‘¼ ë‹¤ìŒ next rowpieceë¡œ ì´ë™í•˜ëŠ”ë°,
+         * ìƒìœ„ í•¨ìˆ˜ì—ì„œëŠ” page latchë¥¼ í’€ì—ˆëŠ”ì§€ ì—¬ë¶€ë¥¼ output parameterë¡œ í™•ì¸í•˜ê³ 
+         * ìƒí™©ì— ë”°ë¼ ì ì ˆí•œ ì²˜ë¦¬ë¥¼ í•´ì•¼ í•œë‹¤. */
         if( sIsPageLatchReleased == ID_FALSE )
         {
             sIsPageLatchReleased = ID_TRUE;
@@ -2383,11 +2383,11 @@ IDE_RC smiTableCursor::getLastRow( const void ** aRow,
     }
     else
     {
-        /* BUG-22282: TC/Server/mm4/Project/PROJ-1518/iloader/AfterTrigger¿¡
-         * ºñÁ¤»ó Á¾·áÇÕ´Ï´Ù.
+        /* BUG-22282: TC/Server/mm4/Project/PROJ-1518/iloader/AfterTriggerì—
+         * ë¹„ì •ìƒ ì¢…ë£Œí•©ë‹ˆë‹¤.
          *
-         * Cursor°¡ InsertÀÏ°æ¿ì mIterator°¡ NullÀÌ°í ¸¶Áö¸· InsertÇÑ Row´Â
-         * mLstInsRowPtr¿¡ ÀúÀåµÇ¾î ÀÖ´Ù.
+         * Cursorê°€ Insertì¼ê²½ìš° mIteratorê°€ Nullì´ê³  ë§ˆì§€ë§‰ Insertí•œ RowëŠ”
+         * mLstInsRowPtrì— ì €ì¥ë˜ì–´ ìˆë‹¤.
          * */
         if( mCursorType == SMI_INSERT_CURSOR )
         {
@@ -2396,7 +2396,7 @@ IDE_RC smiTableCursor::getLastRow( const void ** aRow,
         else
         {
             IDE_ASSERT( mIterator != NULL );
-            // ¸¶Áö¸·À¸·Î update, insertÇÑ row
+            // ë§ˆì§€ë§‰ìœ¼ë¡œ update, insertí•œ row
             *aRow = mIterator->curRecPtr;
         }
     }
@@ -2489,12 +2489,12 @@ IDE_RC smiTableCursor::getLastModifiedRow( void ** aRowBuf,
                   != IDE_SUCCESS );
 
         /* BUG-23319
-         * [SD] ÀÎµ¦½º Scan½Ã sdcRow::fetch ÇÔ¼ö¿¡¼­ Deadlock ¹ß»ı°¡´É¼ºÀÌ ÀÖÀ½. */
-        /* row fetch¸¦ ÇÏ´ÂÁß¿¡ next rowpiece·Î ÀÌµ¿ÇØ¾ß ÇÏ´Â °æ¿ì,
-         * ±âÁ¸ pageÀÇ latch¸¦ Ç®Áö ¾ÊÀ¸¸é deadlock ¹ß»ı°¡´É¼ºÀÌ ÀÖ´Ù.
-         * ±×·¡¼­ page latch¸¦ Ç¬ ´ÙÀ½ next rowpiece·Î ÀÌµ¿ÇÏ´Âµ¥,
-         * »óÀ§ ÇÔ¼ö¿¡¼­´Â page latch¸¦ Ç®¾ú´ÂÁö ¿©ºÎ¸¦ output parameter·Î È®ÀÎÇÏ°í
-         * »óÈ²¿¡ µû¶ó ÀûÀıÇÑ Ã³¸®¸¦ ÇØ¾ß ÇÑ´Ù. */
+         * [SD] ì¸ë±ìŠ¤ Scanì‹œ sdcRow::fetch í•¨ìˆ˜ì—ì„œ Deadlock ë°œìƒê°€ëŠ¥ì„±ì´ ìˆìŒ. */
+        /* row fetchë¥¼ í•˜ëŠ”ì¤‘ì— next rowpieceë¡œ ì´ë™í•´ì•¼ í•˜ëŠ” ê²½ìš°,
+         * ê¸°ì¡´ pageì˜ latchë¥¼ í’€ì§€ ì•Šìœ¼ë©´ deadlock ë°œìƒê°€ëŠ¥ì„±ì´ ìˆë‹¤.
+         * ê·¸ë˜ì„œ page latchë¥¼ í‘¼ ë‹¤ìŒ next rowpieceë¡œ ì´ë™í•˜ëŠ”ë°,
+         * ìƒìœ„ í•¨ìˆ˜ì—ì„œëŠ” page latchë¥¼ í’€ì—ˆëŠ”ì§€ ì—¬ë¶€ë¥¼ output parameterë¡œ í™•ì¸í•˜ê³ 
+         * ìƒí™©ì— ë”°ë¼ ì ì ˆí•œ ì²˜ë¦¬ë¥¼ í•´ì•¼ í•œë‹¤. */
         if( sIsPageLatchReleased == ID_FALSE )
         {
             sIsPageLatchReleased = ID_TRUE;
@@ -2505,11 +2505,11 @@ IDE_RC smiTableCursor::getLastModifiedRow( void ** aRowBuf,
     }
     else
     {
-        /* BUG-22282: TC/Server/mm4/Project/PROJ-1518/iloader/AfterTrigger¿¡
-         * ºñÁ¤»ó Á¾·áÇÕ´Ï´Ù.
+        /* BUG-22282: TC/Server/mm4/Project/PROJ-1518/iloader/AfterTriggerì—
+         * ë¹„ì •ìƒ ì¢…ë£Œí•©ë‹ˆë‹¤.
          *
-         * Cursor°¡ InsertÀÏ°æ¿ì mIterator°¡ NullÀÌ°í ¸¶Áö¸· InsertÇÑ Row´Â
-         * mLstInsRowPtr¿¡ ÀúÀåµÇ¾î ÀÖ´Ù.
+         * Cursorê°€ Insertì¼ê²½ìš° mIteratorê°€ Nullì´ê³  ë§ˆì§€ë§‰ Insertí•œ RowëŠ”
+         * mLstInsRowPtrì— ì €ì¥ë˜ì–´ ìˆë‹¤.
          * */
         if( mCursorType == SMI_INSERT_CURSOR )
         {
@@ -2527,15 +2527,15 @@ IDE_RC smiTableCursor::getLastModifiedRow( void ** aRowBuf,
         }
         else
         {
-            // BUG-27869 VOLATILE Å×ÀÌºí ½ºÆäÀÌ½º¿¡¼­ Æ®¸®°Å¸¦ »ç¿ëÇÏ¸é
-            //           ASSERT ·Î Á×½À´Ï´Ù.
-            // Volatile Table¿¡ ´ëÇÑ ³»¿ëÀÌ ¾ø½À´Ï´Ù. Ãß°¡ÇÕ´Ï´Ù.
+            // BUG-27869 VOLATILE í…Œì´ë¸” ìŠ¤í˜ì´ìŠ¤ì—ì„œ íŠ¸ë¦¬ê±°ë¥¼ ì‚¬ìš©í•˜ë©´
+            //           ASSERT ë¡œ ì£½ìŠµë‹ˆë‹¤.
+            // Volatile Tableì— ëŒ€í•œ ë‚´ìš©ì´ ì—†ìŠµë‹ˆë‹¤. ì¶”ê°€í•©ë‹ˆë‹¤.
             IDE_DASSERT( sTableType == SMI_TABLE_VOLATILE );
 
             IDE_ERROR( aLength <= ((smcTableHeader*)mTable)->mFixed.mVRDB.mSlotSize );
         }
         /* PROJ-2375 Global Meta
-         * ¹öÆÛ¿¡ º¹»çÇÏÁö ¾Ê°í Æ÷ÀÎÅÍ¸¸ ÂüÁ¶ÇÑ´Ù. 
+         * ë²„í¼ì— ë³µì‚¬í•˜ì§€ ì•Šê³  í¬ì¸í„°ë§Œ ì°¸ì¡°í•œë‹¤. 
          */ 
         *aRowBuf = sLstModifiedRow;
     }
@@ -2615,12 +2615,12 @@ IDE_RC smiTableCursor::getModifiedRow( void   ** aRowBuf,
                   != IDE_SUCCESS );
 
         /* BUG-23319
-         * [SD] ÀÎµ¦½º Scan½Ã sdcRow::fetch ÇÔ¼ö¿¡¼­ Deadlock ¹ß»ı°¡´É¼ºÀÌ ÀÖÀ½. */
-        /* row fetch¸¦ ÇÏ´ÂÁß¿¡ next rowpiece·Î ÀÌµ¿ÇØ¾ß ÇÏ´Â °æ¿ì,
-         * ±âÁ¸ pageÀÇ latch¸¦ Ç®Áö ¾ÊÀ¸¸é deadlock ¹ß»ı°¡´É¼ºÀÌ ÀÖ´Ù.
-         * ±×·¡¼­ page latch¸¦ Ç¬ ´ÙÀ½ next rowpiece·Î ÀÌµ¿ÇÏ´Âµ¥,
-         * »óÀ§ ÇÔ¼ö¿¡¼­´Â page latch¸¦ Ç®¾ú´ÂÁö ¿©ºÎ¸¦ output parameter·Î È®ÀÎÇÏ°í
-         * »óÈ²¿¡ µû¶ó ÀûÀıÇÑ Ã³¸®¸¦ ÇØ¾ß ÇÑ´Ù. */
+         * [SD] ì¸ë±ìŠ¤ Scanì‹œ sdcRow::fetch í•¨ìˆ˜ì—ì„œ Deadlock ë°œìƒê°€ëŠ¥ì„±ì´ ìˆìŒ. */
+        /* row fetchë¥¼ í•˜ëŠ”ì¤‘ì— next rowpieceë¡œ ì´ë™í•´ì•¼ í•˜ëŠ” ê²½ìš°,
+         * ê¸°ì¡´ pageì˜ latchë¥¼ í’€ì§€ ì•Šìœ¼ë©´ deadlock ë°œìƒê°€ëŠ¥ì„±ì´ ìˆë‹¤.
+         * ê·¸ë˜ì„œ page latchë¥¼ í‘¼ ë‹¤ìŒ next rowpieceë¡œ ì´ë™í•˜ëŠ”ë°,
+         * ìƒìœ„ í•¨ìˆ˜ì—ì„œëŠ” page latchë¥¼ í’€ì—ˆëŠ”ì§€ ì—¬ë¶€ë¥¼ output parameterë¡œ í™•ì¸í•˜ê³ 
+         * ìƒí™©ì— ë”°ë¼ ì ì ˆí•œ ì²˜ë¦¬ë¥¼ í•´ì•¼ í•œë‹¤. */
         if( sIsPageLatchReleased == ID_FALSE )
         {
             sIsPageLatchReleased = ID_TRUE;
@@ -2637,16 +2637,16 @@ IDE_RC smiTableCursor::getModifiedRow( void   ** aRowBuf,
         }
         else
         {
-            // BUG-27869 VOLATILE Å×ÀÌºí ½ºÆäÀÌ½º¿¡¼­ Æ®¸®°Å¸¦ »ç¿ëÇÏ¸é
-            //           ASSERT ·Î Á×½À´Ï´Ù.
-            // Volatile Table¿¡ ´ëÇÑ ³»¿ëÀÌ ¾ø½À´Ï´Ù. Ãß°¡ÇÕ´Ï´Ù.
+            // BUG-27869 VOLATILE í…Œì´ë¸” ìŠ¤í˜ì´ìŠ¤ì—ì„œ íŠ¸ë¦¬ê±°ë¥¼ ì‚¬ìš©í•˜ë©´
+            //           ASSERT ë¡œ ì£½ìŠµë‹ˆë‹¤.
+            // Volatile Tableì— ëŒ€í•œ ë‚´ìš©ì´ ì—†ìŠµë‹ˆë‹¤. ì¶”ê°€í•©ë‹ˆë‹¤.
             IDE_DASSERT( sTableType == SMI_TABLE_VOLATILE );
 
             IDE_ERROR( aLength <= ((smcTableHeader*)mTable)->mFixed.mVRDB.mSlotSize );
         }
         
         /* PROJ-2375 Global Meta
-         * ¹öÆÛ¿¡ º¹»çÇÏÁö ¾Ê°í Æ÷ÀÎÅÍ¸¸ ÂüÁ¶ÇÑ´Ù. 
+         * ë²„í¼ì— ë³µì‚¬í•˜ì§€ ì•Šê³  í¬ì¸í„°ë§Œ ì°¸ì¡°í•œë‹¤. 
          */
         *aRowBuf = aRow;
     }
@@ -2668,18 +2668,18 @@ IDE_RC smiTableCursor::getModifiedRow( void   ** aRowBuf,
 }
 
 /***********************************************************************
- * Description : Update´Â Column´ÜÀ§·Î ¼öÇàµÈ´Ù. ¶§¹®¿¡ Update½Ã UpdateµÇ´Â
- *               ColumnÀÌ¿ÜÀÇ ColumnÀÇ Index°¡ °É·Á ÀÖ´Â °æ¿ì¿¡´Â Index¿¡
- *               ´ëÇÑ Update°¡ ºÒÇÊ¿äÇÏ´Ù. ¶§¹®¿¡ ¿©±â¼­´Â ÀüÃ¼ IndexÁß¿¡¼­
- *               Update½Ã Update°¡ ÇÊ¿äÇÑ Index¸¸À» Ã£¾Æ¼­ ³Ñ°ÜÁØ´Ù.
+ * Description : UpdateëŠ” Columnë‹¨ìœ„ë¡œ ìˆ˜í–‰ëœë‹¤. ë•Œë¬¸ì— Updateì‹œ Updateë˜ëŠ”
+ *               Columnì´ì™¸ì˜ Columnì˜ Indexê°€ ê±¸ë ¤ ìˆëŠ” ê²½ìš°ì—ëŠ” Indexì—
+ *               ëŒ€í•œ Updateê°€ ë¶ˆí•„ìš”í•˜ë‹¤. ë•Œë¬¸ì— ì—¬ê¸°ì„œëŠ” ì „ì²´ Indexì¤‘ì—ì„œ
+ *               Updateì‹œ Updateê°€ í•„ìš”í•œ Indexë§Œì„ ì°¾ì•„ì„œ ë„˜ê²¨ì¤€ë‹¤.
  *
- * aIndexOID     - [IN] Index Header¸¦ °¡Áö°í ÀÖ´Â Variable Column OID
- * aIndexLength  - [IN] À§ VarcolumnÀÇ ±æÀÌ
- * aCols         - [IN] UpdateµÇ´Â Column List
- * aModifyIdxBit - [IN-OUT] UpdateÇØ¾ßµµ´Â Index¸¦ Bit¸¦ ÀÌ¿ëÇØ Ç¥½ÃÇØ¼­
- *                 ³Ñ°ÜÁØ´Ù.
- *                 ex) 110000000000 ÀÌ¸é Ã¹¹øÂ° Index, µÎ¹øÂ° Index°¡
- *                     Update´ë»óÀÌ µÈ´Ù.
+ * aIndexOID     - [IN] Index Headerë¥¼ ê°€ì§€ê³  ìˆëŠ” Variable Column OID
+ * aIndexLength  - [IN] ìœ„ Varcolumnì˜ ê¸¸ì´
+ * aCols         - [IN] Updateë˜ëŠ” Column List
+ * aModifyIdxBit - [IN-OUT] Updateí•´ì•¼ë„ëŠ” Indexë¥¼ Bitë¥¼ ì´ìš©í•´ í‘œì‹œí•´ì„œ
+ *                 ë„˜ê²¨ì¤€ë‹¤.
+ *                 ex) 110000000000 ì´ë©´ ì²«ë²ˆì§¸ Index, ë‘ë²ˆì§¸ Indexê°€
+ *                     UpdateëŒ€ìƒì´ ëœë‹¤.
  **********************************************************************/
 void smiTableCursor::makeUpdatedIndexList( smcTableHeader       * aTableHeader,
                                            const smiColumnList  * aCols,
@@ -2702,7 +2702,7 @@ void smiTableCursor::makeUpdatedIndexList( smcTableHeader       * aTableHeader,
 
     sIndexCnt =  smcTable::getIndexCount(aTableHeader);
 
-    // ¿µÇâ¹Ş´Â ÀÎµ¦½º¿¡¸¸ key insert
+    // ì˜í–¥ë°›ëŠ” ì¸ë±ìŠ¤ì—ë§Œ key insert
     for( i = 0; i < sIndexCnt;i++ )
     {
         sIndexCursor = (smnIndexHeader*) smcTable::getTableIndex(aTableHeader,i);
@@ -2736,7 +2736,7 @@ void smiTableCursor::makeUpdatedIndexList( smcTableHeader       * aTableHeader,
         
         if( sDoModify == ID_TRUE ) // found same column
         {
-            // UpdateÇØ¾ßµÇ´Â Index Ãß°¡.
+            // Updateí•´ì•¼ë˜ëŠ” Index ì¶”ê°€.
             *sBytePtr |= sBitMask;
             
             if( ((sIndexCursor->mFlag & SMI_INDEX_UNIQUE_MASK) ==
@@ -2796,7 +2796,7 @@ IDE_RC smiTableCursor::insertKeysWithUndoSID( smiTableCursor * aCursor )
 
     IDE_TEST_CONT( sIndexCnt == 0, SKIP_INSERT_KEY );
 
-    /* »ğÀÔÇÒ Index°¡ ÀÖ´ÂÁö Ã¼Å© */
+    /* ì‚½ì…í•  Indexê°€ ìˆëŠ”ì§€ ì²´í¬ */
     sBytePtr = &aCursor->mModifyIdxBit;
     sBitMask = ((ULong)1 << 63);
 
@@ -2867,11 +2867,11 @@ IDE_RC smiTableCursor::insertKeysWithUndoSID( smiTableCursor * aCursor )
                                        SDC_UNDOREC_HDR_TABLEOID,
                                        &sTableOID );
 
-            // Undo RecordÀÇ TableOID°¡ SM_NULL_OID ÀÌ¸é °ü°è¾ø´Â
-            // TypeÀÌ¹Ç·Î skip ÇÑ´Ù.
+            // Undo Recordì˜ TableOIDê°€ SM_NULL_OID ì´ë©´ ê´€ê³„ì—†ëŠ”
+            // Typeì´ë¯€ë¡œ skip í•œë‹¤.
             if ( sTableOID != sTable->mSelfOID )
             {
-                // ´Ù¸¥ Ä¿¼­°¡ ÀÛ¼ºÇÑ Undo Record ÀÌ¹Ç·Î Skip ÇÑ´Ù
+                // ë‹¤ë¥¸ ì»¤ì„œê°€ ì‘ì„±í•œ Undo Record ì´ë¯€ë¡œ Skip í•œë‹¤
                 continue;
             }
 
@@ -2986,7 +2986,7 @@ IDE_RC smiTableCursor::insertKeysWithUndoSID( smiTableCursor * aCursor )
 }
 
 /***********************************************************************
- * Description : MemInsert, Mem&Disk Update½Ã »ç¿ë.
+ * Description : MemInsert, Mem&Disk Updateì‹œ ì‚¬ìš©.
  **********************************************************************/
 IDE_RC smiTableCursor::insertKeyIntoIndices( smiTableCursor * aCursor,
                                              SChar          * aRow,
@@ -3083,12 +3083,12 @@ IDE_RC smiTableCursor::insertKeyIntoIndices( smiTableCursor * aCursor,
                 IDE_ASSERT( sIsRowDeleted == ID_FALSE );
 
                 /* BUG-23319
-                 * [SD] ÀÎµ¦½º Scan½Ã sdcRow::fetch ÇÔ¼ö¿¡¼­ Deadlock ¹ß»ı°¡´É¼ºÀÌ ÀÖÀ½. */
-                /* row fetch¸¦ ÇÏ´ÂÁß¿¡ next rowpiece·Î ÀÌµ¿ÇØ¾ß ÇÏ´Â °æ¿ì,
-                 * ±âÁ¸ pageÀÇ latch¸¦ Ç®Áö ¾ÊÀ¸¸é deadlock ¹ß»ı°¡´É¼ºÀÌ ÀÖ´Ù.
-                 * ±×·¡¼­ page latch¸¦ Ç¬ ´ÙÀ½ next rowpiece·Î ÀÌµ¿ÇÏ´Âµ¥,
-                 * »óÀ§ ÇÔ¼ö¿¡¼­´Â page latch¸¦ Ç®¾ú´ÂÁö ¿©ºÎ¸¦ output parameter·Î È®ÀÎÇÏ°í
-                 * »óÈ²¿¡ µû¶ó ÀûÀıÇÑ Ã³¸®¸¦ ÇØ¾ß ÇÑ´Ù. */
+                 * [SD] ì¸ë±ìŠ¤ Scanì‹œ sdcRow::fetch í•¨ìˆ˜ì—ì„œ Deadlock ë°œìƒê°€ëŠ¥ì„±ì´ ìˆìŒ. */
+                /* row fetchë¥¼ í•˜ëŠ”ì¤‘ì— next rowpieceë¡œ ì´ë™í•´ì•¼ í•˜ëŠ” ê²½ìš°,
+                 * ê¸°ì¡´ pageì˜ latchë¥¼ í’€ì§€ ì•Šìœ¼ë©´ deadlock ë°œìƒê°€ëŠ¥ì„±ì´ ìˆë‹¤.
+                 * ê·¸ë˜ì„œ page latchë¥¼ í‘¼ ë‹¤ìŒ next rowpieceë¡œ ì´ë™í•˜ëŠ”ë°,
+                 * ìƒìœ„ í•¨ìˆ˜ì—ì„œëŠ” page latchë¥¼ í’€ì—ˆëŠ”ì§€ ì—¬ë¶€ë¥¼ output parameterë¡œ í™•ì¸í•˜ê³ 
+                 * ìƒí™©ì— ë”°ë¼ ì ì ˆí•œ ì²˜ë¦¬ë¥¼ í•´ì•¼ í•œë‹¤. */
                 if ( sIsPageLatchReleased == ID_FALSE )
                 {
                     sIsPageLatchReleased = ID_TRUE;
@@ -3146,18 +3146,18 @@ IDE_RC smiTableCursor::insertKeyIntoIndices( smiTableCursor * aCursor,
     {
         /* BUG-32655 [sm-mem-index] The MMDB Ager must not ignore the failure
          * of index aging. 
-         * MemIndex¿¡ ´ëÇÑ »ğÀÔÀÌ ½ÇÆĞÇÏ¸é, ¾Æ¿¹ ÇØ´ç Row¿¡ ´ëÇÑ ¸ğµç Index
-         * »ğÀÔÀ» º¹±¸ÇÔ */
+         * MemIndexì— ëŒ€í•œ ì‚½ì…ì´ ì‹¤íŒ¨í•˜ë©´, ì•„ì˜ˆ í•´ë‹¹ Rowì— ëŒ€í•œ ëª¨ë“  Index
+         * ì‚½ì…ì„ ë³µêµ¬í•¨ */
 
-        /* i±îÁö Index »ğÀÔÀ» ½ÃµµÇßÀ¸´Ï, i Á÷Àü±îÁöÀÇ Index¿¡ ´ëÇØ
-         * Loop¸¦ µ¹¸é µÊ */
+        /* iê¹Œì§€ Index ì‚½ì…ì„ ì‹œë„í–ˆìœ¼ë‹ˆ, i ì§ì „ê¹Œì§€ì˜ Indexì— ëŒ€í•´
+         * Loopë¥¼ ëŒë©´ ë¨ */
         for( j = 0 ; j < i ; j ++ )
         {
             sIndexCursor = (smnIndexHeader*)smcTable::getTableIndex(
                 aCursor->mTable, j );
 
-            /* MemIndex´Â BitCheck ¾ÈÇØµµ µÊ. ÇÑ ColumnÀ» °»½ÅÇØµµ
-             * ±× Column¿¡ ¾È°É¸° Indexµµ °»½ÅÇØ¾ß ÇÏ±â ¶§¹® */
+            /* MemIndexëŠ” BitCheck ì•ˆí•´ë„ ë¨. í•œ Columnì„ ê°±ì‹ í•´ë„
+             * ê·¸ Columnì— ì•ˆê±¸ë¦° Indexë„ ê°±ì‹ í•´ì•¼ í•˜ê¸° ë•Œë¬¸ */
             if( smnManager::isIndexEnabled( sIndexCursor ) == ID_TRUE )
             {
                 IDE_ASSERT( sIndexCursor->mModule->mFreeSlot( sIndexCursor,
@@ -3199,7 +3199,7 @@ IDE_RC smiTableCursor::insertKeyIntoIndices( smiTableCursor * aCursor,
 
 /***********************************************************************
  *
- * Description : Disk Insert¿ë
+ * Description : Disk Insertìš©
  *
  *   - [IN]
  *   - [OUT]
@@ -3231,11 +3231,11 @@ IDE_RC smiTableCursor::insertKeyIntoIndices( smiTableCursor    *aCursor,
 
         /* BUG-35254 - the local index is broken when executing insert or delete
          *             using composite cursor.
-         * InsertÀÎ °æ¿ì mModifyIdxBit¸¦ È®ÀÎÇÒ ÇÊ¿ä¾øÀÌ ¹«Á¶°Ç ¸ğµç ÀÎµ¦½º¸¦
-         * °»½ÅÇØ¾ß ÇÑ´Ù.
-         * ÇÏÁö¸¸ UpdateÀÎ °æ¿ì È®ÀÎÇØ¾ß ÇÏ±â ¶§¹®¿¡ InsertÀÎ °æ¿ì aForce°¡
-         * ID_TRUE·Î ³Ñ¾î¿À°ÔµÇ°í, ÀÌ¶§¿¡¸¸ mModifyIdxBit¸¦ È®ÀÎÇÏÁö ¾Ê°í
-         * ÀÎµ¦½º¸¦ °»½ÅÇÑ´Ù. */
+         * Insertì¸ ê²½ìš° mModifyIdxBitë¥¼ í™•ì¸í•  í•„ìš”ì—†ì´ ë¬´ì¡°ê±´ ëª¨ë“  ì¸ë±ìŠ¤ë¥¼
+         * ê°±ì‹ í•´ì•¼ í•œë‹¤.
+         * í•˜ì§€ë§Œ Updateì¸ ê²½ìš° í™•ì¸í•´ì•¼ í•˜ê¸° ë•Œë¬¸ì— Insertì¸ ê²½ìš° aForceê°€
+         * ID_TRUEë¡œ ë„˜ì–´ì˜¤ê²Œë˜ê³ , ì´ë•Œì—ë§Œ mModifyIdxBitë¥¼ í™•ì¸í•˜ì§€ ì•Šê³ 
+         * ì¸ë±ìŠ¤ë¥¼ ê°±ì‹ í•œë‹¤. */
         if( ((sIndexCursor->mFlag & SMI_INDEX_USE_MASK) == SMI_INDEX_USE_ENABLE) &&
             ( (aForce == ID_TRUE) ||
               (((*sBytePtr) & sBitMask) != 0) ) )
@@ -3345,11 +3345,11 @@ IDE_RC smiTableCursor::deleteKeys( smiTableCursor * aCursor,
 
         /* BUG-35254 - the local index is broken when executing insert or delete
          *             using composite cursor.
-         * DeleteÀÎ °æ¿ì mModifyIdxBit¸¦ È®ÀÎÇÒ ÇÊ¿ä¾øÀÌ ¹«Á¶°Ç ¸ğµç ÀÎµ¦½º¸¦
-         * °»½ÅÇØ¾ß ÇÑ´Ù.
-         * ÇÏÁö¸¸ UpdateÀÎ °æ¿ì È®ÀÎÇØ¾ß ÇÏ±â ¶§¹®¿¡ DeleteÀÎ °æ¿ì aForce°¡
-         * ID_TRUE·Î ³Ñ¾î¿À°ÔµÇ°í, ÀÌ¶§¿¡¸¸ mModifyIdxBit¸¦ È®ÀÎÇÏÁö ¾Ê°í
-         * ÀÎµ¦½º¸¦ °»½ÅÇÑ´Ù. */
+         * Deleteì¸ ê²½ìš° mModifyIdxBitë¥¼ í™•ì¸í•  í•„ìš”ì—†ì´ ë¬´ì¡°ê±´ ëª¨ë“  ì¸ë±ìŠ¤ë¥¼
+         * ê°±ì‹ í•´ì•¼ í•œë‹¤.
+         * í•˜ì§€ë§Œ Updateì¸ ê²½ìš° í™•ì¸í•´ì•¼ í•˜ê¸° ë•Œë¬¸ì— Deleteì¸ ê²½ìš° aForceê°€
+         * ID_TRUEë¡œ ë„˜ì–´ì˜¤ê²Œë˜ê³ , ì´ë•Œì—ë§Œ mModifyIdxBitë¥¼ í™•ì¸í•˜ì§€ ì•Šê³ 
+         * ì¸ë±ìŠ¤ë¥¼ ê°±ì‹ í•œë‹¤. */
         if( ((sIndexCursor->mFlag & SMI_INDEX_USE_MASK) == SMI_INDEX_USE_ENABLE) &&
             ( (aForce == ID_TRUE) ||
               (((*sBytePtr) & sBitMask) != 0) ) )
@@ -3358,10 +3358,10 @@ IDE_RC smiTableCursor::deleteKeys( smiTableCursor * aCursor,
                     (void*)sIndexCursor ) == ID_FALSE, 
                 ERR_INCONSISTENT_INDEX );
             /*
-             * Data Page¿¡ Shard Latch¸¦ È¹µæÇÑ »óÅÂ¿¡¼­ ÀÎµ¦½º¿¡ Á¢±ÙÇÏ¸é
-             * Delayed CTS Stamping½Ã Latch Escalation½ÇÆĞ·Î ÀÎÇØ¼­
-             * Delayed CTS StampingÀÌ ½ÇÆĞÇÑ´Ù. µû¶ó¼­ ÀÎµ¦½º ¿¬»êÀü¿¡ È¹µæÇÑ
-             * Latch¸¦ Á¦°ÅÇØ¾ß ÇÑ´Ù.
+             * Data Pageì— Shard Latchë¥¼ íšë“í•œ ìƒíƒœì—ì„œ ì¸ë±ìŠ¤ì— ì ‘ê·¼í•˜ë©´
+             * Delayed CTS Stampingì‹œ Latch Escalationì‹¤íŒ¨ë¡œ ì¸í•´ì„œ
+             * Delayed CTS Stampingì´ ì‹¤íŒ¨í•œë‹¤. ë”°ë¼ì„œ ì¸ë±ìŠ¤ ì—°ì‚°ì „ì— íšë“í•œ
+             * Latchë¥¼ ì œê±°í•´ì•¼ í•œë‹¤.
              */
             IDE_TEST( sdbBufferMgr::getPageByGRID( aCursor->mCursorProp.mStatistics,
                                                    aRowGRID,
@@ -3374,8 +3374,8 @@ IDE_RC smiTableCursor::deleteKeys( smiTableCursor * aCursor,
             sIsPageLatchReleased = ID_FALSE;
 
             /*
-             * »èÁ¦µÈ ·¹ÄÚµå·Î ºÎÅÍ »èÁ¦Àü Old Image¸¦ ±¸ÃàÇÏ±â À§ÇØ¼­
-             * aIsFetchLastVersionÀ» False·Î ¼³Á¤ÇÑ´Ù.
+             * ì‚­ì œëœ ë ˆì½”ë“œë¡œ ë¶€í„° ì‚­ì œì „ Old Imageë¥¼ êµ¬ì¶•í•˜ê¸° ìœ„í•´ì„œ
+             * aIsFetchLastVersionì„ Falseë¡œ ì„¤ì •í•œë‹¤.
              */
             IDE_TEST( sIndexCursor->mModule->mMakeKeyFromRow(
                           sIterator->properties->mStatistics,
@@ -3399,12 +3399,12 @@ IDE_RC smiTableCursor::deleteKeys( smiTableCursor * aCursor,
             IDE_DASSERT( sIsDeleted == ID_FALSE );
 
             /* BUG-23319
-             * [SD] ÀÎµ¦½º Scan½Ã sdcRow::fetch ÇÔ¼ö¿¡¼­ Deadlock ¹ß»ı°¡´É¼ºÀÌ ÀÖÀ½. */
-            /* row fetch¸¦ ÇÏ´ÂÁß¿¡ next rowpiece·Î ÀÌµ¿ÇØ¾ß ÇÏ´Â °æ¿ì,
-             * ±âÁ¸ pageÀÇ latch¸¦ Ç®Áö ¾ÊÀ¸¸é deadlock ¹ß»ı°¡´É¼ºÀÌ ÀÖ´Ù.
-             * ±×·¡¼­ page latch¸¦ Ç¬ ´ÙÀ½ next rowpiece·Î ÀÌµ¿ÇÏ´Âµ¥,
-             * »óÀ§ ÇÔ¼ö¿¡¼­´Â page latch¸¦ Ç®¾ú´ÂÁö ¿©ºÎ¸¦ output parameter·Î È®ÀÎÇÏ°í
-             * »óÈ²¿¡ µû¶ó ÀûÀıÇÑ Ã³¸®¸¦ ÇØ¾ß ÇÑ´Ù. */
+             * [SD] ì¸ë±ìŠ¤ Scanì‹œ sdcRow::fetch í•¨ìˆ˜ì—ì„œ Deadlock ë°œìƒê°€ëŠ¥ì„±ì´ ìˆìŒ. */
+            /* row fetchë¥¼ í•˜ëŠ”ì¤‘ì— next rowpieceë¡œ ì´ë™í•´ì•¼ í•˜ëŠ” ê²½ìš°,
+             * ê¸°ì¡´ pageì˜ latchë¥¼ í’€ì§€ ì•Šìœ¼ë©´ deadlock ë°œìƒê°€ëŠ¥ì„±ì´ ìˆë‹¤.
+             * ê·¸ë˜ì„œ page latchë¥¼ í‘¼ ë‹¤ìŒ next rowpieceë¡œ ì´ë™í•˜ëŠ”ë°,
+             * ìƒìœ„ í•¨ìˆ˜ì—ì„œëŠ” page latchë¥¼ í’€ì—ˆëŠ”ì§€ ì—¬ë¶€ë¥¼ output parameterë¡œ í™•ì¸í•˜ê³ 
+             * ìƒí™©ì— ë”°ë¼ ì ì ˆí•œ ì²˜ë¦¬ë¥¼ í•´ì•¼ í•œë‹¤. */
             if( sIsPageLatchReleased == ID_FALSE )
             {
                 sIsPageLatchReleased = ID_TRUE;
@@ -3519,7 +3519,7 @@ IDE_RC smiTableCursor::openMRVRDB( smiTableCursor *    aCursor,
 
     //---------------------------------
     // PROJ-1509
-    // Æ®·£Àè¼ÇÀÇ oid list Áß¿¡¼­ cursor open ´ç½Ã ¸¶Áö¸· oid node Á¤º¸ ¼³Á¤
+    // íŠ¸ëœì­ì…˜ì˜ oid list ì¤‘ì—ì„œ cursor open ë‹¹ì‹œ ë§ˆì§€ë§‰ oid node ì •ë³´ ì„¤ì •
     //---------------------------------
 
     aCursor->mFstOidNode =
@@ -3557,14 +3557,14 @@ IDE_RC smiTableCursor::openMRVRDB( smiTableCursor *    aCursor,
 
     if( aCursor->mUntouchable == ID_FALSE )
     {
-        // ÀÏ´Ü ¸ğµç ÀÎµ¦½º¿¡ key insertÇÏµµ·Ï ÇØµÒ
-        // inplace updateÀÎ °æ¿ì¿¡ ´Ù½Ã ±¸ÇÔ.
+        // ì¼ë‹¨ ëª¨ë“  ì¸ë±ìŠ¤ì— key insertí•˜ë„ë¡ í•´ë‘ 
+        // inplace updateì¸ ê²½ìš°ì— ë‹¤ì‹œ êµ¬í•¨.
         makeUpdatedIndexList( ((smcTableHeader*)aCursor->mTable),
                               aCursor->mColumns,
                               &aCursor->mModifyIdxBit,
                               &aCursor->mCheckUniqueIdxBit );
         
-        /* ¸Ş¸ğ¸®´Â ¸ğµç ÀÎµ¦½º¿¡ Å° »ğÀÔÇÏµµ·Ï ÇØ¾ß ÇÑ´Ù.
+        /* ë©”ëª¨ë¦¬ëŠ” ëª¨ë“  ì¸ë±ìŠ¤ì— í‚¤ ì‚½ì…í•˜ë„ë¡ í•´ì•¼ í•œë‹¤.
          * ID_ULONG_MAX = 0xFFFFFFFFFFFFFFFF = set all bit 1 */
         aCursor->mModifyIdxBit = ID_ULONG_MAX;
     }
@@ -3596,13 +3596,13 @@ IDE_RC smiTableCursor::openMRVRDB( smiTableCursor *    aCursor,
 }
 
 /***********************************************************************
- * Description : MRDB, VRDB¿ë Cursor¸¦ CloseÇÑ´Ù. ÀÌ¶§ Close½Ã Cursor°¡ Change¿¬»ê(
- *               insert, delete, update)À» ¼öÇàÇß´Ù¸é TransactionÀÇ OID List
- *               ¿¡ close½Ã¿¡ index¿¡ insertÇØ¾ßµÇ´Â row°¡ ÀÖ´ÂÁö º¸°í ÀÖÀ¸¸é
- *               insertÇÑ´Ù. insert, update´Â cursor close½Ã¿¡ index¿¡ row¸¦
- *               insertÇÑ´Ù.
+ * Description : MRDB, VRDBìš© Cursorë¥¼ Closeí•œë‹¤. ì´ë•Œ Closeì‹œ Cursorê°€ Changeì—°ì‚°(
+ *               insert, delete, update)ì„ ìˆ˜í–‰í–ˆë‹¤ë©´ Transactionì˜ OID List
+ *               ì— closeì‹œì— indexì— insertí•´ì•¼ë˜ëŠ” rowê°€ ìˆëŠ”ì§€ ë³´ê³  ìˆìœ¼ë©´
+ *               insertí•œë‹¤. insert, updateëŠ” cursor closeì‹œì— indexì— rowë¥¼
+ *               insertí•œë‹¤.
  *
- * aCursor - [IN] CloseÇÒ Cursor.
+ * aCursor - [IN] Closeí•  Cursor.
  **********************************************************************/
 IDE_RC smiTableCursor::closeMRVRDB( smiTableCursor * aCursor )
 {
@@ -3622,14 +3622,14 @@ IDE_RC smiTableCursor::closeMRVRDB( smiTableCursor * aCursor )
 
     sTrans        = aCursor->mTrans;
 
-    /* update inplace ·Î escalation µÈ °æ¿ì idx bit °ªÀÌ ´Ş¶óÁø °ÍÀ» ÃÊ±âÈ­. 
-     * escaltion ÀÌÀü ºÎºĞÀ» Ã³¸®ÇÏ±â À§ÇØ¼­.
+    /* update inplace ë¡œ escalation ëœ ê²½ìš° idx bit ê°’ì´ ë‹¬ë¼ì§„ ê²ƒì„ ì´ˆê¸°í™”. 
+     * escaltion ì´ì „ ë¶€ë¶„ì„ ì²˜ë¦¬í•˜ê¸° ìœ„í•´ì„œ.
      * ID_ULONG_MAX = 0xFFFFFFFFFFFFFFFF = set all bit 1 */
     aCursor->mModifyIdxBit = ID_ULONG_MAX;
 
     /*
-     * [BUG-24187] RollbackµÉ statement´Â Internal CloseCurosr¸¦
-     * ¼öÇàÇÒ ÇÊ¿ä°¡ ¾ø½À´Ï´Ù.
+     * [BUG-24187] Rollbackë  statementëŠ” Internal CloseCurosrë¥¼
+     * ìˆ˜í–‰í•  í•„ìš”ê°€ ì—†ìŠµë‹ˆë‹¤.
      */
     if( (smiStatement::getSkipCursorClose( aCursor->mStatement ) == ID_FALSE) &&
         ( aCursor->mUntouchable == ID_FALSE) )
@@ -3639,16 +3639,16 @@ IDE_RC smiTableCursor::closeMRVRDB( smiTableCursor * aCursor )
         if( aCursor->mFstOidNode == NULL )
         {
             /*
-              Cursor°¡ OpenµÉ¶§ Transaction OID List¿¡ ÇÏ³ªµµ Node°¡ ¾ø¾ú´Ù.
-              ¶§¹®¿¡ ½ÃÀÛÀ§Ä¡ºÎÅÍ Á¶»çÇØ¾ß µÈ´Ù.
+              Cursorê°€ Openë ë•Œ Transaction OID Listì— í•˜ë‚˜ë„ Nodeê°€ ì—†ì—ˆë‹¤.
+              ë•Œë¬¸ì— ì‹œì‘ìœ„ì¹˜ë¶€í„° ì¡°ì‚¬í•´ì•¼ ëœë‹¤.
             */
             aCursor->mFstOidNode  = sOIDHeadNodePtr->mNxtNode;
             aCursor->mFstOidCount = 0;
         }
 
         /*
-          aCursor->mOidNode´Â Cursor°¡ OpenµÉ¶§ Transaction OID ListÀÇ ¸¶Áö¸·
-          Node¸¦ °¡¸®Å°°í ÀÖ´Ù.
+          aCursor->mOidNodeëŠ” Cursorê°€ Openë ë•Œ Transaction OID Listì˜ ë§ˆì§€ë§‰
+          Nodeë¥¼ ê°€ë¦¬í‚¤ê³  ìˆë‹¤.
         */
         sTable = (smcTableHeader*)aCursor->mTable;
         sIndexCnt =  smcTable::getIndexCount(sTable);
@@ -3657,8 +3657,8 @@ IDE_RC smiTableCursor::closeMRVRDB( smiTableCursor * aCursor )
          * when insert after row trigger on memory table is called,
          * can not reference new inserted values of INSERT SELECT statement.
          *
-         * normalInsertRow ÇÔ¼ö¿¡¼­ InsertÁ÷ÈÄ Key¸¦ Index¿¡ ³Öµµ·Ï ¼öÁ¤ÇÏ¿©
-         * Insert Cursor Close½Ã¿¡´Â Key¸¦ Index¿¡ ³ÖÁö ¾Ê´Â´Ù.
+         * normalInsertRow í•¨ìˆ˜ì—ì„œ Insertì§í›„ Keyë¥¼ Indexì— ë„£ë„ë¡ ìˆ˜ì •í•˜ì—¬
+         * Insert Cursor Closeì‹œì—ëŠ” Keyë¥¼ Indexì— ë„£ì§€ ì•ŠëŠ”ë‹¤.
          */
         if( (aCursor->mFstOidNode != sOIDHeadNodePtr) &&
             (sIndexCnt  != 0) &&
@@ -3680,8 +3680,8 @@ IDE_RC smiTableCursor::closeMRVRDB( smiTableCursor * aCursor )
                 for( ; sNodeCursor != sNodeFence; sNodeCursor++ )
                 {
                     /*
-                      ÇöÀç OID ListÀÇ Table OID¿Í Cursor°¡ openÇÑ TableÀÌ °°°í,
-                      Index Insert¸¦ ÇØ¾ßÇÑ´Ù¸é Insert¼öÇà
+                      í˜„ì¬ OID Listì˜ Table OIDì™€ Cursorê°€ opení•œ Tableì´ ê°™ê³ ,
+                      Index Insertë¥¼ í•´ì•¼í•œë‹¤ë©´ Insertìˆ˜í–‰
                     */
                     IDE_ASSERT( smcTable::getTableHeaderFromOID( sNodeCursor->mTableOID,
                                                                  (void**)&sTableOfCursor )
@@ -3697,8 +3697,8 @@ IDE_RC smiTableCursor::closeMRVRDB( smiTableCursor * aCursor )
                                     == IDE_SUCCESS );
                         /* 
                             PROJ-2416
-                            inplace updateÇÑ rowºÎÅÍ´Â  ÇÊ¼ö ÀÎµ¦½º¸¸ »ğÀÔ ÇÏµµ·Ï ÇØ¼­ ¼º´É °³¼±
-                            ID_ULONG_MAX·Î ÃÊ±âÈ­µÇ¾îÀÖ´ø mModifyidxBit ¸¦ »õ·Î ¼¼ÆÃÇÑ´Ù.
+                            inplace updateí•œ rowë¶€í„°ëŠ”  í•„ìˆ˜ ì¸ë±ìŠ¤ë§Œ ì‚½ì… í•˜ë„ë¡ í•´ì„œ ì„±ëŠ¥ ê°œì„ 
+                            ID_ULONG_MAXë¡œ ì´ˆê¸°í™”ë˜ì–´ìˆë˜ mModifyidxBit ë¥¼ ìƒˆë¡œ ì„¸íŒ…í•œë‹¤.
                         */
                         if ( aCursor->mUpdateInplaceEscalationPoint == sRowPtrOfCursor )
                         {
@@ -3734,8 +3734,8 @@ IDE_RC smiTableCursor::closeMRVRDB( smiTableCursor * aCursor )
                 sFstOidIndex = 0;
 
                 /*
-                  Áß°£¿¡ SessionÀÌ ²÷¾îÁ³´ÂÁö CheckÇØ¼­ ²÷¾îÁ³À¸¸é
-                  ÇöÀç TransactionÀ» Abort½ÃÅ²´Ù.
+                  ì¤‘ê°„ì— Sessionì´ ëŠì–´ì¡ŒëŠ”ì§€ Checkí•´ì„œ ëŠì–´ì¡Œìœ¼ë©´
+                  í˜„ì¬ Transactionì„ Abortì‹œí‚¨ë‹¤.
                 */
                 IDE_TEST(iduCheckSessionEvent( aCursor->mCursorProp.mStatistics )
                          != IDE_SUCCESS);
@@ -3745,7 +3745,7 @@ IDE_RC smiTableCursor::closeMRVRDB( smiTableCursor * aCursor )
 
         /*---------------------------------
          * PROJ-1509
-         * Cursor close ´ç½Ã Æ®·£Àè¼ÇÀÇ ¸¶Áö¸· oid node Á¤º¸ ¼³Á¤
+         * Cursor close ë‹¹ì‹œ íŠ¸ëœì­ì…˜ì˜ ë§ˆì§€ë§‰ oid node ì •ë³´ ì„¤ì •
          *---------------------------------*/
         aCursor->mLstOidNode = sOIDHeadNodePtr->mPrvNode;
 
@@ -3764,8 +3764,8 @@ IDE_RC smiTableCursor::closeMRVRDB( smiTableCursor * aCursor )
 
     if( sState != 0 )
     {
-        /* BUG-22442: smiTableCursor::close¿¡¼­ error¹ß»ı½Ã Iterator¿¡ ´ëÇØ
-         *            Destroy¸¦ ÇÏÁö ¾Ê°í ÀÖ½À´Ï´Ù. */
+        /* BUG-22442: smiTableCursor::closeì—ì„œ errorë°œìƒì‹œ Iteratorì— ëŒ€í•´
+         *            Destroyë¥¼ í•˜ì§€ ì•Šê³  ìˆìŠµë‹ˆë‹¤. */
         IDE_ASSERT( ((smnIndexModule*)aCursor->mIndexModule)->mDestIterator(
                         aCursor->mIterator )
                     == IDE_SUCCESS );
@@ -3776,8 +3776,8 @@ IDE_RC smiTableCursor::closeMRVRDB( smiTableCursor * aCursor )
 
 /***********************************************************************
  * TASK-5030
- * Description : Full XLog¸¦ À§ÇØ update ÇÒ column list¿Í value list
- *      ¸¦ ¼öÁ¤ÇÑ´Ù.
+ * Description : Full XLogë¥¼ ìœ„í•´ update í•  column listì™€ value list
+ *      ë¥¼ ìˆ˜ì •í•œë‹¤.
  *
  * aCursor              - [IN] table cursor
  * aValueList           - [IN] original value list
@@ -3809,9 +3809,9 @@ IDE_RC smiTableCursor::makeColumnNValueListMRDB(
     void              * sOldColumnValue;
     SChar             * sOldFixRowPtr   = aCursor->mIterator->curRecPtr;
 
-    /* new value°¡ ÀÖ´Â°æ¿ì -> new value¸¦ ±×´ë·Î »ç¿ë
-     * new value¾ø°í Lob typeÀÌ ¾Æ´Ñ°æ¿ì -> old value¸¦ ÀĞ¾î¿Í »ç¿ë
-     * new value¾ø°í Lob typeÀÎ °æ¿ì -> ¹«½Ã */
+    /* new valueê°€ ìˆëŠ”ê²½ìš° -> new valueë¥¼ ê·¸ëŒ€ë¡œ ì‚¬ìš©
+     * new valueì—†ê³  Lob typeì´ ì•„ë‹Œê²½ìš° -> old valueë¥¼ ì½ì–´ì™€ ì‚¬ìš©
+     * new valueì—†ê³  Lob typeì¸ ê²½ìš° -> ë¬´ì‹œ */
     for( i = 0, j = 0, sNewColumnPosition = 0 ;
          i < smcTable::getColumnCount(aCursor->mTable) ;
          i++ )
@@ -3838,7 +3838,7 @@ IDE_RC smiTableCursor::makeColumnNValueListMRDB(
         /* set column list and value list */
         if ( sExistNewValue == ID_TRUE )
         {
-            /* new value°¡ ÀÖÀ¸¸é */
+            /* new valueê°€ ìˆìœ¼ë©´ */
             (aNewColumnList + sNewColumnPosition)->column =
                                 (aUpdateColumnList + j)->column;
             (aNewColumnList + sNewColumnPosition)->next   =
@@ -3854,17 +3854,17 @@ IDE_RC smiTableCursor::makeColumnNValueListMRDB(
         }
         else
         {
-            /* new value°¡ ¾øÀ¸¸é */
+            /* new valueê°€ ì—†ìœ¼ë©´ */
             if( ( sColumn->flag & SMI_COLUMN_COMPRESSION_MASK )
                 != SMI_COLUMN_COMPRESSION_TRUE )
             {
                 sOldColumnLength = smcRecord::getColumnLen( sColumn, sOldFixRowPtr );
 
-                /* smiTableBakcup::appendRow() Âü°íÇØ¼­ ÀÛ¼ºÇÏ¿´À½ */
+                /* smiTableBakcup::appendRow() ì°¸ê³ í•´ì„œ ì‘ì„±í•˜ì˜€ìŒ */
                 switch( sColumn->flag & SMI_COLUMN_TYPE_MASK )
                 {
                     case SMI_COLUMN_TYPE_LOB:
-                        /* Lob typeÀº Á¦¿Ü */
+                        /* Lob typeì€ ì œì™¸ */
                         continue;
 
                     case SMI_COLUMN_TYPE_VARIABLE:
@@ -3891,7 +3891,7 @@ IDE_RC smiTableCursor::makeColumnNValueListMRDB(
                                                                      (SChar*)(aOldValueBuffer + sOldBufferOffset),
                                                                      ID_FALSE );
 
-                            /* value ½ÃÀÛÁöÁ¡À» ÀúÀå */
+                            /* value ì‹œì‘ì§€ì ì„ ì €ì¥ */
                             if( sReadPosition == 0)
                             {
                                 (aNewValueList + sNewColumnPosition)->value = sOldColumnValue;
@@ -3918,7 +3918,7 @@ IDE_RC smiTableCursor::makeColumnNValueListMRDB(
                         break;
 
                     default:
-                        /* ColumnÀº Variable ÀÌ°Å³ª Fixed ÀÌ¾î¾ß ÇÑ´Ù. */
+                        /* Columnì€ Variable ì´ê±°ë‚˜ Fixed ì´ì–´ì•¼ í•œë‹¤. */
                         IDE_ERROR_MSG( 0,
                                        "sColumn->id    :%"ID_UINT32_FMT"\n"
                                        "sColumn->flag  :%"ID_UINT32_FMT"\n"
@@ -3937,8 +3937,8 @@ IDE_RC smiTableCursor::makeColumnNValueListMRDB(
             }
             else
             {
-                /* BUG-39478 supplimental log¿¡¼­ update ÇÒ ¶§
-                 * compressed column¿¡ ´ëÇÑ °í·Á¸¦ ÇÏÁö ¾Ê½À´Ï´Ù. */
+                /* BUG-39478 supplimental logì—ì„œ update í•  ë•Œ
+                 * compressed columnì— ëŒ€í•œ ê³ ë ¤ë¥¼ í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤. */
 
                 sOldColumnValue  = sOldFixRowPtr + sColumn->offset;
 
@@ -3957,7 +3957,7 @@ IDE_RC smiTableCursor::makeColumnNValueListMRDB(
             }
             else
             {
-                /* length°¡ 0ÀÌ¸é value´Â NULL·Î ¼³Á¤ */
+                /* lengthê°€ 0ì´ë©´ valueëŠ” NULLë¡œ ì„¤ì • */
                 (aNewValueList + sNewColumnPosition)->value   = NULL;
             }
 
@@ -3977,17 +3977,17 @@ IDE_RC smiTableCursor::makeColumnNValueListMRDB(
 
 /***********************************************************************
  * TASK-5030
- * Description : Full XLog¸¦ À§ÇØ ÇÊ¿äÇÑ ¸Ş¸ğ¸®¸¦ ÇÒ´ç¹Ş°í, »õ·Î¿î 
- *      column list¿Í value list¸¦ ¸¸µé ÁØºñ¸¦ ÇÑ´Ù.
- *      before value Áß LOB typeÀº Á¦¿ÜÇÑ´Ù.
+ * Description : Full XLogë¥¼ ìœ„í•´ í•„ìš”í•œ ë©”ëª¨ë¦¬ë¥¼ í• ë‹¹ë°›ê³ , ìƒˆë¡œìš´ 
+ *      column listì™€ value listë¥¼ ë§Œë“¤ ì¤€ë¹„ë¥¼ í•œë‹¤.
+ *      before value ì¤‘ LOB typeì€ ì œì™¸í•œë‹¤.
  *
  * aCursor          - [IN] table cursor
  * aValueList       - [IN] original value list
  * aNewColumnList   - [OUT] new column list
  * aNewValueList    - [OUT] new value list
- * aIsReadBeforeImg - [OUT] before value¸¦ ÀĞ´ÂÁö, ¾È ÀĞ´ÂÁö.
- *                          ID_TRUEÀÇ °æ¿ì, before¸¦ ÀĞ¾úÀ½. 
- *                          ¸Ş¸ğ¸® ÇØÁ¦ ÇÊ¿ä
+ * aIsReadBeforeImg - [OUT] before valueë¥¼ ì½ëŠ”ì§€, ì•ˆ ì½ëŠ”ì§€.
+ *                          ID_TRUEì˜ ê²½ìš°, beforeë¥¼ ì½ì—ˆìŒ. 
+ *                          ë©”ëª¨ë¦¬ í•´ì œ í•„ìš”
  **********************************************************************/
 IDE_RC smiTableCursor::makeFullUpdateMRDB( smiTableCursor  * aCursor,
                                            const smiValue  * aValueList,
@@ -4014,10 +4014,10 @@ IDE_RC smiTableCursor::makeFullUpdateMRDB( smiTableCursor  * aCursor,
     SChar                 * sOldFixRowPtr       = aCursor->mIterator->curRecPtr;
 
 
-    // Å×ÀÌºíÀÇ ÃÑ ÄÃ·³ ¼ö
+    // í…Œì´ë¸”ì˜ ì´ ì»¬ëŸ¼ ìˆ˜
     sColumnCount = smcTable::getColumnCount( aCursor->mTable );
 
-    // new valueÀÇ ¼ö, Áï update ¿¬»êÀÌ ¼öÇà µÉ columnÀÇ ¼ö °è»ê
+    // new valueì˜ ìˆ˜, ì¦‰ update ì—°ì‚°ì´ ìˆ˜í–‰ ë  columnì˜ ìˆ˜ ê³„ì‚°
     sUpdateColumnCount  = 0;
     sCurrColumnList     = aCursor->mColumns;
 
@@ -4031,14 +4031,14 @@ IDE_RC smiTableCursor::makeFullUpdateMRDB( smiTableCursor  * aCursor,
 
     IDU_FIT_POINT( "smiTableCursor::makeFullUpdateMRDB::calloc" );
 
-    // new value columnÀ» Á¤·ÄÇÏ±â À§ÇØ ¸Ş¸ğ¸® ÇÒ´ç
+    // new value columnì„ ì •ë ¬í•˜ê¸° ìœ„í•´ ë©”ëª¨ë¦¬ í• ë‹¹
     IDE_TEST( iduMemMgr::calloc( IDU_MEM_SM_SMI,
                                  sUpdateColumnCount,
                                  ID_SIZEOF(smiUpdateColumnList),
                                  (void**)&sUpdateColumnList )
               != IDE_SUCCESS );
 
-    // Á¤·Ä
+    // ì •ë ¬
     sCurrColumnList = aCursor->mColumns;
     for ( i = 0 ; i < sUpdateColumnCount ; i++ )
     {
@@ -4053,14 +4053,14 @@ IDE_RC smiTableCursor::makeFullUpdateMRDB( smiTableCursor  * aCursor,
                   ID_SIZEOF(smiUpdateColumnList),
                   gCompareSmiUpdateColumnListByColId );
 
-    // before columnÀ» ÀúÀåÇÒ ¹öÆÛÀÇ Å©±â¸¦ ±¸ÇÔ. (lobÀº Á¦¿Ü)
+    // before columnì„ ì €ì¥í•  ë²„í¼ì˜ í¬ê¸°ë¥¼ êµ¬í•¨. (lobì€ ì œì™¸)
     for( i = 0, j = 0 ; i < sColumnCount ; i++ )
     {
         sColumn = smcTable::getColumn(aCursor->mTable, i);
 
         if( j < sUpdateColumnCount )
         {
-            /* after image¿¡¼­ ÇØ´ç ÄÃ·³ÀÌ ÀÖ´ÂÁö °Ë»ç */
+            /* after imageì—ì„œ í•´ë‹¹ ì»¬ëŸ¼ì´ ìˆëŠ”ì§€ ê²€ì‚¬ */
             if( sColumn->id == (sUpdateColumnList + j)->column->id )
             {
                 j++;
@@ -4077,17 +4077,17 @@ IDE_RC smiTableCursor::makeFullUpdateMRDB( smiTableCursor  * aCursor,
             sExistNewValue = ID_FALSE;
         }
 
-        /* old value¿¡¼­ ¹Ş¾Æ¿Í¾ß ÇÒ °æ¿ì */
+        /* old valueì—ì„œ ë°›ì•„ì™€ì•¼ í•  ê²½ìš° */
         if( sExistNewValue == ID_FALSE )
         {
-            /* BUG-40650 suppliment log¿¡¼­
-             * old value ÀÇ »ç¿ë À¯¹«¸¦ È®ÀÎÇÕ´Ï´Ù. */
+            /* BUG-40650 suppliment logì—ì„œ
+             * old value ì˜ ì‚¬ìš© ìœ ë¬´ë¥¼ í™•ì¸í•©ë‹ˆë‹¤. */
             sOldValueCnt++;
 
-            /* BUG-39478 supplimental log¿¡¼­ update ÇÒ ¶§
-             * compressed column¿¡ ´ëÇÑ °í·Á¸¦ ÇÏÁö ¾Ê½À´Ï´Ù.
+            /* BUG-39478 supplimental logì—ì„œ update í•  ë•Œ
+             * compressed columnì— ëŒ€í•œ ê³ ë ¤ë¥¼ í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
              *
-             * old value buffer´Â variable column¿¡ ´ëÇØ¼­¸¸ »ç¿ëµË´Ï´Ù. */
+             * old value bufferëŠ” variable columnì— ëŒ€í•´ì„œë§Œ ì‚¬ìš©ë©ë‹ˆë‹¤. */
             if ( ( ( ( sColumn->flag & SMI_COLUMN_TYPE_MASK )
                      == SMI_COLUMN_TYPE_VARIABLE ) ||
                    ( ( sColumn->flag & SMI_COLUMN_TYPE_MASK )
@@ -4130,10 +4130,10 @@ IDE_RC smiTableCursor::makeFullUpdateMRDB( smiTableCursor  * aCursor,
                   != IDE_SUCCESS );
         sState = 2;
 
-        /* BUG-40650 ÀÓ½Ã ¹öÆÛ¸¦ »ç¿ëÇÏ´Â °æ¿ì¿¡¸¸ ÇÒ´çÇÑ´Ù. */
+        /* BUG-40650 ì„ì‹œ ë²„í¼ë¥¼ ì‚¬ìš©í•˜ëŠ” ê²½ìš°ì—ë§Œ í• ë‹¹í•œë‹¤. */
         if( sOldValueBufferSize != 0 )
         {
-            // before column value ÀúÀå¿ë ¹öÆÛ
+            // before column value ì €ì¥ìš© ë²„í¼
             /* smiTableCursor_makeFullUpdateMRDB_calloc_OldValueBuffer.tc */
             IDU_FIT_POINT("smiTableCursor::makeFullUpdateMRDB::calloc::OldValueBuffer");
             IDE_TEST( iduMemMgr::calloc ( IDU_MEM_SM_SMI,
@@ -4161,7 +4161,7 @@ IDE_RC smiTableCursor::makeFullUpdateMRDB( smiTableCursor  * aCursor,
     }
     else
     {
-        // before column value¸¦ °¡Á®¿Ã ÇÊ¿ä°¡ ¾ø´Â °æ¿ì
+        // before column valueë¥¼ ê°€ì ¸ì˜¬ í•„ìš”ê°€ ì—†ëŠ” ê²½ìš°
         (*aNewColumnList)   = NULL;
         (*aNewValueList)    = NULL;
         (*aOldValueBuffer)  = NULL;
@@ -4203,11 +4203,11 @@ IDE_RC smiTableCursor::makeFullUpdateMRDB( smiTableCursor  * aCursor,
 
 
 /***********************************************************************
- * Description : aCursor°¡ °¡¸®Å°´Â Row¸¦ aValueList·Î °»½ÅÇÑ´Ù.
+ * Description : aCursorê°€ ê°€ë¦¬í‚¤ëŠ” Rowë¥¼ aValueListë¡œ ê°±ì‹ í•œë‹¤.
  *
  * aCursor     - [IN] Table Cursor
  * aValueList  - [IN] Update Value List
- * aRetryInfo  - [IN] retry Á¤º¸
+ * aRetryInfo  - [IN] retry ì •ë³´
  **********************************************************************/
 IDE_RC smiTableCursor::updateRowMRVRDB( smiTableCursor       *  aCursor,
                                         const smiValue       *  aValueList,
@@ -4233,7 +4233,7 @@ IDE_RC smiTableCursor::updateRowMRVRDB( smiTableCursor       *  aCursor,
     IDE_TEST_RAISE( aCursor->mIterator->curRecPtr == NULL,
                     ERR_NO_SELECTED_ROW );
 
-    /* TASK-5030 Å¸ DBMS¿Í ¿¬µ¿À» À§ÇÑ ALA ±â´É Ãß°¡ */
+    /* TASK-5030 íƒ€ DBMSì™€ ì—°ë™ì„ ìœ„í•œ ALA ê¸°ëŠ¥ ì¶”ê°€ */
     if ( smcTable::isSupplementalTable( (smcTableHeader*)(aCursor->mTable) ) == ID_TRUE )
     {
         IDE_TEST( makeFullUpdateMRDB( aCursor,
@@ -4247,7 +4247,7 @@ IDE_RC smiTableCursor::updateRowMRVRDB( smiTableCursor       *  aCursor,
 
         if( sIsReadBeforeImg == ID_FALSE )
         {
-            /* before value¸¦ ÀĞ¾î¿Ã ÇÊ¿ä°¡ ¾ø´Â °æ¿ì */
+            /* before valueë¥¼ ì½ì–´ì˜¬ í•„ìš”ê°€ ì—†ëŠ” ê²½ìš° */
             sNewColumnList  = (smiColumnList *)aCursor->mColumns;
             sNewValueList   = (smiValue *)aValueList;
         }
@@ -4267,7 +4267,7 @@ IDE_RC smiTableCursor::updateRowMRVRDB( smiTableCursor       *  aCursor,
     sTableType = SMI_GET_TABLE_TYPE( (smcTableHeader*)(aCursor->mTable) );
 
     /* PROJ-1407 Temporary Table
-     * User temp tableÀÏ °æ¿ì inplace·Î updateÇÑ´Ù. */
+     * User temp tableì¼ ê²½ìš° inplaceë¡œ updateí•œë‹¤. */
     sIsPrivateVol = (( (((smcTableHeader*)(aCursor->mTable))->mFlag)
                        & SMI_TABLE_PRIVATE_VOLATILE_MASK )
                      == SMI_TABLE_PRIVATE_VOLATILE_TRUE ) ? ID_TRUE : ID_FALSE ;
@@ -4314,7 +4314,7 @@ IDE_RC smiTableCursor::updateRowMRVRDB( smiTableCursor       *  aCursor,
 
         if( sIsUpdateInplace == ID_TRUE )
         {
-            /* inplace update ½ÃÀÛ ½ÃÁ¡À» ÀúÀå */
+            /* inplace update ì‹œì‘ ì‹œì ì„ ì €ì¥ */
             aCursor->mUpdateInplaceEscalationPoint = aCursor->mIterator->curRecPtr;
 
             // To Fix BUG-14969
@@ -4349,14 +4349,14 @@ IDE_RC smiTableCursor::updateRowMRVRDB( smiTableCursor       *  aCursor,
             }
             else
             {
-                // mFlag°¡ SMI_INPLACE_DISABLEÀÎ °æ¿ì,
-                // inplace update·Î ¼öÇàµÇ¸é ¾ÈµÊ
-                // < inplace update ÇÏ¸é ¾ÈµÇ´Â ÀÌÀ¯ >
-                //   trigger³ª foreign key°¡ ÀÖ´Â °æ¿ì,
-                //   °»½Å Àü ÈÄ °ªÀ» ÀĞ¾î¾ß ÇÏ´Âµ¥ inplace updateÇÏ¸é
-                //   °»½Å Àü ÈÄ °ªÀ» ±¸ÇÒ ¼ö ¾ø´Ù.
-                //   µû¶ó¼­ QP¿¡¼­ trigger³ª foreign key°¡ ÀÖ´Â °æ¿ì,
-                //   SMI_INPLACE_DISABLE flag¸¦ ¼³Á¤ÇØÁØ´Ù.
+                // mFlagê°€ SMI_INPLACE_DISABLEì¸ ê²½ìš°,
+                // inplace updateë¡œ ìˆ˜í–‰ë˜ë©´ ì•ˆë¨
+                // < inplace update í•˜ë©´ ì•ˆë˜ëŠ” ì´ìœ  >
+                //   triggerë‚˜ foreign keyê°€ ìˆëŠ” ê²½ìš°,
+                //   ê°±ì‹  ì „ í›„ ê°’ì„ ì½ì–´ì•¼ í•˜ëŠ”ë° inplace updateí•˜ë©´
+                //   ê°±ì‹  ì „ í›„ ê°’ì„ êµ¬í•  ìˆ˜ ì—†ë‹¤.
+                //   ë”°ë¼ì„œ QPì—ì„œ triggerë‚˜ foreign keyê°€ ìˆëŠ” ê²½ìš°,
+                //   SMI_INPLACE_DISABLE flagë¥¼ ì„¤ì •í•´ì¤€ë‹¤.
             }
 
         } // aCursor->mIsSolCursor
@@ -4368,11 +4368,11 @@ IDE_RC smiTableCursor::updateRowMRVRDB( smiTableCursor       *  aCursor,
         if( sUpdateMaxLogSize != 0 )
         {
             /* BUG-19080: 
-             *     OLD VersionÀÇ ¾çÀÌ ÀÏÁ¤ÀÌ»ó ¸¸µé¸é ÇØ´ç TransactionÀ»
-             *     AbortÇÏ´Â ±â´ÉÀÌ ÇÊ¿äÇÕ´Ï´Ù.
+             *     OLD Versionì˜ ì–‘ì´ ì¼ì •ì´ìƒ ë§Œë“¤ë©´ í•´ë‹¹ Transactionì„
+             *     Abortí•˜ëŠ” ê¸°ëŠ¥ì´ í•„ìš”í•©ë‹ˆë‹¤.
              *
-             * TRX_UPDATE_MAX_LOGSIZEÀÌ 0ÀÌ¸é ÀÌ Property´Â DisableµÈ °ÍÀÌ¹Ç·Î
-             * ¹«½ÃÇÑ´Ù.
+             * TRX_UPDATE_MAX_LOGSIZEì´ 0ì´ë©´ ì´ PropertyëŠ” Disableëœ ê²ƒì´ë¯€ë¡œ
+             * ë¬´ì‹œí•œë‹¤.
              *
              * */
             IDE_TEST_RAISE( sTrans->mUpdateSize > sUpdateMaxLogSize,
@@ -4439,10 +4439,10 @@ IDE_RC smiTableCursor::updateRowMRVRDB( smiTableCursor       *  aCursor,
 }
 
 /***********************************************************************
- * Description : aCursor°¡ °¡¸®Å°´Â Row¸¦ »èÁ¦ÇÑ´Ù.
+ * Description : aCursorê°€ ê°€ë¦¬í‚¤ëŠ” Rowë¥¼ ì‚­ì œí•œë‹¤.
  *
  * aCursor     - [IN] Table Cursor
- * aRetryInfo  - [IN] retry Á¤º¸
+ * aRetryInfo  - [IN] retry ì •ë³´
  **********************************************************************/
 IDE_RC smiTableCursor::deleteRowMRVRDB( smiTableCursor        * aCursor,
                                         const smiDMLRetryInfo * aRetryInfo )
@@ -4518,7 +4518,7 @@ IDE_RC smiTableCursor::openDRDB( smiTableCursor *    aCursor,
             gSmiGlobalCallBackList.checkNeedUndoRecord( aCursor->mStatement, (void*)aTable, &aCursor->mNeedUndoRec );
     }
 
-    /* Table Meta°¡ º¯°æµÇ¾ú´ÂÁö Ã¼Å© */
+    /* Table Metaê°€ ë³€ê²½ë˜ì—ˆëŠ”ì§€ ì²´í¬ */
     SMX_GET_SCN_AND_TID( ((smpSlotHeader*)aTable)->mCreateSCN, sSCN, sTID );
 
     IDE_TEST_RAISE( ( SM_SCN_IS_EQ(&sSCN, &aSCN) != ID_TRUE
@@ -4527,7 +4527,7 @@ IDE_RC smiTableCursor::openDRDB( smiTableCursor *    aCursor,
                       SM_SCN_IS_NOT_INFINITE(sSCN) ),
                     ERR_MODIFIED );
 
-    /* Iterator ÃÊ±âÈ­ */
+    /* Iterator ì´ˆê¸°í™” */
     if(aCursor->mIndex != NULL)
     {
         IDE_TEST_RAISE((((smnIndexHeader*)aCursor->mIndex)->mFlag &
@@ -4539,7 +4539,7 @@ IDE_RC smiTableCursor::openDRDB( smiTableCursor *    aCursor,
             err_inconsistent_index);
     }
 
-    /* FOR A4 : Cursor Property Àû¿ë, aIterator --> mIterator */
+    /* FOR A4 : Cursor Property ì ìš©, aIterator --> mIterator */
     IDE_TEST( ((smnIndexModule*)aCursor->mIndexModule)->mInitIterator(
                   NULL, // PROJ-2446 bugbug
                   aCursor->mIterator,
@@ -4563,13 +4563,13 @@ IDE_RC smiTableCursor::openDRDB( smiTableCursor *    aCursor,
         if( ( aCursor->mNeedUndoRec == ID_TRUE ) ||
             ( aCursor->mCursorType  != SMI_INSERT_CURSOR ) )
         {
-            // Insert¿Í update undo segment¿¡¼­ next undo record°¡ µÉ ÁöÁ¡ÀÇ
-            // RID¸¦ ¹Ì¸® ±¸ÇØ ³õ´Â´Ù. <- close½Ã¿¡ ¿ä±â¼­ ºÎÅÍ Ã³¸®ÇÏ¸é µÊ.
+            // Insertì™€ update undo segmentì—ì„œ next undo recordê°€ ë  ì§€ì ì˜
+            // RIDë¥¼ ë¯¸ë¦¬ êµ¬í•´ ë†“ëŠ”ë‹¤. <- closeì‹œì— ìš”ê¸°ì„œ ë¶€í„° ì²˜ë¦¬í•˜ë©´ ë¨.
             aCursor->mTrans->getUndoCurPos( &aCursor->mFstUndoRecSID,
                                             &aCursor->mFstUndoExtRID );
         }
 
-        // insert, È¤Àº update¿¬»êÀ¸·Î ¿µÇâÀ» ¹Ş´Â Index ¸®½ºÆ®¸¦ ±¸ÇÑ´Ù.
+        // insert, í˜¹ì€ updateì—°ì‚°ìœ¼ë¡œ ì˜í–¥ì„ ë°›ëŠ” Index ë¦¬ìŠ¤íŠ¸ë¥¼ êµ¬í•œë‹¤.
         makeUpdatedIndexList( ((smcTableHeader*)aCursor->mTable),
                               aCursor->mColumns,
                               &aCursor->mModifyIdxBit,
@@ -4614,13 +4614,13 @@ IDE_RC smiTableCursor::closeDRDB4InsertCursor( smiTableCursor * aCursor )
     sUndoPageID = sEntry->mFstUndoPID;
 
     /***************************************************************************
-     * BUG-30109 - Direct-Path INSERT¸¦ ¼öÇàÇÑ CursorÀÏ °æ¿ì,
-     * mDPathSegInfo ³»¿¡¼­ ¸¶Áö¸·À¸·Î ÇÒ´çÇÑ ÆäÀÌÁö¿¡ ´ëÇÏ¿©
-     * setDirty¸¦ ¼öÇàÇØ ÁØ´Ù.
+     * BUG-30109 - Direct-Path INSERTë¥¼ ìˆ˜í–‰í•œ Cursorì¼ ê²½ìš°,
+     * mDPathSegInfo ë‚´ì—ì„œ ë§ˆì§€ë§‰ìœ¼ë¡œ í• ë‹¹í•œ í˜ì´ì§€ì— ëŒ€í•˜ì—¬
+     * setDirtyë¥¼ ìˆ˜í–‰í•´ ì¤€ë‹¤.
      *
-     *  mDPathSegInfo¸¦ ÇÒ´çÇÏ¿© ¸Å´Ş¾Æ ÁÖ±â Àü¿¡ ¿¹¿Ü°¡ ¹ß»ıÇÏ¿© TransactionÀÌ
-     * AbortµÉ °æ¿ì, INSERT METHOD°¡ APPEND¶ó°í ÇØµµ mDPathSegInfo°¡ NULLÀÏ ¼ö
-     * ÀÖ´Ù.
+     *  mDPathSegInfoë¥¼ í• ë‹¹í•˜ì—¬ ë§¤ë‹¬ì•„ ì£¼ê¸° ì „ì— ì˜ˆì™¸ê°€ ë°œìƒí•˜ì—¬ Transactionì´
+     * Abortë  ê²½ìš°, INSERT METHODê°€ APPENDë¼ê³  í•´ë„ mDPathSegInfoê°€ NULLì¼ ìˆ˜
+     * ìˆë‹¤.
      **************************************************************************/
     if( (aCursor->mFlag & SMI_INSERT_METHOD_MASK) == SMI_INSERT_METHOD_APPEND &&
         aCursor->mDPathSegInfo != NULL )
@@ -4636,9 +4636,9 @@ IDE_RC smiTableCursor::closeDRDB4InsertCursor( smiTableCursor * aCursor )
         if ( aCursor->mFstUndoRecSID == SD_NULL_SID )
         {
             //----------------------------
-            // open ´ç½Ã, transactionÀÇ undo record°¡ ÇÏ³ªµµ »ı¼ºµÇÁö ¾Ê¾Æ
-            // Ã¹¹øÂ° insert undo record sid°¡ ¼³Á¤µÇÁö ¾ÊÀº °æ¿ì,
-            // ÀÌ¸¦ ¼³Á¤ÇØÁÜ
+            // open ë‹¹ì‹œ, transactionì˜ undo recordê°€ í•˜ë‚˜ë„ ìƒì„±ë˜ì§€ ì•Šì•„
+            // ì²«ë²ˆì§¸ insert undo record sidê°€ ì„¤ì •ë˜ì§€ ì•Šì€ ê²½ìš°,
+            // ì´ë¥¼ ì„¤ì •í•´ì¤Œ
             //----------------------------
             sFstSlotNum = sEntry->mFstUndoSlotNum;
             IDE_ASSERT( sFstSlotNum != SC_NULL_SLOTNUM );
@@ -4653,7 +4653,7 @@ IDE_RC smiTableCursor::closeDRDB4InsertCursor( smiTableCursor * aCursor )
         }
 
         //----------------------------
-        // ³ªÀÇ cursor°¡ »ı¼ºÇÑ ¸¶Áö¸· insert undo record rid À§Ä¡ ±¸ÇÏ±â
+        // ë‚˜ì˜ cursorê°€ ìƒì„±í•œ ë§ˆì§€ë§‰ insert undo record rid ìœ„ì¹˜ êµ¬í•˜ê¸°
         //----------------------------
         aCursor->mTrans->getUndoCurPos( &aCursor->mLstUndoRecSID,
                                         &aCursor->mLstUndoExtRID );
@@ -4681,9 +4681,9 @@ IDE_RC smiTableCursor::closeDRDB4UpdateCursor( smiTableCursor * aCursor )
         if ( aCursor->mFstUndoRecSID == SD_NULL_SID )
         {
             //----------------------------
-            // open ´ç½Ã, transactionÀÇ undo record°¡ ÇÏ³ªµµ »ı¼ºµÇÁö ¾Ê¾Æ
-            // Ã¹¹øÂ° update undo record sid°¡ ¼³Á¤µÇÁö ¾ÊÀº °æ¿ì,
-            // ÀÌ¸¦ ¼³Á¤ÇØÁÜ
+            // open ë‹¹ì‹œ, transactionì˜ undo recordê°€ í•˜ë‚˜ë„ ìƒì„±ë˜ì§€ ì•Šì•„
+            // ì²«ë²ˆì§¸ update undo record sidê°€ ì„¤ì •ë˜ì§€ ì•Šì€ ê²½ìš°,
+            // ì´ë¥¼ ì„¤ì •í•´ì¤Œ
             //----------------------------
             sFstSlotNum = sEntry->mFstUndoSlotNum;
             IDE_ASSERT( sFstSlotNum != SC_NULL_SLOTNUM );
@@ -4698,7 +4698,7 @@ IDE_RC smiTableCursor::closeDRDB4UpdateCursor( smiTableCursor * aCursor )
         }
 
         //----------------------------
-        // ³ªÀÇ cursor°¡ »ı¼ºÇÑ ¸¶Áö¸· update undo sid À§Ä¡ ±¸ÇÏ±â
+        // ë‚˜ì˜ cursorê°€ ìƒì„±í•œ ë§ˆì§€ë§‰ update undo sid ìœ„ì¹˜ êµ¬í•˜ê¸°
         //----------------------------
         aCursor->mTrans->getUndoCurPos( &aCursor->mLstUndoRecSID,
                                         &aCursor->mLstUndoExtRID );
@@ -4731,9 +4731,9 @@ IDE_RC smiTableCursor::closeDRDB4DeleteCursor( smiTableCursor * aCursor )
         if ( aCursor->mFstUndoRecSID == SD_NULL_SID )
         {
             //----------------------------
-            // open ´ç½Ã, transactionÀÇ undo record°¡ ÇÏ³ªµµ »ı¼ºµÇÁö ¾Ê¾Æ
-            // Ã¹¹øÂ° insert undo record sid°¡ ¼³Á¤µÇÁö ¾ÊÀº °æ¿ì,
-            // ÀÌ¸¦ ¼³Á¤ÇØÁÜ
+            // open ë‹¹ì‹œ, transactionì˜ undo recordê°€ í•˜ë‚˜ë„ ìƒì„±ë˜ì§€ ì•Šì•„
+            // ì²«ë²ˆì§¸ insert undo record sidê°€ ì„¤ì •ë˜ì§€ ì•Šì€ ê²½ìš°,
+            // ì´ë¥¼ ì„¤ì •í•´ì¤Œ
             //----------------------------
             sFstSlotNum = sEntry->mFstUndoSlotNum;
             IDE_ASSERT( sFstSlotNum != SC_NULL_SLOTNUM );
@@ -4748,7 +4748,7 @@ IDE_RC smiTableCursor::closeDRDB4DeleteCursor( smiTableCursor * aCursor )
         }
 
         //----------------------------
-        // ³ªÀÇ cursor°¡ »ı¼ºÇÑ ¸¶Áö¸· undo record rid À§Ä¡ ±¸ÇÏ±â
+        // ë‚˜ì˜ cursorê°€ ìƒì„±í•œ ë§ˆì§€ë§‰ undo record rid ìœ„ì¹˜ êµ¬í•˜ê¸°
         //----------------------------
         aCursor->mTrans->getUndoCurPos(
                         &aCursor->mLstUndoRecSID,
@@ -4765,8 +4765,8 @@ IDE_RC smiTableCursor::closeDRDB( smiTableCursor * aCursor )
                               aCursor->mTrans);
 
     /*
-     * [BUG-24187] RollbackµÉ statement´Â Internal CloseCurosr¸¦
-     * ¼öÇàÇÒ ÇÊ¿ä°¡ ¾ø½À´Ï´Ù.
+     * [BUG-24187] Rollbackë  statementëŠ” Internal CloseCurosrë¥¼
+     * ìˆ˜í–‰í•  í•„ìš”ê°€ ì—†ìŠµë‹ˆë‹¤.
      */
     if( (smiStatement::getSkipCursorClose( aCursor->mStatement ) == ID_FALSE) &&
         (aCursor->mUntouchable == ID_FALSE) &&
@@ -4822,8 +4822,8 @@ IDE_RC smiTableCursor::closeDRDB( smiTableCursor * aCursor )
 
     if( sState != 0 )
     {
-        /* BUG-22442: smiTableCursor::close¿¡¼­ error¹ß»ı½Ã Iterator¿¡ ´ëÇØ
-         *            Destroy¸¦ ÇÏÁö ¾Ê°í ÀÖ½À´Ï´Ù. */
+        /* BUG-22442: smiTableCursor::closeì—ì„œ errorë°œìƒì‹œ Iteratorì— ëŒ€í•´
+         *            Destroyë¥¼ í•˜ì§€ ì•Šê³  ìˆìŠµë‹ˆë‹¤. */
         IDE_ASSERT( ((smnIndexModule*)aCursor->mIndexModule)->mDestIterator(
                         aCursor->mIterator )
                     == IDE_SUCCESS );
@@ -4836,16 +4836,16 @@ IDE_RC smiTableCursor::closeDRDB( smiTableCursor * aCursor )
 /******************************************************************
  * TASK-5030
  * Description :
- *  sdcRow°¡ ³Ñ°ÜÁØ Á¤º¸¸¦ ¹ÙÅÁÀ¸·Î smiValueÇüÅÂ¸¦ ´Ù½Ã ±¸ÃàÇÑ´Ù.
- *  sdnbBTree::makeSmiValueListInFetch()¸¦ Âü°íÇÏ¿© ÀÛ¼ºÇÏ¿´À½
+ *  sdcRowê°€ ë„˜ê²¨ì¤€ ì •ë³´ë¥¼ ë°”íƒ•ìœ¼ë¡œ smiValueí˜•íƒœë¥¼ ë‹¤ì‹œ êµ¬ì¶•í•œë‹¤.
+ *  sdnbBTree::makeSmiValueListInFetch()ë¥¼ ì°¸ê³ í•˜ì—¬ ì‘ì„±í•˜ì˜€ìŒ
  *  
- *  aIndexColumn        - [IN]     ÀÎµ¦½º Ä®·³ Á¤º¸
- *  aCopyOffset         - [IN]     columnÀº ¿©·¯ rowpiece¿¡ ³ª´©¾î ÀúÀåµÉ ¼ö ÀÖÀ¸¹Ç·Î,
- *                                 copy offset Á¤º¸¸¦ ÀÎÀÚ·Î ³Ñ±ä´Ù.
- *                                 aCopyOffsetÀÌ 0ÀÌ¸é first colpieceÀÌ°í
- *                                 aCopyOffsetÀÌ 0ÀÌ ¾Æ´Ï¸é first colpiece°¡ ¾Æ´Ï´Ù.
- *  aColumnValue        - [IN]     º¹»çÇÒ column value
- *  aKeyInfo            - [OUT]    »Ì¾Æ³½ Row¿¡ °üÇÑ Á¤º¸¸¦ ÀúÀåÇÒ °÷ÀÌ´Ù.
+ *  aIndexColumn        - [IN]     ì¸ë±ìŠ¤ ì¹¼ëŸ¼ ì •ë³´
+ *  aCopyOffset         - [IN]     columnì€ ì—¬ëŸ¬ rowpieceì— ë‚˜ëˆ„ì–´ ì €ì¥ë  ìˆ˜ ìˆìœ¼ë¯€ë¡œ,
+ *                                 copy offset ì •ë³´ë¥¼ ì¸ìë¡œ ë„˜ê¸´ë‹¤.
+ *                                 aCopyOffsetì´ 0ì´ë©´ first colpieceì´ê³ 
+ *                                 aCopyOffsetì´ 0ì´ ì•„ë‹ˆë©´ first colpieceê°€ ì•„ë‹ˆë‹¤.
+ *  aColumnValue        - [IN]     ë³µì‚¬í•  column value
+ *  aKeyInfo            - [OUT]    ë½‘ì•„ë‚¸ Rowì— ê´€í•œ ì •ë³´ë¥¼ ì €ì¥í•  ê³³ì´ë‹¤.
  *
  * ****************************************************************/
 IDE_RC smiTableCursor::makeSmiValueListInFetch(
@@ -4871,12 +4871,12 @@ IDE_RC smiTableCursor::makeSmiValueListInFetch(
         sValue->length = aColumnValue->length;
         sValue->value  = sIndexInfo->mBufferCursor;
     }
-    else                   //first col-piece°¡ ¾Æ´Ñ °æ¿ì
+    else                   //first col-pieceê°€ ì•„ë‹Œ ê²½ìš°
     {
         sValue->length += aColumnValue->length;
     }
 
-    if( 0 < aColumnValue->length ) //NULLÀÏ °æ¿ì length´Â 0
+    if( 0 < aColumnValue->length ) //NULLì¼ ê²½ìš° lengthëŠ” 0
     {
         ID_WRITE_AND_MOVE_DEST( sIndexInfo->mBufferCursor,
                                 aColumnValue->value,
@@ -4889,9 +4889,9 @@ IDE_RC smiTableCursor::makeSmiValueListInFetch(
 
 /***********************************************************************
  * TASK-5030
- * Description : Full XLog¸¦ À§ÇÑ new value list¿Í 
- *               new column list¸¦ ¸¸µç´Ù.
- *      sdnbBTree::makeKeyValueFromRow()¸¦ Âü°íÇØ¼­ ÀÛ¼º
+ * Description : Full XLogë¥¼ ìœ„í•œ new value listì™€ 
+ *               new column listë¥¼ ë§Œë“ ë‹¤.
+ *      sdnbBTree::makeKeyValueFromRow()ë¥¼ ì°¸ê³ í•´ì„œ ì‘ì„±
  *
  * aCursor                  - [IN] table cursor
  * aValueList               - [IN] original value list (after value list)
@@ -5105,17 +5105,17 @@ IDE_RC smiTableCursor::makeColumnNValueListDRDB(
 
 /***********************************************************************
  * TASK-5030
- * Description : before value¸¦ ÀúÀåÇÒ ¹öÆÛ Å©±â¸¦ ±¸ÇÏ°í,
- *      Full XLog¸¦ À§ÇØ Fetch Column List ¸¦ ¸¸µç´Ù.
- *      ¿©±â¼­ ¸¸µç Fetch Column List¸¦ makeColumnNValueList4DRDB()
- *      ¿¡¼­ »ç¿ëÇÑ´Ù.
- *      sdnManager::makeFetchColumnList() ¸¦ Âü°íÇÏ¿© ÀÛ¼º
- *      TASK-5030 ÀÌ¿Ü¿¡ »ç¿ëÇÏÁö ¸»°Í. 
- *      LOB Å¸ÀÔÀº ¿ä±¸»çÇ×ÀÌ ¾Æ´Ï¹Ç·Î ¹«½Ã
+ * Description : before valueë¥¼ ì €ì¥í•  ë²„í¼ í¬ê¸°ë¥¼ êµ¬í•˜ê³ ,
+ *      Full XLogë¥¼ ìœ„í•´ Fetch Column List ë¥¼ ë§Œë“ ë‹¤.
+ *      ì—¬ê¸°ì„œ ë§Œë“  Fetch Column Listë¥¼ makeColumnNValueList4DRDB()
+ *      ì—ì„œ ì‚¬ìš©í•œë‹¤.
+ *      sdnManager::makeFetchColumnList() ë¥¼ ì°¸ê³ í•˜ì—¬ ì‘ì„±
+ *      TASK-5030 ì´ì™¸ì— ì‚¬ìš©í•˜ì§€ ë§ê²ƒ. 
+ *      LOB íƒ€ì…ì€ ìš”êµ¬ì‚¬í•­ì´ ì•„ë‹ˆë¯€ë¡œ ë¬´ì‹œ
  *
  * aCursor          - [IN] table cursor
  * aFetchColumnList - [OUT] new fetch column list
- * aMaxRowSize      - [OUT] before value¸¦ ÀúÀåÇÒ ¹öÆÛÀÇ Å©±â
+ * aMaxRowSize      - [OUT] before valueë¥¼ ì €ì¥í•  ë²„í¼ì˜ í¬ê¸°
  **********************************************************************/
 IDE_RC smiTableCursor::makeFetchColumnList( smiTableCursor      * aCursor,
                                             smiFetchColumnList  * aFetchColumnList,
@@ -5321,11 +5321,11 @@ IDE_RC smiTableCursor::makeFullUpdateDRDB( smiTableCursor    * aCursor,
 
 
 /***********************************************************************
- * Description : ÇöÀç CursorÀÇ Iterator°¡ °¡¸®Å°´Â Row¸¦ updateÇÑ´Ù.
+ * Description : í˜„ì¬ Cursorì˜ Iteratorê°€ ê°€ë¦¬í‚¤ëŠ” Rowë¥¼ updateí•œë‹¤.
  *
  * aCursor     - [IN] Table Cursor
  * aValueList  - [IN] Update Value List
- * aRetryInfo  - [IN] retry Á¤º¸
+ * aRetryInfo  - [IN] retry ì •ë³´
  **********************************************************************/
 IDE_RC smiTableCursor::updateRowDRDB( smiTableCursor       * aCursor,
                                       const smiValue       * aValueList,
@@ -5341,7 +5341,7 @@ IDE_RC smiTableCursor::updateRowDRDB( smiTableCursor       * aCursor,
              SC_GRID_IS_NULL(aCursor->mIterator->mRowGRID) == ID_TRUE,
              ERR_NO_SELECTED_ROW );
 
-    /* TASK-5030 Å¸ DBMS¿Í ¿¬µ¿À» À§ÇÑ ALA ±â´É Ãß°¡ */
+    /* TASK-5030 íƒ€ DBMSì™€ ì—°ë™ì„ ìœ„í•œ ALA ê¸°ëŠ¥ ì¶”ê°€ */
     if ( smcTable::isSupplementalTable( (smcTableHeader*)(aCursor->mTable) ) == ID_TRUE )
     {
         IDE_TEST( makeFullUpdateDRDB( aCursor,
@@ -5355,7 +5355,7 @@ IDE_RC smiTableCursor::updateRowDRDB( smiTableCursor       * aCursor,
 
         if( sIsReadBeforeImg == ID_FALSE )
         {
-            /* before value¸¦ ÀĞ¾î¿Ã ÇÊ¿ä°¡ ¾ø´Â °æ¿ì */
+            /* before valueë¥¼ ì½ì–´ì˜¬ í•„ìš”ê°€ ì—†ëŠ” ê²½ìš° */
             sNewColumnList  = (smiColumnList *)aCursor->mColumns;
             sNewValueList   = (smiValue *)aValueList;
         }
@@ -5388,8 +5388,8 @@ IDE_RC smiTableCursor::updateRowDRDB( smiTableCursor       * aCursor,
                                 != IDE_SUCCESS );
 
     /*
-     * ÀÎµ¦½º Å°¸¦ ·¹ÄÚµåº¸´Ù ¸ÕÀú Áö¿ö¼­´Â ¾ÈµÈ´Ù.
-     * ¹İµå½Ã lock validationÀ» °ÅÄ£ ÈÄ¿¡ ÀÎµ¦½º Å°¸¦ »èÁ¦ÇØ¾ß ÇÑ´Ù.
+     * ì¸ë±ìŠ¤ í‚¤ë¥¼ ë ˆì½”ë“œë³´ë‹¤ ë¨¼ì € ì§€ì›Œì„œëŠ” ì•ˆëœë‹¤.
+     * ë°˜ë“œì‹œ lock validationì„ ê±°ì¹œ í›„ì— ì¸ë±ìŠ¤ í‚¤ë¥¼ ì‚­ì œí•´ì•¼ í•œë‹¤.
      */
     if( SMI_TABLE_TYPE_IS_DISK( (smcTableHeader*)aCursor->mTable ) == ID_TRUE )
     {
@@ -5437,10 +5437,10 @@ IDE_RC smiTableCursor::updateRowDRDB( smiTableCursor       * aCursor,
 }
 
 /***********************************************************************
- * Description : ÇöÀç CursorÀÇ Iterator°¡ °¡¸®Å°´Â Row¸¦ deleteÇÑ´Ù.
+ * Description : í˜„ì¬ Cursorì˜ Iteratorê°€ ê°€ë¦¬í‚¤ëŠ” Rowë¥¼ deleteí•œë‹¤.
  *
  * aCursor     - [IN] Table Cursor
- * aRetryInfo  - [IN] retry Á¤º¸
+ * aRetryInfo  - [IN] retry ì •ë³´
  **********************************************************************/
 IDE_RC smiTableCursor::deleteRowDRDB( smiTableCursor        * aCursor,
                                       const smiDMLRetryInfo * aRetryInfo )
@@ -5461,9 +5461,9 @@ IDE_RC smiTableCursor::deleteRowDRDB( smiTableCursor        * aCursor,
               != IDE_SUCCESS );
 
     /*
-     * Áö¿öÁø Å°¸¦ ´Ù½Ã »èÁ¦ÇÒ¼ö ÀÖ±â ¶§¹®¿¡
-     * ÀÎµ¦½º Å°¸¦ ·¹ÄÚµåº¸´Ù ¸ÕÀú Áö¿ö¼­´Â ¾ÈµÈ´Ù.
-     * ¹İµå½Ã lock validationÀ» °ÅÄ£ ÈÄ¿¡ ÀÎµ¦½º Å°¸¦ »èÁ¦ÇØ¾ß ÇÑ´Ù.
+     * ì§€ì›Œì§„ í‚¤ë¥¼ ë‹¤ì‹œ ì‚­ì œí• ìˆ˜ ìˆê¸° ë•Œë¬¸ì—
+     * ì¸ë±ìŠ¤ í‚¤ë¥¼ ë ˆì½”ë“œë³´ë‹¤ ë¨¼ì € ì§€ì›Œì„œëŠ” ì•ˆëœë‹¤.
+     * ë°˜ë“œì‹œ lock validationì„ ê±°ì¹œ í›„ì— ì¸ë±ìŠ¤ í‚¤ë¥¼ ì‚­ì œí•´ì•¼ í•œë‹¤.
      */
     if( SMI_TABLE_TYPE_IS_DISK( (smcTableHeader*)aCursor->mTable ) == ID_TRUE )
     {
@@ -5487,8 +5487,8 @@ IDE_RC smiTableCursor::deleteRowDRDB( smiTableCursor        * aCursor,
 }
 
 /***********************************************************************
- * Description : Disk Temp Table  Cursor Functions disk temp table¿¡ ´ëÇÑ
-                 action tableÀ¸·ÎºÎÅÍ member function pointer¸¦ setting.
+ * Description : Disk Temp Table  Cursor Functions disk temp tableì— ëŒ€í•œ
+                 action tableìœ¼ë¡œë¶€í„° member function pointerë¥¼ setting.
                  - mInsert,mUpdate,mDelete.
  **********************************************************************/
 IDE_RC smiTableCursor::openTempDRDB( smiTableCursor *    aCursor,
@@ -5506,7 +5506,7 @@ IDE_RC smiTableCursor::openTempDRDB( smiTableCursor *    aCursor,
 
     smnIndexModule * sIndexModule = (smnIndexModule*)aCursor->mIndexModule;
 
-    /* Table Meta°¡ º¯°æµÇ¾ú´ÂÁö Ã¼Å© */
+    /* Table Metaê°€ ë³€ê²½ë˜ì—ˆëŠ”ì§€ ì²´í¬ */
     SMX_GET_SCN_AND_TID( ((smpSlotHeader*)aTable)->mCreateSCN, sSCN, sTID );
 
     IDE_TEST_RAISE( ( ( SM_SCN_IS_EQ(&sSCN, &aSCN) != ID_TRUE ) &&
@@ -5521,7 +5521,7 @@ IDE_RC smiTableCursor::openTempDRDB( smiTableCursor *    aCursor,
                        != SMI_INDEX_USE_ENABLE, err_disabled_index);
     }
 
-    /* FOR A4 : Cursor Property Àû¿ë, aIterator --> mIterator */
+    /* FOR A4 : Cursor Property ì ìš©, aIterator --> mIterator */
     IDE_TEST( sIndexModule->mInitIterator( NULL, // PROJ-2446 bugbug
                                            aCursor->mIterator,
                                            aCursor->mTrans,
@@ -5578,14 +5578,14 @@ IDE_RC smiTableCursor::openTempDRDB( smiTableCursor *    aCursor,
 }
 
 /***********************************************************************
- * Description : Disk Temp Table  Cursor Functions disk temp table°ü·Ã
-                 ¿¬»êÀº undo record¸¦ »ı¼ºÇÏÁö ¾Ê±â¶§¹®¿¡ Æ¯º°È÷ ÇÒÀÏÀÌ ¾ø´Ù.
+ * Description : Disk Temp Table  Cursor Functions disk temp tableê´€ë ¨
+                 ì—°ì‚°ì€ undo recordë¥¼ ìƒì„±í•˜ì§€ ì•Šê¸°ë•Œë¬¸ì— íŠ¹ë³„íˆ í• ì¼ì´ ì—†ë‹¤.
  **********************************************************************/
 IDE_RC smiTableCursor::closeTempDRDB( smiTableCursor * aCursor )
 {
-    /* BUG-22294: Buffer MissÈ¯°æ¿¡¼­ HangÀÎ °ÍÃ³·³ º¸ÀÔ´Ï´Ù.
+    /* BUG-22294: Buffer Missí™˜ê²½ì—ì„œ Hangì¸ ê²ƒì²˜ëŸ¼ ë³´ì…ë‹ˆë‹¤.
      *
-     * Full ScanÀÏ°æ¿ì MPRMgrÀÌ Á¤¸®µÇÁö ¾Ê¾ÒÀ½.
+     * Full Scanì¼ê²½ìš° MPRMgrì´ ì •ë¦¬ë˜ì§€ ì•Šì•˜ìŒ.
      * */
     IDE_TEST( ((smnIndexModule*)aCursor->mIndexModule)->mDestIterator(
                   aCursor->mIterator )
@@ -5653,7 +5653,7 @@ const smiCallBack * smiTableCursor::getDefaultFilter( )
   PROJ-1509
   Function Description: beforeFirstModifiedMRVRDB
   Implementation :
-       cursor°¡ Ã¹¹øÂ° »ı¼ºÇÑ Oid À§Ä¡ Á¤º¸ ÀúÀå
+       cursorê°€ ì²«ë²ˆì§¸ ìƒì„±í•œ Oid ìœ„ì¹˜ ì •ë³´ ì €ì¥
 ***********************************************************/
 IDE_RC smiTableCursor::beforeFirstModifiedMRVRDB( smiTableCursor * aCursor,
                                                   UInt             aFlag )
@@ -5664,7 +5664,7 @@ IDE_RC smiTableCursor::beforeFirstModifiedMRVRDB( smiTableCursor * aCursor,
     if ( ( aCursor->mFstOidNode == aCursor->mLstOidNode ) &&
          ( aCursor->mFstOidCount == aCursor->mLstOidCount ) )
     {
-        // ÇöÀç cursor¿¡ ÀÇÇØ »ı¼ºµÈ oid record°¡ ¾ø´Â °æ¿ì
+        // í˜„ì¬ cursorì— ì˜í•´ ìƒì„±ëœ oid recordê°€ ì—†ëŠ” ê²½ìš°
         aCursor->mCurOidNode = NULL;
         aCursor->mCurOidIndex = 0;
     }
@@ -5674,8 +5674,8 @@ IDE_RC smiTableCursor::beforeFirstModifiedMRVRDB( smiTableCursor * aCursor,
         {
             IDE_ASSERT( aCursor->mFstOidNode != NULL );
 
-            // mOidNodeÀÇ ¸¶Áö¸· record ÀÏ °æ¿ì,
-            // ´ÙÀ½ mOidNodeÀÇ Ã¹¹øÂ° record·Î ¼³Á¤ÇØ¾ß ÇÔ
+            // mOidNodeì˜ ë§ˆì§€ë§‰ record ì¼ ê²½ìš°,
+            // ë‹¤ìŒ mOidNodeì˜ ì²«ë²ˆì§¸ recordë¡œ ì„¤ì •í•´ì•¼ í•¨
             aCursor->mCurOidNode =
                 ((smxOIDNode*)aCursor->mFstOidNode)->mNxtNode;
             aCursor->mCurOidIndex = 0;
@@ -5698,9 +5698,9 @@ IDE_RC smiTableCursor::beforeFirstModifiedMRVRDB( smiTableCursor * aCursor,
 /*********************************************************
   function description: readOldRowMRVRDB
   Implementation :
-      (1) beforeFirstModified() ÇÔ¼ö°¡ ÀÌ¹Ì ¼öÇàµÇ¾ú´ÂÁö °Ë»ç
-      (2) OldRow ¸¦ Ã£À½
-      (3) °á°ú ¹İÈ¯
+      (1) beforeFirstModified() í•¨ìˆ˜ê°€ ì´ë¯¸ ìˆ˜í–‰ë˜ì—ˆëŠ”ì§€ ê²€ì‚¬
+      (2) OldRow ë¥¼ ì°¾ìŒ
+      (3) ê²°ê³¼ ë°˜í™˜
 ***********************************************************/
 IDE_RC smiTableCursor::readOldRowMRVRDB( smiTableCursor * aCursor,
                                          const void    ** aRow,
@@ -5713,7 +5713,7 @@ IDE_RC smiTableCursor::readOldRowMRVRDB( smiTableCursor * aCursor,
     UInt         sMaxOIDCnt   = smuProperty::getOIDListCount();
 
     //------------------------
-    // (1) beforeFirstModified()¸¦ ÀÌÀü¿¡ ¼öÇàÇÏ¿´´ÂÁö °Ë»ç
+    // (1) beforeFirstModified()ë¥¼ ì´ì „ì— ìˆ˜í–‰í•˜ì˜€ëŠ”ì§€ ê²€ì‚¬
     //------------------------
 
     IDE_ASSERT( ( aCursor->mFlag & SMI_FIND_MODIFIED_MASK )
@@ -5722,7 +5722,7 @@ IDE_RC smiTableCursor::readOldRowMRVRDB( smiTableCursor * aCursor,
     IDE_ASSERT( aCursor->mCursorType != SMI_INSERT_CURSOR );
 
     //------------------------
-    // (2) old row¸¦ Ã£À½
+    // (2) old rowë¥¼ ì°¾ìŒ
     //------------------------
 
     while(aCursor->mCurOidNode != NULL)
@@ -5730,8 +5730,8 @@ IDE_RC smiTableCursor::readOldRowMRVRDB( smiTableCursor * aCursor,
         if ( ( aCursor->mCurOidNode == aCursor->mLstOidNode ) &&
              ( aCursor->mCurOidIndex == aCursor->mLstOidCount ) )  // BUG-23370
         {
-            // cursor°¡ »ı¼ºÇÑ undo record´Â ¸ğµÎ ÀĞ¾î¼­ ´õÀÌ»ó
-            // ÀĞ¾î¾ß ÇÒ undo record°¡ Á¸ÀçÇÏÁö ¾ÊÀ½
+            // cursorê°€ ìƒì„±í•œ undo recordëŠ” ëª¨ë‘ ì½ì–´ì„œ ë”ì´ìƒ
+            // ì½ì–´ì•¼ í•  undo recordê°€ ì¡´ì¬í•˜ì§€ ì•ŠìŒ
             aCursor->mCurOidNode = NULL;
             aCursor->mCurOidIndex = 0;
             break;
@@ -5744,19 +5744,19 @@ IDE_RC smiTableCursor::readOldRowMRVRDB( smiTableCursor * aCursor,
                                mArrOIDInfo[aCursor->mCurOidIndex]);
 
                 //------------------------
-                // ³ªÀÇ  cursor°¡ °»½ÅÇÑ old record ÀÎÁö °Ë»ç
+                // ë‚˜ì˜  cursorê°€ ê°±ì‹ í•œ old record ì¸ì§€ ê²€ì‚¬
                 //------------------------
 
                 if ( sCurOIDRec->mTableOID == aCursor->mTableInfo->mTableOID )
                 {
                     sCurRowOID = sCurOIDRec->mTargetOID;
 
-                    // old record ÀÎÁö °Ë»ç
+                    // old record ì¸ì§€ ê²€ì‚¬
                     if (  ((sCurOIDRec->mFlag & SM_OID_OP_MASK) == SM_OID_OP_OLD_FIXED_SLOT)
-                          /*delete row ¿¬»êÀ» ¼öÇàÇÑ row´Â readOldRow¿¡ ÀÇÇØ ÀĞÇôÁ®¾ß ÇÑ´Ù.*/
+                          /*delete row ì—°ì‚°ì„ ìˆ˜í–‰í•œ rowëŠ” readOldRowì— ì˜í•´ ì½í˜€ì ¸ì•¼ í•œë‹¤.*/
                         ||((sCurOIDRec->mFlag & SM_OID_OP_MASK) == SM_OID_OP_DELETED_SLOT))
                     {
-                        // old record¸¦ Ã£À½
+                        // old recordë¥¼ ì°¾ìŒ
                         sFoundOldRow = ID_TRUE;
                         sSpaceID = sCurOIDRec->mSpaceID;
                         IDE_ASSERT( sgmManager::getOIDPtr( sSpaceID,
@@ -5781,7 +5781,7 @@ IDE_RC smiTableCursor::readOldRowMRVRDB( smiTableCursor * aCursor,
         }
 
         //------------------------
-        // ´ÙÀ½ oid record·Î ÁøÇà
+        // ë‹¤ìŒ oid recordë¡œ ì§„í–‰
         //------------------------
 
         aCursor->mCurOidIndex++;
@@ -5789,8 +5789,8 @@ IDE_RC smiTableCursor::readOldRowMRVRDB( smiTableCursor * aCursor,
         // To Fix BUG-14927
         if ( aCursor->mCurOidIndex > sMaxOIDCnt )
         {
-            // ÇöÀç OID Node¿¡ OID Record¸¦ ¸ğµÎ ÀĞ¾úÀ¸¸é
-            // ´ÙÀ½ OID Node·Î ÁøÇà
+            // í˜„ì¬ OID Nodeì— OID Recordë¥¼ ëª¨ë‘ ì½ì—ˆìœ¼ë©´
+            // ë‹¤ìŒ OID Nodeë¡œ ì§„í–‰
             aCursor->mCurOidNode =
                 ((smxOIDNode*)(aCursor->mCurOidNode))->mNxtNode;
             aCursor->mCurOidIndex = 0;
@@ -5801,7 +5801,7 @@ IDE_RC smiTableCursor::readOldRowMRVRDB( smiTableCursor * aCursor,
         }
 
         //------------------------
-        // row¸¦ Ã£Àº °æ¿ì, Áß´Ü
+        // rowë¥¼ ì°¾ì€ ê²½ìš°, ì¤‘ë‹¨
         //------------------------
 
         if ( sFoundOldRow == ID_TRUE )
@@ -5815,7 +5815,7 @@ IDE_RC smiTableCursor::readOldRowMRVRDB( smiTableCursor * aCursor,
     }
 
     //------------------------
-    // (3) °á°ú ¹İÈ¯
+    // (3) ê²°ê³¼ ë°˜í™˜
     //------------------------
 
     if ( sFoundOldRow == ID_TRUE )
@@ -5837,9 +5837,9 @@ IDE_RC smiTableCursor::readOldRowMRVRDB( smiTableCursor * aCursor,
 /*********************************************************
   function description: readNewRowMRVRDB
   Implementation :
-      (1) beforeFirstModified() ÇÔ¼ö°¡ ÀÌ¹Ì ¼öÇàµÇ¾ú´ÂÁö °Ë»ç
-      (2) NewRow ¸¦ Ã£À½
-      (3) °á°ú ¹İÈ¯
+      (1) beforeFirstModified() í•¨ìˆ˜ê°€ ì´ë¯¸ ìˆ˜í–‰ë˜ì—ˆëŠ”ì§€ ê²€ì‚¬
+      (2) NewRow ë¥¼ ì°¾ìŒ
+      (3) ê²°ê³¼ ë°˜í™˜
 ***********************************************************/
 IDE_RC smiTableCursor::readNewRowMRVRDB( smiTableCursor * aCursor,
                                          const void    ** aRow,
@@ -5852,7 +5852,7 @@ IDE_RC smiTableCursor::readNewRowMRVRDB( smiTableCursor * aCursor,
     UInt         sMaxOIDCnt   = smuProperty::getOIDListCount();
 
     //------------------------
-    // (1) beforeFirstModified()¸¦ ÀÌÀü¿¡ ¼öÇàÇÏ¿´´ÂÁö °Ë»ç
+    // (1) beforeFirstModified()ë¥¼ ì´ì „ì— ìˆ˜í–‰í•˜ì˜€ëŠ”ì§€ ê²€ì‚¬
     //------------------------
 
     IDE_ASSERT( ( aCursor->mFlag & SMI_FIND_MODIFIED_MASK )
@@ -5861,7 +5861,7 @@ IDE_RC smiTableCursor::readNewRowMRVRDB( smiTableCursor * aCursor,
     IDE_ASSERT( aCursor->mCursorType != SMI_DELETE_CURSOR );
 
     //------------------------
-    // (2) new row¸¦ Ã£À½
+    // (2) new rowë¥¼ ì°¾ìŒ
     //------------------------
 
     while(aCursor->mCurOidNode != NULL)
@@ -5869,8 +5869,8 @@ IDE_RC smiTableCursor::readNewRowMRVRDB( smiTableCursor * aCursor,
         if ( ( aCursor->mCurOidNode == aCursor->mLstOidNode ) &&
              ( aCursor->mCurOidIndex == aCursor->mLstOidCount ) )  // BUG-23370
         {
-            // cursor°¡ »ı¼ºÇÑ undo record´Â ¸ğµÎ ÀĞ¾î¼­ ´õÀÌ»ó
-            // ÀĞ¾î¾ß ÇÒ undo record°¡ Á¸ÀçÇÏÁö ¾ÊÀ½
+            // cursorê°€ ìƒì„±í•œ undo recordëŠ” ëª¨ë‘ ì½ì–´ì„œ ë”ì´ìƒ
+            // ì½ì–´ì•¼ í•  undo recordê°€ ì¡´ì¬í•˜ì§€ ì•ŠìŒ
             aCursor->mCurOidNode = NULL;
             aCursor->mCurOidIndex = 0;
             break;
@@ -5883,7 +5883,7 @@ IDE_RC smiTableCursor::readNewRowMRVRDB( smiTableCursor * aCursor,
                                mArrOIDInfo[aCursor->mCurOidIndex]);
 
                 //------------------------
-                // ³ªÀÇ  cursor°¡ °»½ÅÇÑ new record ÀÎÁö °Ë»ç
+                // ë‚˜ì˜  cursorê°€ ê°±ì‹ í•œ new record ì¸ì§€ ê²€ì‚¬
                 //------------------------
 
                 if( sCurOIDRec->mTableOID == aCursor->mTableInfo->mTableOID )
@@ -5891,11 +5891,11 @@ IDE_RC smiTableCursor::readNewRowMRVRDB( smiTableCursor * aCursor,
 
                     sCurRowOID = sCurOIDRec->mTargetOID;
 
-                    // new record ÀÎÁö °Ë»ç
+                    // new record ì¸ì§€ ê²€ì‚¬
                     if ((sCurOIDRec->mFlag & SM_OID_OP_MASK)
                         == SM_OID_OP_NEW_FIXED_SLOT)
                     {
-                        // new record¸¦ Ã£À½
+                        // new recordë¥¼ ì°¾ìŒ
                         sFoundNewRow = ID_TRUE;
                         sSpaceID = sCurOIDRec->mSpaceID;
                         IDE_ASSERT( sgmManager::getOIDPtr( sSpaceID,
@@ -5920,7 +5920,7 @@ IDE_RC smiTableCursor::readNewRowMRVRDB( smiTableCursor * aCursor,
         }
 
         //------------------------
-        // ´ÙÀ½ oid record·Î ÁøÇà
+        // ë‹¤ìŒ oid recordë¡œ ì§„í–‰
         //------------------------
 
         aCursor->mCurOidIndex++;
@@ -5928,8 +5928,8 @@ IDE_RC smiTableCursor::readNewRowMRVRDB( smiTableCursor * aCursor,
         // To Fix BUG-14927
         if ( aCursor->mCurOidIndex > sMaxOIDCnt )
         {
-            // ÇöÀç OID Node¿¡ OID Record¸¦ ¸ğµÎ ÀĞ¾úÀ¸¸é
-            // ´ÙÀ½ OID Node·Î ÁøÇà
+            // í˜„ì¬ OID Nodeì— OID Recordë¥¼ ëª¨ë‘ ì½ì—ˆìœ¼ë©´
+            // ë‹¤ìŒ OID Nodeë¡œ ì§„í–‰
             aCursor->mCurOidNode =
                 ((smxOIDNode*)(aCursor->mCurOidNode))->mNxtNode;
             aCursor->mCurOidIndex = 0;
@@ -5940,7 +5940,7 @@ IDE_RC smiTableCursor::readNewRowMRVRDB( smiTableCursor * aCursor,
         }
 
         //------------------------
-        // row¸¦ Ã£Àº °æ¿ì, Áß´Ü
+        // rowë¥¼ ì°¾ì€ ê²½ìš°, ì¤‘ë‹¨
         //------------------------
 
         if ( sFoundNewRow == ID_TRUE )
@@ -5954,7 +5954,7 @@ IDE_RC smiTableCursor::readNewRowMRVRDB( smiTableCursor * aCursor,
     }
 
     //------------------------
-    // (3) °á°ú ¹İÈ¯
+    // (3) ê²°ê³¼ ë°˜í™˜
     //------------------------
 
     if ( sFoundNewRow == ID_TRUE )
@@ -5975,7 +5975,7 @@ IDE_RC smiTableCursor::readNewRowMRVRDB( smiTableCursor * aCursor,
 /*********************************************************
   Function Description: beforeFirstModifiedDRDB
   Implementation :
-      cursor°¡ Ã¹¹øÂ° »ı¼ºµÈ undo record À§Ä¡ Á¤º¸ ÀúÀå
+      cursorê°€ ì²«ë²ˆì§¸ ìƒì„±ëœ undo record ìœ„ì¹˜ ì •ë³´ ì €ì¥
 ***********************************************************/
 IDE_RC smiTableCursor::beforeFirstModifiedDRDB( smiTableCursor * aCursor,
                                                 UInt             aFlag )
@@ -5983,7 +5983,7 @@ IDE_RC smiTableCursor::beforeFirstModifiedDRDB( smiTableCursor * aCursor,
     aCursor->mFlag &= ~SMI_FIND_MODIFIED_MASK;
     aCursor->mFlag |= aFlag;
 
-    // °»½Å ¿¬»ê¿¡ ´ëÇØ¼­¸¸ Áö¿ø
+    // ê°±ì‹  ì—°ì‚°ì— ëŒ€í•´ì„œë§Œ ì§€ì›
     switch( aCursor->mCursorType )
     {
         case SMI_INSERT_CURSOR:
@@ -6026,15 +6026,15 @@ IDE_RC smiTableCursor::beforeFirstModifiedDRDB( smiTableCursor * aCursor,
         case SMI_SELECT_CURSOR:
         {
             // To Fix BUG-14955
-            // mCursorType Á¤º¸´Â ¿ø·¡ cursor open ½Ã¿¡ QP°¡ »ç¿ë ¸ñÀû¿¡
-            // µû¶ó °áÁ¤ÇØ¼­ SM¿¡°Ô ³Ñ°ÜÁÖ´Â °ÍÀÌ °¡Àå ¹Ù¶÷Á÷ÇÏ´Ù.
-            // ±×·¯³ª ÇöÀç mCursorType Á¤º¸´Â updateRow(), insertRow(),
-            // deleteRow() È£Ãâ ½Ã¿¡ ÀÌ ÇÔ¼öµé ¾È¿¡¼­ ¼³Á¤µÇµµ·Ï ±¸ÇöµÇ¾î
-            // ÀÖ´Ù.
-            // µû¶ó¼­ QP¿¡¼­ update¸¦ À§ÇÏ¿© cursor¸¦ openÇÏ¿©µµ
-            // Á¶°Ç¿¡ ¸Â´Â row°¡ ¾ø¾î ½ÇÁ¦ updateRow()°¡ È£ÃâµÇÁö ¾Ê¾ÒÀ»
-            // °æ¿ì, cursor typeÀÌ SMI_SELECT_CURSORÀÏ ¼ö ÀÖ´Ù.
-            // ( SMI_SELECT_CURSOR°¡ default typeÀÌ´Ù. )
+            // mCursorType ì •ë³´ëŠ” ì›ë˜ cursor open ì‹œì— QPê°€ ì‚¬ìš© ëª©ì ì—
+            // ë”°ë¼ ê²°ì •í•´ì„œ SMì—ê²Œ ë„˜ê²¨ì£¼ëŠ” ê²ƒì´ ê°€ì¥ ë°”ëŒì§í•˜ë‹¤.
+            // ê·¸ëŸ¬ë‚˜ í˜„ì¬ mCursorType ì •ë³´ëŠ” updateRow(), insertRow(),
+            // deleteRow() í˜¸ì¶œ ì‹œì— ì´ í•¨ìˆ˜ë“¤ ì•ˆì—ì„œ ì„¤ì •ë˜ë„ë¡ êµ¬í˜„ë˜ì–´
+            // ìˆë‹¤.
+            // ë”°ë¼ì„œ QPì—ì„œ updateë¥¼ ìœ„í•˜ì—¬ cursorë¥¼ opení•˜ì—¬ë„
+            // ì¡°ê±´ì— ë§ëŠ” rowê°€ ì—†ì–´ ì‹¤ì œ updateRow()ê°€ í˜¸ì¶œë˜ì§€ ì•Šì•˜ì„
+            // ê²½ìš°, cursor typeì´ SMI_SELECT_CURSORì¼ ìˆ˜ ìˆë‹¤.
+            // ( SMI_SELECT_CURSORê°€ default typeì´ë‹¤. )
             // To Fix BUG-14990
             aCursor->mFlag &= ~SMI_READ_UNDO_PAGE_LIST_MASK;
             aCursor->mFlag |= SMI_READ_UNDO_PAGE_LIST_NONE;
@@ -6042,8 +6042,8 @@ IDE_RC smiTableCursor::beforeFirstModifiedDRDB( smiTableCursor * aCursor,
         }
         case SMI_LOCKROW_CURSOR:
         {
-            // Referential constraint check¸¦ À§ÇÑ lock row Ä¿¼­¿¡¼­´Â
-            // º» ÇÔ¼ö°¡ ºÒ·Á¼­´Â ¾ÈµÈ´Ù.
+            // Referential constraint checkë¥¼ ìœ„í•œ lock row ì»¤ì„œì—ì„œëŠ”
+            // ë³¸ í•¨ìˆ˜ê°€ ë¶ˆë ¤ì„œëŠ” ì•ˆëœë‹¤.
             IDE_ASSERT(0);
             break;
         }
@@ -6057,8 +6057,8 @@ IDE_RC smiTableCursor::beforeFirstModifiedDRDB( smiTableCursor * aCursor,
 /*********************************************************
   function description: readNewRowDRDB
   implementation :
-      (1) beforeFirstModified()¸¦ ÀÌÀü¿¡ ¼öÇàÇÏ¿´´ÂÁö °Ë»ç
-      (2) new row ¹İÈ¯
+      (1) beforeFirstModified()ë¥¼ ì´ì „ì— ìˆ˜í–‰í•˜ì˜€ëŠ”ì§€ ê²€ì‚¬
+      (2) new row ë°˜í™˜
 
 ***********************************************************/
 IDE_RC smiTableCursor::readNewRowDRDB( smiTableCursor * aCursor,
@@ -6088,7 +6088,7 @@ IDE_RC smiTableCursor::readNewRowDRDB( smiTableCursor * aCursor,
     smxTrans      * sTrans;
 
     //------------------------
-    // (1) beforeFirstModified()¸¦ ÀÌÀü¿¡ ¼öÇàÇÏ¿´´ÂÁö °Ë»ç
+    // (1) beforeFirstModified()ë¥¼ ì´ì „ì— ìˆ˜í–‰í•˜ì˜€ëŠ”ì§€ ê²€ì‚¬
     //------------------------
 
     IDE_ASSERT( ( aCursor->mFlag & SMI_FIND_MODIFIED_MASK )
@@ -6097,14 +6097,14 @@ IDE_RC smiTableCursor::readNewRowDRDB( smiTableCursor * aCursor,
     IDE_ASSERT( aCursor->mCursorType != SMI_DELETE_CURSOR );
 
     //------------------------
-    // (2) new row ¹İÈ¯
+    // (2) new row ë°˜í™˜
     //------------------------
 
-    /* BUG-25176 readNewRow¿Í readOldRow¿¡¼­ Data°¡ º¯°æµÇÁö ¾ÊÀº °æ¿ì¸¦ °í·ÁÇÏÁö ¸øÇÔ
+    /* BUG-25176 readNewRowì™€ readOldRowì—ì„œ Dataê°€ ë³€ê²½ë˜ì§€ ì•Šì€ ê²½ìš°ë¥¼ ê³ ë ¤í•˜ì§€ ëª»í•¨
      *
-     * ¿¹¸¦µé¾î, Foriegn Key Æ÷ÇÔµÈ µğ½ºÅ© Å×ÀÌºí¿¡ INSERT INTO SELECT ..¸¦ ¼öÇàÇØ¼­
-     * SELECT °Ç¼ö°¡ 0°ÇÀÎ °æ¿ì Transaction Segment Entry°¡ NULLÀÌ¹Ç·Î ¹«Á¶°Ç
-     * skip ÇÑ´Ù. */
+     * ì˜ˆë¥¼ë“¤ì–´, Foriegn Key í¬í•¨ëœ ë””ìŠ¤í¬ í…Œì´ë¸”ì— INSERT INTO SELECT ..ë¥¼ ìˆ˜í–‰í•´ì„œ
+     * SELECT ê±´ìˆ˜ê°€ 0ê±´ì¸ ê²½ìš° Transaction Segment Entryê°€ NULLì´ë¯€ë¡œ ë¬´ì¡°ê±´
+     * skip í•œë‹¤. */
 
     sTrans = aCursor->mTrans;
 
@@ -6138,20 +6138,20 @@ IDE_RC smiTableCursor::readNewRowDRDB( smiTableCursor * aCursor,
     {
         if( aCursor->mCurUndoRecSID == aCursor->mLstUndoRecSID )
         {
-            // cursor°¡ »ı¼ºÇÑ undo record´Â ¸ğµÎ ÀĞ¾î¼­ ´õÀÌ»ó
-            // ÀĞ¾î¾ß ÇÒ undo record°¡ Á¸ÀçÇÏÁö ¾ÊÀ½
+            // cursorê°€ ìƒì„±í•œ undo recordëŠ” ëª¨ë‘ ì½ì–´ì„œ ë”ì´ìƒ
+            // ì½ì–´ì•¼ í•  undo recordê°€ ì¡´ì¬í•˜ì§€ ì•ŠìŒ
             aCursor->mCurUndoRecSID = SD_NULL_SID;
             aCursor->mCurUndoExtRID = SD_NULL_RID;
         }
         else
         {
             //------------------------
-            //ÇöÀç undo page list¿¡ ÀĞ¾î¾ß ÇÒ undo record°¡ Á¸ÀçÇÏ´Â °æ¿ì
+            //í˜„ì¬ undo page listì— ì½ì–´ì•¼ í•  undo recordê°€ ì¡´ì¬í•˜ëŠ” ê²½ìš°
             //------------------------
 
             if ( sPrvUndoPID != SD_MAKE_PID( aCursor->mCurUndoRecSID ) )
             {
-                // ÇöÀç undo record°¡ ÀúÀåµÈ page fix
+                // í˜„ì¬ undo recordê°€ ì €ì¥ëœ page fix
                 IDE_TEST( sdbBufferMgr::fixPageByPID( aCursor->mCursorProp.mStatistics,
                                                       SMI_ID_TABLESPACE_SYSTEM_DISK_UNDO,
                                                       SD_MAKE_PID( aCursor->mCurUndoRecSID ),
@@ -6174,15 +6174,15 @@ IDE_RC smiTableCursor::readNewRowDRDB( smiTableCursor * aCursor,
             {
                 IDE_ASSERT( aCursor->mCurUndoRecSID ==
                             aCursor->mFstUndoRecSID );
-                /* mFstUndoRecSID´Â ÀÌÀü cursorÀÇ
-                 * ¸¶Áö¸· undo record ´ÙÀ½ À§Ä¡¸¦ °¡¸®Å²´Ù.
-                 * Ã¹¹øÂ° undo record¸¦ ÀúÀåÇÏ·Á°í ÇÒ¶§,
-                 * mFstUndoRecSID°¡ °¡¸®Å°´Â ÆäÀÌÁö¿¡´Â °ø°£ÀÌ ºÎÁ·ÇÏ¿©
-                 * ÀúÀåÇÒ ¼ö ¾øÀ¸¸é, ´ÙÀ½ ÆäÀÌÁö¿¡ Ã¹¹øÂ° undo record¸¦
-                 * ÀúÀåÇÏ°Ô µÈ´Ù.
-                 * ±×·¯¸é mFstUndoRecSID´Â ½ÇÁ¦·Î Á¸ÀçÇÏÁö ¾Ê´Â À§Ä¡¸¦ °¡¸®Å°°Ô µÈ´Ù.
-                 * ÀÌ·± °æ¿ì¿¡´Â setNextUndoRecSID4NewRow() ÇÔ¼ö¸¦ È£ÃâÇÏ°í
-                 * continue¸¦ ÇÑ´Ù. */
+                /* mFstUndoRecSIDëŠ” ì´ì „ cursorì˜
+                 * ë§ˆì§€ë§‰ undo record ë‹¤ìŒ ìœ„ì¹˜ë¥¼ ê°€ë¦¬í‚¨ë‹¤.
+                 * ì²«ë²ˆì§¸ undo recordë¥¼ ì €ì¥í•˜ë ¤ê³  í• ë•Œ,
+                 * mFstUndoRecSIDê°€ ê°€ë¦¬í‚¤ëŠ” í˜ì´ì§€ì—ëŠ” ê³µê°„ì´ ë¶€ì¡±í•˜ì—¬
+                 * ì €ì¥í•  ìˆ˜ ì—†ìœ¼ë©´, ë‹¤ìŒ í˜ì´ì§€ì— ì²«ë²ˆì§¸ undo recordë¥¼
+                 * ì €ì¥í•˜ê²Œ ëœë‹¤.
+                 * ê·¸ëŸ¬ë©´ mFstUndoRecSIDëŠ” ì‹¤ì œë¡œ ì¡´ì¬í•˜ì§€ ì•ŠëŠ” ìœ„ì¹˜ë¥¼ ê°€ë¦¬í‚¤ê²Œ ëœë‹¤.
+                 * ì´ëŸ° ê²½ìš°ì—ëŠ” setNextUndoRecSID4NewRow() í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•˜ê³ 
+                 * continueë¥¼ í•œë‹¤. */
                 IDE_TEST( setNextUndoRecSID4NewRow( &sSegInfo,
                                                     &sExtInfo,
                                                     aCursor,
@@ -6193,8 +6193,8 @@ IDE_RC smiTableCursor::readNewRowDRDB( smiTableCursor * aCursor,
             }
 
             //-------------------------------------------------------
-            // undo record°¡ Á¸ÀçÇÏ´Â °æ¿ì,
-            // ³ªÀÇ cursor¿¡ ÀÇÇØ ¾²¿©Áø new row°¡ Á¸ÀçÇÏ´ÂÁö °Ë»ç
+            // undo recordê°€ ì¡´ì¬í•˜ëŠ” ê²½ìš°,
+            // ë‚˜ì˜ cursorì— ì˜í•´ ì“°ì—¬ì§„ new rowê°€ ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬
             //-------------------------------------------------------
             IDE_TEST( sdpSlotDirectory::getPagePtrFromSlotNum(
                                         sSlotDirPtr,
@@ -6219,7 +6219,7 @@ IDE_RC smiTableCursor::readNewRowDRDB( smiTableCursor * aCursor,
                                                   SDC_UNDOREC_HDR_TYPE,
                                                   &sType );
 
-                    /* xxxx ÇÔ¼ö Ã³¸® */
+                    /* xxxx í•¨ìˆ˜ ì²˜ë¦¬ */
                     switch( sType )
                     {
                         case SDC_UNDO_INSERT_ROW_PIECE :
@@ -6284,14 +6284,14 @@ IDE_RC smiTableCursor::readNewRowDRDB( smiTableCursor * aCursor,
             }
             else
             {
-                // ´Ù¸¥ Ä¿¼­°¡ ÀÛ¼ºÇÑ Undo RecordÀÎ °æ¿ì Skip ÇÑ´Ù.
+                // ë‹¤ë¥¸ ì»¤ì„œê°€ ì‘ì„±í•œ Undo Recordì¸ ê²½ìš° Skip í•œë‹¤.
                 sExistNewRow = ID_FALSE;
             }
 
             if ( sExistNewRow == ID_TRUE )
             {
-                // ³ªÀÇ cursor¿¡ ´ëÇÑ undo record ÀÎ °æ¿ì ,
-                // undo record¸¦ ÀÌ¿ëÇÏ¿© updateµÈ row¸¦ fix
+                // ë‚˜ì˜ cursorì— ëŒ€í•œ undo record ì¸ ê²½ìš° ,
+                // undo recordë¥¼ ì´ìš©í•˜ì—¬ updateëœ rowë¥¼ fix
                 sdcUndoRecord::parseRowGRID( sCurUndoRecHdr,
                                              &sUpdatedRowGRID );
 
@@ -6313,7 +6313,7 @@ IDE_RC smiTableCursor::readNewRowDRDB( smiTableCursor * aCursor,
                 sIsPageLatchReleased = ID_FALSE;
 
                 //-------------------------------------------------------
-                // New Row°¡ Á¸ÀçÇÏ´Â °æ¿ì, New Row¸¦ »ı¼º
+                // New Rowê°€ ì¡´ì¬í•˜ëŠ” ê²½ìš°, New Rowë¥¼ ìƒì„±
                 //-------------------------------------------------------
                 IDE_TEST( sdcRow::fetch(
                               aCursor->mCursorProp.mStatistics,
@@ -6338,12 +6338,12 @@ IDE_RC smiTableCursor::readNewRowDRDB( smiTableCursor * aCursor,
                           != IDE_SUCCESS );
 
                 /* BUG-23319
-                 * [SD] ÀÎµ¦½º Scan½Ã sdcRow::fetch ÇÔ¼ö¿¡¼­ Deadlock ¹ß»ı°¡´É¼ºÀÌ ÀÖÀ½. */
-                /* row fetch¸¦ ÇÏ´ÂÁß¿¡ next rowpiece·Î ÀÌµ¿ÇØ¾ß ÇÏ´Â °æ¿ì,
-                 * ±âÁ¸ pageÀÇ latch¸¦ Ç®Áö ¾ÊÀ¸¸é deadlock ¹ß»ı°¡´É¼ºÀÌ ÀÖ´Ù.
-                 * ±×·¡¼­ page latch¸¦ Ç¬ ´ÙÀ½ next rowpiece·Î ÀÌµ¿ÇÏ´Âµ¥,
-                 * »óÀ§ ÇÔ¼ö¿¡¼­´Â page latch¸¦ Ç®¾ú´ÂÁö ¿©ºÎ¸¦ output parameter·Î È®ÀÎÇÏ°í
-                 * »óÈ²¿¡ µû¶ó ÀûÀıÇÑ Ã³¸®¸¦ ÇØ¾ß ÇÑ´Ù. */
+                 * [SD] ì¸ë±ìŠ¤ Scanì‹œ sdcRow::fetch í•¨ìˆ˜ì—ì„œ Deadlock ë°œìƒê°€ëŠ¥ì„±ì´ ìˆìŒ. */
+                /* row fetchë¥¼ í•˜ëŠ”ì¤‘ì— next rowpieceë¡œ ì´ë™í•´ì•¼ í•˜ëŠ” ê²½ìš°,
+                 * ê¸°ì¡´ pageì˜ latchë¥¼ í’€ì§€ ì•Šìœ¼ë©´ deadlock ë°œìƒê°€ëŠ¥ì„±ì´ ìˆë‹¤.
+                 * ê·¸ë˜ì„œ page latchë¥¼ í‘¼ ë‹¤ìŒ next rowpieceë¡œ ì´ë™í•˜ëŠ”ë°,
+                 * ìƒìœ„ í•¨ìˆ˜ì—ì„œëŠ” page latchë¥¼ í’€ì—ˆëŠ”ì§€ ì—¬ë¶€ë¥¼ output parameterë¡œ í™•ì¸í•˜ê³ 
+                 * ìƒí™©ì— ë”°ë¼ ì ì ˆí•œ ì²˜ë¦¬ë¥¼ í•´ì•¼ í•œë‹¤. */
                 if( sIsPageLatchReleased == ID_FALSE )
                 {
                     sIsPageLatchReleased = ID_TRUE;
@@ -6361,7 +6361,7 @@ IDE_RC smiTableCursor::readNewRowDRDB( smiTableCursor * aCursor,
             }
 
             //-------------------------------------------------------
-            // ´ÙÀ½ undo record rid¸¦ ¼³Á¤ÇÔ
+            // ë‹¤ìŒ undo record ridë¥¼ ì„¤ì •í•¨
             //-------------------------------------------------------
             IDE_TEST( setNextUndoRecSID4NewRow( &sSegInfo,
                                                 &sExtInfo,
@@ -6373,14 +6373,14 @@ IDE_RC smiTableCursor::readNewRowDRDB( smiTableCursor * aCursor,
             if ( sExistNewRow == ID_TRUE )
             {
                 //-------------------------------------------------------
-                // new row °ªÀ» Ã£Àº °æ¿ì, new row °ª Ã£´Â ÀÛ¾÷À» Áß´Ü
+                // new row ê°’ì„ ì°¾ì€ ê²½ìš°, new row ê°’ ì°¾ëŠ” ì‘ì—…ì„ ì¤‘ë‹¨
                 //-------------------------------------------------------
                 break;
             }
             else
             {
-                // ´ÙÀ½ undo record¸¦ ÀĞ¾î¾ß ÇÏ¹Ç·Î
-                // °è¼Ó ÁøÇà
+                // ë‹¤ìŒ undo recordë¥¼ ì½ì–´ì•¼ í•˜ë¯€ë¡œ
+                // ê³„ì† ì§„í–‰
             }
         }
     }
@@ -6395,7 +6395,7 @@ IDE_RC smiTableCursor::readNewRowDRDB( smiTableCursor * aCursor,
 
     if ( sExistNewRow == ID_FALSE )
     {
-        // ´õ ÀÌ»ó undo log record°¡ ¾ø´Â °æ¿ì
+        // ë” ì´ìƒ undo log recordê°€ ì—†ëŠ” ê²½ìš°
         *aRow = NULL;
         SC_MAKE_NULL_GRID( *aRowGRID );
     }
@@ -6433,8 +6433,8 @@ IDE_RC smiTableCursor::readNewRowDRDB( smiTableCursor * aCursor,
 /*********************************************************
   function description: readOldRowDRDB
   implementation :
-      (1) beforeFirstModified()¸¦ ÀÌÀü¿¡ ¼öÇàÇÏ¿´´ÂÁö °Ë»ç
-      (2) old row ¹İÈ¯
+      (1) beforeFirstModified()ë¥¼ ì´ì „ì— ìˆ˜í–‰í•˜ì˜€ëŠ”ì§€ ê²€ì‚¬
+      (2) old row ë°˜í™˜
 
 ***********************************************************/
 IDE_RC smiTableCursor::readOldRowDRDB( smiTableCursor * aCursor,
@@ -6465,7 +6465,7 @@ IDE_RC smiTableCursor::readOldRowDRDB( smiTableCursor * aCursor,
     smxTrans      * sTrans;
 
     //------------------------
-    // (1) beforeFirstModified()¸¦ ÀÌÀü¿¡ ¼öÇàÇÏ¿´´ÂÁö °Ë»ç
+    // (1) beforeFirstModified()ë¥¼ ì´ì „ì— ìˆ˜í–‰í•˜ì˜€ëŠ”ì§€ ê²€ì‚¬
     //------------------------
 
     IDE_ASSERT( ( aCursor->mFlag & SMI_FIND_MODIFIED_MASK )
@@ -6474,11 +6474,11 @@ IDE_RC smiTableCursor::readOldRowDRDB( smiTableCursor * aCursor,
     IDE_ASSERT( aCursor->mCursorType != SMI_INSERT_CURSOR );
 
     //------------------------
-    // (2) old row ¹İÈ¯
+    // (2) old row ë°˜í™˜
     //------------------------
-    /* BUG-25176 readNewRow¿¡¼­ Data°¡ º¯°æµÇÁö ¾ÊÀº °æ¿ì¸¦ °í·ÁÇÏÁö ¸øÇÔ
-     * Transaction Segment Entry°¡ NULLÀÎ °æ¿ì´Â µé¾î¿ÃÀÏÀÌ ¾øÁö¸¸, ¾ÈÀüÇÏ°Ô
-     * È®ÀÎÇÏ°í ¹«Á¶°Ç skip ÇÑ´Ù. */
+    /* BUG-25176 readNewRowì—ì„œ Dataê°€ ë³€ê²½ë˜ì§€ ì•Šì€ ê²½ìš°ë¥¼ ê³ ë ¤í•˜ì§€ ëª»í•¨
+     * Transaction Segment Entryê°€ NULLì¸ ê²½ìš°ëŠ” ë“¤ì–´ì˜¬ì¼ì´ ì—†ì§€ë§Œ, ì•ˆì „í•˜ê²Œ
+     * í™•ì¸í•˜ê³  ë¬´ì¡°ê±´ skip í•œë‹¤. */
     sTrans = aCursor->mTrans;
 
     if ( sTrans->getTXSegEntry() == NULL )
@@ -6511,8 +6511,8 @@ IDE_RC smiTableCursor::readOldRowDRDB( smiTableCursor * aCursor,
     {
         if ( aCursor->mCurUndoRecSID == aCursor->mLstUndoRecSID )
         {
-            // cursor°¡ »ı¼ºÇÑ undo record´Â ¸ğµÎ ÀĞ¾î
-            // ´õÀÌ»ó ÀĞ¾î¾ß ÇÒ undo record°¡ ¾øÀ½
+            // cursorê°€ ìƒì„±í•œ undo recordëŠ” ëª¨ë‘ ì½ì–´
+            // ë”ì´ìƒ ì½ì–´ì•¼ í•  undo recordê°€ ì—†ìŒ
             aCursor->mCurUndoRecSID = SD_NULL_SID;
             aCursor->mCurUndoExtRID = SD_NULL_RID;
         }
@@ -6520,7 +6520,7 @@ IDE_RC smiTableCursor::readOldRowDRDB( smiTableCursor * aCursor,
         {
             if ( sPrvUndoPID != SD_MAKE_PID( aCursor->mCurUndoRecSID ) )
             {
-                // ÇöÀç undo record°¡ ÀúÀåµÈ page fix
+                // í˜„ì¬ undo recordê°€ ì €ì¥ëœ page fix
                 IDE_TEST( sdbBufferMgr::fixPageByPID( aCursor->mCursorProp.mStatistics,
                                                       SMI_ID_TABLESPACE_SYSTEM_DISK_UNDO,
                                                       SD_MAKE_PID( aCursor->mCurUndoRecSID ),
@@ -6544,14 +6544,14 @@ IDE_RC smiTableCursor::readOldRowDRDB( smiTableCursor * aCursor,
                 IDE_ASSERT( aCursor->mCurUndoRecSID ==
                             aCursor->mFstUndoRecSID );
                 /*
-                 * mFstUndoRecSID´Â ÀÌÀü cursorÀÇ
-                 * ¸¶Áö¸· undo record ´ÙÀ½ À§Ä¡¸¦ °¡¸®Å²´Ù.
-                 * Ã¹¹øÂ° undo record¸¦ ÀúÀåÇÏ·Á°í ÇÒ¶§,
-                 * mFstUndoRecSID°¡ °¡¸®Å°´Â ÆäÀÌÁö¿¡´Â °ø°£ÀÌ ºÎÁ·ÇÏ¿©
-                 * ÀúÀåÇÒ ¼ö ¾øÀ¸¸é, ´ÙÀ½ ÆäÀÌÁö¿¡ Ã¹¹øÂ° undo record¸¦
-                 * ÀúÀåÇÏ°Ô µÈ´Ù.
-                 * ±×·¯¸é mFstUndoRecSID´Â ½ÇÁ¦·Î Á¸ÀçÇÏÁö ¾Ê´Â À§Ä¡¸¦ °¡¸®Å°°Ô µÈ´Ù.
-                 * ÀÌ·± °æ¿ì¿¡´Â setNextUndoRecSID() ÇÔ¼ö¸¦ È£ÃâÇÏ°í continue¸¦ ÇÑ´Ù.
+                 * mFstUndoRecSIDëŠ” ì´ì „ cursorì˜
+                 * ë§ˆì§€ë§‰ undo record ë‹¤ìŒ ìœ„ì¹˜ë¥¼ ê°€ë¦¬í‚¨ë‹¤.
+                 * ì²«ë²ˆì§¸ undo recordë¥¼ ì €ì¥í•˜ë ¤ê³  í• ë•Œ,
+                 * mFstUndoRecSIDê°€ ê°€ë¦¬í‚¤ëŠ” í˜ì´ì§€ì—ëŠ” ê³µê°„ì´ ë¶€ì¡±í•˜ì—¬
+                 * ì €ì¥í•  ìˆ˜ ì—†ìœ¼ë©´, ë‹¤ìŒ í˜ì´ì§€ì— ì²«ë²ˆì§¸ undo recordë¥¼
+                 * ì €ì¥í•˜ê²Œ ëœë‹¤.
+                 * ê·¸ëŸ¬ë©´ mFstUndoRecSIDëŠ” ì‹¤ì œë¡œ ì¡´ì¬í•˜ì§€ ì•ŠëŠ” ìœ„ì¹˜ë¥¼ ê°€ë¦¬í‚¤ê²Œ ëœë‹¤.
+                 * ì´ëŸ° ê²½ìš°ì—ëŠ” setNextUndoRecSID() í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•˜ê³  continueë¥¼ í•œë‹¤.
                  */
                 IDE_TEST( setNextUndoRecSID( &sSegInfo,
                                              &sExtInfo,
@@ -6563,8 +6563,8 @@ IDE_RC smiTableCursor::readOldRowDRDB( smiTableCursor * aCursor,
             }
 
             //-------------------------------------------------------
-            // undo record°¡ Á¸ÀçÇÏ´Â °æ¿ì,
-            // ³ªÀÇ cursor¿¡ ÀÇÇØ ¾²¿©Áø old row°¡ Á¸ÀçÇÏ´ÂÁö °Ë»ç
+            // undo recordê°€ ì¡´ì¬í•˜ëŠ” ê²½ìš°,
+            // ë‚˜ì˜ cursorì— ì˜í•´ ì“°ì—¬ì§„ old rowê°€ ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬
             //-------------------------------------------------------
             IDE_TEST( sdpSlotDirectory::getPagePtrFromSlotNum(
                                         sSlotDirPtr,
@@ -6589,7 +6589,7 @@ IDE_RC smiTableCursor::readOldRowDRDB( smiTableCursor * aCursor,
                                                   SDC_UNDOREC_HDR_TYPE,
                                                   &sType );
  
-                    /* xxx ÇÔ¼öÃ³¸® */
+                    /* xxx í•¨ìˆ˜ì²˜ë¦¬ */
                     switch( sType )
                     {
                         case SDC_UNDO_DELETE_ROW_PIECE :
@@ -6655,15 +6655,15 @@ IDE_RC smiTableCursor::readOldRowDRDB( smiTableCursor * aCursor,
             }
             else
             {
-                // ´Ù¸¥ Ä¿¼­°¡ ÀÛ¼ºÇÑ Undo RecordÀÎ °æ¿ì Skip ÇÑ´Ù.
+                // ë‹¤ë¥¸ ì»¤ì„œê°€ ì‘ì„±í•œ Undo Recordì¸ ê²½ìš° Skip í•œë‹¤.
                 sExistOldRow = ID_FALSE;
             }
 
             if ( sExistOldRow == ID_TRUE )
             {
                 //------------------------
-                // ³ªÀÇ cursor¿¡ ´ëÇÑ undo record ÀÎ °æ¿ì,
-                // undo record¸¦ ÀÌ¿ëÇÏ¿© updateµÈ row¸¦ fix
+                // ë‚˜ì˜ cursorì— ëŒ€í•œ undo record ì¸ ê²½ìš°,
+                // undo recordë¥¼ ì´ìš©í•˜ì—¬ updateëœ rowë¥¼ fix
                 //------------------------
                 sdcUndoRecord::parseRowGRID(sCurUndoRecHdr, &sUpdatedRowGRID);
 
@@ -6686,7 +6686,7 @@ IDE_RC smiTableCursor::readOldRowDRDB( smiTableCursor * aCursor,
                 sIsPageLatchReleased = ID_FALSE;
 
                 //-------------------------------------------------------
-                // Old Row°¡ Á¸ÀçÇÏ´Â °æ¿ì, Old Row¸¦ »ı¼º
+                // Old Rowê°€ ì¡´ì¬í•˜ëŠ” ê²½ìš°, Old Rowë¥¼ ìƒì„±
                 //-------------------------------------------------------
                 IDE_TEST( sdcRow::fetch(
                               aCursor->mCursorProp.mStatistics,
@@ -6712,12 +6712,12 @@ IDE_RC smiTableCursor::readOldRowDRDB( smiTableCursor * aCursor,
                           != IDE_SUCCESS );
 
                 /* BUG-23319
-                 * [SD] ÀÎµ¦½º Scan½Ã sdcRow::fetch ÇÔ¼ö¿¡¼­ Deadlock ¹ß»ı°¡´É¼ºÀÌ ÀÖÀ½. */
-                /* row fetch¸¦ ÇÏ´ÂÁß¿¡ next rowpiece·Î ÀÌµ¿ÇØ¾ß ÇÏ´Â °æ¿ì,
-                 * ±âÁ¸ pageÀÇ latch¸¦ Ç®Áö ¾ÊÀ¸¸é deadlock ¹ß»ı°¡´É¼ºÀÌ ÀÖ´Ù.
-                 * ±×·¡¼­ page latch¸¦ Ç¬ ´ÙÀ½ next rowpiece·Î ÀÌµ¿ÇÏ´Âµ¥,
-                 * »óÀ§ ÇÔ¼ö¿¡¼­´Â page latch¸¦ Ç®¾ú´ÂÁö ¿©ºÎ¸¦ output parameter·Î È®ÀÎÇÏ°í
-                 * »óÈ²¿¡ µû¶ó ÀûÀıÇÑ Ã³¸®¸¦ ÇØ¾ß ÇÑ´Ù. */
+                 * [SD] ì¸ë±ìŠ¤ Scanì‹œ sdcRow::fetch í•¨ìˆ˜ì—ì„œ Deadlock ë°œìƒê°€ëŠ¥ì„±ì´ ìˆìŒ. */
+                /* row fetchë¥¼ í•˜ëŠ”ì¤‘ì— next rowpieceë¡œ ì´ë™í•´ì•¼ í•˜ëŠ” ê²½ìš°,
+                 * ê¸°ì¡´ pageì˜ latchë¥¼ í’€ì§€ ì•Šìœ¼ë©´ deadlock ë°œìƒê°€ëŠ¥ì„±ì´ ìˆë‹¤.
+                 * ê·¸ë˜ì„œ page latchë¥¼ í‘¼ ë‹¤ìŒ next rowpieceë¡œ ì´ë™í•˜ëŠ”ë°,
+                 * ìƒìœ„ í•¨ìˆ˜ì—ì„œëŠ” page latchë¥¼ í’€ì—ˆëŠ”ì§€ ì—¬ë¶€ë¥¼ output parameterë¡œ í™•ì¸í•˜ê³ 
+                 * ìƒí™©ì— ë”°ë¼ ì ì ˆí•œ ì²˜ë¦¬ë¥¼ í•´ì•¼ í•œë‹¤. */
                 if( sIsPageLatchReleased == ID_FALSE )
                 {
                     sIsPageLatchReleased = ID_TRUE;
@@ -6734,7 +6734,7 @@ IDE_RC smiTableCursor::readOldRowDRDB( smiTableCursor * aCursor,
             }
 
             //-------------------------------------------------------
-            // ´ÙÀ½ undo record rid¸¦ ¼³Á¤ÇÔ
+            // ë‹¤ìŒ undo record ridë¥¼ ì„¤ì •í•¨
             //-------------------------------------------------------
             IDE_TEST( setNextUndoRecSID( &sSegInfo,
                                          &sExtInfo,
@@ -6746,15 +6746,15 @@ IDE_RC smiTableCursor::readOldRowDRDB( smiTableCursor * aCursor,
             if ( sExistOldRow == ID_TRUE )
             {
                 //-------------------------------------------------------
-                // old row °ªÀ» Ã£Àº °æ¿ì,
-                // old row °ª Ã£´Â ÀÛ¾÷À» Áß´Ü
+                // old row ê°’ì„ ì°¾ì€ ê²½ìš°,
+                // old row ê°’ ì°¾ëŠ” ì‘ì—…ì„ ì¤‘ë‹¨
                 //-------------------------------------------------------
                 break;
             }
             else
             {
-                // ´ÙÀ½ undo record¸¦ ÀĞ¾î¾ß ÇÏ¹Ç·Î
-                // °è¼Ó ÁøÇà
+                // ë‹¤ìŒ undo recordë¥¼ ì½ì–´ì•¼ í•˜ë¯€ë¡œ
+                // ê³„ì† ì§„í–‰
             }
         }
     }
@@ -6865,41 +6865,41 @@ IDE_RC smiTableCursor::setNextUndoRecSID( sdpSegInfo     * aSegInfo,
     if( sCurRecSlotNum < sUndoRecCnt )
     {
         //---------------------------------
-        // ÇöÀç undo page³»ÀÇ ´ÙÀ½ undo record·Î ÁøÇà
+        // í˜„ì¬ undo pageë‚´ì˜ ë‹¤ìŒ undo recordë¡œ ì§„í–‰
         //---------------------------------
 
-        // ´ÙÀ½ undo recordÀÇ SID¸¦ mCurUndoRecSID¿¡ ¼³Á¤
+        // ë‹¤ìŒ undo recordì˜ SIDë¥¼ mCurUndoRecSIDì— ì„¤ì •
         aCursor->mCurUndoRecSID =
             SD_MAKE_SID( sCurUndoPageID, sCurRecSlotNum );
     }
     else
     {
         /*
-         * ### sCurRecSlotNum == sUndoRecCnt + 1 ÀÎ °æ¿ì ###
+         * ### sCurRecSlotNum == sUndoRecCnt + 1 ì¸ ê²½ìš° ###
          *
-         *  Ã¹¹øÂ° undo record¸¦ ÀúÀåÇÏ·Á°í ÇÒ¶§,
-         * mFstUndoRecSID°¡ °¡¸®Å°´Â ÆäÀÌÁö¿¡ °ø°£ÀÌ ºÎÁ·ÇÏ¿©
-         * ÀúÀåÇÒ ¼ö ¾øÀ¸¸é, ´ÙÀ½ ÆäÀÌÁö¿¡ Ã¹¹øÂ° undo record¸¦
-         * ÀúÀåÇÏ°Ô µÈ´Ù.
-         * ±×·¯¸é mFstUndoRecSID´Â ½ÇÁ¦·Î Á¸ÀçÇÏÁö ¾Ê´Â À§Ä¡¸¦ °¡¸®Å°°Ô µÈ´Ù.
+         *  ì²«ë²ˆì§¸ undo recordë¥¼ ì €ì¥í•˜ë ¤ê³  í• ë•Œ,
+         * mFstUndoRecSIDê°€ ê°€ë¦¬í‚¤ëŠ” í˜ì´ì§€ì— ê³µê°„ì´ ë¶€ì¡±í•˜ì—¬
+         * ì €ì¥í•  ìˆ˜ ì—†ìœ¼ë©´, ë‹¤ìŒ í˜ì´ì§€ì— ì²«ë²ˆì§¸ undo recordë¥¼
+         * ì €ì¥í•˜ê²Œ ëœë‹¤.
+         * ê·¸ëŸ¬ë©´ mFstUndoRecSIDëŠ” ì‹¤ì œë¡œ ì¡´ì¬í•˜ì§€ ì•ŠëŠ” ìœ„ì¹˜ë¥¼ ê°€ë¦¬í‚¤ê²Œ ëœë‹¤.
          */
         IDE_ASSERT( (sCurRecSlotNum == sUndoRecCnt) ||
                     (sCurRecSlotNum == (sUndoRecCnt+1)) );
 
         //---------------------------------
-        // ÇöÀç undo page³»¿¡ Á¸ÀçÇÏ´Â undo record °³¼ö¸¦ ³Ñ¾î¼­´Â °æ¿ì,
-        // ´ÙÀ½ undo page·Î ÀÌµ¿
+        // í˜„ì¬ undo pageë‚´ì— ì¡´ì¬í•˜ëŠ” undo record ê°œìˆ˜ë¥¼ ë„˜ì–´ì„œëŠ” ê²½ìš°,
+        // ë‹¤ìŒ undo pageë¡œ ì´ë™
         //---------------------------------
 
         if ( sCurUndoPageID == SD_MAKE_PID( aCursor->mLstUndoRecSID ) )
         {
             // To Fix BUG-14798
-            //    last undo record rid´Â cursor close´ç½Ã,
-            //    ¾ÕÀ¸·Î »ı¼ºµÉ ´ÙÀ½ undo recordÀÇ rid ÀÌ´Ù.
-            //    ÇöÀç undo page³»¿¡ Á¸ÀçÇÏ´Â undo record °³¼ö¸¦ ³Ñ¾î¼­°í,
-            //    ÇöÀç undo page°¡ ¸¶Áö¸· undo page ÀÌ¶ó´Â °ÍÀº
-            //    cursor close ÀÌÈÄ undo record°¡ »ı¼ºµÇÁö ¾Ê¾ÒÀ¸¸ç
-            //    ³ªÀÇ cursor°¡ »ı¼ºÇÑ undo record¸¦ ¸ğµÎ ÀĞ¾úÀ½À» ÀÇ¹ÌÇÑ´Ù.
+            //    last undo record ridëŠ” cursor closeë‹¹ì‹œ,
+            //    ì•ìœ¼ë¡œ ìƒì„±ë  ë‹¤ìŒ undo recordì˜ rid ì´ë‹¤.
+            //    í˜„ì¬ undo pageë‚´ì— ì¡´ì¬í•˜ëŠ” undo record ê°œìˆ˜ë¥¼ ë„˜ì–´ì„œê³ ,
+            //    í˜„ì¬ undo pageê°€ ë§ˆì§€ë§‰ undo page ì´ë¼ëŠ” ê²ƒì€
+            //    cursor close ì´í›„ undo recordê°€ ìƒì„±ë˜ì§€ ì•Šì•˜ìœ¼ë©°
+            //    ë‚˜ì˜ cursorê°€ ìƒì„±í•œ undo recordë¥¼ ëª¨ë‘ ì½ì—ˆìŒì„ ì˜ë¯¸í•œë‹¤.
 
             aCursor->mCurUndoRecSID = SD_NULL_SID;
             aCursor->mCurUndoExtRID = SD_NULL_RID;
@@ -6921,7 +6921,7 @@ IDE_RC smiTableCursor::setNextUndoRecSID( sdpSegInfo     * aSegInfo,
                                   aCursor->mCursorProp.mStatistics,
                                   sCurUndoRec ) != IDE_SUCCESS );
 
-            // ´ÙÀ½ undo page fix
+            // ë‹¤ìŒ undo page fix
              IDE_TEST( sdbBufferMgr::fixPageByPID( aCursor->mCursorProp.mStatistics,
                                                    SMI_ID_TABLESPACE_SYSTEM_DISK_UNDO,
                                                    sCurUndoPageID,
@@ -6934,7 +6934,7 @@ IDE_RC smiTableCursor::setNextUndoRecSID( sdpSegInfo     * aSegInfo,
             sUndoRecCnt = sdpSlotDirectory::getCount(sSlotDirPtr);
             IDE_ASSERT(sUndoRecCnt > 0);
 
-            // ´ÙÀ½ undo recordÀÇ RID¸¦ mCurUndoRecRID¿¡ ¼³Á¤
+            // ë‹¤ìŒ undo recordì˜ RIDë¥¼ mCurUndoRecRIDì— ì„¤ì •
             aCursor->mCurUndoRecSID = SD_MAKE_SID( sCurUndoPageID, 1 );
 
             sState = 0;
@@ -6981,14 +6981,14 @@ IDE_RC smiTableCursor::setRemoteQueryCallback( smiTableSpecificFuncs *aFuncs,
 
 
 /**********************************************************************
- * Description: aIterator°¡ ÇöÀç °¡¸®Å°°í ÀÖ´Â Row¿¡ ´ëÇØ¼­ XLockÀ»
- *              È¹µæÇÕ´Ï´Ù.
+ * Description: aIteratorê°€ í˜„ì¬ ê°€ë¦¬í‚¤ê³  ìˆëŠ” Rowì— ëŒ€í•´ì„œ XLockì„
+ *              íšë“í•©ë‹ˆë‹¤.
  *
- * aIterator - [IN] CursorÀÇ Iterator
+ * aIterator - [IN] Cursorì˜ Iterator
  *
  * Related Issue:
- *   BUG-19068: smiTableCursor°¡ ÇöÀç°¡¸®Å°°í ÀÖ´Â Row¿¡ ´ëÇØ¼­
- *              LockÀ» ÀâÀ»¼ö ÀÕ´Â Interface°¡ ÇÊ¿äÇÕ´Ï´Ù.
+ *   BUG-19068: smiTableCursorê°€ í˜„ì¬ê°€ë¦¬í‚¤ê³  ìˆëŠ” Rowì— ëŒ€í•´ì„œ
+ *              Lockì„ ì¡ì„ìˆ˜ ì‡ëŠ” Interfaceê°€ í•„ìš”í•©ë‹ˆë‹¤.
  *
  *********************************************************************/
 IDE_RC smiTableCursor::lockRow()
@@ -6998,10 +6998,10 @@ IDE_RC smiTableCursor::lockRow()
 
 
 /**********************************************************************
- * Description: ViewSCNÀÌ Statement/TableCursor/Iterator°£¿¡ µ¿ÀÏÇÑÁö 
- *              Æò°¡ÇÑ´Ù.
+ * Description: ViewSCNì´ Statement/TableCursor/Iteratorê°„ì— ë™ì¼í•œì§€ 
+ *              í‰ê°€í•œë‹¤.
  *
- * this - aIterator - [IN] CursorÀÇ Iterator
+ * this - aIterator - [IN] Cursorì˜ Iterator
  *
  * Related Issue:
  * BUG-31993 [sm_interface] The server does not reset Iterator ViewSCN 
@@ -7075,7 +7075,7 @@ IDE_RC smiTableCursor::destFullUpdateMRDB( smiColumnList  ** aNewColumnList,
 
     if( *aOldValueBuffer != NULL )
     {
-        /* BUG-40650 ÀÓ½Ã ¹öÆÛ¸¦ »ç¿ëÇÏ´Â °æ¿ì¿¡¸¸ ¹İÈ¯ÇÑ´Ù. */
+        /* BUG-40650 ì„ì‹œ ë²„í¼ë¥¼ ì‚¬ìš©í•˜ëŠ” ê²½ìš°ì—ë§Œ ë°˜í™˜í•œë‹¤. */
         IDE_TEST( iduMemMgr::free( *aOldValueBuffer ) != IDE_SUCCESS );
         *aOldValueBuffer = NULL;
     }
@@ -7137,10 +7137,10 @@ IDE_RC smiTableCursor::setAgingIndexFlag( smiTableCursor * aCursor,
             if( ( sNode == sHead ) ||
                 ( sNode->mOIDCnt == 0 ) )
             {
-                /* CircularListÀÌ±â ¶§¹®¿¡, °°´Ù´Â ¸»Àº ºñ¾ú´Ù´Â ¸».
-                 * ºñ¾î ÀÖ´Ù¸é, Rollback/Stamping/Aging ¿¬»êÀÌ ÇÊ¿ä ¾ø´Ù´Â °Í
-                 * ¾ÆÁ÷ ±×·± °æ¿ì ¸øºÃÀ½.*/
-                /* ¸¶Áö¸· Node¸¦ °¡Á®¿È */
+                /* CircularListì´ê¸° ë•Œë¬¸ì—, ê°™ë‹¤ëŠ” ë§ì€ ë¹„ì—ˆë‹¤ëŠ” ë§.
+                 * ë¹„ì–´ ìˆë‹¤ë©´, Rollback/Stamping/Aging ì—°ì‚°ì´ í•„ìš” ì—†ë‹¤ëŠ” ê²ƒ
+                 * ì•„ì§ ê·¸ëŸ° ê²½ìš° ëª»ë´¤ìŒ.*/
+                /* ë§ˆì§€ë§‰ Nodeë¥¼ ê°€ì ¸ì˜´ */
                 ideLog::log( IDE_DUMP_0, 
                              "mSpaceID : %u\n"
                              "mOID     : %lu",
@@ -7161,8 +7161,8 @@ IDE_RC smiTableCursor::setAgingIndexFlag( smiTableCursor * aCursor,
                 == 0 );
 
     /* PROJ-2429 Dictionary based data compress for on-disk DB 
-     * Flag¿¡ µû¶ó rollback¼öÇà ½Ã aging À» ¼öÇàÇÒ ¼öµµ(SM_OID_ACT_AGING_INDEX) ÀÖ°í 
-     * ÇÏÁö ¾ÊÀ» ¼öµµ(SM_OID_ACT_AGING_ROLLBACK, dictionary tableÀÎ °æ¿ì) ÀÖ´Ù.*/
+     * Flagì— ë”°ë¼ rollbackìˆ˜í–‰ ì‹œ aging ì„ ìˆ˜í–‰í•  ìˆ˜ë„(SM_OID_ACT_AGING_INDEX) ìˆê³  
+     * í•˜ì§€ ì•Šì„ ìˆ˜ë„(SM_OID_ACT_AGING_ROLLBACK, dictionary tableì¸ ê²½ìš°) ìˆë‹¤.*/
     sNodeCursor->mFlag |= aFlag;
 
 

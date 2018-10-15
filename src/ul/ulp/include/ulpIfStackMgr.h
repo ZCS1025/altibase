@@ -20,12 +20,12 @@
 #include <idl.h>
 #include <ulpMacro.h>
 
-/* macro if Á¶°Ç¹®Ã³¸®¸¦ À§ÇÑ ÀÚ·á±¸Á¶ */
+/* macro if ì¡°ê±´ë¬¸ì²˜ë¦¬ë¥¼ ìœ„í•œ ìë£Œêµ¬ì¡° */
 typedef struct ulpPPifstack
 {
     ulpPPiftype   mType;
     ulpPPifresult mVal;
-    /* BUG-28162 : SESC_DECLARE ºÎÈ°  */
+    /* BUG-28162 : SESC_DECLARE ë¶€í™œ  */
     idBool        mSescDEC;
 } ulpPPifstack;
 
@@ -46,16 +46,16 @@ class ulpPPifstackMgr
 
         idBool ulpIfCheckGrammar( ulpPPiftype aIftype );
 
-        /* BUG-28162 : SESC_DECLARE ºÎÈ°  */
+        /* BUG-28162 : SESC_DECLARE ë¶€í™œ  */
         idBool ulpIfpop4endif();
 
         IDE_RC ulpIfpush( ulpPPiftype aIftype, ulpPPifresult aVal );
 
         ulpPPifresult ulpPrevIfStatus ( void );
 
-        /* BUG-27961 : preprocessorÀÇ ÁßÃ¸ #ifÃ³¸®½Ã #endif ´ÙÀ½¼Ò½º ¹«Á¶°Ç Ãâ·ÂÇÏ´Â ¹ö±×  */
-        // preprocessor°¡ #endif ¸¦ ¸¶Ä£ÈÄ ´ÙÀ½¿¡¿À´Â ÄÚµåµéÀ»
-        // ÆÄÀÏ·Î Ãâ·ÂÀ» ÇØ¾ßÇÏ´ÂÁö ±×³É skipÇØ¾ßÇÏ´ÂÁö¸¦ °áÁ¤ÇØÁÖ´Â ÇÔ¼ö.
+        /* BUG-27961 : preprocessorì˜ ì¤‘ì²© #ifì²˜ë¦¬ì‹œ #endif ë‹¤ìŒì†ŒìŠ¤ ë¬´ì¡°ê±´ ì¶œë ¥í•˜ëŠ” ë²„ê·¸  */
+        // preprocessorê°€ #endif ë¥¼ ë§ˆì¹œí›„ ë‹¤ìŒì—ì˜¤ëŠ” ì½”ë“œë“¤ì„
+        // íŒŒì¼ë¡œ ì¶œë ¥ì„ í•´ì•¼í•˜ëŠ”ì§€ ê·¸ëƒ¥ skipí•´ì•¼í•˜ëŠ”ì§€ë¥¼ ê²°ì •í•´ì£¼ëŠ” í•¨ìˆ˜.
         idBool ulpIfneedSkip4Endif(void);
 };
 

@@ -113,7 +113,7 @@ IDE_RC qmsPreservedTable::find( qcStatement  * aStatement,
 
     sPreservedTable = aSFWGH->preservedInfo;
 
-    // simple view¿¡ order by¸¸ Çã¿ëÇÑ´Ù.
+    // simple viewì— order byë§Œ í—ˆìš©í•œë‹¤.
     if ( ( sPreservedTable != NULL ) &&
          ( aSFWGH->hierarchy == NULL ) &&
          ( aSFWGH->group == NULL ) &&
@@ -127,7 +127,7 @@ IDE_RC qmsPreservedTable::find( qcStatement  * aStatement,
         IDE_TEST ( checkKeyPreservedTableHints( aSFWGH )
                    != IDE_SUCCESS );
         
-        // tuple¿¡ ¹İ¿µÇÑ´Ù.
+        // tupleì— ë°˜ì˜í•œë‹¤.
         for ( i = 0; i < sPreservedTable->tableCount; i++ )
         {
             if ( sPreservedTable->isKeyPreserved[i] == ID_TRUE )
@@ -168,8 +168,8 @@ IDE_RC qmsPreservedTable::getFirstKeyPrevTable( qmsSFWGH      * aSFWGH,
  *   ex>
  * CASE 1. delete from (select t1.i1 a, t2.i1 b from t1, t2 where t1.i1 = t2.i1 ) ....  
  * CASE 2. delete from (select t1.i1 a, t2.i1 b from t2, t1 where t1.i1 = t2.i1 ) ....
- * t1,t2 key preserved tableÀÌ´Ù. delete ½Ã Ã¹¹øÂ° key preserved table¸¸ deleteµÈ´Ù.
- * CASE 1´Â T1, CASE 2´Â T2.
+ * t1,t2 key preserved tableì´ë‹¤. delete ì‹œ ì²«ë²ˆì§¸ key preserved tableë§Œ deleteëœë‹¤.
+ * CASE 1ëŠ” T1, CASE 2ëŠ” T2.
  *
  ***********************************************************************/
 
@@ -250,16 +250,16 @@ IDE_RC qmsPreservedTable::checkKeyPreservedTableHints( qmsSFWGH      * aSFWGH )
                                           sTableRef->aliasName.offset,
                                           sTableRef->aliasName.size ) == 0 )
                     {
-                        // HINT¿¹ ¸í½ÃÇÑ Å×ÀÌºíÀÌ Á¸ÀçÇÏ´Â °æ¿ì
+                        // HINTì˜ˆ ëª…ì‹œí•œ í…Œì´ë¸”ì´ ì¡´ì¬í•˜ëŠ” ê²½ìš°
                         sPreservedTable->isKeyPreserved[i] = ID_TRUE;
                         break;
                     }
                     else
                     {
-                        // HINT¿¹ ¸í½ÃÇÑ Å×ÀÌºíÀÌ ¾ø´Â °æ¿ì
+                        // HINTì˜ˆ ëª…ì‹œí•œ í…Œì´ë¸”ì´ ì—†ëŠ” ê²½ìš°
                         if ( i == sPreservedTable->tableCount - 1 )
                         {
-                            // Hint ¹«½Ã
+                            // Hint ë¬´ì‹œ
                             aSFWGH->hints->keyPreservedHint = NULL;
                         
                             IDE_CONT( NORMAL_EXIT );

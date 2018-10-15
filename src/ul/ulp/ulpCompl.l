@@ -30,7 +30,7 @@
 #define YY_READ_BUF_SIZE (16384)
 #define YY_BUF_SIZE (YY_READ_BUF_SIZE * 2) /* size of default input buffer */
 
-// column À§Ä¡¸¦ °è»êÇÏ±âÀ§ÇÑ macro
+// column ìœ„ì¹˜ë¥¼ ê³„ì‚°í•˜ê¸°ìœ„í•œ macro
 #define YY_USER_ACTION if(YY_AT_BOL()) { yycolumnC = 0; }\
                        gFirstcolumnC = yycolumnC; gLastcolumnC = yycolumnC+yyleng-1; \
                        yycolumnC += yyleng;
@@ -60,51 +60,51 @@ extern SInt          gUlpCOMPPrevCond;
 extern ulpPPifstackMgr *gUlpCOMPifstackMgr[MAX_HEADER_FILE_NUM];
 extern SInt             gUlpCOMPifstackInd;
 
-/* BUG-27683 : iostream »ç¿ë Á¦°Å */
-// include¸¦ Ã³¸®ÇÏ±âÀ§ÇÑ buffer state ¹è¿­.
+/* BUG-27683 : iostream ì‚¬ìš© ì œê±° */
+// includeë¥¼ ì²˜ë¦¬í•˜ê¸°ìœ„í•œ buffer state ë°°ì—´.
 struct ulpCOMPBufState
 {
     YY_BUFFER_STATE         mCOMPIncludeStack;
     SInt                    mCOMPLinenum;
 } gUlpCOMPIncludeStack[ MAX_HEADER_FILE_NUM ];
-// gUlpPPIncludeStackÀÇ index °ª
+// gUlpPPIncludeStackì˜ index ê°’
 SInt                    gUlpCOMPIncludeIndex = 0;
 
-/* BUG-28068 : #define ¸ÅÅ©·ÎÀÌ¸§ È®Àå¾ÈµÇ´Â ¹®Á¦ */
+/* BUG-28068 : #define ë§¤í¬ë¡œì´ë¦„ í™•ì¥ì•ˆë˜ëŠ” ë¬¸ì œ */
 /* for macro expansion */
 struct ulpCOMPMacroExpState
 {
     YY_BUFFER_STATE         mBufState;
     SChar                   mExpandText[MAX_MACRO_DEFINE_CONTENT_LEN];
 } gUlpCOMPMacroExpState[MAX_ID_EXPANSION];
-// gUlpIDExpandStackÀÇ index °ª
+// gUlpIDExpandStackì˜ index ê°’
 SInt                    gUlpCOMPMacroExpIndex = 0;
 
-// file¿¡ ¾µ°ÍÀÎÁö¸¦ °áÁ¤ÇÔ.
+// fileì— ì“¸ê²ƒì¸ì§€ë¥¼ ê²°ì •í•¨.
 idBool               gDontPrint2file = ID_FALSE;
-// parsing Áß ¹ß»ıÇÑ ¿¡·¯¿¡´ëÇÑ ÄÚµåÁ¤º¸.
+// parsing ì¤‘ ë°œìƒí•œ ì—ëŸ¬ì—ëŒ€í•œ ì½”ë“œì •ë³´.
 SChar               *gUlpCOMPErrCode = NULL;
 
-// column À§Ä¡¸¦ °è»êÇÏ±âÀ§ÇÑ º¯¼öµé.
+// column ìœ„ì¹˜ë¥¼ ê³„ì‚°í•˜ê¸°ìœ„í•œ ë³€ìˆ˜ë“¤.
 SInt                 gFirstcolumnC = 0;
 SInt                 gLastcolumnC  = 0;
 SInt                 yycolumnC     = 0;
 
-/* declare section error Ã³¸® ÇÏ±âÀ§ÇÑ º¯¼ö. */
+/* declare section error ì²˜ë¦¬ í•˜ê¸°ìœ„í•œ ë³€ìˆ˜. */
 SInt           gUlpCOMPERRCheck4DECL = 0;
 
-/* argument section error Ã³¸® ÇÏ±âÀ§ÇÑ º¯¼ö. */
+/* argument section error ì²˜ë¦¬ í•˜ê¸°ìœ„í•œ ë³€ìˆ˜. */
 SInt           gUlpCOMPERRCheck4ARG  = 0;
 
-/* EXEC SQL INCLUDE Çì´õ ÆÄÀÏÀÇ ¶óÀÎ³Ñ¹ö¸¦ °è»êÇÏ±âÀ§ÇÑ º¯¼ö. */
+/* EXEC SQL INCLUDE í—¤ë” íŒŒì¼ì˜ ë¼ì¸ë„˜ë²„ë¥¼ ê³„ì‚°í•˜ê¸°ìœ„í•œ ë³€ìˆ˜. */
 SInt           gUlpCOMPHeaderLine    = 0;
-// ´©Àû Çì´õ ¶óÀÎ¼ö.
+// ëˆ„ì  í—¤ë” ë¼ì¸ìˆ˜.
 SInt           gUlpCOMPSumHeaderLine = 0;
 
-/* Çì´õÆÄÀÏÀÇ path/name À» ÀúÀåÇÏ±â À§ÇÑ º¯¼ö */
+/* í—¤ë”íŒŒì¼ì˜ path/name ì„ ì €ì¥í•˜ê¸° ìœ„í•œ ë³€ìˆ˜ */
 SChar          gUlpCOMPHeaderPath[MAX_FILE_PATH_LEN] = {0};
 
-/* JIS Ã³¸®¸¦ À§ÇÑ º¯¼ö */
+/* JIS ì²˜ë¦¬ë¥¼ ìœ„í•œ ë³€ìˆ˜ */
 idnCharFeature gUlpCOMPCharType4JIS = IDN_CF_UNKNOWN;
 //============================================================//
 
@@ -134,8 +134,8 @@ SJIS_ALL         ({SJIS_HWKATA})|({SJIS_JIS97})
 %x EJ
 
 /*** for C ***/
-/* BUG-28061 : preprocessingÀ»¸¶Ä¡¸é marco tableÀ» ÃÊ±âÈ­ÇÏ°í, *
- *             ulpComp ¿¡¼­ Àç±¸ÃàÇÑ´Ù.                       */
+/* BUG-28061 : preprocessingì„ë§ˆì¹˜ë©´ marco tableì„ ì´ˆê¸°í™”í•˜ê³ , *
+ *             ulpComp ì—ì„œ ì¬êµ¬ì¶•í•œë‹¤.                       */
 /* -parse full */
 %x C
 /* -parse none */
@@ -169,11 +169,11 @@ END_DECL_ARG     "exec"[ \t\n]+"sql"[ \t\n]+"end"[ \t\n]+"argument"[ \t\n]+"sect
 %%
 %{
 
-// yylex°¡ È£ÃâµÇ¸é °¡Àå¸ÕÀú ÀÌºÎºĞÀÌ ¼öÇàµÇ¸ç, gUlpCOMPStartCond »óÅÂ·Î ÀüÀÌ µÈ´Ù.
+// yylexê°€ í˜¸ì¶œë˜ë©´ ê°€ì¥ë¨¼ì € ì´ë¶€ë¶„ì´ ìˆ˜í–‰ë˜ë©°, gUlpCOMPStartCond ìƒíƒœë¡œ ì „ì´ ëœë‹¤.
 switch( gUlpCOMPStartCond )
 {
-/* BUG-28061 : preprocessingÀ»¸¶Ä¡¸é marco tableÀ» ÃÊ±âÈ­ÇÏ°í, *
- *             ulpComp ¿¡¼­ Àç±¸ÃàÇÑ´Ù.                       */
+/* BUG-28061 : preprocessingì„ë§ˆì¹˜ë©´ marco tableì„ ì´ˆê¸°í™”í•˜ê³ , *
+ *             ulpComp ì—ì„œ ì¬êµ¬ì¶•í•œë‹¤.                       */
     case CP_ST_VOID :
         break;
     case CP_ST_NONE :
@@ -209,7 +209,7 @@ switch( gUlpCOMPStartCond )
         BEGIN(MACRO_IF_SKIP);
         break;
     default :
-        /* Æ¯Á¤ »óÅÂ·Î º¹±Í */
+        /* íŠ¹ì • ìƒíƒœë¡œ ë³µê·€ */
         BEGIN(gUlpCOMPStartCond);
         gUlpCOMPStartCond = CP_ST_VOID;
         break;
@@ -289,7 +289,7 @@ switch( gUlpCOMPStartCond )
 }
 
 <ARG_SKIP>{END_DECL_ARG}      {
-    // ÇÏÀ§ È£È¯¼ºÀ» À§ÇÑ argument sectioin Ã³¸®.
+    // í•˜ìœ„ í˜¸í™˜ì„±ì„ ìœ„í•œ argument sectioin ì²˜ë¦¬.
     if ( gUlpCOMPERRCheck4ARG == 1 )
     {
         gUlpCOMPERRCheck4ARG = 0;
@@ -349,10 +349,10 @@ switch( gUlpCOMPStartCond )
 }
 
 <NONE,C,PARTIAL>"EXEC"[ \t]+"SQL"    {
-    // ÇöÀç »óÅÂ ÀúÀå. (³ªÁß¿¡ ´Ù½Ã º¹±ÍÇÏ±â À§ÇÔ)
+    // í˜„ì¬ ìƒíƒœ ì €ì¥. (ë‚˜ì¤‘ì— ë‹¤ì‹œ ë³µê·€í•˜ê¸° ìœ„í•¨)
     gUlpCOMPPrevCond = YYSTATE;
 
-    // EMSQL±¸¹® Ã³¸®Áß SJIS¸¦ Ã³¸®ÇÏ±â À§ÇÑ »óÅÂ º¯È­.
+    // EMSQLêµ¬ë¬¸ ì²˜ë¦¬ì¤‘ SJISë¥¼ ì²˜ë¦¬í•˜ê¸° ìœ„í•œ ìƒíƒœ ë³€í™”.
     switch ( gUlpCOMPCharType4JIS )
     {
         case IDN_CF_SJIS:
@@ -373,8 +373,8 @@ switch( gUlpCOMPStartCond )
 }
 
 <NONE,C,PARTIAL>"@$LOVELY.K.J.H$" {
-    // EXEC SQL INCLUDE Çì´õÆÄÀÏÀÇ ½ÃÀÛÀ» ¾Ë¸°´Ù.
-    // line number Àç¼³Á¤.
+    // EXEC SQL INCLUDE í—¤ë”íŒŒì¼ì˜ ì‹œì‘ì„ ì•Œë¦°ë‹¤.
+    // line number ì¬ì„¤ì •.
     gUlpCOMPHeaderLine = yylineno;
     ulpCOMPSetHeaderName();
 
@@ -407,8 +407,8 @@ switch( gUlpCOMPStartCond )
         WRITESTR2BUFCOMP(sLineMacroStr);
     }
 
-    // EXEC SQL INCLUDE Çì´õÆÄÀÏÀÇ ³¡À» ¾Ë¸°´Ù.
-    // line number Àç¼³Á¤.
+    // EXEC SQL INCLUDE í—¤ë”íŒŒì¼ì˜ ëì„ ì•Œë¦°ë‹¤.
+    // line number ì¬ì„¤ì •.
     gUlpCOMPSumHeaderLine += yylineno - gUlpCOMPHeaderLine + 1;
     gUlpCOMPHeaderLine     = 0;
     gUlpCOMPHeaderPath[0]  = '\0';
@@ -417,12 +417,12 @@ switch( gUlpCOMPStartCond )
 <C,PARTIAL>^([ \t]*"#"[ \t]*"include") |
             (\n[ \t]*"#"[ \t]*"include")    {
 
-    // ÇöÀç »óÅÂ ÀúÀå. (³ªÁß¿¡ ´Ù½Ã º¹±ÍÇÏ±â À§ÇÔ)
+    // í˜„ì¬ ìƒíƒœ ì €ì¥. (ë‚˜ì¤‘ì— ë‹¤ì‹œ ë³µê·€í•˜ê¸° ìœ„í•¨)
     gUlpCOMPPrevCond = YYSTATE;
 
     if ( gUlpProgOption.mOptParseInfo == PARSE_FULL )
     {
-        // -parse full ÀÏ°æ¿ì¿¡¸¸ #include Ã³¸®ÇÏ¿© headerÆÄÀÏÀÇ º¯¼ö¼±¾ğ ÆÄ½Ì.
+        // -parse full ì¼ê²½ìš°ì—ë§Œ #include ì²˜ë¦¬í•˜ì—¬ headeríŒŒì¼ì˜ ë³€ìˆ˜ì„ ì–¸ íŒŒì‹±.
         WRITESTR2BUFCOMP(yytext);
         BEGIN(MACRO_INC);
         return(M_INCLUDE);
@@ -435,35 +435,35 @@ switch( gUlpCOMPStartCond )
 
 <C,PARTIAL>^([ \t]*"#"[ \t]*"if") |
             (\n[ \t]*"#"[ \t]*"if")          {
-    // ÇöÀç »óÅÂ ÀúÀå. (³ªÁß¿¡ ´Ù½Ã º¹±ÍÇÏ±â À§ÇÔ)
+    // í˜„ì¬ ìƒíƒœ ì €ì¥. (ë‚˜ì¤‘ì— ë‹¤ì‹œ ë³µê·€í•˜ê¸° ìœ„í•¨)
     gUlpCOMPPrevCond = YYSTATE;
     return(M_IF);
 }
 
 <C,PARTIAL>^([ \t]*"#"[ \t]*"elif") |
             (\n[ \t]*"#"[ \t]*"elif")        {
-    // ÇöÀç »óÅÂ ÀúÀå. (³ªÁß¿¡ ´Ù½Ã º¹±ÍÇÏ±â À§ÇÔ)
+    // í˜„ì¬ ìƒíƒœ ì €ì¥. (ë‚˜ì¤‘ì— ë‹¤ì‹œ ë³µê·€í•˜ê¸° ìœ„í•¨)
     gUlpCOMPPrevCond = YYSTATE;
     return(M_ELIF);
 }
 
 <C,PARTIAL>^([ \t]*"#"[ \t]*"else") |
             (\n[ \t]*"#"[ \t]*"else")        {
-    // ÇöÀç »óÅÂ ÀúÀå. (³ªÁß¿¡ ´Ù½Ã º¹±ÍÇÏ±â À§ÇÔ)
+    // í˜„ì¬ ìƒíƒœ ì €ì¥. (ë‚˜ì¤‘ì— ë‹¤ì‹œ ë³µê·€í•˜ê¸° ìœ„í•¨)
     gUlpCOMPPrevCond = YYSTATE;
     return(M_ELSE);
 }
 
 <C,PARTIAL>^([ \t]*"#"[ \t]*"endif") |
             (\n[ \t]*"#"[ \t]*"endif")       {
-    // ÇöÀç »óÅÂ ÀúÀå. (³ªÁß¿¡ ´Ù½Ã º¹±ÍÇÏ±â À§ÇÔ)
+    // í˜„ì¬ ìƒíƒœ ì €ì¥. (ë‚˜ì¤‘ì— ë‹¤ì‹œ ë³µê·€í•˜ê¸° ìœ„í•¨)
     gUlpCOMPPrevCond = YYSTATE;
     return(M_ENDIF);
 }
 
 <C,PARTIAL>^([ \t]*"#"[ \t]*"ifdef") |
             (\n[ \t]*"#"[ \t]*"ifdef")       {
-    // ÇöÀç »óÅÂ ÀúÀå. (³ªÁß¿¡ ´Ù½Ã º¹±ÍÇÏ±â À§ÇÔ)
+    // í˜„ì¬ ìƒíƒœ ì €ì¥. (ë‚˜ì¤‘ì— ë‹¤ì‹œ ë³µê·€í•˜ê¸° ìœ„í•¨)
     gUlpCOMPPrevCond = YYSTATE;
     BEGIN(MACRO_IFDEF);
     return(M_IFDEF);
@@ -471,7 +471,7 @@ switch( gUlpCOMPStartCond )
 
 <C,PARTIAL>^([ \t]*"#"[ \t]*"ifndef") |
             (\n[ \t]*"#"[ \t]*"ifndef")      {
-    // ÇöÀç »óÅÂ ÀúÀå. (³ªÁß¿¡ ´Ù½Ã º¹±ÍÇÏ±â À§ÇÔ)
+    // í˜„ì¬ ìƒíƒœ ì €ì¥. (ë‚˜ì¤‘ì— ë‹¤ì‹œ ë³µê·€í•˜ê¸° ìœ„í•¨)
     gUlpCOMPPrevCond = YYSTATE;
     BEGIN(MACRO_IFDEF);
     return(M_IFNDEF);
@@ -479,9 +479,9 @@ switch( gUlpCOMPStartCond )
 
 <C,PARTIAL>^([ \t]*"#"[ \t]*"define") |
             (\n[ \t]*"#"[ \t]*"define")          {
-    /* BUG-28061 : preprocessingÀ»¸¶Ä¡¸é marco tableÀ» ÃÊ±âÈ­ÇÏ°í, *
-     *             ulpComp ¿¡¼­ Àç±¸ÃàÇÑ´Ù.                       */
-    // ÇöÀç »óÅÂ ÀúÀå. (³ªÁß¿¡ ´Ù½Ã º¹±ÍÇÏ±â À§ÇÔ)
+    /* BUG-28061 : preprocessingì„ë§ˆì¹˜ë©´ marco tableì„ ì´ˆê¸°í™”í•˜ê³ , *
+     *             ulpComp ì—ì„œ ì¬êµ¬ì¶•í•œë‹¤.                       */
+    // í˜„ì¬ ìƒíƒœ ì €ì¥. (ë‚˜ì¤‘ì— ë‹¤ì‹œ ë³µê·€í•˜ê¸° ìœ„í•¨)
     gUlpCOMPPrevCond = YYSTATE;
     WRITESTR2BUFCOMP(yytext);
     BEGIN(MACRO_DEF);
@@ -489,9 +489,9 @@ switch( gUlpCOMPStartCond )
 }
 <C,PARTIAL>^([ \t]*"#"[ \t]*"undef") |
     (\n[ \t]*"#"[ \t]*"undef")                   {
-    /* BUG-28061 : preprocessingÀ»¸¶Ä¡¸é marco tableÀ» ÃÊ±âÈ­ÇÏ°í, *
-     *             ulpComp ¿¡¼­ Àç±¸ÃàÇÑ´Ù.                       */
-    // ÇöÀç »óÅÂ ÀúÀå. (³ªÁß¿¡ ´Ù½Ã º¹±ÍÇÏ±â À§ÇÔ)
+    /* BUG-28061 : preprocessingì„ë§ˆì¹˜ë©´ marco tableì„ ì´ˆê¸°í™”í•˜ê³ , *
+     *             ulpComp ì—ì„œ ì¬êµ¬ì¶•í•œë‹¤.                       */
+    // í˜„ì¬ ìƒíƒœ ì €ì¥. (ë‚˜ì¤‘ì— ë‹¤ì‹œ ë³µê·€í•˜ê¸° ìœ„í•¨)
     gUlpCOMPPrevCond = YYSTATE;
     WRITESTR2BUFCOMP(yytext);
     BEGIN(MACRO_DEF);
@@ -502,7 +502,7 @@ switch( gUlpCOMPStartCond )
 
     sCh  = yyinput();
 
-    // ÇÔ¼öÀÎÁö check
+    // í•¨ìˆ˜ì¸ì§€ check
     if (sCh == '(')
     {
         WRITESTR2BUFCOMP(yytext);
@@ -628,7 +628,7 @@ switch( gUlpCOMPStartCond )
 <MACRO_IFDEF>{L}({L}|{D})*                { return(M_IDENTIFIER); }
 <MACRO_IFDEF>{L}({L}|{D})*"("[^\n]*       {
     SChar *sStr;
-    // ÇÔ¼öÀÌ¸§ÀÏ°æ¿ì '(' ¼­ºÎÅÍÀÇ ÅäÅ«µéÀº ¹«½ÃµÈ´Ù.
+    // í•¨ìˆ˜ì´ë¦„ì¼ê²½ìš° '(' ì„œë¶€í„°ì˜ í† í°ë“¤ì€ ë¬´ì‹œëœë‹¤.
     sStr = idlOS::strstr( yytext, "(" );
     if( sStr != NULL )
     {
@@ -640,9 +640,9 @@ switch( gUlpCOMPStartCond )
 
 <NONE,PARTIAL>"{"                  {
     WRITESTR2BUFCOMP(yytext);
-    // blockÀ» ¸¸³ª¸é current depth¸¦ 1Áõ°¡.
+    // blockì„ ë§Œë‚˜ë©´ current depthë¥¼ 1ì¦ê°€.
     gUlpCurDepth++;
-    /* BUG-44675 {} ÁßÃ¸ÀÌ ¸¹À¸¸é apre°¡ Á×À½  */
+    /* BUG-44675 {} ì¤‘ì²©ì´ ë§ìœ¼ë©´ apreê°€ ì£½ìŒ  */
     if (gUlpCurDepth > MAX_SCOPE_DEPTH)
     {
         ulpErrorMgr sErrorMgr;
@@ -657,19 +657,19 @@ switch( gUlpCOMPStartCond )
     WRITESTR2BUFCOMP(yytext);
 
 
-    // -debug symbol ¿É¼ÇÀÌ ÄÑÀÖÀ¸¸é blockÀ» ºüÁ® ³ª¿Ã¶§¸¶´Ù 
-    // struct/symbol tableÀ» printÇØÁØ´Ù.
+    // -debug symbol ì˜µì…˜ì´ ì¼œìˆìœ¼ë©´ blockì„ ë¹ ì ¸ ë‚˜ì˜¬ë•Œë§ˆë‹¤ 
+    // struct/symbol tableì„ printí•´ì¤€ë‹¤.
     if( gUlpProgOption.mDebugSymbol == ID_TRUE )
     {
         gUlpStructT.ulpPrintStructT();
         gUlpScopeT.ulpPrintAllSymT();
     }
 
-    // struct ¼±¾ğ blockÀÌ ¾Æ´Ï¸é, scope table¿¡¼­ ÇØ´ç symbol table Á¦°Å
-    // struct table¿¡¼­ ÇØ´ç scopeÀÇ nodeµéµµ Á¦°ÅÇÔ.
+    // struct ì„ ì–¸ blockì´ ì•„ë‹ˆë©´, scope tableì—ì„œ í•´ë‹¹ symbol table ì œê±°
+    // struct tableì—ì„œ í•´ë‹¹ scopeì˜ nodeë“¤ë„ ì œê±°í•¨.
     if( gUlpParseInfo.mStructDeclDepth == 0 )
     {
-        /* BUG-44675 {} ÁßÃ¸ÀÌ ¸¹À¸¸é apre°¡ Á×À½  */
+        /* BUG-44675 {} ì¤‘ì²©ì´ ë§ìœ¼ë©´ apreê°€ ì£½ìŒ  */
         if (gUlpCurDepth < 0)
         {
             ulpErrorMgr sErrorMgr;
@@ -682,9 +682,9 @@ switch( gUlpCOMPStartCond )
         gUlpStructT.ulpStructDelScope( gUlpCurDepth );
     }
 
-    // current depth °¨¼Ò.
+    // current depth ê°ì†Œ.
     gUlpCurDepth--;
-    // depth¸¦ º¸°í whenever ±¸Á¶Ã¼¸¦ reset.
+    // depthë¥¼ ë³´ê³  whenever êµ¬ì¡°ì²´ë¥¼ reset.
     gUlpCodeGen.ulpGenResetWhenever( gUlpCurDepth );
 }
 <NONE,PARTIAL>\"(\\.|[^\\"]|\\\n)*\"           { WRITESTR2BUFCOMP(yytext); }
@@ -699,7 +699,7 @@ switch( gUlpCOMPStartCond )
 
 
 <MACRO_IF_SKIP>^([ \t]*"#"[ \t]*"if")      {
-    // ¾Æ·¡ regular expr. (\n[ \t]*"#"[ \t]*"if")¿Í ÇÕÄ¡¸é flex compile½Ã ¿¡·¯ ¹ß»ı. ÀÌÀ¯¸ğ¸§.
+    // ì•„ë˜ regular expr. (\n[ \t]*"#"[ \t]*"if")ì™€ í•©ì¹˜ë©´ flex compileì‹œ ì—ëŸ¬ ë°œìƒ. ì´ìœ ëª¨ë¦„.
     BEGIN(C);
     yyless(0);
 }
@@ -774,7 +774,7 @@ switch( gUlpCOMPStartCond )
     return(C_CHAR);
 }
 <C>("varchar")      {
-    // ÇÔ¼ö ¼±¾ğ ºÎºĞ(ÇÔ¼ö ÀÎÀÚ·Î varchar typeÀÌ »ç¿ë)ÀÌ ¾Æ´Ò°æ¿ì ÁÖ¼®Ã³¸®ÇÔ.
+    // í•¨ìˆ˜ ì„ ì–¸ ë¶€ë¶„(í•¨ìˆ˜ ì¸ìë¡œ varchar typeì´ ì‚¬ìš©)ì´ ì•„ë‹ê²½ìš° ì£¼ì„ì²˜ë¦¬í•¨.
 
     if ( gUlpParseInfo.mFuncDecl != ID_TRUE )
     {
@@ -921,12 +921,12 @@ switch( gUlpCOMPStartCond )
 
     WRITESTR2BUFCOMP(yytext);
 
-    // user defined typeÀÎÁö °Ë»çÇÑ´Ù. (typedef)
+    // user defined typeì¸ì§€ ê²€ì‚¬í•œë‹¤. (typedef)
     gUlpParseInfo.mHostValInfo4Typedef = gUlpScopeT.ulpSLookupAll( yytext, gUlpCurDepth );
 
     if( ( gUlpParseInfo.mHostValInfo4Typedef != NULL ) &&
-        // typedef struct ÇÑµÚ ³ªÁß¿¡ struct º¯¼ö ¼±¾ğÇÏ´Â °æ¿ì °í·Á.
-        /* BUG-27875 : ±¸Á¶Ã¼¾ÈÀÇ typedef typeÀÎ½Ä¸øÇÔ. */
+        // typedef struct í•œë’¤ ë‚˜ì¤‘ì— struct ë³€ìˆ˜ ì„ ì–¸í•˜ëŠ” ê²½ìš° ê³ ë ¤.
+        /* BUG-27875 : êµ¬ì¡°ì²´ì•ˆì˜ typedef typeì¸ì‹ëª»í•¨. */
         ( gUlpParseInfo.mSkipTypedef != ID_TRUE ) )
     {
 
@@ -936,7 +936,7 @@ switch( gUlpCOMPStartCond )
         }
     }
 
-    /* BUG-28068 : #define ¸ÅÅ©·ÎÀÌ¸§ È®Àå¾ÈµÇ´Â ¹®Á¦ */
+    /* BUG-28068 : #define ë§¤í¬ë¡œì´ë¦„ í™•ì¥ì•ˆë˜ëŠ” ë¬¸ì œ */
     switch ( gUlpProgOption.mOptParseInfo )
     {
         case PARSE_FULL :
@@ -945,9 +945,9 @@ switch( gUlpCOMPStartCond )
             {
                 if ( sMacroN -> mIsFunc == ID_TRUE )
                 {
-                    /* BUG-28118 : system Çì´õÆÄÀÏµéµµ ÆÄ½ÌµÅ¾ßÇÔ.     *
-                     * 3th. problem : ¸ÅÅ©·Î ÇÔ¼ö°¡ È®ÀåµÇÁö ¾Ê´Â ¹®Á¦. */
-                    // macro ÇÔ¼öÀÏ°æ¿ì¿¡´Â id´ÙÀ½ÀÇ (...) tokenÀ» ¼Ò¸ğÇØÁà¾ßÇÑ´Ù.
+                    /* BUG-28118 : system í—¤ë”íŒŒì¼ë“¤ë„ íŒŒì‹±ë¼ì•¼í•¨.     *
+                     * 3th. problem : ë§¤í¬ë¡œ í•¨ìˆ˜ê°€ í™•ì¥ë˜ì§€ ì•ŠëŠ” ë¬¸ì œ. */
+                    // macro í•¨ìˆ˜ì¼ê²½ìš°ì—ëŠ” idë‹¤ìŒì˜ (...) tokenì„ ì†Œëª¨í•´ì¤˜ì•¼í•œë‹¤.
                     (void) ulpCOMPSkipMacroFunc();
                 }
 
@@ -961,9 +961,9 @@ switch( gUlpCOMPStartCond )
                                  "%s",
                                  sMacroN->mText);
 
-                // ÇöÀç buffer Á¤º¸ ±¸Á¶Ã¼ ÀúÀå. (YY_CURRENT_BUFFER)
+                // í˜„ì¬ buffer ì •ë³´ êµ¬ì¡°ì²´ ì €ì¥. (YY_CURRENT_BUFFER)
                 gUlpCOMPMacroExpState[ gUlpCOMPMacroExpIndex ].mBufState = YY_CURRENT_BUFFER;
-                // »õ·Î Ã³¸®µÉ buffer Á¤º¸ ±¸Á¶Ã¼·Î switch. (return value of yy_scan_buffer)
+                // ìƒˆë¡œ ì²˜ë¦¬ë  buffer ì •ë³´ êµ¬ì¡°ì²´ë¡œ switch. (return value of yy_scan_buffer)
                 // The last two bytes of mText must be ASCII NUL.
                 yy_switch_to_buffer(
                             yy_scan_buffer(
@@ -1037,14 +1037,14 @@ switch( gUlpCOMPStartCond )
 <C>"?"                  { WRITESTR2BUFCOMP(yytext); return('?');            }
 <C>"{"                  {
     WRITESTR2BUFCOMP(yytext);
-    /* BUG-28118 : system Çì´õÆÄÀÏµéµµ ÆÄ½ÌµÅ¾ßÇÔ.                       *
-     * 6th. problem : Nested structure Á¤ÀÇÁß scope¸¦ Àß¸ø °è»êÇÏ´Â ¹®Á¦ */
-    // struct ¼±¾ğ ÁßÀÌ¶ó¸é scope¸¦ ´Ã¸±ÇÊ¿ä ¾ø´Ù.
+    /* BUG-28118 : system í—¤ë”íŒŒì¼ë“¤ë„ íŒŒì‹±ë¼ì•¼í•¨.                       *
+     * 6th. problem : Nested structure ì •ì˜ì¤‘ scopeë¥¼ ì˜ëª» ê³„ì‚°í•˜ëŠ” ë¬¸ì œ */
+    // struct ì„ ì–¸ ì¤‘ì´ë¼ë©´ scopeë¥¼ ëŠ˜ë¦´í•„ìš” ì—†ë‹¤.
     if( gUlpParseInfo.mStructDeclDepth == 0 )
     {
-        // blockÀ» ¸¸³ª¸é current depth¸¦ 1Áõ°¡.
+        // blockì„ ë§Œë‚˜ë©´ current depthë¥¼ 1ì¦ê°€.
         gUlpCurDepth++;
-        /* BUG-44675 {} ÁßÃ¸ÀÌ ¸¹À¸¸é apre°¡ Á×À½  */
+        /* BUG-44675 {} ì¤‘ì²©ì´ ë§ìœ¼ë©´ apreê°€ ì£½ìŒ  */
         if (gUlpCurDepth > MAX_SCOPE_DEPTH)
         {
             ulpErrorMgr sErrorMgr;
@@ -1067,14 +1067,14 @@ switch( gUlpCOMPStartCond )
         gUlpScopeT.ulpPrintAllSymT();
     }
 
-    // struct ¼±¾ğ blockÀÌ ¾Æ´Ï¸é, scope table¿¡¼­ ÇØ´ç symbol table Á¦°Å
-    // struct table¿¡¼­ ÇØ´ç scopeÀÇ nodeµéµµ Á¦°ÅÇÔ.
-    /* BUG-28118 : system Çì´õÆÄÀÏµéµµ ÆÄ½ÌµÅ¾ßÇÔ.                       *
-     * 6th. problem : Nested structure Á¤ÀÇÁß scope¸¦ Àß¸ø °è»êÇÏ´Â ¹®Á¦ */
-    // struct ¼±¾ğ ÁßÀÌ¶ó¸é scope¸¦ ÁÙÀÏÇÊ¿ä ¾ø´Ù.
+    // struct ì„ ì–¸ blockì´ ì•„ë‹ˆë©´, scope tableì—ì„œ í•´ë‹¹ symbol table ì œê±°
+    // struct tableì—ì„œ í•´ë‹¹ scopeì˜ nodeë“¤ë„ ì œê±°í•¨.
+    /* BUG-28118 : system í—¤ë”íŒŒì¼ë“¤ë„ íŒŒì‹±ë¼ì•¼í•¨.                       *
+     * 6th. problem : Nested structure ì •ì˜ì¤‘ scopeë¥¼ ì˜ëª» ê³„ì‚°í•˜ëŠ” ë¬¸ì œ */
+    // struct ì„ ì–¸ ì¤‘ì´ë¼ë©´ scopeë¥¼ ì¤„ì¼í•„ìš” ì—†ë‹¤.
     if( gUlpParseInfo.mStructDeclDepth == 0 )
     {
-        /* BUG-44675 {} ÁßÃ¸ÀÌ ¸¹À¸¸é apre°¡ Á×À½  */
+        /* BUG-44675 {} ì¤‘ì²©ì´ ë§ìœ¼ë©´ apreê°€ ì£½ìŒ  */
         if (gUlpCurDepth < 0)
         {
             ulpErrorMgr sErrorMgr;
@@ -1086,11 +1086,11 @@ switch( gUlpCOMPStartCond )
 
         gUlpScopeT.ulpSDelScope( gUlpCurDepth );
         gUlpStructT.ulpStructDelScope( gUlpCurDepth );
-        // current depth °¨¼Ò.
+        // current depth ê°ì†Œ.
         gUlpCurDepth--;
     }
 
-    // depth¸¦ º¸°í whenever ±¸Á¶Ã¼¸¦ reset.
+    // depthë¥¼ ë³´ê³  whenever êµ¬ì¡°ì²´ë¥¼ reset.
     gUlpCodeGen.ulpGenResetWhenever( gUlpCurDepth );
 
     return('}');
@@ -1406,7 +1406,7 @@ switch( gUlpCOMPStartCond )
 }
 
 <EMSQL,EJ,EP,EN>":"[ \t\n]*[_A-Z][_0-9A-Z]*(([.]|("->"))[_A-Z][_0-9A-Z]*)?("["[_0-9A-Z"*+/%!~()=&^.|"]*"]"([.][_A-Z][_0-9A-Z]*)?)?  {
-    /* BUG-28250 ::¹®ÀÚ¿Í È£½ºÆ®º¯¼ö¸í »çÀÌ¿¡ °ø¹é¹®ÀÚ Çã¿ë. */
+    /* BUG-28250 ::ë¬¸ìì™€ í˜¸ìŠ¤íŠ¸ë³€ìˆ˜ëª… ì‚¬ì´ì— ê³µë°±ë¬¸ì í—ˆìš©. */
     (void) ulpCOMPEraseHostValueSpaces( yytext );
     WRITESTR2QUERYCOMP( yytext );
     return SES_V_HOSTVARIABLE;
@@ -1462,7 +1462,7 @@ switch( gUlpCOMPStartCond )
     }
     else
     {
-        // varchar ¼±¾ğÁß ÁÖ¼®ÀÌ ¿À¸é #·Î ¹Ù²ãÁØ´Ù.
+        // varchar ì„ ì–¸ì¤‘ ì£¼ì„ì´ ì˜¤ë©´ #ë¡œ ë°”ê¿”ì¤€ë‹¤.
         WRITESTR2BUFCOMP((SChar *)"/#");
     }
 
@@ -1475,7 +1475,7 @@ switch( gUlpCOMPStartCond )
 }
 
 <EMSQL,EJ,EP,EN>"\n"|"\n\r"      {
-    // °ø¹éÀ» ÇÏ³ª Ãß°¡ÇØÁà¾ß ÇÑ´Ù. ¾Æ´Ï¸é query stringÀÌ ¾Æ·¡ ¶óÀÎ°ú ºÙ¾î ¿¡·¯¹ß»ıÇÏ´Â °æ¿ì°¡ ÀÖ´Ù
+    // ê³µë°±ì„ í•˜ë‚˜ ì¶”ê°€í•´ì¤˜ì•¼ í•œë‹¤. ì•„ë‹ˆë©´ query stringì´ ì•„ë˜ ë¼ì¸ê³¼ ë¶™ì–´ ì—ëŸ¬ë°œìƒí•˜ëŠ” ê²½ìš°ê°€ ìˆë‹¤
     WRITESTR2QUERYCOMP((SChar *)" ");
     WRITESTR2QUERYCOMP( yytext );
 }
@@ -1495,7 +1495,7 @@ switch( gUlpCOMPStartCond )
 }
 <NONE,PARTIAL>.                   { WRITESTR2BUFCOMP(yytext); }
 <C,NONE,PARTIAL><<EOF>>           {
-    /* BUG-28068 : #define ¸ÅÅ©·ÎÀÌ¸§ È®Àå¾ÈµÇ´Â ¹®Á¦ */
+    /* BUG-28068 : #define ë§¤í¬ë¡œì´ë¦„ í™•ì¥ì•ˆë˜ëŠ” ë¬¸ì œ */
     if( gUlpCOMPMacroExpIndex > 0 )
     {
         gUlpCOMPMacroExpIndex--;
@@ -1540,7 +1540,7 @@ IDE_RC ulpCOMPInitialize( SChar *aFileName )
 /***********************************************************************
  *
  * Description :
- *      COMPLexer ¿¡¼­ ÀĞ¾îµéÀÏ ÆÄÀÏÀ» ¼¼ÆÃÇØÁÖ´Â ÇÔ¼ö.
+ *      COMPLexer ì—ì„œ ì½ì–´ë“¤ì¼ íŒŒì¼ì„ ì„¸íŒ…í•´ì£¼ëŠ” í•¨ìˆ˜.
  *
  ***********************************************************************/
     PDL_stat   sFileInfo;
@@ -1559,12 +1559,12 @@ IDE_RC ulpCOMPInitialize( SChar *aFileName )
     IDE_TEST_RAISE( (yyin = idlOS::fopen(aFileName, "r")) == NULL,
                     ERR_FILE_OPEN)
 
-    /* BUG-27683 : iostream »ç¿ë Á¦°Å */
-    // include Ã³¸®ÀÏ °æ¿ì »õ ¹öÆÛ¸¦ »ı¼ºÇÏ°í, switch½ÃÄÑÁØ´Ù.
+    /* BUG-27683 : iostream ì‚¬ìš© ì œê±° */
+    // include ì²˜ë¦¬ì¼ ê²½ìš° ìƒˆ ë²„í¼ë¥¼ ìƒì„±í•˜ê³ , switchì‹œì¼œì¤€ë‹¤.
     if ( gUlpCOMPIncludeIndex > 0 )
     {
         yy_switch_to_buffer ( yy_create_buffer( yyin, YY_BUF_SIZE) );
-        // »õfile ¿­¶§¸¶´Ù lineÁ¤º¸ ÃÊ±âÈ­.
+        // ìƒˆfile ì—´ë•Œë§ˆë‹¤ lineì •ë³´ ì´ˆê¸°í™”.
         yylineno = 1;
     }
 
@@ -1601,18 +1601,18 @@ void ulpCOMPFinalize( )
  *      Destructor
  *
  ***********************************************************************/
-    /* ÇÏ³ªÀÇ include fileÃ³¸®°¡ ³¡³µÀ¸¹Ç·Î include index 1 °¨¼Ò */
+    /* í•˜ë‚˜ì˜ include fileì²˜ë¦¬ê°€ ëë‚¬ìœ¼ë¯€ë¡œ include index 1 ê°ì†Œ */
     gUlpProgOption.ulpPopIncList();
 
-    /* Ã³¸®°¡ ³¡³­ file close */
+    /* ì²˜ë¦¬ê°€ ëë‚œ file close */
     if( yyin != NULL )
     {
         idlOS::fclose(yyin);
         yyin = NULL;
     }
 
-    /* BUG-27683 : iostream »ç¿ë Á¦°Å */
-    // include Ã³¸®¸¦ ¸¶Ä£ °æ¿ì ÇöÁ¦ ¹öÆÛ¸¦ Áö¿ì°í, ÀÌÀü ¹öÆÛ·Î switch½ÃÄÑÁØ´Ù.
+    /* BUG-27683 : iostream ì‚¬ìš© ì œê±° */
+    // include ì²˜ë¦¬ë¥¼ ë§ˆì¹œ ê²½ìš° í˜„ì œ ë²„í¼ë¥¼ ì§€ìš°ê³ , ì´ì „ ë²„í¼ë¡œ switchì‹œì¼œì¤€ë‹¤.
     if ( gUlpCOMPIncludeIndex > 0 )
     {
         gUlpCOMPIncludeIndex--;
@@ -1628,7 +1628,7 @@ IDE_RC ulpCOMPCommentC( idBool aSkip )
 /***********************************************************************
  *
  * Description :
- *      c-style comment Ã³¸®. commentÀÇ ¸¶Áö¸·ÀÎ " * / " °¡ ¿Ã¶§±îÁö ÀĞ¾îµé¿© write ¹öÆÛ¿¡ ¾´´Ù.
+ *      c-style comment ì²˜ë¦¬. commentì˜ ë§ˆì§€ë§‰ì¸ " * / " ê°€ ì˜¬ë•Œê¹Œì§€ ì½ì–´ë“¤ì—¬ write ë²„í¼ì— ì“´ë‹¤.
  *
  ***********************************************************************/
     SChar sCh1;
@@ -1638,7 +1638,7 @@ IDE_RC ulpCOMPCommentC( idBool aSkip )
 
     for( sIndex = 0 ; ( sCh1 = yyinput() ) != (SChar) EOF ; )
     {
-        /* stack ÀÌ ²ËÃ¡À¸¸é, write buf¿¡ flush ÇÏ°í sIndexÃÊ±âÈ­ÈÄ ´Ù½Ã ÀĞ´Â´Ù. */
+        /* stack ì´ ê½‰ì°¼ìœ¼ë©´, write bufì— flush í•˜ê³  sIndexì´ˆê¸°í™”í›„ ë‹¤ì‹œ ì½ëŠ”ë‹¤. */
         if ( ( MAX_COMMENTSTR_LEN - 6 ) < sIndex )
         {
             unput(sCh1);
@@ -1659,9 +1659,9 @@ IDE_RC ulpCOMPCommentC( idBool aSkip )
         {
             sCh2 = yyinput();
             if( sCh2 == '/' )
-            {   /* ÁÖ¼®ÀÇ ¸¶Áö¸·ÀÌ ¿Ã°æ¿ì */
+            {   /* ì£¼ì„ì˜ ë§ˆì§€ë§‰ì´ ì˜¬ê²½ìš° */
                 if( gUlpParseInfo.mVarcharDecl == ID_TRUE )
-                {   /* varchar ¼±¾ğ »çÀÌ¿¡ ÁÖ¼®ÀÌ ÀÖÀ»°æ¿ì */
+                {   /* varchar ì„ ì–¸ ì‚¬ì´ì— ì£¼ì„ì´ ìˆì„ê²½ìš° */
                     sTmpStr[sIndex-1] = '#';
                 }
                 sTmpStr[sIndex++] = sCh2;
@@ -1680,7 +1680,7 @@ IDE_RC ulpCOMPCommentC( idBool aSkip )
         }
     }
 
-    /* BUG-27854 : AIX¿¡¼­ commentÃ³¸®Áß hang°É¸². */
+    /* BUG-27854 : AIXì—ì„œ commentì²˜ë¦¬ì¤‘ hangê±¸ë¦¼. */
     IDE_TEST_RAISE ( sCh1 == (SChar) EOF, ERR_COMMENT_NO_CLOSE );
 
     return IDE_SUCCESS;
@@ -1713,7 +1713,7 @@ void ulpCOMPCommentCplus()
 /***********************************************************************
  *
  * Description :
- *      c++-style comment Ã³¸®.
+ *      c++-style comment ì²˜ë¦¬.
  *
  ***********************************************************************/
     SChar sCh;
@@ -1736,14 +1736,14 @@ void ulpCOMPCommentCplus()
 }
 
 
-/* BUG-28061 : preprocessingÀ»¸¶Ä¡¸é marco tableÀ» ÃÊ±âÈ­ÇÏ°í, *
- *             ulpComp ¿¡¼­ Àç±¸ÃàÇÑ´Ù.                       */
+/* BUG-28061 : preprocessingì„ë§ˆì¹˜ë©´ marco tableì„ ì´ˆê¸°í™”í•˜ê³ , *
+ *             ulpComp ì—ì„œ ì¬êµ¬ì¶•í•œë‹¤.                       */
 void ulpCOMPCommentCplus4IF()
 {
 /***********************************************************************
  *
  * Description :
- *      #if ±¸¹®¾È¿¡¼­ÀÇ C++ comment Ã³¸® ÇÔ¼ö
+ *      #if êµ¬ë¬¸ì•ˆì—ì„œì˜ C++ comment ì²˜ë¦¬ í•¨ìˆ˜
  *
  ***********************************************************************/
     SChar sCh;
@@ -1763,7 +1763,7 @@ IDE_RC ulpCOMPSkipMacro()
 /***********************************************************************
  *
  * Description :
- *      ÆÄ½ÌÇÒ ÇÊ¿ä¾ø´Â macro±¸¹®À» ½ºÅµÇØÁÖ´Â ÇÔ¼ö.
+ *      íŒŒì‹±í•  í•„ìš”ì—†ëŠ” macroêµ¬ë¬¸ì„ ìŠ¤í‚µí•´ì£¼ëŠ” í•¨ìˆ˜.
  *
  ***********************************************************************/
     SInt  sIndex;
@@ -1837,15 +1837,15 @@ SkipMacro:
     return IDE_FAILURE;
 }
 
-/* BUG-28061 : preprocessingÀ»¸¶Ä¡¸é marco tableÀ» ÃÊ±âÈ­ÇÏ°í, *
- *             ulpComp ¿¡¼­ Àç±¸ÃàÇÑ´Ù.                       */
+/* BUG-28061 : preprocessingì„ë§ˆì¹˜ë©´ marco tableì„ ì´ˆê¸°í™”í•˜ê³ , *
+ *             ulpComp ì—ì„œ ì¬êµ¬ì¶•í•œë‹¤.                       */
 void ulpCOMPEraseBN4MacroText( SChar *aTmpDefinedStr, idBool aIsIf )
 {
 /***********************************************************************
  *
  * Description :
- *      #if <expr>, #define ID <text> ±¸¹® Ã³¸®½Ã <expr>¿Í <text> ¾È¿¡ Æ÷ÇÔµÇ¾î ÀÖ´Â
- *      backspace newline ¹®ÀÚ Ã³¸®¿Í ÁÖ¼®Ã³¸®¸¦ ÇÏ¿©  aTmpDefinedStr ¹öÆÛ¿¡ Æø»çÇØÁÖ´Â ÇÔ¼ö.
+ *      #if <expr>, #define ID <text> êµ¬ë¬¸ ì²˜ë¦¬ì‹œ <expr>ì™€ <text> ì•ˆì— í¬í•¨ë˜ì–´ ìˆëŠ”
+ *      backspace newline ë¬¸ì ì²˜ë¦¬ì™€ ì£¼ì„ì²˜ë¦¬ë¥¼ í•˜ì—¬  aTmpDefinedStr ë²„í¼ì— í­ì‚¬í•´ì£¼ëŠ” í•¨ìˆ˜.
  *
  ***********************************************************************/
     SChar  sCh;
@@ -1859,12 +1859,12 @@ void ulpCOMPEraseBN4MacroText( SChar *aTmpDefinedStr, idBool aIsIf )
     sBreak1    = ID_FALSE;
     sBreak2    = ID_FALSE;
 
-    // text ¾ÕºÎºĞ Ã³¸®.
+    // text ì•ë¶€ë¶„ ì²˜ë¦¬.
     while( sBreak1 != ID_TRUE )
     {
         switch ( (aIsIf == ID_TRUE)? sCh = yyinput() : sCh = ulpCOMPYYinput() )
         {
-            // Ã³À½ °ø¹é Á¦°Å
+            // ì²˜ìŒ ê³µë°± ì œê±°
             case '\t':
             case ' ' :
                 do
@@ -1873,11 +1873,11 @@ void ulpCOMPEraseBN4MacroText( SChar *aTmpDefinedStr, idBool aIsIf )
                 } while( (sCh == ' ') || (sCh == '\t') );
                 sBreak1    = ID_TRUE;
                 break;
-            // Ã³À½¿¡ ±×³É newlineÀÌ ¿Â´Ù°í?
+            // ì²˜ìŒì— ê·¸ëƒ¥ newlineì´ ì˜¨ë‹¤ê³ ?
             case '\n':
                 sBreak1    = ID_TRUE;
                 break;
-            // Ã³À½ ÁÖ¼®ÀÌ ¿À´Â°æ¿ì Ã³¸®.
+            // ì²˜ìŒ ì£¼ì„ì´ ì˜¤ëŠ”ê²½ìš° ì²˜ë¦¬.
             case '/':
                 (aIsIf == ID_TRUE)? sCh = yyinput() : sCh = ulpCOMPYYinput();
                 if ( sCh == '/')
@@ -1907,7 +1907,7 @@ void ulpCOMPEraseBN4MacroText( SChar *aTmpDefinedStr, idBool aIsIf )
 
     while ( ((aIsIf == ID_TRUE)? sCh = yyinput() : sCh = ulpCOMPYYinput()) != (SChar) EOF )
     {
-        /* BUG-30233 : #define ³»¿ëÀÌ 5KÀÌ»óÀÌ¸é apre segv¹ß»ıÇÔ. */
+        /* BUG-30233 : #define ë‚´ìš©ì´ 5Kì´ìƒì´ë©´ apre segvë°œìƒí•¨. */
         IDE_TEST_RAISE( sIndex >= MAX_MACRO_DEFINE_CONTENT_LEN-1,
                         ERR_DEFINE_MACRO_OVERFLOW );
 
@@ -1969,7 +1969,7 @@ void ulpCOMPEraseBN4MacroText( SChar *aTmpDefinedStr, idBool aIsIf )
                 aTmpDefinedStr[sIndex] = '\0';
                 break;
 
-            // Áß°£¿¡ ÁÖ¼®ÀÌ ¿À´Â°æ¿ì Ã³¸®.
+            // ì¤‘ê°„ì— ì£¼ì„ì´ ì˜¤ëŠ”ê²½ìš° ì²˜ë¦¬.
             case '/':
                 (aIsIf == ID_TRUE)? sCh = yyinput() : sCh = ulpCOMPYYinput();
                 if ( sCh == '/')
@@ -1982,7 +1982,7 @@ void ulpCOMPEraseBN4MacroText( SChar *aTmpDefinedStr, idBool aIsIf )
                     if( sCh == '*' )
                     {
                         (aIsIf == ID_TRUE)? ulpCOMPCommentC4IF() : ulpCOMPCommentC(ID_FALSE);
-                        // text Áß°£¿¡ /*~*/ ÀÌ¿À¸é ±×³É °ø¹éÇÏ³ª·Î °£ÁÖµÈ´Ù.
+                        // text ì¤‘ê°„ì— /*~*/ ì´ì˜¤ë©´ ê·¸ëƒ¥ ê³µë°±í•˜ë‚˜ë¡œ ê°„ì£¼ëœë‹¤.
                         aTmpDefinedStr[sIndex++] = ' ';
                     }
                     else
@@ -2019,7 +2019,7 @@ void ulpCOMPEraseBN4MacroText( SChar *aTmpDefinedStr, idBool aIsIf )
 
     return;
 
-    /* BUG-30233 : #define ³»¿ëÀÌ 5KÀÌ»óÀÌ¸é apre segv¹ß»ıÇÔ. */
+    /* BUG-30233 : #define ë‚´ìš©ì´ 5Kì´ìƒì´ë©´ apre segvë°œìƒí•¨. */
     IDE_EXCEPTION (ERR_DEFINE_MACRO_OVERFLOW);
     {
         ulpErrorMgr  sErrorMgr;
@@ -2033,14 +2033,14 @@ void ulpCOMPEraseBN4MacroText( SChar *aTmpDefinedStr, idBool aIsIf )
     return;
 }
 
-/* BUG-28061 : preprocessingÀ»¸¶Ä¡¸é marco tableÀ» ÃÊ±âÈ­ÇÏ°í, *
- *             ulpComp ¿¡¼­ Àç±¸ÃàÇÑ´Ù.                       */
+/* BUG-28061 : preprocessingì„ë§ˆì¹˜ë©´ marco tableì„ ì´ˆê¸°í™”í•˜ê³ , *
+ *             ulpComp ì—ì„œ ì¬êµ¬ì¶•í•œë‹¤.                       */
 SChar ulpCOMPYYinput(void)
 {
 /***********************************************************************
  *
  * Description :
- *      yyinput() ÇÏ¿© ¹®ÀÚ ÇÏ³ª¸¦ ÀĞ¾î¿ÂÈÄ file buffer¿¡ ¾´´Ù.
+ *      yyinput() í•˜ì—¬ ë¬¸ì í•˜ë‚˜ë¥¼ ì½ì–´ì˜¨í›„ file bufferì— ì“´ë‹¤.
  *
  ***********************************************************************/
     SChar sCh;
@@ -2051,28 +2051,28 @@ SChar ulpCOMPYYinput(void)
     return sCh;
 }
 
-/* BUG-28061 : preprocessingÀ»¸¶Ä¡¸é marco tableÀ» ÃÊ±âÈ­ÇÏ°í, *
- *             ulpComp ¿¡¼­ Àç±¸ÃàÇÑ´Ù.                       */
+/* BUG-28061 : preprocessingì„ë§ˆì¹˜ë©´ marco tableì„ ì´ˆê¸°í™”í•˜ê³ , *
+ *             ulpComp ì—ì„œ ì¬êµ¬ì¶•í•œë‹¤.                       */
 void ulpCOMPYYunput( SChar aCh )
 {
 /***********************************************************************
  *
  * Description :
- *      unput() ÇÏ¿© ¹®ÀÚ ÇÏ³ª¸¦ ³»¹ñÀºÈÄ file buffer¿¡¼­ Á¦°ÅÇÑ´Ù.
+ *      unput() í•˜ì—¬ ë¬¸ì í•˜ë‚˜ë¥¼ ë‚´ë±‰ì€í›„ file bufferì—ì„œ ì œê±°í•œë‹¤.
  *
  ***********************************************************************/
     unput(aCh);
     WRITEUNCH2BUFCOMP();
 }
 
-/* BUG-28061 : preprocessingÀ»¸¶Ä¡¸é marco tableÀ» ÃÊ±âÈ­ÇÏ°í, *
- *             ulpComp ¿¡¼­ Àç±¸ÃàÇÑ´Ù.                       */
+/* BUG-28061 : preprocessingì„ë§ˆì¹˜ë©´ marco tableì„ ì´ˆê¸°í™”í•˜ê³ , *
+ *             ulpComp ì—ì„œ ì¬êµ¬ì¶•í•œë‹¤.                       */
 IDE_RC ulpCOMPCommentC4IF()
 {
 /***********************************************************************
  *
  * Description :
- *      #if ¾ÈÀÇ C comment Ã³¸® ÇÔ¼ö (newline¸¸ file¿¡ writeÇÑ´Ù.)
+ *      #if ì•ˆì˜ C comment ì²˜ë¦¬ í•¨ìˆ˜ (newlineë§Œ fileì— writeí•œë‹¤.)
  *
  ***********************************************************************/
     SChar sCh1;
@@ -2085,7 +2085,7 @@ CommentC:
     {
         if( sCh1 == '\n' )
         {
-            // newline¸¸Àº write ÇÑ´Ù. (line number ¾ÅÅ©¸¦ ¸ÂÃß±âÀ§ÇÔ)
+            // newlineë§Œì€ write í•œë‹¤. (line number ì”½í¬ë¥¼ ë§ì¶”ê¸°ìœ„í•¨)
             WRITECH2BUFCOMP('\n');
         }
         sCh1 = yyinput();
@@ -2123,11 +2123,11 @@ void ulpCOMPRestoreCond()
 /***********************************************************************
  *
  * Description :
- *      ÀÌÀüÀÇ lexer »óÅÂ·Î º¹±ÍÇØÁÖ´Â ÇÔ¼ö.
+ *      ì´ì „ì˜ lexer ìƒíƒœë¡œ ë³µê·€í•´ì£¼ëŠ” í•¨ìˆ˜.
  *
  ***********************************************************************/
-    /* BUG-28061 : preprocessingÀ»¸¶Ä¡¸é marco tableÀ» ÃÊ±âÈ­ÇÏ°í, *
-     *             ulpComp ¿¡¼­ Àç±¸ÃàÇÑ´Ù.                       */
+    /* BUG-28061 : preprocessingì„ë§ˆì¹˜ë©´ marco tableì„ ì´ˆê¸°í™”í•˜ê³ , *
+     *             ulpComp ì—ì„œ ì¬êµ¬ì¶•í•œë‹¤.                       */
     switch ( gUlpProgOption.mOptParseInfo )
     {
         case PARSE_PARTIAL :
@@ -2150,18 +2150,18 @@ void ulpCOMPWheneverFunc( SChar *aTmpStr )
 /***********************************************************************
  *
  * Description :
- *      WHENEVER ±¸¹® DO function_name ÀÇ ÇÔ¼öÀÌ¸§À» ÀúÀåÇÏ´Â ÇÔ¼ö.
+ *      WHENEVER êµ¬ë¬¸ DO function_name ì˜ í•¨ìˆ˜ì´ë¦„ì„ ì €ì¥í•˜ëŠ” í•¨ìˆ˜.
  *
  ***********************************************************************/
     SChar sCh;
     idBool sDoBreak;
-    // ( ¿­¸° È½¼ö
+    // ( ì—´ë¦° íšŸìˆ˜
     UInt   sParenNum;
     UInt   sLen;
     UInt   sLen2;
 
     sDoBreak     = ID_FALSE;
-    // ÀÏ´Ü ( ÀÌ ÇÑ¹ø ¿­¸° »óÅÂ´Ù. µû¶ó¼­ 1.
+    // ì¼ë‹¨ ( ì´ í•œë²ˆ ì—´ë¦° ìƒíƒœë‹¤. ë”°ë¼ì„œ 1.
     sParenNum    = 1;
     sLen2 = sLen = idlOS::strlen( aTmpStr );
 
@@ -2211,7 +2211,7 @@ void ulpCOMPSetHeaderName( void )
 /***********************************************************************
  *
  * Description :
- *      EXEC SQL INCLUDE ÀÇ header file ÆĞ½º+ÀÌ¸§À» ÀúÀåÇÏ´Â ÇÔ¼ö.
+ *      EXEC SQL INCLUDE ì˜ header file íŒ¨ìŠ¤+ì´ë¦„ì„ ì €ì¥í•˜ëŠ” í•¨ìˆ˜.
  *
  ***********************************************************************/
 
@@ -2247,7 +2247,7 @@ void ulpCOMPSaveBufferState( void )
 /***********************************************************************
  *
  * Description :
- *      include Ã³¸®¸¦ ÇÏ±âÀ§ÇÑ ÇöÀç flex¹öÆÛ »óÅÂ¸¦ ÀúÀåÇÏ´Â ÇÔ¼ö.
+ *      include ì²˜ë¦¬ë¥¼ í•˜ê¸°ìœ„í•œ í˜„ì¬ flexë²„í¼ ìƒíƒœë¥¼ ì €ì¥í•˜ëŠ” í•¨ìˆ˜.
  *
  ***********************************************************************/
 
@@ -2266,13 +2266,13 @@ void ulpCOMPSaveBufferState( void )
 }
 
 
-/* BUG-28250 : :¹®ÀÚ¿Í È£½ºÆ®º¯¼ö¸í »çÀÌ¿¡ °ø¹é¹®ÀÚ Çã¿ë. */
+/* BUG-28250 : :ë¬¸ìì™€ í˜¸ìŠ¤íŠ¸ë³€ìˆ˜ëª… ì‚¬ì´ì— ê³µë°±ë¬¸ì í—ˆìš©. */
 void ulpCOMPEraseHostValueSpaces( SChar *aString )
 {
 /***********************************************************************
  *
  * Description :
- *      : <È£½ºÆ®º¯¼öÀÌ¸§> ¿¡¼­ :¿Í ÀÌ¸§»çÀÌÀÇ °ø¹éÀ» Á¦°ÅÇØÁÖ´Â ÇÔ¼öÀÌ´Ù.
+ *      : <í˜¸ìŠ¤íŠ¸ë³€ìˆ˜ì´ë¦„> ì—ì„œ :ì™€ ì´ë¦„ì‚¬ì´ì˜ ê³µë°±ì„ ì œê±°í•´ì£¼ëŠ” í•¨ìˆ˜ì´ë‹¤.
  *
  ***********************************************************************/
 
@@ -2311,14 +2311,14 @@ void ulpCOMPEraseHostValueSpaces( SChar *aString )
 }
 
 
-/* BUG-28118 : system Çì´õÆÄÀÏµéµµ ÆÄ½ÌµÅ¾ßÇÔ.     *
- * 3th. problem : ¸ÅÅ©·Î ÇÔ¼ö°¡ È®ÀåµÇÁö ¾Ê´Â ¹®Á¦. */
+/* BUG-28118 : system í—¤ë”íŒŒì¼ë“¤ë„ íŒŒì‹±ë¼ì•¼í•¨.     *
+ * 3th. problem : ë§¤í¬ë¡œ í•¨ìˆ˜ê°€ í™•ì¥ë˜ì§€ ì•ŠëŠ” ë¬¸ì œ. */
 void ulpCOMPSkipMacroFunc()
 {
 /***********************************************************************
  *
  * Description :
- *      : Macro ÇÔ¼ö°¡ ¿Ã°æ¿ì id µÚÀÇ (...) ÅäÅ«À» ¼Ò¸ğÇØÁÖ±â À§ÇÑ ÇÔ¼ö.
+ *      : Macro í•¨ìˆ˜ê°€ ì˜¬ê²½ìš° id ë’¤ì˜ (...) í† í°ì„ ì†Œëª¨í•´ì£¼ê¸° ìœ„í•œ í•¨ìˆ˜.
  *
  ***********************************************************************/
     SChar sCh;
@@ -2326,7 +2326,7 @@ void ulpCOMPSkipMacroFunc()
     idBool sIsQuote;
     idBool sIsDQuote;
     idBool sIsFirst;
-    // ( ¿­¸° È½¼ö
+    // ( ì—´ë¦° íšŸìˆ˜
     UInt   sParenNum;
 
     sIsFirst     = ID_TRUE;
@@ -2465,7 +2465,7 @@ int COMPlex( YYSTYPE        *lvalp )
 /***********************************************************************
  *
  * Description :
- *      parser¿¡¼­ ÅäÅ«À» ÀĞÀ» ¶§¸¶´Ù È£ÃâµÇ´Â lexerÇÔ¼ö. (=yylex)
+ *      parserì—ì„œ í† í°ì„ ì½ì„ ë•Œë§ˆë‹¤ í˜¸ì¶œë˜ëŠ” lexerí•¨ìˆ˜. (=yylex)
  *
  ***********************************************************************/
     SInt   sRc;
@@ -2484,7 +2484,7 @@ int COMPlex( YYSTYPE        *lvalp )
 
         if( ( idlOS::strncmp( sNlsUse, (SChar*)"SHIFTJIS", 8 ) == 0 ) ||
             ( idlOS::strncmp( sNlsUse, (SChar*)"JAPANESE", 8 ) == 0 ) ||
-            /* PROJ-2590 [±â´É¼º] CP932 database character set Áö¿ø */
+            /* PROJ-2590 [ê¸°ëŠ¥ì„±] CP932 database character set ì§€ì› */
             ( idlOS::strncmp( sNlsUse, (SChar*)"MS932", 5 ) == 0 ) ||
             ( idlOS::strncmp( sNlsUse, (SChar*)"CP932", 5 ) == 0 ) ||
             ( idlOS::strncmp( sNlsUse, (SChar*)"WINDOWS932", 10 ) == 0 ) )
@@ -2494,7 +2494,7 @@ int COMPlex( YYSTYPE        *lvalp )
         else if( ( idlOS::strncmp( sNlsUse, (SChar*)"GB231280", 8 ) == 0 ) ||
                  ( idlOS::strncmp( sNlsUse, (SChar*)"ZHS16CGB231280", 14) == 0) ||
                  ( idlOS::strncmp( sNlsUse, (SChar*)"CHINESE", 7 ) == 0 ) ||
-                 /* PROJ-2414 [±â´É¼º] GBK, CP936 character set Ãß°¡ */
+                 /* PROJ-2414 [ê¸°ëŠ¥ì„±] GBK, CP936 character set ì¶”ê°€ */
                  ( idlOS::strncmp( sNlsUse, (SChar*)"MS936", 5 ) == 0 ) ||
                  ( idlOS::strncmp( sNlsUse, (SChar*)"CP936", 5 ) == 0 ) ||
                  ( idlOS::strncmp( sNlsUse, (SChar*)"GBK", 3 ) == 0 ) ||
@@ -2519,7 +2519,7 @@ int COMPlex( YYSTYPE        *lvalp )
 
     sMytextlen     = (UInt)idlOS::strlen(yytext);
 
-    // array [ expr ] => exprÀ» mConstantExprStr ¿¡ strcat ÇÔ.
+    // array [ expr ] => exprì„ mConstantExprStr ì— strcat í•¨.
     if ( gUlpParseInfo.mArrExpr == ID_TRUE )
     {
         idlOS::strcat(gUlpParseInfo.mConstantExprStr, lvalp->strval);
@@ -2543,7 +2543,7 @@ int COMPlex( YYSTYPE        *lvalp )
 
     COMPerror( ulpGetErrorMSG(&sErrorMgr) );
 
-    return 0; // COMPerror()¿¡¼­ °­Á¦ Á¾·á µÇ¹Ç·Î unreachable
+    return 0; // COMPerror()ì—ì„œ ê°•ì œ ì¢…ë£Œ ë˜ë¯€ë¡œ unreachable
 }
 
 
@@ -2552,7 +2552,7 @@ void COMPerror( const SChar* aErrMsg)
 /***********************************************************************
  *
  * Description :
- *      COMP lexer parser¿¡¼­ ¹ß»ıÇÏ´Â ¸ğµç ¿¡·¯µéÀ» Ã³¸®ÇØÁÜ.
+ *      COMP lexer parserì—ì„œ ë°œìƒí•˜ëŠ” ëª¨ë“  ì—ëŸ¬ë“¤ì„ ì²˜ë¦¬í•´ì¤Œ.
  *
  ***********************************************************************/
     idBool sSkip;
@@ -2580,7 +2580,7 @@ void COMPerror( const SChar* aErrMsg)
                       aErrMsg);
     }
 
-    // file open error, file size error´Â skip
+    // file open error, file size errorëŠ” skip
     if( sSkip == ID_FALSE )
     {
         if( gDontPrint2file == ID_TRUE )

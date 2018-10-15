@@ -18,7 +18,7 @@
 /***********************************************************************
  * $Id: stndrFT.h 82075 2018-01-17 06:39:52Z jina.kim $
  *
- * Disk RTree Index¿« DUMP∏¶ ¿ß«— «‘ºˆ
+ * Disk RTree IndexÏùò DUMPÎ•º ÏúÑÌïú Ìï®Ïàò
  *
  **********************************************************************/
 
@@ -33,7 +33,7 @@
 
 
 //-------------------------------
-// D$DISK_INDEX_RTREE_STRUCTURE ¿« ±∏¡∂
+// D$DISK_INDEX_RTREE_STRUCTURE Ïùò Íµ¨Ï°∞
 //-------------------------------
 
 typedef struct stndrDumpTreePage       // for stndrNodeHdr
@@ -58,7 +58,7 @@ typedef struct stndrDumpTreePage       // for stndrNodeHdr
 } stndrDumpTreePage;
 
 //-------------------------------
-// D$DISK_INDEX_RTREE_KEY ¿« ±∏¡∂
+// D$DISK_INDEX_RTREE_KEY Ïùò Íµ¨Ï°∞
 //-------------------------------
 
 typedef struct stndrDumpKey            // for stndrIKey, stndrLKey
@@ -91,7 +91,7 @@ typedef struct stndrDumpKey            // for stndrIKey, stndrLKey
 
 
 //-------------------------------
-// X$DISK_RTREE_HEADER ¿« ±∏¡∂
+// X$DISK_RTREE_HEADER Ïùò Íµ¨Ï°∞
 //-------------------------------
 typedef struct stndrHeader4PerfV
 {
@@ -125,7 +125,7 @@ typedef struct stndrHeader4PerfV
 
 
 //-------------------------------
-// X$DISK_RTREE_STAT ¿« ±∏¡∂
+// X$DISK_RTREE_STAT Ïùò Íµ¨Ï°∞
 //-------------------------------
 typedef struct stndrStat4PerfV
 {

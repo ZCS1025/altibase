@@ -16,22 +16,22 @@
 
 #include <ulpLibInterFuncB.h>
 
-/* XA°ü·Ã ÇÚµéÀÌ ÃÊ±âÈ­ µÆ´ÂÁö¸¦ ÆÇ´ÜÇÏ±âÀ§ÇØ ÇÊ¿äÇÔ. */
+/* XAê´€ë ¨ í•¸ë“¤ì´ ì´ˆê¸°í™” ëëŠ”ì§€ë¥¼ íŒë‹¨í•˜ê¸°ìœ„í•´ í•„ìš”í•¨. */
 extern acp_bool_t gUlpLibDoInitProc;
 
 /********************************************************************************
  *  Description :
- *     select¿Í °°Àº µ¥ÀÌÅÍ Á¶È¸½Ã µ¥ÀÌÅÍ¸¦ ÀúÀåÇÒ host variable¸¦ bindÇÑ´Ù.
- *     dynamic,  static ¹æ½Ä¿¡ µû¶ó ºÐ±âµÈ´Ù.
+ *     selectì™€ ê°™ì€ ë°ì´í„° ì¡°íšŒì‹œ ë°ì´í„°ë¥¼ ì €ìž¥í•  host variableë¥¼ bindí•œë‹¤.
+ *     dynamic,  static ë°©ì‹ì— ë”°ë¼ ë¶„ê¸°ëœë‹¤.
  *
- *  Parameters : °øÅëÀûÀ¸·Î ´ÙÀ½ ÀÎÀÚ¸¦ °®À¸¸ç, ÇÔ¼ö¸¶´Ù ¸î¸î ÀÎÀÚ°¡ Ãß°¡/Á¦°ÅµÉ ¼ö ÀÖ´Ù.
- *     ulpLibConnNode *aConnNode   : envÇÚµé, dbcÇÚµé ±×¸®°í ¿¡·¯ Ã³¸®¸¦ À§ÇÑ ÀÎÀÚ.
- *     ulpLibStmtNode *aStmtNode   : statement °ü·Ã Á¤º¸¸¦ ÀúÀåÇÑ´Ù.
- *     SQLHSTMT    *aHstmt         : CLIÈ£ÃâÀ» À§ÇÑ statement ÇÚµé.
- *     acp_bool_t   aIsReBindCheck : rebind ¼öÇà ¿©ºÎ.
- *     ulpSqlca    *aSqlca         : ¿¡·¯ Ã³¸®¸¦ À§ÇÑ ÀÎÀÚ.
- *     ulpSqlcode  *aSqlcode       : ¿¡·¯ Ã³¸®¸¦ À§ÇÑ ÀÎÀÚ.
- *     ulpSqlstate *aSqlstate      : ¿¡·¯ Ã³¸®¸¦ À§ÇÑ ÀÎÀÚ.
+ *  Parameters : ê³µí†µì ìœ¼ë¡œ ë‹¤ìŒ ì¸ìžë¥¼ ê°–ìœ¼ë©°, í•¨ìˆ˜ë§ˆë‹¤ ëª‡ëª‡ ì¸ìžê°€ ì¶”ê°€/ì œê±°ë  ìˆ˜ ìžˆë‹¤.
+ *     ulpLibConnNode *aConnNode   : enví•¸ë“¤, dbcí•¸ë“¤ ê·¸ë¦¬ê³  ì—ëŸ¬ ì²˜ë¦¬ë¥¼ ìœ„í•œ ì¸ìž.
+ *     ulpLibStmtNode *aStmtNode   : statement ê´€ë ¨ ì •ë³´ë¥¼ ì €ìž¥í•œë‹¤.
+ *     SQLHSTMT    *aHstmt         : CLIí˜¸ì¶œì„ ìœ„í•œ statement í•¸ë“¤.
+ *     acp_bool_t   aIsReBindCheck : rebind ìˆ˜í–‰ ì—¬ë¶€.
+ *     ulpSqlca    *aSqlca         : ì—ëŸ¬ ì²˜ë¦¬ë¥¼ ìœ„í•œ ì¸ìž.
+ *     ulpSqlcode  *aSqlcode       : ì—ëŸ¬ ì²˜ë¦¬ë¥¼ ìœ„í•œ ì¸ìž.
+ *     ulpSqlstate *aSqlstate      : ì—ëŸ¬ ì²˜ë¦¬ë¥¼ ìœ„í•œ ì¸ìž.
  * ******************************************************************************/
 ACI_RC ulpBindCol(ulpLibConnNode *aConnNode,    
                   ulpLibStmtNode *aStmtNode,  
@@ -137,9 +137,9 @@ ACI_RC ulpOpen ( acp_char_t *aConnName, ulpSqlstmt *aSqlstmt, void *reserved )
 /***********************************************************************
  *
  * Description :
- *    ¼±¾ðµÈ Ä¿¼­ open Ã³¸® ´ã´çÇÔ.
+ *    ì„ ì–¸ëœ ì»¤ì„œ open ì²˜ë¦¬ ë‹´ë‹¹í•¨.
  *
- *    Ã³¸®±¸¹®> EXEC SQL OPEN <cursor_name> [ USING <in_host_var_list> ];
+ *    ì²˜ë¦¬êµ¬ë¬¸> EXEC SQL OPEN <cursor_name> [ USING <in_host_var_list> ];
  *
  * Implementation :
  *
@@ -164,7 +164,7 @@ ACI_RC ulpOpen ( acp_char_t *aConnName, ulpSqlstmt *aSqlstmt, void *reserved )
         {
             case S_PREPARE:
             case S_CLOSE:
-                /* BUG-31405 : Failover¼º°øÈÄ Failure of finding statement ¿¡·¯ ¹ß»ý. */
+                /* BUG-31405 : Failoverì„±ê³µí›„ Failure of finding statement ì—ëŸ¬ ë°œìƒ. */
                 if ( (sConnNode->mFailoveredJustnow == ACP_TRUE) ||
                      (sStmtNode->mNeedReprepare     == ACP_TRUE) )
                 {
@@ -180,7 +180,7 @@ ACI_RC ulpOpen ( acp_char_t *aConnName, ulpSqlstmt *aSqlstmt, void *reserved )
                     sStmtNode->mNeedReprepare = ACP_FALSE;
                 }
 
-                /*host º¯¼ö°¡ ÀÖÀ¸¸é binding & setstmtÇØÁØ´Ù.*/
+                /*host ë³€ìˆ˜ê°€ ìžˆìœ¼ë©´ binding & setstmtí•´ì¤€ë‹¤.*/
                 if( aSqlstmt->numofhostvar > 0 )
                 {
                     /* BUG-41010 dynamic binding */
@@ -197,7 +197,7 @@ ACI_RC ulpOpen ( acp_char_t *aConnName, ulpSqlstmt *aSqlstmt, void *reserved )
             case S_BINDING:
             case S_SETSTMTATTR:
             case S_EXECUTE:
-                /* BUG-31405 : Failover¼º°øÈÄ Failure of finding statement ¿¡·¯ ¹ß»ý. */
+                /* BUG-31405 : Failoverì„±ê³µí›„ Failure of finding statement ì—ëŸ¬ ë°œìƒ. */
                 if ( (sConnNode->mFailoveredJustnow == ACP_TRUE) ||
                      (sStmtNode->mNeedReprepare     == ACP_TRUE) )
                 {
@@ -214,7 +214,7 @@ ACI_RC ulpOpen ( acp_char_t *aConnName, ulpSqlstmt *aSqlstmt, void *reserved )
                 }
                 else
                 {
-                    /* BUG-43716 ÆíÀÇ¸¦ À§ÇØ close ¾øÀÌ ´Ù½Ã openÇÏ´Â°É Çã¿ë */
+                    /* BUG-43716 íŽ¸ì˜ë¥¼ ìœ„í•´ close ì—†ì´ ë‹¤ì‹œ opení•˜ëŠ”ê±¸ í—ˆìš© */
                     (void) ulpCloseStmtCore(sConnNode,
                                             sStmtNode,
                                             &(sStmtNode->mHstmt),
@@ -223,7 +223,7 @@ ACI_RC ulpOpen ( acp_char_t *aConnName, ulpSqlstmt *aSqlstmt, void *reserved )
                                             aSqlstmt->sqlstateerr);
                 }
 
-                /* ÇÊ¿äÇÏ´Ù¸é binding & setstmt ¸¦ ´Ù½ÃÇØÁØ´Ù.*/
+                /* í•„ìš”í•˜ë‹¤ë©´ binding & setstmt ë¥¼ ë‹¤ì‹œí•´ì¤€ë‹¤.*/
                 if( aSqlstmt->numofhostvar > 0 )
                 {
                     /* BUG-41010 dynamic binding */
@@ -238,7 +238,7 @@ ACI_RC ulpOpen ( acp_char_t *aConnName, ulpSqlstmt *aSqlstmt, void *reserved )
                 }
                 break;
             default: /*S_INITIAL*/
-                /* PREPARE¸¦ ¸ÕÀú ÇØ¾ßÇÑ´Ù.*/
+                /* PREPAREë¥¼ ë¨¼ì € í•´ì•¼í•œë‹¤.*/
                 ACI_RAISE( ERR_STMT_NEED_PREPARE_4EXEC );
                 break;
         }
@@ -327,9 +327,9 @@ ACI_RC ulpFetch ( acp_char_t *aConnName, ulpSqlstmt *aSqlstmt, void *reserved )
 /***********************************************************************
  *
  * Description :
- *    OpenµÈ Ä¿¼­¿¡ ´ëÇÑ fetch Ã³¸® ´ã´çÇÔ.
+ *    Openëœ ì»¤ì„œì— ëŒ€í•œ fetch ì²˜ë¦¬ ë‹´ë‹¹í•¨.
  *
- *    Ã³¸®±¸¹®> FETCH [ FIRST| PRIOR|NEXT|LAST|CURRENT | RELATIVE fetch_offset
+ *    ì²˜ë¦¬êµ¬ë¬¸> FETCH [ FIRST| PRIOR|NEXT|LAST|CURRENT | RELATIVE fetch_offset
  *            | ABSOLUTE fetch_offset ] <cursor_name> INTO <host_variable_list>;
  *
  * Implementation :
@@ -351,7 +351,7 @@ ACI_RC ulpFetch ( acp_char_t *aConnName, ulpSqlstmt *aSqlstmt, void *reserved )
 
     ulpSetColRowSizeCore( aSqlstmt );
 
-    /* FORÀý Ã³¸®*/
+    /* FORì ˆ ì²˜ë¦¬*/
     ACI_TEST( ulpAdjustArraySize(aSqlstmt) == ACI_FAILURE );
 
     if( (sStmtNode->mCurState == C_OPEN) || (sStmtNode->mCurState == C_FETCH) )
@@ -361,7 +361,7 @@ ACI_RC ulpFetch ( acp_char_t *aConnName, ulpSqlstmt *aSqlstmt, void *reserved )
             case S_EXECUTE:
             case S_SETSTMTATTR:
             case S_BINDING:
-                /*host º¯¼ö°¡ ÀÖÀ¸¸é binding & setstmtÇØÁØ´Ù.*/
+                /*host ë³€ìˆ˜ê°€ ìžˆìœ¼ë©´ binding & setstmtí•´ì¤€ë‹¤.*/
                 if( aSqlstmt->numofhostvar > 0 )
                 {
                     /* BUG-41010 dynamic binding */
@@ -378,7 +378,7 @@ ACI_RC ulpFetch ( acp_char_t *aConnName, ulpSqlstmt *aSqlstmt, void *reserved )
                 break;
             default: 
                 /* S_INITIAL, S_PREPARE, S_INITIAL*/
-                /* EXECUTE¸¦ ¸ÕÀú ÇØ¾ßÇÑ´Ù.*/
+                /* EXECUTEë¥¼ ë¨¼ì € í•´ì•¼í•œë‹¤.*/
                 ACI_RAISE( ERR_STMT_NEED_EXECUTE_4FETCH );
                 break;
         }
@@ -398,7 +398,7 @@ ACI_RC ulpFetch ( acp_char_t *aConnName, ulpSqlstmt *aSqlstmt, void *reserved )
                         , ERR_CLI_SETSTMT );
     }
 
-    /* BUG-45448 FETCH¿¡¼­µµ FOR±¸¹®ÀÌ Àû¿ëµÇµµ·Ï SQL_ATTR_ROW_ARRAY_SIZE ¸Å¹ø ¼ÂÆÃÇÑ´Ù */
+    /* BUG-45448 FETCHì—ì„œë„ FORêµ¬ë¬¸ì´ ì ìš©ë˜ë„ë¡ SQL_ATTR_ROW_ARRAY_SIZE ë§¤ë²ˆ ì…‹íŒ…í•œë‹¤ */
     if(aSqlstmt->arrsize > 0)
     {
         sSqlRes = SQLSetStmtAttr( sStmtNode->mHstmt,
@@ -440,8 +440,8 @@ ACI_RC ulpFetch ( acp_char_t *aConnName, ulpSqlstmt *aSqlstmt, void *reserved )
             break;
     }
 
-    /* varchar ¸¦ È£½ºÆ® º¯¼ö·Î »ç¿ëÇÏ¸ç »ç¿ëÀÚ°¡ indicator¸¦ ¸í½Ã ÇØÁáÀ»°æ¿ì,*/
-    /* fetch ¼öÇàÈÄ indicator°á°ú °ªÀ» varchar.len ¿¡ º¹»çÇØ Áà¾ßÇÔ.*/
+    /* varchar ë¥¼ í˜¸ìŠ¤íŠ¸ ë³€ìˆ˜ë¡œ ì‚¬ìš©í•˜ë©° ì‚¬ìš©ìžê°€ indicatorë¥¼ ëª…ì‹œ í•´ì¤¬ì„ê²½ìš°,*/
+    /* fetch ìˆ˜í–‰í›„ indicatorê²°ê³¼ ê°’ì„ varchar.len ì— ë³µì‚¬í•´ ì¤˜ì•¼í•¨.*/
     for( i = 0 ; aSqlstmt->numofhostvar > i ; i++ )
     {
         if( ((aSqlstmt->hostvalue[i].mType == H_VARCHAR) ||
@@ -484,12 +484,12 @@ ACI_RC ulpFetch ( acp_char_t *aConnName, ulpSqlstmt *aSqlstmt, void *reserved )
     ACI_TEST_RAISE( (sSqlRes == SQL_ERROR) || (sSqlRes == SQL_INVALID_HANDLE)
                     , ERR_CLI_FETCH );
 
-    /* Ä¿¼­ »óÅÂ¸¦ FETCH·Î ¹Ù²Þ;*/
+    /* ì»¤ì„œ ìƒíƒœë¥¼ FETCHë¡œ ë°”ê¿ˆ;*/
     sStmtNode -> mCurState  = C_FETCH;
 
     return ACI_SUCCESS;
 
-    /* fetchµÈ row¼ö¸¦ sqlca->sqlerrd[2] ¿¡ ÀúÀåÇØ¾ßÇÏ´Âµ¥ ¾îµð¼­ Ã³¸®ÇØ¾ßÇÏ³ª? */
+    /* fetchëœ rowìˆ˜ë¥¼ sqlca->sqlerrd[2] ì— ì €ìž¥í•´ì•¼í•˜ëŠ”ë° ì–´ë””ì„œ ì²˜ë¦¬í•´ì•¼í•˜ë‚˜? */
 
     ACI_EXCEPTION ( ERR_NO_CONN );
     {
@@ -571,9 +571,9 @@ ACI_RC ulpClose ( acp_char_t *aConnName, ulpSqlstmt *aSqlstmt, void *reserved )
 /***********************************************************************
  *
  * Description :
- *    openµÈ Ä¿¼­¿¡ ´ëÇÑ closeÃ³¸® ´ã´çÇÔ. statement¸¦ dropÇÏÁö ¾Ê°í closeÇÑ´Ù. ÀçÈ°¿ë °¡´É.
+ *    openëœ ì»¤ì„œì— ëŒ€í•œ closeì²˜ë¦¬ ë‹´ë‹¹í•¨. statementë¥¼ dropí•˜ì§€ ì•Šê³  closeí•œë‹¤. ìž¬í™œìš© ê°€ëŠ¥.
  *
- *    Ã³¸®±¸¹®> EXEC SQL CLOSE <cursor_name>;
+ *    ì²˜ë¦¬êµ¬ë¬¸> EXEC SQL CLOSE <cursor_name>;
  *
  * Implementation :
  *
@@ -645,10 +645,10 @@ ACI_RC ulpCloseRelease ( acp_char_t *aConnName, ulpSqlstmt *aSqlstmt, void *rese
 /***********************************************************************
  *
  * Description :
- *    openµÈ Ä¿¼­¿¡ ´ëÇÑ releaseÃ³¸® ´ã´çÇÔ. statement¸¦ dropÇÏ¸ç, ÇØ´ç cursor hash node¸¦
- *    Á¦°ÅÇÑ´Ù.
+ *    openëœ ì»¤ì„œì— ëŒ€í•œ releaseì²˜ë¦¬ ë‹´ë‹¹í•¨. statementë¥¼ dropí•˜ë©°, í•´ë‹¹ cursor hash nodeë¥¼
+ *    ì œê±°í•œë‹¤.
  *
- *    Ã³¸®±¸¹®> EXEC SQL CLOSE RELEASE <cursor_name>;
+ *    ì²˜ë¦¬êµ¬ë¬¸> EXEC SQL CLOSE RELEASE <cursor_name>;
  *
  * Implementation :
  *
@@ -673,7 +673,7 @@ ACI_RC ulpCloseRelease ( acp_char_t *aConnName, ulpSqlstmt *aSqlstmt, void *rese
     }
     else
     {
-        /* stmt ÀÌ¸§ÀÌ ¸í½Ã µÇ¾î ÀÖÀ¸¸é ³ªÁß¿¡ »ç¿ëµÉ ¼ö ÀÖ±â¶§¹®¿¡ close¸¸ ÇÑ´Ù.*/
+        /* stmt ì´ë¦„ì´ ëª…ì‹œ ë˜ì–´ ìžˆìœ¼ë©´ ë‚˜ì¤‘ì— ì‚¬ìš©ë  ìˆ˜ ìžˆê¸°ë•Œë¬¸ì— closeë§Œ í•œë‹¤.*/
         ACI_TEST( ulpCloseStmtCore( sConnNode,
                                     sStmtNode,
                                     &(sStmtNode-> mHstmt),
@@ -683,7 +683,7 @@ ACI_RC ulpCloseRelease ( acp_char_t *aConnName, ulpSqlstmt *aSqlstmt, void *rese
                   == ACI_FAILURE );
     }
 
-    /* cursor hash table ¿¡¼­ ÇØ´ç cursor node¸¦ Á¦°ÅÇÑ´Ù. ( link¸¸ Á¦°Å or nodeÀÚÃ¼¸¦ Á¦°Å )*/
+    /* cursor hash table ì—ì„œ í•´ë‹¹ cursor nodeë¥¼ ì œê±°í•œë‹¤. ( linkë§Œ ì œê±° or nodeìžì²´ë¥¼ ì œê±° )*/
     ulpLibStDeleteCur( &(sConnNode->mCursorHashT), aSqlstmt->curname );
 
     ulpSetErrorInfo4PCOMP( aSqlstmt->sqlcaerr,
@@ -746,10 +746,10 @@ ACI_RC ulpDeclareStmt ( acp_char_t *aConnName, ulpSqlstmt *aSqlstmt, void *reser
 /***********************************************************************
  *
  * Description :
- *    »õ·Î¿î statement¸¦ ¼±¾ðÃ³¸® ´ã´çÇÔ. stmt hash table¿¡ »õ node Ãß°¡µÊ.
- *    statement°¡ ÀÌ¹Ì Á¸ÀçÇÏ¸é ¾Æ¹«·± Ã³¸®¸¦ ÇÏÁö ¾Ê´Â´Ù.
+ *    ìƒˆë¡œìš´ statementë¥¼ ì„ ì–¸ì²˜ë¦¬ ë‹´ë‹¹í•¨. stmt hash tableì— ìƒˆ node ì¶”ê°€ë¨.
+ *    statementê°€ ì´ë¯¸ ì¡´ìž¬í•˜ë©´ ì•„ë¬´ëŸ° ì²˜ë¦¬ë¥¼ í•˜ì§€ ì•ŠëŠ”ë‹¤.
  *
- *    Ã³¸®±¸¹®> EXEC SQL DECLARE <statement_name> STATEMENT;
+ *    ì²˜ë¦¬êµ¬ë¬¸> EXEC SQL DECLARE <statement_name> STATEMENT;
  *
  * Implementation :
  *
@@ -761,27 +761,27 @@ ACI_RC ulpDeclareStmt ( acp_char_t *aConnName, ulpSqlstmt *aSqlstmt, void *reser
 
     ULPGETCONNECTION(aConnName,sConnNode);
 
-    /* ÀÌ¹Ì ÇØ´ç stmtnameÀ¸·Î stmt node°¡ Á¸ÀçÇÏ´ÂÁö Ã£À½*/
+    /* ì´ë¯¸ í•´ë‹¹ stmtnameìœ¼ë¡œ stmt nodeê°€ ì¡´ìž¬í•˜ëŠ”ì§€ ì°¾ìŒ*/
     sStmtNode = ulpLibStLookupStmt( &( sConnNode->mStmtHashT ),
                                     aSqlstmt->stmtname );
-    /* Á¸ÀçÇÏ¸é do nothing*/
+    /* ì¡´ìž¬í•˜ë©´ do nothing*/
     if( sStmtNode != NULL )
     {
         /* do nothing */
     }
     else
     {
-        /* »õ stmt ³ëµå ÇÒ´ç*/
+        /* ìƒˆ stmt ë…¸ë“œ í• ë‹¹*/
         sStmtNode = ulpLibStNewNode(aSqlstmt, aSqlstmt->stmtname );
         ACI_TEST( sStmtNode == NULL);
 
-        /* AllocStmt ¼öÇà.*/
+        /* AllocStmt ìˆ˜í–‰.*/
         sSqlRes = SQLAllocStmt( sConnNode -> mHdbc, &( sStmtNode -> mHstmt ) );
 
         ACI_TEST_RAISE( (sSqlRes == SQL_ERROR) || (sSqlRes == SQL_INVALID_HANDLE)
                         , ERR_CLI_ALLOC_STMT);
 
-        /* stmt node¸¦ hash table¿¡ Ãß°¡.*/
+        /* stmt nodeë¥¼ hash tableì— ì¶”ê°€.*/
         ACI_TEST_RAISE ( ulpLibStAddStmt( &(sConnNode->mStmtHashT),
                                           sStmtNode ) == NULL,
                          ERR_STMT_ADDED_JUST_BEFORE );
@@ -847,7 +847,7 @@ ACI_RC ulpAutoCommit ( acp_char_t *aConnName, ulpSqlstmt *aSqlstmt, void *reserv
  *
  * Description :
  *
- *    Ã³¸®±¸¹®> EXEC SQL AUTOCOMMIT { ON | OFF };
+ *    ì²˜ë¦¬êµ¬ë¬¸> EXEC SQL AUTOCOMMIT { ON | OFF };
  *
  * Implementation :
  *
@@ -917,7 +917,7 @@ ACI_RC ulpCommit ( acp_char_t *aConnName, ulpSqlstmt *aSqlstmt, void *reserved )
  *
  * Description :
  *
- *    Ã³¸®±¸¹®> EXEC SQL <COMMIT|ROLLBACK> [WORK] [RELEASE];
+ *    ì²˜ë¦¬êµ¬ë¬¸> EXEC SQL <COMMIT|ROLLBACK> [WORK] [RELEASE];
  *
  * Implementation :
  *
@@ -993,17 +993,17 @@ ACI_RC ulpBatch ( acp_char_t *aConnName, ulpSqlstmt *aSqlstmt, void *reserved )
 /***********************************************************************
  *
  * Description :
- *    ODBC CLIÇÔ¼ö SQLSetConnectAttr ¿¡¼­ SQL_ATTR_BATCH ¸¦ Áö¿øÇÏÁö ¾Ê°í ÀÖÀ¸´Ù.
- *    È£¼ºÀ» À§ÇØ ¿¡·¯¸¦ ¹ß»ý½ÃÅ°Áö ¾Ê°í °æ°í ¸Þ¼¼Áö¸¸ º¸¿©ÁØ´Ù.
+ *    ODBC CLIí•¨ìˆ˜ SQLSetConnectAttr ì—ì„œ SQL_ATTR_BATCH ë¥¼ ì§€ì›í•˜ì§€ ì•Šê³  ìžˆìœ¼ë‹¤.
+ *    í˜¸ì„±ì„ ìœ„í•´ ì—ëŸ¬ë¥¼ ë°œìƒì‹œí‚¤ì§€ ì•Šê³  ê²½ê³  ë©”ì„¸ì§€ë§Œ ë³´ì—¬ì¤€ë‹¤.
  *
- *    Ã³¸®±¸¹®> EXEC SQL BATCH { ON | OFF };
+ *    ì²˜ë¦¬êµ¬ë¬¸> EXEC SQL BATCH { ON | OFF };
  *
  * Implementation :
  *
  ***********************************************************************/
     ACP_UNUSED(aConnName);
     ACP_UNUSED(reserved);
-    /*°æ°í ¸Þ¼¼Áö¸¦ sqlca¿¡ ¼¼ÆÃÇÑ´Ù.*/
+    /*ê²½ê³  ë©”ì„¸ì§€ë¥¼ sqlcaì— ì„¸íŒ…í•œë‹¤.*/
     ulpSetErrorInfo4PCOMP( aSqlstmt->sqlcaerr,
                            aSqlstmt->sqlcodeerr,
                            aSqlstmt->sqlstateerr,
@@ -1020,9 +1020,9 @@ ACI_RC ulpFree ( acp_char_t *aConnName, ulpSqlstmt *aSqlstmt, void *reserved )
 /***********************************************************************
  *
  * Description :
- *    µ¥ÀÌÅÍº£ÀÌ½º ¼­¹ö¿ÍÀÇ ¿¬°á ¹× ³»Àå SQL¹® ¼öÇà ½Ã ÇÒ´ç¹Þ¾Ò´ø ÀÚ¿øÀ» ¸ðµÎ ÇØÁ¦ÇÑ´Ù.
+ *    ë°ì´í„°ë² ì´ìŠ¤ ì„œë²„ì™€ì˜ ì—°ê²° ë° ë‚´ìž¥ SQLë¬¸ ìˆ˜í–‰ ì‹œ í• ë‹¹ë°›ì•˜ë˜ ìžì›ì„ ëª¨ë‘ í•´ì œí•œë‹¤.
  *
- *    Ã³¸®±¸¹®> EXEC SQL FREE;
+ *    ì²˜ë¦¬êµ¬ë¬¸> EXEC SQL FREE;
  *
  * Implementation :
  *
@@ -1036,7 +1036,7 @@ ACI_RC ulpFree ( acp_char_t *aConnName, ulpSqlstmt *aSqlstmt, void *reserved )
 
     if ( aConnName != NULL )
     {
-        /* aConnNameÀ¸·Î Connection node(ConnNode)¸¦ Ã£´Â´Ù;*/
+        /* aConnNameìœ¼ë¡œ Connection node(ConnNode)ë¥¼ ì°¾ëŠ”ë‹¤;*/
         sConnNode = ulpLibConLookupConn( aConnName );
 
         ACI_TEST_RAISE( sConnNode == NULL, ERR_NO_CONN );
@@ -1134,9 +1134,9 @@ ACI_RC ulpAlterSession ( acp_char_t *aConnName, ulpSqlstmt *aSqlstmt, void *rese
 /***********************************************************************
  *
  * Description :
- *    DATA FORMAT °ü·Ã session property ¼³Á¤ÇÔ.
+ *    DATA FORMAT ê´€ë ¨ session property ì„¤ì •í•¨.
  *
- *    Ã³¸®±¸¹®> EXEC SQL ALTER SESSION SET DATE_FORMAT = '...';
+ *    ì²˜ë¦¬êµ¬ë¬¸> EXEC SQL ALTER SESSION SET DATE_FORMAT = '...';
  *            EXEC SQL ALTER SESSION SET DEFAULT_DATE_FORMAT = '...';
  *
  * Implementation :
@@ -1204,9 +1204,9 @@ ACI_RC ulpFreeLob ( acp_char_t *aConnName, ulpSqlstmt *aSqlstmt, void *reserved 
 /***********************************************************************
  *
  * Description :
- *    ÇØ´ç LOB locator¿Í °ü·ÃµÈ ÀÚ¿øµéÀ» ¸ðµÎ ÇØÁ¦ÇØÁØ´Ù.
+ *    í•´ë‹¹ LOB locatorì™€ ê´€ë ¨ëœ ìžì›ë“¤ì„ ëª¨ë‘ í•´ì œí•´ì¤€ë‹¤.
  *
- *    Ã³¸®±¸¹®> EXEC SQL FREE LOB <hostvalue_name_list>;
+ *    ì²˜ë¦¬êµ¬ë¬¸> EXEC SQL FREE LOB <hostvalue_name_list>;
  *
  * Implementation :
  *    SQLAllocStmt(...) -> SQLFreeLob(...)
@@ -1228,7 +1228,7 @@ ACI_RC ulpFreeLob ( acp_char_t *aConnName, ulpSqlstmt *aSqlstmt, void *reserved 
     ACI_TEST_RAISE( (sSqlRes == SQL_ERROR) || (sSqlRes == SQL_INVALID_HANDLE)
                     , ERR_CLI_ALLOC_STMT);
 
-    /* 2. host value °¢°¢¿¡ ´ëÇÑ SQLFreeLob È£Ãâ.*/
+    /* 2. host value ê°ê°ì— ëŒ€í•œ SQLFreeLob í˜¸ì¶œ.*/
     for (sI = 0; sI < aSqlstmt -> numofhostvar ; sI++)
     {
         if ( aSqlstmt -> hostvalue[ sI ].isarr == 0 )
@@ -1237,7 +1237,7 @@ ACI_RC ulpFreeLob ( acp_char_t *aConnName, ulpSqlstmt *aSqlstmt, void *reserved 
         }
         else
         {
-            /* FOR Àý °í·Á*/
+            /* FOR ì ˆ ê³ ë ¤*/
             if ( (aSqlstmt -> iters > 0) &&
                  (aSqlstmt -> iters < aSqlstmt -> hostvalue[ sI ].arrsize) )
             {
@@ -1331,9 +1331,9 @@ ACI_RC ulpFailOver ( acp_char_t *aConnName, ulpSqlstmt *aSqlstmt, void *reserved
 /***********************************************************************
  *
  * Description :
- *    fail over callback ¼³Á¤ÇÔ.
+ *    fail over callback ì„¤ì •í•¨.
  *
- *    Ã³¸®±¸¹®> EXEC SQL REGISTER [AT <conn_name>] FAIL_OVER_CALLBACK <:host_variable>;
+ *    ì²˜ë¦¬êµ¬ë¬¸> EXEC SQL REGISTER [AT <conn_name>] FAIL_OVER_CALLBACK <:host_variable>;
  *            EXEC SQL UNREGISTER [AT <conn_name>] FAIL_OVER_CALLBACK ;
  *
  * Implementation :
@@ -1409,7 +1409,7 @@ void ulpAfterXAOpen ( acp_sint32_t aRmid,
 /***********************************************************************
  *
  * Description :
- *      XA °ü·Ã Ã³¸®ÇÔ¼ö.
+ *      XA ê´€ë ¨ ì²˜ë¦¬í•¨ìˆ˜.
  *
  * Implementation :
  *
@@ -1426,13 +1426,13 @@ void ulpAfterXAOpen ( acp_sint32_t aRmid,
     acp_bool_t      sAllocStmt;
     acp_bool_t      sIsLatched;
 
-    /*fix BUG-25597 APRE¿¡¼­ AIXÇÃ·§Æû ÅÎ½Ãµµ ¿¬µ¿¹®Á¦¸¦ ÇØ°áÇØ¾ß ÇÕ´Ï´Ù.
-     APREÀÇ ulpConnMgrÃÊ±âÀÌÀü¿¡ CLIÀÇ XaOpenÇÔ¼ö¿¡ º» ÇÔ¼ö°¡ ºÒ¸°°æ¿ì
-     ¹«½ÃÇÑ´Ù.
-     ³ªÁß¿¡  APREÀÇ ulpConnMgr ÃÊ±âÈ­µÈ  CLI·Î ºÎÅÍ  ±â OpenµÈ Xa ConnectionÀ»
-     ·ÎµùÇÏµµ·Ï ÇÑ´Ù.
+    /*fix BUG-25597 APREì—ì„œ AIXí”Œëž«í¼ í„±ì‹œë„ ì—°ë™ë¬¸ì œë¥¼ í•´ê²°í•´ì•¼ í•©ë‹ˆë‹¤.
+     APREì˜ ulpConnMgrì´ˆê¸°ì´ì „ì— CLIì˜ XaOpení•¨ìˆ˜ì— ë³¸ í•¨ìˆ˜ê°€ ë¶ˆë¦°ê²½ìš°
+     ë¬´ì‹œí•œë‹¤.
+     ë‚˜ì¤‘ì—  APREì˜ ulpConnMgr ì´ˆê¸°í™”ëœ  CLIë¡œ ë¶€í„°  ê¸° Openëœ Xa Connectionì„
+     ë¡œë”©í•˜ë„ë¡ í•œë‹¤.
    */
-    /* gUlpLibDoInitProc°¡ true¶ó¸é ¾ÆÁ÷ XA °ü·Ã ÇÚµéÀ» ¾ò¾î¿ÀÁö ¸øÇÑ »óÅÂÀÌ´Ù.*/
+    /* gUlpLibDoInitProcê°€ trueë¼ë©´ ì•„ì§ XA ê´€ë ¨ í•¸ë“¤ì„ ì–»ì–´ì˜¤ì§€ ëª»í•œ ìƒíƒœì´ë‹¤.*/
     ACI_TEST(gUlpLibDoInitProc == ACP_TRUE);
 
     sSqlca    = ulpGetSqlca();
@@ -1586,7 +1586,7 @@ void ulpAfterXAOpen ( acp_sint32_t aRmid,
 
 void ulpAfterXAClose ( void )
 {
-    /* default connection node ÃÊ±âÈ­*/
+    /* default connection node ì´ˆê¸°í™”*/
     (void) ulpLibConInitDefaultConn();
 }
 

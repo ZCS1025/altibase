@@ -53,11 +53,11 @@ abstract class AbstractBinaryColumn extends AbstractColumn
 
     private final int               mLengthSize;
     /**
-     * µ¥ÀÌÅ¸ÀÇ ±æÀÌ. Byte ±æÀÌ°¡ ¾Æ´Ï¶ó, °¢ ÇÏÀ§ Å¸ÀÔÀÇ ±æÀÌÀÌ´Ù.
-     * ¿¹¸¦µé¾î, x1234´Â BYTE Å¸ÀÔÀÏ ¶§´Â ±æÀÌ°¡ 2Áö¸¸, NIBBLE Å¸ÀÔÀÌ¸é 4¿©¾ß ÇÑ´Ù.
+     * ë°ì´íƒ€ì˜ ê¸¸ì´. Byte ê¸¸ì´ê°€ ì•„ë‹ˆë¼, ê° í•˜ìœ„ íƒ€ì…ì˜ ê¸¸ì´ì´ë‹¤.
+     * ì˜ˆë¥¼ë“¤ì–´, x1234ëŠ” BYTE íƒ€ì…ì¼ ë•ŒëŠ” ê¸¸ì´ê°€ 2ì§€ë§Œ, NIBBLE íƒ€ì…ì´ë©´ 4ì—¬ì•¼ í•œë‹¤.
      */
     protected int                   mLength;
-    /** µ¥ÀÌÅ¸¸¦ byte array ÇüÅÂ·Î ´ãÀº ¹öÆÛ. */
+    /** ë°ì´íƒ€ë¥¼ byte array í˜•íƒœë¡œ ë‹´ì€ ë²„í¼. */
     protected ByteBuffer            mByteBuffer         = NULL_BYTE_BUFFER;
 
     protected AbstractBinaryColumn(int aLengthSize)
@@ -128,8 +128,8 @@ abstract class AbstractBinaryColumn extends AbstractColumn
     public void storeTo(DynamicArray aArray)
     {
         /*
-         * ÇÁ·ÎÅäÄİÀÌ °³¼±µÇ¸é ÀÌ ¸Ş¼Òµå´Â ÃÖÀûÈ­¸¦ ¼öÇàÇÒ ¼ö ÀÖ´Ù. Áï, mByteBuffer¿¡ byte¸¦ ÀúÀåÇß´Ù°¡ ´Ù½Ã
-         * array¿¡ ³ÖÁö ¸»°í, ¹Ù·Î array¿¡ ³Öµµ·Ï ÇØ¾ß ÇÑ´Ù.
+         * í”„ë¡œí† ì½œì´ ê°œì„ ë˜ë©´ ì´ ë©”ì†Œë“œëŠ” ìµœì í™”ë¥¼ ìˆ˜í–‰í•  ìˆ˜ ìˆë‹¤. ì¦‰, mByteBufferì— byteë¥¼ ì €ì¥í–ˆë‹¤ê°€ ë‹¤ì‹œ
+         * arrayì— ë„£ì§€ ë§ê³ , ë°”ë¡œ arrayì— ë„£ë„ë¡ í•´ì•¼ í•œë‹¤.
          */
         mByteBuffer.rewind();
         byte[] sData = new byte[mByteBuffer.remaining()];
@@ -140,7 +140,7 @@ abstract class AbstractBinaryColumn extends AbstractColumn
     protected void loadFromSub(DynamicArray aArray)
     {
         This sThis = (This)((ObjectDynamicArray)aArray).get();
-        // BUG-43807 load ½ÃÁ¡¿¡ ByteBuffer ¸¦ allocateÇÑ´Ù.
+        // BUG-43807 load ì‹œì ì— ByteBuffer ë¥¼ allocateí•œë‹¤.
         ensureAlloc(toByteLength(sThis.mLength));
         mByteBuffer.put(sThis.mByteArray);
         mByteBuffer.flip();
@@ -157,9 +157,9 @@ abstract class AbstractBinaryColumn extends AbstractColumn
     public int writeTo(CmBufferWriter aBufferWriter) throws SQLException
     {
         /*
-         * ÇöÀç ÀÌ¸Ş¼ÒµåÀÇ ±¸ÇöÀº ¿Ïº®ÇÏÁö ¾Ê´Ù. cmtBinary·Î º¸³»´Âµ¥ ¿©·¯ cmtBinary·Î ÂÉ°³¼­ º¸³»´Â °ÍÀ» °í·ÁÇÏÁö
-         * ¾Ê¾Ò´Ù. binary¸¦ ¿©·¯ ÆĞÅ¶À¸·Î º¸³¾ ¸¸Å­ Å« µ¥ÀÌÅÍ¸¦ º¸³»´Â °æ¿ì°¡ Àß ¾ø°í, ±¸ÇöÀÌ ±î´Ù·Ó°í ÁöÀúºĞÇÏ¸ç, ÃßÈÄ¿¡
-         * ÇÁ·ÎÅäÄİÀÌ °³¼±µÇ¸é ºÒÇÊ¿äÇÑ ±¸ÇöÀÌ±â ¶§¹®¿¡ »ı·«Çß´Ù.
+         * í˜„ì¬ ì´ë©”ì†Œë“œì˜ êµ¬í˜„ì€ ì™„ë²½í•˜ì§€ ì•Šë‹¤. cmtBinaryë¡œ ë³´ë‚´ëŠ”ë° ì—¬ëŸ¬ cmtBinaryë¡œ ìª¼ê°œì„œ ë³´ë‚´ëŠ” ê²ƒì„ ê³ ë ¤í•˜ì§€
+         * ì•Šì•˜ë‹¤. binaryë¥¼ ì—¬ëŸ¬ íŒ¨í‚·ìœ¼ë¡œ ë³´ë‚¼ ë§Œí¼ í° ë°ì´í„°ë¥¼ ë³´ë‚´ëŠ” ê²½ìš°ê°€ ì˜ ì—†ê³ , êµ¬í˜„ì´ ê¹Œë‹¤ë¡­ê³  ì§€ì €ë¶„í•˜ë©°, ì¶”í›„ì—
+         * í”„ë¡œí† ì½œì´ ê°œì„ ë˜ë©´ ë¶ˆí•„ìš”í•œ êµ¬í˜„ì´ê¸° ë•Œë¬¸ì— ìƒëµí–ˆë‹¤.
          */
         mByteBuffer.rewind();
         int sByteLen = isNullValueSet() ? 0 : toByteLength(mLength);
@@ -181,7 +181,7 @@ abstract class AbstractBinaryColumn extends AbstractColumn
                 break;
             case LENGTH_SIZE_BINARY:
                 aBufferWriter.writeInt(mLength);
-                aBufferWriter.writeInt(mLength); // BINARY´Â length¸¦ 2¹ø ¾´´Ù.
+                aBufferWriter.writeInt(mLength); // BINARYëŠ” lengthë¥¼ 2ë²ˆ ì“´ë‹¤.
                 break;
             default:
                 Error.throwInternalError(ErrorDef.INTERNAL_ASSERTION);
@@ -215,10 +215,10 @@ abstract class AbstractBinaryColumn extends AbstractColumn
     }
 
     /**
-     * Ã¤³Î·ÎºÎÅÍ ¹ÙÀÌ³Ê¸® ÄÃ·³ÀÇ length¸¦ ¹Ş¾Æ¿Í ¸®ÅÏÇÑ´Ù.
-     * @param aChannel ¼ÒÄÏÅë½ÅÀ» À§ÇÑ Ã¤³Î°´Ã¼
-     * @return ¹ÙÀÌ³Ê¸® ÄÃ·³ length
-     * @throws SQLException Ã¤³Î·ÎºÎÅÍ Á¤»óÀûÀ¸·Î binary length¸¦ °¡Á®¿ÀÁö ¸øÇÑ °æ¿ì
+     * ì±„ë„ë¡œë¶€í„° ë°”ì´ë„ˆë¦¬ ì»¬ëŸ¼ì˜ lengthë¥¼ ë°›ì•„ì™€ ë¦¬í„´í•œë‹¤.
+     * @param aChannel ì†Œì¼“í†µì‹ ì„ ìœ„í•œ ì±„ë„ê°ì²´
+     * @return ë°”ì´ë„ˆë¦¬ ì»¬ëŸ¼ length
+     * @throws SQLException ì±„ë„ë¡œë¶€í„° ì •ìƒì ìœ¼ë¡œ binary lengthë¥¼ ê°€ì ¸ì˜¤ì§€ ëª»í•œ ê²½ìš°
      */
     private int readBinaryLength(CmChannel aChannel) throws SQLException
     {
@@ -248,11 +248,11 @@ abstract class AbstractBinaryColumn extends AbstractColumn
     }
 
     /**
-     * Ã¤³Î·ÎºÎÅÍ aLength »çÀÌÁî¸¸Å­ ¹ÙÀÌ³Ê¸® µ¥ÀÌÅÍ¸¦ ¹Ş¾Æ¿Â´Ù.
-     * @param aChannel  ¼ÒÄÏÅë½ÅÀ» À§ÇÑ Ã¤³Î °´Ã¼
-     * @param aLength ¹ÙÀÌ³Ê¸® ÄÃ·³ length
-     * @return ¹ÙÀÌ³Ê¸® µ¥ÀÌÅÍ ¹è¿­
-     * @throws SQLException ¹ÙÀÌ³Ê¸® µ¥ÀÌÅÍ¸¦ ¹Ş¾Æ¿À´Â µµÁß ¿¡·¯°¡ ¹ß»ıÇÑ °æ¿ì
+     * ì±„ë„ë¡œë¶€í„° aLength ì‚¬ì´ì¦ˆë§Œí¼ ë°”ì´ë„ˆë¦¬ ë°ì´í„°ë¥¼ ë°›ì•„ì˜¨ë‹¤.
+     * @param aChannel  ì†Œì¼“í†µì‹ ì„ ìœ„í•œ ì±„ë„ ê°ì²´
+     * @param aLength ë°”ì´ë„ˆë¦¬ ì»¬ëŸ¼ length
+     * @return ë°”ì´ë„ˆë¦¬ ë°ì´í„° ë°°ì—´
+     * @throws SQLException ë°”ì´ë„ˆë¦¬ ë°ì´í„°ë¥¼ ë°›ì•„ì˜¤ëŠ” ë„ì¤‘ ì—ëŸ¬ê°€ ë°œìƒí•œ ê²½ìš°
      */
     private byte[] readBytes(CmChannel aChannel, int aLength) throws SQLException
     {
@@ -282,7 +282,7 @@ abstract class AbstractBinaryColumn extends AbstractColumn
     }
 
     /**
-     * @return ¸ğµç binary stream Áß ÇÏ³ª¶óµµ 0ÀÌ ¾Æ´Ñ ¹ÙÀÌÆ®°¡ Á¸ÀçÇÏ¸é true, ¾Æ´Ï¸é false
+     * @return ëª¨ë“  binary stream ì¤‘ í•˜ë‚˜ë¼ë„ 0ì´ ì•„ë‹Œ ë°”ì´íŠ¸ê°€ ì¡´ì¬í•˜ë©´ true, ì•„ë‹ˆë©´ false
      */
     protected boolean getBooleanSub() throws SQLException
     {

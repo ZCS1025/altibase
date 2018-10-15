@@ -41,7 +41,7 @@ typedef struct smnfIterator
     UInt                flag;
 
     smiCursorProperties  * mProperties;
-    /* smiIterator °øÅë º¯¼ö ³¡ */
+    /* smiIterator ê³µí†µ ë³€ìˆ˜ ë */
 
     UChar*             mRecBuffer;
     UChar*             mRecEndBuffer;

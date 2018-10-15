@@ -47,7 +47,7 @@ static IDE_RC mtfRoundEstimate( mtcNode*     aNode,
 mtfModule mtfRound = {
     1|MTC_NODE_OPERATOR_FUNCTION,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
+    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìê°€ ì•„ë‹˜)
     mtfRoundFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -132,7 +132,7 @@ IDE_RC mtfRoundEstimate( mtcNode*     aNode,
     const mtdModule* sFloatModules[2];
     const mtdModule* sArgModules[2] = { &mtdDate, &mtdChar };
 
-    /* BUG-44091 where Àı¿¡ round(), trunc() ¿À´Â °æ¿ì ºñÁ¤»ó Á¾·áÇÕ´Ï´Ù.  */
+    /* BUG-44091 where ì ˆì— round(), trunc() ì˜¤ëŠ” ê²½ìš° ë¹„ì •ìƒ ì¢…ë£Œí•©ë‹ˆë‹¤.  */
     IDE_TEST_RAISE( ( aNode->lflag & MTC_NODE_ARGUMENT_COUNT_MASK ) < 1 ||
                     ( aNode->lflag & MTC_NODE_ARGUMENT_COUNT_MASK ) > 2,
                     ERR_INVALID_FUNCTION_ARGUMENT );
@@ -227,8 +227,8 @@ IDE_RC mtfRoundCalculateFloatFor1Arg( mtcNode*     aNode,
  * Description : Round Calculate
  *
  * Implementation :
- *    aStack[0] : Á¤¼ö·Î ¹İ¿Ã¸²ÇÑ ¼ıÀÚ
- *    aStack[1] : ÀÔ·Â ¼ıÀÚ
+ *    aStack[0] : ì •ìˆ˜ë¡œ ë°˜ì˜¬ë¦¼í•œ ìˆ«ì
+ *    aStack[1] : ì…ë ¥ ìˆ«ì
  *
  *    ex) ROUND( 15.79 ) ==> 16
  *
@@ -277,9 +277,9 @@ IDE_RC mtfRoundCalculateFloatFor2Args( mtcNode*     aNode,
  * Description : Round Calculate
  *
  * Implementation :
- *    aStack[0] : Á¤¼ö·Î ¹İ¿Ã¸²ÇÑ ¼ıÀÚ
- *    aStack[1] : ÀÔ·Â ¼ıÀÚ
- *    aStack[2] : ¹İ¿Ã¸²ÇÏ¿© ³ªÅ¸³¾ ¼Ò¼öÁ¡ ¾Æ·¡ ¼ıÀÚÀÇ °³¼ö
+ *    aStack[0] : ì •ìˆ˜ë¡œ ë°˜ì˜¬ë¦¼í•œ ìˆ«ì
+ *    aStack[1] : ì…ë ¥ ìˆ«ì
+ *    aStack[2] : ë°˜ì˜¬ë¦¼í•˜ì—¬ ë‚˜íƒ€ë‚¼ ì†Œìˆ˜ì  ì•„ë˜ ìˆ«ìì˜ ê°œìˆ˜
  *
  *    ex) ROUND( 15.796, 2 ) ==> 15.8
  *
@@ -326,8 +326,8 @@ IDE_RC mtfRoundCalculateFor1Arg(  mtcNode*     aNode,
  * Description : Round Calculate
  *
  * Implementation :
- *    aStack[0] : fmt¸¦ 'ÀÏ'·Î °¡Á¤ÇÏ°í ¹İ¿Ã¸²ÇÑ´Ù.
- *    aStack[1] : ³¯Â¥ °ª
+ *    aStack[0] : fmtë¥¼ 'ì¼'ë¡œ ê°€ì •í•˜ê³  ë°˜ì˜¬ë¦¼í•œë‹¤.
+ *    aStack[1] : ë‚ ì§œ ê°’
  *
  ***********************************************************************/
 
@@ -365,7 +365,7 @@ IDE_RC mtfRoundCalculateFor1Arg(  mtcNode*     aNode,
         sDay = mtdDateInterface::day(sDate);
         sHour = mtdDateInterface::hour(sDate);
 
-        // date°¡ À±³âÀÏ °æ¿ì
+        // dateê°€ ìœ¤ë…„ì¼ ê²½ìš°
         if ( mtdDateInterface::isLeapYear( sYear ) == ID_TRUE )
         {
              sLastDays[2] = 29;
@@ -373,7 +373,7 @@ IDE_RC mtfRoundCalculateFor1Arg(  mtcNode*     aNode,
 
         if ( sHour >= 12 )
         {
-            // ¸¶Áö¸· ³¯ÀÎÁö Ã¼Å©
+            // ë§ˆì§€ë§‰ ë‚ ì¸ì§€ ì²´í¬
             if ( sDay == sLastDays[sMonth] ) 
             {
                 if ( sMonth == 12 )
@@ -390,7 +390,7 @@ IDE_RC mtfRoundCalculateFor1Arg(  mtcNode*     aNode,
             }
             else
             {
-                /* BUG-36296 1582³â 10¿ù 4ÀÏ(¸ñ)¿¡¼­ 10¿ù 15ÀÏ(±İ)À¸·Î ¹Ù·Î °Ç³Ê¶Ú´Ù. */
+                /* BUG-36296 1582ë…„ 10ì›” 4ì¼(ëª©)ì—ì„œ 10ì›” 15ì¼(ê¸ˆ)ìœ¼ë¡œ ë°”ë¡œ ê±´ë„ˆë›´ë‹¤. */
                 if ( ( sYear == 1582 ) &&
                      ( sMonth == 10 ) &&
                      ( sDay == 4 ) )
@@ -405,7 +405,7 @@ IDE_RC mtfRoundCalculateFor1Arg(  mtcNode*     aNode,
                 sDay++;
             }
         }
-        // 12½Ã¸¦ ³ÑÁö ¾ÊÀ¸¸é ½Ã ÀÌÇÏ´Â ¹ö¸°´Ù.
+        // 12ì‹œë¥¼ ë„˜ì§€ ì•Šìœ¼ë©´ ì‹œ ì´í•˜ëŠ” ë²„ë¦°ë‹¤.
         else
         {
             // nothing to do
@@ -444,7 +444,7 @@ IDE_RC mtfRoundCalculateFor2Args(  mtcNode*     aNode,
  *
  * Implementation :
  *    aStack[0] :
- *    aStack[1] : ÀĞ¾î¿Â ½ºÆ®¸µ
+ *    aStack[1] : ì½ì–´ì˜¨ ìŠ¤íŠ¸ë§
  *
  ***********************************************************************/
 
@@ -493,7 +493,7 @@ IDE_RC mtfRoundCalculateFor2Args(  mtcNode*     aNode,
         sMinute = mtdDateInterface::minute(sDate);
         sSecond = mtdDateInterface::second(sDate);
 
-        // date°¡ À±³âÀÏ °æ¿ì
+        // dateê°€ ìœ¤ë…„ì¼ ê²½ìš°
         if ( mtdDateInterface::isLeapYear( sYear ) == ID_TRUE )
         {
              sLastDays[2] = 29;
@@ -508,12 +508,12 @@ IDE_RC mtfRoundCalculateFor2Args(  mtcNode*     aNode,
         {
             if ( sYear <= 0 )
             {
-                // -50³âºÎÅÍ ´ÙÀ½ ¼¼±â·Î ¿Ã¸²
+                // -50ë…„ë¶€í„° ë‹¤ìŒ ì„¸ê¸°ë¡œ ì˜¬ë¦¼
                 sYear = ( ( sYear - 50 ) / 100 ) * 100 + 1;
             }
             else
             {
-                // 51³âºÎÅÍ ´ÙÀ½ ¼¼±â·Î ¿Ã¸²
+                // 51ë…„ë¶€í„° ë‹¤ìŒ ì„¸ê¸°ë¡œ ì˜¬ë¦¼
                 sYear = ( ( sYear + 49 ) / 100 ) * 100 + 1;
             }
 
@@ -533,12 +533,12 @@ IDE_RC mtfRoundCalculateFor2Args(  mtcNode*     aNode,
         else if( sLanguage->extractSet->matchYear( sVarchar->value,
                                                    sVarchar->length ) == 0 )
         {
-            // 7¿ù ºÎÅÍ ´ÙÀ½ ÇØ·Î ¿Ã¸²
+            // 7ì›” ë¶€í„° ë‹¤ìŒ í•´ë¡œ ì˜¬ë¦¼
             if ( sMonth >= 7 )
             {
                 sYear++;
             }
-            //7¿ù ÀÌÀüÀÌ¸é 1¿ù·Î ³»¸°´Ù.
+            //7ì›” ì´ì „ì´ë©´ 1ì›”ë¡œ ë‚´ë¦°ë‹¤.
             else
             {
                 // nothing to do
@@ -561,7 +561,7 @@ IDE_RC mtfRoundCalculateFor2Args(  mtcNode*     aNode,
                                                       sVarchar->length ) == 0 )
         {
             sQuarter = (SInt) idlOS::ceil( ( (SDouble) sMonth / 3 ) );
-            // ÇØ´ç ºĞ±âÀÇ µÎ¹øÂ° ´ŞÀÇ 16ÀÏºÎÅÍ ´ÙÀ½ ºĞ±â·Î ¿Ã¸²
+            // í•´ë‹¹ ë¶„ê¸°ì˜ ë‘ë²ˆì§¸ ë‹¬ì˜ 16ì¼ë¶€í„° ë‹¤ìŒ ë¶„ê¸°ë¡œ ì˜¬ë¦¼
             if ( ( sMonth >= ( sQuarter * 3 - 1 ) && sDay >= 16 ) ||
                    sMonth == ( sQuarter * 3 ) )
             {
@@ -592,7 +592,7 @@ IDE_RC mtfRoundCalculateFor2Args(  mtcNode*     aNode,
         else if( sLanguage->extractSet->matchMonth( sVarchar->value,
                                                     sVarchar->length ) == 0 )
         {
-            // 16ÀÏ ºÎÅÍ ´ÙÀ½ ´Ş·Î ¿Ã¸²
+            // 16ì¼ ë¶€í„° ë‹¤ìŒ ë‹¬ë¡œ ì˜¬ë¦¼
             if ( sDay >= 16)
             {
                 if ( sMonth == 12 )
@@ -605,7 +605,7 @@ IDE_RC mtfRoundCalculateFor2Args(  mtcNode*     aNode,
                     sMonth++;
                 }
             }
-            // 16ÀÏ ÀÌÀüÀÌ¸é 1ÀÏ·Î ³»¸°´Ù.
+            // 16ì¼ ì´ì „ì´ë©´ 1ì¼ë¡œ ë‚´ë¦°ë‹¤.
             else
             {
                 // nothing to do
@@ -627,10 +627,10 @@ IDE_RC mtfRoundCalculateFor2Args(  mtcNode*     aNode,
                                                    sVarchar->length ) == 0 )
         {
             sDayOfWeek = mtc::dayOfWeek ( sYear, sMonth, sDay );
-            // ¸ñ¿äÀÏºÎÅÍ ´ÙÀ½ ÀÏ¿äÀÏ·Î ¿Ã¸².
+            // ëª©ìš”ì¼ë¶€í„° ë‹¤ìŒ ì¼ìš”ì¼ë¡œ ì˜¬ë¦¼.
             if ( sDayOfWeek >= 4)
             {
-                /* BUG-36296 1582³â 10¿ù 4ÀÏ(¸ñ)¿¡¼­ 10¿ù 15ÀÏ(±İ)À¸·Î ¹Ù·Î °Ç³Ê¶Ú´Ù. */
+                /* BUG-36296 1582ë…„ 10ì›” 4ì¼(ëª©)ì—ì„œ 10ì›” 15ì¼(ê¸ˆ)ìœ¼ë¡œ ë°”ë¡œ ê±´ë„ˆë›´ë‹¤. */
                 if ( ( sYear == 1582 ) &&
                      ( sMonth == 10 ) &&
                      ( sDay == 4 ) )
@@ -644,7 +644,7 @@ IDE_RC mtfRoundCalculateFor2Args(  mtcNode*     aNode,
 
                 sDay += ( 7 - sDayOfWeek );
 
-                /* BUG-45730 ¿¡¼­ °°ÀÌ ¼öÁ¤ [ = Á¦°Å sDay´Â ÇØ´ç ´Ş¿¡ ¸¶Áö¸· ³¯ÀÌµµ »ó°ü¾ø´Ù. ] */
+                /* BUG-45730 ì—ì„œ ê°™ì´ ìˆ˜ì • [ = ì œê±° sDayëŠ” í•´ë‹¹ ë‹¬ì— ë§ˆì§€ë§‰ ë‚ ì´ë„ ìƒê´€ì—†ë‹¤. ] */
                 if ( sDay > sLastDays[sMonth] )
                 {
                     sDay -= sLastDays[sMonth]; 
@@ -686,7 +686,7 @@ IDE_RC mtfRoundCalculateFor2Args(  mtcNode*     aNode,
         {
             if ( sHour >= 12 )
             {
-                // ¸¶Áö¸· ³¯ÀÎÁö Ã¼Å©
+                // ë§ˆì§€ë§‰ ë‚ ì¸ì§€ ì²´í¬
                 if ( sDay == sLastDays[sMonth] )
                 {
                     if ( sMonth == 12 )
@@ -703,7 +703,7 @@ IDE_RC mtfRoundCalculateFor2Args(  mtcNode*     aNode,
                 }
                 else
                 {
-                    /* BUG-36296 1582³â 10¿ù 4ÀÏ(¸ñ)¿¡¼­ 10¿ù 15ÀÏ(±İ)À¸·Î ¹Ù·Î °Ç³Ê¶Ú´Ù. */
+                    /* BUG-36296 1582ë…„ 10ì›” 4ì¼(ëª©)ì—ì„œ 10ì›” 15ì¼(ê¸ˆ)ìœ¼ë¡œ ë°”ë¡œ ê±´ë„ˆë›´ë‹¤. */
                     if ( ( sYear == 1582 ) &&
                          ( sMonth == 10 ) &&
                          ( sDay == 4 ) )
@@ -718,7 +718,7 @@ IDE_RC mtfRoundCalculateFor2Args(  mtcNode*     aNode,
                     sDay++;
                 }
             }
-            // 12½Ã¸¦ ³ÑÁö ¾ÊÀ¸¸é ½Ã ÀÌÇÏ´Â ¹ö¸°´Ù.
+            // 12ì‹œë¥¼ ë„˜ì§€ ì•Šìœ¼ë©´ ì‹œ ì´í•˜ëŠ” ë²„ë¦°ë‹¤.
             else
             {
                 // nothing to do
@@ -741,7 +741,7 @@ IDE_RC mtfRoundCalculateFor2Args(  mtcNode*     aNode,
             {
                 if ( sHour == 23 )
                 {
-                    // ¸¶Áö¸· ³¯ÀÎÁö Ã¼Å©
+                    // ë§ˆì§€ë§‰ ë‚ ì¸ì§€ ì²´í¬
                     if ( sDay == sLastDays[sMonth] )
                     {
                         if ( sMonth == 12 )
@@ -760,7 +760,7 @@ IDE_RC mtfRoundCalculateFor2Args(  mtcNode*     aNode,
                      }
                      else
                      {
-                         /* BUG-36296 1582³â 10¿ù 4ÀÏ(¸ñ)¿¡¼­ 10¿ù 15ÀÏ(±İ)À¸·Î ¹Ù·Î °Ç³Ê¶Ú´Ù. */
+                         /* BUG-36296 1582ë…„ 10ì›” 4ì¼(ëª©)ì—ì„œ 10ì›” 15ì¼(ê¸ˆ)ìœ¼ë¡œ ë°”ë¡œ ê±´ë„ˆë›´ë‹¤. */
                          if ( ( sYear == 1582 ) &&
                               ( sMonth == 10 ) &&
                               ( sDay == 4 ) )
@@ -781,7 +781,7 @@ IDE_RC mtfRoundCalculateFor2Args(  mtcNode*     aNode,
                     sHour++;
                 }
             }
-            // 30ºĞÀ» ³ÑÁö ¾ÊÀ¸¸é ºĞ ÀÌÇÏ´Â ¹ö¸°´Ù.
+            // 30ë¶„ì„ ë„˜ì§€ ì•Šìœ¼ë©´ ë¶„ ì´í•˜ëŠ” ë²„ë¦°ë‹¤.
             else
             {
                 // nothing to do
@@ -807,7 +807,7 @@ IDE_RC mtfRoundCalculateFor2Args(  mtcNode*     aNode,
                 {
                     if ( sHour == 23 )
                     {
-                        // ¸¶Áö¸· ³¯ÀÎÁö Ã¼Å©
+                        // ë§ˆì§€ë§‰ ë‚ ì¸ì§€ ì²´í¬
                         if ( sDay == sLastDays[sMonth] )
                         {
                             if ( sMonth == 12 )
@@ -828,7 +828,7 @@ IDE_RC mtfRoundCalculateFor2Args(  mtcNode*     aNode,
                         }
                         else
                         {
-                            /* BUG-36296 1582³â 10¿ù 4ÀÏ(¸ñ)¿¡¼­ 10¿ù 15ÀÏ(±İ)À¸·Î ¹Ù·Î °Ç³Ê¶Ú´Ù. */
+                            /* BUG-36296 1582ë…„ 10ì›” 4ì¼(ëª©)ì—ì„œ 10ì›” 15ì¼(ê¸ˆ)ìœ¼ë¡œ ë°”ë¡œ ê±´ë„ˆë›´ë‹¤. */
                             if ( ( sYear == 1582 ) &&
                                  ( sMonth == 10 ) &&
                                  ( sDay == 4 ) )
@@ -856,7 +856,7 @@ IDE_RC mtfRoundCalculateFor2Args(  mtcNode*     aNode,
                     sMinute++;
                 }
             }
-            // 30ÃÊ¸¦ ³ÑÁö ¾ÊÀ¸¸é ÃÊ ÀÌÇÏ´Â ¹ö¸°´Ù.
+            // 30ì´ˆë¥¼ ë„˜ì§€ ì•Šìœ¼ë©´ ì´ˆ ì´í•˜ëŠ” ë²„ë¦°ë‹¤.
             else
             {
                 // nothing to do
@@ -874,17 +874,17 @@ IDE_RC mtfRoundCalculateFor2Args(  mtcNode*     aNode,
                                                  0, 0)
                       != IDE_SUCCESS );
         }
-        /* BUG-45730 ROUND, TRUNC ÇÔ¼ö¿¡¼­ DATE Æ÷¸Ë IW Ãß°¡ Áö¿ø */
+        /* BUG-45730 ROUND, TRUNC í•¨ìˆ˜ì—ì„œ DATE í¬ë§· IW ì¶”ê°€ ì§€ì› */
         else if( sLanguage->extractSet->matchISOWeek( sVarchar->value,
                                                       sVarchar->length ) == 0 )
         {
-            /* ÀÏ¿äÀÏºÎÅÍ 0, 1, 2, 3, 4, 5, 6 ¼ø¼­¸¦ 6, 0, 1, 2, 3, 4, 5 À¸·Î º¯°æ */
+            /* ì¼ìš”ì¼ë¶€í„° 0, 1, 2, 3, 4, 5, 6 ìˆœì„œë¥¼ 6, 0, 1, 2, 3, 4, 5 ìœ¼ë¡œ ë³€ê²½ */
             sDayOfWeek = ( ( mtc::dayOfWeek( sYear, sMonth, sDay ) + 6 ) % 7 );
 
-            /* ±İ¿äÀÏºÎÅÍ ´ÙÀ½ ¿ù¿äÀÏ·Î ¿Ã¸². */
+            /* ê¸ˆìš”ì¼ë¶€í„° ë‹¤ìŒ ì›”ìš”ì¼ë¡œ ì˜¬ë¦¼. */
             if ( sDayOfWeek >= 4 )
             {
-                /* BUG-36296 1582³â 10¿ù 4ÀÏ(¸ñ)¿¡¼­ 10¿ù 15ÀÏ(±İ)À¸·Î ¹Ù·Î °Ç³Ê¶Ú´Ù. */
+                /* BUG-36296 1582ë…„ 10ì›” 4ì¼(ëª©)ì—ì„œ 10ì›” 15ì¼(ê¸ˆ)ìœ¼ë¡œ ë°”ë¡œ ê±´ë„ˆë›´ë‹¤. */
                 if ( ( sYear == 1582 ) &&
                      ( sMonth == 10 ) &&
                      ( sDay == 4 ) )
@@ -898,7 +898,7 @@ IDE_RC mtfRoundCalculateFor2Args(  mtcNode*     aNode,
 
                 sDay += ( 7 - sDayOfWeek );
 
-                /* = Á¦°Å sDay´Â ÇØ´ç ´Ş¿¡ ¸¶Áö¸· ³¯ÀÌµµ »ó°ü¾ø´Ù. */
+                /* = ì œê±° sDayëŠ” í•´ë‹¹ ë‹¬ì— ë§ˆì§€ë§‰ ë‚ ì´ë„ ìƒê´€ì—†ë‹¤. */
                 if ( sDay > sLastDays[sMonth] )
                 {
                     sDay -= sLastDays[sMonth];

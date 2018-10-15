@@ -26,9 +26,9 @@ static ACI_RC ulnConvBinCheckTruncation(ulnFnContext *aFnContext,
                                         acp_uint16_t  aRowNumber)
 {
     /*
-     * Note : SQL_C_BINARY Å¸ÀÔ¿¡ ´ëÇÑ 01004 °áÁ¤
-     *        ¸¸¾à, ¼Ò½º »çÀÌÁî°¡ SQL_NULL_DATA ÀÌ¸é ±×³É ¼º°øÀ» ¸®ÅÏÇÏ°í, is truncated ´Â
-     *        ID_FALSE ·Î ¼¼ÆÃÇÑ´Ù.
+     * Note : SQL_C_BINARY íƒ€ì…ì— ëŒ€í•œ 01004 ê²°ì •
+     *        ë§Œì•½, ì†ŒìŠ¤ ì‚¬ì´ì¦ˆê°€ SQL_NULL_DATA ì´ë©´ ê·¸ëƒ¥ ì„±ê³µì„ ë¦¬í„´í•˜ê³ , is truncated ëŠ”
+     *        ID_FALSE ë¡œ ì„¸íŒ…í•œë‹¤.
      */
 
     ACI_TEST_RAISE(aSourceSize < 0, LABEL_INVALID_DATA_SIZE);
@@ -385,7 +385,7 @@ ACI_RC ulncBLOB_BINARY(ulnFnContext  *aFnContext,
     sLob = (ulnLob *)aColumn->mBuffer;
 
     /*
-     * ulnLobBuffer ÁØºñ
+     * ulnLobBuffer ì¤€ë¹„
      */
 
     ACI_TEST_RAISE(ulnLobBufferInitialize(&sLobBuffer,
@@ -399,7 +399,7 @@ ACI_RC ulncBLOB_BINARY(ulnFnContext  *aFnContext,
     ACI_TEST(sLobBuffer.mOp->mPrepare(aFnContext, &sLobBuffer) != ACI_SUCCESS);
 
     /*
-     * open LOB ¹× get data
+     * open LOB ë° get data
      */
 
     ACI_TEST(sLob->mOp->mOpen(aFnContext, sPtContext, sLob) != ACI_SUCCESS);
@@ -411,9 +411,9 @@ ACI_RC ulncBLOB_BINARY(ulnFnContext  *aFnContext,
     else
     {
         /*
-         * ulnLobGetData() ÇÔ¼ö°¡ È£ÃâµÊ.
+         * ulnLobGetData() í•¨ìˆ˜ê°€ í˜¸ì¶œë¨.
          *
-         * ¸¹ÀÌ ¼ö½ÅÇØ ºÁ¾ß ¾îÂ÷ÇÇ Àß¸± ÅÙµ¥, ²À ÇÊ¿äÇÑ ¸¸Å­¸¸ ¼­¹ö·Î ¿äÃ»ÇÏµµ·Ï ÇÑ´Ù.
+         * ë§ì´ ìˆ˜ì‹ í•´ ë´ì•¼ ì–´ì°¨í”¼ ì˜ë¦´ í…ë°, ê¼­ í•„ìš”í•œ ë§Œí¼ë§Œ ì„œë²„ë¡œ ìš”ì²­í•˜ë„ë¡ í•œë‹¤.
          */
 
         sSizeToRequest = ACP_MIN(aAppBuffer->mBufferSize, sLob->mSize - aColumn->mGDPosition);
@@ -426,9 +426,9 @@ ACI_RC ulncBLOB_BINARY(ulnFnContext  *aFnContext,
                                      sSizeToRequest) != ACI_SUCCESS);
 
         /*
-         * ÀĞ¾î¿Í¼­ ¾²¿©Áø LOB µ¥ÀÌÅÍÀÇ »çÀÌÁî¸¦ »ç¿ëÀÚ¿¡°Ô ¹İÈ¯
+         * ì½ì–´ì™€ì„œ ì“°ì—¬ì§„ LOB ë°ì´í„°ì˜ ì‚¬ì´ì¦ˆë¥¼ ì‚¬ìš©ìì—ê²Œ ë°˜í™˜
          *
-         * GetData ¸¦ À§ÇÑ GDPosition Á¶Á¤
+         * GetData ë¥¼ ìœ„í•œ GDPosition ì¡°ì •
          */
 
         aLength->mWritten     = sLob->mSizeRetrieved;
@@ -437,19 +437,19 @@ ACI_RC ulncBLOB_BINARY(ulnFnContext  *aFnContext,
     }
 
     /*
-     * ulnLobBuffer Á¤¸®
+     * ulnLobBuffer ì •ë¦¬
      */
 
     ACI_TEST(sLobBuffer.mOp->mFinalize(aFnContext, &sLobBuffer) != ACI_SUCCESS);
 
     /*
      * close LOB :
-     *      1. scrollable Ä¿¼­ÀÏ ¶§´Â Ä¿¼­°¡ ´İÈú ¶§.
-     *         ulnCursorClose() ÇÔ¼ö¿¡¼­
-     *      2. forward only ÀÏ ¶§¿¡´Â Ä³½¬ ¹Ì½º°¡ ¹ß»ıÇßÀ» ¶§.
-     *         ulnFetchFromCache() ÇÔ¼ö¿¡¼­ 
+     *      1. scrollable ì»¤ì„œì¼ ë•ŒëŠ” ì»¤ì„œê°€ ë‹«í ë•Œ.
+     *         ulnCursorClose() í•¨ìˆ˜ì—ì„œ
+     *      2. forward only ì¼ ë•Œì—ëŠ” ìºì‰¬ ë¯¸ìŠ¤ê°€ ë°œìƒí–ˆì„ ë•Œ.
+     *         ulnFetchFromCache() í•¨ìˆ˜ì—ì„œ 
      *
-     *      ulnCacheCloseLobInCurrentContents() ¸¦ È£ÃâÇØ¼­ Á¾·á½ÃÅ´.
+     *      ulnCacheCloseLobInCurrentContents() ë¥¼ í˜¸ì¶œí•´ì„œ ì¢…ë£Œì‹œí‚´.
      */
 
     ACI_TEST(ulnConvBinCheckTruncation(aFnContext,
@@ -484,7 +484,7 @@ ACI_RC ulncCLOB_BINARY(ulnFnContext  *aFnContext,
                        acp_uint16_t   aRowNumber)
 {
     /*
-     * º¯È¯¾øÀÌ ±×³É º¹»çÇÏ¸é µÇ¹Ç·Î
+     * ë³€í™˜ì—†ì´ ê·¸ëƒ¥ ë³µì‚¬í•˜ë©´ ë˜ë¯€ë¡œ
      */
     return ulncBLOB_BINARY(aFnContext,
                            aAppBuffer,

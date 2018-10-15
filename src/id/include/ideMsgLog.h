@@ -66,9 +66,9 @@ private:
     inline void     unrotate(void) { mRotating = 0; }
 
     /*
-     * ÆÄÀÏ ¸¸µé°í Çì´õ »ğÀÔ.  ¼º°ø ½Ã ¸Ş¸ğ¸®¸Ê ¸®½ºÆ® aMmapIndex
-     * À§Ä¡¿¡ ÀúÀå ÈÄ ÇöÀç »ç¿ë Áß Ç¥½Ã.  Ç¥½ÃÇÑ ÈÄ ·Î±× ¸Ş¼¼Áö°¡ ÀÌ
-     * ÆÄÀÏ¿¡ µé¾î°¨.
+     * íŒŒì¼ ë§Œë“¤ê³  í—¤ë” ì‚½ì….  ì„±ê³µ ì‹œ ë©”ëª¨ë¦¬ë§µ ë¦¬ìŠ¤íŠ¸ aMmapIndex
+     * ìœ„ì¹˜ì— ì €ì¥ í›„ í˜„ì¬ ì‚¬ìš© ì¤‘ í‘œì‹œ.  í‘œì‹œí•œ í›„ ë¡œê·¸ ë©”ì„¸ì§€ê°€ ì´
+     * íŒŒì¼ì— ë“¤ì–´ê°.
      */
     IDE_RC createFileAndHeader(void);
     IDE_RC closeAndRename(void);
@@ -82,7 +82,7 @@ private:
     SChar               mPath[ID_MAX_FILE_NAME];    /* File name */
     size_t              mSize;              /* File size */
     UInt                mMaxNumber;         /* Loop file number */
-    UInt                mCurNumber;         /* ReplaceµÉ È­ÀÏ¹øÈ£ */
+    UInt                mCurNumber;         /* Replaceë  í™”ì¼ë²ˆí˜¸ */
     ideLogModule        mSelf;              /* What log this object writes */
     SInt                mRotating;          /* A lock */
     idBool              mEnabled;           /* Enabled */

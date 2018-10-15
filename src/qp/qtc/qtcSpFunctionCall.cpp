@@ -61,7 +61,7 @@ static IDE_RC qtcCalculateStoredProcedure( mtcNode*,
 mtfModule qtc::spFunctionCallModule = {
     1|MTC_NODE_OPERATOR_MISC|MTC_NODE_EAT_NULL_TRUE,
     ~0,
-    1.0,              // default selectivity (ºñ±³ ¿¬»êÀÚ ¾Æ´Ô)
+    1.0,              // default selectivity (ë¹„êµ ì—°ì‚°ì ì•„ë‹˜)
     qtcFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -105,8 +105,8 @@ IDE_RC qtcEstimate( mtcNode     * aNode,
                        (sStatement->myPlan->parseTree))->paramModules) != IDE_SUCCESS );
     }
 
-    /* BUG-44382 clone tuple ¼º´É°³¼± */
-    // º¹»ç¿Í ÃÊ±âÈ­°¡ ÇÊ¿äÇÔ
+    /* BUG-44382 clone tuple ì„±ëŠ¥ê°œì„  */
+    // ë³µì‚¬ì™€ ì´ˆê¸°í™”ê°€ í•„ìš”í•¨
     qtc::setTupleColumnFlag( &(aTemplate->rows[aNode->table]),
                              ID_TRUE,
                              ID_TRUE );
@@ -188,8 +188,8 @@ IDE_RC qtcCalculateStoredProcedure( mtcNode*     aNode,
     {
         /*
          * PROJ-1381 Fetch Across Commit
-         * select µµÁß commit/rollback/dml ÀÌ ÀÏ¾î³ª´Â °æ¿ì
-         * ¿¡·¯Ã³¸®¸¦ À§ÇÏ¿© flag set
+         * select ë„ì¤‘ commit/rollback/dml ì´ ì¼ì–´ë‚˜ëŠ” ê²½ìš°
+         * ì—ëŸ¬ì²˜ë¦¬ë¥¼ ìœ„í•˜ì—¬ flag set
          */
         sStatement->spxEnv->mFlag |= QSX_ENV_DURING_SELECT;
     }
@@ -201,7 +201,7 @@ IDE_RC qtcCalculateStoredProcedure( mtcNode*     aNode,
     }
     else if ( (sStatement->myPlan->parseTree->stmtKind & QCI_STMT_MASK_MASK) == QCI_STMT_MASK_DML )
     {
-        // BUG-44294 PSM³»¿¡¼­ ½ÇÇàÇÑ DMLÀÌ º¯°æÇÑ row ¼ö¸¦ ¹İÈ¯ÇÏµµ·Ï ÇÕ´Ï´Ù.
+        // BUG-44294 PSMë‚´ì—ì„œ ì‹¤í–‰í•œ DMLì´ ë³€ê²½í•œ row ìˆ˜ë¥¼ ë°˜í™˜í•˜ë„ë¡ í•©ë‹ˆë‹¤.
         sStatement->spxEnv->mFlag |= QSX_ENV_DURING_DML;
     }
     else if ( (sStatement->myPlan->parseTree->stmtKind & QCI_STMT_MASK_MASK) == QCI_STMT_MASK_DDL )
@@ -252,8 +252,8 @@ IDE_RC qtcCalculateStoredProcedure( mtcNode*     aNode,
             else
             {
                 // BUG-35713
-                // sql·Î ºÎÅÍ invokeµÇ´Â function¿¡¼­ ¹ß»ıÇÏ´Â no_data_found ¿¡·¯´Â
-                // ¿¡·¯Ã³¸®ÇÏÁö ¾Ê°í nullÀ» ¹İÈ¯ÇÑ´Ù.
+                // sqlë¡œ ë¶€í„° invokeë˜ëŠ” functionì—ì„œ ë°œìƒí•˜ëŠ” no_data_found ì—ëŸ¬ëŠ”
+                // ì—ëŸ¬ì²˜ë¦¬í•˜ì§€ ì•Šê³  nullì„ ë°˜í™˜í•œë‹¤.
                 if ( ( ideGetErrorCode() == qpERR_ABORT_QSX_NO_DATA_FOUND ) &&
                      ( sStatement->spxEnv->mCallDepth == 0 ) &&
                      ( QCU_PSM_IGNORE_NO_DATA_FOUND_ERROR == 1 ) )
@@ -263,7 +263,7 @@ IDE_RC qtcCalculateStoredProcedure( mtcNode*     aNode,
                     sColumn = QTC_TMPL_COLUMN( QC_PRIVATE_TMPLATE(sStatement),
                                                sCallSpecNode );
                     
-                    // sql¿¡¼­ ¼öÇàÇÏ´Â functionÀº primitive type¸¸ ¸®ÅÏÇÑ´Ù.
+                    // sqlì—ì„œ ìˆ˜í–‰í•˜ëŠ” functionì€ primitive typeë§Œ ë¦¬í„´í•œë‹¤.
                     IDE_TEST_RAISE( ( sColumn->module->id >= MTD_UDT_ID_MIN ) &&
                                     ( sColumn->module->id <= MTD_UDT_ID_MAX ),
                                     ERR_RETURN_TYPE );

@@ -21,7 +21,7 @@
  * Description
  *
  *   BUG-20805
- *   Memory Table Records¸¦ DUMPÇÏ±â À§ÇÑ ÇÔ¼ö
+ *   Memory Table Recordsë¥¼ DUMPí•˜ê¸° ìœ„í•œ í•¨ìˆ˜
  *
  **********************************************************************/
 
@@ -46,7 +46,7 @@
  * Description
  *
  *   D$MEM_TABLE_RECORD
- *   : MEMORY TABLEÀÇ Record ³»¿ëÀ» Ãâ·Â
+ *   : MEMORY TABLEì˜ Record ë‚´ìš©ì„ ì¶œë ¥
  *
  *
  **********************************************************************/
@@ -54,7 +54,7 @@
 extern smiGlobalCallBackList gSmiGlobalCallBackList;
 
 //------------------------------------------------------
-// D$MEM_TABLE_RECORD Dump TableÀÇ Column Description
+// D$MEM_TABLE_RECORD Dump Tableì˜ Column Description
 //------------------------------------------------------
 
 static iduFixedTableColDesc gDumpMemTableRecordColDesc[]=
@@ -182,7 +182,7 @@ static iduFixedTableColDesc gDumpMemTableRecordColDesc[]=
 };
 
 //------------------------------------------------------
-// D$MEM_TABLE_RECORD Dump TableÀÇ Table Description
+// D$MEM_TABLE_RECORD Dump Tableì˜ Table Description
 //------------------------------------------------------
 
 iduFixedTableDesc  gDumpMemTableRecordTableDesc =
@@ -198,7 +198,7 @@ iduFixedTableDesc  gDumpMemTableRecordTableDesc =
 };
 
 //------------------------------------------------------
-// D$MEM_TABLE_RECORD Dump TableÀÇ ·¹ÄÚµå Build
+// D$MEM_TABLE_RECORD Dump Tableì˜ ë ˆì½”ë“œ Build
 //------------------------------------------------------
 
 IDE_RC smcFT::buildRecordMemTableRecord( idvSQL              * /*aStatistics*/,
@@ -293,7 +293,7 @@ IDE_RC smcFT::buildRecordMemTableRecord( idvSQL              * /*aStatistics*/,
                              "%"ID_XINT64_FMT, SMP_SLOT_GET_NEXT_OID(sSlotHeader) );
             sDumpRecord.mNext = sNext;
 
-            /* BUG-31062·Î Slot Header Flag Ã³¸® ¹æ½Ä º¯°æ*/
+            /* BUG-31062ë¡œ Slot Header Flag ì²˜ë¦¬ ë°©ì‹ ë³€ê²½*/
             sDumpRecord.mFlag = SMP_SLOT_GET_FLAGS( sSlotHeader );
 
             sDumpRecord.mUsedFlag       = SMP_SLOT_IS_USED( sSlotHeader ) ? 'U':'F';
@@ -378,7 +378,7 @@ IDE_RC smcFT::makeMemColValue24B( const smiColumn * aColumn,
     UInt                  sValueLength;
     IDE_RC                sReturn;
     SChar               * sColumnPtr;
-    SChar                 sDummyNullPtr[3]  = { 0 }; /* mtdCharType ¿¡ ¸ÂÃç¼­ 3 ¹ÙÀÌÆ® »ç¿ë */
+    SChar                 sDummyNullPtr[3]  = { 0 }; /* mtdCharType ì— ë§ì¶°ì„œ 3 ë°”ì´íŠ¸ ì‚¬ìš© */
     SChar               * sKeyPtr           = NULL;
     UInt                  sLength           = 0;
 
@@ -402,10 +402,10 @@ IDE_RC smcFT::makeMemColValue24B( const smiColumn * aColumn,
                                                     aColumn,
                                                     &sLength );
                 /* PROJ-2419 
-                 * Null column return ÇÏ´Â °æ¿ì
-                 * ±âÁ¸¿¡´Â fixed ¿µ¿ªÀÇ column ptr À» ¹İÈ¯¹Ş¾ÒÀ¸³ª
-                 * ¹Ù²ï ±¸Á¶¿¡¼­´Â fixed ¿¡ vcDesc °¡ »ç¶óÁ®¼­ °¡¸®Å³°÷ÀÌ ¾øÀ¸¹Ç·Î
-                 * Áö¿ªº¯¼ö·Î ´ëÃ¼ÇÑ´Ù */
+                 * Null column return í•˜ëŠ” ê²½ìš°
+                 * ê¸°ì¡´ì—ëŠ” fixed ì˜ì—­ì˜ column ptr ì„ ë°˜í™˜ë°›ì•˜ìœ¼ë‚˜
+                 * ë°”ë€ êµ¬ì¡°ì—ì„œëŠ” fixed ì— vcDesc ê°€ ì‚¬ë¼ì ¸ì„œ ê°€ë¦¬í‚¬ê³³ì´ ì—†ìœ¼ë¯€ë¡œ
+                 * ì§€ì—­ë³€ìˆ˜ë¡œ ëŒ€ì²´í•œë‹¤ */
                 if ( sKeyPtr == NULL )
                 {
                     sKeyPtr = sDummyNullPtr;
@@ -455,7 +455,7 @@ IDE_RC smcFT::makeMemColValue24B( const smiColumn * aColumn,
 
 /***********************************************************************
  * Description :PROJ-1407 Temporary Table
- *              Temp Table Info¿¡ ´ëÇÑ Fixed TableÀÇ RecordÀ» »ı¼ºÇÑ´Ù.
+ *              Temp Table Infoì— ëŒ€í•œ Fixed Tableì˜ Recordì„ ìƒì„±í•œë‹¤.
  **********************************************************************/
 IDE_RC
 smcFT::buildRecordForTempTableInfo(idvSQL              * /*aStatistics*/,
@@ -475,8 +475,8 @@ smcFT::buildRecordForTempTableInfo(idvSQL              * /*aStatistics*/,
     IDE_ERROR( aHeader != NULL );
     IDE_ERROR( aMemory != NULL );
 
-    /* BUG-16351: X$Table_info¿¡ Catalog Table¿¡ ´ëÇÑ Á¤º¸´Â ³ª¿ÀÁö
-     * ¾Ê½À´Ï´Ù. */
+    /* BUG-16351: X$Table_infoì— Catalog Tableì— ëŒ€í•œ ì •ë³´ëŠ” ë‚˜ì˜¤ì§€
+     * ì•ŠìŠµë‹ˆë‹¤. */
     IDE_TEST( buildEachRecordForTableInfo(
                   aHeader,
                   sCatTblHdr,
@@ -500,10 +500,10 @@ smcFT::buildRecordForTempTableInfo(idvSQL              * /*aStatistics*/,
          *             creating a table, because of uninitialized
          *             the lockitem, segfault can occur.
          *
-         * Å×ÀÌºí »ı¼º °úÁ¤ ÁßÀÌ¸é Áï, mSCNÀÌ InfiniteÀÌ¸é Å×ÀÌºí lock itemÀÌ
-         * ¾ÆÁ÷ ÃÊ±âÈ­µÇÁö ¾Ê¾ÒÀ» ¼öµµ ÀÖ¾î ¼­¹ö »ç¸ÁÇÒ °¡´É¼ºÀÌ ÀÖ´Ù.
-         * µû¶ó¼­ »ı¼º°úÁ¤ÀÌ ¿Ï·áµÇ¾î commit µÈ °æ¿ì¿¡ ÇÑÇØ¼­ lockÀ» Àâµµ·Ï
-         * ¼öÁ¤ÇÑ´Ù. */
+         * í…Œì´ë¸” ìƒì„± ê³¼ì • ì¤‘ì´ë©´ ì¦‰, mSCNì´ Infiniteì´ë©´ í…Œì´ë¸” lock itemì´
+         * ì•„ì§ ì´ˆê¸°í™”ë˜ì§€ ì•Šì•˜ì„ ìˆ˜ë„ ìˆì–´ ì„œë²„ ì‚¬ë§í•  ê°€ëŠ¥ì„±ì´ ìˆë‹¤.
+         * ë”°ë¼ì„œ ìƒì„±ê³¼ì •ì´ ì™„ë£Œë˜ì–´ commit ëœ ê²½ìš°ì— í•œí•´ì„œ lockì„ ì¡ë„ë¡
+         * ìˆ˜ì •í•œë‹¤. */
         if( SM_SCN_IS_INFINITE(sTgtSlotPtr->mCreateSCN) == ID_TRUE )
         {
             sCurPtr = sNxtPtr;
@@ -521,8 +521,8 @@ smcFT::buildRecordForTempTableInfo(idvSQL              * /*aStatistics*/,
                       "Invalid Table Type : %"ID_UINT32_FMT"\n",
                       sTableType );
 
-        /* ÇØ´çÅ×ÀÌºíÀÌ DropµÇÁö ¾Ê¾Ò´Ù¸é */
-        // BUG-30867 Discard µÈ Tablespace¿¡ ¼ÓÇÑ Tableµµ SkipµÇ¾î¾ß ÇÔ
+        /* í•´ë‹¹í…Œì´ë¸”ì´ Dropë˜ì§€ ì•Šì•˜ë‹¤ë©´ */
+        // BUG-30867 Discard ëœ Tablespaceì— ì†í•œ Tableë„ Skipë˜ì–´ì•¼ í•¨
         if( sctTableSpaceMgr::hasState( sTgtTblHeader->mSpaceID,
                                         SCT_SS_INVALID_DISK_TBS ) == ID_FALSE )
         {
@@ -553,8 +553,8 @@ smcFT::buildRecordForTempTableInfo(idvSQL              * /*aStatistics*/,
 }
 
 /***********************************************************************
- * Description : aTargetTblHeader¿¡ ÇØ´çÇÏ´Â Table Info¿¡ ´ëÇÑ Fixed TableÀÇ
- *               RecordÀ» »ı¼ºÇÑ´Ù.
+ * Description : aTargetTblHeaderì— í•´ë‹¹í•˜ëŠ” Table Infoì— ëŒ€í•œ Fixed Tableì˜
+ *               Recordì„ ìƒì„±í•œë‹¤.
  *
  **********************************************************************/
 IDE_RC smcFT::buildEachRecordForTableInfo(
@@ -572,16 +572,16 @@ IDE_RC smcFT::buildEachRecordForTableInfo(
     smpSlotHeader    *sTargetSlotPtr = ((smpSlotHeader *)aTargetTblHeader - 1);
 
     /* BUG-45654
-     * Droped slot ÀÇ °æ¿ì IDE_TEST_RAISE( SMP_SLOT_IS_DROP ) À¸·Î
-     *   ºĞ±âÇÏ´Â °Í ¸¸À¸·Î´Â INC-38866 ÄÉÀÌ½º¸¦ ¸·À» ¼ö ¾ø´Ù.
-     * ¸¸¾à ´ÙÀ½ ¶óÀÎ¿¡¼­ droped slot ÀÌ ¾Æ´Ï´õ¶óµµ LockÀ¸·Î º¸È£µÇÁö ¾ÊÀ¸¸é
-     *   ¾Æ·¡ ÄÚµå¸¦ ÁøÇàÇÏ´Â µµÁß mRuntimeEntry Æ÷ÀÎÅÍ°¡ NULLÀÌ µÉ ¼ö ÀÖ´Ù.
-     * µû¶ó¼­ »óÀ§ ÇÔ¼ö¿¡¼­ LockÀ¸·Î º¸È£ÇÑ´Ù.
-     *   ¿©±â¼­ IDE_TEST_RAISE ¸¦ »ç¿ëÇÑ °ÍÀº 
-     *   ¸¸¾à LockÀ¸·Î º¸È£µÇÁö ¾ÊÀº °æ¿ì°¡ ¹ß»ıÇÏ¸é
-     *   ÃÖ´ëÇÑ ÇÔ¼ö ³»ºÎ¿¡¼­ º¸È£ÇÏ°í
-     *   TC¸¦ ÅëÇØ Ã£À» ¼ö ÀÖµµ·Ï
-     *   droped slot¿¡ ´ëÇÑ record¸¦ »ı¼ºÇÏÁö ¾Êµµ·Ï ÇÑ´Ù.                    */
+     * Droped slot ì˜ ê²½ìš° IDE_TEST_RAISE( SMP_SLOT_IS_DROP ) ìœ¼ë¡œ
+     *   ë¶„ê¸°í•˜ëŠ” ê²ƒ ë§Œìœ¼ë¡œëŠ” INC-38866 ì¼€ì´ìŠ¤ë¥¼ ë§‰ì„ ìˆ˜ ì—†ë‹¤.
+     * ë§Œì•½ ë‹¤ìŒ ë¼ì¸ì—ì„œ droped slot ì´ ì•„ë‹ˆë”ë¼ë„ Lockìœ¼ë¡œ ë³´í˜¸ë˜ì§€ ì•Šìœ¼ë©´
+     *   ì•„ë˜ ì½”ë“œë¥¼ ì§„í–‰í•˜ëŠ” ë„ì¤‘ mRuntimeEntry í¬ì¸í„°ê°€ NULLì´ ë  ìˆ˜ ìˆë‹¤.
+     * ë”°ë¼ì„œ ìƒìœ„ í•¨ìˆ˜ì—ì„œ Lockìœ¼ë¡œ ë³´í˜¸í•œë‹¤.
+     *   ì—¬ê¸°ì„œ IDE_TEST_RAISE ë¥¼ ì‚¬ìš©í•œ ê²ƒì€ 
+     *   ë§Œì•½ Lockìœ¼ë¡œ ë³´í˜¸ë˜ì§€ ì•Šì€ ê²½ìš°ê°€ ë°œìƒí•˜ë©´
+     *   ìµœëŒ€í•œ í•¨ìˆ˜ ë‚´ë¶€ì—ì„œ ë³´í˜¸í•˜ê³ 
+     *   TCë¥¼ í†µí•´ ì°¾ì„ ìˆ˜ ìˆë„ë¡
+     *   droped slotì— ëŒ€í•œ recordë¥¼ ìƒì„±í•˜ì§€ ì•Šë„ë¡ í•œë‹¤.                    */
     IDE_TEST_CONT( SMP_SLOT_IS_DROP( sTargetSlotPtr ), TABLE_IS_DROPPED );
 
     // fix BUG-20118
@@ -589,16 +589,16 @@ IDE_RC smcFT::buildEachRecordForTableInfo(
 
     sTableType = SMI_GET_TABLE_TYPE( aTargetTblHeader );
 
-    /* aTarget Table¿¡ ´ëÇØ¼­´Â LockÀ» ÀâÁö ¾Ê´Â´Ù. ¿Ö³ÄÇÏ¸é
-       ÇÑ¹ø »ı¼ºµÈ TableÀÇ Table Header´Â Server°¡ Á¾·áµÉ¶§
-       ±îÁö Á¤¸®µÇÁö ¾Ê´Â´Ù. */
+    /* aTarget Tableì— ëŒ€í•´ì„œëŠ” Lockì„ ì¡ì§€ ì•ŠëŠ”ë‹¤. ì™œëƒí•˜ë©´
+       í•œë²ˆ ìƒì„±ëœ Tableì˜ Table HeaderëŠ” Serverê°€ ì¢…ë£Œë ë•Œ
+       ê¹Œì§€ ì •ë¦¬ë˜ì§€ ì•ŠëŠ”ë‹¤. */
     sTableInfo.mTableOID         = aTargetTblHeader->mSelfOID;
     sTableInfo.mSpaceID          = aTargetTblHeader->mSpaceID;
     sTableInfo.mType             = sTableType;
     sTableInfo.mIsConsistent     = aTargetTblHeader->mIsConsistent;
 
     // TASK-2398 Log Compression
-    //           TableÀÇ ·Î±× ¾ĞÃà ¿©ºÎ ¼³Á¤
+    //           Tableì˜ ë¡œê·¸ ì••ì¶• ì—¬ë¶€ ì„¤ì •
     if ( ( aTargetTblHeader->mFlag & SMI_TABLE_LOG_COMPRESS_MASK )
          == SMI_TABLE_LOG_COMPRESS_TRUE )
     {
@@ -628,15 +628,15 @@ IDE_RC smcFT::buildEachRecordForTableInfo(
                 smpManager::getAllocPageCount(aTargetTblHeader->mVar.mMRDB);
 
 
-            /* TableÀÇ Record°¹¼ö¸¦ °¡Á®¿Â´Ù. */
+            /* Tableì˜ Recordê°¯ìˆ˜ë¥¼ ê°€ì ¸ì˜¨ë‹¤. */
             IDE_TEST( smcTable::getRecordCount( aTargetTblHeader, &(sSlotCnt))
                       != IDE_SUCCESS);
 
             sTableInfo.mFixedUsedMem = sSlotCnt * sTableInfo.mMemSlotSize;
             sTableInfo.mVarUsedMem   = 0;
 
-            /* À§ÀÇ memset¿¡¼­ ÃÊ±âÈ­ µÇ¾ú±â¶§¹®¿¡ , mMemVarpageCnt,
-               mSlotCount´Â ÃÊ±âÈ­´Â ¿©±â¼­ ÇÒ ÇÊ¿ä°¡ ¾øÀ½. */
+            /* ìœ„ì˜ memsetì—ì„œ ì´ˆê¸°í™” ë˜ì—ˆê¸°ë•Œë¬¸ì— , mMemVarpageCnt,
+               mSlotCountëŠ” ì´ˆê¸°í™”ëŠ” ì—¬ê¸°ì„œ í•  í•„ìš”ê°€ ì—†ìŒ. */
             for(i= 0; i < SM_VAR_PAGE_LIST_COUNT ; i++ )
             {
                 smpVarPageList::getRecordCount(&(aTargetTblHeader->mVar.mMRDB[i]),&sSlotCnt);
@@ -644,7 +644,7 @@ IDE_RC smcFT::buildEachRecordForTableInfo(
                     sSlotCnt * aTargetTblHeader->mVar.mMRDB[i].mSlotSize;
             }//for
 
-            //BUG-17371 [MMDB] AgingÀÌ ¹Ğ¸±°æ¿ì System¿¡ °úºÎÈ­ ¹× AgingÀÌ ¹Ğ¸®´Â Çö»óÀÌ ´õ ½ÉÈ­µÊ
+            //BUG-17371 [MMDB] Agingì´ ë°€ë¦´ê²½ìš° Systemì— ê³¼ë¶€í™” ë° Agingì´ ë°€ë¦¬ëŠ” í˜„ìƒì´ ë” ì‹¬í™”ë¨
             sTableInfo.mUniqueViolationCount =
                 aTargetTblHeader->mFixed.mMRDB.mRuntimeEntry->mUniqueViolationCount;
             sTableInfo.mUpdateRetryCount =
@@ -668,23 +668,23 @@ IDE_RC smcFT::buildEachRecordForTableInfo(
             sTableInfo.mMemPageHead =
                 svpManager::getFirstAllocPageID(&(aTargetTblHeader->mFixed.mVRDB));
 
-            /* TableÀÇ Record°¹¼ö¸¦ °¡Á®¿Â´Ù. */
+            /* Tableì˜ Recordê°¯ìˆ˜ë¥¼ ê°€ì ¸ì˜¨ë‹¤. */
             IDE_TEST( smcTable::getRecordCount( aTargetTblHeader, &(sSlotCnt))
                       != IDE_SUCCESS);
 
             sTableInfo.mFixedUsedMem = sSlotCnt * sTableInfo.mMemSlotSize;
             sTableInfo.mVarUsedMem   = 0;
 
-            /* À§ÀÇ memset¿¡¼­ ÃÊ±âÈ­ µÇ¾ú±â¶§¹®¿¡ , mMemVarpageCnt,
-               mSlotCount´Â ÃÊ±âÈ­´Â ¿©±â¼­ ÇÒ ÇÊ¿ä°¡ ¾øÀ½. */
+            /* ìœ„ì˜ memsetì—ì„œ ì´ˆê¸°í™” ë˜ì—ˆê¸°ë•Œë¬¸ì— , mMemVarpageCnt,
+               mSlotCountëŠ” ì´ˆê¸°í™”ëŠ” ì—¬ê¸°ì„œ í•  í•„ìš”ê°€ ì—†ìŒ. */
             for(i= 0; i < SM_VAR_PAGE_LIST_COUNT ; i++ )
             {
                 svpVarPageList::getRecordCount(&(aTargetTblHeader->mVar.mVRDB[i]),&sSlotCnt);
                 sTableInfo.mVarUsedMem +=
                     sSlotCnt * aTargetTblHeader->mVar.mVRDB[i].mSlotSize;
             }
-            //BUG-17371 [MMDB] AgingÀÌ ¹Ğ¸±°æ¿ì System¿¡ °úºÎÈ­ ¹× AgingÀÌ ¹Ğ¸®´Â Çö»óÀÌ ´õ ½ÉÈ­µÊ
-            /* PROJ-1381 ¹Ì±¸Çö ±â´ÉÀ¸·Î 0À¸·Î ¼³Á¤ÇÔ (mStatementRebuildCount)
+            //BUG-17371 [MMDB] Agingì´ ë°€ë¦´ê²½ìš° Systemì— ê³¼ë¶€í™” ë° Agingì´ ë°€ë¦¬ëŠ” í˜„ìƒì´ ë” ì‹¬í™”ë¨
+            /* PROJ-1381 ë¯¸êµ¬í˜„ ê¸°ëŠ¥ìœ¼ë¡œ 0ìœ¼ë¡œ ì„¤ì •í•¨ (mStatementRebuildCount)
             sTableInfo.mStatementRebuildCount =
                 aTargetTblHeader->mFixed.mVRDB.mRuntimeEntry->mStatementRebuildCount;
             */
@@ -706,7 +706,7 @@ IDE_RC smcFT::buildEachRecordForTableInfo(
         sSegPID = sdpSegDescMgr::getSegPID( &(aTargetTblHeader->mFixed.mDRDB));
         IDE_TEST_CONT( sSegPID == SD_NULL_PID, TABLE_IS_DROPPED );
 
-        /* BUGBUG: ¿©±â¼­ Á¦°Å ÇØ¾ßÇÔ. */
+        /* BUGBUG: ì—¬ê¸°ì„œ ì œê±° í•´ì•¼í•¨. */
         IDE_TEST( sSegMgmtOp->mGetSegInfo(
                       NULL,
                       aTargetTblHeader->mSpaceID,
@@ -722,7 +722,7 @@ IDE_RC smcFT::buildEachRecordForTableInfo(
         sTableInfo.mDiskPageCnt      = sSegInfo.mFmtPageCnt;
         sTableInfo.mFstExtRID        = sSegInfo.mFstExtRID;
         sTableInfo.mLstExtRID        = sSegInfo.mLstExtRID;
-        //XXX MetaPID¸¦ »Ñ·ÁÁÖ¾î¾ß ÇÔ.
+        //XXX MetaPIDë¥¼ ë¿Œë ¤ì£¼ì–´ì•¼ í•¨.
         //sTableInfo.mTableMetaPage    = sSegInfo.mMetaPID;
 
         sTableInfo.mTableSegPID =
@@ -758,7 +758,7 @@ IDE_RC smcFT::buildEachRecordForTableInfo(
             sdpSegDescMgr::getSegStoAttr(
                 &(aTargetTblHeader->mFixed.mDRDB.mSegDesc))->mMaxExtCnt;
 
-        //BUG-17371 [MMDB] AgingÀÌ ¹Ğ¸±°æ¿ì System¿¡ °úºÎÈ­ ¹× AgingÀÌ ¹Ğ¸®´Â Çö»óÀÌ ´õ ½ÉÈ­µÊ
+        //BUG-17371 [MMDB] Agingì´ ë°€ë¦´ê²½ìš° Systemì— ê³¼ë¶€í™” ë° Agingì´ ë°€ë¦¬ëŠ” í˜„ìƒì´ ë” ì‹¬í™”ë¨
         sTableInfo.mStatementRebuildCount = 0;
         sTableInfo.mUniqueViolationCount =  0;
         sTableInfo.mUpdateRetryCount =      0;
@@ -766,7 +766,7 @@ IDE_RC smcFT::buildEachRecordForTableInfo(
     }
     else
     {
-        // Disk temp tableÀº ÀÌ ÇÔ¼ö°¡ È£ÃâµÇ¸é ¾ÈµÈ´Ù.
+        // Disk temp tableì€ ì´ í•¨ìˆ˜ê°€ í˜¸ì¶œë˜ë©´ ì•ˆëœë‹¤.
         IDE_ASSERT(0);
     }
 
@@ -785,7 +785,7 @@ IDE_RC smcFT::buildEachRecordForTableInfo(
 }
 
 /***********************************************************************
- * Description : Sequence¿¡ ´ëÇÑ Fixed TableÀÇ Record¸¦ »ı¼ºÇÑ´Ù.
+ * Description : Sequenceì— ëŒ€í•œ Fixed Tableì˜ Recordë¥¼ ìƒì„±í•œë‹¤.
  *
  **********************************************************************/
 IDE_RC smcFT::buildRecordForSEQInfo(idvSQL              * /*aStatistics*/,
@@ -818,15 +818,15 @@ IDE_RC smcFT::buildRecordForSEQInfo(idvSQL              * /*aStatistics*/,
         // To fix BUG-14681
         if( SM_SCN_IS_INFINITE(sPtr->mCreateSCN) == ID_TRUE )
         {
-            /* BUG-14974: ¹«ÇÑ Loop¹ß»ı.*/
+            /* BUG-14974: ë¬´í•œ Loopë°œìƒ.*/
             sCurPtr = sNxtPtr;
             continue;
         }
         sHeader = (smcTableHeader *)( sPtr + 1 );
 
-        // 1. -temp tableÀº skip- PROJ-2201 TempTableÀº ÀÌÁ¦ ¾øÀ½
-        // 2. dropµÈ tableÀº skip
-        // 3. sequence°¡ ¾Æ´Ñ object´Â skip.
+        // 1. -temp tableì€ skip- PROJ-2201 TempTableì€ ì´ì œ ì—†ìŒ
+        // 2. dropëœ tableì€ skip
+        // 3. sequenceê°€ ì•„ë‹Œ objectëŠ” skip.
         if( (smcTable::isDropedTable( sHeader ) == ID_TRUE) ||
             (sHeader->mType !=  SMC_TABLE_SEQUENCE) )
         {
@@ -886,8 +886,8 @@ IDE_RC smcFT::buildRecordForCatalog(idvSQL              * /*aStatistics*/,
     {
         /* BUG-32292 [sm-util] Self deadlock occur since fixed-table building
          * operation uses another transaction.
-         * NestedTransactionÀ» »ç¿ëÇÏ¸é Self-deadlock ¿ì·Á°¡ ÀÖ´Ù.
-         * µû¶ó¼­ id Memory ¿µ¿ªÀ¸·ÎºÎÅÍ Iterator¸¦ ¾ò¾î TransactionÀ» ¾ò¾î³½´Ù. */
+         * NestedTransactionì„ ì‚¬ìš©í•˜ë©´ Self-deadlock ìš°ë ¤ê°€ ìˆë‹¤.
+         * ë”°ë¼ì„œ id Memory ì˜ì—­ìœ¼ë¡œë¶€í„° Iteratorë¥¼ ì–»ì–´ Transactionì„ ì–»ì–´ë‚¸ë‹¤. */
         sTrans = ((smiIterator*)aMemory->getContext())->trans;
     }
 
@@ -903,13 +903,13 @@ IDE_RC smcFT::buildRecordForCatalog(idvSQL              * /*aStatistics*/,
         // To fix BUG-14681
         if( SM_SCN_IS_INFINITE(sPtr->mCreateSCN) == ID_TRUE )
         {
-            /* BUG-14974: ¹«ÇÑ Loop¹ß»ı.*/
+            /* BUG-14974: ë¬´í•œ Loopë°œìƒ.*/
             sCurPtr = sNxtPtr;
             continue;
         }
         sHeader = (smcTableHeader *)( sPtr + 1 );
 
-        // temp tableÀº skip
+        // temp tableì€ skip
         if( smcTable::isDropedTable(sHeader) == ID_TRUE )
         {
             sCurPtr = sNxtPtr;
@@ -923,7 +923,7 @@ IDE_RC smcFT::buildRecordForCatalog(idvSQL              * /*aStatistics*/,
         IDE_TEST( smLayerCallback::lockTableModeIS( sTrans,
                                                     SMC_TABLE_LOCK( sHeader ) )
                   != IDE_SUCCESS );
-        //lockÀ» Àâ¾ÒÁö¸¸ tableÀÌ dropµÈ °æ¿ì¿¡´Â skip;
+        //lockì„ ì¡ì•˜ì§€ë§Œ tableì´ dropëœ ê²½ìš°ì—ëŠ” skip;
         if(smcTable::isDropedTable(sHeader) == ID_TRUE)
         {
             IDE_TEST( smLayerCallback::abortToImpSavepoint( sTrans,
@@ -1012,8 +1012,8 @@ IDE_RC smcFT::buildRecordForTempCatalog(idvSQL              * /*aStatistics*/,
     {
         /* BUG-32292 [sm-util] Self deadlock occur since fixed-table building
          * operation uses another transaction.
-         * NestedTransactionÀ» »ç¿ëÇÏ¸é Self-deadlock ¿ì·Á°¡ ÀÖ´Ù.
-         * µû¶ó¼­ id Memory ¿µ¿ªÀ¸·ÎºÎÅÍ Iterator¸¦ ¾ò¾î TransactionÀ» ¾ò¾î³½´Ù. */
+         * NestedTransactionì„ ì‚¬ìš©í•˜ë©´ Self-deadlock ìš°ë ¤ê°€ ìˆë‹¤.
+         * ë”°ë¼ì„œ id Memory ì˜ì—­ìœ¼ë¡œë¶€í„° Iteratorë¥¼ ì–»ì–´ Transactionì„ ì–»ì–´ë‚¸ë‹¤. */
         sTrans = ((smiIterator*)aMemory->getContext())->trans;
     }
 
@@ -1029,7 +1029,7 @@ IDE_RC smcFT::buildRecordForTempCatalog(idvSQL              * /*aStatistics*/,
         // To fix BUG-14681
         if( SM_SCN_IS_INFINITE(sPtr->mCreateSCN) == ID_TRUE )
         {
-            // BUG-14974: ¹«ÇÑ Loop¹ß»ı.
+            // BUG-14974: ë¬´í•œ Loopë°œìƒ.
             sCurPtr = sNxtPtr;
             continue;
         }
@@ -1577,9 +1577,9 @@ static iduFixedTableColDesc  gTableInfoColDesc[]=
         0, 0,NULL // for internal use
     },
 
-    //BUG-17371 [MMDB] AgingÀÌ ¹Ğ¸±°æ¿ì System¿¡ °úºÎÇÏ ¹×
-    //AgingÀÌ ¹Ğ¸®´Â Çö»óÀÌ ´õ ½ÉÈ­µÊ.
-    //Å×ÀÌºíÀÌ °¡Áö´Â old version ÀÇ °³¼ö
+    //BUG-17371 [MMDB] Agingì´ ë°€ë¦´ê²½ìš° Systemì— ê³¼ë¶€í•˜ ë°
+    //Agingì´ ë°€ë¦¬ëŠ” í˜„ìƒì´ ë” ì‹¬í™”ë¨.
+    //í…Œì´ë¸”ì´ ê°€ì§€ëŠ” old version ì˜ ê°œìˆ˜
     {
         (SChar*)"OLD_VERSION_COUNT",
         offsetof(smcTableInfoPerfV,mOldVersionCount),
@@ -1589,7 +1589,7 @@ static iduFixedTableColDesc  gTableInfoColDesc[]=
         0, 0,NULL // for internal use
     },
 
-    //ÀÌ Å×ÀÌºíÀÇ DDLÀÇ ¼öÇà¶§¹®¿¡ rebuildµÈ txÀÇ °³¼ö
+    //ì´ í…Œì´ë¸”ì˜ DDLì˜ ìˆ˜í–‰ë•Œë¬¸ì— rebuildëœ txì˜ ê°œìˆ˜
     {
         (SChar*)"STATEMENT_REBUILD_COUNT",
         offsetof(smcTableInfoPerfV,mStatementRebuildCount),
@@ -1599,7 +1599,7 @@ static iduFixedTableColDesc  gTableInfoColDesc[]=
         0, 0,NULL // for internal use
     },
 
-    //Áßº¹Å°¸¦ ÀÔ·ÂÇÏ·Á ÇÏ·ÁÇÏ´Ù abortµÈ È½¼ö
+    //ì¤‘ë³µí‚¤ë¥¼ ì…ë ¥í•˜ë ¤ í•˜ë ¤í•˜ë‹¤ abortëœ íšŸìˆ˜
     {
         (SChar*)"UNIQUE_VIOLATION_COUNT",
         offsetof(smcTableInfoPerfV,mUniqueViolationCount),
@@ -1608,9 +1608,9 @@ static iduFixedTableColDesc  gTableInfoColDesc[]=
         NULL,
         0, 0,NULL // for internal use
     },
-    //updateÇÒ¶§ ÀÌ¹Ì ´Ù¸¥ Æ®·£Àè¼ÇÀÌ »õ·Î¿î versionÀ» »ı¼ºÇÏ¿´´Ù¸é,
-    //±× Tx´Â retryÇÏ¿© »õ·Î¿î scnÀ» µû¾ß ÇÏ´Âµ¥...
-    //ÀÌ Å×ÀÌºí¿¡ ´ëÇÑ ÀÌ·¯ÇÑ »ç°ÇÀÇ ¹ß»ı È½¼öÀÇ ÇÕ.
+    //updateí• ë•Œ ì´ë¯¸ ë‹¤ë¥¸ íŠ¸ëœì­ì…˜ì´ ìƒˆë¡œìš´ versionì„ ìƒì„±í•˜ì˜€ë‹¤ë©´,
+    //ê·¸ TxëŠ” retryí•˜ì—¬ ìƒˆë¡œìš´ scnì„ ë”°ì•¼ í•˜ëŠ”ë°...
+    //ì´ í…Œì´ë¸”ì— ëŒ€í•œ ì´ëŸ¬í•œ ì‚¬ê±´ì˜ ë°œìƒ íšŸìˆ˜ì˜ í•©.
     {
         (SChar*) "UPDATE_RETRY_COUNT",
         offsetof(smcTableInfoPerfV,mUpdateRetryCount),
@@ -1619,9 +1619,9 @@ static iduFixedTableColDesc  gTableInfoColDesc[]=
         NULL,
         0, 0,NULL // for internal use
     },
-    //removeÇÒ¶§ ÀÌ¹Ì ´Ù¸¥ Æ®·£Àè¼ÇÀÌ »õ·Î¿î versionÀ» »ı¼ºÇÏ¿´´Ù¸é,
-    //±× Tx´Â retryÇÏ¿© »õ·Î¿î scnÀ» µû¾ß ÇÏ´Âµ¥...
-    //ÀÌ Å×ÀÌºí¿¡ ´ëÇÑ ÀÌ·¯ÇÑ »ç°ÇÀÇ ¹ß»ı È½¼öÀÇ ÇÕ.
+    //removeí• ë•Œ ì´ë¯¸ ë‹¤ë¥¸ íŠ¸ëœì­ì…˜ì´ ìƒˆë¡œìš´ versionì„ ìƒì„±í•˜ì˜€ë‹¤ë©´,
+    //ê·¸ TxëŠ” retryí•˜ì—¬ ìƒˆë¡œìš´ scnì„ ë”°ì•¼ í•˜ëŠ”ë°...
+    //ì´ í…Œì´ë¸”ì— ëŒ€í•œ ì´ëŸ¬í•œ ì‚¬ê±´ì˜ ë°œìƒ íšŸìˆ˜ì˜ í•©.
     {
         (SChar*)"DELETE_RETRY_COUNT",
         offsetof(smcTableInfoPerfV,mDeleteRetryCount),
@@ -1896,9 +1896,9 @@ static iduFixedTableColDesc gTempTableInfoColDesc[]=
         0, 0,NULL // for internal use
     },
 
-    //BUG-17371 [MMDB] AgingÀÌ ¹Ğ¸±°æ¿ì System¿¡ °úºÎÇÏ ¹×
-    //AgingÀÌ ¹Ğ¸®´Â Çö»óÀÌ ´õ ½ÉÈ­µÊ.
-    //Å×ÀÌºíÀÌ °¡Áö´Â old version ÀÇ °³¼ö
+    //BUG-17371 [MMDB] Agingì´ ë°€ë¦´ê²½ìš° Systemì— ê³¼ë¶€í•˜ ë°
+    //Agingì´ ë°€ë¦¬ëŠ” í˜„ìƒì´ ë” ì‹¬í™”ë¨.
+    //í…Œì´ë¸”ì´ ê°€ì§€ëŠ” old version ì˜ ê°œìˆ˜
     {
         (SChar*)"OLD_VERSION_COUNT",
         offsetof(smcTableInfoPerfV,mOldVersionCount),
@@ -1908,7 +1908,7 @@ static iduFixedTableColDesc gTempTableInfoColDesc[]=
         0, 0,NULL // for internal use
     },
 
-    //ÀÌ Å×ÀÌºíÀÇ DDLÀÇ ¼öÇà¶§¹®¿¡ rebuildµÈ txÀÇ °³¼ö
+    //ì´ í…Œì´ë¸”ì˜ DDLì˜ ìˆ˜í–‰ë•Œë¬¸ì— rebuildëœ txì˜ ê°œìˆ˜
     {
         (SChar*)"STATEMENT_REBUILD_COUNT",
         offsetof(smcTableInfoPerfV,mStatementRebuildCount),
@@ -1918,7 +1918,7 @@ static iduFixedTableColDesc gTempTableInfoColDesc[]=
         0, 0,NULL // for internal use
     },
 
-    //Áßº¹Å°¸¦ ÀÔ·ÂÇÏ·Á ÇÏ·ÁÇÏ´Ù abortµÈ È½¼ö
+    //ì¤‘ë³µí‚¤ë¥¼ ì…ë ¥í•˜ë ¤ í•˜ë ¤í•˜ë‹¤ abortëœ íšŸìˆ˜
     {
         (SChar*)"UNIQUE_VIOLATION_COUNT",
         offsetof(smcTableInfoPerfV,mUniqueViolationCount),
@@ -1927,9 +1927,9 @@ static iduFixedTableColDesc gTempTableInfoColDesc[]=
         NULL,
         0, 0,NULL // for internal use
     },
-    //updateÇÒ¶§ ÀÌ¹Ì ´Ù¸¥ Æ®·£Àè¼ÇÀÌ »õ·Î¿î versionÀ» »ı¼ºÇÏ¿´´Ù¸é,
-    //±× Tx´Â retryÇÏ¿© »õ·Î¿î scnÀ» µû¾ß ÇÏ´Âµ¥...
-    //ÀÌ Å×ÀÌºí¿¡ ´ëÇÑ ÀÌ·¯ÇÑ »ç°ÇÀÇ ¹ß»ı È½¼öÀÇ ÇÕ.
+    //updateí• ë•Œ ì´ë¯¸ ë‹¤ë¥¸ íŠ¸ëœì­ì…˜ì´ ìƒˆë¡œìš´ versionì„ ìƒì„±í•˜ì˜€ë‹¤ë©´,
+    //ê·¸ TxëŠ” retryí•˜ì—¬ ìƒˆë¡œìš´ scnì„ ë”°ì•¼ í•˜ëŠ”ë°...
+    //ì´ í…Œì´ë¸”ì— ëŒ€í•œ ì´ëŸ¬í•œ ì‚¬ê±´ì˜ ë°œìƒ íšŸìˆ˜ì˜ í•©.
     {
         (SChar*) "UPDATE_RETRY_COUNT",
         offsetof(smcTableInfoPerfV,mUpdateRetryCount),
@@ -1938,9 +1938,9 @@ static iduFixedTableColDesc gTempTableInfoColDesc[]=
         NULL,
         0, 0,NULL // for internal use
     },
-    //removeÇÒ¶§ ÀÌ¹Ì ´Ù¸¥ Æ®·£Àè¼ÇÀÌ »õ·Î¿î versionÀ» »ı¼ºÇÏ¿´´Ù¸é,
-    //±× Tx´Â retryÇÏ¿© »õ·Î¿î scnÀ» µû¾ß ÇÏ´Âµ¥...
-    //ÀÌ Å×ÀÌºí¿¡ ´ëÇÑ ÀÌ·¯ÇÑ »ç°ÇÀÇ ¹ß»ı È½¼öÀÇ ÇÕ.
+    //removeí• ë•Œ ì´ë¯¸ ë‹¤ë¥¸ íŠ¸ëœì­ì…˜ì´ ìƒˆë¡œìš´ versionì„ ìƒì„±í•˜ì˜€ë‹¤ë©´,
+    //ê·¸ TxëŠ” retryí•˜ì—¬ ìƒˆë¡œìš´ scnì„ ë”°ì•¼ í•˜ëŠ”ë°...
+    //ì´ í…Œì´ë¸”ì— ëŒ€í•œ ì´ëŸ¬í•œ ì‚¬ê±´ì˜ ë°œìƒ íšŸìˆ˜ì˜ í•©.
     {
         (SChar*)"DELETE_RETRY_COUNT",
         offsetof(smcTableInfoPerfV,mDeleteRetryCount),
@@ -1976,7 +1976,7 @@ static iduFixedTableColDesc gTempTableInfoColDesc[]=
 };
 
 /***********************************************************************
- * Description :Table Info¿¡ ´ëÇÑ Fixed TableÀÇ RecordÀ» »ı¼ºÇÑ´Ù.
+ * Description :Table Infoì— ëŒ€í•œ Fixed Tableì˜ Recordì„ ìƒì„±í•œë‹¤.
  *
  **********************************************************************/
 IDE_RC smcFT::buildRecordForTableInfo(idvSQL              * /*aStatistis*/,
@@ -2008,8 +2008,8 @@ IDE_RC smcFT::buildRecordForTableInfo(idvSQL              * /*aStatistis*/,
     {
         /* BUG-32292 [sm-util] Self deadlock occur since fixed-table building
          * operation uses another transaction.
-         * NestedTransactionÀ» »ç¿ëÇÏ¸é Self-deadlock ¿ì·Á°¡ ÀÖ´Ù.
-         * µû¶ó¼­ id Memory ¿µ¿ªÀ¸·ÎºÎÅÍ Iterator¸¦ ¾ò¾î TransactionÀ» ¾ò¾î³½´Ù. */
+         * NestedTransactionì„ ì‚¬ìš©í•˜ë©´ Self-deadlock ìš°ë ¤ê°€ ìˆë‹¤.
+         * ë”°ë¼ì„œ id Memory ì˜ì—­ìœ¼ë¡œë¶€í„° Iteratorë¥¼ ì–»ì–´ Transactionì„ ì–»ì–´ë‚¸ë‹¤. */
         sTrans = ((smiIterator *)aMemory->getContext())->trans;
     }
 
@@ -2019,12 +2019,12 @@ IDE_RC smcFT::buildRecordForTableInfo(idvSQL              * /*aStatistis*/,
     sTableType = SMI_GET_TABLE_TYPE( sCatTblHdr );
 
     /* BUG-43006 FixedTable Indexing Filter
-     * Column Index ¸¦ »ç¿ëÇØ¼­ ÀüÃ¼ Record¸¦ »ı¼ºÇÏÁö¾Ê°í
-     * ºÎºĞ¸¸ »ı¼ºÇØ Filtering ÇÑ´Ù.
-     * 1. void * ¹è¿­¿¡ IDU_FT_COLUMN_INDEX ·Î ÁöÁ¤µÈ ÄÃ·³¿¡
-     * ÇØ´çÇÏ´Â °ªÀ» ¼ø¼­´ë·Î ³Ö¾îÁÖ¾î¾ß ÇÑ´Ù.
-     * 2. IDU_FT_COLUMN_INDEXÀÇ ÄÃ·³¿¡ ÇØ´çÇÏ´Â °ªÀ» ¸ğµÎ ³Ö
-     * ¾î ÁÖ¾î¾ßÇÑ´Ù.
+     * Column Index ë¥¼ ì‚¬ìš©í•´ì„œ ì „ì²´ Recordë¥¼ ìƒì„±í•˜ì§€ì•Šê³ 
+     * ë¶€ë¶„ë§Œ ìƒì„±í•´ Filtering í•œë‹¤.
+     * 1. void * ë°°ì—´ì— IDU_FT_COLUMN_INDEX ë¡œ ì§€ì •ëœ ì»¬ëŸ¼ì—
+     * í•´ë‹¹í•˜ëŠ” ê°’ì„ ìˆœì„œëŒ€ë¡œ ë„£ì–´ì£¼ì–´ì•¼ í•œë‹¤.
+     * 2. IDU_FT_COLUMN_INDEXì˜ ì»¬ëŸ¼ì— í•´ë‹¹í•˜ëŠ” ê°’ì„ ëª¨ë‘ ë„£
+     * ì–´ ì£¼ì–´ì•¼í•œë‹¤.
      */
     sIndexValues[0] = &sTableType;
     if ( iduFixedTable::checkKeyRange( aMemory,
@@ -2032,8 +2032,8 @@ IDE_RC smcFT::buildRecordForTableInfo(idvSQL              * /*aStatistis*/,
                                        sIndexValues )
          == ID_TRUE )
     {
-        /* BUG-16351: X$Table_info¿¡ Catalog Table¿¡ ´ëÇÑ Á¤º¸´Â ³ª¿ÀÁö
-         * ¾Ê½À´Ï´Ù. */
+        /* BUG-16351: X$Table_infoì— Catalog Tableì— ëŒ€í•œ ì •ë³´ëŠ” ë‚˜ì˜¤ì§€
+         * ì•ŠìŠµë‹ˆë‹¤. */
         IDE_TEST( buildEachRecordForTableInfo(
                       aHeader,
                       sCatTblHdr,
@@ -2094,16 +2094,16 @@ IDE_RC smcFT::buildRecordForTableInfo(idvSQL              * /*aStatistis*/,
          *             creating a table, because of uninitialized
          *             the lockitem, segfault can occur.
          *
-         * Å×ÀÌºí »ı¼º °úÁ¤ ÁßÀÌ¸é Áï, mSCNÀÌ InfiniteÀÌ¸é Å×ÀÌºí lock itemÀÌ
-         * ¾ÆÁ÷ ÃÊ±âÈ­µÇÁö ¾Ê¾ÒÀ» ¼öµµ ÀÖ¾î ¼­¹ö »ç¸ÁÇÒ °¡´É¼ºÀÌ ÀÖ´Ù.
-         * µû¶ó¼­ »ı¼º°úÁ¤ÀÌ ¿Ï·áµÇ¾î commit µÈ °æ¿ì¿¡ ÇÑÇØ¼­ lockÀ» Àâµµ·Ï
-         * ¼öÁ¤ÇÑ´Ù. */
-        /* BUG-45654 Lock ÀâÀº ÈÄ ´Ù½Ã È®ÀÎ */
+         * í…Œì´ë¸” ìƒì„± ê³¼ì • ì¤‘ì´ë©´ ì¦‰, mSCNì´ Infiniteì´ë©´ í…Œì´ë¸” lock itemì´
+         * ì•„ì§ ì´ˆê¸°í™”ë˜ì§€ ì•Šì•˜ì„ ìˆ˜ë„ ìˆì–´ ì„œë²„ ì‚¬ë§í•  ê°€ëŠ¥ì„±ì´ ìˆë‹¤.
+         * ë”°ë¼ì„œ ìƒì„±ê³¼ì •ì´ ì™„ë£Œë˜ì–´ commit ëœ ê²½ìš°ì— í•œí•´ì„œ lockì„ ì¡ë„ë¡
+         * ìˆ˜ì •í•œë‹¤. */
+        /* BUG-45654 Lock ì¡ì€ í›„ ë‹¤ì‹œ í™•ì¸ */
         if( SM_SCN_IS_INFINITE(sTgtSlotPtr->mCreateSCN) == ID_FALSE )
         {
-            /* Target TableÀÌ Temp TableÀÌ ¾Æ´Ï°í ÇØ´çÅ×ÀÌºíÀÌ DropµÇÁö
-             * ¾Ê¾Ò´Ù¸é */
-            // BUG-30867 Discard µÈ Tablespace¿¡ ¼ÓÇÑ Tableµµ SkipµÇ¾î¾ß ÇÔ
+            /* Target Tableì´ Temp Tableì´ ì•„ë‹ˆê³  í•´ë‹¹í…Œì´ë¸”ì´ Dropë˜ì§€
+             * ì•Šì•˜ë‹¤ë©´ */
+            // BUG-30867 Discard ëœ Tablespaceì— ì†í•œ Tableë„ Skipë˜ì–´ì•¼ í•¨
             if( (smcTable::isDropedTable(sTgtTblHeader) == ID_FALSE) &&
                 (sctTableSpaceMgr::hasState( sTgtTblHeader->mSpaceID,
                                              SCT_SS_INVALID_DISK_TBS ) 
@@ -2114,12 +2114,12 @@ IDE_RC smcFT::buildRecordForTableInfo(idvSQL              * /*aStatistis*/,
                 sTableType = SMI_GET_TABLE_TYPE( sTgtTblHeader );
 
                 /* BUG-43006 FixedTable Indexing Filter
-                 * Column Index ¸¦ »ç¿ëÇØ¼­ ÀüÃ¼ Record¸¦ »ı¼ºÇÏÁö¾Ê°í
-                 * ºÎºĞ¸¸ »ı¼ºÇØ Filtering ÇÑ´Ù.
-                 * 1. void * ¹è¿­¿¡ IDU_FT_COLUMN_INDEX ·Î ÁöÁ¤µÈ ÄÃ·³¿¡
-                 * ÇØ´çÇÏ´Â °ªÀ» ¼ø¼­´ë·Î ³Ö¾îÁÖ¾î¾ß ÇÑ´Ù.
-                 * 2. IDU_FT_COLUMN_INDEXÀÇ ÄÃ·³¿¡ ÇØ´çÇÏ´Â °ªÀ» ¸ğµÎ ³Ö
-                 * ¾î ÁÖ¾î¾ßÇÑ´Ù.
+                 * Column Index ë¥¼ ì‚¬ìš©í•´ì„œ ì „ì²´ Recordë¥¼ ìƒì„±í•˜ì§€ì•Šê³ 
+                 * ë¶€ë¶„ë§Œ ìƒì„±í•´ Filtering í•œë‹¤.
+                 * 1. void * ë°°ì—´ì— IDU_FT_COLUMN_INDEX ë¡œ ì§€ì •ëœ ì»¬ëŸ¼ì—
+                 * í•´ë‹¹í•˜ëŠ” ê°’ì„ ìˆœì„œëŒ€ë¡œ ë„£ì–´ì£¼ì–´ì•¼ í•œë‹¤.
+                 * 2. IDU_FT_COLUMN_INDEXì˜ ì»¬ëŸ¼ì— í•´ë‹¹í•˜ëŠ” ê°’ì„ ëª¨ë‘ ë„£
+                 * ì–´ ì£¼ì–´ì•¼í•œë‹¤.
                  */
                 sIndexValues[0] = &sTableType;
                 if ( iduFixedTable::checkKeyRange( aMemory,
@@ -2220,8 +2220,8 @@ IDE_RC smcFT::buildRecordForTmsTableCache(idvSQL              * /*aStatistics*/,
     {
         /* BUG-32292 [sm-util] Self deadlock occur since fixed-table building
          * operation uses another transaction.
-         * NestedTransactionÀ» »ç¿ëÇÏ¸é Self-deadlock ¿ì·Á°¡ ÀÖ´Ù.
-         * µû¶ó¼­ id Memory ¿µ¿ªÀ¸·ÎºÎÅÍ Iterator¸¦ ¾ò¾î TransactionÀ» ¾ò¾î³½´Ù. */
+         * NestedTransactionì„ ì‚¬ìš©í•˜ë©´ Self-deadlock ìš°ë ¤ê°€ ìˆë‹¤.
+         * ë”°ë¼ì„œ id Memory ì˜ì—­ìœ¼ë¡œë¶€í„° Iteratorë¥¼ ì–»ì–´ Transactionì„ ì–»ì–´ë‚¸ë‹¤. */
         sTrans = ((smiIterator*)aMemory->getContext())->trans;
     }
 
@@ -2237,7 +2237,7 @@ IDE_RC smcFT::buildRecordForTmsTableCache(idvSQL              * /*aStatistics*/,
         // To fix BUG-14681
         if( SM_SCN_IS_INFINITE(sPtr->mCreateSCN) == ID_TRUE )
         {
-            /* BUG-14974: ¹«ÇÑ Loop¹ß»ı.*/
+            /* BUG-14974: ë¬´í•œ Loopë°œìƒ.*/
             sCurPtr = sNxtPtr;
             continue;
         }
@@ -2258,7 +2258,7 @@ IDE_RC smcFT::buildRecordForTmsTableCache(idvSQL              * /*aStatistics*/,
                                                     SMC_TABLE_LOCK( sHeader ) )
                   != IDE_SUCCESS );
 
-        //lockÀ» Àâ¾ÒÁö¸¸ tableÀÌ dropµÈ °æ¿ì¿¡´Â skip;
+        //lockì„ ì¡ì•˜ì§€ë§Œ tableì´ dropëœ ê²½ìš°ì—ëŠ” skip;
         if(smcTable::isDropedTable(sHeader) == ID_TRUE)
         {
             IDE_TEST( smLayerCallback::abortToImpSavepoint( sTrans,

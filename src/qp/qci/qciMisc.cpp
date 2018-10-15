@@ -48,8 +48,8 @@ UInt qciMisc::getQueryStackSize()
 }
 
 // BUG-26017
-// [PSM] server restart½Ã ¼öÇàµÇ´Â psm load°úÁ¤¿¡¼­
-// °ü·ÃÇÁ·ÎÆÛÆ¼¸¦ ÂüÁ¶ÇÏÁö ¸øÇÏ´Â °æ¿ì ÀÖÀ½.
+// [PSM] server restartì‹œ ìˆ˜í–‰ë˜ëŠ” psm loadê³¼ì •ì—ì„œ
+// ê´€ë ¨í”„ë¡œí¼í‹°ë¥¼ ì°¸ì¡°í•˜ì§€ ëª»í•˜ëŠ” ê²½ìš° ìˆìŒ.
 UInt qciMisc::getOptimizerMode()
 {
     return qcg::getOptimizerMode();
@@ -60,7 +60,7 @@ UInt qciMisc::getAutoRemoteExec()
     return qcg::getAutoRemoteExec();
 }
 
-// BUG-23780 TEMP_TBS_MEMORY ÈùÆ® Àû¿ë¿©ºÎ¸¦ property·Î Á¦°ø
+// BUG-23780 TEMP_TBS_MEMORY íŒíŠ¸ ì ìš©ì—¬ë¶€ë¥¼ propertyë¡œ ì œê³µ
 UInt qciMisc::getOptimizerDefaultTempTbsType()
 {
     return qcg::getOptimizerDefaultTempTbsType();
@@ -102,23 +102,23 @@ UInt qciMisc::getStmtType( qciStmtType aStmtType )
 }
 
 // PROJ-1726
-// qcmPerformanceViewManager ¸¦ À§ÇÑ qci interface
+// qcmPerformanceViewManager ë¥¼ ìœ„í•œ qci interface
 IDE_RC qciMisc::initializePerformanceViewManager()
 {
     return qcmPerformanceViewManager::initialize();
 }
 
 // PROJ-1726
-// qcmPerformanceViewManager ¸¦ À§ÇÑ qci interface
+// qcmPerformanceViewManager ë¥¼ ìœ„í•œ qci interface
 IDE_RC qciMisc::finalizePerformanceViewManager()
 {
     return qcmPerformanceViewManager::finalize();
 }
 
 // PROJ-1726
-// qcmPerformanceViewManager ¸¦ À§ÇÑ qci interface
-// µ¿Àû ¸ğµâ¿¡¼­ performance view ¸¦ ·±Å¸ÀÓ Áß Ãß°¡ÇÒ ¶§
-// <¸ğµâ>im.cpp ::initSystemTable() ¿¡¼­ »ç¿ëÇÑ´Ù.
+// qcmPerformanceViewManager ë¥¼ ìœ„í•œ qci interface
+// ë™ì  ëª¨ë“ˆì—ì„œ performance view ë¥¼ ëŸ°íƒ€ì„ ì¤‘ ì¶”ê°€í•  ë•Œ
+// <ëª¨ë“ˆ>im.cpp ::initSystemTable() ì—ì„œ ì‚¬ìš©í•œë‹¤.
 IDE_RC qciMisc::addPerformanceView( SChar* aPerfViewStr )
 {
     return qcmPerformanceViewManager::add( aPerfViewStr );
@@ -262,16 +262,16 @@ IDE_RC qciMisc::comparePartCondValues( idvSQL                  * aStatistics,
     if ( ( sPartCondVal1.partCondValCount == 0 ) ||
          ( sPartCondVal2.partCondValCount == 0 ) )
     {
-        /* BUGBUG : partCondValCount·Î ÆÇ´ÜÇÏ´Â ¹æ¹ıÀº
-         *  BUG-45653 Range/ListÀÇ Default Partition¿¡ µé¾î°¡´Â °¥ ¼ö ÀÖ´Â °ªÀÌ ´Ş¶óµµ, Handshake°¡ ¼º°øÇÕ´Ï´Ù.
-         * ¸¦ ÇØ°áÇÏÁö ¸øÇÕ´Ï´Ù. BUG-45653 Ã³¸® ÀÌÈÄ¿¡ ¼öÁ¤ÇØ¾ß ÇÕ´Ï´Ù.
+        /* BUGBUG : partCondValCountë¡œ íŒë‹¨í•˜ëŠ” ë°©ë²•ì€
+         *  BUG-45653 Range/Listì˜ Default Partitionì— ë“¤ì–´ê°€ëŠ” ê°ˆ ìˆ˜ ìˆëŠ” ê°’ì´ ë‹¬ë¼ë„, Handshakeê°€ ì„±ê³µí•©ë‹ˆë‹¤.
+         * ë¥¼ í•´ê²°í•˜ì§€ ëª»í•©ë‹ˆë‹¤. BUG-45653 ì²˜ë¦¬ ì´í›„ì— ìˆ˜ì •í•´ì•¼ í•©ë‹ˆë‹¤.
          */
         if ( ( sPartCondVal1.partCondValCount == 0 ) &&
              ( sPartCondVal2.partCondValCount == 0 ) )
         {
-            // PartcondValCount°¡ 0ÀÎ °æ¿ì´Â °ªÀÌ NullÀÎ °æ¿ì, Áï
-            // DefaultÀÏ °æ¿ìÀÔ´Ï´Ù.
-            // µû¶ó¼­ µ¿ÀÏÇÕ´Ï´Ù.
+            // PartcondValCountê°€ 0ì¸ ê²½ìš°ëŠ” ê°’ì´ Nullì¸ ê²½ìš°, ì¦‰
+            // Defaultì¼ ê²½ìš°ì…ë‹ˆë‹¤.
+            // ë”°ë¼ì„œ ë™ì¼í•©ë‹ˆë‹¤.
             *aResult = 0;
         }
         else if ( sPartCondVal1.partCondValCount == 0 )
@@ -436,8 +436,8 @@ IDE_RC qciMisc::comparePartCondValues( idvSQL            * aStatistics,
                                          ID_FALSE )
               != IDE_SUCCESS );
     
-    /* PROJ-2446 ONE SOURCE statistics¸¦ ÀÎÀÚ·Î ¹Ş¾Æ ³Ñ±âÁö ¾Ê°í
-     * localÀÇ statement¸¦ ³Ñ±ä´Ù.È®ÀÎ */
+    /* PROJ-2446 ONE SOURCE statisticsë¥¼ ì¸ìë¡œ ë°›ì•„ ë„˜ê¸°ì§€ ì•Šê³ 
+     * localì˜ statementë¥¼ ë„˜ê¸´ë‹¤.í™•ì¸ */
     IDE_TEST( smiGetTableTempInfo( aTableHandle,
                                    (void**)&sTableInfo )
               != IDE_SUCCESS );
@@ -752,8 +752,8 @@ IDE_RC qciMisc::clobRead( idvSQL       * aStatistics,
             if ( (sNCRet == NC_MB_INCOMPLETED) ||
                  (UInt)(sBufPosition - aBuffer) > sReadLength )
             {
-                // ÀĞÀ» À§Ä¡°¡ ¹öÆÛ¸¦ ¹ş¾î³µ´Ù.
-                // ¸¶Áö¸·¿¡ ÀĞÀº ¹®ÀÚ¸¦ ¹ö¸°´Ù.
+                // ì½ì„ ìœ„ì¹˜ê°€ ë²„í¼ë¥¼ ë²—ì–´ë‚¬ë‹¤.
+                // ë§ˆì§€ë§‰ì— ì½ì€ ë¬¸ìë¥¼ ë²„ë¦°ë‹¤.
                 sReadCharCount--;
                 sBufPosition = sPrevBufPosition;
             }
@@ -809,7 +809,7 @@ IDE_RC qciMisc::lobPrepare4Write( idvSQL     * aStatistics,
 
     IDE_EXCEPTION(ERR_NOT_ALLOW_NULL)
     {
-        /* BUG-45680 insert ¼öÇà½Ã not null column¿¡ ´ëÇÑ ¿¡·¯¸Ş½ÃÁö Á¤º¸¿¡ column Á¤º¸ Ãâ·Â. */
+        /* BUG-45680 insert ìˆ˜í–‰ì‹œ not null columnì— ëŒ€í•œ ì—ëŸ¬ë©”ì‹œì§€ ì •ë³´ì— column ì •ë³´ ì¶œë ¥. */
         IDE_SET( ideSetErrorCode( qpERR_ABORT_QMX_NOT_NULL_CONSTRAINT,
                                   "",
                                   "" ) );
@@ -910,7 +910,7 @@ IDE_RC qciMisc::lobFinalize( smLobLocator   aLocator )
     return IDE_SUCCESS;
 }
 
-// Stored Procedure FunctionÀ» MT¿¡ µî·Ï
+// Stored Procedure Functionì„ MTì— ë“±ë¡
 IDE_RC
 qciMisc::addExtFuncModule( void )
 {
@@ -1102,10 +1102,10 @@ qciMisc::copyMtcColumns( void         * aTableHandle,
 }
 
 /* PROJ-1594 Volatile TBS */
-/* volatile tableÀº ÈÖ¹ß¼ºÀÌ¹Ç·Î ¼­¹ö°¡ ±¸µ¿µÉ ¶§¸¶´Ù
-   Å×ÀÌºíÀ» ÃÊ±âÈ­ÇØ¾ß ÇÑ´Ù. Å×ÀÌºíÀ» ÃÊ±âÈ­ÇÒ ¶§
-   null row¸¦ ±¸¼ºÇØ¾ß ÇÏ´Âµ¥, ÀÌ¶§ »ç¿ëµÇ´Â ÇÔ¼öÀÌ´Ù.
-   ÀÌ ÇÔ¼ö´Â SM¿¡¼­ callbackÀ¸·Î È£ÃâµÈ´Ù. */
+/* volatile tableì€ íœ˜ë°œì„±ì´ë¯€ë¡œ ì„œë²„ê°€ êµ¬ë™ë  ë•Œë§ˆë‹¤
+   í…Œì´ë¸”ì„ ì´ˆê¸°í™”í•´ì•¼ í•œë‹¤. í…Œì´ë¸”ì„ ì´ˆê¸°í™”í•  ë•Œ
+   null rowë¥¼ êµ¬ì„±í•´ì•¼ í•˜ëŠ”ë°, ì´ë•Œ ì‚¬ìš©ë˜ëŠ” í•¨ìˆ˜ì´ë‹¤.
+   ì´ í•¨ìˆ˜ëŠ” SMì—ì„œ callbackìœ¼ë¡œ í˜¸ì¶œëœë‹¤. */
 IDE_RC qciMisc::makeNullRow(idvSQL        * /* aStatistics */, /* PROJ-2446 */
                             smiColumnList *aColumnList,
                             smiValue      *aNullRow,
@@ -1120,18 +1120,18 @@ IDE_RC qciMisc::makeNullRow(idvSQL        * /* aStatistics */, /* PROJ-2446 */
 
     for (sCurList = aColumnList; sCurList != NULL; sCurList = sCurList->next)
     {
-        /* table headerÀÇ column list¿¡ ÀÖ´Â mtcColumnÀº
-           module, language´Â »ç¿ëÇÒ ¼ö ¾ø´Ù.
-           ÇÔ¼ö Æ÷ÀÎÅÍ´Â server startÀÌÈÄ ¿Ã¹Ù¸¥ Á¤º¸°¡ ¾Æ´Ï±â ¶§¹®ÀÌ´Ù.
-           µû¶ó¼­ sColumn->moduleÀº »ç¿ëÇØ¼­´Â ¾ÈµÈ´Ù. */
+        /* table headerì˜ column listì— ìˆëŠ” mtcColumnì€
+           module, languageëŠ” ì‚¬ìš©í•  ìˆ˜ ì—†ë‹¤.
+           í•¨ìˆ˜ í¬ì¸í„°ëŠ” server startì´í›„ ì˜¬ë°”ë¥¸ ì •ë³´ê°€ ì•„ë‹ˆê¸° ë•Œë¬¸ì´ë‹¤.
+           ë”°ë¼ì„œ sColumn->moduleì€ ì‚¬ìš©í•´ì„œëŠ” ì•ˆëœë‹¤. */
         sColumn = (mtcColumn*)sCurList->column;
         IDE_TEST(mtd::moduleById(&sModule, sColumn->type.dataTypeId)
                  != IDE_SUCCESS);
 
-        /* volatile tableÀ» ¸¸µé ´ç½ÃÀÇ ÄÃ·³ ¸ğµâÀÌ mtd¿¡ ¾øÀ¸¸é
-           ´õÀÌ»ó ¼­¹ö ±¸µ¿À» ÁøÇà½ÃÅ³ ¼ö ¾ø´Ù.
-           ÀÌ¶§¹®¿¡ volatile table¿¡´Â external columnÀ» »ç¿ëÇÒ ¼ö ¾ø´Â
-           Á¦¾àÀÌ »ı±ä´Ù. */
+        /* volatile tableì„ ë§Œë“¤ ë‹¹ì‹œì˜ ì»¬ëŸ¼ ëª¨ë“ˆì´ mtdì— ì—†ìœ¼ë©´
+           ë”ì´ìƒ ì„œë²„ êµ¬ë™ì„ ì§„í–‰ì‹œí‚¬ ìˆ˜ ì—†ë‹¤.
+           ì´ë•Œë¬¸ì— volatile tableì—ëŠ” external columnì„ ì‚¬ìš©í•  ìˆ˜ ì—†ëŠ”
+           ì œì•½ì´ ìƒê¸´ë‹¤. */
         IDE_ASSERT(sModule != NULL);
 
         if ((sColumn->column.flag & SMI_COLUMN_TYPE_MASK)
@@ -1150,7 +1150,7 @@ IDE_RC qciMisc::makeNullRow(idvSQL        * /* aStatistics */, /* PROJ-2446 */
                                                      sNullValue->value);
         }
 
-        /* ´ÙÀ½ ÄÃ·³ÀÇ value·Î ÀÌµ¿ÇÑ´Ù. */
+        /* ë‹¤ìŒ ì»¬ëŸ¼ì˜ valueë¡œ ì´ë™í•œë‹¤. */
         sNullValue++;
     }
 
@@ -1197,15 +1197,15 @@ IDE_RC qciMisc::smiCallbackCheckNeedUndoRecord( smiStatement * /* aSmiStmt */,
                                                 idBool       * aIsNeed )
 {
 /*--------------------------------------------------------------------
- * SM¿¡¼­ È£ÃâµÇ´Â ÇÔ¼öÀÌ¸ç,
- * foreignKey¿Í trigger°¡ Á¸ÀçÇÏÁö ¾Ê´Â °æ¿ì
- * undo record¸¦ ±â·ÏÇÏÁö ¾Ê±â À§ÇØ¼­
- * ÇØ´ç Å×ÀÌºí¿¡ foreignKey / trigger Á¸ÀçÀ¯¹«ÀÇ Á¤º¸¸¦ ¾ò´Â´Ù.
- * ÇØ´ç Å×ÀÌºí¿¡ ´ëÇØ ÀÌ¹Ì lockÀÌ ÀâÇôÀÖ´Â »óÅÂÀÌ¹Ç·Î
- * º°µµÀÇ lockÀ» ÀâÁö ¾Ê¾Æµµ µÈ´Ù.
- * (ÁÖÀÇ)
- * lockÀÌ ÀâÈ÷Áö ¾ÊÀº Å×ÀÌºíÀÏ°æ¿ì ÀÌ ÇÔ¼ö¸¦ È£ÃâÇÏ±âÀü¿¡
- * ¹İµå½Ã lockÀ» Àâ¾Æ¾ß ÇÑ´Ù.
+ * SMì—ì„œ í˜¸ì¶œë˜ëŠ” í•¨ìˆ˜ì´ë©°,
+ * foreignKeyì™€ triggerê°€ ì¡´ì¬í•˜ì§€ ì•ŠëŠ” ê²½ìš°
+ * undo recordë¥¼ ê¸°ë¡í•˜ì§€ ì•Šê¸° ìœ„í•´ì„œ
+ * í•´ë‹¹ í…Œì´ë¸”ì— foreignKey / trigger ì¡´ì¬ìœ ë¬´ì˜ ì •ë³´ë¥¼ ì–»ëŠ”ë‹¤.
+ * í•´ë‹¹ í…Œì´ë¸”ì— ëŒ€í•´ ì´ë¯¸ lockì´ ì¡í˜€ìˆëŠ” ìƒíƒœì´ë¯€ë¡œ
+ * ë³„ë„ì˜ lockì„ ì¡ì§€ ì•Šì•„ë„ ëœë‹¤.
+ * (ì£¼ì˜)
+ * lockì´ ì¡íˆì§€ ì•Šì€ í…Œì´ë¸”ì¼ê²½ìš° ì´ í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•˜ê¸°ì „ì—
+ * ë°˜ë“œì‹œ lockì„ ì¡ì•„ì•¼ í•œë‹¤.
  ---------------------------------------------------------------------*/
     qcmTableInfo   * sTableInfo;
     idBool           sNeedUndoRecord = ID_TRUE;
@@ -1854,8 +1854,8 @@ IDE_RC qciMisc::getAuditMetaInfo( idBool              * aIsStarted,
 
     sSmiStmtFlag = SMI_STATEMENT_UNTOUCHABLE | SMI_STATEMENT_MEMORY_CURSOR;
 
-    /* PROJ-2446 ONE SOURCE MM ¿¡¼­ statisticsÁ¤º¸¸¦ ³Ñ°Ü ¹Ş¾Æ¾ß ÇÑ´Ù.
-     * ÃßÈÄ ÀÛ¾÷ */
+    /* PROJ-2446 ONE SOURCE MM ì—ì„œ statisticsì •ë³´ë¥¼ ë„˜ê²¨ ë°›ì•„ì•¼ í•œë‹¤.
+     * ì¶”í›„ ì‘ì—… */
     IDE_TEST(sTrans.initialize() != IDE_SUCCESS);
     sStage++; //1
 
@@ -1925,7 +1925,7 @@ IDE_RC qciMisc::makeDictValueForCompress( smiStatement   * aStatement,
 /**
  * PROJ-1438 Job Scheduler
  *
- * ÇöÁ¦ ½Ã°£¿¡ ½ÇÇàÇÒ JobµéÀ» ¾ò´Â´Ù.
+ * í˜„ì œ ì‹œê°„ì— ì‹¤í–‰í•  Jobë“¤ì„ ì–»ëŠ”ë‹¤.
  */
 void qciMisc::getExecJobItems( SInt * aIems,
                                UInt * aCount,
@@ -1942,8 +1942,8 @@ void qciMisc::getExecJobItems( SInt * aIems,
 
     *aCount = 0;
 
-    /* PROJ-2446 ONE SOURCE MM ¿¡¼­ statisticsÁ¤º¸¸¦ ³Ñ°Ü ¹Ş¾Æ¾ß ÇÑ´Ù.
-     * ÃßÈÄ ÀÛ¾÷ */
+    /* PROJ-2446 ONE SOURCE MM ì—ì„œ statisticsì •ë³´ë¥¼ ë„˜ê²¨ ë°›ì•„ì•¼ í•œë‹¤.
+     * ì¶”í›„ ì‘ì—… */
     IDE_TEST( sTrans.initialize() != IDE_SUCCESS );
 
     sStage++; //1
@@ -1996,13 +1996,13 @@ void qciMisc::getExecJobItems( SInt * aIems,
 /**
  * PROJ-1438 Job Scheduler
  *
- *   Job ID¸¦ ÅëÇØ¼­ JobÀ» ½ÇÇàÇÑ´Ù.
+ *   Job IDë¥¼ í†µí•´ì„œ Jobì„ ì‹¤í–‰í•œë‹¤.
  *
- *   1. Job ID¸¦ ÅëÇØ¼­ JobÀÇ Á¤º¸¸¦ È¹µæÇÑ´Ù.
- *   2. Job State¿Í Last Exec Time À» Update ÇÑ´Ù.
- *   3. Job Á¤º¸¸¦ ÅëÇØ Procecure ¸¦ ½ÇÇà½ÃÅ²´Ù.
- *   4. ½ÇÇà °á°ú¿¡ µû¶ó Commit or Rallback ¸í·ÉÀ» ½ÇÇàÇÑ´Ù.
- *   5. ½ÇÇàÈÄ Job State¿Í, Execute Count, Error Code¸¦ Update ÇÑ´Ù.
+ *   1. Job IDë¥¼ í†µí•´ì„œ Jobì˜ ì •ë³´ë¥¼ íšë“í•œë‹¤.
+ *   2. Job Stateì™€ Last Exec Time ì„ Update í•œë‹¤.
+ *   3. Job ì •ë³´ë¥¼ í†µí•´ Procecure ë¥¼ ì‹¤í–‰ì‹œí‚¨ë‹¤.
+ *   4. ì‹¤í–‰ ê²°ê³¼ì— ë”°ë¼ Commit or Rallback ëª…ë ¹ì„ ì‹¤í–‰í•œë‹¤.
+ *   5. ì‹¤í–‰í›„ Job Stateì™€, Execute Count, Error Codeë¥¼ Update í•œë‹¤.
  */
 void qciMisc::executeJobItem( UInt     aJobThreadIndex,
                               SInt     aJob,
@@ -2025,8 +2025,8 @@ void qciMisc::executeJobItem( UInt     aJobThreadIndex,
 
     sSmiStmtFlag = SMI_STATEMENT_NORMAL | SMI_STATEMENT_MEMORY_CURSOR;
 
-    /* PROJ-2446 ONE SOURCE MM ¿¡¼­ statisticsÁ¤º¸¸¦ ³Ñ°Ü ¹Ş¾Æ¾ß ÇÑ´Ù.
-     * ÃßÈÄ ÀÛ¾÷ */
+    /* PROJ-2446 ONE SOURCE MM ì—ì„œ statisticsì •ë³´ë¥¼ ë„˜ê²¨ ë°›ì•„ì•¼ í•œë‹¤.
+     * ì¶”í›„ ì‘ì—… */
     IDE_TEST( sTrans.initialize() != IDE_SUCCESS );
 
     sStage++; //1
@@ -2041,7 +2041,7 @@ void qciMisc::executeJobItem( UInt     aJobThreadIndex,
 
     sStage++; //3
 
-    /* 1. Job ID¸¦ ÅëÇØ¼­ JobÀÇ Á¤º¸¸¦ È¹µæÇÑ´Ù. */
+    /* 1. Job IDë¥¼ í†µí•´ì„œ Jobì˜ ì •ë³´ë¥¼ íšë“í•œë‹¤. */
     IDE_TEST( qcmJob::getJobInfo( &sSmiStmt,
                                   aJob,
                                   sJobName,
@@ -2054,7 +2054,7 @@ void qciMisc::executeJobItem( UInt     aJobThreadIndex,
     if ( ( sJobState != QCM_JOB_STATE_EXEC ) &&
          ( sExecCount > -1 ) )
     {
-        /* 2. Job State¿Í Last Exec Time À» Update ÇÑ´Ù.*/
+        /* 2. Job Stateì™€ Last Exec Time ì„ Update í•œë‹¤.*/
         IDE_TEST( qcmJob::updateStateAndLastExecTime( &sSmiStmt,
                                                       aJob )
                   != IDE_SUCCESS );
@@ -2069,7 +2069,7 @@ void qciMisc::executeJobItem( UInt     aJobThreadIndex,
         sStage--; //0
         IDE_TEST( sTrans.destroy( NULL ) != IDE_SUCCESS );
 
-        /* 3. Job Á¤º¸¸¦ ÅëÇØ Procecure ¸¦ ½ÇÇà½ÃÅ²´Ù. */
+        /* 3. Job ì •ë³´ë¥¼ í†µí•´ Procecure ë¥¼ ì‹¤í–‰ì‹œí‚¨ë‹¤. */
         if ( qcg::runProcforJob( aJobThreadIndex,
                                  aSession,
                                  aJob,
@@ -2078,7 +2078,7 @@ void qciMisc::executeJobItem( UInt     aJobThreadIndex,
                                  &sErrorCode )
               == IDE_SUCCESS )
         {
-            /* 4. ¼º°ø½Ã  CommitÀ» ÇÑ´Ù */
+            /* 4. ì„±ê³µì‹œ  Commitì„ í•œë‹¤ */
             if ( qci::mSessionCallback.mCommit( aSession, ID_FALSE )
                  != IDE_SUCCESS )
             {
@@ -2089,7 +2089,7 @@ void qciMisc::executeJobItem( UInt     aJobThreadIndex,
                              ideGetErrorMsg(ideGetErrorCode()));
                 sErrorCode = ideGetErrorCode();
                 
-                /* 4. ½ÇÆĞ½Ã Rollback ÇÑ´Ù */
+                /* 4. ì‹¤íŒ¨ì‹œ Rollback í•œë‹¤ */
                 if ( qci::mSessionCallback.mRollback( aSession, NULL, ID_FALSE )
                      != IDE_SUCCESS )
                 {
@@ -2111,7 +2111,7 @@ void qciMisc::executeJobItem( UInt     aJobThreadIndex,
         }
         else
         {
-            /* 4. ½ÇÆĞ½Ã Rollback ÇÑ´Ù */
+            /* 4. ì‹¤íŒ¨ì‹œ Rollback í•œë‹¤ */
             if ( qci::mSessionCallback.mRollback( aSession, NULL, ID_FALSE )
                  != IDE_SUCCESS )
             {
@@ -2138,7 +2138,7 @@ void qciMisc::executeJobItem( UInt     aJobThreadIndex,
                   != IDE_SUCCESS );
 
         sStage++; //3
-        /* 5. ½ÇÇàÈÄ Job State¿Í, Execute Count, Error Code¸¦ Update ÇÑ´Ù. */
+        /* 5. ì‹¤í–‰í›„ Job Stateì™€, Execute Count, Error Codeë¥¼ Update í•œë‹¤. */
         sExecCount++;
         IDE_TEST( qcmJob::updateExecuteResult( &sSmiStmt,
                                                aJob,
@@ -2218,7 +2218,7 @@ idvSQL* qciMisc::getStatistics( mtcTemplate * aTemplate )
     return sStatistics;
 }
 
-/* PROJ-2446 ONE SOURCE XDB smiGlobalCallBackList¿¡¼­ »ç¿ë µÈ´Ù.
+/* PROJ-2446 ONE SOURCE XDB smiGlobalCallBackListì—ì„œ ì‚¬ìš© ëœë‹¤.
  * partition meta cache, procedure cache, trigger cache */
 IDE_RC qciMisc::makeAndSetQcmTblInfo( smiStatement * aSmiStmt,
                                       UInt           aTableID,
@@ -2382,7 +2382,7 @@ idBool qciMisc::isSimpleQuery( qcStatement * aStatement )
             
     IDE_TEST_CONT( sIsSimple == ID_FALSE, NORMAL_EXIT );
     
-    // bind param °¹¼ö°¡ °°°í ¸ğµÎ »ç¿ëÇØ¾ß ÇÑ´Ù.
+    // bind param ê°¯ìˆ˜ê°€ ê°™ê³  ëª¨ë‘ ì‚¬ìš©í•´ì•¼ í•œë‹¤.
     if ( sBindParamCount == sHostValueCount )
     {
         for ( i = 0; i < sBindParamCount; i++ )
@@ -2468,7 +2468,7 @@ idBool qciMisc::isSimpleSelectQuery( qmnPlan     * aPlan,
                 
         while ( 1 )
         {
-            // ¿À¸¥ÂÊÀº Ç×»ó SCANÀÌ¾î¾ß ÇÑ´Ù.
+            // ì˜¤ë¥¸ìª½ì€ í•­ìƒ SCANì´ì–´ì•¼ í•œë‹¤.
             if ( sPlan->right->type == QMN_SCAN )
             {
                 // Nothing to do.
@@ -2482,7 +2482,7 @@ idBool qciMisc::isSimpleSelectQuery( qmnPlan     * aPlan,
             sJOIN = (qmncJOIN*)sPlan;
             sSCAN = (qmncSCAN*)sPlan->right;
                     
-            // simpleÀÌ¾î¾ß ÇÑ´Ù.
+            // simpleì´ì–´ì•¼ í•œë‹¤.
             if ( ( sJOIN->isSimple == ID_FALSE ) ||
                  ( sSCAN->isSimple == ID_FALSE ) )
             {
@@ -2499,7 +2499,7 @@ idBool qciMisc::isSimpleSelectQuery( qmnPlan     * aPlan,
                                    sSCAN->simpleValues,
                                    sSCAN->simpleValueCount );
                     
-            // ¿ŞÂÊÀº JOINÀÌ°Å³ª SCAN
+            // ì™¼ìª½ì€ JOINì´ê±°ë‚˜ SCAN
             if ( sPlan->left->type == QMN_JOIN )
             {
                 sPlan = sPlan->left;
@@ -2523,7 +2523,7 @@ idBool qciMisc::isSimpleSelectQuery( qmnPlan     * aPlan,
                                        sSCAN->simpleValues,
                                        sSCAN->simpleValueCount );
                         
-                // ¸¶Áö¸· scan
+                // ë§ˆì§€ë§‰ scan
                 break;
             }
             else
@@ -2663,7 +2663,7 @@ idBool qciMisc::isSimpleSelectBind( qcStatement * aStatement,
                 
         while ( 1 )
         {
-            // ¿À¸¥ÂÊÀº Ç×»ó SCAN
+            // ì˜¤ë¥¸ìª½ì€ í•­ìƒ SCAN
             IDE_DASSERT( sPlan->right->type == QMN_SCAN );
                     
             sSCAN = (qmncSCAN*)sPlan->right;
@@ -2680,7 +2680,7 @@ idBool qciMisc::isSimpleSelectBind( qcStatement * aStatement,
                 // Nothing to do.
             }
 
-            // ¿ŞÂÊÀº JOINÀÌ°Å³ª SCAN
+            // ì™¼ìª½ì€ JOINì´ê±°ë‚˜ SCAN
             if ( sPlan->left->type == QMN_JOIN )
             {
                 sPlan = sPlan->left;
@@ -2735,7 +2735,7 @@ void qciMisc::setSimpleBindFlag( qcStatement * aStatement )
 {
     if ( ( ( aStatement->mFlag & QC_STMT_FAST_EXEC_MASK )
            == QC_STMT_FAST_EXEC_TRUE ) &&
-         /* BUG-45307 Begin Snapshot ÀÌÈÄ¿¡´Â FAST Execute¸¦ ÇÏÁö ¾Ê´Â´Ù */
+         /* BUG-45307 Begin Snapshot ì´í›„ì—ëŠ” FAST Executeë¥¼ í•˜ì§€ ì•ŠëŠ”ë‹¤ */
          ( aStatement->mInplaceUpdateDisableFlag == ID_FALSE ) )
     {
         if ( qciMisc::isSimpleBind( aStatement ) == ID_TRUE )
@@ -2829,8 +2829,8 @@ idBool qciMisc::checkSimpleBind( qciBindParamInfo * aBindParam,
                 }
                 else if ( sValueInfo->column.module->id == MTD_CHAR_ID )
                 {
-                    // char compare·Î´Â char type¸¸ °¡´ÉÇÏ´Ù.
-                    // (¹°·Ğ compareÇÔ¼ö¸¦ varchar compare·Î ¹Ù²Ù¸é µÇ±äÇÑ´Ù.)
+                    // char compareë¡œëŠ” char typeë§Œ ê°€ëŠ¥í•˜ë‹¤.
+                    // (ë¬¼ë¡  compareí•¨ìˆ˜ë¥¼ varchar compareë¡œ ë°”ê¾¸ë©´ ë˜ê¸´í•œë‹¤.)
                     if ( sBindParam->param.type == MTD_CHAR_ID )
                     {
                         // Nothing to do.
@@ -3009,7 +3009,7 @@ IDE_RC qciMisc::writeTableMetaLogForReplication( qcStatement    * aStatement,
     return IDE_FAILURE;
 }
 
-/* BUG-43605 [mt] randomÇÔ¼öÀÇ seed ¼³Á¤À» session ´ÜÀ§·Î º¯°æÇØ¾ß ÇÕ´Ï´Ù. */
+/* BUG-43605 [mt] randomí•¨ìˆ˜ì˜ seed ì„¤ì •ì„ session ë‹¨ìœ„ë¡œ ë³€ê²½í•´ì•¼ í•©ë‹ˆë‹¤. */
 void qciMisc::initRandomInfo( qcRandomInfo * aRandomInfo )
 {
     aRandomInfo->mExistSeed = ID_FALSE;

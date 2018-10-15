@@ -176,19 +176,19 @@ mtdModule mtcdNumeric = {
     {
         // Key Comparison
         {
-            // mt valueµé °£ÀÇ compare 
+            // mt valueë“¤ ê°„ì˜ compare 
             mtdNumericMtdMtdKeyAscComp, // Ascending Key Comparison
             mtdNumericMtdMtdKeyDescComp // Descending Key Comparison
         }
         ,
         {
-            // mt value¿Í stored value°£ÀÇ compare 
+            // mt valueì™€ stored valueê°„ì˜ compare 
             mtdNumericStoredMtdKeyAscComp, // Ascending Key Comparison
             mtdNumericStoredMtdKeyDescComp // Descending Key Comparison
         }
         ,
         {
-            // stored valueµé °£ÀÇ compare 
+            // stored valueë“¤ ê°„ì˜ compare 
             mtdNumericStoredStoredKeyAscComp, // Ascending Key Comparison
             mtdNumericStoredStoredKeyDescComp // Descending Key Comparison
         }
@@ -213,7 +213,7 @@ ACI_RC mtdInitializeNumeric( acp_uint32_t aNo )
 {
     ACI_TEST( mtdInitializeModule( &mtcdNumeric, aNo ) != ACI_SUCCESS );
     
-    // mtdColumnÀÇ ÃÊ±âÈ­
+    // mtdColumnì˜ ì´ˆê¸°í™”
     ACI_TEST( mtcInitializeColumn( & mtdColumn,
                                    & mtcdNumeric,
                                    0,   // arguments
@@ -290,7 +290,7 @@ ACI_RC mtdValue( mtcTemplate*  aTemplate,
                   != ACI_SUCCESS );
 
         // To Fix BUG-12612
-        // precision, scale Àç ¼³Á¤ ÈÄ, estimate·Î semantic °Ë»ç
+        // precision, scale ì¬ ì„¤ì • í›„, estimateë¡œ semantic ê²€ì‚¬
 
         ACI_TEST( mtcGetPrecisionScaleFloat( sValue,
                                              &aColumn->precision,
@@ -437,7 +437,7 @@ mtdNumericMtdMtdKeyAscComp( mtdValueInfo* aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd Å¸ÀÔÀÇ Keyµé °£ÀÇ ascending compare
+ * Description : Mtd íƒ€ì…ì˜ Keyë“¤ ê°„ì˜ ascending compare
  *
  * Implementation :
  *
@@ -524,7 +524,7 @@ mtdNumericMtdMtdKeyDescComp( mtdValueInfo* aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd Å¸ÀÔÀÇ Keyµé °£ÀÇ descending compare
+ * Description : Mtd íƒ€ì…ì˜ Keyë“¤ ê°„ì˜ descending compare
  *
  * Implementation :
  *
@@ -610,7 +610,7 @@ mtdNumericStoredMtdKeyAscComp( mtdValueInfo* aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd Å¸ÀÔÀÇ Key¿Í Stored Key °£ÀÇ ascending compare
+ * Description : Mtd íƒ€ì…ì˜ Keyì™€ Stored Key ê°„ì˜ ascending compare
  *
  * Implementation :
  *
@@ -690,7 +690,7 @@ mtdNumericStoredMtdKeyDescComp( mtdValueInfo* aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd Å¸ÀÔÀÇ Key¿Í Stored Key °£ÀÇ descending compare
+ * Description : Mtd íƒ€ì…ì˜ Keyì™€ Stored Key ê°„ì˜ descending compare
  *
  * Implementation :
  *
@@ -769,7 +769,7 @@ mtdNumericStoredStoredKeyAscComp( mtdValueInfo* aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Stored Keyµé °£ÀÇ ascending compare
+ * Description : Stored Keyë“¤ ê°„ì˜ ascending compare
  *
  * Implementation :
  *
@@ -842,7 +842,7 @@ mtdNumericStoredStoredKeyDescComp( mtdValueInfo* aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Stored Keyµé °£ÀÇ descending compare
+ * Description : Stored Keyë“¤ ê°„ì˜ descending compare
  *
  * Implementation :
  *
@@ -969,7 +969,7 @@ ACI_RC mtdValidate( mtcColumn*   aColumn,
 {
 /***********************************************************************
  *
- * Description : valueÀÇ semantic °Ë»ç ¹× mtcColum ÃÊ±âÈ­
+ * Description : valueì˜ semantic ê²€ì‚¬ ë° mtcColum ì´ˆê¸°í™”
  *
  * Implementation :
  *
@@ -1068,12 +1068,12 @@ mtdSelectivityNumeric( void*  aColumnMax,
 /***********************************************************************
  *
  * Description :
- *    FLOAT, NUMERIC ÀÇ Selectivity ÃßÃâ ÇÔ¼ö
+ *    FLOAT, NUMERIC ì˜ Selectivity ì¶”ì¶œ í•¨ìˆ˜
  *
  * Implementation :
  *
  *    Selectivity = (aValueMax - aValueMin) / (aColumnMax - aColumnMin)
- *    0 < Selectivity <= 1 ÀÇ °ªÀ» ¸®ÅÏÇÔ
+ *    0 < Selectivity <= 1 ì˜ ê°’ì„ ë¦¬í„´í•¨
  *
  ***********************************************************************/
     
@@ -1082,8 +1082,8 @@ mtdSelectivityNumeric( void*  aColumnMax,
     mtdNumericType* sValueMax;
     mtdNumericType* sValueMin;
     acp_double_t    sSelectivity;
-    acp_double_t    sDenominator;  // ºĞ¸ğ°ª
-    acp_double_t    sNumerator;    // ºĞÀÚ°ª
+    acp_double_t    sDenominator;  // ë¶„ëª¨ê°’
+    acp_double_t    sNumerator;    // ë¶„ìê°’
 
     acp_uint8_t     sNumericBuffer[MTD_NUMERIC_SIZE_MAXIMUM];
     mtdNumericType* sNumeric;
@@ -1102,8 +1102,8 @@ mtdSelectivityNumeric( void*  aColumnMax,
     sValueMin  = (mtdNumericType*) aValueMin;
 
     //------------------------------------------------------
-    // DataÀÇ À¯È¿¼º °Ë»ç
-    //     NULL °Ë»ç : °è»êÇÒ ¼ö ¾øÀ½
+    // Dataì˜ ìœ íš¨ì„± ê²€ì‚¬
+    //     NULL ê²€ì‚¬ : ê³„ì‚°í•  ìˆ˜ ì—†ìŒ
     //------------------------------------------------------
 
     if ( ( sColumnMax->length == 0 ) ||
@@ -1111,17 +1111,17 @@ mtdSelectivityNumeric( void*  aColumnMax,
          ( sValueMax->length == 0 )  ||
          ( sValueMin->length == 0 ) )
     {
-        // DataÁß NULL ÀÌ ÀÖÀ» °æ¿ì
-        // ºÎµîÈ£ÀÇ Default SelectivityÀÎ 1/3À» SettingÇÔ
+        // Dataì¤‘ NULL ì´ ìˆì„ ê²½ìš°
+        // ë¶€ë“±í˜¸ì˜ Default Selectivityì¸ 1/3ì„ Settingí•¨
         sSelectivity = MTD_DEFAULT_SELECTIVITY;
     }
     else
     {
         //------------------------------------------------------
-        // À¯È¿¼º °Ë»ç
-        // ´ÙÀ½ÀÇ °æ¿ì´Â Á¶°ÇÀ» Àß¸øµÈ Åë°è Á¤º¸ÀÌ°Å³ª ÀÔ·Â Á¤º¸ÀÓ.
-        // ColumnÀÇ Min°ªº¸´Ù ValueÀÇ Max°ªÀÌ ÀÛÀº °æ¿ì
-        // ColumnÀÇ Max°ªº¸´Ù ValueÀÇ Min°ªÀÌ Å« °æ¿ì
+        // ìœ íš¨ì„± ê²€ì‚¬
+        // ë‹¤ìŒì˜ ê²½ìš°ëŠ” ì¡°ê±´ì„ ì˜ëª»ëœ í†µê³„ ì •ë³´ì´ê±°ë‚˜ ì…ë ¥ ì •ë³´ì„.
+        // Columnì˜ Minê°’ë³´ë‹¤ Valueì˜ Maxê°’ì´ ì‘ì€ ê²½ìš°
+        // Columnì˜ Maxê°’ë³´ë‹¤ Valueì˜ Minê°’ì´ í° ê²½ìš°
         //------------------------------------------------------
 
         sValueInfo1.column = NULL;
@@ -1152,9 +1152,9 @@ mtdSelectivityNumeric( void*  aColumnMax,
         else
         {
             //------------------------------------------------------
-            // Value°ª º¸Á¤
-            // ValueÀÇ Min°ªÀÌ ColumnÀÇ Min°ªº¸´Ù ÀÛ´Ù¸é º¸Á¤
-            // ValueÀÇ Max°ªÀÌ ColumnÀÇ Max°ªº¸´Ù Å©´Ù¸é º¸Á¤
+            // Valueê°’ ë³´ì •
+            // Valueì˜ Minê°’ì´ Columnì˜ Minê°’ë³´ë‹¤ ì‘ë‹¤ë©´ ë³´ì •
+            // Valueì˜ Maxê°’ì´ Columnì˜ Maxê°’ë³´ë‹¤ í¬ë‹¤ë©´ ë³´ì •
             //------------------------------------------------------
 
             sValueInfo1.column = NULL;
@@ -1194,7 +1194,7 @@ mtdSelectivityNumeric( void*  aColumnMax,
             }
 
             //------------------------------------------------------
-            // ºĞ¸ğ°ª (aColumnMax - aColumnMin) °ª È¹µæ
+            // ë¶„ëª¨ê°’ (aColumnMax - aColumnMin) ê°’ íšë“
             //------------------------------------------------------
 
             // sColumnMax - sColumnMin
@@ -1203,26 +1203,26 @@ mtdSelectivityNumeric( void*  aColumnMax,
                                    sColumnMax,
                                    sColumnMin ) != ACI_SUCCESS )
             {
-                // Value Overflow°¡ ¹ß»ıÇÒ ¼ö ÀÖÀ½
+                // Value Overflowê°€ ë°œìƒí•  ìˆ˜ ìˆìŒ
                 sDenominator = 0.0;
             }
             else
             {
                 sVarchar = (mtaVarcharType*)sBuffer;
 
-                // Numeric -> Varchar·Î º¯È¯
+                // Numeric -> Varcharë¡œ ë³€í™˜
                 if ( mtaVarcharExact( sVarchar,
                                       60,
                                       (mtaNumericType*)
                                       & (sNumeric->signExponent),
                                       sNumeric->length ) != ACI_SUCCESS )
                 {
-                    // º¯È¯ Áß Error ¹ß»ıÇÒ ¼ö ÀÖÀ½
+                    // ë³€í™˜ ì¤‘ Error ë°œìƒí•  ìˆ˜ ìˆìŒ
                     sDenominator = 0.0;
                 }
                 else
                 {
-                    // Varchar¸¦ Double·Î º¯È¯
+                    // Varcharë¥¼ Doubleë¡œ ë³€í™˜
                     sVarchar->value[MTA_GET_LENGTH(sVarchar->length)] = 0;
         
 /*                    sDenominator = idlOS::strtod( (char*)sVarchar->value,
@@ -1239,12 +1239,12 @@ mtdSelectivityNumeric( void*  aColumnMax,
                                            & sDenominator,
                                            MTD_OFFSET_USELESS ) == ACP_TRUE )
                     {
-                        // º¯È¯°á°ú°¡ NULLÀÎ °æ¿ì
+                        // ë³€í™˜ê²°ê³¼ê°€ NULLì¸ ê²½ìš°
                         sDenominator = 0.0;
                     }
                     else
                     {
-                        // ¿Ã¹Ù¸¥ ºĞ¸ğ°ª È¹µæ
+                        // ì˜¬ë°”ë¥¸ ë¶„ëª¨ê°’ íšë“
                         // Nothing To do
                     }
                 }
@@ -1252,13 +1252,13 @@ mtdSelectivityNumeric( void*  aColumnMax,
         
             if ( sDenominator <= 0.0 )
             {
-                // Àß¸øµÈ Åë°è Á¤º¸ÀÇ »ç¿ëÇÑ °æ¿ì
+                // ì˜ëª»ëœ í†µê³„ ì •ë³´ì˜ ì‚¬ìš©í•œ ê²½ìš°
                 sSelectivity = MTD_DEFAULT_SELECTIVITY;
             }
             else
             {
                 //------------------------------------------------------
-                // ºĞÀÚ°ª (aValueMax - aValueMin) °ª È¹µæ
+                // ë¶„ìê°’ (aValueMax - aValueMin) ê°’ íšë“
                 //------------------------------------------------------
 
                 // sValueMax - sValueMin
@@ -1267,26 +1267,26 @@ mtdSelectivityNumeric( void*  aColumnMax,
                                        sValueMax,
                                        sValueMin ) != ACI_SUCCESS )
                 {
-                    // Value Overflow°¡ ¹ß»ıÇÒ ¼ö ÀÖÀ½
+                    // Value Overflowê°€ ë°œìƒí•  ìˆ˜ ìˆìŒ
                     sNumerator = 0.0;
                 }
                 else
                 {
                     sVarchar = (mtaVarcharType*)sBuffer;
 
-                    // Numeric -> Varchar·Î º¯È¯
+                    // Numeric -> Varcharë¡œ ë³€í™˜
                     if ( mtaVarcharExact(
                              sVarchar,
                              60,
                              (mtaNumericType*) & (sNumeric->signExponent),
                              sNumeric->length ) != ACI_SUCCESS )
                     {
-                        // º¯È¯ Áß Error ¹ß»ıÇÒ ¼ö ÀÖÀ½
+                        // ë³€í™˜ ì¤‘ Error ë°œìƒí•  ìˆ˜ ìˆìŒ
                         sNumerator = 0.0;
                     }
                     else
                     {
-                        // Varchar¸¦ Double·Î º¯È¯
+                        // Varcharë¥¼ Doubleë¡œ ë³€í™˜
                         sVarchar->value[MTA_GET_LENGTH(sVarchar->length)] = 0;
                         
 /*                        sNumerator = idlOS::strtod( (char*)sVarchar->value,
@@ -1303,12 +1303,12 @@ mtdSelectivityNumeric( void*  aColumnMax,
                                                & sNumerator,
                                                MTD_OFFSET_USELESS ) == ACP_TRUE)
                         {
-                            // º¯È¯°á°ú°¡ NULLÀÎ °æ¿ì
+                            // ë³€í™˜ê²°ê³¼ê°€ NULLì¸ ê²½ìš°
                             sNumerator = 0.0;
                         }
                         else
                         {
-                            // ¿Ã¹Ù¸¥ ºĞÀÚ°ª È¹µæ
+                            // ì˜¬ë°”ë¥¸ ë¶„ìê°’ íšë“
                             // Nothing To do
                         }
                     }
@@ -1316,14 +1316,14 @@ mtdSelectivityNumeric( void*  aColumnMax,
             
                 if ( sNumerator <= 0.0 )
                 {
-                    // Àß¸øµÈ ÀÔ·Â Á¤º¸ÀÎ °æ¿ì
+                    // ì˜ëª»ëœ ì…ë ¥ ì •ë³´ì¸ ê²½ìš°
                     // To Fix PR-11858
                     sSelectivity = 0;
                 }
                 else
                 {
                     //------------------------------------------------------
-                    // Selectivity °è»ê
+                    // Selectivity ê³„ì‚°
                     //------------------------------------------------------
                 
                     sSelectivity = sNumerator / sDenominator;
@@ -1449,20 +1449,20 @@ static ACI_RC mtdStoredValue2MtdValue( acp_uint32_t      aColumnSize,
 {
 /*******************************************************************
  * PROJ-1705
- * µğ½ºÅ©Å×ÀÌºíÄÃ·³ÀÇ µ¥ÀÌÅ¸¸¦
- * qp ·¹ÄÚµåÃ³¸®¿µ¿ªÀÇ ÇØ´ç ÄÃ·³À§Ä¡¿¡ º¹»ç
+ * ë””ìŠ¤í¬í…Œì´ë¸”ì»¬ëŸ¼ì˜ ë°ì´íƒ€ë¥¼
+ * qp ë ˆì½”ë“œì²˜ë¦¬ì˜ì—­ì˜ í•´ë‹¹ ì»¬ëŸ¼ìœ„ì¹˜ì— ë³µì‚¬
  *******************************************************************/
 
     mtdNumericType* sNumericValue;
 
-    // °¡º¯±æÀÌ µ¥ÀÌÅ¸ Å¸ÀÔÀÌÁö¸¸,
-    // ÇÏ³ªÀÇ ÄÃ·³ µ¥ÀÌÅ¸°¡ ¿©·¯ÆäÀÌÁö¿¡ ³ª´©¾î ÀúÀåµÇ´Â °æ¿ì´Â ¾ø´Ù.
+    // ê°€ë³€ê¸¸ì´ ë°ì´íƒ€ íƒ€ì…ì´ì§€ë§Œ,
+    // í•˜ë‚˜ì˜ ì»¬ëŸ¼ ë°ì´íƒ€ê°€ ì—¬ëŸ¬í˜ì´ì§€ì— ë‚˜ëˆ„ì–´ ì €ì¥ë˜ëŠ” ê²½ìš°ëŠ” ì—†ë‹¤.
 
     sNumericValue = (mtdNumericType*)aDestValue;
 
     if( aLength == 0 )
     {
-        // NULL µ¥ÀÌÅ¸
+        // NULL ë°ì´íƒ€
         sNumericValue->length = 0;
     }
     else
@@ -1490,9 +1490,9 @@ acp_uint32_t mtdNullValueSize()
 {
 /*******************************************************************
  * PROJ-1705
- * °¢ µ¥ÀÌÅ¸Å¸ÀÔÀÇ null ValueÀÇ Å©±â ¹İÈ¯
- * ¿¹ ) mtdNumericType( acp_uint8_t length; acp_uint8_t signExponent; acp_uint8_t mantissa[1] ) ¿¡¼­
- *      length Å¸ÀÔÀÎ acp_uint8_tÀÇ Å©±â¸¦ ¹İÈ¯
+ * ê° ë°ì´íƒ€íƒ€ì…ì˜ null Valueì˜ í¬ê¸° ë°˜í™˜
+ * ì˜ˆ ) mtdNumericType( acp_uint8_t length; acp_uint8_t signExponent; acp_uint8_t mantissa[1] ) ì—ì„œ
+ *      length íƒ€ì…ì¸ acp_uint8_tì˜ í¬ê¸°ë¥¼ ë°˜í™˜
  *******************************************************************/
 
     return mtdActualSize( NULL,
@@ -1504,10 +1504,10 @@ static acp_uint32_t mtdHeaderSize()
 {
 /***********************************************************************
  * PROJ-1705
- * length¸¦ °¡Áö´Â µ¥ÀÌÅ¸Å¸ÀÔÀÇ length Á¤º¸¸¦ ÀúÀåÇÏ´Â º¯¼öÀÇ Å©±â ¹İÈ¯
- * ¿¹ ) mtdNumericType( acp_uint8_t length; acp_uint8_t signExponent; acp_uint8_t mantissa[1] ) ¿¡¼­
- *      length Å¸ÀÔÀÎ acp_uint8_tÀÇ Å©±â¸¦ ¹İÈ¯
- *  integer¿Í °°Àº °íÁ¤±æÀÌ µ¥ÀÌÅ¸Å¸ÀÔÀº 0 ¹İÈ¯
+ * lengthë¥¼ ê°€ì§€ëŠ” ë°ì´íƒ€íƒ€ì…ì˜ length ì •ë³´ë¥¼ ì €ì¥í•˜ëŠ” ë³€ìˆ˜ì˜ í¬ê¸° ë°˜í™˜
+ * ì˜ˆ ) mtdNumericType( acp_uint8_t length; acp_uint8_t signExponent; acp_uint8_t mantissa[1] ) ì—ì„œ
+ *      length íƒ€ì…ì¸ acp_uint8_tì˜ í¬ê¸°ë¥¼ ë°˜í™˜
+ *  integerì™€ ê°™ì€ ê³ ì •ê¸¸ì´ ë°ì´íƒ€íƒ€ì…ì€ 0 ë°˜í™˜
  **********************************************************************/
 
     return sizeof(acp_uint8_t);

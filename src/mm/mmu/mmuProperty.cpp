@@ -101,8 +101,8 @@ UInt   mmuProperty::mSqlPlanCacheParentPCOXLatchTryCnt;
 /* BUG-36205 Plan Cache On/Off property for PSM */
 UInt   mmuProperty::mSqlPlanCacheUseInPSM;
 
-//fix BUG-23776, XA ROLLBACK½Ã XID°¡ ACTIVEÀÏ¶§ ´ë±â½Ã°£À»
-//QueryTime OutÀÌ ¾Æ´Ï¶ó,Property¸¦ Á¦°øÇØ¾ß ÇÔ.
+//fix BUG-23776, XA ROLLBACKì‹œ XIDê°€ ACTIVEì¼ë•Œ ëŒ€ê¸°ì‹œê°„ì„
+//QueryTime Outì´ ì•„ë‹ˆë¼,Propertyë¥¼ ì œê³µí•´ì•¼ í•¨.
 UInt   mmuProperty::mXaRollbackTimeOut;
 
 
@@ -110,7 +110,7 @@ UInt   mmuProperty::mXaRollbackTimeOut;
 UInt   mmuProperty::mQueryLoggingLevel;
 // bug-19279 remote sysdba enable + sys can kill session
 UInt   mmuProperty::mRemoteSysdbaEnable;
-// BUG-24993 ³×Æ®¿öÅ© ¿¡·¯ ¸Ş½ÃÁö log ¿©ºÎ
+// BUG-24993 ë„¤íŠ¸ì›Œí¬ ì—ëŸ¬ ë©”ì‹œì§€ log ì—¬ë¶€
 UInt   mmuProperty::mNetworkErrorLog;
 
 /* TASK-4324  Applying lessons learned from CPBS-CAESE to altibase  */
@@ -160,7 +160,7 @@ UInt   mmuProperty::mSslPortNo;
 UInt   mmuProperty::mSslEnable;
 UInt   mmuProperty::mSslMaxListen;
 
-/* PROJ-2624 [±â´É¼º] MM - À¯¿¬ÇÑ access_list °ü¸®¹æ¹ı Á¦°ø */
+/* PROJ-2624 [ê¸°ëŠ¥ì„±] MM - ìœ ì—°í•œ access_list ê´€ë¦¬ë°©ë²• ì œê³µ */
 SChar *mmuProperty::mIPACLFile;
 
 /* BUG-41168 SSL extension */
@@ -323,7 +323,7 @@ IDE_RC mmuProperty::callbackMultiplexingCheckInterval(idvSQL * /*aStatistics*/,
     return IDE_SUCCESS;
 }
 
-// BUG-26280 ¾²±â°¡ °¡´ÉÇÏÁö¸¸ Äİ¹éÀÌ µî·Ï¾ÈµÇ¾î ÀÖ´Â ÇÁ·ÎÆÛÆ¼
+// BUG-26280 ì“°ê¸°ê°€ ê°€ëŠ¥í•˜ì§€ë§Œ ì½œë°±ì´ ë“±ë¡ì•ˆë˜ì–´ ìˆëŠ” í”„ë¡œí¼í‹°
 IDE_RC mmuProperty::callbackNetworkErrorLog(idvSQL * /*aStatistics*/,
                                             SChar * /*aName*/,
                                             void  * /*aOldValue*/,
@@ -410,8 +410,8 @@ IDE_RC mmuProperty::callbackSqlPlanCacheParentPCOXLatchTryCnt(
     return IDE_SUCCESS;
 }
 
-//fix BUG-23776, XA ROLLBACK½Ã XID°¡ ACTIVEÀÏ¶§ ´ë±â½Ã°£À»
-//QueryTime OutÀÌ ¾Æ´Ï¶ó,Property¸¦ Á¦°øÇØ¾ß ÇÔ.
+//fix BUG-23776, XA ROLLBACKì‹œ XIDê°€ ACTIVEì¼ë•Œ ëŒ€ê¸°ì‹œê°„ì„
+//QueryTime Outì´ ì•„ë‹ˆë¼,Propertyë¥¼ ì œê³µí•´ì•¼ í•¨.
 IDE_RC mmuProperty::callbackXaRollbackTimeOut(
     idvSQL * /*aStatistics*/,
     SChar * /*aName*/,
@@ -425,9 +425,9 @@ IDE_RC mmuProperty::callbackXaRollbackTimeOut(
 }
 
 
-/* BUG-18660: COMMIT_WRITE_WAIT_MODEÀ» Alter SystemÀ¸·Î º¯°æÇØµµ MM property¿¡
- *            ¹İ¿µµÇÁö ¾Ê½À´Ï´Ù. Propertyº¯°æ½Ã mmuProperty¿¡ ÀÖ´Â °ªÀ» º¯°æÇÑ´Â
- *            callback functionÀÌ µî·ÏµÇÁö ¾Ê¾Ò½À´Ï´Ù. */
+/* BUG-18660: COMMIT_WRITE_WAIT_MODEì„ Alter Systemìœ¼ë¡œ ë³€ê²½í•´ë„ MM propertyì—
+ *            ë°˜ì˜ë˜ì§€ ì•ŠìŠµë‹ˆë‹¤. Propertyë³€ê²½ì‹œ mmuPropertyì— ìˆëŠ” ê°’ì„ ë³€ê²½í•œëŠ”
+ *            callback functionì´ ë“±ë¡ë˜ì§€ ì•Šì•˜ìŠµë‹ˆë‹¤. */
 IDE_RC mmuProperty::callbackCommitWriteWaitMode(idvSQL * /*aStatistics*/,
                                                 SChar * /*aName*/,
                                                 void  * /*aOldValue*/,
@@ -746,7 +746,7 @@ void mmuProperty::load()
 
     IDE_ASSERT(idp::read("CM_DISCONN_DETECT_TIME",&mCmDetectTime) == IDE_SUCCESS);
 
-    // BUG-19465 : CM_BufferÀÇ pending list¸¦ Á¦ÇÑ
+    // BUG-19465 : CM_Bufferì˜ pending listë¥¼ ì œí•œ
     IDE_ASSERT(idp::read("CM_BUFFER_MAX_PENDING_LIST", &mCmMaxPendingList)
                == IDE_SUCCESS);
 
@@ -794,7 +794,7 @@ void mmuProperty::load()
     /*
      * TASK-5894 Permit sysdba via IPC
      *
-     * SYSDBA¸¦ À§ÇÑ Ã¤³ÎÀ» ÇÏ³ª Ãß°¡ÇÑ´Ù.
+     * SYSDBAë¥¼ ìœ„í•œ ì±„ë„ì„ í•˜ë‚˜ ì¶”ê°€í•œë‹¤.
      */
     mIpcChannelCount += 1;
 
@@ -836,8 +836,8 @@ void mmuProperty::load()
     IDE_ASSERT(idp::read("SQL_PLAN_CACHE_PARENT_PCO_XLATCH_TRY_CNT",
                          &mSqlPlanCacheParentPCOXLatchTryCnt)
                == IDE_SUCCESS);
-    //fix BUG-23776, XA ROLLBACK½Ã XID°¡ ACTIVEÀÏ¶§ ´ë±â½Ã°£À»
-    //QueryTime OutÀÌ ¾Æ´Ï¶ó,Property¸¦ Á¦°øÇØ¾ß ÇÔ.
+    //fix BUG-23776, XA ROLLBACKì‹œ XIDê°€ ACTIVEì¼ë•Œ ëŒ€ê¸°ì‹œê°„ì„
+    //QueryTime Outì´ ì•„ë‹ˆë¼,Propertyë¥¼ ì œê³µí•´ì•¼ í•¨.
     IDE_ASSERT(idp::read("XA_ROLLBACK_TIMEOUT",&mXaRollbackTimeOut) == IDE_SUCCESS);
 
     IDE_ASSERT(idp::read("__QUERY_LOGGING_LEVEL", &mQueryLoggingLevel)
@@ -847,7 +847,7 @@ void mmuProperty::load()
     IDE_ASSERT(idp::read("REMOTE_SYSDBA_ENABLE", &mRemoteSysdbaEnable)
                == IDE_SUCCESS);
 
-    // BUG-24993 ³×Æ®¿öÅ© ¿¡·¯ ¸Ş½ÃÁö log ¿©ºÎ
+    // BUG-24993 ë„¤íŠ¸ì›Œí¬ ì—ëŸ¬ ë©”ì‹œì§€ log ì—¬ë¶€
     IDE_ASSERT(idp::read("NETWORK_ERROR_LOG",&mNetworkErrorLog) == IDE_SUCCESS);
     /* TASK-4324  Applying lessons learned from CPBS-CAESE to altibase
      */
@@ -886,7 +886,7 @@ void mmuProperty::load()
 
     IDE_ASSERT(idp::read("THREAD_CPU_AFFINITY", &mIsCPUAffinity) == IDE_SUCCESS);
 
-    /* PROJ-2624 [±â´É¼º] MM - À¯¿¬ÇÑ access_list °ü¸®¹æ¹ı Á¦°ø */
+    /* PROJ-2624 [ê¸°ëŠ¥ì„±] MM - ìœ ì—°í•œ access_list ê´€ë¦¬ë°©ë²• ì œê³µ */
     IDE_ASSERT( idp::readPtr( "ACCESS_LIST_FILE", (void**)&mIPACLFile ) == IDE_SUCCESS );
     IDE_DASSERT( mmuProperty::mIPACLFile != NULL );
 
@@ -939,10 +939,10 @@ void mmuProperty::load()
     /* proj-1538 ipv6: initialize all entries. */
     mmuAccessList::clear();
 
-    /* PROJ-2624 [±â´É¼º] MM - À¯¿¬ÇÑ access_list °ü¸®¹æ¹ı Á¦°ø */
+    /* PROJ-2624 [ê¸°ëŠ¥ì„±] MM - ìœ ì—°í•œ access_list ê´€ë¦¬ë°©ë²• ì œê³µ */
     if ( mIPACLFile[0] == '\0' )
     {
-        /* fix BUG-28834 IP Access Control List Àß¸øµÇ¾ú½À´Ï´Ù. */
+        /* fix BUG-28834 IP Access Control List ì˜ëª»ë˜ì—ˆìŠµë‹ˆë‹¤. */
         /* proj-1538 ipv6: handle ipv6 addr entries */
         for ( sLoop = 0; sLoop < sIPACLCount; ++sLoop )
         {
@@ -1049,7 +1049,7 @@ void mmuProperty::load()
                 }
             }
 
-            /* access list¿¡ Ãß°¡ */
+            /* access listì— ì¶”ê°€ */
             if ( mmuAccessList::add( sIPACLPermit,
                                      &sIPACLAddr,
                                      sIPACLAddrStr,

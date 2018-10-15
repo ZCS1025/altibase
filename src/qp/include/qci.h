@@ -35,16 +35,16 @@
 
 /*****************************************************************************
  *
- * qciÀÇ ¼³°è ¿øÄ¢
+ * qciì˜ ì„¤ê³„ ì›ì¹™
  *
- * qci´Â »óÀ§ ·¹ÀÌ¾î(MM)À» À§ÇØ ¸¸µé¾îÁø QP ÀÎÅÍÆäÀÌ½ºÀÌ´Ù.
- * MM¿¡¼­´Â qci¸¦ ÅëÇØ¼­ QP¸¦ ÄÁÆ®·Ñ ÇØ¾ßÇÑ´Ù.
- * QP¿¡¼­´Â qci¸¦ »ç¿ëÇØ¼­´Â ¾ÈµÈ´Ù.
- * qci´Â QPÀÇ ÃÖ »óÀ§ ÀÎÅÍÆäÀÌ½ºÀÌ±â ¶§¹®¿¡
- * couplingÀ» ÁÙÀÌ±â À§ÇØ¼­ÀÌ´Ù.
+ * qciëŠ” ìƒìœ„ ë ˆì´ì–´(MM)ì„ ìœ„í•´ ë§Œë“¤ì–´ì§„ QP ì¸í„°í˜ì´ìŠ¤ì´ë‹¤.
+ * MMì—ì„œëŠ” qcië¥¼ í†µí•´ì„œ QPë¥¼ ì»¨íŠ¸ë¡¤ í•´ì•¼í•œë‹¤.
+ * QPì—ì„œëŠ” qcië¥¼ ì‚¬ìš©í•´ì„œëŠ” ì•ˆëœë‹¤.
+ * qciëŠ” QPì˜ ìµœ ìƒìœ„ ì¸í„°í˜ì´ìŠ¤ì´ê¸° ë•Œë¬¸ì—
+ * couplingì„ ì¤„ì´ê¸° ìœ„í•´ì„œì´ë‹¤.
  *
- * qci¿¡´Â qci class »Ó¸¸ ¾Æ´Ï¶ó qciSession, qciStatementµîÀÇ ÀÚ·á±¸Á¶,
- * qciMisc classµµ Æ÷ÇÔÇÑ´Ù.
+ * qciì—ëŠ” qci class ë¿ë§Œ ì•„ë‹ˆë¼ qciSession, qciStatementë“±ì˜ ìë£Œêµ¬ì¡°,
+ * qciMisc classë„ í¬í•¨í•œë‹¤.
  *
  *****************************************************************************/
 
@@ -58,7 +58,7 @@
 #define QCI_BIND_FLAGS_UPDATABLE_TRUE   QMS_TARGET_IS_UPDATABLE_TRUE
 #define QCI_BIND_FLAGS_UPDATABLE_FALSE  QMS_TARGET_IS_UPDATABLE_FALSE
 
-// iSQLSessionKind¿Í ÀÏÄ¡ÇØ¾ß ÇÑ´Ù.
+// iSQLSessionKindì™€ ì¼ì¹˜í•´ì•¼ í•œë‹¤.
 #define QCI_EXPLAIN_PLAN_OFF          (0)
 #define QCI_EXPLAIN_PLAN_ON           (1)
 #define QCI_EXPLAIN_PLAN_ONLY         (2)
@@ -85,17 +85,17 @@
 
 // qciStatement.flag
 // fix BUG-12452
-// rebuild½Ã ½ÇÆĞÇÑ statement¿¡ ´ëÇØ,
-// ´ÙÀ½ execute ¼öÇà½Ã, rebuild¸¦ ¼öÇàÇÏµµ·Ï ÇÑ´Ù.
-// mmcStatement::execute()ÇÔ¼ö³»¿¡¼­ ÀÌ¸¦ °Ë»çÇØ¼­ rebuild¸¦ ¿Ã·Áº¸³½´Ù.
+// rebuildì‹œ ì‹¤íŒ¨í•œ statementì— ëŒ€í•´,
+// ë‹¤ìŒ execute ìˆ˜í–‰ì‹œ, rebuildë¥¼ ìˆ˜í–‰í•˜ë„ë¡ í•œë‹¤.
+// mmcStatement::execute()í•¨ìˆ˜ë‚´ì—ì„œ ì´ë¥¼ ê²€ì‚¬í•´ì„œ rebuildë¥¼ ì˜¬ë ¤ë³´ë‚¸ë‹¤.
 #define QCI_STMT_REBUILD_EXEC_MASK    (0x00000001)
 #define QCI_STMT_REBUILD_EXEC_SUCCESS (0x00000000)
 #define QCI_STMT_REBUILD_EXEC_FAILURE (0x00000001)
 
 // PROJ-2163
-// reprepare½Ã ½ÇÆĞÇÑ statement¿¡ ´ëÇØ,
-// ´ÙÀ½ execute ¼öÇà½Ã, reprepare¸¦ ¼öÇàÇÏµµ·Ï ÇÑ´Ù.
-// mmcStatement::reprepare()ÇÔ¼ö³»¿¡¼­ ÀÌ¸¦ °Ë»çÇØ¼­ ¼öÇàÇÑ´Ù.
+// reprepareì‹œ ì‹¤íŒ¨í•œ statementì— ëŒ€í•´,
+// ë‹¤ìŒ execute ìˆ˜í–‰ì‹œ, reprepareë¥¼ ìˆ˜í–‰í•˜ë„ë¡ í•œë‹¤.
+// mmcStatement::reprepare()í•¨ìˆ˜ë‚´ì—ì„œ ì´ë¥¼ ê²€ì‚¬í•´ì„œ ìˆ˜í–‰í•œë‹¤.
 #define QCI_STMT_REHARDPREPARE_EXEC_MASK    (0x00000004)
 #define QCI_STMT_REHARDPREPARE_EXEC_SUCCESS (0x00000000)
 #define QCI_STMT_REHARDPREPARE_EXEC_FAILURE (0x00000004)
@@ -114,7 +114,7 @@ extern const void * gQcmReplItems;
 extern const void * gQcmReplItemsIndex [ QCM_MAX_META_INDICES ];
 extern const void * gQcmReplRecoveryInfos;
 
-/* PROJ-1442 Replication Online Áß DDL Çã¿ë */
+/* PROJ-1442 Replication Online ì¤‘ DDL í—ˆìš© */
 extern const void * gQcmReplOldItems;
 extern const void * gQcmReplOldItemsIndex  [QCM_MAX_META_INDICES];
 extern const void * gQcmReplOldCols;
@@ -136,7 +136,7 @@ extern const void * gQcmReplOfflineDirsIndex [QCM_MAX_META_INDICES];
 #define QCI_CONDITION_LEN                QC_CONDITION_LEN
 
 // PROJ-1436
-// ÇÑ¹ø¿¡ freeÇÒ ÃÖ´ë prepared private templateÀÇ ¼ö
+// í•œë²ˆì— freeí•  ìµœëŒ€ prepared private templateì˜ ìˆ˜
 #define QCI_MAX_FREE_PREP_TMPLATE_COUNT  (32)
 
 /* PROJ-2598 Shard pilot(shard Analyze) */
@@ -153,11 +153,11 @@ typedef qmcInsertCursor   qciInsertCursor;
 
 typedef qcPlanProperty    qciPlanProperty;
 
-// sessionÀ¸·Î °øÀ¯ÇØ¾ß ÇÏ´Â Á¤º¸ÀÌÁö¸¸,
-// qp¿¡¼­¸¸ »ç¿ëÇÏ´Â Á¤º¸µéÀÇ ÁıÇÕ.
+// sessionìœ¼ë¡œ ê³µìœ í•´ì•¼ í•˜ëŠ” ì •ë³´ì´ì§€ë§Œ,
+// qpì—ì„œë§Œ ì‚¬ìš©í•˜ëŠ” ì •ë³´ë“¤ì˜ ì§‘í•©.
 typedef qcSessionSpecific qciSessionSpecific;
 
-// sessionÁ¤º¸¸¦ ¾ò±â À§ÇÑ mmcSessionÀÇ callback ÇÔ¼öµéÀÇ ÁıÇÕ.
+// sessionì •ë³´ë¥¼ ì–»ê¸° ìœ„í•œ mmcSessionì˜ callback í•¨ìˆ˜ë“¤ì˜ ì§‘í•©.
 typedef qcSessionCallback qciSessionCallback;
 
 /*
@@ -172,8 +172,8 @@ typedef struct qcRemoteTableColumnInfo  qciRemoteTableColumnInfo;
 typedef struct qcRemoteTableCallback    qciRemoteTableCallback;
 
 // PROJ-2163
-// Plan cache µî·ÏÀ» À§ÇÑ È£½ºÆ® º¯¼ö Á¤º¸
-// qciSQLPlanCacheContext ¿¡ qcPlanBindInfo ¸¦ Ãß°¡
+// Plan cache ë“±ë¡ì„ ìœ„í•œ í˜¸ìŠ¤íŠ¸ ë³€ìˆ˜ ì •ë³´
+// qciSQLPlanCacheContext ì— qcPlanBindInfo ë¥¼ ì¶”ê°€
 typedef qcPlanBindInfo      qciPlanBindInfo;
 
 /* PROJ-2240 */
@@ -303,37 +303,37 @@ typedef qcmTableInfo qciTableInfo;
 // PROJ-1624 non-partitioned index
 typedef qmsIndexTableRef qciIndexTableRef;
 
-// statement »óÅÂÁÖ±â
+// statement ìƒíƒœì£¼ê¸°
 typedef enum
 {
     QCI_STMT_STATE_ALLOCED          = 0,
     QCI_STMT_STATE_INITIALIZED      = 1,
     QCI_STMT_STATE_PARSED           = 2,
-    // PROJ-2163 ¼ø¼­º¯°æ
-    // QP ÀÇ type binding(È£½ºÆ® º¯¼öÀÇ Å¸ÀÔ °áÁ¤) ÀÌ prepare °úÁ¤ Áß
-    // ¼öÇàµÇµµ·Ï º¯°æµÇ¾ú´Ù.
-    // µû¶ó¼­ QCI_STMT_STATE_PREPARED ¿Í QCI_STMT_STATE_PARAM_INFO_BOUND ÀÇ
-    // ¼ø¼­°¡ ¼­·Î ¹Ù²î¾ú´Ù.
+    // PROJ-2163 ìˆœì„œë³€ê²½
+    // QP ì˜ type binding(í˜¸ìŠ¤íŠ¸ ë³€ìˆ˜ì˜ íƒ€ì… ê²°ì •) ì´ prepare ê³¼ì • ì¤‘
+    // ìˆ˜í–‰ë˜ë„ë¡ ë³€ê²½ë˜ì—ˆë‹¤.
+    // ë”°ë¼ì„œ QCI_STMT_STATE_PREPARED ì™€ QCI_STMT_STATE_PARAM_INFO_BOUND ì˜
+    // ìˆœì„œê°€ ì„œë¡œ ë°”ë€Œì—ˆë‹¤.
     // QCI_STMT_STATE_PREPARED         = 3,
     // QCI_STMT_STATE_PARAM_INFO_BOUND = 4,
-    QCI_STMT_STATE_PARAM_INFO_BOUND = 3,  // host º¯¼ö Á¤º¸
+    QCI_STMT_STATE_PARAM_INFO_BOUND = 3,  // host ë³€ìˆ˜ ì •ë³´
     QCI_STMT_STATE_PREPARED         = 4,
     // BUG-
-    // PROJ-1558 LOBÁö¿øÀ» À§ÇÑ MM+CM È®Àå¿¡¼­
-    // mm³»ºÎÀûÀ¸·Î direct execute´Â ¾ø¾îÁö°í,
-    // prepare/execute·Î¸¸ ¼öÇàµÊ.
-    // µû¶ó¼­, direct execute¸¦ À§ÇÑ ¾Æ·¡ »óÅÂÀüÀÌ´Â Á¦°ÅÇÔ.
+    // PROJ-1558 LOBì§€ì›ì„ ìœ„í•œ MM+CM í™•ì¥ì—ì„œ
+    // mmë‚´ë¶€ì ìœ¼ë¡œ direct executeëŠ” ì—†ì–´ì§€ê³ ,
+    // prepare/executeë¡œë§Œ ìˆ˜í–‰ë¨.
+    // ë”°ë¼ì„œ, direct executeë¥¼ ìœ„í•œ ì•„ë˜ ìƒíƒœì „ì´ëŠ” ì œê±°í•¨.
     // proj-1535
-    // direct executeÀÇ °æ¿ì spvEnv->procPlanList¿¡ ´ëÇØ
-    // unlatchÇÏÁö ¾ÊÀº »óÅÂ°¡ ÇÊ¿äÇÔ
+    // direct executeì˜ ê²½ìš° spvEnv->procPlanListì— ëŒ€í•´
+    // unlatchí•˜ì§€ ì•Šì€ ìƒíƒœê°€ í•„ìš”í•¨
     // QCI_STMT_STATE_PREPARED_DIRECT  = 4,
-    QCI_STMT_STATE_PARAM_DATA_BOUND = 5,  // hostº¯¼ö µ¥ÀÌÅ¸
+    QCI_STMT_STATE_PARAM_DATA_BOUND = 5,  // hostë³€ìˆ˜ ë°ì´íƒ€
     QCI_STMT_STATE_EXECUTED         = 6,
     QCI_STMT_STATE_MAX
 } qciStmtState;
 
 // proj-1535
-// statement»óÅÂÀüÀÌ½Ã, statement¿Í PSM¿¡ ´ëÇØ ¼öÇàÇÒ ÀÛ¾÷µé
+// statementìƒíƒœì „ì´ì‹œ, statementì™€ PSMì— ëŒ€í•´ ìˆ˜í–‰í•  ì‘ì—…ë“¤
 typedef enum
 {
     STATE_OK                = 0x00,
@@ -354,7 +354,7 @@ typedef enum
 {
     EXEC_INITIALIZE       = 0,
     EXEC_PARSE            = 1,
-    EXEC_BIND_PARAM_INFO  = 2,  // PROJ-2163 ¹ÙÀÎµù ÀçÁ¤¸³À¸·Î ¼ø¼­ º¯°æ
+    EXEC_BIND_PARAM_INFO  = 2,  // PROJ-2163 ë°”ì¸ë”© ì¬ì •ë¦½ìœ¼ë¡œ ìˆœì„œ ë³€ê²½
     EXEC_PREPARE          = 3,
     EXEC_BIND_PARAM_DATA  = 4,
     EXEC_EXECUTE          = 5,
@@ -374,17 +374,17 @@ typedef enum
 
 typedef enum
 {
-    QCI_SQL_PLAN_CACHE_IN_NORMAL = 0,   // SUCCESSÀÌ°Å³ª cache ºñ´ë»óÀÎ °æ¿ì
+    QCI_SQL_PLAN_CACHE_IN_NORMAL = 0,   // SUCCESSì´ê±°ë‚˜ cache ë¹„ëŒ€ìƒì¸ ê²½ìš°
     QCI_SQL_PLAN_CACHE_IN_FAILURE
 } qciSqlPlanCacheInResult;
 
-// Plan Display Option¿¡ ´ëÇÑ Á¤ÀÇ·Î
-// ALTER SESSION SET EXPLAIN PLAN = ON °ú
-// ALTER SESSION SET EXPLAIN PLAN = ONLY¸¦ ±¸º°ÇÏ±â À§ÇÑ »ó¼öÀÌ´Ù.
+// Plan Display Optionì— ëŒ€í•œ ì •ì˜ë¡œ
+// ALTER SESSION SET EXPLAIN PLAN = ON ê³¼
+// ALTER SESSION SET EXPLAIN PLAN = ONLYë¥¼ êµ¬ë³„í•˜ê¸° ìœ„í•œ ìƒìˆ˜ì´ë‹¤.
 typedef enum
 {
-    QCI_DISPLAY_ALL  = QMN_DISPLAY_ALL, // ¼öÇà °á°ú¸¦ ¸ğµÎ Display ÇÔ
-    QCI_DISPLAY_CODE      // Code ¿µ¿ªÀÇ Á¤º¸¸¸À» Display ÇÔ
+    QCI_DISPLAY_ALL  = QMN_DISPLAY_ALL, // ìˆ˜í–‰ ê²°ê³¼ë¥¼ ëª¨ë‘ Display í•¨
+    QCI_DISPLAY_CODE      // Code ì˜ì—­ì˜ ì •ë³´ë§Œì„ Display í•¨
 } qciPlanDisplayMode;
 
 /* PROJ-2207 Password policy support */
@@ -397,10 +397,10 @@ typedef enum
 
 typedef struct qciAccLimitOpts
 {
-    UInt             mCurrentDate;     /* ÇöÀç ÀÏ¼ö*/
+    UInt             mCurrentDate;     /* í˜„ì¬ ì¼ìˆ˜*/
     UInt             mPasswReuseDate;  /* PASSWORD_REUSE_DATE */
-    UInt             mUserFailedCnt;   /* LOGIN FAIL È½¼ö */
-    qciAccLockStatus mAccLockStatus;   /* LOCK »óÅÂ */
+    UInt             mUserFailedCnt;   /* LOGIN FAIL íšŸìˆ˜ */
+    qciAccLockStatus mAccLockStatus;   /* LOCK ìƒíƒœ */
     
     UInt    mAccountLock;         /* ACCOUNT_LOCK */
     UInt    mPasswLimitFlag;      /* PASSWORD_LIMIT_FLAG */
@@ -544,7 +544,7 @@ typedef enum qciAuditObjectType
     QCI_AUDIT_OBJECT_PKG     // BUG-36973 package  
 } qciAuditObjectType;
 
-// sql¿¡¼­ ÂüÁ¶ÇÏ´Â audit objects
+// sqlì—ì„œ ì°¸ì¡°í•˜ëŠ” audit objects
 typedef struct qciAuditRefObject
 {
     UInt                 userID;
@@ -552,7 +552,7 @@ typedef struct qciAuditRefObject
     qciAuditObjectType   objectType;
 } qciAuditRefObject;
 
-// sqlÀÇ audit operation°ú ÂüÁ¶ÇÏ´Â audit objects
+// sqlì˜ audit operationê³¼ ì°¸ì¡°í•˜ëŠ” audit objects
 typedef struct qciAuditInfo
 {
     qciAuditRefObject   * refObjects;
@@ -582,11 +582,11 @@ typedef struct qciStatement
 
     UInt                  flag;
 
-    // mmÀÌ °ü¸®ÇÏ´Â root smiStatement.
-    // rebuild½Ã root smiStatement°¡ ÇÊ¿ä.
-    // rebuild½Ã smiStatement end & beginÀ» ¼öÇàÇØ¾ß ÇÏ¹Ç·Î,
-    // qp¿¡¼­ µû·Î °ü¸®¸¦ ÇÒ ÇÊ¿ä¾øÀÌ
-    // mmÀ¸·ÎºÎÅÍ smiStatement¸¦ ¹Ş¾Æ¼­ Ã³¸®ÇÔ.
+    // mmì´ ê´€ë¦¬í•˜ëŠ” root smiStatement.
+    // rebuildì‹œ root smiStatementê°€ í•„ìš”.
+    // rebuildì‹œ smiStatement end & beginì„ ìˆ˜í–‰í•´ì•¼ í•˜ë¯€ë¡œ,
+    // qpì—ì„œ ë”°ë¡œ ê´€ë¦¬ë¥¼ í•  í•„ìš”ì—†ì´
+    // mmìœ¼ë¡œë¶€í„° smiStatementë¥¼ ë°›ì•„ì„œ ì²˜ë¦¬í•¨.
     // smiStatement    * parentSmiStmtForPrepare;
 
 } qciStatement;
@@ -691,9 +691,9 @@ typedef struct qciArgEnqueue
 typedef struct qciArgDequeue
 {
     void       * mMmSession;
-    UInt         mTableID;   // dequeue¸¦ ¼öÇàÇÒ Å¥ Å×ÀÌºíÀÇ ID
-    smSCN        mViewSCN;   // PROJ-1677 DEQ dequeue ¼öÇà½Ã statement SCN.
-    ULong        mWaitSec;   // dequeue½Ã ´ë±â ½Ã°£
+    UInt         mTableID;   // dequeueë¥¼ ìˆ˜í–‰í•  í í…Œì´ë¸”ì˜ ID
+    smSCN        mViewSCN;   // PROJ-1677 DEQ dequeue ìˆ˜í–‰ì‹œ statement SCN.
+    ULong        mWaitSec;   // dequeueì‹œ ëŒ€ê¸° ì‹œê°„
 } qciArgDequeue;
 
 
@@ -702,7 +702,7 @@ typedef struct qciArgDequeue
 //-------------------------------------
 typedef struct qciBindColumn
 {
-    UShort   mId;           // 0 ºÎÅÍ »ç¿ëÇÔ.
+    UShort   mId;           // 0 ë¶€í„° ì‚¬ìš©í•¨.
     UInt     mType;
     UInt     mLanguage;
     UInt     mArguments;
@@ -731,15 +731,15 @@ typedef struct qciBindColumn
 
 typedef struct qciBindParam
 {
-    UShort          id;      // 0 ºÎÅÍ »ç¿ëÇÔ.
+    UShort          id;      // 0 ë¶€í„° ì‚¬ìš©í•¨.
     SChar         * name;
     UInt            type;
     UInt            language;
     UInt            arguments;
-    SInt            precision;      // »ç¿ëÀÚ°¡ ¹ÙÀÎµåÇÑ precision
-    SInt            scale;          // »ç¿ëÀÚ°¡ ¹ÙÀÎµåÇÑ scale
+    SInt            precision;      // ì‚¬ìš©ìê°€ ë°”ì¸ë“œí•œ precision
+    SInt            scale;          // ì‚¬ìš©ìê°€ ë°”ì¸ë“œí•œ scale
     UInt            inoutType;
-    void          * data;           // µ¥ÀÌÅ¸¸¦ °¡¸®Å°´Â Æ÷ÀÎÅÍ
+    void          * data;           // ë°ì´íƒ€ë¥¼ ê°€ë¦¬í‚¤ëŠ” í¬ì¸í„°
     UInt            dataSize;       // PROJ-2163
     SShort          ctype;          // PROJ-2256
     SShort          sqlctype;       // PROJ-2616
@@ -761,8 +761,8 @@ typedef struct qciBindParamInfo
     void          * canonBuf;
 } qciBindParamInfo;
 
-/* PROJ-2160 CM Å¸ÀÔÁ¦°Å
-   fetch ½Ã »ç¿ëµÇ´Â Á¤º¸ */
+/* PROJ-2160 CM íƒ€ì…ì œê±°
+   fetch ì‹œ ì‚¬ìš©ë˜ëŠ” ì •ë³´ */
 typedef struct qciFetchColumnInfo
 {
     UChar *value;
@@ -826,7 +826,7 @@ typedef struct qciSQLAllocStmtContext
     void                * mmStatement; // OUT parameter
     void                * mmParentStatement;
     void                * mmSession;
-    idBool                dedicatedMode; // sessionÀÇ current stmt·Î ¼³Á¤¿©ºÎ
+    idBool                dedicatedMode; // sessionì˜ current stmtë¡œ ì„¤ì •ì—¬ë¶€
 } qciSQLAllocStmtContext;
 
 typedef struct qciSQLFreeStmtContext
@@ -958,38 +958,38 @@ typedef IDE_RC (*qciSetReplicationCallback)( qciValidateReplicationCallback aVal
 
 /*****************************************************************************
  *
- * qci class¿¡´Â Å©°Ô qciSession °ü·Ã ÇÔ¼ö¿Í
- * qciStatement °ü·Ã ÇÔ¼ö·Î ³ª´¶´Ù.
+ * qci classì—ëŠ” í¬ê²Œ qciSession ê´€ë ¨ í•¨ìˆ˜ì™€
+ * qciStatement ê´€ë ¨ í•¨ìˆ˜ë¡œ ë‚˜ë‰œë‹¤.
  *
- * qciSession °ü·Ã ÇÔ¼ö´Â initializeSession, finalizeSession ÇÔ¼ö°¡ ÀÖÀ¸¸ç,
- * qciStatement °ü·Ã ÇÔ¼ö´Â ¸ğµÎ qciStatement * ÀÎÀÚ¸¦ ¹Ş´Â´Ù.
+ * qciSession ê´€ë ¨ í•¨ìˆ˜ëŠ” initializeSession, finalizeSession í•¨ìˆ˜ê°€ ìˆìœ¼ë©°,
+ * qciStatement ê´€ë ¨ í•¨ìˆ˜ëŠ” ëª¨ë‘ qciStatement * ì¸ìë¥¼ ë°›ëŠ”ë‹¤.
  *
- * + qciStatementÀÇ »óÅÂ ÁÖ±â
+ * + qciStatementì˜ ìƒíƒœ ì£¼ê¸°
  *
  *   - alloced
- *     : qciStatement Áö¿ª º¯¼ö¸¦ ¼±¾ğÇßÀ» ¶§ÀÇ »óÅÂ
+ *     : qciStatement ì§€ì—­ ë³€ìˆ˜ë¥¼ ì„ ì–¸í–ˆì„ ë•Œì˜ ìƒíƒœ
  *
  *   - initialized
- *     : ÃÊ±âÈ­°¡ µÈ »óÅÂ. ³»ºÎÀûÀ¸·Î °¢Á¾ memory°¡ allocµÈ´Ù.
- *       ±×¸®°í qciSessionÀÌ ¼¼ÆÃµÈ´Ù.
+ *     : ì´ˆê¸°í™”ê°€ ëœ ìƒíƒœ. ë‚´ë¶€ì ìœ¼ë¡œ ê°ì¢… memoryê°€ allocëœë‹¤.
+ *       ê·¸ë¦¬ê³  qciSessionì´ ì„¸íŒ…ëœë‹¤.
  *
  *   - parsed
- *     : ÆÄ½Ì °úÁ¤À» ¸¶Ä£ »óÅÂ
- *       rebuild°¡ ¹ß»ıÇÏ¸é ÀÌ »óÅÂºÎÅÍ ´Ù½Ã Ãâ¹ßÇÑ´Ù.
+ *     : íŒŒì‹± ê³¼ì •ì„ ë§ˆì¹œ ìƒíƒœ
+ *       rebuildê°€ ë°œìƒí•˜ë©´ ì´ ìƒíƒœë¶€í„° ë‹¤ì‹œ ì¶œë°œí•œë‹¤.
  *
  *   - prepared
- *     : validation, optimization °úÁ¤À» ¸¶Ä£ »óÅÂ
- *       SQL cacheÀÇ ´ë»óÀÌ µÈ´Ù.
+ *     : validation, optimization ê³¼ì •ì„ ë§ˆì¹œ ìƒíƒœ
+ *       SQL cacheì˜ ëŒ€ìƒì´ ëœë‹¤.
  *
  *   - bindParamInfo
- *     : È£½ºÆ® º¯¼ö¿¡ ´ëÇÑ ÄÃ·³ Á¤º¸°¡ ¹ÙÀÎµùµÈ »óÅÂ
+ *     : í˜¸ìŠ¤íŠ¸ ë³€ìˆ˜ì— ëŒ€í•œ ì»¬ëŸ¼ ì •ë³´ê°€ ë°”ì¸ë”©ëœ ìƒíƒœ
  *
  *   - bindParamData
- *     : È£½ºÆ® º¯¼ö¿¡ µ¥ÀÌÅÍ°¡ ¹ÙÀÎµùµÈ »óÅÂ
+ *     : í˜¸ìŠ¤íŠ¸ ë³€ìˆ˜ì— ë°ì´í„°ê°€ ë°”ì¸ë”©ëœ ìƒíƒœ
  *
  *   - executed
- *     : ½ÇÇàÀÌ µÈ »óÅÂ
- *       ÃÖ»óÀ§ planÀÇ initÀÌ È£ÃâµÈ »óÅÂÀÌ´Ù.
+ *     : ì‹¤í–‰ì´ ëœ ìƒíƒœ
+ *       ìµœìƒìœ„ planì˜ initì´ í˜¸ì¶œëœ ìƒíƒœì´ë‹¤.
  *
  *****************************************************************************/
 class qci
@@ -1000,32 +1000,32 @@ private:
 
     static idBool          mInplaceUpdateDisable;
     // proj-1535
-    // statement »óÅÂÀüÀÌ¿¡ °ü°èµÈ ÇÔ¼ö È£Ãâ½Ã,
-    // Çö »óÅÂ¿¡¼­ È£ÃâµÉ ¼ö ÀÖ´Â ÇÔ¼öÀÎÁö ÆÇ´ÜÇÏ°í,
-    // È£Ãâ°¡´ÉÇÑ ÇÔ¼öÀÌ¸é,
-    // ÇÔ¼ö¼öÇà¿¡ ¸Â°Ô psm lock or qcStatement »óÅÂ Á¤¸®.
+    // statement ìƒíƒœì „ì´ì— ê´€ê³„ëœ í•¨ìˆ˜ í˜¸ì¶œì‹œ,
+    // í˜„ ìƒíƒœì—ì„œ í˜¸ì¶œë  ìˆ˜ ìˆëŠ” í•¨ìˆ˜ì¸ì§€ íŒë‹¨í•˜ê³ ,
+    // í˜¸ì¶œê°€ëŠ¥í•œ í•¨ìˆ˜ì´ë©´,
+    // í•¨ìˆ˜ìˆ˜í–‰ì— ë§ê²Œ psm lock or qcStatement ìƒíƒœ ì •ë¦¬.
     static IDE_RC checkExecuteFuncAndSetEnv( qciStatement * aStatement,
                                              qciExecFunc  aExecFunc );
 
-    // ÇØ´ç °úÁ¤À» ¼º°øÀûÀ¸·Î ¼öÇàÇßÀ» °æ¿ì,
-    // ±×¿¡ ¸Â´Â »óÅÂÀüÀÌ·Î ÀÌµ¿.
+    // í•´ë‹¹ ê³¼ì •ì„ ì„±ê³µì ìœ¼ë¡œ ìˆ˜í–‰í–ˆì„ ê²½ìš°,
+    // ê·¸ì— ë§ëŠ” ìƒíƒœì „ì´ë¡œ ì´ë™.
     static IDE_RC  changeStmtState( qciStatement * aStatement,
                                     qciExecFunc    aExecFunc );
 
-    // prepare Á÷ÈÄ¿¡ bind column ¹è¿­À» »ı¼ºÇÔ
+    // prepare ì§í›„ì— bind column ë°°ì—´ì„ ìƒì„±í•¨
     static IDE_RC makeBindColumnArray( qciStatement * aStatement );
 
-    // prepare Á÷ÈÄ¿¡ bind param ¹è¿­À» »ı¼ºÇÔ
+    // prepare ì§í›„ì— bind param ë°°ì—´ì„ ìƒì„±í•¨
     static IDE_RC makeBindParamArray( qciStatement * aStatement );
 
-    // executeÀü bind param info Á¤º¸¸¦ ±¸ÃàÇÑ´Ù.
+    // executeì „ bind param info ì •ë³´ë¥¼ êµ¬ì¶•í•œë‹¤.
     static IDE_RC buildBindParamInfo( qciStatement * aStatement );
 
-    // PROJ-1436 shared plan cache¸¦ »ı¼ºÇÑ´Ù.
+    // PROJ-1436 shared plan cacheë¥¼ ìƒì„±í•œë‹¤.
     static IDE_RC makePlanCacheInfo( qciStatement           * aStatement,
                                      qciSQLPlanCacheContext * aPlanCacheContext );
 
-    // PROJ-1436 prepared templateÀ» »ı¼ºÇÑ´Ù.
+    // PROJ-1436 prepared templateì„ ìƒì„±í•œë‹¤.
     static IDE_RC allocPrepTemplate( qcStatement     * aStatement,
                                      qcPrepTemplate ** aPrepTemplate );
 
@@ -1056,47 +1056,47 @@ public:
 
     /*************************************************************************
      *
-     * qciSession °ü·Ã ÇÔ¼öµé
+     * qciSession ê´€ë ¨ í•¨ìˆ˜ë“¤
      *
      *************************************************************************/
 
-    // ¼¼¼ÇÀ» ÃÊ±âÈ­ÇÑ´Ù.
-    // QP ³»ºÎÀûÀ¸·Î »ç¿ëµÇ´Â µ¥ÀÌÅÍ¸¦ À§ÇÑ
-    // °ø°£ ÇÒ´ç ¹× °¢ µ¥ÀÌÅÍ¿¡ ´ëÇÑ ÃÊ±âÈ­°¡ ¼öÇàµÈ´Ù.
-    // ¼¼¼ÇÀÌ ½ÃÀÛµÉ ¶§ È£ÃâµÇ¾î¾ß ÇÑ´Ù.
+    // ì„¸ì…˜ì„ ì´ˆê¸°í™”í•œë‹¤.
+    // QP ë‚´ë¶€ì ìœ¼ë¡œ ì‚¬ìš©ë˜ëŠ” ë°ì´í„°ë¥¼ ìœ„í•œ
+    // ê³µê°„ í• ë‹¹ ë° ê° ë°ì´í„°ì— ëŒ€í•œ ì´ˆê¸°í™”ê°€ ìˆ˜í–‰ëœë‹¤.
+    // ì„¸ì…˜ì´ ì‹œì‘ë  ë•Œ í˜¸ì¶œë˜ì–´ì•¼ í•œë‹¤.
     static IDE_RC initializeSession( qciSession *aSession,
                                      void       *aMmSession );
 
-    // QP ³»ºÎÀûÀ¸·Î »ç¿ëµÈ µ¥ÀÌÅÍ¸¦ À§ÇÑ °ø°£À» ÇØÁ¦ÇÑ´Ù.
-    // ¼¼¼ÇÀÌ Á¾·áµÉ ¶§ È£ÃâµÇ¾î¾ß ÇÑ´Ù.
+    // QP ë‚´ë¶€ì ìœ¼ë¡œ ì‚¬ìš©ëœ ë°ì´í„°ë¥¼ ìœ„í•œ ê³µê°„ì„ í•´ì œí•œë‹¤.
+    // ì„¸ì…˜ì´ ì¢…ë£Œë  ë•Œ í˜¸ì¶œë˜ì–´ì•¼ í•œë‹¤.
     static IDE_RC finalizeSession( qciSession *aSession,
                                    void       *aMmSession );
 
     // PROJ-1407 Temporary Table
-    // session¿¡¼­ end-transactionÀÌ ¼öÇàµÇ´Â °æ¿ì commitÀÌÈÄ¿¡ ¼öÇàµÈ´Ù.
+    // sessionì—ì„œ end-transactionì´ ìˆ˜í–‰ë˜ëŠ” ê²½ìš° commitì´í›„ì— ìˆ˜í–‰ëœë‹¤.
     static void endTransForSession( qciSession * aSession );
 
     // PROJ-1407 Temporary Table
-    // session¿¡¼­ end-sessionÀÌ ¼öÇàµÇ´Â °æ¿ì commitÀÌÈÄ¿¡ ¼öÇàµÈ´Ù.
+    // sessionì—ì„œ end-sessionì´ ìˆ˜í–‰ë˜ëŠ” ê²½ìš° commitì´í›„ì— ìˆ˜í–‰ëœë‹¤.
     static void endSession( qciSession * aSession );
     
     /*************************************************************************
      *
-     * qciStatement »óÅÂ ÁÖ±â ÇÔ¼öµé
+     * qciStatement ìƒíƒœ ì£¼ê¸° í•¨ìˆ˜ë“¤
      *
      *************************************************************************/
 
     // initializeStatement()
-    // statement¸¦ ÃÊ±âÈ­ÇÑ´Ù.
-    // ³»ºÎÀûÀ¸·Î °ø°£À» ÇÒ´ç¹Ş°í °¢Á¾ ¸â¹öµéÀ» ÃÊ±âÈ­ÇÑ´Ù.
-    // sessionÀº ÀĞ´Â ¿ëµµ·Î¸¸ »ç¿ëÇÑ´Ù.
-    // ÀÌ ÇÔ¼ö°¡ È£ÃâµÇ¸é statement´Â initialized »óÅÂ°¡ µÈ´Ù.
+    // statementë¥¼ ì´ˆê¸°í™”í•œë‹¤.
+    // ë‚´ë¶€ì ìœ¼ë¡œ ê³µê°„ì„ í• ë‹¹ë°›ê³  ê°ì¢… ë©¤ë²„ë“¤ì„ ì´ˆê¸°í™”í•œë‹¤.
+    // sessionì€ ì½ëŠ” ìš©ë„ë¡œë§Œ ì‚¬ìš©í•œë‹¤.
+    // ì´ í•¨ìˆ˜ê°€ í˜¸ì¶œë˜ë©´ statementëŠ” initialized ìƒíƒœê°€ ëœë‹¤.
     //
-    //   @ aStatement : ´ë»ó statement
+    //   @ aStatement : ëŒ€ìƒ statement
     //
-    //   @ aSession   : statementÃ³¸®½Ã ÂüÁ¶ÇÒ ¼¼¼Ç Á¤º¸
-    //                  °°Àº ¼¼¼Ç¾ÈÀÇ ¸ğµç statementµéÀº
-    //                  session Á¤º¸¸¦ °øÀ¯ÇÑ´Ù.
+    //   @ aSession   : statementì²˜ë¦¬ì‹œ ì°¸ì¡°í•  ì„¸ì…˜ ì •ë³´
+    //                  ê°™ì€ ì„¸ì…˜ì•ˆì˜ ëª¨ë“  statementë“¤ì€
+    //                  session ì •ë³´ë¥¼ ê³µìœ í•œë‹¤.
     //
     static IDE_RC initializeStatement( qciStatement *aStatement,
                                        qciSession   *aSession,
@@ -1104,35 +1104,35 @@ public:
                                        idvSQL       *aStatistics );
 
     // finalizeStatement()
-    // initializeÇÒ ¶§ ÇÒ´ç ¹Ş¾Ò´ø ¸Ş¸ğ¸®µéÀ» ¸ğµÎ ÇØÁ¦ÇÑ´Ù.
-    // ÀÌ ÇÔ¼ö°¡ È£ÃâµÇ¸é alloced »óÅÂ°¡ µÈ´Ù.
+    // initializeí•  ë•Œ í• ë‹¹ ë°›ì•˜ë˜ ë©”ëª¨ë¦¬ë“¤ì„ ëª¨ë‘ í•´ì œí•œë‹¤.
+    // ì´ í•¨ìˆ˜ê°€ í˜¸ì¶œë˜ë©´ alloced ìƒíƒœê°€ ëœë‹¤.
     //
-    //   @ aStatement : ´ë»ó statement
+    //   @ aStatement : ëŒ€ìƒ statement
     //
     static IDE_RC finalizeStatement( qciStatement *aStatement );
 
     // clearStatement()
-    // statementÀÇ »óÅÂ¸¦ µÚ·Î µ¹¸°´Ù.
-    // parse, prepare, bind, execute ½Ã¿¡ ÀúÀåµÈ Á¤º¸µéÀ» »èÁ¦ÇÑ´Ù.
+    // statementì˜ ìƒíƒœë¥¼ ë’¤ë¡œ ëŒë¦°ë‹¤.
+    // parse, prepare, bind, execute ì‹œì— ì €ì¥ëœ ì •ë³´ë“¤ì„ ì‚­ì œí•œë‹¤.
     //
-    //   @ aStatement : ´ë»ó statement
+    //   @ aStatement : ëŒ€ìƒ statement
     //
-    //   @ aTargetState : µÇµ¹¸± »óÅÂ
-    //       - INITIALIZED : ¸ğµç Á¤º¸µéÀ» »èÁ¦ÇÏ°í ÃÊ±âÈ­ÇÑ´Ù.
-    //       - PARAM_DATA_BOUND : execution Á¤º¸¸¦ ³¯¸®°í
-    //                            bindµÈ ÈÄÀÇ »óÅÂ·Î µ¹¸°´Ù.
-    //       - ±×¿Ü        : »óÅÂÀüÀÌ ¿¡·¯ ¹ß»ı
+    //   @ aTargetState : ë˜ëŒë¦´ ìƒíƒœ
+    //       - INITIALIZED : ëª¨ë“  ì •ë³´ë“¤ì„ ì‚­ì œí•˜ê³  ì´ˆê¸°í™”í•œë‹¤.
+    //       - PARAM_DATA_BOUND : execution ì •ë³´ë¥¼ ë‚ ë¦¬ê³ 
+    //                            bindëœ í›„ì˜ ìƒíƒœë¡œ ëŒë¦°ë‹¤.
+    //       - ê·¸ì™¸        : ìƒíƒœì „ì´ ì—ëŸ¬ ë°œìƒ
     //
     static IDE_RC clearStatement( qciStatement *aStatement,
                                   smiStatement *aSmiStmt,
                                   qciStmtState  aTargetState );
 
     // getCurrentState()
-    // statementÀÇ ÇöÀç »óÅÂ¸¦ µ¹·ÁÁØ´Ù.
+    // statementì˜ í˜„ì¬ ìƒíƒœë¥¼ ëŒë ¤ì¤€ë‹¤.
     //
-    //   @ aStatement : ´ë»ó statement
+    //   @ aStatement : ëŒ€ìƒ statement
     //
-    //   @ aState     : ´ë»ó statementÀÇ »óÅÂ (Output)
+    //   @ aState     : ëŒ€ìƒ statementì˜ ìƒíƒœ (Output)
     //
     static IDE_RC getCurrentState( qciStatement *aStatement,
                                    qciStmtState *aState );
@@ -1140,55 +1140,55 @@ public:
 
     /*************************************************************************
      *
-     * Query Ã³¸® ÇÔ¼öµé
+     * Query ì²˜ë¦¬ í•¨ìˆ˜ë“¤
      * parsing -> prepare -> bindParamInfo -> bindParamData
-     *         -> execute -> fetchÀÇ °úÁ¤À» °ÅÄ£´Ù.
+     *         -> execute -> fetchì˜ ê³¼ì •ì„ ê±°ì¹œë‹¤.
      *
      *************************************************************************/
 
     // parse()
-    // initialized »óÅÂÀÇ statement¿¡ ´ëÇØ parsing ÀÛ¾÷À» ¼öÇàÇÑ´Ù.
-    // ÀÔ·Â¹ŞÀº query stringÀÇ ÁÖ¼Ò¸¦ ÀúÀåÇÑ´Ù.
-    // queryStringÀº mm¿¡¼­ °ü¸®ÇÑ´Ù.
+    // initialized ìƒíƒœì˜ statementì— ëŒ€í•´ parsing ì‘ì—…ì„ ìˆ˜í–‰í•œë‹¤.
+    // ì…ë ¥ë°›ì€ query stringì˜ ì£¼ì†Œë¥¼ ì €ì¥í•œë‹¤.
+    // queryStringì€ mmì—ì„œ ê´€ë¦¬í•œë‹¤.
     //
-    //   @ aStatement   : ´ë»ó statement
+    //   @ aStatement   : ëŒ€ìƒ statement
     //
-    //   @ aQueryString : parsingÇÒ SQL text°¡ ÀúÀåµÈ °ø°£ÀÇ ÁÖ¼Ò
+    //   @ aQueryString : parsingí•  SQL textê°€ ì €ì¥ëœ ê³µê°„ì˜ ì£¼ì†Œ
     //
-    //   @ aQueryLen    : SQL textÀÇ ±æÀÌ
+    //   @ aQueryLen    : SQL textì˜ ê¸¸ì´
     //
     static IDE_RC parse( qciStatement *aStatement,
                          SChar        *aQueryString,
                          UInt          aQueryLen );
 
     // prepare()
-    // validation, optimization ÀÛ¾÷À» ¼öÇàÇÑ´Ù.
-    // stored procedure¸¦ Ã³¸®ÇÏ±â À§ÇØ build ÀÛ¾÷À» ¼öÇàÇÑ´Ù.
-    // ³»ºÎÀûÀ¸·Î parse tree°¡ ¿Ï¼ºµÇ°í, execution planÀÌ »ı¼ºµÈ´Ù.
-    // ±×¸®°í preparedµÈ statement¿¡ ´ëÇØ cursor flag¸¦ ¾ò´Â´Ù.
-    // ÀÌ flag¸¦ ÅëÇØ¼­
-    // memory table¿¡ Á¢±ÙÇÏ´ÂÁö disk table¿¡ Á¢±ÙÇÏ´ÂÁö
-    // Á¤º¸¸¦ ¾Ë ¼ö ÀÖ´Ù.
+    // validation, optimization ì‘ì—…ì„ ìˆ˜í–‰í•œë‹¤.
+    // stored procedureë¥¼ ì²˜ë¦¬í•˜ê¸° ìœ„í•´ build ì‘ì—…ì„ ìˆ˜í–‰í•œë‹¤.
+    // ë‚´ë¶€ì ìœ¼ë¡œ parse treeê°€ ì™„ì„±ë˜ê³ , execution planì´ ìƒì„±ëœë‹¤.
+    // ê·¸ë¦¬ê³  preparedëœ statementì— ëŒ€í•´ cursor flagë¥¼ ì–»ëŠ”ë‹¤.
+    // ì´ flagë¥¼ í†µí•´ì„œ
+    // memory tableì— ì ‘ê·¼í•˜ëŠ”ì§€ disk tableì— ì ‘ê·¼í•˜ëŠ”ì§€
+    // ì •ë³´ë¥¼ ì•Œ ìˆ˜ ìˆë‹¤.
     //
-    //   @ aStatement     : ´ë»ó statement
+    //   @ aStatement     : ëŒ€ìƒ statement
     //
-    //   @ aParentSmiStmt : ÃÖ»óÀ§ smiStatement, Áï dummy statement.
-    //                      prepare¿¡ ÇÊ¿äÇÑ smiStatement´Â
-    //                      QP ³»ºÎ¿¡¼­ »ı¼ºÇÑ´Ù.
+    //   @ aParentSmiStmt : ìµœìƒìœ„ smiStatement, ì¦‰ dummy statement.
+    //                      prepareì— í•„ìš”í•œ smiStatementëŠ”
+    //                      QP ë‚´ë¶€ì—ì„œ ìƒì„±í•œë‹¤.
     //
-    //   @ aSmiStmtCursorFlag : preparedµÈ statement°¡ »ı¼ºÇÑ
-    //                          smi statement¿¡ ´ëÇÑ
-    //                          cursor flag¸¦ ¾ò´Â´Ù.
-    //   @ aDirectFlag : direct executeÀÇ °æ¿ì
-    //                   prepare¸¦ ¼öÇàÇÏ°í
-    //                   QCI_STMT_STATE_PREPARED_DIRECT »óÅÂ°¡ µÈ´Ù.
+    //   @ aSmiStmtCursorFlag : preparedëœ statementê°€ ìƒì„±í•œ
+    //                          smi statementì— ëŒ€í•œ
+    //                          cursor flagë¥¼ ì–»ëŠ”ë‹¤.
+    //   @ aDirectFlag : direct executeì˜ ê²½ìš°
+    //                   prepareë¥¼ ìˆ˜í–‰í•˜ê³ 
+    //                   QCI_STMT_STATE_PREPARED_DIRECT ìƒíƒœê°€ ëœë‹¤.
     // PROJ-1436 SQL-Plan Cache.
     static IDE_RC hardPrepare( qciStatement           *aSatement,
                                smiStatement           *aParentSmiStmt,
                                qciSQLPlanCacheContext *aPlanCacheContext );
 
     //-------------------------------------
-    // BIND COLUMN ( target column¿¡ ´ëÇÑ Á¤º¸ )
+    // BIND COLUMN ( target columnì— ëŒ€í•œ ì •ë³´ )
     //-------------------------------------
     static IDE_RC setBindColumnInfo( qciStatement  * aStatement,
                                      qciBindColumn * aBindColumn );
@@ -1201,7 +1201,7 @@ public:
                                     UShort               aBindId,
                                     qciFetchColumnInfo * aFetchColumnInfo);
 
-    // executed »óÅÂÀÇ select ±¸¹®¿¡ ´ëÇØ fetch ÀÛ¾÷À» ¼öÇàÇÑ´Ù.
+    // executed ìƒíƒœì˜ select êµ¬ë¬¸ì— ëŒ€í•´ fetch ì‘ì—…ì„ ìˆ˜í–‰í•œë‹¤.
     static IDE_RC fetchColumn( qciStatement           * aStatement,
                                UShort                   aBindId,
                                qciFetchColumnCallback   aFetchColumnCallback,
@@ -1217,7 +1217,7 @@ public:
                                         UShort          aBindColumnCount );
 
     //-------------------------------------
-    // BIND PARAMETER ( host º¯¼ö¿¡ ´ëÇÑ Á¤º¸ )
+    // BIND PARAMETER ( host ë³€ìˆ˜ì— ëŒ€í•œ ì •ë³´ )
     //-------------------------------------
 
     static IDE_RC setBindParamInfo( qciStatement  * aStatement,
@@ -1281,13 +1281,13 @@ public:
                                        UInt         * aOutBindParamCount );
     
     //--------------------------------------
-    // parameterÀÇ info³ª data¿¡ ´ëÇÑ »óÅÂÀüÀÌ ÇÔ¼ö.
-    // (1) Äõ¸®¼öÇà½Ã
+    // parameterì˜ infoë‚˜ dataì— ëŒ€í•œ ìƒíƒœì „ì´ í•¨ìˆ˜.
+    // (1) ì¿¼ë¦¬ìˆ˜í–‰ì‹œ
     //     initialized->parse->(direct)prepared
     //     ->bindParamInfo->bindParamData->execute
-    // (2) execute Áß
-    //     parameterÀÇ info³ª data Á¤º¸°¡ º¯°æµÇ¾úÀ» °æ¿ì
-    // »óÅÂÀüÀÌ¸¦ À§ÇÑ ÇÔ¼ö.
+    // (2) execute ì¤‘
+    //     parameterì˜ infoë‚˜ data ì •ë³´ê°€ ë³€ê²½ë˜ì—ˆì„ ê²½ìš°
+    // ìƒíƒœì „ì´ë¥¼ ìœ„í•œ í•¨ìˆ˜.
     //--------------------------------------
     static IDE_RC bindParamInfo( qciStatement           * aStatement,
                                  qciSQLPlanCacheContext * aPlanCacheContext );
@@ -1298,56 +1298,56 @@ public:
 
 
     // execute()
-    // execution planÀ» ½ÃÀÛÇÑ´Ù.
-    // ÀÌ ÇÔ¼ö°¡ ¼öÇàµÇ±â À§ÇØ¼­´Â statement°¡ ¹İµå½Ã
-    // bound »óÅÂÀÌ¾î¾ß ÇÑ´Ù.
-    // ÀÌ¿ÜÀÇ °æ¿ì´Â error°¡ ¹ß»ıÇÑ´Ù.
-    // execution¿¡ ÇÊ¿äÇÑ smiStatement¸¦ Á÷Á¢ ÀÎÀÚ·Î Àü´ŞÇØÁÖ¾î¾ß ÇÑ´Ù.
-    // ÀÌ smiStatement´Â statementÀÇ Å¸ÀÔ(DML, DDL, DCL µî)¿¡ µû¶ó
-    // ¶Ç´Â ¼¼¼ÇÀÌ auto commit/non auto commit ¸ğµå¿¡ µû¶ó ´Ù¸£±â ¶§¹®¿¡
-    // ¼¼¼Ç ·¹º§¿¡¼­ °áÁ¤ÇØ¼­ ³Ñ°ÜÁà¾ß ÇÑ´Ù.
+    // execution planì„ ì‹œì‘í•œë‹¤.
+    // ì´ í•¨ìˆ˜ê°€ ìˆ˜í–‰ë˜ê¸° ìœ„í•´ì„œëŠ” statementê°€ ë°˜ë“œì‹œ
+    // bound ìƒíƒœì´ì–´ì•¼ í•œë‹¤.
+    // ì´ì™¸ì˜ ê²½ìš°ëŠ” errorê°€ ë°œìƒí•œë‹¤.
+    // executionì— í•„ìš”í•œ smiStatementë¥¼ ì§ì ‘ ì¸ìë¡œ ì „ë‹¬í•´ì£¼ì–´ì•¼ í•œë‹¤.
+    // ì´ smiStatementëŠ” statementì˜ íƒ€ì…(DML, DDL, DCL ë“±)ì— ë”°ë¼
+    // ë˜ëŠ” ì„¸ì…˜ì´ auto commit/non auto commit ëª¨ë“œì— ë”°ë¼ ë‹¤ë¥´ê¸° ë•Œë¬¸ì—
+    // ì„¸ì…˜ ë ˆë²¨ì—ì„œ ê²°ì •í•´ì„œ ë„˜ê²¨ì¤˜ì•¼ í•œë‹¤.
     //
-    // executionµµÁß¿¡ rebuild error°¡ ¹ß»ıÇÒ ¼ö ÀÖ´Ù.
-    //   - executionÀÌ ½ÃÀÛµÈ ½ÃÁ¡¿¡¼­ stored procedure¿¡ ´ëÇÑ
-    //     DDL ÀÛ¾÷ÀÌ ÀÖ¾úÀ¸¸é rebuild error¸¦ ¹ß»ı½ÃÅ²´Ù.
-    //   - execution planÀ» ½ÇÇàÇÏ´Â µµÁß planÀÌ À¯È¿ÇÏÁö ¾Ê´Ù°í
-    //     ÆÇ´ÜµÇ¸é rebuild error¸¦ ¹ß»ı½ÃÅ²´Ù.
-    // MM¿¡¼­´Â rebuild ¿¡·¯¸¦ ¹Ş°Ô µÇ¸é qci::rebuild¸¦ ÅëÇØ¼­
-    // rebuild ÀÛ¾÷À» ¼öÇàÇÒ ¼ö ÀÖ´Ù.
+    // executionë„ì¤‘ì— rebuild errorê°€ ë°œìƒí•  ìˆ˜ ìˆë‹¤.
+    //   - executionì´ ì‹œì‘ëœ ì‹œì ì—ì„œ stored procedureì— ëŒ€í•œ
+    //     DDL ì‘ì—…ì´ ìˆì—ˆìœ¼ë©´ rebuild errorë¥¼ ë°œìƒì‹œí‚¨ë‹¤.
+    //   - execution planì„ ì‹¤í–‰í•˜ëŠ” ë„ì¤‘ planì´ ìœ íš¨í•˜ì§€ ì•Šë‹¤ê³ 
+    //     íŒë‹¨ë˜ë©´ rebuild errorë¥¼ ë°œìƒì‹œí‚¨ë‹¤.
+    // MMì—ì„œëŠ” rebuild ì—ëŸ¬ë¥¼ ë°›ê²Œ ë˜ë©´ qci::rebuildë¥¼ í†µí•´ì„œ
+    // rebuild ì‘ì—…ì„ ìˆ˜í–‰í•  ìˆ˜ ìˆë‹¤.
     //
-    //   @ aStatement     : ´ë»ó statement
+    //   @ aStatement     : ëŒ€ìƒ statement
     //
-    //   @ aSmiStmt       : executionÀ» ¼öÇàÇÒ smiStatement
-    //                      statementÀÇ Å¸ÀÔ¿¡ µû¶ó ¶Ç´Â auto commit
-    //                      ¸ğµå¿¡ µû¶ó ´Ù¸¥ smiStatement¸¦ ³Ñ°ÜÁà¾ß ÇÑ´Ù.
-    //                      prepare¶§´Â dummy statement¸¦ ³Ñ°ÜÁáÁö¸¸
-    //                      execute½Ã¿¡´Â ½ÇÁ¦ statement¸¦ ³Ñ±ä´Ù.
+    //   @ aSmiStmt       : executionì„ ìˆ˜í–‰í•  smiStatement
+    //                      statementì˜ íƒ€ì…ì— ë”°ë¼ ë˜ëŠ” auto commit
+    //                      ëª¨ë“œì— ë”°ë¼ ë‹¤ë¥¸ smiStatementë¥¼ ë„˜ê²¨ì¤˜ì•¼ í•œë‹¤.
+    //                      prepareë•ŒëŠ” dummy statementë¥¼ ë„˜ê²¨ì¤¬ì§€ë§Œ
+    //                      executeì‹œì—ëŠ” ì‹¤ì œ statementë¥¼ ë„˜ê¸´ë‹¤.
     //
     static IDE_RC execute( qciStatement * aStatement,
                            smiStatement * aSmiStmt );
 
-    // fetch½Ã fetchÇÒ ·¹ÄÚµå À¯¹« ¹İÈ¯.
+    // fetchì‹œ fetchí•  ë ˆì½”ë“œ ìœ ë¬´ ë°˜í™˜.
     static IDE_RC moveNextRecord( qciStatement * aStatement,
                                   smiStatement * aSmiStmt,
                                   idBool       * aRecordExist );
 
 
     // hardRebuild()
-    // execute¸¦ È£ÃâÇßÀ» ¶§ rebuild error¸¦ ¹ŞÀ¸¸é ÀÌ ÇÔ¼ö¸¦ ÅëÇØ¼­
-    // rebuild ÀÛ¾÷À» ¼öÇàÇÑ´Ù.
-    // ³»ºÎÀûÀ¸·Î parse, prepare, bindParamInfo, bindParamData ÀÛ¾÷À» ÇÑ´Ù.
-    // µû¶ó¼­ prepare½Ã¿¡ ³Ñ°Ü¹Ş´ø aSmiStmtCursorFlag¸¦ ¿©±â¼­µµ
-    // ³Ñ°Ü¹ŞÀ» ¼ö ÀÖ´Ù.
-    // prepare½Ã¿¡ ÇÊ¿äÇÑ parent smi statement´Â mmÀ¸·ÎºÎÅÍ ´Ù½Ã ¹Ş¾Æ¾ß ÇÔ.
-    // ( rebuild½Ã smiStatement end & beginÀ» ¼öÇàÇØ¾ß ÇÏ¹Ç·Î,
-    //   qp¿¡¼­ µû·Î °ü¸®¸¦ ÇÒ ¼ö ¾øÀ¸¹Ç·Î,
-    //   mmÀ¸·ÎºÎÅÍ smiStatement¸¦ ¹Ş¾Æ¼­ Ã³¸®ÇØ¾ß ÇÔ. )
+    // executeë¥¼ í˜¸ì¶œí–ˆì„ ë•Œ rebuild errorë¥¼ ë°›ìœ¼ë©´ ì´ í•¨ìˆ˜ë¥¼ í†µí•´ì„œ
+    // rebuild ì‘ì—…ì„ ìˆ˜í–‰í•œë‹¤.
+    // ë‚´ë¶€ì ìœ¼ë¡œ parse, prepare, bindParamInfo, bindParamData ì‘ì—…ì„ í•œë‹¤.
+    // ë”°ë¼ì„œ prepareì‹œì— ë„˜ê²¨ë°›ë˜ aSmiStmtCursorFlagë¥¼ ì—¬ê¸°ì„œë„
+    // ë„˜ê²¨ë°›ì„ ìˆ˜ ìˆë‹¤.
+    // prepareì‹œì— í•„ìš”í•œ parent smi statementëŠ” mmìœ¼ë¡œë¶€í„° ë‹¤ì‹œ ë°›ì•„ì•¼ í•¨.
+    // ( rebuildì‹œ smiStatement end & beginì„ ìˆ˜í–‰í•´ì•¼ í•˜ë¯€ë¡œ,
+    //   qpì—ì„œ ë”°ë¡œ ê´€ë¦¬ë¥¼ í•  ìˆ˜ ì—†ìœ¼ë¯€ë¡œ,
+    //   mmìœ¼ë¡œë¶€í„° smiStatementë¥¼ ë°›ì•„ì„œ ì²˜ë¦¬í•´ì•¼ í•¨. )
     //
-    //   @ aStatement     : ´ë»ó statement
+    //   @ aStatement     : ëŒ€ìƒ statement
     //   @ aParentSmiStmt : root statement
-    //   @ aSmiStmtCursorFlag : preparedµÈ statement°¡ »ı¼ºÇÑ
-    //                          smi statement¿¡ ´ëÇÑ
-    //                          cursor flag¸¦ ¾ò´Â´Ù.
+    //   @ aSmiStmtCursorFlag : preparedëœ statementê°€ ìƒì„±í•œ
+    //                          smi statementì— ëŒ€í•œ
+    //                          cursor flagë¥¼ ì–»ëŠ”ë‹¤.
     //
     static IDE_RC hardRebuild( qciStatement            * aStatement,
                                smiStatement            * aSmiStmt,
@@ -1357,25 +1357,25 @@ public:
                                UInt                      aQueryLen );
 
     // retry()
-    // execute¸¦ È£ÃâÇßÀ»¶§ retry error¸¦ ¹ŞÀ¸¸é,
-    // ÀÌ ÇÔ¼ö¸¦ ÅëÇØ¼­,
-    // retry ¼öÇàÀ» À§ÇÑ »óÅÂÀüÀÌ ¹× °ü·ÃÀÛ¾÷À» ¼öÇàÇÑ´Ù.
-    // ÀÌ ÇÔ¼ö³»¿¡¼­´Â execute¸¦ ¼öÇàÇÒ ¼ö ÀÖ´Â Á÷Àü »óÅÂ·Î µÇµ¹¸°´Ù.
+    // executeë¥¼ í˜¸ì¶œí–ˆì„ë•Œ retry errorë¥¼ ë°›ìœ¼ë©´,
+    // ì´ í•¨ìˆ˜ë¥¼ í†µí•´ì„œ,
+    // retry ìˆ˜í–‰ì„ ìœ„í•œ ìƒíƒœì „ì´ ë° ê´€ë ¨ì‘ì—…ì„ ìˆ˜í–‰í•œë‹¤.
+    // ì´ í•¨ìˆ˜ë‚´ì—ì„œëŠ” executeë¥¼ ìˆ˜í–‰í•  ìˆ˜ ìˆëŠ” ì§ì „ ìƒíƒœë¡œ ë˜ëŒë¦°ë‹¤.
     static IDE_RC retry( qciStatement * aStatement,
                          smiStatement * aSmiStmt );
 
     /*************************************************************************
      *
-     * PARSED »óÅÂºÎÅÍ È£ÃâÇÒ ¼ö ÀÖ´Â ÇÔ¼öµé
+     * PARSED ìƒíƒœë¶€í„° í˜¸ì¶œí•  ìˆ˜ ìˆëŠ” í•¨ìˆ˜ë“¤
      *
      *************************************************************************/
 
     // getStmtType()
-    // parsed »óÅÂÀÇ statement¿¡ ´ëÇØ parsingµÈ ±¸¹®ÀÇ Á¾·ù¸¦ ¾ò¾î¿Â´Ù.
+    // parsed ìƒíƒœì˜ statementì— ëŒ€í•´ parsingëœ êµ¬ë¬¸ì˜ ì¢…ë¥˜ë¥¼ ì–»ì–´ì˜¨ë‹¤.
     //
-    //   @ aStatement   : ´ë»ó statement
+    //   @ aStatement   : ëŒ€ìƒ statement
     //
-    //   @ aType        : ´ë»ó statementÀÇ À¯Çü
+    //   @ aType        : ëŒ€ìƒ statementì˜ ìœ í˜•
     //                    (DDL, DML, DCL, INSERT, UPDATE, DELETE, SELECT,...)
     //
     static IDE_RC getStmtType( qciStatement  *aStatement,
@@ -1387,14 +1387,14 @@ public:
     static IDE_RC checkInternalProcCall( qciStatement * aStatement );
 
     // hasFixedTableView()
-    // parsed »óÅÂÀÇ statement¿¡ ´ëÇØ fixed tableÀÌ³ª performance view¸¦
-    // ÂüÁ¶ÇÏ´ÂÁö¿¡ ´ëÇÑ ¿©ºÎ¸¦ ±¸ÇÑ´Ù.
+    // parsed ìƒíƒœì˜ statementì— ëŒ€í•´ fixed tableì´ë‚˜ performance viewë¥¼
+    // ì°¸ì¡°í•˜ëŠ”ì§€ì— ëŒ€í•œ ì—¬ë¶€ë¥¼ êµ¬í•œë‹¤.
     //
-    //   @ aStatement : ´ë»ó statement
+    //   @ aStatement : ëŒ€ìƒ statement
     //
-    //   @ aHas       : parsedµÈ statement°¡ fixed tableÀÌ³ª performance view
-    //                 ¸¦ ÂüÁ¶ÇÏ¸é ID_TRUE°¡, ¾Æ´Ï¸é ID_FALSE¸¦
-    //                 ¹İÈ¯¹Ş´Â´Ù.
+    //   @ aHas       : parsedëœ statementê°€ fixed tableì´ë‚˜ performance view
+    //                 ë¥¼ ì°¸ì¡°í•˜ë©´ ID_TRUEê°€, ì•„ë‹ˆë©´ ID_FALSEë¥¼
+    //                 ë°˜í™˜ë°›ëŠ”ë‹¤.
     //
     static IDE_RC hasFixedTableView( qciStatement *aStatement,
                                      idBool       *aHas );
@@ -1409,29 +1409,29 @@ public:
 
     /*************************************************************************
      *
-     * DCL ½ÇÇà ÇÔ¼öµé
+     * DCL ì‹¤í–‰ í•¨ìˆ˜ë“¤
      *
      *************************************************************************/
 
-    // DCL·ùÀÇ statement¸¦ executeÇÑ´Ù.
-    // ÀÌ ÇÔ¼ö¸¦ È£ÃâÇÏ±â À§ÇØ¼­´Â bound»óÅÂÀÌ¾î¾ß ÇÏ¸ç
-    // È£Ãâ ÈÄ¿¡´Â executed »óÅÂ°¡ µÈ´Ù.
+    // DCLë¥˜ì˜ statementë¥¼ executeí•œë‹¤.
+    // ì´ í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•˜ê¸° ìœ„í•´ì„œëŠ” boundìƒíƒœì´ì–´ì•¼ í•˜ë©°
+    // í˜¸ì¶œ í›„ì—ëŠ” executed ìƒíƒœê°€ ëœë‹¤.
     //
-    //   @ aStatement  : ´ë»ó statement
+    //   @ aStatement  : ëŒ€ìƒ statement
     //
     static IDE_RC executeDCL( qciStatement *aStatement,
                               smiStatement *aSmiStmt,
                               smiTrans     *aSmiTrans );
 
     /*************************************************************************
-     * PROJ-2551 simple query ÃÖÀûÈ­
-     * fast execute ÇÔ¼öµé
+     * PROJ-2551 simple query ìµœì í™”
+     * fast execute í•¨ìˆ˜ë“¤
      *************************************************************************/
 
-    // simple queryÀÎ°¡?
+    // simple queryì¸ê°€?
     static idBool isSimpleQuery( qciStatement * aStatement );
     
-    // fast execute¿Í fetch¸¦ ¼öÇàÇÑ´Ù.
+    // fast executeì™€ fetchë¥¼ ìˆ˜í–‰í•œë‹¤.
     static IDE_RC fastExecute( smiTrans      * aSmiTrans,
                                qciStatement  * aStatement,
                                UShort        * aBindColInfo,
@@ -1446,15 +1446,15 @@ public:
      *
      *************************************************************************/
 
-    // connect Protocol ·Î Ã³¸®µÇ´Â °÷¿¡¼­ È£ÃâµÊ.
-    // ÀÌ ºÎºĞ¿¡¼­´Â parsetreeÁ¤º¸, sessionÁ¤º¸°¡ ¾øÀ½.
+    // connect Protocol ë¡œ ì²˜ë¦¬ë˜ëŠ” ê³³ì—ì„œ í˜¸ì¶œë¨.
+    // ì´ ë¶€ë¶„ì—ì„œëŠ” parsetreeì •ë³´, sessionì •ë³´ê°€ ì—†ìŒ.
     // ( mmtCmsConnection::connectProtocol() )
-    // ÀÌ ÇÔ¼ö°¡ ±âÁ¸¿¡ mm¿¡¼­ ¼öÇàÇÏ´ø ¾Æ·¡ ÀÛ¾÷À» ÀÏ°ı ¼öÇàÇÑ´Ù.
-    // (1) qcmUserIDÇÔ¼ö ÀÎÀÚ·Î ³Ñ±â±â À§ÇÑ
-    //     userNameÀ¸·Î qcNamePositionÁ¤º¸ ±¸¼ºÀÛ¾÷
+    // ì´ í•¨ìˆ˜ê°€ ê¸°ì¡´ì— mmì—ì„œ ìˆ˜í–‰í•˜ë˜ ì•„ë˜ ì‘ì—…ì„ ì¼ê´„ ìˆ˜í–‰í•œë‹¤.
+    // (1) qcmUserIDí•¨ìˆ˜ ì¸ìë¡œ ë„˜ê¸°ê¸° ìœ„í•œ
+    //     userNameìœ¼ë¡œ qcNamePositionì •ë³´ êµ¬ì„±ì‘ì—…
     // (2) qci2::setSmiStmt()
     // (3) qci2::setStmtText()
-    // (4) userÁ¤º¸ ±¸¼º.
+    // (4) userì •ë³´ êµ¬ì„±.
     static IDE_RC getUserInfo( qciStatement  *aStatement,
                                smiStatement  *aSmiStmt,
                                qciUserInfo   *aResult );
@@ -1466,10 +1466,10 @@ public:
     static IDE_RC updatePasswPolicy( idvSQL         *aStatistics, /* PROJ-2446 */
                                      qciUserInfo    *aUserInfo );
     
-    // QP¿¡ callback ÇÔ¼öµéÀ» ³Ñ±ä´Ù.
-    // ¹İµå½Ã ¼­¹ö ±¸µ¿½Ã¿¡ È£ÃâµÇ¾î¾ß ÇÑ´Ù.
+    // QPì— callback í•¨ìˆ˜ë“¤ì„ ë„˜ê¸´ë‹¤.
+    // ë°˜ë“œì‹œ ì„œë²„ êµ¬ë™ì‹œì— í˜¸ì¶œë˜ì–´ì•¼ í•œë‹¤.
     //
-    // ÆÄ¶ó¹ÌÅÍ ¼³¸íÀº »ı·«ÇÔ
+    // íŒŒë¼ë¯¸í„° ì„¤ëª…ì€ ìƒëµí•¨
     //
     static IDE_RC setDatabaseCallback(
         qciDatabaseCallback        aCreatedbFuncPtr,
@@ -1480,7 +1480,7 @@ public:
         qciDatabaseCallback        aStartupFuncPtr,
         qciDatabaseCallback        aShutdownFuncPtr );
 
-    // mmcSessionÀÇ Á¤º¸¸¦ ÂüÁ¶ÇÏ±â À§ÇÑ callback ÇÔ¼ö ¼³Á¤.
+    // mmcSessionì˜ ì •ë³´ë¥¼ ì°¸ì¡°í•˜ê¸° ìœ„í•œ callback í•¨ìˆ˜ ì„¤ì •.
     static IDE_RC setSessionCallback( qciSessionCallback *aCallback );
     //PROJ-1677
     static IDE_RC setQueueCallback( qciQueueCallback aQueueCreateFuncPtr,
@@ -1514,11 +1514,11 @@ public:
 
     static idBool isSysdba( qciStatement * aStatement );
 
-    // DML ¼öÇàÈÄ, ¿µÇâÀ» ¹ŞÀº ·¹ÄÚµå ¼ö ¹İÈ¯
-    // BUG-44536 Affected row count¿Í fetched row count¸¦ ºĞ¸®
-    //   1. affected row count¿¡ ÀÏ´Ü row count¸¦ ´ã°í
-    //   2. SELECT, SELECT FOR UPDATEÀÌ¸é fetched row count·Î ¿Å±ä ÈÄ
-    //      affected row count¸¦ 0À¸·Î ¸¸µç´Ù.
+    // DML ìˆ˜í–‰í›„, ì˜í–¥ì„ ë°›ì€ ë ˆì½”ë“œ ìˆ˜ ë°˜í™˜
+    // BUG-44536 Affected row countì™€ fetched row countë¥¼ ë¶„ë¦¬
+    //   1. affected row countì— ì¼ë‹¨ row countë¥¼ ë‹´ê³ 
+    //   2. SELECT, SELECT FOR UPDATEì´ë©´ fetched row countë¡œ ì˜®ê¸´ í›„
+    //      affected row countë¥¼ 0ìœ¼ë¡œ ë§Œë“ ë‹¤.
     inline static void getRowCount( qciStatement * aStatement,
                                     SLong        * aAffectedRowCount,
                                     SLong        * aFetchedRowCount )
@@ -1527,7 +1527,7 @@ public:
         qcTemplate  * sTemplate;
         qciStmtType   sStmtType = QCI_STMT_MASK_MAX;
 
-        // PROJ-2551 simple query ÃÖÀûÈ­
+        // PROJ-2551 simple query ìµœì í™”
         if ( ( ( sStatement->mFlag & QC_STMT_FAST_EXEC_MASK )
                == QC_STMT_FAST_EXEC_TRUE ) &&
              ( ( sStatement->mFlag & QC_STMT_FAST_BIND_MASK )
@@ -1571,7 +1571,7 @@ public:
         }
     }
 
-    // graph¿Í plan treeÀÇ textÁ¤º¸¸¦ ¹İÈ¯
+    // graphì™€ plan treeì˜ textì •ë³´ë¥¼ ë°˜í™˜
     static IDE_RC getPlanTreeText( qciStatement * aStatement,
                                    iduVarString * aString,
                                    idBool         aIsCodeOnly );
@@ -1602,7 +1602,7 @@ public:
     static idBool isLastParamData( qciStatement * aStatement,
                                    UShort         aBindParamId );
 
-    // execute½ÃÀÇ cursor¸¦ ´İ°í, temp tableÀ» Á¦°ÅÇÑ´Ù.
+    // executeì‹œì˜ cursorë¥¼ ë‹«ê³ , temp tableì„ ì œê±°í•œë‹¤.
     static IDE_RC closeCursor( qciStatement * aStatement,
                                smiStatement * aSmiStmt );
 
@@ -1626,7 +1626,7 @@ public:
                               UInt         * aSize );
 
     // BUG-25109
-    // simple query¿¡ »ç¿ëµÈ base table nameÀ» ¹İÈ¯ÇÑ´Ù.
+    // simple queryì— ì‚¬ìš©ëœ base table nameì„ ë°˜í™˜í•œë‹¤.
     static IDE_RC getBaseTableInfo( qciStatement * aStatement,
                                     SChar        * aTableOwnerName,
                                     SChar        * aTableName,
@@ -1638,11 +1638,11 @@ public:
                                         qciPlanBindInfo * aPlanBindInfo, // PROJ-2163
                                         idBool          * aIsMatched );
 
-    //rebuild½Ã º¯°æµÇ´Â environment¸¦ ±â·ÏÇÑ´Ù.
+    //rebuildì‹œ ë³€ê²½ë˜ëŠ” environmentë¥¼ ê¸°ë¡í•œë‹¤.
     static IDE_RC rebuildEnvironment( qciStatement    * aStatement,
                                       qciPlanProperty * aEnv );
 
-    //soft-prepare°úÁ¤¿¡¼­ plan¿¡ ´ëÇÑ validationÀ» ¼öÇàÇÑ´Ù.
+    //soft-prepareê³¼ì •ì—ì„œ planì— ëŒ€í•œ validationì„ ìˆ˜í–‰í•œë‹¤.
     static IDE_RC validatePlan(
         qciGetSmiStatement4PrepareCallback   aGetSmiStmt4PrepareCallback,
         void                               * aGetSmiStmt4PrepareContext, 
@@ -1650,28 +1650,28 @@ public:
         void                               * aSharedPlan,
         idBool                             * aIsValidPlan );
 
-    //soft-prepare°úÁ¤¿¡¼­ plan¿¡ ´ëÇÑ ±ÇÇÑÀ» °Ë»çÇÑ´Ù.
+    //soft-prepareê³¼ì •ì—ì„œ planì— ëŒ€í•œ ê¶Œí•œì„ ê²€ì‚¬í•œë‹¤.
     static IDE_RC checkPrivilege(
         qciGetSmiStatement4PrepareCallback   aGetSmiStmt4PrepareCallback,
         void                               * aGetSmiStmt4PrepareContext, 
         qciStatement                       * aStatement,
         void                               * aSharedPlan );
 
-    // shared templateÀ» private templateÀ¸·Î ¼³Á¤ÇÑ´Ù.
+    // shared templateì„ private templateìœ¼ë¡œ ì„¤ì •í•œë‹¤.
     static IDE_RC setPrivateTemplate( qciStatement            * aStatement,
                                       void                    * aSharedPlan,
                                       qciSqlPlanCacheInResult   aInResult );
 
-    // shared templateÀ» º¹»çÇÏ¿© private templateÀ» »ı¼ºÇÑ´Ù.
+    // shared templateì„ ë³µì‚¬í•˜ì—¬ private templateì„ ìƒì„±í•œë‹¤.
     static IDE_RC clonePrivateTemplate( qciStatement            * aStatement,
                                         void                    * aSharedPlan,
                                         void                    * aPrepPrivateTemplate,
                                         qciSQLPlanCacheContext  * aPlanCacheContext );
 
-    // shared plan memory¸¦ ÇØÁ¦ÇÑ´Ù.
+    // shared plan memoryë¥¼ í•´ì œí•œë‹¤.
     static IDE_RC freeSharedPlan( void * aSharedPlan );
 
-    // prepared private templateÀ» ÇØÁ¦ÇÑ´Ù.
+    // prepared private templateì„ í•´ì œí•œë‹¤.
     static IDE_RC freePrepPrivateTemplate( void * aPrepPrivateTemplate );
     
     // PROJ-1518 Atomic Array Insert
@@ -1689,21 +1689,21 @@ public:
                                 idBool        * aIsCursorOpen,
                                 smiStatement  * aSmiStmt );
     
-    // PROJ-1436 prepared templateÀ» »èÁ¦ÇÑ´Ù.
+    // PROJ-1436 prepared templateì„ ì‚­ì œí•œë‹¤.
     static IDE_RC freePrepTemplate( qcPrepTemplate * aPrepTemplate );
 
     // PROJ-2163
-    // Plan ÀÇ È£½ºÆ® º¯¼ö Å¸ÀÔ°ú »ç¿ëÀÚ ¹ÙÀÎµå Å¸ÀÔ ºñ±³
+    // Plan ì˜ í˜¸ìŠ¤íŠ¸ ë³€ìˆ˜ íƒ€ì…ê³¼ ì‚¬ìš©ì ë°”ì¸ë“œ íƒ€ì… ë¹„êµ
     static idBool isBindChanged( qciStatement * aStatement );
 
-    // D$ Å×ÀÌºí ¶Ç´Â NO_PLAN_CACHE ÈùÆ® »ç¿ë ¿©ºÎ ÆÇ´Ü
+    // D$ í…Œì´ë¸” ë˜ëŠ” NO_PLAN_CACHE íŒíŠ¸ ì‚¬ìš© ì—¬ë¶€ íŒë‹¨
     static idBool isCacheAbleStatement( qciStatement * aStatement );
 
-    // ¹ÙÀÎµå ¸Ş¸ğ¸®¸¦ À¯ÁöÇÏ°í statement ¸¦ clear
+    // ë°”ì¸ë“œ ë©”ëª¨ë¦¬ë¥¼ ìœ ì§€í•˜ê³  statement ë¥¼ clear
     static IDE_RC clearStatement4Reprepare( qciStatement  * aStatement,
                                             smiStatement  * aSmiStmt );
 
-    // qcg::setPrivateArea ÇÔ¼öÀÇ wrapper
+    // qcg::setPrivateArea í•¨ìˆ˜ì˜ wrapper
     static IDE_RC setPrivateArea( qciStatement * aStatement );
 
 
@@ -1781,29 +1781,29 @@ public:
 
 /*****************************************************************************
  *
- * qciMisc class¿¡´Â qciStatement¸¦ ÀÎÀÚ·Î ¹ŞÁö ¾Ê´Â
- * ÇÔ¼öµé·Î ±¸¼ºµÈ´Ù.
+ * qciMisc classì—ëŠ” qciStatementë¥¼ ì¸ìë¡œ ë°›ì§€ ì•ŠëŠ”
+ * í•¨ìˆ˜ë“¤ë¡œ êµ¬ì„±ëœë‹¤.
  *
  *****************************************************************************/
 class qciMisc {
 public:
     /*************************************************************************
-     * ÀÔ·ÂµÈ »ç¿ëÀÚ ÀÌ¸§À¸·Î »ç¿ëÀÚ Á¤º¸¸¦ ¾ò¾î¿Â´Ù.
+     * ì…ë ¥ëœ ì‚¬ìš©ì ì´ë¦„ìœ¼ë¡œ ì‚¬ìš©ì ì •ë³´ë¥¼ ì–»ì–´ì˜¨ë‹¤.
      *
-     * - aUserName     : (input) »ç¿ëÀÚ ÀÌ¸§ ¹®ÀÚ¿­
-     * - aUserNameLen  : (input) »ç¿ëÀÚ ÀÌ¸§ ¹®ÀÚ¿­ ±æÀÌ
-     * - aUserID       : (output) »ç¿ëÀÚ ¾ÆÀÌµğ
-     * - aUserPassword : (output) »ç¿ëÀÚ ¾ÏÈ£; authorization¿¡ »ç¿ëµÈ´Ù.
-     * - aTableID      : (output) »ç¿ëÀÚÀÇ tablespace ID
-     * - aTempID       : (output) »ç¿ëÀÚÀÇ temp tablespace ID
+     * - aUserName     : (input) ì‚¬ìš©ì ì´ë¦„ ë¬¸ìì—´
+     * - aUserNameLen  : (input) ì‚¬ìš©ì ì´ë¦„ ë¬¸ìì—´ ê¸¸ì´
+     * - aUserID       : (output) ì‚¬ìš©ì ì•„ì´ë””
+     * - aUserPassword : (output) ì‚¬ìš©ì ì•”í˜¸; authorizationì— ì‚¬ìš©ëœë‹¤.
+     * - aTableID      : (output) ì‚¬ìš©ìì˜ tablespace ID
+     * - aTempID       : (output) ì‚¬ìš©ìì˜ temp tablespace ID
      *************************************************************************/
 
     static UInt getQueryStackSize( );
-    // BUG-26017 [PSM] server restart½Ã ¼öÇàµÇ´Â psm load°úÁ¤¿¡¼­
-    // °ü·ÃÇÁ·ÎÆÛÆ¼¸¦ ÂüÁ¶ÇÏÁö ¸øÇÏ´Â °æ¿ì ÀÖÀ½.
+    // BUG-26017 [PSM] server restartì‹œ ìˆ˜í–‰ë˜ëŠ” psm loadê³¼ì •ì—ì„œ
+    // ê´€ë ¨í”„ë¡œí¼í‹°ë¥¼ ì°¸ì¡°í•˜ì§€ ëª»í•˜ëŠ” ê²½ìš° ìˆìŒ.
     static UInt getOptimizerMode();
     static UInt getAutoRemoteExec();    
-    // BUG-23780 TEMP_TBS_MEMORY ÈùÆ® Àû¿ë¿©ºÎ¸¦ property·Î Á¦°ø
+    // BUG-23780 TEMP_TBS_MEMORY íŒíŠ¸ ì ìš©ì—¬ë¶€ë¥¼ propertyë¡œ ì œê³µ
     static UInt getOptimizerDefaultTempTbsType();    
 
     static idBool isStmtDDL( qciStmtType aStmtType );
@@ -1852,8 +1852,8 @@ public:
                                      UInt         * aPartOrder );
 
     // Proj-2059 DB Upgrade
-    // TableInfo¸¦ ±¸ÇÏ´Â ºÎºĞ°ú CondValue¸¦ °Ë»çÇÏ´Â ÇÔ¼ö¸¦
-    // Wrapping ÇÔ¼ö ÇüÅÂ·Î ºĞ¸®
+    // TableInfoë¥¼ êµ¬í•˜ëŠ” ë¶€ë¶„ê³¼ CondValueë¥¼ ê²€ì‚¬í•˜ëŠ” í•¨ìˆ˜ë¥¼
+    // Wrapping í•¨ìˆ˜ í˜•íƒœë¡œ ë¶„ë¦¬
     static IDE_RC comparePartCondValues( idvSQL           * aStatistics,
                                          qcmTableInfo     * aTableInfo,
                                          SChar            * aValue1,
@@ -1878,7 +1878,7 @@ public:
 
     //-----------------------------------
     // PROJ-1362
-    // SM LOB ÇÔ¼öÀÇ wrapper
+    // SM LOB í•¨ìˆ˜ì˜ wrapper
     //-----------------------------------
 
     static IDE_RC lobRead( idvSQL       * aStatistics,
@@ -2018,8 +2018,8 @@ public:
                                   mtcColumn    * aColumns );
 
     /* PROJ-1594 Volatile TBS */
-    /* SM¿¡¼­ callbackÀ¸·Î È£ÃâµÇ´Â ÇÔ¼ö·Î¼­,
-       null row¸¦ »ı¼ºÇÑ´Ù. */
+    /* SMì—ì„œ callbackìœ¼ë¡œ í˜¸ì¶œë˜ëŠ” í•¨ìˆ˜ë¡œì„œ,
+       null rowë¥¼ ìƒì„±í•œë‹¤. */
     static IDE_RC makeNullRow(idvSQL        *aStatistics,   /* PROJ-2446 */ 
                               smiColumnList *aColumnList,
                               smiValue      *aNullRow,
@@ -2247,7 +2247,7 @@ public:
     /* PROJ-2446 ONE SOURCE XDB USE */
     static idvSQL* getStatistics( mtcTemplate * aTemplate );
 
-    /* PROJ-2446 ONE SOURCE XDB smiGlobalCallBackList¿¡¼­ »ç¿ë µÈ´Ù.
+    /* PROJ-2446 ONE SOURCE XDB smiGlobalCallBackListì—ì„œ ì‚¬ìš© ëœë‹¤.
      * partition meta cache, procedure cache, trigger cache */
     static IDE_RC makeAndSetQcmTblInfo( smiStatement * aSmiStmt,
                                         UInt           aTableID,
@@ -2269,7 +2269,7 @@ public:
     static void setPSMFlag( void * aQcStmt,
                             idBool aValue );
 
-    // PROJ-2551 simple query ÃÖÀûÈ­
+    // PROJ-2551 simple query ìµœì í™”
     static void initSimpleInfo( qcSimpleInfo * aInfo );
     
     static idBool isSimpleQuery( qcStatement * aStatement );
@@ -2303,7 +2303,7 @@ public:
                                                           smOID        * aReplicatedTableOIDArray,
                                                           UInt           aReplicatedTableOIDCount );
 
-    /* BUG-43605 [mt] randomÇÔ¼öÀÇ seed ¼³Á¤À» session ´ÜÀ§·Î º¯°æÇØ¾ß ÇÕ´Ï´Ù. */
+    /* BUG-43605 [mt] randomí•¨ìˆ˜ì˜ seed ì„¤ì •ì„ session ë‹¨ìœ„ë¡œ ë³€ê²½í•´ì•¼ í•©ë‹ˆë‹¤. */
     static void initRandomInfo( qcRandomInfo * aRandomInfo );
 
     /* PROJ-2626 Snapshot Export */

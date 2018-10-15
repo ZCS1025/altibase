@@ -365,7 +365,7 @@ utTxtQuery::utTxtQuery( utTxtConnection * conn)
     _bsize    = 0;
 }
 
-/* TASK-4212: auditÅøÀÇ ´ë¿ë·® Ã³¸®½Ã °³¼± */
+/* TASK-4212: auditíˆ´ì˜ ëŒ€ìš©ëŸ‰ ì²˜ë¦¬ì‹œ ê°œì„  */
 IDE_RC utTxtQuery::utaCloseCur(void)
 {
     return IDE_SUCCESS;

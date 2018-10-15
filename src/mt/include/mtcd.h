@@ -33,17 +33,17 @@ ACI_RC mtdFloat2String( acp_uint8_t    * aBuffer,
                         mtdNumericType * aNumeric );
 
 //----------------------------------------------------------------
-// PROJ-1364 ÇØ´ç value¸¦  bigint typeÀ¸·Î converionÇÏ¿© compare 
+// PROJ-1364 í•´ë‹¹ valueë¥¼  bigint typeìœ¼ë¡œ converioní•˜ì—¬ compare 
 //----------------------------------------------------------------
 
-// ÇØ´ç value¸¦  bigint typeÀ¸·Î converion ÇÏ´Â ÇÔ¼ö 
+// í•´ë‹¹ valueë¥¼  bigint typeìœ¼ë¡œ converion í•˜ëŠ” í•¨ìˆ˜ 
 void mtdConvertToBigintType4MtdValue( mtdValueInfo  * aValueInfo,
                                       mtdBigintType * aBigintValue );
 
 void mtdConvertToBigintType4StoredValue( mtdValueInfo  * aValueInfo,
                                          mtdBigintType * aBigintValue);
 
-// bigint typeÀ¸·Î conversionÇÏ¿© compare ÇÏ´Â ÇÔ¼ö 
+// bigint typeìœ¼ë¡œ conversioní•˜ì—¬ compare í•˜ëŠ” í•¨ìˆ˜ 
 acp_sint32_t mtdCompareNumberGroupBigintMtdMtdAsc(
     mtdValueInfo * aValueInfo1,
     mtdValueInfo * aValueInfo2 );
@@ -69,10 +69,10 @@ acp_sint32_t mtdCompareNumberGroupBigintStoredStoredDesc(
     mtdValueInfo * aValueInfo2 );
 
 //----------------------------------------------------------------
-// PROJ-1364 ÇØ´ç value¸¦  double typeÀ¸·Î converionÇÏ¿© compare 
+// PROJ-1364 í•´ë‹¹ valueë¥¼  double typeìœ¼ë¡œ converioní•˜ì—¬ compare 
 //---------------------------------------------------------------
 
-// double typeÀ¸·Î conversionÇÏ¿© compare ÇÏ´Â ÇÔ¼ö 
+// double typeìœ¼ë¡œ conversioní•˜ì—¬ compare í•˜ëŠ” í•¨ìˆ˜ 
 acp_sint32_t mtdCompareNumberGroupDoubleMtdMtdAsc( 
     mtdValueInfo * aValueInfo1,
     mtdValueInfo * aValueInfo2 );
@@ -98,10 +98,10 @@ acp_sint32_t mtdCompareNumberGroupDoubleStoredStoredDesc(
     mtdValueInfo * aValueInfo2 );
 
 //----------------------------------------------------------------
-// PROJ-1364 ÇØ´ç value¸¦  numeric typeÀ¸·Î converionÇÏ¿© compare 
+// PROJ-1364 í•´ë‹¹ valueë¥¼  numeric typeìœ¼ë¡œ converioní•˜ì—¬ compare 
 //---------------------------------------------------------------
 
-// ÇØ´ç value¸¦ numeric typeÀ¸·Î conversion ÇÏ´Â ÇÔ¼ö 
+// í•´ë‹¹ valueë¥¼ numeric typeìœ¼ë¡œ conversion í•˜ëŠ” í•¨ìˆ˜ 
 void mtdConvertToNumericType4MtdValue(
     mtdValueInfo    * aValueInfo,
     mtdNumericType ** aNumericValue);
@@ -112,7 +112,7 @@ void mtdConvertToNumericType4StoredValue(
     acp_uint8_t     * aLength,
     acp_uint8_t    ** aSignExponentMantissa);
 
-// numeric typeÀ¸·Î conversionÇÏ¿© compare ÇÏ´Â ÇÔ¼ö 
+// numeric typeìœ¼ë¡œ conversioní•˜ì—¬ compare í•˜ëŠ” í•¨ìˆ˜ 
 acp_sint32_t mtdCompareNumberGroupNumericMtdMtdAsc( 
     mtdValueInfo * aValueInfo1,
     mtdValueInfo * aValueInfo2 );
@@ -161,8 +161,8 @@ ACI_RC mtdInitialize( mtdModule    *** aExtTypeModuleGroup,
 
 ACI_RC mtdFinalize( void );
 
-// PROJ-1361 : mtdModule°ú mtlModue ºĞ¸®ÇßÀ¸¹Ç·Î
-//             mtdModue °Ë»ö½Ã language Á¤º¸ ¹ŞÁö ¾ÊÀ½
+// PROJ-1361 : mtdModuleê³¼ mtlModue ë¶„ë¦¬í–ˆìœ¼ë¯€ë¡œ
+//             mtdModue ê²€ìƒ‰ì‹œ language ì •ë³´ ë°›ì§€ ì•ŠìŒ
 ACI_RC mtdModuleByName( const mtdModule ** aModule,
                         const void      *  aName,
                         acp_uint32_t       aLength );
@@ -266,37 +266,37 @@ const void* mtdValueForModule( const void   * aColumn,
                                acp_uint32_t   aFlag,
                                const void   * aDefaultNull );
 
-// ÇØ´ç value¸¦  double typeÀ¸·Î converion ÇÏ´Â ÇÔ¼ö 
-// ÀÎÀÚ·Î ¹ŞÀº data typeÀ» double ÇüÀ¸·Î º¯È¯
-// µ¿ÀÏÄÃ·³¿¡ ´ëÇÑ ÅëÇÕ selectivity °è»ê½Ã,
-// ºñ±³´ë»ó data typeÀ» doubleÇüÀ¸·Î º¯È¯½ÃÄÑ¼­ selectivity¸¦ ±¸ÇÔ.
+// í•´ë‹¹ valueë¥¼  double typeìœ¼ë¡œ converion í•˜ëŠ” í•¨ìˆ˜ 
+// ì¸ìë¡œ ë°›ì€ data typeì„ double í˜•ìœ¼ë¡œ ë³€í™˜
+// ë™ì¼ì»¬ëŸ¼ì— ëŒ€í•œ í†µí•© selectivity ê³„ì‚°ì‹œ,
+// ë¹„êµëŒ€ìƒ data typeì„ doubleí˜•ìœ¼ë¡œ ë³€í™˜ì‹œì¼œì„œ selectivityë¥¼ êµ¬í•¨.
 void mtdConvertToDoubleType4MtdValue( mtdValueInfo  * aValueInfo,
                                       mtdDoubleType * aDoubleValue );
     
 void mtdConvertToDoubleType4StoredValue( mtdValueInfo  * aValueInfo,
                                          mtdDoubleType * aDoubleValue);
   
-// Data TypeÀÇ ±âº» ÀÎµ¦½º Å¸ÀÔÀ» ±¸ÇÑ´Ù.
+// Data Typeì˜ ê¸°ë³¸ ì¸ë±ìŠ¤ íƒ€ì…ì„ êµ¬í•œë‹¤.
 acp_uint32_t mtdGetDefaultIndexTypeID( const mtdModule * aModule );
 
-// Data Type¿¡ »ç¿ë°¡´ÉÇÑ ÀÎµ¦½ºÀÎÁö ÆÇ´ÜÇÔ.
+// Data Typeì— ì‚¬ìš©ê°€ëŠ¥í•œ ì¸ë±ìŠ¤ì¸ì§€ íŒë‹¨í•¨.
 acp_bool_t mtdIsUsableIndexType( const mtdModule * aModule,
                                  acp_uint32_t      aIndexType );
 
 // PROJ-1558
-// MM¿¡¼­ NULL°ªÀ» ÁöÁ¤ÇÑ´Ù.
+// MMì—ì„œ NULLê°’ì„ ì§€ì •í•œë‹¤.
 ACI_RC mtdAssignNullValueById( acp_uint32_t    aId,
                                void         ** aValue,
                                acp_uint32_t  * aSize );
 
 // PROJ-1558
-// MM¿¡¼­ NULL°ªÀÎÁö °Ë»çÇÑ´Ù.
+// MMì—ì„œ NULLê°’ì¸ì§€ ê²€ì‚¬í•œë‹¤.
 ACI_RC mtdCheckNullValueById( acp_uint32_t   aId,
                               void         * aValue,
                               acp_bool_t   * aIsNull );
 
 // PROJ-1705
-// ÀúÀåµÇÁö ¾Ê´Â µ¥ÀÌÅ¸Å¸ÀÔ¿¡ ´ëÇÑ Ã³
+// ì €ì¥ë˜ì§€ ì•ŠëŠ” ë°ì´íƒ€íƒ€ì…ì— ëŒ€í•œ ì²˜
 
 ACI_RC mtdStoredValue2MtdValueNA( acp_uint32_t   aColumnSize,
                                   void         * aRow,
@@ -304,25 +304,25 @@ ACI_RC mtdStoredValue2MtdValueNA( acp_uint32_t   aColumnSize,
                                   acp_uint32_t   aLength,
                                   const void   * aValue );
 // PROJ-1705
-// ÀúÀåµÇÁö ¾Ê´Â µ¥ÀÌÅ¸Å¸ÀÔ¿¡ ´ëÇÑ Ã³¸®     
+// ì €ì¥ë˜ì§€ ì•ŠëŠ” ë°ì´íƒ€íƒ€ì…ì— ëŒ€í•œ ì²˜ë¦¬     
 acp_uint32_t mtdNullValueSizeNA();
     
 // PROJ-1705
-// ÀúÀåµÇÁö ¾Ê´Â µ¥ÀÌÅ¸Å¸ÀÔ¿¡ ´ëÇÑ Ã³¸®         
+// ì €ì¥ë˜ì§€ ì•ŠëŠ” ë°ì´íƒ€íƒ€ì…ì— ëŒ€í•œ ì²˜ë¦¬         
 acp_uint32_t mtdHeaderSizeNA();
 
 // PROJ-1705
-// length¸¦ °¡Áö´Â µ¥ÀÌÅ¸Å¸ÀÔÀÇ length Á¤º¸¸¦ ÀúÀåÇÏ´Â º¯¼öÀÇ Å©±â ¹İÈ¯
-// integer¿Í °°Àº °íÁ¤±æÀÌ µ¥ÀÌÅ¸Å¸ÀÔÀº default·Î 0 ¹İÈ¯
+// lengthë¥¼ ê°€ì§€ëŠ” ë°ì´íƒ€íƒ€ì…ì˜ length ì •ë³´ë¥¼ ì €ì¥í•˜ëŠ” ë³€ìˆ˜ì˜ í¬ê¸° ë°˜í™˜
+// integerì™€ ê°™ì€ ê³ ì •ê¸¸ì´ ë°ì´íƒ€íƒ€ì…ì€ defaultë¡œ 0 ë°˜í™˜
 acp_uint32_t mtdHeaderSizeDefault();
     
 // PROJ-1579 NCHAR
-// META ´Ü°è¿¡¼­ CHAR, VARCHAR, CLOB, CLOBLOCATOR, NCHAR, NVARCHAR 
-// Å¸ÀÔ¿¡ ´ëÇØ¼­ language¸¦ ´Ù½Ã ¼¼ÆÃÇØÁØ´Ù.
+// META ë‹¨ê³„ì—ì„œ CHAR, VARCHAR, CLOB, CLOBLOCATOR, NCHAR, NVARCHAR 
+// íƒ€ì…ì— ëŒ€í•´ì„œ languageë¥¼ ë‹¤ì‹œ ì„¸íŒ…í•´ì¤€ë‹¤.
 ACI_RC mtdModifyNls4MtdModule();
 
 // PROJ-1877
-// µ¥ÀÌÅÍÀÇ ½ÇÁ¦ precision, scale °ªÀ» ¹İÈ¯ÇÑ´Ù.
+// ë°ì´í„°ì˜ ì‹¤ì œ precision, scale ê°’ì„ ë°˜í™˜í•œë‹¤.
 ACI_RC mtdGetPrecisionNA( const mtcColumn * aColumn,
                           const void      * aRow,
                           acp_uint32_t      aFlag,

@@ -31,16 +31,16 @@
 # include <sdpsfSH.h>
 # include <smiFixedTable.h>
 
-/* TASK-4007 [SM]PBT¸¦ À§ÇÑ ±â´É Ãß°¡ 
- * Æí¸®ÇÑ dumpSegHdr¸¦ À§ÇØ, TableÀÌ¸§À» ÀÎÀÚ·Î ³ÖÀ¸¸é
- * ÇØ´ç Å×ÀÌºí °ü·Ã ¸ğµç Segment¸¦ DumpÇÔ */
+/* TASK-4007 [SM]PBTë¥¼ ìœ„í•œ ê¸°ëŠ¥ ì¶”ê°€ 
+ * í¸ë¦¬í•œ dumpSegHdrë¥¼ ìœ„í•´, Tableì´ë¦„ì„ ì¸ìë¡œ ë„£ìœ¼ë©´
+ * í•´ë‹¹ í…Œì´ë¸” ê´€ë ¨ ëª¨ë“  Segmentë¥¼ Dumpí•¨ */
 
 /***********************************************************************
- * Description : D$DISK_TABLE_FMS_SEGHDRÀÇ Record¸¦ ¸¸µå´Â ÇÔ¼öÀÌ´Ù.
+ * Description : D$DISK_TABLE_FMS_SEGHDRì˜ Recordë¥¼ ë§Œë“œëŠ” í•¨ìˆ˜ì´ë‹¤.
  *
- * aHeader   - [IN] FixedTableÀÇ Çì´õ
- * aDumpObj  - [IN] DumpÇÒ ´ë»ó °´Ã¼, smcTableHeader.
- * aMemory   - [IN] FixedTableÀÇ ·¹ÄÚµå¸¦ ÀúÀåÇÒ ¸Ş¸ğ¸®
+ * aHeader   - [IN] FixedTableì˜ í—¤ë”
+ * aDumpObj  - [IN] Dumpí•  ëŒ€ìƒ ê°ì²´, smcTableHeader.
+ * aMemory   - [IN] FixedTableì˜ ë ˆì½”ë“œë¥¼ ì €ì¥í•  ë©”ëª¨ë¦¬
  *
  ***********************************************************************/
 IDE_RC sdpsfFT::buildRecord4SegHdr( idvSQL              * /*aStatistics*/,
@@ -139,7 +139,7 @@ IDE_RC sdpsfFT::dumpSegHdr( scSpaceID             aSpaceID,
 }
 
 //------------------------------------------------------
-// D$DISK_TABLE_FMS_SEGHDR Dump TableÀÇ Column Description
+// D$DISK_TABLE_FMS_SEGHDR Dump Tableì˜ Column Description
 //------------------------------------------------------
 static iduFixedTableColDesc gDumpSegHdrColDescOfFMS[]=
 {
@@ -282,7 +282,7 @@ static iduFixedTableColDesc gDumpSegHdrColDescOfFMS[]=
 };
 
 //------------------------------------------------------
-// D$DISK_TABLE_FMS_SEGHDR Dump TableÀÇ Column Description
+// D$DISK_TABLE_FMS_SEGHDR Dump Tableì˜ Column Description
 //------------------------------------------------------
 iduFixedTableDesc  gDumpDiskTableFmsSegHdrTblDesc =
 {
@@ -299,11 +299,11 @@ iduFixedTableDesc  gDumpDiskTableFmsSegHdrTblDesc =
 
 
 /***********************************************************************
- * Description : D$DISK_TABLE_FMS_FREEPIDLISTÀÇ Record¸¦ ¸¸µå´Â ÇÔ¼öÀÌ´Ù.
+ * Description : D$DISK_TABLE_FMS_FREEPIDLISTì˜ Recordë¥¼ ë§Œë“œëŠ” í•¨ìˆ˜ì´ë‹¤.
  *
- * aHeader   - [IN] FixedTableÀÇ Çì´õ
- * aDumpObj  - [IN] DumpÇÒ ´ë»ó °´Ã¼, smcTableHeader.
- * aMemory   - [IN] FixedTableÀÇ ·¹ÄÚµå¸¦ ÀúÀåÇÒ ¸Ş¸ğ¸®
+ * aHeader   - [IN] FixedTableì˜ í—¤ë”
+ * aDumpObj  - [IN] Dumpí•  ëŒ€ìƒ ê°ì²´, smcTableHeader.
+ * aMemory   - [IN] FixedTableì˜ ë ˆì½”ë“œë¥¼ ì €ì¥í•  ë©”ëª¨ë¦¬
  *
  ***********************************************************************/
 IDE_RC sdpsfFT::buildRecord4FreePIDList(
@@ -480,7 +480,7 @@ IDE_RC sdpsfFT::dumpFreePIDList( scSpaceID             aSpaceID,
 }
 
 //------------------------------------------------------
-// D$DISK_TABLE_FMS_FREELIST Dump TableÀÇ Column Description
+// D$DISK_TABLE_FMS_FREELIST Dump Tableì˜ Column Description
 //------------------------------------------------------
 static iduFixedTableColDesc gDumpFreeLstColDescOfFMS[]=
 {
@@ -543,7 +543,7 @@ static iduFixedTableColDesc gDumpFreeLstColDescOfFMS[]=
 };
 
 //------------------------------------------------------
-// D$DISK_TABLE_FMS_FREEPIDLIST Dump TableÀÇ Column Description
+// D$DISK_TABLE_FMS_FREEPIDLIST Dump Tableì˜ Column Description
 //------------------------------------------------------
 iduFixedTableDesc  gDumpDiskTableFmsFreeLstTblDesc =
 {
@@ -559,11 +559,11 @@ iduFixedTableDesc  gDumpDiskTableFmsFreeLstTblDesc =
 
 
 /***********************************************************************
- * Description : D$DISK_TABLE_FMS_PVTPIDLISTÀÇ Record¸¦ ¸¸µå´Â ÇÔ¼öÀÌ´Ù.
+ * Description : D$DISK_TABLE_FMS_PVTPIDLISTì˜ Recordë¥¼ ë§Œë“œëŠ” í•¨ìˆ˜ì´ë‹¤.
  *
- * aHeader   - [IN] FixedTableÀÇ Çì´õ
- * aDumpObj  - [IN] DumpÇÒ ´ë»ó °´Ã¼, smcTableHeader.
- * aMemory   - [IN] FixedTableÀÇ ·¹ÄÚµå¸¦ ÀúÀåÇÒ ¸Ş¸ğ¸®
+ * aHeader   - [IN] FixedTableì˜ í—¤ë”
+ * aDumpObj  - [IN] Dumpí•  ëŒ€ìƒ ê°ì²´, smcTableHeader.
+ * aMemory   - [IN] FixedTableì˜ ë ˆì½”ë“œë¥¼ ì €ì¥í•  ë©”ëª¨ë¦¬
  *
  ***********************************************************************/
 IDE_RC sdpsfFT::buildRecord4PvtPIDList(
@@ -731,7 +731,7 @@ IDE_RC sdpsfFT::dumpPvtPIDList( scSpaceID             aSpaceID,
 }
 
 //------------------------------------------------------
-// D$DISK_TABLE_FMS_PVTPIDLIST Dump TableÀÇ Column Description
+// D$DISK_TABLE_FMS_PVTPIDLIST Dump Tableì˜ Column Description
 //------------------------------------------------------
 static iduFixedTableColDesc gDumpPvtFreeLstColDescOfFMS[]=
 {
@@ -762,7 +762,7 @@ static iduFixedTableColDesc gDumpPvtFreeLstColDescOfFMS[]=
 };
 
 //------------------------------------------------------
-// D$DISK_TABLE_FMS_PVTPIDLIST Dump TableÀÇ Column Description
+// D$DISK_TABLE_FMS_PVTPIDLIST Dump Tableì˜ Column Description
 //------------------------------------------------------
 iduFixedTableDesc  gDumpDiskTableFmsPvtFreeLstTblDesc =
 {
@@ -779,11 +779,11 @@ iduFixedTableDesc  gDumpDiskTableFmsPvtFreeLstTblDesc =
 
 
 /***********************************************************************
- * Description : D$DISK_FMS_SEG_UFMT_PIDLISTÀÇ Record¸¦ ¸¸µå´Â ÇÔ¼öÀÌ´Ù.
+ * Description : D$DISK_FMS_SEG_UFMT_PIDLISTì˜ Recordë¥¼ ë§Œë“œëŠ” í•¨ìˆ˜ì´ë‹¤.
  *
- * aHeader   - [IN] FixedTableÀÇ Çì´õ
- * aDumpObj  - [IN] DumpÇÒ ´ë»ó °´Ã¼, smcTableHeader.
- * aMemory   - [IN] FixedTableÀÇ ·¹ÄÚµå¸¦ ÀúÀåÇÒ ¸Ş¸ğ¸®
+ * aHeader   - [IN] FixedTableì˜ í—¤ë”
+ * aDumpObj  - [IN] Dumpí•  ëŒ€ìƒ ê°ì²´, smcTableHeader.
+ * aMemory   - [IN] FixedTableì˜ ë ˆì½”ë“œë¥¼ ì €ì¥í•  ë©”ëª¨ë¦¬
  *
  ***********************************************************************/
 IDE_RC sdpsfFT::buildRecord4UFmtPIDList(
@@ -951,7 +951,7 @@ IDE_RC sdpsfFT::dumpUfmtPIDList( scSpaceID             aSpaceID,
 }
 
 //------------------------------------------------------
-// D$DISK_TABLE_FMS_UFMTPIDLIST Dump TableÀÇ Column Description
+// D$DISK_TABLE_FMS_UFMTPIDLIST Dump Tableì˜ Column Description
 //------------------------------------------------------
 static iduFixedTableColDesc gDumpUFmtFreeLstColDescOfFMS[]=
 {
@@ -982,7 +982,7 @@ static iduFixedTableColDesc gDumpUFmtFreeLstColDescOfFMS[]=
 };
 
 //------------------------------------------------------
-// D$DISK_TABLE_FMS_UFMTPIDLIST Dump TableÀÇ Column Description
+// D$DISK_TABLE_FMS_UFMTPIDLIST Dump Tableì˜ Column Description
 //------------------------------------------------------
 iduFixedTableDesc  gDumpDiskTableFmsUFmtFreeLstTblDesc =
 {

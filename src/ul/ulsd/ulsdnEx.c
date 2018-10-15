@@ -85,7 +85,7 @@ SQLRETURN ulsdFetchNodes(ulnFnContext *aFnContext,
             }
             else if ( sNodeResult == SQL_SUCCESS_WITH_INFO )
             {
-                /* infoÀÇ Àü´Ş */
+                /* infoì˜ ì „ë‹¬ */
                 ulsdNativeErrorToUlnError(aFnContext,
                                           SQL_HANDLE_STMT,
                                           (ulnObject *)sNodeStmt,
@@ -96,7 +96,7 @@ SQLRETURN ulsdFetchNodes(ulnFnContext *aFnContext,
             }
             else if ( sNodeResult == SQL_NO_DATA )
             {
-                /* next µ¥ÀÌÅÍ ³ëµå¸¦ È®ÀÎÇØ¾ß ÇÔ */
+                /* next ë°ì´í„° ë…¸ë“œë¥¼ í™•ì¸í•´ì•¼ í•¨ */
                 aStmt->mShardStmtCxt.mNodeDbcIndexCur++;
                 continue;
             }
@@ -109,7 +109,7 @@ SQLRETURN ulsdFetchNodes(ulnFnContext *aFnContext,
         }
         else
         {
-            /* ¸ğµç µ¥ÀÌÅÍ ³ëµå¿¡¼­ no_dataÀÌ¸é no_data ¸®ÅÏ */
+            /* ëª¨ë“  ë°ì´í„° ë…¸ë“œì—ì„œ no_dataì´ë©´ no_data ë¦¬í„´ */
             sSuccessResult = SQL_NO_DATA;
         }
 
@@ -194,7 +194,7 @@ SQLRETURN ulsdExecuteNodes(ulnFnContext *aFnContext,
                   != SQL_SUCCESS );
     }
 
-    /* node execute º´·Ä¼öÇà */
+    /* node execute ë³‘ë ¬ìˆ˜í–‰ */
     ulsdDoCallback( sCallback );
 
     for ( i = 0; i < aStmt->mShardStmtCxt.mNodeDbcIndexCount; i++ )
@@ -216,7 +216,7 @@ SQLRETURN ulsdExecuteNodes(ulnFnContext *aFnContext,
         }
         else if ( sNodeResult == SQL_SUCCESS_WITH_INFO )
         {
-            /* infoÀÇ Àü´Ş */
+            /* infoì˜ ì „ë‹¬ */
             ulsdNativeErrorToUlnError(aFnContext,
                                       SQL_HANDLE_STMT,
                                       (ulnObject *)sNodeStmt,
@@ -231,7 +231,7 @@ SQLRETURN ulsdExecuteNodes(ulnFnContext *aFnContext,
         }
         else
         {
-            /* BUGBUG ¿©·¯°³ÀÇ µ¥ÀÌÅÍ ³ëµå¿¡ ´ëÇØ¼­ retry°¡ °¡´ÉÇÑ°¡? */
+            /* BUGBUG ì—¬ëŸ¬ê°œì˜ ë°ì´í„° ë…¸ë“œì— ëŒ€í•´ì„œ retryê°€ ê°€ëŠ¥í•œê°€? */
             if ( ulsdNodeFailRetryAvailable( SQL_HANDLE_STMT,
                                              (ulnObject *)sNodeStmt ) == ACP_TRUE )
             {
@@ -260,7 +260,7 @@ SQLRETURN ulsdExecuteNodes(ulnFnContext *aFnContext,
         }
     }
 
-    /* ¸ğµÎ no_dataÀÌ¸é no_data ¸®ÅÏ, ¿¡·¯°¡ ÇÏ³ª¶óµµ ÀÖÀ¸¸é ¿¡·¯ ¸®ÅÏ */
+    /* ëª¨ë‘ no_dataì´ë©´ no_data ë¦¬í„´, ì—ëŸ¬ê°€ í•˜ë‚˜ë¼ë„ ìˆìœ¼ë©´ ì—ëŸ¬ ë¦¬í„´ */
     if ( sNoDataCount == aStmt->mShardStmtCxt.mNodeDbcIndexCount )
     {
         sSuccessResult = SQL_NO_DATA;
@@ -270,7 +270,7 @@ SQLRETURN ulsdExecuteNodes(ulnFnContext *aFnContext,
         ACI_TEST( sError == ACP_TRUE );
     }
 
-    /* execute°¡ ¼º°øÇÏ°í, selectÀÎ °æ¿ì fetchÇÒ ÁØºñ°¡ µÊ */
+    /* executeê°€ ì„±ê³µí•˜ê³ , selectì¸ ê²½ìš° fetchí•  ì¤€ë¹„ê°€ ë¨ */
     aStmt->mShardStmtCxt.mNodeDbcIndexCur = 0;
 
     ulsdRemoveCallback( sCallback );
@@ -339,7 +339,7 @@ SQLRETURN ulsdRowCountNodes(ulnFnContext *aFnContext,
         }
         else if ( sNodeResult == SQL_SUCCESS_WITH_INFO )
         {
-            /* infoÀÇ Àü´Ş */
+            /* infoì˜ ì „ë‹¬ */
             ulsdNativeErrorToUlnError(aFnContext,
                                       SQL_HANDLE_STMT,
                                       (ulnObject *)sNodeStmt,
@@ -437,7 +437,7 @@ SQLRETURN ulsdMoreResultsNodes(ulnFnContext *aFnContext,
         }
     }
 
-    /* ¸ğµÎ no_dataÀÌ¸é no_data ¸®ÅÏ */
+    /* ëª¨ë‘ no_dataì´ë©´ no_data ë¦¬í„´ */
     if ( sNoDataCount == aStmt->mShardStmtCxt.mNodeDbcIndexCount )
     {
         sSuccessResult = SQL_NO_DATA;

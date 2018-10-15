@@ -276,7 +276,7 @@ iSQLConnectParserlex( YYSTYPE * lvalp,
         }
         if( ( idlOS::strncmp( sNlsUse, (SChar*)"SHIFTJIS", 8 ) == 0 ) ||
             ( idlOS::strncmp( sNlsUse, (SChar*)"JAPANESE", 8 ) == 0 ) ||
-            /* PROJ-2590 [±‚¥…º∫] CP932 database character set ¡ˆø¯ */
+            /* PROJ-2590 [Í∏∞Îä•ÏÑ±] CP932 database character set ÏßÄÏõê */
             ( idlOS::strncmp( sNlsUse, (SChar*)"MS932", 5 ) == 0 ) ||
             ( idlOS::strncmp( sNlsUse, (SChar*)"CP932", 5 ) == 0 ) ||
             ( idlOS::strncmp( sNlsUse, (SChar*)"WINDOWS932", 10 ) == 0 ) )
@@ -286,7 +286,7 @@ iSQLConnectParserlex( YYSTYPE * lvalp,
         else if( ( idlOS::strncmp( sNlsUse, (SChar*)"GB231280", 8 ) == 0 )   ||
                  (idlOS::strncmp( sNlsUse, (SChar*)"ZHS16CGB231280", 14)==0) ||
                  ( idlOS::strncmp( sNlsUse, (SChar*)"CHINESE", 7 )==0 ) ||
-                 /* PROJ-2414 [±‚¥…º∫] GBK, CP936 character set √ﬂ∞° */
+                 /* PROJ-2414 [Í∏∞Îä•ÏÑ±] GBK, CP936 character set Ï∂îÍ∞Ä */
                  ( idlOS::strncmp( sNlsUse, (SChar*)"MS936", 5 )==0 ) ||
                  ( idlOS::strncmp( sNlsUse, (SChar*)"CP936", 5 )==0 ) ||
                  ( idlOS::strncmp( sNlsUse, (SChar*)"GBK", 3 )==0 ) ||

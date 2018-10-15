@@ -35,12 +35,12 @@ typedef struct mmtCmsFetchContext
     UChar              *mCollectionData;
     UInt                mCollectionSize;
     UInt                mCursor;         // bug-27621: pointer to UInt
-    UInt                mCurRowSize;     // ÇöÀç ´©ÀûµÇ°í ÀÖ´Â ·¹ÄÚµåÀÇ Å©±â
-    UInt                mPrvRowSize;     // ÀÌÀü ·¹ÄÚµåÀÇ ½ÇÁ¦ Å©±â
-    UInt                mMaxRowSize;     // ÃÖ´ë ·¹ÄÚµå Å©±â (estimationÇÑ °ª)
-    UInt                mLastRecordPos;  // CollectionData ³»¿¡¼­ ¸¶Áö¸· ¿Ï·áµÈ
-                                         // ·¹ÄÚµåÀÇ À§Ä¡ ( Fetch µµÁß ½ÇÆÐÇÑ °æ¿ì
-                                         // ÀÌÀü±îÁö ¿Ï·áÇÑ ·¹ÄÚµå´Â Àü¼ÛµÇ¾î¾ß ÇÑ´Ù )
+    UInt                mCurRowSize;     // í˜„ìž¬ ëˆ„ì ë˜ê³  ìžˆëŠ” ë ˆì½”ë“œì˜ í¬ê¸°
+    UInt                mPrvRowSize;     // ì´ì „ ë ˆì½”ë“œì˜ ì‹¤ì œ í¬ê¸°
+    UInt                mMaxRowSize;     // ìµœëŒ€ ë ˆì½”ë“œ í¬ê¸° (estimationí•œ ê°’)
+    UInt                mLastRecordPos;  // CollectionData ë‚´ì—ì„œ ë§ˆì§€ë§‰ ì™„ë£Œëœ
+                                         // ë ˆì½”ë“œì˜ ìœ„ì¹˜ ( Fetch ë„ì¤‘ ì‹¤íŒ¨í•œ ê²½ìš°
+                                         // ì´ì „ê¹Œì§€ ì™„ë£Œí•œ ë ˆì½”ë“œëŠ” ì „ì†¡ë˜ì–´ì•¼ í•œë‹¤ )
     mmcBaseRow         *mBaseRow;        // PROJ-2256
 } mmtCmsFetchContext;
 
@@ -175,9 +175,9 @@ static IDE_RC fetchColumnListCallback(idvSQL        * /*aStatistics*/,
     if( aBindColumn->mId == 0 )
     {
         // To fix BUG-20474
-        // ÀÌÀü ·¹ÄÚµåÀÇ »çÀÌÁî¸¦ ÀÌ¿ëÇØ¼­ ÇâÈÄ ÀúÀåµÉ »çÀÌÁî¸¦ estimationÇÑ´Ù.
-        // Àß¸øµÈ estimationÀº fetch chunkÀÇ »çÀÌÁî¸¦ ÃÊ°ú ÇÒ¼ö ÀÖ´Ù.
-        // µû¶ó¼­, fetch chunk´Â ¿ä±¸ÇÑ »çÀÌÁîÀÇ 2¹è°¡ ÇÒ´çµÇ¾î¾ß ÇÑ´Ù.
+        // ì´ì „ ë ˆì½”ë“œì˜ ì‚¬ì´ì¦ˆë¥¼ ì´ìš©í•´ì„œ í–¥í›„ ì €ìž¥ë  ì‚¬ì´ì¦ˆë¥¼ estimationí•œë‹¤.
+        // ìž˜ëª»ëœ estimationì€ fetch chunkì˜ ì‚¬ì´ì¦ˆë¥¼ ì´ˆê³¼ í• ìˆ˜ ìžˆë‹¤.
+        // ë”°ë¼ì„œ, fetch chunkëŠ” ìš”êµ¬í•œ ì‚¬ì´ì¦ˆì˜ 2ë°°ê°€ í• ë‹¹ë˜ì–´ì•¼ í•œë‹¤.
         if( (sFetchContext->mCursor + sFetchContext->mPrvRowSize)
             > sSession->getFetchChunkLimit() )
         {
@@ -215,8 +215,8 @@ static IDE_RC fetchColumnListCallback(idvSQL        * /*aStatistics*/,
      * PROJ-2256 Communication protocol for efficient query result transmission
      *
      * Description :
-     * REMOVE_REDUNDANT_TRANSMISSION (Áßº¹ Àü¼Û Á¦°Å) ¼¼¼Ç ÇÁ·ÎÆÛÆ¼°¡ off »óÅÂÀÌ°Å³ª
-     * Áßº¹ °Ë»ç ÈÄ Áßº¹ÀÌ ¹ß»ýÇÏÁö ¾ÊÀº °æ¿ì¿¡ ±âÁ¸ ·çÆ¾À» ÅëÇØ CM Å¸ÀÔÀ¸·Î º¯°æÇÏµµ·Ï ÇÑ´Ù.
+     * REMOVE_REDUNDANT_TRANSMISSION (ì¤‘ë³µ ì „ì†¡ ì œê±°) ì„¸ì…˜ í”„ë¡œí¼í‹°ê°€ off ìƒíƒœì´ê±°ë‚˜
+     * ì¤‘ë³µ ê²€ì‚¬ í›„ ì¤‘ë³µì´ ë°œìƒí•˜ì§€ ì•Šì€ ê²½ìš°ì— ê¸°ì¡´ ë£¨í‹´ì„ í†µí•´ CM íƒ€ìž…ìœ¼ë¡œ ë³€ê²½í•˜ë„ë¡ í•œë‹¤.
      */
     if ( sAny.mType != CMT_ID_REDUNDANCY )
     {
@@ -232,11 +232,11 @@ static IDE_RC fetchColumnListCallback(idvSQL        * /*aStatistics*/,
 
     /*
      * CASE-13162
-     * fetchÇØ¿Â row¸¦ collection bufferÀÇ cursorÀ§Ä¡ºÎÅÍ ÀúÀåÇÏ°í
-     * cursor À§Ä¡¸¦ Áõ°¡½ÃÅ´. ±×·¯¹Ç·Î cursorÀÇ À§Ä¡°¡ Àý´ë·Î
-     * collection bufferÀÇ Å©±â¸¦ ³ÑÀ» ¼ö ¾øÀ½.
-     * ¸¸¾à cursorÀÇ À§Ä¡°¡ collection bufferÀÇ Å©±â¸¦ ³Ñ¾î°£´Ù¸é
-     * page°¡ ±úÁö´Â µîÀÇ abnormalÇÑ »óÈ²ÀÓ.
+     * fetchí•´ì˜¨ rowë¥¼ collection bufferì˜ cursorìœ„ì¹˜ë¶€í„° ì €ìž¥í•˜ê³ 
+     * cursor ìœ„ì¹˜ë¥¼ ì¦ê°€ì‹œí‚´. ê·¸ëŸ¬ë¯€ë¡œ cursorì˜ ìœ„ì¹˜ê°€ ì ˆëŒ€ë¡œ
+     * collection bufferì˜ í¬ê¸°ë¥¼ ë„˜ì„ ìˆ˜ ì—†ìŒ.
+     * ë§Œì•½ cursorì˜ ìœ„ì¹˜ê°€ collection bufferì˜ í¬ê¸°ë¥¼ ë„˜ì–´ê°„ë‹¤ë©´
+     * pageê°€ ê¹¨ì§€ëŠ” ë“±ì˜ abnormalí•œ ìƒí™©ìž„.
      */
     IDE_ASSERT( sCursor < sSession->getChunkSize() );
 
@@ -248,9 +248,9 @@ static IDE_RC fetchColumnListCallback(idvSQL        * /*aStatistics*/,
         sFetchContext->mLastRecordPos = sFetchContext->mCursor;
         if( sFetchContext->mRecordNumber > 0 )
         {
-            // ÀÌÀü ·¹ÄÚµåÀÇ »çÀÌÁî¿Í ÇöÀç ·¹ÄÚµåÀÇ »çÀÌÁî°¡ ´Ù¸£´Ù¸é
-            // Å¬¶óÀÌ¾ðÆ®¿¡°Ô Àü¼ÛµÇ´Â ·¹ÄÚµåµéÀº °íÁ¤±æÀÌ°¡ ¾Æ´Ñ
-            // °¡º¯ ±æÀÌ¸¦ °®´Â´Ù°í ¸í½ÃÀûÀ¸·Î ¾Ë·ÁÁÜ.
+            // ì´ì „ ë ˆì½”ë“œì˜ ì‚¬ì´ì¦ˆì™€ í˜„ìž¬ ë ˆì½”ë“œì˜ ì‚¬ì´ì¦ˆê°€ ë‹¤ë¥´ë‹¤ë©´
+            // í´ë¼ì´ì–¸íŠ¸ì—ê²Œ ì „ì†¡ë˜ëŠ” ë ˆì½”ë“œë“¤ì€ ê³ ì •ê¸¸ì´ê°€ ì•„ë‹Œ
+            // ê°€ë³€ ê¸¸ì´ë¥¼ ê°–ëŠ”ë‹¤ê³  ëª…ì‹œì ìœ¼ë¡œ ì•Œë ¤ì¤Œ.
             if( sFetchContext->mPrvRowSize != sFetchContext->mCurRowSize )
             {
                 sFetchContext->mPrvRowSize = CMP_DB_FETCHLIST_VARIABLE_RECORD;
@@ -279,12 +279,12 @@ static IDE_RC doFetchA5( mmtCmsFetchContext *aFetchContext,
     
     sResultSet = aFetchContext->mStatement->getResultSet(aFetchContext->mResultSetID);
     // bug-26977: codesonar: resultset null ref
-    // nullÀÌ °¡´ÉÇÑÁö´Â ¸ð¸£°ÚÁö¸¸, ¹æ¾îÄÚµåÀÓ.
+    // nullì´ ê°€ëŠ¥í•œì§€ëŠ” ëª¨ë¥´ê² ì§€ë§Œ, ë°©ì–´ì½”ë“œìž„.
     IDE_TEST(sResultSet == NULL);
 
     sResultSetStmt = (mmcStatement*)sResultSet->mResultSetStmt;
     // bug-26977: codesonar: resultset null ref
-    // nullÀÌ °¡´ÉÇÑÁö´Â ¸ð¸£°ÚÁö¸¸, ¹æ¾îÄÚµåÃß°¡.
+    // nullì´ ê°€ëŠ¥í•œì§€ëŠ” ëª¨ë¥´ê² ì§€ë§Œ, ë°©ì–´ì½”ë“œì¶”ê°€.
     IDE_TEST(sResultSetStmt == NULL);
  
     for (sColumnIndex  = aFetchContext->mColumnFrom;
@@ -324,7 +324,7 @@ static IDE_RC fetchEnd(cmiProtocolContext *aProtocolContext,
     
     sResultSet = aStatement->getResultSet( aResultSetID );
     // bug-26977: codesonar: resultset null ref
-    // nullÀÌ °¡´ÉÇÑÁö´Â ¸ð¸£°ÚÁö¸¸, ¹æ¾îÄÚµåÀÓ.
+    // nullì´ ê°€ëŠ¥í•œì§€ëŠ” ëª¨ë¥´ê² ì§€ë§Œ, ë°©ì–´ì½”ë“œìž„.
     IDE_TEST(sResultSet == NULL);
 
     sResultSetStmt = (mmcStatement*)sResultSet->mResultSetStmt;
@@ -334,7 +334,7 @@ static IDE_RC fetchEnd(cmiProtocolContext *aProtocolContext,
     if (aStatement->getResultSetState(aResultSetID) != MMC_RESULTSET_STATE_FETCH_CLOSE)
     {
         // bug-26977: codesonar: resultset null ref
-        // nullÀÌ °¡´ÉÇÑÁö´Â ¸ð¸£°ÚÁö¸¸, ¹æ¾îÄÚµåÃß°¡.
+        // nullì´ ê°€ëŠ¥í•œì§€ëŠ” ëª¨ë¥´ê² ì§€ë§Œ, ë°©ì–´ì½”ë“œì¶”ê°€.
         IDE_TEST(sResultSetStmt == NULL);
 
         mmcStatement::makePlanTreeBeforeCloseCursor( aStatement,
@@ -346,7 +346,7 @@ static IDE_RC fetchEnd(cmiProtocolContext *aProtocolContext,
 
         answerFetchEndResult(aProtocolContext, aStatement, aResultSetID);
 
-        // Fetch °¡´ÉÇÑ Result SetÀ» ÇÏ³ª °¨¼Ò
+        // Fetch ê°€ëŠ¥í•œ Result Setì„ í•˜ë‚˜ ê°ì†Œ
         sEnableResultSetCount--;
         aStatement->setEnableResultSetCount(sEnableResultSetCount);
     }
@@ -416,12 +416,12 @@ IDE_RC mmtServiceThread::fetchA5(cmiProtocolContext *aProtocolContext,
 
     sResultSet = aStatement->getResultSet( aResultSetID );
     // bug-26977: codesonar: resultset null ref
-    // nullÀÌ °¡´ÉÇÑÁö´Â ¸ð¸£°ÚÁö¸¸, ¹æ¾îÄÚµåÀÓ.
+    // nullì´ ê°€ëŠ¥í•œì§€ëŠ” ëª¨ë¥´ê² ì§€ë§Œ, ë°©ì–´ì½”ë“œìž„.
     IDE_TEST(sResultSet == NULL);
 
     sResultSetStmt = (mmcStatement*)sResultSet->mResultSetStmt;
     // bug-26977: codesonar: resultset null ref
-    // nullÀÌ °¡´ÉÇÑÁö´Â ¸ð¸£°ÚÁö¸¸, ¹æ¾îÄÚµåÃß°¡.
+    // nullì´ ê°€ëŠ¥í•œì§€ëŠ” ëª¨ë¥´ê² ì§€ë§Œ, ë°©ì–´ì½”ë“œì¶”ê°€.
     IDE_TEST(sResultSetStmt == NULL);
  
     IDE_TEST( qci::getRowSize( sResultSetStmt->getQciStmt(), &sSize )
@@ -430,13 +430,13 @@ IDE_RC mmtServiceThread::fetchA5(cmiProtocolContext *aProtocolContext,
     if ( aSession->getHasClientListChannel() == ID_TRUE
          || aSession->getFetchProtocolType() == MMC_FETCH_PROTOCOL_TYPE_LIST )  // BUG-34725
     {
-        // Åë½Å»ó ÇÊ¿äÇÑ °ø°£À» estimationÇÑ´Ù.
+        // í†µì‹ ìƒ í•„ìš”í•œ ê³µê°„ì„ estimationí•œë‹¤.
         sFetchContext.mMaxRowSize =
             qci::getColumnCount(sResultSetStmt->getQciStmt()) * cmiGetMaxInTypeHeaderSize();
         sFetchContext.mMaxRowSize += sSize;
 
-        // Àû¾îµµ ÇÏ³ªÀÇ ·¹ÄÚµå´Â Àü¼ÛµÇ¾î¾ß ÇÑ´Ù.
-        // BUG-29810 Fetch½Ã Memeory ºÎÁ·»óÈ²¿¡¼­ ¿¡·¯ÄÚµå¸¦ º¸¿©ÁÖÁö ¾Ê½À´Ï´Ù.
+        // ì ì–´ë„ í•˜ë‚˜ì˜ ë ˆì½”ë“œëŠ” ì „ì†¡ë˜ì–´ì•¼ í•œë‹¤.
+        // BUG-29810 Fetchì‹œ Memeory ë¶€ì¡±ìƒí™©ì—ì„œ ì—ëŸ¬ì½”ë“œë¥¼ ë³´ì—¬ì£¼ì§€ ì•ŠìŠµë‹ˆë‹¤.
         IDE_TEST_RAISE(aSession->allocChunk4Fetch(
                                  IDL_MAX(sFetchContext.mMaxRowSize,
                                          (MMC_DEFAULT_COLLECTION_BUFFER_SIZE)) )
@@ -444,7 +444,7 @@ IDE_RC mmtServiceThread::fetchA5(cmiProtocolContext *aProtocolContext,
 
         sFetchContext.mCollectionData  = aSession->getChunk();
         // bug-27621: mCursor: UInt pointer -> UInt
-        // Áö¿ªº¯¼ö sCursorÀÇ ÁÖ¼ÒÁöÁ¤À» Á¦°Å.
+        // ì§€ì—­ë³€ìˆ˜ sCursorì˜ ì£¼ì†Œì§€ì •ì„ ì œê±°.
         sFetchContext.mCursor          = 0;
         sFetchContext.mCurRowSize      = 0;
         sFetchContext.mPrvRowSize      = 0;
@@ -505,8 +505,8 @@ IDE_RC mmtServiceThread::fetchA5(cmiProtocolContext *aProtocolContext,
     else
     {
         // fix BUG-17715
-        // Å¬¶óÀÌ¾ðÆ®°¡ FETCHÇÒ ·¹ÄÚµå °¹¼ö¸¦ ¸í½ÃÇÏÁö ¾Ê¾ÒÀ» °æ¿ì
-        // Åë½Å¹öÆÛ¿¡ °¡´ÉÇÑ ¸ðµç ·¹ÄÚµå °¹¼ö¸¦ ÀúÀåÇÑ´Ù.
+        // í´ë¼ì´ì–¸íŠ¸ê°€ FETCHí•  ë ˆì½”ë“œ ê°¯ìˆ˜ë¥¼ ëª…ì‹œí•˜ì§€ ì•Šì•˜ì„ ê²½ìš°
+        // í†µì‹ ë²„í¼ì— ê°€ëŠ¥í•œ ëª¨ë“  ë ˆì½”ë“œ ê°¯ìˆ˜ë¥¼ ì €ìž¥í•œë‹¤.
         do
         {
             IDE_TEST_RAISE( doFetchA5( &sFetchContext,
@@ -546,7 +546,7 @@ IDE_RC mmtServiceThread::fetchA5(cmiProtocolContext *aProtocolContext,
             if ( aSession->getHasClientListChannel() == ID_TRUE
                  || aSession->getFetchProtocolType() == MMC_FETCH_PROTOCOL_TYPE_LIST )  // BUG-34725
             {
-                // ÀÌÀü »çÀÌÁî¸¦ ÀÌ¿ëÇÏ¿© ÇâÈÄ ÇÊ¿äÇÑ »çÀÌÁî¸¦ estimation ÇÑ´Ù.
+                // ì´ì „ ì‚¬ì´ì¦ˆë¥¼ ì´ìš©í•˜ì—¬ í–¥í›„ í•„ìš”í•œ ì‚¬ì´ì¦ˆë¥¼ estimation í•œë‹¤.
                 if( (sFetchContext.mCursor + sFetchContext.mPrvRowSize)
                     > aSession->getFetchChunkLimit() )
                 {
@@ -642,7 +642,7 @@ IDE_RC mmtServiceThread::fetchMoveProtocolA5(cmiProtocolContext *aProtocolContex
 
     sResultSet = sStatement->getResultSet(sArg->mResultSetID);
     // bug-26977: codesonar: resultset null ref
-    // nullÀÌ °¡´ÉÇÑÁö´Â ¸ð¸£°ÚÁö¸¸, ¹æ¾îÄÚµåÀÓ.
+    // nullì´ ê°€ëŠ¥í•œì§€ëŠ” ëª¨ë¥´ê² ì§€ë§Œ, ë°©ì–´ì½”ë“œìž„.
     IDE_TEST(sResultSet == NULL);
 
     sResultSetStmt = (mmcStatement*)sResultSet->mResultSetStmt;
@@ -666,7 +666,7 @@ IDE_RC mmtServiceThread::fetchMoveProtocolA5(cmiProtocolContext *aProtocolContex
         sArg->mOffset--;
 
         // bug-26977: codesonar: resultset null ref
-        // nullÀÌ °¡´ÉÇÑÁö´Â ¸ð¸£°ÚÁö¸¸, ¹æ¾îÄÚµåÃß°¡.
+        // nullì´ ê°€ëŠ¥í•œì§€ëŠ” ëª¨ë¥´ê² ì§€ë§Œ, ë°©ì–´ì½”ë“œì¶”ê°€.
         IDE_TEST(sResultSetStmt == NULL);
 
         for (i = 0; i < sArg->mOffset; i++)
@@ -747,7 +747,7 @@ IDE_RC mmtServiceThread::fetchProtocolA5(cmiProtocolContext *aProtocolContext,
 
     sResultSet = sStatement->getResultSet( sResultSetID );
     // bug-26977: codesonar: resultset null ref
-    // nullÀÌ °¡´ÉÇÑÁö´Â ¸ð¸£°ÚÁö¸¸, ¹æ¾îÄÚµåÀÓ.
+    // nullì´ ê°€ëŠ¥í•œì§€ëŠ” ëª¨ë¥´ê² ì§€ë§Œ, ë°©ì–´ì½”ë“œìž„.
     IDE_TEST(sResultSet == NULL);
 
     sResultSetStmt = (mmcStatement*)sResultSet->mResultSetStmt;
@@ -756,9 +756,9 @@ IDE_RC mmtServiceThread::fetchProtocolA5(cmiProtocolContext *aProtocolContext,
     {
         case MMC_RESULTSET_STATE_INITIALIZE:
             
-            // Result SetÀÇ moveNextReocrd()´Â Execute½Ã¿¡ È£Ãâ µÇ¾ú´Ù.
-            // Result SetÀÌ ¿©·¯°³ÀÎ °æ¿ì Ã³À½ execute½Ã¿¡ record°¡ ¾øÀ¸¸é
-            // MMC_RESULTSET_STATE_INITIALIZE»óÅÂÀÌ¸ç, ÀÌ´Â ¹Ù·Î fetchEnd
+            // Result Setì˜ moveNextReocrd()ëŠ” Executeì‹œì— í˜¸ì¶œ ë˜ì—ˆë‹¤.
+            // Result Setì´ ì—¬ëŸ¬ê°œì¸ ê²½ìš° ì²˜ìŒ executeì‹œì— recordê°€ ì—†ìœ¼ë©´
+            // MMC_RESULTSET_STATE_INITIALIZEìƒíƒœì´ë©°, ì´ëŠ” ë°”ë¡œ fetchEnd
             sStatement->setFetchFlag(MMC_FETCH_FLAG_CLOSE);
             IDE_RAISE(FetchEnd);
             break;
@@ -782,7 +782,7 @@ IDE_RC mmtServiceThread::fetchProtocolA5(cmiProtocolContext *aProtocolContext,
     sStatement->setFetchStartTime(mmtSessionManager::getBaseTime());
 
     // bug-26977: codesonar: resultset null ref
-    // nullÀÌ °¡´ÉÇÑÁö´Â ¸ð¸£°ÚÁö¸¸, ¹æ¾îÄÚµåÃß°¡.
+    // nullì´ ê°€ëŠ¥í•œì§€ëŠ” ëª¨ë¥´ê² ì§€ë§Œ, ë°©ì–´ì½”ë“œì¶”ê°€.
     IDE_TEST(sResultSetStmt == NULL);
     sColumnCount = qci::getColumnCount(sResultSetStmt->getQciStmt());
 

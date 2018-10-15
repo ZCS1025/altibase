@@ -21,16 +21,16 @@
  * Description :
  *     Parallel Partition Coordinator(PPCRD) Node
  *
- *     Partitioned table¿¡ ´ëÇÑ scanÀ» ¼öÇàÇÏ´Â Plan Node ÀÌ´Ù.
+ *     Partitioned tableì— ëŒ€í•œ scanì„ ìˆ˜í–‰í•˜ëŠ” Plan Node ì´ë‹¤.
  *
- *     ´ÙÀ½°ú °°Àº ±â´ÉÀ» À§ÇØ »ç¿ëµÈ´Ù.
+ *     ë‹¤ìŒê³¼ ê°™ì€ ê¸°ëŠ¥ì„ ìœ„í•´ ì‚¬ìš©ëœë‹¤.
  *         - Partition Coordinator
  *
- *     Multi Children(partition¿¡ ´ëÇÑ SCAN) ¿¡ ´ëÇÑ Data¸¦ ¸®ÅÏÇÑ´Ù.
+ *     Multi Children(partitionì— ëŒ€í•œ SCAN) ì— ëŒ€í•œ Dataë¥¼ ë¦¬í„´í•œë‹¤.
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  **********************************************************************/
 
@@ -45,7 +45,7 @@
 // Code Node Flags
 //-----------------
 
-// qmncPPCRD.flag´Â qmncSCAN.flag°ú °øÀ¯ÇÑ´Ù.
+// qmncPPCRD.flagëŠ” qmncSCAN.flagê³¼ ê³µìœ í•œë‹¤.
 
 //-----------------
 // Data Node Flags
@@ -68,9 +68,9 @@
 #define QMND_PPCRD_INDEX_CURSOR_OPEN        (0x00000004)
 
 /* qmndPPCRD.flag                                     */
-// IN SUBQUERY KEYRANGEÀÇ »ı¼º ¼º°ø ¿©ºÎ
-// IN SUBQUERY KEYRANGE°¡ Á¸ÀçÇÒ °æ¿ì¿¡¸¸ À¯È¿ÇÏ¸ç,
-// ´õ ÀÌ»ó Key Range¸¦ »ı¼ºÇÒ ¼ö ¾øÀ» ¶§ º¯°æµÈ´Ù.
+// IN SUBQUERY KEYRANGEì˜ ìƒì„± ì„±ê³µ ì—¬ë¶€
+// IN SUBQUERY KEYRANGEê°€ ì¡´ì¬í•  ê²½ìš°ì—ë§Œ ìœ íš¨í•˜ë©°,
+// ë” ì´ìƒ Key Rangeë¥¼ ìƒì„±í•  ìˆ˜ ì—†ì„ ë•Œ ë³€ê²½ëœë‹¤.
 #define QMND_PPCRD_INSUBQ_RANGE_BUILD_MASK     (0x00000008)
 #define QMND_PPCRD_INSUBQ_RANGE_BUILD_SUCCESS  (0x00000000)
 #define QMND_PPCRD_INSUBQ_RANGE_BUILD_FAILURE  (0x00000008)
@@ -88,7 +88,7 @@ typedef struct qmnPRLQChildMap
 typedef struct qmncPPCRD
 {
     //---------------------------------
-    // Code ¿µ¿ª °øÅë Á¤º¸
+    // Code ì˜ì—­ ê³µí†µ ì •ë³´
     //---------------------------------
 
     qmnPlan          plan;
@@ -96,13 +96,13 @@ typedef struct qmncPPCRD
     UInt             planID;
 
     //---------------------------------
-    // °íÀ¯ Á¤º¸
+    // ê³ ìœ  ì •ë³´
     //---------------------------------
 
     qmsTableRef    * tableRef;
     UShort           tupleRowID; // Tuple ID
 
-    /* PROJ-2464 hybrid partitioned table Áö¿ø */
+    /* PROJ-2464 hybrid partitioned table ì§€ì› */
     UShort           partitionedTupleID;
 
     UInt             selectedPartitionCount;
@@ -116,12 +116,12 @@ typedef struct qmncPPCRD
     // Index
     qcmIndex       * index;                // selected index
 
-    // Index TableÀÇ Á¤º¸
+    // Index Tableì˜ ì •ë³´
     UShort           indexTupleRowID;      // index table tuple id
     const void     * indexTableHandle;     // index table handle
     smSCN            indexTableSCN;        // index table SCN
 
-    // Index TableÀÇ Index Á¤º¸
+    // Index Tableì˜ Index ì •ë³´
     qcmIndex       * indexTableIndex;      // real index
     
     // Filter
@@ -129,7 +129,7 @@ typedef struct qmncPPCRD
     qtcNode        * subqueryFilter;    // Subquery Filter
     
     //---------------------------------
-    // Display °ü·Ã Á¤º¸
+    // Display ê´€ë ¨ ì •ë³´
     //---------------------------------
 
     qmsNamePosition  tableOwnerName;     // Table Owner Name
@@ -146,7 +146,7 @@ typedef struct qmncPPCRD
 typedef struct qmndPPCRD
 {
     //---------------------------------
-    // Data ¿µ¿ª °øÅë Á¤º¸
+    // Data ì˜ì—­ ê³µí†µ ì •ë³´
     //---------------------------------
 
     qmndPlan                plan;
@@ -154,7 +154,7 @@ typedef struct qmndPPCRD
     UInt                  * flag;
 
     //---------------------------------
-    // Partition SCAN °íÀ¯ Á¤º¸
+    // Partition SCAN ê³ ìœ  ì •ë³´
     //---------------------------------
 
     smiRange              * partitionFilterArea;
@@ -164,13 +164,13 @@ typedef struct qmndPPCRD
     idBool                  isRowMovementUpdate;
 
     //---------------------------------
-    // Disk Table °ü·Ã Á¤º¸
+    // Disk Table ê´€ë ¨ ì •ë³´
     //---------------------------------
 
-    void                  * nullRow;  // Disk TableÀ» À§ÇÑ null row
+    void                  * nullRow;  // Disk Tableì„ ìœ„í•œ null row
     scGRID                  nullRID;
 
-    /* PROJ-2464 hybrid partitioned table Áö¿ø */
+    /* PROJ-2464 hybrid partitioned table ì§€ì› */
     void                  * diskRow;
 
     qmnChildren          ** childrenSCANArea;
@@ -181,57 +181,57 @@ typedef struct qmndPPCRD
     qmnChildren           * prevPRLQ;
 
     // PROJ-1705
-    // 1. update, deleteÀÇ °æ¿ì trigger row°¡ ÇÊ¿ä¿©ºÎ Á¤º¸ 
-    //   ÀÌ Á¤º¸´Â cusor open½Ã fetch columnÁ¤º¸±¸¼º¿¡ ¾²ÀÌ¸ç,
-    //   trigger row°¡ ÇÊ¿äÇÑ °æ¿ì ( Å×ÀÌºí ÀüÃ¼ ÄÃ·³ ÆĞÄ¡ )
-    //   trigger row°¡ ÇÊ¿äÇÏÁö ¾ÊÀº °æ¿ì ( validation½Ã ¼öÁıÇÑ ÄÃ·³¿¡ ´ëÇØ¼­ ÆĞÄ¡ )
-    // 2. partitioned tableÀÇ update½Ã
-    //    rowMovementÀÎ °æ¿ì Å×ÀÌºí ÀüÃ¼ ÄÃ·³ ÆĞÄ¡ 
+    // 1. update, deleteì˜ ê²½ìš° trigger rowê°€ í•„ìš”ì—¬ë¶€ ì •ë³´ 
+    //   ì´ ì •ë³´ëŠ” cusor openì‹œ fetch columnì •ë³´êµ¬ì„±ì— ì“°ì´ë©°,
+    //   trigger rowê°€ í•„ìš”í•œ ê²½ìš° ( í…Œì´ë¸” ì „ì²´ ì»¬ëŸ¼ íŒ¨ì¹˜ )
+    //   trigger rowê°€ í•„ìš”í•˜ì§€ ì•Šì€ ê²½ìš° ( validationì‹œ ìˆ˜ì§‘í•œ ì»¬ëŸ¼ì— ëŒ€í•´ì„œ íŒ¨ì¹˜ )
+    // 2. partitioned tableì˜ updateì‹œ
+    //    rowMovementì¸ ê²½ìš° í…Œì´ë¸” ì „ì²´ ì»¬ëŸ¼ íŒ¨ì¹˜ 
     idBool                  isNeedAllFetchColumn;    
 
     //---------------------------------
-    // Index Table ScanÀ» À§ÇÑ Á¤º¸
+    // Index Table Scanì„ ìœ„í•œ ì •ë³´
     //---------------------------------
 
     mtcTuple              * indexTuple;
     
     // fix BUG-9052
-    // subquery filter°¡ outer column ÂüÁ¶½Ã
-    // outer columnÀ» ÂüÁ¶ÇÑ store and search¸¦
-    // Àç¼öÇàÇÏµµ·Ï ÇÏ±â À§ÇØ¼­ ... qmnSCAN::readRow()ÇÔ¼öÁÖ¼®ÂüÁ¶
-    // printPlan()³»¿¡¼­ ACCESS count display½Ã
-    // DataPlan->plan.myTuple->modify¿¡¼­ ÀÌ °ªÀ» »©ÁÖµµ·Ï ÇÑ´Ù.
+    // subquery filterê°€ outer column ì°¸ì¡°ì‹œ
+    // outer columnì„ ì°¸ì¡°í•œ store and searchë¥¼
+    // ì¬ìˆ˜í–‰í•˜ë„ë¡ í•˜ê¸° ìœ„í•´ì„œ ... qmnSCAN::readRow()í•¨ìˆ˜ì£¼ì„ì°¸ì¡°
+    // printPlan()ë‚´ì—ì„œ ACCESS count displayì‹œ
+    // DataPlan->plan.myTuple->modifyì—ì„œ ì´ ê°’ì„ ë¹¼ì£¼ë„ë¡ í•œë‹¤.
     UInt                    subQFilterDepCnt;
 
     smiTableCursor          cursor;          // Cursor
-    smiCursorProperties     cursorProperty;  // Cursor °ü·Ã Á¤º¸
+    smiCursorProperties     cursorProperty;  // Cursor ê´€ë ¨ ì •ë³´
     smiCursorType           cursorType;      // PROJ-1502 PARTITIONED DISK TABLE
     UInt                    lockMode;        // Lock Mode
 
     //---------------------------------
-    // Update¸¦ À§ÇÑ Column List
+    // Updateë¥¼ ìœ„í•œ Column List
     //---------------------------------
 
-    smiColumnList         * updateColumnList;   // Update°¡ ¾Æ´Ñ °æ¿ì, NULL·Î ¼³Á¤
+    smiColumnList         * updateColumnList;   // Updateê°€ ì•„ë‹Œ ê²½ìš°, NULLë¡œ ì„¤ì •
     idBool                  inplaceUpdate;      // inplace update
 
     //---------------------------------
-    // Predicate Á¾·ù
+    // Predicate ì¢…ë¥˜
     //---------------------------------
 
-    // Filter °ü·Ã CallBack Á¤º¸
+    // Filter ê´€ë ¨ CallBack ì •ë³´
     smiCallBack             callBack;        // Filter CallBack
     qtcSmiCallBackDataAnd   callBackDataAnd; //
-    qtcSmiCallBackData      callBackData[3]; // ¼¼ Á¾·ùÀÇ Filter°¡ °¡´ÉÇÔ.
+    qtcSmiCallBackData      callBackData[3]; // ì„¸ ì¢…ë¥˜ì˜ Filterê°€ ê°€ëŠ¥í•¨.
     
     //---------------------------------
-    // Merge Join °ü·Ã Á¤º¸
+    // Merge Join ê´€ë ¨ ì •ë³´
     //---------------------------------
 
     smiCursorPosInfo        cursorInfo;
 
     //---------------------------------
-    // Child Index °ü·Ã Á¤º¸
+    // Child Index ê´€ë ¨ ì •ë³´
     //---------------------------------
     
     qmnChildrenIndex      * childrenIndex;
@@ -252,11 +252,11 @@ public:
     // Base Function Pointer
     //------------------------
 
-    // ÃÊ±âÈ­
+    // ì´ˆê¸°í™”
     static IDE_RC init( qcTemplate * aTemplate,
                         qmnPlan    * aPlan );
 
-    // ¼öÇà ÇÔ¼ö
+    // ìˆ˜í–‰ í•¨ìˆ˜
     static IDE_RC doIt( qcTemplate * aTemplate,
                         qmnPlan    * aPlan,
                         qmcRowFlag * aFlag );
@@ -265,7 +265,7 @@ public:
     static IDE_RC padNull( qcTemplate * aTemplate,
                            qmnPlan    * aPlan );
 
-    // Plan Á¤º¸ Ãâ·Â
+    // Plan ì •ë³´ ì¶œë ¥
     static IDE_RC printPlan( qcTemplate   * aTemplate,
                              qmnPlan      * aPlan,
                              ULong          aDepth,
@@ -286,54 +286,54 @@ private:
                             qmnPlan    * aPlan,
                             qmcRowFlag * aFlag );
 
-    // È£ÃâµÇ¾î¼­´Â ¾ÈµÊ
+    // í˜¸ì¶œë˜ì–´ì„œëŠ” ì•ˆë¨
     static IDE_RC doItDefault( qcTemplate * aTemplate,
                                qmnPlan    * aPlan,
                                qmcRowFlag * aFlag );
 
-    // Ç×»ó Á¶°ÇÀ» ¸¸Á·ÇÒ ¼ö ¾ø´Â °æ¿ì
+    // í•­ìƒ ì¡°ê±´ì„ ë§Œì¡±í•  ìˆ˜ ì—†ëŠ” ê²½ìš°
     static IDE_RC doItAllFalse( qcTemplate * aTemplate,
                                 qmnPlan    * aPlan,
                                 qmcRowFlag * aFlag );
 
     //------------------------
-    // ÃÊ±âÈ­ °ü·Ã ÇÔ¼ö
+    // ì´ˆê¸°í™” ê´€ë ¨ í•¨ìˆ˜
     //------------------------
     
-    // ÃÖÃÊ ÃÊ±âÈ­
+    // ìµœì´ˆ ì´ˆê¸°í™”
     static IDE_RC firstInit( qcTemplate * aTemplate,
                              qmncPPCRD  * aCodePlan,
                              qmndPPCRD  * aDataPlan );
 
-    // partition filter¸¦ À§ÇÑ °ø°£ ÇÒ´ç
+    // partition filterë¥¼ ìœ„í•œ ê³µê°„ í• ë‹¹
     static IDE_RC allocPartitionFilter( qcTemplate * aTemplate,
                                         qmncPPCRD  * aCodePlan,
                                         qmndPPCRD  * aDataPlan );
 
     
     //------------------------
-    // Plan Display °ü·Ã ÇÔ¼ö
+    // Plan Display ê´€ë ¨ í•¨ìˆ˜
     //------------------------
     
-    // PredicateÀÇ »ó¼¼ Á¤º¸¸¦ Ãâ·ÂÇÑ´Ù.
+    // Predicateì˜ ìƒì„¸ ì •ë³´ë¥¼ ì¶œë ¥í•œë‹¤.
     static IDE_RC printPredicateInfo( qcTemplate   * aTemplate,
                                       qmncPPCRD    * aCodePlan,
                                       ULong          aDepth,
                                       iduVarString * aString );
 
-    // Partition Key RangeÀÇ »ó¼¼ Á¤º¸¸¦ Ãâ·Â
+    // Partition Key Rangeì˜ ìƒì„¸ ì •ë³´ë¥¼ ì¶œë ¥
     static IDE_RC printPartKeyRangeInfo( qcTemplate   * aTemplate,
                                          qmncPPCRD    * aCodePlan,
                                          ULong          aDepth,
                                          iduVarString * aString );
 
-    // Partition FilterÀÇ »ó¼¼ Á¤º¸¸¦ Ãâ·Â
+    // Partition Filterì˜ ìƒì„¸ ì •ë³´ë¥¼ ì¶œë ¥
     static IDE_RC printPartFilterInfo( qcTemplate   * aTemplate,
                                        qmncPPCRD    * aCodePlan,
                                        ULong          aDepth,
                                        iduVarString * aString );
 
-    // FilterÀÇ »ó¼¼ Á¤º¸¸¦ Ãâ·Â
+    // Filterì˜ ìƒì„¸ ì •ë³´ë¥¼ ì¶œë ¥
     static IDE_RC printFilterInfo( qcTemplate   * aTemplate,
                                    qmncPPCRD    * aCodePlan,
                                    ULong          aDepth,

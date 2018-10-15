@@ -232,12 +232,12 @@ static IDE_RC buildRecordForMemBase(idvSQL              * /*aStatistics*/,
             continue;
         }
         /* BUG-43006 FixedTable Indexing Filter
-         * Indexing Filter¸¦ »ç¿ëÇØ¼­ ÀüÃ¼ Record¸¦ »ý¼ºÇÏÁö¾Ê°í
-         * ºÎºÐ¸¸ »ý¼ºÇØ Filtering ÇÑ´Ù.
-         * 1. void * ¹è¿­¿¡ IDU_FT_COLUMN_INDEX ·Î ÁöÁ¤µÈ ÄÃ·³¿¡
-         * ÇØ´çÇÏ´Â °ªÀ» ¼ø¼­´ë·Î ³Ö¾îÁÖ¾î¾ß ÇÑ´Ù.
-         * 2. IDU_FT_COLUMN_INDEXÀÇ ÄÃ·³¿¡ ÇØ´çÇÏ´Â °ªÀ» ¸ðµÎ ³Ö
-         * ¾î ÁÖ¾î¾ßÇÑ´Ù.
+         * Indexing Filterë¥¼ ì‚¬ìš©í•´ì„œ ì „ì²´ Recordë¥¼ ìƒì„±í•˜ì§€ì•Šê³ 
+         * ë¶€ë¶„ë§Œ ìƒì„±í•´ Filtering í•œë‹¤.
+         * 1. void * ë°°ì—´ì— IDU_FT_COLUMN_INDEX ë¡œ ì§€ì •ëœ ì»¬ëŸ¼ì—
+         * í•´ë‹¹í•˜ëŠ” ê°’ì„ ìˆœì„œëŒ€ë¡œ ë„£ì–´ì£¼ì–´ì•¼ í•œë‹¤.
+         * 2. IDU_FT_COLUMN_INDEXì˜ ì»¬ëŸ¼ì— í•´ë‹¹í•˜ëŠ” ê°’ì„ ëª¨ë‘ ë„£
+         * ì–´ ì£¼ì–´ì•¼í•œë‹¤.
          */
         sIndexValues[0] = &sCurTBS->mHeader.mID;
         if ( iduFixedTable::checkKeyRange( aMemory,
@@ -412,12 +412,12 @@ static IDE_RC buildRecordForMemBaseMgr(idvSQL              * /*aStatistics*/,
         }
 
         /* BUG-43006 FixedTable Indexing Filter
-         * Indexing Filter¸¦ »ç¿ëÇØ¼­ ÀüÃ¼ Record¸¦ »ý¼ºÇÏÁö¾Ê°í
-         * ºÎºÐ¸¸ »ý¼ºÇØ Filtering ÇÑ´Ù.
-         * 1. void * ¹è¿­¿¡ IDU_FT_COLUMN_INDEX ·Î ÁöÁ¤µÈ ÄÃ·³¿¡
-         * ÇØ´çÇÏ´Â °ªÀ» ¼ø¼­´ë·Î ³Ö¾îÁÖ¾î¾ß ÇÑ´Ù.
-         * 2. IDU_FT_COLUMN_INDEXÀÇ ÄÃ·³¿¡ ÇØ´çÇÏ´Â °ªÀ» ¸ðµÎ ³Ö
-         * ¾î ÁÖ¾î¾ßÇÑ´Ù.
+         * Indexing Filterë¥¼ ì‚¬ìš©í•´ì„œ ì „ì²´ Recordë¥¼ ìƒì„±í•˜ì§€ì•Šê³ 
+         * ë¶€ë¶„ë§Œ ìƒì„±í•´ Filtering í•œë‹¤.
+         * 1. void * ë°°ì—´ì— IDU_FT_COLUMN_INDEX ë¡œ ì§€ì •ëœ ì»¬ëŸ¼ì—
+         * í•´ë‹¹í•˜ëŠ” ê°’ì„ ìˆœì„œëŒ€ë¡œ ë„£ì–´ì£¼ì–´ì•¼ í•œë‹¤.
+         * 2. IDU_FT_COLUMN_INDEXì˜ ì»¬ëŸ¼ì— í•´ë‹¹í•˜ëŠ” ê°’ì„ ëª¨ë‘ ë„£
+         * ì–´ ì£¼ì–´ì•¼í•œë‹¤.
          */
         sIndexValues[0] = &sCurTBS->mHeader.mID;
         if ( iduFixedTable::checkKeyRange( aMemory,
@@ -471,8 +471,8 @@ iduFixedTableDesc gMemBaseMgrTableDesc =
 };
 
 /*
- * [BUG-24430] X$DB_FREE_PAGE_LISTÀÇ mFreePageCount ÄÃ·³ Ãâ·Â¿¡ ¹®Á¦°¡ ÀÖ½À´Ï´Ù.
- * "vULong mFreePageCount"¸¦ "ULong mFreePageCount"·Î º¯°æÇÔ.
+ * [BUG-24430] X$DB_FREE_PAGE_LISTì˜ mFreePageCount ì»¬ëŸ¼ ì¶œë ¥ì— ë¬¸ì œê°€ ìžˆìŠµë‹ˆë‹¤.
+ * "vULong mFreePageCount"ë¥¼ "ULong mFreePageCount"ë¡œ ë³€ê²½í•¨.
  */
 
 /* ------------------------------------------------
@@ -532,7 +532,7 @@ static iduFixedTableColDesc gMemTBSFreePageListTableColDesc[] =
 };
 
 /*
- * X$MEM_TABLESPACE_FREE_PAGE_LIST Performance View ÀÇ ·¹ÄÚµå¸¦ ¸¸µé¾î³½´Ù.
+ * X$MEM_TABLESPACE_FREE_PAGE_LIST Performance View ì˜ ë ˆì½”ë“œë¥¼ ë§Œë“¤ì–´ë‚¸ë‹¤.
  */
 IDE_RC buildRecordForMemTBSFreePageList(
     idvSQL              * /*aStatistics*/,
@@ -570,7 +570,7 @@ IDE_RC buildRecordForMemTBSFreePageList(
                 sCurTBS->mMemBase->mFreePageLists[i].mFirstFreePageID;
             sPerfMemTBSFreeList.mFreePageCount   =
                 sCurTBS->mMemBase->mFreePageLists[i].mFreePageCount;
-            /* BUG-31881 ¿¹¾àµÈ »ç¿ëºÒ°¡ ÆäÀÌÁöÀÇ °³¼ö¸¦ Ãâ·ÂÇÔ */
+            /* BUG-31881 ì˜ˆì•½ëœ ì‚¬ìš©ë¶ˆê°€ íŽ˜ì´ì§€ì˜ ê°œìˆ˜ë¥¼ ì¶œë ¥í•¨ */
             IDE_TEST( smmFPLManager::getUnusablePageCount(
                     & sCurTBS->mArrPageReservation[i],
                     NULL, // Transaction
@@ -611,8 +611,8 @@ iduFixedTableDesc gMemTBSFreePageListTableDesc =
  * D$MEM_TBS_PCH
  *----------------------------------------- */
 
-/* TASK-4007 [SM] PBT¸¦ À§ÇÑ ±â´É Ãß°¡
- * PCH¸¦ DumpÇÒ ¼ö ÀÖ´Â ±â´É Ãß°¡ */
+/* TASK-4007 [SM] PBTë¥¼ ìœ„í•œ ê¸°ëŠ¥ ì¶”ê°€
+ * PCHë¥¼ Dumpí•  ìˆ˜ ìžˆëŠ” ê¸°ëŠ¥ ì¶”ê°€ */
 static iduFixedTableColDesc gDumpMemTBSPCHColDesc[] =
 {
     {
@@ -690,7 +690,7 @@ static iduFixedTableColDesc gDumpMemTBSPCHColDesc[] =
 };
 
 // D$MEM_TBS_PCH
-// ÇÑ TBSÀÇ ¸ðµç PCH¸¦ DumpÇÑ´Ù.
+// í•œ TBSì˜ ëª¨ë“  PCHë¥¼ Dumpí•œë‹¤.
 static IDE_RC buildRecordMemTBSPCHDump(idvSQL              * /*aStatistics*/,
                                        void                *aHeader,
                                        void                *aDumpObj,
@@ -709,13 +709,13 @@ static IDE_RC buildRecordMemTBSPCHDump(idvSQL              * /*aStatistics*/,
 
     IDE_TEST_RAISE( aDumpObj == NULL, ERR_EMPTY_OBJECT );
 
-    /* BUG-28678  [SM] qmsDumpObjList::mObjInfo¿¡ ¼³Á¤µÉ ¸Þ¸ð¸® ÁÖ¼Ò´Â
-     * ¹Ýµå½Ã °ø°£À» ÇÒ´çÇØ¼­ ¼³Á¤ÇØ¾ßÇÕ´Ï´Ù.
+    /* BUG-28678  [SM] qmsDumpObjList::mObjInfoì— ì„¤ì •ë  ë©”ëª¨ë¦¬ ì£¼ì†ŒëŠ”
+     * ë°˜ë“œì‹œ ê³µê°„ì„ í• ë‹¹í•´ì„œ ì„¤ì •í•´ì•¼í•©ë‹ˆë‹¤.
      *
-     * aDumpObj´Â Pointer·Î µ¥ÀÌÅÍ°¡ ¿À±â ¶§¹®¿¡ °ªÀ» °¡Á®¿Í¾ß ÇÕ´Ï´Ù. */
+     * aDumpObjëŠ” Pointerë¡œ ë°ì´í„°ê°€ ì˜¤ê¸° ë•Œë¬¸ì— ê°’ì„ ê°€ì ¸ì™€ì•¼ í•©ë‹ˆë‹¤. */
     sTBSID  = *( (scSpaceID*)aDumpObj );
 
-    //MEM_TABLESPACE°¡ ¸Â´ÂÁö °Ë»çÇÑ´Ù.
+    //MEM_TABLESPACEê°€ ë§žëŠ”ì§€ ê²€ì‚¬í•œë‹¤.
     IDE_ASSERT( sctTableSpaceMgr::isMemTableSpace( sTBSID ) == ID_TRUE );
 
 
@@ -868,7 +868,7 @@ static iduFixedTableColDesc gMemTablespaceDescColDesc[] =
     }
 };
 
-/* Tablespace Node·ÎºÎÅÍ X$MEM_TABLESPACE_DESCÀÇ ±¸Á¶Ã¼ ±¸¼º
+/* Tablespace Nodeë¡œë¶€í„° X$MEM_TABLESPACE_DESCì˜ êµ¬ì¡°ì²´ êµ¬ì„±
  */
 
 IDE_RC constructTBSDesc( smmTBSNode     * aTBSNode,
@@ -879,8 +879,8 @@ IDE_RC constructTBSDesc( smmTBSNode     * aTBSNode,
 
     smiMemTableSpaceAttr * sMemAttr = & aTBSNode->mTBSAttr.mMemAttr;
 
-    // TablespaceÀÇ Performance View±¸ÃàÁß
-    // Offline, DropÀ¸·ÎÀÇ »óÅÂÀüÀÌ¸¦ ¸·±â À§ÇÔ
+    // Tablespaceì˜ Performance Viewêµ¬ì¶•ì¤‘
+    // Offline, Dropìœ¼ë¡œì˜ ìƒíƒœì „ì´ë¥¼ ë§‰ê¸° ìœ„í•¨
     IDE_ASSERT( sctTableSpaceMgr::lock(NULL /* idvSQL * */)
                 == IDE_SUCCESS );
 
@@ -907,7 +907,7 @@ IDE_RC constructTBSDesc( smmTBSNode     * aTBSNode,
         aTBSDesc->mCurrentSize    *= SM_PAGE_SIZE ;
     }
     else // aTBSDesc->mMemBase == NULL
-         // ==> Tablespace°¡ ¾ÆÁ÷ Prepare/RestoreµÇÁö ¾ÊÀº »óÅÂ
+         // ==> Tablespaceê°€ ì•„ì§ Prepare/Restoreë˜ì§€ ì•Šì€ ìƒíƒœ
     {
         aTBSDesc->mCurrentSize     = 0;
     }
@@ -917,12 +917,12 @@ IDE_RC constructTBSDesc( smmTBSNode     * aTBSNode,
 
     return IDE_SUCCESS;
 
-    // ¿¡·¯Ã³¸® ÇØ¾ßÇÒ °æ¿ì lock/unlock¿¡ ´ëÇÑ »óÅÂÃ³¸® ÇÊ¿ä
+    // ì—ëŸ¬ì²˜ë¦¬ í•´ì•¼í•  ê²½ìš° lock/unlockì— ëŒ€í•œ ìƒíƒœì²˜ë¦¬ í•„ìš”
 }
 
 
 /*
-     X$MEM_TABLESPACE_DESC ÀÇ ·¹ÄÚµå¸¦ ±¸ÃàÇÑ´Ù.
+     X$MEM_TABLESPACE_DESC ì˜ ë ˆì½”ë“œë¥¼ êµ¬ì¶•í•œë‹¤.
  */
 
 IDE_RC buildRecordForMemTablespaceDesc(
@@ -959,7 +959,7 @@ IDE_RC buildRecordForMemTablespaceDesc(
                      (void *) &sTBSDesc )
                  != IDE_SUCCESS);
 
-        // DropµÈ Tablespace´Â SKIPÇÑ´Ù
+        // Dropëœ TablespaceëŠ” SKIPí•œë‹¤
         sctTableSpaceMgr::getNextSpaceNode((void*)sCurTBS, (void**)&sCurTBS);
     }
 
@@ -1012,8 +1012,8 @@ static iduFixedTableColDesc gCheckpointPathColDesc[] =
 
 
 /*
-  Æ¯Á¤ TablespaceÀÇ Checkpoint Path¸¦ ÀÌ¿ëÇÏ¿©
-  X$MEM_TABLESPACE_CHECKPOINT_PATHSÀÇ ·¹ÄÚµå¸¦ ±¸ÃàÇÑ´Ù.
+  íŠ¹ì • Tablespaceì˜ Checkpoint Pathë¥¼ ì´ìš©í•˜ì—¬
+  X$MEM_TABLESPACE_CHECKPOINT_PATHSì˜ ë ˆì½”ë“œë¥¼ êµ¬ì¶•í•œë‹¤.
 */
 IDE_RC buildRecordForCheckpointPathOfTBS( void                * aHeader,
                                           iduFixedTableMemory * aMemory,
@@ -1028,8 +1028,8 @@ IDE_RC buildRecordForCheckpointPathOfTBS( void                * aHeader,
     IDE_ERROR( aMemory != NULL );
     IDE_ERROR( aTBSNode != NULL );
 
-    // TablespaceÀÇ Performance View±¸ÃàÁß
-    // Offline, DropÀ¸·ÎÀÇ »óÅÂÀüÀÌ¸¦ ¸·±â À§ÇÔ
+    // Tablespaceì˜ Performance Viewêµ¬ì¶•ì¤‘
+    // Offline, Dropìœ¼ë¡œì˜ ìƒíƒœì „ì´ë¥¼ ë§‰ê¸° ìœ„í•¨
     IDE_ASSERT( sctTableSpaceMgr::lock( NULL /* idvSQL* */) == IDE_SUCCESS );
     sState = 1;
 
@@ -1079,7 +1079,7 @@ IDE_RC buildRecordForCheckpointPathOfTBS( void                * aHeader,
 }
 
 /*
-  X$MEM_TABLESPACE_CHECKPOINT_PATHS ÀÇ ·¹ÄÚµå¸¦ ±¸ÃàÇÑ´Ù.
+  X$MEM_TABLESPACE_CHECKPOINT_PATHS ì˜ ë ˆì½”ë“œë¥¼ êµ¬ì¶•í•œë‹¤.
 */
 IDE_RC buildRecordForCheckpointPath(
     idvSQL              * /*aStatistics*/,
@@ -1109,7 +1109,7 @@ IDE_RC buildRecordForCheckpointPath(
                                                      sCurTBS )
                   != IDE_SUCCESS );
 
-        // DropµÈ Tablespace´Â SKIPÇÑ´Ù
+        // Dropëœ TablespaceëŠ” SKIPí•œë‹¤
         sctTableSpaceMgr::getNextSpaceNode((void*)sCurTBS, (void**)&sCurTBS);
     }
 
@@ -1163,7 +1163,7 @@ static iduFixedTableColDesc gMemTablespaceStatusDescColDesc[] =
 };
 
 /*
-    X$MEM_TABLESPACE_STATUS_DESCÀÇ ·¹ÄÚµå¸¦ ±¸ÃàÇÑ´Ù.
+    X$MEM_TABLESPACE_STATUS_DESCì˜ ë ˆì½”ë“œë¥¼ êµ¬ì¶•í•œë‹¤.
 
 */
 IDE_RC buildRecordForMemTablespaceStatusDesc(
@@ -1233,7 +1233,7 @@ iduFixedTableDesc gMemTablespaceStatusDescTableDesc =
  *----------------------------------------- */
 
 /* PROJ-2162 RestartRiskReduction
- * PERSPAGEHEADER¸¦ DUMPÇÒ ¼ö ÀÖ´Â ±â´É Ãß°¡ */
+ * PERSPAGEHEADERë¥¼ DUMPí•  ìˆ˜ ìžˆëŠ” ê¸°ëŠ¥ ì¶”ê°€ */
 static iduFixedTableColDesc gDumpMemDBPersPageHdrColDesc[] =
 {
     {
@@ -1295,7 +1295,7 @@ static iduFixedTableColDesc gDumpMemDBPersPageHdrColDesc[] =
 };
 
 // D$MEM_DB_PERSPAGEHDR
-// Æ¯Á¤ PageÀÇ Header¸¦ DumpÇÑ´Ù.
+// íŠ¹ì • Pageì˜ Headerë¥¼ Dumpí•œë‹¤.
 static IDE_RC buildRecordMemDBPersPageHdrDump(idvSQL              * /*aStatistics*/,
                                               void                *aHeader,
                                               void                *aDumpObj,
@@ -1316,7 +1316,7 @@ static IDE_RC buildRecordMemDBPersPageHdrDump(idvSQL              * /*aStatistic
     sSpaceID   = sGRID->mSpaceID;
     sPageID    = sGRID->mPageID;
 
-    //MEM_TABLESPACE°¡ ¸Â´ÂÁö °Ë»çÇÑ´Ù.
+    //MEM_TABLESPACEê°€ ë§žëŠ”ì§€ ê²€ì‚¬í•œë‹¤.
     IDE_ASSERT( sctTableSpaceMgr::isMemTableSpace( sSpaceID ) == ID_TRUE );
 
     sPCH = smmManager::getPCH( sSpaceID, sPageID ) ;

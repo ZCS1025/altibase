@@ -90,19 +90,19 @@ typedef enum ulnConnStrParseCallbackEvent
 #define ULN_CONNSTR_PARSE_RC_ERROR   0x04
 
 /**
- * ulnConnStrParse()¸¦ À§ÇÑ Äİ¹é
+ * ulnConnStrParse()ë¥¼ ìœ„í•œ ì½œë°±
  *
  * @param[in]  aFnContext  function context
- * @param[in]  aKey        Å°
- * @param[in]  aKeyLen     Å° ±æÀÌ
- * @param[in]  aVal        °ª
- * @param[in]  aValLen     °ª ±æÀÌ
- * @param[in]  aFilter     ÇÊÅÍ
+ * @param[in]  aKey        í‚¤
+ * @param[in]  aKeyLen     í‚¤ ê¸¸ì´
+ * @param[in]  aVal        ê°’
+ * @param[in]  aValLen     ê°’ ê¸¸ì´
+ * @param[in]  aFilter     í•„í„°
  *
- * @return ´ÙÀ½°ú °°Àº °ªÀ¸·Î ±¸¼ºµÈ ÇÃ·¡±×
- *         - ULN_CONNSTR_PARSE_SUCCESS : Ã³¸®¸¦ Àß ³¡³¿
- *         - ULN_CONNSTR_PARSE_STOP    : ´õ ÆÄ½ÌÇÒ ÇÊ¿ä ¾øÀ½
- *         - ULN_CONNSTR_PARSE_ERROR   : ¿¡·¯°¡ ¹ß»ıÇß°í, aFnContext¿¡ ¿¡·¯ Á¤º¸¸¦ ¼³Á¤ÇÔ
+ * @return ë‹¤ìŒê³¼ ê°™ì€ ê°’ìœ¼ë¡œ êµ¬ì„±ëœ í”Œë˜ê·¸
+ *         - ULN_CONNSTR_PARSE_SUCCESS : ì²˜ë¦¬ë¥¼ ì˜ ëëƒ„
+ *         - ULN_CONNSTR_PARSE_STOP    : ë” íŒŒì‹±í•  í•„ìš” ì—†ìŒ
+ *         - ULN_CONNSTR_PARSE_ERROR   : ì—ëŸ¬ê°€ ë°œìƒí–ˆê³ , aFnContextì— ì—ëŸ¬ ì •ë³´ë¥¼ ì„¤ì •í•¨
  */
 typedef acp_sint32_t (*ulnConnStrParseCallback)( void                         *aContext,
                                                  ulnConnStrParseCallbackEvent  aEvent,

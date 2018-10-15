@@ -77,7 +77,7 @@ public class AltibaseForwardOnlyResultSet extends AltibaseReadableResultSet
 
         int sResultSetCount = mContext.getPrepareResult().getResultSetCount();
 
-        // PROJ-2427 ¼º´ÉÀ» À§ÇØ close cursorÇÁ·ÎÅäÄİÀ» Àü¼ÛÇÏÁö ¾Ê´Â´Ù.
+        // PROJ-2427 ì„±ëŠ¥ì„ ìœ„í•´ close cursorí”„ë¡œí† ì½œì„ ì „ì†¡í•˜ì§€ ì•ŠëŠ”ë‹¤.
         if (mStatement instanceof AltibasePreparedStatement)
         {
             if (sResultSetCount > 1)
@@ -145,9 +145,9 @@ public class AltibaseForwardOnlyResultSet extends AltibaseReadableResultSet
         throwErrorForClosed();
         if (mFetchResult.fetchRemains())
         {
-            // fetchÇÒ°Ô ³²¾Æ ÀÖÀ¸¸é ÃÖ¼ÒÇÑ ÇÑ row ÀÌ»óÀº ÀÖ´Ù°í °¡Á¤ÇÑ °ÍÀÌ´Ù.
-            // ¸¸¾à fetchÇÒ°Ô ³²¾Æ ÀÖ´Ù°í ÇßÁö¸¸ ½ÇÁ¦ fetchNext¸¦ ¿äÃ»ÇßÀ» ¶§
-            // row°¡ ÇÏ³ªµµ ¾È¿À°í fetch end°¡ ¿Ã ¼ö ÀÖ´Ù¸é ÀÌ ÄÚµå´Â ¹ö±×ÀÌ´Ù.
+            // fetchí• ê²Œ ë‚¨ì•„ ìˆìœ¼ë©´ ìµœì†Œí•œ í•œ row ì´ìƒì€ ìˆë‹¤ê³  ê°€ì •í•œ ê²ƒì´ë‹¤.
+            // ë§Œì•½ fetchí• ê²Œ ë‚¨ì•„ ìˆë‹¤ê³  í–ˆì§€ë§Œ ì‹¤ì œ fetchNextë¥¼ ìš”ì²­í–ˆì„ ë•Œ
+            // rowê°€ í•˜ë‚˜ë„ ì•ˆì˜¤ê³  fetch endê°€ ì˜¬ ìˆ˜ ìˆë‹¤ë©´ ì´ ì½”ë“œëŠ” ë²„ê·¸ì´ë‹¤.
             return false;
         }
         else
@@ -157,7 +157,7 @@ public class AltibaseForwardOnlyResultSet extends AltibaseReadableResultSet
     }
 
     /**
-     * ºñµ¿±â fetch ¸¦ ½ÃÀÛÇÑ´Ù.
+     * ë¹„ë™ê¸° fetch ë¥¼ ì‹œì‘í•œë‹¤.
      */
     private void beginFetchAsync() throws SQLException
     {
@@ -199,7 +199,7 @@ public class AltibaseForwardOnlyResultSet extends AltibaseReadableResultSet
                 }
                 catch (Throwable e)
                 {
-                    // Auto-tuning µµÁß ¿¹¿Ü ¹ß»ı½Ã ¹«½ÃÇÏ°í, ´Ù½Ã cursor open ÇÏ±â Àü±îÁö auto-tuning OFF ½ÃÅ´.
+                    // Auto-tuning ë„ì¤‘ ì˜ˆì™¸ ë°œìƒì‹œ ë¬´ì‹œí•˜ê³ , ë‹¤ì‹œ cursor open í•˜ê¸° ì „ê¹Œì§€ auto-tuning OFF ì‹œí‚´.
 
                     mSemiAsyncPrefetch.getAutoTuner().endAutoTuning();
                 }
@@ -210,7 +210,7 @@ public class AltibaseForwardOnlyResultSet extends AltibaseReadableResultSet
     }
 
     /**
-     * Cursor close ½Ã ºñµ¿½Ã fetch ¸¦ Á¾·áÇÑ´Ù.
+     * Cursor close ì‹œ ë¹„ë™ì‹œ fetch ë¥¼ ì¢…ë£Œí•œë‹¤.
      */
     void endFetchAsync() throws SQLException
     {
@@ -259,8 +259,8 @@ public class AltibaseForwardOnlyResultSet extends AltibaseReadableResultSet
                 if (mFetchResult.fetchRemains())
                 {
                     mCacheOutCount += mFetchResult.rowHandle().size();
-                    mFetchResult.rowHandle().initToStore(); // Ä³½Ã¸¦ ¸ğµÎ ºñ¿ì°í ´Ù½Ã
-                                                            // Ã¤¿î´Ù.
+                    mFetchResult.rowHandle().initToStore(); // ìºì‹œë¥¼ ëª¨ë‘ ë¹„ìš°ê³  ë‹¤ì‹œ
+                                                            // ì±„ìš´ë‹¤.
                     try
                     {
                         // PROJ-2625 Semi-async Prefetch, Prefetch Auto-tuning
@@ -302,8 +302,8 @@ public class AltibaseForwardOnlyResultSet extends AltibaseReadableResultSet
     }
 
     /**
-     * ºñµ¿±âÀûÀ¸·Î fetch ¸¦ ¼öÇàÇÑ´Ù.
-     * ¸¸¾à, ºñµ¿±â·Î send ÇÏÁö ¾Ê¾Ò´Ù¸é µ¿±â·Î ¼Û¼ö½ÅÇÏ°í ºñµ¿±â·Î ¼Û½ÅÇØ ³õÀ½.
+     * ë¹„ë™ê¸°ì ìœ¼ë¡œ fetch ë¥¼ ìˆ˜í–‰í•œë‹¤.
+     * ë§Œì•½, ë¹„ë™ê¸°ë¡œ send í•˜ì§€ ì•Šì•˜ë‹¤ë©´ ë™ê¸°ë¡œ ì†¡ìˆ˜ì‹ í•˜ê³  ë¹„ë™ê¸°ë¡œ ì†¡ì‹ í•´ ë†“ìŒ.
      */
     private void fetchNextAsync() throws SQLException
     {
@@ -332,8 +332,8 @@ public class AltibaseForwardOnlyResultSet extends AltibaseReadableResultSet
     }
 
     /**
-     * ºñµ¿±âÀûÀ¸·Î fetch ¸¦ ¼öÇàÇÏ´Âµ¥ prefetch ¾çÀ» auto-tuning ÇÑ´Ù. ÃÖÀûÀÇ prefetch ¾çÀº network idle time ÀÌ 0 ¿¡ ±Ù»çÇÔ.
-     * ¸¸¾à, auto-tuning µµÁß ¿¡¿Ü°¡ ¹ß»ıÇÏ¸é OFF ½ÃÅ°°í ÀÌÈÄºÎÅÍ´Â ºñµ¿±â·Î¸¸ µ¿ÀÛµÊ.
+     * ë¹„ë™ê¸°ì ìœ¼ë¡œ fetch ë¥¼ ìˆ˜í–‰í•˜ëŠ”ë° prefetch ì–‘ì„ auto-tuning í•œë‹¤. ìµœì ì˜ prefetch ì–‘ì€ network idle time ì´ 0 ì— ê·¼ì‚¬í•¨.
+     * ë§Œì•½, auto-tuning ë„ì¤‘ ì—ì™¸ê°€ ë°œìƒí•˜ë©´ OFF ì‹œí‚¤ê³  ì´í›„ë¶€í„°ëŠ” ë¹„ë™ê¸°ë¡œë§Œ ë™ì‘ë¨.
      */
     private void fetchNextAsyncWithAutoTuning() throws SQLException
     {
@@ -369,7 +369,7 @@ public class AltibaseForwardOnlyResultSet extends AltibaseReadableResultSet
                 }
                 catch (Throwable e)
                 {
-                    // Auto-tuning µµÁß ¿¹¿Ü ¹ß»ı½Ã ¹«½ÃÇÏ°í, ´Ù½Ã cursor open ÇÏ±â Àü±îÁö auto-tuning OFF ½ÃÅ´.
+                    // Auto-tuning ë„ì¤‘ ì˜ˆì™¸ ë°œìƒì‹œ ë¬´ì‹œí•˜ê³ , ë‹¤ì‹œ cursor open í•˜ê¸° ì „ê¹Œì§€ auto-tuning OFF ì‹œí‚´.
 
                     mSemiAsyncPrefetch.getAutoTuner().endAutoTuning();
                 }
@@ -384,7 +384,7 @@ public class AltibaseForwardOnlyResultSet extends AltibaseReadableResultSet
     }
 
     /**
-     * TC ¿¡¼­ Á¢±ÙÇÏ±â À§ÇÑ ¸Ş¼Òµå
+     * TC ì—ì„œ ì ‘ê·¼í•˜ê¸° ìœ„í•œ ë©”ì†Œë“œ
      */
     private boolean isAutoTuning()
     {

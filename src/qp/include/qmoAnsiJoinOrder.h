@@ -21,15 +21,15 @@
  * Description :
  *     ANSI Join Ordering
  *
- *     ANSI style ·Î ÀÛ¼ºµÈ join ¿¡¼­ inner join ÀÇ ¼ø¼­¸¦ º¯°æÇÒ ¼ö ÀÖµµ·Ï
- *     Ã³¸®ÇÑ´Ù.
+ *     ANSI style ë¡œ ìž‘ì„±ëœ join ì—ì„œ inner join ì˜ ìˆœì„œë¥¼ ë³€ê²½í•  ìˆ˜ ìžˆë„ë¡
+ *     ì²˜ë¦¬í•œë‹¤.
  *
- *     ÃßÈÄ cost ¿¡ ±â¹ÝÇÏ¿© inner/outer join ÀÇ ¼ø¼­¸¦ º¯°æÇÒ ¼ö ÀÖµµ·Ï
- *     °³¼±ÇØ¾ß ÇÑ´Ù.
+ *     ì¶”í›„ cost ì— ê¸°ë°˜í•˜ì—¬ inner/outer join ì˜ ìˆœì„œë¥¼ ë³€ê²½í•  ìˆ˜ ìžˆë„ë¡
+ *     ê°œì„ í•´ì•¼ í•œë‹¤.
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  **********************************************************************/
 
@@ -41,7 +41,7 @@
 #include <qmoPredicate.h>
 
 //---------------------------------------------------
-// Ansi join ¼ø¼­ º¯°æÀ» À§ÇÑ ÇÔ¼öµéÀ» ¸ð¾Æ³õÀº class
+// Ansi join ìˆœì„œ ë³€ê²½ì„ ìœ„í•œ í•¨ìˆ˜ë“¤ì„ ëª¨ì•„ë†“ì€ class
 //---------------------------------------------------
 class qmoAnsiJoinOrder
 {

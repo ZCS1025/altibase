@@ -30,11 +30,11 @@ class dktGlobalTxMgr
 {
 private:
     static UInt         mUniqueGlobalTxSeq;
-    /* ¾ó¸¶³ª ¸¹Àº ±Û·Î¹ú Æ®·£Àè¼ÇÀ» ¼öÇàÇÏ°í ÀÖ´ÂÁö */
+    /* ì–¼ë§ˆë‚˜ ë§ì€ ê¸€ë¡œë²Œ íŠ¸ëœì­ì…˜ì„ ìˆ˜í–‰í•˜ê³  ìˆëŠ”ì§€ */
     static UInt         mActiveGlobalCoordinatorCnt;
-    /* DK ¿¡ »ı¼ºµÇ¾î Á¸ÀçÇÏ´Â ¸ğµç global coordinator µéÀÇ ¸®½ºÆ® */
+    /* DK ì— ìƒì„±ë˜ì–´ ì¡´ì¬í•˜ëŠ” ëª¨ë“  global coordinator ë“¤ì˜ ë¦¬ìŠ¤íŠ¸ */
     static iduList      mGlobalCoordinatorList;
-    /* mGlobalCoordinatorList ¿¡ ´ëÇÑ µ¿½ÃÁ¢±ÙÀ» ¸·±â À§ÇÑ mutex */
+    /* mGlobalCoordinatorList ì— ëŒ€í•œ ë™ì‹œì ‘ê·¼ì„ ë§‰ê¸° ìœ„í•œ mutex */
     static iduMutex     mDktMutex;
 
     static dktNotifier  mNotifier;  /* PROJ-2569 2PC */
@@ -65,17 +65,17 @@ public:
 
     static IDE_RC       getAllRemoteStmtCount( UInt  *aCount );
 
-    /* ÀÔ·Â¹ŞÀº global coordinator ¸¦ °ü¸®´ë»óÀ¸·Î Ãß°¡ÇÑ´Ù. */
+    /* ì…ë ¥ë°›ì€ global coordinator ë¥¼ ê´€ë¦¬ëŒ€ìƒìœ¼ë¡œ ì¶”ê°€í•œë‹¤. */
     static IDE_RC       addGlobalCoordinatorToList(
                                         dktGlobalCoordinator  *aGlobalCrd );
 
-    /* Global transaction id ¸¦ ÀÔ·Â¹Ş¾Æ ÇØ´ç global transaction À» ¼öÇàÇÑ
-       global coordinator list node ¸¦ list ¿¡¼­ Ã£¾Æ ¹İÈ¯ÇÑ´Ù. */
+    /* Global transaction id ë¥¼ ì…ë ¥ë°›ì•„ í•´ë‹¹ global transaction ì„ ìˆ˜í–‰í•œ
+       global coordinator list node ë¥¼ list ì—ì„œ ì°¾ì•„ ë°˜í™˜í•œë‹¤. */
     static IDE_RC       findGlobalCoordinator( 
                                         UInt                  aGlobalTxId,
                                         dktGlobalCoordinator **aGlobalCrd );
 
-    /* Linker data session id ¸¦ °®´Â global coordinator ¸¦ Ã£´Â´Ù.*/
+    /* Linker data session id ë¥¼ ê°–ëŠ” global coordinator ë¥¼ ì°¾ëŠ”ë‹¤.*/
     static IDE_RC       findGlobalCoordinatorWithSessionId( 
                                         UInt                   aSessionId, 
                                         dktGlobalCoordinator **aGlobalCrd );

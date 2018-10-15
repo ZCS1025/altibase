@@ -427,7 +427,7 @@ ed_argument_digit(EditLine *el, int c)
 protected el_action_t
 /*ARGSUSED*/
 /* BUG-13782 A4-AT-W 160 Warnings 2006.4.6 modified by Shawn
- * __attribute((__unused__)) »ç¿ëÇØ¼­ unused parameter warning ¾ø¾Ú.
+ * __attribute((__unused__)) ì‚¬ìš©í•´ì„œ unused parameter warning ì—†ì•°.
  */
 ed_unassigned(EditLine * el __attribute__((__unused__)), int c __attribute__((__unused__)))
 {

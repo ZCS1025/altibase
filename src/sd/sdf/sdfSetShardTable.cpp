@@ -55,7 +55,7 @@ static IDE_RC sdfEstimate( mtcNode*        aNode,
 mtfModule sdfSetShardTableModule = {
     1|MTC_NODE_OPERATOR_MISC|MTC_NODE_VARIABLE_TRUE,
     ~0,
-    1.0,                    // default selectivity (ºñ±³ ¿¬»êÀÚ ¾Æ´Ô)
+    1.0,                    // default selectivity (ë¹„êµ ì—°ì‚°ìž ì•„ë‹˜)
     sdfFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -268,7 +268,7 @@ IDE_RC sdfCalculate_SetShardTable( mtcNode*     aNode,
         if ( ( sSplitMethodStr[0] == 'C' ) ||
              ( sSplitMethodStr[0] == 'S' ) )
         {
-            // clone ¹× solo tableÀº shard key¿Í sub split method, sub shard key ¹× default node°¡ nullÀÌ¾î¾ß ÇÑ´Ù.
+            // clone ë° solo tableì€ shard keyì™€ sub split method, sub shard key ë° default nodeê°€ nullì´ì–´ì•¼ í•œë‹¤.
             IDE_TEST_RAISE( ( ( aStack[4].column->module->isNull( aStack[4].column,
                                                                   aStack[4].value ) != ID_TRUE ) || // shard key
                               ( aStack[5].column->module->isNull( aStack[5].column,
@@ -281,7 +281,7 @@ IDE_RC sdfCalculate_SetShardTable( mtcNode*     aNode,
         }
         else
         {
-            // default node´Â nullÀÏ ¼ö ÀÖ´Ù.
+            // default nodeëŠ” nullì¼ ìˆ˜ ìžˆë‹¤.
             IDE_TEST_RAISE( aStack[4].column->module->isNull( aStack[4].column,
                                                               aStack[4].value ) == ID_TRUE, // shard key
                             ERR_ARGUMENT_NOT_APPLICABLE );
@@ -320,13 +320,13 @@ IDE_RC sdfCalculate_SetShardTable( mtcNode*     aNode,
             else if ( idlOS::strMatch( (SChar*)sSubSplitMethod->value, sSubSplitMethod->length,
                                        "C", 1 ) == 0 )
             {
-                /* Sub-shard keyÀÇ split method´Â cloneÀÏ ¼ö ¾ø´Ù. */
+                /* Sub-shard keyì˜ split methodëŠ” cloneì¼ ìˆ˜ ì—†ë‹¤. */
                 IDE_RAISE( ERR_UNSUPPORTED_SUB_SHARD_KEY_SPLIT_TYPE );
             }
             else if ( idlOS::strMatch( (SChar*)sSubSplitMethod->value, sSubSplitMethod->length,
                                        "S", 1 ) == 0 )
             {
-                /* Sub-shard keyÀÇ split method´Â soloÀÏ ¼ö ¾ø´Ù. */
+                /* Sub-shard keyì˜ split methodëŠ” soloì¼ ìˆ˜ ì—†ë‹¤. */
                 IDE_RAISE( ERR_UNSUPPORTED_SUB_SHARD_KEY_SPLIT_TYPE );
             }
             else if ( idlOS::strMatch( (SChar*)sSubSplitMethod->value, sSubSplitMethod->length,
@@ -340,7 +340,7 @@ IDE_RC sdfCalculate_SetShardTable( mtcNode*     aNode,
                 IDE_RAISE( ERR_INVALID_SHARD_SPLIT_METHOD_NAME );
             }
 
-            // sub-shard keyÀÇ split method°¡ nullÀÌ ¾Æ´Ñ °æ¿ì¿¡´Â ¹Ýµå½Ã sub-shard key°¡ ¼¼ÆÃ µÇ¾î¾ß ÇÑ´Ù.
+            // sub-shard keyì˜ split methodê°€ nullì´ ì•„ë‹Œ ê²½ìš°ì—ëŠ” ë°˜ë“œì‹œ sub-shard keyê°€ ì„¸íŒ… ë˜ì–´ì•¼ í•œë‹¤.
             IDE_TEST_RAISE( aStack[6].column->module->isNull( aStack[6].column,
                                                               aStack[6].value ) == ID_TRUE, // sub shard key
                             ERR_ARGUMENT_NOT_APPLICABLE );
@@ -362,7 +362,7 @@ IDE_RC sdfCalculate_SetShardTable( mtcNode*     aNode,
 
         if ( sSubKeyColumnName->length > 0 )
         {
-            // Shard key¿Í sub-shard key´Â °°Àº columnÀÏ ¼ö ¾ø´Ù.
+            // Shard keyì™€ sub-shard keyëŠ” ê°™ì€ columnì¼ ìˆ˜ ì—†ë‹¤.
             IDE_TEST_RAISE( idlOS::strMatch( (SChar*)sKeyColumnName->value, sKeyColumnName->length,
                                              (SChar*)sSubKeyColumnName->value, sSubKeyColumnName->length ) == 0,
                             ERR_DUPLICATED_SUB_SHARD_KEY_NAME );

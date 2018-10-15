@@ -27,7 +27,7 @@ static void gLibraryInit(idvTime *aValue)
     aValue->iTime.mSpec.tb_high = 0;
     aValue->iTime.mSpec.tb_low  = 0;
 // bug-23877 v$statement total_time is 0 when short SQL on hp-ux
-// hp-ux¿¡¼­ÀÇ time interval ±¸ÇÏ´Â ¹æ½Ä º¯°æ (thread -> library)
+// hp-uxì—ì„œì˜ time interval êµ¬í•˜ëŠ” ë°©ì‹ ë³€ê²½ (thread -> library)
 #elif defined(HP_HPUX) || defined(IA64_HP_HPUX)
     aValue->iTime.mClock = 0;
 #else
@@ -61,10 +61,10 @@ static void gLibraryGet(idvTime *aValue)
     time_base_to_time(&((aValue)->iTime.mSpec), TIMEBASE_SZ);
 // =============================================================
 // bug-23877 v$statement total_time is 0 when short SQL on hp-ux
-// hp-ux¿¡¼­ÀÇ time interval ±¸ÇÏ´Â ¹æ½Ä º¯°æ (thread -> library)
+// hp-uxì—ì„œì˜ time interval êµ¬í•˜ëŠ” ë°©ì‹ ë³€ê²½ (thread -> library)
 // gethrtime()   : 130 cycles (return nano secs)
 // hrtime_t now = gethrtime(); (hrtime_t: int64_t => ULong)
-// ref) hp ¹®¼­(HowToTellTheTime.doc)¿¡ º¸¸é ´ÙÀ½°ú °°Àº ¹®ÀåÀÌ ÀÖ´Ù.
+// ref) hp ë¬¸ì„œ(HowToTellTheTime.doc)ì— ë³´ë©´ ë‹¤ìŒê³¼ ê°™ì€ ë¬¸ìž¥ì´ ìžˆë‹¤.
 // gethrtime() is an excellent interface to use to determine an ultra-high
 // resolution time. It is accurate across CPUs, and is very cheap
 // It is ideal in particular for timing events.
@@ -76,7 +76,7 @@ static void gLibraryGet(idvTime *aValue)
 #endif
 }
 
-// ( ÃÊ -> micro ÃÊ ) º¯È¯ Å×ÀÌºí
+// ( ì´ˆ -> micro ì´ˆ ) ë³€í™˜ í…Œì´ë¸”
 ULong gIdvSec2MicroTable[] = {
           0,
     1000000,
@@ -93,9 +93,9 @@ ULong gIdvSec2MicroTable[] = {
 #define IDV_SEC2MICRO_TABLE_SIZE (10)
 
 /*
- * second => micro second·ÎÀÇ º¯È¯
+ * second => micro secondë¡œì˜ ë³€í™˜
  *
- * aSec - º¯È¯µÉ ÃÊ
+ * aSec - ë³€í™˜ë  ì´ˆ
  */
 static inline SLong sec2micro ( SLong aSec )
 {
@@ -111,9 +111,9 @@ static inline SLong sec2micro ( SLong aSec )
 }
 
 /*
- * nano second => micro second·ÎÀÇ º¯È¯
+ * nano second => micro secondë¡œì˜ ë³€í™˜
  *
- * aSec - º¯È¯µÉ nano ÃÊ
+ * aSec - ë³€í™˜ë  nano ì´ˆ
  */
 static inline SLong nano2micro( SLong aNanoSec )
 {
@@ -121,10 +121,10 @@ static inline SLong nano2micro( SLong aNanoSec )
 }
 
 /*
- * µÎ ½Ã°¢ °£ÀÇ ½Ã°£Â÷ÀÌ¸¦ Micro Second´ÜÀ§·Î ¸®ÅÏÇÑ´Ù.
+ * ë‘ ì‹œê° ê°„ì˜ ì‹œê°„ì°¨ì´ë¥¼ Micro Secondë‹¨ìœ„ë¡œ ë¦¬í„´í•œë‹¤.
  *
- * aBefore : ºñ±³ÇÏ·Á´Â ½Ã°¢ Áß ÀÛÀº °ªÀ» °¡Áö´Â ½Ã°¢
- * aAfter  : ºñ±³ÇÏ·Á´Â ½Ã°¢ Áß Å«°ªÀ» °¡Áö´Â ½Ã°¢
+ * aBefore : ë¹„êµí•˜ë ¤ëŠ” ì‹œê° ì¤‘ ìž‘ì€ ê°’ì„ ê°€ì§€ëŠ” ì‹œê°
+ * aAfter  : ë¹„êµí•˜ë ¤ëŠ” ì‹œê° ì¤‘ í°ê°’ì„ ê°€ì§€ëŠ” ì‹œê°
  */
 static ULong gLibraryDiff( idvTime *aBefore, idvTime *aAfter )
 {
@@ -144,9 +144,9 @@ static ULong gLibraryDiff( idvTime *aBefore, idvTime *aAfter )
                 );
 #elif defined(IBM_AIX)
 
-        /* BUG-24325: gLibraryDiffÇÔ¼ö¿¡¼­ IDE_DASSRET·Î °É·Á¼­ Á×½À´Ï´Ù.
+        /* BUG-24325: gLibraryDiffí•¨ìˆ˜ì—ì„œ IDE_DASSRETë¡œ ê±¸ë ¤ì„œ ì£½ìŠµë‹ˆë‹¤.
          *
-         * Before°¡ Afterº¸´Ù Å©¸é 0À» ¸®ÅÏÇÏµµ·Ï ÇÔ.
+         * Beforeê°€ Afterë³´ë‹¤ í¬ë©´ 0ì„ ë¦¬í„´í•˜ë„ë¡ í•¨.
          * */
         if( (aAfter)->iTime.mSpec.tb_high < (aBefore)->iTime.mSpec.tb_high )
         {
@@ -161,9 +161,9 @@ static ULong gLibraryDiff( idvTime *aBefore, idvTime *aAfter )
                 );
 #elif defined(HP_HPUX) || defined(IA64_HP_HPUX)
 
-        /* BUG-24325: gLibraryDiffÇÔ¼ö¿¡¼­ IDE_DASSRET·Î °É·Á¼­ Á×½À´Ï´Ù.
+        /* BUG-24325: gLibraryDiffí•¨ìˆ˜ì—ì„œ IDE_DASSRETë¡œ ê±¸ë ¤ì„œ ì£½ìŠµë‹ˆë‹¤.
          *
-         * Before°¡ Afterº¸´Ù Å©¸é 0À» ¸®ÅÏÇÏµµ·Ï ÇÔ.
+         * Beforeê°€ Afterë³´ë‹¤ í¬ë©´ 0ì„ ë¦¬í„´í•˜ë„ë¡ í•¨.
          * */
         if( aAfter->iTime.mClock < aBefore->iTime.mClock )
         {
@@ -172,7 +172,7 @@ static ULong gLibraryDiff( idvTime *aBefore, idvTime *aAfter )
 
         return (aAfter->iTime.mClock - aBefore->iTime.mClock);
 #else
-        // ´Ù¸¥ ÇÃ·§ÆûÀÇ °æ¿ì ÀÌ ÇÔ¼ö·Î µé¾î¿Í¼­´Â ¾ÈµÈ´Ù.
+        // ë‹¤ë¥¸ í”Œëž«í¼ì˜ ê²½ìš° ì´ í•¨ìˆ˜ë¡œ ë“¤ì–´ì™€ì„œëŠ” ì•ˆëœë‹¤.
         IDE_ASSERT(0);
 #endif
     }
@@ -181,9 +181,9 @@ static ULong gLibraryDiff( idvTime *aBefore, idvTime *aAfter )
 }
 
 /*
- * (second, nansecond)·Î ÀÌ·ç¾îÁø ÇÏ³ªÀÇ idvTimeÀ» micro second·Î º¯È¯ÇÑ´Ù.
+ * (second, nansecond)ë¡œ ì´ë£¨ì–´ì§„ í•˜ë‚˜ì˜ idvTimeì„ micro secondë¡œ ë³€í™˜í•œë‹¤.
  *
- * aValue - º¯È¯ÇÏ°íÀÚ ÇÏ´Â idvTime
+ * aValue - ë³€í™˜í•˜ê³ ìž í•˜ëŠ” idvTime
  */
 
 static ULong gLibraryMicro(idvTime *aValue)
@@ -201,7 +201,7 @@ static ULong gLibraryMicro(idvTime *aValue)
 #elif defined(HP_HPUX) || defined(IA64_HP_HPUX)
     return aValue->iTime.mClock;
 #else
-        // ´Ù¸¥ ÇÃ·§ÆûÀÇ °æ¿ì ÀÌ ÇÔ¼ö·Î µé¾î¿Í¼­´Â ¾ÈµÈ´Ù.
+        // ë‹¤ë¥¸ í”Œëž«í¼ì˜ ê²½ìš° ì´ í•¨ìˆ˜ë¡œ ë“¤ì–´ì™€ì„œëŠ” ì•ˆëœë‹¤.
         IDE_ASSERT(0)
 #endif
     }

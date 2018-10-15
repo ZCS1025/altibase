@@ -43,37 +43,37 @@ static mtcName gQtcRidNames[1] = {
 };
 
 mtfModule gQtcRidModule = {
-    1|                        // ÇÏ³ªÀÇ Column °ø°£
-    MTC_NODE_INDEX_UNUSABLE|  // Index¸¦ »ç¿ëÇÒ ¼ö ÀÖÀ½
-    MTC_NODE_OPERATOR_MISC,   // ±âÅ¸ ¿¬»êÀÚ
-    ~0,                       // Indexable Mask : ÀÇ¹Ì ¾øÀ½
-    1.0,                      // default selectivity (ºñ±³ ¿¬»êÀÚ ¾Æ´Ô)
-    gQtcRidNames,             // ÀÌ¸§ Á¤º¸
-    NULL,                     // Counter ¿¬»êÀÚ ¾øÀ½
-    mtf::initializeDefault,   // ¼­¹ö ±¸µ¿½Ã ÃÊ±âÈ­ ÇÔ¼ö, ¾øÀ½
-    mtf::finalizeDefault,     // ¼­¹ö Á¾·á½Ã Á¾·á ÇÔ¼ö, ¾øÀ½
-    qtcRidEstimate,           // Estimate ÇÒ ÇÔ¼ö
+    1|                        // í•˜ë‚˜ì˜ Column ê³µê°„
+    MTC_NODE_INDEX_UNUSABLE|  // Indexë¥¼ ì‚¬ìš©í•  ìˆ˜ ìžˆìŒ
+    MTC_NODE_OPERATOR_MISC,   // ê¸°íƒ€ ì—°ì‚°ìž
+    ~0,                       // Indexable Mask : ì˜ë¯¸ ì—†ìŒ
+    1.0,                      // default selectivity (ë¹„êµ ì—°ì‚°ìž ì•„ë‹˜)
+    gQtcRidNames,             // ì´ë¦„ ì •ë³´
+    NULL,                     // Counter ì—°ì‚°ìž ì—†ìŒ
+    mtf::initializeDefault,   // ì„œë²„ êµ¬ë™ì‹œ ì´ˆê¸°í™” í•¨ìˆ˜, ì—†ìŒ
+    mtf::finalizeDefault,     // ì„œë²„ ì¢…ë£Œì‹œ ì¢…ë£Œ í•¨ìˆ˜, ì—†ìŒ
+    qtcRidEstimate,           // Estimate í•  í•¨ìˆ˜
 };
 
 mtcColumn gQtcRidColumn;
 
 mtcExecute gQtcRidExecute = {
-    mtf::calculateNA,     // Aggregation ÃÊ±âÈ­ ÇÔ¼ö, ¾øÀ½
-    mtf::calculateNA,     // Aggregation ¼öÇà ÇÔ¼ö, ¾øÀ½
+    mtf::calculateNA,     // Aggregation ì´ˆê¸°í™” í•¨ìˆ˜, ì—†ìŒ
+    mtf::calculateNA,     // Aggregation ìˆ˜í–‰ í•¨ìˆ˜, ì—†ìŒ
     mtf::calculateNA,
-    mtf::calculateNA,     // Aggregation Á¾·á ÇÔ¼ö, ¾øÀ½
+    mtf::calculateNA,     // Aggregation ì¢…ë£Œ í•¨ìˆ˜, ì—†ìŒ
     qtcRidCalculate,      // calculate
-    NULL,                 // ¿¬»êÀ» À§ÇÑ ºÎ°¡ Á¤º¸, ¾øÀ½
-    mtk::estimateRangeNA, // Key Range Å©±â ÃßÃâ ÇÔ¼ö, ¾øÀ½
-    mtk::extractRangeNA   // Key Range »ý¼º ÇÔ¼ö, ¾øÀ½
+    NULL,                 // ì—°ì‚°ì„ ìœ„í•œ ë¶€ê°€ ì •ë³´, ì—†ìŒ
+    mtk::estimateRangeNA, // Key Range í¬ê¸° ì¶”ì¶œ í•¨ìˆ˜, ì—†ìŒ
+    mtk::extractRangeNA   // Key Range ìƒì„± í•¨ìˆ˜, ì—†ìŒ
 };
 
 /*
  * -----------------------------------------
  * select _prowid from t1
  *
- * _prowid ¸¦ À§ÇÑ qtcNode ¸¦ »ý¼º
- * parse °úÁ¤¿¡¼­ È£ÃâµÈ´Ù
+ * _prowid ë¥¼ ìœ„í•œ qtcNode ë¥¼ ìƒì„±
+ * parse ê³¼ì •ì—ì„œ í˜¸ì¶œëœë‹¤
  * -----------------------------------------
  */
 IDE_RC qtcRidMakeColumn(qcStatement*    aStatement,
@@ -188,24 +188,24 @@ static IDE_RC qtcRidEstimate(mtcNode*     aNode,
 
     sSFWGH = sCallBackInfo->SFWGH;
 
-    // ÃÖÃÊ estimate ½Ã¿¡¸¸ Column ID¸¦ ÇÒ´ç¹Þ°Ô ÇÏ°í,
-    // ÀÌÈÄÀÇ estimate È£Ãâ½Ã¿¡´Â Column ID¸¦ ÇÒ´ç¹ÞÁö ¾Êµµ·Ï ÇÑ´Ù.
-    // µû¶ó¼­, estimate() ¿¡¼­¸¸ CallBackInfo¿¡ statement¸¦ ¼³Á¤ÇÑ´Ù.
+    // ìµœì´ˆ estimate ì‹œì—ë§Œ Column IDë¥¼ í• ë‹¹ë°›ê²Œ í•˜ê³ ,
+    // ì´í›„ì˜ estimate í˜¸ì¶œì‹œì—ëŠ” Column IDë¥¼ í• ë‹¹ë°›ì§€ ì•Šë„ë¡ í•œë‹¤.
+    // ë”°ë¼ì„œ, estimate() ì—ì„œë§Œ CallBackInfoì— statementë¥¼ ì„¤ì •í•œë‹¤.
     if (sCallBackInfo->statement != NULL)
     {
-        // ½ÇÁ¦ ColumnÀÎ °æ¿ì Column ID¸¦ SettingÇÑ´Ù.
-        // ColumnÀÌ ¾Æ´Ñ °æ¿ì¿¡´Â ÇØ´ç Node¿¡ ÀûÇÕÇÑ Module·Î º¯°æµÈ´Ù.
-        // ¿¹¸¦ µé¾î, ´ÙÀ½°ú °°Àº ÁúÀÇ¸¦ »ìÆì º¸ÀÚ.
+        // ì‹¤ì œ Columnì¸ ê²½ìš° Column IDë¥¼ Settingí•œë‹¤.
+        // Columnì´ ì•„ë‹Œ ê²½ìš°ì—ëŠ” í•´ë‹¹ Nodeì— ì í•©í•œ Moduleë¡œ ë³€ê²½ëœë‹¤.
+        // ì˜ˆë¥¼ ë“¤ì–´, ë‹¤ìŒê³¼ ê°™ì€ ì§ˆì˜ë¥¼ ì‚´íŽ´ ë³´ìž.
         //     SELECT f1 FROM T1;
-        // Parsing ´Ü°è¿¡¼­´Â [f1]À» ColumnÀ¸·Î ÆÇ´ÜÇÏÁö¸¸,
-        // ÀÌ´Â ColumnÀÏ¼öµµ FunctionÀÏ ¼öµµ ÀÖ´Ù.
-        // ¸¸¾à ModuleÀÌ º¯°æµÈ °æ¿ì¶ó¸é, ³»ºÎ¿¡¼­ estimate°¡ ¼öÇàµÈ´Ù.
+        // Parsing ë‹¨ê³„ì—ì„œëŠ” [f1]ì„ Columnìœ¼ë¡œ íŒë‹¨í•˜ì§€ë§Œ,
+        // ì´ëŠ” Columnì¼ìˆ˜ë„ Functionì¼ ìˆ˜ë„ ìžˆë‹¤.
+        // ë§Œì•½ Moduleì´ ë³€ê²½ëœ ê²½ìš°ë¼ë©´, ë‚´ë¶€ì—ì„œ estimateê°€ ìˆ˜í–‰ëœë‹¤.
 
         if ((sNode->lflag & QTC_NODE_COLUMN_ESTIMATE_MASK) ==
             QTC_NODE_COLUMN_ESTIMATE_TRUE)
         {
-            // partition column id¸¦ ÁöÁ¤ÇÏ¿´À¸¹Ç·Î column id¸¦ »õ·Î ±¸ÇÏ´Â °ÍÀº
-            // ÇÏÁö ¾Ê´Â´Ù.
+            // partition column idë¥¼ ì§€ì •í•˜ì˜€ìœ¼ë¯€ë¡œ column idë¥¼ ìƒˆë¡œ êµ¬í•˜ëŠ” ê²ƒì€
+            // í•˜ì§€ ì•ŠëŠ”ë‹¤.
         }
         else
         {
@@ -216,8 +216,8 @@ static IDE_RC qtcRidEstimate(mtcNode*     aNode,
     if( sRc == IDE_FAILURE )
     {
         // BUG-38507
-        // setColumnID4Rid¿¡¼­ NOT EXISTS COLUMN ¿À·ù°¡ ¹ß»ýÇÑ °æ¿ì
-        // ÀÏ¹Ý columnÀ¸·Î estimate ÇÑ´Ù.
+        // setColumnID4Ridì—ì„œ NOT EXISTS COLUMN ì˜¤ë¥˜ê°€ ë°œìƒí•œ ê²½ìš°
+        // ì¼ë°˜ columnìœ¼ë¡œ estimate í•œë‹¤.
         if( ideGetErrorCode() == qpERR_ABORT_QMV_NOT_EXISTS_COLUMN )
         {
             aNode->module = &qtc::columnModule;
@@ -241,9 +241,9 @@ static IDE_RC qtcRidEstimate(mtcNode*     aNode,
 
         //-----------------------------------------------
         // PROJ-1473
-        // ÁúÀÇ¿¡ »ç¿ëµÈ ÄÃ·³Á¤º¸¸¦ ¼öÁýÇÑ´Ù.
-        // ·¹ÄÚµåÀúÀå¹æ½ÄÀÇ Ã³¸®ÀÎ °æ¿ì,
-        // µð½ºÅ©Å×ÀÌºí°ú ºäÀÇ ÁúÀÇ¿¡ »ç¿ëµÈ ÄÃ·³Á¤º¸ ¼öÁý.
+        // ì§ˆì˜ì— ì‚¬ìš©ëœ ì»¬ëŸ¼ì •ë³´ë¥¼ ìˆ˜ì§‘í•œë‹¤.
+        // ë ˆì½”ë“œì €ìž¥ë°©ì‹ì˜ ì²˜ë¦¬ì¸ ê²½ìš°,
+        // ë””ìŠ¤í¬í…Œì´ë¸”ê³¼ ë·°ì˜ ì§ˆì˜ì— ì‚¬ìš©ëœ ì»¬ëŸ¼ì •ë³´ ìˆ˜ì§‘.
         //-----------------------------------------------
         IDE_TEST(qtc::setColumnExecutionPosition(aTemplate,
                                                  sNode,

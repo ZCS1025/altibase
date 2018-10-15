@@ -35,10 +35,10 @@ PDL_HANDLE idfCore::open(const SChar *aPathName, SInt aFlag, ...)
 
     IDE_TEST(sPath == NULL);
 
-    // ÆÄÀÏÀÌ Á¸ÀçÇÏ´Â °æ¿ì
+    // íŒŒì¼ì´ ì¡´ìž¬í•˜ëŠ” ê²½ìš°
     if((sFileID = idf::getFileIDByName(sPath)) != IDF_INVALID_FILE_ID) 
     {
-        // O_TRUNC ¼Ó¼ºÀÌ ÀÖÀ¸¸é ÆÄÀÏÀÇ Å©±â¸¦ 0À¸·Î ¸¸µç´Ù.
+        // O_TRUNC ì†ì„±ì´ ìžˆìœ¼ë©´ íŒŒì¼ì˜ í¬ê¸°ë¥¼ 0ìœ¼ë¡œ ë§Œë“ ë‹¤.
         if(aFlag & O_TRUNC)
         {
             sMeta = idf::mMetaList[sFileID].mMeta;
@@ -55,20 +55,20 @@ PDL_HANDLE idfCore::open(const SChar *aPathName, SInt aFlag, ...)
             idf::mFdList[sFd].mFileID = sFileID;
             idf::mFdList[sFd].mCursor = 0;
 
-            // ÆÄÀÏÀ» ¿­Àº È¸¼ö(mFileOpenCount)¸¦ Áõ°¡ÇÏ°í,
-            // idfCore::close() È£Ãâ½Ã ÇÏ³ª¾¿ °¨¼ÒÇÑ´Ù.
+            // íŒŒì¼ì„ ì—´ì€ íšŒìˆ˜(mFileOpenCount)ë¥¼ ì¦ê°€í•˜ê³ ,
+            // idfCore::close() í˜¸ì¶œì‹œ í•˜ë‚˜ì”© ê°ì†Œí•œë‹¤.
             idf::mMetaList[sFileID].mFileOpenCount++;
         }
     }
-    // ÆÄÀÏÀÌ Á¸ÀçÇÏÁö ¾ÊÀ¸¸é aFlag¸¦ Á¶»çÇÏ¿© O_CREAT°¡ ÀÖÀ¸¸é ÆÄÀÏÀ»
-    // »ý¼ºÇÑ´Ù. Ã³À½ ÆÄÀÏÀ» »ý¼ºÇÒ ¶§´Â ÆäÀÌÁö¸¦ ÇÒ´çÇÏÁö ¾Ê´Â´Ù.
+    // íŒŒì¼ì´ ì¡´ìž¬í•˜ì§€ ì•Šìœ¼ë©´ aFlagë¥¼ ì¡°ì‚¬í•˜ì—¬ O_CREATê°€ ìžˆìœ¼ë©´ íŒŒì¼ì„
+    // ìƒì„±í•œë‹¤. ì²˜ìŒ íŒŒì¼ì„ ìƒì„±í•  ë•ŒëŠ” íŽ˜ì´ì§€ë¥¼ í• ë‹¹í•˜ì§€ ì•ŠëŠ”ë‹¤.
     else
     {
-        if(aFlag & O_CREAT) // aFlag¿¡ O_CREAT ¼Ó¼ºÀÌ ÀÖ´Â °æ¿ì
+        if(aFlag & O_CREAT) // aFlagì— O_CREAT ì†ì„±ì´ ìžˆëŠ” ê²½ìš°
         {
             if((sFileID = idf::getUnusedFileID()) != IDF_INVALID_FILE_ID)
             {
-                // ºó file ID°¡ Á¸ÀçÇÏ¸é Meta¸¦ ÇÒ´çÇÏ°í ÆÄÀÏÀ» »ý¼ºÇÑ´Ù.
+                // ë¹ˆ file IDê°€ ì¡´ìž¬í•˜ë©´ Metaë¥¼ í• ë‹¹í•˜ê³  íŒŒì¼ì„ ìƒì„±í•œë‹¤.
                 (void)idf::alloc((void **)&sMeta, ID_SIZEOF(idfMeta));
 
                 idlOS::memset(sMeta, 
@@ -106,8 +106,8 @@ PDL_HANDLE idfCore::open(const SChar *aPathName, SInt aFlag, ...)
             }
             else
             {
-                // ºó file ID°¡ ¾øÀ¸¸é ÆÄÀÏ¿¡ ´ëÇÑ Meta¸¦ »ý¼ºÇÒ ¼ö ¾ø±â
-                // ¶§¹®¿¡ ´õ ÀÌ»ó ÆÄÀÏÀ» »ý¼ºÇÒ ¼ö ¾ø´Ù.
+                // ë¹ˆ file IDê°€ ì—†ìœ¼ë©´ íŒŒì¼ì— ëŒ€í•œ Metaë¥¼ ìƒì„±í•  ìˆ˜ ì—†ê¸°
+                // ë•Œë¬¸ì— ë” ì´ìƒ íŒŒì¼ì„ ìƒì„±í•  ìˆ˜ ì—†ë‹¤.
                 (void)idf::freeFd(sFd);
 
                 sFd = IDF_INVALID_HANDLE;
@@ -115,7 +115,7 @@ PDL_HANDLE idfCore::open(const SChar *aPathName, SInt aFlag, ...)
                 errno = ENFILE; // File table overflow
             }
         }
-        else // ÆÄÀÏÀÌ Á¸ÀçÇÏÁö ¾Ê°í, aFlag¿¡ O_CREAT ¼Ó¼ºÀÌ ¾ø´Â °æ¿ì
+        else // íŒŒì¼ì´ ì¡´ìž¬í•˜ì§€ ì•Šê³ , aFlagì— O_CREAT ì†ì„±ì´ ì—†ëŠ” ê²½ìš°
         {
             (void)idf::freeFd(sFd);
 
@@ -131,7 +131,7 @@ PDL_HANDLE idfCore::open(const SChar *aPathName, SInt aFlag, ...)
         {
             idf::mIsSync = ID_FALSE;
 
-            // º¯°æµÈ ·Î±×¸¦ Ã¼Å©ÇÑ´Ù.
+            // ë³€ê²½ëœ ë¡œê·¸ë¥¼ ì²´í¬í•œë‹¤.
             if(idf::mLogList[sFileID] == 0)
             {
                 idf::mLogList[sFileID] = 1;
@@ -187,24 +187,24 @@ SInt idfCore::close(PDL_HANDLE aFd)
     (void)idf::lock();
     sLock = ID_TRUE;
     
-    // Fd°¡ »ç¿ëÁßÀÎÁö È®ÀÎÇÑ´Ù. »ç¿ëÁßÀÎ Fd°¡ ¾Æ´Ï¸é ¿¡·¯¸¦ ¹ß»ýÇÑ´Ù.
+    // Fdê°€ ì‚¬ìš©ì¤‘ì¸ì§€ í™•ì¸í•œë‹¤. ì‚¬ìš©ì¤‘ì¸ Fdê°€ ì•„ë‹ˆë©´ ì—ëŸ¬ë¥¼ ë°œìƒí•œë‹¤.
     IDE_TEST_RAISE((idf::mFdList[sFd].mIsUsed) == IDF_FD_UNUSED, fd_error);
 
     sFileID = idf::mFdList[sFd].mFileID;
 
     IDE_TEST_RAISE(sFileID == IDF_INVALID_FILE_ID, fd_error);
 
-    // Meta List¿¡ ´ëÇØ¼­´Â ´Ü¼øÈ÷ ÆÄÀÏÀ» ¿­Àº È½¼ö¸¦ °¨¼ÒÇÑ´Ù.
-    // File Descriptor List¿¡ mIsUsed°¡ IDF_FD_USED(1)°¡ ¾Æ´Ï¸é ÀÌ¹Ì ÆÄÀÏ¿¡
-    // ´ëÇÑ Meta¸¦ Áö¿î °æ¿ìÀÌ¹Ç·Î ¸ÞÅ¸¿¡ ´ëÇØ¼­´Â Ã³¸®¸¦ ÇÏÁö ¾Ê´Â´Ù.
-    // ¸¸¾à Meta¿¡ ´ëÇØ µ¥ÀÌÅÍ¸¦ º¯°æ, µð½ºÅ©¿¡ ÀúÀåÇÏ¸é ´Ù¸¥ ÆÄÀÏÀÇ Meta¸¦
-    // Àß¸ø º¯°æÇÒ ¼ö ÀÖÀ¸¹Ç·Î Meta¸¦ º¯°æÇÏÁö ¾Êµµ·Ï ÁÖÀÇÇÑ´Ù.
+    // Meta Listì— ëŒ€í•´ì„œëŠ” ë‹¨ìˆœížˆ íŒŒì¼ì„ ì—´ì€ íšŸìˆ˜ë¥¼ ê°ì†Œí•œë‹¤.
+    // File Descriptor Listì— mIsUsedê°€ IDF_FD_USED(1)ê°€ ì•„ë‹ˆë©´ ì´ë¯¸ íŒŒì¼ì—
+    // ëŒ€í•œ Metaë¥¼ ì§€ìš´ ê²½ìš°ì´ë¯€ë¡œ ë©”íƒ€ì— ëŒ€í•´ì„œëŠ” ì²˜ë¦¬ë¥¼ í•˜ì§€ ì•ŠëŠ”ë‹¤.
+    // ë§Œì•½ Metaì— ëŒ€í•´ ë°ì´í„°ë¥¼ ë³€ê²½, ë””ìŠ¤í¬ì— ì €ìž¥í•˜ë©´ ë‹¤ë¥¸ íŒŒì¼ì˜ Metaë¥¼
+    // ìž˜ëª» ë³€ê²½í•  ìˆ˜ ìžˆìœ¼ë¯€ë¡œ Metaë¥¼ ë³€ê²½í•˜ì§€ ì•Šë„ë¡ ì£¼ì˜í•œë‹¤.
     if(idf::mFdList[sFd].mIsUsed == IDF_FD_USED)
     {
         idf::mMetaList[sFileID].mFileOpenCount--;
     }
 
-    // Fd¸¦ ¹ÝÈ¯ÇÏ¿© ´ÙÀ½¿¡ ÆÄÀÏÀ» ¿­ ¶§ »ç¿ëÇÏµµ·Ï ÇÑ´Ù.
+    // Fdë¥¼ ë°˜í™˜í•˜ì—¬ ë‹¤ìŒì— íŒŒì¼ì„ ì—´ ë•Œ ì‚¬ìš©í•˜ë„ë¡ í•œë‹¤.
     (void)idf::freeFd(sFd);
 
     sLock = ID_FALSE;
@@ -237,9 +237,9 @@ PDL_HANDLE idfCore::creat(SChar *aPathName, mode_t /*aMode*/)
 PDL_HANDLE idfCore::creat(const SChar *aPathName, mode_t /*aMode*/)
 #endif
 {
-    // ¸ðµå´Â Áö¿øÇÏÁö ¾Ê´Â´Ù.
-    // open()À» È£ÃâÇÏ¸é errnoµµ open()¿¡¼­ ¼³Á¤ÇÑ´Ù.
-    // µû¶ó¼­ ´Ü¼øÈ÷ open()È£ÃâÇÑ °á°ú¸¸ ¹ÝÈ¯ÇÏ¸é µÈ´Ù.
+    // ëª¨ë“œëŠ” ì§€ì›í•˜ì§€ ì•ŠëŠ”ë‹¤.
+    // open()ì„ í˜¸ì¶œí•˜ë©´ errnoë„ open()ì—ì„œ ì„¤ì •í•œë‹¤.
+    // ë”°ë¼ì„œ ë‹¨ìˆœížˆ open()í˜¸ì¶œí•œ ê²°ê³¼ë§Œ ë°˜í™˜í•˜ë©´ ëœë‹¤.
     PDL_HANDLE sFd = idfCore::open(aPathName, O_CREAT | O_RDWR | O_TRUNC);
 
     return sFd;
@@ -264,7 +264,7 @@ ssize_t idfCore::read(PDL_HANDLE aFd, void *aBuf, size_t aCount)
     (void)idf::lock();
     sLock = ID_TRUE;
 
-    // Fd°¡ »ç¿ëÁßÀÎÁö È®ÀÎÇÑ´Ù. »ç¿ëÁßÀÎ Fd°¡ ¾Æ´Ï¸é ¿¡·¯¸¦ ¹ß»ýÇÑ´Ù.
+    // Fdê°€ ì‚¬ìš©ì¤‘ì¸ì§€ í™•ì¸í•œë‹¤. ì‚¬ìš©ì¤‘ì¸ Fdê°€ ì•„ë‹ˆë©´ ì—ëŸ¬ë¥¼ ë°œìƒí•œë‹¤.
     IDE_TEST_RAISE(idf::mFdList[sFd].mIsUsed != IDF_FD_USED, fd_error);
 
     sFileID = idf::mFdList[sFd].mFileID;
@@ -273,20 +273,20 @@ ssize_t idfCore::read(PDL_HANDLE aFd, void *aBuf, size_t aCount)
 
     sMeta = idf::mMetaList[sFileID].mMeta;
 
-    // sCursor¸¦ Åä´ë·Î ½ÇÁ¦ µ¥ÀÌÅÍ°¡ À§Ä¡ÇÑ ÆäÀÌÁö ÁÖ¼Ò¸¦ Ã£´Â´Ù.
+    // sCursorë¥¼ í† ëŒ€ë¡œ ì‹¤ì œ ë°ì´í„°ê°€ ìœ„ì¹˜í•œ íŽ˜ì´ì§€ ì£¼ì†Œë¥¼ ì°¾ëŠ”ë‹¤.
     sCursor = idf::mFdList[sFd].mCursor;
 
     sPageIndex = sCursor / idf::mPageSize;
 
     IDE_TEST_RAISE(sCount < 0, invalid_arg_error);
 
-    // ¸ÞÅ¸¿¡¼­ ÆÄÀÏ Å©±â¸¦ ¾ò¾î¿Í¼­ ÀÐÀ» Å©±â¸¦ Àç¼³Á¤ÇÑ´Ù.
+    // ë©”íƒ€ì—ì„œ íŒŒì¼ í¬ê¸°ë¥¼ ì–»ì–´ì™€ì„œ ì½ì„ í¬ê¸°ë¥¼ ìž¬ì„¤ì •í•œë‹¤.
     if((SLong)(sMeta->mSize - sCursor) < sCount)
     {
         sCount = sMeta->mSize - sCursor;
     }
 
-    // ÆäÀÌÁö¿¡¼­ µ¥ÀÌÅÍ¸¦ ÀÐ¾î¿À°í ÀÐÀº ±æÀÌ¸¦ ´©ÀûÇÑ´Ù.
+    // íŽ˜ì´ì§€ì—ì„œ ë°ì´í„°ë¥¼ ì½ì–´ì˜¤ê³  ì½ì€ ê¸¸ì´ë¥¼ ëˆ„ì í•œë‹¤.
     if(sCount > 0)
     {
         while(sCount > 0)
@@ -295,9 +295,9 @@ ssize_t idfCore::read(PDL_HANDLE aFd, void *aBuf, size_t aCount)
 
             sPageRemain = (idf::mPageSize - sPageOffset);
 
-            // ÆäÀÌÁöÀÇ ³²Àº °ø°£°ú ³²Àº µ¥ÀÌÅÍ Áß ÀÛÀº Å©±â¸¸Å­ ÀÐ´Â´Ù.
-            //     sPageRemain : ÆäÀÌÁö ³»ÀÇ ³²Àº °ø°£
-            //     sCount      : ÆÄÀÏ ³»ÀÇ ³²Àº µ¥ÀÌÅÍ
+            // íŽ˜ì´ì§€ì˜ ë‚¨ì€ ê³µê°„ê³¼ ë‚¨ì€ ë°ì´í„° ì¤‘ ìž‘ì€ í¬ê¸°ë§Œí¼ ì½ëŠ”ë‹¤.
+            //     sPageRemain : íŽ˜ì´ì§€ ë‚´ì˜ ë‚¨ì€ ê³µê°„
+            //     sCount      : íŒŒì¼ ë‚´ì˜ ë‚¨ì€ ë°ì´í„°
             sReadSize = (sPageRemain < sCount) ? sPageRemain : sCount;
 
             if((sLogicalPage = idf::getPageAddrR(sMeta, sFileID, sPageIndex))
@@ -323,7 +323,7 @@ ssize_t idfCore::read(PDL_HANDLE aFd, void *aBuf, size_t aCount)
             sReadCount += sReadSize;
             sCount     -= sReadSize;
 
-            // ÆäÀÌÁö¸¦ ´Ù ÀÐÀº °æ¿ì ´ÙÀ½ ÆäÀÌÁö¸¦ ÀÐµµ·Ï ÇÑ´Ù.
+            // íŽ˜ì´ì§€ë¥¼ ë‹¤ ì½ì€ ê²½ìš° ë‹¤ìŒ íŽ˜ì´ì§€ë¥¼ ì½ë„ë¡ í•œë‹¤.
             if(((sCursor % idf::mPageSize) == 0) && (sReadSize > 0))
             {
                 sPageIndex++;
@@ -382,7 +382,7 @@ ssize_t idfCore::write(PDL_HANDLE aFd, const void* aBuf, size_t aCount)
     (void)idf::lock();
     sLock = ID_TRUE;
 
-    // Fd°¡ »ç¿ëÁßÀÎÁö È®ÀÎÇÑ´Ù. »ç¿ëÁßÀÎ Fd°¡ ¾Æ´Ï¸é ¿¡·¯¸¦ ¹ß»ýÇÑ´Ù.
+    // Fdê°€ ì‚¬ìš©ì¤‘ì¸ì§€ í™•ì¸í•œë‹¤. ì‚¬ìš©ì¤‘ì¸ Fdê°€ ì•„ë‹ˆë©´ ì—ëŸ¬ë¥¼ ë°œìƒí•œë‹¤.
     IDE_TEST_RAISE(idf::mFdList[sFd].mIsUsed != IDF_FD_USED, fd_error);
 
     sFileID = idf::mFdList[sFd].mFileID;
@@ -391,8 +391,8 @@ ssize_t idfCore::write(PDL_HANDLE aFd, const void* aBuf, size_t aCount)
 
     sMeta = idf::mMetaList[sFileID].mMeta;
 
-    // sCursor¸¦ Åä´ë·Î ÆäÀÌÁö ÀÎµ¦½º¸¦ ¾ò¾î¿Â µÚ 
-    // ½ÇÁ¦ µ¥ÀÌÅÍ°¡ À§Ä¡ÇÒ ÆäÀÌÁö ÁÖ¼Ò¸¦ Ã£´Â´Ù.
+    // sCursorë¥¼ í† ëŒ€ë¡œ íŽ˜ì´ì§€ ì¸ë±ìŠ¤ë¥¼ ì–»ì–´ì˜¨ ë’¤ 
+    // ì‹¤ì œ ë°ì´í„°ê°€ ìœ„ì¹˜í•  íŽ˜ì´ì§€ ì£¼ì†Œë¥¼ ì°¾ëŠ”ë‹¤.
     sCursor = idf::mFdList[sFd].mCursor;
 
     sPageIndex = sCursor / idf::mPageSize;
@@ -405,7 +405,7 @@ ssize_t idfCore::write(PDL_HANDLE aFd, const void* aBuf, size_t aCount)
 
         idf::mIsDirty = ID_FALSE;
 
-        // ÆäÀÌÁö ÀÎµ¦½º¸¦ ÀÌ¿ëÇÏ¿© ÆäÀÌÁö ÁÖ¼Ò¸¦ ¾ò¾î¿Â´Ù.
+        // íŽ˜ì´ì§€ ì¸ë±ìŠ¤ë¥¼ ì´ìš©í•˜ì—¬ íŽ˜ì´ì§€ ì£¼ì†Œë¥¼ ì–»ì–´ì˜¨ë‹¤.
         sLogicalPage = idf::getPageAddrW(sMeta, sFileID, sPageIndex);
 
         IDE_TEST_RAISE(sLogicalPage == -1, free_page_error);
@@ -416,7 +416,7 @@ ssize_t idfCore::write(PDL_HANDLE aFd, const void* aBuf, size_t aCount)
 
             sPageRemain = (idf::mPageSize - sPageOffset);
 
-            // ÆäÀÌÁöÀÇ ³²Àº °ø°£°ú ³²Àº µ¥ÀÌÅÍ Å©±â Áß ÀÛÀº Å©±â¸¸Å­ ¾´´Ù.
+            // íŽ˜ì´ì§€ì˜ ë‚¨ì€ ê³µê°„ê³¼ ë‚¨ì€ ë°ì´í„° í¬ê¸° ì¤‘ ìž‘ì€ í¬ê¸°ë§Œí¼ ì“´ë‹¤.
             sWriteSize = (sPageRemain < sCount) ? sPageRemain : sCount;
 
             IDE_TEST(idf::lseekFs(idf::mFd,
@@ -432,7 +432,7 @@ ssize_t idfCore::write(PDL_HANDLE aFd, const void* aBuf, size_t aCount)
             sWriteCount += sWriteSize;
             sCount      -= sWriteSize;
 
-            // ÆäÀÌÁö¸¦ ´Ù ¾´°æ¿ì ´ÙÀ½ ÆäÀÌÁö¿¡ ¾²µµ·Ï ÇÑ´Ù.
+            // íŽ˜ì´ì§€ë¥¼ ë‹¤ ì“´ê²½ìš° ë‹¤ìŒ íŽ˜ì´ì§€ì— ì“°ë„ë¡ í•œë‹¤.
             if(((sCursor % idf::mPageSize) == 0) && (sWriteSize> 0) && (sCount > 0))
             {
                 sPageIndex++;
@@ -445,7 +445,7 @@ ssize_t idfCore::write(PDL_HANDLE aFd, const void* aBuf, size_t aCount)
             }
         }
 
-        // MetaÀÇ ÆÄÀÏ Å©±â Á¤º¸¸¦ ¼öÁ¤ÇÑ´Ù.
+        // Metaì˜ íŒŒì¼ í¬ê¸° ì •ë³´ë¥¼ ìˆ˜ì •í•œë‹¤.
         if(sMeta->mSize < sCursor)
         {
             sMeta->mSize = sCursor;
@@ -453,8 +453,8 @@ ssize_t idfCore::write(PDL_HANDLE aFd, const void* aBuf, size_t aCount)
             idf::mIsDirty = ID_TRUE;
         }
 
-        // ÆÄÀÏ¿¡ µ¥ÀÌÅÍ¸¦ ±â·ÏÇÑ °æ¿ì¿¡¸¸ Meta¸¦ ±â·ÏÇÑ´Ù.
-        // Meta°¡ º¯°æµÇÁö ¾Ê¾ÒÀ¸¸é Meta¸¦ ÀúÀåÇÏÁö ¾Ê´Â´Ù.
+        // íŒŒì¼ì— ë°ì´í„°ë¥¼ ê¸°ë¡í•œ ê²½ìš°ì—ë§Œ Metaë¥¼ ê¸°ë¡í•œë‹¤.
+        // Metaê°€ ë³€ê²½ë˜ì§€ ì•Šì•˜ìœ¼ë©´ Metaë¥¼ ì €ìž¥í•˜ì§€ ì•ŠëŠ”ë‹¤.
         if(idf::mIsDirty == ID_TRUE)
         {
             if(idf::mLogList[sFileID] == 0)
@@ -467,7 +467,7 @@ ssize_t idfCore::write(PDL_HANDLE aFd, const void* aBuf, size_t aCount)
             IDE_TEST(idf::masterLog(0) != IDE_SUCCESS);
         }
 
-        // Ä¿¼­ÀÇ À§Ä¡¸¦ ÀÌµ¿ÇÑ´Ù.
+        // ì»¤ì„œì˜ ìœ„ì¹˜ë¥¼ ì´ë™í•œë‹¤.
         idf::mFdList[sFd].mCursor = sCursor;
     }
 
@@ -515,15 +515,15 @@ PDL_OFF_T idfCore::lseek(PDL_HANDLE aFd, PDL_OFF_T aOffset, SInt aWhence)
     (void)idf::lock();
     sLock = ID_TRUE;
 
-    // Fd°¡ »ç¿ëÁßÀÎÁö È®ÀÎÇÑ´Ù. »ç¿ëÁßÀÎ Fd°¡ ¾Æ´Ï¸é ¿¡·¯¸¦ ¹ß»ýÇÑ´Ù.
+    // Fdê°€ ì‚¬ìš©ì¤‘ì¸ì§€ í™•ì¸í•œë‹¤. ì‚¬ìš©ì¤‘ì¸ Fdê°€ ì•„ë‹ˆë©´ ì—ëŸ¬ë¥¼ ë°œìƒí•œë‹¤.
     IDE_TEST_RAISE(idf::mFdList[sFd].mIsUsed != IDF_FD_USED, fd_error);
 
     sFileID = idf::mFdList[sFd].mFileID;
 
     IDE_TEST_RAISE(sFileID == IDF_INVALID_FILE_ID, fd_error);
 
-    // aWhence¿¡ µû¶ó¼­ À§Ä¡¸¦ ÁöÁ¤ÇÑ´Ù.
-    // SEEK_SET, SEEK_CUR, SEEK_END ÀÌ¿ÜÀÇ °ªÀÌ ¿À¸é ¿¡·¯¸¦ ¹ß»ýÇÑ´Ù.
+    // aWhenceì— ë”°ë¼ì„œ ìœ„ì¹˜ë¥¼ ì§€ì •í•œë‹¤.
+    // SEEK_SET, SEEK_CUR, SEEK_END ì´ì™¸ì˜ ê°’ì´ ì˜¤ë©´ ì—ëŸ¬ë¥¼ ë°œìƒí•œë‹¤.
     switch(aWhence)
     {
     case SEEK_SET:
@@ -597,7 +597,7 @@ SInt idfCore::fstat(PDL_HANDLE aFd, PDL_stat *aBuf)
     (void)idf::lock();
     sLock = ID_TRUE;
     
-    // Fd°¡ »ç¿ëÁßÀÎÁö È®ÀÎÇÑ´Ù. »ç¿ëÁßÀÎ Fd°¡ ¾Æ´Ï¸é ¿¡·¯¸¦ ¹ß»ýÇÑ´Ù.
+    // Fdê°€ ì‚¬ìš©ì¤‘ì¸ì§€ í™•ì¸í•œë‹¤. ì‚¬ìš©ì¤‘ì¸ Fdê°€ ì•„ë‹ˆë©´ ì—ëŸ¬ë¥¼ ë°œìƒí•œë‹¤.
     IDE_TEST_RAISE(idf::mFdList[sFd].mIsUsed != IDF_FD_USED, fd_error);
 
     sFileID = idf::mFdList[sFd].mFileID;
@@ -736,15 +736,15 @@ SInt idfCore::rename(const SChar *aOldpath, const SChar *aNewpath)
     sFileID    = idf::getFileIDByName(sOldPath);
     sNewFileID = idf::getFileIDByName(sNewPath);
 
-    // aOldPath¿¡ ÇØ´çÇÏ´Â ÆÄÀÏÀÌ ¾ø´Ù¸é errno¿¡ ENOENT¸¦ ¼³Á¤ÇÐ°í
-    // -1À» ¹ÝÈ¯ÇÑ´Ù.
+    // aOldPathì— í•´ë‹¹í•˜ëŠ” íŒŒì¼ì´ ì—†ë‹¤ë©´ errnoì— ENOENTë¥¼ ì„¤ì •í•™ê³ 
+    // -1ì„ ë°˜í™˜í•œë‹¤.
     IDE_TEST_RAISE(sFileID == IDF_INVALID_FILE_ID, fd_error);
 
     idf::mIsSync = ID_FALSE;
 
     if(sNewFileID != IDF_INVALID_FILE_ID)
     {
-        // aNewPath¿¡ ÇØ´çÇÏ´Â ÆÄÀÏÀÌ Á¸ÀçÇÏ¸é ÆÄÀÏÀ» »èÁ¦ÇÑ´Ù.
+        // aNewPathì— í•´ë‹¹í•˜ëŠ” íŒŒì¼ì´ ì¡´ìž¬í•˜ë©´ íŒŒì¼ì„ ì‚­ì œí•œë‹¤.
         IDE_TEST(idf::freeMeta(sNewFileID) != IDE_SUCCESS);
 
         if(idf::mLogList[sNewFileID] == 0)
@@ -835,13 +835,13 @@ SInt idfCore::access(const SChar* aPathName, SInt /*aMode*/)
     SChar *sPathName = NULL;
     idBool sLock     = ID_FALSE;
 
-    // access ÇÔ¼ö¿¡¼­ aMode´Â »ç¿ëÇÏÁö ¾Ê´Â´Ù.
+    // access í•¨ìˆ˜ì—ì„œ aModeëŠ” ì‚¬ìš©í•˜ì§€ ì•ŠëŠ”ë‹¤.
 
     (void)idf::lock();
     sLock = ID_TRUE;
 
-    // aPathNameÀÌ NULLÀÌ¸é errno¿¡ EINVAL(Invalid argument)¸¦ ¼³Á¤ÇÏ°í
-    // NULLÀ» ¹ÝÈ¯ÇÑ´Ù.
+    // aPathNameì´ NULLì´ë©´ errnoì— EINVAL(Invalid argument)ë¥¼ ì„¤ì •í•˜ê³ 
+    // NULLì„ ë°˜í™˜í•œë‹¤.
     IDE_TEST_RAISE(aPathName == NULL, invalid_arg_error);
 
     sPathName = idf::getpath(aPathName);
@@ -850,13 +850,13 @@ SInt idfCore::access(const SChar* aPathName, SInt /*aMode*/)
 
     IDE_TEST_RAISE(idlOS::strcmp(sPathName, "") == 0, not_exist_error);
 
-    // sFileIDÀÇ °ªÀÌ IDF_INVALID_FILE_ID°¡ ¾Æ´Ï¸é 0À» ¹ÝÈ¯ÇÑ´Ù.
-    // ¸¸¾à IDF_INVALID_FILE_IDÀÌ¸é ÇØ´ç sPath°¡ µð·ºÅä¸®ÀÎÁö È®ÀÎÇÑ´Ù.
-    // sPath¿¡ ÇØ´çÇÏ´Â ÆÄÀÏ ¶Ç´Â µð·ºÅä¸®°¡ Á¸ÀçÇÏÁö ¾ÊÀ¸¸é errno¿¡ ENOENT
-    // ¸¦ ¼³Á¤ÇÏ°í -1À» ¹ÝÈ¯ÇÑ´Ù.
+    // sFileIDì˜ ê°’ì´ IDF_INVALID_FILE_IDê°€ ì•„ë‹ˆë©´ 0ì„ ë°˜í™˜í•œë‹¤.
+    // ë§Œì•½ IDF_INVALID_FILE_IDì´ë©´ í•´ë‹¹ sPathê°€ ë””ë ‰í† ë¦¬ì¸ì§€ í™•ì¸í•œë‹¤.
+    // sPathì— í•´ë‹¹í•˜ëŠ” íŒŒì¼ ë˜ëŠ” ë””ë ‰í† ë¦¬ê°€ ì¡´ìž¬í•˜ì§€ ì•Šìœ¼ë©´ errnoì— ENOENT
+    // ë¥¼ ì„¤ì •í•˜ê³  -1ì„ ë°˜í™˜í•œë‹¤.
     if((sFileID = idf::getFileIDByName(sPathName)) == IDF_INVALID_FILE_ID)
     {
-        // idf::isDir()ÀÌ IDE_SUCCESS¸¦ ¹ÝÈ¯ÇÏ¸é µð·ºÅä¸®ÀÌ´Ù.
+        // idf::isDir()ì´ IDE_SUCCESSë¥¼ ë°˜í™˜í•˜ë©´ ë””ë ‰í† ë¦¬ì´ë‹¤.
         IDE_TEST_RAISE(idf::isDir(sPathName) != IDE_SUCCESS, not_exist_error);
     }
 
@@ -912,7 +912,7 @@ SInt idfCore::fsync(PDL_HANDLE aFd)
     (void)idf::lock();
     sLock = ID_TRUE;
     
-    // Fd°¡ »ç¿ëÁßÀÎÁö È®ÀÎÇÑ´Ù. »ç¿ëÁßÀÎ Fd°¡ ¾Æ´Ï¸é ¿¡·¯¸¦ ¹ß»ýÇÑ´Ù.
+    // Fdê°€ ì‚¬ìš©ì¤‘ì¸ì§€ í™•ì¸í•œë‹¤. ì‚¬ìš©ì¤‘ì¸ Fdê°€ ì•„ë‹ˆë©´ ì—ëŸ¬ë¥¼ ë°œìƒí•œë‹¤.
     IDE_TEST_RAISE(idf::mFdList[sFd].mIsUsed != IDF_FD_USED, fd_error);
 
     sFileID = idf::mFdList[sFd].mFileID;
@@ -967,21 +967,21 @@ SInt idfCore::ftruncate(PDL_HANDLE aFd, PDL_OFF_T aLength)
     (void)idf::lock();
     sLock = ID_TRUE;
     
-    // Fd°¡ »ç¿ëÁßÀÎÁö È®ÀÎÇÑ´Ù. »ç¿ëÁßÀÎ Fd°¡ ¾Æ´Ï¸é ¿¡·¯¸¦ ¹ß»ýÇÑ´Ù.
+    // Fdê°€ ì‚¬ìš©ì¤‘ì¸ì§€ í™•ì¸í•œë‹¤. ì‚¬ìš©ì¤‘ì¸ Fdê°€ ì•„ë‹ˆë©´ ì—ëŸ¬ë¥¼ ë°œìƒí•œë‹¤.
     IDE_TEST_RAISE(idf::mFdList[sFd].mIsUsed != IDF_FD_USED, fd_error);
 
-    // aLength´Â ¹Ýµå½Ã 0º¸´Ù Å©°Å³ª °°Àº °ªÀÌ¾î¾ß ÇÑ´Ù.
+    // aLengthëŠ” ë°˜ë“œì‹œ 0ë³´ë‹¤ í¬ê±°ë‚˜ ê°™ì€ ê°’ì´ì–´ì•¼ í•œë‹¤.
     IDE_TEST_RAISE(aLength < 0, invalid_arg_error);
 
     sFileID = idf::mFdList[sFd].mFileID;
 
     IDE_TEST_RAISE(sFileID == IDF_INVALID_FILE_ID, fd_error);
 
-    // aLength°¡ ÆÄÀÏÀÇ Å©±âº¸´Ù Å« °æ¿ì ÆÄÀÏÀÇ Å©±â°¡ ´Ã¾î³ª°í,
-    // aLength°¡ ÆÄÀÏÀÇ Å©±âº¸´Ù ÀÛÀº °æ¿ì ÆÄÀÏÀÇ Å©±â°¡ ÁÙ¾îµç´Ù.
-    // ÆÄÀÏÀÌ ´Ã¾î³­ ºÎºÐ¿¡ ´ëÇØ read()¸¦ ÇÏ¸é ¹öÆÛ¿¡ '\0'ÀÌ Ã¤¿öÁø´Ù.
+    // aLengthê°€ íŒŒì¼ì˜ í¬ê¸°ë³´ë‹¤ í° ê²½ìš° íŒŒì¼ì˜ í¬ê¸°ê°€ ëŠ˜ì–´ë‚˜ê³ ,
+    // aLengthê°€ íŒŒì¼ì˜ í¬ê¸°ë³´ë‹¤ ìž‘ì€ ê²½ìš° íŒŒì¼ì˜ í¬ê¸°ê°€ ì¤„ì–´ë“ ë‹¤.
+    // íŒŒì¼ì´ ëŠ˜ì–´ë‚œ ë¶€ë¶„ì— ëŒ€í•´ read()ë¥¼ í•˜ë©´ ë²„í¼ì— '\0'ì´ ì±„ì›Œì§„ë‹¤.
 
-    // aLength°¡ 0ÀÌ¸é ±æÀÌÀÇ º¯È­°¡ ¾øÀ¸¹Ç·Î ¾Æ¹« ÀÛ¾÷µµ ÇÏÁö ¾Ê´Â´Ù.
+    // aLengthê°€ 0ì´ë©´ ê¸¸ì´ì˜ ë³€í™”ê°€ ì—†ìœ¼ë¯€ë¡œ ì•„ë¬´ ìž‘ì—…ë„ í•˜ì§€ ì•ŠëŠ”ë‹¤.
     if(aLength > 0)
     {
         idf::mIsSync = ID_FALSE;
@@ -1035,8 +1035,8 @@ DIR* idfCore::opendir(const SChar* aName)
     idfDir *sDir;
     idBool  sLock = ID_FALSE;
 
-    // aNameÀÌ NULLÀÌ¸é errno¿¡ EINVAL(Invalid argument)¸¦ ¼³Á¤ÇÏ°í
-    // NULLÀ» ¹ÝÈ¯ÇÑ´Ù.
+    // aNameì´ NULLì´ë©´ errnoì— EINVAL(Invalid argument)ë¥¼ ì„¤ì •í•˜ê³ 
+    // NULLì„ ë°˜í™˜í•œë‹¤.
     IDE_TEST_RAISE(aName == NULL, invalid_arg_error);
 
     (void)idf::lock();
@@ -1112,7 +1112,7 @@ SInt idfCore::readdir_r(DIR            *aDirp,
 
     if(sDirIndex == sDirCount)
     {
-        // DIR °´Ã¼¿¡¼­ dirent°´Ã¼¸¦ ¸ðµÎ ÀÐ¾ú´Ù.
+        // DIR ê°ì²´ì—ì„œ direntê°ì²´ë¥¼ ëª¨ë‘ ì½ì—ˆë‹¤.
         *aResult = NULL;
     }
     else
@@ -1157,7 +1157,7 @@ struct dirent * idfCore::readdir(DIR *aDirp)
 
     if(sDirIndex == sDirCount)
     {
-        // DIR °´Ã¼¿¡¼­ dirent°´Ã¼¸¦ ¸ðµÎ ÀÐ¾ú´Ù.
+        // DIR ê°ì²´ì—ì„œ direntê°ì²´ë¥¼ ëª¨ë‘ ì½ì—ˆë‹¤.
         sDirent = NULL;
     }
     else
@@ -1198,8 +1198,8 @@ void idfCore::closedir(DIR *aDirp)
         sDirentP = sTemp;
     }
 
-    // 1. Dirent °´Ã¼¸¦ ¹ÝÈ¯ÇÑ´Ù.
-    // 2. Dir °´Ã¼¸¦ ¹ÝÈ¯ÇÑ´Ù.
+    // 1. Dirent ê°ì²´ë¥¼ ë°˜í™˜í•œë‹¤.
+    // 2. Dir ê°ì²´ë¥¼ ë°˜í™˜í•œë‹¤.
 
     (void)idf::free(sDir);
 }
@@ -1210,17 +1210,17 @@ SLong idfCore::getDiskFreeSpace(const SChar* /*aPathName*/)
     SLong  sTotal;
     SLong  sUsed;
 
-    // ÆÄÆ¼¼ÇÀÌ ÇÑ°³ÀÌ¹Ç·Î aPathNameÀº »ç¿ëÇÏÁö ¾Ê´Â´Ù.
-    // aPathName¿¡ °ü°è¾øÀÌ ³²Àº µð½ºÅ© ¿ë·®À» ¹ÝÈ¯ÇÑ´Ù.
+    // íŒŒí‹°ì…˜ì´ í•œê°œì´ë¯€ë¡œ aPathNameì€ ì‚¬ìš©í•˜ì§€ ì•ŠëŠ”ë‹¤.
+    // aPathNameì— ê´€ê³„ì—†ì´ ë‚¨ì€ ë””ìŠ¤í¬ ìš©ëŸ‰ì„ ë°˜í™˜í•œë‹¤.
     (void)idf::lock();
 
-    // ÀüÃ¼ Å©±â
+    // ì „ì²´ í¬ê¸°
     sTotal = ((SLong)idf::mPageSize * idf::mPageNum);
 
-    // »ç¿ëÇÑ Å©±â
+    // ì‚¬ìš©í•œ í¬ê¸°
     sUsed = ((SLong)idf::mPageSize * idf::mMaster.mAllocedPages);
 
-    // »ç¿ë °¡´ÉÇÑ Å©±â
+    // ì‚¬ìš© ê°€ëŠ¥í•œ í¬ê¸°
     sRc = sTotal - sUsed;
 
     (void)idf::unlock();

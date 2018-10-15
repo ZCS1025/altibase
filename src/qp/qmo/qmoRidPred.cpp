@@ -37,15 +37,15 @@ static idBool qmoRidPredCheckRidScan(qmoPredicate* aRidPred)
 
     sIsOk = ID_TRUE;
 
-    sNode = aRidPred->node->node.arguments; /* sNode = 'ºñ±³¿¬»êÀÚ' */
+    sNode = aRidPred->node->node.arguments; /* sNode = 'ë¹„êµì—°ì‚°ìž' */
 
     while( sNode != NULL )
     {
         /*
-         * 1) = ¿¡ ÇÑÇØ value ÂÊ¿¡ COLUMN ÀÌ ¾ø°í _prowid ¿¡ conversion ÀÌ ¾ø´Â ÇüÅÂ¿¡ ÇÑÇØ rid scan °¡´É
+         * 1) = ì— í•œí•´ value ìª½ì— COLUMN ì´ ì—†ê³  _prowid ì— conversion ì´ ì—†ëŠ” í˜•íƒœì— í•œí•´ rid scan ê°€ëŠ¥
          *    - _prowid = 1 + 1
          *    - _prowid = cast (:a as bigint) + 1
-         * 2) =ANY ¿¡ ÇÑÇØ value ÂÊ¿¡ conversion ÀÌ ¾ø´Â ÇüÅÂ¿¡ ÇÑÇØ rid scan °¡´É
+         * 2) =ANY ì— í•œí•´ value ìª½ì— conversion ì´ ì—†ëŠ” í˜•íƒœì— í•œí•´ rid scan ê°€ëŠ¥
          *    - _prowid =ANY ( 1, 2 )
          */
 
@@ -95,9 +95,9 @@ static idBool qmoRidPredCheckRidScan(qmoPredicate* aRidPred)
             // BUG-41591
             while( sValueNode != NULL )
             {
-                // LIST ¿¬»êÀÇ °æ¿ì ( ex: i1 =ANY ( 1, '2' ) )
-                // value º°·Î conversion ÀÌ ´Ù¸¦ ¼ö ÀÖÀ¸¹Ç·Î
-                // valueNode ÂÊ¿¡ conversion ³ëµå¸¦ »ý¼ºÇÔ
+                // LIST ì—°ì‚°ì˜ ê²½ìš° ( ex: i1 =ANY ( 1, '2' ) )
+                // value ë³„ë¡œ conversion ì´ ë‹¤ë¥¼ ìˆ˜ ìžˆìœ¼ë¯€ë¡œ
+                // valueNode ìª½ì— conversion ë…¸ë“œë¥¼ ìƒì„±í•¨
                 if ( ( sValueNode->module == &qtc::valueModule ) &&
                      ( sValueNode->leftConversion == NULL ) )
                 {
@@ -142,8 +142,8 @@ static idBool qmoRidPredCheckRidScan(qmoPredicate* aRidPred)
 }
 
 /*
- * RID predicate list ¿¡¼­ RID scan À» ÇÒ predicate ¸¸ ³²±â°í
- * ³ª¸ÓÁö RID predicate Àº ÀÏ¹Ý predicate ¿¡ ºÙÀÎ´Ù
+ * RID predicate list ì—ì„œ RID scan ì„ í•  predicate ë§Œ ë‚¨ê¸°ê³ 
+ * ë‚˜ë¨¸ì§€ RID predicate ì€ ì¼ë°˜ predicate ì— ë¶™ì¸ë‹¤
  */
 IDE_RC qmoRidPredExtractRangePred(qmoPredicate*  aInRidPred,
                                   qmoPredicate*  aInOtherPred,
@@ -185,9 +185,9 @@ IDE_RC qmoRidPredExtractRangePred(qmoPredicate*  aInRidPred,
     if (sIsRidScan == ID_TRUE)
     {
         /*
-         * rid predicate ÀÌ ¿©·¯°³ÀÎ °æ¿ì
-         * rid scan °¡´ÉÇÑ ÇÏ³ªÀÇ predicate ¸¸ ³²±â°í
-         * ³ª¸ÓÁö´Â ÀÏ¹Ý predicate À¸·Î ¿Å±ä´Ù
+         * rid predicate ì´ ì—¬ëŸ¬ê°œì¸ ê²½ìš°
+         * rid scan ê°€ëŠ¥í•œ í•˜ë‚˜ì˜ predicate ë§Œ ë‚¨ê¸°ê³ 
+         * ë‚˜ë¨¸ì§€ëŠ” ì¼ë°˜ predicate ìœ¼ë¡œ ì˜®ê¸´ë‹¤
          */
 
         if (sRidPred->next != NULL)
@@ -241,8 +241,8 @@ IDE_RC qmoRidPredExtractRangePred(qmoPredicate*  aInRidPred,
     else
     {
         /*
-         * rid scan ÀÌ °¡´ÉÇÑ predicate ÀÌ ¾ø´Ù
-         * => ¸ðµç rid predicate À» ÀÏ¹Ý predicate À¸·Î ¿Å±è
+         * rid scan ì´ ê°€ëŠ¥í•œ predicate ì´ ì—†ë‹¤
+         * => ëª¨ë“  rid predicate ì„ ì¼ë°˜ predicate ìœ¼ë¡œ ì˜®ê¹€
          */
         sPrevPred->next = sOtherPred;
         sOtherPred      = sFirstPred;

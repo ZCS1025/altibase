@@ -29,17 +29,17 @@
 #define UTISP_MAX_SYNONYM_DEPTH (64)
 
 /* BUG-34447 SET NUMF[ORMAT]
- * ¼¼¼ÇÀÇ currency À¯Áö¸¦ À§ÇØ »ç¿ëÇÏ´Â Äõ¸® */
+ * ì„¸ì…˜ì˜ currency ìœ ì§€ë¥¼ ìœ„í•´ ì‚¬ìš©í•˜ëŠ” ì¿¼ë¦¬ */
 #define QUERY_CURRENCY \
     "select NLS_ISO_CURRENCY, NLS_CURRENCY, NLS_NUMERIC_CHARACTERS " \
     "    from v$session where id = %"ID_UINT32_FMT
 
 /*
- * Æ¯Á¤ Å×ÀÌºíÀÌ Á¸ÀçÇÏ´ÂÁö Ã¼Å©ÇÑ´Ù.
+ * íŠ¹ì • í…Œì´ë¸”ì´ ì¡´ì¬í•˜ëŠ”ì§€ ì²´í¬í•œë‹¤.
  *
- * @param[in]  aUserName  »ç¿ëÀÚ ÀÌ¸§
- * @param[in]  aTableName Á¸ÀçÇÏ´ÂÁö Ã¼Å©ÇÒ Å×ÀÌºí ÀÌ¸§
- * @param[out] aIsExist   Å×ÀÌºí Á¸Àç ¿©ºÎ
+ * @param[in]  aUserName  ì‚¬ìš©ì ì´ë¦„
+ * @param[in]  aTableName ì¡´ì¬í•˜ëŠ”ì§€ ì²´í¬í•  í…Œì´ë¸” ì´ë¦„
+ * @param[out] aIsExist   í…Œì´ë¸” ì¡´ì¬ ì—¬ë¶€
  */
 IDE_RC
 utISPApi::CheckTableExist(SChar  *aUserName,
@@ -56,7 +56,7 @@ utISPApi::CheckTableExist(SChar  *aUserName,
                    != SQL_SUCCESS, DBCError);
     sStage = 1;
 
-    /* SQLTables execute : aTableName°ú ÀÏÄ¡ÇÏ´Â ÀÌ¸§ÀÇ Å×ÀÌºí Á¸Àç¿©ºÎÃ¼Å©
+    /* SQLTables execute : aTableNameê³¼ ì¼ì¹˜í•˜ëŠ” ì´ë¦„ì˜ í…Œì´ë¸” ì¡´ì¬ì—¬ë¶€ì²´í¬
      * SQLTables( stmt, catalog, catalog_len, schema, schema_len,
      *            table_name, table_name_len, table_type, table_type_len); */
     IDE_TEST_RAISE(SQLTables(sStmt, NULL, 0, (SQLCHAR *)aUserName, SQL_NTS,
@@ -132,7 +132,7 @@ IDE_RC utISPApi::Tables(SChar     *a_UserName,
     // SQLTables execute
     // SQLTables( stmt, catalog, catalog_len, schema, schema_len,
     //            table_name, table_name_len, table_type, table_type_len);
-    // BUG-17430 : Quotable User NameÀ» »ç¿ëÇØ¾ß ÇÔ.
+    // BUG-17430 : Quotable User Nameì„ ì‚¬ìš©í•´ì•¼ í•¨.
     IDE_TEST_RAISE( SQLTables( m_IStmt,
                                NULL,
                                0,
@@ -370,9 +370,9 @@ IDE_RC utISPApi::getTBSName(SChar *a_UserName,
                              idlOS::strlen(a_TableName) );
 
     // BUGBUG-10990
-    // Performance View ¿Ï·á ÈÄ Table Space¸¦ ¾ò¾î¾ß ÇÔ.
+    // Performance View ì™„ë£Œ í›„ Table Spaceë¥¼ ì–»ì–´ì•¼ í•¨.
 
-    // BUG-27284: »ç¿ëÀÚ°¡ ¾ø´Â °æ¿ì È®ÀÎ
+    // BUG-27284: ì‚¬ìš©ìê°€ ì—†ëŠ” ê²½ìš° í™•ì¸
     idlOS::snprintf(m_Buf, mBufSize,
                     "SELECT user_id FROM SYSTEM_.SYS_USERS_ WHERE user_name = '%s'",
                     sNQUserName);
@@ -440,7 +440,7 @@ IDE_RC utISPApi::Columns(SChar      *a_UserName,
 {
     SQLRETURN sRet;
 
-    // BUG-27284: »ç¿ëÀÚ°¡ ¾ø´Â °æ¿ì È®ÀÎ
+    // BUG-27284: ì‚¬ìš©ìê°€ ì—†ëŠ” ê²½ìš° í™•ì¸
     idlOS::snprintf(m_Buf, mBufSize,
                     "SELECT user_id FROM SYSTEM_.SYS_USERS_ WHERE user_name = '%s'",
                     aNQUserName);
@@ -461,8 +461,8 @@ IDE_RC utISPApi::Columns(SChar      *a_UserName,
                    != SQL_SUCCESS, i_error);
 
     // Bind columns in result set to buffers
-    // BUG-24775 SQLColumns ¸¦ È£ÃâÇÏ´Â ÄÚµå¸¦ °Ë»çÇØ¾ßÇÔ
-    // SQLColumns ´Â ÆĞÅÏ °Ë»öÀ» ÇÏ±â¶§¹®¿¡ °á°ú¸¦ ÀÔ·Á°ª°ú È®ÀÎÀ» ÇØ¾ßÇÔ
+    // BUG-24775 SQLColumns ë¥¼ í˜¸ì¶œí•˜ëŠ” ì½”ë“œë¥¼ ê²€ì‚¬í•´ì•¼í•¨
+    // SQLColumns ëŠ” íŒ¨í„´ ê²€ìƒ‰ì„ í•˜ê¸°ë•Œë¬¸ì— ê²°ê³¼ë¥¼ ì…ë ¤ê°’ê³¼ í™•ì¸ì„ í•´ì•¼í•¨
     IDE_TEST_RAISE(
         SQLBindCol(m_IStmt, 2, SQL_C_CHAR, (SQLPOINTER)aColInfo->mUser,
                    UT_MAX_NAME_BUFFER_SIZE, &(aColInfo->mUserInd))
@@ -544,7 +544,7 @@ IDE_RC utISPApi::Columns4FTnPV(SChar      *a_UserName,
                              a_UserName,
                              idlOS::strlen(a_UserName) );
 
-    // BUG-27284: »ç¿ëÀÚ°¡ ¾ø´Â °æ¿ì È®ÀÎ
+    // BUG-27284: ì‚¬ìš©ìê°€ ì—†ëŠ” ê²½ìš° í™•ì¸
     idlOS::snprintf(m_Buf, mBufSize,
                     "SELECT user_id FROM SYSTEM_.SYS_USERS_ WHERE user_name = '%s'",
                     sNQUserName); /* BUG-37002 */
@@ -775,7 +775,7 @@ IDE_RC utISPApi::CheckConstraints( SChar * aUserName,
                              aTableName,
                              idlOS::strlen( aTableName ) );
 
-    /* BUG-27284: »ç¿ëÀÚ°¡ ¾ø´Â °æ¿ì È®ÀÎ */
+    /* BUG-27284: ì‚¬ìš©ìê°€ ì—†ëŠ” ê²½ìš° í™•ì¸ */
     idlOS::snprintf( m_Buf, mBufSize,
                      "SELECT user_id FROM SYSTEM_.SYS_USERS_ WHERE user_name = '%s'",
                      sNQUserName );
@@ -790,7 +790,7 @@ IDE_RC utISPApi::CheckConstraints( SChar * aUserName,
 
     IDE_TEST( StmtClose( m_TmpStmt ) != IDE_SUCCESS );
 
-    /* Check Constraint Á¤º¸ ¾ò±â */
+    /* Check Constraint ì •ë³´ ì–»ê¸° */
     idlOS::snprintf( m_Buf, mBufSize,
                      "SELECT C.CONSTRAINT_NAME,"
                      "       C.CHECK_CONDITION"
@@ -1005,7 +1005,7 @@ utISPApi::FindSynonymObject( SChar * a_UserName,
                              a_ObjectName,
                              idlOS::strlen(a_ObjectName) );
 
-    // BUG-27284: »ç¿ëÀÚ°¡ ¾ø´Â °æ¿ì È®ÀÎ
+    // BUG-27284: ì‚¬ìš©ìê°€ ì—†ëŠ” ê²½ìš° í™•ì¸
     idlOS::snprintf(m_Buf, mBufSize,
                     "SELECT user_id FROM SYSTEM_.SYS_USERS_ WHERE user_name = '%s'",
                     sNQUserName);
@@ -1147,14 +1147,14 @@ utISPApi::FindSynonymObject( SChar * a_UserName,
                     break;
                 }
                 // BUG-17430
-                // ¹İº¹ ¼öÇàµÉ ¼ö ÀÖÀ¸¹Ç·Î PREPARE »óÅÂ·Î µÇµ¹¸°´Ù.
+                // ë°˜ë³µ ìˆ˜í–‰ë  ìˆ˜ ìˆìœ¼ë¯€ë¡œ PREPARE ìƒíƒœë¡œ ë˜ëŒë¦°ë‹¤.
                 SQLFreeStmt( m_ObjectStmt, SQL_CLOSE );
 
                 if((SQLExecute(m_SynonymStmt) == SQL_SUCCESS) &&
                    (SQLFetch(m_SynonymStmt) == SQL_SUCCESS))
                 {
                     // BUG-17430
-                    // ¹İº¹ ¼öÇàÀ» À§ÇÑ Name String ÀúÀå
+                    // ë°˜ë³µ ìˆ˜í–‰ì„ ìœ„í•œ Name String ì €ì¥
                     (void)idlOS::snprintf( sNQObjectName,
                                            ID_SIZEOF(sNQObjectName),
                                            "%s",
@@ -1206,14 +1206,14 @@ utISPApi::FindSynonymObject( SChar * a_UserName,
                 else
                 {
                     // BUG-17430
-                    // ¹İº¹ ¼öÇàµÉ ¼ö ÀÖÀ¸¹Ç·Î PREPARE »óÅÂ·Î µÇµ¹¸°´Ù.
+                    // ë°˜ë³µ ìˆ˜í–‰ë  ìˆ˜ ìˆìœ¼ë¯€ë¡œ PREPARE ìƒíƒœë¡œ ë˜ëŒë¦°ë‹¤.
                     SQLFreeStmt( m_SynonymStmt, SQL_CLOSE);
 
                     if((SQLExecute(m_PublicStmt) == SQL_SUCCESS) &&
                        (SQLFetch(m_PublicStmt) == SQL_SUCCESS))
                     {
                         // BUG-17430
-                        // ¹İº¹ ¼öÇàÀ» À§ÇÑ Name String ÀúÀå
+                        // ë°˜ë³µ ìˆ˜í–‰ì„ ìœ„í•œ Name String ì €ì¥
                         (void)idlOS::snprintf( sNQObjectName,
                                                ID_SIZEOF(sNQObjectName),
                                                "%s",

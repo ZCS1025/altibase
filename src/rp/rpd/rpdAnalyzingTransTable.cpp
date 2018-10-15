@@ -282,7 +282,7 @@ IDE_RC rpdAnalyzingTransTable::addItemMetaEntry( smTID          aTID,
                    aItemMetaLogBody,
                    aItemMetaLogBodySize );
 
-    // ÀÌÈÄ¿¡´Â ½ÇÆÐÇÏÁö ¾Ê´Â´Ù
+    // ì´í›„ì—ëŠ” ì‹¤íŒ¨í•˜ì§€ ì•ŠëŠ”ë‹¤
     IDU_LIST_INIT_OBJ( &(sItemMetaEntry->mNode), sItemMetaEntry );
     IDU_LIST_ADD_LAST( &mTransTable[sIndex].mItemMetaList,
                        &(sItemMetaEntry->mNode) );

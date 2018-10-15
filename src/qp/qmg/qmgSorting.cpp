@@ -19,11 +19,11 @@
  * $Id: qmgSorting.cpp 82075 2018-01-17 06:39:52Z jina.kim $
  *
  * Description :
- *     Sorting Graph¸¦ À§ÇÑ ¼öÇà ÇÔ¼ö
+ *     Sorting Graphë¥¼ ìœ„í•œ ìˆ˜í–‰ í•¨ìˆ˜
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  **********************************************************************/
 
@@ -42,12 +42,12 @@ qmgSorting::init( qcStatement * aStatement,
 {
 /***********************************************************************
  *
- * Description : qmgSortingÀÇ ÃÊ±âÈ­
+ * Description : qmgSortingì˜ ì´ˆê¸°í™”
  *
  * Implementation :
- *    (1) qmgSortingÀ» À§ÇÑ °ø°£ ÇÒ´ç
- *    (2) graph( ¸ðµç Graph¸¦ À§ÇÑ °øÅë ÀÚ·á ±¸Á¶ ) ÃÊ±âÈ­
- *    (3) out ¼³Á¤
+ *    (1) qmgSortingì„ ìœ„í•œ ê³µê°„ í• ë‹¹
+ *    (2) graph( ëª¨ë“  Graphë¥¼ ìœ„í•œ ê³µí†µ ìžë£Œ êµ¬ì¡° ) ì´ˆê¸°í™”
+ *    (3) out ì„¤ì •
  *
  ***********************************************************************/
 
@@ -57,7 +57,7 @@ qmgSorting::init( qcStatement * aStatement,
     IDU_FIT_POINT_FATAL( "qmgSorting::init::__FT__" );
 
     //---------------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //---------------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -65,15 +65,15 @@ qmgSorting::init( qcStatement * aStatement,
     IDE_DASSERT( aChildGraph != NULL );
 
     //---------------------------------------------------
-    // Sorting Graph¸¦ À§ÇÑ ±âº» ÃÊ±âÈ­
+    // Sorting Graphë¥¼ ìœ„í•œ ê¸°ë³¸ ì´ˆê¸°í™”
     //---------------------------------------------------
 
-    // qmgSortingÀ» À§ÇÑ °ø°£ ÇÒ´ç
+    // qmgSortingì„ ìœ„í•œ ê³µê°„ í• ë‹¹
     IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF( qmgSORT ),
                                              (void**) &sMyGraph )
               != IDE_SUCCESS );
 
-    // Graph °øÅë Á¤º¸ÀÇ ÃÊ±âÈ­
+    // Graph ê³µí†µ ì •ë³´ì˜ ì´ˆê¸°í™”
     IDE_TEST( qmg::initGraph( & sMyGraph->graph ) != IDE_SUCCESS );
 
     sMyGraph->graph.type = QMG_SORTING;
@@ -87,7 +87,7 @@ qmgSorting::init( qcStatement * aStatement,
     sMyGraph->graph.makePlan = qmgSorting::makePlan;
     sMyGraph->graph.printGraph = qmgSorting::printGraph;
 
-    // Disk/Memory Á¤º¸ ¼³Á¤
+    // Disk/Memory ì •ë³´ ì„¤ì •
     for ( sQuerySet = aQuerySet;
           sQuerySet->left != NULL;
           sQuerySet = sQuerySet->left ) ;
@@ -95,7 +95,7 @@ qmgSorting::init( qcStatement * aStatement,
     switch(  sQuerySet->SFWGH->hints->interResultType )
     {
         case QMO_INTER_RESULT_TYPE_NOT_DEFINED :
-            // Áß°£ °á°ú Type Hint°¡ ¾ø´Â °æ¿ì, ÇÏÀ§ÀÇ TypeÀ» µû¸¥´Ù.
+            // ì¤‘ê°„ ê²°ê³¼ Type Hintê°€ ì—†ëŠ” ê²½ìš°, í•˜ìœ„ì˜ Typeì„ ë”°ë¥¸ë‹¤.
             if ( ( aChildGraph->flag & QMG_GRAPH_TYPE_MASK )
                  == QMG_GRAPH_TYPE_DISK )
             {
@@ -122,13 +122,13 @@ qmgSorting::init( qcStatement * aStatement,
     }
 
     //---------------------------------------------------
-    // Sorting Graph °íÀ¯ Á¤º¸¸¦ À§ÇÑ ±âº» ÃÊ±âÈ­
+    // Sorting Graph ê³ ìœ  ì •ë³´ë¥¼ ìœ„í•œ ê¸°ë³¸ ì´ˆê¸°í™”
     //---------------------------------------------------
 
     sMyGraph->orderBy = ((qmsParseTree*)(aStatement->myPlan->parseTree))->orderBy;
     sMyGraph->limitCnt = 0;
 
-    // out ¼³Á¤
+    // out ì„¤ì •
     *aGraph = (qmgGraph *)sMyGraph;
 
     return IDE_SUCCESS;
@@ -143,15 +143,15 @@ qmgSorting::optimize( qcStatement * aStatement, qmgGraph * aGraph )
 {
 /***********************************************************************
  *
- * Description : qmgSortingÀÇ ÃÖÀûÈ­
+ * Description : qmgSortingì˜ ìµœì í™”
  *
  * Implementation :
- *    (1) orderByÀÇ Subquery Graph »ý¼º
- *    (2) orderBy¿¡ subquery³ª expressionÀÌ Á¸ÀçÇÏÁö ¾ÊÀ¸¸é, ÃÖÀûÈ­ Ã³¸®
- *        A. indexable Order By ÃÖÀûÈ­
- *        B. indexable Order By ÃÖÀûÈ­ ½ÇÆÐÇÑ °æ¿ì, Limit Sort ÃÖÀûÈ­
- *        C. Limit Sort ÃÖÀûÈ­ ¼±ÅÃµÈ °æ¿ì, limitCnt ¼³Á¤
- *    (3) °øÅë ºñ¿ë Á¤º¸
+ *    (1) orderByì˜ Subquery Graph ìƒì„±
+ *    (2) orderByì— subqueryë‚˜ expressionì´ ì¡´ìž¬í•˜ì§€ ì•Šìœ¼ë©´, ìµœì í™” ì²˜ë¦¬
+ *        A. indexable Order By ìµœì í™”
+ *        B. indexable Order By ìµœì í™” ì‹¤íŒ¨í•œ ê²½ìš°, Limit Sort ìµœì í™”
+ *        C. Limit Sort ìµœì í™” ì„ íƒëœ ê²½ìš°, limitCnt ì„¤ì •
+ *    (3) ê³µí†µ ë¹„ìš© ì •ë³´
  *    (4) Preserved Order
  *
  ***********************************************************************/
@@ -181,21 +181,21 @@ qmgSorting::optimize( qcStatement * aStatement, qmgGraph * aGraph )
     IDU_FIT_POINT_FATAL( "qmgSorting::optimize::__FT__" );
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aGraph != NULL );
 
     //------------------------------------------
-    // ±âº» ÃÊ±âÈ­
+    // ê¸°ë³¸ ì´ˆê¸°í™”
     //------------------------------------------
 
     sMyGraph       = (qmgSORT*) aGraph;
     sWantOrder     = NULL;
 
     //------------------------------------------
-    // order byÀÇ subquery graph »ý¼º ¹× want order »ý¼º
+    // order byì˜ subquery graph ìƒì„± ë° want order ìƒì„±
     //------------------------------------------
 
     for ( sOrderBy = sMyGraph->orderBy;
@@ -213,8 +213,8 @@ qmgSorting::optimize( qcStatement * aStatement, qmgGraph * aGraph )
             // nothing to do
         }
 
-        // BUG-42041 SortColumnÀ¸·Î PSM VariableÀÌ Çã¿ëµÇÁö¸¸,
-        // ÀÌ °æ¿ì limit sort¸¦ ÇÒ ¼ö ¾ø´Ù.
+        // BUG-42041 SortColumnìœ¼ë¡œ PSM Variableì´ í—ˆìš©ë˜ì§€ë§Œ,
+        // ì´ ê²½ìš° limit sortë¥¼ í•  ìˆ˜ ì—†ë‹¤.
         if ( MTC_NODE_IS_DEFINED_TYPE( & sSortNode->node ) == ID_FALSE )
         {
             sHasHostVar = ID_TRUE;
@@ -235,7 +235,7 @@ qmgSorting::optimize( qcStatement * aStatement, qmgGraph * aGraph )
         }
         else
         {
-            // want order »ý¼º
+            // want order ìƒì„±
             IDE_TEST(
                 QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF( qmgPreservedOrder ),
                                                (void**)&sNewOrder )
@@ -295,7 +295,7 @@ qmgSorting::optimize( qcStatement * aStatement, qmgGraph * aGraph )
         }
     }
 
-    // BUG-43194 SORT ÇÃ·£µµ cost¸¦ ÀÌ¿ëÇÏ¿© index »ç¿ë ¿©ºÎ¸¦ °áÁ¤
+    // BUG-43194 SORT í”Œëžœë„ costë¥¼ ì´ìš©í•˜ì—¬ index ì‚¬ìš© ì—¬ë¶€ë¥¼ ê²°ì •
     if ( (aGraph->flag & QMG_GRAPH_TYPE_MASK) == QMG_GRAPH_TYPE_MEMORY )
     {
         sSelTotalCost = qmoCost::getMemSortTempCost(
@@ -321,11 +321,11 @@ qmgSorting::optimize( qcStatement * aStatement, qmgGraph * aGraph )
     if ( sExistSubquery == ID_FALSE )
     {
         //------------------------------------------
-        // order by¿¡ subquery°¡ Á¸ÀçÇÏÁö ¾ÊÀ¸¸é, ÃÖÀûÈ­ Àû¿ë ½Ãµµ
+        // order byì— subqueryê°€ ì¡´ìž¬í•˜ì§€ ì•Šìœ¼ë©´, ìµœì í™” ì ìš© ì‹œë„
         //------------------------------------------
 
         //------------------------------------------
-        // Indexable Order By ÃÖÀûÈ­
+        // Indexable Order By ìµœì í™”
         //------------------------------------------
 
         IDE_TEST( getCostByPrevOrder( aStatement,
@@ -337,7 +337,7 @@ qmgSorting::optimize( qcStatement * aStatement, qmgGraph * aGraph )
 
         if ( QMO_COST_IS_EQUAL(sTotalCost, QMO_COST_INVALID_COST) == ID_TRUE )
         {
-            // retryPreservedOrder °¡ ¼º°øÇÒ °æ¿ì¿¡´Â ¹«Á¶°Ç »ç¿ëÇÑ´Ù.
+            // retryPreservedOrder ê°€ ì„±ê³µí•  ê²½ìš°ì—ëŠ” ë¬´ì¡°ê±´ ì‚¬ìš©í•œë‹¤.
             IDE_TEST(qmg::retryPreservedOrder( aStatement,
                                                aGraph,
                                                sWantOrder,
@@ -386,7 +386,7 @@ qmgSorting::optimize( qcStatement * aStatement, qmgGraph * aGraph )
         }
 
         //------------------------------------------
-        // Indexable Min Max ÃÖÀûÈ­ PR-19344
+        // Indexable Min Max ìµœì í™” PR-19344
         //------------------------------------------
 
         if ( (aGraph->left->type == QMG_GROUPING) &&
@@ -399,7 +399,7 @@ qmgSorting::optimize( qcStatement * aStatement, qmgGraph * aGraph )
 
             sMyGraph->graph.flag &= ~QMG_INDEXABLE_MIN_MAX_MASK;
             sMyGraph->graph.flag |= QMG_INDEXABLE_MIN_MAX_TRUE;
-            // Indexable order-by¿Í µ¿ÀÏÇÏ°Ô sort node¸¦ ´ÞÁö ¾Ê±â À§ÇØ
+            // Indexable order-byì™€ ë™ì¼í•˜ê²Œ sort nodeë¥¼ ë‹¬ì§€ ì•Šê¸° ìœ„í•´
             sMyGraph->graph.flag &= ~QMG_SORT_OPT_TIP_MASK;
             sMyGraph->graph.flag |= QMG_SORT_OPT_TIP_INDEXABLE_ORDERBY;
         }
@@ -409,7 +409,7 @@ qmgSorting::optimize( qcStatement * aStatement, qmgGraph * aGraph )
         }
 
         //------------------------------------------
-        // Limit Sort ÃÖÀûÈ­
+        // Limit Sort ìµœì í™”
         //------------------------------------------
 
         if ( ( sMyGraph->graph.flag & QMG_SORT_OPT_TIP_MASK ) ==
@@ -418,9 +418,9 @@ qmgSorting::optimize( qcStatement * aStatement, qmgGraph * aGraph )
             sLimit = ((qmsParseTree*)(aStatement->myPlan->parseTree))->limit;
 
             // BUG-10146 fix
-            // limit Àý¿¡ host variable bindingÀ» Çã¿ëÇÑ´Ù.
-            // ÇÏÁö¸¸ ¸¸¾à host variableÀÌ »ç¿ëµÇ¸é limit sort¸¦ Àû¿ëÇÒ ¼ö ¾ø´Ù.
-            // BUG-42041 SortColumÀ¸·Î PSM VariableÀÌ »ç¿ëµÈ °æ¿ìµµ Àû¿ëÇÒ ¼ö ¾ø´Ù.
+            // limit ì ˆì— host variable bindingì„ í—ˆìš©í•œë‹¤.
+            // í•˜ì§€ë§Œ ë§Œì•½ host variableì´ ì‚¬ìš©ë˜ë©´ limit sortë¥¼ ì ìš©í•  ìˆ˜ ì—†ë‹¤.
+            // BUG-42041 SortColumìœ¼ë¡œ PSM Variableì´ ì‚¬ìš©ëœ ê²½ìš°ë„ ì ìš©í•  ìˆ˜ ì—†ë‹¤.
             if ( sLimit != NULL )
             {
                 if ( (qmsLimitI::hasHostBind( sLimit ) == ID_FALSE) &&
@@ -433,9 +433,9 @@ qmgSorting::optimize( qcStatement * aStatement, qmgGraph * aGraph )
                     if ( (sLimitCnt > 0) &&
                          (sLimitCnt <= QMN_LMST_MAXIMUM_LIMIT_CNT) )
                     {
-                        // Memory Temp Table¸¸À» »ç¿ëÇÏ°Ô µÈ´Ù.
+                        // Memory Temp Tableë§Œì„ ì‚¬ìš©í•˜ê²Œ ëœë‹¤.
 
-                        // left ÀÇ output record count ¸¦ Á¶Á¤ÇÏ¿© °è»êÇÑ´Ù.
+                        // left ì˜ output record count ë¥¼ ì¡°ì •í•˜ì—¬ ê³„ì‚°í•œë‹¤.
                         sOutputRecordCnt = aGraph->left->costInfo.outputRecordCnt;
                         aGraph->left->costInfo.outputRecordCnt = sLimitCnt;
 
@@ -488,20 +488,20 @@ qmgSorting::optimize( qcStatement * aStatement, qmgGraph * aGraph )
         // nothing to do
     }
 
-    // preserved order ¼³Á¤
+    // preserved order ì„¤ì •
     sMyGraph->graph.preservedOrder = sWantOrder;
     sMyGraph->graph.flag &= ~QMG_PRESERVED_ORDER_MASK;
     sMyGraph->graph.flag |= QMG_PRESERVED_ORDER_DEFINED_FIXED;
 
-    /* PROJ-1353 ROLLUP, CUBE°¡ ÇÏÀ§ ±×·¡ÇÁÀÏ¶§ OPT TIP¿¡ µû¸¥ VALUE TEMP ¼³Á¤ ¿©ºÎ */
+    /* PROJ-1353 ROLLUP, CUBEê°€ í•˜ìœ„ ê·¸ëž˜í”„ì¼ë•Œ OPT TIPì— ë”°ë¥¸ VALUE TEMP ì„¤ì • ì—¬ë¶€ */
     if ( ( sMyGraph->graph.left->flag & QMG_GROUPBY_EXTENSION_MASK )
          == QMG_GROUPBY_EXTENSION_TRUE )
     {
         switch ( sMyGraph->graph.flag & QMG_SORT_OPT_TIP_MASK )
         {
             case QMG_SORT_OPT_TIP_LMST :
-            case QMG_SORT_OPT_TIP_NONE : /* BUG-43727 SORT »ç¿ë ½Ã, Disk/Memory¿¡ °ü°è¾øÀÌ Value Temp¸¦ »ç¿ëÇÑ´Ù. */
-                /* Row¸¦ Value·Î ½×±â¸¦ Rollup, Cube¿¡ ¼³Á¤ÇÑ´Ù. */
+            case QMG_SORT_OPT_TIP_NONE : /* BUG-43727 SORT ì‚¬ìš© ì‹œ, Disk/Memoryì— ê´€ê³„ì—†ì´ Value Tempë¥¼ ì‚¬ìš©í•œë‹¤. */
+                /* Rowë¥¼ Valueë¡œ ìŒ“ê¸°ë¥¼ Rollup, Cubeì— ì„¤ì •í•œë‹¤. */
                 sMyGraph->graph.left->flag &= ~QMG_VALUE_TEMP_MASK;
                 sMyGraph->graph.left->flag |= QMG_VALUE_TEMP_TRUE;
                 break;
@@ -523,11 +523,11 @@ qmgSorting::optimize( qcStatement * aStatement, qmgGraph * aGraph )
 
         if ( sChild->left != NULL )
         {
-            /* PROJ-1353 Rollup, Cube¿Í °°ÀÌ »ç¿ëµÉ ¶§ */
+            /* PROJ-1353 Rollup, Cubeì™€ ê°™ì´ ì‚¬ìš©ë  ë•Œ */
             if ( ( sChild->left->flag & QMG_GROUPBY_EXTENSION_MASK )
                  == QMG_GROUPBY_EXTENSION_TRUE )
             {
-                /* Row¸¦ Value·Î ½×±â¸¦ Rollup, Cube¿¡ ¼³Á¤ÇÑ´Ù. */
+                /* Rowë¥¼ Valueë¡œ ìŒ“ê¸°ë¥¼ Rollup, Cubeì— ì„¤ì •í•œë‹¤. */
                 sChild->left->flag &= ~QMG_VALUE_TEMP_MASK;
                 sChild->left->flag |= QMG_VALUE_TEMP_TRUE;
             }
@@ -547,7 +547,7 @@ qmgSorting::optimize( qcStatement * aStatement, qmgGraph * aGraph )
     }
 
     //------------------------------------------
-    // °øÅë ºñ¿ë Á¤º¸ÀÇ ¼³Á¤
+    // ê³µí†µ ë¹„ìš© ì •ë³´ì˜ ì„¤ì •
     //------------------------------------------
 
     // recordSize
@@ -613,20 +613,20 @@ IDE_RC qmgSorting::makePlan( qcStatement   * aStatement,
 {
 /***********************************************************************
  *
- * Description : qmgSortingÀ¸·Î ºÎÅÍ PlanÀ» »ý¼ºÇÑ´Ù.
+ * Description : qmgSortingìœ¼ë¡œ ë¶€í„° Planì„ ìƒì„±í•œë‹¤.
  *
  * Implementation :
- *     - qmgSortingÀ¸·Î ºÎÅÍ »ý¼º°¡´ÉÇÑ Plan
+ *     - qmgSortingìœ¼ë¡œ ë¶€í„° ìƒì„±ê°€ëŠ¥í•œ Plan
  *
- *         1.  Indexable Order By ÃÖÀûÈ­°¡ Àû¿ëµÈ °æ¿ì
+ *         1.  Indexable Order By ìµœì í™”ê°€ ì ìš©ëœ ê²½ìš°
  *
- *                  ¾øÀ½
+ *                  ì—†ìŒ
  *
- *         2.  Limit Sort ÃÖÀûÈ­°¡ Àû¿ëµÈ °æ¿ì
+ *         2.  Limit Sort ìµœì í™”ê°€ ì ìš©ëœ ê²½ìš°
  *
  *                  [LMST]
  *
- *         3.  ÃÖÀûÈ­°¡ ¾ø´Â °æ¿ì
+ *         3.  ìµœì í™”ê°€ ì—†ëŠ” ê²½ìš°
  *
  *                  [SORT]
  *
@@ -637,7 +637,7 @@ IDE_RC qmgSorting::makePlan( qcStatement   * aStatement,
     IDU_FIT_POINT_FATAL( "qmgSorting::makePlan::__FT__" );
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -650,9 +650,9 @@ IDE_RC qmgSorting::makePlan( qcStatement   * aStatement,
     aGraph->flag |= (aParent->flag & QMG_PARALLEL_IMPOSSIBLE_MASK);
 
     // BUG-38410
-    // Materialize µÉ °æ¿ì ÇÏÀ§ ³ëµåµéÀº ÇÑ¹ø¸¸ ½ÇÇàµÇ°í
-    // materialized µÈ ³»¿ë¸¸ ÂüÁ¶ÇÑ´Ù.
-    // µû¶ó¼­ ÀÚ½Ä ³ëµå¿¡°Ô SCAN ¿¡ ´ëÇÑ parallel À» Çã¿ëÇÑ´Ù.
+    // Materialize ë  ê²½ìš° í•˜ìœ„ ë…¸ë“œë“¤ì€ í•œë²ˆë§Œ ì‹¤í–‰ë˜ê³ 
+    // materialized ëœ ë‚´ìš©ë§Œ ì°¸ì¡°í•œë‹¤.
+    // ë”°ë¼ì„œ ìžì‹ ë…¸ë“œì—ê²Œ SCAN ì— ëŒ€í•œ parallel ì„ í—ˆìš©í•œë‹¤.
     aGraph->left->flag &= ~QMG_PLAN_EXEC_REPEATED_MASK;
     aGraph->left->flag |= QMG_PLAN_EXEC_REPEATED_FALSE;
 
@@ -699,7 +699,7 @@ qmgSorting::makeChildPlan( qcStatement * aStatement,
     IDU_FIT_POINT_FATAL( "qmgSorting::makeChildPlan::__FT__" );
 
     //---------------------------------------------------
-    // ÇÏÀ§ PlanÀÇ »ý¼º
+    // í•˜ìœ„ Planì˜ ìƒì„±
     //---------------------------------------------------
 
     IDE_TEST( aMyGraph->graph.left->makePlan( aStatement ,
@@ -709,7 +709,7 @@ qmgSorting::makeChildPlan( qcStatement * aStatement,
     aMyGraph->graph.myPlan = aMyGraph->graph.left->myPlan;
 
     //---------------------------------------------------
-    // Process »óÅÂ ¼³Á¤
+    // Process ìƒíƒœ ì„¤ì •
     //---------------------------------------------------
     aMyGraph->graph.myQuerySet->processPhase = QMS_MAKEPLAN_ORDERBY;
 
@@ -737,7 +737,7 @@ qmgSorting::makeSort( qcStatement * aStatement,
     //-----------------------------------------------------
 
     //----------------------------
-    // Top-down ÃÊ±âÈ­
+    // Top-down ì´ˆê¸°í™”
     //----------------------------
 
     /* BUG-36826 A rollup or cube occured wrong result using order by count_i3 */
@@ -772,7 +772,7 @@ qmgSorting::makeSort( qcStatement * aStatement,
 
             if ( sChild->left != NULL )
             {
-                /* PROJ-1353 Rollup, Cube¿Í °°ÀÌ »ç¿ëµÉ ¶§ */
+                /* PROJ-1353 Rollup, Cubeì™€ ê°™ì´ ì‚¬ìš©ë  ë•Œ */
                 if ( ( sChild->left->flag & QMG_GROUPBY_EXTENSION_MASK )
                      == QMG_GROUPBY_EXTENSION_TRUE )
                 {
@@ -804,7 +804,7 @@ qmgSorting::makeSort( qcStatement * aStatement,
     aMyGraph->graph.myPlan = sSORT;
 
     //----------------------------
-    // ÇÏÀ§ plan »ý¼º
+    // í•˜ìœ„ plan ìƒì„±
     //----------------------------
 
     IDE_TEST( makeChildPlan( aStatement,
@@ -812,7 +812,7 @@ qmgSorting::makeSort( qcStatement * aStatement,
               != IDE_SUCCESS );
 
     //----------------------------
-    // Bottom-up »ý¼º
+    // Bottom-up ìƒì„±
     //----------------------------
 
     //-----------------------
@@ -822,12 +822,12 @@ qmgSorting::makeSort( qcStatement * aStatement,
     sFlag &= ~QMO_MAKESORT_METHOD_MASK;
     sFlag |= QMO_MAKESORT_ORDERBY;
 
-    //FALSE°¡ µÇ´Â ÀÌÀ¯´Â SORT_TIPÀÌ ¾ø±â¶§¹®ÀÌ´Ù. TRUE°¡µÇ´Â
-    //»óÈ²ÀÌ¶ó¸é INDEXABLE ORDER BY TIPÀÌ Àû¿ëµÉ°ÍÀÌ´Ù.
+    //FALSEê°€ ë˜ëŠ” ì´ìœ ëŠ” SORT_TIPì´ ì—†ê¸°ë•Œë¬¸ì´ë‹¤. TRUEê°€ë˜ëŠ”
+    //ìƒí™©ì´ë¼ë©´ INDEXABLE ORDER BY TIPì´ ì ìš©ë ê²ƒì´ë‹¤.
     sFlag &= ~QMO_MAKESORT_PRESERVED_ORDER_MASK;
     sFlag |= QMO_MAKESORT_PRESERVED_FALSE;
 
-    //ÀúÀå ¸ÅÃ¼ÀÇ ¼±ÅÃ
+    //ì €ìž¥ ë§¤ì²´ì˜ ì„ íƒ
     if( (aMyGraph->graph.flag & QMG_GRAPH_TYPE_MASK) ==
         QMG_GRAPH_TYPE_MEMORY )
     {
@@ -875,7 +875,7 @@ qmgSorting::makeLimitSort( qcStatement * aStatement,
     //-----------------------------------------------------
 
     //----------------------------
-    // Top-down ÃÊ±âÈ­
+    // Top-down ì´ˆê¸°í™”
     //----------------------------
 
     /* BUG-36826 A rollup or cube occured wrong result using order by count_i3 */
@@ -910,7 +910,7 @@ qmgSorting::makeLimitSort( qcStatement * aStatement,
 
             if ( sChild->left != NULL )
             {
-                /* PROJ-1353 Rollup, Cube¿Í °°ÀÌ »ç¿ëµÉ ¶§ */
+                /* PROJ-1353 Rollup, Cubeì™€ ê°™ì´ ì‚¬ìš©ë  ë•Œ */
                 if ( ( sChild->left->flag & QMG_GROUPBY_EXTENSION_MASK )
                      == QMG_GROUPBY_EXTENSION_TRUE )
                 {
@@ -942,7 +942,7 @@ qmgSorting::makeLimitSort( qcStatement * aStatement,
     aMyGraph->graph.myPlan = sLMST;
 
     //----------------------------
-    // ÇÏÀ§ plan »ý¼º
+    // í•˜ìœ„ plan ìƒì„±
     //----------------------------
 
     IDE_TEST( makeChildPlan( aStatement,
@@ -950,7 +950,7 @@ qmgSorting::makeLimitSort( qcStatement * aStatement,
               != IDE_SUCCESS );
 
     //----------------------------
-    // Bottom-up »ý¼º
+    // Bottom-up ìƒì„±
     //----------------------------
 
     //-----------------------
@@ -987,7 +987,7 @@ qmgSorting::printGraph( qcStatement  * aStatement,
 /***********************************************************************
  *
  * Description :
- *    Graph¸¦ ±¸¼ºÇÏ´Â °øÅë Á¤º¸¸¦ Ãâ·ÂÇÑ´Ù.
+ *    Graphë¥¼ êµ¬ì„±í•˜ëŠ” ê³µí†µ ì •ë³´ë¥¼ ì¶œë ¥í•œë‹¤.
  *
  *
  * Implementation :
@@ -997,7 +997,7 @@ qmgSorting::printGraph( qcStatement  * aStatement,
     IDU_FIT_POINT_FATAL( "qmgSorting::printGraph::__FT__" );
 
     //-----------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //-----------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -1005,7 +1005,7 @@ qmgSorting::printGraph( qcStatement  * aStatement,
     IDE_DASSERT( aString != NULL );
 
     //-----------------------------------
-    // Graph °øÅë Á¤º¸ÀÇ Ãâ·Â
+    // Graph ê³µí†µ ì •ë³´ì˜ ì¶œë ¥
     //-----------------------------------
 
     IDE_TEST( qmg::printGraph( aStatement,
@@ -1015,12 +1015,12 @@ qmgSorting::printGraph( qcStatement  * aStatement,
               != IDE_SUCCESS );
 
     //-----------------------------------
-    // Graph °íÀ¯ Á¤º¸ÀÇ Ãâ·Â
+    // Graph ê³ ìœ  ì •ë³´ì˜ ì¶œë ¥
     //-----------------------------------
 
 
     //-----------------------------------
-    // Child Graph °íÀ¯ Á¤º¸ÀÇ Ãâ·Â
+    // Child Graph ê³ ìœ  ì •ë³´ì˜ ì¶œë ¥
     //-----------------------------------
 
     IDE_TEST( aGraph->left->printGraph( aStatement,
@@ -1047,15 +1047,15 @@ IDE_RC qmgSorting::getCostByPrevOrder( qcStatement       * aStatement,
  *
  * Description :
  *
- *    Preserved Order ¹æ½ÄÀ» »ç¿ëÇÑ Sorting ºñ¿ëÀ» °è»êÇÑ´Ù.
+ *    Preserved Order ë°©ì‹ì„ ì‚¬ìš©í•œ Sorting ë¹„ìš©ì„ ê³„ì‚°í•œë‹¤.
  *
  * Implementation :
  *
- *    ÀÌ¹Ì Child°¡ ¿øÇÏ´Â Preserved Order¸¦ °¡Áö°í ÀÖ´Ù¸é
- *    º°µµÀÇ ºñ¿ë ¾øÀÌ SortingÀÌ °¡´ÉÇÏ´Ù.
+ *    ì´ë¯¸ Childê°€ ì›í•˜ëŠ” Preserved Orderë¥¼ ê°€ì§€ê³  ìžˆë‹¤ë©´
+ *    ë³„ë„ì˜ ë¹„ìš© ì—†ì´ Sortingì´ ê°€ëŠ¥í•˜ë‹¤.
  *
- *    ¹Ý¸é Child¿¡ Æ¯Á¤ ÀÎµ¦½º¸¦ Àû¿ëÇÏ´Â °æ¿ì¶ó¸é,
- *    ChildÀÇ ÀÎµ¦½º¸¦ ÀÌ¿ëÇÑ ºñ¿ëÀÌ Æ÷ÇÔµÇ°Ô µÈ´Ù.
+ *    ë°˜ë©´ Childì— íŠ¹ì • ì¸ë±ìŠ¤ë¥¼ ì ìš©í•˜ëŠ” ê²½ìš°ë¼ë©´,
+ *    Childì˜ ì¸ë±ìŠ¤ë¥¼ ì´ìš©í•œ ë¹„ìš©ì´ í¬í•¨ë˜ê²Œ ëœë‹¤.
  *
  ***********************************************************************/
 
@@ -1071,17 +1071,17 @@ IDE_RC qmgSorting::getCostByPrevOrder( qcStatement       * aStatement,
     IDU_FIT_POINT_FATAL( "qmgSorting::getCostByPrevOrder::__FT__" );
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aSortGraph != NULL );
 
     //------------------------------------------
-    // Preserved Order¸¦ »ç¿ëÇÒ ¼ö ÀÖ´Â Áö¸¦ °Ë»ç
+    // Preserved Orderë¥¼ ì‚¬ìš©í•  ìˆ˜ ìžˆëŠ” ì§€ë¥¼ ê²€ì‚¬
     //------------------------------------------
 
-    // preserved order Àû¿ë °¡´É °Ë»ç
+    // preserved order ì ìš© ê°€ëŠ¥ ê²€ì‚¬
     IDE_TEST( qmg::checkUsableOrder( aStatement,
                                      aWantOrder,
                                      aSortGraph->graph.left,
@@ -1091,7 +1091,7 @@ IDE_RC qmgSorting::getCostByPrevOrder( qcStatement       * aStatement,
               != IDE_SUCCESS );
 
     //------------------------------------------
-    // ºñ¿ë °è»ê
+    // ë¹„ìš© ê³„ì‚°
     //------------------------------------------
 
     if ( sUsable == ID_TRUE )
@@ -1100,24 +1100,24 @@ IDE_RC qmgSorting::getCostByPrevOrder( qcStatement       * aStatement,
         {
             if ( (sOrgMethod == NULL) || (sSelMethod == NULL) )
             {
-                // BUG-43824 sorting ºñ¿ëÀ» °è»êÇÒ ¶§ access method°¡ NULLÀÏ ¼ö ÀÖ½À´Ï´Ù
-                // ±âÁ¸ÀÇ °ÍÀ» ÀÌ¿ëÇÏ´Â °æ¿ìÀÌ¹Ç·Î 0À» ¼³Á¤ÇÑ´Ù.
+                // BUG-43824 sorting ë¹„ìš©ì„ ê³„ì‚°í•  ë•Œ access methodê°€ NULLì¼ ìˆ˜ ìžˆìŠµë‹ˆë‹¤
+                // ê¸°ì¡´ì˜ ê²ƒì„ ì´ìš©í•˜ëŠ” ê²½ìš°ì´ë¯€ë¡œ 0ì„ ì„¤ì •í•œë‹¤.
                 sAccessCost = 0;
                 sDiskCost   = 0;
             }
             else
             {
-                // ¼±ÅÃµÈ Access Method¿Í ±âÁ¸ÀÇ AccessMethod Â÷ÀÌ¸¸Å­
-                // Ãß°¡ ºñ¿ëÀÌ ¹ß»ýÇÑ´Ù.
+                // ì„ íƒëœ Access Methodì™€ ê¸°ì¡´ì˜ AccessMethod ì°¨ì´ë§Œí¼
+                // ì¶”ê°€ ë¹„ìš©ì´ ë°œìƒí•œë‹¤.
                 sAccessCost = IDL_MAX( ( sSelMethod->accessCost - sOrgMethod->accessCost ), 0 );
                 sDiskCost   = IDL_MAX( ( sSelMethod->diskCost   - sOrgMethod->diskCost   ), 0 );
             }
         }
         else
         {
-            // ÀÌ¹Ì Child°¡ OrderingÀ» ÇÏ°í ÀÖÀ½.
-            // ·¹ÄÚµå °Ç¼ö¸¸Å­ÀÇ ºñ±³ ºñ¿ë¸¸ÀÌ ¼Ò¿äµÊ.
-            // BUG-41237 compare ºñ¿ë¸¸ Ãß°¡ÇÑ´Ù.
+            // ì´ë¯¸ Childê°€ Orderingì„ í•˜ê³  ìžˆìŒ.
+            // ë ˆì½”ë“œ ê±´ìˆ˜ë§Œí¼ì˜ ë¹„êµ ë¹„ìš©ë§Œì´ ì†Œìš”ë¨.
+            // BUG-41237 compare ë¹„ìš©ë§Œ ì¶”ê°€í•œë‹¤.
             sAccessCost = aSortGraph->graph.left->costInfo.outputRecordCnt *
                 aStatement->mSysStat->mCompareTime;
             sDiskCost   = 0;
@@ -1126,7 +1126,7 @@ IDE_RC qmgSorting::getCostByPrevOrder( qcStatement       * aStatement,
     }
     else
     {
-        // Preserved Order¸¦ »ç¿ëÇÒ ¼ö ¾ø´Â °æ¿ìÀÓ.
+        // Preserved Orderë¥¼ ì‚¬ìš©í•  ìˆ˜ ì—†ëŠ” ê²½ìš°ìž„.
         sAccessCost = QMO_COST_INVALID_COST;
         sDiskCost   = QMO_COST_INVALID_COST;
         sTotalCost  = QMO_COST_INVALID_COST;

@@ -73,7 +73,7 @@ public class CmFetchResult extends CmStatementIdResult
     }
     
     /**
-     * CMP_OP_DB_FetchV2 operation ¿äÃ»¿¡ µû¶ó ¼ö½ÅµÈ fetch row ¼ö¸¦ ¹İÈ¯ÇÑ´Ù.
+     * CMP_OP_DB_FetchV2 operation ìš”ì²­ì— ë”°ë¼ ìˆ˜ì‹ ëœ fetch row ìˆ˜ë¥¼ ë°˜í™˜í•œë‹¤.
      */
     public int getFetchedRowCount()
     {
@@ -81,7 +81,7 @@ public class CmFetchResult extends CmStatementIdResult
     }
 
     /**
-     * CMP_OP_DB_FetchV2 operation ¿äÃ»¿¡ µû¶ó ¼ö½ÅµÈ fetch byte ¼ö¸¦ ¹İÈ¯ÇÑ´Ù.
+     * CMP_OP_DB_FetchV2 operation ìš”ì²­ì— ë”°ë¼ ìˆ˜ì‹ ëœ fetch byte ìˆ˜ë¥¼ ë°˜í™˜í•œë‹¤.
      */
     public long getFetchedBytes()
     {
@@ -89,7 +89,7 @@ public class CmFetchResult extends CmStatementIdResult
     }
 
     /**
-     * SQL/CLI ÀÇ SQL_DESC_OCTET_LENGTH ¿¡ ´ëÀÀµÇ´Â column ±æÀÌ·Î¼­, ¸ğµç column ÀÇ ÃÑÇÕÀ» ¹İÈ¯ÇÑ´Ù.
+     * SQL/CLI ì˜ SQL_DESC_OCTET_LENGTH ì— ëŒ€ì‘ë˜ëŠ” column ê¸¸ì´ë¡œì„œ, ëª¨ë“  column ì˜ ì´í•©ì„ ë°˜í™˜í•œë‹¤.
      */
     public long getTotalOctetLength()
     {
@@ -98,7 +98,7 @@ public class CmFetchResult extends CmStatementIdResult
 
     public boolean fetchRemains()
     {
-        // MaxRows¸¦ ³Ñ¾ú´Ù¸é ´õ °¡Á®¿Ã ÇÊ¿ä°¡ ¾ø´Ù.
+        // MaxRowsë¥¼ ë„˜ì—ˆë‹¤ë©´ ë” ê°€ì ¸ì˜¬ í•„ìš”ê°€ ì—†ë‹¤.
         if ((mMaxRowCount > 0) && (mTotalReceivedRowCount >= mMaxRowCount))
         {
             return false;
@@ -123,7 +123,7 @@ public class CmFetchResult extends CmStatementIdResult
     }
 
     /**
-     * fetchÇÒ row°¡ ´õ ÀÖÀ» °æ¿ì¿¡¸¸ RowHandleÀÇ storeÄ¿¼­ÀÎµ¦½º¸¦ Áõ°¡½ÃÅ²´Ù.
+     * fetchí•  rowê°€ ë” ìˆì„ ê²½ìš°ì—ë§Œ RowHandleì˜ storeì»¤ì„œì¸ë±ìŠ¤ë¥¼ ì¦ê°€ì‹œí‚¨ë‹¤.
      */
     void increaseStoreCursor()
     {
@@ -134,7 +134,7 @@ public class CmFetchResult extends CmStatementIdResult
     }
 
     /**
-     * fetchÇÒ row°¡ ´õ ÀÖÀ» °æ¿ì¿¡¸¸, fetched rows/bytes Á¤º¸¸¦ °»½ÅÇÑ´Ù.
+     * fetchí•  rowê°€ ë” ìˆì„ ê²½ìš°ì—ë§Œ, fetched rows/bytes ì •ë³´ë¥¼ ê°±ì‹ í•œë‹¤.
      */
     void updateFetchStat(long aRowSize)
     {
@@ -207,7 +207,7 @@ public class CmFetchResult extends CmStatementIdResult
     }
 
     /**
-     * CMP_OP_DB_FetchV2 operation ¿äÃ»ÇÏ±â Àü¿¡ ÃÊ±âÈ­¸¦ ¼öÇàÇÑ´Ù.
+     * CMP_OP_DB_FetchV2 operation ìš”ì²­í•˜ê¸° ì „ì— ì´ˆê¸°í™”ë¥¼ ìˆ˜í–‰í•œë‹¤.
      */
     void initFetchRequest()
     {
@@ -221,9 +221,9 @@ public class CmFetchResult extends CmStatementIdResult
     }
 
     /**
-     * ÄÃ·³ÀÎµ¦½º¿¡ ÇØ´çÇÏ´Â DynamicArray¸¦ ¸®ÅÏÇÑ´Ù.
-     * @param aIndex ÄÃ·³ÀÎµ¦½º
-     * @return ÄÃ·³ÀÎµ¦½º¿¡ ÇØ´çÇÏ´Â DynamicArray
+     * ì»¬ëŸ¼ì¸ë±ìŠ¤ì— í•´ë‹¹í•˜ëŠ” DynamicArrayë¥¼ ë¦¬í„´í•œë‹¤.
+     * @param aIndex ì»¬ëŸ¼ì¸ë±ìŠ¤
+     * @return ì»¬ëŸ¼ì¸ë±ìŠ¤ì— í•´ë‹¹í•˜ëŠ” DynamicArray
      */
     public DynamicArray getDynamicArray(int aIndex)
     {

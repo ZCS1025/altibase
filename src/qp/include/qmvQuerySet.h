@@ -102,7 +102,7 @@ public:
         qcmColumn       * aColumnAlias,
         qcmTableInfo   ** aTableInfo,
         smOID             aObjectID );     // BUG-37981
-                                           // cursor for loop ½Ã cursorÀÇ objectID¸¦ ³Ñ±â±â À§ÇÑ parameter
+                                           // cursor for loop ì‹œ cursorì˜ objectIDë¥¼ ë„˜ê¸°ê¸° ìœ„í•œ parameter
     
     static IDE_RC estimateTargetCount(
         qcStatement * aStatement,
@@ -132,13 +132,13 @@ public:
         qtcNode      * aNode,
         qtcNode     ** aNewNode );
 
-    /* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø */
+    /* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ì… ì§€ì› */
     static IDE_RC addBLobLocatorFuncForNode(
         qcStatement  * aStatement,
         qtcNode      * aNode,
         qtcNode     ** aNewNode );
 
-    /* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø */
+    /* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ì… ì§€ì› */
     static IDE_RC addCLobLocatorFuncForNode(
         qcStatement  * aStatement,
         qtcNode      * aNode,
@@ -314,13 +314,13 @@ private:
                                  qmsNamePosition * aNamePos );
 
     // PROJ-2418
-    // Lateral ViewÀÇ outerQuery / outerFrom ¼³Á¤
+    // Lateral Viewì˜ outerQuery / outerFrom ì„¤ì •
     static void setLateralOuterQueryAndFrom( qmsQuerySet * aViewQuerySet,
                                              qmsTableRef * aViewTableRef,
                                              qmsSFWGH    * aOuterSFWGH );
 
     // PROJ-2418
-    // Lateral ViewÀÇ outerFromÀÌ µÉ Join Tree ¹İÈ¯
+    // Lateral Viewì˜ outerFromì´ ë  Join Tree ë°˜í™˜
     static void getLateralOuterFrom( qmsQuerySet  * aViewQuerySet,
                                      qmsTableRef  * aViewTableRef,
                                      qmsFrom      * aFrom,

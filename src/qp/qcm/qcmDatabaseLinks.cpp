@@ -296,7 +296,7 @@ static void decodePasswordCipher( UChar * aCipherPassword,
 }
 
 /*
- * public database linkÀÇ °æ¿ì user_id´Â NULLÀÌ´Ù.
+ * public database linkì˜ ê²½ìš° user_idëŠ” NULLì´ë‹¤.
  */
 IDE_RC qcmDatabaseLinksInsertItem( qcStatement          * aStatement,
                                    qcmDatabaseLinksItem * aItem,
@@ -818,7 +818,7 @@ IDE_RC qcmDatabaseLinksIsUserExisted( qcStatement * aStatement,
     smiRange               sRange;
     smiCursorProperties    sCursorProperty;
     const void           * sRow = NULL;
-    scGRID                 sRid; // Disk TableÀ» À§ÇÑ Record IDentifier
+    scGRID                 sRid; // Disk Tableì„ ìœ„í•œ Record IDentifier
     SInt                   sStage = 0;
     smiTableCursor         sCursor;
 

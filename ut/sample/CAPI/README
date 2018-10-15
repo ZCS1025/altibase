@@ -1,13 +1,13 @@
-Altibase C Interface »ùÇÃ ÇÁ·Î±×·¥Àº schema »ı¼º ÆÄÀÏ°ú Å×½ºÆ® ÇÁ·Î±×·¥ÀÌ
-Â¦À¸·Î ±¸¼ºµÇ¾îÀÖ´Ù. Å×½ºÆ® ÇÁ·Î±×·¥À» ½ÇÇàÇÏ±â Àü¿¡ °°Àº ÀÌ¸§ÀÇ schema »ı¼º
-ÆÄÀÏ(*.sql)À» ¸ÕÀú isqlÀ» ÀÌ¿ëÇØ ½ÇÇàÇØ schema¸¦ »ı¼º ÇØ¾ßÇÑ´Ù.
-¾Æ·¡ÀÇ ¸®½ºÆ®´Â °¢ »ùÇÃ¸í°ú ÇØ´ç »ùÇÃ¿¡¼­ »ç¿ëÇÏ´Â API¸¦ ¿­°ÅÇÑ °ÍÀÌ´Ù.
-¸ğµç ÇÁ·Î±×·¥¿¡´Â ÇÚµéÀÇ ÇÒ´ç(altibase_init, altibase_stmt_init)°ú DB ·ÎÀÇ
-¿¬°á ºÎºĞ(altibase_connect), ÇÚµé ÇØÁ¦(altibase_close, altibase_stmt_close,
-altibase_free_result, altibase_stmt_free_result), ±×¸®°í ¿¡·¯ Áø´Ü ºÎºĞÀÌ
-Æ÷ÇÔµÇ¾î ÀÖ´Ù.
+Altibase C Interface ìƒ˜í”Œ í”„ë¡œê·¸ë¨ì€ schema ìƒì„± íŒŒì¼ê³¼ í…ŒìŠ¤íŠ¸ í”„ë¡œê·¸ë¨ì´
+ì§ìœ¼ë¡œ êµ¬ì„±ë˜ì–´ìˆë‹¤. í…ŒìŠ¤íŠ¸ í”„ë¡œê·¸ë¨ì„ ì‹¤í–‰í•˜ê¸° ì „ì— ê°™ì€ ì´ë¦„ì˜ schema ìƒì„±
+íŒŒì¼(*.sql)ì„ ë¨¼ì € isqlì„ ì´ìš©í•´ ì‹¤í–‰í•´ schemaë¥¼ ìƒì„± í•´ì•¼í•œë‹¤.
+ì•„ë˜ì˜ ë¦¬ìŠ¤íŠ¸ëŠ” ê° ìƒ˜í”Œëª…ê³¼ í•´ë‹¹ ìƒ˜í”Œì—ì„œ ì‚¬ìš©í•˜ëŠ” APIë¥¼ ì—´ê±°í•œ ê²ƒì´ë‹¤.
+ëª¨ë“  í”„ë¡œê·¸ë¨ì—ëŠ” í•¸ë“¤ì˜ í• ë‹¹(altibase_init, altibase_stmt_init)ê³¼ DB ë¡œì˜
+ì—°ê²° ë¶€ë¶„(altibase_connect), í•¸ë“¤ í•´ì œ(altibase_close, altibase_stmt_close,
+altibase_free_result, altibase_stmt_free_result), ê·¸ë¦¬ê³  ì—ëŸ¬ ì§„ë‹¨ ë¶€ë¶„ì´
+í¬í•¨ë˜ì–´ ìˆë‹¤.
 
-< QUERY ¼öÇà >
+< QUERY ìˆ˜í–‰ >
 1. demo_ex1 (select) :
 	altibase_fields
 	altibase_stmt_bind_reault
@@ -60,7 +60,7 @@ altibase_free_result, altibase_stmt_free_result), ±×¸®°í ¿¡·¯ Áø´Ü ºÎºĞÀÌ
 	altibase_stmt_set_array_bind
 	altibase_stmt_status
 
-< Transaction ¼öÇà >
+< Transaction ìˆ˜í–‰ >
 1. demo_tran1 :
 	altibase_commit
 	altibase_rollback
@@ -81,11 +81,11 @@ altibase_free_result, altibase_stmt_free_result), ±×¸®°í ¿¡·¯ Áø´Ü ºÎºĞÀÌ
 < Multi-Thread >
 1. demo_mt
 
-< meta °Ë»ö >
+< meta ê²€ìƒ‰ >
 1. demo_meta1 : altibase_list_tables
 2. demo_meta2 : altibase_list_fields
 8. demo_meta8 : altibase_stmt_result_metadata, altibase_fields
 
 < shared library >
-1. demo_rtl : shared library¸¦ »ç¿ëÇÏ´Â demo_ex2
+1. demo_rtl : shared libraryë¥¼ ì‚¬ìš©í•˜ëŠ” demo_ex2
 

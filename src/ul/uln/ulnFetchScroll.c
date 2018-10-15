@@ -68,16 +68,16 @@ SQLRETURN ulnFetchScroll(ulnStmt *aStmt, acp_sint16_t aFetchOrientation, ulvSLen
                           &sNumberOfRowsFetched) != ACI_SUCCESS);
 
     /*
-     * »ç¿ëÀÚ¿¡°Ô ÆäÄ¡ÇÑ Row ÀÇ °¹¼ö ¸®ÅÏ.
+     * ì‚¬ìš©ìì—ê²Œ í˜ì¹˜í•œ Row ì˜ ê°¯ìˆ˜ ë¦¬í„´.
      */
     ulnDescSetRowsProcessedPtrValue(aStmt->mAttrIrd, sNumberOfRowsFetched);
 
     /*
-     * µ¥ÀÌÅÍ¸¦ fetch ÇØ ÁÖÁö ¾ÊÀº row µéÀÇ status array ¸¦ SQL_ROW_NOROW ·Î ¸¸µé¾î ÁØ´Ù.
+     * ë°ì´í„°ë¥¼ fetch í•´ ì£¼ì§€ ì•Šì€ row ë“¤ì˜ status array ë¥¼ SQL_ROW_NOROW ë¡œ ë§Œë“¤ì–´ ì¤€ë‹¤.
      *
-     * block cursor ¸¦ »ç¿ëÇÒ ¶§,
-     * °¡·É 10 ÁÙÀ» »ç¿ëÀÚ°¡ ÆäÄ¡Çß´Âµ¥, µ¥ÀÌÅÍ´Â 5ÁÙ¸¸ µé¾î°¬À» °æ¿ì,
-     * ³ª¸ÓÁö 5 ÁÙÀÇ row status ptr ¿¡´Â SQL_ROW_NOROW ¸¦ ³Ö¾î Áà¾ß ÇÑ´Ù.
+     * block cursor ë¥¼ ì‚¬ìš©í•  ë•Œ,
+     * ê°€ë ¹ 10 ì¤„ì„ ì‚¬ìš©ìê°€ í˜ì¹˜í–ˆëŠ”ë°, ë°ì´í„°ëŠ” 5ì¤„ë§Œ ë“¤ì–´ê°”ì„ ê²½ìš°,
+     * ë‚˜ë¨¸ì§€ 5 ì¤„ì˜ row status ptr ì—ëŠ” SQL_ROW_NOROW ë¥¼ ë„£ì–´ ì¤˜ì•¼ í•œë‹¤.
      */
     ulnStmtInitRowStatusArrayValue(aStmt,
                                    sNumberOfRowsFetched,

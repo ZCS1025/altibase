@@ -25,7 +25,7 @@
 
 /*
  * ======================
- * LOB °ú °ü·ÃµÈ ÇÔ¼öµé.
+ * LOB ê³¼ ê´€ë ¨ëœ í•¨ìˆ˜ë“¤.
  * ======================
  */
 
@@ -140,7 +140,7 @@ SQLRETURN SQL_API SQLFreeLob(SQLHSTMT aHandle, SQLUBIGINT aLocator)
 /* 
  * PROJ-2047 Strengthening LOB - Added Interfaces
  *
- * ÁöÁ¤ÇÑ OffsetºÎÅÍ LOB µ¥ÀÌÅÍ¸¦ »èÁ¦ÇÑ´Ù.
+ * ì§€ì •í•œ Offsetë¶€í„° LOB ë°ì´í„°ë¥¼ ì‚­ì œí•œë‹¤.
  */
 SQLRETURN SQL_API SQLTrimLob(SQLHSTMT     aHandle,
                              SQLSMALLINT  aLocatorCType,
@@ -156,7 +156,7 @@ SQLRETURN SQL_API SQLTrimLob(SQLHSTMT     aHandle,
 
 /*
  * ===============================
- * ºñÇ¥ÁØÀÌÁö¸¸, ÇÊ¿äÇÑ ÇÔ¼öµé
+ * ë¹„í‘œì¤€ì´ì§€ë§Œ, í•„ìš”í•œ í•¨ìˆ˜ë“¤
  * ===============================
  */
 
@@ -181,11 +181,11 @@ void  SQL_API   SQLDumpDataSourceFromName(SQLCHAR *aDataSourceName)
 /* 
  * PROJ-1721 Name-based Binding
  *
- * ÇÔ¼ö ÀÌ¸§¿¡ Beta¸¦ ºÙÀÎ °Ç ÃßÈÄ CLI¿¡¼­ ¾Æ·¡ ÇÔ¼ö°¡ Á¤½ÄÀ¸·Î Ãß°¡µÉ
- * °¡´É¼ºÀ» ¿°µÎÇß±â ¶§¹®ÀÌ¸ç SQLBindParameterByNameÀº ¿¹¾àÇØ µĞ´Ù.
- * ÇöÀç ADO.net µå¶óÀÌ¹ö¿¡¼­¸¸ È£ÃâµÈ´Ù.
+ * í•¨ìˆ˜ ì´ë¦„ì— Betaë¥¼ ë¶™ì¸ ê±´ ì¶”í›„ CLIì—ì„œ ì•„ë˜ í•¨ìˆ˜ê°€ ì •ì‹ìœ¼ë¡œ ì¶”ê°€ë 
+ * ê°€ëŠ¥ì„±ì„ ì—¼ë‘í–ˆê¸° ë•Œë¬¸ì´ë©° SQLBindParameterByNameì€ ì˜ˆì•½í•´ ë‘”ë‹¤.
+ * í˜„ì¬ ADO.net ë“œë¼ì´ë²„ì—ì„œë§Œ í˜¸ì¶œëœë‹¤.
  *
- * @ParameterName : NULLÀÌ ¾Æ´Ñ °æ¿ì '\0' ¹®ÀÚ·Î ¹İµå½Ã ³¡³ª¾ß ÇÑ´Ù.
+ * @ParameterName : NULLì´ ì•„ë‹Œ ê²½ìš° '\0' ë¬¸ìë¡œ ë°˜ë“œì‹œ ëë‚˜ì•¼ í•œë‹¤.
  */
 #if (ODBCVER >= 0x0300)
 SQLRETURN SQL_API SQLBindParameterByNameBeta(SQLHSTMT     StatementHandle,
@@ -219,12 +219,12 @@ SQLRETURN SQL_API SQLBindParameterByNameBeta(SQLHSTMT     StatementHandle,
 /* 
  * PROJ-1721 Name-based Binding
  *
- * CLI¿¡¼­ Name-based BindingÀ» Áö¿øÇÏ¸é ÀÌ ÇÔ¼ö´Â ºÒÇÊ¿äÇÏ´Ù.
- * ÇöÀç ADO.net µå¶óÀÌ¹ö¿¡¼­¸¸ È£ÃâµÇ¸ç ADO.net µå¶óÀÌ¹ö ¿Ü¿¡¼­
- * È£ÃâµÈ °æ¿ì Statement¸¦ ºÒÇÊ¿äÇÏ°Ô ºĞ¼®ÇÏÁö ¾Ê±â À§ÇØ Ãß°¡ÇÑ´Ù.
+ * CLIì—ì„œ Name-based Bindingì„ ì§€ì›í•˜ë©´ ì´ í•¨ìˆ˜ëŠ” ë¶ˆí•„ìš”í•˜ë‹¤.
+ * í˜„ì¬ ADO.net ë“œë¼ì´ë²„ì—ì„œë§Œ í˜¸ì¶œë˜ë©° ADO.net ë“œë¼ì´ë²„ ì™¸ì—ì„œ
+ * í˜¸ì¶œëœ ê²½ìš° Statementë¥¼ ë¶ˆí•„ìš”í•˜ê²Œ ë¶„ì„í•˜ì§€ ì•Šê¸° ìœ„í•´ ì¶”ê°€í•œë‹¤.
  *
- * @AnalyzeText : NULLÀÌ ¾Æ´Ñ °æ¿ì '\0' ¹®ÀÚ·Î ¹İµå½Ã ³¡³ª¾ß ÇÑ´Ù.
- *                NULLÀÌ¸é StatementText¸¦ ºĞ¼®ÇÏÁö ¾Ê´Â´Ù.
+ * @AnalyzeText : NULLì´ ì•„ë‹Œ ê²½ìš° '\0' ë¬¸ìë¡œ ë°˜ë“œì‹œ ëë‚˜ì•¼ í•œë‹¤.
+ *                NULLì´ë©´ StatementTextë¥¼ ë¶„ì„í•˜ì§€ ì•ŠëŠ”ë‹¤.
  */
 SQLRETURN SQL_API SQLPrepareByName(SQLHSTMT   StatementHandle,
                                    SQLCHAR   *StatementText,

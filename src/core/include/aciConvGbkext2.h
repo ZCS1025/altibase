@@ -23,12 +23,12 @@
 
 #include <aciConv.h>
 
-/* PROJ-2414 [±â´É¼º] GBK, CP936 character set Ãß°¡ */
+/* PROJ-2414 [ê¸°ëŠ¥ì„±] GBK, CP936 character set ì¶”ê°€ */
 #define ACI_GBKEXT2_XOR_VALUE ( 36149 )
 
 ACP_EXTERN_C_BEGIN
 
-/* PROJ-2414 [±â´É¼º] GBK, CP936 character set Ãß°¡ */
+/* PROJ-2414 [ê¸°ëŠ¥ì„±] GBK, CP936 character set ì¶”ê°€ */
 ACP_EXPORT
 acp_sint32_t aciConvConvertMbToWc4Gbkext2( void         * aSrc,
                                            acp_sint32_t   aSrcRemain,

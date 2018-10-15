@@ -19,8 +19,8 @@
  * $Id: stfBasic.cpp 18883 2006-11-14 01:48:40Z sabbra $
  *
  * Description:
- * Geometry °´Ã¼ÀÇ ±âº» ¼Ó¼º ÇÔ¼ö ±¸Çö
- * »ó¼¼ ±¸ÇöÀ» ÇÊ¿ä·Î ÇÏ´Â ÇÔ¼ö´Â stdPrimitive.cpp¸¦ ½ÇÇàÇÑ´Ù.
+ * Geometry ê°ì²´ì˜ ê¸°ë³¸ ì†ì„± í•¨ìˆ˜ êµ¬í˜„
+ * ìƒì„¸ êµ¬í˜„ì„ í•„ìš”ë¡œ í•˜ëŠ” í•¨ìˆ˜ëŠ” stdPrimitive.cppë¥¼ ì‹¤í–‰í•œë‹¤.
  **********************************************************************/
 
 #include <idl.h>
@@ -43,7 +43,7 @@ extern mtdModule stdGeometry;
 
 /***********************************************************************
  * Description:
- * Geometry °´Ã¼ÀÇ Â÷¿øÀ» ¸®ÅÏ
+ * Geometry ê°ì²´ì˜ ì°¨ì›ì„ ë¦¬í„´
  *
  * mtcStack*    aStack(InOut):
  **********************************************************************/
@@ -57,7 +57,7 @@ IDE_RC stfBasic::dimension(
     stdGeometryHeader*  sValue = (stdGeometryHeader *)aStack[1].value;
     mtdIntegerType*     sRet = (mtdIntegerType*)aStack[0].value;
 
-    // Fix BUG-15412 mtdModule.isNull »ç¿ë
+    // Fix BUG-15412 mtdModule.isNull ì‚¬ìš©
     if( stdGeometry.isNull( NULL, sValue )==ID_TRUE )
     {
         aStack[0].column->module->null( aStack[0].column,
@@ -82,7 +82,7 @@ IDE_RC stfBasic::dimension(
 
 /***********************************************************************
  * Description:
- * Geometry °´Ã¼ÀÇ Å¸ÀÔÀ» ¹®ÀÚ¿­·Î ¸®ÅÏ
+ * Geometry ê°ì²´ì˜ íƒ€ì…ì„ ë¬¸ìì—´ë¡œ ë¦¬í„´
  *
  * mtcStack*    aStack(InOut):
  **********************************************************************/
@@ -99,7 +99,7 @@ IDE_RC stfBasic::geometryType(
 
     IDE_ASSERT( sRet != NULL );
     
-    // Fix BUG-15412 mtdModule.isNull »ç¿ë
+    // Fix BUG-15412 mtdModule.isNull ì‚¬ìš©
     if( stdGeometry.isNull( NULL, sValue )==ID_TRUE )
     {
         aStack[0].column->module->null( aStack[0].column,
@@ -125,7 +125,7 @@ IDE_RC stfBasic::geometryType(
 
 /***********************************************************************
  * Description:
- * Geometry °´Ã¼¸¦ WKT(Well Known Text)·Î Ãâ·Â
+ * Geometry ê°ì²´ë¥¼ WKT(Well Known Text)ë¡œ ì¶œë ¥
  *
  * mtcStack*    aStack(InOut):
  **********************************************************************/
@@ -143,7 +143,7 @@ IDE_RC stfBasic::asText(
     IDE_RC              sReturn;
     UInt                sSize = 0;
 
-    // Fix BUG-15412 mtdModule.isNull »ç¿ë
+    // Fix BUG-15412 mtdModule.isNull ì‚¬ìš©
     if( stdGeometry.isNull( NULL, sValue )==ID_TRUE )
     {
         aStack[0].column->module->null( aStack[0].column,
@@ -169,7 +169,7 @@ IDE_RC stfBasic::asText(
 
 /***********************************************************************
  * Description:
- * Geometry °´Ã¼¸¦ WKB(Well Known Binary)·Î Ãâ·Â
+ * Geometry ê°ì²´ë¥¼ WKB(Well Known Binary)ë¡œ ì¶œë ¥
  *
  * mtcStack*    aStack(InOut):
  **********************************************************************/
@@ -185,7 +185,7 @@ IDE_RC stfBasic::asBinary(
     mtdBinaryType*      sBuf   = (mtdBinaryType*)aRow0;   // Fix BUG-15834
     UInt                sMaxSize = aStack[0].column->precision;    
 
-    // Fix BUG-15412 mtdModule.isNull »ç¿ë
+    // Fix BUG-15412 mtdModule.isNull ì‚¬ìš©
     if( stdGeometry.isNull( NULL, sValue ) == ID_TRUE)
     {
         aStack[0].column->module->null( aStack[0].column,
@@ -210,7 +210,7 @@ IDE_RC stfBasic::asBinary(
 
 /***********************************************************************
  * Description:
- * Geometry °´Ã¼ÀÇ Boundary¸¦ Geometry °´Ã¼·Î Ãâ·Â
+ * Geometry ê°ì²´ì˜ Boundaryë¥¼ Geometry ê°ì²´ë¡œ ì¶œë ¥
  *
  * mtcStack*    aStack(InOut):
  **********************************************************************/
@@ -225,7 +225,7 @@ IDE_RC stfBasic::boundary(
     stdGeometryHeader*  sRet = (stdGeometryHeader*)aStack[0].value;
     UInt                sFence = aStack[0].column->precision;
 
-    // Fix BUG-15412 mtdModule.isNull »ç¿ë
+    // Fix BUG-15412 mtdModule.isNull ì‚¬ìš©
     if( stdGeometry.isNull( NULL, sValue )==ID_TRUE )
     {
         aStack[0].column->module->null( aStack[0].column,
@@ -253,7 +253,7 @@ IDE_RC stfBasic::boundary(
 
 /***********************************************************************
  * Description:
- * Geometry °´Ã¼ÀÇ MBRÀ» Æú¸®°ï °´Ã¼·Î Ãâ·Â
+ * Geometry ê°ì²´ì˜ MBRì„ í´ë¦¬ê³¤ ê°ì²´ë¡œ ì¶œë ¥
  *
  * mtcStack*    aStack(InOut):
  **********************************************************************/
@@ -267,7 +267,7 @@ IDE_RC stfBasic::envelope(
     stdGeometryHeader*  sValue = (stdGeometryHeader *)aStack[1].value;
     stdGeometryHeader*  sRet = (stdGeometryHeader*)aStack[0].value;
 
-    // Fix BUG-15412 mtdModule.isNull »ç¿ë
+    // Fix BUG-15412 mtdModule.isNull ì‚¬ìš©
     if( stdGeometry.isNull( NULL, sValue )==ID_TRUE )
     {
         aStack[0].column->module->null( aStack[0].column,
@@ -292,7 +292,7 @@ IDE_RC stfBasic::envelope(
 
 /***********************************************************************
  * Description:
- * Geometry °´Ã¼°¡ Empty °´Ã¼ÀÎÁö ÆÇº°
+ * Geometry ê°ì²´ê°€ Empty ê°ì²´ì¸ì§€ íŒë³„
  *
  * mtcStack*    aStack(InOut):
  **********************************************************************/
@@ -306,7 +306,7 @@ IDE_RC stfBasic::isEmpty(
     stdGeometryHeader*  sValue = (stdGeometryHeader *)aStack[1].value;
     mtdIntegerType*     sRet = (mtdIntegerType*)aStack[0].value;
 
-    // Fix BUG-15412 mtdModule.isNull »ç¿ë
+    // Fix BUG-15412 mtdModule.isNull ì‚¬ìš©
     if( stdGeometry.isNull( NULL, sValue )==ID_TRUE )
     {
         aStack[0].column->module->null( aStack[0].column,
@@ -349,7 +349,7 @@ IDE_RC stfBasic::isEmpty(
 
 /***********************************************************************
  * Description:
- * Geometry °´Ã¼°¡ SimpleÇÑÁö ÆÇº°
+ * Geometry ê°ì²´ê°€ Simpleí•œì§€ íŒë³„
  *
  * mtcStack*    aStack(InOut):
  **********************************************************************/
@@ -363,7 +363,7 @@ IDE_RC stfBasic::isSimple(
     stdGeometryHeader*  sValue = (stdGeometryHeader *)aStack[1].value;
     mtdIntegerType*     sRet = (mtdIntegerType*)aStack[0].value;
 
-    // Fix BUG-15412 mtdModule.isNull »ç¿ë
+    // Fix BUG-15412 mtdModule.isNull ì‚¬ìš©
     if( stdGeometry.isNull( NULL, sValue )==ID_TRUE )
     {
         aStack[0].column->module->null( aStack[0].column,
@@ -388,7 +388,7 @@ IDE_RC stfBasic::isSimple(
 
 /***********************************************************************
  * Description:
- * Geometry °´Ã¼°¡ ValidÇÑÁö ÆÇº°
+ * Geometry ê°ì²´ê°€ Validí•œì§€ íŒë³„
  *
  * mtcStack*    aStack(InOut):
  **********************************************************************/
@@ -410,7 +410,7 @@ IDE_RC stfBasic::isValid(
     sQcTmplate = (qcTemplate*) aTemplate;
     sQmxMem    = QC_QMX_MEM( sQcTmplate->stmt );
     
-    // Fix BUG-15412 mtdModule.isNull »ç¿ë
+    // Fix BUG-15412 mtdModule.isNull ì‚¬ìš©
     if( stdGeometry.isNull( NULL, sValue )==ID_TRUE )
     {
         aStack[0].column->module->null( aStack[0].column,
@@ -419,10 +419,10 @@ IDE_RC stfBasic::isValid(
     else    
     {
         /* BUG-33576 
-         * IsValid´Â Ç×»ó validate¸¦ È£ÃâÇÏ¿© °´Ã¼°¡ ValidÇÑÁö ÆÇº°ÇÕ´Ï´Ù.
-         * Çì´õÀÇ mIsValid°ª¸¸ ÀĞ±â À§ÇØ¼­´Â IsValidHeader ÇÔ¼ö¸¦ »ç¿ëÇØ¾ßÇÕ´Ï´Ù. */
+         * IsValidëŠ” í•­ìƒ validateë¥¼ í˜¸ì¶œí•˜ì—¬ ê°ì²´ê°€ Validí•œì§€ íŒë³„í•©ë‹ˆë‹¤.
+         * í—¤ë”ì˜ mIsValidê°’ë§Œ ì½ê¸° ìœ„í•´ì„œëŠ” IsValidHeader í•¨ìˆ˜ë¥¼ ì‚¬ìš©í•´ì•¼í•©ë‹ˆë‹¤. */
 
-        // Memory Àç»ç¿ëÀ» À§ÇÏ¿© ÇöÀç À§Ä¡ ±â·Ï
+        // Memory ì¬ì‚¬ìš©ì„ ìœ„í•˜ì—¬ í˜„ì¬ ìœ„ì¹˜ ê¸°ë¡
         IDE_TEST( sQmxMem->getStatus(&sQmxMemStatus) != IDE_SUCCESS);
         sStage = 1;
 
@@ -437,7 +437,7 @@ IDE_RC stfBasic::isValid(
             *sRet = ST_INVALID;
         }
         
-        /* Memory Àç»ç¿ëÀ» À§ÇÑ Memory ÀÌµ¿ */
+        /* Memory ì¬ì‚¬ìš©ì„ ìœ„í•œ Memory ì´ë™ */
         sStage = 0;
         IDE_TEST( sQmxMem->setStatus(&sQmxMemStatus) != IDE_SUCCESS);
     }
@@ -457,8 +457,8 @@ IDE_RC stfBasic::isValid(
 // BUG-33576
 /***********************************************************************
  * Description:
- * Geometry °´Ã¼°¡ ValidÇÑÁö ÆÇº°
- * ( HeaderÀÇ mIsValid °ª¸¸ ÂüÁ¶ )
+ * Geometry ê°ì²´ê°€ Validí•œì§€ íŒë³„
+ * ( Headerì˜ mIsValid ê°’ë§Œ ì°¸ì¡° )
  *
  * mtcStack*    aStack(InOut):
  **********************************************************************/
@@ -472,7 +472,7 @@ IDE_RC stfBasic::isValidHeader(
     stdGeometryHeader*  sValue = (stdGeometryHeader *)aStack[1].value;
     mtdIntegerType*     sRet = (mtdIntegerType*)aStack[0].value;
     
-    // Fix BUG-15412 mtdModule.isNull »ç¿ë
+    // Fix BUG-15412 mtdModule.isNull ì‚¬ìš©
     if( stdGeometry.isNull( NULL, sValue )==ID_TRUE )
     {
         aStack[0].column->module->null( aStack[0].column,
@@ -495,7 +495,7 @@ IDE_RC stfBasic::isValidHeader(
 
 /***********************************************************************
  * Description:
- * Geometry °´Ã¼ÀÇ SRID ¸®ÅÏ
+ * Geometry ê°ì²´ì˜ SRID ë¦¬í„´
  *
  * mtcStack*    aStack(InOut):
  **********************************************************************/
@@ -509,7 +509,7 @@ IDE_RC stfBasic::SRID(
     stdGeometryHeader*  sValue = (stdGeometryHeader *)aStack[1].value;
     mtdIntegerType*     sRet = (mtdIntegerType*)aStack[0].value;
 
-    // Fix BUG-15412 mtdModule.isNull »ç¿ë
+    // Fix BUG-15412 mtdModule.isNull ì‚¬ìš©
     if( stdGeometry.isNull( NULL, sValue )==ID_TRUE )
     {
         aStack[0].column->module->null( aStack[0].column,
@@ -537,10 +537,10 @@ IDE_RC stfBasic::SRID(
 
 /***********************************************************************
  * Description:
- * Geometry °´Ã¼ÀÇ Â÷¿øÀ» ¸®ÅÏ
+ * Geometry ê°ì²´ì˜ ì°¨ì›ì„ ë¦¬í„´
  *
- * stdGeometryHeader*  aObj(In): Geometry °´Ã¼
- * mtdIntegerType*     aRet(Out): Â÷¿ø°ª
+ * stdGeometryHeader*  aObj(In): Geometry ê°ì²´
+ * mtdIntegerType*     aRet(Out): ì°¨ì›ê°’
  **********************************************************************/
 IDE_RC stfBasic::getDimension(
                     stdGeometryHeader*  aObj,
@@ -569,13 +569,13 @@ IDE_RC stfBasic::getDimension(
 
 /***********************************************************************
  * Description:
- * Geometry °´Ã¼¸¦ WKT·Î Ãâ·Â
+ * Geometry ê°ì²´ë¥¼ WKTë¡œ ì¶œë ¥
  *
- * stdGeometryHeader*  aObj(In): Geometry °´Ã¼
- * UChar*              aBuf(Out): Ãâ·ÂÇÒ ¹öÆÛ
- * UInt                aMaxSize(In): ¹öÆÛ »çÀÌÁî
- * UInt*               aOffset(Out): WKT ±æÀÌ
- * IDE_RC              aReturn(Out): encoding ¼º°ø ¿©ºÎ
+ * stdGeometryHeader*  aObj(In): Geometry ê°ì²´
+ * UChar*              aBuf(Out): ì¶œë ¥í•  ë²„í¼
+ * UInt                aMaxSize(In): ë²„í¼ ì‚¬ì´ì¦ˆ
+ * UInt*               aOffset(Out): WKT ê¸¸ì´
+ * IDE_RC              aReturn(Out): encoding ì„±ê³µ ì—¬ë¶€
  **********************************************************************/
 IDE_RC stfBasic::getText(
                     stdGeometryHeader*  aObj,
@@ -663,12 +663,12 @@ IDE_RC stfBasic::getText(
 
 /***********************************************************************
  * Description:
- * Geometry °´Ã¼¸¦ WKB·Î Ãâ·Â
+ * Geometry ê°ì²´ë¥¼ WKBë¡œ ì¶œë ¥
  *
- * stdGeometryHeader*  aObj(In): Geometry °´Ã¼
- * UChar*              aBuf(Out): Ãâ·ÂÇÒ ¹öÆÛ
- * UInt                aMaxSize(In): ¹öÆÛ »çÀÌÁî
- * UInt*               aOffset(Out): WKB ±æÀÌ
+ * stdGeometryHeader*  aObj(In): Geometry ê°ì²´
+ * UChar*              aBuf(Out): ì¶œë ¥í•  ë²„í¼
+ * UInt                aMaxSize(In): ë²„í¼ ì‚¬ì´ì¦ˆ
+ * UInt*               aOffset(Out): WKB ê¸¸ì´
  **********************************************************************/
 IDE_RC stfBasic::getBinary(
                     stdGeometryHeader*  aObj,
@@ -755,10 +755,10 @@ IDE_RC stfBasic::getBinary(
 
 /***********************************************************************
  * Description:
- * Geometry °´Ã¼ÀÇ Boundary¸¦ Geometry °´Ã¼·Î Ãâ·Â
+ * Geometry ê°ì²´ì˜ Boundaryë¥¼ Geometry ê°ì²´ë¡œ ì¶œë ¥
  *
- * stdGeometryHeader*  aObj(In): Geometry °´Ã¼
- * stdGeometryHeader*  aRet(Out): Boundary Geometry °´Ã¼
+ * stdGeometryHeader*  aObj(In): Geometry ê°ì²´
+ * stdGeometryHeader*  aRet(Out): Boundary Geometry ê°ì²´
  **********************************************************************/
 IDE_RC stfBasic::getBoundary(
                     stdGeometryHeader*  aObj,
@@ -785,7 +785,7 @@ IDE_RC stfBasic::getBoundary(
     case STD_MULTIPOLYGON_2D_TYPE :
         IDE_TEST(stdPrimitive::getBoundaryMPoly2D((stdMultiPolygon2DType*)aObj, aRet, sFence ) != IDE_SUCCESS );
         break;
-    // OGC Ç¥ÁØ ¿ÜÀÇ Å¸ÀÔ ////////////////////////////////////////////////////////
+    // OGC í‘œì¤€ ì™¸ì˜ íƒ€ì… ////////////////////////////////////////////////////////
     default :
         IDE_RAISE(err_unsupported_object_type);
     }
@@ -806,10 +806,10 @@ IDE_RC stfBasic::getBoundary(
 
 /***********************************************************************
  * Description:
- * Geometry °´Ã¼ÀÇ MBRÀ» Æú¸®°ï °´Ã¼·Î Ãâ·Â
+ * Geometry ê°ì²´ì˜ MBRì„ í´ë¦¬ê³¤ ê°ì²´ë¡œ ì¶œë ¥
  *
- * stdGeometryHeader*  aObj(In): Geometry °´Ã¼
- * stdGeometryHeader*  aRet(Out): Æú¸®°ï °´Ã¼
+ * stdGeometryHeader*  aObj(In): Geometry ê°ì²´
+ * stdGeometryHeader*  aRet(Out): í´ë¦¬ê³¤ ê°ì²´
  **********************************************************************/
 IDE_RC stfBasic::getEnvelope(
                     stdGeometryHeader*  aObj,
@@ -829,7 +829,7 @@ IDE_RC stfBasic::getEnvelope(
     case STD_GEOCOLLECTION_2D_TYPE :
         stdPrimitive::GetEnvelope2D( aObj, aRet );
         break;
-    // OGC Ç¥ÁØ ¿ÜÀÇ Å¸ÀÔ ////////////////////////////////////////////////////////
+    // OGC í‘œì¤€ ì™¸ì˜ íƒ€ì… ////////////////////////////////////////////////////////
     default :
         IDE_RAISE(err_unsupported_object_type);
     }
@@ -849,10 +849,10 @@ IDE_RC stfBasic::getEnvelope(
 
 /***********************************************************************
  * Description:
- * Geometry °´Ã¼°¡ Simple °´Ã¼ÀÌ¸é 1 ¾Æ´Ï¸é 0À» ¸®ÅÏ
+ * Geometry ê°ì²´ê°€ Simple ê°ì²´ì´ë©´ 1 ì•„ë‹ˆë©´ 0ì„ ë¦¬í„´
  *
- * stdGeometryHeader*  aObj(In): Geometry °´Ã¼
- * mtdIntegerType*     aRet(Out): °á°ú
+ * stdGeometryHeader*  aObj(In): Geometry ê°ì²´
+ * mtdIntegerType*     aRet(Out): ê²°ê³¼
  **********************************************************************/
 IDE_RC stfBasic::testSimple(
                     stdGeometryHeader*  aObj,

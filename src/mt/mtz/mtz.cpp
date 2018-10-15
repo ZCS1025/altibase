@@ -878,13 +878,13 @@ IDE_RC mtz::timezoneStr2Second( const SChar * aTimezoneStr,
                  /* nothing to do. */
              }
 
-             if ( ( *sPos >= '0' ) && ( *sPos <= '9' ) ) //sign ¾øÀÌ
+             if ( ( *sPos >= '0' ) && ( *sPos <= '9' ) ) //sign ì—†ì´
              {
                  sState =1 ;
              }
              else
              {
-                 //Ã¹¹ÙÀÌÆ®·Î +/- ¼ýÀÚ°¡ ¾Æ´Ï¸é ¿¹¿Ü
+                 //ì²«ë°”ì´íŠ¸ë¡œ +/- ìˆ«ìžê°€ ì•„ë‹ˆë©´ ì˜ˆì™¸
                  IDE_RAISE( ERR_LITERAL_DOES_NOT_MATCH_FORMAT_STRING );
              }
          }
@@ -911,7 +911,7 @@ IDE_RC mtz::timezoneStr2Second( const SChar * aTimezoneStr,
                      /* nothing to do. */
                  }
 
-                 if ( sHH == 0 ) //Ã³À½ ¶Ç´Â 09 °°ÀÌ 0 ÀÌÈÄ
+                 if ( sHH == 0 ) //ì²˜ìŒ ë˜ëŠ” 09 ê°™ì´ 0 ì´í›„
                  {
                      sHH = *sPos - '0';
                      sDigitsCount ++;

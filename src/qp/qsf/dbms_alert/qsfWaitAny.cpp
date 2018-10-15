@@ -46,7 +46,7 @@ static IDE_RC mtfEstimate( mtcNode*     aNode,
 mtfModule qsfWaitAnyModule = {
     1|MTC_NODE_OPERATOR_MISC,
     ~0,
-    1.0,                    // default selectivity (ºñ±³ ¿¬»êÀÚ ¾Æ´Ô)
+    1.0,                    // default selectivity (ë¹„êµ ì—°ì‚°ì ì•„ë‹˜)
     mtfFunctionName,
     NULL,
     mtf::initializeDefault,

@@ -20,9 +20,9 @@
  *
  * Description :
  *
- * º» ÆÄÀÏÀº ¹é¾÷ °ü¸®ÀÚ¿¡ ´ëÇÑ Çì´õ ÆÄÀÏÀÌ´Ù.
+ * ë³¸ íŒŒì¼ì€ ë°±ì—… ê´€ë¦¬ìì— ëŒ€í•œ í—¤ë” íŒŒì¼ì´ë‹¤.
  *
- * # ±â´É
+ * # ê¸°ëŠ¥
  *   1.
  **********************************************************************/
 
@@ -45,53 +45,53 @@ public:
 
     static inline idBool isBackupingTBS( scSpaceID   aSpaceID );
 
-    // ALTER DATABASE BACKUP LOGANCHOR .. ±¸¹®¿¡ ÀÇÇØ¼­
-    // LoganchorÆÄÀÏ ¹é¾÷À» ¼öÇàÇÑ´Ù.
+    // ALTER DATABASE BACKUP LOGANCHOR .. êµ¬ë¬¸ì— ì˜í•´ì„œ
+    // LoganchoríŒŒì¼ ë°±ì—…ì„ ìˆ˜í–‰í•œë‹¤.
     static IDE_RC backupLogAnchor( idvSQL*  aStatistics,
                                    SChar  * aDestFilePath );
 
-    // ALTER TABLESPACE BACKUP .. ±¸¹®¿¡ ÀÇÇØ¼­ TABLESPACE LEVELÀÇ
-    // ¹é¾÷À» ¼öÇàÇÑ´Ù.
+    // ALTER TABLESPACE BACKUP .. êµ¬ë¬¸ì— ì˜í•´ì„œ TABLESPACE LEVELì˜
+    // ë°±ì—…ì„ ìˆ˜í–‰í•œë‹¤.
     static IDE_RC backupTableSpace(idvSQL*   aStatistics,
                                    void *    aTrans,
                                    scSpaceID aTbsID,
                                    SChar*    aBackupDir);
 
-    // ALTER DATABASE BACKUP .. ±¸¹®¿¡ ÀÇÇØ¼­ DB LEVELÀÇ
-    // ÀüÃ¼¹é¾÷À» ¼öÇàÇÑ´Ù.
+    // ALTER DATABASE BACKUP .. êµ¬ë¬¸ì— ì˜í•´ì„œ DB LEVELì˜
+    // ì „ì²´ë°±ì—…ì„ ìˆ˜í–‰í•œë‹¤.
     static IDE_RC backupDatabase(idvSQL* aStatistics,
                                  void  * aTrans,
                                  SChar * aBackupDir);
 
-    // .. BACKUP BEGIN.. ±¸¹®¿¡ ÀÇÇØ¼­ Å×ÀÌºí½ºÆäÀÌ½º »óÅÂÀÇ
-    // ¹é¾÷»óÅÂ·Î ¼³Á¤ÇÑ´Ù.
+    // .. BACKUP BEGIN.. êµ¬ë¬¸ì— ì˜í•´ì„œ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ìƒíƒœì˜
+    // ë°±ì—…ìƒíƒœë¡œ ì„¤ì •í•œë‹¤.
     static IDE_RC beginBackupTBS(scSpaceID aSpaceID);
 
-    // .. BACKUP END.. ±¸¹®¿¡ ÀÇÇØ¼­ Å×ÀÌºí½ºÆäÀÌ½º »óÅÂÀÇ
-    // ¹é¾÷»óÅÂ¸¦ ÇØÁ¦ÇÑ´Ù.
+    // .. BACKUP END.. êµ¬ë¬¸ì— ì˜í•´ì„œ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ìƒíƒœì˜
+    // ë°±ì—…ìƒíƒœë¥¼ í•´ì œí•œë‹¤.
     static IDE_RC endBackupTBS(scSpaceID aSpaceID);
 
-    // ¸Ş¸ğ¸® Å×ÀÌºí½ºÆäÀÌ½ºÀÇ ½ÇÁ¦ ÆÄÀÏ ¹é¾÷À» ÁøÇàÇÑ´Ù.
+    // ë©”ëª¨ë¦¬ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì˜ ì‹¤ì œ íŒŒì¼ ë°±ì—…ì„ ì§„í–‰í•œë‹¤.
     static IDE_RC backupMemoryTBS( idvSQL*      aStatistics,
                                    scSpaceID    aSpaceID,
                                    SChar     *  aBackupDir );
 
-    // µğ½ºÅ© Å×ÀÌºí½ºÆäÀÌ½ºÀÇ ½ÇÁ¦ ÆÄÀÏ ¹é¾÷À» ÁøÇàÇÑ´Ù.
+    // ë””ìŠ¤í¬ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì˜ ì‹¤ì œ íŒŒì¼ ë°±ì—…ì„ ì§„í–‰í•œë‹¤.
     static IDE_RC backupDiskTBS( idvSQL    * aStatistics,
                                  scSpaceID   aTbsID,
                                  SChar     * aBackupDir );
 
-    // ¹é¾÷¿Ï·á¸¦ À§ÇØ¼­ ·Î±×ÆÄÀÏÀ» °­Á¦·Î ¾ÆÄ«ÀÌºê½ÃÅ²´Ù.
+    // ë°±ì—…ì™„ë£Œë¥¼ ìœ„í•´ì„œ ë¡œê·¸íŒŒì¼ì„ ê°•ì œë¡œ ì•„ì¹´ì´ë¸Œì‹œí‚¨ë‹¤.
     static IDE_RC swithLogFileByForces();
 
-    //ÇØ´ç pathÀÇ ¸ğµç memory db °ü·Ã fileµéÀ» Á¦°ÅÇÔ
+    //í•´ë‹¹ pathì˜ ëª¨ë“  memory db ê´€ë ¨ fileë“¤ì„ ì œê±°í•¨
     static IDE_RC unlinkChkptImages( SChar* aPathName,
                                      SChar* aTBSName );
 
-    // ÇØ´ç pathÀÇ disk db °ü·Ã fileÀ» Á¦°ÅÇÔ
+    // í•´ë‹¹ pathì˜ disk db ê´€ë ¨ fileì„ ì œê±°í•¨
     static IDE_RC unlinkDataFile( SChar*  aDataFileName );
 
-    // ÇØ´ç pathÀÇ ¸ğµç disk db °ü·Ã log fileµéÀ» Á¦°ÅÇÔ
+    // í•´ë‹¹ pathì˜ ëª¨ë“  disk db ê´€ë ¨ log fileë“¤ì„ ì œê±°í•¨
     static IDE_RC unlinkAllLogFiles( SChar* aPathName );
 
     /************************************
@@ -146,13 +146,13 @@ public:
 private:
 
 
-    // ONLINE BACKUP ÇÃ·¡±×¿¡ ¼³Á¤ÇÏ°íÀÚ ÇÏ´Â »óÅÂ°ªÀ» ¼³Á¤ÇÑ´Ù.
+    // ONLINE BACKUP í”Œë˜ê·¸ì— ì„¤ì •í•˜ê³ ì í•˜ëŠ” ìƒíƒœê°’ì„ ì„¤ì •í•œë‹¤.
     static void setOnlineBackupStatusOR( UInt  aOR );
 
-    // ONLINE BACKUP ÇÃ·¡±×¿¡ ÇØÁ¦ÇÏ°íÀÚ ÇÏ´Â »óÅÂ°ªÀ» ÇØÀçÇÑ´Ù.
+    // ONLINE BACKUP í”Œë˜ê·¸ì— í•´ì œí•˜ê³ ì í•˜ëŠ” ìƒíƒœê°’ì„ í•´ì¬í•œë‹¤.
     static void setOnlineBackupStatusNOT( UInt aNOT );
 
-    /* ¿Â¶óÀÎ ¹é¾÷ ÁøÇà»óÅÂ ¼³Á¤ */
+    /* ì˜¨ë¼ì¸ ë°±ì—… ì§„í–‰ìƒíƒœ ì„¤ì • */
     static inline idBool isRemainSpace(SInt  sSystemErrno);
 
     static IDE_RC beginBackupDiskTBS(scSpaceID aSpaceID);
@@ -177,7 +177,7 @@ private:
 
 
 /***********************************************************************
- * Description : ½Ã½ºÅÛ ¿¡·¯¹øÈ£ ºĞ¼® (Is enough space?)
+ * Description : ì‹œìŠ¤í…œ ì—ëŸ¬ë²ˆí˜¸ ë¶„ì„ (Is enough space?)
  **********************************************************************/
 inline idBool smrBackupMgr::isRemainSpace(SInt sSystemErrno)
 {
@@ -195,7 +195,7 @@ inline idBool smrBackupMgr::isRemainSpace(SInt sSystemErrno)
 
 /***********************************************************************
  *
- * Description : ¼­¹öÀÇ ¹é¾÷»óÅÂ¸¦ ¹İÈ¯ÇÑ´Ù.
+ * Description : ì„œë²„ì˜ ë°±ì—…ìƒíƒœë¥¼ ë°˜í™˜í•œë‹¤.
  *
  **********************************************************************/
 inline smrBackupState smrBackupMgr::getBackupState()
@@ -205,21 +205,21 @@ inline smrBackupState smrBackupMgr::getBackupState()
 
 /***********************************************************************
  *
- * Description : Å×ÀÌºí½ºÆäÀÌ½º°¡ Backup »óÅÂÀÎÁö Ã¼Å©ÇÑ´Ù.
+ * Description : í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ê°€ Backup ìƒíƒœì¸ì§€ ì²´í¬í•œë‹¤.
  *
- * aSpaceID  - [IN] Å×ÀÌºí½ºÆäÀÌ½º ID
+ * aSpaceID  - [IN] í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ID
  *
  **********************************************************************/
 inline idBool smrBackupMgr::isBackupingTBS( scSpaceID   aSpaceID )
 {
-    // ¹é¾÷°ü¸®ÀÚÀÇ »óÅÂ¸¦ ¸ÕÀú Ã¼Å©ÇÑ´Ù.
+    // ë°±ì—…ê´€ë¦¬ìì˜ ìƒíƒœë¥¼ ë¨¼ì € ì²´í¬í•œë‹¤.
     if ( (getBackupState() & SMR_BACKUP_DISKTBS)
          != SMR_BACKUP_DISKTBS )
     {
         return ID_FALSE;
     }
 
-    // Å×ÀÌºí½ºÆäÀÌ½ºÀÇ »óÅÂ¸¦ Ã¼Å©ÇÑ´Ù.
+    // í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì˜ ìƒíƒœë¥¼ ì²´í¬í•œë‹¤.
     return sctTableSpaceMgr::isBackupingTBS( aSpaceID );
 }
 

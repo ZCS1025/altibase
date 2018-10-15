@@ -21,13 +21,13 @@
  * Description :
  *     Query Optimizer
  *
- *     Optimizer¸¦ Á¢±ÙÇÏ´Â ÃÖ»óÀ§ Interface·Î ±¸¼ºµÊ
- *     Graph »ı¼º ¹× Plan Tree¸¦ »ı¼ºÇÑ´Ù.
+ *     Optimizerë¥¼ ì ‘ê·¼í•˜ëŠ” ìµœìƒìœ„ Interfaceë¡œ êµ¬ì„±ë¨
+ *     Graph ìƒì„± ë° Plan Treeë¥¼ ìƒì„±í•œë‹¤.
  *
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  **********************************************************************/
 
@@ -41,27 +41,27 @@
 #include <qmmParseTree.h>
 
 //---------------------------------------------------
-// Optimizer ¼öÇà ÇÔ¼ö
+// Optimizer ìˆ˜í–‰ í•¨ìˆ˜
 //---------------------------------------------------
 
 class qmo
 {
 public:
 
-    // SELECT ±¸¹®¿¡ ´ëÇÑ ÃÖÀûÈ­
+    // SELECT êµ¬ë¬¸ì— ëŒ€í•œ ìµœì í™”
     static IDE_RC    optimizeSelect( qcStatement * aStatement );
 
-    // INSERT ±¸¹®¿¡ ´ëÇÑ ÃÖÀûÈ­
+    // INSERT êµ¬ë¬¸ì— ëŒ€í•œ ìµœì í™”
     static IDE_RC    optimizeInsert( qcStatement * aStatement );
     static IDE_RC    optimizeMultiInsertSelect( qcStatement * aStatement );
     
-    // UPDATE ±¸¹®¿¡ ´ëÇÑ ÃÖÀûÈ­
+    // UPDATE êµ¬ë¬¸ì— ëŒ€í•œ ìµœì í™”
     static IDE_RC    optimizeUpdate( qcStatement * aStatement );
 
-    // DELETE ±¸¹®¿¡ ´ëÇÑ ÃÖÀûÈ­
+    // DELETE êµ¬ë¬¸ì— ëŒ€í•œ ìµœì í™”
     static IDE_RC    optimizeDelete( qcStatement * aStatement );
 
-    // MOVE ±¸¹®¿¡ ´ëÇÑ ÃÖÀûÈ­
+    // MOVE êµ¬ë¬¸ì— ëŒ€í•œ ìµœì í™”
     static IDE_RC    optimizeMove( qcStatement * aStatement );
 
     /* PROJ-1988 Implement MERGE statement */
@@ -73,13 +73,13 @@ public:
     // Shard Insert
     static IDE_RC    optimizeShardInsert( qcStatement * aStatement );
 
-    // Sub SELECT ±¸¹®¿¡ ´ëÇÑ ÃÖÀûÈ­ ( CREATE AS SELECT )
+    // Sub SELECT êµ¬ë¬¸ì— ëŒ€í•œ ìµœì í™” ( CREATE AS SELECT )
     static IDE_RC    optimizeCreateSelect( qcStatement * aStatement );
 
 
-    // GraphÀÇ »ı¼º ¹× ÃÊ±âÈ­
-    // Optimizer ¿ÜºÎ¿¡¼­ È£ÃâÇÏ¸é ¾ÈµÊ.
-    // optimizeSelect¿Í qmoSubquery::makeGraph°¡ È£Ãâ
+    // Graphì˜ ìƒì„± ë° ì´ˆê¸°í™”
+    // Optimizer ì™¸ë¶€ì—ì„œ í˜¸ì¶œí•˜ë©´ ì•ˆë¨.
+    // optimizeSelectì™€ qmoSubquery::makeGraphê°€ í˜¸ì¶œ
     static IDE_RC    makeGraph( qcStatement * aStatement );
 
     // PROJ-2205 Rownum in DML
@@ -102,14 +102,14 @@ public:
     static IDE_RC    makeShardInsertGraph( qcStatement * aStatement );
 
     // PROJ-1413
-    // Query TransformationÀÇ ¼öÇà
-    // ParseTree·Î Transformed ParseTree¸¦ »ı¼ºÇÑ´Ù.
+    // Query Transformationì˜ ìˆ˜í–‰
+    // ParseTreeë¡œ Transformed ParseTreeë¥¼ ìƒì„±í•œë‹¤.
     static IDE_RC    doTransform( qcStatement * aStatement );
  
     static IDE_RC    doTransformSubqueries( qcStatement * aStatement,
                                             qtcNode     * aPredicate );
 
-    // ÇöÀç Join Graph¿¡ ÇØ´çÇÏ´Â dependenciesÀÎÁö °Ë»ç
+    // í˜„ì¬ Join Graphì— í•´ë‹¹í•˜ëŠ” dependenciesì¸ì§€ ê²€ì‚¬
     static IDE_RC    currentJoinDependencies( qmgGraph  * aJoinGraph,
                                               qcDepInfo * aDependencies,
                                               idBool    * aIsCurrent );
@@ -118,20 +118,20 @@ public:
                                                         qcDepInfo * aDependencies,
                                                         idBool    * aIsCurrent );
 
-    // PROJ-1446 Host variableÀ» Æ÷ÇÔÇÑ ÁúÀÇ ÃÖÀûÈ­
-    // bind ÈÄ ¾Æ·¡ ÇÔ¼ö¸¦ ÅëÇØ¼­ scan method¸¦ Àç¼³Á¤ÇÑ´Ù.
+    // PROJ-1446 Host variableì„ í¬í•¨í•œ ì§ˆì˜ ìµœì í™”
+    // bind í›„ ì•„ë˜ í•¨ìˆ˜ë¥¼ í†µí•´ì„œ scan methodë¥¼ ì¬ì„¤ì •í•œë‹¤.
     static IDE_RC    optimizeForHost( qcStatement * aStatement );
 
-    // PROJ-1446 Host variableÀ» Æ÷ÇÔÇÑ ÁúÀÇ ÃÖÀûÈ­
-    // À§ ÇÔ¼ö¸¦ ÅëÇØ¼­ Àç¼³Á¤µÈ access method¸¦ ±¸ÇÑ´Ù.
-    // execution½Ã¿¡ dataPlan¿¡ ÀÇÇØ È£ÃâµÈ´Ù.
+    // PROJ-1446 Host variableì„ í¬í•¨í•œ ì§ˆì˜ ìµœì í™”
+    // ìœ„ í•¨ìˆ˜ë¥¼ í†µí•´ì„œ ì¬ì„¤ì •ëœ access methodë¥¼ êµ¬í•œë‹¤.
+    // executionì‹œì— dataPlanì— ì˜í•´ í˜¸ì¶œëœë‹¤.
     static qmncScanMethod * getSelectedMethod(
         qcTemplate            * aTemplate,
         qmoScanDecisionFactor * aSDF,
         qmncScanMethod        * aDefaultMethod );
 
-    // PROJ-2462 Result Cache Hint¿Í Property ¸¦ ÅëÇØ¼­ Result Cache¿©ºÎ¸¦
-    // Ç¥½ÃÇÑ´Ù.
+    // PROJ-2462 Result Cache Hintì™€ Property ë¥¼ í†µí•´ì„œ Result Cacheì—¬ë¶€ë¥¼
+    // í‘œì‹œí•œë‹¤.
     static IDE_RC setResultCacheFlag( qcStatement * aStatement );
 
     // PROJ-2462 Result Cache
@@ -172,12 +172,12 @@ private:
     static void checkQuerySet( qmsQuerySet * aQuerySet, idBool * aIsPossible );
     static void checkFromTree( qmsFrom * aFrom, idBool * aIsPossible );
 
-    /* BUG-44228  merge ½ÇÇà½Ã disk tableÀÌ°í hash join ÀÎ °æ¿ì ÀÇµµÇÏÁö ¾Ê´Â °ªÀ¸·Î º¯°æ µË´Ï´Ù. */
+    /* BUG-44228  merge ì‹¤í–‰ì‹œ disk tableì´ê³  hash join ì¸ ê²½ìš° ì˜ë„í•˜ì§€ ì•ŠëŠ” ê°’ìœ¼ë¡œ ë³€ê²½ ë©ë‹ˆë‹¤. */
     static IDE_RC adjustValueNodeForMerge( qcStatement  * aStatement,
                                            qmcAttrDesc  * sResultDesc,
                                            qmmValueNode * sValueNode );
 
-    /* BUG-44228  merge ½ÇÇà½Ã disk tableÀÌ°í hash join ÀÎ °æ¿ì ÀÇµµÇÏÁö ¾Ê´Â °ªÀ¸·Î º¯°æ µË´Ï´Ù. */
+    /* BUG-44228  merge ì‹¤í–‰ì‹œ disk tableì´ê³  hash join ì¸ ê²½ìš° ì˜ë„í•˜ì§€ ì•ŠëŠ” ê°’ìœ¼ë¡œ ë³€ê²½ ë©ë‹ˆë‹¤. */
     static IDE_RC adjustArgumentNodeForMerge( qcStatement  * aStatement,
                                               mtcNode      * sSrcNode,
                                               mtcNode      * sDstNode );

@@ -19,8 +19,8 @@
  *
  * $Id: sdpscCache.cpp 82075 2018-01-17 06:39:52Z jina.kim $
  *
- * º» ÆÄÀÏÀº Circular-List Managed SegmentÀÇ Segment Runtime Cache¿¡ ´ëÇÑ
- * STATIC ÀÎÅÍÆäÀÌ½º¸¦ °ü¸®ÇÑ´Ù.
+ * ë³¸ íŒŒì¼ì€ Circular-List Managed Segmentì˜ Segment Runtime Cacheì— ëŒ€í•œ
+ * STATIC ì¸í„°íŽ˜ì´ìŠ¤ë¥¼ ê´€ë¦¬í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -34,12 +34,12 @@
 
 /***********************************************************************
  *
- * Description : [ INTERFACE ] Segment Cache ÃÊ±âÈ­
+ * Description : [ INTERFACE ] Segment Cache ì´ˆê¸°í™”
  *
- * aSegHandle  - [IN] ¼¼±×¸ÕÆ® ÇÚµé Æ÷ÀÎÅÍ
- * aSpaceID    - [IN] Å×ÀÌºí½ºÆäÀÌ½º ID
- * aSegType    - [IN] ¼¼±×¸ÕÆ® Å¸ÀÔ
- * aTableOID   - [IN] ¼¼±×¸ÕÆ®ÀÇ ¼ÒÀ¯ °´Ã¼ÀÇ OID (°´Ã¼°¡ TableÀÎ °æ¿ì¸¸)
+ * aSegHandle  - [IN] ì„¸ê·¸ë¨¼íŠ¸ í•¸ë“¤ í¬ì¸í„°
+ * aSpaceID    - [IN] í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ ID
+ * aSegType    - [IN] ì„¸ê·¸ë¨¼íŠ¸ íƒ€ìž…
+ * aTableOID   - [IN] ì„¸ê·¸ë¨¼íŠ¸ì˜ ì†Œìœ  ê°ì²´ì˜ OID (ê°ì²´ê°€ Tableì¸ ê²½ìš°ë§Œ)
  *
  ***********************************************************************/
 IDE_RC sdpscCache::initialize( sdpSegHandle * aSegHandle,
@@ -56,7 +56,7 @@ IDE_RC sdpscCache::initialize( sdpSegHandle * aSegHandle,
 
     //TC/Server/LimitEnv/Bugs/BUG-24163/BUG-24163_2.sql
     //IDU_LIMITPOINT("sdpscCache::initialize::malloc");
-    //[TODO] immediate·Î º¯°æÇÒ°Í.
+    //[TODO] immediateë¡œ ë³€ê²½í• ê²ƒ.
 
     IDE_ASSERT( iduMemMgr::malloc( IDU_MEM_SM_SDP,
                                    ID_SIZEOF(sdpscSegCache),
@@ -104,12 +104,12 @@ IDE_RC sdpscCache::initialize( sdpSegHandle * aSegHandle,
 }
 
 /***********************************************************************
- * Description : SegCacheInfo¸¦ ¾ò¾îÁØ´Ù.
+ * Description : SegCacheInfoë¥¼ ì–»ì–´ì¤€ë‹¤.
  *
- * aStatistics   - [IN] Åë°è Á¤º¸
+ * aStatistics   - [IN] í†µê³„ ì •ë³´
  * aSegHandle    - [IN] Segment Handle
  *
- * aSegCacheInfo - [OUT] SegCacheInfo°¡ ¼³Á¤µÈ´Ù.
+ * aSegCacheInfo - [OUT] SegCacheInfoê°€ ì„¤ì •ëœë‹¤.
  *
  ***********************************************************************/
 IDE_RC sdpscCache::getSegCacheInfo( idvSQL          * /*aStatistics*/,
@@ -130,22 +130,22 @@ IDE_RC sdpscCache::setLstAllocPage( idvSQL          * /*aStatistics*/,
                                     scPageID          /*aLstAllocPID*/,
                                     ULong             /*aLstAllocSeqNo*/ )
 {
-    /* TMS°¡ ¾Æ´Ï¸é ¾Æ¹«°Íµµ ÇÏÁö ¾Ê´Â´Ù. */
+    /* TMSê°€ ì•„ë‹ˆë©´ ì•„ë¬´ê²ƒë„ í•˜ì§€ ì•ŠëŠ”ë‹¤. */
     return IDE_SUCCESS;
 }
 
 /***********************************************************************
  *
- * Description : [ INTERFACE ] Segment Cache ÇØÁ¦
+ * Description : [ INTERFACE ] Segment Cache í•´ì œ
  *
- * aSegHandle  - [IN] ¼¼±×¸ÕÆ® ÇÚµé Æ÷ÀÎÅÍ
+ * aSegHandle  - [IN] ì„¸ê·¸ë¨¼íŠ¸ í•¸ë“¤ í¬ì¸í„°
  *
  ***********************************************************************/
 IDE_RC sdpscCache::destroy( sdpSegHandle * aSegHandle )
 {
     IDE_ASSERT( aSegHandle != NULL );
 
-    // Segment Cache¸¦ ¸Þ¸ð¸® ÇØÁ¦ÇÑ´Ù.
+    // Segment Cacheë¥¼ ë©”ëª¨ë¦¬ í•´ì œí•œë‹¤.
     IDE_ASSERT( iduMemMgr::free( aSegHandle->mCache ) == IDE_SUCCESS );
     aSegHandle->mCache = NULL;
 

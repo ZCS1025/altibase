@@ -69,7 +69,7 @@ static void oci_applier_set_error_message(OCI_APPLIER_HANDLE *aHandle,
 }
 
 /*
- * OCI Applier ÇÚµéÀ» »ı¼ºÇÏ°í, OCI  Library¸¦ ÃÊ±âÈ­ ÇÕ´Ï´Ù.
+ * OCI Applier í•¸ë“¤ì„ ìƒì„±í•˜ê³ , OCI  Libraryë¥¼ ì´ˆê¸°í™” í•©ë‹ˆë‹¤.
  */
 OCI_APPLIER_RC oci_applier_initialize(OCI_APPLIER_HANDLE **aHandle)
 {
@@ -128,7 +128,7 @@ OCI_APPLIER_RC oci_applier_initialize(OCI_APPLIER_HANDLE **aHandle)
 }
 
 /*
- * OCI Library¸¦ Á¤¸®ÇÏ°í, OCI Applier ÇÚµéÀÇ ÀÚ¿øÀ» ¹İ³³ÇÕ´Ï´Ù.
+ * OCI Libraryë¥¼ ì •ë¦¬í•˜ê³ , OCI Applier í•¸ë“¤ì˜ ìì›ì„ ë°˜ë‚©í•©ë‹ˆë‹¤.
  */
 void oci_applier_destroy(OCI_APPLIER_HANDLE *aHandle)
 {
@@ -178,7 +178,7 @@ void oci_applier_destroy(OCI_APPLIER_HANDLE *aHandle)
 }
 
 /*
- * Oracle ¼­¹ö¿¡ Log onÇÕ´Ï´Ù.
+ * Oracle ì„œë²„ì— Log oní•©ë‹ˆë‹¤.
  */
 OCI_APPLIER_RC oci_applier_log_on(OCI_APPLIER_HANDLE *aHandle)
 {
@@ -263,7 +263,7 @@ OCI_APPLIER_RC oci_applier_log_on(OCI_APPLIER_HANDLE *aHandle)
 }
 
 /*
- * Oracle ¼­¹ö¿¡ Log out ÇÕ´Ï´Ù.
+ * Oracle ì„œë²„ì— Log out í•©ë‹ˆë‹¤.
  */
 void oci_applier_log_out(OCI_APPLIER_HANDLE *aHandle)
 {
@@ -274,7 +274,7 @@ void oci_applier_log_out(OCI_APPLIER_HANDLE *aHandle)
 } 
 
 /*
- * Oracle ¼­¹ö¿¡ SQL ÁúÀÇ¸¦ ½ÇÇàÇÕ´Ï´Ù.
+ * Oracle ì„œë²„ì— SQL ì§ˆì˜ë¥¼ ì‹¤í–‰í•©ë‹ˆë‹¤.
  */
 OCI_APPLIER_RC oci_applier_execute_sql(OCI_APPLIER_HANDLE *aHandle,
                                        text *aSqlQuery)
@@ -331,7 +331,7 @@ OCI_APPLIER_RC oci_applier_execute_sql(OCI_APPLIER_HANDLE *aHandle,
 }
 
 /*
- * COMMITÀ» ½ÇÇàÇÕ´Ï´Ù.
+ * COMMITì„ ì‹¤í–‰í•©ë‹ˆë‹¤.
  */
 OCI_APPLIER_RC oci_applier_commit_sql(OCI_APPLIER_HANDLE *aHandle)
 {
@@ -347,7 +347,7 @@ OCI_APPLIER_RC oci_applier_commit_sql(OCI_APPLIER_HANDLE *aHandle)
 }
 
 /*
- * ROLLBACKÀ» ½ÇÇàÇÕ´Ï´Ù.
+ * ROLLBACKì„ ì‹¤í–‰í•©ë‹ˆë‹¤.
  */
 OCI_APPLIER_RC oci_applier_rollback_sql(OCI_APPLIER_HANDLE *aHandle)
 {
@@ -998,7 +998,7 @@ static OCI_APPLIER_RC oci_applier_apply_update_log(
 {
     OCIStmt *sUpdateStatement = NULL;
 
-    /* TODO: Log ºñ±³¸¦ ÅëÇÑ Prepare ¹æ½Ä ÀÌ¿ë */
+    /* TODO: Log ë¹„êµë¥¼ í†µí•œ Prepare ë°©ì‹ ì´ìš© */
 
     EXCEPTION_TEST(oci_applier_prepare_update_statement(aHandle, aLog,
                                                         &sUpdateStatement)
@@ -1030,7 +1030,7 @@ static OCI_APPLIER_RC oci_applier_apply_update_log(
 }
 
 /*
- * DB_LOG¸¦ Oracle¿¡ ¹İ¿µÇÕ´Ï´Ù.
+ * DB_LOGë¥¼ Oracleì— ë°˜ì˜í•©ë‹ˆë‹¤.
  */
 OCI_APPLIER_RC oci_applier_apply_log(OCI_APPLIER_HANDLE *aHandle, 
                                      DB_LOG *aLog)

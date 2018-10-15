@@ -48,10 +48,10 @@ public:
 
     /* BUG-27776 the server startup can be fail since the dw file is 
      * removed after DW recovery. 
-     * DWFileÀ» Áö¿ì´Â ´ë½Å ResetÇÕ´Ï´Ù.*/
+     * DWFileì„ ì§€ìš°ëŠ” ëŒ€ì‹  Resetí•©ë‹ˆë‹¤.*/
     IDE_RC reset()
     {
-        /* writeHeader¸¦ ÇÏ¸é Header¸¦ ±â·ÏÇÏ¸é¼­ FileÀ» resetÇÕ´Ï´Ù.*/
+        /* writeHeaderë¥¼ í•˜ë©´ Headerë¥¼ ê¸°ë¡í•˜ë©´ì„œ Fileì„ resetí•©ë‹ˆë‹¤.*/
         return writeHeader();
     }
 

@@ -184,7 +184,7 @@ IDE_RC testRecovery_normal()
     gVerboseCount = ID_TRUE;
 
     /* ------------------------------------------------
-     * 1. Index°¡ ¾ø´Â »óÅÂ¿¡¼­ Test
+     * 1. Indexê°€ ì—†ëŠ” ìƒíƒœì—ì„œ Test
      * ----------------------------------------------*/
 
     // 1.0) Create Table
@@ -383,7 +383,7 @@ IDE_RC testRecovery_normal()
     s_state = 0;
     IDE_TEST(s_trans.rollback() != IDE_SUCCESS);
 
-    // 1.2) Insert°¡ Á¦´ë·Î Abort°¡ µÇ¾ú´ÂÁö °Ë»ç
+    // 1.2) Insertê°€ ì œëŒ€ë¡œ Abortê°€ ë˜ì—ˆëŠ”ì§€ ê²€ì‚¬
     
     IDE_TEST(s_trans.begin(&spRootStmt, NULL) != IDE_SUCCESS);
     s_state = 1;
@@ -397,7 +397,7 @@ IDE_RC testRecovery_normal()
 
     idlOS::fprintf(TSM_OUTPUT, "### 1.2 testRecovery_normal(insert->commit->select) Begin \n");
 
-    // 1.3) Table¿¡ ·¹ÄÚµå »ğÀÔ ÈÄ commit
+    // 1.3) Tableì— ë ˆì½”ë“œ ì‚½ì… í›„ commit
     IDE_TEST(s_trans.begin(&spRootStmt, NULL) != IDE_SUCCESS);
     s_state = 1;
     for (i = 0; i < TEST_RECOVERY_TABLE_ROW_COUNT/10; i++)
@@ -419,7 +419,7 @@ IDE_RC testRecovery_normal()
     s_state = 0; 
     IDE_TEST(s_trans.commit(&sDummySCN) != IDE_SUCCESS); 
 
-    // 1.2) Insert°¡ Á¦´ë·Î commit µÇ¾ú´ÂÁö °Ë»ç
+    // 1.2) Insertê°€ ì œëŒ€ë¡œ commit ë˜ì—ˆëŠ”ì§€ ê²€ì‚¬
     
     IDE_TEST(s_trans.begin(&spRootStmt, NULL) != IDE_SUCCESS);
     s_state = 1;
@@ -434,7 +434,7 @@ IDE_RC testRecovery_normal()
 
 
     idlOS::fprintf(TSM_OUTPUT, "### 1.3 testRecovery_normal(insert->abort->select) Begin \n");
-    // 1.3) Table¿¡ ·¹ÄÚµå »ğÀÔ ÈÄ abort
+    // 1.3) Tableì— ë ˆì½”ë“œ ì‚½ì… í›„ abort
     IDE_TEST(s_trans.begin(&spRootStmt, NULL) != IDE_SUCCESS);
     s_state = 1;
     
@@ -457,7 +457,7 @@ IDE_RC testRecovery_normal()
     s_state = 0; 
     IDE_TEST(s_trans.rollback() != IDE_SUCCESS);
     
-    // 1.5) Á¦´ë·Î Abort°¡ µÇ¾ú´ÂÁö °Ë»ç
+    // 1.5) ì œëŒ€ë¡œ Abortê°€ ë˜ì—ˆëŠ”ì§€ ê²€ì‚¬
     IDE_TEST(s_trans.begin(&spRootStmt, NULL) != IDE_SUCCESS);
     s_state = 1;
     
@@ -507,7 +507,7 @@ IDE_RC testRecovery_normal()
     idlOS::fprintf(TSM_OUTPUT, "### 1.4 testRecovery_normal(update->abort->select) End \n");
     
     idlOS::fprintf(TSM_OUTPUT, "### 1.5 testRecovery_normal(update->commit->select) Begin \n");
-    // 1.8) update ÈÄ commit 
+    // 1.8) update í›„ commit 
     IDE_TEST(s_trans.begin(&spRootStmt, NULL) != IDE_SUCCESS);
     s_state = 1;
 
@@ -536,7 +536,7 @@ IDE_RC testRecovery_normal()
     s_state = 0; 
     IDE_TEST(s_trans.commit(&sDummySCN) != IDE_SUCCESS);
 
-    // 1.9) Á¦´ë·Î commit µÇ¾ú´ÂÁö °Ë»ç
+    // 1.9) ì œëŒ€ë¡œ commit ë˜ì—ˆëŠ”ì§€ ê²€ì‚¬
     IDE_TEST(s_trans.begin(&spRootStmt, NULL) != IDE_SUCCESS);
     s_state = 1;
 
@@ -548,7 +548,7 @@ IDE_RC testRecovery_normal()
     idlOS::fprintf(TSM_OUTPUT, "### 1.5 testRecovery_normal(update->commit->select) End \n");
 
     idlOS::fprintf(TSM_OUTPUT, "### 1.6 testRecovery_normal(delete->abort->select) Begin \n");
-    // 1.10) Delete all ÈÄ abort
+    // 1.10) Delete all í›„ abort
     IDE_TEST(s_trans.begin(&spRootStmt, NULL) != IDE_SUCCESS);
     s_state = 1;
     
@@ -560,7 +560,7 @@ IDE_RC testRecovery_normal()
     s_state = 0; 
     IDE_TEST(s_trans.rollback() != IDE_SUCCESS);
 
-    // 1.11) Á¦´ë·Î rollback µÇ¾ú´ÂÁö °Ë»ç
+    // 1.11) ì œëŒ€ë¡œ rollback ë˜ì—ˆëŠ”ì§€ ê²€ì‚¬
     IDE_TEST(s_trans.begin(&spRootStmt, NULL) != IDE_SUCCESS);
     s_state = 1;
     
@@ -584,7 +584,7 @@ IDE_RC testRecovery_normal()
 #endif    
    
     idlOS::fprintf(TSM_OUTPUT, "### 1.7 testRecovery_normal(partial delete->abort) Begin \n");
-    // 1.12) ºÎºĞ Delete ÈÄ abort
+    // 1.12) ë¶€ë¶„ Delete í›„ abort
     IDE_TEST(s_trans.begin(&spRootStmt, NULL) != IDE_SUCCESS);
     s_state = 1;
 
@@ -606,7 +606,7 @@ IDE_RC testRecovery_normal()
     s_state = 0; 
     IDE_TEST(s_trans.rollback() != IDE_SUCCESS);
     
-    // 1.13) Á¦´ë·Î rollback µÇ¾ú´ÂÁö °Ë»ç
+    // 1.13) ì œëŒ€ë¡œ rollback ë˜ì—ˆëŠ”ì§€ ê²€ì‚¬
     IDE_TEST(s_trans.begin(&spRootStmt, NULL) != IDE_SUCCESS);
     s_state = 1;
     
@@ -617,7 +617,7 @@ IDE_RC testRecovery_normal()
     idlOS::fprintf(TSM_OUTPUT, "### 1.7 testRecovery_normal(partial delete->abort) End \n");
     
     idlOS::fprintf(TSM_OUTPUT, "### 1.8 testRecovery_normal(delete->commit->select) Begin \n");
-    // 1.15) Delete all ÈÄ commit
+    // 1.15) Delete all í›„ commit
     IDE_TEST(s_trans.begin(&spRootStmt, NULL) != IDE_SUCCESS);
     s_state = 1;
 
@@ -629,7 +629,7 @@ IDE_RC testRecovery_normal()
     
     IDE_TEST(s_trans.destroy() != IDE_SUCCESS);
 
-    // 1.13) Á¦´ë·Î commit µÇ¾ú´ÂÁö °Ë»ç
+    // 1.13) ì œëŒ€ë¡œ commit ë˜ì—ˆëŠ”ì§€ ê²€ì‚¬
     IDE_TEST(s_trans.begin(&spRootStmt, NULL) != IDE_SUCCESS);
     s_state = 1;
     
@@ -667,7 +667,7 @@ void testRecovery_init_threads()
     //idlOS::memset(gArrThreadInfo, 0, sizeof(tsmThreadInfo) * TEST_THREAD_COUNT);
 
      /* --------------------------------------------------------
-        1. active transactionÀÎ »óÅÂ·Î ¼­¹ö ºñÁ¤»ó Á¾·áµÇ´Â °æ¿ì    
+        1. active transactionì¸ ìƒíƒœë¡œ ì„œë²„ ë¹„ì •ìƒ ì¢…ë£Œë˜ëŠ” ê²½ìš°    
            begin -> insert -> commit -> begin -> insert
         -------------------------------------------------------- */
     s_pArrFuncInfo = gArrThreadInfo[0].m_arrTestFunc;
@@ -726,7 +726,7 @@ void testRecovery_init_threads()
     s_pInsertInfo->m_nEnd   = 1999;
 
      /* --------------------------------------------------------
-        2. active transactionÀÎ »óÅÂ·Î ¼­¹ö ºñÁ¤»ó Á¾·áµÇ´Â °æ¿ì    
+        2. active transactionì¸ ìƒíƒœë¡œ ì„œë²„ ë¹„ì •ìƒ ì¢…ë£Œë˜ëŠ” ê²½ìš°    
            begin -> insert -> abort -> begin -> insert
         -------------------------------------------------------- */
 
@@ -787,7 +787,7 @@ void testRecovery_init_threads()
     s_pArrFuncInfo = gArrThreadInfo[2].m_arrTestFunc;
 
      /* --------------------------------------------------------
-        3. abortµÈ »óÅÂ·Î ¼­¹ö ºñÁ¤»ó Á¾·áµÇ´Â °æ¿ì    
+        3. abortëœ ìƒíƒœë¡œ ì„œë²„ ë¹„ì •ìƒ ì¢…ë£Œë˜ëŠ” ê²½ìš°    
            begin -> insert -> abort -> begin -> insert -> abort
         -------------------------------------------------------- */
     
@@ -849,7 +849,7 @@ void testRecovery_init_threads()
     s_pArrFuncInfo = gArrThreadInfo[3].m_arrTestFunc;
     
      /* --------------------------------------------------------
-        4. commitµÈ »óÅÂ·Î ¼­¹ö ºñÁ¤»ó Á¾·áµÇ´Â °æ¿ì    
+        4. commitëœ ìƒíƒœë¡œ ì„œë²„ ë¹„ì •ìƒ ì¢…ë£Œë˜ëŠ” ê²½ìš°    
            begin -> insert -> abort -> begin -> insert -> commit
         -------------------------------------------------------- */
     //3.0 Create Table

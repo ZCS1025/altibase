@@ -60,7 +60,7 @@ public:
     
     /* Update type:  SMR_SMM_MEMBASE_ALLOC_PERS
      *
-     *  MembaseÀÇ ´ÙÁßÈ­µÈ Free Page List¿¡ º¯°æÇÑ ³»¿ë¿¡ ´ëÇØ REDO/UNDO ½Ç½Ã
+     *  Membaseì˜ ë‹¤ì¤‘í™”ëœ Free Page Listì— ë³€ê²½í•œ ë‚´ìš©ì— ëŒ€í•´ REDO/UNDO ì‹¤ì‹œ
      *
      */
     static IDE_RC redo_undo_SMM_MEMBASE_ALLOC_PERS_LIST(
@@ -75,7 +75,7 @@ public:
 
     /* Update type:  SMR_SMM_MEMBASE_ALLOC_PAGECHUNK
      *
-     *  Expand Chunk¿¡ ÇÒ´ç¿¡ ´ëÇÑ logical redo ½Ç½Ã 
+     *  Expand Chunkì— í• ë‹¹ì— ëŒ€í•œ logical redo ì‹¤ì‹œ 
      */
     static IDE_RC redo_SMM_MEMBASE_ALLOC_EXPAND_CHUNK(
                       smTID      /*a_tid*/,
@@ -90,8 +90,8 @@ public:
 
     /* Update type : SMR_SMM_PERS_UPDATE_NEXT_FREE_PAGE_LINK
      *
-     * Free Page List Info Page ¿¡ Free PageÀÇ Next Free Page±â·ÏÇÑ °Í¿¡ ´ëÇØ
-     * REDO / UNDO ½Ç½Ã
+     * Free Page List Info Page ì— Free Pageì˜ Next Free Pageê¸°ë¡í•œ ê²ƒì— ëŒ€í•´
+     * REDO / UNDO ì‹¤ì‹œ
      */
     static IDE_RC redo_undo_SMM_PERS_UPDATE_NEXT_FREE_PAGE_LINK(
                       smTID          /*a_tid*/,
@@ -103,7 +103,7 @@ public:
                       SInt           /*a_nSize*/,
                       UInt           /*aFlag*/);
 
-    // BUGBUG-1548 ÁÖ¼® ´Ş°Í
+    // BUGBUG-1548 ì£¼ì„ ë‹¬ê²ƒ
     static IDE_RC redo_SMM_UPDATE_MRDB_CREATE_TBS(
                       idvSQL*            aStatistics, 
                       void*              aTrans,
@@ -145,7 +145,7 @@ public:
                       idBool             aIsRestart );
 
 
-    // ALTER TABLESPACE TBS1 AUTOEXTEND .... ¿¡ ´ëÇÑ REDO ¼öÇà
+    // ALTER TABLESPACE TBS1 AUTOEXTEND .... ì— ëŒ€í•œ REDO ìˆ˜í–‰
     static IDE_RC redo_SCT_UPDATE_MRDB_ALTER_AUTOEXTEND(
                        idvSQL*              aStatistics, 
                        void*                aTrans,
@@ -157,7 +157,7 @@ public:
                        idBool               /* aIsRestart */ );
 
 
-    // ALTER TABLESPACE TBS1 AUTOEXTEND .... ¿¡ ´ëÇÑ REDO ¼öÇà
+    // ALTER TABLESPACE TBS1 AUTOEXTEND .... ì— ëŒ€í•œ REDO ìˆ˜í–‰
     static IDE_RC undo_SCT_UPDATE_MRDB_ALTER_AUTOEXTEND(
                        idvSQL*              aStatistics, 
                        void*                aTrans,
@@ -169,7 +169,7 @@ public:
                        idBool               aIsRestart );
 
 
-    // Create TablespaceµµÁß Checkpoint Image FileÀÇ »ı¼º¿¡ ´ëÇÑ Redo
+    // Create Tablespaceë„ì¤‘ Checkpoint Image Fileì˜ ìƒì„±ì— ëŒ€í•œ Redo
     static IDE_RC redo_SMM_UPDATE_MRDB_CREATE_CIMAGE_FILE(
                       idvSQL*              aStatistics, 
                       void*              /* aTrans */,
@@ -181,7 +181,7 @@ public:
                       idBool             /* aIsRestart */  );
     
 
-    // Create TablespaceµµÁß Checkpoint Image FileÀÇ »ı¼º¿¡ ´ëÇÑ Undo
+    // Create Tablespaceë„ì¤‘ Checkpoint Image Fileì˜ ìƒì„±ì— ëŒ€í•œ Undo
     static IDE_RC undo_SMM_UPDATE_MRDB_CREATE_CIMAGE_FILE(
                       idvSQL*            aStatistics, 
                       void*              aTrans,
@@ -200,7 +200,7 @@ public:
 
     
 private:
-    // ALTER TABLESPACE TBS1 AUTOEXTEND .... ¿¡ ´ëÇÑ Log Image¸¦ ºĞ¼®ÇÑ´Ù.
+    // ALTER TABLESPACE TBS1 AUTOEXTEND .... ì— ëŒ€í•œ Log Imageë¥¼ ë¶„ì„í•œë‹¤.
     static IDE_RC getAlterAutoExtendImage( UInt       aValueSize,
                                            SChar    * aValuePtr,
                                            idBool   * aAutoExtMode,

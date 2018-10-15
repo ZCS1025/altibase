@@ -18,7 +18,7 @@
 /***********************************************************************
  * $Id: mtdTypeDef.h 19015 2006-11-19 23:43:45Z sungminee $
  *
- * ul¿¡¼­ ÂüÁ¶ÇÏ¹Ç·Î »ó¼ö¸¸ Á¤ÀÇÇÏ¿©¾ß ÇÔ.
+ * ulì—ì„œ ì°¸ì¡°í•˜ë¯€ë¡œ ìƒìˆ˜ë§Œ ì •ì˜í•˜ì—¬ì•¼ í•¨.
  *
  **********************************************************************/
 
@@ -27,63 +27,63 @@
 
 // PROJ-1364
 // mtdModule.id
-#define MTD_MAX_COUNT       36 // ÀüÃ¼ typeÀÇ °³¼ö
+#define MTD_MAX_COUNT       36 // ì „ì²´ typeì˜ ê°œìˆ˜
 
 // BUG-37903
-// data type Ãß°¡ ½Ã qcp/qcpll.lÀÇ TL_TYPED_LETERAL¿¡
-// µ¥ÀÌÅÍÅ¸ÀÔ¸íÀ» Ãß°¡ÇØ¾ß ÇÑ´Ù.
+// data type ì¶”ê°€ ì‹œ qcp/qcpll.lì˜ TL_TYPED_LETERALì—
+// ë°ì´í„°íƒ€ì…ëª…ì„ ì¶”ê°€í•´ì•¼ í•œë‹¤.
 
-// Type id ´Â mtdModuleById ¹è¿­¿¡ ¾²ÀÏ ¶§,
-// 0x3F ·Î ¸¶½ºÅ· ÇÑ °ªÀ» ¹è¿­ÀÇ index ·Î »ç¿ëÇÑ´Ù.
-// µû¶ó¼­ type id ¸¦ »õ·Î Ãß°¡ÇÏ·Á¸é
-// ±âÁ¸ id ¸¦ 0x3F ·Î ¸¶½ºÅ· ÇÑ °ª°ú °ãÄ¡Áö ¾Êµµ·Ï ÇØ¾ß ÇÑ´Ù.
-// (id ¿Í ¸¶½ºÅ·ÇÑ °ªÀÌ ¼­·Î ´Ù¸¦ °æ¿ì ÁÖ¼®¿¡ []·Î ¹­¾î Ç¥±âÇÏ¿´´Ù.)
+// Type id ëŠ” mtdModuleById ë°°ì—´ì— ì“°ì¼ ë•Œ,
+// 0x3F ë¡œ ë§ˆìŠ¤í‚¹ í•œ ê°’ì„ ë°°ì—´ì˜ index ë¡œ ì‚¬ìš©í•œë‹¤.
+// ë”°ë¼ì„œ type id ë¥¼ ìƒˆë¡œ ì¶”ê°€í•˜ë ¤ë©´
+// ê¸°ì¡´ id ë¥¼ 0x3F ë¡œ ë§ˆìŠ¤í‚¹ í•œ ê°’ê³¼ ê²¹ì¹˜ì§€ ì•Šë„ë¡ í•´ì•¼ í•œë‹¤.
+// (id ì™€ ë§ˆìŠ¤í‚¹í•œ ê°’ì´ ì„œë¡œ ë‹¤ë¥¼ ê²½ìš° ì£¼ì„ì— []ë¡œ ë¬¶ì–´ í‘œê¸°í•˜ì˜€ë‹¤.)
                                                         // [ID & 0x3F]
-#define MTD_BIGINT_ID       (UInt)-5                    // [59] 1°³
+#define MTD_BIGINT_ID       (UInt)-5                    // [59] 1ê°œ
 #define MTD_BINARY_ID       (UInt)-2                    // [62]
 #define MTD_BLOB_ID         30                          //
 #define MTD_BLOB_LOCATOR_ID 31    // PROJ-1362          //
-#define MTD_CLOB_ID         40                          //      5°³
+#define MTD_CLOB_ID         40                          //      5ê°œ
 #define MTD_CLOB_LOCATOR_ID 41    // PROJ-1362          //
 #define MTD_BOOLEAN_ID      16                          //
 #define MTD_BIT_ID          (UInt)-7                    // [57]
-#define MTD_VARBIT_ID       (UInt)-100  // VARBITÀº ODBC¿¡ Á¤ÀÇµÇ¾î ÀÖÁö ¾Ê´Ù. [28]
-#define MTD_CHAR_ID         1                           //      10°³
+#define MTD_VARBIT_ID       (UInt)-100  // VARBITì€ ODBCì— ì •ì˜ë˜ì–´ ìˆì§€ ì•Šë‹¤. [28]
+#define MTD_CHAR_ID         1                           //      10ê°œ
 #define MTD_DATE_ID         9                           //
 #define MTD_DOUBLE_ID       8                           //
 #define MTD_FLOAT_ID        6                           //
 #define MTD_BYTE_ID         20001                       // [33]
-#define MTD_NIBBLE_ID       20002                       // [34] 15°³
+#define MTD_NIBBLE_ID       20002                       // [34] 15ê°œ
 #define MTD_VARBYTE_ID      20003                       // [35]
 #define MTD_INTEGER_ID      4                           //
 #define MTD_INTERVAL_ID     10                          //
 #define MTD_LIST_ID         10001                       // [17]
 #define MTD_NULL_ID         0                           //
-#define MTD_NUMBER_ID       10002                       // [42] 20°³
+#define MTD_NUMBER_ID       10002                       // [42] 20ê°œ
 #define MTD_NUMERIC_ID      2                           //
 #define MTD_REAL_ID         7                           //
 #define MTD_SMALLINT_ID     5                           //
 #define MTD_VARCHAR_ID      12                          //
-#define MTD_NONE_ID         (UInt)-999                  // [25] 25°³
+#define MTD_NONE_ID         (UInt)-999                  // [25] 25ê°œ
 #define MTS_FILETYPE_ID     30001                       // [49]
 #define MTS_CONNECT_TYPE_ID 30002
 #define MTD_GEOMETRY_ID     10003                       // [19]
 #define MTD_NCHAR_ID        (UInt)-8   // PROJ-1579     // [56]
 #define MTD_NVARCHAR_ID     (UInt)-9   // PROJ-1579     // [55]
-#define MTD_ECHAR_ID        60         // PROJ-2002     //      30°³
+#define MTD_ECHAR_ID        60         // PROJ-2002     //      30ê°œ
 #define MTD_EVARCHAR_ID     61         // PROJ-2002     //
 #define MTD_UNDEF_ID        90         // PROJ-2163     // [26]
 
-// PROJ-1075 »ç¿ëÀÚ Á¤ÀÇ Å¸ÀÔ ¶Ç´Â rowtype id
-#define MTD_UDT_ID_MIN           (1000001) // typeÀÌ udtÀÎÁö ºñ±³¿ë
+// PROJ-1075 ì‚¬ìš©ì ì •ì˜ íƒ€ì… ë˜ëŠ” rowtype id
+#define MTD_UDT_ID_MIN           (1000001) // typeì´ udtì¸ì§€ ë¹„êµìš©
 #define MTD_ROWTYPE_ID           (1000001)
 #define MTD_RECORDTYPE_ID        (1000002)
 #define MTD_ASSOCIATIVE_ARRAY_ID (1000003)
 #define MTD_REF_CURSOR_ID        (1000004)
-#define MTD_UDT_ID_MAX           (1000004) // typeÀÌ udtÀÎÁö ºñ±³¿ë
+#define MTD_UDT_ID_MAX           (1000004) // typeì´ udtì¸ì§€ ë¹„êµìš©
 // PROJ-1075
-// User-defined typeÀº mtdModuleÀÇ no °¡ ¾ø´Ù.
-// µû¶ó¼­ pre-definedµÈ °ªÀ» »ç¿ëÇÑ´Ù.
+// User-defined typeì€ mtdModuleì˜ no ê°€ ì—†ë‹¤.
+// ë”°ë¼ì„œ pre-definedëœ ê°’ì„ ì‚¬ìš©í•œë‹¤.
 #define MTD_UDT_MODULE_NO     (999)
 
 #endif /* _O_MTD_TYPE_DEF_H_ */

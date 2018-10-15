@@ -20,11 +20,11 @@ import Altibase.jdbc.driver.ex.Error;
 import Altibase.jdbc.driver.ex.ErrorDef;
 
 /**
- * nibble array¸¦ À§ÇÑ À¯Æ¿¸®Æ¼ Å¬·¡½º.
+ * nibble arrayë¥¼ ìœ„í•œ ìœ í‹¸ë¦¬í‹° í´ë˜ìŠ¤.
  * <p>
- * nibble array´Â nibble °ªÀ» ÇÑ ¹ÙÀÌÆ®·Î ÇÏ´Â byte[]´Ù.
- * Áï, nibble µ¥ÀÌÅ¸ 'F0123'ÀÇ nibble array´Â byte[]{0xF, 0x1, 0x2, 0x3}·Î Ç¥ÇöÇÑ´Ù.
- * ÀÌ °ªÀº ¹®ÀÚ¿­·Î 'F0123'Ã³·³ Ç¥ÇöÇÑ´Ù.
+ * nibble arrayëŠ” nibble ê°’ì„ í•œ ë°”ì´íŠ¸ë¡œ í•˜ëŠ” byte[]ë‹¤.
+ * ì¦‰, nibble ë°ì´íƒ€ 'F0123'ì˜ nibble arrayëŠ” byte[]{0xF, 0x1, 0x2, 0x3}ë¡œ í‘œí˜„í•œë‹¤.
+ * ì´ ê°’ì€ ë¬¸ìì—´ë¡œ 'F0123'ì²˜ëŸ¼ í‘œí˜„í•œë‹¤.
  */
 public final class NibbleUtils
 {
@@ -35,10 +35,10 @@ public final class NibbleUtils
     }
 
     /**
-     * nibble °ªÀÎÁö È®ÀÎÇÑ´Ù.
+     * nibble ê°’ì¸ì§€ í™•ì¸í•œë‹¤.
      * 
-     * @param aNibble È®ÀÎÇÒ °ª
-     * @return nibble °ªÀÌ¸é true, ¾Æ´Ï¸é false
+     * @param aNibble í™•ì¸í•  ê°’
+     * @return nibble ê°’ì´ë©´ true, ì•„ë‹ˆë©´ false
      */
     public static boolean isNibble(int aNibble)
     {
@@ -46,10 +46,10 @@ public final class NibbleUtils
     }
 
     /**
-     * À¯È¿ÇÑ nibble arrayÀÎÁö È®ÀÎÇÑ´Ù.
+     * ìœ íš¨í•œ nibble arrayì¸ì§€ í™•ì¸í•œë‹¤.
      *
-     * @param aNibbleArray È®ÀÎÇÑ byte array
-     * @return byte arrayÀÇ °¢ ¿ä¼Ò °ªÀÌ ¸ğµÎ nibbleÀÌ¸é true, ¾Æ´Ï¸é false
+     * @param aNibbleArray í™•ì¸í•œ byte array
+     * @return byte arrayì˜ ê° ìš”ì†Œ ê°’ì´ ëª¨ë‘ nibbleì´ë©´ true, ì•„ë‹ˆë©´ false
      */
     public static boolean isValid(byte[] aNibbleArray)
     {
@@ -69,11 +69,11 @@ public final class NibbleUtils
     }
 
     /**
-     * hex stringÀ» nibble array·Î º¯È¯ÇÑ´Ù.
+     * hex stringì„ nibble arrayë¡œ ë³€í™˜í•œë‹¤.
      * 
-     * @param aHexString nibble array·Î º¯È¯ÇÒ hex string
-     * @return º¯È¯µÈ nibble array. hex stringÀÌ nullÀÌ¸é null, ºó ¹®ÀÚ¿­ÀÌ¸é ±æÀÌ°¡ 0ÀÎ ¹è¿­.
-     * @exception IllegalArgumentException hex stringÀÌ ¿Ã¹Ù¸£Áö ¾ÊÀ» °æ¿ì
+     * @param aHexString nibble arrayë¡œ ë³€í™˜í•  hex string
+     * @return ë³€í™˜ëœ nibble array. hex stringì´ nullì´ë©´ null, ë¹ˆ ë¬¸ìì—´ì´ë©´ ê¸¸ì´ê°€ 0ì¸ ë°°ì—´.
+     * @exception IllegalArgumentException hex stringì´ ì˜¬ë°”ë¥´ì§€ ì•Šì„ ê²½ìš°
      */
     public static byte[] parseNibbleArray(String aHexString)
     {
@@ -99,11 +99,11 @@ public final class NibbleUtils
     }
 
     /**
-     * nibble array¸¦ byte array·Î º¯È¯ÇÑ´Ù.
+     * nibble arrayë¥¼ byte arrayë¡œ ë³€í™˜í•œë‹¤.
      *
-     * @param aNibbleArray º¯È¯ÇÒ nibble array
-     * @return º¯È¯ÇÑ byte array
-     * @exception IllegalArgumentException À¯È¿ÇÑ nibble array°¡ ¾Æ´Ñ °æ¿ì
+     * @param aNibbleArray ë³€í™˜í•  nibble array
+     * @return ë³€í™˜í•œ byte array
+     * @exception IllegalArgumentException ìœ íš¨í•œ nibble arrayê°€ ì•„ë‹Œ ê²½ìš°
      */
     public static byte[] toByteArray(byte[] aNibbleArray)
     {
@@ -144,10 +144,10 @@ public final class NibbleUtils
     }
 
     /**
-     * byte array¸¦ nibble array·Î º¯È¯ÇÑ´Ù.
+     * byte arrayë¥¼ nibble arrayë¡œ ë³€í™˜í•œë‹¤.
      *
-     * @param aByteArray nibble array·Î º¯È¯ÇÒ byte array
-     * @return º¯È¯ÇÑ nibble array
+     * @param aByteArray nibble arrayë¡œ ë³€í™˜í•  byte array
+     * @return ë³€í™˜í•œ nibble array
      */
     public static byte[] fromByteArray(byte[] aByteArray)
     {
@@ -155,17 +155,17 @@ public final class NibbleUtils
     }
 
     /**
-     * byte array¸¦ nibble array·Î º¯È¯ÇÑ´Ù.
+     * byte arrayë¥¼ nibble arrayë¡œ ë³€í™˜í•œë‹¤.
      * <p>
-     * max nibble length¸¦ ÁöÁ¤ÇÏ¸é byte array·ÎºÎÅÍ »ı¼ºµÉ nibble arrayÀÇ ±æÀÌ¸¦ Á¦ÇÑÇÒ ¼ö ÀÖ´Ù.
-     * ´Ü, max nibble length´Â ÃÖ´ë ±æÀÌ¸¦ Á¦ÇÑÇÏ´Âµ¥¸¸ »ç¿ëÇÏ¹Ç·Î,
-     * ÁÖ¾îÁø byte array·Î ¸¸µé ¼ö ÀÖ´Â nibble arrayÀÇ ±æÀÌ°¡ max nibble arrayº¸´Ù ÀÛ´Ù¸é
-     * ±×¸¸Å­ÀÇ ±æÀÌ¸¦ °®´Â nibble array¸¦ ¸¸µç´Ù.
+     * max nibble lengthë¥¼ ì§€ì •í•˜ë©´ byte arrayë¡œë¶€í„° ìƒì„±ë  nibble arrayì˜ ê¸¸ì´ë¥¼ ì œí•œí•  ìˆ˜ ìˆë‹¤.
+     * ë‹¨, max nibble lengthëŠ” ìµœëŒ€ ê¸¸ì´ë¥¼ ì œí•œí•˜ëŠ”ë°ë§Œ ì‚¬ìš©í•˜ë¯€ë¡œ,
+     * ì£¼ì–´ì§„ byte arrayë¡œ ë§Œë“¤ ìˆ˜ ìˆëŠ” nibble arrayì˜ ê¸¸ì´ê°€ max nibble arrayë³´ë‹¤ ì‘ë‹¤ë©´
+     * ê·¸ë§Œí¼ì˜ ê¸¸ì´ë¥¼ ê°–ëŠ” nibble arrayë¥¼ ë§Œë“ ë‹¤.
      *
-     * @param aByteArray nibble array·Î º¯È¯ÇÒ byte array
-     * @param aMaxNibbleLength nibble arrayÀÇ ÃÖ´ë ±æÀÌ
-     * @return º¯È¯ÇÑ nibble array
-     * @exception IllegalArgumentException max nibble length°¡ 0º¸´Ù ÀÛÀ» °æ¿ì
+     * @param aByteArray nibble arrayë¡œ ë³€í™˜í•  byte array
+     * @param aMaxNibbleLength nibble arrayì˜ ìµœëŒ€ ê¸¸ì´
+     * @return ë³€í™˜í•œ nibble array
+     * @exception IllegalArgumentException max nibble lengthê°€ 0ë³´ë‹¤ ì‘ì„ ê²½ìš°
      */
     public static byte[] fromByteArray(byte[] aByteArray, int aMaxNibbleLength)
     {
@@ -198,10 +198,10 @@ public final class NibbleUtils
     }
 
     /**
-     * nibble array¸¦ hex stringÀ¸·Î º¯È¯ÇÑ´Ù.
+     * nibble arrayë¥¼ hex stringìœ¼ë¡œ ë³€í™˜í•œë‹¤.
      * 
-     * @param aNibbleArray hex stringÀ¸·Î º¯È¯ÇÒ nibble array
-     * @return º¯È¯µÈ hex string. nibble array°¡ nullÀÌ¸é "null", ±æÀÌ°¡ 0ÀÌ¸é ºó ¹®ÀÚ¿­.
+     * @param aNibbleArray hex stringìœ¼ë¡œ ë³€í™˜í•  nibble array
+     * @return ë³€í™˜ëœ hex string. nibble arrayê°€ nullì´ë©´ "null", ê¸¸ì´ê°€ 0ì´ë©´ ë¹ˆ ë¬¸ìì—´.
      */
     public static String toHexString(byte[] aNibbleArray)
     {
@@ -209,11 +209,11 @@ public final class NibbleUtils
     }
 
     /**
-     * nibble array¸¦ hex stringÀ¸·Î º¯È¯ÇÑ´Ù.
+     * nibble arrayë¥¼ hex stringìœ¼ë¡œ ë³€í™˜í•œë‹¤.
      * 
-     * @param aNibbleArray hex stringÀ¸·Î º¯È¯ÇÒ nibble array
-     * @param aSpacingBase °ø¹éÀ» »ğÀÔÇÒ ´ÜÀ§. 0ÀÌ¸é °ø¹éÀ» ºÙÀÌÁö ¾Ê´Â´Ù.
-     * @return º¯È¯µÈ hex string. nibble array°¡ nullÀÌ¸é "null", ±æÀÌ°¡ 0ÀÌ¸é ºó ¹®ÀÚ¿­.
+     * @param aNibbleArray hex stringìœ¼ë¡œ ë³€í™˜í•  nibble array
+     * @param aSpacingBase ê³µë°±ì„ ì‚½ì…í•  ë‹¨ìœ„. 0ì´ë©´ ê³µë°±ì„ ë¶™ì´ì§€ ì•ŠëŠ”ë‹¤.
+     * @return ë³€í™˜ëœ hex string. nibble arrayê°€ nullì´ë©´ "null", ê¸¸ì´ê°€ 0ì´ë©´ ë¹ˆ ë¬¸ìì—´.
      */
     public static String toHexString(byte[] aNibbleArray, int aSpacingBase)
     {
@@ -221,13 +221,13 @@ public final class NibbleUtils
     }
 
     /**
-     * nibble array¸¦ hex stringÀ¸·Î º¯È¯ÇÑ´Ù.
+     * nibble arrayë¥¼ hex stringìœ¼ë¡œ ë³€í™˜í•œë‹¤.
      * 
-     * @param aNibbleArray hex stringÀ¸·Î º¯È¯ÇÒ nibble array
-     * @param aAppendingBase aAppendingChar¸¦ »ğÀÔÇÒ ´ÜÀ§. 0ÀÌ¸é ºÙÀÌÁö ¾Ê´Â´Ù.
-     * @param aAppendingString aAppendingBase ¸¶´Ù Ãß°¡ÇÒ ¹®ÀÚ¿­
-     * @return º¯È¯µÈ hex string. nibble array°¡ nullÀÌ¸é "null", ±æÀÌ°¡ 0ÀÌ¸é ºó ¹®ÀÚ¿­.
-     * @exception IllegalArgumentException array¿¡ nibble ¹üÀ§(0x0~0xF)¸¦ ³Ñ¾î°¡´Â °ªÀÌ ÀÖÀ» °æ¿ì
+     * @param aNibbleArray hex stringìœ¼ë¡œ ë³€í™˜í•  nibble array
+     * @param aAppendingBase aAppendingCharë¥¼ ì‚½ì…í•  ë‹¨ìœ„. 0ì´ë©´ ë¶™ì´ì§€ ì•ŠëŠ”ë‹¤.
+     * @param aAppendingString aAppendingBase ë§ˆë‹¤ ì¶”ê°€í•  ë¬¸ìì—´
+     * @return ë³€í™˜ëœ hex string. nibble arrayê°€ nullì´ë©´ "null", ê¸¸ì´ê°€ 0ì´ë©´ ë¹ˆ ë¬¸ìì—´.
+     * @exception IllegalArgumentException arrayì— nibble ë²”ìœ„(0x0~0xF)ë¥¼ ë„˜ì–´ê°€ëŠ” ê°’ì´ ìˆì„ ê²½ìš°
      */
     public static String toHexString(byte[] aNibbleArray, int aAppendingBase, String aAppendingString)
     {
@@ -235,12 +235,12 @@ public final class NibbleUtils
     }
 
     /**
-     * nibble array¸¦ hex stringÀ¸·Î º¯È¯ÇÑ´Ù.
+     * nibble arrayë¥¼ hex stringìœ¼ë¡œ ë³€í™˜í•œë‹¤.
      * 
-     * @param aNibbleArray hex stringÀ¸·Î º¯È¯ÇÒ nibble array
-     * @param aStartIdx ½ÃÀÛ index (inclusive)
-     * @param aEndFence ³¡ index (exclusive)
-     * @return º¯È¯µÈ hex string. nibble array°¡ nullÀÌ¸é "null", ±æÀÌ°¡ 0ÀÌ¸é ºó ¹®ÀÚ¿­.
+     * @param aNibbleArray hex stringìœ¼ë¡œ ë³€í™˜í•  nibble array
+     * @param aStartIdx ì‹œì‘ index (inclusive)
+     * @param aEndFence ë index (exclusive)
+     * @return ë³€í™˜ëœ hex string. nibble arrayê°€ nullì´ë©´ "null", ê¸¸ì´ê°€ 0ì´ë©´ ë¹ˆ ë¬¸ìì—´.
      */
     public static String toHexString(byte[] aNibbleArray, int aStartIdx, int aEndFence)
     {
@@ -248,15 +248,15 @@ public final class NibbleUtils
     }
 
     /**
-     * nibble array¸¦ hex stringÀ¸·Î º¯È¯ÇÑ´Ù.
+     * nibble arrayë¥¼ hex stringìœ¼ë¡œ ë³€í™˜í•œë‹¤.
      * 
-     * @param aNibbleArray hex stringÀ¸·Î º¯È¯ÇÒ nibble array
-     * @param aStartIdx ½ÃÀÛ index (inclusive)
-     * @param aEndIndex ³¡ index (exclusive)
-     * @param aAppendingBase aAppendingChar¸¦ »ğÀÔÇÒ ´ÜÀ§. 0ÀÌ¸é ºÙÀÌÁö ¾Ê´Â´Ù.
-     * @param aAppendingString aAppendingBase ¸¶´Ù Ãß°¡ÇÒ ¹®ÀÚ¿­
-     * @return º¯È¯µÈ hex string. nibble array°¡ nullÀÌ¸é "null", ±æÀÌ°¡ 0ÀÌ¸é ºó ¹®ÀÚ¿­.
-     * @exception IllegalArgumentException array¿¡ nibble ¹üÀ§(0x0~0xF)¸¦ ³Ñ¾î°¡´Â °ªÀÌ ÀÖÀ» °æ¿ì
+     * @param aNibbleArray hex stringìœ¼ë¡œ ë³€í™˜í•  nibble array
+     * @param aStartIdx ì‹œì‘ index (inclusive)
+     * @param aEndIndex ë index (exclusive)
+     * @param aAppendingBase aAppendingCharë¥¼ ì‚½ì…í•  ë‹¨ìœ„. 0ì´ë©´ ë¶™ì´ì§€ ì•ŠëŠ”ë‹¤.
+     * @param aAppendingString aAppendingBase ë§ˆë‹¤ ì¶”ê°€í•  ë¬¸ìì—´
+     * @return ë³€í™˜ëœ hex string. nibble arrayê°€ nullì´ë©´ "null", ê¸¸ì´ê°€ 0ì´ë©´ ë¹ˆ ë¬¸ìì—´.
+     * @exception IllegalArgumentException arrayì— nibble ë²”ìœ„(0x0~0xF)ë¥¼ ë„˜ì–´ê°€ëŠ” ê°’ì´ ìˆì„ ê²½ìš°
      */
     public static String toHexString(byte[] aNibbleArray, int aStartIdx, int aEndIndex, int aAppendingBase, String aAppendingString)
     {

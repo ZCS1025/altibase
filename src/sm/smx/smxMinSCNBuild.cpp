@@ -41,7 +41,7 @@ smxMinSCNBuild::~smxMinSCNBuild()
 
 /**********************************************************************
  *
- * Description : Thread¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+ * Description : Threadë¥¼ ì´ˆê¸°í™”í•œë‹¤.
  *
  **********************************************************************/
 IDE_RC smxMinSCNBuild::initialize()
@@ -54,7 +54,7 @@ IDE_RC smxMinSCNBuild::initialize()
     // BUG-24885 wrong delayed stamping
     SM_INIT_SCN( &mSysMinDskFstViewSCN );
 
-    // BUG-26881 Àß¸øµÈ CTS stampingÀ¸·Î accesÇÒ ¼ö ¾ø´Â row¸¦ Á¢±ÙÇÔ
+    // BUG-26881 ì˜ëª»ëœ CTS stampingìœ¼ë¡œ accesí•  ìˆ˜ ì—†ëŠ” rowë¥¼ ì ‘ê·¼í•¨
     SM_INIT_SCN( &mSysMinOldestFstViewSCN );
 
     IDE_TEST( mMutex.initialize((SChar*)"TRANSACTION_MINVIEWSCN_BUILDER",
@@ -79,7 +79,7 @@ IDE_RC smxMinSCNBuild::initialize()
 
 /**********************************************************************
  *
- * Description : Thread¸¦ ÇØÁ¦ÇÑ´Ù.
+ * Description : Threadë¥¼ í•´ì œí•œë‹¤.
  *
  **********************************************************************/
 IDE_RC smxMinSCNBuild::destroy()
@@ -101,7 +101,7 @@ IDE_RC smxMinSCNBuild::destroy()
 
 /**********************************************************************
  *
- * Description : Thread¸¦ ±¸µ¿ÇÑ´Ù.
+ * Description : Threadë¥¼ êµ¬ë™í•œë‹¤.
  *
  **********************************************************************/
 IDE_RC smxMinSCNBuild::startThread()
@@ -119,7 +119,7 @@ IDE_RC smxMinSCNBuild::startThread()
 
 /**********************************************************************
  *
- * Description : Thread¸¦ Á¾·áÇÑ´Ù.
+ * Description : Threadë¥¼ ì¢…ë£Œí•œë‹¤.
  *
  **********************************************************************/
 IDE_RC smxMinSCNBuild::shutdown()
@@ -166,10 +166,10 @@ IDE_RC smxMinSCNBuild::shutdown()
 
 /**********************************************************************
  *
- * Description : ThreadÀÇ Main JobÀ» ¼öÇàÇÑ´Ù.
+ * Description : Threadì˜ Main Jobì„ ìˆ˜í–‰í•œë‹¤.
  *
- * UPDATE_MIN_VIEWSCN_INTERVAL_ ÇÁ·ÎÆÛÆ¼¿¡ ÁöÁ¤ÇÑ ½Ã°£¸¶´Ù ¾²·¹µå´Â
- * Minimum Disk ViewSCNÀ» ±¸ÇÏ¿© °»½ÅÇÑ´Ù.
+ * UPDATE_MIN_VIEWSCN_INTERVAL_ í”„ë¡œí¼í‹°ì— ì§€ì •í•œ ì‹œê°„ë§ˆë‹¤ ì“°ë ˆë“œëŠ”
+ * Minimum Disk ViewSCNì„ êµ¬í•˜ì—¬ ê°±ì‹ í•œë‹¤.
  *
  **********************************************************************/
 void smxMinSCNBuild::run()
@@ -193,17 +193,17 @@ restart :
 
     while( 1 )
     {
-        // BUG-28819 REBUILD_MIN_VIEWSCN_INTERVAL_À» 0À¸·Î À¯ÁöÇÏ°í restartÇÏ¸é
-        // SysMinOldestFstViewSCNÀÌ °»½ÅµÇÁö ¾Ê°í ÃÊ±â°ª ´ë·Î 0ÀÌ À¯ÁöµÇ¾î¼­
-        // º¼¼ö ¾ø´Â page¸¦ º¸°Ô µÇ¾î SystemÀÌ ºñÁ¤»ó Á¾·áÇÕ´Ï´Ù.
-        // InservalÀÌ 0ÀÌ´õ¶óµµ Ã³À½ ÇÑ¹øÀº °¢ °ªµéÀ» ±¸ÇÏµµ·Ï ¼öÁ¤ÇÕ´Ï´Ù.
+        // BUG-28819 REBUILD_MIN_VIEWSCN_INTERVAL_ì„ 0ìœ¼ë¡œ ìœ ì§€í•˜ê³  restartí•˜ë©´
+        // SysMinOldestFstViewSCNì´ ê°±ì‹ ë˜ì§€ ì•Šê³  ì´ˆê¸°ê°’ ëŒ€ë¡œ 0ì´ ìœ ì§€ë˜ì–´ì„œ
+        // ë³¼ìˆ˜ ì—†ëŠ” pageë¥¼ ë³´ê²Œ ë˜ì–´ Systemì´ ë¹„ì •ìƒ ì¢…ë£Œí•©ë‹ˆë‹¤.
+        // Inservalì´ 0ì´ë”ë¼ë„ ì²˜ìŒ í•œë²ˆì€ ê° ê°’ë“¤ì„ êµ¬í•˜ë„ë¡ ìˆ˜ì •í•©ë‹ˆë‹¤.
         if( mResume == ID_TRUE )
         {
-            // TimeÀÌ ´Ù µÈ °æ¿ì¿¡´Â ´ÙÀ½ °ªµéÀ» ±¸ÇÏ°í
-            // InservalÀÌ °»½Å µÈ °æ¿ì¿¡´Â ±¸ÇÏÁö ¾Ê½À´Ï´Ù.
+            // Timeì´ ë‹¤ ëœ ê²½ìš°ì—ëŠ” ë‹¤ìŒ ê°’ë“¤ì„ êµ¬í•˜ê³ 
+            // Inservalì´ ê°±ì‹  ëœ ê²½ìš°ì—ëŠ” êµ¬í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
 
             // BUG-24885 wrong delayed stamping
-            // ¸ğµç active Æ®·£Àè¼ÇµéÀÇ minimum disk FstSCNÀ» ±¸ÇÏµµ·Ï Ãß°¡
+            // ëª¨ë“  active íŠ¸ëœì­ì…˜ë“¤ì˜ minimum disk FstSCNì„ êµ¬í•˜ë„ë¡ ì¶”ê°€
             smxTransMgr::getDskSCNsofAll(
                 &sSysMinDskViewSCN,
                 &sSysMinDskFstViewSCN,
@@ -214,7 +214,7 @@ restart :
             SM_SET_SCN( &mSysMinDskViewSCN, &sSysMinDskViewSCN );
             SM_SET_SCN( &mSysMinDskFstViewSCN, &sSysMinDskFstViewSCN );
 
-            // BUG-26881 Àß¸øµÈ CTS stampingÀ¸·Î accesÇÒ ¼ö ¾ø´Â row¸¦ Á¢±ÙÇÔ
+            // BUG-26881 ì˜ëª»ëœ CTS stampingìœ¼ë¡œ accesí•  ìˆ˜ ì—†ëŠ” rowë¥¼ ì ‘ê·¼í•¨
             SM_SET_SCN( &mSysMinOldestFstViewSCN, &sSysMinOldestFstViewSCN );
         }
 
@@ -285,12 +285,12 @@ restart :
 
 /**********************************************************************
  *
- * Description : ALTER SYSTEM ±¸¹®À¸·Î »ç¿ëÀÚ°¡ Disk Minimum View SCNÀ» °»½ÅÇÑ´Ù.
+ * Description : ALTER SYSTEM êµ¬ë¬¸ìœ¼ë¡œ ì‚¬ìš©ìê°€ Disk Minimum View SCNì„ ê°±ì‹ í•œë‹¤.
  *
  *               ALTER SYSTEM REBUILD MIN_VIEWSCN;
  *
- *               Rebuild ¸í·ÉÀÌ¹Ç·Î ÇÔ¼ö ¿Ï·á ½ÃÁ¡¿¡´Â Disk Min View SCNÀÌ
- *               ±¸ÇØÁ® ÀÖ¾î¾ß ÇÑ´Ù. Thread ÀÛ¾÷¿¡ ¸º±âÁö ¾Ê°í Á÷Á¢ ±¸ÇÑ´Ù.
+ *               Rebuild ëª…ë ¹ì´ë¯€ë¡œ í•¨ìˆ˜ ì™„ë£Œ ì‹œì ì—ëŠ” Disk Min View SCNì´
+ *               êµ¬í•´ì ¸ ìˆì–´ì•¼ í•œë‹¤. Thread ì‘ì—…ì— ë§ê¸°ì§€ ì•Šê³  ì§ì ‘ êµ¬í•œë‹¤.
  *
  * aStatistics  - [IN] statistics
  *
@@ -306,7 +306,7 @@ IDE_RC smxMinSCNBuild::resumeAndWait( idvSQL  * aStatistics )
     sState = 1;
 
     // BUG-24885 wrong delayed stamping
-    // ¸ğµç active Æ®·£Àè¼ÇµéÀÇ minimum disk FstSCNÀ» ±¸ÇÏµµ·Ï Ãß°¡
+    // ëª¨ë“  active íŠ¸ëœì­ì…˜ë“¤ì˜ minimum disk FstSCNì„ êµ¬í•˜ë„ë¡ ì¶”ê°€
     smxTransMgr::getDskSCNsofAll(
         &sSysMinDskViewSCN,
         &sSysMinDskFstViewSCN,
@@ -319,7 +319,7 @@ IDE_RC smxMinSCNBuild::resumeAndWait( idvSQL  * aStatistics )
 
     IDU_FIT_POINT( "1.BUG-32650@smxMinSCNBuild::resumeAndWait" );
 
-    // BUG-26881 Àß¸øµÈ CTS stampingÀ¸·Î accesÇÒ ¼ö ¾ø´Â row¸¦ Á¢±ÙÇÔ
+    // BUG-26881 ì˜ëª»ëœ CTS stampingìœ¼ë¡œ accesí•  ìˆ˜ ì—†ëŠ” rowë¥¼ ì ‘ê·¼í•¨
     SM_SET_SCN( &mSysMinOldestFstViewSCN, &sSysMinOldestFstViewSCN );
 
     IDE_TEST( clearInterval() != IDE_SUCCESS );
@@ -347,10 +347,10 @@ IDE_RC smxMinSCNBuild::resumeAndWait( idvSQL  * aStatistics )
 
 /**********************************************************************
  *
- * Description : MinDskViewSCN °»½ÅÁÖ±â¸¦ º¯°æÇÑ´Ù.
+ * Description : MinDskViewSCN ê°±ì‹ ì£¼ê¸°ë¥¼ ë³€ê²½í•œë‹¤.
  *
- * ALTER SYSTEM SET UPDATE_MIN_VIEWSCN_INTERVAL_ .. ±¸¹®À¸·Î
- * »ç¿ëÀÚ°¡ Minimum Disk View SCNÀ» °»½ÅÁÖ±â¸¦ º¯°æÇÑ´Ù.
+ * ALTER SYSTEM SET UPDATE_MIN_VIEWSCN_INTERVAL_ .. êµ¬ë¬¸ìœ¼ë¡œ
+ * ì‚¬ìš©ìê°€ Minimum Disk View SCNì„ ê°±ì‹ ì£¼ê¸°ë¥¼ ë³€ê²½í•œë‹¤.
  *
  **********************************************************************/
 IDE_RC smxMinSCNBuild::resetInterval()
@@ -383,7 +383,7 @@ IDE_RC smxMinSCNBuild::resetInterval()
 
 /**********************************************************************
  *
- * Description : ¾²·¹µåÀÇ ÇöÀç IntervalÀ» ÃÊ±âÈ­ÇÑ´Ù.
+ * Description : ì“°ë ˆë“œì˜ í˜„ì¬ Intervalì„ ì´ˆê¸°í™”í•œë‹¤.
  *
  **********************************************************************/
 IDE_RC smxMinSCNBuild::clearInterval()

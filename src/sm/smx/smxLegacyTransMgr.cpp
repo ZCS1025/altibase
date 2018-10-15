@@ -252,9 +252,9 @@ IDE_RC smxLegacyTransMgr::addLegacyTrans( smxTrans * aSmxTrans,
     if( smuProperty::isTrcLogLegacyTxInfo() == ID_TRUE )
     {
         /* --------------------------------------------------------------------
-         * BUG-38515 __SM_SKIP_CHECKSCN_IN_STARTUP È÷µç ÇÁ·ÎÆÛÆ¼¸¦ »ç¿ë½Ã ºĞ¼®À» µ½±â À§ÇØ
-         * Legacy Tx¿¡ °ü·ÃÇÏ¿© addLegacyTrans¿Í removeLegacyTrans ÇÔ¼ö¿¡¼­ legacy Tx°¡ 
-         * Ãß°¡/Á¦°Å µÉ ¶§¸¶´Ù trc ·Î±×¸¦ ³²±ä´Ù. 
+         * BUG-38515 __SM_SKIP_CHECKSCN_IN_STARTUP íˆë“  í”„ë¡œí¼í‹°ë¥¼ ì‚¬ìš©ì‹œ ë¶„ì„ì„ ë•ê¸° ìœ„í•´
+         * Legacy Txì— ê´€ë ¨í•˜ì—¬ addLegacyTransì™€ removeLegacyTrans í•¨ìˆ˜ì—ì„œ legacy Txê°€ 
+         * ì¶”ê°€/ì œê±° ë  ë•Œë§ˆë‹¤ trc ë¡œê·¸ë¥¼ ë‚¨ê¸´ë‹¤. 
          * ----------------------------------------------------------------- */
         ideLog::log( IDE_SM_0, 
                      "AddLegacyTrans TID=%"ID_UINT32_FMT", CommitSCN=%"ID_UINT64_FMT
@@ -324,9 +324,9 @@ IDE_RC smxLegacyTransMgr::removeLegacyTrans( smuList * aLegacyTransNode,
      *
      * 1. Lock
      * 2. Search target node
-     * 3. Unlock    -- ÃßÈÄ Æ©´×
+     * 3. Unlock    -- ì¶”í›„ íŠœë‹
      * 4. Process OIDList pending jobs.
-     * 5. Lock      -- ÃßÈÄ Æ©´×
+     * 5. Lock      -- ì¶”í›„ íŠœë‹
      * 6. Remove Legacy Transaction From Legacy Transaction List.
      * 7. Unlock */
 
@@ -356,7 +356,7 @@ IDE_RC smxLegacyTransMgr::removeLegacyTrans( smuList * aLegacyTransNode,
     }
 
     /* sState = 0;
-     * unlockLTL(); -- ÃßÈÄ Æ©´× */
+     * unlockLTL(); -- ì¶”í›„ íŠœë‹ */
 
     if( sTargetNode != NULL )
     {
@@ -387,9 +387,9 @@ IDE_RC smxLegacyTransMgr::removeLegacyTrans( smuList * aLegacyTransNode,
         if( smuProperty::isTrcLogLegacyTxInfo() == ID_TRUE )
         {
             /* --------------------------------------------------------------------
-             * BUG-38515 __SM_SKIP_CHECKSCN_IN_STARTUP È÷µç ÇÁ·ÎÆÛÆ¼¸¦ »ç¿ë½Ã ºĞ¼®À» µ½±â À§ÇØ
-             * Legacy Tx¿¡ °ü·ÃÇÏ¿© addLegacyTrans¿Í removeLegacyTrans ÇÔ¼ö¿¡¼­ legacy Tx>°¡ 
-             * Ãß°¡/Á¦°Å µÉ ¶§¸¶´Ù trc ·Î±×¸¦ ³²±ä´Ù. 
+             * BUG-38515 __SM_SKIP_CHECKSCN_IN_STARTUP íˆë“  í”„ë¡œí¼í‹°ë¥¼ ì‚¬ìš©ì‹œ ë¶„ì„ì„ ë•ê¸° ìœ„í•´
+             * Legacy Txì— ê´€ë ¨í•˜ì—¬ addLegacyTransì™€ removeLegacyTrans í•¨ìˆ˜ì—ì„œ legacy Tx>ê°€ 
+             * ì¶”ê°€/ì œê±° ë  ë•Œë§ˆë‹¤ trc ë¡œê·¸ë¥¼ ë‚¨ê¸´ë‹¤. 
              * ----------------------------------------------------------------- */
             ideLog::log( IDE_SM_0, "RemoveLegacyTrans TID=%"ID_UINT32_FMT, sLegacyTrans->mTransID );
         }
@@ -403,7 +403,7 @@ IDE_RC smxLegacyTransMgr::removeLegacyTrans( smuList * aLegacyTransNode,
         /* do nothing */
     }
 
-    /* lockLTL();   -- ÃßÈÄ Æ©´×
+    /* lockLTL();   -- ì¶”í›„ íŠœë‹
      * sState = 1; */
 
     if( sTargetNode != NULL )

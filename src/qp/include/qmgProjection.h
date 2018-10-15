@@ -19,11 +19,11 @@
  * $Id: qmgProjection.h 82075 2018-01-17 06:39:52Z jina.kim $
  *
  * Description :
- *     Projection Graph¸¦ À§ÇÑ Á¤ÀÇ
+ *     Projection Graphë¥¼ ìœ„í•œ ì •ì˜
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  **********************************************************************/
 
@@ -34,17 +34,17 @@
 #include <qmgDef.h>
 
 //---------------------------------------------------
-// Projection GraphÀÇ Define »ó¼ö
+// Projection Graphì˜ Define ìƒìˆ˜
 //---------------------------------------------------
 
 // qmgPROJ.graph.flag
-// Åë½Å ¹öÆÛ¿¡ ¾µ PROJ NODE »ı¼º ¿©ºÎ
+// í†µì‹  ë²„í¼ì— ì“¸ PROJ NODE ìƒì„± ì—¬ë¶€
 #define QMG_PROJ_COMMUNICATION_TOP_PROJ_MASK      (0x10000000)
 #define QMG_PROJ_COMMUNICATION_TOP_PROJ_FALSE     (0x00000000)
 #define QMG_PROJ_COMMUNICATION_TOP_PROJ_TRUE      (0x10000000)
 
 // qmgPROJ.graph.flag
-// View Optimization TypeÀÌ View MaterializationÀÎÁö ¾Æ´ÑÁö¿¡ ´ëÇÑ Á¤º¸
+// View Optimization Typeì´ View Materializationì¸ì§€ ì•„ë‹Œì§€ì— ëŒ€í•œ ì •ë³´
 #define QMG_PROJ_VIEW_OPT_TIP_VMTR_MASK         (0x20000000)
 #define QMG_PROJ_VIEW_OPT_TIP_VMTR_FALSE        (0x00000000)
 #define QMG_PROJ_VIEW_OPT_TIP_VMTR_TRUE         (0x20000000)
@@ -61,17 +61,17 @@
 #define QMG_PROJ_VIEW_OPT_TIP_CMTR_TRUE         (0x80000000)
 
 //---------------------------------------------------
-// subquery ÃÖÀûÈ­ ÆÁ Àû¿ë Á¤º¸¸¦ ³ªÅ¸³¾ flag Á¤º¸
+// subquery ìµœì í™” íŒ ì ìš© ì •ë³´ë¥¼ ë‚˜íƒ€ë‚¼ flag ì •ë³´
 //---------------------------------------------------
 
 /* qmgPROJ.subqueryTipFlag                             */
 //---------------------------------
-// subquery ÃÖÀûÈ­ ÆÁ Àû¿ë Á¤º¸
-//  1. _TIP_NONE : Àû¿ëµÈ subquery ÃÖÀûÈ­ ÆÁÀÌ ¾øÀ½
-//  2. _TIP_TRANSFORMNJ  : transform NJ Àû¿ë
-//  3. _TIP_STORENSEARCH : store and search Àû¿ë
-//  4. _TIP_IN_KEYRANGE  : INÀıÀÇ subquery keyRange Àû¿ë
-//  5. _TIP_KEYRANGE     : subquery keyRange Àû¿ë
+// subquery ìµœì í™” íŒ ì ìš© ì •ë³´
+//  1. _TIP_NONE : ì ìš©ëœ subquery ìµœì í™” íŒì´ ì—†ìŒ
+//  2. _TIP_TRANSFORMNJ  : transform NJ ì ìš©
+//  3. _TIP_STORENSEARCH : store and search ì ìš©
+//  4. _TIP_IN_KEYRANGE  : INì ˆì˜ subquery keyRange ì ìš©
+//  5. _TIP_KEYRANGE     : subquery keyRange ì ìš©
 //---------------------------------
 # define QMG_PROJ_SUBQUERY_TIP_MASK                (0x00000007)
 # define QMG_PROJ_SUBQUERY_TIP_NONE                (0x00000000)
@@ -81,7 +81,7 @@
 # define QMG_PROJ_SUBQUERY_TIP_KEYRANGE            (0x00000004)
 
 /* qmgPROJ.subqueryTipFlag                                        */
-// store and search ÃÖÀûÈ­ ÆÁÀÌ Àû¿ëµÇ¾úÀ» °æ¿ìÀÇ ÀúÀå¹æ½ÄÁöÁ¤
+// store and search ìµœì í™” íŒì´ ì ìš©ë˜ì—ˆì„ ê²½ìš°ì˜ ì €ì¥ë°©ì‹ì§€ì •
 # define QMG_PROJ_SUBQUERY_STORENSEARCH_MASK       (0x00000070)
 # define QMG_PROJ_SUBQUERY_STORENSEARCH_NONE       (0X00000000)
 # define QMG_PROJ_SUBQUERY_STORENSEARCH_HASH       (0x00000010)
@@ -90,34 +90,34 @@
 
 /* qmgPROJ.subqueryTipFlag                                        */
 //---------------------------------
-// store and search°¡ HASH·Î ÀúÀåµÉ °æ¿ì, not null °Ë»ç ¿©ºÎ ÁöÁ¤.
-// _HASH_NOTNULLCHECK_FALSE: Àû¿ë ÄÃ·³¿¡ ´ëÇÑ not null °Ë»ç¸¦ ÇÏÁö ¾Ê¾Æµµ µÊ.
-// _HASH_NOTNULLCHECK_TRUE : Àû¿ë ÄÃ·³¿¡ ´ëÇÑ not null °Ë»ç¸¦ ÇØ¾ß µÊ.
+// store and searchê°€ HASHë¡œ ì €ì¥ë  ê²½ìš°, not null ê²€ì‚¬ ì—¬ë¶€ ì§€ì •.
+// _HASH_NOTNULLCHECK_FALSE: ì ìš© ì»¬ëŸ¼ì— ëŒ€í•œ not null ê²€ì‚¬ë¥¼ í•˜ì§€ ì•Šì•„ë„ ë¨.
+// _HASH_NOTNULLCHECK_TRUE : ì ìš© ì»¬ëŸ¼ì— ëŒ€í•œ not null ê²€ì‚¬ë¥¼ í•´ì•¼ ë¨.
 //---------------------------------
 # define QMG_PROJ_SUBQUERY_HASH_NOTNULLCHECK_MASK  (0x00000100)
 # define QMG_PROJ_SUBQUERY_HASH_NOTNULLCHECK_FALSE (0x00000000)
 # define QMG_PROJ_SUBQUERY_HASH_NOTNULLCHECK_TRUE  (0x00000100)
 
 //---------------------------------------------------
-// Projection Graph ¸¦ °ü¸®ÇÏ±â À§ÇÑ ÀÚ·á ±¸Á¶
-//    - Top Graph ¿©ºÎ, indexable MIN MAX, VMTR ¿©ºÎ´Â flag¸¦ ÅëÇØ ¾Ë¾Æ³¿
+// Projection Graph ë¥¼ ê´€ë¦¬í•˜ê¸° ìœ„í•œ ìë£Œ êµ¬ì¡°
+//    - Top Graph ì—¬ë¶€, indexable MIN MAX, VMTR ì—¬ë¶€ëŠ” flagë¥¼ í†µí•´ ì•Œì•„ëƒ„
 //---------------------------------------------------
 
 typedef struct qmgPROJ
 {
-    qmgGraph   graph;    // °øÅë Graph Á¤º¸
+    qmgGraph   graph;    // ê³µí†µ Graph ì •ë³´
 
-    qmsLimit  * limit;   // limit Á¤º¸
-    qtcNode   * loopNode;// loop Á¤º¸
-    qmsTarget * target;  // target Á¤º¸
+    qmsLimit  * limit;   // limit ì •ë³´
+    qtcNode   * loopNode;// loop ì •ë³´
+    qmsTarget * target;  // target ì •ë³´
 
     //-----------------------------------------------
-    // subquery ÃÖÀûÈ­ ÆÁ Àû¿ë Á¤º¸¸¦ À§ÇÑ ÀÚ·á±¸Á¶
-    // subqueryTipFlag : subquery ÃÖÀûÈ­ ÆÁ Àû¿ë Á¤º¸
-    // storeNSearchPred: store and search°¡ HASH·Î ¼öÇàµÉ °æ¿ì¿¡
-    //                   plan tree¿¡¼­ Ã³¸®ÇÒ ¼ö ÀÖµµ·Ï
-    //                   »óÀ§ predicate Á¤º¸¸¦ ´Ş¾ÆÁØ´Ù.
-    // hashBucketCnt   : store and search°¡ HASH·Î ¼öÇàµÉ °æ¿ì ÇÊ¿ä 
+    // subquery ìµœì í™” íŒ ì ìš© ì •ë³´ë¥¼ ìœ„í•œ ìë£Œêµ¬ì¡°
+    // subqueryTipFlag : subquery ìµœì í™” íŒ ì ìš© ì •ë³´
+    // storeNSearchPred: store and searchê°€ HASHë¡œ ìˆ˜í–‰ë  ê²½ìš°ì—
+    //                   plan treeì—ì„œ ì²˜ë¦¬í•  ìˆ˜ ìˆë„ë¡
+    //                   ìƒìœ„ predicate ì •ë³´ë¥¼ ë‹¬ì•„ì¤€ë‹¤.
+    // hashBucketCnt   : store and searchê°€ HASHë¡œ ìˆ˜í–‰ë  ê²½ìš° í•„ìš” 
     //-----------------------------------------------
     
     UInt            subqueryTipFlag;
@@ -126,25 +126,25 @@ typedef struct qmgPROJ
 } qmgPROJ;
 
 //---------------------------------------------------
-// Projection Graph ¸¦ °ü¸®ÇÏ±â À§ÇÑ ÇÔ¼ö
+// Projection Graph ë¥¼ ê´€ë¦¬í•˜ê¸° ìœ„í•œ í•¨ìˆ˜
 //---------------------------------------------------
 
 class qmgProjection
 {
 public:
-    // Graph ÀÇ ÃÊ±âÈ­
+    // Graph ì˜ ì´ˆê¸°í™”
     static IDE_RC  init( qcStatement * aStatement,
                          qmsQuerySet * aQuerySet,
                          qmgGraph    * aChildGraph,
                          qmgGraph   ** aGraph );
 
-    // GraphÀÇ ÃÖÀûÈ­ ¼öÇà
+    // Graphì˜ ìµœì í™” ìˆ˜í–‰
     static IDE_RC  optimize( qcStatement * aStatement, qmgGraph * aGraph );
 
-    // GraphÀÇ Plan Tree »ı¼º
+    // Graphì˜ Plan Tree ìƒì„±
     static IDE_RC  makePlan( qcStatement * aStatement, const qmgGraph * aParent, qmgGraph * aGraph );
 
-    // GraphÀÇ °øÅë Á¤º¸¸¦ Ãâ·ÂÇÔ.
+    // Graphì˜ ê³µí†µ ì •ë³´ë¥¼ ì¶œë ¥í•¨.
     static IDE_RC  printGraph( qcStatement  * aStatement,
                                qmgGraph     * aGraph,
                                ULong          aDepth,
@@ -153,7 +153,7 @@ public:
     static IDE_RC finalizePreservedOrder( qmgGraph * aGraph );
 
 private:
-    // Projection GraphÀÇ preserved order¸¦ »ı¼ºÇÑ´Ù.
+    // Projection Graphì˜ preserved orderë¥¼ ìƒì„±í•œë‹¤.
     static IDE_RC makePreservedOrder( qcStatement       * aStatement,
                                       qmsTarget         * aTarget,
                                       qmgPreservedOrder * aChildPreservedOrder,
@@ -161,7 +161,7 @@ private:
 
     //-----------------------------------------
     // To Fix PR-7307
-    // makePlan()À» À§ÇÑ ÇÔ¼ö
+    // makePlan()ì„ ìœ„í•œ í•¨ìˆ˜
     //-----------------------------------------
 
     static IDE_RC  makeChildPlan( qcStatement * aStatement,
@@ -171,22 +171,22 @@ private:
                                   qmgPROJ     * aGraph,
                                   UInt          aPROJFlag );
 
-    // View MaterializationÀ» À§ÇÑ Plan Tree ±¸¼º
+    // View Materializationì„ ìœ„í•œ Plan Tree êµ¬ì„±
     static IDE_RC  makePlan4ViewMtr( qcStatement    * aStatement,
                                      qmgPROJ        * aGraph,
                                      UInt             aPROJFlag );
 
-    // Store And Search¸¦ À§ÇÑ Plan Tree ±¸¼º
+    // Store And Searchë¥¼ ìœ„í•œ Plan Tree êµ¬ì„±
     static IDE_RC  makePlan4StoreSearch( qcStatement    * aStatement,
                                          qmgPROJ        * aGraph,
                                          UInt             aPROJFlag );
 
-    // In Subquery KeyRange¸¦ À§ÇÑ Plan Tree ±¸¼º
+    // In Subquery KeyRangeë¥¼ ìœ„í•œ Plan Tree êµ¬ì„±
     static IDE_RC  makePlan4InKeyRange( qcStatement * aStatement,
                                         qmgPROJ     * aGraph,
                                         UInt          aPROJFlag );
 
-    // Subquery KeyRange¸¦ À§ÇÑ Plan Tree ±¸¼º
+    // Subquery KeyRangeë¥¼ ìœ„í•œ Plan Tree êµ¬ì„±
     static IDE_RC  makePlan4KeyRange( qcStatement * aStatement,
                                       qmgPROJ     * aGraph,
                                       UInt          aPROJFlag );

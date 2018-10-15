@@ -47,12 +47,12 @@ public class ClobReader extends Reader implements ConnectionSharable
         mServByteLength = aLobByteLength;
         mByteCache = aLobByteCache;
         mCharCache = aLobCharCache;
-        mIsClosed = true; // open Àü±îÁø closed
+        mIsClosed = true; // open ì „ê¹Œì§„ closed
     }
 
     void open(CmChannel aChannel) throws SQLException
     {
-        // ºÒÇÊ¿äÇÑ ÆĞÅ¶ ºĞÇÒÀ» ÁÙÀÌ±â À§ÇØ 1ÆĞÅ¶¿¡ ´ãÀ» ¼ö ÀÖ´Â ÃÖ´ë Å©±â¸¸Å­¾¿¸¸ ¾ò´Â´Ù.
+        // ë¶ˆí•„ìš”í•œ íŒ¨í‚· ë¶„í• ì„ ì¤„ì´ê¸° ìœ„í•´ 1íŒ¨í‚·ì— ë‹´ì„ ìˆ˜ ìˆëŠ” ìµœëŒ€ í¬ê¸°ë§Œí¼ì”©ë§Œ ì–»ëŠ”ë‹¤.
         mMaxCharLengthPerPacket = LobConst.LOB_BUFFER_SIZE / aChannel.getByteLengthPerChar();
         mCharBuf = new char[mMaxCharLengthPerPacket];
         if (mCharCache != null)
@@ -129,11 +129,11 @@ public class ClobReader extends Reader implements ConnectionSharable
     }
 
     /**
-     * ¼­¹ö¿¡¼­ ÁöÁ¤ÇÑ ±æÀÌ¸¸Å­ÀÇ ¹®ÀÚ¿­À» ¾ò¾î¿Â´Ù.
+     * ì„œë²„ì—ì„œ ì§€ì •í•œ ê¸¸ì´ë§Œí¼ì˜ ë¬¸ìì—´ì„ ì–»ì–´ì˜¨ë‹¤.
      * 
-     * @param aFetchLength ¼­¹ö·ÎºÎÅÍ ¾ò¾î¿Ã ¹®ÀÚ¿­ ±æÀÌ
-     * @return ½ÇÁ¦·Î ¾òÀº ¹®ÀÚ¿­ ±æÀÌ
-     * @throws IOException ¼­¹ö·ÎºÎÅÍ ¹®ÀÚ¿­À» ¾ò´Âµ¥ ½ÇÆĞÇßÀ» °æ¿ì
+     * @param aFetchLength ì„œë²„ë¡œë¶€í„° ì–»ì–´ì˜¬ ë¬¸ìì—´ ê¸¸ì´
+     * @return ì‹¤ì œë¡œ ì–»ì€ ë¬¸ìì—´ ê¸¸ì´
+     * @throws IOException ì„œë²„ë¡œë¶€í„° ë¬¸ìì—´ì„ ì–»ëŠ”ë° ì‹¤íŒ¨í–ˆì„ ê²½ìš°
      */
     private long fetchFromServer(long aFetchLength) throws IOException
     {

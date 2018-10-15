@@ -64,7 +64,7 @@ IDE_RC sdpSegment::initCommonCache( sdpSegCCache * aCommonCache,
     return IDE_SUCCESS;
 }
 
-/* PROJ-1671 LOB Segment¿¡ ´ëÇÑ Segment HandleÀ» »ý¼ºÇÏ°í, ÃÊ±âÈ­ÇÑ´Ù.*/
+/* PROJ-1671 LOB Segmentì— ëŒ€í•œ Segment Handleì„ ìƒì„±í•˜ê³ , ì´ˆê¸°í™”í•œë‹¤.*/
 IDE_RC sdpSegment::allocLOBSegDesc( smiColumn * aColumn,
                                     smOID       aTableOID )
 {
@@ -113,7 +113,7 @@ IDE_RC sdpSegment::allocLOBSegDesc( smiColumn * aColumn,
     return IDE_FAILURE;
 }
 
-/* PROJ-1671 LOB Segment¿¡ ´ëÇÑ Segment DescÀ» »ý¼ºÇÏ°í, ÃÊ±âÈ­ÇÑ´Ù.*/
+/* PROJ-1671 LOB Segmentì— ëŒ€í•œ Segment Descì„ ìƒì„±í•˜ê³ , ì´ˆê¸°í™”í•œë‹¤.*/
 IDE_RC sdpSegment::freeLOBSegDesc( smiColumn * aColumn )
 {
     sdpSegmentDesc * sSegmentDesc;
@@ -121,7 +121,7 @@ IDE_RC sdpSegment::freeLOBSegDesc( smiColumn * aColumn )
     IDE_ASSERT( aColumn != NULL );
     sSegmentDesc = (sdpSegmentDesc*)aColumn->descSeg;
 
-    //XXX if°¡ ¾Æ´Ï¶ó ¸íÈ®ÇÏ°Ô Ã³¸®ÇØ¾ß ÇÑ´Ù.
+    //XXX ifê°€ ì•„ë‹ˆë¼ ëª…í™•í•˜ê²Œ ì²˜ë¦¬í•´ì•¼ í•œë‹¤.
     if( sSegmentDesc != NULL )
     {
         IDE_ASSERT( sdpSegDescMgr::destSegDesc( sSegmentDesc )
@@ -173,7 +173,7 @@ IDE_RC sdpSegment::createSegment( idvSQL            * aStatistics,
                   &sMtx,
                   aTableSpaceID,
                   SDP_SEG_TYPE_TABLE,
-                  aSegHandle ) /* Table Segment´Â specific data°¡ ¾ø´Ù */
+                  aSegHandle ) /* Table SegmentëŠ” specific dataê°€ ì—†ë‹¤ */
               != IDE_SUCCESS );
 
 
@@ -255,20 +255,20 @@ IDE_RC sdpSegment::dropSegment( idvSQL        * aStatistics,
 }
 
 /***********************************************************************
- * Description : page list entry¿¡ table segment desc ÇÒ´ç
+ * Description : page list entryì— table segment desc í• ë‹¹
  *
- * disk page list entryÀÇ ÃÊ±âÈ­½Ã¿¡ segment ÇÒ´çÀ» À§ÇØ È£ÃâµÇ¾î ¼öÇàµÈ´Ù.
- * smc layer¿¡¼­ mtx beginÇÏ°í, ÀÌ ÇÔ¼ö¸¦ ºüÁ®³ª°¡¸é SDR_OP_SDP_TABLE_CREATE_SEGMENTÀÇ
- * NTA ¼³Á¤ ÈÄ mtx commitÇÏ°Ô µÈ´Ù.
+ * disk page list entryì˜ ì´ˆê¸°í™”ì‹œì— segment í• ë‹¹ì„ ìœ„í•´ í˜¸ì¶œë˜ì–´ ìˆ˜í–‰ëœë‹¤.
+ * smc layerì—ì„œ mtx beginí•˜ê³ , ì´ í•¨ìˆ˜ë¥¼ ë¹ ì ¸ë‚˜ê°€ë©´ SDR_OP_SDP_TABLE_CREATE_SEGMENTì˜
+ * NTA ì„¤ì • í›„ mtx commití•˜ê²Œ ëœë‹¤.
  *
  * + 2nd. code design
- *   - NTA¸¦ À§ÇÑ LSN ÀúÀå
- *   - segment¸¦ ÇÒ´çÇÒ tablespace id¸¦ ÀÎÀÚ·Î ³Ñ°Ü ÇØ´ç tablespace¿¡ ¼ÓÇÑ
- *     segment descÀÇ RID¸¦ ¾ò´Â´Ù.
- *   - table segment »ý¼ºÀÌÈÄ table segment¸¦ À§ÇØ ¿¹¾àµÈ page¸¦ »ý¼ºÇÑ´Ù.
- *   - table segment RID¿Í table segment hdr page ID¸¦ ·Î±ëÇÑ´Ù.(redo-undo function Á¸Àç)
- *   - table hdr page¸¦ dirty page·Î µî·ÏÇÑ´Ù.
- *   - Ã¹¹øÂ° page¸¦ fixÇÏ¿© table meta page hdr¸¦ ÃÊ±âÈ­ ÇÑ´Ù.
+ *   - NTAë¥¼ ìœ„í•œ LSN ì €ìž¥
+ *   - segmentë¥¼ í• ë‹¹í•  tablespace idë¥¼ ì¸ìžë¡œ ë„˜ê²¨ í•´ë‹¹ tablespaceì— ì†í•œ
+ *     segment descì˜ RIDë¥¼ ì–»ëŠ”ë‹¤.
+ *   - table segment ìƒì„±ì´í›„ table segmentë¥¼ ìœ„í•´ ì˜ˆì•½ëœ pageë¥¼ ìƒì„±í•œë‹¤.
+ *   - table segment RIDì™€ table segment hdr page IDë¥¼ ë¡œê¹…í•œë‹¤.(redo-undo function ì¡´ìž¬)
+ *   - table hdr pageë¥¼ dirty pageë¡œ ë“±ë¡í•œë‹¤.
+ *   - ì²«ë²ˆì§¸ pageë¥¼ fixí•˜ì—¬ table meta page hdrë¥¼ ì´ˆê¸°í™” í•œë‹¤.
  ***********************************************************************/
 IDE_RC sdpSegment::allocTableSeg4Entry( idvSQL               * aStatistics,
                                         void                 * aTrans,
@@ -290,7 +290,7 @@ IDE_RC sdpSegment::allocTableSeg4Entry( idvSQL               * aStatistics,
         IDE_ASSERT( aTrans != NULL );
     }
 
-    /* Temp Table»ý¼º½Ã No LoggingÀ¸·Î ¿Â´Ù. */
+    /* Temp Tableìƒì„±ì‹œ No Loggingìœ¼ë¡œ ì˜¨ë‹¤. */
     if( aLogMode == SDR_MTX_NOLOGGING )
     {
         IDE_ASSERT( aTrans == NULL );
@@ -338,19 +338,19 @@ IDE_RC sdpSegment::allocTableSeg4Entry( idvSQL               * aStatistics,
 }
 
 /***********************************************************************
- * Description : static index header¿¡ index segment desc ÇÒ´ç
+ * Description : static index headerì— index segment desc í• ë‹¹
  *
- * smc layer¿¡¼­ mtx beginÇÏ°í, ÀÌ ÇÔ¼ö¸¦ ºüÁ®³ª°¡¸é SDR_OP_SDP_CREATE_SEGMENTÀÇ
- * NTA ¼³Á¤ ÈÄ mtx commitÇÏ°Ô µÈ´Ù.
+ * smc layerì—ì„œ mtx beginí•˜ê³ , ì´ í•¨ìˆ˜ë¥¼ ë¹ ì ¸ë‚˜ê°€ë©´ SDR_OP_SDP_CREATE_SEGMENTì˜
+ * NTA ì„¤ì • í›„ mtx commití•˜ê²Œ ëœë‹¤.
  *
  * + 2nd. code design
- *   - NTA¸¦ À§ÇÑ LSN ÀúÀå
- *   - segment¸¦ ÇÒ´çÇÒ tablespace id¸¦ ÀÎÀÚ·Î ³Ñ°Ü ÇØ´ç tablespace¿¡ ¼ÓÇÑ
- *     segment descÀÇ RID¸¦ ¾ò´Â´Ù.
- *   - index  segment »ý¼ºÀÌÈÄ index segment¸¦ À§ÇØ ¿¹¾àµÈ page¸¦ »ý¼ºÇÑ´Ù.
- *   - index segment RID¿Í  segment hdr page ID¸¦ ·Î±ëÇÑ´Ù.(redo-undo function Á¸Àç)
- *   - index hdr page¸¦ dirty page·Î µî·ÏÇÑ´Ù.
- *   - Ã¹¹øÂ° page¸¦ fixÇÏ¿© index meta page hdr¸¦ ÃÊ±âÈ­ ÇÑ´Ù.
+ *   - NTAë¥¼ ìœ„í•œ LSN ì €ìž¥
+ *   - segmentë¥¼ í• ë‹¹í•  tablespace idë¥¼ ì¸ìžë¡œ ë„˜ê²¨ í•´ë‹¹ tablespaceì— ì†í•œ
+ *     segment descì˜ RIDë¥¼ ì–»ëŠ”ë‹¤.
+ *   - index  segment ìƒì„±ì´í›„ index segmentë¥¼ ìœ„í•´ ì˜ˆì•½ëœ pageë¥¼ ìƒì„±í•œë‹¤.
+ *   - index segment RIDì™€  segment hdr page IDë¥¼ ë¡œê¹…í•œë‹¤.(redo-undo function ì¡´ìž¬)
+ *   - index hdr pageë¥¼ dirty pageë¡œ ë“±ë¡í•œë‹¤.
+ *   - ì²«ë²ˆì§¸ pageë¥¼ fixí•˜ì—¬ index meta page hdrë¥¼ ì´ˆê¸°í™” í•œë‹¤.
  ***********************************************************************/
 IDE_RC sdpSegment::allocIndexSeg4Entry( idvSQL             * aStatistics,
                                         void*               aTrans,
@@ -388,25 +388,25 @@ IDE_RC sdpSegment::allocIndexSeg4Entry( idvSQL             * aStatistics,
 
     sNTA = smLayerCallback::getLstUndoNxtLSN( aTrans );
 
-    // Index Segment Handle¿¡ Segment Cache¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+    // Index Segment Handleì— Segment Cacheë¥¼ ì´ˆê¸°í™”í•œë‹¤.
     IDE_TEST( sdpSegDescMgr::initSegDesc(
                   &sSegDesc,
                   aTableSpaceID,
-                  SD_NULL_PID, // Segment »ý¼ºÀü
+                  SD_NULL_PID, // Segment ìƒì„±ì „
                   SDP_SEG_TYPE_INDEX,
                   aTableOID,
                   aIndexID) != IDE_SUCCESS );
 
     /*
-     * INITRANS¿Í MAXTRANS¸¦ ¼³Á¤ÇÑ´Ù.
-     * PCTFREE°ú PCTUSED¸¦ »ç¿ëÇÏÁö ¾ÊÁö¸¸ ¼³Á¤ÇÑ´Ù.
+     * INITRANSì™€ MAXTRANSë¥¼ ì„¤ì •í•œë‹¤.
+     * PCTFREEê³¼ PCTUSEDë¥¼ ì‚¬ìš©í•˜ì§€ ì•Šì§€ë§Œ ì„¤ì •í•œë‹¤.
      */
     sdpSegDescMgr::setDefaultSegAttr( &(sSegDesc.mSegHandle.mSegAttr),
                                       SDP_SEG_TYPE_INDEX );
 
-    // STORAGE ¼Ó¼ºÀ» ¼³Á¤ÇÑ´Ù. 
+    // STORAGE ì†ì„±ì„ ì„¤ì •í•œë‹¤. 
     sdpSegDescMgr::setSegAttr( &sSegDesc, aSegAttr );
-    // STORAGE ¼Ó¼ºÀ» ¼³Á¤ÇÑ´Ù. 
+    // STORAGE ì†ì„±ì„ ì„¤ì •í•œë‹¤. 
     sdpSegDescMgr::setSegStoAttr( &sSegDesc, aSegStoAttr );
 
     IDE_TEST( sdrMiniTrans::begin(aStatistics,
@@ -475,25 +475,25 @@ IDE_RC sdpSegment::allocIndexSeg4Entry( idvSQL             * aStatistics,
     sState = 0;
     IDE_TEST( sdrMiniTrans::commit(&sMtx) != IDE_SUCCESS );
 
-    // ÀÌÈÄ¿¡ initIndex¿¡¼­ ´Ù½Ã ÃÊ±âÈ­ÇÑ´Ù.
+    // ì´í›„ì— initIndexì—ì„œ ë‹¤ì‹œ ì´ˆê¸°í™”í•œë‹¤.
     IDE_TEST( sdpSegDescMgr::destSegDesc( &sSegDesc )
               != IDE_SUCCESS );
 
     sSegPID    = sSegDesc.mSegHandle.mSegPID;
     sIndexPID  = SM_MAKE_PID(aIndexOID);
 
-    // index page Æ÷ÀÎÅÍ °è»ê
+    // index page í¬ì¸í„° ê³„ì‚°
     IDE_ASSERT( smmManager::getPersPagePtr( SMI_ID_TABLESPACE_SYSTEM_MEMORY_DIC,
                                             sIndexPID,
                                             (void**)&sIndexPagePtr )
                 == IDE_SUCCESS );
 
-    // index header ±¸ÇÔ
+    // index header êµ¬í•¨
     IDE_ASSERT( smmManager::getOIDPtr( SMI_ID_TABLESPACE_SYSTEM_MEMORY_DIC,
                                        aIndexOID,
                                        (void**)&sIndexHeader )
                 == IDE_SUCCESS );
-    // index headerÀÇ seg rID À§Ä¡ °è»ê
+    // index headerì˜ seg rID ìœ„ì¹˜ ê³„ì‚°
     sIndexSegGRID  =  smLayerCallback::getIndexSegGRIDPtr( sIndexHeader );
 
     SC_MAKE_GRID( *sIndexSegGRID,
@@ -533,11 +533,11 @@ IDE_RC sdpSegment::allocIndexSeg4Entry( idvSQL             * aStatistics,
 
     /* ------------------------------------------------
      * !! CHECK RECOVERY POINT
-     * case) index segment¸¦ ÇÒ´çÇÏ°í crash°¡ ¹ß»ý °æ¿ìÀÌ´Ù.
-     * restart½Ã undoAll °úÁ¤¿¡¼­ segment´Â nta logical undo¸¦ ÅëÇØ
-     * free°¡ µÇ¸ç, table headerÀÇ mIndexOID¿¡ ÇØ´ç index headerÀÇ
-     * ±â·ÏµÈ index segment rid´Â NULL·Î undo µÇµµ·Ï Ã³¸®µÇ°í,
-     * »õ·Ó°Ô ÇÒ´ç¹ÞÀº index varcolumnÀº free µÇµµ·Ï ÇÑ´Ù.
+     * case) index segmentë¥¼ í• ë‹¹í•˜ê³  crashê°€ ë°œìƒ ê²½ìš°ì´ë‹¤.
+     * restartì‹œ undoAll ê³¼ì •ì—ì„œ segmentëŠ” nta logical undoë¥¼ í†µí•´
+     * freeê°€ ë˜ë©°, table headerì˜ mIndexOIDì— í•´ë‹¹ index headerì˜
+     * ê¸°ë¡ëœ index segment ridëŠ” NULLë¡œ undo ë˜ë„ë¡ ì²˜ë¦¬ë˜ê³ ,
+     * ìƒˆë¡­ê²Œ í• ë‹¹ë°›ì€ index varcolumnì€ free ë˜ë„ë¡ í•œë‹¤.
      * ----------------------------------------------*/
 
     return IDE_SUCCESS;
@@ -556,7 +556,7 @@ IDE_RC sdpSegment::allocIndexSeg4Entry( idvSQL             * aStatistics,
 }
 
 /*
- * Column(smiColumn)¿¡ LOB Segment ÇÒ´ç
+ * Column(smiColumn)ì— LOB Segment í• ë‹¹
  */
 IDE_RC sdpSegment::allocLobSeg4Entry( idvSQL            *aStatistics,
                                       void*             aTrans,
@@ -586,7 +586,7 @@ IDE_RC sdpSegment::allocLobSeg4Entry( idvSQL            *aStatistics,
 
     sNTA = smLayerCallback::getLstUndoNxtLSN( aTrans );
 
-    /* PROJ-1671 LOB Segment¿¡ ´ëÇÑ Segment DescÀ» »ý¼ºÇÏ°í, ÃÊ±âÈ­ÇÑ´Ù.*/
+    /* PROJ-1671 LOB Segmentì— ëŒ€í•œ Segment Descì„ ìƒì„±í•˜ê³ , ì´ˆê¸°í™”í•œë‹¤.*/
     IDE_TEST( allocLOBSegDesc( aLobColumn,
                                aTableOID )
               != IDE_SUCCESS );
@@ -659,7 +659,7 @@ IDE_RC sdpSegment::allocLobSeg4Entry( idvSQL            *aStatistics,
                   sSegPID,
                   0 );
 
-    // columnÀÌ ÀúÀåµÈ  page Æ÷ÀÎÅÍ °è»ê
+    // columnì´ ì €ìž¥ëœ  page í¬ì¸í„° ê³„ì‚°
     IDE_ASSERT( smmManager::getPersPagePtr( SMI_ID_TABLESPACE_SYSTEM_MEMORY_DIC,
                                             sLobColPID,
                                             (void**)&sLobColPagePtr )
@@ -715,7 +715,7 @@ IDE_RC sdpSegment::allocLobSeg4Entry( idvSQL            *aStatistics,
 }
 
 /*
- * Lob Segment ÃÊ±âÈ­
+ * Lob Segment ì´ˆê¸°í™”
  */
 IDE_RC sdpSegment::initLobSegDesc( smiColumn * aLobColumn )
 {
@@ -746,7 +746,7 @@ IDE_RC sdpSegment::initLobSegDesc( smiColumn * aLobColumn )
 
 
 /*
- * page list entryÀÇ table segment ÇØÁ¦
+ * page list entryì˜ table segment í•´ì œ
  */
 IDE_RC sdpSegment::freeTableSeg4Entry(  idvSQL           * aStatistics,
                                         scSpaceID          aSpaceID,
@@ -773,7 +773,7 @@ IDE_RC sdpSegment::freeTableSeg4Entry(  idvSQL           * aStatistics,
               != IDE_SUCCESS );
     sState = 1;
 
-    // ½ÇÆÐÇÒ °æ¿ì mtx rollback Ã³¸®ÇÑ´Ù.
+    // ì‹¤íŒ¨í•  ê²½ìš° mtx rollback ì²˜ë¦¬í•œë‹¤.
     IDE_TEST( freeTableSeg4Entry( aStatistics,
                                   aSpaceID,
                                   aTableOID,
@@ -785,10 +785,10 @@ IDE_RC sdpSegment::freeTableSeg4Entry(  idvSQL           * aStatistics,
 
     /* ------------------------------------------------
      * !! CHECK RECOVERY POINT
-     * case) drop table pending½Ã tableÀÇ segment¸¦ freeÇÏ°í crash°¡ ¹ß»ý °æ¿ìÀÌ´Ù.
-     * restart½Ã disk GCÀÇ tx´Â abortÀÌ µÇ±äÇØµµ undo¿¡ ´ëÇÑ ¾Æ¹«·± ÀÏµµ ÇÏÁö ¾Ê´Â´Ù.
-     * Áï, table segment´Â Áö¿öÁøÃ¤·Î ´Ù½Ã restart°¡ µÇ°í, refine catalog ´Ü°è¿¡¼­
-     * drop table pendingÀÌ ´Ù½Ã È£ÃâµÇ°Ô µÈ´Ù.
+     * case) drop table pendingì‹œ tableì˜ segmentë¥¼ freeí•˜ê³  crashê°€ ë°œìƒ ê²½ìš°ì´ë‹¤.
+     * restartì‹œ disk GCì˜ txëŠ” abortì´ ë˜ê¸´í•´ë„ undoì— ëŒ€í•œ ì•„ë¬´ëŸ° ì¼ë„ í•˜ì§€ ì•ŠëŠ”ë‹¤.
+     * ì¦‰, table segmentëŠ” ì§€ì›Œì§„ì±„ë¡œ ë‹¤ì‹œ restartê°€ ë˜ê³ , refine catalog ë‹¨ê³„ì—ì„œ
+     * drop table pendingì´ ë‹¤ì‹œ í˜¸ì¶œë˜ê²Œ ëœë‹¤.
      * ----------------------------------------------*/
 
     return IDE_SUCCESS;
@@ -808,7 +808,7 @@ IDE_RC sdpSegment::freeTableSeg4Entry(  idvSQL           * aStatistics,
 
 
 /*
- * Table È¤Àº Index Segment¿¡ Extent È®Àå
+ * Table í˜¹ì€ Index Segmentì— Extent í™•ìž¥
  */
 IDE_RC sdpSegment::allocExts(  idvSQL           * aStatistics,
                                scSpaceID          aSpaceID,
@@ -856,18 +856,18 @@ IDE_RC sdpSegment::allocExts(  idvSQL           * aStatistics,
 
 
 /***********************************************************************
- * Description : page list entryÀÇ table segment ÇØÁ¦
+ * Description : page list entryì˜ table segment í•´ì œ
  *
- * disk page list entryÀÇ table segment desc RID°¡ SD_NULL_RID°¡ ¾Æ´Ò°æ¿ì
- * È£ÃâµÇ¾î ¼öÇàµÈ´Ù. smc layer¿¡¼­ mtx beginÇÏ°í, ÀÌ ÇÔ¼ö¸¦ ºüÁ®³ª°¡¸é
- * SMR_OP_NULLÀÇ NTA ¼³Á¤ ÈÄ mtx commitÇÏ°Ô µÈ´Ù.
+ * disk page list entryì˜ table segment desc RIDê°€ SD_NULL_RIDê°€ ì•„ë‹ê²½ìš°
+ * í˜¸ì¶œë˜ì–´ ìˆ˜í–‰ëœë‹¤. smc layerì—ì„œ mtx beginí•˜ê³ , ì´ í•¨ìˆ˜ë¥¼ ë¹ ì ¸ë‚˜ê°€ë©´
+ * SMR_OP_NULLì˜ NTA ì„¤ì • í›„ mtx commití•˜ê²Œ ëœë‹¤.
  *
  * + 2nd. code design
- *   - table segment RID¿Í table segment hdr page ID¸¦ ·Î±ëÇÑ´Ù.(redo-undo function Á¸Àç)
- *   - table hdr page¸¦ dirty page·Î µî·ÏÇÑ´Ù.
- *   - segment¸¦ ÇÒ´çÇÒ tablespace id¸¦ ÀÎÀÚ·Î ³Ñ°Ü ÇØ´ç tablespace¿¡
- *     ¼ÓÇÑ segment desc¸¦ freeÇÔ
- * BUGBUG : NULL RIDÀÏ¶§ µé¾î¿Í¼­´Â ¾ÈµÇ³ª µé¾î¿À°í ÀÖ´Ù.
+ *   - table segment RIDì™€ table segment hdr page IDë¥¼ ë¡œê¹…í•œë‹¤.(redo-undo function ì¡´ìž¬)
+ *   - table hdr pageë¥¼ dirty pageë¡œ ë“±ë¡í•œë‹¤.
+ *   - segmentë¥¼ í• ë‹¹í•  tablespace idë¥¼ ì¸ìžë¡œ ë„˜ê²¨ í•´ë‹¹ tablespaceì—
+ *     ì†í•œ segment descë¥¼ freeí•¨
+ * BUGBUG : NULL RIDì¼ë•Œ ë“¤ì–´ì™€ì„œëŠ” ì•ˆë˜ë‚˜ ë“¤ì–´ì˜¤ê³  ìžˆë‹¤.
  ***********************************************************************/
 IDE_RC sdpSegment::freeTableSeg4Entry( idvSQL            * aStatistics,
                                         scSpaceID          aSpaceID,
@@ -940,8 +940,8 @@ IDE_RC sdpSegment::freeTableSeg4Entry( idvSQL            * aStatistics,
         }
         else
         {
-            // drop tablespace½Ã offline °ü·ÃµÈ TBSÀÇ
-            // Table/Index/Lob ¼¼±×¸ÕÆ®´Â freeÇÏÁö ¾Ê´Â´Ù.
+            // drop tablespaceì‹œ offline ê´€ë ¨ëœ TBSì˜
+            // Table/Index/Lob ì„¸ê·¸ë¨¼íŠ¸ëŠ” freeí•˜ì§€ ì•ŠëŠ”ë‹¤.
             ideLog::log(SM_TRC_LOG_LEVEL_WARNNING,
                         SM_TRC_DPAGE_WARNNING4,
                         aPageEntry->mSegDesc.mSegHandle.mSegPID,
@@ -974,10 +974,10 @@ IDE_RC sdpSegment::freeTableSeg4Entry( idvSQL            * aStatistics,
 }
 
 /*
- * Table Segment ¸®¼Â ( for Temporary )
+ * Table Segment ë¦¬ì…‹ ( for Temporary )
  *
- * disk page list entryÀÇ table segment descÀÇ ¸ðµç page¸¦ free ÇÏ°í,
- * entry¸¦ ÃÊ±âÈ­ ÇÑ´Ù.
+ * disk page list entryì˜ table segment descì˜ ëª¨ë“  pageë¥¼ free í•˜ê³ ,
+ * entryë¥¼ ì´ˆê¸°í™” í•œë‹¤.
  */
 IDE_RC sdpSegment::resetTableSeg4Entry( idvSQL           *aStatistics,
                                         scSpaceID         aSpaceID,
@@ -1011,8 +1011,8 @@ IDE_RC sdpSegment::resetTableSeg4Entry( idvSQL           *aStatistics,
     aPageEntry->mRecCnt = 0;
 
     /*
-     * Segment ¼Ó¼º°ú Segment Storage ¼Ó¼º°ú Segment °ø°£ ÀÎÅÍÆäÀÌ½º ¸ðµâÀº
-     * Àç¼³Á¤ÇÏÁö ¾Ê´Â´Ù.
+     * Segment ì†ì„±ê³¼ Segment Storage ì†ì„±ê³¼ Segment ê³µê°„ ì¸í„°íŽ˜ì´ìŠ¤ ëª¨ë“ˆì€
+     * ìž¬ì„¤ì •í•˜ì§€ ì•ŠëŠ”ë‹¤.
      */
     sState = 0;
     IDE_TEST( sdrMiniTrans::commit(&sMtx) != IDE_SUCCESS );
@@ -1031,7 +1031,7 @@ IDE_RC sdpSegment::resetTableSeg4Entry( idvSQL           *aStatistics,
 }
 
 /***********************************************************************
- * Description : static index headerÀÇ index segment ÇØÁ¦ : wrapper
+ * Description : static index headerì˜ index segment í•´ì œ : wrapper
  ***********************************************************************/
 IDE_RC sdpSegment::freeIndexSeg4Entry(  idvSQL           *aStatistics,
                                          scSpaceID         aSpaceID,
@@ -1056,7 +1056,7 @@ IDE_RC sdpSegment::freeIndexSeg4Entry(  idvSQL           *aStatistics,
               != IDE_SUCCESS );
     sState = 1;
 
-    // ½ÇÆÐÇÒ °æ¿ì mtx rollback Ã³¸®ÇÑ´Ù.
+    // ì‹¤íŒ¨í•  ê²½ìš° mtx rollback ì²˜ë¦¬í•œë‹¤.
     IDE_TEST( freeIndexSeg4Entry( aStatistics,
                                   aSpaceID,
                                   aIndexOID,
@@ -1067,10 +1067,10 @@ IDE_RC sdpSegment::freeIndexSeg4Entry(  idvSQL           *aStatistics,
 
     /* ------------------------------------------------
      * !! CHECK RECOVERY POINT
-     * case) drop disk index pending½Ã indexÀÇ segment¸¦ freeÇÏ°í crash°¡ ¹ß»ý °æ¿ìÀÌ´Ù.
-     * restart½Ã disk GCÀÇ tx´Â abortÀÌ µÇ±äÇØµµ undo¿¡ ´ëÇÑ ¾Æ¹«·± ÀÏµµ ÇÏÁö ¾Ê´Â´Ù.
-     * Áï, index segment´Â Áö¿öÁøÃ¤·Î ´Ù½Ã restart°¡ µÇ°í, refine catalog ´Ü°è¿¡¼­
-     * drop table pendingÀÌ ´Ù½Ã È£ÃâµÇ¾î ÀÌ¹Ì freeµÈ index segment´Â skipÇÏ°Ô µÈ´Ù.
+     * case) drop disk index pendingì‹œ indexì˜ segmentë¥¼ freeí•˜ê³  crashê°€ ë°œìƒ ê²½ìš°ì´ë‹¤.
+     * restartì‹œ disk GCì˜ txëŠ” abortì´ ë˜ê¸´í•´ë„ undoì— ëŒ€í•œ ì•„ë¬´ëŸ° ì¼ë„ í•˜ì§€ ì•ŠëŠ”ë‹¤.
+     * ì¦‰, index segmentëŠ” ì§€ì›Œì§„ì±„ë¡œ ë‹¤ì‹œ restartê°€ ë˜ê³ , refine catalog ë‹¨ê³„ì—ì„œ
+     * drop table pendingì´ ë‹¤ì‹œ í˜¸ì¶œë˜ì–´ ì´ë¯¸ freeëœ index segmentëŠ” skipí•˜ê²Œ ëœë‹¤.
      * ----------------------------------------------*/
 
     return IDE_SUCCESS;
@@ -1090,7 +1090,7 @@ IDE_RC sdpSegment::freeIndexSeg4Entry(  idvSQL           *aStatistics,
 
 
 /***********************************************************************
- * Description : static index headerÀÇ index segment ÇØÁ¦
+ * Description : static index headerì˜ index segment í•´ì œ
  ***********************************************************************/
 IDE_RC sdpSegment::freeIndexSeg4Entry( idvSQL           *aStatistics,
                                         scSpaceID         aSpaceID,
@@ -1128,7 +1128,7 @@ IDE_RC sdpSegment::freeIndexSeg4Entry( idvSQL           *aStatistics,
                                        aIndexOID,
                                        (void**)&sIndexHeader )
                 == IDE_SUCCESS );
-    // index headerÀÇ seg rID À§Ä¡ °è»ê
+    // index headerì˜ seg rID ìœ„ì¹˜ ê³„ì‚°
     sIndexSegGRID  =  smLayerCallback::getIndexSegGRIDPtr( sIndexHeader );
 
     IDE_DASSERT( SC_GRID_IS_NULL(*sIndexSegGRID) == ID_FALSE );
@@ -1196,8 +1196,8 @@ IDE_RC sdpSegment::freeIndexSeg4Entry( idvSQL           *aStatistics,
         }
         else
         {
-            // drop tablespace½Ã offline °ü·ÃµÈ TBSÀÇ
-            // Table/Index/Lob ¼¼±×¸ÕÆ®´Â freeÇÏÁö ¾Ê´Â´Ù.
+            // drop tablespaceì‹œ offline ê´€ë ¨ëœ TBSì˜
+            // Table/Index/Lob ì„¸ê·¸ë¨¼íŠ¸ëŠ” freeí•˜ì§€ ì•ŠëŠ”ë‹¤.
             ideLog::log(SM_TRC_LOG_LEVEL_WARNNING,
                         SM_TRC_DPAGE_WARNNING5,
                         sTmpPID,
@@ -1234,7 +1234,7 @@ IDE_RC sdpSegment::freeIndexSeg4Entry( idvSQL           *aStatistics,
 }
 
 /***********************************************************************
- * Description : lob columnÀÇ lob  segment ÇØÁ¦
+ * Description : lob columnì˜ lob  segment í•´ì œ
  ***********************************************************************/
 IDE_RC sdpSegment::freeLobSeg(idvSQL           *aStatistics,
                                void*             aTrans,
@@ -1260,7 +1260,7 @@ IDE_RC sdpSegment::freeLobSeg(idvSQL           *aStatistics,
               != IDE_SUCCESS );
     sState = 1;
 
-    // ½ÇÆÐÇÒ °æ¿ì mtx rollback Ã³¸®ÇÑ´Ù.
+    // ì‹¤íŒ¨í•  ê²½ìš° mtx rollback ì²˜ë¦¬í•œë‹¤.
     IDE_TEST( freeLobSeg( aStatistics,
                           aLobColOID,
                           aLobCol,
@@ -1269,7 +1269,7 @@ IDE_RC sdpSegment::freeLobSeg(idvSQL           *aStatistics,
     sState = 0;
     IDE_TEST( sdrMiniTrans::commit(&sMtx) != IDE_SUCCESS );
 
-    /* PROJ-1671 LOB Segment¿¡ ´ëÇÑ Segment Desc¸¦ ÇØÁ¦ÇÑ´Ù. */
+    /* PROJ-1671 LOB Segmentì— ëŒ€í•œ Segment Descë¥¼ í•´ì œí•œë‹¤. */
     IDE_TEST( freeLOBSegDesc( aLobCol ) != IDE_SUCCESS );
 
     /* ------------------------------------------------
@@ -1292,7 +1292,7 @@ IDE_RC sdpSegment::freeLobSeg(idvSQL           *aStatistics,
 }
 
 /***********************************************************************
- * Description : lob columnÀÇ lob  segment ÇØÁ¦
+ * Description : lob columnì˜ lob  segment í•´ì œ
  ***********************************************************************/
 IDE_RC sdpSegment::freeLobSeg( idvSQL          * aStatistics,
                                smOID             aLobColOID,
@@ -1375,10 +1375,10 @@ IDE_RC sdpSegment::freeLobSeg( idvSQL          * aStatistics,
             sSegMgmtOP = sdpSegDescMgr::getSegMgmtOp( sSpaceID );
             IDE_ERROR( sSegMgmtOP != NULL );
 
-            /* BUG-21545: Drop Table Pending¿¬»ê¿¡¼­ ºñÁ¤»ó Á¾·á½Ã TableÀÇ Drop Flag´Â
-             *            ¼³Á¤µÇ¾î ÀÖ¾î Restart½Ã Disk Refine¿¡¼­ SkipµÇ¾î Lob ColumnÀÇ
-             *            Segment Desc°¡ ÃÊ±âÈ­ µÇÁö ¾Ê°í NULL¼³Á¤µË´Ï´Ù. ÇÏ¿© ¿©±â¼­
-             *            ÂüÁ¶ÇÏ¸é ¾ÊµË´Ï´Ù. */
+            /* BUG-21545: Drop Table Pendingì—°ì‚°ì—ì„œ ë¹„ì •ìƒ ì¢…ë£Œì‹œ Tableì˜ Drop FlagëŠ”
+             *            ì„¤ì •ë˜ì–´ ìžˆì–´ Restartì‹œ Disk Refineì—ì„œ Skipë˜ì–´ Lob Columnì˜
+             *            Segment Descê°€ ì´ˆê¸°í™” ë˜ì§€ ì•Šê³  NULLì„¤ì •ë©ë‹ˆë‹¤. í•˜ì—¬ ì—¬ê¸°ì„œ
+             *            ì°¸ì¡°í•˜ë©´ ì•Šë©ë‹ˆë‹¤. */
             IDE_TEST( sSegMgmtOP->mDropSegment( aStatistics,
                                                 aMtx,
                                                 SC_MAKE_SPACE(aLobCol->colSeg),
@@ -1387,8 +1387,8 @@ IDE_RC sdpSegment::freeLobSeg( idvSQL          * aStatistics,
         }
         else
         {
-            // drop tablespace½Ã offline °ü·ÃµÈ TBSÀÇ
-            // Table/Index/Lob ¼¼±×¸ÕÆ®´Â freeÇÏÁö ¾Ê´Â´Ù.
+            // drop tablespaceì‹œ offline ê´€ë ¨ëœ TBSì˜
+            // Table/Index/Lob ì„¸ê·¸ë¨¼íŠ¸ëŠ” freeí•˜ì§€ ì•ŠëŠ”ë‹¤.
             ideLog::log(SM_TRC_LOG_LEVEL_WARNNING,
                         SM_TRC_DPAGE_WARNNING4,
                         SC_MAKE_PID(aLobCol->colSeg),

@@ -190,8 +190,8 @@ IDE_RC testDDL()
               != 0 );
 
     // tsm_create_table_1
-    // 2°³ÀÇ ¾²·¹µå°¡ °°Àº Å×ÀÌºí ¸íÀ¸·Î »ı¼º½Ãµµ...
-    // 1°³ÀÇ ¾²·¹µå´Â Á¤»ó »ı¼º, ³ª¸ÓÁö ÇÏ³ª´Â Unique ViolationÀ¸·Î »ı¼º ºÒ°¡.
+    // 2ê°œì˜ ì“°ë ˆë“œê°€ ê°™ì€ í…Œì´ë¸” ëª…ìœ¼ë¡œ ìƒì„±ì‹œë„...
+    // 1ê°œì˜ ì“°ë ˆë“œëŠ” ì •ìƒ ìƒì„±, ë‚˜ë¨¸ì§€ í•˜ë‚˜ëŠ” Unique Violationìœ¼ë¡œ ìƒì„± ë¶ˆê°€.
     sThreadCount = 0;
     IDE_TEST( idlOS::thr_create( tsm_create_table_1_A_Thread,
                                  NULL,
@@ -226,8 +226,8 @@ IDE_RC testDDL()
               != 0 );
 
     // tsm_create_table_2
-    // 2°³ÀÇ ¾²·¹µå°¡ °¢°¢ ´Ù¸¥ Å×ÀÌºí ¸íÀ¸·Î createTable, dropTableÀ»
-    // 1000È¸ ¼öÇàÇÑ´Ù.
+    // 2ê°œì˜ ì“°ë ˆë“œê°€ ê°ê° ë‹¤ë¥¸ í…Œì´ë¸” ëª…ìœ¼ë¡œ createTable, dropTableì„
+    // 1000íšŒ ìˆ˜í–‰í•œë‹¤.
     sThreadCount = 0;
     IDE_TEST( idlOS::thr_create( tsm_create_table_2_A_Thread,
                                  NULL,
@@ -257,8 +257,8 @@ IDE_RC testDDL()
     tsmLog("[SUCCESS] tsm_create_table_2 . ok.  \n");
 
     // tsm_create_table_3
-    // 2°³ÀÇ ¾²·¹µå°¡ °¢°¢ ´Ù¸¥ Å×ÀÌºí ¸íÀ¸·Î createTable, rollbackÀ»
-    // 1000È¸ ¼öÇàÇÑ´Ù.
+    // 2ê°œì˜ ì“°ë ˆë“œê°€ ê°ê° ë‹¤ë¥¸ í…Œì´ë¸” ëª…ìœ¼ë¡œ createTable, rollbackì„
+    // 1000íšŒ ìˆ˜í–‰í•œë‹¤.
     sThreadCount = 0;
     IDE_TEST( idlOS::thr_create( tsm_create_table_3_A_Thread,
                                  NULL,
@@ -288,9 +288,9 @@ IDE_RC testDDL()
     tsmLog("[SUCCESS] tsm_create_table_3 . ok.  \n");
     
     // tsm_create_index_1
-    // ÇÏ³ªÀÇ ¾²·¹µå°¡ Table¿¡ 5000°³ÀÇ µ¥ÀÌÅ¸¸¦ »ğÀÔÇÏ°í, ¼øÂ÷ ½ºÄµ
-    // index¸¦ 10°³ »ı¼ºÇÑ ÈÄ, ÀÎµ¦½º ½ºÄµ
-    // index¸¦ »èÁ¦ÇÑ ÈÄ, ¼øÂ÷ ½ºÄµ
+    // í•˜ë‚˜ì˜ ì“°ë ˆë“œê°€ Tableì— 5000ê°œì˜ ë°ì´íƒ€ë¥¼ ì‚½ì…í•˜ê³ , ìˆœì°¨ ìŠ¤ìº”
+    // indexë¥¼ 10ê°œ ìƒì„±í•œ í›„, ì¸ë±ìŠ¤ ìŠ¤ìº”
+    // indexë¥¼ ì‚­ì œí•œ í›„, ìˆœì°¨ ìŠ¤ìº”
 
     sThreadCount = 0;
     IDE_TEST( idlOS::thr_create( tsm_create_index_1_A_Thread,
@@ -311,7 +311,7 @@ IDE_RC testDDL()
     tsmLog("[SUCCESS] tsm_create_index_1 . ok.  \n");
 
     // tsm_create_index_2
-    // table¿¡ index »ı¼º, rollback ¹İº¹
+    // tableì— index ìƒì„±, rollback ë°˜ë³µ
 
     sThreadCount = 0;
     IDE_TEST( idlOS::thr_create( tsm_create_index_2_A_Thread,
@@ -332,7 +332,7 @@ IDE_RC testDDL()
     tsmLog("[SUCCESS] tsm_create_index_2 . ok.  \n");
 
     // tsm_create_index_3
-    // table¿¡ index¸¦ maximum°¹¼ö ¸¸Å­ »ı¼º½ÃÅ°°í, maximum validationÀ» °Ë»ç
+    // tableì— indexë¥¼ maximumê°¯ìˆ˜ ë§Œí¼ ìƒì„±ì‹œí‚¤ê³ , maximum validationì„ ê²€ì‚¬
     sThreadCount = 0;
     IDE_TEST( idlOS::thr_create( tsm_create_index_3_A_Thread,
                                  NULL,
@@ -352,7 +352,7 @@ IDE_RC testDDL()
     tsmLog("[SUCCESS] tsm_create_index_3 . ok.  \n");
 
     // tsm_drop_index_1
-    // table¿¡ index¸¦ »èÁ¦, rollback ¹İº¹
+    // tableì— indexë¥¼ ì‚­ì œ, rollback ë°˜ë³µ
     sThreadCount = 0;
     IDE_TEST( idlOS::thr_create( tsm_drop_index_1_A_Thread,
                                  NULL,
@@ -372,7 +372,7 @@ IDE_RC testDDL()
     tsmLog("[SUCCESS] tsm_drop_index_1 . ok.  \n");
 
     // tsm_drop_index_2
-    // table¿¡ index¸¦ »èÁ¦ ½Ã, ÇØ´ç ÀÎµ¦½º Á¸ÀçÇÏ´ÂÁö validation
+    // tableì— indexë¥¼ ì‚­ì œ ì‹œ, í•´ë‹¹ ì¸ë±ìŠ¤ ì¡´ì¬í•˜ëŠ”ì§€ validation
     sThreadCount = 0;
     IDE_TEST( idlOS::thr_create( tsm_drop_index_2_A_Thread,
                                  NULL,
@@ -511,7 +511,7 @@ void * tsm_create_table_1_A_Thread( void * )
 
     IDE_TEST( ideAllocErrorSpace() != IDE_SUCCESS );
 
-    /* BUG-23680 [5.3.1 Release] TSM Á¤»óÈ­ */
+    /* BUG-23680 [5.3.1 Release] TSM ì •ìƒí™” */
     if( smiTableSpace::isDiskTableSpace( gTBSID )
         == ID_TRUE )
     {
@@ -593,7 +593,7 @@ void * tsm_create_table_1_B_Thread( void * )
 
     IDE_TEST( ideAllocErrorSpace() != IDE_SUCCESS );
 
-    /* BUG-23680 [5.3.1 Release] TSM Á¤»óÈ­ */
+    /* BUG-23680 [5.3.1 Release] TSM ì •ìƒí™” */
     if( smiTableSpace::isDiskTableSpace( gTBSID )
         == ID_TRUE )
     {
@@ -691,7 +691,7 @@ void * tsm_create_table_2_A_Thread( void * )
 
     IDE_TEST( ideAllocErrorSpace() != IDE_SUCCESS );
 
-    /* BUG-23680 [5.3.1 Release] TSM Á¤»óÈ­ */
+    /* BUG-23680 [5.3.1 Release] TSM ì •ìƒí™” */
     if( smiTableSpace::isDiskTableSpace( gTBSID )
         == ID_TRUE )
     {
@@ -785,7 +785,7 @@ void * tsm_create_table_2_B_Thread( void * )
 
     IDE_TEST( ideAllocErrorSpace() != IDE_SUCCESS );
 
-    /* BUG-23680 [5.3.1 Release] TSM Á¤»óÈ­ */
+    /* BUG-23680 [5.3.1 Release] TSM ì •ìƒí™” */
     if( smiTableSpace::isDiskTableSpace( gTBSID )
         == ID_TRUE )
     {
@@ -878,7 +878,7 @@ void * tsm_create_table_3_A_Thread( void * )
     
     IDE_TEST( ideAllocErrorSpace() != IDE_SUCCESS );
 
-    /* BUG-23680 [5.3.1 Release] TSM Á¤»óÈ­ */
+    /* BUG-23680 [5.3.1 Release] TSM ì •ìƒí™” */
     if( smiTableSpace::isDiskTableSpace( gTBSID )
         == ID_TRUE )
     {
@@ -968,7 +968,7 @@ void * tsm_create_table_3_B_Thread( void * )
 
     IDE_TEST( ideAllocErrorSpace() != IDE_SUCCESS );
 
-    /* BUG-23680 [5.3.1 Release] TSM Á¤»óÈ­ */
+    /* BUG-23680 [5.3.1 Release] TSM ì •ìƒí™” */
     if( smiTableSpace::isDiskTableSpace( gTBSID )
         == ID_TRUE )
     {
@@ -1045,7 +1045,7 @@ void * tsm_create_index_1_A_Thread( void * )
                     trans_begin_error );
     sTransBegin = ID_TRUE;
     
-    // index °¡ ¾ø´Â »óÅÂ¿¡¼­ insert
+    // index ê°€ ì—†ëŠ” ìƒíƒœì—ì„œ insert
     for (i = 0; i < CREATE_INDEX_1_CNT; i++)
     {
         SChar sBuffer1[32];
@@ -1065,14 +1065,14 @@ void * tsm_create_index_1_A_Thread( void * )
     }
     gVerbose = ID_FALSE;
     gVerboseCount = ID_TRUE;
-    // index °¡ ¾ø´Â »óÅÂ¿¡¼­ select
+    // index ê°€ ì—†ëŠ” ìƒíƒœì—ì„œ select
     IDE_TEST_RAISE(tsmSelectAll(spRootStmt, 1, sTable)
                    != IDE_SUCCESS, select_all_error );
 
     sTransBegin = ID_FALSE;
     IDE_TEST_RAISE( sTrans.commit(&sDummySCN) != IDE_SUCCESS, trans_commit_error );
 
-    // index »ı¼º
+    // index ìƒì„±
     gVerbose = ID_FALSE;
     for( i = 50; i < 50 + 10; i++ )
     {
@@ -1089,7 +1089,7 @@ void * tsm_create_index_1_A_Thread( void * )
     gVerbose = ID_FALSE;
     gVerboseCount = ID_TRUE;
 
-    // index ¸¦ ÀÌ¿ëÇÑ select
+    // index ë¥¼ ì´ìš©í•œ select
     sMin = 0;
     sMax = CREATE_INDEX_1_CNT;
     
@@ -1106,7 +1106,7 @@ void * tsm_create_index_1_A_Thread( void * )
     IDE_TEST_RAISE( sTrans.commit(&sDummySCN) != IDE_SUCCESS,
                     trans_commit_error );
 
-    // index »èÁ¦
+    // index ì‚­ì œ
     gVerbose = ID_FALSE;
     for( i = 50; i < 50 + 10; i++ )
     {
@@ -1122,7 +1122,7 @@ void * tsm_create_index_1_A_Thread( void * )
 
     gVerbose = ID_FALSE;
     gVerboseCount = ID_TRUE;
-    // index °¡ ¾ø´Â »óÅÂ¿¡¼­ select
+    // index ê°€ ì—†ëŠ” ìƒíƒœì—ì„œ select
     IDE_TEST_RAISE(tsmSelectAll(spRootStmt, 1, sTable)
                    != IDE_SUCCESS, select_all_error );
 
@@ -1263,7 +1263,7 @@ void * tsm_create_index_2_A_Thread( void * )
                             &sIndexList[2],
                             SMI_INDEX_UNIQUE_DISABLE|SMI_INDEX_TYPE_NORMAL,
                             0,
-                            0, // bucket count ¹«ÀÇ¹Ì
+                            0, // bucket count ë¬´ì˜ë¯¸
                             0,
                             SMI_INDEX_BUILD_UNCOMMITTED_ROW_DISABLE,
                             sSegmentAttr,
@@ -1615,7 +1615,7 @@ void * tsm_modify_table_info_1_A_Thread( void * )
                                     sTableName )
                     != IDE_SUCCESS, search_error );
 
-    /* BUG-23680 [5.3.1 Release] TSM Á¤»óÈ­ */
+    /* BUG-23680 [5.3.1 Release] TSM ì •ìƒí™” */
     if( smiTableSpace::isDiskTableSpace( gTBSID )
         == ID_TRUE )
     {
@@ -1743,7 +1743,7 @@ void * tsm_modify_table_info_2_B_Thread( void * )
                                     sTableName )
                     != IDE_SUCCESS, search_error );
 
-    /* BUG-23680 [5.3.1 Release] TSM Á¤»óÈ­ */
+    /* BUG-23680 [5.3.1 Release] TSM ì •ìƒí™” */
     if( smiTableSpace::isDiskTableSpace( gTBSID )
         == ID_TRUE )
     {

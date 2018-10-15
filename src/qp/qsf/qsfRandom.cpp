@@ -18,7 +18,7 @@
 /***********************************************************************
  * $Id: qsfRandom.cpp 82075 2018-01-17 06:39:52Z jina.kim $
  *
- * Description : BUG-43605 [mt] randomÇÔ¼öÀÇ seed ¼³Á¤À» session ´ÜÀ§·Î º¯°æÇØ¾ß ÇÕ´Ï´Ù.
+ * Description : BUG-43605 [mt] randomí•¨ìˆ˜ì˜ seed ì„¤ì •ì„ session ë‹¨ìœ„ë¡œ ë³€ê²½í•´ì•¼ í•©ë‹ˆë‹¤.
  *
  * Syntax :
  *     RANDOM( INTEGER )
@@ -36,8 +36,8 @@ static mtcName qsfFunctionName[1] = {
 };
 
 /** BUG-42750 rand function
- * Mersenne Twister ¾Ë°í¸®Áò
- * MT19937 ±âÁØ »ó¼ö
+ * Mersenne Twister ì•Œê³ ë¦¬ì¦˜
+ * MT19937 ê¸°ì¤€ ìƒìˆ˜
  * ( w, n, m, r ) = (32, 624, 397, 31 )
  * a = 0x9908B0DF
  * ( u, d ) = ( 11, 0xFFFFFFFF )
@@ -70,7 +70,7 @@ static IDE_RC qsfEstimate( mtcNode     * aNode,
 mtfModule qsfRandomModule = {
     1|MTC_NODE_OPERATOR_MISC|MTC_NODE_VARIABLE_TRUE,
     ~0,
-    1.0,                    // default selectivity (ºñ±³ ¿¬»êÀÚ ¾Æ´Ô)
+    1.0,                    // default selectivity (ë¹„êµ ì—°ì‚°ì ì•„ë‹˜)
     qsfFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -196,10 +196,10 @@ IDE_RC qsfCalculate_Random( mtcNode     * aNode,
     sSession = ((qcTemplate *)aTemplate)->stmt->spxEnv->mSession;
     sInfo    = & sSession->mQPSpecific.mRandomInfo;
 
-    /* Seed °¡ ¾ø´Ù¸é, Session Seed¸¦ ÂüÁ¶ÇÑ´Ù. */
+    /* Seed ê°€ ì—†ë‹¤ë©´, Session Seedë¥¼ ì°¸ì¡°í•œë‹¤. */
     if ( sSeed == 0 )
     {
-        /* ¸¸¾à Session Seed°¡ ÃÊ±âÈ­µÇÁö ¾Ê¾ÒÀ¸¸é, SessionID¿Í ÇöÀç ½Ã°£À» ÇÕÇÏ¿© °áÁ¤ÇÑ´Ù. */
+        /* ë§Œì•½ Session Seedê°€ ì´ˆê¸°í™”ë˜ì§€ ì•Šì•˜ìœ¼ë©´, SessionIDì™€ í˜„ì¬ ì‹œê°„ì„ í•©í•˜ì—¬ ê²°ì •í•œë‹¤. */
         if ( sInfo->mExistSeed == ID_FALSE )
         {
             sSessionID = qci::mSessionCallback.mGetSessionID( sSession );
@@ -214,19 +214,19 @@ IDE_RC qsfCalculate_Random( mtcNode     * aNode,
             /* Nothing to do */
         }
     }
-    /* ÀÖ´Ù¸é, Seed¿¡ ¸Âµµ·Ï º¯°æÇÑ´Ù. */
+    /* ìˆë‹¤ë©´, Seedì— ë§ë„ë¡ ë³€ê²½í•œë‹¤. */
     else
     {
         qsfRandSetSeed( sSeed, sInfo );
     }
 
-    /* °ªÀº 0 <= x < ID_SINT_MAX °ªÀÌ ³ª¿Í¾ß ÇÑ´Ù.
-     * Àç½Ãµµ´Â QSF_RAND_MT_N ( 624 ) È¸ ¸¸Å­ ½ÃµµÇØº¸°í
-     * ±×·¡µµ ¾ÊµÇ¸é seed °ªÀ» ´Ù½Ã ³Ö¾î¼­ °ªÀ» ¾ò´Â´Ù.
+    /* ê°’ì€ 0 <= x < ID_SINT_MAX ê°’ì´ ë‚˜ì™€ì•¼ í•œë‹¤.
+     * ì¬ì‹œë„ëŠ” QSF_RAND_MT_N ( 624 ) íšŒ ë§Œí¼ ì‹œë„í•´ë³´ê³ 
+     * ê·¸ë˜ë„ ì•Šë˜ë©´ seed ê°’ì„ ë‹¤ì‹œ ë„£ì–´ì„œ ê°’ì„ ì–»ëŠ”ë‹¤.
      */
     do
     {
-        /* °è¼Ó ¹üÀ§³» °ªÀÌ ³ª¿ÀÁö ¾ÊÀ¸¸é, »õ·Î¿î Seed·Î º¯°æÇÑ´Ù. */
+        /* ê³„ì† ë²”ìœ„ë‚´ ê°’ì´ ë‚˜ì˜¤ì§€ ì•Šìœ¼ë©´, ìƒˆë¡œìš´ Seedë¡œ ë³€ê²½í•œë‹¤. */
         sTryCount++;
 
         if ( sTryCount > QSF_RAND_MT_N )
@@ -242,7 +242,7 @@ IDE_RC qsfCalculate_Random( mtcNode     * aNode,
             /* Nothing to do */
         }
 
-        /* sInfo->mMap¸¦ ¸ğµÎ »ç¿ëÇÏ¿´À¸¸é, Çö Seed·Î °³¼±ÇÑ´Ù. */
+        /* sInfo->mMapë¥¼ ëª¨ë‘ ì‚¬ìš©í•˜ì˜€ìœ¼ë©´, í˜„ Seedë¡œ ê°œì„ í•œë‹¤. */
         if ( sInfo->mIndex >= QSF_RAND_MT_N )
         {
             for ( i = 0; i < QSF_RAND_MT_N; i++ )

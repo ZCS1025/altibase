@@ -35,8 +35,8 @@
 #define QCI_STMT_MASK_MASK  (0x000F0000)
 #define QCI_STMT_MASK_INDEX (0x0000FFFF)
 
-// ulnStmtType.h¿¡¼­ ¾Æ·¡ ³»¿ëÀ» ¶È°°ÀÌ º¹»çÇØ¼­ »ç¿ëÇÏ°í ÀÖÀ½.
-// qciStmtTypeº¯°æ ½Ã ulÂÊµµ º¯°æÇØ¾ß ÇÔ.
+// ulnStmtType.hì—ì„œ ì•„ëž˜ ë‚´ìš©ì„ ë˜‘ê°™ì´ ë³µì‚¬í•´ì„œ ì‚¬ìš©í•˜ê³  ìžˆìŒ.
+// qciStmtTypeë³€ê²½ ì‹œ ulìª½ë„ ë³€ê²½í•´ì•¼ í•¨.
 enum qciStmtType
 {
     QCI_STMT_MASK_DDL     = 0x00000000,
@@ -140,7 +140,7 @@ enum qciStmtType
     /* BUG-39074 */
     QCI_STMT_DELAUDIT_OPTION, 
 
-    /* BUG-42852 STOP°ú FLUSH¸¦ DCL·Î º¯È¯ÇÕ´Ï´Ù. */
+    /* BUG-42852 STOPê³¼ FLUSHë¥¼ DCLë¡œ ë³€í™˜í•©ë‹ˆë‹¤. */
     QCI_STMT_ALT_REPLICATION_STOP,
     QCI_STMT_ALT_REPLICATION_FLUSH,
 

@@ -46,7 +46,7 @@ typedef struct cmpArgRPMetaRepl
 
     cmtVariable  mDBCharSet;         // BUG-23718
     cmtVariable  mNationalCharSet;
-    cmtVariable  mServerID;          // BUG-6093 Server ID Ãß°¡
+    cmtVariable  mServerID;          // BUG-6093 Server ID ì¶”ê°€
     cmtVariable  mRemoteFaultDetectTime;
 } cmpArgRPMetaRepl;
 
@@ -74,7 +74,7 @@ typedef struct cmpArgRPMetaReplTbl
     acp_uint32_t mPKColCnt;          // Primary Key Column Count
     acp_sint32_t mColumnCnt;         // Columnt count
     acp_sint32_t mIndexCnt;          // Index count
-    /* PROJ-1915 Invalid Max SN Àü¼Û */
+    /* PROJ-1915 Invalid Max SN ì „ì†¡ */
     acp_uint64_t mInvalidMaxSN;
     cmtVariable  mConditionStr;
 } cmpArgRPMetaReplTbl;
@@ -84,22 +84,22 @@ typedef struct cmpArgRPMetaReplCol
     cmtVariable  mColumnName;        // Column Name(40byte)
     acp_uint32_t mColumnID;          // Column ID
     acp_uint32_t mColumnFlag;        // Column Flag
-    acp_uint32_t mColumnOffset;      // Fixed record¿¡¼­ÀÇ column offset
+    acp_uint32_t mColumnOffset;      // Fixed recordì—ì„œì˜ column offset
     acp_uint32_t mColumnSize;        // Column Size
-    acp_uint32_t mDataTypeID;        // ColumnÀÇ Data type ID
-    acp_uint32_t mLangID;            // ColumnÀÇ Language ID
-    acp_uint32_t mFlags;             // mtcColumnÀÇ flag
-    acp_sint32_t mPrecision;         // ColumnÀÇ precision
-    acp_sint32_t mScale;             // ColumnÀÇ scale
+    acp_uint32_t mDataTypeID;        // Columnì˜ Data type ID
+    acp_uint32_t mLangID;            // Columnì˜ Language ID
+    acp_uint32_t mFlags;             // mtcColumnì˜ flag
+    acp_sint32_t mPrecision;         // Columnì˜ precision
+    acp_sint32_t mScale;             // Columnì˜ scale
 
     // PROJ-2002 Column Security
-    // echar, evarchar °°Àº º¸¾È Å¸ÀÔÀ» »ç¿ëÇÏ´Â °æ¿ì
-    // ¾Æ·¡ ÄÃ·³Á¤º¸°¡ Ãß°¡µÈ´Ù.
-    acp_sint32_t mEncPrecision;      // º¸¾È Å¸ÀÔÀÇ precision
-    cmtVariable  mPolicyName;        // º¸¾È Å¸ÀÔ¿¡ »ç¿ëµÈ policy name
-    cmtVariable  mPolicyCode;        // º¸¾È Å¸ÀÔ¿¡ »ç¿ëµÈ policy code
-    cmtVariable  mECCPolicyName;     // º¸¾È Å¸ÀÔ¿¡ »ç¿ëµÈ ecc policy name
-    cmtVariable  mECCPolicyCode;     // º¸¾È Å¸ÀÔ¿¡ »ç¿ëµÈ ecc policy code
+    // echar, evarchar ê°™ì€ ë³´ì•ˆ íƒ€ì…ì„ ì‚¬ìš©í•˜ëŠ” ê²½ìš°
+    // ì•„ë˜ ì»¬ëŸ¼ì •ë³´ê°€ ì¶”ê°€ëœë‹¤.
+    acp_sint32_t mEncPrecision;      // ë³´ì•ˆ íƒ€ì…ì˜ precision
+    cmtVariable  mPolicyName;        // ë³´ì•ˆ íƒ€ì…ì— ì‚¬ìš©ëœ policy name
+    cmtVariable  mPolicyCode;        // ë³´ì•ˆ íƒ€ì…ì— ì‚¬ìš©ëœ policy code
+    cmtVariable  mECCPolicyName;     // ë³´ì•ˆ íƒ€ì…ì— ì‚¬ìš©ëœ ecc policy name
+    cmtVariable  mECCPolicyCode;     // ë³´ì•ˆ íƒ€ì…ì— ì‚¬ìš©ëœ ecc policy code
 } cmpArgRPMetaReplCol;
 
 typedef struct cmpArgRPMetaReplIdx
@@ -107,31 +107,31 @@ typedef struct cmpArgRPMetaReplIdx
     cmtVariable  mIndexName;         // Index Name(40byte)
     acp_uint32_t mIndexID;           // Index ID
     acp_uint32_t mIndexTypeID;       // Index Type ID
-    acp_uint32_t mKeyColumnCnt;      // Index¸¦ ±¸¼ºÇÏ´Â column °³¼ö
-    acp_uint32_t mIsUnique;          // Unique index ¿©ºÎ
-    acp_uint32_t mIsRange;           // Range ¿©ºÎ
+    acp_uint32_t mKeyColumnCnt;      // Indexë¥¼ êµ¬ì„±í•˜ëŠ” column ê°œìˆ˜
+    acp_uint32_t mIsUnique;          // Unique index ì—¬ë¶€
+    acp_uint32_t mIsRange;           // Range ì—¬ë¶€
 } cmpArgRPMetaReplIdx;
 
 typedef struct cmpArgRPMetaReplIdxCol
 {
-    acp_uint32_t mColumnID;          // Index¸¦ ±¸¼ºÇÏ´Â column ID
-    acp_uint32_t mKeyColumnFlag;     // IndexÀÇ sort ¼ø¼­(ASC/DESC)
+    acp_uint32_t mColumnID;          // Indexë¥¼ êµ¬ì„±í•˜ëŠ” column ID
+    acp_uint32_t mKeyColumnFlag;     // Indexì˜ sort ìˆœì„œ(ASC/DESC)
 } cmpArgRPMetaReplIdxCol;
 
 typedef struct cmpArgRPHandshakeAck
 {
-    acp_uint32_t mResult;            // ¼º°ø/½ÇÆĞ °á°ú
+    acp_uint32_t mResult;            // ì„±ê³µ/ì‹¤íŒ¨ ê²°ê³¼
     acp_sint32_t mFailbackStatus;
     acp_uint64_t mXSN;
-    cmtVariable  mMsg;               // ½ÇÆĞ ¸Ş¼¼Áö(1024 byte)
+    cmtVariable  mMsg;               // ì‹¤íŒ¨ ë©”ì„¸ì§€(1024 byte)
 } cmpArgRPHandshakeAck;
 
-/* PROJ-1663¿¡ ÀÇÇØ »ç¿ëµÇÁö ¾ÊÀ½ */
+/* PROJ-1663ì— ì˜í•´ ì‚¬ìš©ë˜ì§€ ì•ŠìŒ */
 typedef struct cmpArgRPTrBegin
 {
     acp_uint32_t mXLogType;          // RP_X_BEGIN
     acp_uint32_t mTransID;           // Transaction ID
-    acp_uint64_t mSN;                // ·Î±×ÀÇ SN
+    acp_uint64_t mSN;                // ë¡œê·¸ì˜ SN
     acp_uint64_t mSyncSN;
 } cmpArgRPTrBegin;
 
@@ -139,7 +139,7 @@ typedef struct cmpArgRPTrCommit
 {
     acp_uint32_t mXLogType;          // RP_X_COMMIT
     acp_uint32_t mTransID;           // Transaction ID
-    acp_uint64_t mSN;                // ·Î±×ÀÇ SN
+    acp_uint64_t mSN;                // ë¡œê·¸ì˜ SN
     acp_uint64_t mSyncSN;
 } cmpArgRPTrCommit;
 
@@ -147,7 +147,7 @@ typedef struct cmpArgRPTrAbort
 {
     acp_uint32_t mXLogType;          // RP_X_ABORT
     acp_uint32_t mTransID;           // Transaction ID
-    acp_uint64_t mSN;                // ·Î±×ÀÇ SN
+    acp_uint64_t mSN;                // ë¡œê·¸ì˜ SN
     acp_uint64_t mSyncSN;
 } cmpArgRPTrAbort;
 
@@ -155,7 +155,7 @@ typedef struct cmpArgRPSPSet
 {
     acp_uint32_t mXLogType;          // RP_X_SP_SET
     acp_uint32_t mTransID;           // Transaction ID
-    acp_uint64_t mSN;                // ·Î±×ÀÇ SN
+    acp_uint64_t mSN;                // ë¡œê·¸ì˜ SN
     acp_uint64_t mSyncSN;
     acp_uint32_t mSPNameLen;         // Savepoint Name Length
     cmtVariable  mSPName;            // Savepoint Name
@@ -165,7 +165,7 @@ typedef struct cmpArgRPSPAbort
 {
     acp_uint32_t mXLogType;          // RP_X_SP_ABORT
     acp_uint32_t mTransID;           // Transaction ID
-    acp_uint64_t mSN;                // ·Î±×ÀÇ SN
+    acp_uint64_t mSN;                // ë¡œê·¸ì˜ SN
     acp_uint64_t mSyncSN;
     acp_uint32_t mSPNameLen;         // Savepoint Name Length
     cmtVariable  mSPName;            // Savepoint Name
@@ -175,7 +175,7 @@ typedef struct cmpArgRPStmtBegin
 {
     acp_uint32_t mXLogType;          // RP_X_STMT_BEGIN
     acp_uint32_t mTransID;           // Transaction ID
-    acp_uint64_t mSN;                // ·Î±×ÀÇ SN
+    acp_uint64_t mSN;                // ë¡œê·¸ì˜ SN
     acp_uint64_t mSyncSN;
     acp_uint32_t mStmtID;            // Statement ID
 } cmpArgRPStmtBegin;
@@ -184,7 +184,7 @@ typedef struct cmpArgRPStmtEnd
 {
     acp_uint32_t mXLogType;          // RP_X_STMT_END
     acp_uint32_t mTransID;           // Transaction ID
-    acp_uint64_t mSN;                // ·Î±×ÀÇ SN
+    acp_uint64_t mSN;                // ë¡œê·¸ì˜ SN
     acp_uint64_t mSyncSN;
     acp_uint32_t mStmtID;            // Statement ID
 } cmpArgRPStmtEnd;
@@ -193,7 +193,7 @@ typedef struct cmpArgRPCursorOpen
 {
     acp_uint32_t mXLogType;          // RP_X_CURSOR_OPEN
     acp_uint32_t mTransID;           // Transaction ID
-    acp_uint64_t mSN;                // ·Î±×ÀÇ SN
+    acp_uint64_t mSN;                // ë¡œê·¸ì˜ SN
     acp_uint64_t mSyncSN;
     acp_uint32_t mCursorID;          // Cursor ID
 } cmpArgRPCursorOpen;
@@ -202,7 +202,7 @@ typedef struct cmpArgRPCursorClose
 {
     acp_uint32_t mXLogType;          // RP_X_CURSOR_CLOSE
     acp_uint32_t mTransID;           // Transaction ID
-    acp_uint64_t mSN;                // ·Î±×ÀÇ SN
+    acp_uint64_t mSN;                // ë¡œê·¸ì˜ SN
     acp_uint64_t mSyncSN;
     acp_uint32_t mCursorID;          // Cursor ID
 } cmpArgRPCursorClose;
@@ -211,10 +211,10 @@ typedef struct cmpArgRPInsert
 {
     acp_uint32_t mXLogType;          // RP_X_INSERT
     acp_uint32_t mTransID;           // Transaction ID
-    acp_uint64_t mSN;                // ·Î±×ÀÇ SN
+    acp_uint64_t mSN;                // ë¡œê·¸ì˜ SN
     acp_uint64_t mSyncSN;
     acp_uint32_t mImplSPDepth;
-    acp_uint64_t mTableOID;          // Insert ´ë»ó Table OID
+    acp_uint64_t mTableOID;          // Insert ëŒ€ìƒ Table OID
     acp_uint32_t mColCnt;            // Insert Column Count
 } cmpArgRPInsert;
 
@@ -222,40 +222,40 @@ typedef struct cmpArgRPUpdate
 {
     acp_uint32_t mXLogType;          // RP_X_UPDATE
     acp_uint32_t mTransID;           // Transaction ID
-    acp_uint64_t mSN;                // ·Î±×ÀÇ SN
+    acp_uint64_t mSN;                // ë¡œê·¸ì˜ SN
     acp_uint64_t mSyncSN;
     acp_uint32_t mImplSPDepth;
-    acp_uint64_t mTableOID;          // Update ´ë»ó Table OID
+    acp_uint64_t mTableOID;          // Update ëŒ€ìƒ Table OID
     acp_uint32_t mPKColCnt;          // Primary Key Column Count
-    acp_uint32_t mUpdateColCnt;      // Update°¡ ¹ß»ıÇÑ Column °³¼ö
+    acp_uint32_t mUpdateColCnt;      // Updateê°€ ë°œìƒí•œ Column ê°œìˆ˜
 } cmpArgRPUpdate;
 
 typedef struct cmpArgRPDelete
 {
     acp_uint32_t mXLogType;          // RP_X_DELETE
     acp_uint32_t mTransID;           // Transaction ID
-    acp_uint64_t mSN;                // ·Î±×ÀÇ SN
+    acp_uint64_t mSN;                // ë¡œê·¸ì˜ SN
     acp_uint64_t mSyncSN;
     acp_uint32_t mImplSPDepth;
-    acp_uint64_t mTableOID;          // Delete ´ë»ó Table OID
+    acp_uint64_t mTableOID;          // Delete ëŒ€ìƒ Table OID
     acp_uint32_t mPKColCnt;          // Primary Key Column Count
 } cmpArgRPDelete;
 
 typedef struct cmpArgRPUIntID
 {
-    acp_uint32_t mUIntID;            // Column ID : array·Î »ç¿ëÀ§ÇÔ
+    acp_uint32_t mUIntID;            // Column ID : arrayë¡œ ì‚¬ìš©ìœ„í•¨
 } cmpArgRPUIntID;
 
 typedef struct cmpArgRPValue
 {
-    cmtVariable  mValue;             // ½ÇÁ¦ Value
+    cmtVariable  mValue;             // ì‹¤ì œ Value
 } cmpArgRPValue;
 
 typedef struct cmpArgRPStop
 {
     acp_uint32_t mXLogType;          // RP_X_REPL_STOP
     acp_uint32_t mTransID;           // Transaction ID
-    acp_uint64_t mSN;                // ·Î±×ÀÇ SN
+    acp_uint64_t mSN;                // ë¡œê·¸ì˜ SN
     acp_uint64_t mSyncSN;
     acp_uint64_t mRestartSN;         // BUG-17748 : Restart SN
 } cmpArgRPStop;
@@ -264,7 +264,7 @@ typedef struct cmpArgRPKeepAlive
 {
     acp_uint32_t mXLogType;          // RP_X_KEEP_ALIVE
     acp_uint32_t mTransID;           // Transaction ID
-    acp_uint64_t mSN;                // ·Î±×ÀÇ SN
+    acp_uint64_t mSN;                // ë¡œê·¸ì˜ SN
     acp_uint64_t mSyncSN;
     acp_uint64_t mRestartSN;         // BUG-17748 : Restart SN
 } cmpArgRPKeepAlive;
@@ -273,7 +273,7 @@ typedef struct cmpArgRPFlush
 {
     acp_uint32_t mXLogType;          // RP_X_FLUSH
     acp_uint32_t mTransID;           // Transaction ID
-    acp_uint64_t mSN;                // ·Î±×ÀÇ SN
+    acp_uint64_t mSN;                // ë¡œê·¸ì˜ SN
     acp_uint64_t mSyncSN;
     acp_uint32_t mOption;            // Flush Option
 } cmpArgRPFlush;
@@ -282,7 +282,7 @@ typedef struct cmpArgRPFlushAck
 {
     acp_uint32_t mXLogType;          // RP_X_FLUSH_ACK
     acp_uint32_t mTransID;           // Transaction ID
-    acp_uint64_t mSN;                // ·Î±×ÀÇ SN
+    acp_uint64_t mSN;                // ë¡œê·¸ì˜ SN
     acp_uint64_t mSyncSN;
 } cmpArgRPFlushAck;
 
@@ -292,18 +292,18 @@ typedef struct cmpArgRPAck
     acp_uint32_t mAbortTxCount;      // Abort Transaction Count
     acp_uint32_t mClearTxCount;      // Clear Transaction Count
     acp_uint64_t mRestartSN;         // Transaction Table's Minimum SN
-    acp_uint64_t mLastCommitSN;      // ¸¶Áö¸·À¸·Î CommitÇÑ ·Î±×ÀÇ SN
-    acp_uint64_t mLastArrivedSN;     // Receiver°¡ ¼ö½ÅÇÑ ·Î±×ÀÇ ¸¶Áö¸· SN (Acked Mode)
-    acp_uint64_t mLastProcessedSN;   // ¹İ¿µÀ» ¿Ï·áÇÑ ¸¶Áö¸· ·Î±×ÀÇ SN     (Eager Mode)
-    acp_uint64_t mFlushSN;           // µğ½ºÅ©¿¡ FlushµÈ SN
-    //cmpArgRPTxAck¸¦ ÀÌ¿ëÇØ Abort Transaction List¸¦ ¼ö½Å
-    //cmpArgRPTxAck¸¦ ÀÌ¿ëÇØ Clear Transaction List¸¦ ¼ö½Å
+    acp_uint64_t mLastCommitSN;      // ë§ˆì§€ë§‰ìœ¼ë¡œ Commití•œ ë¡œê·¸ì˜ SN
+    acp_uint64_t mLastArrivedSN;     // Receiverê°€ ìˆ˜ì‹ í•œ ë¡œê·¸ì˜ ë§ˆì§€ë§‰ SN (Acked Mode)
+    acp_uint64_t mLastProcessedSN;   // ë°˜ì˜ì„ ì™„ë£Œí•œ ë§ˆì§€ë§‰ ë¡œê·¸ì˜ SN     (Eager Mode)
+    acp_uint64_t mFlushSN;           // ë””ìŠ¤í¬ì— Flushëœ SN
+    //cmpArgRPTxAckë¥¼ ì´ìš©í•´ Abort Transaction Listë¥¼ ìˆ˜ì‹ 
+    //cmpArgRPTxAckë¥¼ ì´ìš©í•´ Clear Transaction Listë¥¼ ìˆ˜ì‹ 
 } cmpArgRPAck;
 
 typedef struct cmpArgRPTxAck
 {
     acp_uint32_t mTID;               // Transaction ID
-    acp_uint64_t mSN;                // XLogÀÇ SN
+    acp_uint64_t mSN;                // XLogì˜ SN
 
 } cmpArgRPTxAck;
 
@@ -311,10 +311,10 @@ typedef struct cmpArgRPLobCursorOpen
 {
     acp_uint32_t mXLogType;          // RP_X_LOB_CURSOR_OPEN
     acp_uint32_t mTransID;           // Transaction ID
-    acp_uint64_t mSN;                // ·Î±×ÀÇ SN
+    acp_uint64_t mSN;                // ë¡œê·¸ì˜ SN
     acp_uint64_t mSyncSN;
-    acp_uint64_t mTableOID;          // LOB cursor open ´ë»ó Table OID
-    acp_uint64_t mLobLocator;        // LOB locator : ½Äº°ÀÚ·Î »ç¿ë
+    acp_uint64_t mTableOID;          // LOB cursor open ëŒ€ìƒ Table OID
+    acp_uint64_t mLobLocator;        // LOB locator : ì‹ë³„ìë¡œ ì‚¬ìš©
     acp_uint32_t mColumnID;          // LOB column ID
     acp_uint32_t mPKColCnt;
 } cmpArgRPLobCursorOpen;
@@ -323,51 +323,51 @@ typedef struct cmpArgRPLobCursorClose
 {
     acp_uint32_t mXLogType;          // RP_X_LOB_CURSOR_CLOSE
     acp_uint32_t mTransID;           // Transaction ID
-    acp_uint64_t mSN;                // ·Î±×ÀÇ SN
+    acp_uint64_t mSN;                // ë¡œê·¸ì˜ SN
     acp_uint64_t mSyncSN;
-    acp_uint64_t mLobLocator;        // CloseÇÒ LOB locator
+    acp_uint64_t mLobLocator;        // Closeí•  LOB locator
 } cmpArgRPLobCursorClose;
 
 typedef struct cmpArgRPLobPrepare4Write
 {
     acp_uint32_t mXLogType;          // RP_X_PREPARE4WRITE
     acp_uint32_t mTransID;           // Transaction ID
-    acp_uint64_t mSN;                // ·Î±×ÀÇ SN
+    acp_uint64_t mSN;                // ë¡œê·¸ì˜ SN
     acp_uint64_t mSyncSN;
-    acp_uint64_t mLobLocator;        // WriteÇÒ LOB locator
-    acp_uint32_t mOffset;            // º¯°æ ½ÃÀÛ offset
-    acp_uint32_t mOldSize;           // º¯°æ Àü size
-    acp_uint32_t mNewSize;           // º¯°æ ÈÄ size
+    acp_uint64_t mLobLocator;        // Writeí•  LOB locator
+    acp_uint32_t mOffset;            // ë³€ê²½ ì‹œì‘ offset
+    acp_uint32_t mOldSize;           // ë³€ê²½ ì „ size
+    acp_uint32_t mNewSize;           // ë³€ê²½ í›„ size
 } cmpArgRPLobPrepare4Write;
 
 typedef struct cmpArgRPLobPartialWrite
 {
     acp_uint32_t mXLogType;          // RP_X_LOB_PARTIAL_WRITE
     acp_uint32_t mTransID;           // Transaction ID
-    acp_uint64_t mSN;                // ·Î±×ÀÇ SN
+    acp_uint64_t mSN;                // ë¡œê·¸ì˜ SN
     acp_uint64_t mSyncSN;
-    acp_uint64_t mLobLocator;        // WriteÇÒ LOB locator
-    acp_uint32_t mOffset;            // Piece¸¦ WriteÇÒ LOB ³»ÀÇ À§Ä¡
-    acp_uint32_t mPieceLen;          // PieceÀÇ ±æÀÌ
-    cmtVariable  mPieceValue;        // PieceÀÇ value
+    acp_uint64_t mLobLocator;        // Writeí•  LOB locator
+    acp_uint32_t mOffset;            // Pieceë¥¼ Writeí•  LOB ë‚´ì˜ ìœ„ì¹˜
+    acp_uint32_t mPieceLen;          // Pieceì˜ ê¸¸ì´
+    cmtVariable  mPieceValue;        // Pieceì˜ value
 } cmpArgRPLobPartialWrite;
 
 typedef struct cmpArgRPLobFinish2Write
 {
     acp_uint32_t mXLogType;          // RP_X_LOB_FINISH2WRITE
     acp_uint32_t mTransID;           // Transaction ID
-    acp_uint64_t mSN;                // ·Î±×ÀÇ SN
+    acp_uint64_t mSN;                // ë¡œê·¸ì˜ SN
     acp_uint64_t mSyncSN;
-    acp_uint64_t mLobLocator;        // Write¸¦ ³¡³¾ LOB locator
+    acp_uint64_t mLobLocator;        // Writeë¥¼ ëë‚¼ LOB locator
 } cmpArgRPLobFinish2Write;
 
 typedef struct cmpArgRPLobTrim
 {
     acp_uint32_t mXLogType;          // RP_X_LOB_TRIM
     acp_uint32_t mTransID;           // Transaction ID
-    acp_uint64_t mSN;                // ·Î±×ÀÇ SN
+    acp_uint64_t mSN;                // ë¡œê·¸ì˜ SN
     acp_uint64_t mSyncSN;
-    acp_uint64_t mLobLocator;        // TrimÇÒ LOB locator
+    acp_uint64_t mLobLocator;        // Trimí•  LOB locator
     acp_uint32_t mOffset;            // Trim offset
 } cmpArgRPLobTrim;
 
@@ -375,7 +375,7 @@ typedef struct cmpArgRPHandshake
 {
     acp_uint32_t mXLogType;          // RP_X_HANDSHAKE
     acp_uint32_t mTransID;           // Transaction ID
-    acp_uint64_t mSN;                // ·Î±×ÀÇ SN
+    acp_uint64_t mSN;                // ë¡œê·¸ì˜ SN
     acp_uint64_t mSyncSN;
 } cmpArgRPHandshake;
 
@@ -383,7 +383,7 @@ typedef struct cmpArgRPSyncPKBegin
 {
     acp_uint32_t mXLogType;          // RP_X_SYNC_PK_BEGIN
     acp_uint32_t mTransID;           // Transaction ID
-    acp_uint64_t mSN;                // ·Î±×ÀÇ SN
+    acp_uint64_t mSN;                // ë¡œê·¸ì˜ SN
     acp_uint64_t mSyncSN;
 } cmpArgRPSyncPKBegin;
 
@@ -391,9 +391,9 @@ typedef struct cmpArgRPSyncPK
 {
     acp_uint32_t mXLogType;          // RP_X_SYNC_PK
     acp_uint32_t mTransID;           // Transaction ID
-    acp_uint64_t mSN;                // ·Î±×ÀÇ SN
+    acp_uint64_t mSN;                // ë¡œê·¸ì˜ SN
     acp_uint64_t mSyncSN;
-    acp_uint64_t mTableOID;          // Delete ´ë»ó Table OID
+    acp_uint64_t mTableOID;          // Delete ëŒ€ìƒ Table OID
     acp_uint32_t mPKColCnt;          // Primary Key Column Count
 } cmpArgRPSyncPK;
 
@@ -401,7 +401,7 @@ typedef struct cmpArgRPSyncPKEnd
 {
     acp_uint32_t mXLogType;          // RP_X_SYNC_PK_END
     acp_uint32_t mTransID;           // Transaction ID
-    acp_uint64_t mSN;                // ·Î±×ÀÇ SN
+    acp_uint64_t mSN;                // ë¡œê·¸ì˜ SN
     acp_uint64_t mSyncSN;
 } cmpArgRPSyncPKEnd;
 
@@ -409,7 +409,7 @@ typedef struct cmpArgRPFailbackEnd
 {
     acp_uint32_t mXLogType;          // RP_X_FAILBACK_END
     acp_uint32_t mTransID;           // Transaction ID
-    acp_uint64_t mSN;                // ·Î±×ÀÇ SN
+    acp_uint64_t mSN;                // ë¡œê·¸ì˜ SN
     acp_uint64_t mSyncSN;
 } cmpArgRPFailbackEnd;
 
@@ -422,14 +422,14 @@ typedef struct cmpArgRPSyncStart
 {
     acp_uint32_t mXLogType;          /* RP_X_DROP_INDEX */
     acp_uint32_t mTransID;           /* Transaction ID  */
-    acp_uint64_t mSN;                /* ·Î±×ÀÇ SN      */
+    acp_uint64_t mSN;                /* ë¡œê·¸ì˜ SN      */
 } cmpArgRPSyncStart;
 
 typedef struct cmpArgRPSyncRebuildIndex
 {
     acp_uint32_t mXLogType;          /* RP_X_DROP_INDEX */
     acp_uint32_t mTransID;           /* Transaction ID  */
-    acp_uint64_t mSN;                /* ·Î±×ÀÇ SN      */
+    acp_uint64_t mSN;                /* ë¡œê·¸ì˜ SN      */
 } cmpArgRPSyncRebuildIndex;
 
 typedef union cmpArgRP

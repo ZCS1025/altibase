@@ -71,7 +71,7 @@ IDE_RC idsAltiWrap::doCompression( SChar  * aPlainText,
 /***********************************************************************
  *
  * Description :
- *     plain text¸¦ ¾ĞÃàÇÏ¿© compressed text¸¦ ¾ò´Â´Ù.
+ *     plain textë¥¼ ì••ì¶•í•˜ì—¬ compressed textë¥¼ ì–»ëŠ”ë‹¤.
  *     
  *     - Input : idsAltiWrap->mPlainText,
  *               idsAltiWrap->mPlainTextLen
@@ -87,13 +87,13 @@ IDE_RC idsAltiWrap::doCompression( SChar  * aPlainText,
     UInt    sCompResultLen = 0;
     SInt    sState         = 0;
 
-    /* sCompWorkMem ÃÊ±âÈ­ */
+    /* sCompWorkMem ì´ˆê¸°í™” */
     // BUG-42625 Memory used for PSM encryption is initialized incorrectly.
     idlOS::memset( sCompWorkMem,
                    0x00,
                    IDU_COMPRESSION_WORK_SIZE );
 
-    /* compression¿¡¼­ »ç¿ëÇÒ ¸Ş¸ğ¸® ÇÒ´ç */
+    /* compressionì—ì„œ ì‚¬ìš©í•  ë©”ëª¨ë¦¬ í• ë‹¹ */
     IDU_FIT_POINT( "idsAltiWrap::doCompression::calloc",
                    idERR_ABORT_InsufficientMemory );
     IDE_TEST( iduMemMgr::calloc( IDU_MEM_ID_ALTIWRAP, 
@@ -141,7 +141,7 @@ IDE_RC idsAltiWrap::doSHA1( UChar  * aCompText,
 /***********************************************************************
  *
  * Description :
- *     compressed text¿¡ SHA1±â¹ıÀ» Àû¿ëÇØ SHA1 hash key¸¦ ¾ò´Â´Ù.
+ *     compressed textì— SHA1ê¸°ë²•ì„ ì ìš©í•´ SHA1 hash keyë¥¼ ì–»ëŠ”ë‹¤.
  *
  *     - Input : idsAltiWrap->mCompText,
  *               idsAltiWrap->mCompTextLen
@@ -193,9 +193,9 @@ IDE_RC idsAltiWrap::doBase64Encoding( UChar  * aSrcText,
 /***********************************************************************
  *
  * Description :
- *     idsBase64::base64Encode ÇÔ¼ö ½ÇÇàÇÏ¿©,
- *     base64 encoding ½ÇÇàÇÑ °á°ú¸¦ ¾òÀº ÈÄ,
- *     new lineÀ» Ãß°¡ÇÑ´Ù.
+ *     idsBase64::base64Encode í•¨ìˆ˜ ì‹¤í–‰í•˜ì—¬,
+ *     base64 encoding ì‹¤í–‰í•œ ê²°ê³¼ë¥¼ ì–»ì€ í›„,
+ *     new lineì„ ì¶”ê°€í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -227,10 +227,10 @@ IDE_RC idsAltiWrap::makeBase64Result( idsAltiWrapInfo * aAltiWrapInfo,
 /***********************************************************************
  *
  * Description :
- *     stringÀ» º¯È­½ÃÅ² plain text ±æÀÌ¿Í compressed text ±æÀÌ 
- *     ±×¸®°í, compressed text + SHA1 text¿¡ ´ëÇØ¼­,
- *     °¢°¢ base64 encoingÀ» ½ÇÇàÇÏ°í,
- *     ÃÖÁ¾°ªÀ» aAltiWrapInfo->mBase64Text ÀúÀåÇÑ´Ù.
+ *     stringì„ ë³€í™”ì‹œí‚¨ plain text ê¸¸ì´ì™€ compressed text ê¸¸ì´ 
+ *     ê·¸ë¦¬ê³ , compressed text + SHA1 textì— ëŒ€í•´ì„œ,
+ *     ê°ê° base64 encoingì„ ì‹¤í–‰í•˜ê³ ,
+ *     ìµœì¢…ê°’ì„ aAltiWrapInfo->mBase64Text ì €ì¥í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -250,18 +250,18 @@ IDE_RC idsAltiWrap::makeBase64Result( idsAltiWrapInfo * aAltiWrapInfo,
     sLen4CompTextLen  = idlOS::strlen(aCompTextLen);
     sLen4Text         = aAltiWrapInfo->mCompTextLen +
                         aAltiWrapInfo->mSHA1TextLen;
-    /* sCalculatedLenÀº
-       plain text ±æÀÌ(aPlainTextLen)¸¦ base64±â¹ıÀ¸·Î ÀÎÄÚµùÇßÀ» ¶§ÀÇ ±æÀÌ
-       compressed text ±æÀÌ(aCompTextLen)¸¦ base64±â¹ıÀ¸·Î ÀÎÄÚµùÇßÀ» ¶§ÀÇ ±æÀÌ
-       compreseed text¿Í SHA1 text¸¦ ÇÕÄ£ °Í(aText)À» base64·Î ÀÎÄÚµùÇßÀ» ¶§ÀÇ ±æÀÌ¿Í
-       °¢°¢ ÀÎÄÚµù ÈÄ newline(\n)ÀÌ Æ÷ÇÔµÇ´Â ±æÀÌ + null paddingÀ» À§ÇÑ ±æÀÌ¸¦ ÀÇ¹ÌÇÑ´Ù.
+    /* sCalculatedLenì€
+       plain text ê¸¸ì´(aPlainTextLen)ë¥¼ base64ê¸°ë²•ìœ¼ë¡œ ì¸ì½”ë”©í–ˆì„ ë•Œì˜ ê¸¸ì´
+       compressed text ê¸¸ì´(aCompTextLen)ë¥¼ base64ê¸°ë²•ìœ¼ë¡œ ì¸ì½”ë”©í–ˆì„ ë•Œì˜ ê¸¸ì´
+       compreseed textì™€ SHA1 textë¥¼ í•©ì¹œ ê²ƒ(aText)ì„ base64ë¡œ ì¸ì½”ë”©í–ˆì„ ë•Œì˜ ê¸¸ì´ì™€
+       ê°ê° ì¸ì½”ë”© í›„ newline(\n)ì´ í¬í•¨ë˜ëŠ” ê¸¸ì´ + null paddingì„ ìœ„í•œ ê¸¸ì´ë¥¼ ì˜ë¯¸í•œë‹¤.
 
-       ¿¹¸¦ µé¸é,
+       ì˜ˆë¥¼ ë“¤ë©´,
 
        aPlainTextLen : "107" , aCompTextLen : "104"
-       ±×¸®°í sLen4Text = 144¶ó°í °¡Á¤ÇÏÀÚ.
+       ê·¸ë¦¬ê³  sLen4Text = 144ë¼ê³  ê°€ì •í•˜ì.
        
-       sLen4PlainTextLen = 3, sLen4CompTextLen = 3ÀÌ µÈ´Ù.
+       sLen4PlainTextLen = 3, sLen4CompTextLen = 3ì´ ëœë‹¤.
 
        sLen4PalinTextLen =>  estimateBase64BufSize( sLen4PlainTextLen )
                          => ( ( 3 + 2 - ( ( 3 + 2 ) % 3 ) ) / 3 * 4 ) + 1 = 5
@@ -271,7 +271,7 @@ IDE_RC idsAltiWrap::makeBase64Result( idsAltiWrapInfo * aAltiWrapInfo,
                  => ( ( 144 + 2 - ( ( 144 + 2 ) % 3 ) ) / 3 * 4 ) + 1 = 193
 
        sCalculatedLen = 5 + 5 + 193 + 4 = 207
-       ÀÌ µÈ´Ù. */
+       ì´ ëœë‹¤. */
     sCalculatedLen = IDS_CALC_BASE64_BUFSIZE( sLen4PlainTextLen ) +
                      IDS_CALC_BASE64_BUFSIZE( sLen4CompTextLen ) +
                      IDS_CALC_BASE64_BUFSIZE( sLen4Text ) + 4;
@@ -344,12 +344,12 @@ IDE_RC idsAltiWrap::getBase64Result( idsAltiWrapInfo * aAltiWrapInfo )
 /***********************************************************************
  *
  * Description :
- *     base64¸¦ ½ÇÇàÇÏ±â À§ÇÑ ÃÊÀÔ´Ü°èÀÇ ÇÔ¼ö.
- *     intÇüÀÎ aAltiWrapInfo->mPlainTextLen, aAltiWrapInfo->mCompText¸¦
- *     stringÀ¸·Î º¯È¯½ÃÅ°°í,
- *     aAltiWrapInfo->mCompText + aAltiWrapInfo->mSHA1Text ÇØÁØ´Ù.
- *     ÀÌµéÀÌ ½ÇÁ¦ base64 ÀÎÄÚµùÇÏ´Â ÇÔ¼ö´Â makeBase64Result¿¡¼­
- *     È£ÃâµÈ´Ù.
+ *     base64ë¥¼ ì‹¤í–‰í•˜ê¸° ìœ„í•œ ì´ˆì…ë‹¨ê³„ì˜ í•¨ìˆ˜.
+ *     intí˜•ì¸ aAltiWrapInfo->mPlainTextLen, aAltiWrapInfo->mCompTextë¥¼
+ *     stringìœ¼ë¡œ ë³€í™˜ì‹œí‚¤ê³ ,
+ *     aAltiWrapInfo->mCompText + aAltiWrapInfo->mSHA1Text í•´ì¤€ë‹¤.
+ *     ì´ë“¤ì´ ì‹¤ì œ base64 ì¸ì½”ë”©í•˜ëŠ” í•¨ìˆ˜ëŠ” makeBase64Resultì—ì„œ
+ *     í˜¸ì¶œëœë‹¤.
  *
  *     - Input :  (UChar *) idsAltiWrap->mPlainTextLen
  *                (UChar *) idsAltiWrap->mCompTextLen
@@ -394,15 +394,15 @@ IDE_RC idsAltiWrap::getBase64Result( idsAltiWrapInfo * aAltiWrapInfo )
                      "%"ID_INT32_FMT,
                      aAltiWrapInfo->mPlainTextLen );
 
-    /* encoding for compressed text length( decompression ½Ã ÇÊ¿ä ) */
+    /* encoding for compressed text length( decompression ì‹œ í•„ìš” ) */
     idlOS::snprintf( sText4CompTextLen,
                      IDS_ALTIWRAP_MAX_STRING_LEN, 
                      "%"ID_INT32_FMT,
                      aAltiWrapInfo->mCompTextLen );
 
     /* encoding for compressed text + SHA1 result
-       SHA1ÀÇ Æ¯¼º¿¡ µû¶ó Ç×»ó 40byte°¡ µÈ´Ù. 
-       µû¶ó¼­ decryption ½Ã ½±°Ô compressed text¸¦ ¾òÀ» ¼ö ÀÖ´Ù. */
+       SHA1ì˜ íŠ¹ì„±ì— ë”°ë¼ í•­ìƒ 40byteê°€ ëœë‹¤. 
+       ë”°ë¼ì„œ decryption ì‹œ ì‰½ê²Œ compressed textë¥¼ ì–»ì„ ìˆ˜ ìˆë‹¤. */
     idlOS::memcpy( sText,
                    aAltiWrapInfo->mCompText,
                    aAltiWrapInfo->mCompTextLen );
@@ -447,7 +447,7 @@ IDE_RC idsAltiWrap::setEncryptedText( idsAltiWrapInfo  * aAltiWrapInfo,
 /***********************************************************************
  *
  * Description :
- *     ÃÖÁ¾ encrypted text°¡ ¼ÂÆÃµÇ´Â ÇÔ¼ö.
+ *     ìµœì¢… encrypted textê°€ ì…‹íŒ…ë˜ëŠ” í•¨ìˆ˜.
  *
  ***********************************************************************/
 
@@ -495,11 +495,11 @@ IDE_RC idsAltiWrap::encryption(  SChar  * aSrcText,
     IDE_TEST( allocAltiWrapInfo( &sAltiWrapInfo ) != IDE_SUCCESS );
     sState = 1;
 
-    /* plain text Á¤º¸ ¼ÂÆÃ */
+    /* plain text ì •ë³´ ì…‹íŒ… */
     sAltiWrapInfo->mPlainText    = aSrcText;
     sAltiWrapInfo->mPlainTextLen = aSrcTextLen;
 
-    /* Compression ¼öÇà */
+    /* Compression ìˆ˜í–‰ */
     IDE_TEST( doCompression( sAltiWrapInfo->mPlainText,
                              sAltiWrapInfo->mPlainTextLen,
                              &(sAltiWrapInfo->mCompText),
@@ -507,7 +507,7 @@ IDE_RC idsAltiWrap::encryption(  SChar  * aSrcText,
               != IDE_SUCCESS );
     sState = 2;
 
-    /* SHA1 ¼öÇà */
+    /* SHA1 ìˆ˜í–‰ */
     IDE_TEST( doSHA1( sAltiWrapInfo->mCompText,
                       sAltiWrapInfo->mCompTextLen,
                       &(sAltiWrapInfo->mSHA1Text),
@@ -570,8 +570,8 @@ IDE_RC idsAltiWrap::encryption(  SChar  * aSrcText,
             break;
     }
 
-    /* freeÇÏ¸é¼­ exceptionÀ¸·Î ³Ñ¾î¿ÔÀ» ¶§´Â,
-       (*aDstText)¿¡ ´ëÇØ¼­ freeÇØÁà¾ß ÇÑ´Ù.  */
+    /* freeí•˜ë©´ì„œ exceptionìœ¼ë¡œ ë„˜ì–´ì™”ì„ ë•ŒëŠ”,
+       (*aDstText)ì— ëŒ€í•´ì„œ freeí•´ì¤˜ì•¼ í•œë‹¤.  */
     if ( (*aDstText) != NULL )
     {
         (void) iduMemMgr::free( (*aDstText) );
@@ -598,7 +598,7 @@ IDE_RC idsAltiWrap::doDecompression( UChar  * aCompText,
 /***********************************************************************
  *
  * Description :
- *     aCompText¸¦ decompressionÇÏ¿© plain text¸¦ ¾ò¾î³½´Ù.
+ *     aCompTextë¥¼ decompressioní•˜ì—¬ plain textë¥¼ ì–»ì–´ë‚¸ë‹¤.
  *
  *     - Input :  idsAltiWrap->mCompText
  *                idsAltiWrap->mCompTextLen
@@ -662,10 +662,10 @@ IDE_RC idsAltiWrap::checkEncryptedText( idsAltiWrapInfo * aAltiWrapInfo )
 /***********************************************************************
  *
  * Description :
- *     decodingÇÏ¿© ¾ò¾î³½ compressed text¿¡
- *     SHA1 ±â¹ıÀ» Àû¿ëÇÏ¿© ¾ò¾î³½ SHA1 hash¿Í 
- *     decodingÇÏ¿© ¾ò¾î³½ SHA1 hash°¡ µ¿ÀÏÇÑÁö È®ÀÎÇÏ¿©,
- *     encrypted text°¡ ¿À¿°µÇ¾ú´ÂÁö È®ÀÎÇÑ´Ù.
+ *     decodingí•˜ì—¬ ì–»ì–´ë‚¸ compressed textì—
+ *     SHA1 ê¸°ë²•ì„ ì ìš©í•˜ì—¬ ì–»ì–´ë‚¸ SHA1 hashì™€ 
+ *     decodingí•˜ì—¬ ì–»ì–´ë‚¸ SHA1 hashê°€ ë™ì¼í•œì§€ í™•ì¸í•˜ì—¬,
+ *     encrypted textê°€ ì˜¤ì—¼ë˜ì—ˆëŠ”ì§€ í™•ì¸í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -708,7 +708,7 @@ IDE_RC idsAltiWrap::doBase64DecodingInternal( UChar  * aSrcText,
 /***********************************************************************
  *
  * Description :
- *     base64decoding ¼öÇàÇÏ´Â ÇÔ¼ö.
+ *     base64decoding ìˆ˜í–‰í•˜ëŠ” í•¨ìˆ˜.
  *
  ***********************************************************************/
 
@@ -735,7 +735,7 @@ IDE_RC idsAltiWrap::doBase64Decoding( idsAltiWrapInfo * aAltiWrapInfo )
 /***********************************************************************
  *
  * Description :
- *     °¢°¢ÀÇ Á¤º¸¸¦ ºĞ·ùÇÏ¿©, base64 decodingÀ» ¼öÇà.
+ *     ê°ê°ì˜ ì •ë³´ë¥¼ ë¶„ë¥˜í•˜ì—¬, base64 decodingì„ ìˆ˜í–‰.
  *
  *     - Input :  idsAltiWrap->mEncryptedText
  *                idsAltiWrap->mEncryptedTextLen
@@ -820,7 +820,7 @@ IDE_RC idsAltiWrap::doBase64Decoding( idsAltiWrapInfo * aAltiWrapInfo )
                                         &sResultLen )
               != IDE_SUCCESS );
 
-    /* compressed text ¼ÂÆÃ */
+    /* compressed text ì…‹íŒ… */
     IDU_FIT_POINT( "idsAltiWrap::doBase64Decoding::malloc::mCompText",
                    idERR_ABORT_InsufficientMemory );
     IDE_TEST( iduMemMgr::malloc( IDU_MEM_ID_ALTIWRAP,
@@ -835,8 +835,8 @@ IDE_RC idsAltiWrap::doBase64Decoding( idsAltiWrapInfo * aAltiWrapInfo )
                    aAltiWrapInfo->mCompTextLen );
     aAltiWrapInfo->mCompText[aAltiWrapInfo->mCompTextLen] = '\0';
  
-    /* SHA1 text ¼ÂÆÃ
-       SHA1ÀÇ Æ¯¼º»ó 40byteÀÇ °íÁ¤±æÀÌ¸¦ °¡Áø´Ù. */
+    /* SHA1 text ì…‹íŒ…
+       SHA1ì˜ íŠ¹ì„±ìƒ 40byteì˜ ê³ ì •ê¸¸ì´ë¥¼ ê°€ì§„ë‹¤. */
     aAltiWrapInfo->mSHA1TextLen = IDS_SHA1_TEXT_LEN;
 
     IDU_FIT_POINT( "idsAltiWrap::doBase64Decoding::malloc::mSHAText",
@@ -892,7 +892,7 @@ IDE_RC idsAltiWrap::setDecryptedText( idsAltiWrapInfo  * aAltiWrapInfo,
 /***********************************************************************
  *
  * Description :
- *     ÃÖÁ¾ decrypted text°¡ ¼ÂÆÃµÇ´Â ÇÔ¼ö.
+ *     ìµœì¢… decrypted textê°€ ì…‹íŒ…ë˜ëŠ” í•¨ìˆ˜.
  *
  ***********************************************************************/
 
@@ -940,7 +940,7 @@ IDE_RC idsAltiWrap::decryption( SChar  * aSrcText,
     IDE_TEST( allocAltiWrapInfo( &sAltiWrapInfo ) != IDE_SUCCESS );
     sState = 1;
 
-    /* encrypted text Á¤º¸ ¼ÂÆÃ */
+    /* encrypted text ì •ë³´ ì…‹íŒ… */
     sAltiWrapInfo->mEncryptedText    = aSrcText;
     sAltiWrapInfo->mEncryptedTextLen = aSrcTextLen;
 
@@ -1032,8 +1032,8 @@ IDE_RC idsAltiWrap::decryption( SChar  * aSrcText,
             break;
     }
 
-    /* freeÇÏ¸é¼­ exceptionÀ¸·Î ³Ñ¾î¿ÔÀ» ¶§´Â,
-       (*aDstText)¿¡ ´ëÇØ¼­ freeÇØÁà¾ß ÇÑ´Ù.  */
+    /* freeí•˜ë©´ì„œ exceptionìœ¼ë¡œ ë„˜ì–´ì™”ì„ ë•ŒëŠ”,
+       (*aDstText)ì— ëŒ€í•´ì„œ freeí•´ì¤˜ì•¼ í•œë‹¤.  */
     if ( (*aDstText) != NULL )
     {
         (void) iduMemMgr::free( (*aDstText) );

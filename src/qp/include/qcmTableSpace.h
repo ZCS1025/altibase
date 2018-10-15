@@ -31,23 +31,23 @@ class qcmTablespace
 {
 public:
 
-    // ÀÌ¸§À» ÀÌ¿ëÇÏ¿© TBS Á¤º¸¸¦ È¹µæ
+    // ì´ë¦„ì„ ì´ìš©í•˜ì—¬ TBS ì •ë³´ë¥¼ íšë“
     static IDE_RC getTBSAttrByName( qcStatement       * aStatement,
                                     SChar             * aName,
                                     UInt                aNameLength,
                                     smiTableSpaceAttr * aTBSAttr );
 
-    // ID¸¦ ÀÌ¿ëÇÏ¿© TBS Á¤º¸¸¦ È¹µæ
+    // IDë¥¼ ì´ìš©í•˜ì—¬ TBS ì •ë³´ë¥¼ íšë“
     static IDE_RC getTBSAttrByID( scSpaceID           aTBSID,
                                   smiTableSpaceAttr * aTBSAttr );
 
-    // ÇØ´ç TBS³»¿¡ Data FileÀÌ Á¸ÀçÇÏ´Â Áö °Ë»ç
+    // í•´ë‹¹ TBSë‚´ì— Data Fileì´ ì¡´ì¬í•˜ëŠ” ì§€ ê²€ì‚¬
     static IDE_RC existDataFileInTBS( scSpaceID           aTBSID,
                                       SChar             * aName,
                                       UInt                aNameLength,
                                       idBool            * aExist );
 
-    // ÀüÃ¼ DB¿¡¼­ Data FileÀÌ Á¸ÀçÇÏ´Â Áö °Ë»ç
+    // ì „ì²´ DBì—ì„œ Data Fileì´ ì¡´ì¬í•˜ëŠ” ì§€ ê²€ì‚¬
     static IDE_RC existDataFileInDB( SChar             * aName,
                                      UInt                aNameLength,
                                      idBool            * aExist );
@@ -90,7 +90,7 @@ public:
             UInt               aUserID,
             idBool            *aExist);
 
-    // Alias => Tablespace ÀÌ¸§ À¸·ÎÀÇ Mapping À» ½Ç½Ã
+    // Alias => Tablespace ì´ë¦„ ìœ¼ë¡œì˜ Mapping ì„ ì‹¤ì‹œ
     static IDE_RC lookupTBSNameAlias( SChar  * aAliasNamePtr,
                                       SChar ** aTBSNamePtr );
 private :

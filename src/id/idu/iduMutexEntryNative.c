@@ -16,8 +16,8 @@
  *
  *  Primitive Mutex Implementations
  *
- *  => ¸ğµç ÇÃ·§ÆûÀº ¾Æ·¡ÀÇ 3°³ÀÇ Define°ú 3°³ÀÇ ÇÔ¼ö¸¦ ±¸ÇöÇÏ¸é,
- *     ÀÚµ¿À¸·Î LatchÀÇ µ¿ÀÛÀÌ ±¸ÇöµÇµµ·Ï µÇ¾î ÀÖ´Ù.
+ *  => ëª¨ë“  í”Œë«í¼ì€ ì•„ë˜ì˜ 3ê°œì˜ Defineê³¼ 3ê°œì˜ í•¨ìˆ˜ë¥¼ êµ¬í˜„í•˜ë©´,
+ *     ìë™ìœ¼ë¡œ Latchì˜ ë™ì‘ì´ êµ¬í˜„ë˜ë„ë¡ ë˜ì–´ ìˆë‹¤.
  *  Wrappers Implementations
  *
  *  - Used Symbol
@@ -153,7 +153,7 @@ static void iduNativeLock( void         * aRsc,
         }
     }
 
-    /* SpinLockÀº Wait Event TimeÀ» ÃøÁ¤ÇÏÁö ¾Ê´Â´Ù. */
+    /* SpinLockì€ Wait Event Timeì„ ì¸¡ì •í•˜ì§€ ì•ŠëŠ”ë‹¤. */
     idv_BEGIN_WAIT_EVENT( aStatSQL, aWeArgs );
     IDU_MUTEX_STAT_INCREASE_MISS_COUNT( aStat );
 

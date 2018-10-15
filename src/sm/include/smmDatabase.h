@@ -31,12 +31,12 @@ private :
     smmDatabase(){};
     ~smmDatabase(){};
 
-    // µ¥ÀÌÅÍº£ÀÌ½ºÀÇ ¸ÞÅ¸Á¤º¸
+    // ë°ì´í„°ë² ì´ìŠ¤ì˜ ë©”íƒ€ì •ë³´
     // membase of DICTIONARY TBS
     static smmMemBase         *mDicMemBase;
     static smmMemBase          mMemBaseBackup; // for BUG-7592
 
-    // SCN°»½Å½Ã Àâ´Â Mutex
+    // SCNê°±ì‹ ì‹œ ìž¡ëŠ” Mutex
     static iduMutex            mMtxSCN;
     
 public :
@@ -47,7 +47,7 @@ public :
     static IDE_RC initialize();
     static IDE_RC destroy();
     
-     // membase¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+     // membaseë¥¼ ì´ˆê¸°í™”í•œë‹¤.
     static IDE_RC initializeMembase( smmTBSNode * aTBSNode,
                                      SChar *      aDBName,
                                      vULong       aDbFilePageCount,
@@ -165,7 +165,7 @@ public :
     inline static  IDE_RC unlockSCNMtx()
            { return mMtxSCN.unlock(); }
     
-    // System CommitSCNÀÌ ValidÇÑÁö Á¶»çÇÑ´Ù.
+    // System CommitSCNì´ Validí•œì§€ ì¡°ì‚¬í•œë‹¤.
     static void validateCommitSCN(idBool aIsLock);
     
     static  smmMemBase* getDicMemBase(){return mDicMemBase;};
@@ -473,10 +473,10 @@ inline void smmDatabase::setSystemSCN(smSCN *      aSystemSCN)
     SM_SET_SCN(&mDicMemBase->mSystemSCN, aSystemSCN);
 }
 
-/* Service Phase·Î »óÅÂÀüÀÌ ½Ç½Ã.
- * ÀÌ ÇÔ¼ö°¡ ºÒ¸° ´ÙÀ½ºÎÅÍ´Â
- * fillPCHEntryÇÔ¼ö¿¡¼­ PCH °¡ NULLÀÌ ¾Æ´Ï¾îµµ ¼­¹ö¸¦ Á×ÀÌÁö ¾Ê´Â´Ù.
- * Service Phase¿¡¼­´Â PCH°¡ NULL ÀÌ ¾Æ´Ñµ¥µµ fillPCHEntry°¡ ºÒ¸± ¼ö ÀÖ±â ¶§¹®.
+/* Service Phaseë¡œ ìƒíƒœì „ì´ ì‹¤ì‹œ.
+ * ì´ í•¨ìˆ˜ê°€ ë¶ˆë¦° ë‹¤ìŒë¶€í„°ëŠ”
+ * fillPCHEntryí•¨ìˆ˜ì—ì„œ PCH ê°€ NULLì´ ì•„ë‹ˆì–´ë„ ì„œë²„ë¥¼ ì£½ì´ì§€ ì•ŠëŠ”ë‹¤.
+ * Service Phaseì—ì„œëŠ” PCHê°€ NULL ì´ ì•„ë‹Œë°ë„ fillPCHEntryê°€ ë¶ˆë¦´ ìˆ˜ ìžˆê¸° ë•Œë¬¸.
  */
 
 inline smSCN* smmDatabase::getLstSystemSCN()

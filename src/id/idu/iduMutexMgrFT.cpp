@@ -99,7 +99,7 @@ static iduFixedTableColDesc gMutexMgrColDesc[] =
         NULL,
         0, 0,NULL // for internal use
     },
-    /* BUG-43940 V$mutex¿¡¼­ mutex lockÀ» È¹µæÇÑ ½º·¹µå IDÃâ·Â */
+    /* BUG-43940 V$mutexì—ì„œ mutex lockì„ íšë“í•œ ìŠ¤ë ˆë“œ IDì¶œë ¥ */
     {
         (SChar *)"THREAD_ID",
         offsetof(iduMutexEntry, mStat) + offsetof(iduMutexStat, mThreadID),

@@ -340,9 +340,9 @@ static ulnConvEndianFunc *ulnConvEndianMap [2] =
 #define ULN_IS_DIGIT(c) ((c) >= '0' && (c) <= '9')
 
 /*
- * Note : ¾Æ·¡ÀÇ ÇÔ¼ö´Â Strtoll() ÀÌ¶ó´Â cli2 ÀÇ ÇÔ¼ö¸¦ ±×´ë·Î °¡Á®´Ù°¡ º¹»çÇØ µÐ °ÍÀÌ´Ù.
+ * Note : ì•„ëž˜ì˜ í•¨ìˆ˜ëŠ” Strtoll() ì´ë¼ëŠ” cli2 ì˜ í•¨ìˆ˜ë¥¼ ê·¸ëŒ€ë¡œ ê°€ì ¸ë‹¤ê°€ ë³µì‚¬í•´ ë‘” ê²ƒì´ë‹¤.
  *
- * BUGBUG : ½ºÆ®¸µÀÇ °æ°è°Ë»ç¸¦ ¾ÈÇÑ´Ù -_-;
+ * BUGBUG : ìŠ¤íŠ¸ë§ì˜ ê²½ê³„ê²€ì‚¬ë¥¼ ì•ˆí•œë‹¤ -_-;
  */
 
 // This code from gnu c++ library
@@ -373,7 +373,7 @@ acp_sint64_t ulncStrToSLong(const acp_char_t *aString, acp_char_t **aEndPointer,
     sCurrentPointer = aString;
 
     /*
-     * È­ÀÌÆ® ½ºÆäÀÌ½º ¾ø¾Ö±â
+     * í™”ì´íŠ¸ ìŠ¤íŽ˜ì´ìŠ¤ ì—†ì• ê¸°
      */
     do
     {
@@ -381,7 +381,7 @@ acp_sint64_t ulncStrToSLong(const acp_char_t *aString, acp_char_t **aEndPointer,
     } while (sCurrentCharacter == ' ' || sCurrentCharacter == '\t');
 
     /*
-     * ºÎÈ£ Ã¼Å©
+     * ë¶€í˜¸ ì²´í¬
      */
     if (sCurrentCharacter == '-')
     {
@@ -395,7 +395,7 @@ acp_sint64_t ulncStrToSLong(const acp_char_t *aString, acp_char_t **aEndPointer,
 
 #if 0
     /*
-     * 0x Ã¼Å© È¤Àº 8Áø¼ö 0 Ã¼Å© : ÇÊ¿ä¾ø¾î¼­ ÀÏ´Ü ÁÖ¼®Ã³¸®
+     * 0x ì²´í¬ í˜¹ì€ 8ì§„ìˆ˜ 0 ì²´í¬ : í•„ìš”ì—†ì–´ì„œ ì¼ë‹¨ ì£¼ì„ì²˜ë¦¬
      */
     if ((aBase == 0 || aBase == 16) &&
         sCurrentCharacter == '0' && (*sCurrentPointer == 'x' || *sCurrentPointer == 'X'))
@@ -480,14 +480,14 @@ acp_sint64_t ulncStrToSLong(const acp_char_t *aString, acp_char_t **aEndPointer,
 }
 
 /*
- * Note : 4.3.9 ÀÇ strtonumCheck() ÇÔ¼ö¸¦ ±×´ë·Î º¹»çÇØ ¿Í¼­
+ * Note : 4.3.9 ì˜ strtonumCheck() í•¨ìˆ˜ë¥¼ ê·¸ëŒ€ë¡œ ë³µì‚¬í•´ ì™€ì„œ
  *
- *          °æ°è°Ë»ç¸¦ ÇÔ
- *          trailing white space µµ Àû¹ýÇÑ ¼ýÀÚ¹®ÀÚ¿­ÀÌ¶ó°í ÆÇ´ÜÇÔ
+ *          ê²½ê³„ê²€ì‚¬ë¥¼ í•¨
+ *          trailing white space ë„ ì ë²•í•œ ìˆ«ìžë¬¸ìžì—´ì´ë¼ê³  íŒë‹¨í•¨
  *
- *        À¸·Î ¼öÁ¤ÇÔ.
+ *        ìœ¼ë¡œ ìˆ˜ì •í•¨.
  *
- * ÂüÁ¶ : ODBC ÀÇ Numeric Literal Àº ´ÙÀ½°ú °°Àº ¹®¹ýÀ» °¡Áø´Ù :
+ * ì°¸ì¡° : ODBC ì˜ Numeric Literal ì€ ë‹¤ìŒê³¼ ê°™ì€ ë¬¸ë²•ì„ ê°€ì§„ë‹¤ :
  *
  *  numeric-literal       ::= signed-numeric-literal | unsigned-numeric-literal
  *
@@ -515,8 +515,8 @@ acp_bool_t ulncIsValidNumericLiterals(acp_char_t *aString, acp_uint32_t aBufferS
 {
     acp_bool_t   sReturnValue   = ACP_FALSE;
 
-    acp_sint32_t sScaleIncrease = 0;  // ¼Ò¼ýÁ¡ ÀÌÇÏÀÇ ¼ýÀÚÀÎÁöÀÇ ¿©ºÎ
-    acp_sint32_t sScale         = 0;  // ¼Ò¼ýÁ¡ ÀÌÇÏÀÇ ¼ýÀÚÀÇ °¹¼ö
+    acp_sint32_t sScaleIncrease = 0;  // ì†Œìˆ«ì  ì´í•˜ì˜ ìˆ«ìžì¸ì§€ì˜ ì—¬ë¶€
+    acp_sint32_t sScale         = 0;  // ì†Œìˆ«ì  ì´í•˜ì˜ ìˆ«ìžì˜ ê°¯ìˆ˜
 
     acp_sint32_t sExponentSign  = 1;
     acp_sint32_t sExponent      = 0;
@@ -538,7 +538,7 @@ acp_bool_t ulncIsValidNumericLiterals(acp_char_t *aString, acp_uint32_t aBufferS
         ACI_TEST_RAISE(sPos >= aBufferSize, NOT_NUMERIC_LITERAL);
     }
 
-    // ¸Ç ¾Õ È¤Àº ºÎÈ£ ´ÙÀ½¿¡´Â ¹Ýµå½Ã ÇÇ¸®¾îµåÈ¤Àº ¼ýÀÚ°¡ ¿Í¾ß ÇÑ´Ù.
+    // ë§¨ ì•ž í˜¹ì€ ë¶€í˜¸ ë‹¤ìŒì—ëŠ” ë°˜ë“œì‹œ í”¼ë¦¬ì–´ë“œí˜¹ì€ ìˆ«ìžê°€ ì™€ì•¼ í•œë‹¤.
     if (aString[sPos] == '.')
     {
         sScaleIncrease = 1;
@@ -560,7 +560,7 @@ acp_bool_t ulncIsValidNumericLiterals(acp_char_t *aString, acp_uint32_t aBufferS
 
     if (aString[sPos] == '.')
     {
-        // . ÀÌ µÎ¹ø ³ª¿À¸é ¾ÈµÈ´Ù.
+        // . ì´ ë‘ë²ˆ ë‚˜ì˜¤ë©´ ì•ˆëœë‹¤.
         ACI_TEST_RAISE(sScaleIncrease != 0, NOT_NUMERIC_LITERAL);
 
         sScaleIncrease = 1;
@@ -575,7 +575,7 @@ acp_bool_t ulncIsValidNumericLiterals(acp_char_t *aString, acp_uint32_t aBufferS
         }
     }
 
-    // . ¹Ù·Î µÚ¿¡ e °¡ ¿Íµµ µÈ´Ù.
+    // . ë°”ë¡œ ë’¤ì— e ê°€ ì™€ë„ ëœë‹¤.
     if ((aString[sPos] == 'E') || (aString[sPos] == 'e'))
     {
         sPos++;
@@ -596,7 +596,7 @@ acp_bool_t ulncIsValidNumericLiterals(acp_char_t *aString, acp_uint32_t aBufferS
             }
             else
             {
-                // e ´ÙÀ½¿¡´Â ºÎÈ£ È¤Àº ¼ýÀÚ°¡ ¿Í¾ß¸¸ ÇÑ´Ù.
+                // e ë‹¤ìŒì—ëŠ” ë¶€í˜¸ í˜¹ì€ ìˆ«ìžê°€ ì™€ì•¼ë§Œ í•œë‹¤.
                 ACI_TEST_RAISE(aString[sPos] < '0' || aString[sPos] > '9', NOT_NUMERIC_LITERAL);
             }
         }
@@ -610,7 +610,7 @@ acp_bool_t ulncIsValidNumericLiterals(acp_char_t *aString, acp_uint32_t aBufferS
     }
 
     /*
-     * ¿©±â±îÁö ¼ýÀÚºÎºÐÀÌ´Ù.
+     * ì—¬ê¸°ê¹Œì§€ ìˆ«ìžë¶€ë¶„ì´ë‹¤.
      */
 
     while(aString[sPos] == ' ' || aString[sPos] == '\t')
@@ -650,8 +650,8 @@ acp_bool_t ulncIsValidNumericLiterals(acp_char_t *aString, acp_uint32_t aBufferS
 }
 
 /*
- * SrcBuffer ÀÇ ³»¿ëÀ» DstBuffer ·Î º¹»çÇÑ´Ù.
- * º¹»çÇÑ ¾çÀ» ¸®ÅÏÇÑ´Ù.
+ * SrcBuffer ì˜ ë‚´ìš©ì„ DstBuffer ë¡œ ë³µì‚¬í•œë‹¤.
+ * ë³µì‚¬í•œ ì–‘ì„ ë¦¬í„´í•œë‹¤.
  */
 acp_uint32_t ulnConvCopy(acp_uint8_t *aDstBuffer, acp_uint32_t aDstSize, acp_uint8_t *aSrcBuffer, acp_uint32_t aSrcLength)
 {
@@ -674,7 +674,7 @@ acp_uint32_t ulnConvCopy(acp_uint8_t *aDstBuffer, acp_uint32_t aDstSize, acp_uin
     return sSizeToCopy;
 }
 
-// BUG-27515: ulnConvCopyToChar(), ulnConvCopyToWChar() ÄÚµå Áßº¹ Á¦°Å
+// BUG-27515: ulnConvCopyToChar(), ulnConvCopyToWChar() ì½”ë“œ ì¤‘ë³µ ì œê±°
 ACI_RC ulnConvCopyStr(ulnFnContext  *aFnContext,
                       mtlModule     *aSrcCharSet,
                       mtlModule     *aDestCharSet,
@@ -700,8 +700,8 @@ ACI_RC ulnConvCopyStr(ulnFnContext  *aFnContext,
     {
         if (aDestCharSet->id == MTL_UTF16_ID)
         {
-            // BUG-28110: WCHAR·Î µ¥ÀÌÅ¸¸¦ ¾òÀ» ¶§´Â ¹öÆÛ°¡ 2ÀÇ ¹è¼ö¿©¾ßÇÑ´Ù.
-            // 2ÀÇ ¹è¼ö°¡ ¾Æ´Ò °æ¿ì¿¡´Â ¹öÆÛÀÇ ¸¶Áö¸· ¹ÙÀÌÆ®¸¦ ¹«½Ã
+            // BUG-28110: WCHARë¡œ ë°ì´íƒ€ë¥¼ ì–»ì„ ë•ŒëŠ” ë²„í¼ê°€ 2ì˜ ë°°ìˆ˜ì—¬ì•¼í•œë‹¤.
+            // 2ì˜ ë°°ìˆ˜ê°€ ì•„ë‹ ê²½ìš°ì—ëŠ” ë²„í¼ì˜ ë§ˆì§€ë§‰ ë°”ì´íŠ¸ë¥¼ ë¬´ì‹œ
             if ((aAppBuffer->mBufferSize % 2) == 1)
             {
                 aAppBuffer->mBufferSize--;
@@ -713,7 +713,7 @@ ACI_RC ulnConvCopyStr(ulnFnContext  *aFnContext,
             sDstSize = aAppBuffer->mBufferSize - 1;
         }
 
-        // Àü¿¡ ´Ù ¸øÁÖ°í ³²Àº°Ô ÀÖÀ¸¸é ±×°Í¸ÕÀú º¹»ç
+        // ì „ì— ë‹¤ ëª»ì£¼ê³  ë‚¨ì€ê²Œ ìžˆìœ¼ë©´ ê·¸ê²ƒë¨¼ì € ë³µì‚¬
         if (aColumn->mRemainTextLen > 0)
         {
             sCopySize = ACP_MIN(sDstSize, aColumn->mRemainTextLen);
@@ -730,8 +730,8 @@ ACI_RC ulnConvCopyStr(ulnFnContext  *aFnContext,
         }
     }
 
-    // CLOBÀº ÀÏºÎ¸¸ °¡Á®¿Í¼­ º¯È¯ÇÏ¹Ç·Î
-    // CLOBÀÌ ¾Æ´Ò °æ¿ì¿¡¸¸ ÀüÃ¼ ¹®ÀÚ¿­ ±æÀÌ ¿É¼Ç°ú GDPositionÀ» Ã³¸®¸¦ ÇÑ´Ù.
+    // CLOBì€ ì¼ë¶€ë§Œ ê°€ì ¸ì™€ì„œ ë³€í™˜í•˜ë¯€ë¡œ
+    // CLOBì´ ì•„ë‹ ê²½ìš°ì—ë§Œ ì „ì²´ ë¬¸ìžì—´ ê¸¸ì´ ì˜µì…˜ê³¼ GDPositionì„ ì²˜ë¦¬ë¥¼ í•œë‹¤.
     if (aColumn->mMtype != ULN_MTYPE_CLOB)
     {
         sConvOption  |= CONV_CALC_TOTSIZE;
@@ -742,9 +742,9 @@ ACI_RC ulnConvCopyStr(ulnFnContext  *aFnContext,
     ACI_TEST( sConvPosision > aSourceLength );
 
     // PROJ-1579 NCHAR
-    // Å¬¶óÀÌ¾ðÆ® Ä³¸¯ÅÍ ¼ÂÀ¸·Î º¯È¯ÇÑ´Ù.
-    // BUGBUG: ÄÁ¹öÀü¿¡ ½ÇÆÐÇÒ ¼ö ÀÖÀ¸¹Ç·Î ¸®ÅÏ°ªÀ» ¹«Á¶°Ç ¹«½ÃÇÏ¸é ¹®Á¦°¡ µÉ¼öµµ ÀÖ´Ù.
-    // SUCCESS°¡ ÀÌ´Ñ °æ¿ì SUCCESS_WITH_INFOÀÎÁö FAILUREÀÎÁö È®ÀÎÇÒ ¼ö ÀÖ¾î¾ß ÇÑ´Ù.
+    // í´ë¼ì´ì–¸íŠ¸ ìºë¦­í„° ì…‹ìœ¼ë¡œ ë³€í™˜í•œë‹¤.
+    // BUGBUG: ì»¨ë²„ì „ì— ì‹¤íŒ¨í•  ìˆ˜ ìžˆìœ¼ë¯€ë¡œ ë¦¬í„´ê°’ì„ ë¬´ì¡°ê±´ ë¬´ì‹œí•˜ë©´ ë¬¸ì œê°€ ë ìˆ˜ë„ ìžˆë‹¤.
+    // SUCCESSê°€ ì´ë‹Œ ê²½ìš° SUCCESS_WITH_INFOì¸ì§€ FAILUREì¸ì§€ í™•ì¸í•  ìˆ˜ ìžˆì–´ì•¼ í•œë‹¤.
 
     if( (aSrcCharSet      != aDestCharSet) ||
         (aSrcCharSet->id  == MTL_UTF16_ID) ||
@@ -785,7 +785,7 @@ ACI_RC ulnConvCopyStr(ulnFnContext  *aFnContext,
         aLength->mWritten        = sConvSrcSize + sCopySize;
         aColumn->mGDPosition    += sConvSrcSize;
 
-        // BUG-27515: µ¿ÀÏÇÑ ÄÉ¸¯ÅÍ¼ÂÀÏ °æ¿ì¿¡µµ »ç¿ëÀÚ ¹öÆÛ¿¡ º¹»çÇØ¾ßÇÑ´Ù.
+        // BUG-27515: ë™ì¼í•œ ì¼€ë¦­í„°ì…‹ì¼ ê²½ìš°ì—ë„ ì‚¬ìš©ìž ë²„í¼ì— ë³µì‚¬í•´ì•¼í•œë‹¤.
         acpMemCpy(aAppBuffer->mBuffer + sCopySize,
                   aSourceBuffer + sConvPosision,
                   sConvSrcSize);
@@ -827,7 +827,7 @@ ACI_RC ulncNULL(ulnFnContext  *aFnContext,
 }
 
 /*
- * ¿©±â row number ´Â 1 º£ÀÌ½º
+ * ì—¬ê¸° row number ëŠ” 1 ë² ì´ìŠ¤
  */
 ACI_RC ulnConvert(ulnFnContext     *aFnContext,
                   ulnAppBuffer     *aUserBuffer,
@@ -841,8 +841,8 @@ ACI_RC ulnConvert(ulnFnContext     *aFnContext,
     sFilter = ulnConvGetFilter(aUserBuffer->mCTYPE, (ulnMTypeID)aColumn->mMtype);
 
     /*
-     * ÄÁ¹öÁ¯½Ã¿¡ ¿¡·¯°¡ ¹ß»ýÇÏ´õ¶óµµ ÇØ´ç diagnostic record ¸¸ ¸Å´Þ°í,
-     * ÇØ´ç row ¿¡ ¿¡·¯°¡ ¹ß»ýÇßÀ½À» row status ptr ¿¡ ÇÒ´çÇÑ ÈÄ¿¡ °è¼Ó fetch ¸¦ ÁøÇàÇÑ´Ù.
+     * ì»¨ë²„ì ¼ì‹œì— ì—ëŸ¬ê°€ ë°œìƒí•˜ë”ë¼ë„ í•´ë‹¹ diagnostic record ë§Œ ë§¤ë‹¬ê³ ,
+     * í•´ë‹¹ row ì— ì—ëŸ¬ê°€ ë°œìƒí–ˆìŒì„ row status ptr ì— í• ë‹¹í•œ í›„ì— ê³„ì† fetch ë¥¼ ì§„í–‰í•œë‹¤.
      */
     if (sFilter != NULL)
     {
@@ -853,9 +853,9 @@ ACI_RC ulnConvert(ulnFnContext     *aFnContext,
                 /*
                  * 22002 :
                  *
-                 * NULL ÀÌ ÄÃ·³¿¡ fetch µÇ¾î ¿Í¼­, SQL_NULL_DATA ¸¦ »ç¿ëÀÚ°¡ ÁöÁ¤ÇÑ
-                 * StrLen_or_IndPtr ¿¡ ½á Áà¾ß ÇÏ´Âµ¥, ÀÌ³à¼®ÀÌ NULL Æ÷ÀÎÅÍÀÌ´Ù.
-                 * ±×·²¶§¿¡ ¹ß»ý½ÃÄÑ ÁÖ´Â ¿¡·¯.
+                 * NULL ì´ ì»¬ëŸ¼ì— fetch ë˜ì–´ ì™€ì„œ, SQL_NULL_DATA ë¥¼ ì‚¬ìš©ìžê°€ ì§€ì •í•œ
+                 * StrLen_or_IndPtr ì— ì¨ ì¤˜ì•¼ í•˜ëŠ”ë°, ì´ë…€ì„ì´ NULL í¬ì¸í„°ì´ë‹¤.
+                 * ê·¸ëŸ´ë•Œì— ë°œìƒì‹œì¼œ ì£¼ëŠ” ì—ëŸ¬.
                  */
                 ulnErrorExtended(aFnContext,
                                  aUserRowNumber,
@@ -872,7 +872,7 @@ ACI_RC ulnConvert(ulnFnContext     *aFnContext,
                         aUserRowNumber) == ACI_SUCCESS)
             {
                 /*
-                 * µ¥ÀÌÅÍ¸¦ ´Ù °¡Á®°¨. ´õ ÀÌ»ó ÁÙ µ¥ÀÌÅÍ ¾øÀ½.
+                 * ë°ì´í„°ë¥¼ ë‹¤ ê°€ì ¸ê°. ë” ì´ìƒ ì¤„ ë°ì´í„° ì—†ìŒ.
                  */
                 if ((sLength.mNeeded != SQL_NO_TOTAL) && (sLength.mNeeded <= sLength.mWritten))
                 {
@@ -881,7 +881,7 @@ ACI_RC ulnConvert(ulnFnContext     *aFnContext,
                 }
 
                 /*
-                 * »ç¿ëÀÚ¿¡°Ô ¸®ÅÏÇÏ´Â ±æÀÌ : ³²¾ÆÀÖ´Â µ¥ÀÌÅÍÀÇ ±æÀÌÀÌ´Ù.
+                 * ì‚¬ìš©ìžì—ê²Œ ë¦¬í„´í•˜ëŠ” ê¸¸ì´ : ë‚¨ì•„ìžˆëŠ” ë°ì´í„°ì˜ ê¸¸ì´ì´ë‹¤.
                  */
 
                 if (ulnBindSetUserIndLenValue(aUserIndLenPair, sLength.mNeeded) != ACI_SUCCESS)
@@ -889,9 +889,9 @@ ACI_RC ulnConvert(ulnFnContext     *aFnContext,
                     /*
                      * 22002 :
                      *
-                     * NULL ÀÌ ÄÃ·³¿¡ fetch µÇ¾î ¿Í¼­, SQL_NULL_DATA ¸¦ »ç¿ëÀÚ°¡ ÁöÁ¤ÇÑ
-                     * StrLen_or_IndPtr ¿¡ ½á Áà¾ß ÇÏ´Âµ¥, ÀÌ³à¼®ÀÌ NULL Æ÷ÀÎÅÍÀÌ´Ù.
-                     * ±×·²¶§¿¡ ¹ß»ý½ÃÄÑ ÁÖ´Â ¿¡·¯.
+                     * NULL ì´ ì»¬ëŸ¼ì— fetch ë˜ì–´ ì™€ì„œ, SQL_NULL_DATA ë¥¼ ì‚¬ìš©ìžê°€ ì§€ì •í•œ
+                     * StrLen_or_IndPtr ì— ì¨ ì¤˜ì•¼ í•˜ëŠ”ë°, ì´ë…€ì„ì´ NULL í¬ì¸í„°ì´ë‹¤.
+                     * ê·¸ëŸ´ë•Œì— ë°œìƒì‹œì¼œ ì£¼ëŠ” ì—ëŸ¬.
                      */
                     ulnErrorExtended(aFnContext,
                                      aUserRowNumber,

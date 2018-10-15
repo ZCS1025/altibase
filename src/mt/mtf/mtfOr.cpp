@@ -46,7 +46,7 @@ mtfModule mtfOr = {
     1|MTC_NODE_OPERATOR_OR|MTC_NODE_LOGICAL_CONDITION_TRUE|
         MTC_NODE_PRINT_FMT_INFIX_SP,
     ~0,
-    1.0,  // default selectivity (∫Ò±≥ ø¨ªÍ¿⁄∞° æ∆¥‘)
+    1.0,  // default selectivity (ÎπÑÍµê Ïó∞ÏÇ∞ÏûêÍ∞Ä ÏïÑÎãò)
     mtfOrFunctionName,
     &mtfAnd,
     mtf::initializeDefault,

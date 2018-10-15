@@ -22,7 +22,7 @@
  *
  *     [PROJ-1371] Directories
  *
- *     Directories¸¦ À§ÇÑ ¸ÞÅ¸ °ü¸®
+ *     Directoriesë¥¼ ìœ„í•œ ë©”íƒ€ ê´€ë¦¬
  *
  **********************************************************************/
 
@@ -45,11 +45,11 @@ IDE_RC qcmDirectory::getDirectory(
 /***********************************************************************
  *
  * Description :
- *      meta¿¡¼­ directory¸¦ ¾ò¾î¿È
+ *      metaì—ì„œ directoryë¥¼ ì–»ì–´ì˜´
  *
  * Implementation :
- *      1. directory nameÀ¸·Î meta range±¸¼º
- *      2. qcmDirectoryInfo±¸Á¶Ã¼¿¡ °á°ú ÀúÀå
+ *      1. directory nameìœ¼ë¡œ meta rangeêµ¬ì„±
+ *      2. qcmDirectoryInfoêµ¬ì¡°ì²´ì— ê²°ê³¼ ì €ìž¥
  *
  ***********************************************************************/
 
@@ -130,13 +130,13 @@ IDE_RC qcmDirectory::addMetaInfo(
 /***********************************************************************
  *
  * Description :
- *      meta¿¡ directory¸¦ »ðÀÔ(or update)
+ *      metaì— directoryë¥¼ ì‚½ìž…(or update)
  *
  * Implementation :
- *      1. ¸¸¾à replace¶ó¸é update(°ü·Ã ±ÇÇÑÀÇ º¯µ¿ ÃÖ¼ÒÈ­)
- *         path¸¸ update(owner´Â updateÇÏÁö ¾ÊÀ½)
- *      2. replace°¡ ¾Æ´Ï¶ó¸é insert
- *         directory oid´Â sequence°ª »ç¿ë
+ *      1. ë§Œì•½ replaceë¼ë©´ update(ê´€ë ¨ ê¶Œí•œì˜ ë³€ë™ ìµœì†Œí™”)
+ *         pathë§Œ update(ownerëŠ” updateí•˜ì§€ ì•ŠìŒ)
+ *      2. replaceê°€ ì•„ë‹ˆë¼ë©´ insert
+ *         directory oidëŠ” sequenceê°’ ì‚¬ìš©
  *
  ***********************************************************************/
 
@@ -205,10 +205,10 @@ IDE_RC qcmDirectory::delMetaInfoByDirectoryName(
 /***********************************************************************
  *
  * Description :
- *      meta¿¡¼­ directory¸¦ »èÁ¦(drop direcoory½Ã »ç¿ë)
+ *      metaì—ì„œ directoryë¥¼ ì‚­ì œ(drop direcooryì‹œ ì‚¬ìš©)
  *
  * Implementation :
- *      1. sys_directories_¿¡¼­ directory nameÀÌ µ¿ÀÏÇÑ object»èÁ¦
+ *      1. sys_directories_ì—ì„œ directory nameì´ ë™ì¼í•œ objectì‚­ì œ
  *
  ***********************************************************************/
 
@@ -264,8 +264,8 @@ IDE_RC qcmSetDirectory(
         aRow,
         sDirectoryIDMtcColumn,
         &sSLongID );
-    // BUGBUG 32bit machine¿¡¼­ µ¿ÀÛ ½Ã SLong(64bit)º¯¼ö¸¦ uVLong(32bit)º¯¼ö·Î
-    // º¯È¯ÇÏ¹Ç·Î µ¥ÀÌÅÍ ¼Õ½Ç °¡´É¼º ÀÖÀ½
+    // BUGBUG 32bit machineì—ì„œ ë™ìž‘ ì‹œ SLong(64bit)ë³€ìˆ˜ë¥¼ uVLong(32bit)ë³€ìˆ˜ë¡œ
+    // ë³€í™˜í•˜ë¯€ë¡œ ë°ì´í„° ì†ì‹¤ ê°€ëŠ¥ì„± ìžˆìŒ
     aDirectoryInfo->directoryID = (vULong)sSLongID;
 
     IDE_TEST( smiGetTableColumns( gQcmDirectories,

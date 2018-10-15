@@ -19,8 +19,8 @@
  *
  * $Id: sdpstSegDDL.cpp 27229 2008-07-23 17:37:19Z newdaily $
  *
- * º» ÆÄÀÏÀº Treelist Managed SegmentÀÇ Create/Drop/Alter/Reset ¿¬»êÀÇ
- * STATIC ÀÎÅÍÆäÀÌ½ºµéÀ» °ü¸®ÇÑ´Ù.
+ * ë³¸ íŒŒì¼ì€ Treelist Managed Segmentì˜ Create/Drop/Alter/Reset ì—°ì‚°ì˜
+ * STATIC ì¸í„°í˜ì´ìŠ¤ë“¤ì„ ê´€ë¦¬í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -36,9 +36,9 @@
 # include <sdpstAllocExtInfo.h>
 
 /***********************************************************************
- * Description : sdpstBfrAllocExtInfo ±¸Á¶Ã¼¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+ * Description : sdpstBfrAllocExtInfo êµ¬ì¡°ì²´ë¥¼ ì´ˆê¸°í™”í•œë‹¤.
  *
- * aBfrInfo     - [IN] Extent ÇÒ´ç ¾Ë°í¸®Áò¿¡¼­ »ç¿ëÇÏ´Â ÀÌÀü ÇÒ´ç Á¤º¸
+ * aBfrInfo     - [IN] Extent í• ë‹¹ ì•Œê³ ë¦¬ì¦˜ì—ì„œ ì‚¬ìš©í•˜ëŠ” ì´ì „ í• ë‹¹ ì •ë³´
  ***********************************************************************/
 IDE_RC sdpstAllocExtInfo::initialize( sdpstBfrAllocExtInfo *aBfrInfo )
 {
@@ -61,9 +61,9 @@ IDE_RC sdpstAllocExtInfo::initialize( sdpstBfrAllocExtInfo *aBfrInfo )
 }
 
 /***********************************************************************
- * Description : sdpstAftAllocExtInfo ±¸Á¶Ã¼¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+ * Description : sdpstAftAllocExtInfo êµ¬ì¡°ì²´ë¥¼ ì´ˆê¸°í™”í•œë‹¤.
  *
- * aAftInfo     - [IN] Extent ÇÒ´ç ¾Ë°í¸®Áò¿¡¼­ »ç¿ëÇÏ´Â ÀÌÈÄ ÇÒ´ç Á¤º¸
+ * aAftInfo     - [IN] Extent í• ë‹¹ ì•Œê³ ë¦¬ì¦˜ì—ì„œ ì‚¬ìš©í•˜ëŠ” ì´í›„ í• ë‹¹ ì •ë³´
  ***********************************************************************/
 IDE_RC sdpstAllocExtInfo::initialize( sdpstAftAllocExtInfo *aAftInfo )
 {
@@ -82,59 +82,59 @@ IDE_RC sdpstAllocExtInfo::initialize( sdpstAftAllocExtInfo *aAftInfo )
     aAftInfo->mTotPageCnt     = 0;
     aAftInfo->mLfBMP4ExtDir   = SD_NULL_PID;
     aAftInfo->mPageRange      = SDPST_PAGE_RANGE_NULL;
-    aAftInfo->mSegHdrCnt      = 0;  /* 0, 1°ª¸¸ °®´Â´Ù. */
+    aAftInfo->mSegHdrCnt      = 0;  /* 0, 1ê°’ë§Œ ê°–ëŠ”ë‹¤. */
     aAftInfo->mSlotNoInExtDir = -1;
 
     return IDE_SUCCESS;
 }
 
 /***********************************************************************
- * Description : Segment HeaderÀÇ last bmp ÆäÀÌÁöµéÀÇ Á¤º¸¸¦ ¼öÁıÇÑ´Ù.
+ * Description : Segment Headerì˜ last bmp í˜ì´ì§€ë“¤ì˜ ì •ë³´ë¥¼ ìˆ˜ì§‘í•œë‹¤.
  *
- * Segment¿¡ Extent ÇÒ´çÀº Æ®·£Àè¼Ç¿¡ ÀÇÇØ µ¿½Ã¿¡
- * ¼öÇàµÇÁö ¾Ê´Â´Ù. ¿©·¯ Æ®·£Àè¼ÇÀÌ µé¾î¿Íµµ ÇÑ
- * Æ®·£Àè¼ÇÀÌ ¼öÇàÇÏ°í ³ª¸ÓÁö´Â ÇÒ´ç¿¬»êÀÌ ¿Ï·áµÇ±â¸¦
- * ´ë±âÇÑ´Ù.
- * ±×·¯¹Ç·Î, Extent ÇÒ´ç ¿¬»ê°úÁ¤¿¡¼­´Â ´Ù¸¥ Æ®·£Àè¼Ç¿¡ ÀÇÇØ
- * Segment HeaderÀÇ last bmp ÆäÀÌÁö Á¤º¸
- * ¿Í last bmp ÆäÀÌÁöÀÇ free slot °³¼ö´Â º¯°æµÇÁö ¾Ê±â ¶§¹®¿¡
- * ¹Ì¸® °è»êÇØµÎ°í »ç¿ëÇÑ´Ù.
+ * Segmentì— Extent í• ë‹¹ì€ íŠ¸ëœì­ì…˜ì— ì˜í•´ ë™ì‹œì—
+ * ìˆ˜í–‰ë˜ì§€ ì•ŠëŠ”ë‹¤. ì—¬ëŸ¬ íŠ¸ëœì­ì…˜ì´ ë“¤ì–´ì™€ë„ í•œ
+ * íŠ¸ëœì­ì…˜ì´ ìˆ˜í–‰í•˜ê³  ë‚˜ë¨¸ì§€ëŠ” í• ë‹¹ì—°ì‚°ì´ ì™„ë£Œë˜ê¸°ë¥¼
+ * ëŒ€ê¸°í•œë‹¤.
+ * ê·¸ëŸ¬ë¯€ë¡œ, Extent í• ë‹¹ ì—°ì‚°ê³¼ì •ì—ì„œëŠ” ë‹¤ë¥¸ íŠ¸ëœì­ì…˜ì— ì˜í•´
+ * Segment Headerì˜ last bmp í˜ì´ì§€ ì •ë³´
+ * ì™€ last bmp í˜ì´ì§€ì˜ free slot ê°œìˆ˜ëŠ” ë³€ê²½ë˜ì§€ ì•Šê¸° ë•Œë¬¸ì—
+ * ë¯¸ë¦¬ ê³„ì‚°í•´ë‘ê³  ì‚¬ìš©í•œë‹¤.
  *
- * ¿¹¸¦ µé¾î, Extent Å©±â : 512K ÀÏ¶§
+ * ì˜ˆë¥¼ ë“¤ì–´, Extent í¬ê¸° : 512K ì¼ë•Œ
  *
- * A. Segment »ı¼º Å©±â 512K ·Î »ı¼º
+ * A. Segment ìƒì„± í¬ê¸° 512K ë¡œ ìƒì„±
  *
- * - Extent 1°³ ÇÒ´ç -> Segment 512KÀÌ¹Ç·Î PageRange 16( <1M ) °áÁ¤
+ * - Extent 1ê°œ í• ë‹¹ -> Segment 512Kì´ë¯€ë¡œ PageRange 16( <1M ) ê²°ì •
  *
- * - lf-BMPs ±¸ÇÏ±â
- *   PageRange 16À¸·Î 512 Extent¸¦ Ç¥ÇöÇÏ·Á¸é,
- *   512KB¸¦ ÆäÀÌÁö·Î Ç¥ÇöÇÏ¸é, 64 ÆäÀÌÁö : pages = 512/page_size
+ * - lf-BMPs êµ¬í•˜ê¸°
+ *   PageRange 16ìœ¼ë¡œ 512 Extentë¥¼ í‘œí˜„í•˜ë ¤ë©´,
+ *   512KBë¥¼ í˜ì´ì§€ë¡œ í‘œí˜„í•˜ë©´, 64 í˜ì´ì§€ : pages = 512/page_size
  *   lf-BMPs = 64 pages / PageRange_pages = 4 lf-BMPs,
  *
- * - it-BMPs ±¸ÇÏ±â
- *   »ı¼ºµÉ lf-bmps ¸¦ ¸ğµÎ ±â·ÏÇÒ ¸¸Å­ÀÇ lf-bmp map ÀÌ ÀÖ´Â°¡?
- *   lf-BMP map¿¡¼­ ºó lf-BMP slotÀÌ ÀÖ´ÂÁö?
- *   ÀÖÀ¸¸é, »ı¼ºÇÒ lf-BMPs¿¡¼­ ±âÁ¸ lf-BMP¿¡
- *   ±â·ÏÇÒ ¼ö ÀÖ´Â °³¼ö¸¦ »«´Ù : lf-BMPs'
+ * - it-BMPs êµ¬í•˜ê¸°
+ *   ìƒì„±ë  lf-bmps ë¥¼ ëª¨ë‘ ê¸°ë¡í•  ë§Œí¼ì˜ lf-bmp map ì´ ìˆëŠ”ê°€?
+ *   lf-BMP mapì—ì„œ ë¹ˆ lf-BMP slotì´ ìˆëŠ”ì§€?
+ *   ìˆìœ¼ë©´, ìƒì„±í•  lf-BMPsì—ì„œ ê¸°ì¡´ lf-BMPì—
+ *   ê¸°ë¡í•  ìˆ˜ ìˆëŠ” ê°œìˆ˜ë¥¼ ëº€ë‹¤ : lf-BMPs'
  *   it-BMPs = mod( lf-BMPs', lf-BMPs )
- *   ³ª¸ÓÁö ¾øÀÌ ¶³¾îÁö¸é it-BMPs += 1
+ *   ë‚˜ë¨¸ì§€ ì—†ì´ ë–¨ì–´ì§€ë©´ it-BMPs += 1
  *
- * - rt-BMPs ±¸ÇÏ±â
+ * - rt-BMPs êµ¬í•˜ê¸°
  *
- *   »ı¼ºµÉ it-bmps ¸¦ ¸ğµÎ ±â·ÏÇÒ ¸¸Å­ÀÇ it-bmp map ÀÌ ÀÖ´Â°¡?
- *   it-BMP map¿¡¼­ ºó it-BMP slotÀÌ ÀÖ´ÂÁö?
- *   ÀÖÀ¸¸é, »ı¼ºÇÒ it-BMPs¿¡¼­ ±âÁ¸ it-BMP¿¡
- *   ±â·ÏÇÒ ¼ö ÀÖ´Â °³¼ö¸¦ »«´Ù : it-BMPs'
+ *   ìƒì„±ë  it-bmps ë¥¼ ëª¨ë‘ ê¸°ë¡í•  ë§Œí¼ì˜ it-bmp map ì´ ìˆëŠ”ê°€?
+ *   it-BMP mapì—ì„œ ë¹ˆ it-BMP slotì´ ìˆëŠ”ì§€?
+ *   ìˆìœ¼ë©´, ìƒì„±í•  it-BMPsì—ì„œ ê¸°ì¡´ it-BMPì—
+ *   ê¸°ë¡í•  ìˆ˜ ìˆëŠ” ê°œìˆ˜ë¥¼ ëº€ë‹¤ : it-BMPs'
  *   rt-BMPs = mod( it-BMPs', it-BMPs )
- *   ³ª¸ÓÁö ¾øÀÌ ¶³¾îÁö¸é rt-BMPs += 1
+ *   ë‚˜ë¨¸ì§€ ì—†ì´ ë–¨ì–´ì§€ë©´ rt-BMPs += 1
  *
  *
- * aStatistics   - [IN] Åë°èÁ¤º¸
+ * aStatistics   - [IN] í†µê³„ì •ë³´
  * aSpaceID      - [IN] SpaceID
  * aSegPID       - [IN] Segment Header PID
- * aMaxExtCnt    - [IN] Segment¿¡¼­ Çã¿ë°¡´ÉÇÑ ÃÖ´ë Extent ¼ö
- * aExtDesc      - [IN] ÇÒ´çµÈ ExtentÀÇ Desc
- * aBfrInfo      - [OUT] Extent ÇÒ´ç ¾Ë°í¸®Áò¿¡¼­ »ç¿ëÇÏ´Â ÀÌÀü ÇÒ´ç Á¤º¸
+ * aMaxExtCnt    - [IN] Segmentì—ì„œ í—ˆìš©ê°€ëŠ¥í•œ ìµœëŒ€ Extent ìˆ˜
+ * aExtDesc      - [IN] í• ë‹¹ëœ Extentì˜ Desc
+ * aBfrInfo      - [OUT] Extent í• ë‹¹ ì•Œê³ ë¦¬ì¦˜ì—ì„œ ì‚¬ìš©í•˜ëŠ” ì´ì „ í• ë‹¹ ì •ë³´
  ***********************************************************************/
 IDE_RC sdpstAllocExtInfo::getBfrAllocExtInfo( idvSQL               *aStatistics,
                                               scSpaceID             aSpaceID,
@@ -156,7 +156,7 @@ IDE_RC sdpstAllocExtInfo::getBfrAllocExtInfo( idvSQL               *aStatistics,
     sSegHdrPagePtr = NULL;
     sPagePtr       = NULL;
 
-    /* 0. Segment Header°¡ ¾ÆÁ÷ »ı¼ºµÇÁö ¾ÊÀº °æ¿ì */
+    /* 0. Segment Headerê°€ ì•„ì§ ìƒì„±ë˜ì§€ ì•Šì€ ê²½ìš° */
     if ( aSegPID == SD_NULL_PID )
     {
         aBfrInfo->mMaxSlotCnt[SDPST_RTBMP]   =
@@ -178,8 +178,8 @@ IDE_RC sdpstAllocExtInfo::getBfrAllocExtInfo( idvSQL               *aStatistics,
         IDE_CONT( no_segment_header );
     }
 
-    /* 1. Segment Header°¡ Á¸ÀçÇÏ´Â °æ¿ì
-       Segment Header·ÎºÎÅÍ last lf-bmp ÆäÀÌÁö¸¦ ±¸ÇÏ¿© fix ÇÑ´Ù. */
+    /* 1. Segment Headerê°€ ì¡´ì¬í•˜ëŠ” ê²½ìš°
+       Segment Headerë¡œë¶€í„° last lf-bmp í˜ì´ì§€ë¥¼ êµ¬í•˜ì—¬ fix í•œë‹¤. */
     IDE_TEST( sdbBufferMgr::fixPageByPID( aStatistics,
                                           aSpaceID,
                                           aSegPID,
@@ -190,8 +190,8 @@ IDE_RC sdpstAllocExtInfo::getBfrAllocExtInfo( idvSQL               *aStatistics,
     IDE_TEST_RAISE( (sSegHdr->mTotExtCnt + 1) > aMaxExtCnt,
                     error_exceed_segment_maxextents );
 
-    /* »õ·Î¿î ¸¶Áö¸· bitmap ÆäÀÌÁö¸¦ ¹Ì¸® ±âÁ¸ ¸¶Áö¸·À¸·Î ¼³Á¤ÇØ³õ°í,
-     * ÀÌÈÄ º¯°æµÉ °æ¿ì¿¡ ÇÑÇØ¼­ ¼öÁ¤ÇÑ´Ù. */
+    /* ìƒˆë¡œìš´ ë§ˆì§€ë§‰ bitmap í˜ì´ì§€ë¥¼ ë¯¸ë¦¬ ê¸°ì¡´ ë§ˆì§€ë§‰ìœ¼ë¡œ ì„¤ì •í•´ë†“ê³ ,
+     * ì´í›„ ë³€ê²½ë  ê²½ìš°ì— í•œí•´ì„œ ìˆ˜ì •í•œë‹¤. */
     aBfrInfo->mLstPID[SDPST_LFBMP]  = sSegHdr->mLstLfBMP;
     aBfrInfo->mLstPID[SDPST_ITBMP]  = sSegHdr->mLstItBMP;
     aBfrInfo->mLstPID[SDPST_RTBMP]  = sSegHdr->mLstRtBMP;
@@ -209,7 +209,7 @@ IDE_RC sdpstAllocExtInfo::getBfrAllocExtInfo( idvSQL               *aStatistics,
     aBfrInfo->mTotPageCnt  = sSegHdr->mTotPageCnt;
     aBfrInfo->mNxtSeqNo    = sSegHdr->mLstSeqNo + 1;
 
-    /* BMP ÆäÀÌÁöµéÀ» fix ÇØ¼­ Á¤º¸¸¦ °¡Á®¿Â´Ù. */
+    /* BMP í˜ì´ì§€ë“¤ì„ fix í•´ì„œ ì •ë³´ë¥¼ ê°€ì ¸ì˜¨ë‹¤. */
     for ( sLoop = SDPST_RTBMP; sLoop < SDPST_BMP_TYPE_MAX; sLoop++ )
     {
         IDE_TEST( sdbBufferMgr::fixPageByPID( aStatistics,
@@ -248,7 +248,7 @@ IDE_RC sdpstAllocExtInfo::getBfrAllocExtInfo( idvSQL               *aStatistics,
         sPagePtr = NULL;
     }
 
-    /* 2. ¸¶Áö¸· ExtDir ÆäÀÌÁöÀÇ free slot °³¼ö¸¦ ±¸ÇÑ´Ù. */
+    /* 2. ë§ˆì§€ë§‰ ExtDir í˜ì´ì§€ì˜ free slot ê°œìˆ˜ë¥¼ êµ¬í•œë‹¤. */
     IDE_TEST( sdbBufferMgr::fixPageByPID( aStatistics,
                                           aSpaceID,
                                           aBfrInfo->mLstPID[SDPST_EXTDIR],
@@ -296,35 +296,35 @@ IDE_RC sdpstAllocExtInfo::getBfrAllocExtInfo( idvSQL               *aStatistics,
 }
 
 /***********************************************************************
- * Description : Segment¿¡ Extent ÇÒ´ç½Ã »õ·Î »ı¼ºÇÒ Bitmap ÆäÀÌÁöÀÇ
- *               °³¼ö¸¦ °è»êÇÑ´Ù.
+ * Description : Segmentì— Extent í• ë‹¹ì‹œ ìƒˆë¡œ ìƒì„±í•  Bitmap í˜ì´ì§€ì˜
+ *               ê°œìˆ˜ë¥¼ ê³„ì‚°í•œë‹¤.
  *
- * »õ·Î¿î Extent¿Í Segment Å©±â¸¦ ±âÁØÀ¸·Î »õ·Î »ı¼ºÇØ¾ßÇÒ Bitmap
- * ÆäÀÌÁöµéÀ» »êÁ¤ÇÑ´Ù
+ * ìƒˆë¡œìš´ Extentì™€ Segment í¬ê¸°ë¥¼ ê¸°ì¤€ìœ¼ë¡œ ìƒˆë¡œ ìƒì„±í•´ì•¼í•  Bitmap
+ * í˜ì´ì§€ë“¤ì„ ì‚°ì •í•œë‹¤
  *
- * leaf bmp ÆäÀÌÁö¸¦ »ı¼ºÇÒ ¶§ °í·ÁÇØ¾ßÇÒ »çÇ×Àº ´ÙÀ½°ú °°´Ù.
+ * leaf bmp í˜ì´ì§€ë¥¼ ìƒì„±í•  ë•Œ ê³ ë ¤í•´ì•¼í•  ì‚¬í•­ì€ ë‹¤ìŒê³¼ ê°™ë‹¤.
  *
- * 1. ÀÌÀü lf-bmp ÆäÀÌÁöÀÇ PageRange ¿Í ÇöÀç ¼±ÅÃµÈ PageRange°¡ ´Ù¸¥ °æ¿ì
+ * 1. ì´ì „ lf-bmp í˜ì´ì§€ì˜ PageRange ì™€ í˜„ì¬ ì„ íƒëœ PageRangeê°€ ë‹¤ë¥¸ ê²½ìš°
  *
- *  1-1. ÀÌÀü lf-bmp ÆäÀÌÁö°¡ ÀÌÀü PageRange¸¦ ¸¸Á·ÇÏÁö ¾Ê¾Ò¾îµµ
- *       »õ·Î¿î Extent¸¦ »õ·Î¿î lf-bmp¸¦ ÇÒ´çÇÏ¿© °ü¸®ÇÑ´Ù.
+ *  1-1. ì´ì „ lf-bmp í˜ì´ì§€ê°€ ì´ì „ PageRangeë¥¼ ë§Œì¡±í•˜ì§€ ì•Šì•˜ì–´ë„
+ *       ìƒˆë¡œìš´ Extentë¥¼ ìƒˆë¡œìš´ lf-bmpë¥¼ í• ë‹¹í•˜ì—¬ ê´€ë¦¬í•œë‹¤.
  *
- * 2. ÀÌÀü lf-bmpÆäÀÌÁöÀÇ PageRange¿Í ÇöÀç ¼±ÅÃµÈ PageRange°¡ µ¿ÀÏÇÑ °æ¿ì
+ * 2. ì´ì „ lf-bmpí˜ì´ì§€ì˜ PageRangeì™€ í˜„ì¬ ì„ íƒëœ PageRangeê°€ ë™ì¼í•œ ê²½ìš°
  *
- *  2-1. ÀÌÀü lf-bmp ÆäÀÌÁö°¡ ÀÌÀü PageRange¸¦ ¸ğµÎ »ç¿ëÇÏÁö ¾ÊÀº °æ¿ì
- *       »õ·Î¿î ExtentÀÇ ¸ğµç ÆäÀÌÁö °³¼ö°¡ ÀÌÀü lf-bmp ÆäÀÌÁöÀÇ
- *       »ç¿ëµÇÁö ¾ÊÀº PageRangeblocks °³¼öº¸´Ù ÀÛ°Å³ª °°Àº °æ¿ì´Â
- *       ÀÌÀü lf-bmp ÆäÀÌÁö¸¦ ±×´ë·Î »ç¿ëÇÑ´Ù.
+ *  2-1. ì´ì „ lf-bmp í˜ì´ì§€ê°€ ì´ì „ PageRangeë¥¼ ëª¨ë‘ ì‚¬ìš©í•˜ì§€ ì•Šì€ ê²½ìš°
+ *       ìƒˆë¡œìš´ Extentì˜ ëª¨ë“  í˜ì´ì§€ ê°œìˆ˜ê°€ ì´ì „ lf-bmp í˜ì´ì§€ì˜
+ *       ì‚¬ìš©ë˜ì§€ ì•Šì€ PageRangeblocks ê°œìˆ˜ë³´ë‹¤ ì‘ê±°ë‚˜ ê°™ì€ ê²½ìš°ëŠ”
+ *       ì´ì „ lf-bmp í˜ì´ì§€ë¥¼ ê·¸ëŒ€ë¡œ ì‚¬ìš©í•œë‹¤.
  *
- *  2-2  ÀÌÀü lf-bmp ÆäÀÌÁö°¡ ÀÌÀü PageRange¸¦ ¸ğµÎ »ç¿ëÇÏÁö ¾ÊÀº °æ¿ì
- *       »õ·Î¿î ExtentÀÇ ¸ğµç ÆäÀÌÁö °³¼ö°¡ ÀÌÀü lf-bmp ÆäÀÌÁöÀÇ
- *       »ç¿ëµÇÁö ¾ÊÀº PageRangeblocks °³¼öº¸´Ù Å« °æ¿ì´Â
- *       »õ·Î¿î lf-bmp ÆäÀÌÁö¸¦ »ı¼ºÇÑ´Ù.
+ *  2-2  ì´ì „ lf-bmp í˜ì´ì§€ê°€ ì´ì „ PageRangeë¥¼ ëª¨ë‘ ì‚¬ìš©í•˜ì§€ ì•Šì€ ê²½ìš°
+ *       ìƒˆë¡œìš´ Extentì˜ ëª¨ë“  í˜ì´ì§€ ê°œìˆ˜ê°€ ì´ì „ lf-bmp í˜ì´ì§€ì˜
+ *       ì‚¬ìš©ë˜ì§€ ì•Šì€ PageRangeblocks ê°œìˆ˜ë³´ë‹¤ í° ê²½ìš°ëŠ”
+ *       ìƒˆë¡œìš´ lf-bmp í˜ì´ì§€ë¥¼ ìƒì„±í•œë‹¤.
  *
- * aAllocExtInfo - [IN]  Extent ÇÒ´ç½Ã ÇÊ¿äÇÑ Á¤º¸ÀÇ Pointer
- * aExtDesc      - [IN]  Extent SlotÀÇ Pointer
- * aBfrInfo      - [OUT] Extent ÇÒ´ç ¾Ë°í¸®Áò¿¡¼­ »ç¿ëÇÏ´Â ÀÌÀü ÇÒ´ç Á¤º¸
- * aAftInfo      - [OUT] Extent ÇÒ´ç ¾Ë°í¸®Áò¿¡¼­ »ç¿ëÇÏ´Â ÀÌÈÄ ÇÒ´ç Á¤º¸
+ * aAllocExtInfo - [IN]  Extent í• ë‹¹ì‹œ í•„ìš”í•œ ì •ë³´ì˜ Pointer
+ * aExtDesc      - [IN]  Extent Slotì˜ Pointer
+ * aBfrInfo      - [OUT] Extent í• ë‹¹ ì•Œê³ ë¦¬ì¦˜ì—ì„œ ì‚¬ìš©í•˜ëŠ” ì´ì „ í• ë‹¹ ì •ë³´
+ * aAftInfo      - [OUT] Extent í• ë‹¹ ì•Œê³ ë¦¬ì¦˜ì—ì„œ ì‚¬ìš©í•˜ëŠ” ì´í›„ í• ë‹¹ ì •ë³´
  ***********************************************************************/
 void sdpstAllocExtInfo::getAftAllocExtInfo( scPageID                 aSegPID,
                                             sdpstExtDesc           * aExtDesc,
@@ -346,38 +346,38 @@ void sdpstAllocExtInfo::getAftAllocExtInfo( scPageID                 aSegPID,
 
     if ( aBfrInfo->mFreeSlotCnt[SDPST_EXTDIR] == 0 )
     {
-        /* ExtDesc¿¡ ExtDir ÆäÀÌÁö¸¦ »ı¼ºÇØ¼­ ±â·ÏÇØ¾ß ÇÏ´Â °æ¿ì */
+        /* ExtDescì— ExtDir í˜ì´ì§€ë¥¼ ìƒì„±í•´ì„œ ê¸°ë¡í•´ì•¼ í•˜ëŠ” ê²½ìš° */
         aAftInfo->mPageCnt[SDPST_EXTDIR] = 1;
         aAftInfo->mLstPID[SDPST_EXTDIR]  = aExtDesc->mExtFstPID;
         aAftInfo->mSlotNoInExtDir        = 0;
     }
 
-    /* ±âÁ¸ SegHdrÀÇ ÃÑ ÆäÀÌÁö °³¼ö¿¡ ÇÒ´çÇÒ Extent °³¼ö¸¦ ´õÇÑ´Ù. */
+    /* ê¸°ì¡´ SegHdrì˜ ì´ í˜ì´ì§€ ê°œìˆ˜ì— í• ë‹¹í•  Extent ê°œìˆ˜ë¥¼ ë”í•œë‹¤. */
     aAftInfo->mTotPageCnt = aBfrInfo->mTotPageCnt + aExtDesc->mLength;
 
-    /* ÇöÀç Page Range¸¦ ¼±ÅÃÇÑ´Ù. */
+    /* í˜„ì¬ Page Rangeë¥¼ ì„ íƒí•œë‹¤. */
     aAftInfo->mPageRange = selectPageRange( aAftInfo->mTotPageCnt );
 
     if ( (aBfrInfo->mPageRange == aAftInfo->mPageRange) &&
          (aBfrInfo->mFreeSlotCnt[SDPST_LFBMP] > 0) &&
          (aBfrInfo->mFreePageRangeCnt >= aExtDesc->mLength) )
     {
-        /* À§ÀÇ 2-1 »çÇ×¿¡ ÇØ´çÇÑ´Ù. ÀÌÀü lf-bmp¸¦ »ç¿ëÇÏ¸é µÇ¹Ç·Î
-         * »õ·Î »ı¼ºÇÒ bmp ÆäÀÌÁöµéÀÌ ¾ø´Ù. */
+        /* ìœ„ì˜ 2-1 ì‚¬í•­ì— í•´ë‹¹í•œë‹¤. ì´ì „ lf-bmpë¥¼ ì‚¬ìš©í•˜ë©´ ë˜ë¯€ë¡œ
+         * ìƒˆë¡œ ìƒì„±í•  bmp í˜ì´ì§€ë“¤ì´ ì—†ë‹¤. */
         aAftInfo->mPageCnt[SDPST_LFBMP] = 0;
         aAftInfo->mPageCnt[SDPST_ITBMP] = 0;
         aAftInfo->mPageCnt[SDPST_RTBMP] = 0;
 
         if ( aAftInfo->mPageCnt[SDPST_EXTDIR] == 1 )
         {
-            /* »õ·Î »ı¼ºµÇ´Â ExtDir ÆäÀÌÁö´Â ±âÁ¸ LfBMP ¿¡¼­ °ü¸®µÈ´Ù. */
+            /* ìƒˆë¡œ ìƒì„±ë˜ëŠ” ExtDir í˜ì´ì§€ëŠ” ê¸°ì¡´ LfBMP ì—ì„œ ê´€ë¦¬ëœë‹¤. */
             aAftInfo->mLfBMP4ExtDir = aAftInfo->mLstPID[SDPST_LFBMP];
         }
     }
     else
     {
-        /* 1-1, 2-2¿¡ ÇØ´çÇÏ¸ç, »õ·Î¿î lf-bmp¸¦ »ı¼ºÇÏ¿©¾ß ÇÑ´Ù.
-         * ±×·¯¹Ç·Î ÇÊ¿äÇÏ´Ù¸é »óÀ§ bmp ÆäÀÌÁöµéµµ »ı¼ºÇÏ¿©¾ß ÇÑ´Ù. */
+        /* 1-1, 2-2ì— í•´ë‹¹í•˜ë©°, ìƒˆë¡œìš´ lf-bmpë¥¼ ìƒì„±í•˜ì—¬ì•¼ í•œë‹¤.
+         * ê·¸ëŸ¬ë¯€ë¡œ í•„ìš”í•˜ë‹¤ë©´ ìƒìœ„ bmp í˜ì´ì§€ë“¤ë„ ìƒì„±í•˜ì—¬ì•¼ í•œë‹¤. */
         aAftInfo->mPageCnt[SDPST_LFBMP] =
             SDPST_EST_BMP_CNT_4NEWEXT( aExtDesc->mLength,
                                        aAftInfo->mPageRange );
@@ -409,9 +409,9 @@ void sdpstAllocExtInfo::getAftAllocExtInfo( scPageID                 aSegPID,
         if ( aAftInfo->mPageCnt[SDPST_ITBMP] >
                 aBfrInfo->mFreeSlotCnt[SDPST_RTBMP] )
         {
-            // rt-bmps °³¼ö¸¦ ±¸ÇÑ´Ù.
-            // SegHdr ÆäÀÌÁö¿¡ ÀúÀåµÉ itslots°³¼ö¸¦ °í·ÁÇÏ¿© »õ·Î »ı¼ºÇÒ
-            // rt-bmp ÆäÀÌÁö¸¦ °è»êÇÑ´Ù.
+            // rt-bmps ê°œìˆ˜ë¥¼ êµ¬í•œë‹¤.
+            // SegHdr í˜ì´ì§€ì— ì €ì¥ë  itslotsê°œìˆ˜ë¥¼ ê³ ë ¤í•˜ì—¬ ìƒˆë¡œ ìƒì„±í• 
+            // rt-bmp í˜ì´ì§€ë¥¼ ê³„ì‚°í•œë‹¤.
             aAftInfo->mPageCnt[SDPST_RTBMP] =
                 SDPST_EST_BMP_CNT_4NEWEXT( aAftInfo->mPageCnt[SDPST_ITBMP] -
                                            aBfrInfo->mFreeSlotCnt[SDPST_RTBMP],
@@ -431,8 +431,8 @@ void sdpstAllocExtInfo::getAftAllocExtInfo( scPageID                 aSegPID,
 
     if ( aSegPID == SD_NULL_PID )
     {
-        /* Segment Header°¡ ¾ÆÁ÷ »ı¼ºµÇÁö ¾ÊÀº »óÅÂ¿¡¼­´Â ExtentÀÇ
-         * ExtDirÀÇ PID¿Í ExtDesc slotNo¸¦ °­Á¦·Î ¼³Á¤ÇØ¾ßÇÑ´Ù. */
+        /* Segment Headerê°€ ì•„ì§ ìƒì„±ë˜ì§€ ì•Šì€ ìƒíƒœì—ì„œëŠ” Extentì˜
+         * ExtDirì˜ PIDì™€ ExtDesc slotNoë¥¼ ê°•ì œë¡œ ì„¤ì •í•´ì•¼í•œë‹¤. */
         sNewSegPID = aExtDesc->mExtFstPID +
                      (aAftInfo->mPageCnt[SDPST_EXTDIR] +
                       aAftInfo->mPageCnt[SDPST_LFBMP] +
@@ -442,8 +442,8 @@ void sdpstAllocExtInfo::getAftAllocExtInfo( scPageID                 aSegPID,
         aBfrInfo->mLstPID[SDPST_EXTDIR] = sNewSegPID;
         aBfrInfo->mLstPID[SDPST_RTBMP]  = sNewSegPID;
 
-        /* mSegHdrCnt´Â 0 ¶Ç´Â 1 °ª¸¸ °®°í, ÀÌ¹Ì SegHdr°¡ Á¸ÀçÇÏ´Â °æ¿ì Ç×»ó 0
-         * ÀÌ¾î¾ß ÇÑ´Ù. */
+        /* mSegHdrCntëŠ” 0 ë˜ëŠ” 1 ê°’ë§Œ ê°–ê³ , ì´ë¯¸ SegHdrê°€ ì¡´ì¬í•˜ëŠ” ê²½ìš° í•­ìƒ 0
+         * ì´ì–´ì•¼ í•œë‹¤. */
         aAftInfo->mSegHdrCnt            = 1;
         aAftInfo->mLstPID[SDPST_EXTDIR] = sNewSegPID;
         aAftInfo->mLstPID[SDPST_RTBMP]  = sNewSegPID;
@@ -452,7 +452,7 @@ void sdpstAllocExtInfo::getAftAllocExtInfo( scPageID                 aSegPID,
 }
 
  /***********************************************************************
- * Description : Segment¿¡ Extent ÇÒ´ç½Ã ÇÊ¿äÇÑ Á¤º¸¸¦ ¼öÁıÇÑ´Ù.
+ * Description : Segmentì— Extent í• ë‹¹ì‹œ í•„ìš”í•œ ì •ë³´ë¥¼ ìˆ˜ì§‘í•œë‹¤.
  ************************************************************************/
 IDE_RC sdpstAllocExtInfo::getAllocExtInfo( idvSQL                * aStatistics,
                                            scSpaceID               aSpaceID,
@@ -477,8 +477,8 @@ IDE_RC sdpstAllocExtInfo::getAllocExtInfo( idvSQL                * aStatistics,
 }
 
 /***********************************************************************
- * Description : Segment ÃÑ Å©±â¸¦ °í·ÁÇÏ¿© Leaf Bitmap ÆäÀÌÁöÀÇ
- *               Page Range¸¦ °áÁ¤ÇÑ´Ù
+ * Description : Segment ì´ í¬ê¸°ë¥¼ ê³ ë ¤í•˜ì—¬ Leaf Bitmap í˜ì´ì§€ì˜
+ *               Page Rangeë¥¼ ê²°ì •í•œë‹¤
  ************************************************************************/
 sdpstPageRange sdpstAllocExtInfo::selectPageRange( ULong aTotPages )
 {

@@ -78,7 +78,7 @@ IDE_RC rpxReceiver::checkProtocol( cmiProtocolContext *aProtocolContext,
     IDE_EXCEPTION( ERR_READ );
     {
         // To fix BUG-4726
-        // HBT °ËÃâ »ç½Ç¿¡ ´ëÇØ¼­ Á»´õ °ËÁõ ¹× °í¹Î ÇÊ¿äÇÔ... ¤Ñ¤Ì
+        // HBT ê²€ì¶œ ì‚¬ì‹¤ì— ëŒ€í•´ì„œ ì¢€ë” ê²€ì¦ ë° ê³ ë¯¼ í•„ìš”í•¨... ã…¡ã…œ
         if(ideGetErrorCode() == cmERR_ABORT_CONNECTION_CLOSED)
         {
             *aStatus = RP_START_RECV_HBT_OCCURRED;
@@ -144,7 +144,7 @@ IDE_RC rpxReceiver::checkProtocol( cmiProtocolContext *aProtocolContext,
 }
 
 /***********************************************************************
- * Description : Network¸¦ Á¾·áÇÏÁö ¾Ê°í Handshake¸¦ ¼öÇàÇÑ´Ù.
+ * Description : Networkë¥¼ ì¢…ë£Œí•˜ì§€ ì•Šê³  Handshakeë¥¼ ìˆ˜í–‰í•œë‹¤.
  *
  ***********************************************************************/
 IDE_RC rpxReceiver::handshakeWithoutReconnect()

@@ -38,7 +38,7 @@ smmShmKeyList::~smmShmKeyList()
 
 
 /*
- * °øÀ¯¸Ş¸ğ¸® Key List¸¦ »ı¼ºÇÑ´Ù.
+ * ê³µìœ ë©”ëª¨ë¦¬ Key Listë¥¼ ìƒì„±í•œë‹¤.
  */
 IDE_RC smmShmKeyList::initialize()
 {
@@ -63,12 +63,12 @@ IDE_RC smmShmKeyList::initialize()
 }
 
 /*
- * °øÀ¯¸Ş¸ğ¸® Key List¸¦ ÆÄ±«ÇÑ´Ù
+ * ê³µìœ ë©”ëª¨ë¦¬ Key Listë¥¼ íŒŒê´´í•œë‹¤
  */
 IDE_RC smmShmKeyList::destroy()
 {
 
-    // °øÀ¯¸Ş¸ğ¸® Key¸¦ ¸ğµÎ Á¦°Å
+    // ê³µìœ ë©”ëª¨ë¦¬ Keyë¥¼ ëª¨ë‘ ì œê±°
     IDE_TEST( removeAll() != IDE_SUCCESS );
 
     IDE_TEST( mListNodePool.destroy() != IDE_SUCCESS);
@@ -80,9 +80,9 @@ IDE_RC smmShmKeyList::destroy()
 
 
 /*
-    °øÀ¯¸Ş¸ğ¸® Key¸¦ °øÀ¯¸Ş¸ğ¸® Key List¿¡ Ãß°¡ÇÑ´Ù
+    ê³µìœ ë©”ëª¨ë¦¬ Keyë¥¼ ê³µìœ ë©”ëª¨ë¦¬ Key Listì— ì¶”ê°€í•œë‹¤
 
-    aKey [IN] - °øÀ¯¸Ş¸ğ¸® Key List¿¡ Ãß°¡ÇÒ Key
+    aKey [IN] - ê³µìœ ë©”ëª¨ë¦¬ Key Listì— ì¶”ê°€í•  Key
 */
 IDE_RC smmShmKeyList::addKey(key_t aKey)
 {
@@ -123,11 +123,11 @@ IDE_RC smmShmKeyList::addKey(key_t aKey)
 
 
 /*
-    °øÀ¯¸Ş¸ğ¸® Key List¿¡¼­ °øÀ¯¸Ş¸ğ¸® Key¸¦ »©³½´Ù.
+    ê³µìœ ë©”ëª¨ë¦¬ Key Listì—ì„œ ê³µìœ ë©”ëª¨ë¦¬ Keyë¥¼ ë¹¼ë‚¸ë‹¤.
 
-    aKey [OUT] - °øÀ¯¸Ş¸ğ¸® Key List¿¡¼­ »©³½ °øÀ¯¸Ş¸ğ¸® Key
+    aKey [OUT] - ê³µìœ ë©”ëª¨ë¦¬ Key Listì—ì„œ ë¹¼ë‚¸ ê³µìœ ë©”ëª¨ë¦¬ Key
 
-    ¼±ÇàÁ¶°Ç : °øÀ¯¸Ş¸ğ¸® Key List¿¡ °øÀ¯¸Ş¸ğ¸® Key°¡ ÀÖ¾î¾ß ÇÑ´Ù.
+    ì„ í–‰ì¡°ê±´ : ê³µìœ ë©”ëª¨ë¦¬ Key Listì— ê³µìœ ë©”ëª¨ë¦¬ Keyê°€ ìˆì–´ì•¼ í•œë‹¤.
 */
 IDE_RC smmShmKeyList::removeKey(key_t * aKey)
 {
@@ -149,7 +149,7 @@ IDE_RC smmShmKeyList::removeKey(key_t * aKey)
     return IDE_FAILURE;
 }
 /*
-    °øÀ¯¸Ş¸ğ¸® Key List¾ÈÀÇ ¸ğµç Key¸¦ Á¦°ÅÇÑ´Ù
+    ê³µìœ ë©”ëª¨ë¦¬ Key Listì•ˆì˜ ëª¨ë“  Keyë¥¼ ì œê±°í•œë‹¤
  */
 IDE_RC smmShmKeyList::removeAll()
 {
@@ -167,9 +167,9 @@ IDE_RC smmShmKeyList::removeAll()
 
 
 /*
- * °øÀ¯¸Ş¸ğ¸® Key List°¡ ºñ¾îÀÖ´ÂÁö Ã¼Å©ÇÑ´Ù.
- * return [OUT] ID_TRUE - °øÀ¯¸Ş¸ğ¸® Key°¡ ¾ø´Ù
- *              ID_FALSE - °øÀ¯¸Ş¸ğ¸® Key°¡ ÀÖ´Ù.
+ * ê³µìœ ë©”ëª¨ë¦¬ Key Listê°€ ë¹„ì–´ìˆëŠ”ì§€ ì²´í¬í•œë‹¤.
+ * return [OUT] ID_TRUE - ê³µìœ ë©”ëª¨ë¦¬ Keyê°€ ì—†ë‹¤
+ *              ID_FALSE - ê³µìœ ë©”ëª¨ë¦¬ Keyê°€ ìˆë‹¤.
  */
 idBool smmShmKeyList::isEmpty()
 {

@@ -58,7 +58,7 @@ IDE_RC qsx::makeProcInfoMembers( qsxProcInfo * aProcInfo,
     }
 
     // BUG-31422
-    // procedure templateÀÇ statement´Â procedure »ı¼º ÈÄ¿¡´Â ÂüÁ¶ÇÒ ¼ö ¾ø´Ù.
+    // procedure templateì˜ statementëŠ” procedure ìƒì„± í›„ì—ëŠ” ì°¸ì¡°í•  ìˆ˜ ì—†ë‹¤.
     aProcInfo->tmplate->stmt = NULL;
 
     IDE_TEST(qcmPriv::getGranteeOfPSM(
@@ -116,7 +116,7 @@ IDE_RC qsx::makePkgInfoMembers( qsxPkgInfo  * aPkgInfo,
     }
 
     // BUG-31422
-    // procedure templateÀÇ statement´Â procedure »ı¼º ÈÄ¿¡´Â ÂüÁ¶ÇÒ ¼ö ¾ø´Ù.
+    // procedure templateì˜ statementëŠ” procedure ìƒì„± í›„ì—ëŠ” ì°¸ì¡°í•  ìˆ˜ ì—†ë‹¤.
     aPkgInfo->tmplate->stmt = NULL;
 
     IDE_TEST(qcmPriv::getGranteeOfPkg(
@@ -307,7 +307,7 @@ IDE_RC qsx::replaceProcOrFunc(qcStatement * aStatement)
     // fix BUG-18704
     qcg::setPlanTreeState( aStatement, ID_FALSE );
 
-    //To Fix BUG-19839 : ProcedureOID¸¦ »ç¿ëÇÏ¿© ¼ÒÀ¯ÀÚÀÇ UserID¸¦ ¾ò´Â´Ù.
+    //To Fix BUG-19839 : ProcedureOIDë¥¼ ì‚¬ìš©í•˜ì—¬ ì†Œìœ ìì˜ UserIDë¥¼ ì–»ëŠ”ë‹¤.
     IDE_TEST( qcmProc::getProcUserID( aStatement, sProcOID, &sProcUserID )
               != IDE_SUCCESS );
 
@@ -431,7 +431,7 @@ IDE_RC qsx::dropProcOrFunc(qcStatement * aStatement)
                                      sPlanTree->procNamePos.size )
               != IDE_SUCCESS );
 
-    // BUG-36693 procNameÀ» parse tree¿¡¼­ ÂüÁ¶ÇÑ´Ù.
+    // BUG-36693 procNameì„ parse treeì—ì„œ ì°¸ì¡°í•œë‹¤.
     QC_STR_COPY( sProcName, sPlanTree->procNamePos );
 
     // PROJ-2223 audit
@@ -479,8 +479,8 @@ IDE_RC qsx::doRecompile(
               != IDE_SUCCESS );
     sIsStmtAlloc = ID_TRUE;
 
-    // BUG-38800 Server startup½Ã Function-Based Index¿¡¼­ »ç¿ë ÁßÀÎ FunctionÀ»
-    // recompile ÇÒ ¼ö ÀÖ¾î¾ß ÇÑ´Ù.
+    // BUG-38800 Server startupì‹œ Function-Based Indexì—ì„œ ì‚¬ìš© ì¤‘ì¸ Functionì„
+    // recompile í•  ìˆ˜ ìˆì–´ì•¼ í•œë‹¤.
     if ( ( aStatement->session->mQPSpecific.mFlag & QC_SESSION_INTERNAL_LOAD_PROC_MASK )
          == QC_SESSION_INTERNAL_LOAD_PROC_TRUE )
     {
@@ -501,7 +501,7 @@ IDE_RC qsx::doRecompile(
     qcg::getSmiStmt( aStatement, &sSmiStmt );
     qcg::setSmiStmt( &sStatement, sSmiStmt );
 
-    //To Fix BUG-19839 : ProcedureOID¸¦ »ç¿ëÇÏ¿© ¼ÒÀ¯ÀÚÀÇ UserID¸¦ ¾ò´Â´Ù.
+    //To Fix BUG-19839 : ProcedureOIDë¥¼ ì‚¬ìš©í•˜ì—¬ ì†Œìœ ìì˜ UserIDë¥¼ ì–»ëŠ”ë‹¤.
     IDE_TEST( qcmProc::getProcUserID( &sStatement,
                                       aProcOID,
                                       &sProcUserID )
@@ -739,8 +739,8 @@ IDE_RC qsx::alterProcOrFunc(qcStatement * aStatement)
     if ( sProcInfo->isValid == ID_FALSE )
     {
         // proj-1535
-        // vaild »óÅÂÀÇ PSMµµ recompileÀ» Çã¿ëÇÑ´Ù.
-        // refereneced PSMÀ» invalid·Î º¯°æÇÑ´Ù.
+        // vaild ìƒíƒœì˜ PSMë„ recompileì„ í—ˆìš©í•œë‹¤.
+        // refereneced PSMì„ invalidë¡œ ë³€ê²½í•œë‹¤.
         IDE_TEST( qcmUser::getUserID( aStatement,
                                       sPlanTree->userNamePos,
                                       &sUserID ) != IDE_SUCCESS );
@@ -818,7 +818,7 @@ IDE_RC qsx::executeProcOrFunc(qcStatement * aStatement)
                           &sPkgTemplate )
                       != IDE_SUCCESS );
 
-            /* BUG-38844 package subprogramÀÇ plan tree¸¦ Ã£À½ */
+            /* BUG-38844 package subprogramì˜ plan treeë¥¼ ì°¾ìŒ */
             IDE_TEST( qsxPkg::findSubprogramPlanTree(
                           sPkgInfo,
                           sPlanTree->subprogramID,
@@ -1064,7 +1064,7 @@ IDE_RC qsx::callProcWithStack (
 
     // PROJ-1073 Package
     /* QC_PRIVATE_TMPLATE(aStatement)->
-             template.stackBuffer/stack/stackCount/stackRemain ¿øº¹ */
+             template.stackBuffer/stack/stackCount/stackRemain ì›ë³µ */
     QC_CONNECT_TEMPLATE_STACK(    
         QC_PRIVATE_TMPLATE(aStatement),
         sExecInfo.mSourceTemplateStackBuffer,
@@ -1078,7 +1078,7 @@ IDE_RC qsx::callProcWithStack (
 
     // PROJ-1073 Package
     /* QC_PRIVATE_TMPLATE(aStatement)->
-       template.stackBuffer/stack/stackCount/stackRemain ¿øº¹ */
+       template.stackBuffer/stack/stackCount/stackRemain ì›ë³µ */
     QC_CONNECT_TEMPLATE_STACK(
         QC_PRIVATE_TMPLATE(aStatement),
         sExecInfo.mSourceTemplateStackBuffer,
@@ -1173,8 +1173,8 @@ IDE_RC qsx::qsxLoadProcByProcOID( smiStatement   * aSmiStmt,
     UInt                sStage = 0;
 
     // make qcStatement : alloc the members of qcStatement
-    // ½ÇÁ¦ Stack Count´Â ¼öÇà ½ÃÁ¡¿¡ Template º¹»ç¿¡ ÀÇÇÏ¿©
-    // Session Á¤º¸·ÎºÎÅÍ °áÁ¤µÈ´Ù.
+    // ì‹¤ì œ Stack CountëŠ” ìˆ˜í–‰ ì‹œì ì— Template ë³µì‚¬ì— ì˜í•˜ì—¬
+    // Session ì •ë³´ë¡œë¶€í„° ê²°ì •ëœë‹¤.
     IDE_TEST( qcg::allocStatement( &sStatement,
                                    NULL,
                                    NULL,
@@ -1205,7 +1205,7 @@ IDE_RC qsx::qsxLoadProcByProcOID( smiStatement   * aSmiStmt,
     }
 
     // proj-1535
-    // ÀÌ¹Ì »ı¼ºµÈ PSMÀº skip
+    // ì´ë¯¸ ìƒì„±ëœ PSMì€ skip
     if ( sProcObjectInfo == NULL )
     {
         IDE_TEST( qsxProc::createProcObjectInfo( aProcOID, &sProcObjectInfo )
@@ -1284,16 +1284,16 @@ IDE_RC qsxRecompileProc( smiStatement   * aSmiStmt,
     sProcOID = aProc->procOID;
 
     // make qcStatement : alloc the members of qcStatement
-    // ½ÇÁ¦ Stack Count´Â ¼öÇà ½ÃÁ¡¿¡ Template º¹»ç¿¡ ÀÇÇÏ¿©
-    // Session Á¤º¸·ÎºÎÅÍ °áÁ¤µÈ´Ù.
+    // ì‹¤ì œ Stack CountëŠ” ìˆ˜í–‰ ì‹œì ì— Template ë³µì‚¬ì— ì˜í•˜ì—¬
+    // Session ì •ë³´ë¡œë¶€í„° ê²°ì •ëœë‹¤.
     IDE_TEST( qcg::allocStatement( &sStatement,
                                    NULL,
                                    NULL,
                                    NULL ) != IDE_SUCCESS );
 
     // BUG-26017
-    // [PSM] server restart½Ã ¼öÇàµÇ´Â
-    // psm load°úÁ¤¿¡¼­ °ü·ÃÇÁ·ÎÆÛÆ¼¸¦ ÂüÁ¶ÇÏÁö ¸øÇÏ´Â °æ¿ì ÀÖÀ½.
+    // [PSM] server restartì‹œ ìˆ˜í–‰ë˜ëŠ”
+    // psm loadê³¼ì •ì—ì„œ ê´€ë ¨í”„ë¡œí¼í‹°ë¥¼ ì°¸ì¡°í•˜ì§€ ëª»í•˜ëŠ” ê²½ìš° ìˆìŒ.
     sStatement.session->mQPSpecific.mFlag &= ~QC_SESSION_INTERNAL_LOAD_PROC_MASK;
     sStatement.session->mQPSpecific.mFlag |= QC_SESSION_INTERNAL_LOAD_PROC_TRUE;   
 
@@ -1310,10 +1310,10 @@ IDE_RC qsxRecompileProc( smiStatement   * aSmiStmt,
 
     IDE_DASSERT( sProcInfo != NULL );
 
-    // BUG-13707 isValid°¡ ID_FALSE ÀÎ °æ¿ì¿¡ doRecompile ÇÑ´Ù.
+    // BUG-13707 isValidê°€ ID_FALSE ì¸ ê²½ìš°ì— doRecompile í•œë‹¤.
     if (sProcInfo->isValid != ID_TRUE )
     {
-        // server start Áß¿¡´Â doRecompile¿¡ ½ÇÆĞÇÒ ¼ö ÀÖ´Ù.
+        // server start ì¤‘ì—ëŠ” doRecompileì— ì‹¤íŒ¨í•  ìˆ˜ ìˆë‹¤.
         if( qsx::doRecompile( &sStatement,
                               sProcOID,
                               sProcInfo,
@@ -1378,7 +1378,7 @@ IDE_RC qsx::loadAllProc(
               != IDE_SUCCESS );
 
     // BUG-24338
-    // _STORE_PROC_MODE°¡ 1(startup½Ã compile)ÀÌ¸é recompileÀ» ½ÃµµÇÑ´Ù.
+    // _STORE_PROC_MODEê°€ 1(startupì‹œ compile)ì´ë©´ recompileì„ ì‹œë„í•œë‹¤.
     if ( ! ( QCU_STORED_PROC_MODE & QCU_SPM_MASK_DISABLE ) )
     {
         IDE_TEST( doJobForEachProc ( aSmiStmt,
@@ -1476,7 +1476,7 @@ IDE_RC qsx::unloadAllProc(
 
     IDE_TEST( doJobForEachProc ( aSmiStmt,
                                  aIduMem,
-                                 ID_TRUE,  // aIsUseTx, »ç¿ë¾ÈÇÔ.
+                                 ID_TRUE,  // aIsUseTx, ì‚¬ìš©ì•ˆí•¨.
                                  qsxUnloadProc )
               != IDE_SUCCESS );
 
@@ -1519,8 +1519,8 @@ IDE_RC qsx::doPkgRecompile( qcStatement   * aStatement,
                                    aStatement->mStatistics ) != IDE_SUCCESS );
     sIsStmtAlloc = ID_TRUE;
 
-    // BUG-38800 Server startup½Ã Function-Based Index¿¡¼­ »ç¿ë ÁßÀÎ FunctionÀ»
-    // recompile ÇÒ ¼ö ÀÖ¾î¾ß ÇÑ´Ù.
+    // BUG-38800 Server startupì‹œ Function-Based Indexì—ì„œ ì‚¬ìš© ì¤‘ì¸ Functionì„
+    // recompile í•  ìˆ˜ ìˆì–´ì•¼ í•œë‹¤.
     if ( ( aStatement->session->mQPSpecific.mFlag & QC_SESSION_INTERNAL_LOAD_PROC_MASK )
          == QC_SESSION_INTERNAL_LOAD_PROC_TRUE )
     {
@@ -1540,7 +1540,7 @@ IDE_RC qsx::doPkgRecompile( qcStatement   * aStatement,
     qcg::getSmiStmt( aStatement, &sSmiStmt );
     qcg::setSmiStmt( &sStatement, sSmiStmt );
 
-    //To Fix BUG-19839 : PackageOID¸¦ »ç¿ëÇÏ¿© ¼ÒÀ¯ÀÚÀÇ UserID¸¦ ¾ò´Â´Ù.
+    //To Fix BUG-19839 : PackageOIDë¥¼ ì‚¬ìš©í•˜ì—¬ ì†Œìœ ìì˜ UserIDë¥¼ ì–»ëŠ”ë‹¤.
     IDE_TEST( qcmPkg::getPkgUserID( &sStatement,
                                     aPkgOID,
                                     &sPkgUserID )
@@ -1741,8 +1741,8 @@ IDE_RC qsx::qsxLoadPkgByPkgOID( smiStatement   * aSmiStmt,
     UInt                sStage = 0;
 
     // make qcStatement : alloc the members of qcStatement
-    // ½ÇÁ¦ Stack Count´Â ¼öÇà ½ÃÁ¡¿¡ Template º¹»ç¿¡ ÀÇÇÏ¿©
-    // Session Á¤º¸·ÎºÎÅÍ °áÁ¤µÈ´Ù.
+    // ì‹¤ì œ Stack CountëŠ” ìˆ˜í–‰ ì‹œì ì— Template ë³µì‚¬ì— ì˜í•˜ì—¬
+    // Session ì •ë³´ë¡œë¶€í„° ê²°ì •ëœë‹¤.
     IDE_TEST( qcg::allocStatement( &sStatement,
                                    NULL,
                                    NULL,
@@ -1773,7 +1773,7 @@ IDE_RC qsx::qsxLoadPkgByPkgOID( smiStatement   * aSmiStmt,
     }
 
     // proj-1535
-    // ÀÌ¹Ì »ı¼ºµÈ PSMÀº skip
+    // ì´ë¯¸ ìƒì„±ëœ PSMì€ skip
     if ( sPkgObjectInfo == NULL )
     {
         IDE_TEST( qsxPkg::createPkgObjectInfo( aPkgOID, &sPkgObjectInfo )
@@ -1838,16 +1838,16 @@ IDE_RC qsxRecompilePkg( smiStatement   * aSmiStmt,
     sPkgOID = aPkg->pkgOID;
 
     // make qcStatement : alloc the members of qcStatement
-    // ½ÇÁ¦ Stack Count´Â ¼öÇà ½ÃÁ¡¿¡ Template º¹»ç¿¡ ÀÇÇÏ¿©
-    // Session Á¤º¸·ÎºÎÅÍ °áÁ¤µÈ´Ù.
+    // ì‹¤ì œ Stack CountëŠ” ìˆ˜í–‰ ì‹œì ì— Template ë³µì‚¬ì— ì˜í•˜ì—¬
+    // Session ì •ë³´ë¡œë¶€í„° ê²°ì •ëœë‹¤.
     IDE_TEST( qcg::allocStatement( &sStatement,
                                    NULL,
                                    NULL,
                                    NULL ) != IDE_SUCCESS );
 
     // BUG-26017
-    // [PSM] server restart½Ã ¼öÇàµÇ´Â
-    // psm load°úÁ¤¿¡¼­ °ü·ÃÇÁ·ÎÆÛÆ¼¸¦ ÂüÁ¶ÇÏÁö ¸øÇÏ´Â °æ¿ì ÀÖÀ½.
+    // [PSM] server restartì‹œ ìˆ˜í–‰ë˜ëŠ”
+    // psm loadê³¼ì •ì—ì„œ ê´€ë ¨í”„ë¡œí¼í‹°ë¥¼ ì°¸ì¡°í•˜ì§€ ëª»í•˜ëŠ” ê²½ìš° ìˆìŒ.
     sStatement.session->mQPSpecific.mFlag &= ~QC_SESSION_INTERNAL_LOAD_PROC_MASK;
     sStatement.session->mQPSpecific.mFlag |= QC_SESSION_INTERNAL_LOAD_PROC_TRUE;
 
@@ -1864,10 +1864,10 @@ IDE_RC qsxRecompilePkg( smiStatement   * aSmiStmt,
 
     IDE_DASSERT( sPkgInfo != NULL );
 
-    // BUG-13707 isValid°¡ ID_FALSE ÀÎ °æ¿ì¿¡ doPkgRecompile ÇÑ´Ù.
+    // BUG-13707 isValidê°€ ID_FALSE ì¸ ê²½ìš°ì— doPkgRecompile í•œë‹¤.
     if (sPkgInfo->isValid != ID_TRUE )
     {
-        // server start Áß¿¡´Â doPkgRecompile¿¡ ½ÇÆĞÇÒ ¼ö ÀÖ´Ù.
+        // server start ì¤‘ì—ëŠ” doPkgRecompileì— ì‹¤íŒ¨í•  ìˆ˜ ìˆë‹¤.
         if( qsx::doPkgRecompile( &sStatement,
                                  sPkgOID,
                                  sPkgInfo,
@@ -1907,7 +1907,7 @@ IDE_RC qsx::loadAllPkgSpec( smiStatement    * aSmiStmt,
               != IDE_SUCCESS );
 
     // BUG-24338
-    // _STORE_PROC_MODE°¡ 1(startup½Ã compile)ÀÌ¸é recompileÀ» ½ÃµµÇÑ´Ù.
+    // _STORE_PROC_MODEê°€ 1(startupì‹œ compile)ì´ë©´ recompileì„ ì‹œë„í•œë‹¤.
     if ( ! ( QCU_STORED_PROC_MODE & QCU_SPM_MASK_DISABLE ) )
     {
         IDE_TEST( doJobForEachPkg ( aSmiStmt,
@@ -1938,7 +1938,7 @@ IDE_RC qsx::loadAllPkgBody( smiStatement    * aSmiStmt,
               != IDE_SUCCESS );
 
     // BUG-24338
-    // _STORE_PROC_MODE°¡ 1(startup½Ã compile)ÀÌ¸é recompileÀ» ½ÃµµÇÑ´Ù.
+    // _STORE_PROC_MODEê°€ 1(startupì‹œ compile)ì´ë©´ recompileì„ ì‹œë„í•œë‹¤.
     if ( ! ( QCU_STORED_PROC_MODE & QCU_SPM_MASK_DISABLE ) )
     {
         IDE_TEST( doJobForEachPkg ( aSmiStmt,
@@ -2061,16 +2061,16 @@ IDE_RC qsx::rebuildQsxProcInfoPrivilege( qcStatement     * aStatement,
               != IDE_SUCCESS );
 
     // BUG-38994
-    // procedure, functionÀÌ ÂüÁ¶ÇÏ´Â °´Ã¼°¡ Á¸ÀçÇÏÁö ¾ÊÀ¸¸é
-    // ÇØ´ç °´Ã¼ÀÇ »óÅÂ´Â invalid°¡ µÈ´Ù.
-    // °´Ã¼°¡ invalidÇÑ °æ¿ì¿¡´Â meta ableÀÇ Á¤º¸¸¸ º¯°æÇÑ´Ù.
+    // procedure, functionì´ ì°¸ì¡°í•˜ëŠ” ê°ì²´ê°€ ì¡´ì¬í•˜ì§€ ì•Šìœ¼ë©´
+    // í•´ë‹¹ ê°ì²´ì˜ ìƒíƒœëŠ” invalidê°€ ëœë‹¤.
+    // ê°ì²´ê°€ invalidí•œ ê²½ìš°ì—ëŠ” meta ableì˜ ì •ë³´ë§Œ ë³€ê²½í•œë‹¤.
     if ( sProcInfo->isValid == ID_TRUE )
     {
         // to fix BUG-24905
-        // granteeid¸¦ »õ·Î buildÇÏ´Â °æ¿ì
-        // getGranteeOfPSMÇÔ¼ö¸¦ È£ÃâÇÏ¸é
-        // granteeid°¡ »õ·Ó°Ô »ı¼ºµÈ´Ù.
-        // µû¶ó¼­, ±âÁ¸ÀÇ granteeid´Â free
+        // granteeidë¥¼ ìƒˆë¡œ buildí•˜ëŠ” ê²½ìš°
+        // getGranteeOfPSMí•¨ìˆ˜ë¥¼ í˜¸ì¶œí•˜ë©´
+        // granteeidê°€ ìƒˆë¡­ê²Œ ìƒì„±ëœë‹¤.
+        // ë”°ë¼ì„œ, ê¸°ì¡´ì˜ granteeidëŠ” free
         sGranteeID = sProcInfo->granteeID;
 
         // rebuild only privilege information
@@ -2096,8 +2096,8 @@ IDE_RC qsx::rebuildQsxProcInfoPrivilege( qcStatement     * aStatement,
     }
 
     sStage = 0;
-    // unlatch½ÇÆĞÇÏ¸é fatalÀÌ¹Ç·Î
-    // ¸Ş¸ğ¸® ¿øº¹¿¡ ´ëÇØ °í·ÁÇÏÁö ¾Ê´Â´Ù.
+    // unlatchì‹¤íŒ¨í•˜ë©´ fatalì´ë¯€ë¡œ
+    // ë©”ëª¨ë¦¬ ì›ë³µì— ëŒ€í•´ ê³ ë ¤í•˜ì§€ ì•ŠëŠ”ë‹¤.
     IDE_TEST( qsxProc::unlatch( aProcOID ) != IDE_SUCCESS );
 
     return IDE_SUCCESS;
@@ -2388,7 +2388,7 @@ IDE_RC qsx::createPkgBody(qcStatement * aStatement)
     qcg::setPlanTreeState( aStatement, ID_FALSE );
 
     /* BUG-38844
-       create or replace package bodyÀÎ °æ¿ì, spec¿¡ S latch¸¦ Àâ´Â´Ù. */
+       create or replace package bodyì¸ ê²½ìš°, specì— S latchë¥¼ ì¡ëŠ”ë‹¤. */
     IDE_TEST( qsxPkg::latchS( aStatement->spvEnv->pkgPlanTree->pkgOID )
               != IDE_SUCCESS );
     sStage = 4;
@@ -2406,10 +2406,10 @@ IDE_RC qsx::createPkgBody(qcStatement * aStatement)
     sStage = 5;
 
     /* BUG-39094
-       ÇØ´ç package¸¦ related object·Î °¡Áö´Â °´Ã¼ÀÇ »óÅÂ¸¦ invalid »óÅÂ·Î ¹Ù²Û´Ù.
-       ÀÌ´Â package body°¡ ¾ø´Â »óÅÂ¿¡¼­ package¸¦ ÂüÁ¶ÇÏ´Â °´Ã¼¸¦ ¸¸µé ¼ö ÀÖ´Âµ¥,
-       Â÷ÈÄ ½ÇÇà ½Ã package bodyÀÇ Á¤º¸°¡ ¾ø¾î¼­ ¹«ÇÑ rebuild¿¡ ºüÁö´Â °ÍÀ» ¹æÁöÇÏ±â À§ÇØ
-       recompile ½ÃÄÑÁà¾ß ÇÏ±â ¶§¹®ÀÌ´Ù. */
+       í•´ë‹¹ packageë¥¼ related objectë¡œ ê°€ì§€ëŠ” ê°ì²´ì˜ ìƒíƒœë¥¼ invalid ìƒíƒœë¡œ ë°”ê¾¼ë‹¤.
+       ì´ëŠ” package bodyê°€ ì—†ëŠ” ìƒíƒœì—ì„œ packageë¥¼ ì°¸ì¡°í•˜ëŠ” ê°ì²´ë¥¼ ë§Œë“¤ ìˆ˜ ìˆëŠ”ë°,
+       ì°¨í›„ ì‹¤í–‰ ì‹œ package bodyì˜ ì •ë³´ê°€ ì—†ì–´ì„œ ë¬´í•œ rebuildì— ë¹ ì§€ëŠ” ê²ƒì„ ë°©ì§€í•˜ê¸° ìœ„í•´
+       recompile ì‹œì¼œì¤˜ì•¼ í•˜ê¸° ë•Œë¬¸ì´ë‹¤. */
     IDE_TEST( qcmPkg::relSetInvalidPkgOfRelated (
                   aStatement,
                   sPlanTree->userID,
@@ -2455,7 +2455,7 @@ IDE_RC qsx::createPkgBody(qcStatement * aStatement)
     IDE_TEST( qsxPkg::unlatch( sPkgOID ) != IDE_SUCCESS );
 
     /* BUG-38844
-       create or replace package bodyÀÎ °æ¿ì, Àâ¾Ò´ø latchS¸¦ unlatch ÇÑ´Ù. */
+       create or replace package bodyì¸ ê²½ìš°, ì¡ì•˜ë˜ latchSë¥¼ unlatch í•œë‹¤. */
     sStage = 3;
     IDE_TEST( qsxPkg::unlatch( aStatement->spvEnv->pkgPlanTree->pkgOID)
               != IDE_SUCCESS );
@@ -2531,7 +2531,7 @@ IDE_RC qsx::replacePkgOrPkgBody(qcStatement * aStatement)
     sPkgOID = sPlanTree->pkgOID;
 
     /* BUG-38844
-       create or replace package bodyÀÎ °æ¿ì, spec¿¡ S latch¸¦ Àâ´Â´Ù. */
+       create or replace package bodyì¸ ê²½ìš°, specì— S latchë¥¼ ì¡ëŠ”ë‹¤. */
     if ( sPlanTree->objType == QS_PKG_BODY )
     {
         IDE_TEST( qsxPkg::latchS( aStatement->spvEnv->pkgPlanTree->pkgOID )
@@ -2559,7 +2559,7 @@ IDE_RC qsx::replacePkgOrPkgBody(qcStatement * aStatement)
     // fix BUG-18704
     qcg::setPlanTreeState( aStatement, ID_FALSE );
 
-    //To Fix BUG-19839 : ProcedureOID¸¦ »ç¿ëÇÏ¿© ¼ÒÀ¯ÀÚÀÇ UserID¸¦ ¾ò´Â´Ù.
+    //To Fix BUG-19839 : ProcedureOIDë¥¼ ì‚¬ìš©í•˜ì—¬ ì†Œìœ ìì˜ UserIDë¥¼ ì–»ëŠ”ë‹¤.
     IDE_TEST( qcmPkg::getPkgUserID( aStatement,
                                     sPkgOID,
                                     &sPkgUserID )
@@ -2582,10 +2582,10 @@ IDE_RC qsx::replacePkgOrPkgBody(qcStatement * aStatement)
     if ( sPlanTree->objType == QS_PKG_BODY )
     {
         /* BUG-39094
-           ÇØ´ç package¸¦ related object·Î °¡Áö´Â °´Ã¼ÀÇ »óÅÂ¸¦ invalid »óÅÂ·Î ¹Ù²Û´Ù.
-           ÀÌ´Â package body°¡ ¾ø´Â »óÅÂ¿¡¼­ package¸¦ ÂüÁ¶ÇÏ´Â °´Ã¼¸¦ ¸¸µé ¼ö ÀÖ´Âµ¥,
-           Â÷ÈÄ ½ÇÇà ½Ã package bodyÀÇ Á¤º¸°¡ ¾ø¾î¼­ ¹«ÇÑ rebuild¿¡ ºüÁö´Â °ÍÀ» ¹æÁöÇÏ±â À§ÇØ
-           recompile ½ÃÄÑÁà¾ß ÇÏ±â ¶§¹®ÀÌ´Ù. */
+           í•´ë‹¹ packageë¥¼ related objectë¡œ ê°€ì§€ëŠ” ê°ì²´ì˜ ìƒíƒœë¥¼ invalid ìƒíƒœë¡œ ë°”ê¾¼ë‹¤.
+           ì´ëŠ” package bodyê°€ ì—†ëŠ” ìƒíƒœì—ì„œ packageë¥¼ ì°¸ì¡°í•˜ëŠ” ê°ì²´ë¥¼ ë§Œë“¤ ìˆ˜ ìˆëŠ”ë°,
+           ì°¨í›„ ì‹¤í–‰ ì‹œ package bodyì˜ ì •ë³´ê°€ ì—†ì–´ì„œ ë¬´í•œ rebuildì— ë¹ ì§€ëŠ” ê²ƒì„ ë°©ì§€í•˜ê¸° ìœ„í•´
+           recompile ì‹œì¼œì¤˜ì•¼ í•˜ê¸° ë•Œë¬¸ì´ë‹¤. */
         IDE_TEST( qcmPkg::relSetInvalidPkgOfRelated (
                       aStatement,
                       sPlanTree->userID,
@@ -2663,7 +2663,7 @@ IDE_RC qsx::replacePkgOrPkgBody(qcStatement * aStatement)
     IDE_TEST( qsxPkg::unlatch( sPkgOID ) != IDE_SUCCESS );
 
     /* BUG-38844
-       create or replace package bodyÀÎ °æ¿ì, Àâ¾Ò´ø latchS¸¦ unlatch ÇÑ´Ù. */
+       create or replace package bodyì¸ ê²½ìš°, ì¡ì•˜ë˜ latchSë¥¼ unlatch í•œë‹¤. */
     sStage = 0;
     if ( sPlanTree->objType == QS_PKG_BODY )
     {
@@ -2734,11 +2734,11 @@ IDE_RC qsx::dropPkg(qcStatement * aStatement)
               != IDE_SUCCESS );
 
     /* BUG-38844 
-       package´Â package spec / body 2°³ÀÇ °´Ã¼°¡ Á¸ÀçÇÏ¸ç,
-       drop ½Ã À§ÀÇ µÎ °´Ã¼ ¸ğµÎ latch¸¦ µÑ ´Ù Àâ¾Æ¾ß ÇÑ´Ù.
-       latch¸¦ Àâ´Â ¼ø¼­´Â drop package body ÀÌµç drop packageÀÌµç
-       spec->body ¼øÀ¸·Î Àâ´Â´Ù.
-       ´Ü, package bodyÀÇ °æ¿ì, optionalÇÏ±â ¶§¹®¿¡ Á¸Àç À¯¹« ÆÄ¾Ç ÈÄ Àâ¾ÆÁà¾ß ÇÑ´Ù. */
+       packageëŠ” package spec / body 2ê°œì˜ ê°ì²´ê°€ ì¡´ì¬í•˜ë©°,
+       drop ì‹œ ìœ„ì˜ ë‘ ê°ì²´ ëª¨ë‘ latchë¥¼ ë‘˜ ë‹¤ ì¡ì•„ì•¼ í•œë‹¤.
+       latchë¥¼ ì¡ëŠ” ìˆœì„œëŠ” drop package body ì´ë“  drop packageì´ë“ 
+       spec->body ìˆœìœ¼ë¡œ ì¡ëŠ”ë‹¤.
+       ë‹¨, package bodyì˜ ê²½ìš°, optionalí•˜ê¸° ë•Œë¬¸ì— ì¡´ì¬ ìœ ë¬´ íŒŒì•… í›„ ì¡ì•„ì¤˜ì•¼ í•œë‹¤. */
     IDE_TEST( qsxPkg::latchX( sPkgSpecOID,
                               ID_TRUE )
               != IDE_SUCCESS );
@@ -2862,11 +2862,11 @@ IDE_RC qsx::alterPkg( qcStatement * aStatement )
     sPkgBodyOID = sPlanTree->bodyOID;
 
     /* BUG-38844
-       package´Â package spec / body 2°³ÀÇ °´Ã¼°¡ Á¸ÀçÇÏ¸ç,
-       alter ½Ã À§ÀÇ µÎ °´Ã¼ ¸ğµÎ latch¸¦ µÑ ´Ù Àâ¾Æ¾ß ÇÑ´Ù.
-       latch¸¦ Àâ´Â ¼ø¼­´Â alter package compileÀÇ ¸ğµç option¿¡ ´ëÇØ¼­
-       spec->body ¼øÀ¸·Î Àâ´Â´Ù.
-       ´Ü, package bodyÀÇ °æ¿ì, optionalÇÏ±â ¶§¹®¿¡ Á¸Àç À¯¹« ÆÄ¾Ç ÈÄ Àâ¾ÆÁà¾ß ÇÑ´Ù. */
+       packageëŠ” package spec / body 2ê°œì˜ ê°ì²´ê°€ ì¡´ì¬í•˜ë©°,
+       alter ì‹œ ìœ„ì˜ ë‘ ê°ì²´ ëª¨ë‘ latchë¥¼ ë‘˜ ë‹¤ ì¡ì•„ì•¼ í•œë‹¤.
+       latchë¥¼ ì¡ëŠ” ìˆœì„œëŠ” alter package compileì˜ ëª¨ë“  optionì— ëŒ€í•´ì„œ
+       spec->body ìˆœìœ¼ë¡œ ì¡ëŠ”ë‹¤.
+       ë‹¨, package bodyì˜ ê²½ìš°, optionalí•˜ê¸° ë•Œë¬¸ì— ì¡´ì¬ ìœ ë¬´ íŒŒì•… í›„ ì¡ì•„ì¤˜ì•¼ í•œë‹¤. */
     IDE_TEST( qsxPkg::latchX( sPkgSpecOID,
                               ID_TRUE )
               != IDE_SUCCESS );
@@ -2976,7 +2976,7 @@ IDE_RC qsx::dropPkgCommonForMeta( qcStatement * aStatement,
     else
     {
         // Nothing to do.
-        // package body°¡ Áö¿öÁ®µµ package°¡ Áö¿öÁø °ÍÀÌ ¾Æ´Ô.
+        // package bodyê°€ ì§€ì›Œì ¸ë„ packageê°€ ì§€ì›Œì§„ ê²ƒì´ ì•„ë‹˜.
     }
 
     // Drop object should be done at first time
@@ -3115,15 +3115,15 @@ IDE_RC qsx::alterPkgCommon( qcStatement         * aStatement,
          ( sObjType == QS_PKG ) )
     {
         // proj-1535
-        // vaild »óÅÂÀÇ PSMµµ recompileÀ» Çã¿ëÇÑ´Ù.
-        // refereneced PSMÀ» invalid·Î º¯°æÇÑ´Ù.
+        // vaild ìƒíƒœì˜ PSMë„ recompileì„ í—ˆìš©í•œë‹¤.
+        // refereneced PSMì„ invalidë¡œ ë³€ê²½í•œë‹¤.
         IDE_TEST( qcmUser::getUserID( aStatement,
                                       aPlanTree->userNamePos,
                                       &sUserID ) != IDE_SUCCESS );
 
         /* BUG-39340
            ALTER PACKAGE package_name COMPILE SPECIFICATION;
-           ±¸¹® ½Ã invalid µÇ´Â °´Ã¼´Â ÇØ´ç packageÀÇ body °´Ã¼ »ÓÀÌ´Ù. */
+           êµ¬ë¬¸ ì‹œ invalid ë˜ëŠ” ê°ì²´ëŠ” í•´ë‹¹ packageì˜ body ê°ì²´ ë¿ì´ë‹¤. */
         if ( sObjType == QS_PKG )
         {
             IDE_TEST( qcmPkg::relSetInvalidPkgBody(
@@ -3177,9 +3177,9 @@ IDE_RC qsx::alterPkgCommon( qcStatement         * aStatement,
 
 /* PROJ-1073 Package
  * execute pkg1.v1 := 10;
- * µîÀ» Ã³¸®ÇÏ±â À§ÇÑ ÇÔ¼ö 
- * leftNode´Â session¿¡ ÀúÀåµÇ¾î ÀÖ´Â tmplate¿¡ °ªÀÌ´Ù.
- * indirect caculate¸¦ ÅëÇØ¼­ session tmplate¿¡ Á¢±ÙÇÑ´Ù. */
+ * ë“±ì„ ì²˜ë¦¬í•˜ê¸° ìœ„í•œ í•¨ìˆ˜ 
+ * leftNodeëŠ” sessionì— ì €ì¥ë˜ì–´ ìˆëŠ” tmplateì— ê°’ì´ë‹¤.
+ * indirect caculateë¥¼ í†µí•´ì„œ session tmplateì— ì ‘ê·¼í•œë‹¤. */
 IDE_RC qsx::executePkgAssign ( qcStatement * aQcStmt )
 {
     qsExecParseTree   * sParseTree;
@@ -3211,7 +3211,7 @@ IDE_RC qsx::executePkgAssign ( qcStatement * aQcStmt )
     // exec pkg1.v1 := 10;
     sSrcTmplate = QC_PRIVATE_TMPLATE( aQcStmt );
 
-    /* qtcCalculate_indirectColumnÀ» È£ÃâÇÑ´Ù. */
+    /* qtcCalculate_indirectColumnì„ í˜¸ì¶œí•œë‹¤. */
     if( qtc::calculate( sParseTree->leftNode,
                         sSrcTmplate )
         != IDE_SUCCESS )
@@ -3222,7 +3222,7 @@ IDE_RC qsx::executePkgAssign ( qcStatement * aQcStmt )
     }
     else
     {
-        // stackÀÇ µÎ¹øÂ° ºÎºĞ¿¡ rightNodeÀÇ °á°ú°ª ¼¼ÆÃ
+        // stackì˜ ë‘ë²ˆì§¸ ë¶€ë¶„ì— rightNodeì˜ ê²°ê³¼ê°’ ì„¸íŒ…
         sAssignStack[1].column = sSrcTmplate->tmplate.stack[0].column;
         sAssignStack[1].value  = sSrcTmplate->tmplate.stack[0].value;
     }
@@ -3240,7 +3240,7 @@ IDE_RC qsx::executePkgAssign ( qcStatement * aQcStmt )
     }
     else
     {
-        // stackÀÇ Ã¹¹øÂ° ºÎºĞ¿¡ leftNodeÀÇ °á°ú°ª ¼¼ÆÃ
+        // stackì˜ ì²«ë²ˆì§¸ ë¶€ë¶„ì— leftNodeì˜ ê²°ê³¼ê°’ ì„¸íŒ…
         sAssignStack[0].column = sSrcTmplate->tmplate.stack[0].column;
         sAssignStack[0].value  = sSrcTmplate->tmplate.stack[0].value;
     }
@@ -3271,7 +3271,7 @@ IDE_RC qsx::executePkgAssign ( qcStatement * aQcStmt )
     IDE_EXCEPTION( err_pass_wrap_sqltext);
     {
         // To fix BUG-13208
-        // system_À¯Àú°¡ ¸¸µç ÇÁ·Î½ÃÁ®´Â ³»ºÎ°ø°³ ¾ÈÇÔ.
+        // system_ìœ ì €ê°€ ë§Œë“  í”„ë¡œì‹œì ¸ëŠ” ë‚´ë¶€ê³µê°œ ì•ˆí•¨.
         if( sParseTree->userID == QC_SYSTEM_USER_ID )
         {
             qsxEnv::setErrorCode( QC_QSX_ENV(aQcStmt) );
@@ -3321,7 +3321,7 @@ IDE_RC qsx::pkgInitWithNode( qcStatement    * aStatement,
                              qcTemplate     * aPkgTemplate )
 {
     /* BUG-41847
-       package º¯¼öÀÇ default °ªÀ¸·Î functionÀ» »ç¿ëÇÒ ¼ö ÀÖ¾î¾ß ÇÕ´Ï´Ù. */
+       package ë³€ìˆ˜ì˜ default ê°’ìœ¼ë¡œ functionì„ ì‚¬ìš©í•  ìˆ˜ ìˆì–´ì•¼ í•©ë‹ˆë‹¤. */
     qsPkgParseTree  * sOriPkgPlanTree       = NULL;
     qsProcParseTree * sOriProcPlanTree      = NULL;
     SInt              sOriOthersClauseDepth = 0;
@@ -3384,7 +3384,7 @@ IDE_RC qsx::pkgInitWithStack( qcStatement    * aStatement,
               != IDE_SUCCESS );
 
     /* QC_PRIVATE_TMPLATE(aStatement)->
-             template.stackBuffer/stack/stackCount/stackRemain ¿øº¹ */
+             template.stackBuffer/stack/stackCount/stackRemain ì›ë³µ */
     QC_CONNECT_TEMPLATE_STACK(    
         QC_PRIVATE_TMPLATE(aStatement),
         sExecInfo.mSourceTemplateStackBuffer,
@@ -3397,7 +3397,7 @@ IDE_RC qsx::pkgInitWithStack( qcStatement    * aStatement,
     IDE_EXCEPTION_END;
 
     /* QC_PRIVATE_TMPLATE(aStatement)->
-             template.stackBuffer/stack/stackCount/stackRemain ¿øº¹ */
+             template.stackBuffer/stack/stackCount/stackRemain ì›ë³µ */
     QC_CONNECT_TEMPLATE_STACK(    
         QC_PRIVATE_TMPLATE(aStatement),
         sExecInfo.mSourceTemplateStackBuffer,
@@ -3428,16 +3428,16 @@ IDE_RC qsx::rebuildQsxPkgInfoPrivilege( qcStatement     * aStatement,
               != IDE_SUCCESS );
 
     // BUG-38994
-    // package°¡ ÂüÁ¶ÇÏ´Â °´Ã¼°¡ Á¸ÀçÇÏÁö ¾ÊÀ¸¸é
-    // ÇØ´ç °´Ã¼ÀÇ »óÅÂ´Â invalid°¡ µÈ´Ù.
-    // °´Ã¼°¡ invalidÇÑ °æ¿ì¿¡´Â meta ableÀÇ Á¤º¸¸¸ º¯°æÇÑ´Ù.
+    // packageê°€ ì°¸ì¡°í•˜ëŠ” ê°ì²´ê°€ ì¡´ì¬í•˜ì§€ ì•Šìœ¼ë©´
+    // í•´ë‹¹ ê°ì²´ì˜ ìƒíƒœëŠ” invalidê°€ ëœë‹¤.
+    // ê°ì²´ê°€ invalidí•œ ê²½ìš°ì—ëŠ” meta ableì˜ ì •ë³´ë§Œ ë³€ê²½í•œë‹¤.
     if ( sPkgInfo->isValid == ID_TRUE )
     {
         // to fix BUG-24905
-        // granteeid¸¦ »õ·Î buildÇÏ´Â °æ¿ì
-        // getGranteeOfPkgÇÔ¼ö¸¦ È£ÃâÇÏ¸é
-        // granteeid°¡ »õ·Ó°Ô »ı¼ºµÈ´Ù.
-        // µû¶ó¼­, ±âÁ¸ÀÇ granteeid´Â free
+        // granteeidë¥¼ ìƒˆë¡œ buildí•˜ëŠ” ê²½ìš°
+        // getGranteeOfPkgí•¨ìˆ˜ë¥¼ í˜¸ì¶œí•˜ë©´
+        // granteeidê°€ ìƒˆë¡­ê²Œ ìƒì„±ëœë‹¤.
+        // ë”°ë¼ì„œ, ê¸°ì¡´ì˜ granteeidëŠ” free
         sGranteeID = sPkgInfo->granteeID;
 
         // rebuild only privilege information
@@ -3463,8 +3463,8 @@ IDE_RC qsx::rebuildQsxPkgInfoPrivilege( qcStatement     * aStatement,
     }
 
     sStage = 0;
-    // unlatch½ÇÆĞÇÏ¸é fatalÀÌ¹Ç·Î
-    // ¸Ş¸ğ¸® ¿øº¹¿¡ ´ëÇØ °í·ÁÇÏÁö ¾Ê´Â´Ù.
+    // unlatchì‹¤íŒ¨í•˜ë©´ fatalì´ë¯€ë¡œ
+    // ë©”ëª¨ë¦¬ ì›ë³µì— ëŒ€í•´ ê³ ë ¤í•˜ì§€ ì•ŠëŠ”ë‹¤.
     IDE_TEST( qsxPkg::unlatch( aPkgOID ) != IDE_SUCCESS );
 
     return IDE_SUCCESS;
@@ -3606,7 +3606,7 @@ IDE_RC qsx::makeNewPreparedMem( qcStatement * aStatement )
     return IDE_FAILURE;
 }
 
-/* BUG-43113 autonomous transactionÀ¸·Î psm ½ÇÇà */
+/* BUG-43113 autonomous transactionìœ¼ë¡œ psm ì‹¤í–‰ */
 IDE_RC qsx::execAT( qsxExecutorInfo * aExecInfo,
                     qcStatement     * aQcStmt,
                     mtcStack        * aStack,

@@ -48,7 +48,7 @@ mtfModule mtfDivide = {
     1|MTC_NODE_OPERATOR_FUNCTION|
         MTC_NODE_PRINT_FMT_MISC,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
+    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìê°€ ì•„ë‹˜)
     mtfDivideFunctionName,
     NULL,
     mtfDivideInitialize,
@@ -94,7 +94,7 @@ static mtfSubModule* mtfGroupTable[MTD_GROUP_MAXIMUM][MTD_GROUP_MAXIMUM] = {
 };
 
 // BUG-41994
-// high precision¿ë group table
+// high precisionìš© group table
 static mtfSubModule mtfNP[1] = {
     { NULL, mtfDivideEstimateFloat }
 };
@@ -479,8 +479,8 @@ IDE_RC mtfDivideCalculateDouble( mtcNode*     aNode,
            *(mtdDoubleType*)aStack[1].value / *(mtdDoubleType*)aStack[2].value;
 
         // fix BUG-13757
-        // double'0' / double'-1' = double'-0' ÀÌ ³ª¿À¹Ç·Î
-        // -0 °ªÀ» 0 °ªÀ¸·Î Ã³¸®ÇÏ±â À§ÇÑ ÄÚµåÀÓ.
+        // double'0' / double'-1' = double'-0' ì´ ë‚˜ì˜¤ë¯€ë¡œ
+        // -0 ê°’ì„ 0 ê°’ìœ¼ë¡œ ì²˜ë¦¬í•˜ê¸° ìœ„í•œ ì½”ë“œì„.
         /* PATCH(BEGIN): GNU MATH LIBRARY - REMOVE MINUS ZERO */
         if( *(mtdDoubleType*)aStack[0].value == 0 )
         {

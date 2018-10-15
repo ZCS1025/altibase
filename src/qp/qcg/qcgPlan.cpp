@@ -37,7 +37,7 @@ IDE_RC qcgPlan::allocAndInitPlanEnv( qcStatement * aStatement )
  * Description : PROJ-1436 SQL Plan Cache
  *
  * Implementation :
- *     statement¿¡ environment ±â·ÏÀ» À§ÇÑ ÀÚ·á±¸Á¶¸¦ »ı¼ºÇÑ´Ù.
+ *     statementì— environment ê¸°ë¡ì„ ìœ„í•œ ìë£Œêµ¬ì¡°ë¥¼ ìƒì„±í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -54,7 +54,7 @@ IDE_RC qcgPlan::allocAndInitPlanEnv( qcStatement * aStatement )
         != IDE_SUCCESS);
 
     // PROJ-2163
-    // Plan cache ¿¡ ³ÖÀ» ¹ÙÀÎµå Á¤º¸¸¦ À§ÇÑ ¸Ş¸ğ¸® ÇÒ´ç
+    // Plan cache ì— ë„£ì„ ë°”ì¸ë“œ ì •ë³´ë¥¼ ìœ„í•œ ë©”ëª¨ë¦¬ í• ë‹¹
     sBindParamCount = qcg::getBindCount( aStatement );
 
     if( sBindParamCount > 0 )
@@ -91,7 +91,7 @@ void qcgPlan::initPlanProperty( qcPlanProperty * aProperty )
  * Description : PROJ-1436 SQL Plan Cache
  *
  * Implementation :
- *     plan property¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+ *     plan propertyë¥¼ ì´ˆê¸°í™”í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -106,18 +106,18 @@ void qcgPlan::startIndirectRefFlag( qcStatement * aStatement,
  * Description : PROJ-1436 SQL Plan Cache
  *
  * Implementation :
- *     plan »ı¼º½Ã ÂüÁ¶ÇÏ´Â °´Ã¼¿¡ ´ëÇÏ¿© °£Á¢ ÂüÁ¶°¡ ½ÃÀÛµÇ¾úÀ½À»
- *     ±â·ÏÇÑ´Ù. ÀÌ·¯ÇÑ Á¤º¸´Â plan »ı¼º½Ã¿¡¸¸ »ç¿ëµÇ´Â ÀÓ½ÃÁ¤º¸·Î
- *     ´Ù¸¥ Á¤º¸µéÃ³·³ template¿¡ ±â·ÏÇÑ´Ù.
+ *     plan ìƒì„±ì‹œ ì°¸ì¡°í•˜ëŠ” ê°ì²´ì— ëŒ€í•˜ì—¬ ê°„ì ‘ ì°¸ì¡°ê°€ ì‹œì‘ë˜ì—ˆìŒì„
+ *     ê¸°ë¡í•œë‹¤. ì´ëŸ¬í•œ ì •ë³´ëŠ” plan ìƒì„±ì‹œì—ë§Œ ì‚¬ìš©ë˜ëŠ” ì„ì‹œì •ë³´ë¡œ
+ *     ë‹¤ë¥¸ ì •ë³´ë“¤ì²˜ëŸ¼ templateì— ê¸°ë¡í•œë‹¤.
  *
- *     environment´Â ´ÙÀ½ ¼¼ °¡Áö·Î ±¸ºĞÇÒ ¼ö ÀÖ´Ù.
- *     1. plan »ı¼º¿¡ ÂüÁ¶µÇ´Â session & system property
- *     2. plan »ı¼º¿¡ ÂüÁ¶µÇ´Â µ¥ÀÌÅÍº£ÀÌ½º °´Ã¼
- *     3. plan »ı¼º¿¡ ÂüÁ¶µÇ´Â °´Ã¼¿¡ ´ëÇÑ ÇÊ¿äÇÑ ±ÇÇÑ
+ *     environmentëŠ” ë‹¤ìŒ ì„¸ ê°€ì§€ë¡œ êµ¬ë¶„í•  ìˆ˜ ìˆë‹¤.
+ *     1. plan ìƒì„±ì— ì°¸ì¡°ë˜ëŠ” session & system property
+ *     2. plan ìƒì„±ì— ì°¸ì¡°ë˜ëŠ” ë°ì´í„°ë² ì´ìŠ¤ ê°ì²´
+ *     3. plan ìƒì„±ì— ì°¸ì¡°ë˜ëŠ” ê°ì²´ì— ëŒ€í•œ í•„ìš”í•œ ê¶Œí•œ
  *
- *     ÀÌÁß¿¡¼­ 1,2¹øÀº °£Á¢ÀûÀ¸·Î ÂüÁ¶µÇ´õ¶óµµ environment·Î½á
- *     ±â·ÏµÇ¾î¸¸¾ß ÇÏ³ª, 3¹øÀº °£Á¢ÀûÀ¸·Î ÂüÁ¶µÇ´Â °´Ã¼¿¡ ´ëÇÏ¿©
- *     ±â·ÏÇØ¼­´Â ¾ÈµÇ±â ¶§¹®¿¡ ÀÌ¸¦ ±¸ºĞÇØ¾ß ÇÑ´Ù.
+ *     ì´ì¤‘ì—ì„œ 1,2ë²ˆì€ ê°„ì ‘ì ìœ¼ë¡œ ì°¸ì¡°ë˜ë”ë¼ë„ environmentë¡œì¨
+ *     ê¸°ë¡ë˜ì–´ë§Œì•¼ í•˜ë‚˜, 3ë²ˆì€ ê°„ì ‘ì ìœ¼ë¡œ ì°¸ì¡°ë˜ëŠ” ê°ì²´ì— ëŒ€í•˜ì—¬
+ *     ê¸°ë¡í•´ì„œëŠ” ì•ˆë˜ê¸° ë•Œë¬¸ì— ì´ë¥¼ êµ¬ë¶„í•´ì•¼ í•œë‹¤.
  *
  ***********************************************************************/
     
@@ -150,8 +150,8 @@ void qcgPlan::endIndirectRefFlag( qcStatement * aStatement,
  * Description : PROJ-1436 SQL Plan Cache
  *
  * Implementation :
- *     plan »ı¼º½Ã ÂüÁ¶ÇÏ´Â °´Ã¼¿¡ ´ëÇÏ¿© °£Á¢ ÂüÁ¶°¡ ³¡³µÀ½À»
- *     ±â·ÏÇÑ´Ù.
+ *     plan ìƒì„±ì‹œ ì°¸ì¡°í•˜ëŠ” ê°ì²´ì— ëŒ€í•˜ì—¬ ê°„ì ‘ ì°¸ì¡°ê°€ ëë‚¬ìŒì„
+ *     ê¸°ë¡í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -174,7 +174,7 @@ void qcgPlan::registerPlanProperty( qcStatement        * aStatement,
  * Description : PROJ-1436 SQL Plan Cache
  *
  * Implementation :
- *     plan »ı¼º¿¡ ÂüÁ¶µÇ´Â session & system property¸¦ ±â·ÏÇÑ´Ù.
+ *     plan ìƒì„±ì— ì°¸ì¡°ë˜ëŠ” session & system propertyë¥¼ ê¸°ë¡í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -186,7 +186,7 @@ void qcgPlan::registerPlanProperty( qcStatement        * aStatement,
          (QC_PRIVATE_TMPLATE(aStatement) == NULL) &&
          (aStatement->myPlan->planEnv != NULL) )
     {
-        // hard prepare¿¡¼­¸¸ ±â·ÏÇÑ´Ù.
+        // hard prepareì—ì„œë§Œ ê¸°ë¡í•œë‹¤.
 
         sProperty = & aStatement->myPlan->planEnv->planProperty;
 
@@ -285,7 +285,7 @@ void qcgPlan::registerPlanProperty( qcStatement        * aStatement,
 
                 break;
 
-            // BUG-23780 TEMP_TBS_MEMORY ÈùÆ® Àû¿ë¿©ºÎ¸¦ property·Î Á¦°ø
+            // BUG-23780 TEMP_TBS_MEMORY íŒíŠ¸ ì ìš©ì—¬ë¶€ë¥¼ propertyë¡œ ì œê³µ
             case PLAN_PROPERTY_OPTIMIZER_DEFAULT_TEMP_TBS_TYPE:
 
                 QCG_REGISTER_PLAN_PROPERTY( optimizerDefaultTempTbsTypeRef,
@@ -649,7 +649,7 @@ void qcgPlan::registerPlanProperty( qcStatement        * aStatement,
                                             optimizerInnerJoinPushDown,
                                             QCU_OPTIMIZER_INNER_JOIN_PUSH_DOWN );
                 break;
-            // BUG-43068 Indexable order by °³¼±
+            // BUG-43068 Indexable order by ê°œì„ 
             case PLAN_PROPERTY_OPTIMIZER_ORDER_PUSH_DOWN:
 
                 QCG_REGISTER_PLAN_PROPERTY( optimizerOrderPushDownRef,
@@ -696,7 +696,7 @@ void qcgPlan::registerPlanProperty( qcStatement        * aStatement,
                                             optimizerDBMSStatPolicy,
                                             QCU_OPTIMIZER_DBMS_STAT_POLICY );
                 break;
-            /* BUG-44850 Index NL , Inverse index NL Á¶ÀÎ ÃÖÀûÈ­ ¼öÇà½Ã ºñ¿ëÀÌ µ¿ÀÏÇÏ¸é primary key¸¦ ¿ì¼±ÀûÀ¸·Î ¼±ÅÃ. */
+            /* BUG-44850 Index NL , Inverse index NL ì¡°ì¸ ìµœì í™” ìˆ˜í–‰ì‹œ ë¹„ìš©ì´ ë™ì¼í•˜ë©´ primary keyë¥¼ ìš°ì„ ì ìœ¼ë¡œ ì„ íƒ. */
             case PLAN_PROPERTY_OPTIMIZER_INDEX_NL_JOIN_ACCESS_METHOD_POLICY:
                 QCG_REGISTER_PLAN_PROPERTY( optimizerIndexNLJoinAccessMethodPolicyRef,
                                             optimizerIndexNLJoinAccessMethodPolicy,
@@ -739,8 +739,8 @@ IDE_RC qcgPlan::registerPlanTable( qcStatement  * aStatement,
  * Description : PROJ-1436 SQL Plan Cache
  *
  * Implementation :
- *     plan »ı¼º¿¡ ÂüÁ¶µÇ´Â µ¥ÀÌÅÍº£ÀÌ½º °´Ã¼Áß table, view, queue,
- *     dblink °´Ã¼ÀÇ ÂüÁ¶¸¦ ±â·ÏÇÑ´Ù.
+ *     plan ìƒì„±ì— ì°¸ì¡°ë˜ëŠ” ë°ì´í„°ë² ì´ìŠ¤ ê°ì²´ì¤‘ table, view, queue,
+ *     dblink ê°ì²´ì˜ ì°¸ì¡°ë¥¼ ê¸°ë¡í•œë‹¤.
  *
  ***********************************************************************/
     
@@ -752,11 +752,11 @@ IDE_RC qcgPlan::registerPlanTable( qcStatement  * aStatement,
          (QC_PRIVATE_TMPLATE(aStatement) == NULL) &&
          (aStatement->myPlan->planEnv != NULL) )
     {
-        // hard prepare¿¡¼­¸¸ ±â·ÏÇÑ´Ù. Äõ¸®¿¡¼­ °£Á¢ ÂüÁ¶ÇÏ´Â °´Ã¼µéµµ
-        // ¸ğµÎ ±â·ÏÇÑ´Ù. view °´Ã¼ÀÇ °æ¿ì viewÀÇ invalid¸¦ ¼³Á¤ÇÒ¶§
-        // view¸¦ Á÷Á¢ ÂüÁ¶ÇÏ´Â view¿¡ ´ëÇØ¼­¸¸ invalid·Î ¹Ù²Ù±â ¶§¹®¿¡
-        // view¸¦ °£Á¢ ÂüÁ¶ÇÏ´Â view¿¡ ´ëÇØ¼­´Â viewÀÇ handle°ú SCN¸¸À¸·Î´Â
-        // ÀÌ¸¦ ÆÇ´ÜÇÒ ¼ö ¾ø±â¶§¹®ÀÌ´Ù.
+        // hard prepareì—ì„œë§Œ ê¸°ë¡í•œë‹¤. ì¿¼ë¦¬ì—ì„œ ê°„ì ‘ ì°¸ì¡°í•˜ëŠ” ê°ì²´ë“¤ë„
+        // ëª¨ë‘ ê¸°ë¡í•œë‹¤. view ê°ì²´ì˜ ê²½ìš° viewì˜ invalidë¥¼ ì„¤ì •í• ë•Œ
+        // viewë¥¼ ì§ì ‘ ì°¸ì¡°í•˜ëŠ” viewì— ëŒ€í•´ì„œë§Œ invalidë¡œ ë°”ê¾¸ê¸° ë•Œë¬¸ì—
+        // viewë¥¼ ê°„ì ‘ ì°¸ì¡°í•˜ëŠ” viewì— ëŒ€í•´ì„œëŠ” viewì˜ handleê³¼ SCNë§Œìœ¼ë¡œëŠ”
+        // ì´ë¥¼ íŒë‹¨í•  ìˆ˜ ì—†ê¸°ë•Œë¬¸ì´ë‹¤.
         sObject = & aStatement->myPlan->planEnv->planObject;
 
         for ( sTable = sObject->tableList;
@@ -796,7 +796,7 @@ IDE_RC qcgPlan::registerPlanTable( qcStatement  * aStatement,
             sTable->tableSCN    = aTableSCN;
             sTable->next        = sObject->tableList;
 
-            // ¿¬°áÇÑ´Ù.
+            // ì—°ê²°í•œë‹¤.
             sObject->tableList = sTable;
         }
         else
@@ -824,8 +824,8 @@ IDE_RC qcgPlan::registerPlanSequence( qcStatement * aStatement,
  * Description : PROJ-1436 SQL Plan Cache
  *
  * Implementation :
- *     plan »ı¼º¿¡ ÂüÁ¶µÇ´Â µ¥ÀÌÅÍº£ÀÌ½º °´Ã¼Áß sequence °´Ã¼ÀÇ ÂüÁ¶¸¦
- *     ±â·ÏÇÑ´Ù.
+ *     plan ìƒì„±ì— ì°¸ì¡°ë˜ëŠ” ë°ì´í„°ë² ì´ìŠ¤ ê°ì²´ì¤‘ sequence ê°ì²´ì˜ ì°¸ì¡°ë¥¼
+ *     ê¸°ë¡í•œë‹¤.
  *
  ***********************************************************************/
     
@@ -838,7 +838,7 @@ IDE_RC qcgPlan::registerPlanSequence( qcStatement * aStatement,
          (QC_PRIVATE_TMPLATE(aStatement) == NULL) &&
          (aStatement->myPlan->planEnv != NULL) )
     {
-        // hard prepare¿¡¼­¸¸ ±â·ÏÇÑ´Ù.
+        // hard prepareì—ì„œë§Œ ê¸°ë¡í•œë‹¤.
         sObject = & aStatement->myPlan->planEnv->planObject;
 
         for ( sSequence = sObject->sequenceList;
@@ -865,14 +865,14 @@ IDE_RC qcgPlan::registerPlanSequence( qcStatement * aStatement,
                                                      (void**)&sSequence )
                       != IDE_SUCCESS);
 
-            /* Slot ÀçÈ°¿ëÀ» °¨ÁöÇÏ±â À§ÇØ Plan µî·Ï´ç½ÃÀÇ
-             * Slot SCN °ªÀ» ±â·ÏÇØ µÎ¾î¾ß ÇÑ´Ù. */
+            /* Slot ì¬í™œìš©ì„ ê°ì§€í•˜ê¸° ìœ„í•´ Plan ë“±ë¡ë‹¹ì‹œì˜
+             * Slot SCN ê°’ì„ ê¸°ë¡í•´ ë‘ì–´ì•¼ í•œë‹¤. */
             sSequence->sequenceHandle = aSequenceHandle;
             sSCN                      = smiGetRowSCN( aSequenceHandle );
             sSequence->sequenceSCN    = sSCN;
             sSequence->next           = sObject->sequenceList;
 
-            // ¿¬°áÇÑ´Ù.
+            // ì—°ê²°í•œë‹¤.
             sObject->sequenceList = sSequence;
         }
         else
@@ -900,8 +900,8 @@ IDE_RC qcgPlan::registerPlanProc( qcStatement     * aStatement,
  * Description : PROJ-1436 SQL Plan Cache
  *
  * Implementation :
- *     plan »ı¼º¿¡ ÂüÁ¶µÇ´Â µ¥ÀÌÅÍº£ÀÌ½º °´Ã¼Áß PSM °´Ã¼ÀÇ ÂüÁ¶¸¦
- *     ±â·ÏÇÑ´Ù.
+ *     plan ìƒì„±ì— ì°¸ì¡°ë˜ëŠ” ë°ì´í„°ë² ì´ìŠ¤ ê°ì²´ì¤‘ PSM ê°ì²´ì˜ ì°¸ì¡°ë¥¼
+ *     ê¸°ë¡í•œë‹¤.
  *
  ***********************************************************************/
     
@@ -916,7 +916,7 @@ IDE_RC qcgPlan::registerPlanProc( qcStatement     * aStatement,
          (QC_PRIVATE_TMPLATE(aStatement) == NULL) &&
          (aStatement->myPlan->planEnv != NULL) )
     {
-        // hard prepare¿¡¼­¸¸ ±â·ÏÇÑ´Ù.
+        // hard prepareì—ì„œë§Œ ê¸°ë¡í•œë‹¤.
 
         sObject = & aStatement->myPlan->planEnv->planObject;
 
@@ -963,14 +963,14 @@ IDE_RC qcgPlan::registerPlanProc( qcStatement     * aStatement,
                     sProc->modifyCount = sProcPlanList->modifyCount;
                     sProc->next = sObject->procList;
 
-                    /* Slot ÀçÈ°¿ëÀ» °¨ÁöÇÏ±â À§ÇØ Plan µî·Ï´ç½ÃÀÇ
-                     * Slot SCN °ªÀ» ±â·ÏÇØ µÎ¾î¾ß ÇÑ´Ù. */
+                    /* Slot ì¬í™œìš©ì„ ê°ì§€í•˜ê¸° ìœ„í•´ Plan ë“±ë¡ë‹¹ì‹œì˜
+                     * Slot SCN ê°’ì„ ê¸°ë¡í•´ ë‘ì–´ì•¼ í•œë‹¤. */
                     sProcHandle       = (void*)smiGetTable( sProc->procID );
                     sSCN              = smiGetRowSCN( sProcHandle );
                     sProc->procHandle = sProcHandle;
                     sProc->procSCN    = sSCN;
 
-                    // ¿¬°áÇÑ´Ù.
+                    // ì—°ê²°í•œë‹¤.
                     sObject->procList = sProc;
                 }
                 else
@@ -1008,11 +1008,11 @@ IDE_RC qcgPlan::registerPlanSynonym( qcStatement           * aStatement,
  * Description : PROJ-1436 SQL Plan Cache
  *
  * Implementation :
- *     plan »ı¼º¿¡ ÂüÁ¶µÇ´Â µ¥ÀÌÅÍº£ÀÌ½º °´Ã¼Áß synonym °´Ã¼ÀÇ ÂüÁ¶¸¦
- *     ±â·ÏÇÏ¸ç, synonym °´Ã¼¿Í ±× ÃÖÁ¾ °´Ã¼°¡ table °´Ã¼³ª sequence
- *     °´Ã¼ÀÏ¶§ ÀÌÀÇ ÂüÁ¶¸¦ ±â·ÏÇÑ´Ù.
- *     synonym °´Ã¼ÀÇ ±â·ÏÀº synonymÀÌ °¡¸£Å°´Â ÃÖÁ¾ °´Ã¼¿Í ÇÔ²²
- *     ±â·ÏÇÏ¿© »èÁ¦³ª º¯°æÀ¯¹«¸¦ ÆÇ´ÜÇÒ ¼ö ÀÖµµ·Ï ÇÑ´Ù.
+ *     plan ìƒì„±ì— ì°¸ì¡°ë˜ëŠ” ë°ì´í„°ë² ì´ìŠ¤ ê°ì²´ì¤‘ synonym ê°ì²´ì˜ ì°¸ì¡°ë¥¼
+ *     ê¸°ë¡í•˜ë©°, synonym ê°ì²´ì™€ ê·¸ ìµœì¢… ê°ì²´ê°€ table ê°ì²´ë‚˜ sequence
+ *     ê°ì²´ì¼ë•Œ ì´ì˜ ì°¸ì¡°ë¥¼ ê¸°ë¡í•œë‹¤.
+ *     synonym ê°ì²´ì˜ ê¸°ë¡ì€ synonymì´ ê°€ë¥´í‚¤ëŠ” ìµœì¢… ê°ì²´ì™€ í•¨ê»˜
+ *     ê¸°ë¡í•˜ì—¬ ì‚­ì œë‚˜ ë³€ê²½ìœ ë¬´ë¥¼ íŒë‹¨í•  ìˆ˜ ìˆë„ë¡ í•œë‹¤.
  *
  ***********************************************************************/
     
@@ -1026,7 +1026,7 @@ IDE_RC qcgPlan::registerPlanSynonym( qcStatement           * aStatement,
          (QC_PRIVATE_TMPLATE(aStatement) == NULL) &&
          (aStatement->myPlan->planEnv != NULL) )
     {
-        // hard prepare¿¡¼­¸¸ ±â·ÏÇÑ´Ù.
+        // hard prepareì—ì„œë§Œ ê¸°ë¡í•œë‹¤.
 
         if ( aSynonymInfo->isSynonymName == ID_TRUE )
         {
@@ -1125,7 +1125,7 @@ IDE_RC qcgPlan::registerPlanSynonym( qcStatement           * aStatement,
                 
                 sSynonym->next = sObject->synonymList;
                 
-                // ¿¬°áÇÑ´Ù.
+                // ì—°ê²°í•œë‹¤.
                 sObject->synonymList = sSynonym;
             }
             else
@@ -1158,9 +1158,9 @@ IDE_RC qcgPlan::registerPlanProcSynonym( qcStatement              * aStatement,
  * Description : PROJ-1436 SQL Plan Cache
  *
  * Implementation :
- *     plan »ı¼º¿¡ ÂüÁ¶µÇ´Â µ¥ÀÌÅÍº£ÀÌ½º °´Ã¼Áß synonym °´Ã¼ÀÇ ÂüÁ¶¸¦
- *     ±â·ÏÇÏ¸ç, synonym °´Ã¼¿Í ±× ÃÖÁ¾ °´Ã¼°¡ PSM °´Ã¼ÀÏ¶§ ÀÌÀÇ
- *     ÂüÁ¶¸¦ ±â·ÏÇÑ´Ù.
+ *     plan ìƒì„±ì— ì°¸ì¡°ë˜ëŠ” ë°ì´í„°ë² ì´ìŠ¤ ê°ì²´ì¤‘ synonym ê°ì²´ì˜ ì°¸ì¡°ë¥¼
+ *     ê¸°ë¡í•˜ë©°, synonym ê°ì²´ì™€ ê·¸ ìµœì¢… ê°ì²´ê°€ PSM ê°ì²´ì¼ë•Œ ì´ì˜
+ *     ì°¸ì¡°ë¥¼ ê¸°ë¡í•œë‹¤.
  *
  ***********************************************************************/
     
@@ -1175,7 +1175,7 @@ IDE_RC qcgPlan::registerPlanProcSynonym( qcStatement              * aStatement,
          (QC_PRIVATE_TMPLATE(aStatement) == NULL) &&
          (aStatement->myPlan->planEnv != NULL) )
     {
-        // hard prepare¿¡¼­¸¸ ±â·ÏÇÑ´Ù.
+        // hard prepareì—ì„œë§Œ ê¸°ë¡í•œë‹¤.
 
         sObject = & aStatement->myPlan->planEnv->planObject;
 
@@ -1183,7 +1183,7 @@ IDE_RC qcgPlan::registerPlanProcSynonym( qcStatement              * aStatement,
               sObjectSynonym != NULL;
               sObjectSynonym = sObjectSynonym->next )
         {
-            // aObjectSynonymListÀº ÀÌ¹Ì Áßº¹ÀÌ Á¦°ÅµÇ¾ú´Ù.
+            // aObjectSynonymListì€ ì´ë¯¸ ì¤‘ë³µì´ ì œê±°ë˜ì—ˆë‹¤.
             IDU_FIT_POINT( "qcgPlan::registerPlanProcSynonym::alloc::sSynonym",
                             idERR_ABORT_InsufficientMemory );
 
@@ -1207,8 +1207,8 @@ IDE_RC qcgPlan::registerPlanProcSynonym( qcStatement              * aStatement,
             sSynonym->sequenceHandle = NULL;
             sSynonym->objectID = (smOID) sObjectSynonym->objectID;
 
-            /* Slot ÀçÈ°¿ëÀ» °¨ÁöÇÏ±â À§ÇØ Plan µî·Ï´ç½ÃÀÇ
-             * Slot SCN °ªÀ» ±â·ÏÇØ µÎ¾î¾ß ÇÑ´Ù. */
+            /* Slot ì¬í™œìš©ì„ ê°ì§€í•˜ê¸° ìœ„í•´ Plan ë“±ë¡ë‹¹ì‹œì˜
+             * Slot SCN ê°’ì„ ê¸°ë¡í•´ ë‘ì–´ì•¼ í•œë‹¤. */
             sObjectHandle          = (void*)smiGetTable( sSynonym->objectID );
             sSCN                   = smiGetRowSCN( sObjectHandle );
             sSynonym->objectHandle = sObjectHandle;
@@ -1216,7 +1216,7 @@ IDE_RC qcgPlan::registerPlanProcSynonym( qcStatement              * aStatement,
             
             sSynonym->next = sObject->synonymList;
                 
-            // ¿¬°áÇÑ´Ù.
+            // ì—°ê²°í•œë‹¤.
             sObject->synonymList = sSynonym;
         }
     }
@@ -1242,8 +1242,8 @@ IDE_RC qcgPlan::registerPlanPrivTable( qcStatement         * aStatement,
  * Description : PROJ-1436 SQL Plan Cache
  *
  * Implementation :
- *     plan »ı¼º¿¡ ÂüÁ¶µÇ´Â table, view, queue, dblink °´Ã¼¿¡ ´ëÇÑ
- *     ÇÊ¿äÇÑ ±ÇÇÑÀ» ±â·ÏÇÑ´Ù.
+ *     plan ìƒì„±ì— ì°¸ì¡°ë˜ëŠ” table, view, queue, dblink ê°ì²´ì— ëŒ€í•œ
+ *     í•„ìš”í•œ ê¶Œí•œì„ ê¸°ë¡í•œë‹¤.
  *
  ***********************************************************************/
     
@@ -1257,8 +1257,8 @@ IDE_RC qcgPlan::registerPlanPrivTable( qcStatement         * aStatement,
          (QC_SHARED_TMPLATE(aStatement)->indirectRef == ID_FALSE) &&
          (aStatement->myPlan->planEnv != NULL) )
     {
-        // hard prepare¿¡¼­¸¸ ±â·ÏÇÑ´Ù. ¶ÇÇÑ Äõ¸®¿¡¼­ °£Á¢ ÂüÁ¶µÇ´Â
-        // °´Ã¼¿¡ ´ëÇÑ ±ÇÇÑÀº ±â·ÏÇÏÁö ¾Ê´Â´Ù.
+        // hard prepareì—ì„œë§Œ ê¸°ë¡í•œë‹¤. ë˜í•œ ì¿¼ë¦¬ì—ì„œ ê°„ì ‘ ì°¸ì¡°ë˜ëŠ”
+        // ê°ì²´ì— ëŒ€í•œ ê¶Œí•œì€ ê¸°ë¡í•˜ì§€ ì•ŠëŠ”ë‹¤.
 
         sPrivilege = & aStatement->myPlan->planEnv->planPrivilege;
 
@@ -1295,13 +1295,13 @@ IDE_RC qcgPlan::registerPlanPrivTable( qcStatement         * aStatement,
             sTablePriv->tableName[QC_MAX_OBJECT_NAME_LEN] = '\0';
             sTablePriv->privilegeCount = aTableInfo->privilegeCount;
 
-            // soft prepareÈÄ ±ÇÇÑ °Ë»ç½Ã cached meta¸¦ ÂüÁ¶ÇÏÁö ¾Ê°í
-            // ±ÇÇÑÀ» °Ë»çÇÏ±â À§ÇØ tableInfoÀÇ ±ÇÇÑ¸¸À» º¹»çÇØ¼­ »ç¿ëÇÑ´Ù.
-            // ÀÌ°ÍÀº validatePlan¿¡¼­ table °´Ã¼¿¡ ´ëÇÑ À¯È¿¼ºÀ» °Ë»çÇßÀ¸¹Ç·Î
-            // tableInfoÀÇ º¹»çº»À» »ç¿ëÇÏ´õ¶óµµ ±ÇÇÑ °Ë»ç°¡ °¡´ÉÇÏ´Ù.
-            // ¸¸ÀÏ validatePlanÈÄ¿¡ table °´Ã¼°¡ º¯°æµÇ¾î ±ÇÇÑ Á¤º¸°¡
-            // À¯È¿ÇÏÁö ¾ÊÀº °æ¿ì¶ó ÇÒÁö¶óµµ prepare ÈÄ¿¡ table °´Ã¼°¡
-            // º¯°æµÈ °æ¿ì¿Í ³í¸®ÀûÀ¸·Î µ¿ÀÏÇÏ¹Ç·Î ¹®Á¦°¡ ¾ø´Ù.
+            // soft prepareí›„ ê¶Œí•œ ê²€ì‚¬ì‹œ cached metaë¥¼ ì°¸ì¡°í•˜ì§€ ì•Šê³ 
+            // ê¶Œí•œì„ ê²€ì‚¬í•˜ê¸° ìœ„í•´ tableInfoì˜ ê¶Œí•œë§Œì„ ë³µì‚¬í•´ì„œ ì‚¬ìš©í•œë‹¤.
+            // ì´ê²ƒì€ validatePlanì—ì„œ table ê°ì²´ì— ëŒ€í•œ ìœ íš¨ì„±ì„ ê²€ì‚¬í–ˆìœ¼ë¯€ë¡œ
+            // tableInfoì˜ ë³µì‚¬ë³¸ì„ ì‚¬ìš©í•˜ë”ë¼ë„ ê¶Œí•œ ê²€ì‚¬ê°€ ê°€ëŠ¥í•˜ë‹¤.
+            // ë§Œì¼ validatePlaní›„ì— table ê°ì²´ê°€ ë³€ê²½ë˜ì–´ ê¶Œí•œ ì •ë³´ê°€
+            // ìœ íš¨í•˜ì§€ ì•Šì€ ê²½ìš°ë¼ í• ì§€ë¼ë„ prepare í›„ì— table ê°ì²´ê°€
+            // ë³€ê²½ëœ ê²½ìš°ì™€ ë…¼ë¦¬ì ìœ¼ë¡œ ë™ì¼í•˜ë¯€ë¡œ ë¬¸ì œê°€ ì—†ë‹¤.
             if ( sTablePriv->privilegeCount > 0 )
             {
                 IDU_FIT_POINT( "qcgPlan::registerPlanPrivTable::alloc::privilegeInfo",
@@ -1329,7 +1329,7 @@ IDE_RC qcgPlan::registerPlanPrivTable( qcStatement         * aStatement,
             
             sTablePriv->next = sPrivilege->tableList;
             
-            // ¿¬°áÇÑ´Ù.
+            // ì—°ê²°í•œë‹¤.
             sPrivilege->tableList = sTablePriv;
         }
         else
@@ -1357,7 +1357,7 @@ IDE_RC qcgPlan::registerPlanPrivSequence( qcStatement            * aStatement,
  * Description : PROJ-1436 SQL Plan Cache
  *
  * Implementation :
- *     plan »ı¼º¿¡ ÂüÁ¶µÇ´Â sequence °´Ã¼¿¡ ´ëÇÑ ÇÊ¿äÇÑ ±ÇÇÑÀ» ±â·ÏÇÑ´Ù.
+ *     plan ìƒì„±ì— ì°¸ì¡°ë˜ëŠ” sequence ê°ì²´ì— ëŒ€í•œ í•„ìš”í•œ ê¶Œí•œì„ ê¸°ë¡í•œë‹¤.
  *
  ***********************************************************************/
     
@@ -1370,8 +1370,8 @@ IDE_RC qcgPlan::registerPlanPrivSequence( qcStatement            * aStatement,
          (QC_SHARED_TMPLATE(aStatement)->indirectRef == ID_FALSE) &&
          (aStatement->myPlan->planEnv != NULL) )
     {
-        // hard prepare¿¡¼­¸¸ ±â·ÏÇÑ´Ù. ¶ÇÇÑ Äõ¸®¿¡¼­ °£Á¢ ÂüÁ¶µÇ´Â
-        // °´Ã¼¿¡ ´ëÇÑ ±ÇÇÑÀº ±â·ÏÇÏÁö ¾Ê´Â´Ù.
+        // hard prepareì—ì„œë§Œ ê¸°ë¡í•œë‹¤. ë˜í•œ ì¿¼ë¦¬ì—ì„œ ê°„ì ‘ ì°¸ì¡°ë˜ëŠ”
+        // ê°ì²´ì— ëŒ€í•œ ê¶Œí•œì€ ê¸°ë¡í•˜ì§€ ì•ŠëŠ”ë‹¤.
 
         sPrivilege = & aStatement->myPlan->planEnv->planPrivilege;
 
@@ -1410,7 +1410,7 @@ IDE_RC qcgPlan::registerPlanPrivSequence( qcStatement            * aStatement,
             sSequencePriv->name[QC_MAX_OBJECT_NAME_LEN] = '\0';
             sSequencePriv->next = sPrivilege->sequenceList;
             
-            // ¿¬°áÇÑ´Ù.
+            // ì—°ê²°í•œë‹¤.
             sPrivilege->sequenceList = sSequencePriv;
         }
         else
@@ -1439,8 +1439,8 @@ IDE_RC qcgPlan::registerPlanPkg( qcStatement     * aStatement,
  * Description : PROJ-1436 SQL Plan Cache
  *
  * Implementation :
- *     plan »ı¼º¿¡ ÂüÁ¶µÇ´Â µ¥ÀÌÅÍº£ÀÌ½º °´Ã¼Áß PACKAGE °´Ã¼ÀÇ ÂüÁ¶¸¦
- *     ±â·ÏÇÑ´Ù.
+ *     plan ìƒì„±ì— ì°¸ì¡°ë˜ëŠ” ë°ì´í„°ë² ì´ìŠ¤ ê°ì²´ì¤‘ PACKAGE ê°ì²´ì˜ ì°¸ì¡°ë¥¼
+ *     ê¸°ë¡í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -1457,7 +1457,7 @@ IDE_RC qcgPlan::registerPlanPkg( qcStatement     * aStatement,
          (QC_PRIVATE_TMPLATE(aStatement) == NULL) &&
          (aStatement->myPlan->planEnv != NULL) )
     {
-        // hard prepare¿¡¼­¸¸ ±â·ÏÇÑ´Ù.
+        // hard prepareì—ì„œë§Œ ê¸°ë¡í•œë‹¤.
 
         sObject = & aStatement->myPlan->planEnv->planObject;
 
@@ -1467,7 +1467,7 @@ IDE_RC qcgPlan::registerPlanPkg( qcStatement     * aStatement,
         {
             sExist = ID_FALSE;
 
-            // PackageÀÇ subprogram¸¸ pkgPist¿¡ Ãß°¡
+            // Packageì˜ subprogramë§Œ pkgPistì— ì¶”ê°€
             if( sPlanList->objectType == QS_PKG )
             {
                 for ( sPkg = sObject->pkgList;
@@ -1503,18 +1503,18 @@ IDE_RC qcgPlan::registerPlanPkg( qcStatement     * aStatement,
                     sPkg->modifyCount = sPlanList->modifyCount;
                     sPkg->next        = sObject->pkgList;
 
-                    /* Slot ÀçÈ°¿ëÀ» °¨ÁöÇÏ±â À§ÇØ Plan µî·Ï´ç½ÃÀÇ
-                     * Slot SCN °ªÀ» ±â·ÏÇØ µÎ¾î¾ß ÇÑ´Ù. */
+                    /* Slot ì¬í™œìš©ì„ ê°ì§€í•˜ê¸° ìœ„í•´ Plan ë“±ë¡ë‹¹ì‹œì˜
+                     * Slot SCN ê°’ì„ ê¸°ë¡í•´ ë‘ì–´ì•¼ í•œë‹¤. */
                     sPkgHandle      = (void*)smiGetTable( sPkg->pkgID );
                     sSCN            = smiGetRowSCN( sPkgHandle );
                     sPkg->pkgHandle = sPkgHandle;
                     sPkg->pkgSCN    = sSCN;
 
-                    // ¿¬°áÇÑ´Ù.
+                    // ì—°ê²°í•œë‹¤.
                     sObject->pkgList = sPkg;
 
                     /* BUG-37250
-                       package body¸¦ qcgEnvPkgList¿¡ Ãß°¡ÇÏ¿© »èÁ¦ ¹× º¯°æ ¿©ºÎ °Ë»ç. */
+                       package bodyë¥¼ qcgEnvPkgListì— ì¶”ê°€í•˜ì—¬ ì‚­ì œ ë° ë³€ê²½ ì—¬ë¶€ ê²€ì‚¬. */
                     if ( sPlanList->pkgBodyOID != QS_EMPTY_OID )
                     {
                         IDE_DASSERT( sPkgInfo->objType == QS_PKG );
@@ -1532,14 +1532,14 @@ IDE_RC qcgPlan::registerPlanPkg( qcStatement     * aStatement,
                         sPkg->modifyCount = sPlanList->modifyCount;
                         sPkg->next        = sObject->pkgList;
 
-                        /* Slot ÀçÈ°¿ëÀ» °¨ÁöÇÏ±â À§ÇØ Plan µî·Ï´ç½ÃÀÇ
-                         * Slot SCN °ªÀ» ±â·ÏÇØ µÎ¾î¾ß ÇÑ´Ù. */
+                        /* Slot ì¬í™œìš©ì„ ê°ì§€í•˜ê¸° ìœ„í•´ Plan ë“±ë¡ë‹¹ì‹œì˜
+                         * Slot SCN ê°’ì„ ê¸°ë¡í•´ ë‘ì–´ì•¼ í•œë‹¤. */
                         sPkgHandle      = (void*)smiGetTable( sPkg->pkgID );
                         sSCN            = smiGetRowSCN( sPkgHandle );
                         sPkg->pkgHandle = sPkgHandle;
                         sPkg->pkgSCN    = sSCN;
 
-                        // ¿¬°áÇÑ´Ù.
+                        // ì—°ê²°í•œë‹¤.
                         sObject->pkgList = sPkg;
                     }
                     else
@@ -1579,9 +1579,9 @@ IDE_RC qcgPlan::isMatchedPlanProperty( qcStatement    * aStatement,
  * Description : PROJ-1436 SQL Plan Cache
  *
  * Implementation :
- *     plan cache¿¡ cacheµÈ environment(plan property)¿Í soft prepare½ÃÀÇ
- *     qcStatement°¡ °¡Áø environment(plan property)¸¦ ºñ±³ÇÏ¿©
- *     ¿Ã¹Ù¸¥ planÀÎÁö °Ë»çÇÑ´Ù.
+ *     plan cacheì— cacheëœ environment(plan property)ì™€ soft prepareì‹œì˜
+ *     qcStatementê°€ ê°€ì§„ environment(plan property)ë¥¼ ë¹„êµí•˜ì—¬
+ *     ì˜¬ë°”ë¥¸ planì¸ì§€ ê²€ì‚¬í•œë‹¤.
  *
  ***********************************************************************/
     
@@ -1596,7 +1596,7 @@ IDE_RC qcgPlan::isMatchedPlanProperty( qcStatement    * aStatement,
     sProperty = aStatement->propertyEnv;
 
     ////////////////////////////////////////////////////////////////////
-    // QCG_MATCHED_PLAN_PROPERTY ¸ÅÅ©·Î·Î Ã¼Å©ÇÒ¼ö ÀÖ´Â °æ¿ì
+    // QCG_MATCHED_PLAN_PROPERTY ë§¤í¬ë¡œë¡œ ì²´í¬í• ìˆ˜ ìˆëŠ” ê²½ìš°
     ////////////////////////////////////////////////////////////////////
 
     QCG_MATCHED_PLAN_PROPERTY( userIDRef,
@@ -1623,7 +1623,7 @@ IDE_RC qcgPlan::isMatchedPlanProperty( qcStatement    * aStatement,
                                normalFormMaximum,
                                QCG_GET_SESSION_NORMALFORM_MAXIMUM(aStatement) );
 
-    // BUG-23780 TEMP_TBS_MEMORY ÈùÆ® Àû¿ë¿©ºÎ¸¦ property·Î Á¦°ø
+    // BUG-23780 TEMP_TBS_MEMORY íŒíŠ¸ ì ìš©ì—¬ë¶€ë¥¼ propertyë¡œ ì œê³µ
     QCG_MATCHED_PLAN_PROPERTY( optimizerDefaultTempTbsTypeRef,
                                optimizerDefaultTempTbsType,
                                QCG_GET_SESSION_OPTIMIZER_DEFAULT_TEMP_TBS_TYPE(aStatement) );
@@ -1809,7 +1809,7 @@ IDE_RC qcgPlan::isMatchedPlanProperty( qcStatement    * aStatement,
                                optimizerInnerJoinPushDown,
                                QCU_OPTIMIZER_INNER_JOIN_PUSH_DOWN );
 
-    // BUG-43068 Indexable order by °³¼±
+    // BUG-43068 Indexable order by ê°œì„ 
     QCG_MATCHED_PLAN_PROPERTY( optimizerOrderPushDownRef,
                                optimizerOrderPushDown,
                                QCU_OPTIMIZER_ORDER_PUSH_DOWN );
@@ -1848,7 +1848,7 @@ IDE_RC qcgPlan::isMatchedPlanProperty( qcStatement    * aStatement,
                                optimizerDBMSStatPolicy,
                                QCU_OPTIMIZER_DBMS_STAT_POLICY );
 
-    /* BUG-44850 Index NL , Inverse index NL Á¶ÀÎ ÃÖÀûÈ­ ¼öÇà½Ã ºñ¿ëÀÌ µ¿ÀÏÇÏ¸é primary key¸¦ ¿ì¼±ÀûÀ¸·Î ¼±ÅÃ. */
+    /* BUG-44850 Index NL , Inverse index NL ì¡°ì¸ ìµœì í™” ìˆ˜í–‰ì‹œ ë¹„ìš©ì´ ë™ì¼í•˜ë©´ primary keyë¥¼ ìš°ì„ ì ìœ¼ë¡œ ì„ íƒ. */
     QCG_MATCHED_PLAN_PROPERTY( optimizerIndexNLJoinAccessMethodPolicyRef,
                                optimizerIndexNLJoinAccessMethodPolicy,
                                QCU_OPTIMIZER_INDEX_NL_JOIN_ACCESS_METHOD_POLICY );
@@ -1868,7 +1868,7 @@ IDE_RC qcgPlan::isMatchedPlanProperty( qcStatement    * aStatement,
                                QCU_SHARD_AGGREGATION_TRANSFORM_DISABLE );
 
     ////////////////////////////////////////////////////////////////////
-    // QCG_MATCHED_PLAN_PROPERTY ¸ÅÅ©·Î·Î Ã¼Å©ÇÒ¼ö ¾ø´Â °æ¿ì
+    // QCG_MATCHED_PLAN_PROPERTY ë§¤í¬ë¡œë¡œ ì²´í¬í• ìˆ˜ ì—†ëŠ” ê²½ìš°
     ////////////////////////////////////////////////////////////////////
 
 
@@ -2030,10 +2030,10 @@ IDE_RC qcgPlan::isMatchedPlanProperty( qcStatement    * aStatement,
         /* Nothing to do */
     }
 
-    // BUG-38148 ÇÁ·ÎÆÛÆ¼ Ãß°¡ÀÛ¾÷½Ã ½Ç¼ö¸¦ ÇÏ¸é DASSERT ¿¡ °É¸®µµ·Ï ÇÑ´Ù.
+    // BUG-38148 í”„ë¡œí¼í‹° ì¶”ê°€ì‘ì—…ì‹œ ì‹¤ìˆ˜ë¥¼ í•˜ë©´ DASSERT ì— ê±¸ë¦¬ë„ë¡ í•œë‹¤.
     IDE_DASSERT( sMatchedCount == PLAN_PROPERTY_MAX);
 
-    // BUG-45385 ÇöÀç ¼¼¼Ç¿¡¼­ plan cache »ç¿ëÀ» ±İÁö½ÃÅ² °æ¿ì
+    // BUG-45385 í˜„ì¬ ì„¸ì…˜ì—ì„œ plan cache ì‚¬ìš©ì„ ê¸ˆì§€ì‹œí‚¨ ê²½ìš°
     if ( ( aStatement->session->mQPSpecific.mFlag & QC_SESSION_PLAN_CACHE_MASK ) ==
          QC_SESSION_PLAN_CACHE_DISABLE )
     {
@@ -2060,13 +2060,13 @@ IDE_RC qcgPlan::rebuildPlanProperty( qcStatement    * aStatement,
  * Description : PROJ-1436 SQL Plan Cache
  *
  * Implementation :
- *     plan cache¿¡ cacheµÈ environment(plan property)¸¦ °»½ÅÇÑ´Ù.
+ *     plan cacheì— cacheëœ environment(plan property)ë¥¼ ê°±ì‹ í•œë‹¤.
  *
- *     rebuild½Ã planÀÌ Àç»ı¼ºµÇ´Âµ¥ ÀÌ¶§ ÀÌÀü plan¿¡¼­ ÂüÁ¶ÇÏ´ø
- *     session & system property°¡ °è¼Ó Àû¿ëµÇ´Â °ÍÀÌ ¾Æ´Ï¶ó,
- *     rebuild ½ÃÁ¡¿¡¼­ÀÇ »õ·Î¿î property°¡ Àû¿ëµÇ±â ¶§¹®¿¡
- *     plan cache¿¡ cacheµÈ environment(plan property)µµ »õ·Î¿î
- *     property·Î °»½ÅÇØ¾ß ÇÑ´Ù.
+ *     rebuildì‹œ planì´ ì¬ìƒì„±ë˜ëŠ”ë° ì´ë•Œ ì´ì „ planì—ì„œ ì°¸ì¡°í•˜ë˜
+ *     session & system propertyê°€ ê³„ì† ì ìš©ë˜ëŠ” ê²ƒì´ ì•„ë‹ˆë¼,
+ *     rebuild ì‹œì ì—ì„œì˜ ìƒˆë¡œìš´ propertyê°€ ì ìš©ë˜ê¸° ë•Œë¬¸ì—
+ *     plan cacheì— cacheëœ environment(plan property)ë„ ìƒˆë¡œìš´
+ *     propertyë¡œ ê°±ì‹ í•´ì•¼ í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -2075,7 +2075,7 @@ IDE_RC qcgPlan::rebuildPlanProperty( qcStatement    * aStatement,
     UInt     sRebuildCount  = 0;
 
     ////////////////////////////////////////////////////////////////////
-    // QCG_REBUILD_PLAN_PROPERTY ¸ÅÅ©·Î·Î Ã¼Å©ÇÒ¼ö ÀÖ´Â °æ¿ì
+    // QCG_REBUILD_PLAN_PROPERTY ë§¤í¬ë¡œë¡œ ì²´í¬í• ìˆ˜ ìˆëŠ” ê²½ìš°
     ////////////////////////////////////////////////////////////////////
 
     QCG_REBUILD_PLAN_PROPERTY( userIDRef,
@@ -2111,7 +2111,7 @@ IDE_RC qcgPlan::rebuildPlanProperty( qcStatement    * aStatement,
                                optimizerSimpleViewMergingDisable,
                                QCU_OPTIMIZER_SIMPLE_VIEW_MERGING_DISABLE );
 
-    // BUG-23780 TEMP_TBS_MEMORY ÈùÆ® Àû¿ë¿©ºÎ¸¦ property·Î Á¦°ø
+    // BUG-23780 TEMP_TBS_MEMORY íŒíŠ¸ ì ìš©ì—¬ë¶€ë¥¼ propertyë¡œ ì œê³µ
     QCG_REBUILD_PLAN_PROPERTY( optimizerDefaultTempTbsTypeRef,
                                optimizerDefaultTempTbsType,
                                QCG_GET_SESSION_OPTIMIZER_DEFAULT_TEMP_TBS_TYPE(aStatement) );
@@ -2290,7 +2290,7 @@ IDE_RC qcgPlan::rebuildPlanProperty( qcStatement    * aStatement,
                                optimizerInnerJoinPushDown,
                                QCU_OPTIMIZER_INNER_JOIN_PUSH_DOWN );
 
-    // BUG-43068 Indexable order by °³¼±
+    // BUG-43068 Indexable order by ê°œì„ 
     QCG_REBUILD_PLAN_PROPERTY( optimizerOrderPushDownRef,
                                optimizerOrderPushDown,
                                QCU_OPTIMIZER_ORDER_PUSH_DOWN );
@@ -2328,7 +2328,7 @@ IDE_RC qcgPlan::rebuildPlanProperty( qcStatement    * aStatement,
                                optimizerDBMSStatPolicy,
                                QCU_OPTIMIZER_DBMS_STAT_POLICY );
 
-    /* BUG-44850 Index NL , Inverse index NL Á¶ÀÎ ÃÖÀûÈ­ ¼öÇà½Ã ºñ¿ëÀÌ µ¿ÀÏÇÏ¸é primary key¸¦ ¿ì¼±ÀûÀ¸·Î ¼±ÅÃ. */
+    /* BUG-44850 Index NL , Inverse index NL ì¡°ì¸ ìµœì í™” ìˆ˜í–‰ì‹œ ë¹„ìš©ì´ ë™ì¼í•˜ë©´ primary keyë¥¼ ìš°ì„ ì ìœ¼ë¡œ ì„ íƒ. */
     QCG_REBUILD_PLAN_PROPERTY( optimizerIndexNLJoinAccessMethodPolicyRef,
                                optimizerIndexNLJoinAccessMethodPolicy,
                                QCU_OPTIMIZER_INDEX_NL_JOIN_ACCESS_METHOD_POLICY );
@@ -2348,7 +2348,7 @@ IDE_RC qcgPlan::rebuildPlanProperty( qcStatement    * aStatement,
                                QCU_SHARD_AGGREGATION_TRANSFORM_DISABLE );
 
     ////////////////////////////////////////////////////////////////////
-    // QCG_REBUILD_PLAN_PROPERTY ¸ÅÅ©·Î·Î Ã¼Å©ÇÒ¼ö ¾ø´Â °æ¿ì
+    // QCG_REBUILD_PLAN_PROPERTY ë§¤í¬ë¡œë¡œ ì²´í¬í• ìˆ˜ ì—†ëŠ” ê²½ìš°
     ////////////////////////////////////////////////////////////////////
 
     ++sRebuildCount;
@@ -2417,7 +2417,7 @@ IDE_RC qcgPlan::rebuildPlanProperty( qcStatement    * aStatement,
         /* Nothing to do */
     }
 
-    // BUG-38148 ÇÁ·ÎÆÛÆ¼ Ãß°¡ÀÛ¾÷½Ã ½Ç¼ö¸¦ ÇÏ¸é DASSERT ¿¡ °É¸®µµ·Ï ÇÑ´Ù.
+    // BUG-38148 í”„ë¡œí¼í‹° ì¶”ê°€ì‘ì—…ì‹œ ì‹¤ìˆ˜ë¥¼ í•˜ë©´ DASSERT ì— ê±¸ë¦¬ë„ë¡ í•œë‹¤.
     IDE_DASSERT( sRebuildCount == PLAN_PROPERTY_MAX );
 
     return IDE_SUCCESS;
@@ -2431,7 +2431,7 @@ IDE_RC qcgPlan::validatePlanTable( qcgEnvTableList * aTableList,
  * Description : PROJ-1436 SQL Plan Cache
  *
  * Implementation :
- *     environment¿¡ ±â·ÏµÈ table °´Ã¼¿¡ ´ëÇÏ¿© »èÁ¦³ª º¯°æÀ» °Ë»çÇÑ´Ù.
+ *     environmentì— ê¸°ë¡ëœ table ê°ì²´ì— ëŒ€í•˜ì—¬ ì‚­ì œë‚˜ ë³€ê²½ì„ ê²€ì‚¬í•œë‹¤.
  *
  ***********************************************************************/
     
@@ -2442,7 +2442,7 @@ IDE_RC qcgPlan::validatePlanTable( qcgEnvTableList * aTableList,
           sTable != NULL;
           sTable = sTable->next )
     {
-        // »èÁ¦¿Í º¯°æÀ» °¨ÁöÇÑ´Ù.
+        // ì‚­ì œì™€ ë³€ê²½ì„ ê°ì§€í•œë‹¤.
         if ( smiValidateObjects( sTable->tableHandle,
                                  sTable->tableSCN )
              != IDE_SUCCESS )
@@ -2469,7 +2469,7 @@ IDE_RC qcgPlan::validatePlanSequence( qcgEnvSequenceList * aSequenceList,
  * Description : PROJ-1436 SQL Plan Cache
  *
  * Implementation :
- *     environment¿¡ ±â·ÏµÈ sequence °´Ã¼¿¡ ´ëÇÏ¿© »èÁ¦³ª º¯°æÀ» °Ë»çÇÑ´Ù.
+ *     environmentì— ê¸°ë¡ëœ sequence ê°ì²´ì— ëŒ€í•˜ì—¬ ì‚­ì œë‚˜ ë³€ê²½ì„ ê²€ì‚¬í•œë‹¤.
  *
  ***********************************************************************/
     
@@ -2480,7 +2480,7 @@ IDE_RC qcgPlan::validatePlanSequence( qcgEnvSequenceList * aSequenceList,
           sSequence != NULL;
           sSequence = sSequence->next )
     {
-        // »èÁ¦¸¦ °¨ÁöÇÑ´Ù.
+        // ì‚­ì œë¥¼ ê°ì§€í•œë‹¤.
         if ( smiValidateObjects( sSequence->sequenceHandle,
                                  sSequence->sequenceSCN )
              != IDE_SUCCESS )
@@ -2507,7 +2507,7 @@ IDE_RC qcgPlan::validatePlanProc( qcgEnvProcList * aProcList,
  * Description : PROJ-1436 SQL Plan Cache
  *
  * Implementation :
- *     environment¿¡ ±â·ÏµÈ PSM °´Ã¼¿¡ ´ëÇÏ¿© »èÁ¦³ª º¯°æÀ» °Ë»çÇÑ´Ù.
+ *     environmentì— ê¸°ë¡ëœ PSM ê°ì²´ì— ëŒ€í•˜ì—¬ ì‚­ì œë‚˜ ë³€ê²½ì„ ê²€ì‚¬í•œë‹¤.
  *
  ***********************************************************************/
     
@@ -2522,8 +2522,8 @@ IDE_RC qcgPlan::validatePlanProc( qcgEnvProcList * aProcList,
           sProc = sProc->next )
     {
         /* PROJ-2268 Reuse Catalog Table Slot
-         * procID·Î Latch¸¦ Àâ±â Àü¿¡ SlotÀÌ Àç»ç¿ëµÇ¾ú´ÂÁö È®ÀÎÇÏ¿©¾ß ÇÑ´Ù.
-         * Àç»ç¿ëµÇ¾ú´Ù¸é Latch °´Ã¼°¡ ÀÌ¹Ì ÃÊ±âÈ­ µÇ¾î ¾øÀ»¼ö ÀÖ±â ¶§¹® */
+         * procIDë¡œ Latchë¥¼ ì¡ê¸° ì „ì— Slotì´ ì¬ì‚¬ìš©ë˜ì—ˆëŠ”ì§€ í™•ì¸í•˜ì—¬ì•¼ í•œë‹¤.
+         * ì¬ì‚¬ìš©ë˜ì—ˆë‹¤ë©´ Latch ê°ì²´ê°€ ì´ë¯¸ ì´ˆê¸°í™” ë˜ì–´ ì—†ì„ìˆ˜ ìˆê¸° ë•Œë¬¸ */
         if ( smiValidatePlanHandle( sProc->procHandle, 
                                     sProc->procSCN ) 
              != IDE_SUCCESS )
@@ -2628,7 +2628,7 @@ IDE_RC qcgPlan::validatePlanSynonym( qcStatement       * aStatement,
  * Description : PROJ-1436 SQL Plan Cache
  *
  * Implementation :
- *     environment¿¡ ±â·ÏµÈ synonym °´Ã¼¿¡ ´ëÇÏ¿© »èÁ¦³ª º¯°æÀ» °Ë»çÇÑ´Ù.
+ *     environmentì— ê¸°ë¡ëœ synonym ê°ì²´ì— ëŒ€í•˜ì—¬ ì‚­ì œë‚˜ ë³€ê²½ì„ ê²€ì‚¬í•œë‹¤.
  *
  ***********************************************************************/
     
@@ -2672,7 +2672,7 @@ IDE_RC qcgPlan::validatePlanSynonym( qcStatement       * aStatement,
         }
 
         // BUG-24206
-        // ÇÏ³ª¶óµµ invalidÇÏ´Ù¸é invalid·Î ¸®ÅÏÇÑ´Ù.
+        // í•˜ë‚˜ë¼ë„ invalidí•˜ë‹¤ë©´ invalidë¡œ ë¦¬í„´í•œë‹¤.
         if ( sIsValid == ID_FALSE )
         {
             break;
@@ -2701,8 +2701,8 @@ IDE_RC qcgPlan::validatePlanSynonymTable( qcStatement       * aStatement,
  * Description : PROJ-1436 SQL Plan Cache
  *
  * Implementation :
- *     environment¿¡ ±â·ÏµÈ synonym °´Ã¼ÀÇ ÃÖÁ¾°´Ã¼°¡ table °´Ã¼ÀÎ °æ¿ì
- *     »èÁ¦³ª º¯°æÀ» °Ë»çÇÑ´Ù.
+ *     environmentì— ê¸°ë¡ëœ synonym ê°ì²´ì˜ ìµœì¢…ê°ì²´ê°€ table ê°ì²´ì¸ ê²½ìš°
+ *     ì‚­ì œë‚˜ ë³€ê²½ì„ ê²€ì‚¬í•œë‹¤.
  *
  ***********************************************************************/
     
@@ -2811,8 +2811,8 @@ IDE_RC qcgPlan::validatePlanSynonymSequence( qcStatement       * aStatement,
  * Description : PROJ-1436 SQL Plan Cache
  *
  * Implementation :
- *     environment¿¡ ±â·ÏµÈ synonym °´Ã¼ÀÇ ÃÖÁ¾°´Ã¼°¡ sequence °´Ã¼ÀÎ °æ¿ì
- *     »èÁ¦³ª º¯°æÀ» °Ë»çÇÑ´Ù.
+ *     environmentì— ê¸°ë¡ëœ synonym ê°ì²´ì˜ ìµœì¢…ê°ì²´ê°€ sequence ê°ì²´ì¸ ê²½ìš°
+ *     ì‚­ì œë‚˜ ë³€ê²½ì„ ê²€ì‚¬í•œë‹¤.
  *
  ***********************************************************************/
     
@@ -2922,8 +2922,8 @@ IDE_RC qcgPlan::validatePlanSynonymProc( qcStatement       * aStatement,
  * Description : PROJ-1436 SQL Plan Cache
  *
  * Implementation :
- *     environment¿¡ ±â·ÏµÈ synonym °´Ã¼ÀÇ ÃÖÁ¾°´Ã¼°¡ PSM °´Ã¼ÀÎ °æ¿ì
- *     »èÁ¦³ª º¯°æÀ» °Ë»çÇÑ´Ù.
+ *     environmentì— ê¸°ë¡ëœ synonym ê°ì²´ì˜ ìµœì¢…ê°ì²´ê°€ PSM ê°ì²´ì¸ ê²½ìš°
+ *     ì‚­ì œë‚˜ ë³€ê²½ì„ ê²€ì‚¬í•œë‹¤.
  *
  ***********************************************************************/
     
@@ -3025,7 +3025,7 @@ IDE_RC qcgPlan::validatePlanPkg( qcgEnvPkgList  * aPkgList,
  * Description : PROJ-1436 SQL Plan Cache
  *
  * Implementation :
- *     environment¿¡ ±â·ÏµÈ PACKAGE °´Ã¼¿¡ ´ëÇÏ¿© »èÁ¦³ª º¯°æÀ» °Ë»çÇÑ´Ù.
+ *     environmentì— ê¸°ë¡ëœ PACKAGE ê°ì²´ì— ëŒ€í•˜ì—¬ ì‚­ì œë‚˜ ë³€ê²½ì„ ê²€ì‚¬í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -3040,8 +3040,8 @@ IDE_RC qcgPlan::validatePlanPkg( qcgEnvPkgList  * aPkgList,
           sPkg = sPkg->next )
     {
         /* PROJ-2268 Reuse Catalog Table Slot
-         * procID·Î Latch¸¦ Àâ±â Àü¿¡ SlotÀÌ Àç»ç¿ëµÇ¾ú´ÂÁö È®ÀÎÇÏ¿©¾ß ÇÑ´Ù.
-         * Àç»ç¿ëµÇ¾ú´Ù¸é Latch °´Ã¼°¡ ÀÌ¹Ì ÃÊ±âÈ­ µÇ¾î ¾øÀ»¼ö ÀÖ±â ¶§¹® */
+         * procIDë¡œ Latchë¥¼ ì¡ê¸° ì „ì— Slotì´ ì¬ì‚¬ìš©ë˜ì—ˆëŠ”ì§€ í™•ì¸í•˜ì—¬ì•¼ í•œë‹¤.
+         * ì¬ì‚¬ìš©ë˜ì—ˆë‹¤ë©´ Latch ê°ì²´ê°€ ì´ë¯¸ ì´ˆê¸°í™” ë˜ì–´ ì—†ì„ìˆ˜ ìˆê¸° ë•Œë¬¸ */
         if ( smiValidatePlanHandle( sPkg->pkgHandle, 
                                     sPkg->pkgSCN ) 
              != IDE_SUCCESS )
@@ -3148,7 +3148,7 @@ IDE_RC qcgPlan::checkPlanPrivTable(
  * Description : PROJ-1436 SQL Plan Cache
  *
  * Implementation :
- *     environment¿¡ ±â·ÏµÈ table °´Ã¼¿¡ ´ëÇÑ ±ÇÇÑÀ» °Ë»çÇÑ´Ù.
+ *     environmentì— ê¸°ë¡ëœ table ê°ì²´ì— ëŒ€í•œ ê¶Œí•œì„ ê²€ì‚¬í•œë‹¤.
  *
  ***********************************************************************/
     
@@ -3235,7 +3235,7 @@ IDE_RC qcgPlan::checkPlanPrivSequence(
  * Description : PROJ-1436 SQL Plan Cache
  *
  * Implementation :
- *     environment¿¡ ±â·ÏµÈ sequence °´Ã¼¿¡ ´ëÇÑ ±ÇÇÑÀ» °Ë»çÇÑ´Ù.
+ *     environmentì— ê¸°ë¡ëœ sequence ê°ì²´ì— ëŒ€í•œ ê¶Œí•œì„ ê²€ì‚¬í•œë‹¤.
  *
  ***********************************************************************/
     
@@ -3273,7 +3273,7 @@ IDE_RC qcgPlan::checkPlanPrivProc(
  * Description : PROJ-1436 SQL Plan Cache
  *
  * Implementation :
- *     environment¿¡ ±â·ÏµÈ PSM °´Ã¼¿¡ ´ëÇÑ ±ÇÇÑÀ» °Ë»çÇÑ´Ù.
+ *     environmentì— ê¸°ë¡ëœ PSM ê°ì²´ì— ëŒ€í•œ ê¶Œí•œì„ ê²€ì‚¬í•œë‹¤.
  *
  ***********************************************************************/
     
@@ -3284,7 +3284,7 @@ IDE_RC qcgPlan::checkPlanPrivProc(
           sProc != NULL;
           sProc = sProc->next )
     {
-        // procÀº ÀÌ¹Ì latch°¡ È¹µæµÇ¾î ÀÖ´Ù.
+        // procì€ ì´ë¯¸ latchê°€ íšë“ë˜ì–´ ìˆë‹¤.
         IDE_TEST( qsxProc::getProcInfo( sProc->procID,
                                         &sProcInfo )
                   != IDE_SUCCESS);
@@ -3319,7 +3319,7 @@ IDE_RC qcgPlan::checkPlanPrivPkg(
  *               BUG-37251   
  *
  * Implementation :
- *      environment¿¡ ±â·ÏµÈ Package °´Ã¼¿¡ ´ëÇÑ ±ÇÇÑÀ» °Ë»çÇÑ´Ù.
+ *      environmentì— ê¸°ë¡ëœ Package ê°ì²´ì— ëŒ€í•œ ê¶Œí•œì„ ê²€ì‚¬í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -3349,9 +3349,9 @@ IDE_RC qcgPlan::checkPlanPrivPkg(
         else
         {
             // Nothing to do.
-            // privilege check´Â spec¿¡¼­ ÀÌ¹Ì Çß´Ù.
-            // ¸¸¾à spec¿¡¼­ privilege chekc¿¡ ½ÇÆĞ ÇßÀ¸¸é 
-            // package´Â ½ÇÇàµÇÁö ¾Ê´Â´Ù.
+            // privilege checkëŠ” specì—ì„œ ì´ë¯¸ í–ˆë‹¤.
+            // ë§Œì•½ specì—ì„œ privilege chekcì— ì‹¤íŒ¨ í–ˆìœ¼ë©´ 
+            // packageëŠ” ì‹¤í–‰ë˜ì§€ ì•ŠëŠ”ë‹¤.
         }
     }
 
@@ -3371,23 +3371,23 @@ IDE_RC qcgPlan::setSmiStmtCallback(
  *
  * Description : PROJ-1436 SQL Plan Cache
  *
- * Implementation : soft prepare ¼º´É °³¼± tip
+ * Implementation : soft prepare ì„±ëŠ¥ ê°œì„  tip
  *
- *     environment¿¡ ±â·ÏµÈ °´Ã¼¿¡ ´ëÇÑ ±ÇÇÑÀ» °Ë»çÇÒ¶§ ÇÊ¿äÇÑ
- *     smiStatement¸¦ beginÇÑ´Ù. ÃÖÃÊ È£Ãâ½Ã¿¡¸¸ begin ÇÏ¹Ç·Î
- *     ¿©·¯¹ø È£ÃâÇÏ´õ¶óµµ »ó°ü¾ø´Ù.
+ *     environmentì— ê¸°ë¡ëœ ê°ì²´ì— ëŒ€í•œ ê¶Œí•œì„ ê²€ì‚¬í• ë•Œ í•„ìš”í•œ
+ *     smiStatementë¥¼ beginí•œë‹¤. ìµœì´ˆ í˜¸ì¶œì‹œì—ë§Œ begin í•˜ë¯€ë¡œ
+ *     ì—¬ëŸ¬ë²ˆ í˜¸ì¶œí•˜ë”ë¼ë„ ìƒê´€ì—†ë‹¤.
  *
- *     table, sequence, PSM °´Ã¼¸¸À» ÂüÁ¶ÇÏ´Â planÀÇ °æ¿ì system
- *     privilege¸¦ »ç¿ëÇÏÁö ¾Ê´ÂÇÑ Æ¯º°È÷ meta tableÀ» °Ë»öÇÒ ÇÊ¿ä°¡
- *     ¾øÀ¸¹Ç·Î meta tableÀ» °Ë»öÇÒ ¶§¸¸ smiStatement¸¦ beginÇÏ¿©
- *     soft prepareÀÇ °Ë»ö ¼º´ÉÀ» ³ôÀÎ´Ù.
+ *     table, sequence, PSM ê°ì²´ë§Œì„ ì°¸ì¡°í•˜ëŠ” planì˜ ê²½ìš° system
+ *     privilegeë¥¼ ì‚¬ìš©í•˜ì§€ ì•ŠëŠ”í•œ íŠ¹ë³„íˆ meta tableì„ ê²€ìƒ‰í•  í•„ìš”ê°€
+ *     ì—†ìœ¼ë¯€ë¡œ meta tableì„ ê²€ìƒ‰í•  ë•Œë§Œ smiStatementë¥¼ beginí•˜ì—¬
+ *     soft prepareì˜ ê²€ìƒ‰ ì„±ëŠ¥ì„ ë†’ì¸ë‹¤.
  *
  ***********************************************************************/
     
     smiStatement  * sSmiStmt;
 
-    // ÃÖÃÊ È£Ãâ½Ã¿¡¸¸ soft prepare¿ë smiStmt¸¦ »ı¼ºÇÏ¸ç
-    // ÀÌÈÄ¿¡´Â ±×³É °¡Á®¿Â´Ù.
+    // ìµœì´ˆ í˜¸ì¶œì‹œì—ë§Œ soft prepareìš© smiStmtë¥¼ ìƒì„±í•˜ë©°
+    // ì´í›„ì—ëŠ” ê·¸ëƒ¥ ê°€ì ¸ì˜¨ë‹¤.
     IDE_TEST( aGetSmiStmt4PrepareCallback( aGetSmiStmt4PrepareContext,
                                            & sSmiStmt )
               != IDE_SUCCESS );
@@ -3408,7 +3408,7 @@ void qcgPlan::initPrepTemplate4Reuse( qcTemplate * aTemplate )
  * Description : PROJ-1436 SQL Plan Cache
  *
  * Implementation :
- *     prepared private templateÀ» Àç»ç¿ëÇÏ±â À§ÇØ ÃÊ±âÈ­ÇÑ´Ù.
+ *     prepared private templateì„ ì¬ì‚¬ìš©í•˜ê¸° ìœ„í•´ ì´ˆê¸°í™”í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -3441,10 +3441,10 @@ IDE_RC qcgPlan::allocUnusedTupleRow( qcSharedPlan * aSharedPlan )
  *
  * Description : PROJ-1436 SQL Plan Cache
  *
- * Implementation : shared plan Å©±â ÁÙÀÌ±â tip
+ * Implementation : shared plan í¬ê¸° ì¤„ì´ê¸° tip
  *
- *     ¸¸ÀÏ check-inÀÌ ½ÇÆĞÇÏ´Â °æ¿ì ¿øº» templateÀ» ¹Ù·Î »ç¿ëÇÏ±â
- *     À§ÇØ »èÁ¦ÇÑ tupleÀÇ row¸¦ Àç»ı¼ºÇÑ´Ù.
+ *     ë§Œì¼ check-inì´ ì‹¤íŒ¨í•˜ëŠ” ê²½ìš° ì›ë³¸ templateì„ ë°”ë¡œ ì‚¬ìš©í•˜ê¸°
+ *     ìœ„í•´ ì‚­ì œí•œ tupleì˜ rowë¥¼ ì¬ìƒì„±í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -3464,7 +3464,7 @@ IDE_RC qcgPlan::allocUnusedTupleRow( qcSharedPlan * aSharedPlan )
                  ( (sFlag & MTC_TUPLE_ROW_ALLOCATE_MASK) == MTC_TUPLE_ROW_ALLOCATE_TRUE ) &&
                  ( (sFlag & MTC_TUPLE_ROW_COPY_MASK)     == MTC_TUPLE_ROW_COPY_FALSE ) )
             {
-                // ÇöÀç´Â ÀÌ·± tupleÀÌ intermediate/table tupleÀÌ´Ù.
+                // í˜„ì¬ëŠ” ì´ëŸ° tupleì´ intermediate/table tupleì´ë‹¤.
                 if ( ( sTemplate->rows[i].rowMaximum > 0 ) &&
                      ( sTemplate->rows[i].row == NULL ) )
                 {
@@ -3490,7 +3490,7 @@ IDE_RC qcgPlan::allocUnusedTupleRow( qcSharedPlan * aSharedPlan )
         else
         {
             // PROJ-2163 
-            // variable tuple Àº Àç»ı¼º ´ë»óÀÌ ¾Æ´Ô
+            // variable tuple ì€ ì¬ìƒì„± ëŒ€ìƒì´ ì•„ë‹˜
         }
     }
 
@@ -3507,12 +3507,12 @@ IDE_RC qcgPlan::freeUnusedTupleRow( qcSharedPlan * aSharedPlan )
  *
  * Description : PROJ-1436 SQL Plan Cache
  *
- * Implementation : shared plan Å©±â ÁÙÀÌ±â tip
+ * Implementation : shared plan í¬ê¸° ì¤„ì´ê¸° tip
  *
- *     ¸¸ÀÏ check-inÀÌ ¼º°øÇÑ´Ù¸é intermediate/table tupleÀÇ
- *     row´Â ´ÜÁö alloc¸¸ ÇÏ±â ¶§¹®¿¡ free°¡ °¡´ÉÇÏ´Ù.
- *     ±×·¯³ª ¸¸ÀÏ check-inÀÌ ½ÇÆĞÇÏ´Â °æ¿ì ¿øº» templateÀ» ¹Ù·Î
- *     »ç¿ëÇÏ±â ¶§¹®¿¡ ÀÌ¶§ »èÁ¦ÇÑ tupleÀÇ row¸¦ Àç»ı¼ºÇØ¾ß ÇÑ´Ù.
+ *     ë§Œì¼ check-inì´ ì„±ê³µí•œë‹¤ë©´ intermediate/table tupleì˜
+ *     rowëŠ” ë‹¨ì§€ allocë§Œ í•˜ê¸° ë•Œë¬¸ì— freeê°€ ê°€ëŠ¥í•˜ë‹¤.
+ *     ê·¸ëŸ¬ë‚˜ ë§Œì¼ check-inì´ ì‹¤íŒ¨í•˜ëŠ” ê²½ìš° ì›ë³¸ templateì„ ë°”ë¡œ
+ *     ì‚¬ìš©í•˜ê¸° ë•Œë¬¸ì— ì´ë•Œ ì‚­ì œí•œ tupleì˜ rowë¥¼ ì¬ìƒì„±í•´ì•¼ í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -3532,7 +3532,7 @@ IDE_RC qcgPlan::freeUnusedTupleRow( qcSharedPlan * aSharedPlan )
                 ( ( sFlag & MTC_TUPLE_ROW_ALLOCATE_MASK ) == MTC_TUPLE_ROW_ALLOCATE_TRUE ) &&
                 ( ( sFlag & MTC_TUPLE_ROW_COPY_MASK )     == MTC_TUPLE_ROW_COPY_FALSE ) )
             {
-                // ÇöÀç´Â ÀÌ·± tupleÀÌ intermediate/table tupleÀÌ´Ù.
+                // í˜„ì¬ëŠ” ì´ëŸ° tupleì´ intermediate/table tupleì´ë‹¤.
 
                 if( ( sTemplate->rows[i].rowMaximum > 0 ) &&
                     ( sTemplate->rows[i].row != NULL ) )
@@ -3555,7 +3555,7 @@ IDE_RC qcgPlan::freeUnusedTupleRow( qcSharedPlan * aSharedPlan )
         else
         {
             // PROJ-2163
-            // variable tuple Àº ÇØÁ¦ ´ë»óÀÌ ¾Æ´Ô
+            // variable tuple ì€ í•´ì œ ëŒ€ìƒì´ ì•„ë‹˜
         }
 
     }
@@ -3571,13 +3571,13 @@ void qcgPlan::registerPlanBindInfo( qcStatement * aStatement )
 {
 /***********************************************************************
  *
- * Description : PROJ-2163 Plan cache ¿¡ ÀÔ·ÂÇÒ ¹ÙÀÎµå Á¤º¸ µî·Ï
+ * Description : PROJ-2163 Plan cache ì— ì…ë ¥í•  ë°”ì¸ë“œ ì •ë³´ ë“±ë¡
  *
  * Implementation :
- *     Plan cache ÀÇ key °ªÀ¸·Î ¾²ÀÏ environment Áß ¹ÙÀÎµå Á¤º¸¸¦
- *     myPlan ÀÇ plan envirionment ¿¡ µî·ÏÇÑ´Ù.
- *     ÀÌ °ªÀº plan µî·Ï ½Ã qciSQLPlanCacheContext ¿¡ ´ã¾Æ¼­
- *     MM ¿¡ ³Ñ±ä´Ù.
+ *     Plan cache ì˜ key ê°’ìœ¼ë¡œ ì“°ì¼ environment ì¤‘ ë°”ì¸ë“œ ì •ë³´ë¥¼
+ *     myPlan ì˜ plan envirionment ì— ë“±ë¡í•œë‹¤.
+ *     ì´ ê°’ì€ plan ë“±ë¡ ì‹œ qciSQLPlanCacheContext ì— ë‹´ì•„ì„œ
+ *     MM ì— ë„˜ê¸´ë‹¤.
  *
  ***********************************************************************/
 
@@ -3592,7 +3592,7 @@ void qcgPlan::registerPlanBindInfo( qcStatement * aStatement )
         sPlanBindParam = aStatement->myPlan->planEnv->planBindInfo.bindParam;
         sBindInfo      = aStatement->pBindParam;
 
-        // ¹ÙÀÎµå Á¤º¸ ¼¼ÆÃ
+        // ë°”ì¸ë“œ ì •ë³´ ì„¸íŒ…
         for( i = 0; i < aStatement->pBindParamCount; i++ )
         {
             sPlanBindParam[i].id        = sBindInfo[i].param.id;
@@ -3614,13 +3614,13 @@ IDE_RC qcgPlan::isMatchedPlanBindInfo( qcStatement    * aStatement,
 {
 /***********************************************************************
  *
- * Description : PROJ-2163 Plan cache ¿¡ ¹ÙÀÎµå Á¤º¸ Ãß°¡
+ * Description : PROJ-2163 Plan cache ì— ë°”ì¸ë“œ ì •ë³´ ì¶”ê°€
  *
  * Implementation :
- *     plan cache¿¡ cacheµÈ environment Áß ¹ÙÀÎµå Á¤º¸¿Í
- *     soft prepare½ÃÀÇ qcStatement°¡ °¡Áø ¹ÙÀÎµå Á¤º¸¸¦ ºñ±³ÇÏ¿©
- *     ¿Ã¹Ù¸¥ planÀÎÁö °Ë»çÇÑ´Ù.
- *     ´Ü, pBindParam ÀÌ NULL ÀÌ¸é È£½ºÆ® º¯¼ö¸¦ °Ë»çÇÏÁö ¾Ê´Â´Ù.
+ *     plan cacheì— cacheëœ environment ì¤‘ ë°”ì¸ë“œ ì •ë³´ì™€
+ *     soft prepareì‹œì˜ qcStatementê°€ ê°€ì§„ ë°”ì¸ë“œ ì •ë³´ë¥¼ ë¹„êµí•˜ì—¬
+ *     ì˜¬ë°”ë¥¸ planì¸ì§€ ê²€ì‚¬í•œë‹¤.
+ *     ë‹¨, pBindParam ì´ NULL ì´ë©´ í˜¸ìŠ¤íŠ¸ ë³€ìˆ˜ë¥¼ ê²€ì‚¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
  *
  ***********************************************************************/
 
@@ -3634,8 +3634,8 @@ IDE_RC qcgPlan::isMatchedPlanBindInfo( qcStatement    * aStatement,
 
     if( sBindInfo == NULL )
     {
-        // pBindParam ÀÌ NULL ÀÌ¸é »ç¿ëÀÚ°¡ È£½ºÆ® º¯¼ö¸¦ ¹ÙÀÎµå ÇÏ±â ÀüÀÌ´Ù.
-        // ÀÌ °æ¿ì ¹ÙÀÎµå Á¤º¸¸¦ ºñ±³ÇÏÁö ¾Ê°í ÀûÇÕÇÑ ÇÃ·£ÀÌ¶ó°í ÆÇ´ÜÇÑ´Ù.
+        // pBindParam ì´ NULL ì´ë©´ ì‚¬ìš©ìê°€ í˜¸ìŠ¤íŠ¸ ë³€ìˆ˜ë¥¼ ë°”ì¸ë“œ í•˜ê¸° ì „ì´ë‹¤.
+        // ì´ ê²½ìš° ë°”ì¸ë“œ ì •ë³´ë¥¼ ë¹„êµí•˜ì§€ ì•Šê³  ì í•©í•œ í”Œëœì´ë¼ê³  íŒë‹¨í•œë‹¤.
         sIsMatched = ID_TRUE;
     }
     else
@@ -3648,10 +3648,10 @@ IDE_RC qcgPlan::isMatchedPlanBindInfo( qcStatement    * aStatement,
         }
         else
         {
-            // ¹ÙÀÎµå Á¤º¸°¡ ÀÏÄ¡ÇÏ´ÂÁö °Ë»ç
+            // ë°”ì¸ë“œ ì •ë³´ê°€ ì¼ì¹˜í•˜ëŠ”ì§€ ê²€ì‚¬
             for( i = 0; i < aBindInfo->bindParamCount; i++ )
             {
-                // memcmp È¤Àº bitmap µîÀ¸·Î ºñ±³ÇÑ´Ù.
+                // memcmp í˜¹ì€ bitmap ë“±ìœ¼ë¡œ ë¹„êµí•œë‹¤.
                 if( ( sPlanBindParam[i].id        != sBindInfo[i].param.id        ) ||
                     ( sPlanBindParam[i].type      != sBindInfo[i].param.type      ) ||
                     ( sPlanBindParam[i].precision != sBindInfo[i].param.precision ) ||
@@ -3664,7 +3664,7 @@ IDE_RC qcgPlan::isMatchedPlanBindInfo( qcStatement    * aStatement,
         }
     }
 
-    // °Ë»ç °á°ú¸¦ ¹İÈ¯
+    // ê²€ì‚¬ ê²°ê³¼ë¥¼ ë°˜í™˜
     *aIsMatched = sIsMatched;
 
     return IDE_SUCCESS;

@@ -19,11 +19,11 @@
  * $Id: qcgPlan.h 82075 2018-01-17 06:39:52Z jina.kim $
  *
  * Description :
- *     PROJ-1436 SQL Plan Cache¸¦ À§ÇÑ ÀÚ·á ±¸Á¶ Á¤ÀÇ
+ *     PROJ-1436 SQL Plan Cacheë¥¼ ìœ„í•œ ìë£Œ êµ¬ì¡° ì •ì˜
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  **********************************************************************/
 
@@ -35,7 +35,7 @@
 #include <qs.h>
 
 //////////////////////////////////////////////////////
-// BUG-38148 ÇÁ·ÎÆÛÆ¼ Ãß°¡ÀÛ¾÷À» ´Ü¼øÈ­ ½ÃÄÑ¾ß ÇÕ´Ï´Ù.
+// BUG-38148 í”„ë¡œí¼í‹° ì¶”ê°€ì‘ì—…ì„ ë‹¨ìˆœí™” ì‹œì¼œì•¼ í•©ë‹ˆë‹¤.
 //////////////////////////////////////////////////////
 // qcgPlan::isMatchedPlanProperty only
 #define QCG_MATCHED_PLAN_PROPERTY( aRef, aValue, aSetValue )            \
@@ -93,7 +93,7 @@
 
 //---------------------------------------------------
 // [qcgPlanObject]
-// plan »ı¼º¿¡ °ü·ÃÇÑ ¸ğµç database °´Ã¼
+// plan ìƒì„±ì— ê´€ë ¨í•œ ëª¨ë“  database ê°ì²´
 //---------------------------------------------------
 
 // table, view, queue, dblink
@@ -107,7 +107,7 @@ typedef struct qcgEnvTableList
 typedef struct qcgEnvSequenceList
 {
     void               * sequenceHandle;
-    smSCN                sequenceSCN; /* Slot ÀçÈ°¿ë ¿©ºÎ¸¦ È®ÀÎÇÏ±â À§ÇÑ SCN */
+    smSCN                sequenceSCN; /* Slot ì¬í™œìš© ì—¬ë¶€ë¥¼ í™•ì¸í•˜ê¸° ìœ„í•œ SCN */
     qcgEnvSequenceList * next;
 } qcgEnvSequenceList;
 
@@ -115,7 +115,7 @@ typedef struct qcgEnvSequenceList
 typedef struct qcgEnvProcList
 {
     void            * procHandle;
-    smSCN             procSCN; /* Slot ÀçÈ°¿ë ¿©ºÎ¸¦ È®ÀÎÇÏ±â À§ÇÑ SCN */
+    smSCN             procSCN; /* Slot ì¬í™œìš© ì—¬ë¶€ë¥¼ í™•ì¸í•˜ê¸° ìœ„í•œ SCN */
     qsOID             procID;
     qsProcParseTree * planTree;
     UInt              modifyCount;
@@ -124,18 +124,18 @@ typedef struct qcgEnvProcList
 
 typedef struct qcgEnvSynonymList
 {
-    // synonym Á¤º¸
+    // synonym ì •ë³´
     SChar         userName[QC_MAX_OBJECT_NAME_LEN + 1];
     SChar         objectName[QC_MAX_OBJECT_NAME_LEN + 1];
     idBool        isPublicSynonym;
 
-    // synonymÀÌ °¡¸£Å°´Â ÃÖÁ¾ °´Ã¼ÀÇ Á¤º¸
-    // (table, view, queue, dblink, sequence, proc Áß ÇÏ³ªÀÓ)
+    // synonymì´ ê°€ë¥´í‚¤ëŠ” ìµœì¢… ê°ì²´ì˜ ì •ë³´
+    // (table, view, queue, dblink, sequence, proc ì¤‘ í•˜ë‚˜ì„)
     void        * tableHandle;
     void        * sequenceHandle;
     void        * objectHandle;
     qsOID         objectID;
-    smSCN         objectSCN; /* Slot ÀçÈ°¿ë ¿©ºÎ¸¦ È®ÀÎÇÏ±â À§ÇÑ SCN */
+    smSCN         objectSCN; /* Slot ì¬í™œìš© ì—¬ë¶€ë¥¼ í™•ì¸í•˜ê¸° ìœ„í•œ SCN */
     
     qcgEnvSynonymList  * next;
     
@@ -156,7 +156,7 @@ typedef struct qcgEnvRemoteTableColumnList
 typedef struct qcgEnvPkgList
 {
     void           * pkgHandle;
-    smSCN            pkgSCN; /* Slot ÀçÈ°¿ë ¿©ºÎ¸¦ È®ÀÎÇÏ±â À§ÇÑ SCN */
+    smSCN            pkgSCN; /* Slot ì¬í™œìš© ì—¬ë¶€ë¥¼ í™•ì¸í•˜ê¸° ìœ„í•œ SCN */
     qsOID            pkgID;
     qsPkgParseTree * planTree;           // BUG-37250
     UInt             modifyCount;
@@ -174,30 +174,30 @@ typedef struct qcgPlanObject
 
 //---------------------------------------------------
 // [qcgPlanPrivilege]
-// plan »ı¼º¿¡ °ü·ÃÇÑ °´Ã¼µé¿¡ ´ëÇÑ ÇÊ¿äÇÑ ±ÇÇÑ
+// plan ìƒì„±ì— ê´€ë ¨í•œ ê°ì²´ë“¤ì— ëŒ€í•œ í•„ìš”í•œ ê¶Œí•œ
 //---------------------------------------------------
 
 typedef struct qcgEnvTablePrivList
 {
-    // ´ë»ó °´Ã¼
+    // ëŒ€ìƒ ê°ì²´
     void                 * tableHandle;
     UInt                   tableOwnerID;
     SChar                  tableName[ QC_MAX_OBJECT_NAME_LEN + 1 ];
     UInt                   privilegeCount;
-    struct qcmPrivilege  * privilegeInfo;  // cached metaÀÇ º¹»çº»
+    struct qcmPrivilege  * privilegeInfo;  // cached metaì˜ ë³µì‚¬ë³¸
     
-    // ÇÊ¿äÇÑ ±ÇÇÑ (reference, insert, update, delete)
+    // í•„ìš”í•œ ê¶Œí•œ (reference, insert, update, delete)
     UInt                   privilegeID;
     qcgEnvTablePrivList  * next;
 } qcgEnvTablePrivList;
 
 typedef struct qcgEnvSequencePrivList
 {
-    // ´ë»ó °´Ã¼
+    // ëŒ€ìƒ ê°ì²´
     UInt   sequenceOwnerID;
     UInt   sequenceID;  // meta table ID
     SChar  name[ QC_MAX_OBJECT_NAME_LEN + 1 ];
-    // ÇÊ¿äÇÑ ±ÇÇÑ (½ÃÄö½º¿¡ ´ëÇÑ ±ÇÇÑÀº ¿ÀÁ÷ select »ÓÀÌ´Ù.)
+    // í•„ìš”í•œ ê¶Œí•œ (ì‹œí€€ìŠ¤ì— ëŒ€í•œ ê¶Œí•œì€ ì˜¤ì§ select ë¿ì´ë‹¤.)
     //UInt  privilegeID; 
     
     qcgEnvSequencePrivList * next;
@@ -205,10 +205,10 @@ typedef struct qcgEnvSequencePrivList
 
 typedef struct qcgEnvProcPrivList
 {
-    // ´ë»ó °´Ã¼
+    // ëŒ€ìƒ ê°ì²´
     qsOID       procID;
     
-    // ÇÊ¿äÇÑ ±ÇÇÑ (proc¿¡ ´ëÇÑ ±ÇÇÑÀº ¿ÀÁ÷ execute »ÓÀÌ´Ù.)
+    // í•„ìš”í•œ ê¶Œí•œ (procì— ëŒ€í•œ ê¶Œí•œì€ ì˜¤ì§ execute ë¿ì´ë‹¤.)
     //UInt        privilegeID;
     
     qcgEnvProcPrivList * next;
@@ -219,31 +219,31 @@ typedef struct qcgPlanPrivilege
     qcgEnvTablePrivList    * tableList;
     qcgEnvSequencePrivList * sequenceList;
     
-    // procPrivList´Â procList¿Í µ¿ÀÏÇÏ°í Ãß°¡·Î ±â·ÏÇÒ Á¤º¸°¡
-    // ¾øÀ¸¹Ç·Î ±â·ÏÇÏÁö ¾Ê´Â´Ù.
+    // procPrivListëŠ” procListì™€ ë™ì¼í•˜ê³  ì¶”ê°€ë¡œ ê¸°ë¡í•  ì •ë³´ê°€
+    // ì—†ìœ¼ë¯€ë¡œ ê¸°ë¡í•˜ì§€ ì•ŠëŠ”ë‹¤.
     //qcgEnvProcPrivList     * procList;
 } qcgPlanPrivilege;
 
 //---------------------------------------------------
 // [qcgPlanEnv]
-// plan »ı¼º¿¡ °ü·ÃÇÑ ¸ğµç ±â·Ï (Plan Environment)
+// plan ìƒì„±ì— ê´€ë ¨í•œ ëª¨ë“  ê¸°ë¡ (Plan Environment)
 //---------------------------------------------------
 
 typedef struct qcgPlanEnv
 {
-    // plan »ı¼º¿¡ °ü·ÃÇÑ ¸ğµç property
+    // plan ìƒì„±ì— ê´€ë ¨í•œ ëª¨ë“  property
     qcPlanProperty         planProperty;
 
-    // plan »ı¼º¿¡ °ü·ÃÇÑ ¸ğµç °´Ã¼
+    // plan ìƒì„±ì— ê´€ë ¨í•œ ëª¨ë“  ê°ì²´
     qcgPlanObject          planObject;
 
-    // plan »ı¼º¿¡ °ü·ÃÇÑ ¸ğµç ±ÇÇÑ
+    // plan ìƒì„±ì— ê´€ë ¨í•œ ëª¨ë“  ê¶Œí•œ
     qcgPlanPrivilege       planPrivilege;
 
-    // planÀ» »ı¼ºÇÑ user
+    // planì„ ìƒì„±í•œ user
     UInt                   planUserID;
 
-    // PROJ-2163 : plan »ı¼º¿¡ °ü·ÃÇÑ ¹ÙÀÎµå Á¤º¸
+    // PROJ-2163 : plan ìƒì„±ì— ê´€ë ¨í•œ ë°”ì¸ë“œ ì •ë³´
     qcPlanBindInfo         planBindInfo;
 
     // PROJ-2223 audit
@@ -257,41 +257,41 @@ class qcgPlan
 public:
 
     //-------------------------------------------------
-    // plan environment »ı¼º ÇÔ¼ö
+    // plan environment ìƒì„± í•¨ìˆ˜
     //-------------------------------------------------
 
-    // plan environment¸¦ »ı¼ºÇÏ°í ÃÊ±âÈ­ÇÑ´Ù.
+    // plan environmentë¥¼ ìƒì„±í•˜ê³  ì´ˆê¸°í™”í•œë‹¤.
     static IDE_RC allocAndInitPlanEnv( qcStatement * aStatement );
 
-    // plan property¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+    // plan propertyë¥¼ ì´ˆê¸°í™”í•œë‹¤.
     static void   initPlanProperty( qcPlanProperty * aProperty );
 
-    // °£Á¢ ÂüÁ¶ ½ÃÀÛÀ» ±â·ÏÇÑ´Ù.
+    // ê°„ì ‘ ì°¸ì¡° ì‹œì‘ì„ ê¸°ë¡í•œë‹¤.
     static void   startIndirectRefFlag( qcStatement * aStatement,
                                         idBool      * aIndirectRef );
 
-    // °£Á¢ ÂüÁ¶ Á¾·á¸¦ ±â·ÏÇÑ´Ù.
+    // ê°„ì ‘ ì°¸ì¡° ì¢…ë£Œë¥¼ ê¸°ë¡í•œë‹¤.
     static void   endIndirectRefFlag( qcStatement * aStatement,
                                       idBool      * aIndirectRef );
 
-    // planÀÌ property¸¦ ÂüÁ¶ÇÔÀ» ±â·ÏÇÑ´Ù.
+    // planì´ propertyë¥¼ ì°¸ì¡°í•¨ì„ ê¸°ë¡í•œë‹¤.
     static void   registerPlanProperty( qcStatement        * aStatement,
                                         qcPlanPropertyKind   aPropertyID );
 
-    // planÀÌ table °´Ã¼¸¦ ÂüÁ¶ÇÔÀ» ±â·ÏÇÑ´Ù.
+    // planì´ table ê°ì²´ë¥¼ ì°¸ì¡°í•¨ì„ ê¸°ë¡í•œë‹¤.
     static IDE_RC registerPlanTable( qcStatement  * aStatement,
                                      void         * aTableHandle,
                                      smSCN          aTableSCN );
 
-    // planÀÌ sequence °´Ã¼¸¦ ÂüÁ¶ÇÔÀ» ±â·ÏÇÑ´Ù.
+    // planì´ sequence ê°ì²´ë¥¼ ì°¸ì¡°í•¨ì„ ê¸°ë¡í•œë‹¤.
     static IDE_RC registerPlanSequence( qcStatement * aStatement,
                                         void        * aSequenceHandle );
 
-    // planÀÌ proc °´Ã¼ ÂüÁ¶ÇÔÀ» ±â·ÏÇÑ´Ù.
+    // planì´ proc ê°ì²´ ì°¸ì¡°í•¨ì„ ê¸°ë¡í•œë‹¤.
     static IDE_RC registerPlanProc( qcStatement     * aStatement,
                                     qsxProcPlanList * aProcPlanList );
 
-    // planÀÌ table°ú sequence °´Ã¼ÀÇ synonym °´Ã¼¸¦ ÂüÁ¶ÇÔÀ» ±â·ÏÇÑ´Ù.
+    // planì´ tableê³¼ sequence ê°ì²´ì˜ synonym ê°ì²´ë¥¼ ì°¸ì¡°í•¨ì„ ê¸°ë¡í•œë‹¤.
     static IDE_RC registerPlanSynonym( qcStatement           * aStatement,
                                        struct qcmSynonymInfo * aSynonymInfo,
                                        qcNamePosition          aUserName,
@@ -299,88 +299,88 @@ public:
                                        void                  * aTableHandle,
                                        void                  * aSequenceHandle );
 
-    // planÀÌ proc °´Ã¼ÀÇ synonymn °´Ã¼¸¦ ÂüÁ¶ÇÔÀ» ±â·ÏÇÑ´Ù.
+    // planì´ proc ê°ì²´ì˜ synonymn ê°ì²´ë¥¼ ì°¸ì¡°í•¨ì„ ê¸°ë¡í•œë‹¤.
     static IDE_RC registerPlanProcSynonym( qcStatement          * aStatement,
                                            struct qsSynonymList * aObjectSynonymList );
 
-    // planÀÌ table¿¡ ´ëÇÑ ÇÊ¿äÇÑ ±ÇÇÑÀ» ±â·ÏÇÑ´Ù.
+    // planì´ tableì— ëŒ€í•œ í•„ìš”í•œ ê¶Œí•œì„ ê¸°ë¡í•œë‹¤.
     static IDE_RC registerPlanPrivTable( qcStatement         * aStatement,
                                          UInt                  aPrivilegeID,
                                          struct qcmTableInfo * aTableInfo );
 
-    // planÀÌ sequence °´Ã¼¿¡ ´ëÇÑ ÇÊ¿äÇÑ ±ÇÇÑÀ» ±â·ÏÇÑ´Ù.
+    // planì´ sequence ê°ì²´ì— ëŒ€í•œ í•„ìš”í•œ ê¶Œí•œì„ ê¸°ë¡í•œë‹¤.
     static IDE_RC registerPlanPrivSequence( qcStatement            * aStatement,
                                             struct qcmSequenceInfo * aSequenceInfo );
 
-    // Plan ÀÌ ÂüÁ¶ÇÏ´Â ¹ÙÀÎµå Á¤º¸¸¦ ±â·ÏÇÑ´Ù.
+    // Plan ì´ ì°¸ì¡°í•˜ëŠ” ë°”ì¸ë“œ ì •ë³´ë¥¼ ê¸°ë¡í•œë‹¤.
     static void registerPlanBindInfo( qcStatement  * aStatement );
 
     // PROJ-1073 Package
-    // planÀÌ pkg °´Ã¼ ÂüÁ¶ÇÔÀ» ±â·ÏÇÑ´Ù.
+    // planì´ pkg ê°ì²´ ì°¸ì¡°í•¨ì„ ê¸°ë¡í•œë‹¤.
     static IDE_RC registerPlanPkg( qcStatement     * aStatement,
                                    qsxProcPlanList * aPlanList );
 
     //-------------------------------------------------
-    // plan validation ÇÔ¼ö
+    // plan validation í•¨ìˆ˜
     //-------------------------------------------------
 
-    // soft-prepare °úÁ¤¿¡¼­ ¿Ã¹Ù¸¥ planÀ» °Ë»öÇÏ±â À§ÇØ »ç¿ëÇÑ´Ù.
+    // soft-prepare ê³¼ì •ì—ì„œ ì˜¬ë°”ë¥¸ planì„ ê²€ìƒ‰í•˜ê¸° ìœ„í•´ ì‚¬ìš©í•œë‹¤.
     static IDE_RC isMatchedPlanProperty( qcStatement    * aStatement,
                                          qcPlanProperty * aPlanProperty,
                                          idBool         * aIsMatched );
 
-    // PROJ-2163 : soft-prepare °úÁ¤¿¡¼­ ¿Ã¹Ù¸¥ planÀ» °Ë»öÇÏ±â À§ÇØ »ç¿ëÇÑ´Ù.
+    // PROJ-2163 : soft-prepare ê³¼ì •ì—ì„œ ì˜¬ë°”ë¥¸ planì„ ê²€ìƒ‰í•˜ê¸° ìœ„í•´ ì‚¬ìš©í•œë‹¤.
     static IDE_RC isMatchedPlanBindInfo( qcStatement    * aStatement,
                                          qcPlanBindInfo * aBindInfo,
                                          idBool         * aIsMatched );
 
-    // rebuild½Ã ¹İ¿µµÇ´Â property environment¸¦ °»½ÅÇÑ´Ù.
+    // rebuildì‹œ ë°˜ì˜ë˜ëŠ” property environmentë¥¼ ê°±ì‹ í•œë‹¤.
     static IDE_RC rebuildPlanProperty( qcStatement    * aStatement,
                                        qcPlanProperty * aPlanProperty );
 
-    // plan »ı¼º½ÃÀÇ table °´Ã¼¿¡ ´ëÇÑ validationÀ» ¼öÇàÇÑ´Ù.
+    // plan ìƒì„±ì‹œì˜ table ê°ì²´ì— ëŒ€í•œ validationì„ ìˆ˜í–‰í•œë‹¤.
     static IDE_RC validatePlanTable( qcgEnvTableList * aTableList,
                                      idBool          * aIsValid );
 
-    // plan »ı¼º½ÃÀÇ sequence °´Ã¼¿¡ ´ëÇÑ validationÀ» ¼öÇàÇÑ´Ù.
+    // plan ìƒì„±ì‹œì˜ sequence ê°ì²´ì— ëŒ€í•œ validationì„ ìˆ˜í–‰í•œë‹¤.
     static IDE_RC validatePlanSequence( qcgEnvSequenceList * aSequenceList,
                                         idBool             * aIsValid );
 
-    // plan »ı¼º½ÃÀÇ proc °´Ã¼¿¡ ´ëÇÑ validationÀ» ¼öÇàÇÑ´Ù.
-    // procÀ» °Ë»çÇÏ¸é¼­ latch¸¦ È¹µæÇÑ´Ù.
+    // plan ìƒì„±ì‹œì˜ proc ê°ì²´ì— ëŒ€í•œ validationì„ ìˆ˜í–‰í•œë‹¤.
+    // procì„ ê²€ì‚¬í•˜ë©´ì„œ latchë¥¼ íšë“í•œë‹¤.
     static IDE_RC validatePlanProc( qcgEnvProcList * aProcList,
                                     idBool         * aIsValid );
 
-    // plan »ı¼º½ÃÀÇ synonym °´Ã¼¿¡ ´ëÇÑ validationÀ» ¼öÇàÇÑ´Ù.
+    // plan ìƒì„±ì‹œì˜ synonym ê°ì²´ì— ëŒ€í•œ validationì„ ìˆ˜í–‰í•œë‹¤.
     static IDE_RC validatePlanSynonym( qcStatement       * aStatement,
                                        qcgEnvSynonymList * aSynonymList,
                                        idBool            * aIsValid );
 
     // PROJ-1073 Package
-    // plan »ı¼º½ÃÀÇ package °´Ã¼¿¡ ´ëÇÑ validationÀ» ¼öÇàÇÑ´Ù.
-    // packageÀ» °Ë»çÇÏ¸é¼­ latch¸¦ È¹µæÇÑ´Ù.
+    // plan ìƒì„±ì‹œì˜ package ê°ì²´ì— ëŒ€í•œ validationì„ ìˆ˜í–‰í•œë‹¤.
+    // packageì„ ê²€ì‚¬í•˜ë©´ì„œ latchë¥¼ íšë“í•œë‹¤.
     static IDE_RC validatePlanPkg( qcgEnvPkgList  * aPkgList,
                                    idBool         * aIsValid );
 
     //-------------------------------------------------
-    // privilege °Ë»ç ÇÔ¼ö
+    // privilege ê²€ì‚¬ í•¨ìˆ˜
     //-------------------------------------------------
 
-    // plan »ı¼º½ÃÀÇ table °´Ã¼¿¡ ´ëÇÑ ÇÊ¿äÇÑ ±ÇÇÑÀ» °Ë»çÇÑ´Ù.
+    // plan ìƒì„±ì‹œì˜ table ê°ì²´ì— ëŒ€í•œ í•„ìš”í•œ ê¶Œí•œì„ ê²€ì‚¬í•œë‹¤.
     static IDE_RC checkPlanPrivTable(
         qcStatement                         * aStatement,
         qcgEnvTablePrivList                 * aTableList,
         qciGetSmiStatement4PrepareCallback    aGetSmiStmt4PrepareCallback,
         void                                * aGetSmiStmt4PrepareContext );
 
-    // plan »ı¼º½ÃÀÇ sequence °´Ã¼¿¡ ´ëÇÑ ÇÊ¿äÇÑ ±ÇÇÑÀ» °Ë»çÇÑ´Ù.
+    // plan ìƒì„±ì‹œì˜ sequence ê°ì²´ì— ëŒ€í•œ í•„ìš”í•œ ê¶Œí•œì„ ê²€ì‚¬í•œë‹¤.
     static IDE_RC checkPlanPrivSequence(
         qcStatement                        * aStatement,
         qcgEnvSequencePrivList             * aSequenceList,
         qciGetSmiStatement4PrepareCallback   aGetSmiStmt4PrepareCallback,
         void                               * aGetSmiStmt4PrepareContext );
 
-    // plan »ı¼º½ÃÀÇ proc °´Ã¼¿¡ ´ëÇÑ ÇÊ¿äÇÑ ±ÇÇÑÀ» °Ë»çÇÑ´Ù.
+    // plan ìƒì„±ì‹œì˜ proc ê°ì²´ì— ëŒ€í•œ í•„ìš”í•œ ê¶Œí•œì„ ê²€ì‚¬í•œë‹¤.
     static IDE_RC checkPlanPrivProc(
         qcStatement                         * aStatement,
         qcgEnvProcList                      * aProcList,
@@ -388,49 +388,49 @@ public:
         void                                * aGetSmiStmt4PrepareContext );
 
     // BUG-37251 check privilege for package
-    // plan »ı¼º½ÃÀÇ package °´Ã¼¿¡ ´ëÇÑ ÇÊ¿äÇÑ ±ÇÇÑÀ» °Ë»çÇÑ´Ù.
+    // plan ìƒì„±ì‹œì˜ package ê°ì²´ì— ëŒ€í•œ í•„ìš”í•œ ê¶Œí•œì„ ê²€ì‚¬í•œë‹¤.
     static IDE_RC checkPlanPrivPkg(
         qcStatement                        * aStatement,
         qcgEnvPkgList                      * aPkgList,
         qciGetSmiStatement4PrepareCallback   aGetSmiStmt4PrepareCallback,
         void                               * aGetSmiStmt4PrepareContext );
     
-    // qci::checkPrivilege¿¡¼­ ÇÊ¿äÇÑ °æ¿ì¿¡¸¸ smiStmt¸¦ »ı¼ºÇÑ´Ù.
+    // qci::checkPrivilegeì—ì„œ í•„ìš”í•œ ê²½ìš°ì—ë§Œ smiStmtë¥¼ ìƒì„±í•œë‹¤.
     static IDE_RC setSmiStmtCallback(
         qcStatement                        * aStatement,
         qciGetSmiStatement4PrepareCallback   aGetSmiStmt4PrepareCallback,
         void                               * aGetSmiStmt4PrepareContext );
     
     //-------------------------------------------------
-    // plan cache ³»ºÎÀûÀ¸·Î »ç¿ëÇÏ±â À§ÇÑ ÇÔ¼ö
+    // plan cache ë‚´ë¶€ì ìœ¼ë¡œ ì‚¬ìš©í•˜ê¸° ìœ„í•œ í•¨ìˆ˜
     //-------------------------------------------------
 
-    // templateÀ» Àç»ç¿ëÇÏ±â À§ÇÑ ÃÊ±âÈ­¸¦ ¼öÇàÇÑ´Ù.
+    // templateì„ ì¬ì‚¬ìš©í•˜ê¸° ìœ„í•œ ì´ˆê¸°í™”ë¥¼ ìˆ˜í–‰í•œë‹¤.
     static void   initPrepTemplate4Reuse( qcTemplate * aTemplate );
 
-    // ¿øº» template¿¡¼­ free Çß´ø tuple row¸¦ Àç»ı¼ºÇÑ´Ù.
+    // ì›ë³¸ templateì—ì„œ free í–ˆë˜ tuple rowë¥¼ ì¬ìƒì„±í•œë‹¤.
     static IDE_RC allocUnusedTupleRow( qcSharedPlan * aSharedPlan );
 
-    // ¿øº» template¿¡¼­ free °¡´ÉÇÑ tuple row¸¦ ÇØÁ¦ÇÑ´Ù.
+    // ì›ë³¸ templateì—ì„œ free ê°€ëŠ¥í•œ tuple rowë¥¼ í•´ì œí•œë‹¤.
     static IDE_RC freeUnusedTupleRow( qcSharedPlan * aSharedPlan );
     
 private:
 
     //-------------------------------------------------
-    // plan validation ÇÔ¼ö
+    // plan validation í•¨ìˆ˜
     //-------------------------------------------------
     
-    // plan »ı¼º½ÃÀÇ table °´Ã¼ÀÇ synonym °´Ã¼¿¡ ´ëÇÑ validationÀ» ¼öÇàÇÑ´Ù.
+    // plan ìƒì„±ì‹œì˜ table ê°ì²´ì˜ synonym ê°ì²´ì— ëŒ€í•œ validationì„ ìˆ˜í–‰í•œë‹¤.
     static IDE_RC validatePlanSynonymTable( qcStatement       * aStatement,
                                             qcgEnvSynonymList * aSynonym,
                                             idBool            * aIsValid );
     
-    // plan »ı¼º½ÃÀÇ sequence °´Ã¼ÀÇ synonym °´Ã¼¿¡ ´ëÇÑ validationÀ» ¼öÇàÇÑ´Ù.
+    // plan ìƒì„±ì‹œì˜ sequence ê°ì²´ì˜ synonym ê°ì²´ì— ëŒ€í•œ validationì„ ìˆ˜í–‰í•œë‹¤.
     static IDE_RC validatePlanSynonymSequence( qcStatement       * aStatement,
                                                qcgEnvSynonymList * aSynonym,
                                                idBool            * aIsValid );
     
-    // plan »ı¼º½ÃÀÇ proc °´Ã¼ÀÇ synonym °´Ã¼¿¡ ´ëÇÑ validationÀ» ¼öÇàÇÑ´Ù.
+    // plan ìƒì„±ì‹œì˜ proc ê°ì²´ì˜ synonym ê°ì²´ì— ëŒ€í•œ validationì„ ìˆ˜í–‰í•œë‹¤.
     static IDE_RC validatePlanSynonymProc( qcStatement       * aStatement,
                                            qcgEnvSynonymList * aSynonym,
                                            idBool            * aIsValid );

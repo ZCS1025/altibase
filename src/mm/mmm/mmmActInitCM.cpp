@@ -29,7 +29,7 @@ static IDE_RC mmmPhaseActionInitCM(mmmPhase        aPhase,
     SInt  sImpl;
     UInt  sCmMaxPendingList;
 
-    // BUG-19465 : CM_BufferÀÇ pending list¸¦ Á¦ÇÑ
+    // BUG-19465 : CM_Bufferì˜ pending listë¥¼ ì œí•œ
     sCmMaxPendingList = mmuProperty::getCmMaxPendingList();
 
     switch(aPhase)

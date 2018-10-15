@@ -28,12 +28,12 @@ static ACI_RC ulnBindParamCheckArgs(ulnFnContext *aFnContext,
                                     ulvSLen      *aStrLenOrIndPtr)
 {
     /*
-     * ÆÄ¶ó¹ÌÅÍ ³Ñ¹ö À¯È¿¼º Ã¼Å©
+     * íŒŒë¼ë¯¸í„° ë„˜ë²„ ìœ íš¨ì„± ì²´í¬
      */
     ACI_TEST_RAISE(aParamNumber < 1, LABEL_INVALID_PARAMNUM);
 
     /*
-     * InputOutput Å¸ÀÔ ÀÎÀÚÀÇ À¯È¿¼º Ã¼Å©
+     * InputOutput íƒ€ì… ì¸ìì˜ ìœ íš¨ì„± ì²´í¬
      */
     ACI_TEST_RAISE((aInputOutputType != SQL_PARAM_INPUT &&
                     aInputOutputType != SQL_PARAM_OUTPUT &&
@@ -41,12 +41,12 @@ static ACI_RC ulnBindParamCheckArgs(ulnFnContext *aFnContext,
                     LABEL_INVALID_IN_OUT_TYPE);
 
     /*
-     * Buffer Length À¯È¿¼º Ã¼Å©
+     * Buffer Length ìœ íš¨ì„± ì²´í¬
      */
     ACI_TEST_RAISE(aBufferLength < ULN_vLEN(0), LABEL_INVALID_BUFFER_LEN);
 
     /*
-     * NULL Æ÷ÀÎÅÍÀÇ Àû¹ıÇÑ »ç¿ë Ã¼Å©
+     * NULL í¬ì¸í„°ì˜ ì ë²•í•œ ì‚¬ìš© ì²´í¬
      */
     ACI_TEST_RAISE(aStrLenOrIndPtr  == NULL &&
                    aInputOutputType != SQL_PARAM_OUTPUT &&
@@ -65,7 +65,7 @@ static ACI_RC ulnBindParamCheckArgs(ulnFnContext *aFnContext,
                    LABEL_INVALID_USE_OF_NULL);
 
     /*
-     * BUGBUG : HYC00 À» ²À ¸¸µé¾î¾ß ÇÏ´ÂÁö... Á» ¾Ö¸ÅÇÏ´Ù. ´ÙÀ½ ±âÈ¸¿¡ ¸¸µéÀÚ.
+     * BUGBUG : HYC00 ì„ ê¼­ ë§Œë“¤ì–´ì•¼ í•˜ëŠ”ì§€... ì¢€ ì• ë§¤í•˜ë‹¤. ë‹¤ìŒ ê¸°íšŒì— ë§Œë“¤ì.
      */
 
     return ACI_SUCCESS;
@@ -113,7 +113,7 @@ static ACI_RC ulnBindParamIpdPart(ulnFnContext      *aFnContext,
     ulnMeta    *sIpdMeta    = NULL;
 
     /*
-     * IPD record ÁØºñ
+     * IPD record ì¤€ë¹„
      */
     ACI_TEST_RAISE(ulnBindArrangeNewDescRec(sStmt->mAttrIpd, aParamNumber, &sDescRecIpd)
                    != ACI_SUCCESS,
@@ -122,7 +122,7 @@ static ACI_RC ulnBindParamIpdPart(ulnFnContext      *aFnContext,
     sIpdMeta = &sDescRecIpd->mMeta;
 
     /*
-     * ulnMeta ÃÊ±âÈ­
+     * ulnMeta ì´ˆê¸°í™”
      */
     ulnMetaInitialize(sIpdMeta);
 
@@ -133,12 +133,12 @@ static ACI_RC ulnBindParamIpdPart(ulnFnContext      *aFnContext,
                            aDecimalDigits);
 
     /*
-     * IPD record ÀÇ in/out Å¸ÀÔ ¼¼ÆÃ
+     * IPD record ì˜ in/out íƒ€ì… ì„¸íŒ…
      */
     ulnDescRecSetParamInOut(sDescRecIpd, aInputOutputType);
 
     /*
-     * IPD record ¸¦ IPD ¿¡ ¸Å´Ş±â
+     * IPD record ë¥¼ IPD ì— ë§¤ë‹¬ê¸°
      */
     ACI_TEST_RAISE(ulnDescAddDescRec(sStmt->mAttrIpd, sDescRecIpd) != ACI_SUCCESS,
                    LABEL_OUTOF_MEM);
@@ -158,8 +158,8 @@ static ACI_RC ulnBindParamIpdPart(ulnFnContext      *aFnContext,
 }
 
 /*
- * BUGBUG : APD ¿Í ARD ÀÇ meta information À» ¸¸µå´Â °ÍÀÌ ³Ê¹«³ªµµ ºñ½ÁÇÏ´Ù.
- *          °øÅëµÇ´Â ÇÏ³ªÀÇ ÇÔ¼ö·Î ºĞ¸® ÃßÃâ °¡´ÉÇÏ´Ù. »ı°¢ÇØ º¸µµ·Ï ÇÏÀÚ.
+ * BUGBUG : APD ì™€ ARD ì˜ meta information ì„ ë§Œë“œëŠ” ê²ƒì´ ë„ˆë¬´ë‚˜ë„ ë¹„ìŠ·í•˜ë‹¤.
+ *          ê³µí†µë˜ëŠ” í•˜ë‚˜ì˜ í•¨ìˆ˜ë¡œ ë¶„ë¦¬ ì¶”ì¶œ ê°€ëŠ¥í•˜ë‹¤. ìƒê°í•´ ë³´ë„ë¡ í•˜ì.
  */
 ACI_RC ulnBindParamApdPart(ulnFnContext      *aFnContext,
                            ulnDescRec       **aDescRecApd,
@@ -187,7 +187,7 @@ ACI_RC ulnBindParamApdPart(ulnFnContext      *aFnContext,
     }
 
     /*
-     * APD record ÁØºñ
+     * APD record ì¤€ë¹„
      */
     ACI_TEST_RAISE(ulnBindArrangeNewDescRec(sStmt->mAttrApd, aParamNumber, &sDescRecApd)
                    != ACI_SUCCESS,
@@ -196,7 +196,7 @@ ACI_RC ulnBindParamApdPart(ulnFnContext      *aFnContext,
     ulnMetaInitialize(&sDescRecApd->mMeta);
 
     /*
-     * »ç¿ëÀÚ º¯¼öÀÇ Å¸ÀÔÀ» ¹¦»çÇÏ´Â meta ±¸Á¶Ã¼ ÀÛ¾÷
+     * ì‚¬ìš©ì ë³€ìˆ˜ì˜ íƒ€ì…ì„ ë¬˜ì‚¬í•˜ëŠ” meta êµ¬ì¡°ì²´ ì‘ì—…
      */
 
     ulnMetaBuild4ArdApd(&sDescRecApd->mMeta,
@@ -205,14 +205,14 @@ ACI_RC ulnBindParamApdPart(ulnFnContext      *aFnContext,
                         aBufferLength);
 
     /*
-     * Note : APD ÀÇ in/out type Àº »ç¿ëÀÚ°¡ ÁöÁ¤ÇÑ in/out Å¸ÀÔÀ» ±×´ë·Î µĞ´Ù.
-     *        LOB ÄÃ·³ÀÎ °æ¿ì¿¡ ¼­¹ö·Î º¸³»´Â BINDINFO SET REQ ¿¡¼­´Â ±×¶§±×¶§
-     *        Ã¼Å©ÇØ¼­ in/out type Á¶Á¤.
+     * Note : APD ì˜ in/out type ì€ ì‚¬ìš©ìê°€ ì§€ì •í•œ in/out íƒ€ì…ì„ ê·¸ëŒ€ë¡œ ë‘”ë‹¤.
+     *        LOB ì»¬ëŸ¼ì¸ ê²½ìš°ì— ì„œë²„ë¡œ ë³´ë‚´ëŠ” BINDINFO SET REQ ì—ì„œëŠ” ê·¸ë•Œê·¸ë•Œ
+     *        ì²´í¬í•´ì„œ in/out type ì¡°ì •.
      */
     ulnDescRecSetParamInOut(sDescRecApd, aInputOutputType);
 
     /*
-     * »ç¿ëÀÚ º¯¼öÀÇ ¸Ş¸ğ¸®¸¦ ¹¦»çÇÏ´Â desc rec ¸â¹ö ¼¼ÆÃ
+     * ì‚¬ìš©ì ë³€ìˆ˜ì˜ ë©”ëª¨ë¦¬ë¥¼ ë¬˜ì‚¬í•˜ëŠ” desc rec ë©¤ë²„ ì„¸íŒ…
      */
     sDescRecApd->mDataPtr = aParamValuePtr;
 
@@ -220,7 +220,7 @@ ACI_RC ulnBindParamApdPart(ulnFnContext      *aFnContext,
     ulnDescRecSetIndicatorPtr(sDescRecApd, aStrLenOrIndPtr);
 
     /*
-     * APD record ¸¦ APD ¿¡ ¸Å´Ş±â
+     * APD record ë¥¼ APD ì— ë§¤ë‹¬ê¸°
      */
     ACI_TEST_RAISE(ulnDescAddDescRec(sStmt->mAttrApd, sDescRecApd) != ACI_SUCCESS,
                    LABEL_OUTOF_MEM);
@@ -267,7 +267,7 @@ ACI_RC ulnBindParamBody(ulnFnContext *aFnContext,
     ULN_FNCONTEXT_GET_DBC(aFnContext, sDbc);
 
     /*
-     * MTYPE °ú CTYPE À» ¿ì¼± ±¸ÇÑ ÈÄ, ¼­·Î Àû¹ıÇÑ Â¦ÀÎÁö Ã¼Å©
+     * MTYPE ê³¼ CTYPE ì„ ìš°ì„  êµ¬í•œ í›„, ì„œë¡œ ì ë²•í•œ ì§ì¸ì§€ ì²´í¬
      */
     if ( ulsdIsInputMTData( aParamType ) == ACP_FALSE )
     {
@@ -288,10 +288,10 @@ ACI_RC ulnBindParamBody(ulnFnContext *aFnContext,
                    LABEL_INVALID_CONVERSION);
 
     /*
-     * Note : Altibase ¿¡´Â TIME °ú DATE ÀÇ ±¸ºĞÀÌ ¾øÀ¸¹Ç·Î ÀÌ·¸°Ô ¼ÕÀ¸·Î ±¸ºĞÇØ
-     *        ÁÖ¾î¾ß ÇÑ´Ù.
+     * Note : Altibase ì—ëŠ” TIME ê³¼ DATE ì˜ êµ¬ë¶„ì´ ì—†ìœ¼ë¯€ë¡œ ì´ë ‡ê²Œ ì†ìœ¼ë¡œ êµ¬ë¶„í•´
+     *        ì£¼ì–´ì•¼ í•œë‹¤.
      *
-     * BUGBUG : ctype À» º¸°í ±¸ºĞÇØ¾ß ÇÏ³ª, mtype À» º¸°í ÇØ¾ß ÇÏ³ª
+     * BUGBUG : ctype ì„ ë³´ê³  êµ¬ë¶„í•´ì•¼ í•˜ë‚˜, mtype ì„ ë³´ê³  í•´ì•¼ í•˜ë‚˜
      */
     ACI_TEST_RAISE(sCTYPE == ULN_CTYPE_DATE && aParamType == SQL_TYPE_TIME,
                    LABEL_INVALID_CONVERSION);
@@ -323,10 +323,10 @@ ACI_RC ulnBindParamBody(ulnFnContext *aFnContext,
     if (aParamName != NULL)
     {
         /*
-         * sParamPosArrÀÌ NULL·Î ¸®ÅÏµÇ´Â Á¶°Ç
+         * sParamPosArrì´ NULLë¡œ ë¦¬í„´ë˜ëŠ” ì¡°ê±´
          *
-         * 1. aParamNameÀÌ Statement¿¡ ¾ø´Â °æ¿ì
-         * 2. Statement¿¡ ?, :nameÀÌ È¥¿ëµÈ °æ¿ì
+         * 1. aParamNameì´ Statementì— ì—†ëŠ” ê²½ìš°
+         * 2. Statementì— ?, :nameì´ í˜¼ìš©ëœ ê²½ìš°
          */
         ulnAnalyzeStmtGetPosArr(sStmt->mAnalyzeStmt,
                                 aParamName,
@@ -351,10 +351,10 @@ ACI_RC ulnBindParamBody(ulnFnContext *aFnContext,
     for (i = 0; i < sParamPosCnt; i++)
     {
         /*
-         * BUGBUG : IPD ÀÇ ÀÇ¹Ì¸¦ È®½ÇÇÏ°Ô Á¤¸³½ÃÄÑ¾ß ÇÑ´Ù.
-         *          Æ¯È÷³ª LOB, LOB_LOCATOR ¿Í °ü·ÃÇÑ ºÎºĞ¿¡¼­.
+         * BUGBUG : IPD ì˜ ì˜ë¯¸ë¥¼ í™•ì‹¤í•˜ê²Œ ì •ë¦½ì‹œì¼œì•¼ í•œë‹¤.
+         *          íŠ¹íˆë‚˜ LOB, LOB_LOCATOR ì™€ ê´€ë ¨í•œ ë¶€ë¶„ì—ì„œ.
          *
-         * IPD °ü·Ã Ã³¸®
+         * IPD ê´€ë ¨ ì²˜ë¦¬
          */
         ACI_TEST(ulnBindParamIpdPart(aFnContext,
                                      &sDescRecIpd,
@@ -371,7 +371,7 @@ ACI_RC ulnBindParamBody(ulnFnContext *aFnContext,
                                 sMTYPE );
 
         /*
-         * APD °ü·Ã Ã³¸®
+         * APD ê´€ë ¨ ì²˜ë¦¬
          */
         ACI_TEST(ulnBindParamApdPart(aFnContext,
                                      &sDescRecApd,
@@ -397,11 +397,11 @@ ACI_RC ulnBindParamBody(ulnFnContext *aFnContext,
     {
         /*
          * Invalid Application Buffer Type
-         * BUGBUG: ½ºÆåÀÇ ¿¡·¯ÄÚµå ¸®½ºÆ®¿¡´Â aValueType ÀÌ SQL_C_DEFAULT ÀÏ¶§µµ HY003 ÀÎµ¥,
-         * ¶Ç ValueType ¼³¸íÇÒ¶§ º¸¸é SQL_C_DEFAULT ÀÏ ¶§¿¡´Â ¾î¶»°Ô ¾î¶»°Ô ÇÏ¶ó°í
-         * ¼³¸íÇØ µÎ°í ÀÖ´Ù.
-         * ¾î´À Àå´Ü¿¡ ÃãÀ» Ãâ²¿ -_-;;;;
-         * ÀÏ´Ü, SQL_C_DEFAULT ´Â valid ÇÑ °ÍÀ¸·Î ÇÏ°í ³Ñ¾î°£´Ù.
+         * BUGBUG: ìŠ¤í™ì˜ ì—ëŸ¬ì½”ë“œ ë¦¬ìŠ¤íŠ¸ì—ëŠ” aValueType ì´ SQL_C_DEFAULT ì¼ë•Œë„ HY003 ì¸ë°,
+         * ë˜ ValueType ì„¤ëª…í• ë•Œ ë³´ë©´ SQL_C_DEFAULT ì¼ ë•Œì—ëŠ” ì–´ë–»ê²Œ ì–´ë–»ê²Œ í•˜ë¼ê³ 
+         * ì„¤ëª…í•´ ë‘ê³  ìˆë‹¤.
+         * ì–´ëŠ ì¥ë‹¨ì— ì¶¤ì„ ì¶œê¼¬ -_-;;;;
+         * ì¼ë‹¨, SQL_C_DEFAULT ëŠ” valid í•œ ê²ƒìœ¼ë¡œ í•˜ê³  ë„˜ì–´ê°„ë‹¤.
          *
          * HY003
          */

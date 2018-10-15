@@ -21,13 +21,13 @@
  * Description :
  *     SREC Node
  * 
- *     Left Child¿¡ ´ëÇÑ Data¿Í Right Child¿¡ ´ëÇÑ Data¸¦
- *     ¸ğµÎ ¸®ÅÏÇÑ´Ù.
- *     Left Child¿Í Right ChildÀÇ VMTRÀ» ¼­·Î SWAPÇÏ¸é¼­ ¼öÇàÇÑ´Ù.
+ *     Left Childì— ëŒ€í•œ Dataì™€ Right Childì— ëŒ€í•œ Dataë¥¼
+ *     ëª¨ë‘ ë¦¬í„´í•œë‹¤.
+ *     Left Childì™€ Right Childì˜ VMTRì„ ì„œë¡œ SWAPí•˜ë©´ì„œ ìˆ˜í–‰í•œë‹¤.
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  **********************************************************************/
 
@@ -45,7 +45,7 @@ IDE_RC qmnSREC::init( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    SREC ³ëµåÀÇ ÃÊ±âÈ­
+ *    SREC ë…¸ë“œì˜ ì´ˆê¸°í™”
  *
  * Implementation :
  *
@@ -58,7 +58,7 @@ IDE_RC qmnSREC::init( qcTemplate * aTemplate,
     sDataPlan->flag = & aTemplate->planFlag[sCodePlan->planID];
     
     //------------------------------------------------
-    // ÃÊ±âÈ­
+    // ì´ˆê¸°í™”
     //------------------------------------------------
     
     // first initialization
@@ -70,9 +70,9 @@ IDE_RC qmnSREC::init( qcTemplate * aTemplate,
     }
     else
     {
-        // BUG-44070 ¹İº¹ ¼­ºêÄõ¸®¿¡ USE_TOW_PASS_HASH ¿Í
-        // top Äõ¸®¿¡ USE_FULL_NL ¿¡ ¿À¸¥ÂÊ¿¡ recursive view°¡ ¿À´Â °æ¿ì
-        // hash temp tableÀ» Àç±¸¼º ÇÏµµ·Ï touch ÇÑ´Ù.
+        // BUG-44070 ë°˜ë³µ ì„œë¸Œì¿¼ë¦¬ì— USE_TOW_PASS_HASH ì™€
+        // top ì¿¼ë¦¬ì— USE_FULL_NL ì— ì˜¤ë¥¸ìª½ì— recursive viewê°€ ì˜¤ëŠ” ê²½ìš°
+        // hash temp tableì„ ì¬êµ¬ì„± í•˜ë„ë¡ touch í•œë‹¤.
         IDE_TEST( qmnVSCN::touchDependency( aTemplate,
                                             sCodePlan->recursiveChild )
                   != IDE_SUCCESS );
@@ -82,7 +82,7 @@ IDE_RC qmnSREC::init( qcTemplate * aTemplate,
     sDataPlan->recursionLevel = 0;
 
     //------------------------------------------------
-    // ¼öÇà ÇÔ¼ö °áÁ¤
+    // ìˆ˜í–‰ í•¨ìˆ˜ ê²°ì •
     //------------------------------------------------
 
     sDataPlan->doIt = qmnSREC::doItLeftFirst;
@@ -101,10 +101,10 @@ IDE_RC qmnSREC::doIt( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    SRECÀÇ °íÀ¯ ±â´ÉÀ» ¼öÇàÇÑ´Ù.
+ *    SRECì˜ ê³ ìœ  ê¸°ëŠ¥ì„ ìˆ˜í–‰í•œë‹¤.
  *
  * Implementation :
- *    ÁöÁ¤µÈ ÇÔ¼ö Æ÷ÀÎÅÍ¸¦ ¼öÇàÇÑ´Ù.
+ *    ì§€ì •ëœ í•¨ìˆ˜ í¬ì¸í„°ë¥¼ ìˆ˜í–‰í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -126,9 +126,9 @@ IDE_RC qmnSREC::padNull( qcTemplate * /* aTemplate */,
 /***********************************************************************
  *
  * Description :
- *    È£ÃâµÇ¾î¼­´Â ¾ÈµÊ.
- *    »óÀ§ Node´Â ¹İµå½Ã VIEW³ëµåÀÌ¸ç,
- *    View´Â ÀÚ½ÅÀÇ Null Row¸¸À» ¼³Á¤ÇÏ±â ¶§¹®ÀÌ´Ù.
+ *    í˜¸ì¶œë˜ì–´ì„œëŠ” ì•ˆë¨.
+ *    ìƒìœ„ NodeëŠ” ë°˜ë“œì‹œ VIEWë…¸ë“œì´ë©°,
+ *    ViewëŠ” ìì‹ ì˜ Null Rowë§Œì„ ì„¤ì •í•˜ê¸° ë•Œë¬¸ì´ë‹¤.
  *   
  * Implementation :
  *
@@ -148,7 +148,7 @@ IDE_RC qmnSREC::printPlan( qcTemplate   * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    ¼öÇà Á¤º¸¸¦ Ãâ·ÂÇÑ´Ù.
+ *    ìˆ˜í–‰ ì •ë³´ë¥¼ ì¶œë ¥í•œë‹¤.
  *
  * Implementation :
  *
@@ -160,7 +160,7 @@ IDE_RC qmnSREC::printPlan( qcTemplate   * aTemplate,
     ULong      i;
 
     //----------------------------
-    // Display À§Ä¡ °áÁ¤
+    // Display ìœ„ì¹˜ ê²°ì •
     //----------------------------
 
     for ( i = 0; i < aDepth; i++ )
@@ -173,7 +173,7 @@ IDE_RC qmnSREC::printPlan( qcTemplate   * aTemplate,
                               "RECURSIVE UNION ALL\n" );
         
     //----------------------------
-    // Operatorº° °á°ú Á¤º¸ Ãâ·Â
+    // Operatorë³„ ê²°ê³¼ ì •ë³´ ì¶œë ¥
     //----------------------------
     
     if ( QCU_TRCLOG_RESULT_DESC == 1 )
@@ -190,7 +190,7 @@ IDE_RC qmnSREC::printPlan( qcTemplate   * aTemplate,
     }
 
     //----------------------------
-    // Child PlanÀÇ Á¤º¸ Ãâ·Â
+    // Child Planì˜ ì •ë³´ ì¶œë ¥
     //----------------------------
 
     IDE_TEST( aPlan->left->printPlan( aTemplate,
@@ -219,7 +219,7 @@ IDE_RC qmnSREC::doItDefault( qcTemplate * /* aTemplate */,
 /***********************************************************************
  *
  * Description :
- *    È£ÃâµÇ¾î¼­´Â ¾ÈµÊ
+ *    í˜¸ì¶œë˜ì–´ì„œëŠ” ì•ˆë¨
  *
  * Implementation :
  *
@@ -236,21 +236,21 @@ IDE_RC qmnSREC::firstInit( qmncSREC   * aCodePlan,
 /***********************************************************************
  *
  * Description :
- *    left Data ¿µ¿ª¿¡ ´ëÇÑ ÃÊ±âÈ­
+ *    left Data ì˜ì—­ì— ëŒ€í•œ ì´ˆê¸°í™”
  *
  * Implementation :
  *
  ***********************************************************************/
 
     //---------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //---------------------------------
 
     IDE_DASSERT( aCodePlan->plan.left->type == QMN_VMTR );
     IDE_DASSERT( aCodePlan->recursiveChild->type == QMN_VSCN );
 
     //---------------------------------
-    // ÃÊ±âÈ­ ¿Ï·á¸¦ Ç¥±â
+    // ì´ˆê¸°í™” ì™„ë£Œë¥¼ í‘œê¸°
     //---------------------------------
 
     *aDataPlan->flag &= ~QMND_SREC_INIT_DONE_MASK;
@@ -266,7 +266,7 @@ IDE_RC qmnSREC::doItLeftFirst( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    left subquery ¼öÇà½Ã ÃÖÃÊ ¼öÇà ÇÔ¼ö
+ *    left subquery ìˆ˜í–‰ì‹œ ìµœì´ˆ ìˆ˜í–‰ í•¨ìˆ˜
  *
  * Implementation :
  *
@@ -281,8 +281,8 @@ IDE_RC qmnSREC::doItLeftFirst( qcTemplate * aTemplate,
 
     //---------------------------------
     // BUG-43917
-    // recursive view°¡ join ¿À¸¥ÂÊ¿¡ ¿À´Â °æ¿ì
-    // left, right VMTRÀº Àç¼öÇàÀ» À§ÇØ ÃÊ±âÈ­ ÇØ¾ßÇÑ´Ù.
+    // recursive viewê°€ join ì˜¤ë¥¸ìª½ì— ì˜¤ëŠ” ê²½ìš°
+    // left, right VMTRì€ ì¬ìˆ˜í–‰ì„ ìœ„í•´ ì´ˆê¸°í™” í•´ì•¼í•œë‹¤.
     //---------------------------------
 
     IDE_TEST( qmnVMTR::resetDependency( aTemplate,
@@ -294,7 +294,7 @@ IDE_RC qmnSREC::doItLeftFirst( qcTemplate * aTemplate,
               != IDE_SUCCESS );
     
     //---------------------------------
-    // leftÀÇ Child ¼öÇà
+    // leftì˜ Child ìˆ˜í–‰
     //---------------------------------
 
     IDE_TEST( sCodePlan->plan.left->init( aTemplate,
@@ -302,7 +302,7 @@ IDE_RC qmnSREC::doItLeftFirst( qcTemplate * aTemplate,
               != IDE_SUCCESS );
     
     //---------------------------------
-    // Temp Table Àü¿ë Á¤º¸ÀÇ ÃÊ±âÈ­
+    // Temp Table ì „ìš© ì •ë³´ì˜ ì´ˆê¸°í™”
     //---------------------------------
 
     IDE_TEST( qmnVMTR::getCursorInfo( aTemplate,
@@ -313,7 +313,7 @@ IDE_RC qmnSREC::doItLeftFirst( qcTemplate * aTemplate,
                                       & sSortRecord )
               != IDE_SUCCESS );
     
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     IDE_DASSERT( sDataPlan->vmtrLeft.memSortMgr != NULL );
 
     IDE_TEST( qmnVMTR::getMtrNode( aTemplate,
@@ -361,7 +361,7 @@ IDE_RC qmnSREC::doItLeftNext( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    left subquery ¼öÇà½Ã ´ÙÀ½ ¼öÇà ÇÔ¼ö
+ *    left subquery ìˆ˜í–‰ì‹œ ë‹¤ìŒ ìˆ˜í–‰ í•¨ìˆ˜
  *
  * Implementation :
  *
@@ -422,7 +422,7 @@ IDE_RC qmnSREC::doItRightFirst( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    right subquery ¼öÇà½Ã ÃÖÃÊ ¼öÇà ÇÔ¼ö
+ *    right subquery ìˆ˜í–‰ì‹œ ìµœì´ˆ ìˆ˜í–‰ í•¨ìˆ˜
  *
  * Implementation :
  *
@@ -436,7 +436,7 @@ IDE_RC qmnSREC::doItRightFirst( qcTemplate * aTemplate,
     qmdMtrNode * sSortRecord;
     
     //---------------------------------
-    // rightÀÇ Child ¼öÇà
+    // rightì˜ Child ìˆ˜í–‰
     //---------------------------------
         
     IDE_TEST( sCodePlan->plan.right->init( aTemplate,
@@ -444,7 +444,7 @@ IDE_RC qmnSREC::doItRightFirst( qcTemplate * aTemplate,
               != IDE_SUCCESS );
     
     //---------------------------------
-    // Temp Table Àü¿ë Á¤º¸ÀÇ ÃÊ±âÈ­
+    // Temp Table ì „ìš© ì •ë³´ì˜ ì´ˆê¸°í™”
     //---------------------------------
 
     IDE_TEST( qmnVMTR::getCursorInfo( aTemplate,
@@ -455,7 +455,7 @@ IDE_RC qmnSREC::doItRightFirst( qcTemplate * aTemplate,
                                       & sSortRecord )
               != IDE_SUCCESS );
     
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     IDE_DASSERT( sDataPlan->vmtrRight.memSortMgr != NULL );
 
     IDE_TEST( qmnVMTR::getMtrNode( aTemplate,
@@ -503,7 +503,7 @@ IDE_RC qmnSREC::doItRightNext( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    right subquery ¼öÇà½Ã ´ÙÀ½ ¼öÇà ÇÔ¼ö
+ *    right subquery ìˆ˜í–‰ì‹œ ë‹¤ìŒ ìˆ˜í–‰ í•¨ìˆ˜
  *
  * Implementation :
  *
@@ -543,7 +543,7 @@ IDE_RC qmnSREC::doItRightNext( qcTemplate * aTemplate,
         QMN_SWAP_SORT_TEMP( sDataPlan->vmtrLeft.memSortMgr,
                             sDataPlan->vmtrRight.memSortMgr );
         
-        // Àç¼öÇàÀ» À§ÇÑ ÃÊ±âÈ­
+        // ì¬ìˆ˜í–‰ì„ ìœ„í•œ ì´ˆê¸°í™”
         IDE_TEST( qmnVMTR::resetDependency( aTemplate,
                                             sCodePlan->plan.right )
                   != IDE_SUCCESS );
@@ -579,9 +579,9 @@ IDE_RC qmnSREC::setStackValue( qcTemplate * aTemplate,
  * Description :
  *
  * Implementation :
- *    »óÀ§ VIEW¸¦ À§ÇØ stack¿¡ ½×¾Æ ¿Ã¸°´Ù.
- *    ¼º´É ÃÖÀûÈ­¸¦ À§ÇØ VMTRÀÇ mtrNode¸¦ tuple¿¡ ¿øº¹ÇÏÁö ¾Ê°í
- *    value pointer¸¸ ¾ò¾î stack¿¡ ½×´Â´Ù.
+ *    ìƒìœ„ VIEWë¥¼ ìœ„í•´ stackì— ìŒ“ì•„ ì˜¬ë¦°ë‹¤.
+ *    ì„±ëŠ¥ ìµœì í™”ë¥¼ ìœ„í•´ VMTRì˜ mtrNodeë¥¼ tupleì— ì›ë³µí•˜ì§€ ì•Šê³ 
+ *    value pointerë§Œ ì–»ì–´ stackì— ìŒ“ëŠ”ë‹¤.
  *
  ***********************************************************************/
 

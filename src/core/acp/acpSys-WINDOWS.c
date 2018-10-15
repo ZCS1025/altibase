@@ -373,7 +373,7 @@ ACP_EXPORT acp_rc_t acpSysGetMacAddress(acp_mac_addr_t *aMacAddr,
     }
     else
     {
-        /* BUG-21473 windowsÀåºñ¿¡¼­ acpSysGetMacAddr()ÇÔ¼ö°¡ ½ÇÆĞÇÕ´Ï´Ù. */
+        /* BUG-21473 windowsì¥ë¹„ì—ì„œ acpSysGetMacAddr()í•¨ìˆ˜ê°€ ì‹¤íŒ¨í•©ë‹ˆë‹¤. */
         sBufferSize *= sNumIfs;
 
         sRC = acpMemRealloc((void **)&sAdapterInfo, sBufferSize);

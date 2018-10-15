@@ -45,19 +45,19 @@ public:
     void            addTablesModifyCount( void );
 
     /*
-     * + Page List EntryÀÇ record cnt¸¦ °»½ÅÇÏ´Â ÀıÂ÷ by PRJ-1496
+     * + Page List Entryì˜ record cntë¥¼ ê°±ì‹ í•˜ëŠ” ì ˆì°¨ by PRJ-1496
      *
-     * 1) ¸ğµç table¿¡ entry mutex¸¦ ÀâÀ¸¸é¼­ max rows¸¦ °Ë»çÇÑ´Ù.
+     * 1) ëª¨ë“  tableì— entry mutexë¥¼ ì¡ìœ¼ë©´ì„œ max rowsë¥¼ ê²€ì‚¬í•œë‹¤.
      *    -> requestAllEntryForCheckMaxRow
      *
-     * 2) ¸Ş¸ğ¸® Å×ÀÌºíÀÇ Áõ°¡µÈ row °³¼ö¸¦ °»½ÅÇÏ°í entry mutex¸¦ releaseÇÑ´Ù.
+     * 2) ë©”ëª¨ë¦¬ í…Œì´ë¸”ì˜ ì¦ê°€ëœ row ê°œìˆ˜ë¥¼ ê°±ì‹ í•˜ê³  entry mutexë¥¼ releaseí•œë‹¤.
      *    -> releaseEntryAndUpdateMemTableInfoForIns
      *
-     * 3) µğ½ºÅ© Å×ÀÌºíÀÇ Áõ°¨µÈ row °³¼ö¸¦ °»½Å°ú ÇÔ²² commitÇÏ°í
-     *    entry mutex¸¦ releaseÇÑ´Ù.
+     * 3) ë””ìŠ¤í¬ í…Œì´ë¸”ì˜ ì¦ê°ëœ row ê°œìˆ˜ë¥¼ ê°±ì‹ ê³¼ í•¨ê»˜ commití•˜ê³ 
+     *    entry mutexë¥¼ releaseí•œë‹¤.
      *    -> releaseEntryAndUpdateDiskTableInfoWithCommit
      *
-     * 4) ¸Ş¸ğ¸® Å×ÀÌºíÀÇ °¨¼ÒµÈ row °³¼ö¸¦ °»½ÅÇÑ´Ù.
+     * 4) ë©”ëª¨ë¦¬ í…Œì´ë¸”ì˜ ê°ì†Œëœ row ê°œìˆ˜ë¥¼ ê°±ì‹ í•œë‹¤.
      *    -> updateMemTableInfoForDel
      */
 
@@ -182,7 +182,7 @@ inline void smxTableInfoMgr::setHintDataPID( smxTableInfo * aTableInfoPtr,
 }
 
 /***********************************************************************
- * Description : smxTableInfo °´Ã¼ÀÇ ExistDPathIns¸¦ ¹İÈ¯ÇÑ´Ù.
+ * Description : smxTableInfo ê°ì²´ì˜ ExistDPathInsë¥¼ ë°˜í™˜í•œë‹¤.
  ***********************************************************************/
 inline idBool smxTableInfoMgr::isExistDPathIns( void * aTableInfoPtr )
 {

@@ -174,7 +174,7 @@ IDE_RC altiWrapi::parsingCommand( altiWrap     * aAltiWrap,
         }
     }
 
-    /* --inameÀº ÇÊ¼ö ¿É¼ÇÀÌ´Ù. ¾øÀ¸¸é, ¿¡·¯! */
+    /* --inameì€ í•„ìˆ˜ ì˜µì…˜ì´ë‹¤. ì—†ìœ¼ë©´, ì—ëŸ¬! */
     if ( sInPathExist != ID_TRUE )
     {
         IDE_RAISE( ERR_INVALID_COMMAND )
@@ -203,7 +203,7 @@ IDE_RC altiWrapi::parsingCommand( altiWrap     * aAltiWrap,
         // Nothing to do.
     } 
 
-    /* input / output path Á¤º¸¸¦ ¼ÂÆÃ */
+    /* input / output path ì •ë³´ë¥¼ ì…‹íŒ… */
     IDE_TEST( altiWrapFileMgr::setFilePath( aAltiWrap,
                                             sInPath,
                                             sOutPath )
@@ -263,9 +263,9 @@ IDE_RC altiWrapi::allocAltiWrap( altiWrap ** aAltiWrap )
 {
 /***********************************************************
  * Description :
- *     altiWrapÀÇ ÇÒ´ç ¹× ¸â¹ö ÇÒ´ç
- *     ÇØ´ç ÇÔ¼ö¿¡ Ãß°¡ÇßÀ» °æ¿ì,
- *     altiWrapi::finalizeAltiWrap¿¡µµ Ãß°¡ÇØ¾ß ÇÔ.
+ *     altiWrapì˜ í• ë‹¹ ë° ë©¤ë²„ í• ë‹¹
+ *     í•´ë‹¹ í•¨ìˆ˜ì— ì¶”ê°€í–ˆì„ ê²½ìš°,
+ *     altiWrapi::finalizeAltiWrapì—ë„ ì¶”ê°€í•´ì•¼ í•¨.
  **********************************************************/
 
     altiWrap   * sAltiWrap = NULL;
@@ -274,19 +274,19 @@ IDE_RC altiWrapi::allocAltiWrap( altiWrap ** aAltiWrap )
 
     IDE_DASSERT( aAltiWrap != NULL );
 
-    /* altiWrap ÇÒ´ç */
+    /* altiWrap í• ë‹¹ */
     sAltiWrap = (altiWrap *)idlOS::malloc( ID_SIZEOF(altiWrap) );
     IDE_TEST_RAISE( sAltiWrap == NULL, ERR_ALLOC_MEMORY );
     sState = 1;
 
-    /* ¸â¹ö ÇÒ´ç ÇÒ´ç */
-    /* mFilePathInfo ÇÒ´ç ¹× ÃÊ±âÈ­ */
+    /* ë©¤ë²„ í• ë‹¹ í• ë‹¹ */
+    /* mFilePathInfo í• ë‹¹ ë° ì´ˆê¸°í™” */
     sAltiWrap->mFilePathInfo =
         (altiWrapPathInfo *)idlOS::calloc( 1, ID_SIZEOF(altiWrapPathInfo) );
     IDE_TEST_RAISE( sAltiWrap->mFilePathInfo == NULL, ERR_ALLOC_MEMORY );
     sState = 2;
 
-    /* mPlainText ÇÒ´ç ¹× ÃÊ±âÈ­ */
+    /* mPlainText í• ë‹¹ ë° ì´ˆê¸°í™” */
     sAltiWrap->mPlainText =
         (altiWrapText *)idlOS::malloc( ID_SIZEOF(altiWrapText) );
     IDE_TEST_RAISE( sAltiWrap->mPlainText == NULL, ERR_ALLOC_MEMORY );
@@ -294,13 +294,13 @@ IDE_RC altiWrapi::allocAltiWrap( altiWrap ** aAltiWrap )
     sAltiWrap->mPlainText->mText    = NULL;
     sAltiWrap->mPlainText->mTextLen = 0;
 
-    /* mCrtPSMStmtPosInfo ÇÒ´ç ¹× ÃÊ±âÈ­ */
+    /* mCrtPSMStmtPosInfo í• ë‹¹ ë° ì´ˆê¸°í™” */
     SET_EMPTY_ALTIWRAP_POSITION( sAltiWrap->mCrtPSMStmtHeaderPos ); 
 
-    /* mEncryptedTExtList ÃÊ±âÈ­ */
+    /* mEncryptedTExtList ì´ˆê¸°í™” */
     sAltiWrap->mEncryptedTextList = NULL;
 
-    /* mErrorMgr ÇÒ´ç ¹× ÃÊ±âÈ­ */
+    /* mErrorMgr í• ë‹¹ ë° ì´ˆê¸°í™” */
     sAltiWrap->mErrorMgr =
         (uteErrorMgr*)idlOS::malloc( ID_SIZEOF(uteErrorMgr) );
     IDE_TEST_RAISE( sAltiWrap->mErrorMgr == NULL, ERR_ALLOC_MEMORY );
@@ -345,8 +345,8 @@ void altiWrapi::finalizeAltiWrap( altiWrap * aAltiWrap )
 /***********************************************************
  * Description :
  *     altiWrap free
- *     ÇØ´ç ÇÔ¼ö¿¡ Ãß°¡ÇßÀ» °æ¿ì,
- *     altiWrapi::allocAltiWrap¿¡µµ Ãß°¡ÇØ¾ß ÇÔ.
+ *     í•´ë‹¹ í•¨ìˆ˜ì— ì¶”ê°€í–ˆì„ ê²½ìš°,
+ *     altiWrapi::allocAltiWrapì—ë„ ì¶”ê°€í•´ì•¼ í•¨.
  **********************************************************/
 
     altiWrapTextList * sNode = NULL;
@@ -357,20 +357,20 @@ void altiWrapi::finalizeAltiWrap( altiWrap * aAltiWrap )
     aAltiWrap->mErrorMgr = NULL;
 
     /* altiWrapEncrypt::setEncryptedText
-       ¿¡¼­ ÇÒ´ç */
+       ì—ì„œ í• ë‹¹ */
     while ( aAltiWrap->mEncryptedTextList != NULL )
     {
         sNode = aAltiWrap->mEncryptedTextList;
         aAltiWrap->mEncryptedTextList = sNode->mNext;
 
         /* altiWrapEncrypt::setEncryptedText
-           ¿¡¼­ ÇÒ´ç */
+           ì—ì„œ í• ë‹¹ */
         if ( sNode->mText != NULL )
         {
             if ( sNode->mText->mText != NULL )
             {
                 /* altiWrapEncrypt::combineEncryptedText
-                   ¿¡¼­ ÇÒ´ç */
+                   ì—ì„œ í• ë‹¹ */
                 idlOS::free(sNode->mText->mText);
                 sNode->mText->mText = NULL;
             }

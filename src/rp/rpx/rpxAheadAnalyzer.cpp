@@ -271,9 +271,9 @@ void rpxAheadAnalyzer::run( void )
         IDE_CLEAR();
 
         /* 
-         * Thread °¡ ½ÃÀÛÇÏ±âÀü¿¡ ºĞ¼® ½ÃÀÛ Flag °¡ ¼³Á¤µÇ¾î 
-         * ÀÖÀ»¼ö ÀÖ´Ù. ±×·¸°Ô ¶§¹®¿¡ timedwait À¸·Î µé¾î °¡±âÀü
-         * mIsAnalyzing Flag À» È®ÀÎÇÑ´Ù.
+         * Thread ê°€ ì‹œì‘í•˜ê¸°ì „ì— ë¶„ì„ ì‹œì‘ Flag ê°€ ì„¤ì •ë˜ì–´ 
+         * ìˆì„ìˆ˜ ìˆë‹¤. ê·¸ë ‡ê²Œ ë•Œë¬¸ì— timedwait ìœ¼ë¡œ ë“¤ì–´ ê°€ê¸°ì „
+         * mIsAnalyzing Flag ì„ í™•ì¸í•œë‹¤.
          */
         if ( mIsAnalyzing == ID_TRUE ) 
         {
@@ -293,8 +293,8 @@ void rpxAheadAnalyzer::run( void )
         if ( mExitFlag != ID_TRUE )
         {
             /* 
-             * ÇÒÀÏÀ» ¿Ï·á ÇÏ¿´À¸¸é 
-             * Sender °¡ Áö½ÃÇÏ±âÀü±îÁö sleep »óÅÂ·Î º¯°æÇÑ´Ù.
+             * í• ì¼ì„ ì™„ë£Œ í•˜ì˜€ìœ¼ë©´ 
+             * Sender ê°€ ì§€ì‹œí•˜ê¸°ì „ê¹Œì§€ sleep ìƒíƒœë¡œ ë³€ê²½í•œë‹¤.
              */
             mStatus = RPX_AHEAD_ANALYZER_STATUS_WAIT_ANALYZE;
 
@@ -467,7 +467,7 @@ IDE_RC rpxAheadAnalyzer::analyze( smiLogRec     * aLog )
             case SMI_LT_TABLE_META:
                 sItemMeta = aLog->getTblMeta();
 
-                // Table Meta Log Record¸¦ Transaction Table¿¡ º¸°üÇÑ´Ù.
+                // Table Meta Log Recordë¥¼ Transaction Tableì— ë³´ê´€í•œë‹¤.
                 IDE_TEST( mTransTable.addItemMetaEntry( sTransID,
                                                         sItemMeta,
                                                         (const void*)aLog->getTblMetaLogBodyPtr(),
@@ -1115,14 +1115,14 @@ IDE_RC rpxAheadAnalyzer::applyTableMetaLog( smTID aTID )
                                      sItemMetaEntry->mItemMeta.mOldTableOID )
                   != IDE_SUCCESS );
 
-        //BUG-26720 : serchTable¿¡¼­ sMetaItemÀÌ NULLÀÏ¼ö ÀÖÀ½
+        //BUG-26720 : serchTableì—ì„œ sMetaItemì´ NULLì¼ìˆ˜ ìˆìŒ
         IDE_TEST_RAISE( sMetaItem == NULL, ERR_NOT_FOUND_TABLE );
 
         IDU_FIT_POINT( "rpxAheadAnalyzer::applyTableMetaLog::begin::sSmiStmt",
                        rpERR_ABORT_RP_INTERNAL_ARG,
                        "sSmiStmt->begin" );
 
-        // Table Meta¿Í Table Meta Cache¸¦ °»½ÅÇÑ´Ù.
+        // Table Metaì™€ Table Meta Cacheë¥¼ ê°±ì‹ í•œë‹¤.
         IDE_TEST( sSmiStmt.begin( NULL,
                                   spRootStmt,
                                   SMI_STATEMENT_NORMAL |
@@ -1130,7 +1130,7 @@ IDE_RC rpxAheadAnalyzer::applyTableMetaLog( smTID aTID )
                   != IDE_SUCCESS );
         sStage = 3;
 
-        /* PROJ-1915 off-line senderÀÇ °æ¿ì Meta¸¦ °»½ÅÇÏÁö ¾Ê´Â´Ù. */
+        /* PROJ-1915 off-line senderì˜ ê²½ìš° Metaë¥¼ ê°±ì‹ í•˜ì§€ ì•ŠëŠ”ë‹¤. */
         IDE_TEST( mMeta.updateOldTableInfo( &sSmiStmt,
                                             sMetaItem,
                                             &sItemMetaEntry->mItemMeta,
@@ -1157,7 +1157,7 @@ IDE_RC rpxAheadAnalyzer::applyTableMetaLog( smTID aTID )
     }
     IDE_EXCEPTION_END;
 
-    // ÀÌÈÄ Sender°¡ Á¾·áµÇ¹Ç·Î, Table Meta Cache¸¦ º¹¿øÇÏÁö ¾Ê´Â´Ù
+    // ì´í›„ Senderê°€ ì¢…ë£Œë˜ë¯€ë¡œ, Table Meta Cacheë¥¼ ë³µì›í•˜ì§€ ì•ŠëŠ”ë‹¤
     IDE_PUSH();
 
     switch ( sStage )

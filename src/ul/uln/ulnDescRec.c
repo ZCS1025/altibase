@@ -27,21 +27,21 @@ ACI_RC ulnDescRecInitialize(ulnDesc *aParentDesc, ulnDescRec *aRecord, acp_uint1
     acpListInit(&aRecord->mList);
 
     /*
-     * Meta Á¤º¸ ÃÊ±âÈ­
+     * Meta ì •ë³´ ì´ˆê¸°í™”
      */
     ulnMetaInitialize(&aRecord->mMeta);
 
     ulnPDContextCreate(&aRecord->mPDContext);
 
     /*
-     * ODBC Ç¥ÁØ ¼Ó¼ºµé
+     * ODBC í‘œì¤€ ì†ì„±ë“¤
      */
     aRecord->mInOutType          = ULN_PARAM_INOUT_TYPE_MAX;
     aRecord->mDisplaySize        = 0;
 
     /*
-     * BUGBUG : M$ ODBC ¿¡´Â Á¤ÀÇµÇ¾î ÀÖÁö¸¸, ÇöÀç uln ¿¡¼­´Â »ç¿ëµÇ°í ÀÖÁö ¾ÊÀº ¼Ó¼º.
-     *          ¾î¶»°Ô ÇØ¾ß ÇÒ·±Áöµµ Àß ¸ğ¸£°Ú´Ù.
+     * BUGBUG : M$ ODBC ì—ëŠ” ì •ì˜ë˜ì–´ ìˆì§€ë§Œ, í˜„ì¬ uln ì—ì„œëŠ” ì‚¬ìš©ë˜ê³  ìˆì§€ ì•Šì€ ì†ì„±.
+     *          ì–´ë–»ê²Œ í•´ì•¼ í• ëŸ°ì§€ë„ ì˜ ëª¨ë¥´ê² ë‹¤.
      */
     aRecord->mAutoUniqueValue   = 0;
     aRecord->mCaseSensitive     = 0;
@@ -67,7 +67,7 @@ ACI_RC ulnDescRecInitialize(ulnDesc *aParentDesc, ulnDescRec *aRecord, acp_uint1
     aRecord->mRowVer            = 0;
     aRecord->mSearchable        = 0;
     aRecord->mUnnamed           = 0;
-    aRecord->mUnsigned          = SQL_FALSE;    // ¾ËÆ¼º£ÀÌ½º´Â ¸ğµç ¼ıÀÚ°¡ signed ÀÌ´Ù.
+    aRecord->mUnsigned          = SQL_FALSE;    // ì•Œí‹°ë² ì´ìŠ¤ëŠ” ëª¨ë“  ìˆ«ìê°€ signed ì´ë‹¤.
     aRecord->mUpdatable         = SQL_ATTR_READONLY;
 
     /* PROJ-2616 */
@@ -109,12 +109,12 @@ ACI_RC ulnDescRecPrepareOutParamBuffer(ulnDescRec *aDescRec, acp_uint32_t aNewSi
     if (aDescRec->mOutParamBufferSize < aNewSize)
     {
         /*
-         * BUGBUG : »õ·Î ¸Ş¸ğ¸®¸¦ ÇÒ´çÇÒ ÇÊ¿ä°¡ ÀÖÀ» °æ¿ì¿¡´Â ±âÁ¸¿¡ ÇÒ´çÇÑ °ÍÀ» ±×³É
-         *          ¹«½ÃÇÏ°í »õ·Î ÇÒ´çÇÑ´Ù.
-         *          ÀÌ·Î ÀÎÇØ ulnDesc ¿¡ Á»ºñ·Î ³²¾ÆÀÖ´Â ¸Ş¸ğ¸®´Â Å« À§ÇùÀÌ µÇÁö ¾ÊÀ¸¸®¶ó
-         *          ÆÇ´ÜÇÏ°í ÀÏ´Ü ¹«½ÃÇÑ´Ù.
+         * BUGBUG : ìƒˆë¡œ ë©”ëª¨ë¦¬ë¥¼ í• ë‹¹í•  í•„ìš”ê°€ ìˆì„ ê²½ìš°ì—ëŠ” ê¸°ì¡´ì— í• ë‹¹í•œ ê²ƒì„ ê·¸ëƒ¥
+         *          ë¬´ì‹œí•˜ê³  ìƒˆë¡œ í• ë‹¹í•œë‹¤.
+         *          ì´ë¡œ ì¸í•´ ulnDesc ì— ì¢€ë¹„ë¡œ ë‚¨ì•„ìˆëŠ” ë©”ëª¨ë¦¬ëŠ” í° ìœ„í˜‘ì´ ë˜ì§€ ì•Šìœ¼ë¦¬ë¼
+         *          íŒë‹¨í•˜ê³  ì¼ë‹¨ ë¬´ì‹œí•œë‹¤.
          *
-         *          Â÷ÈÄ¿¡ ul ÀÇ ¸Ş¸ğ¸® ±¸Á¶¸¦ °³ÆíÇÒ ¶§ ÇÔ²² ÇØ°áÇÏµµ·Ï ÇÑ´Ù.
+         *          ì°¨í›„ì— ul ì˜ ë©”ëª¨ë¦¬ êµ¬ì¡°ë¥¼ ê°œí¸í•  ë•Œ í•¨ê»˜ í•´ê²°í•˜ë„ë¡ í•œë‹¤.
          */
 
         sMemory = aDescRec->mParentDesc->mObj.mMemory;
@@ -128,7 +128,7 @@ ACI_RC ulnDescRecPrepareOutParamBuffer(ulnDescRec *aDescRec, acp_uint32_t aNewSi
     }
 
     /*
-     * BUGBUG : aDescRec->mOutParamBuffer °¡ null ÀÎÁö Ã¼Å©¸¦ ÇØ¾ß ÇÏ³ª ¸»¾Æ¾ß ÇÏ³ª...
+     * BUGBUG : aDescRec->mOutParamBuffer ê°€ null ì¸ì§€ ì²´í¬ë¥¼ í•´ì•¼ í•˜ë‚˜ ë§ì•„ì•¼ í•˜ë‚˜...
      */
     ((ulnColumn *)(aDescRec->mOutParamBuffer))->mColumnNumber  = aDescRec->mIndex;
     ((ulnColumn *)(aDescRec->mOutParamBuffer))->mMtype         = aMTYPE;
@@ -156,12 +156,12 @@ ACI_RC ulnDescRecCreate(ulnDesc *aParentDesc, ulnDescRec **aDescRec, acp_uint16_
     ulnDescRec  *sDescRec      = NULL;
 
     /* PROJ-1789 Updatable Scrollable Cursor
-     * BOOKMARK ¹ÙÀÎµùÀ» ÇÒ ¼ö ÀÖµµ·Ï Á¶°Ç º¯°æ.
-     * unsignedÀÌ¹Ç·Î >= 0 Á¶°ÇÀÌ Ç×»ó ¼º°øÀÌ´Ù. ±×·¯¹Ç·Î ¹«½ÃÇØµµ OK */
+     * BOOKMARK ë°”ì¸ë”©ì„ í•  ìˆ˜ ìˆë„ë¡ ì¡°ê±´ ë³€ê²½.
+     * unsignedì´ë¯€ë¡œ >= 0 ì¡°ê±´ì´ í•­ìƒ ì„±ê³µì´ë‹¤. ê·¸ëŸ¬ë¯€ë¡œ ë¬´ì‹œí•´ë„ OK */
     ACP_UNUSED(aIndex);
 
     /*
-     * Desc¶ø½Ã°í ³Ñ°ÜÁø ³à¼®ÀÌ Á¤¸»·Î DescriptorÀÌ¸ç À¯È¿ÇÑ Á¾·ùÀÇ DescriptorÀÎÁö È®ÀÎ
+     * Descëì‹œê³  ë„˜ê²¨ì§„ ë…€ì„ì´ ì •ë§ë¡œ Descriptorì´ë©° ìœ íš¨í•œ ì¢…ë¥˜ì˜ Descriptorì¸ì§€ í™•ì¸
      */
 
     ACE_ASSERT(ULN_OBJ_GET_TYPE(aParentDesc) == ULN_OBJ_TYPE_DESC);
@@ -171,7 +171,7 @@ ACI_RC ulnDescRecCreate(ulnDesc *aParentDesc, ulnDescRec **aDescRec, acp_uint16_
 
     *aDescRec = NULL;
 
-    /* BUG-44858 mFreeDescRecList¸¦ ¸ÕÀú È®ÀÎÇÏÀÚ. */
+    /* BUG-44858 mFreeDescRecListë¥¼ ë¨¼ì € í™•ì¸í•˜ì. */
     if (acpListIsEmpty(&aParentDesc->mFreeDescRecList) != ACP_TRUE)
     {
         sDescRec = (ulnDescRec *)acpListGetFirstNode(&aParentDesc->mFreeDescRecList);
@@ -194,7 +194,7 @@ ACI_RC ulnDescRecCreate(ulnDesc *aParentDesc, ulnDescRec **aDescRec, acp_uint16_
 }
 
 /*
- * ulnDescRec::mLobArray °ü·Ã ÇÔ¼öµé
+ * ulnDescRec::mLobArray ê´€ë ¨ í•¨ìˆ˜ë“¤
  */
 
 ulnLob *ulnDescRecGetLobElement(ulnDescRec *aDescRec, acp_uint32_t aRowNumber)
@@ -202,7 +202,7 @@ ulnLob *ulnDescRecGetLobElement(ulnDescRec *aDescRec, acp_uint32_t aRowNumber)
     ulnLob *aReturnLob;
 
     /*
-     * Note : ULU_ARRAY_IGNORE ÀÌ¸é ¹«Á¶°Ç ACI_SUCCESS ¸¸ ¸®ÅÏÇÑ´Ù.
+     * Note : ULU_ARRAY_IGNORE ì´ë©´ ë¬´ì¡°ê±´ ACI_SUCCESS ë§Œ ë¦¬í„´í•œë‹¤.
      */
     uluArrayGetElement(aDescRec->mLobArray, aRowNumber, (void **)&aReturnLob, ULU_ARRAY_IGNORE);
 
@@ -225,12 +225,12 @@ ACI_RC ulnDescRecArrangeLobArray(ulnDescRec *aDescRec, acp_uint32_t aArrayCount)
     }
 
     /*
-     * Array ¿¡ aArrayCount °³ÀÇ element °¡ µé¾î°¥ °ø°£ È®º¸.
+     * Array ì— aArrayCount ê°œì˜ element ê°€ ë“¤ì–´ê°ˆ ê³µê°„ í™•ë³´.
      */
     ACI_TEST(uluArrayReserve(aDescRec->mLobArray, aArrayCount) != ACI_SUCCESS);
 
     /*
-     * ¸ğµç ³»¿ëÀ» 0 À¸·Î ÃÊ±âÈ­
+     * ëª¨ë“  ë‚´ìš©ì„ 0 ìœ¼ë¡œ ì´ˆê¸°í™”
      */
     uluArrayInitializeContent(aDescRec->mLobArray);
 
@@ -242,7 +242,7 @@ ACI_RC ulnDescRecArrangeLobArray(ulnDescRec *aDescRec, acp_uint32_t aArrayCount)
 }
 
 /*
- * ÄÃ·³ÀÌ ¾î¶² Á¾·ùÀÎÁö ÆÇ´ÜÇÏ´Â ÇÔ¼öµé.
+ * ì»¬ëŸ¼ì´ ì–´ë–¤ ì¢…ë¥˜ì¸ì§€ íŒë‹¨í•˜ëŠ” í•¨ìˆ˜ë“¤.
  *      1. Memory bound LOB column
  *      2. DATA AT EXEC column
  */
@@ -268,11 +268,11 @@ acp_bool_t ulnDescRecIsDataAtExecParam(ulnDescRec *aAppDescRec, acp_uint32_t aRo
 /* PROJ-1789 Updatable Scrollable Cursor */
 
 /**
- * DisplayNameÀ» ¼³Á¤ÇÑ´Ù.
+ * DisplayNameì„ ì„¤ì •í•œë‹¤.
  *
  * @param[in] aRecord         IRD Record
  * @param[in] aDisplayName    DisplayName
- * @param[in] aDisplayNameLen DisplayName ±æÀÌ
+ * @param[in] aDisplayNameLen DisplayName ê¸¸ì´
  */
 void ulnDescRecSetDisplayName(ulnDescRec *aRecord, acp_char_t *aDisplayName, acp_size_t aDisplayNameLen)
 {
@@ -282,11 +282,11 @@ void ulnDescRecSetDisplayName(ulnDescRec *aRecord, acp_char_t *aDisplayName, acp
 }
 
 /**
- * ColumnNameÀ» ¼³Á¤ÇÑ´Ù.
+ * ColumnNameì„ ì„¤ì •í•œë‹¤.
  *
  * @param[in] aRecord        IRD Record
  * @param[in] aColumnName    ColumnName
- * @param[in] aColumnNameLen ColumnName ±æÀÌ
+ * @param[in] aColumnNameLen ColumnName ê¸¸ì´
  */
 void ulnDescRecSetColumnName(ulnDescRec *aRecord, acp_char_t *aColumnName, acp_size_t aColumnNameLen)
 {
@@ -306,11 +306,11 @@ void ulnDescRecSetColumnName(ulnDescRec *aRecord, acp_char_t *aColumnName, acp_s
 }
 
 /**
- * BaseColumnNameÀ» ¼³Á¤ÇÑ´Ù.
+ * BaseColumnNameì„ ì„¤ì •í•œë‹¤.
  *
  * @param[in] aRecord            IRD Record
  * @param[in] aBaseColumnName    BaseColumnName
- * @param[in] aBaseColumnNameLen BaseColumnName ±æÀÌ
+ * @param[in] aBaseColumnNameLen BaseColumnName ê¸¸ì´
  */
 void ulnDescRecSetBaseColumnName(ulnDescRec *aRecord, acp_char_t *aBaseColumnName, acp_size_t aBaseColumnNameLen)
 {
@@ -320,11 +320,11 @@ void ulnDescRecSetBaseColumnName(ulnDescRec *aRecord, acp_char_t *aBaseColumnNam
 }
 
 /**
- * TableNameÀ» ¼³Á¤ÇÑ´Ù.
+ * TableNameì„ ì„¤ì •í•œë‹¤.
  *
  * @param[in] aRecord       IRD Record
  * @param[in] aTableName    TableName
- * @param[in] aTableNameLen TableName ±æÀÌ
+ * @param[in] aTableNameLen TableName ê¸¸ì´
  */
 void ulnDescRecSetTableName(ulnDescRec *aRecord, acp_char_t *aTableName, acp_size_t aTableNameLen)
 {
@@ -334,11 +334,11 @@ void ulnDescRecSetTableName(ulnDescRec *aRecord, acp_char_t *aTableName, acp_siz
 }
 
 /**
- * BaseTableNameÀ» ¼³Á¤ÇÑ´Ù.
+ * BaseTableNameì„ ì„¤ì •í•œë‹¤.
  *
  * @param[in] aRecord           IRD Record
  * @param[in] aBaseTableName    BaseTableName
- * @param[in] aBaseTableNameLen BaseTableName ±æÀÌ
+ * @param[in] aBaseTableNameLen BaseTableName ê¸¸ì´
  */
 void ulnDescRecSetBaseTableName(ulnDescRec *aRecord, acp_char_t *aBaseTableName, acp_size_t aBaseTableNameLen)
 {
@@ -348,11 +348,11 @@ void ulnDescRecSetBaseTableName(ulnDescRec *aRecord, acp_char_t *aBaseTableName,
 }
 
 /**
- * SchemaName(User Name)À» ¼³Á¤ÇÑ´Ù.
+ * SchemaName(User Name)ì„ ì„¤ì •í•œë‹¤.
  *
  * @param[in] aRecord        IRD Record
  * @param[in] aSchemaName    SchemaName
- * @param[in] aSchemaNameLen SchemaName ±æÀÌ
+ * @param[in] aSchemaNameLen SchemaName ê¸¸ì´
  */
 void ulnDescRecSetSchemaName(ulnDescRec *aRecord, acp_char_t *aSchemaName, acp_size_t aSchemaNameLen)
 {
@@ -362,11 +362,11 @@ void ulnDescRecSetSchemaName(ulnDescRec *aRecord, acp_char_t *aSchemaName, acp_s
 }
 
 /**
- * CatalogName(DB Name)À» ¼³Á¤ÇÑ´Ù.
+ * CatalogName(DB Name)ì„ ì„¤ì •í•œë‹¤.
  *
  * @param[in] aRecord         IRD Record
  * @param[in] aCatalogName    CatalogName
- * @param[in] aCatalogNameLen CatalogName ±æÀÌ
+ * @param[in] aCatalogNameLen CatalogName ê¸¸ì´
  */
 void ulnDescRecSetCatalogName(ulnDescRec *aRecord, acp_char_t *aCatalogName, acp_size_t aCatalogNameLen)
 {

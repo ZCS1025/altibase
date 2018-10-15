@@ -19,27 +19,27 @@
  *
  * $Id: sdpscDef.h 82075 2018-01-17 06:39:52Z jina.kim $
  *
- * º» ÆÄÀÏÀº Circular-List Managed Segment ¸ğµâÀÇ °øÅë ÀÚ·á±¸Á¶¸¦ Á¤ÀÇÇÑ
- * Çì´õÆÄÀÏÀÌ´Ù.
+ * ë³¸ íŒŒì¼ì€ Circular-List Managed Segment ëª¨ë“ˆì˜ ê³µí†µ ìë£Œêµ¬ì¡°ë¥¼ ì •ì˜í•œ
+ * í—¤ë”íŒŒì¼ì´ë‹¤.
  *
- * Undo Tablespace´Â TSS Segment¿Í Undo SegmentµéÀ» ÀúÀåÇÏ°í °ü¸®ÇÑ´Ù.
- * TSS Segment¿Í Undo Segment´Â CMS·Î °ü¸®µÇ¸ç, Database º¹±¸, Æ®·£Àè¼Ç º¹±¸,
- * Query¿¡ ´ëÇÑ Read Consistency¸¦ Á¦°øÇÑ´Ù.
+ * Undo TablespaceëŠ” TSS Segmentì™€ Undo Segmentë“¤ì„ ì €ì¥í•˜ê³  ê´€ë¦¬í•œë‹¤.
+ * TSS Segmentì™€ Undo SegmentëŠ” CMSë¡œ ê´€ë¦¬ë˜ë©°, Database ë³µêµ¬, íŠ¸ëœì­ì…˜ ë³µêµ¬,
+ * Queryì— ëŒ€í•œ Read Consistencyë¥¼ ì œê³µí•œë‹¤.
  *
- * CMS (Circular-List Managed Segment)´Â FMS¿Í TMS¿Í´Â ´Ù¸¥ ÆäÀÌÁö ÇÒ´ç
- * ¾Ë°í¸®Áò, Extent ÇÒ´ç ¹× Àç»ç¿ë ¾Ë°í¸®Áò, Extent Dir. Shrink ¾Ë°í¸®ÁòµéÀ»
- * ±¸ÇöÇÏ°í ÀÖ´Ù.
+ * CMS (Circular-List Managed Segment)ëŠ” FMSì™€ TMSì™€ëŠ” ë‹¤ë¥¸ í˜ì´ì§€ í• ë‹¹
+ * ì•Œê³ ë¦¬ì¦˜, Extent í• ë‹¹ ë° ì¬ì‚¬ìš© ì•Œê³ ë¦¬ì¦˜, Extent Dir. Shrink ì•Œê³ ë¦¬ì¦˜ë“¤ì„
+ * êµ¬í˜„í•˜ê³  ìˆë‹¤.
  *
- * CMS¿¡ ÀÇÇØ °ü¸®µÇ´Â Undo Segment¿Í TSS Segment´Â ´ÙÀ½°ú °°Àº Æ¯Â¡À» °¡Áø´Ù.
+ * CMSì— ì˜í•´ ê´€ë¦¬ë˜ëŠ” Undo Segmentì™€ TSS SegmentëŠ” ë‹¤ìŒê³¼ ê°™ì€ íŠ¹ì§•ì„ ê°€ì§„ë‹¤.
  *
- * (1) UDSEG¿Í TSSEG´Â ¾ËÆ¼º£ÀÌ½º ¼­¹ö¿¡ ÀÇÇØ¼­ ÀÚµ¿ »ı¼ºµÇ¸ç,¸ğµÎ ¿¹¾àµÈ ÀÌ¸§À»
- *     »ç¿ëÇÑ´Ù.
- * (2) ExpiredµÈ Extent Dir.´Â Àç»ç¿ëµÇ°Å³ª Shrink µÉ ¼ö ÀÖ´Ù.
- * (3) ¿î¿µÁß¿¡ Segment°¡ ÀÚµ¿À¸·Î Shrink µÈ´Ù.
- * (4) SegmentÀÇ HWM °³³äÀÌ Á¸ÀçÇÏÁö ¾Ê´Â´Ù.
- * (5) UDSEG¿Í TSSEG´Â °¢°¢ Extent Dir.ÀÇ Extent °³¼ö¸¦ Á¦ÇÑÇÒ ¼ö ÀÖ´Â
- *     »ç¿ëÀÚ ÇÁ·ÎÆÛÆ¼¸¦ Á¤ÀÇÇÑ´Ù
- * (6) Steal Á¤Ã¥À¸·Î ¼¼±×¸ÕÆ®°£ÀÇ ExpireµÈ ExtDir¸¦ °øÀ¯ÇÒ ¼ö ÀÖ´Ù.
+ * (1) UDSEGì™€ TSSEGëŠ” ì•Œí‹°ë² ì´ìŠ¤ ì„œë²„ì— ì˜í•´ì„œ ìë™ ìƒì„±ë˜ë©°,ëª¨ë‘ ì˜ˆì•½ëœ ì´ë¦„ì„
+ *     ì‚¬ìš©í•œë‹¤.
+ * (2) Expiredëœ Extent Dir.ëŠ” ì¬ì‚¬ìš©ë˜ê±°ë‚˜ Shrink ë  ìˆ˜ ìˆë‹¤.
+ * (3) ìš´ì˜ì¤‘ì— Segmentê°€ ìë™ìœ¼ë¡œ Shrink ëœë‹¤.
+ * (4) Segmentì˜ HWM ê°œë…ì´ ì¡´ì¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
+ * (5) UDSEGì™€ TSSEGëŠ” ê°ê° Extent Dir.ì˜ Extent ê°œìˆ˜ë¥¼ ì œí•œí•  ìˆ˜ ìˆëŠ”
+ *     ì‚¬ìš©ì í”„ë¡œí¼í‹°ë¥¼ ì •ì˜í•œë‹¤
+ * (6) Steal ì •ì±…ìœ¼ë¡œ ì„¸ê·¸ë¨¼íŠ¸ê°„ì˜ Expireëœ ExtDirë¥¼ ê³µìœ í•  ìˆ˜ ìˆë‹¤.
  *
  ***********************************************************************/
 
@@ -51,71 +51,71 @@
 # include <sdpDef.h>
 
 /***********************************************************************
- * Segment Cache ÀÚ·á±¸Á¶ (Runtime Á¤º¸)
+ * Segment Cache ìë£Œêµ¬ì¡° (Runtime ì •ë³´)
  *
  ***********************************************************************/
 typedef struct sdpscSegCache
 {
-    sdpSegCCache     mCommon;            // ¼¼±×¸ÕÆ® Ä³½Ã °øÅë Çì´õ
+    sdpSegCCache     mCommon;            // ì„¸ê·¸ë¨¼íŠ¸ ìºì‹œ ê³µí†µ í—¤ë”
 } sdpscSegCache;
 
 /***********************************************************************
- * ExtDirÁ¤º¸ ÀÚ·á±¸Á¶
+ * ExtDirì •ë³´ ìë£Œêµ¬ì¡°
  ***********************************************************************/
 typedef struct sdpscExtDirInfo
 {
-    // ExtDirÀÇ PID
+    // ExtDirì˜ PID
     scPageID          mExtDirPID;
 
-    /* Cur. ExtDirÀÇ Full ½Ã NewExtDir ÇÊ¿ä */
+    /* Cur. ExtDirì˜ Full ì‹œ NewExtDir í•„ìš” */
     idBool            mIsFull;
 
-    /* ExtDir¿¡¼­ »õ·Î¿î ExtentÀÇ °³¼ö */
+    /* ExtDirì—ì„œ ìƒˆë¡œìš´ Extentì˜ ê°œìˆ˜ */
     SShort            mTotExtCnt;
 
-    /* ExtDir¿¡ ±â·ÏµÉ ¼ö ÀÖ´Â ÃÖ´ë ExtDesc °³¼ö */
+    /* ExtDirì— ê¸°ë¡ë  ìˆ˜ ìˆëŠ” ìµœëŒ€ ExtDesc ê°œìˆ˜ */
     UShort            mMaxExtCnt;
 
-    // ExtDirÀÇ Nxt. ExtDir PID
+    // ExtDirì˜ Nxt. ExtDir PID
     scPageID          mNxtExtDirPID;
 
 } sdpscExtDirInfo;
 
 /***********************************************************************
- *  Extent Descriptor Á¤ÀÇ
+ *  Extent Descriptor ì •ì˜
  ***********************************************************************/
 typedef struct sdpscExtDesc
 {
-    scPageID       mExtFstPID;     // Extent Ã¹¹øÂ° ÆäÀÌÁöÀÇ PID
-    UInt           mLength;        // ExtentÀÇ ÆäÀÌÁö °³¼ö
-    scPageID       mExtFstDataPID; // ExtentÀÇ Ã¹¹øÂ° Data ÆäÀÌÁöÀÇ PID
+    scPageID       mExtFstPID;     // Extent ì²«ë²ˆì§¸ í˜ì´ì§€ì˜ PID
+    UInt           mLength;        // Extentì˜ í˜ì´ì§€ ê°œìˆ˜
+    scPageID       mExtFstDataPID; // Extentì˜ ì²«ë²ˆì§¸ Data í˜ì´ì§€ì˜ PID
 } sdpscExtDesc;
 
 
 /***********************************************************************
- * Extent ÇÒ´ç Á¤º¸
+ * Extent í• ë‹¹ ì •ë³´
  ***********************************************************************/
 typedef struct sdpscAllocExtDirInfo
 {
-    /* È®ÀåÀÌÈÄ »õ·Î¿î Cur. ExtDir ÆäÀÌÁöÀÇ PID */
+    /* í™•ì¥ì´í›„ ìƒˆë¡œìš´ Cur. ExtDir í˜ì´ì§€ì˜ PID */
     scPageID          mNewExtDirPID;
 
-    /* È®ÀåÀÌÈÄ »õ·Î¿î Nxt. ExtDir ÆäÀÌÁöÀÇ PID */
+    /* í™•ì¥ì´í›„ ìƒˆë¡œìš´ Nxt. ExtDir í˜ì´ì§€ì˜ PID */
     scPageID          mNxtPIDOfNewExtDir;
 
-    /* ShrinkÇØ¾ßÇÒ ExtDir */
+    /* Shrinkí•´ì•¼í•  ExtDir */
     scPageID          mShrinkExtDirPID;
 
-    /* TBS·ÎºÎÅÍ ÇÒ´ç¹ŞÀº ExtDir¸¦ Cur.ExtDirÀÇ Nxt.¿¡ ¿¬°áÇØ¾ßÇÏ´ÂÁö ¿©ºÎ */
+    /* TBSë¡œë¶€í„° í• ë‹¹ë°›ì€ ExtDirë¥¼ Cur.ExtDirì˜ Nxt.ì— ì—°ê²°í•´ì•¼í•˜ëŠ”ì§€ ì—¬ë¶€ */
     idBool            mIsAllocNewExtDir;
 
-    sdpscExtDesc      mFstExtDesc;       /* ÇÒ´çµÈ ExtDesc Á¤º¸ */
+    sdpscExtDesc      mFstExtDesc;       /* í• ë‹¹ëœ ExtDesc ì •ë³´ */
 
-    sdRID             mFstExtDescRID;    /* ÇÒ´çµÈ ExtDescÀÇ RID */
+    sdRID             mFstExtDescRID;    /* í• ë‹¹ëœ ExtDescì˜ RID */
 
-    UInt              mTotExtCntOfSeg;   /* ¼¼±×¸ÕÆ®ÀÇ ÃÑ ExtDesc °³¼ö */
+    UInt              mTotExtCntOfSeg;   /* ì„¸ê·¸ë¨¼íŠ¸ì˜ ì´ ExtDesc ê°œìˆ˜ */
 
-    /* ShrinkÇØ¾ßÇÒ ExtDir ¿¡ Æ÷ÇÑµÈ Extent °³¼ö */
+    /* Shrinkí•´ì•¼í•  ExtDir ì— í¬í•œëœ Extent ê°œìˆ˜ */
     UShort            mExtCntInShrinkExtDir;
 
 } sdpscAllocExtDirInfo;
@@ -124,31 +124,31 @@ typedef struct sdpscAllocExtDirInfo
 /***********************************************************************
  * Segment Control Header
  *
- * Segment Meta Header ÆäÀÌÁö¿¡ À§Ä¡ÇÑ´Ù.
+ * Segment Meta Header í˜ì´ì§€ì— ìœ„ì¹˜í•œë‹¤.
  ***********************************************************************/
 typedef struct sdpscSegCntlHdr
 {
-    sdpSegType  mSegType;       // Segment Å¸ÀÔ
+    sdpSegType  mSegType;       // Segment íƒ€ì…
     sdpSegState mSegState;      // Segment State
 } sdpscSegCntlHdr;
 
 
 /***********************************************************************
- * Extent Control Header Á¤ÀÇ
+ * Extent Control Header ì •ì˜
  *
- * Segment Meta Header ÆäÀÌÁö¿¡ À§Ä¡ÇÏ¸ç, SegmentÀÇ Extent Á¤º¸¸¦ °ü¸®ÇÑ´Ù.
+ * Segment Meta Header í˜ì´ì§€ì— ìœ„ì¹˜í•˜ë©°, Segmentì˜ Extent ì •ë³´ë¥¼ ê´€ë¦¬í•œë‹¤.
  ***********************************************************************/
 typedef struct sdpscExtCntlHdr
 {
-    UInt           mTotExtCnt;         // Segment¿¡ ÇÒ´çµÈ Extent ÃÑ °³¼ö
-    scPageID       mLstExtDir;         // ¸¶Áö¸· ExtDir ÆäÀÌÁöÀÇ PID
-    UInt           mTotExtDirCnt;      // Extent MapÀÇ ÃÑ °³¼ö (SegHdr Á¦¿ÜÇÑ°³¼ö)
-    UInt           mPageCntInExt;      // ExtentÀÇ ÆäÀÌÁö °³¼ö
+    UInt           mTotExtCnt;         // Segmentì— í• ë‹¹ëœ Extent ì´ ê°œìˆ˜
+    scPageID       mLstExtDir;         // ë§ˆì§€ë§‰ ExtDir í˜ì´ì§€ì˜ PID
+    UInt           mTotExtDirCnt;      // Extent Mapì˜ ì´ ê°œìˆ˜ (SegHdr ì œì™¸í•œê°œìˆ˜)
+    UInt           mPageCntInExt;      // Extentì˜ í˜ì´ì§€ ê°œìˆ˜
 } sdpscExtCntlHdr;
 
 
 /***********************************************************************
- * Extent Directory Page Map Á¤ÀÇ
+ * Extent Directory Page Map ì •ì˜
  ***********************************************************************/
 typedef struct sdpscExtDirMap
 {
@@ -157,23 +157,23 @@ typedef struct sdpscExtDirMap
 
 
 /***********************************************************************
- * Extent Dir Control Header Á¤ÀÇ
+ * Extent Dir Control Header ì •ì˜
  ***********************************************************************/
 typedef struct sdpscExtDirCntlHdr
 {
-    UShort       mExtCnt;        // ÆäÀÌÁö³»ÀÇ Extent °³¼ö
-    scPageID     mNxtExtDir;     // ´ÙÀ½ Extent Map ÆäÀÌÁöÀÇ PID
-    UShort       mMaxExtCnt;     // ÃÖ´ë Extent°³¼ö ÀúÀå
-    scOffset     mMapOffset;     // ÆäÀÌÁö ³»ÀÇ Extent MapÀÇ Offset
-    smSCN        mLstCommitSCN;  // ¸¶Áö¸· »ç¿ëÇÑ Ä¿¹ÔÇÑ Æ®·£Àè¼ÇÀÇ CommitSCN
+    UShort       mExtCnt;        // í˜ì´ì§€ë‚´ì˜ Extent ê°œìˆ˜
+    scPageID     mNxtExtDir;     // ë‹¤ìŒ Extent Map í˜ì´ì§€ì˜ PID
+    UShort       mMaxExtCnt;     // ìµœëŒ€ Extentê°œìˆ˜ ì €ì¥
+    scOffset     mMapOffset;     // í˜ì´ì§€ ë‚´ì˜ Extent Mapì˜ Offset
+    smSCN        mLstCommitSCN;  // ë§ˆì§€ë§‰ ì‚¬ìš©í•œ ì»¤ë°‹í•œ íŠ¸ëœì­ì…˜ì˜ CommitSCN
                                  // LatestCommitSCN
-    smSCN        mFstDskViewSCN; // »ç¿ëÇß´ø È¤Àº »ç¿ëÁßÀÎ Æ®·£Àè¼ÇÀÇ
+    smSCN        mFstDskViewSCN; // ì‚¬ìš©í–ˆë˜ í˜¹ì€ ì‚¬ìš©ì¤‘ì¸ íŠ¸ëœì­ì…˜ì˜
                                  // First Disk ViewSCN
 } sdpscExtDirHdr;
 
 
 /***********************************************************************
- * Segment Header ÆäÀÌÁö Á¤ÀÇ
+ * Segment Header í˜ì´ì§€ ì •ì˜
  ***********************************************************************/
 typedef struct sdpscSegMetaHdr
 {
@@ -184,22 +184,22 @@ typedef struct sdpscSegMetaHdr
 } sdpscSegMetaHdr;
 
 /***********************************************************************
- * À¯È¿ÇÏÁö ¾ÊÀº ¼ø¹ø
+ * ìœ íš¨í•˜ì§€ ì•Šì€ ìˆœë²ˆ
  ***********************************************************************/
 # define SDPSC_INVALID_IDX         (-1)
 
-/* Page BitSetÀ» 1¹ÙÀÌÆ®·Î Á¤ÀÇÇÑ´Ù. */
+/* Page BitSetì„ 1ë°”ì´íŠ¸ë¡œ ì •ì˜í•œë‹¤. */
 typedef UChar sdpscPageBitSet;
 
 /***********************************************************************
- * ÆäÀÌÁöÀÇ Page BitSetÀÇ ÆäÀÌÁö Á¾·ù¸¦ Á¤ÀÇÇÑ´Ù.
+ * í˜ì´ì§€ì˜ Page BitSetì˜ í˜ì´ì§€ ì¢…ë¥˜ë¥¼ ì •ì˜í•œë‹¤.
  ***********************************************************************/
 # define SDPSC_BITSET_PAGETP_MASK          (0x80)
 # define SDPSC_BITSET_PAGETP_META          (0x80)
 # define SDPSC_BITSET_PAGETP_DATA          (0x00)
 
 /***********************************************************************
- * ÆäÀÌÁöÀÇ Page BitSetÀÇ ÆäÀÌÁö °¡¿ëµµ¸¦ Á¤ÀÇÇÑ´Ù.
+ * í˜ì´ì§€ì˜ Page BitSetì˜ í˜ì´ì§€ ê°€ìš©ë„ë¥¼ ì •ì˜í•œë‹¤.
  ***********************************************************************/
 # define SDPSC_BITSET_PAGEFN_MASK   (0x7F)
 # define SDPSC_BITSET_PAGEFN_UNF    (0x00)
@@ -207,14 +207,14 @@ typedef UChar sdpscPageBitSet;
 # define SDPSC_BITSET_PAGEFN_FUL    (0x02)
 
 /*
- * ExtDir ÀÇ »óÅÂ°ª Á¤ÀÇ
+ * ExtDir ì˜ ìƒíƒœê°’ ì •ì˜
  */
 typedef enum sdpscExtDirState
 {
-    SDPSC_EXTDIR_EXPIRED  = 0, // Àç»ç¿ë°¡´ÉÇÑ ÆäÀÌÁö »óÅÂ
-    SDPSC_EXTDIR_UNEXPIRED,    // Àç»ç¿ëÇÒ ¼ö ¾ø´Â ÆäÀÌÁö »óÅÂ
-    SDPSC_EXTDIR_PREPARED      // prepareNewPage4Append¿¡ ÀÇÇØ¼­ È®º¸µÈ
-                               // ¾ÆÁ÷ »ç¿ëµÇÁö ¾ÊÀº ÆäÀÌÁö·Î Àç»ç¿ëÇÒ ¼ö ¾ø´Â »óÅÂ
+    SDPSC_EXTDIR_EXPIRED  = 0, // ì¬ì‚¬ìš©ê°€ëŠ¥í•œ í˜ì´ì§€ ìƒíƒœ
+    SDPSC_EXTDIR_UNEXPIRED,    // ì¬ì‚¬ìš©í•  ìˆ˜ ì—†ëŠ” í˜ì´ì§€ ìƒíƒœ
+    SDPSC_EXTDIR_PREPARED      // prepareNewPage4Appendì— ì˜í•´ì„œ í™•ë³´ëœ
+                               // ì•„ì§ ì‚¬ìš©ë˜ì§€ ì•Šì€ í˜ì´ì§€ë¡œ ì¬ì‚¬ìš©í•  ìˆ˜ ì—†ëŠ” ìƒíƒœ
 } sdpscExtDirState;
 
 # endif // _O_SDPSC_DEF_H_

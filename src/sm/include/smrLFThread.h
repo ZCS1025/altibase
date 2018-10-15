@@ -31,9 +31,9 @@
 
 /* Log Fulsh Thread
  *
- * ÁÖ±âÀûÀ¸·Î ±ú¾î³ª¼­ ÇöÀç FlushÇÒ ·Î±×ÆÄÀÏµéÀ» FlushÇÑ´Ù.
+ * ì£¼ê¸°ì ìœ¼ë¡œ ê¹¨ì–´ë‚˜ì„œ í˜„ìž¬ Flushí•  ë¡œê·¸íŒŒì¼ë“¤ì„ Flushí•œë‹¤.
  *
- * È¤Àº, ¿ÜºÎ ¸ðµâµéÀÇ ¿äÃ»¿¡ ÀÇÇØ ·Î±×ÆÄÀÏµéÀ» FlushÇÑ´Ù.
+ * í˜¹ì€, ì™¸ë¶€ ëª¨ë“ˆë“¤ì˜ ìš”ì²­ì— ì˜í•´ ë¡œê·¸íŒŒì¼ë“¤ì„ Flushí•œë‹¤.
  *
  */
 
@@ -41,29 +41,29 @@ class smrLFThread : public idtBaseThread
 {
 //For Operation    
 public:
-    /* Sync´ë»ó ·Î±×ÆÄÀÏ ¸®½ºÆ®¿¡ ·Î±×ÆÄÀÏÀ» Ãß°¡
+    /* SyncëŒ€ìƒ ë¡œê·¸íŒŒì¼ ë¦¬ìŠ¤íŠ¸ì— ë¡œê·¸íŒŒì¼ì„ ì¶”ê°€
      */
     IDE_RC addSyncLogFile( smrLogFile    * aLogFile );
 
-    /* Sync´ë»ó ·Î±×ÆÄÀÏ ¸®½ºÆ®¿¡¼­ ·Î±×ÆÄÀÏÀ» Á¦°Å
+    /* SyncëŒ€ìƒ ë¡œê·¸íŒŒì¼ ë¦¬ìŠ¤íŠ¸ì—ì„œ ë¡œê·¸íŒŒì¼ì„ ì œê±°
      */
     IDE_RC removeSyncLogFile( smrLogFile    * aLogFile );
 
-    /* aFileNo, aOffset±îÁö ·Î±×°¡ syncµÇ¾úÀ½À» º¸ÀåÇÑ´Ù.
+    /* aFileNo, aOffsetê¹Œì§€ ë¡œê·¸ê°€ syncë˜ì—ˆìŒì„ ë³´ìž¥í•œë‹¤.
      * 
-     * 1. Commit TransactionÀÇ Durability¸¦ º¸ÀåÇÏ±â À§ÇØ È£Ãâ
-     * 2. Log sync¸¦ º¸ÀåÇÏ±â À§ÇØ LogSwitch °úÁ¤¿¡¼­ È£Ãâ
-     * 3. ¹öÆÛ °ü¸®ÀÚ¿¡ ÀÇÇØ È£ÃâµÇ¸ç, ±âº»ÀûÀÎ µ¿ÀÛÀº
-     *    noWaitForLogSync ¿Í °°´Ù.
+     * 1. Commit Transactionì˜ Durabilityë¥¼ ë³´ìž¥í•˜ê¸° ìœ„í•´ í˜¸ì¶œ
+     * 2. Log syncë¥¼ ë³´ìž¥í•˜ê¸° ìœ„í•´ LogSwitch ê³¼ì •ì—ì„œ í˜¸ì¶œ
+     * 3. ë²„í¼ ê´€ë¦¬ìžì— ì˜í•´ í˜¸ì¶œë˜ë©°, ê¸°ë³¸ì ì¸ ë™ìž‘ì€
+     *    noWaitForLogSync ì™€ ê°™ë‹¤.
      */
     IDE_RC syncOrWait4SyncLogToLSN( smrSyncByWho  aSyncWho,
                                     UInt          aFileNo,
                                     UInt          aOffset,
                                     UInt        * aSyncedLFCnt );
 
-    /* aFileNo, aOffset±îÁö ·Î±×°¡ syncµÇ¾úÀ½À» º¸ÀåÇÑ´Ù.
+    /* aFileNo, aOffsetê¹Œì§€ ë¡œê·¸ê°€ syncë˜ì—ˆìŒì„ ë³´ìž¥í•œë‹¤.
      *
-     * ÀÌ¹Ì syncµÇ¾ú´ÂÁö ÇÑ¹ø¸¸ check ÈÄ ¹Ù·Î ·Î±×¸¦ syncÇÑ´Ù.
+     * ì´ë¯¸ syncë˜ì—ˆëŠ”ì§€ í•œë²ˆë§Œ check í›„ ë°”ë¡œ ë¡œê·¸ë¥¼ syncí•œë‹¤.
      */
     IDE_RC syncLogToDiskByGroup( smrSyncByWho aWhoSync,
                                  UInt         aFileNo,
@@ -71,27 +71,27 @@ public:
                                  idBool     * aIsSyncLogToLSN,
                                  UInt       * aSyncedLFCnt );
 
-    // Æ¯Á¤ LSN±îÁö ·Î±×°¡ syncµÇ¾ú´ÂÁö È®ÀÎÇÑ´Ù.
+    // íŠ¹ì • LSNê¹Œì§€ ë¡œê·¸ê°€ syncë˜ì—ˆëŠ”ì§€ í™•ì¸í•œë‹¤.
     IDE_RC isSynced( UInt    aFileNo,
                      UInt    aOffset,
                      idBool* aIsSynced) ;
     
-    // ÇöÀç±îÁö syncµÈ LSNÀ» ¸®ÅÏÇÑ´Ù.
-    // mSyncLSN ¿¡ ´ëÇÑ thread-safeÇÑ getter
+    // í˜„ìž¬ê¹Œì§€ syncëœ LSNì„ ë¦¬í„´í•œë‹¤.
+    // mSyncLSN ì— ëŒ€í•œ thread-safeí•œ getter
     IDE_RC getSyncedLSN( smLSN *aLSN );
 
-    // ÇöÀç±îÁö syncµÈ À§Ä¡¸¦ mSyncLSN ¿¡ °»½ÅÇÑ´Ù.
-    // mSyncLSN ¿¡ ´ëÇÑ thread-safeÇÑ setter
+    // í˜„ìž¬ê¹Œì§€ syncëœ ìœ„ì¹˜ë¥¼ mSyncLSN ì— ê°±ì‹ í•œë‹¤.
+    // mSyncLSN ì— ëŒ€í•œ thread-safeí•œ setter
     IDE_RC setSyncedLSN( UInt    aFileNo,
                          UInt    aOffset );
 
-    // Å×ÀÌºí ¹é¾÷ ÆÄÀÏÀ» »èÁ¦ÇÒÁöÀÇ ¿©ºÎ¸¦ ¼³Á¤ÇÑ´Ù.
+    // í…Œì´ë¸” ë°±ì—… íŒŒì¼ì„ ì‚­ì œí• ì§€ì˜ ì—¬ë¶€ë¥¼ ì„¤ì •í•œë‹¤.
     IDE_RC setRemoveFlag( idBool aRemove );
     
     virtual void run();
     IDE_RC shutdown();
 
-    /* ÀÎ½ºÅÏ½º¸¦ ÃÊ±âÈ­ÇÏ°í ·Î±× Flush ¾²·¹µå¸¦ ½ÃÀÛÇÔ
+    /* ì¸ìŠ¤í„´ìŠ¤ë¥¼ ì´ˆê¸°í™”í•˜ê³  ë¡œê·¸ Flush ì“°ë ˆë“œë¥¼ ì‹œìž‘í•¨
      */
     IDE_RC initialize( smrLogFileMgr   * aLogFileMgr,
                        smrArchThread   * aArchThread );
@@ -100,13 +100,13 @@ public:
    
     void dump();
 
-    // V$LFG ¿¡ º¸¿©ÁÙ Group Commit Åë°èÄ¡
-    // CommitÇÏ·Á´Â Æ®·£Àè¼ÇµéÀÌ Log°¡ FlushµÇ±â¸¦ ±â´Ù¸° È½¼ö
+    // V$LFG ì— ë³´ì—¬ì¤„ Group Commit í†µê³„ì¹˜
+    // Commití•˜ë ¤ëŠ” íŠ¸ëžœìž­ì…˜ë“¤ì´ Logê°€ Flushë˜ê¸°ë¥¼ ê¸°ë‹¤ë¦° íšŸìˆ˜
     inline UInt getGroupCommitWaitCount();
-    // CommitÇÏ·Á´Â Æ®·£Àè¼ÇµéÀÌ FlushÇÏ·Á´Â LogÀÇ À§Ä¡°¡
-    // ÀÌ¹Ì Log°¡ FlushµÈ °ÍÀ¸·Î ÆÇ¸íµÇ¾î ºüÁ®³ª°£ È½¼ö
+    // Commití•˜ë ¤ëŠ” íŠ¸ëžœìž­ì…˜ë“¤ì´ Flushí•˜ë ¤ëŠ” Logì˜ ìœ„ì¹˜ê°€
+    // ì´ë¯¸ Logê°€ Flushëœ ê²ƒìœ¼ë¡œ íŒëª…ë˜ì–´ ë¹ ì ¸ë‚˜ê°„ íšŸìˆ˜
     inline UInt getGroupCommitAlreadySyncCount();
-    // CommitÇÏ·Á´Â Æ®·£Àè¼ÇµéÀÌ ½ÇÁ¦·Î Log ¸¦ FlushÇÑ È½¼ö
+    // Commití•˜ë ¤ëŠ” íŠ¸ëžœìž­ì…˜ë“¤ì´ ì‹¤ì œë¡œ Log ë¥¼ Flushí•œ íšŸìˆ˜
     inline UInt getGroupCommitRealSyncCount();
 
     smrLFThread();
@@ -143,104 +143,104 @@ private:
 
 //For Member
 private:
-    // ÀÌ ·Î±× Flush ¾²·¹µå°¡ FlushÇÏ´Â ·Î±×ÆÄÀÏµéÀ»
-    // °ü¸®ÇÏ´Â ·Î±×ÆÄÀÏ °ü¸®ÀÚ.
-    // ÇÏ³ªÀÇ ·Î±×¸¦ FlushÇÑ ´ÙÀ½ ÇØ´ç ·Î±× ÆÄÀÏÀ» closeÇØ¾ß ÇÏ´Âµ¥,
-    // ¹Ù·Î ÀÌ ·Î±×ÆÄÀÏ °ü¸®ÀÚ°¡ ·Î±×ÆÄÀÏÀÇ close¸¦ ´ã´çÇÑ´Ù.
+    // ì´ ë¡œê·¸ Flush ì“°ë ˆë“œê°€ Flushí•˜ëŠ” ë¡œê·¸íŒŒì¼ë“¤ì„
+    // ê´€ë¦¬í•˜ëŠ” ë¡œê·¸íŒŒì¼ ê´€ë¦¬ìž.
+    // í•˜ë‚˜ì˜ ë¡œê·¸ë¥¼ Flushí•œ ë‹¤ìŒ í•´ë‹¹ ë¡œê·¸ íŒŒì¼ì„ closeí•´ì•¼ í•˜ëŠ”ë°,
+    // ë°”ë¡œ ì´ ë¡œê·¸íŒŒì¼ ê´€ë¦¬ìžê°€ ë¡œê·¸íŒŒì¼ì˜ closeë¥¼ ë‹´ë‹¹í•œë‹¤.
     smrLogFileMgr    * mLogFileMgr;
 
-    // ·Î±× Flush threadÀÇ µ¿ÀÛÀ» Á¦¾îÇÏ±â À§ÇÑ Condition value
-    // mMtxThread¿Í ÇÔ²² »ç¿ëµÈ´Ù.
+    // ë¡œê·¸ Flush threadì˜ ë™ìž‘ì„ ì œì–´í•˜ê¸° ìœ„í•œ Condition value
+    // mMtxThreadì™€ í•¨ê»˜ ì‚¬ìš©ëœë‹¤.
     iduCond            mCV;
     PDL_Time_Value     mTV;
 
-    // ·Î±×ÆÄÀÏ Flush ¾²·¹µå¸¦ Á¾·áÇØ¾ß ÇÒÁöÀÇ ¿©ºÎ
-    // ÀÌ ÇÃ·¡±×°¡ ¼¼ÆÃµÇ¸é run()ÇÔ¼ö°¡ ·ìÀ» ºüÁ®³ª¿Í¼­ Á¾·áµÇ¾î¾ß ÇÑ´Ù.
+    // ë¡œê·¸íŒŒì¼ Flush ì“°ë ˆë“œë¥¼ ì¢…ë£Œí•´ì•¼ í• ì§€ì˜ ì—¬ë¶€
+    // ì´ í”Œëž˜ê·¸ê°€ ì„¸íŒ…ë˜ë©´ run()í•¨ìˆ˜ê°€ ë£¹ì„ ë¹ ì ¸ë‚˜ì™€ì„œ ì¢…ë£Œë˜ì–´ì•¼ í•œë‹¤.
     idBool             mFinish;
 
-    // mSyncLogFileList ÀÇ µ¿½Ã¼ºÀ» Á¦¾îÇÏ±â À§ÇØ »ç¿ëµÇ´Â Mutex.
+    // mSyncLogFileList ì˜ ë™ì‹œì„±ì„ ì œì–´í•˜ê¸° ìœ„í•´ ì‚¬ìš©ë˜ëŠ” Mutex.
     iduMutex           mMtxList;
 
-    // ·Î±× Flush threadÀÇ µ¿ÀÛÀ» Á¦¾îÇÏ±â À§ÇÑ Mutex.
-    // mCV, mTV¿Í ÇÔ²² »ç¿ëµÈ´Ù.
+    // ë¡œê·¸ Flush threadì˜ ë™ìž‘ì„ ì œì–´í•˜ê¸° ìœ„í•œ Mutex.
+    // mCV, mTVì™€ í•¨ê»˜ ì‚¬ìš©ëœë‹¤.
     iduMutex           mMtxThread;
 
-    // 32ºñÆ®¿¡¼­ 64ºñÆ® µ¥ÀÌÅÍÀÎ mLSN¸¦
-    // atomicÇÏ°Ô Read/WriteÇÏ±â À§ÇØ »ç¿ëÇÏ´Â Mutex
+    // 32ë¹„íŠ¸ì—ì„œ 64ë¹„íŠ¸ ë°ì´í„°ì¸ mLSNë¥¼
+    // atomicí•˜ê²Œ Read/Writeí•˜ê¸° ìœ„í•´ ì‚¬ìš©í•˜ëŠ” Mutex
     iduMutex           mMtxSyncLSN;
     iduCond            mSyncWaitCV;
 
-    // ÇöÀç±îÁö FlushµÈ LSN.
+    // í˜„ìž¬ê¹Œì§€ Flushëœ LSN.
     smrLstLSN          mLstLSN;
 
-    // sync ´ë»óÀÎ ·Î±×ÆÄÀÏÀÇ ¸®½ºÆ®.
+    // sync ëŒ€ìƒì¸ ë¡œê·¸íŒŒì¼ì˜ ë¦¬ìŠ¤íŠ¸.
     smrLogFile         mSyncLogFileList;
 
-    // ¸¶Áö¸·À¸·Î Log Sync¸¦ ÇÑ ½Ã°¢
+    // ë§ˆì§€ë§‰ìœ¼ë¡œ Log Syncë¥¼ í•œ ì‹œê°
     idvTime            mLastSyncTime;
 
-    // V$LFG ¿¡ º¸¿©ÁÙ Group Commit Åë°èÄ¡
-    // CommitÇÏ·Á´Â Æ®·£Àè¼ÇµéÀÌ Log°¡ FlushµÇ±â¸¦ ±â´Ù¸° È½¼ö
+    // V$LFG ì— ë³´ì—¬ì¤„ Group Commit í†µê³„ì¹˜
+    // Commití•˜ë ¤ëŠ” íŠ¸ëžœìž­ì…˜ë“¤ì´ Logê°€ Flushë˜ê¸°ë¥¼ ê¸°ë‹¤ë¦° íšŸìˆ˜
     UInt               mGCWaitCount;
-    // CommitÇÏ·Á´Â Æ®·£Àè¼ÇµéÀÌ FlushÇÏ·Á´Â LogÀÇ À§Ä¡°¡
-    // ÀÌ¹Ì Log°¡ FlushµÈ °ÍÀ¸·Î ÆÇ¸íµÇ¾î ºüÁ®³ª°£ È½¼ö
+    // Commití•˜ë ¤ëŠ” íŠ¸ëžœìž­ì…˜ë“¤ì´ Flushí•˜ë ¤ëŠ” Logì˜ ìœ„ì¹˜ê°€
+    // ì´ë¯¸ Logê°€ Flushëœ ê²ƒìœ¼ë¡œ íŒëª…ë˜ì–´ ë¹ ì ¸ë‚˜ê°„ íšŸìˆ˜
     UInt               mGCAlreadySyncCount;
-    // CommitÇÏ·Á´Â Æ®·£Àè¼ÇµéÀÌ ½ÇÁ¦·Î Log ¸¦ FlushÇÑ È½¼ö
+    // Commití•˜ë ¤ëŠ” íŠ¸ëžœìž­ì…˜ë“¤ì´ ì‹¤ì œë¡œ Log ë¥¼ Flushí•œ íšŸìˆ˜
     UInt               mGCRealSyncCount;
 
     // Archive Thread Ptr
     smrArchThread*     mArchThread;
 
-    // Log°¡ Sync°¡ µÇ±â¸¦ ´ë±âÇÏ´Â ThreadÀÇ °¹¼ö
+    // Logê°€ Syncê°€ ë˜ê¸°ë¥¼ ëŒ€ê¸°í•˜ëŠ” Threadì˜ ê°¯ìˆ˜
     UInt               mThreadCntWaitForSync;
 };
 
 
-// V$LFG ¿¡ º¸¿©ÁÙ Group Commit Åë°èÄ¡
-// CommitÇÏ·Á´Â Æ®·£Àè¼ÇµéÀÌ Log°¡ FlushµÇ±â¸¦ ±â´Ù¸° È½¼ö
+// V$LFG ì— ë³´ì—¬ì¤„ Group Commit í†µê³„ì¹˜
+// Commití•˜ë ¤ëŠ” íŠ¸ëžœìž­ì…˜ë“¤ì´ Logê°€ Flushë˜ê¸°ë¥¼ ê¸°ë‹¤ë¦° íšŸìˆ˜
 UInt smrLFThread::getGroupCommitWaitCount()
 {
     return mGCWaitCount;
 }
 
 
-// CommitÇÏ·Á´Â Æ®·£Àè¼ÇµéÀÌ FlushÇÏ·Á´Â LogÀÇ À§Ä¡°¡
-// ÀÌ¹Ì Log°¡ FlushµÈ °ÍÀ¸·Î ÆÇ¸íµÇ¾î ºüÁ®³ª°£ È½¼ö
+// Commití•˜ë ¤ëŠ” íŠ¸ëžœìž­ì…˜ë“¤ì´ Flushí•˜ë ¤ëŠ” Logì˜ ìœ„ì¹˜ê°€
+// ì´ë¯¸ Logê°€ Flushëœ ê²ƒìœ¼ë¡œ íŒëª…ë˜ì–´ ë¹ ì ¸ë‚˜ê°„ íšŸìˆ˜
 UInt smrLFThread::getGroupCommitAlreadySyncCount()
 {
     return mGCAlreadySyncCount;
 }
 
 
-// CommitÇÏ·Á´Â Æ®·£Àè¼ÇµéÀÌ ½ÇÁ¦·Î Log ¸¦ FlushÇÑ È½¼ö
+// Commití•˜ë ¤ëŠ” íŠ¸ëžœìž­ì…˜ë“¤ì´ ì‹¤ì œë¡œ Log ë¥¼ Flushí•œ íšŸìˆ˜
 UInt smrLFThread::getGroupCommitRealSyncCount()
 {
     return mGCRealSyncCount;
 }
 
-/* mSyncLogFileList ¸µÅ©µå ¸®½ºÆ®ÀÇ ÀÛµ¿¹æ½Ä
- * ( mTBFileList µµ µ¿ÀÏÇÏ°Ô Àû¿ëµÊ )
+/* mSyncLogFileList ë§í¬ë“œ ë¦¬ìŠ¤íŠ¸ì˜ ìž‘ë™ë°©ì‹
+ * ( mTBFileList ë„ ë™ì¼í•˜ê²Œ ì ìš©ë¨ )
  *
- * 1. ¸µÅ©µå ¸®½ºÆ®·Î ¼±¾ðµÈ smrLogFile °´Ã¼(mSyncLogFileList)´Â
- *    ½ÇÁ¦ ·Î±×ÆÄÀÏÀ» ÀúÀåÇÏ´Âµ¥ »ç¿ëµÇÁö ¾Ê´Â´Ù.
+ * 1. ë§í¬ë“œ ë¦¬ìŠ¤íŠ¸ë¡œ ì„ ì–¸ëœ smrLogFile ê°ì²´(mSyncLogFileList)ëŠ”
+ *    ì‹¤ì œ ë¡œê·¸íŒŒì¼ì„ ì €ìž¥í•˜ëŠ”ë° ì‚¬ìš©ë˜ì§€ ì•ŠëŠ”ë‹¤.
  *
- * 2. mSyncLogFileList ¾ÈÀÇ prv, nxt Æ÷ÀÎÅÍ·Î ¸µÅ©µå ¸®½ºÆ® ¾ÈÀÇ
- *    ·Î±×ÆÄÀÏµéÀ» °¡¸®Å°´Â ¿ëµµ·Î¸¸ »ç¿ëµÉ »ÓÀÌ´Ù..
+ * 2. mSyncLogFileList ì•ˆì˜ prv, nxt í¬ì¸í„°ë¡œ ë§í¬ë“œ ë¦¬ìŠ¤íŠ¸ ì•ˆì˜
+ *    ë¡œê·¸íŒŒì¼ë“¤ì„ ê°€ë¦¬í‚¤ëŠ” ìš©ë„ë¡œë§Œ ì‚¬ìš©ë  ë¿ì´ë‹¤..
  *
- * 3. nxtÆ÷ÀÎÅÍ´Â ¸µÅ©µå ¸®½ºÆ®ÀÇ head ¸¦ °¡¸®Å²´Ù.
+ * 3. nxtí¬ì¸í„°ëŠ” ë§í¬ë“œ ë¦¬ìŠ¤íŠ¸ì˜ head ë¥¼ ê°€ë¦¬í‚¨ë‹¤.
  *
- * 4. prvÆ÷ÀÎÅÍ´Â ¸µÅ©µå ¸®½ºÆ®ÀÇ tail À» °¡¸®Å²´Ù.
+ * 4. prví¬ì¸í„°ëŠ” ë§í¬ë“œ ë¦¬ìŠ¤íŠ¸ì˜ tail ì„ ê°€ë¦¬í‚¨ë‹¤.
  *
- * 5. ¸µÅ©µå ¸®½ºÆ®·Î ¼±¾ðµÈ mSyncLogFileListÀÇ ÁÖ¼Ò(&mSyncLogFileList)´Â
- *    nxt, prvÆ÷ÀÎÅÍ¿¡ ÇÒ´çµÉ °æ¿ì, ¸µÅ©µå ¸®½ºÆ®¿¡¼­ NULLÆ÷ÀÎÅÍÀÇ ¿ªÇÒÀ» ÇÑ´Ù.
+ * 5. ë§í¬ë“œ ë¦¬ìŠ¤íŠ¸ë¡œ ì„ ì–¸ëœ mSyncLogFileListì˜ ì£¼ì†Œ(&mSyncLogFileList)ëŠ”
+ *    nxt, prví¬ì¸í„°ì— í• ë‹¹ë  ê²½ìš°, ë§í¬ë“œ ë¦¬ìŠ¤íŠ¸ì—ì„œ NULLí¬ì¸í„°ì˜ ì—­í• ì„ í•œë‹¤.
  *
  */
 
 /*
- * ·Î±×ÆÄÀÏ ´ÙÁßÈ­°¡ SMR_LT_FILE_END±îÁö ¿Ï·áµÇ¾î ÆÄÀÏ ´ÙÁßÈ­ ·Î±×ÆÄÀÏ switch°¡
- * ¼öÇàµÉ¶§ ±îÁö ´ë±âÇÑ´Ù.
+ * ë¡œê·¸íŒŒì¼ ë‹¤ì¤‘í™”ê°€ SMR_LT_FILE_ENDê¹Œì§€ ì™„ë£Œë˜ì–´ íŒŒì¼ ë‹¤ì¤‘í™” ë¡œê·¸íŒŒì¼ switchê°€
+ * ìˆ˜í–‰ë ë•Œ ê¹Œì§€ ëŒ€ê¸°í•œë‹¤.
  *
- * aLogFile - [IN] ¿øº» ·Î±×ÆÄÀÏ
+ * aLogFile - [IN] ì›ë³¸ ë¡œê·¸íŒŒì¼
  */ 
 inline void smrLFThread::wait4MultiplexLogFileSwitch( smrLogFile * aLogFile )
 {

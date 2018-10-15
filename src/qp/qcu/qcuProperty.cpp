@@ -22,8 +22,8 @@
 /***********************************************************************
  * $Id: qcuProperty.cpp 82186 2018-02-05 05:17:56Z lswhh $
  *
- * QP ¹× MM¿¡¼­ »ç¿ëÇÒ System Property¿¡ ´ëÇÑ Á¤ÀÇ
- * A4¿¡¼­ Á¦°øÇÏ´Â Property °ü¸®ÀÚ¸¦ ÀÌ¿ëÇÏ¿© °ü¸®ÇÑ´Ù.
+ * QP ë° MMì—ì„œ ì‚¬ìš©í•  System Propertyì— ëŒ€í•œ ì •ì˜
+ * A4ì—ì„œ ì œê³µí•˜ëŠ” Property ê´€ë¦¬ìžë¥¼ ì´ìš©í•˜ì—¬ ê´€ë¦¬í•œë‹¤.
  *
  **********************************************************************/
 
@@ -61,10 +61,10 @@ IDE_RC qcuProperty::load()
 /***********************************************************************
  *
  * Description :
- *    Server ±¸µ¿ ½Ã System PropertyµéÀ» LoadingÇÑ´Ù.
+ *    Server êµ¬ë™ ì‹œ System Propertyë“¤ì„ Loadingí•œë‹¤.
  *
  * Implementation :
- *    Writable PropertyÀÇ °æ¿ì CallBackÀ» µî·ÏÇØ¾ß ÇÔ.
+ *    Writable Propertyì˜ ê²½ìš° CallBackì„ ë“±ë¡í•´ì•¼ í•¨.
  *
  ***********************************************************************/
 
@@ -77,12 +77,12 @@ IDE_RC qcuProperty::load()
     SChar  * sOptimizerFeatureEnable;
 
     //--------------------------------------------------------
-    // Trace Log °ü·Ã property loading
-    //    - Writable PropertyÀÌ¹Ç·Î CallBackÀ» µî·ÏÇÑ´Ù.
-    //    - Atomic OperationÀÌ¹Ç·Î, BeforeCallBackÀº ÇÊ¿ä ¾ø´Ù.
+    // Trace Log ê´€ë ¨ property loading
+    //    - Writable Propertyì´ë¯€ë¡œ CallBackì„ ë“±ë¡í•œë‹¤.
+    //    - Atomic Operationì´ë¯€ë¡œ, BeforeCallBackì€ í•„ìš” ì—†ë‹¤.
     //--------------------------------------------------------
 
-    // SHARD °ü·Ã ¼³Á¤
+    // SHARD ê´€ë ¨ ì„¤ì •
     IDE_ASSERT( idp::read( "SHARD_META_ENABLE",
                            & QCU_PROPERTY(mShardMetaEnable) ) == IDE_SUCCESS );
 
@@ -92,19 +92,19 @@ IDE_RC qcuProperty::load()
     IDE_ASSERT( idp::read( "__SHARD_AGGREGATION_TRANSFORM_DISABLE",
                            & QCU_PROPERTY(mShardAggrTransformDisable) ) == IDE_SUCCESS );
 
-    // TRCLOG_DML_SENTENCE °ü·Ã ¼³Á¤
+    // TRCLOG_DML_SENTENCE ê´€ë ¨ ì„¤ì •
 
     IDE_ASSERT( idp::read( "TRCLOG_DML_SENTENCE",
                            & QCU_PROPERTY(mTraceLog_DML_Sentence) ) == IDE_SUCCESS );
 
-    // TRCLOG_DETAIL_PREDICATE °ü·Ã ¼³Á¤
+    // TRCLOG_DETAIL_PREDICATE ê´€ë ¨ ì„¤ì •
     IDE_ASSERT( idp::read( "TRCLOG_DETAIL_PREDICATE",
                            & QCU_PROPERTY(mTraceLog_Detail_Predicate) ) == IDE_SUCCESS );
 
     IDE_ASSERT( idp::read( "TRCLOG_DETAIL_MTRNODE",
                            & QCU_PROPERTY(mTraceLog_Detail_MtrNode) ) == IDE_SUCCESS );
 
-    // TRCLOG_EXPLAIN_GRAPH °ü·Ã ¼³Á¤
+    // TRCLOG_EXPLAIN_GRAPH ê´€ë ¨ ì„¤ì •
     IDE_ASSERT( idp::read( "TRCLOG_EXPLAIN_GRAPH",
                            & QCU_PROPERTY(mTraceLog_Explain_Graph) ) == IDE_SUCCESS );
 
@@ -116,14 +116,14 @@ IDE_RC qcuProperty::load()
     IDE_ASSERT( idp::read( "TRCLOG_DISPLAY_CHILDREN",
                            & QCU_PROPERTY(mTraceLogDisplayChildren) ) == IDE_SUCCESS );
 
-    // UPDATE_IN_PLACE °ü·Ã ¼³Á¤
+    // UPDATE_IN_PLACE ê´€ë ¨ ì„¤ì •
     IDE_ASSERT( idp::read( "UPDATE_IN_PLACE",
                            & QCU_PROPERTY(mUpdateInPlace) ) == IDE_SUCCESS );
 
     //--------------------------------------------------------
-    // Query Processor °ü·Ã Property Loading
+    // Query Processor ê´€ë ¨ Property Loading
     //
-    //    - Read Only PropertyÀÌ¹Ç·Î CallBackÀÌ ÇÊ¿ä ¾øÀ½.
+    //    - Read Only Propertyì´ë¯€ë¡œ CallBackì´ í•„ìš” ì—†ìŒ.
     //--------------------------------------------------------
 
     IDE_ASSERT( idp::read( "NORMALFORM_MAXIMUM",
@@ -202,8 +202,8 @@ IDE_RC qcuProperty::load()
     IDE_ASSERT( idp::read( "INDEX_MAXTRANS",
                            & QCU_PROPERTY(mIndexMaxTrans) ) == IDE_SUCCESS );
 
-    // BUG-26017 [PSM] server restart½Ã ¼öÇàµÇ´Â psm load°úÁ¤¿¡¼­
-    // °ü·ÃÇÁ·ÎÆÛÆ¼¸¦ ÂüÁ¶ÇÏÁö ¸øÇÏ´Â °æ¿ì ÀÖÀ½.
+    // BUG-26017 [PSM] server restartì‹œ ìˆ˜í–‰ë˜ëŠ” psm loadê³¼ì •ì—ì„œ
+    // ê´€ë ¨í”„ë¡œí¼í‹°ë¥¼ ì°¸ì¡°í•˜ì§€ ëª»í•˜ëŠ” ê²½ìš° ìžˆìŒ.
     IDE_ASSERT( idp::read( "OPTIMIZER_MODE",
                            & QCU_PROPERTY(mOptimizerMode) ) == IDE_SUCCESS );
 
@@ -211,21 +211,21 @@ IDE_RC qcuProperty::load()
     IDE_ASSERT( idp::read( "AUTO_REMOTE_EXEC",
                            & QCU_PROPERTY(mAutoRemoteExec) ) == IDE_SUCCESS );
 
-    // PROJ-1358 Query Stack SizeÀÇ Á¶Á¤
+    // PROJ-1358 Query Stack Sizeì˜ ì¡°ì •
     IDE_ASSERT( idp::read( "QUERY_STACK_SIZE",
                            & QCU_PROPERTY(mQueryStackSize) ) == IDE_SUCCESS );
 
-    // PR-13395 °¡»ó Åë°è Á¤º¸ ±¸Ãà
+    // PR-13395 ê°€ìƒ í†µê³„ ì •ë³´ êµ¬ì¶•
     // TPC-H Scale Factor
     IDE_ASSERT( idp::read( "__QP_FAKE_STAT_TPCH_SCALE_FACTOR",
                            & QCU_PROPERTY(mFakeTpchScaleFactor) ) == IDE_SUCCESS );
 
-    // PR-13395 °¡»ó Åë°è Á¤º¸ ±¸Ãà
-    // °¡»ó Buffer Size
+    // PR-13395 ê°€ìƒ í†µê³„ ì •ë³´ êµ¬ì¶•
+    // ê°€ìƒ Buffer Size
     IDE_ASSERT( idp::read( "__QP_FAKE_STAT_BUFFER_SIZE",
                            & QCU_PROPERTY(mFakeBufferSize) ) == IDE_SUCCESS );
 
-    // BUG-13068 filehandle open limit Á¶Á¤
+    // BUG-13068 filehandle open limit ì¡°ì •
     IDE_ASSERT( idp::read( "PSM_FILE_OPEN_LIMIT",
                            & QCU_PROPERTY(mFileOpenLimit) ) == IDE_SUCCESS );
     
@@ -233,7 +233,7 @@ IDE_RC qcuProperty::load()
     IDE_ASSERT( idp::read( "CONNECT_TYPE_OPEN_LIMIT",
                            & QCU_PROPERTY(mSocketOpenLimit) ) == IDE_SUCCESS );
 
-    /* BUG-41307 User Lock Áö¿ø */
+    /* BUG-41307 User Lock ì§€ì› */
     IDE_ASSERT( idp::read( "USER_LOCK_POOL_INIT_SIZE",
                            & QCU_PROPERTY(mUserLockPoolInitSize) ) == IDE_SUCCESS );
     IDE_ASSERT( idp::read( "USER_LOCK_REQUEST_TIMEOUT",
@@ -243,12 +243,12 @@ IDE_RC qcuProperty::load()
     IDE_ASSERT( idp::read( "USER_LOCK_REQUEST_LIMIT",
                            & QCU_PROPERTY(mUserLockRequestLimit) ) == IDE_SUCCESS );
 
-    // PROJ-1446 Host variableÀ» Æ÷ÇÔÇÑ ÁúÀÇ ÃÖÀûÈ­
+    // PROJ-1446 Host variableì„ í¬í•¨í•œ ì§ˆì˜ ìµœì í™”
     IDE_ASSERT( idp::read( "HOST_OPTIMIZE_ENABLE",
                            &QCU_PROPERTY(mHostOptimizeEnable) ) == IDE_SUCCESS );
 
     // BUG-18851 disable transitive predicate generation
-    // Read Only PropertyÀÌ¹Ç·Î CallBackÀÌ ÇÊ¿ä ¾øÀ½.
+    // Read Only Propertyì´ë¯€ë¡œ CallBackì´ í•„ìš” ì—†ìŒ.
     IDE_ASSERT( idp::read( "__OPTIMIZER_TRANSITIVITY_DISABLE",
                            &QCU_PROPERTY(mOptimizerTransitivityDisable) ) == IDE_SUCCESS );
 
@@ -256,11 +256,11 @@ IDE_RC qcuProperty::load()
     IDE_ASSERT( idp::read( "__OPTIMIZER_PUSH_PROJECTION",
                            &QCU_PROPERTY(mOptimizerPushProjection) ) == IDE_SUCCESS );
 
-    // BUG-23780 TEMP_TBS_MEMORY ÈùÆ® Àû¿ë¿©ºÎ¸¦ property·Î Á¦°ø
+    // BUG-23780 TEMP_TBS_MEMORY ížŒíŠ¸ ì ìš©ì—¬ë¶€ë¥¼ propertyë¡œ ì œê³µ
     IDE_ASSERT( idp::read( "__OPTIMIZER_DEFAULT_TEMP_TBS_TYPE",
                            &QCU_PROPERTY(mOptimizerDefaultTempTbsType) ) == IDE_SUCCESS );
 
-    // BUG-38132 group byÀÇ temp table À» ¸Þ¸ð¸®·Î °íÁ¤ÇÏ´Â ÇÁ·ÎÆÛÆ¼
+    // BUG-38132 group byì˜ temp table ì„ ë©”ëª¨ë¦¬ë¡œ ê³ ì •í•˜ëŠ” í”„ë¡œí¼í‹°
     IDE_ASSERT( idp::read( "__OPTIMIZER_FIXED_GROUP_MEMORY_TEMP",
                            &QCU_PROPERTY(mOptimizerFixedGroupMemoryTemp) ) == IDE_SUCCESS );
 
@@ -277,7 +277,7 @@ IDE_RC qcuProperty::load()
                            & QCU_PROPERTY(mSTObjBufSize) ) == IDE_SUCCESS );
 
     // BUG-19089
-    // FK°¡ ÀÖ´Â »óÅÂ¿¡¼­ CREATE REPLICATION ±¸¹®ÀÌ °¡´ÉÇÏµµ·Ï ÇÑ´Ù.
+    // FKê°€ ìžˆëŠ” ìƒíƒœì—ì„œ CREATE REPLICATION êµ¬ë¬¸ì´ ê°€ëŠ¥í•˜ë„ë¡ í•œë‹¤.
     IDE_ASSERT( idp::read( "CHECK_FK_IN_CREATE_REPLICATION_DISABLE",
                            & QCU_PROPERTY(mCheckFkInCreateReplicationDisable) ) == IDE_SUCCESS );
 
@@ -345,9 +345,9 @@ IDE_RC qcuProperty::load()
         }
     }
 
-    // BUG-29209 : natc test¸¦ À§ÇÏ¿© Plan Display¿¡¼­
-    //             Æ¯Á¤ Á¤º¸( DISK_PAGE_COUNT, ITEM_SIZE)¸¦ º¸¿©ÁÖÁö
-    //             ¾Ê°Ô ÇÏ´Â ÇÁ·ÎÆÛÆ¼
+    // BUG-29209 : natc testë¥¼ ìœ„í•˜ì—¬ Plan Displayì—ì„œ
+    //             íŠ¹ì • ì •ë³´( DISK_PAGE_COUNT, ITEM_SIZE)ë¥¼ ë³´ì—¬ì£¼ì§€
+    //             ì•Šê²Œ í•˜ëŠ” í”„ë¡œí¼í‹°
     IDE_ASSERT( idp::read( "__DISPLAY_PLAN_FOR_NATC",
                            & QCU_PROPERTY(mDisplayPlanForNATC) ) == IDE_SUCCESS );
 
@@ -485,7 +485,7 @@ IDE_RC qcuProperty::load()
     IDE_ASSERT( idp::read( "OPTIMIZER_UNNEST_AGGREGATION_SUBQUERY",
                            & QCU_PROPERTY(mOptimizerUnnestAggregationSubquery) ) == IDE_SUCCESS);
 
-    /* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø */
+    /* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ìž… ì§€ì› */
     IDE_ASSERT( idp::read( "__INTERMEDIATE_TUPLE_LOB_OBJECT_LIMIT",
                            & QCU_PROPERTY(mIntermediateTupleLobObjectLimit) ) == IDE_SUCCESS );
 
@@ -619,7 +619,7 @@ IDE_RC qcuProperty::load()
     IDE_ASSERT( idp::read( "__FORCE_SUBQUERY_CACHE_DISABLE",
                            & QCU_PROPERTY(mForceSubqueryCacheDisable) ) == IDE_SUCCESS );
 
-    // PROJ-2551 simple query ÃÖÀûÈ­
+    // PROJ-2551 simple query ìµœì í™”
     IDE_ASSERT( idp::read( "EXECUTOR_FAST_SIMPLE_QUERY",
                            & QCU_PROPERTY(mExecutorFastSimpleQuery) ) == IDE_SUCCESS );
 
@@ -743,7 +743,7 @@ IDE_RC qcuProperty::load()
     IDE_ASSERT( idp::read( "__OPTIMIZER_INNER_JOIN_PUSH_DOWN",
                            &QCU_PROPERTY( mOptimizerInnerJoinPushDown ) ) == IDE_SUCCESS );
 
-    // BUG-43068 Indexable order by °³¼±
+    // BUG-43068 Indexable order by ê°œì„ 
     IDE_ASSERT( idp::read( "__OPTIMIZER_ORDER_PUSH_DOWN",
                            &QCU_PROPERTY( mOptimizerOrderPushDown ) ) == IDE_SUCCESS );
 
@@ -780,7 +780,7 @@ IDE_RC qcuProperty::load()
     IDE_ASSERT( idp::read( "TABLE_LOCK_MODE",
                            & QCU_PROPERTY( mTableLockMode ) ) == IDE_SUCCESS );
 
-    // BUG-43443 temp table¿¡ ´ëÇØ¼­ work area size¸¦ estimateÇÏ´Â ±â´ÉÀ» off
+    // BUG-43443 temp tableì— ëŒ€í•´ì„œ work area sizeë¥¼ estimateí•˜ëŠ” ê¸°ëŠ¥ì„ off
     IDE_ASSERT( idp::read( "__DISK_TEMP_SIZE_ESTIMATE",
                            &QCU_PROPERTY( mDiskTempSizeEstimate ) ) == IDE_SUCCESS );
 
@@ -824,7 +824,7 @@ IDE_RC qcuProperty::load()
     IDE_ASSERT( idp::read( "__OPTIMIZER_DBMS_STAT_POLICY",
                            &QCU_PROPERTY(mOptimizerDBMSStatPolicy) ) == IDE_SUCCESS );
 
-    /* BUG-44850 Index NL , Inverse index NL Á¶ÀÎ ÃÖÀûÈ­ ¼öÇà½Ã ºñ¿ëÀÌ µ¿ÀÏÇÏ¸é primary key¸¦ ¿ì¼±ÀûÀ¸·Î ¼±ÅÃ. */
+    /* BUG-44850 Index NL , Inverse index NL ì¡°ì¸ ìµœì í™” ìˆ˜í–‰ì‹œ ë¹„ìš©ì´ ë™ì¼í•˜ë©´ primary keyë¥¼ ìš°ì„ ì ìœ¼ë¡œ ì„ íƒ. */
     IDE_ASSERT( idp::read( "__OPTIMIZER_INDEX_NL_JOIN_ACCESS_METHOD_POLICY",
                            &QCU_PROPERTY(mOptimizerIndexNLJoinAccessMethodPolicy) ) == IDE_SUCCESS);
     
@@ -851,25 +851,25 @@ IDE_RC qcuProperty::setupUpdateCallback()
 /***********************************************************************
  *
  * Description :
- *    Writable PropertyÀÇ °æ¿ì CallBackÀ» µî·ÏÇØ¾ß ÇÔ.
+ *    Writable Propertyì˜ ê²½ìš° CallBackì„ ë“±ë¡í•´ì•¼ í•¨.
  *
  * Implementation :
  *
  ***********************************************************************/
 
     //--------------------------------------------------------
-    // Trace Log °ü·Ã property loading
-    //    - Writable PropertyÀÌ¹Ç·Î CallBackÀ» µî·ÏÇÑ´Ù.
-    //    - Atomic OperationÀÌ¹Ç·Î, BeforeCallBackÀº ÇÊ¿ä ¾ø´Ù.
+    // Trace Log ê´€ë ¨ property loading
+    //    - Writable Propertyì´ë¯€ë¡œ CallBackì„ ë“±ë¡í•œë‹¤.
+    //    - Atomic Operationì´ë¯€ë¡œ, BeforeCallBackì€ í•„ìš” ì—†ë‹¤.
     //--------------------------------------------------------
 
-    // TRCLOG_DML_SENTENCE °ü·Ã ¼³Á¤
+    // TRCLOG_DML_SENTENCE ê´€ë ¨ ì„¤ì •
     IDE_TEST( idp::setupAfterUpdateCallback(
                   "TRCLOG_DML_SENTENCE",
                   qcuProperty::changeTRCLOG_DML_SENTENCE )
               != IDE_SUCCESS );
 
-    // TRCLOG_DETAIL_PREDICATE °ü·Ã ¼³Á¤
+    // TRCLOG_DETAIL_PREDICATE ê´€ë ¨ ì„¤ì •
     IDE_TEST( idp::setupAfterUpdateCallback(
                   "TRCLOG_DETAIL_PREDICATE",
                   qcuProperty::changeTRCLOG_DETAIL_PREDICATE )
@@ -880,7 +880,7 @@ IDE_RC qcuProperty::setupUpdateCallback()
                   qcuProperty::changeTRCLOG_DETAIL_MTRNODE )
               != IDE_SUCCESS );
 
-    // TRCLOG_EXPLAIN_GRAPH °ü·Ã ¼³Á¤
+    // TRCLOG_EXPLAIN_GRAPH ê´€ë ¨ ì„¤ì •
     IDE_TEST( idp::setupAfterUpdateCallback(
                   "TRCLOG_EXPLAIN_GRAPH",
                   qcuProperty::changeTRCLOG_EXPLAIN_GRAPH )
@@ -898,14 +898,14 @@ IDE_RC qcuProperty::setupUpdateCallback()
                   qcuProperty::changeTRCLOG_DISPLAY_CHILDREN )
               != IDE_SUCCESS );
 
-    // UPDATE_IN_PLACE °ü·Ã ¼³Á¤
+    // UPDATE_IN_PLACE ê´€ë ¨ ì„¤ì •
     IDE_TEST( idp::setupAfterUpdateCallback(
                   "UPDATE_IN_PLACE",
                   qcuProperty::changeUPDATE_IN_PLACE )
               != IDE_SUCCESS );
 
     //--------------------------------------------------------
-    // Query Processor °ü·Ã Property Loading
+    // Query Processor ê´€ë ¨ Property Loading
     //--------------------------------------------------------
 
     IDE_TEST( idp::setupAfterUpdateCallback(
@@ -929,27 +929,27 @@ IDE_RC qcuProperty::setupUpdateCallback()
                   qcuProperty::changeAUTO_REMOTE_EXEC )
               != IDE_SUCCESS );
 
-    // PROJ-1358 Query Stack SizeÀÇ Á¶Á¤
+    // PROJ-1358 Query Stack Sizeì˜ ì¡°ì •
     IDE_TEST( idp::setupAfterUpdateCallback(
                   "QUERY_STACK_SIZE",
                   qcuProperty::changeQUERY_STACK_SIZE )
               != IDE_SUCCESS );
 
-    // PR-13395 °¡»ó Åë°è Á¤º¸ ±¸Ãà
+    // PR-13395 ê°€ìƒ í†µê³„ ì •ë³´ êµ¬ì¶•
     // TPC-H Scale Factor
     IDE_TEST( idp::setupAfterUpdateCallback(
                   "__QP_FAKE_STAT_TPCH_SCALE_FACTOR",
                   qcuProperty::changeFAKE_STAT_TPCH_SCALE_FACTOR )
               != IDE_SUCCESS );
 
-    // PR-13395 °¡»ó Åë°è Á¤º¸ ±¸Ãà
-    // °¡»ó Buffer Size
+    // PR-13395 ê°€ìƒ í†µê³„ ì •ë³´ êµ¬ì¶•
+    // ê°€ìƒ Buffer Size
     IDE_TEST( idp::setupAfterUpdateCallback(
                   "__QP_FAKE_STAT_BUFFER_SIZE",
                   qcuProperty::changeFAKE_STAT_BUFFER_SIZE )
               != IDE_SUCCESS );
 
-    // BUG-13068 filehandle open limit Á¶Á¤
+    // BUG-13068 filehandle open limit ì¡°ì •
     IDE_TEST( idp::setupAfterUpdateCallback(
                   "PSM_FILE_OPEN_LIMIT",
                   qcuProperty::changePSM_FILE_OPEN_LIMIT )
@@ -961,25 +961,25 @@ IDE_RC qcuProperty::setupUpdateCallback()
                   qcuProperty::changeCONNECT_TYPE_OPEN_LIMIT )
               != IDE_SUCCESS );
     
-    /* BUG-41307 User Lock Áö¿ø */
+    /* BUG-41307 User Lock ì§€ì› */
     IDE_TEST( idp::setupAfterUpdateCallback(
                   "USER_LOCK_REQUEST_TIMEOUT",
                   qcuProperty::changeUSER_LOCK_REQUEST_TIMEOUT )
               != IDE_SUCCESS );
 
-    /* BUG-41307 User Lock Áö¿ø */
+    /* BUG-41307 User Lock ì§€ì› */
     IDE_TEST( idp::setupAfterUpdateCallback(
                   "USER_LOCK_REQUEST_CHECK_INTERVAL",
                   qcuProperty::changeUSER_LOCK_REQUEST_CHECK_INTERVAL )
               != IDE_SUCCESS );
 
-    /* BUG-41307 User Lock Áö¿ø */
+    /* BUG-41307 User Lock ì§€ì› */
     IDE_TEST( idp::setupAfterUpdateCallback(
                   "USER_LOCK_REQUEST_LIMIT",
                   qcuProperty::changeUSER_LOCK_REQUEST_LIMIT )
               != IDE_SUCCESS );
 
-    // PROJ-1446 Host variableÀ» Æ÷ÇÔÇÑ ÁúÀÇ ÃÖÀûÈ­
+    // PROJ-1446 Host variableì„ í¬í•¨í•œ ì§ˆì˜ ìµœì í™”
     IDE_TEST( idp::setupAfterUpdateCallback(
                   "HOST_OPTIMIZE_ENABLE",
                   qcuProperty::changeHOST_OPTIMIZE_ENABLE )
@@ -990,7 +990,7 @@ IDE_RC qcuProperty::setupUpdateCallback()
                   qcuProperty::changeOPTIMIZER_DEFAULT_TEMP_TBS_TYPE )
               != IDE_SUCCESS );
 
-    // BUG-38132 group byÀÇ temp table À» ¸Þ¸ð¸®·Î °íÁ¤ÇÏ´Â ÇÁ·ÎÆÛÆ¼
+    // BUG-38132 group byì˜ temp table ì„ ë©”ëª¨ë¦¬ë¡œ ê³ ì •í•˜ëŠ” í”„ë¡œí¼í‹°
     IDE_TEST( idp::setupAfterUpdateCallback(
                   "__OPTIMIZER_FIXED_GROUP_MEMORY_TEMP",
                   qcuProperty::changeOPTIMIZER_FIXED_GROUP_MEMORY_TEMP )
@@ -1014,7 +1014,7 @@ IDE_RC qcuProperty::setupUpdateCallback()
               != IDE_SUCCESS );
 
     // BUG-19089
-    // FK°¡ ÀÖ´Â »óÅÂ¿¡¼­ CREATE REPLICATION ±¸¹®ÀÌ °¡´ÉÇÏµµ·Ï ÇÑ´Ù.
+    // FKê°€ ìžˆëŠ” ìƒíƒœì—ì„œ CREATE REPLICATION êµ¬ë¬¸ì´ ê°€ëŠ¥í•˜ë„ë¡ í•œë‹¤.
     IDE_TEST( idp::setupAfterUpdateCallback(
                   "CHECK_FK_IN_CREATE_REPLICATION_DISABLE",
                   qcuProperty::changeCHECK_FK_IN_CREATE_REPLICATION_DISABLE)
@@ -1046,9 +1046,9 @@ IDE_RC qcuProperty::setupUpdateCallback()
                   qcuProperty::changeQCU_SECURITY_ECC_POLICY_NAME )
               != IDE_SUCCESS );
 
-    // BUG-29209 : natc test¸¦ À§ÇÏ¿© Plan Display¿¡¼­
-    //             Æ¯Á¤ Á¤º¸( DISK_PAGE_COUNT, ITEM_SIZE)¸¦ º¸¿©ÁÖÁö
-    //             ¾Ê°Ô ÇÏ´Â ÇÁ·ÎÆÛÆ¼
+    // BUG-29209 : natc testë¥¼ ìœ„í•˜ì—¬ Plan Displayì—ì„œ
+    //             íŠ¹ì • ì •ë³´( DISK_PAGE_COUNT, ITEM_SIZE)ë¥¼ ë³´ì—¬ì£¼ì§€
+    //             ì•Šê²Œ í•˜ëŠ” í”„ë¡œí¼í‹°
     IDE_TEST( idp::setupAfterUpdateCallback(
                   "__DISPLAY_PLAN_FOR_NATC",
                   qcuProperty::changeDISPLAY_PLAN_FOR_NATC )
@@ -1174,7 +1174,7 @@ IDE_RC qcuProperty::setupUpdateCallback()
                                       qcuProperty::changeOPTIMIZER_UNNEST_AGGREGATION_SUBQUERY)
         != IDE_SUCCESS );
 
-    /* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø */
+    /* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ìž… ì§€ì› */
     IDE_TEST(
         idp::setupAfterUpdateCallback( "__INTERMEDIATE_TUPLE_LOB_OBJECT_LIMIT",
                                        qcuProperty::changeINTERMEDIATE_TUPLE_LOB_OBJECT_LIMIT )
@@ -1313,7 +1313,7 @@ IDE_RC qcuProperty::setupUpdateCallback()
                                              qcuProperty::changeFORCE_SUBQUERY_CACHE_DISABLE )
               != IDE_SUCCESS );
 
-    // PROJ-2551 simple query ÃÖÀûÈ­
+    // PROJ-2551 simple query ìµœì í™”
     IDE_TEST( idp::setupAfterUpdateCallback( "EXECUTOR_FAST_SIMPLE_QUERY",
                                              qcuProperty::changeEXECUTOR_FAST_SIMPLE_QUERY )
               != IDE_SUCCESS );
@@ -1408,7 +1408,7 @@ IDE_RC qcuProperty::setupUpdateCallback()
                                              qcuProperty::changeOPTIMIZER_INNER_JOIN_PUSH_DOWN )
               != IDE_SUCCESS );
 
-    // BUG-43068 Indexable order by °³¼±
+    // BUG-43068 Indexable order by ê°œì„ 
     IDE_TEST( idp::setupAfterUpdateCallback( "__OPTIMIZER_ORDER_PUSH_DOWN",
                                              qcuProperty::changeOPTIMIZER_ORDER_PUSH_DOWN )
               != IDE_SUCCESS );
@@ -1435,7 +1435,7 @@ IDE_RC qcuProperty::setupUpdateCallback()
                                              qcuProperty::changePSM_STMT_POOL_COUNT )
               != IDE_SUCCESS );
 
-    // BUG-43443 temp table¿¡ ´ëÇØ¼­ work area size¸¦ estimateÇÏ´Â ±â´ÉÀ» off
+    // BUG-43443 temp tableì— ëŒ€í•´ì„œ work area sizeë¥¼ estimateí•˜ëŠ” ê¸°ëŠ¥ì„ off
     IDE_TEST( idp::setupAfterUpdateCallback( "__DISK_TEMP_SIZE_ESTIMATE",
                                              qcuProperty::changeDISK_TEMP_SIZE_ESTIMATE)
               != IDE_SUCCESS );
@@ -1474,7 +1474,7 @@ IDE_RC qcuProperty::setupUpdateCallback()
                                              qcuProperty::changeOPTIMIZER_DBMS_STAT_POLICY )
               != IDE_SUCCESS );
 
-    /* BUG-44850 Index NL , Inverse index NL Á¶ÀÎ ÃÖÀûÈ­ ¼öÇà½Ã ºñ¿ëÀÌ µ¿ÀÏÇÏ¸é primary key¸¦ ¿ì¼±ÀûÀ¸·Î ¼±ÅÃ. */
+    /* BUG-44850 Index NL , Inverse index NL ì¡°ì¸ ìµœì í™” ìˆ˜í–‰ì‹œ ë¹„ìš©ì´ ë™ì¼í•˜ë©´ primary keyë¥¼ ìš°ì„ ì ìœ¼ë¡œ ì„ íƒ. */
     IDE_TEST( idp::setupAfterUpdateCallback("__OPTIMIZER_INDEX_NL_JOIN_ACCESS_METHOD_POLICY",
                                             qcuProperty::changeOPTIMIZER_INDEX_NL_JOIN_ACCESS_METHOD_POLICY)
               != IDE_SUCCESS );
@@ -1505,10 +1505,10 @@ qcuProperty::changeTRCLOG_DML_SENTENCE( idvSQL* /* aStatistics */,
 /***********************************************************************
  *
  * Description :
- *    TRCLOG_DML_SENTENCE À» À§ÇÑ CallBack ÇÔ¼ö
+ *    TRCLOG_DML_SENTENCE ì„ ìœ„í•œ CallBack í•¨ìˆ˜
  *
  * Implementation :
- *    Atomic OperationÀÌ¹Ç·Î µ¿½Ã¼º Á¦¾î¿¡ ¹®Á¦°¡ ¾ø´Ù.
+ *    Atomic Operationì´ë¯€ë¡œ ë™ì‹œì„± ì œì–´ì— ë¬¸ì œê°€ ì—†ë‹¤.
  *
  ***********************************************************************/
 
@@ -1529,10 +1529,10 @@ qcuProperty::changeTRCLOG_DETAIL_PREDICATE( idvSQL* /* aStatistics */,
 /***********************************************************************
  *
  * Description :
- *    TRCLOG_DETAIL_PREDICATE À» À§ÇÑ CallBack ÇÔ¼ö
+ *    TRCLOG_DETAIL_PREDICATE ì„ ìœ„í•œ CallBack í•¨ìˆ˜
  *
  * Implementation :
- *    Atomic OperationÀÌ¹Ç·Î µ¿½Ã¼º Á¦¾î¿¡ ¹®Á¦°¡ ¾ø´Ù.
+ *    Atomic Operationì´ë¯€ë¡œ ë™ì‹œì„± ì œì–´ì— ë¬¸ì œê°€ ì—†ë‹¤.
  *
  ***********************************************************************/
 
@@ -1553,10 +1553,10 @@ qcuProperty::changeTRCLOG_DETAIL_MTRNODE( idvSQL* /* aStatistics */,
 /***********************************************************************
  *
  * Description :
- *    TRCLOG_DETAIL_MTRNODE À» À§ÇÑ CallBack ÇÔ¼ö
+ *    TRCLOG_DETAIL_MTRNODE ì„ ìœ„í•œ CallBack í•¨ìˆ˜
  *
  * Implementation :
- *    Atomic OperationÀÌ¹Ç·Î µ¿½Ã¼º Á¦¾î¿¡ ¹®Á¦°¡ ¾ø´Ù.
+ *    Atomic Operationì´ë¯€ë¡œ ë™ì‹œì„± ì œì–´ì— ë¬¸ì œê°€ ì—†ë‹¤.
  *
  ***********************************************************************/
 
@@ -1577,10 +1577,10 @@ qcuProperty::changeTRCLOG_EXPLAIN_GRAPH( idvSQL* /* aStatistics */,
 /***********************************************************************
  *
  * Description :
- *    TRCLOG_EXPLAIN_GRAPH À» À§ÇÑ CallBack ÇÔ¼ö
+ *    TRCLOG_EXPLAIN_GRAPH ì„ ìœ„í•œ CallBack í•¨ìˆ˜
  *
  * Implementation :
- *    Atomic OperationÀÌ¹Ç·Î µ¿½Ã¼º Á¦¾î¿¡ ¹®Á¦°¡ ¾ø´Ù.
+ *    Atomic Operationì´ë¯€ë¡œ ë™ì‹œì„± ì œì–´ì— ë¬¸ì œê°€ ì—†ë‹¤.
  *
  ***********************************************************************/
 
@@ -1601,10 +1601,10 @@ qcuProperty::changeTRCLOG_RESULT_DESC( idvSQL* /* aStatistics */,
 /***********************************************************************
  *
  * Description :
- *    TRCLOG_RESULT_DESC À» À§ÇÑ CallBack ÇÔ¼ö
+ *    TRCLOG_RESULT_DESC ì„ ìœ„í•œ CallBack í•¨ìˆ˜
  *
  * Implementation :
- *    Atomic OperationÀÌ¹Ç·Î µ¿½Ã¼º Á¦¾î¿¡ ¹®Á¦°¡ ¾ø´Ù.
+ *    Atomic Operationì´ë¯€ë¡œ ë™ì‹œì„± ì œì–´ì— ë¬¸ì œê°€ ì—†ë‹¤.
  *
  ***********************************************************************/
 
@@ -1640,10 +1640,10 @@ qcuProperty::changeUPDATE_IN_PLACE( idvSQL* /* aStatistics */,
 /***********************************************************************
  *
  * Description :
- *    UPDATE_IN_PLACE À» À§ÇÑ CallBack ÇÔ¼ö
+ *    UPDATE_IN_PLACE ì„ ìœ„í•œ CallBack í•¨ìˆ˜
  *
  * Implementation :
- *    Atomic OperationÀÌ¹Ç·Î µ¿½Ã¼º Á¦¾î¿¡ ¹®Á¦°¡ ¾ø´Ù.
+ *    Atomic Operationì´ë¯€ë¡œ ë™ì‹œì„± ì œì–´ì— ë¬¸ì œê°€ ì—†ë‹¤.
  *
  ***********************************************************************/
 
@@ -1664,10 +1664,10 @@ qcuProperty::changeEXEC_DDL_DISABLE( idvSQL* /* aStatistics */,
 /***********************************************************************
  *
  * Description :
- *    EXEC_DDL_DISABLE À» À§ÇÑ CallBack ÇÔ¼ö
+ *    EXEC_DDL_DISABLE ì„ ìœ„í•œ CallBack í•¨ìˆ˜
  *
  * Implementation :
- *    Atomic OperationÀÌ¹Ç·Î µ¿½Ã¼º Á¦¾î¿¡ ¹®Á¦°¡ ¾ø´Ù.
+ *    Atomic Operationì´ë¯€ë¡œ ë™ì‹œì„± ì œì–´ì— ë¬¸ì œê°€ ì—†ë‹¤.
  *
  ***********************************************************************/
 
@@ -1688,12 +1688,12 @@ qcuProperty::changeOPTIMIZER_MODE( idvSQL* /* aStatistics */,
 /***********************************************************************
  *
  * Description :
- *    BUG-26017 [PSM] server restart½Ã ¼öÇàµÇ´Â psm load°úÁ¤¿¡¼­
- *              °ü·ÃÇÁ·ÎÆÛÆ¼¸¦ ÂüÁ¶ÇÏÁö ¸øÇÏ´Â °æ¿ì ÀÖÀ½.
- *    OPTIMIZER_MODEÀÇ °ªÀ» ¼³Á¤ÇÔ.
+ *    BUG-26017 [PSM] server restartì‹œ ìˆ˜í–‰ë˜ëŠ” psm loadê³¼ì •ì—ì„œ
+ *              ê´€ë ¨í”„ë¡œí¼í‹°ë¥¼ ì°¸ì¡°í•˜ì§€ ëª»í•˜ëŠ” ê²½ìš° ìžˆìŒ.
+ *    OPTIMIZER_MODEì˜ ê°’ì„ ì„¤ì •í•¨.
  *
  * Implementation :
- *    Atomic OperationÀÌ¹Ç·Î µ¿½Ã¼º Á¦¾î¿¡ ¹®Á¦°¡ ¾ø´Ù.
+ *    Atomic Operationì´ë¯€ë¡œ ë™ì‹œì„± ì œì–´ì— ë¬¸ì œê°€ ì—†ë‹¤.
  *
  ***********************************************************************/
 
@@ -1714,12 +1714,12 @@ qcuProperty::changeAUTO_REMOTE_EXEC( idvSQL* /* aStatistics */,
 /***********************************************************************
  *
  * Description :
- *    BUG-26017 [PSM] server restart½Ã ¼öÇàµÇ´Â psm load°úÁ¤¿¡¼­
- *              °ü·ÃÇÁ·ÎÆÛÆ¼¸¦ ÂüÁ¶ÇÏÁö ¸øÇÏ´Â °æ¿ì ÀÖÀ½.
- *    AUTO_REMOTE_EXECÀÇ °ªÀ» ¼³Á¤ÇÔ.
+ *    BUG-26017 [PSM] server restartì‹œ ìˆ˜í–‰ë˜ëŠ” psm loadê³¼ì •ì—ì„œ
+ *              ê´€ë ¨í”„ë¡œí¼í‹°ë¥¼ ì°¸ì¡°í•˜ì§€ ëª»í•˜ëŠ” ê²½ìš° ìžˆìŒ.
+ *    AUTO_REMOTE_EXECì˜ ê°’ì„ ì„¤ì •í•¨.
  *
  * Implementation :
- *    Atomic OperationÀÌ¹Ç·Î µ¿½Ã¼º Á¦¾î¿¡ ¹®Á¦°¡ ¾ø´Ù.
+ *    Atomic Operationì´ë¯€ë¡œ ë™ì‹œì„± ì œì–´ì— ë¬¸ì œê°€ ì—†ë‹¤.
  *
  ***********************************************************************/
 
@@ -1741,10 +1741,10 @@ qcuProperty::changeQUERY_STACK_SIZE( idvSQL* /* aStatistics */,
  *
  * Description :
  *    PROJ-1358
- *    QUERY_STACK_SIZEÀÇ °ªÀ» ¼³Á¤ÇÔ.
+ *    QUERY_STACK_SIZEì˜ ê°’ì„ ì„¤ì •í•¨.
  *
  * Implementation :
- *    Atomic OperationÀÌ¹Ç·Î µ¿½Ã¼º Á¦¾î¿¡ ¹®Á¦°¡ ¾ø´Ù.
+ *    Atomic Operationì´ë¯€ë¡œ ë™ì‹œì„± ì œì–´ì— ë¬¸ì œê°€ ì—†ë‹¤.
  *
  ***********************************************************************/
 
@@ -1766,10 +1766,10 @@ qcuProperty::changeNORMALFORM_MAXIMUM( idvSQL* /* aStatistics */,
  *
  * Description :
  *    PR-24056
- *    NORMALFORM_MAXIMUMÀÇ °ªÀ» ¼³Á¤ÇÔ.
+ *    NORMALFORM_MAXIMUMì˜ ê°’ì„ ì„¤ì •í•¨.
  *
  * Implementation :
- *    Atomic OperationÀÌ¹Ç·Î µ¿½Ã¼º Á¦¾î¿¡ ¹®Á¦°¡ ¾ø´Ù.
+ *    Atomic Operationì´ë¯€ë¡œ ë™ì‹œì„± ì œì–´ì— ë¬¸ì œê°€ ì—†ë‹¤.
  *
  ***********************************************************************/
 
@@ -1791,10 +1791,10 @@ qcuProperty::changeFAKE_STAT_TPCH_SCALE_FACTOR( idvSQL* /* aStatistics */,
  *
  * Description :
  *    PR-13395
- *    TPC-H Scale Factor ¿¡ µû¸¥ °¡»ó Åë°è Á¤º¸ ±¸Ãà
+ *    TPC-H Scale Factor ì— ë”°ë¥¸ ê°€ìƒ í†µê³„ ì •ë³´ êµ¬ì¶•
  *
  * Implementation :
- *    Atomic OperationÀÌ¹Ç·Î µ¿½Ã¼º Á¦¾î¿¡ ¹®Á¦°¡ ¾ø´Ù.
+ *    Atomic Operationì´ë¯€ë¡œ ë™ì‹œì„± ì œì–´ì— ë¬¸ì œê°€ ì—†ë‹¤.
  *
  ***********************************************************************/
 
@@ -1817,10 +1817,10 @@ qcuProperty::changeFAKE_STAT_BUFFER_SIZE( idvSQL* /* aStatistics */,
  *
  * Description :
  *    PR-13395
- *    °¡»ó Buffer Size ¼³Á¤
+ *    ê°€ìƒ Buffer Size ì„¤ì •
  *
  * Implementation :
- *    Atomic OperationÀÌ¹Ç·Î µ¿½Ã¼º Á¦¾î¿¡ ¹®Á¦°¡ ¾ø´Ù.
+ *    Atomic Operationì´ë¯€ë¡œ ë™ì‹œì„± ì œì–´ì— ë¬¸ì œê°€ ì—†ë‹¤.
  *
  ***********************************************************************/
 
@@ -1841,10 +1841,10 @@ qcuProperty::changeHOST_OPTIMIZE_ENABLE( idvSQL* /* aStatistics */,
 /***********************************************************************
  *
  * Description :
- *    HOST_OPTIMIZE_ENABLE À» À§ÇÑ CallBack ÇÔ¼ö
+ *    HOST_OPTIMIZE_ENABLE ì„ ìœ„í•œ CallBack í•¨ìˆ˜
  *
  * Implementation :
- *    Atomic OperationÀÌ¹Ç·Î µ¿½Ã¼º Á¦¾î¿¡ ¹®Á¦°¡ ¾ø´Ù.
+ *    Atomic Operationì´ë¯€ë¡œ ë™ì‹œì„± ì œì–´ì— ë¬¸ì œê°€ ì—†ë‹¤.
  *
  ***********************************************************************/
 
@@ -1866,10 +1866,10 @@ qcuProperty::changePSM_FILE_OPEN_LIMIT( idvSQL* /* aStatistics */,
  *
  * Description :
  *    BUG-13068
- *    filehandle open limit Á¶Á¤
+ *    filehandle open limit ì¡°ì •
  *
  * Implementation :
- *    Atomic OperationÀÌ¹Ç·Î µ¿½Ã¼º Á¦¾î¿¡ ¹®Á¦°¡ ¾ø´Ù.
+ *    Atomic Operationì´ë¯€ë¡œ ë™ì‹œì„± ì œì–´ì— ë¬¸ì œê°€ ì—†ë‹¤.
  *
  ***********************************************************************/
 
@@ -1894,7 +1894,7 @@ IDE_RC qcuProperty::changeCONNECT_TYPE_OPEN_LIMIT( idvSQL* /* aStatistics */,
     return IDE_SUCCESS;
 }
 
-/* BUG-41307 User Lock Áö¿ø */
+/* BUG-41307 User Lock ì§€ì› */
 IDE_RC qcuProperty::changeUSER_LOCK_REQUEST_TIMEOUT( idvSQL * /* aStatistics */,
                                                      SChar  * /* aName */,
                                                      void   * /* aOldValue */,
@@ -1908,7 +1908,7 @@ IDE_RC qcuProperty::changeUSER_LOCK_REQUEST_TIMEOUT( idvSQL * /* aStatistics */,
     return IDE_SUCCESS;
 }
 
-/* BUG-41307 User Lock Áö¿ø */
+/* BUG-41307 User Lock ì§€ì› */
 IDE_RC qcuProperty::changeUSER_LOCK_REQUEST_CHECK_INTERVAL( idvSQL * /* aStatistics */,
                                                             SChar  * /* aName */,
                                                             void   * /* aOldValue */,
@@ -1922,7 +1922,7 @@ IDE_RC qcuProperty::changeUSER_LOCK_REQUEST_CHECK_INTERVAL( idvSQL * /* aStatist
     return IDE_SUCCESS;
 }
 
-/* BUG-41307 User Lock Áö¿ø */
+/* BUG-41307 User Lock ì§€ì› */
 IDE_RC qcuProperty::changeUSER_LOCK_REQUEST_LIMIT( idvSQL * /* aStatistics */,
                                                    SChar  * /* aName */,
                                                    void   * /* aOldValue */,
@@ -1936,7 +1936,7 @@ IDE_RC qcuProperty::changeUSER_LOCK_REQUEST_LIMIT( idvSQL * /* aStatistics */,
     return IDE_SUCCESS;
 }
 
-// ÂüÁ¶ : mmuProperty
+// ì°¸ì¡° : mmuProperty
 void*
 qcuProperty::callbackForGettingArgument( idvSQL              * /* aStatistics */,
                                          qcuPropertyArgument *aArg,
@@ -1985,12 +1985,12 @@ qcuProperty::changeOPTIMIZER_DEFAULT_TEMP_TBS_TYPE( idvSQL* /* aStatistics */,
  *
  * Description :
  *
- *    BUG-23780 TEMP_TBS_MEMORY ÈùÆ® Àû¿ë¿©ºÎ¸¦ property·Î Á¦°ø
+ *    BUG-23780 TEMP_TBS_MEMORY ížŒíŠ¸ ì ìš©ì—¬ë¶€ë¥¼ propertyë¡œ ì œê³µ
  *
- *    __OPTIMIZER_DEFAULT_TEMP_TBS_TYPE À» À§ÇÑ CallBack ÇÔ¼ö
+ *    __OPTIMIZER_DEFAULT_TEMP_TBS_TYPE ì„ ìœ„í•œ CallBack í•¨ìˆ˜
  *
  * Implementation :
- *     ÇÏ³ªÀÇ querySet ¸¶´Ù °Ë»çÇÏ¹Ç·Î µ¿½Ã¼ºÀÇ ¹®Á¦°¡ ¾ø´Ù.
+ *     í•˜ë‚˜ì˜ querySet ë§ˆë‹¤ ê²€ì‚¬í•˜ë¯€ë¡œ ë™ì‹œì„±ì˜ ë¬¸ì œê°€ ì—†ë‹¤.
  *
  ***********************************************************************/
 
@@ -2039,10 +2039,10 @@ IDE_RC qcuProperty::changeCHECK_FK_IN_CREATE_REPLICATION_DISABLE( idvSQL* /* aSt
  *
  * Description :
  *    BUG-19089
- *    CHECK_FK_IN_CREATE_REPLICATION_DISABLE À» À§ÇÑ CallBack ÇÔ¼ö
+ *    CHECK_FK_IN_CREATE_REPLICATION_DISABLE ì„ ìœ„í•œ CallBack í•¨ìˆ˜
  *
  * Implementation :
- *    Atomic OperationÀÌ¹Ç·Î µ¿½Ã¼º Á¦¾î¿¡ ¹®Á¦°¡ ¾ø´Ù.
+ *    Atomic Operationì´ë¯€ë¡œ ë™ì‹œì„± ì œì–´ì— ë¬¸ì œê°€ ì—†ë‹¤.
  *
  ***********************************************************************/
 
@@ -2063,10 +2063,10 @@ qcuProperty::changeOPTIMIZER_SIMPLE_VIEW_MERGING_DISABLE( idvSQL* /* aStatistics
 /***********************************************************************
  *
  * Description : PROJ-1413 Simple View Merging
- *     __OPTIMIZER_SIMPLE_VIEW_MERGING_DISABLE À» À§ÇÑ CallBack ÇÔ¼ö
+ *     __OPTIMIZER_SIMPLE_VIEW_MERGING_DISABLE ì„ ìœ„í•œ CallBack í•¨ìˆ˜
  *
  * Implementation :
- *     ÇÏ³ªÀÇ view merge½Ã ¸¶´Ù °Ë»çÇÏ¹Ç·Î µ¿½Ã¼ºÀÇ ¹®Á¦°¡ ¾ø´Ù.
+ *     í•˜ë‚˜ì˜ view mergeì‹œ ë§ˆë‹¤ ê²€ì‚¬í•˜ë¯€ë¡œ ë™ì‹œì„±ì˜ ë¬¸ì œê°€ ì—†ë‹¤.
  *
  ***********************************************************************/
 
@@ -2087,10 +2087,10 @@ qcuProperty::changeSQL_PLAN_CACHE_PREPARED_EXECUTION_CONTEXT_CNT( idvSQL* /* aSt
 /***********************************************************************
  *
  * Description : PROJ-1436 SQL Plan Cache
- *     SQL_PLAN_CACHE_PREPARED_EXECUTION_CONTEXT_CNT¸¦ À§ÇÑ CallBack ÇÔ¼ö
+ *     SQL_PLAN_CACHE_PREPARED_EXECUTION_CONTEXT_CNTë¥¼ ìœ„í•œ CallBack í•¨ìˆ˜
  *
  * Implementation :
- *     makePlanCacheInfo½Ã ÇÑ¹ø¸¸ °Ë»çÇÏ¹Ç·Î µ¿½Ã¼ºÀÇ ¹®Á¦°¡ ¾ø´Ù.
+ *     makePlanCacheInfoì‹œ í•œë²ˆë§Œ ê²€ì‚¬í•˜ë¯€ë¡œ ë™ì‹œì„±ì˜ ë¬¸ì œê°€ ì—†ë‹¤.
  *
  ***********************************************************************/
 
@@ -2111,7 +2111,7 @@ qcuProperty::changeQCU_SECURITY_MODULE_NAME( idvSQL* /* aStatistics */,
 /***********************************************************************
  *
  * Description : PROJ-2002 Column Security
- *     SECURITY_MODULEÀ» À§ÇÑ CallBack ÇÔ¼ö
+ *     SECURITY_MODULEì„ ìœ„í•œ CallBack í•¨ìˆ˜
  *
  * Implementation :
  *
@@ -2150,7 +2150,7 @@ qcuProperty::changeQCU_SECURITY_MODULE_LIBRARY( idvSQL* /* aStatistics */,
 /***********************************************************************
  *
  * Description : PROJ-2002 Column Security
- *     SECURITY_MODULE_LIBRARYÀ» À§ÇÑ CallBack ÇÔ¼ö
+ *     SECURITY_MODULE_LIBRARYì„ ìœ„í•œ CallBack í•¨ìˆ˜
  *
  * Implementation :
  *
@@ -2189,7 +2189,7 @@ qcuProperty::changeQCU_SECURITY_ECC_POLICY_NAME( idvSQL* /* aStatistics */,
 /***********************************************************************
  *
  * Description : PROJ-2002 Column Security
- *     SECURITY_ECC_POLICY_NAMEÀ» À§ÇÑ CallBack ÇÔ¼ö
+ *     SECURITY_ECC_POLICY_NAMEì„ ìœ„í•œ CallBack í•¨ìˆ˜
  *
  * Implementation :
  *
@@ -2228,7 +2228,7 @@ qcuProperty::changeDISPLAY_PLAN_FOR_NATC( idvSQL* /* aStatistics */,
 /***********************************************************************
  *
  * Description : BUG-29209
- *     DISPLAY_PLAN_FOR_NATC º¯°æÀ» À§ÇÑ CallBack ÇÔ¼ö
+ *     DISPLAY_PLAN_FOR_NATC ë³€ê²½ì„ ìœ„í•œ CallBack í•¨ìˆ˜
  *
  * Implementation :
  *
@@ -2250,7 +2250,7 @@ IDE_RC qcuProperty::changeOPTIMIZER_VIEW_TARGET_ENABLE( idvSQL* /* aStatistics *
 /***********************************************************************
  *
  * Description : PROJ-2469 Optimize View Materialization
- *     __OPTIMIZER_VIEW_TARGET_ENABLE º¯°æÀ» À§ÇÑ CallBack
+ *     __OPTIMIZER_VIEW_TARGET_ENABLE ë³€ê²½ì„ ìœ„í•œ CallBack
  *
  * Implementation :
  *
@@ -2595,7 +2595,7 @@ qcuProperty::changeOPTIMIZER_UNNEST_AGGREGATION_SUBQUERY(idvSQL* /* aStatistics 
     return IDE_SUCCESS;
 }
 
-/* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø */
+/* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ìž… ì§€ì› */
 IDE_RC
 qcuProperty::changeINTERMEDIATE_TUPLE_LOB_OBJECT_LIMIT( idvSQL* /* aStatistics */,
                                                         SChar * /* aName */,
@@ -2664,13 +2664,13 @@ qcuProperty::changeOPTIMIZER_FEATURE_ENABLE( idvSQL* /* aStatistics */,
 
     if ( sLength > 0 && sLength <= QCU_OPTIMIZER_FEATURE_VERSION_LEN )
     {
-        // OPTIMIZER_FEATURE_ENABLE property value º¯°æ
+        // OPTIMIZER_FEATURE_ENABLE property value ë³€ê²½
         idlOS::strncpy( QCU_PROPERTY(mOptimizerFeatureEnable), sFeatureValue, sLength );
         QCU_PROPERTY(mOptimizerFeatureEnable)[sLength] = '\0';
     }
     else
     {
-        // À¯È¿ÇÏÁö ¾ÊÀº ±æÀÌÀÇ ÀÔ·Â°ª
+        // ìœ íš¨í•˜ì§€ ì•Šì€ ê¸¸ì´ì˜ ìž…ë ¥ê°’
         IDE_RAISE( err_invalid_feature_enable_value );
     }
 
@@ -3293,7 +3293,7 @@ IDE_RC qcuProperty::changeOPTIMIZER_INNER_JOIN_PUSH_DOWN( idvSQL* /* aStatistics
     return IDE_SUCCESS;
 }
 
-// BUG-43068 Indexable order by °³¼±
+// BUG-43068 Indexable order by ê°œì„ 
 IDE_RC qcuProperty::changeOPTIMIZER_ORDER_PUSH_DOWN( idvSQL* /* aStatistics */,
                                                           SChar *,/* aName */
                                                           void  *,/* aOleValue */
@@ -3376,7 +3376,7 @@ IDE_RC qcuProperty::changePSM_STMT_POOL_COUNT( idvSQL* /* aStatistics */,
     return IDE_SUCCESS;
 }
 
-// BUG-43443 temp table¿¡ ´ëÇØ¼­ work area size¸¦ estimateÇÏ´Â ±â´ÉÀ» off
+// BUG-43443 temp tableì— ëŒ€í•´ì„œ work area sizeë¥¼ estimateí•˜ëŠ” ê¸°ëŠ¥ì„ off
 IDE_RC qcuProperty::changeDISK_TEMP_SIZE_ESTIMATE( idvSQL* /* aStatistics */,
                                                    SChar * /* aName */,
                                                    void  * /* aOldValue */,
@@ -3487,7 +3487,7 @@ IDE_RC qcuProperty::changeOPTIMIZER_DBMS_STAT_POLICY( idvSQL* /* aStatistics */,
     return IDE_SUCCESS;
 }
 
-/* BUG-44850 Index NL , Inverse index NL Á¶ÀÎ ÃÖÀûÈ­ ¼öÇà½Ã ºñ¿ëÀÌ µ¿ÀÏÇÏ¸é primary key¸¦ ¿ì¼±ÀûÀ¸·Î ¼±ÅÃ. */
+/* BUG-44850 Index NL , Inverse index NL ì¡°ì¸ ìµœì í™” ìˆ˜í–‰ì‹œ ë¹„ìš©ì´ ë™ì¼í•˜ë©´ primary keyë¥¼ ìš°ì„ ì ìœ¼ë¡œ ì„ íƒ. */
 IDE_RC qcuProperty::changeOPTIMIZER_INDEX_NL_JOIN_ACCESS_METHOD_POLICY(idvSQL* /* aStatistics */,
                                                                        SChar * /* aName */,
                                                                        void  * /* aOldValue */,

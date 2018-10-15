@@ -259,7 +259,7 @@ abstract class CommonDateTimeColumn extends AbstractColumn
         sCal.set(Calendar.HOUR_OF_DAY, sHH);
         sCal.set(Calendar.MINUTE, sMI);
         sCal.set(Calendar.SECOND, sSS);
-        // OracleÀº fractional seconds °ªÀ» ¾ÈÁØ´Ù.
+        // Oracleì€ fractional seconds ê°’ì„ ì•ˆì¤€ë‹¤.
         //sCal.set(Calendar.MILLISECOND, mTimestamp.getNanos() / 1000000);
         return new Time(sCal.getTimeInMillis());
     }

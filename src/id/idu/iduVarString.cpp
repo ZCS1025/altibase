@@ -164,8 +164,8 @@ IDE_RC iduVarStringAppendLength(iduVarString *aString, const SChar *aCString, UI
 {
     iduVarStringPiece *sPiece;
     iduListNode       *sIterator;
-    UInt               sLenLeft; /* º¹»çÇØ¾ßÇÒ ¹®ÀÚ¿­ÀÇ ³²Àº ±æÀÌ */
-    UInt               sLenCopy; /* Piece¿¡ º¹»çÇÒ(ÇÑ) ±æÀÌ       */
+    UInt               sLenLeft; /* ë³µì‚¬í•´ì•¼í•  ë¬¸ìì—´ì˜ ë‚¨ì€ ê¸¸ì´ */
+    UInt               sLenCopy; /* Pieceì— ë³µì‚¬í• (í•œ) ê¸¸ì´       */
 
     sIterator = aString->mPieceList.mPrev;
 
@@ -239,11 +239,11 @@ IDE_RC iduVarStringAppendFormatV(iduVarString *aString, const SChar *aFormat, va
 
 /******************************************************************************
  * Description:
- * iduVarStringÀ» SChar·Î º¯È¯
+ * iduVarStringì„ SCharë¡œ ë³€í™˜
  *
- * aSrc       - [in]  ¿øº» iduVarString
- * aDstBufLen - [in]  º¹»ç ¹öÆÛÀÇ ±æÀÌ
- * aDstBuf    - [out] º¹»ç ¹öÆÛ
+ * aSrc       - [in]  ì›ë³¸ iduVarString
+ * aDstBufLen - [in]  ë³µì‚¬ ë²„í¼ì˜ ê¸¸ì´
+ * aDstBuf    - [out] ë³µì‚¬ ë²„í¼
  ******************************************************************************/
 IDE_RC iduVarStringConvToCString( iduVarString *aSrc, UInt aDstBufLen, SChar *aDstBuf )
 {

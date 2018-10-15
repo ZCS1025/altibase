@@ -19,8 +19,8 @@
  *
  * $Id: sdpstBMP.cpp 27229 2008-07-23 17:37:19Z newdaily $
  *
- * º» ÆÄÀÏÀº Treelist Managed SegmentÀÇ Internal Bitmap ÆäÀÌÁö °ü·Ã
- * STATIC ÀÎÅÍÆäÀÌ½º¸¦ °ü¸®ÇÑ´Ù.
+ * ë³¸ íŒŒì¼ì€ Treelist Managed Segmentì˜ Internal Bitmap í˜ì´ì§€ ê´€ë ¨
+ * STATIC ì¸í„°í˜ì´ìŠ¤ë¥¼ ê´€ë¦¬í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -66,18 +66,18 @@ sdpstBMPOps sdpstRtBMP::mRtBMPOps =
 };
 
 /***********************************************************************
- * Description : Internal Hint¸¦ ÀçÅ½»öÇÑ´Ù.
+ * Description : Internal Hintë¥¼ ì¬íƒìƒ‰í•œë‹¤.
  *
- * ¼­¹ö±¸µ¿½Ã¿¡ Segment DescriptorÀÇ ÃÊ±âÈ­ °úÁ¤ÀÌ³ª °¡¿ë°ø°£ Å½»õ°úÁ¤
- * ¿¡¼­ SegCache¿¡ UpdateItHint flag°¡ TRUEÀÎ °æ¿ì¿¡ ±âÁ¸ Internal Hint
- * ¸¦ Àç¼³Á¤ÇÏ°Ô °úÁ¤À» ¼öÇàÇÑ´Ù.
+ * ì„œë²„êµ¬ë™ì‹œì— Segment Descriptorì˜ ì´ˆê¸°í™” ê³¼ì •ì´ë‚˜ ê°€ìš©ê³µê°„ íƒìƒˆê³¼ì •
+ * ì—ì„œ SegCacheì— UpdateItHint flagê°€ TRUEì¸ ê²½ìš°ì— ê¸°ì¡´ Internal Hint
+ * ë¥¼ ì¬ì„¤ì •í•˜ê²Œ ê³¼ì •ì„ ìˆ˜í–‰í•œë‹¤.
  *
- * aStatistics    - [IN]  Åë°ÔÁ¤º¸
- * aSpaceID       - [IN]  Å×ÀÌºí½ºÆäÀÌ½ºÀÇ ID
+ * aStatistics    - [IN]  í†µê²Œì •ë³´
+ * aSpaceID       - [IN]  í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì˜ ID
  * aSegPID        - [IN]  Segment RID
  * aSearchType    - [IN]  Search Type
  * aSegCache      - [IN]  Segment Cache
- * aNewHintStack  - [OUT] »õ·Î¿î Hint Stack
+ * aNewHintStack  - [OUT] ìƒˆë¡œìš´ Hint Stack
  ***********************************************************************/
 IDE_RC sdpstRtBMP::rescanItHint( idvSQL          * aStatistics,
                                  scSpaceID         aSpaceID,
@@ -96,12 +96,12 @@ IDE_RC sdpstRtBMP::rescanItHint( idvSQL          * aStatistics,
     IDE_ASSERT( aSegPID        != SD_NULL_PID );
     IDE_ASSERT( aSegCache      != NULL );
 
-    /* rootºÎÅÍ Ã³¸®ÇÑ´Ù. */
+    /* rootë¶€í„° ì²˜ë¦¬í•œë‹¤. */
     sCurRtBMP = aSegPID;
     sCurIdx   = 0;
     sRtBMPIdx = 0;
 
-    /* RtBMP¸¦ µû¶ó°¡¸é¼­ search typeÀ» ¸¸Á·ÇÏ´Â ItBMP¸¦ Ã£¾Æ ¹İÈ¯ÇÑ´Ù. */
+    /* RtBMPë¥¼ ë”°ë¼ê°€ë©´ì„œ search typeì„ ë§Œì¡±í•˜ëŠ” ItBMPë¥¼ ì°¾ì•„ ë°˜í™˜í•œë‹¤. */
     IDE_TEST( findFstFreeSlot( aStatistics,
                                aSpaceID,
                                NULL,
@@ -113,7 +113,7 @@ IDE_RC sdpstRtBMP::rescanItHint( idvSQL          * aStatistics,
                                &sNewStack4Hint,
                                &sDummy ) != IDE_SUCCESS );
 
-    /* »õ·Î¿î Internal Hint StackÀ» ºñ±³ÇØº¸°í ¼³Á¤ÇÑ´Ù. */
+    /* ìƒˆë¡œìš´ Internal Hint Stackì„ ë¹„êµí•´ë³´ê³  ì„¤ì •í•œë‹¤. */
     sHintFlag = ID_FALSE;
     sdpstCache::setItHintIfLT( aStatistics,
                                aSegCache,
@@ -138,8 +138,8 @@ IDE_RC sdpstRtBMP::rescanItHint( idvSQL          * aStatistics,
 }
 
 /***********************************************************************
- * Description : rt-bmpÀÇ ÀÌÀü itbmp¿¡¼­ºÎÅÍ ´ÙÀ½ °¡¿ë°ø°£ÀÌ Á¸ÀçÇÏ´Â
- *               itbmp¸¦ ¹İÈ¯ÇÑ´Ù.
+ * Description : rt-bmpì˜ ì´ì „ itbmpì—ì„œë¶€í„° ë‹¤ìŒ ê°€ìš©ê³µê°„ì´ ì¡´ì¬í•˜ëŠ”
+ *               itbmpë¥¼ ë°˜í™˜í•œë‹¤.
  ***********************************************************************/
 void sdpstRtBMP::findFreeItBMP( sdpstBMPHdr       * aBMPHdr,
                                 SShort              aSlotNoInParent,
@@ -164,7 +164,7 @@ void sdpstRtBMP::findFreeItBMP( sdpstBMPHdr       * aBMPHdr,
     sFreeSlotNo = SDPST_INVALID_SLOTNO;
     sSlotPtr    = sdpstBMP::getMapPtr( aBMPHdr );
 
-    /* HWM°ú µ¿ÀÏ RtBMPÀÌ¸é, Free ItBMP Å½»öÀº HWM ±îÁö¸¸ ÇÑ´Ù. */
+    /* HWMê³¼ ë™ì¼ RtBMPì´ë©´, Free ItBMP íƒìƒ‰ì€ HWM ê¹Œì§€ë§Œ í•œë‹¤. */
     sHWMPos = sdpstStackMgr::getSeekPos( &aHWM->mStack, SDPST_RTBMP );
     sCurPID = sdpPhyPage::getPageID( sdpPhyPage::getPageStartPtr(aBMPHdr) );
 
@@ -198,7 +198,7 @@ void sdpstRtBMP::findFreeItBMP( sdpstBMPHdr       * aBMPHdr,
 
     if ( sFreeSlotNo != SDPST_INVALID_SLOTNO )
     {
-        // °¡¿ëÇÑ leaf bmp ÆäÀÌÁö¸¦ Å½»öÇÑ °æ¿ì
+        // ê°€ìš©í•œ leaf bmp í˜ì´ì§€ë¥¼ íƒìƒ‰í•œ ê²½ìš°
         sNxtItBMP = sdpstBMP::getSlot( aBMPHdr, sFreeSlotNo )->mBMP;
     }
     else
@@ -218,8 +218,8 @@ void sdpstRtBMP::findFreeItBMP( sdpstBMPHdr       * aBMPHdr,
 }
 
 /***********************************************************************
- * Description : RtBMP ÆäÀÌÁöµéÀ» Å½»öÇÏ¸é¼­ Ã¹¹øÂ°·Î TargetMFNLÀ»
- *               ¸¸Á·ÇÏ´Â Internal SlotÀ» Ã£´Â´Ù.
+ * Description : RtBMP í˜ì´ì§€ë“¤ì„ íƒìƒ‰í•˜ë©´ì„œ ì²«ë²ˆì§¸ë¡œ TargetMFNLì„
+ *               ë§Œì¡±í•˜ëŠ” Internal Slotì„ ì°¾ëŠ”ë‹¤.
  ***********************************************************************/
 IDE_RC sdpstRtBMP::findFstFreeSlot( idvSQL             * aStatistics,
                                     scSpaceID            aSpaceID,
@@ -285,7 +285,7 @@ IDE_RC sdpstRtBMP::findFstFreeSlot( idvSQL             * aStatistics,
         {
             if ( getNxtRtBMP(sBMPHdr) == SD_NULL_PID )
             {
-                // ³¡ÀÌ±â ¶§¹®¿¡ ¸¶Áö¸·À¸·Î Hint¸¦ ¼³Á¤ÇÑ´Ù.
+                // ëì´ê¸° ë•Œë¬¸ì— ë§ˆì§€ë§‰ìœ¼ë¡œ Hintë¥¼ ì„¤ì •í•œë‹¤.
                 sCurSlotNo   = sBMPHdr->mSlotCnt - 1;
                 sCurItBMP = (sdpstBMP::getMapPtr(sBMPHdr) + sCurSlotNo)->mBMP;
                 *aIsFound  = ID_FALSE;
@@ -300,7 +300,7 @@ IDE_RC sdpstRtBMP::findFstFreeSlot( idvSQL             * aStatistics,
         }
         else
         {
-            // Ã£¾ÒÀ¸¹Ç·Î Hint¸¦ ¼³Á¤ÇÑ´Ù.
+            // ì°¾ì•˜ìœ¼ë¯€ë¡œ Hintë¥¼ ì„¤ì •í•œë‹¤.
             sCurItBMP = (sdpstBMP::getMapPtr(sBMPHdr) + sCurSlotNo)->mBMP;
             *aIsFound  = ID_TRUE;
             break;
@@ -346,8 +346,8 @@ IDE_RC sdpstRtBMP::findFstFreeSlot( idvSQL             * aStatistics,
 }
 
 /***********************************************************************
- * Description : Internal SlotÀÇ MFNLÀÌ Full·Î º¯°æµÈ °æ¿ì¿¡´Â Internal
- *               HintÀÇ º¯°æ¿©ºÎ¸¦ °Ë»çÇÏ°í ÀüÁø½ÃÅ²´Ù.
+ * Description : Internal Slotì˜ MFNLì´ Fullë¡œ ë³€ê²½ëœ ê²½ìš°ì—ëŠ” Internal
+ *               Hintì˜ ë³€ê²½ì—¬ë¶€ë¥¼ ê²€ì‚¬í•˜ê³  ì „ì§„ì‹œí‚¨ë‹¤.
  ***********************************************************************/
 IDE_RC sdpstRtBMP::forwardItHint( idvSQL           * aStatistics,
                                   sdrMtx           * aMtx,
@@ -371,8 +371,8 @@ IDE_RC sdpstRtBMP::forwardItHint( idvSQL           * aStatistics,
     IDE_ASSERT( aMtx      != NULL );
 
     /*
-     * ±âÁ¸ Internal Hint °¡ full·Î º¯°æµÈ °æ¿ìÀÌ¹Ç·Î
-     * ´ÙÀ½ Internal Hint¸¦ Ã£¾Æ¼­ ÀüÁø½ÃÅ²´Ù.
+     * ê¸°ì¡´ Internal Hint ê°€ fullë¡œ ë³€ê²½ëœ ê²½ìš°ì´ë¯€ë¡œ
+     * ë‹¤ìŒ Internal Hintë¥¼ ì°¾ì•„ì„œ ì „ì§„ì‹œí‚¨ë‹¤.
      */
     sdpstCache::copyItHint( aStatistics,
                             aSegCache,
@@ -390,13 +390,13 @@ IDE_RC sdpstRtBMP::forwardItHint( idvSQL           * aStatistics,
     }
 
 
-    /* RevStack¿¡¼­ Virtual¿¡ ÀúÀåµÈ °ÍÀÌ ItBMPÀÌ´Ù. */
+    /* RevStackì—ì„œ Virtualì— ì €ì¥ëœ ê²ƒì´ ItBMPì´ë‹¤. */
     sCmpPos = sdpstStackMgr::getSeekPos( aRevStack, SDPST_RTBMP );
     sCurPos = sdpstStackMgr::getSeekPos( &sStack4Hint, SDPST_RTBMP );
 
-    /* forwardItHint´Â ´Ù½Ã RootBMP¿¡¼­ ItBMP°¡ º¯°æµÈ
-     * °æ¿ì¿¡¸¸ µé¾î ¿À¸ç, Root Depth¿¡¼­ µ¿ÀÏÇÑ lfbmp ÆäÀÌÁö°¡
-     * FULL·Î º¯°æµÈ °æ¿ì¿¡¸¸ »õ·Î¿î It Hint¸¦ ¼³Á¤ÇÑ´Ù. */
+    /* forwardItHintëŠ” ë‹¤ì‹œ RootBMPì—ì„œ ItBMPê°€ ë³€ê²½ëœ
+     * ê²½ìš°ì—ë§Œ ë“¤ì–´ ì˜¤ë©°, Root Depthì—ì„œ ë™ì¼í•œ lfbmp í˜ì´ì§€ê°€
+     * FULLë¡œ ë³€ê²½ëœ ê²½ìš°ì—ë§Œ ìƒˆë¡œìš´ It Hintë¥¼ ì„¤ì •í•œë‹¤. */
     if ( sdpstStackMgr::getDist( &sCmpPos, &sCurPos ) != SDPST_FAR_AWAY_OFF )
     {
         sCurPos = sdpstStackMgr::getSeekPos( &sStack4Hint, SDPST_VIRTBMP );
@@ -412,9 +412,9 @@ IDE_RC sdpstRtBMP::forwardItHint( idvSQL           * aStatistics,
 
         sBMPHdr = sdpstBMP::getHdrPtr( sPagePtr );
 
-        // root bitmap ÆäÀÌÁö¸¦ µû¶ó¼­ search typeÀ» ¸¸Á·ÇÏ´Â
-        // internal bitmap ÆäÀÌÁö¸¦ Â÷¾Æ ¹İÈ¯ÇÑ´Ù.
-        sCurIdx = sCurPos.mIndex; // Å½»ö½ÃÀÛÀ§Ä¡
+        // root bitmap í˜ì´ì§€ë¥¼ ë”°ë¼ì„œ search typeì„ ë§Œì¡±í•˜ëŠ”
+        // internal bitmap í˜ì´ì§€ë¥¼ ì°¨ì•„ ë°˜í™˜í•œë‹¤.
+        sCurIdx = sCurPos.mIndex; // íƒìƒ‰ì‹œì‘ìœ„ì¹˜
         IDE_TEST( findFstFreeSlot( aStatistics,
                                    aSpaceID,
                                    sBMPHdr,
@@ -432,7 +432,7 @@ IDE_RC sdpstRtBMP::forwardItHint( idvSQL           * aStatistics,
 
         if ( sIsFound == ID_TRUE )
         {
-            // »õ·Î¿î Internal Hint StackÀ» ºñ±³ÇØº¸°í ¼³Á¤ÇÑ´Ù.
+            // ìƒˆë¡œìš´ Internal Hint Stackì„ ë¹„êµí•´ë³´ê³  ì„¤ì •í•œë‹¤.
             sdpstCache::setItHintIfGT( aStatistics,
                                        aSegCache,
                                        aSearchType,
@@ -454,7 +454,7 @@ IDE_RC sdpstRtBMP::forwardItHint( idvSQL           * aStatistics,
 }
 
 /***********************************************************************
- * Description : Segment¿¡ Next Root BMP¸¦ ¼³Á¤ÇÑ´Ù.
+ * Description : Segmentì— Next Root BMPë¥¼ ì„¤ì •í•œë‹¤.
  ***********************************************************************/
 IDE_RC sdpstRtBMP::setNxtRtBMP( idvSQL          * aStatistics,
                                 sdrMtx          * aMtx,

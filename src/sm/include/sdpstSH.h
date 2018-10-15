@@ -19,7 +19,7 @@
  *
  * $Id: sdpstSH.h 27220 2008-07-23 14:56:22Z newdaily $
  *
- * º» ÆÄÀÏÀº Treelist Managed SegmentÀÇ Segment HeaderÀÇ Çì´õÆÄÀÏÀÌ´Ù.
+ * ë³¸ íŒŒì¼ì€ Treelist Managed Segmentì˜ Segment Headerì˜ í—¤ë”íŒŒì¼ì´ë‹¤.
  *
  ***********************************************************************/
 
@@ -181,7 +181,7 @@ private:
 };
 
 /*
- * ÆäÀÌÁöÀÇ ÀÓÀÇÀÇ Æ÷ÀÎÅÍ¿¡¼­ Logical Header Ptr¸¦ ¹İÈ¯ÇÑ´Ù.
+ * í˜ì´ì§€ì˜ ì„ì˜ì˜ í¬ì¸í„°ì—ì„œ Logical Header Ptrë¥¼ ë°˜í™˜í•œë‹¤.
  */
 inline sdpstSegHdr* sdpstSH::getHdrPtr( UChar * aPagePtr )
 {
@@ -189,27 +189,27 @@ inline sdpstSegHdr* sdpstSH::getHdrPtr( UChar * aPagePtr )
     return (sdpstSegHdr*)sdpPhyPage::getLogicalHdrStartPtr( aPagePtr );
 }
 
-/* Root BMP Header ¹İÈ¯ */
+/* Root BMP Header ë°˜í™˜ */
 inline sdpstBMPHdr * sdpstSH::getRtBMPHdr( UChar * aPagePtr )
 {
     return (sdpstBMPHdr*)(&(getHdrPtr( aPagePtr )->mRtBMPHdr));
 }
 
-/* ExtDir Header ¹İÈ¯ */
+/* ExtDir Header ë°˜í™˜ */
 inline sdpstExtDirHdr * sdpstSH::getExtDirHdr( UChar * aPagePtr )
 {
     return (sdpstExtDirHdr*)(&(getHdrPtr(aPagePtr)->mExtDirHdr));
 }
 
-/* ExtDir °³¼ö ¹İÈ¯ */
+/* ExtDir ê°œìˆ˜ ë°˜í™˜ */
 inline UInt sdpstSH::getTotExtDirCnt( sdpstSegHdr * aSegHdr )
 {
     IDE_ASSERT( aSegHdr != NULL );
-    /* +1Àº SegHdr¿¡ Æ÷ÇÔµÈ ExtDir °³¼ö */
+    /* +1ì€ SegHdrì— í¬í•¨ëœ ExtDir ê°œìˆ˜ */
     return sdpDblPIDList::getNodeCnt(&aSegHdr->mExtDirBase) + 1;
 }
 
-/* Segment Header ÆäÀÌÁö¿¡¼­ ¸¶Áö¸· Lst ExtDir PID¸¦ ¹İÈ¯ÇÑ´Ù. */
+/* Segment Header í˜ì´ì§€ì—ì„œ ë§ˆì§€ë§‰ Lst ExtDir PIDë¥¼ ë°˜í™˜í•œë‹¤. */
 inline scPageID sdpstSH::getLstExtDir( sdpstSegHdr  * aSegHdr )
 {
     scPageID        sExtDirPID;
@@ -228,7 +228,7 @@ inline scPageID sdpstSH::getLstExtDir( sdpstSegHdr  * aSegHdr )
     return sExtDirPID;
 }
 
-/* Segment Header ÆäÀÌÁö¿¡¼­ Ã¹¹øÂ° ExtDir PID¸¦ ¹İÈ¯ÇÑ´Ù. */
+/* Segment Header í˜ì´ì§€ì—ì„œ ì²«ë²ˆì§¸ ExtDir PIDë¥¼ ë°˜í™˜í•œë‹¤. */
 inline scPageID sdpstSH::getFstExtDir( sdpstSegHdr  * aSegHdr )
 {
     scPageID          sExtDirPID;

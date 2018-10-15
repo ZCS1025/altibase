@@ -10,6 +10,6 @@ SA_LLIBS    = $(LIBOPT)sm_sa$(LIBAFT) $(LIBS)
 SDLIB       = $(SD_DIR)/lib/$(LIBPRE)sd.$(LIBEXT)
 CLILIB      = $(UT_DIR)/cli/lib/$(LIBPRE)cli.$(LIBEXT)
 
-# ³ªÁß¿¡ »èÁ¦ÇÒ ¼ö ÀÖµµ·Ï : ÇöÀç È£È¯¼ºÀ» À§ÇØ Á¤ÀÇÇØ µÒ
+# ë‚˜ì¤‘ì— ì‚­ì œí•  ìˆ˜ ìžˆë„ë¡ : í˜„ìž¬ í˜¸í™˜ì„±ì„ ìœ„í•´ ì •ì˜í•´ ë‘ 
 COMPILE=compile
 INSTALL=install

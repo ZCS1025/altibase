@@ -108,7 +108,7 @@ static IDE_RC mtfPercentileContEstimate( mtcNode*     aNode,
 mtfModule mtfPercentileCont = {
     3 | MTC_NODE_OPERATOR_AGGREGATION | MTC_NODE_FUNCTION_WINDOWING_TRUE,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
+    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìê°€ ì•„ë‹˜)
     mtfPercentileContFunctionName,
     NULL,
     mtfPercentileContInitialize,
@@ -177,7 +177,7 @@ static mtfSubModule mtfPercentileContEstimates[4] = {
 };
 
 // BUG-41994
-// high performance¿ë group table
+// high performanceìš© group table
 static mtfSubModule mtfPercentileContEstimatesHighPerformance[3] = {
     { mtfPercentileContEstimatesHighPerformance+1, mtfPercentileContEstimateDouble },
     { mtfPercentileContEstimatesHighPerformance+2, mtfPercentileContEstimateBigint },
@@ -230,15 +230,15 @@ IDE_RC mtfPercentileContEstimate( mtcNode*     aNode,
     const mtfSubModule  * sSubModule;
     mtfSubModule       ** sTable;
     
-    // within group by°¡ ÀÖ¾î¾ß ÇÔ
+    // within group byê°€ ìˆì–´ì•¼ í•¨
     IDE_TEST_RAISE( aNode->funcArguments == NULL,
                     ERR_WITHIN_GROUP_MISSING_WITHIN_GROUP );
     
-    // within group by¿¡ ÇÏ³ª¸¸ °¡´É
+    // within group byì— í•˜ë‚˜ë§Œ ê°€ëŠ¥
     IDE_TEST_RAISE( aNode->funcArguments->next != NULL,
                     ERR_INVALID_FUNCTION_ARGUMENT );
     
-    // stack[2]°¡ ¹İµå½Ã ÇÊ¿äÇÏ´Ù.
+    // stack[2]ê°€ ë°˜ë“œì‹œ í•„ìš”í•˜ë‹¤.
     IDE_TEST_RAISE( ( aNode->lflag & MTC_NODE_ARGUMENT_COUNT_MASK ) != 2,
                     ERR_INVALID_FUNCTION_ARGUMENT );    
     
@@ -299,7 +299,7 @@ IDE_RC mtfPercentileContInitialize( mtcNode*     aNode,
     sRow    = (UChar *)aTemplate->rows[aNode->table].row;
     sBinary = (mtdBinaryType*)(sRow + sColumn[1].column.offset);
 
-    // ÃÖÃÊ µî·Ï
+    // ìµœì´ˆ ë“±ë¡
     if ( aTemplate->funcData[aNode->info] == NULL )
     {
         IDE_TEST( mtf::allocFuncDataMemory( &sMemoryMgr )
@@ -317,7 +317,7 @@ IDE_RC mtfPercentileContInitialize( mtcNode*     aNode,
                                                     sMemoryMgr )
                   != IDE_SUCCESS );
 
-        // µî·Ï
+        // ë“±ë¡
         aTemplate->funcData[aNode->info] = sFuncDataInfo;
     }
     else
@@ -536,14 +536,14 @@ IDE_RC mtfPercentileContEstimateFloat( mtcNode*     aNode,
     
     aStack[0].column = aTemplate->rows[aNode->table].columns + aNode->column;
 
-    // submodule ÃÊ±âÈ­½Ã
+    // submodule ì´ˆê¸°í™”ì‹œ
     if ( ( aCallBack->flag & MTC_ESTIMATE_INITIALIZE_MASK )
          == MTC_ESTIMATE_INITIALIZE_TRUE )
     {
         mtc::makeFloatConversionModule( aStack + 1, sModules + 1 );
         
-        // initializeTemplate½Ã¿¡´Â ÀÎÀÚ°¡ 1°³·Î estimateµÇ°í
-        // percentile_cont ÇÔ¼ö·Î º¸¸é 2¹øÂ° ÀÎÀÚÀÌ´Ù.
+        // initializeTemplateì‹œì—ëŠ” ì¸ìê°€ 1ê°œë¡œ estimateë˜ê³ 
+        // percentile_cont í•¨ìˆ˜ë¡œ ë³´ë©´ 2ë²ˆì§¸ ì¸ìì´ë‹¤.
         IDE_TEST( mtf::makeConversionNodes( aNode,
                                             aNode->arguments,
                                             aTemplate,
@@ -594,7 +594,7 @@ IDE_RC mtfPercentileContEstimateFloat( mtcNode*     aNode,
                                      0 )
               != IDE_SUCCESS );
 
-    // funcData »ç¿ë
+    // funcData ì‚¬ìš©
     aNode->info = aTemplate->funcDataCnt;
     aTemplate->funcDataCnt++;
 
@@ -649,7 +649,7 @@ IDE_RC mtfPercentileContFinalizeFloat( mtcNode      * aNode,
     // sort
     //------------------------------------------
     
-    // chunk¸¦ ÇÏ³ª·Î ÇÕÃÄ total data¸¦ »ı¼ºÇÑ´Ù.
+    // chunkë¥¼ í•˜ë‚˜ë¡œ í•©ì³ total dataë¥¼ ìƒì„±í•œë‹¤.
     IDE_TEST( makeTotalDataPercentileContFuncData( sFuncDataBasicInfo,
                                                    sPercentileContFuncData )
               != IDE_SUCCESS );
@@ -660,7 +660,7 @@ IDE_RC mtfPercentileContFinalizeFloat( mtcNode      * aNode,
               != IDE_SUCCESS );
     
     //------------------------------------------
-    // ¿¬»ê ¼öÇà    
+    // ì—°ì‚° ìˆ˜í–‰    
     //------------------------------------------
 
     if ( sPercentileContFuncData->totalCount > 0 )
@@ -668,7 +668,7 @@ IDE_RC mtfPercentileContFinalizeFloat( mtcNode      * aNode,
         // percentile option
         sFirstValue = *((mtdDoubleType*)(sRow + sColumn[2].column.offset));
                              
-        // RN( Áß°£ rowÀ§Ä¡) À» ±¸ÇÑ´Ù.
+        // RN( ì¤‘ê°„ rowìœ„ì¹˜) ì„ êµ¬í•œë‹¤.
         sRowNum = ( 1 + ( sFirstValue * ( sPercentileContFuncData->totalCount - 1 ) ) );
 
         // ceil row num
@@ -677,7 +677,7 @@ IDE_RC mtfPercentileContFinalizeFloat( mtcNode      * aNode,
         // floor row num
         sFloorRowNum = idlOS::floor( sRowNum );
 
-        // row num = ceil, row num = floor °°Àº °æ¿ì ¶Ç´Â row num ÃÑ°³°¡ È¦¼ö.
+        // row num = ceil, row num = floor ê°™ì€ ê²½ìš° ë˜ëŠ” row num ì´ê°œê°€ í™€ìˆ˜.
         if ( ( PERCENTILECONT_FLOATING_POINT_EQ( sRowNum, (SDouble)sCeilRowNum ) ) &&
              ( PERCENTILECONT_FLOATING_POINT_EQ( sRowNum, (SDouble)sFloorRowNum ) ) )
         {                        
@@ -773,12 +773,12 @@ IDE_RC mtfPercentileContEstimateDouble( mtcNode*     aNode,
 
     aStack[0].column = aTemplate->rows[aNode->table].columns + aNode->column;
     
-    // submodule ÃÊ±âÈ­½Ã
+    // submodule ì´ˆê¸°í™”ì‹œ
     if ( ( aCallBack->flag & MTC_ESTIMATE_INITIALIZE_MASK )
          == MTC_ESTIMATE_INITIALIZE_TRUE )
     {
-        // initializeTemplate½Ã¿¡´Â ÀÎÀÚ°¡ 1°³·Î estimateµÇ°í
-        // percentile_cont ÇÔ¼ö·Î º¸¸é 2¹øÂ° ÀÎÀÚÀÌ´Ù.
+        // initializeTemplateì‹œì—ëŠ” ì¸ìê°€ 1ê°œë¡œ estimateë˜ê³ 
+        // percentile_cont í•¨ìˆ˜ë¡œ ë³´ë©´ 2ë²ˆì§¸ ì¸ìì´ë‹¤.
         IDE_TEST( mtf::makeConversionNodes( aNode,
                                             aNode->arguments,
                                             aTemplate,
@@ -827,7 +827,7 @@ IDE_RC mtfPercentileContEstimateDouble( mtcNode*     aNode,
                                      0 )
               != IDE_SUCCESS );
 
-    // funcData »ç¿ë
+    // funcData ì‚¬ìš©
     aNode->info = aTemplate->funcDataCnt;
     aTemplate->funcDataCnt++;
         
@@ -874,7 +874,7 @@ IDE_RC mtfPercentileContFinalizeDouble( mtcNode     * aNode,
     // sort
     //------------------------------------------
     
-    // chunk¸¦ ÇÏ³ª·Î ÇÕÃÄ total data¸¦ »ı¼ºÇÑ´Ù.
+    // chunkë¥¼ í•˜ë‚˜ë¡œ í•©ì³ total dataë¥¼ ìƒì„±í•œë‹¤.
     IDE_TEST( makeTotalDataPercentileContFuncData( sFuncDataBasicInfo,
                                                    sPercentileContFuncData )
               != IDE_SUCCESS );
@@ -885,7 +885,7 @@ IDE_RC mtfPercentileContFinalizeDouble( mtcNode     * aNode,
               != IDE_SUCCESS );
     
     //------------------------------------------
-    // ¿¬»ê ¼öÇà
+    // ì—°ì‚° ìˆ˜í–‰
     //------------------------------------------
     
     if ( sPercentileContFuncData->totalCount > 0 )
@@ -893,7 +893,7 @@ IDE_RC mtfPercentileContFinalizeDouble( mtcNode     * aNode,
         // percentile option
         sFirstValue = *((mtdDoubleType*)(sRow + sColumn[2].column.offset));
 
-        // RN( Áß°£ rowÀ§Ä¡) À» ±¸ÇÑ´Ù.
+        // RN( ì¤‘ê°„ rowìœ„ì¹˜) ì„ êµ¬í•œë‹¤.
         sRowNum = ( 1 + ( sFirstValue * ( sPercentileContFuncData->totalCount - 1 ) ) );
 
         // ceil row num
@@ -902,7 +902,7 @@ IDE_RC mtfPercentileContFinalizeDouble( mtcNode     * aNode,
         // floor row num
         sFloorRowNum = idlOS::floor( sRowNum );
 
-        // row num = ceil, row num = floor °°Àº °æ¿ì ¶Ç´Â row num ÃÑ°³°¡ È¦¼ö.
+        // row num = ceil, row num = floor ê°™ì€ ê²½ìš° ë˜ëŠ” row num ì´ê°œê°€ í™€ìˆ˜.
         if ( ( PERCENTILECONT_FLOATING_POINT_EQ( sRowNum, (SDouble)sCeilRowNum ) ) &&
              ( PERCENTILECONT_FLOATING_POINT_EQ( sRowNum, (SDouble)sFloorRowNum ) ) )
         {
@@ -972,12 +972,12 @@ IDE_RC mtfPercentileContEstimateBigint( mtcNode*     aNode,
     
     aStack[0].column = aTemplate->rows[aNode->table].columns + aNode->column;
     
-    // submodule ÃÊ±âÈ­½Ã
+    // submodule ì´ˆê¸°í™”ì‹œ
     if ( ( aCallBack->flag & MTC_ESTIMATE_INITIALIZE_MASK )
          == MTC_ESTIMATE_INITIALIZE_TRUE )
     {
-        // initializeTemplate½Ã¿¡´Â ÀÎÀÚ°¡ 1°³·Î estimateµÇ°í
-        // percentile_cont ÇÔ¼ö·Î º¸¸é 2¹øÂ° ÀÎÀÚÀÌ´Ù.
+        // initializeTemplateì‹œì—ëŠ” ì¸ìê°€ 1ê°œë¡œ estimateë˜ê³ 
+        // percentile_cont í•¨ìˆ˜ë¡œ ë³´ë©´ 2ë²ˆì§¸ ì¸ìì´ë‹¤.
         IDE_TEST( mtf::makeConversionNodes( aNode,
                                             aNode->arguments,
                                             aTemplate,
@@ -1026,7 +1026,7 @@ IDE_RC mtfPercentileContEstimateBigint( mtcNode*     aNode,
                                      0 )
               != IDE_SUCCESS );
     
-    // funcData »ç¿ë
+    // funcData ì‚¬ìš©
     aNode->info = aTemplate->funcDataCnt;
     aTemplate->funcDataCnt++;
     
@@ -1073,7 +1073,7 @@ IDE_RC mtfPercentileContFinalizeBigint( mtcNode     * aNode,
     // sort
     //------------------------------------------
     
-    // chunk¸¦ ÇÏ³ª·Î ÇÕÃÄ total data¸¦ »ı¼ºÇÑ´Ù.
+    // chunkë¥¼ í•˜ë‚˜ë¡œ í•©ì³ total dataë¥¼ ìƒì„±í•œë‹¤.
     IDE_TEST( makeTotalDataPercentileContFuncData( sFuncDataBasicInfo,
                                                    sPercentileContFuncData )
               != IDE_SUCCESS );
@@ -1084,7 +1084,7 @@ IDE_RC mtfPercentileContFinalizeBigint( mtcNode     * aNode,
               != IDE_SUCCESS );
     
     //------------------------------------------
-    // ¿¬»ê ¼öÇà
+    // ì—°ì‚° ìˆ˜í–‰
     //------------------------------------------
     
     if ( sPercentileContFuncData->totalCount > 0 )
@@ -1092,7 +1092,7 @@ IDE_RC mtfPercentileContFinalizeBigint( mtcNode     * aNode,
         // percentile option
         sFirstValue = *((mtdDoubleType*)(sRow + sColumn[2].column.offset));
 
-        // RN( Áß°£ rowÀ§Ä¡) À» ±¸ÇÑ´Ù.
+        // RN( ì¤‘ê°„ rowìœ„ì¹˜) ì„ êµ¬í•œë‹¤.
         sRowNum = ( 1 + ( sFirstValue * ( sPercentileContFuncData->totalCount - 1 ) ) );
         
         // ceil row num
@@ -1101,7 +1101,7 @@ IDE_RC mtfPercentileContFinalizeBigint( mtcNode     * aNode,
         // floor row num
         sFloorRowNum = idlOS::floor( sRowNum );
 
-        // row num = ceil, row num = floor °°Àº °æ¿ì ¶Ç´Â row num ÃÑ°³°¡ È¦¼ö.
+        // row num = ceil, row num = floor ê°™ì€ ê²½ìš° ë˜ëŠ” row num ì´ê°œê°€ í™€ìˆ˜.
         if ( ( PERCENTILECONT_FLOATING_POINT_EQ( sRowNum, (SDouble)sCeilRowNum ) ) &&
              ( PERCENTILECONT_FLOATING_POINT_EQ( sRowNum, (SDouble)sFloorRowNum ) ) )
         {
@@ -1172,12 +1172,12 @@ IDE_RC mtfPercentileContEstimateDate( mtcNode     * aNode,
 
     aStack[0].column = aTemplate->rows[aNode->table].columns + aNode->column;
 
-    // submodule ÃÊ±âÈ­½Ã
+    // submodule ì´ˆê¸°í™”ì‹œ
     if ( ( aCallBack->flag & MTC_ESTIMATE_INITIALIZE_MASK )
                           == MTC_ESTIMATE_INITIALIZE_TRUE )
     {
-        // initializeTemplate½Ã¿¡´Â ÀÎÀÚ°¡ 1°³·Î estimateµÇ°í
-        // percentile_cont ÇÔ¼ö·Î º¸¸é 2¹øÂ° ÀÎÀÚÀÌ´Ù.
+        // initializeTemplateì‹œì—ëŠ” ì¸ìê°€ 1ê°œë¡œ estimateë˜ê³ 
+        // percentile_cont í•¨ìˆ˜ë¡œ ë³´ë©´ 2ë²ˆì§¸ ì¸ìì´ë‹¤.
         IDE_TEST( mtf::makeConversionNodes( aNode,
                                             aNode->arguments,
                                             aTemplate,
@@ -1226,7 +1226,7 @@ IDE_RC mtfPercentileContEstimateDate( mtcNode     * aNode,
                                      0 )
               != IDE_SUCCESS );
 
-    // funcData »ç¿ë
+    // funcData ì‚¬ìš©
     aNode->info = aTemplate->funcDataCnt;
     aTemplate->funcDataCnt++;
 
@@ -1289,7 +1289,7 @@ IDE_RC mtfPercentileContFinalizeDate( mtcNode      * aNode,
     // sort
     //------------------------------------------
 
-    // chunk¸¦ ÇÏ³ª·Î ÇÕÃÄ total data¸¦ »ı¼ºÇÑ´Ù.
+    // chunkë¥¼ í•˜ë‚˜ë¡œ í•©ì³ total dataë¥¼ ìƒì„±í•œë‹¤.
     IDE_TEST( makeTotalDataPercentileContFuncData( sFuncDataBasicInfo,
                                                    sPercentileContFuncData )
               != IDE_SUCCESS );
@@ -1300,7 +1300,7 @@ IDE_RC mtfPercentileContFinalizeDate( mtcNode      * aNode,
               != IDE_SUCCESS );
 
     //------------------------------------------
-    // ¿¬»ê ¼öÇà
+    // ì—°ì‚° ìˆ˜í–‰
     //------------------------------------------
 
     if ( sPercentileContFuncData->totalCount > 0 )
@@ -1308,7 +1308,7 @@ IDE_RC mtfPercentileContFinalizeDate( mtcNode      * aNode,
         // percentile option
         sFirstValue = *((mtdDoubleType *)(sRow + sColumn[2].column.offset));
 
-        // RN( Áß°£ rowÀ§Ä¡) À» ±¸ÇÑ´Ù.
+        // RN( ì¤‘ê°„ rowìœ„ì¹˜) ì„ êµ¬í•œë‹¤.
         sRowNum = ( 1 + ( sFirstValue * ( sPercentileContFuncData->totalCount - 1 ) ) );
 
         // ceil row num
@@ -1317,7 +1317,7 @@ IDE_RC mtfPercentileContFinalizeDate( mtcNode      * aNode,
         // floor row num
         sFloorRowNum = idlOS::floor( sRowNum );
 
-        // row num = ceil, row num = floor °°Àº °æ¿ì ¶Ç´Â row num ÃÑ°³°¡ È¦¼ö.
+        // row num = ceil, row num = floor ê°™ì€ ê²½ìš° ë˜ëŠ” row num ì´ê°œê°€ í™€ìˆ˜.
         if ( ( PERCENTILECONT_FLOATING_POINT_EQ( sRowNum, (SDouble)sCeilRowNum ) ) &&
              ( PERCENTILECONT_FLOATING_POINT_EQ( sRowNum, (SDouble)sFloorRowNum ) ) )
         {
@@ -1635,7 +1635,7 @@ IDE_RC makeTotalDataPercentileContFuncData( mtfFuncDataBasicInfo      * aFuncDat
         }
         else
         {
-            // chunk°¡ 1°³ÀÎ °æ¿ì
+            // chunkê°€ 1ê°œì¸ ê²½ìš°
             aPercentileContFuncData->totalData = aPercentileContFuncData->list->data;
         }
     }

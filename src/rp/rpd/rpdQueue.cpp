@@ -134,13 +134,13 @@ void rpdQueue::read(rpdXLog **aXLogPtr)
 }
 /****************************************************
 * call by rpxReceiverApply recvXLog
-* finalµÇ´Â °æ¿ì¿¡ *aXLogPtr´Â NULL·Î setµÈ´Ù. 
+* finalë˜ëŠ” ê²½ìš°ì— *aXLogPtrëŠ” NULLë¡œ setëœë‹¤. 
 ****************************************************/
 void rpdQueue::read(rpdXLog **aXLogPtr, smSN *aTailLogSN)
 {
     IDE_ASSERT(lock() == IDE_SUCCESS);
 
-    //Queue°¡ ºó °æ¿ì ´ë±â
+    //Queueê°€ ë¹ˆ ê²½ìš° ëŒ€ê¸°
     while((mXLogCnt == 0) && (mFinalFlag != ID_TRUE))
     {
         mWaitFlag = ID_TRUE;
@@ -226,10 +226,10 @@ void rpdQueue::freeXLog(rpdXLog *aXLogPtr, iduMemAllocator * aAllocator )
 }
 
 /**
-* @breif XLog¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+* @breif XLogë¥¼ ì´ˆê¸°í™”í•œë‹¤.
 *
-* @param aXLogPtr ÃÊ±âÈ­ÇÒ XLog
-* @param aBufferSize smiValue->value¿¡ ÇÒ´çÇÒ ¸Þ¸ð¸®¸¦ °ü¸®ÇÏ´Â ¹öÆÛÀÇ ±âº» Å©±â
+* @param aXLogPtr ì´ˆê¸°í™”í•  XLog
+* @param aBufferSize smiValue->valueì— í• ë‹¹í•  ë©”ëª¨ë¦¬ë¥¼ ê´€ë¦¬í•˜ëŠ” ë²„í¼ì˜ ê¸°ë³¸ í¬ê¸°
 */
 IDE_RC rpdQueue::initializeXLog( rpdXLog         * aXLogPtr,
                                  ULong             aBufferSize,
@@ -239,7 +239,7 @@ IDE_RC rpdQueue::initializeXLog( rpdXLog         * aXLogPtr,
     idBool sIsMemInit = ID_FALSE;
     idBool sIsAllocLob = ID_FALSE;
 
-    /* rpsSmExecutor¿¡¼­ »ç¿ëÇÏ´Â ÇÊ¼öÀûÀÎ ºÎºÐ */
+    /* rpsSmExecutorì—ì„œ ì‚¬ìš©í•˜ëŠ” í•„ìˆ˜ì ì¸ ë¶€ë¶„ */
     aXLogPtr->mLobPtr = NULL;
 
     IDE_TEST( aXLogPtr->mMemory.init( IDU_MEM_RP_RPD, aBufferSize )
@@ -302,9 +302,9 @@ IDE_RC rpdQueue::initializeXLog( rpdXLog         * aXLogPtr,
 }
 
 /**
- * @breif XLog¿¡ ÇÒ´çµÈ ÀÚ¿øÀ» ¹Ý³³ÇÑ´Ù.
+ * @breif XLogì— í• ë‹¹ëœ ìžì›ì„ ë°˜ë‚©í•œë‹¤.
  *
- * @param aXLogPtr ÀÚ¿øÀ» ¹Ý³³ÇÒ XLog
+ * @param aXLogPtr ìžì›ì„ ë°˜ë‚©í•  XLog
  */
 void rpdQueue::destroyXLog( rpdXLog * aXLogPtr, iduMemAllocator * aAllocator )
 {
@@ -331,9 +331,9 @@ void rpdQueue::destroyXLog( rpdXLog * aXLogPtr, iduMemAllocator * aAllocator )
 }
 
 /**
- * @breif XLog¿¡ ÇÒ´çµÈ ÀÚ¿øÀ» Àç»ç¿ëÇÒ ¼ö ÀÖ°Ô ÇÑ´Ù.
+ * @breif XLogì— í• ë‹¹ëœ ìžì›ì„ ìž¬ì‚¬ìš©í•  ìˆ˜ ìžˆê²Œ í•œë‹¤.
  *
- * @param aXLogPtr ÀÚ¿øÀ» Àç»ç¿ëÇÒ XLog
+ * @param aXLogPtr ìžì›ì„ ìž¬ì‚¬ìš©í•  XLog
  */
 void rpdQueue::recycleXLog( rpdXLog * aXLogPtr, iduMemAllocator * aAllocator )
 {
@@ -341,7 +341,7 @@ void rpdQueue::recycleXLog( rpdXLog * aXLogPtr, iduMemAllocator * aAllocator )
 
     if(aXLogPtr->mLobPtr != NULL)
     {
-        /* mLobPtr Àº ÀçÈ°¿ë ÇÑ´Ù. */
+        /* mLobPtr ì€ ìž¬í™œìš© í•œë‹¤. */
         if ( aXLogPtr->mLobPtr->mLobPiece != NULL )
         {
             (void)iduMemMgr::free((void *)aXLogPtr->mLobPtr->mLobPiece, aAllocator);
@@ -363,7 +363,7 @@ void rpdQueue::recycleXLog( rpdXLog * aXLogPtr, iduMemAllocator * aAllocator )
     aXLogPtr->mColCnt = 0;
     aXLogPtr->mSPNameLen = 0;
     
-    /*SNÀÌ Àü¼ÛµÇÁö ¾Ê´Â °æ¿ì°¡ ÀÖ¾î ÃÊ±âÈ­ ÇØ¾ßÇÔ.*/
+    /*SNì´ ì „ì†¡ë˜ì§€ ì•ŠëŠ” ê²½ìš°ê°€ ìžˆì–´ ì´ˆê¸°í™” í•´ì•¼í•¨.*/
     aXLogPtr->mSN = SM_SN_NULL;
     aXLogPtr->mRestartSN = SM_SN_NULL;
 

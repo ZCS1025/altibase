@@ -21,21 +21,21 @@
  * Description :
  *     HASH(HASH) Node
  *
- *     ∞¸∞Ë«¸ ∏µ®ø°º≠ hashing ø¨ªÍ¿ª ºˆ«‡«œ¥¬ Plan Node ¿Ã¥Ÿ.
+ *     Í¥ÄÍ≥ÑÌòï Î™®Îç∏ÏóêÏÑú hashing Ïó∞ÏÇ∞ÏùÑ ÏàòÌñâÌïòÎäî Plan Node Ïù¥Îã§.
  *
- *     ¥Ÿ¿Ω∞˙ ∞∞¿∫ ±‚¥…¿ª ¿ß«ÿ ªÁøÎµ»¥Ÿ.
+ *     Îã§ÏùåÍ≥º Í∞ôÏùÄ Í∏∞Îä•ÏùÑ ÏúÑÌï¥ ÏÇ¨Ïö©ÎêúÎã§.
  *         - Hash Join
  *         - Hash-based Left Outer Join
  *         - Hash-based Full Outer Join
  *         - Store And Search
  *
- *     HASH ≥ÎµÂ¥¬ Two Pass Hash JoinµÓø° ªÁøÎµ… ∂ß,
- *     ø©∑Ø∞≥¿« Temp Table¿ª ∞¸∏Æ«“ ºˆ ¿÷¥Ÿ.
- *     µ˚∂Ûº≠, ∏µÁ ª¿‘ π◊ ∞Àªˆ Ω√ ¿Ãø° ¥Î«— ∞Ì∑¡∞° √Ê∫–«œø©æﬂ «—¥Ÿ.
+ *     HASH ÎÖ∏ÎìúÎäî Two Pass Hash JoinÎì±Ïóê ÏÇ¨Ïö©Îê† Îïå,
+ *     Ïó¨Îü¨Í∞úÏùò Temp TableÏùÑ Í¥ÄÎ¶¨Ìï† Ïàò ÏûàÎã§.
+ *     Îî∞ÎùºÏÑú, Î™®Îì† ÏÇΩÏûÖ Î∞è Í≤ÄÏÉâ Ïãú Ïù¥Ïóê ÎåÄÌïú Í≥†Î†§Í∞Ä Ï∂©Î∂ÑÌïòÏó¨Ïïº ÌïúÎã§.
  *
- * øÎæÓ º≥∏Ì :
+ * Ïö©Ïñ¥ ÏÑ§Î™Ö :
  *
- * æ‡æÓ :
+ * ÏïΩÏñ¥ :
  *
  **********************************************************************/
 
@@ -54,7 +54,7 @@ qmnHASH::init( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    HASH ≥ÎµÂ¿« √ ±‚»≠
+ *    HASH ÎÖ∏ÎìúÏùò Ï¥àÍ∏∞Ìôî
  *
  * Implementation :
  *
@@ -77,7 +77,7 @@ qmnHASH::init( qcTemplate * aTemplate,
     sDataPlan->searchNext = qmnHASH::searchDefault;
 
     //----------------------------------------
-    // √÷√  √ ±‚»≠ ºˆ«‡
+    // ÏµúÏ¥à Ï¥àÍ∏∞Ìôî ÏàòÌñâ
     //----------------------------------------
 
     if ( (*sDataPlan->flag & QMND_HASH_INIT_DONE_MASK)
@@ -98,7 +98,7 @@ qmnHASH::init( qcTemplate * aTemplate,
     if ( sDependency == ID_TRUE )
     {
         //----------------------------------------
-        // Temp Table ±∏√‡ ¿¸ √ ±‚»≠
+        // Temp Table Íµ¨Ï∂ï Ï†Ñ Ï¥àÍ∏∞Ìôî
         //----------------------------------------
 
         for ( i = 0; i < sCodePlan->tempTableCnt; i++ )
@@ -108,13 +108,13 @@ qmnHASH::init( qcTemplate * aTemplate,
         }
 
         // To Fix PR-8024
-        // Mask FALSE º≥¡§ ø¿∑˘
-        // STORE AND SEARCH∏¶ ¿ß«— √ ±‚»≠
+        // Mask FALSE ÏÑ§Ï†ï Ïò§Î•ò
+        // STORE AND SEARCHÎ•º ÏúÑÌïú Ï¥àÍ∏∞Ìôî
         sDataPlan->isNullStore = ID_FALSE;
         sDataPlan->mtrTotalCnt = 0;
 
         //----------------------------------------
-        // Child∏¶ π›∫π ºˆ«‡«œø© Temp Table¿ª ±∏√‡
+        // ChildÎ•º Î∞òÎ≥µ ÏàòÌñâÌïòÏó¨ Temp TableÏùÑ Íµ¨Ï∂ï
         //----------------------------------------
 
         IDE_TEST( aPlan->left->init( aTemplate,
@@ -125,7 +125,7 @@ qmnHASH::init( qcTemplate * aTemplate,
                                    sDataPlan ) != IDE_SUCCESS);
 
         //----------------------------------------
-        // Temp Table ±∏√‡ »ƒ √ ±‚»≠
+        // Temp Table Íµ¨Ï∂ï ÌõÑ Ï¥àÍ∏∞Ìôî
         //----------------------------------------
 
         sDataPlan->depValue = sDataPlan->depTuple->modify;
@@ -136,7 +136,7 @@ qmnHASH::init( qcTemplate * aTemplate,
     }
 
     //----------------------------------------
-    // ∞Àªˆ «‘ºˆ π◊ ºˆ«‡ «‘ºˆ ∞·¡§
+    // Í≤ÄÏÉâ Ìï®Ïàò Î∞è ÏàòÌñâ Ìï®Ïàò Í≤∞Ï†ï
     //----------------------------------------
 
     IDE_TEST( setSearchFunction( sCodePlan, sDataPlan )
@@ -153,7 +153,7 @@ qmnHASH::init( qcTemplate * aTemplate,
         case QMNC_HASH_SEARCH_STORE_SEARCH:
             sDataPlan->doIt = qmnHASH::doItFirstStoreSearch;
 
-            // ¿˚«’º∫ ∞ÀªÁ
+            // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
             IDE_DASSERT( (sCodePlan->flag & QMNC_HASH_STORE_MASK)
                          == QMNC_HASH_STORE_DISTINCT );
             break;
@@ -180,10 +180,10 @@ qmnHASH::doIt( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    HASH ¿« ∞Ì¿Ø ±‚¥…¿ª ºˆ«‡«—¥Ÿ.
+ *    HASH Ïùò Í≥†Ïú† Í∏∞Îä•ÏùÑ ÏàòÌñâÌïúÎã§.
  *
  * Implementation :
- *    ¡ˆ¡§µ» «‘ºˆ ∆˜¿Œ≈Õ∏¶ ºˆ«‡«—¥Ÿ.
+ *    ÏßÄÏ†ïÎêú Ìï®Ïàò Ìè¨Ïù∏ÌÑ∞Î•º ÏàòÌñâÌïúÎã§.
  *
  ***********************************************************************/
 
@@ -213,11 +213,11 @@ qmnHASH::padNull( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    HASH ≥ÎµÂ¿« Tupleø° Null Row∏¶ º≥¡§«—¥Ÿ.
+ *    HASH ÎÖ∏ÎìúÏùò TupleÏóê Null RowÎ•º ÏÑ§Ï†ïÌïúÎã§.
  *
  * Implementation :
- *    Child Plan¿« Null Padding¿ª ºˆ«‡«œ∞Ì,
- *    ¿⁄Ω≈¿« Null Row∏¶ Temp Table∑Œ∫Œ≈Õ »πµÊ«—¥Ÿ.
+ *    Child PlanÏùò Null PaddingÏùÑ ÏàòÌñâÌïòÍ≥†,
+ *    ÏûêÏã†Ïùò Null RowÎ•º Temp TableÎ°úÎ∂ÄÌÑ∞ ÌöçÎìùÌïúÎã§.
  *
  ***********************************************************************/
 
@@ -248,9 +248,9 @@ qmnHASH::padNull( qcTemplate * aTemplate,
     sDataPlan->plan.myTuple->modify++;
 
     // To Fix PR-9822
-    // padNull() «‘ºˆ¥¬ Child ¿« modify ∞™¿ª ∫Ø∞ÊΩ√≈∞∞‘ µ»¥Ÿ.
-    // ¿Ã¥¬ ¿Á±∏√‡ ø©∫ŒøÕ ∞¸∞Ë∞° æ¯¿∏π«∑Œ ±◊ ∞™¿ª ¿˙¿Â«œø©
-    // ¿Á±∏√‡¿Ã µ«¡ˆ æ µµ∑œ «—¥Ÿ.
+    // padNull() Ìï®ÏàòÎäî Child Ïùò modify Í∞íÏùÑ Î≥ÄÍ≤ΩÏãúÌÇ§Í≤å ÎêúÎã§.
+    // Ïù¥Îäî Ïû¨Íµ¨Ï∂ï Ïó¨Î∂ÄÏôÄ Í¥ÄÍ≥ÑÍ∞Ä ÏóÜÏúºÎØÄÎ°ú Í∑∏ Í∞íÏùÑ Ï†ÄÏû•ÌïòÏó¨
+    // Ïû¨Íµ¨Ï∂ïÏù¥ ÎêòÏßÄ ÏïäÎèÑÎ°ù ÌïúÎã§.
     sDataPlan->depValue = sDataPlan->depTuple->modify;
 
     return IDE_SUCCESS;
@@ -272,7 +272,7 @@ qmnHASH::printPlan( qcTemplate   * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    HASH ≥ÎµÂ¿« ºˆ«‡ ¡§∫∏∏¶ √‚∑¬«—¥Ÿ.
+ *    HASH ÎÖ∏ÎìúÏùò ÏàòÌñâ Ï†ïÎ≥¥Î•º Ï∂úÎ†•ÌïúÎã§.
  *
  * Implementation :
  *
@@ -296,7 +296,7 @@ qmnHASH::printPlan( qcTemplate   * aTemplate,
     ULong  i;
 
     //----------------------------
-    // Display ¿ßƒ° ∞·¡§
+    // Display ÏúÑÏπò Í≤∞Ï†ï
     //----------------------------
 
     for ( i = 0; i < aDepth; i++ )
@@ -306,19 +306,19 @@ qmnHASH::printPlan( qcTemplate   * aTemplate,
     }
 
     //----------------------------
-    // ºˆ«‡ ¡§∫∏ √‚∑¬
+    // ÏàòÌñâ Ï†ïÎ≥¥ Ï∂úÎ†•
     //----------------------------
 
     if ( aMode == QMN_DISPLAY_ALL )
     {
         //----------------------------
-        // explain plan = on; ¿Œ ∞ÊøÏ
+        // explain plan = on; Ïù∏ Í≤ΩÏö∞
         //----------------------------
 
         if ( (*sDataPlan->flag & QMND_HASH_INIT_DONE_MASK)
              == QMND_HASH_INIT_DONE_TRUE )
         {
-            // ºˆ«‡ ¡§∫∏ »πµÊ
+            // ÏàòÌñâ Ï†ïÎ≥¥ ÌöçÎìù
 
             sTotalRecordCnt = 0;
             sTotalPageCnt = 0;
@@ -339,7 +339,7 @@ qmnHASH::printPlan( qcTemplate   * aTemplate,
                  == QMN_PLAN_STORAGE_MEMORY )
             {
                 // To Fix PR-13136
-                // Temp Table¿« ∞≥ºˆ∏¶ æÀ ºˆ ¿÷æÓæﬂ «‘.
+                // Temp TableÏùò Í∞úÏàòÎ•º Ïïå Ïàò ÏûàÏñ¥Ïïº Ìï®.
                 if ( sCodePlan->tempTableCnt == 1 )
                 {
                     if ( QCU_DISPLAY_PLAN_FOR_NATC == 0 )
@@ -358,7 +358,7 @@ qmnHASH::printPlan( qcTemplate   * aTemplate,
                     else
                     {
                         // BUG-29209
-                        // ITEM_SIZE ¡§∫∏ ∫∏ø©¡÷¡ˆ æ ¿Ω
+                        // ITEM_SIZE Ï†ïÎ≥¥ Î≥¥Ïó¨Ï£ºÏßÄ ÏïäÏùå
                         iduVarStringAppendFormat(
                             aString,
                             "HASH ( ITEM_SIZE: BLOCKED, "
@@ -390,7 +390,7 @@ qmnHASH::printPlan( qcTemplate   * aTemplate,
                     else
                     {
                         // BUG-29209
-                        // ITEM_SIZE ¡§∫∏ ∫∏ø©¡÷¡ˆ æ ¿Ω
+                        // ITEM_SIZE Ï†ïÎ≥¥ Î≥¥Ïó¨Ï£ºÏßÄ ÏïäÏùå
                         iduVarStringAppendFormat(
                             aString,
                             "HASH ( ITEM_SIZE: BLOCKED, "
@@ -408,7 +408,7 @@ qmnHASH::printPlan( qcTemplate   * aTemplate,
             else
             {
                 // To Fix PR-13136
-                // Temp Table¿« ∞≥ºˆ∏¶ æÀ ºˆ ¿÷æÓæﬂ «‘.
+                // Temp TableÏùò Í∞úÏàòÎ•º Ïïå Ïàò ÏûàÏñ¥Ïïº Ìï®.
                 if ( sCodePlan->tempTableCnt == 1 )
                 {
                     if ( QCU_DISPLAY_PLAN_FOR_NATC == 0 )
@@ -427,7 +427,7 @@ qmnHASH::printPlan( qcTemplate   * aTemplate,
                     else
                     {
                         // BUG-29209
-                        // ITEM_SIZE, DISK_PAGE_COUNT ¡§∫∏ ∫∏ø©¡÷¡ˆ æ ¿Ω
+                        // ITEM_SIZE, DISK_PAGE_COUNT Ï†ïÎ≥¥ Î≥¥Ïó¨Ï£ºÏßÄ ÏïäÏùå
                         iduVarStringAppendFormat(
                             aString,
                             "HASH ( ITEM_SIZE: BLOCKED, "
@@ -458,7 +458,7 @@ qmnHASH::printPlan( qcTemplate   * aTemplate,
                     else
                     {
                         // BUG-29209
-                        // ITEM_SIZE, DISK_PAGE_COUNT ¡§∫∏ ∫∏ø©¡÷¡ˆ æ ¿Ω
+                        // ITEM_SIZE, DISK_PAGE_COUNT Ï†ïÎ≥¥ Î≥¥Ïó¨Ï£ºÏßÄ ÏïäÏùå
                         iduVarStringAppendFormat(
                             aString,
                             "HASH ( ITEM_SIZE: BLOCKED, "
@@ -474,7 +474,7 @@ qmnHASH::printPlan( qcTemplate   * aTemplate,
         else
         {
             // To Fix PR-13136
-            // Temp Table¿« ∞≥ºˆ∏¶ æÀ ºˆ ¿÷æÓæﬂ «‘.
+            // Temp TableÏùò Í∞úÏàòÎ•º Ïïå Ïàò ÏûàÏñ¥Ïïº Ìï®.
             if ( sCodePlan->tempTableCnt == 1 )
             {
                 iduVarStringAppendFormat( aString,
@@ -498,7 +498,7 @@ qmnHASH::printPlan( qcTemplate   * aTemplate,
     else
     {
         //----------------------------
-        // explain plan = only; ¿Œ ∞ÊøÏ
+        // explain plan = only; Ïù∏ Í≤ΩÏö∞
         //----------------------------
 
         if ( sCodePlan->tempTableCnt == 1 )
@@ -522,7 +522,7 @@ qmnHASH::printPlan( qcTemplate   * aTemplate,
     }
 
     //----------------------------
-    // Cost √‚∑¬
+    // Cost Ï∂úÎ†•
     //----------------------------
     qmn::printCost( aString,
                     sCodePlan->plan.qmgAllCost );
@@ -602,7 +602,7 @@ qmnHASH::printPlan( qcTemplate   * aTemplate,
     }
 
     //----------------------------
-    // Operator∫∞ ∞·∞˙ ¡§∫∏ √‚∑¬
+    // OperatorÎ≥Ñ Í≤∞Í≥º Ï†ïÎ≥¥ Ï∂úÎ†•
     //----------------------------
     if ( QCU_TRCLOG_RESULT_DESC == 1 )
     {
@@ -618,7 +618,7 @@ qmnHASH::printPlan( qcTemplate   * aTemplate,
     }
 
     //----------------------------
-    // Child Plan ¡§∫∏ √‚∑¬
+    // Child Plan Ï†ïÎ≥¥ Ï∂úÎ†•
     //----------------------------
 
     IDE_TEST( aPlan->left->printPlan( aTemplate,
@@ -644,7 +644,7 @@ qmnHASH::doItDefault( qcTemplate * /* aTemplate */,
 /***********************************************************************
  *
  * Description :
- *    ¿Ã «‘ºˆ∞° ºˆ«‡µ«∏È æ»µ .
+ *    Ïù¥ Ìï®ÏàòÍ∞Ä ÏàòÌñâÎêòÎ©¥ ÏïàÎê®.
  *
  * Implementation :
  *
@@ -668,10 +668,10 @@ qmnHASH::doItFirst( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    √ππ¯¬∞ ºˆ«‡ «‘ºˆ
+ *    Ï≤´Î≤àÏß∏ ÏàòÌñâ Ìï®Ïàò
  *
  * Implementation :
- *    «ÿ¥Á ∞Àªˆ «‘ºˆ∏¶ ºˆ«‡«œ∞Ì, «ÿ¥Á ∞·∞˙∏¶ Tuple Setø° ∫πø¯«—¥Ÿ.
+ *    Ìï¥Îãπ Í≤ÄÏÉâ Ìï®ÏàòÎ•º ÏàòÌñâÌïòÍ≥†, Ìï¥Îãπ Í≤∞Í≥ºÎ•º Tuple SetÏóê Î≥µÏõêÌïúÎã§.
  *
  ***********************************************************************/
 
@@ -720,10 +720,10 @@ qmnHASH::doItNext( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    ¥Ÿ¿Ω ∞Àªˆ «‘ºˆ
+ *    Îã§Ïùå Í≤ÄÏÉâ Ìï®Ïàò
  *
  * Implementation :
- *    «ÿ¥Á ∞Àªˆ «‘ºˆ∏¶ ºˆ«‡«œ∞Ì, «ÿ¥Á ∞·∞˙∏¶ Tuple Setø° ∫πø¯«—¥Ÿ.
+ *    Ìï¥Îãπ Í≤ÄÏÉâ Ìï®ÏàòÎ•º ÏàòÌñâÌïòÍ≥†, Ìï¥Îãπ Í≤∞Í≥ºÎ•º Tuple SetÏóê Î≥µÏõêÌïúÎã§.
  *
  ***********************************************************************/
 
@@ -766,21 +766,21 @@ qmnHASH::doItFirstStoreSearch( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *     Store And Search¿« √ππ¯¬∞ ºˆ«‡ «‘ºˆ
+ *     Store And SearchÏùò Ï≤´Î≤àÏß∏ ÏàòÌñâ Ìï®Ïàò
  *
  * Implementation :
- *     0. ¡∂∞« ∞Àªˆ¿ª ≈Î«ÿ ø¯«œ¥¬ Row∏¶ ∞Àªˆ«—¥Ÿ.
- *         - Row¿« ¡∏¿Á ¿Øπ´, ªÛºˆ∞™¿« NULL ø©∫Œ∞° ∆«¥‹µ»¥Ÿ.
- *     1. Row∞° ¡∏¿Á«—¥Ÿ∏È ±◊¥Î∑Œ ∏Æ≈œ
- *     2. Row∞° ¡∏¿Á«œ¡ˆ æ ¥¬¥Ÿ∏È ¥Ÿ¿Ω∞˙ ∞∞¿∫ ªÛ»≤ø° µ˚∂Û ¥Î√≥«—¥Ÿ.
- *         - 2.1 ¿˙¿Â Row∞° æ¯¥Ÿ∏È, µ•¿Ã≈Õ æ¯¿Ω¿ª ∏Æ≈œ
- *         - 2.2 ¿˙¿Â Row∞° ¿÷¥Ÿ∏È,
- *             - 2.2.1 ªÛºˆ∞° NULL¿Ã∂Û∏È, NULL Padding«— »ƒ µ•¿Ã≈Õ ¿÷¿Ω
- *             - 2.2.2 ¿˙¿Â Rowø° NULL¿Ã ¡∏¿Á«—¥Ÿ∏È,
- *                     NULL Padding«— »ƒ µ•¿Ã≈Õ ¿÷¿Ω
- *             - 2.2.3 ±◊ ø‹¿« ∞ÊøÏ, µ•¿Ã≈Õ æ¯¿Ω
+ *     0. Ï°∞Í±¥ Í≤ÄÏÉâÏùÑ ÌÜµÌï¥ ÏõêÌïòÎäî RowÎ•º Í≤ÄÏÉâÌïúÎã§.
+ *         - RowÏùò Ï°¥Ïû¨ Ïú†Î¨¥, ÏÉÅÏàòÍ∞íÏùò NULL Ïó¨Î∂ÄÍ∞Ä ÌåêÎã®ÎêúÎã§.
+ *     1. RowÍ∞Ä Ï°¥Ïû¨ÌïúÎã§Î©¥ Í∑∏ÎåÄÎ°ú Î¶¨ÌÑ¥
+ *     2. RowÍ∞Ä Ï°¥Ïû¨ÌïòÏßÄ ÏïäÎäîÎã§Î©¥ Îã§ÏùåÍ≥º Í∞ôÏùÄ ÏÉÅÌô©Ïóê Îî∞Îùº ÎåÄÏ≤òÌïúÎã§.
+ *         - 2.1 Ï†ÄÏû• RowÍ∞Ä ÏóÜÎã§Î©¥, Îç∞Ïù¥ÌÑ∞ ÏóÜÏùåÏùÑ Î¶¨ÌÑ¥
+ *         - 2.2 Ï†ÄÏû• RowÍ∞Ä ÏûàÎã§Î©¥,
+ *             - 2.2.1 ÏÉÅÏàòÍ∞Ä NULLÏù¥ÎùºÎ©¥, NULL PaddingÌïú ÌõÑ Îç∞Ïù¥ÌÑ∞ ÏûàÏùå
+ *             - 2.2.2 Ï†ÄÏû• RowÏóê NULLÏù¥ Ï°¥Ïû¨ÌïúÎã§Î©¥,
+ *                     NULL PaddingÌïú ÌõÑ Îç∞Ïù¥ÌÑ∞ ÏûàÏùå
+ *             - 2.2.3 Í∑∏ Ïô∏Ïùò Í≤ΩÏö∞, Îç∞Ïù¥ÌÑ∞ ÏóÜÏùå
  *
- *     ¿ÃøÕ ∞∞¿∫ √≥∏Æ¥¬ ¥Ÿ¿Ω∞˙ ∞∞¿∫ ªÁ«◊ø° ¥Î«— √≥∏Æ∏¶ ¿ß«‘¿Ã¥Ÿ.
+ *     Ïù¥ÏôÄ Í∞ôÏùÄ Ï≤òÎ¶¨Îäî Îã§ÏùåÍ≥º Í∞ôÏùÄ ÏÇ¨Ìï≠Ïóê ÎåÄÌïú Ï≤òÎ¶¨Î•º ÏúÑÌï®Ïù¥Îã§.
  *
  *     Ex     1)   3 IN (1, 2, 3)      => TRUE
  *     Ex   2.1)   3 IN {}, NULL IN {} => FALSE
@@ -800,14 +800,14 @@ qmnHASH::doItFirstStoreSearch( qcTemplate * aTemplate,
     IDE_TEST( iduCheckSessionEvent( aTemplate->stmt->mStatistics )
               != IDE_SUCCESS );
 
-    // 0. ¡∂∞« ∞Àªˆ
+    // 0. Ï°∞Í±¥ Í≤ÄÏÉâ
     IDE_TEST( sDataPlan->searchFirst( aTemplate,
                                       sCodePlan,
                                       sDataPlan,
                                       aFlag ) != IDE_SUCCESS );
     if ( (*aFlag & QMC_ROW_DATA_MASK) == QMC_ROW_DATA_EXIST )
     {
-        // 1. Row∞° ¡∏¿Á«œ¥¬ ∞ÊøÏ
+        // 1. RowÍ∞Ä Ï°¥Ïû¨ÌïòÎäî Í≤ΩÏö∞
 
         IDE_TEST( setTupleSet( aTemplate, sDataPlan )
                   != IDE_SUCCESS );
@@ -818,19 +818,19 @@ qmnHASH::doItFirstStoreSearch( qcTemplate * aTemplate,
     {
         if ( sDataPlan->mtrTotalCnt == 0 )
         {
-            // 2.1 ¿˙¿Â Data∞° æ¯¥¬ ∞ÊøÏ
+            // 2.1 Ï†ÄÏû• DataÍ∞Ä ÏóÜÎäî Í≤ΩÏö∞
             // Nothing To Do
         }
         else
         {
-            // 2.2 ¿˙¿Â Data∞° ¿÷¥¬ ∞ÊøÏ
+            // 2.2 Ï†ÄÏû• DataÍ∞Ä ÏûàÎäî Í≤ΩÏö∞
 
             if ( ( (*sDataPlan->flag & QMND_HASH_CONST_NULL_MASK)
                    == QMND_HASH_CONST_NULL_TRUE )
                  ||
                  ( sDataPlan->isNullStore == ID_TRUE ) )
             {
-                // 2.2.1, 2.2.2 : ªÛºˆ∞° NULL¿Ã∞≈≥™ ¿˙¿Â Rowø° NULL¿Ã ¡∏¿Á
+                // 2.2.1, 2.2.2 : ÏÉÅÏàòÍ∞Ä NULLÏù¥Í±∞ÎÇò Ï†ÄÏû• RowÏóê NULLÏù¥ Ï°¥Ïû¨
 
                 IDE_TEST( qmnHASH::padNull( aTemplate, aPlan )
                           != IDE_SUCCESS );
@@ -865,12 +865,12 @@ qmnHASH::doItNextStoreSearch( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *     Store And Search∏¶ ¿ß«— ¥Ÿ¿Ω ∞Àªˆ
+ *     Store And SearchÎ•º ÏúÑÌïú Îã§Ïùå Í≤ÄÏÉâ
  *
  * Implementation :
- *     µ•¿Ã≈Õ æ¯¿Ω¿ª ∏Æ≈œ
- *     Store And Search¿« ∞ÊøÏ «— π¯¿« ∞Àªˆ¿∏∑Œ ±◊ ∞·∞˙∏¶ ∞·¡§«“ ºˆ
- *     ¿÷¿∏∏Á, µŒ π¯¬∞ ºˆ«‡ø°º≠ ±◊ ∞·∞˙∏¶ »Æ¡§«“ ºˆ ¿÷¥Ÿ.
+ *     Îç∞Ïù¥ÌÑ∞ ÏóÜÏùåÏùÑ Î¶¨ÌÑ¥
+ *     Store And SearchÏùò Í≤ΩÏö∞ Ìïú Î≤àÏùò Í≤ÄÏÉâÏúºÎ°ú Í∑∏ Í≤∞Í≥ºÎ•º Í≤∞Ï†ïÌï† Ïàò
+ *     ÏûàÏúºÎ©∞, Îëê Î≤àÏß∏ ÏàòÌñâÏóêÏÑú Í∑∏ Í≤∞Í≥ºÎ•º ÌôïÏ†ïÌï† Ïàò ÏûàÎã§.
  *
  ***********************************************************************/
 
@@ -897,12 +897,12 @@ void qmnHASH::setHitSearch( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    Inverse Hash Joinø°º≠ ªÁøÎµ«∏Á,
- *    Probing Left Tableø° ¥Î«— √≥∏Æ∞° ≥°≥™∞Ì, Driving Right Tableø° ¥Î«—
- *    √≥∏Æ∏¶ ºˆ«‡«œ±‚ ¿ß«ÿ ªÁøÎµ»¥Ÿ.
+ *    Inverse Hash JoinÏóêÏÑú ÏÇ¨Ïö©ÎêòÎ©∞,
+ *    Probing Left TableÏóê ÎåÄÌïú Ï≤òÎ¶¨Í∞Ä ÎÅùÎÇòÍ≥†, Driving Right TableÏóê ÎåÄÌïú
+ *    Ï≤òÎ¶¨Î•º ÏàòÌñâÌïòÍ∏∞ ÏúÑÌï¥ ÏÇ¨Ïö©ÎêúÎã§.
  *
  * Implementation :
- *    ∞Àªˆ «‘ºˆ∏¶ ∞≠¡¶¿˚¿∏∑Œ Hit ∞Àªˆ¿∏∑Œ ¿¸»Ø«—¥Ÿ.
+ *    Í≤ÄÏÉâ Ìï®ÏàòÎ•º Í∞ïÏ†úÏ†ÅÏúºÎ°ú Hit Í≤ÄÏÉâÏúºÎ°ú Ï†ÑÌôòÌïúÎã§.
  *
  ***********************************************************************/
     qmndHASH * sDataPlan =
@@ -919,12 +919,12 @@ void qmnHASH::setNonHitSearch( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    Full Outer Joinø°º≠ ªÁøÎµ«∏Á,
- *    Left Outer Joinø° ¥Î«— √≥∏Æ∞° ≥°≥™∞Ì, Right Outer Joinø° ¥Î«—
- *    √≥∏Æ∏¶ ºˆ«‡«œ±‚ ¿ß«ÿ ªÁøÎµ»¥Ÿ.
+ *    Full Outer JoinÏóêÏÑú ÏÇ¨Ïö©ÎêòÎ©∞,
+ *    Left Outer JoinÏóê ÎåÄÌïú Ï≤òÎ¶¨Í∞Ä ÎÅùÎÇòÍ≥†, Right Outer JoinÏóê ÎåÄÌïú
+ *    Ï≤òÎ¶¨Î•º ÏàòÌñâÌïòÍ∏∞ ÏúÑÌï¥ ÏÇ¨Ïö©ÎêúÎã§.
  *
  * Implementation :
- *    ∞Àªˆ «‘ºˆ∏¶ ∞≠¡¶¿˚¿∏∑Œ Non-Hit ∞Àªˆ¿∏∑Œ ¿¸»Ø«—¥Ÿ.
+ *    Í≤ÄÏÉâ Ìï®ÏàòÎ•º Í∞ïÏ†úÏ†ÅÏúºÎ°ú Non-Hit Í≤ÄÏÉâÏúºÎ°ú Ï†ÑÌôòÌïúÎã§.
  *
  ***********************************************************************/
 
@@ -949,15 +949,15 @@ qmnHASH::setHitFlag( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *     Full Outer Join¿« √≥∏ÆΩ√,
- *     Left Outer Join¿« √≥∏Æ ∞˙¡§ ¡ﬂ ¡∂∞«ø° ∏∏¡∑«œ¥¬ Record∏¶
- *     ∞Àªˆ«œ¥¬ ∞ÊøÏ Hit Flag¿ª º≥¡§«—¥Ÿ.
+ *     Full Outer JoinÏùò Ï≤òÎ¶¨Ïãú,
+ *     Left Outer JoinÏùò Ï≤òÎ¶¨ Í≥ºÏ†ï Ï§ë Ï°∞Í±¥Ïóê ÎßåÏ°±ÌïòÎäî RecordÎ•º
+ *     Í≤ÄÏÉâÌïòÎäî Í≤ΩÏö∞ Hit FlagÏùÑ ÏÑ§Ï†ïÌïúÎã§.
  *
  * Implementation :
  *
- *     Temp Table¿ª ¿ÃøÎ«œø© «ˆ¿Á Row¿« Hit Flag¿ª º¬∆√«—¥Ÿ.
- *     ¿ÃπÃ Temp Table¿∫ «ˆ¿Á Row¿« ¡∏¿Á∏¶ æÀ∞Ì ¿÷æÓ ∫∞µµ¿« ¿Œ¿⁄∞°
- *     « ø‰ æ¯¥Ÿ.
+ *     Temp TableÏùÑ Ïù¥Ïö©ÌïòÏó¨ ÌòÑÏû¨ RowÏùò Hit FlagÏùÑ ÏÖãÌåÖÌïúÎã§.
+ *     Ïù¥ÎØ∏ Temp TableÏùÄ ÌòÑÏû¨ RowÏùò Ï°¥Ïû¨Î•º ÏïåÍ≥† ÏûàÏñ¥ Î≥ÑÎèÑÏùò Ïù∏ÏûêÍ∞Ä
+ *     ÌïÑÏöî ÏóÜÎã§.
  *
  ***********************************************************************/
 
@@ -987,11 +987,11 @@ idBool qmnHASH::isHitFlagged( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description : PROJ-2339
- *     «ˆ¿Á Rowø° Hit Flag∞° ¿÷¥¬¡ˆ ∞À¡ı«—¥Ÿ.
+ *     ÌòÑÏû¨ RowÏóê Hit FlagÍ∞Ä ÏûàÎäîÏßÄ Í≤ÄÏ¶ùÌïúÎã§.
  *
  * Implementation :
  *
- *     Temp Table¿ª ¿ÃøÎ«œø© «ˆ¿Á Rowø° Hit Flag∞° ¿÷¥¬¡ˆ ∞À¡ı«—¥Ÿ.
+ *     Temp TableÏùÑ Ïù¥Ïö©ÌïòÏó¨ ÌòÑÏû¨ RowÏóê Hit FlagÍ∞Ä ÏûàÎäîÏßÄ Í≤ÄÏ¶ùÌïúÎã§.
  *
  ***********************************************************************/
 
@@ -1010,7 +1010,7 @@ qmnHASH::firstInit( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    HASH node¿« Data øµø™¿« ∏‚πˆø° ¥Î«— √ ±‚»≠∏¶ ºˆ«‡
+ *    HASH nodeÏùò Data ÏòÅÏó≠Ïùò Î©§Î≤ÑÏóê ÎåÄÌïú Ï¥àÍ∏∞ÌôîÎ•º ÏàòÌñâ
  *
  * Implementation :
  *
@@ -1044,7 +1044,7 @@ qmnHASH::firstInit( qcTemplate * aTemplate,
     }
 
     //---------------------------------
-    // ¿˚«’º∫ ∞ÀªÁ
+    // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
     //---------------------------------
 
     if ( (aCodePlan->flag & QMNC_HASH_NULL_CHECK_MASK)
@@ -1057,7 +1057,7 @@ qmnHASH::firstInit( qcTemplate * aTemplate,
     }
 
     //---------------------------------
-    // HASH ∞Ì¿Ø ¡§∫∏¿« √ ±‚»≠
+    // HASH Í≥†Ïú† Ï†ïÎ≥¥Ïùò Ï¥àÍ∏∞Ìôî
     //---------------------------------
 
     IDE_TEST( initMtrNode( aTemplate, aCodePlan, aDataPlan ) != IDE_SUCCESS );
@@ -1074,7 +1074,7 @@ qmnHASH::firstInit( qcTemplate * aTemplate,
 
     aDataPlan->mtrTotalCnt = 0;
     //---------------------------------
-    // Temp Table¿« √ ±‚»≠
+    // Temp TableÏùò Ï¥àÍ∏∞Ìôî
     //---------------------------------
 
     IDE_TEST( initTempTable( aTemplate, aCodePlan, aDataPlan )
@@ -1082,7 +1082,7 @@ qmnHASH::firstInit( qcTemplate * aTemplate,
 
 
     //---------------------------------
-    // √ ±‚»≠ øœ∑·∏¶ «•±‚
+    // Ï¥àÍ∏∞Ìôî ÏôÑÎ£åÎ•º ÌëúÍ∏∞
     //---------------------------------
 
     *aDataPlan->flag &= ~QMND_HASH_INIT_DONE_MASK;
@@ -1117,7 +1117,7 @@ qmnHASH::initMtrNode( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    ¿˙¿Â Column¿« ∞¸∏Æ∏¶ ¿ß«— ≥ÎµÂ∏¶ √ ±‚»≠«—¥Ÿ.
+ *    Ï†ÄÏû• ColumnÏùò Í¥ÄÎ¶¨Î•º ÏúÑÌïú ÎÖ∏ÎìúÎ•º Ï¥àÍ∏∞ÌôîÌïúÎã§.
  *
  * Implementation :
  *
@@ -1125,13 +1125,13 @@ qmnHASH::initMtrNode( qcTemplate * aTemplate,
     UInt        sHeaderSize = 0;
 
     //---------------------------------
-    // ¿˚«’º∫ ∞ÀªÁ
+    // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
     //---------------------------------
 
     IDE_DASSERT( aCodePlan->mtrNodeOffset > 0 );
 
     //---------------------------------
-    // ¿˙¿Â ∞¸∏Æ∏¶ ¿ß«— ¡§∫∏¿« √ ±‚»≠
+    // Ï†ÄÏû• Í¥ÄÎ¶¨Î•º ÏúÑÌïú Ï†ïÎ≥¥Ïùò Ï¥àÍ∏∞Ìôî
     //---------------------------------
 
     aDataPlan->mtrNode =
@@ -1160,14 +1160,14 @@ qmnHASH::initMtrNode( qcTemplate * aTemplate,
     }
 
     //---------------------------------
-    // ¿˙¿Â Column¿« √ ±‚»≠
+    // Ï†ÄÏû• ColumnÏùò Ï¥àÍ∏∞Ìôî
     //---------------------------------
 
-    // 1.  ¿˙¿Â Column¿« ø¨∞· ¡§∫∏ ª˝º∫
-    // 2.  ¿˙¿Â Column¿« √ ±‚»≠
-    // 3.  ¿˙¿Â Column¿« offset¿ª ¿Á¡∂¡§
-    // 4.  Row Size¿« ∞ËªÍ
-    //     - Disk Temp Table¿« ∞ÊøÏ Row∏¶ ¿ß«— Memoryµµ «“¥Áπﬁ¿Ω.
+    // 1.  Ï†ÄÏû• ColumnÏùò Ïó∞Í≤∞ Ï†ïÎ≥¥ ÏÉùÏÑ±
+    // 2.  Ï†ÄÏû• ColumnÏùò Ï¥àÍ∏∞Ìôî
+    // 3.  Ï†ÄÏû• ColumnÏùò offsetÏùÑ Ïû¨Ï°∞Ï†ï
+    // 4.  Row SizeÏùò Í≥ÑÏÇ∞
+    //     - Disk Temp TableÏùò Í≤ΩÏö∞ RowÎ•º ÏúÑÌïú MemoryÎèÑ Ìï†ÎãπÎ∞õÏùå.
 
     IDE_TEST( qmc::linkMtrNode( aCodePlan->myNode,
                                 aDataPlan->mtrNode ) != IDE_SUCCESS );
@@ -1198,7 +1198,7 @@ qmnHASH::initHashNode( qmncHASH    * aCodePlan,
 /***********************************************************************
  *
  * Description :
- *     Hashing Column¿« Ω√¿€ ¿ßƒ°∏¶ √£¿Ω
+ *     Hashing ColumnÏùò ÏãúÏûë ÏúÑÏπòÎ•º Ï∞æÏùå
  * Implementation :
  *
  ***********************************************************************/
@@ -1220,7 +1220,7 @@ qmnHASH::initHashNode( qmncHASH    * aCodePlan,
     aDataPlan->hashNode = sNode;
 
     //---------------------------------
-    // ¿˚«’º∫ ∞ÀªÁ
+    // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
     //---------------------------------
 
     IDE_DASSERT( aDataPlan->hashNode != NULL );
@@ -1228,8 +1228,8 @@ qmnHASH::initHashNode( qmncHASH    * aCodePlan,
     if ( (aCodePlan->flag & QMNC_HASH_NULL_CHECK_MASK)
          == QMNC_HASH_NULL_CHECK_TRUE )
     {
-        // STORE AND SEARCH¿« ∞ÊøÏ NULL CHECK∞° « ø‰«— ∞ÊøÏ¥¬
-        // «— ƒ√∑≥ø° ¥Î«— Hashing¿œ ∞ÊøÏ∏∏ ∞°¥…«œ¥Ÿ.
+        // STORE AND SEARCHÏùò Í≤ΩÏö∞ NULL CHECKÍ∞Ä ÌïÑÏöîÌïú Í≤ΩÏö∞Îäî
+        // Ìïú Ïª¨ÎüºÏóê ÎåÄÌïú HashingÏùº Í≤ΩÏö∞Îßå Í∞ÄÎä•ÌïòÎã§.
         IDE_DASSERT( aDataPlan->hashNode->next == NULL );
     }
     else
@@ -1250,10 +1250,10 @@ qmnHASH::initTempTable( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *     Hash Temp Table¿ª √ ±‚»≠«—¥Ÿ.
+ *     Hash Temp TableÏùÑ Ï¥àÍ∏∞ÌôîÌïúÎã§.
  *
  * Implementation :
- *     Hash Temp Table¿« ∞≥ºˆ∏∏≈≠ Hash Temp Table¿ª √ ±‚»≠«—¥Ÿ.
+ *     Hash Temp TableÏùò Í∞úÏàòÎßåÌÅº Hash Temp TableÏùÑ Ï¥àÍ∏∞ÌôîÌïúÎã§.
  *
  ***********************************************************************/
     UInt        i;
@@ -1261,14 +1261,14 @@ qmnHASH::initTempTable( qcTemplate * aTemplate,
     qmndHASH  * sCacheDataPlan = NULL;
 
     //-----------------------------
-    // ¿˚«’º∫ ∞ÀªÁ
+    // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
     //-----------------------------
 
     IDE_DASSERT( aCodePlan->tempTableCnt > 0 );
     IDE_DASSERT( QMN_HASH_PRIMARY_ID == 0 );
 
     //-----------------------------
-    // Flag ¡§∫∏ √ ±‚»≠
+    // Flag Ï†ïÎ≥¥ Ï¥àÍ∏∞Ìôî
     //-----------------------------
 
     sFlag = QMCD_HASH_TMP_INITIALIZE;
@@ -1310,8 +1310,8 @@ qmnHASH::initTempTable( qcTemplate * aTemplate,
     }
 
     // PROJ-2553
-    // Bucket-based Hash Temp Table¿ª ªÁøÎ«œ¡ˆ æ ∞Ì Non-DISTINCT Hashing¿Œ ∞ÊøÏ,
-    // Partitioned Hashing¿ª «œµµ∑œ «—¥Ÿ.
+    // Bucket-based Hash Temp TableÏùÑ ÏÇ¨Ïö©ÌïòÏßÄ ÏïäÍ≥† Non-DISTINCT HashingÏù∏ Í≤ΩÏö∞,
+    // Partitioned HashingÏùÑ ÌïòÎèÑÎ°ù ÌïúÎã§.
     if ( ( aTemplate->memHashTempPartDisable == ID_FALSE ) &&
          ( ( sFlag & QMCD_HASH_TMP_DISTINCT_MASK ) == QMCD_HASH_TMP_DISTINCT_FALSE ) )
     {
@@ -1325,7 +1325,7 @@ qmnHASH::initTempTable( qcTemplate * aTemplate,
     }
 
     //-----------------------------
-    // Temp Table √ ±‚»≠
+    // Temp Table Ï¥àÍ∏∞Ìôî
     //-----------------------------
     if ( ( *aDataPlan->flag & QMN_PLAN_RESULT_CACHE_EXIST_MASK )
          == QMN_PLAN_RESULT_CACHE_EXIST_FALSE )
@@ -1338,7 +1338,7 @@ qmnHASH::initTempTable( qcTemplate * aTemplate,
                   != IDE_SUCCESS );
         IDE_TEST_RAISE( aDataPlan->hashMgr == NULL, err_mem_alloc );
 
-        // Primary Temp Table¿« √ ±‚»≠
+        // Primary Temp TableÏùò Ï¥àÍ∏∞Ìôî
 
         sFlag &= ~QMCD_HASH_TMP_PRIMARY_MASK;
         sFlag |= QMCD_HASH_TMP_PRIMARY_TRUE;
@@ -1348,12 +1348,12 @@ qmnHASH::initTempTable( qcTemplate * aTemplate,
                                      ID_UINT_MAX,
                                      aDataPlan->mtrNode,
                                      aDataPlan->hashNode,
-                                     NULL,  // Aggregation Columnæ¯¿Ω
+                                     NULL,  // Aggregation ColumnÏóÜÏùå
                                      aCodePlan->bucketCnt,
                                      sFlag )
                   != IDE_SUCCESS );
 
-        // Secondary Temp Table¿« √ ±‚»≠
+        // Secondary Temp TableÏùò Ï¥àÍ∏∞Ìôî
 
         sFlag &= ~QMCD_HASH_TMP_PRIMARY_MASK;
         sFlag |= QMCD_HASH_TMP_PRIMARY_FALSE;
@@ -1365,7 +1365,7 @@ qmnHASH::initTempTable( qcTemplate * aTemplate,
                                          ID_UINT_MAX,
                                          aDataPlan->mtrNode,
                                          aDataPlan->hashNode,
-                                         NULL,  // Aggregation Columnæ¯¿Ω
+                                         NULL,  // Aggregation ColumnÏóÜÏùå
                                          aCodePlan->bucketCnt,
                                          sFlag )
                       != IDE_SUCCESS );
@@ -1388,7 +1388,7 @@ qmnHASH::initTempTable( qcTemplate * aTemplate,
                       != IDE_SUCCESS );
             IDE_TEST_RAISE( aDataPlan->hashMgr == NULL, err_mem_alloc );
 
-            // Primary Temp Table¿« √ ±‚»≠
+            // Primary Temp TableÏùò Ï¥àÍ∏∞Ìôî
             sFlag &= ~QMCD_HASH_TMP_PRIMARY_MASK;
             sFlag |= QMCD_HASH_TMP_PRIMARY_TRUE;
 
@@ -1397,12 +1397,12 @@ qmnHASH::initTempTable( qcTemplate * aTemplate,
                                          sCacheDataPlan->resultData.memoryIdx,
                                          aDataPlan->mtrNode,
                                          aDataPlan->hashNode,
-                                         NULL,  // Aggregation Columnæ¯¿Ω
+                                         NULL,  // Aggregation ColumnÏóÜÏùå
                                          aCodePlan->bucketCnt,
                                          sFlag )
                       != IDE_SUCCESS );
 
-            // Secondary Temp Table¿« √ ±‚»≠
+            // Secondary Temp TableÏùò Ï¥àÍ∏∞Ìôî
             sFlag &= ~QMCD_HASH_TMP_PRIMARY_MASK;
             sFlag |= QMCD_HASH_TMP_PRIMARY_FALSE;
 
@@ -1413,7 +1413,7 @@ qmnHASH::initTempTable( qcTemplate * aTemplate,
                                              sCacheDataPlan->resultData.memoryIdx,
                                              aDataPlan->mtrNode,
                                              aDataPlan->hashNode,
-                                             NULL,  // Aggregation Columnæ¯¿Ω
+                                             NULL,  // Aggregation ColumnÏóÜÏùå
                                              aCodePlan->bucketCnt,
                                              sFlag )
                           != IDE_SUCCESS );
@@ -1452,7 +1452,7 @@ IDE_RC qmnHASH::checkDependency( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    Dependent Tupleø° ∫Ø»≠∞° ¿÷¥¬ ¡ˆ∏¶ ∞ÀªÁ
+ *    Dependent TupleÏóê Î≥ÄÌôîÍ∞Ä ÏûàÎäî ÏßÄÎ•º Í≤ÄÏÇ¨
  *
  * Implementation :
  *
@@ -1499,14 +1499,14 @@ qmnHASH::storeAndHashing( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    Child∏¶ π›∫π¿˚¿∏∑Œ ºˆ«‡«œø© Hash Temp Table¿ª ±∏√‡«—¥Ÿ.
+ *    ChildÎ•º Î∞òÎ≥µÏ†ÅÏúºÎ°ú ÏàòÌñâÌïòÏó¨ Hash Temp TableÏùÑ Íµ¨Ï∂ïÌïúÎã§.
  *
  * Implementation :
- *    ¥Ÿ¿Ω∞˙ ∞∞¿∫ ªÁ«◊¿ª ∞Ì∑¡«œø© ±∏º∫«œø©æﬂ «—¥Ÿ.
- *        - ª¿‘«“ Temp Table¿ª ∞·¡§«—¥Ÿ.
- *        - Distinct Option¿œ ∞ÊøÏ ª¿‘ º∫∞¯ ø©∫Œ∏¶ ∆«¥‹«œø©
- *          Memory «“¥Á ø©∫Œ∏¶ ∞·¡§«œø©æﬂ «—¥Ÿ.
- *        - NULL ø©∫Œ∏¶ ∆«¥‹«œø©æﬂ «œ¥¬ ∞ÊøÏ NULLø©∫Œ∏¶ ∞·¡§«œø©æﬂ «—¥Ÿ.
+ *    Îã§ÏùåÍ≥º Í∞ôÏùÄ ÏÇ¨Ìï≠ÏùÑ Í≥†Î†§ÌïòÏó¨ Íµ¨ÏÑ±ÌïòÏó¨Ïïº ÌïúÎã§.
+ *        - ÏÇΩÏûÖÌï† Temp TableÏùÑ Í≤∞Ï†ïÌïúÎã§.
+ *        - Distinct OptionÏùº Í≤ΩÏö∞ ÏÇΩÏûÖ ÏÑ±Í≥µ Ïó¨Î∂ÄÎ•º ÌåêÎã®ÌïòÏó¨
+ *          Memory Ìï†Îãπ Ïó¨Î∂ÄÎ•º Í≤∞Ï†ïÌïòÏó¨Ïïº ÌïúÎã§.
+ *        - NULL Ïó¨Î∂ÄÎ•º ÌåêÎã®ÌïòÏó¨Ïïº ÌïòÎäî Í≤ΩÏö∞ NULLÏó¨Î∂ÄÎ•º Í≤∞Ï†ïÌïòÏó¨Ïïº ÌïúÎã§.
  *
  ***********************************************************************/
 
@@ -1522,7 +1522,7 @@ qmnHASH::storeAndHashing( qcTemplate * aTemplate,
     sInserted = ID_TRUE;
 
     //------------------------------
-    // Child Record¿« ¿˙¿Â
+    // Child RecordÏùò Ï†ÄÏû•
     //------------------------------
 
     IDE_TEST( aCodePlan->plan.left->doIt( aTemplate,
@@ -1532,15 +1532,15 @@ qmnHASH::storeAndHashing( qcTemplate * aTemplate,
     while ( (sFlag & QMC_ROW_DATA_MASK) == QMC_ROW_DATA_EXIST )
     {
         //---------------------------------------
-        // 1.  ¿˙¿Â Row∏¶ ¿ß«— ∞¯∞£ «“¥Á
-        // 2.  ¿˙¿Â Row¿« ±∏º∫
-        // 3.  NULL ø©∫Œ¿« ∆«¥‹
-        // 4.  Temp Table º±≈√
-        // 5.  ¿˙¿Â Row¿« ª¿‘
-        // 6.  Child ºˆ«‡
+        // 1.  Ï†ÄÏû• RowÎ•º ÏúÑÌïú Í≥µÍ∞Ñ Ìï†Îãπ
+        // 2.  Ï†ÄÏû• RowÏùò Íµ¨ÏÑ±
+        // 3.  NULL Ïó¨Î∂ÄÏùò ÌåêÎã®
+        // 4.  Temp Table ÏÑ†ÌÉù
+        // 5.  Ï†ÄÏû• RowÏùò ÏÇΩÏûÖ
+        // 6.  Child ÏàòÌñâ
         //---------------------------------------
 
-        // 1. ¿˙¿Â Row∏¶ ¿ß«— ∞¯∞£ «“¥Á
+        // 1. Ï†ÄÏû• RowÎ•º ÏúÑÌïú Í≥µÍ∞Ñ Ìï†Îãπ
         if ( sInserted == ID_TRUE )
         {
             IDE_TEST(
@@ -1550,19 +1550,19 @@ qmnHASH::storeAndHashing( qcTemplate * aTemplate,
         }
         else
         {
-            // ª¿‘¿Ã Ω«∆–«— ∞ÊøÏ∑Œ ¿ÃπÃ «“¥Áπﬁ¿∫ ∞¯∞£¿ª ªÁøÎ«—¥Ÿ.
-            // µ˚∂Ûº≠, ∫∞µµ∑Œ ∞¯∞£¿ª «“¥Á πﬁ¿ª « ø‰∞° æ¯¥Ÿ.
+            // ÏÇΩÏûÖÏù¥ Ïã§Ìå®Ìïú Í≤ΩÏö∞Î°ú Ïù¥ÎØ∏ Ìï†ÎãπÎ∞õÏùÄ Í≥µÍ∞ÑÏùÑ ÏÇ¨Ïö©ÌïúÎã§.
+            // Îî∞ÎùºÏÑú, Î≥ÑÎèÑÎ°ú Í≥µÍ∞ÑÏùÑ Ìï†Îãπ Î∞õÏùÑ ÌïÑÏöîÍ∞Ä ÏóÜÎã§.
         }
 
-        // 2.  ¿˙¿Â Row¿« ±∏º∫
+        // 2.  Ï†ÄÏû• RowÏùò Íµ¨ÏÑ±
         IDE_TEST( setMtrRow( aTemplate, aDataPlan )
                   != IDE_SUCCESS );
 
-        // 3.  NULL ø©∫Œ¿« ∆«¥‹
+        // 3.  NULL Ïó¨Î∂ÄÏùò ÌåêÎã®
         IDE_TEST( checkNullExist( aCodePlan, aDataPlan )
                   != IDE_SUCCESS );
 
-        // 4.  Temp Table º±≈√
+        // 4.  Temp Table ÏÑ†ÌÉù
         if ( aCodePlan->tempTableCnt > 1 )
         {
             IDE_TEST( getMtrHashKey( aDataPlan,
@@ -1575,7 +1575,7 @@ qmnHASH::storeAndHashing( qcTemplate * aTemplate,
             sTempID = QMN_HASH_PRIMARY_ID;
         }
 
-        // 5.  ¿˙¿Â Row¿« ª¿‘
+        // 5.  Ï†ÄÏû• RowÏùò ÏÇΩÏûÖ
         if ( (aCodePlan->flag & QMNC_HASH_STORE_MASK)
              == QMNC_HASH_STORE_DISTINCT )
         {
@@ -1601,7 +1601,7 @@ qmnHASH::storeAndHashing( qcTemplate * aTemplate,
             // Nothing To Do
         }
 
-        // 6.  Child ºˆ«‡
+        // 6.  Child ÏàòÌñâ
         IDE_TEST( aCodePlan->plan.left->doIt( aTemplate,
                                               aCodePlan->plan.left,
                                               & sFlag ) != IDE_SUCCESS );
@@ -1639,7 +1639,7 @@ qmnHASH::setMtrRow( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *     ¿˙¿Â Row∏¶ ±∏º∫«—¥Ÿ.
+ *     Ï†ÄÏû• RowÎ•º Íµ¨ÏÑ±ÌïúÎã§.
  *
  * Implementation :
  *
@@ -1676,8 +1676,8 @@ qmnHASH::checkNullExist( qmncHASH   * aCodePlan,
 /***********************************************************************
  *
  * Description :
- *     ¿˙¿Â Row¿« Hashing ¥ÎªÛ Column¿Ã NULL¿Œ¡ˆ∏¶ ∆«¥‹«—¥Ÿ.
- *     One Columnø° ¥Î«— Store And SearchΩ√ ªÁøÎµ»¥Ÿ.
+ *     Ï†ÄÏû• RowÏùò Hashing ÎåÄÏÉÅ ColumnÏù¥ NULLÏù∏ÏßÄÎ•º ÌåêÎã®ÌïúÎã§.
+ *     One ColumnÏóê ÎåÄÌïú Store And SearchÏãú ÏÇ¨Ïö©ÎêúÎã§.
  *
  * Implementation :
  *
@@ -1691,8 +1691,8 @@ qmnHASH::checkNullExist( qmncHASH   * aCodePlan,
     if ( (aCodePlan->flag & QMNC_HASH_NULL_CHECK_MASK)
          == QMNC_HASH_NULL_CHECK_TRUE )
     {
-        // «œ≥™¿« Column∏∏¿Ã Hashing ¥ÎªÛ¿”¿Ã ∫∏¿Âµ»¥Ÿ.
-        // ¿Ã¥¬ ¿ÃπÃ ¿˚«’º∫ ∞ÀªÁ∏¶ ≈Î«ÿ ∫∏¿Âµ 
+        // ÌïòÎÇòÏùò ColumnÎßåÏù¥ Hashing ÎåÄÏÉÅÏûÑÏù¥ Î≥¥Ïû•ÎêúÎã§.
+        // Ïù¥Îäî Ïù¥ÎØ∏ Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨Î•º ÌÜµÌï¥ Î≥¥Ïû•Îê®
         sIsNull =
             aDataPlan->hashNode->func.isNull( aDataPlan->hashNode,
                                               aDataPlan->plan.myTuple->row );
@@ -1722,7 +1722,7 @@ qmnHASH::getMtrHashKey( qmndHASH   * aDataPlan,
 /***********************************************************************
  *
  * Description :
- *    ¿˙¿Â Row¿« Hash Key∞™ »πµÊ
+ *    Ï†ÄÏû• RowÏùò Hash KeyÍ∞í ÌöçÎìù
  *
  * Implementation :
  *
@@ -1758,13 +1758,13 @@ qmnHASH::getConstHashKey( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    ªÛºˆ øµø™¿« Hash Key∞™ »πµÊ
+ *    ÏÉÅÏàò ÏòÅÏó≠Ïùò Hash KeyÍ∞í ÌöçÎìù
  *
  * Implementation :
- *    ªÛºˆ øµø™¿ª ºˆ«‡«œ∞Ì, Stackø° Ω◊¿Œ ¡§∫∏∏¶ ¿ÃøÎ«œø©
- *    Hash Key∞™¿ª æÚ¥¬¥Ÿ.
- *    ∫Œ∞°¿˚¿∏∑Œ Store And Search∏¶ ¿ß«ÿ ªÛºˆ øµø™¿« ∞™¿Ã
- *    NULL¿Œ¡ˆø° ¥Î«— ∆«¥‹µµ ºˆ«‡«—¥Ÿ.
+ *    ÏÉÅÏàò ÏòÅÏó≠ÏùÑ ÏàòÌñâÌïòÍ≥†, StackÏóê ÏåìÏù∏ Ï†ïÎ≥¥Î•º Ïù¥Ïö©ÌïòÏó¨
+ *    Hash KeyÍ∞íÏùÑ ÏñªÎäîÎã§.
+ *    Î∂ÄÍ∞ÄÏ†ÅÏúºÎ°ú Store And SearchÎ•º ÏúÑÌï¥ ÏÉÅÏàò ÏòÅÏó≠Ïùò Í∞íÏù¥
+ *    NULLÏù∏ÏßÄÏóê ÎåÄÌïú ÌåêÎã®ÎèÑ ÏàòÌñâÌïúÎã§.
  *
  ***********************************************************************/
 
@@ -1788,7 +1788,7 @@ qmnHASH::getConstHashKey( qcTemplate * aTemplate,
                                                sStack->column,
                                                sStack->value );
 
-        // NULL ∞™ ø©∫Œ¿« ∆«¥‹
+        // NULL Í∞í Ïó¨Î∂ÄÏùò ÌåêÎã®
         sIsNull = sStack->column->module->isNull( sStack->column,
                                                   sStack->value );
         if ( sIsNull == ID_TRUE )
@@ -1821,7 +1821,7 @@ qmnHASH::setTupleSet( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *     ∞Àªˆµ» ¿˙¿Â Row∏¶ ¿ÃøÎ«œø© Tuple Set¿ª ∫πø¯«—¥Ÿ.
+ *     Í≤ÄÏÉâÎêú Ï†ÄÏû• RowÎ•º Ïù¥Ïö©ÌïòÏó¨ Tuple SetÏùÑ Î≥µÏõêÌïúÎã§.
  *
  * Implementation :
  *
@@ -1859,7 +1859,7 @@ qmnHASH::setSearchFunction( qmncHASH   * aCodePlan,
 /***********************************************************************
  *
  * Description :
- *     ∞Àªˆ ø…º«ø° µ˚∂Û ∞Àªˆ «‘ºˆ∏¶ º±≈√«—¥Ÿ.
+ *     Í≤ÄÏÉâ ÏòµÏÖòÏóê Îî∞Îùº Í≤ÄÏÉâ Ìï®ÏàòÎ•º ÏÑ†ÌÉùÌïúÎã§.
  *
  * Implementation :
  *
@@ -1909,7 +1909,7 @@ qmnHASH::searchDefault( qcTemplate * /* aTemplate */,
 /***********************************************************************
  *
  * Description :
- *     ¿Ã «‘ºˆ∞° »£√‚µ«æÓº≠¥¬ æ»µ 
+ *     Ïù¥ Ìï®ÏàòÍ∞Ä Ìò∏Ï∂úÎêòÏñ¥ÏÑúÎäî ÏïàÎê®
  * Implementation :
  *
  ***********************************************************************/
@@ -1933,11 +1933,11 @@ qmnHASH::searchFirstSequence( qcTemplate * /* aTemplate */,
 /***********************************************************************
  *
  * Description :
- *    √ππ¯¬∞ º¯¬˜ ∞Àªˆ
+ *    Ï≤´Î≤àÏß∏ ÏàúÏ∞® Í≤ÄÏÉâ
  *
  * Implementation :
- *    Temp Table¿Ã ø©∑Ø ∞≥¿Œ ∞ÊøÏ∏¶ ∞Ì∑¡«œø© ºˆ«‡«œ∏Á,
- *    Row Pointer∏¶ ¿“¡ˆ æ µµ∑œ «œø©æﬂ «—¥Ÿ.
+ *    Temp TableÏù¥ Ïó¨Îü¨ Í∞úÏù∏ Í≤ΩÏö∞Î•º Í≥†Î†§ÌïòÏó¨ ÏàòÌñâÌïòÎ©∞,
+ *    Row PointerÎ•º ÏûÉÏßÄ ÏïäÎèÑÎ°ù ÌïòÏó¨Ïïº ÌïúÎã§.
  *
  ***********************************************************************/
 
@@ -1952,13 +1952,13 @@ qmnHASH::searchFirstSequence( qcTemplate * /* aTemplate */,
     aDataPlan->currTempID = 0;
 
     // To Fix PR-8142
-    // Data æ¯¿Ω¿∏∑Œ º≥¡§«œø©æﬂ π›∫π ºˆ«‡ π◊ ø√πŸ∏• ¡æ∑·∞°
-    // ∞°¥…«œ¥Ÿ.
+    // Data ÏóÜÏùåÏúºÎ°ú ÏÑ§Ï†ïÌïòÏó¨Ïïº Î∞òÎ≥µ ÏàòÌñâ Î∞è Ïò¨Î∞îÎ•∏ Ï¢ÖÎ£åÍ∞Ä
+    // Í∞ÄÎä•ÌïòÎã§.
     sFlag &= ~QMC_ROW_DATA_MASK;
     sFlag |= QMC_ROW_DATA_NONE;
 
 
-    // Data∞° æ¯∞Ì, ¥ı ¿ÃªÛ¿« Temp Table¿Ã æ¯¿ª ∂ß±Ó¡ˆ ¡¯«‡
+    // DataÍ∞Ä ÏóÜÍ≥†, Îçî Ïù¥ÏÉÅÏùò Temp TableÏù¥ ÏóÜÏùÑ ÎïåÍπåÏßÄ ÏßÑÌñâ
     while ( (aDataPlan->currTempID < aCodePlan->tempTableCnt) &&
             ((sFlag & QMC_ROW_DATA_MASK) == QMC_ROW_DATA_NONE) )
     {
@@ -1973,7 +1973,7 @@ qmnHASH::searchFirstSequence( qcTemplate * /* aTemplate */,
 
         if ( sSearchRow == NULL )
         {
-            // ¥Ÿ¿Ω Temp Tableø° Row∞° ¡∏¿Á«“ ºˆ ¿÷¥Ÿ.
+            // Îã§Ïùå Temp TableÏóê RowÍ∞Ä Ï°¥Ïû¨Ìï† Ïàò ÏûàÎã§.
             sFlag = QMC_ROW_DATA_NONE;
             aDataPlan->currTempID++;
         }
@@ -2003,7 +2003,7 @@ qmnHASH::searchNextSequence( qcTemplate * /* aTemplate */,
 /***********************************************************************
  *
  * Description :
- *    ¥Ÿ¿Ω º¯¬˜ ∞Àªˆ¿ª ºˆ«‡«—¥Ÿ.
+ *    Îã§Ïùå ÏàúÏ∞® Í≤ÄÏÉâÏùÑ ÏàòÌñâÌïúÎã§.
  *
  * Implementation :
  *
@@ -2022,20 +2022,20 @@ qmnHASH::searchNextSequence( qcTemplate * /* aTemplate */,
     sIsNextTemp = ID_FALSE;
 
     // To Fix PR-8142
-    // Data æ¯¿Ω¿∏∑Œ º≥¡§«œø©æﬂ π›∫π ºˆ«‡ π◊ ø√πŸ∏• ¡æ∑·∞°
-    // ∞°¥…«œ¥Ÿ.
+    // Data ÏóÜÏùåÏúºÎ°ú ÏÑ§Ï†ïÌïòÏó¨Ïïº Î∞òÎ≥µ ÏàòÌñâ Î∞è Ïò¨Î∞îÎ•∏ Ï¢ÖÎ£åÍ∞Ä
+    // Í∞ÄÎä•ÌïòÎã§.
     sFlag &= ~QMC_ROW_DATA_MASK;
     sFlag |= QMC_ROW_DATA_NONE;
 
-    // Data∞° æ¯∞Ì, ¥ı ¿ÃªÛ¿« Temp Table¿Ã æ¯¿ª ∂ß±Ó¡ˆ ¡¯«‡
+    // DataÍ∞Ä ÏóÜÍ≥†, Îçî Ïù¥ÏÉÅÏùò Temp TableÏù¥ ÏóÜÏùÑ ÎïåÍπåÏßÄ ÏßÑÌñâ
     while ( (aDataPlan->currTempID < aCodePlan->tempTableCnt) &&
             ((sFlag & QMC_ROW_DATA_MASK) == QMC_ROW_DATA_NONE) )
     {
         sOrgRow = sSearchRow = aDataPlan->plan.myTuple->row;
 
         // To Fix PR-12346
-        // Temp Table¿Ã ¥Ÿ¿Ω Temp Table¿Ã∂Û∏È
-        // Cursor∏¶ Open«ÿº≠ √≥∏Æ«“ ºˆ ¿÷µµ∑œ «ÿæﬂ «‘.
+        // Temp TableÏù¥ Îã§Ïùå Temp TableÏù¥ÎùºÎ©¥
+        // CursorÎ•º OpenÌï¥ÏÑú Ï≤òÎ¶¨Ìï† Ïàò ÏûàÎèÑÎ°ù Ìï¥Ïïº Ìï®.
         if ( sIsNextTemp == ID_TRUE )
         {
             IDE_TEST(
@@ -2059,7 +2059,7 @@ qmnHASH::searchNextSequence( qcTemplate * /* aTemplate */,
 
         if ( sSearchRow == NULL )
         {
-            // ¥Ÿ¿Ω Temp Tableø° Row∞° ¡∏¿Á«“ ºˆ ¿÷¥Ÿ.
+            // Îã§Ïùå Temp TableÏóê RowÍ∞Ä Ï°¥Ïû¨Ìï† Ïàò ÏûàÎã§.
             aDataPlan->currTempID++;
             sFlag = QMC_ROW_DATA_NONE;
 
@@ -2091,12 +2091,12 @@ qmnHASH::searchFirstFilter( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    √ππ¯¬∞ π¸¿ß ∞Àªˆ
+ *    Ï≤´Î≤àÏß∏ Î≤îÏúÑ Í≤ÄÏÉâ
  *
  * Implementation :
- *    ¥Ÿ¿Ω∞˙ ∞∞¿∫ º¯º≠∑Œ ∞Àªˆ«—¥Ÿ.
- *        - ªÛºˆ¿« Hash Key ∞™ π◊ ∞Àªˆ«“ Temp Table º±≈√
- *        - ¡ˆ¡§µ» Temp Table∑Œ∫Œ≈Õ ∞Àªˆ
+ *    Îã§ÏùåÍ≥º Í∞ôÏùÄ ÏàúÏÑúÎ°ú Í≤ÄÏÉâÌïúÎã§.
+ *        - ÏÉÅÏàòÏùò Hash Key Í∞í Î∞è Í≤ÄÏÉâÌï† Temp Table ÏÑ†ÌÉù
+ *        - ÏßÄÏ†ïÎêú Temp TableÎ°úÎ∂ÄÌÑ∞ Í≤ÄÏÉâ
  *
  ***********************************************************************/
 
@@ -2149,7 +2149,7 @@ qmnHASH::searchNextFilter( qcTemplate * /* aTemplate */,
 /***********************************************************************
  *
  * Description :
- *    ¥Ÿ¿Ω π¸¿ß ∞Àªˆ
+ *    Îã§Ïùå Î≤îÏúÑ Í≤ÄÏÉâ
  *
  * Implementation :
  *
@@ -2194,17 +2194,17 @@ IDE_RC qmnHASH::searchFirstHit( qcTemplate * /* aTemplate */,
 /***********************************************************************
  *
  * Description :
- *    √ππ¯¬∞ Hit ∞Àªˆ
+ *    Ï≤´Î≤àÏß∏ Hit Í≤ÄÏÉâ
  *
  * Implementation :
- *    Temp Table¿Ã ø©∑Ø ∞≥¿Œ ∞ÊøÏ∏¶ ∞Ì∑¡«œø© ºˆ«‡«œ∏Á,
- *    Row Pointer∏¶ ¿“¡ˆ æ µµ∑œ «œø©æﬂ «—¥Ÿ.
+ *    Temp TableÏù¥ Ïó¨Îü¨ Í∞úÏù∏ Í≤ΩÏö∞Î•º Í≥†Î†§ÌïòÏó¨ ÏàòÌñâÌïòÎ©∞,
+ *    Row PointerÎ•º ÏûÉÏßÄ ÏïäÎèÑÎ°ù ÌïòÏó¨Ïïº ÌïúÎã§.
  *
- *    Inverse Hash Join¿« √≥∏Æø° ¬¸ø©«“ ∂ß ªÁøÎµ«¥¬ «‘ºˆ∑Œ
- *    Hit Record∞° ¥ı ¿ÃªÛ æ¯¿ª ∞ÊøÏ, ∏µÁ ¿˙¿Â Row¿« Hit Flag¿ª
- *    √ ±‚»≠«—¥Ÿ.  ¿Ã¥¬ SubqueryµÓø°º≠ Inverse Hash Join¿Ã ªÁøÎµ… ∂ß,
- *    √÷√  ºˆ«‡ ∞·∞˙∑Œ ¿Œ«ÿ ¥Ÿ¿Ω Subquery¿« ºˆ«‡¿Ã øµ«‚¿ª πﬁ¡ˆ æ µµ∑œ
- *    «œ±‚ ¿ß«‘¿Ã¥Ÿ.
+ *    Inverse Hash JoinÏùò Ï≤òÎ¶¨Ïóê Ï∞∏Ïó¨Ìï† Îïå ÏÇ¨Ïö©ÎêòÎäî Ìï®ÏàòÎ°ú
+ *    Hit RecordÍ∞Ä Îçî Ïù¥ÏÉÅ ÏóÜÏùÑ Í≤ΩÏö∞, Î™®Îì† Ï†ÄÏû• RowÏùò Hit FlagÏùÑ
+ *    Ï¥àÍ∏∞ÌôîÌïúÎã§.  Ïù¥Îäî SubqueryÎì±ÏóêÏÑú Inverse Hash JoinÏù¥ ÏÇ¨Ïö©Îê† Îïå,
+ *    ÏµúÏ¥à ÏàòÌñâ Í≤∞Í≥ºÎ°ú Ïù∏Ìï¥ Îã§Ïùå SubqueryÏùò ÏàòÌñâÏù¥ ÏòÅÌñ•ÏùÑ Î∞õÏßÄ ÏïäÎèÑÎ°ù
+ *    ÌïòÍ∏∞ ÏúÑÌï®Ïù¥Îã§.
  ***********************************************************************/
 
     UInt        i;
@@ -2218,7 +2218,7 @@ IDE_RC qmnHASH::searchFirstHit( qcTemplate * /* aTemplate */,
     sFlag &= ~QMC_ROW_DATA_MASK;
     sFlag |= QMC_ROW_DATA_NONE;
 
-    // Data∞° æ¯∞Ì, ¥ı ¿ÃªÛ¿« Temp Table¿Ã æ¯¿ª ∂ß±Ó¡ˆ ¡¯«‡
+    // DataÍ∞Ä ÏóÜÍ≥†, Îçî Ïù¥ÏÉÅÏùò Temp TableÏù¥ ÏóÜÏùÑ ÎïåÍπåÏßÄ ÏßÑÌñâ
     while ( (aDataPlan->currTempID < aCodePlan->tempTableCnt) &&
             ((sFlag & QMC_ROW_DATA_MASK) == QMC_ROW_DATA_NONE) )
     {
@@ -2232,7 +2232,7 @@ IDE_RC qmnHASH::searchFirstHit( qcTemplate * /* aTemplate */,
 
         if ( sSearchRow == NULL )
         {
-            // ¥Ÿ¿Ω Temp Tableø° Row∞° ¡∏¿Á«“ ºˆ ¿÷¥Ÿ.
+            // Îã§Ïùå Temp TableÏóê RowÍ∞Ä Ï°¥Ïû¨Ìï† Ïàò ÏûàÎã§.
             sFlag = QMC_ROW_DATA_NONE;
             aDataPlan->currTempID++;
         }
@@ -2272,14 +2272,14 @@ IDE_RC qmnHASH::searchNextHit( qcTemplate * /* aTemplate */,
 /***********************************************************************
  *
  * Description :
- *     ¥Ÿ¿Ω Hit ∞Àªˆ
+ *     Îã§Ïùå Hit Í≤ÄÏÉâ
  *
  * Implementation :
- *    Inverse Hash Join¿« √≥∏Æø° ¬¸ø©«“ ∂ß ªÁøÎµ«¥¬ «‘ºˆ∑Œ
- *    Hit Record∞° ¥ı ¿ÃªÛ æ¯¿ª ∞ÊøÏ, ∏µÁ ¿˙¿Â Row¿« Hit Flag¿ª
- *    √ ±‚»≠«—¥Ÿ.  ¿Ã¥¬ SubqueryµÓø°º≠ Inverse Hash Join¿Ã ªÁøÎµ… ∂ß,
- *    √÷√  ºˆ«‡ ∞·∞˙∑Œ ¿Œ«ÿ ¥Ÿ¿Ω Subquery¿« ºˆ«‡¿Ã øµ«‚¿ª πﬁ¡ˆ æ µµ∑œ
- *    «œ±‚ ¿ß«‘¿Ã¥Ÿ.
+ *    Inverse Hash JoinÏùò Ï≤òÎ¶¨Ïóê Ï∞∏Ïó¨Ìï† Îïå ÏÇ¨Ïö©ÎêòÎäî Ìï®ÏàòÎ°ú
+ *    Hit RecordÍ∞Ä Îçî Ïù¥ÏÉÅ ÏóÜÏùÑ Í≤ΩÏö∞, Î™®Îì† Ï†ÄÏû• RowÏùò Hit FlagÏùÑ
+ *    Ï¥àÍ∏∞ÌôîÌïúÎã§.  Ïù¥Îäî SubqueryÎì±ÏóêÏÑú Inverse Hash JoinÏù¥ ÏÇ¨Ïö©Îê† Îïå,
+ *    ÏµúÏ¥à ÏàòÌñâ Í≤∞Í≥ºÎ°ú Ïù∏Ìï¥ Îã§Ïùå SubqueryÏùò ÏàòÌñâÏù¥ ÏòÅÌñ•ÏùÑ Î∞õÏßÄ ÏïäÎèÑÎ°ù
+ *    ÌïòÍ∏∞ ÏúÑÌï®Ïù¥Îã§.
  *
  ***********************************************************************/
 
@@ -2295,7 +2295,7 @@ IDE_RC qmnHASH::searchNextHit( qcTemplate * /* aTemplate */,
     sFlag &= ~QMC_ROW_DATA_MASK;
     sFlag |= QMC_ROW_DATA_NONE;
 
-    // Data∞° æ¯∞Ì, ¥ı ¿ÃªÛ¿« Temp Table¿Ã æ¯¿ª ∂ß±Ó¡ˆ ¡¯«‡
+    // DataÍ∞Ä ÏóÜÍ≥†, Îçî Ïù¥ÏÉÅÏùò Temp TableÏù¥ ÏóÜÏùÑ ÎïåÍπåÏßÄ ÏßÑÌñâ
     while ( (aDataPlan->currTempID < aCodePlan->tempTableCnt) &&
             ((sFlag & QMC_ROW_DATA_MASK) == QMC_ROW_DATA_NONE) )
     {
@@ -2324,7 +2324,7 @@ IDE_RC qmnHASH::searchNextHit( qcTemplate * /* aTemplate */,
 
         if ( sSearchRow == NULL )
         {
-            // ¥Ÿ¿Ω Temp Tableø° Row∞° ¡∏¿Á«“ ºˆ ¿÷¥Ÿ.
+            // Îã§Ïùå Temp TableÏóê RowÍ∞Ä Ï°¥Ïû¨Ìï† Ïàò ÏûàÎã§.
             sFlag = QMC_ROW_DATA_NONE;
             aDataPlan->currTempID++;
 
@@ -2341,7 +2341,7 @@ IDE_RC qmnHASH::searchNextHit( qcTemplate * /* aTemplate */,
         for ( i = 0; i < aCodePlan->tempTableCnt; i++ )
         {
             // To Fix BUG-8725
-            // qmcHashTemp::clear() --> qmcHashTemp::clearHitFlag() ∑Œ ∫Ø∞Ê
+            // qmcHashTemp::clear() --> qmcHashTemp::clearHitFlag() Î°ú Î≥ÄÍ≤Ω
             IDE_TEST( qmcHashTemp::clearHitFlag( & aDataPlan->hashMgr[i] )
                       != IDE_SUCCESS );
         }
@@ -2369,17 +2369,17 @@ qmnHASH::searchFirstNonHit( qcTemplate * /* aTemplate */,
 /***********************************************************************
  *
  * Description :
- *    √ππ¯¬∞ Non-Hit ∞Àªˆ
+ *    Ï≤´Î≤àÏß∏ Non-Hit Í≤ÄÏÉâ
  *
  * Implementation :
- *    Temp Table¿Ã ø©∑Ø ∞≥¿Œ ∞ÊøÏ∏¶ ∞Ì∑¡«œø© ºˆ«‡«œ∏Á,
- *    Row Pointer∏¶ ¿“¡ˆ æ µµ∑œ «œø©æﬂ «—¥Ÿ.
+ *    Temp TableÏù¥ Ïó¨Îü¨ Í∞úÏù∏ Í≤ΩÏö∞Î•º Í≥†Î†§ÌïòÏó¨ ÏàòÌñâÌïòÎ©∞,
+ *    Row PointerÎ•º ÏûÉÏßÄ ÏïäÎèÑÎ°ù ÌïòÏó¨Ïïº ÌïúÎã§.
  *
- *    Full Outer Join¿« √≥∏Æø° ¬¸ø©«“ ∂ß ªÁøÎµ«¥¬ «‘ºˆ∑Œ
- *    Non-Hit Record∞° ¥ı ¿ÃªÛ æ¯¿ª ∞ÊøÏ, ∏µÁ ¿˙¿Â Row¿« Hit Flag¿ª
- *    √ ±‚»≠«—¥Ÿ.  ¿Ã¥¬ SubqueryµÓø°º≠ Full Outer Join¿Ã ªÁøÎµ… ∂ß,
- *    √÷√  ºˆ«‡ ∞·∞˙∑Œ ¿Œ«ÿ ¥Ÿ¿Ω Subquery¿« ºˆ«‡¿Ã øµ«‚¿ª πﬁ¡ˆ æ µµ∑œ
- *    «œ±‚ ¿ß«‘¿Ã¥Ÿ.
+ *    Full Outer JoinÏùò Ï≤òÎ¶¨Ïóê Ï∞∏Ïó¨Ìï† Îïå ÏÇ¨Ïö©ÎêòÎäî Ìï®ÏàòÎ°ú
+ *    Non-Hit RecordÍ∞Ä Îçî Ïù¥ÏÉÅ ÏóÜÏùÑ Í≤ΩÏö∞, Î™®Îì† Ï†ÄÏû• RowÏùò Hit FlagÏùÑ
+ *    Ï¥àÍ∏∞ÌôîÌïúÎã§.  Ïù¥Îäî SubqueryÎì±ÏóêÏÑú Full Outer JoinÏù¥ ÏÇ¨Ïö©Îê† Îïå,
+ *    ÏµúÏ¥à ÏàòÌñâ Í≤∞Í≥ºÎ°ú Ïù∏Ìï¥ Îã§Ïùå SubqueryÏùò ÏàòÌñâÏù¥ ÏòÅÌñ•ÏùÑ Î∞õÏßÄ ÏïäÎèÑÎ°ù
+ *    ÌïòÍ∏∞ ÏúÑÌï®Ïù¥Îã§.
  ***********************************************************************/
 
     UInt        i;
@@ -2391,12 +2391,12 @@ qmnHASH::searchFirstNonHit( qcTemplate * /* aTemplate */,
     aDataPlan->currTempID = 0;
 
     // To Fix PR-8142
-    // Data æ¯¿Ω¿∏∑Œ º≥¡§«œø©æﬂ π›∫π ºˆ«‡ π◊ ø√πŸ∏• ¡æ∑·∞°
-    // ∞°¥…«œ¥Ÿ.
+    // Data ÏóÜÏùåÏúºÎ°ú ÏÑ§Ï†ïÌïòÏó¨Ïïº Î∞òÎ≥µ ÏàòÌñâ Î∞è Ïò¨Î∞îÎ•∏ Ï¢ÖÎ£åÍ∞Ä
+    // Í∞ÄÎä•ÌïòÎã§.
     sFlag &= ~QMC_ROW_DATA_MASK;
     sFlag |= QMC_ROW_DATA_NONE;
 
-    // Data∞° æ¯∞Ì, ¥ı ¿ÃªÛ¿« Temp Table¿Ã æ¯¿ª ∂ß±Ó¡ˆ ¡¯«‡
+    // DataÍ∞Ä ÏóÜÍ≥†, Îçî Ïù¥ÏÉÅÏùò Temp TableÏù¥ ÏóÜÏùÑ ÎïåÍπåÏßÄ ÏßÑÌñâ
     while ( (aDataPlan->currTempID < aCodePlan->tempTableCnt) &&
             ((sFlag & QMC_ROW_DATA_MASK) == QMC_ROW_DATA_NONE) )
     {
@@ -2410,7 +2410,7 @@ qmnHASH::searchFirstNonHit( qcTemplate * /* aTemplate */,
 
         if ( sSearchRow == NULL )
         {
-            // ¥Ÿ¿Ω Temp Tableø° Row∞° ¡∏¿Á«“ ºˆ ¿÷¥Ÿ.
+            // Îã§Ïùå Temp TableÏóê RowÍ∞Ä Ï°¥Ïû¨Ìï† Ïàò ÏûàÎã§.
             sFlag = QMC_ROW_DATA_NONE;
             aDataPlan->currTempID++;
         }
@@ -2425,7 +2425,7 @@ qmnHASH::searchFirstNonHit( qcTemplate * /* aTemplate */,
         for ( i = 0; i < aCodePlan->tempTableCnt; i++ )
         {
             // To Fix BUG-8725
-            // qmcHashTemp::clear() --> qmcHashTemp::clearHitFlag() ∑Œ ∫Ø∞Ê
+            // qmcHashTemp::clear() --> qmcHashTemp::clearHitFlag() Î°ú Î≥ÄÍ≤Ω
             IDE_TEST( qmcHashTemp::clearHitFlag( & aDataPlan->hashMgr[i] )
                       != IDE_SUCCESS );
         }
@@ -2453,14 +2453,14 @@ qmnHASH::searchNextNonHit( qcTemplate * /* aTemplate */,
 /***********************************************************************
  *
  * Description :
- *     ¥Ÿ¿Ω Non-Hit ∞Àªˆ
+ *     Îã§Ïùå Non-Hit Í≤ÄÏÉâ
  *
  * Implementation :
- *    Full Outer Join¿« √≥∏Æø° ¬¸ø©«“ ∂ß ªÁøÎµ«¥¬ «‘ºˆ∑Œ
- *    Non-Hit Record∞° ¥ı ¿ÃªÛ æ¯¿ª ∞ÊøÏ, ∏µÁ ¿˙¿Â Row¿« Hit Flag¿ª
- *    √ ±‚»≠«—¥Ÿ.  ¿Ã¥¬ SubqueryµÓø°º≠ Full Outer Join¿Ã ªÁøÎµ… ∂ß,
- *    √÷√  ºˆ«‡ ∞·∞˙∑Œ ¿Œ«ÿ ¥Ÿ¿Ω Subquery¿« ºˆ«‡¿Ã øµ«‚¿ª πﬁ¡ˆ æ µµ∑œ
- *    «œ±‚ ¿ß«‘¿Ã¥Ÿ.
+ *    Full Outer JoinÏùò Ï≤òÎ¶¨Ïóê Ï∞∏Ïó¨Ìï† Îïå ÏÇ¨Ïö©ÎêòÎäî Ìï®ÏàòÎ°ú
+ *    Non-Hit RecordÍ∞Ä Îçî Ïù¥ÏÉÅ ÏóÜÏùÑ Í≤ΩÏö∞, Î™®Îì† Ï†ÄÏû• RowÏùò Hit FlagÏùÑ
+ *    Ï¥àÍ∏∞ÌôîÌïúÎã§.  Ïù¥Îäî SubqueryÎì±ÏóêÏÑú Full Outer JoinÏù¥ ÏÇ¨Ïö©Îê† Îïå,
+ *    ÏµúÏ¥à ÏàòÌñâ Í≤∞Í≥ºÎ°ú Ïù∏Ìï¥ Îã§Ïùå SubqueryÏùò ÏàòÌñâÏù¥ ÏòÅÌñ•ÏùÑ Î∞õÏßÄ ÏïäÎèÑÎ°ù
+ *    ÌïòÍ∏∞ ÏúÑÌï®Ïù¥Îã§.
  *
  ***********************************************************************/
     
@@ -2474,20 +2474,20 @@ qmnHASH::searchNextNonHit( qcTemplate * /* aTemplate */,
     sIsNextTemp = ID_FALSE;
 
     // To Fix PR-8142
-    // Data æ¯¿Ω¿∏∑Œ º≥¡§«œø©æﬂ π›∫π ºˆ«‡ π◊ ø√πŸ∏• ¡æ∑·∞°
-    // ∞°¥…«œ¥Ÿ.
+    // Data ÏóÜÏùåÏúºÎ°ú ÏÑ§Ï†ïÌïòÏó¨Ïïº Î∞òÎ≥µ ÏàòÌñâ Î∞è Ïò¨Î∞îÎ•∏ Ï¢ÖÎ£åÍ∞Ä
+    // Í∞ÄÎä•ÌïòÎã§.
     sFlag &= ~QMC_ROW_DATA_MASK;
     sFlag |= QMC_ROW_DATA_NONE;
 
-    // Data∞° æ¯∞Ì, ¥ı ¿ÃªÛ¿« Temp Table¿Ã æ¯¿ª ∂ß±Ó¡ˆ ¡¯«‡
+    // DataÍ∞Ä ÏóÜÍ≥†, Îçî Ïù¥ÏÉÅÏùò Temp TableÏù¥ ÏóÜÏùÑ ÎïåÍπåÏßÄ ÏßÑÌñâ
     while ( (aDataPlan->currTempID < aCodePlan->tempTableCnt) &&
             ((sFlag & QMC_ROW_DATA_MASK) == QMC_ROW_DATA_NONE) )
     {
         sOrgRow = sSearchRow = aDataPlan->plan.myTuple->row;
 
         // BUG-34831
-        // Full outer join ø°º≠ multi-pass hash join ø° ¥Î«— ∞Ì∑¡∏¶ «ÿæﬂ «‘
-        // ¥Ÿ¿Ω temp table ¿ª ¿–±‚ ¿¸ø° cursor ∏¶ ø≠æÓæﬂ «—¥Ÿ.
+        // Full outer join ÏóêÏÑú multi-pass hash join Ïóê ÎåÄÌïú Í≥†Î†§Î•º Ìï¥Ïïº Ìï®
+        // Îã§Ïùå temp table ÏùÑ ÏùΩÍ∏∞ Ï†ÑÏóê cursor Î•º Ïó¥Ïñ¥Ïïº ÌïúÎã§.
         if ( sIsNextTemp == ID_TRUE )
         {
             IDE_TEST(
@@ -2511,7 +2511,7 @@ qmnHASH::searchNextNonHit( qcTemplate * /* aTemplate */,
 
         if ( sSearchRow == NULL )
         {
-            // ¥Ÿ¿Ω Temp Tableø° Row∞° ¡∏¿Á«“ ºˆ ¿÷¥Ÿ.
+            // Îã§Ïùå Temp TableÏóê RowÍ∞Ä Ï°¥Ïû¨Ìï† Ïàò ÏûàÎã§.
             sFlag = QMC_ROW_DATA_NONE;
             aDataPlan->currTempID++;
 
@@ -2528,7 +2528,7 @@ qmnHASH::searchNextNonHit( qcTemplate * /* aTemplate */,
         for ( i = 0; i < aCodePlan->tempTableCnt; i++ )
         {
             // To Fix BUG-8725
-            // qmcHashTemp::clear() --> qmcHashTemp::clearHitFlag() ∑Œ ∫Ø∞Ê
+            // qmcHashTemp::clear() --> qmcHashTemp::clearHitFlag() Î°ú Î≥ÄÍ≤Ω
             IDE_TEST( qmcHashTemp::clearHitFlag( & aDataPlan->hashMgr[i] )
                       != IDE_SUCCESS );
         }

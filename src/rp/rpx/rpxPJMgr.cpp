@@ -215,7 +215,7 @@ IDE_RC rpxPJMgr::allocSyncItem( rpdMetaItem * aTable )
 
 void rpxPJMgr::removeTotalSyncItems()
 {
-    /* Child ¿¡¼­ mSyncList ¸¦ »ç¿ëÇÏ°í ÀÖ±â ¶§¹®¿¡ Child °¡ Á¾·áµÇ±â Àü¿¡ ½ÇÇà½ÃÅ°¸é ¾ÈµÈ´Ù */
+    /* Child ì—ì„œ mSyncList ë¥¼ ì‚¬ìš©í•˜ê³  ìžˆê¸° ë•Œë¬¸ì— Child ê°€ ì¢…ë£Œë˜ê¸° ì „ì— ì‹¤í–‰ì‹œí‚¤ë©´ ì•ˆëœë‹¤ */
 
     rpxSyncItem * sSyncItem  = NULL;
     iduListNode * sNode      = NULL;
@@ -289,7 +289,7 @@ void rpxPJMgr::run()
     IDE_ASSERT(mMutex.lock(NULL /*idvSQL* */) == IDE_SUCCESS);
     sPos = 1;
 
-    // PJChild Áß ÇÏ³ª¶óµµ ½ÃÀÛÇßÀ¸¸é, Á¤»óÀ¸·Î Ãë±ÞÇÑ´Ù.
+    // PJChild ì¤‘ í•˜ë‚˜ë¼ë„ ì‹œìž‘í–ˆìœ¼ë©´, ì •ìƒìœ¼ë¡œ ì·¨ê¸‰í•œë‹¤.
     for(i = 0; i < mChildCount; i++)
     {
         IDU_FIT_POINT( "rpxPJMgr::run::Thread::mChildArray",
@@ -312,9 +312,9 @@ void rpxPJMgr::run()
     IDE_ASSERT(mMutex.unlock() == IDE_SUCCESS);
 
     /* ------------------------------------------------
-     * ¸ðµç ÀÛ¾÷ÀÌ ³¡³¯ ¶§ ±îÁö ´ë±â
+     * ëª¨ë“  ìž‘ì—…ì´ ëë‚  ë•Œ ê¹Œì§€ ëŒ€ê¸°
      * ----------------------------------------------*/
-    while( 1 )  // ´ë±âÇÏ´Â °÷¿¡¼­´Â ½ÇÆÐÇÏÁö ¾Ê¾Æ¾ß ÇÑ´Ù.
+    while( 1 )  // ëŒ€ê¸°í•˜ëŠ” ê³³ì—ì„œëŠ” ì‹¤íŒ¨í•˜ì§€ ì•Šì•„ì•¼ í•œë‹¤.
     {
         sEnd  = 0;
         for (i = 0; i < mChildCount; i++)
@@ -326,7 +326,7 @@ void rpxPJMgr::run()
             }
         }
 
-        if (sEnd == sStartCount) // ¸ðµÎ°¡ Á¾·áÇÑ »óÅÂÀÓ
+        if (sEnd == sStartCount) // ëª¨ë‘ê°€ ì¢…ë£Œí•œ ìƒíƒœìž„
         {
             break;
         }
@@ -352,8 +352,8 @@ void rpxPJMgr::run()
     mPJMgrExitFlag = ID_TRUE;
 
     return;
-    //ÀÌ ÇÔ¼ö´Â ¿¡·¯¸¦ ¹ÝÈ¯ÇÏÁö ¾Ê°í ¿¡·¯¸¦ ¼³Á¤ÇÒ ÇÊ¿ä°¡ ¾øÀ¸¹Ç·Î,
-    //¿¡·¯ÄÚµå¸¦ ¼³Á¤ÇÏÁö ¾Ê°í ¾Æ·¡¿Í °°ÀÌ »ç¿ëÇØµµ µÈ´Ù.
+    //ì´ í•¨ìˆ˜ëŠ” ì—ëŸ¬ë¥¼ ë°˜í™˜í•˜ì§€ ì•Šê³  ì—ëŸ¬ë¥¼ ì„¤ì •í•  í•„ìš”ê°€ ì—†ìœ¼ë¯€ë¡œ,
+    //ì—ëŸ¬ì½”ë“œë¥¼ ì„¤ì •í•˜ì§€ ì•Šê³  ì•„ëž˜ì™€ ê°™ì´ ì‚¬ìš©í•´ë„ ëœë‹¤.
     IDE_EXCEPTION( ERR_ALL_CHILD_START );
     {
         ideLog::log( IDE_RP_0, RP_TRC_PJM_ERR_ALL_CHILD_START );

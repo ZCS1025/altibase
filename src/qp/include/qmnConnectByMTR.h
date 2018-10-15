@@ -21,11 +21,11 @@
  * Description :
  *     CMTR(Connect By MaTeRialization) Node
  *
- *     °ü°èÇü ¸ğµ¨¿¡¼­ Hierarchy¸¦ À§ÇØ MaterializationÀ» ¼öÇàÇÏ´Â NodeÀÌ´Ù.
+ *     ê´€ê³„í˜• ëª¨ë¸ì—ì„œ Hierarchyë¥¼ ìœ„í•´ Materializationì„ ìˆ˜í–‰í•˜ëŠ” Nodeì´ë‹¤.
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  **********************************************************************/
 
@@ -49,15 +49,15 @@
 
 typedef struct qmncCMTR
 {
-    /* Code ¿µ¿ª °øÅë Á¤º¸ */
+    /* Code ì˜ì—­ ê³µí†µ ì •ë³´ */
     qmnPlan        plan;
     UInt           flag;
     UInt           planID;
 
-    /* CMTR °ü·Ã Á¤º¸ */
+    /* CMTR ê´€ë ¨ ì •ë³´ */
     qmcMtrNode   * myNode;
 
-    /* Data ¿µ¿ª °ü·Ã Á¤º¸ */
+    /* Data ì˜ì—­ ê´€ë ¨ ì •ë³´ */
     UInt           mtrNodeOffset;
 
     qcComponentInfo * componentInfo; // PROJ-2462 Result Cache
@@ -65,12 +65,12 @@ typedef struct qmncCMTR
 
 typedef struct qmndCMTR
 {
-    /* Data ¿µ¿ª °øÅë Á¤º¸ */
+    /* Data ì˜ì—­ ê³µí†µ ì •ë³´ */
     qmndPlan         plan;
     doItFunc         doIt;      
     UInt           * flag;      
 
-    /* CMTR °íÀ¯ Á¤º¸ */
+    /* CMTR ê³ ìœ  ì •ë³´ */
     qmdMtrNode     * mtrNode;
     qmdMtrNode    ** priorNode;
     UInt             priorCount;
@@ -86,11 +86,11 @@ class qmnCMTR
 {
 public:
 
-    /* ÃÊ±âÈ­ */
+    /* ì´ˆê¸°í™” */
     static IDE_RC init( qcTemplate * aTemplate,
                         qmnPlan    * aPlan );
 
-    /* ¼öÇà ÇÔ¼ö(È£ÃâµÇ¸é ¾ÈµÊ) */
+    /* ìˆ˜í–‰ í•¨ìˆ˜(í˜¸ì¶œë˜ë©´ ì•ˆë¨) */
     static IDE_RC doIt( qcTemplate * aTemplate,
                         qmnPlan    * aPlan,
                         qmcRowFlag * aFlag );
@@ -98,24 +98,24 @@ public:
     static IDE_RC padNull( qcTemplate * aTemplate,
                            qmnPlan    * aPlan );
 
-    /* Plan Á¤º¸ Ãâ·Â */
+    /* Plan ì •ë³´ ì¶œë ¥ */
     static IDE_RC printPlan( qcTemplate   * aTemplate,
                              qmnPlan      * aPlan,
                              ULong          aDepth,
                              iduVarString * aString,
                              qmnDisplay     aMode );
 
-    /* HIER¿¡¼­ Null Row¸¦ È¹µæÇÏ±â À§ÇØ È£Ãâ */
+    /* HIERì—ì„œ Null Rowë¥¼ íšë“í•˜ê¸° ìœ„í•´ í˜¸ì¶œ */
     static IDE_RC getNullRow( qcTemplate       * aTemplate,
                               qmnPlan          * aPlan,
                               void             * aRow );
 
-    /* HIER¿¡¼­ Row Size¸¦ È¹µæÇÏ±â À§ÇØ È£Ãâ */
+    /* HIERì—ì„œ Row Sizeë¥¼ íšë“í•˜ê¸° ìœ„í•´ í˜¸ì¶œ */
     static IDE_RC getNullRowSize( qcTemplate       * aTemplate,
                                   qmnPlan          * aPlan,
                                   UInt             * aRowSize );
 
-    /* HIER¿¡¼­ tupleÀ» È¹µæÇÏ±â À§ÇØ È£Ãâ */
+    /* HIERì—ì„œ tupleì„ íšë“í•˜ê¸° ìœ„í•´ í˜¸ì¶œ */
     static IDE_RC getTuple( qcTemplate       * aTemplate,
                             qmnPlan          * aPlan,
                             mtcTuple        ** aTuple );
@@ -131,27 +131,27 @@ public:
                                     idBool     * aResult );
 private:
 
-    /* ÃÖÃÊ ÃÊ±âÈ­ */
+    /* ìµœì´ˆ ì´ˆê¸°í™” */
     static IDE_RC firstInit( qcTemplate * aTemplate,
                              qmncCMTR   * aCodePlan,
                              qmndCMTR   * aDataPlan );
 
-    /* ÀúÀå ColumnÀÇ ÃÊ±âÈ­ */
+    /* ì €ì¥ Columnì˜ ì´ˆê¸°í™” */
     static IDE_RC initMtrNode( qcTemplate * aTemplate,
                                qmncCMTR   * aCodePlan,
                                qmndCMTR   * aDataPlan );
 
-    /* Temp TableÀÇ ÃÊ±âÈ­ */
+    /* Temp Tableì˜ ì´ˆê¸°í™” */
     static IDE_RC initTempTable( qcTemplate * aTemplate,
                                  qmncCMTR   * aCodePlan,
                                  qmndCMTR   * aDataPlan );
 
-    /* ChildÀÇ ¼öÇà °á°ú¸¦ ÀúÀå */
+    /* Childì˜ ìˆ˜í–‰ ê²°ê³¼ë¥¼ ì €ì¥ */
     static IDE_RC storeChild( qcTemplate * aTemplate,
                               qmncCMTR   * aCodePlan,
                               qmndCMTR   * aDataPlan );
 
-    /* ÀúÀå Row¸¦ ±¸¼º */
+    /* ì €ì¥ Rowë¥¼ êµ¬ì„± */
     static IDE_RC setMtrRow( qcTemplate * aTemplate,
                              qmndCMTR   * aDataPlan );
 };

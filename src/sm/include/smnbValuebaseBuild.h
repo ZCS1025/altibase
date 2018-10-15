@@ -47,7 +47,7 @@ public:
                               smnGetPageFunc    aGetPageFunc,
                               smnGetRowFunc     aGetRowFunc );
 
-    /* ¾²·¹µå ÃÊ±âÈ­ */
+    /* ì“°ë ˆë“œ ì´ˆê¸°í™” */
     IDE_RC initialize( void            * aTrans,
                        smcTableHeader  * aTable,
                        smnIndexHeader  * aIndex,
@@ -62,7 +62,7 @@ public:
                        smnGetPageFunc    aGetPageFunc,
                        smnGetRowFunc     aGetRowFunc );
 
-    /* BUG-27403 ¾²·¹µå Á¤¸® */
+    /* BUG-27403 ì“°ë ˆë“œ ì •ë¦¬ */
     IDE_RC destroy( );
 
     void run();
@@ -88,8 +88,8 @@ private:
     smnbBuildRun       * mFstRun;
     smnbBuildRun       * mLstRun;
 
-    smnbBuildRun       * mFstFreeRun; // run Àç»ç¿ë : Ã¹¹øÂ° freeNode
-    smnbBuildRun       * mLstFreeRun; // run Àç»ç¿ë : ¸¶Áö¸· freeNode
+    smnbBuildRun       * mFstFreeRun; // run ìž¬ì‚¬ìš© : ì²«ë²ˆì§¸ freeNode
+    smnbBuildRun       * mLstFreeRun; // run ìž¬ì‚¬ìš© : ë§ˆì§€ë§‰ freeNode
     
     idBool               mIsNeedValidation;
     idBool               mIsUnique;

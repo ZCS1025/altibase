@@ -60,8 +60,8 @@ IDE_RC qmoUtil::printPredInPlan(qcTemplate   * aTemplate,
     IDU_FIT_POINT_FATAL( "qmoUtil::printPredInPlan::__FT__" );
 
     // To Fix PR-9044
-    // Transform µîÀ¸·Î ÀÎÇØ PredicateÁ¤º¸¸¦ Ãâ·ÂÇÒ ¼ö ¾ø´Â °æ¿ì°¡
-    // ÀÖÀ¸¹Ç·Î, ¾Æ¹«°Íµµ Ãâ·ÂÇÏÁö ¾Ê´Â´Ù.
+    // Transform ë“±ìœ¼ë¡œ ì¸í•´ Predicateì •ë³´ë¥¼ ì¶œë ¥í•  ìˆ˜ ì—†ëŠ” ê²½ìš°ê°€
+    // ìžˆìœ¼ë¯€ë¡œ, ì•„ë¬´ê²ƒë„ ì¶œë ¥í•˜ì§€ ì•ŠëŠ”ë‹¤.
 
     if ( ( aNode->node.lflag &
          ( MTC_NODE_LOGICAL_CONDITION_MASK | MTC_NODE_OPERATOR_MASK ) )
@@ -95,7 +95,7 @@ IDE_RC qmoUtil::printPredInPlan(qcTemplate   * aTemplate,
                   != IDE_SUCCESS );
             
         // PROJ-1404
-        // Transitive PredicateÀÎ °æ¿ì Ç¥½ÃÇÑ´Ù.
+        // Transitive Predicateì¸ ê²½ìš° í‘œì‹œí•œë‹¤.
         if ( (aNode->lflag & QTC_NODE_TRANS_PRED_MASK)
              == QTC_NODE_TRANS_PRED_EXIST )
         {
@@ -186,7 +186,7 @@ IDE_RC qmoUtil::unparseFrom( qcTemplate   * aTemplate,
 
                 if ( QC_IS_NAME_MATCHED( aFrom->tableRef->tableName, aFrom->tableRef->aliasName ) )
                 {
-                    // TableÀÌ¸§°ú alias°¡ µ¿ÀÏÇÑ °æ¿ì alias´Â Ãâ·ÂÇÏÁö ¾Ê´Â´Ù.
+                    // Tableì´ë¦„ê³¼ aliasê°€ ë™ì¼í•œ ê²½ìš° aliasëŠ” ì¶œë ¥í•˜ì§€ ì•ŠëŠ”ë‹¤.
                     sUnparseAlias = ID_FALSE;
                 }
                 else
@@ -564,7 +564,7 @@ IDE_RC qmoUtil::unparseQuerySet( qcTemplate   * aTemplate,
             // Nothing to do.
         }
 
-        // Subquery¿¡´Â ORDER BY°¡ Á¸ÀçÇÏÁö ¾Ê´Â´Ù.
+        // Subqueryì—ëŠ” ORDER BYê°€ ì¡´ìž¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
 
         if( aQuerySet->SFWGH->hierarchy != NULL )
         {
@@ -697,7 +697,7 @@ IDE_RC qmoUtil::unparseStatement( qcTemplate   * aTemplate,
  *
  * Description :
  *     PROJ-1718 Subquery unnesting
- *     AST¸¦ unparsingÇÏ¿© SQL±¸¹®À» »ý¼ºÇÑ´Ù.
+ *     ASTë¥¼ unparsingí•˜ì—¬ SQLêµ¬ë¬¸ì„ ìƒì„±í•œë‹¤.
  *
  * Implementation :
  *
@@ -903,7 +903,7 @@ IDE_RC qmoUtil::printExpressionInPlan(qcTemplate   * aTemplate,
                         }
 
                         /* BUG-31570
-                         * DDLÀÌ ºó¹øÇÑ È¯°æ¿¡¼­ plan text¸¦ ¾ÈÀüÇÏ°Ô º¸¿©ÁÖ´Â ¹æ¹ýÀÌ ÇÊ¿äÇÏ´Ù.
+                         * DDLì´ ë¹ˆë²ˆí•œ í™˜ê²½ì—ì„œ plan textë¥¼ ì•ˆì „í•˜ê²Œ ë³´ì—¬ì£¼ëŠ” ë°©ë²•ì´ í•„ìš”í•˜ë‹¤.
                          */
                         IDE_DASSERT( sTableRef->columnsName != NULL );
 
@@ -916,7 +916,7 @@ IDE_RC qmoUtil::printExpressionInPlan(qcTemplate   * aTemplate,
                 {
                     if ( QC_IS_NULL_NAME( aNode->position ) == ID_FALSE )
                     {
-                        // prior Ãâ·Â
+                        // prior ì¶œë ¥
                         if ( ( aNode->lflag & QTC_NODE_PRIOR_MASK )
                              == QTC_NODE_PRIOR_EXIST )
                         {
@@ -940,7 +940,7 @@ IDE_RC qmoUtil::printExpressionInPlan(qcTemplate   * aTemplate,
                     {
                         if ( QC_IS_NULL_NAME( aNode->columnName ) == ID_FALSE )
                         {
-                            // prior Ãâ·Â
+                            // prior ì¶œë ¥
                             if ( ( aNode->lflag & QTC_NODE_PRIOR_MASK )
                                  == QTC_NODE_PRIOR_EXIST )
                             {
@@ -1010,8 +1010,8 @@ IDE_RC qmoUtil::printExpressionInPlan(qcTemplate   * aTemplate,
             }
             else if ( aNode->node.module == & qtc::valueModule )
             {
-                // »ó¼ö·Î º¯È¯µÇ±â ÀüÀÇ »ó¼ö expressionÀ» Ãâ·ÂÇÑ´Ù.
-                // PROJ-1718 ¶Ç´Â VIEW operator°¡ »ý¼ºµÈ °æ¿ì ¿ø·¡ expressionÀ» Ãâ·ÂÇÑ´Ù.
+                // ìƒìˆ˜ë¡œ ë³€í™˜ë˜ê¸° ì „ì˜ ìƒìˆ˜ expressionì„ ì¶œë ¥í•œë‹¤.
+                // PROJ-1718 ë˜ëŠ” VIEW operatorê°€ ìƒì„±ëœ ê²½ìš° ì›ëž˜ expressionì„ ì¶œë ¥í•œë‹¤.
                 if ( aNode->node.orgNode != NULL )
                 {
                     IDE_DASSERT( aNode->node.orgNode != NULL );
@@ -1026,8 +1026,8 @@ IDE_RC qmoUtil::printExpressionInPlan(qcTemplate   * aTemplate,
                 else if( QTC_IS_AGGREGATE( aNode ) == ID_TRUE )
                 {
                     // PROJ-2179
-                    // Aggregate functionÀÌ materializeµÈ ÈÄ value module·Î
-                    // º¯°æµÈ °æ¿ì¿¡µµ ¿Ã¹Ù¸£°Ô °á°ú¸¦ Ãâ·ÂÇØÁÖµµ·Ï ÇÑ´Ù.
+                    // Aggregate functionì´ materializeëœ í›„ value moduleë¡œ
+                    // ë³€ê²½ëœ ê²½ìš°ì—ë„ ì˜¬ë°”ë¥´ê²Œ ê²°ê³¼ë¥¼ ì¶œë ¥í•´ì£¼ë„ë¡ í•œë‹¤.
 
                     IDE_DASSERT( aNode->columnName.stmtText != NULL );
                     
@@ -1170,7 +1170,7 @@ IDE_RC qmoUtil::printExpressionInPlan(qcTemplate   * aTemplate,
             }
             else if ( aNode->node.module == & qtc::passModule )
             {
-                // indirect node°¡ ¾Æ´Ñ conversionÀ» À§ÇÑ passNode°¡ ÀÖ´Ù.
+                // indirect nodeê°€ ì•„ë‹Œ conversionì„ ìœ„í•œ passNodeê°€ ìžˆë‹¤.
                 
                 // print expression
                 IDE_TEST( printExpressionInPlan( aTemplate,
@@ -1208,7 +1208,7 @@ IDE_RC qmoUtil::printExpressionInPlan(qcTemplate   * aTemplate,
         }
 
         // PROJ-2179
-        // Analytic functionÀÇ OVERÀý ¹× ANALYTICÀýÀ» Ãâ·ÂÇÑ´Ù.
+        // Analytic functionì˜ OVERì ˆ ë° ANALYTICì ˆì„ ì¶œë ¥í•œë‹¤.
         if ( aNode->overClause != NULL )
         {
             iduVarStringAppend( aString,
@@ -1354,7 +1354,7 @@ IDE_RC qmoUtil::printNodeFormat(qcTemplate   * aTemplate,
         iduVarStringAppend( aString,
                             "(" );
         
-        // distinct Ãâ·Â
+        // distinct ì¶œë ¥
         if ( ( aNode->node.lflag & MTC_NODE_DISTINCT_MASK )
              == MTC_NODE_DISTINCT_TRUE )
         {
@@ -1472,8 +1472,8 @@ IDE_RC qmoUtil::printNodeFormat(qcTemplate   * aTemplate,
         // left
         sArgNode = (qtcNode *)aNode->node.arguments;
 
-        // ºñ±³¿¬»êÀÚ°¡ ÁßÃ¸µÇ´Â °æ¿ì °ýÈ£¸¦ Ãß°¡ÇØ¾ß ÇÑ´Ù.
-        // ÇÏÀ§ ³ëµå°¡ indirect node³ª »ó¼öÈ­µÈ ³ëµåÀÏ ¼ö ÀÖÀ¸¹Ç·Î flag¸¦ ³»¸°´Ù.
+        // ë¹„êµì—°ì‚°ìžê°€ ì¤‘ì²©ë˜ëŠ” ê²½ìš° ê´„í˜¸ë¥¼ ì¶”ê°€í•´ì•¼ í•œë‹¤.
+        // í•˜ìœ„ ë…¸ë“œê°€ indirect nodeë‚˜ ìƒìˆ˜í™”ëœ ë…¸ë“œì¼ ìˆ˜ ìžˆìœ¼ë¯€ë¡œ flagë¥¼ ë‚´ë¦°ë‹¤.
         // ex) (1=1) = (2=2)
         IDE_TEST( printExpressionInPlan( aTemplate,
                                          aString,
@@ -1494,7 +1494,7 @@ IDE_RC qmoUtil::printNodeFormat(qcTemplate   * aTemplate,
         // right
         sArgNode = (qtcNode *)sArgNode->node.next;
         
-        // ºñ±³¿¬»êÀÚ°¡ ÁßÃ¸µÇ´Â °æ¿ì °ýÈ£¸¦ Ãß°¡ÇØ¾ß ÇÑ´Ù.
+        // ë¹„êµì—°ì‚°ìžê°€ ì¤‘ì²©ë˜ëŠ” ê²½ìš° ê´„í˜¸ë¥¼ ì¶”ê°€í•´ì•¼ í•œë‹¤.
         IDE_TEST( printExpressionInPlan( aTemplate,
                                          aString,
                                          sArgNode,
@@ -1615,7 +1615,7 @@ IDE_RC qmoUtil::printNodeFormat(qcTemplate   * aTemplate,
             iduVarStringAppend( aString,
                                 "(" );
             
-            // distinct Ãâ·Â
+            // distinct ì¶œë ¥
             if ( ( aNode->node.lflag & MTC_NODE_DISTINCT_MASK )
                  == MTC_NODE_DISTINCT_TRUE )
             {
@@ -1827,7 +1827,7 @@ IDE_RC qmoUtil::printNodeFormat(qcTemplate   * aTemplate,
                 (aNode->node.lflag & MTC_NODE_ARGUMENT_COUNT_MASK) == 1 );
             
             // BUG-19180
-            // »óÀ§ ³ëµå°¡ minusÀÌ¸é °ýÈ£¸¦ Ãß°¡ÇÑ´Ù.
+            // ìƒìœ„ ë…¸ë“œê°€ minusì´ë©´ ê´„í˜¸ë¥¼ ì¶”ê°€í•œë‹¤.
             if ( ( aParenthesisFlag & QMO_PRINT_UPPER_NODE_MASK )
                    == QMO_PRINT_UPPER_NODE_MINUS )
             {
@@ -1869,8 +1869,8 @@ IDE_RC qmoUtil::printNodeFormat(qcTemplate   * aTemplate,
                 (aNode->node.lflag & MTC_NODE_ARGUMENT_COUNT_MASK) == 2 );
 
             // BUG-19180
-            // »óÀ§ ³ëµå°¡ minusÀÌ°Å³ª
-            // »óÀ§ ³ëµå°¡ '/'ÀÇ ¿À¸¥ÂÊ ³ëµå¸é °ýÈ£¸¦ Ãß°¡ÇÑ´Ù.
+            // ìƒìœ„ ë…¸ë“œê°€ minusì´ê±°ë‚˜
+            // ìƒìœ„ ë…¸ë“œê°€ '/'ì˜ ì˜¤ë¥¸ìª½ ë…¸ë“œë©´ ê´„í˜¸ë¥¼ ì¶”ê°€í•œë‹¤.
             if ( ( ( aParenthesisFlag & QMO_PRINT_UPPER_NODE_MASK )
                    == QMO_PRINT_UPPER_NODE_MINUS )
                  ||
@@ -1894,8 +1894,8 @@ IDE_RC qmoUtil::printNodeFormat(qcTemplate   * aTemplate,
             sArgNode = (qtcNode *)aNode->node.arguments;
 
             // BUG-19180
-            // '*'³ª '/'ÀÇ ÀÎÀÚ·Î '+'³ª '-'°¡ ¿À´Â °æ¿ì °ýÈ£¸¦ Ãß°¡ÇØ¾ß ÇÑ´Ù.
-            // ÇÏÀ§ ³ëµå°¡ indirect node³ª »ó¼öÈ­µÈ ³ëµåÀÏ ¼ö ÀÖÀ¸¹Ç·Î flag¸¦ ³»¸°´Ù.
+            // '*'ë‚˜ '/'ì˜ ì¸ìžë¡œ '+'ë‚˜ '-'ê°€ ì˜¤ëŠ” ê²½ìš° ê´„í˜¸ë¥¼ ì¶”ê°€í•´ì•¼ í•œë‹¤.
+            // í•˜ìœ„ ë…¸ë“œê°€ indirect nodeë‚˜ ìƒìˆ˜í™”ëœ ë…¸ë“œì¼ ìˆ˜ ìžˆìœ¼ë¯€ë¡œ flagë¥¼ ë‚´ë¦°ë‹¤.
             IDE_TEST( printExpressionInPlan( aTemplate,
                                              aString,
                                              sArgNode,
@@ -1947,8 +1947,8 @@ IDE_RC qmoUtil::printNodeFormat(qcTemplate   * aTemplate,
                 (aNode->node.lflag & MTC_NODE_ARGUMENT_COUNT_MASK) == 2 );
 
             // BUG-19180
-            // »óÀ§ ³ëµå°¡ minusÀÌ°Å³ª
-            // »óÀ§ ³ëµå°¡ '/'ÀÇ ¿À¸¥ÂÊ ³ëµå¸é °ýÈ£¸¦ Ãß°¡ÇÑ´Ù.
+            // ìƒìœ„ ë…¸ë“œê°€ minusì´ê±°ë‚˜
+            // ìƒìœ„ ë…¸ë“œê°€ '/'ì˜ ì˜¤ë¥¸ìª½ ë…¸ë“œë©´ ê´„í˜¸ë¥¼ ì¶”ê°€í•œë‹¤.
             if ( ( ( aParenthesisFlag & QMO_PRINT_UPPER_NODE_MASK )
                    == QMO_PRINT_UPPER_NODE_MINUS )
                  ||
@@ -1972,8 +1972,8 @@ IDE_RC qmoUtil::printNodeFormat(qcTemplate   * aTemplate,
             sArgNode = (qtcNode *)aNode->node.arguments;
 
             // BUG-19180
-            // '*'³ª '/'ÀÇ ÀÎÀÚ·Î '+'³ª '-'°¡ ¿À´Â °æ¿ì °ýÈ£¸¦ Ãß°¡ÇØ¾ß ÇÑ´Ù.
-            // ÇÏÀ§ ³ëµå°¡ indirect node³ª »ó¼öÈ­µÈ ³ëµåÀÏ ¼ö ÀÖÀ¸¹Ç·Î flag¸¦ ³»¸°´Ù.
+            // '*'ë‚˜ '/'ì˜ ì¸ìžë¡œ '+'ë‚˜ '-'ê°€ ì˜¤ëŠ” ê²½ìš° ê´„í˜¸ë¥¼ ì¶”ê°€í•´ì•¼ í•œë‹¤.
+            // í•˜ìœ„ ë…¸ë“œê°€ indirect nodeë‚˜ ìƒìˆ˜í™”ëœ ë…¸ë“œì¼ ìˆ˜ ìžˆìœ¼ë¯€ë¡œ flagë¥¼ ë‚´ë¦°ë‹¤.
             IDE_TEST( printExpressionInPlan( aTemplate,
                                              aString,
                                              sArgNode,
@@ -2024,9 +2024,9 @@ IDE_RC qmoUtil::printNodeFormat(qcTemplate   * aTemplate,
             IDE_DASSERT(
                 (aNode->node.lflag & MTC_NODE_ARGUMENT_COUNT_MASK) == 2 );
 
-            // »óÀ§ ³ëµå°¡ minusÀÌ°Å³ª
-            // »óÀ§ ³ëµå°¡ '*','/'ÀÌ°Å³ª
-            // »óÀ§ ³ëµå°¡ '-'ÀÇ ¿À¸¥ÂÊ ³ëµå¶ó¸é °ýÈ£¸¦ Ãß°¡ÇÑ´Ù.
+            // ìƒìœ„ ë…¸ë“œê°€ minusì´ê±°ë‚˜
+            // ìƒìœ„ ë…¸ë“œê°€ '*','/'ì´ê±°ë‚˜
+            // ìƒìœ„ ë…¸ë“œê°€ '-'ì˜ ì˜¤ë¥¸ìª½ ë…¸ë“œë¼ë©´ ê´„í˜¸ë¥¼ ì¶”ê°€í•œë‹¤.
             if ( ( ( aParenthesisFlag & QMO_PRINT_UPPER_NODE_MASK )
                    == QMO_PRINT_UPPER_NODE_MINUS )
                  ||
@@ -2112,9 +2112,9 @@ IDE_RC qmoUtil::printNodeFormat(qcTemplate   * aTemplate,
             IDE_DASSERT(
                 (aNode->node.lflag & MTC_NODE_ARGUMENT_COUNT_MASK) == 2 );
 
-            // »óÀ§ ³ëµå°¡ minusÀÌ°Å³ª
-            // »óÀ§ ³ëµå°¡ '*','/'ÀÌ°Å³ª
-            // »óÀ§ ³ëµå°¡ '-'ÀÇ ¿À¸¥ÂÊ ³ëµå¶ó¸é °ýÈ£¸¦ Ãß°¡ÇÑ´Ù.
+            // ìƒìœ„ ë…¸ë“œê°€ minusì´ê±°ë‚˜
+            // ìƒìœ„ ë…¸ë“œê°€ '*','/'ì´ê±°ë‚˜
+            // ìƒìœ„ ë…¸ë“œê°€ '-'ì˜ ì˜¤ë¥¸ìª½ ë…¸ë“œë¼ë©´ ê´„í˜¸ë¥¼ ì¶”ê°€í•œë‹¤.
             if ( ( ( aParenthesisFlag & QMO_PRINT_UPPER_NODE_MASK )
                    == QMO_PRINT_UPPER_NODE_MINUS )
                  ||

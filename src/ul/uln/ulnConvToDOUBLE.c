@@ -44,9 +44,9 @@ ACI_RC ulncCHAR_DOUBLE(ulnFnContext  *aFnContext,
                    LABEL_OUT_OF_RANGE);
 
     /*
-     * BUGBUG : fractional truncation À» Ã¼Å©ÇÏ·Á¸é numeric µîÀ¸·Î º¯È¯À» ÇØ¾ß ÇÏ´Âµ¥,
-     *          ÀÏ´ÜÀº Æ÷±âÇÏÀÚ. ´ÙÀ½¿¡ ½Ã°£ÀÌ µÇ¸é
-     *          strtod ÇÔ¼ö¸¦ Á÷Á¢ ¸¸µé¾î¼­ ±× ÇÔ¼ö¿¡¼­ Ã¼Å©ÇÏµµ·Ï ÇØ¾ß ÇÏ°Ú´Ù.
+     * BUGBUG : fractional truncation ì„ ì²´í¬í•˜ë ¤ë©´ numeric ë“±ìœ¼ë¡œ ë³€í™˜ì„ í•´ì•¼ í•˜ëŠ”ë°,
+     *          ì¼ë‹¨ì€ í¬ê¸°í•˜ìž. ë‹¤ìŒì— ì‹œê°„ì´ ë˜ë©´
+     *          strtod í•¨ìˆ˜ë¥¼ ì§ì ‘ ë§Œë“¤ì–´ì„œ ê·¸ í•¨ìˆ˜ì—ì„œ ì²´í¬í•˜ë„ë¡ í•´ì•¼ í•˜ê² ë‹¤.
      */
     *(acp_double_t *)aAppBuffer->mBuffer = sDoubleValue;
 
@@ -144,7 +144,7 @@ ACI_RC ulncSMALLINT_DOUBLE(ulnFnContext  *aFnContext,
         /*
          * 01s07
          *
-         * BUGBUG : out of range ¸¦ ³»¾î Áà¾ß ÇÒÁö, fractional truncation À» Áà¾ß ÇÒÁö..
+         * BUGBUG : out of range ë¥¼ ë‚´ì–´ ì¤˜ì•¼ í• ì§€, fractional truncation ì„ ì¤˜ì•¼ í• ì§€..
          */
         ulnErrorExtended(aFnContext,
                          aRowNumber,
@@ -180,7 +180,7 @@ ACI_RC ulncINTEGER_DOUBLE(ulnFnContext  *aFnContext,
         /*
          * 01s07
          *
-         * BUGBUG : out of range ¸¦ ³»¾î Áà¾ß ÇÒÁö, fractional truncation À» Áà¾ß ÇÒÁö..
+         * BUGBUG : out of range ë¥¼ ë‚´ì–´ ì¤˜ì•¼ í• ì§€, fractional truncation ì„ ì¤˜ì•¼ í• ì§€..
          */
         ulnErrorExtended(aFnContext,
                          aRowNumber,
@@ -216,7 +216,7 @@ ACI_RC ulncBIGINT_DOUBLE(ulnFnContext  *aFnContext,
         /*
          * 01s07
          *
-         * BUGBUG : out of range ¸¦ ³»¾î Áà¾ß ÇÒÁö, fractional truncation À» Áà¾ß ÇÒÁö..
+         * BUGBUG : out of range ë¥¼ ë‚´ì–´ ì¤˜ì•¼ í• ì§€, fractional truncation ì„ ì¤˜ì•¼ í• ì§€..
          */
         ulnErrorExtended(aFnContext,
                          aRowNumber,
@@ -279,7 +279,7 @@ ACI_RC ulncINTERVAL_DOUBLE(ulnFnContext  *aFnContext,
                            acp_uint16_t   aRowNumber)
 {
     // BUG-21348
-    // INTERVAL Å¸ÀÔÀ» DOUBLE·Î ÄÁ¹öÀüÇÏ´Â ÇÔ¼ö°¡ ±¸ÇöµÇ¾î ÀÖÁö ¾Ê¾ÒÀ½
+    // INTERVAL íƒ€ìž…ì„ DOUBLEë¡œ ì»¨ë²„ì „í•˜ëŠ” í•¨ìˆ˜ê°€ êµ¬í˜„ë˜ì–´ ìžˆì§€ ì•Šì•˜ìŒ
     cmtInterval  *sCmInterval;
     acp_double_t  sDoubleValue;
 
@@ -366,9 +366,9 @@ ACI_RC ulncNCHAR_DOUBLE(ulnFnContext  *aFnContext,
                    LABEL_OUT_OF_RANGE);
 
     /*
-     * BUGBUG : fractional truncation À» Ã¼Å©ÇÏ·Á¸é numeric µîÀ¸·Î º¯È¯À» ÇØ¾ß ÇÏ´Âµ¥,
-     *          ÀÏ´ÜÀº Æ÷±âÇÏÀÚ. ´ÙÀ½¿¡ ½Ã°£ÀÌ µÇ¸é
-     *          strtod ÇÔ¼ö¸¦ Á÷Á¢ ¸¸µé¾î¼­ ±× ÇÔ¼ö¿¡¼­ Ã¼Å©ÇÏµµ·Ï ÇØ¾ß ÇÏ°Ú´Ù.
+     * BUGBUG : fractional truncation ì„ ì²´í¬í•˜ë ¤ë©´ numeric ë“±ìœ¼ë¡œ ë³€í™˜ì„ í•´ì•¼ í•˜ëŠ”ë°,
+     *          ì¼ë‹¨ì€ í¬ê¸°í•˜ìž. ë‹¤ìŒì— ì‹œê°„ì´ ë˜ë©´
+     *          strtod í•¨ìˆ˜ë¥¼ ì§ì ‘ ë§Œë“¤ì–´ì„œ ê·¸ í•¨ìˆ˜ì—ì„œ ì²´í¬í•˜ë„ë¡ í•´ì•¼ í•˜ê² ë‹¤.
      */
     *(acp_double_t *)aAppBuffer->mBuffer = sDoubleValue;
 

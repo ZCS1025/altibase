@@ -76,7 +76,7 @@ static IDE_RC mtvEstimate( mtcNode*     aNode,
 
     aTemplate->rows[aNode->table].execute[aNode->column] = mtvExecute;
 
-    /* BUG-36429 LOB Column¿¡ ´ëÇØ¼­´Â ÃÖ´ë PrecisionÀ» ÇÒ´çÇÑ´Ù. */
+    /* BUG-36429 LOB Columnì— ëŒ€í•´ì„œëŠ” ìµœëŒ€ Precisionì„ í• ë‹¹í•œë‹¤. */
     if ( aStack[1].column->precision != 0 )
     {
         sPrecision = IDL_MIN( aStack[1].column->precision,
@@ -130,12 +130,12 @@ IDE_RC mtvCalculate_Clob2Varchar( mtcNode*     aNode,
 
     sLanguage = aStack[0].column->language;
 
-    // convert4Server´Â valueÇü¸¸À» Ã³¸®ÇÒ ¼ö ÀÖ¾î aNode°¡ NULLÀÌ´Ù.
+    // convert4ServerëŠ” valueí˜•ë§Œì„ ì²˜ë¦¬í•  ìˆ˜ ìˆì–´ aNodeê°€ NULLì´ë‹¤.
     if ( aNode != NULL )
     {
         if ( aTemplate->isBaseTable( aTemplate, aNode->baseTable ) == ID_TRUE )
         {
-            // clob columnÀÎ °æ¿ì
+            // clob columnì¸ ê²½ìš°
             sIsClobColumn = ID_TRUE;
         }
         else
@@ -151,7 +151,7 @@ IDE_RC mtvCalculate_Clob2Varchar( mtcNode*     aNode,
     if ( sIsClobColumn == ID_TRUE )
     {
         // PROJ-1362
-        // Lob Locator¸¦ ¾ò´Âµ¥ ÇÊ¿äÇÑ Ä¿¼­Á¤º¸¸¦ °¡Á®¿Â´Ù.
+        // Lob Locatorë¥¼ ì–»ëŠ”ë° í•„ìš”í•œ ì»¤ì„œì •ë³´ë¥¼ ê°€ì ¸ì˜¨ë‹¤.
         IDE_TEST( aTemplate->getOpenedCursor( aTemplate,
                                               aNode->baseTable,
                                               & sCursor,
@@ -215,12 +215,12 @@ IDE_RC mtvCalculate_Clob2Varchar( mtcNode*     aNode,
         else
         {
             // BUG-38842
-            // clob to varchar conversion½Ã ÁöÁ¤ÇÑ ±æÀÌ¸¸Å­¸¸ º¯È¯ÇÑ´Ù.
+            // clob to varchar conversionì‹œ ì§€ì •í•œ ê¸¸ì´ë§Œí¼ë§Œ ë³€í™˜í•œë‹¤.
             if ( MTU_CLOB_TO_VARCHAR_PRECISION < sLobLength )
             {
                 sLobLength = MTU_CLOB_TO_VARCHAR_PRECISION;
 
-                // ¹®ÀÚ°¡ Â©¸± ¼ö ÀÖ´Ù.
+                // ë¬¸ìê°€ ì§¤ë¦´ ìˆ˜ ìˆë‹¤.
                 sTruncated = ID_TRUE;
             }
             else
@@ -277,12 +277,12 @@ IDE_RC mtvCalculate_Clob2Varchar( mtcNode*     aNode,
             sLobLength = sClobValue->length;
             
             // BUG-38842
-            // clob to varchar conversion½Ã ÁöÁ¤ÇÑ ±æÀÌ¸¸Å­¸¸ º¯È¯ÇÑ´Ù.
+            // clob to varchar conversionì‹œ ì§€ì •í•œ ê¸¸ì´ë§Œí¼ë§Œ ë³€í™˜í•œë‹¤.
             if ( MTU_CLOB_TO_VARCHAR_PRECISION < sLobLength )
             {
                 sLobLength = MTU_CLOB_TO_VARCHAR_PRECISION;
 
-                // ¹®ÀÚ°¡ Â©¸± ¼ö ÀÖ´Ù.
+                // ë¬¸ìê°€ ì§¤ë¦´ ìˆ˜ ìˆë‹¤.
                 sTruncated = ID_TRUE;
             }
             else

@@ -26,9 +26,9 @@ public:
     IDE_RC destroy   (void);
 
     /*
-     * ÃÊ±âÈ­½Ã ¸í½ÃµÈ wait eventÀÇ wait timeÀ» ÃøÁ¤ÇÏ·Á¸é
-     * Session Åë°èÀÚ·á±¸Á¶ÀÎ idvSQL¸¦ ÀÎÀÚ·Î Àü´ŞÇØ¾ßÇÑ´Ù.
-     * TIMED_STATISTICS ÇÁ·ÎÆÛÆ¼°¡ 1 ÀÌ¾î¾ß ÃøÁ¤µÈ´Ù.
+     * ì´ˆê¸°í™”ì‹œ ëª…ì‹œëœ wait eventì˜ wait timeì„ ì¸¡ì •í•˜ë ¤ë©´
+     * Session í†µê³„ìë£Œêµ¬ì¡°ì¸ idvSQLë¥¼ ì¸ìë¡œ ì „ë‹¬í•´ì•¼í•œë‹¤.
+     * TIMED_STATISTICS í”„ë¡œí¼í‹°ê°€ 1 ì´ì–´ì•¼ ì¸¡ì •ëœë‹¤.
      */
     IDE_RC tryLockRead(idBool*  aSuccess);
     IDE_RC tryLockWrite(idBool* aSuccess);
@@ -39,7 +39,7 @@ public:
     inline IDE_RC unlock(UInt,void*) {return unlock();}
 
     /*
-     * Get, Miss Count, Thread ID °¡Á®¿À±â
+     * Get, Miss Count, Thread ID ê°€ì ¸ì˜¤ê¸°
      */
     inline ULong getReadCount()     {return mLatch->mGetReadCount;  }
     inline ULong getWriteCount()    {return mLatch->mGetWriteCount; }
@@ -128,8 +128,8 @@ inline iduLatchMode iduLatch::getLatchMode()
 }
 
 /* --------------------------------------------------------------------
- * 2°³ÀÇ latch°¡ °°Àº Áö ºñ±³ÇÑ´Ù.
- * sdrMiniTrans¿¡¼­ ½ºÅÃ¿¡ ÀÖ´Â Æ¯Á¤ ¾ÆÀÌÅÛÀ» Ã£À» ¶§ »ç¿ëµÈ´Ù.
+ * 2ê°œì˜ latchê°€ ê°™ì€ ì§€ ë¹„êµí•œë‹¤.
+ * sdrMiniTransì—ì„œ ìŠ¤íƒì— ìˆëŠ” íŠ¹ì • ì•„ì´í…œì„ ì°¾ì„ ë•Œ ì‚¬ìš©ëœë‹¤.
  * ----------------------------------------------------------------- */
 inline idBool iduLatch::isLatchSame( void *aLhs, void *aRhs )
 {

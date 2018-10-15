@@ -46,19 +46,19 @@ IDE_RC qcmDictionary::selectDicSmOID( qcTemplate     * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    Dictionary table ¿¡¼­ smOID ¸¦ ±¸ÇÑ´Ù.
+ *    Dictionary table ì—ì„œ smOID ë¥¼ êµ¬í•œë‹¤.
  *
  * Implementation :
  *
- *    1. Dictionary table °Ë»öÀ» À§ÇØ range ¸¦ »ı¼ºÇÑ´Ù.
- *    2. Ä¿¼­¸¦ ¿¬´Ù.
- *       Dictionary table Àº ÄÃ·³ÀÌ 1°³»ÓÀÎ Æ¯º°ÇÑ Å×ÀÌºíÀÌ¹Ç·Î 1°³Â¥¸® smiColumnList ¸¦ »ç¿ëÇÑ´Ù.
- *    3. Á¶°Ç¿¡ ¸Â´Â row ÀÇ scGRID ¸¦ ¾ò´Â´Ù.
- *    4. scGRID ¿¡¼­ smOID ¸¦ ¾ò´Â´Ù.
+ *    1. Dictionary table ê²€ìƒ‰ì„ ìœ„í•´ range ë¥¼ ìƒì„±í•œë‹¤.
+ *    2. ì»¤ì„œë¥¼ ì—°ë‹¤.
+ *       Dictionary table ì€ ì»¬ëŸ¼ì´ 1ê°œë¿ì¸ íŠ¹ë³„í•œ í…Œì´ë¸”ì´ë¯€ë¡œ 1ê°œì§œë¦¬ smiColumnList ë¥¼ ì‚¬ìš©í•œë‹¤.
+ *    3. ì¡°ê±´ì— ë§ëŠ” row ì˜ scGRID ë¥¼ ì–»ëŠ”ë‹¤.
+ *    4. scGRID ì—ì„œ smOID ë¥¼ ì–»ëŠ”ë‹¤.
  *
  *    PROJ-2264
- *    ÀÌ ÇÔ¼ö´Â dictionary table ¿¡ ´ëÇÑ Ã³¸®ÀÌ¹Ç·Î
- *    fetch column list¸¦ ±¸¼ºÇÏÁö ¾Ê´Â´Ù.
+ *    ì´ í•¨ìˆ˜ëŠ” dictionary table ì— ëŒ€í•œ ì²˜ë¦¬ì´ë¯€ë¡œ
+ *    fetch column listë¥¼ êµ¬ì„±í•˜ì§€ ì•ŠëŠ”ë‹¤.
  *
  ***********************************************************************/
 
@@ -69,7 +69,7 @@ IDE_RC qcmDictionary::selectDicSmOID( qcTemplate     * aTemplate,
 
     mtcColumn         * sColumn;
     smiColumnList       sColumnList[QCM_MAX_META_COLUMNS];
-    scGRID              sRid; // Disk TableÀ» À§ÇÑ Record IDentifier
+    scGRID              sRid; // Disk Tableì„ ìœ„í•œ Record IDentifier
     smiCursorProperties sCursorProperty;
     UInt                sIndexType;
 
@@ -177,20 +177,20 @@ IDE_RC qcmDictionary::recreateDictionaryTable( qcStatement           * aStatemen
     // create new dictionary tables
     for( sColumn = aColumn; sColumn != NULL; sColumn = sColumn->next )
     {
-        // Max rows ¸¦ À§ÇØ ±âÁ¸ dictionary table ÀÇ table info ¸¦ °¡Á®¿Â´Ù.
+        // Max rows ë¥¼ ìœ„í•´ ê¸°ì¡´ dictionary table ì˜ table info ë¥¼ ê°€ì ¸ì˜¨ë‹¤.
         sDicTableInfo = (qcmTableInfo *)smiGetTableRuntimeInfoFromTableOID(
             sColumn->basicInfo->column.mDictionaryTableOID );
 
-        // Table flag ´Â data table ÀÇ °ÍÀ» µû¸¥´Ù.
+        // Table flag ëŠ” data table ì˜ ê²ƒì„ ë”°ë¥¸ë‹¤.
         sTableFlagMask  = QDB_TABLE_ATTR_MASK_ALL;
         sTableFlag      = aTableInfo->tableFlag;
         sTableParallelDegree = 1;
 
-        // Dictionary table flag ¸¦ ¼¼ÆÃÇÑ´Ù.
+        // Dictionary table flag ë¥¼ ì„¸íŒ…í•œë‹¤.
         sTableFlagMask |= SMI_TABLE_DICTIONARY_MASK;
         sTableFlag     |= SMI_TABLE_DICTIONARY_TRUE;
 
-        // PROJ-2429 table typeÀ» ¹«Á¶°Ç memory·Î ¼¼ÆÃÇÑ´Ù.
+        // PROJ-2429 table typeì„ ë¬´ì¡°ê±´ memoryë¡œ ì„¸íŒ…í•œë‹¤.
         sTableFlag     &= ~SMI_TABLE_TYPE_MASK;
         sTableFlag     |= SMI_TABLE_MEMORY;
 
@@ -238,46 +238,46 @@ IDE_RC qcmDictionary::makeDictionaryTable( qcStatement           * aStatement,
         {
             sColumn = sColIter;
 
-            // ÀÌ¸§ÀÌ °°Àº qcmColumn À» Ã£¾Ò´Ù.
+            // ì´ë¦„ì´ ê°™ì€ qcmColumn ì„ ì°¾ì•˜ë‹¤.
             break;
         }
         else
         {
-            // Ã£°íÀÖ´Â ÄÃ·³ÀÌ ¾Æ´Ï´Ù.
+            // ì°¾ê³ ìˆëŠ” ì»¬ëŸ¼ì´ ì•„ë‹ˆë‹¤.
             // Nothing to do.
         }
     }
 
     if( sColumn != NULL )
     {
-        // ¿øº» data table ÀÇ column ÀÌ¸§À» °¡Á®¿Â´Ù.
+        // ì›ë³¸ data table ì˜ column ì´ë¦„ì„ ê°€ì ¸ì˜¨ë‹¤.
         QC_STR_COPY( sColumn->name, sColumn->namePos );
 
-        // MAXROW ¸¦ °¡Á®¿Â´Ù.
+        // MAXROW ë¥¼ ê°€ì ¸ì˜¨ë‹¤.
         if( aCompCol->maxrows == 0 )
         {
             if( ( sParseTree->maxrows != 0 ) &&
                 ( sParseTree->maxrows != ID_ULONG_MAX ) )
             {
-                // CREATE TABLE ½Ã
-                // Compress column ¿¡ MAXROW °¡ ÁöÁ¤µÇÁö ¾Ê¾Ò°í,
-                // data table ¿¡ MAXROW °¡ ÁöÁ¤µÇ¾úÀ» °æ¿ì´Â table ÀÇ MAXROW ¸¦ µû¸¥´Ù.
+                // CREATE TABLE ì‹œ
+                // Compress column ì— MAXROW ê°€ ì§€ì •ë˜ì§€ ì•Šì•˜ê³ ,
+                // data table ì— MAXROW ê°€ ì§€ì •ë˜ì—ˆì„ ê²½ìš°ëŠ” table ì˜ MAXROW ë¥¼ ë”°ë¥¸ë‹¤.
                 sMaxrows = sParseTree->maxrows;
             }
             else
             {
-                // Compress column °ú data table ¾çÂÊ ¸ğµÎ MAXROW °¡
-                // ÁöÁ¤µÇÁö ¾Ê¾ÒÀ¸¸é 0(¹«Á¦ÇÑ)À¸·Î ¼³Á¤ÇÑ´Ù.
+                // Compress column ê³¼ data table ì–‘ìª½ ëª¨ë‘ MAXROW ê°€
+                // ì§€ì •ë˜ì§€ ì•Šì•˜ìœ¼ë©´ 0(ë¬´ì œí•œ)ìœ¼ë¡œ ì„¤ì •í•œë‹¤.
                 sMaxrows = 0;
             }
         }
         else
         {
-            // Compress column ¿¡ MAXROW °¡ ÁöÁ¤µÇ¾úÀ¸¸é ±× °ªÀ¸·Î ¼³Á¤ÇÑ´Ù.
+            // Compress column ì— MAXROW ê°€ ì§€ì •ë˜ì—ˆìœ¼ë©´ ê·¸ ê°’ìœ¼ë¡œ ì„¤ì •í•œë‹¤.
             sMaxrows = aCompCol->maxrows;
         }
 
-        // Dictionary table »ı¼º
+        // Dictionary table ìƒì„±
         sTableFlagMask = SMI_TABLE_DICTIONARY_MASK;
         sTableFlag     = SMI_TABLE_DICTIONARY_TRUE;
         sTableParallelDegree = 1;
@@ -296,8 +296,8 @@ IDE_RC qcmDictionary::makeDictionaryTable( qcStatement           * aStatement,
     }
     else
     {
-        // Compression column ¿¡ ÇØ´çÇÏ´Â column ÀÌ ¾ø´Ù.
-        // »ç¿ëÀÚ°¡ Àß¸ø »ç¿ëÇÑ °æ¿ì validation ¿¡¼­ °É·¯Áö¹Ç·Î ASSERTION Ã³¸® ÇÑ´Ù.
+        // Compression column ì— í•´ë‹¹í•˜ëŠ” column ì´ ì—†ë‹¤.
+        // ì‚¬ìš©ìê°€ ì˜ëª» ì‚¬ìš©í•œ ê²½ìš° validation ì—ì„œ ê±¸ëŸ¬ì§€ë¯€ë¡œ ASSERTION ì²˜ë¦¬ í•œë‹¤.
         IDE_DASSERT( 0 );
     }
 
@@ -315,15 +315,15 @@ IDE_RC qcmDictionary::validateCompressColumn( qcStatement       * aStatement,
 /***********************************************************************
  *
  * Description :
- *    Dictionary based compress column °ËÁõ ÇÔ¼ö
+ *    Dictionary based compress column ê²€ì¦ í•¨ìˆ˜
  *
  * Implementation :
- *    1. Column list¿¡ ¼±¾ğµÈ ÄÃ·³ÀÎÁö °Ë»ç
- *      1-1. ÀûÇÕÇÑ type ÀÎÁö °Ë»ç
- *      1-2. ÀûÇÕÇÑ size ÀÎÁö °Ë»ç
- *      1-3. smiColumn ¿¡ compression column flag ¼¼ÆÃ
- *    2. ¿øº» Å×ÀÌºíÀÇ tablespace °Ë»ç
- *    3. MEMORY PARTITIONED TABLE  °Ë»ç.
+ *    1. Column listì— ì„ ì–¸ëœ ì»¬ëŸ¼ì¸ì§€ ê²€ì‚¬
+ *      1-1. ì í•©í•œ type ì¸ì§€ ê²€ì‚¬
+ *      1-2. ì í•©í•œ size ì¸ì§€ ê²€ì‚¬
+ *      1-3. smiColumn ì— compression column flag ì„¸íŒ…
+ *    2. ì›ë³¸ í…Œì´ë¸”ì˜ tablespace ê²€ì‚¬
+ *    3. MEMORY PARTITIONED TABLE  ê²€ì‚¬.
  *
  ***********************************************************************/
 
@@ -335,7 +335,7 @@ IDE_RC qcmDictionary::validateCompressColumn( qcStatement       * aStatement,
 
     if( aParseTree->compressionColumn != NULL )
     {
-        // 1. column list ¿¡ ¼±¾ğµÈ ÄÃ·³ÀÎÁö °Ë»ç
+        // 1. column list ì— ì„ ì–¸ëœ ì»¬ëŸ¼ì¸ì§€ ê²€ì‚¬
         for( sCompColumn = aParseTree->compressionColumn;
              sCompColumn != NULL;
              sCompColumn = sCompColumn->next )
@@ -346,7 +346,7 @@ IDE_RC qcmDictionary::validateCompressColumn( qcStatement       * aStatement,
             {
                 if ( QC_IS_NAME_MATCHED( sCompColumn->namePos, sColumn->namePos ) )
                 {
-                    // 1-1. Áö¿øÇÏ´Â type ÀÎÁö °Ë»çÇÑ´Ù.
+                    // 1-1. ì§€ì›í•˜ëŠ” type ì¸ì§€ ê²€ì‚¬í•œë‹¤.
                     switch( sColumn->basicInfo->type.dataTypeId )
                     {
                         case MTD_CHAR_ID :
@@ -359,7 +359,7 @@ IDE_RC qcmDictionary::validateCompressColumn( qcStatement       * aStatement,
                         case MTD_BIT_ID :
                         case MTD_VARBIT_ID :
                         case MTD_DATE_ID :
-                            // Áö¿ø type
+                            // ì§€ì› type
                             break;
 
                         case MTD_DOUBLE_ID :
@@ -384,16 +384,16 @@ IDE_RC qcmDictionary::validateCompressColumn( qcStatement       * aStatement,
                         case MTD_BINARY_ID :
                         case MTD_INTERVAL_ID :
                         case MTD_BOOLEAN_ID :
-                        default : // »ç¿ëÀÚ Á¤ÀÇ Å¸ÀÔ ¶Ç´Â rowtype id
+                        default : // ì‚¬ìš©ì ì •ì˜ íƒ€ì… ë˜ëŠ” rowtype id
                             sqlInfo.setSourceInfo( aStatement,
                                                    &(sColumn->namePos) );
                             IDE_RAISE(ERR_NOT_SUPPORT_TYPE);
                             break;
                     }
 
-                    // 1-2. Column ÀÇ ÀúÀåÅ©±â(size)°¡ smOID º¸´Ù ÀÛÀ¸¸é ¾ÈµÈ´Ù.
-                    //    ¿ì¼± compression ÇÏ¸é ¿ÀÈ÷·Á ÀúÀå °ø°£À» ´õ »ç¿ëÇÏ°ÔµÇ°í
-                    //    in-place update ½Ã¿¡ logging ¹®Á¦µµ ¹ß»ıÇÏ°Ô µÈ´Ù.
+                    // 1-2. Column ì˜ ì €ì¥í¬ê¸°(size)ê°€ smOID ë³´ë‹¤ ì‘ìœ¼ë©´ ì•ˆëœë‹¤.
+                    //    ìš°ì„  compression í•˜ë©´ ì˜¤íˆë ¤ ì €ì¥ ê³µê°„ì„ ë” ì‚¬ìš©í•˜ê²Œë˜ê³ 
+                    //    in-place update ì‹œì— logging ë¬¸ì œë„ ë°œìƒí•˜ê²Œ ëœë‹¤.
                     if( sColumn->basicInfo->column.size < ID_SIZEOF(smOID) )
                     {
                         sqlInfo.setSourceInfo( aStatement,
@@ -401,7 +401,7 @@ IDE_RC qcmDictionary::validateCompressColumn( qcStatement       * aStatement,
                         IDE_RAISE( ERR_NOT_SUPPORT_TYPE );
                     }
 
-                    // 1-3. Compression column ÀÓÀ» ³ªÅ¸³»µµ·Ï flag ¼¼ÆÃ
+                    // 1-3. Compression column ì„ì„ ë‚˜íƒ€ë‚´ë„ë¡ flag ì„¸íŒ…
                     sColumn->basicInfo->column.flag &= ~SMI_COLUMN_COMPRESSION_MASK;
                     sColumn->basicInfo->column.flag |= SMI_COLUMN_COMPRESSION_TRUE;
 
@@ -409,7 +409,7 @@ IDE_RC qcmDictionary::validateCompressColumn( qcStatement       * aStatement,
                 }
             }
 
-            // 1. ³¡±îÁö ÀÌµ¿Çß´Ù´Â °ÍÀº ¸ø Ã£¾Ò´Ù´Â ÀÇ¹ÌÀÌ´Ù.
+            // 1. ëê¹Œì§€ ì´ë™í–ˆë‹¤ëŠ” ê²ƒì€ ëª» ì°¾ì•˜ë‹¤ëŠ” ì˜ë¯¸ì´ë‹¤.
             if( sColumn == NULL )
             {
                 sqlInfo.setSourceInfo( aStatement,
@@ -418,15 +418,15 @@ IDE_RC qcmDictionary::validateCompressColumn( qcStatement       * aStatement,
             }
         }
 
-        /* BUG-45641 disk partitioned table¿¡ ¾ĞÃà ÄÃ·³À» Ãß°¡ÇÏ´Ù°¡ ½ÇÆĞÇÏ´Âµ¥, memory partitioned table ¿À·ù°¡ ³ª¿É´Ï´Ù. */
-        // 2. ¿øº» Å×ÀÌºíÀÇ tablespace °Ë»ç
-        //   Compression ÄÃ·³Àº volatile Å×ÀÌºí¿¡¼­ »ç¿ëÇÒ ¼ö ¾ø´Ù.
+        /* BUG-45641 disk partitioned tableì— ì••ì¶• ì»¬ëŸ¼ì„ ì¶”ê°€í•˜ë‹¤ê°€ ì‹¤íŒ¨í•˜ëŠ”ë°, memory partitioned table ì˜¤ë¥˜ê°€ ë‚˜ì˜µë‹ˆë‹¤. */
+        // 2. ì›ë³¸ í…Œì´ë¸”ì˜ tablespace ê²€ì‚¬
+        //   Compression ì»¬ëŸ¼ì€ volatile í…Œì´ë¸”ì—ì„œ ì‚¬ìš©í•  ìˆ˜ ì—†ë‹¤.
         IDE_TEST_RAISE( ( smiTableSpace::isMemTableSpaceType( aType ) != ID_TRUE ) &&
                         ( smiTableSpace::isDiskTableSpaceType( aType ) != ID_TRUE ),
                         ERR_NOT_SUPPORTED_TABLESPACE_TYPE );
 
-        /* 3. PROJ-2334 PMT dictionary compress´Â memory/disk tablespace¸¸ Áö¿ø
-         * memory/disk partitioned table¿¡ ´ëÇÑ °í·Á°¡ µÇ¾î ÀÖÁö ¾Ê¾Æ ¿¡·¯ Ãâ·Â */
+        /* 3. PROJ-2334 PMT dictionary compressëŠ” memory/disk tablespaceë§Œ ì§€ì›
+         * memory/disk partitioned tableì— ëŒ€í•œ ê³ ë ¤ê°€ ë˜ì–´ ìˆì§€ ì•Šì•„ ì—ëŸ¬ ì¶œë ¥ */
         if ( aParseTree->tableInfo != NULL )
         {
             IDE_TEST_RAISE( aParseTree->tableInfo->tablePartitionType == QCM_PARTITIONED_TABLE,
@@ -465,7 +465,7 @@ IDE_RC qcmDictionary::validateCompressColumn( qcStatement       * aStatement,
     }
     IDE_EXCEPTION(ERROR_UBABLE_TO_COMPRESS_PARTITION)
     {
-        /* BUG-45641 disk partitioned table¿¡ ¾ĞÃà ÄÃ·³À» Ãß°¡ÇÏ´Ù°¡ ½ÇÆĞÇÏ´Âµ¥, memory partitioned table ¿À·ù°¡ ³ª¿É´Ï´Ù. */
+        /* BUG-45641 disk partitioned tableì— ì••ì¶• ì»¬ëŸ¼ì„ ì¶”ê°€í•˜ë‹¤ê°€ ì‹¤íŒ¨í•˜ëŠ”ë°, memory partitioned table ì˜¤ë¥˜ê°€ ë‚˜ì˜µë‹ˆë‹¤. */
         /* PROJ-2429 Dictionary based data compress for on-disk DB */
         if ( smiTableSpace::isDiskTableSpaceType( aType ) == ID_TRUE )
         {
@@ -489,10 +489,10 @@ IDE_RC qcmDictionary::rebuildDictionaryTable( qcStatement        * aStatement,
 /***********************************************************************
  *
  * Description :
- *    Data table ÀÇ ·¹ÄÚµå¸¦ ÀĞ¾î dictionary table À» »õ·Î ±¸¼ºÇÑ´Ù.
- *    Áï, data table ¿¡ Á¸ÀçÇÏ´Â °ªÀ¸·Î dictionary table À» Àç±¸¼ºÇÑ´Ù.
+ *    Data table ì˜ ë ˆì½”ë“œë¥¼ ì½ì–´ dictionary table ì„ ìƒˆë¡œ êµ¬ì„±í•œë‹¤.
+ *    ì¦‰, data table ì— ì¡´ì¬í•˜ëŠ” ê°’ìœ¼ë¡œ dictionary table ì„ ì¬êµ¬ì„±í•œë‹¤.
  *
- *    ¾Æ·¡ÇÔ¼ö¿¡¼­ È£ÃâµÊ.
+ *    ì•„ë˜í•¨ìˆ˜ì—ì„œ í˜¸ì¶œë¨.
  *    qdbAlter::executeReorganizeColumn()
  *
  * Implementation :
@@ -546,7 +546,7 @@ IDE_RC qcmDictionary::rebuildDictionaryTable( qcStatement        * aStatement,
     qdbAnalyzeUsage       * sAnalyzeUsage   = NULL;
 
     //-----------------------------------------
-    // Data table ¿¡ ´ëÇÑ smiColumnList »ı¼º
+    // Data table ì— ëŒ€í•œ smiColumnList ìƒì„±
     //-----------------------------------------
 
     for( sDicIter = aDicTable, sDicTabCount = 0;
@@ -556,7 +556,7 @@ IDE_RC qcmDictionary::rebuildDictionaryTable( qcStatement        * aStatement,
         sDicTabCount++;
     }
 
-    // Data table ÀÇ fetch column list »ı¼º¿¡ ¾²ÀÏ qcmColumn º¹»ç
+    // Data table ì˜ fetch column list ìƒì„±ì— ì“°ì¼ qcmColumn ë³µì‚¬
     IDE_TEST( aStatement->qmxMem->cralloc( ID_SIZEOF(qcmColumn) * sDicTabCount,
                                            (void **) & sDataColumns )
               != IDE_SUCCESS );
@@ -569,7 +569,7 @@ IDE_RC qcmDictionary::rebuildDictionaryTable( qcStatement        * aStatement,
     }
 
     /* PROJ-2465 Tablespace Alteration for Table
-     *  Old TableÀÇ Compressed ColumnÀ» º¹»çÇÏ°í, mtc::value()¿¡¼­ »ç¿ëÇÒ offsetÀ» New TableÀÇ °ÍÀ¸·Î ¼öÁ¤ÇÑ´Ù.
+     *  Old Tableì˜ Compressed Columnì„ ë³µì‚¬í•˜ê³ , mtc::value()ì—ì„œ ì‚¬ìš©í•  offsetì„ New Tableì˜ ê²ƒìœ¼ë¡œ ìˆ˜ì •í•œë‹¤.
      */
     IDU_FIT_POINT( "qcmDictionary::rebuildDictionaryTable::alloc::sOldDataColumns",
                    idERR_ABORT_InsufficientMemory );
@@ -591,7 +591,7 @@ IDE_RC qcmDictionary::rebuildDictionaryTable( qcStatement        * aStatement,
         sOldDataColumns[i].column.offset = sDataColumns[i].basicInfo->column.offset;
     }
 
-    // Data table ¿¡ OID ¸¦ update ÇÏ±â À§ÇÑ smiValue ¹è¿­
+    // Data table ì— OID ë¥¼ update í•˜ê¸° ìœ„í•œ smiValue ë°°ì—´
     IDE_TEST(aStatement->qmxMem->alloc(ID_SIZEOF(smiValue) * sDicTabCount,
                                        (void**)&sDataRow)
              != IDE_SUCCESS);
@@ -603,12 +603,12 @@ IDE_RC qcmDictionary::rebuildDictionaryTable( qcStatement        * aStatement,
                  != IDE_SUCCESS);
     }
 
-    // Fetch column list ¸¦ À§ÇÑ °ø°£ ÇÒ´ç
+    // Fetch column list ë¥¼ ìœ„í•œ ê³µê°„ í• ë‹¹
     IDE_TEST(aStatement->qmxMem->alloc(ID_SIZEOF(smiFetchColumnList) * sDicTabCount,
                                        (void**)&sSrcFetchColumnList)
              != IDE_SUCCESS);
 
-    // Update column list ¸¦ À§ÇÑ °ø°£ ÇÒ´ç
+    // Update column list ë¥¼ ìœ„í•œ ê³µê°„ í• ë‹¹
     IDE_TEST(aStatement->qmxMem->alloc(ID_SIZEOF(smiColumnList) * sDicTabCount,
                                        (void**)&sUpdateColList)
                  != IDE_SUCCESS);
@@ -634,17 +634,17 @@ IDE_RC qcmDictionary::rebuildDictionaryTable( qcStatement        * aStatement,
 
     //-------------------------------------------
     // open data table. ( select + update )
-    // cursor property ¼³Á¤.
+    // cursor property ì„¤ì •.
     //
     // PROJ-1705
-    // fetch column list Á¤º¸¸¦ ±¸¼ºÇØ¼­ smÀ¸·Î ³»¸°´Ù.
+    // fetch column list ì •ë³´ë¥¼ êµ¬ì„±í•´ì„œ smìœ¼ë¡œ ë‚´ë¦°ë‹¤.
     //-------------------------------------------
 
     sDataTblCursor.initialize();
     SMI_CURSOR_PROP_INIT_FOR_FULL_SCAN( &sDataCursorProperty, aStatement->mStatistics );
     sDataCursorProperty.mLockWaitMicroSec = 0;
 
-    // Data table À» À§ÇÑ fetch column list
+    // Data table ì„ ìœ„í•œ fetch column list
     IDE_TEST( qdbCommon::makeFetchColumnList( QC_PRIVATE_TMPLATE(aStatement),
                                               sDicTabCount,
                                               sDataColumns,
@@ -652,7 +652,7 @@ IDE_RC qcmDictionary::rebuildDictionaryTable( qcStatement        * aStatement,
                                               & sSrcFetchColumnList )
           != IDE_SUCCESS );
 
-    // Data table À» À§ÇÑ update column list
+    // Data table ì„ ìœ„í•œ update column list
     for( sDicIter = aDicTable, i = 0;
          sDicIter != NULL;
          sDicIter = sDicIter->next, i++ )
@@ -693,10 +693,10 @@ IDE_RC qcmDictionary::rebuildDictionaryTable( qcStatement        * aStatement,
 
     //-------------------------------------------
     // open destination table. ( insert )
-    // cursor property ¼³Á¤.
+    // cursor property ì„¤ì •.
     //-------------------------------------------
 
-    // smiTableCursor ¿¡ ÁÙ cursor property µµ dictionary table º°·Î ¸¸µç´Ù.
+    // smiTableCursor ì— ì¤„ cursor property ë„ dictionary table ë³„ë¡œ ë§Œë“ ë‹¤.
     IDE_TEST( aStatement->qmxMem->cralloc( ID_SIZEOF(smiCursorProperties) * sDicTabCount,
                                            (void **) & sDicCursorProperty )
               != IDE_SUCCESS );
@@ -719,8 +719,8 @@ IDE_RC qcmDictionary::rebuildDictionaryTable( qcStatement        * aStatement,
              != IDE_SUCCESS);
 
     /* PROJ-2465 Tablespace Alteration for Table
-     *  - aDicTable ¸®½ºÆ®¿¡¼­ Ã¹¹øÂ° dictionaryTableInfo¸¸À¸·Î sAnalyzeUsage¸¦ ÃÊ±âÈ­ÇÑ´Ù.
-     *  - µ¿ÀÏÇÑ TableÀÇ ´Ù¸¥ DictionaryÀÇ Row´Â µ¿ÀÏÇÑ TBS¿¡ ÀûÀçµÈ´Ù.
+     *  - aDicTable ë¦¬ìŠ¤íŠ¸ì—ì„œ ì²«ë²ˆì§¸ dictionaryTableInfoë§Œìœ¼ë¡œ sAnalyzeUsageë¥¼ ì´ˆê¸°í™”í•œë‹¤.
+     *  - ë™ì¼í•œ Tableì˜ ë‹¤ë¥¸ Dictionaryì˜ RowëŠ” ë™ì¼í•œ TBSì— ì ì¬ëœë‹¤.
      */
     IDE_TEST( qdbCommon::initializeAnalyzeUsage( aStatement,
                                                  aNewTableInfo,
@@ -736,13 +736,13 @@ IDE_RC qcmDictionary::rebuildDictionaryTable( qcStatement        * aStatement,
                   != IDE_SUCCESS );
 
         // To Fix PR-11704
-        // ·¹ÄÚµå °Ç¼ö¿¡ ºñ·ÊÇÏ¿© ¸Ş¸ğ¸®°¡ Áõ°¡ÇÏÁö ¾Êµµ·Ï ÇØ¾ß ÇÔ.
-        // Memory Àç»ç¿ëÀ» À§ÇÏ¿© ÇöÀç À§Ä¡ ±â·Ï
+        // ë ˆì½”ë“œ ê±´ìˆ˜ì— ë¹„ë¡€í•˜ì—¬ ë©”ëª¨ë¦¬ê°€ ì¦ê°€í•˜ì§€ ì•Šë„ë¡ í•´ì•¼ í•¨.
+        // Memory ì¬ì‚¬ìš©ì„ ìœ„í•˜ì—¬ í˜„ì¬ ìœ„ì¹˜ ê¸°ë¡
         IDE_TEST( aStatement->qmxMem->getStatus(&sQmxMemStatus)
                   != IDE_SUCCESS);
 
         //------------------------------------------
-        // INSERT¸¦ ¼öÇà
+        // INSERTë¥¼ ìˆ˜í–‰
         //------------------------------------------
 
         for( sDicIter = aDicTable, i = 0;
@@ -773,7 +773,7 @@ IDE_RC qcmDictionary::rebuildDictionaryTable( qcStatement        * aStatement,
 
             sStage = 2;
 
-            // Data table ¿¡¼­ °ªÀ» ÀĞ´Â´Ù.
+            // Data table ì—ì„œ ê°’ì„ ì½ëŠ”ë‹¤.
             sValue = (void *) mtc::value( sSrcCol,
                                           sOldRow,
                                           MTD_OFFSET_USE );
@@ -793,8 +793,8 @@ IDE_RC qcmDictionary::rebuildDictionaryTable( qcStatement        * aStatement,
                       != IDE_SUCCESS );
             sNewRow[i].length = sStoringSize;
 
-            // Data table ¿¡¼­ ÀĞÀº °ª(sNewRow)À» dictionary table ¿¡ ³Ö°í,
-            // ±× OID ¸¦ ´Ù½Ã data table ¿¡ update ÇÏ±â À§ÇØ ¹Ş´Â´Ù.(sDataRow)
+            // Data table ì—ì„œ ì½ì€ ê°’(sNewRow)ì„ dictionary table ì— ë„£ê³ ,
+            // ê·¸ OID ë¥¼ ë‹¤ì‹œ data table ì— update í•˜ê¸° ìœ„í•´ ë°›ëŠ”ë‹¤.(sDataRow)
             IDE_TEST( sDstTblCursor.insertRowWithIgnoreUniqueError(
                           &sDstTblCursor,
                           (smcTableHeader *)SMI_MISC_TABLE_HEADER( sTableHandle ), //(smcTableHeader*)
@@ -816,7 +816,7 @@ IDE_RC qcmDictionary::rebuildDictionaryTable( qcStatement        * aStatement,
                  != IDE_SUCCESS);
 
         // To Fix PR-11704
-        // Memory Àç»ç¿ëÀ» À§ÇÑ Memory ÀÌµ¿
+        // Memory ì¬ì‚¬ìš©ì„ ìœ„í•œ Memory ì´ë™
         IDE_TEST( aStatement->qmxMem->setStatus(&sQmxMemStatus)
                   != IDE_SUCCESS);
 
@@ -894,7 +894,7 @@ IDE_RC qcmDictionary::removeDictionaryTable( qcStatement  * aStatement,
 
     IDE_DASSERT( aColumn->basicInfo->column.mDictionaryTableOID != SM_NULL_OID );
     
-    // smiColumn.mDictionaryTableOID »ç¿ë
+    // smiColumn.mDictionaryTableOID ì‚¬ìš©
     sDicTableInfo = (qcmTableInfo *)smiGetTableRuntimeInfoFromTableOID(
         aColumn->basicInfo->column.mDictionaryTableOID );
 
@@ -933,11 +933,11 @@ IDE_RC qcmDictionary::updateCompressionTableSpecMeta( qcStatement * aStatement,
  *
  * Description :
  *      PROJ-2264
- *      executeReorganizeColumn À¸·ÎºÎÅÍ È£Ãâ
- *      Data table-Dictionary table °£ ¿¬°á Á¤º¸¸¦ °»½ÅÇÑ´Ù.
+ *      executeReorganizeColumn ìœ¼ë¡œë¶€í„° í˜¸ì¶œ
+ *      Data table-Dictionary table ê°„ ì—°ê²° ì •ë³´ë¥¼ ê°±ì‹ í•œë‹¤.
  *
  * Implementation :
- *      1. SYS_COMPRESSION_TABLES_ ¸ŞÅ¸ Å×ÀÌºí¿¡¼­ ¿¬°á Á¤º¸ °»½Å
+ *      1. SYS_COMPRESSION_TABLES_ ë©”íƒ€ í…Œì´ë¸”ì—ì„œ ì—°ê²° ì •ë³´ ê°±ì‹ 
  *
  ***********************************************************************/
 
@@ -950,7 +950,7 @@ IDE_RC qcmDictionary::updateCompressionTableSpecMeta( qcStatement * aStatement,
                                       &sSqlStr )
               != IDE_SUCCESS);
 
-    // SYS_COMPRESSION_TABLES_ À» °»½ÅÇÑ´Ù.
+    // SYS_COMPRESSION_TABLES_ ì„ ê°±ì‹ í•œë‹¤.
     idlOS::snprintf( sSqlStr, QD_MAX_SQL_LENGTH,
                      "UPDATE SYS_COMPRESSION_TABLES_ SET DIC_TABLE_ID = "
                      "INTEGER'%"ID_INT32_FMT"' "
@@ -986,11 +986,11 @@ IDE_RC qcmDictionary::updateColumnIDInCompressionTableSpecMeta(
  *
  * Description :
  *      PROJ-2264
- *      executeDropCol À¸·ÎºÎÅÍ È£Ãâ
- *      Data table-Dictionary table °£ ¿¬°á Á¤º¸¸¦ °»½ÅÇÑ´Ù.
+ *      executeDropCol ìœ¼ë¡œë¶€í„° í˜¸ì¶œ
+ *      Data table-Dictionary table ê°„ ì—°ê²° ì •ë³´ë¥¼ ê°±ì‹ í•œë‹¤.
  *
  * Implementation :
- *      1. SYS_COMPRESSION_TABLES_ ¸ŞÅ¸ Å×ÀÌºí¿¡¼­ ¿¬°á Á¤º¸ °»½Å
+ *      1. SYS_COMPRESSION_TABLES_ ë©”íƒ€ í…Œì´ë¸”ì—ì„œ ì—°ê²° ì •ë³´ ê°±ì‹ 
  *
  ***********************************************************************/
 
@@ -1003,7 +1003,7 @@ IDE_RC qcmDictionary::updateColumnIDInCompressionTableSpecMeta(
                                       &sSqlStr )
               != IDE_SUCCESS);
 
-    // SYS_COMPRESSION_TABLES_ À» °»½ÅÇÑ´Ù.
+    // SYS_COMPRESSION_TABLES_ ì„ ê°±ì‹ í•œë‹¤.
     idlOS::snprintf( sSqlStr, QD_MAX_SQL_LENGTH,
                      "UPDATE SYS_COMPRESSION_TABLES_ SET COLUMN_ID = "
                      "INTEGER'%"ID_INT32_FMT"' "
@@ -1037,7 +1037,7 @@ qcmDictionary::dropDictionaryTable( qcStatement  * aStatement,
  *
  * Description : PROJ-2253 Dictionary table
  *
- * Implementation : Dictionary table À» »èÁ¦ÇÑ´Ù.
+ * Implementation : Dictionary table ì„ ì‚­ì œí•œë‹¤.
  *
  ***********************************************************************/
 
@@ -1047,7 +1047,7 @@ qcmDictionary::dropDictionaryTable( qcStatement  * aStatement,
     sTableInfo = aTableInfo;
     sTableID   = aTableInfo->tableID;
 
-    // Constraint, Index, Table ¿¡ °ü·ÃµÈ ¸ŞÅ¸ Å×ÀÌºí¿¡¼­ °ü·Ã ·¹ÄÚµå¸¦ »èÁ¦ÇÑ´Ù.
+    // Constraint, Index, Table ì— ê´€ë ¨ëœ ë©”íƒ€ í…Œì´ë¸”ì—ì„œ ê´€ë ¨ ë ˆì½”ë“œë¥¼ ì‚­ì œí•œë‹¤.
     IDE_TEST(qdd::deleteConstraintsFromMeta(aStatement, sTableID)
              != IDE_SUCCESS);
 
@@ -1057,11 +1057,11 @@ qcmDictionary::dropDictionaryTable( qcStatement  * aStatement,
     IDE_TEST(qdd::deleteTableFromMeta(aStatement, sTableID)
              != IDE_SUCCESS);
 
-    // ÀÌ ¿Ü¿¡ Priviledge, Related view, Comment µîÀÇ ¸ŞÅ¸ Å×ÀÌºíÀ» »èÁ¦ÇØ¾ß ÇÑ´Ù.
-    // ÇÏÁö¸¸ dictionary table Àº DDL ÀÌ ±İÁöµÇ¾î ¸ŞÅ¸¿¡ ·¹ÄÚµå°¡ »ı±âÁö ¾Ê´Â´Ù.
-    // µû¶ó¼­ »èÁ¦¸¦ »ı·«ÇÑ´Ù.
+    // ì´ ì™¸ì— Priviledge, Related view, Comment ë“±ì˜ ë©”íƒ€ í…Œì´ë¸”ì„ ì‚­ì œí•´ì•¼ í•œë‹¤.
+    // í•˜ì§€ë§Œ dictionary table ì€ DDL ì´ ê¸ˆì§€ë˜ì–´ ë©”íƒ€ì— ë ˆì½”ë“œê°€ ìƒê¸°ì§€ ì•ŠëŠ”ë‹¤.
+    // ë”°ë¼ì„œ ì‚­ì œë¥¼ ìƒëµí•œë‹¤.
 
-    // SM ¿¡¼­ dictionary table »èÁ¦
+    // SM ì—ì„œ dictionary table ì‚­ì œ
     IDE_TEST( smiTable::dropTable( QC_SMI_STMT( aStatement ),
                                    sTableInfo->tableHandle,
                                    SMI_TBSLV_DDL_DML )
@@ -1091,7 +1091,7 @@ qcmDictionary::createDictionaryTable( qcStatement         * aStatement,
  * Description : PROJ-2264 Dictionary table
  *
  * Implementation :
- *     dictionary tableÀ» »ı¼ºÇÑ´Ù.
+ *     dictionary tableì„ ìƒì„±í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -1125,7 +1125,7 @@ qcmDictionary::createDictionaryTable( qcStatement         * aStatement,
     idlOS::memset( &sSegStoAttr, 0x00, ID_SIZEOF(smiSegStorageAttr) );
 
     // ---------------------------------------------------------------
-    // Column Á¤º¸ ¼öÁ¤
+    // Column ì •ë³´ ìˆ˜ì •
     // ---------------------------------------------------------------
 
     // qcmColumn deep copy
@@ -1134,35 +1134,35 @@ qcmDictionary::createDictionaryTable( qcStatement         * aStatement,
     sColumn.basicInfo = &sMtcColumn;
     sColumn.next = NULL;
 
-    // smiColumn Á¤º¸¸¦ ¼öÁ¤ÇÑ´Ù.
+    // smiColumn ì •ë³´ë¥¼ ìˆ˜ì •í•œë‹¤.
     sMtcColumn.column.offset = smiGetRowHeaderSize( SMI_TABLE_MEMORY );
     sMtcColumn.column.value = NULL;
     sMtcColumn.column.flag &= ~SMI_COLUMN_COMPRESSION_MASK;
     sMtcColumn.column.flag |= SMI_COLUMN_COMPRESSION_FALSE;
 
-    // Recreate ½Ã, Dictionary TableÀÇ Column¿¡ Dictionary Table OID°¡ ¾ø¾î¾ß ÇÑ´Ù.
+    // Recreate ì‹œ, Dictionary Tableì˜ Columnì— Dictionary Table OIDê°€ ì—†ì–´ì•¼ í•œë‹¤.
     SMI_INIT_SCN( & sMtcColumn.column.mDictionaryTableOID );
 
     //PROJ-2429 Dictionary based data compress for on-disk DB
     if ( smiTableSpace::isDiskTableSpace( aTBSID ) == ID_TRUE )
     {
-        //columnÀúÀå °ø°£À» ¸Ş¸ğ¸®·Î ¼¼ÆÃÇÑ´Ù.
+        //columnì €ì¥ ê³µê°„ì„ ë©”ëª¨ë¦¬ë¡œ ì„¸íŒ…í•œë‹¤.
         sMtcColumn.column.flag &= ~SMI_COLUMN_STORAGE_MASK;
         sMtcColumn.column.flag |= SMI_COLUMN_STORAGE_MEMORY;
 
         sMtcColumn.column.flag &= ~SMI_COLUMN_COMPRESSION_TARGET_MASK;
         sMtcColumn.column.flag |= SMI_COLUMN_COMPRESSION_TARGET_DISK;
 
-        //disk column¿¡¸¸ ¼³Á¤µÈ´Â flag·Î Á¦°Å ÇÑ´Ù.
+        //disk columnì—ë§Œ ì„¤ì •ëœëŠ” flagë¡œ ì œê±° í•œë‹¤.
         sMtcColumn.column.flag &= ~SMI_COLUMN_DATA_STORE_DIVISIBLE_MASK;
 
-        //disk tableÀÇ dictionary tableÀº SMI_ID_TABLESPACE_SYSTEM_MEMORY_DATA¿¡ ÀúÀå µÈ´Ù.
+        //disk tableì˜ dictionary tableì€ SMI_ID_TABLESPACE_SYSTEM_MEMORY_DATAì— ì €ì¥ ëœë‹¤.
         sDictionaryTableTBS        = SMI_ID_TABLESPACE_SYSTEM_MEMORY_DATA;
         sMtcColumn.column.colSpace = SMI_ID_TABLESPACE_SYSTEM_MEMORY_DATA;
     }
     else
     {
-        //memory tableÀÇ dictionary tableÀº ÇØ´ç memory TBS¿¡ ÀúÀå µÈ´Ù.
+        //memory tableì˜ dictionary tableì€ í•´ë‹¹ memory TBSì— ì €ì¥ ëœë‹¤.
         sDictionaryTableTBS = aTBSID;
 
         sMtcColumn.column.flag &= ~SMI_COLUMN_COMPRESSION_TARGET_MASK;
@@ -1170,7 +1170,7 @@ qcmDictionary::createDictionaryTable( qcStatement         * aStatement,
     } 
 
     // ---------------------------------------------------------------
-    // TABLE »ı¼º
+    // TABLE ìƒì„±
     // ---------------------------------------------------------------
 
     // Create table
@@ -1190,10 +1190,10 @@ qcmDictionary::createDictionaryTable( qcStatement         * aStatement,
                                           &sTableOID )
               != IDE_SUCCESS );
 
-    // Áßº¹À» ¹æÁöÇÏµµ·Ï dictionary ÀÇ sequencial ÇÑ ID °ªÀ» ºÙÀÎ´Ù.
+    // ì¤‘ë³µì„ ë°©ì§€í•˜ë„ë¡ dictionary ì˜ sequencial í•œ ID ê°’ì„ ë¶™ì¸ë‹¤.
     IDE_TEST( qcm::getNextDictionaryID( aStatement, &sDictionaryID ) != IDE_SUCCESS );
 
-    // Dictionary table name À» ¸¸µç´Ù.
+    // Dictionary table name ì„ ë§Œë“ ë‹¤.
     idlOS::snprintf( sTableName, QC_MAX_OBJECT_NAME_LEN + 1,
                      "DIC_%"ID_vULONG_FMT"_%"ID_UINT32_FMT,
                      sTableOID,
@@ -1229,7 +1229,7 @@ qcmDictionary::createDictionaryTable( qcStatement         * aStatement,
                                                    ID_FALSE )
               != IDE_SUCCESS );
 
-    /* TableÀ» »ı¼ºÇßÀ¸¹Ç·Î, LockÀ» È¹µæÇÑ´Ù. */
+    /* Tableì„ ìƒì„±í–ˆìœ¼ë¯€ë¡œ, Lockì„ íšë“í•œë‹¤. */
     IDE_TEST( qcm::makeAndSetQcmTableInfo( QC_SMI_STMT( aStatement ),
                                            sTableID,
                                            sTableOID )
@@ -1249,7 +1249,7 @@ qcmDictionary::createDictionaryTable( qcStatement         * aStatement,
               != IDE_SUCCESS );
 
     // ---------------------------------------------------------------
-    // Unique Index »ı¼º
+    // Unique Index ìƒì„±
     // ---------------------------------------------------------------
     sColumnListAtKey.column = (smiColumn*) &sMtcColumn;
     sColumnListAtKey.next = NULL;
@@ -1284,13 +1284,13 @@ qcmDictionary::createDictionaryTable( qcStatement         * aStatement,
                                sBuildFlag,
                                sSegAttr,
                                sSegStoAttr,
-                               0, /* PROJ-2433 : dictionary tableÀº ÀÏ¹İ index »ç¿ë */
+                               0, /* PROJ-2433 : dictionary tableì€ ì¼ë°˜ index ì‚¬ìš© */
                                &sIndexHandle)
          != IDE_SUCCESS)
     {
         // To fix BUG-17762
-        // ±âÁ¸ ¿¡·¯ÄÚµå¿¡ ´ëÇÑ ÇÏÀ§ È£È¯¼ºÀ» °í·ÁÇÏ¿© SM ¿¡·¯¸¦
-        // QP ¿¡·¯·Î º¯È¯ÇÑ´Ù.
+        // ê¸°ì¡´ ì—ëŸ¬ì½”ë“œì— ëŒ€í•œ í•˜ìœ„ í˜¸í™˜ì„±ì„ ê³ ë ¤í•˜ì—¬ SM ì—ëŸ¬ë¥¼
+        // QP ì—ëŸ¬ë¡œ ë³€í™˜í•œë‹¤.
         if( ideGetErrorCode() == smERR_ABORT_NOT_NULL_VIOLATION )
         {
             IDE_CLEAR();
@@ -1332,7 +1332,7 @@ qcmDictionary::createDictionaryTable( qcStatement         * aStatement,
     (void)qcm::destroyQcmTableInfo( sTableInfo );
     sTableInfo = NULL;
 
-    /* Index Á¤º¸¸¦ °¡Áø Meta Cache¸¦ »ı¼ºÇÑ´Ù. */
+    /* Index ì •ë³´ë¥¼ ê°€ì§„ Meta Cacheë¥¼ ìƒì„±í•œë‹¤. */
     IDE_TEST( qcm::makeAndSetQcmTableInfo( QC_SMI_STMT( aStatement ),
                                            sTableID,
                                            sTableOID )
@@ -1346,13 +1346,13 @@ qcmDictionary::createDictionaryTable( qcStatement         * aStatement,
               != IDE_SUCCESS );
 
     // ---------------------------------------------------------------
-    // smiColumn ¿¡ Dictionary Table OID ¸¦ ¼³Á¤ÇÑ´Ù.
+    // smiColumn ì— Dictionary Table OID ë¥¼ ì„¤ì •í•œë‹¤.
     // ---------------------------------------------------------------
     aColumn->basicInfo->column.mDictionaryTableOID = smiGetTableId( sTableHandle );
 
     // ---------------------------------------------------------------
-    // Table »ı¼ºÀÌ ¿Ï·áµÈ ÈÄ¿¡ SYS_COMPRESSION_TABLES_ ¿¡ ³Ö±â À§ÇØ
-    // Column name °ú dictionary table name À» ¸®½ºÆ®·Î ¸¸µç´Ù.
+    // Table ìƒì„±ì´ ì™„ë£Œëœ í›„ì— SYS_COMPRESSION_TABLES_ ì— ë„£ê¸° ìœ„í•´
+    // Column name ê³¼ dictionary table name ì„ ë¦¬ìŠ¤íŠ¸ë¡œ ë§Œë“ ë‹¤.
     // ---------------------------------------------------------------
     IDE_TEST( STRUCT_CRALLOC( aStatement->qmxMem,
                               qcmDictionaryTable,
@@ -1369,7 +1369,7 @@ qcmDictionary::createDictionaryTable( qcStatement         * aStatement,
     }
     else
     {
-        // List ÀÇ Á¦ÀÏ µÚ¿¡ ºÙ¿©ÁÖ±â À§ÇØ ¸¶Áö¸·À¸·Î ÀÌµ¿ÇÑ´Ù.
+        // List ì˜ ì œì¼ ë’¤ì— ë¶™ì—¬ì£¼ê¸° ìœ„í•´ ë§ˆì§€ë§‰ìœ¼ë¡œ ì´ë™í•œë‹¤.
         for( sDicIter = *aDicTable; sDicIter->next != NULL; sDicIter = sDicIter->next );
 
         sDicIter->next = sDicInfo;
@@ -1399,8 +1399,8 @@ qcmDictionary::makeDictValueForCompress( smiStatement   * aStatement,
  *
  * Description : PROJ-2397 Compressed Column Table Replication
  
- * Implementation : Dictionary table À» »èÁ¦ÇÑ´Ù.
- *                  Dictionary table ¿¡ µ¿ÀÏÇÑ °ªÀÌ ÀÖ´Â °æ¿ì ÇØ´çÇÏ´Â OID ¸¦ ¹İÈ¯ ¹Ş´Â´Ù.
+ * Implementation : Dictionary table ì„ ì‚­ì œí•œë‹¤.
+ *                  Dictionary table ì— ë™ì¼í•œ ê°’ì´ ìˆëŠ” ê²½ìš° í•´ë‹¹í•˜ëŠ” OID ë¥¼ ë°˜í™˜ ë°›ëŠ”ë‹¤.
  *
  ***********************************************************************/
    
@@ -1454,8 +1454,8 @@ qcmDictionary::makeDictValueForCompress( smiStatement   * aStatement,
         sInsertValue = aInsertedRow;
 
         // BUG-36718
-        // Storing value(smiValue.valu)¸¦ index range scan ¿¡ »ç¿ëÇÏ±â À§ÇØ
-        // ´Ù½Ã mtd value ·Î º¯È¯ÇÑ´Ù.
+        // Storing value(smiValue.valu)ë¥¼ index range scan ì— ì‚¬ìš©í•˜ê¸° ìœ„í•´
+        // ë‹¤ì‹œ mtd value ë¡œ ë³€í™˜í•œë‹¤.
         IDE_TEST( qdbCommon::storingValue2MtdValue(
                                 sMtcColumn,
                                 (void*)( sInsertValue->value ),
@@ -1463,7 +1463,7 @@ qcmDictionary::makeDictValueForCompress( smiStatement   * aStatement,
                   != IDE_SUCCESS );
     }
 
-    // 1. Dictionary table ¿¡ °ªÀÌ Á¸ÀçÇÏ´ÂÁö º¸°í, ±× row ÀÇ OID ¸¦ °¡Á®¿Â´Ù.
+    // 1. Dictionary table ì— ê°’ì´ ì¡´ì¬í•˜ëŠ”ì§€ ë³´ê³ , ê·¸ row ì˜ OID ë¥¼ ê°€ì ¸ì˜¨ë‹¤.
     IDE_TEST( qcmDictionary::selectDicSmOID( aStatement,
                                              aTableHandle,
                                              aIndexHeader,
@@ -1471,13 +1471,13 @@ qcmDictionary::makeDictValueForCompress( smiStatement   * aStatement,
                                              &sOID )
     != IDE_SUCCESS );
 
-    // 2. Null OID °¡ ¹İÈ¯µÇ¾úÀ¸¸é dictionary table ¿¡ °ªÀÌ ¾ø´Â °ÍÀÌ´Ù.
-    // Dictionary table ¿¡ °ªÀ» ³Ö°í ±× row ÀÇ OID ¸¦ °¡Á®¿Â´Ù.
+    // 2. Null OID ê°€ ë°˜í™˜ë˜ì—ˆìœ¼ë©´ dictionary table ì— ê°’ì´ ì—†ëŠ” ê²ƒì´ë‹¤.
+    // Dictionary table ì— ê°’ì„ ë„£ê³  ê·¸ row ì˜ OID ë¥¼ ê°€ì ¸ì˜¨ë‹¤.
     if ( sOID == SM_NULL_OID )
     {
         sSCN = smiGetRowSCN(aTableHandle);
 
-        // Dictionary table ¿¡ insert ÇÏ±â À§ÇÑ cursor ¸¦ ¿¬´Ù.
+        // Dictionary table ì— insert í•˜ê¸° ìœ„í•œ cursor ë¥¼ ì—°ë‹¤.
         sCursor.initialize();
         SMI_CURSOR_PROP_INIT(&sCursorProperty, NULL, NULL);
 
@@ -1495,10 +1495,10 @@ qcmDictionary::makeDictValueForCompress( smiStatement   * aStatement,
                   != IDE_SUCCESS );
         sState = 1;
 
-        // Dictionary table ¿¡ °ªÀ» ³Ö°í OID ¸¦ ¹İÈ¯ ¹Ş´Â´Ù.
-        // ¸¸¾à µ¿½Ã¼º ¹®Á¦(´Ù¸¥ ¼¼¼Ç¿¡¼­ ÀÌ¹Ì °ªÀ» ³ÖÀº °æ¿ì)·Î
-        // unique error °¡ ¹ß»ıÇÏ´õ¶óµµ ¿À·ù·Î Ã³¸®ÇÏÁö ¾Ê°í
-        // ÀÌ¹Ì Á¸ÀçÇÏ´Â row ÀÇ OID ¸¦ ¹İÈ¯ÇÑ´Ù.
+        // Dictionary table ì— ê°’ì„ ë„£ê³  OID ë¥¼ ë°˜í™˜ ë°›ëŠ”ë‹¤.
+        // ë§Œì•½ ë™ì‹œì„± ë¬¸ì œ(ë‹¤ë¥¸ ì„¸ì…˜ì—ì„œ ì´ë¯¸ ê°’ì„ ë„£ì€ ê²½ìš°)ë¡œ
+        // unique error ê°€ ë°œìƒí•˜ë”ë¼ë„ ì˜¤ë¥˜ë¡œ ì²˜ë¦¬í•˜ì§€ ì•Šê³ 
+        // ì´ë¯¸ ì¡´ì¬í•˜ëŠ” row ì˜ OID ë¥¼ ë°˜í™˜í•œë‹¤.
         IDE_TEST( sCursor.insertRowWithIgnoreUniqueError(
                       &sCursor,
                       (smcTableHeader*)SMI_MISC_TABLE_HEADER( aTableHandle ),
@@ -1512,7 +1512,7 @@ qcmDictionary::makeDictValueForCompress( smiStatement   * aStatement,
     }
     else
     {
-        /* selectDicOID °¡ ¼º°øÇÑ °æ¿ìÀÌ´Ù. */
+        /* selectDicOID ê°€ ì„±ê³µí•œ ê²½ìš°ì´ë‹¤. */
         /* Nothing to do */
     }
 
@@ -1550,15 +1550,15 @@ IDE_RC qcmDictionary::selectDicSmOID( smiStatement   * aSmiStatement,
 /***********************************************************************
  *
  * Description :
- *    Dictionary table ¿¡¼­ smOID ¸¦ ±¸ÇÑ´Ù.
+ *    Dictionary table ì—ì„œ smOID ë¥¼ êµ¬í•œë‹¤.
  *
  * Implementation :
  *
- *    1. Dictionary table °Ë»öÀ» À§ÇØ range ¸¦ »ı¼ºÇÑ´Ù.
- *    2. Ä¿¼­¸¦ ¿¬´Ù.
- *       Dictionary table Àº ÄÃ·³ÀÌ 1°³»ÓÀÎ Æ¯º°ÇÑ Å×ÀÌºíÀÌ¹Ç·Î 1°³Â¥¸® smiColumnList ¸¦ »ç¿ëÇÑ´Ù.
- *    3. Á¶°Ç¿¡ ¸Â´Â row ÀÇ scGRID ¸¦ ¾ò´Â´Ù.
- *    4. scGRID ¿¡¼­ smOID ¸¦ ¾ò´Â´Ù.
+ *    1. Dictionary table ê²€ìƒ‰ì„ ìœ„í•´ range ë¥¼ ìƒì„±í•œë‹¤.
+ *    2. ì»¤ì„œë¥¼ ì—°ë‹¤.
+ *       Dictionary table ì€ ì»¬ëŸ¼ì´ 1ê°œë¿ì¸ íŠ¹ë³„í•œ í…Œì´ë¸”ì´ë¯€ë¡œ 1ê°œì§œë¦¬ smiColumnList ë¥¼ ì‚¬ìš©í•œë‹¤.
+ *    3. ì¡°ê±´ì— ë§ëŠ” row ì˜ scGRID ë¥¼ ì–»ëŠ”ë‹¤.
+ *    4. scGRID ì—ì„œ smOID ë¥¼ ì–»ëŠ”ë‹¤.
  *
  *
  ***********************************************************************/
@@ -1569,7 +1569,7 @@ IDE_RC qcmDictionary::selectDicSmOID( smiStatement   * aSmiStatement,
     const void        * sRow;
 
     smiColumnList       sColumnList[QCM_MAX_META_COLUMNS];
-    scGRID              sRid; // Disk TableÀ» À§ÇÑ Record IDentifier
+    scGRID              sRid; // Disk Tableì„ ìœ„í•œ Record IDentifier
     smiCursorProperties sCursorProperty;
 
     smiRange            sRange;

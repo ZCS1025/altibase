@@ -21,8 +21,8 @@
 /* ------------------------------------------------
  *      !!!!!!!!!!!!!WARNING!!!!!!!!!!!!!!
  *
- *  ÀÌ Çì´õÈ­ÀÏÀº C ¼Ò½ºÄÚµå¿Í È£È¯ÀÌ µÇµµ·Ï
- *  ±¸ÇöµÇ¾î¾ß ÇÕ´Ï´Ù.
+ *  ì´ í—¤ë”í™”ì¼ì€ C ì†ŒìŠ¤ì½”ë“œì™€ í˜¸í™˜ì´ ë˜ë„ë¡
+ *  êµ¬í˜„ë˜ì–´ì•¼ í•©ë‹ˆë‹¤.
  *  This source file should be compatible with
  *  C source, not C++.
  * ----------------------------------------------*/
@@ -68,15 +68,15 @@ typedef UInt iduNativeMutexObj;
 typedef struct iduMutexResNative
 {
     iduNativeMutexObj  mMutexObj;        /* Native Mutex Object              */
-    idBool             mIsLockTimeValid; /* mLastLockedTimeÀÌ À¯È¿ÇÑ °ªÀÎÁö*/
-    iduBridgeTime      mLastLockedTime;  /* ÃÖ±Ù¿¡ LockÀâÀº ½Ã°¢           */
+    idBool             mIsLockTimeValid; /* mLastLockedTimeì´ ìœ íš¨í•œ ê°’ì¸ì§€*/
+    iduBridgeTime      mLastLockedTime;  /* ìµœê·¼ì— Lockì¡ì€ ì‹œê°           */
 } iduMutexResNative;
 
 typedef struct iduMutexResPOSIX
 {
-    PDL_thread_mutex_t mMutex;           /* Mutex ÇÚµé */
-    idBool             mIsLockTimeValid; /* mLastLockedTimeÀÌ À¯È¿ÇÑ °ªÀÎÁö */
-    idvTime            mLastLockedTime;  /* ÃÖ±Ù¿¡ LockÀâÀº ½Ã°¢ */
+    PDL_thread_mutex_t mMutex;           /* Mutex í•¸ë“¤ */
+    idBool             mIsLockTimeValid; /* mLastLockedTimeì´ ìœ íš¨í•œ ê°’ì¸ì§€ */
+    idvTime            mLastLockedTime;  /* ìµœê·¼ì— Lockì¡ì€ ì‹œê° */
 } iduMutexResPOSIX;
 
 #else /* cplusplus */

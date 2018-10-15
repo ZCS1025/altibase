@@ -27,21 +27,21 @@
 
 // #include the SunOS 5.9 config, then add any SunOS 5.10 updates below.
 
-// FlexLexer.h¿¡¼­ iostreamÀ» includeÇÏ´Âµ¥,
-// iostream¿¡¼­ stdexcept¸¦ includeÇÑ´Ù.
-// stdexcept¿¡¼­´Â
-// _RWSTD_NO_EXCEPTIONS°¡ define µÇ¾î ÀÖÀ¸¸é,
-// _RWSTD_THROW_SPEC_NULL¸¦ throw()·Î Á¤ÀÇÇÏÁö ¾Ê´Âµ¥,
-// ¶§¹®¿¡ stdexcept¿¡¼­ ¿¡·¯°¡ ¹ß»ıÇÑ´Ù.
-// ÀÌ¸¦ ¸·±â À§ÇØ _RWSTD_NO_EXCEPTIONS¸¦ undef ÇÑ´Ù.
-// _RWSTD_NO_EXCEPTIONS´Â config-sunos5.5.h¿¡¼­ 1·Î Á¤ÀÇÇÑ´Ù.
-// PDL_HAS_EXCEPTIONS°¡ Á¤ÀÇµÇ¾î ÀÖÀ¸¸é _RWSTD_NO_EXCEPTIONS¸¦ 
-// Á¤ÀÇÇÏÁö ¾Ê´Â´Ù. (config-sunos5.5.h¿¡¼­...)
+// FlexLexer.hì—ì„œ iostreamì„ includeí•˜ëŠ”ë°,
+// iostreamì—ì„œ stdexceptë¥¼ includeí•œë‹¤.
+// stdexceptì—ì„œëŠ”
+// _RWSTD_NO_EXCEPTIONSê°€ define ë˜ì–´ ìˆìœ¼ë©´,
+// _RWSTD_THROW_SPEC_NULLë¥¼ throw()ë¡œ ì •ì˜í•˜ì§€ ì•ŠëŠ”ë°,
+// ë•Œë¬¸ì— stdexceptì—ì„œ ì—ëŸ¬ê°€ ë°œìƒí•œë‹¤.
+// ì´ë¥¼ ë§‰ê¸° ìœ„í•´ _RWSTD_NO_EXCEPTIONSë¥¼ undef í•œë‹¤.
+// _RWSTD_NO_EXCEPTIONSëŠ” config-sunos5.5.hì—ì„œ 1ë¡œ ì •ì˜í•œë‹¤.
+// PDL_HAS_EXCEPTIONSê°€ ì •ì˜ë˜ì–´ ìˆìœ¼ë©´ _RWSTD_NO_EXCEPTIONSë¥¼ 
+// ì •ì˜í•˜ì§€ ì•ŠëŠ”ë‹¤. (config-sunos5.5.hì—ì„œ...)
 // by kumdory
 //#undef _RWSTD_NO_EXCEPTIONS
 #define PDL_HAS_EXCEPTIONS 1
 
-// SESÀÇ seshx.cpp¿¡¼­ ifstream.h ´ë½Å ifstreamÀ» includeÇÏ±â À§ÇØ Á¤ÀÇÇÔ.
+// SESì˜ seshx.cppì—ì„œ ifstream.h ëŒ€ì‹  ifstreamì„ includeí•˜ê¸° ìœ„í•´ ì •ì˜í•¨.
 #define USE_STD_IOSTREAM   1
 
 #include "config-sunos5.9.h"

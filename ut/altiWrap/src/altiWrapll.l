@@ -300,7 +300,7 @@ void altiWraplLexer::setInitState( void )
         {
             if( ( idlOS::strncmp( sNlsUse, (SChar*)"SHIFTJIS", 8 ) == 0 ) ||
                 ( idlOS::strncmp( sNlsUse, (SChar*)"JAPANESE", 8 ) == 0 ) ||
-                /* PROJ-2590 [±‚¥…º∫] CP932 database character set ¡ˆø¯ */
+                /* PROJ-2590 [Í∏∞Îä•ÏÑ±] CP932 database character set ÏßÄÏõê */
                 ( idlOS::strncmp( sNlsUse, (SChar*)"MS932", 5 ) == 0 ) ||
                 ( idlOS::strncmp( sNlsUse, (SChar*)"CP932", 5 ) == 0 ) ||
                 ( idlOS::strncmp( sNlsUse, (SChar*)"WINDOWS932", 10 ) == 0 ) )

@@ -153,8 +153,8 @@ ACI_RC hbpDbConnect( DBCInfo    *aDBCInfo )
     acp_char_t           sConnStr[HBP_CONNECT_LEN];
 
     /*
-     * °¢ Å°¿öµåÀÇ ¼Ó¼º
-     * DSN : HOST IP        UID : »ç¿ëÀÚ ID             DATE_FORMAT
+     * ê° í‚¤ì›Œë“œì˜ ì†ì„±
+     * DSN : HOST IP        UID : ì‚¬ìš©ìž ID             DATE_FORMAT
      * PWD : Password       CONNTYPE : ( 1 : TCP/IP, 2 : UNIX DOMAIN, 3 : IPC )
      * PORT_NO      NLS_USE    TIMEOUT : default 3      CONNECTION_TIMEOUT
      */

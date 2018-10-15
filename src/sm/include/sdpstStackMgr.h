@@ -19,8 +19,8 @@
  *
  * $Id: sdpstStackMgr.h 27220 2008-07-23 14:56:22Z newdaily $
  *
- * º» ÆÄÀÏÀº Treelist Managed Segment¿¡¼­ À§Ä¡ ÀÌ·ÂÁ¤º¸¸¦ °ü¸®ÇÏ´Â
- * Stack °ü¸®ÀÚÀÇ Çì´õÆÄÀÏÀÌ´Ù.
+ * ë³¸ íŒŒì¼ì€ Treelist Managed Segmentì—ì„œ ìœ„ì¹˜ ì´ë ¥ì •ë³´ë¥¼ ê´€ë¦¬í•˜ëŠ”
+ * Stack ê´€ë¦¬ìì˜ í—¤ë”íŒŒì¼ì´ë‹¤.
  *
  ***********************************************************************/
 
@@ -115,7 +115,7 @@ public:
                                   sdpstPosItem * aRHS );
 };
 
-// °°Àº LevelÀÇ PosItem°£¿¡ °Å¸®¸¦ ±¸ÇÑ´Ù.
+// ê°™ì€ Levelì˜ PosItemê°„ì— ê±°ë¦¬ë¥¼ êµ¬í•œë‹¤.
 inline SShort sdpstStackMgr::getDist( sdpstPosItem * aLHS,
                                       sdpstPosItem * aRHS )
 {
@@ -127,7 +127,7 @@ inline SShort sdpstStackMgr::getDist( sdpstPosItem * aLHS,
     }
     else
     {
-        // ´Ù¸¥ ÆäÀÌÁöÀÌ¹Ç·Î distance¸¦ ÃøÁ¤ÇÒ ¼ö ¾ø´Ù.
+        // ë‹¤ë¥¸ í˜ì´ì§€ì´ë¯€ë¡œ distanceë¥¼ ì¸¡ì •í•  ìˆ˜ ì—†ë‹¤.
         sDist  = SDPST_FAR_AWAY_OFF;
     }
 

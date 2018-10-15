@@ -24,9 +24,9 @@ import java.util.regex.Pattern;
 import Altibase.jdbc.driver.ex.Error;
 import Altibase.jdbc.driver.ex.ErrorDef;
 
-// BUGBUG Savepoint´Â ÀÌ¸§À¸·Î¸¸ °ü¸®µÇ¾î¾ß ÇÑ´Ù. 
-// commitµÇ°Å³ª rollbackµÇ´õ¶óµµ statmenet´Â À¯ÁöÇÏ°í ÀÖ¾î¾ßÇÑ´Ù. 
-// ¿Ö³Ä¸é ¶È°°Àº ÀÌ¸§À¸·Î °´Ã¼°¡ »ı¼ºµÇ¸é ÀÌÀü¿¡ Á¸ÀçÇÏ´ø °°Àº ÀÌ¸§ÀÇ °´Ã¼°¡ ´Ù½Ã µ¿ÀÛ°¡´ÉÇØ¾ß ÇÏ±â ¶§¹®ÀÌ´Ù.
+// BUGBUG SavepointëŠ” ì´ë¦„ìœ¼ë¡œë§Œ ê´€ë¦¬ë˜ì–´ì•¼ í•œë‹¤. 
+// commitë˜ê±°ë‚˜ rollbackë˜ë”ë¼ë„ statmenetëŠ” ìœ ì§€í•˜ê³  ìˆì–´ì•¼í•œë‹¤. 
+// ì™œëƒë©´ ë˜‘ê°™ì€ ì´ë¦„ìœ¼ë¡œ ê°ì²´ê°€ ìƒì„±ë˜ë©´ ì´ì „ì— ì¡´ì¬í•˜ë˜ ê°™ì€ ì´ë¦„ì˜ ê°ì²´ê°€ ë‹¤ì‹œ ë™ì‘ê°€ëŠ¥í•´ì•¼ í•˜ê¸° ë•Œë¬¸ì´ë‹¤.
 
 class AltibaseSavepoint implements Savepoint
 {

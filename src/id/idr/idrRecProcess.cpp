@@ -69,14 +69,14 @@ void idrRecProcess::run()
     IDV_WP_SET_PROC_INFO( &sStatistics, mDeadProcInfo );
     IDV_WP_SET_THR_INFO( &sStatistics,  &mDeadProcInfo->mMainTxInfo );
 
-    /* Main Thread¿¡ ´ëÇØ¼­ Recovery¸¦ ¸Ç¸ÕÀú ¼öÇàÇÑ´Ù. ¿Ö³ÄÇÏ¸é ProcInfo¿¡ ´ëÇÑ
-     * Thread List Á¤º¸¿¡ ´ëÇÑ °»½ÅÀÌ ¹ß»ıÇÏ¿´À» ¼ö ÀÖ±â ¶§¹®ÀÌ´Ù. */
+    /* Main Threadì— ëŒ€í•´ì„œ Recoveryë¥¼ ë§¨ë¨¼ì € ìˆ˜í–‰í•œë‹¤. ì™œëƒí•˜ë©´ ProcInfoì— ëŒ€í•œ
+     * Thread List ì •ë³´ì— ëŒ€í•œ ê°±ì‹ ì´ ë°œìƒí•˜ì˜€ì„ ìˆ˜ ìˆê¸° ë•Œë¬¸ì´ë‹¤. */
     IDE_TEST( idrLogMgr::abort( &sStatistics,
                                 &mDeadProcInfo->mMainTxInfo )
               != IDE_SUCCESS );
 
-    /* ThrInfo½Ã ProcessInfo Latch¸¸ Àâ°í Á×Àº °æ¿ì, Log°¡ ¾ø±â¶§¹®¿¡ ¹«Á¶°Ç
-     * Latch¸¦ Ç®¾îÁØ´Ù. */
+    /* ThrInfoì‹œ ProcessInfo Latchë§Œ ì¡ê³  ì£½ì€ ê²½ìš°, Logê°€ ì—†ê¸°ë•Œë¬¸ì— ë¬´ì¡°ê±´
+     * Latchë¥¼ í’€ì–´ì¤€ë‹¤. */
     IDE_TEST( idwPMMgr::unlockProcess( &sStatistics, mDeadProcInfo ) != IDE_SUCCESS );
 
     sDeadThrCount = mDeadProcInfo->mThreadCnt;
@@ -95,15 +95,15 @@ void idrRecProcess::run()
 
         sHeadAddr        = mDeadProcInfo->mMainTxInfo.mSelfAddr;
 
-        /* Á×Àº Process¿¡ ´ëÇØ¼­ Recovery ThreadµéÀ» ¼öÇàÇÑ´Ù. */
+        /* ì£½ì€ Processì— ëŒ€í•´ì„œ Recovery Threadë“¤ì„ ìˆ˜í–‰í•œë‹¤. */
         for( i = 0; i < sDeadThrCount; i++ )
         {
             IDE_ASSERT( sCurDeadTxInfo->mSelfAddr != sHeadAddr );
 
             new ( sArrThread + i ) idrRecThread;
 
-            /* Process Log Buffer¿¡ ÀÖ´Â Logµé¿¡ ´ëÇØ¼­ Undo¸¦ ¼öÇàÇÑ´Ù. */
-            /* ¸ğµç Thread Info¸¦ FreeÇÑ´Ù. */
+            /* Process Log Bufferì— ìˆëŠ” Logë“¤ì— ëŒ€í•´ì„œ Undoë¥¼ ìˆ˜í–‰í•œë‹¤. */
+            /* ëª¨ë“  Thread Infoë¥¼ Freeí•œë‹¤. */
 
             IDE_ASSERT( sCurDeadTxInfo != &mDeadProcInfo->mMainTxInfo );
 
@@ -128,8 +128,8 @@ void idrRecProcess::run()
 
             IDE_ASSERT( sCurDeadTxInfo->mSelfAddr != sHeadAddr );
 
-            /* Process Log Buffer¿¡ ÀÖ´Â Logµé¿¡ ´ëÇØ¼­ Undo¸¦ ¼öÇàÇÑ´Ù. */
-            /* ¸ğµç Thread Info¸¦ FreeÇÑ´Ù. */
+            /* Process Log Bufferì— ìˆëŠ” Logë“¤ì— ëŒ€í•´ì„œ Undoë¥¼ ìˆ˜í–‰í•œë‹¤. */
+            /* ëª¨ë“  Thread Infoë¥¼ Freeí•œë‹¤. */
             IDE_TEST( sArrThread[i].shutdown() != IDE_SUCCESS );
             IDE_TEST( sArrThread[i].destroy() != IDE_SUCCESS );
 
@@ -139,7 +139,7 @@ void idrRecProcess::run()
             sThrListNode = (iduShmListNode*)IDU_SHM_GET_ADDR_PTR(
                 sCurDeadTxInfo->mNode.mAddrNext );
 
-            /* ThrInfo¸¦ ProcessInfo¿¡¼­ Á¦°ÅÇÑ´Ù. */
+            /* ThrInfoë¥¼ ProcessInfoì—ì„œ ì œê±°í•œë‹¤. */
             IDE_TEST( idwPMMgr::freeThrInfo( &sStatistics, sCurDeadTxInfo )
                       != IDE_SUCCESS );
 
@@ -149,11 +149,11 @@ void idrRecProcess::run()
 
     IDV_WP_SET_THR_INFO( &sStatistics, &mDeadProcInfo->mMainTxInfo );
 
-    /* PROCINFO¿¡ StStmtInfo°¡ µî·ÏµÇ¾î ÀÖ´Â °æ¿ì¿¡,
-     * mmcStatementManager::removeStStmtInfo¸¦ ÅëÇÏ¿© ÇØ´ç ¸Ş¸ğ¸®¸¦
-     * ¸Ş¸ğ¸® ¸®½ºÆ®¿¡¼­ UNLINK¸¦ ÇÏ°í POOL¿¡¼­ Á¦°ÅÇÏ¿© ÀçÇÒ´çÀÌ °¡´ÉÇÏµµ·Ï ÇÑ´Ù.
+    /* PROCINFOì— StStmtInfoê°€ ë“±ë¡ë˜ì–´ ìˆëŠ” ê²½ìš°ì—,
+     * mmcStatementManager::removeStStmtInfoë¥¼ í†µí•˜ì—¬ í•´ë‹¹ ë©”ëª¨ë¦¬ë¥¼
+     * ë©”ëª¨ë¦¬ ë¦¬ìŠ¤íŠ¸ì—ì„œ UNLINKë¥¼ í•˜ê³  POOLì—ì„œ ì œê±°í•˜ì—¬ ì¬í• ë‹¹ì´ ê°€ëŠ¥í•˜ë„ë¡ í•œë‹¤.
      *
-     * ÂüÁ¶ NOK ÁÖ¼Ò ÀÔ´Ï´Ù.
+     * ì°¸ì¡° NOK ì£¼ì†Œ ì…ë‹ˆë‹¤.
      *     http://nok.altibase.com/display/rnd/BUG-41760+Working+Report
      */
     if (mDeadProcInfo->mLPID >= IDU_PROC_TYPE_USER)

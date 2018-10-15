@@ -21,21 +21,21 @@
  * Description :
  *     AGGR(AGGRegation) Node
  *
- *     °ü°èÇü ¸ğµ¨¿¡¼­ ´ÙÀ½°ú °°Àº ±â´ÉÀ» ¼öÇàÇÏ´Â Plan Node ÀÌ´Ù.
+ *     ê´€ê³„í˜• ëª¨ë¸ì—ì„œ ë‹¤ìŒê³¼ ê°™ì€ ê¸°ëŠ¥ì„ ìˆ˜í–‰í•˜ëŠ” Plan Node ì´ë‹¤.
  *
  *         - Sort-based Grouping
  *         - Distinct Aggregation
  *
- *    - Distinct ColumnÀ» Disk Temp TableÀ» »ç¿ëÇÏ´ø, Memory Temp TableÀ»
- *      »ç¿ë¿¡ °ü°è ¾øÀÌ AGGR NodeÀÇ Row ÀúÀåÀ» À§ÇÑ Tuple SetÀÇ Á¤º¸´Â
- *      Memory Storage¿©¾ß ÇÑ´Ù.
+ *    - Distinct Columnì„ Disk Temp Tableì„ ì‚¬ìš©í•˜ë˜, Memory Temp Tableì„
+ *      ì‚¬ìš©ì— ê´€ê³„ ì—†ì´ AGGR Nodeì˜ Row ì €ì¥ì„ ìœ„í•œ Tuple Setì˜ ì •ë³´ëŠ”
+ *      Memory Storageì—¬ì•¼ í•œë‹¤.
  *
- *    - Distinct ColumnÀ»  Disk¿¡ ÀúÀåÇÒ °æ¿ì, PlanÀÇ flagÁ¤º¸´Â DISK°¡ µÇ¸ç,
- *      °¢ Distinct ColumnÀ» À§ÇÑ Tuple SetÀÇ Storage ¿ª½Ã Disk TypeÀÌ µÈ´Ù.
+ *    - Distinct Columnì„  Diskì— ì €ì¥í•  ê²½ìš°, Planì˜ flagì •ë³´ëŠ” DISKê°€ ë˜ë©°,
+ *      ê° Distinct Columnì„ ìœ„í•œ Tuple Setì˜ Storage ì—­ì‹œ Disk Typeì´ ëœë‹¤.
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  **********************************************************************/
 
@@ -53,7 +53,7 @@
 //-----------------
 
 // qmncAGGR.flag - has child GRBY
-// GROUP BY°¡ Á¸ÀçÇÏ´Â ÁöÀÇ ¿©ºÎ
+// GROUP BYê°€ ì¡´ì¬í•˜ëŠ” ì§€ì˜ ì—¬ë¶€
 #define QMNC_AGGR_GROUPED_MASK             (0x00000001)
 #define QMNC_AGGR_GROUPED_FALSE            (0x00000000)
 #define QMNC_AGGR_GROUPED_TRUE             (0x00000001)
@@ -70,10 +70,10 @@
 
 //------------------------------------------
 // [qmdDistNode]
-//    AggregationÀÇ Distinct Argument¿¡ ´ëÇÑ
-//    ÀúÀå °ü¸®¸¦ ´ã´çÇÏ´Â ³ëµåÀÌ´Ù.
-//    (qmdMtrNode)¿Í °­Á¦ÀûÀ¸·Î Type CastingµÇ¹Ç·Î
-//    ±× ÀÚ·á ±¸Á¶ÀÇ º¯°æ¿¡ ÁÖÀÇÇÏ¿©¾ß ÇÑ´Ù.
+//    Aggregationì˜ Distinct Argumentì— ëŒ€í•œ
+//    ì €ì¥ ê´€ë¦¬ë¥¼ ë‹´ë‹¹í•˜ëŠ” ë…¸ë“œì´ë‹¤.
+//    (qmdMtrNode)ì™€ ê°•ì œì ìœ¼ë¡œ Type Castingë˜ë¯€ë¡œ
+//    ê·¸ ìë£Œ êµ¬ì¡°ì˜ ë³€ê²½ì— ì£¼ì˜í•˜ì—¬ì•¼ í•œë‹¤.
 //------------------------------------------
 
 typedef struct qmdDistNode
@@ -90,23 +90,23 @@ typedef struct qmdDistNode
     qmdMtrFunction      func;
     UInt                flag;
 
-    // qmdMtrNode·Î castingÇÏ±â ¶§¹®¿¡ qmdMtrNode¿Í µ¿ÀÏÇÏ°Ô Ãß°¡ÇÑ´Ù.
+    // qmdMtrNodeë¡œ castingí•˜ê¸° ë•Œë¬¸ì— qmdMtrNodeì™€ ë™ì¼í•˜ê²Œ ì¶”ê°€í•œë‹¤.
     smiFetchColumnList * fetchColumnList; // PROJ-1705
     mtcTemplate        * tmplate;
     
     // for qmdDistNode
     qmcdHashTemp        hashMgr;    // Hash Temp Table
     void              * mtrRow;
-    idBool              isDistinct; // ColumnÀÇ Distinction ¿©ºÎ
+    idBool              isDistinct; // Columnì˜ Distinction ì—¬ë¶€
 } qmdDistNode;
 
 //------------------------------------------
 // [qmdAggrNode]
-//    AggregationÀ» ´ã´çÇÏ´Â ³ëµå·Î
-//    Distinct ArgumentÀÇ Á¸Àç À¯¹«¿¡ µû¶ó
-//    ´Ù¸¥ Ã³¸®¸¦ °ü¸®ÇÏ´Â ³ëµåÀÌ´Ù.
-//    (qmdMtrNode)¿Í °­Á¦ÀûÀ¸·Î Type CastingµÇ¹Ç·Î
-//    ±× ÀÚ·á ±¸Á¶ÀÇ º¯°æ¿¡ ÁÖÀÇÇÏ¿©¾ß ÇÑ´Ù.
+//    Aggregationì„ ë‹´ë‹¹í•˜ëŠ” ë…¸ë“œë¡œ
+//    Distinct Argumentì˜ ì¡´ì¬ ìœ ë¬´ì— ë”°ë¼
+//    ë‹¤ë¥¸ ì²˜ë¦¬ë¥¼ ê´€ë¦¬í•˜ëŠ” ë…¸ë“œì´ë‹¤.
+//    (qmdMtrNode)ì™€ ê°•ì œì ìœ¼ë¡œ Type Castingë˜ë¯€ë¡œ
+//    ê·¸ ìë£Œ êµ¬ì¡°ì˜ ë³€ê²½ì— ì£¼ì˜í•˜ì—¬ì•¼ í•œë‹¤.
 //------------------------------------------
 
 typedef struct qmdAggrNode
@@ -123,7 +123,7 @@ typedef struct qmdAggrNode
     qmdMtrFunction   func;
     UInt             flag;
 
-    // qmdMtrNode·Î castingÇÏ±â ¶§¹®¿¡ qmdMtrNode¿Í µ¿ÀÏÇÏ°Ô Ãß°¡ÇÑ´Ù.
+    // qmdMtrNodeë¡œ castingí•˜ê¸° ë•Œë¬¸ì— qmdMtrNodeì™€ ë™ì¼í•˜ê²Œ ì¶”ê°€í•œë‹¤.
     smiFetchColumnList * fetchColumnList; // PROJ-1705
     mtcTemplate        * tmplate;
     
@@ -150,7 +150,7 @@ typedef struct qmdAggrNode
 typedef struct qmncAGGR
 {
     //---------------------------------
-    // Code ¿µ¿ª °øÅë Á¤º¸
+    // Code ì˜ì—­ ê³µí†µ ì •ë³´
     //---------------------------------
 
     qmnPlan        plan;
@@ -158,22 +158,22 @@ typedef struct qmncAGGR
     UInt           planID;
 
     //---------------------------------
-    // AGGR °ü·Ã Á¤º¸
+    // AGGR ê´€ë ¨ ì •ë³´
     //---------------------------------
 
-    // Base Table Á¤º¸¸¦ Á¦°ÅÇÑ´Ù.
-    // AggregationÀÇ °æ¿ì ÀÚ¿¬½º·´°Ô Push ProjectionÈ¿°ú°¡ »ı±â±â ¶§¹®ÀÌ´Ù.
+    // Base Table ì •ë³´ë¥¼ ì œê±°í•œë‹¤.
+    // Aggregationì˜ ê²½ìš° ìì—°ìŠ¤ëŸ½ê²Œ Push Projectioníš¨ê³¼ê°€ ìƒê¸°ê¸° ë•Œë¬¸ì´ë‹¤.
     UShort         baseTableCount;
     qmcMtrNode   * myNode;
-    qmcMtrNode   * distNode;          // distinct aggregationÀÇ argument
+    qmcMtrNode   * distNode;          // distinct aggregationì˜ argument
 
     //---------------------------------
-    // Data ¿µ¿ª Á¤º¸
+    // Data ì˜ì—­ ì •ë³´
     //---------------------------------
 
-    UInt           mtrNodeOffset;     // ÀúÀå ColumnÀÇ Data ¿µ¿ª À§Ä¡
-    UInt           aggrNodeOffset;    // AggregationÀÇ Data ¿µ¿ª À§Ä¡
-    UInt           distNodeOffset;    // distinctionÀÇ Data ¿µ¿ª À§Ä¡
+    UInt           mtrNodeOffset;     // ì €ì¥ Columnì˜ Data ì˜ì—­ ìœ„ì¹˜
+    UInt           aggrNodeOffset;    // Aggregationì˜ Data ì˜ì—­ ìœ„ì¹˜
+    UInt           distNodeOffset;    // distinctionì˜ Data ì˜ì—­ ìœ„ì¹˜
 
 } qmncAGGR;
 
@@ -181,30 +181,30 @@ typedef struct qmncAGGR
 typedef struct qmndAGGR
 {
     //---------------------------------
-    // Data ¿µ¿ª °øÅë Á¤º¸
+    // Data ì˜ì—­ ê³µí†µ ì •ë³´
     //---------------------------------
     qmndPlan            plan;
     doItFunc            doIt;
     UInt              * flag;
 
     //---------------------------------
-    // AGGR °íÀ¯ Á¤º¸
+    // AGGR ê³ ìœ  ì •ë³´
     //---------------------------------
 
-    qmdMtrNode        * mtrNode;     // ÀúÀå Column Á¤º¸
-    qmdMtrNode        * groupNode;   // Group ColumnÀÇ À§Ä¡
+    qmdMtrNode        * mtrNode;     // ì €ì¥ Column ì •ë³´
+    qmdMtrNode        * groupNode;   // Group Columnì˜ ìœ„ì¹˜
 
-    UInt                distNodeCnt; // Distinct ArgumentÀÇ °³¼ö
-    qmdDistNode       * distNode;    // Distinct ÀúÀå Column Á¤º¸
-    UInt                aggrNodeCnt; // Aggr Column °³¼ö
-    qmdAggrNode       * aggrNode;    // Aggr Column Á¤º¸
+    UInt                distNodeCnt; // Distinct Argumentì˜ ê°œìˆ˜
+    qmdDistNode       * distNode;    // Distinct ì €ì¥ Column ì •ë³´
+    UInt                aggrNodeCnt; // Aggr Column ê°œìˆ˜
+    qmdAggrNode       * aggrNode;    // Aggr Column ì •ë³´
 
     //---------------------------------
-    // ¼­·Î ´Ù¸¥ GroupÀ» À§ÇÑ ÀÚ·á ±¸Á¶
+    // ì„œë¡œ ë‹¤ë¥¸ Groupì„ ìœ„í•œ ìë£Œ êµ¬ì¡°
     //---------------------------------
 
-    UInt                mtrRowSize;  // ÀúÀåÇÒ RowÀÇ Size
-    void              * mtrRow[2];   // °á°ú °ü¸®¸¦ À§ÇÑ µÎ °³ÀÇ °ø°£
+    UInt                mtrRowSize;  // ì €ì¥í•  Rowì˜ Size
+    void              * mtrRow[2];   // ê²°ê³¼ ê´€ë¦¬ë¥¼ ìœ„í•œ ë‘ ê°œì˜ ê³µê°„
     UInt                mtrRowIdx;   // wap within mtrRow[0] and mtr2Row[1]
 
     void              * nullRow;     // Null Row
@@ -218,11 +218,11 @@ public:
     // Base Function Pointer
     //------------------------
 
-    // ÃÊ±âÈ­
+    // ì´ˆê¸°í™”
     static IDE_RC init( qcTemplate * aTemplate,
                         qmnPlan    * aPlan );
 
-    // ¼öÇà ÇÔ¼ö
+    // ìˆ˜í–‰ í•¨ìˆ˜
     static IDE_RC doIt( qcTemplate * aTemplate,
                         qmnPlan    * aPlan,
                         qmcRowFlag * aFlag );
@@ -231,7 +231,7 @@ public:
     static IDE_RC padNull( qcTemplate * aTemplate,
                            qmnPlan    * aPlan );
 
-    // Plan Á¤º¸ Ãâ·Â
+    // Plan ì •ë³´ ì¶œë ¥
     static IDE_RC printPlan( qcTemplate   * aTemplate,
                              qmnPlan      * aPlan,
                              ULong          aDepth,
@@ -242,27 +242,27 @@ public:
     // mapping by doIt() function pointer
     //------------------------
 
-    // È£ÃâµÇ¾î¼­´Â ¾ÈµÊ.
+    // í˜¸ì¶œë˜ì–´ì„œëŠ” ì•ˆë¨.
     static IDE_RC doItDefault( qcTemplate * aTemplate,
                                qmnPlan    * aPlan,
                                qmcRowFlag * aFlag );
 
-    // One-Group AggregationÀ» ¼öÇà
+    // One-Group Aggregationì„ ìˆ˜í–‰
     static IDE_RC doItAggregation( qcTemplate * aTemplate,
                                    qmnPlan    * aPlan,
                                    qmcRowFlag * aFlag );
 
-    // Multi-Group AggregationÀ» ÃÖÃÊ ¼öÇà
+    // Multi-Group Aggregationì„ ìµœì´ˆ ìˆ˜í–‰
     static IDE_RC doItGroupAggregation( qcTemplate * aTemplate,
                                         qmnPlan    * aPlan,
                                         qmcRowFlag * aFlag );
 
-    // Multi-Group AggregationÀÇ ´ÙÀ½ ¼öÇà
+    // Multi-Group Aggregationì˜ ë‹¤ìŒ ìˆ˜í–‰
     static IDE_RC doItNext( qcTemplate * aTemplate,
                             qmnPlan    * aPlan,
                             qmcRowFlag * aFlag );
 
-    // Record ¾øÀ½À» ¸®ÅÏ
+    // Record ì—†ìŒì„ ë¦¬í„´
     static IDE_RC doItLast( qcTemplate * aTemplate,
                             qmnPlan    * aPlan,
                             qmcRowFlag * aFlag );
@@ -270,94 +270,94 @@ public:
 private:
 
     //------------------------
-    // ÃÊ±âÈ­ °ü·Ã ÇÔ¼ö
+    // ì´ˆê¸°í™” ê´€ë ¨ í•¨ìˆ˜
     //------------------------
 
-    // ÃÖÃÊ ÃÊ±âÈ­
+    // ìµœì´ˆ ì´ˆê¸°í™”
     static IDE_RC firstInit( qcTemplate * aTemplate,
                              qmncAGGR   * aCodePlan,
                              qmndAGGR   * aDataPlan );
 
-    // ÀúÀå ColumnÀÇ ÃÊ±âÈ­
+    // ì €ì¥ Columnì˜ ì´ˆê¸°í™”
     static IDE_RC initMtrNode( qcTemplate * aTemplate,
                                qmncAGGR   * aCodePlan,
                                qmndAGGR   * aDataPlan );
 
-    // Distinct ColumnÀÇ ÃÊ±âÈ­
+    // Distinct Columnì˜ ì´ˆê¸°í™”
     static IDE_RC initDistNode( qcTemplate * aTemplate,
                                 qmncAGGR   * aCodePlan,
                                 qmndAGGR   * aDataPlan );
 
-    // Aggregation ColumnÀÇ ÃÊ±âÈ­
+    // Aggregation Columnì˜ ì´ˆê¸°í™”
     static IDE_RC initAggrNode( qcTemplate * aTemplate,
                                 qmncAGGR   * aCodePlan,
                                 qmndAGGR   * aDataPlan );
 
-    // Aggregation ColumnÁ¤º¸ÀÇ ¿¬°á
+    // Aggregation Columnì •ë³´ì˜ ì—°ê²°
     static IDE_RC linkAggrNode( qmncAGGR   * aCodeNode,
                                 qmndAGGR   * aDataNode );
 
-    // Group ColumnÀÇ ÃÊ±âÈ­
+    // Group Columnì˜ ì´ˆê¸°í™”
     static IDE_RC initGroupNode( qmncAGGR   * aCodePlan,
                                  qmndAGGR   * aDataPlan );
 
-    // µÎ RowÀÇ ÀúÀå °ø°£ ¸¶·Ã
+    // ë‘ Rowì˜ ì €ì¥ ê³µê°„ ë§ˆë ¨
     static IDE_RC allocMtrRow( qcTemplate * aTemplate,
                                qmndAGGR   * aDataPlan );
 
-    // Null RowÀÇ »ı¼º
+    // Null Rowì˜ ìƒì„±
     static IDE_RC makeNullRow(qcTemplate * aTemplate,
                               qmndAGGR   * aDataPlan );
 
     //----------------------------------------------------
-    // AGGR ÀÇ doIt() °ü·Ã ÇÔ¼ö
+    // AGGR ì˜ doIt() ê´€ë ¨ í•¨ìˆ˜
     //----------------------------------------------------
 
     //-----------------------------
-    // Aggregation ÃÊ±âÈ­ °úÁ¤
+    // Aggregation ì´ˆê¸°í™” ê³¼ì •
     //-----------------------------
 
-    // Distinct ColumnÀ» À§ÇÑ Temp TableÀ» ClearÇÔ
+    // Distinct Columnì„ ìœ„í•œ Temp Tableì„ Clearí•¨
     static IDE_RC clearDistNode( qmndAGGR   * aDataPlan );
 
-    // AggregationÀÇ ÃÊ±âÈ­¿Í Group °ªÀ» ¼³Á¤
+    // Aggregationì˜ ì´ˆê¸°í™”ì™€ Group ê°’ì„ ì„¤ì •
     static IDE_RC initAggregation( qcTemplate * aTemplate,
                                    qmndAGGR   * aDataPlan );
 
-    // Grouping °ªÀ» ¼³Á¤
+    // Grouping ê°’ì„ ì„¤ì •
     static IDE_RC setGroupColumns( qcTemplate * aTemplate,
                                    qmndAGGR   * aDataPlan );
 
     //-----------------------------
-    // Aggregation ¼öÇà °úÁ¤
+    // Aggregation ìˆ˜í–‰ ê³¼ì •
     //-----------------------------
 
-    // AggregationÀ» ¼öÇàÇÑ´Ù.
+    // Aggregationì„ ìˆ˜í–‰í•œë‹¤.
     static IDE_RC execAggregation( qcTemplate * aTemplate,
                                    qmndAGGR   * aDataPlan );
 
-    // Aggregation ArgumentÀÇ Distinction ¿©ºÎ¸¦ ÆÇ´Ü
+    // Aggregation Argumentì˜ Distinction ì—¬ë¶€ë¥¼ íŒë‹¨
     static IDE_RC setDistMtrColumns( qcTemplate * aTemplate,
                                      qmndAGGR * aDataPlan );
 
     //-----------------------------
-    // Aggregation ¸¶¹«¸® °úÁ¤
+    // Aggregation ë§ˆë¬´ë¦¬ ê³¼ì •
     //-----------------------------
 
-    // AggregationÀ» ¸¶¹«¸®
+    // Aggregationì„ ë§ˆë¬´ë¦¬
     static IDE_RC finiAggregation( qcTemplate * aTemplate,
                                    qmndAGGR   * aDataPlan );
 
-    // °á°ú¸¦ Tuple Set¿¡ ¼³Á¤
+    // ê²°ê³¼ë¥¼ Tuple Setì— ì„¤ì •
     static IDE_RC setTupleSet( qcTemplate * aTemplate,
                                qmndAGGR   * aDataPlan );
 
-    // »õ·Î¿î GroupÀÌ ¿Ã¶ó¿Â °æ¿ìÀÇ Ã³¸®
+    // ìƒˆë¡œìš´ Groupì´ ì˜¬ë¼ì˜¨ ê²½ìš°ì˜ ì²˜ë¦¬
     static IDE_RC setNewGroup( qcTemplate * aTemplate,
                                qmndAGGR   * aDataPlan );
 
     //-----------------------------
-    // A4 - Grouping Set °ü·Ã ÇÔ¼ö
+    // A4 - Grouping Set ê´€ë ¨ í•¨ìˆ˜
     //-----------------------------
 
     /*

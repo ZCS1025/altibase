@@ -20,36 +20,36 @@
  *
  * Description :
  *
- *    Cost Factor »ó¼öÀÇ Á¤ÀÇ
+ *    Cost Factor ìƒìˆ˜ì˜ ì •ì˜
  *
- *    ºñ¿ë °è»ê ½Ã Àû¿ëµÇ´Â »ó¼ö°ªÀ» ¿©±â¿¡ Á¤ÀÇÇÔ.
+ *    ë¹„ìš© ê³„ì‚° ì‹œ ì ìš©ë˜ëŠ” ìƒìˆ˜ê°’ì„ ì—¬ê¸°ì— ì •ì˜í•¨.
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  **********************************************************************/
 
 #ifndef _O_QMO_COST_DEF_H_
 #define _O_QMO_COST_DEF_H_ 1
 
-// JoinÀ» DNF ·Î Ã³¸®ÇÏ´Â °ÍÀº ¹Ù¶÷Á÷ÇÏÁö ¾Ê´Ù.
-// ÀÌ¿¡ ´ëÇÑ Penalty¸¦ ºÎ¿©ÇÑ´Ù.
+// Joinì„ DNF ë¡œ ì²˜ë¦¬í•˜ëŠ” ê²ƒì€ ë°”ëžŒì§í•˜ì§€ ì•Šë‹¤.
+// ì´ì— ëŒ€í•œ Penaltyë¥¼ ë¶€ì—¬í•œë‹¤.
 #define QMO_COST_DNF_JOIN_PENALTY                                  (10)
 
 //----------------------------------------------
-// Àû¿ëÇÒ ¼ö ¾ø´Â °æ¿ìÀÇ ºñ¿ë
+// ì ìš©í•  ìˆ˜ ì—†ëŠ” ê²½ìš°ì˜ ë¹„ìš©
 //----------------------------------------------
 #define QMO_COST_INVALID_COST                                      (-1)
 
-// ÃÖ¼Ò ¹öÆÛ °³¼ö
+// ìµœì†Œ ë²„í¼ ê°œìˆ˜
 #define QMO_COST_DISK_MINIMUM_BUFFER                               (10)
 
 //----------------------------------------------------------------------
-// Áß°£ °á°ú ÀúÀå ¹æ½Ä
+// ì¤‘ê°„ ê²°ê³¼ ì €ìž¥ ë°©ì‹
 //----------------------------------------------------------------------
 
-// RID ÀúÀå ¹æ½Ä°ú Push Projection¿¡ ÀÇÇÑ Value ÀúÀå ¹æ½ÄÀ¸·Î ³ª´¶´Ù.
+// RID ì €ìž¥ ë°©ì‹ê³¼ Push Projectionì— ì˜í•œ Value ì €ìž¥ ë°©ì‹ìœ¼ë¡œ ë‚˜ë‰œë‹¤.
 typedef enum
 {
     QMO_STORE_RID = 0,

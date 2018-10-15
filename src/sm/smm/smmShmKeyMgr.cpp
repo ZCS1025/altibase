@@ -28,11 +28,11 @@
 #include <smmShmKeyMgr.h>
 
 
-smmShmKeyList smmShmKeyMgr::mFreeKeyList; // ÀçÈ°¿ë °øÀ¯¸Ş¸ğ¸® Key List
+smmShmKeyList smmShmKeyMgr::mFreeKeyList; // ì¬í™œìš© ê³µìœ ë©”ëª¨ë¦¬ Key List
 iduMutex      smmShmKeyMgr::mMutex; 
 key_t         smmShmKeyMgr::mSeekKey;
 
-// »ç¿ë°¡´ÉÇÑ °øÀ¯¸Ş¸ğ¸® KeyÁß °¡Àå ÀÛÀº °ª 
+// ì‚¬ìš©ê°€ëŠ¥í•œ ê³µìœ ë©”ëª¨ë¦¬ Keyì¤‘ ê°€ì¥ ì‘ì€ ê°’ 
 #define SMM_MIN_SHM_KEY_CANDIDATE (1024)
 
 smmShmKeyMgr::smmShmKeyMgr()
@@ -45,22 +45,22 @@ smmShmKeyMgr::~smmShmKeyMgr()
 
 
 /*
-   ´ÙÀ½ »ç¿ëÇÒ °øÀ¯¸Ş¸ğ¸® Key ÈÄº¸¸¦ Ã£¾Æ ¸®ÅÏÇÑ´Ù.
+   ë‹¤ìŒ ì‚¬ìš©í•  ê³µìœ ë©”ëª¨ë¦¬ Key í›„ë³´ë¥¼ ì°¾ì•„ ë¦¬í„´í•œë‹¤.
 
-   ÈÄº¸ÀÎ ÀÌÀ¯ :
-     ÇØ´ç Key¸¦ ÀÌ¿ëÇÏ¿© »õ °øÀ¯¸Ş¸ğ¸® ¿µ¿ªÀ» »ı¼ºÇÒ ¼ö ÀÖÀ» ¼öµµ ÀÖ°í
-     ÀÌ¹Ì ÇØ´ç Key·Î °øÀ¯¸Ş¸ğ¸® ¿µ¿ªÀÌ »ı¼ºµÇ¾î ÀÖÀ» ¼öµµ ÀÖ±â ¶§¹®.
+   í›„ë³´ì¸ ì´ìœ  :
+     í•´ë‹¹ Keyë¥¼ ì´ìš©í•˜ì—¬ ìƒˆ ê³µìœ ë©”ëª¨ë¦¬ ì˜ì—­ì„ ìƒì„±í•  ìˆ˜ ìˆì„ ìˆ˜ë„ ìˆê³ 
+     ì´ë¯¸ í•´ë‹¹ Keyë¡œ ê³µìœ ë©”ëª¨ë¦¬ ì˜ì—­ì´ ìƒì„±ë˜ì–´ ìˆì„ ìˆ˜ë„ ìˆê¸° ë•Œë¬¸.
 
-   aShmKeyCandidate [OUT] 0 : °øÀ¯¸Ş¸ğ¸® Key ÈÄº¸°¡ ¾øÀ½
-                          Otherwise : »ç¿ëÇÒ ¼ö ÀÖ´Â °øÀ¯¸Ş¸ğ¸® Key ÈÄº¸
+   aShmKeyCandidate [OUT] 0 : ê³µìœ ë©”ëª¨ë¦¬ Key í›„ë³´ê°€ ì—†ìŒ
+                          Otherwise : ì‚¬ìš©í•  ìˆ˜ ìˆëŠ” ê³µìœ ë©”ëª¨ë¦¬ Key í›„ë³´
 
    PROJ-1548 Memory Tablespace
-   - mSeekKey¿¡ ´ëÇÑ µ¿½Ã¼º Á¦¾î¸¦ ÇÏ´Â ÀÌÀ¯
-     - mSeekKey´Â ¿©·¯ Tx°¡ µ¿½Ã¿¡ Á¢±ÙÇÒ ¼ö ÀÖ´Ù.
-     - mSeekKey´Â ¿©·¯ Tablespace¿¡¼­ µ¿½Ã¿¡ Á¢±ÙÇÒ ¼ö ÀÖ´Ù.
+   - mSeekKeyì— ëŒ€í•œ ë™ì‹œì„± ì œì–´ë¥¼ í•˜ëŠ” ì´ìœ 
+     - mSeekKeyëŠ” ì—¬ëŸ¬ Txê°€ ë™ì‹œì— ì ‘ê·¼í•  ìˆ˜ ìˆë‹¤.
+     - mSeekKeyëŠ” ì—¬ëŸ¬ Tablespaceì—ì„œ ë™ì‹œì— ì ‘ê·¼í•  ìˆ˜ ìˆë‹¤.
 
-  - °¡´ÉÇÏ¸é ÀÌÀü¿¡ ´Ù¸¥ Tablespace¿¡¼­ »ç¿ëµÇ¾ú´ø Key¸¦
-     ÀçÈ°¿ëÇÏ¿© »ç¿ëÇÑ´Ù.
+  - ê°€ëŠ¥í•˜ë©´ ì´ì „ì— ë‹¤ë¥¸ Tablespaceì—ì„œ ì‚¬ìš©ë˜ì—ˆë˜ Keyë¥¼
+     ì¬í™œìš©í•˜ì—¬ ì‚¬ìš©í•œë‹¤.
 */
 IDE_RC smmShmKeyMgr::getShmKeyCandidate(key_t * aShmKeyCandidate) 
 {
@@ -72,19 +72,19 @@ IDE_RC smmShmKeyMgr::getShmKeyCandidate(key_t * aShmKeyCandidate)
     sState = 1;
     
     
-    // ÀçÈ°¿ë Key List¿¡ ÀçÈ°¿ë Key°¡ ÀÖ´Ù¸é ÀÌ¸¦ ¸ÕÀú »ç¿ëÇÑ´Ù.
+    // ì¬í™œìš© Key Listì— ì¬í™œìš© Keyê°€ ìˆë‹¤ë©´ ì´ë¥¼ ë¨¼ì € ì‚¬ìš©í•œë‹¤.
     if ( mFreeKeyList.isEmpty() == ID_FALSE )
     {
         IDE_TEST( mFreeKeyList.removeKey( aShmKeyCandidate ) != IDE_SUCCESS );
     }
-    else // ÀçÈ°¿ë Key List ¿¡ Key°¡ ¾ø´Ù.
+    else // ì¬í™œìš© Key List ì— Keyê°€ ì—†ë‹¤.
     {
-        // »ç¿ëÇÒ ¼ö ÀÖ´Â KeyÈÄº¸°¡ ÀÖ´Â°¡?
+        // ì‚¬ìš©í•  ìˆ˜ ìˆëŠ” Keyí›„ë³´ê°€ ìˆëŠ”ê°€?
         if ( mSeekKey > SMM_MIN_SHM_KEY_CANDIDATE ) 
         {
             *aShmKeyCandidate = --mSeekKey;
         }
-        else // »ç¿ëÇÒ ¼ö ÀÖ´Â KeyÈÄº¸°¡ ¾ø´Ù.
+        else // ì‚¬ìš©í•  ìˆ˜ ìˆëŠ” Keyí›„ë³´ê°€ ì—†ë‹¤.
         {
             IDE_RAISE(error_no_more_key);
         }
@@ -115,12 +115,12 @@ IDE_RC smmShmKeyMgr::getShmKeyCandidate(key_t * aShmKeyCandidate)
 }
 
 /*
- * ÇöÀç »ç¿ëÁßÀÎ Key¸¦ ¾Ë·ÁÁØ´Ù.
+ * í˜„ì¬ ì‚¬ìš©ì¤‘ì¸ Keyë¥¼ ì•Œë ¤ì¤€ë‹¤.
  *
- * ÀÌ ÇÔ¼ö´Â attach½Ã¿¡ È£ÃâµÇ¸ç,
- * ÀÌ¹Ì »ç¿ëµÈ Å°º¸´Ù Å« °ªÀ» °øÀ¯¸Ş¸ğ¸® ÈÄº¸Å°·Î »ç¿ëÇÏÁö ¾Êµµ·Ï ÇÑ´Ù.
+ * ì´ í•¨ìˆ˜ëŠ” attachì‹œì— í˜¸ì¶œë˜ë©°,
+ * ì´ë¯¸ ì‚¬ìš©ëœ í‚¤ë³´ë‹¤ í° ê°’ì„ ê³µìœ ë©”ëª¨ë¦¬ í›„ë³´í‚¤ë¡œ ì‚¬ìš©í•˜ì§€ ì•Šë„ë¡ í•œë‹¤.
  *
- * aUsedKey [IN] ÇöÀç »ç¿ëÁßÀÎ Key
+ * aUsedKey [IN] í˜„ì¬ ì‚¬ìš©ì¤‘ì¸ Key
  */ 
 IDE_RC smmShmKeyMgr::notifyUsedKey(key_t aUsedKey)
 {
@@ -131,10 +131,10 @@ IDE_RC smmShmKeyMgr::notifyUsedKey(key_t aUsedKey)
     IDE_TEST( lock() != IDE_SUCCESS );
     sState = 1;
     
-    // BUGBUG-1548 FreeKey List¸¦ IncrementalÇÏ°Ô ±¸Ãà ÇØÁÖ¾î¾ß ÇÑ´Ù.
+    // BUGBUG-1548 FreeKey Listë¥¼ Incrementalí•˜ê²Œ êµ¬ì¶• í•´ì£¼ì–´ì•¼ í•œë‹¤.
     if ( mSeekKey >= aUsedKey ) 
     {
-        // ÀÌ¹Ì »ç¿ëµÈ Keyº¸´Ù ÇÏ³ª ÀÛÀº KeyºÎÅÍ »ç¿ëÇÑ´Ù.
+        // ì´ë¯¸ ì‚¬ìš©ëœ Keyë³´ë‹¤ í•˜ë‚˜ ì‘ì€ Keyë¶€í„° ì‚¬ìš©í•œë‹¤.
         mSeekKey = aUsedKey -1;
     }
 
@@ -159,13 +159,13 @@ IDE_RC smmShmKeyMgr::notifyUsedKey(key_t aUsedKey)
 
 
 /*
- * ´õÀÌ»ó »ç¿ëµÇÁö ¾Ê´Â Key¸¦ ¾Ë·ÁÁØ´Ù.
+ * ë”ì´ìƒ ì‚¬ìš©ë˜ì§€ ì•ŠëŠ” Keyë¥¼ ì•Œë ¤ì¤€ë‹¤.
  *
- * ÀÌ ÇÔ¼ö´Â Tablespace drop/offline½Ã °øÀ¯¸Ş¸ğ¸® ¿µ¿ªÀ» Á¦°ÅÇÒ¶§
- * È£ÃâµÇ¸ç, ´õÀÌ»ó »ç¿ëµÇÁö ¾Ê´Â °øÀ¯¸Ş¸ğ¸® Key¸¦ ´Ù¸¥
- * Tablespace¿¡¼­ ÀçÈ°¿ëµÉ ¼ö ÀÖµµ·Ï µ½´Â´Ù.
+ * ì´ í•¨ìˆ˜ëŠ” Tablespace drop/offlineì‹œ ê³µìœ ë©”ëª¨ë¦¬ ì˜ì—­ì„ ì œê±°í• ë•Œ
+ * í˜¸ì¶œë˜ë©°, ë”ì´ìƒ ì‚¬ìš©ë˜ì§€ ì•ŠëŠ” ê³µìœ ë©”ëª¨ë¦¬ Keyë¥¼ ë‹¤ë¥¸
+ * Tablespaceì—ì„œ ì¬í™œìš©ë  ìˆ˜ ìˆë„ë¡ ë•ëŠ”ë‹¤.
  *
- * aUnusedKey [IN] ´õÀÌ»ó »ç¿ëµÇÁö ¾Ê´Â Key
+ * aUnusedKey [IN] ë”ì´ìƒ ì‚¬ìš©ë˜ì§€ ì•ŠëŠ” Key
  */ 
 IDE_RC smmShmKeyMgr::notifyUnusedKey(key_t aUnusedKey)
 {
@@ -176,7 +176,7 @@ IDE_RC smmShmKeyMgr::notifyUnusedKey(key_t aUnusedKey)
     IDE_TEST( lock() != IDE_SUCCESS );
     sState = 1;
     
-    // ÀçÈ°¿ë Key List¿¡ Ãß°¡ÇÑ´Ù.
+    // ì¬í™œìš© Key Listì— ì¶”ê°€í•œë‹¤.
     IDE_TEST( mFreeKeyList.addKey( aUnusedKey ) != IDE_SUCCESS );
 
     sState = 0;
@@ -199,14 +199,14 @@ IDE_RC smmShmKeyMgr::notifyUnusedKey(key_t aUnusedKey)
 }
 
 /*
- * shmShmKeyMgrÀÇ static ÃÊ±âÈ­ ¼öÇà 
+ * shmShmKeyMgrì˜ static ì´ˆê¸°í™” ìˆ˜í–‰ 
  */
 IDE_RC smmShmKeyMgr::initializeStatic()
 {
-    // ÀçÈ°¿ë Key°ü¸®ÀÚ ÃÊ±âÈ­
+    // ì¬í™œìš© Keyê´€ë¦¬ì ì´ˆê¸°í™”
     IDE_TEST( mFreeKeyList.initialize() != IDE_SUCCESS );
     
-    // mSeekKey°ªÀ» Read/WriteÇÒ ¶§ Àâ´Â Mutex
+    // mSeekKeyê°’ì„ Read/Writeí•  ë•Œ ì¡ëŠ” Mutex
     IDE_TEST( mMutex.initialize((SChar*)"SHARED_MEMORY_KEY_MUTEX",
                                 IDU_MUTEX_KIND_NATIVE,
                                 IDV_WAIT_INDEX_NULL)
@@ -220,7 +220,7 @@ IDE_RC smmShmKeyMgr::initializeStatic()
 }
 
 /*
- * shmShmKeyMgrÀÇ static ÆÄ±« ¼öÇà 
+ * shmShmKeyMgrì˜ static íŒŒê´´ ìˆ˜í–‰ 
  */
 IDE_RC smmShmKeyMgr::destroyStatic()
 {

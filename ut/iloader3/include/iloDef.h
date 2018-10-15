@@ -47,7 +47,7 @@
 #define ENV_ISQL_CONNECTION                    ENV_ISQL_PREFIX"CONNECTION"
 #define ENV_ILO_DATEFORM                       ENV_ILO_PREFIX"DATEFORM"
 
-/* BUG-31404: Ç×»ó STD_GEOHEAD_SIZE º¸´Ù Ä¿¾ß ÇÔ */
+/* BUG-31404: í•­ìƒ STD_GEOHEAD_SIZE ë³´ë‹¤ ì»¤ì•¼ í•¨ */
 #define ILO_GEOHEAD_SIZE   56
 
 /* BUG-31387: define Connection Type */
@@ -59,7 +59,7 @@
 #define ILO_CONNTYPE_IPCDA 7
 
 #define MAX_OBJNAME_LEN    128+30    //BUG-39621 "MaxLengthName"\0 + alpha
-/* BUG-17563 : iloader ¿¡¼­ Å«µû¿ÈÇ¥ ÀÌ¿ëÇÑ Naming Rule Á¦¾à Á¦°Å  */
+/* BUG-17563 : iloader ì—ì„œ í°ë”°ì˜´í‘œ ì´ìš©í•œ Naming Rule ì œì•½ ì œê±°  */
 #define MAX_FILEPATH_LEN   1024     //BUG-24583
 #define MAX_WORD_LEN       128
 #define MAX_ATTR_COUNT     1024
@@ -76,9 +76,9 @@
 #define ILOADER_WARNING     -2
 
 #define MAX_VARCHAR_SIZE   32*1024 // BUGBUG : TODO ..(SMC_PERS_PAGE_BODY_SIZE - sizeof(smcVarPageHeader) - sizeof(smVarColumn))
-/* ¼ýÀÚ Å¸ÀÔµé¿¡´ëÇÑ ±æÀÌÁ¦ÇÑ °ª :
- * doubleÀ» ±âÁØÀ¸·Î ÇßÀ»¶§, ÀÔ·ÂµÉ¼ö ÀÖ´Â ¼ýÀÚÀÇ °¡Àå±ä string ±æÀÌ´Â 312byte. 
- * ¿¹¿Ü»óÈ²À» °í·ÁÇÏ¿© ³Ë³ËÈ÷ 511byte·Î ÇÒ´çÇÔ.
+/* ìˆ«ìž íƒ€ìž…ë“¤ì—ëŒ€í•œ ê¸¸ì´ì œí•œ ê°’ :
+ * doubleì„ ê¸°ì¤€ìœ¼ë¡œ í–ˆì„ë•Œ, ìž…ë ¥ë ìˆ˜ ìžˆëŠ” ìˆ«ìžì˜ ê°€ìž¥ê¸´ string ê¸¸ì´ëŠ” 312byte. 
+ * ì˜ˆì™¸ìƒí™©ì„ ê³ ë ¤í•˜ì—¬ ë„‰ë„‰ížˆ 511byteë¡œ í• ë‹¹í•¨.
  */
 /* BUG - 18804 */
 #define MAX_NUMBER_SIZE    511
@@ -90,7 +90,7 @@
 
 #define MAX_PASS_LEN       40
 
-#define SYS_ERROR          -1   // BUG-28208: malloc µî¿¡ ½ÇÆÐÇßÀ» ¶§ iloader ¹Ù·Î Á¾·á 
+#define SYS_ERROR          -1   // BUG-28208: malloc ë“±ì— ì‹¤íŒ¨í–ˆì„ ë•Œ iloader ë°”ë¡œ ì¢…ë£Œ 
 #define READ_ERROR         0
 #define READ_SUCCESS       1
 #define END_OF_FILE        2
@@ -108,19 +108,19 @@
 //PROJ-1714
 #define MAX_PARALLEL_COUNT      32
 #define MAX_CIRCULAR_BUF        1024 * 1024 * 10    //10M
-// BUG-18803 readsize ¿É¼Ç Ãß°¡
-// readsize ¿É¼ÇÀÇ ±âº»°ªÀÌ´Ù.
+// BUG-18803 readsize ì˜µì…˜ ì¶”ê°€
+// readsize ì˜µì…˜ì˜ ê¸°ë³¸ê°’ì´ë‹¤.
 #define FILE_READ_SIZE_DEFAULT  1024 * 1024         //1M
 
 /* BUG-21064 : CLOB type CSV up/download error */
-// CSV Æ÷¸Ë ÇüÅÂÀÇ CLOB dataÀÏ°æ¿ì.
+// CSV í¬ë§· í˜•íƒœì˜ CLOB dataì¼ê²½ìš°.
 #define CLOB4CSV ( sHandle->mProgOption->mRule == csv ) && ( mLOBLocCType == SQL_C_CLOB_LOCATOR )
 
 // PROJ-2075
 
-/*iLoader build ½Ã ÇöÀç ¹öÀüÀ» ¸í½Ã ÇÑ´Ù. 
- * ALTIBASE_ILOADER_MAX_VER Àº ALTIBASE_ILOADER_V(x)ÀÇ 
- * ÃÖ´ë ¹öÀü °ª°ú µ¿ÀÏ ÇØ¾ß ÇÑ´Ù. 
+/*iLoader build ì‹œ í˜„ìž¬ ë²„ì „ì„ ëª…ì‹œ í•œë‹¤. 
+ * ALTIBASE_ILOADER_MAX_VER ì€ ALTIBASE_ILOADER_V(x)ì˜ 
+ * ìµœëŒ€ ë²„ì „ ê°’ê³¼ ë™ì¼ í•´ì•¼ í•œë‹¤. 
  */
 
 #define ALTIBASE_ILOADER_MAX_VER 1

@@ -52,7 +52,7 @@ static IDE_RC mtfDecodeEstimate( mtcNode*     aNode,
 mtfModule mtfDecode = {
     1|MTC_NODE_OPERATOR_FUNCTION|MTC_NODE_EAT_NULL_TRUE,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
+    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìê°€ ì•„ë‹˜)
     mtfDecodeFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -102,12 +102,12 @@ IDE_RC mtfDecodeEstimate( mtcNode*     aNode,
     sFence      = aNode->lflag & MTC_NODE_ARGUMENT_COUNT_MASK;
 
     // BUG-21357
-    // ¿À¶óÅ¬°ú ´Ş¸® ¾ËÆ¼º£ÀÌ½º¿¡´Â ´Ù¾çÇÑ number typeÀÌ ÀÖ´Ù.
-    // exprÀÌ Ç×»ó Ã¹¹øÂ° search parameterÀÇ Å¸ÀÔÀ¸·Î º¯È¯µÉ °æ¿ì
-    // °æ¿ì¿¡ µû¶ó value overflow°¡ ¹ß»ıÇÒ ¼ö ÀÖÀ¸¹Ç·Î
-    // ¾ËÆ¼º£ÀÌ½ºÀÇ ´Ù¾çÇÑ number typeÀ» °í·ÁÇÏ¿© expr°ú Ã¹¹øÂ°
-    // search parameter°¡ number typeÀÎ °æ¿ì¿¡ ÀÌµéÀÇ comparison
-    // module·Î ºñ±³ÇÑ´Ù.
+    // ì˜¤ë¼í´ê³¼ ë‹¬ë¦¬ ì•Œí‹°ë² ì´ìŠ¤ì—ëŠ” ë‹¤ì–‘í•œ number typeì´ ìˆë‹¤.
+    // exprì´ í•­ìƒ ì²«ë²ˆì§¸ search parameterì˜ íƒ€ì…ìœ¼ë¡œ ë³€í™˜ë  ê²½ìš°
+    // ê²½ìš°ì— ë”°ë¼ value overflowê°€ ë°œìƒí•  ìˆ˜ ìˆìœ¼ë¯€ë¡œ
+    // ì•Œí‹°ë² ì´ìŠ¤ì˜ ë‹¤ì–‘í•œ number typeì„ ê³ ë ¤í•˜ì—¬ exprê³¼ ì²«ë²ˆì§¸
+    // search parameterê°€ number typeì¸ ê²½ìš°ì— ì´ë“¤ì˜ comparison
+    // moduleë¡œ ë¹„êµí•œë‹¤.
     if ( ( (aStack[1].column->module->flag & MTD_GROUP_MASK) == MTD_GROUP_NUMBER ) &&
          ( (aStack[2].column->module->flag & MTD_GROUP_MASK) == MTD_GROUP_NUMBER ) )
     {
@@ -124,17 +124,17 @@ IDE_RC mtfDecodeEstimate( mtcNode*     aNode,
     else
     {
         // BUG-21357
-        // ±âÁ¸¿¡´Â search parameter°¡ exprÀÇ Å¸ÀÔÀ¸·Î º¯È¯ÀÌ µÇ¾úÁö¸¸,
-        // ÀÌ´Â ¿À¶óÅ¬ ½ºÆå°ú ´Ş¶ó »ç¿ëÀÚ°¡ ÀÇµµÇÏÁö ¾ÊÀº °á°ú¸¦ ÃÊ·¡ÇÒ ¼ö ÀÖ´Ù.
-        // µû¶ó¼­ ¿À¶óÅ¬ ½ºÆåÀ» µû¶ó exprÀÌ Ã¹¹øÂ° search parameterÀÇ Å¸ÀÔÀ¸·Î
-        // º¯È¯µÇµµ·Ï ÇÑ´Ù.
+        // ê¸°ì¡´ì—ëŠ” search parameterê°€ exprì˜ íƒ€ì…ìœ¼ë¡œ ë³€í™˜ì´ ë˜ì—ˆì§€ë§Œ,
+        // ì´ëŠ” ì˜¤ë¼í´ ìŠ¤í™ê³¼ ë‹¬ë¼ ì‚¬ìš©ìê°€ ì˜ë„í•˜ì§€ ì•Šì€ ê²°ê³¼ë¥¼ ì´ˆë˜í•  ìˆ˜ ìˆë‹¤.
+        // ë”°ë¼ì„œ ì˜¤ë¼í´ ìŠ¤í™ì„ ë”°ë¼ exprì´ ì²«ë²ˆì§¸ search parameterì˜ íƒ€ì…ìœ¼ë¡œ
+        // ë³€í™˜ë˜ë„ë¡ í•œë‹¤.
         sModules[0] = aStack[2].column->module;
         IDE_TEST_RAISE( sModules[0] == &mtdList, ERR_CONVERSION_NOT_APPLICABLE );
 
-        // Ã¹¹øÂ° search parameter°¡ nullÀÌ¸é
-        // expr°ú ´Ù¸¥ search parameterµéÀ» Ã¹¹øÂ° search parameter Å¸ÀÔÀ¸·Î
-        // º¯È¯ÇÏ´Â°Ô ºÒ°¡´ÉÇÏ´Ù.
-        // ÀÌ·² °æ¿ì Ã¹¹øÂ° search parameter¸¦ VARCHARÅ¸ÀÔÀ¸·Î °£ÁÖÇÏ°í º¯È¯ÇÑ´Ù.
+        // ì²«ë²ˆì§¸ search parameterê°€ nullì´ë©´
+        // exprê³¼ ë‹¤ë¥¸ search parameterë“¤ì„ ì²«ë²ˆì§¸ search parameter íƒ€ì…ìœ¼ë¡œ
+        // ë³€í™˜í•˜ëŠ”ê²Œ ë¶ˆê°€ëŠ¥í•˜ë‹¤.
+        // ì´ëŸ´ ê²½ìš° ì²«ë²ˆì§¸ search parameterë¥¼ VARCHARíƒ€ì…ìœ¼ë¡œ ê°„ì£¼í•˜ê³  ë³€í™˜í•œë‹¤.
         if ( sModules[0] == &mtdNull )
         {
             sModules[0] = &mtdVarchar;
@@ -194,7 +194,7 @@ IDE_RC mtfDecodeEstimate( mtcNode*     aNode,
     else
     {
         // PROJ-2523
-        // Result Áß ÇÏ³ª¶óµµ nvarchar, nchar Å¸ÀÔÀÎ °æ¿ì °á°ú Å¸ÀÔÀ» nvarchar·Î ÇÑ´Ù.
+        // Result ì¤‘ í•˜ë‚˜ë¼ë„ nvarchar, nchar íƒ€ì…ì¸ ê²½ìš° ê²°ê³¼ íƒ€ì…ì„ nvarcharë¡œ í•œë‹¤.
         for ( sCount = 3; sCount <= sFence; sCount += 2 )
         {
             if ( ( aStack[ sCount ].column->module->id == mtdNvarchar.id ) ||
@@ -264,7 +264,7 @@ IDE_RC mtfDecodeEstimate( mtcNode*     aNode,
     }
 
     // BUG-23102
-    // mtcColumnÀ¸·Î ÃÊ±âÈ­ÇÑ´Ù.
+    // mtcColumnìœ¼ë¡œ ì´ˆê¸°í™”í•œë‹¤.
     mtc::initializeColumn( aStack[0].column, aStack[3].column );
     for( sCount = 5; sCount <= sFence; sCount += 2 )
     {

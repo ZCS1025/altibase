@@ -41,8 +41,8 @@ qsvRefCursor::validateOpenFor( qcStatement       * aStatement,
  *  Description : PROJ-1386 Dynamic SQL
  *               
  *  Implementation :
- *            (1) query stringÀÌ char³ª varcharÀÎÁö °Ë»ç
- *            (2) USINGÀý¿¡ ´ëÇÑ validation
+ *            (1) query stringì´ charë‚˜ varcharì¸ì§€ ê²€ì‚¬
+ *            (2) USINGì ˆì— ëŒ€í•œ validation
  *
  ***********************************************************************/
 
@@ -115,11 +115,11 @@ IDE_RC qsvRefCursor::validateUsingParamClause(
 /***********************************************************************
  *
  *  Description : PROJ-1385 Dynamic-SQL
- *                USING ... Àý¿¡ ´ëÇÑ validation
- *  Implementation : parameterÀÇ inouttypeº°·Î ±¸ºÐ
- *                  OUT, IN OUT ÀÎ °æ¿ì
- *                  (1)¹Ýµå½Ã procedure variableÀÌ¾î¾ß ÇÔ
- *                  (2) read¸¸ °¡´ÉÇÑ variableÀÇ °æ¿ì Çã¿ë¾ÈÇÔ
+ *                USING ... ì ˆì— ëŒ€í•œ validation
+ *  Implementation : parameterì˜ inouttypeë³„ë¡œ êµ¬ë¶„
+ *                  OUT, IN OUT ì¸ ê²½ìš°
+ *                  (1)ë°˜ë“œì‹œ procedure variableì´ì–´ì•¼ í•¨
+ *                  (2) readë§Œ ê°€ëŠ¥í•œ variableì˜ ê²½ìš° í—ˆìš©ì•ˆí•¨
  *
  ***********************************************************************/
     
@@ -141,7 +141,7 @@ IDE_RC qsvRefCursor::validateUsingParamClause(
 
             if( sCurrParam->inOutType == QS_IN )
             {
-                // inÅ¸ÀÔÀÎ °æ¿ì Æ¯º°ÇÑ °Ë»ç¸¦ ÇÏÁö ¾ÊÀ½.
+                // iníƒ€ìž…ì¸ ê²½ìš° íŠ¹ë³„í•œ ê²€ì‚¬ë¥¼ í•˜ì§€ ì•ŠìŒ.
                 IDE_TEST( qtc::estimate( sCurrParamNode,
                                          QC_SHARED_TMPLATE(aStatement), 
                                          aStatement,
@@ -152,8 +152,8 @@ IDE_RC qsvRefCursor::validateUsingParamClause(
             }
             else
             {
-                // (1) out, in outÀÎ °æ¿ì ¹Ýµå½Ã procedureº¯¼ö¿©¾ß ÇÔ.
-                // invalid out argument ¿¡·¯¸¦ ³¿.
+                // (1) out, in outì¸ ê²½ìš° ë°˜ë“œì‹œ procedureë³€ìˆ˜ì—¬ì•¼ í•¨.
+                // invalid out argument ì—ëŸ¬ë¥¼ ëƒ„.
                 IDE_TEST(qsvProcVar::searchVarAndPara(
                          aStatement,
                          sCurrParamNode,
@@ -184,9 +184,9 @@ IDE_RC qsvRefCursor::validateUsingParamClause(
                     // Nothing to do.
                 }
 
-                // lvalue¿¡ psmº¯¼ö°¡ Á¸ÀçÇÏ¹Ç·Î lvalue flag¸¦ ¾º¿ò.
-                // outÀÎ °æ¿ì¿¡¸¸ ÇØ´çµÊ. array_index_variableÀÎ °æ¿ì
-                // ¾øÀ¸¸é ¸¸µé¾î¾ß ÇÏ±â ¶§¹®.
+                // lvalueì— psmë³€ìˆ˜ê°€ ì¡´ìž¬í•˜ë¯€ë¡œ lvalue flagë¥¼ ì”Œì›€.
+                // outì¸ ê²½ìš°ì—ë§Œ í•´ë‹¹ë¨. array_index_variableì¸ ê²½ìš°
+                // ì—†ìœ¼ë©´ ë§Œë“¤ì–´ì•¼ í•˜ê¸° ë•Œë¬¸.
                 if( sCurrParam->inOutType == QS_OUT )
                 {
                     sCurrParamNode->lflag |= QTC_NODE_LVALUE_ENABLE;
@@ -196,7 +196,7 @@ IDE_RC qsvRefCursor::validateUsingParamClause(
                     // Nothing to do.
                 }
 
-                // (2) out, in outÀÎ °æ¿ì outbinding_disableÀÌ¸é ¿¡·¯
+                // (2) out, in outì¸ ê²½ìš° outbinding_disableì´ë©´ ì—ëŸ¬
                 IDE_TEST( qtc::estimate( sCurrParamNode,
                                          QC_SHARED_TMPLATE(aStatement), 
                                          aStatement,
@@ -254,8 +254,8 @@ IDE_RC qsvRefCursor::searchRefCursorVar(
  *  Description : PROJ-1386 Dynamic-SQL
  *
  *  Implementation : (1) variable search
- *                   (2) variable Ã£¾ÒÀ¸¸é ref cursor typeÀÎÁö °Ë»ç
- *                   (3) variableÀ» ¸øÃ£¾Ò°Å³ª, ref cursor typeÀÌ ¾Æ´Ï¸é
+ *                   (2) variable ì°¾ì•˜ìœ¼ë©´ ref cursor typeì¸ì§€ ê²€ì‚¬
+ *                   (3) variableì„ ëª»ì°¾ì•˜ê±°ë‚˜, ref cursor typeì´ ì•„ë‹ˆë©´
  *                       not found
  *
  ***********************************************************************/
@@ -295,7 +295,7 @@ IDE_RC qsvRefCursor::searchRefCursorVar(
                                           &sPkgInfo )
                       != IDE_SUCCESS );
 
-            // objectIDÀÇ templateÀ» °¡Á®¿Â´Ù.
+            // objectIDì˜ templateì„ ê°€ì ¸ì˜¨ë‹¤.
             sTemplate = sPkgInfo->tmplate;
         }
         else
@@ -307,7 +307,7 @@ IDE_RC qsvRefCursor::searchRefCursorVar(
                        rows[aVariableNode->node.table].
                        columns[aVariableNode->node.column]);
 
-        // ¹Ýµå½Ã ref cursor type moduleÀÌ¾î¾ß ÇÔ.
+        // ë°˜ë“œì‹œ ref cursor type moduleì´ì–´ì•¼ í•¨.
         if( sMtcColumn->module->id != MTD_REF_CURSOR_ID )
         {
             *aFindVar = ID_FALSE;
@@ -337,22 +337,22 @@ qsvRefCursor::validateFetch( qcStatement     * aStatement,
  *                BUG-41707 chunking bulk collections of reference cursor    
  *
  *  Implementation :
- *            (1) intoÀý¿¡ ´ëÇÑ validation
- *            (2) limitÀý¿¡ ´ëÇÑ validation
+ *            (1) intoì ˆì— ëŒ€í•œ validation
+ *            (2) limitì ˆì— ëŒ€í•œ validation
  *
  ***********************************************************************/
 
     qsProcStmtFetch * sProcStmtFetch = (qsProcStmtFetch*)aProcStmts;
 
-    /* intoÀý¿¡ ´ëÇÑ validation */
+    /* intoì ˆì— ëŒ€í•œ validation */
     IDE_TEST( qsvProcStmts::validateIntoClauseForRefCursor( 
                    aStatement,
                    aProcStmts,
                    sProcStmtFetch->intoVariableNodes )
               != IDE_SUCCESS );
 
-    /* limitÀý¿¡ ´ëÇÑ validation */
-    // limitÀýÀº bulk collect intoÀÏ ¶§¸¸ »ç¿ë °¡´ÉÇÏ´Ù.
+    /* limitì ˆì— ëŒ€í•œ validation */
+    // limitì ˆì€ bulk collect intoì¼ ë•Œë§Œ ì‚¬ìš© ê°€ëŠ¥í•˜ë‹¤.
     if ( ( sProcStmtFetch->intoVariableNodes->bulkCollect == ID_TRUE ) && 
          ( sProcStmtFetch->limit != NULL ) )
     {

@@ -23,7 +23,7 @@
 #include <iduGrowingMemoryHandle.h>
 
 
-// °´Ã¼ »ı¼ºÀÚ,ÆÄ±«ÀÚ => ¾Æ¹«ÀÏµµ ¼öÇàÇÏÁö ¾Ê´Â´Ù.
+// ê°ì²´ ìƒì„±ì,íŒŒê´´ì => ì•„ë¬´ì¼ë„ ìˆ˜í–‰í•˜ì§€ ì•ŠëŠ”ë‹¤.
 iduGrowingMemoryHandle::iduGrowingMemoryHandle()
 {
 }
@@ -32,39 +32,39 @@ iduGrowingMemoryHandle::~iduGrowingMemoryHandle()
 }
 
 /*
-  Growing Memory HandleÀ» ÃÊ±âÈ­ ÇÑ´Ù.
+  Growing Memory Handleì„ ì´ˆê¸°í™” í•œë‹¤.
 
-  [IN] aMemoryClient - iduMemMgr¿¡ ³Ñ±æ ¸Ş¸ğ¸® ÇÒ´ç Client
-  [IN] aChunkSize - ¸Ş¸ğ¸® ÇÒ´çÀÇ ´ÜÀ§ÀÎ ChunkÀÇ Å©±â
+  [IN] aMemoryClient - iduMemMgrì— ë„˜ê¸¸ ë©”ëª¨ë¦¬ í• ë‹¹ Client
+  [IN] aChunkSize - ë©”ëª¨ë¦¬ í• ë‹¹ì˜ ë‹¨ìœ„ì¸ Chunkì˜ í¬ê¸°
 */
 IDE_RC iduGrowingMemoryHandle::initialize(
            iduMemoryClientIndex   aMemoryClient,
            ULong                  aChunkSize )
 {
-    /* °´Ã¼ÀÇ virtual function tableÃÊ±âÈ­ À§ÇØ¼­ new¸¦ È£Ãâ */
+    /* ê°ì²´ì˜ virtual function tableì´ˆê¸°í™” ìœ„í•´ì„œ newë¥¼ í˜¸ì¶œ */
     new (this) iduGrowingMemoryHandle();
     
 #ifdef __CSURF__
     IDE_ASSERT( this != NULL );
 #endif
 
-    /* ¸Ş¸ğ¸® ÇÒ´ç±â ÃÊ±âÈ­ */
+    /* ë©”ëª¨ë¦¬ í• ë‹¹ê¸° ì´ˆê¸°í™” */
     mAllocator.init( aMemoryClient, aChunkSize);
     
-    // prepareMemory¸¦ È£ÃâÇÏ¿© ÇÒ´ç¹Ş¾Æ°£ ¸Ş¸ğ¸® Å©±âÀÇ ÃÑÇÕ
+    // prepareMemoryë¥¼ í˜¸ì¶œí•˜ì—¬ í• ë‹¹ë°›ì•„ê°„ ë©”ëª¨ë¦¬ í¬ê¸°ì˜ ì´í•©
     mTotalPreparedSize = 0;
         
     return IDE_SUCCESS;
 }
     
 /*
-  Growing Memory HandleÀ» ÆÄ±« ÇÑ´Ù.
+  Growing Memory Handleì„ íŒŒê´´ í•œë‹¤.
   
-  [IN] aHandle - ÆÄ±«ÇÒ Memory Handle
+  [IN] aHandle - íŒŒê´´í•  Memory Handle
 */
 IDE_RC iduGrowingMemoryHandle::destroy()
 {
-    /* ¸Ş¸ğ¸® ÇÒ´ç±â°¡ ÇÒ´çÇÑ ¸ğµç Memory Chunk¸¦ ÇÒ´çÇØÁ¦ */
+    /* ë©”ëª¨ë¦¬ í• ë‹¹ê¸°ê°€ í• ë‹¹í•œ ëª¨ë“  Memory Chunkë¥¼ í• ë‹¹í•´ì œ */
     mAllocator.destroy();
    
     return IDE_SUCCESS;
@@ -72,16 +72,16 @@ IDE_RC iduGrowingMemoryHandle::destroy()
 }
 
 /*
-  Growing Memory HandleÀÌ ÇÒ´çÇÑ ¸Ş¸ğ¸®¸¦ ÀüºÎ ÇØÁ¦
+  Growing Memory Handleì´ í• ë‹¹í•œ ë©”ëª¨ë¦¬ë¥¼ ì „ë¶€ í•´ì œ
   
-  [IN] aHandle - ÆÄ±«ÇÒ Memory Handle
+  [IN] aHandle - íŒŒê´´í•  Memory Handle
 */
 IDE_RC iduGrowingMemoryHandle::clear()
 {
-    /* ¸Ş¸ğ¸® ÇÒ´ç±â°¡ ÇÒ´çÇÑ ¸ğµç Memory Chunk¸¦ ÇÒ´çÇØÁ¦ */
+    /* ë©”ëª¨ë¦¬ í• ë‹¹ê¸°ê°€ í• ë‹¹í•œ ëª¨ë“  Memory Chunkë¥¼ í• ë‹¹í•´ì œ */
     mAllocator.clear();
 
-    // prepareMemory¸¦ È£ÃâÇÏ¿© ÇÒ´ç¹Ş¾Æ°£ ¸Ş¸ğ¸® Å©±âÀÇ ÃÑÇÕ
+    // prepareMemoryë¥¼ í˜¸ì¶œí•˜ì—¬ í• ë‹¹ë°›ì•„ê°„ ë©”ëª¨ë¦¬ í¬ê¸°ì˜ ì´í•©
     mTotalPreparedSize = 0;
     
     return IDE_SUCCESS;
@@ -90,12 +90,12 @@ IDE_RC iduGrowingMemoryHandle::clear()
 
     
 /*
-  Growing Memory Handle¿¡ aSizeÀÌ»óÀÇ ¸Ş¸ğ¸®¸¦ »ç¿ë°¡´ÉÇÏµµ·Ï ÁØºñÇÑ´Ù.
+  Growing Memory Handleì— aSizeì´ìƒì˜ ë©”ëª¨ë¦¬ë¥¼ ì‚¬ìš©ê°€ëŠ¥í•˜ë„ë¡ ì¤€ë¹„í•œë‹¤.
   
-  Ç×»ó »õ·Î¿î ¸Ş¸ğ¸®¸¦ ÇÒ´ç±â·ÎºÎÅÍ ÇÒ´çÇÏ¿© ¸®ÅÏÇÑ´Ù.
+  í•­ìƒ ìƒˆë¡œìš´ ë©”ëª¨ë¦¬ë¥¼ í• ë‹¹ê¸°ë¡œë¶€í„° í• ë‹¹í•˜ì—¬ ë¦¬í„´í•œë‹¤.
 
-  [IN] aSize   - ÁØºñÇÒ ¸Ş¸ğ¸® °ø°£ÀÇ Å©±â
-  [OUT] aPreparedMemory - ÁØºñµÈ ¸Ş¸ğ¸®ÀÇ ÁÖ¼Ò
+  [IN] aSize   - ì¤€ë¹„í•  ë©”ëª¨ë¦¬ ê³µê°„ì˜ í¬ê¸°
+  [OUT] aPreparedMemory - ì¤€ë¹„ëœ ë©”ëª¨ë¦¬ì˜ ì£¼ì†Œ
 */
 IDE_RC iduGrowingMemoryHandle::prepareMemory( UInt    aSize,
                                              void ** aPreparedMemory)
@@ -116,7 +116,7 @@ IDE_RC iduGrowingMemoryHandle::prepareMemory( UInt    aSize,
 }
 
 /*
-    ÀÌ Memory HandleÀ» ÅëÇØ OS·ÎºÎÅÍ ÇÒ´ç¹ŞÀº ¸Ş¸ğ¸®ÀÇ ÃÑ·®À» ¸®ÅÏ
+    ì´ Memory Handleì„ í†µí•´ OSë¡œë¶€í„° í• ë‹¹ë°›ì€ ë©”ëª¨ë¦¬ì˜ ì´ëŸ‰ì„ ë¦¬í„´
  */
 ULong iduGrowingMemoryHandle::getSize()
 {

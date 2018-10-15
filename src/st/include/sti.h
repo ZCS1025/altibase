@@ -28,8 +28,8 @@
 #include <stmFixedTable.h>
 
 // PROJ-1726 performance view definition
-// st/sti/sti.cpp ¿Í qp/qcm/qcmPerformanceView.cpp µÎ ±ºµ¥¿¡¼­
-// »ç¿ëµÇ¹Ç·Î ÇÑ ÄÚµå·Î °ü¸®ÇÏ±â À§ÇÏ¿© #define À¸·Î Á¤ÀÇÇÔ.
+// st/sti/sti.cpp ì™€ qp/qcm/qcmPerformanceView.cpp ë‘ êµ°ë°ì—ì„œ
+// ì‚¬ìš©ë˜ë¯€ë¡œ í•œ ì½”ë“œë¡œ ê´€ë¦¬í•˜ê¸° ìœ„í•˜ì—¬ #define ìœ¼ë¡œ ì •ì˜í•¨.
 #define ST_PERFORMANCE_VIEWS \
     (SChar*)"CREATE VIEW V$MEM_RTREE_HEADER "\
                "(INDEX_NAME, INDEX_ID, TABLE_TBS_ID,"\
@@ -67,7 +67,7 @@
             "AS SELECT "\
                 "UNIT, UNIT_NAME, CONVERSION_FACTOR "\
             "FROM X$ST_ANGULAR_UNIT"
-// ÁÖÀÇ : ¸¶Áö¸· performance view ¿¡´Â ',' ¸¦ »ı·«ÇÒ °Í!
+// ì£¼ì˜ : ë§ˆì§€ë§‰ performance view ì—ëŠ” ',' ë¥¼ ìƒëµí•  ê²ƒ!
 
 class sti
 {
@@ -86,8 +86,8 @@ public:
     static IDE_RC initSystemTables( void );
 
     // Proj-2059 DB Upgrade
-    // GeometryÅ¸ÀÔ È®ÀÎÀ» À§ÇØ Tool¿¡¼­ Insert°¡´ÉÇÑ TextÇüÅÂ·Î Ãâ·ÂÇÒ
-    // ¼ö ÀÖ¾î¾ß ÇÕ´Ï´Ù.
+    // Geometryíƒ€ì… í™•ì¸ì„ ìœ„í•´ Toolì—ì„œ Insertê°€ëŠ¥í•œ Textí˜•íƒœë¡œ ì¶œë ¥í• 
+    // ìˆ˜ ìˆì–´ì•¼ í•©ë‹ˆë‹¤.
     static IDE_RC getTextFromGeometry(
                     void*               aObj,
                     UChar*              aBuf,

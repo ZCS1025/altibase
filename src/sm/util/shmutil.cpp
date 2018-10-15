@@ -132,7 +132,7 @@ int main(int argc, char* argv[])
     smuUtility::outputUtilityHeader("ShmUtil");
 
     /* --------------------
-     * [0] È¯°æº¯¼ö Á¸Àç °Ë»ç
+     * [0] í™˜ê²½ë³€ìˆ˜ ì¡´ì¬ ê²€ì‚¬
      * -------------------*/
     envhome = idlOS::getenv(IDP_HOME_ENV);
 
@@ -143,16 +143,16 @@ int main(int argc, char* argv[])
     gConfFile[0] = '\0';
 
     /* --------------------
-     * [1] ¿É¼Ç Ã³¸®
+     * [1] ì˜µì…˜ ì²˜ë¦¬
      * -------------------*/
     while ( (sOptR = idlOS::getopt(argc, argv, "d:f:pwe")) != EOF)
     {
         switch(sOptR)
         {
-            case 'd':  // È¨ µğ·ºÅä¸® ¸í½Ã
+            case 'd':  // í™ˆ ë””ë ‰í† ë¦¬ ëª…ì‹œ
                 idlOS::strncpy(gHomeDir, optarg, 255);
                 break;
-            case 'f':  // Conf È­ÀÏ ¸í½Ã
+            case 'f':  // Conf í™”ì¼ ëª…ì‹œ
                 idlOS::strncpy(gConfFile, optarg, 255);
                 break;
             case 'p':
@@ -173,7 +173,7 @@ int main(int argc, char* argv[])
     IDE_TEST_RAISE(sOptCount > 1 || sOptFlag == ' ', invalid_option_error);
 
     /* --------------------
-     *  ÇÁ·ÎÆÛÆ¼ ·Îµù
+     *  í”„ë¡œí¼í‹° ë¡œë”©
      * -------------------*/
     IDE_TEST_RAISE(idp::initialize(gHomeDir, gConfFile) != IDE_SUCCESS,
                    load_property_error);
@@ -182,7 +182,7 @@ int main(int argc, char* argv[])
     smuProperty::load();
 
     /* --------------------
-     *  ¿¡·¯ Message ·Îµù
+     *  ì—ëŸ¬ Message ë¡œë”©
      * -------------------*/
     IDE_TEST_RAISE(smuUtility::loadErrorMsb(idp::getHomeDir(),
                                             (SChar*)"US7ASCII")
@@ -191,7 +191,7 @@ int main(int argc, char* argv[])
     if( gCheckStatus.isFileExist() == ID_TRUE )
     {
         /* ---------------------------
-         *  Server Lock File ÃÊ±âÈ­
+         *  Server Lock File ì´ˆê¸°í™”
          * --------------------------*/
         IDE_TEST_RAISE(gCheckStatus.initialize() != IDE_SUCCESS,
                        status_init_error);
@@ -203,7 +203,7 @@ int main(int argc, char* argv[])
 
 
     /* -------------------------------------------
-     * [3] SHM KEY ÇÁ·ÎÆÛÆ¼ °Ë»ç ¹× attach() °¡´É?
+     * [3] SHM KEY í”„ë¡œí¼í‹° ê²€ì‚¬ ë° attach() ê°€ëŠ¥?
      * ------------------------------------------*/
     IDE_ASSERT(idp::read("SHM_DB_KEY", (void**)&sShmDBKey, 0)
                == IDE_SUCCESS);
@@ -217,7 +217,7 @@ int main(int argc, char* argv[])
     IDE_TEST(idvManager::startupService() != IDE_SUCCESS);
 
     /* -----------------------
-     * [4] SM ¸Å´ÏÀú ÃÊ±âÈ­
+     * [4] SM ë§¤ë‹ˆì € ì´ˆê¸°í™”
      * ----------------------*/
     IDE_TEST_RAISE(smiStartup(SMI_STARTUP_PRE_PROCESS,
                               SMI_STARTUP_NOACTION,
@@ -234,7 +234,7 @@ int main(int argc, char* argv[])
                               &mmm::mSmiGlobalCallBackList) != IDE_SUCCESS,
                    smi_init_error );
     /* -----------------------
-     * [4-1] Shared Memory Attach ¼öÇà
+     * [4-1] Shared Memory Attach ìˆ˜í–‰
      * ----------------------*/
     IDE_TEST(smmManager::prepareDB( SMM_PREPARE_OP_DONT_CHECK_DB_SIGNATURE_4SHMUTIL )
 
@@ -252,9 +252,9 @@ int main(int argc, char* argv[])
             break;
 
         case 'w': // write to disk
-            // ¾î´À µğ·ºÅä¸®¿¡ DBÆÄÀÏÀ» ¸¸µéÁö °áÁ¤ÇÑ´Ù.
+            // ì–´ëŠ ë””ë ‰í† ë¦¬ì— DBíŒŒì¼ì„ ë§Œë“¤ì§€ ê²°ì •í•œë‹¤.
             IDE_TEST( askDBPath( sDBPath,
-                                 SM_MAX_FILE_NAME ) // ÃÖ´ë Path±æÀÌ
+                                 SM_MAX_FILE_NAME ) // ìµœëŒ€ Pathê¸¸ì´
                       != IDE_SUCCESS );
             break;
         case 'p': // print info
@@ -263,7 +263,7 @@ int main(int argc, char* argv[])
 
     }
 
-    // ¸ğµç Tablespace¿¡ ´ëÇØ Optionº° µ¿ÀÛ ½Ç½Ã
+    // ëª¨ë“  Tablespaceì— ëŒ€í•´ Optionë³„ ë™ì‘ ì‹¤ì‹œ
     sctTableSpaceMgr::getFirstSpaceNode( (void**)& sTBSNode );
     while ( sTBSNode != NULL)
     {
@@ -274,7 +274,7 @@ int main(int argc, char* argv[])
                                              SCT_SS_SKIP_SHMUTIL_OPER)
                  == ID_TRUE )
             {
-                // shmutilÀÇ µ¿ÀÛÀ» SKIPÇØ¾ß ÇÏ´Â °æ¿ì
+                // shmutilì˜ ë™ì‘ì„ SKIPí•´ì•¼ í•˜ëŠ” ê²½ìš°
                 // do nothing..
             }
             else
@@ -284,7 +284,7 @@ int main(int argc, char* argv[])
                                restore_type_error);
 
                 /* -----------------------
-                 * [5] Option º° ¼öÇà
+                 * [5] Option ë³„ ìˆ˜í–‰
                  * ----------------------*/
                 switch(sOptFlag)
                 {
@@ -301,7 +301,7 @@ int main(int argc, char* argv[])
         else
         {
             // do nothing..
-            // Disk Tablespace¿¡ ´ëÇØ¼­´Â ¾Æ¹«°Íµµ Ã³¸®ÇÒ °ÍÀÌ ¾ø´Ù.
+            // Disk Tablespaceì— ëŒ€í•´ì„œëŠ” ì•„ë¬´ê²ƒë„ ì²˜ë¦¬í•  ê²ƒì´ ì—†ë‹¤.
         }
 
 
@@ -330,7 +330,7 @@ int main(int argc, char* argv[])
 
     return IDE_SUCCESS;
     /* -----------------------------------------------------------------
-     * E [0] : SM ¿¡·¯ Ã³¸®
+     * E [0] : SM ì—ëŸ¬ ì²˜ë¦¬
      * ---------------------------------------------------------------*/
     IDE_EXCEPTION(shm_remove_canceled);
     {
@@ -438,7 +438,7 @@ void printMemBase(SChar *aMsg, smmTBSNode * aTBSNode)
 
     total_page = aTBSNode->mMemBase->mAllocPersPageCount;
 
-    // ¸ğµç Free Page ListÀÇ ÃÑ Free Page¼ö¸¦ ±¸ÇÑ´Ù.
+    // ëª¨ë“  Free Page Listì˜ ì´ Free Pageìˆ˜ë¥¼ êµ¬í•œë‹¤.
     free_page = 0;
     for ( i=0; i< aTBSNode->mMemBase->mFreePageListCount; i++ )
     {
@@ -468,8 +468,8 @@ void printMemBase(SChar *aMsg, smmTBSNode * aTBSNode)
 
 
     smuUtility::outputMsg("\n #################### Detail Information ###################### \n");
-    sSCH = sBaseSCH->m_next;          // Ã¹¹øÂ° SCH·Î ¿Å±ä´Ù.
-    sKey = smmFixedMemoryMgr::getShmKey(aTBSNode); // Base key¸¦ ¾òÀ½
+    sSCH = sBaseSCH->m_next;          // ì²«ë²ˆì§¸ SCHë¡œ ì˜®ê¸´ë‹¤.
+    sKey = smmFixedMemoryMgr::getShmKey(aTBSNode); // Base keyë¥¼ ì–»ìŒ
 
     while(sSCH != NULL)
     {
@@ -726,7 +726,7 @@ IDE_RC eraseSHM(smmTBSNode * aTBSNode)
     idBool sRunningFlag;
 
     /* -------------------------
-     * [1] ¼­¹ö°¡ µ¿ÀÛÁßÀÎÁö °Ë»ç
+     * [1] ì„œë²„ê°€ ë™ì‘ì¤‘ì¸ì§€ ê²€ì‚¬
      * ------------------------*/
 
     if( gCheckStatus.isFileExist() == ID_TRUE )

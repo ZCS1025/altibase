@@ -229,19 +229,19 @@ void idwWatchDog::run()
 
     mWatchDogStatus = ID_WATCHDOG_RUN;
 
-    /* Process register tableÀ» °è¼Ó MonitoringÇÑ´Ù. */
+    /* Process register tableì„ ê³„ì† Monitoringí•œë‹¤. */
     while( mFinish == ID_FALSE )
     {
         /* BUG-41127 */
-        /* ¾Æ·¡ÀÇ ÀÚ±â ÀÚ½Å¿¡ ´ëÇÑ °Ë»ç´Â ¼¼¸¶Æ÷¾îÀÇ ¹«°á¼ºÀ» °Ë»çÇÏ±â À§ÇÑ °ÍÀÌ´Ù.
-         * ¿ÍÄ¡µµ±×´Â ¼¼¸¶Æ÷¾î°¡ ³»·Á°¡¼­ Á×Àº °æ¿ì
-         *  - W-Server¿Í R-Server°¡ ¸ÕÀú Á×Àº °æ¿ì, ÇØ´ç ÇÁ·Î¼¼½º¿¡ ´ëÇÏ¿©
-         *    checkProcAliveByLPID¸¦ ÇÏ´Â °úÁ¤¿¡ tryAcquireSem4Proc¸¦ ÇÏÁö ¾Ê´Â´Ù.
-         *    ÀÌ·Î ÀÎÇÏ¿© ¿ÍÄ¡-µ¶ ÀÚÃ¼¿¡¼­ ¼¼¸¶Æ÷¾î°¡ ³»·Á°£ °ÍÀ» ÀÎÁöÇÏÁö ¸øÇÏ°í
-         *    ÀÚ½ÅÀ» Á×ÀÌÁö ¾Ê´Â´Ù.
-         * ¿Í °°Àº Çö»óÀÌ ¹ß»ýÇÏ¿© ¼¼¸¶Æ÷¾î°¡ ºñÁ¤»óÀûÀÎ µ¥¸óÀÌ Áö¼ÓÀûÀ¸·Î Á¸ÀçÇÏ°Ô µÈ´Ù.
-         * ÀÌ¸¦ ¹æÁöÇÏ±â À§ÇÏ¿© ÀÚ½ÅÀÇ ÇÁ·Î¼¼½º¿¡ ´ëÇÑ Á¤º¸¸¦ °¨½ÃÇÏ¸é¼­ ¼¼¸¶Æ÷¾îÀÇ Á¤»ó
-         * ¿©ºÎ¸¦ ¸ð´ÏÅÍ¸µ(tryAcquireSem4Proc)ÇÏ°Ô ÇÑ´Ù.
+        /* ì•„ëž˜ì˜ ìžê¸° ìžì‹ ì— ëŒ€í•œ ê²€ì‚¬ëŠ” ì„¸ë§ˆí¬ì–´ì˜ ë¬´ê²°ì„±ì„ ê²€ì‚¬í•˜ê¸° ìœ„í•œ ê²ƒì´ë‹¤.
+         * ì™€ì¹˜ë„ê·¸ëŠ” ì„¸ë§ˆí¬ì–´ê°€ ë‚´ë ¤ê°€ì„œ ì£½ì€ ê²½ìš°
+         *  - W-Serverì™€ R-Serverê°€ ë¨¼ì € ì£½ì€ ê²½ìš°, í•´ë‹¹ í”„ë¡œì„¸ìŠ¤ì— ëŒ€í•˜ì—¬
+         *    checkProcAliveByLPIDë¥¼ í•˜ëŠ” ê³¼ì •ì— tryAcquireSem4Procë¥¼ í•˜ì§€ ì•ŠëŠ”ë‹¤.
+         *    ì´ë¡œ ì¸í•˜ì—¬ ì™€ì¹˜-ë… ìžì²´ì—ì„œ ì„¸ë§ˆí¬ì–´ê°€ ë‚´ë ¤ê°„ ê²ƒì„ ì¸ì§€í•˜ì§€ ëª»í•˜ê³ 
+         *    ìžì‹ ì„ ì£½ì´ì§€ ì•ŠëŠ”ë‹¤.
+         * ì™€ ê°™ì€ í˜„ìƒì´ ë°œìƒí•˜ì—¬ ì„¸ë§ˆí¬ì–´ê°€ ë¹„ì •ìƒì ì¸ ë°ëª¬ì´ ì§€ì†ì ìœ¼ë¡œ ì¡´ìž¬í•˜ê²Œ ëœë‹¤.
+         * ì´ë¥¼ ë°©ì§€í•˜ê¸° ìœ„í•˜ì—¬ ìžì‹ ì˜ í”„ë¡œì„¸ìŠ¤ì— ëŒ€í•œ ì •ë³´ë¥¼ ê°ì‹œí•˜ë©´ì„œ ì„¸ë§ˆí¬ì–´ì˜ ì •ìƒ
+         * ì—¬ë¶€ë¥¼ ëª¨ë‹ˆí„°ë§(tryAcquireSem4Proc)í•˜ê²Œ í•œë‹¤.
          */
         IDE_TEST( idwPMMgr::tryAcquireSem4Proc( sDaemonProcInfo, &sAcquired)
                   != IDE_SUCCESS );
@@ -304,7 +304,7 @@ void idwWatchDog::run()
 
     mWatchDogStatus = ID_WATCHDOG_END;
 
-    /* Watch Dog ProcessÀÇ Á¾·á¿¡ ´ëÇÑ Fatal Error¸¦ ¼³Á¤ÇÑ´Ù. */
+    /* Watch Dog Processì˜ ì¢…ë£Œì— ëŒ€í•œ Fatal Errorë¥¼ ì„¤ì •í•œë‹¤. */
 
     IDE_SET( ideSetErrorCode( idERR_FATAL_WATCHDOG_THEAD_ABNORMAL_EXIT ) );
 

@@ -38,31 +38,31 @@ public final class TimeZoneUtils
     }
 
     /**
-     * ID¿¡ ÇØ´çÇÏ´Â TimeZoneÀ» ¾ò´Â´Ù.
+     * IDì— í•´ë‹¹í•˜ëŠ” TimeZoneì„ ì–»ëŠ”ë‹¤.
      * 
-     * @param aID "Asia/Seoul"°ú °°Àº ID ¹®ÀÚ¿­ÀÌ³ª "GMT+09:00"°ú °°Àº offset ¹®ÀÚ¿­.
-     *            "+09:00"¿Í °°Àº ÇüÅÂÀÌ¸é ÀÚµ¿À¸·Î "GMT+09:00"¿¡ ´ëÇÑ TimeZoneÀ» ¾ò´Â´Ù.
-     * @return ID¿¡ ÇØ´çÇÏ´Â TimeZone.
-     *         ¸¸¾à, ÇØ´çÇÏ´Â TimeZoneÀÌ ¾øÀ¸¸é GMT zone.
+     * @param aID "Asia/Seoul"ê³¼ ê°™ì€ ID ë¬¸ìì—´ì´ë‚˜ "GMT+09:00"ê³¼ ê°™ì€ offset ë¬¸ìì—´.
+     *            "+09:00"ì™€ ê°™ì€ í˜•íƒœì´ë©´ ìë™ìœ¼ë¡œ "GMT+09:00"ì— ëŒ€í•œ TimeZoneì„ ì–»ëŠ”ë‹¤.
+     * @return IDì— í•´ë‹¹í•˜ëŠ” TimeZone.
+     *         ë§Œì•½, í•´ë‹¹í•˜ëŠ” TimeZoneì´ ì—†ìœ¼ë©´ GMT zone.
      */
     public static TimeZone getTimeZone(String aID)
     {
         Matcher sMatcher = NUMERIC_TZ_PATTERN.matcher(aID);
         if (sMatcher.find())
         {
-            // Java¿¡¼­ ¾Ë¾ÆÂ÷¸± ¼ö ÀÖ´Â ÇüÅÂ·Î ¼öÁ¤
+            // Javaì—ì„œ ì•Œì•„ì°¨ë¦´ ìˆ˜ ìˆëŠ” í˜•íƒœë¡œ ìˆ˜ì •
             aID = "GMT" + aID;
         }
         return TimeZone.getTimeZone(aID);
     }
 
     /**
-     * TimeZoneÀ» º¯È¯ÇÑ´Ù.
+     * TimeZoneì„ ë³€í™˜í•œë‹¤.
      * 
-     * @param aMillis ¹Ù²Ü ½Ã°£(ms ´ÜÀ§)
-     * @param aSrcCal ¿ø·¡ TimeZoneÀÌ ¼³Á¤µÈ Calendar
-     * @param aDstCal ¹Ù²Ü TimeZoneÀÌ ¼³Á¤µÈ Calendar
-     * @return TimeZone º¯È¯ÇÑ milliseconds °ª
+     * @param aMillis ë°”ê¿€ ì‹œê°„(ms ë‹¨ìœ„)
+     * @param aSrcCal ì›ë˜ TimeZoneì´ ì„¤ì •ëœ Calendar
+     * @param aDstCal ë°”ê¿€ TimeZoneì´ ì„¤ì •ëœ Calendar
+     * @return TimeZone ë³€í™˜í•œ milliseconds ê°’
      */
     public static long convertTimeZone(long aMillis, Calendar aSrcCal, Calendar aDstCal)
     {
@@ -80,11 +80,11 @@ public final class TimeZoneUtils
     }
 
     /**
-     * TimeZoneÀ» º¯È¯ÇÑ´Ù.
+     * TimeZoneì„ ë³€í™˜í•œë‹¤.
      * 
-     * @param aMillis ¹Ù²Ü ½Ã°£(ms ´ÜÀ§)
-     * @param aDstCal ¹Ù²Ü TimeZoneÀÌ ¼³Á¤µÈ Calendar
-     * @return TimeZone º¯È¯ÇÑ milliseconds °ª
+     * @param aMillis ë°”ê¿€ ì‹œê°„(ms ë‹¨ìœ„)
+     * @param aDstCal ë°”ê¿€ TimeZoneì´ ì„¤ì •ëœ Calendar
+     * @return TimeZone ë³€í™˜í•œ milliseconds ê°’
      */
     public static long convertTimeZone(long aMillis, Calendar aDstCal)
     {
@@ -92,12 +92,12 @@ public final class TimeZoneUtils
     }
 
     /**
-     * TimeZoneÀ» º¯È¯ÇÑ´Ù.
+     * TimeZoneì„ ë³€í™˜í•œë‹¤.
      * 
-     * @param aMillis ¹Ù²Ü ½Ã°£(ms ´ÜÀ§)
-     * @param sSrcCal ¿ø·¡ TimeZone
-     * @param aDstCal ¹Ù²Ü TimeZone
-     * @return TimeZone º¯È¯ÇÑ milliseconds °ª
+     * @param aMillis ë°”ê¿€ ì‹œê°„(ms ë‹¨ìœ„)
+     * @param sSrcCal ì›ë˜ TimeZone
+     * @param aDstCal ë°”ê¿€ TimeZone
+     * @return TimeZone ë³€í™˜í•œ milliseconds ê°’
      */
     public static long convertTimeZone(long aMillis, TimeZone aSrcTZ, TimeZone aDstTZ)
     {
@@ -105,11 +105,11 @@ public final class TimeZoneUtils
     }
 
     /**
-     * TimeZoneÀ» º¯È¯ÇÑ´Ù.
+     * TimeZoneì„ ë³€í™˜í•œë‹¤.
      * 
-     * @param aMillis ¹Ù²Ü ½Ã°£(ms ´ÜÀ§)
-     * @param aDstCal ¹Ù²Ü TimeZone
-     * @return TimeZone º¯È¯ÇÑ milliseconds °ª
+     * @param aMillis ë°”ê¿€ ì‹œê°„(ms ë‹¨ìœ„)
+     * @param aDstCal ë°”ê¿€ TimeZone
+     * @return TimeZone ë³€í™˜í•œ milliseconds ê°’
      */
     public static long convertTimeZone(long aMillis, TimeZone aDstTZ)
     {

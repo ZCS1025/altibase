@@ -20,9 +20,9 @@
 
 /*
  * ULN_SFID_67
- * SQLDisconnect(), DBC »óÅÂÀüÀÌ ÇÔ¼ö : C3, C4, C5
+ * SQLDisconnect(), DBC ìƒíƒœì „ì´ í•¨ìˆ˜ : C3, C4, C5
  *
- * ¸ðµÎ ¼º°ø½Ã¿¡ C2 ·Î ÀüÀÌÇÔ.
+ * ëª¨ë‘ ì„±ê³µì‹œì— C2 ë¡œ ì „ì´í•¨.
  */
 ACI_RC ulnSFID_67(ulnFnContext *aFnContext)
 {
@@ -35,21 +35,21 @@ ACI_RC ulnSFID_67(ulnFnContext *aFnContext)
     if(aFnContext->mWhere == ULN_STATE_ENTRY_POINT)
     {
         /*
-         * µé¾î°¥ ¶§ : ÀÏ´Ü ÇÏÀ§ÀÇ ¸ðµç STMT ÀÇ »óÅÂµµ ºÁ¾ß ÇÑ´Ù.
-         *             ÇÏ³ª¶óµµ Åë°ú ¸øÇÏ¸é Åë°ú ¸øÇÏ´Â °Å´Ù.
+         * ë“¤ì–´ê°ˆ ë•Œ : ì¼ë‹¨ í•˜ìœ„ì˜ ëª¨ë“  STMT ì˜ ìƒíƒœë„ ë´ì•¼ í•œë‹¤.
+         *             í•˜ë‚˜ë¼ë„ í†µê³¼ ëª»í•˜ë©´ í†µê³¼ ëª»í•˜ëŠ” ê±°ë‹¤.
          */
 
         ACP_LIST_ITERATE(&(sDbc->mStmtList), sIterator)
         {
             /*
-             * Note : ÀÌ °æ¿ì´Â »ó´çÈ÷ Æ¯ÀÌÇÑ °æ¿ì·Î½á, ÇÏÀ§ÀÇ STMT µéÀÇ »óÅÂ¿¡ ½Å°æÀ» ½á¾ß
-             *        ÇÑ´Ù. ¿Ö³ÄÇÏ¸é disconnect ÇÏ°í ³ª¼­ stmt ÇÚµéµéÀ» ¸ðµÎ free ÇÒ °ÍÀÌ±â
-             *        ¶§¹®ÀÌ´Ù. ±×·±µ¥, °¢°¢ÀÇ stmt ¿¡ ´ëÇØ¼­ »óÅÂ¸Ó½ÅÀ» ºÎ¸¦ ¼öµµ ¾ø´Â ³ë¸©ÀÌ´Ù.
-             *        ¿Ö³ÄÇÏ¸é Áö±Ý ÇöÀçÀÇ context ´Â mHandle ÀÌ DBC ÀÌ±â ¶§¹®ÀÌ´Ù. context ¸¦
-             *        ÇÏ³ª ´õ »ý¼ºÇÒ ¼öµµ ¾ø´Â ³ë¸©ÀÌ°í... ±×·¸´Ù°í, SQLFreeHandle() ÀÇ °æ¿ìÃ³·³
-             *        °£´ÜÈ÷ »óÀ§ ÇÚµéÀÇ »óÅÂ¸¸ ÂüÁ¶ÇÏ¸é µÇ´Â °Íµµ ¾Æ´Ï´Ï ¸»ÀÌ´Ù.
-             *        ÀÏ´Ü ÀÏÀÏÀÌ ÇÏÀ§ stmt ÀÇ »óÅÂ¸¦ Ã¼Å©ÇØ¼­ ÇÏ³ª¶óµµ ¾Æ´Ï¸é ¿¡·¯ ³»°í
-             *        ¸®ÅÏÇÏµµ·Ï, Áï, ´õ ÀÌ»ó ÇÔ¼ö¿¡ ÁøÀÔÇÏÁö ¸øÇÏµµ·Ï ÇÏ¿´´Ù.
+             * Note : ì´ ê²½ìš°ëŠ” ìƒë‹¹ížˆ íŠ¹ì´í•œ ê²½ìš°ë¡œì¨, í•˜ìœ„ì˜ STMT ë“¤ì˜ ìƒíƒœì— ì‹ ê²½ì„ ì¨ì•¼
+             *        í•œë‹¤. ì™œëƒí•˜ë©´ disconnect í•˜ê³  ë‚˜ì„œ stmt í•¸ë“¤ë“¤ì„ ëª¨ë‘ free í•  ê²ƒì´ê¸°
+             *        ë•Œë¬¸ì´ë‹¤. ê·¸ëŸ°ë°, ê°ê°ì˜ stmt ì— ëŒ€í•´ì„œ ìƒíƒœë¨¸ì‹ ì„ ë¶€ë¥¼ ìˆ˜ë„ ì—†ëŠ” ë…¸ë¦‡ì´ë‹¤.
+             *        ì™œëƒí•˜ë©´ ì§€ê¸ˆ í˜„ìž¬ì˜ context ëŠ” mHandle ì´ DBC ì´ê¸° ë•Œë¬¸ì´ë‹¤. context ë¥¼
+             *        í•˜ë‚˜ ë” ìƒì„±í•  ìˆ˜ë„ ì—†ëŠ” ë…¸ë¦‡ì´ê³ ... ê·¸ë ‡ë‹¤ê³ , SQLFreeHandle() ì˜ ê²½ìš°ì²˜ëŸ¼
+             *        ê°„ë‹¨ížˆ ìƒìœ„ í•¸ë“¤ì˜ ìƒíƒœë§Œ ì°¸ì¡°í•˜ë©´ ë˜ëŠ” ê²ƒë„ ì•„ë‹ˆë‹ˆ ë§ì´ë‹¤.
+             *        ì¼ë‹¨ ì¼ì¼ì´ í•˜ìœ„ stmt ì˜ ìƒíƒœë¥¼ ì²´í¬í•´ì„œ í•˜ë‚˜ë¼ë„ ì•„ë‹ˆë©´ ì—ëŸ¬ ë‚´ê³ 
+             *        ë¦¬í„´í•˜ë„ë¡, ì¦‰, ë” ì´ìƒ í•¨ìˆ˜ì— ì§„ìž…í•˜ì§€ ëª»í•˜ë„ë¡ í•˜ì˜€ë‹¤.
              */
             sStmt = (ulnStmt *)sIterator;
             ACI_TEST_RAISE(ULN_OBJ_GET_STATE(sStmt) >= ULN_S_S8, LABEL_HY010);
@@ -58,7 +58,7 @@ ACI_RC ulnSFID_67(ulnFnContext *aFnContext)
     else
     {
         /*
-         * ºüÁ®³ª°¥ ¶§ : SQL_SUCCESS ¸¦ ¸®ÅÏÇÒ °æ¿ì »óÅÂ ÀüÀÌ¸¦ ÇÑ´Ù.
+         * ë¹ ì ¸ë‚˜ê°ˆ ë•Œ : SQL_SUCCESS ë¥¼ ë¦¬í„´í•  ê²½ìš° ìƒíƒœ ì „ì´ë¥¼ í•œë‹¤.
          */
         if(SQL_SUCCEEDED(ULN_FNCONTEXT_GET_RC(aFnContext)) != 0)
         {
@@ -136,7 +136,7 @@ static ACI_RC ulnDisconnReceiveDisconnectRes(ulnFnContext *aFnContext, ulnPtCont
     ACI_TEST( sDbc == NULL );           //BUG-28623 [CodeSonar]Null Pointer Dereference
 
     /*
-     * Å¸ÀÓ¾Æ¿ô ¼¼ÆÃ
+     * íƒ€ìž„ì•„ì›ƒ ì„¸íŒ…
      */
     if (cmiGetLinkImpl(&(aPtContext->mCmiPtContext)) == CMI_LINK_IMPL_IPCDA)
     {
@@ -168,7 +168,7 @@ static ACI_RC ulnDisconnDoLogicalDisconnect(ulnFnContext *aFnContext)
     if(ulnDbcIsConnected(sDbc) == ACP_TRUE)
     {
         /*
-         * protocol context ¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+         * protocol context ë¥¼ ì´ˆê¸°í™”í•œë‹¤.
          */
         //fix BUG-17722
         ACI_TEST(ulnInitializeProtocolContext(aFnContext,
@@ -178,22 +178,22 @@ static ACI_RC ulnDisconnDoLogicalDisconnect(ulnFnContext *aFnContext)
         sNeedPtFin = ACP_TRUE;
 
         /*
-         * disconnect req Àü¼Û
+         * disconnect req ì „ì†¡
          *
-         * BUG-16724 Disconnect ½Ã¿¡ ¼­¹ö°¡ Á×¾î ÀÖ¾îµµ ¼º°øÇØ¾ß ÇÑ´Ù.
-         *           --> ACI_TEST() ¸¦ ¾ø¾Ö¼­ ¿¡·¯°¡ ³ªµµ °è¼Ó ÁøÇà.
+         * BUG-16724 Disconnect ì‹œì— ì„œë²„ê°€ ì£½ì–´ ìžˆì–´ë„ ì„±ê³µí•´ì•¼ í•œë‹¤.
+         *           --> ACI_TEST() ë¥¼ ì—†ì• ì„œ ì—ëŸ¬ê°€ ë‚˜ë„ ê³„ì† ì§„í–‰.
          */
         //fix BUG-17722
         if (ulnDisconnSendDisconnectReq(aFnContext,&(sDbc->mPtContext)) == ACI_SUCCESS)
         {
             /*
-             * BUGBUG : ulnDisconnSendDisconnectReq() ÇÔ¼öÀÇ ¿¡·¯°¡ ¹Ýµå½Ã
-             *          communication link failure ¶ó´Â ¹ýÀº ¾ø´Ù.
-             *          ÀÏ´Ü, ¸±¸®Áî¿¡ ¹Ù»Ú¹Ç·Î ÀÌ¿Í°°ÀÌ Ã³¸®ÇÏ°í ³Ñ¾î°¡ÀÚ.
+             * BUGBUG : ulnDisconnSendDisconnectReq() í•¨ìˆ˜ì˜ ì—ëŸ¬ê°€ ë°˜ë“œì‹œ
+             *          communication link failure ë¼ëŠ” ë²•ì€ ì—†ë‹¤.
+             *          ì¼ë‹¨, ë¦´ë¦¬ì¦ˆì— ë°”ì˜ë¯€ë¡œ ì´ì™€ê°™ì´ ì²˜ë¦¬í•˜ê³  ë„˜ì–´ê°€ìž.
              */
 
             /*
-             * disconnect result ¼ö½Å
+             * disconnect result ìˆ˜ì‹ 
              */
             if (ulnDisconnReceiveDisconnectRes(aFnContext,&(sDbc->mPtContext))
                      != ACI_SUCCESS)
@@ -211,15 +211,15 @@ static ACI_RC ulnDisconnDoLogicalDisconnect(ulnFnContext *aFnContext)
                            LABEL_MEM_MAN_ERR);
 
             // BUG-24817
-            // windows ¿¡¼­ ulnDisconnSendDisconnectReq ÇÔ¼ö°¡ ½ÇÆÐÇÕ´Ï´Ù.
-            // º¸³»´Â°ÍÀÌ ½ÇÆÐÇß±â ¶§¹®¿¡ ¹ÞÀ»°Íµµ ¾ø´Ù.
+            // windows ì—ì„œ ulnDisconnSendDisconnectReq í•¨ìˆ˜ê°€ ì‹¤íŒ¨í•©ë‹ˆë‹¤.
+            // ë³´ë‚´ëŠ”ê²ƒì´ ì‹¤íŒ¨í–ˆê¸° ë•Œë¬¸ì— ë°›ì„ê²ƒë„ ì—†ë‹¤.
             sDbc->mPtContext.mNeedReadProtocol = 0;
 
             ULN_FNCONTEXT_SET_RC(aFnContext, SQL_SUCCESS);
         }
 
         /*
-         * protocol context Á¤¸®
+         * protocol context ì •ë¦¬
          */
         sNeedPtFin = ACP_FALSE;
         //fix BUG-17722
@@ -274,7 +274,7 @@ static ACI_RC ulnDisconnDoPhysicalDisconnect(ulnFnContext *aFnContext)
 }
 
 /*
- * BUGBUG : ¾Æ·¡ µÎ ÇÔ¼ö°¡ ÀÖ¾î¾ß ÇÒ ÆÄÀÏÀÌ ¾îµðÀÎÁö Á» ´õ »ý°¢ÇØ º¸ÀÚ.
+ * BUGBUG : ì•„ëž˜ ë‘ í•¨ìˆ˜ê°€ ìžˆì–´ì•¼ í•  íŒŒì¼ì´ ì–´ë””ì¸ì§€ ì¢€ ë” ìƒê°í•´ ë³´ìž.
  */
 static ACI_RC ulnDisconnFreeAllDesc(ulnFnContext *aFnContext)
 {
@@ -313,10 +313,10 @@ static ACI_RC ulnDisconnFreeAllStmt(ulnFnContext *aFnContext)
         sStmt = (ulnStmt *)sIterator1;
 
         /*
-         * Note : disconnect ½Ã¿¡ ¼­¹ö·Î stmt free request À» º¸³»Áö ¾Ê´Â´Ù.
-         *        disconnect ¸¦ ÇÏ¸é ¼­¹ö¿¡¼­´Â ÀÚµ¿À¸·Î ÇØ´ç ¿¬°á¿¡ ¼ÓÇÑ stmt µéÀ»
-         *        ÇØÁ¦ÇÏ±â ¶§¹®¿¡ ÀÌÁß ÇØÁ¦°¡ µÈ´Ù.
-         *        Å« ¹®Á¦´Â ¾øÁö¸¸ ¿¡·¯°¡ º¸³»¾îÁ® ¿Â´Ù.
+         * Note : disconnect ì‹œì— ì„œë²„ë¡œ stmt free request ì„ ë³´ë‚´ì§€ ì•ŠëŠ”ë‹¤.
+         *        disconnect ë¥¼ í•˜ë©´ ì„œë²„ì—ì„œëŠ” ìžë™ìœ¼ë¡œ í•´ë‹¹ ì—°ê²°ì— ì†í•œ stmt ë“¤ì„
+         *        í•´ì œí•˜ê¸° ë•Œë¬¸ì— ì´ì¤‘ í•´ì œê°€ ëœë‹¤.
+         *        í° ë¬¸ì œëŠ” ì—†ì§€ë§Œ ì—ëŸ¬ê°€ ë³´ë‚´ì–´ì ¸ ì˜¨ë‹¤.
          */
         ACI_TEST(ulnFreeHandleStmtBody(aFnContext, sDbc, sStmt, ACP_FALSE) != ACI_SUCCESS);
     }
@@ -336,7 +336,7 @@ SQLRETURN ulnDisconnect(ulnDbc *aDbc)
     ULN_INIT_FUNCTION_CONTEXT(sFnContext, ULN_FID_DISCONNECT, aDbc, ULN_OBJ_TYPE_DBC);
 
     /*
-     * ÇÔ¼ö ÁøÀÔ
+     * í•¨ìˆ˜ ì§„ìž…
      */
     ACI_TEST(ulnEnter(&sFnContext, NULL) != ACI_SUCCESS);
     sNeedExit = ACP_TRUE;
@@ -344,36 +344,36 @@ SQLRETURN ulnDisconnect(ulnDbc *aDbc)
     ACI_TEST_RAISE(aDbc->mXaEnlist == ACP_TRUE, LABEL_SUCCESS_RETURN);
 
     /*
-     * ÀÎÀÚ Ã¼Å© : ulnDbc ´Â ulnEnter() ÇÔ¼ö¿¡¼­ Ã¼Å©µÊ. µû·Î ¼öÇàÇÒ ÇÊ¿ä ¾øÀ½.
+     * ì¸ìž ì²´í¬ : ulnDbc ëŠ” ulnEnter() í•¨ìˆ˜ì—ì„œ ì²´í¬ë¨. ë”°ë¡œ ìˆ˜í–‰í•  í•„ìš” ì—†ìŒ.
      */
 
     /*
-     * ³²¾ÆÀÖ´Â STMT ÇÚµé ÇØÁ¦
-     * Note : ÁøÀÔ½Ã »óÅÂ¸Ó½Å¿¡¼­ stmt »óÅÂ Ã¼Å© ´Ù ÇßÀ¸¹Ç·Î ¸¶À½³õ°í ÇØÁ¦ÇØµµ µÈ´Ù.
-     *        ¸ðµç ÇÏÀ§ stmt ´Â SQLFreeHandle() ÀÌ È£Ãâ µÉ ¼ö ÀÖ´Â »óÅÂ¿¡ ÀÖ´Ù.
+     * ë‚¨ì•„ìžˆëŠ” STMT í•¸ë“¤ í•´ì œ
+     * Note : ì§„ìž…ì‹œ ìƒíƒœë¨¸ì‹ ì—ì„œ stmt ìƒíƒœ ì²´í¬ ë‹¤ í–ˆìœ¼ë¯€ë¡œ ë§ˆìŒë†“ê³  í•´ì œí•´ë„ ëœë‹¤.
+     *        ëª¨ë“  í•˜ìœ„ stmt ëŠ” SQLFreeHandle() ì´ í˜¸ì¶œ ë  ìˆ˜ ìžˆëŠ” ìƒíƒœì— ìžˆë‹¤.
      */
     ACI_TEST(ulnDisconnFreeAllStmt(&sFnContext) != ACI_SUCCESS);
 
     /*
-     * ³²¾ÆÀÖ´Â DESC ÇØÁ¦
+     * ë‚¨ì•„ìžˆëŠ” DESC í•´ì œ
      */
     ACI_TEST(ulnDisconnFreeAllDesc(&sFnContext) != ACI_SUCCESS);
 
     /*
-     * Note : disconnect ¸¦ stmt ÇØÁ¦º¸´Ù ´Ê°Ô ÇÏ´Â ÀÌÀ¯´Â stmt ÇØÁ¦ÇÏ¸é¼­ ¼­¹ö·Î stmt free ¸¦
-     *        ³¯¸®±â ¶§¹®ÀÌ´Ù.
+     * Note : disconnect ë¥¼ stmt í•´ì œë³´ë‹¤ ëŠ¦ê²Œ í•˜ëŠ” ì´ìœ ëŠ” stmt í•´ì œí•˜ë©´ì„œ ì„œë²„ë¡œ stmt free ë¥¼
+     *        ë‚ ë¦¬ê¸° ë•Œë¬¸ì´ë‹¤.
      *
-     * Á¢¼Ó ²÷±â (DB Session)
+     * ì ‘ì† ëŠê¸° (DB Session)
      */
     ACI_TEST(ulnDisconnDoLogicalDisconnect(&sFnContext) != ACI_SUCCESS);
 
     /*
-     * ¸µÅ© ²÷±â
+     * ë§í¬ ëŠê¸°
      */
     ACI_TEST(ulnDisconnDoPhysicalDisconnect(&sFnContext) != ACI_SUCCESS);
 
     /*
-     * ÇÔ¼ö Å»Ãâ
+     * í•¨ìˆ˜ íƒˆì¶œ
      */
     sNeedExit = ACP_FALSE;
 
@@ -406,12 +406,12 @@ SQLRETURN ulnDisconnect(ulnDbc *aDbc)
 
 /* ulnDisconnectLocal
  *
- * ¼³¸í:
- *  REQ_SendDisconnectÀ» Àü¼ÛÇÏ°í ÀÌ°Í¿¡ ´ëÇÑ ¸®ÅÏ °á°ú´Â °í·ÁÇÏÁö ¾Ê´Â´Ù.
- *  »þµå¿¡¼­ ÄÚµð³×ÀÌÅÍ¿¡ ÇÏ³ªÀÇ Å¬¶óÀÌ¾ðÆ®¿ÍÀÇ ¼¼¼Ç¿¡ ¿©·¯ °³ÀÇ µ¥ÀÌÅÍ ³ëµå¿ÍÀÇ
- *  ¿¬°áÀÌ Á¸ÀçÇÒ ¼ö ÀÖ½À´Ï´Ù. ÀÌ µ¥ÀÌÅÍ ³ëµå ¿¬°á Áß¿¡´Â Á¤»óÀûÀÎ °Í°ú ºñÁ¤»óÀûÀÎ
- *  °ÍÀÌ Á¸ÀçÇÒ ¼ö ÀÖ½À´Ï´Ù. ÀÌ°Í¿¡ ´ëÇØ¼­ ¸ÞÅ¸¿¡¼­´Â µ¥ÀÌÅÍ³ëµå¿¡¼­ÀÇ ÀÀ´ä¿¡
- *  °ü°è¾øÀÌ ·ÎÄÃ ¿¬°áÀ» ¹«Á¶°Ç ²÷½À´Ï´Ù.
+ * ì„¤ëª…:
+ *  REQ_SendDisconnectì„ ì „ì†¡í•˜ê³  ì´ê²ƒì— ëŒ€í•œ ë¦¬í„´ ê²°ê³¼ëŠ” ê³ ë ¤í•˜ì§€ ì•ŠëŠ”ë‹¤.
+ *  ìƒ¤ë“œì—ì„œ ì½”ë””ë„¤ì´í„°ì— í•˜ë‚˜ì˜ í´ë¼ì´ì–¸íŠ¸ì™€ì˜ ì„¸ì…˜ì— ì—¬ëŸ¬ ê°œì˜ ë°ì´í„° ë…¸ë“œì™€ì˜
+ *  ì—°ê²°ì´ ì¡´ìž¬í•  ìˆ˜ ìžˆìŠµë‹ˆë‹¤. ì´ ë°ì´í„° ë…¸ë“œ ì—°ê²° ì¤‘ì—ëŠ” ì •ìƒì ì¸ ê²ƒê³¼ ë¹„ì •ìƒì ì¸
+ *  ê²ƒì´ ì¡´ìž¬í•  ìˆ˜ ìžˆìŠµë‹ˆë‹¤. ì´ê²ƒì— ëŒ€í•´ì„œ ë©”íƒ€ì—ì„œëŠ” ë°ì´í„°ë…¸ë“œì—ì„œì˜ ì‘ë‹µì—
+ *  ê´€ê³„ì—†ì´ ë¡œì»¬ ì—°ê²°ì„ ë¬´ì¡°ê±´ ëŠìŠµë‹ˆë‹¤.
  *
  *  Return : SQL_SUCCESS or Error
  */
@@ -423,7 +423,7 @@ SQLRETURN ulnDisconnectLocal(ulnDbc *aDbc)
     ULN_INIT_FUNCTION_CONTEXT(sFnContext, ULN_FID_DISCONNECT, aDbc, ULN_OBJ_TYPE_DBC);
 
     /*
-     * ÇÔ¼ö ÁøÀÔ
+     * í•¨ìˆ˜ ì§„ìž…
      */
     ACI_TEST(ulnEnter(&sFnContext, NULL) != ACI_SUCCESS);
     sNeedExit = ACP_TRUE;
@@ -431,36 +431,36 @@ SQLRETURN ulnDisconnectLocal(ulnDbc *aDbc)
     ACI_TEST_RAISE(aDbc->mXaEnlist == ACP_TRUE, LABEL_SUCCESS_RETURN);
 
     /*
-     * ÀÎÀÚ Ã¼Å© : ulnDbc ´Â ulnEnter() ÇÔ¼ö¿¡¼­ Ã¼Å©µÊ. µû·Î ¼öÇàÇÒ ÇÊ¿ä ¾øÀ½.
+     * ì¸ìž ì²´í¬ : ulnDbc ëŠ” ulnEnter() í•¨ìˆ˜ì—ì„œ ì²´í¬ë¨. ë”°ë¡œ ìˆ˜í–‰í•  í•„ìš” ì—†ìŒ.
      */
 
     /*
-     * ³²¾ÆÀÖ´Â STMT ÇÚµé ÇØÁ¦
-     * Note : ÁøÀÔ½Ã »óÅÂ¸Ó½Å¿¡¼­ stmt »óÅÂ Ã¼Å© ´Ù ÇßÀ¸¹Ç·Î ¸¶À½³õ°í ÇØÁ¦ÇØµµ µÈ´Ù.
-     *        ¸ðµç ÇÏÀ§ stmt ´Â SQLFreeHandle() ÀÌ È£Ãâ µÉ ¼ö ÀÖ´Â »óÅÂ¿¡ ÀÖ´Ù.
+     * ë‚¨ì•„ìžˆëŠ” STMT í•¸ë“¤ í•´ì œ
+     * Note : ì§„ìž…ì‹œ ìƒíƒœë¨¸ì‹ ì—ì„œ stmt ìƒíƒœ ì²´í¬ ë‹¤ í–ˆìœ¼ë¯€ë¡œ ë§ˆìŒë†“ê³  í•´ì œí•´ë„ ëœë‹¤.
+     *        ëª¨ë“  í•˜ìœ„ stmt ëŠ” SQLFreeHandle() ì´ í˜¸ì¶œ ë  ìˆ˜ ìžˆëŠ” ìƒíƒœì— ìžˆë‹¤.
      */
     ACI_TEST(ulnDisconnFreeAllStmt(&sFnContext) != ACI_SUCCESS);
 
     /*
-     * ³²¾ÆÀÖ´Â DESC ÇØÁ¦
+     * ë‚¨ì•„ìžˆëŠ” DESC í•´ì œ
      */
     ACI_TEST(ulnDisconnFreeAllDesc(&sFnContext) != ACI_SUCCESS);
 
     /*
-     * Note : disconnect ¸¦ stmt ÇØÁ¦º¸´Ù ´Ê°Ô ÇÏ´Â ÀÌÀ¯´Â stmt ÇØÁ¦ÇÏ¸é¼­ ¼­¹ö·Î stmt free ¸¦
-     *        ³¯¸®±â ¶§¹®ÀÌ´Ù.
+     * Note : disconnect ë¥¼ stmt í•´ì œë³´ë‹¤ ëŠ¦ê²Œ í•˜ëŠ” ì´ìœ ëŠ” stmt í•´ì œí•˜ë©´ì„œ ì„œë²„ë¡œ stmt free ë¥¼
+     *        ë‚ ë¦¬ê¸° ë•Œë¬¸ì´ë‹¤.
      *
-     * Á¢¼Ó ²÷±â (DB Session)
+     * ì ‘ì† ëŠê¸° (DB Session)
      */
     (void)ulnDisconnDoLogicalDisconnect(&sFnContext);
 
     /*
-     * ¸µÅ© ²÷±â
+     * ë§í¬ ëŠê¸°
      */
     ACI_TEST(ulnDisconnDoPhysicalDisconnect(&sFnContext) != ACI_SUCCESS);
 
     /*
-     * ÇÔ¼ö Å»Ãâ
+     * í•¨ìˆ˜ íƒˆì¶œ
      */
     sNeedExit = ACP_FALSE;
 

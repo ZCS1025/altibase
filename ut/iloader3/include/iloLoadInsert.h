@@ -40,7 +40,7 @@
 #define FAIL_BREAK                                                \
     (ECODE == 0x3b032 ||                                          \
      ECODE == 0x5003b || /* buffer full */                        \
-     ECODE == 0x51043 || /* Åë½Å Àå¾Ö    */                       \
+     ECODE == 0x51043 || /* í†µì‹  ì¥ì•     */                       \
      ECODE == 0x91044 || /* Data file IO error */                 \
      ECODE == 0x91045)   /* LOB file IO error */
 
@@ -59,8 +59,8 @@ inline IDE_RC iloLoad::InitContextData(iloLoadInsertContext *aData)
 
     iloMutexLock( sHandle, &(sHandle->mParallel.mLoadInsMutex) );
     /* PROJ-1714
-     * sConnIndex´Â ÇöÀç Thread¿¡¼­ »ç¿ëÇÏ°ÔµÉ Identifier °°Àº ¿ªÇÒÀ» ÇÑ´Ù.
-     * Connection°ú TableInfo¸¦ ±¸ºĞÇÒ ¼ö ÀÖµµ·Ï ÇÑ´Ù.
+     * sConnIndexëŠ” í˜„ì¬ Threadì—ì„œ ì‚¬ìš©í•˜ê²Œë  Identifier ê°™ì€ ì—­í• ì„ í•œë‹¤.
+     * Connectionê³¼ TableInfoë¥¼ êµ¬ë¶„í•  ìˆ˜ ìˆë„ë¡ í•œë‹¤.
      */
     aData->mConnIndex = mConnIndex++;          
     aData->mLOBColExist = IsLOBColExist( sHandle, &m_pTableInfo[aData->mConnIndex] );
@@ -79,8 +79,8 @@ inline IDE_RC iloLoad::InitContextData(iloLoadInsertContext *aData)
     IDE_TEST_RAISE(aData->mRecordNumber == NULL, MAllocError);
     
     /* BUG-24583
-     * -lob 'use_separate_files=yes' ¿É¼ÇÀ» »ç¿ëÇÒ °æ¿ì¿¡ 
-     * Bad File¿¡ FilePath + FileNameÀ» ÀúÀåÇÑ´Ù.
+     * -lob 'use_separate_files=yes' ì˜µì…˜ì„ ì‚¬ìš©í•  ê²½ìš°ì— 
+     * Bad Fileì— FilePath + FileNameì„ ì €ì¥í•œë‹¤.
      */
     if ( aData->mLOBColExist == ILO_TRUE &&
          m_pProgOption->mUseSeparateFiles == ILO_TRUE )
@@ -156,8 +156,8 @@ inline SInt iloLoad::ReadOneRecord(iloLoadInsertContext *aData)
 
     iloMutexLock( sHandle, &(sHandle->mParallel.mLoadInsMutex) );
 
-    // BUG-24898 iloader ÆÄ½Ì¿¡·¯ »ó¼¼È­
-    // ¿¡·¯¸Ş½ÃÁö¸¦ clear ÇÑ´Ù.
+    // BUG-24898 iloader íŒŒì‹±ì—ëŸ¬ ìƒì„¸í™”
+    // ì—ëŸ¬ë©”ì‹œì§€ë¥¼ clear í•œë‹¤.
     if (uteGetErrorCODE(sHandle->mErrorMgr) != 0x00000)
     {
         uteClearError(sHandle->mErrorMgr);
@@ -172,16 +172,16 @@ inline SInt iloLoad::ReadOneRecord(iloLoadInsertContext *aData)
         idlOS::memcpy(sErrorMgr, sHandle->mErrorMgr, ID_SIZEOF(uteErrorMgr));
     }
 
-    // BUG-24879 errors ¿É¼Ç Áö¿ø
-    // recordcount ¸¦ Á¤È®È÷ Ãâ·ÂÇÏ±â À§ÇØ¼­ eof ÀÏ¶§´Â count ÇÏÁö ¾Ê´Â´Ù.
+    // BUG-24879 errors ì˜µì…˜ ì§€ì›
+    // recordcount ë¥¼ ì •í™•íˆ ì¶œë ¥í•˜ê¸° ìœ„í•´ì„œ eof ì¼ë•ŒëŠ” count í•˜ì§€ ì•ŠëŠ”ë‹¤.
     if (sRet != END_OF_FILE)
     {
-        aData->mRecordNumber[sRealCount] = mReadRecCount += 1; //ÀĞÀº Record ¼ö
+        aData->mRecordNumber[sRealCount] = mReadRecCount += 1; //ì½ì€ Record ìˆ˜
     }
 
     iloMutexUnLock( sHandle, &(sHandle->mParallel.mLoadInsMutex) );
 
-    // BUG-28208: malloc µî¿¡ ½ÇÆĞÇßÀ» ¶§ iloader ¹Ù·Î Á¾·á 
+    // BUG-28208: malloc ë“±ì— ì‹¤íŒ¨í–ˆì„ ë•Œ iloader ë°”ë¡œ ì¢…ë£Œ 
     if ( (sRet == SYS_ERROR) ||
          (m_pProgOption->m_bExist_L &&
           (aData->mRecordNumber[sRealCount] > m_pProgOption->m_LastRow)) )
@@ -214,12 +214,12 @@ inline IDE_RC iloLoad::LogError(iloLoadInsertContext *aData,
 
     ADD_ERROR_COUNT(1);
 
-    // BUG-21640 iloader¿¡¼­ ¿¡·¯¸Ş½ÃÁö¸¦ ¾Ë¾Æº¸±â ÆíÇÏ°Ô Ãâ·ÂÇÏ±â
-    // log ÆÄÀÏ¿¡ rowcount ¸¦ Ãâ·ÂÇÑ´Ù.
+    // BUG-21640 iloaderì—ì„œ ì—ëŸ¬ë©”ì‹œì§€ë¥¼ ì•Œì•„ë³´ê¸° í¸í•˜ê²Œ ì¶œë ¥í•˜ê¸°
+    // log íŒŒì¼ì— rowcount ë¥¼ ì¶œë ¥í•œë‹¤.
     PRINT_RECORD(aArrayIndex);
 
-    // BUG-21640 iloader¿¡¼­ ¿¡·¯¸Ş½ÃÁö¸¦ ¾Ë¾Æº¸±â ÆíÇÏ°Ô Ãâ·ÂÇÏ±â
-    // ±âÁ¸ ¿¡·¯¸Ş½ÃÁö¿Í µ¿ÀÏÇÑ Çü½ÄÀ¸·Î Ãâ·ÂÇÏ´Â ÇÔ¼öÃß°¡   
+    // BUG-21640 iloaderì—ì„œ ì—ëŸ¬ë©”ì‹œì§€ë¥¼ ì•Œì•„ë³´ê¸° í¸í•˜ê²Œ ì¶œë ¥í•˜ê¸°
+    // ê¸°ì¡´ ì—ëŸ¬ë©”ì‹œì§€ì™€ ë™ì¼í•œ í˜•ì‹ìœ¼ë¡œ ì¶œë ¥í•˜ëŠ” í•¨ìˆ˜ì¶”ê°€   
     m_LogFile.PrintLogErr(sErrorMgr);
 
     ILO_CALLBACK;
@@ -262,7 +262,7 @@ inline IDE_RC iloLoad::Callback4Api(iloLoadInsertContext *aData)
     }
 
     /* BUG-30413
-     * mCBFrequencyCnt °ª°ú arrayCount ÀÇ °ªÀ» ºñ±³ ÇÏ¿© Äİ¹éÀ» È£Ãâ ÇÑ´Ù.  
+     * mCBFrequencyCnt ê°’ê³¼ arrayCount ì˜ ê°’ì„ ë¹„êµ í•˜ì—¬ ì½œë°±ì„ í˜¸ì¶œ í•œë‹¤.  
      */
     if ( sRealCount == aData->mArrayCount ) 
     {
@@ -394,8 +394,8 @@ inline IDE_RC iloLoad::ExecuteInsertSQL(iloLoadInsertContext *aData)
                 {
                     ADD_ERROR_COUNT(1);
 
-                    // array ¿¡·¯¸¦ Ãâ·ÂÇÒ¶§ Á¤È®ÇÑ rowcount ¸¦ Ãâ·ÂÇÏ±âÀ§ÇØ¼­
-                    // array ÀÇ °¹¼ö¸¦ »«ÈÄ +1 ÇÑ´Ù.
+                    // array ì—ëŸ¬ë¥¼ ì¶œë ¥í• ë•Œ ì •í™•í•œ rowcount ë¥¼ ì¶œë ¥í•˜ê¸°ìœ„í•´ì„œ
+                    // array ì˜ ê°¯ìˆ˜ë¥¼ ëº€í›„ +1 í•œë‹¤.
                     PRINT_RECORD(i);
 
                     if (sStatusPtr[i] == SQL_PARAM_ERROR)
@@ -441,7 +441,7 @@ inline IDE_RC iloLoad::ExecuteInsertLOB(iloLoadInsertContext *aData)
     {
         for (i = 0; i < sRealCount; i++)
         {
-            /* LOB µ¥ÀÌÅÍ¸¦ ÆÄÀÏ·ÎºÎÅÍ ÀĞ¾î ¼­¹ö·Î Àü¼Û. */
+            /* LOB ë°ì´í„°ë¥¼ íŒŒì¼ë¡œë¶€í„° ì½ì–´ ì„œë²„ë¡œ ì „ì†¡. */
             iloMutexLock( sHandle, &(sHandle->mParallel.mLoadLOBMutex) );
             sRC = m_DataFile.LoadOneRecordLOBCols( sHandle,
                     aData->mRecordNumber[i],
@@ -452,9 +452,9 @@ inline IDE_RC iloLoad::ExecuteInsertLOB(iloLoadInsertContext *aData)
 
             if (sRC != IDE_SUCCESS)
             {
-                /* ¿À·ù°¡ ¹ß»ıÇÑ ·¹ÄÚµåÀÇ »ğÀÔÀ» Ãë¼ÒÇÑ´Ù.
-                 * m_ArrayCount¿Í m_CommitUnitÀÌ 1ÀÌ¶ó´Â
-                 * °¡Á¤ÀÌ ±ò·Á ÀÖ´Ù. */
+                /* ì˜¤ë¥˜ê°€ ë°œìƒí•œ ë ˆì½”ë“œì˜ ì‚½ì…ì„ ì·¨ì†Œí•œë‹¤.
+                 * m_ArrayCountì™€ m_CommitUnitì´ 1ì´ë¼ëŠ”
+                 * ê°€ì •ì´ ê¹”ë ¤ ìˆë‹¤. */
 
                 (void)m_pISPApiUp[sConnIndex].EndTran(ILO_FALSE);
 
@@ -469,7 +469,7 @@ inline IDE_RC iloLoad::ExecuteInsertLOB(iloLoadInsertContext *aData)
                     ILO_CALLBACK;
 
                     m_LogFile.PrintLogErr(sErrorMgr);
-                    //goto AFTER_MAIN_LOOP_LABEL;       //!!! Ã³¸®ÇØ¾ßÇÔ
+                    //goto AFTER_MAIN_LOOP_LABEL;       //!!! ì²˜ë¦¬í•´ì•¼í•¨
                     iloMutexUnLock( sHandle, &(sHandle->mParallel.mLoadFIOMutex) );
 
                     break;

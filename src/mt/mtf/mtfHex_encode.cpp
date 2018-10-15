@@ -21,8 +21,8 @@
 
 /***********************************************************************
  * HEX_ENCODE() : 
- * ÀÔ·Â¹ŞÀº hex stringÀ» ÀÎÄÚµùÇÏ¿©
- * VARCHARÅ¸ÀÔÀÇ ¹®ÀÚ¿­À» ¹İÈ¯ÇÑ´Ù.
+ * ì…ë ¥ë°›ì€ hex stringì„ ì¸ì½”ë”©í•˜ì—¬
+ * VARCHARíƒ€ì…ì˜ ë¬¸ìì—´ì„ ë°˜í™˜í•œë‹¤.
  *
  * ex) SELECT HEX_ENCODE('altibase') FROM DUAL;
  * HEX_ENCODE('altibase')
@@ -57,7 +57,7 @@ static IDE_RC mtfHex_encodeEstimate( mtcNode*     aNode,
 mtfModule mtfHex_encode = {
     1|MTC_NODE_OPERATOR_FUNCTION,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
+    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìê°€ ì•„ë‹˜)
     mtfHex_encodeFunctionName,
     NULL,
     mtf::initializeDefault,

@@ -48,7 +48,7 @@ static IDE_RC mtfDigestEstimate( mtcNode*     aNode,
 mtfModule mtfDigest = {
     1|MTC_NODE_OPERATOR_FUNCTION|MTC_NODE_EAT_NULL_TRUE,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
+    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìžê°€ ì•„ë‹˜)
     mtfDigestFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -125,8 +125,8 @@ IDE_RC mtfDigestEstimate( mtcNode*     aNode,
     {
         /* DIGEST( 'ABCD', 'SHA-1' ) 
          * DIGEST( 'ABCD', 'SHA-256' )
-         * °ú °°ÀÌ validation ´Ü°è¿¡¼­ Àû¿ëÇÒ ¾Ë°í¸®ÁòÀ» ¾Ë ¼ö ÀÖ´Â °æ¿ì´Â 
-         * ¾Ë°í¸®Áò¿¡ ¸Â°Ô PrecisionÀ» º¯°æÇÑ´Ù. 
+         * ê³¼ ê°™ì´ validation ë‹¨ê³„ì—ì„œ ì ìš©í•  ì•Œê³ ë¦¬ì¦˜ì„ ì•Œ ìˆ˜ ìžˆëŠ” ê²½ìš°ëŠ” 
+         * ì•Œê³ ë¦¬ì¦˜ì— ë§žê²Œ Precisionì„ ë³€ê²½í•œë‹¤. 
          *
          * DIGEST 
          *   |
@@ -150,7 +150,7 @@ IDE_RC mtfDigestEstimate( mtcNode*     aNode,
                 MTD_OFFSET_USE,
                 sAlgorithmColumn->module->staticNull );
 
-            /* °ªÀÌ NULL ÀÎ °æ¿ì ¿¡·¯ */
+            /* ê°’ì´ NULL ì¸ ê²½ìš° ì—ëŸ¬ */
             IDE_TEST_RAISE ( sAlgorithmColumn->module->isNull( sAlgorithmColumn, sValueTemp ) 
                              == ID_TRUE,
                              INVALID_DIGEST_ALGORITHM );
@@ -241,7 +241,7 @@ IDE_RC mtfDigestEstimate( mtcNode*     aNode,
         aNode->lflag &= ~MTC_NODE_REESTIMATE_MASK;
         aNode->lflag |= MTC_NODE_REESTIMATE_TRUE;
             
-        // BUG-38070 undef typeÀ¸·Î re-estimateÇÏÁö ¾Ê´Â´Ù.
+        // BUG-38070 undef typeìœ¼ë¡œ re-estimateí•˜ì§€ ì•ŠëŠ”ë‹¤.
         if ( ( aTemplate->variableRow != ID_USHORT_MAX ) &&
              ( ( aNode->lflag & MTC_NODE_BIND_MASK ) == MTC_NODE_BIND_EXIST ) )
         {

@@ -73,7 +73,7 @@ IDE_RC cmpCallbackBASEError(cmiProtocolContext * /*aProtocolContext*/,
                             void               * /*aUserContext*/)
 {
     /*
-     * BUGBUG: ¿¡·¯Ã³¸®¸¦ ÇØ¾ßÇÏ³ª ÀÏ´Ü ¹«½Ã
+     * BUGBUG: ì—ëŸ¬ì²˜ë¦¬ë¥¼ í•´ì•¼í•˜ë‚˜ ì¼ë‹¨ ë¬´ì‹œ
      */
 
     IDE_ASSERT(0);
@@ -93,7 +93,7 @@ IDE_RC cmpCallbackBASEHandshake(cmiProtocolContext *aProtocolContext,
 
     
     /*
-     * Module ID °Ë»ç
+     * Module ID ê²€ì‚¬
      */
     if (sSession != NULL)
     {
@@ -106,13 +106,13 @@ IDE_RC cmpCallbackBASEHandshake(cmiProtocolContext *aProtocolContext,
     }
 
     /*
-     * »ç¿ëÇÒ Version ¼¼ÆÃ
+     * ì‚¬ìš©í•  Version ì„¸íŒ…
      */
     sBaseVersion   = IDL_MIN(sArg->mBaseVersion, gCmpModule[CMP_MODULE_BASE]->mVersionMax - 1);
     sModuleVersion = IDL_MIN(sArg->mModuleVersion, gCmpModule[sArg->mModuleID]->mVersionMax - 1);
 
     /*
-     * Session¿¡ Version ¼¼ÆÃ
+     * Sessionì— Version ì„¸íŒ…
      */
     if (sSession != NULL)
     {

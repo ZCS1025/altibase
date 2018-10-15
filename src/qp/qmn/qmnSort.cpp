@@ -21,9 +21,9 @@
  * Description :
  *     SORT(SORT) Node
  *
- *     °ü°èÇü ¸ğµ¨¿¡¼­ sorting ¿¬»êÀ» ¼öÇàÇÏ´Â Plan Node ÀÌ´Ù.
+ *     ê´€ê³„í˜• ëª¨ë¸ì—ì„œ sorting ì—°ì‚°ì„ ìˆ˜í–‰í•˜ëŠ” Plan Node ì´ë‹¤.
  *
- *     ´ÙÀ½°ú °°Àº ±â´ÉÀ» À§ÇØ »ç¿ëµÈ´Ù.
+ *     ë‹¤ìŒê³¼ ê°™ì€ ê¸°ëŠ¥ì„ ìœ„í•´ ì‚¬ìš©ëœë‹¤.
  *         - ORDER BY
  *         - Sort-based Grouping
  *         - Sort-based Distinction
@@ -33,9 +33,9 @@
  *         - Sort-based Full Outer Join
  *         - Store And Search
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  **********************************************************************/
 
@@ -53,7 +53,7 @@ qmnSORT::init( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    SORT ³ëµåÀÇ ÃÊ±âÈ­
+ *    SORT ë…¸ë“œì˜ ì´ˆê¸°í™”
  *
  * Implementation :
  *
@@ -74,7 +74,7 @@ qmnSORT::init( qcTemplate * aTemplate,
     sDataPlan->searchNext  = qmnSORT::searchDefault;
 
     //----------------------------------------
-    // ÃÖÃÊ ÃÊ±âÈ­ ¼öÇà
+    // ìµœì´ˆ ì´ˆê¸°í™” ìˆ˜í–‰
     //----------------------------------------
 
     if ( (*sDataPlan->flag & QMND_SORT_INIT_DONE_MASK)
@@ -95,13 +95,13 @@ qmnSORT::init( qcTemplate * aTemplate,
     if ( sDependency == ID_TRUE )
     {
         //----------------------------------------
-        // Temp Table ±¸Ãà Àü ÃÊ±âÈ­
+        // Temp Table êµ¬ì¶• ì „ ì´ˆê¸°í™”
         //----------------------------------------
 
         IDE_TEST( qmcSortTemp::clear( sDataPlan->sortMgr ) != IDE_SUCCESS );
 
         //----------------------------------------
-        // Child¸¦ ¹İº¹ ¼öÇàÇÏ¿© Temp TableÀ» ±¸Ãà
+        // Childë¥¼ ë°˜ë³µ ìˆ˜í–‰í•˜ì—¬ Temp Tableì„ êµ¬ì¶•
         //----------------------------------------
 
         IDE_TEST( aPlan->left->init( aTemplate,
@@ -111,7 +111,7 @@ qmnSORT::init( qcTemplate * aTemplate,
                   != IDE_SUCCESS);
 
         //----------------------------------------
-        // Temp Table ±¸Ãà ÈÄ ÃÊ±âÈ­
+        // Temp Table êµ¬ì¶• í›„ ì´ˆê¸°í™”
         //----------------------------------------
 
         sDataPlan->depValue = sDataPlan->depTuple->modify;
@@ -122,7 +122,7 @@ qmnSORT::init( qcTemplate * aTemplate,
     }
 
     //----------------------------------------
-    // °Ë»ö ÇÔ¼ö ¹× ¼öÇà ÇÔ¼ö °áÁ¤
+    // ê²€ìƒ‰ í•¨ìˆ˜ ë° ìˆ˜í–‰ í•¨ìˆ˜ ê²°ì •
     //----------------------------------------
 
     IDE_TEST( setSearchFunction( sCodePlan, sDataPlan )
@@ -153,10 +153,10 @@ qmnSORT::doIt( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    SORT ÀÇ °íÀ¯ ±â´ÉÀ» ¼öÇàÇÑ´Ù.
+ *    SORT ì˜ ê³ ìœ  ê¸°ëŠ¥ì„ ìˆ˜í–‰í•œë‹¤.
  *
  * Implementation :
- *    ÁöÁ¤µÈ ÇÔ¼ö Æ÷ÀÎÅÍ¸¦ ¼öÇàÇÑ´Ù.
+ *    ì§€ì •ëœ í•¨ìˆ˜ í¬ì¸í„°ë¥¼ ìˆ˜í–‰í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -185,11 +185,11 @@ qmnSORT::padNull( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    SORT ³ëµåÀÇ Tuple¿¡ Null Row¸¦ ¼³Á¤ÇÑ´Ù.
+ *    SORT ë…¸ë“œì˜ Tupleì— Null Rowë¥¼ ì„¤ì •í•œë‹¤.
  *
  * Implementation :
- *    Child PlanÀÇ Null PaddingÀ» ¼öÇàÇÏ°í,
- *    ÀÚ½ÅÀÇ Null Row¸¦ Temp Table·ÎºÎÅÍ È¹µæÇÑ´Ù.
+ *    Child Planì˜ Null Paddingì„ ìˆ˜í–‰í•˜ê³ ,
+ *    ìì‹ ì˜ Null Rowë¥¼ Temp Tableë¡œë¶€í„° íšë“í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -223,9 +223,9 @@ qmnSORT::padNull( qcTemplate * aTemplate,
     sDataPlan->plan.myTuple->modify++;
 
     // To Fix PR-9822
-    // padNull() ÇÔ¼ö´Â Child ÀÇ modify °ªÀ» º¯°æ½ÃÅ°°Ô µÈ´Ù.
-    // ÀÌ´Â Àç±¸Ãà ¿©ºÎ¿Í °ü°è°¡ ¾øÀ¸¹Ç·Î ±× °ªÀ» ÀúÀåÇÏ¿©
-    // Àç±¸ÃàÀÌ µÇÁö ¾Êµµ·Ï ÇÑ´Ù.
+    // padNull() í•¨ìˆ˜ëŠ” Child ì˜ modify ê°’ì„ ë³€ê²½ì‹œí‚¤ê²Œ ëœë‹¤.
+    // ì´ëŠ” ì¬êµ¬ì¶• ì—¬ë¶€ì™€ ê´€ê³„ê°€ ì—†ìœ¼ë¯€ë¡œ ê·¸ ê°’ì„ ì €ì¥í•˜ì—¬
+    // ì¬êµ¬ì¶•ì´ ë˜ì§€ ì•Šë„ë¡ í•œë‹¤.
     sDataPlan->depValue = sDataPlan->depTuple->modify;
 
     return IDE_SUCCESS;
@@ -247,7 +247,7 @@ qmnSORT::printPlan( qcTemplate   * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    SORT ³ëµåÀÇ ¼öÇà Á¤º¸¸¦ Ãâ·ÂÇÑ´Ù.
+ *    SORT ë…¸ë“œì˜ ìˆ˜í–‰ ì •ë³´ë¥¼ ì¶œë ¥í•œë‹¤.
  *
  * Implementation :
  *
@@ -267,7 +267,7 @@ qmnSORT::printPlan( qcTemplate   * aTemplate,
     SLong  sRecordCnt;
     idBool sIsInit      = ID_FALSE;
     //----------------------------
-    // Display À§Ä¡ °áÁ¤
+    // Display ìœ„ì¹˜ ê²°ì •
     //----------------------------
 
     for ( i = 0; i < aDepth; i++ )
@@ -277,13 +277,13 @@ qmnSORT::printPlan( qcTemplate   * aTemplate,
     }
 
     //----------------------------
-    // ¼öÇà Á¤º¸ Ãâ·Â
+    // ìˆ˜í–‰ ì •ë³´ ì¶œë ¥
     //----------------------------
 
     if ( aMode == QMN_DISPLAY_ALL )
     {
         //----------------------------
-        // explain plan = on; ÀÎ °æ¿ì
+        // explain plan = on; ì¸ ê²½ìš°
         //----------------------------
 
         if ( (*sDataPlan->flag & QMND_SORT_INIT_DONE_MASK)
@@ -298,7 +298,7 @@ qmnSORT::printPlan( qcTemplate   * aTemplate,
             if ( (sCodePlan->plan.flag & QMN_PLAN_STORAGE_MASK)
                  == QMN_PLAN_STORAGE_MEMORY )
             {
-                // Memory Temp TableÀÎ °æ¿ì
+                // Memory Temp Tableì¸ ê²½ìš°
                 // To Fix BUG-9034
                 if ( ( sCodePlan->flag & QMNC_SORT_STORE_MASK )
                      == QMNC_SORT_STORE_ONLY )
@@ -317,7 +317,7 @@ qmnSORT::printPlan( qcTemplate   * aTemplate,
                     else
                     {
                         // BUG-29209
-                        // ITEM_SIZE Á¤º¸ º¸¿©ÁÖÁö ¾ÊÀ½
+                        // ITEM_SIZE ì •ë³´ ë³´ì—¬ì£¼ì§€ ì•ŠìŒ
                         iduVarStringAppendFormat(
                             aString,
                             "STORE ( ITEM_SIZE: BLOCKED, "
@@ -343,7 +343,7 @@ qmnSORT::printPlan( qcTemplate   * aTemplate,
                     else
                     {
                         // BUG-29209
-                        // ITEM_SIZE Á¤º¸ º¸¿©ÁÖÁö ¾ÊÀ½
+                        // ITEM_SIZE ì •ë³´ ë³´ì—¬ì£¼ì§€ ì•ŠìŒ
                         iduVarStringAppendFormat(
                             aString,
                             "SORT ( ITEM_SIZE: BLOCKED, "
@@ -356,7 +356,7 @@ qmnSORT::printPlan( qcTemplate   * aTemplate,
             }
             else
             {
-                // Disk Temp TableÀÎ °æ¿ì
+                // Disk Temp Tableì¸ ê²½ìš°
                 // To Fix BUG-9034
                 if ( ( sCodePlan->flag & QMNC_SORT_STORE_MASK )
                      == QMNC_SORT_STORE_ONLY )
@@ -377,7 +377,7 @@ qmnSORT::printPlan( qcTemplate   * aTemplate,
                     else
                     {
                         // BUG-29209
-                        // ITEM_SIZE Á¤º¸ º¸¿©ÁÖÁö ¾ÊÀ½
+                        // ITEM_SIZE ì •ë³´ ë³´ì—¬ì£¼ì§€ ì•ŠìŒ
                         iduVarStringAppendFormat(
                             aString,
                             "STORE ( ITEM_SIZE: BLOCKED, "
@@ -406,7 +406,7 @@ qmnSORT::printPlan( qcTemplate   * aTemplate,
                     else
                     {
                         // BUG-29209
-                        // ITEM_SIZE Á¤º¸ º¸¿©ÁÖÁö ¾ÊÀ½
+                        // ITEM_SIZE ì •ë³´ ë³´ì—¬ì£¼ì§€ ì•ŠìŒ
                         iduVarStringAppendFormat(
                             aString,
                             "SORT ( ITEM_SIZE: BLOCKED, "
@@ -421,7 +421,7 @@ qmnSORT::printPlan( qcTemplate   * aTemplate,
         }
         else
         {
-            // ÃÊ±âÈ­µÇÁö ¾ÊÀº °æ¿ì
+            // ì´ˆê¸°í™”ë˜ì§€ ì•Šì€ ê²½ìš°
             // To Fix BUG-9034
             if ( ( sCodePlan->flag & QMNC_SORT_STORE_MASK )
                  == QMNC_SORT_STORE_ONLY )
@@ -441,7 +441,7 @@ qmnSORT::printPlan( qcTemplate   * aTemplate,
     else
     {
         //----------------------------
-        // explain plan = only; ÀÎ °æ¿ì
+        // explain plan = only; ì¸ ê²½ìš°
         //----------------------------
 
         // To Fix BUG-9034
@@ -461,7 +461,7 @@ qmnSORT::printPlan( qcTemplate   * aTemplate,
     }
 
     //----------------------------
-    // Cost Ãâ·Â
+    // Cost ì¶œë ¥
     //----------------------------
     qmn::printCost( aString,
                     sCodePlan->plan.qmgAllCost );
@@ -541,7 +541,7 @@ qmnSORT::printPlan( qcTemplate   * aTemplate,
     }
 
     //----------------------------
-    // Operatorº° °á°ú Á¤º¸ Ãâ·Â
+    // Operatorë³„ ê²°ê³¼ ì •ë³´ ì¶œë ¥
     //----------------------------
     if ( QCU_TRCLOG_RESULT_DESC == 1 )
     {
@@ -557,7 +557,7 @@ qmnSORT::printPlan( qcTemplate   * aTemplate,
     }
 
     //----------------------------
-    // Child Plan Á¤º¸ Ãâ·Â
+    // Child Plan ì •ë³´ ì¶œë ¥
     //----------------------------
 
     IDE_TEST( aPlan->left->printPlan( aTemplate,
@@ -583,7 +583,7 @@ qmnSORT::doItDefault( qcTemplate * /* aTemplate */,
 /***********************************************************************
  *
  * Description :
- *    ÀÌ ÇÔ¼ö°¡ ¼öÇàµÇ¸é ¾ÈµÊ.
+ *    ì´ í•¨ìˆ˜ê°€ ìˆ˜í–‰ë˜ë©´ ì•ˆë¨.
  *
  * Implementation :
  *
@@ -607,10 +607,10 @@ qmnSORT::doItFirst( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    ÃÖÃÊ ¼öÇà ÇÔ¼ö
+ *    ìµœì´ˆ ìˆ˜í–‰ í•¨ìˆ˜
  *
  * Implementation :
- *    °Ë»ö ÈÄ Row°¡ Á¸ÀçÇÏ¸é, Tuple Set¿¡ º¹¿øÇÑ´Ù.
+ *    ê²€ìƒ‰ í›„ Rowê°€ ì¡´ì¬í•˜ë©´, Tuple Setì— ë³µì›í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -624,13 +624,13 @@ qmnSORT::doItFirst( qcTemplate * aTemplate,
     IDE_TEST( iduCheckSessionEvent( aTemplate->stmt->mStatistics )
               != IDE_SUCCESS );
 
-    // Option¿¡ µû¸¥ °Ë»ö ¼öÇà
+    // Optionì— ë”°ë¥¸ ê²€ìƒ‰ ìˆ˜í–‰
     IDE_TEST( sDataPlan->searchFirst( aTemplate,
                                       sCodePlan,
                                       sDataPlan,
                                       aFlag ) != IDE_SUCCESS );
 
-    // Data°¡ Á¸ÀçÇÒ °æ¿ì Tuple Set º¹¿ø
+    // Dataê°€ ì¡´ì¬í•  ê²½ìš° Tuple Set ë³µì›
     if ( (*aFlag & QMC_ROW_DATA_MASK) == QMC_ROW_DATA_EXIST )
     {
         IDE_TEST( setTupleSet( aTemplate,
@@ -660,7 +660,7 @@ qmnSORT::doItNext( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *     ´ÙÀ½ ¼öÇà ÇÔ¼ö
+ *     ë‹¤ìŒ ìˆ˜í–‰ í•¨ìˆ˜
  *
  * Implementation :
  *
@@ -673,13 +673,13 @@ qmnSORT::doItNext( qcTemplate * aTemplate,
     qmndSORT * sDataPlan =
         (qmndSORT *) (aTemplate->tmplate.data + aPlan->offset);
 
-    // ¿É¼Ç¿¡ ¸Â´Â °Ë»ö ¼öÇà
+    // ì˜µì…˜ì— ë§ëŠ” ê²€ìƒ‰ ìˆ˜í–‰
     IDE_TEST( sDataPlan->searchNext( aTemplate,
                                      sCodePlan,
                                      sDataPlan,
                                      aFlag ) != IDE_SUCCESS );
 
-    // Data°¡ Á¸ÀçÇÒ °æ¿ì Tuple Set º¹¿ø
+    // Dataê°€ ì¡´ì¬í•  ê²½ìš° Tuple Set ë³µì›
     if ( (*aFlag & QMC_ROW_DATA_MASK) == QMC_ROW_DATA_EXIST )
     {
         IDE_TEST( setTupleSet( aTemplate,
@@ -744,11 +744,11 @@ void qmnSORT::setHitSearch( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    Probing (LEFT) Table¿¡ ´ëÇÑ Ã³¸®°¡ ³¡³ª°í, Driving (RIGHT) Table¿¡ ´ëÇÑ
- *    Ã³¸®¸¦ ¼öÇàÇÏ±â À§ÇØ »ç¿ëµÈ´Ù.
+ *    Probing (LEFT) Tableì— ëŒ€í•œ ì²˜ë¦¬ê°€ ëë‚˜ê³ , Driving (RIGHT) Tableì— ëŒ€í•œ
+ *    ì²˜ë¦¬ë¥¼ ìˆ˜í–‰í•˜ê¸° ìœ„í•´ ì‚¬ìš©ëœë‹¤.
  *
  * Implementation :
- *    °Ë»ö ÇÔ¼ö¸¦ °­Á¦ÀûÀ¸·Î Hit °Ë»öÀ¸·Î ÀüÈ¯ÇÑ´Ù.
+ *    ê²€ìƒ‰ í•¨ìˆ˜ë¥¼ ê°•ì œì ìœ¼ë¡œ Hit ê²€ìƒ‰ìœ¼ë¡œ ì „í™˜í•œë‹¤.
  *
  ***********************************************************************/
     qmndSORT * sDataPlan =
@@ -766,11 +766,11 @@ void qmnSORT::setNonHitSearch( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    Probing (LEFT) Table¿¡ ´ëÇÑ Ã³¸®°¡ ³¡³ª°í, Driving (RIGHT) Table¿¡ ´ëÇÑ
- *    Ã³¸®¸¦ ¼öÇàÇÏ±â À§ÇØ »ç¿ëµÈ´Ù.
+ *    Probing (LEFT) Tableì— ëŒ€í•œ ì²˜ë¦¬ê°€ ëë‚˜ê³ , Driving (RIGHT) Tableì— ëŒ€í•œ
+ *    ì²˜ë¦¬ë¥¼ ìˆ˜í–‰í•˜ê¸° ìœ„í•´ ì‚¬ìš©ëœë‹¤.
  *
  * Implementation :
- *    °Ë»ö ÇÔ¼ö¸¦ °­Á¦ÀûÀ¸·Î Non-Hit °Ë»öÀ¸·Î ÀüÈ¯ÇÑ´Ù.
+ *    ê²€ìƒ‰ í•¨ìˆ˜ë¥¼ ê°•ì œì ìœ¼ë¡œ Non-Hit ê²€ìƒ‰ìœ¼ë¡œ ì „í™˜í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -790,14 +790,14 @@ qmnSORT::setHitFlag( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *     Full Outer JoinÀÇ Ã³¸®½Ã,
- *     Left Outer JoinÀÇ Ã³¸® °úÁ¤ Áß Á¶°Ç¿¡ ¸¸Á·ÇÏ´Â Record¸¦
- *     °Ë»öÇÏ´Â °æ¿ì Hit FlagÀ» ¼³Á¤ÇÑ´Ù.
+ *     Full Outer Joinì˜ ì²˜ë¦¬ì‹œ,
+ *     Left Outer Joinì˜ ì²˜ë¦¬ ê³¼ì • ì¤‘ ì¡°ê±´ì— ë§Œì¡±í•˜ëŠ” Recordë¥¼
+ *     ê²€ìƒ‰í•˜ëŠ” ê²½ìš° Hit Flagì„ ì„¤ì •í•œë‹¤.
  *
  * Implementation :
- *     Temp TableÀ» ÀÌ¿ëÇÏ¿© ÇöÀç RowÀÇ Hit FlagÀ» ¼ÂÆÃÇÑ´Ù.
- *     ÀÌ¹Ì Temp TableÀº ÇöÀç RowÀÇ Á¸Àç¸¦ ¾Ë°í ÀÖ¾î º°µµÀÇ ÀÎÀÚ°¡
- *     ÇÊ¿ä ¾ø´Ù.
+ *     Temp Tableì„ ì´ìš©í•˜ì—¬ í˜„ì¬ Rowì˜ Hit Flagì„ ì…‹íŒ…í•œë‹¤.
+ *     ì´ë¯¸ Temp Tableì€ í˜„ì¬ Rowì˜ ì¡´ì¬ë¥¼ ì•Œê³  ìˆì–´ ë³„ë„ì˜ ì¸ìê°€
+ *     í•„ìš” ì—†ë‹¤.
  *
  ***********************************************************************/
 
@@ -808,7 +808,7 @@ qmnSORT::setHitFlag( qcTemplate * aTemplate,
     qmndSORT * sDataPlan =
         (qmndSORT *) (aTemplate->tmplate.data + aPlan->offset);
 
-    // ÇöÀç ÀúÀå RowÀÇ Hit FlagÀ» ¼ÂÆÃ
+    // í˜„ì¬ ì €ì¥ Rowì˜ Hit Flagì„ ì…‹íŒ…
     IDE_TEST( qmcSortTemp::setHitFlag( sDataPlan->sortMgr )
               != IDE_SUCCESS );
 
@@ -827,11 +827,11 @@ idBool qmnSORT::isHitFlagged( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description : 
- *     ÇöÀç Row¿¡ Hit Flag°¡ ÀÖ´ÂÁö °ËÁõÇÑ´Ù.
+ *     í˜„ì¬ Rowì— Hit Flagê°€ ìˆëŠ”ì§€ ê²€ì¦í•œë‹¤.
  *
  * Implementation :
  *
- *     Temp TableÀ» ÀÌ¿ëÇÏ¿© ÇöÀç Row¿¡ Hit Flag°¡ ÀÖ´ÂÁö °ËÁõÇÑ´Ù.
+ *     Temp Tableì„ ì´ìš©í•˜ì—¬ í˜„ì¬ Rowì— Hit Flagê°€ ìˆëŠ”ì§€ ê²€ì¦í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -848,10 +848,10 @@ qmnSORT::storeCursor( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *     Merge Joinµî¿¡¼­ ÇöÀç À§Ä¡ÀÇ Cursor¸¦ ÀúÀåÇÏ±â À§ÇÏ¿© »ç¿ëÇÑ´Ù.
+ *     Merge Joinë“±ì—ì„œ í˜„ì¬ ìœ„ì¹˜ì˜ Cursorë¥¼ ì €ì¥í•˜ê¸° ìœ„í•˜ì—¬ ì‚¬ìš©í•œë‹¤.
  *
  * Implementation :
- *     Temp TableÀÇ Ä¿¼­ ÀúÀå ±â´ÉÀ» »ç¿ëÇÑ´Ù.
+ *     Temp Tableì˜ ì»¤ì„œ ì €ì¥ ê¸°ëŠ¥ì„ ì‚¬ìš©í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -862,7 +862,7 @@ qmnSORT::storeCursor( qcTemplate * aTemplate,
     qmndSORT * sDataPlan =
         (qmndSORT *) (aTemplate->tmplate.data + aPlan->offset);
 
-    // ÇöÀç À§Ä¡ÀÇ Ä¿¼­¸¦ ÀúÀåÇÔ
+    // í˜„ì¬ ìœ„ì¹˜ì˜ ì»¤ì„œë¥¼ ì €ì¥í•¨
     IDE_TEST( qmcSortTemp::storeCursor( sDataPlan->sortMgr,
                                         & sDataPlan->cursorInfo )
               != IDE_SUCCESS );
@@ -883,11 +883,11 @@ qmnSORT::restoreCursor( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *     Merge Join¿¡¼­ »ç¿ëÇÏ¸ç,
- *     ÀúÀåµÈ Cursor À§Ä¡·Î Ä¿¼­¸¦ º¹¿ø½ÃÅ²´Ù.
+ *     Merge Joinì—ì„œ ì‚¬ìš©í•˜ë©°,
+ *     ì €ì¥ëœ Cursor ìœ„ì¹˜ë¡œ ì»¤ì„œë¥¼ ë³µì›ì‹œí‚¨ë‹¤.
  *
  * Implementation :
- *     Temp TableÀÇ Ä¿¼­ º¹¿ø ±â´ÉÀ» »ç¿ëÇÑ´Ù.
+ *     Temp Tableì˜ ì»¤ì„œ ë³µì› ê¸°ëŠ¥ì„ ì‚¬ìš©í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -897,16 +897,16 @@ qmnSORT::restoreCursor( qcTemplate * aTemplate,
     qmndSORT * sDataPlan =
         (qmndSORT *) (aTemplate->tmplate.data + aPlan->offset);
 
-    // ÇöÀç À§Ä¡ÀÇ Ä¿¼­¸¦ ÁöÁ¤µÈ À§Ä¡·Î º¹¿ø½ÃÅ´
+    // í˜„ì¬ ìœ„ì¹˜ì˜ ì»¤ì„œë¥¼ ì§€ì •ëœ ìœ„ì¹˜ë¡œ ë³µì›ì‹œí‚´
     IDE_TEST( qmcSortTemp::restoreCursor( sDataPlan->sortMgr,
                                           & sDataPlan->cursorInfo )
               != IDE_SUCCESS );
 
-    // °Ë»öµÈ Row¸¦ ÀÌ¿ëÇÑ Tuple Set º¹¿ø
+    // ê²€ìƒ‰ëœ Rowë¥¼ ì´ìš©í•œ Tuple Set ë³µì›
     IDE_TEST( setTupleSet( aTemplate, sDataPlan )
               != IDE_SUCCESS );
 
-    // Ä¿¼­ÀÇ º¹¿ø ÈÄÀÇ ¼öÇà ÇÔ¼ö
+    // ì»¤ì„œì˜ ë³µì› í›„ì˜ ìˆ˜í–‰ í•¨ìˆ˜
     sDataPlan->doIt = qmnSORT::doItNext;
 
     return IDE_SUCCESS;
@@ -926,7 +926,7 @@ qmnSORT::firstInit( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    SORT nodeÀÇ Data ¿µ¿ªÀÇ ¸â¹ö¿¡ ´ëÇÑ ÃÊ±âÈ­¸¦ ¼öÇà
+ *    SORT nodeì˜ Data ì˜ì—­ì˜ ë©¤ë²„ì— ëŒ€í•œ ì´ˆê¸°í™”ë¥¼ ìˆ˜í–‰
  *
  * Implementation :
  *
@@ -934,11 +934,11 @@ qmnSORT::firstInit( qcTemplate * aTemplate,
     qmndSORT * sCacheDataPlan = NULL;
 
     //---------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //---------------------------------
 
     //---------------------------------
-    // SORT °íÀ¯ Á¤º¸ÀÇ ÃÊ±âÈ­
+    // SORT ê³ ìœ  ì •ë³´ì˜ ì´ˆê¸°í™”
     //---------------------------------
     //
     /* PROJ-2462 Result Cache */
@@ -978,14 +978,14 @@ qmnSORT::firstInit( qcTemplate * aTemplate,
     aDataPlan->depValue = QMN_PLAN_DEFAULT_DEPENDENCY_VALUE;
 
     //---------------------------------
-    // Temp TableÀÇ ÃÊ±âÈ­
+    // Temp Tableì˜ ì´ˆê¸°í™”
     //---------------------------------
 
     IDE_TEST( initTempTable( aTemplate, aCodePlan, aDataPlan )
               != IDE_SUCCESS );
 
     //---------------------------------
-    // ÃÊ±âÈ­ ¿Ï·á¸¦ Ç¥±â
+    // ì´ˆê¸°í™” ì™„ë£Œë¥¼ í‘œê¸°
     //---------------------------------
 
     *aDataPlan->flag &= ~QMND_SORT_INIT_DONE_MASK;
@@ -1018,14 +1018,14 @@ qmnSORT::initMtrNode( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    ÀúÀå ColumnÀÇ °ü¸®¸¦ À§ÇÑ ³ëµå¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+ *    ì €ì¥ Columnì˜ ê´€ë¦¬ë¥¼ ìœ„í•œ ë…¸ë“œë¥¼ ì´ˆê¸°í™”í•œë‹¤.
  *
  * Implementation :
  *
  ***********************************************************************/
     UInt         sHeaderSize;
     //---------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //---------------------------------
 
     IDE_DASSERT( aCodePlan->mtrNodeOffset > 0 );
@@ -1033,7 +1033,7 @@ qmnSORT::initMtrNode( qcTemplate * aTemplate,
     aDataPlan->mtrNode =
         (qmdMtrNode*) (aTemplate->tmplate.data + aCodePlan->mtrNodeOffset);
     //---------------------------------
-    // ÀúÀå °ü¸®¸¦ À§ÇÑ Á¤º¸ÀÇ ÃÊ±âÈ­
+    // ì €ì¥ ê´€ë¦¬ë¥¼ ìœ„í•œ ì •ë³´ì˜ ì´ˆê¸°í™”
     //---------------------------------
 
     if ( (aCodePlan->plan.flag & QMN_PLAN_STORAGE_MASK)
@@ -1059,14 +1059,14 @@ qmnSORT::initMtrNode( qcTemplate * aTemplate,
     }
 
     //---------------------------------
-    // ÀúÀå ColumnÀÇ ÃÊ±âÈ­
+    // ì €ì¥ Columnì˜ ì´ˆê¸°í™”
     //---------------------------------
 
-    // 1.  ÀúÀå ColumnÀÇ ¿¬°á Á¤º¸ »ı¼º
-    // 2.  ÀúÀå ColumnÀÇ ÃÊ±âÈ­
-    // 3.  ÀúÀå ColumnÀÇ offsetÀ» ÀçÁ¶Á¤
-    // 4.  Row SizeÀÇ °è»ê
-    //     - Disk Temp TableÀÇ °æ¿ì Row¸¦ À§ÇÑ Memoryµµ ÇÒ´ç¹ŞÀ½.
+    // 1.  ì €ì¥ Columnì˜ ì—°ê²° ì •ë³´ ìƒì„±
+    // 2.  ì €ì¥ Columnì˜ ì´ˆê¸°í™”
+    // 3.  ì €ì¥ Columnì˜ offsetì„ ì¬ì¡°ì •
+    // 4.  Row Sizeì˜ ê³„ì‚°
+    //     - Disk Temp Tableì˜ ê²½ìš° Rowë¥¼ ìœ„í•œ Memoryë„ í• ë‹¹ë°›ìŒ.
 
     IDE_TEST( qmc::linkMtrNode( aCodePlan->myNode,
                                 aDataPlan->mtrNode ) != IDE_SUCCESS );
@@ -1099,7 +1099,7 @@ qmnSORT::initSortNode( qmncSORT   * aCodePlan,
 /***********************************************************************
  *
  * Description :
- *     ÀúÀå ColumnÀÇ Á¤º¸ Áß Á¤·Ä ColumnÀÇ ½ÃÀÛ À§Ä¡¸¦ Ã£´Â´Ù.
+ *     ì €ì¥ Columnì˜ ì •ë³´ ì¤‘ ì •ë ¬ Columnì˜ ì‹œì‘ ìœ„ì¹˜ë¥¼ ì°¾ëŠ”ë‹¤.
  *
  * Implementation :
  *
@@ -1110,7 +1110,7 @@ qmnSORT::initSortNode( qmncSORT   * aCodePlan,
 
     qmdMtrNode * sNode;
 
-    // ÃÖÃÊ Á¤·Ä ColumnÀÇ À§Ä¡ °Ë»ö
+    // ìµœì´ˆ ì •ë ¬ Columnì˜ ìœ„ì¹˜ ê²€ìƒ‰
     for ( sNode = aDataPlan->mtrNode; sNode != NULL; sNode = sNode->next )
     {
         if ( ( sNode->myNode->flag & QMC_MTR_SORT_NEED_MASK )
@@ -1123,7 +1123,7 @@ qmnSORT::initSortNode( qmncSORT   * aCodePlan,
     aDataPlan->sortNode = sNode;
 
     //-----------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //-----------------------------
 
     switch ( aCodePlan->flag & QMNC_SORT_STORE_MASK )
@@ -1156,7 +1156,7 @@ qmnSORT::initTempTable( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *     Sort Temp TableÀ» ÃÊ±âÈ­ÇÑ´Ù.
+ *     Sort Temp Tableì„ ì´ˆê¸°í™”í•œë‹¤.
  *
  * Implementation :
  *
@@ -1165,11 +1165,11 @@ qmnSORT::initTempTable( qcTemplate * aTemplate,
     qmndSORT * sCacheDataPlan = NULL;
 
     //-----------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //-----------------------------
 
     //-----------------------------
-    // Flag Á¤º¸ ÃÊ±âÈ­
+    // Flag ì •ë³´ ì´ˆê¸°í™”
     //-----------------------------
 
     sFlag = QMCD_SORT_TMP_INITIALIZE;
@@ -1193,7 +1193,7 @@ qmnSORT::initTempTable( qcTemplate * aTemplate,
     }
 
     /* PROJ-2201 Innovation in sorting and hashing(temp)
-     * QMNCÀÇ Flag¸¦ QMND·Î ÀÌ¾î¹ŞÀ½ */
+     * QMNCì˜ Flagë¥¼ QMNDë¡œ ì´ì–´ë°›ìŒ */
     if( ( aCodePlan->flag & QMNC_SORT_SEARCH_MASK )
         == QMNC_SORT_SEARCH_SEQUENTIAL )
     {
@@ -1210,7 +1210,7 @@ qmnSORT::initTempTable( qcTemplate * aTemplate,
     }
 
     //-----------------------------
-    // Temp Table ÃÊ±âÈ­
+    // Temp Table ì´ˆê¸°í™”
     //-----------------------------
 
     if ( ( *aDataPlan->flag & QMN_PLAN_RESULT_CACHE_EXIST_MASK )
@@ -1278,7 +1278,7 @@ IDE_RC qmnSORT::checkDependency( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    Dependent Tuple¿¡ º¯È­°¡ ÀÖ´Â Áö¸¦ °Ë»ç
+ *    Dependent Tupleì— ë³€í™”ê°€ ìˆëŠ” ì§€ë¥¼ ê²€ì‚¬
  *
  * Implementation :
  *
@@ -1325,18 +1325,18 @@ qmnSORT::storeAndSort( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    ÀúÀå ¹× Á¤·Ä ¼öÇà
+ *    ì €ì¥ ë° ì •ë ¬ ìˆ˜í–‰
  *
  * Implementation :
- *    Child¸¦ ¹İº¹ÀûÀ¸·Î ¼öÇàÇÏ¿© ÀÌ¸¦ ÀúÀåÇÏ°í,
- *    ¸¶Áö¸·À¸·Î SortingÀ» ¼öÇàÇÑ´Ù.
+ *    Childë¥¼ ë°˜ë³µì ìœ¼ë¡œ ìˆ˜í–‰í•˜ì—¬ ì´ë¥¼ ì €ì¥í•˜ê³ ,
+ *    ë§ˆì§€ë§‰ìœ¼ë¡œ Sortingì„ ìˆ˜í–‰í•œë‹¤.
  *
  ***********************************************************************/
 
     qmcRowFlag sFlag = QMC_ROW_INITIALIZE;
 
     //------------------------------
-    // Child RecordÀÇ ÀúÀå
+    // Child Recordì˜ ì €ì¥
     //------------------------------
 
     IDE_TEST( aCodePlan->plan.left->doIt( aTemplate,
@@ -1355,14 +1355,14 @@ qmnSORT::storeAndSort( qcTemplate * aTemplate,
     }
 
     //------------------------------
-    // Á¤·Ä ¼öÇà
+    // ì •ë ¬ ìˆ˜í–‰
     //------------------------------
 
-    //  ÁöÁ¤ÇÑ ÀúÀå ¿É¼Ç¿¡ µû¶ó Á¤·Ä ¿©ºÎ °áÁ¤
+    //  ì§€ì •í•œ ì €ì¥ ì˜µì…˜ì— ë”°ë¼ ì •ë ¬ ì—¬ë¶€ ê²°ì •
     if ( (aCodePlan->plan.flag & QMN_PLAN_STORAGE_MASK)
          == QMN_PLAN_STORAGE_DISK )
     {
-        // diskÀÏ °æ¿ì SORTING or PRESEVED_ORDER ÀÏ °æ¿ì Á¤·ÄÀ» ÇÔ
+        // diskì¼ ê²½ìš° SORTING or PRESEVED_ORDER ì¼ ê²½ìš° ì •ë ¬ì„ í•¨
         if( ( aCodePlan->flag & QMNC_SORT_STORE_MASK )
             == QMNC_SORT_STORE_SORTING ||
             ( aCodePlan->flag & QMNC_SORT_STORE_MASK )
@@ -1374,7 +1374,7 @@ qmnSORT::storeAndSort( qcTemplate * aTemplate,
     }
     else
     {
-        // memoryÀÏ °æ¿ì SORTING ÀÏ¶§¸¸ Á¤·ÄÀ» ÇÔ
+        // memoryì¼ ê²½ìš° SORTING ì¼ë•Œë§Œ ì •ë ¬ì„ í•¨
         if( ( aCodePlan->flag & QMNC_SORT_STORE_MASK )
             == QMNC_SORT_STORE_SORTING )
         {
@@ -1410,14 +1410,14 @@ qmnSORT::addOneRow( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    Temp Table¿¡ ÇÏ³ªÀÇ Record¸¦ ±¸¼ºÇÏ¿© »ğÀÔÇÑ´Ù.
+ *    Temp Tableì— í•˜ë‚˜ì˜ Recordë¥¼ êµ¬ì„±í•˜ì—¬ ì‚½ì…í•œë‹¤.
  *
  * Implementation :
- *    1. °ø°£ ÇÒ´ç : Temp TableÀ» ÀÌ¿ëÇÏ¿© °ø°£ ÇÒ´çÀ» ¹ŞÀ¸¸ç,
- *                   Memory Temp TableÀÇ °æ¿ì¿¡¸¸ º°µµÀÇ °ø°£À»
- *                   ÇÒ´çÇØ ÁØ´Ù.
- *    2. ÀúÀå RowÀÇ ±¸¼º
- *    3. RowÀÇ »ğÀÔ
+ *    1. ê³µê°„ í• ë‹¹ : Temp Tableì„ ì´ìš©í•˜ì—¬ ê³µê°„ í• ë‹¹ì„ ë°›ìœ¼ë©°,
+ *                   Memory Temp Tableì˜ ê²½ìš°ì—ë§Œ ë³„ë„ì˜ ê³µê°„ì„
+ *                   í• ë‹¹í•´ ì¤€ë‹¤.
+ *    2. ì €ì¥ Rowì˜ êµ¬ì„±
+ *    3. Rowì˜ ì‚½ì…
  *
  ***********************************************************************/
 
@@ -1427,16 +1427,16 @@ qmnSORT::addOneRow( qcTemplate * aTemplate,
     IDU_FIT_POINT( "qmnSORT::addOneRow::alloc::myTupleRow",
                     idERR_ABORT_InsufficientMemory );
 
-    // °ø°£ÀÇ ÇÒ´ç
+    // ê³µê°„ì˜ í• ë‹¹
     IDE_TEST( qmcSortTemp::alloc( aDataPlan->sortMgr,
                                   & aDataPlan->plan.myTuple->row )
               != IDE_SUCCESS);
 
-    // ÀúÀå RowÀÇ ±¸¼º
+    // ì €ì¥ Rowì˜ êµ¬ì„±
     IDE_TEST( setMtrRow( aTemplate,
                          aDataPlan ) != IDE_SUCCESS );
 
-    // RowÀÇ »ğÀÔ
+    // Rowì˜ ì‚½ì…
     IDE_TEST( qmcSortTemp::addRow( aDataPlan->sortMgr,
                                    aDataPlan->plan.myTuple->row )
               != IDE_SUCCESS );
@@ -1458,10 +1458,10 @@ qmnSORT::setMtrRow( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *     ÀúÀå Row¸¦ ±¸¼ºÇÑ´Ù.
+ *     ì €ì¥ Rowë¥¼ êµ¬ì„±í•œë‹¤.
  *
  * Implementation :
- *     ÀúÀå ColumnÀ» ¼øÈ¸ÇÏ¸ç, ÀúÀå Row¸¦ ±¸¼ºÇÑ´Ù.
+ *     ì €ì¥ Columnì„ ìˆœíšŒí•˜ë©°, ì €ì¥ Rowë¥¼ êµ¬ì„±í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -1495,7 +1495,7 @@ qmnSORT::setTupleSet( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *     °Ë»öµÈ ÀúÀå Row¸¦ ±âÁØÀ¸·Î Tuple SetÀ» º¹¿øÇÑ´Ù.
+ *     ê²€ìƒ‰ëœ ì €ì¥ Rowë¥¼ ê¸°ì¤€ìœ¼ë¡œ Tuple Setì„ ë³µì›í•œë‹¤.
  *
  * Implementation :
  *
@@ -1530,7 +1530,7 @@ qmnSORT::setSearchFunction( qmncSORT   * aCodePlan,
 /***********************************************************************
  *
  * Description :
- *     SORT ³ëµåÀÇ °Ë»ö ¿É¼Ç¿¡ ºÎÇÕÇÏ´Â °Ë»ö ÇÔ¼ö¸¦ °áÁ¤ÇÑ´Ù.
+ *     SORT ë…¸ë“œì˜ ê²€ìƒ‰ ì˜µì…˜ì— ë¶€í•©í•˜ëŠ” ê²€ìƒ‰ í•¨ìˆ˜ë¥¼ ê²°ì •í•œë‹¤.
  *
  * Implementation :
  *
@@ -1549,7 +1549,7 @@ qmnSORT::setSearchFunction( qmncSORT   * aCodePlan,
             aDataPlan->searchFirst = qmnSORT::searchFirstRangeSearch;
             aDataPlan->searchNext = qmnSORT::searchNextRangeSearch;
 
-            // ÀûÇÕ¼º °Ë»ç
+            // ì í•©ì„± ê²€ì‚¬
             IDE_DASSERT( aCodePlan->range != NULL );
             IDE_DASSERT( aDataPlan->sortNode != NULL );
 
@@ -1573,7 +1573,7 @@ qmnSORT::searchDefault( qcTemplate * /* aTemplate */,
 /***********************************************************************
  *
  * Description :
- *    È£ÃâµÇ¾î¼­´Â ¾ÈµÊ
+ *    í˜¸ì¶œë˜ì–´ì„œëŠ” ì•ˆë¨
  *
  * Implementation :
  *
@@ -1598,14 +1598,14 @@ qmnSORT::searchFirstSequence( qcTemplate * /* aTemplate */,
 /***********************************************************************
  *
  * Description :
- *     Ã¹¹øÂ° ¼øÂ÷ °Ë»öÀ» ¼öÇà
+ *     ì²«ë²ˆì§¸ ìˆœì°¨ ê²€ìƒ‰ì„ ìˆ˜í–‰
  *
  * Implementation :
- *     Temp TableÀ» ÀÌ¿ëÇÏ¿© °Ë»öÇÑ´Ù.
+ *     Temp Tableì„ ì´ìš©í•˜ì—¬ ê²€ìƒ‰í•œë‹¤.
  *
- *     - Memory °ø°£ÀÇ °ü¸®
- *         Disk Temp TableÀ» »ç¿ëÇÏ´Â °æ¿ì ÇØ´ç TupleÀÇ ¸Ş¸ğ¸® °ø°£À»
- *         »ó½ÇÇÒ ¼ö ÀÖ´Ù.  ÀÌ¸¦ À§ÇØ µÎ ¹úÀÇ BackUp ÀÌ ÇÊ¿äÇÏ´Ù.
+ *     - Memory ê³µê°„ì˜ ê´€ë¦¬
+ *         Disk Temp Tableì„ ì‚¬ìš©í•˜ëŠ” ê²½ìš° í•´ë‹¹ Tupleì˜ ë©”ëª¨ë¦¬ ê³µê°„ì„
+ *         ìƒì‹¤í•  ìˆ˜ ìˆë‹¤.  ì´ë¥¼ ìœ„í•´ ë‘ ë²Œì˜ BackUp ì´ í•„ìš”í•˜ë‹¤.
  *
  ***********************************************************************/
 
@@ -1615,14 +1615,14 @@ qmnSORT::searchFirstSequence( qcTemplate * /* aTemplate */,
     void * sOrgRow;
     void * sSearchRow;
 
-    // Ã¹¹øÂ° ¼øÂ÷ °Ë»ö
+    // ì²«ë²ˆì§¸ ìˆœì°¨ ê²€ìƒ‰
     sOrgRow = sSearchRow = aDataPlan->plan.myTuple->row;
     IDE_TEST( qmcSortTemp::getFirstSequence( aDataPlan->sortMgr,
                                              & sSearchRow )
               != IDE_SUCCESS );
     aDataPlan->plan.myTuple->row = (sSearchRow == NULL) ? sOrgRow : sSearchRow;
 
-    // Row Á¸Àç À¯¹« ¼³Á¤
+    // Row ì¡´ì¬ ìœ ë¬´ ì„¤ì •
     if ( sSearchRow == NULL )
     {
         *aFlag = QMC_ROW_DATA_NONE;
@@ -1650,7 +1650,7 @@ qmnSORT::searchNextSequence( qcTemplate * /* aTemplate */,
 /***********************************************************************
  *
  * Description :
- *     ´ÙÀ½ ¼øÂ÷ °Ë»öÀ» ¼öÇà
+ *     ë‹¤ìŒ ìˆœì°¨ ê²€ìƒ‰ì„ ìˆ˜í–‰
  *
  * Implementation :
  *
@@ -1662,14 +1662,14 @@ qmnSORT::searchNextSequence( qcTemplate * /* aTemplate */,
     void * sOrgRow;
     void * sSearchRow;
 
-    // ´ÙÀ½ ¼øÂ÷ °Ë»ö
+    // ë‹¤ìŒ ìˆœì°¨ ê²€ìƒ‰
     sOrgRow = sSearchRow = aDataPlan->plan.myTuple->row;
     IDE_TEST( qmcSortTemp::getNextSequence( aDataPlan->sortMgr,
                                             & sSearchRow )
               != IDE_SUCCESS );
     aDataPlan->plan.myTuple->row = (sSearchRow == NULL) ? sOrgRow : sSearchRow;
 
-    // Row Á¸Àç À¯¹« ¼³Á¤
+    // Row ì¡´ì¬ ìœ ë¬´ ì„¤ì •
     if ( sSearchRow == NULL )
     {
         *aFlag = QMC_ROW_DATA_NONE;
@@ -1697,11 +1697,11 @@ qmnSORT::searchFirstRangeSearch( qcTemplate * /* aTemplate */,
 /***********************************************************************
  *
  * Description :
- *     Ã¹ ¹øÂ° Range °Ë»ö
+ *     ì²« ë²ˆì§¸ Range ê²€ìƒ‰
  *
  * Implementation :
- *     Range Predicate(DNF·Î ±¸¼º)À» Temp Table·Î ³Ñ±â¸é,
- *     ÀÌ¸¦ ÀÌ¿ëÇÏ¿© Temp TableÀÌ Range °Ë»öÀ» ¼öÇàÇÑ´Ù.
+ *     Range Predicate(DNFë¡œ êµ¬ì„±)ì„ Temp Tableë¡œ ë„˜ê¸°ë©´,
+ *     ì´ë¥¼ ì´ìš©í•˜ì—¬ Temp Tableì´ Range ê²€ìƒ‰ì„ ìˆ˜í–‰í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -1711,7 +1711,7 @@ qmnSORT::searchFirstRangeSearch( qcTemplate * /* aTemplate */,
     void * sOrgRow;
     void * sSearchRow;
 
-    // Ã¹¹øÂ° Range °Ë»ö
+    // ì²«ë²ˆì§¸ Range ê²€ìƒ‰
     sOrgRow = sSearchRow = aDataPlan->plan.myTuple->row;
     IDE_TEST( qmcSortTemp::getFirstRange( aDataPlan->sortMgr,
                                           aCodePlan->range,
@@ -1720,7 +1720,7 @@ qmnSORT::searchFirstRangeSearch( qcTemplate * /* aTemplate */,
     aDataPlan->plan.myTuple->row = (sSearchRow == NULL) ? sOrgRow : sSearchRow;
 
 
-    // Row Á¸Àç À¯¹« ¼³Á¤
+    // Row ì¡´ì¬ ìœ ë¬´ ì„¤ì •
     if ( sSearchRow == NULL )
     {
         *aFlag = QMC_ROW_DATA_NONE;
@@ -1748,11 +1748,11 @@ qmnSORT::searchNextRangeSearch( qcTemplate * /* aTemplate */,
 /***********************************************************************
  *
  * Description :
- *    ´ÙÀ½ Range °Ë»ö
+ *    ë‹¤ìŒ Range ê²€ìƒ‰
  *
  * Implementation :
- *    Ã¹¹øÂ° Range°Ë»ö ½Ã »ç¿ëµÈ Range PredicateÀ» ÀÌ¿ëÇÏ¿©
- *    ´ÙÀ½ Row¸¦ °Ë»öÇÑ´Ù.
+ *    ì²«ë²ˆì§¸ Rangeê²€ìƒ‰ ì‹œ ì‚¬ìš©ëœ Range Predicateì„ ì´ìš©í•˜ì—¬
+ *    ë‹¤ìŒ Rowë¥¼ ê²€ìƒ‰í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -1762,14 +1762,14 @@ qmnSORT::searchNextRangeSearch( qcTemplate * /* aTemplate */,
     void * sOrgRow;
     void * sSearchRow;
 
-    // ´ÙÀ½ Range °Ë»ö
+    // ë‹¤ìŒ Range ê²€ìƒ‰
     sOrgRow = sSearchRow = aDataPlan->plan.myTuple->row;
     IDE_TEST( qmcSortTemp::getNextRange( aDataPlan->sortMgr,
                                          & sSearchRow )
               != IDE_SUCCESS );
     aDataPlan->plan.myTuple->row = (sSearchRow == NULL) ? sOrgRow : sSearchRow;
 
-    // Row Á¸Àç À¯¹« ¼³Á¤
+    // Row ì¡´ì¬ ìœ ë¬´ ì„¤ì •
     if ( sSearchRow == NULL )
     {
         *aFlag = QMC_ROW_DATA_NONE;
@@ -1796,28 +1796,28 @@ IDE_RC qmnSORT::searchFirstHit( qcTemplate * /* aTemplate */,
 /***********************************************************************
  *
  * Description :
- *    Ã¹¹øÂ° Hit °Ë»ö
+ *    ì²«ë²ˆì§¸ Hit ê²€ìƒ‰
  *
  * Implementation :
- *    Inverse Sort JoinÀÇ Ã³¸®¿¡ Âü¿©ÇÒ ¶§ »ç¿ëµÇ´Â ÇÔ¼ö·Î
- *    Hit Record°¡ ´õ ÀÌ»ó ¾øÀ» °æ¿ì, ¸ğµç ÀúÀå RowÀÇ Hit FlagÀ»
- *    ÃÊ±âÈ­ÇÑ´Ù.  ÀÌ´Â Subqueryµî¿¡¼­ Inverse Sort JoinÀÌ »ç¿ëµÉ ¶§,
- *    ÃÖÃÊ ¼öÇà °á°ú·Î ÀÎÇØ ´ÙÀ½ SubqueryÀÇ ¼öÇàÀÌ ¿µÇâÀ» ¹ŞÁö ¾Êµµ·Ï
- *    ÇÏ±â À§ÇÔÀÌ´Ù.
+ *    Inverse Sort Joinì˜ ì²˜ë¦¬ì— ì°¸ì—¬í•  ë•Œ ì‚¬ìš©ë˜ëŠ” í•¨ìˆ˜ë¡œ
+ *    Hit Recordê°€ ë” ì´ìƒ ì—†ì„ ê²½ìš°, ëª¨ë“  ì €ì¥ Rowì˜ Hit Flagì„
+ *    ì´ˆê¸°í™”í•œë‹¤.  ì´ëŠ” Subqueryë“±ì—ì„œ Inverse Sort Joinì´ ì‚¬ìš©ë  ë•Œ,
+ *    ìµœì´ˆ ìˆ˜í–‰ ê²°ê³¼ë¡œ ì¸í•´ ë‹¤ìŒ Subqueryì˜ ìˆ˜í–‰ì´ ì˜í–¥ì„ ë°›ì§€ ì•Šë„ë¡
+ *    í•˜ê¸° ìœ„í•¨ì´ë‹¤.
  *
  ***********************************************************************/
 
     void * sOrgRow;
     void * sSearchRow;
 
-    // Ã¹¹øÂ° Hit °Ë»ö
+    // ì²«ë²ˆì§¸ Hit ê²€ìƒ‰
     sOrgRow = sSearchRow = aDataPlan->plan.myTuple->row;
     IDE_TEST( qmcSortTemp::getFirstHit( aDataPlan->sortMgr,
                                         & sSearchRow )
               != IDE_SUCCESS );
     aDataPlan->plan.myTuple->row = (sSearchRow == NULL) ? sOrgRow : sSearchRow;
 
-    // Row Á¸Àç À¯¹« ¼³Á¤
+    // Row ì¡´ì¬ ìœ ë¬´ ì„¤ì •
     if ( sSearchRow == NULL )
     {
         IDE_TEST( qmcSortTemp::clearHitFlag( aDataPlan->sortMgr )
@@ -1847,7 +1847,7 @@ IDE_RC qmnSORT::searchNextHit( qcTemplate * /* aTemplate */,
 /***********************************************************************
  *
  * Description :
- *     ´ÙÀ½ Hit °Ë»ö
+ *     ë‹¤ìŒ Hit ê²€ìƒ‰
  *
  * Implementation :
  *
@@ -1856,14 +1856,14 @@ IDE_RC qmnSORT::searchNextHit( qcTemplate * /* aTemplate */,
     void * sOrgRow;
     void * sSearchRow;
 
-    // ´ÙÀ½ Hit °Ë»ö
+    // ë‹¤ìŒ Hit ê²€ìƒ‰
     sOrgRow = sSearchRow = aDataPlan->plan.myTuple->row;
     IDE_TEST( qmcSortTemp::getNextHit( aDataPlan->sortMgr,
                                        & sSearchRow )
               != IDE_SUCCESS );
     aDataPlan->plan.myTuple->row = (sSearchRow == NULL) ? sOrgRow : sSearchRow;
 
-    // Row Á¸Àç À¯¹« ¼³Á¤
+    // Row ì¡´ì¬ ìœ ë¬´ ì„¤ì •
     if ( sSearchRow == NULL )
     {
         IDE_TEST( qmcSortTemp::clearHitFlag( aDataPlan->sortMgr )
@@ -1892,14 +1892,14 @@ qmnSORT::searchFirstNonHit( qcTemplate * /* aTemplate */,
 /***********************************************************************
  *
  * Description :
- *    Ã¹¹øÂ° Non-Hit °Ë»ö
+ *    ì²«ë²ˆì§¸ Non-Hit ê²€ìƒ‰
  *
  * Implementation :
- *    Full Outer JoinÀÇ Ã³¸®¿¡ Âü¿©ÇÒ ¶§ »ç¿ëµÇ´Â ÇÔ¼ö·Î
- *    Non-Hit Record°¡ ´õ ÀÌ»ó ¾øÀ» °æ¿ì, ¸ğµç ÀúÀå RowÀÇ Hit FlagÀ»
- *    ÃÊ±âÈ­ÇÑ´Ù.  ÀÌ´Â Subqueryµî¿¡¼­ Full Outer JoinÀÌ »ç¿ëµÉ ¶§,
- *    ÃÖÃÊ ¼öÇà °á°ú·Î ÀÎÇØ ´ÙÀ½ SubqueryÀÇ ¼öÇàÀÌ ¿µÇâÀ» ¹ŞÁö ¾Êµµ·Ï
- *    ÇÏ±â À§ÇÔÀÌ´Ù.
+ *    Full Outer Joinì˜ ì²˜ë¦¬ì— ì°¸ì—¬í•  ë•Œ ì‚¬ìš©ë˜ëŠ” í•¨ìˆ˜ë¡œ
+ *    Non-Hit Recordê°€ ë” ì´ìƒ ì—†ì„ ê²½ìš°, ëª¨ë“  ì €ì¥ Rowì˜ Hit Flagì„
+ *    ì´ˆê¸°í™”í•œë‹¤.  ì´ëŠ” Subqueryë“±ì—ì„œ Full Outer Joinì´ ì‚¬ìš©ë  ë•Œ,
+ *    ìµœì´ˆ ìˆ˜í–‰ ê²°ê³¼ë¡œ ì¸í•´ ë‹¤ìŒ Subqueryì˜ ìˆ˜í–‰ì´ ì˜í–¥ì„ ë°›ì§€ ì•Šë„ë¡
+ *    í•˜ê¸° ìœ„í•¨ì´ë‹¤.
  *
  ***********************************************************************/
 
@@ -1909,14 +1909,14 @@ qmnSORT::searchFirstNonHit( qcTemplate * /* aTemplate */,
     void * sOrgRow;
     void * sSearchRow;
 
-    // Ã¹¹øÂ° Non-Hit °Ë»ö
+    // ì²«ë²ˆì§¸ Non-Hit ê²€ìƒ‰
     sOrgRow = sSearchRow = aDataPlan->plan.myTuple->row;
     IDE_TEST( qmcSortTemp::getFirstNonHit( aDataPlan->sortMgr,
                                            & sSearchRow )
               != IDE_SUCCESS );
     aDataPlan->plan.myTuple->row = (sSearchRow == NULL) ? sOrgRow : sSearchRow;
 
-    // Row Á¸Àç À¯¹« ¼³Á¤
+    // Row ì¡´ì¬ ìœ ë¬´ ì„¤ì •
     if ( sSearchRow == NULL )
     {
         IDE_TEST( qmcSortTemp::clearHitFlag( aDataPlan->sortMgr )
@@ -1947,7 +1947,7 @@ qmnSORT::searchNextNonHit( qcTemplate * /* aTemplate */,
 /***********************************************************************
  *
  * Description :
- *     ´ÙÀ½ Non-Hit °Ë»ö
+ *     ë‹¤ìŒ Non-Hit ê²€ìƒ‰
  *
  * Implementation :
  *
@@ -1959,14 +1959,14 @@ qmnSORT::searchNextNonHit( qcTemplate * /* aTemplate */,
     void * sOrgRow;
     void * sSearchRow;
 
-    // ´ÙÀ½ Non-Hit °Ë»ö
+    // ë‹¤ìŒ Non-Hit ê²€ìƒ‰
     sOrgRow = sSearchRow = aDataPlan->plan.myTuple->row;
     IDE_TEST( qmcSortTemp::getNextNonHit( aDataPlan->sortMgr,
                                           & sSearchRow )
               != IDE_SUCCESS );
     aDataPlan->plan.myTuple->row = (sSearchRow == NULL) ? sOrgRow : sSearchRow;
 
-    // Row Á¸Àç À¯¹« ¼³Á¤
+    // Row ì¡´ì¬ ìœ ë¬´ ì„¤ì •
     if ( sSearchRow == NULL )
     {
         IDE_TEST( qmcSortTemp::clearHitFlag( aDataPlan->sortMgr )

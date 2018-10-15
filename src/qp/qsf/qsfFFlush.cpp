@@ -20,7 +20,7 @@
  *
  * Description :
  *     PROJ-1371 PSM File Handling
- *     FILE bufferÀÇ µ¥ÀÌÅÍ¸¦ flushÇÏ´Â ÇÔ¼ö
+ *     FILE bufferì˜ ë°ì´í„°ë¥¼ flushí•˜ëŠ” í•¨ìˆ˜
  *
  * Syntax :
  *     FILE_FLUSH( file FILE_TYPE );
@@ -48,7 +48,7 @@ static IDE_RC qsfEstimate( mtcNode*     aNode,
 mtfModule qsfFFlushModule = {
     1|MTC_NODE_OPERATOR_MISC|MTC_NODE_VARIABLE_TRUE,
     ~0,
-    1.0,                    // default selectivity (ºñ±³ ¿¬»êÀÚ ¾Æ´Ô)
+    1.0,                    // default selectivity (ë¹„êµ ì—°ì‚°ì ì•„ë‹˜)
     qsfFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -139,9 +139,9 @@ IDE_RC qsfCalculate_FFlush( mtcNode*     aNode,
  *     file_flush calculate
  *
  * Implementation :
- *     1. filehandleÀÌ nullÀÌ¸é openµÇÁö ¾ÊÀº »óÅÂ·Î °£ÁÖ. error
- *     2. flushÇÔ¼ö È£Ãâ
- *     3. return value´Â dummy, TRUE·Î ¼¼ÆÃ
+ *     1. filehandleì´ nullì´ë©´ openë˜ì§€ ì•Šì€ ìƒíƒœë¡œ ê°„ì£¼. error
+ *     2. flushí•¨ìˆ˜ í˜¸ì¶œ
+ *     3. return valueëŠ” dummy, TRUEë¡œ ì„¸íŒ…
  *
  ***********************************************************************/
     

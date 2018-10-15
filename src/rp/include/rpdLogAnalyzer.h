@@ -33,8 +33,8 @@ typedef IDE_RC (*rpdAnalyzeLogFunc)(rpdLogAnalyzer *aAnlz,
 
 typedef struct rpValueLen
 {
-    UShort lengthSize; // ID_SIZEOF(UChar), ID_SIZEOF(UShort), ID_SIZEOF(UInt)¿¡ ÇØ´çÇÏ´Â °ª.
-    UShort lengthValue;// mtdValueÀÇ ¾Õ¿¡ ¿À´Â mtdValueLengh°ª
+    UShort lengthSize; // ID_SIZEOF(UChar), ID_SIZEOF(UShort), ID_SIZEOF(UInt)ì— í•´ë‹¹í•˜ëŠ” ê°’.
+    UShort lengthValue;// mtdValueì˜ ì•ì— ì˜¤ëŠ” mtdValueLenghê°’
 } rpValueLen;
 
 /*
@@ -51,52 +51,52 @@ typedef struct rpdDictionaryValue
 class rpdLogAnalyzer
 {
 public :
-    /* ÇöÀç ºĞ¼®ÁßÀÎ XLogÀÇ Å¸ÀÔ */
+    /* í˜„ì¬ ë¶„ì„ì¤‘ì¸ XLogì˜ íƒ€ì… */
     rpXLogType  mType;
-    /* ÇöÀç ºĞ¼®ÁßÀÎ LogÀÇ Æ®·£Àè¼Ç ID */
+    /* í˜„ì¬ ë¶„ì„ì¤‘ì¸ Logì˜ íŠ¸ëœì­ì…˜ ID */
     smTID       mTID;
 
     smTID       mSendTransID;
 
-    /* ÇöÀç ·Î±×ÀÇ SN */
+    /* í˜„ì¬ ë¡œê·¸ì˜ SN */
     smSN        mSN;
-    /* ÇöÀç ºĞ¼®ÁßÀÎ LogÀÇ Å×ÀÌºí OID */
+    /* í˜„ì¬ ë¶„ì„ì¤‘ì¸ Logì˜ í…Œì´ë¸” OID */
     ULong       mTableOID;
 
     /* Column ID Array */
-    UInt            mCIDs[QCI_MAX_COLUMN_COUNT]; // ÃÊ±â°ª UINT_MAX
+    UInt            mCIDs[QCI_MAX_COLUMN_COUNT]; // ì´ˆê¸°ê°’ UINT_MAX
 
-    /* ÇöÀç ºĞ¼®ÁßÀÎ ·Î±×ÀÇ Before Image Column Value Array */
+    /* í˜„ì¬ ë¶„ì„ì¤‘ì¸ ë¡œê·¸ì˜ Before Image Column Value Array */
     smiValue        mBCols[QCI_MAX_COLUMN_COUNT];
-    /* [PROJ-1705] µğ½ºÅ© Å×ÀÌºíÀÇ before image */
+    /* [PROJ-1705] ë””ìŠ¤í¬ í…Œì´ë¸”ì˜ before image */
     smiChainedValue mBChainedCols[QCI_MAX_COLUMN_COUNT];
-    /* [PROJ-1705] chained valueÀÇ total length - ÃÊ±âÈ­ÇÏÁö ¾Ê´Â´Ù */
+    /* [PROJ-1705] chained valueì˜ total length - ì´ˆê¸°í™”í•˜ì§€ ì•ŠëŠ”ë‹¤ */
     UInt            mChainedValueTotalLen[QCI_MAX_COLUMN_COUNT];
 
-    /* ÇöÀç ºĞ¼®ÁßÀÎ ·Î±×ÀÇ After Image Column Value Array */
+    /* í˜„ì¬ ë¶„ì„ì¤‘ì¸ ë¡œê·¸ì˜ After Image Column Value Array */
     smiValue        mACols[QCI_MAX_COLUMN_COUNT];
 
-    /* ÇöÀç ºĞ¼®ÁßÀÎ ·Î±×ÀÇ Priamry Key Column ValueÀÇ Array */
+    /* í˜„ì¬ ë¶„ì„ì¤‘ì¸ ë¡œê·¸ì˜ Priamry Key Column Valueì˜ Array */
     smiValue        mPKCols[QCI_MAX_KEY_COLUMN_COUNT];
-    /* ÇöÀç ºĞ¼®ÁßÀÎ ·Î±×ÀÇ Primary Key Column Count */
+    /* í˜„ì¬ ë¶„ì„ì¤‘ì¸ ë¡œê·¸ì˜ Primary Key Column Count */
     UInt            mPKColCnt;
-    /* ÇöÀç ºĞ¼®ÁßÀÎ ·Î±×ÀÇ Primary Key ColumnÀÇ Column ID Array */
+    /* í˜„ì¬ ë¶„ì„ì¤‘ì¸ ë¡œê·¸ì˜ Primary Key Columnì˜ Column ID Array */
     UInt            mPKCIDs[QCI_MAX_KEY_COLUMN_COUNT];
     ULong           mPKArea[SM_PAGE_SIZE/ID_SIZEOF(ULong)];
 
-    /* [PROJ-1705] PK value ¾Õ¿¡ ºÙ´Â mtdValueLen Á¤º¸ */
+    /* [PROJ-1705] PK value ì•ì— ë¶™ëŠ” mtdValueLen ì •ë³´ */
     rpValueLen      mPKMtdValueLen[QCI_MAX_KEY_COLUMN_COUNT];
-    /* [PROJ-1705] After value ¾Õ¿¡ ºÙ´Â mtdValueLen Á¤º¸ */
+    /* [PROJ-1705] After value ì•ì— ë¶™ëŠ” mtdValueLen ì •ë³´ */
     rpValueLen      mAMtdValueLen[QCI_MAX_COLUMN_COUNT];
-    /* [PROJ-1705] Before value ¾Õ¿¡ ºÙ´Â mtdValueLen Á¤º¸ */
+    /* [PROJ-1705] Before value ì•ì— ë¶™ëŠ” mtdValueLen ì •ë³´ */
     rpValueLen      mBMtdValueLen[QCI_MAX_COLUMN_COUNT];
 
-    /* [PROJ-1705] Analyzed Redo ColumnÀÇ °³¼ö : Insert¿¡¼­ »ç¿ë */
+    /* [PROJ-1705] Analyzed Redo Columnì˜ ê°œìˆ˜ : Insertì—ì„œ ì‚¬ìš© */
     UShort          mRedoAnalyzedColCnt;
-    /* [PROJ-1705] Analyzed Undo ColumnÀÇ °³¼ö : before image array ¼ø¼­´ë·Î ³Ö±â À§ÇÔ */
+    /* [PROJ-1705] Analyzed Undo Columnì˜ ê°œìˆ˜ : before image array ìˆœì„œëŒ€ë¡œ ë„£ê¸° ìœ„í•¨ */
     UShort          mUndoAnalyzedColCnt;
 
-    /* Savepoint ÀÌ¸§ÀÇ ±æÀÌ */
+    /* Savepoint ì´ë¦„ì˜ ê¸¸ì´ */
     UInt        mSPNameLen;
     SChar       mSPName[RP_SAVEPOINT_NAME_LEN + 1];
 
@@ -113,26 +113,26 @@ public :
     UInt        mLobPieceLen;
     SChar      *mLobPiece;
 
-    /* PROJ-1705 ÇöÀç ºĞ¼®ÁßÀÎ Redo Column Value¿¡¼­ ÁøÇàµÈ ±æÀÌ */
+    /* PROJ-1705 í˜„ì¬ ë¶„ì„ì¤‘ì¸ Redo Column Valueì—ì„œ ì§„í–‰ëœ ê¸¸ì´ */
     UInt        mRedoAnalyzedLen;
-    /* PROj-1705 ÇöÀç ºĞ¼®ÁßÀÎ Undo Column Value¿¡¼­ ÁøÇàµÈ ±æÀÌ */
+    /* PROj-1705 í˜„ì¬ ë¶„ì„ì¤‘ì¸ Undo Column Valueì—ì„œ ì§„í–‰ëœ ê¸¸ì´ */
     UInt        mUndoAnalyzedLen;
-    /* PROJ-1705 ÇöÀç ºĞ¼®ÁßÀÎ Lob Column Value¿¡¼­ ÁøÇàµÈ ±æÀÌ */
+    /* PROJ-1705 í˜„ì¬ ë¶„ì„ì¤‘ì¸ Lob Column Valueì—ì„œ ì§„í–‰ëœ ê¸¸ì´ */
     UInt        mLobAnalyzedLen;
 
-    /* ´ÙÀ½ ·Î±×·Î ÀÌ¾îÁö´Â Áö ¾Æ´ÑÁö¿¡ ´ëÇÑ ÇÃ·¡±× */
+    /* ë‹¤ìŒ ë¡œê·¸ë¡œ ì´ì–´ì§€ëŠ” ì§€ ì•„ë‹Œì§€ì— ëŒ€í•œ í”Œë˜ê·¸ */
     idBool      mIsCont;
 
-    /* BCols, ACols ¸Ş¸ğ¸®¸¦ free ½ÃÄÑÁÖ¾î¾ß ÇÏ´Â °æ¿ì Ç¥½Ã ÇÃ·¡±× */
+    /* BCols, ACols ë©”ëª¨ë¦¬ë¥¼ free ì‹œì¼œì£¼ì–´ì•¼ í•˜ëŠ” ê²½ìš° í‘œì‹œ í”Œë˜ê·¸ */
     idBool      mNeedFree;
 
-    /* mtdValue·ÎÀÇ º¯È¯¿©ºÎ */
+    /* mtdValueë¡œì˜ ë³€í™˜ì—¬ë¶€ */
     idBool      mNeedConvertToMtdValue;
 
     iduMemAllocator * mAllocator;
     iduList           mDictionaryValueList;
 private :
-    /* smiLogRecÀÇ °Í°ú °°Àº Memory Pool */
+    /* smiLogRecì˜ ê²ƒê³¼ ê°™ì€ Memory Pool */
     iduMemPool *mChainedValuePool;
 
     // PROJ-1705
@@ -253,8 +253,8 @@ public:
 
 /* For MVCC
  *
- *     Before Image : Sender°¡ ÀĞ¾î¼­ º¸³»´Â ·Î±×¿¡ ´ëÇØ¼­¸¸ ±â·ÏµÈ´Ù.
- *                    °¢°¢ÀÇ UpdateµÇ´Â Column¿¡ ´ëÇØ¼­
+ *     Before Image : Senderê°€ ì½ì–´ì„œ ë³´ë‚´ëŠ” ë¡œê·¸ì— ëŒ€í•´ì„œë§Œ ê¸°ë¡ëœë‹¤.
+ *                    ê°ê°ì˜ Updateë˜ëŠ” Columnì— ëŒ€í•´ì„œ
  *        Fixed Column : Column ID | SIZE | DATA
  *        Var   Column :
  *            1. SMC_VC_LOG_WRITE_TYPE_BEFORIMG & SMP_VCDESC_MODE_OUT
@@ -263,18 +263,18 @@ public:
  *            2. SMC_VC_LOG_WRITE_TYPE_BEFORIMG & SMP_VCDESC_MODE_IN
  *               - Column ID(UInt) | Length(UInt) | Value
  *
- *     After  Image: Header¸¦ Á¦¿ÜÇÑ Fixed Row ÀüÃ¼¿Í Variable Column¿¡
- *                   ´ëÇÑ Log¸¦ ±â·Ï.
+ *     After  Image: Headerë¥¼ ì œì™¸í•œ Fixed Row ì „ì²´ì™€ Variable Columnì—
+ *                   ëŒ€í•œ Logë¥¼ ê¸°ë¡.
  *        Fixed Column :
  *                   Fixed Row Size(UShort) + Fixed Row Data
  *
  *        Var   Column :
  *            1. SMC_VC_LOG_WRITE_TYPE_AFTERIMG & SMP_VCDESC_MODE_OUT
- *               - Column ID(UInt) | Length(UInt) | Value | OID ... µé
+ *               - Column ID(UInt) | Length(UInt) | Value | OID ... ë“¤
  *
  *            2. SMC_VC_LOG_WRITE_TYPE_AFTERIMG & SMP_VCDESC_MODE_IN
- *               - Fixed Row ·Î±×¿¡ µ¥ÀÌÅ¸°¡ ÀúÀåµÇ¾î ÀÖ±â¶§¹®¿¡
- *                 ·Î±ëÇÒ ÇÊ¿ä°¡ ¾ø´Ù.
+ *               - Fixed Row ë¡œê·¸ì— ë°ì´íƒ€ê°€ ì €ì¥ë˜ì–´ ìˆê¸°ë•Œë¬¸ì—
+ *                 ë¡œê¹…í•  í•„ìš”ê°€ ì—†ë‹¤.
  */
 /* Before Image, After Image VC Column */
 #define RP_MV_COLUMN_CID_OFFSET    ( 0 )
@@ -289,23 +289,23 @@ public:
 
 
 /* For Update Inplace Log
- *      Befor  Image: °¢°¢ÀÇ UpdateµÇ´Â Column¿¡ ´ëÇØ¼­
+ *      Befor  Image: ê°ê°ì˜ Updateë˜ëŠ” Columnì— ëŒ€í•´ì„œ
  *         Fixed Column : Flag(SChar) | Offset(UInt)  |ColumnID(UInt) | SIZE(UInt)
  *                        | Value
  *
  *         Var   Column : Flag(SChar) | Offset(UInt) | ColumnID(UInt) | SIZE(UInt)
  *               SMP_VCDESC_MODE_OUT:
- *                        | Value | OID µé...
+ *                        | Value | OID ë“¤...
  *               SMP_VCDESC_MODE_IN:
  *                        | Value
  *
- *      After  Image: °¢°¢ÀÇ UpdateµÇ´Â Column¿¡ ´ëÇØ¼­
+ *      After  Image: ê°ê°ì˜ Updateë˜ëŠ” Columnì— ëŒ€í•´ì„œ
  *         Fixed Column : Flag(SChar) | Offset(UInt) | ColumnID(UInt) | SIZE(UInt)
  *                        | Value
  *
  *         Var   Column : Flag(SChar) | Offset(UInt) | ColumnID(UInt) | SIZE(UInt)
  *               SMP_VCDESC_MODE_OUT:
- *                        | Value | OID µé...
+ *                        | Value | OID ë“¤...
  *               SMP_VCDESC_MODE_IN:
  *                        | Value
  */

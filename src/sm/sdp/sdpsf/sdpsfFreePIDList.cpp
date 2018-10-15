@@ -19,7 +19,7 @@
  *
  * $Id: sdpsfFreePIDList.cpp 25804 2008-04-29 01:23:17Z bskim $
  *
- * º» ÆÄÀÏÀº Segment¿¡¼­ °¡¿ë°ø°£ Å½»ö ¿¬»êÀÇ STATIC ÀÎÅÍÆäÀÌ½ºµéÀ» °ü¸®ÇÑ´Ù.
+ * ë³¸ íŒŒì¼ì€ Segmentì—ì„œ ê°€ìš©ê³µê°„ íƒìƒ‰ ì—°ì‚°ì˜ STATIC ì¸í„°í˜ì´ìŠ¤ë“¤ì„ ê´€ë¦¬í•œë‹¤.
  *
  **********************************************************************/
 
@@ -51,19 +51,19 @@ IDE_RC sdpsfFreePIDList::destroy()
 }
 
 /***********************************************************************
- * Description : Free Page List¿¡¼­ aRecordSize°¡ µé¾î°¥¼ö ÆäÀÌÁö¿¡
- *               XLatch¸¦ °Ç´Ù. walk, unlinkÀ» ÁÖ¾îÁø °¹¼öÀÌ»óÀ¸·Î ÇÏ°Ô
- *               µÇ¸é Æ÷±âÇÑ´Ù.
+ * Description : Free Page Listì—ì„œ aRecordSizeê°€ ë“¤ì–´ê°ˆìˆ˜ í˜ì´ì§€ì—
+ *               XLatchë¥¼ ê±´ë‹¤. walk, unlinkì„ ì£¼ì–´ì§„ ê°¯ìˆ˜ì´ìƒìœ¼ë¡œ í•˜ê²Œ
+ *               ë˜ë©´ í¬ê¸°í•œë‹¤.
  *
  * Caution:
- *  1. aSegHdr¿¡ XLatch°¡ °É·Á ÀÖ¾î¾ß ÇÑ´Ù.
+ *  1. aSegHdrì— XLatchê°€ ê±¸ë ¤ ìˆì–´ì•¼ í•œë‹¤.
  *
- * aStatistics      - [IN] Åë°è Á¤º¸
+ * aStatistics      - [IN] í†µê³„ ì •ë³´
  * aMtx             - [IN] Mini Transaction Pointer
  * aSpaceID         - [IN] SpaceID
  * aSegHdr          - [IN] Segment Header
  * aRecordSize      - [IN] Record Size
- * aNeedKeySlot     - [IN] KeySlotÀÌ ÇÊ¿äÇÏ¸é ID_TRUE, else ID_FALSE.
+ * aNeedKeySlot     - [IN] KeySlotì´ í•„ìš”í•˜ë©´ ID_TRUE, else ID_FALSE.
  *
  * aPagePtr         - [OUT] Free Page Ptr
  *
@@ -79,7 +79,7 @@ IDE_RC sdpsfFreePIDList::walkAndUnlink( idvSQL               *aStatistics,
 {
     UChar             *sPagePtr;
     UChar             *sPrvPagePtr;
-    /* BUGBUG: Property Á¤ÇØ¾ß ÇÔ.
+    /* BUGBUG: Property ì •í•´ì•¼ í•¨.
      * smuProperty::getWalkCntInDiskTblFreePIDList() */
     UInt               sWalkCnt = 5;
     scPageID           sNxtPageID;
@@ -109,10 +109,10 @@ IDE_RC sdpsfFreePIDList::walkAndUnlink( idvSQL               *aStatistics,
     sPrvPagePtr     = NULL;
     sPrvPageLatched = ID_FALSE;
 
-    /* BUGBUG : ¸î°³ÀÇ ÆäÀÌÁö±îÁö WalkingÇÒ °ÍÀÎ°¡ ? */
+    /* BUGBUG : ëª‡ê°œì˜ í˜ì´ì§€ê¹Œì§€ Walkingí•  ê²ƒì¸ê°€ ? */
     for( i = 0; i < (sWalkCnt) && (sPageID != SD_NULL_PID); i++ )
     {
-        /* Page¿¡ ´ëÇØ¼­ Fix½ÃÅ²´Ù. */
+        /* Pageì— ëŒ€í•´ì„œ Fixì‹œí‚¨ë‹¤. */
         IDE_TEST( sdbBufferMgr::fixPageByPID( aStatistics,
                                               aSpaceID,
                                               sPageID,
@@ -159,7 +159,7 @@ IDE_RC sdpsfFreePIDList::walkAndUnlink( idvSQL               *aStatistics,
                 break;
             }
 
-            /* ÀÌÀü Page¿¡ ´ëÇØ¼­ Latch°¡ ÀâÇûÀ» °æ¿ì¸¸ Unlink¸¦ ½ÃµµÇÑ´Ù. */
+            /* ì´ì „ Pageì— ëŒ€í•´ì„œ Latchê°€ ì¡í˜”ì„ ê²½ìš°ë§Œ Unlinkë¥¼ ì‹œë„í•œë‹¤. */
             if( sRemFrmList == ID_TRUE )
             {
                 if ( (sPrvPageLatched == ID_TRUE) || (i == 0) )
@@ -251,10 +251,10 @@ IDE_RC sdpsfFreePIDList::walkAndUnlink( idvSQL               *aStatistics,
 }
 
 /***********************************************************************
- * Description : aPagePtrÀ» Free Page List¿¡ ¾Õ¿¡ ºÙÀÎ´Ù.
+ * Description : aPagePtrì„ Free Page Listì— ì•ì— ë¶™ì¸ë‹¤.
  *
  * Caution:
- *  1. aSegHdr¿¡ XLatch°¡ °É·Á ÀÖ¾î¾ß ÇÑ´Ù.
+ *  1. aSegHdrì— XLatchê°€ ê±¸ë ¤ ìˆì–´ì•¼ í•œë‹¤.
  *
  * aMtx      - [IN] Mini Transaction Pointer
  * aSegHdr   - [IN] Segment Header
@@ -287,7 +287,7 @@ IDE_RC sdpsfFreePIDList::addPage( sdrMtx          * aMtx,
                                           aPagePtr )
               != IDE_SUCCESS );
 
-    /* ÆäÀÌÁö¸¦ Free Page List¾Õ¿¡ Ãß°¡ÇÑ´Ù. */
+    /* í˜ì´ì§€ë¥¼ Free Page Listì•ì— ì¶”ê°€í•œë‹¤. */
     IDE_TEST( sdpSglPIDList::addNode2Head(
                   sFreePIDList,
                   sdpPhyPage::getSglPIDListNode( sPageHdr ),
@@ -308,19 +308,19 @@ IDE_RC sdpsfFreePIDList::addPage( sdrMtx          * aMtx,
 }
 
 /***********************************************************************
- * Description : aPagePtrÀ» Free Page List¿¡ ¾Õ¿¡ ºÙÀÎ´Ù.
+ * Description : aPagePtrì„ Free Page Listì— ì•ì— ë¶™ì¸ë‹¤.
  *
  * Caution:
- *  1. aSegHdr¿¡ XLatch°¡ °É·Á ÀÖ¾î¾ß ÇÑ´Ù.
- *  2. aPrvPagePtr¿¡ XLatch°¡ °É·Á ÀÖ¾î¾ß ÇÑ´Ù.
- *  3. aTgtPagePtr¿¡ XLatch°¡ °É·Á ÀÖ¾î¾ß ÇÑ´Ù.
- *  4. ÀÌ ÇÔ¼ö°¡ returnµÇ¸é rollbackµÇÁö ¾Ê´Â´Ù.
+ *  1. aSegHdrì— XLatchê°€ ê±¸ë ¤ ìˆì–´ì•¼ í•œë‹¤.
+ *  2. aPrvPagePtrì— XLatchê°€ ê±¸ë ¤ ìˆì–´ì•¼ í•œë‹¤.
+ *  3. aTgtPagePtrì— XLatchê°€ ê±¸ë ¤ ìˆì–´ì•¼ í•œë‹¤.
+ *  4. ì´ í•¨ìˆ˜ê°€ returnë˜ë©´ rollbackë˜ì§€ ì•ŠëŠ”ë‹¤.
  *
- * aStatistics      - [IN] Åë°è Á¤º¸
+ * aStatistics      - [IN] í†µê³„ ì •ë³´
  * aMtx             - [IN] Mini Transaction Pointer
  * aSegHdr          - [IN] Segment Hdr
- * aPrvPagePtr      - [IN] Á¦°ÅÇÏ·Á´Â PageÀÇ ÀÌÀü ÆäÀÌÁö Pointer
- * aTgtPagePtr      - [IN] Á¦°ÅÇÏ·Á´Â Page Pointer
+ * aPrvPagePtr      - [IN] ì œê±°í•˜ë ¤ëŠ” Pageì˜ ì´ì „ í˜ì´ì§€ Pointer
+ * aTgtPagePtr      - [IN] ì œê±°í•˜ë ¤ëŠ” Page Pointer
  ***********************************************************************/
 IDE_RC sdpsfFreePIDList::removePage( idvSQL             * aStatistics,
                                      sdrMtx             * aMtx,
@@ -398,8 +398,8 @@ IDE_RC sdpsfFreePIDList::removePage( idvSQL             * aStatistics,
     }
     else
     {
-        /* PrevPage°¡ NullÀÎ °ÍÀº Á¦°ÅÇÏ·Á´Â ÆäÀÌÁö°¡
-         * HeaderÆäÀÌÁöÀÌ´Ù. */
+        /* PrevPageê°€ Nullì¸ ê²ƒì€ ì œê±°í•˜ë ¤ëŠ” í˜ì´ì§€ê°€
+         * Headerí˜ì´ì§€ì´ë‹¤. */
         IDE_TEST( sdpSglPIDList::removeNodeAtHead( sFreePIDList,
                                                    aTgtPagePtr,
                                                    &sRmvMtx,

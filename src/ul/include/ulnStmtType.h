@@ -17,7 +17,7 @@
 #ifndef _O_ULN_STMT_TYPE_H_
 #define _O_ULN_STMT_TYPE_H_ 1
 
-// qci.h¿¡ ÀÖ´Â qciStmtTypeÀ» ±×´ë·Î º¹»çÇØ¼­ »ç¿ëÇÔ.
+// qci.hì— ìˆëŠ” qciStmtTypeì„ ê·¸ëŒ€ë¡œ ë³µì‚¬í•´ì„œ ì‚¬ìš©í•¨.
 enum ulnStmtKind
 {
     ULN_STMT_MASK_DDL     = 0x00000000,

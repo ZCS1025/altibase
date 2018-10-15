@@ -462,7 +462,7 @@ void testUTF8ReadWrite(void)
     {
         /* Ansi Characters */
         'H', 'e', 'l', 'l', 'o', ',', ' ', 'W', 'o', 'r', 'l', 'd', '!', '\n',
-        /* KSC-5601 Characters æÀ∆º∫£¿ÃΩ∫ */
+        /* KSC-5601 Characters ÏïåÌã∞Î≤†Ïù¥Ïä§ */
         0xBECB, 0xC6BC, 0xBAA3, 0xC0CC, 0xBDBA, 0
     };
     acp_qchar_t sBuffer[20];

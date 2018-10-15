@@ -45,7 +45,7 @@ static IDE_RC mtfBitAndEstimate( mtcNode*     aNode,
 mtfModule mtfBitAnd = {
     1|MTC_NODE_OPERATOR_FUNCTION,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
+    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìžê°€ ì•„ë‹˜)
     mtfBitAndFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -89,7 +89,7 @@ IDE_RC mtfBitAndEstimate( mtcNode*     aNode,
                     ERR_INVALID_FUNCTION_ARGUMENT );
 
     // BUG-40992 FATAL when using _prowid
-    // ÀÎÀÚÀÇ °æ¿ì mtcStack ÀÇ column °ªÀ» ÀÌ¿ëÇÏ¸é µÈ´Ù.
+    // ì¸ìžì˜ ê²½ìš° mtcStack ì˜ column ê°’ì„ ì´ìš©í•˜ë©´ ëœë‹¤.
     sNode1Precision = aStack[1].column->precision;
     sNode2Precision = aStack[2].column->precision;
 

@@ -27,14 +27,14 @@
 
 struct iduShmLatchInfo;
 
-// Shared Memory SXLatch¸¦ Á¤ÀÇ
+// Shared Memory SXLatchë¥¼ ì •ì˜
 typedef struct iduShmSet4SXLatch
 {
-    // Shared Memory LatchÀÇ Self Address
+    // Shared Memory Latchì˜ Self Address
     idShmAddr       mAddrSelf;
-    // Shared Memory LatchÀÇ ArrayÀÇ ½ÃÀÛ Address
+    // Shared Memory Latchì˜ Arrayì˜ ì‹œì‘ Address
     idShmAddr       mAddr4ArrLatch;
-    // SX SetLatch¿¡ Á¸ÀçÇÏ´Â LatchÀÇ °¹¼ö
+    // SX SetLatchì— ì¡´ì¬í•˜ëŠ” Latchì˜ ê°¯ìˆ˜
     UInt            mLatchCnt;
 } iduShmSet4SXLatch;
 

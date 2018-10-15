@@ -156,9 +156,9 @@ public:
     smxOIDNode              *mCacheOIDNode4Insert;
 
 private:
-    /* mMemPoolType == 0 ÀÌ¸é mOIDListSize¸¦ »ç¿ë.
-     * 1ÀÌ¸é mMemPoolÀ» »ç¿ë.
-     * XXX: Å×½ºÆ®¿ëÀ¸·Î Ãß°¡ */
+    /* mMemPoolType == 0 ì´ë©´ mOIDListSizeë¥¼ ì‚¬ìš©.
+     * 1ì´ë©´ mMemPoolì„ ì‚¬ìš©.
+     * XXX: í…ŒìŠ¤íŠ¸ìš©ìœ¼ë¡œ ì¶”ê°€ */
     static UInt              mMemPoolType;
     static UInt              mOIDListSize;
     static iduOIDMemory      mOIDMemory;
@@ -170,7 +170,7 @@ public:
     // To fix BUG-14126
     idBool                   mNeedAging;
 
-    smuHashBase             *mUniqueOIDHash; // OID Áßº¹Çã¿ëÇÏÁö ¾Ê±â À§ÇÑ Hash.
+    smuHashBase             *mUniqueOIDHash; // OID ì¤‘ë³µí—ˆìš©í•˜ì§€ ì•Šê¸° ìœ„í•œ Hash.
 };
 
 void smxOIDList::initOIDNode(smxOIDNode *aOIDNode)
@@ -182,14 +182,14 @@ void smxOIDList::initOIDNode(smxOIDNode *aOIDNode)
 }
 
 /**********************************************************************
- * Description: aOIDInfo°¡ Aging´ë»óÀÌ¸é ID_TRUE, ¾Æ´Ï¸é ID_FALSE
+ * Description: aOIDInfoê°€ AgingëŒ€ìƒì´ë©´ ID_TRUE, ì•„ë‹ˆë©´ ID_FALSE
  *
- * aAgingState - [IN] Commit½Ã¿¡´Â SM_OID_ACT_AGING_COMMIT
- *                    Rollback½Ã¿¡´Â SM_OID_ACT_AGING_ROLLBACk
+ * aAgingState - [IN] Commitì‹œì—ëŠ” SM_OID_ACT_AGING_COMMIT
+ *                    Rollbackì‹œì—ëŠ” SM_OID_ACT_AGING_ROLLBACk
  * aOIDInfo    - [IN] OID Info
  *
- * Releated Issue - 1. BUG-17417 V$AgerÁ¤º¸ÀÇ Add OID°¹¼ö´Â ½ÇÁ¦ Ager°¡
- *                     ÇØ¾ßÇÒ ÀÛ¾÷ÀÇ °¹¼ö°¡ ¾Æ´Ï´Ù.
+ * Releated Issue - 1. BUG-17417 V$Agerì •ë³´ì˜ Add OIDê°¯ìˆ˜ëŠ” ì‹¤ì œ Agerê°€
+ *                     í•´ì•¼í•  ì‘ì—…ì˜ ê°¯ìˆ˜ê°€ ì•„ë‹ˆë‹¤.
  **********************************************************************/
 idBool smxOIDList::checkIsAgingTarget( UInt         aAgingState,
                                        smxOIDInfo  *aOIDInfo )

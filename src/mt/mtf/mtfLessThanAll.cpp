@@ -53,7 +53,7 @@ mtfModule mtfLessThanAll = {
         MTC_NODE_GROUP_ALL|
         MTC_NODE_PRINT_FMT_INFIX,
     // ~(MTC_NODE_INDEX_MASK),
-    ~0,        // A4¿¡¼­´Â Node Transform¿¡ ÀÇÇØ ÀÎµ¦½º »ç¿ëÇÒ ¼ö ÀÖÀ½
+    ~0,        // A4ì—ì„œëŠ” Node Transformì— ì˜í•´ ì¸ë±ìŠ¤ ì‚¬ìš©í•  ìˆ˜ ìˆìŒ
     1.0/3.0,  // TODO : default selectivity 
     mtfLessThanAllFunctionName,
     &mtfGreaterEqualAny,

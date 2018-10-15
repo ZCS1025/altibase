@@ -31,10 +31,10 @@ ACI_RC cmbPoolInitializeIPC(cmbPool *aPool)
     cmbPoolIPC *sPool      = (cmbPoolIPC *)aPool;
 
     /*
-     * Block Pool ÃÊ±âÈ­
+     * Block Pool ì´ˆê¸°í™”
      *
      * bug-27250 free Buf list can be crushed when client killed
-     * block ¹Ì¸® ÇÒ´ç: cmbBlock -> cmbBlock + mBlockSize
+     * block ë¯¸ë¦¬ í• ë‹¹: cmbBlock -> cmbBlock + mBlockSize
      */
     ACI_TEST(aclMemPoolCreate(&sPool->mBlockPool,
                               ACI_SIZEOF(cmbBlock) + aPool->mBlockSize,
@@ -51,7 +51,7 @@ ACI_RC cmbPoolFinalizeIPC(cmbPool * aPool)
     cmbPoolIPC *sPool = (cmbPoolIPC *)aPool;
 
     /*
-     * Block Pool »èÁ¦
+     * Block Pool ì‚­ì œ
      */
     aclMemPoolDestroy(&sPool->mBlockPool);
 
@@ -63,12 +63,12 @@ ACI_RC cmbPoolAllocBlockIPC(cmbPool * aPool, cmbBlock ** aBlock)
     cmbPoolIPC *sPool = (cmbPoolIPC *)aPool;
 
     /*
-     * Block ÇÒ´ç
+     * Block í• ë‹¹
      */
     ACI_TEST(aclMemPoolAlloc(&sPool->mBlockPool, (void **)aBlock) != ACP_RC_SUCCESS);
 
     /*
-     * Block ÃÊ±âÈ­
+     * Block ì´ˆê¸°í™”
      */
     (*aBlock)->mBlockSize   = aPool->mBlockSize;
     (*aBlock)->mDataSize    = 0;
@@ -77,7 +77,7 @@ ACI_RC cmbPoolAllocBlockIPC(cmbPool * aPool, cmbBlock ** aBlock)
 
     /*
      * bug-27250 free Buf list can be crushed when client killed
-     * tcp Ã³·³ blockÀ» ¹Ì¸® »ý¼ºÇÏµµ·Ï ÇÑ´Ù.
+     * tcp ì²˜ëŸ¼ blockì„ ë¯¸ë¦¬ ìƒì„±í•˜ë„ë¡ í•œë‹¤.
      */
     (*aBlock)->mData        = (acp_uint8_t *)((*aBlock) + 1);
 
@@ -93,13 +93,13 @@ ACI_RC cmbPoolFreeBlockIPC(cmbPool *aPool, cmbBlock * aBlock)
     cmbPoolIPC *sPool  = (cmbPoolIPC *)aPool;
 
     /*
-     * List¿¡¼­ Block »èÁ¦
+     * Listì—ì„œ Block ì‚­ì œ
      */
 
     acpListDeleteNode(&aBlock->mListNode);
 
     /*
-     * Block ÇØÁ¦
+     * Block í•´ì œ
      */
     aclMemPoolFree(&sPool->mBlockPool, (void*)aBlock);
 
@@ -122,7 +122,7 @@ struct cmbPoolOP gCmbPoolOpIPCClient =
 ACI_RC cmbPoolMapIPC(cmbPool *aPool)
 {
     /*
-     * ÇÔ¼ö Æ÷ÀÎÅÍ ¼¼ÆÃ
+     * í•¨ìˆ˜ í¬ì¸í„° ì„¸íŒ…
      */
     aPool->mOp = &gCmbPoolOpIPCClient;
 

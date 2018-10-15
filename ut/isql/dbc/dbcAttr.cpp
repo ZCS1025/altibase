@@ -118,9 +118,9 @@ IDE_RC utISPApi::GetConnectAttr(SInt aAttr, SInt *aValue)
 /**
  * SetAltiDateFmt.
  *
- * DBCÀÇ ALTIBASE_DATE_FORMATÀ» ¼³Á¤ÇØÁØ´Ù.
- * È¯°æº¯¼ö ALTIBASE_DATE_FORMATÀÌ ¼³Á¤µÇ¾îÀÖÀ¸¸é È¯°æº¯¼ö·Î ¼³Á¤ÇÏ°í,
- * ±×·¸Áö ¾ÊÀ¸¸é ±âº»°ª "YYYY/MM/DD HH:MI:SS"·Î ¼³Á¤ÇÑ´Ù.
+ * DBCì˜ ALTIBASE_DATE_FORMATì„ ì„¤ì •í•´ì¤€ë‹¤.
+ * í™˜ê²½ë³€ìˆ˜ ALTIBASE_DATE_FORMATì´ ì„¤ì •ë˜ì–´ìžˆìœ¼ë©´ í™˜ê²½ë³€ìˆ˜ë¡œ ì„¤ì •í•˜ê³ ,
+ * ê·¸ë ‡ì§€ ì•Šìœ¼ë©´ ê¸°ë³¸ê°’ "YYYY/MM/DD HH:MI:SS"ë¡œ ì„¤ì •í•œë‹¤.
  */
 IDE_RC utISPApi::SetAltiDateFmt()
 {
@@ -210,10 +210,10 @@ IDE_RC utISPApi::SetAsyncPrefetch( AsyncPrefetchType aType )
 
         IDE_TEST(sRc == SQL_ERROR);
 
-        /* Asynchronous Prefetch Auto TuningÀ» Áö¿øÇÏ´Â ¾ÊÀ» °æ¿ì CLI¿¡¼­
+        /* Asynchronous Prefetch Auto Tuningì„ ì§€ì›í•˜ëŠ” ì•Šì„ ê²½ìš° CLIì—ì„œ
          * 0x52011(Option value changed. ALTIBASE_PREFETCH_AUTO_TUNING changed to OFF.)
-         * ¿¡·¯ ÄÚµå¿Í ÇÔ²² SQL_SUCCESS_WITH_INFO°¡ ¹ÝÈ¯µÊ.
-         * ÀÌ °æ¿ì ¹«½ÃÇÏ°í °è¼Ó ÁøÇàÇÏ±â À§ÇØ IDE_SUCCESS ¸®ÅÏ. */
+         * ì—ëŸ¬ ì½”ë“œì™€ í•¨ê»˜ SQL_SUCCESS_WITH_INFOê°€ ë°˜í™˜ë¨.
+         * ì´ ê²½ìš° ë¬´ì‹œí•˜ê³  ê³„ì† ì§„í–‰í•˜ê¸° ìœ„í•´ IDE_SUCCESS ë¦¬í„´. */
         if (sRc == SQL_SUCCESS_WITH_INFO)
         {
             (void)SetErrorMsgWithHandle(SQL_HANDLE_STMT, (SQLHANDLE)m_IStmt);

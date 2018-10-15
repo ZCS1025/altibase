@@ -199,7 +199,7 @@ IDE_RC sdm::checkMetaVersion( smiStatement * aSmiStmt )
     mtdIntegerType       sMinorVer;
     mtdIntegerType       sPatchVer;
 
-    scGRID               sRid; // Disk TableÀ» À§ÇÑ Record IDentifier
+    scGRID               sRid; // Disk Tableì„ ìœ„í•œ Record IDentifier
     smiCursorProperties  sCursorProperty;
 
     IDE_TEST( getMetaTableAndIndex( aSmiStmt,
@@ -244,7 +244,7 @@ IDE_RC sdm::checkMetaVersion( smiStatement * aSmiStmt )
     IDE_TEST(sCursor.beforeFirst() != IDE_SUCCESS);
 
     IDE_TEST(sCursor.readRow(&sRow, &sRid, SMI_FIND_NEXT) != IDE_SUCCESS);
-    // 1°Çµµ ¾øÀ¸¸é ¿¡·¯
+    // 1ê±´ë„ ì—†ìœ¼ë©´ ì—ëŸ¬
     IDE_TEST_RAISE( sRow == NULL, ERR_CHECK_META_VERSION );
 
     sMajorVer = *(mtdIntegerType*)((SChar *)sRow + sSdmVersionMajorVerColumn->column.offset );
@@ -252,7 +252,7 @@ IDE_RC sdm::checkMetaVersion( smiStatement * aSmiStmt )
     sPatchVer = *(mtdIntegerType*)((SChar *)sRow + sSdmVersionPatchVerColumn->column.offset );
 
     IDE_TEST(sCursor.readRow(&sRow, &sRid, SMI_FIND_NEXT) != IDE_SUCCESS);
-    // 1°ÇÀÌ¾î¾ß ÇÑ´Ù.
+    // 1ê±´ì´ì–´ì•¼ í•œë‹¤.
     IDE_TEST_RAISE( sRow != NULL, ERR_CHECK_META_VERSION );
 
     sStage = 0;
@@ -409,9 +409,9 @@ IDE_RC sdm::getNextNodeID( qcStatement * aStatement,
                                           NULL )
                  != IDE_SUCCESS );
 
-        // sSeqValÀº ºñ·Ï SLongÀÌÁö¸¸, sequence¸¦ »ý¼ºÇÒ ¶§
-        // max¸¦ integer max¸¦ ¾È³Ñµµ·Ï ÇÏ¿´±â ¶§¹®¿¡
-        // ¿©±â¼­ overflowÃ¼Å©´Â ÇÏÁö ¾Ê´Â´Ù.
+        // sSeqValì€ ë¹„ë¡ SLongì´ì§€ë§Œ, sequenceë¥¼ ìƒì„±í•  ë•Œ
+        // maxë¥¼ integer maxë¥¼ ì•ˆë„˜ë„ë¡ í•˜ì˜€ê¸° ë•Œë¬¸ì—
+        // ì—¬ê¸°ì„œ overflowì²´í¬ëŠ” í•˜ì§€ ì•ŠëŠ”ë‹¤.
         IDE_TEST( searchNodeID( QC_SMI_STMT( aStatement ),
                                 (SInt)sSeqVal,
                                 &sExist )
@@ -424,8 +424,8 @@ IDE_RC sdm::getNextNodeID( qcStatement * aStatement,
         }
         else
         {
-            // Ã£´ÙÃ£´Ù ÇÑ¹ÙÄû µ· °æ¿ì.
-            // ÀÌ´Â object°¡ ²Ë Âù °ÍÀ» ÀÇ¹ÌÇÔ.
+            // ì°¾ë‹¤ì°¾ë‹¤ í•œë°”í€´ ëˆ ê²½ìš°.
+            // ì´ëŠ” objectê°€ ê½‰ ì°¬ ê²ƒì„ ì˜ë¯¸í•¨.
             IDE_TEST_RAISE( sSeqVal == sSeqValFirst, ERR_OBJECTS_OVERFLOW );
         }
     }
@@ -472,7 +472,7 @@ IDE_RC sdm::searchNodeID( smiStatement * aSmiStmt,
     mtcColumn          * sSdmNodeIDColumn;
     qtcMetaRangeColumn   sRangeColumn;
 
-    scGRID              sRid; // Disk TableÀ» À§ÇÑ Record IDentifier
+    scGRID              sRid; // Disk Tableì„ ìœ„í•œ Record IDentifier
     smiCursorProperties sCursorProperty;
 
     IDE_TEST( getMetaTableAndIndex( aSmiStmt,
@@ -489,12 +489,12 @@ IDE_RC sdm::searchNodeID( smiStatement * aSmiStmt,
                                   (const smiColumn**)&sSdmNodeIDColumn )
               != IDE_SUCCESS );
 
-    // mtdModule ¼³Á¤
+    // mtdModule ì„¤ì •
     IDE_TEST( mtd::moduleById( &(sSdmNodeIDColumn->module),
                                sSdmNodeIDColumn->type.dataTypeId )
               != IDE_SUCCESS );
 
-    // mtlModule ¼³Á¤
+    // mtlModule ì„¤ì •
     IDE_TEST( mtl::moduleById( &sSdmNodeIDColumn->language,
                                sSdmNodeIDColumn->type.languageId )
               != IDE_SUCCESS );
@@ -597,9 +597,9 @@ IDE_RC sdm::getNextShardID( qcStatement * aStatement,
                                           NULL )
                  != IDE_SUCCESS );
 
-        // sSeqValÀº ºñ·Ï SLongÀÌÁö¸¸, sequence¸¦ »ý¼ºÇÒ ¶§
-        // max¸¦ integer max¸¦ ¾È³Ñµµ·Ï ÇÏ¿´±â ¶§¹®¿¡
-        // ¿©±â¼­ overflowÃ¼Å©´Â ÇÏÁö ¾Ê´Â´Ù.
+        // sSeqValì€ ë¹„ë¡ SLongì´ì§€ë§Œ, sequenceë¥¼ ìƒì„±í•  ë•Œ
+        // maxë¥¼ integer maxë¥¼ ì•ˆë„˜ë„ë¡ í•˜ì˜€ê¸° ë•Œë¬¸ì—
+        // ì—¬ê¸°ì„œ overflowì²´í¬ëŠ” í•˜ì§€ ì•ŠëŠ”ë‹¤.
         IDE_TEST( searchShardID( QC_SMI_STMT( aStatement ),
                                  (SInt)sSeqVal,
                                  &sExist )
@@ -612,8 +612,8 @@ IDE_RC sdm::getNextShardID( qcStatement * aStatement,
         }
         else
         {
-            // Ã£´ÙÃ£´Ù ÇÑ¹ÙÄû µ· °æ¿ì.
-            // ÀÌ´Â object°¡ ²Ë Âù °ÍÀ» ÀÇ¹ÌÇÔ.
+            // ì°¾ë‹¤ì°¾ë‹¤ í•œë°”í€´ ëˆ ê²½ìš°.
+            // ì´ëŠ” objectê°€ ê½‰ ì°¬ ê²ƒì„ ì˜ë¯¸í•¨.
             IDE_TEST_RAISE( sSeqVal == sSeqValFirst, ERR_OBJECTS_OVERFLOW );
         }
     }
@@ -660,7 +660,7 @@ IDE_RC sdm::searchShardID( smiStatement * aSmiStmt,
     mtcColumn          * sSdmShardIDColumn;
     qtcMetaRangeColumn   sRangeColumn;
 
-    scGRID              sRid; // Disk TableÀ» À§ÇÑ Record IDentifier
+    scGRID              sRid; // Disk Tableì„ ìœ„í•œ Record IDentifier
     smiCursorProperties sCursorProperty;
 
     IDE_TEST( getMetaTableAndIndex( aSmiStmt,
@@ -677,12 +677,12 @@ IDE_RC sdm::searchShardID( smiStatement * aSmiStmt,
                                   (const smiColumn**)&sSdmShardIDColumn )
               != IDE_SUCCESS );
 
-    // mtdModule ¼³Á¤
+    // mtdModule ì„¤ì •
     IDE_TEST( mtd::moduleById( &(sSdmShardIDColumn->module),
                                sSdmShardIDColumn->type.dataTypeId )
               != IDE_SUCCESS );
 
-    // mtlModule ¼³Á¤
+    // mtlModule ì„¤ì •
     IDE_TEST( mtl::moduleById( &sSdmShardIDColumn->language,
                                sSdmShardIDColumn->type.languageId )
               != IDE_SUCCESS );
@@ -1017,7 +1017,7 @@ IDE_RC sdm::insertProcedure( qcStatement * aStatement,
 
     IDE_TEST_RAISE( sProcOID == QS_EMPTY_OID, ERR_NOT_EXIST_OBJECT );
 
-    // ÀÌ¹Ì µ¿ÀÏÇÑ Å×ÀÌºíÀÌ Á¸ÀçÇÑ´Ù¸é ¿¡·¯Ã³¸®ÇÑ´Ù.
+    // ì´ë¯¸ ë™ì¼í•œ í…Œì´ë¸”ì´ ì¡´ìž¬í•œë‹¤ë©´ ì—ëŸ¬ì²˜ë¦¬í•œë‹¤.
     IDE_TEST_RAISE( getTableInfo( QC_SMI_STMT( aStatement ),
                                   aUserName,
                                   aProcName,
@@ -1087,8 +1087,8 @@ IDE_RC sdm::insertProcedure( qcStatement * aStatement,
     }
     else
     {
-        // Clone tableÀÇ °æ¿ì shard key columnÀÌ ¾ø±â ¶§¹®¿¡,
-        // key column nameÀ» NULL·Î ÀÔ·ÂÇÑ´Ù.
+        // Clone tableì˜ ê²½ìš° shard key columnì´ ì—†ê¸° ë•Œë¬¸ì—,
+        // key column nameì„ NULLë¡œ ìž…ë ¥í•œë‹¤.
         idlOS::snprintf( sSqlStr, QD_MAX_SQL_LENGTH,
                          "INSERT INTO SYS_SHARD.OBJECTS_ VALUES( "
                          QCM_SQL_INT32_FMT", "
@@ -1182,7 +1182,7 @@ IDE_RC sdm::insertTable( qcStatement * aStatement,
                                          &sTableSCN )
               != IDE_SUCCESS );
 
-    // ÀÌ¹Ì µ¿ÀÏÇÑ Å×ÀÌºíÀÌ Á¸ÀçÇÑ´Ù¸é ¿¡·¯Ã³¸®ÇÑ´Ù.
+    // ì´ë¯¸ ë™ì¼í•œ í…Œì´ë¸”ì´ ì¡´ìž¬í•œë‹¤ë©´ ì—ëŸ¬ì²˜ë¦¬í•œë‹¤.
     IDE_TEST_RAISE( getTableInfo( QC_SMI_STMT( aStatement ),
                                   aUserName,
                                   aTableName,
@@ -1252,8 +1252,8 @@ IDE_RC sdm::insertTable( qcStatement * aStatement,
     }
     else
     {
-        // Clone, solo tableÀÇ °æ¿ì shard key columnÀÌ ¾ø±â ¶§¹®¿¡,
-        // key column nameÀ» NULL·Î ÀÔ·ÂÇÑ´Ù.
+        // Clone, solo tableì˜ ê²½ìš° shard key columnì´ ì—†ê¸° ë•Œë¬¸ì—,
+        // key column nameì„ NULLë¡œ ìž…ë ¥í•œë‹¤.
         idlOS::snprintf( sSqlStr, QD_MAX_SQL_LENGTH,
                          "INSERT INTO SYS_SHARD.OBJECTS_ VALUES( "
                          QCM_SQL_INT32_FMT", "
@@ -1560,7 +1560,7 @@ IDE_RC sdm::insertRange( qcStatement * aStatement,
         IDE_RAISE( ERR_INVALID_RANGE_FUNCTION );
     }
 
-    // hash max´Â 1~1000±îÁö¸¸ °¡´ÉÇÏ´Ù.
+    // hash maxëŠ” 1~1000ê¹Œì§€ë§Œ ê°€ëŠ¥í•˜ë‹¤.
     if ( sTableInfo.mSplitMethod == SDI_SPLIT_HASH )
     {
         sPosition.stmtText = (SChar*)(aValue);
@@ -1890,12 +1890,12 @@ IDE_RC sdm::getNodeByName( smiStatement * aSmiStmt,
                                   (const smiColumn**)&sAlternateHostIPColumn )
               != IDE_SUCCESS );
 
-    // mtdModule ¼³Á¤
+    // mtdModule ì„¤ì •
     IDE_TEST( mtd::moduleById( &(sNodeNameColumn->module),
                                sNodeNameColumn->type.dataTypeId )
               != IDE_SUCCESS );
 
-    // mtlModule ¼³Á¤
+    // mtlModule ì„¤ì •
     IDE_TEST( mtl::moduleById( &sNodeNameColumn->language,
                                sNodeNameColumn->type.languageId )
               != IDE_SUCCESS );
@@ -1958,7 +1958,7 @@ IDE_RC sdm::getNodeByName( smiStatement * aSmiStmt,
     }
     else
     {
-        // BUGBUG ÀÌÈÄ ¿Ã¹Ù¸¥ message ·Î º¯°æÇØ¾ß ÇÔ
+        // BUGBUG ì´í›„ ì˜¬ë°”ë¥¸ message ë¡œ ë³€ê²½í•´ì•¼ í•¨
         IDE_RAISE( BUFFER_OVERFLOW );
     }
 
@@ -1978,7 +1978,7 @@ IDE_RC sdm::getNodeByName( smiStatement * aSmiStmt,
     }
     else
     {
-        // BUGBUG ÀÌÈÄ ¿Ã¹Ù¸¥ message ·Î º¯°æÇØ¾ß ÇÔ
+        // BUGBUG ì´í›„ ì˜¬ë°”ë¥¸ message ë¡œ ë³€ê²½í•´ì•¼ í•¨
         IDE_RAISE( BUFFER_OVERFLOW );
     }
 
@@ -1991,7 +1991,7 @@ IDE_RC sdm::getNodeByName( smiStatement * aSmiStmt,
     }
     else
     {
-        // BUGBUG ÀÌÈÄ ¿Ã¹Ù¸¥ message ·Î º¯°æÇØ¾ß ÇÔ
+        // BUGBUG ì´í›„ ì˜¬ë°”ë¥¸ message ë¡œ ë³€ê²½í•´ì•¼ í•¨
         IDE_RAISE( BUFFER_OVERFLOW );
     }
 
@@ -2154,7 +2154,7 @@ IDE_RC sdm::getNodeInfo( smiStatement * aSmiStmt,
         }
         else
         {
-            // BUGBUG ÀÌÈÄ ¿Ã¹Ù¸¥ message ·Î º¯°æÇØ¾ß ÇÔ
+            // BUGBUG ì´í›„ ì˜¬ë°”ë¥¸ message ë¡œ ë³€ê²½í•´ì•¼ í•¨
             IDE_RAISE( BUFFER_OVERFLOW );
         }
 
@@ -2174,7 +2174,7 @@ IDE_RC sdm::getNodeInfo( smiStatement * aSmiStmt,
         }
         else
         {
-            // BUGBUG ÀÌÈÄ ¿Ã¹Ù¸¥ message ·Î º¯°æÇØ¾ß ÇÔ
+            // BUGBUG ì´í›„ ì˜¬ë°”ë¥¸ message ë¡œ ë³€ê²½í•´ì•¼ í•¨
             IDE_RAISE( BUFFER_OVERFLOW );
         }
 
@@ -2187,7 +2187,7 @@ IDE_RC sdm::getNodeInfo( smiStatement * aSmiStmt,
         }
         else
         {
-            // BUGBUG ÀÌÈÄ ¿Ã¹Ù¸¥ message ·Î º¯°æÇØ¾ß ÇÔ
+            // BUGBUG ì´í›„ ì˜¬ë°”ë¥¸ message ë¡œ ë³€ê²½í•´ì•¼ í•¨
             IDE_RAISE( BUFFER_OVERFLOW );
         }
 
@@ -2344,22 +2344,22 @@ IDE_RC sdm::getTableInfo( smiStatement * aSmiStmt,
                                   (const smiColumn**)&sDefaultNodeIDColumn )
               != IDE_SUCCESS );
 
-    // mtdModule ¼³Á¤
+    // mtdModule ì„¤ì •
     IDE_TEST( mtd::moduleById( &(sUserNameColumn->module),
                                sUserNameColumn->type.dataTypeId )
               != IDE_SUCCESS );
 
-    // mtlModule ¼³Á¤
+    // mtlModule ì„¤ì •
     IDE_TEST( mtl::moduleById( &sUserNameColumn->language,
                                sUserNameColumn->type.languageId )
               != IDE_SUCCESS );
 
-    // mtdModule ¼³Á¤
+    // mtdModule ì„¤ì •
     IDE_TEST( mtd::moduleById( &(sObjectNameColumn->module),
                                sObjectNameColumn->type.dataTypeId )
               != IDE_SUCCESS );
 
-    // mtlModule ¼³Á¤
+    // mtlModule ì„¤ì •
     IDE_TEST( mtl::moduleById( &sObjectNameColumn->language,
                                sObjectNameColumn->type.languageId )
               != IDE_SUCCESS );
@@ -2512,7 +2512,7 @@ IDE_RC sdm::getTableInfo( smiStatement * aSmiStmt,
     }
     else // sSubSplitMethod->length == 0
     {
-        /* SDI_INIT_TABLE_INFO()¿¡¼­ ÃÊ±âÈ­ µÇ¾îÀÖÁö¸¸, ´Ù½Ã ¼³Á¤ */
+        /* SDI_INIT_TABLE_INFO()ì—ì„œ ì´ˆê¸°í™” ë˜ì–´ìžˆì§€ë§Œ, ë‹¤ì‹œ ì„¤ì • */
         aTableInfo->mSubKeyExists   = ID_FALSE;
         aTableInfo->mSubSplitMethod = SDI_SPLIT_NONE;
     }
@@ -2660,12 +2660,12 @@ IDE_RC sdm::getRange( smiStatement * aSmiStmt,
                                   (const smiColumn**)&sNodeIDColumn )
               != IDE_SUCCESS );
 
-    // mtdModule ¼³Á¤
+    // mtdModule ì„¤ì •
     IDE_TEST( mtd::moduleById( &(sShardIDColumn->module),
                                sShardIDColumn->type.dataTypeId )
               != IDE_SUCCESS );
 
-    // mtlModule ¼³Á¤
+    // mtlModule ì„¤ì •
     IDE_TEST( mtl::moduleById( &sShardIDColumn->language,
                                sShardIDColumn->type.languageId )
               != IDE_SUCCESS );
@@ -2716,10 +2716,10 @@ IDE_RC sdm::getRange( smiStatement * aSmiStmt,
 
         aRangeInfo->mRanges[sCount].mNodeId = (UShort)sNodeID;
 
-        // shard keyÀÇ range value stringÀ» ¾Ë¸ÂÀº data typeÀ¸·Î º¯È¯
+        // shard keyì˜ range value stringì„ ì•Œë§žì€ data typeìœ¼ë¡œ ë³€í™˜
         if ( aTableInfo->mSplitMethod == SDI_SPLIT_HASH )
         {
-            // hash´Â integer·Î º¯È¯
+            // hashëŠ” integerë¡œ ë³€í™˜
             IDE_TEST( convertRangeValue( (SChar*)sValue->value,
                                          sValue->length,
                                          MTD_INTEGER_ID,
@@ -2728,7 +2728,7 @@ IDE_RC sdm::getRange( smiStatement * aSmiStmt,
         }
         else
         {
-            // range, list´Â ÇØ´ç key typeÀ¸·Î º¯È¯
+            // range, listëŠ” í•´ë‹¹ key typeìœ¼ë¡œ ë³€í™˜
             IDE_TEST( convertRangeValue( (SChar*)sValue->value,
                                          sValue->length,
                                          aTableInfo->mKeyDataType,
@@ -2736,12 +2736,12 @@ IDE_RC sdm::getRange( smiStatement * aSmiStmt,
                       != IDE_SUCCESS );
         }
 
-        // sub-shard keyÀÇ range value stringÀ» ¾Ë¸ÂÀº data typeÀ¸·Î º¯È¯
+        // sub-shard keyì˜ range value stringì„ ì•Œë§žì€ data typeìœ¼ë¡œ ë³€í™˜
         if ( aTableInfo->mSubKeyExists == ID_TRUE )
         {
             if ( aTableInfo->mSubSplitMethod == SDI_SPLIT_HASH )
             {
-                // hash´Â integer·Î º¯È¯
+                // hashëŠ” integerë¡œ ë³€í™˜
                 IDE_TEST( convertRangeValue( (SChar*)sSubValue->value,
                                              sSubValue->length,
                                              MTD_INTEGER_ID,
@@ -2750,7 +2750,7 @@ IDE_RC sdm::getRange( smiStatement * aSmiStmt,
             }
             else
             {
-                // range, list´Â ÇØ´ç key typeÀ¸·Î º¯È¯
+                // range, listëŠ” í•´ë‹¹ key typeìœ¼ë¡œ ë³€í™˜
                 IDE_TEST( convertRangeValue( (SChar*)sSubValue->value,
                                              sSubValue->length,
                                              aTableInfo->mSubKeyDataType,
@@ -2774,8 +2774,8 @@ IDE_RC sdm::getRange( smiStatement * aSmiStmt,
 
     aRangeInfo->mCount = sCount;
 
-    // ¼ýÀÚ Å¸ÀÔÀ¸·Î º¯È¯µÈ stringÀÇ °æ¿ì
-    // index¸¦ ÀÌ¿ëÇÑ Á¤·ÄÀÌ ¿Ã¹Ù¸£Áö ¾Ê¾Æ Ãß°¡ Á¤·ÄÀÌ ÇÊ¿äÇÏ´Ù.
+    // ìˆ«ìž íƒ€ìž…ìœ¼ë¡œ ë³€í™˜ëœ stringì˜ ê²½ìš°
+    // indexë¥¼ ì´ìš©í•œ ì •ë ¬ì´ ì˜¬ë°”ë¥´ì§€ ì•Šì•„ ì¶”ê°€ ì •ë ¬ì´ í•„ìš”í•˜ë‹¤.
     IDE_TEST( shardRangeSort( aTableInfo->mSplitMethod,
                               aTableInfo->mKeyDataType,
                               aTableInfo->mSubKeyExists,
@@ -2784,7 +2784,7 @@ IDE_RC sdm::getRange( smiStatement * aSmiStmt,
                               aRangeInfo )
               != IDE_SUCCESS );
 
-    // Á¤·Ä ÈÄ Áßº¹µÈ ºÐ»ê Á¤ÀÇ¸¦ ÇÕÃÄÁØ´Ù.
+    // ì •ë ¬ í›„ ì¤‘ë³µëœ ë¶„ì‚° ì •ì˜ë¥¼ í•©ì³ì¤€ë‹¤.
     IDE_TEST( shardEliminateDuplication( aTableInfo,
                                          aRangeInfo )
               != IDE_SUCCESS );
@@ -2862,12 +2862,12 @@ IDE_RC sdm::getClone( smiStatement * aSmiStmt,
                                   (const smiColumn**)&sNodeIDColumn )
               != IDE_SUCCESS );
 
-    // mtdModule ¼³Á¤
+    // mtdModule ì„¤ì •
     IDE_TEST( mtd::moduleById( &(sShardIDColumn->module),
                                sShardIDColumn->type.dataTypeId )
               != IDE_SUCCESS );
 
-    // mtlModule ¼³Á¤
+    // mtlModule ì„¤ì •
     IDE_TEST( mtl::moduleById( &sShardIDColumn->language,
                                sShardIDColumn->type.languageId )
               != IDE_SUCCESS );
@@ -2915,7 +2915,7 @@ IDE_RC sdm::getClone( smiStatement * aSmiStmt,
         }
 
         aRangeInfo->mRanges[sCount].mNodeId = (UShort)sNodeID;
-        // Clone table ¿¡¼­ hash value´Â ÀÇ¹Ì ¾ø´Ù. max·Î ¼³Á¤
+        // Clone table ì—ì„œ hash valueëŠ” ì˜ë¯¸ ì—†ë‹¤. maxë¡œ ì„¤ì •
         aRangeInfo->mRanges[sCount].mValue.mHashMax = (UInt)SDI_RANGE_MAX_COUNT;
 
         sCount++;
@@ -2999,12 +2999,12 @@ IDE_RC sdm::getSolo( smiStatement * aSmiStmt,
                                   (const smiColumn**)&sNodeIDColumn )
               != IDE_SUCCESS );
 
-    // mtdModule ¼³Á¤
+    // mtdModule ì„¤ì •
     IDE_TEST( mtd::moduleById( &(sShardIDColumn->module),
                                sShardIDColumn->type.dataTypeId )
               != IDE_SUCCESS );
 
-    // mtlModule ¼³Á¤
+    // mtlModule ì„¤ì •
     IDE_TEST( mtl::moduleById( &sShardIDColumn->language,
                                sShardIDColumn->type.languageId )
               != IDE_SUCCESS );
@@ -3052,7 +3052,7 @@ IDE_RC sdm::getSolo( smiStatement * aSmiStmt,
         }
 
         aRangeInfo->mRanges[sCount].mNodeId = (UShort)sNodeID;
-        // Solo table ¿¡¼­ value´Â ÀÇ¹Ì ¾ø´Ù. max·Î ¼³Á¤
+        // Solo table ì—ì„œ valueëŠ” ì˜ë¯¸ ì—†ë‹¤. maxë¡œ ì„¤ì •
         aRangeInfo->mRanges[sCount].mValue.mHashMax = (UInt)SDI_RANGE_MAX_COUNT;
 
         sCount++;
@@ -3268,8 +3268,8 @@ IDE_RC sdm::shardRangeSort( sdiSplitMethod   aSplitMethod,
     /*
      * PROJ-2655 Composite shard key
      * 
-     * Index¿¡ ÀÇÇØ º¸Àå µÇÁö ¾Ê´Â
-     * Data type conversion( e.x. string to integer ) ÈÄ ÀÇ rangeInfoÀÇ rangeµéÀ» Á¤·ÄÇÑ´Ù.
+     * Indexì— ì˜í•´ ë³´ìž¥ ë˜ì§€ ì•ŠëŠ”
+     * Data type conversion( e.x. string to integer ) í›„ ì˜ rangeInfoì˜ rangeë“¤ì„ ì •ë ¬í•œë‹¤.
      *
      */
 
@@ -3361,13 +3361,13 @@ IDE_RC sdm::shardRangeSort( sdiSplitMethod   aSplitMethod,
                     }
                     else
                     {
-                        // Sub-shard key ±îÁö equal ÀÏ ¼ö ¾ø´Ù. ( unique index )
+                        // Sub-shard key ê¹Œì§€ equal ì¼ ìˆ˜ ì—†ë‹¤. ( unique index )
                         IDE_RAISE( ERR_DUPLICATED );
                     }
                 }
                 else
                 {
-                    // shard key°¡ equalÀÏ ¼ö ¾ø´Ù. ( unique index )
+                    // shard keyê°€ equalì¼ ìˆ˜ ì—†ë‹¤. ( unique index )
                     IDE_RAISE( ERR_DUPLICATED );
                 }
             }
@@ -3425,8 +3425,8 @@ IDE_RC sdm::shardEliminateDuplication( sdiTableInfo * aTableInfo,
     /*
      * PROJ-2655 Composite shard key
      *
-     * Value ¿¡ ´ëÇØ sort°¡ µÈ »óÅÂÀÇ range value¿¡ ´ëÇØ
-     * ÁßÃ¸ Á¤ÀÇ µÈ range value¸¦ ÇÕÃÄÁØ´Ù.
+     * Value ì— ëŒ€í•´ sortê°€ ëœ ìƒíƒœì˜ range valueì— ëŒ€í•´
+     * ì¤‘ì²© ì •ì˜ ëœ range valueë¥¼ í•©ì³ì¤€ë‹¤.
      *
      * e.x ) RANGE [100][200][300][400]
      *       NODE  [ A ][ B ][ B ][ C ]
@@ -3434,16 +3434,16 @@ IDE_RC sdm::shardEliminateDuplication( sdiTableInfo * aTableInfo,
      *   ->  RANGE [100][300][400]
      *       NODE  [ A ][ B ][ C ]
      *
-     * + ÇÕÄ¡´Â ±âÁØ +
+     * + í•©ì¹˜ëŠ” ê¸°ì¤€ +
      *
-     * sSplitCombination | split method  | sub split method | process ( Á¤·ÄµÇ¾î ÀÖ´Â »óÅÂ¿¡¼­~ )
+     * sSplitCombination | split method  | sub split method | process ( ì •ë ¬ë˜ì–´ ìžˆëŠ” ìƒíƒœì—ì„œ~ )
      *--------------------------------------------------------------------------------------------------------
-     *         1         | RANGE or HASH |        -         | ³ëµå°¡ °°À¸¸é ÇÕÄ¥ ¼ö ÀÖ´Ù.
-     *         2         | LIST          | RANGE or HASH    | Value°¡ °°À¸¸é¼­ ³ëµå°¡ °°À¸¸é ÇÕÄ¥ ¼ö ÀÖ´Ù.
-     *         3         | RANGE or HASH | RANGE or HASH    | Value°¡ °°À¸¸é¼­ ³ëµå°¡ °°À¸¸é ÇÕÄ¥ ¼ö ÀÖ´Ù.
+     *         1         | RANGE or HASH |        -         | ë…¸ë“œê°€ ê°™ìœ¼ë©´ í•©ì¹  ìˆ˜ ìžˆë‹¤.
+     *         2         | LIST          | RANGE or HASH    | Valueê°€ ê°™ìœ¼ë©´ì„œ ë…¸ë“œê°€ ê°™ìœ¼ë©´ í•©ì¹  ìˆ˜ ìžˆë‹¤.
+     *         3         | RANGE or HASH | RANGE or HASH    | Valueê°€ ê°™ìœ¼ë©´ì„œ ë…¸ë“œê°€ ê°™ìœ¼ë©´ í•©ì¹  ìˆ˜ ìžˆë‹¤.
      *--------------------------------------------------------------------------------------------------------
      *
-     * + ¸ñ·Ï¿¡ ¾ø´Â Á¶ÇÕÀº Áßº¹Á¦°Å ÇÏ¸é ¾ÈµÈ´Ù.
+     * + ëª©ë¡ì— ì—†ëŠ” ì¡°í•©ì€ ì¤‘ë³µì œê±° í•˜ë©´ ì•ˆëœë‹¤.
      *
      *    e.x. ) RANGE & LIST etc...
      *

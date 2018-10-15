@@ -19,14 +19,14 @@ package Altibase.jdbc.driver;
 import java.util.ArrayList;
 
 /**
- * {@link AltibaseFailoverServerInfo}¸¦ À§ÇÑ Å¬·¡½º.
+ * {@link AltibaseFailoverServerInfo}ë¥¼ ìœ„í•œ í´ë˜ìŠ¤.
  */
 final class AltibaseFailoverServerInfoList extends ArrayList<AltibaseFailoverServerInfo>
 {
     private static final long serialVersionUID = 8898419134711793282L;
 
     /**
-     * alternate servers string ÇüÅÂÀÇ ¹®ÀÚ¿­·Î º¯È¯ÇÑ´Ù.
+     * alternate servers string í˜•íƒœì˜ ë¬¸ìì—´ë¡œ ë³€í™˜í•œë‹¤.
      */
     @Override
     public String toString()

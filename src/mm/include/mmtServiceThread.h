@@ -36,8 +36,8 @@ class mmtServiceThread : public idtBaseThread
 {    
 private:
     //PROJ-1677 DEQUEUE
-    // shared, dedicated mode service threadÀÇ
-    // multiplexing function pointerÀ» ´ÙÀ½°ú °°ÀÌ Á¤ÀÇÇÑ´Ù.
+    // shared, dedicated mode service threadì˜
+    // multiplexing function pointerì„ ë‹¤ìŒê³¼ ê°™ì´ ì •ì˜í•œë‹¤.
     typedef void (mmtServiceThread::*multiPlexingFunc)();
     mmtServiceThreadInfo              mInfo;
 
@@ -92,8 +92,8 @@ public:
     idBool checkBusy();
     void   addTask(mmcTask *aTask);
     /* TASK-4324  Applying lessons learned from CPBS-CAESE to altibase
-       load balance ÀÌ·ÂÀ» ÆÄ ¾ÇÇÏ±â À§ÇÏ¿© function
-       signature¸¦ º¯°æÇÕ´Ï´Ù.
+       load balance ì´ë ¥ì„ íŒŒ ì•…í•˜ê¸° ìœ„í•˜ì—¬ function
+       signatureë¥¼ ë³€ê²½í•©ë‹ˆë‹¤.
      */
     void   addTasks(iduList *aTaskList,UInt aTaskCnt);
     void   removeAllTasks(iduList *aTaskList, mmtServiceThreadLock aLock);
@@ -124,11 +124,11 @@ private:
 
     void   removeTask(iduList *aTaskList, mmcTask *aTask, idBool aRemoveFlag);
 
-    //PROJ-1677  shared-modeÀ¸·Î ¿î¿µµÇ´Â service thread´Â
-    //polling timeoutÀÌ ÀÇ¹Ì°¡ ÀÖ¾î¼­
-    //mPollTimeout  pointer°¡ ÀÎÀÚ·Î ³Ñ¾î¿Â´Ù.
-    //±×·¯³ª  dedicated modeÀ¸·Î ¿î¿µµÇ´Â  service thread´Â pollingÀ» ÇÏÁö ¾Ê°í
-    //¹«ÇÑ´ë±â¸¦ ÇÏ±â À§ÇÏ¿© NULLÀÌ ÀÎÀÚ·Î ³Ñ¾î¿Â´Ù.
+    //PROJ-1677  shared-modeìœ¼ë¡œ ìš´ì˜ë˜ëŠ” service threadëŠ”
+    //polling timeoutì´ ì˜ë¯¸ê°€ ìˆì–´ì„œ
+    //mPollTimeout  pointerê°€ ì¸ìë¡œ ë„˜ì–´ì˜¨ë‹¤.
+    //ê·¸ëŸ¬ë‚˜  dedicated modeìœ¼ë¡œ ìš´ì˜ë˜ëŠ”  service threadëŠ” pollingì„ í•˜ì§€ ì•Šê³ 
+    //ë¬´í•œëŒ€ê¸°ë¥¼ í•˜ê¸° ìœ„í•˜ì—¬ NULLì´ ì¸ìë¡œ ë„˜ì–´ì˜¨ë‹¤.
     void   findReadyTask(PDL_Time_Value* aPollTimeout);
     void   multiplexingAsShared();
     /* PROJ-2108 Dedicated thread mode which uses less CPU */
@@ -237,7 +237,7 @@ public:
     UInt                   getTaskCount();
     UInt                   getReadyTaskCount();
     /* TASK-4324  Applying lessons learned from CPBS-CAESE to altibase
-       load balance ÀÌ·ÂÀ» ÆÄ ¾ÇÇÏ±â À§ÇÏ¿© functionÀ» Ãß°¡ÇÕ´Ï´Ù.
+       load balance ì´ë ¥ì„ íŒŒ ì•…í•˜ê¸° ìœ„í•˜ì—¬ functionì„ ì¶”ê°€í•©ë‹ˆë‹¤.
      */
 
     void                   increaseInTaskCount(mmtServiceThreadRunStatus  aRunStatus,
@@ -557,15 +557,15 @@ inline void mmtServiceThread::setStatement(mmcStatement *aStatement)
     mInfo.mStmtID = (aStatement != NULL) ? aStatement->getStmtID() : 0;
 }
 
-//PROJ-1677 ÇöÀç ¼­ºñ½º ¾²·¹µå°¡ shared mode ¶Ç´Â dedicated modeÀ¸·Î runningµÇ°í ÀÖ´ÂÁö ¿©ºÎ¸¦
-//return ÇÑ´Ù.
+//PROJ-1677 í˜„ì¬ ì„œë¹„ìŠ¤ ì“°ë ˆë“œê°€ shared mode ë˜ëŠ” dedicated modeìœ¼ë¡œ runningë˜ê³  ìˆëŠ”ì§€ ì—¬ë¶€ë¥¼
+//return í•œë‹¤.
 inline idBool mmtServiceThread::isRunModeShared()
 {
     return (mMultiPlexingFunc == &mmtServiceThread::multiplexingAsShared) ? ID_TRUE:ID_FALSE;
 }
 
-// PROJ-1677 »õ·Î »ı¼ºÇÑ target service thread¿¡°Ô task list¸¦
-// ¾çµµ ÇÑ´Ù.
+// PROJ-1677 ìƒˆë¡œ ìƒì„±í•œ target service threadì—ê²Œ task listë¥¼
+// ì–‘ë„ í•œë‹¤.
 inline void  mmtServiceThread::moveTaskLists(mmtServiceThread* aTargetServiceThr)
 {
     iduList           sTaskList;
@@ -631,7 +631,7 @@ inline ULong mmtServiceThread::getBusyDegree(idBool aIncludeToCurrentBusy)
 
     if(aIncludeToCurrentBusy == ID_TRUE)
     {
-        // ÇöÀç busyÀÌ¸é SERVICE_THREAD_INITIAL_LIFESPAN°³ÀÇ task°¡ ÀÖ´Â°ÍÀ¸·Î °£ÁÖÇÑ´Ù.
+        // í˜„ì¬ busyì´ë©´ SERVICE_THREAD_INITIAL_LIFESPANê°œì˜ taskê°€ ìˆëŠ”ê²ƒìœ¼ë¡œ ê°„ì£¼í•œë‹¤.
         sBusyDegree += ((mLoopCounter ==  mLoopCheck ) ? mmuProperty::getBusyServiceThrPenalty() : 0 );
     }
     return sBusyDegree;

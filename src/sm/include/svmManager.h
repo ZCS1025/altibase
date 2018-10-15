@@ -25,34 +25,34 @@
 #include <sctTableSpaceMgr.h>
 #include <smu.h>
 
-// svmManager¸¦ ÃÊ±âÈ­ ÇÏ´Â ¸ğµå
+// svmManagerë¥¼ ì´ˆê¸°í™” í•˜ëŠ” ëª¨ë“œ
 typedef enum
 {
-    // ÀÏ¹İ STARTUP - µğ½ºÅ©»ó¿¡ µ¥ÀÌÅÍº£ÀÌ½º ÆÄÀÏ Á¸Àç
+    // ì¼ë°˜ STARTUP - ë””ìŠ¤í¬ìƒì— ë°ì´í„°ë² ì´ìŠ¤ íŒŒì¼ ì¡´ì¬
     SVM_MGR_INIT_MODE_NORMAL_STARTUP = 1,
-    // CREATEDBµµÁß - ¾ÆÁ÷ µğ½ºÅ©»ó¿¡ µ¥ÀÌÅÍº£ÀÌ½º ÆÄÀÏÀÌ Á¸ÀçÇÏÁö ¾ÊÀ½
+    // CREATEDBë„ì¤‘ - ì•„ì§ ë””ìŠ¤í¬ìƒì— ë°ì´í„°ë² ì´ìŠ¤ íŒŒì¼ì´ ì¡´ì¬í•˜ì§€ ì•ŠìŒ
     SVM_MGR_INIT_MODE_CREATEDB = 2
 } svmMgrInitMode ;
 
-// fillPCHEntry ÇÔ¼ö¿¡¼­ ÆäÀÌÁö ¸Ş¸ğ¸®ÀÇ º¹»ç¿©ºÎ¸¦ °áÁ¤
+// fillPCHEntry í•¨ìˆ˜ì—ì„œ í˜ì´ì§€ ë©”ëª¨ë¦¬ì˜ ë³µì‚¬ì—¬ë¶€ë¥¼ ê²°ì •
 typedef enum svmFillPCHOption {
     SVM_FILL_PCH_OP_NONE = 0 ,
-    /** ÆäÀÌÁö ¸Ş¸ğ¸®ÀÇ ³»¿ëÀ» PCH ¾ÈÀÇ Page¿¡ º¹»çÇÑ´Ù */
+    /** í˜ì´ì§€ ë©”ëª¨ë¦¬ì˜ ë‚´ìš©ì„ PCH ì•ˆì˜ Pageì— ë³µì‚¬í•œë‹¤ */
     SVM_FILL_PCH_OP_COPY_PAGE = 1,
-    /** ÆäÀÌÁö ¸Ş¸ğ¸®ÀÇ Æ÷ÀÎÅÍ¸¦ PCH ¾ÈÀÇ Page¿¡ ¼¼ÆÃÇÑ´Ù */
+    /** í˜ì´ì§€ ë©”ëª¨ë¦¬ì˜ í¬ì¸í„°ë¥¼ PCH ì•ˆì˜ Pageì— ì„¸íŒ…í•œë‹¤ */
     SVM_FILL_PCH_OP_SET_PAGE = 2
 } svmFillPCHOption ;
 
 
-// allocNewExpandChunk ÇÔ¼öÀÇ ¿É¼Ç
+// allocNewExpandChunk í•¨ìˆ˜ì˜ ì˜µì…˜
 typedef enum svmAllocChunkOption 
 {
-    SVM_ALLOC_CHUNK_OP_NONE = 0,              // ¿É¼Ç¾øÀ½
-    SVM_ALLOC_CHUNK_OP_CREATEDB         = 1   // createdb µµÁßÀÓÀ» ¾Ë¸²
+    SVM_ALLOC_CHUNK_OP_NONE = 0,              // ì˜µì…˜ì—†ìŒ
+    SVM_ALLOC_CHUNK_OP_CREATEDB         = 1   // createdb ë„ì¤‘ì„ì„ ì•Œë¦¼
 } svmAllocChunkOption ;
 
 /*********************************************************************
-  ¸Ş¸ğ¸® µ¥ÀÌÅÍº£ÀÌ½ºÀÇ ÆäÀÌÁö »ç¿ë
+  ë©”ëª¨ë¦¬ ë°ì´í„°ë² ì´ìŠ¤ì˜ í˜ì´ì§€ ì‚¬ìš©
  *********************************************************************   
   --------------------------------------------------
    Page#1  ~ Page#10  Expand Chunk #0
@@ -64,18 +64,18 @@ typedef enum svmAllocChunkOption
 class svmManager
 {
 private:
-    // °¢ µ¥ÀÌÅÍº£ÀÌ½º PageÀÇ non-durableÇÑ µ¥ÀÌÅÍ¸¦ Áö´Ï´Â PCH ¹è¿­
+    // ê° ë°ì´í„°ë² ì´ìŠ¤ Pageì˜ non-durableí•œ ë°ì´í„°ë¥¼ ì§€ë‹ˆëŠ” PCH ë°°ì—´
     static svmPCH            **mPCHArray[SC_MAX_SPACE_COUNT];
 
 private :
-    // ÀÏ¹İ ¸Ş¸ğ¸® Page PoolÀ» ÃÊ±âÈ­ÇÑ´Ù.
+    // ì¼ë°˜ ë©”ëª¨ë¦¬ Page Poolì„ ì´ˆê¸°í™”í•œë‹¤.
     static IDE_RC initializeDynMemPool(svmTBSNode * aTBSNode);
     
-    // Tablespace¿¡ ÇÒ´çµÈ Page PoolÀ» ÆÄ±«ÇÑ´Ù.
+    // Tablespaceì— í• ë‹¹ëœ Page Poolì„ íŒŒê´´í•œë‹¤.
     static IDE_RC destroyPagePool( svmTBSNode * aTBSNode );
 
-    // »õ·Î ÇÒ´çµÈ Expand Chunk¾È¿¡ ¼ÓÇÏ´Â PageµéÀÇ PCH Entry¸¦ ÇÒ´çÇÑ´Ù.
-    // Chunk¾ÈÀÇ Free List Info PageÀÇ Page Memoryµµ ÇÒ´çÇÑ´Ù.
+    // ìƒˆë¡œ í• ë‹¹ëœ Expand Chunkì•ˆì— ì†í•˜ëŠ” Pageë“¤ì˜ PCH Entryë¥¼ í• ë‹¹í•œë‹¤.
+    // Chunkì•ˆì˜ Free List Info Pageì˜ Page Memoryë„ í• ë‹¹í•œë‹¤.
     static IDE_RC fillPCHEntry4AllocChunk(svmTBSNode * aTBSNode,
                                           scPageID     aNewChunkFirstPID,
                                           scPageID     aNewChunkLastPID );
@@ -83,56 +83,56 @@ private :
     static void dump(FILE     *a_fp,
                      scPageID  a_no);
 
-    // Prepare-> RestoreÀÇ °úÁ¤¿¡¼­ PrepareÁß¿¡¸¸ ¾²ÀÌ´Â
-    // ÀÓ½Ã Page Memory¸¦ °ü¸®ÇÏ´Â Memory Pool 
+    // Prepare-> Restoreì˜ ê³¼ì •ì—ì„œ Prepareì¤‘ì—ë§Œ ì“°ì´ëŠ”
+    // ì„ì‹œ Page Memoryë¥¼ ê´€ë¦¬í•˜ëŠ” Memory Pool 
     static SChar * mPageBuffer4PrepareTBS; 
     static UInt  mPageBuffer4PrepareTBSSize;
 
-    // Æ¯Á¤ PageÀÇ PCH¾ÈÀÇ Page Memory¸¦ ÇÒ´çÇÑ´Ù.
+    // íŠ¹ì • Pageì˜ PCHì•ˆì˜ Page Memoryë¥¼ í• ë‹¹í•œë‹¤.
     static IDE_RC allocPageMemory( svmTBSNode * aTBSNode,
                                    scPageID     aPID );
 
-    // ÆäÀÌÁö ¸Ş¸ğ¸®¸¦ ÇÒ´çÇÏ°í, ÇØ´ç Page¸¦ ÃÊ±âÈ­ÇÑ´Ù.
-    // ÇÊ¿äÇÑ °æ¿ì, ÆäÀÌÁö ÃÊ±âÈ­¿¡ ´ëÇÑ ·Î±ëÀ» ½Ç½ÃÇÑ´Ù
+    // í˜ì´ì§€ ë©”ëª¨ë¦¬ë¥¼ í• ë‹¹í•˜ê³ , í•´ë‹¹ Pageë¥¼ ì´ˆê¸°í™”í•œë‹¤.
+    // í•„ìš”í•œ ê²½ìš°, í˜ì´ì§€ ì´ˆê¸°í™”ì— ëŒ€í•œ ë¡œê¹…ì„ ì‹¤ì‹œí•œë‹¤
     static IDE_RC allocAndLinkPageMemory( svmTBSNode * aTBSNode,
                                           scPageID     aPID,
                                           scPageID     aPrevPID,
                                           scPageID     aNextPID );
     
-    // Æ¯Á¤ PageÀÇ PCH¾ÈÀÇ Page Memory¸¦ ÇØÁ¦ÇÑ´Ù.
+    // íŠ¹ì • Pageì˜ PCHì•ˆì˜ Page Memoryë¥¼ í•´ì œí•œë‹¤.
     static IDE_RC freePageMemory( svmTBSNode * aTBSNode, scPageID aPID );
 
 
-    // FLI Page¿¡ Next Free Page ID·Î ¸µÅ©µÈ ÆäÀÌÁöµé¿¡ ´ëÇØ
-    // PCH¾ÈÀÇ Page ¸Ş¸ğ¸®¸¦ ÇÒ´çÇÏ°í Page HeaderÀÇ Prev/NextÆ÷ÀÎÅÍ¸¦ ¿¬°áÇÑ´Ù.
+    // FLI Pageì— Next Free Page IDë¡œ ë§í¬ëœ í˜ì´ì§€ë“¤ì— ëŒ€í•´
+    // PCHì•ˆì˜ Page ë©”ëª¨ë¦¬ë¥¼ í• ë‹¹í•˜ê³  Page Headerì˜ Prev/Nextí¬ì¸í„°ë¥¼ ì—°ê²°í•œë‹¤.
     static IDE_RC allocFreePageMemoryList( svmTBSNode * aTBSNode,
                                            scPageID     aHeadPID,
                                            scPageID     aTailPID,
                                            vULong     * aPageCount );
 
-    // PCHÀÇ Page¼ÓÀÇ Page HeaderÀÇ Prev/NextÆ÷ÀÎÅÍ¸¦ ±â¹İÀ¸·Î
-    // FLI Page¿¡ Next Free Page ID¸¦ ¼³Á¤ÇÑ´Ù.
+    // PCHì˜ Pageì†ì˜ Page Headerì˜ Prev/Nextí¬ì¸í„°ë¥¼ ê¸°ë°˜ìœ¼ë¡œ
+    // FLI Pageì— Next Free Page IDë¥¼ ì„¤ì •í•œë‹¤.
     static IDE_RC linkFreePageList( svmTBSNode * aTBSNode,
                                     void       * aHeadPage,
                                     void       * aTailPage,
                                     vULong     * aPageCount );
     
     /*
-     * PageÀÇ PCH(Page Control Header)Á¤º¸¸¦ ±¸¼ºÇÑ´Ù.
+     * Pageì˜ PCH(Page Control Header)ì •ë³´ë¥¼ êµ¬ì„±í•œë‹¤.
      */
-    // PCH ÇÒ´ç¹× ÃÊ±âÈ­
+    // PCH í• ë‹¹ë° ì´ˆê¸°í™”
     static IDE_RC allocPCHEntry(svmTBSNode *  aTBSNode,
                                 scPageID      a_pid);
 
-    // PCH ÇØÁ¦
+    // PCH í•´ì œ
     static IDE_RC freePCHEntry(svmTBSNode *  aTBSNode,
                                scPageID     a_pid);
 
-    // ¸ğµç PCH ¸Ş¸ğ¸®¸¦ ÇØÁ¦ÇÑ´Ù.
+    // ëª¨ë“  PCH ë©”ëª¨ë¦¬ë¥¼ í•´ì œí•œë‹¤.
     static IDE_RC freeAll(svmTBSNode * aTBSNode);
 
-    // µ¥ÀÌÅÍ º£ÀÌ½ºÀÇ Base Page (Page#0) ¿Í °ü·ÃÇÑ Á¤º¸¸¦ ¼³Á¤ÇÑ´Ù.
-    // ÀÌ¿Í °ü·ÃµÈ Á¤º¸·Î´Â  MemBase¿Í Catalog TableÁ¤º¸°¡ ÀÖ´Ù.
+    // ë°ì´í„° ë² ì´ìŠ¤ì˜ Base Page (Page#0) ì™€ ê´€ë ¨í•œ ì •ë³´ë¥¼ ì„¤ì •í•œë‹¤.
+    // ì´ì™€ ê´€ë ¨ëœ ì •ë³´ë¡œëŠ”  MemBaseì™€ Catalog Tableì •ë³´ê°€ ìˆë‹¤.
     static IDE_RC setupBasePageInfo( svmTBSNode * aTBSNode, UChar *aBasePage );
     
     static IDE_RC freeFreePageMemoryList( svmTBSNode * aTBSNode,
@@ -150,26 +150,26 @@ public:
      * Class Control
      * -------------------*/
     svmManager();
-    // svmManager¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+    // svmManagerë¥¼ ì´ˆê¸°í™”í•œë‹¤.
     static IDE_RC initializeStatic();
     static IDE_RC destroyStatic();
 
-    // TBSNode¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+    // TBSNodeë¥¼ ì´ˆê¸°í™”í•œë‹¤.
     static IDE_RC allocTBSNode(svmTBSNode        **aTBSNode,
                                smiTableSpaceAttr  *aTBSAttr);
 
-    // TBSNode¸¦ ÇØÁ¦ÇÑ´Ù.
+    // TBSNodeë¥¼ í•´ì œí•œë‹¤.
     static IDE_RC destroyTBSNode(svmTBSNode *aTBSNode);
 
-    // Volatile TBS¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+    // Volatile TBSë¥¼ ì´ˆê¸°í™”í•œë‹¤.
     static IDE_RC initTBS(svmTBSNode *aTBSNode);
 
-    // Volatile TBS¸¦ ÇØÁ¦ÇÑ´Ù.
+    // Volatile TBSë¥¼ í•´ì œí•œë‹¤.
     static IDE_RC finiTBS(svmTBSNode *aTBSNode);
 
-    // Base Page ( 0¹ø Page ) ¿¡ Latch¸¦ °Ç´Ù
+    // Base Page ( 0ë²ˆ Page ) ì— Latchë¥¼ ê±´ë‹¤
     static IDE_RC lockBasePage(svmTBSNode * aTBSNode);
-    // Base Page ( 0¹ø Page ) ¿¡¼­ Latch¸¦ Ç¬´Ù.
+    // Base Page ( 0ë²ˆ Page ) ì—ì„œ Latchë¥¼ í‘¼ë‹¤.
     static IDE_RC unlockBasePage(svmTBSNode * aTBSNode);
 
     /* -----------------------
@@ -177,40 +177,40 @@ public:
      * manipulations
      * ----------------------*/
     
-    // ¿©·¯°³ÀÇ Expand Chunk¸¦ Ãß°¡ÇÏ¿© µ¥ÀÌÅÍº£ÀÌ½º¸¦ È®ÀåÇÑ´Ù.
+    // ì—¬ëŸ¬ê°œì˜ Expand Chunkë¥¼ ì¶”ê°€í•˜ì—¬ ë°ì´í„°ë² ì´ìŠ¤ë¥¼ í™•ì¥í•œë‹¤.
     static IDE_RC allocNewExpandChunks( svmTBSNode *  aTBSNode,
                                         UInt          aExpandChunkCount );
 
     
-    // Æ¯Á¤ ÆäÀÌÁö ¹üÀ§¸¸Å­ µ¥ÀÌÅÍº£ÀÌ½º¸¦ È®ÀåÇÑ´Ù.
+    // íŠ¹ì • í˜ì´ì§€ ë²”ìœ„ë§Œí¼ ë°ì´í„°ë² ì´ìŠ¤ë¥¼ í™•ì¥í•œë‹¤.
     static IDE_RC allocNewExpandChunk( svmTBSNode *  aTBSNode,
                                        scPageID      aNewChunkFirstPID,
                                        scPageID      aNewChunkLastPID);
 
     
-    // DB·ÎºÎÅÍ ÇÏ³ªÀÇ Page¸¦ ÇÒ´ç¹Ş´Â´Ù.
+    // DBë¡œë¶€í„° í•˜ë‚˜ì˜ Pageë¥¼ í• ë‹¹ë°›ëŠ”ë‹¤.
     static IDE_RC allocatePersPage (void       *  aTrans,
                                     scSpaceID     aSpaceID,
                                     void      **  aAllocatedPage);
     
     
-    // DB·ÎºÎÅÍ Page¸¦ ¿©·¯°³ ÇÒ´ç¹Ş¾Æ Æ®·£Àè¼Ç¿¡°Ô Free Page¸¦ Á¦°øÇÑ´Ù.
-    // aHeadPageºÎÅÍ aTailPage±îÁö
-    // Page HeaderÀÇ Prev/NextÆ÷ÀÎÅÍ·Î ¿¬°áÇØÁØ´Ù.
+    // DBë¡œë¶€í„° Pageë¥¼ ì—¬ëŸ¬ê°œ í• ë‹¹ë°›ì•„ íŠ¸ëœì­ì…˜ì—ê²Œ Free Pageë¥¼ ì œê³µí•œë‹¤.
+    // aHeadPageë¶€í„° aTailPageê¹Œì§€
+    // Page Headerì˜ Prev/Nextí¬ì¸í„°ë¡œ ì—°ê²°í•´ì¤€ë‹¤.
     static IDE_RC allocatePersPageList (void        *aTrans,
                                         scSpaceID    aSpaceID,
                                         UInt         aPageCount,
                                         void       **aHeadPage,
                                         void       **aTailPage);
 
-    // ÇÏ³ªÀÇ Page¸¦ µ¥ÀÌÅÍº£ÀÌ½º·Î ¹İ³³ÇÑ´Ù
+    // í•˜ë‚˜ì˜ Pageë¥¼ ë°ì´í„°ë² ì´ìŠ¤ë¡œ ë°˜ë‚©í•œë‹¤
     static IDE_RC freePersPage (void     *   aTrans,
                                 scSpaceID    aSpaceID,
                                 void     *   aToBeFreePage );
 
-    // ¿©·¯°³ÀÇ Page¸¦ ÇÑ²¨¹ø¿¡ µ¥ÀÌÅÍº£ÀÌ½º·Î ¹İ³³ÇÑ´Ù.
-    // aHeadPageºÎÅÍ aTailPage±îÁö
-    // Page HeaderÀÇ Prev/NextÆ÷ÀÎÅÍ·Î ¿¬°áµÇ¾î ÀÖ¾î¾ß ÇÑ´Ù.
+    // ì—¬ëŸ¬ê°œì˜ Pageë¥¼ í•œêº¼ë²ˆì— ë°ì´í„°ë² ì´ìŠ¤ë¡œ ë°˜ë‚©í•œë‹¤.
+    // aHeadPageë¶€í„° aTailPageê¹Œì§€
+    // Page Headerì˜ Prev/Nextí¬ì¸í„°ë¡œ ì—°ê²°ë˜ì–´ ìˆì–´ì•¼ í•œë‹¤.
     static IDE_RC freePersPageList (void        *aTrans,
                                     scSpaceID    aSpaceID,
                                     void        *aHeadPage,
@@ -221,19 +221,19 @@ public:
      *     the memory manager
      *     informations
      * ----------------------*/
-    // Æ¯Á¤ PageÀÇ PCH¸¦ °¡Á®¿Â´Ù.
+    // íŠ¹ì • Pageì˜ PCHë¥¼ ê°€ì ¸ì˜¨ë‹¤.
     static svmPCH          * getPCH(scSpaceID aSpaceID, scPageID aPID );
 
-    // OID¸¦ ¸Ş¸ğ¸® ÁÖ¼Ò°ªÀ¸·Î º¯È¯ÇÑ´Ù.
+    // OIDë¥¼ ë©”ëª¨ë¦¬ ì£¼ì†Œê°’ìœ¼ë¡œ ë³€í™˜í•œë‹¤.
     static IDE_RC getOIDPtr(scSpaceID aSpaceID, smOID aOID, void ** aPtr);
 
-    // Æ¯Á¤ Page¿¡ S·¡Ä¡¸¦ È¹µæÇÑ´Ù. ( ÇöÀç´Â X·¡Ä¡·Î ±¸ÇöµÇ¾î ÀÖ´Ù )
+    // íŠ¹ì • Pageì— Së˜ì¹˜ë¥¼ íšë“í•œë‹¤. ( í˜„ì¬ëŠ” Xë˜ì¹˜ë¡œ êµ¬í˜„ë˜ì–´ ìˆë‹¤ )
     static IDE_RC            holdPageSLatch(scSpaceID aSpaceID,
                                             scPageID  aPageID);
-    // Æ¯Á¤ Page¿¡ X·¡Ä¡¸¦ È¹µæÇÑ´Ù. 
+    // íŠ¹ì • Pageì— Xë˜ì¹˜ë¥¼ íšë“í•œë‹¤. 
     static IDE_RC            holdPageXLatch(scSpaceID aSpaceID,
                                             scPageID  aPageID);
-    // Æ¯Á¤ Page¿¡¼­ ·¡Ä¡¸¦ Ç®¾îÁØ´Ù.
+    // íŠ¹ì • Pageì—ì„œ ë˜ì¹˜ë¥¼ í’€ì–´ì¤€ë‹¤.
     static IDE_RC            releasePageLatch(scSpaceID aSpaceID,
                                               scPageID  aPageID);
 
@@ -266,27 +266,27 @@ public:
         *aAttrFlagPtr = &aTBSNode->mTBSAttr.mAttrFlag;
     }
     
-    // µ¥ÀÌÅÍº£ÀÌ½º Å©±â¸¦ ÀÌ¿ëÇÏ¿© µ¥ÀÌÅÍº£ÀÌ½º Page¼ö¸¦ ±¸ÇÑ´Ù.
+    // ë°ì´í„°ë² ì´ìŠ¤ í¬ê¸°ë¥¼ ì´ìš©í•˜ì—¬ ë°ì´í„°ë² ì´ìŠ¤ Pageìˆ˜ë¥¼ êµ¬í•œë‹¤.
     static ULong calculateDbPageCount( ULong aDbSize, ULong aChunkPageCount );
 
-    // ÇÏ³ªÀÇ PageÀÇ µ¥ÀÌÅÍ°¡ ÀúÀåµÇ´Â ¸Ş¸ğ¸® °ø°£À» PCH Entry¿¡¼­ °¡Á®¿Â´Ù.
+    // í•˜ë‚˜ì˜ Pageì˜ ë°ì´í„°ê°€ ì €ì¥ë˜ëŠ” ë©”ëª¨ë¦¬ ê³µê°„ì„ PCH Entryì—ì„œ ê°€ì ¸ì˜¨ë‹¤.
     static IDE_RC getPersPagePtr(scSpaceID    aSpaceID, 
                                  scPageID     aPID, 
                                  void      ** aPagePtr);
 
-    // Space ID°¡ ValidÇÑ °ªÀÎÁö Ã¼Å©ÇÑ´Ù.
+    // Space IDê°€ Validí•œ ê°’ì¸ì§€ ì²´í¬í•œë‹¤.
     static idBool isValidSpaceID( scSpaceID aSpaceID );
 
-    // Page ID°¡ ValidÇÑ °ªÀÎÁö Ã¼Å©ÇÑ´Ù.
+    // Page IDê°€ Validí•œ ê°’ì¸ì§€ ì²´í¬í•œë‹¤.
     static idBool isValidPageID( scSpaceID aSpaceID, scPageID aPageID );
 
     /***********************************************************
-     * svmTableSpace ¿¡¼­ È£ÃâÇÏ´Â ÇÔ¼öµé
+     * svmTableSpace ì—ì„œ í˜¸ì¶œí•˜ëŠ” í•¨ìˆ˜ë“¤
      ***********************************************************/
-    // Tablespace¿¡¼­ »ç¿ëÇÒ Page ¸Ş¸ğ¸® Ç®À» ÃÊ±âÈ­ÇÑ´Ù.
+    // Tablespaceì—ì„œ ì‚¬ìš©í•  Page ë©”ëª¨ë¦¬ í’€ì„ ì´ˆê¸°í™”í•œë‹¤.
     static IDE_RC initializePagePool( svmTBSNode * aTBSNode );
 
-    // TablespaceÀÇ Meta Page¸¦ ÃÊ±âÈ­ÇÏ°í Free PageµéÀ» »ı¼ºÇÑ´Ù.
+    // Tablespaceì˜ Meta Pageë¥¼ ì´ˆê¸°í™”í•˜ê³  Free Pageë“¤ì„ ìƒì„±í•œë‹¤.
     static IDE_RC createTBSPages( svmTBSNode      * aTBSNode,
                                   SChar           * aDBName,
                                   scPageID          aCreatePageCount);
@@ -294,9 +294,9 @@ public:
 };
 
 /*
- * Æ¯Á¤ PageÀÇ PCH¸¦ °¡Á®¿Â´Ù
+ * íŠ¹ì • Pageì˜ PCHë¥¼ ê°€ì ¸ì˜¨ë‹¤
  *
- * aPID [IN] PCH¸¦ °¡Á®¿Ã ÆäÀÌÁöÀÇ ID
+ * aPID [IN] PCHë¥¼ ê°€ì ¸ì˜¬ í˜ì´ì§€ì˜ ID
  */
 inline svmPCH *
 svmManager::getPCH(scSpaceID aSpaceID, scPageID aPID )
@@ -308,11 +308,11 @@ svmManager::getPCH(scSpaceID aSpaceID, scPageID aPID )
 }
 
 /*
- * OID¸¦ ¸Ş¸ğ¸® ÁÖ¼Ò°ªÀ¸·Î º¯È¯ÇÑ´Ù.
+ * OIDë¥¼ ë©”ëª¨ë¦¬ ì£¼ì†Œê°’ìœ¼ë¡œ ë³€í™˜í•œë‹¤.
  *
  * aSpaceID - [IN]  TablespaceID
- * aOID     - [IN]  ¸Ş¸ğ¸® ÁÖ¼Ò°ªÀ¸·Î º¯È¯ÇÒ Object ID
- * aPtr     - [OUT] °á°úÀÎ Object ÁÖ¼Ò°ª
+ * aOID     - [IN]  ë©”ëª¨ë¦¬ ì£¼ì†Œê°’ìœ¼ë¡œ ë³€í™˜í•  Object ID
+ * aPtr     - [OUT] ê²°ê³¼ì¸ Object ì£¼ì†Œê°’
  */
 inline IDE_RC svmManager::getOIDPtr(scSpaceID aSpaceID, smOID aOID, void ** aPtr )
 {
@@ -334,9 +334,9 @@ inline IDE_RC svmManager::getOIDPtr(scSpaceID aSpaceID, smOID aOID, void ** aPtr
 }
 
 #if 0
-/* TRUE¸¸ ¸®ÅÏÇÏ°í ÀÖ¾î¼­ ÇÔ¼ö»èÁ¦ÇÔ. */
+/* TRUEë§Œ ë¦¬í„´í•˜ê³  ìˆì–´ì„œ í•¨ìˆ˜ì‚­ì œí•¨. */
 
-// Page ¼ö°¡ ValidÇÑ °ªÀÎÁö Ã¼Å©ÇÑ´Ù.
+// Page ìˆ˜ê°€ Validí•œ ê°’ì¸ì§€ ì²´í¬í•œë‹¤.
 inline idBool
 svmManager::isValidPageCount( svmTBSNode * /* aTBSNode*/,
                               vULong       /*aPageCount*/ )
@@ -350,14 +350,14 @@ svmManager::isValidPageCount( svmTBSNode * /* aTBSNode*/,
 }
 #endif
 
-// Page ID°¡ ValidÇÑ °ªÀÎÁö Ã¼Å©ÇÑ´Ù.
+// Page IDê°€ Validí•œ ê°’ì¸ì§€ ì²´í¬í•œë‹¤.
 inline idBool
 svmManager::isValidSpaceID( scSpaceID aSpaceID )
 {
     return (mPCHArray[aSpaceID] == NULL) ? ID_FALSE : ID_TRUE;
 }
 
-// Page ID°¡ ValidÇÑ °ªÀÎÁö Ã¼Å©ÇÑ´Ù.
+// Page IDê°€ Validí•œ ê°’ì¸ì§€ ì²´í¬í•œë‹¤.
 inline idBool
 svmManager::isValidPageID( scSpaceID aSpaceID ,
                            scPageID aPageID )

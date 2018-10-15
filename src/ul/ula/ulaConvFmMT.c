@@ -36,25 +36,25 @@
 
 /*
  * -----------------------------------------------------------------------------
- *  ALA_GetODBCCValue() ÇÔ¼ö´Â
- *      ALA_Value ¸¦ ÀÔ·ÂÀ¸·Î ¹Þ¾Æ¼­ »ç¿ëÀÚ°¡ aODBCCTypeID ¿¡ ÁöÁ¤ÇÑ Å¸ÀÔÀ¸·Î
- *      Å¸ÀÔÀ» º¯È¯ÇÑ ÈÄ ±× °á°ú µ¥ÀÌÅÍ¸¦
- *      aOutODBCCValueBuffer °¡ °¡¸®Å°´Â ¹öÆÛ¿¡ ´ã¾Æ ÁÖ´Â ÇÔ¼öÀÌ´Ù.
+ *  ALA_GetODBCCValue() í•¨ìˆ˜ëŠ”
+ *      ALA_Value ë¥¼ ìž…ë ¥ìœ¼ë¡œ ë°›ì•„ì„œ ì‚¬ìš©ìžê°€ aODBCCTypeID ì— ì§€ì •í•œ íƒ€ìž…ìœ¼ë¡œ
+ *      íƒ€ìž…ì„ ë³€í™˜í•œ í›„ ê·¸ ê²°ê³¼ ë°ì´í„°ë¥¼
+ *      aOutODBCCValueBuffer ê°€ ê°€ë¦¬í‚¤ëŠ” ë²„í¼ì— ë‹´ì•„ ì£¼ëŠ” í•¨ìˆ˜ì´ë‹¤.
  *
- *      ÀÌ ¶§, Å¸ÀÔÀÇ º¯È¯Àº
+ *      ì´ ë•Œ, íƒ€ìž…ì˜ ë³€í™˜ì€
  *
  *      mt --> cmt --> ulnColumn --> odbc
  *
- *      ÀÇ ¼ø¼­·Î ÀÌ·ç¾îÁø´Ù.
+ *      ì˜ ìˆœì„œë¡œ ì´ë£¨ì–´ì§„ë‹¤.
  *
- *      ±× Áß ul ÂÊÀÇ º¯È¯Àº uln ÀÇ ÇÔ¼öµéÀ» ÀÌ¿ëÇØ¼­ ÇÒ ¼ö ÀÖÀ¸³ª
- *      PROJ-1000 Client C Porting ´ç½Ã ¼­¹öÂÊÀÇ ¸ðµâÀº C ·Î Æ÷ÆÃÇÏÁö ¾Ê¾Æ¼­
- *      mt --> cmt ÀÇ º¯È¯¿¡ »ç¿ëµÈ mmcSession À» ÀÌ¿ëÇÒ ¼ö ¾ø´Â »óÈ²ÀÌ¾ú´Ù.
+ *      ê·¸ ì¤‘ ul ìª½ì˜ ë³€í™˜ì€ uln ì˜ í•¨ìˆ˜ë“¤ì„ ì´ìš©í•´ì„œ í•  ìˆ˜ ìžˆìœ¼ë‚˜
+ *      PROJ-1000 Client C Porting ë‹¹ì‹œ ì„œë²„ìª½ì˜ ëª¨ë“ˆì€ C ë¡œ í¬íŒ…í•˜ì§€ ì•Šì•„ì„œ
+ *      mt --> cmt ì˜ ë³€í™˜ì— ì‚¬ìš©ëœ mmcSession ì„ ì´ìš©í•  ìˆ˜ ì—†ëŠ” ìƒí™©ì´ì—ˆë‹¤.
  *
- *      º» ÆÄÀÏ (ulaConv.c) Àº mmcSession ÀÌ ¼öÇàÇÏ´ø mt --> cmt ÀÇ
- *      º¯È¯ ÄÚµå¸¦ ±×·¡µµ °¡Á®¿Í¼­ C ·Î Æ÷ÆÃÇÑ ÄÚµåÀÌ´Ù.
+ *      ë³¸ íŒŒì¼ (ulaConv.c) ì€ mmcSession ì´ ìˆ˜í–‰í•˜ë˜ mt --> cmt ì˜
+ *      ë³€í™˜ ì½”ë“œë¥¼ ê·¸ëž˜ë„ ê°€ì ¸ì™€ì„œ C ë¡œ í¬íŒ…í•œ ì½”ë“œì´ë‹¤.
  *
- *      mmcConvFmMT.cpp ÆÄÀÏ ÂüÁ¶.
+ *      mmcConvFmMT.cpp íŒŒì¼ ì°¸ì¡°.
  * -----------------------------------------------------------------------------
  */
 
@@ -109,7 +109,7 @@ static ACI_RC ulaConvertMtBoolean(cmtAny *aTarget, void *aSource)
     }
     else
     {
-        //fix BUG-28927 MT->CM conversion function¿¡¼­ safeguard°¡ ÇÊ¿ä.
+        //fix BUG-28927 MT->CM conversion functionì—ì„œ safeguardê°€ í•„ìš”.
         ACI_TEST_RAISE(aSource == NULL,INVALID_SOURCE_DATA);
         ACI_TEST(cmtAnyWriteUChar(aTarget,
                                   (*(mtdBooleanType *)aSource
@@ -137,7 +137,7 @@ static ACI_RC ulaConvertMtSmallInt(cmtAny *aTarget, void *aSource)
     }
     else
     {
-        //fix BUG-28927 MT->CM conversion function¿¡¼­ safeguard°¡ ÇÊ¿ä.
+        //fix BUG-28927 MT->CM conversion functionì—ì„œ safeguardê°€ í•„ìš”.
         ACI_TEST_RAISE(aSource == NULL, INVALID_SOURCE_DATA);
         ACI_TEST(cmtAnyWriteSShort(aTarget, *(mtdSmallintType *)aSource)
                  != ACI_SUCCESS);
@@ -163,7 +163,7 @@ static ACI_RC ulaConvertMtInteger(cmtAny *aTarget, void *aSource)
     }
     else
     {
-        //fix BUG-28927 MT->CM conversion function¿¡¼­ safeguard°¡ ÇÊ¿ä.
+        //fix BUG-28927 MT->CM conversion functionì—ì„œ safeguardê°€ í•„ìš”.
         ACI_TEST_RAISE(aSource == NULL,INVALID_SOURCE_DATA);
         ACI_TEST(cmtAnyWriteSInt(aTarget,
                                  *(mtdIntegerType *)aSource) != ACI_SUCCESS);
@@ -189,7 +189,7 @@ static ACI_RC ulaConvertMtBigInt(cmtAny *aTarget, void *aSource)
     }
     else
     {
-        //fix BUG-28927 MT->CM conversion function¿¡¼­ safeguard°¡ ÇÊ¿ä.
+        //fix BUG-28927 MT->CM conversion functionì—ì„œ safeguardê°€ í•„ìš”.
         ACI_TEST_RAISE(aSource == NULL, INVALID_SOURCE_DATA);
         ACI_TEST(cmtAnyWriteSLong(aTarget,
                                   *(mtdBigintType *)aSource) != ACI_SUCCESS);
@@ -217,7 +217,7 @@ static ACI_RC ulaConvertMtBlobLocator(cmtAny      *aTarget,
     }
     else
     {
-        //fix BUG-28927 MT->CM conversion function¿¡¼­ safeguard°¡ ÇÊ¿ä.
+        //fix BUG-28927 MT->CM conversion functionì—ì„œ safeguardê°€ í•„ìš”.
         ACI_TEST_RAISE(aSource == NULL,INVALID_SOURCE_DATA);
         // bug-19174
         ACI_TEST(cmtAnyWriteLobLocator(aTarget,
@@ -247,7 +247,7 @@ static ACI_RC ulaConvertMtClobLocator(cmtAny       *aTarget,
     }
     else
     {
-        //fix BUG-28927 MT->CM conversion function¿¡¼­ safeguard°¡ ÇÊ¿ä.
+        //fix BUG-28927 MT->CM conversion functionì—ì„œ safeguardê°€ í•„ìš”.
         ACI_TEST_RAISE(aSource == NULL, INVALID_SOURCE_DATA);
         // bug-19174
         ACI_TEST(cmtAnyWriteLobLocator(aTarget,
@@ -275,7 +275,7 @@ static ACI_RC ulaConvertMtReal(cmtAny *aTarget, void *aSource)
     }
     else
     {
-        //fix BUG-28927 MT->CM conversion function¿¡¼­ safeguard°¡ ÇÊ¿ä.
+        //fix BUG-28927 MT->CM conversion functionì—ì„œ safeguardê°€ í•„ìš”.
         ACI_TEST_RAISE(aSource == NULL, INVALID_SOURCE_DATA);
         ACI_TEST(cmtAnyWriteSFloat(aTarget,
                                    *(mtdRealType *)aSource) != ACI_SUCCESS);
@@ -302,7 +302,7 @@ static ACI_RC ulaConvertMtDouble(cmtAny *aTarget, void *aSource)
     }
     else
     {
-        //fix BUG-28927 MT->CM conversion function¿¡¼­ safeguard°¡ ÇÊ¿ä.
+        //fix BUG-28927 MT->CM conversion functionì—ì„œ safeguardê°€ í•„ìš”.
         ACI_TEST_RAISE(aSource == NULL,INVALID_SOURCE_DATA);
         ACI_TEST(cmtAnyWriteSDouble(aTarget,
                                     *(mtdDoubleType *)aSource) != ACI_SUCCESS);
@@ -332,7 +332,7 @@ static ACI_RC ulaConvertMtDate(cmtAny *aTarget, void *aSource)
     }
     else
     {
-        //fix BUG-28927 MT->CM conversion function¿¡¼­ safeguard°¡ ÇÊ¿ä.
+        //fix BUG-28927 MT->CM conversion functionì—ì„œ safeguardê°€ í•„ìš”.
         ACI_TEST_RAISE(aSource == NULL, INVALID_SOURCE_DATA);
         ACI_TEST(cmtAnyGetDateTimeForWrite(aTarget, &sCmDateTime)
                  != ACI_SUCCESS);
@@ -370,7 +370,7 @@ static ACI_RC ulaConvertMtInterval(cmtAny *aTarget, void *aSource)
     }
     else
     {
-        //fix BUG-28927 MT->CM conversion function¿¡¼­ safeguard°¡ ÇÊ¿ä.
+        //fix BUG-28927 MT->CM conversion functionì—ì„œ safeguardê°€ í•„ìš”.
         ACI_TEST_RAISE(aSource == NULL, INVALID_SOURCE_DATA);
         ACI_TEST(cmtAnyGetIntervalForWrite(aTarget, &sCmInterval)
                  != ACI_SUCCESS);
@@ -416,7 +416,7 @@ static ACI_RC ulaConvertMtNumeric(cmtAny           *aTarget,
     }
     else
     {
-        //fix BUG-28927 MT->CM conversion function¿¡¼­ safeguard°¡ ÇÊ¿ä.
+        //fix BUG-28927 MT->CM conversion functionì—ì„œ safeguardê°€ í•„ìš”.
         ACI_TEST_RAISE(aSource == NULL, INVALID_SOURCE_DATA);
         sMantissaLen = sMtNumeric->length - 1;
         ACI_TEST_RAISE(sMantissaLen > MTD_NUMERIC_MANTISSA_MAXIMUM,
@@ -484,9 +484,9 @@ static ACI_RC ulaConvertMtNumeric(cmtAny           *aTarget,
         ACI_TEST(cmtAnyGetNumericForWrite(aTarget,
                                           &sCmNumeric,
                                           sSize) != ACI_SUCCESS);
-        //fix BUG-28927 MT->CM conversion function¿¡¼­ safeguard°¡ ÇÊ¿ä.
+        //fix BUG-28927 MT->CM conversion functionì—ì„œ safeguardê°€ í•„ìš”.
         /*
-         * if (sScale !=0 ....) ¿¡¼­ else¸¦ Å¸¸é sConvMantisaa°¡ nullÀÌ´Ù.
+         * if (sScale !=0 ....) ì—ì„œ elseë¥¼ íƒ€ë©´ sConvMantisaaê°€ nullì´ë‹¤.
          */
         if (sConvMantissa != NULL)
         {
@@ -528,7 +528,7 @@ static ACI_RC ulaConvertMtChar(cmtAny *aTarget, void *aSource)
     }
     else
     {
-        //fix BUG-28927 MT->CM conversion function¿¡¼­ safeguard°¡ ÇÊ¿ä.
+        //fix BUG-28927 MT->CM conversion functionì—ì„œ safeguardê°€ í•„ìš”.
         ACI_TEST_RAISE(aSource == NULL,INVALID_SOURCE_DATA);
         ACI_TEST(cmtAnyWriteVariable(aTarget,
                                      sChar->value,
@@ -556,7 +556,7 @@ static ACI_RC ulaConvertMtNchar(cmtAny *aTarget, void *aSource)
     }
     else
     {
-        //fix BUG-28927 MT->CM conversion function¿¡¼­ safeguard°¡ ÇÊ¿ä.
+        //fix BUG-28927 MT->CM conversion functionì—ì„œ safeguardê°€ í•„ìš”.
         ACI_TEST_RAISE(aSource == NULL,INVALID_SOURCE_DATA);
         ACI_TEST(cmtAnyWriteVariable(aTarget,
                                      sNchar->value,
@@ -584,7 +584,7 @@ static ACI_RC ulaConvertMtBinary(cmtAny *aTarget, void *aSource)
     }
     else
     {
-        //fix BUG-28927 MT->CM conversion function¿¡¼­ safeguard°¡ ÇÊ¿ä.
+        //fix BUG-28927 MT->CM conversion functionì—ì„œ safeguardê°€ í•„ìš”.
         ACI_TEST_RAISE(aSource == NULL,INVALID_SOURCE_DATA);
         ACI_TEST(cmtAnyWriteBinary(aTarget,
                                    sBinary->mValue,
@@ -613,7 +613,7 @@ static ACI_RC ulaConvertMtByte(cmtAny *aTarget, void *aSource)
     }
     else
     {
-        //fix BUG-28927 MT->CM conversion function¿¡¼­ safeguard°¡ ÇÊ¿ä.
+        //fix BUG-28927 MT->CM conversion functionì—ì„œ safeguardê°€ í•„ìš”.
         ACI_TEST_RAISE(aSource == NULL, INVALID_SOURCE_DATA);
         ACI_TEST(cmtAnyWriteBinary(aTarget,
                                    sByte->value,
@@ -641,7 +641,7 @@ static ACI_RC ulaConvertMtBit(cmtAny *aTarget, void *aSource)
     }
     else
     {
-        //fix BUG-28927 MT->CM conversion function¿¡¼­ safeguard°¡ ÇÊ¿ä.
+        //fix BUG-28927 MT->CM conversion functionì—ì„œ safeguardê°€ í•„ìš”.
         ACI_TEST_RAISE(aSource == NULL, INVALID_SOURCE_DATA);
         ACI_TEST(cmtAnyWriteBit(aTarget,
                                 sBit->value,
@@ -669,7 +669,7 @@ static ACI_RC ulaConvertMtNibble(cmtAny *aTarget, void *aSource)
     }
     else
     {
-        //fix BUG-28927 MT->CM conversion function¿¡¼­ safeguard°¡ ÇÊ¿ä.
+        //fix BUG-28927 MT->CM conversion functionì—ì„œ safeguardê°€ í•„ìš”.
         ACI_TEST_RAISE(aSource == NULL, INVALID_SOURCE_DATA);
         ACI_TEST(cmtAnyWriteNibble(aTarget,
                                    sNibble->value,
@@ -689,13 +689,13 @@ static ACI_RC ulaConvertMtNibble(cmtAny *aTarget, void *aSource)
  * -----------------------------------------------------------------------------
  *  ulaConvConvertFromMTToCMT()
  *
- *  ¿øº»Àº mmcConvFromMT::convert ÇÔ¼ö
+ *  ì›ë³¸ì€ mmcConvFromMT::convert í•¨ìˆ˜
  *
- *      - cmiProtocolContext ´Â È£ÃâÇÏ´Â °÷¿¡¼­ NULL ·Î È£ÃâÇÏ¹Ç·Î »©µµ µÊ
- *      - mmcSession Àº ´ÜÁö endian À» ¾Ë±â À§ÇÑ ¸ñÀûÀ¸·Î¸¸ ¾²ÀÌ¹Ç·Î
- *        ¿ø·¡ÀÇ ALA_GetODBCCValue() ÇÔ¼ö¿¡¼­ °íÁ¤½ÃÄÑ µÎ¾ú´ø
- *        MMC_BYTEORDER_LITTLE_ENDIAN À¸·Î »ç¿ë °¡´ÉÇÏ´Ù.
- *        µû¶ó¼­ mmcSession Àº ÇÊ¿ä¾øÀ½.
+ *      - cmiProtocolContext ëŠ” í˜¸ì¶œí•˜ëŠ” ê³³ì—ì„œ NULL ë¡œ í˜¸ì¶œí•˜ë¯€ë¡œ ë¹¼ë„ ë¨
+ *      - mmcSession ì€ ë‹¨ì§€ endian ì„ ì•Œê¸° ìœ„í•œ ëª©ì ìœ¼ë¡œë§Œ ì“°ì´ë¯€ë¡œ
+ *        ì›ëž˜ì˜ ALA_GetODBCCValue() í•¨ìˆ˜ì—ì„œ ê³ ì •ì‹œì¼œ ë‘ì—ˆë˜
+ *        MMC_BYTEORDER_LITTLE_ENDIAN ìœ¼ë¡œ ì‚¬ìš© ê°€ëŠ¥í•˜ë‹¤.
+ *        ë”°ë¼ì„œ mmcSession ì€ í•„ìš”ì—†ìŒ.
  *
  * -----------------------------------------------------------------------------
  */
@@ -705,8 +705,8 @@ ACI_RC ulaConvConvertFromMTToCMT(cmtAny           *aTarget,
                                  acp_uint32_t      aLobSize,
                                  ulaConvByteOrder  aByteOrder)
 {
-    // BUG-22609 AIX ÃÖÀûÈ­ ¿À·ù ¼öÁ¤
-    // switch ¿¡ acp_uint32_t ÇüÀ¸·Î À½¼ö°ªÀÌ 2¹øÀÌ»ó¿Ã¶§ ¼­¹ö Á×À½
+    // BUG-22609 AIX ìµœì í™” ì˜¤ë¥˜ ìˆ˜ì •
+    // switch ì— acp_uint32_t í˜•ìœ¼ë¡œ ìŒìˆ˜ê°’ì´ 2ë²ˆì´ìƒì˜¬ë•Œ ì„œë²„ ì£½ìŒ
     acp_sint32_t    sType   = (acp_sint32_t)aSourceType;
 
     ACP_UNUSED(aByteOrder);

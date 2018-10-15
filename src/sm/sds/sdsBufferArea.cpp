@@ -25,7 +25,7 @@
 
 /******************************************************************************
  * Description :
- *    sdsBufferArea ´Â  BCB¸¦ ¸¸µé¾î °ü¸®ÇÑ´Ù.
+ *    sdsBufferArea ëŠ”  BCBë¥¼ ë§Œë“¤ì–´ ê´€ë¦¬í•œë‹¤.
  ******************************************************************************/
 #include <smu.h>
 #include <smErrorCode.h>
@@ -33,8 +33,8 @@
 
 /******************************************************************************
  * Description :
- *  aExtentCnt [IN] : Extent ¼ö (Secondary Buffer´Â ÀÍ½ºÅÙÆ®´ÜÀ§·Î µ¿ÀÛÇÑ´Ù)
- *  aBCBCnt    [IN] : page cnt ¼ö: BCBÀÇ ¼ö
+ *  aExtentCnt [IN] : Extent ìˆ˜ (Secondary BufferëŠ” ìµìŠ¤í…íŠ¸ë‹¨ìœ„ë¡œ ë™ì‘í•œë‹¤)
+ *  aBCBCnt    [IN] : page cnt ìˆ˜: BCBì˜ ìˆ˜
  ******************************************************************************/
 IDE_RC sdsBufferArea::initializeStatic( UInt aExtentCnt, 
                                         UInt aBCBCnt ) 
@@ -62,7 +62,7 @@ IDE_RC sdsBufferArea::initializeStatic( UInt aExtentCnt,
                     ERR_INSUFFICIENT_MEMORY );
     sState = 1;
 
-    /* BCBÃÊ±âÈ­ ¹× ÇÒ´ç */
+    /* BCBì´ˆê¸°í™” ë° í• ë‹¹ */
     IDE_TEST( mBCBMemPool.initialize( IDU_MEM_SM_SDS,
                                       (SChar*)"SDS_BCB_MEMORY_POOL",
                                       1,                 // Multi Pool Cnt
@@ -77,7 +77,7 @@ IDE_RC sdsBufferArea::initializeStatic( UInt aExtentCnt,
              != IDE_SUCCESS );
     sState = 2;
 
-    /* BCBÃÊ±âÈ­ ¹× ÇÒ´ç */
+    /* BCBì´ˆê¸°í™” ë° í• ë‹¹ */
     for( i = 0; i < aBCBCnt ; i++ )
     {
         IDE_TEST( mBCBMemPool.alloc((void**)&sBCB) != IDE_SUCCESS );
@@ -89,7 +89,7 @@ IDE_RC sdsBufferArea::initializeStatic( UInt aExtentCnt,
     }
     mBCBCount = sBCBID;
     
-    // wait mutex ÃÊ±âÈ­
+    // wait mutex ì´ˆê¸°í™”
     idlOS::snprintf( sTmpName,
                      ID_SIZEOF( sTmpName ),
                      "SECONDARY_EXTENT_WAIT_MUTEX" );
@@ -101,7 +101,7 @@ IDE_RC sdsBufferArea::initializeStatic( UInt aExtentCnt,
               != IDE_SUCCESS );
     sState = 3;
  
-    // condition variable ÃÊ±âÈ­
+    // condition variable ì´ˆê¸°í™”
     idlOS::snprintf( sTmpName,
                      ID_SIZEOF(sTmpName),
                      "SECONDARY_BUFFER_COND" );
@@ -110,7 +110,7 @@ IDE_RC sdsBufferArea::initializeStatic( UInt aExtentCnt,
                     ERR_COND_VAR_INIT );
     sState = 4;
 
-    /* ÀÍ½ºÅÙÆ® °ü¸® */
+    /* ìµìŠ¤í…íŠ¸ ê´€ë¦¬ */
     idlOS::snprintf( sTmpName,
                      ID_SIZEOF( sTmpName ),
                      "SECONDARY_FLUSH_EXTENT_MUTEX" );
@@ -133,7 +133,7 @@ IDE_RC sdsBufferArea::initializeStatic( UInt aExtentCnt,
                    ERR_INSUFFICIENT_MEMORY );
     sState = 6;
 
-    /* ÃÊ±âÈ­ */ 
+    /* ì´ˆê¸°í™” */ 
     for( i = 0 ; i< mBCBExtentCount ; i++ )
     {
         mBCBExtState[i] = SDS_EXTENT_STATE_FREE; 
@@ -207,8 +207,8 @@ IDE_RC sdsBufferArea::destroyStatic()
 }
 
 /******************************************************************************
- * Description : Secondary Flusher °¡ flush ÇØ¾ßÇÒ Extent°¡ ÀÖ´ÂÁö È®ÀÎ 
- *  aExtIndex [OUT] - flush ´ë»ó Extent
+ * Description : Secondary Flusher ê°€ flush í•´ì•¼í•  Extentê°€ ìˆëŠ”ì§€ í™•ì¸ 
+ *  aExtIndex [OUT] - flush ëŒ€ìƒ Extent
  ******************************************************************************/
 idBool sdsBufferArea::getTargetFlushExtentIndex( UInt *aExtIndex )
 {
@@ -222,8 +222,8 @@ idBool sdsBufferArea::getTargetFlushExtentIndex( UInt *aExtIndex )
 
     switch( sState )
     {
-        /* sdbFlusher°¡ movedownÀ» ¿Ï·á ÇßÁö¸¸ ¾ÆÁ÷ datafile¿¡ ¹İ¿µ ÀüÀÎ
-           Ext¸¦ °¡Á®¿Â´Ù */
+        /* sdbFlusherê°€ movedownì„ ì™„ë£Œ í–ˆì§€ë§Œ ì•„ì§ datafileì— ë°˜ì˜ ì „ì¸
+           Extë¥¼ ê°€ì ¸ì˜¨ë‹¤ */
         case SDS_EXTENT_STATE_MOVEDOWN_DONE :
             *aExtIndex = mFlushPos;
             sIsSuccess  = ID_TRUE;
@@ -231,17 +231,17 @@ idBool sdsBufferArea::getTargetFlushExtentIndex( UInt *aExtIndex )
             mFlushPos = (mFlushPos+1) % mBCBExtentCount;
             break;
 
-        /* ÇÒÀÏÀÌ ¾ø°Å³ª 
-           secondary BufferÀÇ Flusher ¾öÃ» ºü¸£°Å³ª ¸¹¾Æ¼­ ÇÑ¹ÙÄû¸¦ µ¹¾Æ
-           ¿Â »óÈ². */
+        /* í• ì¼ì´ ì—†ê±°ë‚˜ 
+           secondary Bufferì˜ Flusher ì—„ì²­ ë¹ ë¥´ê±°ë‚˜ ë§ì•„ì„œ í•œë°”í€´ë¥¼ ëŒì•„
+           ì˜¨ ìƒí™©. */
         case SDS_EXTENT_STATE_FREE:
         case SDS_EXTENT_STATE_FLUSH_ING:
         case SDS_EXTENT_STATE_FLUSH_DONE:
             /* nothing to do */
             break; 
 
-        /* sdbFlusher°¡ ¸Õ°¡¸¦ ³»·È¾²°í ÀÖÀ¸¸é ´ÙÀ½ÅÏ¿¡ flush½ÃÅ³¼ö ÀÖµµ·Ï
-           mFlushPos Áõ°¡ ¾ÈÇÔ */
+        /* sdbFlusherê°€ ë¨¼ê°€ë¥¼ ë‚´ë ¸ì“°ê³  ìˆìœ¼ë©´ ë‹¤ìŒí„´ì— flushì‹œí‚¬ìˆ˜ ìˆë„ë¡
+           mFlushPos ì¦ê°€ ì•ˆí•¨ */
         case SDS_EXTENT_STATE_MOVEDOWN_ING:
             /* nothing to do */
             break; 
@@ -256,12 +256,12 @@ idBool sdsBufferArea::getTargetFlushExtentIndex( UInt *aExtIndex )
 
     IDE_ASSERT( mExtentMutex.unlock() == IDE_SUCCESS );
 
-     /* ÀÎµ¦½º¸¦ ¹Ş¾Æ ¿ÀÁö ¸øÇÑ »óÈ²ÀÌ¸é False ¹İÈ¯ */
+     /* ì¸ë±ìŠ¤ë¥¼ ë°›ì•„ ì˜¤ì§€ ëª»í•œ ìƒí™©ì´ë©´ False ë°˜í™˜ */
     return sIsSuccess;
 }
 
 /******************************************************************************
- * Description : sdbFlusher°¡ secondary Buffer¿¡ movedown ÇÒ idx È®ÀÎ
+ * Description : sdbFlusherê°€ secondary Bufferì— movedown í•  idx í™•ì¸
  *  aExtIndex -[OUT]  
  ******************************************************************************/
 IDE_RC sdsBufferArea::getTargetMoveDownIndex( idvSQL  * aStatistics, 
@@ -280,9 +280,9 @@ retry:
 
     switch ( sState )
     {
-            /* ÃÊ±âÈ­µÈ Á÷ÈÄ°Å³ª
-               ÀÌ¹Ì datafile¿¡ ¹İ¿µÀÌ µÇ¾úÀ¸¸é      
-               ÇØ´ç Ext¸¦ °¡Á®¿Â´Ù   */
+            /* ì´ˆê¸°í™”ëœ ì§í›„ê±°ë‚˜
+               ì´ë¯¸ datafileì— ë°˜ì˜ì´ ë˜ì—ˆìœ¼ë©´      
+               í•´ë‹¹ Extë¥¼ ê°€ì ¸ì˜¨ë‹¤   */
         case SDS_EXTENT_STATE_FREE:
         case SDS_EXTENT_STATE_FLUSH_DONE:
             *aExtIndex = mMovedownPos;
@@ -291,18 +291,18 @@ retry:
             mMovedownPos = (mMovedownPos+1) % mBCBExtentCount;
             break;
 
-            /* secondary BufferÀÇ Flusher °¡ ¾öÃ» ¹Ğ·Á¼­ ÇÑ¹ÙÄû¸¦ µ¹¾Æ
-               µû¶ó¿Â »óÈ²ÀÌ´Ù.
-               ´õ µÚÂÊÀ¸·Î Ã£Áö ¸»°í secondary Flusher¸¦ ±ú¿ö¼­ ±â´Ù¸°´Ù. */  
+            /* secondary Bufferì˜ Flusher ê°€ ì—„ì²­ ë°€ë ¤ì„œ í•œë°”í€´ë¥¼ ëŒì•„
+               ë”°ë¼ì˜¨ ìƒí™©ì´ë‹¤.
+               ë” ë’¤ìª½ìœ¼ë¡œ ì°¾ì§€ ë§ê³  secondary Flusherë¥¼ ê¹¨ì›Œì„œ ê¸°ë‹¤ë¦°ë‹¤. */  
         case SDS_EXTENT_STATE_MOVEDOWN_ING:
         case SDS_EXTENT_STATE_MOVEDOWN_DONE:
             /* nothing to do */
             break;
 
-            /* sdsFlusher°¡ datafile¿¡ flush ÁßÀÌ¸é 
-               ´ÙÀ½ Extµµ Flush ÁßÀÏ¼ö ÀÖÀ¸´Ï
-               ´õ µÚÂÊÀ¸·Î Ã£Áö ¸»°í ´ÙÀ½ ÅÏ¿¡ ÇØ´ç Ext¿¡ movedown ÇÒ¼öÀÖµµ·Ï
-               mMovedownPos Áõ°¡ ½ÃÅ°Áö ¾Ê°í ´ë±â */
+            /* sdsFlusherê°€ datafileì— flush ì¤‘ì´ë©´ 
+               ë‹¤ìŒ Extë„ Flush ì¤‘ì¼ìˆ˜ ìˆìœ¼ë‹ˆ
+               ë” ë’¤ìª½ìœ¼ë¡œ ì°¾ì§€ ë§ê³  ë‹¤ìŒ í„´ì— í•´ë‹¹ Extì— movedown í• ìˆ˜ìˆë„ë¡
+               mMovedownPos ì¦ê°€ ì‹œí‚¤ì§€ ì•Šê³  ëŒ€ê¸° */
         case SDS_EXTENT_STATE_FLUSH_ING:
             /* nothing to do */
             break;
@@ -330,7 +330,7 @@ retry:
     }
     else 
     {
-        /* Á¤»óÀûÀ¸·Î ÀÎµ¦½º¸¦ ¹Ş¾Æ¼­ flusher¸¦ µ¿ÀÛ½ÃÅ²´Ù */
+        /* ì •ìƒì ìœ¼ë¡œ ì¸ë±ìŠ¤ë¥¼ ë°›ì•„ì„œ flusherë¥¼ ë™ì‘ì‹œí‚¨ë‹¤ */
         /* nothing to do */
     }
 
@@ -342,7 +342,7 @@ retry:
 }
 
 /******************************************************************************
- * Description : flush ´ÙÇÑ Extent¸¦ sdbFlusher°¡ movedownÇÒ¼öÀÖµµ·Ï »óÅÂº¯°æ 
+ * Description : flush ë‹¤í•œ Extentë¥¼ sdbFlusherê°€ movedowní• ìˆ˜ìˆë„ë¡ ìƒíƒœë³€ê²½ 
  *  aExtIndex [IN]  
  ******************************************************************************/
 IDE_RC sdsBufferArea::changeStateFlushDone( UInt aExtIndex )
@@ -352,7 +352,7 @@ IDE_RC sdsBufferArea::changeStateFlushDone( UInt aExtIndex )
     mBCBExtState[aExtIndex] = SDS_EXTENT_STATE_FLUSH_DONE;
 
     IDE_ASSERT( mExtentMutex.unlock() == IDE_SUCCESS );
-    // ºó EXTENT¸¦ ±â´Ù¸®°í ÀÖ´Â ¾²·¹µå°¡ ÀÖÀ¸¸é ±ú¿î´Ù.
+    // ë¹ˆ EXTENTë¥¼ ê¸°ë‹¤ë¦¬ê³  ìˆëŠ” ì“°ë ˆë“œê°€ ìˆìœ¼ë©´ ê¹¨ìš´ë‹¤.
     if( mWaitingClientCount > 0 )
     {
         IDE_ASSERT( mMutexForWait.lock( NULL /*aStatistics*/ ) == IDE_SUCCESS );
@@ -375,7 +375,7 @@ IDE_RC sdsBufferArea::changeStateFlushDone( UInt aExtIndex )
 }
 
 /******************************************************************************
- * Description : movedownÇÑ Extent¸¦ sdsFlusher°¡ flushÇÒ¼öÀÖµµ·Ï »óÅÂ¸¦ º¯°æ
+ * Description : movedowní•œ Extentë¥¼ sdsFlusherê°€ flushí• ìˆ˜ìˆë„ë¡ ìƒíƒœë¥¼ ë³€ê²½
  *  aExtIndex [IN]
  ******************************************************************************/
 IDE_RC sdsBufferArea::changeStateMovedownDone( UInt aExtIndex )
@@ -391,8 +391,8 @@ IDE_RC sdsBufferArea::changeStateMovedownDone( UInt aExtIndex )
 
 /******************************************************************************
  * Description :  
- * aFunc     [IN]  °¢ BCB¿¡ Àû¿ëÇÒ ÇÔ¼ö
- * aObj      [IN]  aFunc¼öÇàÇÒ¶§ ÇÊ¿äÇÑ º¯¼ö
+ * aFunc     [IN]  ê° BCBì— ì ìš©í•  í•¨ìˆ˜
+ * aObj      [IN]  aFuncìˆ˜í–‰í• ë•Œ í•„ìš”í•œ ë³€ìˆ˜
  ******************************************************************************/
 IDE_RC sdsBufferArea::applyFuncToEachBCBs( sdsBufferAreaActFunc   aFunc,
                                            void                 * aObj )

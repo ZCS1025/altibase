@@ -42,8 +42,8 @@ SChar * gDbf               = NULL;
 idBool  gReadHexa          = ID_FALSE;
 idBool  gReadTempPage      = ID_FALSE;
 
-/* ideLog::ideMemToHexStrÂüÁ¶ 
- * IDE_DUMP_FORMAT_PIECE_4BYTE ±âÁØ */
+/* ideLog::ideMemToHexStrì°¸ì¡° 
+ * IDE_DUMP_FORMAT_PIECE_4BYTE ê¸°ì¤€ */
 UInt    gReadHexaLineSize  = 32;
 UInt    gReadHexaBlockSize = 4;
 
@@ -66,7 +66,7 @@ UInt    gPageType          = 0;
 typedef struct dumpFuncType
 {
     smPageDump dumpLogicalHdr;    // logical hdr print
-    smPageDump dumpPageBody;      // pageÀÇ ³»¿ë print
+    smPageDump dumpPageBody;      // pageì˜ ë‚´ìš© print
 } dumpFuncType;
 
 dumpFuncType gDumpVector[ SDP_PAGE_TYPE_MAX ];
@@ -344,7 +344,7 @@ IDE_RC readPage( iduFile * aDataFile,
 
     sLineCount     = aPageSize / gReadHexaLineSize;
 
-    /* ideLog::ideMemToHexStrÂüÁ¶, Full format */
+    /* ideLog::ideMemToHexStrì°¸ì¡°, Full format */
     sLineFormatSize = 
         gReadHexaLineSize * 2 +                  /* Body             */
         gReadHexaLineSize / gReadHexaBlockSize + /* Body Seperator   */
@@ -370,7 +370,7 @@ IDE_RC readPage( iduFile * aDataFile,
 
     for( i = 0 ;  i < sLineCount ; i ++ )
     {
-        /* Body ½ÃÀÛ ºÎºĞ Å½»ö */
+        /* Body ì‹œì‘ ë¶€ë¶„ íƒìƒ‰ */
         for( j = 0 ; 
              j < sLineFormatSize ; 
              j++, sOffsetInSrc ++ )
@@ -378,13 +378,13 @@ IDE_RC readPage( iduFile * aDataFile,
             if( ( sSrc[ sOffsetInSrc ] == '|' ) && 
                 ( sSrc[ sOffsetInSrc + 1 ] == ' ' ) )
             {
-                /* Address ±¸ºĞÀÚ '| ' */
+                /* Address êµ¬ë¶„ì '| ' */
                 sOffsetInSrc += 2;
                 break;
             }
         }
 
-        /* Address ±¸ºĞÀÚ¸¦ Ã£Áö ¸øÇßÀ» °æ¿ì */
+        /* Address êµ¬ë¶„ìë¥¼ ì°¾ì§€ ëª»í–ˆì„ ê²½ìš° */
         if( j == sLineFormatSize )
         {
             break;
@@ -478,17 +478,17 @@ IDE_RC dumpPage()
     }
     else
     {
-        /* ÇØ´ç ¸Ş¸ğ¸® ¿µ¿ªÀ» DumpÇÑ °á°ú°ªÀ» ÀúÀåÇÒ ¹öÆÛ¸¦ È®º¸ÇÕ´Ï´Ù.
-         * Stack¿¡ ¼±¾ğÇÒ °æ¿ì, ÀÌ ÇÔ¼ö¸¦ ÅëÇØ ¼­¹ö°¡ Á¾·áµÉ ¼ö ÀÖÀ¸¹Ç·Î
-         * Heap¿¡ ÇÒ´çÀ» ½ÃµµÇÑ ÈÄ, ¼º°øÇÏ¸é ±â·Ï, ¼º°øÇÏÁö ¾ÊÀ¸¸é ±×³É
-         * returnÇÕ´Ï´Ù. */
+        /* í•´ë‹¹ ë©”ëª¨ë¦¬ ì˜ì—­ì„ Dumpí•œ ê²°ê³¼ê°’ì„ ì €ì¥í•  ë²„í¼ë¥¼ í™•ë³´í•©ë‹ˆë‹¤.
+         * Stackì— ì„ ì–¸í•  ê²½ìš°, ì´ í•¨ìˆ˜ë¥¼ í†µí•´ ì„œë²„ê°€ ì¢…ë£Œë  ìˆ˜ ìˆìœ¼ë¯€ë¡œ
+         * Heapì— í• ë‹¹ì„ ì‹œë„í•œ í›„, ì„±ê³µí•˜ë©´ ê¸°ë¡, ì„±ê³µí•˜ì§€ ì•Šìœ¼ë©´ ê·¸ëƒ¥
+         * returní•©ë‹ˆë‹¤. */
         IDE_TEST( iduMemMgr::calloc( IDU_MEM_ID, 1,
                                      ID_SIZEOF( SChar ) * IDE_DUMP_DEST_LIMIT,
                                      (void**)&sTempBuf )
                   != IDE_SUCCESS );
         sState = 3;
 
-        /* page¸¦ Hexa code·Î dumpÇÏ¿© Ãâ·ÂÇÑ´Ù. */
+        /* pageë¥¼ Hexa codeë¡œ dumpí•˜ì—¬ ì¶œë ¥í•œë‹¤. */
         if( ideLog::ideMemToHexStr( (UChar*)sPage, 
                                     SD_PAGE_SIZE,
                                     IDE_DUMP_FORMAT_NORMAL,
@@ -503,7 +503,7 @@ IDE_RC dumpPage()
             /* nothing to do ... */
         }
 
-        /* PhyPageHeader¸¦ dumpÇÏ¿© Ãâ·ÂÇÑ´Ù. */
+        /* PhyPageHeaderë¥¼ dumpí•˜ì—¬ ì¶œë ¥í•œë‹¤. */
         if( sdpPhyPage::dumpHdr( (UChar*) sPage,
                                  sTempBuf,
                                  IDE_DUMP_DEST_LIMIT )
@@ -517,8 +517,8 @@ IDE_RC dumpPage()
         }
 
         /* BUG-31628 [sm-util] dumpddf does not check checksum of DRDB page.
-         * sdpPhyPage::isPageCorrupted ÇÔ¼ö´Â property¿¡ µû¶ó Checksum°Ë»ç¸¦
-         * ¾È ÇÒ ¼öµµ ÀÖ±â ¶§¹®¿¡ Ç×»ó ÇÏµµ·Ï ¼öÁ¤ÇÕ´Ï´Ù. */
+         * sdpPhyPage::isPageCorrupted í•¨ìˆ˜ëŠ” propertyì— ë”°ë¼ Checksumê²€ì‚¬ë¥¼
+         * ì•ˆ í•  ìˆ˜ë„ ìˆê¸° ë•Œë¬¸ì— í•­ìƒ í•˜ë„ë¡ ìˆ˜ì •í•©ë‹ˆë‹¤. */
         sPhyPageHdr = sdpPhyPage::getHdr( (UChar*)sPage );
         sCalculatedChecksum = sdpPhyPage::calcCheckSum( sPhyPageHdr );
         sChecksumInPage     = sdpPhyPage::getCheckSum( sPhyPageHdr );
@@ -539,7 +539,7 @@ IDE_RC dumpPage()
 
 
 
-        /* PageTypeÀ» ÁöÁ¤ÇØÁÖÁö ¾Ê¾ÒÀ» °æ¿ì, PhyPageHeader¿¡¼­ ÀĞ¾î¼­ Àû¿ëÇÑ´Ù */
+        /* PageTypeì„ ì§€ì •í•´ì£¼ì§€ ì•Šì•˜ì„ ê²½ìš°, PhyPageHeaderì—ì„œ ì½ì–´ì„œ ì ìš©í•œë‹¤ */
         if( gPageType == 0 )
         {
             sPageType = sdpPhyPage::getPageType( sPhyPageHdr );
@@ -549,7 +549,7 @@ IDE_RC dumpPage()
             sPageType = gPageType;
         }
 
-        // Logical Header ¹× Body¸¦ DumpÇÑ´Ù.
+        // Logical Header ë° Bodyë¥¼ Dumpí•œë‹¤.
         if( sPageType >= SDP_PAGE_TYPE_MAX )
         {
             idlOS::printf("invalidate page type(%"ID_UINT32_FMT")\n", sPageType );
@@ -777,8 +777,8 @@ int main(int aArgc, char *aArgv[])
     return IDE_FAILURE;
 }
 
-// BUG-28510 dumpÀ¯Æ¿µéÀÇ Banner¾ç½ÄÀ» ÅëÀÏÇØ¾ß ÇÕ´Ï´Ù.
-// DUMPCI.banÀ» ÅëÇØ dumpciÀÇ Å¸ÀÌÆ²À» Ãâ·ÂÇØÁİ´Ï´Ù.
+// BUG-28510 dumpìœ í‹¸ë“¤ì˜ Bannerì–‘ì‹ì„ í†µì¼í•´ì•¼ í•©ë‹ˆë‹¤.
+// DUMPCI.banì„ í†µí•´ dumpciì˜ íƒ€ì´í‹€ì„ ì¶œë ¥í•´ì¤ë‹ˆë‹¤.
 void showCopyRight( void )
 {
     SChar         sBuf[1024 + 1];

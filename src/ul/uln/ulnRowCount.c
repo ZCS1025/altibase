@@ -100,15 +100,15 @@ SQLRETURN ulnRowCount(ulnStmt *aStmt, ulvSLen *aRowCountPtr)
 }
 
 /* BUG-44572
- * BUGBUG (2017-02-28) È£Ãâ ½ÃÁ¡¿¡ ¾Ë ¼ö ÀÖ´Â °ªÀÌ ¾Æ´Ï¶ó execute °á°ú·Î ¹ÞÀº °ªÀ» ÁØ´Ù.
- * TODO (2017-02-28) ÃßÈÄ cached rows±îÁö Æ÷ÇÔÇØ È£Ãâ ½ÃÁ¡¿¡ ¾Ë ¼ö ÀÖ´Â °ªÀ» ÁÖµµ·Ï ¹Ù²ã¾ß ÇÑ´Ù. */
+ * BUGBUG (2017-02-28) í˜¸ì¶œ ì‹œì ì— ì•Œ ìˆ˜ ìžˆëŠ” ê°’ì´ ì•„ë‹ˆë¼ execute ê²°ê³¼ë¡œ ë°›ì€ ê°’ì„ ì¤€ë‹¤.
+ * TODO (2017-02-28) ì¶”í›„ cached rowsê¹Œì§€ í¬í•¨í•´ í˜¸ì¶œ ì‹œì ì— ì•Œ ìˆ˜ ìžˆëŠ” ê°’ì„ ì£¼ë„ë¡ ë°”ê¿”ì•¼ í•œë‹¤. */
 /**
- * Fetched Row Count¸¦ ¾ò´Â´Ù.
+ * Fetched Row Countë¥¼ ì–»ëŠ”ë‹¤.
  *
- * @param[in]  aStmt       Statement ÇÚµé
- * @param[out] aNumRowsPtr Fetched Row Count¸¦ ´ãÀ» Æ÷ÀÎÅÍ
+ * @param[in]  aStmt       Statement í•¸ë“¤
+ * @param[out] aNumRowsPtr Fetched Row Countë¥¼ ë‹´ì„ í¬ì¸í„°
  *
- * @return ÇÔ¼ö ¼öÇà¿¡ ¼º°øÇß´Ù¸é SQL_SUCCESS, ½ÇÆÐÇÏ¸é SQL_FAILURE, ÇÚµéÀÌ ¿Ã¹Ù¸£Áö ¾ÊÀ¸¸é SQL_INVALID_HANDLE
+ * @return í•¨ìˆ˜ ìˆ˜í–‰ì— ì„±ê³µí–ˆë‹¤ë©´ SQL_SUCCESS, ì‹¤íŒ¨í•˜ë©´ SQL_FAILURE, í•¸ë“¤ì´ ì˜¬ë°”ë¥´ì§€ ì•Šìœ¼ë©´ SQL_INVALID_HANDLE
  */
 SQLRETURN ulnNumRows(ulnStmt *aStmt, ulvSLen *aNumRowsPtr)
 {

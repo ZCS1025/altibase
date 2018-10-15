@@ -70,12 +70,12 @@ public:
 
     static inline void getSysMinDskFstViewSCN( smSCN* aMinDskFstViewSCN );
 
-    // BUG-26881 Àß¸øµÈ CTS stampingÀ¸·Î accesÇÒ ¼ö ¾ø´Â row¸¦ Á¢±ÙÇÔ
+    // BUG-26881 ì˜ëª»ëœ CTS stampingìœ¼ë¡œ accesí•  ìˆ˜ ì—†ëŠ” rowë¥¼ ì ‘ê·¼í•¨
     static inline void getSysAgableSCN( smSCN* aSysAagableSCN );
 
     static void  getMinMemViewSCNofAll( smSCN* aMinSCN, smTID* aTID );
 
-    // BUG-26881 Àß¸øµÈ CTS stampingÀ¸·Î accesÇÒ ¼ö ¾ø´Â row¸¦ Á¢±ÙÇÔ
+    // BUG-26881 ì˜ëª»ëœ CTS stampingìœ¼ë¡œ accesí•  ìˆ˜ ì—†ëŠ” rowë¥¼ ì ‘ê·¼í•¨
     static void  getDskSCNsofAll( smSCN   * aMinViewSCN,
                                   smSCN   * aMinDskFstViewSCN,
                                   smSCN   * aMinOldestFstViewSCN );
@@ -98,8 +98,8 @@ public:
     static void dump();
     static void dumpActiveTrans();
 
-    /* BUG-20862 ¹öÆÛ hash resize¸¦ ÇÏ±â À§ÇØ¼­ ´Ù¸¥ Æ®·£Àè¼ÇµéÀ» ¸ğµÎ Á¢±ÙÇÏÁö
-     * ¸øÇÏ°Ô ÇØ¾ß ÇÕ´Ï´Ù.*/
+    /* BUG-20862 ë²„í¼ hash resizeë¥¼ í•˜ê¸° ìœ„í•´ì„œ ë‹¤ë¥¸ íŠ¸ëœì­ì…˜ë“¤ì„ ëª¨ë‘ ì ‘ê·¼í•˜ì§€
+     * ëª»í•˜ê²Œ í•´ì•¼ í•©ë‹ˆë‹¤.*/
     static void block( void * aTrans, UInt   aTryMicroSec, idBool *aSuccess );
     static void unblock(void);
     
@@ -176,10 +176,10 @@ public:
     static UInt   getPreparedTransCnt() { return mPreparedTransCnt; }
 
     /* PROJ-1594 Volatile TBS */
-    /* Volatile loggingÀ» ÇÏ±â À§ÇØ ÇÊ¿äÇÑ ÇÔ¼ö */
+    /* Volatile loggingì„ í•˜ê¸° ìœ„í•´ í•„ìš”í•œ í•¨ìˆ˜ */
     static svrLogEnv *getVolatileLogEnv( void *aTrans );
 
-    /* BUG-19245: TransactionÀÌ µÎ¹ø FreeµÇ´Â °ÍÀ» DetectÇÏ±â À§ÇØ Ãß°¡µÊ */
+    /* BUG-19245: Transactionì´ ë‘ë²ˆ Freeë˜ëŠ” ê²ƒì„ Detectí•˜ê¸° ìœ„í•´ ì¶”ê°€ë¨ */
     static void checkFreeTransList();
 
     /* PROJ-1704 MVCC renwal */
@@ -225,7 +225,7 @@ public:
     static smxGetSmmViewSCNFunc   mGetSmmViewSCN;
     static smxGetSmmCommitSCNFunc mGetSmmCommitSCN;
 
-    /* BUG-33873 TRANSACTION_TABLE_SIZE ¿¡ µµ´ŞÇß¾ú´ÂÁö trc ·Î±×¿¡ ³²±ä´Ù */
+    /* BUG-33873 TRANSACTION_TABLE_SIZE ì— ë„ë‹¬í–ˆì—ˆëŠ”ì§€ trc ë¡œê·¸ì— ë‚¨ê¸´ë‹¤ */
     static UInt               mTransTableFullCount;
 };
 
@@ -267,14 +267,14 @@ IDE_RC smxTransMgr::freeTrans(smxTrans *aTrans)
 
     return IDE_FAILURE;
 }
-// active transaction list°ü·Ã ÇÔ¼ö ¸ğÀ½.
-// active transaction list´Â circular double link list.
+// active transaction listê´€ë ¨ í•¨ìˆ˜ ëª¨ìŒ.
+// active transaction listëŠ” circular double link list.
 inline void smxTransMgr::initATL()
 {
     mActiveTrans.mPrvAT = &mActiveTrans;
     mActiveTrans.mNxtAT = &mActiveTrans;
 }
-// active transaction list¿¡ add.
+// active transaction listì— add.
 inline void smxTransMgr::addAT(smxTrans *aTrans)
 {
     aTrans->mPrvAT = &mActiveTrans;
@@ -284,7 +284,7 @@ inline void smxTransMgr::addAT(smxTrans *aTrans)
     mActiveTrans.mNxtAT = aTrans;
     mActiveTransCnt++;
 }
-// active transaction list¿¡¼­ remove
+// active transaction listì—ì„œ remove
 inline void smxTransMgr::removeAT(smxTrans *aTrans)
 {
     aTrans->mPrvAT->mNxtAT = aTrans->mNxtAT;
@@ -304,7 +304,7 @@ inline idBool smxTransMgr::isEmptyActiveTrans()
     }
 }
 
-// prepared transaction list°ü·Ã ÇÔ¼ö ¸ğÀ½.
+// prepared transaction listê´€ë ¨ í•¨ìˆ˜ ëª¨ìŒ.
 inline void smxTransMgr::initPreparedList()
 {
     mPreparedTrans.mPrvPT = &mPreparedTrans;
@@ -422,8 +422,8 @@ inline void smxTransMgr::getSysMinDskFstViewSCN( smSCN* aSysMinDskFstViewSCN )
     mMinSCNBuilder.getMinDskFstViewSCN( aSysMinDskFstViewSCN );
 }
 
-// BUG-26881 Àß¸øµÈ CTS stampingÀ¸·Î accesÇÒ ¼ö ¾ø´Â row¸¦ Á¢±ÙÇÔ
-// systemÀÇ active transactionµé Áß ÃÖ¼ÒÀÇ oldestViewSCN(AgableSCN)À» ±¸ÇÔ
+// BUG-26881 ì˜ëª»ëœ CTS stampingìœ¼ë¡œ accesí•  ìˆ˜ ì—†ëŠ” rowë¥¼ ì ‘ê·¼í•¨
+// systemì˜ active transactionë“¤ ì¤‘ ìµœì†Œì˜ oldestViewSCN(AgableSCN)ì„ êµ¬í•¨
 inline void smxTransMgr::getSysAgableSCN( smSCN* aSysAgableSCN )
 {
     mMinSCNBuilder.getMinOldestFstViewSCN( aSysAgableSCN );

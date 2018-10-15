@@ -36,21 +36,21 @@ struct ulnIndLenPtrPair
 };
 
 /*
- * ªÁøÎ¿⁄∞° πŸ¿ŒµÂ∏¶ ªı∑Œ «œ∞≈≥™ BINDINFO GET RES ∏¶ πﬁæ∆º≠ IRD ∏¶ ª˝º∫«ÿæﬂ «“ « ø‰∞° ¿÷¿ª ∞ÊøÏ
- * ªı∑ŒøÓ(»§¿∫ ¿ÁªÁøÎ«“) Descriptor Record ∏¶ ¡ˆ¡§«ÿ¡÷¥¬ «‘ºˆ
+ * ÏÇ¨Ïö©ÏûêÍ∞Ä Î∞îÏù∏ÎìúÎ•º ÏÉàÎ°ú ÌïòÍ±∞ÎÇò BINDINFO GET RES Î•º Î∞õÏïÑÏÑú IRD Î•º ÏÉùÏÑ±Ìï¥Ïïº Ìï† ÌïÑÏöîÍ∞Ä ÏûàÏùÑ Í≤ΩÏö∞
+ * ÏÉàÎ°úÏö¥(ÌòπÏùÄ Ïû¨ÏÇ¨Ïö©Ìï†) Descriptor Record Î•º ÏßÄÏ†ïÌï¥Ï£ºÎäî Ìï®Ïàò
  */
 ACI_RC ulnBindArrangeNewDescRec(ulnDesc       *aDesc,
                                 acp_uint16_t   aIndex,
                                 ulnDescRec   **aOutputDescRec);
 
 /*
- * ªÁøÎ¿⁄∞° πŸ¿ŒµÂ«— æÓµÂ∑πΩ∫∏¶ ∞ËªÍ«œ¥¬ «‘ºˆ
+ * ÏÇ¨Ïö©ÏûêÍ∞Ä Î∞îÏù∏ÎìúÌïú Ïñ¥ÎìúÎ†àÏä§Î•º Í≥ÑÏÇ∞ÌïòÎäî Ìï®Ïàò
  */
 ACP_INLINE ACI_RC ulnBindGetBindOffsetAndElementSize(ulnDescRec   *aAppDescRec,
                                                         ulvULen      *aBindOffset,
                                                         acp_uint32_t *aElementSize)
 {
-    // fix BUG-20745 BIND_OFFSET_PTR ¡ˆø¯
+    // fix BUG-20745 BIND_OFFSET_PTR ÏßÄÏõê
     if( aAppDescRec->mParentDesc->mHeader.mBindOffsetPtr != NULL )
     {
         *aBindOffset = *(aAppDescRec->mParentDesc->mHeader.mBindOffsetPtr);
@@ -61,13 +61,13 @@ ACP_INLINE ACI_RC ulnBindGetBindOffsetAndElementSize(ulnDescRec   *aAppDescRec,
     }
 
     /*
-     * Note : ¿Ã ±‘ƒ¢¿∫ desc ∞° APD µÁ, ARD µÁ ªÛ∞¸æ¯¿Ã ¿˚øÎµ»¥Ÿ.
-     *        ¡Ô, SQL_ATTR_PARAM_BIND_TYPE ¿Ã∞«, SQL_ATTR_ROW_BIND_TYPE ¿Ã∞« ªÛ∞¸æ¯¥Ÿ¥¬ ∞Õ¿Ã¥Ÿ.
+     * Note : Ïù¥ Í∑úÏπôÏùÄ desc Í∞Ä APD Îì†, ARD Îì† ÏÉÅÍ¥ÄÏóÜÏù¥ Ï†ÅÏö©ÎêúÎã§.
+     *        Ï¶â, SQL_ATTR_PARAM_BIND_TYPE Ïù¥Í±¥, SQL_ATTR_ROW_BIND_TYPE Ïù¥Í±¥ ÏÉÅÍ¥ÄÏóÜÎã§Îäî Í≤ÉÏù¥Îã§.
      */
     if (aAppDescRec->mParentDesc->mHeader.mBindType != SQL_PARAM_BIND_BY_COLUMN)
     {
         /*
-         * row wise binding ¿œ ∂ßø°¥¬ ±∏¡∂√º¿« ≈©±‚∞° element size.
+         * row wise binding Ïùº ÎïåÏóêÎäî Íµ¨Ï°∞Ï≤¥Ïùò ÌÅ¨Í∏∞Í∞Ä element size.
          */
         *aElementSize = aAppDescRec->mParentDesc->mHeader.mBindType;
     }
@@ -76,25 +76,25 @@ ACP_INLINE ACI_RC ulnBindGetBindOffsetAndElementSize(ulnDescRec   *aAppDescRec,
 }
 
 /*
- * ªÁøÎ¿⁄ πˆ∆€¿« ¡÷º“∏¶ ∞ËªÍ«œ¥¬ «‘ºˆ.
+ * ÏÇ¨Ïö©Ïûê Î≤ÑÌçºÏùò Ï£ºÏÜåÎ•º Í≥ÑÏÇ∞ÌïòÎäî Ìï®Ïàò.
  *
  *      ULN_CALC_USER_BUF_ADDR()
  *      ulnBindCalcUserOctetLengthAddr()
  *      ulnBindCalcUserFileOptionAddr()
  *      ulnBindCalcUserIndLenPair()
  *
- * «‘ºˆµÈø°º≠ ∞¯≈Î¿∏∑Œ æ≤¿Ã¥¬ «‘ºˆ¿Ã¥Ÿ.
+ * Ìï®ÏàòÎì§ÏóêÏÑú Í≥µÌÜµÏúºÎ°ú Ïì∞Ïù¥Îäî Ìï®ÏàòÏù¥Îã§.
  *
- * BUGBUG : Execute Ω√ø°µµ ∏∏æ‡ ªÁøÎ¿⁄∞° indicator ptr øÕ strlen ptr ¿ª ∫–∏Æ«ﬂ¿ª ∞ÊøÏ
- *          ∞¢∞¢¿ª ∏µŒ ∞ÀªÁ«ÿº≠ SQL_NTS, SQL_NULL_DATA, length ∏¶ ∆«¥‹«ÿº≠
- *          ∞ËªÍ«ÿæﬂ «—¥Ÿ.
+ * BUGBUG : Execute ÏãúÏóêÎèÑ ÎßåÏïΩ ÏÇ¨Ïö©ÏûêÍ∞Ä indicator ptr ÏôÄ strlen ptr ÏùÑ Î∂ÑÎ¶¨ÌñàÏùÑ Í≤ΩÏö∞
+ *          Í∞ÅÍ∞ÅÏùÑ Î™®Îëê Í≤ÄÏÇ¨Ìï¥ÏÑú SQL_NTS, SQL_NULL_DATA, length Î•º ÌåêÎã®Ìï¥ÏÑú
+ *          Í≥ÑÏÇ∞Ìï¥Ïïº ÌïúÎã§.
  *
- *          ±◊∑Ø≥™ ¡ˆ±›¿∫ ±∏«ˆ«ÿ ≥ı¡ˆ æ æ“¥Ÿ.
+ *          Í∑∏Îü¨ÎÇò ÏßÄÍ∏àÏùÄ Íµ¨ÌòÑÌï¥ ÎÜìÏßÄ ÏïäÏïòÎã§.
  *
- *          ≥™¡ﬂø° ulnBindCalcUserOctetLengthAddr() ∏¶ »£√‚«œ¥¬ ∫Œ∫–µÈ¿ª
- *          ∏µŒ √£æ∆º≠ ∞Ì√ƒ ¡÷æÓæﬂ «—¥Ÿ.
- *          «ˆ¿Á Fetch() Ω√ø° ∫–∏Æµ» indicator, strlen πˆ∆€∏¶ ∞Ì∑¡«ÿº≠ ±Ê¿Ã∏¶ ∏Æ≈œ«œ¥¬ 
- *          ∞Õ¿∫ ±∏«ˆ¿Ã µ«æÓ ¿÷¥Ÿ.
+ *          ÎÇòÏ§ëÏóê ulnBindCalcUserOctetLengthAddr() Î•º Ìò∏Ï∂úÌïòÎäî Î∂ÄÎ∂ÑÎì§ÏùÑ
+ *          Î™®Îëê Ï∞æÏïÑÏÑú Í≥†Ï≥ê Ï£ºÏñ¥Ïïº ÌïúÎã§.
+ *          ÌòÑÏû¨ Fetch() ÏãúÏóê Î∂ÑÎ¶¨Îêú indicator, strlen Î≤ÑÌçºÎ•º Í≥†Î†§Ìï¥ÏÑú Í∏∏Ïù¥Î•º Î¶¨ÌÑ¥ÌïòÎäî 
+ *          Í≤ÉÏùÄ Íµ¨ÌòÑÏù¥ ÎêòÏñ¥ ÏûàÎã§.
  */
 #define ULN_CALC_USER_BUF_ADDR(aBoundAddr, aRowNumber, aBindOffset, aElementSize) \
     ((void *)((aBoundAddr) + (aBindOffset) + ((aRowNumber) * (aElementSize))))
@@ -105,7 +105,7 @@ ACP_INLINE acp_uint32_t *ulnBindCalcUserFileOptionAddr(ulnDescRec *aAppDescRec, 
     acp_uint32_t sElementSize;
 
     /*
-     * aRowNumber ¥¬ 0 ∫£¿ÃΩ∫ ¿Œµ¶Ω∫
+     * aRowNumber Îäî 0 Î≤†Ïù¥Ïä§ Ïù∏Îç±Ïä§
      */
 
     if (aAppDescRec->mFileOptionsPtr == NULL)
@@ -114,15 +114,15 @@ ACP_INLINE acp_uint32_t *ulnBindCalcUserFileOptionAddr(ulnDescRec *aAppDescRec, 
     }
 
     /*
-     * ±‚∫ª column wise binding ¿œ ∂ßø°¥¬ ªÁøÎ¿⁄∞° πŸ¿ŒµÂ«— µ•¿Ã≈Õ ≈∏¿‘ø° µ˚∏• ≈©±‚.
-     * ∞°∫Ø±Ê¿Ã∏¶ πŸ¿ŒµÂ«ﬂ¿ª ∂ßø°µµ ∏∂¬˘∞°¡ˆ¿Ã¥Ÿ. ªÁøÎ¿⁄∞° ¡ÿ∫Ò«ÿ µŒæ˙¥Ÿ∞Ì ≈Î∫∏«— πˆ∆€¿« ≈©±‚.
+     * Í∏∞Î≥∏ column wise binding Ïùº ÎïåÏóêÎäî ÏÇ¨Ïö©ÏûêÍ∞Ä Î∞îÏù∏ÎìúÌïú Îç∞Ïù¥ÌÑ∞ ÌÉÄÏûÖÏóê Îî∞Î•∏ ÌÅ¨Í∏∞.
+     * Í∞ÄÎ≥ÄÍ∏∏Ïù¥Î•º Î∞îÏù∏ÎìúÌñàÏùÑ ÎïåÏóêÎèÑ ÎßàÏ∞¨Í∞ÄÏßÄÏù¥Îã§. ÏÇ¨Ïö©ÏûêÍ∞Ä Ï§ÄÎπÑÌï¥ ÎëêÏóàÎã§Í≥† ÌÜµÎ≥¥Ìïú Î≤ÑÌçºÏùò ÌÅ¨Í∏∞.
      */
     sElementSize = ACI_SIZEOF(acp_uint32_t);
     sBindOffset  = 0;
 
     /*
-     * Note : sBindOffset ∞˙ sElementSize ¥¬ πŸ≤‹ « ø‰∞° ¿÷¿ª ∂ß,
-     *        ¡Ô, row wise binding Ω√ø°∏∏ πŸ≤€¥Ÿ.
+     * Note : sBindOffset Í≥º sElementSize Îäî Î∞îÍøÄ ÌïÑÏöîÍ∞Ä ÏûàÏùÑ Îïå,
+     *        Ï¶â, row wise binding ÏãúÏóêÎßå Î∞îÍæºÎã§.
      */
     ulnBindGetBindOffsetAndElementSize(aAppDescRec, &sBindOffset, &sElementSize);
 
@@ -138,7 +138,7 @@ ACP_INLINE void *ulnBindCalcUserDataAddr(ulnDescRec *aAppDescRec, acp_uint32_t a
     acp_uint32_t sElementSize;
 
     /*
-     * aRowNumber ¥¬ 0 ∫£¿ÃΩ∫ ¿Œµ¶Ω∫
+     * aRowNumber Îäî 0 Î≤†Ïù¥Ïä§ Ïù∏Îç±Ïä§
      */
 
     if (aAppDescRec->mDataPtr == NULL)
@@ -147,18 +147,18 @@ ACP_INLINE void *ulnBindCalcUserDataAddr(ulnDescRec *aAppDescRec, acp_uint32_t a
     }
 
     /*
-     * ±‚∫ª column wise binding ¿œ ∂ßø°¥¬ ªÁøÎ¿⁄∞° πŸ¿ŒµÂ«— µ•¿Ã≈Õ ≈∏¿‘ø° µ˚∏• ≈©±‚.
-     * ∞°∫Ø±Ê¿Ã∏¶ πŸ¿ŒµÂ«ﬂ¿ª ∂ßø°µµ ∏∂¬˘∞°¡ˆ¿Ã¥Ÿ. ªÁøÎ¿⁄∞° ¡ÿ∫Ò«ÿ µŒæ˙¥Ÿ∞Ì ≈Î∫∏«— πˆ∆€¿« ≈©±‚.
+     * Í∏∞Î≥∏ column wise binding Ïùº ÎïåÏóêÎäî ÏÇ¨Ïö©ÏûêÍ∞Ä Î∞îÏù∏ÎìúÌïú Îç∞Ïù¥ÌÑ∞ ÌÉÄÏûÖÏóê Îî∞Î•∏ ÌÅ¨Í∏∞.
+     * Í∞ÄÎ≥ÄÍ∏∏Ïù¥Î•º Î∞îÏù∏ÎìúÌñàÏùÑ ÎïåÏóêÎèÑ ÎßàÏ∞¨Í∞ÄÏßÄÏù¥Îã§. ÏÇ¨Ïö©ÏûêÍ∞Ä Ï§ÄÎπÑÌï¥ ÎëêÏóàÎã§Í≥† ÌÜµÎ≥¥Ìïú Î≤ÑÌçºÏùò ÌÅ¨Í∏∞.
      *
-     * Note : 64bit ∞™¿ª octet length ∑Œ æ¥¥Ÿ∞Ì «ÿµµ º≥∏∂ ±‚∞° ¥‹¿ß¿œ±Ó -_-;; ±◊≥… acp_uint32_t ∑Œ ƒ≥Ω∫∆√
-     *        «ÿº≠ Ω·µµ µ«∏Æ∂Û ª˝∞¢«‘.
+     * Note : 64bit Í∞íÏùÑ octet length Î°ú Ïì¥Îã§Í≥† Ìï¥ÎèÑ ÏÑ§Îßà Í∏∞Í∞Ä Îã®ÏúÑÏùºÍπå -_-;; Í∑∏ÎÉ• acp_uint32_t Î°ú Ï∫êÏä§ÌåÖ
+     *        Ìï¥ÏÑú Ïç®ÎèÑ ÎêòÎ¶¨Îùº ÏÉùÍ∞ÅÌï®.
      */
     sElementSize = (acp_uint32_t)(aAppDescRec->mMeta.mOctetLength);
     sBindOffset  = 0;
 
     /*
-     * Note : sBindOffset ∞˙ sElementSize ¥¬ πŸ≤‹ « ø‰∞° ¿÷¿ª ∂ß,
-     *        ¡Ô, row wise binding Ω√ø°∏∏ πŸ≤€¥Ÿ.
+     * Note : sBindOffset Í≥º sElementSize Îäî Î∞îÍøÄ ÌïÑÏöîÍ∞Ä ÏûàÏùÑ Îïå,
+     *        Ï¶â, row wise binding ÏãúÏóêÎßå Î∞îÍæºÎã§.
      */
     ulnBindGetBindOffsetAndElementSize(aAppDescRec, &sBindOffset, &sElementSize);
 
@@ -188,14 +188,14 @@ ACP_INLINE ulvSLen *ulnBindCalcUserOctetLengthAddr(ulnDescRec *aAppDescRec, acp_
     }
 
     /*
-     * ±‚∫ª column wise binding ¿œ ∂ßø° len or ind ¿« ªÁ¿Ã¡Ó
+     * Í∏∞Î≥∏ column wise binding Ïùº ÎïåÏóê len or ind Ïùò ÏÇ¨Ïù¥Ï¶à
      */
     sElementSize = ACI_SIZEOF(ulvSLen);
     sBindOffset  = 0;
 
     /*
-     * Note : sBindOffset ∞˙ sElementSize ¥¬ πŸ≤‹ « ø‰∞° ¿÷¿ª ∂ß,
-     *        ¡Ô, row wise binding Ω√ø°∏∏ πŸ≤€¥Ÿ.
+     * Note : sBindOffset Í≥º sElementSize Îäî Î∞îÍøÄ ÌïÑÏöîÍ∞Ä ÏûàÏùÑ Îïå,
+     *        Ï¶â, row wise binding ÏãúÏóêÎßå Î∞îÍæºÎã§.
      */
     ulnBindGetBindOffsetAndElementSize(aAppDescRec, &sBindOffset, &sElementSize);
 
@@ -206,7 +206,7 @@ ACP_INLINE ulvSLen *ulnBindCalcUserOctetLengthAddr(ulnDescRec *aAppDescRec, acp_
 }
 
 /*
- * ∆Ì¿«ªÛ aLengthRetrievedFromServer ø° 0 ¿Ã µÈæÓøÕµµ NULL_DATA ∑Œ √Î±ﬁ«œ¿⁄.
+ * Ìé∏ÏùòÏÉÅ aLengthRetrievedFromServer Ïóê 0 Ïù¥ Îì§Ïñ¥ÏôÄÎèÑ NULL_DATA Î°ú Ï∑®Í∏âÌïòÏûê.
  */
 ACP_INLINE ACI_RC ulnBindSetUserIndLenValue(ulnIndLenPtrPair *aIndLenPair, ulvSLen aLengthRetrievedFromServer)
 {
@@ -214,7 +214,7 @@ ACP_INLINE ACI_RC ulnBindSetUserIndLenValue(ulnIndLenPtrPair *aIndLenPair, ulvSL
         aLengthRetrievedFromServer == SQL_NULL_DATA)
     {
         /*
-         * NULL DATA ∞° ºˆΩ≈µ«æ˙¿ª ∂ß
+         * NULL DATA Í∞Ä ÏàòÏã†ÎêòÏóàÏùÑ Îïå
          */
         if (aIndLenPair->mLengthPtr != NULL)
         {
@@ -250,10 +250,10 @@ ACP_INLINE ACI_RC ulnBindSetUserIndLenValue(ulnIndLenPtrPair *aIndLenPair, ulvSL
      * 22002 : Indicator Variable Required but not supplied and
      *         the data retrieved was NULL.
      *
-     *         ¿Ã «‘ºˆ∏¶ »£√‚«— ∞˜ø°º≠ ¿˚¿˝»˜ æÀæ∆º≠ πﬂª˝Ω√ƒ— ¡÷∏È µ»¥Ÿ.
+     *         Ïù¥ Ìï®ÏàòÎ•º Ìò∏Ï∂úÌïú Í≥≥ÏóêÏÑú Ï†ÅÏ†àÌûà ÏïåÏïÑÏÑú Î∞úÏÉùÏãúÏºú Ï£ºÎ©¥ ÎêúÎã§.
      *
-     * Note : Fetch Ω√ø°∏∏ πﬂª˝Ω√≈∞∞Ì, outbinding parameter ¿« ∞ÊøÏø°¥¬ ¡∂øÎ»˜
-     *        π´Ω√«œ∞Ì, ø°∑Ø πﬂª˝Ω√≈∞¡ˆ æ ¿Ωø° ¡÷¿«!
+     * Note : Fetch ÏãúÏóêÎßå Î∞úÏÉùÏãúÌÇ§Í≥†, outbinding parameter Ïùò Í≤ΩÏö∞ÏóêÎäî Ï°∞Ïö©Ìûà
+     *        Î¨¥ÏãúÌïòÍ≥†, ÏóêÎü¨ Î∞úÏÉùÏãúÌÇ§ÏßÄ ÏïäÏùåÏóê Ï£ºÏùò!
      */
     ACI_EXCEPTION(LABEL_ERR_22002);
 
@@ -276,7 +276,7 @@ ACP_INLINE void ulnBindCalcUserIndLenPair(ulnDescRec       *aAppDescRec,
     if (sOctetLengthPtr != NULL || sIndicatorPtr != NULL)
     {
         /*
-         * ±‚∫ª column wise binding ¿œ ∂ßø° len or ind ¿« ªÁ¿Ã¡Ó
+         * Í∏∞Î≥∏ column wise binding Ïùº ÎïåÏóê len or ind Ïùò ÏÇ¨Ïù¥Ï¶à
          */
         sElementSize = ACI_SIZEOF(ulvSLen);
         sBindOffset  = 0;
@@ -310,8 +310,8 @@ ACP_INLINE void ulnBindCalcUserIndLenPair(ulnDescRec       *aAppDescRec,
 }
 
 /*
- * ªÁøÎ¿⁄∞° BindParameter Ω√ø° ¡¶∞¯«— BufferSize, StrLenOrIndPtr ø° ¿÷¥¬∞™¿ª ∞°¡ˆ∞Ìº≠
- * ªÁøÎ¿⁄∞° Ω«¡¶ ¿¸º€«œ∞Ì¿⁄ «œ¥¬ µ•¿Ã≈Õ¿« ªÁ¿Ã¡Ó∏¶ ±∏«—¥Ÿ.
+ * ÏÇ¨Ïö©ÏûêÍ∞Ä BindParameter ÏãúÏóê Ï†úÍ≥µÌïú BufferSize, StrLenOrIndPtr Ïóê ÏûàÎäîÍ∞íÏùÑ Í∞ÄÏßÄÍ≥†ÏÑú
+ * ÏÇ¨Ïö©ÏûêÍ∞Ä Ïã§Ï†ú Ï†ÑÏÜ°ÌïòÍ≥†Ïûê ÌïòÎäî Îç∞Ïù¥ÌÑ∞Ïùò ÏÇ¨Ïù¥Ï¶àÎ•º Íµ¨ÌïúÎã§.
  */
 ACP_INLINE ACI_RC ulnBindCalcUserDataLen(ulnCTypeID    aCType,
                                             ulvSLen       aUserBufferSize,
@@ -326,13 +326,13 @@ ACP_INLINE ACI_RC ulnBindCalcUserDataLen(ulnCTypeID    aCType,
     ulvSLen       sWCharMaxLen    = 0;
 
     /*
-     * Note : ¿Ã «‘ºˆ∏¶ »£√‚«“ ∂ß aUserDataPtr ø° ¿˙¿Âµ» µ•¿Ã≈Õ¿« ≈∏¿‘¿Ã CHAR or BINARY
-     *        ¿Œ ∞Õ¿ª »Æ¿Œ«ÿæﬂ «—¥Ÿ.
+     * Note : Ïù¥ Ìï®ÏàòÎ•º Ìò∏Ï∂úÌï† Îïå aUserDataPtr Ïóê Ï†ÄÏû•Îêú Îç∞Ïù¥ÌÑ∞Ïùò ÌÉÄÏûÖÏù¥ CHAR or BINARY
+     *        Ïù∏ Í≤ÉÏùÑ ÌôïÏù∏Ìï¥Ïïº ÌïúÎã§.
      */
     if (aUserDataPtr == NULL)
     {
         /*
-         * SQLBindParameter() ø°º≠ ParamValuePtr ¿Ã NULL ¿Ã∏È, NULL DATA ¿Ã¥Ÿ.
+         * SQLBindParameter() ÏóêÏÑú ParamValuePtr Ïù¥ NULL Ïù¥Î©¥, NULL DATA Ïù¥Îã§.
          */
         aUserStrLenOrInd = SQL_NULL_DATA;
     }
@@ -351,16 +351,16 @@ ACP_INLINE ACI_RC ulnBindCalcUserDataLen(ulnCTypeID    aCType,
                     sUserDataLength = acpCStrLen((acp_char_t *)aUserDataPtr, ACP_SINT32_MAX);
                 }
             }
-            // BUG-25937 SQL_WCHAR∑Œ CLOB¿ª ≥÷¿∏∏È ¡¶¥Î∑Œ æ»µÈæÓ∞©¥œ¥Ÿ.
-            // WCHAR µ•¿Ã≈∏¿« ±Ê¿Ã∏¶ ¡§»Æ»˜ ±∏«—¥Ÿ.
-            // ±Ê¿Ã∏¶ ¿ﬂ∏¯±∏«œ∏È º≠πˆø° ¿ﬂ∏¯µ» ∞™µÈ¿Ã µÈæÓ∞£¥Ÿ.
+            // BUG-25937 SQL_WCHARÎ°ú CLOBÏùÑ ÎÑ£ÏúºÎ©¥ Ï†úÎåÄÎ°ú ÏïàÎì§Ïñ¥Í∞ëÎãàÎã§.
+            // WCHAR Îç∞Ïù¥ÌÉÄÏùò Í∏∏Ïù¥Î•º Ï†ïÌôïÌûà Íµ¨ÌïúÎã§.
+            // Í∏∏Ïù¥Î•º ÏûòÎ™ªÍµ¨ÌïòÎ©¥ ÏÑúÎ≤ÑÏóê ÏûòÎ™ªÎêú Í∞íÎì§Ïù¥ Îì§Ïñ¥Í∞ÑÎã§.
             else if(aCType == ULN_CTYPE_WCHAR)
             {
 
                 /* bug-36698: wrong length when SQL_C_WCHAR and 0 buflen.
-                   wchar ≈∏¿‘µµ ¿ß¿« char ≈∏¿‘√≥∑≥, buflen∞° 0¿Œ∞ÊøÏø°
-                   ¥Î«ÿº≠ √≥∏Æ«ÿ ¡÷µµ∑œ «—¥Ÿ.
-                   cf) Power Builder ø°º≠ parameter∞° wchar ≈∏¿‘¿∏∑Œ µÈæÓø» */
+                   wchar ÌÉÄÏûÖÎèÑ ÏúÑÏùò char ÌÉÄÏûÖÏ≤òÎüº, buflenÍ∞Ä 0Ïù∏Í≤ΩÏö∞Ïóê
+                   ÎåÄÌï¥ÏÑú Ï≤òÎ¶¨Ìï¥ Ï£ºÎèÑÎ°ù ÌïúÎã§.
+                   cf) Power Builder ÏóêÏÑú parameterÍ∞Ä wchar ÌÉÄÏûÖÏúºÎ°ú Îì§Ïñ¥Ïò¥ */
                 if (aUserBufferSize > ULN_vLEN(0))
                 {
                     sWCharMaxLen = aUserBufferSize;
@@ -380,7 +380,7 @@ ACP_INLINE ACI_RC ulnBindCalcUserDataLen(ulnCTypeID    aCType,
             else
             {
                 /*
-                 * aCType ¿∫ ULN_CTYPE_BINARY, ULN_CTYPE_BYTE, ULN_CTYPE_BIT, ULN_CTYPE_NIBBLE
+                 * aCType ÏùÄ ULN_CTYPE_BINARY, ULN_CTYPE_BYTE, ULN_CTYPE_BIT, ULN_CTYPE_NIBBLE
                  */
                 sUserDataLength = aUserBufferSize;
             }
@@ -394,7 +394,7 @@ ACP_INLINE ACI_RC ulnBindCalcUserDataLen(ulnCTypeID    aCType,
         case SQL_DEFAULT_PARAM:
         case SQL_DATA_AT_EXEC:
             /*
-             * BUGBUG : æ∆¡˜ ±∏«ˆ æ»«‘
+             * BUGBUG : ÏïÑÏßÅ Íµ¨ÌòÑ ÏïàÌï®
              */
             ACI_TEST(1);
             break;
@@ -403,7 +403,7 @@ ACP_INLINE ACI_RC ulnBindCalcUserDataLen(ulnCTypeID    aCType,
             if (aUserStrLenOrInd <= SQL_LEN_DATA_AT_EXEC(0))
             {
                 /*
-                 * SQL_LEN_DATA_AT_EXEC() ∏≈≈©∑Œø° ¿««— ∞™
+                 * SQL_LEN_DATA_AT_EXEC() Îß§ÌÅ¨Î°úÏóê ÏùòÌïú Í∞í
                  */
                 ACI_TEST(1);
             }

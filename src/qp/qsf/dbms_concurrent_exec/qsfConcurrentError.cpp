@@ -82,7 +82,7 @@ static IDE_RC qsfEstimateGetText( mtcNode*     aNode,
 mtfModule qsfConcGetTextModule = {
     1 | MTC_NODE_OPERATOR_MISC | MTC_NODE_VARIABLE_TRUE,
     ~0,
-    1.0,                    // default selectivity (∫Ò±≥ ø¨ªÍ¿⁄ æ∆¥‘)
+    1.0,                    // default selectivity (ÎπÑÍµê Ïó∞ÏÇ∞Ïûê ÏïÑÎãò)
     qsfFunctionName4,
     NULL,
     mtf::initializeDefault,
@@ -93,7 +93,7 @@ mtfModule qsfConcGetTextModule = {
 mtfModule qsfConcGetErrCntModule = {
     1 | MTC_NODE_OPERATOR_MISC | MTC_NODE_VARIABLE_TRUE,
     ~0,
-    1.0,                    // default selectivity (∫Ò±≥ ø¨ªÍ¿⁄ æ∆¥‘)
+    1.0,                    // default selectivity (ÎπÑÍµê Ïó∞ÏÇ∞Ïûê ÏïÑÎãò)
     qsfFunctionName3,
     NULL,
     mtf::initializeDefault,
@@ -104,7 +104,7 @@ mtfModule qsfConcGetErrCntModule = {
 mtfModule qsfConcGetErrMsgModule = {
     1 | MTC_NODE_OPERATOR_MISC | MTC_NODE_VARIABLE_TRUE,
     ~0,
-    1.0,                    // default selectivity (∫Ò±≥ ø¨ªÍ¿⁄ æ∆¥‘)
+    1.0,                    // default selectivity (ÎπÑÍµê Ïó∞ÏÇ∞Ïûê ÏïÑÎãò)
     qsfFunctionName2,
     NULL,
     mtf::initializeDefault,
@@ -115,7 +115,7 @@ mtfModule qsfConcGetErrMsgModule = {
 mtfModule qsfConcGetErrSeqModule = {
     1 | MTC_NODE_OPERATOR_MISC | MTC_NODE_VARIABLE_TRUE,
     ~0,
-    1.0,                    // default selectivity (∫Ò±≥ ø¨ªÍ¿⁄ æ∆¥‘)
+    1.0,                    // default selectivity (ÎπÑÍµê Ïó∞ÏÇ∞Ïûê ÏïÑÎãò)
     qsfFunctionName5,
     NULL,
     mtf::initializeDefault,
@@ -126,7 +126,7 @@ mtfModule qsfConcGetErrSeqModule = {
 mtfModule qsfConcGetErrCodeModule = {
     1 | MTC_NODE_OPERATOR_MISC | MTC_NODE_VARIABLE_TRUE,
     ~0,
-    1.0,                    // default selectivity (∫Ò±≥ ø¨ªÍ¿⁄ æ∆¥‘)
+    1.0,                    // default selectivity (ÎπÑÍµê Ïó∞ÏÇ∞Ïûê ÏïÑÎãò)
     qsfFunctionName1,
     NULL,
     mtf::initializeDefault,

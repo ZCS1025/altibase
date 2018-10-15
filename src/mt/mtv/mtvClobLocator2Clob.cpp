@@ -121,12 +121,12 @@ IDE_RC mtvCalculate_ClobLocator2Clob( mtcNode*,
     else
     {
         // BUG-38842
-        // clob to varchar conversion½Ã ÁöÁ¤ÇÑ ±æÀÌ¸¸Å­¸¸ º¯È¯ÇÑ´Ù.
+        // clob to varchar conversionì‹œ ì§€ì •í•œ ê¸¸ì´ë§Œí¼ë§Œ ë³€í™˜í•œë‹¤.
         if ( MTU_CLOB_TO_VARCHAR_PRECISION < sLobLength )
         {
             sLobLength = MTU_CLOB_TO_VARCHAR_PRECISION;
 
-            // ¹®ÀÚ°¡ Â©¸± ¼ö ÀÖ´Ù.
+            // ë¬¸ìžê°€ ì§¤ë¦´ ìˆ˜ ìžˆë‹¤.
             sTruncated = ID_TRUE;
         }
         else

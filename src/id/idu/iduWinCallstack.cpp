@@ -723,12 +723,12 @@ int iduCallStackWINDOWS(const CONTEXT *aContext)
 
 
 /***********************************************************************
- * Description : Windows Minidump ±â·Ï
+ * Description : Windows Minidump ê¸°ë¡
  *
- *   aExceptionPtr [IN] - ¿¹¿ÜÀÇ Á¾·ù, ASSERTÀÏ °æ¿ì NULLÀÌ ³Ñ¾î¿Â´Ù.
- *   aDumpFile     [IN] - MiniDump±â·Ï ÇÒ FileÀÇ HandleÀÌ´Ù.
- *                        º» ÆÄÀÏ¿¡¼­ idf µîÀ» ¸¸µé ¼ö ¾øÀ¸¹Ç·Î,
- *                        ¹Ì¸® ¸¸µé¾î¼­ ³Ñ°Ü¹Ş´Â´Ù.
+ *   aExceptionPtr [IN] - ì˜ˆì™¸ì˜ ì¢…ë¥˜, ASSERTì¼ ê²½ìš° NULLì´ ë„˜ì–´ì˜¨ë‹¤.
+ *   aDumpFile     [IN] - MiniDumpê¸°ë¡ í•  Fileì˜ Handleì´ë‹¤.
+ *                        ë³¸ íŒŒì¼ì—ì„œ idf ë“±ì„ ë§Œë“¤ ìˆ˜ ì—†ìœ¼ë¯€ë¡œ,
+ *                        ë¯¸ë¦¬ ë§Œë“¤ì–´ì„œ ë„˜ê²¨ë°›ëŠ”ë‹¤.
  **********************************************************************/
 void iduWriteMiniDump( void*         aExceptionPtr,
                        HANDLE        aDumpFile )

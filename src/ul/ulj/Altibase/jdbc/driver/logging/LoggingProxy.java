@@ -31,10 +31,10 @@ import Altibase.jdbc.driver.AltibaseLob;
 import Altibase.jdbc.driver.AltibasePooledConnection;
 
 /**
- * JDBC ÀÎÅÍÆäÀÌ½º¸¦ hookingÇÏ¿© ·Î±ë±â´ÉÀ» ¼öÇàÇÏ´Â ÇÁ¶ô½Ã Å¬·¡½º</br>
+ * JDBC ì¸í„°íŽ˜ì´ìŠ¤ë¥¼ hookingí•˜ì—¬ ë¡œê¹…ê¸°ëŠ¥ì„ ìˆ˜í–‰í•˜ëŠ” í”„ë½ì‹œ í´ëž˜ìŠ¤</br>
  * 
- * ÀÌ Å¬·¡½º´Â JDBC API¸¦ hookingÇÏ¿© ·Î±×°ü·Ã µ¿ÀÛÀ» ÀÏºÎ Ãß°¡ÇÑ´Ù.
- * ¸î¸î ¸Þ¼Òµå´Â ÇÏÀ§Å¬·¡½º¿¡¼­ overrideing µÈ´Ù.
+ * ì´ í´ëž˜ìŠ¤ëŠ” JDBC APIë¥¼ hookingí•˜ì—¬ ë¡œê·¸ê´€ë ¨ ë™ìž‘ì„ ì¼ë¶€ ì¶”ê°€í•œë‹¤.
+ * ëª‡ëª‡ ë©”ì†Œë“œëŠ” í•˜ìœ„í´ëž˜ìŠ¤ì—ì„œ overrideing ëœë‹¤.
  * 
  * @author yjpark
  *
@@ -68,8 +68,8 @@ public class LoggingProxy implements InvocationHandler
     }
 
     /**
-     * JDBC API°¡ hooking µÉ¶§ ¼öÇàµÇ´Â ¸Þ¼Òµå.</br>
-     * JDBC API¸¦ hookingÇØ ÀÏºÎ ·Î±ë ±â´ÉÀ» ¼öÇàÇÏ°í invoke·Î ÇØ´ç ¸Þ¼Òµå¸¦ ¼öÇàÇÑ´Ù.
+     * JDBC APIê°€ hooking ë ë•Œ ìˆ˜í–‰ë˜ëŠ” ë©”ì†Œë“œ.</br>
+     * JDBC APIë¥¼ hookingí•´ ì¼ë¶€ ë¡œê¹… ê¸°ëŠ¥ì„ ìˆ˜í–‰í•˜ê³  invokeë¡œ í•´ë‹¹ ë©”ì†Œë“œë¥¼ ìˆ˜í–‰í•œë‹¤.
      */
     public Object invoke(Object aProxy, Method aMethod, Object[] aArgs) throws Throwable
     {
@@ -101,8 +101,8 @@ public class LoggingProxy implements InvocationHandler
     }
 
     /**
-     * ¸Þ¼Òµå°¡ ½ÃÀÛÇÏ´Â ½ÃÁ¡¿¡ ¸Þ¼ÒµåÀÌ¸§°ú ¾Æ±Ô¸ÕÆ® Á¤º¸¸¦ ·Î±×·Î ³²±ä´Ù.</br>
-     * ÀÌ¶§ ¸Å¼Òµå¸íÀÌ toStringÀÎ °æ¿ì´Â ¹«½ÃÇÑ´Ù.
+     * ë©”ì†Œë“œê°€ ì‹œìž‘í•˜ëŠ” ì‹œì ì— ë©”ì†Œë“œì´ë¦„ê³¼ ì•„ê·œë¨¼íŠ¸ ì •ë³´ë¥¼ ë¡œê·¸ë¡œ ë‚¨ê¸´ë‹¤.</br>
+     * ì´ë•Œ ë§¤ì†Œë“œëª…ì´ toStringì¸ ê²½ìš°ëŠ” ë¬´ì‹œí•œë‹¤.
      * 
      * @param aMethod
      * @param aArgs
@@ -118,28 +118,28 @@ public class LoggingProxy implements InvocationHandler
     }
 
     /**
-     * CONFIG·¹º§·Î ¼ÂÆÃµÇ¾úÀ» ¶§ sql¹®À» Ãâ·ÂÇÑ´Ù.
+     * CONFIGë ˆë²¨ë¡œ ì…‹íŒ…ë˜ì—ˆì„ ë•Œ sqlë¬¸ì„ ì¶œë ¥í•œë‹¤.
      * @param aMethod
      * @param aResult
      * @param aArgs
      */
     protected void logSql(Method aMethod, Object aResult, Object[] aArgs)
     {
-        // ±âº»ÀûÀÎ Proxy°´Ã¼´Â sql ·Î±ëÀ» ÇÏÁö ¾Ê´Â´Ù.
+        // ê¸°ë³¸ì ì¸ Proxyê°ì²´ëŠ” sql ë¡œê¹…ì„ í•˜ì§€ ì•ŠëŠ”ë‹¤.
     }
     
     /**
-     * sql¹®ÀÌ ½ÇÇàµÇ´Âµ¥ °É¸° ½Ã°£À» Ãâ·ÂÇÑ´Ù.
+     * sqlë¬¸ì´ ì‹¤í–‰ë˜ëŠ”ë° ê±¸ë¦° ì‹œê°„ì„ ì¶œë ¥í•œë‹¤.
      * @param aMethod
      * @param aStartTime
      */
     protected void logSqlTiming(Method aMethod, long aStartTime)
     {
-        // ±âº»ÀûÀÎ Proxy°´Ã¼´Â sql timing Á¤º¸¸¦ ·Î±ëÇÏÁö ¾Ê´Â´Ù.
+        // ê¸°ë³¸ì ì¸ Proxyê°ì²´ëŠ” sql timing ì •ë³´ë¥¼ ë¡œê¹…í•˜ì§€ ì•ŠëŠ”ë‹¤.
     }
     
     /**
-     * ¸Þ¼Òµå ½ÇÇà°á°ú¸¦ ÀÌ¿ëÇØ ÇÊ¿äÇÏ¸é Proxy°´Ã¼¸¦ ¸¸µé°í ·Î±×¸¦ ³²±ä´Ù.
+     * ë©”ì†Œë“œ ì‹¤í–‰ê²°ê³¼ë¥¼ ì´ìš©í•´ í•„ìš”í•˜ë©´ Proxyê°ì²´ë¥¼ ë§Œë“¤ê³  ë¡œê·¸ë¥¼ ë‚¨ê¸´ë‹¤.
      * @param aResult
      * @return
      */
@@ -169,8 +169,8 @@ public class LoggingProxy implements InvocationHandler
     }
     
     /**
-     * ¸Þ¼Òµå ½ÇÇà °á°ú°ªÀ» ·Î±×·Î ³²±ä´Ù.</br>
-     * ¸Þ¼Òµå¸íÀÌ toStringÀÎ °æ¿ì´Â ¹«½ÃÇÏ°í ¸®ÅÏ°ªÀÌ ÀÖÀ»¶§¸¸ FINE·¹º§·Î ÇØ´ç Object¸¦ Ãâ·ÂÇÑ´Ù.
+     * ë©”ì†Œë“œ ì‹¤í–‰ ê²°ê³¼ê°’ì„ ë¡œê·¸ë¡œ ë‚¨ê¸´ë‹¤.</br>
+     * ë©”ì†Œë“œëª…ì´ toStringì¸ ê²½ìš°ëŠ” ë¬´ì‹œí•˜ê³  ë¦¬í„´ê°’ì´ ìžˆì„ë•Œë§Œ FINEë ˆë²¨ë¡œ í•´ë‹¹ Objectë¥¼ ì¶œë ¥í•œë‹¤.
      * 
      * @param aMethod
      * @param aResult
@@ -192,10 +192,10 @@ public class LoggingProxy implements InvocationHandler
     }
     
     /**
-     * close ¸Þ¼Òµå¸¦ ·Î±ëÇÑ´Ù.</br>
-     * ÀÌ¶§ ÇØ´çÇÏ´Â ¿ÀºêÁ§Æ®ÀÇ unique id¸¦ °°ÀÌ Ãâ·ÂÇÑ´Ù.</br>
-     * ¿¹¸¦ µé¾î ConnectionÀÌ³ª Statement°°Àº °æ¿ì session id³ª stmt id¸¦ Ãâ·ÂÇÏ°í ±× ÀÌ¿ÜÀÇ °æ¿ì¿¡´Â</br> 
-     * ObjectÀÇ hashcode¸¦ Ãâ·ÂÇÑ´Ù.
+     * close ë©”ì†Œë“œë¥¼ ë¡œê¹…í•œë‹¤.</br>
+     * ì´ë•Œ í•´ë‹¹í•˜ëŠ” ì˜¤ë¸Œì íŠ¸ì˜ unique idë¥¼ ê°™ì´ ì¶œë ¥í•œë‹¤.</br>
+     * ì˜ˆë¥¼ ë“¤ì–´ Connectionì´ë‚˜ Statementê°™ì€ ê²½ìš° session idë‚˜ stmt idë¥¼ ì¶œë ¥í•˜ê³  ê·¸ ì´ì™¸ì˜ ê²½ìš°ì—ëŠ”</br> 
+     * Objectì˜ hashcodeë¥¼ ì¶œë ¥í•œë‹¤.
      * 
      * @param aMethod
      */
@@ -216,7 +216,7 @@ public class LoggingProxy implements InvocationHandler
     }
     
     /**
-     * ¾Æ±Ô¸ÕÆ®ÀÇ ÀÎµ¦½º, Å¸ÀÔ, °ª Á¤º¸¸¦ FINE·¹º§·Î ³²±ä´Ù.
+     * ì•„ê·œë¨¼íŠ¸ì˜ ì¸ë±ìŠ¤, íƒ€ìž…, ê°’ ì •ë³´ë¥¼ FINEë ˆë²¨ë¡œ ë‚¨ê¸´ë‹¤.
      * 
      * @param aArgs
      * @return
@@ -237,8 +237,8 @@ public class LoggingProxy implements InvocationHandler
     }
 
     /**
-     * ¾Æ±Ô¸ÕÆ®Á¤º¸¸¦ ÀÌ¿ëÇØ StringÀ» ±¸¼ºÇÑ´Ù..</br>
-     * ÀÌ¶§ ¾Æ±Ô¸ÕÆ®°¡ StringÀÎ °æ¿ì¿¡´Â "¸¦ Ãß°¡ÇÏ¿© ¾Æ·¡¿Í °°Àº ÇüÅÂ°¡ µÇ¸ç CONFIG·¹º§·Î sqlÀ» Ãâ·ÂÇÒ¶§ »ç¿ëµÈ´Ù.</br>
+     * ì•„ê·œë¨¼íŠ¸ì •ë³´ë¥¼ ì´ìš©í•´ Stringì„ êµ¬ì„±í•œë‹¤..</br>
+     * ì´ë•Œ ì•„ê·œë¨¼íŠ¸ê°€ Stringì¸ ê²½ìš°ì—ëŠ” "ë¥¼ ì¶”ê°€í•˜ì—¬ ì•„ëž˜ì™€ ê°™ì€ í˜•íƒœê°€ ë˜ë©° CONFIGë ˆë²¨ë¡œ sqlì„ ì¶œë ¥í• ë•Œ ì‚¬ìš©ëœë‹¤.</br>
      * (1, "aaa", "bbb", 222)
      * 
      * @param aArgs

@@ -19,7 +19,7 @@
  *
  * $Id: sdpscFT.h 82075 2018-01-17 06:39:52Z jina.kim $
  *
- * º» ÆÄÀÏÀº Circular-List Managed SegmentÀÇ Fixed Table¿¡ ´ëÇÑ Çì´õÆÄÀÏÀÌ´Ù.
+ * ë³¸ íŒŒì¼ì€ Circular-List Managed Segmentì˜ Fixed Tableì— ëŒ€í•œ í—¤ë”íŒŒì¼ì´ë‹¤.
  *
  ***********************************************************************/
 
@@ -31,56 +31,56 @@
 
 
 /***********************************************************************
- * X$DISK_UNDO_EXTDIRHDR Dump TableÀÇ ·¹ÄÚµå
- * Dump Extent Dir Control Header Á¤ÀÇ
+ * X$DISK_UNDO_EXTDIRHDR Dump Tableì˜ ë ˆì½”ë“œ
+ * Dump Extent Dir Control Header ì •ì˜
  ***********************************************************************/
 typedef struct sdpscDumpExtDirCntlHdr
 {
-    UChar        mSegType;       // DumpÇÑ SegmentÀÇ Å¸ÀÔ
-    scSpaceID    mSegSpaceID;    // SegmentÀÇ TbsID
-    scPageID     mSegPageID;     // SegmentÀÇ PID
-    scPageID     mMyPageID;      // ÇöÀç ExtDirCtlHeaderÀÇ PID
-    UShort       mExtCnt;        // ÆäÀÌÁö³»ÀÇ Extent °³¼ö
-    scPageID     mNxtExtDir;     // ´ÙÀ½ Extent Map ÆäÀÌÁöÀÇ PID
-    UShort       mMaxExtCnt;     // ÃÖ´ë Extent°³¼ö ÀúÀå
-    scOffset     mMapOffset;     // ÆäÀÌÁö ³»ÀÇ Extent MapÀÇ Offset
-    smSCN        mLstCommitSCN;  // ¸¶Áö¸· »ç¿ëÇÑ Ä¿¹ÔÇÑ Æ®·£Àè¼ÇÀÇ CommitSCN
-    smSCN        mFstDskViewSCN; // »ç¿ëÇß´ø È¤Àº »ç¿ëÁßÀÎ Æ®·£Àè¼ÇÀÇ Fst Disk ViewSCN
+    UChar        mSegType;       // Dumpí•œ Segmentì˜ íƒ€ì…
+    scSpaceID    mSegSpaceID;    // Segmentì˜ TbsID
+    scPageID     mSegPageID;     // Segmentì˜ PID
+    scPageID     mMyPageID;      // í˜„ì¬ ExtDirCtlHeaderì˜ PID
+    UShort       mExtCnt;        // í˜ì´ì§€ë‚´ì˜ Extent ê°œìˆ˜
+    scPageID     mNxtExtDir;     // ë‹¤ìŒ Extent Map í˜ì´ì§€ì˜ PID
+    UShort       mMaxExtCnt;     // ìµœëŒ€ Extentê°œìˆ˜ ì €ì¥
+    scOffset     mMapOffset;     // í˜ì´ì§€ ë‚´ì˜ Extent Mapì˜ Offset
+    smSCN        mLstCommitSCN;  // ë§ˆì§€ë§‰ ì‚¬ìš©í•œ ì»¤ë°‹í•œ íŠ¸ëœì­ì…˜ì˜ CommitSCN
+    smSCN        mFstDskViewSCN; // ì‚¬ìš©í–ˆë˜ í˜¹ì€ ì‚¬ìš©ì¤‘ì¸ íŠ¸ëœì­ì…˜ì˜ Fst Disk ViewSCN
 
-    UInt          mTxExtCnt;        // TSS Segment¿¡ ÇÒ´çµÈ Extent ÃÑ °³¼ö
-    UInt          mExpiredExtCnt;   // Segment¿¡ ÇÒ´çµÈ Expire»óÅÂÀÇ Extent °³¼ö
-    UInt          mUnExpiredExtCnt; // Segment¿¡ ÇÒ´çµÈ UnExpire »óÅÂÀÇ Extent ¼ö
-    UInt          mUnStealExtCnt;   // SegHdr¿Í Áö±İ º¸°í ÀÖ´Â Ext
-    smSCN         mSysMinViewSCN;   // Segment Á¶È¸ÇÒ ´ç½ÃÀÇ minViewSCN
-    UChar         mIsOnline;        // binding µÇ¾î ÀÖ´ÂÁö ¿©ºÎ
+    UInt          mTxExtCnt;        // TSS Segmentì— í• ë‹¹ëœ Extent ì´ ê°œìˆ˜
+    UInt          mExpiredExtCnt;   // Segmentì— í• ë‹¹ëœ Expireìƒíƒœì˜ Extent ê°œìˆ˜
+    UInt          mUnExpiredExtCnt; // Segmentì— í• ë‹¹ëœ UnExpire ìƒíƒœì˜ Extent ìˆ˜
+    UInt          mUnStealExtCnt;   // SegHdrì™€ ì§€ê¸ˆ ë³´ê³  ìˆëŠ” Ext
+    smSCN         mSysMinViewSCN;   // Segment ì¡°íšŒí•  ë‹¹ì‹œì˜ minViewSCN
+    UChar         mIsOnline;        // binding ë˜ì–´ ìˆëŠ”ì§€ ì—¬ë¶€
 } sdpscDumpExtDirCntlHdr;
 
 /***********************************************************************
- * X$DISK_UNDO_SEGHDR Dump TableÀÇ ·¹ÄÚµå
+ * X$DISK_UNDO_SEGHDR Dump Tableì˜ ë ˆì½”ë“œ
  * Dump Segment Header
  ***********************************************************************/
 typedef struct sdpscDumpSegHdrInfo
 {
-    UChar         mSegType;       // DumpÇÑ SegmentÀÇ Å¸ÀÔ
+    UChar         mSegType;       // Dumpí•œ Segmentì˜ íƒ€ì…
     scPageID      mSegPID;        // PID
     sdpSegState   mSegState;      // SEG_STATE
-    UInt          mTotExtCnt;     // Segment¿¡ ÇÒ´çµÈ Extent ÃÑ °³¼ö
-    scPageID      mLstExtDir;     // ¸¶Áö¸· ExtDir ÆäÀÌÁöÀÇ PID
-    UInt          mTotExtDirCnt;  // Extent MapÀÇ ÃÑ °³¼ö (SegHdr Á¦¿ÜÇÑ°³¼ö)
-    UInt          mPageCntInExt;  // ExtentÀÇ ÆäÀÌÁö °³¼ö
-    UShort        mExtCntInPage;  // ÆäÀÌÁö³»ÀÇ Extent °³¼ö
-    scPageID      mNxtExtDir;     // ´ÙÀ½ Extent Map ÆäÀÌÁöÀÇ PID
-    UShort        mMaxExtCnt;     // ÃÖ´ë Extent°³¼ö ÀúÀå
-    scOffset      mMapOffset;     // ÆäÀÌÁö ³»ÀÇ Extent MapÀÇ Offset
-    smSCN         mLstCommitSCN;  // ¸¶Áö¸· »ç¿ëÇÑ Ä¿¹ÔÇÑ Æ®·£Àè¼ÇÀÇ CommitSCN
-    smSCN         mFstDskViewSCN; // »ç¿ëÇß´ø È¤Àº »ç¿ëÁßÀÎ Æ®·£Àè¼ÇÀÇ Fst Disk ViewSCN
+    UInt          mTotExtCnt;     // Segmentì— í• ë‹¹ëœ Extent ì´ ê°œìˆ˜
+    scPageID      mLstExtDir;     // ë§ˆì§€ë§‰ ExtDir í˜ì´ì§€ì˜ PID
+    UInt          mTotExtDirCnt;  // Extent Mapì˜ ì´ ê°œìˆ˜ (SegHdr ì œì™¸í•œê°œìˆ˜)
+    UInt          mPageCntInExt;  // Extentì˜ í˜ì´ì§€ ê°œìˆ˜
+    UShort        mExtCntInPage;  // í˜ì´ì§€ë‚´ì˜ Extent ê°œìˆ˜
+    scPageID      mNxtExtDir;     // ë‹¤ìŒ Extent Map í˜ì´ì§€ì˜ PID
+    UShort        mMaxExtCnt;     // ìµœëŒ€ Extentê°œìˆ˜ ì €ì¥
+    scOffset      mMapOffset;     // í˜ì´ì§€ ë‚´ì˜ Extent Mapì˜ Offset
+    smSCN         mLstCommitSCN;  // ë§ˆì§€ë§‰ ì‚¬ìš©í•œ ì»¤ë°‹í•œ íŠ¸ëœì­ì…˜ì˜ CommitSCN
+    smSCN         mFstDskViewSCN; // ì‚¬ìš©í–ˆë˜ í˜¹ì€ ì‚¬ìš©ì¤‘ì¸ íŠ¸ëœì­ì…˜ì˜ Fst Disk ViewSCN
 
-    UInt          mTxExtCnt;        // TSS Segment¿¡ ÇÒ´çµÈ Extent ÃÑ °³¼ö
-    UInt          mExpiredExtCnt;   // Segment¿¡ ÇÒ´çµÈ Expire»óÅÂÀÇ Extent °³¼ö
-    UInt          mUnExpiredExtCnt; // Segment¿¡ ÇÒ´çµÈ UnExpire »óÅÂÀÇ Extent ¼ö
-    UInt          mUnStealExtCnt;   // SegHdr¿Í Áö±İ º¸°í ÀÖ´Â Ext
-    smSCN         mSysMinViewSCN;   // Segment Á¶È¸ÇÒ ´ç½ÃÀÇ minViewSCN
-    UChar         mIsOnline;        // binding µÇ¾î ÀÖ´ÂÁö ¿©ºÎ 
+    UInt          mTxExtCnt;        // TSS Segmentì— í• ë‹¹ëœ Extent ì´ ê°œìˆ˜
+    UInt          mExpiredExtCnt;   // Segmentì— í• ë‹¹ëœ Expireìƒíƒœì˜ Extent ê°œìˆ˜
+    UInt          mUnExpiredExtCnt; // Segmentì— í• ë‹¹ëœ UnExpire ìƒíƒœì˜ Extent ìˆ˜
+    UInt          mUnStealExtCnt;   // SegHdrì™€ ì§€ê¸ˆ ë³´ê³  ìˆëŠ” Ext
+    smSCN         mSysMinViewSCN;   // Segment ì¡°íšŒí•  ë‹¹ì‹œì˜ minViewSCN
+    UChar         mIsOnline;        // binding ë˜ì–´ ìˆëŠ”ì§€ ì—¬ë¶€ 
 } sdpscDumpSegHdrInfo;
 
 class sdpscFT
@@ -89,7 +89,7 @@ public:
     static IDE_RC initialize();
     static IDE_RC destroy();
 
-    // ¼¼±×¸ÕÆ® Çì´õ Dump
+    // ì„¸ê·¸ë¨¼íŠ¸ í—¤ë” Dump
     static IDE_RC dumpSegHdr( scSpaceID             aSpaceID,
                               scPageID              aPageID,
                               sdpSegType            aSegType,
@@ -98,7 +98,7 @@ public:
                               void                * aHeader,
                               iduFixedTableMemory * aMemory );
 
-    // ExtentDirectoryÇì´õ Dump
+    // ExtentDirectoryí—¤ë” Dump
     static IDE_RC dumpExtDirHdr( scSpaceID             aSpaceID,
                                  scPageID              aPageID,
                                  sdpSegType            aSegType,

@@ -45,37 +45,37 @@ IDE_RC qdr::validateCreate(qcStatement * aStatement)
 /***********************************************************************
  *
  * Description :
- *    CREATE USER ... ÀÇ validation  ¼öÇà
+ *    CREATE USER ... ì˜ validation  ìˆ˜í–‰
  *
  * Implementation :
- *    1. CreateUse ±ÇÇÑÀÌ ÀÖ´ÂÁö Ã¼Å©
- *    2. °°Àº ÀÌ¸§ÀÇ »ç¿ëÀÚ°¡ ÀÌ¹Ì ÀÖ´ÂÁö Ã¼Å©
+ *    1. CreateUse ê¶Œí•œì´ ìˆëŠ”ì§€ ì²´í¬
+ *    2. ê°™ì€ ì´ë¦„ì˜ ì‚¬ìš©ìê°€ ì´ë¯¸ ìˆëŠ”ì§€ ì²´í¬
  *    3. validation of DEFAULT TABLESPACE
- *    if ( DEFAULT TABLESPACE name ¸í½ÃÇÑ °æ¿ì )
+ *    if ( DEFAULT TABLESPACE name ëª…ì‹œí•œ ê²½ìš° )
  *    {
- *      3.1.1 TABLESPACE name Á¸Àç À¯¹« °Ë»ç
- *      3.1.2 DATA TABLESPACE °¡ ¾Æ´Ñ °æ¿ì ¿À·ù ¹ß»ı
+ *      3.1.1 TABLESPACE name ì¡´ì¬ ìœ ë¬´ ê²€ì‚¬
+ *      3.1.2 DATA TABLESPACE ê°€ ì•„ë‹Œ ê²½ìš° ì˜¤ë¥˜ ë°œìƒ
  *    }
  *    else
  *    {
- *      3.2.1 SYS_TBS_MEMORY ¸¦ DEFAULT DATA TABLESPACE ·Î ÁöÁ¤
+ *      3.2.1 SYS_TBS_MEMORY ë¥¼ DEFAULT DATA TABLESPACE ë¡œ ì§€ì •
  *    }
  *    4. validation of TEMPORARY TABLESPACE
- *    if ( DEFAULT TABLESPACE name ¸í½ÃÇÑ °æ¿ì )
+ *    if ( DEFAULT TABLESPACE name ëª…ì‹œí•œ ê²½ìš° )
  *    {
- *      4.1.1 TABLESPACE name Á¸Àç À¯¹« °Ë»ç
- *      4.1.2 TEMPORARY TABLESPACE °¡ ¾Æ´Ñ °æ¿ì ¿À·ù ¹ß»ı
+ *      4.1.1 TABLESPACE name ì¡´ì¬ ìœ ë¬´ ê²€ì‚¬
+ *      4.1.2 TEMPORARY TABLESPACE ê°€ ì•„ë‹Œ ê²½ìš° ì˜¤ë¥˜ ë°œìƒ
  *    }
  *    else
  *    {
- *      4.2.1 SYSTEM TEMPORARY TABLESPACE(SYS_TBS_TEMP) ¸¦ TEMPORARY
- *            TABLESPACE·Î ÁöÁ¤
+ *      4.2.1 SYSTEM TEMPORARY TABLESPACE(SYS_TBS_TEMP) ë¥¼ TEMPORARY
+ *            TABLESPACEë¡œ ì§€ì •
  *    }
  *    5. validation of ACCESS
  *    for ( each ACCESS )
  *    {
- *      5.1 TABLESPACE name Á¸Àç À¯¹« °Ë»ç(data tablespace, temporary
- *          tablespace ¸ğµÎ ¸í½Ã °¡´É)
+ *      5.1 TABLESPACE name ì¡´ì¬ ìœ ë¬´ ê²€ì‚¬(data tablespace, temporary
+ *          tablespace ëª¨ë‘ ëª…ì‹œ ê°€ëŠ¥)
  *    }
  *
  ***********************************************************************/
@@ -93,7 +93,7 @@ IDE_RC qdr::validateCreate(qcStatement * aStatement)
     if ( sParseTree->disableTCP != QD_DISABLE_TCP_NONE )
     {
         sCurrentUserID = QCG_GET_SESSION_USER_ID(aStatement);
-        /* sys user¸¸ °¡´É */
+        /* sys userë§Œ ê°€ëŠ¥ */
         IDE_TEST_RAISE ( sCurrentUserID != QC_SYS_USER_ID,
                          ERR_NOT_SYS_USER );
     }
@@ -246,28 +246,28 @@ IDE_RC qdr::validateAlter(qcStatement * aStatement)
 /***********************************************************************
  *
  * Description :
- *    ALTER USER ... ÀÇ validation  ¼öÇà
+ *    ALTER USER ... ì˜ validation  ìˆ˜í–‰
  *
  * Implementation :
- *    1. ALTER ÇÏ°íÀÚ ÇÏ´Â »ç¿ëÀÚ°¡ ¾øÀ¸¸é ¿¡·¯
- *    2. AlterUser ±ÇÇÑÀÌ ÀÖ´ÂÁö Ã¼Å©
+ *    1. ALTER í•˜ê³ ì í•˜ëŠ” ì‚¬ìš©ìê°€ ì—†ìœ¼ë©´ ì—ëŸ¬
+ *    2. AlterUser ê¶Œí•œì´ ìˆëŠ”ì§€ ì²´í¬
  *    3. validation of DEFAULT TABLESPACE
- *    if ( DEFAULT TABLESPACE name ¸í½ÃÇÑ °æ¿ì )
+ *    if ( DEFAULT TABLESPACE name ëª…ì‹œí•œ ê²½ìš° )
  *    {
- *      3.1.1 TABLESPACE name Á¸Àç À¯¹« °Ë»ç
- *      3.1.2 DATA TABLESPACE °¡ ¾Æ´Ñ °æ¿ì ¿À·ù ¹ß»ı
+ *      3.1.1 TABLESPACE name ì¡´ì¬ ìœ ë¬´ ê²€ì‚¬
+ *      3.1.2 DATA TABLESPACE ê°€ ì•„ë‹Œ ê²½ìš° ì˜¤ë¥˜ ë°œìƒ
  *    }
  *    4. validation of TEMPORARY TABLESPACE
- *    if ( DEFAULT TABLESPACE name ¸í½ÃÇÑ °æ¿ì )
+ *    if ( DEFAULT TABLESPACE name ëª…ì‹œí•œ ê²½ìš° )
  *    {
- *      4.1.1 TABLESPACE name Á¸Àç À¯¹« °Ë»ç
- *      4.1.2 TEMPORARY TABLESPACE °¡ ¾Æ´Ñ °æ¿ì ¿À·ù ¹ß»ı
+ *      4.1.1 TABLESPACE name ì¡´ì¬ ìœ ë¬´ ê²€ì‚¬
+ *      4.1.2 TEMPORARY TABLESPACE ê°€ ì•„ë‹Œ ê²½ìš° ì˜¤ë¥˜ ë°œìƒ
  *    }
  *    5. validation of ACCESS
  *    for ( each ACCESS )
  *    {
- *      5.1 TABLESPACE name Á¸Àç À¯¹« °Ë»ç(data tablespace, temporary
- *          tablespace ¸ğµÎ ¸í½Ã °¡´É)
+ *      5.1 TABLESPACE name ì¡´ì¬ ìœ ë¬´ ê²€ì‚¬(data tablespace, temporary
+ *          tablespace ëª¨ë‘ ëª…ì‹œ ê°€ëŠ¥)
  *    }
  *
  ***********************************************************************/
@@ -336,7 +336,7 @@ IDE_RC qdr::validateAlter(qcStatement * aStatement)
 #endif
 
         // To Fix PR-10589
-        // TABLESPACE¿¡ ´ëÇÑ Á¢±Ù ±ÇÇÑÀ» °Ë»çÇÏ¿©¾ß ÇÔ.
+        // TABLESPACEì— ëŒ€í•œ ì ‘ê·¼ ê¶Œí•œì„ ê²€ì‚¬í•˜ì—¬ì•¼ í•¨.
         IDE_TEST( qdpRole::checkAccessTBS( aStatement,
                                            QCG_GET_SESSION_USER_ID(aStatement),
                                            sParseTree->dataTBSID )
@@ -358,7 +358,7 @@ IDE_RC qdr::validateAlter(qcStatement * aStatement)
                         ERR_INVALID_TEMP_TBS );
 
         // To Fix PR-10589
-        // TABLESPACE¿¡ ´ëÇÑ Á¢±Ù ±ÇÇÑÀ» °Ë»çÇÏ¿©¾ß ÇÔ.
+        // TABLESPACEì— ëŒ€í•œ ì ‘ê·¼ ê¶Œí•œì„ ê²€ì‚¬í•˜ì—¬ì•¼ í•¨.
         IDE_TEST( qdpRole::checkAccessTBS( aStatement,
                                            QCG_GET_SESSION_USER_ID(aStatement),
                                            sParseTree->tempTBSID )
@@ -378,7 +378,7 @@ IDE_RC qdr::validateAlter(qcStatement * aStatement)
         sAccess->dataTBSID = sTBSAttr.mID;
 
         // To Fix PR-10589
-        // TABLESPACE¿¡ ´ëÇÑ Á¢±Ù ±ÇÇÑÀ» °Ë»çÇÏ¿©¾ß ÇÔ.
+        // TABLESPACEì— ëŒ€í•œ ì ‘ê·¼ ê¶Œí•œì„ ê²€ì‚¬í•˜ì—¬ì•¼ í•¨.
         IDE_TEST( qdpRole::checkAccessTBS( aStatement,
                                            QCG_GET_SESSION_USER_ID(aStatement),
                                            sAccess->dataTBSID )
@@ -392,7 +392,7 @@ IDE_RC qdr::validateAlter(qcStatement * aStatement)
     {
         sCurrentUserID = QCG_GET_SESSION_USER_ID(aStatement);
 
-        /* sys user¸¸ °¡´É */
+        /* sys userë§Œ ê°€ëŠ¥ */
         IDE_TEST_RAISE ( sCurrentUserID != QC_SYS_USER_ID,
                          ERR_NOT_SYS_USER );
     }
@@ -445,13 +445,13 @@ IDE_RC qdr::executeCreate(qcStatement * aStatement)
 /***********************************************************************
  *
  * Description :
- *      CREATE USER ¹®ÀÇ execution ¼öÇà ÇÔ¼ö
+ *      CREATE USER ë¬¸ì˜ execution ìˆ˜í–‰ í•¨ìˆ˜
  *
  * Implementation :
- *      1. »õ·Î¿î »ç¿ëÀÚ¸¦ À§ÇÑ user ID¸¦ ºÎ¿©
- *      2. DBA_USERS_ ¸ŞÅ¸ Å×ÀÌºí¿¡ »ç¿ëÀÚ Á¤º¸ ÀÔ·Â
- *      3. SYS_TBS_USERS_ ¸ŞÅ¸ Å×ÀÌºí¿¡ ÀÔ·Â
- *      4. default privilege ºÎ¿©
+ *      1. ìƒˆë¡œìš´ ì‚¬ìš©ìë¥¼ ìœ„í•œ user IDë¥¼ ë¶€ì—¬
+ *      2. DBA_USERS_ ë©”íƒ€ í…Œì´ë¸”ì— ì‚¬ìš©ì ì •ë³´ ì…ë ¥
+ *      3. SYS_TBS_USERS_ ë©”íƒ€ í…Œì´ë¸”ì— ì…ë ¥
+ *      4. default privilege ë¶€ì—¬
  *
  ***********************************************************************/
 
@@ -513,7 +513,7 @@ IDE_RC qdr::executeCreate(qcStatement * aStatement)
         sDisableTCP[1] = 0;
     }
 
-    // BUG-38565 password ¾ÏÈ£È­ ¾Ë°í¸®µë º¯°æ
+    // BUG-38565 password ì•”í˜¸í™” ì•Œê³ ë¦¬ë“¬ ë³€ê²½
     idsPassword::crypt( sCryptStr, sUserPasswd, idlOS::strlen( sUserPasswd ), NULL );
 
     IDE_TEST(qcmUser::getNextUserID(aStatement, &sUserID) != IDE_SUCCESS);
@@ -675,7 +675,7 @@ IDE_RC qdr::executeCreate(qcStatement * aStatement)
     IDE_TEST_RAISE(sRowCnt != 1, ERR_META_CRASH);
 
     /* BUG-37443
-     * SYS_PASSWORD_HISTORY_  ÆĞ½º¿öµå ±â·Ï */
+     * SYS_PASSWORD_HISTORY_  íŒ¨ìŠ¤ì›Œë“œ ê¸°ë¡ */
     if ( ( sParseTree->passwReuseTime != 0 ) ||
          ( sParseTree->passwReuseMax != 0 ) )
     {
@@ -748,31 +748,31 @@ IDE_RC qdr::executeAlter(qcStatement * aStatement)
 /***********************************************************************
  *
  * Description :
- *    ALTER USER ¹®ÀÇ execution ¼öÇà ÇÔ¼ö
+ *    ALTER USER ë¬¸ì˜ execution ìˆ˜í–‰ í•¨ìˆ˜
  *
  * Implementation :
- *    1. »ç¿ëÀÚ¸íÀ¸·Î user idÁ¤º¸¸¦ ¸ŞÅ¸¿¡¼­ ÀĞ¾î¿È.
- *    2. PASSWORD º¯°æ
- *    if ( IDENTIFIED BY clause °¡ Á¸ÀçÇÏ´Â °æ¿ì )
+ *    1. ì‚¬ìš©ìëª…ìœ¼ë¡œ user idì •ë³´ë¥¼ ë©”íƒ€ì—ì„œ ì½ì–´ì˜´.
+ *    2. PASSWORD ë³€ê²½
+ *    if ( IDENTIFIED BY clause ê°€ ì¡´ì¬í•˜ëŠ” ê²½ìš° )
  *    {
  *      UPDATE DBA_USERS_ SET PASSWORD=? WHERE USER_ID=?
  *    }
- *    3. DEFAULT TABLESPACE º¯°æ
- *    if ( DEFAULT TABLESPACE clause °¡ Á¸ÀçÇÏ´Â °æ¿ì )
+ *    3. DEFAULT TABLESPACE ë³€ê²½
+ *    if ( DEFAULT TABLESPACE clause ê°€ ì¡´ì¬í•˜ëŠ” ê²½ìš° )
  *    {
  *      UPDATE DBA_USERS_ SET DEFAULT_TBS_ID=? WHERE USER_ID=?
  *    }
- *    4. TEMPORARY TABLESPACE º¯°æ
- *    if ( TEMPORARY TABLESPACE clause °¡ Á¸ÀçÇÏ´Â °æ¿ì )
+ *    4. TEMPORARY TABLESPACE ë³€ê²½
+ *    if ( TEMPORARY TABLESPACE clause ê°€ ì¡´ì¬í•˜ëŠ” ê²½ìš° )
  *    {
  *      UPDATE DBA_USERS_ SET TEMP_TBS_ID=? WHERE USER_ID=?
  *    }
- *    5. ACCESS º¯°æ ¶Ç´Â Ãß°¡
- *    if ( ACCESS clause °¡ Á¸ÀçÇÏ´Â °æ¿ì )
+ *    5. ACCESS ë³€ê²½ ë˜ëŠ” ì¶”ê°€
+ *    if ( ACCESS clause ê°€ ì¡´ì¬í•˜ëŠ” ê²½ìš° )
  *    {
  *      for ( each ACCESS )
  *      {
- *        if ( tablespace ¿¡ ´ëÇÑ ACCESS Á¤º¸°¡ ÀÌ¹Ì ¸ŞÅ¸¿¡ Á¸ÀçÇÏ´Â °æ¿ì )
+ *        if ( tablespace ì— ëŒ€í•œ ACCESS ì •ë³´ê°€ ì´ë¯¸ ë©”íƒ€ì— ì¡´ì¬í•˜ëŠ” ê²½ìš° )
  *        {
  *          UPDATE SYS_TBS_USERS_ SET ACCESS=? WHERE USER_ID=? AND TBS_ID=?
  *        }
@@ -829,9 +829,9 @@ IDE_RC qdr::executeAlter(qcStatement * aStatement)
         QC_STR_COPY( sUserPasswd, sParseTree->password );
 
         /* PROJ-2207 Password policy support
-         * Á¢¼Ó µÇ¾îÀÖ´Â session °ú alter password ¼öÇà ÇÏ´Â sessionÀÌ
-         * ´Ù¸£±â ¶§¹®¿¡ alter password ¼öÇà ÇÏ´Â sesstionÀÇ
-         * PASSWORD OPTION Á¤º¸¸¦ SYS_USERS_ META·Î ºÎÅÍ °¡Á®¿Í¾ßÇÔ */
+         * ì ‘ì† ë˜ì–´ìˆëŠ” session ê³¼ alter password ìˆ˜í–‰ í•˜ëŠ” sessionì´
+         * ë‹¤ë¥´ê¸° ë•Œë¬¸ì— alter password ìˆ˜í–‰ í•˜ëŠ” sesstionì˜
+         * PASSWORD OPTION ì •ë³´ë¥¼ SYS_USERS_ METAë¡œ ë¶€í„° ê°€ì ¸ì™€ì•¼í•¨ */
         IDE_TEST( qcmUser::getPasswPolicyInfo( aStatement,
                                                sUserID,
                                                &sUserPasswOpts )
@@ -852,10 +852,10 @@ IDE_RC qdr::executeAlter(qcStatement * aStatement)
                                                     &sIsAlterReusePasswd )
                   != IDE_SUCCESS );
 
-        /* SYS_PASSWORD_HISTORY_ ÀÌ¹Ì ÆĞ½º¿öµå°¡ Á¸Àç ÇÏ´Â °æ¿ì µ¿ÀÏÇÑ salt·Î ¾ÏÈ£È­ ÇÑ´Ù. */
+        /* SYS_PASSWORD_HISTORY_ ì´ë¯¸ íŒ¨ìŠ¤ì›Œë“œê°€ ì¡´ì¬ í•˜ëŠ” ê²½ìš° ë™ì¼í•œ saltë¡œ ì•”í˜¸í™” í•œë‹¤. */
         if ( sIsAlterReusePasswd == ID_TRUE )
         {
-            // BUG-38565 password ¾ÏÈ£È­ ¾Ë°í¸®µë º¯°æ
+            // BUG-38565 password ì•”í˜¸í™” ì•Œê³ ë¦¬ë“¬ ë³€ê²½
             idsPassword::crypt( sCryptStr,
                                 sUserPasswd, idlOS::strlen( sUserPasswd ),
                                 sUserPasswOpts.userPassword );
@@ -876,7 +876,7 @@ IDE_RC qdr::executeAlter(qcStatement * aStatement)
         }
         else
         {
-            // BUG-38565 password ¾ÏÈ£È­ ¾Ë°í¸®µë º¯°æ
+            // BUG-38565 password ì•”í˜¸í™” ì•Œê³ ë¦¬ë“¬ ë³€ê²½
             idsPassword::crypt( sCryptStr,
                                 sUserPasswd, idlOS::strlen( sUserPasswd ),
                                 NULL );
@@ -902,9 +902,9 @@ IDE_RC qdr::executeAlter(qcStatement * aStatement)
         if (sUserPasswOpts.mAccLimitOpts.mPasswLifeTime != 0)
         {
             /* PROJ-2207 Password policy support
-             * PASSWORD_LIFE_TIME ¼³Á¤ µÈ °æ¿ì ALTER PASSWORD ÇÑ °æ¿ì
-             * º¯°æµÈ ½ÃÁ¡ÀÇ ³¯ÀÚ + PASSWORD_LIFE_TIME À¸·Î °»½Å µÊ
-             * ALTER PASSWORD ¼öÇà ÇÏ¸é PASSWORD_LIFE_TIME ÀÌ °»½Å µÇ¾ßÇÔ. */
+             * PASSWORD_LIFE_TIME ì„¤ì • ëœ ê²½ìš° ALTER PASSWORD í•œ ê²½ìš°
+             * ë³€ê²½ëœ ì‹œì ì˜ ë‚ ì + PASSWORD_LIFE_TIME ìœ¼ë¡œ ê°±ì‹  ë¨
+             * ALTER PASSWORD ìˆ˜í–‰ í•˜ë©´ PASSWORD_LIFE_TIME ì´ ê°±ì‹  ë˜ì•¼í•¨. */
             idlOS::snprintf( sSqlStr, QD_MAX_SQL_LENGTH,
                              "UPDATE DBA_USERS_ "
                              "SET PASSWORD = VARCHAR'%s' , "
@@ -1074,16 +1074,16 @@ IDE_RC qdr::executeAlter(qcStatement * aStatement)
             }
         }
 
-        /* ALTER USER PASSWORD OPTIONÀ» º¯°æ ÇÒ °æ¿ì option parameter
-         * ¸¸ º¯°æ µÇ°í ACCOUNT_STATUS ´Â º¯°æ µÇÁö ¾Ê´Â´Ù.
-         * ACCOUNT_STATUS ´Â LOCK_DATE, EXPIRY_DATE º¯°æ½Ã ¿µÇâÀÌ ÀÖ´Ù.
+        /* ALTER USER PASSWORD OPTIONì„ ë³€ê²½ í•  ê²½ìš° option parameter
+         * ë§Œ ë³€ê²½ ë˜ê³  ACCOUNT_STATUS ëŠ” ë³€ê²½ ë˜ì§€ ì•ŠëŠ”ë‹¤.
+         * ACCOUNT_STATUS ëŠ” LOCK_DATE, EXPIRY_DATE ë³€ê²½ì‹œ ì˜í–¥ì´ ìˆë‹¤.
          */
         if ( sParseTree->passwLifeTime != 0 )
         {
             /* BUG-37433 alter user limit
-             * PASSWORD_LIFE_TIME ¼³Á¤ µÈ °æ¿ì ALTER USER LIMITD ÇÑ °æ¿ì
-             * º¯°æµÈ ½ÃÁ¡ÀÇ ³¯ÀÚ + passwrod_life_time À¸·Î °»½Å µÊ
-             * ALTER PASSWORD ¼öÇà ÇÏ¸é PASSWORD_LIFE_TIME ÀÌ °»½Å µÇ¾ßÇÔ. */
+             * PASSWORD_LIFE_TIME ì„¤ì • ëœ ê²½ìš° ALTER USER LIMITD í•œ ê²½ìš°
+             * ë³€ê²½ëœ ì‹œì ì˜ ë‚ ì + passwrod_life_time ìœ¼ë¡œ ê°±ì‹  ë¨
+             * ALTER PASSWORD ìˆ˜í–‰ í•˜ë©´ PASSWORD_LIFE_TIME ì´ ê°±ì‹  ë˜ì•¼í•¨. */
             idlOS::snprintf( sSqlStr, QD_MAX_SQL_LENGTH,
                              "UPDATE DBA_USERS_ SET "
                              "PASSWORD_EXPIRY_DATE = "
@@ -1148,7 +1148,7 @@ IDE_RC qdr::executeAlter(qcStatement * aStatement)
         IDE_TEST_RAISE(sRowCnt != 1, ERR_META_CRASH);
 
         /* BUG-27443
-         * SYS_PASSWORD_HISTORY_  ÆĞ½º¿öµå ±â·Ï */
+         * SYS_PASSWORD_HISTORY_  íŒ¨ìŠ¤ì›Œë“œ ê¸°ë¡ */
         if ( ( sParseTree->passwReuseTime != 0 ) ||
              ( sParseTree->passwReuseMax != 0 ) )
         {
@@ -1157,7 +1157,7 @@ IDE_RC qdr::executeAlter(qcStatement * aStatement)
                                                 sUserPasswOpts.userPassword )
                       != IDE_SUCCESS );
 
-            /* SYS_PASSWORD_HISTORY_¿¡ ÆĞ½º¿öµå Á¸Àç ¿©ºÎ Ã¼Å© */
+            /* SYS_PASSWORD_HISTORY_ì— íŒ¨ìŠ¤ì›Œë“œ ì¡´ì¬ ì—¬ë¶€ ì²´í¬ */
             IDE_TEST( qcmReuseVerify::checkReusePasswd( aStatement,
                                                         sUserID,
                                                         (UChar*)sUserPasswOpts.userPassword,
@@ -1166,7 +1166,7 @@ IDE_RC qdr::executeAlter(qcStatement * aStatement)
 
             if ( sIsAlterReusePasswd == ID_TRUE )
             {
-                /* ÆĞ½º¿öµå Àç»ç¿ë µÇ´Â ÆĞ½º¿öµåÀÇ PASSWORD_DATE °»½Å */
+                /* íŒ¨ìŠ¤ì›Œë“œ ì¬ì‚¬ìš© ë˜ëŠ” íŒ¨ìŠ¤ì›Œë“œì˜ PASSWORD_DATE ê°±ì‹  */
                 IDE_TEST( qcmReuseVerify::updatePasswdDate( aStatement,
                                                             (UChar*)sUserPasswOpts.userPassword,
                                                             sUserID )
@@ -1283,7 +1283,7 @@ IDE_RC qdr::validatePasswOpts( qcStatement * aStatement )
 /***********************************************************************
  *
  * Description : PROJ-2207 Password policy support
- *      password policy option validate Ã³¸®
+ *      password policy option validate ì²˜ë¦¬
  *
  * Implementation :
  *
@@ -1334,7 +1334,7 @@ void qdr::passwPolicyDefaultOpts( qcStatement * aStatement )
 /***********************************************************************
  *
  * Description : PROJ-2207 Password policy support
- *     altibase.properties¿¡ ¼³Á¤µÈ °ªÀ¸·Î ¼ÂÆÃ
+ *     altibase.propertiesì— ì„¤ì •ëœ ê°’ìœ¼ë¡œ ì…‹íŒ…
  *
  * Implementation :
  *

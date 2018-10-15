@@ -33,13 +33,13 @@
 #include <idCore.h>
 extern ULong    gInitialValue;
 
-/* BUG-41307 User Lock Áö¿ø */
+/* BUG-41307 User Lock ì§€ì› */
 #define USER_LOCK_RESULT_SUCCESS            (0)
 #define USER_LOCK_RESULT_TIMEOUT            (1)
 #define USER_LOCK_RESULT_PARAMETER_ERROR    (3)
 #define USER_LOCK_RESULT_OWN_ERROR          (4)
 
-/* BUG-41307 User Lock Áö¿ø */
+/* BUG-41307 User Lock ì§€ì› */
 acl_mem_pool_t     gUserLockMemPool;
 acl_hash_table_t   gUserLockHashTable;
 
@@ -48,7 +48,7 @@ IDE_RC qcuSessionObj::initOpenedFileList( qcSessionObjInfo* aSessionObjInfo )
 /***********************************************************************
  *
  * Description :
- *  filelist¸¦ ÃÊ±âÈ­
+ *  filelistë¥¼ ì´ˆê¸°í™”
  *
  * Implementation :
  *
@@ -73,11 +73,11 @@ IDE_RC qcuSessionObj::closeAllOpenedFile(
 /***********************************************************************
  *
  * Description :
- *  ¿­·ÁÀÖ´Â ¸ðµç fileÀ» closeÇÏ°í node¸Þ¸ð¸® ÇØÁ¦
+ *  ì—´ë ¤ìžˆëŠ” ëª¨ë“  fileì„ closeí•˜ê³  nodeë©”ëª¨ë¦¬ í•´ì œ
  *
  * Implementation :
- *  1. nodeÀÇ next¸¦ µû¶ó°¡¸é¼­ closeFileÀ» ÇÏ°í ¸Þ¸ð¸® free
- *  2. filelistÃÊ±âÈ­(filenode¸¦ null·Î ÃÊ±âÈ­)
+ *  1. nodeì˜ nextë¥¼ ë”°ë¼ê°€ë©´ì„œ closeFileì„ í•˜ê³  ë©”ëª¨ë¦¬ free
+ *  2. filelistì´ˆê¸°í™”(filenodeë¥¼ nullë¡œ ì´ˆê¸°í™”)
  *
  ***********************************************************************/
     
@@ -118,7 +118,7 @@ IDE_RC qcuSessionObj::addOpenedFile( qcSessionObjInfo* aSessionObjInfo,
 /***********************************************************************
  *
  * Description :
- *  fopenÀ¸·Î openµÈ fileÀ» filelist¿¡ Ãß°¡
+ *  fopenìœ¼ë¡œ openëœ fileì„ filelistì— ì¶”ê°€
  *
  * Implementation :
  *
@@ -133,7 +133,7 @@ IDE_RC qcuSessionObj::addOpenedFile( qcSessionObjInfo* aSessionObjInfo,
     IDE_DASSERT( aSessionObjInfo != NULL );
 
     // BUG-13068
-    // limitÀ» ÃÊ°úÇÏ¸é ¿¡·¯
+    // limitì„ ì´ˆê³¼í•˜ë©´ ì—ëŸ¬
     IDE_TEST_RAISE( aSessionObjInfo->filelist.count >=
                     QCU_PSM_FILE_OPEN_LIMIT, ERR_OPEN_LIMIT );
     
@@ -158,7 +158,7 @@ IDE_RC qcuSessionObj::addOpenedFile( qcSessionObjInfo* aSessionObjInfo,
     
     IDE_EXCEPTION_END;
 
-    // ¿¡·¯³ª¸é ¹«Á¶°Ç fileÀ» ´Ý¾Æ¾ß ÇÔ.
+    // ì—ëŸ¬ë‚˜ë©´ ë¬´ì¡°ê±´ fileì„ ë‹«ì•„ì•¼ í•¨.
     (void)iduFileStream::closeFile(aFp);
     
     switch( sState )
@@ -182,18 +182,18 @@ IDE_RC qcuSessionObj::delOpenedFile( qcSessionObjInfo * aSessionObjInfo,
 /***********************************************************************
  *
  * Description :
- *  fclose·Î closeµÈ fileÀ» filelist¿¡¼­ Á¦°Å
+ *  fcloseë¡œ closeëœ fileì„ filelistì—ì„œ ì œê±°
  *
  * Implementation :
- *  1. previous node¸¦ ¼³Á¤ÇÏ±â À§ÇØ headnode¸¦ ¸¸µé°í next¸¦ Ã³À½ À§Ä¡·Î
- *     ¼³Á¤
- *  2. previous, current¸¦ next·Î ¿Å±â¸é¼­ fp°¡ °°Àº ³ëµå°¡ ÀÖ´ÂÁö °Ë»ç
- *  3. ¸¸¾à Ã£Àº ³ëµå°¡ ¾ø´Ù¸é ¾Æ¹«ÀÏµµ ÇÏÁö ¾ÊÀ½
- *     => Áß°£¿¡ fclose_allÀ» ¼öÇàÇÑ ÈÄ¿¡ fclose¸¦ ¼öÇàÇßÀ» °æ¿ìÀÓ
- *  4. ³ëµå¸¦ Ã£Àº °æ¿ì previousÀÇ next¸¦ Ã£Àº ³ëµåÀÇ next·Î ¼³Á¤ÇÏ°í
- *     ³ëµå¸¦ »èÁ¦ÇÔ.
- *  5. previousÀÇ next°¡ ¸Ç Ã³À½ ³ëµåÀÏ ¼ö ÀÖÀ¸¹Ç·Î filelistÀÇ node¸¦
- *     headnodeÀÇ next·Î °¡¸®Å°°Ô ÇÔ
+ *  1. previous nodeë¥¼ ì„¤ì •í•˜ê¸° ìœ„í•´ headnodeë¥¼ ë§Œë“¤ê³  nextë¥¼ ì²˜ìŒ ìœ„ì¹˜ë¡œ
+ *     ì„¤ì •
+ *  2. previous, currentë¥¼ nextë¡œ ì˜®ê¸°ë©´ì„œ fpê°€ ê°™ì€ ë…¸ë“œê°€ ìžˆëŠ”ì§€ ê²€ì‚¬
+ *  3. ë§Œì•½ ì°¾ì€ ë…¸ë“œê°€ ì—†ë‹¤ë©´ ì•„ë¬´ì¼ë„ í•˜ì§€ ì•ŠìŒ
+ *     => ì¤‘ê°„ì— fclose_allì„ ìˆ˜í–‰í•œ í›„ì— fcloseë¥¼ ìˆ˜í–‰í–ˆì„ ê²½ìš°ìž„
+ *  4. ë…¸ë“œë¥¼ ì°¾ì€ ê²½ìš° previousì˜ nextë¥¼ ì°¾ì€ ë…¸ë“œì˜ nextë¡œ ì„¤ì •í•˜ê³ 
+ *     ë…¸ë“œë¥¼ ì‚­ì œí•¨.
+ *  5. previousì˜ nextê°€ ë§¨ ì²˜ìŒ ë…¸ë“œì¼ ìˆ˜ ìžˆìœ¼ë¯€ë¡œ filelistì˜ nodeë¥¼
+ *     headnodeì˜ nextë¡œ ê°€ë¦¬í‚¤ê²Œ í•¨
  *
  ***********************************************************************/
     
@@ -453,7 +453,7 @@ IDE_RC qcuSessionObj::getConnectionSocket( qcSessionObjInfo * aSessionObjInfo,
     }
     else
     {
-        /* PROJ-2657 UTL_SMTP Áö¿ø */
+        /* PROJ-2657 UTL_SMTP ì§€ì› */
         if ( sNodeCurrent->connectState == QC_CONNECTION_STATE_NOCONNECT )
         {
             *aSocket = PDL_INVALID_SOCKET;
@@ -467,7 +467,7 @@ IDE_RC qcuSessionObj::getConnectionSocket( qcSessionObjInfo * aSessionObjInfo,
     return IDE_SUCCESS;
 }
 
-/* PROJ-2657 UTL_SMTP Áö¿ø */
+/* PROJ-2657 UTL_SMTP ì§€ì› */
 void qcuSessionObj::setConnectionState( qcSessionObjInfo * aSessionObjInfo,
                                         SLong              aConnectionNodeKey,
                                         SInt               aState )
@@ -507,7 +507,7 @@ void qcuSessionObj::setConnectionState( qcSessionObjInfo * aSessionObjInfo,
     }
 }
 
-/* PROJ-2657 UTL_SMTP Áö¿ø */
+/* PROJ-2657 UTL_SMTP ì§€ì› */
 void qcuSessionObj::getConnectionState( qcSessionObjInfo * aSessionObjInfo,
                                         SLong              aConnectionNodeKey,
                                         SInt             * aState )
@@ -598,8 +598,8 @@ void qcuSessionObj::finalizeStatic()
     acl_hash_traverse_t   sHashTraverse;
     acp_rc_t              sRC;
 
-    /* Server¸¦ Á¾·áÇÏ¸é ¸ðµç SessionÀÌ ²÷¾îÁö±â ¶§¹®¿¡, Hash Table¿¡ ÀÖ´Â ¸ðµç User LockÀº Release »óÅÂ°¡ µÈ´Ù.
-     * Hash TableÀÇ ¸ðµç User LockÀ» Á¦°ÅÇÑ´Ù.
+    /* Serverë¥¼ ì¢…ë£Œí•˜ë©´ ëª¨ë“  Sessionì´ ëŠì–´ì§€ê¸° ë•Œë¬¸ì—, Hash Tableì— ìžˆëŠ” ëª¨ë“  User Lockì€ Release ìƒíƒœê°€ ëœë‹¤.
+     * Hash Tableì˜ ëª¨ë“  User Lockì„ ì œê±°í•œë‹¤.
      */
     sRC = aclHashTraverseOpen( &sHashTraverse,
                                &gUserLockHashTable,
@@ -608,12 +608,12 @@ void qcuSessionObj::finalizeStatic()
     {
         while ( ACP_RC_NOT_EOF( sRC ) )
         {
-            /* ACP_RC_SUCCESS, ACP_RC_EOF µÑ Áß ÇÏ³ªÀÌ´Ù. */
+            /* ACP_RC_SUCCESS, ACP_RC_EOF ë‘˜ ì¤‘ í•˜ë‚˜ì´ë‹¤. */
             sRC = aclHashTraverseNext( &sHashTraverse, (void **)&sValue );
 
             if ( ACP_RC_IS_SUCCESS( sRC ) )
             {
-                /* Server¸¦ Á¾·áÇÏ´Â »óÈ²ÀÌ¹Ç·Î, ½ÇÆÐÇØµµ ±»ÀÌ Server¸¦ ºñÁ¤»ó Á¾·á½ÃÅ°Áö ¾Ê´Â´Ù. */
+                /* Serverë¥¼ ì¢…ë£Œí•˜ëŠ” ìƒí™©ì´ë¯€ë¡œ, ì‹¤íŒ¨í•´ë„ êµ³ì´ Serverë¥¼ ë¹„ì •ìƒ ì¢…ë£Œì‹œí‚¤ì§€ ì•ŠëŠ”ë‹¤. */
                 (void)sValue->mutex.destroy();
                 aclMemPoolFree( &gUserLockMemPool, (void *)sValue );
             }
@@ -627,12 +627,12 @@ void qcuSessionObj::finalizeStatic()
 
         aclHashDestroy( &gUserLockHashTable );
 
-        /* Hash TableÀ» Á¦°ÅÇÑ ÈÄ¿¡ Memory PoolÀ» Á¦°ÅÇØ¾ß ÇÑ´Ù. */
+        /* Hash Tableì„ ì œê±°í•œ í›„ì— Memory Poolì„ ì œê±°í•´ì•¼ í•œë‹¤. */
         aclMemPoolDestroy( &gUserLockMemPool );
     }
     else
     {
-        /* Server°¡ ºñÁ¤»ó Á¾·áÇÒ ¼ö ÀÖÀ¸¹Ç·Î, ¾Æ¹«°Íµµ ÇÏÁö ¾Ê´Â´Ù. */
+        /* Serverê°€ ë¹„ì •ìƒ ì¢…ë£Œí•  ìˆ˜ ìžˆìœ¼ë¯€ë¡œ, ì•„ë¬´ê²ƒë„ í•˜ì§€ ì•ŠëŠ”ë‹¤. */
     }
 
     return;
@@ -662,7 +662,7 @@ void qcuSessionObj::finalizeUserLockList( qcSessionObjInfo * aSessionObjInfo )
         sNext = sNode->next;
         sNode->next = NULL;
 
-        /* ½ÇÆÐÇØµµ Ã³¸®ÇÒ ¹æ¹ýÀÌ ¾ø´Ù. ¹«½ÃÇÏ°í °è¼Ó ÁøÇàÇÑ´Ù. */
+        /* ì‹¤íŒ¨í•´ë„ ì²˜ë¦¬í•  ë°©ë²•ì´ ì—†ë‹¤. ë¬´ì‹œí•˜ê³  ê³„ì† ì§„í–‰í•œë‹¤. */
         (void)sNode->mutex.unlock();
 
         aSessionObjInfo->userLockList.count--;
@@ -690,7 +690,7 @@ IDE_RC qcuSessionObj::requestUserLock( qcSessionObjInfo * aSessionObjInfo,
     }
     else
     {
-        /* User LockÀ» ÀÌ¹Ì ¾ò¾ú´ÂÁö È®ÀÎÇÑ´Ù. */
+        /* User Lockì„ ì´ë¯¸ ì–»ì—ˆëŠ”ì§€ í™•ì¸í•œë‹¤. */
         findUserLockFromSession( aSessionObjInfo,
                                  aUserLockID,
                                  &sUserLockNode );
@@ -701,10 +701,10 @@ IDE_RC qcuSessionObj::requestUserLock( qcSessionObjInfo * aSessionObjInfo,
         }
         else
         {
-            /* Session¿¡¼­ Request °¡´ÉÇÑ ÇÑ°è¿¡ µµ´ÞÇß´ÂÁö °Ë»çÇÑ´Ù. */
+            /* Sessionì—ì„œ Request ê°€ëŠ¥í•œ í•œê³„ì— ë„ë‹¬í–ˆëŠ”ì§€ ê²€ì‚¬í•œë‹¤. */
             IDE_TEST( checkUserLockRequestLimit( aSessionObjInfo ) != IDE_SUCCESS );
 
-            /* Hash Table¿¡ ÀÖ´Â °ÍÀ» »ç¿ëÇÒÁö, »õ·Î ¸¸µéÁö °Ë»çÇÑ´Ù. */
+            /* Hash Tableì— ìžˆëŠ” ê²ƒì„ ì‚¬ìš©í• ì§€, ìƒˆë¡œ ë§Œë“¤ì§€ ê²€ì‚¬í•œë‹¤. */
             IDE_TEST( findUserLockFromHashTable( aUserLockID, &sUserLockNode ) != IDE_SUCCESS );
 
             if ( sUserLockNode != NULL )
@@ -717,15 +717,15 @@ IDE_RC qcuSessionObj::requestUserLock( qcSessionObjInfo * aSessionObjInfo,
                                                          &sUserLockNode )
                           != IDE_SUCCESS );
 
-                /* ¿©·¯ SessionÀÌ ¾ÆÁ÷ »ý¼ºÇÏÁö ¾ÊÀº µ¿ÀÏÇÑ User LockÀ» µ¿½Ã¿¡ RequestÇÏ¸é,
-                 * ÇÑ Session¸¸ User LockÀ» Hash Table¿¡ ³Ö°í, ³ª¸ÓÁö SessionÀº ½ÇÆÐÇÑ´Ù.
-                 * ÀÌ °æ¿ì, ³ª¸ÓÁö SessionÀº Hash Table¿¡¼­ User LockÀ» ´Ù½Ã ¾ò´Â´Ù.
+                /* ì—¬ëŸ¬ Sessionì´ ì•„ì§ ìƒì„±í•˜ì§€ ì•Šì€ ë™ì¼í•œ User Lockì„ ë™ì‹œì— Requestí•˜ë©´,
+                 * í•œ Sessionë§Œ User Lockì„ Hash Tableì— ë„£ê³ , ë‚˜ë¨¸ì§€ Sessionì€ ì‹¤íŒ¨í•œë‹¤.
+                 * ì´ ê²½ìš°, ë‚˜ë¨¸ì§€ Sessionì€ Hash Tableì—ì„œ User Lockì„ ë‹¤ì‹œ ì–»ëŠ”ë‹¤.
                  */
                 if ( sUserLockNode == NULL )
                 {
                     IDE_TEST( findUserLockFromHashTable( aUserLockID, &sUserLockNode ) != IDE_SUCCESS );
 
-                    /* Server Á¾·á Àü¿¡´Â Hash Table¿¡ Ãß°¡¸¸ ÇÒ ¼ö ÀÖÀ¸¹Ç·Î, User LockÀº ¹Ýµå½Ã ¾ò´Â´Ù. */
+                    /* Server ì¢…ë£Œ ì „ì—ëŠ” Hash Tableì— ì¶”ê°€ë§Œ í•  ìˆ˜ ìžˆìœ¼ë¯€ë¡œ, User Lockì€ ë°˜ë“œì‹œ ì–»ëŠ”ë‹¤. */
                     IDE_ASSERT( sUserLockNode != NULL );
                 }
                 else
@@ -770,7 +770,7 @@ IDE_RC qcuSessionObj::releaseUserLock( qcSessionObjInfo * aSessionObjInfo,
     }
     else
     {
-        /* User LockÀ» °¡Áö°í ÀÖ´ÂÁö È®ÀÎÇÑ´Ù. */
+        /* User Lockì„ ê°€ì§€ê³  ìžˆëŠ”ì§€ í™•ì¸í•œë‹¤. */
         findUserLockFromSession( aSessionObjInfo,
                                  aUserLockID,
                                  &sUserLockNode );
@@ -803,8 +803,8 @@ void qcuSessionObj::findUserLockFromSession( qcSessionObjInfo  * aSessionObjInfo
 {
     qcUserLockNode * sNode;
 
-    /* Áßº¹À» ÇÇÇØ±â À§ÇØ, Request´Â ¸ðµç Node¸¦ È®ÀÎÇØ¾ß ÇÑ´Ù. µû¶ó¼­, °Ë»ö ¼ø¼­°¡ Áß¿äÇÏÁö ¾Ê´Ù.
-     * ÀÏ¹ÝÀûÀ¸·Î Request¿Í ReleaseÀÇ ¼ø¼­´Â ¹Ý´ëÀÌ´Ù. Release¸¦ À§ÇØ °Ë»öÇÒ ¶§´Â ¸¶Áö¸·¿¡ Ãß°¡ÇÑ Node°¡ ´ë»óÀÏ È®·üÀÌ ³ô´Ù.
+    /* ì¤‘ë³µì„ í”¼í•´ê¸° ìœ„í•´, RequestëŠ” ëª¨ë“  Nodeë¥¼ í™•ì¸í•´ì•¼ í•œë‹¤. ë”°ë¼ì„œ, ê²€ìƒ‰ ìˆœì„œê°€ ì¤‘ìš”í•˜ì§€ ì•Šë‹¤.
+     * ì¼ë°˜ì ìœ¼ë¡œ Requestì™€ Releaseì˜ ìˆœì„œëŠ” ë°˜ëŒ€ì´ë‹¤. Releaseë¥¼ ìœ„í•´ ê²€ìƒ‰í•  ë•ŒëŠ” ë§ˆì§€ë§‰ì— ì¶”ê°€í•œ Nodeê°€ ëŒ€ìƒì¼ í™•ë¥ ì´ ë†’ë‹¤.
      */
     for ( sNode = aSessionObjInfo->userLockList.userLockNode;
           sNode != NULL;
@@ -844,7 +844,7 @@ IDE_RC qcuSessionObj::checkUserLockRequestLimit( qcSessionObjInfo * aSessionObjI
 void qcuSessionObj::addUserLockToSession( qcSessionObjInfo * aSessionObjInfo,
                                           qcUserLockNode   * aUserLockNode )
 {
-    /* ÀÏ¹ÝÀûÀ¸·Î Request¿Í ReleaseÀÇ ¼ø¼­´Â ¹Ý´ëÀÌ´Ù. Release¸¦ ºü¸£°Ô ÇÏ±â À§ÇØ, ¸Ç ¾Õ¿¡ Node¸¦ Ãß°¡ÇÑ´Ù. */
+    /* ì¼ë°˜ì ìœ¼ë¡œ Requestì™€ Releaseì˜ ìˆœì„œëŠ” ë°˜ëŒ€ì´ë‹¤. Releaseë¥¼ ë¹ ë¥´ê²Œ í•˜ê¸° ìœ„í•´, ë§¨ ì•žì— Nodeë¥¼ ì¶”ê°€í•œë‹¤. */
     aUserLockNode->next = aSessionObjInfo->userLockList.userLockNode;
     aSessionObjInfo->userLockList.userLockNode = aUserLockNode;
 
@@ -859,7 +859,7 @@ void qcuSessionObj::removeUserLockFromSession( qcSessionObjInfo * aSessionObjInf
     qcUserLockNode * sNode;
     qcUserLockNode * sPrev = NULL;
 
-    /* ÀÏ¹ÝÀûÀ¸·Î Request¿Í ReleaseÀÇ ¼ø¼­´Â ¹Ý´ëÀÌ´Ù. Release¸¦ À§ÇØ °Ë»öÇÒ ¶§´Â ¸¶Áö¸·¿¡ Ãß°¡ÇÑ Node°¡ ´ë»óÀÏ È®·üÀÌ ³ô´Ù. */
+    /* ì¼ë°˜ì ìœ¼ë¡œ Requestì™€ Releaseì˜ ìˆœì„œëŠ” ë°˜ëŒ€ì´ë‹¤. Releaseë¥¼ ìœ„í•´ ê²€ìƒ‰í•  ë•ŒëŠ” ë§ˆì§€ë§‰ì— ì¶”ê°€í•œ Nodeê°€ ëŒ€ìƒì¼ í™•ë¥ ì´ ë†’ë‹¤. */
     for ( sNode = aSessionObjInfo->userLockList.userLockNode;
           sNode != NULL;
           sNode = sNode->next )
@@ -876,9 +876,9 @@ void qcuSessionObj::removeUserLockFromSession( qcSessionObjInfo * aSessionObjInf
         sPrev = sNode;
     }
 
-    if ( sNode != NULL )    // ´ë»ó Node¸¦ Ã£¾ÒÀ» ¶§
+    if ( sNode != NULL )    // ëŒ€ìƒ Nodeë¥¼ ì°¾ì•˜ì„ ë•Œ
     {
-        if ( sPrev == NULL )    // ´ë»ó Node°¡ Ã¹ ¹øÂ°ÀÏ ¶§
+        if ( sPrev == NULL )    // ëŒ€ìƒ Nodeê°€ ì²« ë²ˆì§¸ì¼ ë•Œ
         {
             aSessionObjInfo->userLockList.userLockNode = sNode->next;
         }
@@ -984,7 +984,7 @@ IDE_RC qcuSessionObj::makeAndAddUserLockToHashTable( SInt              aUserLock
                     ERR_ALLOC_MEM_POOL );
     sIsAlloced = ID_TRUE;
 
-    /* ¿©±â¿¡¼­ ÇÒ´çÇÑ User Lock ID´Â ÀÌÈÄ¿¡ ¹Ù²îÁö ¾Ê´Â´Ù. */
+    /* ì—¬ê¸°ì—ì„œ í• ë‹¹í•œ User Lock IDëŠ” ì´í›„ì— ë°”ë€Œì§€ ì•ŠëŠ”ë‹¤. */
     sUserLockNode->id   = aUserLockID;
     sUserLockNode->next = NULL;
 
@@ -1003,7 +1003,7 @@ IDE_RC qcuSessionObj::makeAndAddUserLockToHashTable( SInt              aUserLock
     }
     else
     {
-        /* Hash Table¿¡ ÀÌ¹Ì User LockÀÌ ÀÖ´Ù¸é, ´Ù¸¥ SessionÀÌ ¸ÕÀú Ãß°¡ÇÑ °ÍÀÌ´Ù. */
+        /* Hash Tableì— ì´ë¯¸ User Lockì´ ìžˆë‹¤ë©´, ë‹¤ë¥¸ Sessionì´ ë¨¼ì € ì¶”ê°€í•œ ê²ƒì´ë‹¤. */
         sIsInited = ID_FALSE;
         IDE_TEST( sUserLockNode->mutex.destroy() != IDE_SUCCESS );
 
@@ -1053,20 +1053,20 @@ IDE_RC qcuSessionObj::waitForUserLock( qcUserLockNode * aUserLockNode,
     /* USER_LOCK_REQUEST_CHECK_INTERVAL : 10 ~ 999999 microseconds */
     sSleepTime.set( 0, QCU_USER_LOCK_REQUEST_CHECK_INTERVAL );
 
-    /* USER_LOCK_REQUEST_TIMEOUTÀÌ 0ÀÏ ¶§¿¡µµ ÇÑ ¹øÀº ½ÃµµÇÑ´Ù. */
+    /* USER_LOCK_REQUEST_TIMEOUTì´ 0ì¼ ë•Œì—ë„ í•œ ë²ˆì€ ì‹œë„í•œë‹¤. */
     IDE_TEST( aUserLockNode->mutex.trylock( sIsLocked ) != IDE_SUCCESS );
 
     while ( ( sIsLocked != ID_TRUE ) &&
             ( sElapsedSeconds < QCU_USER_LOCK_REQUEST_TIMEOUT ) )
     {
-        /* sleep ÀÌÈÄÀÇ °æ°ú ½Ã°£À» ¹Ì¸® °è»êÇÑ´Ù. */
+        /* sleep ì´í›„ì˜ ê²½ê³¼ ì‹œê°„ì„ ë¯¸ë¦¬ ê³„ì‚°í•œë‹¤. */
         sElapsedMicroSeconds += QCU_USER_LOCK_REQUEST_CHECK_INTERVAL;
         if ( sElapsedMicroSeconds >= 1000000 )
         {
             sElapsedSeconds++;
             sElapsedMicroSeconds -= 1000000;
 
-            /* ¸¶Áö¸· sleepÀ» º¸Á¤ÇÑ´Ù. */
+            /* ë§ˆì§€ë§‰ sleepì„ ë³´ì •í•œë‹¤. */
             if ( sElapsedSeconds >= QCU_USER_LOCK_REQUEST_TIMEOUT )
             {
                 sSleepTime.set( 0, ( QCU_USER_LOCK_REQUEST_CHECK_INTERVAL - sElapsedMicroSeconds ) );

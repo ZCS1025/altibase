@@ -48,7 +48,7 @@ mtfModule mtfMinus = {
     1|MTC_NODE_OPERATOR_FUNCTION|
         MTC_NODE_PRINT_FMT_MISC,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
+    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìžê°€ ì•„ë‹˜)
     mtfMinusFunctionName,
     NULL,
     mtfMinusInitialize,
@@ -517,14 +517,14 @@ IDE_RC mtfMinusCalculateNumeric( mtcNode*     aNode,
     else
     {
         // To fix BUG-13643
-        // ºÎÈ£¸¦ ¹Ù²Ü ¶§ precisionÀÌ º¯ÇÏ¸é ¾ÈµÇ¹Ç·Î
-        // idaTNumericÇÔ¼ö¸¦ »ç¿ëÇÏÁö ¾Ê´Â´Ù.
+        // ë¶€í˜¸ë¥¼ ë°”ê¿€ ë•Œ precisionì´ ë³€í•˜ë©´ ì•ˆë˜ë¯€ë¡œ
+        // idaTNumericí•¨ìˆ˜ë¥¼ ì‚¬ìš©í•˜ì§€ ì•ŠëŠ”ë‹¤.
         sArgument = (mtdNumericType*)aStack[1].value;
         sReturnValue = (mtdNumericType*)aStack[0].value;
 
         sReturnValue->length = sArgument->length;
 
-        // ºÎÈ£ ¹Ù²Ù°í º¸¼ö
+        // ë¶€í˜¸ ë°”ê¾¸ê³  ë³´ìˆ˜
         sReturnValue->signExponent = 256 - sArgument->signExponent;
         for( sMantissaIndex = 0 ;
              sMantissaIndex < sArgument->length - 1 ;
@@ -632,14 +632,14 @@ IDE_RC mtfMinusCalculateFloat( mtcNode*     aNode,
     else
     {
         // To fix BUG-13643
-        // ºÎÈ£¸¦ ¹Ù²Ü ¶§ precisionÀÌ º¯ÇÏ¸é ¾ÈµÇ¹Ç·Î
-        // idaTNumericÇÔ¼ö¸¦ »ç¿ëÇÏÁö ¾Ê´Â´Ù.
+        // ë¶€í˜¸ë¥¼ ë°”ê¿€ ë•Œ precisionì´ ë³€í•˜ë©´ ì•ˆë˜ë¯€ë¡œ
+        // idaTNumericí•¨ìˆ˜ë¥¼ ì‚¬ìš©í•˜ì§€ ì•ŠëŠ”ë‹¤.
         sArgument = (mtdNumericType*)aStack[1].value;
         sReturnValue = (mtdNumericType*)aStack[0].value;
 
         sReturnValue->length = sArgument->length;
 
-        // ºÎÈ£ ¹Ù²Ù°í º¸¼ö
+        // ë¶€í˜¸ ë°”ê¾¸ê³  ë³´ìˆ˜
         sReturnValue->signExponent = 256 - sArgument->signExponent;
         for( sMantissaIndex = 0 ;
              sMantissaIndex < sArgument->length - 1 ;

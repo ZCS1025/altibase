@@ -19,8 +19,8 @@
  *
  * $Id: sdpstFindPage.cpp 27229 2008-07-23 17:37:19Z newdaily $
  *
- * º» ÆÄÀÏÀº Treelist Managed Segment¿¡¼­ °¡¿ë°ø°£ Å½»ö ¿¬»ê °ü·Ã STATIC
- * ÀÎÅÍÆäÀÌ½º¸¦ °ü¸®ÇÑ´Ù.
+ * ë³¸ íŒŒì¼ì€ Treelist Managed Segmentì—ì„œ ê°€ìš©ê³µê°„ íƒìƒ‰ ì—°ì‚° ê´€ë ¨ STATIC
+ * ì¸í„°í˜ì´ìŠ¤ë¥¼ ê´€ë¦¬í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -42,8 +42,8 @@
 # include <sdpstStackMgr.h>
 
 /***********************************************************************
- * Description : [ INTERFACE ] °¡¿ë°ø°£ ÇÒ´ç °¡´ÉÇÑ Table Data ÆäÀÌÁö¸¦
- *               Å½»öÇÑ´Ù.
+ * Description : [ INTERFACE ] ê°€ìš©ê³µê°„ í• ë‹¹ ê°€ëŠ¥í•œ Table Data í˜ì´ì§€ë¥¼
+ *               íƒìƒ‰í•œë‹¤.
  ***********************************************************************/
 IDE_RC sdpstFindPage::findInsertablePage( idvSQL           * aStatistics,
                                           sdrMtx           * aMtx,
@@ -73,8 +73,8 @@ IDE_RC sdpstFindPage::findInsertablePage( idvSQL           * aStatistics,
 
     if ( smuProperty::getTmsIgnoreHintPID() == 0 )
     {
-        /* Hint DataPID¸¦ ¸ÕÀú Trans¿¡¼­ °¡Á®¿Â´Ù.
-         * ¸¸¾à Trans¿¡ ¾ø´Â °æ¿ì SegCache¿¡¼­ °¡Á®¿Â´Ù. */
+        /* Hint DataPIDë¥¼ ë¨¼ì € Transì—ì„œ ê°€ì ¸ì˜¨ë‹¤.
+         * ë§Œì•½ Transì— ì—†ëŠ” ê²½ìš° SegCacheì—ì„œ ê°€ì ¸ì˜¨ë‹¤. */
         if ( (sTableOID != SM_NULL_OID) && (aTableInfo != NULL) )
         {
             smLayerCallback::getHintDataPIDofTableInfo( aTableInfo, &sHintDataPID );
@@ -138,8 +138,8 @@ IDE_RC sdpstFindPage::findInsertablePage( idvSQL           * aStatistics,
     {
         if ( sPagePtr == NULL )
         {
-            // Hint Data ÆäÀÌÁö¿¡ ´ëÇØ¼­ °¡¿ë°ø°£ÇÒ´çÀÌ ºÒ°¡´ÉÇÏ¿©
-            // Hint Data ÆäÀÌÁö¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+            // Hint Data í˜ì´ì§€ì— ëŒ€í•´ì„œ ê°€ìš©ê³µê°„í• ë‹¹ì´ ë¶ˆê°€ëŠ¥í•˜ì—¬
+            // Hint Data í˜ì´ì§€ë¥¼ ì´ˆê¸°í™”í•œë‹¤.
             smLayerCallback::setHintDataPIDofTableInfo( aTableInfo, SD_NULL_PID );
         }
     }
@@ -151,7 +151,7 @@ IDE_RC sdpstFindPage::findInsertablePage( idvSQL           * aStatistics,
 }
 
 /***********************************************************************
- * Description : Search À¯Çü¿¡ µû¶ó °¡¿ë°ø°£À» Å½»öÇÑ´Ù.
+ * Description : Search ìœ í˜•ì— ë”°ë¼ ê°€ìš©ê³µê°„ì„ íƒìƒ‰í•œë‹¤.
  ***********************************************************************/
 IDE_RC sdpstFindPage::searchFreeSpace( idvSQL            * aStatistics,
                                        sdrMtx            * aMtx,
@@ -202,8 +202,8 @@ IDE_RC sdpstFindPage::searchFreeSpace( idvSQL            * aStatistics,
         if ( sGoNxtIt == ID_TRUE )
         {
             /* BUG-29038
-             * Å½»öÇÒ ItBMP °³¼ö¸¦ ÃÊ°úÇÏ°Å³ª È®ÀåÀÌ ÇÊ¿äÇÒ¶§ È®ÀåÇÏ¿©
-             * È®ÀåÇÑ ExtentÀÇ Ã¹¹øÂ° ÆäÀÌÁö¸¦ ¹Ù·Î ÇÒ´çÇÑ´Ù. */
+             * íƒìƒ‰í•  ItBMP ê°œìˆ˜ë¥¼ ì´ˆê³¼í•˜ê±°ë‚˜ í™•ì¥ì´ í•„ìš”í• ë•Œ í™•ì¥í•˜ì—¬
+             * í™•ì¥í•œ Extentì˜ ì²«ë²ˆì§¸ í˜ì´ì§€ë¥¼ ë°”ë¡œ í• ë‹¹í•œë‹¤. */
             if ( sSearchItBMPCnt <= SDPST_SEARCH_QUOTA_IN_RTBMP )
             {
                 IDE_TEST( searchSpaceInRtBMP( aStatistics,
@@ -233,12 +233,12 @@ IDE_RC sdpstFindPage::searchFreeSpace( idvSQL            * aStatistics,
 
                 IDU_FIT_POINT( "1.BUG-30667@sdpstFindPage::searchFreeSpace" );
 
-                /* Extent È®ÀåÀ» ¿©·¯ Æ®·£Àè¼ÇÀÌ µ¿½Ã¿¡ ¼öÇàÇÏ°Ô µÇ¸é
-                 * ÇÑ Æ®·£Àè¼Ç¸¸ È®ÀåÀ» ÁøÇàÇÏ°í ´Ù¸¥ Æ®·£Àè¼ÇÀº ´ë±âÇÏ´Ù°¡
-                 * È®ÀåÀÌ ¿Ï·áµÇ¸é ¾Æ¹«°Íµµ ¾ÈÇÏ°í, Å½»öÇÒ ItHint¸¸ sStack¿¡ 
-                 * ¼³Á¤ÇÏ°í ³ª¿À°Ô µÈ´Ù.
-                 * µû¶ó¼­ ÀÌ °æ¿ì sPagePtrÀÌ NULL·Î ¸®ÅÏµÇ´Âµ¥, ÀÌ¶§ ÇØ´ç
-                 * ItHint¿¡¼­ Å½»öÀ» ´õ ºÁ¾ßÇÑ´Ù. */
+                /* Extent í™•ì¥ì„ ì—¬ëŸ¬ íŠ¸ëœì­ì…˜ì´ ë™ì‹œì— ìˆ˜í–‰í•˜ê²Œ ë˜ë©´
+                 * í•œ íŠ¸ëœì­ì…˜ë§Œ í™•ì¥ì„ ì§„í–‰í•˜ê³  ë‹¤ë¥¸ íŠ¸ëœì­ì…˜ì€ ëŒ€ê¸°í•˜ë‹¤ê°€
+                 * í™•ì¥ì´ ì™„ë£Œë˜ë©´ ì•„ë¬´ê²ƒë„ ì•ˆí•˜ê³ , íƒìƒ‰í•  ItHintë§Œ sStackì— 
+                 * ì„¤ì •í•˜ê³  ë‚˜ì˜¤ê²Œ ëœë‹¤.
+                 * ë”°ë¼ì„œ ì´ ê²½ìš° sPagePtrì´ NULLë¡œ ë¦¬í„´ë˜ëŠ”ë°, ì´ë•Œ í•´ë‹¹
+                 * ItHintì—ì„œ íƒìƒ‰ì„ ë” ë´ì•¼í•œë‹¤. */
                 if ( sPagePtr != NULL )
                 {
                     break;
@@ -261,7 +261,7 @@ IDE_RC sdpstFindPage::searchFreeSpace( idvSQL            * aStatistics,
             IDE_ASSERT( 0 );
         }
 
-        /* Å½»öÇÒ ItBMP °³¼ö¸¦ Á¦ÇÑÇÑ´Ù. */
+        /* íƒìƒ‰í•  ItBMP ê°œìˆ˜ë¥¼ ì œí•œí•œë‹¤. */
         sSearchItBMPCnt++;
 
         IDE_TEST( searchSpaceInItBMP(
@@ -277,8 +277,8 @@ IDE_RC sdpstFindPage::searchFreeSpace( idvSQL            * aStatistics,
 
         if ( sGoNxtIt == ID_TRUE )
         {
-            // itbmp ÆäÀÌÁö°¡ °¡¿ëÇÏÁö ¾Ê´Ù¸é, ´Ù½Ã Root bmp ÆäÀÌÁö¿¡¼­ÀÇ
-            // Å½»ö°úÁ¤À¸·Î µ¹¾Æ°£´Ù.
+            // itbmp í˜ì´ì§€ê°€ ê°€ìš©í•˜ì§€ ì•Šë‹¤ë©´, ë‹¤ì‹œ Root bmp í˜ì´ì§€ì—ì„œì˜
+            // íƒìƒ‰ê³¼ì •ìœ¼ë¡œ ëŒì•„ê°„ë‹¤.
             sdpstStackMgr::pop( &sStack );
             continue;
         }
@@ -302,14 +302,14 @@ IDE_RC sdpstFindPage::searchFreeSpace( idvSQL            * aStatistics,
 
         for ( sLoop = 0; sLoop < sCandidateLfCount; sLoop++ )
         {
-            /* ÈÄº¸ Data ÆäÀÌÁö´Â Stack¿¡ ÀúÀåÇÒ °æ¿ì´Â HWM
-             * ÀúÀåÇÏ±â À§ÇØ¼­¸¸ ÀúÀåÇÏ¸ç, traverse¸¦ À§ÇØ¼­´Â ÀúÀå
-             * ÇÏÁö ¾Ê´Â´Ù. ±×·¯¹Ç·Î, ¿©±â±îÁö´Â Stack¿¡´Â Lf BMP
-             * ±îÁö Á¤º¸¸¸ ÀúÀåµÇ¾î ÀÖÀ¸¸ç, Lf BMP ÆäÀÌÁö¿¡¼­ Data
-             * ÆäÀÌÁöÀÇ Create ¿¬»êÀÌ ¹ß»ıÇÒ °æ¿ì¿¡¸¸, Data ÆäÀÌÁöÀÇ
-             * Á¤º¸°¡ Stack¿¡ ÀúÀåµÈ´Ù. */
+            /* í›„ë³´ Data í˜ì´ì§€ëŠ” Stackì— ì €ì¥í•  ê²½ìš°ëŠ” HWM
+             * ì €ì¥í•˜ê¸° ìœ„í•´ì„œë§Œ ì €ì¥í•˜ë©°, traverseë¥¼ ìœ„í•´ì„œëŠ” ì €ì¥
+             * í•˜ì§€ ì•ŠëŠ”ë‹¤. ê·¸ëŸ¬ë¯€ë¡œ, ì—¬ê¸°ê¹Œì§€ëŠ” Stackì—ëŠ” Lf BMP
+             * ê¹Œì§€ ì •ë³´ë§Œ ì €ì¥ë˜ì–´ ìˆìœ¼ë©°, Lf BMP í˜ì´ì§€ì—ì„œ Data
+             * í˜ì´ì§€ì˜ Create ì—°ì‚°ì´ ë°œìƒí•  ê²½ìš°ì—ë§Œ, Data í˜ì´ì§€ì˜
+             * ì •ë³´ê°€ Stackì— ì €ì¥ëœë‹¤. */
 
-            /* internal depthÀÇ ÇÏÀ§ Slot Index¸¦ Àç¼³Á¤ÇÑ´Ù. */
+            /* internal depthì˜ í•˜ìœ„ Slot Indexë¥¼ ì¬ì„¤ì •í•œë‹¤. */
             sdpstStackMgr::setCurrPos( &sStack,
                                        sCurrPos.mNodePID,
                                        sArrLfBMP[sLoop].mIndex );
@@ -337,8 +337,8 @@ IDE_RC sdpstFindPage::searchFreeSpace( idvSQL            * aStatistics,
 
         if ( sPagePtr == NULL ) // Not Found !!
         {
-            /* °¡¿ëÇÑ Data ÆäÀÌÁö¸¦ Å½»öÇÏÁö ¸øÇß´Ù¸é,
-             * ItBMP ÆäÀÌÁöÀÇ »óÀ§ RtBMP ÆäÀÌÁöºÎÅÍ ´Ù½Ã Å½»öÀ» ¼öÇàÇÑ´Ù. */
+            /* ê°€ìš©í•œ Data í˜ì´ì§€ë¥¼ íƒìƒ‰í•˜ì§€ ëª»í–ˆë‹¤ë©´,
+             * ItBMP í˜ì´ì§€ì˜ ìƒìœ„ RtBMP í˜ì´ì§€ë¶€í„° ë‹¤ì‹œ íƒìƒ‰ì„ ìˆ˜í–‰í•œë‹¤. */
             sdpstStackMgr::pop( &sStack );
             sGoNxtIt = ID_TRUE;
         }
@@ -352,14 +352,14 @@ IDE_RC sdpstFindPage::searchFreeSpace( idvSQL            * aStatistics,
     *aPagePtr        = sPagePtr;
     *aCTSlotNo       = sCTSlotNo;
 
-    /* lstAllocPage¸¦ °»½ÅÇÑ´Ù. */
+    /* lstAllocPageë¥¼ ê°±ì‹ í•œë‹¤. */
     sdpstCache::setLstAllocPage4AllocPage( aStatistics,
                                  aSegHandle,
                                  sdpPhyPage::getPageID( sPagePtr ),
                                  sdpPhyPage::getSeqNo( 
                                         sdpPhyPage::getHdr(sPagePtr) ) );
 
-    /* Index PageÀÎ °æ¿ì free index Page °³¼ö¸¦ °»½ÅÇÑ´Ù */
+    /* Index Pageì¸ ê²½ìš° free index Page ê°œìˆ˜ë¥¼ ê°±ì‹ í•œë‹¤ */
     if ( aPageType != SDP_PAGE_DATA )
     {
         sdrMiniTrans::makeStartInfo( aMtx, &sStartInfo );
@@ -411,12 +411,12 @@ IDE_RC sdpstFindPage::searchFreeSpace( idvSQL            * aStatistics,
 }
 
 /***********************************************************************
- * Description : È®ÀåÇÏ°í, È®ÀåÇß´Ù¸é È®ÀåÇÑ ExtentÀÇ Ã¹¹øÂ° dataÆäÀÌÁö¿¡
- * X-Latch¸¦ Àâ¾Æ ¸®ÅÏÇÑ´Ù.
+ * Description : í™•ì¥í•˜ê³ , í™•ì¥í–ˆë‹¤ë©´ í™•ì¥í•œ Extentì˜ ì²«ë²ˆì§¸ dataí˜ì´ì§€ì—
+ * X-Latchë¥¼ ì¡ì•„ ë¦¬í„´í•œë‹¤.
  *
- * ´Ù¸¥ Trans¿¡¼­ ÀÌ¹Ì È®ÀåÁßÀÎ°æ¿ì È®ÀåÇÏÁö ¾Ê´Â °æ¿ìµµ ÀÖ´Ù.
- * ÀÌ¶§ È®ÀåÇÑ ¸¶Áö¸· ItBMP°¡ aStack¿¡ ¼³Á¤µÈ´Ù.
- * Áï, °è¼Ó Å½»öÀ» ¼öÇàÇÏ¸é µÈ´Ù.
+ * ë‹¤ë¥¸ Transì—ì„œ ì´ë¯¸ í™•ì¥ì¤‘ì¸ê²½ìš° í™•ì¥í•˜ì§€ ì•ŠëŠ” ê²½ìš°ë„ ìˆë‹¤.
+ * ì´ë•Œ í™•ì¥í•œ ë§ˆì§€ë§‰ ItBMPê°€ aStackì— ì„¤ì •ëœë‹¤.
+ * ì¦‰, ê³„ì† íƒìƒ‰ì„ ìˆ˜í–‰í•˜ë©´ ëœë‹¤.
  ***********************************************************************/
 IDE_RC sdpstFindPage::tryToAllocExtsAndPage( idvSQL          * aStatistics,
                                              sdrMtx          * aMtx4Latch,
@@ -446,8 +446,8 @@ IDE_RC sdpstFindPage::tryToAllocExtsAndPage( idvSQL          * aStatistics,
 
     sSegCache = (sdpstSegCache*)aSegHandle->mCache;
 
-    // ÇöÀç Root bmp ÆäÀÌÁö¿¡ °¡¿ëÇÑ itbmp ÆäÀÌÁö°¡ Á¸ÀçÇÏÁö
-    // ¾Ê±â ¶§¹®¿¡ Segment È®ÀåÀ» ¼öÇàÇÑ´Ù.
+    // í˜„ì¬ Root bmp í˜ì´ì§€ì— ê°€ìš©í•œ itbmp í˜ì´ì§€ê°€ ì¡´ì¬í•˜ì§€
+    // ì•Šê¸° ë•Œë¬¸ì— Segment í™•ì¥ì„ ìˆ˜í–‰í•œë‹¤.
     sdrMiniTrans::makeStartInfo( aMtx4Latch, &sStartInfo );
 
     IDE_TEST( sdpstSegDDL::allocNewExtsAndPage(
@@ -462,8 +462,8 @@ IDE_RC sdpstFindPage::tryToAllocExtsAndPage( idvSQL          * aStatistics,
                                    &sPagePtr )
               != IDE_SUCCESS );
 
-    /* Extent¸¦ Á÷Á¢ È®ÀåÇÑ °æ¿ì First Data PageÀÇ Æ÷ÀÎÅÍ°¡ ¸®ÅÏµÈ´Ù.
-     * ÇØ´ç ÆäÀÌÁö¸¦ ÃÊ±âÈ­ÇÑ´Ù. */
+    /* Extentë¥¼ ì§ì ‘ í™•ì¥í•œ ê²½ìš° First Data Pageì˜ í¬ì¸í„°ê°€ ë¦¬í„´ëœë‹¤.
+     * í•´ë‹¹ í˜ì´ì§€ë¥¼ ì´ˆê¸°í™”í•œë‹¤. */
     if ( sPagePtr != NULL )
     {
         IDE_TEST( sdrMiniTrans::begin( aStatistics,
@@ -509,11 +509,11 @@ IDE_RC sdpstFindPage::tryToAllocExtsAndPage( idvSQL          * aStatistics,
                                             &sInitMtx )
                       != IDE_SUCCESS );
 
-            // Table Page°¡ ¾Æ´Ñ°æ¿ì¿¡´Â ¹Ì¸® bitmapÀ» °»½ÅÇÑ´Ù.
+            // Table Pageê°€ ì•„ë‹Œê²½ìš°ì—ëŠ” ë¯¸ë¦¬ bitmapì„ ê°±ì‹ í•œë‹¤.
             sdpstStackMgr::initialize(&sRevStack);
 
-            // leaf bmp ÆäÀÌÁöºÎÅÍ MFNLÀ» º¯°æ½ÃµµÇÏ¿©
-            // »óÀ§³ëµå·Î ÀüÆÄÇÑ´Ù.
+            // leaf bmp í˜ì´ì§€ë¶€í„° MFNLì„ ë³€ê²½ì‹œë„í•˜ì—¬
+            // ìƒìœ„ë…¸ë“œë¡œ ì „íŒŒí•œë‹¤.
             IDE_TEST( sdpstAllocPage::tryToChangeMFNLAndItHint(
                           aStatistics,
                           &sInitMtx,
@@ -534,13 +534,13 @@ IDE_RC sdpstFindPage::tryToAllocExtsAndPage( idvSQL          * aStatistics,
         *aFstDataPagePtr = sPagePtr;
     }
 
-    /* È®ÀåµÈ ÀÌÈÄ¿¡´Â ¸¶Áö¸· ItBMP¸¦ Hint·Î ¼³Á¤ÇÏ°í,
-     * ÇØ´ç ItBMP¿¡¼­ Å½»öÀ» ½ÃÀÛÇÑ´Ù.
-     * ¸¶Áö¸· ItBMP´Â HWM¿¡ ¼³Á¤µÇ¾î ÀÖ´Ù. */
+    /* í™•ì¥ëœ ì´í›„ì—ëŠ” ë§ˆì§€ë§‰ ItBMPë¥¼ Hintë¡œ ì„¤ì •í•˜ê³ ,
+     * í•´ë‹¹ ItBMPì—ì„œ íƒìƒ‰ì„ ì‹œì‘í•œë‹¤.
+     * ë§ˆì§€ë§‰ ItBMPëŠ” HWMì— ì„¤ì •ë˜ì–´ ìˆë‹¤. */
     sdpstCache::copyHWM( aStatistics, sSegCache, &sHWM );
 
-    /* ÇöÀç stackÀ» ÃÊ±âÈ­ÇÏ°í, ¸¶Áö¸· ItBMP¸¦ Å½»ö À§Ä¡·Î
-     * ¼³Á¤ÇÑ´Ù. */
+    /* í˜„ì¬ stackì„ ì´ˆê¸°í™”í•˜ê³ , ë§ˆì§€ë§‰ ItBMPë¥¼ íƒìƒ‰ ìœ„ì¹˜ë¡œ
+     * ì„¤ì •í•œë‹¤. */
     sdpstStackMgr::initialize( aStack );
 
     if ( sdpstStackMgr::getDepth( aStack ) != SDPST_EMPTY )
@@ -580,20 +580,20 @@ IDE_RC sdpstFindPage::tryToAllocExtsAndPage( idvSQL          * aStatistics,
         IDE_ASSERT( 0 );
     }
 
-    /* ÀÌÀü ItHint¸¦ °¡Á®¿À°í, */
+    /* ì´ì „ ItHintë¥¼ ê°€ì ¸ì˜¤ê³ , */
     sdpstCache::copyItHint( aStatistics,
                             sSegCache,
                             aSearchType,
                             &sPrvItHint );
 
-    /* ¼³Á¤ÇÑ ItBMP¸¦ Hint·Î ¼³Á¤ÇÑ´Ù. */
+    /* ì„¤ì •í•œ ItBMPë¥¼ Hintë¡œ ì„¤ì •í•œë‹¤. */
     sdpstCache::setItHintIfGT( aStatistics,
                                sSegCache,
                                aSearchType,
                                aStack );
 
-    /* ÇöÀç ItHint¿Í ºñ±³ÇÏ¿© Hint°¡ ¾Õ´ç°ÜÁ³´Ù¸é
-     * rescan flag¸¦ ÄÑÁØ´Ù. */
+    /* í˜„ì¬ ItHintì™€ ë¹„êµí•˜ì—¬ Hintê°€ ì•ë‹¹ê²¨ì¡Œë‹¤ë©´
+     * rescan flagë¥¼ ì¼œì¤€ë‹¤. */
     if ( sdpstStackMgr::compareStackPos( &sPrvItHint, aStack ) < 0 )
     {
         if ( aSearchType == SDPST_SEARCH_NEWSLOT )
@@ -621,10 +621,10 @@ IDE_RC sdpstFindPage::tryToAllocExtsAndPage( idvSQL          * aStatistics,
 }
 
 /***********************************************************************
- * Description : Root BMP ÆäÀÌÁö¿¡¼­ÀÇ °¡¿ë°ø°£ Å½»öÀ» ¼öÇàÇÑ´Ù.
+ * Description : Root BMP í˜ì´ì§€ì—ì„œì˜ ê°€ìš©ê³µê°„ íƒìƒ‰ì„ ìˆ˜í–‰í•œë‹¤.
  *
- * Root BMP ÆäÀÌÁö°¡ °¡¿ë°ø°£À» °¡Áø Internal BMP ÆäÀÌÁö¸¦ °¡Áö°í ÀÖÁö
- * ¾Ê´Ù¸é, It Hint¸¦ º¯°æÇØÁÖ¾î¾ß ÇÑ´Ù.
+ * Root BMP í˜ì´ì§€ê°€ ê°€ìš©ê³µê°„ì„ ê°€ì§„ Internal BMP í˜ì´ì§€ë¥¼ ê°€ì§€ê³  ìˆì§€
+ * ì•Šë‹¤ë©´, It Hintë¥¼ ë³€ê²½í•´ì£¼ì–´ì•¼ í•œë‹¤.
  ***********************************************************************/
 IDE_RC sdpstFindPage::searchSpaceInRtBMP( idvSQL            * aStatistics,
                                           sdrMtx            * aMtx,
@@ -697,10 +697,10 @@ IDE_RC sdpstFindPage::searchSpaceInRtBMP( idvSQL            * aStatistics,
 
         sBMPHdr = sdpstBMP::getHdrPtr( sPagePtr );
 
-        /* RtBMP¿¡¼­ ´ÙÀ½¿¡ Å½»öÇÒ ItBMP¸¦ ±¸ÇÑ´Ù.
-         * ¼¼±×¸ÕÆ® °ø°£ È®Àå ÀÌÀü¿¡´Â Çö ItBMP ÀÌÈÄ¿¡ °¡¿ë°ø°£ÀÌ ÀÖ´Â
-         * ItBMP¸¦ Ã£´Â´Ù. È®Àå ÈÄ¿¡´Â È®ÀåµÈ Extent°¡ ±âÁ¸ ItBMP¿¡ Á¸ÀçÇÒ
-         * ¼ö ÀÖ±â ¶§¹®¿¡ Çö ItBMPºÎÅÍ Å½»öÀ» ½ÃÀÛÇÑ´Ù. */
+        /* RtBMPì—ì„œ ë‹¤ìŒì— íƒìƒ‰í•  ItBMPë¥¼ êµ¬í•œë‹¤.
+         * ì„¸ê·¸ë¨¼íŠ¸ ê³µê°„ í™•ì¥ ì´ì „ì—ëŠ” í˜„ ItBMP ì´í›„ì— ê°€ìš©ê³µê°„ì´ ìˆëŠ”
+         * ItBMPë¥¼ ì°¾ëŠ”ë‹¤. í™•ì¥ í›„ì—ëŠ” í™•ì¥ëœ Extentê°€ ê¸°ì¡´ ItBMPì— ì¡´ì¬í• 
+         * ìˆ˜ ìˆê¸° ë•Œë¬¸ì— í˜„ ItBMPë¶€í„° íƒìƒ‰ì„ ì‹œì‘í•œë‹¤. */
         sdpstRtBMP::findFreeItBMP( sBMPHdr,
                                    sSlotNoInParent + 1,
                                    SDPST_SEARCH_TARGET_MIN_MFNL(aSearchType),
@@ -711,12 +711,12 @@ IDE_RC sdpstFindPage::searchSpaceInRtBMP( idvSQL            * aStatistics,
         if ( sNxtItBMP != SD_NULL_PID )
         {
             sState = 0;
-            // È¹µæÇß´ø root bmp ÆäÀÌÁö¸¦ unlatch ÇÑ´Ù.
+            // íšë“í–ˆë˜ root bmp í˜ì´ì§€ë¥¼ unlatch í•œë‹¤.
             IDE_TEST( sdrMiniTrans::releaseLatchToSP( aMtx, &sInitSP )
                       != IDE_SUCCESS );
 
-            // Internal Bitmap ÆäÀÌÁö¿¡¼­ÀÇ Å½»ö°úÁ¤À¸·Î ³Ñ¾î°£´Ù.
-            // Stack¿¡ ³Ö´Â´Ù.
+            // Internal Bitmap í˜ì´ì§€ì—ì„œì˜ íƒìƒ‰ê³¼ì •ìœ¼ë¡œ ë„˜ì–´ê°„ë‹¤.
+            // Stackì— ë„£ëŠ”ë‹¤.
             sdpstStackMgr::setCurrPos( aStack,
                                        sCurRtBMP,
                                        sNewSlotNoInParent );
@@ -739,22 +739,22 @@ IDE_RC sdpstFindPage::searchSpaceInRtBMP( idvSQL            * aStatistics,
             break; // Found it !!
         }
 
-        // °¡¿ëÇÑ itbmp ÆäÀÌÁö°¡ Á¸ÀçÇÏÁö ¾Ê´Â´Ù¸é »óÀ§
-        // rtbmp ÆäÀÌÁö¿¡¼­ ´ÙÀ½ itbmp ÆäÀÌÁö·Î ³Ñ¾î°£´Ù.
+        // ê°€ìš©í•œ itbmp í˜ì´ì§€ê°€ ì¡´ì¬í•˜ì§€ ì•ŠëŠ”ë‹¤ë©´ ìƒìœ„
+        // rtbmp í˜ì´ì§€ì—ì„œ ë‹¤ìŒ itbmp í˜ì´ì§€ë¡œ ë„˜ì–´ê°„ë‹¤.
         sNxtRtBMP          = sdpstRtBMP::getNxtRtBMP(sBMPHdr);
-        sNewSlotNoInParent = 0; // Slot ¼ø¹øÀ» Ã¹¹øÂ°·Î ¼³Á¤ÇÑ´Ù.
+        sNewSlotNoInParent = 0; // Slot ìˆœë²ˆì„ ì²«ë²ˆì§¸ë¡œ ì„¤ì •í•œë‹¤.
 
-        // È¹µæÇß´ø root bmp ÆäÀÌÁö¸¦ unlatch ÇÑ´Ù.
+        // íšë“í–ˆë˜ root bmp í˜ì´ì§€ë¥¼ unlatch í•œë‹¤.
         sState = 0;
         IDE_TEST( sdrMiniTrans::releaseLatchToSP( aMtx, &sInitSP )
                   != IDE_SUCCESS );
 
         if ( sNxtRtBMP == SD_NULL_PID )
         {
-            /* ÀÌÀü ItBMP¿¡ delete°¡ ¹ß»ıÇÏ¿© ÇØ´ç ItBMPÀÇ MFNLÀÌ °»½ÅµÇ´Â
-             * °æ¿ì UpdateItHint Flag°¡ True°¡ µÈ´Ù.
-             * ´õÀÌ»ó °¡¿ë °ø°£ÀÌ ¾ø´Â °æ¿ì ÇØ´ç ÇÃ·¡±×¸¦ º¸°í, ÀÌÀü¿¡ °¡¿ë°ø°£
-             * ÀÌ ÀÖ´Â °æ¿ì ÇØ´ç ItBMP¸¦ Hint·Î ¼³Á¤ÇÏ°í Å½»öÀ» ½ÃÀÛÇÑ´Ù. */
+            /* ì´ì „ ItBMPì— deleteê°€ ë°œìƒí•˜ì—¬ í•´ë‹¹ ItBMPì˜ MFNLì´ ê°±ì‹ ë˜ëŠ”
+             * ê²½ìš° UpdateItHint Flagê°€ Trueê°€ ëœë‹¤.
+             * ë”ì´ìƒ ê°€ìš© ê³µê°„ì´ ì—†ëŠ” ê²½ìš° í•´ë‹¹ í”Œë˜ê·¸ë¥¼ ë³´ê³ , ì´ì „ì— ê°€ìš©ê³µê°„
+             * ì´ ìˆëŠ” ê²½ìš° í•´ë‹¹ ItBMPë¥¼ Hintë¡œ ì„¤ì •í•˜ê³  íƒìƒ‰ì„ ì‹œì‘í•œë‹¤. */
             if ( sdpstCache::needToUpdateItHint( sSegCache,
                                                  aSearchType ) == ID_TRUE )
             {
@@ -764,8 +764,8 @@ IDE_RC sdpstFindPage::searchSpaceInRtBMP( idvSQL            * aStatistics,
                                                     aSearchType,
                                                     sSegCache,
                                                     aStack ) != IDE_SUCCESS );
-                /* aStack¿¡ ItBMP Hint°¡ ¼³Á¤µÇ¾ú´Ù. ItBMP¿¡¼­ Å½»öÀ» ½ÃÀÛ
-                 * ÇÑ´Ù. */
+                /* aStackì— ItBMP Hintê°€ ì„¤ì •ë˜ì—ˆë‹¤. ItBMPì—ì„œ íƒìƒ‰ì„ ì‹œì‘
+                 * í•œë‹¤. */
                 if ( sdpstStackMgr::getDepth( aStack ) != SDPST_ITBMP )
                 {
                     ideLog::log( IDE_SERVER_0, "Search Stack is invalid\n" );
@@ -783,23 +783,23 @@ IDE_RC sdpstFindPage::searchSpaceInRtBMP( idvSQL            * aStatistics,
             }
             else
             {
-                /* °ø°£ È®ÀåÀ» ¼öÇàÇÑ´Ù. */
+                /* ê³µê°„ í™•ì¥ì„ ìˆ˜í–‰í•œë‹¤. */
                 *aNeedToExtendExt = ID_TRUE;
                 break;
             }
         }
         else
         {
-            // ÇöÀç Root¸¦ Á¦°ÅÇÑ´Ù.
+            // í˜„ì¬ Rootë¥¼ ì œê±°í•œë‹¤.
             sdpstStackMgr::pop( aStack );
-            // °¡»ó Node¸¦ Á¦°ÅÇÑ´Ù.
+            // ê°€ìƒ Nodeë¥¼ ì œê±°í•œë‹¤.
             sPosItem = sdpstStackMgr::pop( aStack );
 
-            // °¡»ó ³ëµå¿¡¼­ÀÇ rtbmp ÆäÀÌÁö ¼ø¹øÀ» Áõ°¡½ÃÅ²´ÙÀ½,
-            // °¡»ó Node¸¦ ´Ù½Ã ³Ö´Â´Ù.
+            // ê°€ìƒ ë…¸ë“œì—ì„œì˜ rtbmp í˜ì´ì§€ ìˆœë²ˆì„ ì¦ê°€ì‹œí‚¨ë‹¤ìŒ,
+            // ê°€ìƒ Nodeë¥¼ ë‹¤ì‹œ ë„£ëŠ”ë‹¤.
             sPosItem.mIndex++;
             sdpstStackMgr::push( aStack, &sPosItem );
-            // »õ·Î¿î Root bmp ÆäÀÌÁö¸¦ Stack¿¡ ³Ö´Â´Ù.
+            // ìƒˆë¡œìš´ Root bmp í˜ì´ì§€ë¥¼ Stackì— ë„£ëŠ”ë‹¤.
             sdpstStackMgr::push( aStack, sNxtRtBMP, sNewSlotNoInParent );
         }
     }
@@ -819,7 +819,7 @@ IDE_RC sdpstFindPage::searchSpaceInRtBMP( idvSQL            * aStatistics,
 
 
 /***********************************************************************
- * Description : Internal Bitmap ÆäÀÌÁö¿¡¼­ÀÇ °¡¿ë°ø°£ Å½»öÀ» ¼öÇàÇÑ´Ù.
+ * Description : Internal Bitmap í˜ì´ì§€ì—ì„œì˜ ê°€ìš©ê³µê°„ íƒìƒ‰ì„ ìˆ˜í–‰í•œë‹¤.
  ***********************************************************************/
 IDE_RC sdpstFindPage::searchSpaceInItBMP(
                                  idvSQL          * aStatistics,
@@ -861,16 +861,16 @@ IDE_RC sdpstFindPage::searchSpaceInItBMP(
 
     sState = 1;
 
-    /* BUG-29325 TC/Server/sm4/Project3/PROJ-2037/conc_recv/sgl/upd_sqs.sql ¿¡¼­
-     *           FATAL ¹ß»ı
-     * ÈÄº¸ ¼±Á¤ °úÁ¤¿¡¼­ HWMÀÌ º¯°æµÉ ¼ö ÀÖ±â ¶§¹®¿¡ ÇØ´ç BMP ÆäÀÌÁö¿¡
-     * S-Latch¸¦ È¹µæÇÑ ÀÌÈÄ HWMÀ» °¡Á®¿Í¾ß ÇÑ´Ù. */
+    /* BUG-29325 TC/Server/sm4/Project3/PROJ-2037/conc_recv/sgl/upd_sqs.sql ì—ì„œ
+     *           FATAL ë°œìƒ
+     * í›„ë³´ ì„ ì • ê³¼ì •ì—ì„œ HWMì´ ë³€ê²½ë  ìˆ˜ ìˆê¸° ë•Œë¬¸ì— í•´ë‹¹ BMP í˜ì´ì§€ì—
+     * S-Latchë¥¼ íšë“í•œ ì´í›„ HWMì„ ê°€ì ¸ì™€ì•¼ í•œë‹¤. */
     sdpstCache::copyHWM( aStatistics, aSegCache, &sHWM );
 
     /*
-     * internal bitmap ÆäÀÌÁö¿¡¼­ Å½»öÇÒ leaf bmp ÆäÀÌÁöµéÀÇ ÈÄº¸ ¸ñ·ÏÀ»
-     * ÀÛ¼ºÇÏ°í, Search Type¿¡ µû¶ó Available ÇÏÁö ¾Ê´Ù¸é Cache Hint¸¦
-     * º¯°æÇÑ´Ù.
+     * internal bitmap í˜ì´ì§€ì—ì„œ íƒìƒ‰í•  leaf bmp í˜ì´ì§€ë“¤ì˜ í›„ë³´ ëª©ë¡ì„
+     * ì‘ì„±í•˜ê³ , Search Typeì— ë”°ë¼ Available í•˜ì§€ ì•Šë‹¤ë©´ Cache Hintë¥¼
+     * ë³€ê²½í•œë‹¤.
      */
     sdpstBMP::makeCandidateChild( aSegCache,
                                   sItPagePtr,
@@ -888,17 +888,17 @@ IDE_RC sdpstFindPage::searchSpaceInItBMP(
 
     if ( *aCandidateCount == 0 )
     {
-        // itbmp ÆäÀÌÁö°¡ °¡¿ëÇÑ ÈÄº¸ lfbmp ÆäÀÌÁöµéÀÌ Á¸ÀçÇÏÁö ¾Ê´Â´Ù¸é
-        // »óÀ§ rtbmp ÆäÀÌÁö¿¡¼­ ´ÙÀ½ itbmp ÆäÀÌÁö·Î ³Ñ¾î°£´Ù.
-        // stack¿¡ ÀúÀåµÇ¾î ÀÖ´Â Root BMP ÆäÀÌÁöÀÇ PID¿Í It SlotNo¸¦
-        // »ç¿ëÇÏ¿© ÁøÇàÇÏ°í, ÇöÀç Á¸ÀçÇÏ´Â internal bmp ÆäÀÌÁö¿¡ ´ëÇÑ Á¤º¸´Â
-        // stack¿¡¼­ Á¦°ÅÇÑ´Ù.
+        // itbmp í˜ì´ì§€ê°€ ê°€ìš©í•œ í›„ë³´ lfbmp í˜ì´ì§€ë“¤ì´ ì¡´ì¬í•˜ì§€ ì•ŠëŠ”ë‹¤ë©´
+        // ìƒìœ„ rtbmp í˜ì´ì§€ì—ì„œ ë‹¤ìŒ itbmp í˜ì´ì§€ë¡œ ë„˜ì–´ê°„ë‹¤.
+        // stackì— ì €ì¥ë˜ì–´ ìˆëŠ” Root BMP í˜ì´ì§€ì˜ PIDì™€ It SlotNoë¥¼
+        // ì‚¬ìš©í•˜ì—¬ ì§„í–‰í•˜ê³ , í˜„ì¬ ì¡´ì¬í•˜ëŠ” internal bmp í˜ì´ì§€ì— ëŒ€í•œ ì •ë³´ëŠ”
+        // stackì—ì„œ ì œê±°í•œë‹¤.
         *aGoNxtIt = ID_TRUE;
     }
     else
     {
-        // °¡¿ëÇÑ ÈÄº¸ leaf bmp ÆäÀÌÁöµéÀ» Å½»öÇß±â ¶§¹®¿¡
-        // Stack¿¡¼­ internal bmp¿¡ ´ëÇÑ ³»¿ëÀ» popÇÏÁö ¾Ê´Â´Ù.
+        // ê°€ìš©í•œ í›„ë³´ leaf bmp í˜ì´ì§€ë“¤ì„ íƒìƒ‰í–ˆê¸° ë•Œë¬¸ì—
+        // Stackì—ì„œ internal bmpì— ëŒ€í•œ ë‚´ìš©ì„ popí•˜ì§€ ì•ŠëŠ”ë‹¤.
         *aGoNxtIt = ID_FALSE;
     }
 
@@ -913,29 +913,29 @@ IDE_RC sdpstFindPage::searchSpaceInItBMP(
 }
 
 /***********************************************************************
- * Description : Leaf Bitmap ÆäÀÌÁö¿¡¼­ÀÇ °¡¿ë°ø°£ Å½»öÀ» ¼öÇàÇÑ´Ù.
+ * Description : Leaf Bitmap í˜ì´ì§€ì—ì„œì˜ ê°€ìš©ê³µê°„ íƒìƒ‰ì„ ìˆ˜í–‰í•œë‹¤.
  *
- * ÈÄº¸ Data ÆäÀÌÁö°¡ Unformat »óÅÂÀÌ¸é, ÆäÀÌÁö ÇÒ´çÀ» ¼öÇàÇÑ´Ù.
+ * í›„ë³´ Data í˜ì´ì§€ê°€ Unformat ìƒíƒœì´ë©´, í˜ì´ì§€ í• ë‹¹ì„ ìˆ˜í–‰í•œë‹¤.
  *
- * A. ÈÄº¸ ÆäÀÌÁö°¡ INSERTABLE ÆäÀÌÁöÀÎ°æ¿ì
+ * A. í›„ë³´ í˜ì´ì§€ê°€ INSERTABLE í˜ì´ì§€ì¸ê²½ìš°
  *
- * leaf bmp ÆäÀÌÁö¸¦ S-latch·Î È¹µæÇÑ »óÅÂ¿¡¼­ ÈÄº¸ Data ÆäÀÌÁö ¸ñ·ÏÀ»
- * ÀÛ¼ºÇÏ°í ¹Ù·Î ÇØÁ¦ÇÑ´Ù. ¿Ö³ÄÇÏ¸é, ÇÒ´çÀÌÈÄ ÈÄº¸ ÆäÀÌÁöÀÇ °¡¿ëµµ¸¦
- * º¯°æÇÏ±â À§ÇØ¼­ leaf bmp ÆäÀÌÁö¿¡ ´ëÇØ¼­ X-latch¸¦ È¹µæÇÏ·Á°í ÇØ¾ß
- * ÇÏ±â ¶§¹®ÀÌ´Ù. ¸¸¾à S-latch¸¦ ÇØÁ¦ÇÏÁö ¾ÊÀ¸¸é, ´Ù¸¥ Æ®·£Àè¼Çµéµµ
- * ¸¶Âù°¡Áö·Î ÇØÁ¦ÇÏÁö ¾Ê±â ¶§¹®¿¡ ÆäÀÌÁö °¡¿ëµµ º¯°æÀ» ÇÏ±â À§ÇØ¼­
- * X-latch¸¦ È¹µæÇÏÁö ¸øÇÏ´Â ±³Âø»óÅÂ¿¡ ºüÁú ¼ö ÀÖ´Ù.
+ * leaf bmp í˜ì´ì§€ë¥¼ S-latchë¡œ íšë“í•œ ìƒíƒœì—ì„œ í›„ë³´ Data í˜ì´ì§€ ëª©ë¡ì„
+ * ì‘ì„±í•˜ê³  ë°”ë¡œ í•´ì œí•œë‹¤. ì™œëƒí•˜ë©´, í• ë‹¹ì´í›„ í›„ë³´ í˜ì´ì§€ì˜ ê°€ìš©ë„ë¥¼
+ * ë³€ê²½í•˜ê¸° ìœ„í•´ì„œ leaf bmp í˜ì´ì§€ì— ëŒ€í•´ì„œ X-latchë¥¼ íšë“í•˜ë ¤ê³  í•´ì•¼
+ * í•˜ê¸° ë•Œë¬¸ì´ë‹¤. ë§Œì•½ S-latchë¥¼ í•´ì œí•˜ì§€ ì•Šìœ¼ë©´, ë‹¤ë¥¸ íŠ¸ëœì­ì…˜ë“¤ë„
+ * ë§ˆì°¬ê°€ì§€ë¡œ í•´ì œí•˜ì§€ ì•Šê¸° ë•Œë¬¸ì— í˜ì´ì§€ ê°€ìš©ë„ ë³€ê²½ì„ í•˜ê¸° ìœ„í•´ì„œ
+ * X-latchë¥¼ íšë“í•˜ì§€ ëª»í•˜ëŠ” êµì°©ìƒíƒœì— ë¹ ì§ˆ ìˆ˜ ìˆë‹¤.
  *
- * leaf bmp ÆäÀÌÁö¿¡ ´ëÇÑ unlatchÀÌÈÄ¿¡ ÈÄº¸ Data ÆäÀÌÁö°¡ °©ÀÚ±â
- * format ÆäÀÌÁö·Î º¯°æµÉ ¼ö ÀÖ´Ù. ÀÌ¸¦ °í·ÁÇØ¾ßÇÑ´Ù.
+ * leaf bmp í˜ì´ì§€ì— ëŒ€í•œ unlatchì´í›„ì— í›„ë³´ Data í˜ì´ì§€ê°€ ê°‘ìê¸°
+ * format í˜ì´ì§€ë¡œ ë³€ê²½ë  ìˆ˜ ìˆë‹¤. ì´ë¥¼ ê³ ë ¤í•´ì•¼í•œë‹¤.
  *
- * B. ÈÄº¸ ÆäÀÌÁö°¡ UNFORMAT ÆäÀÌÁöÀÎ°æ¿ì
- * leaf bmp ÆäÀÌÁö¿¡ ´ëÇÑ S-latch¸¦ ÇØÁ¦ÇÏ¿´±â ¶§¹®¿¡, ÈÄº¸ unformat
- * ÆäÀÌÁö¿¡ ´ëÇÑ Æ®·£Àè¼Ç°£ÀÇ °æÀïÀÌ ¹ß»ıÇÒ ¼ö ÀÖ´Ù. ±×·¯¹Ç·Î ÀÚ½ÅÀÇ
- * ÈÄº¸ ÆäÀÌÁö°¡ unformat ÆäÀÌÁö¿´´Ù ÇÒÁö¶óµµ leaf bmp ÆäÀÌÁö
- * ¿¡ X-latch¸¦ È¹µæÇßÀ» ¶§, PBSÀ» ´Ù½ÃÇÑ¹ø È®ÀÎÇØºÁ¾ß ÇÑ´Ù.
+ * B. í›„ë³´ í˜ì´ì§€ê°€ UNFORMAT í˜ì´ì§€ì¸ê²½ìš°
+ * leaf bmp í˜ì´ì§€ì— ëŒ€í•œ S-latchë¥¼ í•´ì œí•˜ì˜€ê¸° ë•Œë¬¸ì—, í›„ë³´ unformat
+ * í˜ì´ì§€ì— ëŒ€í•œ íŠ¸ëœì­ì…˜ê°„ì˜ ê²½ìŸì´ ë°œìƒí•  ìˆ˜ ìˆë‹¤. ê·¸ëŸ¬ë¯€ë¡œ ìì‹ ì˜
+ * í›„ë³´ í˜ì´ì§€ê°€ unformat í˜ì´ì§€ì˜€ë‹¤ í• ì§€ë¼ë„ leaf bmp í˜ì´ì§€
+ * ì— X-latchë¥¼ íšë“í–ˆì„ ë•Œ, PBSì„ ë‹¤ì‹œí•œë²ˆ í™•ì¸í•´ë´ì•¼ í•œë‹¤.
  *
- * °¡¿ë°ø°£À» Å½»öÇÏ¿´°í, MFNLÀ» º¯°æÇØ¾ßÇÑ´Ù¸é, º¯°æÇÑ´Ù.
+ * ê°€ìš©ê³µê°„ì„ íƒìƒ‰í•˜ì˜€ê³ , MFNLì„ ë³€ê²½í•´ì•¼í•œë‹¤ë©´, ë³€ê²½í•œë‹¤.
  ***********************************************************************/
 IDE_RC sdpstFindPage::searchSpaceInLfBMP( idvSQL          * aStatistics,
                                           sdrMtx          * aMtx,
@@ -980,15 +980,15 @@ IDE_RC sdpstFindPage::searchSpaceInLfBMP( idvSQL          * aStatistics,
               != IDE_SUCCESS );
     sState = 1;
 
-    /* BUG-29325 TC/Server/sm4/Project3/PROJ-2037/conc_recv/sgl/upd_sqs.sql ¿¡¼­
-     *           FATAL ¹ß»ı
-     * ÈÄº¸ ¼±Á¤ °úÁ¤¿¡¼­ HWMÀÌ º¯°æµÉ ¼ö ÀÖ±â ¶§¹®¿¡ ÇØ´ç BMP ÆäÀÌÁö¿¡
-     * S-Latch¸¦ È¹µæÇÑ ÀÌÈÄ HWMÀ» °¡Á®¿Í¾ß ÇÑ´Ù. */
+    /* BUG-29325 TC/Server/sm4/Project3/PROJ-2037/conc_recv/sgl/upd_sqs.sql ì—ì„œ
+     *           FATAL ë°œìƒ
+     * í›„ë³´ ì„ ì • ê³¼ì •ì—ì„œ HWMì´ ë³€ê²½ë  ìˆ˜ ìˆê¸° ë•Œë¬¸ì— í•´ë‹¹ BMP í˜ì´ì§€ì—
+     * S-Latchë¥¼ íšë“í•œ ì´í›„ HWMì„ ê°€ì ¸ì™€ì•¼ í•œë‹¤. */
     sdpstCache::copyHWM( aStatistics,
                          (sdpstSegCache*)aSegHandle->mCache,
                          &sHWM );
 
-    /* HWM ÀÌÈÄ Å½»öÇÏ·Á´Â °æ¿ì */
+    /* HWM ì´í›„ íƒìƒ‰í•˜ë ¤ëŠ” ê²½ìš° */
     if ( sdpstStackMgr::compareStackPos( &sHWM.mStack, aStack ) < 0 )
     {
         ideLog::log( IDE_SERVER_0,
@@ -1009,7 +1009,7 @@ IDE_RC sdpstFindPage::searchSpaceInLfBMP( idvSQL          * aStatistics,
         IDE_ASSERT( 0 );
     }
 
-    // A. Å½»öÇÒ Data ÆäÀÌÁö ÈÄº¸ ¸ñ·ÏÀ» ÀÛ¼ºÇÑ´Ù.
+    // A. íƒìƒ‰í•  Data í˜ì´ì§€ í›„ë³´ ëª©ë¡ì„ ì‘ì„±í•œë‹¤.
     sdpstBMP::makeCandidateChild( (sdpstSegCache*)aSegHandle->mCache,
                                   sLfPagePtr,
                                   SDPST_LFBMP,
@@ -1018,10 +1018,10 @@ IDE_RC sdpstFindPage::searchSpaceInLfBMP( idvSQL          * aStatistics,
                                   (void*)sArrData,
                                   &sCandidateDataCount );
 
-    // ÈÄº¸ Data ÆäÀÌÁö ¸ñ·ÏÀ» ÀÛ¼ºÇÏ¿´´Ù¸é, lfbmp ÆäÀÌÁö¿¡ ´ëÇÑ Latch¸¦
-    // ÇØÁ¦ÇÑ´ÙÀ½, ÈÄº¸ ¸ñ·Ï¿¡ ´ëÇØ¼­ No-Wait ¸ğµå·Î °¡¿ë°ø°£Å½»öÀ» ¼öÇàÇÑ´Ù.
-    // itbmp ÆäÀÌÁö¿¡ ´ëÇÑ latch¸¦ ÇØÁ¦Çß±â ¶§¹®¿¡, ½ÇÁ¦ ÈÄº¸ ¸ñ·Ï ÀÛ¼º´ç½ÃÀÇ
-    // ÆäÀÌÁö »óÅÂ°¡ ¾Æ´Ò¼öµµ ÀÖ´Ù´Â °ÍÀ» °í·ÁÇØ¾ßÇÑ´Ù.
+    // í›„ë³´ Data í˜ì´ì§€ ëª©ë¡ì„ ì‘ì„±í•˜ì˜€ë‹¤ë©´, lfbmp í˜ì´ì§€ì— ëŒ€í•œ Latchë¥¼
+    // í•´ì œí•œë‹¤ìŒ, í›„ë³´ ëª©ë¡ì— ëŒ€í•´ì„œ No-Wait ëª¨ë“œë¡œ ê°€ìš©ê³µê°„íƒìƒ‰ì„ ìˆ˜í–‰í•œë‹¤.
+    // itbmp í˜ì´ì§€ì— ëŒ€í•œ latchë¥¼ í•´ì œí–ˆê¸° ë•Œë¬¸ì—, ì‹¤ì œ í›„ë³´ ëª©ë¡ ì‘ì„±ë‹¹ì‹œì˜
+    // í˜ì´ì§€ ìƒíƒœê°€ ì•„ë‹ìˆ˜ë„ ìˆë‹¤ëŠ” ê²ƒì„ ê³ ë ¤í•´ì•¼í•œë‹¤.
     sState = 0;
     IDE_TEST( sdrMiniTrans::releaseLatchToSP(aMtx, &sInitSP) != IDE_SUCCESS );
 
@@ -1029,7 +1029,7 @@ IDE_RC sdpstFindPage::searchSpaceInLfBMP( idvSQL          * aStatistics,
 
     if ( sCandidateDataCount > 0 )
     {
-        // ÈÄº¸ Data ÆäÀÌÁö¿¡ ´ëÇØ¼­ No-Wait ¸ğµå·Î Å½»öÀ» ¼öÇàÇÑ´Ù.
+        // í›„ë³´ Data í˜ì´ì§€ì— ëŒ€í•´ì„œ No-Wait ëª¨ë“œë¡œ íƒìƒ‰ì„ ìˆ˜í–‰í•œë‹¤.
         IDE_TEST( searchPagesInCandidatePage(
                                            aStatistics,
                                            aMtx,
@@ -1047,24 +1047,24 @@ IDE_RC sdpstFindPage::searchSpaceInLfBMP( idvSQL          * aStatistics,
 
         /* BUG-33683 - [SM] in sdcRow::processOverflowData, Deadlock can occur
          *
-         * sdcRow::processOverflowData¿¡¼­ overflow µ¥ÀÌÅÍ¸¦ Ã³¸®ÇÏ±â À§ÇØ
-         * ÆäÀÌÁö¸¦ ÇÒ´çÇÏ°Ô µÈ´Ù.
-         * ÀÌ¶§, sdcRow¿¡¼­ µ¿½Ã¿¡ ÇÏ³ªÀÇ ÆäÀÌÁö¿¡¸¸ latch¸¦ °É¾î¾ß ÇÑ´Ù´Â
-         * °¡Á¤ÀÌ ±úÁö±â ¶§¹®¿¡ µ¥µå¶ô ¹ß»ı °¡´É¼ºÀÌ ÀÖ°Ô µÈ´Ù.
-         * µû¶ó¼­ ÀÌ·¯ÇÑ °æ¿ì¸¦ ÇØ°áÇÏ±â À§ÇØ TMS¿¡¼­ No-wait ¸ğµå·Î µ¥ÀÌÅÍ ÆäÀÌÁö¸¦
-         * È®ÀÎÇØº» ÈÄ wait ¸ğµå·Î È®ÀÎÇÏ°í ÀÖ´Âµ¥, ÀÌ¸¦ no-wait ¸ğµå·Î¸¸ È®ÀÎÇÏµµ·Ï
-         * ¼öÁ¤ÇÑ´Ù.
+         * sdcRow::processOverflowDataì—ì„œ overflow ë°ì´í„°ë¥¼ ì²˜ë¦¬í•˜ê¸° ìœ„í•´
+         * í˜ì´ì§€ë¥¼ í• ë‹¹í•˜ê²Œ ëœë‹¤.
+         * ì´ë•Œ, sdcRowì—ì„œ ë™ì‹œì— í•˜ë‚˜ì˜ í˜ì´ì§€ì—ë§Œ latchë¥¼ ê±¸ì–´ì•¼ í•œë‹¤ëŠ”
+         * ê°€ì •ì´ ê¹¨ì§€ê¸° ë•Œë¬¸ì— ë°ë“œë½ ë°œìƒ ê°€ëŠ¥ì„±ì´ ìˆê²Œ ëœë‹¤.
+         * ë”°ë¼ì„œ ì´ëŸ¬í•œ ê²½ìš°ë¥¼ í•´ê²°í•˜ê¸° ìœ„í•´ TMSì—ì„œ No-wait ëª¨ë“œë¡œ ë°ì´í„° í˜ì´ì§€ë¥¼
+         * í™•ì¸í•´ë³¸ í›„ wait ëª¨ë“œë¡œ í™•ì¸í•˜ê³  ìˆëŠ”ë°, ì´ë¥¼ no-wait ëª¨ë“œë¡œë§Œ í™•ì¸í•˜ë„ë¡
+         * ìˆ˜ì •í•œë‹¤.
          *
-         * ÀÌ·¸°Ô ¼öÁ¤ÇÔÀ¸·Î½á ¼¼±×¸ÕÆ®ÀÇ °ø°£È®ÀåÀÌ Á¶±İ ´õ ºó¹øÇØÁú ¼ö ÀÖ´Ù´Â ´ÜÁ¡ÀÌ
-         * ÀÖÁö¸¸,
-         * no-wait ¸ğµå·Î getPage¸¦ ÇßÀ»¶§ ÆäÀÌÁö¸¦ È¹µæÇÏÁö ¸øÇÑ °æ¿ì´Â
-         * µ¥ÀÌÅÍ ÆäÀÌÁö contentionÀÌ ½ÉÇÑ °æ¿ì¶ó°í º¼ ¼ö ÀÖ°í,
-         * ÀÌ·± °æ¿ì ¼¼±×¸ÕÆ® °ø°£À» È®ÀåÇÏ¿© contentionÀ» ÁÙÀÌ´Â °ÍÀÌ ¼º´É¿¡ µµ¿òÀÌ µÈ´Ù.
-         * µû¶ó¼­ no-wait ¸ğµå·Î º¯°æÇÏ´Â °ÍÀÌ ´õ ÇÕ¸®ÀûÀÌ´Ù. */
+         * ì´ë ‡ê²Œ ìˆ˜ì •í•¨ìœ¼ë¡œì¨ ì„¸ê·¸ë¨¼íŠ¸ì˜ ê³µê°„í™•ì¥ì´ ì¡°ê¸ˆ ë” ë¹ˆë²ˆí•´ì§ˆ ìˆ˜ ìˆë‹¤ëŠ” ë‹¨ì ì´
+         * ìˆì§€ë§Œ,
+         * no-wait ëª¨ë“œë¡œ getPageë¥¼ í–ˆì„ë•Œ í˜ì´ì§€ë¥¼ íšë“í•˜ì§€ ëª»í•œ ê²½ìš°ëŠ”
+         * ë°ì´í„° í˜ì´ì§€ contentionì´ ì‹¬í•œ ê²½ìš°ë¼ê³  ë³¼ ìˆ˜ ìˆê³ ,
+         * ì´ëŸ° ê²½ìš° ì„¸ê·¸ë¨¼íŠ¸ ê³µê°„ì„ í™•ì¥í•˜ì—¬ contentionì„ ì¤„ì´ëŠ” ê²ƒì´ ì„±ëŠ¥ì— ë„ì›€ì´ ëœë‹¤.
+         * ë”°ë¼ì„œ no-wait ëª¨ë“œë¡œ ë³€ê²½í•˜ëŠ” ê²ƒì´ ë” í•©ë¦¬ì ì´ë‹¤. */
         if ( sPagePtr == NULL )
         {
-            // ÈÄº¸ Data ÆäÀÌÁö¿¡ ´ëÇØ¼­ Wait ¸ğµå·Î Å½»öÇÑ´Ù.
-            // ÆäÀÌÁöÇÒ´ç Å½»ö¿¬»êÀº Wait ¸ğµå·Î Å½»öÇÏÁö ¾Ê´Â´Ù.
+            // í›„ë³´ Data í˜ì´ì§€ì— ëŒ€í•´ì„œ Wait ëª¨ë“œë¡œ íƒìƒ‰í•œë‹¤.
+            // í˜ì´ì§€í• ë‹¹ íƒìƒ‰ì—°ì‚°ì€ Wait ëª¨ë“œë¡œ íƒìƒ‰í•˜ì§€ ì•ŠëŠ”ë‹¤.
             IDE_TEST( searchPagesInCandidatePage(
                                              aStatistics,
                                              aMtx,
@@ -1084,8 +1084,8 @@ IDE_RC sdpstFindPage::searchSpaceInLfBMP( idvSQL          * aStatistics,
     }
     else
     {
-        // ÈÄº¸¸ñ·ÏÀ» ÀÛ¼ºÇÏÁö ¸øÇÏ¿´´Ù¸é, ´ÙÀ½ ÈÄº¸ itbmp ÆäÀÌÁö¿¡ ´ëÇÑ
-        // Å½»ö°úÁ¤À¸·Î ³Ñ¾î°£´Ù.
+        // í›„ë³´ëª©ë¡ì„ ì‘ì„±í•˜ì§€ ëª»í•˜ì˜€ë‹¤ë©´, ë‹¤ìŒ í›„ë³´ itbmp í˜ì´ì§€ì— ëŒ€í•œ
+        // íƒìƒ‰ê³¼ì •ìœ¼ë¡œ ë„˜ì–´ê°„ë‹¤.
     }
 
     *aPagePtr   = sPagePtr;
@@ -1112,8 +1112,8 @@ IDE_RC sdpstFindPage::searchSpaceInLfBMP( idvSQL          * aStatistics,
 
 
 /***********************************************************************
- * Description : ÈÄº¸ Data ÆäÀÌÁö¿¡ ´ëÇØ¼­ No-Wait ¸ğµå·Î °¡¿ë°ø°£
- *               Å½»öÀ» ¼öÇàÇÑ´Ù.
+ * Description : í›„ë³´ Data í˜ì´ì§€ì— ëŒ€í•´ì„œ No-Wait ëª¨ë“œë¡œ ê°€ìš©ê³µê°„
+ *               íƒìƒ‰ì„ ìˆ˜í–‰í•œë‹¤.
  **********************************************************************/
 IDE_RC sdpstFindPage::searchPagesInCandidatePage(
     idvSQL               * aStatistics,
@@ -1155,7 +1155,7 @@ IDE_RC sdpstFindPage::searchPagesInCandidatePage(
 
     for ( sLoop = 0; sLoop < aCandidateDataCount; sLoop++ )
     {
-        /* Unformat »óÅÂ´Â ¾ø´Ù. */
+        /* Unformat ìƒíƒœëŠ” ì—†ë‹¤. */
         if ( sdpstLfBMP::isEqFN( aArrData[sLoop].mPBS,
                                  SDPST_BITSET_PAGEFN_UNF ) == ID_TRUE )
         {
@@ -1179,12 +1179,12 @@ IDE_RC sdpstFindPage::searchPagesInCandidatePage(
         }
 
 
-        // Unformat ÆäÀÌÁö¿¡ ´ëÇÑ Å½»ö°úÁ¤ÀÌ ½ÇÆĞÇÑ °æ¿ì Format ÀÌ»óÀÇ
-        // °¡¿ëµµ¸¦ °¡Áø ÆäÀÌÁö¿¡ ´ëÇØ¼­ NoWait ¸ğµå·Î ¼öÇàÇØº»´Ù.
-        // SLOTÇÒ´çÀÌ °¡´ÉÇÑ PBSÀ» °Ë»çÇÑ´Ù.
+        // Unformat í˜ì´ì§€ì— ëŒ€í•œ íƒìƒ‰ê³¼ì •ì´ ì‹¤íŒ¨í•œ ê²½ìš° Format ì´ìƒì˜
+        // ê°€ìš©ë„ë¥¼ ê°€ì§„ í˜ì´ì§€ì— ëŒ€í•´ì„œ NoWait ëª¨ë“œë¡œ ìˆ˜í–‰í•´ë³¸ë‹¤.
+        // SLOTí• ë‹¹ì´ ê°€ëŠ¥í•œ PBSì„ ê²€ì‚¬í•œë‹¤.
         sdrMiniTrans::setSavePoint( aMtx, &sInitSP );
 
-        // ÈÄº¸ Data ÆäÀÌÁö¸¦ NoWait or Wiat¸ğµå·Î X-latch ¿äÃ»ÇÑ´Ù.
+        // í›„ë³´ Data í˜ì´ì§€ë¥¼ NoWait or Wiatëª¨ë“œë¡œ X-latch ìš”ì²­í•œë‹¤.
         sState = 0;
         IDE_TEST( sdbBufferMgr::getPageByPID( aStatistics,
                                               aSpaceID,
@@ -1206,8 +1206,8 @@ IDE_RC sdpstFindPage::searchPagesInCandidatePage(
             continue;
         }
 
-        /* ÆäÀÌÁö°¡ ÀÌ¹Ì ÇÑ¹ø formatÀÌ µÇ¾ú±â ¶§¹®¿¡ ÆÇµ¶ÇÑ ³»¿ëÀ»
-         * ¹ÏÀ» ¼ö ÀÖ´Ù. */
+        /* í˜ì´ì§€ê°€ ì´ë¯¸ í•œë²ˆ formatì´ ë˜ì—ˆê¸° ë•Œë¬¸ì— íŒë…í•œ ë‚´ìš©ì„
+         * ë¯¿ì„ ìˆ˜ ìˆë‹¤. */
         sPBS = (sdpstPBS)sdpPhyPage::getState((sdpPhyPageHdr*)sPagePtr);
         IDE_DASSERT( sdpstLfBMP::isEqFN( sPBS, SDPST_BITSET_PAGEFN_UNF )
                      == ID_FALSE );
@@ -1223,8 +1223,8 @@ IDE_RC sdpstFindPage::searchPagesInCandidatePage(
 
         if ( sdpstLfBMP::isEqFN( sPBS, SDPST_BITSET_PAGEFN_FMT ) == ID_TRUE )
         {
-            /* ÇÑ¹ø FormatÀÌ µÇ¾ú´ø ÆäÀÌÁö´Â ReadÇØ¼­ ÆÇµ¶ÇØ¼­ ÀĞ¾îº¸°í
-             * ¾ÆÁ÷µµ FormatÀÌ¸é ÇÊ¿äÇÑ ÆäÀÌÁöÅ¸ÀÔÀ¸·Î ÀçÆ÷¸ËÇÏ°í »ç¿ëÇÑ´Ù */
+            /* í•œë²ˆ Formatì´ ë˜ì—ˆë˜ í˜ì´ì§€ëŠ” Readí•´ì„œ íŒë…í•´ì„œ ì½ì–´ë³´ê³ 
+             * ì•„ì§ë„ Formatì´ë©´ í•„ìš”í•œ í˜ì´ì§€íƒ€ì…ìœ¼ë¡œ ì¬í¬ë§·í•˜ê³  ì‚¬ìš©í•œë‹¤ */
             sParentInfo = sdpPhyPage::getParentInfo( sPagePtr );
 
             if ( (sParentInfo.mParentPID != aLeafBMP) ||
@@ -1255,9 +1255,9 @@ IDE_RC sdpstFindPage::searchPagesInCandidatePage(
             {
                 /* BUG-32539 [sm-disk-page] The abnormal shutdown during
                  * executing INSERT make a DRDB Page unrecoverable.
-                 * Page´Â DataPage·Î º¯°æÇß´Âµ¥, PBS´Â Format´Â º¯°æ ¸øÇÑÃ¤
-                 * ¼­¹ö°¡ Á¾·áµÉ ¼ö ÀÖÀ½. ÀÌ °æ¿ì´Â ÀÌ¹Ì DataPage·Î º¯°æ
-                 * µÇ¾úÀ¸´Ï, ¶Ç º¯°æÇÒ ÇÊ¿ä ¾øÀ½. */
+                 * PageëŠ” DataPageë¡œ ë³€ê²½í–ˆëŠ”ë°, PBSëŠ” FormatëŠ” ë³€ê²½ ëª»í•œì±„
+                 * ì„œë²„ê°€ ì¢…ë£Œë  ìˆ˜ ìˆìŒ. ì´ ê²½ìš°ëŠ” ì´ë¯¸ DataPageë¡œ ë³€ê²½
+                 * ë˜ì—ˆìœ¼ë‹ˆ, ë˜ ë³€ê²½í•  í•„ìš” ì—†ìŒ. */
             }
             else
             {
@@ -1330,11 +1330,11 @@ IDE_RC sdpstFindPage::searchPagesInCandidatePage(
                     IDE_TEST( sdpPhyPage::setState( sPhyPageHdr, sPBS, &sMtx )
                               != IDE_SUCCESS );
 
-                    // Table Page°¡ ¾Æ´Ñ°æ¿ì¿¡´Â ¹Ì¸® bitmapÀ» °»½ÅÇÑ´Ù.
+                    // Table Pageê°€ ì•„ë‹Œê²½ìš°ì—ëŠ” ë¯¸ë¦¬ bitmapì„ ê°±ì‹ í•œë‹¤.
                     sdpstStackMgr::initialize(&sRevStack);
 
-                    // leaf bmp ÆäÀÌÁöºÎÅÍ MFNLÀ» º¯°æ½ÃµµÇÏ¿©
-                    // »óÀ§³ëµå·Î ÀüÆÄÇÑ´Ù.
+                    // leaf bmp í˜ì´ì§€ë¶€í„° MFNLì„ ë³€ê²½ì‹œë„í•˜ì—¬
+                    // ìƒìœ„ë…¸ë“œë¡œ ì „íŒŒí•œë‹¤.
                     IDE_TEST( sdpstAllocPage::tryToChangeMFNLAndItHint(
                                   aStatistics,
                                   &sMtx,
@@ -1376,8 +1376,8 @@ IDE_RC sdpstFindPage::searchPagesInCandidatePage(
         {
             if ( aSearchType == SDPST_SEARCH_NEWPAGE )
             {
-                // ¿ÏÀüÈ÷ ºóÆäÀÌÁö°¡ ¾Æ´Ï¿©¼­ ÆäÀÌÁö ÇÒ´ç¿¡ ºÎÀûÇÕÇÏ¿©
-                // ´ÙÀ½ ÈÄº¸ µ¥ÀÌÅ¸ÆäÀÌÁö·Î ³Ñ¾î°£´Ù.
+                // ì™„ì „íˆ ë¹ˆí˜ì´ì§€ê°€ ì•„ë‹ˆì—¬ì„œ í˜ì´ì§€ í• ë‹¹ì— ë¶€ì í•©í•˜ì—¬
+                // ë‹¤ìŒ í›„ë³´ ë°ì´íƒ€í˜ì´ì§€ë¡œ ë„˜ì–´ê°„ë‹¤.
                 sState = 0;
                 IDE_TEST( sdrMiniTrans::releaseLatchToSP( aMtx, &sInitSP )
                           != IDE_SUCCESS );
@@ -1385,13 +1385,13 @@ IDE_RC sdpstFindPage::searchPagesInCandidatePage(
                 continue;
             }
 
-            // ½ÇÁ¦·Î X-Latch°¡ È¹µæµÇ¸é, Insert High LimitÀ» °í·ÁÇÑ
-            // °¡¿ë°ø°£Å©±â¿Í Row Å©±â¸¦ ÀúÀåÇÒ ¼ö ÀÖÀ»Áö ÆÇ´ÜÇÑ´Ù.
-            // ¸¸¾à ÀúÀåÇÒ ¼ö ¾ø´Ù¸é, Data ÆäÀÌÁö »óÅÂ¸¦ Full·Î º¯°æÇÑ´Ù.
-            // ´Ù¸¥ RowÅ©±â¸¦ ÀúÀåÇÒ¼ö ÀÖÀ»Áöµµ ¸ğ¸£Áö¸¸, °ø°£Å½»ö¼º´ÉÀ»
-            // À§ÇØ ÀúÀåÇÒ ¼ö ¾ø´Â °æ¿ì´Â ÆäÀÌÁö »óÅÂ¸¦ Full·Î º¯°æÇÏ¿©
-            // Å½»öºñ¿ëÀ» ÁÙÀÏ¼ö ÀÖ°Ô ÇÑ´Ù.
-            // ( ±âÁ¸ ¼¼±×¸ÕÆ®¿Í µ¿ÀÏÇÑ Á¤Ã¥ÀÌ´Ù)
+            // ì‹¤ì œë¡œ X-Latchê°€ íšë“ë˜ë©´, Insert High Limitì„ ê³ ë ¤í•œ
+            // ê°€ìš©ê³µê°„í¬ê¸°ì™€ Row í¬ê¸°ë¥¼ ì €ì¥í•  ìˆ˜ ìˆì„ì§€ íŒë‹¨í•œë‹¤.
+            // ë§Œì•½ ì €ì¥í•  ìˆ˜ ì—†ë‹¤ë©´, Data í˜ì´ì§€ ìƒíƒœë¥¼ Fullë¡œ ë³€ê²½í•œë‹¤.
+            // ë‹¤ë¥¸ Rowí¬ê¸°ë¥¼ ì €ì¥í• ìˆ˜ ìˆì„ì§€ë„ ëª¨ë¥´ì§€ë§Œ, ê³µê°„íƒìƒ‰ì„±ëŠ¥ì„
+            // ìœ„í•´ ì €ì¥í•  ìˆ˜ ì—†ëŠ” ê²½ìš°ëŠ” í˜ì´ì§€ ìƒíƒœë¥¼ Fullë¡œ ë³€ê²½í•˜ì—¬
+            // íƒìƒ‰ë¹„ìš©ì„ ì¤„ì¼ìˆ˜ ìˆê²Œ í•œë‹¤.
+            // ( ê¸°ì¡´ ì„¸ê·¸ë¨¼íŠ¸ì™€ ë™ì¼í•œ ì •ì±…ì´ë‹¤)
             IDE_TEST(  checkSizeAndAllocCTS( aStatistics,
                                              aMtx,
                                              aSpaceID,
@@ -1442,8 +1442,8 @@ IDE_RC sdpstFindPage::searchPagesInCandidatePage(
 }
 
 /***********************************************************************
- * Description : Table Data ÆäÀÌÁöÀÇ Freeness Á¤º¸¸¦ º¯°æÇØ¾ßÇÏ´ÂÁö
- *               È®ÀÎÇÑ´Ù.
+ * Description : Table Data í˜ì´ì§€ì˜ Freeness ì •ë³´ë¥¼ ë³€ê²½í•´ì•¼í•˜ëŠ”ì§€
+ *               í™•ì¸í•œë‹¤.
  *
  *  aPageHdr       - [IN]  physical page header
  *  aSegHandle     - [IN]  Segment Handle
@@ -1514,8 +1514,8 @@ idBool sdpstFindPage::needToChangePageFN( sdpPhyPageHdr    * aPageHdr,
 }
 
 /***********************************************************************
- * Description : Æ®·£Àè¼Ç TableInfoÀÇ ¸¶Áö¸· °¡¿ë°ø°£ ÇÒ´çÇß´ø Data
- *               ÆäÀÌÁö¿¡¼­ °¡¿ë°ø°£ Å½»ö ½ÃÀÛÇÑ´Ù.
+ * Description : íŠ¸ëœì­ì…˜ TableInfoì˜ ë§ˆì§€ë§‰ ê°€ìš©ê³µê°„ í• ë‹¹í–ˆë˜ Data
+ *               í˜ì´ì§€ì—ì„œ ê°€ìš©ê³µê°„ íƒìƒ‰ ì‹œì‘í•œë‹¤.
  ***********************************************************************/
 IDE_RC sdpstFindPage::checkAndSearchHintDataPID(
                            idvSQL             * aStatistics,
@@ -1547,7 +1547,7 @@ IDE_RC sdpstFindPage::checkAndSearchHintDataPID(
     {
         sdrMiniTrans::setSavePoint( aMtx, &sInitSP );
 
-        // No-Wait ¸ğµå·Î Data ÆäÀÌÁö¿¡ X-latch¸¦ È¹µæÇÑ´Ù.
+        // No-Wait ëª¨ë“œë¡œ Data í˜ì´ì§€ì— X-latchë¥¼ íšë“í•œë‹¤.
         sState = 0;
         IDE_TEST( sdbBufferMgr::getPageByPID( aStatistics,
                                               aSpaceID,
@@ -1576,10 +1576,10 @@ IDE_RC sdpstFindPage::checkAndSearchHintDataPID(
                ((sdpstPBS)
                (SDPST_BITSET_PAGETP_DATA|SDPST_BITSET_PAGEFN_FUL)) )
         {
-            // ¸¶Áö¸· insertÇÑ Data ÆäÀÌÁö¿¡¼­ °¡¿ë°ø°£À» Å½»öÇÑ´Ù.
-            // ¸¸¾à, Data ÆäÀÌÁöÀÇ °¡¿ë°ø°£ÀÌ Á¸ÀçÇÏÁö ¾Ê´Â °æ¿ì¿¡´Â
-            // Hint Leaf BMP¿¡¼­ Å½»öÀ» ½ÃµµÇÑ´Ù. Leaf BMP´Â Insert
-            // Data ÆäÀÌÁö¿¡¼­ ¾ò¾î³½´Ù.
+            // ë§ˆì§€ë§‰ insertí•œ Data í˜ì´ì§€ì—ì„œ ê°€ìš©ê³µê°„ì„ íƒìƒ‰í•œë‹¤.
+            // ë§Œì•½, Data í˜ì´ì§€ì˜ ê°€ìš©ê³µê°„ì´ ì¡´ì¬í•˜ì§€ ì•ŠëŠ” ê²½ìš°ì—ëŠ”
+            // Hint Leaf BMPì—ì„œ íƒìƒ‰ì„ ì‹œë„í•œë‹¤. Leaf BMPëŠ” Insert
+            // Data í˜ì´ì§€ì—ì„œ ì–»ì–´ë‚¸ë‹¤.
             IDE_TEST( checkSizeAndAllocCTS( aStatistics,
                         aMtx,
                         aSpaceID,
@@ -1604,8 +1604,8 @@ IDE_RC sdpstFindPage::checkAndSearchHintDataPID(
             }
             else
             {
-                // ÆäÀÌÁö¿¡ °¡¿ë°ø°£ÇÒ´çÀÌ °¡´ÉÇÏ¸é Å½»ö¿¬»êÀ» ¿Ï·áÇÑ´Ù.
-                // ÆäÀÌÁö »óÅÂ º¯°æÀº ÇÒ´çÀÌÈÄ¿¡ Ã³¸®ÇÑ´Ù.
+                // í˜ì´ì§€ì— ê°€ìš©ê³µê°„í• ë‹¹ì´ ê°€ëŠ¥í•˜ë©´ íƒìƒ‰ì—°ì‚°ì„ ì™„ë£Œí•œë‹¤.
+                // í˜ì´ì§€ ìƒíƒœ ë³€ê²½ì€ í• ë‹¹ì´í›„ì— ì²˜ë¦¬í•œë‹¤.
             }
         }
         else
@@ -1613,8 +1613,8 @@ IDE_RC sdpstFindPage::checkAndSearchHintDataPID(
             sState = 0;
             IDE_TEST( sdrMiniTrans::releaseLatchToSP( aMtx, &sInitSP )
                       != IDE_SUCCESS );
-            // Hint Data ÆäÀÌÁö¿¡ ´ëÇØ¼­ °¡¿ë°ø°£ÇÒ´çÀÌ ºÒ°¡´ÉÇÏ¿©
-            // Hint Data ÆäÀÌÁö¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+            // Hint Data í˜ì´ì§€ì— ëŒ€í•´ì„œ ê°€ìš©ê³µê°„í• ë‹¹ì´ ë¶ˆê°€ëŠ¥í•˜ì—¬
+            // Hint Data í˜ì´ì§€ë¥¼ ì´ˆê¸°í™”í•œë‹¤.
             smLayerCallback::setHintDataPIDofTableInfo( aTableInfo, SD_NULL_PID );
 
             sPagePtr = NULL;
@@ -1646,7 +1646,7 @@ IDE_RC sdpstFindPage::checkAndSearchHintDataPID(
 
 
 /***********************************************************************
- * Description : ÆäÀÌÁöÀÇ °¡¿ë°ø°£À» È®ÀÎÇÏ°í, TTS¸¦ BindÇÑ´Ù.
+ * Description : í˜ì´ì§€ì˜ ê°€ìš©ê³µê°„ì„ í™•ì¸í•˜ê³ , TTSë¥¼ Bindí•œë‹¤.
  ***********************************************************************/
 IDE_RC sdpstFindPage::checkSizeAndAllocCTS( idvSQL          * aStatistics,
                                             sdrMtx          * aMtx,
@@ -1682,14 +1682,14 @@ IDE_RC sdpstFindPage::checkSizeAndAllocCTS( idvSQL          * aStatistics,
         /*
          * PRJ-1704 Disk MVCC Renewal
          *
-         * Insert ¼öÇà °¡´ÉÇÑ ÆäÀÌÁö¿¡ ´ëÇØ¼­ TTS ÇÒ´ç°úÁ¤¿¡¼­
-         * Soft Row TimeStampingÀ» ÇÒ¼ö ÀÖ´Â TTSµé¿¡ ´ëÇØ ¼öÇàÇÏ¿©
-         * È®º¸ÇÒ ¼ö ÀÖ´Â °¡¿ë°ø°£À» È®º¸ÇÏ±âµµ ÇÑ´Ù.
+         * Insert ìˆ˜í–‰ ê°€ëŠ¥í•œ í˜ì´ì§€ì— ëŒ€í•´ì„œ TTS í• ë‹¹ê³¼ì •ì—ì„œ
+         * Soft Row TimeStampingì„ í• ìˆ˜ ìˆëŠ” TTSë“¤ì— ëŒ€í•´ ìˆ˜í–‰í•˜ì—¬
+         * í™•ë³´í•  ìˆ˜ ìˆëŠ” ê°€ìš©ê³µê°„ì„ í™•ë³´í•˜ê¸°ë„ í•œë‹¤.
          *
-         * ¹«¾ùº¸´Ù ´õ TTS¸¦ ÇÒ´çÇÏ´Â °ÍÀÌ ´õ Áß¿äÇÏ±â ¶§¹®¿¡ InsertÀÇ
-         * °æ¿ì È®ÀåÀ» ÇÏÁöµµ ¸øÇÏ°í FreeÀÎ TTS°¡ Á¸ÀçÇÏÁö ¾Ê¾Æ¼­
-         * ÇÒ´çÇÏÁö ¸øÇÏ¸é, ´Ù¸¥ Page¸¦ °Ë»öÇÏµµ·Ï ÇØ´ç Page¿¡ ´ëÇÑ
-         * È®ÀÎ°úÁ¤À» ¿Ï·áÇÑ´Ù.
+         * ë¬´ì—‡ë³´ë‹¤ ë” TTSë¥¼ í• ë‹¹í•˜ëŠ” ê²ƒì´ ë” ì¤‘ìš”í•˜ê¸° ë•Œë¬¸ì— Insertì˜
+         * ê²½ìš° í™•ì¥ì„ í•˜ì§€ë„ ëª»í•˜ê³  Freeì¸ TTSê°€ ì¡´ì¬í•˜ì§€ ì•Šì•„ì„œ
+         * í• ë‹¹í•˜ì§€ ëª»í•˜ë©´, ë‹¤ë¥¸ Pageë¥¼ ê²€ìƒ‰í•˜ë„ë¡ í•´ë‹¹ Pageì— ëŒ€í•œ
+         * í™•ì¸ê³¼ì •ì„ ì™„ë£Œí•œë‹¤.
          */
         sPageHdr = (sdpPhyPageHdr*)aPagePtr;
 
@@ -1719,13 +1719,13 @@ IDE_RC sdpstFindPage::checkSizeAndAllocCTS( idvSQL          * aStatistics,
         }
         else
         {
-            // Available Free Size°¡ ºÎÁ·ÇÏÁö¸¸,
-            // Self-Aging ÇÏ¸é °¡´ÉÇÒ ¼öµµ ÀÖ´Ù.
+            // Available Free Sizeê°€ ë¶€ì¡±í•˜ì§€ë§Œ,
+            // Self-Aging í•˜ë©´ ê°€ëŠ¥í•  ìˆ˜ë„ ìˆë‹¤.
 
-            // PageÀÇ Available FreeSize°¡ ÃæºĞÇÏÁö ¾Ê¾Æµµ ÀÌÈÄ¿¡
-            // Total Free Size´Â ÃæºĞÇÏ±â ¶§¹®¿¡ ´Ù½Ã Á¢±ÙÇÒ ¼ö ÀÖµµ·Ï
-            // ¿©Áö¸¦ ¸¸µé¾îµÎ¾î¾ß ÇÑ´Ù. ±×·¯¹Ç·Î ÆäÀÌÁö »óÅÂ¸¦
-            // FULL »óÅÂ·Î º¯°æÇÏÁö ¾Ê´Â´Ù.
+            // Pageì˜ Available FreeSizeê°€ ì¶©ë¶„í•˜ì§€ ì•Šì•„ë„ ì´í›„ì—
+            // Total Free SizeëŠ” ì¶©ë¶„í•˜ê¸° ë•Œë¬¸ì— ë‹¤ì‹œ ì ‘ê·¼í•  ìˆ˜ ìˆë„ë¡
+            // ì—¬ì§€ë¥¼ ë§Œë“¤ì–´ë‘ì–´ì•¼ í•œë‹¤. ê·¸ëŸ¬ë¯€ë¡œ í˜ì´ì§€ ìƒíƒœë¥¼
+            // FULL ìƒíƒœë¡œ ë³€ê²½í•˜ì§€ ì•ŠëŠ”ë‹¤.
             sCTSlotNo = SDP_CTS_IDX_NULL;
         }
 
@@ -1733,9 +1733,9 @@ IDE_RC sdpstFindPage::checkSizeAndAllocCTS( idvSQL          * aStatistics,
         {
             if ( sCheckFlag != SDP_SA_FLAG_NOTHING_TO_AGING )
             {
-                // ¸¸¾à Long-term Æ®·£Àè¼ÇÀÌ Á¸ÀçÇØ¼­
-                // SelfAgingÀ» ÇÒ¼ö ¾ø´Â °æ¿ì¿¡´Â Insertable Page°¡
-                // ´õ ¸¹¾ÆÁ®¼­ Insert ¼º´ÉÀúÇÏÀÇ ¿øÀÎÀÌ µÉ¼öÀÖ´Ù.
+                // ë§Œì•½ Long-term íŠ¸ëœì­ì…˜ì´ ì¡´ì¬í•´ì„œ
+                // SelfAgingì„ í• ìˆ˜ ì—†ëŠ” ê²½ìš°ì—ëŠ” Insertable Pageê°€
+                // ë” ë§ì•„ì ¸ì„œ Insert ì„±ëŠ¥ì €í•˜ì˜ ì›ì¸ì´ ë ìˆ˜ìˆë‹¤.
                 sUpdatePageStateToFull = ID_FALSE;
             }
             break;

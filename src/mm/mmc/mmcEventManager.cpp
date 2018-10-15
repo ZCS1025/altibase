@@ -59,8 +59,8 @@ IDE_RC mmcEventManager::initialize( mmcSession * aSession )
 
 IDE_RC mmcEventManager::finalize()
 {
-    // ¸®½ºÆ®/ÇØ½¬ Å×ÀÌºí¿¡ ³ëµå¸¦ Ãß°¡ÇÒ¶§ ÇÒ´çµÈ ¸Ş¸ğ¸®´Â mMemory.destroy()
-    // ¿¡¼­ ¸ğµÎ ÇØÁ¦µÈ´Ù.
+    // ë¦¬ìŠ¤íŠ¸/í•´ì‰¬ í…Œì´ë¸”ì— ë…¸ë“œë¥¼ ì¶”ê°€í• ë•Œ í• ë‹¹ëœ ë©”ëª¨ë¦¬ëŠ” mMemory.destroy()
+    // ì—ì„œ ëª¨ë‘ í•´ì œëœë‹¤.
     IDU_LIST_INIT( &mPendingList );
 
     IDU_LIST_INIT( &mQueue );
@@ -177,7 +177,7 @@ IDE_RC mmcEventManager::remove(  const SChar * aName,
         /* do nothing */
     }
 
-    // ÀÌº¥Æ® Å¥¿¡¼­µµ Á¦°ÅµÇ¾î¾ß ÇÑ´Ù.
+    // ì´ë²¤íŠ¸ íì—ì„œë„ ì œê±°ë˜ì–´ì•¼ í•œë‹¤.
     IDU_LIST_ITERATE_SAFE( &mQueue, sIterator, sNext )
     {
         if ( idlOS::strncmp( ((mmcEventInfo *)sIterator->mObj)->mName,
@@ -236,7 +236,7 @@ IDE_RC mmcEventManager::removeall()
 
     mSize = 0;
 
-    // ÀÌº¥Æ® Å¥¿¡¼­µµ Á¦°ÅµÇ¾î¾ß ÇÑ´Ù.
+    // ì´ë²¤íŠ¸ íì—ì„œë„ ì œê±°ë˜ì–´ì•¼ í•œë‹¤.
     IDU_LIST_ITERATE_SAFE( &mQueue, sIterator, sNext )
     {
         sNode = sIterator;
@@ -436,7 +436,7 @@ IDE_RC mmcEventManager::waitany( idvSQL   * aStatistics,
     }
     else
     {
-        // aName°ú ÀÌ¸§ÀÌ °°Àº Áßº¹µÈ ÀÌº¥Æ®¸¦ Á¦°ÅÇÑ´Ù.
+        // aNameê³¼ ì´ë¦„ì´ ê°™ì€ ì¤‘ë³µëœ ì´ë²¤íŠ¸ë¥¼ ì œê±°í•œë‹¤.
         IDU_LIST_ITERATE_SAFE( &mQueue, sIterator, sNext )
         {
             if ( idlOS::strncmp( ((mmcEventInfo *)sIterator->mObj)->mName,
@@ -583,7 +583,7 @@ IDE_RC mmcEventManager::waitone( idvSQL       * aStatistics,
     }
     else
     {
-        // aName°ú ÀÌ¸§ÀÌ °°Àº Áßº¹µÈ ÀÌº¥Æ®¸¦ Á¦°ÅÇÑ´Ù.
+        // aNameê³¼ ì´ë¦„ì´ ê°™ì€ ì¤‘ë³µëœ ì´ë²¤íŠ¸ë¥¼ ì œê±°í•œë‹¤.
         IDU_LIST_ITERATE_SAFE( &mQueue, sIterator, sNext )
         {
             if ( idlOS::strncmp( ((mmcEventInfo *)sIterator->mObj)->mName,
@@ -944,7 +944,7 @@ IDE_RC mmcEventManager::apply( mmcSession * aSession )
         /* do nothing */
     }
 
-    // µî·ÏµÈ ÀÌº¥Æ® °³¼ö°¡ 0ÀÌ¸é ¹Ù·Î ¸®ÅÏÇÑ´Ù.
+    // ë“±ë¡ëœ ì´ë²¤íŠ¸ ê°œìˆ˜ê°€ 0ì´ë©´ ë°”ë¡œ ë¦¬í„´í•œë‹¤.
     IDE_TEST_CONT( mSize == 0, pass );
 
     IDU_LIST_ITERATE( sPendingList, sIterator )

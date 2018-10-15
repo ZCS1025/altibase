@@ -97,7 +97,7 @@
     " A.USER_ID = CHARTONUM.USER_ID "                       \
     " and A.TABLE_ID = CHARTONUM.TABLE_ID "                 
 
-/* BUG-43010 Table DDL »ı¼º ½Ã, ·Î±× ¾ĞÃà¿©ºÎ¸¦ È®ÀÎÇØ¾ß ÇÕ´Ï´Ù. */
+/* BUG-43010 Table DDL ìƒì„± ì‹œ, ë¡œê·¸ ì••ì¶•ì—¬ë¶€ë¥¼ í™•ì¸í•´ì•¼ í•©ë‹ˆë‹¤. */
 #define GET_LOG_COMPRESSION_QUERY                           \
     "SELECT i.compressed_logging"                           \
     " FROM system_.sys_users_ u, system_.sys_tables_ t,"    \
@@ -205,7 +205,7 @@ SQLRETURN getTableInfo( SChar *a_user,
     }
     else
     {
-        /* BUG-36593 ¼Ò¹®ÀÚ,°ø¹éÀÌ Æ÷ÇÔµÈ ÀÌ¸§(quoted identifier) Ã³¸® */
+        /* BUG-36593 ì†Œë¬¸ì,ê³µë°±ì´ í¬í•¨ëœ ì´ë¦„(quoted identifier) ì²˜ë¦¬ */
         utString::makeQuotedName(sQuotedUserName, a_user, idlOS::strlen(a_user));
 
         IDE_TEST_RAISE(SQLTables(s_tblStmt,
@@ -250,7 +250,7 @@ SQLRETURN getTableInfo( SChar *a_user,
         != SQL_SUCCESS, tbl_error);
 
     /* BUG-23652
-     * [5.3.1 SD] insert high limit, insert low limit À» pctfree ¿Í pctused ·Î º¯°æ */
+     * [5.3.1 SD] insert high limit, insert low limit ì„ pctfree ì™€ pctused ë¡œ ë³€ê²½ */
     IDE_TEST_RAISE(    
         SQLBindCol(s_tblStmt, 9, SQL_C_SLONG, (SQLPOINTER)&sPctFree, 0,
                    &sPctFree_ind) != SQL_SUCCESS, tbl_error);
@@ -314,14 +314,14 @@ SQLRETURN getTableInfo( SChar *a_user,
             IDE_TEST( getIndexQuery( s_user_name, s_puser_name, s_table_name, aIndexFp, aDbStatsFp )
                       != SQL_SUCCESS );
 
-            /* PROJ-1107 Check Constraint Áö¿ø */
+            /* PROJ-1107 Check Constraint ì§€ì› */
             IDE_TEST( getCheckConstraintQuery( s_user_name,
                                                s_puser_name,
                                                s_table_name,
                                                aIndexFp )
                       != SQL_SUCCESS );
 
-            /* BUG-26236 comment Äõ¸®¹®ÀÇ À¯Æ¿¸®Æ¼ Áö¿ø */
+            /* BUG-26236 comment ì¿¼ë¦¬ë¬¸ì˜ ìœ í‹¸ë¦¬í‹° ì§€ì› */
             IDE_TEST( getComment( s_user_name,
                                   s_table_name,
                                   aTblFp ) != SQL_SUCCESS );
@@ -348,7 +348,7 @@ SQLRETURN getTableInfo( SChar *a_user,
             IDE_TEST( getIndexQuery( s_user_name, s_puser_name, s_table_name, aIndexFp, aDbStatsFp )
                       != SQL_SUCCESS );
 
-            /* PROJ-1107 Check Constraint Áö¿ø */
+            /* PROJ-1107 Check Constraint ì§€ì› */
             IDE_TEST( getCheckConstraintQuery( s_user_name,
                                                s_puser_name,
                                                s_table_name,
@@ -422,7 +422,7 @@ SQLRETURN getTempTableQuery( SChar *a_user,
     IDE_TEST_RAISE(SQLExecDirect(s_optionStmt, (SQLCHAR *)sQuery, SQL_NTS) != SQL_SUCCESS,
                    option_error);
 
-    // ¹İµå½Ã 1°Ç Á¸ÀçÇØ¾ß ÇÑ´Ù.
+    // ë°˜ë“œì‹œ 1ê±´ ì¡´ì¬í•´ì•¼ í•œë‹¤.
     IDE_TEST_RAISE(SQLFetch(s_optionStmt)
             != SQL_SUCCESS, option_error);
 
@@ -447,7 +447,7 @@ SQLRETURN getTempTableQuery( SChar *a_user,
     eraseWhiteSpace(aTbsName);
     sDdlPos += idlOS::sprintf( sDdl + sDdlPos, "\n tablespace \"%s\"", aTbsName );
 
-    /* BUG-43010 Table DDL »ı¼º ½Ã, ·Î±× ¾ĞÃà¿©ºÎ¸¦ È®ÀÎÇØ¾ß ÇÕ´Ï´Ù. */
+    /* BUG-43010 Table DDL ìƒì„± ì‹œ, ë¡œê·¸ ì••ì¶•ì—¬ë¶€ë¥¼ í™•ì¸í•´ì•¼ í•©ë‹ˆë‹¤. */
     IDE_TEST( utmWriteLogCompressionClause( a_user,
                                             a_table,
                                             sDdl,
@@ -459,13 +459,13 @@ SQLRETURN getTempTableQuery( SChar *a_user,
 
     if ( gProgOption.mbExistDrop == ID_TRUE )
     {
-        // BUG-20943 drop ±¸¹®¿¡¼­ user °¡ ¸í½ÃµÇÁö ¾Ê¾Æ drop ÀÌ ½ÇÆĞÇÕ´Ï´Ù.
+        // BUG-20943 drop êµ¬ë¬¸ì—ì„œ user ê°€ ëª…ì‹œë˜ì§€ ì•Šì•„ drop ì´ ì‹¤íŒ¨í•©ë‹ˆë‹¤.
         idlOS::fprintf(a_crt_fp, "drop table \"%s\".\"%s\";\n", a_user, a_table);
     }
     
     sDdlPos += idlOS::sprintf( sDdl + sDdlPos, ";" );
 
-    /* Table ±¸¹®À» FILE WRITE */
+    /* Table êµ¬ë¬¸ì„ FILE WRITE */
 #ifdef DEBUG
     idlOS::fprintf( stderr, "%s\n", sDdl );
 #endif
@@ -567,7 +567,7 @@ SQLRETURN getTableQuery( SChar *a_user,
 
     IDE_TEST( Execute( sTableAccessStmt ) != SQL_SUCCESS );
 
-    // ¹İµå½Ã 1°Ç Á¸ÀçÇØ¾ß ÇÑ´Ù.
+    // ë°˜ë“œì‹œ 1ê±´ ì¡´ì¬í•´ì•¼ í•œë‹¤.
     IDE_TEST_RAISE( SQLFetch( sTableAccessStmt ) != SQL_SUCCESS, TABLE_ACCESS_ERROR );
 
     // BUG-33995 aexport have wrong free handle code
@@ -585,9 +585,9 @@ SQLRETURN getTableQuery( SChar *a_user,
         /* Nothing to do */
     }
 
-    // partition °ü·Ã ÁúÀÇ Ãß°¡.
-    // SQL ¹®¹ı »ó partition ÁúÀÇ°¡ table space °ü·Ã ÁúÀÇº¸´Ù
-    // ¸ÕÀú ³ª¿Í¾ß ÇÔ.
+    // partition ê´€ë ¨ ì§ˆì˜ ì¶”ê°€.
+    // SQL ë¬¸ë²• ìƒ partition ì§ˆì˜ê°€ table space ê´€ë ¨ ì§ˆì˜ë³´ë‹¤
+    // ë¨¼ì € ë‚˜ì™€ì•¼ í•¨.
     IDE_TEST( writePartitionQuery( a_table,
                                    a_user,
                                    sDdl,
@@ -596,7 +596,7 @@ SQLRETURN getTableQuery( SChar *a_user,
                                    &sIsPartitioned,
                                    aDbStatsFp ) != SQL_SUCCESS );
 
-    // table space °ü·Ã ÁúÀÇ Ãß°¡.
+    // table space ê´€ë ¨ ì§ˆì˜ ì¶”ê°€.
     /* s_tbs_type = X$TABLESPACES.TYPE
      *
      * smiDef.h
@@ -613,7 +613,7 @@ SQLRETURN getTableQuery( SChar *a_user,
      */
     eraseWhiteSpace(aTbsName);
 
-    // BUG-24311 user tablespace »ı¼º ÈÄ ÀÌÀÇ table »ı¼º½Ã tablespace ±¸¹®ÀÌ ¾ø½À´Ï´Ù.
+    // BUG-24311 user tablespace ìƒì„± í›„ ì´ì˜ table ìƒì„±ì‹œ tablespace êµ¬ë¬¸ì´ ì—†ìŠµë‹ˆë‹¤.
     switch(aTbsType)
     {
     case SMI_MEMORY_SYSTEM_DATA:
@@ -629,13 +629,13 @@ SQLRETURN getTableQuery( SChar *a_user,
                                  aTbsName );
 
         /* BUG-23652
-         * [5.3.1 SD] insert high limit, insert low limit À» pctfree ¿Í pctused ·Î º¯°æ */
+         * [5.3.1 SD] insert high limit, insert low limit ì„ pctfree ì™€ pctused ë¡œ ë³€ê²½ */
         s_pos += idlOS::sprintf( sDdl + s_pos,
                                  "\n pctfree %"ID_INT32_FMT"\n pctused %"ID_INT32_FMT" ",
                                  aPctFree,
                                  aPctUsed );
 
-        /* BUG-28682 STORAGE ±¸¹® EXPORT */
+        /* BUG-28682 STORAGE êµ¬ë¬¸ EXPORT */
         IDE_TEST( getStorage( a_user, a_table, sDdl, &s_pos ) != SQL_SUCCESS );
         break;
     case SMI_VOLATILE_USER_DATA:
@@ -645,7 +645,7 @@ SQLRETURN getTableQuery( SChar *a_user,
         break;
     }
 
-    /* BUG-43010 Table DDL »ı¼º ½Ã, ·Î±× ¾ĞÃà¿©ºÎ¸¦ È®ÀÎÇØ¾ß ÇÕ´Ï´Ù. */
+    /* BUG-43010 Table DDL ìƒì„± ì‹œ, ë¡œê·¸ ì••ì¶•ì—¬ë¶€ë¥¼ í™•ì¸í•´ì•¼ í•©ë‹ˆë‹¤. */
     IDE_TEST( utmWriteLogCompressionClause( a_user,
                                             a_table,
                                             sDdl,
@@ -658,11 +658,11 @@ SQLRETURN getTableQuery( SChar *a_user,
                                        &s_pos );
     IDE_TEST( sRet != IDE_SUCCESS );
 
-    // LOB clause °ü·ÃÁúÀÇ Ãß°¡.
-    // fix BUG-24274 aexport¿¡¼­ LOB Tablespace¸¦ °í·ÁÇÏÁö ¾ÊÀ½.
+    // LOB clause ê´€ë ¨ì§ˆì˜ ì¶”ê°€.
+    // fix BUG-24274 aexportì—ì„œ LOB Tablespaceë¥¼ ê³ ë ¤í•˜ì§€ ì•ŠìŒ.
     if(sIsPartitioned == ID_FALSE)
     {
-        // BUG-24762 aexport¿¡¼­ create table ½Ã ´Ù¸¥À¯ÀúÀÇ LOB store as ¿É¼ÇÀÌ »ğÀÔµÊ
+        // BUG-24762 aexportì—ì„œ create table ì‹œ ë‹¤ë¥¸ìœ ì €ì˜ LOB store as ì˜µì…˜ì´ ì‚½ì…ë¨
         IDE_TEST( genLobStorageClaues( a_user,
                                        a_table,
                                        sDdl,
@@ -670,7 +670,7 @@ SQLRETURN getTableQuery( SChar *a_user,
     }
     else
     {
-        //Partioned TableÀÇ LOBÀº writePartitionQuery¿¡¼­ Ã³¸®ÇÏ¿´±â¶§¹®¿¡
+        //Partioned Tableì˜ LOBì€ writePartitionQueryì—ì„œ ì²˜ë¦¬í•˜ì˜€ê¸°ë•Œë¬¸ì—
         //Nothing to do.
     }
     
@@ -695,11 +695,11 @@ SQLRETURN getTableQuery( SChar *a_user,
     idlOS::fprintf(a_crt_fp, "--############################\n");
     if ( gProgOption.mbExistDrop == ID_TRUE )
     {
-        // BUG-20943 drop ±¸¹®¿¡¼­ user °¡ ¸í½ÃµÇÁö ¾Ê¾Æ drop ÀÌ ½ÇÆĞÇÕ´Ï´Ù.
+        // BUG-20943 drop êµ¬ë¬¸ì—ì„œ user ê°€ ëª…ì‹œë˜ì§€ ì•Šì•„ drop ì´ ì‹¤íŒ¨í•©ë‹ˆë‹¤.
         idlOS::fprintf(a_crt_fp, "drop table \"%s\".\"%s\";\n", a_user, a_table);
     }
 
-    /* Table ±¸¹®À» FILE WRITE */
+    /* Table êµ¬ë¬¸ì„ FILE WRITE */
     idlOS::fprintf( a_crt_fp, "%s\n", sDdl );
 
 #if (SIZEOF_LONG == 8) || defined(HAVE_LONG_LONG) || defined(VC_WIN32)
@@ -713,7 +713,7 @@ SQLRETURN getTableQuery( SChar *a_user,
                        a_table, SQLBIGINT_TO_SLONG(aMaxRow));
     }
     
-    /* TABLE EXPORT µÉ ¶§ ÇØ´ç TABLE°ú ¿¬°üµÈ OBJECT PRIVILEGE ÇÔ²² EXPORT */
+    /* TABLE EXPORT ë  ë•Œ í•´ë‹¹ TABLEê³¼ ì—°ê´€ëœ OBJECT PRIVILEGE í•¨ê»˜ EXPORT */
     IDE_TEST( getObjPrivQuery( a_crt_fp, UTM_TABLE, a_user, a_table )
                                != SQL_SUCCESS );
 
@@ -771,7 +771,7 @@ SQLRETURN getColumnInfo( SChar  * aDdl,
     SChar sQuotedUserName[UTM_NAME_LEN+3] = {'\0', };
     SChar sQuotedTableName[UTM_NAME_LEN+3] = {'\0', };
 
-    // BUG-24764 aexport create table±¸¹®¿¡ ÄÃ·³µéÀÌ µÎ¹ø¾¿ µé¾î°¨
+    // BUG-24764 aexport create tableêµ¬ë¬¸ì— ì»¬ëŸ¼ë“¤ì´ ë‘ë²ˆì”© ë“¤ì–´ê°
     SChar s_user[UTM_NAME_LEN+1] = {'\0', };
     SChar s_table[UTM_NAME_LEN+1] = {'\0', };
     SChar s_col_name[UTM_NAME_LEN+1] = {'\0', };
@@ -792,12 +792,12 @@ SQLRETURN getColumnInfo( SChar  * aDdl,
 
     SQLSMALLINT sDataType;
 
-    // Table Column Á¤º¸¸¦ ¾òÀº µÚ ÀÌ¿¡ ´ëÇÏ¿© table ÁúÀÇ »ı¼º
+    // Table Column ì •ë³´ë¥¼ ì–»ì€ ë’¤ ì´ì— ëŒ€í•˜ì—¬ table ì§ˆì˜ ìƒì„±
     // output : aDdl
     IDE_TEST_RAISE(SQLAllocStmt(m_hdbc, &s_colStmt) != SQL_SUCCESS,
                    alloc_error);
 
-    /* BUG-36593 ¼Ò¹®ÀÚ,°ø¹éÀÌ Æ÷ÇÔµÈ ÀÌ¸§(quoted identifier) Ã³¸® */
+    /* BUG-36593 ì†Œë¬¸ì,ê³µë°±ì´ í¬í•¨ëœ ì´ë¦„(quoted identifier) ì²˜ë¦¬ */
     utString::makeQuotedName(sQuotedUserName, a_user, idlOS::strlen(a_user));
     utString::makeQuotedName(sQuotedTableName, a_table, idlOS::strlen(a_table));
 
@@ -808,7 +808,7 @@ SQLRETURN getColumnInfo( SChar  * aDdl,
                               NULL, 0)
                    != SQL_SUCCESS, col_error);
 
-    // BUG-24764 aexport create table±¸¹®¿¡ ÄÃ·³µéÀÌ µÎ¹ø¾¿ µé¾î°¨
+    // BUG-24764 aexport create tableêµ¬ë¬¸ì— ì»¬ëŸ¼ë“¤ì´ ë‘ë²ˆì”© ë“¤ì–´ê°
     IDE_TEST_RAISE(
         SQLBindCol(s_colStmt, 2, SQL_C_CHAR, (SQLPOINTER)s_user,
                (SQLLEN)ID_SIZEOF(s_user), NULL)
@@ -870,8 +870,8 @@ SQLRETURN getColumnInfo( SChar  * aDdl,
         }
         IDE_TEST_RAISE( sRet != SQL_SUCCESS, col_error );
 
-        // BUG-24764 aexport create table±¸¹®¿¡ ÄÃ·³µéÀÌ µÎ¹ø¾¿ µé¾î°¨
-        // µ¿ÀÏÇÑ À¯Àú¸í, Å×ÀÌºí¸íÀÎÁö °Ë»çÇÔ
+        // BUG-24764 aexport create tableêµ¬ë¬¸ì— ì»¬ëŸ¼ë“¤ì´ ë‘ë²ˆì”© ë“¤ì–´ê°
+        // ë™ì¼í•œ ìœ ì €ëª…, í…Œì´ë¸”ëª…ì¸ì§€ ê²€ì‚¬í•¨
         if((idlOS::strncmp(a_user, s_user, ID_SIZEOF(a_user)) != 0) ||
            (idlOS::strncmp(a_table, s_table, ID_SIZEOF(a_table)) != 0))
         {
@@ -888,9 +888,9 @@ SQLRETURN getColumnInfo( SChar  * aDdl,
 
         //===============================================================
         // PROJ-2002 Column Security
-        // º¸¾È ÄÃ·³À» ¼³Á¤ÇÑ °æ¿ì ´ÙÀ½°ú °°Àº ±¸¹®À¸·Î »ı¼ºÇØ¾ß ÇÑ´Ù.
+        // ë³´ì•ˆ ì»¬ëŸ¼ì„ ì„¤ì •í•œ ê²½ìš° ë‹¤ìŒê³¼ ê°™ì€ êµ¬ë¬¸ìœ¼ë¡œ ìƒì„±í•´ì•¼ í•œë‹¤.
         // ex) create table (c1 varchar(100) encrypt using 'policy' fixed default 'a')
-        // policy´Â literal·Î 16byteÀÌ³»ÀÌ´Ù.
+        // policyëŠ” literalë¡œ 16byteì´ë‚´ì´ë‹¤.
         //===============================================================
         if ( s_encrypt == 1 )
         {
@@ -953,8 +953,8 @@ SQLRETURN getColumnInfo( SChar  * aDdl,
 }
 
 /* BUG-40038 [ux-aexport] Needs to consider temporary table in aexport codes */
-/* BUG-45215 [ux-aexport] ÄÃ·³ ¼Ó¼º 'IS_NULLABLE'ÀÌ false¸é ÇØ´ç Å×ÀÌºí ÄÃ·³¿¡
-             NOT NULL Á¦¾àÁ¶°ÇÀÌ ¾ø¾îµµ DDL¿¡ NOT NULLÀ» ÀÛ¼ºÇÕ´Ï´Ù */
+/* BUG-45215 [ux-aexport] ì»¬ëŸ¼ ì†ì„± 'IS_NULLABLE'ì´ falseë©´ í•´ë‹¹ í…Œì´ë¸” ì»¬ëŸ¼ì—
+             NOT NULL ì œì•½ì¡°ê±´ì´ ì—†ì–´ë„ DDLì— NOT NULLì„ ì‘ì„±í•©ë‹ˆë‹¤ */
 SQLRETURN getColumnNotNull( SChar * aDdl,
                             SInt  * aDdlPos,
                             SChar * aUser,
@@ -1086,7 +1086,7 @@ SQLRETURN getColumnEncryptClause( SChar * aDdl,
 
     IDE_TEST(Execute(s_policyStmt) != SQL_SUCCESS );
 
-    // ¹İµå½Ã 1°Ç Á¸ÀçÇØ¾ß ÇÑ´Ù.
+    // ë°˜ë“œì‹œ 1ê±´ ì¡´ì¬í•´ì•¼ í•œë‹¤.
     IDE_TEST_RAISE(SQLFetch(s_policyStmt) != SQL_SUCCESS, policy_error);
 
     // BUG-33995 aexport have wrong free handle code
@@ -1126,12 +1126,12 @@ void getColumnVariableClause( SQLSMALLINT   * aDataType,
 {
 #define IDE_FN "getColumnVariableClause()"
     //===============================================================
-    // bug-21345: ÄÃ·³ ÀúÀå ¼Ó¼º Áß fixed Å¸ÀÔÀ» ¸í½ÃÀûÀ¸·Î ÁöÁ¤ ¾ÈÇÏ´Â ¹ö±×.
-    // ±âÁ¸¿¡´Â variable¸¸ ¸í½ÃÀûÀ¸·Î ±â¼úÀÌ µÇ¾ú°í fixedÀÎ °æ¿ì »ı·«ÀÌ µÇ¾ú´Âµ¥
-    // fixed°¡ »ı·«ÀÌ µÈ Ã¼·Î create tableÀ» ´Ù½Ã ¼öÇàÇÏ¸é variable·Î ¹Ù²ğ ¼ö°¡ ÀÖ´Ù.
-    // ±×·¡¼­ variable/fixedÀÎ °æ¿ì ¸ğµÎ ¸í½ÃÀûÀ¸·Î ÀúÀå ¼Ó¼ºÀ» ÁöÁ¤ÇÏµµ·Ï ÇÑ´Ù.
+    // bug-21345: ì»¬ëŸ¼ ì €ì¥ ì†ì„± ì¤‘ fixed íƒ€ì…ì„ ëª…ì‹œì ìœ¼ë¡œ ì§€ì • ì•ˆí•˜ëŠ” ë²„ê·¸.
+    // ê¸°ì¡´ì—ëŠ” variableë§Œ ëª…ì‹œì ìœ¼ë¡œ ê¸°ìˆ ì´ ë˜ì—ˆê³  fixedì¸ ê²½ìš° ìƒëµì´ ë˜ì—ˆëŠ”ë°
+    // fixedê°€ ìƒëµì´ ëœ ì²´ë¡œ create tableì„ ë‹¤ì‹œ ìˆ˜í–‰í•˜ë©´ variableë¡œ ë°”ë€” ìˆ˜ê°€ ìˆë‹¤.
+    // ê·¸ë˜ì„œ variable/fixedì¸ ê²½ìš° ëª¨ë‘ ëª…ì‹œì ìœ¼ë¡œ ì €ì¥ ì†ì„±ì„ ì§€ì •í•˜ë„ë¡ í•œë‹¤.
     // ex)create table (c1 varchar(200)) => variable
-    // Âü°í·Î ÄÃ·³ ÀúÀå ¼Ó¼ºÀº 3°¡Áö°¡ ÀÖ´Ù
+    // ì°¸ê³ ë¡œ ì»¬ëŸ¼ ì €ì¥ ì†ì„±ì€ 3ê°€ì§€ê°€ ìˆë‹¤
     // V: variable, F: fixed, L: LOB
     //===============================================================
     if ( a_store_type[0] == 'V' )
@@ -1253,7 +1253,7 @@ void getColumnDataType( SQLSMALLINT * aDataType,
 #undef IDE_FN
 }
 
-/* BUG-26236 comment Äõ¸®¹®ÀÇ À¯Æ¿¸®Æ¼ Áö¿ø */
+/* BUG-26236 comment ì¿¼ë¦¬ë¬¸ì˜ ìœ í‹¸ë¦¬í‹° ì§€ì› */
 SQLRETURN getComment( SChar * a_user,
                       SChar * a_table,
                       FILE  * a_fp )
@@ -1307,8 +1307,8 @@ SQLRETURN getComment( SChar * a_user,
     {
         IDE_TEST_RAISE( sRet != SQL_SUCCESS, user_error );
 
-        /* ÄÚ¸àÆ®°¡ Áö¿öÁ³À»¶§´Â null ·Î ÀúÀåµÇ¾î ÀÖ´Ù.
-           Å×ÀÌºí ÄÚ¸àÆ®ÀÇ °æ¿ì ÄÃ·³ÀÌ¸§ÀÌ ¾ø´Ù.
+        /* ì½”ë©˜íŠ¸ê°€ ì§€ì›Œì¡Œì„ë•ŒëŠ” null ë¡œ ì €ì¥ë˜ì–´ ìˆë‹¤.
+           í…Œì´ë¸” ì½”ë©˜íŠ¸ì˜ ê²½ìš° ì»¬ëŸ¼ì´ë¦„ì´ ì—†ë‹¤.
          */
         if(sCommentInd != SQL_NULL_DATA)
         {
@@ -1366,7 +1366,7 @@ SQLRETURN getComment( SChar * a_user,
     return SQL_ERROR;
 }
 
-/* BUG-28682 STORAGE ±¸¹® EXPORT */
+/* BUG-28682 STORAGE êµ¬ë¬¸ EXPORT */
 SQLRETURN getStorage( SChar * aUser,
                       SChar * aTable,
                       SChar * aDdl,
@@ -1470,7 +1470,7 @@ SQLRETURN getStorage( SChar * aUser,
     return SQL_ERROR;
 }
 
-/* BUG-43010 Table DDL »ı¼º ½Ã, ·Î±× ¾ĞÃà¿©ºÎ¸¦ È®ÀÎÇØ¾ß ÇÕ´Ï´Ù. */
+/* BUG-43010 Table DDL ìƒì„± ì‹œ, ë¡œê·¸ ì••ì¶•ì—¬ë¶€ë¥¼ í™•ì¸í•´ì•¼ í•©ë‹ˆë‹¤. */
 IDE_RC utmWriteLogCompressionClause( SChar  * aUserName,
                                      SChar  * aTableName,
                                      SChar  * aDdl,
@@ -1767,8 +1767,8 @@ IDE_RC utmTableWriteCompressQuery( SChar  * aTableName,
     {
         IDE_TEST_RAISE( sRet != SQL_SUCCESS, execute_error );
 
-        /* Æ¯Á¤ Å×ÀÌºíÀÌ Compress Å×ÀÌºíÀÌ¶ó¸é,
-         * ±¸¹®À» ¿Ï¼ºÇÏ°í ¸¶Áö¸·¿¡ °ıÈ£¸¦ Ãâ·ÂÇÑ´Ù.
+        /* íŠ¹ì • í…Œì´ë¸”ì´ Compress í…Œì´ë¸”ì´ë¼ë©´,
+         * êµ¬ë¬¸ì„ ì™„ì„±í•˜ê³  ë§ˆì§€ë§‰ì— ê´„í˜¸ë¥¼ ì¶œë ¥í•œë‹¤.
          */
         if( sIsCompTable == ID_FALSE )
         {

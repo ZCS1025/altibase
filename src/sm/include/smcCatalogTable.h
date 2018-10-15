@@ -31,25 +31,25 @@ class smcCatalogTable
 {
 public:
 
-    /* DB »ı¼º½Ã¿¡ Catalog Table°ú Temp Catalog Table »ı¼º */
+    /* DB ìƒì„±ì‹œì— Catalog Tableê³¼ Temp Catalog Table ìƒì„± */
     static IDE_RC createCatalogTable();
 
-    /* Server shutdown½Ã Catalog Table¿¡ ´ëÇØ ¸Ş¸ğ¸® ÇØÁ¦ ¼öÇà */
+    /* Server shutdownì‹œ Catalog Tableì— ëŒ€í•´ ë©”ëª¨ë¦¬ í•´ì œ ìˆ˜í–‰ */
     static IDE_RC finalizeCatalogTable();
 
-    /* Server startup½Ã Catalog Table¿¡ ´ëÇØ ÃÊ±âÈ­ ¼öÇà */
+    /* Server startupì‹œ Catalog Tableì— ëŒ€í•´ ì´ˆê¸°í™” ìˆ˜í–‰ */
     static IDE_RC initialize();
 
-    /* Server shutdown½Ã Catalog Table¿¡ ´ëÇØ ¸Ş¸ğ¸® ÇØÁ¦ ¼öÇà */
+    /* Server shutdownì‹œ Catalog Tableì— ëŒ€í•´ ë©”ëª¨ë¦¬ í•´ì œ ìˆ˜í–‰ */
     static IDE_RC destroy();
 
-    /* Temp Catalog Table Offset¸¦ return */
+    /* Temp Catalog Table Offsetë¥¼ return */
     static UInt getCatTempTableOffset();
 
-    /* restart recovery½Ã¿¡
-       disk tableÀÇ header¸¦ ÃÊ±âÈ­ÇÏ°í ÇØ´ç tableÀÇ
-       ¸ğµç index runtime header¸¦
-       rebuild ÇÑ´Ù.*/
+    /* restart recoveryì‹œì—
+       disk tableì˜ headerë¥¼ ì´ˆê¸°í™”í•˜ê³  í•´ë‹¹ tableì˜
+       ëª¨ë“  index runtime headerë¥¼
+       rebuild í•œë‹¤.*/
     static IDE_RC refineDRDBTables();
 
    static IDE_RC doAction4EachTBL(idvSQL            * aStatistics,
@@ -58,14 +58,14 @@ public:
 
 private:
 
-   // Create DB½Ã Catalog TableÀ» »ı¼ºÇÑ´Ù.
+   // Create DBì‹œ Catalog Tableì„ ìƒì„±í•œë‹¤.
     static IDE_RC createCatalog( void*   aCatTableHeader,
                                  UShort  aOffset );
 
-    // Shutdown½Ã Catalog TableÀÇ ÇØÁ¦ÀÛ¾÷À» ¼öÇà
+    // Shutdownì‹œ Catalog Tableì˜ í•´ì œì‘ì—…ì„ ìˆ˜í–‰
     static IDE_RC finCatalog( void* sCatTableHeader );
 
-    //  Catalog Table¾ÈÀÇ Used Slot¿¡ ´ëÇØ Lock Item°ú Runtime ItemÇØÁ¦
+    //  Catalog Tableì•ˆì˜ Used Slotì— ëŒ€í•´ Lock Itemê³¼ Runtime Itemí•´ì œ
     static IDE_RC finAllocedTableSlots( smcTableHeader * aCatTblHdr );
 };
 

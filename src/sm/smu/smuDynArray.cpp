@@ -96,7 +96,7 @@ IDE_RC smuDynArray::freeDynNode(smuDynArrayNode *aNode)
 
 
 /*
- * °´Ã¼ ÃÊ±âÈ­ ¼öÇà. List¿¡ ´ëÇÑ ÃÊ±âÈ­ ÇÊ¼ö!
+ * ê°ì²´ ì´ˆê¸°í™” ìˆ˜í–‰. Listì— ëŒ€í•œ ì´ˆê¸°í™” í•„ìˆ˜!
  */
 
 IDE_RC smuDynArray::initialize(smuDynArrayBase *aBase)
@@ -118,9 +118,9 @@ IDE_RC smuDynArray::initialize(smuDynArrayBase *aBase)
 }
 
 /*
- * °´Ã¼ ¼Ò¸êÈ­ ¼öÇà
- * 1. Sub Nodeµé¿¡ ´ëÇÑ ¸Ş¸ğ¸® ÇØÁ¦. (debug modeÀÏ °æ¿ì ASSERT Ã¼Å©)
- * 2. °´Ã¼ ¸â¹ö ÃÊ±âÈ­ 
+ * ê°ì²´ ì†Œë©¸í™” ìˆ˜í–‰
+ * 1. Sub Nodeë“¤ì— ëŒ€í•œ ë©”ëª¨ë¦¬ í•´ì œ. (debug modeì¼ ê²½ìš° ASSERT ì²´í¬)
+ * 2. ê°ì²´ ë©¤ë²„ ì´ˆê¸°í™” 
  */
 
 IDE_RC smuDynArray::destroy(smuDynArrayBase *aBase)
@@ -132,8 +132,8 @@ IDE_RC smuDynArray::destroy(smuDynArrayBase *aBase)
 
     sBaseList = &(aBase->mNode.mList);
     
-    // 1. Node Å½»ö ¹× ¸®½ºÆ® ²÷±â
-    // 2. ¸Ş¸ğ¸® ÇØÁ¦ 
+    // 1. Node íƒìƒ‰ ë° ë¦¬ìŠ¤íŠ¸ ëŠê¸°
+    // 2. ë©”ëª¨ë¦¬ í•´ì œ 
 
     sCurList = SMU_LIST_GET_NEXT(sBaseList);
     while(sCurList != sBaseList)
@@ -157,9 +157,9 @@ IDE_RC smuDynArray::destroy(smuDynArrayBase *aBase)
 /*
  *  Storing Logic:
  *
- *     A. SrcÀÇ Å©±â°¡ Node Å©±â¸¦ ³ÑÁö ¾ÊÀº °æ¿ì, Copy ÈÄ ¸®ÅÏ.
- *     B. SrcÀÇ Å©±â°¡ Node¸¦ ³ÑÀº °æ¿ì ÇöÀç ³ëµå¸¦ Ã¤¿ì°í,
- *        Next Node ÇÒ´ç ¹Ş°í, ´Ù½Ã ·çÆ¾ ½ÃÀÛ.
+ *     A. Srcì˜ í¬ê¸°ê°€ Node í¬ê¸°ë¥¼ ë„˜ì§€ ì•Šì€ ê²½ìš°, Copy í›„ ë¦¬í„´.
+ *     B. Srcì˜ í¬ê¸°ê°€ Nodeë¥¼ ë„˜ì€ ê²½ìš° í˜„ì¬ ë…¸ë“œë¥¼ ì±„ìš°ê³ ,
+ *        Next Node í• ë‹¹ ë°›ê³ , ë‹¤ì‹œ ë£¨í‹´ ì‹œì‘.
  */
 
 
@@ -215,7 +215,7 @@ IDE_RC smuDynArray::copyData(smuDynArrayBase *aBase,
 }
 
 /*
- * HeadºÎÅÍ Tail±îÁö µû¶ó°¡¸é¼­, aDest¿¡ ¼øÂ÷ÀûÀ¸·Î º¹»ç.
+ * Headë¶€í„° Tailê¹Œì§€ ë”°ë¼ê°€ë©´ì„œ, aDestì— ìˆœì°¨ì ìœ¼ë¡œ ë³µì‚¬.
  */
 
 void smuDynArray::load(smuDynArrayBase *aBase, void *aDest, UInt aDestBuffSize)

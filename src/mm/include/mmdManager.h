@@ -32,7 +32,7 @@ public:
     static IDE_RC finalize();
 
     static void   checkXaTimeout();
-    //fix BUG-27218 XA Load Heurisitc TransactionÇÔ¼ö ³»¿ëÀ» ¸íÈ®È÷ ÇØ¾ß ÇÑ´Ù.
+    //fix BUG-27218 XA Load Heurisitc Transactioní•¨ìˆ˜ ë‚´ìš©ì„ ëª…í™•íˆ í•´ì•¼ í•œë‹¤.
     static IDE_RC loadHeuristicTrans( idvSQL                        *aStatistics,   /* PROJ-2446 */ 
                                       mmdXaLoadHeuristicXidFlag      aLoadHeuristicXidFlag, 
                                       ID_XID                       **aHeuristicXids, 

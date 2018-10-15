@@ -47,7 +47,7 @@ ACI_RC ulnSFID_24(ulnFnContext *aFnContext)
 
 /*
  * ULN_SFID_25
- * SQLFetch(), SQLFetchScroll(), STMT »óÅÂÀüÀÌÇÔ¼ö : S6 »óÅÂ
+ * SQLFetch(), SQLFetchScroll(), STMT ìƒíƒœì „ì´í•¨ìˆ˜ : S6 ìƒíƒœ
  *      -- [s] or [nf]
  *      S11 [x]
  *  where
@@ -112,10 +112,10 @@ SQLRETURN ulnFetch(ulnStmt *aStmt)
         if (sNumberOfRowsFetched == 0)
         {
             /*
-             * BUGBUG : ulnFetchFromCache() ÇÔ¼ö ÁÖ¼®À» º¸¸é ¾Æ·¡¿Í °°ÀÌ ÀûÇô ÀÖ´Ù :
+             * BUGBUG : ulnFetchFromCache() í•¨ìˆ˜ ì£¼ì„ì„ ë³´ë©´ ì•„ëž˜ì™€ ê°™ì´ ì í˜€ ìžˆë‹¤ :
              *
-             * SQL_NO_DATA ¸¦ ¸®ÅÏÇØ ÁÖ±â À§ÇØ¼­ ¼¼ÆÃÀ» ÇØ¾ß ÇÏÁö¸¸,
-             * ÀÌ¹Ì ulnFetchUpdateAfterFetch() ÇÔ¼ö¿¡¼­ ¼¼ÆÃÇØ¹ö¸° °æ¿ìÀÌ´Ù.
+             * SQL_NO_DATA ë¥¼ ë¦¬í„´í•´ ì£¼ê¸° ìœ„í•´ì„œ ì„¸íŒ…ì„ í•´ì•¼ í•˜ì§€ë§Œ,
+             * ì´ë¯¸ ulnFetchUpdateAfterFetch() í•¨ìˆ˜ì—ì„œ ì„¸íŒ…í•´ë²„ë¦° ê²½ìš°ì´ë‹¤.
              */
             ULN_FNCONTEXT_SET_RC(&sFnContext, SQL_NO_DATA);
         }
@@ -138,16 +138,16 @@ SQLRETURN ulnFetch(ulnStmt *aStmt)
     }
 
     /*
-     * »ç¿ëÀÚ¿¡°Ô ÆäÄ¡ÇÑ Row ÀÇ °¹¼ö ¸®ÅÏ.
+     * ì‚¬ìš©ìžì—ê²Œ íŽ˜ì¹˜í•œ Row ì˜ ê°¯ìˆ˜ ë¦¬í„´.
      */
     ulnDescSetRowsProcessedPtrValue(aStmt->mAttrIrd, sNumberOfRowsFetched);
 
     /*
-     * µ¥ÀÌÅÍ¸¦ fetch ÇØ ÁÖÁö ¾ÊÀº row µéÀÇ status array ¸¦ SQL_ROW_NOROW ·Î ¸¸µé¾î ÁØ´Ù.
+     * ë°ì´í„°ë¥¼ fetch í•´ ì£¼ì§€ ì•Šì€ row ë“¤ì˜ status array ë¥¼ SQL_ROW_NOROW ë¡œ ë§Œë“¤ì–´ ì¤€ë‹¤.
      *
-     * block cursor ¸¦ »ç¿ëÇÒ ¶§,
-     * °¡·É 10 ÁÙÀ» »ç¿ëÀÚ°¡ ÆäÄ¡Çß´Âµ¥, µ¥ÀÌÅÍ´Â 5ÁÙ¸¸ µé¾î°¬À» °æ¿ì,
-     * ³ª¸ÓÁö 5 ÁÙÀÇ row status ptr ¿¡´Â SQL_ROW_NOROW ¸¦ ³Ö¾î Áà¾ß ÇÑ´Ù.
+     * block cursor ë¥¼ ì‚¬ìš©í•  ë•Œ,
+     * ê°€ë ¹ 10 ì¤„ì„ ì‚¬ìš©ìžê°€ íŽ˜ì¹˜í–ˆëŠ”ë°, ë°ì´í„°ëŠ” 5ì¤„ë§Œ ë“¤ì–´ê°”ì„ ê²½ìš°,
+     * ë‚˜ë¨¸ì§€ 5 ì¤„ì˜ row status ptr ì—ëŠ” SQL_ROW_NOROW ë¥¼ ë„£ì–´ ì¤˜ì•¼ í•œë‹¤.
      */
     ulnDescInitStatusArrayValues(aStmt->mAttrIrd,
                                  sNumberOfRowsFetched,

@@ -15,9 +15,9 @@
  */
 
 /**
- * ÀÌ ÆÄÀÏÀº ¿ÜºÎ·Î Export µÇ´Â Çì´õÆÄÀÏÀÌ´Ù.
- * ulu ¶óÀÌºê·¯¸®¸¦ »ç¿ëÇÏ´Â ÇÁ·Î±×·¥µé¿¡¼­´Â
- * ÀÌ Çì´õÆÄÀÏÀ» include ÇØ¾ß¸¸ ÇÑ´Ù.
+ * ì´ íŒŒì¼ì€ ì™¸ë¶€ë¡œ Export ë˜ëŠ” í—¤ë”íŒŒì¼ì´ë‹¤.
+ * ulu ë¼ì´ë¸ŒëŸ¬ë¦¬ë¥¼ ì‚¬ìš©í•˜ëŠ” í”„ë¡œê·¸ëž¨ë“¤ì—ì„œëŠ”
+ * ì´ í—¤ë”íŒŒì¼ì„ include í•´ì•¼ë§Œ í•œë‹¤.
  */
 
 #ifndef _O_ULU_H_

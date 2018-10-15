@@ -54,11 +54,11 @@ IDE_RC qdbCreate::validateCreateTable(qcStatement * aStatement)
 /***********************************************************************
  *
  * Description :
- *      CREATE TABLE ¹®ÀÇ validation ¼öÇà ÇÔ¼ö
+ *      CREATE TABLE ë¬¸ì˜ validation ìˆ˜í–‰ í•¨ìˆ˜
  *
  * Implementation :
- *      1. Å×ÀÌºí ÀÌ¸§ÀÇ Áßº¹ °Ë»ç
- *      2. Å×ÀÌºí »ı¼º ±ÇÇÑ °Ë»ç
+ *      1. í…Œì´ë¸” ì´ë¦„ì˜ ì¤‘ë³µ ê²€ì‚¬
+ *      2. í…Œì´ë¸” ìƒì„± ê¶Œí•œ ê²€ì‚¬
  *      3. validation of TABLESPACE
  *      4. validation of columns specification
  *      5. validation of lob column attributes
@@ -138,14 +138,14 @@ IDE_RC qdbCreate::validateCreateTable(qcStatement * aStatement)
     // PROJ-2264 Dictionary table
     if( QCU_FORCE_COMPRESSION_COLUMN == 1 )
     {
-        // ´ÙÀ½À» ¸ğµÎ ¸¸Á·ÇÏ´Â °æ¿ì¿¡ °­Á¦·Î compression column À¸·Î ¸¸µç´Ù.
-        // 1. Debug ¸ğµå·Î ºôµå µÇ¾úÀ» ¶§
-        // 2. Patition table ÀÌ ¾Æ´Ò ¶§
-        // 3. Dictionary table ÀÌ ¾Æ´Ò ¶§
-        // 4. Compress ÀıÀÌ ¾øÀ» ¶§
-        // 5. Data memory/disk table ÀÏ ¶§
-        // 6. Compression column ÀÌ Áö¿øµÇ´Â µ¥ÀÌÅÍ Å¸ÀÔÀÏ ¶§
-        // 7. (BUG-38610) Queue °´Ã¼¸¦ ¸¸µå´Â °æ¿ì°¡ ¾Æ´Ò ¶§
+        // ë‹¤ìŒì„ ëª¨ë‘ ë§Œì¡±í•˜ëŠ” ê²½ìš°ì— ê°•ì œë¡œ compression column ìœ¼ë¡œ ë§Œë“ ë‹¤.
+        // 1. Debug ëª¨ë“œë¡œ ë¹Œë“œ ë˜ì—ˆì„ ë•Œ
+        // 2. Patition table ì´ ì•„ë‹ ë•Œ
+        // 3. Dictionary table ì´ ì•„ë‹ ë•Œ
+        // 4. Compress ì ˆì´ ì—†ì„ ë•Œ
+        // 5. Data memory/disk table ì¼ ë•Œ
+        // 6. Compression column ì´ ì§€ì›ë˜ëŠ” ë°ì´í„° íƒ€ì…ì¼ ë•Œ
+        // 7. (BUG-38610) Queue ê°ì²´ë¥¼ ë§Œë“œëŠ” ê²½ìš°ê°€ ì•„ë‹ ë•Œ
 
         if (smiTableSpace::isDataTableSpaceType( sParseTree->TBSAttr.mType ) == ID_TRUE )
         {
@@ -186,9 +186,9 @@ IDE_RC qdbCreate::validateCreateTable(qcStatement * aStatement)
                     case MTD_BIT_ID :
                     case MTD_VARBIT_ID :
                     case MTD_DATE_ID :
-                        // Column ÀÇ ÀúÀåÅ©±â(size)°¡ smOID º¸´Ù ÀÛÀ¸¸é skip
-                        // ¿ì¼± compression ÇÏ¸é ¿ÀÈ÷·Á ÀúÀå °ø°£À» ´õ »ç¿ëÇÏ°ÔµÇ°í
-                        // in-place update ½Ã¿¡ logging ¹®Á¦µµ ¹ß»ıÇÏ°Ô µÈ´Ù.
+                        // Column ì˜ ì €ì¥í¬ê¸°(size)ê°€ smOID ë³´ë‹¤ ì‘ìœ¼ë©´ skip
+                        // ìš°ì„  compression í•˜ë©´ ì˜¤íˆë ¤ ì €ì¥ ê³µê°„ì„ ë” ì‚¬ìš©í•˜ê²Œë˜ê³ 
+                        // in-place update ì‹œì— logging ë¬¸ì œë„ ë°œìƒí•˜ê²Œ ëœë‹¤.
                         if( sColumn->basicInfo->column.size < ID_SIZEOF(smOID) )
                         {
                             sColumn->basicInfo->column.flag &= ~SMI_COLUMN_COMPRESSION_MASK;
@@ -197,7 +197,7 @@ IDE_RC qdbCreate::validateCreateTable(qcStatement * aStatement)
                         else
                         {
                             // BUG-38670
-                            // Hidden column Àº compress ´ë»ó¿¡¼­ Á¦¿ÜÇÑ´Ù.
+                            // Hidden column ì€ compress ëŒ€ìƒì—ì„œ ì œì™¸í•œë‹¤.
                             // (Function based index)
                             if ( (sColumn->flag & QCM_COLUMN_HIDDEN_COLUMN_MASK)
                                  == QCM_COLUMN_HIDDEN_COLUMN_TRUE )
@@ -207,7 +207,7 @@ IDE_RC qdbCreate::validateCreateTable(qcStatement * aStatement)
                             }
                             else
                             {
-                                // Compression column ÀÓÀ» ³ªÅ¸³»µµ·Ï flag ¼¼ÆÃ
+                                // Compression column ì„ì„ ë‚˜íƒ€ë‚´ë„ë¡ flag ì„¸íŒ…
                                 sColumn->basicInfo->column.flag &= ~SMI_COLUMN_COMPRESSION_MASK;
                                 sColumn->basicInfo->column.flag |= SMI_COLUMN_COMPRESSION_TRUE;
 
@@ -242,7 +242,7 @@ IDE_RC qdbCreate::validateCreateTable(qcStatement * aStatement)
     IDE_EXCEPTION_CONT(LABEL_PASS);
 #endif
 
-    /* BUG-45641 disk partitioned table¿¡ ¾ĞÃà ÄÃ·³À» Ãß°¡ÇÏ´Ù°¡ ½ÇÆĞÇÏ´Âµ¥, memory partitioned table ¿À·ù°¡ ³ª¿É´Ï´Ù. */
+    /* BUG-45641 disk partitioned tableì— ì••ì¶• ì»¬ëŸ¼ì„ ì¶”ê°€í•˜ë‹¤ê°€ ì‹¤íŒ¨í•˜ëŠ”ë°, memory partitioned table ì˜¤ë¥˜ê°€ ë‚˜ì˜µë‹ˆë‹¤. */
     // PROJ-2264 Dictionary table
     IDE_TEST( qcmDictionary::validateCompressColumn( aStatement,
                                                      sParseTree,
@@ -320,8 +320,8 @@ IDE_RC qdbCreate::validateCreateTable(qcStatement * aStatement)
                                        NULL )
              != IDE_SUCCESS);
 
-    /* PROJ-2464 [±â´É¼º] hybrid partaitioned table Áö¿ø
-     *  - qdn::validateConstraints, qdbCommon::validatePartitionedTable ÀÌÈÄ¿¡ È£Ãâ
+    /* PROJ-2464 [ê¸°ëŠ¥ì„±] hybrid partaitioned table ì§€ì›
+     *  - qdn::validateConstraints, qdbCommon::validatePartitionedTable ì´í›„ì— í˜¸ì¶œ
      */
     IDE_TEST( qdbCommon::validateConstraintRestriction( aStatement,
                                                         sParseTree )
@@ -331,9 +331,9 @@ IDE_RC qdbCreate::validateCreateTable(qcStatement * aStatement)
                                       sParseTree )
               != IDE_SUCCESS );
 
-    /* PROJ-2464 hybrid partitioned table Áö¿ø
-     *  - °ü·Ã³»¿ë : PRJ-1671 Bitmap TableSpace And Segment Space Management
-     *               Segment Storage ¼Ó¼º validation
+    /* PROJ-2464 hybrid partitioned table ì§€ì›
+     *  - ê´€ë ¨ë‚´ìš© : PRJ-1671 Bitmap TableSpace And Segment Space Management
+     *               Segment Storage ì†ì„± validation
      */
     IDE_TEST( qdbCommon::validatePhysicalAttr( sParseTree )
               != IDE_SUCCESS );
@@ -375,10 +375,10 @@ IDE_RC qdbCreate::parseCreateTableAsSelect(qcStatement * aStatement)
 /***********************************************************************
  *
  * Description :
- *    CREATE TABLE ... AS SELECT ... ÀÇ parse ¼öÇà
+ *    CREATE TABLE ... AS SELECT ... ì˜ parse ìˆ˜í–‰
  *
  * Implementation :
- *    1. SELECT ÀÇ parse ¼öÇà => qmv::parseSelect
+ *    1. SELECT ì˜ parse ìˆ˜í–‰ => qmv::parseSelect
  *
  ***********************************************************************/
 
@@ -405,11 +405,11 @@ IDE_RC qdbCreate::validateCreateTableAsSelect(qcStatement * aStatement)
 /***********************************************************************
  *
  * Description :
- *    CREATE TABLE ... AS SELECT ... ÀÇ validation ¼öÇà
+ *    CREATE TABLE ... AS SELECT ... ì˜ validation ìˆ˜í–‰
  *
  * Implementation :
- *    1. Å×ÀÌºí ÀÌ¸§ÀÌ ÀÌ¹Ì Á¸ÀçÇÏ´ÂÁö Ã¼Å©
- *    2. CREATE TABLE ±ÇÇÑÀÌ ÀÖ´ÂÁö Ã¼Å©
+ *    1. í…Œì´ë¸” ì´ë¦„ì´ ì´ë¯¸ ì¡´ì¬í•˜ëŠ”ì§€ ì²´í¬
+ *    2. CREATE TABLE ê¶Œí•œì´ ìˆëŠ”ì§€ ì²´í¬
  *    3. validation of TABLESPACE
  *    4. validation of SELECT statement
  *    5. validation of column and target
@@ -495,7 +495,7 @@ IDE_RC qdbCreate::validateCreateTableAsSelect(qcStatement * aStatement)
              != IDE_SUCCESS);
 
     // fix BUG-17237
-    // columnÀÇ not null Á¤º¸ Á¦°Å.
+    // columnì˜ not null ì •ë³´ ì œê±°.
     for( sColumns = sParseTree->columns;
          sColumns != NULL;
          sColumns = sColumns->next )
@@ -525,7 +525,7 @@ IDE_RC qdbCreate::validateCreateTableAsSelect(qcStatement * aStatement)
                                         NULL )
               != IDE_SUCCESS);
 
-    /* PROJ-1107 Check Constraint Áö¿ø */
+    /* PROJ-1107 Check Constraint ì§€ì› */
     for ( sConstraint = sParseTree->constraints;
           sConstraint != NULL;
           sConstraint = sConstraint->next )
@@ -636,21 +636,21 @@ IDE_RC qdbCreate::validateCreateTableAsSelect(qcStatement * aStatement)
     }
 #endif
 
-    /* PROJ-2464 hybrid partitioned table Áö¿ø
-     *  - qdn::validateConstraint, qdbCommon::validatePartitionedTable¿¡ È£ÃâÇÑ´Ù.
+    /* PROJ-2464 hybrid partitioned table ì§€ì›
+     *  - qdn::validateConstraint, qdbCommon::validatePartitionedTableì— í˜¸ì¶œí•œë‹¤.
      */
     IDE_TEST( qdbCommon::validateConstraintRestriction( aStatement,
                                                         sParseTree )
               != IDE_SUCCESS );
 
-    // Attribute List·ÎºÎÅÍ TableÀÇ Flag °è»ê
+    // Attribute Listë¡œë¶€í„° Tableì˜ Flag ê³„ì‚°
     IDE_TEST( calculateTableAttrFlag( aStatement,
                                       sParseTree )
               != IDE_SUCCESS );
 
-    /* PROJ-2464 hybrid partitioned table Áö¿ø
-     *  - °ü·Ã³»¿ë : PRJ-1671 Bitmap TableSpace And Segment Space Management
-     *               Segment Storage ¼Ó¼º validation
+    /* PROJ-2464 hybrid partitioned table ì§€ì›
+     *  - ê´€ë ¨ë‚´ìš© : PRJ-1671 Bitmap TableSpace And Segment Space Management
+     *               Segment Storage ì†ì„± validation
      */
     IDE_TEST( qdbCommon::validatePhysicalAttr( sParseTree )
               != IDE_SUCCESS );
@@ -703,28 +703,28 @@ IDE_RC qdbCreate::validateTableSpace(qcStatement * aStatement)
 /***********************************************************************
  *
  * Description :
- *    1. TABLESPACE ¿¡ ´ëÇÑ validation
+ *    1. TABLESPACE ì— ëŒ€í•œ validation
  *    2. INSERT HIGH LIMIT validation
  *    3. INSERT LOW LIMIT validation
  *
  * Implementation :
- *    1. TABLESPACE ¿¡ ´ëÇÑ validation
- *    if ( TABLESPACENAME ¸í½ÃÇÑ °æ¿ì )
+ *    1. TABLESPACE ì— ëŒ€í•œ validation
+ *    if ( TABLESPACENAME ëª…ì‹œí•œ ê²½ìš° )
  *    {
- *      1.1.1 SM ¿¡¼­ Á¸ÀçÇÏ´Â Å×ÀÌºí½ºÆäÀÌ½º¸íÀÎÁö °Ë»ö
- *      1.1.2 Á¸ÀçÇÏÁö ¾ÊÀ¸¸é ¿À·ù
- *      1.1.3 Å×ÀÌºí½ºÆäÀÌ½ºÀÇ Á¾·ù°¡ UNDO tablespace ¶Ç´Â temporary
- *            tablespace ÀÌ¸é ¿À·ù
- *      1.1.4 USER_ID ¿Í TBS_ID ·Î SYS_TBS_USERS_ °Ë»öÇØ¼­ ·¹ÄÚµå°¡ Á¸ÀçÇÏ°í
- *            QUOTA °ªÀÌ 0 ÀÌ¸é ¿À·ù
+ *      1.1.1 SM ì—ì„œ ì¡´ì¬í•˜ëŠ” í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ëª…ì¸ì§€ ê²€ìƒ‰
+ *      1.1.2 ì¡´ì¬í•˜ì§€ ì•Šìœ¼ë©´ ì˜¤ë¥˜
+ *      1.1.3 í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì˜ ì¢…ë¥˜ê°€ UNDO tablespace ë˜ëŠ” temporary
+ *            tablespace ì´ë©´ ì˜¤ë¥˜
+ *      1.1.4 USER_ID ì™€ TBS_ID ë¡œ SYS_TBS_USERS_ ê²€ìƒ‰í•´ì„œ ë ˆì½”ë“œê°€ ì¡´ì¬í•˜ê³ 
+ *            QUOTA ê°’ì´ 0 ì´ë©´ ì˜¤ë¥˜
  *    }
  *    else
  *    {
- *      1.2.1 USER_ID ·Î SYS_USERS_ °Ë»öÇØ¼­ DEFAULT_TBS_ID °ªÀ» ÀĞ¾î Å×ÀÌºíÀ»
- *            À§ÇÑ Å×ÀÌºí½ºÆäÀÌ½º·Î ÁöÁ¤
+ *      1.2.1 USER_ID ë¡œ SYS_USERS_ ê²€ìƒ‰í•´ì„œ DEFAULT_TBS_ID ê°’ì„ ì½ì–´ í…Œì´ë¸”ì„
+ *            ìœ„í•œ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ë¡œ ì§€ì •
  *    }
  *    2. PCTFREE validation
- *    if ( PCTFREE °ªÀ» ¸í½ÃÇÑ °æ¿ì )
+ *    if ( PCTFREE ê°’ì„ ëª…ì‹œí•œ ê²½ìš° )
  *    {
  *      0 <= PCTFREE <= 99
  *    }
@@ -733,7 +733,7 @@ IDE_RC qdbCreate::validateTableSpace(qcStatement * aStatement)
  *      PCTFREE = QD_TABLE_DEFAULT_PCTFREE
  *    }
  *    3. PCTUSED validation
- *    if ( PCTUSED °ªÀ» ¸í½ÃÇÑ °æ¿ì )
+ *    if ( PCTUSED ê°’ì„ ëª…ì‹œí•œ ê²½ìš° )
  *    {
  *      0 <= PCTUSED <= 99
  *    }
@@ -751,7 +751,7 @@ IDE_RC qdbCreate::validateTableSpace(qcStatement * aStatement)
 
     if ( QC_IS_NULL_NAME(sParseTree->TBSName) == ID_TRUE )
     {
-        // BUG-37377 queue ÀÇ °æ¿ì ¸Ş¸ğ¸® Å×ÀÌºí ½ºÆäÀÌ½º¿¡ »ı¼ºµÇ¾î¾ß ÇÑ´Ù.
+        // BUG-37377 queue ì˜ ê²½ìš° ë©”ëª¨ë¦¬ í…Œì´ë¸” ìŠ¤í˜ì´ìŠ¤ì— ìƒì„±ë˜ì–´ì•¼ í•œë‹¤.
         if( (sParseTree->flag & QDQ_QUEUE_MASK) == QDQ_QUEUE_TRUE )
         {
             sTBSID = SMI_ID_TABLESPACE_SYSTEM_MEMORY_DATA;
@@ -800,30 +800,30 @@ IDE_RC qdbCreate::validateTableSpace(qcStatement * aStatement)
 
 
     //----------------------------------------------
-    // [Cursor Flag ÀÇ ¼³Á¤]
-    // Á¢±ÙÇÏ´Â Å×ÀÌºí ½ºÆäÀÌ½ºÀÇ Á¾·ù¿¡ µû¶ó, AgerÀÇ µ¿ÀÛÀÌ ´Ù¸£°Ô µÈ´Ù.
-    // ÀÌ¸¦ À§ÇØ Memory, Disk, Memory¿Í Disk¿¡ Á¢±ÙÇÏ´Â Áö¸¦
-    // Á¤È®ÇÏ°Ô ÆÇ´ÜÇÏ¿©¾ß ÇÑ´Ù.
-    // ÁúÀÇ¹®¿¡ ¿©·¯°³ÀÇ ´Ù¸¥ Å×ÀÌºíÀÌ Á¸ÀçÇÒ ¼ö ÀÖÀ¸¹Ç·Î,
-    // ÇØ´ç Cursor FlagÀ» ORingÇÏ¿© ±× Á¤º¸°¡ ´©ÀûµÇ°Ô ÇÑ´Ù.
+    // [Cursor Flag ì˜ ì„¤ì •]
+    // ì ‘ê·¼í•˜ëŠ” í…Œì´ë¸” ìŠ¤í˜ì´ìŠ¤ì˜ ì¢…ë¥˜ì— ë”°ë¼, Agerì˜ ë™ì‘ì´ ë‹¤ë¥´ê²Œ ëœë‹¤.
+    // ì´ë¥¼ ìœ„í•´ Memory, Disk, Memoryì™€ Diskì— ì ‘ê·¼í•˜ëŠ” ì§€ë¥¼
+    // ì •í™•í•˜ê²Œ íŒë‹¨í•˜ì—¬ì•¼ í•œë‹¤.
+    // ì§ˆì˜ë¬¸ì— ì—¬ëŸ¬ê°œì˜ ë‹¤ë¥¸ í…Œì´ë¸”ì´ ì¡´ì¬í•  ìˆ˜ ìˆìœ¼ë¯€ë¡œ,
+    // í•´ë‹¹ Cursor Flagì„ ORingí•˜ì—¬ ê·¸ ì •ë³´ê°€ ëˆ„ì ë˜ê²Œ í•œë‹¤.
     //----------------------------------------------
-    /* PROJ-2464 hybrid partitioned table Áö¿ø
-     *  - HPT ÀÎ °æ¿ì¿¡, Memory, Disk Partition¸¦ ¸ğµÎ Áö´Ò ¼ö ÀÖ´Ù.
-     *  - µû¶ó¼­ Memory PartitionÀÌ Æ÷ÇÔµÇ¾îµµ SegAttr, SegStoAttr ¿É¼ÇÀ» Áö´Ò ¼ö ÀÖ´Ù.
-     *  - Validate°ú ±âº»°ª ¼³Á¤À» PartitionÀÇ TBS Validate ÀÌÈÄ¿¡ ¼öÇàÇÑ´Ù.
+    /* PROJ-2464 hybrid partitioned table ì§€ì›
+     *  - HPT ì¸ ê²½ìš°ì—, Memory, Disk Partitionë¥¼ ëª¨ë‘ ì§€ë‹ ìˆ˜ ìˆë‹¤.
+     *  - ë”°ë¼ì„œ Memory Partitionì´ í¬í•¨ë˜ì–´ë„ SegAttr, SegStoAttr ì˜µì…˜ì„ ì§€ë‹ ìˆ˜ ìˆë‹¤.
+     *  - Validateê³¼ ê¸°ë³¸ê°’ ì„¤ì •ì„ Partitionì˜ TBS Validate ì´í›„ì— ìˆ˜í–‰í•œë‹¤.
      *  - qdbCommon::validatePhysicalAttr
      */
     if ((smiTableSpace::isMemTableSpaceType(sParseTree->TBSAttr.mType) == ID_TRUE) ||
         (smiTableSpace::isVolatileTableSpaceType(sParseTree->TBSAttr.mType) == ID_TRUE))
     {
-        // Memory Table Space¸¦ »ç¿ëÇÏ´Â DDLÀÎ °æ¿ì
-        // Cursor FlagÀÇ ´©Àû
+        // Memory Table Spaceë¥¼ ì‚¬ìš©í•˜ëŠ” DDLì¸ ê²½ìš°
+        // Cursor Flagì˜ ëˆ„ì 
         QC_SHARED_TMPLATE(aStatement)->smiStatementFlag |= SMI_STATEMENT_MEMORY_CURSOR;
     }
     else
     {
-        // Disk Table Space¸¦ »ç¿ëÇÏ´Â DDLÀÎ °æ¿ì
-        // Cursor FlagÀÇ ´©Àû
+        // Disk Table Spaceë¥¼ ì‚¬ìš©í•˜ëŠ” DDLì¸ ê²½ìš°
+        // Cursor Flagì˜ ëˆ„ì 
         QC_SHARED_TMPLATE(aStatement)->smiStatementFlag |= SMI_STATEMENT_DISK_CURSOR;
     }
 
@@ -847,19 +847,19 @@ IDE_RC qdbCreate::validateTargetAndMakeColumnList(qcStatement * aStatement)
 /***********************************************************************
  *
  * Description :
- *      CREATE TABLE ... AS SELECT ¹®ÀÇ validation ¼öÇà ÇÔ¼ö·ÎºÎÅÍ È£Ãâ
+ *      CREATE TABLE ... AS SELECT ë¬¸ì˜ validation ìˆ˜í–‰ í•¨ìˆ˜ë¡œë¶€í„° í˜¸ì¶œ
  *      : validation of target and make column
  *
  * Implementation :
- *      1. if... create ¹®ÀåÀÇ ÄÃ·³ÀÌ ¸í½Ã X
- *         : select ÄÃ·³ÀÇ ¾Ù¸®¾î½º ¸í Áßº¹ °Ë»ç
- *      2. else... create ¹®ÀåÀÇ ÄÃ·³ÀÌ ¸í½Ã O
- *         : create ¹®ÀåÀÇ ÄÃ·³°³¼ö¿Í select ÄÃ·³ÀÇ °³¼ö ÀÏÄ¡ °Ë»ç
+ *      1. if... create ë¬¸ì¥ì˜ ì»¬ëŸ¼ì´ ëª…ì‹œ X
+ *         : select ì»¬ëŸ¼ì˜ ì•¨ë¦¬ì–´ìŠ¤ ëª… ì¤‘ë³µ ê²€ì‚¬
+ *      2. else... create ë¬¸ì¥ì˜ ì»¬ëŸ¼ì´ ëª…ì‹œ O
+ *         : create ë¬¸ì¥ì˜ ì»¬ëŸ¼ê°œìˆ˜ì™€ select ì»¬ëŸ¼ì˜ ê°œìˆ˜ ì¼ì¹˜ ê²€ì‚¬
  *
  *      fix BUG-24917
- *         : create as select ¶Ç´Â view»ı¼º½Ã¿¡´Â ÀÌ ÇÔ¼ö¸¦ È£ÃâÇÏ¿©
- *           targetÀ¸·ÎºÎÅÍ ÄÃ·³À» »ı¼ºÇÏ°í
- *           ÄÃ·³¿¡ ´ëÇÑ validationÀº qdbCommon::validateColumnList(..)¸¦ È£Ãâ
+ *         : create as select ë˜ëŠ” viewìƒì„±ì‹œì—ëŠ” ì´ í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•˜ì—¬
+ *           targetìœ¼ë¡œë¶€í„° ì»¬ëŸ¼ì„ ìƒì„±í•˜ê³ 
+ *           ì»¬ëŸ¼ì— ëŒ€í•œ validationì€ qdbCommon::validateColumnList(..)ë¥¼ í˜¸ì¶œ
  *
  ***********************************************************************/
 
@@ -1047,10 +1047,10 @@ IDE_RC qdbCreate::optimize(qcStatement * aStatement)
 /***********************************************************************
  *
  * Description :
- *      CREATE TABLE ... AS SELECT ¹®ÀÇ optimization ¼öÇà ÇÔ¼ö
+ *      CREATE TABLE ... AS SELECT ë¬¸ì˜ optimization ìˆ˜í–‰ í•¨ìˆ˜
  *
  * Implementation :
- *      1. select Äõ¸®¿¡ ´ëÇÑ optimization ¼öÇà
+ *      1. select ì¿¼ë¦¬ì— ëŒ€í•œ optimization ìˆ˜í–‰
  *      2. make internal PROJ
  *      3. set execution plan tree
  *
@@ -1091,16 +1091,16 @@ IDE_RC qdbCreate::executeCreateTable(qcStatement * aStatement)
 /***********************************************************************
  *
  * Description :
- *      CREATE TABLE ¹®ÀÇ execution ¼öÇà ÇÔ¼ö
+ *      CREATE TABLE ë¬¸ì˜ execution ìˆ˜í–‰ í•¨ìˆ˜
  *
  * Implementation :
  *      1. validateDefaultValueType
- *      2. »õ·Î¿î Å×ÀÌºíÀ» À§ÇÑ TableID ±¸ÇÏ±â
+ *      2. ìƒˆë¡œìš´ í…Œì´ë¸”ì„ ìœ„í•œ TableID êµ¬í•˜ê¸°
  *      3. createTableOnSM
- *      4. SYS_TABLES_ ¸ŞÅ¸ Å×ÀÌºí¿¡ Å×ÀÌºí Á¤º¸ ÀÔ·Â
- *      5. SYS_COLUMNS_ ¸ŞÅ¸ Å×ÀÌºí¿¡ Å×ÀÌºí ÄÃ·³ Á¤º¸ ÀÔ·Â
- *      6. primary key, not null, check constraint »ı¼º
- *      7. ¸ŞÅ¸ Ä³½¬ ¼öÇà
+ *      4. SYS_TABLES_ ë©”íƒ€ í…Œì´ë¸”ì— í…Œì´ë¸” ì •ë³´ ì…ë ¥
+ *      5. SYS_COLUMNS_ ë©”íƒ€ í…Œì´ë¸”ì— í…Œì´ë¸” ì»¬ëŸ¼ ì •ë³´ ì…ë ¥
+ *      6. primary key, not null, check constraint ìƒì„±
+ *      7. ë©”íƒ€ ìºì‰¬ ìˆ˜í–‰
  *
  ***********************************************************************/
 
@@ -1136,7 +1136,7 @@ IDE_RC qdbCreate::executeCreateTable(qcStatement * aStatement)
     qcmDictionaryTable   * sDictionaryTable;
 
     //---------------------------------
-    // ±âº» Á¤º¸ ÃÊ±âÈ­
+    // ê¸°ë³¸ ì •ë³´ ì´ˆê¸°í™”
     //---------------------------------
     sParseTree = (qdTableParseTree *)aStatement->myPlan->parseTree;
 
@@ -1145,13 +1145,13 @@ IDE_RC qdbCreate::executeCreateTable(qcStatement * aStatement)
     sDictionaryTable = NULL;
 
     // PROJ-1502 PARTITIONED DISK TABLE
-    // ³íÆÄÆ¼¼Çµå Å×ÀÌºí »ı¼º
+    // ë…¼íŒŒí‹°ì…˜ë“œ í…Œì´ë¸” ìƒì„±
     
     if( sParseTree->partTable == NULL )
     {
         sIsPartitioned = ID_FALSE;
     }
-    // ÆÄÆ¼¼Çµå Å×ÀÌºí »ı¼º
+    // íŒŒí‹°ì…˜ë“œ í…Œì´ë¸” ìƒì„±
     else
     {
         sIsPartitioned = ID_TRUE;
@@ -1202,8 +1202,8 @@ IDE_RC qdbCreate::executeCreateTable(qcStatement * aStatement)
     if ( sParseTree->parallelDegree == 0 )
     {
         // PROJ-1071 Parallel query
-        // Table »ı¼º ½Ã parallel degree °¡ ÁöÁ¤µÇÁö ¾Ê¾Ò´Ù¸é
-        // ÃÖ¼Ò°ªÀÎ 1 ·Î º¯°æÇÑ´Ù.
+        // Table ìƒì„± ì‹œ parallel degree ê°€ ì§€ì •ë˜ì§€ ì•Šì•˜ë‹¤ë©´
+        // ìµœì†Œê°’ì¸ 1 ë¡œ ë³€ê²½í•œë‹¤.
         sParseTree->parallelDegree = 1;
     }
     else
@@ -1213,9 +1213,9 @@ IDE_RC qdbCreate::executeCreateTable(qcStatement * aStatement)
 
     if ( QCU_FORCE_PARALLEL_DEGREE > 1 )
     {
-        // 1. Dictionary table ÀÌ ¾Æ´Ò ¶§
-        // 2. Parallel degree ÀÌ 1 ÀÏ ¶§
-        // °­Á¦·Î parallel degree ¸¦ property Å©±â·Î ÁöÁ¤ÇÑ´Ù.
+        // 1. Dictionary table ì´ ì•„ë‹ ë•Œ
+        // 2. Parallel degree ì´ 1 ì¼ ë•Œ
+        // ê°•ì œë¡œ parallel degree ë¥¼ property í¬ê¸°ë¡œ ì§€ì •í•œë‹¤.
         if ( ( (sParseTree->tableAttrValue & SMI_TABLE_DICTIONARY_MASK)
                == SMI_TABLE_DICTIONARY_FALSE ) &&
              ( sParseTree->parallelDegree == 1 ) )
@@ -1328,10 +1328,10 @@ IDE_RC qdbCreate::executeCreateTable(qcStatement * aStatement)
                                                       & sTempPartInfoList )
                   != IDE_SUCCESS );
 
-        // ¸ğµç ÆÄÆ¼¼Ç¿¡ LOCK(X)
+        // ëª¨ë“  íŒŒí‹°ì…˜ì— LOCK(X)
         IDE_TEST( qcmPartition::validateAndLockPartitionInfoList( aStatement,
                                                                   sTempPartInfoList,
-                                                                  SMI_TBSLV_DDL_DML, // TBS Validation ¿É¼Ç
+                                                                  SMI_TBSLV_DDL_DML, // TBS Validation ì˜µì…˜
                                                                   SMI_TABLE_LOCK_X,
                                                                   ( ( smiGetDDLLockTimeOut() == -1 ) ?
                                                                     ID_ULONG_MAX :
@@ -1363,7 +1363,7 @@ IDE_RC qdbCreate::executeCreateTable(qcStatement * aStatement)
                                                 sTableID)
                  != IDE_SUCCESS);
 
-        /* PROJ-1107 Check Constraint Áö¿ø */
+        /* PROJ-1107 Check Constraint ì§€ì› */
         IDE_TEST( qdbCommon::createConstrCheck( aStatement,
                                                 sConstraint,
                                                 sParseTree->userID,
@@ -1484,8 +1484,8 @@ IDE_RC qdbCreate::executeCreateTable(qcStatement * aStatement)
             QS_TABLE)
         != IDE_SUCCESS);
 
-    /* PROJ-1723 [MDW/INTEGRATOR] Altibase Plugin °³¹ß
-       DDL Statement TextÀÇ ·Î±ë
+    /* PROJ-1723 [MDW/INTEGRATOR] Altibase Plugin ê°œë°œ
+       DDL Statement Textì˜ ë¡œê¹…
      */
     if (QCU_DDL_SUPPLEMENTAL_LOG == 1)
     {
@@ -1547,7 +1547,7 @@ IDE_RC qdbCreate::executeCreateTable(qcStatement * aStatement)
     }
 
     // PROJ-2002 Column Security
-    // º¸¾È ÄÃ·³ »ı¼º½Ã º¸¾È ¸ğµâ¿¡ ¾Ë¸°´Ù.
+    // ë³´ì•ˆ ì»¬ëŸ¼ ìƒì„±ì‹œ ë³´ì•ˆ ëª¨ë“ˆì— ì•Œë¦°ë‹¤.
     sColumn = sParseTree->columns;
 
     while(sColumn != NULL)
@@ -1557,7 +1557,7 @@ IDE_RC qdbCreate::executeCreateTable(qcStatement * aStatement)
         {
             if ( sTableOwnerName[0] == '\0' )
             {
-                // ÃÖÃÊ ÇÑ¹ø¸¸ ¾ò¾î¿Â´Ù.
+                // ìµœì´ˆ í•œë²ˆë§Œ ì–»ì–´ì˜¨ë‹¤.
                 IDE_TEST( qcmUser::getUserName( aStatement,
                                                 sParseTree->userID,
                                                 sTableOwnerName )
@@ -1591,14 +1591,14 @@ IDE_RC qdbCreate::executeCreateTable(qcStatement * aStatement)
     IDE_EXCEPTION_END;
 
     // PROJ-2264 Dictionary Table
-    // DDL ½ÇÆĞ½Ã dictionary table À» »èÁ¦ÇÑ´Ù.
+    // DDL ì‹¤íŒ¨ì‹œ dictionary table ì„ ì‚­ì œí•œë‹¤.
     for( sDicTable = sDictionaryTable;
          sDicTable != NULL;
          sDicTable = sDicTable->next )
     {
         // BUG-36719
-        // Dictionary table °ú ¸ŞÅ¸Å×ÀÌºíÀº ·Ñ¹éµÇ¾î »ç¶óÁú °ÍÀÌ´Ù.
-        // ¿©±â¼­´Â table info ¸¸ ÇØÁ¦ÇÑ´Ù.
+        // Dictionary table ê³¼ ë©”íƒ€í…Œì´ë¸”ì€ ë¡¤ë°±ë˜ì–´ ì‚¬ë¼ì§ˆ ê²ƒì´ë‹¤.
+        // ì—¬ê¸°ì„œëŠ” table info ë§Œ í•´ì œí•œë‹¤.
         (void)qcm::destroyQcmTableInfo( sDicTable->dictionaryTableInfo );
     }
 
@@ -1626,19 +1626,19 @@ IDE_RC qdbCreate::executeCreateTablePartition(qcStatement   * aStatement,
  * Description :
  *      PROJ-1502 PARTITIONED DISK TABLE
  *
- *      CREATE TABLE ¹®ÀÇ execution ¼öÇà ÇÔ¼ö
- *      °¢°¢ÀÇ ÆÄÆ¼¼ÇÀ» ¸ğµÎ »ı¼ºÇÑ´Ù.
+ *      CREATE TABLE ë¬¸ì˜ execution ìˆ˜í–‰ í•¨ìˆ˜
+ *      ê°ê°ì˜ íŒŒí‹°ì…˜ì„ ëª¨ë‘ ìƒì„±í•œë‹¤.
  *
  * Implementation :
- *      1. ÆÄÆ¼¼ÇÀÇ °³¼ö¸¸Å­ ¹İº¹
- *          1-1. ÆÄÆ¼¼Ç Å° Á¶°Ç °ª(PARTITION_MAX_VALUE, PARTITION_MIN_VALUE )
- *               À» ±¸ÇÑ´Ù.(ÇØ½Ã ÆÄÆ¼¼Çµå Å×ÀÌºí Á¦¿Ü)
- *          1-2. ÆÄÆ¼¼Ç ¼ø¼­(PARTITION_ORDER)¸¦ ±¸ÇÑ´Ù.
- *               (ÇØ½Ã ÆÄÆ¼¼Çµå Å×ÀÌºí¸¸ ÇØ´çÇÔ)
- *          1-3. ÆÄÆ¼¼Ç »ı¼º
- *          1-4. SYS_TABLE_PARTITIONS_ ¸ŞÅ¸ Å×ÀÌºí¿¡ ÆÄÆ¼¼Ç Á¤º¸ ÀÔ·Â
- *          1-5. SYS_PART_LOBS_ ¸ŞÅ¸ Å×ÀÌºí¿¡ ÆÄÆ¼¼Ç Á¤º¸ ÀÔ·Â
- *          1-6. Å×ÀÌºí ÆÄÆ¼¼Ç ¸ŞÅ¸ Ä³½Ã »ı¼º
+ *      1. íŒŒí‹°ì…˜ì˜ ê°œìˆ˜ë§Œí¼ ë°˜ë³µ
+ *          1-1. íŒŒí‹°ì…˜ í‚¤ ì¡°ê±´ ê°’(PARTITION_MAX_VALUE, PARTITION_MIN_VALUE )
+ *               ì„ êµ¬í•œë‹¤.(í•´ì‹œ íŒŒí‹°ì…˜ë“œ í…Œì´ë¸” ì œì™¸)
+ *          1-2. íŒŒí‹°ì…˜ ìˆœì„œ(PARTITION_ORDER)ë¥¼ êµ¬í•œë‹¤.
+ *               (í•´ì‹œ íŒŒí‹°ì…˜ë“œ í…Œì´ë¸”ë§Œ í•´ë‹¹í•¨)
+ *          1-3. íŒŒí‹°ì…˜ ìƒì„±
+ *          1-4. SYS_TABLE_PARTITIONS_ ë©”íƒ€ í…Œì´ë¸”ì— íŒŒí‹°ì…˜ ì •ë³´ ì…ë ¥
+ *          1-5. SYS_PART_LOBS_ ë©”íƒ€ í…Œì´ë¸”ì— íŒŒí‹°ì…˜ ì •ë³´ ì…ë ¥
+ *          1-6. í…Œì´ë¸” íŒŒí‹°ì…˜ ë©”íƒ€ ìºì‹œ ìƒì„±
  *
  ***********************************************************************/
 
@@ -1686,17 +1686,17 @@ IDE_RC qdbCreate::executeCreateTablePartition(qcStatement   * aStatement,
     sPartMethod = sParseTree->partTable->partMethod;
 
     //-----------------------------------------------------
-    // 1. ÆÄÆ¼¼Ç °³¼ö¸¸Å­ ¹İº¹ÇÏ¸é¼­ ÆÄÆ¼¼ÇÀ» »ı¼ºÇÑ´Ù.
+    // 1. íŒŒí‹°ì…˜ ê°œìˆ˜ë§Œí¼ ë°˜ë³µí•˜ë©´ì„œ íŒŒí‹°ì…˜ì„ ìƒì„±í•œë‹¤.
     //-----------------------------------------------------
-    // ÇöÀç ÆÄÆ¼¼ÇµéÀÇ ¸®½ºÆ®´Â Å° Á¶°Ç °ªÀ» ±âÁØÀ¸·Î ¿À¸§Â÷¼ø Á¤·ÄµÇ¾î
-    // ÀÖ´Â »óÅÂÀÌ´Ù.
-    // qdbCommon::validateCondValues()ÇÔ¼ö¿¡¼­ Á¤·ÄÇßÀ½.
+    // í˜„ì¬ íŒŒí‹°ì…˜ë“¤ì˜ ë¦¬ìŠ¤íŠ¸ëŠ” í‚¤ ì¡°ê±´ ê°’ì„ ê¸°ì¤€ìœ¼ë¡œ ì˜¤ë¦„ì°¨ìˆœ ì •ë ¬ë˜ì–´
+    // ìˆëŠ” ìƒíƒœì´ë‹¤.
+    // qdbCommon::validateCondValues()í•¨ìˆ˜ì—ì„œ ì •ë ¬í–ˆìŒ.
     for( sPartAttr = sParseTree->partTable->partAttr, sPartCount = 0;
          sPartAttr != NULL;
          sPartAttr = sPartAttr->next, sPartCount++ )
     {
         //-----------------------------------------------------
-        // 1-1. ÆÄÆ¼¼Ç Å° Á¶°Ç °ªÀ» ±¸ÇÑ´Ù.(ÇØ½Ã ÆÄÆ¼¼Çµå Å×ÀÌºí Á¦¿Ü)
+        // 1-1. íŒŒí‹°ì…˜ í‚¤ ì¡°ê±´ ê°’ì„ êµ¬í•œë‹¤.(í•´ì‹œ íŒŒí‹°ì…˜ë“œ í…Œì´ë¸” ì œì™¸)
         //-----------------------------------------------------
         if( sPartMethod != QCM_PARTITION_METHOD_HASH )
         {
@@ -1716,7 +1716,7 @@ IDE_RC qdbCreate::executeCreateTablePartition(qcStatement   * aStatement,
         }
 
         //-----------------------------------------------------
-        // 1-2. ÆÄÆ¼¼Ç ¼ø¼­¸¦ ±¸ÇÑ´Ù.(ÇØ½Ã ÆÄÆ¼¼Çµå Å×ÀÌºí¸¸ ÇØ´ç)
+        // 1-2. íŒŒí‹°ì…˜ ìˆœì„œë¥¼ êµ¬í•œë‹¤.(í•´ì‹œ íŒŒí‹°ì…˜ë“œ í…Œì´ë¸”ë§Œ í•´ë‹¹)
         //-----------------------------------------------------
         if( sPartMethod == QCM_PARTITION_METHOD_HASH )
         {
@@ -1728,13 +1728,13 @@ IDE_RC qdbCreate::executeCreateTablePartition(qcStatement   * aStatement,
         }
 
         //-----------------------------------------------------
-        // 1-3. ÆÄÆ¼¼Ç »ı¼º
+        // 1-3. íŒŒí‹°ì…˜ ìƒì„±
         //-----------------------------------------------------
         IDE_TEST(qcmPartition::getNextTablePartitionID(
                      aStatement,
                      & sPartitionID) != IDE_SUCCESS);
 
-        // µğÆúÆ® °ª validation
+        // ë””í´íŠ¸ ê°’ validation
         sColumn = sPartAttr->columns;
         while(sColumn != NULL)
         {
@@ -1753,7 +1753,7 @@ IDE_RC qdbCreate::executeCreateTablePartition(qcStatement   * aStatement,
 
         sPartType = qdbCommon::getTableTypeFromTBSID( sPartAttr->TBSAttr.mID );
 
-        /* PROJ-2464 hybrid partitioned table Áö¿ø */
+        /* PROJ-2464 hybrid partitioned table ì§€ì› */
         qdbCommon::adjustPhysicalAttr( sPartType,
                                        sParseTree->segAttr,
                                        sParseTree->segStoAttr,
@@ -1776,7 +1776,7 @@ IDE_RC qdbCreate::executeCreateTablePartition(qcStatement   * aStatement,
                  != IDE_SUCCESS);
 
         //-----------------------------------------------------
-        // 1-4. SYS_TABLE_PARTITIONS_ ¸ŞÅ¸ Å×ÀÌºí¿¡ ÆÄÆ¼¼Ç Á¤º¸ ÀÔ·Â
+        // 1-4. SYS_TABLE_PARTITIONS_ ë©”íƒ€ í…Œì´ë¸”ì— íŒŒí‹°ì…˜ ì •ë³´ ì…ë ¥
         //-----------------------------------------------------
         IDE_TEST(qdbCommon::insertTablePartitionSpecIntoMeta(aStatement,
                                      sParseTree->userID,
@@ -1792,7 +1792,7 @@ IDE_RC qdbCreate::executeCreateTablePartition(qcStatement   * aStatement,
                  != IDE_SUCCESS);
 
         //-----------------------------------------------------
-        // 1-5. SYS_PART_LOBS_ ¸ŞÅ¸ Å×ÀÌºí¿¡ ÆÄÆ¼¼Ç Á¤º¸ ÀÔ·Â
+        // 1-5. SYS_PART_LOBS_ ë©”íƒ€ í…Œì´ë¸”ì— íŒŒí‹°ì…˜ ì •ë³´ ì…ë ¥
         //-----------------------------------------------------
         IDE_TEST(qdbCommon::insertPartLobSpecIntoMeta(aStatement,
                                                       sParseTree->userID,
@@ -1802,7 +1802,7 @@ IDE_RC qdbCreate::executeCreateTablePartition(qcStatement   * aStatement,
                  != IDE_SUCCESS);
 
         //-----------------------------------------------------
-        // 1-6. Å×ÀÌºí ÆÄÆ¼¼Ç ¸ŞÅ¸ Ä³½Ã »ı¼º
+        // 1-6. í…Œì´ë¸” íŒŒí‹°ì…˜ ë©”íƒ€ ìºì‹œ ìƒì„±
         //-----------------------------------------------------
         IDE_TEST( qcmPartition::makeAndSetQcmPartitionInfo(
                       QC_SMI_STMT( aStatement ),
@@ -1823,7 +1823,7 @@ IDE_RC qdbCreate::executeCreateTablePartition(qcStatement   * aStatement,
         IDE_TEST( qcmPartition::validateAndLockOnePartition( aStatement,
                                                              sPartitionHandle,
                                                              sSCN,
-                                                             SMI_TBSLV_DDL_DML, // TBS Validation ¿É¼Ç
+                                                             SMI_TBSLV_DDL_DML, // TBS Validation ì˜µì…˜
                                                              SMI_TABLE_LOCK_X,
                                                              ( ( smiGetDDLLockTimeOut() == -1 ) ?
                                                                ID_ULONG_MAX :
@@ -1848,16 +1848,16 @@ IDE_RC qdbCreate::executeCreateTableAsSelect(qcStatement * aStatement)
 /***********************************************************************
  *
  * Description :
- *      CREATE TABLE ... AS SELECT ¹®ÀÇ execution ¼öÇà ÇÔ¼ö
+ *      CREATE TABLE ... AS SELECT ë¬¸ì˜ execution ìˆ˜í–‰ í•¨ìˆ˜
  *
  * Implementation :
  *      1. convertDefaultValueType
- *      2. »õ·Î¿î Å×ÀÌºíÀ» À§ÇÑ TableID ±¸ÇÏ±â
+ *      2. ìƒˆë¡œìš´ í…Œì´ë¸”ì„ ìœ„í•œ TableID êµ¬í•˜ê¸°
  *      3. createTableOnSM
- *      4. SYS_TABLES_ ¸ŞÅ¸ Å×ÀÌºí¿¡ Å×ÀÌºí Á¤º¸ ÀÔ·Â
- *      5. SYS_COLUMNS_ ¸ŞÅ¸ Å×ÀÌºí¿¡ Å×ÀÌºí ÄÃ·³ Á¤º¸ ÀÔ·Â
- *      6. primary key, not null constraint »ı¼º
- *      7. ¸ŞÅ¸ Ä³½¬ ¼öÇà
+ *      4. SYS_TABLES_ ë©”íƒ€ í…Œì´ë¸”ì— í…Œì´ë¸” ì •ë³´ ì…ë ¥
+ *      5. SYS_COLUMNS_ ë©”íƒ€ í…Œì´ë¸”ì— í…Œì´ë¸” ì»¬ëŸ¼ ì •ë³´ ì…ë ¥
+ *      6. primary key, not null constraint ìƒì„±
+ *      7. ë©”íƒ€ ìºì‰¬ ìˆ˜í–‰
  *      8. insertRow
  *
  ***********************************************************************/
@@ -1947,17 +1947,17 @@ IDE_RC qdbCreate::executeCreateTableAsSelect(qcStatement * aStatement)
             // Nothing to do.
         }
 
-        // TODO : SourceÀÇ LOB Column ¼ö¸¦ Á¤È®ÇÏ°Ô ÁöÁ¤ÇÏ¸é, ¸Ş¸ğ¸® »ç¿ë·®À» ÁÙÀÏ ¼ö ÀÖ´Ù.
+        // TODO : Sourceì˜ LOB Column ìˆ˜ë¥¼ ì •í™•í•˜ê²Œ ì§€ì •í•˜ë©´, ë©”ëª¨ë¦¬ ì‚¬ìš©ëŸ‰ì„ ì¤„ì¼ ìˆ˜ ìˆë‹¤.
         sLobColumnCount++;
     }
 
     // PROJ-1502 PARTITIONED DISK TABLE
-    // ³íÆÄÆ¼¼Çµå Å×ÀÌºí »ı¼º
+    // ë…¼íŒŒí‹°ì…˜ë“œ í…Œì´ë¸” ìƒì„±
     if( sParseTree->partTable == NULL )
     {
         sIsPartitioned = ID_FALSE;
     }
-    // ÆÄÆ¼¼Çµå Å×ÀÌºí »ı¼º
+    // íŒŒí‹°ì…˜ë“œ í…Œì´ë¸” ìƒì„±
     else
     {
         sIsPartitioned = ID_TRUE;
@@ -1996,7 +1996,7 @@ IDE_RC qdbCreate::executeCreateTableAsSelect(qcStatement * aStatement)
                                      (UShort)sLobColumnCount)
               != IDE_SUCCESS );
 
-    /* BUG-36211 °¢ Row Insert ÈÄ, ÇØ´ç Lob Cursor¸¦ ¹Ù·Î ÇØÁ¦ÇÕ´Ï´Ù. */
+    /* BUG-36211 ê° Row Insert í›„, í•´ë‹¹ Lob Cursorë¥¼ ë°”ë¡œ í•´ì œí•©ë‹ˆë‹¤. */
     qmx::setImmediateCloseLobInfo( sLobInfo, ID_TRUE );
 
     IDE_TEST(qcm::getNextTableID(aStatement, &sTableID) != IDE_SUCCESS);
@@ -2081,10 +2081,10 @@ IDE_RC qdbCreate::executeCreateTableAsSelect(qcStatement * aStatement)
                                                       & sTempPartInfoList )
                   != IDE_SUCCESS );
 
-        // ¸ğµç ÆÄÆ¼¼Ç¿¡ LOCK(X)
+        // ëª¨ë“  íŒŒí‹°ì…˜ì— LOCK(X)
         IDE_TEST( qcmPartition::validateAndLockPartitionInfoList( aStatement,
                                                                   sTempPartInfoList,
-                                                                  SMI_TBSLV_DDL_DML, // TBS Validation ¿É¼Ç
+                                                                  SMI_TBSLV_DDL_DML, // TBS Validation ì˜µì…˜
                                                                   SMI_TABLE_LOCK_X,
                                                                   ( ( smiGetDDLLockTimeOut() == -1 ) ?
                                                                     ID_ULONG_MAX :
@@ -2331,7 +2331,7 @@ IDE_RC qdbCreate::executeCreateTableAsSelect(qcStatement * aStatement)
                      != IDE_SUCCESS);
 
             // To fix BUG-12622
-            // not nullÃ¼Å© ÇÔ¼ö¸¦ makeSmiValueWithResult¿¡¼­ µû·Î ºĞ¸®ÇÏ¿´À½
+            // not nullì²´í¬ í•¨ìˆ˜ë¥¼ makeSmiValueWithResultì—ì„œ ë”°ë¡œ ë¶„ë¦¬í•˜ì˜€ìŒ
             IDE_TEST( qmx::checkNotNullColumnForInsert(
                           sTempTableInfo->columns,
                           sInsertedRow,
@@ -2340,7 +2340,7 @@ IDE_RC qdbCreate::executeCreateTableAsSelect(qcStatement * aStatement)
                       != IDE_SUCCESS );
 
             //------------------------------------------
-            // INSERT¸¦ ¼öÇà
+            // INSERTë¥¼ ìˆ˜í–‰
             //------------------------------------------
             
             IDE_TEST( sInsertCursorMgr.getCursor( &sCursor )
@@ -2377,7 +2377,7 @@ IDE_RC qdbCreate::executeCreateTableAsSelect(qcStatement * aStatement)
         // open partition insert cursors
         //------------------------------------------
         
-        // partitionRef ±¸¼º
+        // partitionRef êµ¬ì„±
         for( sPartInfoList = sTempPartInfoList, sPartCount = 0,
                  sPartAttr = sParseTree->partTable->partAttr;
              sPartInfoList != NULL;
@@ -2418,7 +2418,7 @@ IDE_RC qdbCreate::executeCreateTableAsSelect(qcStatement * aStatement)
                     }
                 }
 
-                // minValueÀÇ partCondValType Á¶Á¤
+                // minValueì˜ partCondValType ì¡°ì •
                 if( sPartitionRef->minPartCondVal.partCondValCount == 0 )
                 {
                     sPartitionRef->minPartCondVal.partCondValType
@@ -2430,7 +2430,7 @@ IDE_RC qdbCreate::executeCreateTableAsSelect(qcStatement * aStatement)
                         = QMS_PARTCONDVAL_NORMAL;
                 }
 
-                // maxValueÀÇ partCondValType Á¶Á¤
+                // maxValueì˜ partCondValType ì¡°ì •
                 if( sPartitionRef->maxPartCondVal.partCondValCount == 0 )
                 {
                     sPartitionRef->maxPartCondVal.partCondValType
@@ -2462,7 +2462,7 @@ IDE_RC qdbCreate::executeCreateTableAsSelect(qcStatement * aStatement)
         sTableRef->partitionRef = sFirstPartitionRef;
         sTableRef->partitionCount = sPartCount;
 
-        /* PROJ-2464 hybrid partitioned table Áö¿ø */
+        /* PROJ-2464 hybrid partitioned table ì§€ì› */
         IDE_TEST( qcmPartition::makePartitionSummary( aStatement, sTableRef )
                   != IDE_SUCCESS );
 
@@ -2504,7 +2504,7 @@ IDE_RC qdbCreate::executeCreateTableAsSelect(qcStatement * aStatement)
         }
         
         //------------------------------------------
-        // SELECT¸¦ ¼öÇà
+        // SELECTë¥¼ ìˆ˜í–‰
         //------------------------------------------
         
         IDE_TEST(qmnPROJ::doIt( QC_PRIVATE_TMPLATE(aStatement),
@@ -2541,7 +2541,7 @@ IDE_RC qdbCreate::executeCreateTableAsSelect(qcStatement * aStatement)
                      != IDE_SUCCESS);
 
             // To fix BUG-12622
-            // not nullÃ¼Å© ÇÔ¼ö¸¦ makeSmiValueWithResult¿¡¼­ µû·Î ºĞ¸®ÇÏ¿´À½
+            // not nullì²´í¬ í•¨ìˆ˜ë¥¼ makeSmiValueWithResultì—ì„œ ë”°ë¡œ ë¶„ë¦¬í•˜ì˜€ìŒ
             IDE_TEST( qmx::checkNotNullColumnForInsert(
                           sTempTableInfo->columns,
                           sInsertedRow,
@@ -2550,7 +2550,7 @@ IDE_RC qdbCreate::executeCreateTableAsSelect(qcStatement * aStatement)
                       != IDE_SUCCESS );
 
             //------------------------------------------
-            // INSERT¸¦ ¼öÇà
+            // INSERTë¥¼ ìˆ˜í–‰
             //------------------------------------------
 
             IDE_TEST( sInsertCursorMgr.partitionFilteringWithRow(
@@ -2570,8 +2570,8 @@ IDE_RC qdbCreate::executeCreateTableAsSelect(qcStatement * aStatement)
             if ( QCM_TABLE_TYPE_IS_DISK( sTempTableInfo->tableFlag ) !=
                  QCM_TABLE_TYPE_IS_DISK( sSelectedPartitionInfo->tableFlag ) )
             {
-                /* PROJ-2464 hybrid partitioned table Áö¿ø
-                 * Partitioned TableÀ» ±âÁØÀ¸·Î ¸¸µç smiValue Array¸¦ Table Partition¿¡ ¸Â°Ô º¯È¯ÇÑ´Ù.
+                /* PROJ-2464 hybrid partitioned table ì§€ì›
+                 * Partitioned Tableì„ ê¸°ì¤€ìœ¼ë¡œ ë§Œë“  smiValue Arrayë¥¼ Table Partitionì— ë§ê²Œ ë³€í™˜í•œë‹¤.
                  */
                 IDE_TEST( qmx::makeSmiValueWithSmiValue( sTempTableInfo,
                                                          sSelectedPartitionInfo,
@@ -2594,7 +2594,7 @@ IDE_RC qdbCreate::executeCreateTableAsSelect(qcStatement * aStatement)
                      != IDE_SUCCESS);
 
             //------------------------------------------
-            // INSERT¸¦ ¼öÇàÈÄ Lob ÄÃ·³À» Ã³¸®
+            // INSERTë¥¼ ìˆ˜í–‰í›„ Lob ì»¬ëŸ¼ì„ ì²˜ë¦¬
             //------------------------------------------
             
             IDE_TEST( qmx::copyAndOutBindLobInfo( aStatement,
@@ -2605,7 +2605,7 @@ IDE_RC qdbCreate::executeCreateTableAsSelect(qcStatement * aStatement)
                       != IDE_SUCCESS );
             
             //------------------------------------------
-            // INSERT¸¦ ¼öÇàÈÄ non-partitioned index¸¦ Ã³¸®
+            // INSERTë¥¼ ìˆ˜í–‰í›„ non-partitioned indexë¥¼ ì²˜ë¦¬
             //------------------------------------------
 
             if ( sParseTree->newIndexTables != NULL )
@@ -2650,8 +2650,8 @@ IDE_RC qdbCreate::executeCreateTableAsSelect(qcStatement * aStatement)
         }
     }
 
-    /* PROJ-1723 [MDW/INTEGRATOR] Altibase Plugin °³¹ß
-       DDL Statement TextÀÇ ·Î±ë
+    /* PROJ-1723 [MDW/INTEGRATOR] Altibase Plugin ê°œë°œ
+       DDL Statement Textì˜ ë¡œê¹…
     */
     if (QCU_DDL_SUPPLEMENTAL_LOG == 1)
     {
@@ -2710,13 +2710,13 @@ void qdbCreate::fillColumnID(
 /***********************************************************************
  *
  * Description :
- *    ÀüÃ¼ ÄÃ·³ÀÇ ¸®½ºÆ®¿¡¼­ constraint ¸¦ ±¸¼ºÇÏ´Â ÄÃ·³À» Ã£¾Æ¼­ id ºÎ¿©
+ *    ì „ì²´ ì»¬ëŸ¼ì˜ ë¦¬ìŠ¤íŠ¸ì—ì„œ constraint ë¥¼ êµ¬ì„±í•˜ëŠ” ì»¬ëŸ¼ì„ ì°¾ì•„ì„œ id ë¶€ì—¬
  *
  * Implementation :
- *    1. constraint ¸¦ ±¸¼ºÇÏ´Â ÄÃ·³ÀÇ ÀÌ¸§°ú °°Àº °ÍÀ» ÀüÃ¼ ÄÃ·³Áß¿¡¼­
- *       Ã£Àº ÈÄ¿¡ ±× ID ¸¦ qdConstraintSpec ÀÇ ÄÃ·³ ID ¿¡ ºÎ¿©
- *    2. constraint Å¸ÀÔÀÌ foreign key ÀÌ°í ÂüÁ¶ÇÏ´Â Å×ÀÌºíÀÌ self Å×ÀÌºíÀÌ¸é
- *       1 ÀÇ °úÁ¤Ã³·³ °ÅÃÄ¼­ ID ¸¦ ºÎ¿©
+ *    1. constraint ë¥¼ êµ¬ì„±í•˜ëŠ” ì»¬ëŸ¼ì˜ ì´ë¦„ê³¼ ê°™ì€ ê²ƒì„ ì „ì²´ ì»¬ëŸ¼ì¤‘ì—ì„œ
+ *       ì°¾ì€ í›„ì— ê·¸ ID ë¥¼ qdConstraintSpec ì˜ ì»¬ëŸ¼ ID ì— ë¶€ì—¬
+ *    2. constraint íƒ€ì…ì´ foreign key ì´ê³  ì°¸ì¡°í•˜ëŠ” í…Œì´ë¸”ì´ self í…Œì´ë¸”ì´ë©´
+ *       1 ì˜ ê³¼ì •ì²˜ëŸ¼ ê±°ì³ì„œ ID ë¥¼ ë¶€ì—¬
  *
  ***********************************************************************/
 
@@ -2802,11 +2802,11 @@ void qdbCreate::fillColumnID(
 }
 
 
-/*  TableÀÇ Attribute Flag List·ÎºÎÅÍ
-    32bit Flag°ªÀ» °è»ê
+/*  Tableì˜ Attribute Flag Listë¡œë¶€í„°
+    32bit Flagê°’ì„ ê³„ì‚°
 
-    [IN] qcStatement  - ¼öÇàÁßÀÎ Statement
-    [IN] aCreateTable - Create TableÀÇ Parse Tree
+    [IN] qcStatement  - ìˆ˜í–‰ì¤‘ì¸ Statement
+    [IN] aCreateTable - Create Tableì˜ Parse Tree
  */
 IDE_RC qdbCreate::calculateTableAttrFlag( qcStatement      * aStatement,
                                           qdTableParseTree * aCreateTable )
@@ -2830,20 +2830,20 @@ IDE_RC qdbCreate::calculateTableAttrFlag( qcStatement      * aStatement,
     else
     {
 
-        // Tablespace Attribute List°¡ ÁöÁ¤µÇÁö ¾ÊÀº °æ¿ì
-        // ±âº»°ªÀ¸·Î ¼³Á¤
+        // Tablespace Attribute Listê°€ ì§€ì •ë˜ì§€ ì•Šì€ ê²½ìš°
+        // ê¸°ë³¸ê°’ìœ¼ë¡œ ì„¤ì •
         //
-        // Tablespace Attribute°ªÀº ±âº»°ªÀ¸·Î »ç¿ëµÉ °ª¿¡ ´ëÇØ
-        // Bit 0¸¦ »ç¿ëÇÏµµ·Ï ±¸¼ºµÈ´Ù.
+        // Tablespace Attributeê°’ì€ ê¸°ë³¸ê°’ìœ¼ë¡œ ì‚¬ìš©ë  ê°’ì— ëŒ€í•´
+        // Bit 0ë¥¼ ì‚¬ìš©í•˜ë„ë¡ êµ¬ì„±ëœë‹¤.
         //
-        // Mask¸¦ 0À¸·Î ¼¼ÆÃÇØµÎ¸é Create Table½Ã
-        // TableÀÇ flag¸¦ °Çµå¸®Áö ¾Ê°í 0À¸·Î ³²°ÜµĞ´Ù.
+        // Maskë¥¼ 0ìœ¼ë¡œ ì„¸íŒ…í•´ë‘ë©´ Create Tableì‹œ
+        // Tableì˜ flagë¥¼ ê±´ë“œë¦¬ì§€ ì•Šê³  0ìœ¼ë¡œ ë‚¨ê²¨ë‘”ë‹¤.
         aCreateTable->tableAttrMask   = 0;
         aCreateTable->tableAttrValue  = 0;
     }
 
-    // PROJ-1665 : logging / no logging mode°¡ ÁÖ¾îÁø °æ¿ì,
-    // ÀÌ¸¦ ¼³Á¤ÇÔ
+    // PROJ-1665 : logging / no logging modeê°€ ì£¼ì–´ì§„ ê²½ìš°,
+    // ì´ë¥¼ ì„¤ì •í•¨
     if ( aCreateTable->loggingMode != NULL )
     {
         sLoggingMode = *(aCreateTable->loggingMode);
@@ -2857,20 +2857,20 @@ IDE_RC qdbCreate::calculateTableAttrFlag( qcStatement      * aStatement,
         // nothing to do
     }
 
-    // Volatile TablespaceÀÇ °æ¿ì º°µµ Ã¼Å© ½Ç½Ã
+    // Volatile Tablespaceì˜ ê²½ìš° ë³„ë„ ì²´í¬ ì‹¤ì‹œ
     if ( smiTableSpace::isVolatileTableSpace( aCreateTable->TBSAttr.mID )
          == ID_TRUE )
     {
-        // COMPRESSED LOGGING ±¸¹® »ç¿ë½Ã ¿¡·¯
+        // COMPRESSED LOGGING êµ¬ë¬¸ ì‚¬ìš©ì‹œ ì—ëŸ¬
         IDE_TEST( checkError4CreateVolatileTable(aCreateTable)
                   != IDE_SUCCESS );
 
-        // ·Î±× ¾ĞÃà ÇÏÁö ¾Êµµ·Ï ±âº»°ª ¼³Á¤
+        // ë¡œê·¸ ì••ì¶• í•˜ì§€ ì•Šë„ë¡ ê¸°ë³¸ê°’ ì„¤ì •
         aCreateTable->tableAttrValue &= ~SMI_TABLE_LOG_COMPRESS_MASK;
         aCreateTable->tableAttrValue |=  SMI_TABLE_LOG_COMPRESS_FALSE;
     }
 
-    /* PROJ-2464 hybrid partitioned table Áö¿ø */
+    /* PROJ-2464 hybrid partitioned table ì§€ì› */
     if ( aCreateTable->partTable != NULL )
     {
         for ( sPartAttr = aCreateTable->partTable->partAttr;
@@ -2880,7 +2880,7 @@ IDE_RC qdbCreate::calculateTableAttrFlag( qcStatement      * aStatement,
             if ( smiTableSpace::isVolatileTableSpace( sPartAttr->TBSAttr.mID )
                  == ID_TRUE )
             {
-                // COMPRESSED LOGGING ±¸¹® »ç¿ë½Ã ¿¡·¯
+                // COMPRESSED LOGGING êµ¬ë¬¸ ì‚¬ìš©ì‹œ ì—ëŸ¬
                 IDE_TEST( checkError4CreateVolatileTable( aCreateTable )
                           != IDE_SUCCESS );
                 break;
@@ -2903,13 +2903,13 @@ IDE_RC qdbCreate::calculateTableAttrFlag( qcStatement      * aStatement,
     return IDE_FAILURE;
 }
 
-/* Volatile Tablespace¿¡ Table»ı¼ºÁß ¼öÇàÇÏ´Â ¿¡·¯Ã³¸®
+/* Volatile Tablespaceì— Tableìƒì„±ì¤‘ ìˆ˜í–‰í•˜ëŠ” ì—ëŸ¬ì²˜ë¦¬
 
-   => Volatile TablespaceÀÇ °æ¿ì Log CompressionÁö¿øÇÏÁö ¾Ê´Â´Ù.
-      Create Table±¸¹®¿¡ COMPRESSED LOGGING
-      ÀıÀ» »ç¿ëÇÑ °æ¿ì ¿¡·¯
+   => Volatile Tablespaceì˜ ê²½ìš° Log Compressionì§€ì›í•˜ì§€ ì•ŠëŠ”ë‹¤.
+      Create Tableêµ¬ë¬¸ì— COMPRESSED LOGGING
+      ì ˆì„ ì‚¬ìš©í•œ ê²½ìš° ì—ëŸ¬
 
-   [IN] aAttrFlagList - Tablespace Attribute FlagÀÇ List
+   [IN] aAttrFlagList - Tablespace Attribute Flagì˜ List
 */
 IDE_RC qdbCreate::checkError4CreateVolatileTable(
                       qdTableParseTree * aCreateTable )
@@ -2947,11 +2947,11 @@ IDE_RC qdbCreate::validateTemporaryTable( qcStatement      * aStatement,
 /***********************************************************************
  *
  * Description :
- *    create Temporary table °ËÁõ ÇÔ¼ö
+ *    create Temporary table ê²€ì¦ í•¨ìˆ˜
  *
  * Implementation :
- *     1. temporary tableÀº volatile tbs¿¡¼­¸¸ »ı¼ºÇÒ ¼ö ÀÖ´Ù.
- *     2. temporary table¿¡¸¸ on commit optionÀ» »ç¿ëÇÒ ¼ö ÀÖ´Ù.
+ *     1. temporary tableì€ volatile tbsì—ì„œë§Œ ìƒì„±í•  ìˆ˜ ìˆë‹¤.
+ *     2. temporary tableì—ë§Œ on commit optionì„ ì‚¬ìš©í•  ìˆ˜ ìˆë‹¤.
  *
  ***********************************************************************/
     qcuSqlSourceInfo  sqlInfo;
@@ -2961,14 +2961,14 @@ IDE_RC qdbCreate::validateTemporaryTable( qcStatement      * aStatement,
     // PROJ-1407 Temporary Table
     if ( ( aParseTree->flag & QDT_CREATE_TEMPORARY_MASK ) == QDT_CREATE_TEMPORARY_TRUE )
     {
-        // temporary tableÀº volatile tbs¿¡¼­¸¸ »ı¼ºÇÒ ¼ö ÀÖ´Ù.
+        // temporary tableì€ volatile tbsì—ì„œë§Œ ìƒì„±í•  ìˆ˜ ìˆë‹¤.
         IDE_TEST_RAISE( smiTableSpace::isVolatileTableSpaceType(aParseTree->TBSAttr.mType)
                         != ID_TRUE,
                         ERR_CANNOT_CREATE_TEMPORARY_TABLE_IN_NONVOLATILE_TBS );
     }
     else
     {
-        // temporary table¿¡¸¸ on commit optionÀ» »ç¿ëÇÒ ¼ö ÀÖ´Ù.
+        // temporary tableì—ë§Œ on commit optionì„ ì‚¬ìš©í•  ìˆ˜ ìˆë‹¤.
         if ( aParseTree->temporaryOption != NULL )
         {
             sqlInfo.setSourceInfo( aStatement,

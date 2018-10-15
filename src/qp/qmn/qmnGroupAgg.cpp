@@ -21,16 +21,16 @@
  * Description :
  *     GRAG(GRoup AGgregation) Node
  *
- *     °ü°èÇü ¸ğµ¨¿¡¼­ Hash-based Grouping ¿¬»êÀ» ¼öÇàÇÏ´Â Plan Node ÀÌ´Ù.
+ *     ê´€ê³„í˜• ëª¨ë¸ì—ì„œ Hash-based Grouping ì—°ì‚°ì„ ìˆ˜í–‰í•˜ëŠ” Plan Node ì´ë‹¤.
  *
- *     Aggregation°ú Group ByÀÇ ÇüÅÂ¿¡ µû¶ó ´ÙÀ½°ú °°Àº ¼öÇàÀ» ÇÑ´Ù.
+ *     Aggregationê³¼ Group Byì˜ í˜•íƒœì— ë”°ë¼ ë‹¤ìŒê³¼ ê°™ì€ ìˆ˜í–‰ì„ í•œë‹¤.
  *         - Grouping Only
  *         - Aggregation Only
  *         - Group Aggregation
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  **********************************************************************/
 
@@ -47,7 +47,7 @@ qmnGRAG::init( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    GRAG ³ëµåÀÇ ÃÊ±âÈ­
+ *    GRAG ë…¸ë“œì˜ ì´ˆê¸°í™”
  *
  * Implementation :
  *
@@ -66,7 +66,7 @@ qmnGRAG::init( qcTemplate * aTemplate,
     sDataPlan->plan.mTID = QMN_PLAN_INIT_THREAD_ID;
 
     //----------------------------------------
-    // ÃÖÃÊ ÃÊ±âÈ­ ¼öÇà
+    // ìµœì´ˆ ì´ˆê¸°í™” ìˆ˜í–‰
     //----------------------------------------
 
     if ( (*sDataPlan->flag & QMND_GRAG_INIT_DONE_MASK)
@@ -144,10 +144,10 @@ qmnGRAG::doIt( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    GRAG ÀÇ °íÀ¯ ±â´ÉÀ» ¼öÇàÇÑ´Ù.
+ *    GRAG ì˜ ê³ ìœ  ê¸°ëŠ¥ì„ ìˆ˜í–‰í•œë‹¤.
  *
  * Implementation :
- *    ÁöÁ¤µÈ ÇÔ¼ö Æ÷ÀÎÅÍ¸¦ ¼öÇàÇÑ´Ù.
+ *    ì§€ì •ëœ í•¨ìˆ˜ í¬ì¸í„°ë¥¼ ìˆ˜í–‰í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -176,11 +176,11 @@ qmnGRAG::padNull( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    GRAG ³ëµåÀÇ Tuple¿¡ Null Row¸¦ ¼³Á¤ÇÑ´Ù.
+ *    GRAG ë…¸ë“œì˜ Tupleì— Null Rowë¥¼ ì„¤ì •í•œë‹¤.
  *
  * Implementation :
- *    Child PlanÀÇ Null PaddingÀ» ¼öÇàÇÏ°í,
- *    ÀÚ½ÅÀÇ Null Row¸¦ Temp Table·ÎºÎÅÍ È¹µæÇÑ´Ù.
+ *    Child Planì˜ Null Paddingì„ ìˆ˜í–‰í•˜ê³ ,
+ *    ìì‹ ì˜ Null Rowë¥¼ Temp Tableë¡œë¶€í„° íšë“í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -211,9 +211,9 @@ qmnGRAG::padNull( qcTemplate * aTemplate,
     sDataPlan->plan.myTuple->modify++;
 
     // To Fix PR-9822
-    // padNull() ÇÔ¼ö´Â Child ÀÇ modify °ªÀ» º¯°æ½ÃÅ°°Ô µÈ´Ù.
-    // ÀÌ´Â Àç±¸Ãà ¿©ºÎ¿Í °ü°è°¡ ¾øÀ¸¹Ç·Î ±× °ªÀ» ÀúÀåÇÏ¿©
-    // Àç±¸ÃàÀÌ µÇÁö ¾Êµµ·Ï ÇÑ´Ù.
+    // padNull() í•¨ìˆ˜ëŠ” Child ì˜ modify ê°’ì„ ë³€ê²½ì‹œí‚¤ê²Œ ëœë‹¤.
+    // ì´ëŠ” ì¬êµ¬ì¶• ì—¬ë¶€ì™€ ê´€ê³„ê°€ ì—†ìœ¼ë¯€ë¡œ ê·¸ ê°’ì„ ì €ì¥í•˜ì—¬
+    // ì¬êµ¬ì¶•ì´ ë˜ì§€ ì•Šë„ë¡ í•œë‹¤.
     sDataPlan->depValue = sDataPlan->depTuple->modify;
 
     return IDE_SUCCESS;
@@ -235,7 +235,7 @@ qmnGRAG::printPlan( qcTemplate   * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    GRAG ³ëµåÀÇ ¼öÇà Á¤º¸¸¦ Ãâ·ÂÇÑ´Ù.
+ *    GRAG ë…¸ë“œì˜ ìˆ˜í–‰ ì •ë³´ë¥¼ ì¶œë ¥í•œë‹¤.
  *
  * Implementation :
  *
@@ -256,7 +256,7 @@ qmnGRAG::printPlan( qcTemplate   * aTemplate,
     UInt   sBucketCnt;
 
     //----------------------------
-    // Display À§Ä¡ °áÁ¤
+    // Display ìœ„ì¹˜ ê²°ì •
     //----------------------------
 
     for ( i = 0; i < aDepth; i++ )
@@ -266,19 +266,19 @@ qmnGRAG::printPlan( qcTemplate   * aTemplate,
     }
 
     //----------------------------
-    // ¼öÇà Á¤º¸ Ãâ·Â
+    // ìˆ˜í–‰ ì •ë³´ ì¶œë ¥
     //----------------------------
 
     if ( aMode == QMN_DISPLAY_ALL )
     {
         //----------------------------
-        // explain plan = on; ÀÎ °æ¿ì
+        // explain plan = on; ì¸ ê²½ìš°
         //----------------------------
 
         if ( (*sDataPlan->flag & QMND_GRAG_INIT_DONE_MASK)
              == QMND_GRAG_INIT_DONE_TRUE )
         {
-            // ¼öÇà Á¤º¸ È¹µæ
+            // ìˆ˜í–‰ ì •ë³´ íšë“
             sIsInit = ID_TRUE;
             if ( sDataPlan->groupNode != NULL )
             {
@@ -315,7 +315,7 @@ qmnGRAG::printPlan( qcTemplate   * aTemplate,
                 else
                 {
                     // BUG-29209
-                    // ITEM_SIZE Á¤º¸ º¸¿©ÁÖÁö ¾ÊÀ½
+                    // ITEM_SIZE ì •ë³´ ë³´ì—¬ì£¼ì§€ ì•ŠìŒ
                     iduVarStringAppendFormat(
                         aString,
                         "GROUP-AGGREGATION ( "
@@ -347,7 +347,7 @@ qmnGRAG::printPlan( qcTemplate   * aTemplate,
                 else
                 {
                     // BUG-29209
-                    // ITEM_SIZE, DISK_PAGE_COUNT Á¤º¸ º¸¿©ÁÖÁö ¾ÊÀ½
+                    // ITEM_SIZE, DISK_PAGE_COUNT ì •ë³´ ë³´ì—¬ì£¼ì§€ ì•ŠìŒ
                     iduVarStringAppendFormat(
                         aString,
                         "GROUP-AGGREGATION ( "
@@ -374,7 +374,7 @@ qmnGRAG::printPlan( qcTemplate   * aTemplate,
     else
     {
         //----------------------------
-        // explain plan = only; ÀÎ °æ¿ì
+        // explain plan = only; ì¸ ê²½ìš°
         //----------------------------
 
         iduVarStringAppendFormat( aString,
@@ -407,16 +407,16 @@ qmnGRAG::printPlan( qcTemplate   * aTemplate,
         }
         else
         {
-            // Parallel execution ÀÌ ¾Æ´Ñ °æ¿ì Ãâ·ÂÀ» »ı·«ÇÑ´Ù.
+            // Parallel execution ì´ ì•„ë‹Œ ê²½ìš° ì¶œë ¥ì„ ìƒëµí•œë‹¤.
         }
     }
     else
     {
-        // Planonly ÀÎ °æ¿ì Ãâ·ÂÀ» »ı·«ÇÑ´Ù.
+        // Planonly ì¸ ê²½ìš° ì¶œë ¥ì„ ìƒëµí•œë‹¤.
     }
 
     //----------------------------
-    // Cost Ãâ·Â
+    // Cost ì¶œë ¥
     //----------------------------
     qmn::printCost( aString,
                     sCodePlan->plan.qmgAllCost );
@@ -476,7 +476,7 @@ qmnGRAG::printPlan( qcTemplate   * aTemplate,
     }
 
     //----------------------------
-    // Operatorº° °á°ú Á¤º¸ Ãâ·Â
+    // Operatorë³„ ê²°ê³¼ ì •ë³´ ì¶œë ¥
     //----------------------------
     if ( QCU_TRCLOG_RESULT_DESC == 1 )
     {
@@ -492,7 +492,7 @@ qmnGRAG::printPlan( qcTemplate   * aTemplate,
     }
 
     //----------------------------
-    // Child Plan Á¤º¸ Ãâ·Â
+    // Child Plan ì •ë³´ ì¶œë ¥
     //----------------------------
 
     IDE_TEST( aPlan->left->printPlan( aTemplate,
@@ -521,17 +521,17 @@ IDE_RC qmnGRAG::readyIt( qcTemplate * aTemplate,
     UInt       sModifyCnt;
 
     // ----------------
-    // TID ¼³Á¤
+    // TID ì„¤ì •
     // ----------------
     sDataPlan->plan.mTID = aTID;
 
     if ( sDataPlan->plan.mTID != QMN_PLAN_INIT_THREAD_ID )
     {
         // PROJ-2444
-        // »õ·Î¿î ÅÛÇÃ¸´¿¡ ¸Â°Ô mtrNode ÃÊ±âÈ­, temp table ÃÊ±âÈ­µîÀÇ ÀÛ¾÷À» ´Ù½Ã ÇØÁÖ¾î¾ß ÇÑ´Ù.
+        // ìƒˆë¡œìš´ í…œí”Œë¦¿ì— ë§ê²Œ mtrNode ì´ˆê¸°í™”, temp table ì´ˆê¸°í™”ë“±ì˜ ì‘ì—…ì„ ë‹¤ì‹œ í•´ì£¼ì–´ì•¼ í•œë‹¤.
         IDE_TEST( firstInit(aTemplate, sCodePlan, sDataPlan) != IDE_SUCCESS );
 
-        // ÀÚ½Ä ÇÃ·£ÀÇ readyIt ÇÔ¼ö¸¦ È£ÃâÇÑ´Ù.
+        // ìì‹ í”Œëœì˜ readyIt í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•œë‹¤.
         IDE_TEST( aPlan->left->readyIt( aTemplate,
                                         aPlan->left,
                                         aTID ) != IDE_SUCCESS);
@@ -541,15 +541,15 @@ IDE_RC qmnGRAG::readyIt( qcTemplate * aTemplate,
         // Nothing To Do
     }
 
-    // ±âÁ¸ ACCESS count
+    // ê¸°ì¡´ ACCESS count
     sModifyCnt = sDataPlan->plan.myTuple->modify;
 
     // ----------------
-    // Tuple À§Ä¡ÀÇ °áÁ¤
+    // Tuple ìœ„ì¹˜ì˜ ê²°ì •
     // ----------------
     sDataPlan->plan.myTuple = &aTemplate->tmplate.rows[sCodePlan->myNode->dstNode->node.table];
 
-    // ACCESS count ¿øº¹
+    // ACCESS count ì›ë³µ
     sDataPlan->plan.myTuple->modify = sModifyCnt;
 
     return IDE_SUCCESS;
@@ -566,7 +566,7 @@ IDE_RC qmnGRAG::storeTempTable( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    GARG ³ëµå¿¡¼­ temp table ¿¡ ÀÌ¿ëÇÏ¿© grouping, aggr ÀÛ¾÷À» ¼öÇàÇÑ´Ù.
+ *    GARG ë…¸ë“œì—ì„œ temp table ì— ì´ìš©í•˜ì—¬ grouping, aggr ì‘ì—…ì„ ìˆ˜í–‰í•œë‹¤.
  *
  * Implementation :
  *
@@ -583,17 +583,17 @@ IDE_RC qmnGRAG::storeTempTable( qcTemplate * aTemplate,
     if ( sDependency == ID_TRUE )
     {
         //----------------------------------------
-        // Temp Table ±¸Ãà Àü ÃÊ±âÈ­
+        // Temp Table êµ¬ì¶• ì „ ì´ˆê¸°í™”
         //----------------------------------------
 
         IDE_TEST( qmcHashTemp::clear( aDataPlan->hashMgr ) != IDE_SUCCESS );
 
         //----------------------------------------
-        // Child¸¦ ¹İº¹ ¼öÇàÇÏ¿© Temp TableÀ» ±¸Ãà
+        // Childë¥¼ ë°˜ë³µ ìˆ˜í–‰í•˜ì—¬ Temp Tableì„ êµ¬ì¶•
         //----------------------------------------
 
         // PROJ-2444
-        // parallel plan ÀÏ¶§ MERGE ´Ü°è´Â º°µµÀÇ ÇÔ¼ö·Î ±¸ÇöµÇ¾î ÀÖ´Ù.
+        // parallel plan ì¼ë•Œ MERGE ë‹¨ê³„ëŠ” ë³„ë„ì˜ í•¨ìˆ˜ë¡œ êµ¬í˜„ë˜ì–´ ìˆë‹¤.
         if ( (aCodePlan->flag & QMNC_GRAG_PARALLEL_STEP_MASK) == QMNC_GRAG_PARALLEL_STEP_MERGE )
         {
             if ( aDataPlan->groupNode == NULL )
@@ -626,7 +626,7 @@ IDE_RC qmnGRAG::storeTempTable( qcTemplate * aTemplate,
             if ( aDataPlan->groupNode == NULL )
             {
                 //----------------------------------
-                // GROUP BY°¡ ¾ø´Â °æ¿ì
+                // GROUP BYê°€ ì—†ëŠ” ê²½ìš°
                 //----------------------------------
 
                 IDE_DASSERT( aDataPlan->aggrNode != NULL );
@@ -641,7 +641,7 @@ IDE_RC qmnGRAG::storeTempTable( qcTemplate * aTemplate,
                 if ( aDataPlan->aggrNode == NULL )
                 {
                     //----------------------------------
-                    // AggregationÀÌ ¾ø´Â °æ¿ì
+                    // Aggregationì´ ì—†ëŠ” ê²½ìš°
                     //----------------------------------
 
                     IDE_TEST( groupingOnly( aTemplate,
@@ -651,7 +651,7 @@ IDE_RC qmnGRAG::storeTempTable( qcTemplate * aTemplate,
                 else
                 {
                     //----------------------------------
-                    // GROUP BY¿Í AggregationÀÌ ¸ğµÎ ÀÖ´Â °æ¿ì
+                    // GROUP BYì™€ Aggregationì´ ëª¨ë‘ ìˆëŠ” ê²½ìš°
                     //----------------------------------
 
                     IDE_TEST( groupAggregation( aTemplate,
@@ -677,7 +677,7 @@ IDE_RC qmnGRAG::storeTempTable( qcTemplate * aTemplate,
         }
 
         //----------------------------------------
-        // Temp Table ±¸Ãà ÈÄ ÃÊ±âÈ­
+        // Temp Table êµ¬ì¶• í›„ ì´ˆê¸°í™”
         //----------------------------------------
 
         aDataPlan->depValue = aDataPlan->depTuple->modify;
@@ -688,7 +688,7 @@ IDE_RC qmnGRAG::storeTempTable( qcTemplate * aTemplate,
     }
 
     //----------------------------------------
-    // ¼öÇà ÇÔ¼ö °áÁ¤
+    // ìˆ˜í–‰ í•¨ìˆ˜ ê²°ì •
     //----------------------------------------
 
     if ( aDataPlan->isNoData == ID_FALSE )
@@ -697,7 +697,7 @@ IDE_RC qmnGRAG::storeTempTable( qcTemplate * aTemplate,
     }
     else
     {
-        // GROUP BY°¡ ÀÖ°í Record°¡ ¾øÀ» °æ¿ì
+        // GROUP BYê°€ ìˆê³  Recordê°€ ì—†ì„ ê²½ìš°
         aDataPlan->doIt = qmnGRAG::doItNoData;
     }
 
@@ -716,7 +716,7 @@ qmnGRAG::doItDefault( qcTemplate * /* aTemplate */,
 /***********************************************************************
  *
  * Description :
- *    ÀÌ ÇÔ¼ö°¡ ¼öÇàµÇ¸é ¾ÈµÊ.
+ *    ì´ í•¨ìˆ˜ê°€ ìˆ˜í–‰ë˜ë©´ ì•ˆë¨.
  *
  * Implementation :
  *
@@ -740,10 +740,10 @@ qmnGRAG::doItFirst( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    Ã¹¹øÂ° ¼öÇà ÇÔ¼ö
+ *    ì²«ë²ˆì§¸ ìˆ˜í–‰ í•¨ìˆ˜
  *
  * Implementation :
- *    Temp Table·ÎºÎÅÍ °Ë»öÀ» ¼öÇàÇÏ°í, ÇØ´ç °á°ú¸¦ Tuple Set¿¡ º¹¿øÇÑ´Ù.
+ *    Temp Tableë¡œë¶€í„° ê²€ìƒ‰ì„ ìˆ˜í–‰í•˜ê³ , í•´ë‹¹ ê²°ê³¼ë¥¼ Tuple Setì— ë³µì›í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -761,7 +761,7 @@ qmnGRAG::doItFirst( qcTemplate * aTemplate,
               != IDE_SUCCESS );
 
     // PROJ-2444
-    // parallel ÇÃ·£ÀÌ ¾Æ´Ò¶§ ¼öÇàÇØ¾ß ÇÑ´Ù.
+    // parallel í”Œëœì´ ì•„ë‹ë•Œ ìˆ˜í–‰í•´ì•¼ í•œë‹¤.
     if ( sDataPlan->plan.mTID == QMN_PLAN_INIT_THREAD_ID )
     {
         IDE_TEST(readyIt(aTemplate, aPlan, QMN_PLAN_INIT_THREAD_ID) != IDE_SUCCESS);
@@ -772,9 +772,9 @@ qmnGRAG::doItFirst( qcTemplate * aTemplate,
     }
 
     // PROJ-2444
-    // readyIt ÇÔ¼ö¿¡¼­ temp table ÀÛ¾÷À» ¼öÇàÇÏ¸é ¾ÈµÈ´Ù.
-    // ÀÌÀ¯´Â readyIt ÇÔ¼ö´Â parallel ÇÏ°Ô ¼öÇàµÇÁö ¾Ê´Â´Ù.
-    // º°µµÀÇ ÇÔ¼ö·Î ºĞ¸®ÇÏ¿© ¼öÇàÇÑ´Ù.
+    // readyIt í•¨ìˆ˜ì—ì„œ temp table ì‘ì—…ì„ ìˆ˜í–‰í•˜ë©´ ì•ˆëœë‹¤.
+    // ì´ìœ ëŠ” readyIt í•¨ìˆ˜ëŠ” parallel í•˜ê²Œ ìˆ˜í–‰ë˜ì§€ ì•ŠëŠ”ë‹¤.
+    // ë³„ë„ì˜ í•¨ìˆ˜ë¡œ ë¶„ë¦¬í•˜ì—¬ ìˆ˜í–‰í•œë‹¤.
     IDE_TEST( storeTempTable( aTemplate, sCodePlan, sDataPlan ) != IDE_SUCCESS );
 
     if ( sDataPlan->groupNode != NULL )
@@ -801,10 +801,10 @@ qmnGRAG::doItFirst( qcTemplate * aTemplate,
     {
         if ( sDataPlan->isNoData == ID_FALSE )
         {
-            // Group By°¡ ¾ø´Â °æ¿ì·Î ÇÏ³ªÀÇ Record¸¸ÀÌ Á¸ÀçÇÑ´Ù.
-            // ÇöÀçÀÇ ÀúÀå Row°¡ ±× °á°ú°¡ µÈ´Ù.
-            // µû¶ó¼­, ´ÙÀ½ ¼öÇà ÇÔ¼ö¸¦ Data ¾øÀ½À» ¸®ÅÏÇÒ ¼ö ÀÖ´Â
-            // ÇÔ¼ö·Î ¼³Á¤ÇÑ´Ù.
+            // Group Byê°€ ì—†ëŠ” ê²½ìš°ë¡œ í•˜ë‚˜ì˜ Recordë§Œì´ ì¡´ì¬í•œë‹¤.
+            // í˜„ì¬ì˜ ì €ì¥ Rowê°€ ê·¸ ê²°ê³¼ê°€ ëœë‹¤.
+            // ë”°ë¼ì„œ, ë‹¤ìŒ ìˆ˜í–‰ í•¨ìˆ˜ë¥¼ Data ì—†ìŒì„ ë¦¬í„´í•  ìˆ˜ ìˆëŠ”
+            // í•¨ìˆ˜ë¡œ ì„¤ì •í•œë‹¤.
             *aFlag = QMC_ROW_DATA_EXIST;
             IDE_TEST( setTupleSet( aTemplate, sCodePlan, sDataPlan )
                     != IDE_SUCCESS );
@@ -838,10 +838,10 @@ qmnGRAG::doItNext( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    ´ÙÀ½ ¼öÇà ÇÔ¼ö
+ *    ë‹¤ìŒ ìˆ˜í–‰ í•¨ìˆ˜
  *
  * Implementation :
- *    Temp Table·ÎºÎÅÍ °Ë»öÀ» ¼öÇàÇÏ°í, ÇØ´ç °á°ú¸¦ Tuple Set¿¡ º¹¿øÇÑ´Ù.
+ *    Temp Tableë¡œë¶€í„° ê²€ìƒ‰ì„ ìˆ˜í–‰í•˜ê³ , í•´ë‹¹ ê²°ê³¼ë¥¼ Tuple Setì— ë³µì›í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -890,10 +890,10 @@ qmnGRAG::doItNoData( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    Aggregation Only¿¡¼­ÀÇ ´ÙÀ½ ¼öÇà ÇÔ¼ö
+ *    Aggregation Onlyì—ì„œì˜ ë‹¤ìŒ ìˆ˜í–‰ í•¨ìˆ˜
  *
  * Implementation :
- *    °á°ú ¾øÀ½À» ¸®ÅÏÇÑ´Ù.
+ *    ê²°ê³¼ ì—†ìŒì„ ë¦¬í„´í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -922,7 +922,7 @@ qmnGRAG::firstInit( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    GRAG nodeÀÇ Data ¿µ¿ªÀÇ ¸â¹ö¿¡ ´ëÇÑ ÃÊ±âÈ­¸¦ ¼öÇà
+ *    GRAG nodeì˜ Data ì˜ì—­ì˜ ë©¤ë²„ì— ëŒ€í•œ ì´ˆê¸°í™”ë¥¼ ìˆ˜í–‰
  *
  * Implementation :
  *
@@ -932,16 +932,16 @@ qmnGRAG::firstInit( qcTemplate * aTemplate,
     IDE_MSGLOG_FUNC(IDE_MSGLOG_BODY(""));
 
     //---------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //---------------------------------
 
     //---------------------------------
-    // GRAG °íÀ¯ Á¤º¸ÀÇ ÃÊ±âÈ­
+    // GRAG ê³ ìœ  ì •ë³´ì˜ ì´ˆê¸°í™”
     //---------------------------------
-    // 1. ÀúÀå ColumnÀÇ ÃÊ±âÈ­
-    // 2. Aggregation ColumnÀÇ ÃÊ±âÈ­
-    // 3. Grouping Column Á¤º¸ÀÇ À§Ä¡ ÁöÁ¤
-    // 4. Tuple À§Ä¡ ÁöÁ¤
+    // 1. ì €ì¥ Columnì˜ ì´ˆê¸°í™”
+    // 2. Aggregation Columnì˜ ì´ˆê¸°í™”
+    // 3. Grouping Column ì •ë³´ì˜ ìœ„ì¹˜ ì§€ì •
+    // 4. Tuple ìœ„ì¹˜ ì§€ì •
 
     IDE_TEST( initMtrNode( aTemplate, aCodePlan, aDataPlan ) != IDE_SUCCESS );
 
@@ -968,14 +968,14 @@ qmnGRAG::firstInit( qcTemplate * aTemplate,
     aDataPlan->isNoData = ID_FALSE;
 
     //---------------------------------
-    // Temp TableÀÇ ÃÊ±âÈ­
+    // Temp Tableì˜ ì´ˆê¸°í™”
     //---------------------------------
 
     IDE_TEST( initTempTable( aTemplate, aCodePlan, aDataPlan )
               != IDE_SUCCESS );
 
     //---------------------------------
-    // ÃÊ±âÈ­ ¿Ï·á¸¦ Ç¥±â
+    // ì´ˆê¸°í™” ì™„ë£Œë¥¼ í‘œê¸°
     //---------------------------------
 
     *aDataPlan->flag &= ~QMND_GRAG_INIT_DONE_MASK;
@@ -998,7 +998,7 @@ qmnGRAG::initMtrNode( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    ÀúÀå ColumnÀÇ Á¤º¸¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+ *    ì €ì¥ Columnì˜ ì •ë³´ë¥¼ ì´ˆê¸°í™”í•œë‹¤.
  *
  * Implementation :
  *
@@ -1008,7 +1008,7 @@ qmnGRAG::initMtrNode( qcTemplate * aTemplate,
     UShort       i;
 
     //---------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //---------------------------------
 
     IDE_DASSERT( aCodePlan->mtrNodeOffset > 0 );
@@ -1017,7 +1017,7 @@ qmnGRAG::initMtrNode( qcTemplate * aTemplate,
         (qmdMtrNode*) (aTemplate->tmplate.data + aCodePlan->mtrNodeOffset);
 
     //---------------------------------
-    // ÀúÀå °ü¸®¸¦ À§ÇÑ Á¤º¸ÀÇ ÃÊ±âÈ­
+    // ì €ì¥ ê´€ë¦¬ë¥¼ ìœ„í•œ ì •ë³´ì˜ ì´ˆê¸°í™”
     //---------------------------------
 
     if ( (aCodePlan->plan.flag & QMN_PLAN_STORAGE_MASK)
@@ -1031,7 +1031,7 @@ qmnGRAG::initMtrNode( qcTemplate * aTemplate,
     }
 
     //----------------------------------
-    // Aggregation ¿µ¿ªÀÇ ±¸ºĞ
+    // Aggregation ì˜ì—­ì˜ êµ¬ë¶„
     //----------------------------------
 
     // PROJ-1473
@@ -1074,27 +1074,27 @@ qmnGRAG::initMtrNode( qcTemplate * aTemplate,
     }
 
     //---------------------------------
-    // ÀúÀå ColumnÀÇ ÃÊ±âÈ­
+    // ì €ì¥ Columnì˜ ì´ˆê¸°í™”
     //---------------------------------
 
-    // ÀúÀå ColumnÀÇ ¿¬°á Á¤º¸ »ı¼º
+    // ì €ì¥ Columnì˜ ì—°ê²° ì •ë³´ ìƒì„±
     IDE_TEST( qmc::linkMtrNode( aCodePlan->myNode,
                                 aDataPlan->mtrNode ) != IDE_SUCCESS );
 
-    // ÀúÀå ColumnÀÇ ÃÊ±âÈ­
-    // AggregationÀÇ ÀúÀå ½Ã Conversion°ªÀ» ÀúÀåÇØ¼­´Â ¾ÈµÊ
+    // ì €ì¥ Columnì˜ ì´ˆê¸°í™”
+    // Aggregationì˜ ì €ì¥ ì‹œ Conversionê°’ì„ ì €ì¥í•´ì„œëŠ” ì•ˆë¨
     IDE_TEST( qmc::initMtrNode( aTemplate,
                                 aDataPlan->mtrNode,
                                 (UShort)aCodePlan->baseTableCount +
                                 aDataPlan->aggrNodeCnt )
               != IDE_SUCCESS );
 
-    // ÀúÀå ColumnÀÇ offsetÀ» ÀçÁ¶Á¤.
+    // ì €ì¥ Columnì˜ offsetì„ ì¬ì¡°ì •.
     IDE_TEST( qmc::refineOffsets( aDataPlan->mtrNode,
                                   sHeaderSize )
               != IDE_SUCCESS );
 
-    // Row SizeÀÇ °è»ê
+    // Row Sizeì˜ ê³„ì‚°
     IDE_TEST( qmc::setRowSize( aTemplate->stmt->qmxMem,
                                & aTemplate->tmplate,
                                aDataPlan->mtrNode->dstNode->node.table )
@@ -1115,11 +1115,11 @@ qmnGRAG::initAggrNode( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    Aggregation ColumnÀÇ ÃÊ±âÈ­
+ *    Aggregation Columnì˜ ì´ˆê¸°í™”
  *
  * Implementation :
- *    Aggregation ColumnÀ» ÃÊ±âÈ­ÇÏ°í,
- *    Distinct AggregationÀÎ °æ¿ì ÇØ´ç Distinct Node¸¦ Ã£¾Æ ¿¬°áÇÑ´Ù.
+ *    Aggregation Columnì„ ì´ˆê¸°í™”í•˜ê³ ,
+ *    Distinct Aggregationì¸ ê²½ìš° í•´ë‹¹ Distinct Nodeë¥¼ ì°¾ì•„ ì—°ê²°í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -1134,13 +1134,13 @@ qmnGRAG::initAggrNode( qcTemplate * aTemplate,
     UInt          sHeaderSize = 0;
 
     //-----------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //-----------------------------------------------
 
     IDE_DASSERT( aCodePlan->aggrNodeOffset > 0 );
 
     //-----------------------------------------------
-    // Aggregation NodeÀÇ ¿¬°á Á¤º¸¸¦ ¼³Á¤ÇÏ°í ÃÊ±âÈ­
+    // Aggregation Nodeì˜ ì—°ê²° ì •ë³´ë¥¼ ì„¤ì •í•˜ê³  ì´ˆê¸°í™”
     //-----------------------------------------------
 
     /* PROJ-2462 Result Cache */
@@ -1165,7 +1165,7 @@ qmnGRAG::initAggrNode( qcTemplate * aTemplate,
         // Nothing To Do
     }
 
-    // Aggregation ColumnÀÇ ¿¬°á Á¤º¸ »ı¼º
+    // Aggregation Columnì˜ ì—°ê²° ì •ë³´ ìƒì„±
     for ( i = 0,
               sNode = sNode,
               sAggrNode = aDataPlan->aggrNode,
@@ -1193,7 +1193,7 @@ qmnGRAG::initAggrNode( qcTemplate * aTemplate,
                                 (UShort)aDataPlan->aggrNodeCnt )
               != IDE_SUCCESS );
 
-    // Aggregation ColumnÀÇ offsetÀ» ÀçÁ¶Á¤.
+    // Aggregation Columnì˜ offsetì„ ì¬ì¡°ì •.
     if ( (aCodePlan->plan.flag & QMN_PLAN_STORAGE_MASK)
          == QMN_PLAN_STORAGE_MEMORY )
     {
@@ -1224,7 +1224,7 @@ qmnGRAG::initGroupNode( qmncGRAG   * aCodePlan,
 /***********************************************************************
  *
  * Description :
- *     Grouping ColumnÀÇ À§Ä¡¸¦ Ã£´Â´Ù.
+ *     Grouping Columnì˜ ìœ„ì¹˜ë¥¼ ì°¾ëŠ”ë‹¤.
  *
  * Implementation :
  *
@@ -1255,7 +1255,7 @@ qmnGRAG::initTempTable( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *     Hash Temp TableÀ» ÃÊ±âÈ­ÇÑ´Ù.
+ *     Hash Temp Tableì„ ì´ˆê¸°í™”í•œë‹¤.
  *
  * Implementation :
  *
@@ -1264,11 +1264,11 @@ qmnGRAG::initTempTable( qcTemplate * aTemplate,
     qmndGRAG  * sCacheDataPlan = NULL;
 
     //-----------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //-----------------------------
 
     //-----------------------------
-    // Flag Á¤º¸ ÃÊ±âÈ­
+    // Flag ì •ë³´ ì´ˆê¸°í™”
     //-----------------------------
 
     sFlag = QMCD_HASH_TMP_PRIMARY_TRUE | QMCD_HASH_TMP_DISTINCT_TRUE;
@@ -1292,12 +1292,12 @@ qmnGRAG::initTempTable( qcTemplate * aTemplate,
     }
     
     // PROJ-2553
-    // DISTINCT HashingÀº Bucket List Hashing ¹æ¹ıÀ» ½á¾ß ÇÑ´Ù.
+    // DISTINCT Hashingì€ Bucket List Hashing ë°©ë²•ì„ ì¨ì•¼ í•œë‹¤.
     sFlag &= ~QMCD_HASH_TMP_HASHING_TYPE;
     sFlag |= QMCD_HASH_TMP_HASHING_BUCKET;
 
     //-----------------------------
-    // Temp Table ÃÊ±âÈ­
+    // Temp Table ì´ˆê¸°í™”
     //-----------------------------
     if ( ( *aDataPlan->flag & QMN_PLAN_RESULT_CACHE_EXIST_MASK )
          == QMN_PLAN_RESULT_CACHE_EXIST_FALSE )
@@ -1394,7 +1394,7 @@ IDE_RC qmnGRAG::checkDependency( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    Dependent TupleÀÇ º¯°æ ¿©ºÎ °Ë»ç
+ *    Dependent Tupleì˜ ë³€ê²½ ì—¬ë¶€ ê²€ì‚¬
  *
  * Implementation :
  *
@@ -1441,11 +1441,11 @@ qmnGRAG::aggregationOnly( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *     GROUP BY°¡ ¾ø´Â °æ¿ì·Î ÇÏ³ªÀÇ Row¸¸À» ±¸¼ºÇÏ°í,
- *     AggregationÀ» ¼öÇàÇÑ´Ù.
+ *     GROUP BYê°€ ì—†ëŠ” ê²½ìš°ë¡œ í•˜ë‚˜ì˜ Rowë§Œì„ êµ¬ì„±í•˜ê³ ,
+ *     Aggregationì„ ìˆ˜í–‰í•œë‹¤.
  *
  * Implementation :
- *     ÇÑ ¹ø¸¸ ¸Ş¸ğ¸®¸¦ ÇÒ´ç ¹Ş°í, Temp TableÀº »ç¿ëÇÏÁö ¾Ê´Â´Ù.
+ *     í•œ ë²ˆë§Œ ë©”ëª¨ë¦¬ë¥¼ í• ë‹¹ ë°›ê³ , Temp Tableì€ ì‚¬ìš©í•˜ì§€ ì•ŠëŠ”ë‹¤.
  *
  ***********************************************************************/
 
@@ -1454,11 +1454,11 @@ qmnGRAG::aggregationOnly( qcTemplate * aTemplate,
 
     qmcRowFlag sFlag = QMC_ROW_INITIALIZE;
 
-    // Aggregation ColumnÀÇ ÃÊ±âÈ­
+    // Aggregation Columnì˜ ì´ˆê¸°í™”
     IDE_TEST( aggrInit( aTemplate, aDataPlan ) != IDE_SUCCESS );
 
     //-------------------------------------
-    // ChildÀÇ ¹İº¹ ¼öÇà°ú Aggregation
+    // Childì˜ ë°˜ë³µ ìˆ˜í–‰ê³¼ Aggregation
     //-------------------------------------
 
     IDE_TEST( aCodePlan->plan.left->doIt( aTemplate,
@@ -1469,7 +1469,7 @@ qmnGRAG::aggregationOnly( qcTemplate * aTemplate,
     {
         //-----------------------------------
         // PROJ-1473
-        // »óÀ§³ëµå¿¡¼­ ÂüÁ¶ÇÒ ÄÃ·³ ÀúÀå.
+        // ìƒìœ„ë…¸ë“œì—ì„œ ì°¸ì¡°í•  ì»¬ëŸ¼ ì €ì¥.
         //-----------------------------------       
         IDE_TEST( setBaseColumnRow( aTemplate, aCodePlan, aDataPlan )
                   != IDE_SUCCESS );        
@@ -1482,11 +1482,11 @@ qmnGRAG::aggregationOnly( qcTemplate * aTemplate,
     }
 
     //----------------------------------------
-    // Aggregation ColumnÀÇ ¸¶¹«¸® ¼öÇà
+    // Aggregation Columnì˜ ë§ˆë¬´ë¦¬ ìˆ˜í–‰
     //----------------------------------------
 
     // PROJ-2444
-    // AGGR ´Ü°è¿¡¼­´Â aggrFini À» ¼öÇàÇÏ¸é ¾ÈµÈ´Ù.
+    // AGGR ë‹¨ê³„ì—ì„œëŠ” aggrFini ì„ ìˆ˜í–‰í•˜ë©´ ì•ˆëœë‹¤.
     if ( (aCodePlan->flag & QMNC_GRAG_PARALLEL_STEP_MASK) != QMNC_GRAG_PARALLEL_STEP_AGGR )
     {
         IDE_TEST( aggrFini( aTemplate, aDataPlan ) != IDE_SUCCESS );
@@ -1513,7 +1513,7 @@ qmnGRAG::groupingOnly( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *     GROUP BY¸¸ Á¸ÀçÇÏ°í AggregationÀÌ ¾ø´Â °æ¿ì¿¡ ¼öÇà
+ *     GROUP BYë§Œ ì¡´ì¬í•˜ê³  Aggregationì´ ì—†ëŠ” ê²½ìš°ì— ìˆ˜í–‰
  *
  * Implementation :
  *
@@ -1532,7 +1532,7 @@ qmnGRAG::groupingOnly( qcTemplate * aTemplate,
                                           & sFlag ) != IDE_SUCCESS );
 
     //-----------------------------------
-    // Result SetÀÇ Á¸Àç À¯¹« ¼³Á¤
+    // Result Setì˜ ì¡´ì¬ ìœ ë¬´ ì„¤ì •
     //-----------------------------------
 
     if ( (sFlag & QMC_ROW_DATA_MASK) == QMC_ROW_DATA_EXIST )
@@ -1541,20 +1541,20 @@ qmnGRAG::groupingOnly( qcTemplate * aTemplate,
     }
     else
     {
-        // GRAGÀÇ ¼öÇà °á°ú°¡ ÇÏ³ªµµ ¾ø´Â °æ¿ìÀÌ´Ù.
+        // GRAGì˜ ìˆ˜í–‰ ê²°ê³¼ê°€ í•˜ë‚˜ë„ ì—†ëŠ” ê²½ìš°ì´ë‹¤.
         aDataPlan->isNoData = ID_TRUE;
     }
 
     sInserted = ID_TRUE;
 
     //-----------------------------------
-    // ChildÀÇ ¹İº¹ ¼öÇàÀ» ÅëÇÑ Grouping ¼öÇà
+    // Childì˜ ë°˜ë³µ ìˆ˜í–‰ì„ í†µí•œ Grouping ìˆ˜í–‰
     //-----------------------------------
 
     while ( (sFlag & QMC_ROW_DATA_MASK) == QMC_ROW_DATA_EXIST )
     {
         //-----------------------------------
-        // Memory °ø°£ÀÇ ÇÒ´ç
+        // Memory ê³µê°„ì˜ í• ë‹¹
         //-----------------------------------
 
         if ( sInserted == ID_TRUE )
@@ -1568,21 +1568,21 @@ qmnGRAG::groupingOnly( qcTemplate * aTemplate,
         }
         else
         {
-            // »ğÀÔÀÌ ½ÇÆĞÇÑ °æ¿ì¶ó¸é,
-            // Memory °ø°£ÀÌ ±×´ë·Î ³²¾Æ ÀÖ´Ù.
+            // ì‚½ì…ì´ ì‹¤íŒ¨í•œ ê²½ìš°ë¼ë©´,
+            // Memory ê³µê°„ì´ ê·¸ëŒ€ë¡œ ë‚¨ì•„ ìˆë‹¤.
             // Nothing To Do
         }
 
         //-----------------------------------
         // PROJ-1473
-        // »óÀ§³ëµå¿¡¼­ ÂüÁ¶ÇÒ ÄÃ·³ ÀúÀå.
+        // ìƒìœ„ë…¸ë“œì—ì„œ ì°¸ì¡°í•  ì»¬ëŸ¼ ì €ì¥.
         //-----------------------------------
         
         IDE_TEST( setBaseColumnRow( aTemplate, aCodePlan, aDataPlan )
                   != IDE_SUCCESS );        
 
         //-----------------------------------
-        // ÀúÀå RowÀÇ ±¸¼º ¹× »ğÀÔ
+        // ì €ì¥ Rowì˜ êµ¬ì„± ë° ì‚½ì…
         //-----------------------------------
 
         IDE_TEST( setGroupRow( aTemplate,
@@ -1594,7 +1594,7 @@ qmnGRAG::groupingOnly( qcTemplate * aTemplate,
                   != IDE_SUCCESS );
 
         //-----------------------------------
-        // Child Plan ¼öÇà
+        // Child Plan ìˆ˜í–‰
         //-----------------------------------
 
         IDE_TEST( aCodePlan->plan.left->doIt( aTemplate,
@@ -1638,7 +1638,7 @@ qmnGRAG::groupAggregation( qcTemplate * aTemplate,
                                           & sFlag ) != IDE_SUCCESS );
 
     //-----------------------------------
-    // Result SetÀÇ Á¸Àç À¯¹« ¼³Á¤
+    // Result Setì˜ ì¡´ì¬ ìœ ë¬´ ì„¤ì •
     //-----------------------------------
 
     if ( (sFlag & QMC_ROW_DATA_MASK) == QMC_ROW_DATA_EXIST )
@@ -1647,7 +1647,7 @@ qmnGRAG::groupAggregation( qcTemplate * aTemplate,
     }
     else
     {
-        // GRAGÀÇ ¼öÇà °á°ú°¡ ÇÏ³ªµµ ¾ø´Â °æ¿ìÀÌ´Ù.
+        // GRAGì˜ ìˆ˜í–‰ ê²°ê³¼ê°€ í•˜ë‚˜ë„ ì—†ëŠ” ê²½ìš°ì´ë‹¤.
         aDataPlan->isNoData = ID_TRUE;
     }
 
@@ -1657,7 +1657,7 @@ qmnGRAG::groupAggregation( qcTemplate * aTemplate,
     while ( (sFlag & QMC_ROW_DATA_MASK) == QMC_ROW_DATA_EXIST )
     {
         //-----------------------------------
-        // Memory °ø°£ÀÇ ÇÒ´ç
+        // Memory ê³µê°„ì˜ í• ë‹¹
         //-----------------------------------
 
         if ( sSearchRow == NULL )
@@ -1672,14 +1672,14 @@ qmnGRAG::groupAggregation( qcTemplate * aTemplate,
         }
         else
         {
-            // »ğÀÔÀÌ ½ÇÆĞÇÑ °æ¿ì¶ó¸é,
-            // Memory °ø°£ÀÌ ±×´ë·Î ³²¾Æ ÀÖ´Ù.
+            // ì‚½ì…ì´ ì‹¤íŒ¨í•œ ê²½ìš°ë¼ë©´,
+            // Memory ê³µê°„ì´ ê·¸ëŒ€ë¡œ ë‚¨ì•„ ìˆë‹¤.
             aDataPlan->plan.myTuple->row = sAllocRow;
         }
 
         //-----------------------------------
         // PROJ-1473
-        // »óÀ§³ëµå¿¡¼­ ÂüÁ¶ÇÒ ÄÃ·³ ÀúÀå.
+        // ìƒìœ„ë…¸ë“œì—ì„œ ì°¸ì¡°í•  ì»¬ëŸ¼ ì €ì¥.
         //-----------------------------------
         
         IDE_TEST( setBaseColumnRow( aTemplate, aCodePlan, aDataPlan )
@@ -1687,7 +1687,7 @@ qmnGRAG::groupAggregation( qcTemplate * aTemplate,
 
         //-----------------------------------
         // To Fix PR-8213
-        // µ¿ÀÏ GroupÀÇ °Ë»ö
+        // ë™ì¼ Groupì˜ ê²€ìƒ‰
         //-----------------------------------
 
         IDE_TEST( setGroupRow( aTemplate, aDataPlan )
@@ -1700,13 +1700,13 @@ qmnGRAG::groupAggregation( qcTemplate * aTemplate,
                   != IDE_SUCCESS );
         
         //-----------------------------------
-        // Aggregation Ã³¸®
+        // Aggregation ì²˜ë¦¬
         //-----------------------------------
 
         if ( sSearchRow == NULL )
         {
-            // µ¿ÀÏ GroupÀÌ ¾ø´Â °æ¿ì·Î ÀúÀå Row¸¦ ±¸¼ºÇÏ¿©
-            // »õ·Î¿î GroupÀ» »ğÀÔÇÑ´Ù.
+            // ë™ì¼ Groupì´ ì—†ëŠ” ê²½ìš°ë¡œ ì €ì¥ Rowë¥¼ êµ¬ì„±í•˜ì—¬
+            // ìƒˆë¡œìš´ Groupì„ ì‚½ì…í•œë‹¤.
             IDE_TEST( aggrInit( aTemplate, aDataPlan )
                       != IDE_SUCCESS );
 
@@ -1721,7 +1721,7 @@ qmnGRAG::groupAggregation( qcTemplate * aTemplate,
         {
             aDataPlan->plan.myTuple->row = sSearchRow;
             
-            // ÀÌ¹Ì ±âÁ¸ GroupÀÌ Á¸ÀçÇÏ´Â °æ¿ì·Î Aggregation ¼öÇà
+            // ì´ë¯¸ ê¸°ì¡´ Groupì´ ì¡´ì¬í•˜ëŠ” ê²½ìš°ë¡œ Aggregation ìˆ˜í–‰
             IDE_TEST( aggrDoIt( aTemplate, aDataPlan )
                       != IDE_SUCCESS );
 
@@ -1732,7 +1732,7 @@ qmnGRAG::groupAggregation( qcTemplate * aTemplate,
         }
 
         //-----------------------------------
-        // Child Plan ¼öÇà
+        // Child Plan ìˆ˜í–‰
         //-----------------------------------
 
         IDE_TEST( aCodePlan->plan.left->doIt( aTemplate,
@@ -1741,15 +1741,15 @@ qmnGRAG::groupAggregation( qcTemplate * aTemplate,
     }
 
     // PROJ-2444
-    // AGGR ´Ü°è¿¡¼­´Â aggrFini À» ¼öÇàÇÏ¸é ¾ÈµÈ´Ù.
+    // AGGR ë‹¨ê³„ì—ì„œëŠ” aggrFini ì„ ìˆ˜í–‰í•˜ë©´ ì•ˆëœë‹¤.
     if ( (aCodePlan->flag & QMNC_GRAG_PARALLEL_STEP_MASK) != QMNC_GRAG_PARALLEL_STEP_AGGR )
     {
         //--------------------------------------
         // To-Fix PR-8415
-        // ¸ğµç Group¿¡ ´ëÇÏ¿© Aggregation ¿Ï·á¸¦ ¼öÇàÇÏ¿©¾ß ÇÑ´Ù.
-        // Disk Temp TableÀÇ °æ¿ì Memory »óÀÇ Aggregation¸¸À» ¼öÇàÇÒ °æ¿ì
-        // »óÀ§¿¡ ORDER BYµîÀÌ Á¸ÀçÇÏ¸é Disk »ó¿¡´Â ÃÖÁ¾ Aggregation°á°ú°¡
-        // Á¸ÀçÇÏÁö ¾Ê¾Æ Á¤È®ÇÑ °á°ú¸¦ µµÃâÇÒ ¼ö ¾ø´Ù.
+        // ëª¨ë“  Groupì— ëŒ€í•˜ì—¬ Aggregation ì™„ë£Œë¥¼ ìˆ˜í–‰í•˜ì—¬ì•¼ í•œë‹¤.
+        // Disk Temp Tableì˜ ê²½ìš° Memory ìƒì˜ Aggregationë§Œì„ ìˆ˜í–‰í•  ê²½ìš°
+        // ìƒìœ„ì— ORDER BYë“±ì´ ì¡´ì¬í•˜ë©´ Disk ìƒì—ëŠ” ìµœì¢… Aggregationê²°ê³¼ê°€
+        // ì¡´ì¬í•˜ì§€ ì•Šì•„ ì •í™•í•œ ê²°ê³¼ë¥¼ ë„ì¶œí•  ìˆ˜ ì—†ë‹¤.
         //--------------------------------------
 
         sOrgRow = sSearchRow = aDataPlan->plan.myTuple->row;
@@ -1762,7 +1762,7 @@ qmnGRAG::groupAggregation( qcTemplate * aTemplate,
         while ( sSearchRow != NULL )
         {
             //----------------------------------------
-            // Aggregation ColumnÀÇ ¸¶¹«¸® ¼öÇà
+            // Aggregation Columnì˜ ë§ˆë¬´ë¦¬ ìˆ˜í–‰
             //----------------------------------------
 
             IDE_TEST( aggrFini( aTemplate, aDataPlan ) != IDE_SUCCESS );
@@ -1773,7 +1773,7 @@ qmnGRAG::groupAggregation( qcTemplate * aTemplate,
             aDataPlan->plan.myTuple->row = sOrgRow;
 
             //----------------------------------------
-            // »õ·Î¿î Group È¹µæ
+            // ìƒˆë¡œìš´ Group íšë“
             //----------------------------------------
 
             sOrgRow = sSearchRow = aDataPlan->plan.myTuple->row;
@@ -1804,8 +1804,8 @@ IDE_RC qmnGRAG::aggrOnlyMerge( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description : PROJ-2444 Parallel Aggreagtion
- *               aggr ¸¦ »ç¿ëÇÒ¶§
- *               parallel plan ÀÇ merge ´Ü°è¸¦ ¼öÇàÇÑ´Ù.
+ *               aggr ë¥¼ ì‚¬ìš©í• ë•Œ
+ *               parallel plan ì˜ merge ë‹¨ê³„ë¥¼ ìˆ˜í–‰í•œë‹¤.
  *
  * Implementation :
  *
@@ -1819,7 +1819,7 @@ IDE_RC qmnGRAG::aggrOnlyMerge( qcTemplate * aTemplate,
     IDE_TEST( aggrInit( aTemplate, aDataPlan ) != IDE_SUCCESS );
 
     //-------------------------------------
-    // ChildÀÇ ¹İº¹ ¼öÇà°ú Aggregation
+    // Childì˜ ë°˜ë³µ ìˆ˜í–‰ê³¼ Aggregation
     //-------------------------------------
 
     IDE_TEST( aCodePlan->plan.left->doIt( aTemplate,
@@ -1841,7 +1841,7 @@ IDE_RC qmnGRAG::aggrOnlyMerge( qcTemplate * aTemplate,
     }
 
     //----------------------------------------
-    // Aggregation ColumnÀÇ ¸¶¹«¸® ¼öÇà
+    // Aggregation Columnì˜ ë§ˆë¬´ë¦¬ ìˆ˜í–‰
     //----------------------------------------
 
     IDE_TEST( aggrFini( aTemplate, aDataPlan ) != IDE_SUCCESS );
@@ -1860,8 +1860,8 @@ IDE_RC qmnGRAG::groupOnlyMerge( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description : PROJ-2444 Parallel Aggreagtion
- *               group by ¸¦ »ç¿ëÇÒ¶§
- *               parallel plan ÀÇ merge ´Ü°è¸¦ ¼öÇàÇÑ´Ù.
+ *               group by ë¥¼ ì‚¬ìš©í• ë•Œ
+ *               parallel plan ì˜ merge ë‹¨ê³„ë¥¼ ìˆ˜í–‰í•œë‹¤.
  *
  * Implementation :
  *
@@ -1879,7 +1879,7 @@ IDE_RC qmnGRAG::groupOnlyMerge( qcTemplate * aTemplate,
                                           &sFlag ) != IDE_SUCCESS );
 
     //-----------------------------------
-    // Result SetÀÇ Á¸Àç À¯¹« ¼³Á¤
+    // Result Setì˜ ì¡´ì¬ ìœ ë¬´ ì„¤ì •
     //-----------------------------------
 
     if ( (sFlag & QMC_ROW_DATA_MASK) == QMC_ROW_DATA_EXIST )
@@ -1888,31 +1888,31 @@ IDE_RC qmnGRAG::groupOnlyMerge( qcTemplate * aTemplate,
     }
     else
     {
-        // GRAGÀÇ ¼öÇà °á°ú°¡ ÇÏ³ªµµ ¾ø´Â °æ¿ìÀÌ´Ù.
+        // GRAGì˜ ìˆ˜í–‰ ê²°ê³¼ê°€ í•˜ë‚˜ë„ ì—†ëŠ” ê²½ìš°ì´ë‹¤.
         aDataPlan->isNoData = ID_TRUE;
     }
 
     //-----------------------------------
-    // ChildÀÇ ¹İº¹ ¼öÇàÀ» ÅëÇÑ Grouping ¼öÇà
+    // Childì˜ ë°˜ë³µ ìˆ˜í–‰ì„ í†µí•œ Grouping ìˆ˜í–‰
     //-----------------------------------
 
     while ( (sFlag & QMC_ROW_DATA_MASK) == QMC_ROW_DATA_EXIST )
     {
         //-----------------------------------
-        // ÀúÀå RowÀÇ ±¸¼º ¹× »ğÀÔ
+        // ì €ì¥ Rowì˜ êµ¬ì„± ë° ì‚½ì…
         //-----------------------------------
 
-        // disk temp ´Â ¾ğÁ¦³ª aDataPlan->plan.myTuple->row ·Î ÀÛ¾÷À» ÇÑ´Ù.
+        // disk temp ëŠ” ì–¸ì œë‚˜ aDataPlan->plan.myTuple->row ë¡œ ì‘ì—…ì„ í•œë‹¤.
         sChildRow = sChildDataPlan->myTuple->row;
         aDataPlan->plan.myTuple->row = sChildRow;
 
         IDE_TEST( qmcHashTemp::addDistRow( aDataPlan->hashMgr,
-                                           &sChildRow,  // °Ë»ö¿ë row
+                                           &sChildRow,  // ê²€ìƒ‰ìš© row
                                            &sInserted )
                   != IDE_SUCCESS );
 
         //-----------------------------------
-        // Child Plan ¼öÇà
+        // Child Plan ìˆ˜í–‰
         //-----------------------------------
 
         IDE_TEST( aCodePlan->plan.left->doIt( aTemplate,
@@ -1934,8 +1934,8 @@ IDE_RC qmnGRAG::groupAggrMerge( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description : PROJ-2444 Parallel Aggreagtion
- *               Aggr ÇÔ¼ö¿Í group by ¸¦ »ç¿ëÇÒ¶§
- *               parallel plan ÀÇ merge ´Ü°è¸¦ ¼öÇàÇÑ´Ù.
+ *               Aggr í•¨ìˆ˜ì™€ group by ë¥¼ ì‚¬ìš©í• ë•Œ
+ *               parallel plan ì˜ merge ë‹¨ê³„ë¥¼ ìˆ˜í–‰í•œë‹¤.
  *
  * Implementation :
  *
@@ -1953,7 +1953,7 @@ IDE_RC qmnGRAG::groupAggrMerge( qcTemplate * aTemplate,
                                           & sFlag ) != IDE_SUCCESS );
 
     //-----------------------------------
-    // Result SetÀÇ Á¸Àç À¯¹« ¼³Á¤
+    // Result Setì˜ ì¡´ì¬ ìœ ë¬´ ì„¤ì •
     //-----------------------------------
 
     if ( (sFlag & QMC_ROW_DATA_MASK) == QMC_ROW_DATA_EXIST )
@@ -1962,7 +1962,7 @@ IDE_RC qmnGRAG::groupAggrMerge( qcTemplate * aTemplate,
     }
     else
     {
-        // GRAGÀÇ ¼öÇà °á°ú°¡ ÇÏ³ªµµ ¾ø´Â °æ¿ìÀÌ´Ù.
+        // GRAGì˜ ìˆ˜í–‰ ê²°ê³¼ê°€ í•˜ë‚˜ë„ ì—†ëŠ” ê²½ìš°ì´ë‹¤.
         aDataPlan->isNoData = ID_TRUE;
     }
 
@@ -1970,33 +1970,33 @@ IDE_RC qmnGRAG::groupAggrMerge( qcTemplate * aTemplate,
 
     while ( (sFlag & QMC_ROW_DATA_MASK) == QMC_ROW_DATA_EXIST )
     {
-        // sChildRow ´Â ÇöÀç GRAG ³ëµåÀÇ mtr ±¸Á¶¿Í µ¿ÀÏÇÏ´Ù.
+        // sChildRow ëŠ” í˜„ì¬ GRAG ë…¸ë“œì˜ mtr êµ¬ì¡°ì™€ ë™ì¼í•˜ë‹¤.
         sChildRow  = sChildDataPlan->myTuple->row;
         sSearchRow = sBufferRow;
 
-        // ¸Ş¸ğ¸® temp ´Â sSearchRow ¿¡ ÁÖ¼Ò°ªÀ» ÀúÀåÇÏ°í
-        // µğ½ºÅ© temp ´Â *(sSearchRow) ÀÇ À§Ä¡¿¡ °ªÀ» º¹»çÇÑ´Ù.
+        // ë©”ëª¨ë¦¬ temp ëŠ” sSearchRow ì— ì£¼ì†Œê°’ì„ ì €ì¥í•˜ê³ 
+        // ë””ìŠ¤í¬ temp ëŠ” *(sSearchRow) ì˜ ìœ„ì¹˜ì— ê°’ì„ ë³µì‚¬í•œë‹¤.
         IDE_TEST( qmcHashTemp::getSameGroup( aDataPlan->hashMgr,
-                                             &sChildRow,    // °Ë»ö¿ë row
-                                             &sSearchRow )  // °á°ú°ª
+                                             &sChildRow,    // ê²€ìƒ‰ìš© row
+                                             &sSearchRow )  // ê²°ê³¼ê°’
                   != IDE_SUCCESS );
 
         //-----------------------------------
-        // Aggregation Ã³¸®
+        // Aggregation ì²˜ë¦¬
         //-----------------------------------
 
         if ( sSearchRow == NULL )
         {
             //-----------------------------------
             // PROJ-2527 WITHIN GROUP AGGR
-            // Memory ÇÒ´ç
-            // parentÀÇ function data ¿¡ child function data mergeÇÑ´Ù.
+            // Memory í• ë‹¹
+            // parentì˜ function data ì— child function data mergeí•œë‹¤.
             //-----------------------------------
             
-            // µ¿ÀÏ GroupÀÌ ¾ø´Â °æ¿ì·Î ÀúÀå Row¸¦ ±¸¼ºÇÏ¿©
-            // »õ·Î¿î GroupÀ» »ğÀÔÇÑ´Ù.
-            // ¸Ş¸ğ¸® temp ´Â ÀÌ¹Ì insert °¡ ¿Ï·áµÈ »óÅÂ
-            // µğ½ºÅ© temp ´Â aDataPlan->plan.myTuple->row ÀÇ °ªÀ» insert ÇÑ´Ù.
+            // ë™ì¼ Groupì´ ì—†ëŠ” ê²½ìš°ë¡œ ì €ì¥ Rowë¥¼ êµ¬ì„±í•˜ì—¬
+            // ìƒˆë¡œìš´ Groupì„ ì‚½ì…í•œë‹¤.
+            // ë©”ëª¨ë¦¬ temp ëŠ” ì´ë¯¸ insert ê°€ ì™„ë£Œëœ ìƒíƒœ
+            // ë””ìŠ¤í¬ temp ëŠ” aDataPlan->plan.myTuple->row ì˜ ê°’ì„ insert í•œë‹¤.
             IDE_TEST( qmcHashTemp::alloc( aDataPlan->hashMgr,
                                           &aDataPlan->plan.myTuple->row )
                       != IDE_SUCCESS );
@@ -2020,7 +2020,7 @@ IDE_RC qmnGRAG::groupAggrMerge( qcTemplate * aTemplate,
         }
         else
         {
-            // ¾Æ·¡ ÀÛ¾÷µéÀº aDataPlan->plan.myTuple->row À» ÀÌ¿ëÇÑ´Ù.
+            // ì•„ë˜ ì‘ì—…ë“¤ì€ aDataPlan->plan.myTuple->row ì„ ì´ìš©í•œë‹¤.
             aDataPlan->plan.myTuple->row = sSearchRow;
             
             IDE_TEST( aggrMerge( aTemplate,
@@ -2033,7 +2033,7 @@ IDE_RC qmnGRAG::groupAggrMerge( qcTemplate * aTemplate,
         }
 
         //-----------------------------------
-        // Child Plan ¼öÇà
+        // Child Plan ìˆ˜í–‰
         //-----------------------------------
 
         IDE_TEST( aCodePlan->plan.left->doIt( aTemplate,
@@ -2042,7 +2042,7 @@ IDE_RC qmnGRAG::groupAggrMerge( qcTemplate * aTemplate,
     }
 
     //----------------------------------------
-    // Aggregation ColumnÀÇ ¸¶¹«¸® ¼öÇà
+    // Aggregation Columnì˜ ë§ˆë¬´ë¦¬ ìˆ˜í–‰
     //----------------------------------------
 
     sSearchRow = aDataPlan->plan.myTuple->row;
@@ -2061,7 +2061,7 @@ IDE_RC qmnGRAG::groupAggrMerge( qcTemplate * aTemplate,
                   != IDE_SUCCESS );
 
         //----------------------------------------
-        // »õ·Î¿î Group È¹µæ
+        // ìƒˆë¡œìš´ Group íšë“
         //----------------------------------------
 
         IDE_TEST( qmcHashTemp::getNextGroup( aDataPlan->hashMgr,
@@ -2084,7 +2084,7 @@ qmnGRAG::setBaseColumnRow( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *     Grouping ColumnÀÇ °ªÀ» ¼³Á¤
+ *     Grouping Columnì˜ ê°’ì„ ì„¤ì •
  *
  * Implementation :
  *
@@ -2119,7 +2119,7 @@ qmnGRAG::setGroupRow( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *     Grouping ColumnÀÇ °ªÀ» ¼³Á¤
+ *     Grouping Columnì˜ ê°’ì„ ì„¤ì •
  *
  * Implementation :
  *
@@ -2157,7 +2157,7 @@ qmnGRAG::aggrInit( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    Aggregation ColumnÀÇ °ªÀ» ÃÊ±âÈ­ÇÑ´Ù.
+ *    Aggregation Columnì˜ ê°’ì„ ì´ˆê¸°í™”í•œë‹¤.
  *
  * Implementation :
  *
@@ -2193,7 +2193,7 @@ qmnGRAG::aggrDoIt( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    Aggregation Column¿¡ ´ëÇÑ ¿¬»ê ¼öÇà
+ *    Aggregation Columnì— ëŒ€í•œ ì—°ì‚° ìˆ˜í–‰
  * Implementation :
  *
  ***********************************************************************/
@@ -2229,7 +2229,7 @@ qmnGRAG::aggrMerge( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    Aggregation Column¿¡ ´ëÇÑ ¿¬»ê ¼öÇà
+ *    Aggregation Columnì— ëŒ€í•œ ì—°ì‚° ìˆ˜í–‰
  * Implementation :
  *
  ***********************************************************************/
@@ -2264,7 +2264,7 @@ qmnGRAG::aggrFini( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    Aggregation Column¿¡ ´ëÇÑ ¸¶¹«¸®
+ *    Aggregation Columnì— ëŒ€í•œ ë§ˆë¬´ë¦¬
  * Implementation :
  *
  ***********************************************************************/
@@ -2299,11 +2299,11 @@ qmnGRAG::setTupleSet( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *     ÀúÀå Row¸¦ ÀÌ¿ëÇÏ¿© Tuple SetÀ» º¹¿ø
+ *     ì €ì¥ Rowë¥¼ ì´ìš©í•˜ì—¬ Tuple Setì„ ë³µì›
  *
  * Implementation :
- *     Grouping ColumnÀ» Tuple Set¿¡ º¹¿øÇÏ°í
- *     Aggregation Column¿¡ ´ëÇÑ ¸¶¹«¸® ¿¬»êÀ» ¼öÇàÇÑ´Ù.
+ *     Grouping Columnì„ Tuple Setì— ë³µì›í•˜ê³ 
+ *     Aggregation Columnì— ëŒ€í•œ ë§ˆë¬´ë¦¬ ì—°ì‚°ì„ ìˆ˜í–‰í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -2315,7 +2315,7 @@ qmnGRAG::setTupleSet( qcTemplate * aTemplate,
 
     //----------------------------------------
     // PROJ-1473
-    // »óÀ§³ëµå¿¡¼­ ÂüÁ¶ÇØ¾ß µÉ ÀúÀåÄÃ·³ÀÇ º¹¿ø
+    // ìƒìœ„ë…¸ë“œì—ì„œ ì°¸ì¡°í•´ì•¼ ë  ì €ì¥ì»¬ëŸ¼ì˜ ë³µì›
     //----------------------------------------
 
     for ( sNode = aDataPlan->mtrNode, i = 0;
@@ -2328,7 +2328,7 @@ qmnGRAG::setTupleSet( qcTemplate * aTemplate,
     }
 
     //----------------------------------------
-    // Grouping ColumnÀÇ Tuple Set º¹¿ø
+    // Grouping Columnì˜ Tuple Set ë³µì›
     //----------------------------------------
 
     for ( sNode = aDataPlan->groupNode;

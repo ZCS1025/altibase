@@ -31,17 +31,17 @@
 #include <smpReq.h>
 
 /* BUG-26939 
- * ÀÌ ¹è¿­ÀÇ °ªµéÀº ´ÙÀ½ ±¸Á¶Ã¼ÀÇ Å©±â º¯°æÀ¸·Î °ªÀÌ ´Ş¶óÁú ¼ö ÀÖ´Ù.
+ * ì´ ë°°ì—´ì˜ ê°’ë“¤ì€ ë‹¤ìŒ êµ¬ì¡°ì²´ì˜ í¬ê¸° ë³€ê²½ìœ¼ë¡œ ê°’ì´ ë‹¬ë¼ì§ˆ ìˆ˜ ìˆë‹¤.
  *      SMP_PERS_PAGE_BODY_SIZE, smpVarPageHeader, smVCPieceHeader.
- * ¶ÇÇÑ ÄÄÆÄÀÏ bit ¿¡ µû¶ó¼­ ±¸Á¶Ã¼ Å©±â°¡ ´Ş¶óÁö¹Ç·Î ´Ù¸£°Ô ¼¼ÆÃÇÑ´Ù.
- * debug mode¿¡¼­ ÀÌ Å©±â°¡ º¯°æµÇÁö ¾Ê´ÂÁö initializePageListEntry¿¡¼­ °Ë»çÇÑ´Ù.
- * ÀÌ ÆÄÆ®°¡ ¼öÁ¤µÈ´Ù¸é svp¿¡ ¶È°°Àº ÄÚµå°¡ ÀÖÀ¸¹Ç·Î µ¿ÀÏÇÏ°Ô ¼öÁ¤ÇØ¾ßÇÑ´Ù.
- * °ªÀ» ¾Æ·¡¿Í °°ÀÌ °áÁ¤ÇÑ ÀÚ¼¼ÇÑ ÀÌÀ¯´Â NOK Variable Page slots ¹®¼­ ÂüÁ¶
+ * ë˜í•œ ì»´íŒŒì¼ bit ì— ë”°ë¼ì„œ êµ¬ì¡°ì²´ í¬ê¸°ê°€ ë‹¬ë¼ì§€ë¯€ë¡œ ë‹¤ë¥´ê²Œ ì„¸íŒ…í•œë‹¤.
+ * debug modeì—ì„œ ì´ í¬ê¸°ê°€ ë³€ê²½ë˜ì§€ ì•ŠëŠ”ì§€ initializePageListEntryì—ì„œ ê²€ì‚¬í•œë‹¤.
+ * ì´ íŒŒíŠ¸ê°€ ìˆ˜ì •ëœë‹¤ë©´ svpì— ë˜‘ê°™ì€ ì½”ë“œê°€ ìˆìœ¼ë¯€ë¡œ ë™ì¼í•˜ê²Œ ìˆ˜ì •í•´ì•¼í•œë‹¤.
+ * ê°’ì„ ì•„ë˜ì™€ ê°™ì´ ê²°ì •í•œ ìì„¸í•œ ì´ìœ ëŠ” NOK Variable Page slots ë¬¸ì„œ ì°¸ì¡°
  */
 /* BUG-43379
- * smVCPieceHeaderÀÇ Å©±â´Â slot size·Î page¸¦ ÃÊ±âÈ­ ½ÃÅ³ ¶§ Æ÷ÇÔ½ÃÅ²´Ù.µû¶ó¼­ 
- * allocSlot ÇÒ ¶§´Â °í·ÁÇÒ ÇÊ¿ä°¡ ¾ø´Ù. ÀÚ¼¼ÇÑ ³»¿ëÀº initializePageListEntryÇÔ¼ö¿Í
- * initializePage ÇÔ¼ö¸¦ ÂüÁ¶.   
+ * smVCPieceHeaderì˜ í¬ê¸°ëŠ” slot sizeë¡œ pageë¥¼ ì´ˆê¸°í™” ì‹œí‚¬ ë•Œ í¬í•¨ì‹œí‚¨ë‹¤.ë”°ë¼ì„œ 
+ * allocSlot í•  ë•ŒëŠ” ê³ ë ¤í•  í•„ìš”ê°€ ì—†ë‹¤. ìì„¸í•œ ë‚´ìš©ì€ initializePageListEntryí•¨ìˆ˜ì™€
+ * initializePage í•¨ìˆ˜ë¥¼ ì°¸ì¡°.   
  */
 #if defined(COMPILE_64BIT)
 static UInt gVarSlotSizeArray[SM_VAR_PAGE_LIST_COUNT]=
@@ -56,15 +56,15 @@ static UInt gVarSlotSizeArray[SM_VAR_PAGE_LIST_COUNT]=
     2032, 2720, 4080, 5448, 8176, 10904, 16360, 32728
 };
 #endif
-/* size º°·Î ¸Â´Â index¸¦ ¸ÅÄª½ÃÄÑÁÖ´Â ¹è¿­ */
+/* size ë³„ë¡œ ë§ëŠ” indexë¥¼ ë§¤ì¹­ì‹œì¼œì£¼ëŠ” ë°°ì—´ */
 static UChar gAllocArray[SMP_PERS_PAGE_BODY_SIZE] = {0, };
 
 /***********************************************************************
- * Runtime ItemÀ» NULL·Î ¼³Á¤ÇÑ´Ù.
- * DISCARD/OFFLINE Tablespace¿¡ ¼ÓÇÑ Tableµé¿¡ ´ëÇØ ¼öÇàµÈ´Ù.
+ * Runtime Itemì„ NULLë¡œ ì„¤ì •í•œë‹¤.
+ * DISCARD/OFFLINE Tablespaceì— ì†í•œ Tableë“¤ì— ëŒ€í•´ ìˆ˜í–‰ëœë‹¤.
  *
- * [IN] aVarEntryCount : ÃÊ±âÈ­ÇÏ·Á´Â PageListEntryÀÇ ¼ö
- * [IN] aVarEntryArray : ÃÊ±âÈ­ÇÏ·Á´Â PageListEntryµéÀÇ Array
+ * [IN] aVarEntryCount : ì´ˆê¸°í™”í•˜ë ¤ëŠ” PageListEntryì˜ ìˆ˜
+ * [IN] aVarEntryArray : ì´ˆê¸°í™”í•˜ë ¤ëŠ” PageListEntryë“¤ì˜ Array
  ***********************************************************************/
 IDE_RC smpVarPageList::setRuntimeNull( UInt              aVarEntryCount,
                                        smpPageListEntry* aVarEntryArray )
@@ -75,7 +75,7 @@ IDE_RC smpVarPageList::setRuntimeNull( UInt              aVarEntryCount,
 
     for ( i=0; i<aVarEntryCount; i++)
     {
-        // RuntimeEntry ÃÊ±âÈ­
+        // RuntimeEntry ì´ˆê¸°í™”
         IDE_TEST(smpFreePageList::setRuntimeNull( & aVarEntryArray[i] )
                  != IDE_SUCCESS);
     }
@@ -88,10 +88,10 @@ IDE_RC smpVarPageList::setRuntimeNull( UInt              aVarEntryCount,
 }
 
 /**********************************************************************
- * memory tableÀÇ  variable page list entry°¡ Æ÷ÇÔÇÏ´Â runtime Á¤º¸ ÃÊ±âÈ­
+ * memory tableì˜  variable page list entryê°€ í¬í•¨í•˜ëŠ” runtime ì •ë³´ ì´ˆê¸°í™”
  *
- * aTableOID : PageListEntry°¡ ¼ÓÇÏ´Â Å×ÀÌºí OID
- * aVarEntry : ÃÊ±âÈ­ÇÏ·Á´Â PageListEntry
+ * aTableOID : PageListEntryê°€ ì†í•˜ëŠ” í…Œì´ë¸” OID
+ * aVarEntry : ì´ˆê¸°í™”í•˜ë ¤ëŠ” PageListEntry
  **********************************************************************/
 IDE_RC smpVarPageList::initEntryAtRuntime(
     smOID                  aTableOID,
@@ -107,7 +107,7 @@ IDE_RC smpVarPageList::initEntryAtRuntime(
 
     for( i = 0; i < SM_VAR_PAGE_LIST_COUNT ; i++ )
     {
-        // RuntimeEntry ÃÊ±âÈ­
+        // RuntimeEntry ì´ˆê¸°í™”
         IDE_TEST(smpFreePageList::initEntryAtRuntime( &(aVarEntry[i]) )
                  != IDE_SUCCESS);
 
@@ -123,9 +123,9 @@ IDE_RC smpVarPageList::initEntryAtRuntime(
 }
 
 /**********************************************************************
- * memory tableÀÇ  variable page list entry°¡ Æ÷ÇÔÇÏ´Â runtime Á¤º¸ ÇØÁ¦
+ * memory tableì˜  variable page list entryê°€ í¬í•¨í•˜ëŠ” runtime ì •ë³´ í•´ì œ
  *
- * aVarEntry : ÇØÁ¦ÇÏ·Á´Â PageListEntry
+ * aVarEntry : í•´ì œí•˜ë ¤ëŠ” PageListEntry
  **********************************************************************/
 IDE_RC smpVarPageList::finEntryAtRuntime( smpPageListEntry* aVarEntry )
 {
@@ -140,7 +140,7 @@ IDE_RC smpVarPageList::finEntryAtRuntime( smpPageListEntry* aVarEntry )
              sPageListID < SMP_PAGE_LIST_COUNT;
              sPageListID++ )
         {
-            // AllocPageListÀÇ Mutex ÇØÁ¦
+            // AllocPageListì˜ Mutex í•´ì œ
             IDE_TEST( smpAllocPageList::finEntryAtRuntime(
                           &(aVarEntry->mRuntimeEntry->
                               mAllocPageList[sPageListID]) )
@@ -150,12 +150,12 @@ IDE_RC smpVarPageList::finEntryAtRuntime( smpPageListEntry* aVarEntry )
     else
     {
         // Do Nothing
-        // OFFLINE/DISCARDµÈ TableÀÇ °æ¿ì mRuntimeEntry°¡ NULLÀÏ ¼öµµ ÀÖ´Ù.
+        // OFFLINE/DISCARDëœ Tableì˜ ê²½ìš° mRuntimeEntryê°€ NULLì¼ ìˆ˜ë„ ìˆë‹¤.
     }
 
     for( i = 0; i < SM_VAR_PAGE_LIST_COUNT; i++ )
     {
-        // RuntimeEntry Á¦°Å
+        // RuntimeEntry ì œê±°
         IDE_TEST(smpFreePageList::finEntryAtRuntime(&(aVarEntry[i]))
                  != IDE_SUCCESS);
     }
@@ -169,11 +169,11 @@ IDE_RC smpVarPageList::finEntryAtRuntime( smpPageListEntry* aVarEntry )
 }
 
 /***********************************************************************
- * PageListEntry¸¦ ¿ÏÀüÈ÷ Á¦°ÅÇÏ°í DB·Î ¹İ³³ÇÑ´Ù.
+ * PageListEntryë¥¼ ì™„ì „íˆ ì œê±°í•˜ê³  DBë¡œ ë°˜ë‚©í•œë‹¤.
  *
- * aTrans    : ÀÛ¾÷À» ¼öÇàÇÏ´Â Æ®·£Àè¼Ç °´Ã¼
- * aTableOID : Á¦°ÅÇÒ Å×ÀÌºí OID
- * aVarEntry : Á¦°ÅÇÒ PageListEntry
+ * aTrans    : ì‘ì—…ì„ ìˆ˜í–‰í•˜ëŠ” íŠ¸ëœì­ì…˜ ê°ì²´
+ * aTableOID : ì œê±°í•  í…Œì´ë¸” OID
+ * aVarEntry : ì œê±°í•  PageListEntry
  ***********************************************************************/
 IDE_RC smpVarPageList::freePageListToDB(void*             aTrans,
                                         scSpaceID         aSpaceID,
@@ -189,7 +189,7 @@ IDE_RC smpVarPageList::freePageListToDB(void*             aTrans,
 
     for( i = 0; i < SM_VAR_PAGE_LIST_COUNT; i++ )
     {
-        // FreePageList Á¦°Å
+        // FreePageList ì œê±°
         smpFreePageList::initializeFreePageListAndPool(&(aVarEntry[i]));
     }
 
@@ -239,16 +239,16 @@ IDE_RC smpVarPageList::setValue(scSpaceID       aSpaceID,
 }
 
 /***********************************************************************
- * Description: Variable Length Data¸¦ ÀĞ´Â´Ù. ¸¸¾à ±æÀÌ°¡ ÃÖ´ë Piece±æÀÌ º¸´Ù
- *              ÀÛ°í ÀĞ¾î¾ß ÇÒ Piece°¡ ÇÏ³ªÀÇ ÆäÀÌÁö¿¡ Á¸ÀçÇÑ´Ù¸é ÀĞ¾î¾ß ÇÒ À§Ä¡ÀÇ
- *              Ã¹¹øÂ° ¹ÙÀÌÆ®°¡ À§Ä¡ÇÑ ¸Ş¸ğ¸® Æ÷ÀÎÅÍ¸¦ ¸®ÅÏÇÑ´Ù. ±×·¸Áö ¾ÊÀ» °æ¿ì RowÀÇ
- *              °ªÀ» º¹»çÇØ¼­ ³Ñ°ÜÁØ´Ù.
+ * Description: Variable Length Dataë¥¼ ì½ëŠ”ë‹¤. ë§Œì•½ ê¸¸ì´ê°€ ìµœëŒ€ Pieceê¸¸ì´ ë³´ë‹¤
+ *              ì‘ê³  ì½ì–´ì•¼ í•  Pieceê°€ í•˜ë‚˜ì˜ í˜ì´ì§€ì— ì¡´ì¬í•œë‹¤ë©´ ì½ì–´ì•¼ í•  ìœ„ì¹˜ì˜
+ *              ì²«ë²ˆì§¸ ë°”ì´íŠ¸ê°€ ìœ„ì¹˜í•œ ë©”ëª¨ë¦¬ í¬ì¸í„°ë¥¼ ë¦¬í„´í•œë‹¤. ê·¸ë ‡ì§€ ì•Šì„ ê²½ìš° Rowì˜
+ *              ê°’ì„ ë³µì‚¬í•´ì„œ ë„˜ê²¨ì¤€ë‹¤.
  *
  * aSpaceID     - [IN] Space ID
- * aBeginPos    - [IN] ½ÃÀÛ À§Ä¡
- * aReadLen     - [IN] ÀĞÀ» µ¥ÀÌÅ¸ÀÇ ±æÀÌ
- * aFstPieceOID - [IN] Ã¹¹øÂ° PieceÀÇ OID
- * aBuffer      - [IN] value°¡ º¹»çµÊ.
+ * aBeginPos    - [IN] ì‹œì‘ ìœ„ì¹˜
+ * aReadLen     - [IN] ì½ì„ ë°ì´íƒ€ì˜ ê¸¸ì´
+ * aFstPieceOID - [IN] ì²«ë²ˆì§¸ Pieceì˜ OID
+ * aBuffer      - [IN] valueê°€ ë³µì‚¬ë¨.
  *
  ***********************************************************************/
 SChar* smpVarPageList::getValue( scSpaceID       aSpaceID,
@@ -266,13 +266,13 @@ SChar* smpVarPageList::getValue( scSpaceID       aSpaceID,
 
     IDE_ASSERT( aFstPieceOID != SM_NULL_OID );
 
-    /* Ã¹¹øÂ° VC Piece Header¸¦ °¡Á®¿Â´Ù. */
+    /* ì²«ë²ˆì§¸ VC Piece Headerë¥¼ ê°€ì ¸ì˜¨ë‹¤. */
     IDE_ASSERT( smmManager::getOIDPtr( aSpaceID,
                                        aFstPieceOID,
                                        (void**)&sVCPieceHeader )
                 == IDE_SUCCESS );
 
-    /* ÀĞÀ» Ã¹¹øÂ° ¹ÙÀÌÆ® À§Ä¡¸¦ Ã£´Â´Ù. */
+    /* ì½ì„ ì²«ë²ˆì§¸ ë°”ì´íŠ¸ ìœ„ì¹˜ë¥¼ ì°¾ëŠ”ë‹¤. */
     sPos = aBeginPos;
     while( sPos >= SMP_VC_PIECE_MAX_SIZE )
     {
@@ -288,8 +288,8 @@ SChar* smpVarPageList::getValue( scSpaceID       aSpaceID,
 
     sRet = smpVarPageList::getPieceValuePtr( sVCPieceHeader, sPos );
 
-    /* µ¥ÀÌÅ¸ÀÇ ±æÀÌ°¡ SMP_VC_PIECE_MAX_SIZEº¸´Ù ÀÛ°Å³ª °°°í ÀĞÀ» µ¥ÀÌÅ¸
-     * °¡ ÆäÀÌÁö¿¡ °ÉÃÄ¼­ ÀúÀåµÇÁö ¾Ê°í ÇÏ³ªÀÇ ÆäÀÌÁö¿¡ µé¾î°£´Ù¸é */
+    /* ë°ì´íƒ€ì˜ ê¸¸ì´ê°€ SMP_VC_PIECE_MAX_SIZEë³´ë‹¤ ì‘ê±°ë‚˜ ê°™ê³  ì½ì„ ë°ì´íƒ€
+     * ê°€ í˜ì´ì§€ì— ê±¸ì³ì„œ ì €ì¥ë˜ì§€ ì•Šê³  í•˜ë‚˜ì˜ í˜ì´ì§€ì— ë“¤ì–´ê°„ë‹¤ë©´ */
     if ( (( sPos + aReadLen)  > SMP_VC_PIECE_MAX_SIZE) 
             && ( aBuffer != NULL ))
     {
@@ -334,8 +334,8 @@ SChar* smpVarPageList::getValue( scSpaceID       aSpaceID,
             sRemainedReadSize = 0;
         }
 
-        /* ¹öÆÛ¿¡ º¹»çµÈ µ¥ÀÌÅ¸ÀÇ ±æÀÌ´Â ÀĞÀ» µ¥ÀÌÅ¸ÀÇ ±æÀÌ¿Í
-         * µ¿ÀÏÇØ¾ß ÇÕ´Ï´Ù. */
+        /* ë²„í¼ì— ë³µì‚¬ëœ ë°ì´íƒ€ì˜ ê¸¸ì´ëŠ” ì½ì„ ë°ì´íƒ€ì˜ ê¸¸ì´ì™€
+         * ë™ì¼í•´ì•¼ í•©ë‹ˆë‹¤. */
         IDE_ASSERT( (UInt)(sRowBuffer - aBuffer) == aReadLen );
     }
     else
@@ -349,9 +349,9 @@ SChar* smpVarPageList::getValue( scSpaceID       aSpaceID,
 /**********************************************************************
  * BUG-31206    improve usability of DUMPCI and DUMPDDF
  *
- * Varialbe ColumnÀ» À§ÇÑ Slot Header¸¦ altibase_sm.log¿¡ ´ıÇÁÇÑ´Ù
+ * Varialbe Columnì„ ìœ„í•œ Slot Headerë¥¼ altibase_sm.logì— ë¤í”„í•œë‹¤
  *
- * aVarSlotHeader : dumpÇÒ slot Çì´õ
+ * aVarSlotHeader : dumpí•  slot í—¤ë”
  **********************************************************************/
 void smpVarPageList::dumpVCPieceHeader( smVCPieceHeader *aVCPieceHeader )
 {
@@ -365,14 +365,14 @@ void smpVarPageList::dumpVCPieceHeader( smVCPieceHeader *aVCPieceHeader )
 
 /**********************************************************************
  * BUG-31206 improve usability of DUMPCI and DUMPDDF
- *           Slot Header¸¦ altibase_sm.log¿¡ ´ıÇÁÇÑ´Ù
+ *           Slot Headerë¥¼ altibase_sm.logì— ë¤í”„í•œë‹¤
  *
- * VCPieceHeader¸¦ ´ıÇÁÇÑ´Ù
+ * VCPieceHeaderë¥¼ ë¤í”„í•œë‹¤
  *
- * aVCPieceHeader : dumpÇÒ slot Çì´õ 
- * aDisplayTable  : TableÇüÅÂ·Î Ç¥½ÃÇÒ °ÍÀÎ°¡?
- * aOutBuf        : ´ë»ó ¹öÆÛ
- * aOutSize       : ´ë»ó ¹öÆÛÀÇ Å©±â
+ * aVCPieceHeader : dumpí•  slot í—¤ë” 
+ * aDisplayTable  : Tableí˜•íƒœë¡œ í‘œì‹œí•  ê²ƒì¸ê°€?
+ * aOutBuf        : ëŒ€ìƒ ë²„í¼
+ * aOutSize       : ëŒ€ìƒ ë²„í¼ì˜ í¬ê¸°
  **********************************************************************/
 void smpVarPageList::dumpVCPieceHeaderByBuffer( 
     smVCPieceHeader     * aVCPHeader,
@@ -406,11 +406,11 @@ void smpVarPageList::dumpVCPieceHeaderByBuffer(
 
 
 /**********************************************************************
- * systemÀ¸·ÎºÎÅÍ persistent page¸¦ ÇÒ´ç¹Ş´Â´Ù.
+ * systemìœ¼ë¡œë¶€í„° persistent pageë¥¼ í• ë‹¹ë°›ëŠ”ë‹¤.
  *
- * aTrans    : ÀÛ¾÷ÇÏ´Â Æ®·£Àè¼Ç °´Ã¼
- * aVarEntry : ÇÒ´ç¹ŞÀ» PageListEntry
- * aIdx      : ÇÒ´ç¹ŞÀ» VarSlot Å©±â idx
+ * aTrans    : ì‘ì—…í•˜ëŠ” íŠ¸ëœì­ì…˜ ê°ì²´
+ * aVarEntry : í• ë‹¹ë°›ì„ PageListEntry
+ * aIdx      : í• ë‹¹ë°›ì„ VarSlot í¬ê¸° idx
  **********************************************************************/
 IDE_RC smpVarPageList::allocPersPages( void*             aTrans,
                                        scSpaceID         aSpaceID,
@@ -451,9 +451,9 @@ IDE_RC smpVarPageList::allocPersPages( void*             aTrans,
     IDE_DASSERT( sFreePagePool != NULL );
     IDE_DASSERT( sFreePageList != NULL );
 
-    // DB¿¡¼­ PageµéÀ» ÇÒ´ç¹ŞÀ¸¸é FreePageList¸¦
-    // Tx's Private Page List¿¡ ¸ÕÀú µî·ÏÇÑ ÈÄ
-    // Æ®·£Àè¼ÇÀÌ Á¾·áµÉ ¶§ ÇØ´ç Å×ÀÌºíÀÇ PageListEntry¿¡ µî·ÏÇÏ°Ô µÈ´Ù.
+    // DBì—ì„œ Pageë“¤ì„ í• ë‹¹ë°›ìœ¼ë©´ FreePageListë¥¼
+    // Tx's Private Page Listì— ë¨¼ì € ë“±ë¡í•œ í›„
+    // íŠ¸ëœì­ì…˜ì´ ì¢…ë£Œë  ë•Œ í•´ë‹¹ í…Œì´ë¸”ì˜ PageListEntryì— ë“±ë¡í•˜ê²Œ ëœë‹¤.
 
     IDE_TEST( smLayerCallback::findPrivatePageList( aTrans,
                                                     aVarEntry->mTableOID,
@@ -462,7 +462,7 @@ IDE_RC smpVarPageList::allocPersPages( void*             aTrans,
 
     if(sPrivatePageList == NULL)
     {
-        // ±âÁ¸¿¡ PrivatePageList°¡ ¾ø¾ú´Ù¸é »õ·Î »ı¼ºÇÑ´Ù.
+        // ê¸°ì¡´ì— PrivatePageListê°€ ì—†ì—ˆë‹¤ë©´ ìƒˆë¡œ ìƒì„±í•œë‹¤.
         IDE_TEST( smLayerCallback::createPrivatePageList(
                       aTrans,
                       aVarEntry->mTableOID,
@@ -474,7 +474,7 @@ IDE_RC smpVarPageList::allocPersPages( void*             aTrans,
     sNTA = smLayerCallback::getLstUndoNxtLSN( aTrans );
     sState = 1;
 
-    // [1] smmManager·ÎºÎÅÍ page ÇÒ´ç
+    // [1] smmManagerë¡œë¶€í„° page í• ë‹¹
     IDE_TEST( smmManager::allocatePersPageList( aTrans,
                                                 aSpaceID,
                                                 SMP_ALLOCPAGECOUNT_FROMDB,
@@ -489,14 +489,14 @@ IDE_RC smpVarPageList::allocPersPages( void*             aTrans,
                      SMP_ALLOCPAGECOUNT_FROMDB )
                  == ID_TRUE );
 
-    // ÇÒ´ç¹ŞÀº HeadPage¸¦ PrivatePageList¿¡ µî·ÏÇÑ´Ù.
+    // í• ë‹¹ë°›ì€ HeadPageë¥¼ PrivatePageListì— ë“±ë¡í•œë‹¤.
     IDE_DASSERT( sPrivatePageList->mVarFreePageHead[aIdx] == NULL );
 
     sPrivatePageList->mVarFreePageHead[aIdx] =
         smpFreePageList::getFreePageHeader(aSpaceID,
                                            sAllocPageHead->mHeader.mSelfPageID);
 
-    // [2] page ÃÊ±âÈ­
+    // [2] page ì´ˆê¸°í™”
     sNextPageID = sAllocPageHead->mHeader.mSelfPageID;
 
     while(sNextPageID != SM_NULL_PID)
@@ -519,7 +519,7 @@ IDE_RC smpVarPageList::allocPersPages( void*             aTrans,
                   != IDE_SUCCESS);
 
 
-        // PersPageHeader ÃÊ±âÈ­ÇÏ°í (FreeSlotµéÀ» ¿¬°áÇÑ´Ù.)
+        // PersPageHeader ì´ˆê¸°í™”í•˜ê³  (FreeSlotë“¤ì„ ì—°ê²°í•œë‹¤.)
         initializePage( aIdx,
                         sPageListID,
                         aVarEntry->mSlotSize,
@@ -532,26 +532,26 @@ IDE_RC smpVarPageList::allocPersPages( void*             aTrans,
                                                 sPagePtr->mHeader.mSelfPageID)
                   != IDE_SUCCESS );
 
-        // FreePageHeader ÃÊ±âÈ­ÇÏ°í
+        // FreePageHeader ì´ˆê¸°í™”í•˜ê³ 
         smpFreePageList::initializeFreePageHeader(
             smpFreePageList::getFreePageHeader(aSpaceID, sPagePtr) );
 
-        // FreeSlotList¸¦ Page¿¡ µî·ÏÇÑ´Ù.
+        // FreeSlotListë¥¼ Pageì— ë“±ë¡í•œë‹¤.
         smpFreePageList::initializeFreeSlotListAtPage( aSpaceID,
                                                        aVarEntry,
                                                        sPagePtr );
 
         sNextPageID = sPagePtr->mHeader.mNextPageID;
 
-        // FreePageHeader¸¦ PrivatePageList·Î ¿¬°áÇÑ´Ù.
-        // PrivatePageList¿¡ Var¿µ¿ªÀº ´Ü¹æÇâ¸®½ºÆ®ÀÌ±â¶§¹®¿¡ Prev°¡ NULL·Î ¼ÂÆÃµÈ´Ù.
+        // FreePageHeaderë¥¼ PrivatePageListë¡œ ì—°ê²°í•œë‹¤.
+        // PrivatePageListì— Varì˜ì—­ì€ ë‹¨ë°©í–¥ë¦¬ìŠ¤íŠ¸ì´ê¸°ë•Œë¬¸ì— Prevê°€ NULLë¡œ ì…‹íŒ…ëœë‹¤.
         smpFreePageList::addFreePageToPrivatePageList( aSpaceID,
                                                        sPagePtr->mHeader.mSelfPageID,
                                                        SM_NULL_PID,  // Prev
                                                        sNextPageID );
     }
 
-    // [3] AllocPageList µî·Ï
+    // [3] AllocPageList ë“±ë¡
     IDE_TEST( sAllocPageList->mMutex->lock(NULL /* idvSQL* */) != IDE_SUCCESS );
     sState = 2;
 
@@ -588,7 +588,7 @@ IDE_RC smpVarPageList::allocPersPages( void*             aTrans,
                         == IDE_SUCCESS );
 
         case 2:
-            // DB¿¡¼­ TABÀ¸·Î PageµéÀ» °¡Á®¿Ô´Âµ¥ ¹ÌÃ³ TAB¿¡ ´ŞÁö ¸øÇß´Ù¸é ·Ñ¹é
+            // DBì—ì„œ TABìœ¼ë¡œ Pageë“¤ì„ ê°€ì ¸ì™”ëŠ”ë° ë¯¸ì²˜ TABì— ë‹¬ì§€ ëª»í–ˆë‹¤ë©´ ë¡¤ë°±
             IDE_ASSERT( smrRecoveryMgr::undoTrans( NULL, /* idvSQL* */
                                                    aTrans,
                                                    &sNTA )
@@ -597,7 +597,7 @@ IDE_RC smpVarPageList::allocPersPages( void*             aTrans,
             break;
 
         case 1:
-            // DB¿¡¼­ TABÀ¸·Î PageµéÀ» °¡Á®¿Ô´Âµ¥ ¹ÌÃ³ TAB¿¡ ´ŞÁö ¸øÇß´Ù¸é ·Ñ¹é
+            // DBì—ì„œ TABìœ¼ë¡œ Pageë“¤ì„ ê°€ì ¸ì™”ëŠ”ë° ë¯¸ì²˜ TABì— ë‹¬ì§€ ëª»í–ˆë‹¤ë©´ ë¡¤ë°±
             IDE_ASSERT( smrRecoveryMgr::undoTrans( NULL, /* idvSQL* */
                                                    aTrans,
                                                    &sNTA )
@@ -615,19 +615,19 @@ IDE_RC smpVarPageList::allocPersPages( void*             aTrans,
 }
 
 /***********************************************************************
- * temporary table header¸¦ À§ÇÑ fixed slot ÇÒ´ç
+ * temporary table headerë¥¼ ìœ„í•œ fixed slot í• ë‹¹
  *
- * temporary table header¿¡ column, index Á¤º¸µîÀ» ÀúÀåÇÒ°æ¿ì,
- * slot ÇÒ´ç¿¡ ´ëÇÑ ·Î±ëÀº ÇÏÁö ¾Êµµ·Ï Ã³¸®ÇØ¾ßÇÏÁö¸¸,
- * free slotÀÌ ÇÊ¿äÇÏ¿© systemÀ¸·ÎºÎÅÍ persistent page¸¦ ÇÒ´çÇÏ´Â
- * ¿¬»ê¿¡ ´ëÇØ¼­´Â ·Î±ëÀ» Ã³¸®ÇÑ´Ù.
+ * temporary table headerì— column, index ì •ë³´ë“±ì„ ì €ì¥í• ê²½ìš°,
+ * slot í• ë‹¹ì— ëŒ€í•œ ë¡œê¹…ì€ í•˜ì§€ ì•Šë„ë¡ ì²˜ë¦¬í•´ì•¼í•˜ì§€ë§Œ,
+ * free slotì´ í•„ìš”í•˜ì—¬ systemìœ¼ë¡œë¶€í„° persistent pageë¥¼ í• ë‹¹í•˜ëŠ”
+ * ì—°ì‚°ì— ëŒ€í•´ì„œëŠ” ë¡œê¹…ì„ ì²˜ë¦¬í•œë‹¤.
  *
- * aTableOID : ÇÒ´çÇÏ·Á´Â Å×ÀÌºíÀÇ OID
- * aVarEntry : ÇÒ´çÇÏ·Á´Â PageListEntry
- * aPieceSize: Variable ColumnÀ» ±¸¼ºÇÒ PieceÀÇ Å©±â
- * aNxtPieceOID  : ÇÒ´çÇÒ PieceÀÇ nextPieceOID
- * aPieceOID : ÇÒ´çµÈ PieceÀÇ OID
- * aPiecePtr      : ÇÒ´çÇØ¼­ ¹İÈ¯ÇÏ·Á´Â Row Æ÷ÀÎÅÍ
+ * aTableOID : í• ë‹¹í•˜ë ¤ëŠ” í…Œì´ë¸”ì˜ OID
+ * aVarEntry : í• ë‹¹í•˜ë ¤ëŠ” PageListEntry
+ * aPieceSize: Variable Columnì„ êµ¬ì„±í•  Pieceì˜ í¬ê¸°
+ * aNxtPieceOID  : í• ë‹¹í•  Pieceì˜ nextPieceOID
+ * aPieceOID : í• ë‹¹ëœ Pieceì˜ OID
+ * aPiecePtr      : í• ë‹¹í•´ì„œ ë°˜í™˜í•˜ë ¤ëŠ” Row í¬ì¸í„°
  ***********************************************************************/
 IDE_RC smpVarPageList::allocSlotForTempTableHdr( scSpaceID          aSpaceID,
                                                  smOID              aTableOID,
@@ -651,7 +651,7 @@ IDE_RC smpVarPageList::allocSlotForTempTableHdr( scSpaceID          aSpaceID,
     IDE_DASSERT( aPiecePtr != NULL );
 
     /* ------------------------------------------------
-     * Å©±â¿¡ ¸Â´Â variable page list ¼±ÅÃ
+     * í¬ê¸°ì— ë§ëŠ” variable page list ì„ íƒ
      * ----------------------------------------------*/
     IDE_TEST( calcVarIdx( aPieceSize, &sIdx ) != IDE_SUCCESS );
 
@@ -661,10 +661,10 @@ IDE_RC smpVarPageList::allocSlotForTempTableHdr( scSpaceID          aSpaceID,
     sVarPageList = aVarEntry + sIdx;
 
     // BUG-8083
-    // temp table °ü·Ã statement´Â untouchable ¼Ó¼ºÀÌ¹Ç·Î
-    // ·Î±ëÀ» ÇÏÁö ¸øÇÑ´Ù. ±×·¯¹Ç·Î »õ·Î¿î tx¸¦ ÇÒ´çÇÏ¿©
-    // PageListID¸¦ ¼±ÅÃÇÏ°í,
-    // systemÀ¸·ÎºÎÅÍ page¸¦ ÇÒ´ç¹ŞÀ»¶§ ·Î±ëÀ» Ã³¸®ÇÏµµ·Ï ÇÑ´Ù.
+    // temp table ê´€ë ¨ statementëŠ” untouchable ì†ì„±ì´ë¯€ë¡œ
+    // ë¡œê¹…ì„ í•˜ì§€ ëª»í•œë‹¤. ê·¸ëŸ¬ë¯€ë¡œ ìƒˆë¡œìš´ txë¥¼ í• ë‹¹í•˜ì—¬
+    // PageListIDë¥¼ ì„ íƒí•˜ê³ ,
+    // systemìœ¼ë¡œë¶€í„° pageë¥¼ í• ë‹¹ë°›ì„ë•Œ ë¡œê¹…ì„ ì²˜ë¦¬í•˜ë„ë¡ í•œë‹¤.
     IDE_TEST( smLayerCallback::allocTx( &sDummyTx ) != IDE_SUCCESS );
     sState = 1;
 
@@ -679,7 +679,7 @@ IDE_RC smpVarPageList::allocSlotForTempTableHdr( scSpaceID          aSpaceID,
 
     while(1)
     {
-        // 1) Tx's PrivatePageList¿¡¼­ Ã£±â
+        // 1) Tx's PrivatePageListì—ì„œ ì°¾ê¸°
         IDE_TEST( tryForAllocSlotFromPrivatePageList( sDummyTx,
                                                       aSpaceID,
                                                       aTableOID,
@@ -693,7 +693,7 @@ IDE_RC smpVarPageList::allocSlotForTempTableHdr( scSpaceID          aSpaceID,
             break;
         }
 
-        // 2) FreePageList¿¡¼­ Ã£±â
+        // 2) FreePageListì—ì„œ ì°¾ê¸°
         IDE_TEST( tryForAllocSlotFromFreePageList( sDummyTx,
                                                    aSpaceID,
                                                    sVarPageList,
@@ -707,7 +707,7 @@ IDE_RC smpVarPageList::allocSlotForTempTableHdr( scSpaceID          aSpaceID,
             break;
         }
 
-        // 3) systemÀ¸·ÎºÎÅÍ page¸¦ ÇÒ´ç¹Ş´Â´Ù.
+        // 3) systemìœ¼ë¡œë¶€í„° pageë¥¼ í• ë‹¹ë°›ëŠ”ë‹¤.
         IDE_TEST( allocPersPages( sDummyTx,
                                   aSpaceID,
                                   sVarPageList,
@@ -735,10 +735,10 @@ IDE_RC smpVarPageList::allocSlotForTempTableHdr( scSpaceID          aSpaceID,
     sCurVCPieceHeader->nxtPieceOID = aNxtPieceOID;
 
     /* ------------------------------------------------
-     * ÀÏ¹İÀûÀ¸·Î´Â normal table¿¡¼­´Â ·Î±ëÀÌ ÇÊ¿äÇÏÁö¸¸,
-     * temporary table header¿¡¼­ free slotÀ»
-     * ÇÒ´çÇÏ±â À§ÇØ Á¦°ÅÇÏ¿© free slotÀ» ÃÊ±âÈ­ÇÏ´Â
-     * ¿¬»ê¿¡ ´ëÇÑ ·Î±ëÀº ÇÊ¿äÇÏÁö ¾Ê´Ù.
+     * ì¼ë°˜ì ìœ¼ë¡œëŠ” normal tableì—ì„œëŠ” ë¡œê¹…ì´ í•„ìš”í•˜ì§€ë§Œ,
+     * temporary table headerì—ì„œ free slotì„
+     * í• ë‹¹í•˜ê¸° ìœ„í•´ ì œê±°í•˜ì—¬ free slotì„ ì´ˆê¸°í™”í•˜ëŠ”
+     * ì—°ì‚°ì— ëŒ€í•œ ë¡œê¹…ì€ í•„ìš”í•˜ì§€ ì•Šë‹¤.
      * ----------------------------------------------*/
 
     sState = 0;
@@ -746,7 +746,7 @@ IDE_RC smpVarPageList::allocSlotForTempTableHdr( scSpaceID          aSpaceID,
     IDE_TEST(smmDirtyPageMgr::insDirtyPage( aSpaceID, SM_MAKE_PID(*aPieceOID) )
              != IDE_SUCCESS);
 
-    // Record Count Áõ°¡
+    // Record Count ì¦ê°€
     IDE_TEST(sVarPageList->mRuntimeEntry->mMutex.lock( NULL /* idvSQL* */)
              != IDE_SUCCESS);
     sState = 4;
@@ -797,15 +797,15 @@ IDE_RC smpVarPageList::allocSlotForTempTableHdr( scSpaceID          aSpaceID,
 }
 
 /***********************************************************************
- * var slotÀ» ÇÒ´çÇÑ´Ù.
+ * var slotì„ í• ë‹¹í•œë‹¤.
  *
- * aTrans    : ÀÛ¾÷ÇÏ·Á´Â Æ®·£Àè¼Ç °´Ã¼
- * aTableOID : ÇÒ´çÇÏ·Á´Â Å×ÀÌºíÀÇ OID
- * aVarEntry : ÇÒ´çÇÏ·Á´Â PageListEntry
- * aPieceSize: Variable ColumnÀ» ±¸¼ºÇÒ PieceÀÇ Å©±â
- * aNxtPieceOID  : ÇÒ´çÇÒ PieceÀÇ nextPieceOID
- * aPieceOID : ÇÒ´çµÈ PieceÀÇ OID
- * aPiecePtr      : ÇÒ´çÇØ¼­ ¹İÈ¯ÇÏ·Á´Â Row Æ÷ÀÎÅÍ
+ * aTrans    : ì‘ì—…í•˜ë ¤ëŠ” íŠ¸ëœì­ì…˜ ê°ì²´
+ * aTableOID : í• ë‹¹í•˜ë ¤ëŠ” í…Œì´ë¸”ì˜ OID
+ * aVarEntry : í• ë‹¹í•˜ë ¤ëŠ” PageListEntry
+ * aPieceSize: Variable Columnì„ êµ¬ì„±í•  Pieceì˜ í¬ê¸°
+ * aNxtPieceOID  : í• ë‹¹í•  Pieceì˜ nextPieceOID
+ * aPieceOID : í• ë‹¹ëœ Pieceì˜ OID
+ * aPiecePtr      : í• ë‹¹í•´ì„œ ë°˜í™˜í•˜ë ¤ëŠ” Row í¬ì¸í„°
  ***********************************************************************/
 IDE_RC smpVarPageList::allocSlot( void*              aTrans,
                                   scSpaceID          aSpaceID,
@@ -830,7 +830,7 @@ IDE_RC smpVarPageList::allocSlot( void*              aTrans,
     IDE_DASSERT( aPiecePtr != NULL );
 
     /* ----------------------------
-     * Å©±â¿¡ ¸Â´Â variable page list ¼±ÅÃ
+     * í¬ê¸°ì— ë§ëŠ” variable page list ì„ íƒ
      * ---------------------------*/
     IDE_TEST( calcVarIdx( aPieceSize, &sIdx ) != IDE_SUCCESS );
 
@@ -844,7 +844,7 @@ IDE_RC smpVarPageList::allocSlot( void*              aTrans,
 
     while(1)
     {
-        // 1) Tx's PrivatePageList¿¡¼­ Ã£±â
+        // 1) Tx's PrivatePageListì—ì„œ ì°¾ê¸°
         IDE_TEST( tryForAllocSlotFromPrivatePageList( aTrans,
                                                       aSpaceID,
                                                       aTableOID,
@@ -858,7 +858,7 @@ IDE_RC smpVarPageList::allocSlot( void*              aTrans,
             break;
         }
 
-        // 2) FreePageList¿¡¼­ Ã£±â
+        // 2) FreePageListì—ì„œ ì°¾ê¸°
         IDE_TEST( tryForAllocSlotFromFreePageList( aTrans,
                                                    aSpaceID,
                                                    sVarPageList,
@@ -872,7 +872,7 @@ IDE_RC smpVarPageList::allocSlot( void*              aTrans,
             break;
         }
 
-        // 3) systemÀ¸·ÎºÎÅÍ page¸¦ ÇÒ´ç¹Ş´Â´Ù.
+        // 3) systemìœ¼ë¡œë¶€í„° pageë¥¼ í• ë‹¹ë°›ëŠ”ë‹¤.
         IDE_TEST( allocPersPages( aTrans,
                                   aSpaceID,
                                   sVarPageList,
@@ -891,8 +891,8 @@ IDE_RC smpVarPageList::allocSlot( void*              aTrans,
     sAfterVCPieceHeader.flag &= ~SM_VCPIECE_TYPE_MASK;
     sAfterVCPieceHeader.flag |= aPieceType;
 
-    /* BUG-15354: [A4] SM VARCHAR 32K: VarcharÀúÀå½Ã PieceHeader¿¡ ´ëÇÑ loggingÀÌ
-     * ´©¶ôµÇ¾î PieceHeader¿¡ ´ëÇÑ Redo, Undo°¡ µÇÁö¾ÊÀ½. */
+    /* BUG-15354: [A4] SM VARCHAR 32K: Varcharì €ì¥ì‹œ PieceHeaderì— ëŒ€í•œ loggingì´
+     * ëˆ„ë½ë˜ì–´ PieceHeaderì— ëŒ€í•œ Redo, Undoê°€ ë˜ì§€ì•ŠìŒ. */
     sAfterVCPieceHeader.length      = aPieceSize;
     sAfterVCPieceHeader.nxtPieceOID = aNxtPieceOID;
 
@@ -912,7 +912,7 @@ IDE_RC smpVarPageList::allocSlot( void*              aTrans,
     IDE_TEST(smmDirtyPageMgr::insDirtyPage( aSpaceID, SM_MAKE_PID(*aPieceOID) )
              != IDE_SUCCESS);
 
-    // Record Count Áõ°¡
+    // Record Count ì¦ê°€
     IDE_TEST(sVarPageList->mRuntimeEntry->mMutex.lock(NULL /* idvSQL* */)
              != IDE_SUCCESS);
     sState = 2;
@@ -954,14 +954,14 @@ IDE_RC smpVarPageList::allocSlot( void*              aTrans,
 }
 
 /**********************************************************************
- * Tx's PrivatePageListÀÇ FreePage·ÎºÎÅÍ Slot¸¦ ÇÒ´çÇÒ ¼ö ÀÖÀ»Áö °Ë»çÇÏ°í
- * °¡´ÉÇÏ¸é ÇÒ´çÇÑ´Ù.
+ * Tx's PrivatePageListì˜ FreePageë¡œë¶€í„° Slotë¥¼ í• ë‹¹í•  ìˆ˜ ìˆì„ì§€ ê²€ì‚¬í•˜ê³ 
+ * ê°€ëŠ¥í•˜ë©´ í• ë‹¹í•œë‹¤.
  *
- * aTrans    : ÀÛ¾÷ÇÏ´Â Æ®·£Àè¼Ç °´Ã¼
- * aTableOID : ÇÒ´çÇÏ·Á´Â Å×ÀÌºí OID
- * aIdx      : ÇÒ´çÇÏ·Á´Â VarPageÀÇ Idx°ª
- * aPieceOID : ÇÒ´çÇØ¼­ ¹İÈ¯ÇÏ·Á´Â Slot ÀÇ OID
- * aPiecePtr : ÇÒ´çÇØ¼­ ¹İÈ¯ÇÏ·Á´Â Slot Æ÷ÀÎÅÍ
+ * aTrans    : ì‘ì—…í•˜ëŠ” íŠ¸ëœì­ì…˜ ê°ì²´
+ * aTableOID : í• ë‹¹í•˜ë ¤ëŠ” í…Œì´ë¸” OID
+ * aIdx      : í• ë‹¹í•˜ë ¤ëŠ” VarPageì˜ Idxê°’
+ * aPieceOID : í• ë‹¹í•´ì„œ ë°˜í™˜í•˜ë ¤ëŠ” Slot ì˜ OID
+ * aPiecePtr : í• ë‹¹í•´ì„œ ë°˜í™˜í•˜ë ¤ëŠ” Slot í¬ì¸í„°
  **********************************************************************/
 
 IDE_RC smpVarPageList::tryForAllocSlotFromPrivatePageList(
@@ -1019,14 +1019,14 @@ IDE_RC smpVarPageList::tryForAllocSlotFromPrivatePageList(
 }
 
 /***********************************************************************
- * FreePageList³ª FreePagePool¿¡¼­ FreeSlotÀ» ÇÒ´çÇÒ ¼ö ÀÖ´ÂÁö ½Ãµµ
- * ÇÒ´çÀÌ µÇ¸é aPiecePtr·Î ¹İÈ¯ÇÏ°í ÇÒ´çÇÒ FreeSlotÀÌ ¾ø´Ù¸é aPiecePtr¸¦ NULL·Î ¹İÈ¯
+ * FreePageListë‚˜ FreePagePoolì—ì„œ FreeSlotì„ í• ë‹¹í•  ìˆ˜ ìˆëŠ”ì§€ ì‹œë„
+ * í• ë‹¹ì´ ë˜ë©´ aPiecePtrë¡œ ë°˜í™˜í•˜ê³  í• ë‹¹í•  FreeSlotì´ ì—†ë‹¤ë©´ aPiecePtrë¥¼ NULLë¡œ ë°˜í™˜
  *
- * aTrans      : ÀÛ¾÷ÇÏ´Â Æ®·£Àè¼Ç °´Ã¼
- * aVarEntry   : SlotÀ» ÇÒ´çÇÏ·Á´Â PageListEntry
- * aPageListID : SlotÀ» ÇÒ´çÇÏ·Á´Â PageListID
- * aPieceOID   : ÇÒ´çÇØ¼­ ¹İÈ¯ÇÏ·Á´Â Piece OID
- * aPiecePtr   : ÇÒ´çÇØ¼­ ¹İÈ¯ÇÏ·Á´Â Piece Ptr
+ * aTrans      : ì‘ì—…í•˜ëŠ” íŠ¸ëœì­ì…˜ ê°ì²´
+ * aVarEntry   : Slotì„ í• ë‹¹í•˜ë ¤ëŠ” PageListEntry
+ * aPageListID : Slotì„ í• ë‹¹í•˜ë ¤ëŠ” PageListID
+ * aPieceOID   : í• ë‹¹í•´ì„œ ë°˜í™˜í•˜ë ¤ëŠ” Piece OID
+ * aPiecePtr   : í• ë‹¹í•´ì„œ ë°˜í™˜í•˜ë ¤ëŠ” Piece Ptr
  ***********************************************************************/
 IDE_RC smpVarPageList::tryForAllocSlotFromFreePageList(
     void*             aTrans,
@@ -1059,7 +1059,7 @@ IDE_RC smpVarPageList::tryForAllocSlotFromFreePageList(
 
     while(1)
     {
-        // FreePageListÀÇ SizeClass¸¦ ¼øÈ¸ÇÏ¸é¼­ tryAllocSlotÇÑ´Ù.
+        // FreePageListì˜ SizeClassë¥¼ ìˆœíšŒí•˜ë©´ì„œ tryAllocSlotí•œë‹¤.
         for( sSizeClassID = 0;
              sSizeClassID < sSizeClassCount;
              sSizeClassID++ )
@@ -1068,13 +1068,13 @@ IDE_RC smpVarPageList::tryForAllocSlotFromFreePageList(
 
             while(sFreePageHeader != NULL)
             {
-                // ÇØ´ç Page¿¡ ´ëÇØ SlotÀ» ÇÒ´çÇÏ·Á°í ÇÏ°í
-                // ÇÒ´çÇÏ°ÔµÇ¸é ÇØ´ç PageÀÇ ¼Ó¼ºÀÌ º¯°æµÇ¹Ç·Î lockÀ¸·Î º¸È£
+                // í•´ë‹¹ Pageì— ëŒ€í•´ Slotì„ í• ë‹¹í•˜ë ¤ê³  í•˜ê³ 
+                // í• ë‹¹í•˜ê²Œë˜ë©´ í•´ë‹¹ Pageì˜ ì†ì„±ì´ ë³€ê²½ë˜ë¯€ë¡œ lockìœ¼ë¡œ ë³´í˜¸
                 IDE_TEST(sFreePageHeader->mMutex.lock(NULL /* idvSQL* */)
                          != IDE_SUCCESS);
                 sState = 1;
 
-                // lockÀâ±âÀü¿¡ ÇØ´ç Page¿¡ ´ëÇØ ´Ù¸¥ Tx¿¡ ÀÇÇØ º¯°æµÇ¾ú´ÂÁö °Ë»ç
+                // lockì¡ê¸°ì „ì— í•´ë‹¹ Pageì— ëŒ€í•´ ë‹¤ë¥¸ Txì— ì˜í•´ ë³€ê²½ë˜ì—ˆëŠ”ì§€ ê²€ì‚¬
                 if(sFreePageHeader->mFreeListID == aPageListID)
                 {
                     IDE_ASSERT(sFreePageHeader->mFreeSlotCount > 0);
@@ -1084,8 +1084,8 @@ IDE_RC smpVarPageList::tryForAllocSlotFromFreePageList(
                                                aPieceOID,
                                                aPiecePtr);
 
-                    // FreeSlotÀ» ÇÒ´çÇÑ PageÀÇ SizeClass°¡ º¯°æµÇ¾ú´ÂÁö
-                    // È®ÀÎÇÏ¿© Á¶Á¤
+                    // FreeSlotì„ í• ë‹¹í•œ Pageì˜ SizeClassê°€ ë³€ê²½ë˜ì—ˆëŠ”ì§€
+                    // í™•ì¸í•˜ì—¬ ì¡°ì •
                     IDE_TEST(smpFreePageList::modifyPageSizeClass(
                                  aTrans,
                                  aVarEntry,
@@ -1101,13 +1101,13 @@ IDE_RC smpVarPageList::tryForAllocSlotFromFreePageList(
                 sState = 0;
                 IDE_TEST(sFreePageHeader->mMutex.unlock() != IDE_SUCCESS);
 
-                // ÇØ´ç Page°¡ º¯°æµÈ °ÍÀÌ¶ó¸é List¿¡¼­ ´Ù½Ã Head¸¦ °¡Á®¿Â´Ù.
+                // í•´ë‹¹ Pageê°€ ë³€ê²½ëœ ê²ƒì´ë¼ë©´ Listì—ì„œ ë‹¤ì‹œ Headë¥¼ ê°€ì ¸ì˜¨ë‹¤.
                 sFreePageHeader = sFreePageList->mHead[sSizeClassID];
             }
         }
 
-        // FreePageList¿¡¼­ FreeSlotÀ» Ã£Áö ¸øÇß´Ù¸é
-        // FreePagePool¿¡¼­ È®ÀÎÇÏ¿© °¡Á®¿Â´Ù.
+        // FreePageListì—ì„œ FreeSlotì„ ì°¾ì§€ ëª»í–ˆë‹¤ë©´
+        // FreePagePoolì—ì„œ í™•ì¸í•˜ì—¬ ê°€ì ¸ì˜¨ë‹¤.
 
         IDE_TEST( smpFreePageList::tryForAllocPagesFromPool( aVarEntry,
                                                              aPageListID,
@@ -1116,7 +1116,7 @@ IDE_RC smpVarPageList::tryForAllocSlotFromFreePageList(
 
         if(sIsPageAlloced == ID_FALSE)
         {
-            // Pool¿¡¼­ ¸ø°¡Á®¿Ô´Ù.
+            // Poolì—ì„œ ëª»ê°€ì ¸ì™”ë‹¤.
             IDE_CONT(normal_case);
         }
     }
@@ -1144,18 +1144,18 @@ IDE_RC smpVarPageList::tryForAllocSlotFromFreePageList(
 }
 
 /***********************************************************************
- * slotÀ» free ÇÑ´Ù.
+ * slotì„ free í•œë‹¤.
  *
- * BUG-14093 Ager Tx°¡ freeSlotÇÑ °ÍÀ» commitµÇÁö ¾ÊÀº »óÈ²¿¡¼­
- *           ´Ù¸¥ Tx°¡ ÇÒ´ç¹Ş¾Æ »ç¿ëÇßÀ»¶§ ¼­¹ö »ç¸Á½Ã ¹®Á¦¹ß»ı
- *           µû¶ó¼­ Ager Tx°¡ CommitÀÌÈÄ¿¡ FreeSlotÀ» FreeSlotList¿¡ ¸Å´Ü´Ù.
+ * BUG-14093 Ager Txê°€ freeSlotí•œ ê²ƒì„ commitë˜ì§€ ì•Šì€ ìƒí™©ì—ì„œ
+ *           ë‹¤ë¥¸ Txê°€ í• ë‹¹ë°›ì•„ ì‚¬ìš©í–ˆì„ë•Œ ì„œë²„ ì‚¬ë§ì‹œ ë¬¸ì œë°œìƒ
+ *           ë”°ë¼ì„œ Ager Txê°€ Commitì´í›„ì— FreeSlotì„ FreeSlotListì— ë§¤ë‹¨ë‹¤.
  *
- * aTrans     : ÀÛ¾÷À» ¼öÇàÇÏ´Â Æ®·£Àè¼Ç °´Ã¼
- * aVarEntry  : aPiecePtr°¡ ¼ÓÇÑ PageListEntry
- * aPieceOID  : freeÇÏ·Á´Â Piece OID
- * aPiecePtr  : freeÇÏ·Á´Â Piece Ptr
+ * aTrans     : ì‘ì—…ì„ ìˆ˜í–‰í•˜ëŠ” íŠ¸ëœì­ì…˜ ê°ì²´
+ * aVarEntry  : aPiecePtrê°€ ì†í•œ PageListEntry
+ * aPieceOID  : freeí•˜ë ¤ëŠ” Piece OID
+ * aPiecePtr  : freeí•˜ë ¤ëŠ” Piece Ptr
  * aNTA       : NTA LSN
- * aTableType : Temp TableÀÇ slotÀÎÁö¿¡ ´ëÇÑ ¿©ºÎ
+ * aTableType : Temp Tableì˜ slotì¸ì§€ì— ëŒ€í•œ ì—¬ë¶€
  ***********************************************************************/
 IDE_RC smpVarPageList::freeSlot( void*             aTrans,
                                  scSpaceID         aSpaceID,
@@ -1182,8 +1182,8 @@ IDE_RC smpVarPageList::freeSlot( void*             aTrans,
 
     /* ----------------------------
      * BUG-14093
-     * freeSlot¿¡¼­´Â slot¿¡ ´ëÇÑ FreeÀÛ¾÷¸¸ ¼öÇàÇÏ°í
-     * ager Tx°¡ commitÇÑ ÀÌÈÄ¿¡ addFreeSlotPendingÀ» ¼öÇàÇÑ´Ù.
+     * freeSlotì—ì„œëŠ” slotì— ëŒ€í•œ Freeì‘ì—…ë§Œ ìˆ˜í–‰í•˜ê³ 
+     * ager Txê°€ commití•œ ì´í›„ì— addFreeSlotPendingì„ ìˆ˜í–‰í•œë‹¤.
      * ---------------------------*/
 
     sPageID        = SM_MAKE_PID(aPieceOID);
@@ -1207,7 +1207,7 @@ IDE_RC smpVarPageList::freeSlot( void*             aTrans,
                           aTableType )
               != IDE_SUCCESS);
 
-    // Record Count Á¶Á¤
+    // Record Count ì¡°ì •
     if(sVarPageList->mRuntimeEntry->mDelRecCnt == ID_UINT_MAX)
     {
         IDE_TEST(sVarPageList->mRuntimeEntry->mMutex.lock(NULL /* idvSQL* */)
@@ -1237,9 +1237,9 @@ IDE_RC smpVarPageList::freeSlot( void*             aTrans,
 
     if(aTableType == SMP_TABLE_NORMAL)
     {
-        // BUG-14093 freeSlotÇÏ´Â ager°¡ commitÇÏ±â Àü¿¡´Â
-        //           freeSlotList¿¡ ¸Å´ŞÁö ¾Ê°í ager TX°¡
-        //           commit ÀÌÈÄ¿¡ ¸Å´Şµµ·Ï OIDList¿¡ Ãß°¡ÇÑ´Ù.
+        // BUG-14093 freeSlotí•˜ëŠ” agerê°€ commití•˜ê¸° ì „ì—ëŠ”
+        //           freeSlotListì— ë§¤ë‹¬ì§€ ì•Šê³  ager TXê°€
+        //           commit ì´í›„ì— ë§¤ë‹¬ë„ë¡ OIDListì— ì¶”ê°€í•œë‹¤.
         IDE_TEST( smLayerCallback::addOID( aTrans,
                                            aVarEntry->mTableOID,
                                            aPieceOID,
@@ -1249,7 +1249,7 @@ IDE_RC smpVarPageList::freeSlot( void*             aTrans,
     }
     else
     {
-        // TEMP TableÀº ¹Ù·Î FreeSlotList¿¡ Ãß°¡ÇÑ´Ù.
+        // TEMP Tableì€ ë°”ë¡œ FreeSlotListì— ì¶”ê°€í•œë‹¤.
         IDE_TEST( addFreeSlotPending(aTrans,
                                      aSpaceID,
                                      aVarEntry,
@@ -1278,14 +1278,14 @@ IDE_RC smpVarPageList::freeSlot( void*             aTrans,
 }
 
 /***********************************************************************
- * Page¸¦ ÃÊ±âÈ­ ÇÑ´Ù.
- * Page³»ÀÇ ¸ğµç Slotµéµµ ÃÊ±âÈ­ÇÏ¸ç Next ¸µÅ©¸¦ ±¸¼ºÇÑ´Ù.
+ * Pageë¥¼ ì´ˆê¸°í™” í•œë‹¤.
+ * Pageë‚´ì˜ ëª¨ë“  Slotë“¤ë„ ì´ˆê¸°í™”í•˜ë©° Next ë§í¬ë¥¼ êµ¬ì„±í•œë‹¤.
  *
- * aIdx        : PageÀÇ VarEntryÀÇ Idx °ª
- * aPageListID : Page°¡ ¼ÓÇÒ PageListID
- * aSlotSize   : Page¿¡ µé¾î°¡´Â SlotÀÇ Å©±â
- * aSlotCount  : Page³»ÀÇ ¸ğµç Slot °¹¼ö
- * aPage       : ÃÊ±âÈ­ÇÒ Page
+ * aIdx        : Pageì˜ VarEntryì˜ Idx ê°’
+ * aPageListID : Pageê°€ ì†í•  PageListID
+ * aSlotSize   : Pageì— ë“¤ì–´ê°€ëŠ” Slotì˜ í¬ê¸°
+ * aSlotCount  : Pageë‚´ì˜ ëª¨ë“  Slot ê°¯ìˆ˜
+ * aPage       : ì´ˆê¸°í™”í•  Page
  ***********************************************************************/
 void smpVarPageList::initializePage( vULong       aIdx,
                                      UInt         aPageListID,
@@ -1314,7 +1314,7 @@ void smpVarPageList::initializePage( vULong       aIdx,
 
     sNxtVCFreePieceHeader   = (smVCPieceHeader*)(sVarPageHeader + 1);
 
-    // Variable Page¿¡ ¼ÓÇØÀÖ´Â ¸ğµç VC Piece¸¦ free·Î Setting.
+    // Variable Pageì— ì†í•´ìˆëŠ” ëª¨ë“  VC Pieceë¥¼ freeë¡œ Setting.
     for( i = 0; i < aSlotCount; i++ )
     {
         sCurVCFreePieceHeader = sNxtVCFreePieceHeader;
@@ -1329,7 +1329,7 @@ void smpVarPageList::initializePage( vULong       aIdx,
     // fix BUG-26934 : [codeSonar] Null Pointer Dereference
     IDE_ASSERT( sCurVCFreePieceHeader != NULL );
 
-    // ¸¶Áö¸· Next = NULL
+    // ë§ˆì§€ë§‰ Next = NULL
     sCurVCFreePieceHeader->nxtPieceOID = (smOID)NULL;
 
     IDL_MEM_BARRIER;
@@ -1339,14 +1339,14 @@ void smpVarPageList::initializePage( vULong       aIdx,
 }
 
 /**********************************************************************
- * FreeSlot Á¤º¸¸¦ ±â·ÏÇÑ´Ù.
+ * FreeSlot ì •ë³´ë¥¼ ê¸°ë¡í•œë‹¤.
  *
- * aTrans      : ÀÛ¾÷ÇÏ·Á´Â Æ®·£Àè¼Ç °´Ã¼
- * aPageID     : FreeSlotÃß°¡ÇÏ·Á´Â PageID
- * aVCPieceOID : FreeÇÒ·Á´Â Piece OID
- * aVCPiecePtr : FreeÇÒ·Á´Â Piece Ptr
+ * aTrans      : ì‘ì—…í•˜ë ¤ëŠ” íŠ¸ëœì­ì…˜ ê°ì²´
+ * aPageID     : FreeSlotì¶”ê°€í•˜ë ¤ëŠ” PageID
+ * aVCPieceOID : Freeí• ë ¤ëŠ” Piece OID
+ * aVCPiecePtr : Freeí• ë ¤ëŠ” Piece Ptr
  * aNTA        : NTA LSN
- * aTableType  : TempÅ×ÀÌºíÀÎÁö ¿©ºÎ
+ * aTableType  : Tempí…Œì´ë¸”ì¸ì§€ ì—¬ë¶€
  **********************************************************************/
 IDE_RC smpVarPageList::setFreeSlot( void          * aTrans,
                                     scSpaceID       aSpaceID,
@@ -1376,13 +1376,13 @@ IDE_RC smpVarPageList::setFreeSlot( void          * aTrans,
     sCurFreeVCPieceHdr = (smVCPieceHeader*)aVCPiecePtr;
     sCurFreeVCPieceHdr->nxtPieceOID = SM_NULL_OID;
 
-    /* Variable ColumnÀº TransactionÀÌ CommitÀÌÀü¿¡ Variable Column»èÁ¦½Ã
-       ¹Ì¸® Variable ColumnÀÇ ¸ğµç VC PieceÀÇ Flag¿¡ FreeµÇ¾ú´Ù°í Ç¥½ÃÇÑ´Ù.
-       ÇÏÁö¸¸ TransactionµéÀº Variable ColumnÀÌ ¼ÓÇÑ Fixed Row¸¦ ÅëÇØ ÀÚ½ÅÀÌ
-       ÀÌ Variable ColumnÀ» ÀĞ¾î¾ß ÇÒÁö °áÁ¤ÇÏ±â ¶§¹®¿¡ Transaction CommitÀÌÀü¿¡
-       Flag¸¦ ¼³Á¤ÇÏ¿©µµ ¹®Á¦°¡ ¾ÈµÈ´Ù. ÀÌ Flag¸¦ ÂüÁ¶ÇÏ´Â °ÍÀº refine½Ã Free
-       VC Piece List¸¦ ±¸¼ºÇÒ ¶§ÀÌ´Ù. ¿ÀÁ÷ TransactionÀº Alloc, Free¶§ Flag¸¦
-       Setting¸¸ÇÏÁö ÂüÁ¶ÇÏÁö´Â ¾Ê´Â´Ù.*/
+    /* Variable Columnì€ Transactionì´ Commitì´ì „ì— Variable Columnì‚­ì œì‹œ
+       ë¯¸ë¦¬ Variable Columnì˜ ëª¨ë“  VC Pieceì˜ Flagì— Freeë˜ì—ˆë‹¤ê³  í‘œì‹œí•œë‹¤.
+       í•˜ì§€ë§Œ Transactionë“¤ì€ Variable Columnì´ ì†í•œ Fixed Rowë¥¼ í†µí•´ ìì‹ ì´
+       ì´ Variable Columnì„ ì½ì–´ì•¼ í• ì§€ ê²°ì •í•˜ê¸° ë•Œë¬¸ì— Transaction Commitì´ì „ì—
+       Flagë¥¼ ì„¤ì •í•˜ì—¬ë„ ë¬¸ì œê°€ ì•ˆëœë‹¤. ì´ Flagë¥¼ ì°¸ì¡°í•˜ëŠ” ê²ƒì€ refineì‹œ Free
+       VC Piece Listë¥¼ êµ¬ì„±í•  ë•Œì´ë‹¤. ì˜¤ì§ Transactionì€ Alloc, Freeë•Œ Flagë¥¼
+       Settingë§Œí•˜ì§€ ì°¸ì¡°í•˜ì§€ëŠ” ì•ŠëŠ”ë‹¤.*/
     if( (sCurFreeVCPieceHdr->flag & SM_VCPIECE_FREE_MASK)
         == SM_VCPIECE_FREE_NO )
     {
@@ -1416,14 +1416,14 @@ IDE_RC smpVarPageList::setFreeSlot( void          * aTrans,
 }
 
 /**********************************************************************
- * ½ÇÁ¦ FreeSlotÀ» FreeSlotList¿¡ Ãß°¡ÇÑ´Ù.
+ * ì‹¤ì œ FreeSlotì„ FreeSlotListì— ì¶”ê°€í•œë‹¤.
  *
- * BUG-14093 CommitÀÌÈÄ¿¡ FreeSlotÀ» ½ÇÁ¦ FreeSlotList¿¡ ¸Å´Ü´Ù.
+ * BUG-14093 Commitì´í›„ì— FreeSlotì„ ì‹¤ì œ FreeSlotListì— ë§¤ë‹¨ë‹¤.
  *
- * aTrans    : ÀÛ¾÷ÇÏ´Â Æ®·£Àè¼Ç °´Ã¼
- * aVarEntry : FreeSlotÀÌ ¼ÓÇÑ PageListEntry
- * aPieceOID : FreeSlotÀÇ OID
- * aPiecePtr : FreeSlotÀÇ Row Æ÷ÀÎÅÍ
+ * aTrans    : ì‘ì—…í•˜ëŠ” íŠ¸ëœì­ì…˜ ê°ì²´
+ * aVarEntry : FreeSlotì´ ì†í•œ PageListEntry
+ * aPieceOID : FreeSlotì˜ OID
+ * aPiecePtr : FreeSlotì˜ Row í¬ì¸í„°
  **********************************************************************/
 
 IDE_RC smpVarPageList::addFreeSlotPending( void*             aTrans,
@@ -1454,13 +1454,13 @@ IDE_RC smpVarPageList::addFreeSlotPending( void*             aTrans,
     IDE_TEST(sFreePageHeader->mMutex.lock(NULL /* idvSQL* */) != IDE_SUCCESS);
     sState = 1;
 
-    // PrivatePageList¿¡¼­´Â FreeSlotµÇÁö ¾Ê´Â´Ù.
+    // PrivatePageListì—ì„œëŠ” FreeSlotë˜ì§€ ì•ŠëŠ”ë‹¤.
     IDE_ASSERT(sFreePageHeader->mFreeListID != SMP_PRIVATE_PAGELISTID);
 
-    // FreeSlotÀ» FreeSlotList¿¡ Ãß°¡
+    // FreeSlotì„ FreeSlotListì— ì¶”ê°€
     addFreeSlotToFreeSlotList(aSpaceID, sPageID, aPiecePtr);
 
-    // FreeSlotÀÌ Ãß°¡µÈ ´ÙÀ½ SizeClass°¡ º¯°æµÇ¾ú´ÂÁö È®ÀÎÇÏ¿© Á¶Á¤ÇÑ´Ù.
+    // FreeSlotì´ ì¶”ê°€ëœ ë‹¤ìŒ SizeClassê°€ ë³€ê²½ë˜ì—ˆëŠ”ì§€ í™•ì¸í•˜ì—¬ ì¡°ì •í•œë‹¤.
     IDE_TEST(smpFreePageList::modifyPageSizeClass( aTrans,
                                                    aVarEntry + sIdx,
                                                    sFreePageHeader )
@@ -1487,13 +1487,13 @@ IDE_RC smpVarPageList::addFreeSlotPending( void*             aTrans,
 }
 
 /**********************************************************************
- * FreePageHeader¿¡¼­ FreeSlotÁ¦°Å
+ * FreePageHeaderì—ì„œ FreeSlotì œê±°
  *
- * ÇØ´ç Page¿¡ LockÀ» Àâ°í µé¾î¿Í¾ß ÇÑ´Ù.
+ * í•´ë‹¹ Pageì— Lockì„ ì¡ê³  ë“¤ì–´ì™€ì•¼ í•œë‹¤.
  *
- * aFreePageHeader : Á¦°ÅÇÏ·Á´Â FreePageHeader
- * aPieceOID       : Á¦°ÅÇÑ Variable Column Piece OID ¹İÈ¯
- * aPiecePtr       : Á¦°ÅÇÑ Free VC PieceÀÇ Æ÷ÀÎÅÍ ¹İÈ¯
+ * aFreePageHeader : ì œê±°í•˜ë ¤ëŠ” FreePageHeader
+ * aPieceOID       : ì œê±°í•œ Variable Column Piece OID ë°˜í™˜
+ * aPiecePtr       : ì œê±°í•œ Free VC Pieceì˜ í¬ì¸í„° ë°˜í™˜
  **********************************************************************/
 void smpVarPageList::removeSlotFromFreeSlotList(
     scSpaceID          aSpaceID,
@@ -1536,14 +1536,14 @@ void smpVarPageList::removeSlotFromFreeSlotList(
 
     if(sFreeVCPieceHdr->nxtPieceOID == (smOID)NULL)
     {
-        // Next°¡ ¾ø´Ù¸é ¸¶Áö¸· FreeSlotÀÌ´Ù.
+        // Nextê°€ ì—†ë‹¤ë©´ ë§ˆì§€ë§‰ FreeSlotì´ë‹¤.
         IDE_ASSERT(aFreePageHeader->mFreeSlotCount == 0);
 
         aFreePageHeader->mFreeSlotTail = NULL;
     }
     else
     {
-        // ´ÙÀ½ FreeSlotÀ» Head·Î µî·ÏÇÑ´Ù.
+        // ë‹¤ìŒ FreeSlotì„ Headë¡œ ë“±ë¡í•œë‹¤.
         IDE_ASSERT(aFreePageHeader->mFreeSlotCount > 0);
     }
 
@@ -1556,14 +1556,14 @@ void smpVarPageList::removeSlotFromFreeSlotList(
 }
 
 /***********************************************************************
- * nextOIDallÀ» À§ÇØ aPiecePtrÀÇ  Page¿Í Next Piece Ptr, OID¸¦ ±¸ÇÑ´Ù.
- * aPiecePtrÀÌ ¸¸¾à NULLÀÌ¶ó¸é aVarEntry¿¡¼­ Ã¹¹øÂ° Allocated Row¸¦ Ã£´Â´Ù.
+ * nextOIDallì„ ìœ„í•´ aPiecePtrì˜  Pageì™€ Next Piece Ptr, OIDë¥¼ êµ¬í•œë‹¤.
+ * aPiecePtrì´ ë§Œì•½ NULLì´ë¼ë©´ aVarEntryì—ì„œ ì²«ë²ˆì§¸ Allocated Rowë¥¼ ì°¾ëŠ”ë‹¤.
  *
  * aSpaceID       TablespaceID
- * aVarEntry      ¼øÈ¸ÇÏ·Á´Â PageListEntry
+ * aVarEntry      ìˆœíšŒí•˜ë ¤ëŠ” PageListEntry
  * aPieceOID      Current Piece OID
  * aPiecePtr      Current Piece Ptr
- * aPage          aPiecePtrÀÌ ¼ÓÇÑ Page¸¦ Ã£¾Æ¼­ ¹İÈ¯
+ * aPage          aPiecePtrì´ ì†í•œ Pageë¥¼ ì°¾ì•„ì„œ ë°˜í™˜
  * aNxtPieceOID   Next Piece OID
  * aPiecePtrPtr   Next Piece Ptr
  ***********************************************************************/
@@ -1623,7 +1623,7 @@ IDE_RC smpVarPageList::initForScan( scSpaceID          aSpaceID,
         }
         else
         {
-            /* AllocateµÈ ÆäÀÌÁö°¡ Á¸ÀçÇÏÁö ¾Ê´Â´Ù.*/
+            /* Allocateëœ í˜ì´ì§€ê°€ ì¡´ì¬í•˜ì§€ ì•ŠëŠ”ë‹¤.*/
         }
     }
 
@@ -1636,16 +1636,16 @@ IDE_RC smpVarPageList::initForScan( scSpaceID          aSpaceID,
 }
 
 /**********************************************************************
- * PageList³»ÀÇ ¸ğµç Row¸¦ ¼øÈ¸ÇÏ¸é¼­ À¯È¿ÇÑ Row¸¦ Ã£¾ÆÁØ´Ù.
- * VarEntryÀÇ nextOIDallÀº RefineDB¶§¸¸ »ç¿ëµÈ´Ù.
+ * PageListë‚´ì˜ ëª¨ë“  Rowë¥¼ ìˆœíšŒí•˜ë©´ì„œ ìœ íš¨í•œ Rowë¥¼ ì°¾ì•„ì¤€ë‹¤.
+ * VarEntryì˜ nextOIDallì€ RefineDBë•Œë§Œ ì‚¬ìš©ëœë‹¤.
  *
  * aSpaceID       [IN]  TablespaceID
- * aVarEntry      [IN]  ¼øÈ¸ÇÏ·Á´Â PageListEntry
- * aCurPieceOID   [IN]  ¸¶Áö¸·À¸·Î Ã£Àº Piece OID
- * aCurPiecePtr   [IN]  ¸¶Áö¸·À¸·Î Ã£Àº Piece Pointer.
- * aNxtPieceOID   [OUT] ´ÙÀ½ Ã£Àº PieceÀÇ OID
- * aNxtPiecePtr   [OUT] ´ÙÀ½ Ã£Àº PieceÀÇ Pointer
- * aIdx           [OUT] VarPageÀÇ Index ( Å©±â ¹øÈ£ )
+ * aVarEntry      [IN]  ìˆœíšŒí•˜ë ¤ëŠ” PageListEntry
+ * aCurPieceOID   [IN]  ë§ˆì§€ë§‰ìœ¼ë¡œ ì°¾ì€ Piece OID
+ * aCurPiecePtr   [IN]  ë§ˆì§€ë§‰ìœ¼ë¡œ ì°¾ì€ Piece Pointer.
+ * aNxtPieceOID   [OUT] ë‹¤ìŒ ì°¾ì€ Pieceì˜ OID
+ * aNxtPiecePtr   [OUT] ë‹¤ìŒ ì°¾ì€ Pieceì˜ Pointer
+ * aIdx           [OUT] VarPageì˜ Index ( í¬ê¸° ë²ˆí˜¸ )
  **********************************************************************/
 IDE_RC smpVarPageList::nextOIDallForRefineDB( scSpaceID          aSpaceID,
                                               smpPageListEntry * aVarEntry,
@@ -1683,7 +1683,7 @@ IDE_RC smpVarPageList::nextOIDallForRefineDB( scSpaceID          aSpaceID,
     {
         sFence = (SChar*)sPage + ID_SIZEOF(smpPersPage);
 
-        // ÇöÀç refineÇÒ slotÀÇ PageÀÇ VarIdx °ªÀ» ±¸ÇØ¿Â´Ù.
+        // í˜„ì¬ refineí•  slotì˜ Pageì˜ VarIdx ê°’ì„ êµ¬í•´ì˜¨ë‹¤.
         sIdx = getVarIdx(sPage);
         IDE_ERROR_MSG( sIdx < SM_VAR_PAGE_LIST_COUNT,
                        "sIdx : %"ID_UINT32_FMT,
@@ -1700,7 +1700,7 @@ IDE_RC smpVarPageList::nextOIDallForRefineDB( scSpaceID          aSpaceID,
             if((((smVCPieceHeader *)sNxtVCPiecePtr)->flag & SM_VCPIECE_FREE_MASK)
                == SM_VCPIECE_FREE_OK)
             {
-                // refineDB¶§ FreeSlotÀº FreeSlotList¿¡ µî·ÏÇÑ´Ù.
+                // refineDBë•Œ FreeSlotì€ FreeSlotListì— ë“±ë¡í•œë‹¤.
                 addFreeSlotToFreeSlotList(aSpaceID,
                                           sPage->mHeader.mSelfPageID,
                                           sNxtVCPiecePtr);
@@ -1713,13 +1713,13 @@ IDE_RC smpVarPageList::nextOIDallForRefineDB( scSpaceID          aSpaceID,
             IDE_CONT(normal_case);
         } /* for */
 
-        // refineDB¶§ ÇÏ³ªÀÇ Page ScanÀ» ¸¶Ä¡¸é FreePageList¿¡ µî·ÏÇÑ´Ù.
+        // refineDBë•Œ í•˜ë‚˜ì˜ Page Scanì„ ë§ˆì¹˜ë©´ FreePageListì— ë“±ë¡í•œë‹¤.
 
         sFreePageHeader = smpFreePageList::getFreePageHeader(aSpaceID, sPage);
 
         if( sFreePageHeader->mFreeSlotCount > 0 )
         {
-            // FreeSlotÀÌ ÀÖ¾î¾ß FreePageÀÌ°í FreePageList¿¡ µî·ÏµÈ´Ù.
+            // FreeSlotì´ ìˆì–´ì•¼ FreePageì´ê³  FreePageListì— ë“±ë¡ëœë‹¤.
             IDE_TEST( smpFreePageList::addPageToFreePageListAtInit(
                           aVarEntry + sIdx,
                           smpFreePageList::getFreePageHeader(aSpaceID, sPage))
@@ -1732,7 +1732,7 @@ IDE_RC smpVarPageList::nextOIDallForRefineDB( scSpaceID          aSpaceID,
 
         if(sNxtPID == SM_NULL_PID)
         {
-            // NextPage°¡ NULLÀÌ¸é ³¡ÀÌ´Ù.
+            // NextPageê°€ NULLì´ë©´ ëì´ë‹¤.
             IDE_CONT(normal_case);
         }
 
@@ -1762,10 +1762,10 @@ IDE_RC smpVarPageList::nextOIDallForRefineDB( scSpaceID          aSpaceID,
 }
 
 /**********************************************************************
- * FreePageHeader¿¡ FreeSlotÃß°¡
+ * FreePageHeaderì— FreeSlotì¶”ê°€
  *
- * aPageID    : FreeSlotÃß°¡ÇÏ·Á´Â PageID
- * aPiecePtr  : FreeSlotÀÇ Row Æ÷ÀÎÅÍ
+ * aPageID    : FreeSlotì¶”ê°€í•˜ë ¤ëŠ” PageID
+ * aPiecePtr  : FreeSlotì˜ Row í¬ì¸í„°
  **********************************************************************/
 
 void smpVarPageList::addFreeSlotToFreeSlotList( scSpaceID aSpaceID,
@@ -1809,13 +1809,13 @@ void smpVarPageList::addFreeSlotToFreeSlotList( scSpaceID aSpaceID,
 }
 
 /**********************************************************************
- * PageListÀÇ FreeSlotList,FreePageList,FreePagePoolÀ» Àç±¸ÃàÇÑ´Ù.
+ * PageListì˜ FreeSlotList,FreePageList,FreePagePoolì„ ì¬êµ¬ì¶•í•œë‹¤.
  *
- * FreeSlot/FreePage °ü·Ã Á¤º¸´Â Disk¿¡ ÀúÀåµÇ´Â DurableÇÑ Á¤º¸°¡ ¾Æ´Ï±â¶§¹®¿¡
- * ¼­¹ö°¡ restartµÇ¸é Àç±¸ÃàÇØÁÖ¾î¾ß ÇÑ´Ù.
+ * FreeSlot/FreePage ê´€ë ¨ ì •ë³´ëŠ” Diskì— ì €ì¥ë˜ëŠ” Durableí•œ ì •ë³´ê°€ ì•„ë‹ˆê¸°ë•Œë¬¸ì—
+ * ì„œë²„ê°€ restartë˜ë©´ ì¬êµ¬ì¶•í•´ì£¼ì–´ì•¼ í•œë‹¤.
  *
- * aTrans    : ÀÛ¾÷À» ¼öÇàÇÏ´Â Æ®·£Àè¼Ç °´Ã¼
- * aVarEntry : ±¸ÃàÇÏ·Á´Â PageListEntry
+ * aTrans    : ì‘ì—…ì„ ìˆ˜í–‰í•˜ëŠ” íŠ¸ëœì­ì…˜ ê°ì²´
+ * aVarEntry : êµ¬ì¶•í•˜ë ¤ëŠ” PageListEntry
  **********************************************************************/
 
 IDE_RC smpVarPageList::refinePageList( void*             aTrans,
@@ -1827,20 +1827,20 @@ IDE_RC smpVarPageList::refinePageList( void*             aTrans,
     IDE_DASSERT( aTrans != NULL );
     IDE_DASSERT( aVarEntry != NULL );
 
-    // SlotÀ» RefineÇÏ°í °¢ Page¸¶´Ù FreeSlotList¸¦ ±¸¼ºÇÏ°í
-    // °¢ ÆäÀÌÁö°¡ FreePageÀÌ¸é ¿ì¼± FreePageList[0]¿¡ µî·ÏÇÑ´Ù.
+    // Slotì„ Refineí•˜ê³  ê° Pageë§ˆë‹¤ FreeSlotListë¥¼ êµ¬ì„±í•˜ê³ 
+    // ê° í˜ì´ì§€ê°€ FreePageì´ë©´ ìš°ì„  FreePageList[0]ì— ë“±ë¡í•œë‹¤.
     IDE_TEST( buildFreeSlotList( aSpaceID,
                                  aVarEntry )
               != IDE_SUCCESS );
 
     for( i = 0; i < SM_VAR_PAGE_LIST_COUNT ; i++ )
     {
-        // FreePageList[0]¿¡¼­ N°³ÀÇ FreePageList¿¡ FreePageµéÀ» ³ª´²ÁÖ°í
+        // FreePageList[0]ì—ì„œ Nê°œì˜ FreePageListì— FreePageë“¤ì„ ë‚˜ëˆ ì£¼ê³ 
         smpFreePageList::distributePagesFromFreePageList0ToTheOthers( (aVarEntry + i) );
 
-        // EmptyPage(ÀüÇô»ç¿ëÇÏÁö¾Ê´Â FreePage)°¡ ÇÊ¿äÀÌ»óÀÌ¸é
-        // FreePagePool¿¡ ¹İ³³ÇÏ°í FreePagePool¿¡µµ ÇÊ¿äÀÌ»óÀÌ¸é
-        // DB¿¡ ¹İ³³ÇÑ´Ù.
+        // EmptyPage(ì „í˜€ì‚¬ìš©í•˜ì§€ì•ŠëŠ” FreePage)ê°€ í•„ìš”ì´ìƒì´ë©´
+        // FreePagePoolì— ë°˜ë‚©í•˜ê³  FreePagePoolì—ë„ í•„ìš”ì´ìƒì´ë©´
+        // DBì— ë°˜ë‚©í•œë‹¤.
         IDE_TEST(smpFreePageList::distributePagesFromFreePageList0ToFreePagePool(
                      aTrans,
                      aSpaceID,
@@ -1857,10 +1857,10 @@ IDE_RC smpVarPageList::refinePageList( void*             aTrans,
 }
 
 /**********************************************************************
- * FreeSlotList ±¸Ãà
+ * FreeSlotList êµ¬ì¶•
  *
- * aTrans    : ÀÛ¾÷À» ¼öÇàÇÏ´Â Æ®·£Àè¼Ç °´Ã¼
- * aVarEntry : ±¸ÃàÇÏ·Á´Â PageListEntry
+ * aTrans    : ì‘ì—…ì„ ìˆ˜í–‰í•˜ëŠ” íŠ¸ëœì­ì…˜ ê°ì²´
+ * aVarEntry : êµ¬ì¶•í•˜ë ¤ëŠ” PageListEntry
  **********************************************************************/
 IDE_RC smpVarPageList::buildFreeSlotList( scSpaceID          aSpaceID,
                                           smpPageListEntry * aVarEntry )
@@ -1879,7 +1879,7 @@ IDE_RC smpVarPageList::buildFreeSlotList( scSpaceID          aSpaceID,
 
     while(1)
     {
-        // FreeSlotÀ» Á¤¸®ÇÏ°í
+        // FreeSlotì„ ì •ë¦¬í•˜ê³ 
         IDE_TEST(nextOIDallForRefineDB(aSpaceID,
                                        aVarEntry,
                                        sCurPieceOID,
@@ -1897,8 +1897,8 @@ IDE_RC smpVarPageList::buildFreeSlotList( scSpaceID          aSpaceID,
         sVCPieceHeaderPtr = (smVCPieceHeader *)sNxtVarRowPtr;
 
         /* ----------------------------
-         * Variable SlotÀÇ Delete Flag°¡
-         * ¼³Á¤µÈ °æ¿ì ¹«¿ëÈ­µÈ RowÀÌ´Ù.
+         * Variable Slotì˜ Delete Flagê°€
+         * ì„¤ì •ëœ ê²½ìš° ë¬´ìš©í™”ëœ Rowì´ë‹¤.
          * ---------------------------*/
         IDE_ERROR_MSG( ( sVCPieceHeaderPtr->flag & SM_VCPIECE_FREE_MASK )
                        == SM_VCPIECE_FREE_NO,
@@ -1920,10 +1920,10 @@ IDE_RC smpVarPageList::buildFreeSlotList( scSpaceID          aSpaceID,
 }
 
 /**********************************************************************
- * PageListÀÇ À¯È¿ÇÑ ·¹ÄÚµå °¹¼ö ¹İÈ¯
+ * PageListì˜ ìœ íš¨í•œ ë ˆì½”ë“œ ê°¯ìˆ˜ ë°˜í™˜
  *
- * aVarEntry    : °Ë»öÇÏ°íÀÚ ÇÏ´Â PageListEntry
- * aRecordCount : ¹İÈ¯ÇÏ´Â ·¹ÄÚµå °¹¼ö
+ * aVarEntry    : ê²€ìƒ‰í•˜ê³ ì í•˜ëŠ” PageListEntry
+ * aRecordCount : ë°˜í™˜í•˜ëŠ” ë ˆì½”ë“œ ê°¯ìˆ˜
  **********************************************************************/
 
 IDE_RC smpVarPageList::getRecordCount(smpPageListEntry *aVarEntry,
@@ -1955,10 +1955,10 @@ IDE_RC smpVarPageList::getRecordCount(smpPageListEntry *aVarEntry,
 
 
 /**********************************************************************
- * PageListEntry¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+ * PageListEntryë¥¼ ì´ˆê¸°í™”í•œë‹¤.
  *
- * aVarEntry : ÃÊ±âÈ­ÇÏ·Á´Â PageListEntry
- * aTableOID : PageListEntryÀÇ Å×ÀÌºí OID
+ * aVarEntry : ì´ˆê¸°í™”í•˜ë ¤ëŠ” PageListEntry
+ * aTableOID : PageListEntryì˜ í…Œì´ë¸” OID
  **********************************************************************/
 void smpVarPageList::initializePageListEntry( smpPageListEntry* aVarEntry,
                                               smOID             aTableOID )
@@ -2026,9 +2026,9 @@ void smpVarPageList::initializePageListEntry( smpPageListEntry* aVarEntry,
 }
 
 /**********************************************************************
- * VarPageÀÇ VarIdx°ªÀ» ±¸ÇÑ´Ù.
+ * VarPageì˜ VarIdxê°’ì„ êµ¬í•œë‹¤.
  *
- * aPagePtr : Idx°ªÀ» ¾Ë°íÀÚÇÏ´Â Page Æ÷ÀÎÅÍ
+ * aPagePtr : Idxê°’ì„ ì•Œê³ ìí•˜ëŠ” Page í¬ì¸í„°
  **********************************************************************/
 UInt smpVarPageList::getVarIdx( void* aPagePtr )
 {
@@ -2043,10 +2043,10 @@ UInt smpVarPageList::getVarIdx( void* aPagePtr )
 }
 
 /**********************************************************************
- * aValue¿¡ ´ëÇÑ VarEntryÀÇ Idx°ªÀ» ±¸ÇÑ´Ù.
+ * aValueì— ëŒ€í•œ VarEntryì˜ Idxê°’ì„ êµ¬í•œë‹¤.
  *
- * aLength : VarEntry¿¡ ÀÔ·ÂÇÒ ValueÀÇ ±æÀÌ.
- * aIdx    : aValue¿¡ ´ëÇÑ VarIdx°ª
+ * aLength : VarEntryì— ì…ë ¥í•  Valueì˜ ê¸¸ì´.
+ * aIdx    : aValueì— ëŒ€í•œ VarIdxê°’
  **********************************************************************/
 IDE_RC smpVarPageList::calcVarIdx( UInt     aLength,
                                    UInt*    aVarIdx )
@@ -2071,9 +2071,9 @@ IDE_RC smpVarPageList::calcVarIdx( UInt     aLength,
 }
 
 /**********************************************************************
- * Page³»ÀÇ FreeSlotListÀÇ ¿¬°áÀÌ ¿Ã¹Ù¸¥Áö °Ë»çÇÑ´Ù.
+ * Pageë‚´ì˜ FreeSlotListì˜ ì—°ê²°ì´ ì˜¬ë°”ë¥¸ì§€ ê²€ì‚¬í•œë‹¤.
  *
- * aFreePageHeader : °Ë»çÇÏ·Á´Â FreeSlotList°¡ ÀÖ´Â PageÀÇ FreePageHeader
+ * aFreePageHeader : ê²€ì‚¬í•˜ë ¤ëŠ” FreeSlotListê°€ ìˆëŠ” Pageì˜ FreePageHeader
  **********************************************************************/
 idBool smpVarPageList::isValidFreeSlotList( smpFreePageHeader* aFreePageHeader )
 {
@@ -2156,13 +2156,13 @@ idBool smpVarPageList::isValidFreeSlotList( smpFreePageHeader* aFreePageHeader )
 
 /**********************************************************************
  * BUG-31206 improve usability of DUMPCI and DUMPDDF
- *           Slot Header¸¦ altibase_sm.log¿¡ ´ıÇÁÇÑ´Ù
+ *           Slot Headerë¥¼ altibase_sm.logì— ë¤í”„í•œë‹¤
  *
- * VarPage¸¦ ´ıÇÁÇÑ´Ù
+ * VarPageë¥¼ ë¤í”„í•œë‹¤
  *
- * aPagePtr       : dumpÇÒ page 
- * aOutBuf        : ´ë»ó ¹öÆÛ
- * aOutSize       : ´ë»ó ¹öÆÛÀÇ Å©±â
+ * aPagePtr       : dumpí•  page 
+ * aOutBuf        : ëŒ€ìƒ ë²„í¼
+ * aOutSize       : ëŒ€ìƒ ë²„í¼ì˜ í¬ê¸°
  **********************************************************************/
 void smpVarPageList::dumpVarPageByBuffer( UChar            * aPagePtr,
                                           SChar            * aOutBuf,
@@ -2244,7 +2244,7 @@ void smpVarPageList::dumpVarPageByBuffer( UChar            * aPagePtr,
 /**********************************************************************
  * BUG-31206    improve usability of DUMPCI and DUMPDDF *
  *
- * Description: VarPage¸¦ DumpÇÏ¿© altibase_boot.log¿¡ Âï´Â´Ù.
+ * Description: VarPageë¥¼ Dumpí•˜ì—¬ altibase_boot.logì— ì°ëŠ”ë‹¤.
  *
  * aSpaceID    - [IN] SpaceID
  * aPageID     - [IN] Page ID
@@ -2286,9 +2286,9 @@ void smpVarPageList::dumpVarPage( scSpaceID         aSpaceID,
 
 /**********************************************************************
  *
- * Description: calcVarIdx ¸¦ ºü¸£°Ô ÇÏ±â À§ÇÑ gAllocArray¸¦ ¼¼ÆÃÇÑ´Ù.
- *              °¢ »çÀÌÁî°ª¿¡ ÇØ´çµÇ´Â ÀÎµ¦½º¸¦ ¹Ì¸® ¼¼ÆÃÇØ³õ¾Æ
- *              »çÀÌÁî·Î ¹Ù·Î ÀÎµ¦½º¸¦ Ã£À» ¼ö ÀÖ°Ô ÇÑ´Ù.
+ * Description: calcVarIdx ë¥¼ ë¹ ë¥´ê²Œ í•˜ê¸° ìœ„í•œ gAllocArrayë¥¼ ì„¸íŒ…í•œë‹¤.
+ *              ê° ì‚¬ì´ì¦ˆê°’ì— í•´ë‹¹ë˜ëŠ” ì¸ë±ìŠ¤ë¥¼ ë¯¸ë¦¬ ì„¸íŒ…í•´ë†“ì•„
+ *              ì‚¬ì´ì¦ˆë¡œ ë°”ë¡œ ì¸ë±ìŠ¤ë¥¼ ì°¾ì„ ìˆ˜ ìˆê²Œ í•œë‹¤.
  *
  **********************************************************************/
 void smpVarPageList::initAllocArray()

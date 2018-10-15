@@ -20,24 +20,24 @@
 
 
 /*----------------------------------------------------------------------
-  task-2457 heap sort¸¦ ±¸ÇöÇÕ´Ï´Ù.
+  task-2457 heap sortë¥¼ êµ¬í˜„í•©ë‹ˆë‹¤.
 
-  Description  : Ç×»ó ¼öÇà½Ã°£ O(NlnN)À» °¡Áö´Â heap sortÀÔ´Ï´Ù. ±âº»ÀûÀ¸·Î c¿¡¼­
-  Á¦°øÇÏ´Â qsort¿Í °°Àº ÀÎÅÍÆäÀÌ½º¸¦ °¡Áý´Ï´Ù.
-  ¼Óµµ´Â qsort¿¡ ºñÇØ¼­ 2¹èÁ¤µµ ´À¸³´Ï´Ù. heap sort´Â º°µµÀÇ
-  ¸Þ¸ð¸® °ø°£À» ¿ä±¸ÇÏÁö ¾Ê´Â´Ù´Â Á¡ÀÌ qsort´ëÇÑ ÀåÁ¡ÀÔ´Ï´Ù.
+  Description  : í•­ìƒ ìˆ˜í–‰ì‹œê°„ O(NlnN)ì„ ê°€ì§€ëŠ” heap sortìž…ë‹ˆë‹¤. ê¸°ë³¸ì ìœ¼ë¡œ cì—ì„œ
+  ì œê³µí•˜ëŠ” qsortì™€ ê°™ì€ ì¸í„°íŽ˜ì´ìŠ¤ë¥¼ ê°€ì§‘ë‹ˆë‹¤.
+  ì†ë„ëŠ” qsortì— ë¹„í•´ì„œ 2ë°°ì •ë„ ëŠë¦½ë‹ˆë‹¤. heap sortëŠ” ë³„ë„ì˜
+  ë©”ëª¨ë¦¬ ê³µê°„ì„ ìš”êµ¬í•˜ì§€ ì•ŠëŠ”ë‹¤ëŠ” ì ì´ qsortëŒ€í•œ ìž¥ì ìž…ë‹ˆë‹¤.
                  
-  aArray       -   [IN/OUT]  Á¤·ÄÀ» ½ÃÅ°±â ¿øÇÏ´Â ¹è¿­,
-  ÀÌ ÇÔ¼ö ¼öÇàÈÄ, ÀÌ ¹è¿­Àº Á¤·ÄµÇ¾î ÀÖ´Ù.
-  aArrayNum    -   [IN]      ¹è¿­ÀÇ ¿ø¼ÒÀÇ ÃÑ °³¼ö
-  aDataSize    -   [IN]      ¹è¿­ÀÇ ÇÑ ¿ø¼ÒÀÇ Å©±â(byte´ÜÀ§)
-  aCompar      -   [IN]      Á¤·ÄÀ» ¼öÇàÇÏ±â À§ÇØ¼± °ªÀ» ºñ±³ ÇÒ ¼ö ÀÖ¾î¾ß ÇÑ´Ù.
+  aArray       -   [IN/OUT]  ì •ë ¬ì„ ì‹œí‚¤ê¸° ì›í•˜ëŠ” ë°°ì—´,
+  ì´ í•¨ìˆ˜ ìˆ˜í–‰í›„, ì´ ë°°ì—´ì€ ì •ë ¬ë˜ì–´ ìžˆë‹¤.
+  aArrayNum    -   [IN]      ë°°ì—´ì˜ ì›ì†Œì˜ ì´ ê°œìˆ˜
+  aDataSize    -   [IN]      ë°°ì—´ì˜ í•œ ì›ì†Œì˜ í¬ê¸°(byteë‹¨ìœ„)
+  aCompar      -   [IN]      ì •ë ¬ì„ ìˆ˜í–‰í•˜ê¸° ìœ„í•´ì„  ê°’ì„ ë¹„êµ í•  ìˆ˜ ìžˆì–´ì•¼ í•œë‹¤.
   
-  µÎ ¿ø¼Ò¸¦ ¹Þ¾Æ¼­ ºñ±³¸¦ ¼öÇàÇÏ´Â ÇÔ¼ö.
-  ¿À¸§Â÷¼ø = ¾Õ¿¡¿ø¼Ò°¡ Å¬°æ¿ì return 1,°°À» °æ¿ì return 0,
-  µÚÀÇ ¿ø¼Ò°¡ ´õ Å¬°æ¿ì return -1
-  ³»¸²Â÷¼ø = ¾Õ¿¡¿ø¼Ò°¡ Å¬°æ¿ì return -1, °°À» °æ¿ì return 0,
-  µÚÀÇ ¿ø¼Ò°¡ ´õ Å¬°æ¿ì return 1
+  ë‘ ì›ì†Œë¥¼ ë°›ì•„ì„œ ë¹„êµë¥¼ ìˆ˜í–‰í•˜ëŠ” í•¨ìˆ˜.
+  ì˜¤ë¦„ì°¨ìˆœ = ì•žì—ì›ì†Œê°€ í´ê²½ìš° return 1,ê°™ì„ ê²½ìš° return 0,
+  ë’¤ì˜ ì›ì†Œê°€ ë” í´ê²½ìš° return -1
+  ë‚´ë¦¼ì°¨ìˆœ = ì•žì—ì›ì†Œê°€ í´ê²½ìš° return -1, ê°™ì„ ê²½ìš° return 0,
+  ë’¤ì˜ ì›ì†Œê°€ ë” í´ê²½ìš° return 1
   ----------------------------------------------------------------------*/
 void iduHeapSort::sort( void  *aArray,
                         UInt aArrayNum,
@@ -53,26 +53,26 @@ void iduHeapSort::sort( void  *aArray,
 
     if (aArrayNum != 1)
     {
-        /* º» ÇÔ¼ö ³»¿¡¼­ itemÀº 1ºÎÅÍ Á¸ÀçÇÑ´Ù°í °¡Á¤ÇÏ¹Ç·Î, Æ÷ÀÎÅÍ¸¦ ÇÑÄ­
-         * µÚ·Î µ¹¸°´Ù. Áï, c¿¡¼­´Â aArray[0]ÀÌ Ã¹¹øÂ°¸¦ °¡¸®Å°Áö¸¸ ¾Æ·¡
-         * ¿¬»êÀ» Àû¿ëÇÏ¸é, aArray[1]ÀÌ Ã¹¹øÂ°¸¦ °¡¸®Å°°Ô µÈ´Ù.
-         * 1ºÎÅÍ ½ÃÀÛÇÏ´Â ÀÌÀ¯´Â ÀÚ½Ä ³ëµå¸¦ ±¸ÇÒ¶§, 0ºÎÅÍ ½ÃÀÛÇÏ¸é ÀÚ½Ä³ëµå°¡ 0ÀÌ
-         * ³ª¿À±â ¶§¹®ÀÌ´Ù.*/
+        /* ë³¸ í•¨ìˆ˜ ë‚´ì—ì„œ itemì€ 1ë¶€í„° ì¡´ìž¬í•œë‹¤ê³  ê°€ì •í•˜ë¯€ë¡œ, í¬ì¸í„°ë¥¼ í•œì¹¸
+         * ë’¤ë¡œ ëŒë¦°ë‹¤. ì¦‰, cì—ì„œëŠ” aArray[0]ì´ ì²«ë²ˆì§¸ë¥¼ ê°€ë¦¬í‚¤ì§€ë§Œ ì•„ëž˜
+         * ì—°ì‚°ì„ ì ìš©í•˜ë©´, aArray[1]ì´ ì²«ë²ˆì§¸ë¥¼ ê°€ë¦¬í‚¤ê²Œ ëœë‹¤.
+         * 1ë¶€í„° ì‹œìž‘í•˜ëŠ” ì´ìœ ëŠ” ìžì‹ ë…¸ë“œë¥¼ êµ¬í• ë•Œ, 0ë¶€í„° ì‹œìž‘í•˜ë©´ ìžì‹ë…¸ë“œê°€ 0ì´
+         * ë‚˜ì˜¤ê¸° ë•Œë¬¸ì´ë‹¤.*/
         aArray = (void*)((SChar*)aArray - aDataSize);
 
-        /*  ÀÚ½ÄÀ» °¡Áö´Â ÃÖ¼Ò ³ëµå ºÎÅÍ ·çÆ®±îÁö ¿Ã¶ó°¡¸é¼­ °¢ ³ëµå¿¡ ´ëÇØ
-         *  MAX_HEAPIFY¸¦ ¼öÇàÇÑ´Ù.
+        /*  ìžì‹ì„ ê°€ì§€ëŠ” ìµœì†Œ ë…¸ë“œ ë¶€í„° ë£¨íŠ¸ê¹Œì§€ ì˜¬ë¼ê°€ë©´ì„œ ê° ë…¸ë“œì— ëŒ€í•´
+         *  MAX_HEAPIFYë¥¼ ìˆ˜í–‰í•œë‹¤.
          *  
-         *  ¸¶Áö¸· ºÎÅÍ ÇÏ´Â ÀÌÀ¯ =>
-         *  1. MAX_HEAPIFY°¡ ¼öÇàÇÏ±â À§ÇÑ Á¶°Ç¿¡ left child ¼­ºê Æ®¸®¿Í
-         *     right child ¼­ºêÆ®¸®°¡ ÈüÆ®¸®¿©¾ß ÇÑ´Ù´Â Á¶°ÇÀÌ ÀÖ´Ù.
-         *  2. MAX_HEAPIFY¸¦ ¼öÇàÇÏ°í ³ª¸é ÈüÆ®¸® Á¶°ÇÀ» ¸¸Á·ÇÑ´Ù.
-         *  3. ¾î¶² sNodeIdx¿¡ ´ëÇØ MAX_HEAPIFY¸¦ ¼öÇàÇÒ¶§,
-         *     ±× left child¿Í right child´Â ÀÌ¹Ì MAX_HEAPIFY¸¦
-         *     ¼öÇàÇÏ°í ³­ ÈÄÀÌ¹Ç·Î ÈüÆ®¸® ÀÏ °ÍÀÌ¹Ç·Î MAX_HEAPIFY¸¦
-         *     ¼öÇàÇÒ ¼ö ÀÖ´Ù.
-         *  4. sNodeIdx°¡ 1ÀÏ¶§°¡ °¡Àå ¸¶Áö¸·À¸·Î, ÀÌ°ÍÀº ÀüÃ¼ Æ®¸®ÀÇ ·çÆ®ÀÌ´Ù.
-         *     ±×·¯¹Ç·Î ÀÌ°ÍÀ» ¼öÇàÈÄ, ÀüÃ¼ Æ®¸®°¡ ÈüÆ®¸®°¡ µÊÀ» º¸ÀåÇÒ ¼ö ÀÖ´Ù.
+         *  ë§ˆì§€ë§‰ ë¶€í„° í•˜ëŠ” ì´ìœ  =>
+         *  1. MAX_HEAPIFYê°€ ìˆ˜í–‰í•˜ê¸° ìœ„í•œ ì¡°ê±´ì— left child ì„œë¸Œ íŠ¸ë¦¬ì™€
+         *     right child ì„œë¸ŒíŠ¸ë¦¬ê°€ íž™íŠ¸ë¦¬ì—¬ì•¼ í•œë‹¤ëŠ” ì¡°ê±´ì´ ìžˆë‹¤.
+         *  2. MAX_HEAPIFYë¥¼ ìˆ˜í–‰í•˜ê³  ë‚˜ë©´ íž™íŠ¸ë¦¬ ì¡°ê±´ì„ ë§Œì¡±í•œë‹¤.
+         *  3. ì–´ë–¤ sNodeIdxì— ëŒ€í•´ MAX_HEAPIFYë¥¼ ìˆ˜í–‰í• ë•Œ,
+         *     ê·¸ left childì™€ right childëŠ” ì´ë¯¸ MAX_HEAPIFYë¥¼
+         *     ìˆ˜í–‰í•˜ê³  ë‚œ í›„ì´ë¯€ë¡œ íž™íŠ¸ë¦¬ ì¼ ê²ƒì´ë¯€ë¡œ MAX_HEAPIFYë¥¼
+         *     ìˆ˜í–‰í•  ìˆ˜ ìžˆë‹¤.
+         *  4. sNodeIdxê°€ 1ì¼ë•Œê°€ ê°€ìž¥ ë§ˆì§€ë§‰ìœ¼ë¡œ, ì´ê²ƒì€ ì „ì²´ íŠ¸ë¦¬ì˜ ë£¨íŠ¸ì´ë‹¤.
+         *     ê·¸ëŸ¬ë¯€ë¡œ ì´ê²ƒì„ ìˆ˜í–‰í›„, ì „ì²´ íŠ¸ë¦¬ê°€ íž™íŠ¸ë¦¬ê°€ ë¨ì„ ë³´ìž¥í•  ìˆ˜ ìžˆë‹¤.
          */
         for (sNodeIdx = aArrayNum / 2; sNodeIdx != 0 ; --sNodeIdx)
         {
@@ -81,31 +81,31 @@ void iduHeapSort::sort( void  *aArray,
     
 
         /*
-         * ÈüÆ®¸®·Î ºÎÅÍ Á¤·ÄÀ» ¼öÇàÇÏ´Â ºÎºÐ, aArray[1], Áï Æ®¸®ÀÇ ·çÆ®°¡
-         * °¡Àå ÇöÀç Æ®¸®(¹è¿­,aArray)³»¿¡¼­ °¡Àå Å« °ªÀ» °¡Áö°í ÀÖ´Ù´Â °ÍÀ»
-         * ÀÌ¿ëÇÏ¿© Á¤·ÄÀ» ÇÑ´Ù.
+         * íž™íŠ¸ë¦¬ë¡œ ë¶€í„° ì •ë ¬ì„ ìˆ˜í–‰í•˜ëŠ” ë¶€ë¶„, aArray[1], ì¦‰ íŠ¸ë¦¬ì˜ ë£¨íŠ¸ê°€
+         * ê°€ìž¥ í˜„ìž¬ íŠ¸ë¦¬(ë°°ì—´,aArray)ë‚´ì—ì„œ ê°€ìž¥ í° ê°’ì„ ê°€ì§€ê³  ìžˆë‹¤ëŠ” ê²ƒì„
+         * ì´ìš©í•˜ì—¬ ì •ë ¬ì„ í•œë‹¤.
          */
         while (aArrayNum > 1)
         {
-            /*Æ®¸®ÀÇ ·çÆ®, ÇöÀç Æ®¸®³»¿¡¼­ °¡Àå Å« °ªÀ» °¡Áü*/
+            /*íŠ¸ë¦¬ì˜ ë£¨íŠ¸, í˜„ìž¬ íŠ¸ë¦¬ë‚´ì—ì„œ ê°€ìž¥ í° ê°’ì„ ê°€ì§*/
             sFirstNode = IDU_HEAPSORT_GET_NTH_DATA(1, aArray, aDataSize);
         
-            /*Æ®¸®ÀÇ ¸¶Áö¸· ³ëµå*/
+            /*íŠ¸ë¦¬ì˜ ë§ˆì§€ë§‰ ë…¸ë“œ*/
             sLastNode  = IDU_HEAPSORT_GET_NTH_DATA(aArrayNum,aArray, aDataSize);
 
-            /*ÇöÀç Æ®¸®¿¡¼­ °¡Àå Å« °ªÀÌ ¹è¿­ÀÇ °¡Àå ¸¶Áö¸·À¸·Î °£´Ù.*/
+            /*í˜„ìž¬ íŠ¸ë¦¬ì—ì„œ ê°€ìž¥ í° ê°’ì´ ë°°ì—´ì˜ ê°€ìž¥ ë§ˆì§€ë§‰ìœ¼ë¡œ ê°„ë‹¤.*/
             IDU_HEAPSORT_SWAP(sFirstNode, sLastNode, aDataSize);
 
-            /*¹è¿­ÀÇ ¸¶Áö¸·À¸·Î °£ °ªÀº ´õÀÌ»ó Æ®¸®³»ÀÇ ¿ø¼Ò°¡ ¾Æ´Ï´Ù.*/
+            /*ë°°ì—´ì˜ ë§ˆì§€ë§‰ìœ¼ë¡œ ê°„ ê°’ì€ ë”ì´ìƒ íŠ¸ë¦¬ë‚´ì˜ ì›ì†Œê°€ ì•„ë‹ˆë‹¤.*/
             --aArrayNum;
         
-            /*ÇöÀç Æ®¸®ÀÇ ·çÆ®, Áï aArray[1]°ªÀº ´õÀÌ»ó °¡Àå Å« °ªÀÌ ¾Æ´Ï´Ù.  ÇÏÁö¸¸
-             *ÀÌ°ÍÀÇ left child¿Í rigth child´Â ¸ðµÎ ÈüÆ®¸®ÀÌ¹Ç·Î ·çÆ®¿¡ ´ëÇØ¼­¸¸
-             *MAX_HEAPIFY¸¦ ¼öÇàÇÏ¸é, ÀüÃ¼ Æ®¸®´Â ÈüÆ®¸®°¡ µÈ´Ù.*/
+            /*í˜„ìž¬ íŠ¸ë¦¬ì˜ ë£¨íŠ¸, ì¦‰ aArray[1]ê°’ì€ ë”ì´ìƒ ê°€ìž¥ í° ê°’ì´ ì•„ë‹ˆë‹¤.  í•˜ì§€ë§Œ
+             *ì´ê²ƒì˜ left childì™€ rigth childëŠ” ëª¨ë‘ íž™íŠ¸ë¦¬ì´ë¯€ë¡œ ë£¨íŠ¸ì— ëŒ€í•´ì„œë§Œ
+             *MAX_HEAPIFYë¥¼ ìˆ˜í–‰í•˜ë©´, ì „ì²´ íŠ¸ë¦¬ëŠ” íž™íŠ¸ë¦¬ê°€ ëœë‹¤.*/
             IDU_HEAPSORT_MAX_HEAPIFY(1, aArray, aArrayNum, aDataSize, aCompar);
         
-            /*ÀÌ·¯ÇÑ Çàµ¿À» Æ®¸®ÀÇ Å©±â°¡ 1ÀÌ µÉ¶§±îÁö ¼öÇàÇÑ´Ù. ±×·¯¸é °á±¹ °¡Àå
-             * ÀÛÀº °ªºÎÅÍ Å« ¼øÀ¸·Î Á¤·ÄµÈ °ªÀ» ¾òÀ» ¼ö ÀÖ´Ù.*/
+            /*ì´ëŸ¬í•œ í–‰ë™ì„ íŠ¸ë¦¬ì˜ í¬ê¸°ê°€ 1ì´ ë ë•Œê¹Œì§€ ìˆ˜í–‰í•œë‹¤. ê·¸ëŸ¬ë©´ ê²°êµ­ ê°€ìž¥
+             * ìž‘ì€ ê°’ë¶€í„° í° ìˆœìœ¼ë¡œ ì •ë ¬ëœ ê°’ì„ ì–»ì„ ìˆ˜ ìžˆë‹¤.*/
         }
     }    
 }

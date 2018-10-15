@@ -63,9 +63,9 @@ void qsxEnv::initialize(qsxEnvInfo     * aEnv,
   ,
   QCIDBC             * dbc*/ )
 {
-    // sessionÁ¤º¸¸¦ ¾ò±â À§ÇØ¼­,
-    // qciSessionCallbackÇÔ¼ö¸¦ ÀÌ¿ëÇØ¾ß ÇÏ´Âµ¥,
-    // ÀÌ¶§, mmSessionÁ¤º¸°¡ ÇÊ¿äÇÔ.
+    // sessionì •ë³´ë¥¼ ì–»ê¸° ìœ„í•´ì„œ,
+    // qciSessionCallbackí•¨ìˆ˜ë¥¼ ì´ìš©í•´ì•¼ í•˜ëŠ”ë°,
+    // ì´ë•Œ, mmSessionì •ë³´ê°€ í•„ìš”í•¨.
     (aEnv)-> mSession        = aSession;
 // BUGBUG QCI interface does not exist yet.
 /*
@@ -94,8 +94,8 @@ void qsxEnv::reset ( qsxEnvInfo   * aEnv )
 {
     resetForInvocation( aEnv );
 
-    // To fix BUG-12642 SQLCODE´Â ÇÁ·Î½ÃÁ® ½ÃÀÛ, Á¾·á½Ã¿¡¸¸
-    // ÃÊ±âÈ­ µÇ¾î¾ß ÇÑ´Ù.
+    // To fix BUG-12642 SQLCODEëŠ” í”„ë¡œì‹œì ¸ ì‹œìž‘, ì¢…ë£Œì‹œì—ë§Œ
+    // ì´ˆê¸°í™” ë˜ì–´ì•¼ í•œë‹¤.
     clearErrorVariables( aEnv );
 
     aEnv->mCursorsInUse            = NULL;
@@ -113,7 +113,7 @@ void qsxEnv::reset ( qsxEnvInfo   * aEnv )
                    ID_SIZEOF(qsxStackFrame) );
 
     /* BUG-43154
-       password_verify_functionÀÌ autonomous_transaction(AT) pragma°¡ ¼±¾ðµÈ functionÀÏ °æ¿ì ºñÁ¤»ó Á¾·á */
+       password_verify_functionì´ autonomous_transaction(AT) pragmaê°€ ì„ ì–¸ëœ functionì¼ ê²½ìš° ë¹„ì •ìƒ ì¢…ë£Œ */
     aEnv->mExecPWVerifyFunc = ID_FALSE;
 
     /* BUG-43160 */
@@ -187,8 +187,8 @@ IDE_RC qsxEnv::decreaseCallDepth( qsxEnvInfo   * aEnv )
 
 /*
   func0(func1(func2(v1)));
-  °ú °°Àº È£ÃâÀ» bindÇÒ ¼ö ÀÖ¾î¾ß ÇÔ.
-  ¸Ç Ã¹¹øÂ° qsxEnv::invoke½ÃÁ¡¿¡¼­ bind¸¦ ³¡À» ºÁ¾ßÇÔ.
+  ê³¼ ê°™ì€ í˜¸ì¶œì„ bindí•  ìˆ˜ ìžˆì–´ì•¼ í•¨.
+  ë§¨ ì²«ë²ˆì§¸ qsxEnv::invokeì‹œì ì—ì„œ bindë¥¼ ëì„ ë´ì•¼í•¨.
   func0's arg0 :
   func1
   func1's arg0
@@ -196,11 +196,11 @@ IDE_RC qsxEnv::decreaseCallDepth( qsxEnvInfo   * aEnv )
   func2's arg0
   v1
 
-  qrxExecutor°¡ invokeÇÒ¶§¸¸ qrxExecutor::execÈ£ÃâÀü¿¡
-  ¸ðµç argument(argumentÀÇ argumentÆ÷ÇÔ) ¸¦ ¹ÙÀÎµå.
+  qrxExecutorê°€ invokeí• ë•Œë§Œ qrxExecutor::execí˜¸ì¶œì „ì—
+  ëª¨ë“  argument(argumentì˜ argumentí¬í•¨) ë¥¼ ë°”ì¸ë“œ.
   ( aIsBindCallSpecArguments  == ID_TRUE )
 
-  ±×¿ÜÀÇ °æ¿ì ¹ÙÀÎµùÀº ÀüÇô ÇÏÁö ¾ÊÀ½.
+  ê·¸ì™¸ì˜ ê²½ìš° ë°”ì¸ë”©ì€ ì „í˜€ í•˜ì§€ ì•ŠìŒ.
   ( aIsBindCallSpecArguments  == ID_FALSE )
 */
 
@@ -241,8 +241,8 @@ IDE_RC qsxEnv::invoke (
               != IDE_SUCCESS );
     sStage = 1;
 
-    /* aSubprogramÀÌ QS_PSM_SUBPROGRAM_IDÀÎ °æ¿ì´Â ÀÏ¹Ý procedure¸¦ ½ÇÇà½ÃÅ³ ¶§ÀÌ¸ç( exec proc1 ),
-       À§ÀÇ °æ¿ì°¡ ¾Æ´Ò °æ¿ì´Â, packageÀÇ subprogramÀ» ½ÇÇà ½ÃÅ°´Â °æ¿ìÀÌ´Ù( exec pkg1.proc1 ).*/
+    /* aSubprogramì´ QS_PSM_SUBPROGRAM_IDì¸ ê²½ìš°ëŠ” ì¼ë°˜ procedureë¥¼ ì‹¤í–‰ì‹œí‚¬ ë•Œì´ë©°( exec proc1 ),
+       ìœ„ì˜ ê²½ìš°ê°€ ì•„ë‹ ê²½ìš°ëŠ”, packageì˜ subprogramì„ ì‹¤í–‰ ì‹œí‚¤ëŠ” ê²½ìš°ì´ë‹¤( exec pkg1.proc1 ).*/
     if( aSubprogramID == QS_PSM_SUBPROGRAM_ID )
     {
         if( aProcOID == QS_EMPTY_OID )
@@ -266,7 +266,7 @@ IDE_RC qsxEnv::invoke (
         if ( aProcOID == QS_EMPTY_OID )
         {
             /* BUG-39481
-               packageÀÇ initialize section ½ÇÇà ½Ã¿¡´Â qsProcParseTree°¡ ¾øÀ» ¼öµµ ÀÖ´Ù. */
+               packageì˜ initialize section ì‹¤í–‰ ì‹œì—ëŠ” qsProcParseTreeê°€ ì—†ì„ ìˆ˜ë„ ìžˆë‹¤. */
             if ( sOriProcPlan != NULL )
             {
                 sPkgBodyOID = sOriProcPlan->pkgBodyOID;
@@ -301,7 +301,7 @@ IDE_RC qsxEnv::invoke (
                                                            &sPkgTemplate )
                   != IDE_SUCCESS );
 
-        /* BUG-38844 package subprogramÀÇ plan tree¸¦ Ã£À½ */
+        /* BUG-38844 package subprogramì˜ plan treeë¥¼ ì°¾ìŒ */
         IDE_TEST( qsxPkg::findSubprogramPlanTree(
                 sPkgBodyInfo,
                 aSubprogramID,
@@ -312,9 +312,9 @@ IDE_RC qsxEnv::invoke (
     }
 
     /* BUG-39481
-       println( recursive fucntion ); ÀÌ¸é, ºñÁ¤»ó Á¾·á
-       ¿ø qsProcParseTree ¹× qsPkgParseTree Á¤º¸¸¦ °¡Áö°í ÀÖ¾î¾ß 
-       argumentÀÇ calculate ½Ã »ç¿ëÇÒ ¼ö ÀÖ´Ù. */
+       println( recursive fucntion ); ì´ë©´, ë¹„ì •ìƒ ì¢…ë£Œ
+       ì› qsProcParseTree ë° qsPkgParseTree ì •ë³´ë¥¼ ê°€ì§€ê³  ìžˆì–´ì•¼ 
+       argumentì˜ calculate ì‹œ ì‚¬ìš©í•  ìˆ˜ ìžˆë‹¤. */
     QSX_ENV_PLAN_TREE( QC_QSX_ENV(aQcStmt) )     = sOriProcPlan;
     QSX_ENV_PKG_PLAN_TREE( QC_QSX_ENV(aQcStmt) ) = sOriPkgPlan;
 
@@ -402,9 +402,9 @@ IDE_RC qsxEnv::invokeWithStack (
     IDE_TEST( iduCheckSessionEvent( aQcStmt->mStatistics )
               != IDE_SUCCESS );
 
-    /* aSubprogramÀÌ QS_PSM_SUBPROGRAM_IDÀÎ °æ¿ì´Â ÀÏ¹Ý procedure¸¦ ½ÇÇà½ÃÅ³ ¶§ÀÌ¸ç( exec proc1 ),
-       À§ÀÇ °æ¿ì°¡ ¾Æ´Ò °æ¿ì´Â, packageÀÇ subprogramÀ» ½ÇÇà ½ÃÅ°´Â °æ¿ìÀÌ´Ù( exec pkg1.proc1 ).
-       qsxEnv::invoke¿Í ºñ½Á */
+    /* aSubprogramì´ QS_PSM_SUBPROGRAM_IDì¸ ê²½ìš°ëŠ” ì¼ë°˜ procedureë¥¼ ì‹¤í–‰ì‹œí‚¬ ë•Œì´ë©°( exec proc1 ),
+       ìœ„ì˜ ê²½ìš°ê°€ ì•„ë‹ ê²½ìš°ëŠ”, packageì˜ subprogramì„ ì‹¤í–‰ ì‹œí‚¤ëŠ” ê²½ìš°ì´ë‹¤( exec pkg1.proc1 ).
+       qsxEnv::invokeì™€ ë¹„ìŠ· */
     if( aSubprogramID ==  QS_PSM_SUBPROGRAM_ID )
     {
       if( aProcOID == QS_EMPTY_OID )
@@ -428,7 +428,7 @@ IDE_RC qsxEnv::invokeWithStack (
         if ( aProcOID == QS_EMPTY_OID )
         {
             /* BUG-39481
-               packageÀÇ initialize section ½ÇÇà ½Ã¿¡´Â qsProcParseTree°¡ ¾øÀ» ¼öµµ ÀÖ´Ù. */
+               packageì˜ initialize section ì‹¤í–‰ ì‹œì—ëŠ” qsProcParseTreeê°€ ì—†ì„ ìˆ˜ë„ ìžˆë‹¤. */
             if ( sOriProcPlan != NULL )
             {
                 sPkgBodyOID = sOriProcPlan->pkgBodyOID;
@@ -463,7 +463,7 @@ IDE_RC qsxEnv::invokeWithStack (
                                                            &sPkgTemplate )
                   != IDE_SUCCESS );
 
-        /* BUG-38844 package subprogramÀÇ plan tree¸¦ Ã£À½ */
+        /* BUG-38844 package subprogramì˜ plan treeë¥¼ ì°¾ìŒ */
         IDE_TEST( qsxPkg::findSubprogramPlanTree(
                       sPkgBodyInfo,
                       aSubprogramID,
@@ -474,9 +474,9 @@ IDE_RC qsxEnv::invokeWithStack (
     }
 
     /* BUG-39481
-       println( recursive fucntion ); ÀÌ¸é, ºñÁ¤»ó Á¾·á
-       ¿ø qsProcParseTree ¹× qsPkgParseTree Á¤º¸¸¦ °¡Áö°í ÀÖ¾î¾ß
-       argumentÀÇ calculate ½Ã »ç¿ëÇÒ ¼ö ÀÖ´Ù. */
+       println( recursive fucntion ); ì´ë©´, ë¹„ì •ìƒ ì¢…ë£Œ
+       ì› qsProcParseTree ë° qsPkgParseTree ì •ë³´ë¥¼ ê°€ì§€ê³  ìžˆì–´ì•¼
+       argumentì˜ calculate ì‹œ ì‚¬ìš©í•  ìˆ˜ ìžˆë‹¤. */
     QSX_ENV_PLAN_TREE( QC_QSX_ENV(aQcStmt) )     = sOriProcPlan;
     QSX_ENV_PKG_PLAN_TREE( QC_QSX_ENV(aQcStmt) ) = sOriPkgPlan;
 
@@ -666,8 +666,8 @@ IDE_RC qsxEnv::closeCursorsInUse( qsxEnvInfo    * aEnv,
         sNxtInfo = sCurInfo->mNext;
 
         // To Fix Bug-8986
-        // stored procedure ³»¿¡¼­ commit ½Ã¿¡ cursor¸¦ finalize
-        // ÇÏ¸é Á¤º¸¸¦ ÀÒ¾î¹ö¸®¹Ç·Î openµÈ cursor¸¦ close¸¸ ÇØ¾ß ÇÔ
+        // stored procedure ë‚´ì—ì„œ commit ì‹œì— cursorë¥¼ finalize
+        // í•˜ë©´ ì •ë³´ë¥¼ ìžƒì–´ë²„ë¦¬ë¯€ë¡œ openëœ cursorë¥¼ closeë§Œ í•´ì•¼ í•¨
         if ( QSX_CURSOR_IS_OPEN(sCurInfo) == ID_TRUE )
         {
             if ( qsxCursor::close( sCurInfo, aQcStmt )
@@ -731,10 +731,10 @@ void qsxEnv::freeReturnArray( qsxEnvInfo * aEnv )
 {
 /***********************************************************************
  *
- * Description : PROJ-1075 functionÀÇ return°ªÀ¸·Î ³Ñ¾î¿Â array º¯¼ö¸¦
- *               ÇÒ´ç ÇØÁ¦ÇÔ.
+ * Description : PROJ-1075 functionì˜ returnê°’ìœ¼ë¡œ ë„˜ì–´ì˜¨ array ë³€ìˆ˜ë¥¼
+ *               í• ë‹¹ í•´ì œí•¨.
  *
- * Implementation : iduMemMgr·Î ÇÒ´çµÇ¾î ÀÖ´Ù.
+ * Implementation : iduMemMgrë¡œ í• ë‹¹ë˜ì–´ ìžˆë‹¤.
  *
  ***********************************************************************/
 
@@ -772,20 +772,20 @@ IDE_RC qsxEnv::commit ( qsxEnvInfo   * aEnv )
         /*
          * PROJ-1381: Fetch Across Commit
          *
-         * commit À» ÇØµµ cursor ¸¦ ´ÝÁö ¾Ê´Â´Ù.
-         * cursor ´Â ¸í½ÃÀûÀ¸·Î close cursor ¸¦ ÇÏ°Å³ª
-         * psm ¼öÇàÀÌ ³¡³ª¸é ´ÝÈù´Ù.
+         * commit ì„ í•´ë„ cursor ë¥¼ ë‹«ì§€ ì•ŠëŠ”ë‹¤.
+         * cursor ëŠ” ëª…ì‹œì ìœ¼ë¡œ close cursor ë¥¼ í•˜ê±°ë‚˜
+         * psm ìˆ˜í–‰ì´ ëë‚˜ë©´ ë‹«ížŒë‹¤.
          *
-         * fence ¸¦ Á¶Á¤ÇÏ´Â ÀÌÀ¯´Â ´ÙÀ½°ú °°Àº °æ¿ì ¶§¹®ÀÌ´Ù.
+         * fence ë¥¼ ì¡°ì •í•˜ëŠ” ì´ìœ ëŠ” ë‹¤ìŒê³¼ ê°™ì€ ê²½ìš° ë•Œë¬¸ì´ë‹¤.
          *
          * open cursor c1
          * commit
          * open cursor c2
          * rollback
          *
-         * ÀÌ °æ¿ì c1 cursor ´Â °è¼Ó À¯È¿ÇØ¾ßÇÏÁö¸¸
-         * rollback ÀÌÈÄ¿¡ c2 cursor ´Â ³²¾ÆÀÖÀ¸¸é ¾ÈµÈ´Ù.
-         * rollback ½Ã c1 ÀÌ ´ÝÈ÷Áö ¾Êµµ·Ï ÇÏ±âÀ§ÇØ fence ¸¦ Á¶Á¤ÇÑ´Ù.
+         * ì´ ê²½ìš° c1 cursor ëŠ” ê³„ì† ìœ íš¨í•´ì•¼í•˜ì§€ë§Œ
+         * rollback ì´í›„ì— c2 cursor ëŠ” ë‚¨ì•„ìžˆìœ¼ë©´ ì•ˆëœë‹¤.
+         * rollback ì‹œ c1 ì´ ë‹«ížˆì§€ ì•Šë„ë¡ í•˜ê¸°ìœ„í•´ fence ë¥¼ ì¡°ì •í•œë‹¤.
          */
 
         sOriCursorsInUseFence    = aEnv->mCursorsInUseFence;
@@ -966,8 +966,8 @@ idBool qsxEnv::isCriticalError(UInt aErrorCode)
     {
         case E_ACTION_FATAL:
             // BUG-24281
-            // PSMÀÇ fetch ±¸¹® ¼öÇà½Ã ¹ß»ýÇÏ´Â retry ¿¡·¯´Â PSM¿¡¼­ abort ¿¡·¯·Î ¹Ù²ã
-            // retry ¿¡·¯°¡ »óÀ§ ¸ðµâ·Î Àü´ÞµÇÁö ¾Êµµ·Ï Ã³¸®ÇÑ´Ù.
+            // PSMì˜ fetch êµ¬ë¬¸ ìˆ˜í–‰ì‹œ ë°œìƒí•˜ëŠ” retry ì—ëŸ¬ëŠ” PSMì—ì„œ abort ì—ëŸ¬ë¡œ ë°”ê¿”
+            // retry ì—ëŸ¬ê°€ ìƒìœ„ ëª¨ë“ˆë¡œ ì „ë‹¬ë˜ì§€ ì•Šë„ë¡ ì²˜ë¦¬í•œë‹¤.
             // case E_ACTION_RETRY:
             // case E_ACTION_REBUILD:
 
@@ -1074,10 +1074,10 @@ void qsxEnv::setStackInfo( qsxEnvInfo * aEnv,
 
 void qsxEnv::initializeRaisedExcpInfo( qsxRaisedExcpInfo * aRaisedExcpInfo )
 {
-    /* ÃÊ±â°ª ¼ÂÆÃ */
+    /* ì´ˆê¸°ê°’ ì…‹íŒ… */
     aRaisedExcpInfo->mRaisedExcpOID         = QS_EMPTY_OID;
     aRaisedExcpInfo->mRaisedExcpId          = QSX_FLOW_ID_INVALID;
     aRaisedExcpInfo->mRaisedExcpErrorMsgLen = 0;
-    /* qcg::allocStatement¿¡¼­ qsxEnvInfoÀ» callocÀ¸·Î ÇÏ±â ¶§¹®¿¡
-       mRaisedExcpErrorMsg¿¡ ´ëÇØ¼­´Â ÃÊ±âÈ­ µÇ¾î ÀÖ´Ù. */
+    /* qcg::allocStatementì—ì„œ qsxEnvInfoì„ callocìœ¼ë¡œ í•˜ê¸° ë•Œë¬¸ì—
+       mRaisedExcpErrorMsgì— ëŒ€í•´ì„œëŠ” ì´ˆê¸°í™” ë˜ì–´ ìžˆë‹¤. */
 }

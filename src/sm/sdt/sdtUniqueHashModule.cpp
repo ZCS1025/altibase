@@ -26,7 +26,7 @@
 #include <sdtTempRow.h>
 #include <sdtTempPage.h>
 
-/* FilteringÀ» ÀÌ¿ëÇØ Row¸¦ Ã£±â À§ÇÔ */
+/* Filteringì„ ì´ìš©í•´ Rowë¥¼ ì°¾ê¸° ìœ„í•¨ */
 typedef struct sdtTempCompData
 {
     smiTempTableHeader *mHeader;
@@ -35,11 +35,11 @@ typedef struct sdtTempCompData
 
 /**************************************************************************
  * Description :
- * WorkArea¸¦ ÇÒ´ç¹Ş°í temptableHeaderµîÀ» ÃÊ±âÈ­ ÇØÁØ´Ù.
- * HashGroup, SubGroupÀ» ¸¸µé¾îÁØ´Ù.
+ * WorkAreaë¥¼ í• ë‹¹ë°›ê³  temptableHeaderë“±ì„ ì´ˆê¸°í™” í•´ì¤€ë‹¤.
+ * HashGroup, SubGroupì„ ë§Œë“¤ì–´ì¤€ë‹¤.
  *
  * <IN>
- * aHeader        - ´ë»ó Table
+ * aHeader        - ëŒ€ìƒ Table
  ***************************************************************************/
 IDE_RC sdtUniqueHashModule::init( void * aHeader )
 {
@@ -96,10 +96,10 @@ IDE_RC sdtUniqueHashModule::init( void * aHeader )
 
 /**************************************************************************
  * Description :
- * Á¤¸®ÇÑ´Ù. WorkArea¹× CursorµîÀº smiTemp¿¡¼­ ¾Ë¾Æ¼­ ÇÑ´Ù.
+ * ì •ë¦¬í•œë‹¤. WorkAreaë° Cursorë“±ì€ smiTempì—ì„œ ì•Œì•„ì„œ í•œë‹¤.
  *
  * <IN>
- * aHeader        - ´ë»ó Table
+ * aHeader        - ëŒ€ìƒ Table
  ***************************************************************************/
 IDE_RC sdtUniqueHashModule::destroy( void * aHeader )
 {
@@ -108,8 +108,8 @@ IDE_RC sdtUniqueHashModule::destroy( void * aHeader )
 
     smiTempTableHeader * sHeader = (smiTempTableHeader*)aHeader;
 
-    /* Á¾·áµÇ¸é¼­ ¿¹Ãø Åë°èÄ¡¸¦ °è»êÇÑ´Ù. */
-    /* Optimal(InMemory)Àº ¸ğµç µ¥ÀÌÅÍ°¡ HashArea¿¡ ´ã±æ Å©±â¸é µÈ´Ù. */
+    /* ì¢…ë£Œë˜ë©´ì„œ ì˜ˆì¸¡ í†µê³„ì¹˜ë¥¼ ê³„ì‚°í•œë‹¤. */
+    /* Optimal(InMemory)ì€ ëª¨ë“  ë°ì´í„°ê°€ HashAreaì— ë‹´ê¸¸ í¬ê¸°ë©´ ëœë‹¤. */
     sHeader->mStatsPtr->mEstimatedOptimalHashSize =
         (ULong)(( SDT_TR_HEADER_SIZE_FULL + sHeader->mRowSize )
                 * sHeader->mRowCount
@@ -120,15 +120,15 @@ IDE_RC sdtUniqueHashModule::destroy( void * aHeader )
 
 /**************************************************************************
  * Description :
- * Uniquness¸¦ CheckÇÏ¸ç µ¥ÀÌÅÍ¸¦ »ğÀÔÇÑ´Ù.
+ * Uniqunessë¥¼ Checkí•˜ë©° ë°ì´í„°ë¥¼ ì‚½ì…í•œë‹¤.
  *
  * <IN>
- * aTable           - ´ë»ó Table
- * aValue           - »ğÀÔÇÒ Value
- * aHashValue       - »ğÀÔÇÒ HashValue (HashTemp¸¸ À¯È¿ )
+ * aTable           - ëŒ€ìƒ Table
+ * aValue           - ì‚½ì…í•  Value
+ * aHashValue       - ì‚½ì…í•  HashValue (HashTempë§Œ ìœ íš¨ )
  * <OUT>
- * aGRID            - »ğÀÔÇÑ À§Ä¡
- * aResult          - »ğÀÔÀÌ ¼º°øÇÏ¿´´Â°¡?(UniqueViolation Check¿ë )
+ * aGRID            - ì‚½ì…í•œ ìœ„ì¹˜
+ * aResult          - ì‚½ì…ì´ ì„±ê³µí•˜ì˜€ëŠ”ê°€?(UniqueViolation Checkìš© )
  ***************************************************************************/
 IDE_RC sdtUniqueHashModule::insert( void     * aHeader,
                                     smiValue * aValue,
@@ -147,8 +147,8 @@ IDE_RC sdtUniqueHashModule::insert( void     * aHeader,
     scGRID             * sBucketGRIDPtr;
     scGRID               sTargetGRID;
 
-    /*************************** Áßº¹Ã¼Å© *******************************/
-    /* sdtTempRow::insertByHVIndexÀÇ 1373 line ÂüÁ¶ */
+    /*************************** ì¤‘ë³µì²´í¬ *******************************/
+    /* sdtTempRow::insertByHVIndexì˜ 1373 line ì°¸ì¡° */
     if ( SM_IS_FLAG_ON( sHeader->mTTFlag,  SMI_TTFLAG_UNIQUE ) )
     {
         sData.mHeader     = sHeader;
@@ -175,7 +175,7 @@ IDE_RC sdtUniqueHashModule::insert( void     * aHeader,
     }
     else
     {
-        /* Uniqueness CheckÇÒ ÇÊ¿ä ¾øÀ¸´Ï, Bucket¸¸ Á¶È¸ÇÔ */
+        /* Uniqueness Checkí•  í•„ìš” ì—†ìœ¼ë‹ˆ, Bucketë§Œ ì¡°íšŒí•¨ */
         sIdx = aHashValue % sdtWAMap::getSlotCount( &sWASeg->mSortHashMapHdr );
 
         IDE_TEST( sdtWAMap::getSlotPtrWithCheckState( &sWASeg->mSortHashMapHdr,
@@ -185,7 +185,7 @@ IDE_RC sdtUniqueHashModule::insert( void     * aHeader,
                   != IDE_SUCCESS );
     }
 
-    /**************************** »ğÀÔ *********************************/
+    /**************************** ì‚½ì… *********************************/
     *aResult = ID_TRUE;
     sdtTempRow::makeTRPInfo( SDT_TRFLAG_HEAD |
                              SDT_TRFLAG_CHILDGRID,
@@ -208,12 +208,12 @@ IDE_RC sdtUniqueHashModule::insert( void     * aHeader,
               != IDE_SUCCESS );
     IDE_ERROR( sTRInsertResult.mComplete == ID_TRUE );
 
-    /* BucketÀÇ GRID°ªÀ» º¯°æÇÑ´Ù.
+    /* Bucketì˜ GRIDê°’ì„ ë³€ê²½í•œë‹¤.
      * IDE_TEST( sdtWAMap::set( &sWASeg->mSortHashMapHdr,
      *                          sIdx,
      *                          &sTRInsertResult.mHeadRowpieceGRID )
      *          != IDE_SUCCESS );
-     * ¿Í µ¿ÀÏÇÔ */
+     * ì™€ ë™ì¼í•¨ */
     *sBucketGRIDPtr = sTRInsertResult.mHeadRowpieceGRID;
 
     *aGRID = sTRInsertResult.mHeadRowpieceGRID;
@@ -229,12 +229,12 @@ IDE_RC sdtUniqueHashModule::insert( void     * aHeader,
 
 /***************************************************************************
  * Description :
- * Ä¿¼­¸¦ ¿±´Ï´Ù.
+ * ì»¤ì„œë¥¼ ì—½ë‹ˆë‹¤.
  *
  * <IN>
- * aHeader        - ´ë»ó Table
+ * aHeader        - ëŒ€ìƒ Table
  * <OUT>
- * aCursor        - ¹İÈ¯°ª
+ * aCursor        - ë°˜í™˜ê°’
  ***************************************************************************/
 IDE_RC sdtUniqueHashModule::openCursor( void * aHeader,
                                         void * aCursor )
@@ -247,20 +247,20 @@ IDE_RC sdtUniqueHashModule::openCursor( void * aHeader,
     IDE_DASSERT( SM_IS_FLAG_OFF( sCursor->mTCFlag, SMI_TCFLAG_ORDEREDSCAN ) );
     
 #ifdef DEBUG
-    /* Cache Á¤º¸µé : UniqueHash ´Â »ç¿ëÇÏÁö ¾Ê´Â´Ù. */
+    /* Cache ì •ë³´ë“¤ : UniqueHash ëŠ” ì‚¬ìš©í•˜ì§€ ì•ŠëŠ”ë‹¤. */
     sCursor->mWPID      = SC_NULL_PID;
     sCursor->mWAPagePtr = NULL;
     sCursor->mSlotCount = SDT_WASLOT_UNUSED;
 #endif
 
-    /* RowÀÇ À§Ä¡ : page¸¦ fix ÇÏÁö ¾ÊÀ¸¹Ç·Î ¹Ù²ğ¼ö ÀÖ¾î¼­ »ç¿ë½Ã ÁÖÀÇ ÇÊ¿ä */
+    /* Rowì˜ ìœ„ì¹˜ : pageë¥¼ fix í•˜ì§€ ì•Šìœ¼ë¯€ë¡œ ë°”ë€”ìˆ˜ ìˆì–´ì„œ ì‚¬ìš©ì‹œ ì£¼ì˜ í•„ìš” */
     sCursor->mRowPtr = NULL;
 
     if ( SM_IS_FLAG_ON( sCursor->mTCFlag, SMI_TCFLAG_HASHSCAN ) )
     {
         sCursor->mFetch     = fetchHashScan;
 
-        /* HashValue¸¦ »ç¿ëÇÏ¿© Å½»öÇÔ */
+        /* HashValueë¥¼ ì‚¬ìš©í•˜ì—¬ íƒìƒ‰í•¨ */
         sCursor->mGRID      = SC_NULL_GRID;
         sCursor->mChildGRID = SC_NULL_GRID;
     }
@@ -284,13 +284,13 @@ IDE_RC sdtUniqueHashModule::openCursor( void * aHeader,
 
 /**************************************************************************
  * Description :
- * Ä¿¼­·ÎºÎÅÍ HashValue¸¦ ¹ÙÅÁÀ¸·Î ´ÙÀ½ Row¸¦ °¡Á®¿É´Ï´Ù.
+ * ì»¤ì„œë¡œë¶€í„° HashValueë¥¼ ë°”íƒ•ìœ¼ë¡œ ë‹¤ìŒ Rowë¥¼ ê°€ì ¸ì˜µë‹ˆë‹¤.
  *
  * <IN>
- * aCursor        - ´ë»ó Cursor
+ * aCursor        - ëŒ€ìƒ Cursor
  * <OUT>
- * aRow           - ´ë»ó Row
- * aGRID          - °¡Á®¿Â RowÀÇ GRID
+ * aRow           - ëŒ€ìƒ Row
+ * aGRID          - ê°€ì ¸ì˜¨ Rowì˜ GRID
  ***************************************************************************/
 IDE_RC sdtUniqueHashModule::fetchHashScan( void           * aCursor,
                                            UChar         ** aRow,
@@ -308,7 +308,7 @@ IDE_RC sdtUniqueHashModule::fetchHashScan( void           * aCursor,
     scPageID             sNPID         = SC_NULL_PID;
 
     IDE_DASSERT( SM_IS_FLAG_ON( sCursor->mTCFlag, SMI_TCFLAG_HASHSCAN ) );
-    /* Cache Á¤º¸µé : UniqueHash ´Â »ç¿ëÇÏÁö ¾Ê´Â´Ù. */
+    /* Cache ì •ë³´ë“¤ : UniqueHash ëŠ” ì‚¬ìš©í•˜ì§€ ì•ŠëŠ”ë‹¤. */
     IDE_DASSERT( sCursor->mWPID      == SC_NULL_PID ) ;
     IDE_DASSERT( sCursor->mWAPagePtr == NULL );
     IDE_DASSERT( sCursor->mSlotCount == SDT_WASLOT_UNUSED );
@@ -317,7 +317,7 @@ IDE_RC sdtUniqueHashModule::fetchHashScan( void           * aCursor,
     {
         if ( SC_GRID_IS_NULL( sCursor->mGRID ) )
         {
-            /* ÃÖÃÊ Å½»ö */
+            /* ìµœì´ˆ íƒìƒ‰ */
             IDE_TEST( findExactRow( sHeader,
                                     sWASeg,
                                     ID_FALSE, /* reset page */
@@ -331,7 +331,7 @@ IDE_RC sdtUniqueHashModule::fetchHashScan( void           * aCursor,
         }
         else
         {
-            /* ´ÙÀ½ Row¸¦ Ã£¾Æ°¨ */
+            /* ë‹¤ìŒ Rowë¥¼ ì°¾ì•„ê° */
             sCursor->mGRID = sCursor->mChildGRID;
 
 #ifdef DEBUG
@@ -360,7 +360,7 @@ IDE_RC sdtUniqueHashModule::fetchHashScan( void           * aCursor,
         }
         else
         {
-            /* BUG-45474 hash_area_size°¡ ºÎÁ·ÇÏ¸é ºñÁ¤»óÁ¾·áÇÏ°Å³ª SQL ÀÇ °á°ú°¡ Áßº¹µÈ °ªÀÌ Ãâ·ÂµÉ ¼ö ÀÖ½À´Ï´Ù. */
+            /* BUG-45474 hash_area_sizeê°€ ë¶€ì¡±í•˜ë©´ ë¹„ì •ìƒì¢…ë£Œí•˜ê±°ë‚˜ SQL ì˜ ê²°ê³¼ê°€ ì¤‘ë³µëœ ê°’ì´ ì¶œë ¥ë  ìˆ˜ ìˆìŠµë‹ˆë‹¤. */
             if ( ( SC_MAKE_SPACE( sCursor->mGRID ) != SDT_SPACEID_WAMAP ) &&
                  ( SC_MAKE_SPACE( sCursor->mGRID ) != SDT_SPACEID_WORKAREA ) )
             {
@@ -413,13 +413,13 @@ IDE_RC sdtUniqueHashModule::fetchHashScan( void           * aCursor,
 
 /**************************************************************************
  * Description :
- * Ä¿¼­·ÎºÎÅÍ ¸ğµç Row¸¦ ´ë»óÀ¸·Î FetchNext·Î °¡Á®¿É´Ï´Ù.
+ * ì»¤ì„œë¡œë¶€í„° ëª¨ë“  Rowë¥¼ ëŒ€ìƒìœ¼ë¡œ FetchNextë¡œ ê°€ì ¸ì˜µë‹ˆë‹¤.
  *
  * <IN>
- * aCursor        - ´ë»ó Cursor
+ * aCursor        - ëŒ€ìƒ Cursor
  * <OUT>
- * aRow           - ´ë»ó Row
- * aGRID          - °¡Á®¿Â RowÀÇ GRID
+ * aRow           - ëŒ€ìƒ Row
+ * aGRID          - ê°€ì ¸ì˜¨ Rowì˜ GRID
  ***************************************************************************/
 IDE_RC sdtUniqueHashModule::fetchFullScan(void           * aCursor,
                                           UChar         ** aRow,
@@ -465,7 +465,7 @@ IDE_RC sdtUniqueHashModule::fetchFullScan(void           * aCursor,
 
         if ( SC_GRID_IS_NULL( sCursor->mChildGRID ) )
         {
-            /* ÀÌ¹ø Bucket¿¡ ´ëÇÑ Á¶È¸´Â ³¡³µÀ½ */
+            /* ì´ë²ˆ Bucketì— ëŒ€í•œ ì¡°íšŒëŠ” ëë‚¬ìŒ */
             IDE_TEST( getNextNPage( sWASeg, sCursor ) != IDE_SUCCESS );
         }
         if ( sResult == ID_TRUE )
@@ -483,10 +483,10 @@ IDE_RC sdtUniqueHashModule::fetchFullScan(void           * aCursor,
 
 /**************************************************************************
  * Description :
- * Ä¿¼­¸¦ ´İ½À´Ï´Ù.
+ * ì»¤ì„œë¥¼ ë‹«ìŠµë‹ˆë‹¤.
  *
  * <IN>
- * aCursor        - ´ë»ó Cursor
+ * aCursor        - ëŒ€ìƒ Cursor
  ***************************************************************************/
 IDE_RC sdtUniqueHashModule::closeCursor(void * /*aTempCursor*/ )
 {
@@ -495,14 +495,14 @@ IDE_RC sdtUniqueHashModule::closeCursor(void * /*aTempCursor*/ )
 
 /**************************************************************************
  * Description :
- * Row ºñ±³¿ë Filter
+ * Row ë¹„êµìš© Filter
  *
  * <OUT>
- * aResult - °á°ú°ª
+ * aResult - ê²°ê³¼ê°’
  * <IN>
- * aRow    - ´ë»ó Row
- * aGRID   - ´ë»ó RowÀÇ GRID
- * aData   - ºñ±³ÇÒ Filter Data
+ * aRow    - ëŒ€ìƒ Row
+ * aGRID   - ëŒ€ìƒ Rowì˜ GRID
+ * aData   - ë¹„êµí•  Filter Data
  ***************************************************************************/
 IDE_RC sdtUniqueHashModule::compareRowAndValue( idBool         * aResult,
                                                 const void     * aRow,
@@ -527,9 +527,9 @@ IDE_RC sdtUniqueHashModule::compareRowAndValue( idBool         * aResult,
         IDE_ERROR( sKeyColumn->mIdx < sHeader->mColumnCount );
 
         /* PROJ-2180 valueForModule
-           SMI_OFFSET_USELESS ·Î ºñ±³ÇÏ´Â ÄÃ·³Àº mBlankColumn À» »ç¿ëÇØ¾ß ÇÑ´Ù.
-           Compare ÇÔ¼ö¿¡¼­ valueForModule À» È£ÃâÇÏÁö ¾Ê°í
-           offset À» »ç¿ëÇÒ¼ö ÀÖ±â ¶§¹®ÀÌ´Ù. */
+           SMI_OFFSET_USELESS ë¡œ ë¹„êµí•˜ëŠ” ì»¬ëŸ¼ì€ mBlankColumn ì„ ì‚¬ìš©í•´ì•¼ í•œë‹¤.
+           Compare í•¨ìˆ˜ì—ì„œ valueForModule ì„ í˜¸ì¶œí•˜ì§€ ì•Šê³ 
+           offset ì„ ì‚¬ìš©í• ìˆ˜ ìˆê¸° ë•Œë¬¸ì´ë‹¤. */
         sValue1.column = sHeader->mBlankColumn;
         sValue1.value  = sValueList[ sKeyColumn->mIdx ].value;
         sValue1.length = sValueList[ sKeyColumn->mIdx ].length;
@@ -562,13 +562,13 @@ IDE_RC sdtUniqueHashModule::compareRowAndValue( idBool         * aResult,
 
 /**************************************************************************
  * Description :
- * FullScanÀÏ¶§, ScanÇÒ ´ÙÀ½ PageÁ¤º¸¸¦ °¡Á®¿Í ¼³Á¤ÇÑ´Ù.
+ * FullScanì¼ë•Œ, Scaní•  ë‹¤ìŒ Pageì •ë³´ë¥¼ ê°€ì ¸ì™€ ì„¤ì •í•œë‹¤.
  *
  * <IN>
- * aCursor        - ´ë»ó Cursor
+ * aCursor        - ëŒ€ìƒ Cursor
  * <OUT>
- * aRow           - ´ë»ó Row
- * aGRID          - °¡Á®¿Â RowÀÇ GRID
+ * aRow           - ëŒ€ìƒ Row
+ * aGRID          - ê°€ì ¸ì˜¨ Rowì˜ GRID
  ***************************************************************************/
 IDE_RC sdtUniqueHashModule::getNextNPage( sdtWASegment   * aWASegment,
                                           smiTempCursor  * aCursor )

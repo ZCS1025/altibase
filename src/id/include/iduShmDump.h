@@ -38,7 +38,7 @@ public:
     static IDE_RC initialize();
     static IDE_RC destroy();
 
-    // aMsgBuf[aBufSize]¿¡ ÇØ´çµÇ´Â ¸Ş½ÃÁö¸¦ Ã¤¿î´Ù.
+    // aMsgBuf[aBufSize]ì— í•´ë‹¹ë˜ëŠ” ë©”ì‹œì§€ë¥¼ ì±„ìš´ë‹¤.
     static IDE_RC getMsgSysSeg( SChar * aMsgBuf,
                                 UInt    aBufSize );
     static IDE_RC getMsgDataSeg( SChar * aMsgBuf,
@@ -58,7 +58,7 @@ public:
                                  UInt      aDumpLength );
 
 private:
-    // aMsgBuf[aBufSize]¿¡ ÇØ´çµÇ´Â ¸Ş½ÃÁö¸¦ Ã¤¿î´Ù.
+    // aMsgBuf[aBufSize]ì— í•´ë‹¹ë˜ëŠ” ë©”ì‹œì§€ë¥¼ ì±„ìš´ë‹¤.
     static UInt getMsgShmHeader( SChar * aMsgBuf,
                                  UInt    aBufSize );
     static UInt getMsgShmStatictics( SChar * aMsgBuf,

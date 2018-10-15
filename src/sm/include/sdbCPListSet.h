@@ -50,22 +50,22 @@ public:
 
     UInt getListCount();
 
-    // sdbBCBListStatÀ» À§ÇÑ ÇÔ¼öµé
+    // sdbBCBListStatì„ ìœ„í•œ í•¨ìˆ˜ë“¤
     UInt getLength(UInt aListNo);
     void* getFirst(UInt aListNo);
     void* getLast(UInt aListNo);
 
 private:
-    /* À¯ÁöÇÏ´Â list °¹¼ö */
+    /* ìœ ì§€í•˜ëŠ” list ê°¯ìˆ˜ */
     UInt        mListCount;
     
-    /* ¸®½ºÆ®µéÀÇ base. ¹è¿­ÇüÅÂ·Î µÇ¾îÀÖ´Ù.*/
+    /* ë¦¬ìŠ¤íŠ¸ë“¤ì˜ base. ë°°ì—´í˜•íƒœë¡œ ë˜ì–´ìˆë‹¤.*/
     smuList    *mBase;
     
-    /* ¸®½ºÆ®µéÀÇ ±æÀÌ. ¹è¿­ÇüÅÂ·Î µÇ¾îÀÖ´Ù.*/
+    /* ë¦¬ìŠ¤íŠ¸ë“¤ì˜ ê¸¸ì´. ë°°ì—´í˜•íƒœë¡œ ë˜ì–´ìˆë‹¤.*/
     UInt       *mListLength;
     
-    /* ¸®½ºÆ®µéÀÇ ¹ÂÅØ½º. ¹è¿­ÇüÅÂ·Î µÇ¾îÀÖ´Ù.*/
+    /* ë¦¬ìŠ¤íŠ¸ë“¤ì˜ ë®¤í…ìŠ¤. ë°°ì—´í˜•íƒœë¡œ ë˜ì–´ìˆë‹¤.*/
     iduMutex   *mListMutex;
 };  
 

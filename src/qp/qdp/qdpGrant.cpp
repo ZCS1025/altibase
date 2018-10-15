@@ -82,8 +82,8 @@ IDE_RC qdpGrant::validateGrantSystem(qcStatement * aStatement)
          sPrivilege != NULL;
          sPrivilege = sPrivilege->next)
     {
-        /* GRANT ANY PRIVILEGES, GRANT ANY ROLEÀ» privilege list role, system priv
-         * Á¸Àç ¿©ºÎ Ã¼Å© */
+        /* GRANT ANY PRIVILEGES, GRANT ANY ROLEì„ privilege list role, system priv
+         * ì¡´ì¬ ì—¬ë¶€ ì²´í¬ */
         if ( sPrivilege->privType == QDP_ROLE_PRIV )
         {
             /* GET ROLE ID */
@@ -93,7 +93,7 @@ IDE_RC qdpGrant::validateGrantSystem(qcStatement * aStatement)
                                                 &sUserType )
                      != IDE_SUCCESS);
 
-            /* privilege list¿¡ role type °Ë»ç */
+            /* privilege listì— role type ê²€ì‚¬ */
             IDE_TEST_RAISE ( sUserType != QDP_ROLE_TYPE, ERR_NOT_EXIST_ROLE );
 
             sIsRoleExist = ID_TRUE;
@@ -115,7 +115,7 @@ IDE_RC qdpGrant::validateGrantSystem(qcStatement * aStatement)
     if ( sParseTree->grantorID != QC_SYS_USER_ID &&
          sParseTree->grantorID != QC_SYSTEM_USER_ID )
     {
-        /*  GRANT ANY PRIVILEGES ±ÇÇÑ °Ë»ç */
+        /*  GRANT ANY PRIVILEGES ê¶Œí•œ ê²€ì‚¬ */
         if ( sIsSysPrivExist == ID_TRUE )
         {
             IDE_TEST( qdpRole::checkDDLGrantAnyPrivilegesPriv( aStatement )
@@ -126,7 +126,7 @@ IDE_RC qdpGrant::validateGrantSystem(qcStatement * aStatement)
             /* Nothing To Do */
         }
 
-        /* GRANT ANY ROLE ±ÇÇÑ °Ë»ç */
+        /* GRANT ANY ROLE ê¶Œí•œ ê²€ì‚¬ */
         if ( sIsRoleExist == ID_TRUE )
         {
             IDE_TEST( qdpRole::checkDDLGrantAnyRolePriv( aStatement )
@@ -143,8 +143,8 @@ IDE_RC qdpGrant::validateGrantSystem(qcStatement * aStatement)
     }
 
     // To fix BUG-12188 check exist privileges
-    // °¢°¢ÀÇ system privilege, °¢°¢ÀÇ grantee¿¡ ´ëÇØ
-    // ÇØ´ç ±ÇÇÑÀÌ Á¸ÀçÇÏ´ÂÁö °Ë»ç.
+    // ê°ê°ì˜ system privilege, ê°ê°ì˜ granteeì— ëŒ€í•´
+    // í•´ë‹¹ ê¶Œí•œì´ ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬.
     
     /* PROJ-1812 ROLE */
     for (sPrivilege = sParseTree->privileges;
@@ -157,15 +157,15 @@ IDE_RC qdpGrant::validateGrantSystem(qcStatement * aStatement)
         {
             if ( sPrivilege->privType == QDP_ROLE_PRIV )
             {   
-                /* ROLE TO PUBLIC °Ë»ç */
+                /* ROLE TO PUBLIC ê²€ì‚¬ */
                 IDE_TEST_RAISE ( sGrantee->userOrRoleID == QC_PUBLIC_USER_ID,
                                  ERR_NOT_SUPPORT_ROLE_TO_PUBLIC );
                 
-                /* ROLE TO ROLE °Ë»ç */
+                /* ROLE TO ROLE ê²€ì‚¬ */
                 IDE_TEST_RAISE( sGrantee->userType == QDP_ROLE_TYPE,
                                 ERR_NOT_SUPPORT_ROLE_TO_ROLE );   
                 
-                /* ROLE Áßº¹ ºÎ¿© °Ë»ç */
+                /* ROLE ì¤‘ë³µ ë¶€ì—¬ ê²€ì‚¬ */
                 IDE_TEST( qcmPriv::checkRoleWithGrantor(
                               aStatement,
                               sParseTree->grantorID,
@@ -187,15 +187,15 @@ IDE_RC qdpGrant::validateGrantSystem(qcStatement * aStatement)
                     // Nothing to do.
                 }
                
-                /* USER TO ROLES MAX COUNT °Ë»ç */
+                /* USER TO ROLES MAX COUNT ê²€ì‚¬ */
                 IDE_TEST( qdpRole::getRoleCountByUserID( aStatement,
                                                          sGrantee->userOrRoleID,
                                                          &sRoleCount )
                           != IDE_SUCCESS );
 
-                /* current userid, public ¸¦ Á¦¿Ü ÇÑ °ÍÀÌ role ÃÖ´ë ºÎ¿© °³¼ö
-                 * public´Â sRoleCunt Æ÷ÇÔ
-                 * current user´Â QDD_USER_TO_ROLES_MAX_COUNT - 1 */
+                /* current userid, public ë¥¼ ì œì™¸ í•œ ê²ƒì´ role ìµœëŒ€ ë¶€ì—¬ ê°œìˆ˜
+                 * publicëŠ” sRoleCunt í¬í•¨
+                 * current userëŠ” QDD_USER_TO_ROLES_MAX_COUNT - 1 */
                 IDE_TEST_RAISE( ( sPrivilegeListRoleCount + sRoleCount ) >
                                 ( QDD_USER_TO_ROLES_MAX_COUNT - 1 ),            
                                 ERR_USER_TO_ROLES_MAX_COUNT );
@@ -306,8 +306,8 @@ IDE_RC qdpGrant::validateGrantObject(qcStatement * aStatement)
           sGrantee != NULL;
           sGrantee = sGrantee->next )
     {        
-        /* ROLE WITH GRANT OPTION ÃÇÅ©
-         * GRANT SELECT ON T1 TO PUBLIC WITH GRANT OPTIONÀº Á¦¿Ü */
+        /* ROLE WITH GRANT OPTION ì³¬í¬
+         * GRANT SELECT ON T1 TO PUBLIC WITH GRANT OPTIONì€ ì œì™¸ */
         IDE_TEST_RAISE( ( sGrantee->userType == QDP_ROLE_TYPE ) &&
                         ( sGrantee->userOrRoleID != QC_PUBLIC_USER_ID ) &&
                         ( sParseTree->grantOption == ID_TRUE ),
@@ -591,7 +591,7 @@ IDE_RC qdpGrant::checkObjectInfo(
 
                     sTableType = smiGetTableFlag(sObjectHandle) & SMI_TABLE_TYPE_MASK;
                     
-                    // grant´Â »ç¿ëÀÚ°¡ »ı¼ºÇÑ table¿¡¸¸ °¡´ÉÇÏ´Ù.
+                    // grantëŠ” ì‚¬ìš©ìê°€ ìƒì„±í•œ tableì—ë§Œ ê°€ëŠ¥í•˜ë‹¤.
                     if( ( sTableType != SMI_TABLE_MEMORY ) &&
                         ( sTableType != SMI_TABLE_DISK ) &&
                         ( sTableType != SMI_TABLE_VOLATILE ) )
@@ -613,7 +613,7 @@ IDE_RC qdpGrant::checkObjectInfo(
                     *aObjID = sTableInfo->tableID;
 
                     // PROJ-2264 Dictionary table
-                    // Dictionary table ¿¡ ´ëÇÑ DDL Àº ¸ğµÎ ±İÁöÇÑ´Ù.
+                    // Dictionary table ì— ëŒ€í•œ DDL ì€ ëª¨ë‘ ê¸ˆì§€í•œë‹¤.
                     IDE_TEST_RAISE( sTableInfo->isDictionary == ID_TRUE,
                                     ERR_CANNOT_DDL_DICTIONARY_TABLE );
 
@@ -1233,10 +1233,10 @@ IDE_RC qdpGrant::executeGrantSystem(qcStatement * aStatement)
 /***********************************************************************
  *
  * Description :
- *      GRANT privilege_list TO grantees ¼öÇà
+ *      GRANT privilege_list TO grantees ìˆ˜í–‰
  *
  * Implementation :
- *      1. SYS_GRANT_SYSTEM_ ¸ŞÅ¸ Å×ÀÌºí¿¡ ±ÇÇÑ ÀÔ·Â
+ *      1. SYS_GRANT_SYSTEM_ ë©”íƒ€ í…Œì´ë¸”ì— ê¶Œí•œ ì…ë ¥
  *
  ***********************************************************************/
 
@@ -1627,7 +1627,7 @@ IDE_RC qdpGrant::executeGrantObject(qcStatement * aStatement)
     if (sParseTree->objectType[0] == 'T')
     {
         // BUG-14509
-        // °ü·Ã psmµéÀÌ rebuildµÉ ¼ö ÀÖµµ·Ï invalid»óÅÂ·Î º¯°æ.
+        // ê´€ë ¨ psmë“¤ì´ rebuildë  ìˆ˜ ìˆë„ë¡ invalidìƒíƒœë¡œ ë³€ê²½.
         IDE_TEST( qcmProc::relSetInvalidProcOfRelated(
                       aStatement,
                       sParseTree->userID,
@@ -1737,7 +1737,7 @@ IDE_RC qdpGrant::executeGrantObject(qcStatement * aStatement)
 
     IDE_EXCEPTION_END;
 
-    // sqlSourceInfo°¡ ¾ø´Â error¶ó¸é... 
+    // sqlSourceInfoê°€ ì—†ëŠ” errorë¼ë©´... 
     if ( ideHasErrorPosition() == ID_FALSE )
     {
         sqlInfo.setSourceInfo( aStatement,
@@ -1810,10 +1810,10 @@ IDE_RC qdpGrant::grantDefaultPrivs4CreateUser(
 /***********************************************************************
  *
  * Description :
- *      CREATE USER ½Ã µğÆúÆ® ±ÇÇÑ ÀÔ·Â
+ *      CREATE USER ì‹œ ë””í´íŠ¸ ê¶Œí•œ ì…ë ¥
  *
  * Implementation :
- *      1. SYS_GRANT_SYSTEM_ ¸ŞÅ¸ Å×ÀÌºí¿¡ µğÆúÆ® ±ÇÇÑ ÀÔ·Â
+ *      1. SYS_GRANT_SYSTEM_ ë©”íƒ€ í…Œì´ë¸”ì— ë””í´íŠ¸ ê¶Œí•œ ì…ë ¥
  *
  ***********************************************************************/
 
@@ -2088,10 +2088,10 @@ IDE_RC qdpGrant::insertObjectPrivIntoMeta(
 /***********************************************************************
  *
  * Description :
- *      OBJECT ±ÇÇÑ ÀÔ·Â
+ *      OBJECT ê¶Œí•œ ì…ë ¥
  *
  * Implementation :
- *      1. SYS_GRANT_OBJECT_ ¸ŞÅ¸ Å×ÀÌºí¿¡ ÁÖ¾îÁø ±ÇÇÑ ÀÔ·Â
+ *      1. SYS_GRANT_OBJECT_ ë©”íƒ€ í…Œì´ë¸”ì— ì£¼ì–´ì§„ ê¶Œí•œ ì…ë ¥
  *
  ***********************************************************************/
 
@@ -2186,10 +2186,10 @@ IDE_RC qdpGrant::haveObjectWithGrantOfDirectory(
 {
 /***********************************************************************
  *
- * Description : directory¿¡ ´ëÇÑ objectÀÇ grant ±ÇÇÑÀÌ Á¸ÀçÇÏ´ÂÁö °Ë»ç
+ * Description : directoryì— ëŒ€í•œ objectì˜ grant ê¶Œí•œì´ ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬
  *
  * Implementation :
- *     1. read ¶Ç´Â write¿¡ ´ëÇÑ grant ±ÇÇÑÀÌ Á¸ÀçÇÏ´ÂÁö °Ë»ç.
+ *     1. read ë˜ëŠ” writeì— ëŒ€í•œ grant ê¶Œí•œì´ ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬.
  *
  ***********************************************************************/
 
@@ -2268,7 +2268,7 @@ IDE_RC qdpGrant::haveObjectWithGrantOfPkg(
 /***********************************************************************
  *
  * Description : PROJ-1812 ROLE
- *      CREATE USER ½Ã PUBLIC ROLEÀ» ºÎ¿©
+ *      CREATE USER ì‹œ PUBLIC ROLEì„ ë¶€ì—¬
  *
  * Implementation :
  *      

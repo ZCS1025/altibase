@@ -81,7 +81,7 @@ private :
                                  UInt          aPkgNameSize,
                                  qsPkgOption   aOption );
 
-    /* BUG-38844 drop package ½Ã meta Á¤º¸ »èÁ¦ */
+    /* BUG-38844 drop package ì‹œ meta ì •ë³´ ì‚­ì œ */
     static IDE_RC dropPkgCommonForMeta( qcStatement * aStatement,
                                         qsOID         aPkgOID,
                                         UInt          aUserID,
@@ -89,7 +89,7 @@ private :
                                         UInt          aPkgNameSize,
                                         qsObjectType  aPkgType );
 
-    /* BUG-38844 drop package ½Ã qsxPkgInfo free */
+    /* BUG-38844 drop package ì‹œ qsxPkgInfo free */
     static IDE_RC dropPkgCommonForPkgInfo( qsOID          aPkgOID,
                                            qsxPkgInfo   * aPkgInfo );
 
@@ -106,8 +106,8 @@ private :
 public:
 
     /* PROJ-2197 PSM Renewal
-     * PSMÀ» »ı¼ºÇÒ ¶§ prepare memory¸¦ ¿ÂÀüÈ÷ º¸È£ÇÏ±â À§ÇØ¼­
-     * PSMÀ» »ı¼ºÇÑ ÀÌÈÄ¿¡ prepare memory¸¦ »õ·Î ¸¸µç´Ù. */
+     * PSMì„ ìƒì„±í•  ë•Œ prepare memoryë¥¼ ì˜¨ì „íˆ ë³´í˜¸í•˜ê¸° ìœ„í•´ì„œ
+     * PSMì„ ìƒì„±í•œ ì´í›„ì— prepare memoryë¥¼ ìƒˆë¡œ ë§Œë“ ë‹¤. */
     static IDE_RC makeNewPreparedMem( qcStatement * aStatement );
 
     static IDE_RC makeProcInfoMembers(

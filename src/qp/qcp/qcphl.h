@@ -38,7 +38,7 @@ class qcphLexer : public qcphFlexLexer
     SChar           mMessage[QCPH_BUFFER_SIZE];
     qcStatement*    mStatement;
     SInt            mTextOffset;
-    // TODO - A4¿¡ ¸Âµµ·Ï ¼öÁ¤ÇØ¾ß ÇÔ
+    // TODO - A4ì— ë§ë„ë¡ ìˆ˜ì •í•´ì•¼ í•¨
     /*
     qmsHints**  mHints;
     */

@@ -107,7 +107,7 @@ private:
 
     static IDE_RC checkMetaVersion( smiStatement * aSmiStmt );
 
-    // hash, range, listÀÇ ¸ğµç distribution value meta handleÀ» ÀĞ´Â´Ù.
+    // hash, range, listì˜ ëª¨ë“  distribution value meta handleì„ ì½ëŠ”ë‹¤.
     static IDE_RC getMetaTableAndIndex( smiStatement * aSmiStmt,
                                         const SChar  * aMetaTableName,
                                         const void  ** aTableHandle,

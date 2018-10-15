@@ -20,15 +20,15 @@
  *
  * Description :
  *
- *     SRECÀ» ¼öÇàÇÏ´Â Plan Node ÀÌ´Ù.
+ *     SRECì„ ìˆ˜í–‰í•˜ëŠ” Plan Node ì´ë‹¤.
  * 
- *     Left Child¿¡ ´ëÇÑ Data¿Í Right Child¿¡ ´ëÇÑ Data¸¦
- *     recursive ÇÏ°Ô ¼öÇà ÇÏ¸é¼­ °á°ú¸¦ ¸®ÅÏÇÑ´Ù.
- *     Left Child¿Í Right ChildÀÇ VMTRÀ» ¼­·Î SWAPÇÏ¸é¼­ ¼öÇàÇÑ´Ù. 
+ *     Left Childì— ëŒ€í•œ Dataì™€ Right Childì— ëŒ€í•œ Dataë¥¼
+ *     recursive í•˜ê²Œ ìˆ˜í–‰ í•˜ë©´ì„œ ê²°ê³¼ë¥¼ ë¦¬í„´í•œë‹¤.
+ *     Left Childì™€ Right Childì˜ VMTRì„ ì„œë¡œ SWAPí•˜ë©´ì„œ ìˆ˜í–‰í•œë‹¤. 
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  **********************************************************************/
 
@@ -61,7 +61,7 @@
 typedef struct qmnSRECInfo
 {
     //---------------------------------
-    // Memory Temp Table Àü¿ë Á¤º¸
+    // Memory Temp Table ì „ìš© ì •ë³´
     //---------------------------------
 
     qmcdMemSortTemp    * memSortMgr;
@@ -70,7 +70,7 @@ typedef struct qmnSRECInfo
     SLong                recordPos;
 
     //---------------------------------
-    // mtrNode Á¤º¸
+    // mtrNode ì •ë³´
     //---------------------------------
     
     qmdMtrNode         * mtrNode;
@@ -80,7 +80,7 @@ typedef struct qmnSRECInfo
 typedef struct qmncSREC
 {
     //---------------------------------
-    // Code ¿µ¿ª °øÅë Á¤º¸
+    // Code ì˜ì—­ ê³µí†µ ì •ë³´
     //---------------------------------
 
     qmnPlan           plan;
@@ -88,24 +88,24 @@ typedef struct qmncSREC
     UInt              planID;
 
     //---------------------------------
-    // SREC °íÀ¯ Á¤º¸
+    // SREC ê³ ìœ  ì •ë³´
     //---------------------------------
 
-    qmnPlan         * recursiveChild;      // right queryÀÇ ÇÏÀ§ recursive view scan
+    qmnPlan         * recursiveChild;      // right queryì˜ í•˜ìœ„ recursive view scan
     
 } qmncSREC;
 
 typedef struct qmndSREC
 {
     //---------------------------------
-    // Data ¿µ¿ª °øÅë Á¤º¸
+    // Data ì˜ì—­ ê³µí†µ ì •ë³´
     //---------------------------------
     qmndPlan          plan;
     doItFunc          doIt;
     UInt            * flag;
     
     //---------------------------------
-    // SREC Á¤º¸
+    // SREC ì •ë³´
     //---------------------------------
     
     qmnSRECInfo       vmtrLeft;
@@ -124,11 +124,11 @@ public:
     // Base Function Pointer
     //------------------------
 
-    // ÃÊ±âÈ­
+    // ì´ˆê¸°í™”
     static IDE_RC init( qcTemplate * aTemplate,
                         qmnPlan    * aPlan );
 
-    // ¼öÇà ÇÔ¼ö
+    // ìˆ˜í–‰ í•¨ìˆ˜
     static IDE_RC doIt( qcTemplate * aTemplate,
                         qmnPlan    * aPlan,
                         qmcRowFlag * aFlag );
@@ -137,7 +137,7 @@ public:
     static IDE_RC padNull( qcTemplate * aTemplate,
                            qmnPlan    * aPlan );
 
-    // Plan Á¤º¸ Ãâ·Â
+    // Plan ì •ë³´ ì¶œë ¥
     static IDE_RC printPlan( qcTemplate   * aTemplate,
                              qmnPlan      * aPlan,
                              ULong          aDepth,
@@ -148,7 +148,7 @@ public:
     // mapping by doIt() function pointer
     //------------------------
 
-    // È£ÃâµÇ¾î¼­´Â ¾ÈµÊ
+    // í˜¸ì¶œë˜ì–´ì„œëŠ” ì•ˆë¨
     static IDE_RC doItDefault( qcTemplate * aTemplate,
                                qmnPlan    * aPlan,
                                qmcRowFlag * aFlag );
@@ -171,7 +171,7 @@ public:
     
 private:
 
-    // ÃÖÃÊ ÃÊ±âÈ­
+    // ìµœì´ˆ ì´ˆê¸°í™”
     static IDE_RC firstInit( qmncSREC   * aCodePlan,
                              qmndSREC   * aDataPlan );
 

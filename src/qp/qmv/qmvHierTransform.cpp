@@ -35,8 +35,8 @@
 /**
  * doTransform
  *
- * TableÀÌ ÇÑ°³ÀÎ °æ¿ì¿¡ Hierarcy Query¸¦ »ç¿ë½Ã ÀÌ¸¦ inline viewÇüÅÂ·Î ¹Ù²Ù¾îÁØ´Ù.
- * ÀÌ¸¦ ÅëÇØ¼­ Hierarhcy QueraryÀÇ PLANÀ» inline view¿Í µ¿ÀÏÇÏ°Ô Ã³¸®ÇÑ´Ù.
+ * Tableì´ í•œê°œì¸ ê²½ìš°ì— Hierarcy Queryë¥¼ ì‚¬ìš©ì‹œ ì´ë¥¼ inline viewí˜•íƒœë¡œ ë°”ê¾¸ì–´ì¤€ë‹¤.
+ * ì´ë¥¼ í†µí•´ì„œ Hierarhcy Queraryì˜ PLANì„ inline viewì™€ ë™ì¼í•˜ê²Œ ì²˜ë¦¬í•œë‹¤.
  *
  * select * from t1 connect by prior id = pid ;
  * --> select * from (select * from t1 ) t1 connect by prior id = pid;

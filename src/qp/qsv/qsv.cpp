@@ -79,8 +79,8 @@ IDE_RC qsv::parseCreateProc(qcStatement * aStatement)
         IDE_RAISE( CANT_USE_RESERVED_WORD );
     }
 
-    // validation½Ã¿¡ ÂüÁ¶µÇ±â ¶§¹®¿¡ ÀÓ½Ã·Î ÁöÁ¤ÇÑ´Ù.
-    // PVO°¡ ¿Ï·áµÇ¸é Á¤»óÀûÀÎ °ªÀ¸·Î ÁöÁ¤µÈ´Ù.
+    // validationì‹œì— ì°¸ì¡°ë˜ê¸° ë•Œë¬¸ì— ìž„ì‹œë¡œ ì§€ì •í•œë‹¤.
+    // PVOê°€ ì™„ë£Œë˜ë©´ ì •ìƒì ì¸ ê°’ìœ¼ë¡œ ì§€ì •ëœë‹¤.
     sParseTree->stmtText    = aStatement->myPlan->stmtText;
     sParseTree->stmtTextLen = aStatement->myPlan->stmtTextLen;
 
@@ -128,9 +128,9 @@ IDE_RC qsv::validateCreateProc(qcStatement * aStatement)
                                 & sExist )
               != IDE_SUCCESS );
 
-    /* 1. procOID°¡ ÀÖÀ¸¸é °°Àº ÀÌ¸§ÀÇ PSMÀÌ ÀÖÀ¸¹Ç·Î ¿À·ù
-     * 2. procOID´Â QS_EMPTY_OIDÀÎµ¥, OBJECT°¡ Á¸ÀçÇÏ¸é
-     *    °°Àº ÀÌ¸§ÀÇ PSMÀÌ ¾Æ´Ñ OBJECT°¡ Á¸Àç (¿¹¸¦ µé¸é TABLE) */
+    /* 1. procOIDê°€ ìžˆìœ¼ë©´ ê°™ì€ ì´ë¦„ì˜ PSMì´ ìžˆìœ¼ë¯€ë¡œ ì˜¤ë¥˜
+     * 2. procOIDëŠ” QS_EMPTY_OIDì¸ë°, OBJECTê°€ ì¡´ìž¬í•˜ë©´
+     *    ê°™ì€ ì´ë¦„ì˜ PSMì´ ì•„ë‹Œ OBJECTê°€ ì¡´ìž¬ (ì˜ˆë¥¼ ë“¤ë©´ TABLE) */
     if( sParseTree->procOID != QS_EMPTY_OID )
     {
         sqlInfo.setSourceInfo( aStatement, & sParseTree->procNamePos );
@@ -260,9 +260,9 @@ IDE_RC qsv::validateReplaceProc(qcStatement * aStatement)
         else
         {
             /* BUG-39101
-               °´Ã¼ÀÇ typeÀ» È®ÀÎÇÏ¿© parse treeÀÇ type°ú µ¿ÀÏÇÏÁö ¾ÊÀ¸¸é,
-               µ¿ÀÏÇÑ °´Ã¼¸íÀ» °¡Áø ´Ù¸¥ typeÀÇ psm °´Ã¼ÀÌ¹Ç·Î
-               ¿¡·¯¸Þ½ÃÁö¸¦ ¼ÂÆÃÇÑ´Ù. */
+               ê°ì²´ì˜ typeì„ í™•ì¸í•˜ì—¬ parse treeì˜ typeê³¼ ë™ì¼í•˜ì§€ ì•Šìœ¼ë©´,
+               ë™ì¼í•œ ê°ì²´ëª…ì„ ê°€ì§„ ë‹¤ë¥¸ typeì˜ psm ê°ì²´ì´ë¯€ë¡œ
+               ì—ëŸ¬ë©”ì‹œì§€ë¥¼ ì…‹íŒ…í•œë‹¤. */
             IDE_TEST( qcmProc::getProcObjType( aStatement,
                                                sParseTree->procOID,
                                                &sObjectType )
@@ -304,12 +304,12 @@ IDE_RC qsv::validateReplaceProc(qcStatement * aStatement)
                                  &sParseTree->objectNameInfo )
               != IDE_SUCCESS );
 
-    // BUG-38800 Server startup½Ã Function-Based Index¿¡¼­ »ç¿ë ÁßÀÎ FunctionÀ»
-    // recompile ÇÒ ¼ö ÀÖ¾î¾ß ÇÑ´Ù.
+    // BUG-38800 Server startupì‹œ Function-Based Indexì—ì„œ ì‚¬ìš© ì¤‘ì¸ Functionì„
+    // recompile í•  ìˆ˜ ìžˆì–´ì•¼ í•œë‹¤.
     if ( ( aStatement->session->mQPSpecific.mFlag & QC_SESSION_INTERNAL_LOAD_PROC_MASK )
          != QC_SESSION_INTERNAL_LOAD_PROC_TRUE )
     {
-        /* BUG-35445 Check Constraint, Function-Based Index¿¡¼­ »ç¿ë ÁßÀÎ FunctionÀ» º¯°æ/Á¦°Å ¹æÁö */
+        /* BUG-35445 Check Constraint, Function-Based Indexì—ì„œ ì‚¬ìš© ì¤‘ì¸ Functionì„ ë³€ê²½/ì œê±° ë°©ì§€ */
         IDE_TEST( qcmProc::relIsUsedProcByConstraint(
                       aStatement,
                       &(sParseTree->procNamePos),
@@ -476,13 +476,13 @@ IDE_RC qsv::validateReturnDef( qcStatement * aStatement )
 
     sReturnTypeVar = sParseTree->returnTypeVar;
 
-    // ÀûÇÕ¼º °Ë»ç. returnÅ¸ÀÔÀº ¹Ýµå½Ã ÀÖ¾î¾ß ÇÔ.
+    // ì í•©ì„± ê²€ì‚¬. returníƒ€ìž…ì€ ë°˜ë“œì‹œ ìžˆì–´ì•¼ í•¨.
     IDE_DASSERT( sReturnTypeVar != NULL );
 
     // validation return data type
     if (sReturnTypeVar->variableType == QS_COL_TYPE)
     {
-        // return value¿¡¼­ column typeÀ» Çã¿ëÇÏ´Â °æ¿ì´Â ´Ü 2°¡Áö.
+        // return valueì—ì„œ column typeì„ í—ˆìš©í•˜ëŠ” ê²½ìš°ëŠ” ë‹¨ 2ê°€ì§€.
         // (1) table_name.column_name%TYPE
         // (2) user_name.table_name.column_name%TYPE
         if (QC_IS_NULL_NAME(sReturnTypeVar->variableTypeNode->tableName) == ID_TRUE)
@@ -508,7 +508,7 @@ IDE_RC qsv::validateReturnDef( qcStatement * aStatement )
     {
         if (QC_IS_NULL_NAME(sReturnTypeVar->variableTypeNode->userName) == ID_TRUE)
         {
-            // PROJ-1075 rowtype »ý¼º Çã¿ë.
+            // PROJ-1075 rowtype ìƒì„± í—ˆìš©.
             // (1) user_name.table_name%ROWTYPE
             // (2) table_name%ROWTYPE
             IDE_TEST(qsvProcVar::checkAttributeRowType( aStatement, sReturnTypeVar)
@@ -529,7 +529,7 @@ IDE_RC qsv::validateReturnDef( qcStatement * aStatement )
     }
     else
     {
-        // ÀûÇÕ¼º °Ë»ç. ÀÌ ÀÌ¿ÜÀÇ Å¸ÀÔÀº Àý´ë·Î ¿Ã ¼ö ¾øÀ½.
+        // ì í•©ì„± ê²€ì‚¬. ì´ ì´ì™¸ì˜ íƒ€ìž…ì€ ì ˆëŒ€ë¡œ ì˜¬ ìˆ˜ ì—†ìŒ.
         IDE_DASSERT(0);
     }
 
@@ -546,23 +546,23 @@ IDE_RC qsv::validateReturnDef( qcStatement * aStatement )
     sReturnTypeNodeColumn->column.offset = 0;
 
     // sReturnTypeNodeColumn->flag = 0;
-    // to fix BUG-13600 precision, scaleÀ» º¹»çÇÏ±â À§ÇØ
-    // column argument°ªÀº ÀúÀåÇØ¾ß ÇÔ.
+    // to fix BUG-13600 precision, scaleì„ ë³µì‚¬í•˜ê¸° ìœ„í•´
+    // column argumentê°’ì€ ì €ìž¥í•´ì•¼ í•¨.
     sReturnTypeNodeColumn->flag = sReturnTypeNodeColumn->flag & MTC_COLUMN_ARGUMENT_COUNT_MASK;
     sReturnTypeNodeColumn->type.languageId = sReturnTypeNodeColumn->language->id;
 
     /* PROJ-2586 PSM Parameters and return without precision
-       ¾Æ·¡ Á¶°Ç Áß ÇÏ³ª¸¸ ¸¸Á·ÇÏ¸é precisionÀ» Á¶Á¤ÇÏ±â À§ÇÑ ÇÔ¼ö È£Ãâ.
+       ì•„ëž˜ ì¡°ê±´ ì¤‘ í•˜ë‚˜ë§Œ ë§Œì¡±í•˜ë©´ precisionì„ ì¡°ì •í•˜ê¸° ìœ„í•œ í•¨ìˆ˜ í˜¸ì¶œ.
 
-       Á¶°Ç 1. QCU_PSM_PARAM_AND_RETURN_WITHOUT_PRECISION_ENABLE == 1ÀÌ¸é¼­
-       datatypeÀÇ flag¿¡ QTC_NODE_SP_PARAM_OR_RETURN_PRECISION_ABSENT ÀÏ °Í.
-       Á¶°Ç 2. QCU_PSM_PARAM_AND_RETURN_WITHOUT_PRECISION_ENABLE == 2 */
-    /* ¿Ö ¾Æ·¡ÂÊ¿¡ º¹»çÇß´Â°¡?
-       allocÀü¿¡ ÇÏ¸é, mtcColumn¿¡ ¼ÂÆÃÇß´ø flag Á¤º¸°¡ ³¯¶ó°¨. */
+       ì¡°ê±´ 1. QCU_PSM_PARAM_AND_RETURN_WITHOUT_PRECISION_ENABLE == 1ì´ë©´ì„œ
+       datatypeì˜ flagì— QTC_NODE_SP_PARAM_OR_RETURN_PRECISION_ABSENT ì¼ ê²ƒ.
+       ì¡°ê±´ 2. QCU_PSM_PARAM_AND_RETURN_WITHOUT_PRECISION_ENABLE == 2 */
+    /* ì™œ ì•„ëž˜ìª½ì— ë³µì‚¬í–ˆëŠ”ê°€?
+       allocì „ì— í•˜ë©´, mtcColumnì— ì…‹íŒ…í–ˆë˜ flag ì •ë³´ê°€ ë‚ ë¼ê°. */
     if( ((QCU_PSM_PARAM_AND_RETURN_WITHOUT_PRECISION_ENABLE == 1) &&
          (((sReturnTypeVar->variableTypeNode->lflag & QTC_NODE_SP_PARAM_OR_RETURN_PRECISION_MASK)
-           == QTC_NODE_SP_PARAM_OR_RETURN_PRECISION_ABSENT))) /* Á¶°Ç1 */ ||
-        (QCU_PSM_PARAM_AND_RETURN_WITHOUT_PRECISION_ENABLE == 2) /* Á¶°Ç2 */ )
+           == QTC_NODE_SP_PARAM_OR_RETURN_PRECISION_ABSENT))) /* ì¡°ê±´1 */ ||
+        (QCU_PSM_PARAM_AND_RETURN_WITHOUT_PRECISION_ENABLE == 2) /* ì¡°ê±´2 */ )
     {
         IDE_TEST( setPrecisionAndScale( aStatement,
                                         sReturnTypeVar )
@@ -573,8 +573,8 @@ IDE_RC qsv::validateReturnDef( qcStatement * aStatement )
         // Nothing to do.
     }
 
-    /* BUG-44382 clone tuple ¼º´É°³¼± */
-    // º¹»ç¿Í ÃÊ±âÈ­°¡ ÇÊ¿äÇÔ
+    /* BUG-44382 clone tuple ì„±ëŠ¥ê°œì„  */
+    // ë³µì‚¬ì™€ ì´ˆê¸°í™”ê°€ í•„ìš”í•¨
     qtc::setTupleColumnFlag(
         QTC_STMT_TUPLE( aStatement, sReturnTypeVar->variableTypeNode ),
         ID_TRUE,
@@ -583,7 +583,7 @@ IDE_RC qsv::validateReturnDef( qcStatement * aStatement )
     mtc::copyColumn(sParseTree->returnTypeColumn,
                     sReturnTypeNodeColumn);
 
-    // mtdModule ¼³Á¤
+    // mtdModule ì„¤ì •
     sParseTree->returnTypeModule = (mtdModule *)sReturnTypeNodeColumn->module;
 
     // PROJ-1685
@@ -635,7 +635,7 @@ IDE_RC qsv::validateReturnDef( qcStatement * aStatement )
         switch( sParseTree->returnTypeColumn->type.dataTypeId )
         {
             case MTD_LIST_ID:
-                // list typeÀ» ¹ÝÈ¯ÇÏ´Â user-defined functionÀº »ý¼ºÇÒ ¼ö ¾ø´Ù.
+                // list typeì„ ë°˜í™˜í•˜ëŠ” user-defined functionì€ ìƒì„±í•  ìˆ˜ ì—†ë‹¤.
                 sFound = ID_FALSE;
                 break;
             default:
@@ -718,8 +718,8 @@ IDE_RC qsv::validateDropProc(qcStatement * aStatement)
                   != IDE_SUCCESS );
 
         /* BUG-39059
-           Ã£Àº °´Ã¼ÀÇ typeÀÌ parsing ´Ü°è¿¡¼­ parse tree¿¡ ¼ÂÆÃµÈ
-           Å¸ÀÔ°ú µ¿ÀÏÇÏÁö ¾ÊÀ» °æ¿ì, ¿¡·¯¸Þ½ÃÁö¸¦ ¼ÂÆÃÇÑ´Ù. */
+           ì°¾ì€ ê°ì²´ì˜ typeì´ parsing ë‹¨ê³„ì—ì„œ parse treeì— ì…‹íŒ…ëœ
+           íƒ€ìž…ê³¼ ë™ì¼í•˜ì§€ ì•Šì„ ê²½ìš°, ì—ëŸ¬ë©”ì‹œì§€ë¥¼ ì…‹íŒ…í•œë‹¤. */
         if( sObjType != sParseTree->objectType )
         {
             sqlInfo.setSourceInfo( aStatement,
@@ -732,7 +732,7 @@ IDE_RC qsv::validateDropProc(qcStatement * aStatement)
         }
     }
 
-    /* BUG-35445 Check Constraint, Function-Based Index¿¡¼­ »ç¿ë ÁßÀÎ FunctionÀ» º¯°æ/Á¦°Å ¹æÁö */
+    /* BUG-35445 Check Constraint, Function-Based Indexì—ì„œ ì‚¬ìš© ì¤‘ì¸ Functionì„ ë³€ê²½/ì œê±° ë°©ì§€ */
     IDE_TEST( qcmProc::relIsUsedProcByConstraint(
                   aStatement,
                   &(sParseTree->procNamePos),
@@ -812,8 +812,8 @@ IDE_RC qsv::validateAltProc(qcStatement * aStatement)
                   != IDE_SUCCESS );
 
         /* BUG-39059
-           Ã£Àº °´Ã¼ÀÇ typeÀÌ parsing ´Ü°è¿¡¼­ parse tree¿¡ ¼ÂÆÃµÈ
-           Å¸ÀÔ°ú µ¿ÀÏÇÏÁö ¾ÊÀ» °æ¿ì, ¿¡·¯¸Þ½ÃÁö¸¦ ¼ÂÆÃÇÑ´Ù. */
+           ì°¾ì€ ê°ì²´ì˜ typeì´ parsing ë‹¨ê³„ì—ì„œ parse treeì— ì…‹íŒ…ëœ
+           íƒ€ìž…ê³¼ ë™ì¼í•˜ì§€ ì•Šì„ ê²½ìš°, ì—ëŸ¬ë©”ì‹œì§€ë¥¼ ì…‹íŒ…í•œë‹¤. */
         if( sObjType != sParseTree->objectType )
         {
             sqlInfo.setSourceInfo( aStatement,
@@ -913,8 +913,8 @@ IDE_RC qsv::parseExeProc(qcStatement * aStatement)
     else
     {
         /* PROJ-1073 Package
-           create package ½Ã µ¿ÀÏÇÑ package¿¡ ¼ÓÇØÀÖ´Â ´Ù¸¥ subprogramÀ» È£ÃâÇÏ´ÂÁö,
-           subprogramÀÌ ÀÚ±â ÀÚ½ÅÀ» Àç±ÍÈ£ÃâÇÏ´ÂÁö °Ë»çÇÑ´Ù. */
+           create package ì‹œ ë™ì¼í•œ packageì— ì†í•´ìžˆëŠ” ë‹¤ë¥¸ subprogramì„ í˜¸ì¶œí•˜ëŠ”ì§€,
+           subprogramì´ ìžê¸° ìžì‹ ì„ ìž¬ê·€í˜¸ì¶œí•˜ëŠ”ì§€ ê²€ì‚¬í•œë‹¤. */
         IDE_TEST( checkMyPkgSubprogramCall( aStatement,
                                             &sMyPkgSubprogram,
                                             &sRecursiveCall )
@@ -927,18 +927,18 @@ IDE_RC qsv::parseExeProc(qcStatement * aStatement)
         {
             /* PROJ-1073 Package
              *
-             * procedure callÀÇ °æ¿ì
+             * procedure callì˜ ê²½ìš°
              * | USER   | TABLE    | COLUMN   | PKG |
              * |    x   | (USER)   | PSM NAME |   X |
              *
-             * packageÀÇ procedure callÀÇ °æ¿ì
+             * packageì˜ procedure callì˜ ê²½ìš°
              * |  USER  | TABLE    | COLUMN   | PKG |
              * | (USER) | PKG NAME | PSM NAME |   X |
              *
-             * µû¶ó¼­ resolvePkg È£ÃâÇÑ ´ÙÀ½ resolvePSMÀ» È£ÃâÇÑ´Ù. */
+             * ë”°ë¼ì„œ resolvePkg í˜¸ì¶œí•œ ë‹¤ìŒ resolvePSMì„ í˜¸ì¶œí•œë‹¤. */
             if ( QC_IS_NULL_NAME( sParseTree->callSpecNode->tableName) == ID_FALSE )
             {
-                /* 1. PackageÀÇ PSM (sub program)ÀÎÁö È®ÀÎÇÑ´Ù. */
+                /* 1. Packageì˜ PSM (sub program)ì¸ì§€ í™•ì¸í•œë‹¤. */
                 // PROJ-1073 Package
                 IDE_TEST( qcmSynonym::resolvePkg(
                               aStatement,
@@ -960,11 +960,11 @@ IDE_RC qsv::parseExeProc(qcStatement * aStatement)
                 }
                 else
                 {
-                    // user.package.proceudre³ª variableÀÏ ¶§
-                    // user°¡ ¾ø´Â °æ¿ì´Â "User not found"°¡ ³ª¿À´Â´Ù.
-                    // user°¡ Á¦´ë·Î µÈ »óÅÂ¿¡¼­ package°¡ Á¸ÀçÇÏÁö ¾ÊÀ¸¸é, sExists°¡ false°¡ µÇ°í,
-                    // errorÃ³¸®¸¦ ÇÏÁö ¾Ê´Â´Ù.
-                    // µû¶ó¼­, user°¡ Á¸ÀçÇÏ¸é¼­, package°¡ Á¸ÀçÇÏÁö ¾ÊÀ¸¸é, errorÃ³¸®¸¦ ÇØ¾ßÇÑ´Ù.
+                    // user.package.proceudreë‚˜ variableì¼ ë•Œ
+                    // userê°€ ì—†ëŠ” ê²½ìš°ëŠ” "User not found"ê°€ ë‚˜ì˜¤ëŠ”ë‹¤.
+                    // userê°€ ì œëŒ€ë¡œ ëœ ìƒíƒœì—ì„œ packageê°€ ì¡´ìž¬í•˜ì§€ ì•Šìœ¼ë©´, sExistsê°€ falseê°€ ë˜ê³ ,
+                    // errorì²˜ë¦¬ë¥¼ í•˜ì§€ ì•ŠëŠ”ë‹¤.
+                    // ë”°ë¼ì„œ, userê°€ ì¡´ìž¬í•˜ë©´ì„œ, packageê°€ ì¡´ìž¬í•˜ì§€ ì•Šìœ¼ë©´, errorì²˜ë¦¬ë¥¼ í•´ì•¼í•œë‹¤.
                     if( QC_IS_NULL_NAME( sParseTree->callSpecNode->userName ) != ID_TRUE )
                     {
                         sqlInfo.setSourceInfo( aStatement,
@@ -984,7 +984,7 @@ IDE_RC qsv::parseExeProc(qcStatement * aStatement)
 
             if( sExist == ID_FALSE )
             {
-                /* 2. PSM ÀÎÁö È®ÀÎÇÑ´Ù. */
+                /* 2. PSM ì¸ì§€ í™•ì¸í•œë‹¤. */
                 if( qcmSynonym::resolvePSM(
                         aStatement,
                         sParseTree->callSpecNode->tableName,
@@ -1036,7 +1036,7 @@ IDE_RC qsv::parseExeProc(qcStatement * aStatement)
                 }
             }
 
-            /* BUG-36728 Check Constraint, Function-Based Index¿¡¼­ SynonymÀ» »ç¿ëÇÒ ¼ö ¾ø¾î¾ß ÇÕ´Ï´Ù. */
+            /* BUG-36728 Check Constraint, Function-Based Indexì—ì„œ Synonymì„ ì‚¬ìš©í•  ìˆ˜ ì—†ì–´ì•¼ í•©ë‹ˆë‹¤. */
             if ( sSynonymInfo.isSynonymName == ID_TRUE )
             {
                 sParseTree->callSpecNode->lflag &= ~QTC_NODE_SP_SYNONYM_FUNC_MASK;
@@ -1047,12 +1047,12 @@ IDE_RC qsv::parseExeProc(qcStatement * aStatement)
                 /* Nothing to do */
             }
 
-            /* PSMÀ» È£ÃâÇÏ´Â °æ¿ì */
+            /* PSMì„ í˜¸ì¶œí•˜ëŠ” ê²½ìš° */
             if( sIsPkg == ID_FALSE )
             {
                 sParseTree->subprogramID = QS_PSM_SUBPROGRAM_ID;
 
-                // synonymÀ¸·Î ÂüÁ¶µÇ´Â procÀÇ ±â·Ï
+                // synonymìœ¼ë¡œ ì°¸ì¡°ë˜ëŠ” procì˜ ê¸°ë¡
                 IDE_TEST( qsvProcStmts::makeProcSynonymList(
                               aStatement,
                               &sSynonymInfo,
@@ -1133,7 +1133,7 @@ IDE_RC qsv::parseExeProc(qcStatement * aStatement)
                     }
                 }
 
-                // PROJ-1075 typesetÀº execute ÇÒ ¼ö ¾øÀ½.
+                // PROJ-1075 typesetì€ execute í•  ìˆ˜ ì—†ìŒ.
                 if( sProcInfo->planTree->objType == QS_TYPESET )
                 {
                     sqlInfo.setSourceInfo( aStatement,
@@ -1146,9 +1146,9 @@ IDE_RC qsv::parseExeProc(qcStatement * aStatement)
                 }
 
                 /* BUG-39770
-                   package¸¦ ÂüÁ¶ÇÏ´Â °´Ã¼¸¦ related object·Î °¡Áö°Å³ª,
-                   package¸¦ ÂüÁ¶ÇÏ´Â psm°´Ã¼¸¦ ÂüÁ¶ÇÏ¸é
-                   parallel·Î ½ÇÇàµÇ¸é ¾È µÈ´Ù. */
+                   packageë¥¼ ì°¸ì¡°í•˜ëŠ” ê°ì²´ë¥¼ related objectë¡œ ê°€ì§€ê±°ë‚˜,
+                   packageë¥¼ ì°¸ì¡°í•˜ëŠ” psmê°ì²´ë¥¼ ì°¸ì¡°í•˜ë©´
+                   parallelë¡œ ì‹¤í–‰ë˜ë©´ ì•ˆ ëœë‹¤. */
                 if ( sProcInfo->planTree->referToPkg == ID_TRUE )
                 {
                     sParseTree->callSpecNode->lflag &= ~QTC_NODE_PKG_MEMBER_MASK;
@@ -1159,7 +1159,7 @@ IDE_RC qsv::parseExeProc(qcStatement * aStatement)
                     // Nothing to do.
                 }
             }
-            else /* PackageÀÇ subprogramÀ» È£ÃâÇÏ´Â °æ¿ì */
+            else /* Packageì˜ subprogramì„ í˜¸ì¶œí•˜ëŠ” ê²½ìš° */
             {
                 // PROJ-1073 Package
                 IDE_TEST( qsvPkgStmts::makePkgSynonymList(
@@ -1192,13 +1192,13 @@ IDE_RC qsv::parseExeProc(qcStatement * aStatement)
                                               &sPkgInfo )
                           != IDE_SUCCESS );
 
-                /* 1) sPkgInfo°¡ NULLÀÌ¸é ¿À·ù
-                   2) sSubprogramID°¡ 0ÀÌ ¾Æ´Ï³ª sPkgBodyInfo°¡ NULLÀÌ¸é
+                /* 1) sPkgInfoê°€ NULLì´ë©´ ì˜¤ë¥˜
+                   2) sSubprogramIDê°€ 0ì´ ì•„ë‹ˆë‚˜ sPkgBodyInfoê°€ NULLì´ë©´
                    => qpERR_ABORT_QSV_INVALID_OR_MISSING_SUBPROGRAM
-                   3) sSubprogramID°¡ 0ÀÌ°í sPkgBodyInfo°¡ NULLÀÌ¸é
+                   3) sSubprogramIDê°€ 0ì´ê³  sPkgBodyInfoê°€ NULLì´ë©´
                    => qpERR_ABORT_QSX_NOT_EXIST_SUBPROGRAM_OR_VARIABLE */
 
-                // 1) specÀÇ package info¸¦ °¡Á®¿ÀÁö ¸øÇÔ.
+                // 1) specì˜ package infoë¥¼ ê°€ì ¸ì˜¤ì§€ ëª»í•¨.
                 IDE_TEST( sPkgInfo == NULL );
 
                 /* BUG-45164 */
@@ -1209,8 +1209,8 @@ IDE_RC qsv::parseExeProc(qcStatement * aStatement)
                 sStmtText    = sPkgInfo->planTree->stmtText;
 
                 /* BUG-39194
-                   qsExecParseTree->callSpecNodeÀÇ Á¤º¸°¡
-                   package_name( ¶Ç´Â synonym_name ).record_name.field_nameÀÌ¸é ¸ø Ã£À½ */
+                   qsExecParseTree->callSpecNodeì˜ ì •ë³´ê°€
+                   package_name( ë˜ëŠ” synonym_name ).record_name.field_nameì´ë©´ ëª» ì°¾ìŒ */
                 sUserName = &(sPkgInfo->planTree->userNamePos);
                 sPkgName  = &(sPkgInfo->planTree->pkgNamePos);
 
@@ -1243,14 +1243,14 @@ IDE_RC qsv::parseExeProc(qcStatement * aStatement)
                                                            &sSubprogramID )
                           != IDE_SUCCESS );
 
-                // 2) subprogram id¸¦ °¡Á®¿ÀÁö ¸øÇÔ.
+                // 2) subprogram idë¥¼ ê°€ì ¸ì˜¤ì§€ ëª»í•¨.
                 IDE_TEST_RAISE( sSubprogramID == QS_PSM_SUBPROGRAM_ID,
                                 ERR_NOT_EXIST_SUBPROGRAM );
 
                 sParseTree->subprogramID  = sSubprogramID;
 
                 /* BUG-38720
-                   package body Á¸Àç ¿©ºÎ È®ÀÎ ÈÄ bodyÀÇ qsxPkgInfo¸¦ °¡Á®¿Â´Ù. */
+                   package body ì¡´ìž¬ ì—¬ë¶€ í™•ì¸ í›„ bodyì˜ qsxPkgInfoë¥¼ ê°€ì ¸ì˜¨ë‹¤. */
                 IDE_TEST( qcmPkg::getPkgExistWithEmptyByNamePtr( aStatement,
                                                                  sParseTree->userID,
                                                                  (SChar*)( sPkgInfo->planTree->pkgNamePos.stmtText +
@@ -1260,11 +1260,11 @@ IDE_RC qsv::parseExeProc(qcStatement * aStatement)
                                                                  & sPkgBodyOID )
                           != IDE_SUCCESS);
 
-                // BUG-41412 VariableÀÎÁö ¸ÕÀú È®ÀÎÇÑ´Ù.
+                // BUG-41412 Variableì¸ì§€ ë¨¼ì € í™•ì¸í•œë‹¤.
                 if ( sSubprogramID == QS_PKG_VARIABLE_ID )
                 {
                     /* BUG-39194
-                       package variableÀÏ ¶§ qsExecParseTree->leftNode°¡ ÀÖ¾î¾ß ÇÑ´Ù. */
+                       package variableì¼ ë•Œ qsExecParseTree->leftNodeê°€ ìžˆì–´ì•¼ í•œë‹¤. */
                     if ( sParseTree->leftNode == NULL )
                     {
                         if ( QC_IS_NULL_NAME(sParseTree->callSpecNode->pkgName) != ID_TRUE )
@@ -1284,8 +1284,8 @@ IDE_RC qsv::parseExeProc(qcStatement * aStatement)
                     else
                     {
                         /* PROJ-2533
-                           Member FunctionÀÎ °æ¿ì spFunctionCallModle ÀÎ °æ¿ì°¡ ÀÖ´Ù.
-                           Member Function°ú µ¿ÀÏÇÑ ÀÌ¸§ÀÇ variableÀÌ ÀÖÀ» ¼ö ÀÖÀ½ */
+                           Member Functionì¸ ê²½ìš° spFunctionCallModle ì¸ ê²½ìš°ê°€ ìžˆë‹¤.
+                           Member Functionê³¼ ë™ì¼í•œ ì´ë¦„ì˜ variableì´ ìžˆì„ ìˆ˜ ìžˆìŒ */
                         if ( ( sParseTree->callSpecNode->node.module == & qsfMCountModule ) ||
                              ( sParseTree->callSpecNode->node.module == & qsfMDeleteModule) ||
                              ( sParseTree->callSpecNode->node.module == & qsfMExistsModule) ||
@@ -1297,7 +1297,7 @@ IDE_RC qsv::parseExeProc(qcStatement * aStatement)
                                ( ( (sParseTree->callSpecNode->lflag) & QTC_NODE_SP_ARRAY_INDEX_VAR_MASK ) ==
                                  QTC_NODE_SP_ARRAY_INDEX_VAR_EXIST ) ) )
                         {
-                            // BUG-41412 Member FunctionÀÎ °æ¿ì columnModule·Î ¹Ù²ÙÁö ¾Ê´Â´Ù.
+                            // BUG-41412 Member Functionì¸ ê²½ìš° columnModuleë¡œ ë°”ê¾¸ì§€ ì•ŠëŠ”ë‹¤.
                             // Nothing to do.
                         }
                         else
@@ -1333,7 +1333,7 @@ IDE_RC qsv::parseExeProc(qcStatement * aStatement)
                 else
                 {
                     /* BUG-39094
-                       DDLÀÏ ¶§´Â package body°¡ ¾ø¾îµµ ¼º°øÇØ¾ß ÇÑ´Ù. */
+                       DDLì¼ ë•ŒëŠ” package bodyê°€ ì—†ì–´ë„ ì„±ê³µí•´ì•¼ í•œë‹¤. */
                     if ( (sTopStmtKind & QCI_STMT_MASK_MASK) != QCI_STMT_MASK_DDL )
                     {
                         sqlInfo.setSourceInfo( aStatement,
@@ -1391,9 +1391,9 @@ IDE_RC qsv::parseExeProc(qcStatement * aStatement)
                 }
 
                 /* BUG-39770
-                   package¸¦ ÂüÁ¶ÇÏ´Â °´Ã¼¸¦ related object·Î °¡Áö°Å³ª,
-                   package¸¦ ÂüÁ¶ÇÏ´Â psm°´Ã¼¸¦ ÂüÁ¶ÇÏ¸é
-                   parallel·Î ½ÇÇàµÇ¸é ¾È µÈ´Ù. */
+                   packageë¥¼ ì°¸ì¡°í•˜ëŠ” ê°ì²´ë¥¼ related objectë¡œ ê°€ì§€ê±°ë‚˜,
+                   packageë¥¼ ì°¸ì¡°í•˜ëŠ” psmê°ì²´ë¥¼ ì°¸ì¡°í•˜ë©´
+                   parallelë¡œ ì‹¤í–‰ë˜ë©´ ì•ˆ ëœë‹¤. */
                 sParseTree->callSpecNode->lflag &= ~QTC_NODE_PKG_MEMBER_MASK;
                 sParseTree->callSpecNode->lflag |= QTC_NODE_PKG_MEMBER_EXIST;
                 if ( (aStatement->spvEnv->createProc != NULL) &&
@@ -1433,7 +1433,7 @@ IDE_RC qsv::parseExeProc(qcStatement * aStatement)
                           &sSubprogramID )
                       != IDE_SUCCESS );
 
-            // 2) subprogram id¸¦ °¡Á®¿ÀÁö ¸øÇÔ.
+            // 2) subprogram idë¥¼ ê°€ì ¸ì˜¤ì§€ ëª»í•¨.
             IDE_TEST_RAISE( sSubprogramID == QS_PSM_SUBPROGRAM_ID,
                             ERR_NOT_EXIST_SUBPROGRAM );
 
@@ -1490,9 +1490,9 @@ IDE_RC qsv::parseExeProc(qcStatement * aStatement)
             sParseTree->isDeterministic = sProcPlanTree->isDeterministic;
 
             /* BUG-39770
-               package¸¦ ÂüÁ¶ÇÏ´Â °´Ã¼¸¦ related object·Î °¡Áö°Å³ª,
-               package¸¦ ÂüÁ¶ÇÏ´Â psm°´Ã¼¸¦ ÂüÁ¶ÇÏ¸é
-               parallel·Î ½ÇÇàµÇ¸é ¾È µÈ´Ù. */
+               packageë¥¼ ì°¸ì¡°í•˜ëŠ” ê°ì²´ë¥¼ related objectë¡œ ê°€ì§€ê±°ë‚˜,
+               packageë¥¼ ì°¸ì¡°í•˜ëŠ” psmê°ì²´ë¥¼ ì°¸ì¡°í•˜ë©´
+               parallelë¡œ ì‹¤í–‰ë˜ë©´ ì•ˆ ëœë‹¤. */
             sParseTree->callSpecNode->lflag &= ~QTC_NODE_PKG_MEMBER_MASK;
             sParseTree->callSpecNode->lflag |= QTC_NODE_PKG_MEMBER_EXIST;
         } /* sMyPkgSubprogram == ID_TRUE */
@@ -1509,7 +1509,7 @@ IDE_RC qsv::parseExeProc(qcStatement * aStatement)
             else
             {
                 // BUG-41228
-                // parameterÀÇ default¿¡ ÀÚ±â ÀÚ½ÅÀ» È£Ãâ(recursive call) ÇÒ ¼ö ¾ø´Ù.
+                // parameterì˜ defaultì— ìžê¸° ìžì‹ ì„ í˜¸ì¶œ(recursive call) í•  ìˆ˜ ì—†ë‹¤.
                 sqlInfo.setSourceInfo( aStatement,
                                        & sParseTree->callSpecNode->columnName);
                 IDE_RAISE( ERR_NOT_EXIST_PROC_NAME );
@@ -1523,11 +1523,11 @@ IDE_RC qsv::parseExeProc(qcStatement * aStatement)
 
     IDE_EXCEPTION_CONT( IS_PACKAGE_VARIABLE );
 
-    // Shard Transformation ¼öÇà
+    // Shard Transformation ìˆ˜í–‰
     IDE_TEST( qmvShardTransform::doTransform( aStatement )
               != IDE_SUCCESS );
 
-    // parameterÀÇ subquery¿¡ ´ëÇÏ¿© shard transform ¼öÇà
+    // parameterì˜ subqueryì— ëŒ€í•˜ì—¬ shard transform ìˆ˜í–‰
     IDE_TEST( qmvShardTransform::doTransformForExpr(
                   aStatement,
                   sParseTree->callSpecNode )
@@ -1649,7 +1649,7 @@ IDE_RC qsv::validateExeProc(qcStatement * aStatement)
         }
         else
         {
-            // subprogramÀÌ ÀÚ½ÅÀ» Àç±ÍÈ£ÃâÇßÀ» ¶§
+            // subprogramì´ ìžì‹ ì„ ìž¬ê·€í˜¸ì¶œí–ˆì„ ë•Œ
             if ( (aStatement->spvEnv->isPkgInitializeSection == ID_FALSE) &&
                  (qsvPkgStmts::checkIsRecursiveSubprogramCall( sCurrStmt,
                                                                sExeParseTree->subprogramID )
@@ -1709,8 +1709,8 @@ IDE_RC qsv::validateExeProc(qcStatement * aStatement)
 
             // PROJ-1075
             // set return 
-            // node´Â ÀÌ¹Ì ¸¸µé¾îÁ® ÀÖ´Â »óÅÂÀÓ.
-            // primitive data typeÀÌ ¾Æ´Ñ °æ¿ì¿¡ ¾î¶»°Ô µÇ´ÂÁö Ã¼Å©ÇØ º¸¾Æ¾ß ÇÔ.
+            // nodeëŠ” ì´ë¯¸ ë§Œë“¤ì–´ì ¸ ìžˆëŠ” ìƒíƒœìž„.
+            // primitive data typeì´ ì•„ë‹Œ ê²½ìš°ì— ì–´ë–»ê²Œ ë˜ëŠ”ì§€ ì²´í¬í•´ ë³´ì•„ì•¼ í•¨.
             sCallSpecColumn = &( sTmplate->tmplate.rows[sExeParseTree->callSpecNode->node.table]
                                  .columns[sExeParseTree->callSpecNode->node.column]);
 
@@ -1749,7 +1749,7 @@ IDE_RC qsv::validateExeProc(qcStatement * aStatement)
                       != IDE_SUCCESS );
 
             /* BUG-38720
-               package body Á¸Àç ¿©ºÎ È®ÀÎ ÈÄ bodyÀÇ qsxPkgInfo¸¦ °¡Á®¿Â´Ù. */
+               package body ì¡´ìž¬ ì—¬ë¶€ í™•ì¸ í›„ bodyì˜ qsxPkgInfoë¥¼ ê°€ì ¸ì˜¨ë‹¤. */
             if ( sExeParseTree->pkgBodyOID != QS_EMPTY_OID )
             {
                 IDE_TEST( qsxPkg::getPkgInfo( sExeParseTree->pkgBodyOID,
@@ -1774,7 +1774,7 @@ IDE_RC qsv::validateExeProc(qcStatement * aStatement)
             else
             {
                 /* BUG-39094
-                   package body°¡ ¾ø¾îµµ °´Ã¼´Â »ý¼ºµÇ¾î¾ß ÇÑ´Ù. */
+                   package bodyê°€ ì—†ì–´ë„ ê°ì²´ëŠ” ìƒì„±ë˜ì–´ì•¼ í•œë‹¤. */
                 sProcPlan.pkgBodyOID         = QS_EMPTY_OID;
                 sProcPlan.pkgBodyModifyCount = 0;
 
@@ -1901,7 +1901,7 @@ IDE_RC qsv::validateExeProc(qcStatement * aStatement)
             sProcPlan.pkgBodyModifyCount = 0;
             sProcPlan.next = NULL;
 
-            // environmentÀÇ ±â·Ï
+            // environmentì˜ ê¸°ë¡
             IDE_TEST( qcgPlan::registerPlanProc(
                           aStatement,
                           & sProcPlan )
@@ -1985,7 +1985,7 @@ IDE_RC qsv::validateExeProc(qcStatement * aStatement)
         }
 
         // BUG-36203 PSM Optimize
-        // BUG-38767 package¸¦ ½ÇÇàÇÒ ¶§µµ stmt list¸¦ »ý¼ºÇÑ´Ù.
+        // BUG-38767 packageë¥¼ ì‹¤í–‰í•  ë•Œë„ stmt listë¥¼ ìƒì„±í•œë‹¤.
         if ( sProcInfo != NULL )
         {
             sTmplate = sProcInfo->tmplate;
@@ -2093,7 +2093,7 @@ IDE_RC qsv::validateExeFunc(qcStatement * aStatement)
         else
         {
             /* BUG-39094
-               package body°¡ ¾ø¾îµµ °´Ã¼´Â »ý¼ºµÇ¾î¾ß ÇÑ´Ù. */
+               package bodyê°€ ì—†ì–´ë„ ê°ì²´ëŠ” ìƒì„±ë˜ì–´ì•¼ í•œë‹¤. */
             IDE_TEST( qsxPkg::getPkgInfo( sParseTree->procOID,
                                           &sPkgInfo )
                       != IDE_SUCCESS );
@@ -2131,7 +2131,7 @@ IDE_RC qsv::validateExeFunc(qcStatement * aStatement)
                                            (mtdModule **)&sParseTree->returnModule )
                   != IDE_SUCCESS );
 
-        /* functionÀÇ return°ªÀÌ columnÀ¸·Î »ç¿ëµÉ ¶§, return char(1)ÀÎÁö return char·Î »ý¼ºµÇ¾ú´ÂÁö ±¸º° */
+        /* functionì˜ returnê°’ì´ columnìœ¼ë¡œ ì‚¬ìš©ë  ë•Œ, return char(1)ì¸ì§€ return charë¡œ ìƒì„±ë˜ì—ˆëŠ”ì§€ êµ¬ë³„ */
         if ( ( sReturnTypeVar->variableTypeNode->lflag & QTC_NODE_SP_PARAM_OR_RETURN_PRECISION_MASK)
              == QTC_NODE_SP_PARAM_OR_RETURN_PRECISION_ABSENT )
         {
@@ -2144,8 +2144,8 @@ IDE_RC qsv::validateExeFunc(qcStatement * aStatement)
         }
 
         // BUG-32392
-        // sParseTree->returnTypeColumnÀÇ ³»¿ëÀÌ º¯°æµÇ¾úÀ¸¹Ç·Î qtc::fixAfterValidation¿¡¼­
-        // ¹Ýµå½Ã ÇØ´ç columnÀÇ ³»¿ëÀ» º¸Á¤ÇØÁÖ¾î¾ß ÇÑ´Ù.
+        // sParseTree->returnTypeColumnì˜ ë‚´ìš©ì´ ë³€ê²½ë˜ì—ˆìœ¼ë¯€ë¡œ qtc::fixAfterValidationì—ì„œ
+        // ë°˜ë“œì‹œ í•´ë‹¹ columnì˜ ë‚´ìš©ì„ ë³´ì •í•´ì£¼ì–´ì•¼ í•œë‹¤.
         QC_SHARED_TMPLATE(aStatement)->tmplate.rows[sParseTree->callSpecNode->node.table].lflag
             &= ~MTC_TUPLE_ROW_SKIP_MASK;
         QC_SHARED_TMPLATE(aStatement)->tmplate.rows[sParseTree->callSpecNode->node.table].lflag
@@ -2158,7 +2158,7 @@ IDE_RC qsv::validateExeFunc(qcStatement * aStatement)
     {
         if( sParseTree->subprogramID != QS_PSM_SUBPROGRAM_ID )
         {
-            // subprogramÀÌ ÀÚ½ÅÀ» Àç±ÍÈ£ÃâÇßÀ» ¶§
+            // subprogramì´ ìžì‹ ì„ ìž¬ê·€í˜¸ì¶œí–ˆì„ ë•Œ
             if ( (aStatement->spvEnv->isPkgInitializeSection == ID_FALSE) &&
                  (qsvPkgStmts::checkIsRecursiveSubprogramCall(
                      aStatement->spvEnv->currSubprogram,
@@ -2210,7 +2210,7 @@ IDE_RC qsv::validateExeFunc(qcStatement * aStatement)
                                                    (mtdModule **)&sParseTree->returnModule )
                           != IDE_SUCCESS );
 
-                /* functionÀÇ return°ªÀÌ columnÀ¸·Î »ç¿ëµÉ ¶§, return char(1)ÀÎÁö return char·Î »ý¼ºµÇ¾ú´ÂÁö ±¸º° */
+                /* functionì˜ returnê°’ì´ columnìœ¼ë¡œ ì‚¬ìš©ë  ë•Œ, return char(1)ì¸ì§€ return charë¡œ ìƒì„±ë˜ì—ˆëŠ”ì§€ êµ¬ë³„ */
                 if ( (sReturnTypeVar->variableTypeNode->lflag & QTC_NODE_SP_PARAM_OR_RETURN_PRECISION_MASK)
                      == QTC_NODE_SP_PARAM_OR_RETURN_PRECISION_ABSENT )
                 {
@@ -2223,8 +2223,8 @@ IDE_RC qsv::validateExeFunc(qcStatement * aStatement)
                 }
 
                 // BUG-32392
-                // sParseTree->returnTypeColumnÀÇ ³»¿ëÀÌ º¯°æµÇ¾úÀ¸¹Ç·Î qtc::fixAfterValidation¿¡¼­
-                // ¹Ýµå½Ã ÇØ´ç columnÀÇ ³»¿ëÀ» º¸Á¤ÇØÁÖ¾î¾ß ÇÑ´Ù.
+                // sParseTree->returnTypeColumnì˜ ë‚´ìš©ì´ ë³€ê²½ë˜ì—ˆìœ¼ë¯€ë¡œ qtc::fixAfterValidationì—ì„œ
+                // ë°˜ë“œì‹œ í•´ë‹¹ columnì˜ ë‚´ìš©ì„ ë³´ì •í•´ì£¼ì–´ì•¼ í•œë‹¤.
                 QC_SHARED_TMPLATE(aStatement)->tmplate.rows[sParseTree->callSpecNode->node.table].lflag
                     &= ~MTC_TUPLE_ROW_SKIP_MASK;
                 QC_SHARED_TMPLATE(aStatement)->tmplate.rows[sParseTree->callSpecNode->node.table].lflag
@@ -2511,13 +2511,13 @@ IDE_RC qsv::validateArgumentsWithParser(
 
         if( aIsRootStmt == ID_TRUE )
         {
-            // ref cursor typeÀÌ°í out/inoutÀÎ °æ¿ìÀÓ
-            // ÀÌ °æ¿ì resultsetÀÌ µÊ.
+            // ref cursor typeì´ê³  out/inoutì¸ ê²½ìš°ìž„
+            // ì´ ê²½ìš° resultsetì´ ë¨.
             if( (sParaVar->variableType == QS_REF_CURSOR_TYPE) &&
                 ( (sParaVar->inOutType == QS_OUT) ||
                   (sParaVar->inOutType == QS_INOUT) ) )
             {
-                // ref cursor typeÀÌ¹Ç·Î ¹Ýµå½Ã typeInfo´Â ÀÖ¾î¾ßÇÔ.
+                // ref cursor typeì´ë¯€ë¡œ ë°˜ë“œì‹œ typeInfoëŠ” ìžˆì–´ì•¼í•¨.
                 IDE_DASSERT( sParaVar->typeInfo != NULL );
 
                 IDE_TEST( qtc::createColumn(
@@ -2527,7 +2527,7 @@ IDE_RC qsv::validateArgumentsWithParser(
                               0, NULL, NULL, 1 )
                           != IDE_SUCCESS );
 
-                // °¡»óÀÇ ref cursor proc var¸¦ ¸¸µç´Ù.
+                // ê°€ìƒì˜ ref cursor proc varë¥¼ ë§Œë“ ë‹¤.
                 IDE_TEST( qtc::makeInternalProcVariable( aStatement,
                                                          sNewVar,
                                                          NULL,
@@ -2565,18 +2565,18 @@ IDE_RC qsv::validateArgumentsWithParser(
                 // BUG-41243
                 if ( sArgPassArray[i].mType != QSV_ARG_NOT_PASSED )
                 {
-                    // PassArrayÀÇ TypeÀ» Á¤ÇÒ ¶§´Â refCursor¸¦ °í·ÁÇÒ ¼ö ¾ø´Ù.
-                    // µû¶ó¼­ refCursor°¡ »ý·«µÇ¾ú¾îµµ PassArray¿¡ ¼³Á¤µÈ °æ¿ì°¡ ÀÖÀ¸¹Ç·Î
-                    // ÀÌ °æ¿ì, ÇöÀç TypeÀ» ´ÙÀ½¿¡ ´Ù½Ã ÀÐµµ·Ï ÇØ¾ß ÇÑ´Ù.
+                    // PassArrayì˜ Typeì„ ì •í•  ë•ŒëŠ” refCursorë¥¼ ê³ ë ¤í•  ìˆ˜ ì—†ë‹¤.
+                    // ë”°ë¼ì„œ refCursorê°€ ìƒëžµë˜ì—ˆì–´ë„ PassArrayì— ì„¤ì •ëœ ê²½ìš°ê°€ ìžˆìœ¼ë¯€ë¡œ
+                    // ì´ ê²½ìš°, í˜„ìž¬ Typeì„ ë‹¤ìŒì— ë‹¤ì‹œ ì½ë„ë¡ í•´ì•¼ í•œë‹¤.
                     i--;
                 }
                 else
                 {
-                    // PassArray¿¡ ¼³Á¤ÇÏÁö ¾Ê¾Æµµ µÈ´Ù.
+                    // PassArrayì— ì„¤ì •í•˜ì§€ ì•Šì•„ë„ ëœë‹¤.
                     // Nothing to do.
                 }
                 
-                // Argument¸¦ »ðÀÔÇßÀ¸¹Ç·Î, Default Argument ºÎºÐÀ» Áö³ªÄ£´Ù.
+                // Argumentë¥¼ ì‚½ìž…í–ˆìœ¼ë¯€ë¡œ, Default Argument ë¶€ë¶„ì„ ì§€ë‚˜ì¹œë‹¤.
                 sAlreadyAdded = ID_TRUE;
             }
             else
@@ -2589,8 +2589,8 @@ IDE_RC qsv::validateArgumentsWithParser(
             // Nothing to do.
         }
 
-        // BUG-41243 ¸¶Áö¸· Default Parameter¿¡ ´ëÇØ¼­¸¸ Ã³¸®ÇÒ ¼ö ¾ø´Ù.
-        // ArgPassArray¸¦ ÅëÇØ Default Parameter¸¦ Ã³¸®ÇÑ´Ù.
+        // BUG-41243 ë§ˆì§€ë§‰ Default Parameterì— ëŒ€í•´ì„œë§Œ ì²˜ë¦¬í•  ìˆ˜ ì—†ë‹¤.
+        // ArgPassArrayë¥¼ í†µí•´ Default Parameterë¥¼ ì²˜ë¦¬í•œë‹¤.
         if ( ( sArgPassArray[i].mType == QSV_ARG_NOT_PASSED ) && 
              ( sAlreadyAdded == ID_FALSE ) )
         {
@@ -2609,9 +2609,9 @@ IDE_RC qsv::validateArgumentsWithParser(
 
             /****************************************************************
              * BUG-37235
-             * ¾Æ·¡ ¿¹Á¦¿Í °°ÀÌ package ³»ºÎ º¯¼ö¸¦ default value·Î ÇßÀ» ¶§,
-             * ½ÇÇà ½Ã º¯¼ö¸¦ Ã£±â À§ÇØ¼­ default statement »ý¼º ½Ã
-             * package ÀÌ¸§À» Ãß°¡ÇÑ´Ù.
+             * ì•„ëž˜ ì˜ˆì œì™€ ê°™ì´ package ë‚´ë¶€ ë³€ìˆ˜ë¥¼ default valueë¡œ í–ˆì„ ë•Œ,
+             * ì‹¤í–‰ ì‹œ ë³€ìˆ˜ë¥¼ ì°¾ê¸° ìœ„í•´ì„œ default statement ìƒì„± ì‹œ
+             * package ì´ë¦„ì„ ì¶”ê°€í•œë‹¤.
              *
              * ex)
              * create or replace package pkg1 as
@@ -2630,7 +2630,7 @@ IDE_RC qsv::validateArgumentsWithParser(
              * exec pkg1.proc1;
              ****************************************************************/
 
-            // default statement¸¦ ÀúÀåÇÒ ÀÓ½Ã buffer »ý¼º
+            // default statementë¥¼ ì €ìž¥í•  ìž„ì‹œ buffer ìƒì„±
             IDE_TEST( iduVarMemStringInitialize( &sSqlBuffer, QC_QME_MEM(aStatement), QSV_SQL_BUFFER_SIZE )
                       != IDE_SUCCESS );
 
@@ -2708,7 +2708,7 @@ IDE_RC qsv::validateArgumentsWithParser(
                 sPrevArgu->node.next = (mtcNode *)sCurrArgu;
             }
 
-            // mtcNodeÀÇ MTC_NODE_ARGUMENT_COUNT °ªÀ» Áõ°¡½ÃÅ²´Ù.
+            // mtcNodeì˜ MTC_NODE_ARGUMENT_COUNT ê°’ì„ ì¦ê°€ì‹œí‚¨ë‹¤.
             aCallSpec->node.lflag++;
         }
 
@@ -2801,8 +2801,8 @@ IDE_RC qsv::validateArgumentsAfterParser(
                 if ( aStatement->spvEnv->createProc != NULL)
                 {
                     /* BUG-38644
-                       estimate¿¡¼­ indirect calculate¸¦ À§ÇÑ
-                       Á¤º¸°¡ ÀÖ´Â table/column Á¤º¸ º¸Á¸ */
+                       estimateì—ì„œ indirect calculateë¥¼ ìœ„í•œ
+                       ì •ë³´ê°€ ìžˆëŠ” table/column ì •ë³´ ë³´ì¡´ */
                     sTable  = sCurrArgu->node.table;
                     sColumn = sCurrArgu->node.column;
 
@@ -2835,8 +2835,8 @@ IDE_RC qsv::validateArgumentsAfterParser(
                 else
                 {
                     // PROJ-1386 Dynamic-SQL
-                    // ref cursor¸¦ À§ÇØ internal procedure variableÀ»
-                    // ¸¸µé¾úÀ½.
+                    // ref cursorë¥¼ ìœ„í•´ internal procedure variableì„
+                    // ë§Œë“¤ì—ˆìŒ.
                     if( ( sCurrArgu->lflag & QTC_NODE_INTERNAL_PROC_VAR_MASK )
                         == QTC_NODE_INTERNAL_PROC_VAR_EXIST )
                     {
@@ -2845,13 +2845,13 @@ IDE_RC qsv::validateArgumentsAfterParser(
                     else
                     {
                         /* - BUG-38644
-                           estimate¿¡¼­ indirect calculate¸¦ À§ÇÑ Á¤º¸°¡ ÀÖ´Â table/column Á¤º¸ º¸Á¸
-                           - BUG-42311 argument°¡ package º¯¼öÀÏ ¶§ Ã£À» ¼ö ÀÖ¾î¾ß ÇÑ´Ù. */
+                           estimateì—ì„œ indirect calculateë¥¼ ìœ„í•œ ì •ë³´ê°€ ìžˆëŠ” table/column ì •ë³´ ë³´ì¡´
+                           - BUG-42311 argumentê°€ package ë³€ìˆ˜ì¼ ë•Œ ì°¾ì„ ìˆ˜ ìžˆì–´ì•¼ í•œë‹¤. */
                         sTable  = sCurrArgu->node.table;
                         sColumn = sCurrArgu->node.column;
 
                         /* BUG-44941
-                           packageÀÇ initialize section¿¡¼­ fcloseÇÔ¼öÀÇ argument°¡ µ¿ÀÏÇÑ package º¯¼öÀÌ¸é Ã£Áö ¸ø ÇÕ´Ï´Ù. */
+                           packageì˜ initialize sectionì—ì„œ fcloseí•¨ìˆ˜ì˜ argumentê°€ ë™ì¼í•œ package ë³€ìˆ˜ì´ë©´ ì°¾ì§€ ëª» í•©ë‹ˆë‹¤. */
                         // search in variable or parameter list
                         IDE_TEST(qsvProcVar::searchVarAndPara(
                                      aStatement,
@@ -2895,7 +2895,7 @@ IDE_RC qsv::validateArgumentsAfterParser(
                         // Nothing to do.
                     }
 
-                    // out parameterÀÎ °æ¿ì lvalue_enable·Î ¼¼ÆÃ.
+                    // out parameterì¸ ê²½ìš° lvalue_enableë¡œ ì„¸íŒ….
                     if( sParaVar->inOutType == QS_OUT )
                     {
                         sCurrArgu->lflag |= QTC_NODE_LVALUE_ENABLE;
@@ -3032,8 +3032,8 @@ IDE_RC qsv::validateArgumentsWithoutParser(
     {
         sParaVar = (qsVariables*)sParaDecl;
 
-        // BUG-41243 ¸¶Áö¸· Default Parameter¿¡ ´ëÇØ¼­¸¸ Ã³¸®ÇÒ ¼ö ¾ø´Ù.
-        // ArgPassArray¸¦ ÅëÇØ Default Parameter¸¦ Ã³¸®ÇÑ´Ù.
+        // BUG-41243 ë§ˆì§€ë§‰ Default Parameterì— ëŒ€í•´ì„œë§Œ ì²˜ë¦¬í•  ìˆ˜ ì—†ë‹¤.
+        // ArgPassArrayë¥¼ í†µí•´ Default Parameterë¥¼ ì²˜ë¦¬í•œë‹¤.
         if ( sArgPassArray[i].mType == QSV_ARG_NOT_PASSED )
         {
             if (sParaVar->defaultValueNode == NULL)
@@ -3065,7 +3065,7 @@ IDE_RC qsv::validateArgumentsWithoutParser(
                 sPrevArgu->node.next = (mtcNode *)sCurrArgu;
             }
 
-            // mtcNodeÀÇ MTC_NODE_ARGUMENT_COUNT °ªÀ» Áõ°¡½ÃÅ²´Ù.
+            // mtcNodeì˜ MTC_NODE_ARGUMENT_COUNT ê°’ì„ ì¦ê°€ì‹œí‚¨ë‹¤.
             aCallSpec->node.lflag++;
         }
 
@@ -3134,8 +3134,8 @@ IDE_RC qsv::validateArgumentsWithoutParser(
                 if ( aStatement->spvEnv->createProc != NULL)
                 {
                     /* BUG-38644
-                       estimate¿¡¼­ indirect calculate¸¦ À§ÇÑ
-                       Á¤º¸°¡ ÀÖ´Â table/column Á¤º¸ º¸Á¸ */
+                       estimateì—ì„œ indirect calculateë¥¼ ìœ„í•œ
+                       ì •ë³´ê°€ ìžˆëŠ” table/column ì •ë³´ ë³´ì¡´ */
                     sTable  = sCurrArgu->node.table;
                     sColumn = sCurrArgu->node.column;
 
@@ -3304,19 +3304,19 @@ IDE_RC qsv::checkNoSubquery(
 // To Fix BUG-11921(A3) 11920(A4)
 ////////////////////////////////////////////////////////
 //
-// aNode´Â ½ºÅä¾îµå Æã¼ÇÀÇ call spec ³ëµåÀÌ´Ù.
-// call spec ³ëµå´Â ³ëµå ÀÚ½ÅÀº Æã¼ÇÀÇ ¸®ÅÏ°ªÀ» °¡¸®Å°°í
-// arguments´Â Æã¼ÇÀÇ ÀÎÀÚµéÀ» °¡¸®Å²´Ù.
+// aNodeëŠ” ìŠ¤í† ì–´ë“œ íŽ‘ì…˜ì˜ call spec ë…¸ë“œì´ë‹¤.
+// call spec ë…¸ë“œëŠ” ë…¸ë“œ ìžì‹ ì€ íŽ‘ì…˜ì˜ ë¦¬í„´ê°’ì„ ê°€ë¦¬í‚¤ê³ 
+// argumentsëŠ” íŽ‘ì…˜ì˜ ì¸ìžë“¤ì„ ê°€ë¦¬í‚¨ë‹¤.
 //
-// ÀÌ ÇÔ¼ö°¡ È£ÃâµÇ°í ³ª¸é aNode->subquery¿¡
-// qcStatement°¡ ¼³Á¤µÇ´Âµ¥, ÀÌ ¼Ó¿¡ Æã¼Ç ½ÇÇàÀ» À§ÇÑ
-// qsExecParseTree °¡ ¼³Á¤µÈ´Ù.
+// ì´ í•¨ìˆ˜ê°€ í˜¸ì¶œë˜ê³  ë‚˜ë©´ aNode->subqueryì—
+// qcStatementê°€ ì„¤ì •ë˜ëŠ”ë°, ì´ ì†ì— íŽ‘ì…˜ ì‹¤í–‰ì„ ìœ„í•œ
+// qsExecParseTree ê°€ ì„¤ì •ëœë‹¤.
 //
-// ±×¸®°í aNode->arguments¿¡ »ç¿ëÀÚ°¡ ÁöÁ¤ÇÏÁö ¾ÊÀº
-// ±âº» ÀÎÀÚµéÀ» »ý¼ºÇØÁØ´Ù.
-// ÀÌ´Â qtc::estimateInternal¿¡¼­
-// Æã¼ÇÀÇ argumentµé¿¡ ´ëÇØ¼­ recursiveÇÏ°Ô
-// qtc::estimateInternal À» È£ÃâÇÒ¶§ ¾²ÀÎ´Ù.
+// ê·¸ë¦¬ê³  aNode->argumentsì— ì‚¬ìš©ìžê°€ ì§€ì •í•˜ì§€ ì•Šì€
+// ê¸°ë³¸ ì¸ìžë“¤ì„ ìƒì„±í•´ì¤€ë‹¤.
+// ì´ëŠ” qtc::estimateInternalì—ì„œ
+// íŽ‘ì…˜ì˜ argumentë“¤ì— ëŒ€í•´ì„œ recursiveí•˜ê²Œ
+// qtc::estimateInternal ì„ í˜¸ì¶œí• ë•Œ ì“°ì¸ë‹¤.
 
 IDE_RC qsv::createExecParseTreeOnCallSpecNode(
     qtcNode     * aCallSpecNode,
@@ -3340,7 +3340,7 @@ IDE_RC qsv::createExecParseTreeOnCallSpecNode(
     {
         // PROJ-1502 PARTITIONED DISK TABLE
         // Nothing to do.
-        // ÀÌ¹Ì ¸¸µé¾úÀ½.
+        // ì´ë¯¸ ë§Œë“¤ì—ˆìŒ.
     }
     else
     {
@@ -3360,7 +3360,7 @@ IDE_RC qsv::createExecParseTreeOnCallSpecNode(
                               &(sParseTree->leftNode))
                  != IDE_SUCCESS);
 
-        // left ÃÊ±âÈ­
+        // left ì´ˆê¸°í™”
         QTC_NODE_INIT( sParseTree->leftNode );
 
         sParseTree->isRootStmt = ID_FALSE;
@@ -3495,7 +3495,7 @@ IDE_RC qsv::createExecParseTreeOnCallSpecNode(
         case 1:
 
             // BUG-41758 replace pkg result worng
-            // validate °úÁ¤¿¡¼­ ¿¡·¯°¡ ¹ß»ýÇßÀ»¶§ ´Ù½Ã º¹±¸ÇØÁØ´Ù.
+            // validate ê³¼ì •ì—ì„œ ì—ëŸ¬ê°€ ë°œìƒí–ˆì„ë•Œ ë‹¤ì‹œ ë³µêµ¬í•´ì¤€ë‹¤.
             sStatement->spvEnv->flag &= ~QSV_ENV_ESTIMATE_ARGU_MASK;
             sStatement->spvEnv->flag |= QSV_ENV_ESTIMATE_ARGU_FALSE;
 
@@ -4087,8 +4087,8 @@ IDE_RC qsv::parseCreatePkg( qcStatement * aStatement )
 
 IDE_RC qsv::validateCreatePkg( qcStatement * aStatement )
 {
-    /* 1. °´Ã¼ÀÇ ÀÌ¸§ Áßº¹ È®ÀÎ
-     * 2. ±ÇÇÑ È®ÀÎ
+    /* 1. ê°ì²´ì˜ ì´ë¦„ ì¤‘ë³µ í™•ì¸
+     * 2. ê¶Œí•œ í™•ì¸
      * 3. parsing block
      * 4. validate block          */
 
@@ -4173,8 +4173,8 @@ IDE_RC qsv::validateCreatePkg( qcStatement * aStatement )
 
 IDE_RC qsv::validateReplacePkg( qcStatement * aStatement )
 {
-    /* 1. °´Ã¼ÀÇ ÀÌ¸§ Áßº¹ È®ÀÎ
-     * 2. ±ÇÇÑ È®ÀÎ
+    /* 1. ê°ì²´ì˜ ì´ë¦„ ì¤‘ë³µ í™•ì¸
+     * 2. ê¶Œí•œ í™•ì¸
      * 3. parsing block
      * 4. validate block          */
 
@@ -4198,7 +4198,7 @@ IDE_RC qsv::validateReplacePkg( qcStatement * aStatement )
               != IDE_SUCCESS );
     if( sExist == ID_TRUE )
     {
-        // °´Ã¼ÀÇ ÀÌ¸§ÀÌ °°Àº ´Ù¸¥ Å¸ÀÔÀÇ °´Ã¼
+        // ê°ì²´ì˜ ì´ë¦„ì´ ê°™ì€ ë‹¤ë¥¸ íƒ€ìž…ì˜ ê°ì²´
         if( sParseTree->pkgOID == QS_EMPTY_OID )
         {
             IDE_TEST_RAISE( sExist == ID_TRUE, ERR_EXIST_OBJECT_NAME );
@@ -4233,12 +4233,12 @@ IDE_RC qsv::validateReplacePkg( qcStatement * aStatement )
                                  &sParseTree->objectNameInfo )
               != IDE_SUCCESS );
 
-    // BUG-38800 Server startup½Ã Function-Based Index¿¡¼­ »ç¿ë ÁßÀÎ FunctionÀ»
-    // recompile ÇÒ ¼ö ÀÖ¾î¾ß ÇÑ´Ù.
+    // BUG-38800 Server startupì‹œ Function-Based Indexì—ì„œ ì‚¬ìš© ì¤‘ì¸ Functionì„
+    // recompile í•  ìˆ˜ ìžˆì–´ì•¼ í•œë‹¤.
     if ( ( aStatement->session->mQPSpecific.mFlag & QC_SESSION_INTERNAL_LOAD_PROC_MASK )
          != QC_SESSION_INTERNAL_LOAD_PROC_TRUE )
     {
-        /* BUG-35445 Check Constraint, Function-Based Index¿¡¼­ »ç¿ë ÁßÀÎ FunctionÀ» º¯°æ/Á¦°Å ¹æÁö */
+        /* BUG-35445 Check Constraint, Function-Based Indexì—ì„œ ì‚¬ìš© ì¤‘ì¸ Functionì„ ë³€ê²½/ì œê±° ë°©ì§€ */
         IDE_TEST( qcmProc::relIsUsedProcByConstraint(
                       aStatement,
                       &(sParseTree->pkgNamePos),
@@ -4301,9 +4301,9 @@ IDE_RC qsv::validateReplacePkg( qcStatement * aStatement )
 
 IDE_RC qsv::validateCreatePkgBody( qcStatement * aStatement )
 {
-    /* 1. package specÀÇ Á¸Àç¿©ºÎ È®ÀÎ
-     * 2. package bodyÀÇ Áßº¹¿©ºÎ È®ÀÎ
-     * 3. ±ÇÇÑ Ã¼Å©
+    /* 1. package specì˜ ì¡´ìž¬ì—¬ë¶€ í™•ì¸
+     * 2. package bodyì˜ ì¤‘ë³µì—¬ë¶€ í™•ì¸
+     * 3. ê¶Œí•œ ì²´í¬
      * 4. parsing block
      * 5. validation block             */
 
@@ -4317,9 +4317,9 @@ IDE_RC qsv::validateCreatePkgBody( qcStatement * aStatement )
 
     sParseTree   = (qsPkgParseTree *)(aStatement->myPlan->parseTree);
 
-    // package body´Â package specÀÌ ÀÖ¾î¾ß¸¸ ¸¸µé ¼ö ÀÖ´Ù.
-    // SYS_PACKAGES_¿¡¼­ µ¿ÀÏÇÑ ÀÌ¸§À» °¡Áø  row¸¦ Ã£Áö ¸øÇÏ¸é ¸¸µé ¼ö ¾ø´Ù.
-    // ¸ÕÀú, existObject¿¡¼­ package specÀÌ ÀÖ´ÂÁö Ã£´Â´Ù.
+    // package bodyëŠ” package specì´ ìžˆì–´ì•¼ë§Œ ë§Œë“¤ ìˆ˜ ìžˆë‹¤.
+    // SYS_PACKAGES_ì—ì„œ ë™ì¼í•œ ì´ë¦„ì„ ê°€ì§„  rowë¥¼ ì°¾ì§€ ëª»í•˜ë©´ ë§Œë“¤ ìˆ˜ ì—†ë‹¤.
+    // ë¨¼ì €, existObjectì—ì„œ package specì´ ìžˆëŠ”ì§€ ì°¾ëŠ”ë‹¤.
     IDE_TEST( qcm::existObject( aStatement,
                                 ID_FALSE,
                                 sParseTree->userNamePos,
@@ -4330,12 +4330,12 @@ IDE_RC qsv::validateCreatePkgBody( qcStatement * aStatement )
                                 &sExist )
               != IDE_SUCCESS );
 
-    // °´Ã¼°¡ Á¸ÀçÇÑ´Ù.
+    // ê°ì²´ê°€ ì¡´ìž¬í•œë‹¤.
     if( sExist == ID_TRUE )
     {
-        // specÀÇ OID°¡ ÃÊ±â°ª°ú µ¿ÀÏÇÏ¸é package°¡
-        // Á¸ÀçÇÏÁö ¾Ê±â ¶§¹®¿¡ body »ý¼ºÀÌ ºÒ°¡´ÉÇÏ¸ç,
-        // specÀÌ ¾ø´Ù´Â error¸¦ Ç¥½ÃÇÑ´Ù.
+        // specì˜ OIDê°€ ì´ˆê¸°ê°’ê³¼ ë™ì¼í•˜ë©´ packageê°€
+        // ì¡´ìž¬í•˜ì§€ ì•Šê¸° ë•Œë¬¸ì— body ìƒì„±ì´ ë¶ˆê°€ëŠ¥í•˜ë©°,
+        // specì´ ì—†ë‹¤ëŠ” errorë¥¼ í‘œì‹œí•œë‹¤.
         if ( sPkgSpecOID == QS_EMPTY_OID )
         {
             sqlInfo.setSourceInfo( aStatement, &(sParseTree->pkgNamePos) );
@@ -4344,14 +4344,14 @@ IDE_RC qsv::validateCreatePkgBody( qcStatement * aStatement )
         else
         {
             /* BUG-38844
-               create or replace package bodyÀÏ ¶§, spec¿¡ ´ëÇØ ÂüÁ¶ÇÏ±â ¶§¹®¿¡
-               specÀÌ º¯°æµÇ´Â °ÍÀ» ¸·±â À§ÇØ S latch¸¦ Àâ¾ÆµÐ´Ù.
-               1) package body°¡ Á¤»óÀûÀ¸·Î »ý¼ºµÉ °æ¿ì
-               => qci::hardPrepare PVO ÈÄ¿¡ aStatement->spvEnv->procPlanList¿¡ ´ëÇØ unlatch ¼öÇà
-               2) package specÀÌ procPlanList¿¡ ´Þ±â ÀÌÀü¿¡ excpetion ¹ß»ýÇÒ °æ¿ì
-               => Çö ÇÔ¼öÀÇ exception Ã³¸® ½Ã package spec¿¡ ´ëÇØ¼­ unlatch
-               3) package specÀÌ procPlanList¿¡ ´Þ¸° ÀÌÈÄ exception ¹ß»ý
-               => qci::hardPrepareÀÇ exception Ã³¸® ½Ã procPlanList¿¡ ´Þ¸° °´Ã¼¿Í °°ÀÌ unlatch */
+               create or replace package bodyì¼ ë•Œ, specì— ëŒ€í•´ ì°¸ì¡°í•˜ê¸° ë•Œë¬¸ì—
+               specì´ ë³€ê²½ë˜ëŠ” ê²ƒì„ ë§‰ê¸° ìœ„í•´ S latchë¥¼ ìž¡ì•„ë‘”ë‹¤.
+               1) package bodyê°€ ì •ìƒì ìœ¼ë¡œ ìƒì„±ë  ê²½ìš°
+               => qci::hardPrepare PVO í›„ì— aStatement->spvEnv->procPlanListì— ëŒ€í•´ unlatch ìˆ˜í–‰
+               2) package specì´ procPlanListì— ë‹¬ê¸° ì´ì „ì— excpetion ë°œìƒí•  ê²½ìš°
+               => í˜„ í•¨ìˆ˜ì˜ exception ì²˜ë¦¬ ì‹œ package specì— ëŒ€í•´ì„œ unlatch
+               3) package specì´ procPlanListì— ë‹¬ë¦° ì´í›„ exception ë°œìƒ
+               => qci::hardPrepareì˜ exception ì²˜ë¦¬ ì‹œ procPlanListì— ë‹¬ë¦° ê°ì²´ì™€ ê°™ì´ unlatch */
             IDE_TEST( qsxPkg::latchS( sPkgSpecOID )
                       != IDE_SUCCESS );
             sStage = 1;
@@ -4360,24 +4360,24 @@ IDE_RC qsv::validateCreatePkgBody( qcStatement * aStatement )
                                           & sPkgSpecInfo )
                       != IDE_SUCCESS );
 
-            /* BUG-38348 Package specÀÌ invalid »óÅÂÀÏ ¼öµµ ÀÖ´Ù. */
+            /* BUG-38348 Package specì´ invalid ìƒíƒœì¼ ìˆ˜ë„ ìžˆë‹¤. */
             if ( sPkgSpecInfo->isValid == ID_TRUE )
             {
                 /* BUG-38844
-                   package specÀ» spvEnv->procPlanList¿¡ ´Þ¾ÆµÐ´Ù. */
+                   package specì„ spvEnv->procPlanListì— ë‹¬ì•„ë‘”ë‹¤. */
                 IDE_TEST( qsvPkgStmts::makeRelatedPkgSpecToPkgBody( aStatement,
                                                                     sPkgSpecInfo )
                           != IDE_SUCCESS );
 
                 /* BUG-41847
-                   package specÀÇ related object¸¦ bodyÀÇ related object·Î »ó¼Ó */
+                   package specì˜ related objectë¥¼ bodyì˜ related objectë¡œ ìƒì† */
                 IDE_TEST( qsvPkgStmts::inheritRelatedObjectFromPkgSpec( aStatement,
                                                                         sPkgSpecInfo )
                           != IDE_SUCCESS );
                 sStage = 0;
 
-                // specÀÇ OID°¡ ÃÊ±â°ªÀÌ ¾Æ´Ï¸é, specÀÌ Á¸ÀçÇÏ´Â °ÍÀÌ¸ç,
-                // body¸¦ »ý¼ºÇÒ ¼ö ÀÖ´Ù.
+                // specì˜ OIDê°€ ì´ˆê¸°ê°’ì´ ì•„ë‹ˆë©´, specì´ ì¡´ìž¬í•˜ëŠ” ê²ƒì´ë©°,
+                // bodyë¥¼ ìƒì„±í•  ìˆ˜ ìžˆë‹¤.
                 IDE_TEST( qcmPkg::getPkgExistWithEmptyByName( aStatement,
                                                               sParseTree->userID,
                                                               sParseTree->pkgNamePos,
@@ -4385,15 +4385,15 @@ IDE_RC qsv::validateCreatePkgBody( qcStatement * aStatement )
                                                               &( sParseTree->pkgOID ) )
                           != IDE_SUCCESS );
 
-                // sParseTree->pkgOID°¡ ÃÊ±â°ªÀÏ °æ¿ì, spec Á¤º¸¸¦ qsvEnv¿¡ ÀúÀåÇÑ´Ù
+                // sParseTree->pkgOIDê°€ ì´ˆê¸°ê°’ì¼ ê²½ìš°, spec ì •ë³´ë¥¼ qsvEnvì— ì €ìž¥í•œë‹¤
                 if( sParseTree->pkgOID == QS_EMPTY_OID)
                 {
                     aStatement->spvEnv->pkgPlanTree = sPkgSpecInfo->planTree;
                 }
                 else
                 {
-                    // sParseTree->pkgOID°¡ ÃÊ±â°ªÀÌ ¾Æ´Ò °æ¿ì,
-                    // ±âÁ¸¿¡ body°¡ Á¸ÀçÇÏ´Ù´Â ÀÇ¹ÌÀÌ¹Ç·Î body Áßº¹ error¸¦ Ç¥½ÃÇÑ´Ù.
+                    // sParseTree->pkgOIDê°€ ì´ˆê¸°ê°’ì´ ì•„ë‹ ê²½ìš°,
+                    // ê¸°ì¡´ì— bodyê°€ ì¡´ìž¬í•˜ë‹¤ëŠ” ì˜ë¯¸ì´ë¯€ë¡œ body ì¤‘ë³µ errorë¥¼ í‘œì‹œí•œë‹¤.
                     sqlInfo.setSourceInfo( aStatement, &(sParseTree->pkgNamePos) );
                     IDE_RAISE( ERR_DUP_PKG_NAME );
                 }
@@ -4407,7 +4407,7 @@ IDE_RC qsv::validateCreatePkgBody( qcStatement * aStatement )
     }
     else
     {
-        // °´Ã¼°¡ Á¸ÀçÇÏÁö ¾Ê´Â´Ù.
+        // ê°ì²´ê°€ ì¡´ìž¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
         sqlInfo.setSourceInfo( aStatement, &(sParseTree->pkgNamePos) );
         IDE_RAISE( ERR_NOT_EXIST_PACKAGE_NAME );
     }
@@ -4426,7 +4426,7 @@ IDE_RC qsv::validateCreatePkgBody( qcStatement * aStatement )
               != IDE_SUCCESS );
 
     /* BUG-45306 PSM AUTHID 
-       package bodyÀÇ authid´Â package specÀÇ authid¿Í µ¿ÀÏÇÏ°Ô ¼³Á¤ÇØ¾ß ÇÑ´Ù. */
+       package bodyì˜ authidëŠ” package specì˜ authidì™€ ë™ì¼í•˜ê²Œ ì„¤ì •í•´ì•¼ í•œë‹¤. */
     sParseTree->isDefiner = aStatement->spvEnv->pkgPlanTree->isDefiner; 
 
     QCG_SET_SESSION_USER_ID( aStatement, sParseTree->userID );
@@ -4479,10 +4479,10 @@ IDE_RC qsv::validateCreatePkgBody( qcStatement * aStatement )
 
     /* BUG-38844
        1) sStage == 1
-       => aStatement->spvEnv->procPlanList¿¡ ´Þ±â ÀÌÀüÀÌ¹Ç·Î, Çö ÇÔ¼ö¿¡¼­ unlatch
+       => aStatement->spvEnv->procPlanListì— ë‹¬ê¸° ì´ì „ì´ë¯€ë¡œ, í˜„ í•¨ìˆ˜ì—ì„œ unlatch
        2) sStage == 0
-       => procPlanList¿¡ ´Þ¸° ÈÄÀÌ¹Ç·Î, qci::hardPrepare¿¡¼­ exception Ã³¸® ½Ã
-       procPlanList¿¡ ´Þ¸° °´Ã¼µé°ú ÇÔ²² unlatch */
+       => procPlanListì— ë‹¬ë¦° í›„ì´ë¯€ë¡œ, qci::hardPrepareì—ì„œ exception ì²˜ë¦¬ ì‹œ
+       procPlanListì— ë‹¬ë¦° ê°ì²´ë“¤ê³¼ í•¨ê»˜ unlatch */
     if ( sStage == 1 )
     {
         sStage = 0;
@@ -4498,10 +4498,10 @@ IDE_RC qsv::validateCreatePkgBody( qcStatement * aStatement )
 
 IDE_RC qsv::validateReplacePkgBody( qcStatement * aStatement )
 {
-    /* 1. package specÀÇ Á¸Àç¿©ºÎ È®ÀÎ
-     * 2. package bodyÀÇ Áßº¹¿©ºÎ È®ÀÎ
-     * 3. package specÀÇ Á¤º¸ ¼³Á¤
-     * 4. ±ÇÇÑ Ã¼Å©
+    /* 1. package specì˜ ì¡´ìž¬ì—¬ë¶€ í™•ì¸
+     * 2. package bodyì˜ ì¤‘ë³µì—¬ë¶€ í™•ì¸
+     * 3. package specì˜ ì •ë³´ ì„¤ì •
+     * 4. ê¶Œí•œ ì²´í¬
      * 5. parsing block
      * 6. validation block             */
 
@@ -4515,9 +4515,9 @@ IDE_RC qsv::validateReplacePkgBody( qcStatement * aStatement )
 
     sParseTree   = (qsPkgParseTree *)(aStatement->myPlan->parseTree);
 
-    // package body´Â package specÀÌ ÀÖ¾î¾ß¸¸ ¸¸µé ¼ö ÀÖ´Ù.
-    // SYS_PACKAGES_¿¡¼­ µ¿ÀÏÇÑ ÀÌ¸§À» °¡Áø  row¸¦ Ã£Áö ¸øÇÏ¸é ¸¸µé ¼ö ¾ø´Ù.
-    // 1. package specÀÇ Á¸Àç ¿©ºÎ È®ÀÎ
+    // package bodyëŠ” package specì´ ìžˆì–´ì•¼ë§Œ ë§Œë“¤ ìˆ˜ ìžˆë‹¤.
+    // SYS_PACKAGES_ì—ì„œ ë™ì¼í•œ ì´ë¦„ì„ ê°€ì§„  rowë¥¼ ì°¾ì§€ ëª»í•˜ë©´ ë§Œë“¤ ìˆ˜ ì—†ë‹¤.
+    // 1. package specì˜ ì¡´ìž¬ ì—¬ë¶€ í™•ì¸
     IDE_TEST( qcm::existObject( aStatement,
                                 ID_FALSE,
                                 sParseTree->userNamePos,
@@ -4528,12 +4528,12 @@ IDE_RC qsv::validateReplacePkgBody( qcStatement * aStatement )
                                 &sExist )
               != IDE_SUCCESS );
 
-    // °´Ã¼°¡ Á¸ÀçÇÑ´Ù.
+    // ê°ì²´ê°€ ì¡´ìž¬í•œë‹¤.
     if( sExist == ID_TRUE )
     {
-        // specÀÇ OID°¡ ÃÊ±â°ª°ú µ¿ÀÏÇÏ¸é package°¡
-        // Á¸ÀçÇÏÁö ¾Ê±â ¶§¹®¿¡ body »ý¼ºÀÌ ºÒ°¡´ÉÇÏ¸ç,
-        // specÀÌ ¾ø´Ù´Â error¸¦ Ç¥½ÃÇÑ´Ù.
+        // specì˜ OIDê°€ ì´ˆê¸°ê°’ê³¼ ë™ì¼í•˜ë©´ packageê°€
+        // ì¡´ìž¬í•˜ì§€ ì•Šê¸° ë•Œë¬¸ì— body ìƒì„±ì´ ë¶ˆê°€ëŠ¥í•˜ë©°,
+        // specì´ ì—†ë‹¤ëŠ” errorë¥¼ í‘œì‹œí•œë‹¤.
         if( sPkgSpecOID == QS_EMPTY_OID )
         {
             sqlInfo.setSourceInfo( aStatement, &(sParseTree->pkgNamePos) );
@@ -4542,18 +4542,18 @@ IDE_RC qsv::validateReplacePkgBody( qcStatement * aStatement )
         else
         {
             /* BUG-38348
-               package specÀÌ rebuild ÇÏ´Ù ½ÇÆÐÇÏ¸é,
-               package spec´Â ÀÖÁö¸¸, invalid »óÅÂÀÌ´Ù.
-               ÀÌ ¶§´Â body ¿ª½Ã invalid°¡ µÇ¾î¾ß ÇÑ´Ù.*/
+               package specì´ rebuild í•˜ë‹¤ ì‹¤íŒ¨í•˜ë©´,
+               package specëŠ” ìžˆì§€ë§Œ, invalid ìƒíƒœì´ë‹¤.
+               ì´ ë•ŒëŠ” body ì—­ì‹œ invalidê°€ ë˜ì–´ì•¼ í•œë‹¤.*/
             /* BUG-38844
-               create or replace package bodyÀÏ ¶§, spec¿¡ ´ëÇØ ÂüÁ¶ÇÏ±â ¶§¹®¿¡
-               specÀÌ º¯°æµÇ´Â °ÍÀ» ¸·±â À§ÇØ S latch¸¦ Àâ¾ÆµÐ´Ù.
-               1) package body°¡ Á¤»óÀûÀ¸·Î »ý¼ºµÉ °æ¿ì
-               => qci::hardPrepare PVO ÈÄ¿¡ aStatement->spvEnv->procPlanList¿¡ ´ëÇØ unlatch ¼öÇà
-               2) package specÀÌ procPlanList¿¡ ´Þ±â ÀÌÀü¿¡ excpetion ¹ß»ýÇÒ °æ¿ì
-               => Çö ÇÔ¼öÀÇ exception Ã³¸® ½Ã package spec¿¡ ´ëÇØ¼­ unlatch
-               3) package specÀÌ procPlanList¿¡ ´Þ¸° ÀÌÈÄ exception ¹ß»ý
-               => qci::hardPrepareÀÇ exception Ã³¸® ½Ã procPlanList¿¡ ´Þ¸° °´Ã¼¿Í °°ÀÌ unlatch */
+               create or replace package bodyì¼ ë•Œ, specì— ëŒ€í•´ ì°¸ì¡°í•˜ê¸° ë•Œë¬¸ì—
+               specì´ ë³€ê²½ë˜ëŠ” ê²ƒì„ ë§‰ê¸° ìœ„í•´ S latchë¥¼ ìž¡ì•„ë‘”ë‹¤.
+               1) package bodyê°€ ì •ìƒì ìœ¼ë¡œ ìƒì„±ë  ê²½ìš°
+               => qci::hardPrepare PVO í›„ì— aStatement->spvEnv->procPlanListì— ëŒ€í•´ unlatch ìˆ˜í–‰
+               2) package specì´ procPlanListì— ë‹¬ê¸° ì´ì „ì— excpetion ë°œìƒí•  ê²½ìš°
+               => í˜„ í•¨ìˆ˜ì˜ exception ì²˜ë¦¬ ì‹œ package specì— ëŒ€í•´ì„œ unlatch
+               3) package specì´ procPlanListì— ë‹¬ë¦° ì´í›„ exception ë°œìƒ
+               => qci::hardPrepareì˜ exception ì²˜ë¦¬ ì‹œ procPlanListì— ë‹¬ë¦° ê°ì²´ì™€ ê°™ì´ unlatch */
             IDE_TEST( qsxPkg::latchS( sPkgSpecOID )
                       != IDE_SUCCESS );
             sStage = 1;
@@ -4565,21 +4565,21 @@ IDE_RC qsv::validateReplacePkgBody( qcStatement * aStatement )
             if ( sPkgSpecInfo->isValid == ID_TRUE )
             {
                 /*BUG-38844
-                  package specÀ» spvEnv->procPlanList¿¡ ´Þ¾ÆµÐ´Ù. */
+                  package specì„ spvEnv->procPlanListì— ë‹¬ì•„ë‘”ë‹¤. */
                 IDE_TEST( qsvPkgStmts::makeRelatedPkgSpecToPkgBody( aStatement,
                                                                     sPkgSpecInfo )
                           != IDE_SUCCESS );
 
                 /* BUG-41847
-                   package specÀÇ related object¸¦ bodyÀÇ related object·Î »ó¼Ó */
+                   package specì˜ related objectë¥¼ bodyì˜ related objectë¡œ ìƒì† */
                 IDE_TEST( qsvPkgStmts::inheritRelatedObjectFromPkgSpec( aStatement,
                                                                         sPkgSpecInfo )
                           != IDE_SUCCESS );
                 sStage = 0;
 
-                // specÀÇ OID°¡ ÃÊ±â°ªÀÌ ¾Æ´Ï¸é, specÀÌ Á¸ÀçÇÏ´Â °ÍÀÌ¸ç,
-                // body¸¦ »ý¼ºÇÒ ¼ö ÀÖ´Ù.
-                // 2. package bodyÀÇ Áßº¹¿©ºÎ È®ÀÎ
+                // specì˜ OIDê°€ ì´ˆê¸°ê°’ì´ ì•„ë‹ˆë©´, specì´ ì¡´ìž¬í•˜ëŠ” ê²ƒì´ë©°,
+                // bodyë¥¼ ìƒì„±í•  ìˆ˜ ìžˆë‹¤.
+                // 2. package bodyì˜ ì¤‘ë³µì—¬ë¶€ í™•ì¸
                 IDE_TEST( qcmPkg::getPkgExistWithEmptyByName( aStatement,
                                                               sParseTree->userID,
                                                               sParseTree->pkgNamePos,
@@ -4598,7 +4598,7 @@ IDE_RC qsv::validateReplacePkgBody( qcStatement * aStatement )
                     sParseTree->common.execute = qsx::createPkgBody;
                 }
 
-                // 3. spec¿¡ ´ëÇÑ Á¤º¸ ¼³Á¤
+                // 3. specì— ëŒ€í•œ ì •ë³´ ì„¤ì •
                 aStatement->spvEnv->pkgPlanTree = sPkgSpecInfo->planTree;
 
                 // 4. check grant
@@ -4616,7 +4616,7 @@ IDE_RC qsv::validateReplacePkgBody( qcStatement * aStatement )
     }
     else
     {
-        // °´Ã¼°¡ Á¸ÀçÇÏÁö ¾Ê´Â´Ù.
+        // ê°ì²´ê°€ ì¡´ìž¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
         sqlInfo.setSourceInfo( aStatement, &(sParseTree->pkgNamePos) );
         IDE_RAISE( ERR_NOT_EXIST_PACKAGE_NAME );
     }
@@ -4630,7 +4630,7 @@ IDE_RC qsv::validateReplacePkgBody( qcStatement * aStatement )
               != IDE_SUCCESS );
 
     /* BUG-45306 PSM AUTHID 
-       package bodyÀÇ authid´Â package specÀÇ authid¿Í µ¿ÀÏÇÏ°Ô ¼³Á¤ÇØ¾ß ÇÑ´Ù. */
+       package bodyì˜ authidëŠ” package specì˜ authidì™€ ë™ì¼í•˜ê²Œ ì„¤ì •í•´ì•¼ í•œë‹¤. */
     sParseTree->isDefiner = aStatement->spvEnv->pkgPlanTree->isDefiner; 
 
     QCG_SET_SESSION_USER_ID( aStatement, sParseTree->userID );
@@ -4675,10 +4675,10 @@ IDE_RC qsv::validateReplacePkgBody( qcStatement * aStatement )
 
     /* BUG-38844
        1) sStage == 1
-       => aStatement->spvEnv->procPlanList¿¡ ´Þ±â ÀÌÀüÀÌ¹Ç·Î, Çö ÇÔ¼ö¿¡¼­ unlatch
+       => aStatement->spvEnv->procPlanListì— ë‹¬ê¸° ì´ì „ì´ë¯€ë¡œ, í˜„ í•¨ìˆ˜ì—ì„œ unlatch
        2) sStage == 0
-       => procPlanList¿¡ ´Þ¸° ÈÄÀÌ¹Ç·Î, qci::hardPrepare¿¡¼­ exception Ã³¸® ½Ã
-       procPlanList¿¡ ´Þ¸° °´Ã¼µé°ú ÇÔ²² unlatch */
+       => procPlanListì— ë‹¬ë¦° í›„ì´ë¯€ë¡œ, qci::hardPrepareì—ì„œ exception ì²˜ë¦¬ ì‹œ
+       procPlanListì— ë‹¬ë¦° ê°ì²´ë“¤ê³¼ í•¨ê»˜ unlatch */
     if ( sStage == 1 )
     {
         sStage = 0;
@@ -4808,7 +4808,7 @@ IDE_RC qsv::validateDropPkg( qcStatement * aStatement )
                                             sParseTree->userID )
               != IDE_SUCCESS );
 
-    /* BUG-35445 Check Constraint, Function-Based Index¿¡¼­ »ç¿ë ÁßÀÎ FunctionÀ» º¯°æ/Á¦°Å ¹æÁö */
+    /* BUG-35445 Check Constraint, Function-Based Indexì—ì„œ ì‚¬ìš© ì¤‘ì¸ Functionì„ ë³€ê²½/ì œê±° ë°©ì§€ */
     IDE_TEST( qcmProc::relIsUsedProcByConstraint(
                   aStatement,
                   &(sParseTree->pkgNamePos),
@@ -4878,7 +4878,7 @@ IDE_RC qsv::parseExecPkgAssign ( qcStatement * aQcStmt )
     if( sExist == ID_TRUE )
     {
         // initialize section
-        // synonymÀ¸·Î ÂüÁ¶µÇ´Â procÀÇ ±â·Ï
+        // synonymìœ¼ë¡œ ì°¸ì¡°ë˜ëŠ” procì˜ ê¸°ë¡
         IDE_TEST( qsvPkgStmts::makePkgSynonymList(
                       aQcStmt,
                       & sSynonymInfo,
@@ -4897,14 +4897,14 @@ IDE_RC qsv::parseExecPkgAssign ( qcStatement * aQcStmt )
                                       &sPkgInfo )
                   != IDE_SUCCESS );
 
-        // 1) specÀÇ package info¸¦ °¡Á®¿ÀÁö ¸øÇÔ.
+        // 1) specì˜ package infoë¥¼ ê°€ì ¸ì˜¤ì§€ ëª»í•¨.
         IDE_TEST( sPkgInfo == NULL );
 
         /* BUG-45164 */
         IDE_TEST_RAISE( sPkgInfo->isValid != ID_TRUE, err_object_invalid );
 
         /* BUG-38720
-           package body Á¸Àç ¿©ºÎ È®ÀÎ ÈÄ bodyÀÇ qsxPkgInfo¸¦ °¡Á®¿Â´Ù. */
+           package body ì¡´ìž¬ ì—¬ë¶€ í™•ì¸ í›„ bodyì˜ qsxPkgInfoë¥¼ ê°€ì ¸ì˜¨ë‹¤. */
         IDE_TEST( qcmPkg::getPkgExistWithEmptyByName(
                       aQcStmt,
                       sParseTree->userID,
@@ -4923,7 +4923,7 @@ IDE_RC qsv::parseExecPkgAssign ( qcStatement * aQcStmt )
                   != IDE_SUCCESS );
 
         // PROJ-2533
-        // exec pkg1.func(10) := 1 ¿Í °°ÀÌ subprogramÀº left node¿¡ ¿Ã ¼ö ¾ø´Ù.
+        // exec pkg1.func(10) := 1 ì™€ ê°™ì´ subprogramì€ left nodeì— ì˜¬ ìˆ˜ ì—†ë‹¤.
         IDE_TEST( qsvProcVar::searchPkgVariable( aQcStmt,
                                                  sPkgInfo,
                                                  sParseTree->leftNode,
@@ -4938,7 +4938,7 @@ IDE_RC qsv::parseExecPkgAssign ( qcStatement * aQcStmt )
     }
     else
     {
-        // left node¸¦ Ã£Áö ¸øÇÑ °æ¿ì invalid identifier error¸¦ ¹ß»ýÇÑ´Ù.
+        // left nodeë¥¼ ì°¾ì§€ ëª»í•œ ê²½ìš° invalid identifier errorë¥¼ ë°œìƒí•œë‹¤.
         sqlInfo.setSourceInfo( aQcStmt,
                                & sParseTree->leftNode->position);
         IDE_RAISE( ERR_INVALID_IDENTIFIER );
@@ -5026,7 +5026,7 @@ IDE_RC qsv::validateExecPkgAssign ( qcStatement * aQcStmt )
               != IDE_SUCCESS );
 
     // BUG-42790
-    // left¿¡ ¿À´Â º¯¼ö´Â  column ¸ðµâÀÌ°Å³ª, host º¯¼ö¿©¾ßÇÔ.
+    // leftì— ì˜¤ëŠ” ë³€ìˆ˜ëŠ”  column ëª¨ë“ˆì´ê±°ë‚˜, host ë³€ìˆ˜ì—¬ì•¼í•¨.
     IDE_ERROR_RAISE( ( ( sParseTree->leftNode->node.module ==
                          &qtc::columnModule ) ||
                        ( sParseTree->leftNode->node.module ==
@@ -5101,20 +5101,20 @@ IDE_RC qsv::checkMyPkgSubprogramCall( qcStatement * aStatement,
 /*******************************************************************************
  *
  * Description :
- *    create package ½Ã subprogram¿¡ ´ëÇØ Àç±ÍÈ£ÃâÀÎÁö ¶Ç´Â
- *    µ¿ÀÏÇÑ package¿¡ Á¸ÀçÇÏ´Â subprogramÀ» È£ÃâÇÏ´Â °Ë»ç
+ *    create package ì‹œ subprogramì— ëŒ€í•´ ìž¬ê·€í˜¸ì¶œì¸ì§€ ë˜ëŠ”
+ *    ë™ì¼í•œ packageì— ì¡´ìž¬í•˜ëŠ” subprogramì„ í˜¸ì¶œí•˜ëŠ” ê²€ì‚¬
  *
  * Implementation :
- *    1. Àç±ÍÈ£ÃâÀÎÁö °Ë»ç
- *      a. qsExecParseTree->callSpecNode->columnName°ú
- *         aStatement->spvEnv->createProc->procNamePos°¡ µ¿ÀÏÇÏ¸é Àç±ÍÈ£Ãâ
- *    2. Àç±ÍÈ£ÃâÀÌ ¾Æ´Ï¸é, µ¿ÀÏÇÑ package ³»ÀÇ subprogram È£ÃâÇÏ´ÂÁö °Ë»ç
- *      a. public subprogram¿¡¼­ °Ë»ç
- *         ( Áï, package spec¿¡ ¼±¾ðµÇ¾î ÀÖ´Â subprogram °Ë»ç )
- *        => public subprogramÀ» È£ÃâÇÏ´Â °æ¿ì,
- *           qsProcStmtSql->usingSubprograms¿¡ ´Þ¾Æ³õ´Â´Ù.
- *      b. a¿¡ ¾øÀ» °æ¿ì, private subprogram¿¡ Á¸ÀçÇÏ´Â °Ë»ç
- *         ( package body¸¸ Á¤ÀÇµÈ subprogram )
+ *    1. ìž¬ê·€í˜¸ì¶œì¸ì§€ ê²€ì‚¬
+ *      a. qsExecParseTree->callSpecNode->columnNameê³¼
+ *         aStatement->spvEnv->createProc->procNamePosê°€ ë™ì¼í•˜ë©´ ìž¬ê·€í˜¸ì¶œ
+ *    2. ìž¬ê·€í˜¸ì¶œì´ ì•„ë‹ˆë©´, ë™ì¼í•œ package ë‚´ì˜ subprogram í˜¸ì¶œí•˜ëŠ”ì§€ ê²€ì‚¬
+ *      a. public subprogramì—ì„œ ê²€ì‚¬
+ *         ( ì¦‰, package specì— ì„ ì–¸ë˜ì–´ ìžˆëŠ” subprogram ê²€ì‚¬ )
+ *        => public subprogramì„ í˜¸ì¶œí•˜ëŠ” ê²½ìš°,
+ *           qsProcStmtSql->usingSubprogramsì— ë‹¬ì•„ë†“ëŠ”ë‹¤.
+ *      b. aì— ì—†ì„ ê²½ìš°, private subprogramì— ì¡´ìž¬í•˜ëŠ” ê²€ì‚¬
+ *         ( package bodyë§Œ ì •ì˜ëœ subprogram )
  ******************************************************************************/
 
     qsExecParseTree  * sExeParseTree        = NULL;
@@ -5184,17 +5184,17 @@ IDE_RC qsv::checkMyPkgSubprogramCall( qcStatement * aStatement,
         IDE_TEST_CONT( sSubprogramID == QS_PSM_SUBPROGRAM_ID,
                        IS_NOT_SAME_PACKAGE_OR_IS_RECURSIVECALL );
 
-        /* BUG-41847 packageÀÇ subprogramÀ» default value·Î »ç¿ë °¡´ÉÇÏ°Ô Áö¿ø */
-        /* package spec¿¡ ¼±¾ðµÈ varialbe¿¡ default·Î ¿Ã ¼ö ÀÖ´Â subprogram
-           - ´Ù¸¥ package subprogram */
+        /* BUG-41847 packageì˜ subprogramì„ default valueë¡œ ì‚¬ìš© ê°€ëŠ¥í•˜ê²Œ ì§€ì› */
+        /* package specì— ì„ ì–¸ëœ varialbeì— defaultë¡œ ì˜¬ ìˆ˜ ìžˆëŠ” subprogram
+           - ë‹¤ë¥¸ package subprogram */
         IDE_TEST_CONT( (sPkgParseTree->objType == QS_PKG) &&
                        (sIsInitializeSection == ID_FALSE) &&
                        (sCurrStmt == NULL),
                        IS_NOT_SAME_PACKAGE_OR_IS_RECURSIVECALL );
 
-        /* package body¿¡ ¼±¾ðµÈ varialbe¿¡ default·Î ¿Ã ¼ö ÀÖ´Â subprogram
-           - ´Ù¸¥ package subprogram
-           - µ¿ÀÏ packageÀÇ public subprogram */
+        /* package bodyì— ì„ ì–¸ëœ varialbeì— defaultë¡œ ì˜¬ ìˆ˜ ìžˆëŠ” subprogram
+           - ë‹¤ë¥¸ package subprogram
+           - ë™ì¼ packageì˜ public subprogram */
         IDE_TEST_CONT( (sPkgParseTree->objType == QS_PKG_BODY) &&
                        (sIsInitializeSection == ID_FALSE) &&
                        (sCurrStmt == NULL) &&
@@ -5247,8 +5247,8 @@ IDE_RC qsv::checkMyPkgSubprogramCall( qcStatement * aStatement,
     }
 
     /* BUG-37235, BUG-41847
-       default value¿¡ subprogram name¸¸ ¸í½ÃÇßÀ» °æ¿ì, ½ÇÇà ½Ã default value¸¦ Ã£Áö ¸ø ÇÑ´Ù.
-       µû¶ó¼­, default statement¸¦ ¸¸µé ¶§, package nameÀ» ¸í½Ã ÇØ Áà¾ß ÇÑ´Ù. */
+       default valueì— subprogram nameë§Œ ëª…ì‹œí–ˆì„ ê²½ìš°, ì‹¤í–‰ ì‹œ default valueë¥¼ ì°¾ì§€ ëª» í•œë‹¤.
+       ë”°ë¼ì„œ, default statementë¥¼ ë§Œë“¤ ë•Œ, package nameì„ ëª…ì‹œ í•´ ì¤˜ì•¼ í•œë‹¤. */
     if ( (sExist == ID_TRUE) &&
          ((sExeParseTree->callSpecNode->lflag & QTC_NODE_SP_PARAM_DEFAULT_VALUE_MASK)
           == QTC_NODE_SP_PARAM_DEFAULT_VALUE_TRUE) )
@@ -5282,57 +5282,57 @@ IDE_RC qsv::validateNamedArguments( qcStatement     * aStatement,
 /****************************************************************************
  * 
  * Description : BUG-41243 Name-based Argument Passing
- *               Name-based Argument ÀÇ °ËÁõÀ» ÇÏ°í, ¼ø¼­¸¦ Àç¹èÄ¡ÇÑ´Ù.
+ *               Name-based Argument ì˜ ê²€ì¦ì„ í•˜ê³ , ìˆœì„œë¥¼ ìž¬ë°°ì¹˜í•œë‹¤.
  *
- *    Argument Passing¿¡´Â 3°¡Áö°¡ ÀÖ´Ù.
+ *    Argument Passingì—ëŠ” 3ê°€ì§€ê°€ ìžˆë‹¤.
  *
- *    1. Positional Argument Passing (±âÁ¸ ¹æ½Ä)
- *       - Parameter ¼ø¼­´ë·Î Argument °ªÀ» ÁöÁ¤
- *       - ¼ø¼­°¡ ¹Ù²î¸é »ç¿ëÀÚ ÀÇµµ¿Í ´Ù¸£°Ô ÀÛµ¿
+ *    1. Positional Argument Passing (ê¸°ì¡´ ë°©ì‹)
+ *       - Parameter ìˆœì„œëŒ€ë¡œ Argument ê°’ì„ ì§€ì •
+ *       - ìˆœì„œê°€ ë°”ë€Œë©´ ì‚¬ìš©ìž ì˜ë„ì™€ ë‹¤ë¥´ê²Œ ìž‘ë™
  *         (e.g.) exec PROC1( 1, 'aa', :a );
  *
  *    2. Name-based Argument Passing
- *       - Parameter ÀÌ¸§À» ¸í½ÃÇØ Argument °ªÀ» ÁöÁ¤
- *       - ¼ø¼­°¡ ¹Ù²î¾îµµ »ó°ü¾øÀ½
+ *       - Parameter ì´ë¦„ì„ ëª…ì‹œí•´ Argument ê°’ì„ ì§€ì •
+ *       - ìˆœì„œê°€ ë°”ë€Œì–´ë„ ìƒê´€ì—†ìŒ
  *         (e.g.) exec PROC1( P2=>'aa', P3=>:a, P1=>1 );
  *
  *    3. Mixed Argument Passing
- *       - µÎ ¹æ½ÄÀÇ È¥ÇÕÇü
- *       - ¹Ýµå½Ã PositionalÀ¸·Î ÀÏºÎ ÁöÁ¤ÇÑ ÈÄ Name-based·Î ³ª¸ÓÁö¸¦ ÁöÁ¤
+ *       - ë‘ ë°©ì‹ì˜ í˜¼í•©í˜•
+ *       - ë°˜ë“œì‹œ Positionalìœ¼ë¡œ ì¼ë¶€ ì§€ì •í•œ í›„ Name-basedë¡œ ë‚˜ë¨¸ì§€ë¥¼ ì§€ì •
  *         (e.g.) exec PROC1( 1, P3=>:a, P2=>'aa' );
  *
  *
- *    ¹ß»ýÇÒ ¼ö ÀÖ´Â ¿¡·¯´Â ´ÙÀ½°ú °°´Ù.
+ *    ë°œìƒí•  ìˆ˜ ìžˆëŠ” ì—ëŸ¬ëŠ” ë‹¤ìŒê³¼ ê°™ë‹¤.
  *
- *    - Positional > Name-based ¼ø¼­¸¦ ¾î±â¸ç ÁöÁ¤ÇÏ´Â °æ¿ì
- *      >> exec PROC1( 1, P3=>:a, 'aa' ); -- ´Ù½Ã Positional Passing
+ *    - Positional > Name-based ìˆœì„œë¥¼ ì–´ê¸°ë©° ì§€ì •í•˜ëŠ” ê²½ìš°
+ *      >> exec PROC1( 1, P3=>:a, 'aa' ); -- ë‹¤ì‹œ Positional Passing
  *                                ^  ^
- *    - Àß¸øµÈ Parameter ÀÌ¸§ ÁöÁ¤
- *      >> exec PROC1( P2=>'aa', P3=>:a, P100=>1 ); -- P100Àº ¾øÀ½
+ *    - ìž˜ëª»ëœ Parameter ì´ë¦„ ì§€ì •
+ *      >> exec PROC1( P2=>'aa', P3=>:a, P100=>1 ); -- P100ì€ ì—†ìŒ
  *                                       ^  ^
- *    - ÀÌ¹Ì Argument°¡ ÁöÁ¤µÈ Parameter¸¦ Áßº¹ ÁöÁ¤ÇÏ´Â °æ¿ì
- *      >> exec PROC1( 1, P1=>3, :a ); -- ÀÌ¹Ì P1ÀÇ Argument 1ÀÌ ÁöÁ¤
+ *    - ì´ë¯¸ Argumentê°€ ì§€ì •ëœ Parameterë¥¼ ì¤‘ë³µ ì§€ì •í•˜ëŠ” ê²½ìš°
+ *      >> exec PROC1( 1, P1=>3, :a ); -- ì´ë¯¸ P1ì˜ Argument 1ì´ ì§€ì •
  *                        ^^
  *
  * Implementation :
  *
- *  - Á¤ÀÇµÈ ParameterÀÇ ÂüÁ¶ ¿©ºÎ¸¦ ÀúÀåÇÒ Array¸¦ ÇÒ´ç (RefArray)
+ *  - ì •ì˜ëœ Parameterì˜ ì°¸ì¡° ì—¬ë¶€ë¥¼ ì €ìž¥í•  Arrayë¥¼ í• ë‹¹ (RefArray)
  *
- *  - CallSpecNode¸¦ µû¶ó°¡¸é¼­,
- *    - ¼øÂ÷Àû ¹æ½Ä(Positional)Àº ¼ø¼­´ë·Î RefArray °ª ¼³Á¤
- *    - ¸í½ÃÀû ¹æ½Ä(Named)Àº ParaDecls¸¦ Å½»öÇØ ÇØ´ç À§Ä¡ RefArray °ª ¼³Á¤
+ *  - CallSpecNodeë¥¼ ë”°ë¼ê°€ë©´ì„œ,
+ *    - ìˆœì°¨ì  ë°©ì‹(Positional)ì€ ìˆœì„œëŒ€ë¡œ RefArray ê°’ ì„¤ì •
+ *    - ëª…ì‹œì  ë°©ì‹(Named)ì€ ParaDeclsë¥¼ íƒìƒ‰í•´ í•´ë‹¹ ìœ„ì¹˜ RefArray ê°’ ì„¤ì •
  *
- *  - CallSpecNode¿¡¼­ Named ÀÌÈÄÀÇ List¸¦ Tmp List·Î ÁöÁ¤
- *  - ÂüÁ¶°¡ ÀÌ¹Ì µÈ ParaDecls¸¦ µû¶ó°¡¸é¼­,
- *    - Tmp List¿¡ ¾Ë¸ÂÀº qtcNode ¹ß°ß
- *    - ÇØ´ç qtcNode ´ÙÀ½ Node¸¦ CallSpecNode¿¡ ÀÌ¾î ºÙÀÓ
- *      (ÇØ´ç qtcNode´Â Name NodeÀÌ¹Ç·Î, ´ÙÀ½ Node°¡ Argument Node)
+ *  - CallSpecNodeì—ì„œ Named ì´í›„ì˜ Listë¥¼ Tmp Listë¡œ ì§€ì •
+ *  - ì°¸ì¡°ê°€ ì´ë¯¸ ëœ ParaDeclsë¥¼ ë”°ë¼ê°€ë©´ì„œ,
+ *    - Tmp Listì— ì•Œë§žì€ qtcNode ë°œê²¬
+ *    - í•´ë‹¹ qtcNode ë‹¤ìŒ Nodeë¥¼ CallSpecNodeì— ì´ì–´ ë¶™ìž„
+ *      (í•´ë‹¹ qtcNodeëŠ” Name Nodeì´ë¯€ë¡œ, ë‹¤ìŒ Nodeê°€ Argument Node)
  *
  * Note :
  *
- *   - ¸ðµÎ ³¡³µÀ» ¶§, ÂüÁ¶ÇÏÁö ¸øÇÑ ParaDecls°¡ ¹ß°ßµÉ ¼ö ÀÖÀ¸³ª
- *     Argument Validation ³ª¸ÓÁö ÀÛ¾÷¿¡¼­ °É·¯³¾ °ÍÀÌ´Ù.
- *   - RefArray´Â, Default Parameter Ã³¸® ÇÒ ¶§µµ »ç¿ëÇØ¾ß ÇÏ¹Ç·Î ¹ÝÈ¯ÇÑ´Ù.
+ *   - ëª¨ë‘ ëë‚¬ì„ ë•Œ, ì°¸ì¡°í•˜ì§€ ëª»í•œ ParaDeclsê°€ ë°œê²¬ë  ìˆ˜ ìžˆìœ¼ë‚˜
+ *     Argument Validation ë‚˜ë¨¸ì§€ ìž‘ì—…ì—ì„œ ê±¸ëŸ¬ë‚¼ ê²ƒì´ë‹¤.
+ *   - RefArrayëŠ”, Default Parameter ì²˜ë¦¬ í•  ë•Œë„ ì‚¬ìš©í•´ì•¼ í•˜ë¯€ë¡œ ë°˜í™˜í•œë‹¤.
  *    
  ****************************************************************************/
 
@@ -5347,11 +5347,11 @@ IDE_RC qsv::validateNamedArguments( qcStatement     * aStatement,
 
     IDU_FIT_POINT_FATAL( "qsv::validateNamedArguments::__FT__" );
 
-    // Á¤ÀÇµÈ Parameter°¡ ¾øÀ¸¸é °Ç³Ê¶Ú´Ù.
+    // ì •ì˜ëœ Parameterê°€ ì—†ìœ¼ë©´ ê±´ë„ˆë›´ë‹¤.
     IDE_TEST_CONT( aParaDeclCnt == 0, NO_NAMED_ARGUMENT );
 
     /****************************************************************
-     * Argument Passing ¿©ºÎ¸¦ ÀúÀåÇÒ ¹è¿­ ÇÒ´ç
+     * Argument Passing ì—¬ë¶€ë¥¼ ì €ìž¥í•  ë°°ì—´ í• ë‹¹
      ***************************************************************/
 
     IDE_TEST( QC_QME_MEM(aStatement)->cralloc(
@@ -5360,7 +5360,7 @@ IDE_RC qsv::validateNamedArguments( qcStatement     * aStatement,
               != IDE_SUCCESS );
     
     /****************************************************************
-     * Positional ArgumentÀÇ RefArray ¼³Á¤
+     * Positional Argumentì˜ RefArray ì„¤ì •
      ***************************************************************/
     
     for ( i = 0, sCurrArg = (qtcNode *)(aCallSpec->node.arguments);
@@ -5370,65 +5370,65 @@ IDE_RC qsv::validateNamedArguments( qcStatement     * aStatement,
         if ( ( sCurrArg->lflag & QTC_NODE_SP_PARAM_NAME_MASK )
              == QTC_NODE_SP_PARAM_NAME_FALSE )
         {
-            // Argument °³¼ö¸¦ ¼¼¾î³ª°£´Ù.
+            // Argument ê°œìˆ˜ë¥¼ ì„¸ì–´ë‚˜ê°„ë‹¤.
             sArgCount++;
 
-            // Argument °³¼ö°¡ aParaDeclCnt¸¦ ³Ñ´Â °æ¿ì ¿¡·¯
+            // Argument ê°œìˆ˜ê°€ aParaDeclCntë¥¼ ë„˜ëŠ” ê²½ìš° ì—ëŸ¬
             IDE_TEST_RAISE( sArgCount > aParaDeclCnt, TOO_MANY_ARGUMENT );
 
-            // PassInfoÀÇ PassTypeÀ» POSITIONAL·Î ¼³Á¤
+            // PassInfoì˜ PassTypeì„ POSITIONALë¡œ ì„¤ì •
             sArgPassArray[i].mType = QSV_ARG_PASS_POSITIONAL;
-            // PassInfoÀÇ PassArg¸¦ sCurrArg ±×´ë·Î ¼³Á¤
+            // PassInfoì˜ PassArgë¥¼ sCurrArg ê·¸ëŒ€ë¡œ ì„¤ì •
             sArgPassArray[i].mArg  = sCurrArg;
         }
         else
         {
-            // Named Argument°¡ Á¸ÀçÇÑ´Ù´Â °É ¸í½ÃÇÏ°í, ´ÙÀ½ ´Ü°è·Î ³Ñ¾î°£´Ù.
+            // Named Argumentê°€ ì¡´ìž¬í•œë‹¤ëŠ” ê±¸ ëª…ì‹œí•˜ê³ , ë‹¤ìŒ ë‹¨ê³„ë¡œ ë„˜ì–´ê°„ë‹¤.
             sIsNameFound = ID_TRUE;
             break;
         }
     }
 
-    // Name-based Argument°¡ ¾øÀ¸¸é °Ç³Ê¶Ú´Ù.
+    // Name-based Argumentê°€ ì—†ìœ¼ë©´ ê±´ë„ˆë›´ë‹¤.
     IDE_TEST_CONT( sIsNameFound == ID_FALSE, NO_NAMED_ARGUMENT );
 
     /****************************************************************
-     * Name-based ArgumentÀÇ RefArray ¼³Á¤
+     * Name-based Argumentì˜ RefArray ì„¤ì •
      ***************************************************************/
 
     while ( sCurrArg != NULL )
     {
-        // Named Argument¸¸ ³ª¿Í¾ß ÇÏ´Âµ¥
-        // ´Ù½Ã Positional Argument°¡ ³ª¿À¸é ¿¡·¯.
+        // Named Argumentë§Œ ë‚˜ì™€ì•¼ í•˜ëŠ”ë°
+        // ë‹¤ì‹œ Positional Argumentê°€ ë‚˜ì˜¤ë©´ ì—ëŸ¬.
         // (e.g.) exec proc1( 1, P2=>3, 3 );
         IDE_TEST_RAISE( ( sCurrArg->lflag & QTC_NODE_SP_PARAM_NAME_MASK )
                         == QTC_NODE_SP_PARAM_NAME_FALSE,
                         ARGUMENT_DOUBLE_MIXED_REFERNECE );
 
-        // Argument °³¼ö¸¦ ¼¼¾î³ª°£´Ù.
+        // Argument ê°œìˆ˜ë¥¼ ì„¸ì–´ë‚˜ê°„ë‹¤.
         sArgCount++;
 
-        // Argument °³¼ö°¡ aParaDeclCnt¸¦ ³Ñ´Â °æ¿ì ¿¡·¯
+        // Argument ê°œìˆ˜ê°€ aParaDeclCntë¥¼ ë„˜ëŠ” ê²½ìš° ì—ëŸ¬
         IDE_TEST_RAISE( sArgCount > aParaDeclCnt, TOO_MANY_ARGUMENT );
 
-        // Named ArgumentÀÇ NameÀ» °¡Áö°í ParaDeclsÀ» °Ë»öÇÑ´Ù.
+        // Named Argumentì˜ Nameì„ ê°€ì§€ê³  ParaDeclsì„ ê²€ìƒ‰í•œë‹¤.
         for ( i = 0, sParaDecl = aParaDecls;
               sParaDecl != NULL;
               i++, sParaDecl = sParaDecl->next )
         {
             if ( QC_IS_NAME_MATCHED( sParaDecl->name, sCurrArg->position ) )
             {
-                // i°ªÀº Ç×»ó Parameter °³¼öº¸´Ù Àû¾î¾ß ÇÑ´Ù.
+                // iê°’ì€ í•­ìƒ Parameter ê°œìˆ˜ë³´ë‹¤ ì ì–´ì•¼ í•œë‹¤.
                 IDE_DASSERT( i < aParaDeclCnt );
 
-                // Named Argument°¡ °¡¸®Å°°í ÀÖ´Â Parameter¿¡
-                // ÀÌ¹Ì ´Ù¸¥ Argument°¡ °¡¸®Å°°í ÀÖ´Â °æ¿ì ¿¡·¯.
+                // Named Argumentê°€ ê°€ë¦¬í‚¤ê³  ìžˆëŠ” Parameterì—
+                // ì´ë¯¸ ë‹¤ë¥¸ Argumentê°€ ê°€ë¦¬í‚¤ê³  ìžˆëŠ” ê²½ìš° ì—ëŸ¬.
                 IDE_TEST_RAISE( sArgPassArray[i].mType != QSV_ARG_NOT_PASSED,
                                 ARGUMENT_DUPLICATE_REFERENCE );
 
-                // PassInfoÀÇ PassTypeÀ» NAMED·Î ¼³Á¤
+                // PassInfoì˜ PassTypeì„ NAMEDë¡œ ì„¤ì •
                 sArgPassArray[i].mType = QSV_ARG_PASS_NAMED;
-                // PassInfoÀÇ PassArg¸¦ sCurrArg ´ÙÀ½ Node·Î ¼³Á¤
+                // PassInfoì˜ PassArgë¥¼ sCurrArg ë‹¤ìŒ Nodeë¡œ ì„¤ì •
                 sArgPassArray[i].mArg  = (qtcNode *)(sCurrArg->node.next);
 
                 break;
@@ -5439,18 +5439,18 @@ IDE_RC qsv::validateNamedArguments( qcStatement     * aStatement,
             }
         }
 
-        // ÀÏÄ¡ÇÏ´Â Parameter NameÀÌ ³ª¿ÀÁö ¾ÊÀº °æ¿ì ¿¡·¯.
+        // ì¼ì¹˜í•˜ëŠ” Parameter Nameì´ ë‚˜ì˜¤ì§€ ì•Šì€ ê²½ìš° ì—ëŸ¬.
         IDE_TEST_RAISE( sParaDecl == NULL, ARGUMENT_WRONG_REFERENCE );
 
-        // ´ÙÀ½ Node°¡ Á¸ÀçÇÏÁö ¾ÊÀ» ¼ö ¾ø´Ù.
+        // ë‹¤ìŒ Nodeê°€ ì¡´ìž¬í•˜ì§€ ì•Šì„ ìˆ˜ ì—†ë‹¤.
         IDE_DASSERT( sCurrArg->node.next != NULL );
 
-        // ´ÙÀ½´ÙÀ½ Argument·Î ÀÌµ¿ = ´ÙÀ½ ArgumentÀÇ Name Node·Î ÀÌµ¿
+        // ë‹¤ìŒë‹¤ìŒ Argumentë¡œ ì´ë™ = ë‹¤ìŒ Argumentì˜ Name Nodeë¡œ ì´ë™
         sCurrArg = (qtcNode *)(sCurrArg->node.next->next);
     }
 
     /****************************************************************
-     * Name-based ArgumentÀÇ À§Ä¡ ÀçÁ¶Á¤
+     * Name-based Argumentì˜ ìœ„ì¹˜ ìž¬ì¡°ì •
      ***************************************************************/
     
     i        = 0;
@@ -5477,7 +5477,7 @@ IDE_RC qsv::validateNamedArguments( qcStatement     * aStatement,
                 sCurrArg->node.next = (mtcNode *)sArgPassArray[i].mArg;
                 sCurrArg            = (qtcNode *)sCurrArg->node.next;
 
-                // next Node´Â NULL·Î ÃÊ±âÈ­ÇØ¾ß ÇÑ´Ù.
+                // next NodeëŠ” NULLë¡œ ì´ˆê¸°í™”í•´ì•¼ í•œë‹¤.
                 sCurrArg->node.next = NULL;
             }
         }
@@ -5485,12 +5485,12 @@ IDE_RC qsv::validateNamedArguments( qcStatement     * aStatement,
         i++;
     }
 
-    // Àç¿¬°áÇÑ ¸®½ºÆ®¸¦ ¿¬°á
+    // ìž¬ì—°ê²°í•œ ë¦¬ìŠ¤íŠ¸ë¥¼ ì—°ê²°
     aCallSpec->node.arguments = (mtcNode *)sNewArgs;
 
     IDE_EXCEPTION_CONT( NO_NAMED_ARGUMENT );
 
-    // ParaRefArr ¹ÝÈ¯
+    // ParaRefArr ë°˜í™˜
     if ( aArgPassArray != NULL )
     {
         *aArgPassArray = sArgPassArray;
@@ -5547,7 +5547,7 @@ IDE_RC qsv::setPrecisionAndScale( qcStatement * aStatement,
  * Description :
  *     PROJ-2586 PSM Parameters and return without precision
  *
- *     ¾Æ·¡ÀÇ type¿¡ ´ëÇØ¼­ Precision, Scale ¹× Size¸¦ default °ªÀ¸·Î Á¶Á¤
+ *     ì•„ëž˜ì˜ typeì— ëŒ€í•´ì„œ Precision, Scale ë° Sizeë¥¼ default ê°’ìœ¼ë¡œ ì¡°ì •
  *         - CHAR( M )
  *         - VARCHAR( M )
  *         - NCHAR( M )
@@ -5561,7 +5561,7 @@ IDE_RC qsv::setPrecisionAndScale( qcStatement * aStatement,
  *         - NUMBER[ ( P [ , S ] ) ]
  *         - NUMERIC[ ( P [ , S ] ) ]
  *         - DECIMAL[ ( P [ , S ] ) ]
- *             ¤¤NUMERIC°ú µ¿ÀÏ
+ *             ã„´NUMERICê³¼ ë™ì¼
  ****************************************************************************/
 
     qtcNode   * sNode        = NULL;
@@ -5593,8 +5593,8 @@ IDE_RC qsv::setPrecisionAndScale( qcStatement * aStatement,
             }
             else /* UTF8 */
             {
-                /* °ËÁõ¿ë ÄÚµå
-                   mtdEstimate¿¡¼­ UTF16 ¶Ç´Â UTF8ÀÌ ¾Æ´Ï¸é ¿¡·¯ ¹ß»ýÇÔ. */
+                /* ê²€ì¦ìš© ì½”ë“œ
+                   mtdEstimateì—ì„œ UTF16 ë˜ëŠ” UTF8ì´ ì•„ë‹ˆë©´ ì—ëŸ¬ ë°œìƒí•¨. */
                 IDE_DASSERT( mtl::mNationalCharSet->id == MTL_UTF8_ID );
 
                 sPrecision = QCU_PSM_NCHAR_UTF8_DEFAULT_PRECISION; 
@@ -5607,8 +5607,8 @@ IDE_RC qsv::setPrecisionAndScale( qcStatement * aStatement,
             }
             else /* UTF8 */
             {
-                /* °ËÁõ¿ë ÄÚµå
-                   mtdEstimate¿¡¼­ UTF16 ¶Ç´Â UTF8ÀÌ ¾Æ´Ï¸é ¿¡·¯ ¹ß»ýÇÔ. */
+                /* ê²€ì¦ìš© ì½”ë“œ
+                   mtdEstimateì—ì„œ UTF16 ë˜ëŠ” UTF8ì´ ì•„ë‹ˆë©´ ì—ëŸ¬ ë°œìƒí•¨. */
                 IDE_DASSERT( mtl::mNationalCharSet->id == MTL_UTF8_ID );
 
                 sPrecision = QCU_PSM_NVARCHAR_UTF8_DEFAULT_PRECISION; 
@@ -5634,12 +5634,12 @@ IDE_RC qsv::setPrecisionAndScale( qcStatement * aStatement,
             sPrecision = MTD_FLOAT_PRECISION_MAXIMUM; 
             break;
         case MTD_NUMERIC_ID :
-            // DECIMAL typeÀº NUMERIC type°ú µ¿ÀÏ
+            // DECIMAL typeì€ NUMERIC typeê³¼ ë™ì¼
             sPrecision = MTD_NUMERIC_PRECISION_MAXIMUM; 
             break;
         default :
-            /* ECHAR ¶Ç´Â EVARCHAR datatypeÀÇ °æ¿ì,
-               ÆÄ¼­¿¡¼­ mtcColumn ¼ÂÆÃ ½Ã ¿¡·¯ ¹ß»ýÇÑ´Ù. */
+            /* ECHAR ë˜ëŠ” EVARCHAR datatypeì˜ ê²½ìš°,
+               íŒŒì„œì—ì„œ mtcColumn ì…‹íŒ… ì‹œ ì—ëŸ¬ ë°œìƒí•œë‹¤. */
             IDE_DASSERT( sColumn->module->id != MTD_ECHAR_ID );
             IDE_DASSERT( sColumn->module->id != MTD_EVARCHAR_ID );
 

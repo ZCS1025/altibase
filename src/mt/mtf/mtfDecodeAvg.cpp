@@ -54,7 +54,7 @@ static IDE_RC mtfDecodeAvgEstimate( mtcNode*     aNode,
 mtfModule mtfDecodeAvg = {
     2|MTC_NODE_OPERATOR_AGGREGATION,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
+    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìžê°€ ì•„ë‹˜)
     mtfDecodeAvgFunctionName,
     NULL,
     mtfDecodeAvgInitialize,
@@ -187,23 +187,23 @@ static const mtcExecute mtfDecodeAvgExecuteBigint = {
 
 typedef struct mtfDecodeAvgInfo
 {
-    // Ã¹¹øÂ° ÀÎÀÚ
+    // ì²«ë²ˆì§¸ ì¸ìž
     mtcExecute   * sAvgColumnExecute;
     mtcNode      * sAvgColumnNode;
 
-    // µÎ¹øÂ° ÀÎÀÚ
+    // ë‘ë²ˆì§¸ ì¸ìž
     mtcExecute   * sExprExecute;
     mtcNode      * sExprNode;
 
-    // ¼¼¹øÂ° ÀÎÀÚ
+    // ì„¸ë²ˆì§¸ ì¸ìž
     mtcExecute   * sSearchExecute;
     mtcNode      * sSearchNode;
 
-    // return ÀÎÀÚ
+    // return ì¸ìž
     mtcColumn    * sReturnColumn;
     void         * sReturnValue;
 
-    // ÀÓ½Ãº¯¼ö
+    // ìž„ì‹œë³€ìˆ˜
     ULong          sSumCount;
     mtdBigintType  sBigintSum;
 } mtfDecodeAvgInfo;
@@ -244,7 +244,7 @@ IDE_RC mtfDecodeAvgEstimate( mtcNode*     aNode,
 
     sFence = aNode->lflag & MTC_NODE_ARGUMENT_COUNT_MASK;
 
-    // 1 È¤Àº 3°³ÀÇ ÀÎÀÚ
+    // 1 í˜¹ì€ 3ê°œì˜ ì¸ìž
     IDE_TEST_RAISE( (sFence != 1) && (sFence != 3),
                     ERR_INVALID_FUNCTION_ARGUMENT );
 
@@ -404,14 +404,14 @@ IDE_RC mtfDecodeAvgEstimateFloat( mtcNode*     aNode,
 
     aTemplate->rows[aNode->table].execute[aNode->column] = mtfDecodeAvgExecuteFloat;
 
-    // avg °á°ú¸¦ ÀúÀåÇÔ
+    // avg ê²°ê³¼ë¥¼ ì €ìž¥í•¨
     IDE_TEST( mtc::initializeColumn( aStack[0].column,
                                      & mtdFloat,
                                      0,
                                      0,
                                      0 )
               != IDE_SUCCESS );
-    // avg info Á¤º¸¸¦ mtdBinary¿¡ ÀúÀå
+    // avg info ì •ë³´ë¥¼ mtdBinaryì— ì €ìž¥
     sBinaryPrecision = ID_SIZEOF(mtfDecodeAvgInfo);
     IDE_TEST( mtc::initializeColumn( aStack[0].column + 1,
                                      & mtdBinary,
@@ -462,12 +462,12 @@ IDE_RC mtfDecodeAvgInitializeFloat( mtcNode*     aNode,
     sInfo = (mtfDecodeAvgInfo*)(sValue->mValue);
 
     //-----------------------------
-    // avg info ÃÊ±âÈ­
+    // avg info ì´ˆê¸°í™”
     //-----------------------------
 
     sArgNode[0] = aNode->arguments;
 
-    // avg column ¼³Á¤
+    // avg column ì„¤ì •
     sInfo->sAvgColumnExecute = aTemplate->rows[sArgNode[0]->table].execute + sArgNode[0]->column;
     sInfo->sAvgColumnNode    = sArgNode[0];
 
@@ -476,11 +476,11 @@ IDE_RC mtfDecodeAvgInitializeFloat( mtcNode*     aNode,
         sArgNode[1] = sArgNode[0]->next;
         sArgNode[2] = sArgNode[1]->next;
 
-        // expression column ¼³Á¤
+        // expression column ì„¤ì •
         sInfo->sExprExecute = aTemplate->rows[sArgNode[1]->table].execute + sArgNode[1]->column;
         sInfo->sExprNode    = sArgNode[1];
 
-        // search value ¼³Á¤
+        // search value ì„¤ì •
         sInfo->sSearchExecute = aTemplate->rows[sArgNode[2]->table].execute + sArgNode[2]->column;
         sInfo->sSearchNode    = sArgNode[2];
     }
@@ -493,17 +493,17 @@ IDE_RC mtfDecodeAvgInitializeFloat( mtcNode*     aNode,
         sInfo->sSearchNode    = NULL;
     }
 
-    // return column ¼³Á¤
+    // return column ì„¤ì •
     sInfo->sReturnColumn = aTemplate->rows[aNode->table].columns + aNode->column;
     sInfo->sReturnValue  = (void *)
         ((UChar*) aTemplate->rows[aNode->table].row + sInfo->sReturnColumn->column.offset);
 
-    // ÀÓ½Ãº¯¼ö ÃÊ±âÈ­
+    // ìž„ì‹œë³€ìˆ˜ ì´ˆê¸°í™”
     sInfo->sSumCount  = 0;
     sInfo->sBigintSum = 0;
 
     //-----------------------------
-    // avg °á°ú¸¦ ÃÊ±âÈ­
+    // avg ê²°ê³¼ë¥¼ ì´ˆê¸°í™”
     //-----------------------------
     sFloat = (mtdNumericType*) sInfo->sReturnValue;
     sFloat->length       = 1;
@@ -550,7 +550,7 @@ IDE_RC mtfDecodeAvgAggregateFloat( mtcNode*     aNode,
     {
         IDE_TEST_RAISE( aRemain < 2, ERR_STACK_OVERFLOW );
 
-        // µÎ¹øÂ° ÀÎÀÚ
+        // ë‘ë²ˆì§¸ ì¸ìž
         IDE_TEST( sInfo->sExprExecute->calculate( sInfo->sExprNode,
                                                   aStack,
                                                   aRemain,
@@ -568,7 +568,7 @@ IDE_RC mtfDecodeAvgAggregateFloat( mtcNode*     aNode,
                       != IDE_SUCCESS );
         }
 
-        // ¼¼¹øÂ° ÀÎÀÚ
+        // ì„¸ë²ˆì§¸ ì¸ìž
         IDE_TEST( sInfo->sSearchExecute->calculate( sInfo->sSearchNode,
                                                     aStack + 1,
                                                     aRemain - 1,
@@ -586,7 +586,7 @@ IDE_RC mtfDecodeAvgAggregateFloat( mtcNode*     aNode,
                       != IDE_SUCCESS );
         }
 
-        // decode ¿¬»ê¼öÇà
+        // decode ì—°ì‚°ìˆ˜í–‰
         if ( aStack[0].column->module != &mtdList )
         {
             IDE_DASSERT( aStack[0].column->module == aStack[1].column->module );
@@ -610,7 +610,7 @@ IDE_RC mtfDecodeAvgAggregateFloat( mtcNode*     aNode,
                 sValueInfo2.value  = aStack[1].value;
                 sValueInfo2.flag   = MTD_OFFSET_USELESS;
 
-                // µÎ¹øÂ° ÀÎÀÚ¿Í ¼¼¹øÂ° ÀÎÀÚÀÇ ºñ±³
+                // ë‘ë²ˆì§¸ ì¸ìžì™€ ì„¸ë²ˆì§¸ ì¸ìžì˜ ë¹„êµ
                 sCompare = sModule->logicalCompare[MTD_COMPARE_ASCENDING]( &sValueInfo1,
                                                                            &sValueInfo2 );
             }
@@ -662,7 +662,7 @@ IDE_RC mtfDecodeAvgAggregateFloat( mtcNode*     aNode,
         sCompare = 0;
     }
 
-    // Ã¹¹øÂ° ÀÎÀÚ
+    // ì²«ë²ˆì§¸ ì¸ìž
     IDE_TEST( sInfo->sAvgColumnExecute->calculate( sInfo->sAvgColumnNode,
                                                    aStack,
                                                    aRemain,
@@ -919,7 +919,7 @@ IDE_RC mtfDecodeAvgEstimateDouble( mtcNode*     aNode,
 
     aTemplate->rows[aNode->table].execute[aNode->column] = mtfDecodeAvgExecuteDouble;
 
-    // avg °á°ú¸¦ ÀúÀåÇÔ
+    // avg ê²°ê³¼ë¥¼ ì €ìž¥í•¨
     IDE_TEST( mtc::initializeColumn( aStack[0].column,
                                      & mtdDouble,
                                      0,
@@ -927,7 +927,7 @@ IDE_RC mtfDecodeAvgEstimateDouble( mtcNode*     aNode,
                                      0 )
               != IDE_SUCCESS );
 
-    // avg info Á¤º¸¸¦ mtdBinary¿¡ ÀúÀå
+    // avg info ì •ë³´ë¥¼ mtdBinaryì— ì €ìž¥
     sBinaryPrecision = ID_SIZEOF(mtfDecodeAvgInfo);
     IDE_TEST( mtc::initializeColumn( aStack[0].column + 1,
                                      & mtdBinary,
@@ -975,11 +975,11 @@ IDE_RC mtfDecodeAvgInitializeDouble( mtcNode*     aNode,
     sInfo = (mtfDecodeAvgInfo*)(sValue->mValue);
 
     //-----------------------------
-    // avg info ÃÊ±âÈ­
+    // avg info ì´ˆê¸°í™”
     //-----------------------------
     sArgNode[0] = aNode->arguments;
 
-    // avg column ¼³Á¤
+    // avg column ì„¤ì •
     sInfo->sAvgColumnExecute = aTemplate->rows[sArgNode[0]->table].execute + sArgNode[0]->column;
     sInfo->sAvgColumnNode    = sArgNode[0];
 
@@ -988,11 +988,11 @@ IDE_RC mtfDecodeAvgInitializeDouble( mtcNode*     aNode,
         sArgNode[1] = sArgNode[0]->next;
         sArgNode[2] = sArgNode[1]->next;
 
-        // expression column ¼³Á¤
+        // expression column ì„¤ì •
         sInfo->sExprExecute = aTemplate->rows[sArgNode[1]->table].execute + sArgNode[1]->column;
         sInfo->sExprNode    = sArgNode[1];
 
-        // search value ¼³Á¤
+        // search value ì„¤ì •
         sInfo->sSearchExecute = aTemplate->rows[sArgNode[2]->table].execute + sArgNode[2]->column;
         sInfo->sSearchNode    = sArgNode[2];
     }
@@ -1005,17 +1005,17 @@ IDE_RC mtfDecodeAvgInitializeDouble( mtcNode*     aNode,
         sInfo->sSearchNode    = NULL;
     }
 
-    // return column ¼³Á¤
+    // return column ì„¤ì •
     sInfo->sReturnColumn = aTemplate->rows[aNode->table].columns + aNode->column;
     sInfo->sReturnValue  = (void *)
         ((UChar*) aTemplate->rows[aNode->table].row + sInfo->sReturnColumn->column.offset);
 
-    // ÀÓ½Ãº¯¼ö ÃÊ±âÈ­
+    // ìž„ì‹œë³€ìˆ˜ ì´ˆê¸°í™”
     sInfo->sSumCount  = 0;
     sInfo->sBigintSum = 0;
 
     //-----------------------------
-    // avg °á°ú¸¦ ÃÊ±âÈ­
+    // avg ê²°ê³¼ë¥¼ ì´ˆê¸°í™”
     //-----------------------------
 
     *(mtdDoubleType*)(sInfo->sReturnValue) = 0;
@@ -1056,7 +1056,7 @@ IDE_RC mtfDecodeAvgAggregateDouble( mtcNode*     aNode,
     {
         IDE_TEST_RAISE( aRemain < 2, ERR_STACK_OVERFLOW );
 
-        // µÎ¹øÂ° ÀÎÀÚ
+        // ë‘ë²ˆì§¸ ì¸ìž
         IDE_TEST( sInfo->sExprExecute->calculate( sInfo->sExprNode,
                                                   aStack,
                                                   aRemain,
@@ -1074,7 +1074,7 @@ IDE_RC mtfDecodeAvgAggregateDouble( mtcNode*     aNode,
                       != IDE_SUCCESS );
         }
 
-        // ¼¼¹øÂ° ÀÎÀÚ
+        // ì„¸ë²ˆì§¸ ì¸ìž
         IDE_TEST( sInfo->sSearchExecute->calculate( sInfo->sSearchNode,
                                                     aStack + 1,
                                                     aRemain - 1,
@@ -1092,7 +1092,7 @@ IDE_RC mtfDecodeAvgAggregateDouble( mtcNode*     aNode,
                       != IDE_SUCCESS );
         }
 
-        // decode ¿¬»ê¼öÇà
+        // decode ì—°ì‚°ìˆ˜í–‰
         if ( aStack[0].column->module != &mtdList )
         {
             IDE_DASSERT( aStack[0].column->module == aStack[1].column->module );
@@ -1116,7 +1116,7 @@ IDE_RC mtfDecodeAvgAggregateDouble( mtcNode*     aNode,
                 sValueInfo2.value  = aStack[1].value;
                 sValueInfo2.flag   = MTD_OFFSET_USELESS;
 
-                // µÎ¹øÂ° ÀÎÀÚ¿Í ¼¼¹øÂ° ÀÎÀÚÀÇ ºñ±³
+                // ë‘ë²ˆì§¸ ì¸ìžì™€ ì„¸ë²ˆì§¸ ì¸ìžì˜ ë¹„êµ
                 sCompare = sModule->logicalCompare[MTD_COMPARE_ASCENDING]( &sValueInfo1,
                                                                            &sValueInfo2 );
             }
@@ -1169,7 +1169,7 @@ IDE_RC mtfDecodeAvgAggregateDouble( mtcNode*     aNode,
         sCompare = 0;
     }
 
-    // Ã¹¹øÂ° ÀÎÀÚ
+    // ì²«ë²ˆì§¸ ì¸ìž
     IDE_TEST( sInfo->sAvgColumnExecute->calculate( sInfo->sAvgColumnNode,
                                                    aStack,
                                                    aRemain,
@@ -1394,8 +1394,8 @@ IDE_RC mtfDecodeAvgEstimateBigint( mtcNode*     aNode,
 
     aTemplate->rows[aNode->table].execute[aNode->column] = mtfDecodeAvgExecuteBigint;
 
-    // avg °á°ú¸¦ ÀúÀåÇÔ
-    // bigint avgÀÇ °á°ú´Â doubleÀÌ ¾Æ´Ï¶ó float typeÀÓ
+    // avg ê²°ê³¼ë¥¼ ì €ìž¥í•¨
+    // bigint avgì˜ ê²°ê³¼ëŠ” doubleì´ ì•„ë‹ˆë¼ float typeìž„
     IDE_TEST( mtc::initializeColumn( aStack[0].column,
                                      & mtdFloat,
                                      0,
@@ -1403,7 +1403,7 @@ IDE_RC mtfDecodeAvgEstimateBigint( mtcNode*     aNode,
                                      0 )
               != IDE_SUCCESS );
 
-    // avg info Á¤º¸¸¦ mtdBinary¿¡ ÀúÀå
+    // avg info ì •ë³´ë¥¼ mtdBinaryì— ì €ìž¥
     sBinaryPrecision = ID_SIZEOF(mtfDecodeAvgInfo);
     IDE_TEST( mtc::initializeColumn( aStack[0].column + 1,
                                      & mtdBinary,
@@ -1454,11 +1454,11 @@ IDE_RC mtfDecodeAvgInitializeBigint( mtcNode*     aNode,
     sInfo = (mtfDecodeAvgInfo*)(sValue->mValue);
 
     //-----------------------------
-    // avg info ÃÊ±âÈ­
+    // avg info ì´ˆê¸°í™”
     //-----------------------------
     sArgNode[0] = aNode->arguments;
 
-    // avg column ¼³Á¤
+    // avg column ì„¤ì •
     sInfo->sAvgColumnExecute = aTemplate->rows[sArgNode[0]->table].execute + sArgNode[0]->column;
     sInfo->sAvgColumnNode    = sArgNode[0];
 
@@ -1467,11 +1467,11 @@ IDE_RC mtfDecodeAvgInitializeBigint( mtcNode*     aNode,
         sArgNode[1] = sArgNode[0]->next;
         sArgNode[2] = sArgNode[1]->next;
 
-        // expression column ¼³Á¤
+        // expression column ì„¤ì •
         sInfo->sExprExecute = aTemplate->rows[sArgNode[1]->table].execute + sArgNode[1]->column;
         sInfo->sExprNode    = sArgNode[1];
 
-        // search value ¼³Á¤
+        // search value ì„¤ì •
         sInfo->sSearchExecute = aTemplate->rows[sArgNode[2]->table].execute + sArgNode[2]->column;
         sInfo->sSearchNode    = sArgNode[2];
     }
@@ -1483,16 +1483,16 @@ IDE_RC mtfDecodeAvgInitializeBigint( mtcNode*     aNode,
         sInfo->sSearchExecute = NULL;
         sInfo->sSearchNode    = NULL;
     }
-    // return column ¼³Á¤
+    // return column ì„¤ì •
     sInfo->sReturnColumn = aTemplate->rows[aNode->table].columns + aNode->column;
     sInfo->sReturnValue  = (void *)
         ((UChar*) aTemplate->rows[aNode->table].row + sInfo->sReturnColumn->column.offset);
 
-    // ÀÓ½Ãº¯¼ö ÃÊ±âÈ­
+    // ìž„ì‹œë³€ìˆ˜ ì´ˆê¸°í™”
     sInfo->sSumCount = 0;
     sInfo->sBigintSum = 0;
     //-----------------------------
-    // avg °á°ú¸¦ ÃÊ±âÈ­
+    // avg ê²°ê³¼ë¥¼ ì´ˆê¸°í™”
     //-----------------------------
 
     sFloat = (mtdNumericType*) sInfo->sReturnValue;
@@ -1535,7 +1535,7 @@ IDE_RC mtfDecodeAvgAggregateBigint( mtcNode*     aNode,
     {
         IDE_TEST_RAISE( aRemain < 2, ERR_STACK_OVERFLOW );
 
-        // µÎ¹øÂ° ÀÎÀÚ
+        // ë‘ë²ˆì§¸ ì¸ìž
         IDE_TEST( sInfo->sExprExecute->calculate( sInfo->sExprNode,
                                                   aStack,
                                                   aRemain,
@@ -1553,7 +1553,7 @@ IDE_RC mtfDecodeAvgAggregateBigint( mtcNode*     aNode,
                       != IDE_SUCCESS );
         }
 
-        // ¼¼¹øÂ° ÀÎÀÚ
+        // ì„¸ë²ˆì§¸ ì¸ìž
         IDE_TEST( sInfo->sSearchExecute->calculate( sInfo->sSearchNode,
                                                     aStack + 1,
                                                     aRemain - 1,
@@ -1571,7 +1571,7 @@ IDE_RC mtfDecodeAvgAggregateBigint( mtcNode*     aNode,
                       != IDE_SUCCESS );
         }
 
-        // decode ¿¬»ê¼öÇà
+        // decode ì—°ì‚°ìˆ˜í–‰
         if ( aStack[0].column->module != &mtdList )
         {
             IDE_DASSERT( aStack[0].column->module == aStack[1].column->module );
@@ -1593,7 +1593,7 @@ IDE_RC mtfDecodeAvgAggregateBigint( mtcNode*     aNode,
                 sValueInfo2.column = aStack[1].column;
                 sValueInfo2.value  = aStack[1].value;
                 sValueInfo2.flag   = MTD_OFFSET_USELESS;
-                // µÎ¹øÂ° ÀÎÀÚ¿Í ¼¼¹øÂ° ÀÎÀÚÀÇ ºñ±³
+                // ë‘ë²ˆì§¸ ì¸ìžì™€ ì„¸ë²ˆì§¸ ì¸ìžì˜ ë¹„êµ
                 sCompare = sModule->logicalCompare[MTD_COMPARE_ASCENDING]( &sValueInfo1,
                                                                            &sValueInfo2 );
             }
@@ -1644,7 +1644,7 @@ IDE_RC mtfDecodeAvgAggregateBigint( mtcNode*     aNode,
         sCompare = 0;
     }
 
-    // Ã¹¹øÂ° ÀÎÀÚ
+    // ì²«ë²ˆì§¸ ì¸ìž
     IDE_TEST( sInfo->sAvgColumnExecute->calculate( sInfo->sAvgColumnNode,
                                                    aStack,
                                                    aRemain,

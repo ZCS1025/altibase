@@ -197,7 +197,7 @@ ACP_EXPORT acp_sint32_t aciConvConvertWcToMb4Cp949( void    * aSrc,
                     *aSrcAdvance = 2;
                 }
 
-                /* fix BUG-25959 UTF8¿¡ MS949·Î º¯È¯ÀÌ Á¦´ë·Î µÇÁö ¾Ê½À´Ï´Ù. */
+                /* fix BUG-25959 UTF8ì— MS949ë¡œ ë³€í™˜ì´ ì œëŒ€ë¡œ ë˜ì§€ ì•ŠìŠµë‹ˆë‹¤. */
                 ACI_RAISE(RET_CONV);
             }
             else
@@ -220,7 +220,7 @@ ACP_EXPORT acp_sint32_t aciConvConvertWcToMb4Cp949( void    * aSrc,
                                                  aDest, aDestRemain);
             }
 
-            /* fix BUG-25959 UTF8¿¡ MS949·Î º¯È¯ÀÌ Á¦´ë·Î µÇÁö ¾Ê½À´Ï´Ù. */
+            /* fix BUG-25959 UTF8ì— MS949ë¡œ ë³€í™˜ì´ ì œëŒ€ë¡œ ë˜ì§€ ì•ŠìŠµë‹ˆë‹¤. */
             ACI_RAISE(RET_CONV);
         }
         /* User-defined characters */
@@ -255,7 +255,7 @@ ACP_EXPORT acp_sint32_t aciConvConvertWcToMb4Cp949( void    * aSrc,
         }
     }
 
-    /* fix BUG-25959 UTF8¿¡ MS949·Î º¯È¯ÀÌ Á¦´ë·Î µÇÁö ¾Ê½À´Ï´Ù. */
+    /* fix BUG-25959 UTF8ì— MS949ë¡œ ë³€í™˜ì´ ì œëŒ€ë¡œ ë˜ì§€ ì•ŠìŠµë‹ˆë‹¤. */
     ACI_EXCEPTION_CONT( RET_CONV );
 
     return sRet;

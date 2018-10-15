@@ -23,15 +23,15 @@
 
 #define IDN_MAX_CHAR_SET_LEN ((UInt)40)
 
-// ASCII ¹®ÀÚÀÎÁö Ã¼Å©
+// ASCII ë¬¸ìì¸ì§€ ì²´í¬
 #define IDN_IS_ASCII(c)       ( (((c) & ~0x7F) == 0) ? ID_TRUE : ID_FALSE )
 
 #define IDN_IS_UTF16_ASCII_PTR(s) ( ( ( *(UChar*)s == 0 ) && ( (*((UChar*)s+1) & ~0x7F) == 0 ) ) ? ID_TRUE : ID_FALSE )
 
-// Ä³¸¯ÅÍ ¼Â º¯È¯ ½Ã, º¯È¯ÇÒ ¹®ÀÚ°¡ ¾ø´Â °æ¿ì ³ªÅ¸³»´Â ¹®ÀÚ
-// ASCIIÀÇ °æ¿ì '?'ÀÌ´Ù.
-// WE8ISO8859P1ÀÇ °æ¿ì °Å²Ù·Î ¹°À½Ç¥(0xBF)°¡ default_replace_characterÀÌ´Ù.
-// (ÇöÀç WE8ISO8859P1´Â Áö¿øÇÏÁö ¾ÊÀ¸¹Ç·Î °í·ÁÇÏÁö ¾Ê´Â´Ù.)
+// ìºë¦­í„° ì…‹ ë³€í™˜ ì‹œ, ë³€í™˜í•  ë¬¸ìê°€ ì—†ëŠ” ê²½ìš° ë‚˜íƒ€ë‚´ëŠ” ë¬¸ì
+// ASCIIì˜ ê²½ìš° '?'ì´ë‹¤.
+// WE8ISO8859P1ì˜ ê²½ìš° ê±°ê¾¸ë¡œ ë¬¼ìŒí‘œ(0xBF)ê°€ default_replace_characterì´ë‹¤.
+// (í˜„ì¬ WE8ISO8859P1ëŠ” ì§€ì›í•˜ì§€ ì•Šìœ¼ë¯€ë¡œ ê³ ë ¤í•˜ì§€ ì•ŠëŠ”ë‹¤.)
 #define IDN_ASCII_DEFAULT_REPLACE_CHARACTER ((UChar)(0x3F))
 
 // space character ' '
@@ -52,8 +52,8 @@
 
 
 // PROJ-1579 NCHAR
-// Áö¿øÇÏ´Â Ä³¸¯ÅÍ¼ÂÀÇ id¸¦ ÁöÁ¤ÇÑ´Ù. 
-// conversion matrix¿Í ¿¬°üÀÌ ÀÖ±â ¶§¹®¿¡ 0ºÎÅÍ ¼ø¼­´ë·Î ¹øÈ£¸¦ ¸Å°Ü¾ß ÇÔ
+// ì§€ì›í•˜ëŠ” ìºë¦­í„°ì…‹ì˜ idë¥¼ ì§€ì •í•œë‹¤. 
+// conversion matrixì™€ ì—°ê´€ì´ ìˆê¸° ë•Œë¬¸ì— 0ë¶€í„° ìˆœì„œëŒ€ë¡œ ë²ˆí˜¸ë¥¼ ë§¤ê²¨ì•¼ í•¨
 typedef enum idnCharSetList
 {
     IDN_ASCII_ID = 0,
@@ -61,10 +61,10 @@ typedef enum idnCharSetList
     IDN_MS949_ID,
     IDN_EUCJP_ID,
     IDN_SHIFTJIS_ID,
-    IDN_MS932_ID,   /* PROJ-2590 [±â´É¼º] CP932 database character set Áö¿ø */
+    IDN_MS932_ID,   /* PROJ-2590 [ê¸°ëŠ¥ì„±] CP932 database character set ì§€ì› */
     IDN_BIG5_ID,
     IDN_GB231280_ID,
-    /* PORJ-2414 [±â´É¼º] GBK, CP936 character set Ãß°¡ */
+    /* PORJ-2414 [ê¸°ëŠ¥ì„±] GBK, CP936 character set ì¶”ê°€ */
     IDN_MS936_ID,
     IDN_UTF8_ID,
     IDN_UTF16_ID,

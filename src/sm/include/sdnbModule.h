@@ -54,9 +54,9 @@ public:
                           smnIndexHeader    ** aRebuildIndexHeader,
                           ULong                aSmoNo );
     
-    /*PROJ-1872 Disk index ÀúÀå ±¸Á¶ ÃÖÀûÈ­
-     *·±Å¸ÀÓ Çì´õÀÇ ÀÎµ¦½º Ä®·³ Á¤º¸¸¦ ¼³Á¤ÇÑ´Ù. ·±Å¸ÀÓ Çì´õ »ı¼º½Ã,
-     *½Ç½Ã°£ AlterDDL·Î ÀÎÇØ ÀÎµ¦½º Ä®·³À» Àç¼³Á¤ÇØ¾ß ÇÒ¶§ È£ÃâµÈ´Ù.*/
+    /*PROJ-1872 Disk index ì €ì¥ êµ¬ì¡° ìµœì í™”
+     *ëŸ°íƒ€ì„ í—¤ë”ì˜ ì¸ë±ìŠ¤ ì¹¼ëŸ¼ ì •ë³´ë¥¼ ì„¤ì •í•œë‹¤. ëŸ°íƒ€ì„ í—¤ë” ìƒì„±ì‹œ,
+     *ì‹¤ì‹œê°„ AlterDDLë¡œ ì¸í•´ ì¸ë±ìŠ¤ ì¹¼ëŸ¼ì„ ì¬ì„¤ì •í•´ì•¼ í• ë•Œ í˜¸ì¶œëœë‹¤.*/
     static IDE_RC rebuildIndexColumn (
                           smnIndexHeader * aIndex,
                           smcTableHeader * aTable,
@@ -67,7 +67,7 @@ public:
                            const sdnbHeader       *aIndexHeader,
                            UShort                  aIndexColCount);
     
-    // BUG-25351 : Å°»ı¼º ¹× ÀÎµ¦½º Build¿¡ °üÇÑ ¸ğµâÈ­ ¸®ÆÑÅä¸µÀÌ ÇÊ¿äÇÕ´Ï´Ù.
+    // BUG-25351 : í‚¤ìƒì„± ë° ì¸ë±ìŠ¤ Buildì— ê´€í•œ ëª¨ë“ˆí™” ë¦¬íŒ©í† ë§ì´ í•„ìš”í•©ë‹ˆë‹¤.
     static IDE_RC buildIndex( idvSQL*               aStatistics,
                               void*                 aTrans,
                               smcTableHeader*       aTable,
@@ -203,7 +203,7 @@ public:
                                    sdnbKeyInfo      * aKeyInfo, 
                                    sdnbKeyInfo      * aVRowInfo );
 
-    //ÀÏ´ë´Ù ºñ±³ÀÏ °æ¿ì, º¯È¯µÈ Å°¿Í ÀÏ¹İ Å°¸¦ ºñ±³ÇÑ´Ù.
+    //ì¼ëŒ€ë‹¤ ë¹„êµì¼ ê²½ìš°, ë³€í™˜ëœ í‚¤ì™€ ì¼ë°˜ í‚¤ë¥¼ ë¹„êµí•œë‹¤.
     static SInt compareConvertedKeyAndKey( sdnbStatistic        * aIndexStat,
                                            const sdnbColumn     * aColumns,
                                            const sdnbColumn     * aColumnFence,
@@ -220,20 +220,20 @@ public:
                                   UInt               aCompareFlag,
                                   idBool           * aIsSameValue );
 
-    /* Proj-1872 Disk index ÀúÀå ±¸Á¶ ÃÖÀûÈ­
-     * Index Key±¸Á¶¸¦ °í·ÁÇÏ¿© NullÀ» Ã¼Å©ÇØ¾ß ÇÑ´Ù. */
+    /* Proj-1872 Disk index ì €ì¥ êµ¬ì¡° ìµœì í™”
+     * Index Keyêµ¬ì¡°ë¥¼ ê³ ë ¤í•˜ì—¬ Nullì„ ì²´í¬í•´ì•¼ í•œë‹¤. */
     static idBool isNullColumn( sdnbColumn       * aIndexColumn,
                                 UChar            * aKeyPtr );
 
-    /* BUG-30074 disk tableÀÇ unique index¿¡¼­ NULL key »èÁ¦ ½Ã/
-     *           non-unique index¿¡¼­ deleted key Ãß°¡ ½Ã
-     *           cardinalityÀÇ Á¤È®¼ºÀÌ ¸¹ÀÌ ¶³¾îÁı´Ï´Ù.
-     * Key ÀüÃ¼°¡ NullÀÎÁö È®ÀÎÇÑ´Ù. */
+    /* BUG-30074 disk tableì˜ unique indexì—ì„œ NULL key ì‚­ì œ ì‹œ/
+     *           non-unique indexì—ì„œ deleted key ì¶”ê°€ ì‹œ
+     *           cardinalityì˜ ì •í™•ì„±ì´ ë§ì´ ë–¨ì–´ì§‘ë‹ˆë‹¤.
+     * Key ì „ì²´ê°€ Nullì¸ì§€ í™•ì¸í•œë‹¤. */
     static idBool isNullKey( sdnbHeader       * aIndexHeader,
                              UChar            * aKeyPtr );
 
-    /* Proj-1872 Disk index ÀúÀå ±¸Á¶ ÃÖÀûÈ­
-     * keyValue¸¦ StringÀ¸·Î º¯È¯ÇÏ´Â ÇÔ¼ö. Dump¿¡¼­ »ç¿ëÇÑ´Ù. */
+    /* Proj-1872 Disk index ì €ì¥ êµ¬ì¡° ìµœì í™”
+     * keyValueë¥¼ Stringìœ¼ë¡œ ë³€í™˜í•˜ëŠ” í•¨ìˆ˜. Dumpì—ì„œ ì‚¬ìš©í•œë‹¤. */
     static IDE_RC columnValue2String ( sdnbColumn       * aIndexColumn,
                                        UChar              aTargetColLenInfo,
                                        UChar            * aKeyPtr,
@@ -241,8 +241,8 @@ public:
                                        UInt             * aTextLen,
                                        IDE_RC           * aRet );
 
-    /* Proj-1872 Disk index ÀúÀå ±¸Á¶ ÃÖÀûÈ­
-     * Å° ±æÀÌ¸¦ °è»êÇÏ±â À§ÇØ »ç¿ëÇÏ´Â ColLenInfoList¸¦ »ı¼ºÇÑ´Ù. */
+    /* Proj-1872 Disk index ì €ì¥ êµ¬ì¡° ìµœì í™”
+     * í‚¤ ê¸¸ì´ë¥¼ ê³„ì‚°í•˜ê¸° ìœ„í•´ ì‚¬ìš©í•˜ëŠ” ColLenInfoListë¥¼ ìƒì„±í•œë‹¤. */
     static void   makeColLenInfoList ( const sdnbColumn     * aColumns,
                                        const sdnbColumn     * aColumnFence,
                                        sdnbColLenInfoList   * aColLenInfoList );
@@ -424,8 +424,8 @@ public:
     static IDE_RC adjustKeyPosition( sdpPhyPageHdr  * aPage,
                                      SShort         * aKeyPosition );
 
-    /* BUG-30639 Disk Index¿¡¼­ Internal Node¸¦
-     * Min/Max Node¶ó°í ÀÎ½ÄÇÏ¿© »ç¸ÁÇÕ´Ï´Ù. */
+    /* BUG-30639 Disk Indexì—ì„œ Internal Nodeë¥¼
+     * Min/Max Nodeë¼ê³  ì¸ì‹í•˜ì—¬ ì‚¬ë§í•©ë‹ˆë‹¤. */
     static IDE_RC rebuildMinStat( idvSQL         * aStatistics,
                                   void           * aTrans,
                                   smnIndexHeader * aPersIndex,
@@ -482,47 +482,47 @@ public:
                                                      UShort           aMoveStartSeq,
                                                      UInt             aMode );
 
-    /* PROJ-1872 Disk index ÀúÀå ±¸Á¶ ÃÖÀûÈ­
-     * ColumnÀ» ºĞ¼®ÇÏ¿©, Column ValueÀÇ ±æÀÌ¿Í Column HeaderÀÇ ±æÀÌ
-     * ColumnÀÇ ±æÀÌ, Column ValueÀÇ Æ÷ÀÎÅÍ¸¦ ¹İÈ¯ÇÑ´Ù */
+    /* PROJ-1872 Disk index ì €ì¥ êµ¬ì¡° ìµœì í™”
+     * Columnì„ ë¶„ì„í•˜ì—¬, Column Valueì˜ ê¸¸ì´ì™€ Column Headerì˜ ê¸¸ì´
+     * Columnì˜ ê¸¸ì´, Column Valueì˜ í¬ì¸í„°ë¥¼ ë°˜í™˜í•œë‹¤ */
     static UShort getColumnLength( UChar        aTargetColLenInfo,
                                    UChar       *aColumnPtr,
                                    UInt        *aColumnHeaderLen,
                                    UInt        *aColumnValueLen,
                                    const void **aColumnValuePtr);
 
-    /* PROJ-1872 Disk index ÀúÀå ±¸Á¶ ÃÖÀûÈ­
-     * Index KeyÀÇ ÇÑ Ä®·³ °ªÀ» smiValueÇüÅÂ·Î º¯È¯ÇÑ´Ù */
+    /* PROJ-1872 Disk index ì €ì¥ êµ¬ì¡° ìµœì í™”
+     * Index Keyì˜ í•œ ì¹¼ëŸ¼ ê°’ì„ smiValueí˜•íƒœë¡œ ë³€í™˜í•œë‹¤ */
     static UShort column2SmiValue( UChar             * aTargetColLenInfo,
                                    UChar             * aColumnPtr,
                                    UInt              * aLength,
                                    const void       ** aValue );
 
-    /* PROJ-1872 Disk index ÀúÀå ±¸Á¶ ÃÖÀûÈ­
-     * getKeyValueLength¸¦ ÀÌ¿ëÇØ KeyÀÇ Å©±â¸¦ ¾Ë¾Æ³½´Ù */
+    /* PROJ-1872 Disk index ì €ì¥ êµ¬ì¡° ìµœì í™”
+     * getKeyValueLengthë¥¼ ì´ìš©í•´ Keyì˜ í¬ê¸°ë¥¼ ì•Œì•„ë‚¸ë‹¤ */
     static UShort getKeyLength( sdnbColLenInfoList * aColLenInfoList,
                                 UChar              * aKey,
                                 idBool               aIsLeaf );
 
-    /* PROJ-1872 Disk index ÀúÀå ±¸Á¶ ÃÖÀûÈ­
-     * keyValueÀÇ Å©±â¸¦ ¾Ë¾Æ³½´Ù */
+    /* PROJ-1872 Disk index ì €ì¥ êµ¬ì¡° ìµœì í™”
+     * keyValueì˜ í¬ê¸°ë¥¼ ì•Œì•„ë‚¸ë‹¤ */
     static UShort getKeyValueLength( sdnbColLenInfoList * aColLenInfoList,
                                      UChar              * aKeyValue);
 
-    //CompareµîÀ» À§ÇØ KeyValue¸¦ smiValueListÀÇ ÇüÅÂ·Î º¯°æÇÑ´Ù.
+    //Compareë“±ì„ ìœ„í•´ KeyValueë¥¼ smiValueListì˜ í˜•íƒœë¡œ ë³€ê²½í•œë‹¤.
     static void makeSmiValueListFromKeyValue( sdnbColLenInfoList * aColLenInfoList,
                                               UChar              * aKey,
                                               smiValue           * aSmiValue );
     
-    /* PROJ-1872 Disk index ÀúÀå ±¸Á¶ ÃÖÀûÈ­
-     * Á¦´ë·ÎµÈ FetchColumnList°¡ ¿Ô´ÂÁö È®ÀÎÇÕ´Ï´Ù.. */
+    /* PROJ-1872 Disk index ì €ì¥ êµ¬ì¡° ìµœì í™”
+     * ì œëŒ€ë¡œëœ FetchColumnListê°€ ì™”ëŠ”ì§€ í™•ì¸í•©ë‹ˆë‹¤.. */
     static IDE_RC checkFetchColumnList(
         sdnbHeader         * aIndex,
         smiFetchColumnList * aFetchColumnList,
         idBool             * aFullIndexScan );
 
-    /* PROJ-1872 Disk index ÀúÀå ±¸Á¶ ÃÖÀûÈ­
-     * Fetch½Ã, RowFilter ¹× CursorLevelVisibility°¡ °¡´ÉÇÑ VRow¸¦ »ı¼ºÇÕ´Ï´Ù. */
+    /* PROJ-1872 Disk index ì €ì¥ êµ¬ì¡° ìµœì í™”
+     * Fetchì‹œ, RowFilter ë° CursorLevelVisibilityê°€ ê°€ëŠ¥í•œ VRowë¥¼ ìƒì„±í•©ë‹ˆë‹¤. */
     static IDE_RC makeVRowFromRow( idvSQL             * aStatistics,
                                    sdrMtx             * aMtx,
                                    sdrSavePoint       * aSP,
@@ -540,8 +540,8 @@ public:
                                    idBool             * aIsRowDeleted,
                                    idBool             * aIsPageLatchReleased );
 
-    /* PROJ-1872 Disk index ÀúÀå ±¸Á¶ ÃÖÀûÈ­
-     * mFetchColumnListToMakeKeyValue¸¦ ÀÌ¿ëÇØ Row·ÎºÎÅÍ KeyValue¸¦ ¸¸µé¾î³À´Ï´Ù. */
+    /* PROJ-1872 Disk index ì €ì¥ êµ¬ì¡° ìµœì í™”
+     * mFetchColumnListToMakeKeyValueë¥¼ ì´ìš©í•´ Rowë¡œë¶€í„° KeyValueë¥¼ ë§Œë“¤ì–´ëƒ…ë‹ˆë‹¤. */
     static IDE_RC makeKeyValueFromRow(
                            idvSQL                 * aStatistics,
                            sdrMtx                 * aMtx,
@@ -721,8 +721,8 @@ public:
                                   smTID            * aWaitTID);
 
     // BUG-15553
-    // À¯´ÏÅ© °Ë»ç¸¦ À§ÇØ °°Àº °ª(value)¸¦ °®´Â ÃÖ¼Ò Å°¸¦ Ã£±â À§ÇØ
-    // ¿ª¹æÇâÀ¸·Î ³ëµå¸¦ ¼øÈ¸ÇÑ´Ù.
+    // ìœ ë‹ˆí¬ ê²€ì‚¬ë¥¼ ìœ„í•´ ê°™ì€ ê°’(value)ë¥¼ ê°–ëŠ” ìµœì†Œ í‚¤ë¥¼ ì°¾ê¸° ìœ„í•´
+    // ì—­ë°©í–¥ìœ¼ë¡œ ë…¸ë“œë¥¼ ìˆœíšŒí•œë‹¤.
     static IDE_RC backwardScanNode( idvSQL         * aStatistics,
                                     sdnbStatistic  * aIndexStat,
                                     sdrMtx         * aMtx,
@@ -732,8 +732,8 @@ public:
                                     sdpPhyPageHdr ** aDestNode );
 
     // BUG-16702
-    // À¯´ÏÅ© °Ë»ç¸¦ À§ÇØ °°Àº °ª(value)¸¦ °®´Â Ã¹¹øÂ° ½½·ÔÀ» Ã£±â À§ÇØ
-    // ¿ª¹æÇâÀ¸·Î ½½·ÔÀ» ¼øÈ¸ÇÑ´Ù.
+    // ìœ ë‹ˆí¬ ê²€ì‚¬ë¥¼ ìœ„í•´ ê°™ì€ ê°’(value)ë¥¼ ê°–ëŠ” ì²«ë²ˆì§¸ ìŠ¬ë¡¯ì„ ì°¾ê¸° ìœ„í•´
+    // ì—­ë°©í–¥ìœ¼ë¡œ ìŠ¬ë¡¯ì„ ìˆœíšŒí•œë‹¤.
     static IDE_RC backwardScanSlot( sdnbHeader     * aIndex,
                                     sdnbStatistic  * aIndexStat,                
                                     sdnbKeyInfo    * aKeyInfo,
@@ -742,7 +742,7 @@ public:
                                     SShort         * aDestSlotSeq );
     
     // BUG-15106
-    // unique index ÀÏ¶§, insert positionÀ» Ã£À½
+    // unique index ì¼ë•Œ, insert positionì„ ì°¾ìŒ
     static IDE_RC findInsertPos4Unique( idvSQL*          aStatistics,
                                         void           * aTrans,
                                         void           * aTable,
@@ -766,7 +766,7 @@ public:
                                         SLong          * aTotalTraverseLength );
 
     // BUG-15106
-    // non unique index ÀÏ¶§, insert positionÀ» Ã£À½
+    // non unique index ì¼ë•Œ, insert positionì„ ì°¾ìŒ
     static IDE_RC findInsertPos4NonUnique( idvSQL*          aStatistics,
                                            sdnbStatistic  * aIndexStat,
                                            sdrMtx         * aMtx,
@@ -994,8 +994,8 @@ public:
     static void increaseSmoNo( sdnbHeader*    aIndex );
 
     // To Fix BUG-15670
-    // Key Map Sequence No¸¦ ÀÌ¿ëÇÏ¿© Key ColumnÀÇ ½ÇÁ¦ Value Ptr È¹µæÇÑ ÈÄ
-    // ÀÎµ¦½º Çì´õ¿¡ MinMax Åë°èÄ¡¸¦ ¼³Á¤ÇÔ
+    // Key Map Sequence Noë¥¼ ì´ìš©í•˜ì—¬ Key Columnì˜ ì‹¤ì œ Value Ptr íšë“í•œ í›„
+    // ì¸ë±ìŠ¤ í—¤ë”ì— MinMax í†µê³„ì¹˜ë¥¼ ì„¤ì •í•¨
     static IDE_RC setMinMaxValue( sdnbHeader     * aIndex,
                                   UChar          * aIndexPageNode,
                                   SShort           aKeyMapSeq,
@@ -1321,7 +1321,7 @@ private:
                                            sdpPhyPageHdr ** aTargetPage,
                                            SShort         * aTargetSlotSeq );
 
-    // Key Map Sequence No¸¦ ÀÌ¿ëÇÏ¿© Key PointerÈ¹µæ
+    // Key Map Sequence Noë¥¼ ì´ìš©í•˜ì—¬ Key Pointeríšë“
     static IDE_RC getKeyPtr( UChar         * aIndexPageNode,
                              SShort          aKeyMapSeq,
                              UChar        ** aKeyPtr );
@@ -1358,9 +1358,9 @@ private:
 
 public:
     /* PROJ-2162 RestartRiskReduction
-     * ÀÎµ¦½º DumpÇÔ¼öµéÀ» ÇÑ°÷¿¡ ¸ğ¾ÆµÒ */
-    /* TASK-4007 [SM] PBT¸¦ À§ÇÑ ±â´É Ãß°¡ - dumpddfÁ¤»óÈ­
-     * ÀÎµ¦½º ÆäÀÌÁöÀÇ NodeHdr ¹× MetaPage Dump*/
+     * ì¸ë±ìŠ¤ Dumpí•¨ìˆ˜ë“¤ì„ í•œê³³ì— ëª¨ì•„ë‘  */
+    /* TASK-4007 [SM] PBTë¥¼ ìœ„í•œ ê¸°ëŠ¥ ì¶”ê°€ - dumpddfì •ìƒí™”
+     * ì¸ë±ìŠ¤ í˜ì´ì§€ì˜ NodeHdr ë° MetaPage Dump*/
     static IDE_RC dump       ( UChar *sPage ,
                                SChar *aOutBuf ,
                                UInt   aOutSize );
@@ -1371,10 +1371,10 @@ public:
                                SChar *aOutBuf ,
                                UInt   aOutSize );
     
-    // BUG-28711 SM PBT º¸°­
+    // BUG-28711 SM PBT ë³´ê°•
     static void dumpIndexNode( sdpPhyPageHdr * aNode );
 
-    // BUG-30605: Deleted/DeadµÈ Å°µµ Min/Max·Î Æ÷ÇÔ½ÃÅµ´Ï´Ù
+    // BUG-30605: Deleted/Deadëœ í‚¤ë„ Min/Maxë¡œ í¬í•¨ì‹œí‚µë‹ˆë‹¤
     static idBool isIgnoredKey4MinMaxStat( sdnbLKey   * aKey,
                                            sdnbColumn * aColumn );
 
@@ -1414,7 +1414,7 @@ public:
 
     /* BUG-31845 [sm-disk-index] Debugging information is needed for 
      * PBT when fail to check visibility using DRDB Index.
-     * °ËÁõ¿ë Dump ÄÚµå Ãß°¡ */
+     * ê²€ì¦ìš© Dump ì½”ë“œ ì¶”ê°€ */
     static void dumpHeadersAndIteratorToSMTrc( 
         smnIndexHeader * aCommonHeader,
         sdnbHeader     * aRuntimeHeader,
@@ -1501,11 +1501,11 @@ inline void sdnbBTree::dumpIndexNode( sdpPhyPageHdr *aNode )
  * ------------------------------------------------------------------*
  * BUG-32313: The values of DRDB index cardinality converge on 0     *
  *                                                                   *
- * ÀÎµ¦½º Åë°èÁ¤º¸ °»½Å½Ã ¹«½ÃµÉ Å° ¿©ºÎ¸¦ ¹İÈ¯ÇÑ´Ù. DELETED, DEAD   *
- * »óÅÂ Å°µéÀº »èÁ¦µÈ Å°µéÀÌ±â ¶§¹®¿¡ Åë°è Á¤º¸ °»½Å½Ã ¹«½ÃµÈ´Ù.     *
+ * ì¸ë±ìŠ¤ í†µê³„ì •ë³´ ê°±ì‹ ì‹œ ë¬´ì‹œë  í‚¤ ì—¬ë¶€ë¥¼ ë°˜í™˜í•œë‹¤. DELETED, DEAD   *
+ * ìƒíƒœ í‚¤ë“¤ì€ ì‚­ì œëœ í‚¤ë“¤ì´ê¸° ë•Œë¬¸ì— í†µê³„ ì •ë³´ ê°±ì‹ ì‹œ ë¬´ì‹œëœë‹¤.     *
  *                                                                   *
- * Min, Max Á¤º¸ °»½Å½Ã Ã¹¹øÂ° Å° ÄÃ·³ÀÌ Null ÀÌ¸é ¹«½ÃµÈ´Ù. Min,    *
- * Max´Â Ã¹¹øÂ° ÄÃ·³¸¸À» °í·ÁÇÏ±â ¶§¹®ÀÌ´Ù.                          *
+ * Min, Max ì •ë³´ ê°±ì‹ ì‹œ ì²«ë²ˆì§¸ í‚¤ ì»¬ëŸ¼ì´ Null ì´ë©´ ë¬´ì‹œëœë‹¤. Min,    *
+ * MaxëŠ” ì²«ë²ˆì§¸ ì»¬ëŸ¼ë§Œì„ ê³ ë ¤í•˜ê¸° ë•Œë¬¸ì´ë‹¤.                          *
  *********************************************************************/
 inline idBool sdnbBTree::isIgnoredKey4NumDistStat( sdnbHeader * aIdxHdr,
                                                    sdnbLKey   * aKey )
@@ -1537,12 +1537,12 @@ inline idBool sdnbBTree::isIgnoredKey4NumDistStat( sdnbHeader * aIdxHdr,
 /*********************************************************************
  * FUNCTION DESCRIPTION : sdnbBTree::isIgnoredKey4MinMaxStat         *
  * ------------------------------------------------------------------*
- * BUG-30605 Deleted/DeadµÈ Å°µµ Min/Max·Î Æ÷ÇÔ½ÃÅµ´Ï´Ù.             *
+ * BUG-30605 Deleted/Deadëœ í‚¤ë„ Min/Maxë¡œ í¬í•¨ì‹œí‚µë‹ˆë‹¤.             *
  *                                                                   *
- * Min, Max Á¤º¸´Â delete, dead Å°µµ Æ÷ÇÔÇÏ¿© °è»êµÈ´Ù.              *
+ * Min, Max ì •ë³´ëŠ” delete, dead í‚¤ë„ í¬í•¨í•˜ì—¬ ê³„ì‚°ëœë‹¤.              *
  *                                                                   *
- * Min, Max Á¤º¸ °»½Å½Ã Ã¹¹øÂ° Å° ÄÃ·³ÀÌ Null ÀÌ¸é ¹«½ÃµÈ´Ù. Min,    *
- * Max´Â Ã¹¹øÂ° ÄÃ·³¸¸À» °í·ÁÇÏ±â ¶§¹®ÀÌ´Ù.                          *
+ * Min, Max ì •ë³´ ê°±ì‹ ì‹œ ì²«ë²ˆì§¸ í‚¤ ì»¬ëŸ¼ì´ Null ì´ë©´ ë¬´ì‹œëœë‹¤. Min,    *
+ * MaxëŠ” ì²«ë²ˆì§¸ ì»¬ëŸ¼ë§Œì„ ê³ ë ¤í•˜ê¸° ë•Œë¬¸ì´ë‹¤.                          *
  *********************************************************************/
 inline idBool sdnbBTree::isIgnoredKey4MinMaxStat( sdnbLKey   * aKey,
                                                   sdnbColumn * aColumn )

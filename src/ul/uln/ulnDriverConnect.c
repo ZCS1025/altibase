@@ -25,7 +25,7 @@
 
 /*
  * ULN_SFID_68
- * SQLDriverConnect(), DBC »óÅÂÀüÀÌ : C2 »óÅÂ
+ * SQLDriverConnect(), DBC ìƒíƒœì „ì´ : C2 ìƒíƒœ
  *      C4 [s]
  *      -- [nf]
  *  where
@@ -34,8 +34,8 @@
  *           This does not apply when SQLExecDirect, SQLExecute, or SQLParamData
  *           returns SQL_NO_DATA after executing a searched update or delete statement.
  *
- *  Note : SQLDriverConnect() ¿¡¼­ ´ÙÀÌ¾ó·Î±× ¹Ú½º¸¦ µï¿ü´Âµ¥, »ç¿ëÀÚ°¡ Cancel ¹öÆ°À» ´©¸£¸é
- *         SQL_NO_DATA °¡ ¸®ÅÏµÈ´Ù.
+ *  Note : SQLDriverConnect() ì—ì„œ ë‹¤ì´ì–¼ë¡œê·¸ ë°•ìŠ¤ë¥¼ ë“¸ì› ëŠ”ë°, ì‚¬ìš©ìê°€ Cancel ë²„íŠ¼ì„ ëˆ„ë¥´ë©´
+ *         SQL_NO_DATA ê°€ ë¦¬í„´ëœë‹¤.
  */
 
 ACI_RC ulnSFID_68(ulnFnContext *aFnContext)
@@ -77,7 +77,7 @@ ACI_RC ulnCallbackDBConnectExResult(cmiProtocolContext *aProtocolContext,
 
     ACI_TEST_RAISE(ULN_OBJ_GET_TYPE(sDbc) != ULN_OBJ_TYPE_DBC, LABEL_MEM_MANAGE_ERR);
 
-    /* °°Àº CID°¡ ¸¸µé¾îÁö´Â°É ¸·±â À§ÇØ¼­ SessionID(server side)¸¦ ¹Ş¾Æ ÂüÁ¶ÇÑ´Ù. */
+    /* ê°™ì€ CIDê°€ ë§Œë“¤ì–´ì§€ëŠ”ê±¸ ë§‰ê¸° ìœ„í•´ì„œ SessionID(server side)ë¥¼ ë°›ì•„ ì°¸ì¡°í•œë‹¤. */
     sDbc->mSessionID  = sSessionID;
     sDbc->mNextCIDSeq = 0;
     ulnDbcInitUsingCIDSeq(sDbc);
@@ -114,8 +114,8 @@ ACI_RC ulnCallbackDBConnectExResult(cmiProtocolContext *aProtocolContext,
     }
     ACI_EXCEPTION_END;
 
-    /* CM Äİ¹é ÇÔ¼ö´Â communication error°¡ ¾Æ´Ñ ÇÑ ACI_SUCCESS¸¦ ¹İÈ¯ÇØ¾ß ÇÑ´Ù.
-     * Äİ¹é ¿¡·¯´Â function context¿¡ ¼³Á¤µÈ °ªÀ¸·Î ÆÇ´ÜÇÑ´Ù. */
+    /* CM ì½œë°± í•¨ìˆ˜ëŠ” communication errorê°€ ì•„ë‹Œ í•œ ACI_SUCCESSë¥¼ ë°˜í™˜í•´ì•¼ í•œë‹¤.
+     * ì½œë°± ì—ëŸ¬ëŠ” function contextì— ì„¤ì •ëœ ê°’ìœ¼ë¡œ íŒë‹¨í•œë‹¤. */
     return ACI_SUCCESS;
 }
 
@@ -190,13 +190,13 @@ SQLRETURN ulnDriverConnect(ulnDbc       *aDbc,
         aConnStringLength = acpCStrLen(aConnString, aConnStringLength);
     }
 
-    //PROJ-1645 UL-FailOver DSN¸¸ ¼³Á¤ÇÑ´Ù.
+    //PROJ-1645 UL-FailOver DSNë§Œ ì„¤ì •í•œë‹¤.
     ACI_TEST(ulnSetDSNByConnString(&sFnContext,
                                    aConnString,
                                    aConnStringLength) != ACI_SUCCESS);
 
-    /* ALTIBASE_CLI.ini,  ODBC.ini, Connection StringÀÇ ¿ì¼±¼øÀ§
-       ´Â ´ÙÀ½°ú °°´Ù.
+    /* ALTIBASE_CLI.ini,  ODBC.ini, Connection Stringì˜ ìš°ì„ ìˆœìœ„
+       ëŠ” ë‹¤ìŒê³¼ ê°™ë‹¤.
        Connection String > ODBC.ini > ALTIBASE_CLI.ini    */
 
     //PROJ-1645 UL Fail-Over.
@@ -207,9 +207,9 @@ SQLRETURN ulnDriverConnect(ulnDbc       *aDbc,
         ACI_TEST(ulnDataSourceSetConnAttr(&sFnContext,sDataSource) != ACI_SUCCESS);
     }
     /*
-     * User Profile (odbc.ini, registry µî) À» ÀÌ¿ëÇÑ DBC Attribute ¼¼ÆÃ
+     * User Profile (odbc.ini, registry ë“±) ì„ ì´ìš©í•œ DBC Attribute ì„¸íŒ…
      *
-     * cli ¸¦ Á÷Á¢ ¾µ °æ¿ì ¾Æ¹«°Íµµ ¾ÈÇÏ´Â ´õ¹Ì ÇÔ¼ö È£Ãâ
+     * cli ë¥¼ ì§ì ‘ ì“¸ ê²½ìš° ì•„ë¬´ê²ƒë„ ì•ˆí•˜ëŠ” ë”ë¯¸ í•¨ìˆ˜ í˜¸ì¶œ
      */
 
     ACI_TEST(ulnSetConnAttrByProfileFunc(&sFnContext,
@@ -217,7 +217,7 @@ SQLRETURN ulnDriverConnect(ulnDbc       *aDbc,
                                          (acp_char_t *)"ODBC.INI") != ACI_SUCCESS);
 
     /*
-     * connection string À» ÀÌ¿ëÇÑ DBC Attribute ¼¼ÆÃ
+     * connection string ì„ ì´ìš©í•œ DBC Attribute ì„¸íŒ…
      */
 
     ACI_TEST(ulnSetConnAttrByConnString(&sFnContext,
@@ -226,7 +226,7 @@ SQLRETURN ulnDriverConnect(ulnDbc       *aDbc,
 
 
     /*
-     * »ç¿ëÀÚ¿¡°Ô full connection string À» ÀçÁ¶ÇÕÇØ¼­ ¸®ÅÏ
+     * ì‚¬ìš©ìì—ê²Œ full connection string ì„ ì¬ì¡°í•©í•´ì„œ ë¦¬í„´
      */
     ACI_TEST(ulnConnStrBuildOutConnString(&sFnContext,
                                           aOutConnStr,

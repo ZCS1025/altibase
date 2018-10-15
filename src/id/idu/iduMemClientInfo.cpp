@@ -30,7 +30,7 @@
 #include <idCore.h>
 #include <idtContainer.h>
 
-// Altibase³»ÀÇ °¢ ¸ðµâµéÀÇ Åë°èÁ¤º¸¸¦ ÀúÀå
+// Altibaseë‚´ì˜ ê° ëª¨ë“ˆë“¤ì˜ í†µê³„ì •ë³´ë¥¼ ì €ìž¥
 iduMemClientInfo iduMemMgr::mClientInfo[IDU_MEM_UPPERLIMIT] =
 {
     IDU_MEM_CLIENTINFO_STRUCT(IDU_MEM_MMA, "MM", "Main_Module_DirectAttach"),
@@ -245,7 +245,7 @@ void iduMemMgr::server_statupdate(iduMemoryClientIndex  aIndex,
  
         //===================================================================
         // To Fix PR-13959
-        // ÇöÀç±îÁö »ç¿ëÇÑ ÃÖ´ë ¸Þ¸ð¸® »ç¿ë·®
+        // í˜„ìž¬ê¹Œì§€ ì‚¬ìš©í•œ ìµœëŒ€ ë©”ëª¨ë¦¬ ì‚¬ìš©ëŸ‰
         //===================================================================
         sMaxTotalSize = sClientInfo[aIndex].mMaxTotSize;
         if ( sCurTotalSize > sMaxTotalSize )

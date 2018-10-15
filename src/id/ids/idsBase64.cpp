@@ -45,10 +45,10 @@ void idsBase64::base64EncodeBlk( UChar * aIn, UChar * aOut, UInt aLen )
 /* base64 encode a stream, adding padding if needed */
 IDE_RC idsBase64::base64Encode( UChar * aSrc, UInt aSrcLen, UChar ** aDst, UInt * aDstLen )
 {
-    UChar    sIn[3];            /* encoding¿Ã µ«¥¬ ¥ÎªÛ */
-    UChar    sOut[5];           /* encoding ∞·∞˙*/
+    UChar    sIn[3];            /* encodingÏù¥ ÎêòÎäî ÎåÄÏÉÅ */
+    UChar    sOut[5];           /* encoding Í≤∞Í≥º*/
     UChar  * sDst;
-    UInt     sDstLen     = 0;   /* √÷¡æ result size */ 
+    UInt     sDstLen     = 0;   /* ÏµúÏ¢Ö result size */ 
     UInt     sSrcTextLen = 0;
     UInt     sIndex      = 0;
     UInt     sLen        = 0; 
@@ -138,10 +138,10 @@ void idsBase64::base64DecodeBlk( UChar * aIn, UChar * aOut )
 IDE_RC idsBase64::base64Decode( UChar * aSrc, UInt aSrcLen, UChar ** aDst, UInt * aDstLen )
 {
 
-    UChar         sIn[4];               /* decoding¿Ã µ«¥¬ ¥ÎªÛ */
-    UChar         sOut[4];              /* decoding ∞·∞˙*/
+    UChar         sIn[4];               /* decodingÏù¥ ÎêòÎäî ÎåÄÏÉÅ */
+    UChar         sOut[4];              /* decoding Í≤∞Í≥º*/
     UChar       * sDst;
-    UInt          sDstLen     = 0;   /* √÷¡æ result size */ 
+    UInt          sDstLen     = 0;   /* ÏµúÏ¢Ö result size */ 
     UInt          sSrcTextLen = 0;
     UInt          sIndex      = 0;
     UChar         sLetter;
@@ -185,7 +185,7 @@ IDE_RC idsBase64::base64Decode( UChar * aSrc, UInt aSrcLen, UChar ** aDst, UInt 
                 idlOS::memcpy( sDst + sDstLen, sOut, 3 );
                 sDstLen += 3;
 
-                /* sIn √ ±‚»≠ */
+                /* sIn Ï¥àÍ∏∞Ìôî */
                 sIn[0] = sIn[1] = sIn[2] = sIn[3] = 0;
             }
             else

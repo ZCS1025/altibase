@@ -20,9 +20,9 @@
  *
  * PROJ-1353
  *
- * CUBE´Â ¸ðµç Row¸¦ Sort Temp¿¡ ½×¾Æ¼­ SortingÀ» ¿©·¯¹ø ¼öÇàÇÏ¹Ç·Î½á CUBE¸¦ ¼öÇàÇÑ´Ù.
- * CUBE´Â 2^nÀÇ ±×·ìÀÇ °è»êÀ» ¼öÇàÇÏ¸ç 2^(n-1) ¸¸Å­ÀÇ Sort¸¦ Àç ¼öÇàÇÏ¹Ç·Î½á CUBE
- * ¸¦ ¼öÇàÇÑ´Ù.
+ * CUBEëŠ” ëª¨ë“  Rowë¥¼ Sort Tempì— ìŒ“ì•„ì„œ Sortingì„ ì—¬ëŸ¬ë²ˆ ìˆ˜í–‰í•˜ë¯€ë¡œì¨ CUBEë¥¼ ìˆ˜í–‰í•œë‹¤.
+ * CUBEëŠ” 2^nì˜ ê·¸ë£¹ì˜ ê³„ì‚°ì„ ìˆ˜í–‰í•˜ë©° 2^(n-1) ë§Œí¼ì˜ Sortë¥¼ ìž¬ ìˆ˜í–‰í•˜ë¯€ë¡œì¨ CUBE
+ * ë¥¼ ìˆ˜í–‰í•œë‹¤.
  *
  *
  ***********************************************************************/
@@ -35,7 +35,7 @@
 /**
  * init
  *
- *  CUBE Plan ÃÊ±âÈ­ ¼öÇà
+ *  CUBE Plan ì´ˆê¸°í™” ìˆ˜í–‰
  */
 IDE_RC qmnCUBE::init( qcTemplate * aTemplate, qmnPlan * aPlan )
 {
@@ -56,7 +56,7 @@ IDE_RC qmnCUBE::init( qcTemplate * aTemplate, qmnPlan * aPlan )
         sDataPlan->plan.myTuple->row = sDataPlan->myRow;
     }
 
-    /* doItÁß¿¡ initÀÌ È£ÃâµÇ´Â °æ¿ì Àç¼öÇàÀ» À§ÇØ ÃÊ±âÈ­ÇÑ´Ù. */
+    /* doItì¤‘ì— initì´ í˜¸ì¶œë˜ëŠ” ê²½ìš° ìž¬ìˆ˜í–‰ì„ ìœ„í•´ ì´ˆê¸°í™”í•œë‹¤. */
     if ( sDataPlan->groupIndex != sCodePlan->groupCount - 1 )
     {
         if ( findRemainGroup( sDataPlan ) == ID_UINT_MAX )
@@ -130,7 +130,7 @@ IDE_RC qmnCUBE::checkDependency( qcTemplate * aTemplate,
 {
     idBool sDep = ID_FALSE;
 
-    /* Dependency°¡ °°°í valueTemp°¡ ÀÖ´Â °æ¿ì¸¸ Àç»ç¿ëÀÌ °¡´ÉÇÏ´Ù. */
+    /* Dependencyê°€ ê°™ê³  valueTempê°€ ìžˆëŠ” ê²½ìš°ë§Œ ìž¬ì‚¬ìš©ì´ ê°€ëŠ¥í•˜ë‹¤. */
     if ( aCodePlan->valueTempNode != NULL )
     {
         if ( aDataPlan->depValue != aDataPlan->depTuple->modify )
@@ -199,7 +199,7 @@ IDE_RC qmnCUBE::doIt( qcTemplate * aTemplate,
 /**
  * linkAggrNode
  *
- *  CodePlanÀÇ AggrNode¸¦ DataPlanÀÇ aggrNode·Î ¿¬°áÇÑ´Ù.
+ *  CodePlanì˜ AggrNodeë¥¼ DataPlanì˜ aggrNodeë¡œ ì—°ê²°í•œë‹¤.
  */
 IDE_RC qmnCUBE::linkAggrNode( qmncCUBE * aCodePlan, qmndCUBE * aDataPlan )
 {
@@ -233,8 +233,8 @@ IDE_RC qmnCUBE::linkAggrNode( qmncCUBE * aCodePlan, qmndCUBE * aDataPlan )
 /**
  * initDistNode
  *
- *  Distinct ÄÃ·³ÀÌ d °³ÀÏ °æ¿ì  Group ¼ö( n + 1 ) * d ¸¸Å­ÀÇ DistNode°¡ »ý¼ºµÈ´Ù.
- *  ÀÌ´Â 2Áß ¹è¿­À» ÅëÇØ¼­ °ü¸®µÇ¸ç °¢°¢ Distinct¸¦ À§ÇÑ HashTemp¸¦ »ý¼ºÇÑ´Ù.
+ *  Distinct ì»¬ëŸ¼ì´ d ê°œì¼ ê²½ìš°  Group ìˆ˜( n + 1 ) * d ë§Œí¼ì˜ DistNodeê°€ ìƒì„±ëœë‹¤.
+ *  ì´ëŠ” 2ì¤‘ ë°°ì—´ì„ í†µí•´ì„œ ê´€ë¦¬ë˜ë©° ê°ê° Distinctë¥¼ ìœ„í•œ HashTempë¥¼ ìƒì„±í•œë‹¤.
  */
 IDE_RC qmnCUBE::initDistNode( qcTemplate * aTemplate,
                               qmncCUBE   * aCodePlan,
@@ -286,7 +286,7 @@ IDE_RC qmnCUBE::initDistNode( qcTemplate * aTemplate,
     }
 
     // PROJ-2553
-    // DISTINCT HashingÀº Bucket List Hashing ¹æ¹ýÀ» ½á¾ß ÇÑ´Ù.
+    // DISTINCT Hashingì€ Bucket List Hashing ë°©ë²•ì„ ì¨ì•¼ í•œë‹¤.
     sFlag &= ~QMCD_HASH_TMP_HASHING_TYPE;
     sFlag |= QMCD_HASH_TMP_HASHING_BUCKET;
 
@@ -331,10 +331,10 @@ IDE_RC qmnCUBE::initDistNode( qcTemplate * aTemplate,
 /**
  * initMtrNode
  *
- *  mtrNode, myNode, aggrNode, distNode, memoeryValeNodeÀÇ ÃÊ±âÈ­¸¦ ¼öÇàÇÑ´Ù.
+ *  mtrNode, myNode, aggrNode, distNode, memoeryValeNodeì˜ ì´ˆê¸°í™”ë¥¼ ìˆ˜í–‰í•œë‹¤.
  *
- *  aggrNode´Â Cube¿ëÀ¸·Î 1°³¸¸ »ý¼ºµÇÁö¸¸ distNode´Â Cube ÄÃ·³ + 1°³ ¸¸Å­ »ý¼ºÇÑ´Ù.
- *  ÀÏ´Ü distNodeÀÇ 0¹øÂ°·Î ¿¬°áÇØ ³õ´Â´Ù.
+ *  aggrNodeëŠ” Cubeìš©ìœ¼ë¡œ 1ê°œë§Œ ìƒì„±ë˜ì§€ë§Œ distNodeëŠ” Cube ì»¬ëŸ¼ + 1ê°œ ë§Œí¼ ìƒì„±í•œë‹¤.
+ *  ì¼ë‹¨ distNodeì˜ 0ë²ˆì§¸ë¡œ ì—°ê²°í•´ ë†“ëŠ”ë‹¤.
  */
 IDE_RC qmnCUBE::initMtrNode( qcTemplate * aTemplate,
                              qmncCUBE   * aCodePlan,
@@ -382,7 +382,7 @@ IDE_RC qmnCUBE::initMtrNode( qcTemplate * aTemplate,
         sHeaderSize  = QMC_DISKSORT_TEMPHEADER_SIZE;
         sFlag       &= ~QMCD_SORT_TMP_STORAGE_TYPE;
         sFlag       |= QMCD_SORT_TMP_STORAGE_DISK;
-        /* PROJ-2201 ÀçÁ¤·Ä, BackwardScanµîÀ» ÇÏ·Á¸é RangeFlag¸¦ Áà¾ßÇÔ */
+        /* PROJ-2201 ìž¬ì •ë ¬, BackwardScanë“±ì„ í•˜ë ¤ë©´ RangeFlagë¥¼ ì¤˜ì•¼í•¨ */
         sFlag       &= ~QMCD_SORT_TMP_SEARCH_MASK;
         sFlag       |= QMCD_SORT_TMP_SEARCH_RANGE;
     }
@@ -407,7 +407,7 @@ IDE_RC qmnCUBE::initMtrNode( qcTemplate * aTemplate,
 
     aDataPlan->sortNode = ( qmdMtrNode * )( aTemplate->tmplate.data +
                                             aCodePlan->sortNodeOffset );
-    /* sortNode¿Í mtrNode°ú myNode °¹¼ö¸¸ Å­¸¸ °°´Ù */
+    /* sortNodeì™€ mtrNodeê³¼ myNode ê°¯ìˆ˜ë§Œ í¼ë§Œ ê°™ë‹¤ */
     for ( i = 0, sCNode = aCodePlan->mtrNode, sSNode = aDataPlan->sortNode;
           i < aCodePlan->myNodeCount;
           i++, sCNode = sCNode->next, sSNode = sSNode->next )
@@ -515,7 +515,7 @@ IDE_RC qmnCUBE::initMtrNode( qcTemplate * aTemplate,
 
     sMemory = aTemplate->stmt->qmxMem;
 
-    /* valueTempNode°¡ ÀÖ´Ù¸é MTR Node¸¦ »ý¼ºÇÏ°í STORE¿ë TempTableÀ» initializeÇÑ´Ù */
+    /* valueTempNodeê°€ ìžˆë‹¤ë©´ MTR Nodeë¥¼ ìƒì„±í•˜ê³  STOREìš© TempTableì„ initializeí•œë‹¤ */
     if ( aCodePlan->valueTempNode != NULL )
     {
         if ( ( *aDataPlan->flag & QMN_PLAN_RESULT_CACHE_EXIST_MASK )
@@ -613,7 +613,7 @@ IDE_RC qmnCUBE::initMtrNode( qcTemplate * aTemplate,
 /**
  * allocMtrRow
  *
- *   °¢°¢ ÇÊ¿äÇÑ RowÀÇ Å©±â¸¦ ÇÒ´çÇÑ´Ù.
+ *   ê°ê° í•„ìš”í•œ Rowì˜ í¬ê¸°ë¥¼ í• ë‹¹í•œë‹¤.
  */
 IDE_RC qmnCUBE::allocMtrRow( qcTemplate * aTemplate,
                              qmncCUBE   * aCodePlan,
@@ -648,10 +648,10 @@ IDE_RC qmnCUBE::allocMtrRow( qcTemplate * aTemplate,
               != IDE_SUCCESS );
 
     /**
-     * aggrNodeÀÇ °æ¿ì mtrNode´Â 1°³¸¸ ÀÖÁö¸¸ Row´Â Rollup ±×·ì¼ö(n+1) ¸¸Å­ Á¸ÀçÇÏ°Ô µÈ´Ù.
-     * ÀÌ¸¦ ÅëÇØ¼­ ÇÑ¹ø ºñ±³¸¦ ÅëÇØ¼­ ( n + 1 ) ±×·ìÀÇ aggregationÀ» ¼öÇàÇÒ ¼ö ÀÖ´Ù.
-     * Cube´Â RollupÀ» ¹Ýº¹ÇØ¼­ ¼öÇàÇÏ¹Ç·Î½á ¼öÇàÇÏ¹Ç·Î Aggregaion Row ¿ª½Ã Rollup ±×·ì¼ö
-     * ¸¸Å­ »ý¼ºµÈ´Ù.
+     * aggrNodeì˜ ê²½ìš° mtrNodeëŠ” 1ê°œë§Œ ìžˆì§€ë§Œ RowëŠ” Rollup ê·¸ë£¹ìˆ˜(n+1) ë§Œí¼ ì¡´ìž¬í•˜ê²Œ ëœë‹¤.
+     * ì´ë¥¼ í†µí•´ì„œ í•œë²ˆ ë¹„êµë¥¼ í†µí•´ì„œ ( n + 1 ) ê·¸ë£¹ì˜ aggregationì„ ìˆ˜í–‰í•  ìˆ˜ ìžˆë‹¤.
+     * CubeëŠ” Rollupì„ ë°˜ë³µí•´ì„œ ìˆ˜í–‰í•˜ë¯€ë¡œì¨ ìˆ˜í–‰í•˜ë¯€ë¡œ Aggregaion Row ì—­ì‹œ Rollup ê·¸ë£¹ìˆ˜
+     * ë§Œí¼ ìƒì„±ëœë‹¤.
      */
     if ( aCodePlan->aggrNode != NULL )
     {
@@ -699,7 +699,7 @@ IDE_RC qmnCUBE::allocMtrRow( qcTemplate * aTemplate,
 /**
  * initAggregation
  *
- *   Aggregation NodeÀÇ ÃÊ±âÈ­¸¦ ¼öÇàÇÑ´Ù.
+ *   Aggregation Nodeì˜ ì´ˆê¸°í™”ë¥¼ ìˆ˜í–‰í•œë‹¤.
  */
 IDE_RC qmnCUBE::initAggregation( qcTemplate * aTemplate,
                                  qmndCUBE   * aDataPlan,
@@ -726,9 +726,9 @@ IDE_RC qmnCUBE::initAggregation( qcTemplate * aTemplate,
 /**
  * execAggregation
  *
- *   ÇØ´çÇÏ´Â ±×·ìÀÇ RowÀÇ AggregationÀÇ °è»êÀ» ¼öÇàÇÑ´Ù.
- *   ¸¸¾à Distinct ³ëµå°¡ ÀÖ´Â°æ¿ì¿¡´Â ÇØ´çÇÏ´Â distNodeÀÇ distinct¿©ºÎ¸¦ º¸°í
- *   aggregate ÀÇ ¼öÇà ¿©ºÎ¸¦ °áÁ¤ÇÑ´Ù.
+ *   í•´ë‹¹í•˜ëŠ” ê·¸ë£¹ì˜ Rowì˜ Aggregationì˜ ê³„ì‚°ì„ ìˆ˜í–‰í•œë‹¤.
+ *   ë§Œì•½ Distinct ë…¸ë“œê°€ ìžˆëŠ”ê²½ìš°ì—ëŠ” í•´ë‹¹í•˜ëŠ” distNodeì˜ distinctì—¬ë¶€ë¥¼ ë³´ê³ 
+ *   aggregate ì˜ ìˆ˜í–‰ ì—¬ë¶€ë¥¼ ê²°ì •í•œë‹¤.
  */
 IDE_RC qmnCUBE::execAggregation( qcTemplate * aTemplate,
                                  qmncCUBE   * aCodePlan,
@@ -779,7 +779,7 @@ IDE_RC qmnCUBE::execAggregation( qcTemplate * aTemplate,
 /**
  *  finiAggregation
  *
- *   finialize¸¦ ¼öÇàÇÑ´Ù.
+ *   finializeë¥¼ ìˆ˜í–‰í•œë‹¤.
  */
 IDE_RC qmnCUBE::finiAggregation( qcTemplate * aTemplate,
                                  qmndCUBE   * aDataPlan )
@@ -804,7 +804,7 @@ IDE_RC qmnCUBE::finiAggregation( qcTemplate * aTemplate,
 /**
  * setTupleMtrNode
  *
- *  memory pointer¸¦ ½×¾ÒÀ» °æ¿ì ÀÌ¸¦ ¿øº»ÇÑ´Ù.
+ *  memory pointerë¥¼ ìŒ“ì•˜ì„ ê²½ìš° ì´ë¥¼ ì›ë³¸í•œë‹¤.
  */
 IDE_RC qmnCUBE::setTupleMtrNode( qcTemplate * aTemplate,
                                  qmndCUBE   * aDataPlan )
@@ -853,7 +853,7 @@ IDE_RC qmnCUBE::setTupleValueTempNode( qcTemplate * aTemplate,
 /**
  * setMtrRow
  *
- *   ÇöÁ¦ Row¿¡ setMtrÀ» ¼öÇàÇÑ´Ù. ÀÌ¸¦ ÅëÇØ¼­ °¢ ÄÃ·³ÀÌ Á¦´ë·Î °ªÀ» ¾ò´Â´Ù.
+ *   í˜„ì œ Rowì— setMtrì„ ìˆ˜í–‰í•œë‹¤. ì´ë¥¼ í†µí•´ì„œ ê° ì»¬ëŸ¼ì´ ì œëŒ€ë¡œ ê°’ì„ ì–»ëŠ”ë‹¤.
  */
 IDE_RC qmnCUBE::setMtrRow( qcTemplate * aTemplate,
                            qmndCUBE   * aDataPlan )
@@ -880,9 +880,9 @@ IDE_RC qmnCUBE::setMtrRow( qcTemplate * aTemplate,
 /**
  * copy MtrRow to My Row using pointer
  *
- *  pointer·Î ¿Ã¶ó¿Â µ¥ÀÌÅÍ¸¦ myRow¿¡ º¹»çÇØÁØ´Ù.
+ *  pointerë¡œ ì˜¬ë¼ì˜¨ ë°ì´í„°ë¥¼ myRowì— ë³µì‚¬í•´ì¤€ë‹¤.
  *
- *   RowNumÀÌ³ª level°°Àº °æ¿ì Pointer°¡ ¾Æ´Ñ value·Î ¿Ã¶ó¿Â´Ù. µû¶ó¼­ valueÃ³¸®ÇØ¾ßÇÑ´Ù.
+ *   RowNumì´ë‚˜ levelê°™ì€ ê²½ìš° Pointerê°€ ì•„ë‹Œ valueë¡œ ì˜¬ë¼ì˜¨ë‹¤. ë”°ë¼ì„œ valueì²˜ë¦¬í•´ì•¼í•œë‹¤.
  */
 IDE_RC qmnCUBE::copyMtrRowToMyRow( qmndCUBE * aDataPlan )
 {
@@ -936,10 +936,10 @@ IDE_RC qmnCUBE::copyMtrRowToMyRow( qmndCUBE * aDataPlan )
 /**
  * makeGroups
  *
- *  CUBE groupÀ» »ý¼ºÇÑ´Ù. CUBEÀÇ °æ¿ì UShort TypeÀÇ BitmapÇüÅÂ·Î groupÀ» Ç¥ÇöÇÑ´Ù.
- *  CUBE´Â ÃÑ 2^n°³ÀÇ ±×·ìÀÌ ³ª¿Ã ¼ö ÀÖÀ¸¹Ç·Î 2^n°³ ¸¸Å­ÀÇ UShort¸¦ ÇÒ´çÇØ¼­ ¿©±â¿¡
- *  ±×·ìÀ» Ç¥½ÃÇÑ´Ù. ÀÌ ±×·ìÀº POWER SETÀ» ±¸ÇÏ´Â ¾Ë°í¸®ÁòÀ» ÂüÁ¶ÇØ¼­ ±¸ÇöÇßÀ½
- *  POWER SET ¾Ë°í¸®Áò ( http://rosettacode.org/wiki/Power_set )
+ *  CUBE groupì„ ìƒì„±í•œë‹¤. CUBEì˜ ê²½ìš° UShort Typeì˜ Bitmapí˜•íƒœë¡œ groupì„ í‘œí˜„í•œë‹¤.
+ *  CUBEëŠ” ì´ 2^nê°œì˜ ê·¸ë£¹ì´ ë‚˜ì˜¬ ìˆ˜ ìžˆìœ¼ë¯€ë¡œ 2^nê°œ ë§Œí¼ì˜ UShortë¥¼ í• ë‹¹í•´ì„œ ì—¬ê¸°ì—
+ *  ê·¸ë£¹ì„ í‘œì‹œí•œë‹¤. ì´ ê·¸ë£¹ì€ POWER SETì„ êµ¬í•˜ëŠ” ì•Œê³ ë¦¬ì¦˜ì„ ì°¸ì¡°í•´ì„œ êµ¬í˜„í–ˆìŒ
+ *  POWER SET ì•Œê³ ë¦¬ì¦˜ ( http://rosettacode.org/wiki/Power_set )
  */
 IDE_RC qmnCUBE::makeGroups( qcTemplate * aTemplate,
                             qmncCUBE   * aCodePlan,
@@ -1000,7 +1000,7 @@ void qmnCUBE::initGroups( qmncCUBE   * aCodePlan,
 /**
  * storeChild
  *
- *   ¸ðµç ROW¸¦ SORT Temp¿¡ ½×´Â´Ù. ÀÌ·¸°Ô ½×À¸¸é¼­ ÃÑ°è¸¦ ±¸ÇÑ´Ù.
+ *   ëª¨ë“  ROWë¥¼ SORT Tempì— ìŒ“ëŠ”ë‹¤. ì´ë ‡ê²Œ ìŒ“ìœ¼ë©´ì„œ ì´ê³„ë¥¼ êµ¬í•œë‹¤.
  */
 IDE_RC qmnCUBE::storeChild( qcTemplate * aTemplate,
                             qmncCUBE   * aCodePlan,
@@ -1008,12 +1008,12 @@ IDE_RC qmnCUBE::storeChild( qcTemplate * aTemplate,
 {
     qmcRowFlag   sFlag = QMC_ROW_INITIALIZE;
 
-    /* Child PlanÀÇ ÃÊ±âÈ­ */
+    /* Child Planì˜ ì´ˆê¸°í™” */
     IDE_TEST( aCodePlan->plan.left->init( aTemplate,
                                           aCodePlan->plan.left )
               != IDE_SUCCESS);
 
-    /* Child PlanÀÇ °á°ú¸¦ ÀúÀå */
+    /* Child Planì˜ ê²°ê³¼ë¥¼ ì €ìž¥ */
     IDE_TEST( aCodePlan->plan.left->doIt( aTemplate,
                                           aCodePlan->plan.left,
                                           &sFlag )
@@ -1021,7 +1021,7 @@ IDE_RC qmnCUBE::storeChild( qcTemplate * aTemplate,
 
     if ( ( sFlag & QMC_ROW_DATA_MASK ) == QMC_ROW_DATA_EXIST )
     {
-        /* partialCube°¡ ¾Æ´Ñ°æ¿ì ÃÑ°è¸¦ ±¸ÇÏ±â À§ÇÑ ÃÊ±âÈ­¸¦ ¼öÇàÇÑ´Ù */
+        /* partialCubeê°€ ì•„ë‹Œê²½ìš° ì´ê³„ë¥¼ êµ¬í•˜ê¸° ìœ„í•œ ì´ˆê¸°í™”ë¥¼ ìˆ˜í–‰í•œë‹¤ */
         if ( aCodePlan->partialCube == -1 )
         {
             if ( aCodePlan->distNode != NULL )
@@ -1065,7 +1065,7 @@ IDE_RC qmnCUBE::storeChild( qcTemplate * aTemplate,
 
         if ( aCodePlan->partialCube == -1 )
         {
-            /* partialCube°¡ ¾Æ´Ñ°æ¿ì ÃÑ°è °è»êÀ» ¼öÇàÇÑ´Ù */
+            /* partialCubeê°€ ì•„ë‹Œê²½ìš° ì´ê³„ ê³„ì‚°ì„ ìˆ˜í–‰í•œë‹¤ */
             if ( aCodePlan->distNode != NULL )
             {
                 IDE_TEST( qmnCUBE::setDistMtrColumns( aTemplate,
@@ -1140,7 +1140,7 @@ IDE_RC qmnCUBE::storeChild( qcTemplate * aTemplate,
 /**
  * firstInit
  *
- *  CUBE ÃÊ±â initialize¸¦ ¼öÇàÇÑ´Ù.
+ *  CUBE ì´ˆê¸° initializeë¥¼ ìˆ˜í–‰í•œë‹¤.
  */
 IDE_RC qmnCUBE::firstInit( qcTemplate * aTemplate,
                            qmncCUBE   * aCodePlan,
@@ -1226,7 +1226,7 @@ IDE_RC qmnCUBE::firstInit( qcTemplate * aTemplate,
 /**
  * findRemainGroup
  *
- *  µÚ¿¡¼­ ºÎÅÍ ±¸ÇØÁöÁö ¾ÊÀº ±×·ìÀ» Ã£´Â´Ù.
+ *  ë’¤ì—ì„œ ë¶€í„° êµ¬í•´ì§€ì§€ ì•Šì€ ê·¸ë£¹ì„ ì°¾ëŠ”ë‹¤.
  */
 UInt qmnCUBE::findRemainGroup( qmndCUBE * aDataPlan )
 {
@@ -1253,7 +1253,7 @@ UInt qmnCUBE::findRemainGroup( qmndCUBE * aDataPlan )
 /**
  * makeSortNodeAndSort
  *
- *  Bitmap¼øÀ¸·Î SortNode¸¦ ¼³Á¤ÇÏ°í Sort¸¦ ¼öÇàÇÑ´Ù.
+ *  Bitmapìˆœìœ¼ë¡œ SortNodeë¥¼ ì„¤ì •í•˜ê³  Sortë¥¼ ìˆ˜í–‰í•œë‹¤.
  */
 IDE_RC qmnCUBE::makeSortNodeAndSort( qmncCUBE * aCodePlan,
                                      qmndCUBE * aDataPlan )
@@ -1272,7 +1272,7 @@ IDE_RC qmnCUBE::makeSortNodeAndSort( qmncCUBE * aCodePlan,
 
     sNode = aDataPlan->sortNode;
 
-    /* ¸ÕÀú CUBE¿¡ ÇØ´çÇÏÁö ¾Ê´Â ÄÃ·³À» ¼³Á¤ÇÑ´Ù */
+    /* ë¨¼ì € CUBEì— í•´ë‹¹í•˜ì§€ ì•ŠëŠ” ì»¬ëŸ¼ì„ ì„¤ì •í•œë‹¤ */
     for ( i = 0; (SInt)i < aCodePlan->partialCube; i++, sNode++ )
     {
         sNode->next = NULL;
@@ -1288,7 +1288,7 @@ IDE_RC qmnCUBE::makeSortNodeAndSort( qmncCUBE * aCodePlan,
         }
     }
 
-    /* CUBEÀÇ ÄÃ·³Áß ÇØ´ç ±×·ì¿¡ Æ÷ÇÔÇÏ´Â ÄÃ·³¸¸ Sort Key¸¦ ¼³Á¤ÇÑ´Ù. */
+    /* CUBEì˜ ì»¬ëŸ¼ì¤‘ í•´ë‹¹ ê·¸ë£¹ì— í¬í•¨í•˜ëŠ” ì»¬ëŸ¼ë§Œ Sort Keyë¥¼ ì„¤ì •í•œë‹¤. */
     for ( i = 0, sMask = 0x0001;
           i < aCodePlan->cubeCount;
           i ++, sMask <<= 1 )
@@ -1332,7 +1332,7 @@ IDE_RC qmnCUBE::makeSortNodeAndSort( qmncCUBE * aCodePlan,
 /**
  * clearDistNode
  *
- *   ±×·ì index¸¦ ÀÎÀÚ·Î ¹Þ¾Æ ÇØ´çÇÏ´Â Distinct³ëµåÀÇ ÃÊ±âÈ­¸¦ ¼öÇàÇÑ´Ù.
+ *   ê·¸ë£¹ indexë¥¼ ì¸ìžë¡œ ë°›ì•„ í•´ë‹¹í•˜ëŠ” Distinctë…¸ë“œì˜ ì´ˆê¸°í™”ë¥¼ ìˆ˜í–‰í•œë‹¤.
  */
 IDE_RC qmnCUBE::clearDistNode( qmncCUBE * aCodePlan,
                                qmndCUBE * aDataPlan,
@@ -1361,8 +1361,8 @@ IDE_RC qmnCUBE::clearDistNode( qmncCUBE * aCodePlan,
 /**
  * setDistMtrColumns
  *
- *   ±×·ì Index¸¦ ÀÎÀÚ·Î ¹Þ¾Æ ÇØ´ç ÀÎµ¦½ºÀÇ distint NodeÀÇ HashTemp¿¡ ÇöÁ¦
- *   °ªÀ» ³Ö¾îº¸°í °ãÄ¡´Â ÀÚ·áÀÎÁö ¾Æ´ÑÁö¸¦ ¼³Á¤ÇÑ´Ù.
+ *   ê·¸ë£¹ Indexë¥¼ ì¸ìžë¡œ ë°›ì•„ í•´ë‹¹ ì¸ë±ìŠ¤ì˜ distint Nodeì˜ HashTempì— í˜„ì œ
+ *   ê°’ì„ ë„£ì–´ë³´ê³  ê²¹ì¹˜ëŠ” ìžë£Œì¸ì§€ ì•„ë‹Œì§€ë¥¼ ì„¤ì •í•œë‹¤.
  */
 IDE_RC qmnCUBE::setDistMtrColumns( qcTemplate * aTemplate,
                                    qmncCUBE   * aCodePlan,
@@ -1408,8 +1408,8 @@ IDE_RC qmnCUBE::setDistMtrColumns( qcTemplate * aTemplate,
 /**
  * setSubGroups
  *
- *  CUBEÀÇ GroupÀº PowerSet ¾Ë°í¸®Áò¿¡ ÀÇÇØ »ý¼ºµÇ´Âµ¥ ¸ðµç ÄÃ·³À» Æ÷ÇÔÇÏ´Â ±×·ìÀÌ °¡Àå
- *  ¸¶Áö¸·¿¡ ¼³Á¤µÈ´Ù. µû¶ó¼­ ¿ª¼øÀ¸·Î ±×·ì setÀ» ¼öÇàÇÑ´Ù.
+ *  CUBEì˜ Groupì€ PowerSet ì•Œê³ ë¦¬ì¦˜ì— ì˜í•´ ìƒì„±ë˜ëŠ”ë° ëª¨ë“  ì»¬ëŸ¼ì„ í¬í•¨í•˜ëŠ” ê·¸ë£¹ì´ ê°€ìž¥
+ *  ë§ˆì§€ë§‰ì— ì„¤ì •ëœë‹¤. ë”°ë¼ì„œ ì—­ìˆœìœ¼ë¡œ ê·¸ë£¹ setì„ ìˆ˜í–‰í•œë‹¤.
  */
 void qmnCUBE::setSubGroups( qmncCUBE * aCodePlan, qmndCUBE * aDataPlan )
 {
@@ -1421,7 +1421,7 @@ void qmnCUBE::setSubGroups( qmncCUBE * aCodePlan, qmndCUBE * aDataPlan )
     SInt         j;
 
     /**
-     * °¡Àå ¸¶Áö¸· ±×·ìºÎÅÍ °è»êÀ» ¼öÇàÇÏ±â ½ÃÀÛÇÑ´Ù.
+     * ê°€ìž¥ ë§ˆì§€ë§‰ ê·¸ë£¹ë¶€í„° ê³„ì‚°ì„ ìˆ˜í–‰í•˜ê¸° ì‹œìž‘í•œë‹¤.
      */
     aDataPlan->subIndexToGroupIndex[0] = aDataPlan->groupIndex;
     sTemp = aDataPlan->cubeGroups[aDataPlan->groupIndex];
@@ -1479,7 +1479,7 @@ void qmnCUBE::setSubGroups( qmncCUBE * aCodePlan, qmndCUBE * aDataPlan )
 /**
  * compareRows
  *
- *  myNodeÀÇ Row¿Í mtrNodeÀÇ Row¸¦ ºñ·áÇØ¼­ °¢ ÄÃ·³ÀÌ matching ¿©ºÎ¸¦ Ç¥½ÃÇÑ´Ù.
+ *  myNodeì˜ Rowì™€ mtrNodeì˜ Rowë¥¼ ë¹„ë£Œí•´ì„œ ê° ì»¬ëŸ¼ì´ matching ì—¬ë¶€ë¥¼ í‘œì‹œí•œë‹¤.
  */
 IDE_RC qmnCUBE::compareRows( qmndCUBE * aDataPlan )
 {
@@ -1507,9 +1507,9 @@ IDE_RC qmnCUBE::compareRows( qmndCUBE * aDataPlan )
         }
         else
         {
-            // PROJ-2362 memory temp ÀúÀå È¿À²¼º °³¼±
-            // mtrNode°¡ TEMP_TYPEÀÎ °æ¿ì compare functionÀº logical compareÀÌ¹Ç·Î
-            // myRowÀÇ value¸¦ offset_useless·Î º¯°æÇÑ´Ù.
+            // PROJ-2362 memory temp ì €ìž¥ íš¨ìœ¨ì„± ê°œì„ 
+            // mtrNodeê°€ TEMP_TYPEì¸ ê²½ìš° compare functionì€ logical compareì´ë¯€ë¡œ
+            // myRowì˜ valueë¥¼ offset_uselessë¡œ ë³€ê²½í•œë‹¤.
             if ( sMtrNode->func.setTuple == &qmc::setTupleByValue )
             {
                 if ( SMI_COLUMN_TYPE_IS_TEMP( sMtrNode->dstColumn->column.flag ) == ID_TRUE )
@@ -1640,9 +1640,9 @@ IDE_RC qmnCUBE::compareRows( qmndCUBE * aDataPlan )
 /**
  * compareGroupExecAggr
  *
- *  CUBEÀÇ ±×·ìº°·Î matched µÇ¾î¾ß ÇÏ´Â ÄÃ·³ÀÌ ´Ù¸£¹Ç·Î °¢ ±×·ìº°·Î matchedµÇ¾î¾ß
- *  ÇÏ´Â ÄÃ·³¸¸ ¼±º°ÇÏ¿© compareResults°¡ µÇ´ÂÁö¸¦ ÆÇº°ÇÏ°í
- *  ÀÌ ±×·ìÀÌ myNode¿¡ ÀÖ´Â ÀÚ·á¿Í ±×·ìÈ­ µÇ¾îÀÖ´Ù¸é execAggregationÀ» ¼öÇàÇÑ´Ù.
+ *  CUBEì˜ ê·¸ë£¹ë³„ë¡œ matched ë˜ì–´ì•¼ í•˜ëŠ” ì»¬ëŸ¼ì´ ë‹¤ë¥´ë¯€ë¡œ ê° ê·¸ë£¹ë³„ë¡œ matchedë˜ì–´ì•¼
+ *  í•˜ëŠ” ì»¬ëŸ¼ë§Œ ì„ ë³„í•˜ì—¬ compareResultsê°€ ë˜ëŠ”ì§€ë¥¼ íŒë³„í•˜ê³ 
+ *  ì´ ê·¸ë£¹ì´ myNodeì— ìžˆëŠ” ìžë£Œì™€ ê·¸ë£¹í™” ë˜ì–´ìžˆë‹¤ë©´ execAggregationì„ ìˆ˜í–‰í•œë‹¤.
  */
 IDE_RC qmnCUBE::compareGroupsExecAggr( qcTemplate * aTemplate,
                                        qmncCUBE   * aCodePlan,
@@ -1767,8 +1767,8 @@ IDE_RC qmnCUBE::compareGroupsExecAggr( qcTemplate * aTemplate,
 /**
  * setColumnNULL
  *
- *  aSubIndex·Î ºÎÅÍ ÀüÃ¼ CUBE ±×·ìÀÎÅØ½º¸¦ ±¸ÇÏ°í ÀüÃ¼ ±×·ìÀÎµ¦½º¿¡¼­ CUBE ÄÃ·³ÀÇ Bitmap
- *  À» ±¸ÇØ¼­ NULLÀÌ µÇ¾î¾ß ÇÒ ÄÃ·³ÀÇ NULLÀ» ¼öÇàÇÑ´Ù.
+ *  aSubIndexë¡œ ë¶€í„° ì „ì²´ CUBE ê·¸ë£¹ì¸í…ìŠ¤ë¥¼ êµ¬í•˜ê³  ì „ì²´ ê·¸ë£¹ì¸ë±ìŠ¤ì—ì„œ CUBE ì»¬ëŸ¼ì˜ Bitmap
+ *  ì„ êµ¬í•´ì„œ NULLì´ ë˜ì–´ì•¼ í•  ì»¬ëŸ¼ì˜ NULLì„ ìˆ˜í–‰í•œë‹¤.
  */
 void qmnCUBE::setColumnNull( qmncCUBE * aCodePlan,
                              qmndCUBE * aDataPlan,
@@ -1818,7 +1818,7 @@ void qmnCUBE::setColumnNull( qmncCUBE * aCodePlan,
 /**
  * padNull
  *
- *   Null padingÀ» ¼öÇàÇÑ´Ù.
+ *   Null padingì„ ìˆ˜í–‰í•œë‹¤.
  */
 IDE_RC qmnCUBE::padNull( qcTemplate * aTemplate, qmnPlan * aPlan )
 {
@@ -1843,7 +1843,7 @@ IDE_RC qmnCUBE::padNull( qcTemplate * aTemplate, qmnPlan * aPlan )
     {
         sDataPlan->plan.myTuple->row = sDataPlan->nullRow;
         
-        // PROJ-2362 memory temp ÀúÀå È¿À²¼º °³¼±
+        // PROJ-2362 memory temp ì €ìž¥ íš¨ìœ¨ì„± ê°œì„ 
         sColumn = sDataPlan->plan.myTuple->columns;
         for ( i = 0; i < sDataPlan->plan.myTuple->columnCount; i++, sColumn++ )
         {
@@ -1877,8 +1877,8 @@ IDE_RC qmnCUBE::padNull( qcTemplate * aTemplate, qmnPlan * aPlan )
 /**
  * doItFirst
  *
- *  CUBE´Â ÀÌ¹Ì ½×¿©Áø SortTemp¿¡¼­ 2^(n-1) ¸¸Å­ Sort¸¦ ¼öÇàÇÏ¸é¼­ 2^n ¸¸Å­ÀÇ ±×·ì °è»êÀ»
- *  ¼öÇàÇÑ´Ù.
+ *  CUBEëŠ” ì´ë¯¸ ìŒ“ì—¬ì§„ SortTempì—ì„œ 2^(n-1) ë§Œí¼ Sortë¥¼ ìˆ˜í–‰í•˜ë©´ì„œ 2^n ë§Œí¼ì˜ ê·¸ë£¹ ê³„ì‚°ì„
+ *  ìˆ˜í–‰í•œë‹¤.
  */
 IDE_RC qmnCUBE::doItFirst( qcTemplate * aTemplate,
                            qmnPlan    * aPlan,
@@ -1904,7 +1904,7 @@ IDE_RC qmnCUBE::doItFirst( qcTemplate * aTemplate,
 
         initGroups( sCodePlan, sDataPlan );
 
-        /* Store½Ã¿¡ ½×À» µ¥ÀÌÅÍ°¡ ¾ø´Ù°í ¼³Á¤µÇ¸é DATA_NONEÀ¸·Î ¼³Á¤ÇÑ´Ù. */
+        /* Storeì‹œì— ìŒ“ì„ ë°ì´í„°ê°€ ì—†ë‹¤ê³  ì„¤ì •ë˜ë©´ DATA_NONEìœ¼ë¡œ ì„¤ì •í•œë‹¤. */
         *aFlag = QMC_ROW_DATA_NONE;
         IDE_CONT( NORMAL_EXIT );
     }
@@ -1913,7 +1913,7 @@ IDE_RC qmnCUBE::doItFirst( qcTemplate * aTemplate,
         /* Nothing to do */
     }
 
-    /* partialCube°¡ ¾Æ´Ï¶ó¸é Store½Ã¿¡ ±¸ÇØÁø ÃÑ°è¸¦ ¸ÕÀú ¿Ã·ÁµÐ´Ù */
+    /* partialCubeê°€ ì•„ë‹ˆë¼ë©´ Storeì‹œì— êµ¬í•´ì§„ ì´ê³„ë¥¼ ë¨¼ì € ì˜¬ë ¤ë‘”ë‹¤ */
     if ( (( sDataPlan->cubeGroups[0] & QMND_CUBE_GROUP_DONE_MASK )
          == QMND_CUBE_GROUP_DONE_FALSE ) && ( sCodePlan->partialCube == -1 ) )
     {
@@ -1939,7 +1939,7 @@ IDE_RC qmnCUBE::doItFirst( qcTemplate * aTemplate,
         /* Nothing to do */
     }
 
-    /* ¸Ç ¸¶Áö¸· ±×·ìÀÌ ¾Æ´Ï¶ó¸é µÚ¿¡¼­ ºÎÅÍ ±¸ÇØÁöÁö ¾ÊÀº ±×·ìÀ» Ã£´Â´Ù */
+    /* ë§¨ ë§ˆì§€ë§‰ ê·¸ë£¹ì´ ì•„ë‹ˆë¼ë©´ ë’¤ì—ì„œ ë¶€í„° êµ¬í•´ì§€ì§€ ì•Šì€ ê·¸ë£¹ì„ ì°¾ëŠ”ë‹¤ */
     if ( sDataPlan->groupIndex != sCodePlan->groupCount - 1 )
     {
         sGroupIndex = findRemainGroup( sDataPlan );
@@ -1968,14 +1968,14 @@ IDE_RC qmnCUBE::doItFirst( qcTemplate * aTemplate,
         /* Nothing to do */
     }
 
-    /* ±¸ÇØÁø ±×·ìÀº ÇÑ¹ø¿¡ ÃÖ´ë ( n + 1 )°³ÀÇ ±×·ìÀ» ±¸ÇÒ ¼ö ÀÖÀ¸¹Ç·Î ÇÏÀ§ ±×·ìÀ» ¼³Á¤ÇÑ´Ù.
-     * ¼³Á¤µÈ ±×·ìÀ¸·Î sortNode¸¦ ±¸¼ºÇÏ°í Sort¸¦ ¼öÇàÇÑ´Ù.
+    /* êµ¬í•´ì§„ ê·¸ë£¹ì€ í•œë²ˆì— ìµœëŒ€ ( n + 1 )ê°œì˜ ê·¸ë£¹ì„ êµ¬í•  ìˆ˜ ìžˆìœ¼ë¯€ë¡œ í•˜ìœ„ ê·¸ë£¹ì„ ì„¤ì •í•œë‹¤.
+     * ì„¤ì •ëœ ê·¸ë£¹ìœ¼ë¡œ sortNodeë¥¼ êµ¬ì„±í•˜ê³  Sortë¥¼ ìˆ˜í–‰í•œë‹¤.
      */
     setSubGroups( sCodePlan, sDataPlan );
     IDE_TEST( makeSortNodeAndSort( sCodePlan, sDataPlan )
               != IDE_SUCCESS );
 
-    /* ¸¶Áö¸· ³ëµåÀÏ °æ¿ì ´ÙÀ½ ±×·ìÀ¸·Î ¼³Á¤ÇÑ´Ù */
+    /* ë§ˆì§€ë§‰ ë…¸ë“œì¼ ê²½ìš° ë‹¤ìŒ ê·¸ë£¹ìœ¼ë¡œ ì„¤ì •í•œë‹¤ */
     if ( sDataPlan->groupIndex == sCodePlan->groupCount - 1 )
     {
         --sDataPlan->groupIndex;
@@ -2064,7 +2064,7 @@ IDE_RC qmnCUBE::doItFirst( qcTemplate * aTemplate,
 /**
  * doItNext
  *
- *   doItNext´Â ½ÇÁ¦·Î Rollup°ú ¸¶Âù°¡Áö·Î ÃÖ´ë (n+1)°³ÀÇ ±×·ì¿¡ ´ëÇÑ °è»êÀ» ¼öÇàÇÑ´Ù.
+ *   doItNextëŠ” ì‹¤ì œë¡œ Rollupê³¼ ë§ˆì°¬ê°€ì§€ë¡œ ìµœëŒ€ (n+1)ê°œì˜ ê·¸ë£¹ì— ëŒ€í•œ ê³„ì‚°ì„ ìˆ˜í–‰í•œë‹¤.
  */
 IDE_RC qmnCUBE::doItNext( qcTemplate * aTemplate,
                           qmnPlan    * aPlan,
@@ -2081,7 +2081,7 @@ IDE_RC qmnCUBE::doItNext( qcTemplate * aTemplate,
 
     if ( sDataPlan->subIndex != 0 )
     {
-        /* ÀÌ¹Ì ¿Ã·ÁÁø ±×·ì¿¡ ´ëÇØ AggregationÀ» ÃÊ±âÈ­ÇÑ´Ù. */
+        /* ì´ë¯¸ ì˜¬ë ¤ì§„ ê·¸ë£¹ì— ëŒ€í•´ Aggregationì„ ì´ˆê¸°í™”í•œë‹¤. */
         if ( sCodePlan->distNode != NULL )
         {
             IDE_TEST( clearDistNode( sCodePlan, sDataPlan, sDataPlan->subIndex - 1 )
@@ -2183,17 +2183,17 @@ IDE_RC qmnCUBE::doItNext( qcTemplate * aTemplate,
                 /* Nothing to do */
             }
 
-            /* myNode¿Í mtrNodeÀÇ Row¸¦ ¼­·Î ºñ±³ÇØ °¢ ÄÃ·³ÀÌ ¸Â´ÂÁö ºñ±³ÇÑ´Ù */
+            /* myNodeì™€ mtrNodeì˜ Rowë¥¼ ì„œë¡œ ë¹„êµí•´ ê° ì»¬ëŸ¼ì´ ë§žëŠ”ì§€ ë¹„êµí•œë‹¤ */
             IDE_TEST( compareRows( sDataPlan ) != IDE_SUCCESS );
 
-            /* °¢ ±×·ìº°·Î ±×·ìÀÌ µÇ´ÂÁö ¾Æ´ÑÁö¸¦ ÆÇº°ÇÏ°í ±×·ìÀÌ¶ó¸é exeAggrÀ» ¼öÇàÇÑ´Ù. */
+            /* ê° ê·¸ë£¹ë³„ë¡œ ê·¸ë£¹ì´ ë˜ëŠ”ì§€ ì•„ë‹Œì§€ë¥¼ íŒë³„í•˜ê³  ê·¸ë£¹ì´ë¼ë©´ exeAggrì„ ìˆ˜í–‰í•œë‹¤. */
             IDE_TEST( compareGroupsExecAggr( aTemplate,
                                              sCodePlan,
                                              sDataPlan,
                                              &sAllMatched )
                       != IDE_SUCCESS );
 
-            /* ¸ðµç ±×·ìÀÌ ¸Â´Ù¸é ´ÙÀ½ Row¸¦ ÀÐ¾î¼­ ¹Ýº¹ÇÑ´Ù */
+            /* ëª¨ë“  ê·¸ë£¹ì´ ë§žë‹¤ë©´ ë‹¤ìŒ Rowë¥¼ ì½ì–´ì„œ ë°˜ë³µí•œë‹¤ */
             if ( sAllMatched == ID_TRUE )
             {
                 sOrgRow = sSearchRow = sDataPlan->mtrTuple->row;
@@ -2205,7 +2205,7 @@ IDE_RC qmnCUBE::doItNext( qcTemplate * aTemplate,
 
                 if ( sSearchRow == NULL )
                 {
-                    /* Data°¡ ¾ø´Ù¸é ¸ðµç ÇÏÀ§ ±×·ìÀ» ¿Ã·Áº¸³»ÁØ´Ù */
+                    /* Dataê°€ ì—†ë‹¤ë©´ ëª¨ë“  í•˜ìœ„ ê·¸ë£¹ì„ ì˜¬ë ¤ë³´ë‚´ì¤€ë‹¤ */
                     sDataPlan->isDataNone = ID_TRUE;
                     sDataPlan->subIndex   = 1;
                     sDataPlan->subStatus  = 0;
@@ -2237,7 +2237,7 @@ IDE_RC qmnCUBE::doItNext( qcTemplate * aTemplate,
             }
             else
             {
-                /* Ã¹ ¹øÂ° ±×·ì ¿¡¼­ ±×·ìÀÌ ¾Æ´Ï¹Ç·Î ÀÌ¿¡ ´ëÇÑ NULLÀ» ¼öÇàÇÏ°í À§·Î ¿Ã·Áº¸³»ÁØ´Ù */
+                /* ì²« ë²ˆì§¸ ê·¸ë£¹ ì—ì„œ ê·¸ë£¹ì´ ì•„ë‹ˆë¯€ë¡œ ì´ì— ëŒ€í•œ NULLì„ ìˆ˜í–‰í•˜ê³  ìœ„ë¡œ ì˜¬ë ¤ë³´ë‚´ì¤€ë‹¤ */
                 sDataPlan->needCopy = ID_TRUE;
                 sDataPlan->subIndex = 1;
                 setColumnNull( sCodePlan, sDataPlan, 0 );
@@ -2256,7 +2256,7 @@ IDE_RC qmnCUBE::doItNext( qcTemplate * aTemplate,
     }
     else
     {
-        /* Data°¡ ¾ø´Ù¸é ¸ðµç ÇÏÀ§ ±×·ìÀ» ¿Ã·Áº¸³»ÁØ´Ù */
+        /* Dataê°€ ì—†ë‹¤ë©´ ëª¨ë“  í•˜ìœ„ ê·¸ë£¹ì„ ì˜¬ë ¤ë³´ë‚´ì¤€ë‹¤ */
         sDataPlan->isDataNone = ID_TRUE;
         sDataPlan->subIndex   = 1;
         sDataPlan->subStatus  = 0;
@@ -2298,8 +2298,8 @@ IDE_RC qmnCUBE::doItNext( qcTemplate * aTemplate,
 /**
  * valueTempStore
  *
- *  µ¥ÀÌºíÀÌ ¸Þ¸ð¸®ÀÌ°í »óÀ§¿¡¼­ Sort³ª Window Sort¿Í °°ÀÌ ¸Þ¸ð¸® Æ÷ÀÎÅÍ¸¦ ½×¾Æ¼­ ÀÛ¾÷À» ÇÏ´Â
- *  °æ¿ì¿¡ ±âÁ¸ ·ÎÁ÷À» µ¿ÀÛ½ÃÄÑ »õ·Î¿î Temp¿¡ ÀúÀåÇÑ´Ù.
+ *  ë°ì´ë¸”ì´ ë©”ëª¨ë¦¬ì´ê³  ìƒìœ„ì—ì„œ Sortë‚˜ Window Sortì™€ ê°™ì´ ë©”ëª¨ë¦¬ í¬ì¸í„°ë¥¼ ìŒ“ì•„ì„œ ìž‘ì—…ì„ í•˜ëŠ”
+ *  ê²½ìš°ì— ê¸°ì¡´ ë¡œì§ì„ ë™ìž‘ì‹œì¼œ ìƒˆë¡œìš´ Tempì— ì €ìž¥í•œë‹¤.
  */
 IDE_RC qmnCUBE::valueTempStore( qcTemplate * aTemplate, qmnPlan * aPlan )
 {
@@ -2393,8 +2393,8 @@ IDE_RC qmnCUBE::valueTempStore( qcTemplate * aTemplate, qmnPlan * aPlan )
 /**
  * doItFirstValueTemp
  *
- *  µ¥ÀÌºíÀÌ ¸Þ¸ð¸®ÀÌ°í »óÀ§¿¡¼­ Sort³ª Window Sort¿Í °°ÀÌ ¸Þ¸ð¸® Æ÷ÀÎÅÍ¸¦ ½×¾Æ¼­ ÀÛ¾÷À» ÇÏ´Â
- *  °æ¿ì¿¡ ±âÁ¸ ·ÎÁ÷À» µ¿ÀÛ½ÃÄÑ »õ·Î¿î Memory Temp¿¡ ÀúÀå½ÃÅ°°í ÀÌ¶§Temp¿¡¼­ Ã¹¹ø Â° Row¸¦ ¾ò´Â´Ù.
+ *  ë°ì´ë¸”ì´ ë©”ëª¨ë¦¬ì´ê³  ìƒìœ„ì—ì„œ Sortë‚˜ Window Sortì™€ ê°™ì´ ë©”ëª¨ë¦¬ í¬ì¸í„°ë¥¼ ìŒ“ì•„ì„œ ìž‘ì—…ì„ í•˜ëŠ”
+ *  ê²½ìš°ì— ê¸°ì¡´ ë¡œì§ì„ ë™ìž‘ì‹œì¼œ ìƒˆë¡œìš´ Memory Tempì— ì €ìž¥ì‹œí‚¤ê³  ì´ë•ŒTempì—ì„œ ì²«ë²ˆ ì§¸ Rowë¥¼ ì–»ëŠ”ë‹¤.
  */
 IDE_RC qmnCUBE::doItFirstValueTemp( qcTemplate * aTemplate,
                                   qmnPlan    * aPlan,
@@ -2435,8 +2435,8 @@ IDE_RC qmnCUBE::doItFirstValueTemp( qcTemplate * aTemplate,
 /**
  * doItNextValueTemp
  *
- *  µ¥ÀÌºíÀÌ ¸Þ¸ð¸®ÀÌ°í »óÀ§¿¡¼­ Sort³ª Window Sort¿Í °°ÀÌ ¸Þ¸ð¸® Æ÷ÀÎÅÍ¸¦ ½×¾Æ¼­ ÀÛ¾÷À» ÇÏ´Â
- *  °æ¿ì¿¡ ±âÁ¸ ·ÎÁ÷À» µ¿ÀÛ½ÃÄÑ »õ·Î¿î Memory Temp¿¡ ÀúÀå½ÃÅ°°í ÀÌ¶§Temp¿¡¼­ ´Ù Â° Row¸¦ ¾ò´Â´Ù.
+ *  ë°ì´ë¸”ì´ ë©”ëª¨ë¦¬ì´ê³  ìƒìœ„ì—ì„œ Sortë‚˜ Window Sortì™€ ê°™ì´ ë©”ëª¨ë¦¬ í¬ì¸í„°ë¥¼ ìŒ“ì•„ì„œ ìž‘ì—…ì„ í•˜ëŠ”
+ *  ê²½ìš°ì— ê¸°ì¡´ ë¡œì§ì„ ë™ìž‘ì‹œì¼œ ìƒˆë¡œìš´ Memory Tempì— ì €ìž¥ì‹œí‚¤ê³  ì´ë•ŒTempì—ì„œ ë‹¤ ì§¸ Rowë¥¼ ì–»ëŠ”ë‹¤.
  */
 IDE_RC qmnCUBE::doItNextValueTemp( qcTemplate * aTemplate,
                                  qmnPlan    * aPlan,
@@ -2536,7 +2536,7 @@ IDE_RC qmnCUBE::printPlan( qcTemplate   * aTemplate,
     }
 
     //----------------------------
-    // Cost Ãâ·Â
+    // Cost ì¶œë ¥
     //----------------------------
     qmn::printCost( aString,
                     sCodePlan->plan.qmgAllCost );

@@ -224,7 +224,7 @@ IDE_RC qdcJob::executeCreateJob( qcStatement * aStatement )
 
     sParseTree = ( qdJobParseTree * )aStatement->myPlan->parseTree;
 
-    /* Sql Query °ø°£ ÇÒ´ç */
+    /* Sql Query ê³µê°„ í• ë‹¹ */
     IDU_FIT_POINT("qdcJob::execCreateJob::malloc1");
     IDE_TEST( STRUCT_ALLOC_WITH_SIZE( aStatement->qmxMem,
                                       SChar,
@@ -362,7 +362,7 @@ IDE_RC qdcJob::executeAlterJobExec( qcStatement * aStatement )
 
     sParseTree = ( qdJobParseTree * )aStatement->myPlan->parseTree;
 
-    /* Sql Query °ø°£ ÇÒ´ç */
+    /* Sql Query ê³µê°„ í• ë‹¹ */
     IDU_FIT_POINT("qdcJob::executeAlterJobExec::malloc1");
     IDE_TEST( STRUCT_ALLOC_WITH_SIZE( aStatement->qmxMem,
                                       SChar,
@@ -407,7 +407,7 @@ IDE_RC qdcJob::executeAlterJobStartEnd( qcStatement * aStatement )
 
     sParseTree = ( qdJobParseTree * )aStatement->myPlan->parseTree;
 
-    /* Sql Query °ø°£ ÇÒ´ç */
+    /* Sql Query ê³µê°„ í• ë‹¹ */
     IDU_FIT_POINT("qdcJob::executeAlterJobStartEnd::malloc1");
     IDE_TEST( STRUCT_ALLOC_WITH_SIZE( aStatement->qmxMem,
                                       SChar,
@@ -462,7 +462,7 @@ IDE_RC qdcJob::executeAlterJobInterval( qcStatement * aStatement )
 
     sParseTree = ( qdJobParseTree * )aStatement->myPlan->parseTree;
 
-    /* Sql Query °ø°£ ÇÒ´ç */
+    /* Sql Query ê³µê°„ í• ë‹¹ */
     IDU_FIT_POINT("qdcJob::executeAlterJobInterval::malloc1");
     IDE_TEST( STRUCT_ALLOC_WITH_SIZE( aStatement->qmxMem,
                                       SChar,
@@ -508,7 +508,7 @@ IDE_RC qdcJob::executeAlterJobEnable( qcStatement * aStatement )
 
     sParseTree = ( qdJobParseTree * )aStatement->myPlan->parseTree;
 
-    /* Sql Query °ø°£ ÇÒ´ç */
+    /* Sql Query ê³µê°„ í• ë‹¹ */
     IDU_FIT_POINT("qdcJob::executeAlterJobEnable::malloc1");
     IDE_TEST( STRUCT_ALLOC_WITH_SIZE( aStatement->qmxMem,
                                       SChar,
@@ -560,7 +560,7 @@ IDE_RC qdcJob::executeAlterJobComment( qcStatement * aStatement )
 
     sParseTree = ( qdJobParseTree * )aStatement->myPlan->parseTree;
 
-    /* Sql Query °ø°£ ÇÒ´ç */
+    /* Sql Query ê³µê°„ í• ë‹¹ */
     IDU_FIT_POINT("qdcJob::executeAlterJobComment::malloc1");
     IDE_TEST( STRUCT_ALLOC_WITH_SIZE( aStatement->qmxMem,
                                       SChar,
@@ -608,7 +608,7 @@ IDE_RC qdcJob::executeDropJob( qcStatement * aStatement )
 
     sParseTree = ( qdJobParseTree * )aStatement->myPlan->parseTree;
 
-    /* Sql Query °ø°£ ÇÒ´ç */
+    /* Sql Query ê³µê°„ í• ë‹¹ */
     IDU_FIT_POINT("qdcJob::executeDropJob::malloc1");
     IDE_TEST( STRUCT_ALLOC_WITH_SIZE( aStatement->qmxMem,
                                       SChar,

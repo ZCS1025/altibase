@@ -16,7 +16,7 @@
 
 /***********************************************************************
  *
- * Spatio-Temporal Byte Order Á¶Á¤ ÇÔ¼ö
+ * Spatio-Temporal Byte Order ì¡°ì • í•¨ìˆ˜
  *
  ***********************************************************************/
 
@@ -32,7 +32,7 @@
  *
  * Description:
  *
- *   Àü¼Û¹ŞÀº Geometry °´Ã¼¸¦ System¿¡ ¸Âµµ·Ï Byte Order¸¦ Á¶Á¤ÇÑ´Ù.
+ *   ì „ì†¡ë°›ì€ Geometry ê°ì²´ë¥¼ Systemì— ë§ë„ë¡ Byte Orderë¥¼ ì¡°ì •í•œë‹¤.
  *
  * Implementation:
  *
@@ -54,7 +54,7 @@ ulsAdjustByteOrder( ulsHandle         * aHandle,
     ACI_TEST_RAISE( aObject == NULL, ERR_NULL_PARAMETER );
 
     /*------------------------------*/
-    /* Endian º¯°æÀÌ ÇÊ¿äÇÑÁö¸¦ °Ë»ç*/
+    /* Endian ë³€ê²½ì´ í•„ìš”í•œì§€ë¥¼ ê²€ì‚¬*/
     /*------------------------------*/
 
     ACI_TEST( ulsIsEquiEndian( aHandle,
@@ -62,16 +62,16 @@ ulsAdjustByteOrder( ulsHandle         * aHandle,
                                & sEquiEndian ) != ACI_SUCCESS );
 
     /*------------------------------*/
-    /* Endian º¯°æ*/
+    /* Endian ë³€ê²½*/
     /*------------------------------*/
 
     if ( sEquiEndian == ACP_TRUE )
     {
-        /* µ¿ÀÏÇÑ Byte OrderÀÓ.*/
+        /* ë™ì¼í•œ Byte Orderì„.*/
     }
     else
     {
-        /* ¼­·Î ´Ù¸¥ Byte Order·Î EndianÀ» º¯°æÇÔ.*/
+        /* ì„œë¡œ ë‹¤ë¥¸ Byte Orderë¡œ Endianì„ ë³€ê²½í•¨.*/
         ACI_TEST( ulsEndian( aHandle, aObject ) != ACS_SUCCESS );
     }
     
@@ -97,7 +97,7 @@ ulsAdjustByteOrder( ulsHandle         * aHandle,
  *
  * Description:
  *
- *   Geometry °´Ã¼ÀÇ EndianÀ» º¯°æÇÑ´Ù.
+ *   Geometry ê°ì²´ì˜ Endianì„ ë³€ê²½í•œë‹¤.
  *
  * Implementation:
  *
@@ -218,7 +218,7 @@ ulsEndian( ulsHandle         * aHandle,
  *
  * Description:
  *
- *   Double DataÀÇ EndianÀ» º¯°æ
+ *   Double Dataì˜ Endianì„ ë³€ê²½
  *
  * Implementation:
  *
@@ -257,7 +257,7 @@ ulsEndianDouble( void* aValue )
  *
  * Description:
  *
- *   Integer DataÀÇ EndianÀ» º¯°æ
+ *   Integer Dataì˜ Endianì„ ë³€ê²½
  *
  * Implementation:
  *
@@ -292,7 +292,7 @@ ulsEndianInteger( void* aValue )
  *
  * Description:
  *
- *   Short DataÀÇ EndianÀ» º¯°æ
+ *   Short Dataì˜ Endianì„ ë³€ê²½
  *
  * Implementation:
  *
@@ -324,7 +324,7 @@ ulsEndianShort( void* aValue )
  *
  * Description:
  *
- *   SystemÀÇ Endian°ú DataÀÇ EndianÀÌ µ¿ÀÏÇÑÁö¸¦ ÆÇ´Ü
+ *   Systemì˜ Endianê³¼ Dataì˜ Endianì´ ë™ì¼í•œì§€ë¥¼ íŒë‹¨
  *
  * Implementation:
  *
@@ -398,7 +398,7 @@ ulsIsEquiEndian( ulsHandle         * aHandle,
  *
  * Description:
  *
- *   Geometry HeaderÀÇ EndianÀ» º¯°æÇÑ´Ù.
+ *   Geometry Headerì˜ Endianì„ ë³€ê²½í•œë‹¤.
  *
  * Implementation:
  *
@@ -442,7 +442,7 @@ ulsEndianHeader( ulsHandle         * aHandle,
  *
  * Description:
  *
- *   2D Point Geometry °´Ã¼ÀÇ EndianÀ» º¯°æÇÑ´Ù.
+ *   2D Point Geometry ê°ì²´ì˜ Endianì„ ë³€ê²½í•œë‹¤.
  *
  * Implementation:
  *
@@ -547,7 +547,7 @@ ulsEndianLinearRing2D(  ulsHandle        * aHandle,
     /* Parameter Validation*/
     /*------------------------------*/
 
-    /* BUG-28414 : warnning Á¦°Å */ 
+    /* BUG-28414 : warnning ì œê±° */ 
     ACE_ASSERT( aHandle != NULL );
     ACE_ASSERT( aObject != NULL );
 

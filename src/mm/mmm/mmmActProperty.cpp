@@ -33,7 +33,7 @@ static IDE_RC mmmPhaseActionProperty(mmmPhase         /*aPhase*/,
 
     IDE_TEST(iduProperty::load() != IDE_SUCCESS);
 
-    mmuProperty::load(); // ∏Æ≈œ : void
+    mmuProperty::load(); // Î¶¨ÌÑ¥ : void
 
     return IDE_SUCCESS;
 

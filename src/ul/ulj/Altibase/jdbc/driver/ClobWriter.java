@@ -77,7 +77,7 @@ public class ClobWriter extends Writer implements ConnectionSharable
             throw new IndexOutOfBoundsException();
         }
 
-        // ¼­¹ö¿¡ ¹İ¿µÇØ¾ß ÇÏ¹Ç·Î Áß°£ ¹öÆÛ¸¦ °ÅÄ¡Áö ¾Ê°í ¹Ù·Î putClobÀ» ¼öÇàÇÑ´Ù.
+        // ì„œë²„ì— ë°˜ì˜í•´ì•¼ í•˜ë¯€ë¡œ ì¤‘ê°„ ë²„í¼ë¥¼ ê±°ì¹˜ì§€ ì•Šê³  ë°”ë¡œ putClobì„ ìˆ˜í–‰í•œë‹¤.
         try
         {
             long sWrited = CmProtocol.putClob(mContext, mServerOffset, aSource, aOffset, aLength);

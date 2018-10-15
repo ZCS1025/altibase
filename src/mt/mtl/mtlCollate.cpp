@@ -35,16 +35,16 @@ void mtlCollate::mtlSetCodeAndLenInfo( const UChar * aSource,
 {
 /***********************************************************************
  *
- * Description : ÇÑ¹®ÀÚ¿¡ ´ëÇÑ ÄÚµå¿Í length ¹ÝÈ¯
+ * Description : í•œë¬¸ìžì— ëŒ€í•œ ì½”ë“œì™€ length ë°˜í™˜
  *
- *              ( US7ASCII, KSC5601, MS949 ¿¡ ´ëÇØ¼­ À¯È¿ÇÔ )
+ *              ( US7ASCII, KSC5601, MS949 ì— ëŒ€í•´ì„œ ìœ íš¨í•¨ )
  *
  * Implementation :
  *
- *   ¿¹ : °¡ 
+ *   ì˜ˆ : ê°€ 
  *
- *   1. KSC5601  (1) code = 0xb0a1 (2) ±æÀÌ : 2
- *   2. MS949    (1) code = 0xb0a1 (2) ±æÀÌ : 2
+ *   1. KSC5601  (1) code = 0xb0a1 (2) ê¸¸ì´ : 2
+ *   2. MS949    (1) code = 0xb0a1 (2) ê¸¸ì´ : 2
  *
  ***********************************************************************/
     IDE_ASSERT( aSource != NULL );
@@ -74,13 +74,13 @@ void mtlCollate::mtlSetCodeAndLenInfoWithCheck2ByteCharCut( const UChar * aSourc
  *
  * BUG-43106
  *
- * Description : À§ÀÇ mtlCollate::mtlSetCodeAndLenInfo() ÇÔ¼ö¿¡
- *               2byte¹®ÀÚ Ã¼Å© ÄÚµå¸¦ Ãß°¡ÇÔ.
+ * Description : ìœ„ì˜ mtlCollate::mtlSetCodeAndLenInfo() í•¨ìˆ˜ì—
+ *               2byteë¬¸ìž ì²´í¬ ì½”ë“œë¥¼ ì¶”ê°€í•¨.
  *
- *             ( ÀÔ·Â¹®ÀÚ¿­¿¡ 2bytes ¹®ÀÚ°¡ Æ÷ÇÔµÆÀ»¶§
- *               ¾Õ 1byte¸¸ ¹®ÀÚ¿­¿¡ Æ÷ÇÔµÇ°í
- *               µÚ 1byte´Â ¹®ÀÚ¿­¿¡ Æ÷ÇÔµÇÁö ¾ÊÀº°æ¿ì
- *               *aIs2ByteCharCut = TRUE¸¦ ¼¼ÆÃÇÑ´Ù. )
+ *             ( ìž…ë ¥ë¬¸ìžì—´ì— 2bytes ë¬¸ìžê°€ í¬í•¨ëì„ë•Œ
+ *               ì•ž 1byteë§Œ ë¬¸ìžì—´ì— í¬í•¨ë˜ê³ 
+ *               ë’¤ 1byteëŠ” ë¬¸ìžì—´ì— í¬í•¨ë˜ì§€ ì•Šì€ê²½ìš°
+ *               *aIs2ByteCharCut = TRUEë¥¼ ì„¸íŒ…í•œë‹¤. )
  *
  ***********************************************************************/
     IDE_ASSERT( aSource != NULL );
@@ -116,12 +116,12 @@ SInt mtlCollate::mtlCharMS949collateMtdMtdAsc( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : MS949ÄÚµå¿Í KSC5601 ÄÚµå¸¦
- *               ¸ÅÇÎµÇ´Â UNICODE ·Î º¯È¯ÇØ¼­ ºñ±³ ¼öÇà
- *               ( MS949°¡ KSC5601ÀÇ super setÀ¸·Î
- *                 KSC5601 ÄÚµå°¡ ¸ðµÎ Æ÷ÇÔµÇ¾î ÀÖÀ½. )
+ * Description : MS949ì½”ë“œì™€ KSC5601 ì½”ë“œë¥¼
+ *               ë§¤í•‘ë˜ëŠ” UNICODE ë¡œ ë³€í™˜í•´ì„œ ë¹„êµ ìˆ˜í–‰
+ *               ( MS949ê°€ KSC5601ì˜ super setìœ¼ë¡œ
+ *                 KSC5601 ì½”ë“œê°€ ëª¨ë‘ í¬í•¨ë˜ì–´ ìžˆìŒ. )
  *
- *               Áï, ÃÊ¼ºÀ» Æ÷ÇÔÇÑ ÇÑ±ÛÁ¤·ÄÀ» ¼öÇàÇÏ±â À§ÇÔ.
+ *               ì¦‰, ì´ˆì„±ì„ í¬í•¨í•œ í•œê¸€ì •ë ¬ì„ ìˆ˜í–‰í•˜ê¸° ìœ„í•¨.
  * 
  * Implementation :
  *
@@ -272,12 +272,12 @@ SInt mtlCollate::mtlCharMS949collateMtdMtdDesc( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : MS949ÄÚµå¿Í KSC5601 ÄÚµå¸¦
- *               ¸ÅÇÎµÇ´Â UNICODE ·Î º¯È¯ÇØ¼­ ºñ±³ ¼öÇà
- *               ( MS949°¡ KSC5601ÀÇ super setÀ¸·Î
- *                 KSC5601 ÄÚµå°¡ ¸ðµÎ Æ÷ÇÔµÇ¾î ÀÖÀ½. )
+ * Description : MS949ì½”ë“œì™€ KSC5601 ì½”ë“œë¥¼
+ *               ë§¤í•‘ë˜ëŠ” UNICODE ë¡œ ë³€í™˜í•´ì„œ ë¹„êµ ìˆ˜í–‰
+ *               ( MS949ê°€ KSC5601ì˜ super setìœ¼ë¡œ
+ *                 KSC5601 ì½”ë“œê°€ ëª¨ë‘ í¬í•¨ë˜ì–´ ìžˆìŒ. )
  *
- *               Áï, ÃÊ¼ºÀ» Æ÷ÇÔÇÑ ÇÑ±ÛÁ¤·ÄÀ» ¼öÇàÇÏ±â À§ÇÔ.
+ *               ì¦‰, ì´ˆì„±ì„ í¬í•¨í•œ í•œê¸€ì •ë ¬ì„ ìˆ˜í–‰í•˜ê¸° ìœ„í•¨.
  * 
  * Implementation :
  *
@@ -428,12 +428,12 @@ SInt mtlCollate::mtlCharMS949collateStoredMtdAsc( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : MS949ÄÚµå¿Í KSC5601 ÄÚµå¸¦
- *               ¸ÅÇÎµÇ´Â UNICODE ·Î º¯È¯ÇØ¼­ ºñ±³ ¼öÇà
- *               ( MS949°¡ KSC5601ÀÇ super setÀ¸·Î
- *                 KSC5601 ÄÚµå°¡ ¸ðµÎ Æ÷ÇÔµÇ¾î ÀÖÀ½. )
+ * Description : MS949ì½”ë“œì™€ KSC5601 ì½”ë“œë¥¼
+ *               ë§¤í•‘ë˜ëŠ” UNICODE ë¡œ ë³€í™˜í•´ì„œ ë¹„êµ ìˆ˜í–‰
+ *               ( MS949ê°€ KSC5601ì˜ super setìœ¼ë¡œ
+ *                 KSC5601 ì½”ë“œê°€ ëª¨ë‘ í¬í•¨ë˜ì–´ ìžˆìŒ. )
  *
- *               Áï, ÃÊ¼ºÀ» Æ÷ÇÔÇÑ ÇÑ±ÛÁ¤·ÄÀ» ¼öÇàÇÏ±â À§ÇÔ.
+ *               ì¦‰, ì´ˆì„±ì„ í¬í•¨í•œ í•œê¸€ì •ë ¬ì„ ìˆ˜í–‰í•˜ê¸° ìœ„í•¨.
  * 
  * Implementation :
  *
@@ -578,12 +578,12 @@ SInt mtlCollate::mtlCharMS949collateStoredMtdDesc( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : MS949ÄÚµå¿Í KSC5601 ÄÚµå¸¦
- *               ¸ÅÇÎµÇ´Â UNICODE ·Î º¯È¯ÇØ¼­ ºñ±³ ¼öÇà
- *               ( MS949°¡ KSC5601ÀÇ super setÀ¸·Î
- *                 KSC5601 ÄÚµå°¡ ¸ðµÎ Æ÷ÇÔµÇ¾î ÀÖÀ½. )
+ * Description : MS949ì½”ë“œì™€ KSC5601 ì½”ë“œë¥¼
+ *               ë§¤í•‘ë˜ëŠ” UNICODE ë¡œ ë³€í™˜í•´ì„œ ë¹„êµ ìˆ˜í–‰
+ *               ( MS949ê°€ KSC5601ì˜ super setìœ¼ë¡œ
+ *                 KSC5601 ì½”ë“œê°€ ëª¨ë‘ í¬í•¨ë˜ì–´ ìžˆìŒ. )
  *
- *               Áï, ÃÊ¼ºÀ» Æ÷ÇÔÇÑ ÇÑ±ÛÁ¤·ÄÀ» ¼öÇàÇÏ±â À§ÇÔ.
+ *               ì¦‰, ì´ˆì„±ì„ í¬í•¨í•œ í•œê¸€ì •ë ¬ì„ ìˆ˜í–‰í•˜ê¸° ìœ„í•¨.
  * 
  * Implementation :
  *
@@ -727,12 +727,12 @@ SInt mtlCollate::mtlCharMS949collateStoredStoredAsc( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : MS949ÄÚµå¿Í KSC5601 ÄÚµå¸¦
- *               ¸ÅÇÎµÇ´Â UNICODE ·Î º¯È¯ÇØ¼­ ºñ±³ ¼öÇà
- *               ( MS949°¡ KSC5601ÀÇ super setÀ¸·Î
- *                 KSC5601 ÄÚµå°¡ ¸ðµÎ Æ÷ÇÔµÇ¾î ÀÖÀ½. )
+ * Description : MS949ì½”ë“œì™€ KSC5601 ì½”ë“œë¥¼
+ *               ë§¤í•‘ë˜ëŠ” UNICODE ë¡œ ë³€í™˜í•´ì„œ ë¹„êµ ìˆ˜í–‰
+ *               ( MS949ê°€ KSC5601ì˜ super setìœ¼ë¡œ
+ *                 KSC5601 ì½”ë“œê°€ ëª¨ë‘ í¬í•¨ë˜ì–´ ìžˆìŒ. )
  *
- *               Áï, ÃÊ¼ºÀ» Æ÷ÇÔÇÑ ÇÑ±ÛÁ¤·ÄÀ» ¼öÇàÇÏ±â À§ÇÔ.
+ *               ì¦‰, ì´ˆì„±ì„ í¬í•¨í•œ í•œê¸€ì •ë ¬ì„ ìˆ˜í–‰í•˜ê¸° ìœ„í•¨.
  * 
  * Implementation :
  *
@@ -870,12 +870,12 @@ SInt mtlCollate::mtlCharMS949collateStoredStoredDesc( mtdValueInfo * aValueInfo1
 {
 /***********************************************************************
  *
- * Description : MS949ÄÚµå¿Í KSC5601 ÄÚµå¸¦
- *               ¸ÅÇÎµÇ´Â UNICODE ·Î º¯È¯ÇØ¼­ ºñ±³ ¼öÇà
- *               ( MS949°¡ KSC5601ÀÇ super setÀ¸·Î
- *                 KSC5601 ÄÚµå°¡ ¸ðµÎ Æ÷ÇÔµÇ¾î ÀÖÀ½. )
+ * Description : MS949ì½”ë“œì™€ KSC5601 ì½”ë“œë¥¼
+ *               ë§¤í•‘ë˜ëŠ” UNICODE ë¡œ ë³€í™˜í•´ì„œ ë¹„êµ ìˆ˜í–‰
+ *               ( MS949ê°€ KSC5601ì˜ super setìœ¼ë¡œ
+ *                 KSC5601 ì½”ë“œê°€ ëª¨ë‘ í¬í•¨ë˜ì–´ ìžˆìŒ. )
  *
- *               Áï, ÃÊ¼ºÀ» Æ÷ÇÔÇÑ ÇÑ±ÛÁ¤·ÄÀ» ¼öÇàÇÏ±â À§ÇÔ.
+ *               ì¦‰, ì´ˆì„±ì„ í¬í•¨í•œ í•œê¸€ì •ë ¬ì„ ìˆ˜í–‰í•˜ê¸° ìœ„í•¨.
  * 
  * Implementation :
  *
@@ -1016,11 +1016,11 @@ SInt mtlCollate::mtlCharMS949collateIndexKeyMtdAsc( mtdValueInfo * aValueInfo1,
  *
  * BUG-43106 
  *
- * Description : mtlCollate::mtlCharMS949collateMtdMtdAsc() ÇÔ¼ö¸¦
- *               index key ºñ±³¿ëÀ¸·Î º¯°æÇÔ ÇÔ¼ö.
+ * Description : mtlCollate::mtlCharMS949collateMtdMtdAsc() í•¨ìˆ˜ë¥¼
+ *               index key ë¹„êµìš©ìœ¼ë¡œ ë³€ê²½í•¨ í•¨ìˆ˜.
  *
- *             ( PROJ-2433 Direct Key INDEXÀÇ 
- *               partial direct key ºñ±³¸¦ À§ÇÑ ÄÚµå°¡ Ãß°¡µÊ ) 
+ *             ( PROJ-2433 Direct Key INDEXì˜ 
+ *               partial direct key ë¹„êµë¥¼ ìœ„í•œ ì½”ë“œê°€ ì¶”ê°€ë¨ ) 
  *
  ***********************************************************************/
 
@@ -1064,25 +1064,25 @@ SInt mtlCollate::mtlCharMS949collateIndexKeyMtdAsc( mtdValueInfo * aValueInfo1,
 
     /*
      * PROJ-2433 Direct Key Index
-     * Partial Direct Key Ã³¸®
+     * Partial Direct Key ì²˜ë¦¬
      * 
-     * - Direct Key°¡ partial direct keyÀÎ °æ¿ì
-     *   partialµÈ ±æÀÌ¸¸Å­¸¸ ºñ±³ÇÏµµ·Ï length¸¦ ¼öÁ¤ÇÑ´Ù
+     * - Direct Keyê°€ partial direct keyì¸ ê²½ìš°
+     *   partialëœ ê¸¸ì´ë§Œí¼ë§Œ ë¹„êµí•˜ë„ë¡ lengthë¥¼ ìˆ˜ì •í•œë‹¤
      *
      * BUG-43106
      * 
-     * - À§ÀÇ ÀÌÀ¯·Î length°¡ ¼öÁ¤µÆÀ» °æ¿ì
-     *   ¹®ÀÚ¿­ ¸¶Áö¸·ÀÇ 2byte¹®ÀÚ°¡ 1byte¸¸ Æ÷ÇÔµÇ°í Àß¸±°¡´É¼ºÀÌ ÀÖ´Ù.
-     *   ±×·¯³ª ¾Æ·¡ Å°ºñ±³½Ã¿¡ È®ÀÎÇÏ¹Ç·Î, ¿©±â¼­´Â Ãß°¡Ã³¸®ÇÏÁö ¾Ê´Â´Ù.
+     * - ìœ„ì˜ ì´ìœ ë¡œ lengthê°€ ìˆ˜ì •ëì„ ê²½ìš°
+     *   ë¬¸ìžì—´ ë§ˆì§€ë§‰ì˜ 2byteë¬¸ìžê°€ 1byteë§Œ í¬í•¨ë˜ê³  ìž˜ë¦´ê°€ëŠ¥ì„±ì´ ìžˆë‹¤.
+     *   ê·¸ëŸ¬ë‚˜ ì•„ëž˜ í‚¤ë¹„êµì‹œì— í™•ì¸í•˜ë¯€ë¡œ, ì—¬ê¸°ì„œëŠ” ì¶”ê°€ì²˜ë¦¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
      */ 
     if ( ( aValueInfo1->flag & MTD_PARTIAL_KEY_MASK ) == MTD_PARTIAL_KEY_ON )
     {
         sDirectKeyPartialSize = aValueInfo1->length;
 
-        /* partail key ÀÌ¸é */
+        /* partail key ì´ë©´ */
         if ( sDirectKeyPartialSize != 0 )
         {
-            /* direct key ±æÀÌº¸Á¤*/
+            /* direct key ê¸¸ì´ë³´ì •*/
             if ( ( sLength1 + mtdChar.headerSize() ) > sDirectKeyPartialSize )
             {
                 sLength1 = (UShort)( sDirectKeyPartialSize - mtdChar.headerSize() );
@@ -1092,7 +1092,7 @@ SInt mtlCollate::mtlCharMS949collateIndexKeyMtdAsc( mtdValueInfo * aValueInfo1,
                 /* nothing todo */
             }
 
-            /* search key µµ partial ±æÀÌ¸¸Å­ º¸Á¤*/
+            /* search key ë„ partial ê¸¸ì´ë§Œí¼ ë³´ì •*/
             if ( ( sLength2 + mtdChar.headerSize() ) > sDirectKeyPartialSize )
             {
                 sLength2 = (UShort)( sDirectKeyPartialSize - mtdChar.headerSize() );
@@ -1143,9 +1143,9 @@ SInt mtlCollate::mtlCharMS949collateIndexKeyMtdAsc( mtdValueInfo * aValueInfo1,
                 if ( sIs2ByteCharCut == ID_TRUE )
                 {
                     /* BUG-43106
-                       ¹®ÀÚ¿­ ¸¶Áö¸·ÀÇ 2byte¹®ÀÚ°¡
-                       ¾Õ 1bytes¸¸ ¹®ÀÚ¿­¿¡ Æ÷ÇÔµÇ°í,
-                       µÚ 1bytes´Â ¹®ÀÚ¿­¿¡ Æ÷ÇÔµÇÁö ¾ÊÀº °æ¿ìÀÌ´Ù. */
+                       ë¬¸ìžì—´ ë§ˆì§€ë§‰ì˜ 2byteë¬¸ìžê°€
+                       ì•ž 1bytesë§Œ ë¬¸ìžì—´ì— í¬í•¨ë˜ê³ ,
+                       ë’¤ 1bytesëŠ” ë¬¸ìžì—´ì— í¬í•¨ë˜ì§€ ì•Šì€ ê²½ìš°ì´ë‹¤. */
                     return 0;
                 }
 
@@ -1238,11 +1238,11 @@ SInt mtlCollate::mtlCharMS949collateIndexKeyMtdDesc( mtdValueInfo * aValueInfo1,
  *
  * BUG-43106 
  *
- * Description : mtlCollate::mtlCharMS949collateMtdMtdDesc() ÇÔ¼ö¸¦
- *               index key ºñ±³¿ëÀ¸·Î º¯°æÇÔ ÇÔ¼ö.
+ * Description : mtlCollate::mtlCharMS949collateMtdMtdDesc() í•¨ìˆ˜ë¥¼
+ *               index key ë¹„êµìš©ìœ¼ë¡œ ë³€ê²½í•¨ í•¨ìˆ˜.
  *
- *             ( PROJ-2433 Direct Key INDEXÀÇ 
- *               partial direct key ºñ±³¸¦ À§ÇÑ ÄÚµå°¡ Ãß°¡µÊ ) 
+ *             ( PROJ-2433 Direct Key INDEXì˜ 
+ *               partial direct key ë¹„êµë¥¼ ìœ„í•œ ì½”ë“œê°€ ì¶”ê°€ë¨ ) 
  *
  ***********************************************************************/
 
@@ -1286,25 +1286,25 @@ SInt mtlCollate::mtlCharMS949collateIndexKeyMtdDesc( mtdValueInfo * aValueInfo1,
 
     /*
      * PROJ-2433 Direct Key Index
-     * Partial Direct Key Ã³¸®
+     * Partial Direct Key ì²˜ë¦¬
      * 
-     * - Direct Key°¡ partial direct keyÀÎ °æ¿ì
-     *   partialµÈ ±æÀÌ¸¸Å­¸¸ ºñ±³ÇÏµµ·Ï length¸¦ ¼öÁ¤ÇÑ´Ù
+     * - Direct Keyê°€ partial direct keyì¸ ê²½ìš°
+     *   partialëœ ê¸¸ì´ë§Œí¼ë§Œ ë¹„êµí•˜ë„ë¡ lengthë¥¼ ìˆ˜ì •í•œë‹¤
      *
      * BUG-43106
      * 
-     * - À§ÀÇ ÀÌÀ¯·Î length°¡ ¼öÁ¤µÆÀ» °æ¿ì
-     *   ¹®ÀÚ¿­ ¸¶Áö¸·ÀÇ 2byte¹®ÀÚ°¡ 1byte¸¸ Æ÷ÇÔµÇ°í Àß¸±°¡´É¼ºÀÌ ÀÖ´Ù.
-     *   ±×·¯³ª ¾Æ·¡ Å°ºñ±³½Ã¿¡ È®ÀÎÇÏ¹Ç·Î, ¿©±â¼­´Â Ãß°¡Ã³¸®ÇÏÁö ¾Ê´Â´Ù.
+     * - ìœ„ì˜ ì´ìœ ë¡œ lengthê°€ ìˆ˜ì •ëì„ ê²½ìš°
+     *   ë¬¸ìžì—´ ë§ˆì§€ë§‰ì˜ 2byteë¬¸ìžê°€ 1byteë§Œ í¬í•¨ë˜ê³  ìž˜ë¦´ê°€ëŠ¥ì„±ì´ ìžˆë‹¤.
+     *   ê·¸ëŸ¬ë‚˜ ì•„ëž˜ í‚¤ë¹„êµì‹œì— í™•ì¸í•˜ë¯€ë¡œ, ì—¬ê¸°ì„œëŠ” ì¶”ê°€ì²˜ë¦¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
      */ 
     if ( ( aValueInfo1->flag & MTD_PARTIAL_KEY_MASK ) == MTD_PARTIAL_KEY_ON )
     {
         sDirectKeyPartialSize = aValueInfo1->length;
 
-        /* partail key ÀÌ¸é */
+        /* partail key ì´ë©´ */
         if ( sDirectKeyPartialSize != 0 )
         {
-            /* direct key ±æÀÌº¸Á¤*/
+            /* direct key ê¸¸ì´ë³´ì •*/
             if ( ( sLength1 + mtdChar.headerSize() ) > sDirectKeyPartialSize )
             {
                 sLength1 = (UShort)( sDirectKeyPartialSize - mtdChar.headerSize() );
@@ -1314,7 +1314,7 @@ SInt mtlCollate::mtlCharMS949collateIndexKeyMtdDesc( mtdValueInfo * aValueInfo1,
                 /* nothing todo */
             }
 
-            /* search key µµ partial ±æÀÌ¸¸Å­ º¸Á¤*/
+            /* search key ë„ partial ê¸¸ì´ë§Œí¼ ë³´ì •*/
             if ( ( sLength2 + mtdChar.headerSize() ) > sDirectKeyPartialSize )
             {
                 sLength2 = (UShort)( sDirectKeyPartialSize - mtdChar.headerSize() );
@@ -1365,9 +1365,9 @@ SInt mtlCollate::mtlCharMS949collateIndexKeyMtdDesc( mtdValueInfo * aValueInfo1,
                 if ( sIs2ByteCharCut == ID_TRUE )
                 {
                     /* BUG-43106
-                       ¹®ÀÚ¿­ ¸¶Áö¸·ÀÇ 2byte¹®ÀÚ°¡
-                       ¾Õ 1bytes¸¸ ¹®ÀÚ¿­¿¡ Æ÷ÇÔµÇ°í,
-                       µÚ 1bytes´Â ¹®ÀÚ¿­¿¡ Æ÷ÇÔµÇÁö ¾ÊÀº °æ¿ìÀÌ´Ù. */
+                       ë¬¸ìžì—´ ë§ˆì§€ë§‰ì˜ 2byteë¬¸ìžê°€
+                       ì•ž 1bytesë§Œ ë¬¸ìžì—´ì— í¬í•¨ë˜ê³ ,
+                       ë’¤ 1bytesëŠ” ë¬¸ìžì—´ì— í¬í•¨ë˜ì§€ ì•Šì€ ê²½ìš°ì´ë‹¤. */
                     return 0;
                 }
 
@@ -1460,12 +1460,12 @@ SInt mtlCollate::mtlVarcharMS949collateMtdMtdAsc(
 {
 /***********************************************************************
  *
- * Description : MS949ÄÚµå¿Í KSC5601 ÄÚµå¸¦
- *               ¸ÅÇÎµÇ´Â UNICODE ·Î º¯È¯ÇØ¼­ ºñ±³ ¼öÇà
- *               ( MS949°¡ KSC5601ÀÇ super setÀ¸·Î
- *                 KSC5601 ÄÚµå°¡ ¸ðµÎ Æ÷ÇÔµÇ¾î ÀÖÀ½. )
+ * Description : MS949ì½”ë“œì™€ KSC5601 ì½”ë“œë¥¼
+ *               ë§¤í•‘ë˜ëŠ” UNICODE ë¡œ ë³€í™˜í•´ì„œ ë¹„êµ ìˆ˜í–‰
+ *               ( MS949ê°€ KSC5601ì˜ super setìœ¼ë¡œ
+ *                 KSC5601 ì½”ë“œê°€ ëª¨ë‘ í¬í•¨ë˜ì–´ ìžˆìŒ. )
  *
- *               Áï, ÃÊ¼ºÀ» Æ÷ÇÔÇÑ ÇÑ±ÛÁ¤·ÄÀ» ¼öÇàÇÏ±â À§ÇÔ.
+ *               ì¦‰, ì´ˆì„±ì„ í¬í•¨í•œ í•œê¸€ì •ë ¬ì„ ìˆ˜í–‰í•˜ê¸° ìœ„í•¨.
  *
  * Implementation :
  *
@@ -1625,12 +1625,12 @@ SInt mtlCollate::mtlVarcharMS949collateMtdMtdDesc(
 {
 /***********************************************************************
  *
- * Description : MS949ÄÚµå¿Í KSC5601 ÄÚµå¸¦
- *               ¸ÅÇÎµÇ´Â UNICODE ·Î º¯È¯ÇØ¼­ ºñ±³ ¼öÇà
- *               ( MS949°¡ KSC5601ÀÇ super setÀ¸·Î
- *                 KSC5601 ÄÚµå°¡ ¸ðµÎ Æ÷ÇÔµÇ¾î ÀÖÀ½. )
+ * Description : MS949ì½”ë“œì™€ KSC5601 ì½”ë“œë¥¼
+ *               ë§¤í•‘ë˜ëŠ” UNICODE ë¡œ ë³€í™˜í•´ì„œ ë¹„êµ ìˆ˜í–‰
+ *               ( MS949ê°€ KSC5601ì˜ super setìœ¼ë¡œ
+ *                 KSC5601 ì½”ë“œê°€ ëª¨ë‘ í¬í•¨ë˜ì–´ ìžˆìŒ. )
  *
- *               Áï, ÃÊ¼ºÀ» Æ÷ÇÔÇÑ ÇÑ±ÛÁ¤·ÄÀ» ¼öÇàÇÏ±â À§ÇÔ.
+ *               ì¦‰, ì´ˆì„±ì„ í¬í•¨í•œ í•œê¸€ì •ë ¬ì„ ìˆ˜í–‰í•˜ê¸° ìœ„í•¨.
  * 
  * Implementation :
  *
@@ -1790,12 +1790,12 @@ SInt mtlCollate::mtlVarcharMS949collateStoredMtdAsc(
 {
 /***********************************************************************
  *
- * Description : MS949ÄÚµå¿Í KSC5601 ÄÚµå¸¦
- *               ¸ÅÇÎµÇ´Â UNICODE ·Î º¯È¯ÇØ¼­ ºñ±³ ¼öÇà
- *               ( MS949°¡ KSC5601ÀÇ super setÀ¸·Î
- *                 KSC5601 ÄÚµå°¡ ¸ðµÎ Æ÷ÇÔµÇ¾î ÀÖÀ½. )
+ * Description : MS949ì½”ë“œì™€ KSC5601 ì½”ë“œë¥¼
+ *               ë§¤í•‘ë˜ëŠ” UNICODE ë¡œ ë³€í™˜í•´ì„œ ë¹„êµ ìˆ˜í–‰
+ *               ( MS949ê°€ KSC5601ì˜ super setìœ¼ë¡œ
+ *                 KSC5601 ì½”ë“œê°€ ëª¨ë‘ í¬í•¨ë˜ì–´ ìžˆìŒ. )
  *
- *               Áï, ÃÊ¼ºÀ» Æ÷ÇÔÇÑ ÇÑ±ÛÁ¤·ÄÀ» ¼öÇàÇÏ±â À§ÇÔ.
+ *               ì¦‰, ì´ˆì„±ì„ í¬í•¨í•œ í•œê¸€ì •ë ¬ì„ ìˆ˜í–‰í•˜ê¸° ìœ„í•¨.
  *
  * Implementation :
  *
@@ -1950,12 +1950,12 @@ SInt mtlCollate::mtlVarcharMS949collateStoredMtdDesc(
 {
 /***********************************************************************
  *
- * Description : MS949ÄÚµå¿Í KSC5601 ÄÚµå¸¦
- *               ¸ÅÇÎµÇ´Â UNICODE ·Î º¯È¯ÇØ¼­ ºñ±³ ¼öÇà
- *               ( MS949°¡ KSC5601ÀÇ super setÀ¸·Î
- *                 KSC5601 ÄÚµå°¡ ¸ðµÎ Æ÷ÇÔµÇ¾î ÀÖÀ½. )
+ * Description : MS949ì½”ë“œì™€ KSC5601 ì½”ë“œë¥¼
+ *               ë§¤í•‘ë˜ëŠ” UNICODE ë¡œ ë³€í™˜í•´ì„œ ë¹„êµ ìˆ˜í–‰
+ *               ( MS949ê°€ KSC5601ì˜ super setìœ¼ë¡œ
+ *                 KSC5601 ì½”ë“œê°€ ëª¨ë‘ í¬í•¨ë˜ì–´ ìžˆìŒ. )
  *
- *               Áï, ÃÊ¼ºÀ» Æ÷ÇÔÇÑ ÇÑ±ÛÁ¤·ÄÀ» ¼öÇàÇÏ±â À§ÇÔ.
+ *               ì¦‰, ì´ˆì„±ì„ í¬í•¨í•œ í•œê¸€ì •ë ¬ì„ ìˆ˜í–‰í•˜ê¸° ìœ„í•¨.
  * 
  * Implementation :
  *
@@ -2108,12 +2108,12 @@ SInt mtlCollate::mtlVarcharMS949collateStoredStoredAsc(
 {
 /***********************************************************************
  *
- * Description : MS949ÄÚµå¿Í KSC5601 ÄÚµå¸¦
- *               ¸ÅÇÎµÇ´Â UNICODE ·Î º¯È¯ÇØ¼­ ºñ±³ ¼öÇà
- *               ( MS949°¡ KSC5601ÀÇ super setÀ¸·Î
- *                 KSC5601 ÄÚµå°¡ ¸ðµÎ Æ÷ÇÔµÇ¾î ÀÖÀ½. )
+ * Description : MS949ì½”ë“œì™€ KSC5601 ì½”ë“œë¥¼
+ *               ë§¤í•‘ë˜ëŠ” UNICODE ë¡œ ë³€í™˜í•´ì„œ ë¹„êµ ìˆ˜í–‰
+ *               ( MS949ê°€ KSC5601ì˜ super setìœ¼ë¡œ
+ *                 KSC5601 ì½”ë“œê°€ ëª¨ë‘ í¬í•¨ë˜ì–´ ìžˆìŒ. )
  *
- *               Áï, ÃÊ¼ºÀ» Æ÷ÇÔÇÑ ÇÑ±ÛÁ¤·ÄÀ» ¼öÇàÇÏ±â À§ÇÔ.
+ *               ì¦‰, ì´ˆì„±ì„ í¬í•¨í•œ í•œê¸€ì •ë ¬ì„ ìˆ˜í–‰í•˜ê¸° ìœ„í•¨.
  *
  * Implementation :
  *
@@ -2262,12 +2262,12 @@ SInt mtlCollate::mtlVarcharMS949collateStoredStoredDesc(
 {
 /***********************************************************************
  *
- * Description : MS949ÄÚµå¿Í KSC5601 ÄÚµå¸¦
- *               ¸ÅÇÎµÇ´Â UNICODE ·Î º¯È¯ÇØ¼­ ºñ±³ ¼öÇà
- *               ( MS949°¡ KSC5601ÀÇ super setÀ¸·Î
- *                 KSC5601 ÄÚµå°¡ ¸ðµÎ Æ÷ÇÔµÇ¾î ÀÖÀ½. )
+ * Description : MS949ì½”ë“œì™€ KSC5601 ì½”ë“œë¥¼
+ *               ë§¤í•‘ë˜ëŠ” UNICODE ë¡œ ë³€í™˜í•´ì„œ ë¹„êµ ìˆ˜í–‰
+ *               ( MS949ê°€ KSC5601ì˜ super setìœ¼ë¡œ
+ *                 KSC5601 ì½”ë“œê°€ ëª¨ë‘ í¬í•¨ë˜ì–´ ìžˆìŒ. )
  *
- *               Áï, ÃÊ¼ºÀ» Æ÷ÇÔÇÑ ÇÑ±ÛÁ¤·ÄÀ» ¼öÇàÇÏ±â À§ÇÔ.
+ *               ì¦‰, ì´ˆì„±ì„ í¬í•¨í•œ í•œê¸€ì •ë ¬ì„ ìˆ˜í–‰í•˜ê¸° ìœ„í•¨.
  * 
  * Implementation :
  *
@@ -2416,11 +2416,11 @@ SInt mtlCollate::mtlVarcharMS949collateIndexKeyMtdAsc( mtdValueInfo * aValueInfo
  *
  * BUG-43106 
  *
- * Description : mtlCollate::mtlVarcharMS949collateMtdMtdAsc() ÇÔ¼ö¸¦
- *               index key ºñ±³¿ëÀ¸·Î º¯°æÇÔ ÇÔ¼ö.
+ * Description : mtlCollate::mtlVarcharMS949collateMtdMtdAsc() í•¨ìˆ˜ë¥¼
+ *               index key ë¹„êµìš©ìœ¼ë¡œ ë³€ê²½í•¨ í•¨ìˆ˜.
  *
- *             ( PROJ-2433 Direct Key INDEXÀÇ 
- *               partial direct key ºñ±³¸¦ À§ÇÑ ÄÚµå°¡ Ãß°¡µÊ ) 
+ *             ( PROJ-2433 Direct Key INDEXì˜ 
+ *               partial direct key ë¹„êµë¥¼ ìœ„í•œ ì½”ë“œê°€ ì¶”ê°€ë¨ ) 
  *
  ***********************************************************************/
 
@@ -2462,25 +2462,25 @@ SInt mtlCollate::mtlVarcharMS949collateIndexKeyMtdAsc( mtdValueInfo * aValueInfo
 
     /*
      * PROJ-2433 Direct Key Index
-     * Partial Direct Key Ã³¸®
+     * Partial Direct Key ì²˜ë¦¬
      * 
-     * - Direct Key°¡ partial direct keyÀÎ °æ¿ì
-     *   partialµÈ ±æÀÌ¸¸Å­¸¸ ºñ±³ÇÏµµ·Ï length¸¦ ¼öÁ¤ÇÑ´Ù
+     * - Direct Keyê°€ partial direct keyì¸ ê²½ìš°
+     *   partialëœ ê¸¸ì´ë§Œí¼ë§Œ ë¹„êµí•˜ë„ë¡ lengthë¥¼ ìˆ˜ì •í•œë‹¤
      *
      * BUG-43106
      * 
-     * - À§ÀÇ ÀÌÀ¯·Î length°¡ ¼öÁ¤µÆÀ» °æ¿ì
-     *   ¹®ÀÚ¿­ ¸¶Áö¸·ÀÇ 2byte¹®ÀÚ°¡ 1byte¸¸ Æ÷ÇÔµÇ°í Àß¸±°¡´É¼ºÀÌ ÀÖ´Ù.
-     *   ±×·¯³ª ¾Æ·¡ Å°ºñ±³½Ã¿¡ È®ÀÎÇÏ¹Ç·Î, ¿©±â¼­´Â Ãß°¡Ã³¸®ÇÏÁö ¾Ê´Â´Ù.
+     * - ìœ„ì˜ ì´ìœ ë¡œ lengthê°€ ìˆ˜ì •ëì„ ê²½ìš°
+     *   ë¬¸ìžì—´ ë§ˆì§€ë§‰ì˜ 2byteë¬¸ìžê°€ 1byteë§Œ í¬í•¨ë˜ê³  ìž˜ë¦´ê°€ëŠ¥ì„±ì´ ìžˆë‹¤.
+     *   ê·¸ëŸ¬ë‚˜ ì•„ëž˜ í‚¤ë¹„êµì‹œì— í™•ì¸í•˜ë¯€ë¡œ, ì—¬ê¸°ì„œëŠ” ì¶”ê°€ì²˜ë¦¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
      */ 
     if ( ( aValueInfo1->flag & MTD_PARTIAL_KEY_MASK ) == MTD_PARTIAL_KEY_ON )
     {
         sDirectKeyPartialSize = aValueInfo1->length;
 
-        /* partail key ÀÌ¸é */
+        /* partail key ì´ë©´ */
         if ( sDirectKeyPartialSize != 0 )
         {
-            /* direct key ±æÀÌº¸Á¤*/
+            /* direct key ê¸¸ì´ë³´ì •*/
             if ( ( sLength1 + mtdVarchar.headerSize() ) > sDirectKeyPartialSize )
             {
                 sLength1 = (UShort)( sDirectKeyPartialSize - mtdVarchar.headerSize() );
@@ -2490,7 +2490,7 @@ SInt mtlCollate::mtlVarcharMS949collateIndexKeyMtdAsc( mtdValueInfo * aValueInfo
                 /* nothing todo */
             }
 
-            /* search key µµ partial ±æÀÌ¸¸Å­ º¸Á¤*/
+            /* search key ë„ partial ê¸¸ì´ë§Œí¼ ë³´ì •*/
             if ( ( sLength2 + mtdVarchar.headerSize() ) > sDirectKeyPartialSize )
             {
                 sLength2 = (UShort)( sDirectKeyPartialSize - mtdVarchar.headerSize() );
@@ -2541,9 +2541,9 @@ SInt mtlCollate::mtlVarcharMS949collateIndexKeyMtdAsc( mtdValueInfo * aValueInfo
                 if ( sIs2ByteCharCut == ID_TRUE )
                 {
                     /* BUG-43106
-                       ¹®ÀÚ¿­ ¸¶Áö¸·ÀÇ 2byte¹®ÀÚ°¡
-                       ¾Õ 1bytes¸¸ ¹®ÀÚ¿­¿¡ Æ÷ÇÔµÇ°í,
-                       µÚ 1bytes´Â ¹®ÀÚ¿­¿¡ Æ÷ÇÔµÇÁö ¾ÊÀº °æ¿ìÀÌ´Ù. */
+                       ë¬¸ìžì—´ ë§ˆì§€ë§‰ì˜ 2byteë¬¸ìžê°€
+                       ì•ž 1bytesë§Œ ë¬¸ìžì—´ì— í¬í•¨ë˜ê³ ,
+                       ë’¤ 1bytesëŠ” ë¬¸ìžì—´ì— í¬í•¨ë˜ì§€ ì•Šì€ ê²½ìš°ì´ë‹¤. */
                     return 0;
                 }
 
@@ -2652,11 +2652,11 @@ SInt mtlCollate::mtlVarcharMS949collateIndexKeyMtdDesc( mtdValueInfo * aValueInf
  *
  * BUG-43106 
  *
- * Description : mtlCollate::mtlVarcharMS949collateMtdMtdDesc() ÇÔ¼ö¸¦
- *               index key ºñ±³¿ëÀ¸·Î º¯°æÇÔ ÇÔ¼ö.
+ * Description : mtlCollate::mtlVarcharMS949collateMtdMtdDesc() í•¨ìˆ˜ë¥¼
+ *               index key ë¹„êµìš©ìœ¼ë¡œ ë³€ê²½í•¨ í•¨ìˆ˜.
  *
- *             ( PROJ-2433 Direct Key INDEXÀÇ 
- *               partial direct key ºñ±³¸¦ À§ÇÑ ÄÚµå°¡ Ãß°¡µÊ ) 
+ *             ( PROJ-2433 Direct Key INDEXì˜ 
+ *               partial direct key ë¹„êµë¥¼ ìœ„í•œ ì½”ë“œê°€ ì¶”ê°€ë¨ ) 
  *
  ***********************************************************************/
 
@@ -2698,25 +2698,25 @@ SInt mtlCollate::mtlVarcharMS949collateIndexKeyMtdDesc( mtdValueInfo * aValueInf
 
     /*
      * PROJ-2433 Direct Key Index
-     * Partial Direct Key Ã³¸®
+     * Partial Direct Key ì²˜ë¦¬
      * 
-     * - Direct Key°¡ partial direct keyÀÎ °æ¿ì
-     *   partialµÈ ±æÀÌ¸¸Å­¸¸ ºñ±³ÇÏµµ·Ï length¸¦ ¼öÁ¤ÇÑ´Ù
+     * - Direct Keyê°€ partial direct keyì¸ ê²½ìš°
+     *   partialëœ ê¸¸ì´ë§Œí¼ë§Œ ë¹„êµí•˜ë„ë¡ lengthë¥¼ ìˆ˜ì •í•œë‹¤
      *
      * BUG-43106
      * 
-     * - À§ÀÇ ÀÌÀ¯·Î length°¡ ¼öÁ¤µÆÀ» °æ¿ì
-     *   ¹®ÀÚ¿­ ¸¶Áö¸·ÀÇ 2byte¹®ÀÚ°¡ 1byte¸¸ Æ÷ÇÔµÇ°í Àß¸±°¡´É¼ºÀÌ ÀÖ´Ù.
-     *   ±×·¯³ª ¾Æ·¡ Å°ºñ±³½Ã¿¡ È®ÀÎÇÏ¹Ç·Î, ¿©±â¼­´Â Ãß°¡Ã³¸®ÇÏÁö ¾Ê´Â´Ù.
+     * - ìœ„ì˜ ì´ìœ ë¡œ lengthê°€ ìˆ˜ì •ëì„ ê²½ìš°
+     *   ë¬¸ìžì—´ ë§ˆì§€ë§‰ì˜ 2byteë¬¸ìžê°€ 1byteë§Œ í¬í•¨ë˜ê³  ìž˜ë¦´ê°€ëŠ¥ì„±ì´ ìžˆë‹¤.
+     *   ê·¸ëŸ¬ë‚˜ ì•„ëž˜ í‚¤ë¹„êµì‹œì— í™•ì¸í•˜ë¯€ë¡œ, ì—¬ê¸°ì„œëŠ” ì¶”ê°€ì²˜ë¦¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
      */ 
     if ( ( aValueInfo1->flag & MTD_PARTIAL_KEY_MASK ) == MTD_PARTIAL_KEY_ON )
     {
         sDirectKeyPartialSize = aValueInfo1->length;
 
-        /* partail key ÀÌ¸é */
+        /* partail key ì´ë©´ */
         if ( sDirectKeyPartialSize != 0 )
         {
-            /* direct key ±æÀÌº¸Á¤*/
+            /* direct key ê¸¸ì´ë³´ì •*/
             if ( ( sLength1 + mtdVarchar.headerSize() ) > sDirectKeyPartialSize )
             {
                 sLength1 = (UShort)( sDirectKeyPartialSize - mtdVarchar.headerSize() );
@@ -2726,7 +2726,7 @@ SInt mtlCollate::mtlVarcharMS949collateIndexKeyMtdDesc( mtdValueInfo * aValueInf
                 /* nothing todo */
             }
 
-            /* search key µµ partial ±æÀÌ¸¸Å­ º¸Á¤*/
+            /* search key ë„ partial ê¸¸ì´ë§Œí¼ ë³´ì •*/
             if ( ( sLength2 + mtdVarchar.headerSize() ) > sDirectKeyPartialSize )
             {
                 sLength2 = (UShort)( sDirectKeyPartialSize - mtdVarchar.headerSize() );
@@ -2777,9 +2777,9 @@ SInt mtlCollate::mtlVarcharMS949collateIndexKeyMtdDesc( mtdValueInfo * aValueInf
                 if ( sIs2ByteCharCut == ID_TRUE )
                 {
                     /* BUG-43106
-                       ¹®ÀÚ¿­ ¸¶Áö¸·ÀÇ 2byte¹®ÀÚ°¡
-                       ¾Õ 1bytes¸¸ ¹®ÀÚ¿­¿¡ Æ÷ÇÔµÇ°í,
-                       µÚ 1bytes´Â ¹®ÀÚ¿­¿¡ Æ÷ÇÔµÇÁö ¾ÊÀº °æ¿ìÀÌ´Ù. */
+                       ë¬¸ìžì—´ ë§ˆì§€ë§‰ì˜ 2byteë¬¸ìžê°€
+                       ì•ž 1bytesë§Œ ë¬¸ìžì—´ì— í¬í•¨ë˜ê³ ,
+                       ë’¤ 1bytesëŠ” ë¬¸ìžì—´ì— í¬í•¨ë˜ì§€ ì•Šì€ ê²½ìš°ì´ë‹¤. */
                     return 0;
                 }
 
@@ -2890,17 +2890,17 @@ SInt mtlCollate::mtlCompareMS949Collate( const UChar  * aValue1,
 {
 /***********************************************************************
  *
- * Description : MS949ÄÚµå¿Í KSC5601 ÄÚµå¸¦
- *               ´ëÀÀµÇ´Â UNICODE·Î º¯È¯ÇØ¼­ ºñ±³
+ * Description : MS949ì½”ë“œì™€ KSC5601 ì½”ë“œë¥¼
+ *               ëŒ€ì‘ë˜ëŠ” UNICODEë¡œ ë³€í™˜í•´ì„œ ë¹„êµ
  *
  * Implementation :
  *
- *   mtMS949ToUnicodeTable[] ¿¡¼­´Â 
- *   ¸ðµç MS949ÀÇ ÄÚµå¿Í ´ëÀÀµÇ´Â UNICODE ÀÇ ÀÏÂ÷¿ø¹è¿­·Î ±¸¼ºµÇ¾î ÀÖÀ½.
- *   ÀÌ UNICODE´Â Ç¥ÁØ UNICODE¸¦ ÃÊ¼ºÀ» Æ÷ÇÔ ÇÑ±ÛÁ¤·Ä·Î Àç¹è¿­µÇ¾î ÀÖÀ½.
+ *   mtMS949ToUnicodeTable[] ì—ì„œëŠ” 
+ *   ëª¨ë“  MS949ì˜ ì½”ë“œì™€ ëŒ€ì‘ë˜ëŠ” UNICODE ì˜ ì¼ì°¨ì›ë°°ì—´ë¡œ êµ¬ì„±ë˜ì–´ ìžˆìŒ.
+ *   ì´ UNICODEëŠ” í‘œì¤€ UNICODEë¥¼ ì´ˆì„±ì„ í¬í•¨ í•œê¸€ì •ë ¬ë¡œ ìž¬ë°°ì—´ë˜ì–´ ìžˆìŒ.
  *
- *   µû¶ó¼­, mtMS949ToUnicodeTable¿¡ ´ëÀÀµÇ´Â UNICODE°¡
- *   Á¸ÀçÇÏÁö ¾Ê´Â °æ¿ì, mtMS949ToUnicodeTable[0][0] (0x0000 )ÀÇ °ªÀÌ ¸®ÅÏµÊ.
+ *   ë”°ë¼ì„œ, mtMS949ToUnicodeTableì— ëŒ€ì‘ë˜ëŠ” UNICODEê°€
+ *   ì¡´ìž¬í•˜ì§€ ì•ŠëŠ” ê²½ìš°, mtMS949ToUnicodeTable[0][0] (0x0000 )ì˜ ê°’ì´ ë¦¬í„´ë¨.
  *
  ***********************************************************************/
 
@@ -2911,7 +2911,7 @@ SInt mtlCollate::mtlCompareMS949Collate( const UChar  * aValue1,
     UShort    sUnicode2;
 
     //-------------------------------------------
-    // ÇÑ¹®ÀÚ¿¡ ´ëÇÑ ms949 code¿Í length¸¦ ±¸ÇÔ.
+    // í•œë¬¸ìžì— ëŒ€í•œ ms949 codeì™€ lengthë¥¼ êµ¬í•¨.
     //-------------------------------------------
 
     mtlCollate::mtlSetCodeAndLenInfo( aValue1,
@@ -2926,15 +2926,15 @@ SInt mtlCollate::mtlCompareMS949Collate( const UChar  * aValue1,
                                       aLength2 );
 
     //-------------------------------------------
-    // mtMS949ToUnicodeTable ¿¡¼­
-    // ms949 code¿¡ ´ëÀÀµÇ´Â unicode¸¦ ±¸ÇÑ´Ù.
+    // mtMS949ToUnicodeTable ì—ì„œ
+    // ms949 codeì— ëŒ€ì‘ë˜ëŠ” unicodeë¥¼ êµ¬í•œë‹¤.
     //-------------------------------------------
 
     sUnicode1 = mtlMS949CollationTable[sMs949Code1];
     sUnicode2 = mtlMS949CollationTable[sMs949Code2];
 
     //----------------------------------------
-    // unicode·Î ºñ±³
+    // unicodeë¡œ ë¹„êµ
     //----------------------------------------
         
     if( sUnicode1 > sUnicode2 )
@@ -2967,13 +2967,13 @@ SInt mtlCollate::mtlCompareMS949CollateWithCheck2ByteCharCut( const UChar  * aVa
  *
  * BUG-43106
  *
- * Description : À§ÀÇ mtlCollate::mtlCompareMS949Collate() ÇÔ¼ö¿¡
- *               2byte¹®ÀÚ Ã¼Å© ÄÚµå¸¦ Ãß°¡ÇÔ.
+ * Description : ìœ„ì˜ mtlCollate::mtlCompareMS949Collate() í•¨ìˆ˜ì—
+ *               2byteë¬¸ìž ì²´í¬ ì½”ë“œë¥¼ ì¶”ê°€í•¨.
  *
- *               µÎ ÀÔ·Â¹®ÀÚ¿­ ºñ±³Áß¿¡ Àß¸° 2byte¹®ÀÚ°¡ Æ÷ÇÔµÆÀ» °æ¿ì
- *               *aIs2ByteCharCut = TRUE¸¦ ¼¼ÆÃÇÑ´Ù. 
- *               ( ¾Õ 1byte¸¸ ¹®ÀÚ¿­¿¡ Æ÷ÇÔµÇ°í
- *                 µÚ 1byte´Â ¹®ÀÚ¿­¿¡ Æ÷ÇÔµÇÁö ¾Ê¾Ò´Ù.)
+ *               ë‘ ìž…ë ¥ë¬¸ìžì—´ ë¹„êµì¤‘ì— ìž˜ë¦° 2byteë¬¸ìžê°€ í¬í•¨ëì„ ê²½ìš°
+ *               *aIs2ByteCharCut = TRUEë¥¼ ì„¸íŒ…í•œë‹¤. 
+ *               ( ì•ž 1byteë§Œ ë¬¸ìžì—´ì— í¬í•¨ë˜ê³ 
+ *                 ë’¤ 1byteëŠ” ë¬¸ìžì—´ì— í¬í•¨ë˜ì§€ ì•Šì•˜ë‹¤.)
  *
  ***********************************************************************/
 
@@ -2986,7 +2986,7 @@ SInt mtlCollate::mtlCompareMS949CollateWithCheck2ByteCharCut( const UChar  * aVa
     idBool    sIs2ByteCharCut2 = ID_FALSE;
 
     //-------------------------------------------
-    // ÇÑ¹®ÀÚ¿¡ ´ëÇÑ ms949 code¿Í length¸¦ ±¸ÇÔ.
+    // í•œë¬¸ìžì— ëŒ€í•œ ms949 codeì™€ lengthë¥¼ êµ¬í•¨.
     //-------------------------------------------
 
     mtlCollate::mtlSetCodeAndLenInfoWithCheck2ByteCharCut( aValue1,
@@ -3014,15 +3014,15 @@ SInt mtlCollate::mtlCompareMS949CollateWithCheck2ByteCharCut( const UChar  * aVa
         *aIs2ByteCharCut = ID_FALSE;
 
         //-------------------------------------------
-        // mtMS949ToUnicodeTable ¿¡¼­
-        // ms949 code¿¡ ´ëÀÀµÇ´Â unicode¸¦ ±¸ÇÑ´Ù.
+        // mtMS949ToUnicodeTable ì—ì„œ
+        // ms949 codeì— ëŒ€ì‘ë˜ëŠ” unicodeë¥¼ êµ¬í•œë‹¤.
         //-------------------------------------------
 
         sUnicode1 = mtlMS949CollationTable[sMs949Code1];
         sUnicode2 = mtlMS949CollationTable[sMs949Code2];
 
         //----------------------------------------
-        // unicode·Î ºñ±³
+        // unicodeë¡œ ë¹„êµ
         //----------------------------------------
 
         if ( sUnicode1 > sUnicode2 )

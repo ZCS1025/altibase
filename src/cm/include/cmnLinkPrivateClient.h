@@ -98,7 +98,7 @@ acp_uint32_t cmnLinkPeerSizeSSL();
 
 #define USE_DISCONN_CHECK
 
-#define USE_NEW_UNDO_SEMA         (1)  /* »õ·Î¿î UNDO Semaphore operation ÀÌ¿ë : PR-2476*/
+#define USE_NEW_UNDO_SEMA         (1)  /* ìƒˆë¡œìš´ UNDO Semaphore operation ì´ìš© : PR-2476*/
 #define NEW_UNDO_SEMA_VALUE      (10)
 
 typedef struct cmnLinkDescIPC
@@ -114,18 +114,18 @@ typedef struct cmnLinkDescIPC
     acp_sint32_t       mChannelID;
     struct semid_ds    mSemInfo;
 
-    acp_uint32_t       mTicketNum;  // BUG-32398 Å¸ÀÓ½ºÅÆÇÁ¿¡¼­ Æ¼ÄÏ¹øÈ£·Î º¯°æ
+    acp_uint32_t       mTicketNum;  // BUG-32398 íƒ€ì„ìŠ¤íƒ¬í”„ì—ì„œ í‹°ì¼“ë²ˆí˜¸ë¡œ ë³€ê²½
 
     /*
      * BUG-12909
-     * close½Ã mHandle¿¡ PDL_INVALID_SOCKETÀ» ¼¼ÆÃÇÏ´Â ´ë½Å
-     * ÀÌ ÇÃ·¡±×¸¦ »ç¿ëÇÑ´Ù.
+     * closeì‹œ mHandleì— PDL_INVALID_SOCKETì„ ì„¸íŒ…í•˜ëŠ” ëŒ€ì‹ 
+     * ì´ í”Œë˜ê·¸ë¥¼ ì‚¬ìš©í•œë‹¤.
      */
     acp_bool_t         mConnectFlag;
 
     /*
-     * HandShake°¡ ½ÇÆĞÇÒ °æ¿ì ±×³É close()ÇÏ¸é ¿¡·¯ ¹ß»ıÇÏ±â¿¡
-     * »óÅÂ¸¦ ÀúÀåÇÏ°í, I/O¸¦ ¼öÇàÇÒ ¶§ ÇÊ¿äÁ¶Ä¡¸¦ ÇÔ.
+     * HandShakeê°€ ì‹¤íŒ¨í•  ê²½ìš° ê·¸ëƒ¥ close()í•˜ë©´ ì—ëŸ¬ ë°œìƒí•˜ê¸°ì—
+     * ìƒíƒœë¥¼ ì €ì¥í•˜ê³ , I/Oë¥¼ ìˆ˜í–‰í•  ë•Œ í•„ìš”ì¡°ì¹˜ë¥¼ í•¨.
      */
     acp_bool_t         mHandShakeFlag;
 
@@ -161,7 +161,7 @@ typedef struct cmnLinkDescIPC
 
     /*
      * bug-27250 free Buf list can be crushed when client killed
-     * Å« ÇÁ·ÎÅäÄİ¿¡ ´ëÇÑ ´ÙÀ½ ÆĞÅ¶ ¼Û½Å ½ÅÈ£ Á¦¾î¿ë semaphore
+     * í° í”„ë¡œí† ì½œì— ëŒ€í•œ ë‹¤ìŒ íŒ¨í‚· ì†¡ì‹  ì‹ í˜¸ ì œì–´ìš© semaphore
      * IPC_SEM_SENDMORE_TO_SVR (4) : controlled by server
      */
     struct sembuf      mOpInitSendMoreToSvr[1];  /* in Server */
@@ -203,18 +203,18 @@ typedef struct cmnLinkDescIPCDA
     acp_sint32_t       mChannelID;
     struct semid_ds    mSemInfo;
 
-    acp_uint32_t       mTicketNum;  /* BUG-32398 Å¸ÀÓ½ºÅÆÇÁ¿¡¼­ Æ¼ÄÏ¹øÈ£·Î º¯°æ */
+    acp_uint32_t       mTicketNum;  /* BUG-32398 íƒ€ì„ìŠ¤íƒ¬í”„ì—ì„œ í‹°ì¼“ë²ˆí˜¸ë¡œ ë³€ê²½ */
 
     /*
      * BUG-12909
-     * close½Ã mHandle¿¡ PDL_INVALID_SOCKETÀ» ¼¼ÆÃÇÏ´Â ´ë½Å
-     * ÀÌ ÇÃ·¡±×¸¦ »ç¿ëÇÑ´Ù.
+     * closeì‹œ mHandleì— PDL_INVALID_SOCKETì„ ì„¸íŒ…í•˜ëŠ” ëŒ€ì‹ 
+     * ì´ í”Œë˜ê·¸ë¥¼ ì‚¬ìš©í•œë‹¤.
      */
     acp_bool_t         mConnectFlag;
 
     /*
-     * HandShake°¡ ½ÇÆĞÇÒ °æ¿ì ±×³É close()ÇÏ¸é ¿¡·¯ ¹ß»ıÇÏ±â¿¡
-     * »óÅÂ¸¦ ÀúÀåÇÏ°í, I/O¸¦ ¼öÇàÇÒ ¶§ ÇÊ¿äÁ¶Ä¡¸¦ ÇÔ.
+     * HandShakeê°€ ì‹¤íŒ¨í•  ê²½ìš° ê·¸ëƒ¥ close()í•˜ë©´ ì—ëŸ¬ ë°œìƒí•˜ê¸°ì—
+     * ìƒíƒœë¥¼ ì €ì¥í•˜ê³ , I/Oë¥¼ ìˆ˜í–‰í•  ë•Œ í•„ìš”ì¡°ì¹˜ë¥¼ í•¨.
      */
     acp_bool_t         mHandShakeFlag;
 

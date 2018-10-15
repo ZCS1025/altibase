@@ -23,7 +23,7 @@
   HeapSortTest1
   integer test
   -------------------------------------------------------------------*/
-//aArray³»¿ëÀ» ·£´ı°ªÀ¸·Î ¼³Á¤
+//aArrayë‚´ìš©ì„ ëœë¤ê°’ìœ¼ë¡œ ì„¤ì •
 void intInitArrayRand(SInt *aArray, SInt aSize)
 {
     SInt i;
@@ -34,14 +34,14 @@ void intInitArrayRand(SInt *aArray, SInt aSize)
     }
 }
 
-//aArray°¡ ascending¼ø¼­¸¦ ÁöÅ°´ÂÁö Ã¼Å©
+//aArrayê°€ ascendingìˆœì„œë¥¼ ì§€í‚¤ëŠ”ì§€ ì²´í¬
 SInt intVerifyAscArray(SInt *aArray, SInt aSize)
 {
     SInt i;
 
     for(i=1; i< aSize; i++)
     {
-        //¾Õ¿¡°ÍÀÌ ´õ Å©¸é ¿¡·¯, µÚ¿¡°ÍÀÌ ´õ Ä¿¾ß ÇÑ´Ù.
+        //ì•ì—ê²ƒì´ ë” í¬ë©´ ì—ëŸ¬, ë’¤ì—ê²ƒì´ ë” ì»¤ì•¼ í•œë‹¤.
         if( aArray[i-1] > aArray[i]){
             IDE_ASSERT(0);
             return -1;
@@ -80,7 +80,7 @@ typedef struct saTest
 }saTest;
 
 
-//aArray³»¿ëÀ» ·£´ı°ªÀ¸·Î ¼³Á¤
+//aArrayë‚´ìš©ì„ ëœë¤ê°’ìœ¼ë¡œ ì„¤ì •
 void saTestInitArrayRand(saTest *aArray, SInt aSize)
 {
     SInt i;
@@ -99,14 +99,14 @@ SInt saTestAscCmp(const void *a, const void *b)
     return sNumA - sNumB;
 }
 
-//aArray°¡ ascending¼ø¼­¸¦ ÁöÅ°´ÂÁö Ã¼Å©
+//aArrayê°€ ascendingìˆœì„œë¥¼ ì§€í‚¤ëŠ”ì§€ ì²´í¬
 SInt saTestVerifyAscArray(saTest *aArray, SInt aSize)
 {
     SInt    i;
     
     for(i=1; i< aSize; i++)
     {
-        //¾Õ¿¡°ÍÀÌ ´õ Å©¸é ¿¡·¯, µÚ¿¡°ÍÀÌ ´õ Ä¿¾ß ÇÑ´Ù.
+        //ì•ì—ê²ƒì´ ë” í¬ë©´ ì—ëŸ¬, ë’¤ì—ê²ƒì´ ë” ì»¤ì•¼ í•œë‹¤.
         if( aArray[i-1].mNum > aArray[i].mNum){
             IDE_ASSERT(0);
             return -1;
@@ -131,7 +131,7 @@ void HeapSortTest2()
   char test
   -------------------------------------------------------------------*/
 
-//aArray³»¿ëÀ» ·£´ı°ªÀ¸·Î ¼³Á¤
+//aArrayë‚´ìš©ì„ ëœë¤ê°’ìœ¼ë¡œ ì„¤ì •
 void charInitArrayRand(SChar *aArray, SInt aSize)
 {
     SInt i;
@@ -147,14 +147,14 @@ SInt charAscCmp(const void *a,const void *b)
     return (*(SChar*)a - *(SChar*)b);
 }
 
-//aArray°¡ ascending¼ø¼­¸¦ ÁöÅ°´ÂÁö Ã¼Å©
+//aArrayê°€ ascendingìˆœì„œë¥¼ ì§€í‚¤ëŠ”ì§€ ì²´í¬
 SInt charVerifyAscArray(SChar *aArray, SInt aSize)
 {
     SInt i;
 
     for(i=1; i< aSize; i++)
     {
-        //¾Õ¿¡°ÍÀÌ ´õ Å©¸é ¿¡·¯, µÚ¿¡°ÍÀÌ ´õ Ä¿¾ß ÇÑ´Ù.
+        //ì•ì—ê²ƒì´ ë” í¬ë©´ ì—ëŸ¬, ë’¤ì—ê²ƒì´ ë” ì»¤ì•¼ í•œë‹¤.
         if( aArray[i-1] > aArray[i]){
             IDE_ASSERT(0);
             return -1;

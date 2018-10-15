@@ -28,8 +28,8 @@ import java.util.logging.LogRecord;
 import java.util.logging.XMLFormatter;
 
 /**
- * ¼¼¼Çº°·Î º°µµÀÇ ÆÄÀÏÀÌ »ı¼ºµÇ¾î ·Î±×¸¦ ³²±æ¼ö ÀÖµµ·Ï FileHandler¸¦ È®ÀåÇÏ¿© ±¸ÇöÇÔ.</br>
- * ³»ºÎÀûÀ¸·Î FileHandlerÀÇ ÁıÇÕÀ» Hashtable·Î ±¸ÇöÇÏ°í ÀÖÀ¸¸ç ¼¼¼Ç¾ÆÀÌµğº°·Î FileHandler¸¦ »ı¼ºÇÏ¿© °ü¸®ÇÑ´Ù.
+ * ì„¸ì…˜ë³„ë¡œ ë³„ë„ì˜ íŒŒì¼ì´ ìƒì„±ë˜ì–´ ë¡œê·¸ë¥¼ ë‚¨ê¸¸ìˆ˜ ìˆë„ë¡ FileHandlerë¥¼ í™•ì¥í•˜ì—¬ êµ¬í˜„í•¨.</br>
+ * ë‚´ë¶€ì ìœ¼ë¡œ FileHandlerì˜ ì§‘í•©ì„ Hashtableë¡œ êµ¬í˜„í•˜ê³  ìˆìœ¼ë©° ì„¸ì…˜ì•„ì´ë””ë³„ë¡œ FileHandlerë¥¼ ìƒì„±í•˜ì—¬ ê´€ë¦¬í•œë‹¤.
  * 
  * @author yjpark
  *
@@ -53,7 +53,7 @@ public class MultipleFileHandler extends FileHandler
     boolean             mLocalAppend;
     int                 mLocalLimit;
     int                 mLocalCount;
-    Map                 mHandlerMap      = new Hashtable(); // ¾²·¹µå°£ °æÇÕÀÌ½´°¡ ÀÖ±â¶§¹®¿¡ HashMap´ë½Å HashtableÀ» »ç¿ëÇÑ´Ù.
+    Map                 mHandlerMap      = new Hashtable(); // ì“°ë ˆë“œê°„ ê²½í•©ì´ìŠˆê°€ ìˆê¸°ë•Œë¬¸ì— HashMapëŒ€ì‹  Hashtableì„ ì‚¬ìš©í•œë‹¤.
 
     public MultipleFileHandler() throws IOException
     {
@@ -127,7 +127,7 @@ public class MultipleFileHandler extends FileHandler
         {
             Handler sHandler = (Handler)this.mHandlerMap.get(sParam[0]);
 
-            // Hashtable¿¡ ÇØ´çÇÏ´Â ¼¼¼Ç¾ÆÀÌµğÀÇ FileHandler°¡ ¾ø´Â °æ¿ì »õ·Î »ı¼ºÇÏ¿© Ãß°¡ÇÑ´Ù.
+            // Hashtableì— í•´ë‹¹í•˜ëŠ” ì„¸ì…˜ì•„ì´ë””ì˜ FileHandlerê°€ ì—†ëŠ” ê²½ìš° ìƒˆë¡œ ìƒì„±í•˜ì—¬ ì¶”ê°€í•œë‹¤.
             if (sHandler == null)
             {
                 if (this.mLocalPattern == null)

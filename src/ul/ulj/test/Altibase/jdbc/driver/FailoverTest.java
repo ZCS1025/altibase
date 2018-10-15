@@ -19,7 +19,7 @@ public class FailoverTest extends AltibaseTestCase
     public void testFailover() throws SQLException
     {
         Connection sConn = DriverManager.getConnection(getURL());
-        // ¾î¶² ÀÌÀ¯¿¡¼­°Ç Á¢¼ÓÀÌ °¡´ÉÇØ¾ß ÇÑ´Ù.
+        // ì–´ë–¤ ì´ìœ ì—ì„œê±´ ì ‘ì†ì´ ê°€ëŠ¥í•´ì•¼ í•œë‹¤.
         sConn.close();
     }
 }

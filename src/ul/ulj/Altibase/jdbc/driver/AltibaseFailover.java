@@ -60,13 +60,13 @@ final class AltibaseFailover
     }
 
     /**
-     * CTF¸¦ ½ÃµµÇÏ°í, °á°ú¿¡ µû¶ó °æ°í¸¦ ³²±â°Å³ª ¿ø·¡³µ´ø ¿¹¿Ü¸¦ ´Ù½Ã ´øÁø´Ù.
+     * CTFë¥¼ ì‹œë„í•˜ê³ , ê²°ê³¼ì— ë”°ë¼ ê²½ê³ ë¥¼ ë‚¨ê¸°ê±°ë‚˜ ì›ë˜ë‚¬ë˜ ì˜ˆì™¸ë¥¼ ë‹¤ì‹œ ë˜ì§„ë‹¤.
      *
      * @param aContext Failover context
-     * @param aWarning °æ°í¸¦ ´ãÀ» °´Ã¼. nullÀÌ¸é »õ °´Ã¼¸¦ ¸¸µç´Ù.
-     * @param aException ¿ø·¡ ³µ´ø ¿¹¿Ü
-     * @return °æ°í¸¦ ´ãÀº °´Ã¼
-     * @throws SQLException CTF¸¦ ÇÒ »óÈ²ÀÌ ¾Æ´Ï°Å³ª CTF¿¡ ½ÇÆĞÇÑ °æ¿ì
+     * @param aWarning ê²½ê³ ë¥¼ ë‹´ì„ ê°ì²´. nullì´ë©´ ìƒˆ ê°ì²´ë¥¼ ë§Œë“ ë‹¤.
+     * @param aException ì›ë˜ ë‚¬ë˜ ì˜ˆì™¸
+     * @return ê²½ê³ ë¥¼ ë‹´ì€ ê°ì²´
+     * @throws SQLException CTFë¥¼ í•  ìƒí™©ì´ ì•„ë‹ˆê±°ë‚˜ CTFì— ì‹¤íŒ¨í•œ ê²½ìš°
      */
     public static SQLWarning tryCTF(AltibaseFailoverContext aContext, SQLWarning aWarning, SQLException aException) throws SQLException
     {
@@ -92,14 +92,14 @@ final class AltibaseFailover
     }
 
     /**
-     * STF¸¦ ½ÃµµÇÏ°í, °á°ú¿¡ µû¶ó ¿¹¿Ü¸¦ ´øÁø´Ù.
-     * ¼º°øÇßÀ»¶§µµ ¿¹¿Ü¸¦ ´øÁ® STF ¼º°øÀ» ¾Ë¸°´Ù.
+     * STFë¥¼ ì‹œë„í•˜ê³ , ê²°ê³¼ì— ë”°ë¼ ì˜ˆì™¸ë¥¼ ë˜ì§„ë‹¤.
+     * ì„±ê³µí–ˆì„ë•Œë„ ì˜ˆì™¸ë¥¼ ë˜ì ¸ STF ì„±ê³µì„ ì•Œë¦°ë‹¤.
      * <p>
-     * ¸¸¾à failover context°¡ ÃÊ±âÈ­µÇÁö ¾Ê¾Ò´Ù¸é ¿ø·¡ ³µ´ø ¿¹¿Ü¸¦ ´øÁö°Å³ª »ç¿ëÀÚ°¡ ³Ñ±ä °æ°í °´Ã¼¸¦ ±×´ë·Î ¹İÈ¯ÇÑ´Ù.
+     * ë§Œì•½ failover contextê°€ ì´ˆê¸°í™”ë˜ì§€ ì•Šì•˜ë‹¤ë©´ ì›ë˜ ë‚¬ë˜ ì˜ˆì™¸ë¥¼ ë˜ì§€ê±°ë‚˜ ì‚¬ìš©ìê°€ ë„˜ê¸´ ê²½ê³  ê°ì²´ë¥¼ ê·¸ëŒ€ë¡œ ë°˜í™˜í•œë‹¤.
      *
      * @param aContext Failover context
-     * @param aException ¿ø·¡ ³µ´ø ¿¹¿Ü
-     * @throws SQLException STF¿¡ ½ÇÆĞÇß´Ù¸é ¿ø·¡ ³µ´ø ¿¹¿Ü, ¾Æ´Ï¸é STF ¼º°øÀ» ¾Ë¸®´Â ¿¹¿Ü
+     * @param aException ì›ë˜ ë‚¬ë˜ ì˜ˆì™¸
+     * @throws SQLException STFì— ì‹¤íŒ¨í–ˆë‹¤ë©´ ì›ë˜ ë‚¬ë˜ ì˜ˆì™¸, ì•„ë‹ˆë©´ STF ì„±ê³µì„ ì•Œë¦¬ëŠ” ì˜ˆì™¸
      */
     public static void trySTF(AltibaseFailoverContext aContext, SQLException aException) throws SQLException
     {
@@ -120,10 +120,10 @@ final class AltibaseFailover
     }
 
     /**
-     * CTF¸¦ À§ÇØ alternateservers¿¡¼­ »ç¿ë °¡´ÉÇÑ ¼­¹ö¸¦ ¼±ÅÃÇØ Á¢¼ÓÇÑ´Ù.
+     * CTFë¥¼ ìœ„í•´ alternateserversì—ì„œ ì‚¬ìš© ê°€ëŠ¥í•œ ì„œë²„ë¥¼ ì„ íƒí•´ ì ‘ì†í•œë‹¤.
      *
      * @param aContext Failover context
-     * @return CTF ¼º°ø ¿©ºÎ
+     * @return CTF ì„±ê³µ ì—¬ë¶€
      */
     private static boolean doCTF(AltibaseFailoverContext aContext)
     {
@@ -131,11 +131,11 @@ final class AltibaseFailover
     }
 
     /**
-     * CTF ¶Ç´Â STF¸¦ À§ÇØ alternateservers¿¡¼­ »ç¿ë °¡´ÉÇÑ ¼­¹ö¸¦ ¼±ÅÃÇØ Á¢¼ÓÇÑ´Ù.
+     * CTF ë˜ëŠ” STFë¥¼ ìœ„í•´ alternateserversì—ì„œ ì‚¬ìš© ê°€ëŠ¥í•œ ì„œë²„ë¥¼ ì„ íƒí•´ ì ‘ì†í•œë‹¤.
      *
      * @param aContext Failover context
-     * @param aFailoverType Failover À¯Çü
-     * @return CTF ¼º°ø ¿©ºÎ
+     * @param aFailoverType Failover ìœ í˜•
+     * @return CTF ì„±ê³µ ì—¬ë¶€
      */
     private static boolean doCTF(AltibaseFailoverContext aContext, FailoverType aFailoverType)
     {
@@ -154,7 +154,7 @@ final class AltibaseFailover
         {
             for (int sRemainRetryCnt = Math.max(1, sMaxConnectionRetry); sRemainRetryCnt > 0; sRemainRetryCnt--)
             {
-                /* BUG-43219 ¸Å Á¢¼Ó½Ã¸¶´Ù Ã¤³ÎÀ» Àç»ı¼ºÇØ¾ß ÇÑ´Ù. ±×·¸Áö ¾ÊÀ¸¸é Ã¹¹øÂ° Á¢¼Ó Á¤º¸°¡ µÚ¿¡¿À´Â Á¢¼Ó¿¡ ¿µÇâÀ» ³¢Ä£´Ù. */
+                /* BUG-43219 ë§¤ ì ‘ì†ì‹œë§ˆë‹¤ ì±„ë„ì„ ì¬ìƒì„±í•´ì•¼ í•œë‹¤. ê·¸ë ‡ì§€ ì•Šìœ¼ë©´ ì²«ë²ˆì§¸ ì ‘ì† ì •ë³´ê°€ ë’¤ì—ì˜¤ëŠ” ì ‘ì†ì— ì˜í–¥ì„ ë¼ì¹œë‹¤. */
                 CmChannel sNewChannel = new CmChannel();
                 try
                 {
@@ -195,12 +195,12 @@ final class AltibaseFailover
     }
 
     /**
-     * <tt>CmChannel</tt>À» ¹Ù²Ù°í, ±×¸¦ ÀÌ¿ëÇØ <tt>connect</tt>¸¦ ½ÃµµÇÑ´Ù.
+     * <tt>CmChannel</tt>ì„ ë°”ê¾¸ê³ , ê·¸ë¥¼ ì´ìš©í•´ <tt>connect</tt>ë¥¼ ì‹œë„í•œë‹¤.
      *
      * @param aContext Failover contest
-     * @param aChannel ¹Ù²Ü <tt>CmChannel</tt>
-     * @param aServerInfo AltibaseFailoverServerInfo Á¤º¸
-     * @throws SQLException »õ <tt>CmChannel</tt>À» ÀÌ¿ëÇÏ <tt>connect</tt>¿¡ ½ÇÆĞÇÑ °æ¿ì
+     * @param aChannel ë°”ê¿€ <tt>CmChannel</tt>
+     * @param aServerInfo AltibaseFailoverServerInfo ì •ë³´
+     * @throws SQLException ìƒˆ <tt>CmChannel</tt>ì„ ì´ìš©í•˜ <tt>connect</tt>ì— ì‹¤íŒ¨í•œ ê²½ìš°
      */
     private static void changeChannelAndConnect(AltibaseFailoverContext aContext, CmChannel aChannel, AltibaseFailoverServerInfo aServerInfo) throws SQLException
     {
@@ -215,12 +215,12 @@ final class AltibaseFailover
     }
 
     /**
-     * CTF¿Í Failover callbackÀ» ¼öÇàÇÑ´Ù.
-     * callback °á°ú¿¡ µû¶ó STF¸¦ °è¼Ó ÁøÇàÇÒÁö ±×¸¸µÑÁö¸¦ °áÁ¤ÇÑ´Ù.
+     * CTFì™€ Failover callbackì„ ìˆ˜í–‰í•œë‹¤.
+     * callback ê²°ê³¼ì— ë”°ë¼ STFë¥¼ ê³„ì† ì§„í–‰í• ì§€ ê·¸ë§Œë‘˜ì§€ë¥¼ ê²°ì •í•œë‹¤.
      *
      * @param aContext Failover context
-     * @return STF ¼º°ø ¿©ºÎ
-     * @throws SQLException STF¸¦ À§ÇØ <tt>Statement</tt>¸¦ Á¤¸®ÇÏ´Ù°¡ ½ÇÆĞÇÑ °æ¿ì
+     * @return STF ì„±ê³µ ì—¬ë¶€
+     * @throws SQLException STFë¥¼ ìœ„í•´ <tt>Statement</tt>ë¥¼ ì •ë¦¬í•˜ë‹¤ê°€ ì‹¤íŒ¨í•œ ê²½ìš°
      */
     private static boolean doSTF(AltibaseFailoverContext aContext) throws SQLException
     {
@@ -283,11 +283,11 @@ final class AltibaseFailover
 
     /* BUG-31390 Failover info for v$session */
     /**
-     * V$SESSION.FAILOVER_SOURCE·Î º¸¿©ÁÙ °ªÀ» »ı¼ºÇØ Connection property·Î ¼³Á¤ÇÑ´Ù.
+     * V$SESSION.FAILOVER_SOURCEë¡œ ë³´ì—¬ì¤„ ê°’ì„ ìƒì„±í•´ Connection propertyë¡œ ì„¤ì •í•œë‹¤.
      *
      * @param aContext Failover Context
-     * @param aFailoverType Failover À¯Çü
-     * @param aServerInfo ¼³Á¤ÇÒ ¼­¹ö Á¤º¸
+     * @param aFailoverType Failover ìœ í˜•
+     * @param aServerInfo ì„¤ì •í•  ì„œë²„ ì •ë³´
      */
     private static void setFailoverSource(AltibaseFailoverContext aContext, FailoverType aFailoverType, AltibaseFailoverServerInfo aServerInfo)
     {
@@ -304,7 +304,7 @@ final class AltibaseFailover
                 break;
 
             default:
-                // ³»ºÎ¿¡¼­¸¸ ¾²¹Ç·Î, ÀÌ·±ÀÏÀº Àı´ë ÀÏ¾î³ª¼± ¾ÈµÈ´Ù.
+                // ë‚´ë¶€ì—ì„œë§Œ ì“°ë¯€ë¡œ, ì´ëŸ°ì¼ì€ ì ˆëŒ€ ì¼ì–´ë‚˜ì„  ì•ˆëœë‹¤.
                 Error.throwInternalError(ErrorDef.INTERNAL_ASSERTION);
                 break;
         }
@@ -321,11 +321,11 @@ final class AltibaseFailover
     }
 
     /**
-     * CTF°¡ ÇÊ¿äÇÑÁö È®ÀÎÇÑ´Ù.
+     * CTFê°€ í•„ìš”í•œì§€ í™•ì¸í•œë‹¤.
      *
-     * @param aContext Failover¿¡ ´ëÇÑ Á¤º¸¸¦ ´ãÀº °´Ã¼
-     * @param aException CTF°¡ ÇÊ¿äÇÑÁö º¼ ¿¹¿Ü
-     * @return CTF°¡ ÇÊ¿äÇÏ¸é true, ¾Æ´Ï¸é false
+     * @param aContext Failoverì— ëŒ€í•œ ì •ë³´ë¥¼ ë‹´ì€ ê°ì²´
+     * @param aException CTFê°€ í•„ìš”í•œì§€ ë³¼ ì˜ˆì™¸
+     * @return CTFê°€ í•„ìš”í•˜ë©´ true, ì•„ë‹ˆë©´ false
      */
     private static boolean checkNeedCTF(AltibaseFailoverContext aContext, SQLException aException) throws SQLException
     {
@@ -339,11 +339,11 @@ final class AltibaseFailover
     }
 
     /**
-     * STF°¡ ÇÊ¿äÇÑÁö È®ÀÎÇÑ´Ù.
+     * STFê°€ í•„ìš”í•œì§€ í™•ì¸í•œë‹¤.
      *
-     * @param aContext Failover¿¡ ´ëÇÑ Á¤º¸¸¦ ´ãÀº °´Ã¼
-     * @param aException STF°¡ ÇÊ¿äÇÑÁö º¼ ¿¹¿Ü
-     * @return STF°¡ ÇÊ¿äÇÏ¸é true, ¾Æ´Ï¸é false
+     * @param aContext Failoverì— ëŒ€í•œ ì •ë³´ë¥¼ ë‹´ì€ ê°ì²´
+     * @param aException STFê°€ í•„ìš”í•œì§€ ë³¼ ì˜ˆì™¸
+     * @return STFê°€ í•„ìš”í•˜ë©´ true, ì•„ë‹ˆë©´ false
      */
     private static boolean checkNeedSTF(AltibaseFailoverContext aContext, SQLException aException) throws SQLException
     {
@@ -359,10 +359,10 @@ final class AltibaseFailover
     }
 
     /**
-     * Failover°¡ ÇÊ¿äÇÑ ¿¹¿ÜÀÎÁö È®ÀÎÇÑ´Ù.
+     * Failoverê°€ í•„ìš”í•œ ì˜ˆì™¸ì¸ì§€ í™•ì¸í•œë‹¤.
      *
-     * @param aException Failover°¡ ÇÊ¿äÇÑÁö º¼ ¿¹¿Ü
-     * @return Failover°¡ ÇÊ¿äÇÏ¸é true, ¾Æ´Ï¸é false
+     * @param aException Failoverê°€ í•„ìš”í•œì§€ ë³¼ ì˜ˆì™¸
+     * @return Failoverê°€ í•„ìš”í•˜ë©´ true, ì•„ë‹ˆë©´ false
      */
     private static boolean isNeedToFailover(SQLException aException)
     {

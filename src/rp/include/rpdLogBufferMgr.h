@@ -26,14 +26,14 @@
 #include <smiLogRec.h>
 
 /*
- * Write pointer: Service°¡ ·Î±×¸¦ º¹»çÇÒ ¶§ ¹«Á¶°Ç °»½Å
- * Writable Flag(Copy Mode Flag): Service°¡ ·Î±× ¹öÆÛ¿¡ º¹»çÇÏ´Â °ÍÀ» Æ÷±âÇÒ ¶§ OFF/
- *                  Service°¡ Accessing Info CountÈ®ÀÎ(Sender°¡ ¸ğµç ·Î±×¸¦ ´Ù ÀĞ¾î°¡¸é) ÈÄ ON/
- *                  Sender°¡ ÁøÀÔ °¡´ÉÇÑÁö È®ÀÎÇÒ ¶§ ÀĞÀ½/ ´õ ÀĞÀ» ·Î±×°¡ ¾øÀ» ¶§ È®ÀÎ
- * Accessing Info Count : Sender°¡ ÁøÀÔÇÒ ¶§¿Í ³ª¿Ã¶§ °»½Å/
- * Min Read Pointer:Service°¡ ·Î±×¸¦ º¹»çÇÒ¶§ ÇÊ¿äÇÑ °æ¿ì °»½Å/
- *                  Sender°¡ ÁøÀÔÇÒ¶§ °»½Å / Sender°¡ ÀĞ°í ÀÖ´Â ¹öÆÛÀÇ ¹Ù·Î ¾ÕÀ» °¡¸®Å°°í ÀÖÀ½
- * Min SN,  Max SN: Service°¡ ¸ğµç ·Î±× Ã³¸®½Ã °»½Å
+ * Write pointer: Serviceê°€ ë¡œê·¸ë¥¼ ë³µì‚¬í•  ë•Œ ë¬´ì¡°ê±´ ê°±ì‹ 
+ * Writable Flag(Copy Mode Flag): Serviceê°€ ë¡œê·¸ ë²„í¼ì— ë³µì‚¬í•˜ëŠ” ê²ƒì„ í¬ê¸°í•  ë•Œ OFF/
+ *                  Serviceê°€ Accessing Info Countí™•ì¸(Senderê°€ ëª¨ë“  ë¡œê·¸ë¥¼ ë‹¤ ì½ì–´ê°€ë©´) í›„ ON/
+ *                  Senderê°€ ì§„ì… ê°€ëŠ¥í•œì§€ í™•ì¸í•  ë•Œ ì½ìŒ/ ë” ì½ì„ ë¡œê·¸ê°€ ì—†ì„ ë•Œ í™•ì¸
+ * Accessing Info Count : Senderê°€ ì§„ì…í•  ë•Œì™€ ë‚˜ì˜¬ë•Œ ê°±ì‹ /
+ * Min Read Pointer:Serviceê°€ ë¡œê·¸ë¥¼ ë³µì‚¬í• ë•Œ í•„ìš”í•œ ê²½ìš° ê°±ì‹ /
+ *                  Senderê°€ ì§„ì…í• ë•Œ ê°±ì‹  / Senderê°€ ì½ê³  ìˆëŠ” ë²„í¼ì˜ ë°”ë¡œ ì•ì„ ê°€ë¦¬í‚¤ê³  ìˆìŒ
+ * Min SN,  Max SN: Serviceê°€ ëª¨ë“  ë¡œê·¸ ì²˜ë¦¬ì‹œ ê°±ì‹ 
  */
 #define RP_BUF_NULL_PTR     (ID_UINT_MAX)
 #define RP_BUF_NULL_ID      (ID_UINT_MAX)
@@ -51,15 +51,15 @@ typedef struct AccessingInfo
     UInt    mNextPtr;
 } AccessingInfo;
 /***************************************************************************************
- *   RP LOG Buffer´Â service thread°¡ ·Î±×¸¦ writeÇÏ°í Sender°¡ ÀĞ¾î°¡´Â ±¸Á¶·Î µÇ¾îÀÖÀ½,
- *   È¯ÇüÀ¸·Î À¯ÁöµÇ±â ¶§¹®¿¡ Sender°¡ ÀĞ´Â À§Ä¡°¡ Service Thread°¡ ¾²´Â À§Ä¡¸¦ µû¶ó°¬´ÂÁö, 
- *   Service Thread°¡ ¾²´Â À§Ä¡°¡ Sender°¡ ÀĞ´Â À§Ä¡¸¦ µû¶ó°¬´ÂÁö È®ÀÎÇÒ ¼ö ÀÖ¾î¾ß ÇÏ¸ç, 
- *   ÀÌ°ÍÀ» ±¸ºĞÇÏ±â À§ÇØ Service Thread°¡ ¾²±â¸¦ ¿Ï·áÇÑ °÷ÀÇ À§Ä¡(mWrotePtr)¿Í Sender°¡ 
- *   ÀĞ±â¸¦ ¿Ï·áÇÑ °÷ÀÇ À§Ä¡(mMinReadPtr)¸¦ ±â¾ïÇÑ´Ù. Sender´Â Service Thread°¡ ¾²±â¸¦ ¿Ï·áÇÑ 
- *   À§Ä¡ÀÎ mWritePtr±îÁö mMinReadPtrÀ» ÀÌµ¿ÇÒ ¼ö ÀÖÀ¸¸ç, µÎ °ªÀÌ °°Àº °æ¿ì  
- *   Service Thread°¡ ¾´ °÷À» Sender°¡ ¸ğµÎ ÀĞ¾ú´Ù´Â ¶æÀÌµÈ´Ù.
- *   ±×¸®°í Service Thread´Â mMinReadPtrÀÌ °¡¸®Å°´Â °÷¿¡ ¾²±â¸¦ ÇÒ ¼ö ¾øµµ·Ï º¸È£ÇÏ±â ¶§¹®¿¡ 
- *   Service Thread°¡ Sender°¡ ÀĞ´Â °÷À» ³¡±îÁö µû¶ó°£´Ù°í ÇÏ´õ¶óµµ µÎ °ªÀÌ °°¾Æ Áú ¼ö ¾ø´Ù.
+ *   RP LOG BufferëŠ” service threadê°€ ë¡œê·¸ë¥¼ writeí•˜ê³  Senderê°€ ì½ì–´ê°€ëŠ” êµ¬ì¡°ë¡œ ë˜ì–´ìˆìŒ,
+ *   í™˜í˜•ìœ¼ë¡œ ìœ ì§€ë˜ê¸° ë•Œë¬¸ì— Senderê°€ ì½ëŠ” ìœ„ì¹˜ê°€ Service Threadê°€ ì“°ëŠ” ìœ„ì¹˜ë¥¼ ë”°ë¼ê°”ëŠ”ì§€, 
+ *   Service Threadê°€ ì“°ëŠ” ìœ„ì¹˜ê°€ Senderê°€ ì½ëŠ” ìœ„ì¹˜ë¥¼ ë”°ë¼ê°”ëŠ”ì§€ í™•ì¸í•  ìˆ˜ ìˆì–´ì•¼ í•˜ë©°, 
+ *   ì´ê²ƒì„ êµ¬ë¶„í•˜ê¸° ìœ„í•´ Service Threadê°€ ì“°ê¸°ë¥¼ ì™„ë£Œí•œ ê³³ì˜ ìœ„ì¹˜(mWrotePtr)ì™€ Senderê°€ 
+ *   ì½ê¸°ë¥¼ ì™„ë£Œí•œ ê³³ì˜ ìœ„ì¹˜(mMinReadPtr)ë¥¼ ê¸°ì–µí•œë‹¤. SenderëŠ” Service Threadê°€ ì“°ê¸°ë¥¼ ì™„ë£Œí•œ 
+ *   ìœ„ì¹˜ì¸ mWritePtrê¹Œì§€ mMinReadPtrì„ ì´ë™í•  ìˆ˜ ìˆìœ¼ë©°, ë‘ ê°’ì´ ê°™ì€ ê²½ìš°  
+ *   Service Threadê°€ ì“´ ê³³ì„ Senderê°€ ëª¨ë‘ ì½ì—ˆë‹¤ëŠ” ëœ»ì´ëœë‹¤.
+ *   ê·¸ë¦¬ê³  Service ThreadëŠ” mMinReadPtrì´ ê°€ë¦¬í‚¤ëŠ” ê³³ì— ì“°ê¸°ë¥¼ í•  ìˆ˜ ì—†ë„ë¡ ë³´í˜¸í•˜ê¸° ë•Œë¬¸ì— 
+ *   Service Threadê°€ Senderê°€ ì½ëŠ” ê³³ì„ ëê¹Œì§€ ë”°ë¼ê°„ë‹¤ê³  í•˜ë”ë¼ë„ ë‘ ê°’ì´ ê°™ì•„ ì§ˆ ìˆ˜ ì—†ë‹¤.
  ***************************************************************************************/
 class rpdLogBufferMgr
 {
@@ -79,29 +79,29 @@ public:
 
 
     /*Buffer Info*/
-    /* mMinReadPtr: ¹öÆÛÀÇ ÃÖ¼Ò À§Ä¡ (Sender°¡ ÀĞÀº ¹öÆÛÀÇ ÃÖ¼Ò À§Ä¡·Î ¹öÆÛÀÇ ÃÖ¼Ò À§Ä¡¸¦ Á¤ÇÔ)
-     * Sender´Â ÁøÀÔ ½Ã »ç¿ëÇÏ°í, Service´Â overwriteÇÏÁö ¾Ê±â À§ÇØ»ç¿ë*/
+    /* mMinReadPtr: ë²„í¼ì˜ ìµœì†Œ ìœ„ì¹˜ (Senderê°€ ì½ì€ ë²„í¼ì˜ ìµœì†Œ ìœ„ì¹˜ë¡œ ë²„í¼ì˜ ìµœì†Œ ìœ„ì¹˜ë¥¼ ì •í•¨)
+     * SenderëŠ” ì§„ì… ì‹œ ì‚¬ìš©í•˜ê³ , ServiceëŠ” overwriteí•˜ì§€ ì•Šê¸° ìœ„í•´ì‚¬ìš©*/
     UInt           mMinReadPtr;
-    /*Service Thread°¡ ¾²±â¸¦ ¿Ï·áÇÑ ¹öÆÛÀÇ À§Ä¡*/
+    /*Service Threadê°€ ì“°ê¸°ë¥¼ ì™„ë£Œí•œ ë²„í¼ì˜ ìœ„ì¹˜*/
     UInt           mWrotePtr;
-    /*Service Thread°¡ ´ÙÀ½¹ø¿¡ ½á¾ß ÇÒ ¹öÆÛÀÇ À§Ä¡*/
+    /*Service Threadê°€ ë‹¤ìŒë²ˆì— ì¨ì•¼ í•  ë²„í¼ì˜ ìœ„ì¹˜*/
     UInt           mWritePtr;
 
-    /* Service Thread°¡ ¹öÆÛ¿¡ ÀÛ¾÷À» ÇØ¾ßÇÏ´Â Áö ¿©ºÎ¸¦ ³ªÅ¸³¿
-     * Sender´Â Service Thread°¡ ¹öÆÛ¿¡ ÀÛ¾÷À» ÇÏ°í ÀÖ´ÂÁö ¿©ºÎ¸¦ È®ÀÎÇÏ´Â µ¥ »ç¿ë
+    /* Service Threadê°€ ë²„í¼ì— ì‘ì—…ì„ í•´ì•¼í•˜ëŠ” ì§€ ì—¬ë¶€ë¥¼ ë‚˜íƒ€ëƒ„
+     * SenderëŠ” Service Threadê°€ ë²„í¼ì— ì‘ì—…ì„ í•˜ê³  ìˆëŠ”ì§€ ì—¬ë¶€ë¥¼ í™•ì¸í•˜ëŠ” ë° ì‚¬ìš©
      */
     flagSwitch     mWritableFlag;
 
     iduMutex       mBufInfoMutex;
-    /*¹öÆÛÀÇ ÃÖ¼Ò SN°ú ÃÖ´ë SN*/
+    /*ë²„í¼ì˜ ìµœì†Œ SNê³¼ ìµœëŒ€ SN*/
     smSN           mMinSN;
     smSN           mMaxSN;
     smLSN          mMaxLSN;
-    /*¹öÆÛ¿¡¼­ ·Î±×¸¦ ÀĞ°í ÀÖ´Â Senderµé¿¡ °üÇÑ Á¤º¸*/
+    /*ë²„í¼ì—ì„œ ë¡œê·¸ë¥¼ ì½ê³  ìˆëŠ” Senderë“¤ì— ê´€í•œ ì •ë³´*/
     UInt           mAccessInfoCnt;
     AccessingInfo* mAccessInfoList;
 
-    /*aCopyFlag°¡ TRUEÀÏ ¶§ Log¸¦ Buffer¿¡ º¹»çÇÑ´Ù, ±×·¸Áö ¾ÊÀ¸¸é ControlÁ¤º¸¸¸ º¯°æÇÑ´Ù*/
+    /*aCopyFlagê°€ TRUEì¼ ë•Œ Logë¥¼ Bufferì— ë³µì‚¬í•œë‹¤, ê·¸ë ‡ì§€ ì•Šìœ¼ë©´ Controlì •ë³´ë§Œ ë³€ê²½í•œë‹¤*/
     IDE_RC copyToRPLogBuf(idvSQL * aStatistics,
                           UInt     aSize, 
                           SChar  * aLogPtr, 
@@ -110,7 +110,7 @@ public:
 
 
 
-    /*Log¸¦ Buffer¿¡¼­ ´ÙÀ½¿¡ ÀĞ¾î¾ßÇÏ´Â ·Î±×ÀÇ Æ÷ÀÎÅÍ¸¦ ³Ñ°ÜÁØ´Ù.*/
+    /*Logë¥¼ Bufferì—ì„œ ë‹¤ìŒì— ì½ì–´ì•¼í•˜ëŠ” ë¡œê·¸ì˜ í¬ì¸í„°ë¥¼ ë„˜ê²¨ì¤€ë‹¤.*/
     IDE_RC readFromRPLogBuf(UInt       aSndrID,
                             smiLogHdr* aLogHead,
                             void**     aLogPtr,
@@ -118,7 +118,7 @@ public:
                             smLSN*     aLSN,
                             idBool*    aIsLeave);
 
-    /*buffer¸ğµå·Î ÁøÀÔ °¡´ÉÇÑÁö Å×½ºÆ® ÇÏ°í ¸ğµå¸¦ º¯°æÇÑ ÈÄ ID¸¦ ¹İÈ¯ÇÑ´Ù. by sender*/
+    /*bufferëª¨ë“œë¡œ ì§„ì… ê°€ëŠ¥í•œì§€ í…ŒìŠ¤íŠ¸ í•˜ê³  ëª¨ë“œë¥¼ ë³€ê²½í•œ í›„ IDë¥¼ ë°˜í™˜í•œë‹¤. by sender*/
     idBool tryEnter(smSN    aNeedSN,
                     smSN*   aMinSN,
                     smSN*   aMaxSN,

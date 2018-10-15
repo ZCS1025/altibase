@@ -68,13 +68,13 @@ IDE_RC qdd::parseDropIndex( qcStatement * aStatement )
 /***********************************************************************
  *
  * Description :
- *    DROP INDEX ... ÀÇ parsing ¼öÇà
+ *    DROP INDEX ... ì˜ parsing ìˆ˜í–‰
  *
  * Implementation :
- *    1. Table°ú Index Á¤º¸¸¦ ¾ò´Â´Ù.
- *    2. Table LockÀ» È¹µæÇÑ´Ù.
- *    3. Function-based IndexÀÌ¸é,
- *       'ALTER TABLE ... DROP COLUMN ...'À¸·Î º¯°æÇÑ´Ù.
+ *    1. Tableê³¼ Index ì •ë³´ë¥¼ ì–»ëŠ”ë‹¤.
+ *    2. Table Lockì„ íšë“í•œë‹¤.
+ *    3. Function-based Indexì´ë©´,
+ *       'ALTER TABLE ... DROP COLUMN ...'ìœ¼ë¡œ ë³€ê²½í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -223,15 +223,15 @@ IDE_RC qdd::validateDropTable(qcStatement * aStatement)
 /***********************************************************************
  *
  * Description :
- *    DROP TABLE ... ÀÇ validation ¼öÇà
+ *    DROP TABLE ... ì˜ validation ìˆ˜í–‰
  *
  * Implementation :
- *    1. Å×ÀÌºí Á¸Àç ¿©ºÎ Ã¼Å©
- *    2. ¸ŞÅ¸ Å×ÀÌºíÀÌ¸é ¿¡·¯
- *    3. sequence ³ª view ÀÌ¸é ¿¡·¯
- *    4. DropTable ±ÇÇÑÀÌ ÀÖ´ÂÁö Ã¼Å©
- *    5. Å×ÀÌºí¿¡ ÀÌÁßÈ­°¡ °É·ÁÀÖÀ¸¸é ¿¡·¯
- *    6. Å×ÀÌºí¿¡ uniquekey °¡ ÀÖ°í, ±× Å°¸¦ ÂüÁ¶ÇÏ´Â child °¡ ÀÖÀ¸¸é ¿¡·¯
+ *    1. í…Œì´ë¸” ì¡´ì¬ ì—¬ë¶€ ì²´í¬
+ *    2. ë©”íƒ€ í…Œì´ë¸”ì´ë©´ ì—ëŸ¬
+ *    3. sequence ë‚˜ view ì´ë©´ ì—ëŸ¬
+ *    4. DropTable ê¶Œí•œì´ ìˆëŠ”ì§€ ì²´í¬
+ *    5. í…Œì´ë¸”ì— ì´ì¤‘í™”ê°€ ê±¸ë ¤ìˆìœ¼ë©´ ì—ëŸ¬
+ *    6. í…Œì´ë¸”ì— uniquekey ê°€ ìˆê³ , ê·¸ í‚¤ë¥¼ ì°¸ì¡°í•˜ëŠ” child ê°€ ìˆìœ¼ë©´ ì—ëŸ¬
  *
  ***********************************************************************/
 
@@ -321,15 +321,15 @@ IDE_RC qdd::validateDropTable(qcStatement * aStatement)
     IDE_TEST_RAISE(sInfo->replicationCount > 0,
                    ERR_DDL_WITH_REPLICATED_TABLE);
 
-    //proj-1608:replicationCount°¡ 0ÀÏ ¶§ recovery count´Â Ç×»ó 0ÀÌ¾î¾ß ÇÔ
+    //proj-1608:replicationCountê°€ 0ì¼ ë•Œ recovery countëŠ” í•­ìƒ 0ì´ì–´ì•¼ í•¨
     IDE_DASSERT(sInfo->replicationRecoveryCount == 0);
 
     // PROJ-1509, BUG-14168
-    // DROP TABLE ... CASCADE ¿É¼Ç Ãß°¡
+    // DROP TABLE ... CASCADE ì˜µì…˜ ì¶”ê°€
     if( ( sParseTree->flag & QDD_DROP_CASCADE_CONSTRAINTS_MASK )
         == QDD_DROP_CASCADE_CONSTRAINTS_FALSE )
     {
-        // CASCADE ¿É¼ÇÀ» ¾²Áö ¾ÊÀº °æ¿ì.
+        // CASCADE ì˜µì…˜ì„ ì“°ì§€ ì•Šì€ ê²½ìš°.
         // check referential constraint
         for (i = 0; i < sInfo->uniqueKeyCount; i++)
         {
@@ -354,15 +354,15 @@ IDE_RC qdd::validateDropTable(qcStatement * aStatement)
     }
     else
     {
-        // CASCADE CONSTRAINTS ¿É¼ÇÀ» ¾´ °æ¿ì.
+        // CASCADE CONSTRAINTS ì˜µì…˜ì„ ì“´ ê²½ìš°.
         // Nothing To Do
     }
 
     // PROJ-1502 PARTITIONED DISK TABLE
     if( sInfo->tablePartitionType == QCM_PARTITIONED_TABLE )
     {
-        // ¸ğµç ÆÄÆ¼¼Ç¿¡ LOCK(IS)
-        // ÆÄÆ¼¼Ç ¸®½ºÆ®¸¦ ÆÄ½ºÆ®¸®¿¡ ´Ş¾Æ³õ´Â´Ù.
+        // ëª¨ë“  íŒŒí‹°ì…˜ì— LOCK(IS)
+        // íŒŒí‹°ì…˜ ë¦¬ìŠ¤íŠ¸ë¥¼ íŒŒìŠ¤íŠ¸ë¦¬ì— ë‹¬ì•„ë†“ëŠ”ë‹¤.
         IDE_TEST( qdbCommon::checkAndSetAllPartitionInfo(
                       aStatement,
                       sInfo->tableID,
@@ -397,7 +397,7 @@ IDE_RC qdd::validateDropTable(qcStatement * aStatement)
     {
         sParseTree->useRecycleBin = ID_TRUE;
 
-        /* PROJ-2441 flashback º¸¾È ÄÃ·³ÀÌ »ç¿ëµÈ °æ¿ì recyclebin ÀÌ¿ë ÇÏÁö ¸ø ÇÑ´Ù.*/
+        /* PROJ-2441 flashback ë³´ì•ˆ ì»¬ëŸ¼ì´ ì‚¬ìš©ëœ ê²½ìš° recyclebin ì´ìš© í•˜ì§€ ëª» í•œë‹¤.*/
         for ( i = 0; i < sInfo->columnCount; i++ )
         {
             sColumn = &sInfo->columns[i];
@@ -488,15 +488,15 @@ IDE_RC qdd::validateDropIndex(qcStatement * aStatement )
 /***********************************************************************
  *
  * Description :
- *    DROP INDEX ... ÀÇ validation ¼öÇà
+ *    DROP INDEX ... ì˜ validation ìˆ˜í–‰
  *
  * Implementation :
- *    1. ÀÎµ¦½º Á¸Àç ¿©ºÎ Ã¼Å©, tableID, indexID µµ ±¸ÇØÁü
- *    2. Å×ÀÌºí¿¡ lock °É¸é¼­ table info ±¸ÇÏ±â => qcm::getTableInfoByID
- *    3. DropIndex ±ÇÇÑÀÌ ÀÖ´ÂÁö Ã¼Å©
- *    4. »èÁ¦ÇÏ°íÀÚ ÇÏ´Â ÀÎµ¦½º°¡ Å×ÀÌºíÀÇ unique constraint ÀÌ¸é ¿¡·¯
- *    5. Å×ÀÌºí¿¡ uniquekey °¡ ÀÖ°í, ±× Å°¸¦ ÂüÁ¶ÇÏ´Â child °¡ ÀÖÀ¸¸é ¿¡·¯
- *    6. ReplicationÀÌ °É·ÁÀÖÀ¸¸é, Unique Index ¿©ºÎ¸¦ È®ÀÎ
+ *    1. ì¸ë±ìŠ¤ ì¡´ì¬ ì—¬ë¶€ ì²´í¬, tableID, indexID ë„ êµ¬í•´ì§
+ *    2. í…Œì´ë¸”ì— lock ê±¸ë©´ì„œ table info êµ¬í•˜ê¸° => qcm::getTableInfoByID
+ *    3. DropIndex ê¶Œí•œì´ ìˆëŠ”ì§€ ì²´í¬
+ *    4. ì‚­ì œí•˜ê³ ì í•˜ëŠ” ì¸ë±ìŠ¤ê°€ í…Œì´ë¸”ì˜ unique constraint ì´ë©´ ì—ëŸ¬
+ *    5. í…Œì´ë¸”ì— uniquekey ê°€ ìˆê³ , ê·¸ í‚¤ë¥¼ ì°¸ì¡°í•˜ëŠ” child ê°€ ìˆìœ¼ë©´ ì—ëŸ¬
+ *    6. Replicationì´ ê±¸ë ¤ìˆìœ¼ë©´, Unique Index ì—¬ë¶€ë¥¼ í™•ì¸
  *
  ***********************************************************************/
 
@@ -560,8 +560,8 @@ IDE_RC qdd::validateDropIndex(qcStatement * aStatement )
     // PROJ-1502 PARTITIONED DISK TABLE
     if( sInfo->tablePartitionType == QCM_PARTITIONED_TABLE )
     {
-        // ¸ğµç ÆÄÆ¼¼Ç¿¡ LOCK(IS)
-        // ÆÄÆ¼¼Ç ¸®½ºÆ®¸¦ ÆÄ½ºÆ®¸®¿¡ ´Ş¾Æ³õ´Â´Ù.
+        // ëª¨ë“  íŒŒí‹°ì…˜ì— LOCK(IS)
+        // íŒŒí‹°ì…˜ ë¦¬ìŠ¤íŠ¸ë¥¼ íŒŒìŠ¤íŠ¸ë¦¬ì— ë‹¬ì•„ë†“ëŠ”ë‹¤.
         IDE_TEST( qdbCommon::checkAndSetAllPartitionInfo(
                       aStatement,
                       sInfo->tableID,
@@ -603,10 +603,10 @@ IDE_RC qdd::validateDropUser(qcStatement * aStatement)
 /***********************************************************************
  *
  * Description :
- *    DROP USER ... ÀÇ validation ¼öÇà
+ *    DROP USER ... ì˜ validation ìˆ˜í–‰
  *
  * Implementation :
- *    1. DropUser ±ÇÇÑÀÌ ÀÖ´ÂÁö Ã¼Å©
+ *    1. DropUser ê¶Œí•œì´ ìˆëŠ”ì§€ ì²´í¬
  *
  ***********************************************************************/
 
@@ -629,11 +629,11 @@ IDE_RC qdd::validateDropSequence(qcStatement * aStatement)
 /***********************************************************************
  *
  * Description :
- *    DROP SEQUENCE ... ÀÇ validation ¼öÇà
+ *    DROP SEQUENCE ... ì˜ validation ìˆ˜í–‰
  *
  * Implementation :
- *    1. SEQUENCE Á¸Àç ¿©ºÎ Ã¼Å©
- *    2. DropSequence ±ÇÇÑÀÌ ÀÖ´ÂÁö Ã¼Å©
+ *    1. SEQUENCE ì¡´ì¬ ì—¬ë¶€ ì²´í¬
+ *    2. DropSequence ê¶Œí•œì´ ìˆëŠ”ì§€ ì²´í¬
  *
  ***********************************************************************/
 
@@ -692,15 +692,15 @@ IDE_RC qdd::validateTruncateTable(qcStatement * aStatement)
 /***********************************************************************
  *
  * Description :
- *    TRUNCATE TABLE ... ÀÇ validation ¼öÇà
+ *    TRUNCATE TABLE ... ì˜ validation ìˆ˜í–‰
  *
  * Implementation :
- *    1. Å×ÀÌºí Á¸Àç ¿©ºÎ Ã¼Å©
- *    2. ¸ŞÅ¸ Å×ÀÌºíÀÌ¸é ¿¡·¯
- *    3. view ÀÌ¸é ¿¡·¯
- *    4. AlterTable ±ÇÇÑÀÌ ÀÖ´ÂÁö Ã¼Å©
- *    5. Å×ÀÌºí¿¡ ReplicationÀÌ °É·ÁÀÖÀ¸¸é, Recovery ¿©ºÎ¸¦ È®ÀÎ
- *    6. Å×ÀÌºí¿¡ uniquekey °¡ ÀÖ°í, ±× Å°¸¦ ÂüÁ¶ÇÏ´Â child °¡ ÀÖÀ¸¸é ¿¡·¯
+ *    1. í…Œì´ë¸” ì¡´ì¬ ì—¬ë¶€ ì²´í¬
+ *    2. ë©”íƒ€ í…Œì´ë¸”ì´ë©´ ì—ëŸ¬
+ *    3. view ì´ë©´ ì—ëŸ¬
+ *    4. AlterTable ê¶Œí•œì´ ìˆëŠ”ì§€ ì²´í¬
+ *    5. í…Œì´ë¸”ì— Replicationì´ ê±¸ë ¤ìˆìœ¼ë©´, Recovery ì—¬ë¶€ë¥¼ í™•ì¸
+ *    6. í…Œì´ë¸”ì— uniquekey ê°€ ìˆê³ , ê·¸ í‚¤ë¥¼ ì°¸ì¡°í•˜ëŠ” child ê°€ ìˆìœ¼ë©´ ì—ëŸ¬
  *
  ***********************************************************************/
 
@@ -753,8 +753,8 @@ IDE_RC qdd::validateTruncateTable(qcStatement * aStatement)
     }
     else
     {
-        /* PROJ-1723 [MDW/INTEGRATOR] Altibase Plugin °³¹ß
-           DDL Statement TextÀÇ ·Î±ë
+        /* PROJ-1723 [MDW/INTEGRATOR] Altibase Plugin ê°œë°œ
+           DDL Statement Textì˜ ë¡œê¹…
         */
         if (QCU_DDL_SUPPLEMENTAL_LOG == 1)
         {
@@ -804,8 +804,8 @@ IDE_RC qdd::validateTruncateTable(qcStatement * aStatement)
                                                    sInfo )
                   != IDE_SUCCESS );
 
-        /* PROJ-1442 Replication Online Áß DDL Çã¿ë
-         * Recovery ±â´É°ú °°ÀÌ »ç¿ëÇÒ ¼ö ¾øÀ½
+        /* PROJ-1442 Replication Online ì¤‘ DDL í—ˆìš©
+         * Recovery ê¸°ëŠ¥ê³¼ ê°™ì´ ì‚¬ìš©í•  ìˆ˜ ì—†ìŒ
          */
         if (sInfo->replicationCount > 0)
         {
@@ -842,8 +842,8 @@ IDE_RC qdd::validateTruncateTable(qcStatement * aStatement)
         // PROJ-1502 PARTITIONED DISK TABLE
         if ( sInfo->tablePartitionType == QCM_PARTITIONED_TABLE )
         {
-            // ¸ğµç ÆÄÆ¼¼Ç¿¡ LOCK(IS)
-            // ÆÄÆ¼¼Ç ¸®½ºÆ®¸¦ ÆÄ½ºÆ®¸®¿¡ ´Ş¾Æ³õ´Â´Ù.
+            // ëª¨ë“  íŒŒí‹°ì…˜ì— LOCK(IS)
+            // íŒŒí‹°ì…˜ ë¦¬ìŠ¤íŠ¸ë¥¼ íŒŒìŠ¤íŠ¸ë¦¬ì— ë‹¬ì•„ë†“ëŠ”ë‹¤.
             IDE_TEST( qdbCommon::checkAndSetAllPartitionInfo(
                           aStatement,
                           sInfo->tableID,
@@ -932,13 +932,13 @@ IDE_RC qdd::validateDropView(qcStatement * aStatement)
 /***********************************************************************
  *
  * Description :
- *    DROP VIEW ... ÀÇ validation ¼öÇà
+ *    DROP VIEW ... ì˜ validation ìˆ˜í–‰
  *
  * Implementation :
- *    1. VIEW Á¸Àç ¿©ºÎ Ã¼Å©
- *    2. tableType ÀÌ view °¡ ¾Æ´Ï¸é ¿¡·¯
- *    3. ¸ŞÅ¸ Å×ÀÌºíÀÌ¸é ¿¡·¯
- *    4. DropView ±ÇÇÑÀÌ ÀÖ´ÂÁö Ã¼Å©
+ *    1. VIEW ì¡´ì¬ ì—¬ë¶€ ì²´í¬
+ *    2. tableType ì´ view ê°€ ì•„ë‹ˆë©´ ì—ëŸ¬
+ *    3. ë©”íƒ€ í…Œì´ë¸”ì´ë©´ ì—ëŸ¬
+ *    4. DropView ê¶Œí•œì´ ìˆëŠ”ì§€ ì²´í¬
  *
  ***********************************************************************/
 
@@ -1037,15 +1037,15 @@ IDE_RC qdd::validateDropView(qcStatement * aStatement)
 /***********************************************************************
  *
  * Description :
- *    DROP MATERIALIZED VIEW ... ÀÇ validation ¼öÇà
+ *    DROP MATERIALIZED VIEW ... ì˜ validation ìˆ˜í–‰
  *
  * Implementation :
- *    1. Meta TableÀÎÁö È®ÀÎ
- *    2. Materialized View, Table, View Á¸Àç ¿©ºÎ È®ÀÎ
- *    3. TableÀÌ MView TableÀÎÁö, View°¡ MView ViewÀÎÁö È®ÀÎ
- *    4. Materialized View »èÁ¦ ±ÇÇÑÀÌ ÀÖ´ÂÁö È®ÀÎ
- *    5. Replication °ü·Ã »çÇ× È®ÀÎ
- *    6. Table¿¡ unique key°¡ ÀÖ°í, ±×°ÍÀ» ÂüÁ¶ÇÏ´Â child°¡ ÀÖ´ÂÁö È®ÀÎ
+ *    1. Meta Tableì¸ì§€ í™•ì¸
+ *    2. Materialized View, Table, View ì¡´ì¬ ì—¬ë¶€ í™•ì¸
+ *    3. Tableì´ MView Tableì¸ì§€, Viewê°€ MView Viewì¸ì§€ í™•ì¸
+ *    4. Materialized View ì‚­ì œ ê¶Œí•œì´ ìˆëŠ”ì§€ í™•ì¸
+ *    5. Replication ê´€ë ¨ ì‚¬í•­ í™•ì¸
+ *    6. Tableì— unique keyê°€ ìˆê³ , ê·¸ê²ƒì„ ì°¸ì¡°í•˜ëŠ” childê°€ ìˆëŠ”ì§€ í™•ì¸
  *
  ***********************************************************************/
 IDE_RC qdd::validateDropMView( qcStatement * aStatement )
@@ -1178,10 +1178,10 @@ IDE_RC qdd::validateDropMView( qcStatement * aStatement )
     /* if specified tables is replicated, the ERR_DDL_WITH_REPLICATED_TABLE */
     IDE_TEST_RAISE( sTableInfo->replicationCount > 0,
                     ERR_DDL_WITH_REPLICATED_TABLE );
-    /* PROJ-1608 replicationCount°¡ 0ÀÏ ¶§, recovery count´Â Ç×»ó 0ÀÌ¾î¾ß ÇÔ */
+    /* PROJ-1608 replicationCountê°€ 0ì¼ ë•Œ, recovery countëŠ” í•­ìƒ 0ì´ì–´ì•¼ í•¨ */
     IDE_DASSERT( sTableInfo->replicationRecoveryCount == 0 );
 
-    /* CASCADE ¿É¼ÇÀ» Áö¿øÇÏÁö ¾ÊÀ¸¹Ç·Î, check referential constraint */
+    /* CASCADE ì˜µì…˜ì„ ì§€ì›í•˜ì§€ ì•Šìœ¼ë¯€ë¡œ, check referential constraint */
     for ( i = 0; i < sTableInfo->uniqueKeyCount; i++ )
     {
         sIndexInfo = sTableInfo->uniqueKeys[i].constraintIndex;
@@ -1206,8 +1206,8 @@ IDE_RC qdd::validateDropMView( qcStatement * aStatement )
     /* PROJ-1502 PARTITIONED DISK TABLE */
     if ( sTableInfo->tablePartitionType == QCM_PARTITIONED_TABLE )
     {
-        /* ¸ğµç ÆÄÆ¼¼Ç¿¡ LOCK(IS)
-         * ÆÄÆ¼¼Ç ¸®½ºÆ®¸¦ ÆÄ½ºÆ®¸®¿¡ ´Ş¾Æ³õ´Â´Ù.
+        /* ëª¨ë“  íŒŒí‹°ì…˜ì— LOCK(IS)
+         * íŒŒí‹°ì…˜ ë¦¬ìŠ¤íŠ¸ë¥¼ íŒŒìŠ¤íŠ¸ë¦¬ì— ë‹¬ì•„ë†“ëŠ”ë‹¤.
          */
         IDE_TEST( qdbCommon::checkAndSetAllPartitionInfo(
                       aStatement,
@@ -1271,21 +1271,21 @@ IDE_RC qdd::executeDropTable(qcStatement * aStatement)
 /***********************************************************************
  *
  * Description :
- *    DROP TABLE ... ÀÇ execution ¼öÇà
+ *    DROP TABLE ... ì˜ execution ìˆ˜í–‰
  *
  * Implementation :
  *    1. get table info
- *    2. ¸ŞÅ¸ Å×ÀÌºí¿¡¼­ constraint »èÁ¦
- *    3. ¸ŞÅ¸ Å×ÀÌºí¿¡¼­ index »èÁ¦
- *    4. ¸ŞÅ¸ Å×ÀÌºí¿¡¼­ table,column »èÁ¦
- *    5. ¸ŞÅ¸ Å×ÀÌºí¿¡¼­ privilege »èÁ¦
- *    -. ¸ŞÅ¸ Å×ÀÌºí¿¡¼­ trigger »èÁ¦
- *    6. related PSM À» invalid »óÅÂ·Î º¯°æ
- *    7. related VIEW À» invalid »óÅÂ·Î º¯°æ
- *    8. Constraint¿Í °ü·ÃµÈ Procedure¿¡ ´ëÇÑ Á¤º¸¸¦ »èÁ¦
- *    9. Index¿Í °ü·ÃµÈ Procedure¿¡ ´ëÇÑ Á¤º¸¸¦ »èÁ¦
+ *    2. ë©”íƒ€ í…Œì´ë¸”ì—ì„œ constraint ì‚­ì œ
+ *    3. ë©”íƒ€ í…Œì´ë¸”ì—ì„œ index ì‚­ì œ
+ *    4. ë©”íƒ€ í…Œì´ë¸”ì—ì„œ table,column ì‚­ì œ
+ *    5. ë©”íƒ€ í…Œì´ë¸”ì—ì„œ privilege ì‚­ì œ
+ *    -. ë©”íƒ€ í…Œì´ë¸”ì—ì„œ trigger ì‚­ì œ
+ *    6. related PSM ì„ invalid ìƒíƒœë¡œ ë³€ê²½
+ *    7. related VIEW ì„ invalid ìƒíƒœë¡œ ë³€ê²½
+ *    8. Constraintì™€ ê´€ë ¨ëœ Procedureì— ëŒ€í•œ ì •ë³´ë¥¼ ì‚­ì œ
+ *    9. Indexì™€ ê´€ë ¨ëœ Procedureì— ëŒ€í•œ ì •ë³´ë¥¼ ì‚­ì œ
  *   10. smiTable::dropTable
- *   11. ¸ŞÅ¸ Ä³½¬¿¡¼­ »èÁ¦
+ *   11. ë©”íƒ€ ìºì‰¬ì—ì„œ ì‚­ì œ
  *
  ***********************************************************************/
 
@@ -1315,7 +1315,7 @@ IDE_RC qdd::executeDropTable(qcStatement * aStatement)
     sParseTree = (qdDropParseTree *)aStatement->myPlan->parseTree;
 
     // TASK-2176
-    // Table¿¡ ´ëÇÑ LockÀ» È¹µæÇÑ´Ù.
+    // Tableì— ëŒ€í•œ Lockì„ íšë“í•œë‹¤.
     IDE_TEST( qcm::validateAndLockTable(aStatement,
                                         sParseTree->tableHandle,
                                         sParseTree->tableSCN,
@@ -1328,7 +1328,7 @@ IDE_RC qdd::executeDropTable(qcStatement * aStatement)
     sTableID = sInfo->tableID;
     sTableOID = smiGetTableId( sInfo->tableHandle );
 
-    /* recylebin »ç¿ë ¿©ºÎ */
+    /* recylebin ì‚¬ìš© ì—¬ë¶€ */
     sUseRecyclebin = sParseTree->useRecycleBin;
 
     // PROJ-1502 PARTITIONED DISK TABLE
@@ -1336,23 +1336,23 @@ IDE_RC qdd::executeDropTable(qcStatement * aStatement)
     {
         sIsPartitioned = ID_TRUE;
 
-        // ¸ğµç ÆÄÆ¼¼Ç¿¡ LOCK(X)
+        // ëª¨ë“  íŒŒí‹°ì…˜ì— LOCK(X)
         IDE_TEST( qcmPartition::validateAndLockPartitionInfoList( aStatement,
                                                                   sParseTree->partInfoList,
-                                                                  SMI_TBSLV_DDL_DML, // TBS Validation ¿É¼Ç
+                                                                  SMI_TBSLV_DDL_DML, // TBS Validation ì˜µì…˜
                                                                   SMI_TABLE_LOCK_X,
                                                                   ( ( smiGetDDLLockTimeOut() == -1 ) ?
                                                                     ID_ULONG_MAX :
                                                                     smiGetDDLLockTimeOut() * 1000000 ) )
                   != IDE_SUCCESS );
 
-        // ¿¹¿Ü Ã³¸®¸¦ À§ÇÏ¿©, LockÀ» ÀâÀº ÈÄ¿¡ Partition List¸¦ ¼³Á¤ÇÑ´Ù.
+        // ì˜ˆì™¸ ì²˜ë¦¬ë¥¼ ìœ„í•˜ì—¬, Lockì„ ì¡ì€ í›„ì— Partition Listë¥¼ ì„¤ì •í•œë‹¤.
         sOldPartInfoList = sParseTree->partInfoList;
 
         // PROJ-1624 non-partitioned index
         IDE_TEST( qdx::validateAndLockIndexTableList( aStatement,
                                                       sParseTree->oldIndexTables,
-                                                      SMI_TBSLV_DDL_DML, // TBS Validation ¿É¼Ç
+                                                      SMI_TBSLV_DDL_DML, // TBS Validation ì˜µì…˜
                                                       SMI_TABLE_LOCK_X,
                                                       ( ( smiGetDDLLockTimeOut() == -1 ) ?
                                                         ID_ULONG_MAX :
@@ -1365,12 +1365,12 @@ IDE_RC qdd::executeDropTable(qcStatement * aStatement)
     }
 
     // PROJ-1407 Temporary table
-    // session temporary tableÀÌ Á¸ÀçÇÏ´Â °æ¿ì DDLÀ» ÇÒ ¼ö ¾ø´Ù.
+    // session temporary tableì´ ì¡´ì¬í•˜ëŠ” ê²½ìš° DDLì„ í•  ìˆ˜ ì—†ë‹¤.
     IDE_TEST_RAISE( qcuTemporaryObj::existSessionTable( sInfo ) == ID_TRUE,
                     ERR_SESSION_TEMPORARY_TABLE_EXIST );
 
-    /* PROJ-1723 [MDW/INTEGRATOR] Altibase Plugin °³¹ß
-       DDL Statement TextÀÇ ·Î±ë
+    /* PROJ-1723 [MDW/INTEGRATOR] Altibase Plugin ê°œë°œ
+       DDL Statement Textì˜ ë¡œê¹…
     */
     if (QCU_DDL_SUPPLEMENTAL_LOG == 1)
     {
@@ -1390,8 +1390,8 @@ IDE_RC qdd::executeDropTable(qcStatement * aStatement)
     if ( ( sParseTree->flag & QDD_DROP_CASCADE_CONSTRAINTS_MASK )
         == QDD_DROP_CASCADE_CONSTRAINTS_TRUE )
     {
-        // primary or uniquey key¿Í ¿¬°üµÈ
-        // ´Ù¸¥ Å×ÀÌºíÀÇ referential integrity constraint »èÁ¦
+        // primary or uniquey keyì™€ ì—°ê´€ëœ
+        // ë‹¤ë¥¸ í…Œì´ë¸”ì˜ referential integrity constraint ì‚­ì œ
         for( i = 0; i < sInfo->uniqueKeyCount; i++ )
         {
             sIndexInfo = sInfo->uniqueKeys[i].constraintIndex;
@@ -1421,7 +1421,7 @@ IDE_RC qdd::executeDropTable(qcStatement * aStatement)
     if ( sIsPartitioned == ID_TRUE )
     {
         // -----------------------------------------------------
-        // Å×ÀÌºí ÆÄÆ¼¼Ç °³¼ö¸¸Å­ ¹İº¹
+        // í…Œì´ë¸” íŒŒí‹°ì…˜ ê°œìˆ˜ë§Œí¼ ë°˜ë³µ
         // -----------------------------------------------------
         for ( sPartInfoList = sOldPartInfoList;
               sPartInfoList != NULL;
@@ -1505,7 +1505,7 @@ IDE_RC qdd::executeDropTable(qcStatement * aStatement)
                  sParseTree->objectName.size,
                  QS_TABLE) != IDE_SUCCESS);
 
-    /* BUG-35445 Check Constraint, Function-Based Index¿¡¼­ »ç¿ë ÁßÀÎ FunctionÀ» º¯°æ/Á¦°Å ¹æÁö */
+    /* BUG-35445 Check Constraint, Function-Based Indexì—ì„œ ì‚¬ìš© ì¤‘ì¸ Functionì„ ë³€ê²½/ì œê±° ë°©ì§€ */
     IDE_TEST( qcmProc::relRemoveRelatedToConstraintByTableID(
                     aStatement,
                     sInfo->tableID )
@@ -1577,13 +1577,13 @@ IDE_RC qdd::executeDropTable(qcStatement * aStatement)
         }
 
         // To Fix BUG-12034
-        // SMÀÌ ´õÀÌ»ó ½ÇÆĞÇÒ ¿©Áö°¡ ¾øÀ» ¶§¿¡ QP¿¡¼­ À¯ÁöÇÏ°í ÀÖ´Â
-        // ¸Ş¸ğ¸®µéÀ» ÇØÁ¦ÇØÁØ´Ù.
+        // SMì´ ë”ì´ìƒ ì‹¤íŒ¨í•  ì—¬ì§€ê°€ ì—†ì„ ë•Œì— QPì—ì„œ ìœ ì§€í•˜ê³  ìˆëŠ”
+        // ë©”ëª¨ë¦¬ë“¤ì„ í•´ì œí•´ì¤€ë‹¤.
         IDE_TEST( qdnTrigger::freeTriggerCaches4DropTable( sInfo )
                   != IDE_SUCCESS );
     
         // BUG-36719
-        // Table info ¸¦ »èÁ¦ÇÑ´Ù.
+        // Table info ë¥¼ ì‚­ì œí•œë‹¤.
         for( sColumn  = sInfo->columns;
              sColumn != NULL;
              sColumn  = sColumn->next )
@@ -1604,7 +1604,7 @@ IDE_RC qdd::executeDropTable(qcStatement * aStatement)
         }
         
         // PROJ-2002 Column Security
-        // º¸¾È ÄÃ·³ »èÁ¦½Ã º¸¾È ¸ğµâ¿¡ ¾Ë¸°´Ù.
+        // ë³´ì•ˆ ì»¬ëŸ¼ ì‚­ì œì‹œ ë³´ì•ˆ ëª¨ë“ˆì— ì•Œë¦°ë‹¤.
         for ( i = 0; i < sInfo->columnCount; i++ )
         {
             sColumn = & sInfo->columns[i];
@@ -1659,8 +1659,8 @@ IDE_RC qdd::executeDropTable(qcStatement * aStatement)
         }
         
         // To Fix BUG-12034
-        // SMÀÌ ´õÀÌ»ó ½ÇÆĞÇÒ ¿©Áö°¡ ¾øÀ» ¶§¿¡ QP¿¡¼­ À¯ÁöÇÏ°í ÀÖ´Â
-        // ¸Ş¸ğ¸®µéÀ» ÇØÁ¦ÇØÁØ´Ù.
+        // SMì´ ë”ì´ìƒ ì‹¤íŒ¨í•  ì—¬ì§€ê°€ ì—†ì„ ë•Œì— QPì—ì„œ ìœ ì§€í•˜ê³  ìˆëŠ”
+        // ë©”ëª¨ë¦¬ë“¤ì„ í•´ì œí•´ì¤€ë‹¤.
         IDE_TEST( qdnTrigger::freeTriggerCaches4DropTable( sInfo )
                   != IDE_SUCCESS );
     }
@@ -1711,8 +1711,8 @@ IDE_RC qdd::dropTablePartition( qcStatement  * aStatement,
 /***********************************************************************
  *
  * Description :
- *      PROJ-1502 PARTITIONED DISK TABLE¿¡¼­
- *      ÇÏ³ªÀÇ Å×ÀÌºí ÆÄÆ¼¼ÇÀ» »èÁ¦ÇÑ´Ù.
+ *      PROJ-1502 PARTITIONED DISK TABLEì—ì„œ
+ *      í•˜ë‚˜ì˜ í…Œì´ë¸” íŒŒí‹°ì…˜ì„ ì‚­ì œí•œë‹¤.
  *
  * Implementation :
  *
@@ -1724,7 +1724,7 @@ IDE_RC qdd::dropTablePartition( qcStatement  * aStatement,
     qcmIndex * sIndexInfo  = NULL;
 
     // -----------------------------------------------------
-    // 2-1. Å×ÀÌºí ÆÄÆ¼¼Ç °ü·Ã ¸ŞÅ¸ Å×ÀÌºí Á¤º¸ »èÁ¦
+    // 2-1. í…Œì´ë¸” íŒŒí‹°ì…˜ ê´€ë ¨ ë©”íƒ€ í…Œì´ë¸” ì •ë³´ ì‚­ì œ
     // -----------------------------------------------------
     if ( aUseRecyclebin == ID_FALSE )
     {
@@ -1738,7 +1738,7 @@ IDE_RC qdd::dropTablePartition( qcStatement  * aStatement,
     }
 
     // -----------------------------------------------------
-    // 2-2. ÀÎµ¦½º ÆÄÆ¼¼Ç °ü·Ã ¸ŞÅ¸ Å×ÀÌºí Á¤º¸ »èÁ¦
+    // 2-2. ì¸ë±ìŠ¤ íŒŒí‹°ì…˜ ê´€ë ¨ ë©”íƒ€ í…Œì´ë¸” ì •ë³´ ì‚­ì œ
     // -----------------------------------------------------
     for( sIndexCount = 0;
          sIndexCount < aPartInfo->indexCount;
@@ -1750,7 +1750,7 @@ IDE_RC qdd::dropTablePartition( qcStatement  * aStatement,
     }
 
     // -----------------------------------------------------
-    // 2-3. ÆÄÆ¼¼Ç °´Ã¼ »èÁ¦
+    // 2-3. íŒŒí‹°ì…˜ ê°ì²´ ì‚­ì œ
     // -----------------------------------------------------
 
     if ( aUseRecyclebin == ID_FALSE )
@@ -1791,8 +1791,8 @@ IDE_RC qdd::dropTablePartitionWithoutMeta( qcStatement  * aStatement,
 /***********************************************************************
  *
  * Description :
- *      PROJ-1502 PARTITIONED DISK TABLE¿¡¼­
- *      ÇÏ³ªÀÇ Å×ÀÌºí ÆÄÆ¼¼ÇÀ» »èÁ¦ÇÑ´Ù. ´Ü ¸ŞÅ¸»èÁ¦´Â ÇÏÁö ¾Ê´Â´Ù.
+ *      PROJ-1502 PARTITIONED DISK TABLEì—ì„œ
+ *      í•˜ë‚˜ì˜ í…Œì´ë¸” íŒŒí‹°ì…˜ì„ ì‚­ì œí•œë‹¤. ë‹¨ ë©”íƒ€ì‚­ì œëŠ” í•˜ì§€ ì•ŠëŠ”ë‹¤.
  *
  * Implementation :
  *
@@ -1802,7 +1802,7 @@ IDE_RC qdd::dropTablePartitionWithoutMeta( qcStatement  * aStatement,
     UInt    sIndexCount;
 
     // -----------------------------------------------------
-    // 2-1. ÀÎµ¦½º ÆÄÆ¼¼Ç °ü·Ã ¸ŞÅ¸ Å×ÀÌºí Á¤º¸ »èÁ¦
+    // 2-1. ì¸ë±ìŠ¤ íŒŒí‹°ì…˜ ê´€ë ¨ ë©”íƒ€ í…Œì´ë¸” ì •ë³´ ì‚­ì œ
     // -----------------------------------------------------
     for( sIndexCount = 0;
          sIndexCount < aPartInfo->indexCount;
@@ -1814,7 +1814,7 @@ IDE_RC qdd::dropTablePartitionWithoutMeta( qcStatement  * aStatement,
     }
 
     // -----------------------------------------------------
-    // 2-2. ÆÄÆ¼¼Ç °´Ã¼ »èÁ¦
+    // 2-2. íŒŒí‹°ì…˜ ê°ì²´ ì‚­ì œ
     // -----------------------------------------------------
     IDE_TEST( smiTable::dropTable( QC_SMI_STMT( aStatement ),
                                    aPartInfo->tableHandle,
@@ -1833,20 +1833,20 @@ IDE_RC qdd::executeDropIndex(qcStatement * aStatement)
 /***********************************************************************
  *
  * Description :
- *    DROP INDEX ... ÀÇ execution ¼öÇà
+ *    DROP INDEX ... ì˜ execution ìˆ˜í–‰
  *
  * Implementation :
- *    1. ÀÎµ¦½º Á¸Àç ¿©ºÎ Ã¼Å©, tableID, indexID µµ ±¸ÇØÁü
- *    2. table info ±¸ÇÏ±â
- *    3. 2 ¿¡¼­ ±¸ÇÑ info Áß¿¡¼­ indexID ¿¡ ÇØ´çÇÏ´Â qcmIndex ±¸ÇÏ±â
- *       => ¾øÀ¸¸é ERR_NOT_EXIST_INDEX ¿¡·¯
+ *    1. ì¸ë±ìŠ¤ ì¡´ì¬ ì—¬ë¶€ ì²´í¬, tableID, indexID ë„ êµ¬í•´ì§
+ *    2. table info êµ¬í•˜ê¸°
+ *    3. 2 ì—ì„œ êµ¬í•œ info ì¤‘ì—ì„œ indexID ì— í•´ë‹¹í•˜ëŠ” qcmIndex êµ¬í•˜ê¸°
+ *       => ì—†ìœ¼ë©´ ERR_NOT_EXIST_INDEX ì—ëŸ¬
  *    4. smiTable::dropIndex
  *    5. delete index from meta
- *    6. Index¿Í °ü·ÃµÈ Procedure¿¡ ´ëÇÑ Á¤º¸¸¦ »èÁ¦
- *    7. ¸ŞÅ¸ Ä³½¬ Àç±¸¼º
+ *    6. Indexì™€ ê´€ë ¨ëœ Procedureì— ëŒ€í•œ ì •ë³´ë¥¼ ì‚­ì œ
+ *    7. ë©”íƒ€ ìºì‰¬ ì¬êµ¬ì„±
  *
- * ReplicationÀÌ °É¸° Table¿¡ ´ëÇÑ DDLÀÎ °æ¿ì, Ãß°¡ÀûÀ¸·Î ¾Æ·¡ÀÇ ÀÛ¾÷À» ÇÑ´Ù.
- *    1. Validate¿Í Execute´Â ´Ù¸¥ TransactionÀÌ¹Ç·Î, ÇÁ¶óÆÛÆ¼ °Ë»ç´Â Execute¿¡¼­ ÇÑ´Ù.
+ * Replicationì´ ê±¸ë¦° Tableì— ëŒ€í•œ DDLì¸ ê²½ìš°, ì¶”ê°€ì ìœ¼ë¡œ ì•„ë˜ì˜ ì‘ì—…ì„ í•œë‹¤.
+ *    1. Validateì™€ ExecuteëŠ” ë‹¤ë¥¸ Transactionì´ë¯€ë¡œ, í”„ë¼í¼í‹° ê²€ì‚¬ëŠ” Executeì—ì„œ í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -1882,7 +1882,7 @@ IDE_RC qdd::executeDropIndex(qcStatement * aStatement)
     sParseTree = (qdDropParseTree *)aStatement->myPlan->parseTree;
 
     // TASK-2176
-    // Table¿¡ ´ëÇÑ LockÀ» È¹µæÇÑ´Ù.
+    // Tableì— ëŒ€í•œ Lockì„ íšë“í•œë‹¤.
     IDE_TEST(qcm::validateAndLockTable(aStatement,
                                        sParseTree->tableHandle,
                                        sParseTree->tableSCN,
@@ -1896,23 +1896,23 @@ IDE_RC qdd::executeDropIndex(qcStatement * aStatement)
     {
         sIsPartitioned = ID_TRUE;
 
-        // ¸ğµç ÆÄÆ¼¼Ç¿¡ LOCK(X)
+        // ëª¨ë“  íŒŒí‹°ì…˜ì— LOCK(X)
         IDE_TEST( qcmPartition::validateAndLockPartitionInfoList( aStatement,
                                                                   sParseTree->partInfoList,
-                                                                  SMI_TBSLV_DDL_DML, // TBS Validation ¿É¼Ç
+                                                                  SMI_TBSLV_DDL_DML, // TBS Validation ì˜µì…˜
                                                                   SMI_TABLE_LOCK_X,
                                                                   ( ( smiGetDDLLockTimeOut() == -1 ) ?
                                                                     ID_ULONG_MAX :
                                                                     smiGetDDLLockTimeOut() * 1000000 ) )
                   != IDE_SUCCESS );
         
-        // ÆÄ½ºÆ®¸®¿¡¼­ ÆÄÆ¼¼Ç Á¤º¸ ¸®½ºÆ®¸¦ °¡Á®¿Â´Ù.
+        // íŒŒìŠ¤íŠ¸ë¦¬ì—ì„œ íŒŒí‹°ì…˜ ì •ë³´ ë¦¬ìŠ¤íŠ¸ë¥¼ ê°€ì ¸ì˜¨ë‹¤.
         sOldPartInfoList = sParseTree->partInfoList;
 
         // PROJ-1624 non-partitioned index
         IDE_TEST( qdx::validateAndLockIndexTableList( aStatement,
                                                       sParseTree->oldIndexTables,
-                                                      SMI_TBSLV_DDL_DML, // TBS Validation ¿É¼Ç
+                                                      SMI_TBSLV_DDL_DML, // TBS Validation ì˜µì…˜
                                                       SMI_TABLE_LOCK_X,
                                                       ( ( smiGetDDLLockTimeOut() == -1 ) ?
                                                         ID_ULONG_MAX :
@@ -1939,12 +1939,12 @@ IDE_RC qdd::executeDropIndex(qcStatement * aStatement)
     }
 
     // PROJ-1407 Temporary table
-    // session temporary tableÀÌ Á¸ÀçÇÏ´Â °æ¿ì DDLÀ» ÇÒ ¼ö ¾ø´Ù.
+    // session temporary tableì´ ì¡´ì¬í•˜ëŠ” ê²½ìš° DDLì„ í•  ìˆ˜ ì—†ë‹¤.
     IDE_TEST_RAISE( qcuTemporaryObj::existSessionTable( sInfo ) == ID_TRUE,
                     ERR_SESSION_TEMPORARY_TABLE_EXIST );
 
-    /* PROJ-1723 [MDW/INTEGRATOR] Altibase Plugin °³¹ß
-       DDL Statement TextÀÇ ·Î±ë
+    /* PROJ-1723 [MDW/INTEGRATOR] Altibase Plugin ê°œë°œ
+       DDL Statement Textì˜ ë¡œê¹…
     */
     if ( sDDLSupplementalLog == 1 )
     {
@@ -1972,8 +1972,8 @@ IDE_RC qdd::executeDropIndex(qcStatement * aStatement)
 
     IDE_TEST_RAISE(sIndex == NULL, ERR_NOT_EXIST_INDEX);
 
-    /* PROJ-1442 Replication Online Áß DDL Çã¿ë
-     * Validate¿Í Execute´Â ´Ù¸¥ TransactionÀÌ¹Ç·Î, ÇÁ¶óÆÛÆ¼ °Ë»ç´Â Execute¿¡¼­ ÇÑ´Ù.
+    /* PROJ-1442 Replication Online ì¤‘ DDL í—ˆìš©
+     * Validateì™€ ExecuteëŠ” ë‹¤ë¥¸ Transactionì´ë¯€ë¡œ, í”„ë¼í¼í‹° ê²€ì‚¬ëŠ” Executeì—ì„œ í•œë‹¤.
      * PROJ-2642 Table on Replication Allow DDL
      */
     if ( sInfo->replicationCount > 0 )
@@ -2104,7 +2104,7 @@ IDE_RC qdd::executeDropIndex(qcStatement * aStatement)
     IDE_TEST(deleteIndicesFromMetaByIndexID(aStatement, sIndex->indexId)
              != IDE_SUCCESS);
 
-    /* BUG-35445 Check Constraint, Function-Based Index¿¡¼­ »ç¿ë ÁßÀÎ FunctionÀ» º¯°æ/Á¦°Å ¹æÁö */
+    /* BUG-35445 Check Constraint, Function-Based Indexì—ì„œ ì‚¬ìš© ì¤‘ì¸ Functionì„ ë³€ê²½/ì œê±° ë°©ì§€ */
     IDE_TEST( qcmProc::relRemoveRelatedToIndexByIndexID(
                     aStatement,
                     sIndex->indexId )
@@ -2185,7 +2185,7 @@ IDE_RC qdd::executeDropIndex(qcStatement * aStatement)
         // nothing to do
     }
 
-    // index table infoÀÇ destroy
+    // index table infoì˜ destroy
     if ( sOldIndexTable != NULL )
     {
         (void)qcm::destroyQcmTableInfo(sOldIndexTable->tableInfo);
@@ -2236,13 +2236,13 @@ IDE_RC qdd::dropIndexPartitions( qcStatement          * aStatement,
  *
  * Description :
  *      PROJ-1502 PARTITIONED DISK TABLE
- *      °¢°¢ÀÇ ÀÎµ¦½º ÆÄÆ¼¼ÇÀ» ¸ğµÎ »èÁ¦ÇÑ´Ù.
+ *      ê°ê°ì˜ ì¸ë±ìŠ¤ íŒŒí‹°ì…˜ì„ ëª¨ë‘ ì‚­ì œí•œë‹¤.
  *
  * Implementation :
- *      1. ÆÄÆ¼¼ÇÀÇ °³¼ö¸¸Å­ ¹İº¹
- *          1-1. »èÁ¦ÇÒ ÀÎµ¦½º¸¦ Ã£´Â´Ù.
- *          1-2. ·ÎÄÃ ÀÎµ¦½º »èÁ¦
- *          1-3. ¸ŞÅ¸ Å×ÀÌºí »èÁ¦
+ *      1. íŒŒí‹°ì…˜ì˜ ê°œìˆ˜ë§Œí¼ ë°˜ë³µ
+ *          1-1. ì‚­ì œí•  ì¸ë±ìŠ¤ë¥¼ ì°¾ëŠ”ë‹¤.
+ *          1-2. ë¡œì»¬ ì¸ë±ìŠ¤ ì‚­ì œ
+ *          1-3. ë©”íƒ€ í…Œì´ë¸” ì‚­ì œ
  *
  ***********************************************************************/
 
@@ -2254,7 +2254,7 @@ IDE_RC qdd::dropIndexPartitions( qcStatement          * aStatement,
     void                    * sIndexHandle  = NULL;
 
     // -----------------------------------------------------
-    // 1. ÆÄÆ¼¼ÇÀÇ °³¼ö¸¸Å­ ¹İº¹
+    // 1. íŒŒí‹°ì…˜ì˜ ê°œìˆ˜ë§Œí¼ ë°˜ë³µ
     // -----------------------------------------------------
     for( sPartInfoList = aPartInfoList;
          sPartInfoList != NULL;
@@ -2263,7 +2263,7 @@ IDE_RC qdd::dropIndexPartitions( qcStatement          * aStatement,
         sPartInfo = sPartInfoList->partitionInfo;
 
         // -----------------------------------------------------
-        // 1-1. »èÁ¦ÇÒ ÀÎµ¦½º¸¦ Ã£´Â´Ù.
+        // 1-1. ì‚­ì œí•  ì¸ë±ìŠ¤ë¥¼ ì°¾ëŠ”ë‹¤.
         // -----------------------------------------------------
         for( sLocalIndexCount = 0;
              sLocalIndexCount < sPartInfo->indexCount;
@@ -2287,12 +2287,12 @@ IDE_RC qdd::dropIndexPartitions( qcStatement          * aStatement,
             }
         }
 
-        // ÀÎµ¦½º°¡ ÀÖ´ÂÁö Ã¼Å©¸¦ ÀÌ¹Ì Çß±â ¶§¹®¿¡ ·ÎÄÃ ÀÎµ¦½º´Â
-        // ¹İµå½Ã ÀÖ¾î¾ß ÇÑ´Ù.
+        // ì¸ë±ìŠ¤ê°€ ìˆëŠ”ì§€ ì²´í¬ë¥¼ ì´ë¯¸ í–ˆê¸° ë•Œë¬¸ì— ë¡œì»¬ ì¸ë±ìŠ¤ëŠ”
+        // ë°˜ë“œì‹œ ìˆì–´ì•¼ í•œë‹¤.
         IDE_ASSERT( sLocalIndex != NULL );
 
         // -----------------------------------------------------
-        // 1-2. ·ÎÄÃ ÀÎµ¦½º »èÁ¦
+        // 1-2. ë¡œì»¬ ì¸ë±ìŠ¤ ì‚­ì œ
         // -----------------------------------------------------
 
         // BUG-35135
@@ -2316,7 +2316,7 @@ IDE_RC qdd::dropIndexPartitions( qcStatement          * aStatement,
         }
 
         // -----------------------------------------------------
-        // 1-3. ¸ŞÅ¸ Å×ÀÌºí »èÁ¦
+        // 1-3. ë©”íƒ€ í…Œì´ë¸” ì‚­ì œ
         // -----------------------------------------------------
         IDE_TEST(qdd::deleteIndexPartitionFromMeta(aStatement,
                                                    sLocalIndex->indexPartitionID)
@@ -2335,18 +2335,18 @@ IDE_RC qdd::executeDropUser(qcStatement * aStatement)
 /***********************************************************************
  *
  * Description :
- *    DROP USER ¼öÇà
+ *    DROP USER ìˆ˜í–‰
  *
  * Implementation :
- *    1. USER Á¸Àç ¿©ºÎ °Ë»ç
- *    2. SYS, SYSTEM À¯ÀúÀÎÁö °Ë»ç
- *    3. ÇØ´ç À¯Àú¿¡ ¼ÓÇÑ object °¡ ¾ø´ÂÁö °Ë»ç
- *    4. DBA_USERS_ ¸ŞÅ¸ Å×ÀÌºí¿¡¼­ »èÁ¦
- *    5. °ü·Ã ±ÇÇÑ Á¤º¸ »èÁ¦
+ *    1. USER ì¡´ì¬ ì—¬ë¶€ ê²€ì‚¬
+ *    2. SYS, SYSTEM ìœ ì €ì¸ì§€ ê²€ì‚¬
+ *    3. í•´ë‹¹ ìœ ì €ì— ì†í•œ object ê°€ ì—†ëŠ”ì§€ ê²€ì‚¬
+ *    4. DBA_USERS_ ë©”íƒ€ í…Œì´ë¸”ì—ì„œ ì‚­ì œ
+ *    5. ê´€ë ¨ ê¶Œí•œ ì •ë³´ ì‚­ì œ
  *      5.1 DELETE FROM SYS_GRANT_SYSTEM_ WHERE GRANTEE_ID=?
  *      5.2 DELETE FROM SYS_GRANT_OBJECT_ WHERE GRANTEE_ID=?
  *      5.3 DELETE FROM SYS_GRANT_SYSTEM_ WHERE GRANTOR_ID=?
- *    6. °ü·Ã TABLESPACE Á¤º¸ »èÁ¦
+ *    6. ê´€ë ¨ TABLESPACE ì •ë³´ ì‚­ì œ
  *      6.1 DELETE FROM SYS_TBS_USERS_ WHERE USER_ID=?
  *
  ***********************************************************************/
@@ -2478,18 +2478,18 @@ IDE_RC qdd::executeDropUserCascade(qcStatement * aStatement)
 /***********************************************************************
  *
  * Description :
- *    DROP USER ... CASCADE ¼öÇà
+ *    DROP USER ... CASCADE ìˆ˜í–‰
  *
  * Implementation :
- *    1. ÇØ´ç À¯Àú°¡ Á¸ÀçÇÏ´ÂÁö °Ë»çÇÑ´Ù
- *    2. »èÁ¦ °¡´ÉÇÑ À¯ÀúÀÎÁö °Ë»çÇÑ´Ù (SYS, SYSTEMÀ¯Àú´Â »èÁ¦ÇÒ ¼ö ¾ø´Ù)
- *    3. À¯Àú ¼ÒÀ¯ÀÇ °´Ã¼ ¸®½ºÆ®¸¦ °¡Á® ¿Â´Ù.
- *        3.1. DROP ÇØ¾ß ÇÒ Å×ÀÌºíÀÇ ¸®½ºÆ®¸¦ ¹Ş¾Æ¿Â´Ù ( TABLE, VIEW, QUEUE, MATERIALIZED VIEW )
- *        3.2. DROP ÇØ¾ß ÇÒ ÀÎµ¦½ºÀÇ ¸®½ºÆ®¸¦ ¹Ş¾Æ¿Â´Ù ( INDEX )
- *        3.3. DROP ÇØ¾ß ÇÒ Æ®¸®°ÅÀÇ ¸®½ºÆ®¸¦ ¹Ş¾Æ¿Â´Ù ( TRIGGER )
- *        3.4. DROP ÇØ¾ß ÇÒ ½ÃÄö½ÃÀÇ ¸®½ºÆ®¸¦ ¹Ş¾Æ¿Â´Ù ( SEQUENCE )  // BUG-16980
- *        3.5. DROP ÇØ¾ß ÇÒ ÇÁ·Î½ÃÁ®ÀÇ ¸®½ºÆ®¸¦ ¹Ş¾Æ¿Â´Ù ( PROCEDURE )
- *    4. À¯Àú ¼ÒÀ¯ÀÇ °´Ã¼¸¦ ¸ŞÅ¸ Å×ÀÌºí ·¹ÄÚµå¿¡¼­ »èÁ¦
+ *    1. í•´ë‹¹ ìœ ì €ê°€ ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬í•œë‹¤
+ *    2. ì‚­ì œ ê°€ëŠ¥í•œ ìœ ì €ì¸ì§€ ê²€ì‚¬í•œë‹¤ (SYS, SYSTEMìœ ì €ëŠ” ì‚­ì œí•  ìˆ˜ ì—†ë‹¤)
+ *    3. ìœ ì € ì†Œìœ ì˜ ê°ì²´ ë¦¬ìŠ¤íŠ¸ë¥¼ ê°€ì ¸ ì˜¨ë‹¤.
+ *        3.1. DROP í•´ì•¼ í•  í…Œì´ë¸”ì˜ ë¦¬ìŠ¤íŠ¸ë¥¼ ë°›ì•„ì˜¨ë‹¤ ( TABLE, VIEW, QUEUE, MATERIALIZED VIEW )
+ *        3.2. DROP í•´ì•¼ í•  ì¸ë±ìŠ¤ì˜ ë¦¬ìŠ¤íŠ¸ë¥¼ ë°›ì•„ì˜¨ë‹¤ ( INDEX )
+ *        3.3. DROP í•´ì•¼ í•  íŠ¸ë¦¬ê±°ì˜ ë¦¬ìŠ¤íŠ¸ë¥¼ ë°›ì•„ì˜¨ë‹¤ ( TRIGGER )
+ *        3.4. DROP í•´ì•¼ í•  ì‹œí€€ì‹œì˜ ë¦¬ìŠ¤íŠ¸ë¥¼ ë°›ì•„ì˜¨ë‹¤ ( SEQUENCE )  // BUG-16980
+ *        3.5. DROP í•´ì•¼ í•  í”„ë¡œì‹œì ¸ì˜ ë¦¬ìŠ¤íŠ¸ë¥¼ ë°›ì•„ì˜¨ë‹¤ ( PROCEDURE )
+ *    4. ìœ ì € ì†Œìœ ì˜ ê°ì²´ë¥¼ ë©”íƒ€ í…Œì´ë¸” ë ˆì½”ë“œì—ì„œ ì‚­ì œ
  *        4.1. QUEUE, VIEW, TABLE, MATERIALIZED VIEW
  *              executeDropTableOwnedByUser()
  *        4.2. INDEX
@@ -2500,13 +2500,13 @@ IDE_RC qdd::executeDropUserCascade(qcStatement * aStatement)
  *              executeDropSequenceOwnedByUser()  // BUG-16980
  *        4.5. PROCEDURE
  *              executeDropProcOwnedByUser()
- *    5. À¯Àú ¼ÒÀ¯ °´Ã¼¸¦ ¸ŞÅ¸ Å×ÀÌºí¿¡¼­ »èÁ¦ÇÑ´Ù
- *    6. À¯Àú ¼ÒÀ¯ °´Á¦ÀÇ cached meta¸¦ »èÁ¦
- *        6.1. TRIGGER : make new cached meta »ı¼º
- *        6.2. INDEX : make new cached meta »ı¼º
- *        6.3. TRIGGER : old cached meta »èÁ¦
- *        6.4. INDEX : old cached meta »èÁ¦
- *        6.5. TABLE, VIEW, QUEUE, MATERIALIZED VIEW cached meta »èÁ¦
+ *    5. ìœ ì € ì†Œìœ  ê°ì²´ë¥¼ ë©”íƒ€ í…Œì´ë¸”ì—ì„œ ì‚­ì œí•œë‹¤
+ *    6. ìœ ì € ì†Œìœ  ê°ì œì˜ cached metaë¥¼ ì‚­ì œ
+ *        6.1. TRIGGER : make new cached meta ìƒì„±
+ *        6.2. INDEX : make new cached meta ìƒì„±
+ *        6.3. TRIGGER : old cached meta ì‚­ì œ
+ *        6.4. INDEX : old cached meta ì‚­ì œ
+ *        6.5. TABLE, VIEW, QUEUE, MATERIALIZED VIEW cached meta ì‚­ì œ
  *
  ***********************************************************************/
 
@@ -2547,7 +2547,7 @@ IDE_RC qdd::executeDropUserCascade(qcStatement * aStatement)
     sParseTree = (qdDropParseTree *)aStatement->myPlan->parseTree;
 
     //-----------------------------------------
-    // ÇØ´ç À¯Àú°¡ Á¸ÀçÇÏ´ÂÁö °Ë»çÇÑ´Ù
+    // í•´ë‹¹ ìœ ì €ê°€ ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬í•œë‹¤
     //-----------------------------------------
 
     if (qcmUser::getUserID(aStatement, sParseTree->objectName, &sUserID)
@@ -2560,8 +2560,8 @@ IDE_RC qdd::executeDropUserCascade(qcStatement * aStatement)
     }
 
     //-----------------------------------------
-    // »èÁ¦ °¡´ÉÇÑ À¯ÀúÀÎÁö °Ë»çÇÑ´Ù
-    // SYS, SYSTEMÀ¯Àú´Â »èÁ¦ÇÒ ¼ö ¾ø´Ù
+    // ì‚­ì œ ê°€ëŠ¥í•œ ìœ ì €ì¸ì§€ ê²€ì‚¬í•œë‹¤
+    // SYS, SYSTEMìœ ì €ëŠ” ì‚­ì œí•  ìˆ˜ ì—†ë‹¤
     //-----------------------------------------
 
     IDE_TEST_RAISE((sUserID == QC_SYS_USER_ID) ||
@@ -2569,24 +2569,24 @@ IDE_RC qdd::executeDropUserCascade(qcStatement * aStatement)
                    ERR_NO_DROP_SYS_USER);
 
     //-----------------------------------------
-    // À¯Àú ¼ÒÀ¯ÀÇ °´Ã¼ ¸®½ºÆ®¸¦ °¡Á® ¿Â´Ù.
+    // ìœ ì € ì†Œìœ ì˜ ê°ì²´ ë¦¬ìŠ¤íŠ¸ë¥¼ ê°€ì ¸ ì˜¨ë‹¤.
     //-----------------------------------------
 
-    // DROP ÇØ¾ß ÇÒ Å×ÀÌºíÀÇ ¸®½ºÆ®¸¦ ¹Ş¾Æ¿Â´Ù ( TABLE, VIEW, QUEUE, MATERIALIZED VIEW )
+    // DROP í•´ì•¼ í•  í…Œì´ë¸”ì˜ ë¦¬ìŠ¤íŠ¸ë¥¼ ë°›ì•„ì˜¨ë‹¤ ( TABLE, VIEW, QUEUE, MATERIALIZED VIEW )
     IDE_TEST(qcmUser::findTableListByUserID(aStatement,
                                             sUserID,
                                             &sTableInfoList)
              != IDE_SUCCESS);
 
-    // DROP ÇØ¾ß ÇÒ ÀÎµ¦½ºÀÇ ¸®½ºÆ®¸¦ ¹Ş¾Æ¿Â´Ù ( INDEX )
-    // ´Ù¸¥ À¯Àú ¼ÒÀ¯ÀÇ Å×ÀÌºí¿¡ ´ëÇÑ ÀÎµ¦½º
+    // DROP í•´ì•¼ í•  ì¸ë±ìŠ¤ì˜ ë¦¬ìŠ¤íŠ¸ë¥¼ ë°›ì•„ì˜¨ë‹¤ ( INDEX )
+    // ë‹¤ë¥¸ ìœ ì € ì†Œìœ ì˜ í…Œì´ë¸”ì— ëŒ€í•œ ì¸ë±ìŠ¤
     IDE_TEST(qcmUser::findIndexListByUserID(aStatement,
                                             sUserID,
                                             &sIndexInfoList)
              != IDE_SUCCESS);
 
     // PROJ-1407 Temporary table
-    // session temporary tableÀÌ Á¸ÀçÇÏ´Â °æ¿ì DDLÀ» ÇÒ ¼ö ¾ø´Ù.
+    // session temporary tableì´ ì¡´ì¬í•˜ëŠ” ê²½ìš° DDLì„ í•  ìˆ˜ ì—†ë‹¤.
     for( sTempTableInfoList = sTableInfoList;
          sTempTableInfoList != NULL;
          sTempTableInfoList = sTempTableInfoList->next )
@@ -2647,10 +2647,10 @@ IDE_RC qdd::executeDropUserCascade(qcStatement * aStatement)
                           & sTablePartInfoList[i] )
                       != IDE_SUCCESS );
 
-            // ¸ğµç ÆÄÆ¼¼Ç¿¡ LOCK(X)
+            // ëª¨ë“  íŒŒí‹°ì…˜ì— LOCK(X)
             IDE_TEST( qcmPartition::validateAndLockPartitionInfoList( aStatement,
                                                                       sTablePartInfoList[i],
-                                                                      SMI_TBSLV_DDL_DML, // TBS Validation ¿É¼Ç
+                                                                      SMI_TBSLV_DDL_DML, // TBS Validation ì˜µì…˜
                                                                       SMI_TABLE_LOCK_X,
                                                                       ( ( smiGetDDLLockTimeOut() == -1 ) ?
                                                                         ID_ULONG_MAX :
@@ -2667,7 +2667,7 @@ IDE_RC qdd::executeDropUserCascade(qcStatement * aStatement)
             
             IDE_TEST( qdx::validateAndLockIndexTableList( aStatement,
                                                           sIndexTableList[i],
-                                                          SMI_TBSLV_DDL_DML, // TBS Validation ¿É¼Ç
+                                                          SMI_TBSLV_DDL_DML, // TBS Validation ì˜µì…˜
                                                           SMI_TABLE_LOCK_X,
                                                           ( ( smiGetDDLLockTimeOut() == -1 ) ?
                                                             ID_ULONG_MAX :
@@ -2722,10 +2722,10 @@ IDE_RC qdd::executeDropUserCascade(qcStatement * aStatement)
                           & sIndexPartInfoList[i] )
                       != IDE_SUCCESS );
 
-            // ¸ğµç ÆÄÆ¼¼Ç¿¡ LOCK(X)
+            // ëª¨ë“  íŒŒí‹°ì…˜ì— LOCK(X)
             IDE_TEST( qcmPartition::validateAndLockPartitionInfoList( aStatement,
                                                                       sIndexPartInfoList[i],
-                                                                      SMI_TBSLV_DDL_DML, // TBS Validation ¿É¼Ç
+                                                                      SMI_TBSLV_DDL_DML, // TBS Validation ì˜µì…˜
                                                                       SMI_TABLE_LOCK_X,
                                                                       ( ( smiGetDDLLockTimeOut() == -1 ) ?
                                                                         ID_ULONG_MAX :
@@ -2733,7 +2733,7 @@ IDE_RC qdd::executeDropUserCascade(qcStatement * aStatement)
                       != IDE_SUCCESS );
 
             // PROJ-1624 global non-partitioned index
-            // non-partitioned indexÇÏ³ª¸¸ lock
+            // non-partitioned indexí•˜ë‚˜ë§Œ lock
             if ( sTempIndexInfoList->isPartitionedIndex == ID_FALSE )
             {
                 sIndexTable = & sTempIndexInfoList->indexTable;
@@ -2760,8 +2760,8 @@ IDE_RC qdd::executeDropUserCascade(qcStatement * aStatement)
         }
     }
 
-    // DROP ÇØ¾ß ÇÒ Æ®¸®°ÅÀÇ ¸®½ºÆ®¸¦ ¹Ş¾Æ¿Â´Ù ( TRIGGER )
-    // ´Ù¸¥ À¯Àú ¼ÒÀ¯ÀÇ Å×ÀÌºí¿¡ ´ëÇÑ Æ®¸®°Å
+    // DROP í•´ì•¼ í•  íŠ¸ë¦¬ê±°ì˜ ë¦¬ìŠ¤íŠ¸ë¥¼ ë°›ì•„ì˜¨ë‹¤ ( TRIGGER )
+    // ë‹¤ë¥¸ ìœ ì € ì†Œìœ ì˜ í…Œì´ë¸”ì— ëŒ€í•œ íŠ¸ë¦¬ê±°
     IDE_TEST(qcmUser::findTriggerListByUserID(aStatement,
                                               sUserID,
                                               &sTriggerInfoList)
@@ -2818,10 +2818,10 @@ IDE_RC qdd::executeDropUserCascade(qcStatement * aStatement)
                                                           & sTriggerPartInfoList[i] )
                       != IDE_SUCCESS );
 
-            // ¸ğµç ÆÄÆ¼¼Ç¿¡ LOCK(X)
+            // ëª¨ë“  íŒŒí‹°ì…˜ì— LOCK(X)
             IDE_TEST( qcmPartition::validateAndLockPartitionInfoList( aStatement,
                                                                       sTriggerPartInfoList[i],
-                                                                      SMI_TBSLV_DDL_DML, // TBS Validation ¿É¼Ç
+                                                                      SMI_TBSLV_DDL_DML, // TBS Validation ì˜µì…˜
                                                                       SMI_TABLE_LOCK_X,
                                                                       ( ( smiGetDDLLockTimeOut() == -1 ) ?
                                                                         ID_ULONG_MAX :
@@ -2837,13 +2837,13 @@ IDE_RC qdd::executeDropUserCascade(qcStatement * aStatement)
     }
 
     // BUG-16980
-    // DROP ÇØ¾ß ÇÒ ½ÃÄö½ºÀÇ ¸®½ºÆ®¸¦ ¹Ş¾Æ¿Â´Ù ( SEQUENCE )
+    // DROP í•´ì•¼ í•  ì‹œí€€ìŠ¤ì˜ ë¦¬ìŠ¤íŠ¸ë¥¼ ë°›ì•„ì˜¨ë‹¤ ( SEQUENCE )
     IDE_TEST(qcmUser::findSequenceListByUserID(aStatement,
                                                sUserID,
                                                &sSequenceInfoList)
              != IDE_SUCCESS);
 
-    // DROP ÇØ¾ß ÇÒ ÇÁ·Î½ÃÁ®ÀÇ ¸®½ºÆ®¸¦ ¹Ş¾Æ¿Â´Ù ( PROCEDURE )
+    // DROP í•´ì•¼ í•  í”„ë¡œì‹œì ¸ì˜ ë¦¬ìŠ¤íŠ¸ë¥¼ ë°›ì•„ì˜¨ë‹¤ ( PROCEDURE )
     IDE_TEST(qcmUser::findProcListByUserID(aStatement,
                                            sUserID,
                                            &sProcInfoList)
@@ -2851,7 +2851,7 @@ IDE_RC qdd::executeDropUserCascade(qcStatement * aStatement)
 
     sStage = 1;
     // proj-1535
-    // DROP ÇØ¾ß ÇÒ ÇÁ·ÎÁöÁ®¿¡ ´ëÇØ X-LATCH¸¦ È¹µæÇÑ´Ù.
+    // DROP í•´ì•¼ í•  í”„ë¡œì§€ì ¸ì— ëŒ€í•´ X-LATCHë¥¼ íšë“í•œë‹¤.
     sTempProcInfoList = sProcInfoList;
     while (sTempProcInfoList != NULL)
     {
@@ -2864,7 +2864,7 @@ IDE_RC qdd::executeDropUserCascade(qcStatement * aStatement)
 
     sStage = 2;
     // PROJ-1073 Package
-    // DROP ÇØ¾ß ÇÒ packageÀÇ ¸®½ºÆ®¸¦ ¹Ş¾Æ¿Â´Ù.
+    // DROP í•´ì•¼ í•  packageì˜ ë¦¬ìŠ¤íŠ¸ë¥¼ ë°›ì•„ì˜¨ë‹¤.
     IDE_TEST(qcmUser::findPkgListByUserID(aStatement,
                                           sUserID,
                                           &sPkgInfoList)
@@ -2881,12 +2881,12 @@ IDE_RC qdd::executeDropUserCascade(qcStatement * aStatement)
     }
 
     //-----------------------------------------
-    // À¯Àú ¼ÒÀ¯ÀÇ °´Á¦¸¦ »èÁ¦
+    // ìœ ì € ì†Œìœ ì˜ ê°ì œë¥¼ ì‚­ì œ
     //-----------------------------------------
 
     // VIEW, TABLE, QUEUE, MATERIALIZED VIEW
-    // Å×ÀÌºíÀÇ °æ¿ì,
-    // Å×ÀÌºí¿¡ ¼ÓÇÑ ÀÎµ¦½º¿Í Æ®¸®°ÅÀÇ °´Ã¼, ¸ŞÅ¸ Å×ÀÌºí ·¹ÄÚµå±îÁö »èÁ¦ ÇÔ.
+    // í…Œì´ë¸”ì˜ ê²½ìš°,
+    // í…Œì´ë¸”ì— ì†í•œ ì¸ë±ìŠ¤ì™€ íŠ¸ë¦¬ê±°ì˜ ê°ì²´, ë©”íƒ€ í…Œì´ë¸” ë ˆì½”ë“œê¹Œì§€ ì‚­ì œ í•¨.
     for( sTempTableInfoList = sTableInfoList, i = 0;
          sTempTableInfoList != NULL;
          sTempTableInfoList = sTempTableInfoList->next )
@@ -2917,7 +2917,7 @@ IDE_RC qdd::executeDropUserCascade(qcStatement * aStatement)
         }
     }
 
-    // INDEX : ´Ù¸¥ À¯Àú ¼ÒÀ¯ÀÇ Å×ÀÌºí¿¡ ´ëÇÑ ÀÎµ¦½º
+    // INDEX : ë‹¤ë¥¸ ìœ ì € ì†Œìœ ì˜ í…Œì´ë¸”ì— ëŒ€í•œ ì¸ë±ìŠ¤
     for( sTempIndexInfoList = sIndexInfoList, i = 0;
          sTempIndexInfoList != NULL;
          sTempIndexInfoList = sTempIndexInfoList->next )
@@ -2946,7 +2946,7 @@ IDE_RC qdd::executeDropUserCascade(qcStatement * aStatement)
         }
     }
 
-    // TRIGGER : ´Ù¸¥ À¯Àú ¼ÒÀ¯ÀÇ Å×ÀÌºí¿¡ ´ëÇÑ Æ®¸®°Å
+    // TRIGGER : ë‹¤ë¥¸ ìœ ì € ì†Œìœ ì˜ í…Œì´ë¸”ì— ëŒ€í•œ íŠ¸ë¦¬ê±°
     sTempTriggerInfoList = sTriggerInfoList;
     while (sTempTriggerInfoList != NULL)
     {
@@ -3028,8 +3028,8 @@ IDE_RC qdd::executeDropUserCascade(qcStatement * aStatement)
     }
 
     //-----------------------------------------
-    // À¯Àú ¼ÒÀ¯ÀÇ °´Ã¼µéÀÇ qp meta Á¤º¸¸¦ »èÁ¦
-    // Æ®¸®°Å¿Í ÇÁ·Î½ÃÁ®´Â °´Ã¼¸¦ »èÁ¦ÇÏ¸é¼­ ¸ŞÅ¸ Å×ÀÌºíµµ ÇÔ²² »èÁ¦µÊ
+    // ìœ ì € ì†Œìœ ì˜ ê°ì²´ë“¤ì˜ qp meta ì •ë³´ë¥¼ ì‚­ì œ
+    // íŠ¸ë¦¬ê±°ì™€ í”„ë¡œì‹œì ¸ëŠ” ê°ì²´ë¥¼ ì‚­ì œí•˜ë©´ì„œ ë©”íƒ€ í…Œì´ë¸”ë„ í•¨ê»˜ ì‚­ì œë¨
     //-----------------------------------------
 
     IDE_TEST(deleteObjectFromMetaByUserID(aStatement, sUserID)
@@ -3040,7 +3040,7 @@ IDE_RC qdd::executeDropUserCascade(qcStatement * aStatement)
               != IDE_SUCCESS );
     
     //-----------------------------------------
-    // À¯Àú ¼ÒÀ¯ÀÇ °´Á¦ÀÇ cached meta¸¦ »èÁ¦
+    // ìœ ì € ì†Œìœ ì˜ ê°ì œì˜ cached metaë¥¼ ì‚­ì œ
     //-----------------------------------------
 
     // TRIGGER : make new cached meta
@@ -3126,7 +3126,7 @@ IDE_RC qdd::executeDropUserCascade(qcStatement * aStatement)
             }
             
             // PROJ-1624 global non-partitioned index
-            // index table tableinfo´Â destroyÇÑ´Ù.
+            // index table tableinfoëŠ” destroyí•œë‹¤.
             if ( sTempIndexInfoList->isPartitionedIndex == ID_FALSE )
             {
                 sIndexTable = & sTempIndexInfoList->indexTable;
@@ -3158,13 +3158,13 @@ IDE_RC qdd::executeDropUserCascade(qcStatement * aStatement)
         IDE_TEST( qdnTrigger::freeTriggerCache( sTriggerCache )
                   != IDE_SUCCESS );
 
-        // triggerÀÇ »èÁ¦´Â tableInfo¸¦ º¯°æÇÒ »ÓÀÌ¹Ç·Î
-        // tableInfo¸¦ »èÁ¦ÇÏÁö´Â ¾Ê´Â´Ù.
+        // triggerì˜ ì‚­ì œëŠ” tableInfoë¥¼ ë³€ê²½í•  ë¿ì´ë¯€ë¡œ
+        // tableInfoë¥¼ ì‚­ì œí•˜ì§€ëŠ” ì•ŠëŠ”ë‹¤.
     }
 
     // INDEX
-    // indexÀÇ »èÁ¦´Â tableInfo¸¦ º¯°æÇÒ »ÓÀÌ¹Ç·Î
-    // tableInfo¸¦ »èÁ¦ÇÏÁö´Â ¾Ê´Â´Ù.
+    // indexì˜ ì‚­ì œëŠ” tableInfoë¥¼ ë³€ê²½í•  ë¿ì´ë¯€ë¡œ
+    // tableInfoë¥¼ ì‚­ì œí•˜ì§€ëŠ” ì•ŠëŠ”ë‹¤.
 
     // TABLE, VIEW, QUEUE, MATERIALIZED VIEW
     for( sTempTableInfoList = sTableInfoList, i = 0;
@@ -3222,7 +3222,7 @@ IDE_RC qdd::executeDropUserCascade(qcStatement * aStatement)
     }
 
     // SEQUENCE
-    // sequence´Â cached meta°¡ ¾ø´Ù.
+    // sequenceëŠ” cached metaê°€ ì—†ë‹¤.
     // PROJ-1073 Package
     for( sTempPkgInfoList = sPkgInfoList;
          sTempPkgInfoList != NULL;
@@ -3326,15 +3326,15 @@ IDE_RC qdd::executeDropSequence(qcStatement * aStatement)
 /***********************************************************************
  *
  * Description :
- *    DROP SEQUENCE ... ÀÇ execution ¼öÇà
+ *    DROP SEQUENCE ... ì˜ execution ìˆ˜í–‰
  *
  * Implementation :
- *    1. ½ÃÄö½º ÇÚµé, info ±¸ÇÏ±â
- *    2. ¸ŞÅ¸ Å×ÀÌºí¿¡¼­ sequence »èÁ¦
- *    3. ¸ŞÅ¸ Å×ÀÌºí¿¡¼­ privilege »èÁ¦
+ *    1. ì‹œí€€ìŠ¤ í•¸ë“¤, info êµ¬í•˜ê¸°
+ *    2. ë©”íƒ€ í…Œì´ë¸”ì—ì„œ sequence ì‚­ì œ
+ *    3. ë©”íƒ€ í…Œì´ë¸”ì—ì„œ privilege ì‚­ì œ
  *    4. smiTable::dropSequence
- *    6. related PSM À» invalid »óÅÂ·Î º¯°æ
- *    8. ¸ŞÅ¸ Ä³½¬¿¡¼­ »èÁ¦
+ *    6. related PSM ì„ invalid ìƒíƒœë¡œ ë³€ê²½
+ *    8. ë©”íƒ€ ìºì‰¬ì—ì„œ ì‚­ì œ
  *
  ***********************************************************************/
 
@@ -3352,7 +3352,7 @@ IDE_RC qdd::executeDropSequence(qcStatement * aStatement)
     SChar                sSeqTableNameStr[ QC_MAX_OBJECT_NAME_LEN + 1 ];
     qcNamePosition       sSeqTableName;
 
-    // PROJ-2365 sequence table Á¤º¸
+    // PROJ-2365 sequence table ì •ë³´
     qcmTableInfo       * sSeqTableInfo = NULL;
     void               * sSeqTableHandle;
     smSCN                sSeqTableSCN;
@@ -3366,12 +3366,12 @@ IDE_RC qdd::executeDropSequence(qcStatement * aStatement)
                                     &sSequenceHandle)
              != IDE_SUCCESS);
 
-    // QUEUE_SEQUENCE´Â DropÇÒ ¼ö ¾ø´Ù.
+    // QUEUE_SEQUENCEëŠ” Dropí•  ìˆ˜ ì—†ë‹¤.
     IDE_TEST_RAISE(sSequenceInfo.sequenceType != QCM_SEQUENCE,
                    ERR_NOT_EXIST_SEQUENCE);
 
-    /* PROJ-1723 [MDW/INTEGRATOR] Altibase Plugin °³¹ß
-       DDL Statement TextÀÇ ·Î±ë
+    /* PROJ-1723 [MDW/INTEGRATOR] Altibase Plugin ê°œë°œ
+       DDL Statement Textì˜ ë¡œê¹…
     */
     if (QCU_DDL_SUPPLEMENTAL_LOG == 1)
     {
@@ -3395,7 +3395,7 @@ IDE_RC qdd::executeDropSequence(qcStatement * aStatement)
              != IDE_SUCCESS);
     
     // PROJ-2365 sequence table
-    // ÀÌ¹Ì »ı¼ºµÈ sequence table¿¡ ´ëÇÑ ¿¡·¯¿Í alter¿¡ ´ëÇÑ ¿¡·¯
+    // ì´ë¯¸ ìƒì„±ëœ sequence tableì— ëŒ€í•œ ì—ëŸ¬ì™€ alterì— ëŒ€í•œ ì—ëŸ¬
     if ( ( sOption & SMI_SEQUENCE_TABLE_MASK ) == SMI_SEQUENCE_TABLE_TRUE )
     {
         // make sequence table name : SEQ1$SEQ
@@ -3425,7 +3425,7 @@ IDE_RC qdd::executeDropSequence(qcStatement * aStatement)
                                        (void**)&sSeqTableInfo )
                   != IDE_SUCCESS );
         
-        // sequence table¿¡ DDL lock
+        // sequence tableì— DDL lock
         IDE_TEST( qcm::validateAndLockTable( aStatement,
                                              sSeqTableHandle,
                                              sSeqTableSCN,
@@ -3436,7 +3436,7 @@ IDE_RC qdd::executeDropSequence(qcStatement * aStatement)
         IDE_TEST_RAISE( sSeqTableInfo->replicationCount > 0,
                         ERR_DDL_WITH_REPLICATED_TABLE );
 
-        //proj-1608:replicationCount°¡ 0ÀÏ ¶§ recovery count´Â Ç×»ó 0ÀÌ¾î¾ß ÇÔ
+        //proj-1608:replicationCountê°€ 0ì¼ ë•Œ recovery countëŠ” í•­ìƒ 0ì´ì–´ì•¼ í•¨
         IDE_DASSERT( sSeqTableInfo->replicationRecoveryCount == 0 );
         
         // drop sequence table
@@ -3484,7 +3484,7 @@ IDE_RC qdd::executeDropSequence(qcStatement * aStatement)
         QS_TABLE) != IDE_SUCCESS);
 
     // PROJ-2365
-    // sequence tableInfo »èÁ¦
+    // sequence tableInfo ì‚­ì œ
     if ( sSeqTableInfo != NULL )
     {
         (void) qcm::destroyQcmTableInfo( sSeqTableInfo );
@@ -3526,24 +3526,24 @@ IDE_RC qdd::executeTruncateTable(qcStatement * aStatement)
 /***********************************************************************
  *
  * Description :
- *    TRUNCATE TABLE ... ÀÇ execution ¼öÇà
+ *    TRUNCATE TABLE ... ì˜ execution ìˆ˜í–‰
  *
  * Implementation :
- *    1. get table info. Å×ÀÌºí ÇÚµé, Å×ÀÌºí ID ±¸ÇØµÎ±â
- *    2. Å×ÀÌºíÀÇ ÀÎµ¦½º °³¼ö¸¸Å­ qcmIndex ¹öÆÛ ÇÒ´ç¹Ş¾Æ¼­
- *       ÀÌÀüÀÇ ÀÎµ¦½º Á¤º¸ º¹»ç
- *    3. Å×ÀÌºí »õ·Î »ı¼ºÇÏ¿© tableOID ºÎ¿©¹Ş±â
- *    4. SYS_TABLES_ ÀÇ tableOID ¸¦ 3 ¿¡¼­ ±¸ÇÑ °ªÀ¸·Î º¯°æ
- *    5. ÀÎµ¦½º »õ·Î »ı¼º
- *    6. related PSM À» invalid »óÅÂ·Î º¯°æ
+ *    1. get table info. í…Œì´ë¸” í•¸ë“¤, í…Œì´ë¸” ID êµ¬í•´ë‘ê¸°
+ *    2. í…Œì´ë¸”ì˜ ì¸ë±ìŠ¤ ê°œìˆ˜ë§Œí¼ qcmIndex ë²„í¼ í• ë‹¹ë°›ì•„ì„œ
+ *       ì´ì „ì˜ ì¸ë±ìŠ¤ ì •ë³´ ë³µì‚¬
+ *    3. í…Œì´ë¸” ìƒˆë¡œ ìƒì„±í•˜ì—¬ tableOID ë¶€ì—¬ë°›ê¸°
+ *    4. SYS_TABLES_ ì˜ tableOID ë¥¼ 3 ì—ì„œ êµ¬í•œ ê°’ìœ¼ë¡œ ë³€ê²½
+ *    5. ì¸ë±ìŠ¤ ìƒˆë¡œ ìƒì„±
+ *    6. related PSM ì„ invalid ìƒíƒœë¡œ ë³€ê²½
  *    7. drop old table
- *    8. ¸ŞÅ¸ Ä³½¬ Àç±¸¼º
+ *    8. ë©”íƒ€ ìºì‰¬ ì¬êµ¬ì„±
  *
- * ReplicationÀÌ °É¸° Table¿¡ ´ëÇÑ DDLÀÎ °æ¿ì, Ãß°¡ÀûÀ¸·Î ¾Æ·¡ÀÇ ÀÛ¾÷À» ÇÑ´Ù.
- *    1. Validate¿Í Execute´Â ´Ù¸¥ TransactionÀÌ¹Ç·Î, ÇÁ¶óÆÛÆ¼ °Ë»ç´Â Execute¿¡¼­ ÇÑ´Ù.
- *    2. °ü·Ã Receiver Thread ÁßÁö
- *    3. SYS_REPL_ITEMS_ÀÇ TABLE_OID ÄÃ·³ °»½Å
- *    4. Table Meta Log Record ±â·Ï
+ * Replicationì´ ê±¸ë¦° Tableì— ëŒ€í•œ DDLì¸ ê²½ìš°, ì¶”ê°€ì ìœ¼ë¡œ ì•„ë˜ì˜ ì‘ì—…ì„ í•œë‹¤.
+ *    1. Validateì™€ ExecuteëŠ” ë‹¤ë¥¸ Transactionì´ë¯€ë¡œ, í”„ë¼í¼í‹° ê²€ì‚¬ëŠ” Executeì—ì„œ í•œë‹¤.
+ *    2. ê´€ë ¨ Receiver Thread ì¤‘ì§€
+ *    3. SYS_REPL_ITEMS_ì˜ TABLE_OID ì»¬ëŸ¼ ê°±ì‹ 
+ *    4. Table Meta Log Record ê¸°ë¡
  *
  ***********************************************************************/
 
@@ -3590,7 +3590,7 @@ IDE_RC qdd::executeTruncateTable(qcStatement * aStatement)
     sParseTree = (qdDropParseTree *)aStatement->myPlan->parseTree;
 
     // TASK-2176
-    // Table¿¡ ´ëÇÑ LockÀ» È¹µæÇÑ´Ù.
+    // Tableì— ëŒ€í•œ Lockì„ íšë“í•œë‹¤.
     IDE_TEST( qcm::validateAndLockTable(aStatement,
                                         sParseTree->tableHandle,
                                         sParseTree->tableSCN,
@@ -3607,20 +3607,20 @@ IDE_RC qdd::executeTruncateTable(qcStatement * aStatement)
         sIsPartitioned = ID_TRUE;
 
         // -----------------------------------------------------
-        // Partition OID ¸®½ºÆ®¸¦  ÀúÀåÇÏ±â À§ÇÑ ¸Ş¸ğ¸® Å©±â °è»ê
+        // Partition OID ë¦¬ìŠ¤íŠ¸ë¥¼  ì €ì¥í•˜ê¸° ìœ„í•œ ë©”ëª¨ë¦¬ í¬ê¸° ê³„ì‚°
         // -----------------------------------------------------
 
-        // ¸ğµç ÆÄÆ¼¼Ç¿¡ LOCK(X)
+        // ëª¨ë“  íŒŒí‹°ì…˜ì— LOCK(X)
         IDE_TEST( qcmPartition::validateAndLockPartitionInfoList( aStatement,
                                                                   sParseTree->partInfoList,
-                                                                  SMI_TBSLV_DDL_DML, // TBS Validation ¿É¼Ç
+                                                                  SMI_TBSLV_DDL_DML, // TBS Validation ì˜µì…˜
                                                                   SMI_TABLE_LOCK_X,
                                                                   ( ( smiGetDDLLockTimeOut() == -1 ) ?
                                                                     ID_ULONG_MAX :
                                                                     smiGetDDLLockTimeOut() * 1000000 ) )
                   != IDE_SUCCESS );
 
-        // ¿¹¿Ü Ã³¸®¸¦ À§ÇÏ¿©, LockÀ» ÀâÀº ÈÄ¿¡ Partition List¸¦ ¼³Á¤ÇÑ´Ù.
+        // ì˜ˆì™¸ ì²˜ë¦¬ë¥¼ ìœ„í•˜ì—¬, Lockì„ ì¡ì€ í›„ì— Partition Listë¥¼ ì„¤ì •í•œë‹¤.
         sOldPartInfoList = sParseTree->partInfoList;
 
         for ( sPartInfoList = sOldPartInfoList;
@@ -3633,7 +3633,7 @@ IDE_RC qdd::executeTruncateTable(qcStatement * aStatement)
         // PROJ-1624 non-partitioned index
         IDE_TEST( qdx::validateAndLockIndexTableList( aStatement,
                                                       sParseTree->oldIndexTables,
-                                                      SMI_TBSLV_DDL_DML, // TBS Validation ¿É¼Ç
+                                                      SMI_TBSLV_DDL_DML, // TBS Validation ì˜µì…˜
                                                       SMI_TABLE_LOCK_X,
                                                       ( ( smiGetDDLLockTimeOut() == -1 ) ?
                                                         ID_ULONG_MAX :
@@ -3661,8 +3661,8 @@ IDE_RC qdd::executeTruncateTable(qcStatement * aStatement)
         // Nothing to do.
     }
 
-    /* PROJ-1442 Replication Online Áß DDL Çã¿ë
-     * Validate¿Í Execute´Â ´Ù¸¥ TransactionÀÌ¹Ç·Î, ÇÁ¶óÆÛÆ¼ °Ë»ç´Â Execute¿¡¼­ ÇÑ´Ù.
+    /* PROJ-1442 Replication Online ì¤‘ DDL í—ˆìš©
+     * Validateì™€ ExecuteëŠ” ë‹¤ë¥¸ Transactionì´ë¯€ë¡œ, í”„ë¼í¼í‹° ê²€ì‚¬ëŠ” Executeì—ì„œ í•œë‹¤.
      */
     if(sInfo->replicationCount > 0)
     {
@@ -3674,8 +3674,8 @@ IDE_RC qdd::executeTruncateTable(qcStatement * aStatement)
                        == SMI_TRANSACTION_REPL_NONE,
                        ERR_CANNOT_WRITE_REPL_INFO);
 
-        /* PROJ-1442 Replication Online Áß DDL Çã¿ë
-         * °ü·Ã Receiver Thread ÁßÁö
+        /* PROJ-1442 Replication Online ì¤‘ DDL í—ˆìš©
+         * ê´€ë ¨ Receiver Thread ì¤‘ì§€
          */
         if ( sIsPartitioned == ID_TRUE )
         {
@@ -3693,9 +3693,9 @@ IDE_RC qdd::executeTruncateTable(qcStatement * aStatement)
                                                                    sTableOIDCount )
                   != IDE_SUCCESS );
 
-        // BUG-22703 : Begin Statement¸¦ ¼öÇàÇÑ ÈÄ¿¡ HangÀÌ °É¸®Áö
-        // ¾Ê¾Æ¾ß ÇÕ´Ï´Ù.
-        // mStatistics Åë°è Á¤º¸¸¦ Àü´Ş ÇÕ´Ï´Ù.
+        // BUG-22703 : Begin Statementë¥¼ ìˆ˜í–‰í•œ í›„ì— Hangì´ ê±¸ë¦¬ì§€
+        // ì•Šì•„ì•¼ í•©ë‹ˆë‹¤.
+        // mStatistics í†µê³„ ì •ë³´ë¥¼ ì „ë‹¬ í•©ë‹ˆë‹¤.
         IDE_TEST( qci::mManageReplicationCallback.mStopReceiverThreads( QC_SMI_STMT(aStatement),
                                                                         aStatement->mStatistics,
                                                                         sOldTableOIDArray,
@@ -3762,7 +3762,7 @@ IDE_RC qdd::executeTruncateTable(qcStatement * aStatement)
                 }
                 else
                 {
-                    // ¸ğµÎ non-partitioned index¸¸ »ı¼ºµÈ °æ¿ì
+                    // ëª¨ë‘ non-partitioned indexë§Œ ìƒì„±ëœ ê²½ìš°
                     sNewPartIndex[i] = NULL;
                 }
             }
@@ -3781,13 +3781,13 @@ IDE_RC qdd::executeTruncateTable(qcStatement * aStatement)
     // create new table
     //-----------------
 
-    // »õ·Î¿î Å×ÀÌºíµµ
-    // ¿øº» Å×ÀÌºíÀÇ Flag¿Í Parallel Degree¿Í °°Àº
-    // °ªÀ» °¡Áø´Ù.
+    // ìƒˆë¡œìš´ í…Œì´ë¸”ë„
+    // ì›ë³¸ í…Œì´ë¸”ì˜ Flagì™€ Parallel Degreeì™€ ê°™ì€
+    // ê°’ì„ ê°€ì§„ë‹¤.
     sOrgTableFlag = sInfo->tableFlag;
     sOrgTableParallelDegree = sInfo->parallelDegree;
 
-    /* BUG-45503 Table »ı¼º ÀÌÈÄ¿¡ ½ÇÆĞ ½Ã, Table Meta CacheÀÇ Column Á¤º¸¸¦ º¹±¸ÇÏÁö ¾Ê´Â °æ¿ì°¡ ÀÖ½À´Ï´Ù. */
+    /* BUG-45503 Table ìƒì„± ì´í›„ì— ì‹¤íŒ¨ ì‹œ, Table Meta Cacheì˜ Column ì •ë³´ë¥¼ ë³µêµ¬í•˜ì§€ ì•ŠëŠ” ê²½ìš°ê°€ ìˆìŠµë‹ˆë‹¤. */
     IDE_TEST( qcm::copyQcmColumns( QC_QMX_MEM( aStatement ),
                                    sInfo->columns,
                                    & sTempColumns,
@@ -3803,16 +3803,16 @@ IDE_RC qdd::executeTruncateTable(qcStatement * aStatement)
                                          sInfo->TBSID,
                                          sInfo->segAttr,
                                          sInfo->segStoAttr,
-                                         /* ¿øº» Table Flag¸¦
-                                            ÅëÂ°·Î º¹»ç =>
-                                            MASK ºñÆ®¸¦ ¸ğµÎ 1·Î¼³Á¤*/
+                                         /* ì›ë³¸ Table Flagë¥¼
+                                            í†µì§¸ë¡œ ë³µì‚¬ =>
+                                            MASK ë¹„íŠ¸ë¥¼ ëª¨ë‘ 1ë¡œì„¤ì •*/
                                          QDB_TABLE_ATTR_MASK_ALL,
                                          sOrgTableFlag, /* Flag Value */
                                          sOrgTableParallelDegree,
                                          &sTableOID)
              != IDE_SUCCESS);
 
-    // BUG-44814 ddl ±¸¹® ¼öÇà½Ã Åë°èÁ¤º¸ º¹»ç¸¦ ÇØ¾ßÇÔ
+    // BUG-44814 ddl êµ¬ë¬¸ ìˆ˜í–‰ì‹œ í†µê³„ì •ë³´ ë³µì‚¬ë¥¼ í•´ì•¼í•¨
     smiStatistics::copyTableStats( smiGetTable(sTableOID), sOldTableHandle, NULL, 0 );
 
     // update table spec (tableOID).
@@ -3850,7 +3850,7 @@ IDE_RC qdd::executeTruncateTable(qcStatement * aStatement)
                  != IDE_SUCCESS);
 
         // -----------------------------------------------------
-        // Å×ÀÌºí ÆÄÆ¼¼Ç °³¼ö¸¸Å­ ¹İº¹
+        // í…Œì´ë¸” íŒŒí‹°ì…˜ ê°œìˆ˜ë§Œí¼ ë°˜ë³µ
         // -----------------------------------------------------
         for( i = 0, sPartInfoList = sOldPartInfoList;
              sPartInfoList != NULL;
@@ -3861,9 +3861,9 @@ IDE_RC qdd::executeTruncateTable(qcStatement * aStatement)
             sPartitionID[i]        = sPartInfo->partitionID;
             sPartType              = sPartInfo->tableFlag & SMI_TABLE_TYPE_MASK;
 
-            /* PROJ-2464 hybrid partitioned table Áö¿ø
-             *  - Partition Info¸¦ ±¸¼ºÇÒ ¶§¿¡, Table OptionÀ» Partitioned TableÀÇ °ªÀ¸·Î º¹Á¦ÇÑ´Ù.
-             *  - µû¶ó¼­, PartInfoÀÇ Á¤º¸¸¦ ÀÌ¿ëÇÏÁö ¾Ê°í, TBSID¿¡ µû¶ó ÀûÇÕÇÑ °ªÀ¸·Î Á¶Á¤ÇØ¼­ ÀÌ¿ëÇÑ´Ù.
+            /* PROJ-2464 hybrid partitioned table ì§€ì›
+             *  - Partition Infoë¥¼ êµ¬ì„±í•  ë•Œì—, Table Optionì„ Partitioned Tableì˜ ê°’ìœ¼ë¡œ ë³µì œí•œë‹¤.
+             *  - ë”°ë¼ì„œ, PartInfoì˜ ì •ë³´ë¥¼ ì´ìš©í•˜ì§€ ì•Šê³ , TBSIDì— ë”°ë¼ ì í•©í•œ ê°’ìœ¼ë¡œ ì¡°ì •í•´ì„œ ì´ìš©í•œë‹¤.
              */
             qdbCommon::adjustPhysicalAttr( sPartType,
                                            sInfo->segAttr,
@@ -3872,7 +3872,7 @@ IDE_RC qdd::executeTruncateTable(qcStatement * aStatement)
                                            & sSegStoAttr,
                                            ID_TRUE /* aIsTable */ );
 
-            /* BUG-45503 Table »ı¼º ÀÌÈÄ¿¡ ½ÇÆĞ ½Ã, Table Meta CacheÀÇ Column Á¤º¸¸¦ º¹±¸ÇÏÁö ¾Ê´Â °æ¿ì°¡ ÀÖ½À´Ï´Ù. */
+            /* BUG-45503 Table ìƒì„± ì´í›„ì— ì‹¤íŒ¨ ì‹œ, Table Meta Cacheì˜ Column ì •ë³´ë¥¼ ë³µêµ¬í•˜ì§€ ì•ŠëŠ” ê²½ìš°ê°€ ìˆìŠµë‹ˆë‹¤. */
             IDE_TEST( qcm::copyQcmColumns( QC_QMX_MEM( aStatement ),
                                            sPartInfo->columns,
                                            & sTempColumns,
@@ -3887,16 +3887,16 @@ IDE_RC qdd::executeTruncateTable(qcStatement * aStatement)
                                                  sPartInfo->TBSID,
                                                  sSegAttr,
                                                  sSegStoAttr,
-                                                 /* ¿øº» Table Flag¸¦
-                                                    ÅëÂ°·Î º¹»ç =>
-                                                    MASK ºñÆ®¸¦
-                                                    ¸ğµÎ 1·Î¼³Á¤*/
+                                                 /* ì›ë³¸ Table Flagë¥¼
+                                                    í†µì§¸ë¡œ ë³µì‚¬ =>
+                                                    MASK ë¹„íŠ¸ë¥¼
+                                                    ëª¨ë‘ 1ë¡œì„¤ì •*/
                                                  QDB_TABLE_ATTR_MASK_ALL,
                                                  sOrgTableFlag, /* Flag Value */
                                                  sOrgTableParallelDegree,
                                                  &sNewPartitionOID[i] )
                      != IDE_SUCCESS);
-            // BUG-44814 ddl ±¸¹® ¼öÇà½Ã Åë°èÁ¤º¸ º¹»ç¸¦ ÇØ¾ßÇÔ
+            // BUG-44814 ddl êµ¬ë¬¸ ìˆ˜í–‰ì‹œ í†µê³„ì •ë³´ ë³µì‚¬ë¥¼ í•´ì•¼í•¨
             smiStatistics::copyTableStats( smiGetTable(sNewPartitionOID[i]), sPartInfo->tableHandle, NULL, 0 );
 
             IDE_TEST(qdbCommon::updatePartTableSpecFromMeta( aStatement,
@@ -3912,7 +3912,7 @@ IDE_RC qdd::executeTruncateTable(qcStatement * aStatement)
     }
     
     // PROJ-1624 non-partitioned index
-    // index tableÀº createIndex½Ã ´Ù½Ã »ı¼ºµÇ¹Ç·Î meta¸¦ À§ÇØ ¹Ì¸® Áö¿î´Ù.
+    // index tableì€ createIndexì‹œ ë‹¤ì‹œ ìƒì„±ë˜ë¯€ë¡œ metaë¥¼ ìœ„í•´ ë¯¸ë¦¬ ì§€ìš´ë‹¤.
     if( sIsPartitioned == ID_TRUE )
     {
         for ( sIndexTable = sParseTree->oldIndexTables;
@@ -3931,7 +3931,7 @@ IDE_RC qdd::executeTruncateTable(qcStatement * aStatement)
     }
     
     // re-create index!!
-    // index tableÀº »õ·Î »ı¼ºÇÑ´Ù.
+    // index tableì€ ìƒˆë¡œ ìƒì„±í•œë‹¤.
     IDE_TEST(qdbCommon::createIndexFromInfo(aStatement,
                                             sInfo,
                                             sTableOID,
@@ -3948,7 +3948,7 @@ IDE_RC qdd::executeTruncateTable(qcStatement * aStatement)
              != IDE_SUCCESS);
 
     // PROJ-1624 global non-partitioned index
-    // index meta¿¡¼­ index table id¸¦ °»½ÅÇÑ´Ù.
+    // index metaì—ì„œ index table idë¥¼ ê°±ì‹ í•œë‹¤.
     if( sIsPartitioned == ID_TRUE )
     {
         for ( i = 0; i < sInfo->indexCount; i++ )
@@ -3976,8 +3976,8 @@ IDE_RC qdd::executeTruncateTable(qcStatement * aStatement)
         // Nothing to do.
     }
     
-    /* PROJ-1442 Replication Online Áß DDL Çã¿ë
-     * SYS_REPL_ITEMS_ÀÇ TABLE_OID ÄÃ·³ °»½Å
+    /* PROJ-1442 Replication Online ì¤‘ DDL í—ˆìš©
+     * SYS_REPL_ITEMS_ì˜ TABLE_OID ì»¬ëŸ¼ ê°±ì‹ 
      */
     if(sIsReplicatedTable == ID_TRUE)
     {
@@ -4043,7 +4043,7 @@ IDE_RC qdd::executeTruncateTable(qcStatement * aStatement)
     // PROJ-1502 PARTITIONED DISK TABLE
     if( sIsPartitioned == ID_TRUE )
     {
-        // »õ·Î¿î qcmPartitionInfoµéÀÇ pointerÁ¤º¸¸¦ °¡Áö´Â ¹è¿­ »ı¼º
+        // ìƒˆë¡œìš´ qcmPartitionInfoë“¤ì˜ pointerì •ë³´ë¥¼ ê°€ì§€ëŠ” ë°°ì—´ ìƒì„±
         IDU_FIT_POINT( "qdd::executeTruncateTable::cralloc::sNewPartitionInfoArr",
                         idERR_ABORT_InsufficientMemory );
 
@@ -4070,8 +4070,8 @@ IDE_RC qdd::executeTruncateTable(qcStatement * aStatement)
         // nothing to do
     }
 
-    /* PROJ-1442 Replication Online Áß DDL Çã¿ë
-     * Table Meta Log Record ±â·Ï
+    /* PROJ-1442 Replication Online ì¤‘ DDL í—ˆìš©
+     * Table Meta Log Record ê¸°ë¡
      * PROJ-2642 Table on Replication Allow DDL
      */
     if((sIsReplicatedTable == ID_TRUE) ||
@@ -4100,7 +4100,7 @@ IDE_RC qdd::executeTruncateTable(qcStatement * aStatement)
     (void)qcm::destroyQcmTableInfo(sInfo);
     sInfo = NULL;
 
-    // old index table tableinfo »èÁ¦
+    // old index table tableinfo ì‚­ì œ
     if ( sIsPartitioned == ID_TRUE )
     {
         (void)qcmPartition::destroyQcmPartitionInfoList( sOldPartInfoList );
@@ -4161,8 +4161,8 @@ IDE_RC qdd::executeTruncateTempTable(qcStatement * aStatement)
 /***********************************************************************
  *
  * Description :
- *    TRUNCATE TABLE ... ÀÇ execution ¼öÇà
- *    temporary tableÀ» truncateÇÑ´Ù.
+ *    TRUNCATE TABLE ... ì˜ execution ìˆ˜í–‰
+ *    temporary tableì„ truncateí•œë‹¤.
  *
  * Implementation :
  *
@@ -4192,10 +4192,10 @@ IDE_RC qdd::deleteConstraintsFromMeta(qcStatement * aStatement,
 /***********************************************************************
  *
  * Description :
- *      executeDropTable ·ÎºÎÅÍ È£Ãâ, constraint Á¤º¸ »èÁ¦
+ *      executeDropTable ë¡œë¶€í„° í˜¸ì¶œ, constraint ì •ë³´ ì‚­ì œ
  *
  * Implementation :
- *      1. SYS_CONSTRAINTS_ ¸ŞÅ¸ Å×ÀÌºí¿¡¼­ constraint Á¤º¸ »èÁ¦
+ *      1. SYS_CONSTRAINTS_ ë©”íƒ€ í…Œì´ë¸”ì—ì„œ constraint ì •ë³´ ì‚­ì œ
  *
  ***********************************************************************/
 
@@ -4246,10 +4246,10 @@ IDE_RC qdd::deleteConstraintsFromMetaByConstraintID(qcStatement * aStatement,
  *
  * Description :
  *      BUG-17326
- *      executeDropIndexInTBS ·ÎºÎÅÍ È£Ãâ, constraint Á¤º¸ »èÁ¦
+ *      executeDropIndexInTBS ë¡œë¶€í„° í˜¸ì¶œ, constraint ì •ë³´ ì‚­ì œ
  *
  * Implementation :
- *      1. SYS_CONSTRAINTS_ ¸ŞÅ¸ Å×ÀÌºí¿¡¼­ constraint Á¤º¸ »èÁ¦
+ *      1. SYS_CONSTRAINTS_ ë©”íƒ€ í…Œì´ë¸”ì—ì„œ constraint ì •ë³´ ì‚­ì œ
  *
  ***********************************************************************/
 
@@ -4300,12 +4300,12 @@ IDE_RC qdd::deleteFKConstraintsFromMeta(qcStatement * aStatement,
 /***********************************************************************
  *
  * Description :
- *      qdtDrop::exeuct(), qdd::executeDropUserCascade ·ÎºÎÅÍ È£Ãâ,
- *      constraint Á¤º¸ »èÁ¦
+ *      qdtDrop::exeuct(), qdd::executeDropUserCascade ë¡œë¶€í„° í˜¸ì¶œ,
+ *      constraint ì •ë³´ ì‚­ì œ
  *
  * Implementation :
- *      1. SYS_CONSTRAINTS_ ¸ŞÅ¸ Å×ÀÌºí¿¡¼­
- *         foreign key constraint Á¤º¸ »èÁ¦
+ *      1. SYS_CONSTRAINTS_ ë©”íƒ€ í…Œì´ë¸”ì—ì„œ
+ *         foreign key constraint ì •ë³´ ì‚­ì œ
  *
  ***********************************************************************/
 
@@ -4361,10 +4361,10 @@ IDE_RC qdd::deleteTableFromMeta( qcStatement * aStatement,
 /***********************************************************************
  *
  * Description :
- *      executeDropTable,executeDropSequence ·ÎºÎÅÍ È£Ãâ
+ *      executeDropTable,executeDropSequence ë¡œë¶€í„° í˜¸ì¶œ
  *
  * Implementation :
- *      1. SYS_TABLES_, SYS_COLUMNS_ ¸ŞÅ¸ Å×ÀÌºí¿¡¼­ ÇØ´ç Å×ÀÌºí Á¤º¸ »èÁ¦
+ *      1. SYS_TABLES_, SYS_COLUMNS_ ë©”íƒ€ í…Œì´ë¸”ì—ì„œ í•´ë‹¹ í…Œì´ë¸” ì •ë³´ ì‚­ì œ
  *
  ***********************************************************************/
 
@@ -4545,11 +4545,11 @@ IDE_RC qdd::deleteViewFromMeta( qcStatement * aStatement,
 /***********************************************************************
  *
  * Description :
- *      executeDropView ·ÎºÎÅÍ È£Ãâ
+ *      executeDropView ë¡œë¶€í„° í˜¸ì¶œ
  *
  * Implementation :
  *      1. SYS_TABLES_, SYS_COLUMNS_, SYS_VIEWS_, SYS_VIEW_PARSE_,
- *         SYS_VIEW_RELATED_ ¸ŞÅ¸ Å×ÀÌºí¿¡¼­ ÇØ´ç Å×ÀÌºí Á¤º¸ »èÁ¦
+ *         SYS_VIEW_RELATED_ ë©”íƒ€ í…Œì´ë¸”ì—ì„œ í•´ë‹¹ í…Œì´ë¸” ì •ë³´ ì‚­ì œ
  *
  ***********************************************************************/
 
@@ -4631,10 +4631,10 @@ IDE_RC qdd::deleteIndicesFromMeta(qcStatement  * aStatement,
 /***********************************************************************
  *
  * Description :
- *      executeDropTable ·ÎºÎÅÍ È£Ãâ
+ *      executeDropTable ë¡œë¶€í„° í˜¸ì¶œ
  *
  * Implementation :
- *      1. SYS_INDICES_, SYS_INDEX_COLUMNS_ ÇØ´ç Å×ÀÌºí Á¤º¸ »èÁ¦
+ *      1. SYS_INDICES_, SYS_INDEX_COLUMNS_ í•´ë‹¹ í…Œì´ë¸” ì •ë³´ ì‚­ì œ
  *
  ***********************************************************************/
 
@@ -4711,10 +4711,10 @@ IDE_RC qdd::deleteIndicesFromMetaByIndexID(qcStatement * aStatement,
 /***********************************************************************
  *
  * Description :
- *      executeDropIndex ·ÎºÎÅÍ È£Ãâ
+ *      executeDropIndex ë¡œë¶€í„° í˜¸ì¶œ
  *
  * Implementation :
- *      1. SYS_INDICES_, SYS_INDEX_COLUMNS_ ÇØ´ç Å×ÀÌºí Á¤º¸ »èÁ¦
+ *      1. SYS_INDICES_, SYS_INDEX_COLUMNS_ í•´ë‹¹ í…Œì´ë¸” ì •ë³´ ì‚­ì œ
  *
  ***********************************************************************/
 
@@ -4784,16 +4784,16 @@ IDE_RC qdd::executeDropView(qcStatement * aStatement)
 /***********************************************************************
  *
  * Description :
- *    DROP VIEW ... ÀÇ execution ¼öÇà
+ *    DROP VIEW ... ì˜ execution ìˆ˜í–‰
  *
  * Implementation :
  *    1. get table info
- *    2. ¸ŞÅ¸ Å×ÀÌºí¿¡¼­ view »èÁ¦
- *    3. ¸ŞÅ¸ Å×ÀÌºí¿¡¼­ privilege »èÁ¦
- *    4. related PSM À» invalid »óÅÂ·Î º¯°æ
- *    5. related VIEW À» invalid »óÅÂ·Î º¯°æ
+ *    2. ë©”íƒ€ í…Œì´ë¸”ì—ì„œ view ì‚­ì œ
+ *    3. ë©”íƒ€ í…Œì´ë¸”ì—ì„œ privilege ì‚­ì œ
+ *    4. related PSM ì„ invalid ìƒíƒœë¡œ ë³€ê²½
+ *    5. related VIEW ì„ invalid ìƒíƒœë¡œ ë³€ê²½
  *    6. smiTable::dropTable
- *    7. ¸ŞÅ¸ Ä³½¬¿¡¼­ »èÁ¦
+ *    7. ë©”íƒ€ ìºì‰¬ì—ì„œ ì‚­ì œ
  *
  ***********************************************************************/
 
@@ -4805,15 +4805,15 @@ IDE_RC qdd::executeDropView(qcStatement * aStatement)
     sParseTree = (qdDropParseTree *)aStatement->myPlan->parseTree;
 
     // TASK-2176
-    // Table¿¡ ´ëÇÑ LockÀ» È¹µæÇÑ´Ù.
+    // Tableì— ëŒ€í•œ Lockì„ íšë“í•œë‹¤.
     IDE_TEST( qcm::validateAndLockTable(aStatement,
                                         sParseTree->tableHandle,
                                         sParseTree->tableSCN,
                                         SMI_TABLE_LOCK_X)
               != IDE_SUCCESS );
 
-    // BUG-30741 validate°úÁ¤¿¡¼­ sParseTree¿¡ ±¸ÇØ³õÀº tableInfo´Â
-    // À¯È¿ÇÏÁö ¾ÊÀ»¼ö ÀÖÀ¸¹Ç·Î ´Ù½Ã °¡Á®¿Â´Ù.
+    // BUG-30741 validateê³¼ì •ì—ì„œ sParseTreeì— êµ¬í•´ë†“ì€ tableInfoëŠ”
+    // ìœ íš¨í•˜ì§€ ì•Šì„ìˆ˜ ìˆìœ¼ë¯€ë¡œ ë‹¤ì‹œ ê°€ì ¸ì˜¨ë‹¤.
     IDE_TEST( smiGetTableTempInfo( sParseTree->tableHandle,
                                    (void**)&sParseTree->tableInfo )
               != IDE_SUCCESS );
@@ -4825,7 +4825,7 @@ IDE_RC qdd::executeDropView(qcStatement * aStatement)
     IDE_TEST(qdpDrop::removePriv4DropTable(aStatement, sInfo->tableID)
              != IDE_SUCCESS);
 
-    /* PROJ-1888 INSTEAD OF TRIGGER drop view Æ®¸®°Åµµ  drop*/
+    /* PROJ-1888 INSTEAD OF TRIGGER drop view íŠ¸ë¦¬ê±°ë„  drop*/
     IDE_TEST(qdnTrigger::dropTrigger4DropTable(aStatement, sInfo )
              != IDE_SUCCESS);
 
@@ -4893,7 +4893,7 @@ IDE_RC qdd::deleteObjectFromMetaByUserID( qcStatement * aStatement,
 /***********************************************************************
  *
  * Description :
- *      executeDropUserCascade ·ÎºÎÅÍ È£Ãâ
+ *      executeDropUserCascade ë¡œë¶€í„° í˜¸ì¶œ
  *
  * Implementation :
  *
@@ -5128,7 +5128,7 @@ IDE_RC qdd::deleteObjectFromMetaByUserID( qcStatement * aStatement,
     IDE_TEST(qcg::runDMLforDDL(QC_SMI_STMT( aStatement ),
                                (SChar*)sSqlStr, &sRowCnt) != IDE_SUCCESS);
 
-    /* BUG-35445 Check Constraint, Function-Based Index¿¡¼­ »ç¿ë ÁßÀÎ FunctionÀ» º¯°æ/Á¦°Å ¹æÁö */
+    /* BUG-35445 Check Constraint, Function-Based Indexì—ì„œ ì‚¬ìš© ì¤‘ì¸ Functionì„ ë³€ê²½/ì œê±° ë°©ì§€ */
     IDE_TEST( qcmProc::relRemoveRelatedToConstraintByUserID(
                     aStatement,
                     aUserID )
@@ -5157,21 +5157,21 @@ IDE_RC qdd::executeDropTableOwnedByUser(
 /***********************************************************************
  *
  * Description :
- *    qdd::executeDropUserCascade·Î ºÎÅÍ È£Ãâ
- *    À¯Àú ¼ÒÀ¯ÀÇ Å×ÀÌºí, Å¥ Å×ÀÌºí, ºä, MATERIALIZED VIEW(ÇÏÀ§ Table/View) °´Ã¼¸¦ »èÁ¦
+ *    qdd::executeDropUserCascadeë¡œ ë¶€í„° í˜¸ì¶œ
+ *    ìœ ì € ì†Œìœ ì˜ í…Œì´ë¸”, í í…Œì´ë¸”, ë·°, MATERIALIZED VIEW(í•˜ìœ„ Table/View) ê°ì²´ë¥¼ ì‚­ì œ
  *
  * Implementation :
- *    if ( tableTypeÀÌ ºä ÀÌ¸é )
- *        ºä °´Ã¼¸¦ »èÁ¦
- *    else if ( tableTypeÀÌ Å¥ Å×ÀÌºí ÀÌ¸é )
- *        1.1 Å¥ Å×ÀÌºí °´Ã¼¸¦ »èÁ¦
- *        1.2 Å¥ ½ÃÄö½º °´Ã¼¸¦ »èÁ¦
+ *    if ( tableTypeì´ ë·° ì´ë©´ )
+ *        ë·° ê°ì²´ë¥¼ ì‚­ì œ
+ *    else if ( tableTypeì´ í í…Œì´ë¸” ì´ë©´ )
+ *        1.1 í í…Œì´ë¸” ê°ì²´ë¥¼ ì‚­ì œ
+ *        1.2 í ì‹œí€€ìŠ¤ ê°ì²´ë¥¼ ì‚­ì œ
  *    else
- *        1.1 Å×ÀÌºí¿¡ unique ÀÎµ¦½º°¡ ÀÖÀ» °æ¿ì
- *            referential constraint¸¦ Ã£¾Æ¼­ »èÁ¦
- *        1.2 Trigger °´Ã¼¿Í SYS_TRIGGERS_ ..µî ¿¡¼­
- *            Å×ÀÌºí°ú °ü·ÃµÈ Trigger Á¤º¸ »èÁ¦
- *        1.3 Å×ÀÌºí °´Ã¼¸¦ »èÁ¦
+ *        1.1 í…Œì´ë¸”ì— unique ì¸ë±ìŠ¤ê°€ ìˆì„ ê²½ìš°
+ *            referential constraintë¥¼ ì°¾ì•„ì„œ ì‚­ì œ
+ *        1.2 Trigger ê°ì²´ì™€ SYS_TRIGGERS_ ..ë“± ì—ì„œ
+ *            í…Œì´ë¸”ê³¼ ê´€ë ¨ëœ Trigger ì •ë³´ ì‚­ì œ
+ *        1.3 í…Œì´ë¸” ê°ì²´ë¥¼ ì‚­ì œ
  *
  *
  ***********************************************************************/
@@ -5195,7 +5195,7 @@ IDE_RC qdd::executeDropTableOwnedByUser(
     if ( ( sTableInfo->tableType == QCM_VIEW ) ||
          ( sTableInfo->tableType == QCM_MVIEW_VIEW ) )
     {
-        /* PROJ-1888 INSTEAD OF TRIGGER drop view Æ®¸®°Åµµ  drop*/
+        /* PROJ-1888 INSTEAD OF TRIGGER drop view íŠ¸ë¦¬ê±°ë„  drop*/
         IDE_TEST(qdnTrigger::dropTrigger4DropTable(aStatement, sTableInfo )
                  != IDE_SUCCESS);
 
@@ -5239,7 +5239,7 @@ IDE_RC qdd::executeDropTableOwnedByUser(
                   != IDE_SUCCESS );
     
         //-----------------------------------------
-        // ºä °´Ã¼¸¦ »èÁ¦
+        // ë·° ê°ì²´ë¥¼ ì‚­ì œ
         //-----------------------------------------
 
         IDE_TEST( smiTable::dropTable( QC_SMI_STMT( aStatement ),
@@ -5250,7 +5250,7 @@ IDE_RC qdd::executeDropTableOwnedByUser(
     else if ( sTableInfo->tableType == QCM_QUEUE_TABLE )
     {
         //-----------------------------------------
-        // Å¥ Å×ÀÌºí°ú °ü·ÃµÈ ¸ŞÅ¸ Å×ÀÌºí¿¡¼­ ·¹ÄÚµå »èÁ¦
+        // í í…Œì´ë¸”ê³¼ ê´€ë ¨ëœ ë©”íƒ€ í…Œì´ë¸”ì—ì„œ ë ˆì½”ë“œ ì‚­ì œ
         //-----------------------------------------
 
         // DELETE
@@ -5271,7 +5271,7 @@ IDE_RC qdd::executeDropTableOwnedByUser(
                  != IDE_SUCCESS);
 
         //-----------------------------------------
-        // Å¥ Å×ÀÌºí °´Ã¼¸¦ »èÁ¦
+        // í í…Œì´ë¸” ê°ì²´ë¥¼ ì‚­ì œ
         //-----------------------------------------
 
         IDE_TEST( smiTable::dropTable( QC_SMI_STMT( aStatement ),
@@ -5280,7 +5280,7 @@ IDE_RC qdd::executeDropTableOwnedByUser(
                   != IDE_SUCCESS );
 
         //-----------------------------------------
-        // Å¥ ½ÃÄö½º¿Í °ü·ÃµÈ ¸ŞÅ¸ Å×ÀÌºí¿¡¼­ ·¹ÄÚµå »èÁ¦
+        // í ì‹œí€€ìŠ¤ì™€ ê´€ë ¨ëœ ë©”íƒ€ í…Œì´ë¸”ì—ì„œ ë ˆì½”ë“œ ì‚­ì œ
         //-----------------------------------------
 
         idlOS::snprintf(sSequenceName,
@@ -5306,7 +5306,7 @@ IDE_RC qdd::executeDropTableOwnedByUser(
                  != IDE_SUCCESS);
 
         //-----------------------------------------
-        // Å¥ ½ÃÄö½º °´Ã¼¸¦ »èÁ¦
+        // í ì‹œí€€ìŠ¤ ê°ì²´ë¥¼ ì‚­ì œ
         //-----------------------------------------
 
         IDE_TEST( smiTable::dropSequence( QC_SMI_STMT( aStatement ),
@@ -5314,7 +5314,7 @@ IDE_RC qdd::executeDropTableOwnedByUser(
                   != IDE_SUCCESS );
 
         //-----------------------------------------
-        // MMÀÇ QUEUE°ü·Ã µ¥ÀÌÅÍ »èÁ¦¿äÃ» (commit½Ã »èÁ¦µÊ)
+        // MMì˜ QUEUEê´€ë ¨ ë°ì´í„° ì‚­ì œìš”ì²­ (commitì‹œ ì‚­ì œë¨)
         //-----------------------------------------
 
         // drop queue funcPtr
@@ -5326,15 +5326,15 @@ IDE_RC qdd::executeDropTableOwnedByUser(
     else // TABLE, MView Table
     {
         /* PROJ-1407 Temporary table
-         * session temporary tableÀÌ Á¸ÀçÇÏ´Â °æ¿ì DDLÀ» ÇÒ ¼ö ¾ø´Ù.
-         * ¾Õ¿¡¼­ session tableÀÇ Á¸ÀçÀ¯¹«¸¦ ¹Ì¸® È®ÀÎÇÏ¿´´Ù.
-         * session tableÀÌ ÀÖÀ»¸® ¾ø´Ù.*/
+         * session temporary tableì´ ì¡´ì¬í•˜ëŠ” ê²½ìš° DDLì„ í•  ìˆ˜ ì—†ë‹¤.
+         * ì•ì—ì„œ session tableì˜ ì¡´ì¬ìœ ë¬´ë¥¼ ë¯¸ë¦¬ í™•ì¸í•˜ì˜€ë‹¤.
+         * session tableì´ ìˆì„ë¦¬ ì—†ë‹¤.*/
         IDE_DASSERT( qcuTemporaryObj::existSessionTable( sTableInfo )
                      == ID_FALSE );
 
         //-----------------------------------------
-        // Å×ÀÌºí¿¡ unique ÀÎµ¦½º°¡ ÀÖÀ» °æ¿ì
-        // referential constraint¸¦ Ã£¾Æ¼­ »èÁ¦
+        // í…Œì´ë¸”ì— unique ì¸ë±ìŠ¤ê°€ ìˆì„ ê²½ìš°
+        // referential constraintë¥¼ ì°¾ì•„ì„œ ì‚­ì œ
         //-----------------------------------------
 
         for (i=0; i<sTableInfo->uniqueKeyCount; i++)
@@ -5385,7 +5385,7 @@ IDE_RC qdd::executeDropTableOwnedByUser(
         }
 
         //-----------------------------------------
-        // Å×ÀÌºí°ú °ü·ÃµÈ ¸ŞÅ¸ Å×ÀÌºí¿¡¼­ ·¹ÄÚµå »èÁ¦
+        // í…Œì´ë¸”ê³¼ ê´€ë ¨ëœ ë©”íƒ€ í…Œì´ë¸”ì—ì„œ ë ˆì½”ë“œ ì‚­ì œ
         //-----------------------------------------
 
         // DELETE
@@ -5397,7 +5397,7 @@ IDE_RC qdd::executeDropTableOwnedByUser(
                                             sTableInfo)
                  != IDE_SUCCESS);
 
-        // TRIGGER : ¸ŞÅ¸ Å×ÀÌºí, °´Ã¼
+        // TRIGGER : ë©”íƒ€ í…Œì´ë¸”, ê°ì²´
         IDE_TEST(qdnTrigger::dropTrigger4DropTable(aStatement, sTableInfo )
                  != IDE_SUCCESS);
 
@@ -5426,13 +5426,13 @@ IDE_RC qdd::executeDropTableOwnedByUser(
                   != IDE_SUCCESS );
 
         // PROJ-2264 Dictionary table
-        // SYS_COMPRESSION_TABLES_ ¿¡¼­ °ü·Ã ·¹ÄÚµå¸¦ »èÁ¦ÇÑ´Ù.
+        // SYS_COMPRESSION_TABLES_ ì—ì„œ ê´€ë ¨ ë ˆì½”ë“œë¥¼ ì‚­ì œí•œë‹¤.
         IDE_TEST( qdd::deleteCompressionTableSpecFromMeta( aStatement,
                                                            sTableInfo->tableID )
                   != IDE_SUCCESS );
 
         //-----------------------------------------
-        // Å×ÀÌºí °´Ã¼¸¦ »èÁ¦
+        // í…Œì´ë¸” ê°ì²´ë¥¼ ì‚­ì œ
         //-----------------------------------------
 
         IDE_TEST( smiTable::dropTable( QC_SMI_STMT( aStatement ),
@@ -5462,12 +5462,12 @@ IDE_RC qdd::executeDropIndexOwnedByUser(
 /***********************************************************************
  *
  * Description :
- *    qdd::executeDropUserCascade·Î ºÎÅÍ È£Ãâ
- *    À¯Àú ¼ÒÀ¯ÀÇ ÀÎµ¦½º °´Ã¼¸¦ »èÁ¦
+ *    qdd::executeDropUserCascadeë¡œ ë¶€í„° í˜¸ì¶œ
+ *    ìœ ì € ì†Œìœ ì˜ ì¸ë±ìŠ¤ ê°ì²´ë¥¼ ì‚­ì œ
  *
  * Implementation :
- *    1. unique ÀÎµ¦½º°¡ ÀÖÀ» °æ¿ì referential constraint¸¦ Ã£¾Æ¼­ »èÁ¦
- *    2. ÀÎµ¦½º °´Ã¼¸¦ »èÁ¦
+ *    1. unique ì¸ë±ìŠ¤ê°€ ìˆì„ ê²½ìš° referential constraintë¥¼ ì°¾ì•„ì„œ ì‚­ì œ
+ *    2. ì¸ë±ìŠ¤ ê°ì²´ë¥¼ ì‚­ì œ
  *
  ***********************************************************************/
 #define IDE_FN "qdd::executeDropIndexOwnedByUser"
@@ -5507,7 +5507,7 @@ IDE_RC qdd::executeDropIndexOwnedByUser(
     IDE_TEST_RAISE( sIndexInfo == NULL, ERR_NOT_EXIST_INDEX);
 
     //-----------------------------------------
-    // unique ÀÎµ¦½º°¡ ÀÖÀ» °æ¿ì referential constraint¸¦ Ã£¾Æ¼­ »èÁ¦
+    // unique ì¸ë±ìŠ¤ê°€ ìˆì„ ê²½ìš° referential constraintë¥¼ ì°¾ì•„ì„œ ì‚­ì œ
     //-----------------------------------------
 
     if( sIndexInfo->isUnique == ID_TRUE )
@@ -5532,7 +5532,7 @@ IDE_RC qdd::executeDropIndexOwnedByUser(
     }
 
     //-----------------------------------------
-    // ÀÎµ¦½º °´Ã¼¸¦ »èÁ¦
+    // ì¸ë±ìŠ¤ ê°ì²´ë¥¼ ì‚­ì œ
     //-----------------------------------------
 
     // PROJ-1502 PARTITIONED DISK TABLE
@@ -5620,8 +5620,8 @@ IDE_RC qdd::deleteFKConstraints( qcStatement     * aStatement,
 {
 /***********************************************************************
  *
- * Description : ÀÎµ¦½º¿Í °ü°èµÈ ´Ù¸¥ Å×ÀÌºí¿¡ Á¸ÀçÇÏ´Â
- *               foreign key Á¤º¸ »èÁ¦.
+ * Description : ì¸ë±ìŠ¤ì™€ ê´€ê³„ëœ ë‹¤ë¥¸ í…Œì´ë¸”ì— ì¡´ì¬í•˜ëŠ”
+ *               foreign key ì •ë³´ ì‚­ì œ.
  *
  * Implementation :
  *
@@ -5640,7 +5640,7 @@ IDE_RC qdd::deleteFKConstraints( qcStatement     * aStatement,
 
     smiTBSLockValidType    sTBSLockValidType = SMI_TBSLV_DDL_DML;
 
-    /* BUG-43299 Drop TablespaceÀÎ °æ¿ì, SMI_TBSLV_DROP_TBSÀ» »ç¿ëÇØ¾ß ÇÑ´Ù. */
+    /* BUG-43299 Drop Tablespaceì¸ ê²½ìš°, SMI_TBSLV_DROP_TBSì„ ì‚¬ìš©í•´ì•¼ í•œë‹¤. */
     if ( aDropTablespace == ID_TRUE )
     {
         sTBSLockValidType = SMI_TBSLV_DROP_TBS;
@@ -5657,12 +5657,12 @@ IDE_RC qdd::deleteFKConstraints( qcStatement     * aStatement,
     {
         sChildTableRef = sChildInfo->childTableRef;
 
-        // childTable¿¡ lockÀ» È¹µæÇÑ´Ù.
+        // childTableì— lockì„ íšë“í•œë‹¤.
         sOldTableInfo = sChildTableRef->tableInfo;
         sOldTableID   = sChildTableRef->tableInfo->tableID;
         sRefTableID   = sChildInfo->foreignKey->referencedTableID;
 
-        // ¿¬°üµÈ foreign key¸¦ »èÁ¦ÇÑ´Ù.
+        // ì—°ê´€ëœ foreign keyë¥¼ ì‚­ì œí•œë‹¤.
         IDE_TEST(qdd::deleteFKConstraintsFromMeta(
                      aStatement,
                      sOldTableID,
@@ -5727,12 +5727,12 @@ IDE_RC qdd::executeDropTriggerOwnedByUser(
 /***********************************************************************
  *
  * Description :
- *    qdd::executeDropUserCascade·Î ºÎÅÍ È£Ãâ
- *    À¯Àú ¼ÒÀ¯ÀÇ Æ®¸®°Å °´Ã¼¸¦ »èÁ¦
+ *    qdd::executeDropUserCascadeë¡œ ë¶€í„° í˜¸ì¶œ
+ *    ìœ ì € ì†Œìœ ì˜ íŠ¸ë¦¬ê±° ê°ì²´ë¥¼ ì‚­ì œ
  *
  * Implementation :
- *    1. °ü·ÃµÈ PSM¸¦ Invalid ÇÔÀ» ¼³Á¤
- *    2. Æ®¸®°Å °´Ã¼ »èÁ¦
+ *    1. ê´€ë ¨ëœ PSMë¥¼ Invalid í•¨ì„ ì„¤ì •
+ *    2. íŠ¸ë¦¬ê±° ê°ì²´ ì‚­ì œ
  *
  ***********************************************************************/
 #define IDE_FN "qdd::executeDropTriggerOwnedByUser"
@@ -5741,7 +5741,7 @@ IDE_RC qdd::executeDropTriggerOwnedByUser(
     void               * sTriggerHandle;
 
     //---------------------------------------
-    // Trigger Object »èÁ¦
+    // Trigger Object ì‚­ì œ
     //---------------------------------------
 
     sTriggerHandle = (void*) smiGetTable( aTriggerInfoList->triggerOID );
@@ -5771,11 +5771,11 @@ IDE_RC qdd::executeDropSequenceOwnedByUser(
  *
  * Description :
  *    BUG-16980
- *    qdd::executeDropUserCascade·Î ºÎÅÍ È£Ãâ
- *    À¯Àú ¼ÒÀ¯ÀÇ ½ÃÄö½º °´Ã¼¸¦ »èÁ¦
+ *    qdd::executeDropUserCascadeë¡œ ë¶€í„° í˜¸ì¶œ
+ *    ìœ ì € ì†Œìœ ì˜ ì‹œí€€ìŠ¤ ê°ì²´ë¥¼ ì‚­ì œ
  *
  * Implementation :
- *    ½ÃÄö½º °´Ã¼¸¦ »èÁ¦
+ *    ì‹œí€€ìŠ¤ ê°ì²´ë¥¼ ì‚­ì œ
  *
  ***********************************************************************/
 #define IDE_FN "qdd::executeDropSequenceOwnedByUser"
@@ -5791,7 +5791,7 @@ IDE_RC qdd::executeDropSequenceOwnedByUser(
     SChar                sSeqTableNameStr[ QC_MAX_OBJECT_NAME_LEN + 1 ];
     qcNamePosition       sSeqTableName;
 
-    // PROJ-2365 sequence table Á¤º¸
+    // PROJ-2365 sequence table ì •ë³´
     qcmTableInfo       * sSeqTableInfo = NULL;
     void               * sSeqTableHandle;
     smSCN                sSeqTableSCN;
@@ -5808,7 +5808,7 @@ IDE_RC qdd::executeDropSequenceOwnedByUser(
              != IDE_SUCCESS);
     
     // PROJ-2365 sequence table
-    // ÀÌ¹Ì »ı¼ºµÈ sequence table¿¡ ´ëÇÑ ¿¡·¯¿Í alter¿¡ ´ëÇÑ ¿¡·¯
+    // ì´ë¯¸ ìƒì„±ëœ sequence tableì— ëŒ€í•œ ì—ëŸ¬ì™€ alterì— ëŒ€í•œ ì—ëŸ¬
     if ( ( sOption & SMI_SEQUENCE_TABLE_MASK ) == SMI_SEQUENCE_TABLE_TRUE )
     {
         // make sequence table name : SEQ1$SEQ
@@ -5838,7 +5838,7 @@ IDE_RC qdd::executeDropSequenceOwnedByUser(
                                        (void**)&sSeqTableInfo )
                   != IDE_SUCCESS );;
         
-        // sequence table¿¡ DDL lock
+        // sequence tableì— DDL lock
         IDE_TEST( qcm::validateAndLockTable( aStatement,
                                              sSeqTableHandle,
                                              sSeqTableSCN,
@@ -5849,7 +5849,7 @@ IDE_RC qdd::executeDropSequenceOwnedByUser(
         IDE_TEST_RAISE( sSeqTableInfo->replicationCount > 0,
                         ERR_DDL_WITH_REPLICATED_TABLE );
 
-        //proj-1608:replicationCount°¡ 0ÀÏ ¶§ recovery count´Â Ç×»ó 0ÀÌ¾î¾ß ÇÔ
+        //proj-1608:replicationCountê°€ 0ì¼ ë•Œ recovery countëŠ” í•­ìƒ 0ì´ì–´ì•¼ í•¨
         IDE_DASSERT( sSeqTableInfo->replicationRecoveryCount == 0 );
         
         // drop sequence table
@@ -5879,7 +5879,7 @@ IDE_RC qdd::executeDropSequenceOwnedByUser(
               != IDE_SUCCESS );
     
     //-----------------------------------------
-    // ½ÃÄö½º °´Ã¼¸¦ »èÁ¦
+    // ì‹œí€€ìŠ¤ ê°ì²´ë¥¼ ì‚­ì œ
     //-----------------------------------------
 
     IDE_TEST( smiTable::dropSequence( QC_SMI_STMT( aStatement ),
@@ -5917,12 +5917,12 @@ IDE_RC qdd::executeDropProcOwnedByUser(
 /***********************************************************************
  *
  * Description :
- *    qdd::executeDropUserCascade·Î ºÎÅÍ È£Ãâ
+ *    qdd::executeDropUserCascadeë¡œ ë¶€í„° í˜¸ì¶œ
  *
  * Implementation :
  *
- *    1. À¯Àú ¼ÒÀ¯ÀÇ Procecure or Function Á¤º¸¸¦ ¸ŞÅ¸ Å×ÀÌºí¿¡¼­ »èÁ¦
- *    2. À¯Àú ¼ÒÀ¯ÀÇ Procecure or Function °´Ã¼¸¦ »èÁ¦
+ *    1. ìœ ì € ì†Œìœ ì˜ Procecure or Function ì •ë³´ë¥¼ ë©”íƒ€ í…Œì´ë¸”ì—ì„œ ì‚­ì œ
+ *    2. ìœ ì € ì†Œìœ ì˜ Procecure or Function ê°ì²´ë¥¼ ì‚­ì œ
  *
  ***********************************************************************/
 #define IDE_FN "qdd::executeDropProcOwnedByUser"
@@ -5953,28 +5953,28 @@ IDE_RC qdd::executeDropProcOwnedByUser(
 /***********************************************************************
  *
  * Description :
- *    DROP MATERIALIZED VIEW ... ÀÇ execution ¼öÇà
+ *    DROP MATERIALIZED VIEW ... ì˜ execution ìˆ˜í–‰
  *
  * Implementation :
  *    1. lock & get table, view information
- *    2. Meta Table¿¡¼­ Constraint »èÁ¦
- *    3. Meta Table¿¡¼­ Index »èÁ¦
- *    4. Meta Table¿¡¼­ Table, Column »èÁ¦
- *    5. Meta Table¿¡¼­ Object Privilege »èÁ¦ (Table)
- *    6. Trigger »èÁ¦ (Meta Table, Object)
- *    7. related VIEW À» Invalid »óÅÂ·Î º¯°æ (Table)
- *    8. Constraint¿Í °ü·ÃµÈ Procedure¿¡ ´ëÇÑ Á¤º¸¸¦ »èÁ¦ (Table)
- *    9. Index¿Í °ü·ÃµÈ Procedure¿¡ ´ëÇÑ Á¤º¸¸¦ »èÁ¦ (Table)
+ *    2. Meta Tableì—ì„œ Constraint ì‚­ì œ
+ *    3. Meta Tableì—ì„œ Index ì‚­ì œ
+ *    4. Meta Tableì—ì„œ Table, Column ì‚­ì œ
+ *    5. Meta Tableì—ì„œ Object Privilege ì‚­ì œ (Table)
+ *    6. Trigger ì‚­ì œ (Meta Table, Object)
+ *    7. related VIEW ì„ Invalid ìƒíƒœë¡œ ë³€ê²½ (Table)
+ *    8. Constraintì™€ ê´€ë ¨ëœ Procedureì— ëŒ€í•œ ì •ë³´ë¥¼ ì‚­ì œ (Table)
+ *    9. Indexì™€ ê´€ë ¨ëœ Procedureì— ëŒ€í•œ ì •ë³´ë¥¼ ì‚­ì œ (Table)
  *   10. smiTable::dropTable (Table)
- *   11. Meta Table¿¡¼­ View »èÁ¦
- *   12. Meta Table¿¡¼­ Object Privilege »èÁ¦ (View)
- *   13. Trigger »èÁ¦ (Meta Table, Object)
- *   14. related PSM À» Invalid »óÅÂ·Î º¯°æ (View)
- *   15. related VIEW À» Invalid »óÅÂ·Î º¯°æ (View)
+ *   11. Meta Tableì—ì„œ View ì‚­ì œ
+ *   12. Meta Tableì—ì„œ Object Privilege ì‚­ì œ (View)
+ *   13. Trigger ì‚­ì œ (Meta Table, Object)
+ *   14. related PSM ì„ Invalid ìƒíƒœë¡œ ë³€ê²½ (View)
+ *   15. related VIEW ì„ Invalid ìƒíƒœë¡œ ë³€ê²½ (View)
  *   16. smiTable::dropTable (View)
- *   17. Meta Table¿¡¼­ Materialized View »èÁ¦
- *   18. Meta Cache¿¡¼­ »èÁ¦ (Table)
- *   19. Meta Cache¿¡¼­ »èÁ¦ (View)
+ *   17. Meta Tableì—ì„œ Materialized View ì‚­ì œ
+ *   18. Meta Cacheì—ì„œ ì‚­ì œ (Table)
+ *   19. Meta Cacheì—ì„œ ì‚­ì œ (View)
  *
  ***********************************************************************/
 IDE_RC qdd::executeDropMView( qcStatement * aStatement )
@@ -6017,13 +6017,13 @@ IDE_RC qdd::executeDropMView( qcStatement * aStatement )
     {
         sIsPartitioned = ID_TRUE;
 
-        /* ÆÄ½ºÆ®¸®¿¡¼­ ÆÄÆ¼¼Ç Á¤º¸ ¸®½ºÆ®¸¦ °¡Á®¿Â´Ù. */
+        /* íŒŒìŠ¤íŠ¸ë¦¬ì—ì„œ íŒŒí‹°ì…˜ ì •ë³´ ë¦¬ìŠ¤íŠ¸ë¥¼ ê°€ì ¸ì˜¨ë‹¤. */
         sOldPartInfoList = sParseTree->partInfoList;
 
-        /* ¸ğµç ÆÄÆ¼¼Ç¿¡ LOCK(X) */
+        /* ëª¨ë“  íŒŒí‹°ì…˜ì— LOCK(X) */
         IDE_TEST( qcmPartition::validateAndLockPartitionInfoList( aStatement,
                                                                   sOldPartInfoList,
-                                                                  SMI_TBSLV_DDL_DML, // TBS Validation ¿É¼Ç
+                                                                  SMI_TBSLV_DDL_DML, // TBS Validation ì˜µì…˜
                                                                   SMI_TABLE_LOCK_X,
                                                                   ( ( smiGetDDLLockTimeOut() == -1 ) ?
                                                                     ID_ULONG_MAX :
@@ -6033,7 +6033,7 @@ IDE_RC qdd::executeDropMView( qcStatement * aStatement )
         // PROJ-1624 non-partitioned index
         IDE_TEST( qdx::validateAndLockIndexTableList( aStatement,
                                                       sParseTree->oldIndexTables,
-                                                      SMI_TBSLV_DDL_DML, // TBS Validation ¿É¼Ç
+                                                      SMI_TBSLV_DDL_DML, // TBS Validation ì˜µì…˜
                                                       SMI_TABLE_LOCK_X,
                                                       ( ( smiGetDDLLockTimeOut() == -1 ) ?
                                                         ID_ULONG_MAX :
@@ -6045,8 +6045,8 @@ IDE_RC qdd::executeDropMView( qcStatement * aStatement )
         sIsPartitioned = ID_FALSE;
     }
 
-    /* PROJ-1723 [MDW/INTEGRATOR] Altibase Plugin °³¹ß
-     * DDL Statement TextÀÇ ·Î±ë
+    /* PROJ-1723 [MDW/INTEGRATOR] Altibase Plugin ê°œë°œ
+     * DDL Statement Textì˜ ë¡œê¹…
      */
     if ( QCU_DDL_SUPPLEMENTAL_LOG == 1 )
     {
@@ -6065,7 +6065,7 @@ IDE_RC qdd::executeDropMView( qcStatement * aStatement )
     /* PROJ-1502 PARTITIONED DISK TABLE */
     if ( sIsPartitioned == ID_TRUE )
     {
-        /* Å×ÀÌºí ÆÄÆ¼¼Ç °³¼ö¸¸Å­ ¹İº¹ */
+        /* í…Œì´ë¸” íŒŒí‹°ì…˜ ê°œìˆ˜ë§Œí¼ ë°˜ë³µ */
         for ( sPartInfoList = sOldPartInfoList;
               sPartInfoList != NULL;
               sPartInfoList = sPartInfoList->next )
@@ -6111,7 +6111,7 @@ IDE_RC qdd::executeDropMView( qcStatement * aStatement )
     IDE_TEST( qdnTrigger::dropTrigger4DropTable( aStatement, sTableInfo )
               != IDE_SUCCESS );
 
-    /* BUG-35445 Check Constraint, Function-Based Index¿¡¼­ »ç¿ë ÁßÀÎ FunctionÀ» º¯°æ/Á¦°Å ¹æÁö */
+    /* BUG-35445 Check Constraint, Function-Based Indexì—ì„œ ì‚¬ìš© ì¤‘ì¸ Functionì„ ë³€ê²½/ì œê±° ë°©ì§€ */
     IDE_TEST( qcmProc::relRemoveRelatedToConstraintByTableID(
                     aStatement,
                     sTableInfo->tableID )
@@ -6222,13 +6222,13 @@ IDE_RC qdd::executeDropMView( qcStatement * aStatement )
               != IDE_SUCCESS );
 
     /* To Fix BUG-12034
-     * SMÀÌ ´õÀÌ»ó ½ÇÆĞÇÒ ¿©Áö°¡ ¾øÀ» ¶§¿¡ QP¿¡¼­ À¯ÁöÇÏ°í ÀÖ´Â
-     * ¸Ş¸ğ¸®µéÀ» ÇØÁ¦ÇØÁØ´Ù.
+     * SMì´ ë”ì´ìƒ ì‹¤íŒ¨í•  ì—¬ì§€ê°€ ì—†ì„ ë•Œì— QPì—ì„œ ìœ ì§€í•˜ê³  ìˆëŠ”
+     * ë©”ëª¨ë¦¬ë“¤ì„ í•´ì œí•´ì¤€ë‹¤.
      */
     (void)qdnTrigger::freeTriggerCaches4DropTable( sTableInfo );
 
     /* PROJ-2002 Column Security
-     * º¸¾È ÄÃ·³ »èÁ¦½Ã º¸¾È ¸ğµâ¿¡ ¾Ë¸°´Ù.
+     * ë³´ì•ˆ ì»¬ëŸ¼ ì‚­ì œì‹œ ë³´ì•ˆ ëª¨ë“ˆì— ì•Œë¦°ë‹¤.
      */
     for ( i = 0; i < sTableInfo->columnCount; i++ )
     {
@@ -6274,11 +6274,11 @@ IDE_RC qdd::executeDropMView( qcStatement * aStatement )
 /***********************************************************************
  *
  * Description :
- *    executeDropMView·ÎºÎÅÍ È£Ãâ
+ *    executeDropMViewë¡œë¶€í„° í˜¸ì¶œ
  *
  * Implementation :
  *    1. SYS_MATERIALIZED_VIEWS_
- *       ¸ŞÅ¸ Å×ÀÌºí¿¡¼­ ÇØ´ç Å×ÀÌºí Á¤º¸ »èÁ¦
+ *       ë©”íƒ€ í…Œì´ë¸”ì—ì„œ í•´ë‹¹ í…Œì´ë¸” ì •ë³´ ì‚­ì œ
  *
  ***********************************************************************/
 IDE_RC qdd::deleteMViewFromMeta( qcStatement * aStatement,
@@ -6318,11 +6318,11 @@ IDE_RC qdd::deleteCompressionTableSpecFromMetaByDicTableID(
  *
  * Description :
  *      PROJ-2264
- *      executeDropIndexInTBS ·ÎºÎÅÍ È£Ãâ
- *      Data table-Dictionary table °£ ¿¬°á Á¤º¸¸¦ »èÁ¦ÇÑ´Ù.
+ *      executeDropIndexInTBS ë¡œë¶€í„° í˜¸ì¶œ
+ *      Data table-Dictionary table ê°„ ì—°ê²° ì •ë³´ë¥¼ ì‚­ì œí•œë‹¤.
  *
  * Implementation :
- *      1. SYS_COMPRESSION_TABLES_ ¸ŞÅ¸ Å×ÀÌºí¿¡¼­ ¿¬°á Á¤º¸ »èÁ¦
+ *      1. SYS_COMPRESSION_TABLES_ ë©”íƒ€ í…Œì´ë¸”ì—ì„œ ì—°ê²° ì •ë³´ ì‚­ì œ
  *
  ***********************************************************************/
 
@@ -6358,11 +6358,11 @@ IDE_RC qdd::deleteCompressionTableSpecFromMeta( qcStatement * aStatement,
  *
  * Description :
  *      PROJ-2264
- *      executeDropIndexInTBS ·ÎºÎÅÍ È£Ãâ
- *      Data table-Dictionary table °£ ¿¬°á Á¤º¸¸¦ »èÁ¦ÇÑ´Ù.
+ *      executeDropIndexInTBS ë¡œë¶€í„° í˜¸ì¶œ
+ *      Data table-Dictionary table ê°„ ì—°ê²° ì •ë³´ë¥¼ ì‚­ì œí•œë‹¤.
  *
  * Implementation :
- *      1. SYS_COMPRESSION_TABLES_ ¸ŞÅ¸ Å×ÀÌºí¿¡¼­ ¿¬°á Á¤º¸ »èÁ¦
+ *      1. SYS_COMPRESSION_TABLES_ ë©”íƒ€ í…Œì´ë¸”ì—ì„œ ì—°ê²° ì •ë³´ ì‚­ì œ
  *
  ***********************************************************************/
 
@@ -6399,12 +6399,12 @@ IDE_RC qdd::executeDropPkgOwnedByUser(
 /***********************************************************************
  *
  * Description :
- *    qdd::executeDropUserCascade·Î ºÎÅÍ È£Ãâ
+ *    qdd::executeDropUserCascadeë¡œ ë¶€í„° í˜¸ì¶œ
  *
  * Implementation :
  *
- *    1. À¯Àú ¼ÒÀ¯ÀÇ Package Á¤º¸¸¦ ¸ŞÅ¸ Å×ÀÌºí¿¡¼­ »èÁ¦
- *    2. À¯Àú ¼ÒÀ¯ÀÇ Package °´Ã¼¸¦ »èÁ¦
+ *    1. ìœ ì € ì†Œìœ ì˜ Package ì •ë³´ë¥¼ ë©”íƒ€ í…Œì´ë¸”ì—ì„œ ì‚­ì œ
+ *    2. ìœ ì € ì†Œìœ ì˜ Package ê°ì²´ë¥¼ ì‚­ì œ
  *
  ***********************************************************************/
        

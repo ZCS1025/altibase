@@ -19,11 +19,11 @@
  * $Id: qmgDistinction.cpp 82075 2018-01-17 06:39:52Z jina.kim $
  *
  * Description :
- *     Distinction Graph¸¦ À§ÇÑ ¼öÇà ÇÔ¼ö
+ *     Distinction Graphë¥¼ ìœ„í•œ ìˆ˜í–‰ í•¨ìˆ˜
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  **********************************************************************/
 
@@ -45,12 +45,12 @@ qmgDistinction::init( qcStatement * aStatement,
 {
 /***********************************************************************
  *
- * Description : qmgDistinctionÀÇ ÃÊ±âÈ­
+ * Description : qmgDistinctionì˜ ì´ˆê¸°í™”
  *
  * Implementation :
- *    (1) qmgDistinctionÀ» À§ÇÑ °ø°£ ÇÒ´ç
- *    (2) graph( ¸ðµç Graph¸¦ À§ÇÑ °øÅë ÀÚ·á ±¸Á¶ ) ÃÊ±âÈ­
- *    (3) out ¼³Á¤
+ *    (1) qmgDistinctionì„ ìœ„í•œ ê³µê°„ í• ë‹¹
+ *    (2) graph( ëª¨ë“  Graphë¥¼ ìœ„í•œ ê³µí†µ ìžë£Œ êµ¬ì¡° ) ì´ˆê¸°í™”
+ *    (3) out ì„¤ì •
  *
  ***********************************************************************/
 
@@ -59,7 +59,7 @@ qmgDistinction::init( qcStatement * aStatement,
     IDU_FIT_POINT_FATAL( "qmgDistinction::init::__FT__" );
 
     //---------------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //---------------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -67,15 +67,15 @@ qmgDistinction::init( qcStatement * aStatement,
     IDE_DASSERT( aChildGraph != NULL );
 
     //---------------------------------------------------
-    // Distinction Graph¸¦ À§ÇÑ ±âº» ÃÊ±âÈ­
+    // Distinction Graphë¥¼ ìœ„í•œ ê¸°ë³¸ ì´ˆê¸°í™”
     //---------------------------------------------------
 
-    // qmgDistinctionÀ» À§ÇÑ °ø°£ ÇÒ´ç
+    // qmgDistinctionì„ ìœ„í•œ ê³µê°„ í• ë‹¹
     IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF( qmgDIST ),
                                              (void**) &sMyGraph )
               != IDE_SUCCESS );
 
-    // Graph °øÅë Á¤º¸ÀÇ ÃÊ±âÈ­
+    // Graph ê³µí†µ ì •ë³´ì˜ ì´ˆê¸°í™”
     IDE_TEST( qmg::initGraph( & sMyGraph->graph ) != IDE_SUCCESS );
 
     sMyGraph->graph.type = QMG_DISTINCTION;
@@ -90,11 +90,11 @@ qmgDistinction::init( qcStatement * aStatement,
     sMyGraph->graph.makePlan = qmgDistinction::makePlan;
     sMyGraph->graph.printGraph = qmgDistinction::printGraph;
 
-    // Disk/Memory Á¤º¸ ¼³Á¤
+    // Disk/Memory ì •ë³´ ì„¤ì •
     switch(  aQuerySet->SFWGH->hints->interResultType )
     {
         case QMO_INTER_RESULT_TYPE_NOT_DEFINED :
-            // Áß°£ °á°ú Type Hint°¡ ¾ø´Â °æ¿ì, ÇÏÀ§ÀÇ TypeÀ» µû¸¥´Ù.
+            // ì¤‘ê°„ ê²°ê³¼ Type Hintê°€ ì—†ëŠ” ê²½ìš°, í•˜ìœ„ì˜ Typeì„ ë”°ë¥¸ë‹¤.
             sMyGraph->graph.flag &= ~QMG_GRAPH_TYPE_MASK;
             sMyGraph->graph.flag |=
                 ( aChildGraph->flag & QMG_GRAPH_TYPE_MASK );
@@ -113,12 +113,12 @@ qmgDistinction::init( qcStatement * aStatement,
     }
 
     //---------------------------------------------------
-    // Distinction Graph ¸¸À» À§ÇÑ ±âº» ÃÊ±âÈ­
+    // Distinction Graph ë§Œì„ ìœ„í•œ ê¸°ë³¸ ì´ˆê¸°í™”
     //---------------------------------------------------
 
     sMyGraph->hashBucketCnt = 0;
 
-    // out ¼³Á¤
+    // out ì„¤ì •
     *aGraph = (qmgGraph*)sMyGraph;
     
     return IDE_SUCCESS;
@@ -134,13 +134,13 @@ qmgDistinction::optimize( qcStatement * aStatement, qmgGraph * aGraph )
 {
 /***********************************************************************
  *
- * Description : qmgDistinctionÀÇ ÃÖÀûÈ­
+ * Description : qmgDistinctionì˜ ìµœì í™”
  *
  * Implementation :
- *    (1) indexable Distinct ÃÖÀûÈ­
- *    (2) distinction Method °áÁ¤ ¹× Preserved order flag ¼³Á¤
- *    (3) hash based distinctionÀ¸·Î °áÁ¤µÈ °æ¿ì, hashBucketCnt ¼³Á¤
- *    (4) °øÅë ºñ¿ë Á¤º¸ ¼³Á¤
+ *    (1) indexable Distinct ìµœì í™”
+ *    (2) distinction Method ê²°ì • ë° Preserved order flag ì„¤ì •
+ *    (3) hash based distinctionìœ¼ë¡œ ê²°ì •ëœ ê²½ìš°, hashBucketCnt ì„¤ì •
+ *    (4) ê³µí†µ ë¹„ìš© ì •ë³´ ì„¤ì •
  *
  ***********************************************************************/
 
@@ -167,14 +167,14 @@ qmgDistinction::optimize( qcStatement * aStatement, qmgGraph * aGraph )
     IDU_FIT_POINT_FATAL( "qmgDistinction::optimize::__FT__" );
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aGraph != NULL );
 
     //------------------------------------------
-    // ±âº» ÃÊ±âÈ­
+    // ê¸°ë³¸ ì´ˆê¸°í™”
     //------------------------------------------
 
     sMyGraph = (qmgDIST*) aGraph;
@@ -185,7 +185,7 @@ qmgDistinction::optimize( qcStatement * aStatement, qmgGraph * aGraph )
     sSelTotalCost  = 0;
 
     //------------------------------------------
-    // Record Size °è»ê
+    // Record Size ê³„ì‚°
     //------------------------------------------
 
     for ( sTarget = aGraph->myQuerySet->SFWGH->target;
@@ -197,11 +197,11 @@ qmgDistinction::optimize( qcStatement * aStatement, qmgGraph * aGraph )
         sMtcColumn   = QTC_TMPL_COLUMN(QC_SHARED_TMPLATE(aStatement), sNode);
         sRecordSize += sMtcColumn->column.size;
     }
-    // BUG-36463 sRecordSize ´Â 0ÀÌ µÇ¾î¼­´Â ¾ÈµÈ´Ù.
+    // BUG-36463 sRecordSize ëŠ” 0ì´ ë˜ì–´ì„œëŠ” ì•ˆëœë‹¤.
     sRecordSize = IDL_MAX( sRecordSize, 1 );
 
     //------------------------------------------
-    // Distinction Method °áÁ¤
+    // Distinction Method ê²°ì •
     //------------------------------------------
     IDE_TEST( qmg::isDiskTempTable( aGraph, & sIsDisk ) != IDE_SUCCESS );
 
@@ -253,16 +253,16 @@ qmgDistinction::optimize( qcStatement * aStatement, qmgGraph * aGraph )
         case QMO_DISTINCT_METHOD_TYPE_NOT_DEFINED :
 
             // To Fix PR-12394
-            // DISTINCTION °ü·Ã ÈùÆ®°¡ ¾ø´Â °æ¿ì¿¡¸¸
-            // ÃÖÀûÈ­ TipÀ» Àû¿ëÇÑ´Ù.
+            // DISTINCTION ê´€ë ¨ ížŒíŠ¸ê°€ ì—†ëŠ” ê²½ìš°ì—ë§Œ
+            // ìµœì í™” Tipì„ ì ìš©í•œë‹¤.
 
             //------------------------------------------
             // To Fix PR-12396
-            // ºñ¿ë °è»êÀ» ÅëÇØ ¼öÇà ¹æ¹ýÀ» °áÁ¤ÇÑ´Ù.
+            // ë¹„ìš© ê³„ì‚°ì„ í†µí•´ ìˆ˜í–‰ ë°©ë²•ì„ ê²°ì •í•œë‹¤.
             //------------------------------------------
 
             //------------------------------------------
-            // Sorting À» ÀÌ¿ëÇÑ ¹æ½ÄÀÇ ºñ¿ë °è»ê
+            // Sorting ì„ ì´ìš©í•œ ë°©ì‹ì˜ ë¹„ìš© ê³„ì‚°
             //------------------------------------------
             if( sIsDisk == ID_FALSE )
             {
@@ -286,7 +286,7 @@ qmgDistinction::optimize( qcStatement * aStatement, qmgGraph * aGraph )
             sMyGraph->graph.flag |= QMG_SORT_HASH_METHOD_SORT;
 
             //------------------------------------------
-            // Hashing À» ÀÌ¿ëÇÑ ¹æ½ÄÀÇ ºñ¿ë°è»ê
+            // Hashing ì„ ì´ìš©í•œ ë°©ì‹ì˜ ë¹„ìš©ê³„ì‚°
             //------------------------------------------
             if( sIsDisk == ID_FALSE )
             {
@@ -308,7 +308,7 @@ qmgDistinction::optimize( qcStatement * aStatement, qmgGraph * aGraph )
 
             if (QMO_COST_IS_EQUAL(sTotalCost, QMO_COST_INVALID_COST) == ID_TRUE)
             {
-                // Hashing ¹æ½ÄÀ» Àû¿ëÇÒ ¼ö ¾ø´Â °æ¿ìÀÓ
+                // Hashing ë°©ì‹ì„ ì ìš©í•  ìˆ˜ ì—†ëŠ” ê²½ìš°ìž„
             }
             else
             {
@@ -318,7 +318,7 @@ qmgDistinction::optimize( qcStatement * aStatement, qmgGraph * aGraph )
                 }
                 else
                 {
-                    // Hashing ¹æ½ÄÀÌ º¸´Ù ³ªÀ½
+                    // Hashing ë°©ì‹ì´ ë³´ë‹¤ ë‚˜ìŒ
                     sSelTotalCost  = sTotalCost;
                     sSelDiskCost   = sDiskCost;
                     sSelAccessCost = sAccessCost;
@@ -334,7 +334,7 @@ qmgDistinction::optimize( qcStatement * aStatement, qmgGraph * aGraph )
             }
 
             //------------------------------------------
-            // Preserved Order ¸¦ ÀÌ¿ëÇÑ ¹æ½ÄÀÇ ºñ¿ë°è»ê
+            // Preserved Order ë¥¼ ì´ìš©í•œ ë°©ì‹ì˜ ë¹„ìš©ê³„ì‚°
             //------------------------------------------
 
             IDE_TEST( getCostByPrevOrder( aStatement,
@@ -346,7 +346,7 @@ qmgDistinction::optimize( qcStatement * aStatement, qmgGraph * aGraph )
 
             if (QMO_COST_IS_EQUAL(sTotalCost, QMO_COST_INVALID_COST) == ID_TRUE)
             {
-                // Preserved Order ¹æ½ÄÀ» Àû¿ëÇÒ ¼ö ¾ø´Â °æ¿ìÀÓ
+                // Preserved Order ë°©ì‹ì„ ì ìš©í•  ìˆ˜ ì—†ëŠ” ê²½ìš°ìž„
             }
             else
             {
@@ -356,13 +356,13 @@ qmgDistinction::optimize( qcStatement * aStatement, qmgGraph * aGraph )
                 }
                 else
                 {
-                    // Preserved Order ¹æ½ÄÀÌ º¸´Ù ³ªÀ½
+                    // Preserved Order ë°©ì‹ì´ ë³´ë‹¤ ë‚˜ìŒ
                     sSelTotalCost  = sTotalCost;
                     sSelDiskCost   = sDiskCost;
                     sSelAccessCost = sAccessCost;
 
                     //------------------------------------------
-                    // Indexable Distinct ÃÖÀûÈ­ ¼öÇà
+                    // Indexable Distinct ìµœì í™” ìˆ˜í–‰
                     //------------------------------------------
 
                     IDE_TEST( indexableDistinct( aStatement,
@@ -376,7 +376,7 @@ qmgDistinction::optimize( qcStatement * aStatement, qmgGraph * aGraph )
                     sMyGraph->graph.flag &= ~QMG_SORT_HASH_METHOD_MASK;
                     sMyGraph->graph.flag |= QMG_SORT_HASH_METHOD_SORT;
 
-                    // Preserved Order´Â ÀÌ¹Ì »ý¼ºµÊ
+                    // Preserved OrderëŠ” ì´ë¯¸ ìƒì„±ë¨
                     sMyGraph->graph.flag &= ~QMG_PRESERVED_ORDER_MASK;
                     sMyGraph->graph.flag |= QMG_PRESERVED_ORDER_DEFINED_FIXED;
 
@@ -386,10 +386,10 @@ qmgDistinction::optimize( qcStatement * aStatement, qmgGraph * aGraph )
             }
 
             //------------------------------------------
-            // ¸¶¹«¸®
+            // ë§ˆë¬´ë¦¬
             //------------------------------------------
 
-            // Sorting ¹æ½ÄÀÌ ¼±ÅÃµÈ °æ¿ì Preserved Order »ý¼º
+            // Sorting ë°©ì‹ì´ ì„ íƒëœ ê²½ìš° Preserved Order ìƒì„±
             if ( ( ( sMyGraph->graph.flag & QMG_SORT_HASH_METHOD_MASK )
                    == QMG_SORT_HASH_METHOD_SORT )
                  &&
@@ -399,7 +399,7 @@ qmgDistinction::optimize( qcStatement * aStatement, qmgGraph * aGraph )
                 sMyGraph->graph.flag &= ~QMG_SORT_HASH_METHOD_MASK;
                 sMyGraph->graph.flag |= QMG_SORT_HASH_METHOD_SORT;
 
-                // Sort-based DistinctionÀÇ °æ¿ì Preserved Order°¡ »ý±ä´Ù.
+                // Sort-based Distinctionì˜ ê²½ìš° Preserved Orderê°€ ìƒê¸´ë‹¤.
                 IDE_TEST(
                     makeTargetOrder( aStatement,
                                      sMyGraph->graph.myQuerySet->SFWGH->target,
@@ -411,7 +411,7 @@ qmgDistinction::optimize( qcStatement * aStatement, qmgGraph * aGraph )
             }
             else
             {
-                // ´Ù¸¥ Method°¡ ¼±ÅÃµÊ
+                // ë‹¤ë¥¸ Methodê°€ ì„ íƒë¨
             }
             break;
 
@@ -468,7 +468,7 @@ qmgDistinction::optimize( qcStatement * aStatement, qmgGraph * aGraph )
             sMyGraph->graph.flag &= ~QMG_SORT_HASH_METHOD_MASK;
             sMyGraph->graph.flag |= QMG_SORT_HASH_METHOD_SORT;
 
-            // Sort-based DistinctionÀÇ °æ¿ì Preserved Order°¡ »ý±ä´Ù.
+            // Sort-based Distinctionì˜ ê²½ìš° Preserved Orderê°€ ìƒê¸´ë‹¤.
             IDE_TEST(
                 makeTargetOrder( aStatement,
                                  sMyGraph->graph.myQuerySet->SFWGH->target,
@@ -485,7 +485,7 @@ qmgDistinction::optimize( qcStatement * aStatement, qmgGraph * aGraph )
     }
 
     //------------------------------------------
-    // Hash Bucket CountÀÇ ¼³Á¤
+    // Hash Bucket Countì˜ ì„¤ì •
     //------------------------------------------
 
     IDE_TEST(
@@ -506,11 +506,11 @@ qmgDistinction::optimize( qcStatement * aStatement, qmgGraph * aGraph )
     {
         sMyGraph->hashBucketCnt = 0;
 
-        /* PROJ-1353 Rollup, Cube¿Í °°ÀÌ »ç¿ëµÉ ¶§ */
+        /* PROJ-1353 Rollup, Cubeì™€ ê°™ì´ ì‚¬ìš©ë  ë•Œ */
         if ( ( sMyGraph->graph.left->flag & QMG_GROUPBY_EXTENSION_MASK )
              == QMG_GROUPBY_EXTENSION_TRUE )
         {
-            /* Row¸¦ Value·Î ½×±â¸¦ Rollup, Cube¿¡ ¼³Á¤ÇÑ´Ù. */
+            /* Rowë¥¼ Valueë¡œ ìŒ“ê¸°ë¥¼ Rollup, Cubeì— ì„¤ì •í•œë‹¤. */
             sMyGraph->graph.left->flag &= ~QMG_VALUE_TEMP_MASK;
             sMyGraph->graph.left->flag |= QMG_VALUE_TEMP_TRUE;
         }
@@ -521,7 +521,7 @@ qmgDistinction::optimize( qcStatement * aStatement, qmgGraph * aGraph )
     }
 
     //------------------------------------------
-    // °øÅë ºñ¿ë Á¤º¸ÀÇ ¼³Á¤
+    // ê³µí†µ ë¹„ìš© ì •ë³´ì˜ ì„¤ì •
     //------------------------------------------
 
     // recordSize = group by column size + aggregation column size
@@ -544,7 +544,7 @@ qmgDistinction::optimize( qcStatement * aStatement, qmgGraph * aGraph )
                  != IDE_SUCCESS );
 
     //----------------------------------
-    // ÇØ´ç GraphÀÇ ºñ¿ë Á¤º¸ ¼³Á¤
+    // í•´ë‹¹ Graphì˜ ë¹„ìš© ì •ë³´ ì„¤ì •
     //----------------------------------
     sMyGraph->graph.costInfo.myAccessCost = sSelAccessCost;
     sMyGraph->graph.costInfo.myDiskCost   = sSelDiskCost;
@@ -575,18 +575,18 @@ qmgDistinction::makePlan( qcStatement * aStatement, const qmgGraph * aParent, qm
 {
 /***********************************************************************
  *
- * Description : qmgDistinctionÀ¸·Î ºÎÅÍ PlanÀ» »ý¼ºÇÑ´Ù.
+ * Description : qmgDistinctionìœ¼ë¡œ ë¶€í„° Planì„ ìƒì„±í•œë‹¤.
  *
  * Implementation :
- *     - qmgDistinction·Î ºÎÅÍ »ý¼º °¡´ÉÇÑ Plan
+ *     - qmgDistinctionë¡œ ë¶€í„° ìƒì„± ê°€ëŠ¥í•œ Plan
  *
- *         - Sort-based Ã³¸®
+ *         - Sort-based ì²˜ë¦¬
  *
- *             [GRBY] : distinct option »ç¿ë
+ *             [GRBY] : distinct option ì‚¬ìš©
  *               |
- *           ( [SORT] ) : Indexable DistinctÀÎ °æ¿ì »ý¼ºµÇÁö ¾ÊÀ½.
+ *           ( [SORT] ) : Indexable Distinctì¸ ê²½ìš° ìƒì„±ë˜ì§€ ì•ŠìŒ.
  *
- *         - Hash-based Ã³¸®
+ *         - Hash-based ì²˜ë¦¬
  *
  *             [HSDS]
  *
@@ -597,7 +597,7 @@ qmgDistinction::makePlan( qcStatement * aStatement, const qmgGraph * aParent, qm
     IDU_FIT_POINT_FATAL( "qmgDistinction::makePlan::__FT__" );
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -610,7 +610,7 @@ qmgDistinction::makePlan( qcStatement * aStatement, const qmgGraph * aParent, qm
     aGraph->flag |= (aParent->flag & QMG_PARALLEL_IMPOSSIBLE_MASK);
 
     // BUG-38410
-    // SCAN parallel flag ¸¦ ÀÚ½Ä ³ëµå·Î ¹°·ÁÁØ´Ù.
+    // SCAN parallel flag ë¥¼ ìžì‹ ë…¸ë“œë¡œ ë¬¼ë ¤ì¤€ë‹¤.
     aGraph->left->flag  |= (aGraph->flag & QMG_PLAN_EXEC_REPEATED_MASK);
 
     sMyGraph->graph.myPlan = aParent->myPlan;
@@ -661,7 +661,7 @@ qmgDistinction::makeSortDistinction( qcStatement * aStatement,
     //-----------------------------------------------------
 
     //----------------------------
-    // Top-down ÃÊ±âÈ­
+    // Top-down ì´ˆê¸°í™”
     //----------------------------
 
     //-----------------------
@@ -695,7 +695,7 @@ qmgDistinction::makeSortDistinction( qcStatement * aStatement,
     }
 
     //---------------------------------------------------
-    // ÇÏÀ§ PlanÀÇ »ý¼º
+    // í•˜ìœ„ Planì˜ ìƒì„±
     //---------------------------------------------------
 
     IDE_TEST( aMyGraph->graph.left->makePlan( aStatement ,
@@ -705,12 +705,12 @@ qmgDistinction::makeSortDistinction( qcStatement * aStatement,
     aMyGraph->graph.myPlan = aMyGraph->graph.left->myPlan;
 
     //---------------------------------------------------
-    // Process »óÅÂ ¼³Á¤
+    // Process ìƒíƒœ ì„¤ì •
     //---------------------------------------------------
     aMyGraph->graph.myQuerySet->processPhase = QMS_MAKEPLAN_DISTINCT;
 
     //----------------------------
-    // Bottom-up »ý¼º
+    // Bottom-up ìƒì„±
     //----------------------------
 
     //-----------------------
@@ -721,7 +721,7 @@ qmgDistinction::makeSortDistinction( qcStatement * aStatement,
         QMG_DIST_OPT_TIP_INDEXABLE_DISINCT )
     {
         //----------------------------
-        // SORTÀÇ »ý¼º
+        // SORTì˜ ìƒì„±
         //----------------------------
         sFlag = 0;
         sFlag &= ~QMO_MAKESORT_METHOD_MASK;
@@ -731,7 +731,7 @@ qmgDistinction::makeSortDistinction( qcStatement * aStatement,
         sFlag &= ~QMO_MAKESORT_PRESERVED_ORDER_MASK;
         sFlag |= QMO_MAKESORT_PRESERVED_FALSE;
 
-        //ÀúÀå ¸ÅÃ¼ÀÇ °áÁ¤
+        //ì €ìž¥ ë§¤ì²´ì˜ ê²°ì •
         if( (aMyGraph->graph.flag & QMG_GRAPH_TYPE_MASK) ==
             QMG_GRAPH_TYPE_MEMORY )
         {
@@ -798,7 +798,7 @@ qmgDistinction::makeHashDistinction( qcStatement * aStatement,
     //-----------------------------------------------------
 
     //----------------------------
-    // Top-down ÃÊ±âÈ­
+    // Top-down ì´ˆê¸°í™”
     //----------------------------
 
     //-----------------------
@@ -814,7 +814,7 @@ qmgDistinction::makeHashDistinction( qcStatement * aStatement,
     aMyGraph->graph.myPlan = sHSDS;
 
     //---------------------------------------------------
-    // ÇÏÀ§ PlanÀÇ »ý¼º
+    // í•˜ìœ„ Planì˜ ìƒì„±
     //---------------------------------------------------
 
     IDE_TEST( aMyGraph->graph.left->makePlan( aStatement ,
@@ -824,12 +824,12 @@ qmgDistinction::makeHashDistinction( qcStatement * aStatement,
     aMyGraph->graph.myPlan = aMyGraph->graph.left->myPlan;
 
     //---------------------------------------------------
-    // Process »óÅÂ ¼³Á¤
+    // Process ìƒíƒœ ì„¤ì •
     //---------------------------------------------------
     aMyGraph->graph.myQuerySet->processPhase = QMS_MAKEPLAN_DISTINCT;
 
     //----------------------------
-    // Bottom-up »ý¼º
+    // Bottom-up ìƒì„±
     //----------------------------
 
     //-----------------------
@@ -840,7 +840,7 @@ qmgDistinction::makeHashDistinction( qcStatement * aStatement,
     sFlag &= ~QMO_MAKEHSDS_METHOD_MASK;
     sFlag |= QMO_MAKEHSDS_HASH_BASED_DISTINCTION;
 
-    //ÀúÀå ¸ÅÃ¼ÀÇ °áÁ¤
+    //ì €ìž¥ ë§¤ì²´ì˜ ê²°ì •
     if( (aMyGraph->graph.flag & QMG_GRAPH_TYPE_MASK) ==
         QMG_GRAPH_TYPE_MEMORY )
     {
@@ -880,7 +880,7 @@ qmgDistinction::printGraph( qcStatement  * aStatement,
 /***********************************************************************
  *
  * Description :
- *    Graph¸¦ ±¸¼ºÇÏ´Â °øÅë Á¤º¸¸¦ Ãâ·ÂÇÑ´Ù.
+ *    Graphë¥¼ êµ¬ì„±í•˜ëŠ” ê³µí†µ ì •ë³´ë¥¼ ì¶œë ¥í•œë‹¤.
  *
  *
  * Implementation :
@@ -890,7 +890,7 @@ qmgDistinction::printGraph( qcStatement  * aStatement,
     IDU_FIT_POINT_FATAL( "qmgDistinction::printGraph::__FT__" );
 
     //-----------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //-----------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -898,7 +898,7 @@ qmgDistinction::printGraph( qcStatement  * aStatement,
     IDE_DASSERT( aString != NULL );
 
     //-----------------------------------
-    // Graph °øÅë Á¤º¸ÀÇ Ãâ·Â
+    // Graph ê³µí†µ ì •ë³´ì˜ ì¶œë ¥
     //-----------------------------------
 
     IDE_TEST( qmg::printGraph( aStatement,
@@ -908,12 +908,12 @@ qmgDistinction::printGraph( qcStatement  * aStatement,
               != IDE_SUCCESS );
 
     //-----------------------------------
-    // Graph °íÀ¯ Á¤º¸ÀÇ Ãâ·Â
+    // Graph ê³ ìœ  ì •ë³´ì˜ ì¶œë ¥
     //-----------------------------------
 
 
     //-----------------------------------
-    // Child Graph °íÀ¯ Á¤º¸ÀÇ Ãâ·Â
+    // Child Graph ê³ ìœ  ì •ë³´ì˜ ì¶œë ¥
     //-----------------------------------
 
     IDE_TEST( aGraph->left->printGraph( aStatement,
@@ -937,8 +937,8 @@ qmgDistinction::makeTargetOrder( qcStatement        * aStatement,
 {
 /***********************************************************************
  *
- * Description : DISTINCT Target ÄÃ·³À» ÀÌ¿ëÇÏ¿©
- *               Preserved Order ÀÚ·á ±¸Á¶¸¦ ±¸ÃàÇÔ.
+ * Description : DISTINCT Target ì»¬ëŸ¼ì„ ì´ìš©í•˜ì—¬
+ *               Preserved Order ìžë£Œ êµ¬ì¡°ë¥¼ êµ¬ì¶•í•¨.
  *
  *
  * Implementation :
@@ -954,21 +954,21 @@ qmgDistinction::makeTargetOrder( qcStatement        * aStatement,
     IDU_FIT_POINT_FATAL( "qmgDistinction::makeTargetOrder::__FT__" );
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aDistTarget != NULL );
 
     //------------------------------------------
-    // ±âº» ÃÊ±âÈ­
+    // ê¸°ë³¸ ì´ˆê¸°í™”
     //------------------------------------------
 
     sWantOrder = NULL;
     sCurOrder = NULL;
 
     //------------------------------------------
-    // Target ÄÃ·³¿¡ ´ëÇÑ Want Order¸¦ »ý¼º
+    // Target ì»¬ëŸ¼ì— ëŒ€í•œ Want Orderë¥¼ ìƒì„±
     //------------------------------------------
 
     for ( sTarget = aDistTarget;
@@ -978,10 +978,10 @@ qmgDistinction::makeTargetOrder( qcStatement        * aStatement,
         sNode = sTarget->targetColumn;
 
         // To Fix PR-11568
-        // ¿ø·¡ÀÇ Target ColumnÀ» È¹µæÇÏ¿©¾ß ÇÑ´Ù.
-        // ORDER BY indicatorµî°ú ÇÔ²² Á¸Àç½Ã Pass Node°¡
-        // Ãß°¡ÀûÀ¸·Î Á¸ÀçÇÒ ¼ö ÀÖÀ¸¹Ç·Î ÀÌ¸¦ °í·ÁÇÏ¿©¾ß ÇÑ´Ù.
-        // qmgSorting::optimize() ÂüÁ¶
+        // ì›ëž˜ì˜ Target Columnì„ íšë“í•˜ì—¬ì•¼ í•œë‹¤.
+        // ORDER BY indicatorë“±ê³¼ í•¨ê»˜ ì¡´ìž¬ì‹œ Pass Nodeê°€
+        // ì¶”ê°€ì ìœ¼ë¡œ ì¡´ìž¬í•  ìˆ˜ ìžˆìœ¼ë¯€ë¡œ ì´ë¥¼ ê³ ë ¤í•˜ì—¬ì•¼ í•œë‹¤.
+        // qmgSorting::optimize() ì°¸ì¡°
         //
         // BUG-20272
         if ( (sNode->node.module == &qtc::passModule) ||
@@ -995,7 +995,7 @@ qmgDistinction::makeTargetOrder( qcStatement        * aStatement,
         }
         
         //------------------------------------------
-        // Target Ä®·³¿¡ ´ëÇÑ want order¸¦ »ý¼º
+        // Target ì¹¼ëŸ¼ì— ëŒ€í•œ want orderë¥¼ ìƒì„±
         //------------------------------------------
 
         IDE_TEST(
@@ -1038,10 +1038,10 @@ qmgDistinction::indexableDistinct( qcStatement      * aStatement,
 {
 /***********************************************************************
  *
- * Description : Indexable Distinct ÃÖÀûÈ­ °¡´ÉÇÑ °æ¿ì, Àû¿ë
+ * Description : Indexable Distinct ìµœì í™” ê°€ëŠ¥í•œ ê²½ìš°, ì ìš©
  *
  * Implementation :
- *    Preserved Order »ç¿ë °¡´ÉÇÑ °æ¿ì, Àû¿ë
+ *    Preserved Order ì‚¬ìš© ê°€ëŠ¥í•œ ê²½ìš°, ì ìš©
  *
  ***********************************************************************/
 
@@ -1049,11 +1049,11 @@ qmgDistinction::indexableDistinct( qcStatement      * aStatement,
 
     IDU_FIT_POINT_FATAL( "qmgDistinction::indexableDistinct::__FT__" );
 
-    // TargetÀ» ÀÌ¿ëÇÑ Order ÀÚ·á ±¸Á¶ »ý¼º
+    // Targetì„ ì´ìš©í•œ Order ìžë£Œ êµ¬ì¡° ìƒì„±
     IDE_TEST( makeTargetOrder( aStatement, aDistTarget, & sWantOrder )
                  != IDE_SUCCESS );
 
-    // Preserved Order »ç¿ë°¡´É ¿©ºÎ¸¦ °Ë»ç
+    // Preserved Order ì‚¬ìš©ê°€ëŠ¥ ì—¬ë¶€ë¥¼ ê²€ì‚¬
     IDE_TEST( qmg::tryPreservedOrder( aStatement,
                                       aGraph,
                                       sWantOrder,
@@ -1079,15 +1079,15 @@ qmgDistinction::getCostByPrevOrder( qcStatement      * aStatement,
  *
  * Description :
  *
- *    Preserved Order ¹æ½ÄÀ» »ç¿ëÇÑ Distinction ºñ¿ëÀ» °è»êÇÑ´Ù.
+ *    Preserved Order ë°©ì‹ì„ ì‚¬ìš©í•œ Distinction ë¹„ìš©ì„ ê³„ì‚°í•œë‹¤.
  *
  * Implementation :
  *
- *    ÀÌ¹Ì Child°¡ ¿øÇÏ´Â Preserved Order¸¦ °¡Áö°í ÀÖ´Ù¸é
- *    º°µµÀÇ ºñ¿ë ¾øÀÌ DistinctionÀÌ °¡´ÉÇÏ´Ù.
+ *    ì´ë¯¸ Childê°€ ì›í•˜ëŠ” Preserved Orderë¥¼ ê°€ì§€ê³  ìžˆë‹¤ë©´
+ *    ë³„ë„ì˜ ë¹„ìš© ì—†ì´ Distinctionì´ ê°€ëŠ¥í•˜ë‹¤.
  *
- *    ¹Ý¸é Child¿¡ Æ¯Á¤ ÀÎµ¦½º¸¦ Àû¿ëÇÏ´Â °æ¿ì¶ó¸é,
- *    ChildÀÇ ÀÎµ¦½º¸¦ ÀÌ¿ëÇÑ ºñ¿ëÀÌ Æ÷ÇÔµÇ°Ô µÈ´Ù.
+ *    ë°˜ë©´ Childì— íŠ¹ì • ì¸ë±ìŠ¤ë¥¼ ì ìš©í•˜ëŠ” ê²½ìš°ë¼ë©´,
+ *    Childì˜ ì¸ë±ìŠ¤ë¥¼ ì´ìš©í•œ ë¹„ìš©ì´ í¬í•¨ë˜ê²Œ ëœë‹¤.
  *
  ***********************************************************************/
 
@@ -1105,24 +1105,24 @@ qmgDistinction::getCostByPrevOrder( qcStatement      * aStatement,
     IDU_FIT_POINT_FATAL( "qmgDistinction::getCostByPrevOrder::__FT__" );
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aDistGraph != NULL );
 
     //------------------------------------------
-    // Preserved Order¸¦ »ç¿ëÇÒ ¼ö ÀÖ´Â Áö¸¦ °Ë»ç
+    // Preserved Orderë¥¼ ì‚¬ìš©í•  ìˆ˜ ìžˆëŠ” ì§€ë¥¼ ê²€ì‚¬
     //------------------------------------------
 
-    // Target Ä®·³¿¡ ´ëÇÑ want order¸¦ »ý¼º
+    // Target ì¹¼ëŸ¼ì— ëŒ€í•œ want orderë¥¼ ìƒì„±
     sWantOrder = NULL;
     IDE_TEST( makeTargetOrder( aStatement,
                                   aDistGraph->graph.myQuerySet->SFWGH->target,
                                   & sWantOrder )
                  != IDE_SUCCESS );
 
-    // preserved order Àû¿ë °¡´É °Ë»ç
+    // preserved order ì ìš© ê°€ëŠ¥ ê²€ì‚¬
     IDE_TEST( qmg::checkUsableOrder( aStatement,
                                      sWantOrder,
                                      aDistGraph->graph.left,
@@ -1132,7 +1132,7 @@ qmgDistinction::getCostByPrevOrder( qcStatement      * aStatement,
               != IDE_SUCCESS );
 
     //------------------------------------------
-    // ºñ¿ë °è»ê
+    // ë¹„ìš© ê³„ì‚°
     //------------------------------------------
 
     if ( sUsable == ID_TRUE )
@@ -1141,24 +1141,24 @@ qmgDistinction::getCostByPrevOrder( qcStatement      * aStatement,
         {
             if ( (sOrgMethod == NULL) || (sSelMethod == NULL) )
             {
-                // BUG-43824 sorting ºñ¿ëÀ» °è»êÇÒ ¶§ access method°¡ NULLÀÏ ¼ö ÀÖ½À´Ï´Ù
-                // ±âÁ¸ÀÇ °ÍÀ» ÀÌ¿ëÇÏ´Â °æ¿ìÀÌ¹Ç·Î 0À» ¼³Á¤ÇÑ´Ù.
+                // BUG-43824 sorting ë¹„ìš©ì„ ê³„ì‚°í•  ë•Œ access methodê°€ NULLì¼ ìˆ˜ ìžˆìŠµë‹ˆë‹¤
+                // ê¸°ì¡´ì˜ ê²ƒì„ ì´ìš©í•˜ëŠ” ê²½ìš°ì´ë¯€ë¡œ 0ì„ ì„¤ì •í•œë‹¤.
                 sAccessCost = 0;
                 sDiskCost   = 0;
             }
             else
             {
-                // ¼±ÅÃµÈ Access Method¿Í ±âÁ¸ÀÇ AccessMethod Â÷ÀÌ¸¸Å­
-                // Ãß°¡ ºñ¿ëÀÌ ¹ß»ýÇÑ´Ù.
+                // ì„ íƒëœ Access Methodì™€ ê¸°ì¡´ì˜ AccessMethod ì°¨ì´ë§Œí¼
+                // ì¶”ê°€ ë¹„ìš©ì´ ë°œìƒí•œë‹¤.
                 sAccessCost = IDL_MAX( ( sSelMethod->accessCost - sOrgMethod->accessCost ), 0 );
                 sDiskCost   = IDL_MAX( ( sSelMethod->diskCost   - sOrgMethod->diskCost   ), 0 );
             }
         }
         else
         {
-            // ÀÌ¹Ì Child°¡ OrderingÀ» ÇÏ°í ÀÖÀ½.
-            // ·¹ÄÚµå °Ç¼ö¸¸Å­ÀÇ ºñ±³ ºñ¿ë¸¸ÀÌ ¼Ò¿äµÊ.
-            // BUG-41237 compare ºñ¿ë¸¸ Ãß°¡ÇÑ´Ù.
+            // ì´ë¯¸ Childê°€ Orderingì„ í•˜ê³  ìžˆìŒ.
+            // ë ˆì½”ë“œ ê±´ìˆ˜ë§Œí¼ì˜ ë¹„êµ ë¹„ìš©ë§Œì´ ì†Œìš”ë¨.
+            // BUG-41237 compare ë¹„ìš©ë§Œ ì¶”ê°€í•œë‹¤.
             sAccessCost = aDistGraph->graph.left->costInfo.outputRecordCnt *
                           aStatement->mSysStat->mCompareTime;
             sDiskCost   = 0;
@@ -1167,7 +1167,7 @@ qmgDistinction::getCostByPrevOrder( qcStatement      * aStatement,
     }
     else
     {
-        // Preserved Order¸¦ »ç¿ëÇÒ ¼ö ¾ø´Â °æ¿ìÀÓ.
+        // Preserved Orderë¥¼ ì‚¬ìš©í•  ìˆ˜ ì—†ëŠ” ê²½ìš°ìž„.
         sAccessCost = QMO_COST_INVALID_COST;
         sDiskCost   = QMO_COST_INVALID_COST;
         sTotalCost  = QMO_COST_INVALID_COST;
@@ -1190,13 +1190,13 @@ qmgDistinction::finalizePreservedOrder( qmgGraph * aGraph )
 {
 /***********************************************************************
  *
- *  Description : Preserved OrderÀÇ directionÀ» °áÁ¤ÇÑ´Ù.
- *                directionÀÌ NOT_DEFINED ÀÏ °æ¿ì¿¡¸¸ È£ÃâÇÏ¿©¾ß ÇÑ´Ù.
+ *  Description : Preserved Orderì˜ directionì„ ê²°ì •í•œë‹¤.
+ *                directionì´ NOT_DEFINED ì¼ ê²½ìš°ì—ë§Œ í˜¸ì¶œí•˜ì—¬ì•¼ í•œë‹¤.
  *
  *  Implementation :
- *     1. Child graphÀÇ Preserved order¿Í µ¿ÀÏÇÑÁö °Ë»ç
- *     2-1. µ¿ÀÏÇÏ´Ù¸é direction º¹»ç
- *     2-2. ´Ù¸£´Ù¸é directionÀ» ascendingÀ¸·Î ¼³Á¤
+ *     1. Child graphì˜ Preserved orderì™€ ë™ì¼í•œì§€ ê²€ì‚¬
+ *     2-1. ë™ì¼í•˜ë‹¤ë©´ direction ë³µì‚¬
+ *     2-2. ë‹¤ë¥´ë‹¤ë©´ directionì„ ascendingìœ¼ë¡œ ì„¤ì •
  *
  ***********************************************************************/
 
@@ -1215,7 +1215,7 @@ qmgDistinction::finalizePreservedOrder( qmgGraph * aGraph )
 
     if ( sIsSamePrevOrderWithChild == ID_TRUE )
     {
-        // Child graphÀÇ Preserved order directionÀ» º¹»çÇÑ´Ù.
+        // Child graphì˜ Preserved order directionì„ ë³µì‚¬í•œë‹¤.
         IDE_TEST( qmg::copyPreservedOrderDirection(
                       aGraph->preservedOrder,
                       aGraph->left->preservedOrder )
@@ -1223,16 +1223,16 @@ qmgDistinction::finalizePreservedOrder( qmgGraph * aGraph )
     }
     else
     {
-        // ÇÏÀ§ preserved order¸¦ µû¸£Áö ¾Ê°í
-        // »õ·Î preserved order¸¦ »ý¼ºÇÑ °æ¿ì,
-        // Preserved OrderÀÇ directionÀ» acsendingÀ¸·Î ¼³Á¤
+        // í•˜ìœ„ preserved orderë¥¼ ë”°ë¥´ì§€ ì•Šê³ 
+        // ìƒˆë¡œ preserved orderë¥¼ ìƒì„±í•œ ê²½ìš°,
+        // Preserved Orderì˜ directionì„ acsendingìœ¼ë¡œ ì„¤ì •
         sPreservedOrder = aGraph->preservedOrder;
 
-        // Ã¹¹øÂ° Ä®·³Àº ascendingÀ¸·Î ¼³Á¤
+        // ì²«ë²ˆì§¸ ì¹¼ëŸ¼ì€ ascendingìœ¼ë¡œ ì„¤ì •
         sPreservedOrder->direction = QMG_DIRECTION_ASC;
         sPrevDirection = QMG_DIRECTION_ASC;
 
-        // µÎ¹øÂ° Ä®·³Àº ÀÌÀü Ä®·³ÀÇ direction Á¤º¸¿¡ µû¶ó ¼öÇàÇÔ
+        // ë‘ë²ˆì§¸ ì¹¼ëŸ¼ì€ ì´ì „ ì¹¼ëŸ¼ì˜ direction ì •ë³´ì— ë”°ë¼ ìˆ˜í–‰í•¨
         for ( sPreservedOrder = sPreservedOrder->next;
               sPreservedOrder != NULL;
               sPreservedOrder = sPreservedOrder->next )
@@ -1246,7 +1246,7 @@ qmgDistinction::finalizePreservedOrder( qmgGraph * aGraph )
                     sPreservedOrder->direction = sPrevDirection;
                     break;
                 case QMG_DIRECTION_DIFF_WITH_PREV :
-                    // directionÀÌ ÀÌÀü Ä®·³ÀÇ direction°ú ´Ù¸¦ °æ¿ì
+                    // directionì´ ì´ì „ ì¹¼ëŸ¼ì˜ directionê³¼ ë‹¤ë¥¼ ê²½ìš°
                     if ( sPrevDirection == QMG_DIRECTION_ASC )
                     {
                         sPreservedOrder->direction = QMG_DIRECTION_DESC;

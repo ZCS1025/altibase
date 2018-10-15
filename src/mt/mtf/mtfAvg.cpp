@@ -55,7 +55,7 @@ static IDE_RC mtfAvgEstimate( mtcNode*     aNode,
 mtfModule mtfAvg = {
     4|MTC_NODE_OPERATOR_AGGREGATION|MTC_NODE_FUNCTION_WINDOWING_TRUE,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
+    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìê°€ ì•„ë‹˜)
     mtfAvgFunctionName,
     NULL,
     mtfAvgInitialize,
@@ -92,7 +92,7 @@ static mtfSubModule mtfAvgEstimates[3] = {
 };
 
 // BUG-41994
-// high performance¿ë group table
+// high performanceìš© group table
 static mtfSubModule mtfAvgEstimatesHighPerformance[2] = {
     { mtfAvgEstimatesHighPerformance+1, mtfAvgEstimateDouble },
     { NULL,                             mtfAvgEstimateBigint }
@@ -414,7 +414,7 @@ IDE_RC mtfAvgMergeFloat(    mtcNode*     aNode,
     sColumn = aTemplate->rows[aNode->table].columns + aNode->column;
 
     //----------------------------------------
-    // Merge ÀÛ¾÷À» ¼öÇàÇÑ´Ù.
+    // Merge ì‘ì—…ì„ ìˆ˜í–‰í•œë‹¤.
     //----------------------------------------
 
     // Sum
@@ -566,8 +566,8 @@ static const mtcExecute mtfAvgExecuteDouble = {
 };
 
 
-// ÃÖÀûÀÇ sumÀ» ¼öÇàÇÏ´Â
-// aggregate ÇÔ¼ö¸¦ Æ÷ÇÔÇÏ°í ÀÖ´Â execute
+// ìµœì ì˜ sumì„ ìˆ˜í–‰í•˜ëŠ”
+// aggregate í•¨ìˆ˜ë¥¼ í¬í•¨í•˜ê³  ìˆëŠ” execute
 static const mtcExecute mtfAvgExecuteDoubleFast = {
     mtfAvgInitializeDouble,
     mtfAvgAggregateDoubleFast,
@@ -603,12 +603,12 @@ IDE_RC mtfAvgEstimateDouble( mtcNode*     aNode,
     
     aTemplate->rows[aNode->table].execute[aNode->column] = mtfAvgExecuteDouble;
     
-    // ÃÖÀûÈ­µÈ aggregate ÇÔ¼ö
+    // ìµœì í™”ëœ aggregate í•¨ìˆ˜
     sArgModule = aNode->arguments->module;
     if( sArgModule != NULL )
     {
         // BUG-19856
-        // view ÄÃ·³ÀÎ °æ¿ì ÃÖÀûÈ­µÈ executionÀ» ´ŞÁö¾Ê´Â´Ù.
+        // view ì»¬ëŸ¼ì¸ ê²½ìš° ìµœì í™”ëœ executionì„ ë‹¬ì§€ì•ŠëŠ”ë‹¤.
         if( ( ( aTemplate->rows[aNode->arguments->table].lflag
                 & MTC_TUPLE_VIEW_MASK )
               == MTC_TUPLE_VIEW_FALSE ) &&
@@ -724,10 +724,10 @@ IDE_RC mtfAvgAggregateDouble( mtcNode*     aNode,
                   != IDE_SUCCESS );
     }
     
-    // mtdDouble.isNull() ¸¦ È£ÃâÇÏ´Â ´ë½Å
-    // Á÷Á¢ null °Ë»ç¸¦ ÇÑ´Ù.
-    // aStack->valueÀÇ µ¥ÀÌÅÍ Å¸ÀÔÀ» ¹Ì¸® ¾Ë±â ¶§¹®¿¡
-    // Á÷Á¢ null °Ë»ç¸¦ ÇÏ´Âµ¥ ¼öÇà ¼Óµµ¸¦ À§ÇØ¼­ÀÌ´Ù.
+    // mtdDouble.isNull() ë¥¼ í˜¸ì¶œí•˜ëŠ” ëŒ€ì‹ 
+    // ì§ì ‘ null ê²€ì‚¬ë¥¼ í•œë‹¤.
+    // aStack->valueì˜ ë°ì´í„° íƒ€ì…ì„ ë¯¸ë¦¬ ì•Œê¸° ë•Œë¬¸ì—
+    // ì§ì ‘ null ê²€ì‚¬ë¥¼ í•˜ëŠ”ë° ìˆ˜í–‰ ì†ë„ë¥¼ ìœ„í•´ì„œì´ë‹¤.
     if( ( *(ULong*)(aStack->value) & MTD_DOUBLE_EXPONENT_MASK )
         != MTD_DOUBLE_EXPONENT_MASK )
     {
@@ -766,10 +766,10 @@ IDE_RC mtfAvgAggregateDoubleFast( mtcNode*     aNode,
                                          aTemplate->rows[sNode->table].row,
                                          MTD_OFFSET_USE );
 
-    // mtdDouble.isNull() ¸¦ È£ÃâÇÏ´Â ´ë½Å
-    // Á÷Á¢ null °Ë»ç¸¦ ÇÑ´Ù.
-    // aStack->valueÀÇ µ¥ÀÌÅÍ Å¸ÀÔÀ» ¹Ì¸® ¾Ë±â ¶§¹®¿¡
-    // Á÷Á¢ null °Ë»ç¸¦ ÇÏ´Âµ¥ ¼öÇà ¼Óµµ¸¦ À§ÇØ¼­ÀÌ´Ù.
+    // mtdDouble.isNull() ë¥¼ í˜¸ì¶œí•˜ëŠ” ëŒ€ì‹ 
+    // ì§ì ‘ null ê²€ì‚¬ë¥¼ í•œë‹¤.
+    // aStack->valueì˜ ë°ì´í„° íƒ€ì…ì„ ë¯¸ë¦¬ ì•Œê¸° ë•Œë¬¸ì—
+    // ì§ì ‘ null ê²€ì‚¬ë¥¼ í•˜ëŠ”ë° ìˆ˜í–‰ ì†ë„ë¥¼ ìœ„í•´ì„œì´ë‹¤.
     if( ( *(ULong*)(aStack->value) & MTD_DOUBLE_EXPONENT_MASK )
         != MTD_DOUBLE_EXPONENT_MASK )
     {
@@ -799,7 +799,7 @@ IDE_RC mtfAvgMergeDouble(    mtcNode*     aNode,
     sColumn = aTemplate->rows[aNode->table].columns + aNode->column;
 
     //----------------------------------------
-    // Merge ÀÛ¾÷À» ¼öÇàÇÑ´Ù.
+    // Merge ì‘ì—…ì„ ìˆ˜í–‰í•œë‹¤.
     //----------------------------------------
 
     // Sum
@@ -913,8 +913,8 @@ static const mtcExecute mtfAvgExecuteBigint = {
     mtk::extractRangeNA
 };
 
-// ÃÖÀûÀÇ sumÀ» ¼öÇàÇÏ´Â
-// aggregate ÇÔ¼ö¸¦ Æ÷ÇÔÇÏ°í ÀÖ´Â execute
+// ìµœì ì˜ sumì„ ìˆ˜í–‰í•˜ëŠ”
+// aggregate í•¨ìˆ˜ë¥¼ í¬í•¨í•˜ê³  ìˆëŠ” execute
 static const mtcExecute mtfAvgExecuteBigintFast = {
     mtfAvgInitializeBigint,
     mtfAvgAggregateBigintFast,
@@ -950,12 +950,12 @@ IDE_RC mtfAvgEstimateBigint( mtcNode*     aNode,
     
     aTemplate->rows[aNode->table].execute[aNode->column] = mtfAvgExecuteBigint;
     
-    // ÃÖÀûÈ­µÈ aggregate ÇÔ¼ö
+    // ìµœì í™”ëœ aggregate í•¨ìˆ˜
     sArgModule = aNode->arguments->module;
     if( sArgModule != NULL )
     {
         // BUG-19856
-        // view ÄÃ·³ÀÎ °æ¿ì ÃÖÀûÈ­µÈ executionÀ» ´ŞÁö¾Ê´Â´Ù.
+        // view ì»¬ëŸ¼ì¸ ê²½ìš° ìµœì í™”ëœ executionì„ ë‹¬ì§€ì•ŠëŠ”ë‹¤.
         if( ( ( aTemplate->rows[aNode->arguments->table].lflag
                 & MTC_TUPLE_VIEW_MASK )
               == MTC_TUPLE_VIEW_FALSE ) &&
@@ -1073,10 +1073,10 @@ IDE_RC mtfAvgAggregateBigint( mtcNode*     aNode,
                   != IDE_SUCCESS );
     }
     
-    // mtdBigint.isNull() ¸¦ È£ÃâÇÏ´Â ´ë½Å
-    // Á÷Á¢ null °Ë»ç¸¦ ÇÑ´Ù.
-    // aStack->valueÀÇ µ¥ÀÌÅÍ Å¸ÀÔÀ» ¹Ì¸® ¾Ë±â ¶§¹®¿¡
-    // Á÷Á¢ null °Ë»ç¸¦ ÇÏ´Âµ¥ ¼öÇà ¼Óµµ¸¦ À§ÇØ¼­ÀÌ´Ù.
+    // mtdBigint.isNull() ë¥¼ í˜¸ì¶œí•˜ëŠ” ëŒ€ì‹ 
+    // ì§ì ‘ null ê²€ì‚¬ë¥¼ í•œë‹¤.
+    // aStack->valueì˜ ë°ì´í„° íƒ€ì…ì„ ë¯¸ë¦¬ ì•Œê¸° ë•Œë¬¸ì—
+    // ì§ì ‘ null ê²€ì‚¬ë¥¼ í•˜ëŠ”ë° ìˆ˜í–‰ ì†ë„ë¥¼ ìœ„í•´ì„œì´ë‹¤.
     if( *(mtdBigintType*)aStack->value != MTD_BIGINT_NULL )
     {
         sColumn = aTemplate->rows[aNode->table].columns + aNode->column;
@@ -1114,10 +1114,10 @@ IDE_RC mtfAvgAggregateBigintFast( mtcNode*     aNode,
                                          aTemplate->rows[sNode->table].row,
                                          MTD_OFFSET_USE );
 
-    // mtdBigint.isNull() ¸¦ È£ÃâÇÏ´Â ´ë½Å
-    // Á÷Á¢ null °Ë»ç¸¦ ÇÑ´Ù.
-    // aStack->valueÀÇ µ¥ÀÌÅÍ Å¸ÀÔÀ» ¹Ì¸® ¾Ë±â ¶§¹®¿¡
-    // Á÷Á¢ null °Ë»ç¸¦ ÇÏ´Âµ¥ ¼öÇà ¼Óµµ¸¦ À§ÇØ¼­ÀÌ´Ù.
+    // mtdBigint.isNull() ë¥¼ í˜¸ì¶œí•˜ëŠ” ëŒ€ì‹ 
+    // ì§ì ‘ null ê²€ì‚¬ë¥¼ í•œë‹¤.
+    // aStack->valueì˜ ë°ì´í„° íƒ€ì…ì„ ë¯¸ë¦¬ ì•Œê¸° ë•Œë¬¸ì—
+    // ì§ì ‘ null ê²€ì‚¬ë¥¼ í•˜ëŠ”ë° ìˆ˜í–‰ ì†ë„ë¥¼ ìœ„í•´ì„œì´ë‹¤.
     if( *(mtdBigintType*)aStack->value != MTD_BIGINT_NULL )
     {
         sColumn = aTemplate->rows[aNode->table].columns + aNode->column;
@@ -1148,7 +1148,7 @@ IDE_RC mtfAvgMergeBigint(    mtcNode*     aNode,
     sColumn = aTemplate->rows[aNode->table].columns + aNode->column;
 
     //----------------------------------------
-    // Merge ÀÛ¾÷À» ¼öÇàÇÑ´Ù.
+    // Merge ì‘ì—…ì„ ìˆ˜í–‰í•œë‹¤.
     //----------------------------------------
 
     // Sum

@@ -34,7 +34,7 @@ IDE_RC utAtbField::initialize(UShort aNo ,utAtbRow * aRow)
     displaySize =0;
     sqlType     =0;
     realSqlType =0;
-    /* TASK-4212: auditÅøÀÇ ´ë¿ë·® Ã³¸®½Ã °³¼± */
+    /* TASK-4212: auditíˆ´ì˜ ëŒ€ìš©ëŸ‰ ì²˜ë¦¬ì‹œ ê°œì„  */
     mValueInd   = NULL;
 
     IDE_TEST(Field::initialize(aNo, aRow ) != IDE_SUCCESS);
@@ -142,7 +142,7 @@ IDE_RC utAtbField::initialize(UShort aNo ,utAtbRow * aRow)
 
 IDE_RC utAtbField::finalize( )
 {
-    /* TASK-4212: auditÅøÀÇ ´ë¿ë·® Ã³¸®½Ã °³¼± */
+    /* TASK-4212: auditíˆ´ì˜ ëŒ€ìš©ëŸ‰ ì²˜ë¦¬ì‹œ ê°œì„  */
     if ( mValueInd  != NULL )
     {
         idlOS::free(mValueInd);
@@ -162,14 +162,14 @@ IDE_RC utAtbField::bindColumn(SInt aSqlType,void * aLinks)
         mWidth ++;
     }
 
-    // indicator ¹è¿­ free
+    // indicator ë°°ì—´ free
     if ( mValueInd != NULL )
     {
         idlOS::free( mValueInd );
         mValueInd = NULL;
     }
 
-    /* TASK-4212: auditÅøÀÇ ´ë¿ë·® Ã³¸®½Ã °³¼± */
+    /* TASK-4212: auditíˆ´ì˜ ëŒ€ìš©ëŸ‰ ì²˜ë¦¬ì‹œ ê°œì„  */
     if ( mIsFileMode == true)
     {
         switch( aSqlType )

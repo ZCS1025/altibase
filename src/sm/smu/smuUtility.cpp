@@ -38,10 +38,10 @@ SInt smuUtility::outputMsg(const SChar *aFmt, ...)
     va_list ap;
     va_start(ap, aFmt);
     /* ------------------------------------------------
-     *  vfprintf°¡ ºñ·Ï idlOS::¿¡ ¾øÁö¸¸,
-     *  PDL´Â fprintf¸¦ vfprintf¸¦ ÀÌ¿ëÇØ¼­
-     *  ±¸ÇöÇÑ´Ù. µû¶ó¼­, PDL°¡ ÄÄÆÄÀÏ µÇ´Â ÇÑ,
-     *  ::vfprintf¸¦ »ç¿ëÇØµµ ¹«¹æÇÏ´Ù°í ÆÇ´ÜÇÑ´Ù.
+     *  vfprintfê°€ ë¹„ë¡ idlOS::ì— ì—†ì§€ë§Œ,
+     *  PDLëŠ” fprintfë¥¼ vfprintfë¥¼ ì´ìš©í•´ì„œ
+     *  êµ¬í˜„í•œë‹¤. ë”°ë¼ì„œ, PDLê°€ ì»´íŒŒì¼ ë˜ëŠ” í•œ,
+     *  ::vfprintfë¥¼ ì‚¬ìš©í•´ë„ ë¬´ë°©í•˜ë‹¤ê³  íŒë‹¨í•œë‹¤.
      *  2001/05/09  by gamestar
      * ----------------------------------------------*/
     rc = ::vfprintf(stdout, aFmt, ap); 
@@ -57,10 +57,10 @@ SInt smuUtility::outputErr(const SChar *aFmt, ...)
     va_list ap;
     va_start(ap, aFmt);
     /* ------------------------------------------------
-     *  vfprintf°¡ ºñ·Ï idlOS::¿¡ ¾øÁö¸¸,
-     *  PDL´Â fprintf¸¦ vfprintf¸¦ ÀÌ¿ëÇØ¼­
-     *  ±¸ÇöÇÑ´Ù. µû¶ó¼­, PDL°¡ ÄÄÆÄÀÏ µÇ´Â ÇÑ,
-     *  ::vfprintf¸¦ »ç¿ëÇØµµ ¹«¹æÇÏ´Ù°í ÆÇ´ÜÇÑ´Ù.
+     *  vfprintfê°€ ë¹„ë¡ idlOS::ì— ì—†ì§€ë§Œ,
+     *  PDLëŠ” fprintfë¥¼ vfprintfë¥¼ ì´ìš©í•´ì„œ
+     *  êµ¬í˜„í•œë‹¤. ë”°ë¼ì„œ, PDLê°€ ì»´íŒŒì¼ ë˜ëŠ” í•œ,
+     *  ::vfprintfë¥¼ ì‚¬ìš©í•´ë„ ë¬´ë°©í•˜ë‹¤ê³  íŒë‹¨í•œë‹¤.
      *  2001/05/09  by gamestar
      * ----------------------------------------------*/
     rc = ::vfprintf(stderr, aFmt, ap); 
@@ -113,11 +113,11 @@ IDE_RC smuUtility::loadErrorMsb(SChar *aRootDir, SChar *aIDN)
 
 /******************************************************************
  * DESCRIPTION : 
- *    TimeValue·ÎºÎÅÍ ³¯Â¥/½Ã°£ ¹®ÀÚ¿­À» È¹µæÇÔ
+ *    TimeValueë¡œë¶€í„° ë‚ ì§œ/ì‹œê°„ ë¬¸ìì—´ì„ íšë“í•¨
  *
- *  aTimeValue           - [IN]  ÀÔ·ÂµÇ´Â ½Ã°£°ª
- *  aBufferLength        - [OUT] °á°ú°ªÀ» ÀúÀåÇÒ ¹öÆÛÀÇ Å©±â
- *  aBuffer              - [OUT] °á°ú°ªÀ» ÀúÀåÇÒ ¹öÆÛ
+ *  aTimeValue           - [IN]  ì…ë ¥ë˜ëŠ” ì‹œê°„ê°’
+ *  aBufferLength        - [OUT] ê²°ê³¼ê°’ì„ ì €ì¥í•  ë²„í¼ì˜ í¬ê¸°
+ *  aBuffer              - [OUT] ê²°ê³¼ê°’ì„ ì €ì¥í•  ë²„í¼
  ******************************************************************/
 void smuUtility::getTimeString( UInt    aTimeValue, 
                                 UInt    aBufferLength,
@@ -290,11 +290,11 @@ void smuUtility::dumpPointer( void  * aTarget,
 
    Description :
 
-   createdb½Ã¿¡ fileÀ» ÀúÀåÇÒ database dirÀ» Ã£´Â´Ù.
-   db_dirÀÌ ´Ù¼ö°³ÀÌ±â ¶§¹®¿¡ ±× Áß ÀÓÀÇÀÇ ÇÏ³ª¸¦
-   ¼±ÅÃÇÑ´Ù. 
-   ÀÌÁ¦´Â PINGPONG datafileÀº ±¸ºĞµÇÁö ¾ÊÀ¸¹Ç·Î µû·Î ÀúÀåÇÒ ÇÊ¿ä°¡ ¾ø´Ù.
-   property¿¡¼­ °¡Àå Ã¹¹øÂ° dirÀ» ¼±ÅÃÇÒ °ÍÀÌ´Ù.
+   createdbì‹œì— fileì„ ì €ì¥í•  database dirì„ ì°¾ëŠ”ë‹¤.
+   db_dirì´ ë‹¤ìˆ˜ê°œì´ê¸° ë•Œë¬¸ì— ê·¸ ì¤‘ ì„ì˜ì˜ í•˜ë‚˜ë¥¼
+   ì„ íƒí•œë‹¤. 
+   ì´ì œëŠ” PINGPONG datafileì€ êµ¬ë¶„ë˜ì§€ ì•Šìœ¼ë¯€ë¡œ ë”°ë¡œ ì €ì¥í•  í•„ìš”ê°€ ì—†ë‹¤.
+   propertyì—ì„œ ê°€ì¥ ì²«ë²ˆì§¸ dirì„ ì„ íƒí•  ê²ƒì´ë‹¤.
    
    ----------------------------------------------------------------- */
 

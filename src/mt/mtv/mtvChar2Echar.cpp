@@ -130,23 +130,23 @@ IDE_RC mtvCalculate_Char2Echar( mtcNode     * /* aNode */,
     //-----------------------------------------------------
     // PROJ-2002 Column Security
     //
-    // [padding Á¦°ÅÇÏ´Â ÀÌÀ¯]
-    // char typeÀÇ compare´Â paddingÀ» ¹«½ÃÇÏ°í ºñ±³ÇÑ´Ù.
-    // µû¶ó¼­ echar typeÀÇ paddingÀ» Á¦°ÅÇÏ¿© ecc¸¦ »ý¼ºÇÏ¸é 
-    // eccÀÇ memcmp¸¸À¸·Î echar typeÀÇ ºñ±³°¡ °¡´ÉÇÏ´Ù.
+    // [padding ì œê±°í•˜ëŠ” ì´ìœ ]
+    // char typeì˜ compareëŠ” paddingì„ ë¬´ì‹œí•˜ê³  ë¹„êµí•œë‹¤.
+    // ë”°ë¼ì„œ echar typeì˜ paddingì„ ì œê±°í•˜ì—¬ eccë¥¼ ìƒì„±í•˜ë©´ 
+    // eccì˜ memcmpë§Œìœ¼ë¡œ echar typeì˜ ë¹„êµê°€ ê°€ëŠ¥í•˜ë‹¤.
     // 
-    // ´Ü, NULL°ú ' ', '  'ÀÇ ºñ±³¸¦ À§ÇÏ¿© 
-    // NULL¿¡ ´ëÇØ¼­´Â ecc¸¦ »ý¼ºÇÏÁö ¾ÊÀ¸¸ç, ' ', '  '´Â
-    // space padding ÇÏ³ª(' ')·Î ecc¸¦ »ý¼ºÇÑ´Ù.
+    // ë‹¨, NULLê³¼ ' ', '  'ì˜ ë¹„êµë¥¼ ìœ„í•˜ì—¬ 
+    // NULLì— ëŒ€í•´ì„œëŠ” eccë¥¼ ìƒì„±í•˜ì§€ ì•Šìœ¼ë©°, ' ', '  'ëŠ”
+    // space padding í•˜ë‚˜(' ')ë¡œ eccë¥¼ ìƒì„±í•œë‹¤.
     // 
-    // ¿¹Á¦) char'NULL' => echar( encrypt(''),   ecc('')  )
+    // ì˜ˆì œ) char'NULL' => echar( encrypt(''),   ecc('')  )
     //       char' '    => echar( encrypt(' '),  ecc(' ') )
     //       char'  '   => echar( encrypt('  '), ecc(' ') )
     //       char'a'    => echar( encrypt('a'),  ecc('a') )
     //       char'a '   => echar( encrypt('a '), ecc('a') )
     //-----------------------------------------------------
     
-    // sEcharValue¿¡¼­ space padingÀ» Á¦¿ÜÇÑ ±æÀÌ¸¦ Ã£´Â´Ù.
+    // sEcharValueì—ì„œ space padingì„ ì œì™¸í•œ ê¸¸ì´ë¥¼ ì°¾ëŠ”ë‹¤.
     for( sLength = sEcharValue->mCipherLength; sLength > 1; sLength-- )
     {
         if( sEcharValue->mValue[sLength - 1] != ' ' )
@@ -155,7 +155,7 @@ IDE_RC mtvCalculate_Char2Echar( mtcNode     * /* aNode */,
         }
     }
 
-    // sEcharValue¿¡¼­ space paddingÀ» Á¦¿ÜÇÑ value¸¦ ÀÌ¿ëÇØ ECC¸¦ °è»êÇÑ´Ù.
+    // sEcharValueì—ì„œ space paddingì„ ì œì™¸í•œ valueë¥¼ ì´ìš©í•´ ECCë¥¼ ê³„ì‚°í•œë‹¤.
     if( sLength > 0 )
     {
         IDE_TEST( aTemplate->getECCInfo( aTemplate,

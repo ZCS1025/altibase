@@ -31,66 +31,66 @@
 #include <smriDef.h>
 
 /*
-  [Âü°í] SMM¾È¿¡¼­ÀÇ File°£ÀÇ Layer¹× ¿ªÇÒÀº ´ÙÀ½°ú °°´Ù.
-         ÇÏÀ§ LayerÀÇ ÄÚµå¿¡¼­´Â »óÀ§ LayerÀÇ ÄÚµå¸¦ »ç¿ëÇÒ ¼ö ¾ø´Ù.
+  [ì°¸ê³ ] SMMì•ˆì—ì„œì˜ Fileê°„ì˜ Layerë° ì—­í• ì€ ë‹¤ìŒê³¼ ê°™ë‹¤.
+         í•˜ìœ„ Layerì˜ ì½”ë“œì—ì„œëŠ” ìƒìœ„ Layerì˜ ì½”ë“œë¥¼ ì‚¬ìš©í•  ìˆ˜ ì—†ë‹¤.
 
   ----------------------------------------------------------------------------
-  smmTBSCreate          ; Create Tablespace ±¸Çö
-  smmTBSDrop            ; Drop Tablespace ±¸Çö
-  smmTBSAlterAutoExtend ; Alter Tablespace Auto Extend ±¸Çö
-  smmTBSAlterChkptPath  ; Alter Tablespace Add/Rename/Drop Checkpoint Path±¸Çö
-  smmTBSAlterDiscard    ; Alter Tablespace Discard ±¸Çö
-  smmTBSStartupShutdown ; Startup, Shutdown½ÃÀÇ Tablespace°ü·Ã Ã³¸®¸¦ ±¸Çö
+  smmTBSCreate          ; Create Tablespace êµ¬í˜„
+  smmTBSDrop            ; Drop Tablespace êµ¬í˜„
+  smmTBSAlterAutoExtend ; Alter Tablespace Auto Extend êµ¬í˜„
+  smmTBSAlterChkptPath  ; Alter Tablespace Add/Rename/Drop Checkpoint Pathêµ¬í˜„
+  smmTBSAlterDiscard    ; Alter Tablespace Discard êµ¬í˜„
+  smmTBSStartupShutdown ; Startup, Shutdownì‹œì˜ Tablespaceê´€ë ¨ ì²˜ë¦¬ë¥¼ êµ¬í˜„
   ----------------------------------------------------------------------------
-  smmTBSChkptPath  ; TablespaceÀÇ Checkpoint Path °ü¸®
-  smmTBSMultiPhase ; TablespaceÀÇ ´Ù´Ü°è ÃÊ±âÈ­
+  smmTBSChkptPath  ; Tablespaceì˜ Checkpoint Path ê´€ë¦¬
+  smmTBSMultiPhase ; Tablespaceì˜ ë‹¤ë‹¨ê³„ ì´ˆê¸°í™”
   ----------------------------------------------------------------------------
-  smmManager       ; TablespaceÀÇ ³»ºÎ ±¸Çö 
-  smmFPLManager    ; Tablespace Free Page ListÀÇ ³»ºÎ ±¸Çö
-  smmExpandChunk   ; ChunkÀÇ ³»ºÎ±¸Á¶ ±¸Çö
+  smmManager       ; Tablespaceì˜ ë‚´ë¶€ êµ¬í˜„ 
+  smmFPLManager    ; Tablespace Free Page Listì˜ ë‚´ë¶€ êµ¬í˜„
+  smmExpandChunk   ; Chunkì˜ ë‚´ë¶€êµ¬ì¡° êµ¬í˜„
   ----------------------------------------------------------------------------
   
-  c.f> Memory TablespaceÀÇ Alter Online/OfflineÀº smp layer¿¡ ±¸ÇöµÇ¾î ÀÖ´Ù.
+  c.f> Memory Tablespaceì˜ Alter Online/Offlineì€ smp layerì— êµ¬í˜„ë˜ì–´ ìˆë‹¤.
 */
 
 
 /*
-   Memory DBÀÇ Tablespace°ü·Ã ¿¬»êµéÀ» ±¸ÇöÇÑ class
+   Memory DBì˜ Tablespaceê´€ë ¨ ì—°ì‚°ë“¤ì„ êµ¬í˜„í•œ class
    - Create Tablespace 
    - Drop Tablespace
    - Alter Tablespace Add/Rename/Drop Checkpoint Path
    - Alter Tablespace AutoExtend ...
 
-   Âü°í·Î Alter Tablespace Online/OfflineÀº
-   smpTBSAlterOnOff class¿¡ ±¸ÇöµÇ¾î ÀÖ´Ù.
+   ì°¸ê³ ë¡œ Alter Tablespace Online/Offlineì€
+   smpTBSAlterOnOff classì— êµ¬í˜„ë˜ì–´ ìˆë‹¤.
  */
 class smmTBSMediaRecovery
 {
 public :
-    // »ı¼ºÀÚ (¾Æ¹«°Íµµ ¾ÈÇÔ)
+    // ìƒì„±ì (ì•„ë¬´ê²ƒë„ ì•ˆí•¨)
     smmTBSMediaRecovery();
 
 public :
-    // ¸ğµç Chkpt ImagesµéÀÇ ¸ŞÅ¸Çì´õ¿¡ Ã¼Å©Æ÷ÀÎÁ¤º¸¸¦ °»½ÅÇÑ´Ù. 
+    // ëª¨ë“  Chkpt Imagesë“¤ì˜ ë©”íƒ€í—¤ë”ì— ì²´í¬í¬ì¸ì •ë³´ë¥¼ ê°±ì‹ í•œë‹¤. 
     static IDE_RC updateDBFileHdr4AllTBS();
 
-    // Å×ÀÌºí½ºÆäÀÌ½ºÀÇ ¸¶Áö¸· »ı¼ºµÈ ÆÄÀÏ¹øÈ£¸¦ ¹İÈ¯ÇÑ´Ù. 
+    // í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì˜ ë§ˆì§€ë§‰ ìƒì„±ëœ íŒŒì¼ë²ˆí˜¸ë¥¼ ë°˜í™˜í•œë‹¤. 
     static UInt   getLstCreatedDBFile( smmTBSNode    * aTBSNode )
                   { return aTBSNode->mLstCreatedDBFile; }
 
 
-    // Å×ÀÌºí½ºÆäÀÌ½ºÀÇ N¹øÂ° µ¥ÀÌÅ¸ÆÄÀÏÀÇ ÆäÀÌÁö ±¸°£ ¹İÈ¯
+    // í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì˜ Në²ˆì§¸ ë°ì´íƒ€íŒŒì¼ì˜ í˜ì´ì§€ êµ¬ê°„ ë°˜í™˜
     static void getPageRangeOfNthFile( smmTBSNode * aTBSNode, 
                                        UInt         aFileNum,
                                        scPageID   * aFstPageID, 
                                        scPageID   * aLstPageID );
 
     ////////////////////////////////////////////////////////////////////
-    // Backup °ü·Ã ÇÔ¼ö
+    // Backup ê´€ë ¨ í•¨ìˆ˜
     ////////////////////////////////////////////////////////////////////
 
     // PRJ-1548 User Memory Tablespace 
-    // ¸ğµç ¸Ş¸ğ¸® Å×ÀÌºí½ºÆäÀÌ½º¸¦ ¹é¾÷ÇÑ´Ù. 
+    // ëª¨ë“  ë©”ëª¨ë¦¬ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ë¥¼ ë°±ì—…í•œë‹¤. 
     static IDE_RC backupAllMemoryTBS(
                         idvSQL * aStatistics,
                         void   * aTrans,
@@ -98,7 +98,7 @@ public :
 
     
     // PROJ-2133 incremental backup
-    // ¸ğµç ¸Ş¸ğ¸® Å×ÀÌºí½ºÆäÀÌ½º¸¦ incremental backupÇÑ´Ù. 
+    // ëª¨ë“  ë©”ëª¨ë¦¬ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ë¥¼ incremental backupí•œë‹¤. 
     static IDE_RC incrementalBackupAllMemoryTBS(
                         idvSQL     * aStatistics,
                         void       * aTrans,
@@ -106,74 +106,74 @@ public :
                         SChar      * aBackupDir );
 
     ////////////////////////////////////////////////////////////////////
-    // Media Recovery °ü·Ã ÇÔ¼ö
+    // Media Recovery ê´€ë ¨ í•¨ìˆ˜
     ////////////////////////////////////////////////////////////////////
 
-    // Å×ÀÌºí½ºÆäÀÌ½ºÀÇ ¹Ìµğ¾î¿À·ù°¡ ÀÖ´Â µ¥ÀÌÅ¸ÆÄÀÏ ¸ñ·ÏÀ» ¸¸µç´Ù.
+    // í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì˜ ë¯¸ë””ì–´ì˜¤ë¥˜ê°€ ìˆëŠ” ë°ì´íƒ€íŒŒì¼ ëª©ë¡ì„ ë§Œë“ ë‹¤.
     static IDE_RC makeMediaRecoveryDBFList( sctTableSpaceNode * sSpaceNode, 
                                             smiRecoverType      aRecoveryType,
                                             UInt              * aFailureChkptImgCount, 
                                             smLSN             * aFromRedoLSN,
                                             smLSN             * aToRedoLSN );
 
-    // ¸ğµç ¸Ş¸ğ¸® Å×ÀÌºí½ºÆäÀÌ½ºÀÇ ¸ğµç ¸Ş¸ğ¸® DBFileµéÀÇ 
-    // ¹Ìµğ¾î º¹±¸ ÇÊ¿ä ¿©ºÎ¸¦ Ã¼Å©ÇÑ´Ù.
+    // ëª¨ë“  ë©”ëª¨ë¦¬ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì˜ ëª¨ë“  ë©”ëª¨ë¦¬ DBFileë“¤ì˜ 
+    // ë¯¸ë””ì–´ ë³µêµ¬ í•„ìš” ì—¬ë¶€ë¥¼ ì²´í¬í•œë‹¤.
     static IDE_RC identifyDBFilesOfAllTBS( idBool aIsOnCheckPoint );
 
-    // ¸ğµç µ¥ÀÌÅ¸ÆÄÀÏÀÇ ¸ŞÅ¸Çì´õ¸¦ ÆÇµ¶ÇÏ¿© 
-    // ¹Ìµğ¾î ¿À·ù¿©ºÎ¸¦ È®ÀÎÇÑ´Ù. 
+    // ëª¨ë“  ë°ì´íƒ€íŒŒì¼ì˜ ë©”íƒ€í—¤ë”ë¥¼ íŒë…í•˜ì—¬ 
+    // ë¯¸ë””ì–´ ì˜¤ë¥˜ì—¬ë¶€ë¥¼ í™•ì¸í•œë‹¤. 
     static IDE_RC doActIdentifyAllDBFiles( 
                                idvSQL            * aStatistics, 
                                sctTableSpaceNode  * aSpaceNode,
                                void               * aActionArg );
 
-    // »õ·Î »ı¼ºµÈ µ¥ÀÌÅ¸ÆÄÀÏÀÇ ·±Å¸ÀÓ Çì´õ¿¡ CreateLSNÀ» 
+    // ìƒˆë¡œ ìƒì„±ëœ ë°ì´íƒ€íŒŒì¼ì˜ ëŸ°íƒ€ì„ í—¤ë”ì— CreateLSNì„ 
     static IDE_RC setCreateLSN4NewDBFiles( smmTBSNode * aSpaceNode,
                                            smLSN      * aCreateLSN );
 
-    // ¹Ìµğ¾î¿À·ù·Î ÀÎÇØ ¹Ìµğ¾îº¹±¸¸¦ ÁøÇàÇÑ ¸Ş¸ğ¸® µ¥ÀÌÅ¸ÆÄÀÏµéÀ» 
-    // Ã£¾Æ¼­ ÆÄÀÏÇì´õ¸¦ º¹±¸ÇÑ´Ù. 
+    // ë¯¸ë””ì–´ì˜¤ë¥˜ë¡œ ì¸í•´ ë¯¸ë””ì–´ë³µêµ¬ë¥¼ ì§„í–‰í•œ ë©”ëª¨ë¦¬ ë°ì´íƒ€íŒŒì¼ë“¤ì„ 
+    // ì°¾ì•„ì„œ íŒŒì¼í—¤ë”ë¥¼ ë³µêµ¬í•œë‹¤. 
     static IDE_RC doActRepairDBFHdr( 
                                idvSQL             * aStatistics, 
                                sctTableSpaceNode  * aSpaceNode,
                                void               * aActionArg );
 
-    // ¸ğµç Å×ÀÌºí½ºÆäÀÌ½ºÀÇ µ¥ÀÌÅ¸ÆÄÀÏ¿¡¼­ ÀÔ·ÂµÈ ÆäÀÌÁö ID¸¦ °¡Áö´Â 
-    // Failure µ¥ÀÌÅ¸ÆÄÀÏÀÇ Á¸Àç¿©ºÎ¸¦ ¹İÈ¯ÇÑ´Ù. 
+    // ëª¨ë“  í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì˜ ë°ì´íƒ€íŒŒì¼ì—ì„œ ì…ë ¥ëœ í˜ì´ì§€ IDë¥¼ ê°€ì§€ëŠ” 
+    // Failure ë°ì´íƒ€íŒŒì¼ì˜ ì¡´ì¬ì—¬ë¶€ë¥¼ ë°˜í™˜í•œë‹¤. 
     static IDE_RC findMatchFailureDBF( scSpaceID   aTBSID,
                                        scPageID    aPageID, 
                                        idBool    * aIsExistTBS,
                                        idBool    * aIsFailureDBF );
 
-    // ¹Ìµğ¾îº¹±¸½Ã Å×ÀÌºí½ºÆäÀÌ½ºµé¿¡ ÇÒ´çÇß´ø ÀÚ¿øµéÀ» ¸®¼ÂÇÑ´Ù.. 
+    // ë¯¸ë””ì–´ë³µêµ¬ì‹œ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ë“¤ì— í• ë‹¹í–ˆë˜ ìì›ë“¤ì„ ë¦¬ì…‹í•œë‹¤.. 
     static IDE_RC resetMediaFailureMemTBSNodes();
     
-    // online backupÀ» ¼öÇàÇÑ´Ù. 
+    // online backupì„ ìˆ˜í–‰í•œë‹¤. 
     static IDE_RC doActOnlineBackup( 
                              idvSQL            * aStatistics, 
                              sctTableSpaceNode * aSpaceNode,
                              void              * aActionArg );
 
 
-    // µ¥ÀÌÅ¸ÆÄÀÏÀÇ ¸ŞÅ¸Çì´õ¸¦ °»½ÅÇÑ´Ù. 
+    // ë°ì´íƒ€íŒŒì¼ì˜ ë©”íƒ€í—¤ë”ë¥¼ ê°±ì‹ í•œë‹¤. 
     static IDE_RC doActUpdateAllDBFileHdr(
                              idvSQL            * aStatistics, 
                              sctTableSpaceNode * aSpaceNode,
                              void              * aActionArg );
 
 
-    // ¹Ìµğ¾îº¹±¸½Ã Å×ÀÌºí½ºÆäÀÌ½º¿¡ ÇÒ´çÇß´ø
-    // ÀÚ¿øµéÀ» ¸®¼ÂÇÑ´Ù. ( Action ÇÔ¼ö )
+    // ë¯¸ë””ì–´ë³µêµ¬ì‹œ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì— í• ë‹¹í–ˆë˜
+    // ìì›ë“¤ì„ ë¦¬ì…‹í•œë‹¤. ( Action í•¨ìˆ˜ )
     static IDE_RC doActResetMediaFailureTBSNode( 
                             idvSQL            * aStatistics, 
                             sctTableSpaceNode * aTBSNode,
                             void              * /* aActionArg */ );
 
-    // Tablespace¸¦ State ´Ü°è·Î ³»·È´Ù°¡ ´Ù½Ã Page´Ü°è·Î ¿Ã¸°´Ù. 
+    // Tablespaceë¥¼ State ë‹¨ê³„ë¡œ ë‚´ë ¸ë‹¤ê°€ ë‹¤ì‹œ Pageë‹¨ê³„ë¡œ ì˜¬ë¦°ë‹¤. 
     static IDE_RC resetTBSNode(smmTBSNode * aTBSNode);
 
 private:
-    // ÇÏ³ªÀÇ Tablespace¿¡ ¼ÓÇÑ ¸ğµç DB fileÀÇ Header¿¡ Redo LSNÀ» ±â·Ï
+    // í•˜ë‚˜ì˜ Tablespaceì— ì†í•œ ëª¨ë“  DB fileì˜ Headerì— Redo LSNì„ ê¸°ë¡
     static IDE_RC flushRedoLSN4AllDBF( smmTBSNode * aSpaceNode );
 };
 

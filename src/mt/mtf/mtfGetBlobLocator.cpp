@@ -141,7 +141,7 @@ IDE_RC mtfGetBlobLocatorCalculate( mtcNode*     aNode,
               != IDE_SUCCESS );
     
     // PROJ-1362
-    // Lob Locator¸¦ ¾ò´Âµ¥ ÇÊ¿äÇÑ Ä¿¼­Á¤º¸¸¦ °¡Á®¿Â´Ù.
+    // Lob Locatorë¥¼ ì–»ëŠ”ë° í•„ìš”í•œ ì»¤ì„œì •ë³´ë¥¼ ê°€ì ¸ì˜¨ë‹¤.
     IDE_TEST( aTemplate->getOpenedCursor( aTemplate,
                                           aNode->arguments->table,
                                           & sCursor,
@@ -211,7 +211,7 @@ IDE_RC mtfGetBlobLocatorCalculate( mtcNode*     aNode,
         }
 
         // BUG-40427
-        // ÃÖÃÊ·Î OpenÇÑ LOB CursorÀÎ °æ¿ì, qmcCursor¿¡ ±â·Ï
+        // ìµœì´ˆë¡œ Opení•œ LOB Cursorì¸ ê²½ìš°, qmcCursorì— ê¸°ë¡
         IDE_TEST( aTemplate->addOpenedLobCursor( aTemplate,
                                                  sLocator )
                   != IDE_SUCCESS );

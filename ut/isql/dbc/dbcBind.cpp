@@ -215,12 +215,12 @@ IDE_RC utISPApi::ProcBindPara(SShort a_Order, SShort a_InOutType,
 /**
  * GetAltiDateFmtLen.
  *
- * DBCÀÇ ALTIBASE_DATE_FORMAT Çü½Ä ¹®ÀÚ¿­¿¡ µû¶ó
- * DATE ÄÃ·³°ªÀÌ ¹®ÀÚ¿­·Î º¯È¯µÇ¾úÀ» ¶§,
- * ¹®ÀÚ¿­ÀÌ °¡Áú ¼ö ÀÖ´Â ÃÖ´ë ±æÀÌ¸¦ ±¸ÇØ ¸®ÅÏÇÑ´Ù.
+ * DBCì˜ ALTIBASE_DATE_FORMAT í˜•ì‹ ë¬¸ìžì—´ì— ë”°ë¼
+ * DATE ì»¬ëŸ¼ê°’ì´ ë¬¸ìžì—´ë¡œ ë³€í™˜ë˜ì—ˆì„ ë•Œ,
+ * ë¬¸ìžì—´ì´ ê°€ì§ˆ ìˆ˜ ìžˆëŠ” ìµœëŒ€ ê¸¸ì´ë¥¼ êµ¬í•´ ë¦¬í„´í•œë‹¤.
  *
  * @param[out] aLen
- *  DATE ÄÃ·³°ªÀÌ º¯È¯µÈ ¹®ÀÚ¿­ÀÇ ÃÖ´ë ±æÀÌ¸¦ ¸®ÅÏÇÏ±â À§ÇÑ ÀÎÀÚ.
+ *  DATE ì»¬ëŸ¼ê°’ì´ ë³€í™˜ëœ ë¬¸ìžì—´ì˜ ìµœëŒ€ ê¸¸ì´ë¥¼ ë¦¬í„´í•˜ê¸° ìœ„í•œ ì¸ìž.
  */
 IDE_RC utISPApi::GetAltiDateFmtLen(SQLULEN *aLen)
 {
@@ -228,28 +228,28 @@ IDE_RC utISPApi::GetAltiDateFmtLen(SQLULEN *aLen)
 
     sAltiDateFmt[0] = '\0';
 
-    /* DBCÀÇ ALTIBASE_DATE_FORMATÀ» ¾ò´Â´Ù. */
+    /* DBCì˜ ALTIBASE_DATE_FORMATì„ ì–»ëŠ”ë‹¤. */
     IDE_TEST_RAISE(SQLGetConnectAttr(m_ICon, ALTIBASE_DATE_FORMAT,
                                      (SQLPOINTER)sAltiDateFmt,
                                      (SQLINTEGER)ID_SIZEOF(sAltiDateFmt), NULL)
                    != SQL_SUCCESS, DBCError);
 
     /* BUGBUG:
-     * ODBCCLI¿¡¼­ ALTIBASE_DATE_FORMATÀÌ Á¦´ë·Î ±¸ÇöÀÌ ¾È µÇ¾îÀÖ¾î¼­
-     * ÀÓ½Ã·Î ³ÖÀº Á¶°Ç °Ë»ç. */
+     * ODBCCLIì—ì„œ ALTIBASE_DATE_FORMATì´ ì œëŒ€ë¡œ êµ¬í˜„ì´ ì•ˆ ë˜ì–´ìžˆì–´ì„œ
+     * ìž„ì‹œë¡œ ë„£ì€ ì¡°ê±´ ê²€ì‚¬. */
     if (sAltiDateFmt[0] != '\0' &&
         idlOS::strcasecmp(sAltiDateFmt, "(null)") != 0 &&
         idlOS::strcasecmp(sAltiDateFmt, "null") != 0)
     {
-        /* ALTIBASE_DATE_FORMATÀ¸·ÎºÎÅÍ
-         * ¹®ÀÚ¿­·Î º¯È¯µÈ DATE ÄÃ·³°ªÀÇ ÃÖ´ë ±æÀÌ¸¦ ±¸ÇÑ´Ù. */
+        /* ALTIBASE_DATE_FORMATìœ¼ë¡œë¶€í„°
+         * ë¬¸ìžì—´ë¡œ ë³€í™˜ëœ DATE ì»¬ëŸ¼ê°’ì˜ ìµœëŒ€ ê¸¸ì´ë¥¼ êµ¬í•œë‹¤. */
         *aLen = (SQLULEN)GetDateFmtLenFromDateFmt(sAltiDateFmt);
     }
     else
     {
         /* BUGBUG:
-         * ODBCCLI¿¡¼­ ALTIBASE_DATE_FORMATÀÌ Á¦´ë·Î ±¸ÇöÀÌ ¾È µÇ¾îÀÖ¾î¼­
-         * ÀÓ½Ã·Î ³ÖÀº ÄÚµå. */
+         * ODBCCLIì—ì„œ ALTIBASE_DATE_FORMATì´ ì œëŒ€ë¡œ êµ¬í˜„ì´ ì•ˆ ë˜ì–´ìžˆì–´ì„œ
+         * ìž„ì‹œë¡œ ë„£ì€ ì½”ë“œ. */
         *aLen = 19;
     }
 
@@ -261,7 +261,7 @@ IDE_RC utISPApi::GetAltiDateFmtLen(SQLULEN *aLen)
     }
     IDE_EXCEPTION_END;
 
-    /* DATE ÄÃ·³ÀÇ column size ±âº»°ª = 19 */
+    /* DATE ì»¬ëŸ¼ì˜ column size ê¸°ë³¸ê°’ = 19 */
     *aLen = 19;
 
     return IDE_FAILURE;
@@ -270,11 +270,11 @@ IDE_RC utISPApi::GetAltiDateFmtLen(SQLULEN *aLen)
 /**
  * GetDateFmtLenFromDateFmt.
  *
- * DATE ÄÃ·³°ªÀ» ¹®ÀÚ¿­·Î º¯È¯ ½Ã »ç¿ëÇÏ´Â Çü½Ä ¹®ÀÚ¿­À» ÀÎÀÚ·Î ¹Þ¾Æ,
- * DATE ÄÃ·³°ªÀÌ º¯È¯µÈ ¹®ÀÚ¿­ÀÌ °¡Áú ¼ö ÀÖ´Â ÃÖ´ë ±æÀÌ¸¦ ±¸ÇØ ¸®ÅÏÇÑ´Ù.
+ * DATE ì»¬ëŸ¼ê°’ì„ ë¬¸ìžì—´ë¡œ ë³€í™˜ ì‹œ ì‚¬ìš©í•˜ëŠ” í˜•ì‹ ë¬¸ìžì—´ì„ ì¸ìžë¡œ ë°›ì•„,
+ * DATE ì»¬ëŸ¼ê°’ì´ ë³€í™˜ëœ ë¬¸ìžì—´ì´ ê°€ì§ˆ ìˆ˜ ìžˆëŠ” ìµœëŒ€ ê¸¸ì´ë¥¼ êµ¬í•´ ë¦¬í„´í•œë‹¤.
  *
  * @param[in] aDateFmt
- *  DATE ÄÃ·³°ªÀ» ¹®ÀÚ¿­·Î º¯È¯ ½Ã »ç¿ëÇÏ´Â Çü½Ä ¹®ÀÚ¿­.
+ *  DATE ì»¬ëŸ¼ê°’ì„ ë¬¸ìžì—´ë¡œ ë³€í™˜ ì‹œ ì‚¬ìš©í•˜ëŠ” í˜•ì‹ ë¬¸ìžì—´.
  */
 UInt utISPApi::GetDateFmtLenFromDateFmt(SChar *aDateFmt)
 {
@@ -284,38 +284,38 @@ UInt utISPApi::GetDateFmtLenFromDateFmt(SChar *aDateFmt)
 
     (void)idlOS::snprintf(sDateFmt, ID_SIZEOF(sDateFmt), "%s", aDateFmt);
 
-    /* sDateFmtLenÀ» Çü½Ä ¹®ÀÚ¿­ÀÇ ±æÀÌ·Î ÃÊ±âÈ­ÇÑ´Ù. */
+    /* sDateFmtLenì„ í˜•ì‹ ë¬¸ìžì—´ì˜ ê¸¸ì´ë¡œ ì´ˆê¸°í™”í•œë‹¤. */
     sDateFmtLen = (UInt)idlOS::strlen(sDateFmt);
 
-    /* Çü½Ä ÁöÁ¤ÀÚÀÇ ±æÀÌ¿Í
-     * DATE ÄÃ·³°ªÀÌ Çü½Ä ÁöÁ¤ÀÚ¿¡ µû¶ó Ãâ·ÂµÈ ¹®ÀÚ¿­ÀÇ ÃÖ´ë ±æÀÌ°¡
-     * ¼­·Î ´Ù¸¦ ¼ö ÀÖ´Â Çü½Ä ÁöÁ¤ÀÚ¸¦ Ã£¾Æ,
-     * sDateFmtLenÀ» Á¶Á¤ÇÑ´Ù. */
+    /* í˜•ì‹ ì§€ì •ìžì˜ ê¸¸ì´ì™€
+     * DATE ì»¬ëŸ¼ê°’ì´ í˜•ì‹ ì§€ì •ìžì— ë”°ë¼ ì¶œë ¥ëœ ë¬¸ìžì—´ì˜ ìµœëŒ€ ê¸¸ì´ê°€
+     * ì„œë¡œ ë‹¤ë¥¼ ìˆ˜ ìžˆëŠ” í˜•ì‹ ì§€ì •ìžë¥¼ ì°¾ì•„,
+     * sDateFmtLenì„ ì¡°ì •í•œë‹¤. */
     sTk = idlOS::strtok(sDateFmt,
                         " \t\r\n\v\f-/,.:'`~!@#$%^&*()_=+\\|[{]};\"<>?");
     while (sTk != NULL)
     {
         if (idlOS::strcasecmp(sTk, "DAY") == 0)
         {
-            /* ¹®ÀÚ¿­ ±æÀÌ ÃÖ´ë = 9(WEDNESDAY) */
+            /* ë¬¸ìžì—´ ê¸¸ì´ ìµœëŒ€ = 9(WEDNESDAY) */
             sDateFmtLen += 6;
         }
         else if (idlOS::strcasecmp(sTk, "DY") == 0)
         {
-            /* ¹®ÀÚ¿­ ±æÀÌ = 3 */
+            /* ë¬¸ìžì—´ ê¸¸ì´ = 3 */
             sDateFmtLen += 1;
         }
         else if (idlOS::strncasecmp(sTk, "FF", 2) == 0)
         {
             if (sTk[2] == '\0')
             {
-                /* ¹®ÀÚ¿­ ±æÀÌ = 6 */
+                /* ë¬¸ìžì—´ ê¸¸ì´ = 6 */
                 sDateFmtLen += 4;
             }
             else if ('1' <= sTk[2] && sTk[2] <= '6' &&
                      sTk[3] == '\0')
             {
-                /* ¹®ÀÚ¿­ ±æÀÌ = [1, 6] */
+                /* ë¬¸ìžì—´ ê¸¸ì´ = [1, 6] */
                 sDateFmtLen = sDateFmtLen - 3 + (sTk[2] - '0');
             }
         }
@@ -323,23 +323,23 @@ UInt utISPApi::GetDateFmtLenFromDateFmt(SChar *aDateFmt)
         {
             if (sTk[2] == '1' && sTk[3] == '2' && sTk[4] == '\0')
             {
-                /* ¹®ÀÚ¿­ ±æÀÌ = 2 */
+                /* ë¬¸ìžì—´ ê¸¸ì´ = 2 */
                 sDateFmtLen -= 2;
             }
             else if (sTk[2] == '2' && sTk[3] == '4' && sTk[4] == '\0')
             {
-                /* ¹®ÀÚ¿­ ±æÀÌ = 2 */
+                /* ë¬¸ìžì—´ ê¸¸ì´ = 2 */
                 sDateFmtLen -= 2;
             }
         }
         else if (idlOS::strcasecmp(sTk, "MONTH") == 0)
         {
-            /* ¹®ÀÚ¿­ ±æÀÌ ÃÖ´ë = 9(SEPTEMBER) */
+            /* ë¬¸ìžì—´ ê¸¸ì´ ìµœëŒ€ = 9(SEPTEMBER) */
             sDateFmtLen += 4;
         }
         else if (idlOS::strcasecmp(sTk, "RM") == 0)
         {
-            /* ¹®ÀÚ¿­ ±æÀÌ ÃÖ´ë = 4(VIII) */
+            /* ë¬¸ìžì—´ ê¸¸ì´ ìµœëŒ€ = 4(VIII) */
             sDateFmtLen += 2;
         }
 

@@ -48,7 +48,7 @@ mtfModule mtfFirstValueIgnoreNulls = {
         MTC_NODE_FUNCTION_ANALYTIC_TRUE |
         MTC_NODE_FUNCTION_WINDOWING_TRUE,
     ~( MTC_NODE_INDEX_MASK ),
-    1.0, /* default selectivity ( ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô ) */
+    1.0, /* default selectivity ( ë¹„êµ ì—°ì‚°ìê°€ ì•„ë‹˜ ) */
     mtfFirstValueIgnoreNullsName,
     NULL,
     mtf::initializeDefault,
@@ -116,7 +116,7 @@ IDE_RC mtfFirstValueIgnoreNullsEstimate( mtcNode     * aNode,
 
     mtc::initializeColumn( aStack[0].column, aStack[1].column );
 
-    /* First Value ¸¦ È¹µæ Çß´ÂÁö ¾ÊÇß´ÂÁö¸¦ ÀúÀå */
+    /* First Value ë¥¼ íšë“ í–ˆëŠ”ì§€ ì•Ší–ˆëŠ”ì§€ë¥¼ ì €ì¥ */
     IDE_TEST( mtc::initializeColumn( aStack[0].column + 1,
                                      & mtdBoolean,
                                      0,

@@ -21,11 +21,11 @@
  * Description :
  *     MRGE(MeRGE) Node
  *
- *     °ü°èÇü ¸ðµ¨¿¡¼­ merge¸¦ ¼öÇàÇÏ´Â Plan Node ÀÌ´Ù.
+ *     ê´€ê³„í˜• ëª¨ë¸ì—ì„œ mergeë¥¼ ìˆ˜í–‰í•˜ëŠ” Plan Node ì´ë‹¤.
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  **********************************************************************/
 
@@ -45,7 +45,7 @@ qmnMRGE::init( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    MRGE ³ëµåÀÇ ÃÊ±âÈ­
+ *    MRGE ë…¸ë“œì˜ ì´ˆê¸°í™”
  *
  * Implementation :
  *
@@ -62,17 +62,17 @@ qmnMRGE::init( qcTemplate * aTemplate,
     sDataPlan->doIt = qmnMRGE::doItDefault;
     
     //------------------------------------------------
-    // ÃÖÃÊ ÃÊ±âÈ­ ¼öÇà ¿©ºÎ ÆÇ´Ü
+    // ìµœì´ˆ ì´ˆê¸°í™” ìˆ˜í–‰ ì—¬ë¶€ íŒë‹¨
     //------------------------------------------------
 
     if ( ( *sDataPlan->flag & QMND_MRGE_INIT_DONE_MASK )
          == QMND_MRGE_INIT_DONE_FALSE )
     {
-        // ÃÖÃÊ ÃÊ±âÈ­ ¼öÇà
+        // ìµœì´ˆ ì´ˆê¸°í™” ìˆ˜í–‰
         IDE_TEST( firstInit(aTemplate, sCodePlan, sDataPlan) != IDE_SUCCESS );
         
         //---------------------------------
-        // ÃÊ±âÈ­ ¿Ï·á¸¦ Ç¥±â
+        // ì´ˆê¸°í™” ì™„ë£Œë¥¼ í‘œê¸°
         //---------------------------------
         
         *sDataPlan->flag &= ~QMND_MRGE_INIT_DONE_MASK;
@@ -84,14 +84,14 @@ qmnMRGE::init( qcTemplate * aTemplate,
     }
         
     //------------------------------------------------
-    // Child PlanÀÇ ÃÊ±âÈ­
+    // Child Planì˜ ì´ˆê¸°í™”
     //------------------------------------------------
 
-    // select sourceÀÇ init
+    // select sourceì˜ init
     IDE_TEST( initSource( aTemplate, aPlan ) != IDE_SUCCESS );
     
     //------------------------------------------------
-    // ¼öÇà ÇÔ¼ö °áÁ¤
+    // ìˆ˜í–‰ í•¨ìˆ˜ ê²°ì •
     //------------------------------------------------
 
     sDataPlan->doIt = qmnMRGE::doItFirst;
@@ -113,10 +113,10 @@ qmnMRGE::doIt( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    MRGE ÀÇ °íÀ¯ ±â´ÉÀ» ¼öÇàÇÑ´Ù.
+ *    MRGE ì˜ ê³ ìœ  ê¸°ëŠ¥ì„ ìˆ˜í–‰í•œë‹¤.
  *
  * Implementation :
- *    ÁöÁ¤µÈ ÇÔ¼ö Æ÷ÀÎÅÍ¸¦ ¼öÇàÇÑ´Ù.
+ *    ì§€ì •ëœ í•¨ìˆ˜ í¬ì¸í„°ë¥¼ ìˆ˜í–‰í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -163,7 +163,7 @@ qmnMRGE::printPlan( qcTemplate   * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    MRGE ³ëµåÀÇ ¼öÇà Á¤º¸¸¦ Ãâ·ÂÇÑ´Ù.
+ *    MRGE ë…¸ë“œì˜ ìˆ˜í–‰ ì •ë³´ë¥¼ ì¶œë ¥í•œë‹¤.
  *
  * Implementation :
  *
@@ -182,7 +182,7 @@ qmnMRGE::printPlan( qcTemplate   * aTemplate,
     sDataPlan->flag = & aTemplate->planFlag[sCodePlan->planID];
 
     //------------------------------------------------------
-    // ½ÃÀÛ Á¤º¸ÀÇ Ãâ·Â
+    // ì‹œìž‘ ì •ë³´ì˜ ì¶œë ¥
     //------------------------------------------------------
 
     for ( i = 0; i < aDepth; i++ )
@@ -192,10 +192,10 @@ qmnMRGE::printPlan( qcTemplate   * aTemplate,
     }
 
     //------------------------------------------------------
-    // MRGE Target Á¤º¸ÀÇ Ãâ·Â
+    // MRGE Target ì •ë³´ì˜ ì¶œë ¥
     //------------------------------------------------------
 
-    // MRGE Á¤º¸ÀÇ Ãâ·Â
+    // MRGE ì •ë³´ì˜ ì¶œë ¥
     if ( sCodePlan->tableRef->tableType == QCM_VIEW )
     {
         iduVarStringAppendFormat( aString,
@@ -221,7 +221,7 @@ qmnMRGE::printPlan( qcTemplate   * aTemplate,
     }
 
     //----------------------------
-    // Table Name Ãâ·Â
+    // Table Name ì¶œë ¥
     //----------------------------
 
     if ( ( sCodePlan->tableName.size <= QC_MAX_OBJECT_NAME_LEN ) &&
@@ -238,14 +238,14 @@ qmnMRGE::printPlan( qcTemplate   * aTemplate,
     }
     
     //----------------------------
-    // Alias Name Ãâ·Â
+    // Alias Name ì¶œë ¥
     //----------------------------
     
     if ( sCodePlan->aliasName.name != NULL &&
          sCodePlan->aliasName.size > 0  &&
          sCodePlan->aliasName.name != sCodePlan->tableName.name )
     {
-        // Table ÀÌ¸§ Á¤º¸¿Í Alias ÀÌ¸§ Á¤º¸°¡ ´Ù¸¦ °æ¿ì
+        // Table ì´ë¦„ ì •ë³´ì™€ Alias ì´ë¦„ ì •ë³´ê°€ ë‹¤ë¥¼ ê²½ìš°
         // (alias name)
         iduVarStringAppend( aString, " " );
         
@@ -262,12 +262,12 @@ qmnMRGE::printPlan( qcTemplate   * aTemplate,
     }
     else
     {
-        // Alias ÀÌ¸§ Á¤º¸°¡ ¾ø°Å³ª Table ÀÌ¸§ Á¤º¸°¡ µ¿ÀÏÇÑ °æ¿ì
+        // Alias ì´ë¦„ ì •ë³´ê°€ ì—†ê±°ë‚˜ Table ì´ë¦„ ì •ë³´ê°€ ë™ì¼í•œ ê²½ìš°
         // Nothing To Do
     }
 
     //----------------------------
-    // New line Ãâ·Â
+    // New line ì¶œë ¥
     //----------------------------
     iduVarStringAppend( aString, " )\n" );
 
@@ -284,13 +284,13 @@ qmnMRGE::printPlan( qcTemplate   * aTemplate,
                                 aMode ) != IDE_SUCCESS );
 
     //----------------------------
-    // match condition, matched, not-mached Á¤º¸ÀÇ »ó¼¼ Ãâ·Â
+    // match condition, matched, not-mached ì •ë³´ì˜ ìƒì„¸ ì¶œë ¥
     //----------------------------
     
     if (QCG_GET_SESSION_TRCLOG_DETAIL_PREDICATE(aTemplate->stmt) == 1)
     {
-        // plan node·Î ±¸¼ºµÇÁö¸¸ ±¸ÇöÀÌ ÀÌ·²»Ó °³³ä»ó
-        // MERGE ³ëµåÀÇ predicate¿¡ ºÒ°úÇÏ´Ù. ¶ó°í ÁÖÀåÇÑ´Ù.
+        // plan nodeë¡œ êµ¬ì„±ë˜ì§€ë§Œ êµ¬í˜„ì´ ì´ëŸ´ë¿ ê°œë…ìƒ
+        // MERGE ë…¸ë“œì˜ predicateì— ë¶ˆê³¼í•˜ë‹¤. ë¼ê³  ì£¼ìž¥í•œë‹¤.
         
         //---------------------------------
         // select target child
@@ -436,10 +436,10 @@ qmnMRGE::firstInit( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    MRGE nodeÀÇ Data ¿µ¿ªÀÇ ¸â¹ö¿¡ ´ëÇÑ ÃÊ±âÈ­¸¦ ¼öÇà
+ *    MRGE nodeì˜ Data ì˜ì—­ì˜ ë©¤ë²„ì— ëŒ€í•œ ì´ˆê¸°í™”ë¥¼ ìˆ˜í–‰
  *
  * Implementation :
- *    - Data ¿µ¿ªÀÇ ÁÖ¿ä ¸â¹ö¿¡ ´ëÇÑ ÃÊ±âÈ­¸¦ ¼öÇà
+ *    - Data ì˜ì—­ì˜ ì£¼ìš” ë©¤ë²„ì— ëŒ€í•œ ì´ˆê¸°í™”ë¥¼ ìˆ˜í–‰
  *
  ***********************************************************************/
 
@@ -450,22 +450,22 @@ qmnMRGE::firstInit( qcTemplate * aTemplate,
     idBool  sNeedToCloseLocalTempTableMgr = ID_FALSE;
 
     //---------------------------------
-    // ±âº» ¼³Á¤
+    // ê¸°ë³¸ ì„¤ì •
     //---------------------------------
 
-    // select source statement¸¦ º¯°æ½ÃÅ°¹Ç·Î º¹»çÇØ¼­ »ç¿ëÇÑ´Ù.
+    // select source statementë¥¼ ë³€ê²½ì‹œí‚¤ë¯€ë¡œ ë³µì‚¬í•´ì„œ ì‚¬ìš©í•œë‹¤.
     idlOS::memcpy( (void*) & aDataPlan->selectSourceStatement,
                    (void*) aCodePlan->selectSourceStatement,
                    ID_SIZEOF(qcStatement) );
     qmx::setSubStatement( aTemplate->stmt, & aDataPlan->selectSourceStatement );
 
-    // select target statement¸¦ º¯°æ½ÃÅ°¹Ç·Î º¹»çÇØ¼­ »ç¿ëÇÑ´Ù.
+    // select target statementë¥¼ ë³€ê²½ì‹œí‚¤ë¯€ë¡œ ë³µì‚¬í•´ì„œ ì‚¬ìš©í•œë‹¤.
     idlOS::memcpy( (void*) & aDataPlan->selectTargetStatement,
                    (void*) aCodePlan->selectTargetStatement,
                    ID_SIZEOF(qcStatement) );
     qmx::setSubStatement( aTemplate->stmt, & aDataPlan->selectTargetStatement );
 
-    // update statement¸¦ º¯°æ½ÃÅ°¹Ç·Î º¹»çÇØ¼­ »ç¿ëÇÑ´Ù.
+    // update statementë¥¼ ë³€ê²½ì‹œí‚¤ë¯€ë¡œ ë³µì‚¬í•´ì„œ ì‚¬ìš©í•œë‹¤.
     if ( aCodePlan->updateStatement != NULL )
     {
         idlOS::memcpy( (void*) & aDataPlan->updateStatement,
@@ -478,7 +478,7 @@ qmnMRGE::firstInit( qcTemplate * aTemplate,
         // Nothing to do.
     }
 
-    // insert statement¸¦ º¯°æ½ÃÅ°¹Ç·Î º¹»çÇØ¼­ »ç¿ëÇÑ´Ù.
+    // insert statementë¥¼ ë³€ê²½ì‹œí‚¤ë¯€ë¡œ ë³µì‚¬í•´ì„œ ì‚¬ìš©í•œë‹¤.
     if ( aCodePlan->insertStatement != NULL )
     {
         idlOS::memcpy( (void*) & aDataPlan->insertStatement,
@@ -491,7 +491,7 @@ qmnMRGE::firstInit( qcTemplate * aTemplate,
         // Nothing to do.
     }
     
-    // insert empty statement¸¦ º¯°æ½ÃÅ°¹Ç·Î º¹»çÇØ¼­ »ç¿ëÇÑ´Ù.
+    // insert empty statementë¥¼ ë³€ê²½ì‹œí‚¤ë¯€ë¡œ ë³µì‚¬í•´ì„œ ì‚¬ìš©í•œë‹¤.
     if ( aCodePlan->insertNoRowsStatement != NULL )
     {
         idlOS::memcpy( (void*) & aDataPlan->insertNoRowsStatement,
@@ -504,7 +504,7 @@ qmnMRGE::firstInit( qcTemplate * aTemplate,
         // Nothing to do.
     }
 
-    /* BUG-45763 MERGE ±¸¹®¿¡¼­ CLOB Column Update Áß FATAL ¹ß»ýÇÕ´Ï´Ù. */
+    /* BUG-45763 MERGE êµ¬ë¬¸ì—ì„œ CLOB Column Update ì¤‘ FATAL ë°œìƒí•©ë‹ˆë‹¤. */
     IDE_TEST( setBindParam( aTemplate, aDataPlan )
               != IDE_SUCCESS );
 
@@ -560,7 +560,7 @@ qmnMRGE::doItDefault( qcTemplate * /* aTemplate */,
 /***********************************************************************
  *
  * Description :
- *    ÀÌ ÇÔ¼ö°¡ ¼öÇàµÇ¸é ¾ÈµÊ.
+ *    ì´ í•¨ìˆ˜ê°€ ìˆ˜í–‰ë˜ë©´ ì•ˆë¨.
  *
  * Implementation :
  *
@@ -584,7 +584,7 @@ qmnMRGE::doItFirst( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    MRGEÀÇ ÃÖÃÊ ¼öÇà ÇÔ¼ö
+ *    MRGEì˜ ìµœì´ˆ ìˆ˜í–‰ í•¨ìˆ˜
  *
  * Implementation :
  *    - merge one record
@@ -668,7 +668,7 @@ qmnMRGE::doItFirst( qcTemplate * aTemplate,
         //-----------------------------------
 
         // BUG-37535
-        // source tableÀÌ no rowsÀÎ °æ¿ì insert¸¦ ¼öÇàÇÑ´Ù.
+        // source tableì´ no rowsì¸ ê²½ìš° insertë¥¼ ìˆ˜í–‰í•œë‹¤.
         if ( sCodePlan->insertNoRowsStatement != NULL )
         {
             IDE_TEST( insertNoRowsTarget( aTemplate, aPlan ) != IDE_SUCCESS );
@@ -719,7 +719,7 @@ qmnMRGE::doItNext( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    MRGEÀÇ ´ÙÀ½ ¼öÇà ÇÔ¼ö
+ *    MRGEì˜ ë‹¤ìŒ ìˆ˜í–‰ í•¨ìˆ˜
  *
  * Implementation :
  *    - merge one record
@@ -813,8 +813,8 @@ qmnMRGE::doItNext( qcTemplate * aTemplate,
     }
     else
     {
-        // record°¡ ¾ø´Â °æ¿ì
-        // ´ÙÀ½ ¼öÇàÀ» À§ÇØ ÃÖÃÊ ¼öÇà ÇÔ¼ö·Î ¼³Á¤ÇÔ.
+        // recordê°€ ì—†ëŠ” ê²½ìš°
+        // ë‹¤ìŒ ìˆ˜í–‰ì„ ìœ„í•´ ìµœì´ˆ ìˆ˜í–‰ í•¨ìˆ˜ë¡œ ì„¤ì •í•¨.
         sDataPlan->doIt = qmnMRGE::doItFirst;
     }
 
@@ -856,7 +856,7 @@ qmnMRGE::getMergedRowCount( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    merge count´Â update row count¿Í insert row countÀÇ ÇÕ´Ï´Ù.
+ *    merge countëŠ” update row countì™€ insert row countì˜ í•©ë‹ˆë‹¤.
  *
  * Implementation :
  *
@@ -899,7 +899,7 @@ qmnMRGE::initSource( qcTemplate * aTemplate,
     qmnPlan  * sPlan;
     
     //-----------------------------------
-    // ±âº» Á¤º¸ ¼³Á¤
+    // ê¸°ë³¸ ì •ë³´ ì„¤ì •
     //-----------------------------------
     
     sPlan = aPlan->children[QMO_MERGE_SELECT_SOURCE_IDX].childPlan;
@@ -968,7 +968,7 @@ qmnMRGE::readSource( qcTemplate * aTemplate,
     qmnPlan  * sPlan;
     
     //-----------------------------------
-    // ±âº» Á¤º¸ ¼³Á¤
+    // ê¸°ë³¸ ì •ë³´ ì„¤ì •
     //-----------------------------------
     
     sPlan = aPlan->children[QMO_MERGE_SELECT_SOURCE_IDX].childPlan;
@@ -1035,7 +1035,7 @@ qmnMRGE::matchTarget( qcTemplate * aTemplate,
     UInt       sStatus = 0;
 
     //-----------------------------------
-    // ±âº» Á¤º¸ ¼³Á¤
+    // ê¸°ë³¸ ì •ë³´ ì„¤ì •
     //-----------------------------------
     
     sPlan = aPlan->children[QMO_MERGE_SELECT_TARGET_IDX].childPlan;
@@ -1049,7 +1049,7 @@ qmnMRGE::matchTarget( qcTemplate * aTemplate,
     IDE_TEST( qmnPROJ::init( aTemplate, sPlan ) != IDE_SUCCESS );
     sStatus = 2;
 
-    // ÇÑ °ÇÀÌ¶óµµ Á¸ÀçÇÏ´ÂÁö¸¸ º¸¸é µÈ´Ù.
+    // í•œ ê±´ì´ë¼ë„ ì¡´ìž¬í•˜ëŠ”ì§€ë§Œ ë³´ë©´ ëœë‹¤.
     IDE_TEST( qmnPROJ::doIt( aTemplate, sPlan, aFlag ) != IDE_SUCCESS );
 
     //-----------------------------------
@@ -1112,7 +1112,7 @@ qmnMRGE::updateTarget( qcTemplate * aTemplate,
     UInt               sStatus = 0;
 
     //-----------------------------------
-    // ±âº» Á¤º¸ ¼³Á¤
+    // ê¸°ë³¸ ì •ë³´ ì„¤ì •
     //-----------------------------------
     
     // update plan
@@ -1121,19 +1121,19 @@ qmnMRGE::updateTarget( qcTemplate * aTemplate,
     aTemplate->stmt = & sDataPlan->updateStatement;
 
     //-----------------------------------
-    // UPDATE¸¦ À§ÇÑ plan tree ÃÊ±âÈ­
+    // UPDATEë¥¼ ìœ„í•œ plan tree ì´ˆê¸°í™”
     //-----------------------------------
 
     IDE_TEST( qmnUPTE::init( aTemplate, sPlan ) != IDE_SUCCESS );
     sStatus = 3;
 
     //------------------------------------------
-    // UPDATE¸¦ ¼öÇà
+    // UPDATEë¥¼ ìˆ˜í–‰
     //------------------------------------------
 
     do
     {
-        // ºñÁ¤»ó Á¾·á °Ë»ç
+        // ë¹„ì •ìƒ ì¢…ë£Œ ê²€ì‚¬
         IDE_TEST( iduCheckSessionEvent( aTemplate->stmt->mStatistics )
                   != IDE_SUCCESS );
     
@@ -1161,7 +1161,7 @@ qmnMRGE::updateTarget( qcTemplate * aTemplate,
               != IDE_SUCCESS );
 
     //------------------------------------------
-    // Foreign Key Reference °Ë»ç
+    // Foreign Key Reference ê²€ì‚¬
     //------------------------------------------
 
     if ( sNumRows > 0 )
@@ -1227,7 +1227,7 @@ qmnMRGE::insertTarget( qcTemplate * aTemplate,
     UInt               sStatus = 0;
 
     //-----------------------------------
-    // ±âº» Á¤º¸ ¼³Á¤
+    // ê¸°ë³¸ ì •ë³´ ì„¤ì •
     //-----------------------------------
     
     // insert plan
@@ -1236,10 +1236,10 @@ qmnMRGE::insertTarget( qcTemplate * aTemplate,
     aTemplate->stmt = & sDataPlan->insertStatement;
 
     //-----------------------------------
-    // INSERT¸¦ À§ÇÑ plan tree ÃÊ±âÈ­
+    // INSERTë¥¼ ìœ„í•œ plan tree ì´ˆê¸°í™”
     //-----------------------------------
 
-    // BUG-45288 atomic insert ´Â direct path °¡´É. normal insert ºÒ°¡´É.
+    // BUG-45288 atomic insert ëŠ” direct path ê°€ëŠ¥. normal insert ë¶ˆê°€ëŠ¥.
     ((qmndINST*) (aTemplate->tmplate.data + sPlan->offset))->isAppend =
         ((qmncINST*)sPlan)->isAppend;
 
@@ -1247,7 +1247,7 @@ qmnMRGE::insertTarget( qcTemplate * aTemplate,
     sStatus = 3;
 
     //------------------------------------------
-    // INSERT¸¦ ¼öÇà
+    // INSERTë¥¼ ìˆ˜í–‰
     //------------------------------------------
 
     IDE_TEST( qmnINST::doIt( aTemplate, sPlan, &sFlag ) != IDE_SUCCESS );
@@ -1268,7 +1268,7 @@ qmnMRGE::insertTarget( qcTemplate * aTemplate,
               != IDE_SUCCESS );
 
     //------------------------------------------
-    // Foreign Key Reference °Ë»ç
+    // Foreign Key Reference ê²€ì‚¬
     //------------------------------------------
 
     // BUG-28049
@@ -1323,7 +1323,7 @@ qmnMRGE::insertNoRowsTarget( qcTemplate * aTemplate,
     UInt               sStatus = 0;
 
     //-----------------------------------
-    // ±âº» Á¤º¸ ¼³Á¤
+    // ê¸°ë³¸ ì •ë³´ ì„¤ì •
     //-----------------------------------
     
     // insert plan
@@ -1332,10 +1332,10 @@ qmnMRGE::insertNoRowsTarget( qcTemplate * aTemplate,
     aTemplate->stmt = & sDataPlan->insertNoRowsStatement;
 
     //-----------------------------------
-    // INSERT¸¦ À§ÇÑ plan tree ÃÊ±âÈ­
+    // INSERTë¥¼ ìœ„í•œ plan tree ì´ˆê¸°í™”
     //-----------------------------------
 
-    // BUG-45288 atomic insert ´Â direct path °¡´É. normal insert ºÒ°¡´É.
+    // BUG-45288 atomic insert ëŠ” direct path ê°€ëŠ¥. normal insert ë¶ˆê°€ëŠ¥.
     ((qmndINST*) (aTemplate->tmplate.data + sPlan->offset))->isAppend =
         ((qmncINST*)sPlan)->isAppend;
 
@@ -1343,7 +1343,7 @@ qmnMRGE::insertNoRowsTarget( qcTemplate * aTemplate,
     sStatus = 3;
 
     //------------------------------------------
-    // INSERT¸¦ ¼öÇà
+    // INSERTë¥¼ ìˆ˜í–‰
     //------------------------------------------
 
     IDE_TEST( qmnINST::doIt( aTemplate, sPlan, &sFlag ) != IDE_SUCCESS );
@@ -1364,7 +1364,7 @@ qmnMRGE::insertNoRowsTarget( qcTemplate * aTemplate,
               != IDE_SUCCESS );
 
     //------------------------------------------
-    // Foreign Key Reference °Ë»ç
+    // Foreign Key Reference ê²€ì‚¬
     //------------------------------------------
 
     // BUG-28049
@@ -1488,12 +1488,12 @@ IDE_RC qmnMRGE::setBindParam( qcTemplate * aTemplate,
 {
 /***********************************************************************
  *
- * Description : BUG-45763 MERGE ±¸¹®¿¡¼­ CLOB Column Update Áß FATAL ¹ß»ýÇÕ´Ï´Ù.
+ * Description : BUG-45763 MERGE êµ¬ë¬¸ì—ì„œ CLOB Column Update ì¤‘ FATAL ë°œìƒí•©ë‹ˆë‹¤.
  *
- * Implementation : LOB ColumnÀÇ Bind Á¤º¸´Â Merge StatemantÀÎ aStatement->pBindParam ¿¡ ÀúÀåµÈ´Ù.
- *                  Merge ±¸¹®Àº Statemant ¸¦ SELECT, ON, UPDATE, INSERT, INSERT ¼øÀ¸·Î º¯°æÇÏ´Âµ¥,
- *                  ÃÖ»óÀ§¿¡ ÀÖ´Â Merge ÀÇ pBindParam À» Àü´ÞÇÏÁö ¾Ê´Â´Ù. µû¶ó¼­ LOB Bind Á¤º¸¸¦
- *                  °Ë»öÇÒ ¶§¿¡, FATAL ÀÌ ¹ß»ýÇÏ¹Ç·Î, pBindParam Á¤º¸¸¦ ¾Æ·¡·Î Àü´ÞÇØ¾ß ÇÑ´Ù.
+ * Implementation : LOB Columnì˜ Bind ì •ë³´ëŠ” Merge Statemantì¸ aStatement->pBindParam ì— ì €ìž¥ëœë‹¤.
+ *                  Merge êµ¬ë¬¸ì€ Statemant ë¥¼ SELECT, ON, UPDATE, INSERT, INSERT ìˆœìœ¼ë¡œ ë³€ê²½í•˜ëŠ”ë°,
+ *                  ìµœìƒìœ„ì— ìžˆëŠ” Merge ì˜ pBindParam ì„ ì „ë‹¬í•˜ì§€ ì•ŠëŠ”ë‹¤. ë”°ë¼ì„œ LOB Bind ì •ë³´ë¥¼
+ *                  ê²€ìƒ‰í•  ë•Œì—, FATAL ì´ ë°œìƒí•˜ë¯€ë¡œ, pBindParam ì •ë³´ë¥¼ ì•„ëž˜ë¡œ ì „ë‹¬í•´ì•¼ í•œë‹¤.
  *
  ***********************************************************************/
 

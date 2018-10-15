@@ -23,24 +23,24 @@ idBool iduFitManager::mIsPluginLoaded = ID_FALSE;
 iduFitStatus iduFitManager::mIsFitEnabled = IDU_FIT_NONE;
 UInt iduFitManager::mInitFailureCount = 0;
 
-/* ServerID ¹× sleepNode °ü¸® ¸®½ºÆ® */
+/* ServerID ë° sleepNode ê´€ë¦¬ ë¦¬ìŠ¤íŠ¸ */
 SChar iduFitManager::mSID[IDU_FIT_SID_MAX_LEN + 1];
 iduSleepList iduFitManager::mSleepList;
 
 void *iduFitManager::mShmPtr = NULL;
 volatile SInt *iduFitManager::mShmBuffer = NULL;
 
-/* FIT ¼­¹ö¶û Åë½Å¿ë ÇÔ¼ö ¹× µ¿Àû ¶óÀÌºê·¯¸® ÇÚµé */
+/* FIT ì„œë²„ë‘ í†µì‹ ìš© í•¨ìˆ˜ ë° ë™ì  ë¼ì´ë¸ŒëŸ¬ë¦¬ í•¸ë“¤ */
 fitTransmission iduFitManager::mTransmission = NULL;
 PDL_SHLIB_HANDLE iduFitManager::mFitHandle = PDL_SHLIB_INVALID_HANDLE;
 
-/* iduFitManager ÃÊ±âÈ­ ÇÔ¼ö */
+/* iduFitManager ì´ˆê¸°í™” í•¨ìˆ˜ */
 IDE_RC iduFitManager::initialize()
 {
-    /* FIT_ENABLE = 1 ÀÌ¸é loading ÇÏ°í, 0 ÀÌ¸é ÇÏÁö ¾Ê´Â´Ù. */
+    /* FIT_ENABLE = 1 ì´ë©´ loading í•˜ê³ , 0 ì´ë©´ í•˜ì§€ ì•ŠëŠ”ë‹¤. */
     IDE_TEST( iduFitManager::getFitEnable() == IDU_FIT_FALSE );
 
-    /* iduFitManager ÃÊ±âÈ­ »óÅÂ¸¦ È®ÀÎ */
+    /* iduFitManager ì´ˆê¸°í™” ìƒíƒœë¥¼ í™•ì¸ */
     if ( mIsInitialized == ID_TRUE )
     {
         IDE_TEST( iduFitManager::finalize() != IDE_SUCCESS );
@@ -50,34 +50,34 @@ IDE_RC iduFitManager::initialize()
         /* DO NOTHING */
     }
 
-    /* ¼­¹ö ½Äº°ÀÚ ÆÄ½ÌÇÏ±â */
+    /* ì„œë²„ ì‹ë³„ì íŒŒì‹±í•˜ê¸° */
     IDE_TEST_RAISE( iduFitManager::parseSID() != IDE_SUCCESS, ERR_FIT_INITIALIZATION );
 
-    /* ¸Ş¸ğ¸® ÇÒ´ç */
+    /* ë©”ëª¨ë¦¬ í• ë‹¹ */
     IDE_TEST_RAISE( initSleepList(&iduFitManager::mSleepList) != IDE_SUCCESS, ERR_FIT_INITIALIZATION );
 
-    /* µ¿Àû ¶óÀÌºê·¯¸® fitPlugin ·Îµù */
+    /* ë™ì  ë¼ì´ë¸ŒëŸ¬ë¦¬ fitPlugin ë¡œë”© */
     IDE_TEST_RAISE( loadFitPlugin() != IDE_SUCCESS, ERR_FIT_INITIALIZATION );
 
-    /* Shared Memory ´Â ¼º´ÉÀ» À§ÇÑ ¸ñÀûÀÌ¹Ç·Î Failure °¡ ¹ß»ıÇÏ´õ¶óµµ ¹«½ÃÇÑ´Ù */
+    /* Shared Memory ëŠ” ì„±ëŠ¥ì„ ìœ„í•œ ëª©ì ì´ë¯€ë¡œ Failure ê°€ ë°œìƒí•˜ë”ë¼ë„ ë¬´ì‹œí•œë‹¤ */
     (void)attachSharedMemory();
 
-    /* fitPluging ·Îµù »óÅÂ °ªÀ» º¯°æ */
+    /* fitPluging ë¡œë”© ìƒíƒœ ê°’ì„ ë³€ê²½ */
     mIsPluginLoaded = ID_TRUE;
 
-    /* iduFitManager »óÅÂ °ªÀ» º¯°æ */
+    /* iduFitManager ìƒíƒœ ê°’ì„ ë³€ê²½ */
     mIsInitialized = ID_TRUE;
 
     return IDE_SUCCESS;
 
     IDE_EXCEPTION( ERR_FIT_INITIALIZATION )
     {
-        /* ½ÇÆĞ ÇÏ´õ¶óµµ log ¸¸ ³²±â°í °è¼Ó ÁøÇàÇÑ´Ù. */
+        /* ì‹¤íŒ¨ í•˜ë”ë¼ë„ log ë§Œ ë‚¨ê¸°ê³  ê³„ì† ì§„í–‰í•œë‹¤. */
         IDU_FIT_LOG( "FIT Initialization Failure." );
 
         mInitFailureCount++;
 
-        /* Failure ÀÌ IDU_FIT_INIT_RETRY_MAX ÀÌ»óÀ¸·Î ¹İº¹µÉ °æ¿ìFIT_ENABLE À» 0 À¸·Î º¯°æÇÑ´Ù. */
+        /* Failure ì´ IDU_FIT_INIT_RETRY_MAX ì´ìƒìœ¼ë¡œ ë°˜ë³µë  ê²½ìš°FIT_ENABLE ì„ 0 ìœ¼ë¡œ ë³€ê²½í•œë‹¤. */
         if ( mInitFailureCount > IDU_FIT_INIT_RETRY_MAX ) 
         {
             mIsFitEnabled = IDU_FIT_FALSE;
@@ -95,15 +95,15 @@ IDE_RC iduFitManager::initialize()
     return IDE_SUCCESS; 
 }
 
-/* iduFitManager ¼Ò¸ê ÇÔ¼ö */
+/* iduFitManager ì†Œë©¸ í•¨ìˆ˜ */
 IDE_RC iduFitManager::finalize()
 {
     UInt sState = 1;
 
-    /* fitPluging ·ÎµùÀ» ÇØÁ¦ */
+    /* fitPluging ë¡œë”©ì„ í•´ì œ */
     IDE_TEST_RAISE( iduFitManager::unloadFitPlugin() != IDE_SUCCESS, ERR_FIT_FINALIZATION );
 
-    /* sleepList¸¦ ÇØÁ¦ÇÏ±â */
+    /* sleepListë¥¼ í•´ì œí•˜ê¸° */
     IDE_TEST_RAISE( finalSleepList(&iduFitManager::mSleepList) != IDE_SUCCESS, ERR_FIT_FINALIZATION );
 
     if ( ( mShmPtr != NULL ) && ( mShmPtr != (void *)-1 ) )
@@ -121,7 +121,7 @@ IDE_RC iduFitManager::finalize()
 
     IDE_EXCEPTION( ERR_FIT_FINALIZATION )
     {
-        /* ½ÇÆĞ ÇÏ´õ¶óµµ log ¸¸ ³²±â°í °è¼Ó ÁøÇàÇÑ´Ù. */
+        /* ì‹¤íŒ¨ í•˜ë”ë¼ë„ log ë§Œ ë‚¨ê¸°ê³  ê³„ì† ì§„í–‰í•œë‹¤. */
         IDU_FIT_LOG( "FIT Finalization Failure." );
     }
 
@@ -141,7 +141,7 @@ IDE_RC iduFitManager::finalize()
     return IDE_SUCCESS;
 }
 
-/* ErrorCode ¼¼ÆÃÇÔ¼ö */
+/* ErrorCode ì„¸íŒ…í•¨ìˆ˜ */
 void iduFitManager::setErrorCode( const SChar *aFormat, ... )
 {
     UInt sErrorCode = 0;
@@ -160,16 +160,16 @@ void iduFitManager::setLogInfo( const SChar *aFileName,
                                 UInt aCodeLine,
                                 iduFitAction *aFitAction )
 {
-    /* ÆÄÀÏ ÀÌ¸§À» ÀúÀå */
+    /* íŒŒì¼ ì´ë¦„ì„ ì €ì¥ */
     idlOS::strncpy( aFitAction->mFileName, 
                     aFileName, 
                     IDU_FIT_NAME_MAX_LEN );
 
-    /* ¶óÀÎÀ» ÀúÀå */
+    /* ë¼ì¸ì„ ì €ì¥ */
     aFitAction->mCodeLine = aCodeLine;
 }
 
-/* $ALTIBASE_HOME °æ·Î·Î SID µ¥ÀÌÅÍ¸¦ ÆÄ½Ì */
+/* $ALTIBASE_HOME ê²½ë¡œë¡œ SID ë°ì´í„°ë¥¼ íŒŒì‹± */
 IDE_RC iduFitManager::parseSID()
 {
     SChar *sEnvPath = NULL;
@@ -178,27 +178,27 @@ IDE_RC iduFitManager::parseSID()
     SChar *sStrPtr = NULL;
     SChar *sSidPtr = NULL;
 
-    /* ½Äº°ÀÚ SID ±¸¼ºÇÏ±â */
+    /* ì‹ë³„ì SID êµ¬ì„±í•˜ê¸° */
     sEnvPath = idlOS::getenv(IDP_HOME_ENV);
     IDE_TEST( sEnvPath == NULL );
 
     idlOS::strncpy(sHomePath, sEnvPath, IDU_FIT_PATH_MAX_LEN);
     sHomePath[IDU_FIT_PATH_MAX_LEN] = IDE_FIT_STRING_TERM;
 
-    /* HDBHomePath¸¦ ÀÚ¸£±â. ¿¹¸¦ µéÀÚ¸é 
+    /* HDBHomePathë¥¼ ìë¥´ê¸°. ì˜ˆë¥¼ ë“¤ìë©´ 
        /home/user/work/altidev4/altibase_home 
-       ¹®ÀÚ¿­À» ÀÚ¸£¸é altibase_home  */
+       ë¬¸ìì—´ì„ ìë¥´ë©´ altibase_home  */
     sStrPtr = idlOS::strtok(sHomePath, IDL_FILE_SEPARATORS);
     
-    /* ´õ ÀÌ»ó ±¸ÇÒ ¹®ÀÚ¿­ÀÌ ¾øÀ» ¶§±îÁö ¹İº¹ */
+    /* ë” ì´ìƒ êµ¬í•  ë¬¸ìì—´ì´ ì—†ì„ ë•Œê¹Œì§€ ë°˜ë³µ */
     while ( sStrPtr != NULL )
     {
-        /* ´ÙÀ½¹ø ÀÚ¸£±â À§ÇØ¼­ À§Ä¡ ÀúÀå */
+        /* ë‹¤ìŒë²ˆ ìë¥´ê¸° ìœ„í•´ì„œ ìœ„ì¹˜ ì €ì¥ */
         sSidPtr = sStrPtr;
         sStrPtr = idlOS::strtok(NULL, IDL_FILE_SEPARATORS);
     }
 
-    /* SID º¹»ç */
+    /* SID ë³µì‚¬ */
     idlOS::strncpy(iduFitManager::mSID, sSidPtr, IDU_FIT_SID_MAX_LEN);
     iduFitManager::mSID[IDU_FIT_SID_MAX_LEN] = IDE_FIT_STRING_TERM;
 
@@ -215,7 +215,7 @@ IDE_RC iduFitManager::requestFitAction( const SChar *aUID, iduFitAction *aFitAct
     SChar sSendData[IDU_FIT_DATA_MAX_LEN + 1] = { 0, };
     SChar sRecvData[IDU_FIT_DATA_MAX_LEN + 1] = { 0, };
 
-    /* FIT NODE ¿¡ ¾Æ¹«°Íµµ ¾øÀ¸¸é Åë½ÅÇÏÁö ¾Ê´Â´Ù */
+    /* FIT NODE ì— ì•„ë¬´ê²ƒë„ ì—†ìœ¼ë©´ í†µì‹ í•˜ì§€ ì•ŠëŠ”ë‹¤ */
     if ( ( mShmBuffer != NULL ) && ( mShmBuffer != (void *)-1 ) ) 
     {
         IDE_TEST( *mShmBuffer != IDU_FIT_POINT_EXIST );
@@ -238,21 +238,21 @@ IDE_RC iduFitManager::requestFitAction( const SChar *aUID, iduFitAction *aFitAct
 
     IDE_TEST( mFitHandle == PDL_SHLIB_INVALID_HANDLE );
 
-    /* UID ¹× SID Append Ã³¸® */
+    /* UID ë° SID Append ì²˜ë¦¬ */
     idlOS::strncpy(sSendData, aUID, ID_SIZEOF(sSendData));
     sSendData[IDU_FIT_DATA_MAX_LEN] = IDE_FIT_STRING_TERM;
 
     idlOS::strncat( sSendData, IDU_FIT_VERTICAL_BAR, IDU_FIT_DATA_MAX_LEN );
     idlOS::strncat( sSendData, iduFitManager::mSID, IDU_FIT_DATA_MAX_LEN );
 
-    /* FIT ¼­¹ö¿Í ¼Û¼ö½Å ÇÏ±â */
+    /* FIT ì„œë²„ì™€ ì†¡ìˆ˜ì‹  í•˜ê¸° */
     IDE_TEST( mTransmission( (SChar *)sSendData, IDU_FIT_DATA_MAX_LEN,
                              (SChar *)sRecvData, IDU_FIT_DATA_MAX_LEN ) != 0 );
 
-    /* ¼ö½Å ¹Ş´ø °á°ú¿¡ ´ëÇÑ ÆÄ½Ì */
+    /* ìˆ˜ì‹  ë°›ë˜ ê²°ê³¼ì— ëŒ€í•œ íŒŒì‹± */
     IDE_TEST( iduFitManager::parseFitAction(sRecvData, aFitAction) != IDE_SUCCESS );
 
-    /* ¾Æ¹«·± Action ÀÌ ÇÊ¿äÇÏÁö ¾ÊÀ»°æ¿ì */
+    /* ì•„ë¬´ëŸ° Action ì´ í•„ìš”í•˜ì§€ ì•Šì„ê²½ìš° */
     IDE_TEST( aFitAction->mProtocol != IDU_FIT_DO_ACTION );
 
     return IDE_SUCCESS;
@@ -263,7 +263,7 @@ IDE_RC iduFitManager::requestFitAction( const SChar *aUID, iduFitAction *aFitAct
 }
 
 
-/* ¼ö½Å Á¤º¸¸¦ ºĞ¼®ÇÏ°í FitActionÀ» ÃÊ±âÈ­ */
+/* ìˆ˜ì‹  ì •ë³´ë¥¼ ë¶„ì„í•˜ê³  FitActionì„ ì´ˆê¸°í™” */
 IDE_RC iduFitManager::parseFitAction( SChar *aRecvData, iduFitAction *aFitAction )
 {
     SInt sValue = 0;
@@ -280,21 +280,21 @@ IDE_RC iduFitManager::parseFitAction( SChar *aRecvData, iduFitAction *aFitAction
 
     IDE_TEST( aRecvData == NULL );
 
-    /* aRecvData ¹®ÀÚ¿­¿¡¼­ '{' ½ÃÀÛÇÏ´Â À§Ä¡¸¦ ±¸ÇÔ */
+    /* aRecvData ë¬¸ìì—´ì—ì„œ '{' ì‹œì‘í•˜ëŠ” ìœ„ì¹˜ë¥¼ êµ¬í•¨ */
     sLeftPtr = idlOS::strstr(aRecvData, IDE_FIT_LEFT_BRACE);
     IDE_TEST( sLeftPtr == NULL );
     
-    /* aRecvData ¹®ÀÚ¿­ÀÌ '{' ÀÖ´ÂÁö È®ÀÎ */
+    /* aRecvData ë¬¸ìì—´ì´ '{' ìˆëŠ”ì§€ í™•ì¸ */
     IDE_TEST( idlOS::strncmp(sLeftPtr, IDE_FIT_LEFT_BRACE, 1) != 0 );
     
-    /* aRecvData ¹®ÀÚ¿­¿¡¼­ '}' ½ÃÀÛÇÏ´Â À§Ä¡¸¦ ±¸ÇÔ */
+    /* aRecvData ë¬¸ìì—´ì—ì„œ '}' ì‹œì‘í•˜ëŠ” ìœ„ì¹˜ë¥¼ êµ¬í•¨ */
     sRightPtr = idlOS::strstr(aRecvData, IDE_FIT_RIGHT_BRACE);
     IDE_TEST( sRightPtr == NULL);
     
-    /* aRecvData ¹®ÀÚ¿­ÀÌ '}' ÀÖ´ÂÁö È®ÀÎ */
+    /* aRecvData ë¬¸ìì—´ì´ '}' ìˆëŠ”ì§€ í™•ì¸ */
     IDE_TEST( idlOS::strncmp(sRightPtr, IDE_FIT_RIGHT_BRACE, 1) != 0 );
     
-    /* ¹®ÀÚ¿­ÀÌ ÆÄ½Ì */
+    /* ë¬¸ìì—´ì´ íŒŒì‹± */
     sStrPtr = idlOS::strtok_r(aRecvData, IDE_FIT_LEFT_BRACE, &sSavePtr);
     sStrPtr = idlOS::strtok_r(sStrPtr, IDE_FIT_RIGHT_BRACE, &sSavePtr);
 
@@ -314,29 +314,29 @@ IDE_RC iduFitManager::parseFitAction( SChar *aRecvData, iduFitAction *aFitAction
         {
             case 0:
             {
-                /* Protocol ÄÚµå ÆÄ½Ì */
+                /* Protocol ì½”ë“œ íŒŒì‹± */
                 sStrLen = idlOS::strlen(sStrPtr);
                 IDE_TEST(idlVA::strnToSLong(sStrPtr, sStrLen, &sProtocol, NULL) != 0);
 
-                /* Protocol ¼³Á¤ */
+                /* Protocol ì„¤ì • */
                 aFitAction->mProtocol = (iduFitProtocol)sProtocol;
 
                 break;
             }
             case 1:
             {
-                /* ActionType ÆÄ½Ì */
+                /* ActionType íŒŒì‹± */
                 sStrLen = idlOS::strlen(sStrPtr);
                 IDE_TEST(idlVA::strnToSLong(sStrPtr, sStrLen, &sActionType, NULL) != 0);
 
-                /* ActionType ¼³Á¤ */
+                /* ActionType ì„¤ì • */
                 aFitAction->mType = (iduFitActionType)sActionType;
 
                 break;
             }
             case 2:
             {
-                /* TID ÆÄ½Ì */
+                /* TID íŒŒì‹± */
                 idlOS::strncpy(aFitAction->mTID, sStrPtr, ID_SIZEOF(aFitAction->mTID));
                 aFitAction->mTID[IDU_FIT_TID_MAX_LEN] = IDE_FIT_STRING_TERM;
 
@@ -344,11 +344,11 @@ IDE_RC iduFitManager::parseFitAction( SChar *aRecvData, iduFitAction *aFitAction
             }
             case 3:
             {
-                /* Timeout ½Ã°£ ÆÄ½Ì */
+                /* Timeout ì‹œê°„ íŒŒì‹± */
                 sStrLen = idlOS::strlen(sStrPtr);
                 IDE_TEST(idlVA::strnToSLong(sStrPtr, sStrLen, &sTimeout, NULL) != 0);
 
-                /* Timeout ¼³Á¤ */
+                /* Timeout ì„¤ì • */
                 aFitAction->mTimeout = (UInt)sTimeout;
 
                 break;
@@ -372,7 +372,7 @@ IDE_RC iduFitManager::parseFitAction( SChar *aRecvData, iduFitAction *aFitAction
     return IDE_FAILURE;
 }
 
-/* ÁÖ¾îÁø fitActionÀÇ À¯ÇüÀ» µû¶ó¼­ ±â´É ½ÇÇàÇÏ´Â ÇÔ¼ö */
+/* ì£¼ì–´ì§„ fitActionì˜ ìœ í˜•ì„ ë”°ë¼ì„œ ê¸°ëŠ¥ ì‹¤í–‰í•˜ëŠ” í•¨ìˆ˜ */
 IDE_RC iduFitManager::validateFitAction( iduFitAction *aFitAction )
 {
 
@@ -433,13 +433,13 @@ IDE_RC iduFitManager::validateFitAction( iduFitAction *aFitAction )
     return IDE_FAILURE;
 }
 
-/* Åë½Å¿ë ¶óÀÌºê·¯¸®¸¦ ·ÎµùÇÏ´Â ÇÔ¼ö */
+/* í†µì‹ ìš© ë¼ì´ë¸ŒëŸ¬ë¦¬ë¥¼ ë¡œë”©í•˜ëŠ” í•¨ìˆ˜ */
 IDE_RC iduFitManager::loadFitPlugin()
 {
     SChar *sEnvPath = NULL;
     SChar sPluginPath[IDU_FIT_PATH_MAX_LEN + 1] = { 0, };
 
-    /* $ATAF_HOME °æ·Î¸¦ ¾ò¾î¿À±â */
+    /* $ATAF_HOME ê²½ë¡œë¥¼ ì–»ì–´ì˜¤ê¸° */
     sEnvPath = idlOS::getenv(IDU_FIT_ATAF_HOME_ENV);
     IDE_TEST( sEnvPath == NULL );
 
@@ -460,7 +460,7 @@ IDE_RC iduFitManager::loadFitPlugin()
 
 #endif
 
-    /* ¶óÀÌºê·¯¸®¸¦ ¿­±â */
+    /* ë¼ì´ë¸ŒëŸ¬ë¦¬ë¥¼ ì—´ê¸° */
     mFitHandle = idlOS::dlopen(sPluginPath, RTLD_LAZY | RTLD_LOCAL);
     IDE_TEST_RAISE( mFitHandle == PDL_SHLIB_INVALID_HANDLE, ERR_INVALID_HANDLE );
 
@@ -532,7 +532,7 @@ IDE_RC iduFitManager::initSleepList( iduSleepList *aSleepList )
     /* Setting preporties */
     aSleepList->mCount = 0;
 
-    /* Mutex ÃÊ±âÈ­ */
+    /* Mutex ì´ˆê¸°í™” */
     IDE_TEST_RAISE( aSleepList->mMutex.initialize((SChar *) "FIT_SLEEPLIST_MUTEX",
                                                   IDU_MUTEX_KIND_POSIX,
                                                   IDV_WAIT_INDEX_NULL)
@@ -542,7 +542,7 @@ IDE_RC iduFitManager::initSleepList( iduSleepList *aSleepList )
 
     IDE_EXCEPTION( ERR_MUTEX_INIT )
     {
-        /* Mutex ÃÊ±âÈ­ ½ÇÆĞ·Î ÀÎÇÑ ¿¡·¯ */
+        /* Mutex ì´ˆê¸°í™” ì‹¤íŒ¨ë¡œ ì¸í•œ ì—ëŸ¬ */
         IDE_SET(ideSetErrorCode(idERR_FATAL_ThrMutexInit));
     }
     IDE_EXCEPTION_END;
@@ -558,14 +558,14 @@ IDE_RC iduFitManager::finalSleepList( iduSleepList *aSleepList )
     IDE_TEST( resetSleepList(aSleepList) != IDE_SUCCESS );
     sState = 1;
 
-    /* sleepList ¿ë Mutex ÇØÁ¦ */
+    /* sleepList ìš© Mutex í•´ì œ */
     IDE_TEST_RAISE( aSleepList->mMutex.destroy() != IDE_SUCCESS, ERR_MUTEX_DESTROY );
 
     return IDE_SUCCESS;
 
     IDE_EXCEPTION( ERR_MUTEX_DESTROY )
     {
-        /* Mutex ÇØÁ¦ ½ÇÆĞ·Î ÀÎÇÑ ¿¡·¯ */
+        /* Mutex í•´ì œ ì‹¤íŒ¨ë¡œ ì¸í•œ ì—ëŸ¬ */
         IDE_SET(ideSetErrorCode(idERR_FATAL_ThrMutexDestroy));
     }
     IDE_EXCEPTION_END;
@@ -620,12 +620,12 @@ IDE_RC iduFitManager::createSleepNode( iduSleepNode **aSleepNode,
 
     IDE_TEST( aSleepNode == NULL );
 
-    /* ¸Ş¸ğ¸® ÇÒ´ç */
+    /* ë©”ëª¨ë¦¬ í• ë‹¹ */
     sSleepNode = (iduSleepNode *) iduMemMgr::mallocRaw(ID_SIZEOF(iduSleepNode));
     IDE_TEST( sSleepNode == NULL );
     sState = 1;
     
-    /* TID º¹»çÇÏ±â */
+    /* TID ë³µì‚¬í•˜ê¸° */
     idlOS::strncpy( sSleepNode->mAction.mTID, 
                     aFitAction->mTID, 
                     IDU_FIT_TID_MAX_LEN );
@@ -633,20 +633,20 @@ IDE_RC iduFitManager::createSleepNode( iduSleepNode **aSleepNode,
     sTIDLength = idlOS::strlen(aFitAction->mTID);
     sSleepNode->mAction.mTID[sTIDLength] = IDE_FIT_STRING_TERM;
 
-    /* ActionType º¹»çÇÏ±â */
+    /* ActionType ë³µì‚¬í•˜ê¸° */
     sSleepNode->mAction.mType = aFitAction->mType;
 
-    /* Time º¹»çÇÏ±â */
+    /* Time ë³µì‚¬í•˜ê¸° */
     sSleepNode->mAction.mTimeout = aFitAction->mTimeout;
 
-    /* Mutex ÃÊ±âÈ­ */
+    /* Mutex ì´ˆê¸°í™” */
     IDE_TEST_RAISE( sSleepNode->mMutex.initialize((SChar *)"FIT_SLEEPNODE_MUTEX",
                                                   IDU_MUTEX_KIND_POSIX,
                                                   IDV_WAIT_INDEX_NULL)
                     != IDE_SUCCESS, ERR_MUTEX_INIT );
     sState = 2;
 
-    /* Condition ÃÊ±âÈ­ */
+    /* Condition ì´ˆê¸°í™” */
     IDE_TEST_RAISE( sSleepNode->mCond.initialize((SChar *)"FIT_SLEEPNODE_COND")
                     != IDE_SUCCESS, ERR_COND_INIT );
 
@@ -656,12 +656,12 @@ IDE_RC iduFitManager::createSleepNode( iduSleepNode **aSleepNode,
 
     IDE_EXCEPTION( ERR_MUTEX_INIT )
     {
-        /* Mutex ÃÊ±âÈ­ ½ÇÆĞ·Î ÀÎÇÑ ¿¡·¯ */
+        /* Mutex ì´ˆê¸°í™” ì‹¤íŒ¨ë¡œ ì¸í•œ ì—ëŸ¬ */
         IDE_SET(ideSetErrorCode(idERR_FATAL_ThrMutexInit));
     }
     IDE_EXCEPTION( ERR_COND_INIT )
     {
-        /* Condition ÃÊ±âÈ­ ½ÇÆĞ·Î ÀÎÇÑ ¿¡·¯ */
+        /* Condition ì´ˆê¸°í™” ì‹¤íŒ¨ë¡œ ì¸í•œ ì—ëŸ¬ */
         IDE_SET(ideSetErrorCode(idERR_FATAL_ThrCondInit));
     }
     IDE_EXCEPTION_END;
@@ -751,22 +751,22 @@ IDE_RC iduFitManager::freeSleepNode( iduSleepNode *aSleepNode )
     IDE_TEST_RAISE( aSleepNode->mMutex.destroy() != IDE_SUCCESS,
                     ERR_MUTEX_DESTROY );
 
-    /* ¸Ş¸ğ¸® ÇØÁ¦ */
+    /* ë©”ëª¨ë¦¬ í•´ì œ */
     (void)iduMemMgr::freeRaw(aSleepNode);
 
-    /* Æ÷ÀÎÅÍ¸¦ NULL·Î ¼³Á¤ */
+    /* í¬ì¸í„°ë¥¼ NULLë¡œ ì„¤ì • */
     aSleepNode = NULL;
 
     return IDE_SUCCESS;
 
     IDE_EXCEPTION( ERR_COND_DESTROY )
     {
-        /* Condition ÇØÁ¦ ½ÇÆĞ·Î ÀÎÇÑ ¿¡·¯ */
+        /* Condition í•´ì œ ì‹¤íŒ¨ë¡œ ì¸í•œ ì—ëŸ¬ */
         IDE_SET(ideSetErrorCode(idERR_FATAL_ThrCondDestroy));
     }
     IDE_EXCEPTION( ERR_MUTEX_DESTROY )
     {
-        /* Mutex ÇØÁ¦ ½ÇÆĞ·Î ÀÎÇÑ ¿¡·¯ */
+        /* Mutex í•´ì œ ì‹¤íŒ¨ë¡œ ì¸í•œ ì—ëŸ¬ */
         IDE_SET(ideSetErrorCode(idERR_FATAL_ThrMutexDestroy));
     }
     IDE_EXCEPTION_END;
@@ -790,7 +790,7 @@ IDE_RC iduFitManager::getSleepNode( const SChar *aUID,
           sDestNode != sTailNode;
           sDestNode = sDestNode->mNext )
     {
-        /* UID ¹× TID ÀÌ¸§ÀÌ °°´ÂÁö È®ÀÎ */
+        /* UID ë° TID ì´ë¦„ì´ ê°™ëŠ”ì§€ í™•ì¸ */
         if ( 0 == idlOS::strncmp(aUID, sDestNode->mAction.mTID, IDU_FIT_TID_MAX_LEN) )
         {
             *aSleepNode = sDestNode;
@@ -802,7 +802,7 @@ IDE_RC iduFitManager::getSleepNode( const SChar *aUID,
         }
     }
 
-    /* ¾øÀ¸¸é ½ÇÆĞ Ã³¸® */
+    /* ì—†ìœ¼ë©´ ì‹¤íŒ¨ ì²˜ë¦¬ */
     IDE_TEST( *aSleepNode == NULL );
 
     return IDE_SUCCESS;
@@ -849,7 +849,7 @@ IDE_RC iduFitManager::killServer( iduFitAction *aFitAction )
     /* BUG-39414 */
     ideLogEntry sLog(IDE_FIT_0);
 
-    /* ·Î±× ÆÄÀÏ ³¡¿¡ ÀÌµ¿ */
+    /* ë¡œê·¸ íŒŒì¼ ëì— ì´ë™ */
     sLog.setTailless(ACP_TRUE);
     sLog.append( "HDB server was terminated.\n" );
     sLog.appendFormat( "[%s:%"ID_UINT32_FMT":\"%s\"]\n",
@@ -875,31 +875,31 @@ IDE_RC iduFitManager::sleepServer( iduFitAction *aFitAction )
     UInt sState = 0;
     iduSleepNode *sSleepNode = NULL;
 
-    /* ¸Ş¸ğ¸® ÇÒ´ç */
+    /* ë©”ëª¨ë¦¬ í• ë‹¹ */
     sRC = createSleepNode(&sSleepNode, aFitAction);
     IDE_TEST( sRC != IDE_SUCCESS );
     sState = 1;
 
-    /* ¶ôÀ» Àâ°í ³ëµå¸¦ Ãß°¡ */
+    /* ë½ì„ ì¡ê³  ë…¸ë“œë¥¼ ì¶”ê°€ */
     sRC = addSleepNode(&iduFitManager::mSleepList, sSleepNode);
     IDE_TEST( sRC != IDE_SUCCESS );
     sState = 2;
 
-    /* SLEEP µ¿ÀÛÇÏ±â À§ÇÑ ³ëµå ¶ô Àâ±â */
+    /* SLEEP ë™ì‘í•˜ê¸° ìœ„í•œ ë…¸ë“œ ë½ ì¡ê¸° */
     IDE_TEST( sSleepNode->mMutex.lock(NULL) != IDE_SUCCESS );
 
-    /* SLEEP ·Î±×¸¦ ±â·ÏÇÏ±â */
+    /* SLEEP ë¡œê·¸ë¥¼ ê¸°ë¡í•˜ê¸° */
     ideLog::log ( IDE_FIT_0, 
                   "HDB server is sleeping.\n[%s:%"ID_UINT32_FMT":\"%s\":INFINATE msec]",
                   aFitAction->mFileName,
                   aFitAction->mCodeLine,
                   aFitAction->mTID );
 
-    /* ½Ã±×³ÎÀ» ¹ß»ıÇÒ¶§±îÁö ¸ØÃã */
+    /* ì‹œê·¸ë„ì„ ë°œìƒí• ë•Œê¹Œì§€ ë©ˆì¶¤ */
     IDE_TEST_RAISE( sSleepNode->mCond.wait(&(sSleepNode->mMutex))
                     != IDE_SUCCESS, ERR_COND_WAIT );
 
-    /* WAKEUP ·Î±×¸¦ ±â·ÏÇÏ±â */
+    /* WAKEUP ë¡œê·¸ë¥¼ ê¸°ë¡í•˜ê¸° */
     ideLog::log ( IDE_FIT_0, 
                   "HDB server received a wakeup signal.\n[%s:%"ID_UINT32_FMT":\"%s\"]\n",
                   aFitAction->mFileName,
@@ -907,15 +907,15 @@ IDE_RC iduFitManager::sleepServer( iduFitAction *aFitAction )
                   aFitAction->mTID );
 
 
-    /* SLEEP ÇØÁ¦ÇÏ±â À§ÇÑ ³ëµå¶ô Ç®±â */
+    /* SLEEP í•´ì œí•˜ê¸° ìœ„í•œ ë…¸ë“œë½ í’€ê¸° */
     IDE_TEST( sSleepNode->mMutex.unlock() != IDE_SUCCESS );
 
-    /* ¶ôÀ» Àâ°í ³ëµå¸¦ »èÁ¦ */
+    /* ë½ì„ ì¡ê³  ë…¸ë“œë¥¼ ì‚­ì œ */
     sRC = deleteSleepNode(&iduFitManager::mSleepList, sSleepNode);
     IDE_TEST( sRC != IDE_SUCCESS );
     sState = 1;
 
-    /* ¸Ş¸ğ¸® ÇØÁ¦ */
+    /* ë©”ëª¨ë¦¬ í•´ì œ */
     sRC = freeSleepNode(sSleepNode);
     IDE_TEST( sRC != IDE_SUCCESS );
 
@@ -923,7 +923,7 @@ IDE_RC iduFitManager::sleepServer( iduFitAction *aFitAction )
 
     IDE_EXCEPTION( ERR_COND_WAIT )
     {
-        /* Condition Wait ½ÇÆĞ·Î ÀÎÇÑ ¼­¹ö FATAL */
+        /* Condition Wait ì‹¤íŒ¨ë¡œ ì¸í•œ ì„œë²„ FATAL */
         IDE_SET_AND_DIE(ideSetErrorCode(idERR_FATAL_ThrCondWait));
     }
     IDE_EXCEPTION_END;
@@ -955,20 +955,20 @@ IDE_RC iduFitManager::timeSleepServer( iduFitAction *aFitAction )
 
     IDE_TEST( aFitAction->mTimeout == 0 );
 
-    /* ¸Ş¸ğ¸® ÇÒ´ç */
+    /* ë©”ëª¨ë¦¬ í• ë‹¹ */
     sRC = createSleepNode(&sSleepNode, aFitAction);
     IDE_TEST( sRC != IDE_SUCCESS );
     sState = 1;
 
-    /* ¶ôÀ» Àâ°í ³ëµå¸¦ Ãß°¡ */
+    /* ë½ì„ ì¡ê³  ë…¸ë“œë¥¼ ì¶”ê°€ */
     sRC = addSleepNode(&iduFitManager::mSleepList, sSleepNode);
     IDE_TEST( sRC != IDE_SUCCESS );
     sState = 2;
 
-    /* TIME SLEEP µ¿ÀÛÇÏ±â À§ÇÑ ³ëµå¶ô Àâ±â */
+    /* TIME SLEEP ë™ì‘í•˜ê¸° ìœ„í•œ ë…¸ë“œë½ ì¡ê¸° */
     IDE_TEST( sSleepNode->mMutex.lock(NULL) != IDE_SUCCESS );
 
-    /* TIME SLEEP ·Î±×¸¦ ±â·ÏÇÏ±â */
+    /* TIME SLEEP ë¡œê·¸ë¥¼ ê¸°ë¡í•˜ê¸° */
     ideLog::log ( IDE_FIT_0,
                   "HDB server is sleeping.\n[%s:%"ID_UINT32_FMT":\"%s\":%"ID_UINT32_FMT" msec]",
                   aFitAction->mFileName,
@@ -976,32 +976,32 @@ IDE_RC iduFitManager::timeSleepServer( iduFitAction *aFitAction )
                   aFitAction->mTID,
                   aFitAction->mTimeout );
 
-    /* TIME ¼³Á¤ÇÏ±â */
+    /* TIME ì„¤ì •í•˜ê¸° */
     sUSecond = aFitAction->mTimeout;
     sSleepNode->mTV.set((idlOS::time(NULL) + (sUSecond / 1000)), 0);
 
-    /* TIMEOUT ¹ß»ıÇÏ°Å³ª ½Ã±×³ÎÀ» ¹ß»ıÇÒ¶§±îÁö ¸ØÃã */
+    /* TIMEOUT ë°œìƒí•˜ê±°ë‚˜ ì‹œê·¸ë„ì„ ë°œìƒí• ë•Œê¹Œì§€ ë©ˆì¶¤ */
     IDE_TEST_RAISE( sSleepNode->mCond.timedwait(&(sSleepNode->mMutex),
                                                 &(sSleepNode->mTV),
                                                 ID_TRUE)
                     != IDE_SUCCESS, ERR_COND_TIME_WAIT );
 
-    /* WAKEUP ·Î±×¸¦ ±â·ÏÇÏ±â */
+    /* WAKEUP ë¡œê·¸ë¥¼ ê¸°ë¡í•˜ê¸° */
     ideLog::log ( IDE_FIT_0,
                   "HDB server received a wakeup signal.\n[%s:%"ID_UINT32_FMT":\"%s\"]",
                   aFitAction->mFileName,
                   aFitAction->mCodeLine,
                   aFitAction->mTID );
 
-    /* TIME SLEEP ÇØÁ¦ÇÏ±â À§ÇÑ ³ëµå¶ô Ç®±â */
+    /* TIME SLEEP í•´ì œí•˜ê¸° ìœ„í•œ ë…¸ë“œë½ í’€ê¸° */
     IDE_TEST( sSleepNode->mMutex.unlock() != IDE_SUCCESS );
 
-    /* ¶ôÀ» Àâ°í ³ëµå¸¦ »èÁ¦ */
+    /* ë½ì„ ì¡ê³  ë…¸ë“œë¥¼ ì‚­ì œ */
     sRC = deleteSleepNode(&iduFitManager::mSleepList, sSleepNode);
     IDE_TEST( sRC != IDE_SUCCESS );
     sState = 1;
     
-    /* ¸Ş¸ğ¸® ÇØÁ¦ */
+    /* ë©”ëª¨ë¦¬ í•´ì œ */
     sRC = freeSleepNode(sSleepNode);
     IDE_TEST( sRC != IDE_SUCCESS );
 
@@ -1009,7 +1009,7 @@ IDE_RC iduFitManager::timeSleepServer( iduFitAction *aFitAction )
 
     IDE_EXCEPTION( ERR_COND_TIME_WAIT )
     {
-        /* Condition timedWait ½ÇÆĞ·Î ÀÎÇÑ ¼­¹ö FATAL */
+        /* Condition timedWait ì‹¤íŒ¨ë¡œ ì¸í•œ ì„œë²„ FATAL */
         IDE_SET_AND_DIE(ideSetErrorCode(idERR_FATAL_ThrCondWait));
     }
     IDE_EXCEPTION_END;
@@ -1040,17 +1040,17 @@ IDE_RC iduFitManager::wakeupServerBySignal( iduFitAction *aFitAction )
 
     iduSleepNode *sDestNode = NULL;
 
-    /* ¶ôÀ» Àâ°í ³ëµå¸¦ °Ë»öÇÏ±â */
+    /* ë½ì„ ì¡ê³  ë…¸ë“œë¥¼ ê²€ìƒ‰í•˜ê¸° */
     sRC = getSleepNode(aFitAction->mTID, &sDestNode);
     IDE_TEST( sRC != IDE_SUCCESS );
 
-    /* WAKEUP µ¿ÀÛÇÏ±â À§ÇÑ ³ëµå¶ô Àâ±â */
+    /* WAKEUP ë™ì‘í•˜ê¸° ìœ„í•œ ë…¸ë“œë½ ì¡ê¸° */
     IDE_TEST( sDestNode->mMutex.lock(NULL) != IDE_SUCCESS );
 
-    /* ½Ã±×³ÎÀ» ¹ß¼ÛÇÏ±â */   
+    /* ì‹œê·¸ë„ì„ ë°œì†¡í•˜ê¸° */   
     IDE_TEST_RAISE( sDestNode->mCond.signal() != IDE_SUCCESS, ERR_COND_SIGNAL );
 
-    /* WAKEUP ·Î±×¸¦ ±â·ÏÇÏ±â */
+    /* WAKEUP ë¡œê·¸ë¥¼ ê¸°ë¡í•˜ê¸° */
     sLog.append("HDB server sent a wakeup signal.\n");
     sLog.appendFormat( "[%s:%"ID_UINT32_FMT":\"%s\"]\n",
                         aFitAction->mFileName,
@@ -1058,14 +1058,14 @@ IDE_RC iduFitManager::wakeupServerBySignal( iduFitAction *aFitAction )
                         aFitAction->mTID );
     sLog.write();
 
-    /* WAKEUP ¿Ï·áÇÏ±â À§ÇÑ ³ëµå¶ô Ç®±â */
+    /* WAKEUP ì™„ë£Œí•˜ê¸° ìœ„í•œ ë…¸ë“œë½ í’€ê¸° */
     IDE_TEST( sDestNode->mMutex.unlock() != IDE_SUCCESS );
 
     return IDE_SUCCESS;
 
     IDE_EXCEPTION( ERR_COND_SIGNAL )
     {
-        /* Condition Signal ¹ß¼Û ½ÇÆĞ·Î ÀÎÇÑ ¼­¹ö FATAL */
+        /* Condition Signal ë°œì†¡ ì‹¤íŒ¨ë¡œ ì¸í•œ ì„œë²„ FATAL */
         IDE_SET_AND_DIE(ideSetErrorCode(idERR_FATAL_ThrCondSignal));
     }
     IDE_EXCEPTION_END;
@@ -1086,10 +1086,10 @@ IDE_RC iduFitManager::wakeupServerByBroadcast( iduFitAction *aFitAction )
           sDestNode != sTailNode;
           sDestNode = sDestNode->mNext )
     {
-        /* ½Ã±×³ÎÀ» ¹ß¼ÛÇÏ±â */
+        /* ì‹œê·¸ë„ì„ ë°œì†¡í•˜ê¸° */
         IDE_TEST_RAISE( sDestNode->mCond.signal() != IDE_SUCCESS, ERR_COND_SIGNAL );
 
-        /* WAKEUP ·Î±×¸¦ ±â·ÏÇÏ±â */
+        /* WAKEUP ë¡œê·¸ë¥¼ ê¸°ë¡í•˜ê¸° */
         ideLog::log ( IDE_FIT_0, 
                       "HDB server sent a wakeup signal.\n[%s:%"ID_UINT32_FMT":\"%s\"]",
                       aFitAction->mFileName,
@@ -1104,7 +1104,7 @@ IDE_RC iduFitManager::wakeupServerByBroadcast( iduFitAction *aFitAction )
 
     IDE_EXCEPTION( ERR_COND_SIGNAL )
     {
-        /* Condition Signal ¹ß¼Û ½ÇÆĞ·Î ÀÎÇÑ ¼­¹ö FATAL */
+        /* Condition Signal ë°œì†¡ ì‹¤íŒ¨ë¡œ ì¸í•œ ì„œë²„ FATAL */
         IDE_SET_AND_DIE(ideSetErrorCode(idERR_FATAL_ThrCondSignal));
     }
     IDE_EXCEPTION_END;
@@ -1132,8 +1132,8 @@ IDE_RC iduFitManager::sigsegvServer( iduFitAction *aFitAction )
 }
 
 /**************************************************************************************** 
- * FITSERVER ¿¡ FITPOINT °¡ ¾øÀ» °æ¿ì Åë½ÅÀ» ÇÒ ÇÊ¿ä°¡ ¾ø´Ù.
- * µû¶ó¼­, Shared Memory ¸¦ ÅëÇØ FITPOINT ÀÖ´ÂÁö È®ÀÎÇÏ°í, ¾ø´Ù¸é FITSERVER ¿Í Åë½ÅÀ» ÇÏÁö ¾Ê´Â´Ù. 
+ * FITSERVER ì— FITPOINT ê°€ ì—†ì„ ê²½ìš° í†µì‹ ì„ í•  í•„ìš”ê°€ ì—†ë‹¤.
+ * ë”°ë¼ì„œ, Shared Memory ë¥¼ í†µí•´ FITPOINT ìˆëŠ”ì§€ í™•ì¸í•˜ê³ , ì—†ë‹¤ë©´ FITSERVER ì™€ í†µì‹ ì„ í•˜ì§€ ì•ŠëŠ”ë‹¤. 
  ****************************************************************************************/
 IDE_RC iduFitManager::attachSharedMemory()
 {
@@ -1193,10 +1193,10 @@ IDE_RC iduFitManager::attachSharedMemory()
 }
 
 /**************************************************************************************** 
- * FIT_SHM_KEY °¡ ÀÖ´Ù¸é ±× °ªÀ» key ·Î »ç¿ë
- * FIT_SHM_KEY °¡ 0 ÀÌ¶ó¸é shared memory »ç¿ëÇÏÁö ¾ÊÀ½
- * FIT_SHM_KEY °¡ ¾øÀ¸¸é ( FIT_SHM_KEY_DEFAULT * FIT_SHM_KEY_WEIGHT_NUMBER ) ¸¦ key ·Î »ç¿ë
- * FIT_SHM_KEY_DEFAULT ´Â ALTIBASE_PORT_NO °¡ default 
+ * FIT_SHM_KEY ê°€ ìˆë‹¤ë©´ ê·¸ ê°’ì„ key ë¡œ ì‚¬ìš©
+ * FIT_SHM_KEY ê°€ 0 ì´ë¼ë©´ shared memory ì‚¬ìš©í•˜ì§€ ì•ŠìŒ
+ * FIT_SHM_KEY ê°€ ì—†ìœ¼ë©´ ( FIT_SHM_KEY_DEFAULT * FIT_SHM_KEY_WEIGHT_NUMBER ) ë¥¼ key ë¡œ ì‚¬ìš©
+ * FIT_SHM_KEY_DEFAULT ëŠ” ALTIBASE_PORT_NO ê°€ default 
 *****************************************************************************************/
 IDE_RC iduFitManager::getSharedMemoryKey( key_t *aKey )
 {
@@ -1210,7 +1210,7 @@ IDE_RC iduFitManager::getSharedMemoryKey( key_t *aKey )
     SChar *sFitShmKeyDefaultEnv = NULL;
     UInt sFitShmKeyDefault = 0;
 
-    /* FIT_SHM_KEY °¡ ÀÖÀ¸¸é FIT_SHM_KEY ¸¦ key ·Î »ç¿ë */
+    /* FIT_SHM_KEY ê°€ ìˆìœ¼ë©´ FIT_SHM_KEY ë¥¼ key ë¡œ ì‚¬ìš© */
     sFitShmKeyEnv = idlOS::getenv( IDU_FIT_SHM_KEY );
 
     if ( sFitShmKeyEnv != NULL )
@@ -1233,14 +1233,14 @@ IDE_RC iduFitManager::getSharedMemoryKey( key_t *aKey )
         /* FIT_SHM_KEY_DEFAULT */        
         sFitShmKeyDefaultEnv = idlOS::getenv( IDU_FIT_SHM_KEY_DEFAULT );
 
-        /* FIT_SHM_KEY_DEFAULT °¡ ¾øÀ¸¸é ALTIBASE_PORT_NO ¸¦ »ç¿ë */
+        /* FIT_SHM_KEY_DEFAULT ê°€ ì—†ìœ¼ë©´ ALTIBASE_PORT_NO ë¥¼ ì‚¬ìš© */
         if ( sFitShmKeyDefaultEnv == NULL ) 
         {
             *aKey = sAltibasePortNo * IDU_FIT_SHM_KEY_WEIGHT_NUMBER;
         }
         else
         {
-            /* FIT_SHM_KEY_DEFAULT °¡ ÀÖÀ¸¸é FIT_SHM_KEY_DEFAULT ¸¦ »ç¿ë */
+            /* FIT_SHM_KEY_DEFAULT ê°€ ìˆìœ¼ë©´ FIT_SHM_KEY_DEFAULT ë¥¼ ì‚¬ìš© */
             sFitShmKeyDefault = idlOS::strtol( sFitShmKeyDefaultEnv, NULL, 10 );
 
             IDE_TEST_RAISE( sFitShmKeyDefault == 0, ERR_GET_FIT_SHM_KEY_DEFAULT );       

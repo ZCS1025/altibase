@@ -22,13 +22,13 @@
 /**********************************************************************
  * FILE DESCRIPTION : smiBackup.cpp
  *--------------------------------------------------------------------- 
- *  backup±â´ÉÀ» ´ã´çÇÏ´Â ¸ğµâÀÌ¸ç ´ÙÀ½°ú °°Àº ±â´ÉÀ» Á¦°øÇÑ´Ù.
+ *  backupê¸°ëŠ¥ì„ ë‹´ë‹¹í•˜ëŠ” ëª¨ë“ˆì´ë©° ë‹¤ìŒê³¼ ê°™ì€ ê¸°ëŠ¥ì„ ì œê³µí•œë‹¤.
  *
- * -  table space¿¡ ´ëÇÑ hot backup±â´É.
+ * -  table spaceì— ëŒ€í•œ hot backupê¸°ëŠ¥.
  *  : disk table space.
  *  : memory table space.
- * -  log anchorÆÄÀÏ backup±â´É.
- * -  DBÀüÃ¼¿¡ ´ëÇÑ  backup¿¡  ±â´É.
+ * -  log anchoríŒŒì¼ backupê¸°ëŠ¥.
+ * -  DBì „ì²´ì— ëŒ€í•œ  backupì—  ê¸°ëŠ¥.
  **********************************************************************/
 
 #include <ide.h>
@@ -42,33 +42,33 @@
 #include <smriBackupInfoMgr.h>
 
 /*********************************************************
- * function description: archivelog mode º¯°æ
- * archivelog ¸ğµå¸¦ È°¼ºÈ­ ¶Ç´Â ºñÈ°¼ºÈ­ ½ÃÅµ´Ï´Ù.
- * alter database ±¸¹®À¸·Î startup control ´Ü°è¿¡¼­¸¸ »ç¿ëÀÌ °¡´É
- * ÇÕ´Ï´Ù.
+ * function description: archivelog mode ë³€ê²½
+ * archivelog ëª¨ë“œë¥¼ í™œì„±í™” ë˜ëŠ” ë¹„í™œì„±í™” ì‹œí‚µë‹ˆë‹¤.
+ * alter database êµ¬ë¬¸ìœ¼ë¡œ startup control ë‹¨ê³„ì—ì„œë§Œ ì‚¬ìš©ì´ ê°€ëŠ¥
+ * í•©ë‹ˆë‹¤.
  *
  * sql - alter database [archivelog|noarchivelog]
  * 
- * + archivelog ¸ğµåÀÇ È°¼ºÈ­
- *  - µ¥ÀÌÅ¸º£ÀÌ½º¸¦ Á¾·áÇÕ´Ï´Ù.
+ * + archivelog ëª¨ë“œì˜ í™œì„±í™”
+ *  - ë°ì´íƒ€ë² ì´ìŠ¤ë¥¼ ì¢…ë£Œí•©ë‹ˆë‹¤.
  *    : shutdown abort
- *  - startup control »óÅÂ·Î ¸¸µì´Ï´Ù.
- *  - alter database [archivelog|noarchivelog] ¼öÇàÇÕ´Ï´Ù.
- *  - µ¥ÀÌÅ¸º£ÀÌ½º¸¦ Á¾·áÇÕ´Ï´Ù.
+ *  - startup control ìƒíƒœë¡œ ë§Œë“­ë‹ˆë‹¤.
+ *  - alter database [archivelog|noarchivelog] ìˆ˜í–‰í•©ë‹ˆë‹¤.
+ *  - ë°ì´íƒ€ë² ì´ìŠ¤ë¥¼ ì¢…ë£Œí•©ë‹ˆë‹¤.
  *    : shutdown abort
- *  - µ¥ÀÌÅ¸º£ÀÌ½ºÀÇ ÀüÃ¼ ´İÈù ¹é¾÷À» ¼öÇàÇÕ´Ï´Ù.
- *    : ºñÈ°¼ºÈ­ => È°¼ºÈ­ º¯°æµÉ °æ¿ì ¸ğµç µ¥ÀÌÅ¸ÆÄÀÏÀ» ¹é¾÷ÇØ¾ßÇÑ´Ù.
- *    µ¥ÀÌÅ¸º£ÀÌ½º°¡ noarchive ¸ğµå¿¡¼­ ¿î¿µµÇ´Â µ¿¾ÈÀÇ
- *    ¸ğµç ¹é¾÷Àº ³í¸®ÀûÀ¸·Î ´õÀÌ»ó »ç¿ëÇÒ ¼ö ¾ø´Ù.
- *    archivelog ¸ğµå·Î ¹Ù²ÛÈÄ¿¡ ÃëÇØÁø »õ·Î¿î ¹é¾÷Àº ¾ÕÀ¸·ÎÀÇ
- *    ¸ğµç archive redo ·Î±× ÆÄÀÏÀÌ Àû¿ëµÉ °Í¿¡ ´ëºñÇÑ ¹é¾÷ÀÌ´Ù.
+ *  - ë°ì´íƒ€ë² ì´ìŠ¤ì˜ ì „ì²´ ë‹«íŒ ë°±ì—…ì„ ìˆ˜í–‰í•©ë‹ˆë‹¤.
+ *    : ë¹„í™œì„±í™” => í™œì„±í™” ë³€ê²½ë  ê²½ìš° ëª¨ë“  ë°ì´íƒ€íŒŒì¼ì„ ë°±ì—…í•´ì•¼í•œë‹¤.
+ *    ë°ì´íƒ€ë² ì´ìŠ¤ê°€ noarchive ëª¨ë“œì—ì„œ ìš´ì˜ë˜ëŠ” ë™ì•ˆì˜
+ *    ëª¨ë“  ë°±ì—…ì€ ë…¼ë¦¬ì ìœ¼ë¡œ ë”ì´ìƒ ì‚¬ìš©í•  ìˆ˜ ì—†ë‹¤.
+ *    archivelog ëª¨ë“œë¡œ ë°”ê¾¼í›„ì— ì·¨í•´ì§„ ìƒˆë¡œìš´ ë°±ì—…ì€ ì•ìœ¼ë¡œì˜
+ *    ëª¨ë“  archive redo ë¡œê·¸ íŒŒì¼ì´ ì ìš©ë  ê²ƒì— ëŒ€ë¹„í•œ ë°±ì—…ì´ë‹¤.
  * 
- * + archivelog ¸ğµåÀÇ ºñÈ°¼ºÈ­
- *  - µ¥ÀÌÅ¸º£ÀÌ½º¸¦ Á¾·áÇÕ´Ï´Ù.
+ * + archivelog ëª¨ë“œì˜ ë¹„í™œì„±í™”
+ *  - ë°ì´íƒ€ë² ì´ìŠ¤ë¥¼ ì¢…ë£Œí•©ë‹ˆë‹¤.
  *    : shutdown abort
- *  - startup control »óÅÂ·Î ¸¸µì´Ï´Ù.
- *  - alter database [archivelog|noarchivelog] ¼öÇàÇÕ´Ï´Ù.
- *  - µ¥ÀÌÅ¸º£ÀÌ½º¸¦ Á¾·áÇÕ´Ï´Ù.
+ *  - startup control ìƒíƒœë¡œ ë§Œë“­ë‹ˆë‹¤.
+ *  - alter database [archivelog|noarchivelog] ìˆ˜í–‰í•©ë‹ˆë‹¤.
+ *  - ë°ì´íƒ€ë² ì´ìŠ¤ë¥¼ ì¢…ë£Œí•©ë‹ˆë‹¤.
  *    : shutdown abort
  *********************************************************/
 IDE_RC smiBackup::alterArchiveMode( smiArchiveMode  aArchiveMode,
@@ -80,8 +80,8 @@ IDE_RC smiBackup::alterArchiveMode( smiArchiveMode  aArchiveMode,
 
     if (aCheckPhase == ID_TRUE)
     {
-        // ´Ù´Ü°è startup´Ü°è Áß, control´Ü°è¿¡¼­
-        // archive mode¸¦ º¯°æÇÒ¼ö ÀÖ´Ù.
+        // ë‹¤ë‹¨ê³„ startupë‹¨ê³„ ì¤‘, controlë‹¨ê³„ì—ì„œ
+        // archive modeë¥¼ ë³€ê²½í• ìˆ˜ ìˆë‹¤.
         IDE_TEST_RAISE(smiGetStartupPhase() != SMI_STARTUP_CONTROL,
                        err_cannot_alter_archive_mode);
         
@@ -104,16 +104,16 @@ IDE_RC smiBackup::alterArchiveMode( smiArchiveMode  aArchiveMode,
 }
 
 /*********************************************************
- * function description: alter system archive log start ¼öÇà
- * startup open meta »óÅÂ ÀÌÈÄ¿¡¼­¸¸ archivelog thread¸¦
- * È°¼ºÈ­½ÃÅ³¼ö ÀÖ´Ù.
+ * function description: alter system archive log start ìˆ˜í–‰
+ * startup open meta ìƒíƒœ ì´í›„ì—ì„œë§Œ archivelog threadë¥¼
+ * í™œì„±í™”ì‹œí‚¬ìˆ˜ ìˆë‹¤.
  *
- * + archivelog threadÀÇ È°¼ºÈ­
- *   - µ¥ÀÌÅ¸º£ÀÌ½º¸¦ startup meta »óÅÂÀÎÁö È®ÀÎÇÑ´Ù.
- *   - µ¥ÀÌÅ¸º£ÀÌ½º°¡ archivelog ¸ğµå·Î È°¼ºÈ­ µÇ¾î ÀÖ´ÂÁö
- *     È®ÀÎÇÑ´Ù. (archive log list)
- *   - alter system archivelog start¸¦ ¼öÇàÇÏ¿© thread¸¦
- *     ¼öÇà½ÃÅ²´Ù.
+ * + archivelog threadì˜ í™œì„±í™”
+ *   - ë°ì´íƒ€ë² ì´ìŠ¤ë¥¼ startup meta ìƒíƒœì¸ì§€ í™•ì¸í•œë‹¤.
+ *   - ë°ì´íƒ€ë² ì´ìŠ¤ê°€ archivelog ëª¨ë“œë¡œ í™œì„±í™” ë˜ì–´ ìˆëŠ”ì§€
+ *     í™•ì¸í•œë‹¤. (archive log list)
+ *   - alter system archivelog startë¥¼ ìˆ˜í–‰í•˜ì—¬ threadë¥¼
+ *     ìˆ˜í–‰ì‹œí‚¨ë‹¤.
  *********************************************************/
 IDE_RC smiBackup::startArchThread()
 {
@@ -161,16 +161,16 @@ IDE_RC smiBackup::startArchThread()
 }
 
 /*********************************************************
- * function description: alter system archive log stop ¼öÇà
- * startup open meta »óÅÂ ÀÌÈÄ¿¡¼­¸¸ archivelog thread¸¦
- * È°¼ºÈ­½ÃÅ³¼ö ÀÖ´Ù.
+ * function description: alter system archive log stop ìˆ˜í–‰
+ * startup open meta ìƒíƒœ ì´í›„ì—ì„œë§Œ archivelog threadë¥¼
+ * í™œì„±í™”ì‹œí‚¬ìˆ˜ ìˆë‹¤.
  *
- * + archivelog threadÀÇ È°¼ºÈ­
- *   - µ¥ÀÌÅ¸º£ÀÌ½º¸¦ startup meta »óÅÂÀÎÁö È®ÀÎÇÑ´Ù.
- *   - µ¥ÀÌÅ¸º£ÀÌ½º°¡ archivelog ¸ğµå·Î È°¼ºÈ­ µÇ¾î ÀÖ´ÂÁö
- *     È®ÀÎÇÑ´Ù. (archive log list)
- *   - alter system archivelog stopÀ» ¼öÇàÇÏ¿© thread¸¦
- *     ÁßÁö½ÃÅ²´Ù.
+ * + archivelog threadì˜ í™œì„±í™”
+ *   - ë°ì´íƒ€ë² ì´ìŠ¤ë¥¼ startup meta ìƒíƒœì¸ì§€ í™•ì¸í•œë‹¤.
+ *   - ë°ì´íƒ€ë² ì´ìŠ¤ê°€ archivelog ëª¨ë“œë¡œ í™œì„±í™” ë˜ì–´ ìˆëŠ”ì§€
+ *     í™•ì¸í•œë‹¤. (archive log list)
+ *   - alter system archivelog stopì„ ìˆ˜í–‰í•˜ì—¬ threadë¥¼
+ *     ì¤‘ì§€ì‹œí‚¨ë‹¤.
  *********************************************************/
 IDE_RC smiBackup::stopArchThread()
 {
@@ -217,7 +217,7 @@ IDE_RC smiBackup::stopArchThread()
 
 /*********************************************************
   function description: smiBackup::backupLogAnchor
-  - logAnchorÆÄÀÏÀ» destnation directroy¿¡ copyÇÑ´Ù.
+  - logAnchoríŒŒì¼ì„ destnation directroyì— copyí•œë‹¤.
   *********************************************************/
 IDE_RC smiBackup::backupLogAnchor( idvSQL*   aStatistics,
                                    SChar*    aDestFilePath )
@@ -231,7 +231,7 @@ IDE_RC smiBackup::backupLogAnchor( idvSQL*   aStatistics,
     IDE_TEST_RAISE(smrRecoveryMgr::getArchiveMode() != SMI_LOG_ARCHIVE,
                    err_backup_mode);
         
-    // logAnchorÆÄÀÏÀ» destnation directroy¿¡ copyÇÑ´Ù.
+    // logAnchoríŒŒì¼ì„ destnation directroyì— copyí•œë‹¤.
     IDE_TEST( smrBackupMgr::backupLogAnchor( aStatistics,
                                              aDestFilePath )
               != IDE_SUCCESS );
@@ -253,8 +253,8 @@ IDE_RC smiBackup::backupLogAnchor( idvSQL*   aStatistics,
 
 /*********************************************************
  * function description: smiBackup::backupTableSpace
- * ÀÎÀÚ·Î ÁÖ¾îÁø Å×ÀÌºí ½ºÆäÀÌ½º¿¡ ´ëÇÏ¿© hot backup
- * À» ¼öÇàÇÏ¸ç, ÁÖ¾îÁø  Å×ÀÌºí ½ºÆäÀÌ½ºÀÇ µ¥ÀÌÅ¸ ÆÄÀÏµéÀ» º¹»çÇÑ´Ù.       
+ * ì¸ìë¡œ ì£¼ì–´ì§„ í…Œì´ë¸” ìŠ¤í˜ì´ìŠ¤ì— ëŒ€í•˜ì—¬ hot backup
+ * ì„ ìˆ˜í–‰í•˜ë©°, ì£¼ì–´ì§„  í…Œì´ë¸” ìŠ¤í˜ì´ìŠ¤ì˜ ë°ì´íƒ€ íŒŒì¼ë“¤ì„ ë³µì‚¬í•œë‹¤.       
  **********************************************************/
 IDE_RC smiBackup::backupTableSpace(idvSQL*      aStatistics,
                                    smiTrans*    aTrans,
@@ -271,7 +271,7 @@ IDE_RC smiBackup::backupTableSpace(idvSQL*      aStatistics,
     IDE_TEST_RAISE(smrRecoveryMgr::getArchiveMode() != SMI_LOG_ARCHIVE,
                    err_backup_mode);
     
-    // BUG-17213 Volatile TBS¿¡ ´ëÇØ¼­´Â backup ±â´ÉÀ» ¸·´Â´Ù.
+    // BUG-17213 Volatile TBSì— ëŒ€í•´ì„œëŠ” backup ê¸°ëŠ¥ì„ ë§‰ëŠ”ë‹¤.
     IDE_TEST_RAISE(sctTableSpaceMgr::isVolatileTableSpace(aTbsID)
                    == ID_TRUE, err_volatile_backup);
 
@@ -302,14 +302,14 @@ IDE_RC smiBackup::backupTableSpace(idvSQL*      aStatistics,
 
 /*********************************************************
   function description: smiBackup::backupDatabase
-  - Database¿¡ ÀÖ´Â ¸ğµç Å×ÀÌºí ½ºÆäÀÌ½º¿¡ ´ëÇÏ¿©
-    hot backupÀ» ¼öÇàÇÏ¿©, °¢ Å×ÀÌºí ½ºÆäÀÌ½ºÀÇ
-    µ¥ÀÌÅ¸ ÆÄÀÏÀ» º¹»çÇÑ´Ù.
+  - Databaseì— ìˆëŠ” ëª¨ë“  í…Œì´ë¸” ìŠ¤í˜ì´ìŠ¤ì— ëŒ€í•˜ì—¬
+    hot backupì„ ìˆ˜í–‰í•˜ì—¬, ê° í…Œì´ë¸” ìŠ¤í˜ì´ìŠ¤ì˜
+    ë°ì´íƒ€ íŒŒì¼ì„ ë³µì‚¬í•œë‹¤.
     
-  - log anchorÆÄÀÏµéÀ» º¹»çÇÑ´Ù.
+  - log anchoríŒŒì¼ë“¤ì„ ë³µì‚¬í•œë‹¤.
   
-  - DB backupÀ» ¹Ş´Â µ¿¾È  »ı±ä active log ÆÄÀÏµéÀ»
-    archive log·Î ¸¸µé¾î  º¹»çÇÑ´Ù.
+  - DB backupì„ ë°›ëŠ” ë™ì•ˆ  ìƒê¸´ active log íŒŒì¼ë“¤ì„
+    archive logë¡œ ë§Œë“¤ì–´  ë³µì‚¬í•œë‹¤.
   *********************************************************/
 IDE_RC smiBackup::backupDatabase( idvSQL* aStatistics,
                                   smiTrans* aTrans,
@@ -348,10 +348,10 @@ IDE_RC smiBackup::backupDatabase( idvSQL* aStatistics,
 
 /*********************************************************
   function description: smiBackup::beginBackupTBS
-  - veritas¿Í °°ÀÌ backup ¿¬µ¿À» À§ÇÏ¿© Ãß°¡µÈ ÇÔ¼öÀÌ¸ç,
-   ÁÖ¾îÁø Å×ÀÌºí ½ºÆäÀÌ½ºÀÇ »óÅÂ¸¦ ¹é¾÷ ½ÃÀÛ(BACKUP_BEGIN)
-   À¸·Î º¯°æÇÑ´Ù.
-  ¸Ş¸ğ¸® tablespaceÀÇ °æ¿ì¿¡´Â checkpoint¸¦ disable ½ÃÅ²´Ù. 
+  - veritasì™€ ê°™ì´ backup ì—°ë™ì„ ìœ„í•˜ì—¬ ì¶”ê°€ëœ í•¨ìˆ˜ì´ë©°,
+   ì£¼ì–´ì§„ í…Œì´ë¸” ìŠ¤í˜ì´ìŠ¤ì˜ ìƒíƒœë¥¼ ë°±ì—… ì‹œì‘(BACKUP_BEGIN)
+   ìœ¼ë¡œ ë³€ê²½í•œë‹¤.
+  ë©”ëª¨ë¦¬ tablespaceì˜ ê²½ìš°ì—ëŠ” checkpointë¥¼ disable ì‹œí‚¨ë‹¤. 
   *********************************************************/
 IDE_RC smiBackup::beginBackupTBS( scSpaceID aSpaceID )
 {
@@ -385,11 +385,11 @@ IDE_RC smiBackup::beginBackupTBS( scSpaceID aSpaceID )
 
 /*********************************************************
   function description: smiBackup::endBackupTBS
-  - veritas¿Í °°ÀÌ backup ¿¬µ¿À» À§ÇÏ¿© Ãß°¡µÈ ÇÔ¼öÀÌ¸ç,
-   ÁÖ¾îÁø Å×ÀÌºí ½ºÆäÀÌ½ºÀÇ »óÅÂ¸¦ ¹é¾÷ Á¾·áÀÎ online»óÅÂ·Î
-   º¯°æ½ÃÅ²´Ù.
+  - veritasì™€ ê°™ì´ backup ì—°ë™ì„ ìœ„í•˜ì—¬ ì¶”ê°€ëœ í•¨ìˆ˜ì´ë©°,
+   ì£¼ì–´ì§„ í…Œì´ë¸” ìŠ¤í˜ì´ìŠ¤ì˜ ìƒíƒœë¥¼ ë°±ì—… ì¢…ë£Œì¸ onlineìƒíƒœë¡œ
+   ë³€ê²½ì‹œí‚¨ë‹¤.
    
-  ¸Ş¸ğ¸® tablespaceÀÇ °æ¿ì¿¡´Â checkpoint¸¦ enable ½ÃÅ²´Ù. 
+  ë©”ëª¨ë¦¬ tablespaceì˜ ê²½ìš°ì—ëŠ” checkpointë¥¼ enable ì‹œí‚¨ë‹¤. 
   *********************************************************/
 IDE_RC smiBackup::endBackupTBS( scSpaceID aSpaceID )
 {
@@ -423,8 +423,8 @@ IDE_RC smiBackup::endBackupTBS( scSpaceID aSpaceID )
 
 /*********************************************************
   function description: smiBackup::switchLogFile
-  - ¹é¾÷ÀÌ Á¾·áÇÑ ÈÄ¿¡ ÇöÀç ¿Â¶óÀÎ ·Î±×ÆÄÀÏÀ» archive log·Î
-   ¹é¾÷¹Şµµ·Ï ÇÑ´Ù.
+  - ë°±ì—…ì´ ì¢…ë£Œí•œ í›„ì— í˜„ì¬ ì˜¨ë¼ì¸ ë¡œê·¸íŒŒì¼ì„ archive logë¡œ
+   ë°±ì—…ë°›ë„ë¡ í•œë‹¤.
   *********************************************************/
 IDE_RC smiBackup::switchLogFile()
 {
@@ -459,8 +459,8 @@ IDE_RC smiBackup::switchLogFile()
 /*********************************************************
   function description: smiBackup::incrementalBackupDatabase
     PROJ-2133 incremental backup
-  - Database¿¡ ÀÖ´Â ¸ğµç Å×ÀÌºí ½ºÆäÀÌ½º¿¡ ´ëÇÏ¿©
-    incrementalb backupÀ» ¼öÇàÇÑ´Ù.
+  - Databaseì— ìˆëŠ” ëª¨ë“  í…Œì´ë¸” ìŠ¤í˜ì´ìŠ¤ì— ëŒ€í•˜ì—¬
+    incrementalb backupì„ ìˆ˜í–‰í•œë‹¤.
   *********************************************************/
 IDE_RC smiBackup::incrementalBackupDatabase( idvSQL*           aStatistics,
                                              smiTrans*         aTrans,
@@ -520,8 +520,8 @@ IDE_RC smiBackup::incrementalBackupDatabase( idvSQL*           aStatistics,
 /*********************************************************
   function description: smiBackup::incrementalBackupDatabase
     PROJ-2133 incremental backup
-  - Database¿¡ ÀÖ´Â ¸ğµç Å×ÀÌºí ½ºÆäÀÌ½º¿¡ ´ëÇÏ¿©
-    incrementalb backupÀ» ¼öÇàÇÑ´Ù.
+  - Databaseì— ìˆëŠ” ëª¨ë“  í…Œì´ë¸” ìŠ¤í˜ì´ìŠ¤ì— ëŒ€í•˜ì—¬
+    incrementalb backupì„ ìˆ˜í–‰í•œë‹¤.
   *********************************************************/
 IDE_RC smiBackup::incrementalBackupTableSpace( idvSQL*           aStatistics,
                                                smiTrans*         aTrans,
@@ -583,9 +583,9 @@ IDE_RC smiBackup::incrementalBackupTableSpace( idvSQL*           aStatistics,
 /*********************************************************
   function description: smiBackup::enableChangeTracking
     PROJ-2133 incremental backup
-  - incremental backupÀ» ¼öÇàÇÏ±â À§ÇØ µ¥ÀÌÅÍº£ÀÌ½º¿¡ 
-    ¼ÓÇÑ ¸ğµç µ¥ÀÌÅÍÆÄÀÏµéÀÇ º¯°æ Á¤º¸¸¦ ÃßÀûÇÏ´Â ±â´ÉÀ»
-    enable ½ÃÅ²´Ù.
+  - incremental backupì„ ìˆ˜í–‰í•˜ê¸° ìœ„í•´ ë°ì´í„°ë² ì´ìŠ¤ì— 
+    ì†í•œ ëª¨ë“  ë°ì´í„°íŒŒì¼ë“¤ì˜ ë³€ê²½ ì •ë³´ë¥¼ ì¶”ì í•˜ëŠ” ê¸°ëŠ¥ì„
+    enable ì‹œí‚¨ë‹¤.
   *********************************************************/
 IDE_RC smiBackup::enableChangeTracking()
 {
@@ -643,9 +643,9 @@ IDE_RC smiBackup::enableChangeTracking()
 /*********************************************************
   function description: smiBackup::disableChangeTracking
     PROJ-2133 incremental backup
-  - incremental backupÀ» ¼öÇàÇÏ±â À§ÇØ µ¥ÀÌÅÍº£ÀÌ½º¿¡ 
-    ¼ÓÇÑ ¸ğµç µ¥ÀÌÅÍÆÄÀÏµéÀÇ º¯°æ Á¤º¸¸¦ ÃßÀûÇÏ´Â ±â´ÉÀ» 
-    disable ½ÃÅ²´Ù.
+  - incremental backupì„ ìˆ˜í–‰í•˜ê¸° ìœ„í•´ ë°ì´í„°ë² ì´ìŠ¤ì— 
+    ì†í•œ ëª¨ë“  ë°ì´í„°íŒŒì¼ë“¤ì˜ ë³€ê²½ ì •ë³´ë¥¼ ì¶”ì í•˜ëŠ” ê¸°ëŠ¥ì„ 
+    disable ì‹œí‚¨ë‹¤.
   *********************************************************/
 IDE_RC smiBackup::disableChangeTracking()
 {
@@ -661,7 +661,7 @@ IDE_RC smiBackup::disableChangeTracking()
 /*********************************************************
   function description: smiBackup::removeObsoleteBackupFile
     PROJ-2133 incremental backup
-  - À¯Áö±â°£ÀÌ Áö³­ incremental backupfileµéÀ» »èÁ¦ÇÑ´Ù.
+  - ìœ ì§€ê¸°ê°„ì´ ì§€ë‚œ incremental backupfileë“¤ì„ ì‚­ì œí•œë‹¤.
   *********************************************************/
 IDE_RC smiBackup::removeObsoleteBackupFile()
 {
@@ -684,7 +684,7 @@ IDE_RC smiBackup::removeObsoleteBackupFile()
 /*********************************************************
   function description: smiBackup::changeBackupDir
     PROJ-2133 incremental backup
-  - incremental backupfileµéÀÌ »ı¼ºµÉ directory¸¦ º¯°æÇÑ´Ù.
+  - incremental backupfileë“¤ì´ ìƒì„±ë  directoryë¥¼ ë³€ê²½í•œë‹¤.
   *********************************************************/
 IDE_RC smiBackup::changeIncrementalBackupDir( SChar * aNewBackupDir )
 {
@@ -700,7 +700,7 @@ IDE_RC smiBackup::changeIncrementalBackupDir( SChar * aNewBackupDir )
 
     if( smuProperty::getIncrementalBackupPathMakeABSPath() == 1 )
     {
-        /* aNewBackupDirÀÌ Àı´ë°æ·Î°¡ ¾Æ´ÑÁö È®ÀÎÇÑ´Ù. */
+        /* aNewBackupDirì´ ì ˆëŒ€ê²½ë¡œê°€ ì•„ë‹Œì§€ í™•ì¸í•œë‹¤. */
         IDE_TEST( smriBackupInfoMgr::isValidABSPath( ID_TRUE, aNewBackupDir ) 
                   != IDE_FAILURE );
 
@@ -717,7 +717,7 @@ IDE_RC smiBackup::changeIncrementalBackupDir( SChar * aNewBackupDir )
                         aNewBackupDir);
     }
 
-    /* aNewBackupDirÀÌ validÇÑ Àı´ë°æ·ÎÀÎÁö È®ÀÎÇÑ´Ù. */
+    /* aNewBackupDirì´ validí•œ ì ˆëŒ€ê²½ë¡œì¸ì§€ í™•ì¸í•œë‹¤. */
     IDE_TEST( smriBackupInfoMgr::isValidABSPath( ID_TRUE, sPath ) 
               != IDE_SUCCESS );
 
@@ -742,7 +742,7 @@ IDE_RC smiBackup::changeIncrementalBackupDir( SChar * aNewBackupDir )
 /*********************************************************
   function description: smiBackup::moveBackupFile
     PROJ-2133 incremental backup
-  - incremental backupfileµéÀÇ À§Ä¡¸¦ ÀÌµ¿½ÃÅ²´Ù.
+  - incremental backupfileë“¤ì˜ ìœ„ì¹˜ë¥¼ ì´ë™ì‹œí‚¨ë‹¤.
   *********************************************************/
 IDE_RC smiBackup::moveBackupFile( SChar  * aMoveDir, 
                                   idBool   aWithFile )
@@ -756,7 +756,7 @@ IDE_RC smiBackup::moveBackupFile( SChar  * aMoveDir,
 
     if( smuProperty::getIncrementalBackupPathMakeABSPath() == 1 )
     {
-        /* aNewBackupDirÀÌ Àı´ë°æ·Î°¡ ¾Æ´ÑÁö È®ÀÎÇÑ´Ù. */
+        /* aNewBackupDirì´ ì ˆëŒ€ê²½ë¡œê°€ ì•„ë‹Œì§€ í™•ì¸í•œë‹¤. */
         IDE_TEST( smriBackupInfoMgr::isValidABSPath( ID_TRUE, aMoveDir ) 
                   != IDE_FAILURE );
 
@@ -773,7 +773,7 @@ IDE_RC smiBackup::moveBackupFile( SChar  * aMoveDir,
                         aMoveDir);
     }
 
-    /* aMoveDir°¡ validÇÑ Àı´ë°æ·ÎÀÎÁö È®ÀÎÇÑ´Ù. */
+    /* aMoveDirê°€ validí•œ ì ˆëŒ€ê²½ë¡œì¸ì§€ í™•ì¸í•œë‹¤. */
     IDE_TEST( smriBackupInfoMgr::isValidABSPath( ID_TRUE, sPath ) 
               != IDE_SUCCESS );
 
@@ -796,11 +796,11 @@ IDE_RC smiBackup::moveBackupFile( SChar  * aMoveDir,
 /*********************************************************
   function description: smiBackup::removeBackupInfoFile
     PROJ-2133 incremental backup
-  - backupinfoÆÄÀÏÀ» »èÁ¦ÇÏ°í backupinfo manager¸¦ disable½ÃÅ²´Ù.
-    º» ÇÔ¼ö¸¦ È£ÃâÇÏ¸é ±âÁ¸¿¡ ¹é¾÷µÈ ¸ğµç incremental backupÆÄÀÏµéÀ» 
-    »ç¿ëÇÒ¼ö ¾ø°ÔµÈ´Ù.
-    backup infoÆÄÀÏÀÇ ¿À·ù·Î DB startupÀÌ µÇÁö ¸øÇÒ¶§
-    ¿¡¸¸ »ç¿ëÇØ¾ßÇÑ´Ù.
+  - backupinfoíŒŒì¼ì„ ì‚­ì œí•˜ê³  backupinfo managerë¥¼ disableì‹œí‚¨ë‹¤.
+    ë³¸ í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•˜ë©´ ê¸°ì¡´ì— ë°±ì—…ëœ ëª¨ë“  incremental backupíŒŒì¼ë“¤ì„ 
+    ì‚¬ìš©í• ìˆ˜ ì—†ê²Œëœë‹¤.
+    backup infoíŒŒì¼ì˜ ì˜¤ë¥˜ë¡œ DB startupì´ ë˜ì§€ ëª»í• ë•Œ
+    ì—ë§Œ ì‚¬ìš©í•´ì•¼í•œë‹¤.
   *********************************************************/
 IDE_RC smiBackup::removeBackupInfoFile()
 {

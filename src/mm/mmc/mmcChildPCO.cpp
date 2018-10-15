@@ -59,8 +59,8 @@ void mmcChildPCO::finalize()
     }
    
     // PROJ-2163
-    // bindParam Àº childPCO °¡ °®°í ÀÖ´Â QC_QMP_MEM ÀÇ PlanBindInfo ¸¦ Æ÷ÀÎÆÃÇÏ°í ÀÖ´Ù.
-    // childPCO °¡ Áö¿öÁú °æ¿ì Æ÷ÀÎÆÃ Á¤º¸¸¦ NULL ·Î ¼¼ÆÃÇÑ´Ù.
+    // bindParam ì€ childPCO ê°€ ê°–ê³  ìˆëŠ” QC_QMP_MEM ì˜ PlanBindInfo ë¥¼ í¬ì¸íŒ…í•˜ê³  ìˆë‹¤.
+    // childPCO ê°€ ì§€ì›Œì§ˆ ê²½ìš° í¬ì¸íŒ… ì •ë³´ë¥¼ NULL ë¡œ ì„¸íŒ…í•œë‹¤.
     mPlanBindInfo.bindParam = NULL; 
 
     // PROJ-2408
@@ -91,10 +91,10 @@ void  mmcChildPCO::wait4HardPrepare(idvSQL* aStatistics)
 {
 
     latchPrepareAsShared(aStatistics);
-    //fix BUG-24607 hard-prepare´ë±â ¿Ï·áÈÄ¿¡ child PCO°¡
-    //old PCO listÀ¸·Î ¿Å°ÜÁú¼ö ÀÖ´Ù.
-    // parent PCO prepare-latch¸¦ ÀâÀº»óÅÂ¿¡¼­
-    // search Child PCO¿¡¼­ child PCO»óÅÂ¸¦ °Ë»çÇÏµµ·Ï ÇÑ´Ù.
+    //fix BUG-24607 hard-prepareëŒ€ê¸° ì™„ë£Œí›„ì— child PCOê°€
+    //old PCO listìœ¼ë¡œ ì˜®ê²¨ì§ˆìˆ˜ ìˆë‹¤.
+    // parent PCO prepare-latchë¥¼ ì¡ì€ìƒíƒœì—ì„œ
+    // search Child PCOì—ì„œ child PCOìƒíƒœë¥¼ ê²€ì‚¬í•˜ë„ë¡ í•œë‹¤.
     releasePrepareLatch();
 }
 
@@ -113,7 +113,7 @@ void mmcChildPCO::assignEnv(qciPlanProperty* aEnvironment,
     // BUG-36956
     if( aPlanBindInfo == NULL )
     {
-        // new C-PCO ÀÇ planBindInfo ÀÇ ÃÊ±â°ªÀº NULL
+        // new C-PCO ì˜ planBindInfo ì˜ ì´ˆê¸°ê°’ì€ NULL
         ID_SERIAL_EXEC(idlOS::memset(&mPlanBindInfo,0x00,ID_SIZEOF(mPlanBindInfo)),1);
     }
     else
@@ -122,7 +122,7 @@ void mmcChildPCO::assignEnv(qciPlanProperty* aEnvironment,
         ID_SERIAL_EXEC(idlOS::memcpy(&mPlanBindInfo,aPlanBindInfo,ID_SIZEOF(mPlanBindInfo)),1);
 
         // BUG-42512
-        // aPlanBindInfo °¡ NULL ÀÎ °æ¿ì´Â search ´ë»óÀ¸·Î »ïÀ¸¸é ¾È µÊ
+        // aPlanBindInfo ê°€ NULL ì¸ ê²½ìš°ëŠ” search ëŒ€ìƒìœ¼ë¡œ ì‚¼ìœ¼ë©´ ì•ˆ ë¨
         ID_SERIAL_END(mEnvState = MMC_CHILD_PCO_ENV_IS_READY);
     }
 }

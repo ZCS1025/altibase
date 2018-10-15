@@ -18,7 +18,7 @@
 #define _O_CMT_NUMERIC_H_ 1
 
 // BUG-20652
-// ¿¬»êÀÇ °á°ú·Î MT numeric typeÀÇ ÃÖ´ë precisionÀº 40±îÁö »ı¼ºµÉ ¼ö ÀÖ´Ù.
+// ì—°ì‚°ì˜ ê²°ê³¼ë¡œ MT numeric typeì˜ ìµœëŒ€ precisionì€ 40ê¹Œì§€ ìƒì„±ë  ìˆ˜ ìˆë‹¤.
 #define CMT_NUMERIC_DATA_SIZE 17
 
 

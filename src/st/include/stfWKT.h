@@ -19,8 +19,8 @@
  * $Id: stfWKT.h 18883 2006-11-14 01:48:40Z sabbra $
  *
  * Description:
- * WKT(Well Known Text)·ÎºÎÅÍ Geometry °´Ã¼ »ı¼ºÇÏ´Â ÇÔ¼ö
- * »ó¼¼ ±¸ÇöÀº stdParsing.cpp ¿¡ ÀÖ´Ù.
+ * WKT(Well Known Text)ë¡œë¶€í„° Geometry ê°ì²´ ìƒì„±í•˜ëŠ” í•¨ìˆ˜
+ * ìƒì„¸ êµ¬í˜„ì€ stdParsing.cpp ì— ìˆë‹¤.
  **********************************************************************/
 
 #ifndef _O_STF_WKT_H_
@@ -62,7 +62,7 @@ public:
                                 IDE_RC*      aResult,
                                 UInt         aValidateOption );
     
-    /* BUG-44399 ST_RECTFROMTEXT(), ST_RECTFROMWKB()¸¦ Áö¿øÇØ¾ß ÇÕ´Ï´Ù. */
+    /* BUG-44399 ST_RECTFROMTEXT(), ST_RECTFROMWKB()ë¥¼ ì§€ì›í•´ì•¼ í•©ë‹ˆë‹¤. */
     static IDE_RC rectFromText( iduMemory  * aQmxMem,
                                 void       * aWKT,
                                 void       * aBuf,

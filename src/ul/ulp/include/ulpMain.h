@@ -32,14 +32,14 @@
 
 
 /****************************************
- * Global º¯¼ö ¼±¾ğ
+ * Global ë³€ìˆ˜ ì„ ì–¸
  ****************************************/
 
-/* command-line optionÁ¤º¸¸¦ °®´Â °´Ã¼. globalÇÏ°Ô °ü¸®µÈ´Ù. */
+/* command-line optionì •ë³´ë¥¼ ê°–ëŠ” ê°ì²´. globalí•˜ê²Œ ê´€ë¦¬ëœë‹¤. */
 ulpProgOption gUlpProgOption;
-/* lexer¿Í parser¿¡¼­ globalÇÏ°Ô »ç¿ëµÇ´Â code generator °´Ã¼. */
+/* lexerì™€ parserì—ì„œ globalí•˜ê²Œ ì‚¬ìš©ë˜ëŠ” code generator ê°ì²´. */
 ulpCodeGen    gUlpCodeGen;
-/* lexer tokenÀ» ÀúÀåÇÏ±â À§ÇÑ memory manager*/
+/* lexer tokenì„ ì €ì¥í•˜ê¸° ìœ„í•œ memory manager*/
 iduMemory       *gUlpMem;
 /* Symbol tables */
 // Macro table
@@ -49,7 +49,7 @@ ulpScopeTable  gUlpScopeT;
 // Struct Table
 ulpStructTable gUlpStructT;
 
-/* ¿¡·¯ ¹ß»ı½Ã ¼öÇàÄÚµå ºÎºĞ¿¡ µû¶ó fileÁ¦°Å ¿©ºÎ¸¦ °áÁ¤. */
+/* ì—ëŸ¬ ë°œìƒì‹œ ìˆ˜í–‰ì½”ë“œ ë¶€ë¶„ì— ë”°ë¼ fileì œê±° ì—¬ë¶€ë¥¼ ê²°ì •. */
 SInt          gUlpErrDelFile = ERR_DEL_FILE_NONE;
 
 

@@ -27,9 +27,9 @@
 #include <idTypesClient.h>
 
 /*
- * CM¸ðµâÀÇ ¸ðµç HEADER ÆÄÀÏµé
+ * CMëª¨ë“ˆì˜ ëª¨ë“  HEADER íŒŒì¼ë“¤
  *
- * CM¸ðµâ³»¿¡¼­´Â ÀÌ HEADER ÆÄÀÏ¸¸ include ÇÏ¸é µÊ
+ * CMëª¨ë“ˆë‚´ì—ì„œëŠ” ì´ HEADER íŒŒì¼ë§Œ include í•˜ë©´ ë¨
  */
 
 #include <cmErrorCodeClient.h>

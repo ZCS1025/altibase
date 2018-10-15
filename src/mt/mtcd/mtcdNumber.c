@@ -67,7 +67,7 @@ mtdModule mtcdNumber = {
       0,
       0, 0, 0, 0, 0 },
     0,
-    0|  // MTD_SELECTIVITY_DISABLE(Float ¶Ç´Â NumericÀ¸·Î Ã³¸®)
+    0|  // MTD_SELECTIVITY_DISABLE(Float ë˜ëŠ” Numericìœ¼ë¡œ ì²˜ë¦¬)
     MTD_CREATE_ENABLE|
     MTD_CREATE_PARAM_PRECISIONSCALE|
     MTD_SEARCHABLE_PRED_BASIC|
@@ -81,7 +81,7 @@ mtdModule mtcdNumber = {
     MTD_NUMERIC_SCALE_MAXIMUM,
     NULL, // staticNull
     mtdInitializeNumber,
-    NULL, // mtdEstimate : Ä®·³ »ı¼º ½Ã, Float/NumericÀ¸·Î ÃÊ±âÈ­µÇ¹Ç·Î »ç¿ë X
+    NULL, // mtdEstimate : ì¹¼ëŸ¼ ìƒì„± ì‹œ, Float/Numericìœ¼ë¡œ ì´ˆê¸°í™”ë˜ë¯€ë¡œ ì‚¬ìš© X
     mtdFloatValue,
     NULL,
     NULL,
@@ -110,7 +110,7 @@ mtdModule mtcdNumber = {
     NULL,
     NULL,
     mtdValidate,
-    mtdSelectivityNA, // NUMBER ModuleÀº Float/Numeric Module·Î º¯È¯µÊ.
+    mtdSelectivityNA, // NUMBER Moduleì€ Float/Numeric Moduleë¡œ ë³€í™˜ë¨.
     mtdEncodeNumericDefault,
     mtdDecodeDefault,
     mtdCompileFmtDefault,

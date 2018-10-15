@@ -32,7 +32,7 @@ ACI_RC cmnLinkListenInitializeTCP(cmnLink *aLink)
     cmnLinkListenTCP *sLink = (cmnLinkListenTCP *)aLink;
 
     /*
-     * Handle ÃÊ±âÈ­
+     * Handle ì´ˆê¸°í™”
      */
     sLink->mSocket.mHandle = CMN_INVALID_SOCKET_HANDLE;
 
@@ -42,7 +42,7 @@ ACI_RC cmnLinkListenInitializeTCP(cmnLink *aLink)
 ACI_RC cmnLinkListenFinalizeTCP(cmnLink *aLink)
 {
     /*
-     * socketÀÌ ¿­·ÁÀÖÀ¸¸é ´ÝÀ½
+     * socketì´ ì—´ë ¤ìžˆìœ¼ë©´ ë‹«ìŒ
      */
     ACI_TEST(aLink->mOp->mClose(aLink) != ACI_SUCCESS);
 
@@ -56,7 +56,7 @@ ACI_RC cmnLinkListenCloseTCP(cmnLink *aLink)
     cmnLinkListenTCP *sLink = (cmnLinkListenTCP *)aLink;
 
     /*
-     * socketÀÌ ¿­·ÁÀÖÀ¸¸é ´ÝÀ½
+     * socketì´ ì—´ë ¤ìžˆìœ¼ë©´ ë‹«ìŒ
      */
     if (sLink->mSocket.mHandle != CMN_INVALID_SOCKET_HANDLE)
     {
@@ -73,7 +73,7 @@ ACI_RC cmnLinkListenGetSocketTCP(cmnLink *aLink, void **aHandle)
     cmnLinkListenTCP *sLink = (cmnLinkListenTCP *)aLink;
 
     /*
-     * socket À» µ¹·ÁÁÜ
+     * socket ì„ ëŒë ¤ì¤Œ
      */
     *(acp_sock_t**)aHandle = &(sLink->mSocket);
 
@@ -85,7 +85,7 @@ ACI_RC cmnLinkListenGetDispatchInfoTCP(cmnLink *aLink, void *aDispatchInfo)
     cmnLinkListenTCP *sLink = (cmnLinkListenTCP *)aLink;
 
     /*
-     * DispatcherInfo¸¦ µ¹·ÁÁÜ
+     * DispatcherInfoë¥¼ ëŒë ¤ì¤Œ
      */
     *(acp_uint32_t *)aDispatchInfo = sLink->mDispatchInfo;
 
@@ -97,7 +97,7 @@ ACI_RC cmnLinkListenSetDispatchInfoTCP(cmnLink *aLink, void *aDispatchInfo)
     cmnLinkListenTCP *sLink = (cmnLinkListenTCP *)aLink;
 
     /*
-     * DispatcherInfo¸¦ ¼¼ÆÃ
+     * DispatcherInfoë¥¼ ì„¸íŒ…
      */
     sLink->mDispatchInfo = *(acp_uint32_t *)aDispatchInfo;
 
@@ -118,7 +118,7 @@ ACI_RC cmnLinkListenListenTCP(cmnLinkListen *aLink, cmnLinkListenArg *aListenArg
     acp_char_t            sErrMsg[256];
 
     sErrMsg[0] = '\0';
-    /* socketÀÌ ÀÌ¹Ì ¿­·ÁÀÖ´ÂÁö °Ë»ç */
+    /* socketì´ ì´ë¯¸ ì—´ë ¤ìžˆëŠ”ì§€ ê²€ì‚¬ */
     ACI_TEST_RAISE(sLink->mSocket.mHandle != CMN_INVALID_SOCKET_HANDLE, SocketAlreadyOpened);
 
     /* *********************************************************
@@ -248,21 +248,21 @@ ACI_RC cmnLinkListenAcceptTCP(cmnLinkListen *aLink, cmnLinkPeer **aLinkPeer)
     cmnLinkDescTCP     sTmpDesc;
 
     /*
-     * »õ·Î¿î Link¸¦ ÇÒ´ç
+     * ìƒˆë¡œìš´ Linkë¥¼ í• ë‹¹
      */
    /* BUG-29957
-    * cmnLinkAlloc ½ÇÆÐ½Ã Connect¸¦ ¿äÃ»ÇÑ SocketÀ» ÀÓ½Ã·Î accept ÇØÁà¾ß ÇÑ´Ù.
+    * cmnLinkAlloc ì‹¤íŒ¨ì‹œ Connectë¥¼ ìš”ì²­í•œ Socketì„ ìž„ì‹œë¡œ accept í•´ì¤˜ì•¼ í•œë‹¤.
     */
     ACI_TEST_RAISE(cmnLinkAlloc((cmnLink **)&sLinkPeer, CMN_LINK_TYPE_PEER_SERVER, CMN_LINK_IMPL_TCP) != ACI_SUCCESS, LinkError);
 
     /*
-     * Desc È¹µæ
+     * Desc íšë“
      */
     ACI_TEST_RAISE(sLinkPeer->mPeerOp->mGetDesc(sLinkPeer, &sDesc) != ACI_SUCCESS, LinkError);
 
     /* TASK-3873 5.3.3 Release Static Analysis Code-sonar */
-    /* Code-Sonar°¡ Function  Pointer¸¦ followÇÏÁö ¸øÇØ¼­..
-       assert¸¦ ³Ö¾ú½À´Ï´Ù */
+    /* Code-Sonarê°€ Function  Pointerë¥¼ followí•˜ì§€ ëª»í•´ì„œ..
+       assertë¥¼ ë„£ì—ˆìŠµë‹ˆë‹¤ */
     ACE_ASSERT( sDesc != NULL);
 
     /*
@@ -277,12 +277,12 @@ ACI_RC cmnLinkListenAcceptTCP(cmnLinkListen *aLink, cmnLinkPeer **aLinkPeer)
                    AcceptError);
 
     /*
-     * Link¸¦ µ¹·ÁÁÜ
+     * Linkë¥¼ ëŒë ¤ì¤Œ
      */
     *aLinkPeer = sLinkPeer;
 
     /*
-     * socket ÃÊ±âÈ­
+     * socket ì´ˆê¸°í™”
      */
     ACI_TEST((*aLinkPeer)->mPeerOp->mSetOptions(*aLinkPeer, SO_NONE) != ACI_SUCCESS);
 
@@ -347,13 +347,13 @@ ACI_RC cmnLinkListenMapTCP(cmnLink *aLink)
     cmnLinkListen *sLink = (cmnLinkListen *)aLink;
 
     /*
-     * Link °Ë»ç
+     * Link ê²€ì‚¬
      */
     ACE_ASSERT(aLink->mType == CMN_LINK_TYPE_LISTEN);
     ACE_ASSERT(aLink->mImpl == CMN_LINK_IMPL_TCP);
 
     /*
-     * ÇÔ¼ö Æ÷ÀÎÅÍ ¼¼ÆÃ
+     * í•¨ìˆ˜ í¬ì¸í„° ì„¸íŒ…
      */
     aLink->mOp       = &gCmnLinkListenOpTCPClient;
     sLink->mListenOp = &gCmnLinkListenListenOpTCPClient;

@@ -19,7 +19,7 @@
 /* 
  * BUG-38951 Support to choice a type of CM dispatcher on run-time
  *
- * ±¸Á¶Ã¼¿Í ÇÔ¼ö¸í¿¡ suffix 'Epoll'À» Ãß°¡. (BUG-45240)
+ * êµ¬ì¡°ì²´ì™€ í•¨ìˆ˜ëª…ì— suffix 'Epoll'ì„ ì¶”ê°€. (BUG-45240)
  */
 
 #if !defined(CM_DISABLE_TCP) || !defined(CM_DISABLE_UNIX)
@@ -30,11 +30,11 @@ typedef struct cmnDispatcherSOCKEpoll
 {
     cmnDispatcher       mDispatcher;
 
-    UInt                mPollingFdCnt;  /* pollingÁßÀÎ Fd °³¼ö */
+    UInt                mPollingFdCnt;  /* pollingì¤‘ì¸ Fd ê°œìˆ˜ */
 
     SInt                mEpollFd;       /* A handle for Epoll */
-    struct epoll_event *mEvents;        /* ¹İÈ¯µÈ ÀÌº¥Æ® ¸®½ºÆ® */
-    UInt                mMaxEvents;     /* °¨ÁöÇÒ ÀÌº¥Æ® ÃÖ´ë¼ö */
+    struct epoll_event *mEvents;        /* ë°˜í™˜ëœ ì´ë²¤íŠ¸ ë¦¬ìŠ¤íŠ¸ */
+    UInt                mMaxEvents;     /* ê°ì§€í•  ì´ë²¤íŠ¸ ìµœëŒ€ìˆ˜ */
 } cmnDispatcherSOCKEpoll;
 
 IDE_RC cmnDispatcherInitializeSOCKEpoll(cmnDispatcher *aDispatcher, UInt aMaxLink)
@@ -53,7 +53,7 @@ IDE_RC cmnDispatcherInitializeSOCKEpoll(cmnDispatcher *aDispatcher, UInt aMaxLin
     sDispatcher->mEpollFd = idlOS::epoll_create(aMaxLink);
     IDE_TEST_RAISE(sDispatcher->mEpollFd == PDL_INVALID_HANDLE, EpollCreateError);
 
-    /* mEvents¸¦ À§ÇÑ ¸Ş¸ğ¸® ÇÒ´ç - ¸î°³°¡ Àû´çÇÒ±î? */
+    /* mEventsë¥¼ ìœ„í•œ ë©”ëª¨ë¦¬ í• ë‹¹ - ëª‡ê°œê°€ ì ë‹¹í• ê¹Œ? */
     IDE_TEST_RAISE(iduMemMgr::malloc(IDU_MEM_CMN,
                                      ID_SIZEOF(struct epoll_event) * aMaxLink,
                                      (void **)&(sDispatcher->mEvents),
@@ -92,7 +92,7 @@ IDE_RC cmnDispatcherFinalizeSOCKEpoll(cmnDispatcher *aDispatcher)
         /* A obsolete convention */
     }
 
-    /* BUG-41458 ÇÒ´çÇÑ ¸Ş¸ğ¸® ÇØÁ¦ */
+    /* BUG-41458 í• ë‹¹í•œ ë©”ëª¨ë¦¬ í•´ì œ */
     if (sDispatcher->mEvents != NULL)
     {
         (void)iduMemMgr::free(sDispatcher->mEvents);
@@ -115,10 +115,10 @@ IDE_RC cmnDispatcherAddLinkSOCKEpoll(cmnDispatcher *aDispatcher, cmnLink *aLink)
     PDL_SOCKET              sHandle     = PDL_INVALID_SOCKET;
     struct epoll_event      sEvent;
 
-    /* LinkÀÇ socket È¹µæ */
+    /* Linkì˜ socket íšë“ */
     IDE_TEST(aLink->mOp->mGetHandle(aLink, &sHandle) != IDE_SUCCESS);
 
-    /* socket Ãß°¡ */
+    /* socket ì¶”ê°€ */
     sEvent.events   = EPOLLIN;
     sEvent.data.ptr = (void *)aLink;
     IDE_TEST_RAISE(idlOS::epoll_ctl(sDispatcher->mEpollFd,
@@ -128,7 +128,7 @@ IDE_RC cmnDispatcherAddLinkSOCKEpoll(cmnDispatcher *aDispatcher, cmnLink *aLink)
 
     sDispatcher->mPollingFdCnt++;
 
-    /* DispatcherÀÇ Link list¿¡ Ãß°¡ */
+    /* Dispatcherì˜ Link listì— ì¶”ê°€ */
     IDE_TEST(cmnDispatcherAddLink(aDispatcher, aLink) != IDE_SUCCESS);
 
     return IDE_SUCCESS;
@@ -148,10 +148,10 @@ IDE_RC cmnDispatcherRemoveLinkSOCKEpoll(cmnDispatcher *aDispatcher, cmnLink *aLi
     PDL_SOCKET              sHandle     = PDL_INVALID_SOCKET;
     struct epoll_event      sEvent;
 
-    /* LinkÀÇ socket È¹µæ */
+    /* Linkì˜ socket íšë“ */
     IDE_TEST(aLink->mOp->mGetHandle(aLink, &sHandle) != IDE_SUCCESS); 
 
-    /* 2.6.9 ÀÌÀü ¹öÀü°ú È£È¯¼º À¯Áö¸¦ À§ÇØ sEvent ¼³Á¤ */
+    /* 2.6.9 ì´ì „ ë²„ì „ê³¼ í˜¸í™˜ì„± ìœ ì§€ë¥¼ ìœ„í•´ sEvent ì„¤ì • */
     sEvent.events   = EPOLLIN;
     sEvent.data.ptr = (void *)aLink;
     IDE_TEST_RAISE(idlOS::epoll_ctl(sDispatcher->mEpollFd,
@@ -161,7 +161,7 @@ IDE_RC cmnDispatcherRemoveLinkSOCKEpoll(cmnDispatcher *aDispatcher, cmnLink *aLi
 
     sDispatcher->mPollingFdCnt--;
 
-    /* DispatcherÀÇ Link list¿¡ »èÁ¦ */
+    /* Dispatcherì˜ Link listì— ì‚­ì œ */
     IDE_TEST(cmnDispatcherRemoveLink(aDispatcher, aLink) != IDE_SUCCESS);
 
     return IDE_SUCCESS;
@@ -242,8 +242,8 @@ IDE_RC cmnDispatcherDetectSOCKEpoll(cmnDispatcher  *aDispatcher,
         else
         {
             /* 
-             * Client°¡ Á¾·áÇÑ °æ¿ìÀÌ¸ç DedicatedMode¿¡¼­´Â epoll_wait()À» È£ÃâÇÒ ÇÊ¿ä°¡ ¾ø´Ù.
-             * DedicatedMode¿¡¼­´Â ÇØ´ç Servicethread°¡ cond_wait »óÅÂ·Î °¡±â ¶§¹®ÀÌ´Ù.
+             * Clientê°€ ì¢…ë£Œí•œ ê²½ìš°ì´ë©° DedicatedModeì—ì„œëŠ” epoll_wait()ì„ í˜¸ì¶œí•  í•„ìš”ê°€ ì—†ë‹¤.
+             * DedicatedModeì—ì„œëŠ” í•´ë‹¹ Servicethreadê°€ cond_wait ìƒíƒœë¡œ ê°€ê¸° ë•Œë¬¸ì´ë‹¤.
              */
         }
     }
@@ -257,7 +257,7 @@ IDE_RC cmnDispatcherDetectSOCKEpoll(cmnDispatcher  *aDispatcher,
 
     IDE_TEST_RAISE(sResult < 0, EpollWaitError);
 
-    /* Ready Link °Ë»ö */
+    /* Ready Link ê²€ìƒ‰ */
     for (i = 0; i < sResult; i++)
     {
         IDE_ASSERT(sDispatcher->mEvents[i].data.ptr != NULL);
@@ -266,7 +266,7 @@ IDE_RC cmnDispatcherDetectSOCKEpoll(cmnDispatcher  *aDispatcher,
         IDU_LIST_ADD_LAST(aReadyList, &sLink->mReadyListNode);
     }
 
-    /* ReadyCount ¼¼ÆÃ */
+    /* ReadyCount ì„¸íŒ… */
     if (aReadyCount != NULL)
     {
         *aReadyCount = sResult;
@@ -301,7 +301,7 @@ struct cmnDispatcherOP gCmnDispatcherOpSOCKEpoll =
 
 IDE_RC cmnDispatcherMapSOCKEpoll(cmnDispatcher *aDispatcher)
 {
-    /* ÇÔ¼ö Æ÷ÀÎÅÍ ¼¼ÆÃ */
+    /* í•¨ìˆ˜ í¬ì¸í„° ì„¸íŒ… */
     aDispatcher->mOp = &gCmnDispatcherOpSOCKEpoll;
 
     return IDE_SUCCESS;
@@ -317,8 +317,8 @@ IDE_RC cmnDispatcherWaitLinkSOCKEpoll(cmnLink        * /*aLink*/,
                                       PDL_Time_Value * /*aTimeout*/)
 {
     /* 
-     * EpollÀº 1È¸¼º FD¸¦ °¨½ÃÇÏ´Â ¿ëµµ·Î´Â ½Ã½ºÅÛ Äİ ºñ¿ëÀÌ ´õ Å©´Ù.
-     * PollÀ» ÃßÃµÇÑ´Ù. (epoll_create() -> epoll_ctl() -> close()) 
+     * Epollì€ 1íšŒì„± FDë¥¼ ê°ì‹œí•˜ëŠ” ìš©ë„ë¡œëŠ” ì‹œìŠ¤í…œ ì½œ ë¹„ìš©ì´ ë” í¬ë‹¤.
+     * Pollì„ ì¶”ì²œí•œë‹¤. (epoll_create() -> epoll_ctl() -> close()) 
      */
     IDE_ASSERT(0);
 
@@ -329,8 +329,8 @@ SInt cmnDispatcherCheckHandleSOCKEpoll(PDL_SOCKET       /*aHandle*/,
                                        PDL_Time_Value * /*aTimeout*/)
 {
     /* 
-     * EpollÀº 1È¸¼º FD¸¦ °¨½ÃÇÏ´Â ¿ëµµ·Î´Â ½Ã½ºÅÛ Äİ ºñ¿ëÀÌ ´õ Å©´Ù.
-     * PollÀ» ÃßÃµÇÑ´Ù. (epoll_create() -> epoll_ctl() -> close()) 
+     * Epollì€ 1íšŒì„± FDë¥¼ ê°ì‹œí•˜ëŠ” ìš©ë„ë¡œëŠ” ì‹œìŠ¤í…œ ì½œ ë¹„ìš©ì´ ë” í¬ë‹¤.
+     * Pollì„ ì¶”ì²œí•œë‹¤. (epoll_create() -> epoll_ctl() -> close()) 
      */
     IDE_ASSERT(0);
 

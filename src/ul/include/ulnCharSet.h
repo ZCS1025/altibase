@@ -22,7 +22,7 @@
 // ulConvert() option flags
 #define CONV_DATA_IN        0x01
 #define CONV_DATA_OUT       0x02
-#define CONV_CALC_TOTSIZE   0x10 // ¹®ÀÚ¿­ ÀüÃ¼ ±æÀÌ °è»ê
+#define CONV_CALC_TOTSIZE   0x10 // ë¬¸ìì—´ ì „ì²´ ê¸¸ì´ ê³„ì‚°
 
 typedef enum ulnCharactersetValidation
 {
@@ -55,19 +55,19 @@ typedef struct ulnCharSet
     acp_uint8_t  *mWcharEndianBuf;
     acp_sint32_t  mWcharEndianBufMaxLen;
 
-    // BUG-27515: º¯È¯µÈ ¹®ÀÚ¿­ Á¤º¸
-    // ¸¶Áö¸· ¹®ÀÚ°¡ Àß¸° °æ¿ì¿¡µµ mConvedSrcLenÀº ÇØ´ç ¹®ÀÚ±îÁöÀÇ ±æÀÌ¸¦ ³ªÅ¸³½´Ù.
-    // »ç¿ëÀÚ ¹öÆÛ¸¦ ¹Ş´Â ulConvert()¿¡¼­¸¸ À¯È¿.
-    acp_sint32_t  mConvedSrcLen;                  // º¯È¯µÈ ¹®ÀÚ¿­ÀÇ ¿øº» ±æÀÌ (byte ´ÜÀ§)
-    acp_sint32_t  mCopiedDesLen;                  // ¹öÆÛ¿¡ ¾´ ±æÀÌ (byte ´ÜÀ§)
-    acp_uint8_t   mRemainText[ULN_MAX_CHARSIZE];  // ¸¶Áö¸· ¹®ÀÚ°¡ Àß¸° °æ¿ì, ³²Àº °ª
-    acp_sint32_t  mRemainTextLen;                 // ¸¶Áö¸· ¹®ÀÚ°¡ Àß¸° °æ¿ì, ³²Àº ±æÀÌ
+    // BUG-27515: ë³€í™˜ëœ ë¬¸ìì—´ ì •ë³´
+    // ë§ˆì§€ë§‰ ë¬¸ìê°€ ì˜ë¦° ê²½ìš°ì—ë„ mConvedSrcLenì€ í•´ë‹¹ ë¬¸ìê¹Œì§€ì˜ ê¸¸ì´ë¥¼ ë‚˜íƒ€ë‚¸ë‹¤.
+    // ì‚¬ìš©ì ë²„í¼ë¥¼ ë°›ëŠ” ulConvert()ì—ì„œë§Œ ìœ íš¨.
+    acp_sint32_t  mConvedSrcLen;                  // ë³€í™˜ëœ ë¬¸ìì—´ì˜ ì›ë³¸ ê¸¸ì´ (byte ë‹¨ìœ„)
+    acp_sint32_t  mCopiedDesLen;                  // ë²„í¼ì— ì“´ ê¸¸ì´ (byte ë‹¨ìœ„)
+    acp_uint8_t   mRemainText[ULN_MAX_CHARSIZE];  // ë§ˆì§€ë§‰ ë¬¸ìê°€ ì˜ë¦° ê²½ìš°, ë‚¨ì€ ê°’
+    acp_sint32_t  mRemainTextLen;                 // ë§ˆì§€ë§‰ ë¬¸ìê°€ ì˜ë¦° ê²½ìš°, ë‚¨ì€ ê¸¸ì´
 
     /* 
      * PROJ-2047 Strengthening LOB - Partial Converting
      *
-     * Partial ConvertingÀ» À§ÇÑ ³²Àº Src.
-     * ´ÙÀ½¿¡ Àü¼Û ¹ŞÀº µ¥ÀÌÅÍ ¾ÕºÎºĞ¿¡ ºÙ¿©¾ß ÇÑ´Ù.
+     * Partial Convertingì„ ìœ„í•œ ë‚¨ì€ Src.
+     * ë‹¤ìŒì— ì „ì†¡ ë°›ì€ ë°ì´í„° ì•ë¶€ë¶„ì— ë¶™ì—¬ì•¼ í•œë‹¤.
      */
     acp_uint8_t   mRemainSrc[ULN_MAX_CHARSIZE];
     acp_sint32_t  mRemainSrcLen;

@@ -126,7 +126,7 @@ IDE_RC utISPApi::GetRowCount(SQLLEN * aRowCnt, idBool aPrepare)
 /**
  * DirectExecute.
  *
- * ¸â¹ö º¯¼ö m_Query¿¡ ¼³Á¤µÇ¾îÀÖ´Â Äõ¸®¸¦ SQLExecDirect()¿¡ ÀÇÇØ ¼öÇàÇÑ´Ù.
+ * ë©¤ë²„ ë³€ìˆ˜ m_Queryì— ì„¤ì •ë˜ì–´ìžˆëŠ” ì¿¼ë¦¬ë¥¼ SQLExecDirect()ì— ì˜í•´ ìˆ˜í–‰í•œë‹¤.
  */
 IDE_RC utISPApi::DirectExecute(idBool aAllowCancel)
 {
@@ -138,7 +138,7 @@ IDE_RC utISPApi::DirectExecute(idBool aAllowCancel)
                    __FILE__, __LINE__, m_Query);
 #endif
 
-    /* Äõ¸®°¡ SHUTDOWNÀÎÁö °Ë»ç. */
+    /* ì¿¼ë¦¬ê°€ SHUTDOWNì¸ì§€ ê²€ì‚¬. */
     if (idlOS::strncmp(m_Query, "alter database mydb shutdown", 28) == 0)
     {
         sIsShutdown = ID_TRUE;
@@ -163,8 +163,8 @@ IDE_RC utISPApi::DirectExecute(idBool aAllowCancel)
     IDE_TEST_RAISE(sSqlRC != SQL_SUCCESS && sSqlRC != SQL_NO_DATA,
                    ExecError);
 
-    /* Äõ¸®°¡ SHUTDOWNÀÌ¾ú°í, Äõ¸® ¼öÇàÀÌ Á¤»óÀûÀ¸·Î ¿Ï·áµÈ °æ¿ì,
-     * ¼­¹ö°¡ SHUTDOWNµÈ °ÍÀÌ´Ù. */
+    /* ì¿¼ë¦¬ê°€ SHUTDOWNì´ì—ˆê³ , ì¿¼ë¦¬ ìˆ˜í–‰ì´ ì •ìƒì ìœ¼ë¡œ ì™„ë£Œëœ ê²½ìš°,
+     * ì„œë²„ê°€ SHUTDOWNëœ ê²ƒì´ë‹¤. */
     if (sIsShutdown == ID_TRUE)
     {
         mIsConnToIdleInstance = ID_TRUE;
@@ -182,9 +182,9 @@ IDE_RC utISPApi::DirectExecute(idBool aAllowCancel)
     {
         SetErrorMsgWithHandle(SQL_HANDLE_STMT, (SQLHANDLE)m_IStmt);
 
-        /* Äõ¸®°¡ SHUTDOWNÀÌ¾ú°í,
-         * ¼­¹ö¿ÍÀÇ ¿¬°á ´ÜÀý¿¡ ÀÇÇØ Äõ¸® ¼öÇàÀÌ ºñÁ¤»ó Á¾·áÇÑ °æ¿ì,
-         * ¼­¹ö°¡ SHUTDOWNµÈ °ÍÀ¸·Î º»´Ù. */
+        /* ì¿¼ë¦¬ê°€ SHUTDOWNì´ì—ˆê³ ,
+         * ì„œë²„ì™€ì˜ ì—°ê²° ë‹¨ì ˆì— ì˜í•´ ì¿¼ë¦¬ ìˆ˜í–‰ì´ ë¹„ì •ìƒ ì¢…ë£Œí•œ ê²½ìš°,
+         * ì„œë²„ê°€ SHUTDOWNëœ ê²ƒìœ¼ë¡œ ë³¸ë‹¤. */
         if (sIsShutdown == ID_TRUE &&
             idlOS::strncmp(GetErrorState(), "08S01", 5) == 0)
         {
@@ -361,10 +361,10 @@ IDE_RC utISPApi::Execute(idBool aAllowCancel)
     IDE_TEST_RAISE(aAllowCancel == ID_TRUE && mIsSQLCanceled == ID_TRUE,
                    Canceled);
 
-    /* BUGBUG: String data right-truncated ¸¦ Ã³¸®ÇÏÁö ¾Ê¾Æ¼­ ¹ÙÀÎµù º¯¼ö¿¡ 
-     * °ªÀÌ µé¾î°¡Áö ¾Ê°í ÀÖÀ½.
-     * ÇöÀç·Î¼± iSQLExecuteCommand::ExecutePSMStmt(..)·Î SUCCESS_WITH_INFO¸¦
-     * ¸®ÅÏÇÒ ¹æ¹ýÀÌ ¾ø¾î¼­ ¼öÁ¤ º¸·ù...
+    /* BUGBUG: String data right-truncated ë¥¼ ì²˜ë¦¬í•˜ì§€ ì•Šì•„ì„œ ë°”ì¸ë”© ë³€ìˆ˜ì— 
+     * ê°’ì´ ë“¤ì–´ê°€ì§€ ì•Šê³  ìžˆìŒ.
+     * í˜„ìž¬ë¡œì„  iSQLExecuteCommand::ExecutePSMStmt(..)ë¡œ SUCCESS_WITH_INFOë¥¼
+     * ë¦¬í„´í•  ë°©ë²•ì´ ì—†ì–´ì„œ ìˆ˜ì • ë³´ë¥˜...
     if (sSqlRC == SQL_SUCCESS_WITH_INFO)
     {
         SetErrorMsgWithHandle(SQL_HANDLE_STMT, (SQLHANDLE)m_TmpStmt3);
@@ -398,11 +398,11 @@ IDE_RC utISPApi::Execute(idBool aAllowCancel)
 /**
  * AllocStmt.
  *
- * utISPApiÀÇ ¸â¹ö statement¸¦ ÇÒ´çÇÑ´Ù.
+ * utISPApiì˜ ë©¤ë²„ statementë¥¼ í• ë‹¹í•œë‹¤.
  *
  * @param[in] aWhatStmt
- *  ¾î¶² statement¸¦ ÇÒ´çÇÒÁö ÁöÁ¤ÇÑ´Ù.
- *  ¾Æ·¡¿Í °°Àº ºñÆ®¿¡ ÀÇÇØ ÁöÁ¤ÇÏ¸ç, bitwise or °¡´ÉÇÏ´Ù.
+ *  ì–´ë–¤ statementë¥¼ í• ë‹¹í• ì§€ ì§€ì •í•œë‹¤.
+ *  ì•„ëž˜ì™€ ê°™ì€ ë¹„íŠ¸ì— ì˜í•´ ì§€ì •í•˜ë©°, bitwise or ê°€ëŠ¥í•˜ë‹¤.
  *  0x01: m_IStmt
  *  0x02: m_TmpStmt
  *  0x04: m_TmpStmt2

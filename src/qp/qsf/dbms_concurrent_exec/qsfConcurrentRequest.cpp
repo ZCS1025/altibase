@@ -42,7 +42,7 @@ static IDE_RC qsfEstimate( mtcNode*     aNode,
 mtfModule qsfConcExecModule = {
     1 | MTC_NODE_OPERATOR_MISC | MTC_NODE_VARIABLE_TRUE,
     ~0,
-    1.0,                    // default selectivity (ºñ±³ ¿¬»êÀÚ ¾Æ´Ô)
+    1.0,                    // default selectivity (ë¹„êµ ì—°ì‚°ì ì•„ë‹˜)
     qsfFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -174,7 +174,7 @@ IDE_RC qsfCalculate_SpConcRequest( mtcNode*     aNode,
     IDE_TEST( sConcMgr->mutex.lock(NULL) != IDE_SUCCESS );
     sIsLocked = ID_TRUE;
 
-    // Error°¡ reserved thread count¸¸Å­ ½×ÀÎ °æ¿ì ´õÀÌ»ó ½ÇÇàÇÏÁö ¾Ê´Â´Ù.
+    // Errorê°€ reserved thread countë§Œí¼ ìŒ“ì¸ ê²½ìš° ë”ì´ìƒ ì‹¤í–‰í•˜ì§€ ì•ŠëŠ”ë‹¤.
     IDE_TEST( sConcMgr->errCnt >= (sConcMgr->errMaxCnt  / 2) );
 
     //PROJ-2451 FIT TEST
@@ -209,7 +209,7 @@ IDE_RC qsfCalculate_SpConcRequest( mtcNode*     aNode,
                     &sThrObj )
          == IDE_SUCCESS )
     {
-        // Thread¸¦ °¡Á®¿Â °æ¿ì
+        // Threadë¥¼ ê°€ì ¸ì˜¨ ê²½ìš°
         if ( sThrObj != NULL )
         {
             sIsRunStart = ID_TRUE;
@@ -231,7 +231,7 @@ IDE_RC qsfCalculate_SpConcRequest( mtcNode*     aNode,
 
             IDE_TEST( sIsSuccess != ID_TRUE );
         }
-        // Thread¸¦ °¡Á®¿ÀÁö ¸øÇÑ °æ¿ì (free list¿¡ ÇÑ °³µµ ¾ø´Â °æ¿ì)
+        // Threadë¥¼ ê°€ì ¸ì˜¤ì§€ ëª»í•œ ê²½ìš° (free listì— í•œ ê°œë„ ì—†ëŠ” ê²½ìš°)
         else
         {
             // Nothing to do.
@@ -364,7 +364,7 @@ IDE_RC qsfCalculate_SpConcRequest( mtcNode*     aNode,
         // Nothing to do.
     }
 
-    // ½ÇÇà¿¡ ½ÇÆĞÇÑ °æ¿ì -1À» return ÇÑ´Ù.
+    // ì‹¤í–‰ì— ì‹¤íŒ¨í•œ ê²½ìš° -1ì„ return í•œë‹¤.
     *((mtdIntegerType*)aStack[0].value) = (mtdIntegerType)(-1);
 
     return IDE_FAILURE;

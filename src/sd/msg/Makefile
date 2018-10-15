@@ -4,7 +4,7 @@
 
 include ../sdEnv.mk
 
-# NLS Áß ¿µ¾î ¿¡·¯ ¸Þ½ÃÁö È­ÀÏ Á¤ÀÇ 
+# NLS ì¤‘ ì˜ì–´ ì—ëŸ¬ ë©”ì‹œì§€ í™”ì¼ ì •ì˜ 
 E_SD_US_MSG    = E_SD_US7ASCII.msg
 ALLMSG         = $(E_SD_US_MSG)
 

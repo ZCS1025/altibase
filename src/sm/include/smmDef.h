@@ -33,10 +33,10 @@
 
 #define SMM_PINGPONG_COUNT   (2)  // ping & pong
 
-#define SMM_MAX_AIO_COUNT_PER_FILE  (8192)  // ÇÑ È­ÀÏ¿¡ ´ëÇÑ AIO ÃÖ´ë °¹¼ö
-#define SMM_MIN_AIO_FILE_SIZE       (1 * 1024 * 1024) // ÃÖ¼Ò AIO ¼öÇà È­ÀÏ Å©±â 
+#define SMM_MAX_AIO_COUNT_PER_FILE  (8192)  // í•œ í™”ì¼ì— ëŒ€í•œ AIO ìµœëŒ€ ê°¯ìˆ˜
+#define SMM_MIN_AIO_FILE_SIZE       (1 * 1024 * 1024) // ìµœì†Œ AIO ìˆ˜í–‰ í™”ì¼ í¬ê¸° 
 
-// BUG-29607 Checkpoint Image File NameÀÇ Çü½Ä
+// BUG-29607 Checkpoint Image File Nameì˜ í˜•ì‹
 // TBSName "-" PingpongNumber "-"
 // TBSName "-" PingpongNumber "-" FileNumber
 // DirPath "//" TBSName "-" PingpongNumber "-" FileNumber
@@ -53,12 +53,12 @@
 typedef struct smmDBFreePageList
 {
     // Free Page List ID
-    // smmMemBase.mFreePageLists³»¿¡¼­ÀÇ index
-    scPageID   mFirstFreePageID ; // Ã¹¹øÂ° Free Page ÀÇ ID
-    vULong     mFreePageCount ;   // Free Page ¼ö
+    // smmMemBase.mFreePageListsë‚´ì—ì„œì˜ index
+    scPageID   mFirstFreePageID ; // ì²«ë²ˆì§¸ Free Page ì˜ ID
+    vULong     mFreePageCount ;   // Free Page ìˆ˜
 } smmDBFreePageList ;
 
-// ÃÖ´ë Free Page ListÀÇ ¼ö 
+// ìµœëŒ€ Free Page Listì˜ ìˆ˜ 
 #define SMM_MAX_FPL_COUNT (SM_MAX_PAGELIST_COUNT)
 
 
@@ -88,13 +88,13 @@ typedef struct smmMemBase
     // Storing SystemStat persistantly 
     smiSystemStat   mSystemStat;
 
-    // PROJ-1490 ÆäÀÌÁö ¸®½ºÆ® ´ÙÁßÈ­¹× ¸Ş¸ğ¸® ÇØÁ¦ °ü·Ã ¸â¹öµé
-    // Expand Chunk´Â µ¥ÀÌÅÍº£ÀÌ½º¸¦ È®ÀåÇÏ´Â ÃÖ¼Ò ´ÜÀ§ÀÌ´Ù.
-    // Exapnd ChunkÀÇ Å©±â´Â µ¥ÀÌÅÍº£ÀÌ½º »ı¼º½Ã¿¡ °áÁ¤µÇ¸ç, º¯°æÀÌ ºÒ°¡´ÉÇÑ´Ù.
-    vULong          mExpandChunkPageCnt;    // ExpandChunk ´ç Page¼ö
-    vULong          mCurrentExpandChunkCnt; // ÇöÀç ÇÒ´çÇÑ ExpandChunkÀÇ ¼ö
+    // PROJ-1490 í˜ì´ì§€ ë¦¬ìŠ¤íŠ¸ ë‹¤ì¤‘í™”ë° ë©”ëª¨ë¦¬ í•´ì œ ê´€ë ¨ ë©¤ë²„ë“¤
+    // Expand ChunkëŠ” ë°ì´í„°ë² ì´ìŠ¤ë¥¼ í™•ì¥í•˜ëŠ” ìµœì†Œ ë‹¨ìœ„ì´ë‹¤.
+    // Exapnd Chunkì˜ í¬ê¸°ëŠ” ë°ì´í„°ë² ì´ìŠ¤ ìƒì„±ì‹œì— ê²°ì •ë˜ë©°, ë³€ê²½ì´ ë¶ˆê°€ëŠ¥í•œë‹¤.
+    vULong          mExpandChunkPageCnt;    // ExpandChunk ë‹¹ Pageìˆ˜
+    vULong          mCurrentExpandChunkCnt; // í˜„ì¬ í• ë‹¹í•œ ExpandChunkì˜ ìˆ˜
     
-    // ¿©·¯°³·Î ´ÙÁßÈ­µÈ DB Free Page List¹× ±× °¹¼ö
+    // ì—¬ëŸ¬ê°œë¡œ ë‹¤ì¤‘í™”ëœ DB Free Page Listë° ê·¸ ê°¯ìˆ˜
     UInt                mFreePageListCount;
     smmDBFreePageList   mFreePageLists[ SMM_MAX_FPL_COUNT ];
     // system SCN
@@ -138,19 +138,19 @@ typedef struct smmPCH // Page Control Header : PCH
     void               *m_page;
     void               *mPageMemHandle;
 
-    // BUG-17770: DML TransactinoÀº Page¿¡ ´ëÇÑ °»½Å ¶Ç´Â ReadÀü¿¡
-    //            Page¿¡ ´ëÇØ¼­ °¢±â X, S Latch¸¦ Àâ´Â´Ù. ÀÌ¶§ »ç¿ëÇÏ´Â
-    //            Mutex°¡ mPageMemMutexÀÌ´Ù. ¶§¹®¿¡ Checkpoint½Ã¿¡´Â º°µµÀÇ
-    //            Mutex¸¦ »ç¿ëÇÏ¿©¾ß ÇÑ´Ù.
+    // BUG-17770: DML Transactinoì€ Pageì— ëŒ€í•œ ê°±ì‹  ë˜ëŠ” Readì „ì—
+    //            Pageì— ëŒ€í•´ì„œ ê°ê¸° X, S Latchë¥¼ ì¡ëŠ”ë‹¤. ì´ë•Œ ì‚¬ìš©í•˜ëŠ”
+    //            Mutexê°€ mPageMemMutexì´ë‹¤. ë•Œë¬¸ì— Checkpointì‹œì—ëŠ” ë³„ë„ì˜
+    //            Mutexë¥¼ ì‚¬ìš©í•˜ì—¬ì•¼ í•œë‹¤.
 
-    // m_pageÀÇ Page Memory¸¦ FreeÇÏ·Á´Â Thread¿Í m_page¸¦ Disk¿¡ ³»¸®·Á´Â
-    // Checkpoint Thread°£ÀÇ µ¿½Ã¼º Á¦¾î¸¦ À§ÇÑ Mutex.
-    // mPageMemMutex¸¦ »ç¿ëÇÏ°Ô µÇ¸é, ÀÏ¹İ Æ®·£Àè¼Çµé°ú
-    // Checkpoint Thread°¡ ºÒÇÊ¿äÇÑ Contension¿¡ °É¸®°Ô µÈ´Ù.
+    // m_pageì˜ Page Memoryë¥¼ Freeí•˜ë ¤ëŠ” Threadì™€ m_pageë¥¼ Diskì— ë‚´ë¦¬ë ¤ëŠ”
+    // Checkpoint Threadê°„ì˜ ë™ì‹œì„± ì œì–´ë¥¼ ìœ„í•œ Mutex.
+    // mPageMemMutexë¥¼ ì‚¬ìš©í•˜ê²Œ ë˜ë©´, ì¼ë°˜ íŠ¸ëœì­ì…˜ë“¤ê³¼
+    // Checkpoint Threadê°€ ë¶ˆí•„ìš”í•œ Contensionì— ê±¸ë¦¬ê²Œ ëœë‹¤.
     iduMutex            mMutex;
 
-    // DML(insert, update, delete)¿¬»êÀ» ¼öÇàÇÏ´Â TransactionÀÌ
-    // Àâ´Â Mutex
+    // DML(insert, update, delete)ì—°ì‚°ì„ ìˆ˜í–‰í•˜ëŠ” Transactionì´
+    // ì¡ëŠ” Mutex
 
     /* BUG-31569 [sm-mem-page] When executing full scan, hold page X Latch
      * in MMDB */
@@ -162,7 +162,7 @@ typedef struct smmPCH // Page Control Header : PCH
     smmPCH             *m_pnxtDirtyPCH; 
     smmPCH             *m_pprvDirtyPCH; // CASE-3768
 
-    // BUG-25179 [SMM] Full ScanÀ» À§ÇÑ ÆäÀÌÁö°£ Scan List°¡ ÇÊ¿äÇÕ´Ï´Ù.
+    // BUG-25179 [SMM] Full Scanì„ ìœ„í•œ í˜ì´ì§€ê°„ Scan Listê°€ í•„ìš”í•©ë‹ˆë‹¤.
     scPageID            mNxtScanPID; 
     scPageID            mPrvScanPID;
     ULong               mModifySeqForScan;
@@ -174,9 +174,9 @@ typedef struct smmPCH // Page Control Header : PCH
 } smmPCH;
 
 
-// BUG-43463 ¿¡¼­ »ç¿ë scanlist link/unlink ½Ã¿¡
-// page°¡ List¿¡¼­ Á¦°ÅµÇ°Å³ª ¿¬°á µÉ ¶§ °»½ÅÇÑ´Ù.
-// È¦¼öÀÌ¸é ¼öÁ¤Áß, Â¦¼öÀÌ¸é ¼öÁ¤ ¿Ï·á
+// BUG-43463 ì—ì„œ ì‚¬ìš© scanlist link/unlink ì‹œì—
+// pageê°€ Listì—ì„œ ì œê±°ë˜ê±°ë‚˜ ì—°ê²° ë  ë•Œ ê°±ì‹ í•œë‹¤.
+// í™€ìˆ˜ì´ë©´ ìˆ˜ì •ì¤‘, ì§ìˆ˜ì´ë©´ ìˆ˜ì • ì™„ë£Œ
 #define SMM_PCH_SET_MODIFYING( aPCH ) \
 IDE_ASSERT( aPCH->mModifySeqForScan % 2 == 0); \
 idCore::acpAtomicInc64( &(aPCH->mModifySeqForScan) );
@@ -185,8 +185,8 @@ idCore::acpAtomicInc64( &(aPCH->mModifySeqForScan) );
 IDE_ASSERT( aPCH->mModifySeqForScan % 2 != 0); \
 idCore::acpAtomicInc64( &(aPCH->mModifySeqForScan) );
 
-// BUG-43463 smnnSeq::moveNext/PrevµîÀÇ ÇÔ¼ö¿¡¼­ »ç¿ë
-// ÇöÀç page°¡ link/unlinkÀÛ¾÷ ÁßÀÎÁö È®ÀÎÇÑ´Ù.
+// BUG-43463 smnnSeq::moveNext/Prevë“±ì˜ í•¨ìˆ˜ì—ì„œ ì‚¬ìš©
+// í˜„ì¬ pageê°€ link/unlinkì‘ì—… ì¤‘ì¸ì§€ í™•ì¸í•œë‹¤.
 #define SMM_PAGE_IS_MODIFYING( aScanModifySeq ) \
 ( (( aScanModifySeq % 2 ) == 1) ? ID_TRUE : ID_FALSE )
 
@@ -217,7 +217,7 @@ typedef struct smmSCH  // Shared memory Control Header
 
 
 /* ------------------------------------------------
- *  CPU CACHE Set : BUGBUG : ID Layer·Î ¿Å±æ¼ö ÀÖÀ½!
+ *  CPU CACHE Set : BUGBUG : ID Layerë¡œ ì˜®ê¸¸ìˆ˜ ìˆìŒ!
  * ----------------------------------------------*/
 #if defined(SPARC_SOLARIS)
 #define SMM_CPU_CACHE_LINE      (64)
@@ -250,35 +250,35 @@ typedef struct smmSCH  // Shared memory Control Header
 typedef struct smmShmHeader
 {
     UInt          m_versionID;
-    idBool        m_valid_state;   // operation Áß¿¡ Á×À¸¸é ID_FALSE
-    scPageID      m_page_count;    // ÇÒ´çµÈ page °¹¼ö
+    idBool        m_valid_state;   // operation ì¤‘ì— ì£½ìœ¼ë©´ ID_FALSE
+    scPageID      m_page_count;    // í• ë‹¹ëœ page ê°¯ìˆ˜
     // PROJ-1548 Memory Table Space
-    // »ç¿ëÀÚ°¡ SHM_DB_KEY_TBS_INTERVAL¸¦ º¯°æÇÏ¿© 
-    // °øÀ¯¸Ş¸ğ¸® Chunk°¡ ´Ù¸¥ Å×ÀÌºí ½ºÆäÀÌ½º·Î
-    // attach°¡ µÇ´Â °æ¿ì¸¦ Ã¼Å©ÇÏ±â À§ÇÔ
-    scSpaceID     mTBSID;          // °øÀ¯¸Ş¸ğ¸® Chunk°¡ ¼ÓÇÑ TBSÀÇ ID
-    key_t         m_next_key;      // == 0 ÀÌ¸é  next key°¡ ¾øÀ½
+    // ì‚¬ìš©ìê°€ SHM_DB_KEY_TBS_INTERVALë¥¼ ë³€ê²½í•˜ì—¬ 
+    // ê³µìœ ë©”ëª¨ë¦¬ Chunkê°€ ë‹¤ë¥¸ í…Œì´ë¸” ìŠ¤í˜ì´ìŠ¤ë¡œ
+    // attachê°€ ë˜ëŠ” ê²½ìš°ë¥¼ ì²´í¬í•˜ê¸° ìœ„í•¨
+    scSpaceID     mTBSID;          // ê³µìœ ë©”ëª¨ë¦¬ Chunkê°€ ì†í•œ TBSì˜ ID
+    key_t         m_next_key;      // == 0 ì´ë©´  next keyê°€ ì—†ìŒ
 } smmShmHeader;
 
 /*
     Aligned Version of Shared memory header
 
-   °øÀ¯¸Ş¸ğ¸® Header´Â °øÀ¯¸Ş¸ğ¸® ¿µ¿ª¾È¿¡¼­
-   Cache LineÅ©±â·Î AlignÇÑ Å©±â¸¸Å­À» Â÷ÁöÇÑ´Ù.
-   ÀÌ¸¦ ÅëÇØ Header¹Ù·Î ´ÙÀ½¿¡ ¿À´Â °øÀ¯¸Ş¸ğ¸® PageµéÀÇ ½ÃÀÛÁÖ¼Ò°¡
-   Cache Line¿¡ AlignµÇµµ·Ï ÇÑ´Ù
+   ê³µìœ ë©”ëª¨ë¦¬ HeaderëŠ” ê³µìœ ë©”ëª¨ë¦¬ ì˜ì—­ì•ˆì—ì„œ
+   Cache Lineí¬ê¸°ë¡œ Aligní•œ í¬ê¸°ë§Œí¼ì„ ì°¨ì§€í•œë‹¤.
+   ì´ë¥¼ í†µí•´ Headerë°”ë¡œ ë‹¤ìŒì— ì˜¤ëŠ” ê³µìœ ë©”ëª¨ë¦¬ Pageë“¤ì˜ ì‹œì‘ì£¼ì†Œê°€
+   Cache Lineì— Alignë˜ë„ë¡ í•œë‹¤
  */
 
-// °øÀ¯¸Ş¸ğ¸® HeaderÀÇ Å©±â¸¦ Cache AlignÇÏ¿©
-// °øÀ¯¸Ş¸ğ¸® PageµéÀÇ ½ÃÀÛÁÖ¼Ò°¡ Cache AlignµÇµµ·Ï ÇÑ´Ù
+// ê³µìœ ë©”ëª¨ë¦¬ Headerì˜ í¬ê¸°ë¥¼ Cache Aligní•˜ì—¬
+// ê³µìœ ë©”ëª¨ë¦¬ Pageë“¤ì˜ ì‹œì‘ì£¼ì†Œê°€ Cache Alignë˜ë„ë¡ í•œë‹¤
 #define SMM_CACHE_ALIGNED_SHM_HEADER_SIZE \
             ( SMM_CACHE_ALIGN( ID_SIZEOF(smmShmHeader) ) )
 #define SMM_SHM_DB_SIZE(a_use_page)       \
             ( SMM_CACHE_ALIGNED_SHM_HEADER_SIZE + SM_PAGE_SIZE * a_use_page)
 /* ------------------------------------------------
- *  [] Fixed MemoryÀÇ ¸µÅ©¿¡ À§Ä¡ÇÒ °æ¿ì
- *     Æ÷ÀÎÅÍ¸¦ ¾Æ·¡ÀÇ °ª(0xFF..)À¸·Î ¼³Á¤.
- *     attach()¸¦ ¼öÇàÇÒ ¶§ ÀÌ °ªÀ» ÀÌ¿ëÇÔ.
+ *  [] Fixed Memoryì˜ ë§í¬ì— ìœ„ì¹˜í•  ê²½ìš°
+ *     í¬ì¸í„°ë¥¼ ì•„ë˜ì˜ ê°’(0xFF..)ìœ¼ë¡œ ì„¤ì •.
+ *     attach()ë¥¼ ìˆ˜í–‰í•  ë•Œ ì´ ê°’ì„ ì´ìš©í•¨.
  * ----------------------------------------------*/
 #ifdef COMPILE_64BIT
 #define SMM_SHM_LOCATION_FREE     (ID_ULONG(0xFFFFFFFFFFFFFFFF))
@@ -325,98 +325,98 @@ typedef struct smmSlot
 smmSlot;
 
 /* ------------------------------------------------
-   db dirÀÌ ¿©·¯°³ ÀÖÀ»¶§ Ã¹¹øÂ° db dir¿¡ memory db¸¦
-   createÇÑ´Ù. 
+   db dirì´ ì—¬ëŸ¬ê°œ ìˆì„ë•Œ ì²«ë²ˆì§¸ db dirì— memory dbë¥¼
+   createí•œë‹¤. 
  * ----------------------------------------------*/
 #define SMM_CREATE_DB_DIR_INDEX (0)
 
 
 
 /* ------------------------------------------------
-   PROJ-1490 ÆäÀÌÁö¸®½ºÆ® ´ÙÁßÈ­¹× ¸Ş¸ğ¸® ¹İ³³ °ü·Ã
+   PROJ-1490 í˜ì´ì§€ë¦¬ìŠ¤íŠ¸ ë‹¤ì¤‘í™”ë° ë©”ëª¨ë¦¬ ë°˜ë‚© ê´€ë ¨
  * ----------------------------------------------*/
 
-// Free Page List ÀÇ ¼ö
+// Free Page List ì˜ ìˆ˜
 #define SMM_FREE_PAGE_LIST_COUNT (smuProperty::getPageListGroupCount())
 
-// ÃÖ¼Ò ¸î°³ÀÇ Page¸¦ °¡Áø Free Page List¸¦ ºĞÇÒ ÇÒ °ÍÀÎ°¡?
+// ìµœì†Œ ëª‡ê°œì˜ Pageë¥¼ ê°€ì§„ Free Page Listë¥¼ ë¶„í•  í•  ê²ƒì¸ê°€?
 #define SMM_FREE_PAGE_SPLIT_THRESHOLD                       \
             ( smuProperty::getMinPagesDBTableFreeList() )
 
 
-// Expand ChunkÇÒ´ç½Ã °¢ Free Page¿¡ ¸î°³ÀÇ Page¾¿À» ¿¬°áÇÒ °ÍÀÎÁö °áÁ¤.
+// Expand Chunkí• ë‹¹ì‹œ ê° Free Pageì— ëª‡ê°œì˜ Pageì”©ì„ ì—°ê²°í•  ê²ƒì¸ì§€ ê²°ì •.
 #define SMM_PER_LIST_DIST_PAGE_COUNT                       \
             ( smuProperty::getPerListDistPageCount() )
 
-// ÆäÀÌÁö°¡ ºÎÁ·ÇÒ ¶§ ÇÑ¹ø¿¡ ¸î°³ÀÇ Expand Chunk¸¦ ÇÒ´ç¹ŞÀ» °ÍÀÎ°¡?
+// í˜ì´ì§€ê°€ ë¶€ì¡±í•  ë•Œ í•œë²ˆì— ëª‡ê°œì˜ Expand Chunkë¥¼ í• ë‹¹ë°›ì„ ê²ƒì¸ê°€?
 #define SMM_EXPAND_CHUNK_COUNT (1)
 
-// µ¥ÀÌÅÍº£ÀÌ½º ¸ŞÅ¸ ÆäÀÌÁöÀÇ ¼ö
-// ¸ŞÅ¸ ÆäÀÌÁö´Â µ¥ÀÌÅÍº£ÀÌ½ºÀÇ ¸Ç Ã³À½¿¡ À§Ä¡ÇÏ¸ç
-// Membase¿Í Ä«Å»·Î±× Å×ÀÌºí Á¤º¸¸¦ Áö´Ñ´Ù.
+// ë°ì´í„°ë² ì´ìŠ¤ ë©”íƒ€ í˜ì´ì§€ì˜ ìˆ˜
+// ë©”íƒ€ í˜ì´ì§€ëŠ” ë°ì´í„°ë² ì´ìŠ¤ì˜ ë§¨ ì²˜ìŒì— ìœ„ì¹˜í•˜ë©°
+// Membaseì™€ ì¹´íƒˆë¡œê·¸ í…Œì´ë¸” ì •ë³´ë¥¼ ì§€ë‹Œë‹¤.
 #define SMM_DATABASE_META_PAGE_CNT ((vULong)1)
 
-// PROJ-1490 ÆäÀÌÁö¸®½ºÆ® ´ÙÁßÈ­¹× ¸Ş¸ğ¸®¹İ³³
-// Page°¡ Å×ÀÌºí·Î ÇÒ´çµÉ ¶§ ÇØ´ç PageÀÇ Free List Info Page¿¡ ¼³Á¤µÉ °ª
-// ¼­¹ö ±âµ¿½Ã Free Page¿Í Allocated Page¸¦ ±¸ºĞÇÏ±â À§ÇÑ ¿ëµµ·Î »ç¿ëµÈ´Ù.
+// PROJ-1490 í˜ì´ì§€ë¦¬ìŠ¤íŠ¸ ë‹¤ì¤‘í™”ë° ë©”ëª¨ë¦¬ë°˜ë‚©
+// Pageê°€ í…Œì´ë¸”ë¡œ í• ë‹¹ë  ë•Œ í•´ë‹¹ Pageì˜ Free List Info Pageì— ì„¤ì •ë  ê°’
+// ì„œë²„ ê¸°ë™ì‹œ Free Pageì™€ Allocated Pageë¥¼ êµ¬ë¶„í•˜ê¸° ìœ„í•œ ìš©ë„ë¡œ ì‚¬ìš©ëœë‹¤.
 #define SMM_FLI_ALLOCATED_PID ( SM_SPECIAL_PID )
 
 
-// prepareDB °ü·Ã ÇÔ¼öµé¿¡ Àü´ŞµÇ´Â ¿É¼Ç
+// prepareDB ê´€ë ¨ í•¨ìˆ˜ë“¤ì— ì „ë‹¬ë˜ëŠ” ì˜µì…˜
 typedef enum smmPrepareOption
 {
-    SMM_PREPARE_OP_NONE = 0,                    // ¿É¼Ç¾øÀ½ 
-    SMM_PREPARE_OP_DBIMAGE_NEED_RECOVERY = 1,   // DB IMAGE°¡ RecoveryµÉ ¿¹Á¤
-    SMM_PREPARE_OP_DONT_CHECK_RESTORE_TYPE = 2,  // RestoreType Ã¼Å© ¾ÈÇÔ
-    SMM_PREPARE_OP_DBIMAGE_NEED_MEDIA_RECOVERY = 3,  // DB IMAGE°¡ Media RecoveryµÉ ¿¹Á¤
-    SMM_PREPARE_OP_DONT_CHECK_DB_SIGNATURE_4SHMUTIL = 4  // shmutilÀÌ »ç¿ë 
+    SMM_PREPARE_OP_NONE = 0,                    // ì˜µì…˜ì—†ìŒ 
+    SMM_PREPARE_OP_DBIMAGE_NEED_RECOVERY = 1,   // DB IMAGEê°€ Recoveryë  ì˜ˆì •
+    SMM_PREPARE_OP_DONT_CHECK_RESTORE_TYPE = 2,  // RestoreType ì²´í¬ ì•ˆí•¨
+    SMM_PREPARE_OP_DBIMAGE_NEED_MEDIA_RECOVERY = 3,  // DB IMAGEê°€ Media Recoveryë  ì˜ˆì •
+    SMM_PREPARE_OP_DONT_CHECK_DB_SIGNATURE_4SHMUTIL = 4  // shmutilì´ ì‚¬ìš© 
 } smmPrepareOption ;
 
-// restoreDB °ü·Ã ÇÔ¼öµé¿¡ Àü´ŞµÇ´Â ¿É¼Ç
+// restoreDB ê´€ë ¨ í•¨ìˆ˜ë“¤ì— ì „ë‹¬ë˜ëŠ” ì˜µì…˜
 typedef enum smmRestoreOption
 {
-    SMM_RESTORE_OP_NONE = 0,                        // ¿É¼Ç¾øÀ½
-    // Restart Recovery°¡ ÇÊ¿äÇÑÁö ¿©ºÎ
-    // DB IMAGE°¡ RecoveryµÉ ¿¹Á¤
+    SMM_RESTORE_OP_NONE = 0,                        // ì˜µì…˜ì—†ìŒ
+    // Restart Recoveryê°€ í•„ìš”í•œì§€ ì—¬ë¶€
+    // DB IMAGEê°€ Recoveryë  ì˜ˆì •
     SMM_RESTORE_OP_DBIMAGE_NEED_RECOVERY = 1, 
-    // DB IMAGE°¡ Media RecoveryµÉ ¿¹Á¤
+    // DB IMAGEê°€ Media Recoveryë  ì˜ˆì •
     SMM_RESTORE_OP_DBIMAGE_NEED_MEDIA_RECOVERY = 2  
 } smmRestoreOption ;
 
 // PRJ-1548 User Memory Tablespace
-// µ¥ÀÌÅÍº£ÀÌ½ºÀÇ Á¾·ù
+// ë°ì´í„°ë² ì´ìŠ¤ì˜ ì¢…ë¥˜
 typedef enum
 {
-    // ÀÏ¹İ¸Ş¸ğ¸®
+    // ì¼ë°˜ë©”ëª¨ë¦¬
     SMM_DB_RESTORE_TYPE_DYNAMIC    = 0, 
-    // DISK»ó¿¡ CREATEµÈ µ¥ÀÌÅÍº£ÀÌ½º¸¦ °øÀ¯¸Ş¸ğ¸®·Î RESTORE
+    // DISKìƒì— CREATEëœ ë°ì´í„°ë² ì´ìŠ¤ë¥¼ ê³µìœ ë©”ëª¨ë¦¬ë¡œ RESTORE
     SMM_DB_RESTORE_TYPE_SHM_CREATE = 1,
-    // °øÀ¯¸Ş¸ğ¸®»ó¿¡ Á¸ÀçÇÏ´Â µ¥ÀÌÅÍº£ÀÌ½º¸¦ ATTACH
+    // ê³µìœ ë©”ëª¨ë¦¬ìƒì— ì¡´ì¬í•˜ëŠ” ë°ì´í„°ë² ì´ìŠ¤ë¥¼ ATTACH
     SMM_DB_RESTORE_TYPE_SHM_ATTACH = 2,
-    // ¾ÆÁ÷ PREPARE/RESTORE°¡ µÇÁö ¾Ê¾ÒÀ½
+    // ì•„ì§ PREPARE/RESTOREê°€ ë˜ì§€ ì•Šì•˜ìŒ
     SMM_DB_RESTORE_TYPE_NOT_RESTORED_YET = 3,
-    // TYPE¾øÀ½ ( ÀÌ °ªÀ» °¡Áö´Â °æ¿ì°¡ ÀÖ¾î¼­´Â ¾ÈµÊ )
+    // TYPEì—†ìŒ ( ì´ ê°’ì„ ê°€ì§€ëŠ” ê²½ìš°ê°€ ìˆì–´ì„œëŠ” ì•ˆë¨ )
     SMM_DB_RESTORE_TYPE_NONE       = 4
 } smmDBRestoreType;
 
 
-// ÇöÀç µ¥ÀÌÅÍº£ÀÌ½º »óÅÂ°¡ ¼­ºñ½º ÁßÀÎÁö ¾Æ´ÑÁö¸¦ Áö´Ï´Â FLAG
+// í˜„ì¬ ë°ì´í„°ë² ì´ìŠ¤ ìƒíƒœê°€ ì„œë¹„ìŠ¤ ì¤‘ì¸ì§€ ì•„ë‹Œì§€ë¥¼ ì§€ë‹ˆëŠ” FLAG
 typedef enum
 {
-    SMM_STARTUP_PHASE_NON_SERVICE = 0, // ¼­ºñ½ºÁßÀÌ ¾Æ´Ô
-    SMM_STARTUP_PHASE_SERVICE     = 1  // ¼­ºñ½ºÁßÀÓ.
+    SMM_STARTUP_PHASE_NON_SERVICE = 0, // ì„œë¹„ìŠ¤ì¤‘ì´ ì•„ë‹˜
+    SMM_STARTUP_PHASE_SERVICE     = 1  // ì„œë¹„ìŠ¤ì¤‘ì„.
 } smmStartupPhase;
 
 /* 
-   ¸Ş¸ğ¸® µ¥ÀÌÅ¸ÆÄÀÏ¿¡ ´ëÇÑ »ı¼º¿©ºÎ ¹× ·Î±×¾ŞÄ¿»óÀÇ Offset µî.. 
-   Runtime Á¤º¸¸¦ ÀúÀåÇÏ´Â ±¸Á¶Ã¼
+   ë©”ëª¨ë¦¬ ë°ì´íƒ€íŒŒì¼ì— ëŒ€í•œ ìƒì„±ì—¬ë¶€ ë° ë¡œê·¸ì•µì»¤ìƒì˜ Offset ë“±.. 
+   Runtime ì •ë³´ë¥¼ ì €ì¥í•˜ëŠ” êµ¬ì¡°ì²´
 */
 typedef struct smmCrtDBFileInfo
 {
-    // Stable/UnstableÀÇ ÆÄÀÏ »ı¼º¿©ºÎ¸¦ ÀúÀåÇÑ´Ù.
+    // Stable/Unstableì˜ íŒŒì¼ ìƒì„±ì—¬ë¶€ë¥¼ ì €ì¥í•œë‹¤.
     idBool    mCreateDBFileOnDisk[ SMM_PINGPONG_COUNT ];
 
-    // Loganchor»ó¿¡ ÀúÀåµÈ Chkpt Image AttributeÀÇ AnchorOffset¸¦ ÀúÀåÇÑ´Ù. 
+    // Loganchorìƒì— ì €ì¥ëœ Chkpt Image Attributeì˜ AnchorOffsetë¥¼ ì €ì¥í•œë‹¤. 
     UInt      mAnchorOffset;
 
 } smmCrtDBFileInfo;
@@ -427,8 +427,8 @@ class smmDirtyPageMgr;
 /* BUG-31881 [sm-mem-resource] When executing alter table in MRDB and 
  * using space by other transaction,
  * The server can not do restart recovery. 
- * AlterTable Áß RestoreTable ÇÏ±â À§ÇØ È®º¸ÇÏ´Â Pageµé.
- * µ¿½Ã¿¡ SMM_PAGE_RESERVATION_MAX¸¸Å­ÀÇ Tx°¡ ¿¹¾àÇØµÑ ¼ö ÀÖ´Ù.*/
+ * AlterTable ì¤‘ RestoreTable í•˜ê¸° ìœ„í•´ í™•ë³´í•˜ëŠ” Pageë“¤.
+ * ë™ì‹œì— SMM_PAGE_RESERVATION_MAXë§Œí¼ì˜ Txê°€ ì˜ˆì•½í•´ë‘˜ ìˆ˜ ìˆë‹¤.*/
 
 #define SMM_PAGE_RESERVATION_MAX  (64)
 #define SMM_PAGE_RESERVATION_NULL ID_UINT_MAX
@@ -441,7 +441,7 @@ typedef struct smmPageReservation
 } smmPageReservation;
 
 // Memory Tablespace Node
-// ÇÏ³ªÀÇ Memory Tablespace¿¡ ´ëÇÑ ¸ğµç RuntimeÁ¤º¸¸¦ Áö´Ñ´Ù.
+// í•˜ë‚˜ì˜ Memory Tablespaceì— ëŒ€í•œ ëª¨ë“  Runtimeì •ë³´ë¥¼ ì§€ë‹Œë‹¤.
 typedef struct smmTBSNode
 {
     /******** FROM smmTableSpace ********************/
@@ -461,9 +461,9 @@ typedef struct smmTBSNode
     smmSCH *          mTailSCH;
     smmDBRestoreType  mRestoreType;
 
-    // Loading ½ÃÀÇ ÃÖ´ë PID : ¸Ş¸ğ¸® ÇØÁ¦¹æ¹ıÀÌ Æ²·ÁÁü
-    // PID°¡ ¾Æ·¡ÀÇ °ªº¸´Ù ÀÛÀ» °æ¿ì mDataArea¿¡ ÀÇÇØ ÇØÁ¦µÇ¾î¾ß ÇÏ°í,
-    // Å¬ °æ¿ì TempMemPool¿¡ ÀÇÇØ ÇØÁ¦ µÇ¾î¾ß ÇÔ.
+    // Loading ì‹œì˜ ìµœëŒ€ PID : ë©”ëª¨ë¦¬ í•´ì œë°©ë²•ì´ í‹€ë ¤ì§
+    // PIDê°€ ì•„ë˜ì˜ ê°’ë³´ë‹¤ ì‘ì„ ê²½ìš° mDataAreaì— ì˜í•´ í•´ì œë˜ì–´ì•¼ í•˜ê³ ,
+    // í´ ê²½ìš° TempMemPoolì— ì˜í•´ í•´ì œ ë˜ì–´ì•¼ í•¨.
     scPageID          mStartupPID;
 
     ULong             mDBMaxPageCount;
@@ -472,110 +472,110 @@ typedef struct smmTBSNode
     UInt              mLstCreatedDBFile;
     void **           mDBFile[ SM_DB_DIR_MAX_COUNT ];
 
-    // BUG-17343 loganchor¿¡ Stable/Unstable Chkpt Image¿¡ ´ëÇÑ »ı¼º 
-    //           Á¤º¸¸¦ ÀúÀå 
-    // ¸Ş¸ğ¸® µ¥ÀÌÅ¸ÆÄÀÏÀÇ »ı¼º¿¡ ´ëÇÑ Runtime Á¤º¸ 
+    // BUG-17343 loganchorì— Stable/Unstable Chkpt Imageì— ëŒ€í•œ ìƒì„± 
+    //           ì •ë³´ë¥¼ ì €ì¥ 
+    // ë©”ëª¨ë¦¬ ë°ì´íƒ€íŒŒì¼ì˜ ìƒì„±ì— ëŒ€í•œ Runtime ì •ë³´ 
     smmCrtDBFileInfo* mCrtDBFileInfo; 
 
     iduMemPool2       mDynamicMemPagePool;
     iduMemPool        mPCHMemPool;
-    smmTempMemBase    mTempMemBase;    // °øÀ¯¸Ş¸ğ¸® ÆäÀÌÁö ¸®½ºÆ®
+    smmTempMemBase    mTempMemBase;    // ê³µìœ ë©”ëª¨ë¦¬ í˜ì´ì§€ ë¦¬ìŠ¤íŠ¸
 
     smmMemBase *      mMemBase;
     
     /******** FROM smmFPLManager ********************/
 
-    // °¢ Free Page Listº° Mutex ¹è¿­
-    // Mutex´Â DurableÇÑ Á¤º¸°¡ ¾Æ´Ï±â ¶§¹®¿¡,
-    // membase¿¡ Free Page ListÀÇ Mutex¸¦ ÇÔ²² µÎÁö ¾Ê´Â´Ù.
+    // ê° Free Page Listë³„ Mutex ë°°ì—´
+    // MutexëŠ” Durableí•œ ì •ë³´ê°€ ì•„ë‹ˆê¸° ë•Œë¬¸ì—,
+    // membaseì— Free Page Listì˜ Mutexë¥¼ í•¨ê»˜ ë‘ì§€ ì•ŠëŠ”ë‹¤.
     iduMutex   * mArrFPLMutex;
 
-    // ÇÏ³ªÀÇ Æ®·£Àè¼ÇÀÌ Expand Chunk¸¦ ÇÒ´çÇÏ°í ÀÖÀ» ¶§,
-    // ´Ù¸¥ Æ®·£Àè¼ÇÀÌ PageºÎÁ·½Ã Expand Chunk¸¦ ¶Ç ÇÒ´çÇÏÁö ¾Ê°í,
-    // Expand ChunkÇÒ´ç ÀÛ¾÷ÀÌ Á¾·áµÇ±â¸¦ ±â´Ù¸®µµ·Ï ÇÏ±â À§ÇÑ Mutex.
+    // í•˜ë‚˜ì˜ íŠ¸ëœì­ì…˜ì´ Expand Chunkë¥¼ í• ë‹¹í•˜ê³  ìˆì„ ë•Œ,
+    // ë‹¤ë¥¸ íŠ¸ëœì­ì…˜ì´ Pageë¶€ì¡±ì‹œ Expand Chunkë¥¼ ë˜ í• ë‹¹í•˜ì§€ ì•Šê³ ,
+    // Expand Chunkí• ë‹¹ ì‘ì—…ì´ ì¢…ë£Œë˜ê¸°ë¥¼ ê¸°ë‹¤ë¦¬ë„ë¡ í•˜ê¸° ìœ„í•œ Mutex.
     iduMutex     mAllocChunkMutex;
     
     /* BUG-31881 [sm-mem-resource] When executing alter table in MRDB and 
      * using space by other transaction,
      * The server can not do restart recovery. 
-     * FreePageListCount¸¸Å­ ´ÙÁßÈ­µÇ¾î mArrFPLMutex¸¦ ÅëÇØ Á¦¾îµÈ´Ù. */
+     * FreePageListCountë§Œí¼ ë‹¤ì¤‘í™”ë˜ì–´ mArrFPLMutexë¥¼ í†µí•´ ì œì–´ëœë‹¤. */
     smmPageReservation * mArrPageReservation;
 
     /******** FROM smmExpandChunk ********************/
 
-    // Free List Info Page³»ÀÇ Slot±â·ÏÀ» ½ÃÀÛÇÒ À§Ä¡ 
+    // Free List Info Pageë‚´ì˜ Slotê¸°ë¡ì„ ì‹œì‘í•  ìœ„ì¹˜ 
     UInt              mFLISlotBase;
-    // Free List Info PageÀÇ ¼öÀÌ´Ù.
+    // Free List Info Pageì˜ ìˆ˜ì´ë‹¤.
     UInt              mChunkFLIPageCnt;
-    // ÇÏ³ªÀÇ Expand Chunk°¡ Áö´Ï´Â PageÀÇ ¼ö
-    // Free List Info PageÀÇ ¼ö ±îÁö Æ÷ÇÔÇÑ ÀüÃ¼ Page ¼ö ÀÌ´Ù.
+    // í•˜ë‚˜ì˜ Expand Chunkê°€ ì§€ë‹ˆëŠ” Pageì˜ ìˆ˜
+    // Free List Info Pageì˜ ìˆ˜ ê¹Œì§€ í¬í•¨í•œ ì „ì²´ Page ìˆ˜ ì´ë‹¤.
     vULong            mChunkPageCnt;
     
     // PRJ-1548 User Memory Tablespace
-    // Loganchor ¸Ş¸ğ¸®¹öÆÛ»óÀÇ TBS Attribute ÀúÀå¿ÀÇÁ¼Â
+    // Loganchor ë©”ëª¨ë¦¬ë²„í¼ìƒì˜ TBS Attribute ì €ì¥ì˜¤í”„ì…‹
     UInt              mAnchorOffset;
     
 } smmTBSNode;
 
 // PRJ-1548 User Memory Tablespace
-// ¸Ş¸ğ¸®Å×ÀÌºí½ºÆäÀÌ½ºÀÇ CHECKPOINT PATH Á¤º¸¸¦ ÀúÀåÇÏ´Â ³ëµå
-// ¼­¹ö±¸µ¿½Ã¿¡ Loganchor·ÎºÎÅÍ ÃÊ±âÈ­µÇ°Å³ª  DDLÀ» ÅëÇØ¼­ 
-// »ı¼ºµÈ´Ù.
+// ë©”ëª¨ë¦¬í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì˜ CHECKPOINT PATH ì •ë³´ë¥¼ ì €ì¥í•˜ëŠ” ë…¸ë“œ
+// ì„œë²„êµ¬ë™ì‹œì— Loganchorë¡œë¶€í„° ì´ˆê¸°í™”ë˜ê±°ë‚˜  DDLì„ í†µí•´ì„œ 
+// ìƒì„±ëœë‹¤.
 //
-// ÀÌ ±¸Á¶Ã¼¿¡ ¸â¹ö°¡ Ãß°¡µÇ¸é
-// smmTBSChkptPath::initializeChkptPathNode µµ ÇÔ²² º¯°æµÇ¾î¾ß ÇÑ´Ù.
+// ì´ êµ¬ì¡°ì²´ì— ë©¤ë²„ê°€ ì¶”ê°€ë˜ë©´
+// smmTBSChkptPath::initializeChkptPathNode ë„ í•¨ê»˜ ë³€ê²½ë˜ì–´ì•¼ í•œë‹¤.
 typedef struct smmChkptPathNode
 {
-    smiChkptPathAttr       mChkptPathAttr; // Chkpt Path ¼Ó¼º
-    UInt                   mAnchorOffset;  // Loganchor»óÀÇ ÀúÀåµÈ ¿ÀÇÁ¼Â
+    smiChkptPathAttr       mChkptPathAttr; // Chkpt Path ì†ì„±
+    UInt                   mAnchorOffset;  // Loganchorìƒì˜ ì €ì¥ëœ ì˜¤í”„ì…‹
 } smmChkptPathNode;
 
-// ¸Ş¸ğ¸® Ã¼Å©Æ÷ÀÎÆ®ÀÌ¹ÌÁö(µ¥ÀÌÅ¸ÆÄÀÏ)ÀÇ ¸ŞÅ¸Çì´õ
+// ë©”ëª¨ë¦¬ ì²´í¬í¬ì¸íŠ¸ì´ë¯¸ì§€(ë°ì´íƒ€íŒŒì¼)ì˜ ë©”íƒ€í—¤ë”
 typedef struct smmChkptImageHdr
 {
-    // To Fix BUG-17143 TBS CREATE/DROP/CREATE½Ã DBF NOT FOUND¿¡·¯
-    scSpaceID mSpaceID;  // TablespaceÀÇ ID
+    // To Fix BUG-17143 TBS CREATE/DROP/CREATEì‹œ DBF NOT FOUNDì—ëŸ¬
+    scSpaceID mSpaceID;  // Tablespaceì˜ ID
 
-    UInt    mSmVersion;  // ¹ÙÀÌ³Ê¸® ¹öÀü ÀúÀå 
+    UInt    mSmVersion;  // ë°”ì´ë„ˆë¦¬ ë²„ì „ ì €ì¥ 
 
-    // ¹Ìµğ¾îº¹±¸¸¦ À§ÇÑ RedoLSN
+    // ë¯¸ë””ì–´ë³µêµ¬ë¥¼ ìœ„í•œ RedoLSN
     smLSN   mMemRedoLSN;
 
-    // ¹Ìµğ¾îº¹±¸¸¦ À§ÇÑ CreateLSN 
+    // ë¯¸ë””ì–´ë³µêµ¬ë¥¼ ìœ„í•œ CreateLSN 
     smLSN   mMemCreateLSN;
 
     // PROJ-2133 incremental backup
     smiDataFileDescSlotID  mDataFileDescSlotID;
     
     // PROJ-2133 incremental backup
-    // incremental backupµÈ ÆÄÀÏ¿¡¸¸ Á¸ÀçÇÏ´Â Á¤º¸
+    // incremental backupëœ íŒŒì¼ì—ë§Œ ì¡´ì¬í•˜ëŠ” ì •ë³´
     smriBISlot  mBackupInfo;
 } smmChkptImageHdr;
 
 /* 
    PRJ-1548 User Memory TableSpace 
 
-   ¸Ş¸ğ¸® µ¥ÀÌÅ¸ÆÄÀÏÀÇ ¸ŞÅ¸Çì´õ¸¦ LogAnchor¿¡ ÀúÀåÇÏ±â À§ÇÑ ±¸Á¶Ã¼
-   smmDatabaseFile °´Ã¼¿¡ ¸â¹öº¯¼ö·Î Á¤ÀÇµÇ¾î ÀÖ´Ù. 
+   ë©”ëª¨ë¦¬ ë°ì´íƒ€íŒŒì¼ì˜ ë©”íƒ€í—¤ë”ë¥¼ LogAnchorì— ì €ì¥í•˜ê¸° ìœ„í•œ êµ¬ì¡°ì²´
+   smmDatabaseFile ê°ì²´ì— ë©¤ë²„ë³€ìˆ˜ë¡œ ì •ì˜ë˜ì–´ ìˆë‹¤. 
 */
 typedef struct smmChkptImageAttr
 {
-    smiNodeAttrType  mAttrType;         // PRJ-1548 ¹İµå½Ã Ã³À½¿¡ ÀúÀå
-    scSpaceID        mSpaceID;          // ¸Ş¸ğ¸® Å×ÀÌºí½ºÆäÀÌ½º ID
-    UInt             mFileNum;          // µ¥ÀÌÅ¸ÆÄÀÏÀÇ No. 
-    // µ¥ÀÌÅ¸ÆÄÀÏÀÇ CreateLSN
+    smiNodeAttrType  mAttrType;         // PRJ-1548 ë°˜ë“œì‹œ ì²˜ìŒì— ì €ì¥
+    scSpaceID        mSpaceID;          // ë©”ëª¨ë¦¬ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ID
+    UInt             mFileNum;          // ë°ì´íƒ€íŒŒì¼ì˜ No. 
+    // ë°ì´íƒ€íŒŒì¼ì˜ CreateLSN
     smLSN            mMemCreateLSN;
-    // Stable/Unstable ÆÄÀÏ »ı¼º ¿©ºÎ 
+    // Stable/Unstable íŒŒì¼ ìƒì„± ì—¬ë¶€ 
     idBool           mCreateDBFileOnDisk[ SMM_PINGPONG_COUNT ];
     //PROJ-2133 incremental backup
     smiDataFileDescSlotID mDataFileDescSlotID;
 
 } smmChkptImageAttr;
 
-// PRJ-1548 User Memory Tablespace °³³ä µµÀÔ 
-// dirty page flushÇÒ ¶§ taget µ¥ÀÌÅ¸º£ÀÌ½ºÀÇ pingpong ¹øÈ£¸¦ ¹İÈ¯ 
-// ¹Ìµğ¾îº¹±¸¿¬»ê¿¡¼­´Â ÇöÀç stableÇÑ µ¥ÀÌÅ¸º£ÀÌ½º¿¡ flushÇØ¾ß ÇÏ°í,
-// ¿î¿µÁß Ã¼Å©Æ÷ÀÎÆ®½Ã¿¡´Â ´ÙÀ½ stableÇÑ µ¥ÀÌÅ¸º£ÀÌ½º¿¡ flushÇØ¾ß ÇÑ´Ù. 
+// PRJ-1548 User Memory Tablespace ê°œë… ë„ì… 
+// dirty page flushí•  ë•Œ taget ë°ì´íƒ€ë² ì´ìŠ¤ì˜ pingpong ë²ˆí˜¸ë¥¼ ë°˜í™˜ 
+// ë¯¸ë””ì–´ë³µêµ¬ì—°ì‚°ì—ì„œëŠ” í˜„ì¬ stableí•œ ë°ì´íƒ€ë² ì´ìŠ¤ì— flushí•´ì•¼ í•˜ê³ ,
+// ìš´ì˜ì¤‘ ì²´í¬í¬ì¸íŠ¸ì‹œì—ëŠ” ë‹¤ìŒ stableí•œ ë°ì´íƒ€ë² ì´ìŠ¤ì— flushí•´ì•¼ í•œë‹¤. 
 typedef SInt (*smmGetFlushTargetDBNoFunc) ( smmTBSNode * aTBSNode );
 
 /* BUG-32461 [sm-mem-resource] add getPageState functions to smmExpandChunk

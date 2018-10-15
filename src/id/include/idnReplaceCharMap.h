@@ -18,15 +18,15 @@
  * $Id: idnCharMap.h 24174 2007-11-19 01:23:49Z copyrei $
  *
  * Description :
- *     gNlsReplaceCharMap : UNICODE¸¦ ´Ù¸¥ charsetÀ¸·Î º¯È¯½Ã ´ëÃ¼¹®ÀÚÇ¥
+ *     gNlsReplaceCharMap : UNICODEë¥¼ ë‹¤ë¥¸ charsetìœ¼ë¡œ ë³€í™˜ì‹œ ëŒ€ì²´ë¬¸ìží‘œ
  *
- *     ´ëÃ¼¹®ÀÚ À¯´ÏÄÚµå ¹üÀ§ : U+0000 ~ U+212A
+ *     ëŒ€ì²´ë¬¸ìž ìœ ë‹ˆì½”ë“œ ë²”ìœ„ : U+0000 ~ U+212A
  **********************************************************************/
 
 #ifndef _O_IDNREPLACECHARMAP_H_
 #define _O_IDNREPLACECHARMAP_H_ 1
 
-// 0x212B ÀÌÈÄÀÇ À¯´ÏÄÚµå¿¡ ´ëÇØ¼­´Â ´ëÃ¼ ¹®ÀÚ ¹®ÀÚ°¡ ÀÇ¹Ì°¡ ¾øÀ½
+// 0x212B ì´í›„ì˜ ìœ ë‹ˆì½”ë“œì— ëŒ€í•´ì„œëŠ” ëŒ€ì²´ ë¬¸ìž ë¬¸ìžê°€ ì˜ë¯¸ê°€ ì—†ìŒ
 #define IDN_NLS_REPLACE_UNICODE_MAX     (0x212B)  /*  8491 */
 
 #endif /* _O_IDNREPLACECHARMAP_H_ */

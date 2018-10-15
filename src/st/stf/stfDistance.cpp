@@ -45,7 +45,7 @@ static IDE_RC stfDistanceEstimate(
 mtfModule stfDistance = {
     1|MTC_NODE_OPERATOR_FUNCTION,
     ~0,
-    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
+    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìê°€ ì•„ë‹˜)
     stfDistanceFunctionName,
     NULL,
     mtf::initializeDefault,

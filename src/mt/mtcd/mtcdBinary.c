@@ -20,7 +20,7 @@
  *
  * Description:
  *   PROJ-1583, PR-15722
- *   ODBC Ç¥ÁØÀÇ SQL_BINARY¿¡ ´ëÀÀÇÏ´Â mtcdBinary Å¸ÀÔ Á¦°ø
+ *   ODBC í‘œì¤€ì˜ SQL_BINARYì— ëŒ€ì‘í•˜ëŠ” mtcdBinary íƒ€ì… ì œê³µ
  *
  **********************************************************************/
 
@@ -163,7 +163,7 @@ ACI_RC mtdInitializeBinary( acp_uint32_t aNo )
 {
     ACI_TEST( mtdInitializeModule( &mtcdBinary, aNo ) != ACI_SUCCESS );
 
-    // mtdColumnÀÇ ÃÊ±âÈ­
+    // mtdColumnì˜ ì´ˆê¸°í™”
     ACI_TEST( mtcInitializeColumn( & mtdColumn,
                                    & mtcdBinary,
                                    0,   // arguments
@@ -243,7 +243,7 @@ ACI_RC mtdValue( mtcTemplate*  aTemplate,
                                  aTokenLength )
                   != ACI_SUCCESS );
         
-        // precision, scale Àç ¼³Á¤ ÈÄ, estimate·Î semantic °Ë»ç
+        // precision, scale ì¬ ì„¤ì • í›„, estimateë¡œ semantic ê²€ì‚¬
         aColumn->flag            = 1;
         aColumn->precision       = sValue->mLength;
         aColumn->scale           = 0;
@@ -383,7 +383,7 @@ ACI_RC mtdValidate( mtcColumn*   aColumn,
 {
 /***********************************************************************
  *
- * Description : valueÀÇ semantic °Ë»ç ¹× mtcColum ÃÊ±âÈ­
+ * Description : valueì˜ semantic ê²€ì‚¬ ë° mtcColum ì´ˆê¸°í™”
  *
  * Implementation :
  *
@@ -399,9 +399,9 @@ ACI_RC mtdValidate( mtcColumn*   aColumn,
 
     ACI_TEST_RAISE( sVal->mLength > aColumn->column.size, ERR_INVALID_VALUE );
 
-    // ÃÊ±âÈ­µÈ aColumnÀº cannonize() ½Ã¿¡ »ç¿ë
-    // ÀÌ¶§, data type moduleÀÇ precision Á¤º¸¸¸À» »ç¿ëÇÏ¹Ç·Î,
-    // language Á¤º¸ ¼³Á¤ÇÒ ÇÊ¿ä¾øÀ½
+    // ì´ˆê¸°í™”ëœ aColumnì€ cannonize() ì‹œì— ì‚¬ìš©
+    // ì´ë•Œ, data type moduleì˜ precision ì •ë³´ë§Œì„ ì‚¬ìš©í•˜ë¯€ë¡œ,
+    // language ì •ë³´ ì„¤ì •í•  í•„ìš”ì—†ìŒ
     ACI_TEST( mtcInitializeColumn( aColumn,
                                    & mtcdBinary,
                                    1,            // arguments
@@ -437,8 +437,8 @@ static ACI_RC mtdStoredValue2MtdValue( acp_uint32_t aColumnSize,
 {
 /*******************************************************************
  * PROJ-1705
- * µğ½ºÅ©Å×ÀÌºíÄÃ·³ÀÇ µ¥ÀÌÅ¸¸¦
- * qp ·¹ÄÚµåÃ³¸®¿µ¿ªÀÇ ÇØ´ç ÄÃ·³À§Ä¡¿¡ º¹»ç
+ * ë””ìŠ¤í¬í…Œì´ë¸”ì»¬ëŸ¼ì˜ ë°ì´íƒ€ë¥¼
+ * qp ë ˆì½”ë“œì²˜ë¦¬ì˜ì—­ì˜ í•´ë‹¹ ì»¬ëŸ¼ìœ„ì¹˜ì— ë³µì‚¬
  *******************************************************************/
 
     mtdBinaryType* sValue;
@@ -449,7 +449,7 @@ static ACI_RC mtdStoredValue2MtdValue( acp_uint32_t aColumnSize,
 
     if( ( aDestValueOffset == 0 ) && ( aLength == 0 ) )
     {
-        // NULL µ¥ÀÌÅ¸
+        // NULL ë°ì´íƒ€
         sValue->mLength = 0;
     }
     else
@@ -476,7 +476,7 @@ static acp_uint32_t mtdHeaderSize()
 {
 /***********************************************************************
  * PROJ-1705
- * length¸¦ °¡Áö´Â µ¥ÀÌÅ¸Å¸ÀÔÀÇ length Á¤º¸¸¦ ÀúÀåÇÏ´Â º¯¼öÀÇ Å©±â ¹İÈ¯
+ * lengthë¥¼ ê°€ì§€ëŠ” ë°ì´íƒ€íƒ€ì…ì˜ length ì •ë³´ë¥¼ ì €ì¥í•˜ëŠ” ë³€ìˆ˜ì˜ í¬ê¸° ë°˜í™˜
  **********************************************************************/
 
     return offsetof(mtdBinaryType, mValue);

@@ -43,7 +43,7 @@ iduMutex::initialize( const SChar     * aName,
     }
 
     /* ------------------------------------------------
-     *  Property¿¡ ÀÇÇØ POSIX·Î µÇµ¹¸± ¼ö ÀÖµµ·Ï
+     *  Propertyì— ì˜í•´ POSIXë¡œ ë˜ëŒë¦´ ìˆ˜ ìˆë„ë¡
      * ----------------------------------------------*/
 #if defined(WRS_VXWORKS) || defined(VC_WINCE) || defined(ANDROID) || defined(SYMBIAN) || defined(X86_SOLARIS)   
     aKind = IDU_MUTEX_KIND_POSIX;
@@ -68,13 +68,13 @@ iduMutex::initialize( const SChar     * aName,
     IDE_TEST(iduMutexMgr::alloc(&mEntry, aKind) != IDE_SUCCESS);
 
     /* ------------------------------------------------
-     *  1. MUTEX ÀÎÀÚ Ã³¸®
+     *  1. MUTEX ì¸ì ì²˜ë¦¬
      *
-     *     A. ÇÁ·ÎÆÛÆ¼ MUTEX_SPIN_COUNT ¿¡¼­ ¾ò´Â´Ù. 
-     *     B. default °ªÀº ¾Æ·¡ÀÇ È¯°æº¯¼ö¿¡¼­ ¾ò´Â´Ù.
+     *     A. í”„ë¡œí¼í‹° MUTEX_SPIN_COUNT ì—ì„œ ì–»ëŠ”ë‹¤. 
+     *     B. default ê°’ì€ ì•„ë˜ì˜ í™˜ê²½ë³€ìˆ˜ì—ì„œ ì–»ëŠ”ë‹¤.
      *         ALTIBASE_MUTEX_SPINLOCK_COUNT = VALUE;
      *
-     *     C. ÀÌ¸§ÀÌ ÁöÁ¤µÇ¾úÀ» °æ¿ì ¼³Á¤ÇÑ´Ù.
+     *     C. ì´ë¦„ì´ ì§€ì •ë˜ì—ˆì„ ê²½ìš° ì„¤ì •í•œë‹¤.
      *        ALTIBASE_MUTEX_SPINLOCK_COUNT_[NAME] = VALUE
      *
      * ----------------------------------------------*/
@@ -85,8 +85,8 @@ iduMutex::initialize( const SChar     * aName,
             sSpinCount = iduProperty::getNativeMutexSpinCount();
             break;
         case IDU_MUTEX_KIND_NATIVE_FOR_LOGGING :
-            // BUG-28856 Logging º´¸ñÁ¦°Å
-            // ³ôÀº spin count¸¦ °¡Áø native mutex¿¡¼­ Logging¼º´É Çâ»ó
+            // BUG-28856 Logging ë³‘ëª©ì œê±°
+            // ë†’ì€ spin countë¥¼ ê°€ì§„ native mutexì—ì„œ Loggingì„±ëŠ¥ í–¥ìƒ
             sSpinCount = iduProperty::getNativeMutexSpinCount4Logging();
             break;
         default:

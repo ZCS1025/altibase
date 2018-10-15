@@ -16,7 +16,7 @@
 
 /***********************************************************************
  *
- * Spatio-Temporal Date Á¶ÀÛ ÇÔ¼ö
+ * Spatio-Temporal Date ì¡°ì‘ í•¨ìˆ˜
  *
  ***********************************************************************/
 
@@ -40,7 +40,7 @@
  *
  * Description:
  *
- *   2D Point °´Ã¼¸¦ »ı¼ºÇÑ´Ù.
+ *   2D Point ê°ì²´ë¥¼ ìƒì„±í•œë‹¤.
  *
  * Implementation:
  *
@@ -74,30 +74,30 @@ ulsCreatePoint2D( ulsHandle         * aHandle,
                     ERR_INSUFFICIENT_BUFFER_SIZE );
 
     /*------------------------------*/
-    /* ÃÊ±âÈ­ */
+    /* ì´ˆê¸°í™” */
     /*------------------------------*/
     
     sPointObj = (stdPoint2DType*) aBuffer;
 
-    /* Geometry Header ÃÊ±âÈ­ */
+    /* Geometry Header ì´ˆê¸°í™” */
     ACI_TEST( ulsInitHeader( aHandle, (stdGeometryHeader*) sPointObj )
               != ACI_SUCCESS );
 
     /*------------------------------*/
-    /* Point °´Ã¼ »ı¼º*/
+    /* Point ê°ì²´ ìƒì„±*/
     /*------------------------------*/
 
-    /* Type ¼³Á¤*/
+    /* Type ì„¤ì •*/
     ACI_TEST( ulsSetGeoType( aHandle,
                              (stdGeometryHeader*) sPointObj,
                              STD_POINT_2D_TYPE )
               != ACI_SUCCESS );
 
-    /* ÁÂÇ¥ ¼³Á¤*/
+    /* ì¢Œí‘œ ì„¤ì •*/
     sPointObj->mPoint.mX = aPoint->mX;
     sPointObj->mPoint.mY = aPoint->mY;
 
-    /* MBR ¼³Á¤*/
+    /* MBR ì„¤ì •*/
     sPointObj->mMbr.mMinX = aPoint->mX;
     sPointObj->mMbr.mMinY = aPoint->mY;
     sPointObj->mMbr.mMaxX = aPoint->mX;
@@ -105,11 +105,11 @@ ulsCreatePoint2D( ulsHandle         * aHandle,
     /* sPointObj->mMbr.mMinT;*/
     /* sPointObj->mMbr.mMaxT;*/
     
-    /* Size ¼³Á¤*/
+    /* Size ì„¤ì •*/
     sPointObj->mSize = ACI_SIZEOF( stdPoint2DType );
 
     /*------------------------------*/
-    /* ¸®ÅÏ°ª ¼³Á¤*/
+    /* ë¦¬í„´ê°’ ì„¤ì •*/
     /*------------------------------*/
     
     *aObjLength = sPointObj->mSize;
@@ -181,40 +181,40 @@ ulsCreateLineString2D( ulsHandle         * aHandle,
                     ERR_INSUFFICIENT_BUFFER_SIZE );
 
     /*------------------------------*/
-    /* ÃÊ±âÈ­ */
+    /* ì´ˆê¸°í™” */
     /*------------------------------*/
     
     sObj = (stdLineString2DType*) aBuffer;
 
-    /* Geometry Header ÃÊ±âÈ­ */
+    /* Geometry Header ì´ˆê¸°í™” */
     ACI_TEST( ulsInitHeader( aHandle, (stdGeometryHeader*) sObj )
               != ACI_SUCCESS );
 
     /*------------------------------*/
-    /* °´Ã¼ »ı¼º*/
+    /* ê°ì²´ ìƒì„±*/
     /*------------------------------*/
 
-    /* Type ¼³Á¤*/
+    /* Type ì„¤ì •*/
     ACI_TEST( ulsSetGeoType( aHandle,
                              (stdGeometryHeader*) sObj,
                              STD_LINESTRING_2D_TYPE )
               != ACI_SUCCESS );
 
-    /* ÁÂÇ¥ ¼³Á¤*/
+    /* ì¢Œí‘œ ì„¤ì •*/
     acpMemCpy( ulsM_GetPointsLS2D( sObj ),
                aPoints,
                ACI_SIZEOF(stdPoint2D) * aNumPoints );
 
     sObj->mNumPoints = aNumPoints;
 
-    /* MBR ¼³Á¤*/
+    /* MBR ì„¤ì •*/
     ulsM_GetMBR2D( aNumPoints, aPoints, &sObj->mMbr );
     
-    /* Size ¼³Á¤*/
+    /* Size ì„¤ì •*/
     sObj->mSize = sObjSize;
 
     /*------------------------------*/
-    /* ¸®ÅÏ°ª ¼³Á¤*/
+    /* ë¦¬í„´ê°’ ì„¤ì •*/
     /*------------------------------*/
     
     *aObjLength = sObj->mSize;
@@ -287,19 +287,19 @@ ulsCreateLinearRing2D( ulsHandle         * aHandle,
                     ERR_INSUFFICIENT_BUFFER_SIZE );
 
     /*------------------------------*/
-    /* ÃÊ±âÈ­ */
+    /* ì´ˆê¸°í™” */
     /*------------------------------*/
     
     sObj = (stdLinearRing2D*) aBuffer;
 
-    /* ÁÂÇ¥ ¼³Á¤*/
+    /* ì¢Œí‘œ ì„¤ì •*/
     acpMemCpy( ulsM_GetPointsLR2D( sObj ),
                aPoints,
                ACI_SIZEOF(stdPoint2D) * aNumPoints );
     sObj->mNumPoints = aNumPoints;
 
     /*------------------------------*/
-    /* ¸®ÅÏ°ª ¼³Á¤*/
+    /* ë¦¬í„´ê°’ ì„¤ì •*/
     /*------------------------------*/
     
     *aObjLength = sObjSize;
@@ -377,19 +377,19 @@ ulsCreatePolygon2D( ulsHandle              * aHandle,
                     ERR_INSUFFICIENT_BUFFER_SIZE );
 
     /*------------------------------*/
-    /* ÃÊ±âÈ­ */
+    /* ì´ˆê¸°í™” */
     /*------------------------------*/
     sObj = (stdPolygon2DType*) aBuffer;
 
-    /* Geometry Header ÃÊ±âÈ­ */
+    /* Geometry Header ì´ˆê¸°í™” */
     ACI_TEST( ulsInitHeader( aHandle, (stdGeometryHeader*) sObj )
               != ACI_SUCCESS );
 
     /*------------------------------*/
-    /* °´Ã¼ »ı¼º*/
+    /* ê°ì²´ ìƒì„±*/
     /*------------------------------*/
 
-    /* Type ¼³Á¤*/
+    /* Type ì„¤ì •*/
     ACI_TEST( ulsSetGeoType( aHandle,
                              (stdGeometryHeader*) sObj,
                              STD_POLYGON_2D_TYPE )
@@ -412,15 +412,15 @@ ulsCreatePolygon2D( ulsHandle              * aHandle,
                   != ACI_SUCCESS );
     }
     
-    /* MBR ¼³Á¤*/
+    /* MBR ì„¤ì •*/
     ACI_TEST( ulsRecalcMBR( aHandle, (stdGeometryType*)sObj, &sObj->mMbr )
               != ACI_SUCCESS );
     
-    /* Size ¼³Á¤*/
+    /* Size ì„¤ì •*/
     sObj->mSize = sObjSize;
 
     /*------------------------------*/
-    /* ¸®ÅÏ°ª ¼³Á¤*/
+    /* ë¦¬í„´ê°’ ì„¤ì •*/
     /*------------------------------*/
     
     *aObjLength = sObj->mSize;
@@ -520,19 +520,19 @@ ulsCreateMultiGeometry( ulsHandle               * aHandle,
                     ERR_INSUFFICIENT_BUFFER_SIZE );
 
     /*------------------------------*/
-    /* ÃÊ±âÈ­ */
+    /* ì´ˆê¸°í™” */
     /*------------------------------*/
     sObj = (stdGeoCollection2DType*) aBuffer;
 
-    /* Geometry Header ÃÊ±âÈ­ */
+    /* Geometry Header ì´ˆê¸°í™” */
     ACI_TEST( ulsInitHeader( aHandle, (stdGeometryHeader*) sObj )
               != ACI_SUCCESS );
 
     /*------------------------------*/
-    /* °´Ã¼ »ı¼º*/
+    /* ê°ì²´ ìƒì„±*/
     /*------------------------------*/
 
-    /* Type ¼³Á¤*/
+    /* Type ì„¤ì •*/
     ACI_TEST( ulsSetGeoType( aHandle,
                              (stdGeometryHeader*) sObj,
                              aGeoTypes )
@@ -555,17 +555,17 @@ ulsCreateMultiGeometry( ulsHandle               * aHandle,
                   != ACI_SUCCESS );
     }
     
-    /* MBR ¼³Á¤*/
+    /* MBR ì„¤ì •*/
     ACI_TEST( ulsRecalcMBR( aHandle,
                             (stdGeometryType*)sObj,
                             &sObj->mMbr )
               != ACI_SUCCESS );
     
-    /* Size ¼³Á¤*/
+    /* Size ì„¤ì •*/
     sObj->mSize = sObjSize;
 
     /*------------------------------*/
-    /* ¸®ÅÏ°ª ¼³Á¤*/
+    /* ë¦¬í„´ê°’ ì„¤ì •*/
     /*------------------------------*/
     
     *aObjLength = sObj->mSize;
@@ -697,7 +697,7 @@ ulsCreateGeomCollection2D( ulsHandle               * aHandle,
  *
  * Description:
  *
- *   Geometry Header¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+ *   Geometry Headerë¥¼ ì´ˆê¸°í™”í•œë‹¤.
  *
  * Implementation:
  *
@@ -719,9 +719,9 @@ ulsInitHeader( ulsHandle         * aHandle,
     /* Initialize Header*/
     /*------------------------------*/
 
-    /* TODO - stdGeometry->null()ÇÔ¼ö¸¦ »ç¿ëÇÏ´Â °ÍÀÌ ¹Ù¶÷Á÷ÇÏ´Ù.*/
+    /* TODO - stdGeometry->null()í•¨ìˆ˜ë¥¼ ì‚¬ìš©í•˜ëŠ” ê²ƒì´ ë°”ëŒì§í•˜ë‹¤.*/
     
-    /* Null ÃÊ±âÈ­*/
+    /* Null ì´ˆê¸°í™”*/
     acpMemSet( aObjectHeader, 0x00, ACI_SIZEOF( stdGeometryHeader ) );
     ACI_TEST( ulsSetGeoType( aHandle,
                              aObjectHeader,
@@ -738,7 +738,7 @@ ulsInitHeader( ulsHandle         * aHandle,
  *
  * Description:
  *
- *   Geometry TypeÀ» ¼³Á¤ÇÑ´Ù.
+ *   Geometry Typeì„ ì„¤ì •í•œë‹¤.
  *
  * Implementation:
  *
@@ -754,7 +754,7 @@ ulsSetGeoType( ulsHandle          * aHandle,
     /* Parameter Validation*/
     /*------------------------------*/
 
-    /* BUG-28414 : warnning Á¦°Å */
+    /* BUG-28414 : warnning ì œê±° */
     ACE_ASSERT( aHandle != NULL );
     ACE_ASSERT( aObjHeader != NULL );
 
@@ -783,7 +783,7 @@ ulsSetGeoType( ulsHandle          * aHandle,
  *
  * Description:
  *
- *   °´Ã¼ÀÇ Geometry TypeÀ» È¹µæÇÑ´Ù.
+ *   ê°ì²´ì˜ Geometry Typeì„ íšë“í•œë‹¤.
  *
  * Implementation:
  *
@@ -820,7 +820,7 @@ ulsGetGeoType( ulsHandle          * aHandle,
     }
     else
     {
-        /* Endian º¯È¯*/
+        /* Endian ë³€í™˜*/
         ulsEndianShort( & sType );
     }
 
@@ -837,7 +837,7 @@ ulsGetGeoType( ulsHandle          * aHandle,
  *
  * Description:
  *
- *   GeometryÀÇ MBRÀ» Àç°è»êÇÏ¿© ³Ñ°ÜÁØ´Ù.
+ *   Geometryì˜ MBRì„ ì¬ê³„ì‚°í•˜ì—¬ ë„˜ê²¨ì¤€ë‹¤.
  *
  * Implementation:
  *

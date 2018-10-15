@@ -45,14 +45,14 @@ static IDE_RC mmmPhaseActionInitMT(mmmPhase         /*aPhase*/,
     // PROJ-2446
     sExtCallBack.getStatistics           = qciMisc::getStatistics;
 
-    // Stored Procedure Function¿ª MTø° µÓ∑œ
+    // Stored Procedure FunctionÏùÑ MTÏóê Îì±Î°ù
     IDE_TEST( qciMisc::addExtFuncModule() != IDE_SUCCESS );
 
     IDE_TEST( qciMisc::addExtRangeFunc() != IDE_SUCCESS );
 
     IDE_TEST( qciMisc::addExtCompareFunc() != IDE_SUCCESS );
     
-    // Spatio-Temporal ∞¸∑√ DataType, Conversion, Function µÓ∑œ
+    // Spatio-Temporal Í¥ÄÎ†® DataType, Conversion, Function Îì±Î°ù
     IDE_TEST( sti::addExtMT_Module() != IDE_SUCCESS );
 
     /* PROJ-2638 shard native linker */
@@ -61,11 +61,11 @@ static IDE_RC mmmPhaseActionInitMT(mmmPhase         /*aPhase*/,
     /* Database Link's Functions */
     IDE_TEST( dkiAddDatabaseLinkFunctions() != IDE_SUCCESS );
               
-    // MT √ ±‚»≠
+    // MT Ï¥àÍ∏∞Ìôî
     IDE_TEST( mtc::initialize( &sExtCallBack )
               != IDE_SUCCESS );
 
-    // ST √ ±‚»≠
+    // ST Ï¥àÍ∏∞Ìôî
     IDE_TEST( sti::initialize() != IDE_SUCCESS );
 
     return IDE_SUCCESS;

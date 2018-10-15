@@ -21,11 +21,11 @@
  * Description :
  *     SDIN(SharD INsert) Node
  *
- *     °ü°èÇü ¸ðµ¨¿¡¼­ insert¸¦ ¼öÇàÇÏ´Â Plan Node ÀÌ´Ù.
+ *     ê´€ê³„í˜• ëª¨ë¸ì—ì„œ insertë¥¼ ìˆ˜í–‰í•˜ëŠ” Plan Node ì´ë‹¤.
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  **********************************************************************/
 
@@ -43,7 +43,7 @@ IDE_RC qmnSDIN::init( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    SDIN ³ëµåÀÇ ÃÊ±âÈ­
+ *    SDIN ë…¸ë“œì˜ ì´ˆê¸°í™”
  *
  * Implementation :
  *
@@ -57,17 +57,17 @@ IDE_RC qmnSDIN::init( qcTemplate * aTemplate,
     sDataPlan->doIt = qmnSDIN::doItDefault;
 
     //------------------------------------------------
-    // ÃÖÃÊ ÃÊ±âÈ­ ¼öÇà ¿©ºÎ ÆÇ´Ü
+    // ìµœì´ˆ ì´ˆê¸°í™” ìˆ˜í–‰ ì—¬ë¶€ íŒë‹¨
     //------------------------------------------------
 
     if ( ( *sDataPlan->flag & QMND_SDIN_INIT_DONE_MASK )
          == QMND_SDIN_INIT_DONE_FALSE )
     {
-        // ÃÖÃÊ ÃÊ±âÈ­ ¼öÇà
+        // ìµœì´ˆ ì´ˆê¸°í™” ìˆ˜í–‰
         IDE_TEST( firstInit(aTemplate, sCodePlan, sDataPlan) != IDE_SUCCESS );
 
         //---------------------------------
-        // ÃÊ±âÈ­ ¿Ï·á¸¦ Ç¥±â
+        // ì´ˆê¸°í™” ì™„ë£Œë¥¼ í‘œê¸°
         //---------------------------------
 
         *sDataPlan->flag &= ~QMND_SDIN_INIT_DONE_MASK;
@@ -79,7 +79,7 @@ IDE_RC qmnSDIN::init( qcTemplate * aTemplate,
     }
 
     //------------------------------------------------
-    // Child PlanÀÇ ÃÊ±âÈ­
+    // Child Planì˜ ì´ˆê¸°í™”
     //------------------------------------------------
 
     if ( aPlan->left != NULL )
@@ -93,7 +93,7 @@ IDE_RC qmnSDIN::init( qcTemplate * aTemplate,
     }
 
     //------------------------------------------------
-    // ¼öÇà ÇÔ¼ö °áÁ¤
+    // ìˆ˜í–‰ í•¨ìˆ˜ ê²°ì •
     //------------------------------------------------
 
     if ( sCodePlan->isInsertSelect == ID_TRUE )
@@ -119,10 +119,10 @@ IDE_RC qmnSDIN::doIt( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    SDIN ÀÇ °íÀ¯ ±â´ÉÀ» ¼öÇàÇÑ´Ù.
+ *    SDIN ì˜ ê³ ìœ  ê¸°ëŠ¥ì„ ìˆ˜í–‰í•œë‹¤.
  *
  * Implementation :
- *    ÁöÁ¤µÈ ÇÔ¼ö Æ÷ÀÎÅÍ¸¦ ¼öÇàÇÑ´Ù.
+ *    ì§€ì •ëœ í•¨ìˆ˜ í¬ì¸í„°ë¥¼ ìˆ˜í–‰í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -138,8 +138,8 @@ IDE_RC qmnSDIN::padNull( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    SDIN ³ëµå´Â º°µµÀÇ null row¸¦ °¡ÁöÁö ¾ÊÀ¸¸ç,
- *    Child¿¡ ´ëÇÏ¿© padNull()À» È£ÃâÇÑ´Ù.
+ *    SDIN ë…¸ë“œëŠ” ë³„ë„ì˜ null rowë¥¼ ê°€ì§€ì§€ ì•Šìœ¼ë©°,
+ *    Childì— ëŒ€í•˜ì—¬ padNull()ì„ í˜¸ì¶œí•œë‹¤.
  *
  * Implementation :
  *
@@ -152,7 +152,7 @@ IDE_RC qmnSDIN::padNull( qcTemplate * aTemplate,
     if ( (aTemplate->planFlag[sCodePlan->planID] & QMND_SDIN_INIT_DONE_MASK)
          == QMND_SDIN_INIT_DONE_FALSE )
     {
-        // ÃÊ±âÈ­µÇÁö ¾ÊÀº °æ¿ì ÃÊ±âÈ­ ¼öÇà
+        // ì´ˆê¸°í™”ë˜ì§€ ì•Šì€ ê²½ìš° ì´ˆê¸°í™” ìˆ˜í–‰
         IDE_TEST( aPlan->init( aTemplate, aPlan ) != IDE_SUCCESS );
     }
     else
@@ -160,7 +160,7 @@ IDE_RC qmnSDIN::padNull( qcTemplate * aTemplate,
         // Nothing To Do
     }
 
-    // Child Plan¿¡ ´ëÇÏ¿© Null Padding¼öÇà
+    // Child Planì— ëŒ€í•˜ì—¬ Null Paddingìˆ˜í–‰
     if ( aPlan->left != NULL )
     {
         IDE_TEST( aPlan->left->padNull( aTemplate, aPlan->left )
@@ -187,7 +187,7 @@ IDE_RC qmnSDIN::printPlan( qcTemplate   * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    SDIN ³ëµåÀÇ ¼öÇà Á¤º¸¸¦ Ãâ·ÂÇÑ´Ù.
+ *    SDIN ë…¸ë“œì˜ ìˆ˜í–‰ ì •ë³´ë¥¼ ì¶œë ¥í•œë‹¤.
  *
  * Implementation :
  *
@@ -204,10 +204,10 @@ IDE_RC qmnSDIN::printPlan( qcTemplate   * aTemplate,
     sDataPlan->flag = & aTemplate->planFlag[sCodePlan->planID];
 
     //------------------------------------------------------
-    // SDIN Target Á¤º¸ÀÇ Ãâ·Â
+    // SDIN Target ì •ë³´ì˜ ì¶œë ¥
     //------------------------------------------------------
 
-    // SDIN Á¤º¸ÀÇ Ãâ·Â
+    // SDIN ì •ë³´ì˜ ì¶œë ¥
     qmn::printSpaceDepth( aString, aDepth );
     iduVarStringAppendFormat( aString,
                               "SHARD-INSERT ( TABLE: " );
@@ -226,7 +226,7 @@ IDE_RC qmnSDIN::printPlan( qcTemplate   * aTemplate,
     }
 
     //----------------------------
-    // Table Name Ãâ·Â
+    // Table Name ì¶œë ¥
     //----------------------------
 
     if ( ( sCodePlan->tableName.size <= QC_MAX_OBJECT_NAME_LEN ) &&
@@ -243,14 +243,14 @@ IDE_RC qmnSDIN::printPlan( qcTemplate   * aTemplate,
     }
 
     //----------------------------
-    // Alias Name Ãâ·Â
+    // Alias Name ì¶œë ¥
     //----------------------------
 
     if ( sCodePlan->aliasName.name != NULL &&
          sCodePlan->aliasName.size > 0  &&
          sCodePlan->aliasName.name != sCodePlan->tableName.name )
     {
-        // Table ÀÌ¸§ Á¤º¸¿Í Alias ÀÌ¸§ Á¤º¸°¡ ´Ù¸¦ °æ¿ì
+        // Table ì´ë¦„ ì •ë³´ì™€ Alias ì´ë¦„ ì •ë³´ê°€ ë‹¤ë¥¼ ê²½ìš°
         // (alias name)
         iduVarStringAppend( aString, " " );
 
@@ -267,17 +267,17 @@ IDE_RC qmnSDIN::printPlan( qcTemplate   * aTemplate,
     }
     else
     {
-        // Alias ÀÌ¸§ Á¤º¸°¡ ¾ø°Å³ª Table ÀÌ¸§ Á¤º¸°¡ µ¿ÀÏÇÑ °æ¿ì
+        // Alias ì´ë¦„ ì •ë³´ê°€ ì—†ê±°ë‚˜ Table ì´ë¦„ ì •ë³´ê°€ ë™ì¼í•œ ê²½ìš°
         // Nothing To Do
     }
 
     //----------------------------
-    // New line Ãâ·Â
+    // New line ì¶œë ¥
     //----------------------------
     iduVarStringAppend( aString, " )\n" );
 
     //------------------------------------------------------
-    // BUG-38343 VALUES ³»ºÎÀÇ Subquery Á¤º¸ Ãâ·Â
+    // BUG-38343 VALUES ë‚´ë¶€ì˜ Subquery ì •ë³´ ì¶œë ¥
     //------------------------------------------------------
 
     for ( sMultiRows = sCodePlan->rows;
@@ -297,7 +297,7 @@ IDE_RC qmnSDIN::printPlan( qcTemplate   * aTemplate,
     }
 
     //----------------------------
-    // ¼öÇà Á¤º¸ÀÇ »ó¼¼ Ãâ·Â
+    // ìˆ˜í–‰ ì •ë³´ì˜ ìƒì„¸ ì¶œë ¥
     //----------------------------
 
     if ( ( QCG_GET_SESSION_TRCLOG_DETAIL_PREDICATE(aTemplate->stmt) == 1 ) &&
@@ -322,7 +322,7 @@ IDE_RC qmnSDIN::printPlan( qcTemplate   * aTemplate,
     }
 
     //------------------------------------------------------
-    // Child Plan Á¤º¸ÀÇ Ãâ·Â
+    // Child Plan ì •ë³´ì˜ ì¶œë ¥
     //------------------------------------------------------
 
     if ( aPlan->left != NULL )
@@ -352,10 +352,10 @@ IDE_RC qmnSDIN::firstInit( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    SDIN nodeÀÇ Data ¿µ¿ªÀÇ ¸â¹ö¿¡ ´ëÇÑ ÃÊ±âÈ­¸¦ ¼öÇà
+ *    SDIN nodeì˜ Data ì˜ì—­ì˜ ë©¤ë²„ì— ëŒ€í•œ ì´ˆê¸°í™”ë¥¼ ìˆ˜í–‰
  *
  * Implementation :
- *    - Data ¿µ¿ªÀÇ ÁÖ¿ä ¸â¹ö¿¡ ´ëÇÑ ÃÊ±âÈ­¸¦ ¼öÇà
+ *    - Data ì˜ì—­ì˜ ì£¼ìš” ë©¤ë²„ì— ëŒ€í•œ ì´ˆê¸°í™”ë¥¼ ìˆ˜í–‰
  *
  ***********************************************************************/
 
@@ -365,13 +365,13 @@ IDE_RC qmnSDIN::firstInit( qcTemplate * aTemplate,
     smiValue       * sInsertedRow;
 
     //---------------------------------
-    // ±âº» ¼³Á¤
+    // ê¸°ë³¸ ì„¤ì •
     //---------------------------------
 
     aDataPlan->rows = aCodePlan->rows;
 
     //------------------------------------------
-    // INSERT¸¦ À§ÇÑ Default ROW ±¸¼º
+    // INSERTë¥¼ ìœ„í•œ Default ROW êµ¬ì„±
     //------------------------------------------
 
     if ( aCodePlan->isInsertSelect == ID_TRUE )
@@ -400,10 +400,10 @@ IDE_RC qmnSDIN::firstInit( qcTemplate * aTemplate,
     }
 
     //-------------------------------
-    // ¼öÇà³ëµå ÃÊ±âÈ­
+    // ìˆ˜í–‰ë…¸ë“œ ì´ˆê¸°í™”
     //-------------------------------
 
-    // shard linker °Ë»ç & ÃÊ±âÈ­
+    // shard linker ê²€ì‚¬ & ì´ˆê¸°í™”
     IDE_TEST( sdi::checkShardLinker( aTemplate->stmt ) != IDE_SUCCESS );
 
     IDE_TEST_RAISE( aTemplate->shardExecData.execInfo == NULL,
@@ -413,7 +413,7 @@ IDE_RC qmnSDIN::firstInit( qcTemplate * aTemplate,
         + aCodePlan->shardDataIndex;
 
     //-------------------------------
-    // shard ¼öÇàÀ» À§ÇÑ ÁØºñ
+    // shard ìˆ˜í–‰ì„ ìœ„í•œ ì¤€ë¹„
     //-------------------------------
 
     sClientInfo = aTemplate->stmt->session->mQPSpecific.mClientInfo;
@@ -426,7 +426,7 @@ IDE_RC qmnSDIN::firstInit( qcTemplate * aTemplate,
         sDataNodeArg.mBindParams = (sdiBindParam*)
             ( aTemplate->shardExecData.data + aCodePlan->bindParam );
 
-        // ÃÊ±âÈ­
+        // ì´ˆê¸°í™”
         IDE_TEST( setParamInfo( aTemplate,
                                 aCodePlan,
                                 sDataNodeArg.mBindParams )
@@ -530,7 +530,7 @@ IDE_RC qmnSDIN::doItDefault( qcTemplate * /* aTemplate */,
 /***********************************************************************
  *
  * Description :
- *    ÀÌ ÇÔ¼ö°¡ ¼öÇàµÇ¸é ¾ÈµÊ.
+ *    ì´ í•¨ìˆ˜ê°€ ìˆ˜í–‰ë˜ë©´ ì•ˆë¨.
  *
  * Implementation :
  *
@@ -548,11 +548,11 @@ IDE_RC qmnSDIN::doItFirst( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    SDINÀÇ ÃÖÃÊ ¼öÇà ÇÔ¼ö
+ *    SDINì˜ ìµœì´ˆ ìˆ˜í–‰ í•¨ìˆ˜
  *
  * Implementation :
- *    - Table¿¡ IX LockÀ» °Ç´Ù.
- *    - Session Event Check (ºñÁ¤»ó Á¾·á Detect)
+ *    - Tableì— IX Lockì„ ê±´ë‹¤.
+ *    - Session Event Check (ë¹„ì •ìƒ ì¢…ë£Œ Detect)
  *    - Cursor Open
  *    - insert one record
  *
@@ -563,7 +563,7 @@ IDE_RC qmnSDIN::doItFirst( qcTemplate * aTemplate,
         (qmndSDIN*) (aTemplate->tmplate.data + aPlan->offset);
 
     //-----------------------------------
-    // Child PlanÀ» ¼öÇàÇÔ
+    // Child Planì„ ìˆ˜í–‰í•¨
     //-----------------------------------
 
     // doIt left child
@@ -571,7 +571,7 @@ IDE_RC qmnSDIN::doItFirst( qcTemplate * aTemplate,
               != IDE_SUCCESS );
 
     //-----------------------------------
-    // Insert¸¦ ¼öÇàÇÔ
+    // Insertë¥¼ ìˆ˜í–‰í•¨
     //-----------------------------------
 
     if ( ( *aFlag & QMC_ROW_DATA_MASK ) == QMC_ROW_DATA_EXIST )
@@ -600,8 +600,8 @@ IDE_RC qmnSDIN::doItNext( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    SDINÀÇ ´ÙÀ½ ¼öÇà ÇÔ¼ö
- *    ´ÙÀ½ Record¸¦ »èÁ¦ÇÑ´Ù.
+ *    SDINì˜ ë‹¤ìŒ ìˆ˜í–‰ í•¨ìˆ˜
+ *    ë‹¤ìŒ Recordë¥¼ ì‚­ì œí•œë‹¤.
  *
  * Implementation :
  *    - insert one record
@@ -613,7 +613,7 @@ IDE_RC qmnSDIN::doItNext( qcTemplate * aTemplate,
         (qmndSDIN*) (aTemplate->tmplate.data + aPlan->offset);
 
     //-----------------------------------
-    // Child PlanÀ» ¼öÇàÇÔ
+    // Child Planì„ ìˆ˜í–‰í•¨
     //-----------------------------------
 
     // doIt left child
@@ -621,7 +621,7 @@ IDE_RC qmnSDIN::doItNext( qcTemplate * aTemplate,
               != IDE_SUCCESS );
 
     //-----------------------------------
-    // Insert¸¦ ¼öÇàÇÔ
+    // Insertë¥¼ ìˆ˜í–‰í•¨
     //-----------------------------------
 
     if ( ( *aFlag & QMC_ROW_DATA_MASK ) == QMC_ROW_DATA_EXIST )
@@ -631,8 +631,8 @@ IDE_RC qmnSDIN::doItNext( qcTemplate * aTemplate,
     }
     else
     {
-        // record°¡ ¾ø´Â °æ¿ì
-        // ´ÙÀ½ ¼öÇàÀ» À§ÇØ ÃÖÃÊ ¼öÇà ÇÔ¼ö·Î ¼³Á¤ÇÔ.
+        // recordê°€ ì—†ëŠ” ê²½ìš°
+        // ë‹¤ìŒ ìˆ˜í–‰ì„ ìœ„í•´ ìµœì´ˆ ìˆ˜í–‰ í•¨ìˆ˜ë¡œ ì„¤ì •í•¨.
         sDataPlan->doIt = qmnSDIN::doItFirst;
     }
 
@@ -652,7 +652,7 @@ IDE_RC qmnSDIN::doItFirstMultiRows( qcTemplate * aTemplate,
         (qmndSDIN*) (aTemplate->tmplate.data + aPlan->offset);
 
     //-----------------------------------
-    // Insert¸¦ ¼öÇàÇÔ
+    // Insertë¥¼ ìˆ˜í–‰í•¨
     //-----------------------------------
 
     // insert one record
@@ -689,12 +689,12 @@ IDE_RC qmnSDIN::doItNextMultiRows( qcTemplate * aTemplate,
     IDE_TEST_RAISE( sDataPlan->rows->next == NULL, ERR_UNEXPECTED );
 
     //-----------------------------------
-    // ´Ù¸§ Row¸¦ ¼±ÅÃ
+    // ë‹¤ë¦„ Rowë¥¼ ì„ íƒ
     //-----------------------------------
     sDataPlan->rows = sDataPlan->rows->next;
 
     //-----------------------------------
-    // Insert¸¦ ¼öÇàÇÔ
+    // Insertë¥¼ ìˆ˜í–‰í•¨
     //-----------------------------------
 
     // insert one record
@@ -705,7 +705,7 @@ IDE_RC qmnSDIN::doItNextMultiRows( qcTemplate * aTemplate,
         *aFlag &= ~QMC_ROW_DATA_MASK;
         *aFlag |= QMC_ROW_DATA_NONE;
 
-        // ´ÙÀ½ ¼öÇàÀ» À§ÇØ ÃÖÃÊ ¼öÇà ÇÔ¼ö·Î ¼³Á¤ÇÔ.
+        // ë‹¤ìŒ ìˆ˜í–‰ì„ ìœ„í•´ ìµœì´ˆ ìˆ˜í–‰ í•¨ìˆ˜ë¡œ ì„¤ì •í•¨.
         sDataPlan->doIt = qmnSDIN::doItFirstMultiRows;
     }
     else
@@ -733,10 +733,10 @@ IDE_RC qmnSDIN::insertOneRow( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    SDIN ÀÇ °íÀ¯ ±â´ÉÀ» ¼öÇàÇÑ´Ù.
+ *    SDIN ì˜ ê³ ìœ  ê¸°ëŠ¥ì„ ìˆ˜í–‰í•œë‹¤.
  *
  * Implementation :
- *    - insert one record ¼öÇà
+ *    - insert one record ìˆ˜í–‰
  *
  ***********************************************************************/
 
@@ -753,14 +753,14 @@ IDE_RC qmnSDIN::insertOneRow( qcTemplate * aTemplate,
     vSLong             sNumRows = 0;
 
     //---------------------------------
-    // ±âº» ¼³Á¤
+    // ê¸°ë³¸ ì„¤ì •
     //---------------------------------
 
     sCanonizedTuple = &(aTemplate->tmplate.rows[sCodePlan->canonizedTuple]);
     sTableForInsert = sCodePlan->tableRef->tableInfo;
     sInsertedRow = aTemplate->insOrUptRow[sCodePlan->valueIdx];
 
-    // Memory Àç»ç¿ëÀ» À§ÇÏ¿© ÇöÀç À§Ä¡ ±â·Ï
+    // Memory ìž¬ì‚¬ìš©ì„ ìœ„í•˜ì—¬ í˜„ìž¬ ìœ„ì¹˜ ê¸°ë¡
     IDE_TEST( aTemplate->stmt->qmxMem->getStatus( &sQmxMemStatus )
               != IDE_SUCCESS );
 
@@ -768,7 +768,7 @@ IDE_RC qmnSDIN::insertOneRow( qcTemplate * aTemplate,
     // set next sequence
     //-----------------------------------
 
-    // Sequence Value È¹µæ
+    // Sequence Value íšë“
     if ( sCodePlan->nextValSeqs != NULL )
     {
         IDE_TEST( qmx::readSequenceNextVals(
@@ -785,7 +785,7 @@ IDE_RC qmnSDIN::insertOneRow( qcTemplate * aTemplate,
     // make insert value
     //-----------------------------------
 
-    // stackÀÇ °ªÀ» ÀÌ¿ë
+    // stackì˜ ê°’ì„ ì´ìš©
     IDE_TEST( qmx::makeSmiValueWithResult( sCodePlan->columns,
                                            aTemplate,
                                            sTableForInsert,
@@ -805,7 +805,7 @@ IDE_RC qmnSDIN::insertOneRow( qcTemplate * aTemplate,
               != IDE_SUCCESS );
 
     //------------------------------------------
-    // Shard Insert¸¦ À§ÇÑ Default ROW ±¸¼º
+    // Shard Insertë¥¼ ìœ„í•œ Default ROW êµ¬ì„±
     //------------------------------------------
 
     if ( ( sCodePlan->columnsForValues != NULL ) &&
@@ -829,7 +829,7 @@ IDE_RC qmnSDIN::insertOneRow( qcTemplate * aTemplate,
     }
 
     //-----------------------------------
-    // canonized tuple·Î °ªÀ» º¹»ç
+    // canonized tupleë¡œ ê°’ì„ ë³µì‚¬
     //-----------------------------------
 
     IDE_TEST( copySmiValueToTuple( sTableForInsert,
@@ -838,7 +838,7 @@ IDE_RC qmnSDIN::insertOneRow( qcTemplate * aTemplate,
               != IDE_SUCCESS );
 
     //-------------------------------
-    // ¼öÇà³ëµå °áÁ¤
+    // ìˆ˜í–‰ë…¸ë“œ ê²°ì •
     //-------------------------------
 
     IDE_TEST( sdi::decideShardDataInfo(
@@ -851,7 +851,7 @@ IDE_RC qmnSDIN::insertOneRow( qcTemplate * aTemplate,
               != IDE_SUCCESS );
 
     //-------------------------------
-    // ¼öÇà
+    // ìˆ˜í–‰
     //-------------------------------
 
     IDE_TEST( sdi::executeInsert( aTemplate->stmt,
@@ -864,10 +864,10 @@ IDE_RC qmnSDIN::insertOneRow( qcTemplate * aTemplate,
     aTemplate->numRows += sNumRows;
 
     //-----------------------------------
-    // ¿Ï·á
+    // ì™„ë£Œ
     //-----------------------------------
 
-    // Memory Àç»ç¿ëÀ» À§ÇÑ Memory ÀÌµ¿
+    // Memory ìž¬ì‚¬ìš©ì„ ìœ„í•œ Memory ì´ë™
     IDE_TEST( aTemplate->stmt->qmxMem->setStatus( &sQmxMemStatus )
               != IDE_SUCCESS);
 
@@ -895,17 +895,17 @@ IDE_RC qmnSDIN::insertOnce( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    insertOnce´Â insertOneRow¿Í cursor¸¦ openÇÏ´Â ½ÃÁ¡ÀÌ ´Ù¸£´Ù.
- *    insertOnce¿¡¼­´Â makeSmiValueÀÌÈÄ¿¡ cursor¸¦ openÇÑ´Ù.
- *    ´ÙÀ½ Äõ¸®¿¡¼­ t1 insert cursor¸¦ ¸ÕÀú ¿­¸é subquery°¡ ¼öÇàµÉ ¼ö ¾ø´Ù.
+ *    insertOnceëŠ” insertOneRowì™€ cursorë¥¼ opení•˜ëŠ” ì‹œì ì´ ë‹¤ë¥´ë‹¤.
+ *    insertOnceì—ì„œëŠ” makeSmiValueì´í›„ì— cursorë¥¼ opení•œë‹¤.
+ *    ë‹¤ìŒ ì¿¼ë¦¬ì—ì„œ t1 insert cursorë¥¼ ë¨¼ì € ì—´ë©´ subqueryê°€ ìˆ˜í–‰ë  ìˆ˜ ì—†ë‹¤.
  *
  *    ex)
  *    insert into t1 values ( select max(i1) from t1 );
  *
  * Implementation :
  *    - cursor open
- *    - insert one record ¼öÇà
- *    - trigger each row ¼öÇà
+ *    - insert one record ìˆ˜í–‰
+ *    - trigger each row ìˆ˜í–‰
  *
  ***********************************************************************/
 
@@ -928,7 +928,7 @@ IDE_RC qmnSDIN::insertOnce( qcTemplate * aTemplate,
     // set next sequence
     //-----------------------------------
 
-    // Sequence Value È¹µæ
+    // Sequence Value íšë“
     if ( sCodePlan->nextValSeqs != NULL )
     {
         IDE_TEST( qmx::readSequenceNextVals(
@@ -945,7 +945,7 @@ IDE_RC qmnSDIN::insertOnce( qcTemplate * aTemplate,
     // make insert value
     //-----------------------------------
 
-    // valuesÀÇ °ªÀ» ÀÌ¿ë
+    // valuesì˜ ê°’ì„ ì´ìš©
     IDE_TEST( qmx::makeSmiValueWithValue( aTemplate,
                                           sTableForInsert,
                                           sCodePlan->canonizedTuple,
@@ -956,7 +956,7 @@ IDE_RC qmnSDIN::insertOnce( qcTemplate * aTemplate,
               != IDE_SUCCESS );
 
     //-----------------------------------
-    // canonized tuple·Î °ªÀ» º¹»ç
+    // canonized tupleë¡œ ê°’ì„ ë³µì‚¬
     //-----------------------------------
 
     IDE_TEST( copySmiValueToTuple( sTableForInsert,
@@ -976,7 +976,7 @@ IDE_RC qmnSDIN::insertOnce( qcTemplate * aTemplate,
               != IDE_SUCCESS );
 
     //-------------------------------
-    // ¼öÇà³ëµå °áÁ¤
+    // ìˆ˜í–‰ë…¸ë“œ ê²°ì •
     //-------------------------------
 
     IDE_TEST( sdi::decideShardDataInfo(
@@ -989,7 +989,7 @@ IDE_RC qmnSDIN::insertOnce( qcTemplate * aTemplate,
               != IDE_SUCCESS );
 
     //-------------------------------
-    // ¼öÇà
+    // ìˆ˜í–‰
     //-------------------------------
 
     IDE_TEST( sdi::executeInsert( aTemplate->stmt,
@@ -1002,7 +1002,7 @@ IDE_RC qmnSDIN::insertOnce( qcTemplate * aTemplate,
     aTemplate->numRows += sNumRows;
 
     //-----------------------------------
-    // ¿Ï·á
+    // ì™„ë£Œ
     //-----------------------------------
 
     if ( ( *sDataPlan->flag & QMND_SDIN_INSERT_MASK )

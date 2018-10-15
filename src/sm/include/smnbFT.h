@@ -18,7 +18,7 @@
 /***********************************************************************
  * $Id: smnbFT.h 19550 2007-02-07 03:09:40Z kimmkeun $
  *
- * Memory BTree Index¿« FT∏¶ ¿ß«— «‘ºˆ
+ * Memory BTree IndexÏùò FTÎ•º ÏúÑÌïú Ìï®Ïàò
  *
  **********************************************************************/
 
@@ -29,7 +29,7 @@
 # include <smDef.h>
 
 //-------------------------------
-// D$MEM_INDEX_BTREE_STRUCTURE¿« ±∏¡∂
+// D$MEM_INDEX_BTREE_STRUCTUREÏùò Íµ¨Ï°∞
 //-------------------------------
 
 typedef struct smnbDumpTreePage
@@ -42,7 +42,7 @@ typedef struct smnbDumpTreePage
 } smnbDumpTreePage;
 
 //-------------------------------
-// D$MEM_INDEX_BTREE_KEY ¿« ±∏¡∂
+// D$MEM_INDEX_BTREE_KEY Ïùò Íµ¨Ï°∞
 //-------------------------------
 
 typedef struct smnbDumpKey
@@ -154,7 +154,7 @@ public:
     //-----------------------------------------
     // For X$MEM_BTREE_NODEPOOL
     //-----------------------------------------
-    // BUG-18122 : MEM_BTREE_NODEPOOL performance view √ﬂ∞°
+    // BUG-18122 : MEM_BTREE_NODEPOOL performance view Ï∂îÍ∞Ä
     static IDE_RC buildRecordForMemBTreeNodePool(idvSQL              * /*aStatistics*/,
                                                  void                * aHeader,
                                                  void                * /* aDumpObj */,

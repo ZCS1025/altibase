@@ -35,13 +35,13 @@ SChar sdtTempPage::mPageName[ SDT_TEMP_PAGETYPE_MAX ][ SMI_TT_STR_SIZE ] = {
 
 /**************************************************************************
  * Description :
- * Page¸¦ sdtTempPage ÇüÅÂ·Î ÃÊ±âÈ­ÇÑ´Ù.
+ * Pageë¥¼ sdtTempPage í˜•íƒœë¡œ ì´ˆê¸°í™”í•œë‹¤.
  *
  * <IN>
- * aPagePtr       - ÃÊ±âÈ­ÇÒ ´ë»ó Page
- * aType          - PageÀÇ Type
- * aPrev          - PageÀÇ ÀÌÀü PID
- * aNext          - PageÀÇ ´ÙÀ½ PID
+ * aPagePtr       - ì´ˆê¸°í™”í•  ëŒ€ìƒ Page
+ * aType          - Pageì˜ Type
+ * aPrev          - Pageì˜ ì´ì „ PID
+ * aNext          - Pageì˜ ë‹¤ìŒ PID
  ***************************************************************************/
 IDE_RC sdtTempPage::init( UChar    * aPagePtr,
                           UInt       aType,

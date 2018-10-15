@@ -28,7 +28,7 @@ extern cmpOpMap gCmpOpDBMap[];
 extern cmpOpMap gCmpOpRPMap[];
 extern cmpOpMap gCmpOpDKMap[];
 
-// BUG-19465 : CM_BufferÀÇ pending list¸¦ Á¦ÇÑ
+// BUG-19465 : CM_Bufferì˜ pending listë¥¼ ì œí•œ
 UInt     gMaxPendingList;
 
 //BUG-21080
@@ -55,8 +55,8 @@ inline IDE_RC cmiIPCDACheckLinkAndWait(cmiProtocolContext *aCtx,
 
         if (aMicroSleepTime == 0)
         {
-            /* IPCDA_SLEEP_TIMEÀÇ °ªÀÌ 0 ÀÎ °æ¿ì,
-             * thread_yield¸¦ ¼öÇàÇÕ´Ï´Ù. */
+            /* IPCDA_SLEEP_TIMEì˜ ê°’ì´ 0 ì¸ ê²½ìš°,
+             * thread_yieldë¥¼ ìˆ˜í–‰í•©ë‹ˆë‹¤. */
             idlOS::thr_yield();
         }
         else
@@ -176,12 +176,12 @@ static void cmiDump(cmiProtocolContext   *aCtx,
 #define RC4_KEY_LEN     (16) /* 16 byte ( 128 bit ) */
 
 /*
- * Packet Header·ÎºÎÅÍ ModuleÀ» ±¸ÇÑ´Ù.
+ * Packet Headerë¡œë¶€í„° Moduleì„ êµ¬í•œë‹¤.
  */
 static IDE_RC cmiGetModule(cmpHeader *aHeader, cmpModule **aModule)
 {
     /*
-     * Module È¹µæ
+     * Module íšë“
      */
     IDE_TEST_RAISE(aHeader->mA5.mModuleID >= CMP_MODULE_MAX, UnknownModule);
 
@@ -199,7 +199,7 @@ static IDE_RC cmiGetModule(cmpHeader *aHeader, cmpModule **aModule)
 }
 
 /*
- * ProtocolContext¿¡ Free ´ë±âÁßÀÎ Read BlockµéÀ» ¹ÝÈ¯ÇÑ´Ù.
+ * ProtocolContextì— Free ëŒ€ê¸°ì¤‘ì¸ Read Blockë“¤ì„ ë°˜í™˜í•œë‹¤.
  */
 static IDE_RC cmiFreeReadBlock(cmiProtocolContext *aProtocolContext)
 {
@@ -212,12 +212,12 @@ static IDE_RC cmiFreeReadBlock(cmiProtocolContext *aProtocolContext)
                   ContFreeReadBlock);
 
     /*
-     * Protocol Context·ÎºÎÅÍ Link È¹µæ
+     * Protocol Contextë¡œë¶€í„° Link íšë“
      */
     sLink = aProtocolContext->mLink;
 
     /*
-     * Read Block ListÀÇ Blockµé ¹ÝÈ¯
+     * Read Block Listì˜ Blockë“¤ ë°˜í™˜
      */
     IDU_LIST_ITERATE_SAFE(&aProtocolContext->mReadBlockList, sIterator, sNodeNext)
     {
@@ -237,7 +237,7 @@ static IDE_RC cmiFreeReadBlock(cmiProtocolContext *aProtocolContext)
 }
 
 /*
- * BlockÀ» ÀÐ¾î¿Â´Ù.
+ * Blockì„ ì½ì–´ì˜¨ë‹¤.
  */
 static IDE_RC cmiReadBlock(cmiProtocolContext *aProtocolContext, PDL_Time_Value *aTimeout)
 {
@@ -246,7 +246,7 @@ static IDE_RC cmiReadBlock(cmiProtocolContext *aProtocolContext, PDL_Time_Value 
     IDE_TEST_RAISE(aProtocolContext->mIsDisconnect == ID_TRUE, Disconnected);
 
     /*
-     * Link·ÎºÎÅÍ BlockÀ» ÀÐ¾î¿È
+     * Linkë¡œë¶€í„° Blockì„ ì½ì–´ì˜´
      */
     IDE_TEST(aProtocolContext->mLink->mPeerOp->mRecv(aProtocolContext->mLink,
                                                      &aProtocolContext->mReadBlock,
@@ -258,14 +258,14 @@ static IDE_RC cmiReadBlock(cmiProtocolContext *aProtocolContext, PDL_Time_Value 
     aProtocolContext->mReceiveDataCount++;
     
     /*
-     * Sequence °Ë»ç
+     * Sequence ê²€ì‚¬
      */
     sCmSeqNo = CMP_HEADER_SEQ_NO(&aProtocolContext->mReadHeader);
 
     IDE_TEST_RAISE(sCmSeqNo != aProtocolContext->mCmSeqNo, InvalidProtocolSeqNo);
 
     /*
-     * Next Sequence ¼¼ÆÃ
+     * Next Sequence ì„¸íŒ…
      */
     if (CMP_HEADER_PROTO_END_IS_SET(&aProtocolContext->mReadHeader) == ID_TRUE)
     {
@@ -277,13 +277,13 @@ static IDE_RC cmiReadBlock(cmiProtocolContext *aProtocolContext, PDL_Time_Value 
     }
 
     /*
-     * Module È¹µæ
+     * Module íšë“
      */
     IDE_TEST(cmiGetModule(&aProtocolContext->mReadHeader,
                           &aProtocolContext->mModule) != IDE_SUCCESS);
 
     /*
-     * ReadHeader·ÎºÎÅÍ WriteHeader¿¡ ÇÊ¿äÇÑ Á¤º¸¸¦ È¹µæ
+     * ReadHeaderë¡œë¶€í„° WriteHeaderì— í•„ìš”í•œ ì •ë³´ë¥¼ íšë“
      */
     aProtocolContext->mWriteHeader.mA5.mModuleID        = aProtocolContext->mReadHeader.mA5.mModuleID;
     aProtocolContext->mWriteHeader.mA5.mModuleVersion   = aProtocolContext->mReadHeader.mA5.mModuleVersion;
@@ -306,7 +306,7 @@ static IDE_RC cmiReadBlock(cmiProtocolContext *aProtocolContext, PDL_Time_Value 
 }
 
 /*
- * BlockÀ» Àü¼ÛÇÑ´Ù.
+ * Blockì„ ì „ì†¡í•œë‹¤.
  */
 static IDE_RC cmiWriteBlock(cmiProtocolContext *aProtocolContext, idBool aIsEnd, PDL_Time_Value *aTimeout = NULL)
 {
@@ -323,7 +323,7 @@ static IDE_RC cmiWriteBlock(cmiProtocolContext *aProtocolContext, idBool aIsEnd,
     cmnDispatcherImpl   sImpl;
 
     /*
-     * ÇÁ·ÎÅäÄÝ ³¡ÀÌ¶ó¸é Sequence Á¾·á ¼¼ÆÃ
+     * í”„ë¡œí† ì½œ ëì´ë¼ë©´ Sequence ì¢…ë£Œ ì„¸íŒ…
      */
     if (aIsEnd == ID_TRUE)
     {
@@ -336,7 +336,7 @@ static IDE_RC cmiWriteBlock(cmiProtocolContext *aProtocolContext, idBool aIsEnd,
                 aProtocolContext->mIsAddReadBlock = ID_TRUE;
 
                 /*
-                 * ÇöÀç BlockÀ» Free ´ë±â¸¦ À§ÇÑ Read Block List¿¡ Ãß°¡
+                 * í˜„ìž¬ Blockì„ Free ëŒ€ê¸°ë¥¼ ìœ„í•œ Read Block Listì— ì¶”ê°€
                  */
                 IDU_LIST_ADD_LAST(&aProtocolContext->mReadBlockList,
                                   &aProtocolContext->mReadBlock->mListNode);
@@ -348,12 +348,12 @@ static IDE_RC cmiWriteBlock(cmiProtocolContext *aProtocolContext, idBool aIsEnd,
     }
 
     /*
-     * Protocol Header ±â·Ï
+     * Protocol Header ê¸°ë¡
      */
     IDE_TEST(cmpHeaderWrite(sHeader, sBlock) != IDE_SUCCESS);
 
     /*
-     * Pending Write BlockµéÀ» Àü¼Û
+     * Pending Write Blockë“¤ì„ ì „ì†¡
      */
     IDU_LIST_ITERATE_SAFE(&aProtocolContext->mWriteBlockList, sIterator, sNodeNext)
     {
@@ -361,7 +361,7 @@ static IDE_RC cmiWriteBlock(cmiProtocolContext *aProtocolContext, idBool aIsEnd,
 
         sSendSuccess = ID_TRUE;
 
-        // BUG-19465 : CM_BufferÀÇ pending list¸¦ Á¦ÇÑ
+        // BUG-19465 : CM_Bufferì˜ pending listë¥¼ ì œí•œ
         while (sLink->mPeerOp->mSend(sLink, sPendingBlock) != IDE_SUCCESS)
         {
             sSendSuccess = ID_FALSE;
@@ -420,7 +420,7 @@ static IDE_RC cmiWriteBlock(cmiProtocolContext *aProtocolContext, idBool aIsEnd,
     }
 
     /*
-     * Pending Write BlockÀÌ ¾øÀ¸¸é ÇöÀç Block Àü¼Û
+     * Pending Write Blockì´ ì—†ìœ¼ë©´ í˜„ìž¬ Block ì „ì†¡
      */
     if (sIterator == &aProtocolContext->mWriteBlockList)
     {
@@ -443,7 +443,7 @@ static IDE_RC cmiWriteBlock(cmiProtocolContext *aProtocolContext, idBool aIsEnd,
     }
 
     /*
-     * Protocol ContextÀÇ Write Block »èÁ¦
+     * Protocol Contextì˜ Write Block ì‚­ì œ
      */
     sBlock                        = NULL;
     aProtocolContext->mWriteBlock = NULL;
@@ -456,7 +456,7 @@ static IDE_RC cmiWriteBlock(cmiProtocolContext *aProtocolContext, idBool aIsEnd,
         aProtocolContext->mWriteHeader.mA5.mCmSeqNo = 0;
 
         /*
-         * ÇÁ·ÎÅäÄÝ ³¡ÀÌ¶ó¸é ¸ðµç BlockÀÌ Àü¼ÛµÇ¾î¾ß ÇÔ
+         * í”„ë¡œí† ì½œ ëì´ë¼ë©´ ëª¨ë“  Blockì´ ì „ì†¡ë˜ì–´ì•¼ í•¨
          */
         IDU_LIST_ITERATE_SAFE(&aProtocolContext->mWriteBlockList, sIterator, sNodeNext)
         {
@@ -508,8 +508,8 @@ static IDE_RC cmiWriteBlock(cmiProtocolContext *aProtocolContext, idBool aIsEnd,
     return IDE_SUCCESS;
 
     // bug-27250 IPC linklist can be crushed.
-    // ¸ðµç ¿¡·¯¿¡ ´ëÇÏ¿© pending blockÀÌ ÀÖÀ¸¸é ÇØÁ¦ÇÏµµ·Ï º¯°æ.
-    // sendfailÀº empty·Î ³²°ÜµÒ.
+    // ëª¨ë“  ì—ëŸ¬ì— ëŒ€í•˜ì—¬ pending blockì´ ìžˆìœ¼ë©´ í•´ì œí•˜ë„ë¡ ë³€ê²½.
+    // sendfailì€ emptyë¡œ ë‚¨ê²¨ë‘ .
     IDE_EXCEPTION(SendFail);
     {
     }
@@ -529,12 +529,12 @@ static IDE_RC cmiWriteBlock(cmiProtocolContext *aProtocolContext, idBool aIsEnd,
         {
             if ( sBlock != NULL )
             {
-                /*timeout errorÀÎ °æ¿ì¿¡ ³ªÁß¿¡ º¸³¾ ¼ö ÀÖµµ·Ï pending block¿¡ »ðÀÔÇÑ´Ù.*/
+                /*timeout errorì¸ ê²½ìš°ì— ë‚˜ì¤‘ì— ë³´ë‚¼ ìˆ˜ ìžˆë„ë¡ pending blockì— ì‚½ìž…í•œë‹¤.*/
                 IDU_LIST_ADD_LAST( &aProtocolContext->mWriteBlockList, &sBlock->mListNode );
                 aProtocolContext->mListLength++;
 
                 /*
-                 * Protocol ContextÀÇ Write Block »èÁ¦
+                 * Protocol Contextì˜ Write Block ì‚­ì œ
                  */
                 sBlock                        = NULL;
                 aProtocolContext->mWriteBlock = NULL;
@@ -576,7 +576,7 @@ static IDE_RC cmiWriteBlock(cmiProtocolContext *aProtocolContext, idBool aIsEnd,
 
 
 /*
- * ProtocolÀ» ÀÐ¾î¿Â´Ù.
+ * Protocolì„ ì½ì–´ì˜¨ë‹¤.
  */
 static IDE_RC cmiReadProtocolInternal(cmiProtocolContext *aProtocolContext,
                                       cmiProtocol        *aProtocol,
@@ -586,22 +586,22 @@ static IDE_RC cmiReadProtocolInternal(cmiProtocolContext *aProtocolContext,
     UChar              sOpID;
 
     /*
-     * Operation ID ÀÐÀ½
+     * Operation ID ì½ìŒ
      */
     CMB_BLOCK_READ_BYTE1(aProtocolContext->mReadBlock, &sOpID);
 
     /*
-     * ÇÁ·ÎÅäÄÝÀ» Ã³À½ºÎÅÍ ÀÐ¾î¾ß ÇÏ´Â »óÈ²
+     * í”„ë¡œí† ì½œì„ ì²˜ìŒë¶€í„° ì½ì–´ì•¼ í•˜ëŠ” ìƒí™©
      */
     if (CMP_MARSHAL_STATE_IS_COMPLETE(aProtocolContext->mMarshalState) == ID_TRUE)
     {
         /*
-         * Operation ID °Ë»ç
+         * Operation ID ê²€ì‚¬
          */
         IDE_TEST_RAISE(sOpID >= aProtocolContext->mModule->mOpMaxA5, InvalidOpError);
 
         /*
-         * Protocol ÃÊ±âÈ­
+         * Protocol ì´ˆê¸°í™”
          */
         //fix BUG-17947.
         IDE_TEST(cmiInitializeProtocol(aProtocol,
@@ -611,7 +611,7 @@ static IDE_RC cmiReadProtocolInternal(cmiProtocolContext *aProtocolContext,
     else
     {
         /*
-         * ÇÁ·ÎÅäÄÝÀÌ ¿¬¼ÓµÇ´Â °æ¿ì ÇÁ·ÎÅäÄÝ OpID°¡ °°ÀºÁö °Ë»ç
+         * í”„ë¡œí† ì½œì´ ì—°ì†ë˜ëŠ” ê²½ìš° í”„ë¡œí† ì½œ OpIDê°€ ê°™ì€ì§€ ê²€ì‚¬
          */
         IDE_TEST_RAISE(sOpID != aProtocol->mOpID, InvalidProtocolSeqNo);
     }
@@ -629,12 +629,12 @@ static IDE_RC cmiReadProtocolInternal(cmiProtocolContext *aProtocolContext,
                               &aProtocolContext->mMarshalState) != IDE_SUCCESS);
 
     /*
-     * Protocol MarshalÀÌ ¿Ï·áµÇÁö ¾Ê¾ÒÀ¸¸é ´ÙÀ½ BlockÀ» °è¼Ó ÀÐ¾î¿Â ÈÄ ÁøÇà
+     * Protocol Marshalì´ ì™„ë£Œë˜ì§€ ì•Šì•˜ìœ¼ë©´ ë‹¤ìŒ Blockì„ ê³„ì† ì½ì–´ì˜¨ í›„ ì§„í–‰
      */
     while (CMP_MARSHAL_STATE_IS_COMPLETE(aProtocolContext->mMarshalState) != ID_TRUE)
     {
         /*
-         * ÇöÀç BlockÀ» Free ´ë±â¸¦ À§ÇÑ Read Block List¿¡ Ãß°¡
+         * í˜„ìž¬ Blockì„ Free ëŒ€ê¸°ë¥¼ ìœ„í•œ Read Block Listì— ì¶”ê°€
          */
         IDU_LIST_ADD_LAST(&aProtocolContext->mReadBlockList,
                           &aProtocolContext->mReadBlock->mListNode);
@@ -642,12 +642,12 @@ static IDE_RC cmiReadProtocolInternal(cmiProtocolContext *aProtocolContext,
         aProtocolContext->mReadBlock = NULL;
 
         /*
-         * ´ÙÀ½ BlockÀ» ÀÐ¾î¿È
+         * ë‹¤ìŒ Blockì„ ì½ì–´ì˜´
          */
         IDE_TEST(cmiReadBlock(aProtocolContext, aTimeout) != IDE_SUCCESS);
 
         /*
-         * Block¿¡¼­ Operation ID ÀÐÀ½
+         * Blockì—ì„œ Operation ID ì½ìŒ
          */
         if (CMI_CHECK_BLOCK_FOR_READ(aProtocolContext->mReadBlock))
         {
@@ -687,8 +687,8 @@ static IDE_RC cmiDispatcherWaitLink( cmiLink             * aLink,
     PDL_Time_Value      sWaitTime;
     PDL_Time_Value    * sWaitTimePtr = NULL;
 
-    // º¯°æÀü: all timeout NULL, º¯°æÈÄ: 1 msec for IPC
-    // IPCÀÇ °æ¿ì ¹«ÇÑ´ë±âÇÏ¸é ¾ÈµÈ´Ù.
+    // ë³€ê²½ì „: all timeout NULL, ë³€ê²½í›„: 1 msec for IPC
+    // IPCì˜ ê²½ìš° ë¬´í•œëŒ€ê¸°í•˜ë©´ ì•ˆëœë‹¤.
     sImpl = cmnDispatcherImplForLinkImpl( aLink->mImpl );
     if ( aTimeout != NULL )
     {
@@ -737,7 +737,7 @@ IDE_RC cmiInitialize( UInt   aCmMaxPendingList )
     {         
         
         /*
-        * Shared Pool »ý¼º ¹× µî·Ï
+        * Shared Pool ìƒì„± ë° ë“±ë¡
         */
         //fix BUG-17864.
         IDE_TEST(cmbPoolAlloc(&sPoolLocal, CMB_POOL_IMPL_LOCAL,CMB_BLOCK_DEFAULT_SIZE,0) != IDE_SUCCESS);
@@ -751,39 +751,39 @@ IDE_RC cmiInitialize( UInt   aCmMaxPendingList )
         IDE_TEST(cmbPoolSetSharedPool(sPoolIPC, CMB_POOL_IMPL_IPC) != IDE_SUCCESS);
     
         /*
-        * IPC Mutex ÃÊ±âÈ­
+        * IPC Mutex ì´ˆê¸°í™”
         */
         IDE_TEST(cmbShmInitializeStatic() != IDE_SUCCESS);
     #endif
 
     #if !defined(CM_DISABLE_IPCDA)
         /*
-         * IPC Mutex ÃÊ±âÈ­
+         * IPC Mutex ì´ˆê¸°í™”
          */
         IDE_TEST(cmbShmIPCDAInitializeStatic() != IDE_SUCCESS);
     #endif
 
         /*
-        * cmmSession ÃÊ±âÈ­
+        * cmmSession ì´ˆê¸°í™”
         */
         IDE_TEST(cmmSessionInitializeStatic() != IDE_SUCCESS);
     
         /*
-        * cmtVariable Piece Pool ÃÊ±âÈ­
+        * cmtVariable Piece Pool ì´ˆê¸°í™”
         */
         IDE_TEST(cmtVariableInitializeStatic() != IDE_SUCCESS);
     
         /*
-        * cmpModule ÃÊ±âÈ­
+        * cmpModule ì´ˆê¸°í™”
         */
         IDE_TEST(cmpModuleInitializeStatic() != IDE_SUCCESS);
     
         /*
-        * DB Protocol Åë°èÁ¤º¸ ÃÊ±âÈ­
+        * DB Protocol í†µê³„ì •ë³´ ì´ˆê¸°í™”
         */
         idlOS::memset( gDBProtocolStat, 0x00, ID_SIZEOF(ULong) * CMP_OP_DB_MAX );
     
-        // BUG-19465 : CM_BufferÀÇ pending list¸¦ Á¦ÇÑ
+        // BUG-19465 : CM_Bufferì˜ pending listë¥¼ ì œí•œ
         gMaxPendingList = aCmMaxPendingList;
 
         /* BUG-38951 Support to choice a type of CM dispatcher on run-time */
@@ -821,17 +821,17 @@ IDE_RC cmiFinalize()
     if (gCMInitCount == 0)
     {
         /*
-        * cmpModule Á¤¸®
+        * cmpModule ì •ë¦¬
         */
         IDE_TEST(cmpModuleFinalizeStatic() != IDE_SUCCESS);
     
         /*
-        * cmtVariable Piece Pool ÇØÁ¦
+        * cmtVariable Piece Pool í•´ì œ
         */
         IDE_TEST(cmtVariableFinalizeStatic() != IDE_SUCCESS);
     
         /*
-        * cmmSession Á¤¸®
+        * cmmSession ì •ë¦¬
         */
         IDE_TEST(cmmSessionFinalizeStatic() != IDE_SUCCESS);
     
@@ -839,22 +839,22 @@ IDE_RC cmiFinalize()
     #if !defined(CM_DISABLE_IPC)
         cmbPool *sPoolIPC;
     
-        /* IPC Mutex ÇØÁ¦ */
+        /* IPC Mutex í•´ì œ */
         IDE_TEST(cmbShmFinalizeStatic() != IDE_SUCCESS);
     
-        /* Shared Pool ÇØÁ¦ */
+        /* Shared Pool í•´ì œ */
         IDE_TEST(cmbPoolGetSharedPool(&sPoolIPC, CMB_POOL_IMPL_IPC) != IDE_SUCCESS);
         IDE_TEST(cmbPoolFree(sPoolIPC) != IDE_SUCCESS);
 
-        /* Shared Memory ÇØÁ¦ */
+        /* Shared Memory í•´ì œ */
         IDE_TEST(cmbShmDestroy() != IDE_SUCCESS);
     #endif
 
     #if !defined(CM_DISABLE_IPCDA)
-        /* IPCDA Mutex ÇØÁ¦ */
+        /* IPCDA Mutex í•´ì œ */
         IDE_TEST(cmbShmIPCDAFinalizeStatic() != IDE_SUCCESS);
 
-        /* Shared Memory ÇØÁ¦ */
+        /* Shared Memory í•´ì œ */
          IDE_TEST(cmbShmIPCDADestroy() != IDE_SUCCESS);
     #endif
 
@@ -879,18 +879,18 @@ IDE_RC cmiFinalize()
 IDE_RC cmiSetCallback(UChar aModuleID, UChar aOpID, cmiCallbackFunction aCallbackFunction)
 {
     /*
-     * Module ID °Ë»ç
+     * Module ID ê²€ì‚¬
      */
     IDE_TEST_RAISE((aModuleID == CMP_MODULE_BASE) ||
                    (aModuleID >= CMP_MODULE_MAX), InvalidModule);
 
     /*
-     * Operation ID °Ë»ç
+     * Operation ID ê²€ì‚¬
      */
     IDE_TEST_RAISE(aOpID >= gCmpModule[aModuleID]->mOpMax, InvalidOperation);
 
     /*
-     * Callback Function ¼¼ÆÃ
+     * Callback Function ì„¸íŒ…
      */
     if (aCallbackFunction == NULL)
     {
@@ -929,7 +929,7 @@ idBool cmiIsSupportedDispatcherImpl(cmiDispatcherImpl aDispatcherImpl)
 IDE_RC cmiAllocLink(cmiLink **aLink, cmiLinkType aType, cmiLinkImpl aImpl)
 {
     /*
-     * Link ÇÒ´ç
+     * Link í• ë‹¹
      */
     IDE_TEST(cmnLinkAlloc(aLink, aType, aImpl) != IDE_SUCCESS);
 
@@ -943,7 +943,7 @@ IDE_RC cmiAllocLink(cmiLink **aLink, cmiLinkType aType, cmiLinkImpl aImpl)
 IDE_RC cmiFreeLink(cmiLink *aLink)
 {
     /*
-     * Link ÇØÁ¦
+     * Link í•´ì œ
      */
     IDE_TEST(cmnLinkFree(aLink) != IDE_SUCCESS);
 
@@ -983,7 +983,7 @@ IDE_RC cmiListenLink(cmiLink *aLink, cmiListenArg *aListenArg)
     cmnLinkListen *sLink = (cmnLinkListen *)aLink;
 
     /*
-     * Listen Type °Ë»ç
+     * Listen Type ê²€ì‚¬
      */
     IDE_ASSERT(aLink->mType == CMN_LINK_TYPE_LISTEN);
 
@@ -1005,7 +1005,7 @@ IDE_RC cmiAcceptLink(cmiLink *aLinkListen, cmiLink **aLinkPeer)
     cmnLinkPeer   *sLinkPeer   = NULL;
 
     /*
-     * Listen Type °Ë»ç
+     * Listen Type ê²€ì‚¬
      */
     IDE_ASSERT(aLinkListen->mType == CMN_LINK_TYPE_LISTEN);
 
@@ -1015,7 +1015,7 @@ IDE_RC cmiAcceptLink(cmiLink *aLinkListen, cmiLink **aLinkPeer)
     IDE_TEST(sLinkListen->mListenOp->mAccept(sLinkListen, &sLinkPeer) != IDE_SUCCESS);
 
     /*
-     * acceptµÈ Link ¹ÝÈ¯
+     * acceptëœ Link ë°˜í™˜
      */
     *aLinkPeer = (cmiLink *)sLinkPeer;
 
@@ -1031,7 +1031,7 @@ IDE_RC cmiAllocChannel(cmiLink *aLink, SInt *aChannelID)
     cmnLinkPeer *sLink = (cmnLinkPeer *)aLink;
 
     /*
-     * Peer Type °Ë»ç
+     * Peer Type ê²€ì‚¬
      */
     IDE_ASSERT(aLink->mType == CMN_LINK_TYPE_PEER_SERVER);
 
@@ -1052,7 +1052,7 @@ IDE_RC cmiHandshake(cmiLink *aLink)
     cmnLinkPeer *sLink = (cmnLinkPeer *)aLink;
 
     /*
-     * Peer Type °Ë»ç
+     * Peer Type ê²€ì‚¬
      */
     IDE_ASSERT(aLink->mType == CMN_LINK_TYPE_PEER_SERVER ||
                aLink->mType == CMN_LINK_TYPE_PEER_CLIENT);
@@ -1074,7 +1074,7 @@ IDE_RC cmiSetLinkBlockingMode(cmiLink *aLink, idBool aBlockingMode)
     cmnLinkPeer *sLink = (cmnLinkPeer *)aLink;
 
     /*
-     * Peer Type °Ë»ç
+     * Peer Type ê²€ì‚¬
      */
     IDE_ASSERT(aLink->mType == CMN_LINK_TYPE_PEER_SERVER ||
                aLink->mType == CMN_LINK_TYPE_PEER_CLIENT);
@@ -1122,7 +1122,7 @@ IDE_RC cmiGetLinkInfo(cmiLink *aLink, SChar *aBuf, UInt aBufLen, cmiLinkInfoKey 
     cmnLinkPeer *sLink = (cmnLinkPeer *)aLink;
 
     /*
-     * Peer Type °Ë»ç
+     * Peer Type ê²€ì‚¬
      */
     IDE_ASSERT(aLink->mType == CMN_LINK_TYPE_PEER_SERVER ||
                aLink->mType == CMN_LINK_TYPE_PEER_CLIENT);
@@ -1139,7 +1139,7 @@ IDE_RC cmiGetLinkSndBufSize(cmiLink *aLink, SInt *aSndBufSize)
     cmnLinkPeer *sLink = (cmnLinkPeer *)aLink;
 
     /*
-     * Peer Type °Ë»ç
+     * Peer Type ê²€ì‚¬
      */
     IDE_ASSERT(aLink->mType == CMN_LINK_TYPE_PEER_SERVER ||
                aLink->mType == CMN_LINK_TYPE_PEER_CLIENT);
@@ -1165,7 +1165,7 @@ IDE_RC cmiSetLinkSndBufSize(cmiLink *aLink, SInt aSndBufSize)
     cmnLinkPeer *sLink = (cmnLinkPeer *)aLink;
 
     /*
-     * Peer Type °Ë»ç
+     * Peer Type ê²€ì‚¬
      */
     IDE_ASSERT(aLink->mType == CMN_LINK_TYPE_PEER_SERVER ||
                aLink->mType == CMN_LINK_TYPE_PEER_CLIENT);
@@ -1191,7 +1191,7 @@ IDE_RC cmiGetLinkRcvBufSize(cmiLink *aLink, SInt *aRcvBufSize)
     cmnLinkPeer *sLink = (cmnLinkPeer *)aLink;
 
     /*
-     * Peer Type °Ë»ç
+     * Peer Type ê²€ì‚¬
      */
     IDE_ASSERT(aLink->mType == CMN_LINK_TYPE_PEER_SERVER ||
                aLink->mType == CMN_LINK_TYPE_PEER_CLIENT);
@@ -1217,7 +1217,7 @@ IDE_RC cmiSetLinkRcvBufSize(cmiLink *aLink, SInt aRcvBufSize)
     cmnLinkPeer *sLink = (cmnLinkPeer *)aLink;
 
     /*
-     * Peer Type °Ë»ç
+     * Peer Type ê²€ì‚¬
      */
     IDE_ASSERT(aLink->mType == CMN_LINK_TYPE_PEER_SERVER ||
                aLink->mType == CMN_LINK_TYPE_PEER_CLIENT);
@@ -1243,13 +1243,13 @@ IDE_RC cmiCheckLink(cmiLink *aLink, idBool *aIsClosed)
     cmnLinkPeer *sLink = (cmnLinkPeer *)aLink;
 
     /*
-     * Peer Type °Ë»ç
+     * Peer Type ê²€ì‚¬
      */
     IDE_ASSERT(aLink->mType == CMN_LINK_TYPE_PEER_SERVER ||
                aLink->mType == CMN_LINK_TYPE_PEER_CLIENT);
 
     /*
-     * Connection Closed °Ë»ç
+     * Connection Closed ê²€ì‚¬
      */
     return sLink->mPeerOp->mCheck(sLink, aIsClosed);
 }
@@ -1329,13 +1329,13 @@ idBool cmiLinkHasPendingRequest(cmiLink *aLink)
     cmnLinkPeer *sLink = (cmnLinkPeer *)aLink;
 
     /*
-     * Peer Type °Ë»ç
+     * Peer Type ê²€ì‚¬
      */
     IDE_ASSERT(aLink->mType == CMN_LINK_TYPE_PEER_SERVER ||
                aLink->mType == CMN_LINK_TYPE_PEER_CLIENT);
 
     /*
-     * Pending Request Á¸Àç ¿©ºÎ ¸®ÅÏ
+     * Pending Request ì¡´ìž¬ ì—¬ë¶€ ë¦¬í„´
      */
     return sLink->mPeerOp->mHasPendingRequest(sLink);
 }
@@ -1380,7 +1380,7 @@ IDE_RC cmiShutdownLink(cmiLink *aLink, cmiDirection aDirection)
                aLink->mType == CMN_LINK_TYPE_PEER_CLIENT);
 
     // bug-28277 ipc: server stop failed when idle clis exist
-    // server stop½Ã¿¡¸¸ shutdown_mode_force ³Ñ±âµµ·Ï ÇÔ.
+    // server stopì‹œì—ë§Œ shutdown_mode_force ë„˜ê¸°ë„ë¡ í•¨.
     IDE_TEST(sLink->mPeerOp->mShutdown(sLink, aDirection,
                                        CMN_SHUTDOWN_MODE_NORMAL)
              != IDE_SUCCESS);
@@ -1393,8 +1393,8 @@ IDE_RC cmiShutdownLink(cmiLink *aLink, cmiDirection aDirection)
 }
 
 // bug-28227: ipc: server stop failed when idle cli exists
-// server stop½Ã mmtSessionManager::shutdown() ¿¡¼­ ´ÙÀ½ÇÔ¼ö È£Ãâ.
-// IPC¿¡ ´ëÇØ¼­¸¸ shutdown_mode_force·Î ¼³Á¤ÇÏ¿© shutdown È£Ãâ.
+// server stopì‹œ mmtSessionManager::shutdown() ì—ì„œ ë‹¤ìŒí•¨ìˆ˜ í˜¸ì¶œ.
+// IPCì— ëŒ€í•´ì„œë§Œ shutdown_mode_forceë¡œ ì„¤ì •í•˜ì—¬ shutdown í˜¸ì¶œ.
 IDE_RC cmiShutdownLinkForce(cmiLink *aLink)
 {
     cmnLinkPeer *sLink = (cmnLinkPeer *)aLink;
@@ -1422,7 +1422,7 @@ cmiDispatcherImpl cmiDispatcherImplForLink(cmiLink *aLink)
 IDE_RC cmiAllocDispatcher(cmiDispatcher **aDispatcher, cmiDispatcherImpl aImpl, UInt aMaxLink)
 {
     /*
-     * Dispatcher ÇÒ´ç
+     * Dispatcher í• ë‹¹
      */
     IDE_TEST(cmnDispatcherAlloc(aDispatcher, aImpl, aMaxLink) != IDE_SUCCESS);
 
@@ -1436,7 +1436,7 @@ IDE_RC cmiAllocDispatcher(cmiDispatcher **aDispatcher, cmiDispatcherImpl aImpl, 
 IDE_RC cmiFreeDispatcher(cmiDispatcher *aDispatcher)
 {
     /*
-     * Dispatcher ÇØÁ¦
+     * Dispatcher í•´ì œ
      */
     IDE_TEST(cmnDispatcherFree(aDispatcher) != IDE_SUCCESS);
 
@@ -1450,12 +1450,12 @@ IDE_RC cmiFreeDispatcher(cmiDispatcher *aDispatcher)
 IDE_RC cmiAddLinkToDispatcher(cmiDispatcher *aDispatcher, cmiLink *aLink)
 {
     /*
-     * Dispatcher¿¡¼­ »ç¿ëÇÒ ¼ö ÀÖ´Â Link ImplÀÎÁö °Ë»ç
+     * Dispatcherì—ì„œ ì‚¬ìš©í•  ìˆ˜ ìžˆëŠ” Link Implì¸ì§€ ê²€ì‚¬
      */
     IDE_TEST_RAISE(cmiDispatcherImplForLink(aLink) != aDispatcher->mImpl, InvalidLinkImpl);
 
     /*
-     * Dispatcher¿¡ Link Ãß°¡
+     * Dispatcherì— Link ì¶”ê°€
      */
     IDE_TEST(aDispatcher->mOp->mAddLink(aDispatcher, aLink) != IDE_SUCCESS);
 
@@ -1473,7 +1473,7 @@ IDE_RC cmiAddLinkToDispatcher(cmiDispatcher *aDispatcher, cmiLink *aLink)
 IDE_RC cmiRemoveLinkFromDispatcher(cmiDispatcher *aDispatcher, cmiLink *aLink)
 {
     /*
-     * Dispatcher¿¡ Link »èÁ¦
+     * Dispatcherì— Link ì‚­ì œ
      */
     IDE_TEST(aDispatcher->mOp->mRemoveLink(aDispatcher, aLink) != IDE_SUCCESS);
 
@@ -1487,7 +1487,7 @@ IDE_RC cmiRemoveLinkFromDispatcher(cmiDispatcher *aDispatcher, cmiLink *aLink)
 IDE_RC cmiRemoveAllLinksFromDispatcher(cmiDispatcher *aDispatcher)
 {
     /*
-     * Dispatcher¿¡¼­ ¸ðµç Link »èÁ¦
+     * Dispatcherì—ì„œ ëª¨ë“  Link ì‚­ì œ
      */
     IDE_TEST(aDispatcher->mOp->mRemoveAllLinks(aDispatcher) != IDE_SUCCESS);
 
@@ -1524,19 +1524,19 @@ IDE_RC cmiAddSession(cmiSession         *aSession,
                      cmiProtocolContext */* aProtocolContext */)
 {
     /*
-     * ÆÄ¶ó¹ÌÅÍ ¹üÀ§ °Ë»ç
+     * íŒŒë¼ë¯¸í„° ë²”ìœ„ ê²€ì‚¬
      */
     IDE_ASSERT(aModuleID > CMP_MODULE_BASE);
 
     IDE_TEST_RAISE(aModuleID >= CMP_MODULE_MAX, UnknownModule);
 
     /*
-     * Session Ãß°¡
+     * Session ì¶”ê°€
      */
     IDE_TEST(cmmSessionAdd(aSession) != IDE_SUCCESS);
 
     /*
-     * Session ÃÊ±âÈ­
+     * Session ì´ˆê¸°í™”
      */
     aSession->mOwner       = aOwner;
     aSession->mBaseVersion = CMP_VER_BASE_NONE;
@@ -1560,12 +1560,12 @@ IDE_RC cmiAddSession(cmiSession         *aSession,
 IDE_RC cmiRemoveSession(cmiSession *aSession)
 {
     /*
-     * SessionÀÇ Session ID°¡ 0ÀÌ¸é µî·ÏµÇÁö ¾ÊÀº Session
+     * Sessionì˜ Session IDê°€ 0ì´ë©´ ë“±ë¡ë˜ì§€ ì•Šì€ Session
      */
     IDE_TEST_RAISE(aSession->mSessionID == 0, SessionNotAdded);
 
     /*
-     * Session »èÁ¦
+     * Session ì‚­ì œ
      */
     IDE_TEST(cmmSessionRemove(aSession) != IDE_SUCCESS);
 
@@ -1585,12 +1585,12 @@ IDE_RC cmiSetLinkForSession(cmiSession *aSession, cmiLink *aLink)
     if (aLink != NULL)
     {
         /*
-         * Session¿¡ Link°¡ ÀÌ¹Ì µî·ÏµÈ »óÅÂ¿¡¼­ »õ·Î¿î Link¸¦ ¼¼ÆÃÇÒ ¼ö ¾øÀ½
+         * Sessionì— Linkê°€ ì´ë¯¸ ë“±ë¡ëœ ìƒíƒœì—ì„œ ìƒˆë¡œìš´ Linkë¥¼ ì„¸íŒ…í•  ìˆ˜ ì—†ìŒ
          */
         IDE_TEST_RAISE(aSession->mLink != NULL, LinkAlreadyRegistered);
 
         /*
-         * Link°¡ Peer TypeÀÎÁö °Ë»ç
+         * Linkê°€ Peer Typeì¸ì§€ ê²€ì‚¬
          */
         //BUG-28119 for RP PBT
         IDE_TEST_RAISE((aLink->mType != CMN_LINK_TYPE_PEER_CLIENT) && 
@@ -1598,7 +1598,7 @@ IDE_RC cmiSetLinkForSession(cmiSession *aSession, cmiLink *aLink)
     }
 
     /*
-     * Session¿¡ Link ¼¼ÆÃ
+     * Sessionì— Link ì„¸íŒ…
      */
     aSession->mLink = (cmnLinkPeer *)aLink;
 
@@ -1620,7 +1620,7 @@ IDE_RC cmiSetLinkForSession(cmiSession *aSession, cmiLink *aLink)
 IDE_RC cmiGetLinkForSession(cmiSession *aSession, cmiLink **aLink)
 {
     /*
-     * SessionÀÇ Link ¹ÝÈ¯
+     * Sessionì˜ Link ë°˜í™˜
      */
     *aLink = (cmiLink *)aSession->mLink;
 
@@ -1630,7 +1630,7 @@ IDE_RC cmiGetLinkForSession(cmiSession *aSession, cmiLink **aLink)
 IDE_RC cmiSetOwnerForSession(cmiSession *aSession, void *aOwner)
 {
     /*
-     * Session¿¡ Owner ¼¼ÆÃ
+     * Sessionì— Owner ì„¸íŒ…
      */
     aSession->mOwner = aOwner;
 
@@ -1640,7 +1640,7 @@ IDE_RC cmiSetOwnerForSession(cmiSession *aSession, void *aOwner)
 IDE_RC cmiGetOwnerForSession(cmiSession *aSession, void **aOwner)
 {
     /*
-     * SessionÀÇ Owner ¹ÝÈ¯
+     * Sessionì˜ Owner ë°˜í™˜
      */
     *aOwner = aSession->mOwner;
 
@@ -1650,7 +1650,7 @@ IDE_RC cmiGetOwnerForSession(cmiSession *aSession, void **aOwner)
 IDE_RC cmiSetOwnerForProtocolContext( cmiProtocolContext *aCtx, void *aOwner )
 {
     /*
-     * ProtocolContext¿¡ Owner ¼¼ÆÃ
+     * ProtocolContextì— Owner ì„¸íŒ…
      */
     aCtx->mOwner = aOwner;
 
@@ -1660,7 +1660,7 @@ IDE_RC cmiSetOwnerForProtocolContext( cmiProtocolContext *aCtx, void *aOwner )
 IDE_RC cmiGetOwnerForProtocolContext( cmiProtocolContext *aCtx, void **aOwner )
 {
     /*
-     * ProtocolContextÀÇ Owner ¹ÝÈ¯
+     * ProtocolContextì˜ Owner ë°˜í™˜
      */
     *aOwner = aCtx->mOwner;
 
@@ -1670,7 +1670,7 @@ IDE_RC cmiGetOwnerForProtocolContext( cmiProtocolContext *aCtx, void **aOwner )
 IDE_RC cmiGetLinkForProtocolContext( cmiProtocolContext *aCtx, cmiLink **aLink )
 {
     /*
-     * ProtocolContextÀÇ Link ¹ÝÈ¯
+     * ProtocolContextì˜ Link ë°˜í™˜
      */
     *aLink = (cmiLink *)(aCtx->mLink);
 
@@ -1679,13 +1679,13 @@ IDE_RC cmiGetLinkForProtocolContext( cmiProtocolContext *aCtx, cmiLink **aLink )
 
 //===========================================================
 // proj_2160 cm_type removal
-// ÇÔ¼ö¸¦ 2°³·Î ³ª´« ÀÌÀ¯:
-// cmiConnect            : DB ÇÁ·ÎÅäÄÝ¿ë
-// cmiConnectWithoutData : RP ÇÁ·ÎÅäÄÝ¿ë (DB_Handshake ÇÏÁö ¾ÊÀ½)
-// RP¿¡¼­´Â DB_Handshake¸¦ Ã³¸®ÇÏ±â°¡ ¾î·Æ°í,
-// (BASE ÇÁ·ÎÅäÄÝÀÌ ¾ø¾îÁö¸é¼­ opcode °ªÀÌ DB ³»¿¡¼­¸¸ À¯È¿ÇØÁü),
-// ¶Ç ¾ÈÇØµµ ¹®Á¦°¡ ¾ø´Ù°í »ý°¢µÇ¾î ÇÏÁö ¾Êµµ·Ï ÇÑ´Ù
-// º°µµ ÇÔ¼ö¸¦ »ç¿ëÇÏ´Â °ÍÀÌ  if-else Ã³¸® º¸´Ù ³´´Ù°í ÇùÀÇÇÏ¿´À½
+// í•¨ìˆ˜ë¥¼ 2ê°œë¡œ ë‚˜ëˆˆ ì´ìœ :
+// cmiConnect            : DB í”„ë¡œí† ì½œìš©
+// cmiConnectWithoutData : RP í”„ë¡œí† ì½œìš© (DB_Handshake í•˜ì§€ ì•ŠìŒ)
+// RPì—ì„œëŠ” DB_Handshakeë¥¼ ì²˜ë¦¬í•˜ê¸°ê°€ ì–´ë µê³ ,
+// (BASE í”„ë¡œí† ì½œì´ ì—†ì–´ì§€ë©´ì„œ opcode ê°’ì´ DB ë‚´ì—ì„œë§Œ ìœ íš¨í•´ì§),
+// ë˜ ì•ˆí•´ë„ ë¬¸ì œê°€ ì—†ë‹¤ê³  ìƒê°ë˜ì–´ í•˜ì§€ ì•Šë„ë¡ í•œë‹¤
+// ë³„ë„ í•¨ìˆ˜ë¥¼ ì‚¬ìš©í•˜ëŠ” ê²ƒì´  if-else ì²˜ë¦¬ ë³´ë‹¤ ë‚«ë‹¤ê³  í˜‘ì˜í•˜ì˜€ìŒ
 //===========================================================
 IDE_RC cmiConnect(cmiProtocolContext *aCtx, cmiConnectArg *aConnectArg, PDL_Time_Value *aTimeout, SInt aOption)
 {
@@ -1708,7 +1708,7 @@ IDE_RC cmiConnect(cmiProtocolContext *aCtx, cmiConnectArg *aConnectArg, PDL_Time
                                             aTimeout,
                                             aOption) != IDE_SUCCESS);
     sConnectFlag = ID_TRUE;
-    // STFÀÎ °æ¿ì ¶§¹®¿¡ ¿©±â¼­ ´Ù½Ã ÃÊ±âÈ­½ÃÄÑÁà¾ßÇÔ
+    // STFì¸ ê²½ìš° ë•Œë¬¸ì— ì—¬ê¸°ì„œ ë‹¤ì‹œ ì´ˆê¸°í™”ì‹œì¼œì¤˜ì•¼í•¨
     aCtx->mWriteHeader.mA7.mCmSeqNo = 0; // send seq
     aCtx->mCmSeqNo = 0;                  // recv seq
 
@@ -1723,8 +1723,8 @@ IDE_RC cmiConnect(cmiProtocolContext *aCtx, cmiConnectArg *aConnectArg, PDL_Time
     IDE_TEST( cmiSend(aCtx, ID_TRUE) != IDE_SUCCESS);
 
     //fix BUG-17942
-    // cmiRecvNext() ´ë½Å¿¡ cmiRecv()¸¦ È£ÃâÇÑ´Ù
-    // DB_HandshakeResult¿¡ ´ëÇÑ callbackÀº Á¸ÀçÇÏÁö ¾ÊÀ½
+    // cmiRecvNext() ëŒ€ì‹ ì— cmiRecv()ë¥¼ í˜¸ì¶œí•œë‹¤
+    // DB_HandshakeResultì— ëŒ€í•œ callbackì€ ì¡´ìž¬í•˜ì§€ ì•ŠìŒ
     IDE_TEST(cmiRecvNext(aCtx, aTimeout) != IDE_SUCCESS);
     CMI_RD1(aCtx, sOpID);
     if (sOpID != CMP_OP_DB_HandshakeResult)
@@ -1744,7 +1744,7 @@ IDE_RC cmiConnect(cmiProtocolContext *aCtx, cmiConnectArg *aConnectArg, PDL_Time
     IDE_EXCEPTION(HandshakeError);
     {
         CMI_SKIP_READ_BLOCK(aCtx, 1); /* skip error op ID */
-        /* BUG-44556  Handshake °úÁ¤Áß¿¡ ¹ß»ýÇÑ ¿¡·¯ÀÇ ÇÁ·ÎÅäÄÝ ÇØ¼®ÀÌ Àß¸øµÇ¾ú½À´Ï´Ù.*/
+        /* BUG-44556  Handshake ê³¼ì •ì¤‘ì— ë°œìƒí•œ ì—ëŸ¬ì˜ í”„ë¡œí† ì½œ í•´ì„ì´ ìž˜ëª»ë˜ì—ˆìŠµë‹ˆë‹¤.*/
         CMI_RD4(aCtx, &sErrIndex);
         CMI_RD4(aCtx, &sErrCode);
         CMI_RD2(aCtx, &sErrMsgLen);
@@ -1767,7 +1767,7 @@ IDE_RC cmiConnect(cmiProtocolContext *aCtx, cmiConnectArg *aConnectArg, PDL_Time
     IDE_EXCEPTION_END;
     {
         IDE_PUSH();
-        // BUG-24170 [CM] cmiConnect ½ÇÆÐ ½Ã, cmiConnect ³»¿¡¼­ close ÇØ¾ß ÇÕ´Ï´Ù
+        // BUG-24170 [CM] cmiConnect ì‹¤íŒ¨ ì‹œ, cmiConnect ë‚´ì—ì„œ close í•´ì•¼ í•©ë‹ˆë‹¤
         if(sConnectFlag == ID_TRUE)
         {
             (void)aCtx->mLink->mPeerOp->mShutdown(aCtx->mLink,
@@ -1782,7 +1782,7 @@ IDE_RC cmiConnect(cmiProtocolContext *aCtx, cmiConnectArg *aConnectArg, PDL_Time
     return IDE_FAILURE;
 }
 
-// RP ÇÁ·ÎÅäÄÝ¿ë (DB_Handshake ÇÏÁö ¾ÊÀ½)
+// RP í”„ë¡œí† ì½œìš© (DB_Handshake í•˜ì§€ ì•ŠìŒ)
 IDE_RC cmiConnectWithoutData( cmiProtocolContext * aCtx,
                               cmiConnectArg * aConnectArg,
                               PDL_Time_Value * aTimeout,
@@ -1806,7 +1806,7 @@ IDE_RC cmiConnectWithoutData( cmiProtocolContext * aCtx,
     IDE_EXCEPTION_END;
 
     IDE_PUSH();
-    // BUG-24170 [CM] cmiConnect ½ÇÆÐ ½Ã, cmiConnect ³»¿¡¼­ close ÇØ¾ß ÇÕ´Ï´Ù
+    // BUG-24170 [CM] cmiConnect ì‹¤íŒ¨ ì‹œ, cmiConnect ë‚´ì—ì„œ close í•´ì•¼ í•©ë‹ˆë‹¤
     if(sConnectFlag == ID_TRUE)
     {
         (void)aCtx->mLink->mPeerOp->mShutdown(aCtx->mLink,
@@ -1824,17 +1824,17 @@ IDE_RC cmiInitializeProtocol(cmiProtocol *aProtocol, cmpModule*  aModule, UChar 
 {
     //fix BUG-17947.
     /*
-     * Operation ID ¼¼ÆÃ
+     * Operation ID ì„¸íŒ…
      */
     aProtocol->mOpID = aOperationID;
 
     /*
-     * Protocol Finalize ÇÔ¼ö ¼¼ÆÃ
+     * Protocol Finalize í•¨ìˆ˜ ì„¸íŒ…
      */
     aProtocol->mFinalizeFunction = (void *)aModule->mArgFinalizeFunction[aOperationID];
 
     /*
-     * Protocol ÃÊ±âÈ­
+     * Protocol ì´ˆê¸°í™”
      */
     if (aModule->mArgInitializeFunction[aOperationID] != cmpArgNULL)
     {
@@ -1853,8 +1853,8 @@ IDE_RC cmiInitializeProtocol(cmiProtocol *aProtocol, cmpModule*  aModule, UChar 
     return IDE_FAILURE;
 }
 
-/*fix BUG-30041 cmiReadProtocol¿¡¼­ mFinalization ÀÌÃÊ±âÈ­ µÇ±âÀü¿¡
- ½ÇÆÐÇÏ´Â case¿¡ cmiFinalization¿¡¼­ ºñÁ¤»óÁ¾·áµË´Ï´Ù.*/
+/*fix BUG-30041 cmiReadProtocolì—ì„œ mFinalization ì´ì´ˆê¸°í™” ë˜ê¸°ì „ì—
+ ì‹¤íŒ¨í•˜ëŠ” caseì— cmiFinalizationì—ì„œ ë¹„ì •ìƒì¢…ë£Œë©ë‹ˆë‹¤.*/
 void  cmiInitializeProtocolNullFinalization(cmiProtocol *aProtocol)
 {
     aProtocol->mFinalizeFunction = (void *)cmpArgNULL;
@@ -1879,8 +1879,8 @@ IDE_RC cmiFinalizeProtocol(cmiProtocol *aProtocol)
 /*
  * PROJ-2296
  *
- * ÀÌÁßÈ­ ÇÁ·ÎÅäÄÝ È£È¯À» À§ÇØ Ãß°¡ÇÔ. Àü¼ÛÀ» À§ÇÑ º°µµÀÇ
- * cmiProtocolContext¸¦ ÀÌ ÇÔ¼ö·Î ¸¸µç´Ù.
+ * ì´ì¤‘í™” í”„ë¡œí† ì½œ í˜¸í™˜ì„ ìœ„í•´ ì¶”ê°€í•¨. ì „ì†¡ì„ ìœ„í•œ ë³„ë„ì˜
+ * cmiProtocolContextë¥¼ ì´ í•¨ìˆ˜ë¡œ ë§Œë“ ë‹¤.
  */ 
 IDE_RC cmiInitializeProtocolContext( cmiProtocolContext * aCtx,
                                      UChar                aModuleID,
@@ -1933,7 +1933,7 @@ IDE_RC cmiInitializeProtocolContext( cmiProtocolContext * aCtx,
 /*
  * PROJ-2296
  *
- * cmiInitializeProtocolContext()·Î ¸¸µé¾îÁø Protocol Context¸¦ Á¤¸®ÇÑ´Ù.
+ * cmiInitializeProtocolContext()ë¡œ ë§Œë“¤ì–´ì§„ Protocol Contextë¥¼ ì •ë¦¬í•œë‹¤.
  */
 IDE_RC cmiFinalizeProtocolContext( cmiProtocolContext   * aProtocolContext )
 {
@@ -1951,7 +1951,7 @@ IDE_RC cmiFinalizeProtocolContext( cmiProtocolContext   * aProtocolContext )
 void cmiSetProtocolContextLink(cmiProtocolContext *aProtocolContext, cmiLink *aLink)
 {
     /*
-     * Protocol Context¿¡ Link ¼¼ÆÃ
+     * Protocol Contextì— Link ì„¸íŒ…
      */
     aProtocolContext->mLink = (cmnLinkPeer *)aLink;
 }
@@ -2003,21 +2003,21 @@ IDE_RC cmiReadProtocolAndCallback(cmiProtocolContext      *aProtocolContext,
     cmnLinkPeer         *sLink;
 
     /*
-     * ÀÐ¾î¿Â BlockÀÌ ÇÏ³ªµµ ¾øÀ¸¸é ÀÐ¾î¿È
+     * ì½ì–´ì˜¨ Blockì´ í•˜ë‚˜ë„ ì—†ìœ¼ë©´ ì½ì–´ì˜´
      */
     if (aProtocolContext->mReadBlock == NULL)
     {
         IDE_TEST(cmiReadBlock(aProtocolContext, aTimeout) != IDE_SUCCESS);
 
         /* bug-33841: ipc thread's state is wrongly displayed.
-           IPCÀÎ °æ¿ì ÆÐÅ¶ ¼ö½ÅÈÄ¿¡ execute »óÅÂ·Î º¯°æ */
+           IPCì¸ ê²½ìš° íŒ¨í‚· ìˆ˜ì‹ í›„ì— execute ìƒíƒœë¡œ ë³€ê²½ */
         (void) gCMCallbackSetExecute(aUserContext, aTask);
     }
 
     while (1)
     {
         /*
-         * Protocol ÀÐÀ½
+         * Protocol ì½ìŒ
          */
         if (CMI_CHECK_BLOCK_FOR_READ(aProtocolContext->mReadBlock))
         {
@@ -2026,13 +2026,13 @@ IDE_RC cmiReadProtocolAndCallback(cmiProtocolContext      *aProtocolContext,
                                              aTimeout) != IDE_SUCCESS);
 
             /*
-             * Callback Function È¹µæ
+             * Callback Function íšë“
              */
             // proj_2160 cm_type removal: call mCallbackFunctionA5
             sCallbackFunction = aProtocolContext->mModule->mCallbackFunctionA5[aProtocolContext->mProtocol.mOpID];
 
             /*
-             * Callback È£Ãâ
+             * Callback í˜¸ì¶œ
              */
             sRet = sCallbackFunction(aProtocolContext,
                                      &aProtocolContext->mProtocol,
@@ -2053,12 +2053,12 @@ IDE_RC cmiReadProtocolAndCallback(cmiProtocolContext      *aProtocolContext,
             IDE_TEST(cmiFinalizeProtocol(&aProtocolContext->mProtocol) != IDE_SUCCESS);
 
             /*
-             * Free Block List¿¡ ´Þ¸° Block ÇØÁ¦
+             * Free Block Listì— ë‹¬ë¦° Block í•´ì œ
              */
             IDE_TEST(cmiFreeReadBlock(aProtocolContext) != IDE_SUCCESS);
 
             /*
-             * Callback °á°ú È®ÀÎ
+             * Callback ê²°ê³¼ í™•ì¸
              */
             if (sRet != IDE_SUCCESS)
             {
@@ -2075,7 +2075,7 @@ IDE_RC cmiReadProtocolAndCallback(cmiProtocolContext      *aProtocolContext,
             if (aProtocolContext->mIsAddReadBlock == ID_FALSE)
             {
                 /*
-                 * ÇöÀç BlockÀ» Free ´ë±â¸¦ À§ÇÑ Read Block List¿¡ Ãß°¡
+                 * í˜„ìž¬ Blockì„ Free ëŒ€ê¸°ë¥¼ ìœ„í•œ Read Block Listì— ì¶”ê°€
                  */
                 IDU_LIST_ADD_LAST(&aProtocolContext->mReadBlockList,
                                   &aProtocolContext->mReadBlock->mListNode);
@@ -2090,7 +2090,7 @@ IDE_RC cmiReadProtocolAndCallback(cmiProtocolContext      *aProtocolContext,
                 {
                     IDE_TEST(cmiFreeReadBlock(aProtocolContext) != IDE_SUCCESS);
                     /*
-                     * Protocol Sequence ¿Ï·á
+                     * Protocol Sequence ì™„ë£Œ
                      */
 
                     sLink = aProtocolContext->mLink;
@@ -2100,7 +2100,7 @@ IDE_RC cmiReadProtocolAndCallback(cmiProtocolContext      *aProtocolContext,
                 else
                 {
                     /*
-                     * ´ÙÀ½ BlockÀ» ÀÐ¾î¿È
+                     * ë‹¤ìŒ Blockì„ ì½ì–´ì˜´
                      */
                     IDE_TEST(cmiReadBlock(aProtocolContext, aTimeout) != IDE_SUCCESS);
                 }
@@ -2126,12 +2126,12 @@ IDE_RC cmiReadProtocol(cmiProtocolContext *aProtocolContext,
     cmnLinkPeer        *sLink;
 
     /*
-     * ÀÌÀü Read ProtocolÀÌ Á¤»óÀûÀ¸·Î ¿Ï·áµÇ¾úÀ» °æ¿ì
+     * ì´ì „ Read Protocolì´ ì •ìƒì ìœ¼ë¡œ ì™„ë£Œë˜ì—ˆì„ ê²½ìš°
      */
     if (CMP_MARSHAL_STATE_IS_COMPLETE(aProtocolContext->mMarshalState) == ID_TRUE)
     {
         /*
-         * Read Block ¹ÝÈ¯
+         * Read Block ë°˜í™˜
          */
         IDE_TEST(cmiFreeReadBlock(aProtocolContext) != IDE_SUCCESS);
 
@@ -2139,15 +2139,15 @@ IDE_RC cmiReadProtocol(cmiProtocolContext *aProtocolContext,
         sLink->mPeerOp->mResComplete(sLink);
 
         /*
-         * Protocol Finalize ÇÔ¼ö ÃÊ±âÈ­
+         * Protocol Finalize í•¨ìˆ˜ ì´ˆê¸°í™”
          *
-         * cmiReadProtocol ÇÔ¼ö´Â cmiFinalizeProtocolÈ£ÃâÀÇ Ã¥ÀÓÀ» »óÀ§·¹ÀÌ¾î°¡ °¡Áü
+         * cmiReadProtocol í•¨ìˆ˜ëŠ” cmiFinalizeProtocolí˜¸ì¶œì˜ ì±…ìž„ì„ ìƒìœ„ë ˆì´ì–´ê°€ ê°€ì§
          */
         aProtocol->mFinalizeFunction = (void *)cmpArgNULL;
     }
 
     /*
-     * ÀÐ¾î¿Â BlockÀÌ ÇÏ³ªµµ ¾øÀ¸¸é ÀÐ¾î¿È
+     * ì½ì–´ì˜¨ Blockì´ í•˜ë‚˜ë„ ì—†ìœ¼ë©´ ì½ì–´ì˜´
      */
     if (aProtocolContext->mReadBlock == NULL)
     {
@@ -2157,7 +2157,7 @@ IDE_RC cmiReadProtocol(cmiProtocolContext *aProtocolContext,
     while (1)
     {
         /*
-         * Protocol ÀÐÀ½
+         * Protocol ì½ìŒ
          */
         if (CMI_CHECK_BLOCK_FOR_READ(aProtocolContext->mReadBlock))
         {
@@ -2166,12 +2166,12 @@ IDE_RC cmiReadProtocol(cmiProtocolContext *aProtocolContext,
                                              aTimeout) != IDE_SUCCESS);
 
             /*
-             * BASE ModuleÀÌ¸é Callback
+             * BASE Moduleì´ë©´ Callback
              */
             if (aProtocolContext->mReadHeader.mA5.mModuleID == CMP_MODULE_BASE)
             {
                 /*
-                 * Callback Function È¹µæ
+                 * Callback Function íšë“
                  */
                 // proj_2160 cm_type removal: call mCallbackFunctionA5
                 sCallbackFunction = aProtocolContext->mModule->mCallbackFunctionA5[aProtocol->mOpID];
@@ -2222,7 +2222,7 @@ IDE_RC cmiReadProtocol(cmiProtocolContext *aProtocolContext,
     }
 
     /*
-     * ÇöÀç Read BlockÀ» ³¡±îÁö ÀÐ¾úÀ¸¸é
+     * í˜„ìž¬ Read Blockì„ ëê¹Œì§€ ì½ì—ˆìœ¼ë©´
      */
     if (!CMI_CHECK_BLOCK_FOR_READ(aProtocolContext->mReadBlock))
     {
@@ -2261,7 +2261,7 @@ IDE_RC cmiWriteProtocol(cmiProtocolContext *aProtocolContext, cmiProtocol *aProt
     cmpMarshalFunction  sMarshalFunction;
 
     /*
-     * Write BlockÀÌ ÇÒ´çµÇ¾îÀÖÁö ¾ÊÀ¸¸é ÇÒ´ç
+     * Write Blockì´ í• ë‹¹ë˜ì–´ìžˆì§€ ì•Šìœ¼ë©´ í• ë‹¹
      */
     if (aProtocolContext->mWriteBlock == NULL)
     {
@@ -2271,12 +2271,12 @@ IDE_RC cmiWriteProtocol(cmiProtocolContext *aProtocolContext, cmiProtocol *aProt
     }
 
     /*
-     * Marshal State ÃÊ±âÈ­
+     * Marshal State ì´ˆê¸°í™”
      */
     CMP_MARSHAL_STATE_INITIALIZE(sMarshalState);
 
     /*
-     * Module È¹µæ
+     * Module íšë“
      */
     if (aProtocolContext->mModule == NULL)
     {
@@ -2285,12 +2285,12 @@ IDE_RC cmiWriteProtocol(cmiProtocolContext *aProtocolContext, cmiProtocol *aProt
     }
 
     /*
-     * Operation ID °Ë»ç
+     * Operation ID ê²€ì‚¬
      */
     IDE_TEST_RAISE(aProtocol->mOpID >= aProtocolContext->mModule->mOpMaxA5, InvalidOpError);
 
     /*
-     * Marshal Function È¹µæ
+     * Marshal Function íšë“
      */
     sMarshalFunction = aProtocolContext->mModule->mWriteFunction[aProtocol->mOpID];
 
@@ -2308,7 +2308,7 @@ IDE_RC cmiWriteProtocol(cmiProtocolContext *aProtocolContext, cmiProtocol *aProt
     while (1)
     {
         /*
-         * Operation ID¸¦ ±â·ÏÇÏ°í Marshal
+         * Operation IDë¥¼ ê¸°ë¡í•˜ê³  Marshal
          */
         if (CMI_CHECK_BLOCK_FOR_WRITE(aProtocolContext->mWriteBlock))
         {
@@ -2319,7 +2319,7 @@ IDE_RC cmiWriteProtocol(cmiProtocolContext *aProtocolContext, cmiProtocol *aProt
                                       &sMarshalState) != IDE_SUCCESS);
 
             /*
-             * ÇÁ·ÎÅäÄÝ ¾²±â°¡ ¿Ï·áµÇ¾úÀ¸¸é Loop Á¾·á
+             * í”„ë¡œí† ì½œ ì“°ê¸°ê°€ ì™„ë£Œë˜ì—ˆìœ¼ë©´ Loop ì¢…ë£Œ
              */
             if (CMP_MARSHAL_STATE_IS_COMPLETE(sMarshalState) == ID_TRUE)
             {
@@ -2328,7 +2328,7 @@ IDE_RC cmiWriteProtocol(cmiProtocolContext *aProtocolContext, cmiProtocol *aProt
         }
 
         /*
-         * Àü¼Û
+         * ì „ì†¡
          */
         if ( cmiWriteBlock(aProtocolContext, ID_FALSE, aTimeout) != IDE_SUCCESS )
         {
@@ -2340,7 +2340,7 @@ IDE_RC cmiWriteProtocol(cmiProtocolContext *aProtocolContext, cmiProtocol *aProt
         }
 
         /*
-         * »õ·Î¿î Block ÇÒ´ç
+         * ìƒˆë¡œìš´ Block í• ë‹¹
          */
         IDE_TEST(aProtocolContext->mLink->mPeerOp->mAllocBlock(aProtocolContext->mLink,
                                                                &aProtocolContext->mWriteBlock)
@@ -2376,7 +2376,7 @@ IDE_RC cmiFlushProtocol(cmiProtocolContext *aProtocolContext, idBool aIsEnd, PDL
     if (aProtocolContext->mWriteBlock != NULL)
     {
         /*
-         * Write BlockÀÌ ÇÒ´çµÇ¾î ÀÖÀ¸¸é Àü¼Û
+         * Write Blockì´ í• ë‹¹ë˜ì–´ ìžˆìœ¼ë©´ ì „ì†¡
          */
         IDE_TEST(cmiWriteBlock(aProtocolContext, aIsEnd, aTimeout) != IDE_SUCCESS);
     }
@@ -2387,7 +2387,7 @@ IDE_RC cmiFlushProtocol(cmiProtocolContext *aProtocolContext, idBool aIsEnd, PDL
             (CMP_HEADER_PROTO_END_IS_SET(&aProtocolContext->mWriteHeader) == ID_FALSE))
         {
             /*
-             * Sequence End°¡ Àü¼ÛµÇÁö ¾Ê¾ÒÀ¸¸é ºó Write BlockÀ» ÇÒ´çÇÏ¿© Àü¼Û
+             * Sequence Endê°€ ì „ì†¡ë˜ì§€ ì•Šì•˜ìœ¼ë©´ ë¹ˆ Write Blockì„ í• ë‹¹í•˜ì—¬ ì „ì†¡
              */
             IDE_TEST(aProtocolContext->mLink->mPeerOp->mAllocBlock(aProtocolContext->mLink,
                                                                    &aProtocolContext->mWriteBlock)
@@ -2407,12 +2407,12 @@ IDE_RC cmiFlushProtocol(cmiProtocolContext *aProtocolContext, idBool aIsEnd, PDL
 }
 
 // fix BUG-17715
-// ÇöÀç Åë½Å ¹öÆÛ¿¡ ·¹ÄÚµå°¡ µé¾î°¥ ¼ö ÀÖ´ÂÁö °Ë»çÇÑ´Ù.
+// í˜„ìž¬ í†µì‹  ë²„í¼ì— ë ˆì½”ë“œê°€ ë“¤ì–´ê°ˆ ìˆ˜ ìžˆëŠ”ì§€ ê²€ì‚¬í•œë‹¤.
 IDE_RC cmiCheckFetch(cmiProtocolContext *aProtocolContext, UInt aRecordSize)
 {
-    // µ¥ÀÌÅÍ Å¸ÀÔ¸¶´Ù ºÎ°¡ÀûÀÎ Á¤º¸°¡ Ãß°¡·Î µé¾î°¡¸ç
-    // char, varcharÀÏ °æ¿ì cmtAny¿¡ °¡Àå ¸¹Àº Á¤º¸°¡ µé¾î°£´Ù.
-    // µû¶ó¼­ °è»êÀº °¡Àå ¸¹Àº ºÎ°¡ Á¤º¸°¡ µé¾î°¬À» °æ¿ì·Î °è»êÇÑ´Ù.
+    // ë°ì´í„° íƒ€ìž…ë§ˆë‹¤ ë¶€ê°€ì ì¸ ì •ë³´ê°€ ì¶”ê°€ë¡œ ë“¤ì–´ê°€ë©°
+    // char, varcharì¼ ê²½ìš° cmtAnyì— ê°€ìž¥ ë§Žì€ ì •ë³´ê°€ ë“¤ì–´ê°„ë‹¤.
+    // ë”°ë¼ì„œ ê³„ì‚°ì€ ê°€ìž¥ ë§Žì€ ë¶€ê°€ ì •ë³´ê°€ ë“¤ì–´ê°”ì„ ê²½ìš°ë¡œ ê³„ì‚°í•œë‹¤.
 
     // OPCODE(1) + STMTID(4) + RSTID(2) + ROWNO(2) + COLNO(2) + TYPEID(1) + OFFSET(4) + SIZE(2) + END(1) + DATA(x)
 
@@ -2426,10 +2426,10 @@ idBool cmiCheckInVariable(cmiProtocolContext *aProtocolContext, UInt aInVariable
     
     if( aProtocolContext->mWriteBlock == NULL )
     {
-        // mWriteBlockÀÌ nullÀÏ °æ¿ì´Â ÇöÀç ¾Æ¹«°Íµµ Ã¤¿öÁöÁö ¾ÊÀº »óÅÂÀÌ±â ¶§¹®¿¡
-        // Ã¤¿öÁö´Â ÇÁ·ÎÅäÄÝ¿¡ µû¶ó¼­ sCurSize°¡ ´Þ¶óÁú¼ö ÀÖ´Ù.
-        // µû¶ó¼­, sCurSize¸¦ °¡´ÉÇÑ ÃÖ´ë°ª(CMP_HEADER_SIZE)À¸·Î ¼³Á¤ÇÑ´Ù.
-        // cmtInVariableÀº CM ÀÚÃ¼ÀÇ ³»ºÎ Å¸ÀÔÀÌ±â ¶§¹®¿¡ »ó°ü¾øÀ» µí...
+        // mWriteBlockì´ nullì¼ ê²½ìš°ëŠ” í˜„ìž¬ ì•„ë¬´ê²ƒë„ ì±„ì›Œì§€ì§€ ì•Šì€ ìƒíƒœì´ê¸° ë•Œë¬¸ì—
+        // ì±„ì›Œì§€ëŠ” í”„ë¡œí† ì½œì— ë”°ë¼ì„œ sCurSizeê°€ ë‹¬ë¼ì§ˆìˆ˜ ìžˆë‹¤.
+        // ë”°ë¼ì„œ, sCurSizeë¥¼ ê°€ëŠ¥í•œ ìµœëŒ€ê°’(CMP_HEADER_SIZE)ìœ¼ë¡œ ì„¤ì •í•œë‹¤.
+        // cmtInVariableì€ CM ìžì²´ì˜ ë‚´ë¶€ íƒ€ìž…ì´ê¸° ë•Œë¬¸ì— ìƒê´€ì—†ì„ ë“¯...
         sCurSize = CMP_HEADER_SIZE;
     }
     else
@@ -2466,10 +2466,10 @@ idBool cmiCheckInBit(cmiProtocolContext *aProtocolContext, UInt aInBitSize)
 
     if( aProtocolContext->mWriteBlock == NULL )
     {
-        // mWriteBlockÀÌ nullÀÏ °æ¿ì´Â ÇöÀç ¾Æ¹«°Íµµ Ã¤¿öÁöÁö ¾ÊÀº »óÅÂÀÌ±â ¶§¹®¿¡
-        // Ã¤¿öÁö´Â ÇÁ·ÎÅäÄÝ¿¡ µû¶ó¼­ sCurSize°¡ ´Þ¶óÁú¼ö ÀÖ´Ù.
-        // µû¶ó¼­, sCurSize¸¦ °¡´ÉÇÑ ÃÖ´ë°ª(CMP_HEADER_SIZE)À¸·Î ¼³Á¤ÇÑ´Ù.
-        // cmtInVariableÀº CM ÀÚÃ¼ÀÇ ³»ºÎ Å¸ÀÔÀÌ±â ¶§¹®¿¡ »ó°ü¾øÀ» µí...
+        // mWriteBlockì´ nullì¼ ê²½ìš°ëŠ” í˜„ìž¬ ì•„ë¬´ê²ƒë„ ì±„ì›Œì§€ì§€ ì•Šì€ ìƒíƒœì´ê¸° ë•Œë¬¸ì—
+        // ì±„ì›Œì§€ëŠ” í”„ë¡œí† ì½œì— ë”°ë¼ì„œ sCurSizeê°€ ë‹¬ë¼ì§ˆìˆ˜ ìžˆë‹¤.
+        // ë”°ë¼ì„œ, sCurSizeë¥¼ ê°€ëŠ¥í•œ ìµœëŒ€ê°’(CMP_HEADER_SIZE)ìœ¼ë¡œ ì„¤ì •í•œë‹¤.
+        // cmtInVariableì€ CM ìžì²´ì˜ ë‚´ë¶€ íƒ€ìž…ì´ê¸° ë•Œë¬¸ì— ìƒê´€ì—†ì„ ë“¯...
         sCurSize = CMP_HEADER_SIZE;
     }
     else
@@ -2488,10 +2488,10 @@ idBool cmiCheckInNibble(cmiProtocolContext *aProtocolContext, UInt aInNibbleSize
 
     if( aProtocolContext->mWriteBlock == NULL )
     {
-        // mWriteBlockÀÌ nullÀÏ °æ¿ì´Â ÇöÀç ¾Æ¹«°Íµµ Ã¤¿öÁöÁö ¾ÊÀº »óÅÂÀÌ±â ¶§¹®¿¡
-        // Ã¤¿öÁö´Â ÇÁ·ÎÅäÄÝ¿¡ µû¶ó¼­ sCurSize°¡ ´Þ¶óÁú¼ö ÀÖ´Ù.
-        // µû¶ó¼­, sCurSize¸¦ °¡´ÉÇÑ ÃÖ´ë°ª(CMP_HEADER_SIZE)À¸·Î ¼³Á¤ÇÑ´Ù.
-        // cmtInVariableÀº CM ÀÚÃ¼ÀÇ ³»ºÎ Å¸ÀÔÀÌ±â ¶§¹®¿¡ »ó°ü¾øÀ» µí...
+        // mWriteBlockì´ nullì¼ ê²½ìš°ëŠ” í˜„ìž¬ ì•„ë¬´ê²ƒë„ ì±„ì›Œì§€ì§€ ì•Šì€ ìƒíƒœì´ê¸° ë•Œë¬¸ì—
+        // ì±„ì›Œì§€ëŠ” í”„ë¡œí† ì½œì— ë”°ë¼ì„œ sCurSizeê°€ ë‹¬ë¼ì§ˆìˆ˜ ìžˆë‹¤.
+        // ë”°ë¼ì„œ, sCurSizeë¥¼ ê°€ëŠ¥í•œ ìµœëŒ€ê°’(CMP_HEADER_SIZE)ìœ¼ë¡œ ì„¤ì •í•œë‹¤.
+        // cmtInVariableì€ CM ìžì²´ì˜ ë‚´ë¶€ íƒ€ìž…ì´ê¸° ë•Œë¬¸ì— ìƒê´€ì—†ì„ ë“¯...
         sCurSize = CMP_HEADER_SIZE;
     }
     else
@@ -2504,7 +2504,7 @@ idBool cmiCheckInNibble(cmiProtocolContext *aProtocolContext, UInt aInNibbleSize
         ID_TRUE : ID_FALSE;
 }
 
-// IN Å¸ÀÔÁß¿¡ °¡Àå Å« Çì´õ¸¦ °®´Â °ÍÀº IN_NIBBLEÀÌ³ª IN_BITÀÌ´Ù.
+// IN íƒ€ìž…ì¤‘ì— ê°€ìž¥ í° í—¤ë”ë¥¼ ê°–ëŠ” ê²ƒì€ IN_NIBBLEì´ë‚˜ IN_BITì´ë‹¤.
 UInt cmiGetMaxInTypeHeaderSize()
 {
     // TYPE(1) + PRECISION(4) + SIZE(4) + DATA(x)
@@ -2553,11 +2553,11 @@ cmiLinkImpl cmiGetLinkImpl(cmiProtocolContext *aProtocolContext)
 }
 
 /**
- * cmpCollectionDBBindColumnInfoGetResultÀÇ ÃÖ´ë Å©±â¸¦ ¾ò´Â´Ù.
+ * cmpCollectionDBBindColumnInfoGetResultì˜ ìµœëŒ€ í¬ê¸°ë¥¼ ì–»ëŠ”ë‹¤.
  *
- * cmtAnyÀÎ ÀÌ¸§ °ªÀº ÃÖ´ë 50 ±æÀÌÀÎ °ÍÀ¸·Î º»´Ù.
+ * cmtAnyì¸ ì´ë¦„ ê°’ì€ ìµœëŒ€ 50 ê¸¸ì´ì¸ ê²ƒìœ¼ë¡œ ë³¸ë‹¤.
  *
- * @return cmpCollectionDBBindColumnInfoGetResultÀÇ ÃÖ´ë Å©±â
+ * @return cmpCollectionDBBindColumnInfoGetResultì˜ ìµœëŒ€ í¬ê¸°
  */
 UInt cmiGetBindColumnInfoStructSize( void )
 {
@@ -2571,11 +2571,11 @@ UInt cmiGetBindColumnInfoStructSize( void )
 }
 
 // bug-19279 remote sysdba enable + sys can kill session
-// client°¡ ¿ø°Ý¿¡¼­ Á¢¼ÓÇßÀ¸¸é true
-// local¿¡¼­ Á¢¼ÓÇßÀ¸¸é false ¹ÝÈ¯
-// tcp ¹æ½ÄÀÌ°í IP°¡ 127.0.0.1ÀÌ ¾Æ´Ñ °æ¿ì¿¡ ¿ø°ÝÀ¸·Î °£ÁÖÇÑ´Ù
-// ÁÖÀÇ: localÀÌ¶óµµ 127.0.0.lÀÌ ¾Æ´Ñ ÁÖ¼Ò¶ó¸é ¿ø°ÝÀ¸·Î °£ÁÖ.
-// remote sysdba ¸¦ Çã¿ëÇÒÁö ¿©ºÎ¸¦ °áÁ¤ÇÒ ¶§ »ç¿ë
+// clientê°€ ì›ê²©ì—ì„œ ì ‘ì†í–ˆìœ¼ë©´ true
+// localì—ì„œ ì ‘ì†í–ˆìœ¼ë©´ false ë°˜í™˜
+// tcp ë°©ì‹ì´ê³  IPê°€ 127.0.0.1ì´ ì•„ë‹Œ ê²½ìš°ì— ì›ê²©ìœ¼ë¡œ ê°„ì£¼í•œë‹¤
+// ì£¼ì˜: localì´ë¼ë„ 127.0.0.lì´ ì•„ë‹Œ ì£¼ì†Œë¼ë©´ ì›ê²©ìœ¼ë¡œ ê°„ì£¼.
+// remote sysdba ë¥¼ í—ˆìš©í• ì§€ ì—¬ë¶€ë¥¼ ê²°ì •í•  ë•Œ ì‚¬ìš©
 IDE_RC cmiCheckRemoteAccess(cmiLink* aLink, idBool* aIsRemote)
 {
     struct sockaddr*         sAddrCommon = NULL ;
@@ -2586,7 +2586,7 @@ IDE_RC cmiCheckRemoteAccess(cmiLink* aLink, idBool* aIsRemote)
     UInt*                    sUIntPtr = NULL;
 
     *aIsRemote = ID_FALSE;
-    /* BUG-44530 SSL¿¡¼­ ALTIBASE_SOCK_BIND_ADDR Áö¿ø */
+    /* BUG-44530 SSLì—ì„œ ALTIBASE_SOCK_BIND_ADDR ì§€ì› */
     if ((aLink->mImpl == CMN_LINK_IMPL_TCP) || (aLink->mImpl == CMN_LINK_IMPL_SSL))
     {
         /* proj-1538 ipv6 */
@@ -2683,9 +2683,9 @@ idBool cmiIsValidIPFormat(SChar * aIP)
 
 /***********************************************************
  * proj_2160 cm_type removal
- * cmbBlock Æ÷ÀÎÅÍ 2°³¸¦ NULL·Î ¸¸µç´Ù
- * cmiAllocCmBlockÀ» È£ÃâÇÏ±â Àü¿¡ ÀÌ ÇÔ¼ö¸¦ ¹Ýµå½Ã ¸ÕÀú
- * È£ÃâÇØ¼­ cmbBlock ÇÒ´çÀÌ Á¦´ë·Î µÇµµ·Ï ÇØ¾ß ÇÑ´Ù.
+ * cmbBlock í¬ì¸í„° 2ê°œë¥¼ NULLë¡œ ë§Œë“ ë‹¤
+ * cmiAllocCmBlockì„ í˜¸ì¶œí•˜ê¸° ì „ì— ì´ í•¨ìˆ˜ë¥¼ ë°˜ë“œì‹œ ë¨¼ì €
+ * í˜¸ì¶œí•´ì„œ cmbBlock í• ë‹¹ì´ ì œëŒ€ë¡œ ë˜ë„ë¡ í•´ì•¼ í•œë‹¤.
 ***********************************************************/
 IDE_RC cmiMakeCmBlockNull(cmiProtocolContext *aCtx)
 {
@@ -2699,32 +2699,32 @@ IDE_RC cmiMakeCmBlockNull(cmiProtocolContext *aCtx)
  * proj_2160 cm_type removal
  **********************************************************
  *  cmiAllocCmBlock:
- * 1. ÀÌ ÇÔ¼ö´Â ¿¹ÀüÀÇ cmiAddSession() °ú
- *  cmiInitializeProtocolContext() ¸¦ ´ëÃ¼ÇÏ´Â ÇÔ¼öÀÌ´Ù
- * 2. ÀÌ ÇÔ¼ö´Â cmiProtocolContext¸¦ ÃÊ±âÈ­ÇÏ°í
- *  2°³ÀÇ cmbBlock(recv, send)À» ÇÒ´çÇÑ´Ù.
- * 3. ÁÖÀÇÇÒ Á¡Àº È£ÃâÇÏ±â Àü¿¡ cmbBlock Æ÷ÀÎÅÍ°¡ NULL·Î
- *  ÃÊ±âÈ­µÇ¾î ÀÖ¾î¾ß ÇÑ´Ù´Â °ÍÀÌ´Ù(cmiMakeCmBlockNull)
- * 4. A5 client°¡ Á¢¼ÓÇÏ´Â °æ¿ì¿¡µµ ¼­¹ö¿¡¼­´Â ÀÌ ÇÔ¼ö¸¦
- *  »ç¿ëÇÏ´Âµ¥ ¹®Á¦°¡ ¾ø´Ù(A7¿¡¼­ A5·Î ÀüÈ¯µÊ)
+ * 1. ì´ í•¨ìˆ˜ëŠ” ì˜ˆì „ì˜ cmiAddSession() ê³¼
+ *  cmiInitializeProtocolContext() ë¥¼ ëŒ€ì²´í•˜ëŠ” í•¨ìˆ˜ì´ë‹¤
+ * 2. ì´ í•¨ìˆ˜ëŠ” cmiProtocolContextë¥¼ ì´ˆê¸°í™”í•˜ê³ 
+ *  2ê°œì˜ cmbBlock(recv, send)ì„ í• ë‹¹í•œë‹¤.
+ * 3. ì£¼ì˜í•  ì ì€ í˜¸ì¶œí•˜ê¸° ì „ì— cmbBlock í¬ì¸í„°ê°€ NULLë¡œ
+ *  ì´ˆê¸°í™”ë˜ì–´ ìžˆì–´ì•¼ í•œë‹¤ëŠ” ê²ƒì´ë‹¤(cmiMakeCmBlockNull)
+ * 4. A5 clientê°€ ì ‘ì†í•˜ëŠ” ê²½ìš°ì—ë„ ì„œë²„ì—ì„œëŠ” ì´ í•¨ìˆ˜ë¥¼
+ *  ì‚¬ìš©í•˜ëŠ”ë° ë¬¸ì œê°€ ì—†ë‹¤(A7ì—ì„œ A5ë¡œ ì „í™˜ë¨)
  **********************************************************
- *  º¯°æ»çÇ×:
- * 1. ¿¹Àü¿¡´Â ¼Û¼ö½Å¸¶´Ù cmbBlockÀÌ ÇÒ´ç/ÇØÁ¦°¡ µÇ¾ú´Âµ¥,
- *  A7ºÎÅÍ´Â ÇÑ¹ø¸¸ ÇÒ´çÇÑ ÈÄ ¿¬°áÀÌ ²÷±æ¶§±îÁö
- *  °è¼Ó À¯ÁöµÇµµ·Ï º¯°æµÇ¾ú´Ù.
- * 2. cmiProtocolContextµµ ÇÑ¹ø¸¸ ÃÊ±âÈ­¸¦ ÇØ¾ßÇÑ´Ù. ÀÌÀ¯´Â
- *  ÆÐÅ¶ÀÏ·Ã¹øÈ£¸¦ ¼¼¼Ç³»¿¡¼­ °è¼Ó À¯ÁöÇØ¾ß ÇÏ±â ¶§¹®ÀÌ´Ù
- * 3. cmmSession ±¸Á¶Ã¼´Â ´õÀÌ»ó »ç¿ëÇÏÁö ¾Ê´Â´Ù
+ *  ë³€ê²½ì‚¬í•­:
+ * 1. ì˜ˆì „ì—ëŠ” ì†¡ìˆ˜ì‹ ë§ˆë‹¤ cmbBlockì´ í• ë‹¹/í•´ì œê°€ ë˜ì—ˆëŠ”ë°,
+ *  A7ë¶€í„°ëŠ” í•œë²ˆë§Œ í• ë‹¹í•œ í›„ ì—°ê²°ì´ ëŠê¸¸ë•Œê¹Œì§€
+ *  ê³„ì† ìœ ì§€ë˜ë„ë¡ ë³€ê²½ë˜ì—ˆë‹¤.
+ * 2. cmiProtocolContextë„ í•œë²ˆë§Œ ì´ˆê¸°í™”ë¥¼ í•´ì•¼í•œë‹¤. ì´ìœ ëŠ”
+ *  íŒ¨í‚·ì¼ë ¨ë²ˆí˜¸ë¥¼ ì„¸ì…˜ë‚´ì—ì„œ ê³„ì† ìœ ì§€í•´ì•¼ í•˜ê¸° ë•Œë¬¸ì´ë‹¤
+ * 3. cmmSession êµ¬ì¡°ì²´ëŠ” ë”ì´ìƒ ì‚¬ìš©í•˜ì§€ ì•ŠëŠ”ë‹¤
  **********************************************************
- *  »ç¿ë¹æ¹ý(ÇÔ¼ö È£Ãâ ¼ø¼­):
- *  1. cmiMakeCmBlockNull(ctx);   : cmbBlock Æ÷ÀÎÅÍ NULL ¼¼ÆÃ
- *  2. cmiAllocLink(&link);       : Link ±¸Á¶Ã¼ ÇÒ´ç
- *  3. cmiAllocCmBlock(ctx, link);: cmbBlock 2°³ ÇÒ´ç
- *  4.  connected   ...           : ¿¬°á ¼º°ø
- *  5.  send/recv   ...           : cmbBlockÀ» ÅëÇØ ¼Û¼ö½Å
- *  6.  disconnected ..           : ¿¬°á Á¾·á
- *  7. cmiFreeCmBlock(ctx);       : cmbBlock 2°³ ÇØÁ¦
- *  8. cmiFreeLink(link);         : Link ±¸Á¶Ã¼ ÇØÁ¦
+ *  ì‚¬ìš©ë°©ë²•(í•¨ìˆ˜ í˜¸ì¶œ ìˆœì„œ):
+ *  1. cmiMakeCmBlockNull(ctx);   : cmbBlock í¬ì¸í„° NULL ì„¸íŒ…
+ *  2. cmiAllocLink(&link);       : Link êµ¬ì¡°ì²´ í• ë‹¹
+ *  3. cmiAllocCmBlock(ctx, link);: cmbBlock 2ê°œ í• ë‹¹
+ *  4.  connected   ...           : ì—°ê²° ì„±ê³µ
+ *  5.  send/recv   ...           : cmbBlockì„ í†µí•´ ì†¡ìˆ˜ì‹ 
+ *  6.  disconnected ..           : ì—°ê²° ì¢…ë£Œ
+ *  7. cmiFreeCmBlock(ctx);       : cmbBlock 2ê°œ í•´ì œ
+ *  8. cmiFreeLink(link);         : Link êµ¬ì¡°ì²´ í•´ì œ
 ***********************************************************/
 IDE_RC cmiAllocCmBlock(cmiProtocolContext* aCtx,
                        UChar               aModuleID,
@@ -2859,9 +2859,9 @@ IDE_RC cmiAllocCmBlockForA5( cmiProtocolContext* aCtx,
  }
 
 /***********************************************************
- * ÀÌ ÇÔ¼ö´Â ¼¼¼ÇÀÌ Á¾·áµÈÈÄ¿¡´Â ¸Þ¸ð¸® ¹Ý³³À» À§ÇØ
- * ¹Ýµå½Ã È£ÃâµÇ¾î¾ß ÇÑ´Ù
- * ³»ºÎ¿¡¼­´Â A7°ú A5 ¼¼¼ÇÀ» µ¿½Ã¿¡ Ã³¸®ÇÏµµ·Ï µÇ¾î ÀÖ´Ù
+ * ì´ í•¨ìˆ˜ëŠ” ì„¸ì…˜ì´ ì¢…ë£Œëœí›„ì—ëŠ” ë©”ëª¨ë¦¬ ë°˜ë‚©ì„ ìœ„í•´
+ * ë°˜ë“œì‹œ í˜¸ì¶œë˜ì–´ì•¼ í•œë‹¤
+ * ë‚´ë¶€ì—ì„œëŠ” A7ê³¼ A5 ì„¸ì…˜ì„ ë™ì‹œì— ì²˜ë¦¬í•˜ë„ë¡ ë˜ì–´ ìžˆë‹¤
 ***********************************************************/
 IDE_RC cmiFreeCmBlock(cmiProtocolContext* aCtx)
 {
@@ -2877,7 +2877,7 @@ IDE_RC cmiFreeCmBlock(cmiProtocolContext* aCtx)
 
     IDE_TEST(aCtx->mLink == NULL);
 
-    /* mWriteBlockList ¿¡ ÇÒ´ÙµÇ¾î ÀÖ´Â Block ÀÌ ÀÖÀ¸¸é ÇØÁ¦ ÇÑ´Ù. */
+    /* mWriteBlockList ì— í• ë‹¤ë˜ì–´ ìžˆëŠ” Block ì´ ìžˆìœ¼ë©´ í•´ì œ í•œë‹¤. */
     IDU_LIST_ITERATE_SAFE(&aCtx->mWriteBlockList, sIterator, sNodeNext)
     {
         sPool = aCtx->mLink->mPool;
@@ -2892,8 +2892,8 @@ IDE_RC cmiFreeCmBlock(cmiProtocolContext* aCtx)
         sPool = aCtx->mLink->mPool;
         IDE_ASSERT(aCtx->mReadBlock != NULL && aCtx->mWriteBlock != NULL);
 
-        // timeoutÀ¸·Î ¼¼¼ÇÀÌ ²÷±æ°æ¿ì ¿¡·¯¸Þ½ÃÁö¸¦ Æ÷ÇÔÇÑ
-        // ÀÀ´ä µ¥ÀÌÅÍ°¡ ¾ÆÁ÷ cmBlock¿¡ ³²¾Æ ÀÖ´Ù. ÀÌ¸¦ Àü¼Û
+        // timeoutìœ¼ë¡œ ì„¸ì…˜ì´ ëŠê¸¸ê²½ìš° ì—ëŸ¬ë©”ì‹œì§€ë¥¼ í¬í•¨í•œ
+        // ì‘ë‹µ ë°ì´í„°ê°€ ì•„ì§ cmBlockì— ë‚¨ì•„ ìžˆë‹¤. ì´ë¥¼ ì „ì†¡
         if (aCtx->mWriteBlock->mCursor > CMP_HEADER_SIZE)
         {
             (void)cmiSend(aCtx, ID_TRUE);
@@ -2947,7 +2947,7 @@ IDE_RC cmiFreeCmBlock(cmiProtocolContext* aCtx)
 }
 
 /*
- * CM ÇÁ·ÎÅäÄÝÀÇ A5 ¹öÀüÀÇ Handshake¸¦ Ã³¸®ÇÑ´Ù.
+ * CM í”„ë¡œí† ì½œì˜ A5 ë²„ì „ì˜ Handshakeë¥¼ ì²˜ë¦¬í•œë‹¤.
  */ 
 static IDE_RC cmiHandshakeA5( cmiProtocolContext * aCtx )
 {
@@ -2960,10 +2960,10 @@ static IDE_RC cmiHandshakeA5( cmiProtocolContext * aCtx )
     if ( aCtx->mReadHeader.mA5.mModuleID == CMP_MODULE_RP )
     {
         /* do nothing */
-        /* ¼­¹ö·Î A5ÇÁ·ÎÅäÄÝ·Î Á¢¼ÓÀ» ½ÃµµÇÏ´Â Å¬¶óÀÌ¾ðÆ®°¡ ÀÖÀ» ¶§,
-         * ULÀÎ°æ¿ì ACK¸¦ Àü¼ÛÇÏ¸ç, UL¿ÜÀÇ ´Ù¸¥ ¸ðµâÀÏ °æ¿ì Á¢¼ÓÀ» ²÷´Â´Ù.
-         * a631¿¡¼­ A5¸¦ ÀÌ¿ëÇÑ RP Å¬¶óÀÌ¾ðÆ®¸¦ ¿À·ù·Î ÀÎ½ÄÇÏ¹Ç·Î,
-         * RPÅ¬¶óÀÌ¾ðÆ®·Î Á¢¼ÓÇÒ ¶§ ¿À·ù·Î ÀÎ½Ä¾Ê°Ô ÇÏ¸ç, ¶ÇÇÑ ACK¸¦ Àü¼ÛÇÏÁö ¾Ê´Â °ÍÀ¸·Î ¼öÁ¤ÇÑ´Ù.
+        /* ì„œë²„ë¡œ A5í”„ë¡œí† ì½œë¡œ ì ‘ì†ì„ ì‹œë„í•˜ëŠ” í´ë¼ì´ì–¸íŠ¸ê°€ ìžˆì„ ë•Œ,
+         * ULì¸ê²½ìš° ACKë¥¼ ì „ì†¡í•˜ë©°, ULì™¸ì˜ ë‹¤ë¥¸ ëª¨ë“ˆì¼ ê²½ìš° ì ‘ì†ì„ ëŠëŠ”ë‹¤.
+         * a631ì—ì„œ A5ë¥¼ ì´ìš©í•œ RP í´ë¼ì´ì–¸íŠ¸ë¥¼ ì˜¤ë¥˜ë¡œ ì¸ì‹í•˜ë¯€ë¡œ,
+         * RPí´ë¼ì´ì–¸íŠ¸ë¡œ ì ‘ì†í•  ë•Œ ì˜¤ë¥˜ë¡œ ì¸ì‹ì•Šê²Œ í•˜ë©°, ë˜í•œ ACKë¥¼ ì „ì†¡í•˜ì§€ ì•ŠëŠ” ê²ƒìœ¼ë¡œ ìˆ˜ì •í•œë‹¤.
          */
     }
     else
@@ -3155,30 +3155,30 @@ static IDE_RC cmiDecryptCmBlock( cmbBlock   * aBlock,
 
 /*************************************************************
  * proj_2160 cm_type removal
- * 1. ÀÌ ÇÔ¼ö´Â A7 ÀÌ»ó Àü¿ëÀÌ´Ù
- * 2. ÆÐÅ¶ ¼ö½Å¹× ÇØ´ç ÇÁ·ÎÅäÄÝ¿¡ ´ëÀÀÇÏ´Â ÄÝ¹éÇÔ¼ö¸¦
- *  ÀÚµ¿ È£ÃâÇÏ±â À§ÇØ »ç¿ëµÇ´Â ÇÔ¼öÀÌ´Ù
- * 3. ÆÐÅ¶ ÇÑ°³¸¦ ÀÐ¾îµéÀÎ ÈÄ ÆÐÅ¶¿¡ ¿©·¯°³ÀÇ ÇÁ·ÎÅäÄÝÀÌ µé¾î
- *  ÀÖÀ» ¼ö ÀÖÀ¸¹Ç·Î ¹Ýº¹¹®¿¡¼­ ¹Ýº¹ÀûÀ¸·Î ÄÝ¹éÀ» È£ÃâÇÑ´Ù
- * 4. ¹Ýº¹¹®ÀÌ ³¡³ª´Â Á¶°ÇÀº ÆÐÅ¶ µ¥ÀÌÅÍ¸¦ ÀüºÎ ´Ù ÀÐÀº °æ¿ìÀÌ´Ù
- * 5. ºÐÇÒ ÆÐÅ¶À» ¼ö½ÅÇÑ °æ¿ì(Å« ÇÁ·ÎÅäÄÝ)´Â ¿©±â¼­ Ã³¸®ÇÏÁö ¾ÊÀ¸¸ç
- *  ÇØ´ç ÇÁ·ÎÅäÄÝ ÄÝ¹é¾È¿¡¼­ ¹Ýº¹¹®À» »ç¿ëÇÏ¿© ¾Ë¾Æ¼­ Ã³¸®ÇÑ´Ù
+ * 1. ì´ í•¨ìˆ˜ëŠ” A7 ì´ìƒ ì „ìš©ì´ë‹¤
+ * 2. íŒ¨í‚· ìˆ˜ì‹ ë° í•´ë‹¹ í”„ë¡œí† ì½œì— ëŒ€ì‘í•˜ëŠ” ì½œë°±í•¨ìˆ˜ë¥¼
+ *  ìžë™ í˜¸ì¶œí•˜ê¸° ìœ„í•´ ì‚¬ìš©ë˜ëŠ” í•¨ìˆ˜ì´ë‹¤
+ * 3. íŒ¨í‚· í•œê°œë¥¼ ì½ì–´ë“¤ì¸ í›„ íŒ¨í‚·ì— ì—¬ëŸ¬ê°œì˜ í”„ë¡œí† ì½œì´ ë“¤ì–´
+ *  ìžˆì„ ìˆ˜ ìžˆìœ¼ë¯€ë¡œ ë°˜ë³µë¬¸ì—ì„œ ë°˜ë³µì ìœ¼ë¡œ ì½œë°±ì„ í˜¸ì¶œí•œë‹¤
+ * 4. ë°˜ë³µë¬¸ì´ ëë‚˜ëŠ” ì¡°ê±´ì€ íŒ¨í‚· ë°ì´í„°ë¥¼ ì „ë¶€ ë‹¤ ì½ì€ ê²½ìš°ì´ë‹¤
+ * 5. ë¶„í•  íŒ¨í‚·ì„ ìˆ˜ì‹ í•œ ê²½ìš°(í° í”„ë¡œí† ì½œ)ëŠ” ì—¬ê¸°ì„œ ì²˜ë¦¬í•˜ì§€ ì•Šìœ¼ë©°
+ *  í•´ë‹¹ í”„ë¡œí† ì½œ ì½œë°±ì•ˆì—ì„œ ë°˜ë³µë¬¸ì„ ì‚¬ìš©í•˜ì—¬ ì•Œì•„ì„œ ì²˜ë¦¬í•œë‹¤
 **************************************************************
- * 6. ±×·ì ÇÁ·ÎÅäÄÝ (ºÐÇÒ ÆÐÅ¶ÀÎµ¥ ÆÐÅ¶¸¶´Ù ¿Ï¼ºµÈ ÇüÅÂ¸¦ °¡Áü)ÀÎ
- *  °æ¿ì ÄÝ¹é ³»ºÎ¿¡¼­ ¹Ýº¹¹®À¸·Î Ã³¸®ÇÏ±â°¡ Èûµé±â ¶§¹®¿¡
- *  ¿©±â¼­ goto¸¦ »ç¿ëÇÏ¿© Æ¯º°Ã³¸® ÇÑ´Ù (ex) ¸Þ½ÃÁö ÇÁ·ÎÅäÄÝ)
- * 7. A5 client°¡ Á¢¼ÓÇÏ¸é handshakeProtocolÀ» È£ÃâÇÏ°Ô µÇ¸ç
- *  ÇØ´ç ÄÝ¹é¾È¿¡¼­ A5 ÀÀ´äÀ» ÁÖ¸é¼­ A5·Î ÀüÈ¯ÀÌ µÇ°Ô µÈ´Ù
- * 8. ÆÐÅ¶¸¶´Ù ¼¼¼Ç³» °íÀ¯ÀÏ·Ã¹øÈ£(¼ö½Å½Ã¸¶´Ù 1¾¿ Áõ°¡)¸¦ ºÎ¿©ÇÏ¿©
- *  Àß¸øµÇ°Å³ª Áßº¹µÈ ÆÐÅ¶ÀÌ ¼ö½ÅµÇ´Â °ÍÀ» ¸·´Â´Ù
- *  (Âü°í·Î A5¿¡¼­´Â ºÐÇÒ ÆÐÅ¶¿¡ ´ëÇØ¼­¸¸ ÀÏ·Ã¹øÈ£¸¦ ºÎ¿©Çß¾ú´Ù)
- * 9. RP(ALA Æ÷ÇÔ) ¸ðµâµµ º» ÇÔ¼ö¸¦ °øµ¿ »ç¿ëÇÑ´Ù. ´Ù¸¸ RPÀÇ °æ¿ì
- *  ÄÝ¹é±¸Á¶°¡ ¾Æ´Ï±â ¶§¹®¿¡ ÆÐÅ¶ ¼ö½ÅÈÄ ¹Ù·Î ÇÔ¼ö¸¦ ºüÁ®³ª°£´Ù
- * 10. CMI_DUMP: °³¹ßÀÚ µð¹ö±ë ¿ëµµ·Î ³Ö¾îµÎ¾ú´Ù. ´Ü¼øÈ÷ ¼ö½Å
- *  ÇÁ·ÎÅäÄÝ ÀÌ¸§°ú ÆÐÅ¶±æÀÌ Á¤º¸¸¸ Ãâ·ÂÇÑ´Ù. ÃßÈÄ¿¡ alter system
- *  À¸·Î ÆÐÅ¶´ýÇÁ¸¦ ÇÒ¼ö ÀÖµµ·Ï º¯°æÇÏ´Â °Íµµ ÁÁÀ» °Í °°´Ù
- * 11. ÀÌ ÇÔ¼ö´Â A5ÀÇ cmiReadBlock + cmiReadProtocolAndCallback
- *  À» ´ëÃ¼ÇÑ´Ù
+ * 6. ê·¸ë£¹ í”„ë¡œí† ì½œ (ë¶„í•  íŒ¨í‚·ì¸ë° íŒ¨í‚·ë§ˆë‹¤ ì™„ì„±ëœ í˜•íƒœë¥¼ ê°€ì§)ì¸
+ *  ê²½ìš° ì½œë°± ë‚´ë¶€ì—ì„œ ë°˜ë³µë¬¸ìœ¼ë¡œ ì²˜ë¦¬í•˜ê¸°ê°€ íž˜ë“¤ê¸° ë•Œë¬¸ì—
+ *  ì—¬ê¸°ì„œ gotoë¥¼ ì‚¬ìš©í•˜ì—¬ íŠ¹ë³„ì²˜ë¦¬ í•œë‹¤ (ex) ë©”ì‹œì§€ í”„ë¡œí† ì½œ)
+ * 7. A5 clientê°€ ì ‘ì†í•˜ë©´ handshakeProtocolì„ í˜¸ì¶œí•˜ê²Œ ë˜ë©°
+ *  í•´ë‹¹ ì½œë°±ì•ˆì—ì„œ A5 ì‘ë‹µì„ ì£¼ë©´ì„œ A5ë¡œ ì „í™˜ì´ ë˜ê²Œ ëœë‹¤
+ * 8. íŒ¨í‚·ë§ˆë‹¤ ì„¸ì…˜ë‚´ ê³ ìœ ì¼ë ¨ë²ˆí˜¸(ìˆ˜ì‹ ì‹œë§ˆë‹¤ 1ì”© ì¦ê°€)ë¥¼ ë¶€ì—¬í•˜ì—¬
+ *  ìž˜ëª»ë˜ê±°ë‚˜ ì¤‘ë³µëœ íŒ¨í‚·ì´ ìˆ˜ì‹ ë˜ëŠ” ê²ƒì„ ë§‰ëŠ”ë‹¤
+ *  (ì°¸ê³ ë¡œ A5ì—ì„œëŠ” ë¶„í•  íŒ¨í‚·ì— ëŒ€í•´ì„œë§Œ ì¼ë ¨ë²ˆí˜¸ë¥¼ ë¶€ì—¬í–ˆì—ˆë‹¤)
+ * 9. RP(ALA í¬í•¨) ëª¨ë“ˆë„ ë³¸ í•¨ìˆ˜ë¥¼ ê³µë™ ì‚¬ìš©í•œë‹¤. ë‹¤ë§Œ RPì˜ ê²½ìš°
+ *  ì½œë°±êµ¬ì¡°ê°€ ì•„ë‹ˆê¸° ë•Œë¬¸ì— íŒ¨í‚· ìˆ˜ì‹ í›„ ë°”ë¡œ í•¨ìˆ˜ë¥¼ ë¹ ì ¸ë‚˜ê°„ë‹¤
+ * 10. CMI_DUMP: ê°œë°œìž ë””ë²„ê¹… ìš©ë„ë¡œ ë„£ì–´ë‘ì—ˆë‹¤. ë‹¨ìˆœížˆ ìˆ˜ì‹ 
+ *  í”„ë¡œí† ì½œ ì´ë¦„ê³¼ íŒ¨í‚·ê¸¸ì´ ì •ë³´ë§Œ ì¶œë ¥í•œë‹¤. ì¶”í›„ì— alter system
+ *  ìœ¼ë¡œ íŒ¨í‚·ë¤í”„ë¥¼ í• ìˆ˜ ìžˆë„ë¡ ë³€ê²½í•˜ëŠ” ê²ƒë„ ì¢‹ì„ ê²ƒ ê°™ë‹¤
+ * 11. ì´ í•¨ìˆ˜ëŠ” A5ì˜ cmiReadBlock + cmiReadProtocolAndCallback
+ *  ì„ ëŒ€ì²´í•œë‹¤
 *************************************************************/
 // #define CMI_DUMP 1
 IDE_RC cmiRecv(cmiProtocolContext* aCtx,
@@ -3210,14 +3210,14 @@ beginToRecv:
     aCtx->mReceiveDataCount++;
     
     /* bug-33841: ipc thread's state is wrongly displayed.
-       IPCÀÎ °æ¿ì ÆÐÅ¶ ¼ö½ÅÈÄ¿¡ execute »óÅÂ·Î º¯°æ.
-       RP, DK ¸ðµâÀÎ °æ¿ì SetExecute¿Í °ü°è ¾ø´Ù */
+       IPCì¸ ê²½ìš° íŒ¨í‚· ìˆ˜ì‹ í›„ì— execute ìƒíƒœë¡œ ë³€ê²½.
+       RP, DK ëª¨ë“ˆì¸ ê²½ìš° SetExecuteì™€ ê´€ê³„ ì—†ë‹¤ */
     if (aCtx->mModule->mModuleID == CMP_MODULE_DB)
     {
         (void) gCMCallbackSetExecute(aUserContext, aTask);
     }
 
-    // ÀÌ if¹®Àº A5 client°¡ Á¢¼ÓÇÑ °æ¿ì¿¡ ÇÑÇØ ÃÖÃÊ ÇÑ¹ø¸¸ ¼öÇàµÈ´Ù
+    // ì´ ifë¬¸ì€ A5 clientê°€ ì ‘ì†í•œ ê²½ìš°ì— í•œí•´ ìµœì´ˆ í•œë²ˆë§Œ ìˆ˜í–‰ëœë‹¤
     // call A7's DB handshake directly.
     if ( cmiGetPacketType( aCtx ) == CMP_PACKET_TYPE_A5 )
     {
@@ -3260,8 +3260,8 @@ beginToRecv:
     /* BUG-41909 Add dump CM block when a packet error occurs */
     IDU_FIT_POINT_RAISE( "cmiRecv::Server::InvalidProtocolSeqNo", InvalidProtocolSeqNo );
 
-    // ¸ðµç ÆÐÅ¶Àº ¼¼¼Ç³»¾Ö¼­ °íÀ¯ÀÏ·Ã¹øÈ£¸¦ °®´Â´Ù.
-    // ¹üÀ§: 0 ~ 0x7fffffff, ÃÖ´ë°ª¿¡ ´Ù´Ù¸£¸é 0ºÎÅÍ ´Ù½Ã ½ÃÀÛµÈ´Ù
+    // ëª¨ë“  íŒ¨í‚·ì€ ì„¸ì…˜ë‚´ì• ì„œ ê³ ìœ ì¼ë ¨ë²ˆí˜¸ë¥¼ ê°–ëŠ”ë‹¤.
+    // ë²”ìœ„: 0 ~ 0x7fffffff, ìµœëŒ€ê°’ì— ë‹¤ë‹¤ë¥´ë©´ 0ë¶€í„° ë‹¤ì‹œ ì‹œìž‘ëœë‹¤
     IDE_TEST_RAISE(sCmSeqNo != aCtx->mCmSeqNo, InvalidProtocolSeqNo);
     if (aCtx->mCmSeqNo == CMP_HEADER_MAX_SEQ_NO)
     {
@@ -3272,8 +3272,8 @@ beginToRecv:
         aCtx->mCmSeqNo++;
     }
 
-    // RP(ALA) ¸ðµâ¿¡¼­´Â callbackÀ» »ç¿ëÇÏÁö ¾Ê´Â´Ù.
-    // µû¶ó¼­, RPÀÎ °æ¿ì callback È£Ãâ¾øÀÌ ¹Ù·Î return ÇÑ´Ù.
+    // RP(ALA) ëª¨ë“ˆì—ì„œëŠ” callbackì„ ì‚¬ìš©í•˜ì§€ ì•ŠëŠ”ë‹¤.
+    // ë”°ë¼ì„œ, RPì¸ ê²½ìš° callback í˜¸ì¶œì—†ì´ ë°”ë¡œ return í•œë‹¤.
     if ( ( aCtx->mModule->mModuleID == CMP_MODULE_RP ) ||
          ( aCtx->mModule->mModuleID == CMP_MODULE_DK ) )
     {
@@ -3302,18 +3302,18 @@ beginToRecv:
         {
             CMP_DB_PROTOCOL_STAT_ADD(sOpID, 1);
         }
-        // dequeueÀÇ °æ¿ì IDE_CM_STOPÀÌ ¹ÝÈ¯µÉ ¼ö ÀÖ´Ù.
+        // dequeueì˜ ê²½ìš° IDE_CM_STOPì´ ë°˜í™˜ë  ìˆ˜ ìžˆë‹¤.
         IDE_TEST_RAISE(sRet != IDE_SUCCESS, CmiRecvReturn);
 
         /* BUG-41909 Add dump CM block when a packet error occurs */
         IDU_FIT_POINT_RAISE( "cmiRecv::Server::MarshalErr", MarshalErr );
 
-        // ¼ö½ÅÇÑ ÆÐÅ¶¿¡ ´ëÇÑ ¸ðµç ÇÁ·ÎÅäÄÝ Ã³¸®°¡ ³¡³­ °æ¿ì
+        // ìˆ˜ì‹ í•œ íŒ¨í‚·ì— ëŒ€í•œ ëª¨ë“  í”„ë¡œí† ì½œ ì²˜ë¦¬ê°€ ëë‚œ ê²½ìš°
         if (aCtx->mReadBlock->mCursor == aCtx->mReadBlock->mDataSize)
         {
             break;
         }
-        // ÇÁ·ÎÅäÄÝ ÇØ¼®ÀÌ Àß¸øµÇ¾î cursor°¡ ÆÐÅ¶À» ³Ñ¾î°£ °æ¿ì
+        // í”„ë¡œí† ì½œ í•´ì„ì´ ìž˜ëª»ë˜ì–´ cursorê°€ íŒ¨í‚·ì„ ë„˜ì–´ê°„ ê²½ìš°
         else if (aCtx->mReadBlock->mCursor > aCtx->mReadBlock->mDataSize)
         {
             IDE_RAISE(MarshalErr);
@@ -3322,10 +3322,10 @@ beginToRecv:
         IDE_TEST_RAISE(aCtx->mIsDisconnect == ID_TRUE, Disconnected);
     }
 
-    // special ÇÁ·ÎÅäÄÝ Ã³¸®(Message, LobPut protocol)
-    // msg¿Í lobput ÇÁ·ÎÅäÄÝÀÇ °æ¿ì ÇÁ·ÎÅäÄÝ groupÀ¸·Î ¼ö½ÅÀÌ °¡´ÉÇÔ
-    // (ÆÐÅ¶¸¶´Ù °¢°¢ opID¸¦ °¡Áö¸ç ÆÐÅ¶Çì´õ¿¡ Á¾·á flag°¡ 0ÀÌ´Ù)
-    // ÀÌµéÀº ¿©·¯¹ø ¼ö½ÅÇÏ´õ¶óµµ ¸¶Áö¸· ÇÑ¹ø¸¸ ÀÀ´ä¼Û½ÅÇØ¾ß ÇÑ´Ù.
+    // special í”„ë¡œí† ì½œ ì²˜ë¦¬(Message, LobPut protocol)
+    // msgì™€ lobput í”„ë¡œí† ì½œì˜ ê²½ìš° í”„ë¡œí† ì½œ groupìœ¼ë¡œ ìˆ˜ì‹ ì´ ê°€ëŠ¥í•¨
+    // (íŒ¨í‚·ë§ˆë‹¤ ê°ê° opIDë¥¼ ê°€ì§€ë©° íŒ¨í‚·í—¤ë”ì— ì¢…ë£Œ flagê°€ 0ì´ë‹¤)
+    // ì´ë“¤ì€ ì—¬ëŸ¬ë²ˆ ìˆ˜ì‹ í•˜ë”ë¼ë„ ë§ˆì§€ë§‰ í•œë²ˆë§Œ ì‘ë‹µì†¡ì‹ í•´ì•¼ í•œë‹¤.
     if (CMP_HEADER_PROTO_END_IS_SET(sHeader) == ID_FALSE)
     {
         goto beginToRecv;
@@ -3402,8 +3402,8 @@ IDE_RC cmiRecvIPCDA(cmiProtocolContext *aCtx,
                                               sCurReadOperationCount,
                                               aMicroSleepTime) == IDE_FAILURE, Disconnected);
 
-        /* ¼ö½Å¹ÞÀº µ¥ÀÌÅÍ »çÀÌÁî °»½Å */
-        /* BUG-44705 sTmpBlock.mDataSize°ª º¸ÀåÀ» À§ÇÑ ¸Þ¸ð¸® ¹è¸®¾î Ãß°¡ */
+        /* ìˆ˜ì‹ ë°›ì€ ë°ì´í„° ì‚¬ì´ì¦ˆ ê°±ì‹  */
+        /* BUG-44705 sTmpBlock.mDataSizeê°’ ë³´ìž¥ì„ ìœ„í•œ ë©”ëª¨ë¦¬ ë°°ë¦¬ì–´ ì¶”ê°€ */
         IDL_MEM_BARRIER;
         sTmpBlock.mDataSize = sOrgBlock->mBlock.mDataSize;
 
@@ -3419,7 +3419,7 @@ IDE_RC cmiRecvIPCDA(cmiProtocolContext *aCtx,
             sNeedFinalizeWrite = ID_TRUE;
         }
 
-        /* Callback Function È¹µæ */
+        /* Callback Function íšë“ */
         aCtx->mSessionCloseNeeded  = ID_FALSE;
         /* BUG-39463 Add new fetch protocol that can request over 65535 rows. */
         aCtx->mProtocol.mOpID      = sOpID;
@@ -3428,7 +3428,7 @@ IDE_RC cmiRecvIPCDA(cmiProtocolContext *aCtx,
         sLinkIPCDA->mMessageQ.mNeedToNotify = ID_TRUE;
 #endif
 
-        /* Callback È£Ãâ */
+        /* Callback í˜¸ì¶œ */
         sCallbackFunction = aCtx->mModule->mCallbackFunction[sOpID];
         sRet = sCallbackFunction(aCtx,
                                  &aCtx->mProtocol,
@@ -3437,7 +3437,7 @@ IDE_RC cmiRecvIPCDA(cmiProtocolContext *aCtx,
         /* PROJ-1697 Performance view for Protocols */
         CMP_DB_PROTOCOL_STAT_ADD( aCtx->mProtocol.mOpID, 1 );
 
-        /* BUG-44125 [mm-cli] IPCDA ¸ðµå Å×½ºÆ® Áß hang - iloader CLOB */
+        /* BUG-44125 [mm-cli] IPCDA ëª¨ë“œ í…ŒìŠ¤íŠ¸ ì¤‘ hang - iloader CLOB */
         IDE_TEST(sRet != IDE_SUCCESS);
     }
 
@@ -3528,9 +3528,9 @@ IDE_RC cmiMessageQNotify(cmnLinkPeerIPCDA *aLink)
 
 /*************************************************************
  * proj_2160 cm_type removal
- * 1. ÀÌ ÇÔ¼ö´Â ÄÝ¹é ¾È¿¡¼­ ºÐÇÒ ÆÐÅ¶À» ¿¬¼ÓÀûÀ¸·Î ¼ö½ÅÇÏ´Â °æ¿ì¿¡
- *  »ç¿ëÇÏ±â À§ÇØ ¸¸µé¾îÁ³´Ù.
- * 2. cmiRecv()¿ÍÀÇ Â÷ÀÌÁ¡Àº ÄÝ¹éÀ» È£ÃâÇÏ´Â ¹Ýº¹¹®ÀÌ ¾ø´Ù
+ * 1. ì´ í•¨ìˆ˜ëŠ” ì½œë°± ì•ˆì—ì„œ ë¶„í•  íŒ¨í‚·ì„ ì—°ì†ì ìœ¼ë¡œ ìˆ˜ì‹ í•˜ëŠ” ê²½ìš°ì—
+ *  ì‚¬ìš©í•˜ê¸° ìœ„í•´ ë§Œë“¤ì–´ì¡Œë‹¤.
+ * 2. cmiRecv()ì™€ì˜ ì°¨ì´ì ì€ ì½œë°±ì„ í˜¸ì¶œí•˜ëŠ” ë°˜ë³µë¬¸ì´ ì—†ë‹¤
 *************************************************************/
 IDE_RC cmiRecvNext(cmiProtocolContext* aCtx, PDL_Time_Value* aTimeout)
 {
@@ -3559,8 +3559,8 @@ IDE_RC cmiRecvNext(cmiProtocolContext* aCtx, PDL_Time_Value* aTimeout)
     /* BUG-41909 Add dump CM block when a packet error occurs */
     IDU_FIT_POINT_RAISE( "cmiRecvNext::Server::InvalidProtocolSeqNo", InvalidProtocolSeqNo );
 
-    // ¸ðµç ÆÐÅ¶Àº ¼¼¼Ç³»¾Ö¼­ °íÀ¯ÀÏ·Ã¹øÈ£¸¦ °®´Â´Ù.
-    // ¹üÀ§: 0 ~ 0x7fffffff, ÃÖ´ë°ª¿¡ ´Ù´Ù¸£¸é 0ºÎÅÍ ´Ù½Ã ½ÃÀÛµÈ´Ù
+    // ëª¨ë“  íŒ¨í‚·ì€ ì„¸ì…˜ë‚´ì• ì„œ ê³ ìœ ì¼ë ¨ë²ˆí˜¸ë¥¼ ê°–ëŠ”ë‹¤.
+    // ë²”ìœ„: 0 ~ 0x7fffffff, ìµœëŒ€ê°’ì— ë‹¤ë‹¤ë¥´ë©´ 0ë¶€í„° ë‹¤ì‹œ ì‹œìž‘ëœë‹¤
     IDE_TEST_RAISE(sCmSeqNo != aCtx->mCmSeqNo, InvalidProtocolSeqNo);
     if (aCtx->mCmSeqNo == CMP_HEADER_MAX_SEQ_NO)
     {
@@ -3589,14 +3589,14 @@ IDE_RC cmiRecvNext(cmiProtocolContext* aCtx, PDL_Time_Value* aTimeout)
 
 /*************************************************************
  * proj_2160 cm_type removal
- * 1. ÀÌ ÇÔ¼ö´Â A5ÀÇ cmiWriteBlockÀ» ´ëÃ¼ÇÑ´Ù
- * 2. ÀÌ ÇÔ¼ö¿¡¼­´Â ÆÐÅ¶ Çì´õ¸¦ ¸¸µé¾î ÆÐÅ¶À» ¼Û½ÅÇÑ´Ù
- * 3. A5°ú ¸¶Âù°¡Áö·Î pendingList¸¦ À¯ÁöÇÑ´Ù. ÀÌÀ¯´Â
- *  Altibase¿¡¼­´Â ºñµ¿±â Åë½ÅÀÌ °¡´É(ex) client°¡ ¼Û½ÅÇÏ°í ÀÖ´Â
- *  µµÁßÀÎµ¥, ¼­¹ö¿¡¼­´Â ÀÀ´äÀ» ¹Ù·Î »ý¼ºÇÏ¸ç ÇÑ ÆÐÅ¶À» ³Ñ±â´Â °æ¿ì
- *  ¹Ù·Î ¼Û½ÅÀÌ µÇ¾îÁöµµ·Ï µÇ¾î ÀÖÀ½) ÇÑµ¥, ÀÌ ¶§ ¼ÒÄÏ¹öÆÛ°¡
- *  ²Ë Â÷¼­ ½ÇÆÐÇÑ °æ¿ì ¹öÆÛ¸µÀ» ÇÏÁö ¾Ê°í ¹«ÇÑ ´ë±âÇÏ°Ô µÇ¸é
- *  ¼­·Î¸¦ ¾ÖÅ¸°Ô ±â´Ù¸®´Â »óÈ²ÀÌ ¹ú¾îÁú¼öµµ ÀÖ´Ù
+ * 1. ì´ í•¨ìˆ˜ëŠ” A5ì˜ cmiWriteBlockì„ ëŒ€ì²´í•œë‹¤
+ * 2. ì´ í•¨ìˆ˜ì—ì„œëŠ” íŒ¨í‚· í—¤ë”ë¥¼ ë§Œë“¤ì–´ íŒ¨í‚·ì„ ì†¡ì‹ í•œë‹¤
+ * 3. A5ê³¼ ë§ˆì°¬ê°€ì§€ë¡œ pendingListë¥¼ ìœ ì§€í•œë‹¤. ì´ìœ ëŠ”
+ *  Altibaseì—ì„œëŠ” ë¹„ë™ê¸° í†µì‹ ì´ ê°€ëŠ¥(ex) clientê°€ ì†¡ì‹ í•˜ê³  ìžˆëŠ”
+ *  ë„ì¤‘ì¸ë°, ì„œë²„ì—ì„œëŠ” ì‘ë‹µì„ ë°”ë¡œ ìƒì„±í•˜ë©° í•œ íŒ¨í‚·ì„ ë„˜ê¸°ëŠ” ê²½ìš°
+ *  ë°”ë¡œ ì†¡ì‹ ì´ ë˜ì–´ì§€ë„ë¡ ë˜ì–´ ìžˆìŒ) í•œë°, ì´ ë•Œ ì†Œì¼“ë²„í¼ê°€
+ *  ê½‰ ì°¨ì„œ ì‹¤íŒ¨í•œ ê²½ìš° ë²„í¼ë§ì„ í•˜ì§€ ì•Šê³  ë¬´í•œ ëŒ€ê¸°í•˜ê²Œ ë˜ë©´
+ *  ì„œë¡œë¥¼ ì• íƒ€ê²Œ ê¸°ë‹¤ë¦¬ëŠ” ìƒí™©ì´ ë²Œì–´ì§ˆìˆ˜ë„ ìžˆë‹¤
 *************************************************************/
 IDE_RC cmiSend( cmiProtocolContext  * aCtx, 
                 idBool                aIsEnd, 
@@ -3657,14 +3657,14 @@ IDE_RC cmiSend( cmiProtocolContext  * aCtx,
     
     IDU_FIT_POINT_RAISE( "cmiSend::Server::ideIsRetry", SendFail );
 
-    // Pending Write BlockµéÀ» Àü¼Û (send previous packets)
+    // Pending Write Blockë“¤ì„ ì „ì†¡ (send previous packets)
     IDU_LIST_ITERATE_SAFE(&aCtx->mWriteBlockList, sIterator, sNodeNext)
     {
         sPendingBlock = (cmbBlock *)sIterator->mObj;
 
         sSendSuccess = ID_TRUE;
 
-        // BUG-19465 : CM_BufferÀÇ pending list¸¦ Á¦ÇÑ
+        // BUG-19465 : CM_Bufferì˜ pending listë¥¼ ì œí•œ
         while (sLink->mPeerOp->mSend(sLink, sPendingBlock) != IDE_SUCCESS)
         {
             sSendSuccess = ID_FALSE;
@@ -3722,7 +3722,7 @@ IDE_RC cmiSend( cmiProtocolContext  * aCtx,
         sNeedToSave = ID_TRUE;
     }
 
-    // ÇöÀç blockÀ» pendingList ¸ÇµÚ¿¡ ÀúÀåÇØ µÐ´Ù
+    // í˜„ìž¬ blockì„ pendingList ë§¨ë’¤ì— ì €ìž¥í•´ ë‘”ë‹¤
     if (sNeedToSave == ID_TRUE)
     {
         sNewBlock = NULL;
@@ -3735,8 +3735,8 @@ IDE_RC cmiSend( cmiProtocolContext  * aCtx,
         sNeedToSave = ID_FALSE;
     }
 
-    // ¸ðµç ÆÐÅ¶Àº ¼¼¼Ç³»¾Ö¼­ °íÀ¯ÀÏ·Ã¹øÈ£¸¦ °®´Â´Ù.
-    // ¹üÀ§: 0 ~ 0x7fffffff, ÃÖ´ë°ª¿¡ ´Ù´Ù¸£¸é 0ºÎÅÍ ´Ù½Ã ½ÃÀÛµÈ´Ù
+    // ëª¨ë“  íŒ¨í‚·ì€ ì„¸ì…˜ë‚´ì• ì„œ ê³ ìœ ì¼ë ¨ë²ˆí˜¸ë¥¼ ê°–ëŠ”ë‹¤.
+    // ë²”ìœ„: 0 ~ 0x7fffffff, ìµœëŒ€ê°’ì— ë‹¤ë‹¤ë¥´ë©´ 0ë¶€í„° ë‹¤ì‹œ ì‹œìž‘ëœë‹¤
     sCmSeqNo = CMP_HEADER_SEQ_NO(sHeader);
     if (sCmSeqNo == CMP_HEADER_MAX_SEQ_NO)
     {
@@ -3749,7 +3749,7 @@ IDE_RC cmiSend( cmiProtocolContext  * aCtx,
 
     if (aIsEnd == ID_TRUE)
     {
-        // ÇÁ·ÎÅäÄÝ ³¡ÀÌ¶ó¸é ¸ðµç BlockÀÌ Àü¼ÛµÇ¾î¾ß ÇÔ
+        // í”„ë¡œí† ì½œ ëì´ë¼ë©´ ëª¨ë“  Blockì´ ì „ì†¡ë˜ì–´ì•¼ í•¨
         IDU_LIST_ITERATE_SAFE(&aCtx->mWriteBlockList, sIterator, sNodeNext)
         {
             sPendingBlock = (cmbBlock *)sIterator->mObj;
@@ -3827,8 +3827,8 @@ IDE_RC cmiSend( cmiProtocolContext  * aCtx,
  *  BUG-38716 
  *  [rp-sender] It needs a property to give sending timeout to replication sender. 
  *
- *  Pending Block ¿¡ ÀúÀåµÇ¾î ÀÖ´Â Block µéÀ» Àü¼Û ÇÕ´Ï´Ù.
- *  ÇöÀç RP ¿¡¼­¸¸ »ç¿ë
+ *  Pending Block ì— ì €ìž¥ë˜ì–´ ìžˆëŠ” Block ë“¤ì„ ì „ì†¡ í•©ë‹ˆë‹¤.
+ *  í˜„ìž¬ RP ì—ì„œë§Œ ì‚¬ìš©
  */
 IDE_RC cmiFlushPendingBlock( cmiProtocolContext * aCtx,
                              PDL_Time_Value     * aTimeout )
@@ -4001,11 +4001,11 @@ IDE_RC cmiPermitConnection(cmiLink *aLink,
     cmnLinkPeer *sLink = (cmnLinkPeer *)aLink;
 
     /*
-     * Peer Type °Ë»ç
+     * Peer Type ê²€ì‚¬
      */
     IDE_ASSERT(aLink->mType == CMN_LINK_TYPE_PEER_SERVER);
 
-    /* IPC¿¡¼­¸¸ mPermitConnectionÀ» Ã¼Å©ÇÏ¸é µÈ´Ù */
+    /* IPCì—ì„œë§Œ mPermitConnectionì„ ì²´í¬í•˜ë©´ ëœë‹¤ */
     if (sLink->mPeerOp->mPermitConnection != NULL)
     {
         IDE_TEST(sLink->mPeerOp->mPermitConnection(sLink,
@@ -4030,7 +4030,7 @@ cmnLinkImpl cmiGetLinkImpl(cmiLink *aLink)
 }
 
 /* bug-33841: ipc thread's state is wrongly displayed
-   mmtThreadManager¿¡¼­ mmtServiceThread::setExecuteCallbackÀ» µî·Ï */
+   mmtThreadManagerì—ì„œ mmtServiceThread::setExecuteCallbackì„ ë“±ë¡ */
 IDE_RC cmiSetCallbackSetExecute(cmiCallbackSetExecute aCallback)
 {
     gCMCallbackSetExecute = aCallback;
@@ -4084,13 +4084,13 @@ void cmiLinkSetPacketTypeA5( cmiLink *aLink )
 /**
  *  cmiDump
  *
- *  Ctx, Packetµî ¿¡·¯ ¹ß»ý½Ã À¯¿ëÇÑ Á¤º¸¸¦ ´ýÇÁÇÑ´Ù.
+ *  Ctx, Packetë“± ì—ëŸ¬ ë°œìƒì‹œ ìœ ìš©í•œ ì •ë³´ë¥¼ ë¤í”„í•œë‹¤.
  *
  *  @aCtx       : cmiProtocolContext
  *  @aHeader    : CM Packet Header
  *  @aBlock     : CM Packet Block
- *  @aFromIndex : Ãâ·ÂÇÒ ½ÃÀÛ Index
- *  @aLen       : Ãâ·ÂÇÒ Length
+ *  @aFromIndex : ì¶œë ¥í•  ì‹œìž‘ Index
+ *  @aLen       : ì¶œë ¥í•  Length
  */
 static void cmiDump(cmiProtocolContext   *aCtx,
                     cmpHeader            *aHeader,
@@ -4106,9 +4106,9 @@ static void cmiDump(cmiProtocolContext   *aCtx,
      * Line Count    = 2^15(CMB_BLOCK_DEFAULT_SIZE) / 2^4 = 2^11
      * Needed Buffer = 59 * 2^11 = 120832byte
      *
-     * 32KB ÆÐÅ¶ ÀüÃ¼¸¦ Ãâ·ÂÇÏ±â À§ÇØ¼­´Â 120KB°¡ ÇÊ¿äÇÏ´Ù.
-     * CTX, HEADERµîµµ Ãâ·ÂÇÏ±â ¶§¹®¿¡ 128KB Á¤µµ¸é ÇöÀç ÃæºÐÇÏ´Ù.
-     * 1byte¸¦ HEX °ªÀ¸·Î Ãâ·ÂÇÏ±â À§ÇØ¼­ ´ë·« 4byte°¡ ÇÊ¿äÇÑ °ÍÀÌ´Ù.
+     * 32KB íŒ¨í‚· ì „ì²´ë¥¼ ì¶œë ¥í•˜ê¸° ìœ„í•´ì„œëŠ” 120KBê°€ í•„ìš”í•˜ë‹¤.
+     * CTX, HEADERë“±ë„ ì¶œë ¥í•˜ê¸° ë•Œë¬¸ì— 128KB ì •ë„ë©´ í˜„ìž¬ ì¶©ë¶„í•˜ë‹¤.
+     * 1byteë¥¼ HEX ê°’ìœ¼ë¡œ ì¶œë ¥í•˜ê¸° ìœ„í•´ì„œ ëŒ€ëžµ 4byteê°€ í•„ìš”í•œ ê²ƒì´ë‹¤.
      */
     UInt   sHexBufSize  = CMB_BLOCK_DEFAULT_SIZE * 4;
     UInt   sToIndex     = aFromIndex + aLen - 1;
@@ -4118,8 +4118,8 @@ static void cmiDump(cmiProtocolContext   *aCtx,
     IDE_TEST_CONT( (aCtx == NULL) || (aHeader == NULL) || (aBlock == NULL), NO_NEED_WORK);
 
     /*
-     * cmiProtocolContext¿¡ HexBuffer¸¦ ´Þ¸é Session¸¶´Ù 128KB ¹öÆÛ¸¦ °¡Á®¾ß ÇÑ´Ù.
-     * Packet error´Â ±ØÈ÷ µå¹® »óÈ²ÀÌ¹Ç·Î ½ÇÁ¦ Ãâ·ÂÀ» ÇÒ ¶§ ÇÒ´çÇØ¼­ ¾´´Ù.
+     * cmiProtocolContextì— HexBufferë¥¼ ë‹¬ë©´ Sessionë§ˆë‹¤ 128KB ë²„í¼ë¥¼ ê°€ì ¸ì•¼ í•œë‹¤.
+     * Packet errorëŠ” ê·¹ížˆ ë“œë¬¸ ìƒí™©ì´ë¯€ë¡œ ì‹¤ì œ ì¶œë ¥ì„ í•  ë•Œ í• ë‹¹í•´ì„œ ì“´ë‹¤.
      */
     IDU_FIT_POINT_RAISE( "cmiDump::Server::MemAllocError", MemAllocError );
 
@@ -4141,7 +4141,7 @@ static void cmiDump(cmiProtocolContext   *aCtx,
                                     CMP_HEADER_SEQ_NO(aHeader),
                                     aBlock->mDataSize);
 
-    /* MSG ÆÄÀÏ¿¡¼­ %02X¸¦ ÀÎ½Ä¸øÇÏ´Â ¹ö±×°¡ ÀÖ´Ù. %x¸¸ ÀÎ½ÄÇÑ´Ù. */
+    /* MSG íŒŒì¼ì—ì„œ %02Xë¥¼ ì¸ì‹ëª»í•˜ëŠ” ë²„ê·¸ê°€ ìžˆë‹¤. %xë§Œ ì¸ì‹í•œë‹¤. */
     sHexBufIndex += idlOS::snprintf(&sHexBuf[sHexBufIndex], sHexBufSize - sHexBufIndex,
                                     "# BLOCK HEADER  = "
                                     "%02X %02X %02X%02X %02X%02X%02X%02X "
@@ -4176,7 +4176,7 @@ static void cmiDump(cmiProtocolContext   *aCtx,
 
     for (i = aFromIndex, sAddr = 0; i <= sToIndex; i++)
     {
-        /* ÇÑ ¶óÀÎ¿¡ HEX°ª 16°³¸¦ Ãâ·ÂÇÑ´Ù. */
+        /* í•œ ë¼ì¸ì— HEXê°’ 16ê°œë¥¼ ì¶œë ¥í•œë‹¤. */
         if (sAddr % 16 == 0)
         {
             sHexBufIndex += idlOS::snprintf(&sHexBuf[sHexBufIndex], sHexBufSize - sHexBufIndex, "\n%08X: ", sAddr);
@@ -4204,7 +4204,7 @@ static void cmiDump(cmiProtocolContext   *aCtx,
         /* Nothing */
     }
 
-    /* ¸Þ¸ð¸® ÇÒ´ç ½ÇÆÐ½Ã TRC Log¸¸ Ãâ·ÂÇÏ°í ³Ñ¾î°¡ÀÚ */
+    /* ë©”ëª¨ë¦¬ í• ë‹¹ ì‹¤íŒ¨ì‹œ TRC Logë§Œ ì¶œë ¥í•˜ê³  ë„˜ì–´ê°€ìž */
     IDE_EXCEPTION(MemAllocError)
     {
         ideLog::log(IDE_CM_0, CM_TRC_MEM_ALLOC_ERROR, errno, sHexBufSize);

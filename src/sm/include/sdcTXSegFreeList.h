@@ -30,31 +30,31 @@
 class sdcTXSegFreeList;
 
 /*
- * Æ®·£Àè¼Ç ¼¼±×¸ÕÆ® ¿£Æ®¸® Á¤ÀÇ
+ * íŠ¸ëœì­ì…˜ ì„¸ê·¸ë¨¼íŠ¸ ì—”íŠ¸ë¦¬ ì •ì˜
  */
 typedef struct sdcTXSegEntry
 {
     smuList            mListNode;       // Dbl-Linked List Node
 
     sdcTXSegFreeList * mFreeList;       // FreeList Pointer
-    sdcTXSegStatus     mStatus;         // ¿£Æ®¸®»óÅÂ
-    UInt               mEntryIdx;       // ¿£Æ®¸®¼ø¹ø
+    sdcTXSegStatus     mStatus;         // ì—”íŠ¸ë¦¬ìƒíƒœ
+    UInt               mEntryIdx;       // ì—”íŠ¸ë¦¬ìˆœë²ˆ
 
-    smSCN              mMaxCommitSCN;   // ÃÖÁ¾ »ç¿ëÇÑ Æ®·£Àè¼ÇÀÇ CSCN
+    smSCN              mMaxCommitSCN;   // ìµœì¢… ì‚¬ìš©í•œ íŠ¸ëœì­ì…˜ì˜ CSCN
 
     sdcTSSegment       mTSSegmt;        // TSS Segment
     sdcUndoSegment     mUDSegmt;        // Undo Segment
 
-    sdSID              mTSSlotSID;      // TSS SlotÀÇ SID
-    sdRID              mExtRID4TSS;     // ÇÒ´çÇÑ TSS ÆäÀÌÁöÀÇ ExtRID
+    sdSID              mTSSlotSID;      // TSS Slotì˜ SID
+    sdRID              mExtRID4TSS;     // í• ë‹¹í•œ TSS í˜ì´ì§€ì˜ ExtRID
 
-    sdRID              mFstExtRID4UDS;  // Ã³À½ ÇÒ´çÇÑ Undo ÆäÀÌÁöÀÇ ExtRID
-    scPageID           mFstUndoPID;     // Ã³À½ ÇÒ´çÇÑ Undo ÆäÀÌÁöÀÇ PID
-    scSlotNum          mFstUndoSlotNum; // Ã³À½ ÇÒ´çÇÑ Undo RecordÀÇ SlotNum
+    sdRID              mFstExtRID4UDS;  // ì²˜ìŒ í• ë‹¹í•œ Undo í˜ì´ì§€ì˜ ExtRID
+    scPageID           mFstUndoPID;     // ì²˜ìŒ í• ë‹¹í•œ Undo í˜ì´ì§€ì˜ PID
+    scSlotNum          mFstUndoSlotNum; // ì²˜ìŒ í• ë‹¹í•œ Undo Recordì˜ SlotNum
 
-    sdRID              mLstExtRID4UDS;  // ¸¶Áö¸· ÇÒ´çÇÑ Undo ÆäÀÌÁöÀÇ ExtRID
-    scPageID           mLstUndoPID;     // ¸¶Áö¸· ÇÒ´çÇÑ Undo ÆäÀÌÁöÀÇ PID
-    scSlotNum          mLstUndoSlotNum; // ¸¶Áö¸· ÇÒ´çÇÑ Undo RecordÀÇ SlotNum
+    sdRID              mLstExtRID4UDS;  // ë§ˆì§€ë§‰ í• ë‹¹í•œ Undo í˜ì´ì§€ì˜ ExtRID
+    scPageID           mLstUndoPID;     // ë§ˆì§€ë§‰ í• ë‹¹í•œ Undo í˜ì´ì§€ì˜ PID
+    scSlotNum          mLstUndoSlotNum; // ë§ˆì§€ë§‰ í• ë‹¹í•œ Undo Recordì˜ SlotNum
 
 } sdcTXSegEntry;
 
@@ -72,8 +72,8 @@ public:
 
     void   allocEntry( sdcTXSegEntry ** aEntry );
 
-    // BUG-29839 Àç»ç¿ëµÈ undo page¿¡¼­ ÀÌÀü CTS¸¦ º¸·Á°í ÇÒ ¼ö ÀÖÀ½.
-    // ÀçÇöÇÏ±â À§ÇØ transaction¿¡ Æ¯Á¤ segment entry¸¦ bindingÇÏ´Â ±â´É Ãß°¡
+    // BUG-29839 ì¬ì‚¬ìš©ëœ undo pageì—ì„œ ì´ì „ CTSë¥¼ ë³´ë ¤ê³  í•  ìˆ˜ ìˆìŒ.
+    // ì¬í˜„í•˜ê¸° ìœ„í•´ transactionì— íŠ¹ì • segment entryë¥¼ bindingí•˜ëŠ” ê¸°ëŠ¥ ì¶”ê°€
     void   allocEntryByEntryID( UInt             aEntryID,
                                 sdcTXSegEntry ** aEntry );
 
@@ -100,23 +100,23 @@ public:
 
 public:
 
-    SInt            mEntryCnt;       /* ÃÑ Entry °³¼ö */
-    SInt            mFreeEntryCnt;   /* Free Entry °³¼ö */
-    smuList         mBase;           /* FreeListÀÇ Base Node */
+    SInt            mEntryCnt;       /* ì´ Entry ê°œìˆ˜ */
+    SInt            mFreeEntryCnt;   /* Free Entry ê°œìˆ˜ */
+    smuList         mBase;           /* FreeListì˜ Base Node */
 
 private:
 
-    iduMutex        mMutex;          /* FreeListÀÇ µ¿½Ã¼º Á¦¾î */
+    iduMutex        mMutex;          /* FreeListì˜ ë™ì‹œì„± ì œì–´ */
 };
 
 /***********************************************************************
  *
- * Description : Æ®·£Àè¼Ç ¼¼±×¸ÕÆ® ¿£Æ®¸® ÃÊ±âÈ­
+ * Description : íŠ¸ëœì­ì…˜ ì„¸ê·¸ë¨¼íŠ¸ ì—”íŠ¸ë¦¬ ì´ˆê¸°í™”
  *
- * Æ®·£Àè¼Ç ¼¼±×¸ÕÆ® ¿£Æ®¸®¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+ * íŠ¸ëœì­ì…˜ ì„¸ê·¸ë¨¼íŠ¸ ì—”íŠ¸ë¦¬ë¥¼ ì´ˆê¸°í™”í•œë‹¤.
  *
- * aEntry    - [IN] Æ®·£Àè¼Ç ¼¼±×¸ÕÆ® Entry Æ÷ÀÎÅÍ
- * aFreeList - [IN] Æ®·£Àè¼Ç ¼¼±×¸ÕÆ® FreeList Æ÷ÀÎÅÍ
+ * aEntry    - [IN] íŠ¸ëœì­ì…˜ ì„¸ê·¸ë¨¼íŠ¸ Entry í¬ì¸í„°
+ * aFreeList - [IN] íŠ¸ëœì­ì…˜ ì„¸ê·¸ë¨¼íŠ¸ FreeList í¬ì¸í„°
  *
  ***********************************************************************/
 inline void sdcTXSegFreeList::initEntry4Runtime( sdcTXSegEntry    * aEntry,
@@ -139,17 +139,17 @@ inline void sdcTXSegFreeList::initEntry4Runtime( sdcTXSegEntry    * aEntry,
 
 /******************************************************************************
  *
- * Description : Steal ¿¬»êÀ» À§ÇÑ Æ®·£Àè¼Ç ¼¼±×¸ÕÆ® ¿£Æ®¸® ÇÒ´ç °¡´É¼ºÀ»
- *               OptimisticsÇÏ°Ô È®ÀÎ
+ * Description : Steal ì—°ì‚°ì„ ìœ„í•œ íŠ¸ëœì­ì…˜ ì„¸ê·¸ë¨¼íŠ¸ ì—”íŠ¸ë¦¬ í• ë‹¹ ê°€ëŠ¥ì„±ì„
+ *               Optimisticsí•˜ê²Œ í™•ì¸
  *
- * °¢ ¿£Æ®¸®ÀÇ Max CommitSCNÀÌ aCheckSCN º¸´Ù ÀÛ´Ù´Â °ÍÀ» È®ÀÎÇÏ°í,
- * Segment Size°¡ ExtDir ÆäÀÌÁö 2°³ÀÌ»óÀÎ °æ¿ì¿¡ ÇØ´ç ¿£Æ®¸®ÀÇ 
- * ¼¼±×¸ÕÆ®µéÀ» ¸ğµÎ Expired µÇ¾úÀ½À» º¸ÀåÇÑ´Ù.
+ * ê° ì—”íŠ¸ë¦¬ì˜ Max CommitSCNì´ aCheckSCN ë³´ë‹¤ ì‘ë‹¤ëŠ” ê²ƒì„ í™•ì¸í•˜ê³ ,
+ * Segment Sizeê°€ ExtDir í˜ì´ì§€ 2ê°œì´ìƒì¸ ê²½ìš°ì— í•´ë‹¹ ì—”íŠ¸ë¦¬ì˜ 
+ * ì„¸ê·¸ë¨¼íŠ¸ë“¤ì„ ëª¨ë‘ Expired ë˜ì—ˆìŒì„ ë³´ì¥í•œë‹¤.
  *
- * aEntry           - [IN] Æ®·£Àè¼Ç ¼¼±×¸ÕÆ® ¿£Æ®¸® Æ÷ÀÎÅÍ
+ * aEntry           - [IN] íŠ¸ëœì­ì…˜ ì„¸ê·¸ë¨¼íŠ¸ ì—”íŠ¸ë¦¬ í¬ì¸í„°
  * aSegType         - [IN] Segment Type
- * aOldestTransBSCN - [IN] ActiveÇÑ Æ®·£Àè¼ÇµéÀÌ °¡Áø Statement Áß¿¡¼­
- *                         °¡Àå ¿À·¡Àü¿¡ ½ÃÀÛÇÑ StatementÀÇ SCN
+ * aOldestTransBSCN - [IN] Activeí•œ íŠ¸ëœì­ì…˜ë“¤ì´ ê°€ì§„ Statement ì¤‘ì—ì„œ
+ *                         ê°€ì¥ ì˜¤ë˜ì „ì— ì‹œì‘í•œ Statementì˜ SCN
  *
  ******************************************************************************/
 inline idBool sdcTXSegFreeList::isEntryExpired( 

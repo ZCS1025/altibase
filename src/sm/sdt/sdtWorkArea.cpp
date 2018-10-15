@@ -47,8 +47,8 @@ sdtWAState            sdtWorkArea::mWAState = SDT_WASTATE_SHUTDOWN;
  ******************************************************************/
 /**************************************************************************
  * Description :
- * Ã³À½ ¼­¹ö ±¸µ¿ÇÒ¶§ È£ÃâµÈ´Ù. º¯¼ö°ªÀ» ÃÊ±âÈ­ÇÏ°í Mutex¸¦ ¸¸µé°í
- * createWA¸¦ ºÎ¸¥´Ù.
+ * ì²˜ìŒ ì„œë²„ êµ¬ë™í• ë•Œ í˜¸ì¶œëœë‹¤. ë³€ìˆ˜ê°’ì„ ì´ˆê¸°í™”í•˜ê³  Mutexë¥¼ ë§Œë“¤ê³ 
+ * createWAë¥¼ ë¶€ë¥¸ë‹¤.
  ***************************************************************************/
 IDE_RC sdtWorkArea::initializeStatic()
 {
@@ -68,7 +68,7 @@ IDE_RC sdtWorkArea::initializeStatic()
 
 /**************************************************************************
  * Description :
- * memory¸¦ ÇÒ´çÇÏ°í ±¸Á¶¸¦ ¸¸µç´Ù.
+ * memoryë¥¼ í• ë‹¹í•˜ê³  êµ¬ì¡°ë¥¼ ë§Œë“ ë‹¤.
  ***************************************************************************/
 IDE_RC sdtWorkArea::createWA()
 {
@@ -79,11 +79,11 @@ IDE_RC sdtWorkArea::createWA()
     UInt      sState = 0;
     UInt      i;
 
-    /* WASegment ÀÚ·á±¸Á¶¿¡ ´ëÇÑ °ËÁõ*/
-    /* WASegment´Â Page¿¡ ¹èÄ¡µÇ±â ¶§¹®¿¡ PageÅ©±âº¸´Ù ÀÛ¾Æ¾ß ÇÑ´Ù. */
+    /* WASegment ìë£Œêµ¬ì¡°ì— ëŒ€í•œ ê²€ì¦*/
+    /* WASegmentëŠ” Pageì— ë°°ì¹˜ë˜ê¸° ë•Œë¬¸ì— Pageí¬ê¸°ë³´ë‹¤ ì‘ì•„ì•¼ í•œë‹¤. */
     IDE_DASSERT( ID_SIZEOF( sdtWASegment ) < SD_PAGE_SIZE );
-    /* WASegment + Pointer*N ÀÌ Page¿¡ ºñ·ÊÇØ¾ß ÇÏ¸ç, ±×³Éµµ Page¿¡
-     * ºñ·ÊÇØ¾ß ÇÔ */
+    /* WASegment + Pointer*N ì´ Pageì— ë¹„ë¡€í•´ì•¼ í•˜ë©°, ê·¸ëƒ¥ë„ Pageì—
+     * ë¹„ë¡€í•´ì•¼ í•¨ */
     IDE_DASSERT( ( SD_PAGE_SIZE - ID_SIZEOF( sdtWASegment ) )
                  % ( ID_SIZEOF( UChar * ) ) == 0 );
     IDE_DASSERT( ( SD_PAGE_SIZE % ID_SIZEOF( UChar * ) ) == 0 );
@@ -156,8 +156,8 @@ IDE_RC sdtWorkArea::createWA()
                                            &mFlusherMgr )
               != IDE_SUCCESS );
 
-    /* Flusher ±âµ¿½ÃÅ°±â Àü¿¡ DoneÀ» ¼³Á¤ÇØÁà¾ß, FlusherµéÀÌ ¿­¸®ÀÚ¸¶ÀÚ
-     * ´İÈ÷´Â Çö»óÀÌ ¾øÀ½*/
+    /* Flusher ê¸°ë™ì‹œí‚¤ê¸° ì „ì— Doneì„ ì„¤ì •í•´ì¤˜ì•¼, Flusherë“¤ì´ ì—´ë¦¬ìë§ˆì
+     * ë‹«íˆëŠ” í˜„ìƒì´ ì—†ìŒ*/
 
     for( i = 0 ; i < getWAFlusherCount() ; i ++ )
     {
@@ -237,7 +237,7 @@ IDE_RC sdtWorkArea::createWA()
 
 /**************************************************************************
  * Description :
- * WA¸¦ Àç±¸ÃàÇÑ´Ù.
+ * WAë¥¼ ì¬êµ¬ì¶•í•œë‹¤.
  ***************************************************************************/
 IDE_RC sdtWorkArea::resetWA()
 {
@@ -253,7 +253,7 @@ IDE_RC sdtWorkArea::resetWA()
 
 /**************************************************************************
  * Description :
- * ¼­¹ö ³»¸±¶§ È£ÃâµÈ´Ù. dropWA¸¦ È£ÃâÇÏ°í Mutex¸¦ free ÇÑ´Ù.
+ * ì„œë²„ ë‚´ë¦´ë•Œ í˜¸ì¶œëœë‹¤. dropWAë¥¼ í˜¸ì¶œí•˜ê³  Mutexë¥¼ free í•œë‹¤.
  ***************************************************************************/
 IDE_RC sdtWorkArea::destroyStatic()
 {
@@ -265,7 +265,7 @@ IDE_RC sdtWorkArea::destroyStatic()
 
 /**************************************************************************
  * Description :
- * WA¿Í °ü·ÃµÈ °´Ã¼µéÀ» Á¦°ÅÇÏ°í ¸Ş¸ğ¸®¸¦ ÇØÁ¦ÇÑ´Ù.
+ * WAì™€ ê´€ë ¨ëœ ê°ì²´ë“¤ì„ ì œê±°í•˜ê³  ë©”ëª¨ë¦¬ë¥¼ í•´ì œí•œë‹¤.
  ***************************************************************************/
 IDE_RC sdtWorkArea::dropWA()
 {
@@ -277,14 +277,14 @@ IDE_RC sdtWorkArea::dropWA()
     sTV.set(0, smuProperty::getTempSleepInterval() );
 
     lock();
-    /* ´Ù¸¥ ³à¼®¿¡ ÀÇÇØ Shutdown ÁßÀÌ¸é ¹«½ÃÇÔ */
+    /* ë‹¤ë¥¸ ë…€ì„ì— ì˜í•´ Shutdown ì¤‘ì´ë©´ ë¬´ì‹œí•¨ */
     IDE_TEST_CONT( getWAState() != SDT_WASTATE_RUNNING, SKIP );
     mWAState = SDT_WASTATE_FINALIZING;
     unlock();
 
     sFreeCount = mFreePool.getTotItemCnt();
 
-    /* ¸ğµç TransactionµéÀÌ Extent¸¦ ÀüºÎ »ç¿ë ¿Ï·áÇÒ¶§±îÁö ´ë±âÇÔ */
+    /* ëª¨ë“  Transactionë“¤ì´ Extentë¥¼ ì „ë¶€ ì‚¬ìš© ì™„ë£Œí• ë•Œê¹Œì§€ ëŒ€ê¸°í•¨ */
     while( sFreeCount < sWAExtentCount )
     {
         idlOS::sleep( sTV );
@@ -302,7 +302,7 @@ IDE_RC sdtWorkArea::dropWA()
     {
         if( mWAFlusher[ i ].mRun == ID_TRUE )
         {
-            /* »ì¾Æ ÀÖ´Ù¸é, TargetµéÀÌ ¸ğµÎ Á¤¸®µÇ¾î ÀÖ¾î¾ß ÇÔ. */
+            /* ì‚´ì•„ ìˆë‹¤ë©´, Targetë“¤ì´ ëª¨ë‘ ì •ë¦¬ë˜ì–´ ìˆì–´ì•¼ í•¨. */
             IDE_ASSERT( mWAFlusher[ i ].mTargetHead == NULL );
         }
         IDE_ASSERT( mWAFlusher[ i ].mMutex.destroy() == IDE_SUCCESS);
@@ -322,8 +322,8 @@ IDE_RC sdtWorkArea::dropWA()
 
 /**************************************************************************
  * Description :
- * WAExtentµéÀ» ÇÒ´çÇÑ´Ù. ±×¸®°í WAExtentÀÇ °¡Àå ¾ÕÂÊ¿¡ WASegment¸¦ ¹èÄ¡ÇÏ°í
- * ÀÌ¸¦ ÃÊ±âÈ­ÇØÁØ´Ù.
+ * WAExtentë“¤ì„ í• ë‹¹í•œë‹¤. ê·¸ë¦¬ê³  WAExtentì˜ ê°€ì¥ ì•ìª½ì— WASegmentë¥¼ ë°°ì¹˜í•˜ê³ 
+ * ì´ë¥¼ ì´ˆê¸°í™”í•´ì¤€ë‹¤.
  ***************************************************************************/
 IDE_RC sdtWorkArea::allocWASegmentAndExtent( idvSQL             *aStatistics,
                                              sdtWASegment      **aWASegment,
@@ -341,21 +341,21 @@ IDE_RC sdtWorkArea::allocWASegmentAndExtent( idvSQL             *aStatistics,
     sTV.set(0, smuProperty::getTempSleepInterval() );
 
     IDE_ERROR( aExtentCount >= 1 );
-    /* ¾Æ¿¹ ÇÒ´çÇÏ±â¿¡ WA°¡ ºÎÁ·ÇÑ »óÈ² */
+    /* ì•„ì˜ˆ í• ë‹¹í•˜ê¸°ì— WAê°€ ë¶€ì¡±í•œ ìƒí™© */
     IDE_TEST_RAISE( aExtentCount > (mWASize / SDT_WAEXTENT_SIZE),
                     ERROR_NOT_ENOUGH_WORKAREA );
 
     lock();
     sLockState = 1;
 
-    /***************************WAExtent ÇÒ´ç****************************/
+    /***************************WAExtent í• ë‹¹****************************/
     while( 1)
     {
-        if( getWAState() == SDT_WASTATE_RUNNING ) /* WA°¡ À¯È¿ÇÏ°í */
+        if( getWAState() == SDT_WASTATE_RUNNING ) /* WAê°€ ìœ íš¨í•˜ê³  */
         {
-            if( getFreeWAExtentCount() >= aExtentCount ) /* Extentµµ ÀÖ°í*/
+            if( getFreeWAExtentCount() >= aExtentCount ) /* Extentë„ ìˆê³ */
             {
-                break; /* ±×·¯¸é Ok */
+                break; /* ê·¸ëŸ¬ë©´ Ok */
             }
         }
 
@@ -376,18 +376,18 @@ IDE_RC sdtWorkArea::allocWASegmentAndExtent( idvSQL             *aStatistics,
         sLockState = 1;
     }
 
-    /* WAExtent¸¦ °¡Á®¿À°í, °Å±â¼­ °¡Àå ¾ÕÂÊ¿¡ WASegment±¸Á¶Ã¼¸¦ ¹èÄ¡ÇÔ */
+    /* WAExtentë¥¼ ê°€ì ¸ì˜¤ê³ , ê±°ê¸°ì„œ ê°€ì¥ ì•ìª½ì— WASegmentêµ¬ì¡°ì²´ë¥¼ ë°°ì¹˜í•¨ */
     for( i = 0 ; i < aExtentCount ; i ++ )
     {
         IDE_TEST( mFreePool.pop( ID_FALSE, /* lock */
                                  (void*) &sExtent,
                                  &sIsEmpty )
                   != IDE_SUCCESS );
-        IDE_ERROR( sIsEmpty == ID_FALSE ); /* ¹İµå½Ã ¼º°øÇØ¾ßÇÔ */
+        IDE_ERROR( sIsEmpty == ID_FALSE ); /* ë°˜ë“œì‹œ ì„±ê³µí•´ì•¼í•¨ */
 
         if( i == 0 )
         {
-            /* Ã¹ Page¿¡´Â WASegment¸¦ ¹èÄ¡½ÃÅ´*/
+            /* ì²« Pageì—ëŠ” WASegmentë¥¼ ë°°ì¹˜ì‹œí‚´*/
             sWASeg = (sdtWASegment*)sdtWASegment::getFrameInExtent( sExtent, 0 );
             idlOS::memset( sWASeg, 0, ID_SIZEOF( sdtWASegment ) );
         }
@@ -396,7 +396,7 @@ IDE_RC sdtWorkArea::allocWASegmentAndExtent( idvSQL             *aStatistics,
     }
     IDE_ERROR( sWASeg->mWAExtentCount == aExtentCount );
 
-    /*************************** WAList¿¬°á  ****************************/
+    /*************************** WAListì—°ê²°  ****************************/
     sWASeg->mPrev = NULL;
     if( mWASegListHead != NULL )
     {
@@ -433,7 +433,7 @@ IDE_RC sdtWorkArea::allocWASegmentAndExtent( idvSQL             *aStatistics,
 
 /**************************************************************************
  * Description :
- * WAExtentµéÀ» ¹İÈ¯ÇÑ´Ù.
+ * WAExtentë“¤ì„ ë°˜í™˜í•œë‹¤.
  ***************************************************************************/
 IDE_RC sdtWorkArea::freeWASegmentAndExtent( sdtWASegment   * aWASegment )
 {
@@ -486,7 +486,7 @@ IDE_RC sdtWorkArea::freeWASegmentAndExtent( sdtWASegment   * aWASegment )
 
 /**************************************************************************
  * Description :
- * ÇöÀçÀÇ WASegment¸¦ ´ã´çÇÒ Flusher¸¦ ¼±ÅÃÇÑ´Ù.
+ * í˜„ì¬ì˜ WASegmentë¥¼ ë‹´ë‹¹í•  Flusherë¥¼ ì„ íƒí•œë‹¤.
  ***************************************************************************/
 IDE_RC sdtWorkArea::assignWAFlusher( sdtWASegment * aWASegment )
 {
@@ -499,15 +499,15 @@ IDE_RC sdtWorkArea::assignWAFlusher( sdtWASegment * aWASegment )
 
     for( i = 0 ; i < getWAFlusherCount() ; i ++ )
     {
-        /* AtomicOperationÀ¸·Î ¼öÇà ¾ÈÇØµµ LoadBalancing¸¸
-         * ºÒ±ÕÇüÇØÁú»Ó ¹®Á¦¾øÀ½ */
+        /* AtomicOperationìœ¼ë¡œ ìˆ˜í–‰ ì•ˆí•´ë„ LoadBalancingë§Œ
+         * ë¶ˆê· í˜•í•´ì§ˆë¿ ë¬¸ì œì—†ìŒ */
         sWAFlusherIdx = getGlobalWAFlusherIdx();
         sWAFlusher    = getWAFlusher( sWAFlusherIdx );
 
         IDE_TEST( sWAFlusher->mMutex.lock( NULL ) != IDE_SUCCESS );
         sLockState = 1;
 
-        if( sWAFlusher->mRun == ID_TRUE ) /* µ¿ÀÛÁßÀÎ Flusher¸¦ Ã£¾ÒÀ½ */
+        if( sWAFlusher->mRun == ID_TRUE ) /* ë™ì‘ì¤‘ì¸ Flusherë¥¼ ì°¾ì•˜ìŒ */
         {
             /* sdtWASegment_assignWAFlusher_alloc_FlushQueue.tc */
             IDU_FIT_POINT("sdtWorkArea::assignWAFlusher::alloc::FlushQueue");
@@ -531,13 +531,13 @@ IDE_RC sdtWorkArea::assignWAFlusher( sdtWASegment * aWASegment )
         }
         else
         {
-            /* ¾Æ´Ï¸é, ´ÙÀ½ Flusher¸¦ Ã£¾Æ ´Ù½Ã ½ÃµµÇÔ */
+            /* ì•„ë‹ˆë©´, ë‹¤ìŒ Flusherë¥¼ ì°¾ì•„ ë‹¤ì‹œ ì‹œë„í•¨ */
             sLockState = 0;
             IDE_TEST( sWAFlusher->mMutex.unlock() != IDE_SUCCESS );
         }
     }
 
-    /* µ¿ÀÛÁßÀÎ Flusher°¡ ÇÏ³ªµµ ¾øÀ¸¸é, Á¤»óµ¿ÀÛ ÇÒ ¼ö ¾øÀ½ */
+    /* ë™ì‘ì¤‘ì¸ Flusherê°€ í•˜ë‚˜ë„ ì—†ìœ¼ë©´, ì •ìƒë™ì‘ í•  ìˆ˜ ì—†ìŒ */
     IDE_ERROR( sWAFlusher != NULL );
     IDE_ERROR( sWAFlusher->mRun == ID_TRUE );
 
@@ -568,7 +568,7 @@ IDE_RC sdtWorkArea::assignWAFlusher( sdtWASegment * aWASegment )
 
 /**************************************************************************
  * Description :
- * ÇöÀçÀÇ WASegment¸¦ ´ã´çÇÑ Flusher¸¦ ¶§¾î³õ´Â´Ù.
+ * í˜„ì¬ì˜ WASegmentë¥¼ ë‹´ë‹¹í•œ Flusherë¥¼ ë•Œì–´ë†“ëŠ”ë‹¤.
  ***************************************************************************/
 IDE_RC sdtWorkArea::releaseWAFlusher( sdtWAFlushQueue   * aWAFlushQueue )
 {
@@ -596,7 +596,7 @@ IDE_RC sdtWorkArea::releaseWAFlusher( sdtWAFlushQueue   * aWAFlushQueue )
 
     IDE_ERROR( sWAFlushQueue != NULL );
 
-    /* ÇØ´ç Queue´Â »ç¿ë Á¾·áµÊ.  Link¿¡¼­ Á¦°ÅÇÏ°í FreeÇÔ */
+    /* í•´ë‹¹ QueueëŠ” ì‚¬ìš© ì¢…ë£Œë¨.  Linkì—ì„œ ì œê±°í•˜ê³  Freeí•¨ */
     *sWAFlushQueuePtr = sWAFlushQueue->mNextTarget;
     IDE_TEST( freeWAFlushQueue( sWAFlushQueue )
               != IDE_SUCCESS );
@@ -622,17 +622,17 @@ IDE_RC sdtWorkArea::releaseWAFlusher( sdtWAFlushQueue   * aWAFlushQueue )
 
 /**************************************************************************
  * Description :
- *     Flusher°¡ µ¿ÀÛÇÏ´Â ¸ŞÀÎ ÇÔ¼ö
+ *     Flusherê°€ ë™ì‘í•˜ëŠ” ë©”ì¸ í•¨ìˆ˜
  *
  * <Warrning>
- * Flusher¿¡¼­´Â ¹İµå½Ã getWCB, getWAPagePtrµîÀÇ Hint¸¦ »ç¿ëÇÏ´Â ÇÔ¼ö¸¦
- * »ç¿ëÇÏ¸é ¾ÈµÈ´Ù.
- * ÇØ´ç ÇÔ¼öµéÀº ServiceThread È¥ÀÚ Á¢±ÙÇÑ´Ù´Â ÀüÁ¦°¡ ÀÖ±â ¶§¹®¿¡,
- * Flusher´Â »ç¿ëÇÏ¸é ¾ÈµÈ´Ù. getWCBInternalµîÀ¸·Î Ã³¸®ÇØ¾ß ÇÑ´Ù.
+ * Flusherì—ì„œëŠ” ë°˜ë“œì‹œ getWCB, getWAPagePtrë“±ì˜ Hintë¥¼ ì‚¬ìš©í•˜ëŠ” í•¨ìˆ˜ë¥¼
+ * ì‚¬ìš©í•˜ë©´ ì•ˆëœë‹¤.
+ * í•´ë‹¹ í•¨ìˆ˜ë“¤ì€ ServiceThread í˜¼ì ì ‘ê·¼í•œë‹¤ëŠ” ì „ì œê°€ ìˆê¸° ë•Œë¬¸ì—,
+ * FlusherëŠ” ì‚¬ìš©í•˜ë©´ ì•ˆëœë‹¤. getWCBInternalë“±ìœ¼ë¡œ ì²˜ë¦¬í•´ì•¼ í•œë‹¤.
  * <Warrning>
  *
  * <IN>
- * aParam         - ÀÌ Flusher¿¡ ´ëÇÑ Á¤º¸
+ * aParam         - ì´ Flusherì— ëŒ€í•œ ì •ë³´
  ***************************************************************************/
 void sdtWorkArea::flusherRun( void * aParam )
 {
@@ -660,7 +660,7 @@ void sdtWorkArea::flusherRun( void * aParam )
         if( ( sWAFlusher->mTargetHead == NULL ) &&
             ( getWAState() != SDT_WASTATE_RUNNING ) )
         {
-            /*ÇÒÀÏ ´ÙÇßÀ¸¸ç, Á¾·áÇØ¾ß ÇÏ´Â »óÈ² */
+            /*í• ì¼ ë‹¤í–ˆìœ¼ë©°, ì¢…ë£Œí•´ì•¼ í•˜ëŠ” ìƒí™© */
             sWAFlusher->mRun = ID_FALSE;
 
             sLockState = 0;
@@ -697,7 +697,7 @@ void sdtWorkArea::flusherRun( void * aParam )
                 continue;
             }
 
-            /* FlushÇÒ ÀÛ¾÷ÀÌ ÀÖ´Ù¸é */
+            /* Flushí•  ì‘ì—…ì´ ìˆë‹¤ë©´ */
             if( isEmptyQueue( sWAFlushQueue ) == ID_FALSE )
             {
                 sLockState = 0;
@@ -718,7 +718,7 @@ void sdtWorkArea::flusherRun( void * aParam )
 
         if( sDoFlush == ID_FALSE )
         {
-            /* ÇÒ°Ô ¾øÀ½ */
+            /* í• ê²Œ ì—†ìŒ */
             idlOS::sleep( sTV );
         }
     }
@@ -739,8 +739,8 @@ void sdtWorkArea::flusherRun( void * aParam )
     }
     switch ( sDoneState )
     {
-        /* BUG-42751 Á¾·á ´Ü°è¿¡¼­ ¿¹¿Ü°¡ ¹ß»ıÇÏ¸é ÇØ´ç ÀÚ¿øÀÌ Á¤¸®µÇ±â¸¦ ±â´Ù¸®¸é¼­
-           server stop ½Ã HANGÀÌ ¹ß»ıÇÒ¼ö ÀÖÀ¸¹Ç·Î Á¤¸®ÇØÁà¾ß ÇÔ. */
+        /* BUG-42751 ì¢…ë£Œ ë‹¨ê³„ì—ì„œ ì˜ˆì™¸ê°€ ë°œìƒí•˜ë©´ í•´ë‹¹ ìì›ì´ ì •ë¦¬ë˜ê¸°ë¥¼ ê¸°ë‹¤ë¦¬ë©´ì„œ
+           server stop ì‹œ HANGì´ ë°œìƒí• ìˆ˜ ìˆìœ¼ë¯€ë¡œ ì •ë¦¬í•´ì¤˜ì•¼ í•¨. */
         case 1:
             IDE_ASSERT( sWASegment->mFreeNPageStack.destroy() == IDE_SUCCESS );
         case 2:
@@ -769,17 +769,17 @@ void sdtWorkArea::flusherRun( void * aParam )
 
 /**************************************************************************
  * Description :
- * Flusher°¡ FlushQueue¿¡¼­ FlushÇÒ ÆäÀÌÁö¸¦ °¡Á®¿Í WriteÇÑ´Ù.
+ * Flusherê°€ FlushQueueì—ì„œ Flushí•  í˜ì´ì§€ë¥¼ ê°€ì ¸ì™€ Writeí•œë‹¤.
  *
  * <Warrning>
- * Flusher¿¡¼­´Â ¹İµå½Ã getWCB, getWAPagePtrµîÀÇ Hint¸¦ »ç¿ëÇÏ´Â ÇÔ¼ö¸¦
- * »ç¿ëÇÏ¸é ¾ÈµÈ´Ù.
- * ÇØ´ç ÇÔ¼öµéÀº ServiceThread È¥ÀÚ Á¢±ÙÇÑ´Ù´Â ÀüÁ¦°¡ ÀÖ±â ¶§¹®¿¡,
- * Flusher´Â »ç¿ëÇÏ¸é ¾ÈµÈ´Ù. getWCBInternalµîÀ¸·Î Ã³¸®ÇØ¾ß ÇÑ´Ù.
+ * Flusherì—ì„œëŠ” ë°˜ë“œì‹œ getWCB, getWAPagePtrë“±ì˜ Hintë¥¼ ì‚¬ìš©í•˜ëŠ” í•¨ìˆ˜ë¥¼
+ * ì‚¬ìš©í•˜ë©´ ì•ˆëœë‹¤.
+ * í•´ë‹¹ í•¨ìˆ˜ë“¤ì€ ServiceThread í˜¼ì ì ‘ê·¼í•œë‹¤ëŠ” ì „ì œê°€ ìˆê¸° ë•Œë¬¸ì—,
+ * FlusherëŠ” ì‚¬ìš©í•˜ë©´ ì•ˆëœë‹¤. getWCBInternalë“±ìœ¼ë¡œ ì²˜ë¦¬í•´ì•¼ í•œë‹¤.
  * <Warrning>
  *
  * <IN>
- * aWAFlushQueue  - ´ë»ó FlushQueue
+ * aWAFlushQueue  - ëŒ€ìƒ FlushQueue
  ***************************************************************************/
 IDE_RC sdtWorkArea::flushTempPages( sdtWAFlushQueue * aWAFlushQueue )
 {
@@ -800,19 +800,19 @@ IDE_RC sdtWorkArea::flushTempPages( sdtWAFlushQueue * aWAFlushQueue )
 
         if( aWAFlushQueue->mFQDone == ID_TRUE )
         {
-            /* ´çÀå Flusher ÀÛ¾÷À» Á¾·áÇÔ.
-             * ³²Àº ÀÛ¾÷µéÀ» FlushÇÒ ÇÊ¿äµµ ¾øÀ½ */
+            /* ë‹¹ì¥ Flusher ì‘ì—…ì„ ì¢…ë£Œí•¨.
+             * ë‚¨ì€ ì‘ì—…ë“¤ì„ Flushí•  í•„ìš”ë„ ì—†ìŒ */
             break;
         }
 
-        /* WPID°¡ Á¦´ë·Î ¼³Á¤µÇ¾î ÀÖ´ÂÁö °Ë»ç */
+        /* WPIDê°€ ì œëŒ€ë¡œ ì„¤ì •ë˜ì–´ ìˆëŠ”ì§€ ê²€ì‚¬ */
         IDE_ERROR( sCurWCBPtr->mWPageID == sWPID );
 
         if( ( sSiblingPageCount > 0 ) &&
             ( isSiblingPage( sPrevWCBPtr, sCurWCBPtr ) == ID_FALSE ) )
         {
-            // ¿¬¼ÓÀûÀÌÁö ¸øÇÑ ÆäÀÌÁö¸¦ ¸¸³ª°Ô µÇ¸é,
-            // ±âÁ¸ÀÇ ¿¬¼ÓµÈ ÆäÀÌÁöµéÀ» FlushÇÔ
+            // ì—°ì†ì ì´ì§€ ëª»í•œ í˜ì´ì§€ë¥¼ ë§Œë‚˜ê²Œ ë˜ë©´,
+            // ê¸°ì¡´ì˜ ì—°ì†ëœ í˜ì´ì§€ë“¤ì„ Flushí•¨
             IDE_TEST( flushTempPagesInternal( aWAFlushQueue->mStatistics,
                                               *aWAFlushQueue->mStatsPtr,
                                               (sdtWASegment*)
@@ -849,22 +849,22 @@ IDE_RC sdtWorkArea::flushTempPages( sdtWAFlushQueue * aWAFlushQueue )
 
 /**************************************************************************
  * Description :
- * Page¸¦ MultiBlockWrite·Î ±â·ÏÇÑ´Ù.
+ * Pageë¥¼ MultiBlockWriteë¡œ ê¸°ë¡í•œë‹¤.
  *
  * <Warrning>
- * Flusher¿¡¼­´Â ¹İµå½Ã getWCB, getWAPagePtrµîÀÇ Hint¸¦ »ç¿ëÇÏ´Â ÇÔ¼ö¸¦
- * »ç¿ëÇÏ¸é ¾ÈµÈ´Ù.
- * ÇØ´ç ÇÔ¼öµéÀº ServiceThread È¥ÀÚ Á¢±ÙÇÑ´Ù´Â ÀüÁ¦°¡ ÀÖ±â ¶§¹®¿¡,
- * Flusher´Â »ç¿ëÇÏ¸é ¾ÈµÈ´Ù. getWCBInternalµîÀ¸·Î Ã³¸®ÇØ¾ß ÇÑ´Ù.
+ * Flusherì—ì„œëŠ” ë°˜ë“œì‹œ getWCB, getWAPagePtrë“±ì˜ Hintë¥¼ ì‚¬ìš©í•˜ëŠ” í•¨ìˆ˜ë¥¼
+ * ì‚¬ìš©í•˜ë©´ ì•ˆëœë‹¤.
+ * í•´ë‹¹ í•¨ìˆ˜ë“¤ì€ ServiceThread í˜¼ì ì ‘ê·¼í•œë‹¤ëŠ” ì „ì œê°€ ìˆê¸° ë•Œë¬¸ì—,
+ * FlusherëŠ” ì‚¬ìš©í•˜ë©´ ì•ˆëœë‹¤. getWCBInternalë“±ìœ¼ë¡œ ì²˜ë¦¬í•´ì•¼ í•œë‹¤.
  * <Warrning>
  *
  * <IN>
- * aStatistics    - Åë°èÁ¤º¸
- * aStats         - TempTable¿ë Åë°èÁ¤º¸
- * aWASegment     - ´ë»ó WASegment
- * aWCBPtr        - ´ë»ó WCBPtr
- * aPageCount     - À§ WCB·ÎºÎÅÍ, N°³ÀÇ Page¸¦ ÇÑ¹ø¿¡ FlushÇÑ´Ù.
- *                  À§ WCBÀÇ PID°¡ 10, NÀÇ 4ÀÌ¸é, 7,8,9,10 ÀÌ´Ù.
+ * aStatistics    - í†µê³„ì •ë³´
+ * aStats         - TempTableìš© í†µê³„ì •ë³´
+ * aWASegment     - ëŒ€ìƒ WASegment
+ * aWCBPtr        - ëŒ€ìƒ WCBPtr
+ * aPageCount     - ìœ„ WCBë¡œë¶€í„°, Nê°œì˜ Pageë¥¼ í•œë²ˆì— Flushí•œë‹¤.
+ *                  ìœ„ WCBì˜ PIDê°€ 10, Nì˜ 4ì´ë©´, 7,8,9,10 ì´ë‹¤.
  ***************************************************************************/
 IDE_RC sdtWorkArea::flushTempPagesInternal( idvSQL            * aStatistics,
                                             smiTempTableStats * aStats,
@@ -884,7 +884,7 @@ IDE_RC sdtWorkArea::flushTempPagesInternal( idvSQL            * aStatistics,
 
     sWAPagePtr = aWCBPtr->mWAPagePtr - SD_PAGE_SIZE * ( aPageCount - 1 );
 #if defined(DEBUG)
-    /* ÀÌ¿ôÆäÀÌÁö¸¦ Á¦´ë·Î °¡Á®¿Ô´ÂÁö °Ë»ç */
+    /* ì´ì›ƒí˜ì´ì§€ë¥¼ ì œëŒ€ë¡œ ê°€ì ¸ì™”ëŠ”ì§€ ê²€ì‚¬ */
     IDE_TEST( sdtWASegment::getSiblingWCBPtr( aWCBPtr, aPageCount - 1, &sTargetWCBPtr )
               != IDE_SUCCESS );
     IDE_ASSERT( sWAPagePtr == sTargetWCBPtr->mWAPagePtr );
@@ -903,7 +903,7 @@ IDE_RC sdtWorkArea::flushTempPagesInternal( idvSQL            * aStatistics,
 
     for( i = 0 ; i < aPageCount ; i ++ )
     {
-        /* WritingÀ» ´Ù½Ã CleanÀ¸·Î º¯°æ */
+        /* Writingì„ ë‹¤ì‹œ Cleanìœ¼ë¡œ ë³€ê²½ */
         IDE_TEST( sdtWASegment::getSiblingWCBPtr( aWCBPtr, i, &sTargetWCBPtr )
                   != IDE_SUCCESS );
         sdtWASegment::checkAndSetWAPageState( sTargetWCBPtr,
@@ -913,15 +913,15 @@ IDE_RC sdtWorkArea::flushTempPagesInternal( idvSQL            * aStatistics,
 
         if( sState == SDT_WA_PAGESTATE_IN_FLUSHQUEUE )
         {
-            /* ServiceThread°¡ ´Ù½Ã±İ Flush¸¦ ¿äÃ»ÇÏ¿´´Ù. ±×·¯¸é¼­ Queue¿¡
-             * JobÀ» µî·ÏÇÏ¿´À» »ÓÀÌ±â ¶§¹®¿¡, Çö ½ÃÁ¡¿¡¼­´Â Á¤¸®¸¸ ÇÑ´Ù.
-             * ´Ü¼øÈ÷ Åë°è ´©Àû ¿ëÀÌ´Ù. */
+            /* ServiceThreadê°€ ë‹¤ì‹œê¸ˆ Flushë¥¼ ìš”ì²­í•˜ì˜€ë‹¤. ê·¸ëŸ¬ë©´ì„œ Queueì—
+             * Jobì„ ë“±ë¡í•˜ì˜€ì„ ë¿ì´ê¸° ë•Œë¬¸ì—, í˜„ ì‹œì ì—ì„œëŠ” ì •ë¦¬ë§Œ í•œë‹¤.
+             * ë‹¨ìˆœíˆ í†µê³„ ëˆ„ì  ìš©ì´ë‹¤. */
             aStats->mRedirtyCount ++;
         }
 
-        /* Writing »óÅÂ¸¸Àº ¾Æ´Ï¾î¾ß ÇÑ´Ù.
-         * WritingÀ¸·Î º¯°æÇÏ´Â °ÍÀº ÀÌ Segment¸¦ ´ã´çÇÏ´Â
-         * ÀÌ Flusher Thread »ÓÀÌ±â ¶§¹®ÀÌ´Ù. */
+        /* Writing ìƒíƒœë§Œì€ ì•„ë‹ˆì–´ì•¼ í•œë‹¤.
+         * Writingìœ¼ë¡œ ë³€ê²½í•˜ëŠ” ê²ƒì€ ì´ Segmentë¥¼ ë‹´ë‹¹í•˜ëŠ”
+         * ì´ Flusher Thread ë¿ì´ê¸° ë•Œë¬¸ì´ë‹¤. */
         IDE_DASSERT( sTargetWCBPtr->mWPState != SDT_WA_PAGESTATE_WRITING );
     }
 
@@ -942,11 +942,11 @@ IDE_RC sdtWorkArea::flushTempPagesInternal( idvSQL            * aStatistics,
 
 /**************************************************************************
  * Description :
- * NPID»óÀ¸·Îµµ WPID»óÀ¸·Îµµ ÀÌ¿ôÀÎÁö ÆÇ´ÜÇÑ´Ù.
+ * NPIDìƒìœ¼ë¡œë„ WPIDìƒìœ¼ë¡œë„ ì´ì›ƒì¸ì§€ íŒë‹¨í•œë‹¤.
  *
  * <IN>
- * aPrevWCBPtr    - ÀÌÀü WCBPtr
- * aNextWCBPtr    - ´ÙÀ½ WCBPtr
+ * aPrevWCBPtr    - ì´ì „ WCBPtr
+ * aNextWCBPtr    - ë‹¤ìŒ WCBPtr
  ***************************************************************************/
 idBool sdtWorkArea::isSiblingPage( sdtWCB * aPrevWCBPtr, sdtWCB * aNextWCBPtr )
 {
@@ -966,18 +966,18 @@ idBool sdtWorkArea::isSiblingPage( sdtWCB * aPrevWCBPtr, sdtWCB * aNextWCBPtr )
 
 /**************************************************************************
  * Description :
- * QueueÀÇ Sequqence°ªÀ» ¿Å±ä´Ù.
- * ÇÏ³ªÀÇ Thread¸¸ Á¢±ÙÇÏ±â ¶§¹®¿¡, ABA Problem¿Ü °ÆÁ¤ÇÒ°Ç ¾ø´Ù.
- * ( BeginÀº Flusher°¡, End´Â ServiceThread°¡ )
+ * Queueì˜ Sequqenceê°’ì„ ì˜®ê¸´ë‹¤.
+ * í•˜ë‚˜ì˜ Threadë§Œ ì ‘ê·¼í•˜ê¸° ë•Œë¬¸ì—, ABA Problemì™¸ ê±±ì •í• ê±´ ì—†ë‹¤.
+ * ( Beginì€ Flusherê°€, EndëŠ” ServiceThreadê°€ )
  *
  * <IN>
- * aSeq           - ¿Ã¸± Seq°ª
+ * aSeq           - ì˜¬ë¦´ Seqê°’
  ***************************************************************************/
 void sdtWorkArea::incQueueSeq( SInt * aSeq )
 {
     (void)idCore::acpAtomicInc32( aSeq );
 
-    /* Max¿¡ µµ´ŞÇßÀ¸¸é ÃÊ±âÈ­ */
+    /* Maxì— ë„ë‹¬í–ˆìœ¼ë©´ ì´ˆê¸°í™” */
     if( *aSeq == (SInt)mWAFlushQueueSize )
     {
         (void)idCore::acpAtomicSet32( aSeq, 0 );
@@ -986,16 +986,16 @@ void sdtWorkArea::incQueueSeq( SInt * aSeq )
 
 /**************************************************************************
  * Description :
- * Queue°¡ ºñ¾î ÀÖ´Â°¡?
+ * Queueê°€ ë¹„ì–´ ìˆëŠ”ê°€?
  *
  * <IN>
- * aWAFQ    - ´ë»ó Queue
+ * aWAFQ    - ëŒ€ìƒ Queue
  ***************************************************************************/
 idBool   sdtWorkArea::isEmptyQueue( sdtWAFlushQueue * aWAFQ )
 {
     if( ( idCore::acpAtomicGet32( &aWAFQ->mFQBegin )
           == idCore::acpAtomicGet32( &aWAFQ->mFQEnd ) ) ||
-        ( aWAFQ->mFQDone == ID_TRUE ) ) /* Á¾·áµÇ¾ú¾îµµ, ºó°ÍÀ¸·Î ¿©±è */
+        ( aWAFQ->mFQDone == ID_TRUE ) ) /* ì¢…ë£Œë˜ì—ˆì–´ë„, ë¹ˆê²ƒìœ¼ë¡œ ì—¬ê¹€ */
     {
         return ID_TRUE;
     }
@@ -1007,11 +1007,11 @@ idBool   sdtWorkArea::isEmptyQueue( sdtWAFlushQueue * aWAFQ )
 
 /**************************************************************************
  * Description :
- * ServiceThread°¡ FlushÇÒ ´ë»ó Page¸¦ Queue¿¡ »ğÀÔÇÔ
+ * ServiceThreadê°€ Flushí•  ëŒ€ìƒ Pageë¥¼ Queueì— ì‚½ì…í•¨
  *
  * <IN>
- * aWASegment     - ´ë»ó WASegment
- * aWPID          - ´ë»ó WPID
+ * aWASegment     - ëŒ€ìƒ WASegment
+ * aWPID          - ëŒ€ìƒ WPID
  ***************************************************************************/
 IDE_RC   sdtWorkArea::pushJob( sdtWASegment    * aWASeg,
                                scPageID          aWPID )
@@ -1026,14 +1026,14 @@ IDE_RC   sdtWorkArea::pushJob( sdtWASegment    * aWASeg,
     sEnd = sNextEnd = idCore::acpAtomicGet32( &sWAFQ->mFQEnd );
     incQueueSeq( &sNextEnd );
 
-    /* Queue°¡ ²ËÃ¡´Â°¡?*/
+    /* Queueê°€ ê½‰ì°¼ëŠ”ê°€?*/
     while( sNextEnd == idCore::acpAtomicGet32( &sWAFQ->mFQBegin ) )
     {
-        /* Flusher°¡ ¸ØÃèÀ¸¸é, µ¿ÀÛÀ» ¸ØÃã */
+        /* Flusherê°€ ë©ˆì·„ìœ¼ë©´, ë™ì‘ì„ ë©ˆì¶¤ */
         IDE_TEST_RAISE( mWAFlusher[ sWAFQ->mWAFlusherIdx ].mRun == ID_FALSE,
                         ERROR_TEMP_FLUSHER_STOPPED );
 
-        /* sleepÇß´Ù°¡ ´Ù½Ã ½ÃµµÇÔ */
+        /* sleepí–ˆë‹¤ê°€ ë‹¤ì‹œ ì‹œë„í•¨ */
         (*aWASeg->mStatsPtr)->mQueueWaitCount ++;
         idlOS::thr_yield();
     }
@@ -1056,20 +1056,20 @@ IDE_RC   sdtWorkArea::pushJob( sdtWASegment    * aWASeg,
 
 /**************************************************************************
  * Description :
- * Flusher°¡ FlushÇÒ ´ë»ó Page¸¦ Queue¿¡¼­ °¡Á®¿È
+ * Flusherê°€ Flushí•  ëŒ€ìƒ Pageë¥¼ Queueì—ì„œ ê°€ì ¸ì˜´
  *
  * <Warrning>
- * Flusher¿¡¼­´Â ¹İµå½Ã getWCB, getWAPagePtrµîÀÇ Hint¸¦ »ç¿ëÇÏ´Â ÇÔ¼ö¸¦
- * »ç¿ëÇÏ¸é ¾ÈµÈ´Ù.
- * ÇØ´ç ÇÔ¼öµéÀº ServiceThread È¥ÀÚ Á¢±ÙÇÑ´Ù´Â ÀüÁ¦°¡ ÀÖ±â ¶§¹®¿¡,
- * Flusher´Â »ç¿ëÇÏ¸é ¾ÈµÈ´Ù. getWCBInternalµîÀ¸·Î Ã³¸®ÇØ¾ß ÇÑ´Ù.
+ * Flusherì—ì„œëŠ” ë°˜ë“œì‹œ getWCB, getWAPagePtrë“±ì˜ Hintë¥¼ ì‚¬ìš©í•˜ëŠ” í•¨ìˆ˜ë¥¼
+ * ì‚¬ìš©í•˜ë©´ ì•ˆëœë‹¤.
+ * í•´ë‹¹ í•¨ìˆ˜ë“¤ì€ ServiceThread í˜¼ì ì ‘ê·¼í•œë‹¤ëŠ” ì „ì œê°€ ìˆê¸° ë•Œë¬¸ì—,
+ * FlusherëŠ” ì‚¬ìš©í•˜ë©´ ì•ˆëœë‹¤. getWCBInternalë“±ìœ¼ë¡œ ì²˜ë¦¬í•´ì•¼ í•œë‹¤.
  * <Warrning>
  *
  * <IN>
- * aWAFQ          - ´ë»ó FlushQueue
+ * aWAFQ          - ëŒ€ìƒ FlushQueue
  * <OUT>
- * aWPID          - ´ë»ó WPID
- * aWCBPtr        - ´ë»ó WCBPtr
+ * aWPID          - ëŒ€ìƒ WPID
+ * aWCBPtr        - ëŒ€ìƒ WCBPtr
  ***************************************************************************/
 IDE_RC     sdtWorkArea::popJob( sdtWAFlushQueue  * aWAFQ,
                                 scPageID         * aWPID,
@@ -1090,7 +1090,7 @@ IDE_RC     sdtWorkArea::popJob( sdtWAFlushQueue  * aWAFQ,
 
         sWCBPtr = sdtWASegment::getWCBInternal( sWASeg, *aWPID );
 
-        /* Flusher°¡ °¡Á®°¬´Ü ÀÇ¹Ì·Î, Writing »óÅÂ·Î ¼³Á¤ÇØµÒ */
+        /* Flusherê°€ ê°€ì ¸ê°”ë‹¨ ì˜ë¯¸ë¡œ, Writing ìƒíƒœë¡œ ì„¤ì •í•´ë‘  */
         sdtWASegment::checkAndSetWAPageState( sWCBPtr,
                                               SDT_WA_PAGESTATE_IN_FLUSHQUEUE,
                                               SDT_WA_PAGESTATE_WRITING,
@@ -1107,8 +1107,8 @@ IDE_RC     sdtWorkArea::popJob( sdtWAFlushQueue  * aWAFQ,
         }
         else
         {
-            /* ServiceThread¿¡¼­ ÀÌ WCB¿¡ ´ëÇÑ Flush¸¦ Queue¿¡ ³ÖÀº ÈÄ
-             * Æ÷±âÇÏ¿´À½ */
+            /* ServiceThreadì—ì„œ ì´ WCBì— ëŒ€í•œ Flushë¥¼ Queueì— ë„£ì€ í›„
+             * í¬ê¸°í•˜ì˜€ìŒ */
         }
     }
 
@@ -1121,7 +1121,7 @@ IDE_RC     sdtWorkArea::popJob( sdtWAFlushQueue  * aWAFQ,
 
 /**************************************************************************
  * Description :
- * X$Tempinfo¸¦ À§ÇØ ·¹ÄÚµå ±¸Ãà
+ * X$Tempinfoë¥¼ ìœ„í•´ ë ˆì½”ë“œ êµ¬ì¶•
  ***************************************************************************/
 IDE_RC sdtWorkArea::buildTempInfoRecord( void                * aHeader,
                                          iduFixedTableMemory * aMemory )

@@ -129,8 +129,8 @@ void testBTC1_BTC2_BTC3( UInt aBlockSize, UInt aChunkSize, UInt aAlignSize )
 
     sAllocBlockCnt = sMemPool2.getBlockCnt4Chunk() * 3;
 
-    /* BlockµéÀÌ Chunk³»ÀÇ ÇÑ¹øµµ ÇÒ´çµÇÁö ¾ÊÀº ¿µ¿ª¿¡¼­ ÇÒ´çµÇµµ·Ï
-     * Ã³¸® */
+    /* Blockë“¤ì´ Chunkë‚´ì˜ í•œë²ˆë„ í• ë‹¹ë˜ì§€ ì•Šì€ ì˜ì—­ì—ì„œ í• ë‹¹ë˜ë„ë¡
+     * ì²˜ë¦¬ */
     for( i = 0; i < sAllocBlockCnt; i++ )
     {
         IDE_ASSERT( sMemPool2.memAlloc( &sArrHandle[i], &sAllocMem )

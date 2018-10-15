@@ -57,7 +57,7 @@ stndrTDBuild::~stndrTDBuild()
 /* ------------------------------------------------
  * Description :
  *
- * Index build ¾²·¹µå ÃÊ±âÈ­
+ * Index build ì“°ë ˆë“œ ì´ˆê¸°í™”
  * ----------------------------------------------*/
 IDE_RC stndrTDBuild::initialize( UInt             aTotalThreadCnt,
                                  UInt             aID,
@@ -90,9 +90,9 @@ IDE_RC stndrTDBuild::initialize( UInt             aTotalThreadCnt,
     sStatus = 1;
 
     /*
-     * TASK-2356 [Á¦Ç°¹®Á¦ºĞ¼®] altibase wait interface
-     * Á¤È®ÇÑ Åë°èÁ¤º¸¸¦ ±¸ÇÏ±â À§ÇØ¼­´Â
-     * Thread °³¼ö¸¸Å­ idvSQL ÀÌ Á¸ÀçÇØ¾ß ÇÑ´Ù.
+     * TASK-2356 [ì œí’ˆë¬¸ì œë¶„ì„] altibase wait interface
+     * ì •í™•í•œ í†µê³„ì •ë³´ë¥¼ êµ¬í•˜ê¸° ìœ„í•´ì„œëŠ”
+     * Thread ê°œìˆ˜ë§Œí¼ idvSQL ì´ ì¡´ì¬í•´ì•¼ í•œë‹¤.
      */
     IDE_TEST( smLayerCallback::beginTrans(mTrans,
                                           SMI_TRANSACTION_REPL_NONE,
@@ -118,7 +118,7 @@ IDE_RC stndrTDBuild::initialize( UInt             aTotalThreadCnt,
 /* ------------------------------------------------
  * Description :
  *
- * buffer flush ¾²·¹µå ÇØÁ¦
+ * buffer flush ì“°ë ˆë“œ í•´ì œ
  * ----------------------------------------------*/
 IDE_RC stndrTDBuild::destroy()
 {
@@ -152,10 +152,10 @@ IDE_RC stndrTDBuild::destroy()
 /* ------------------------------------------------
  * Description :
  *
- * ¾²·¹µå ¸ŞÀÎ ½ÇÇà ·çÆ¾
+ * ì“°ë ˆë“œ ë©”ì¸ ì‹¤í–‰ ë£¨í‹´
  *
- * - interval ±â°£µ¿¾È waitÇÏ´Ù°¡ buffer flush
- *   ¼öÇà
+ * - interval ê¸°ê°„ë™ì•ˆ waití•˜ë‹¤ê°€ buffer flush
+ *   ìˆ˜í–‰
  * ----------------------------------------------*/
 void stndrTDBuild::run()
 {
@@ -292,16 +292,16 @@ void stndrTDBuild::run()
                 IDE_ASSERT( sIsRowDeleted == ID_FALSE );
 
                 /* BUG-23319
-                 * [SD] ÀÎµ¦½º Scan½Ã sdcRow::fetch ÇÔ¼ö¿¡¼­ Deadlock ¹ß»ı°¡´É¼ºÀÌ ÀÖÀ½. */
-                /* row fetch¸¦ ÇÏ´ÂÁß¿¡ next rowpiece·Î ÀÌµ¿ÇØ¾ß ÇÏ´Â °æ¿ì,
-                 * ±âÁ¸ pageÀÇ latch¸¦ Ç®Áö ¾ÊÀ¸¸é deadlock ¹ß»ı°¡´É¼ºÀÌ ÀÖ´Ù.
-                 * ±×·¡¼­ page latch¸¦ Ç¬ ´ÙÀ½ next rowpiece·Î ÀÌµ¿ÇÏ´Âµ¥,
-                 * »óÀ§ ÇÔ¼ö¿¡¼­´Â page latch¸¦ Ç®¾ú´ÂÁö ¿©ºÎ¸¦ output parameter·Î È®ÀÎÇÏ°í
-                 * »óÈ²¿¡ µû¶ó ÀûÀıÇÑ Ã³¸®¸¦ ÇØ¾ß ÇÑ´Ù. */
+                 * [SD] ì¸ë±ìŠ¤ Scanì‹œ sdcRow::fetch í•¨ìˆ˜ì—ì„œ Deadlock ë°œìƒê°€ëŠ¥ì„±ì´ ìˆìŒ. */
+                /* row fetchë¥¼ í•˜ëŠ”ì¤‘ì— next rowpieceë¡œ ì´ë™í•´ì•¼ í•˜ëŠ” ê²½ìš°,
+                 * ê¸°ì¡´ pageì˜ latchë¥¼ í’€ì§€ ì•Šìœ¼ë©´ deadlock ë°œìƒê°€ëŠ¥ì„±ì´ ìˆë‹¤.
+                 * ê·¸ë˜ì„œ page latchë¥¼ í‘¼ ë‹¤ìŒ next rowpieceë¡œ ì´ë™í•˜ëŠ”ë°,
+                 * ìƒìœ„ í•¨ìˆ˜ì—ì„œëŠ” page latchë¥¼ í’€ì—ˆëŠ”ì§€ ì—¬ë¶€ë¥¼ output parameterë¡œ í™•ì¸í•˜ê³ 
+                 * ìƒí™©ì— ë”°ë¼ ì ì ˆí•œ ì²˜ë¦¬ë¥¼ í•´ì•¼ í•œë‹¤. */
                 if( sIsPageLatchReleased == ID_TRUE )
                 {
                     /* BUG-25126
-                     * [5.3.1 SD] Index Bottom-up Build ½Ã Page fetch½Ã ¼­¹ö»ç¸Á!! */
+                     * [5.3.1 SD] Index Bottom-up Build ì‹œ Page fetchì‹œ ì„œë²„ì‚¬ë§!! */
                     IDE_TEST( sdbBufferMgr::getPage( mStatistics,
                                                      sTBSID,
                                                      sCurPageID,
@@ -316,8 +316,8 @@ void stndrTDBuild::run()
                     sSlotDirPtr = sdpPhyPage::getSlotDirStartPtr(sPage);
                     sSlotCount  = sdpSlotDirectory::getCount(sSlotDirPtr);
 
-                    /* page latch°¡ Ç®¸° »çÀÌ¿¡ ´Ù¸¥ Æ®·£Àè¼ÇÀÌ
-                     * µ¿ÀÏ ÆäÀÌÁö¿¡ Á¢±ÙÇÏ¿© º¯°æ ¿¬»êÀ» ¼öÇàÇÒ ¼ö ÀÖ´Ù. */
+                    /* page latchê°€ í’€ë¦° ì‚¬ì´ì— ë‹¤ë¥¸ íŠ¸ëœì­ì…˜ì´
+                     * ë™ì¼ í˜ì´ì§€ì— ì ‘ê·¼í•˜ì—¬ ë³€ê²½ ì—°ì‚°ì„ ìˆ˜í–‰í•  ìˆ˜ ìˆë‹¤. */
                     if( sdpSlotDirectory::isUnusedSlotEntry(sSlotDirPtr, i)
                         == ID_TRUE )
                     {
@@ -353,8 +353,8 @@ void stndrTDBuild::run()
             }
         }
 
-        /* BUG-23388: Top Down Build½Ã Meta Page°¡ ScanµÉ °æ¿ì SLatch¸¦ Ç®Áö
-         *            ¾Ê½À´Ï´Ù. */
+        /* BUG-23388: Top Down Buildì‹œ Meta Pageê°€ Scanë  ê²½ìš° SLatchë¥¼ í’€ì§€
+         *            ì•ŠìŠµë‹ˆë‹¤. */
         sIsPageLatchReleased = ID_TRUE;
         IDE_TEST( sdbBufferMgr::releasePage( mStatistics,
                                              sPage )

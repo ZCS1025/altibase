@@ -44,7 +44,7 @@ static IDE_RC mtfRaw_to_varcharEstimate( mtcNode*     aNode,
 mtfModule mtfRaw_to_varchar = {
     1|MTC_NODE_OPERATOR_FUNCTION,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
+    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìê°€ ì•„ë‹˜)
     mtfFunctionName,
     NULL,
     mtf::initializeDefault,

@@ -58,7 +58,7 @@ typedef struct sdcColumnDescSet
 #define SDC_LOG_UNDO_INFO_LAYER_MAX_SIZE    \
     ( SDC_UNDOREC_HDR_MAX_SIZE + ID_SIZEOF(scGRID) )
 
-// UPDATE_ROW_PIECE ·Î±×°¡ Update Info Layer°¡ °¡Àå Å©´Ù.
+// UPDATE_ROW_PIECE ë¡œê·¸ê°€ Update Info Layerê°€ ê°€ì¥ í¬ë‹¤.
 // opcode(1)
 // size(2)
 // colcount(2)
@@ -124,29 +124,29 @@ typedef struct sdcColumnDescSet
 #define SDC_ROWHDR_FLAG_NULLROW    SDC_ROWHDR_FLAG_NO_CHAINING_ROW
 
 /*
- * ###   FSC ÇÃ·¡±×   ###
+ * ###   FSC í”Œë˜ê·¸   ###
  *
- * DML ¿¬»êÁß¿¡´Â ´ç¿¬È÷ FSC¸¦ reserve ÇØ¾ß ÇÑ´Ù.
- * ±×·¯¸é redo³ª undo½Ã¿¡´Â ¾î¶»°Ô ÇØ¾ß ÇÏ³ª?
+ * DML ì—°ì‚°ì¤‘ì—ëŠ” ë‹¹ì—°íˆ FSCë¥¼ reserve í•´ì•¼ í•œë‹¤.
+ * ê·¸ëŸ¬ë©´ redoë‚˜ undoì‹œì—ëŠ” ì–´ë–»ê²Œ í•´ì•¼ í•˜ë‚˜?
  *
- * redo´Â DML ¿¬»êÀ» ´Ù½Ã ¼öÇàÇÏ´Â °ÍÀÌ¹Ç·Î,
- * DML ¿¬»êÇÒ¶§¿Í µ¿ÀÏÇÏ°Ô FSC¸¦ reserve ÇØ¾ß ÇÑ´Ù.
+ * redoëŠ” DML ì—°ì‚°ì„ ë‹¤ì‹œ ìˆ˜í–‰í•˜ëŠ” ê²ƒì´ë¯€ë¡œ,
+ * DML ì—°ì‚°í• ë•Œì™€ ë™ì¼í•˜ê²Œ FSCë¥¼ reserve í•´ì•¼ í•œë‹¤.
  *
- * ¹İ¸é undo½Ã¿¡´Â FSC¸¦ reserveÇÏ¸é ¾ÈµÈ´Ù.
- * ¿Ö³ªÇÏ¸é FSC´Â DML ¿¬»êÀ» undo½ÃÅ³¶§¸¦ ´ëºñÇØ¼­
- * °ø°£À» ¿¹¾àÇØµÎ´Â °ÍÀÌ¹Ç·Î,
- * undo½Ã¿¡´Â ÀÌÀü¿¡ reserveÇØµĞ FSC¸¦
- * ÆäÀÌÁö¿¡ µÇµ¹·Á(restore)ÁÖ¾î¾ß ÇÏ°í,
- * undo½Ã¿¡ ¶Ç ´Ù½Ã FSC¸¦ reserveÇÏ·Á°í ÇØ¼­´Â ¾ÈµÈ´Ù.
+ * ë°˜ë©´ undoì‹œì—ëŠ” FSCë¥¼ reserveí•˜ë©´ ì•ˆëœë‹¤.
+ * ì™œë‚˜í•˜ë©´ FSCëŠ” DML ì—°ì‚°ì„ undoì‹œí‚¬ë•Œë¥¼ ëŒ€ë¹„í•´ì„œ
+ * ê³µê°„ì„ ì˜ˆì•½í•´ë‘ëŠ” ê²ƒì´ë¯€ë¡œ,
+ * undoì‹œì—ëŠ” ì´ì „ì— reserveí•´ë‘” FSCë¥¼
+ * í˜ì´ì§€ì— ë˜ëŒë ¤(restore)ì£¼ì–´ì•¼ í•˜ê³ ,
+ * undoì‹œì— ë˜ ë‹¤ì‹œ FSCë¥¼ reserveí•˜ë ¤ê³  í•´ì„œëŠ” ì•ˆëœë‹¤.
  *
- * clrÀº undo¿¡ ´ëÇÑ redoÀÌ¹Ç·Î undo¶§¿Í µ¿ÀÏÇÏ°Ô
- * FSC¸¦ reserveÇÏ¸é ¾ÈµÈ´Ù.
+ * clrì€ undoì— ëŒ€í•œ redoì´ë¯€ë¡œ undoë•Œì™€ ë™ì¼í•˜ê²Œ
+ * FSCë¥¼ reserveí•˜ë©´ ì•ˆëœë‹¤.
  *
- * ÀÌ ¼¼°¡Áö °æ¿ì¸¦ ±¸ºĞÇÏ¿©
- * FSC reserve Ã³¸®¸¦ ÇØ¾ß ÇÏ´Âµ¥,
- * ³ª(upinel9)´Â ·Î±×¸¦ ±â·ÏÇÒ¶§ FSC reserve ¿©ºÎ¸¦ ÇÃ·¡±×·Î ³²°Ü¼­,
- * redo³ª undo½Ã¿¡´Â ÀÌ ÇÃ·¡±×¸¸ º¸°í
- * reallocSlot()À» ÇÏµµ·Ï ¼³°èÇÏ¿´´Ù.
+ * ì´ ì„¸ê°€ì§€ ê²½ìš°ë¥¼ êµ¬ë¶„í•˜ì—¬
+ * FSC reserve ì²˜ë¦¬ë¥¼ í•´ì•¼ í•˜ëŠ”ë°,
+ * ë‚˜(upinel9)ëŠ” ë¡œê·¸ë¥¼ ê¸°ë¡í• ë•Œ FSC reserve ì—¬ë¶€ë¥¼ í”Œë˜ê·¸ë¡œ ë‚¨ê²¨ì„œ,
+ * redoë‚˜ undoì‹œì—ëŠ” ì´ í”Œë˜ê·¸ë§Œ ë³´ê³ 
+ * reallocSlot()ì„ í•˜ë„ë¡ ì„¤ê³„í•˜ì˜€ë‹¤.
  *
  * redo     : SDC_UPDATE_LOG_FLAG_RESERVE_FREESPACE_CREDIT_TRUE
  * undo     : SDC_UPDATE_LOG_FLAG_RESERVE_FREESPACE_CREDIT_FALSE
@@ -165,18 +165,18 @@ typedef struct sdcColumnDescSet
 #define SDC_UPDATE_LOG_FLAG_LOCK_TYPE_IMPLICIT    (0x00)
 
 /*
- * PROJ-1704 Disk MVCC ¸®´º¾ó
+ * PROJ-1704 Disk MVCC ë¦¬ë‰´ì–¼
  *
  * Row-Based Read Consitency
  *
- * Row Piece º¯°æÀÌÈÄ ´Ù¸¥ Æ®·£Àè¼ÇÀÌ Page¿¡ Á¢±ÙÇÒ ¶§ ¼öÇàÇÏ´Â
- * Row Time-Stamping È¯°æÇÏ¿¡¼­ °¢ Row Pieceµé¿¡ ´ëÇØ¼­ CommitSCN
- * Á¤º¸¸¦ ¼³Á¤ÇÏ¿© Read-Only È¤Àº Update Æ®·£Àè¼ÇÀÌ Row PieceÀÇ ÆÇµ¶
- * ¹× °»½Å ¿©ºÎ¸¦ ÃÖ´ëÇÑ ¹Ù·Î ÆÇ´ÜÇÒ ¼ö ÀÖµµ·Ï ÇÑ´Ù.
- * Row Piece ¿Í °ü·ÃµÈ Undo RecordÀÇ SID(UndoSID)¸¦ ÀúÀåÇÏ¿©
- * Row Piece ±â¹İÀ¸·Î ÀÌÀü Row Piece VersionÀ» »ı¼ºÇÒ ¼ö ÀÖµµ·Ï ÇÑ´Ù
+ * Row Piece ë³€ê²½ì´í›„ ë‹¤ë¥¸ íŠ¸ëœì­ì…˜ì´ Pageì— ì ‘ê·¼í•  ë•Œ ìˆ˜í–‰í•˜ëŠ”
+ * Row Time-Stamping í™˜ê²½í•˜ì—ì„œ ê° Row Pieceë“¤ì— ëŒ€í•´ì„œ CommitSCN
+ * ì •ë³´ë¥¼ ì„¤ì •í•˜ì—¬ Read-Only í˜¹ì€ Update íŠ¸ëœì­ì…˜ì´ Row Pieceì˜ íŒë…
+ * ë° ê°±ì‹  ì—¬ë¶€ë¥¼ ìµœëŒ€í•œ ë°”ë¡œ íŒë‹¨í•  ìˆ˜ ìˆë„ë¡ í•œë‹¤.
+ * Row Piece ì™€ ê´€ë ¨ëœ Undo Recordì˜ SID(UndoSID)ë¥¼ ì €ì¥í•˜ì—¬
+ * Row Piece ê¸°ë°˜ìœ¼ë¡œ ì´ì „ Row Piece Versionì„ ìƒì„±í•  ìˆ˜ ìˆë„ë¡ í•œë‹¤
  *
- * @ Row Piece Header (+RowHdrEx) ÀÚ·á±¸Á¶
+ * @ Row Piece Header (+RowHdrEx) ìë£Œêµ¬ì¡°
  * ______________________________________________________________
  * | CTSLOTIDX | InfiniteSCN | URID.mPageID | URID.mUndoSlotNum |
  * |___________|_____________|______________|___________________|
@@ -185,37 +185,37 @@ typedef struct sdcColumnDescSet
  * (RowHdrEx)  |TSSPID   |TSSlotNum |FSCredit |FSCNOrCSCN |
  *             |_________|__________|_________|___________|
  *
- * Row Piece Header Å©±â´Â 34BytesÀÌ´Ù.
+ * Row Piece Header í¬ê¸°ëŠ” 34Bytesì´ë‹¤.
  *
  * (1) CTSLOTIDX
- *     °»½ÅÀ» À§ÇÑ Æ®·£Àè¼ÇÀº ÆäÀÌÁö·ÎºÎÅÍ CTS¸¦ ÇÒ´ç ¹ŞÀº ÈÄ¿¡ Row¸¦
- *     º¯°æÇÒ ¼ö ÀÖ´Ù. ÇÒ´ç¹ŞÀº CTS¸¦ Row Piece¿¡ ¹ÙÀÎµùÇÒ¶§ CTSlot
- *     Number¸¦ ±â·ÏÇÑ´Ù.
+ *     ê°±ì‹ ì„ ìœ„í•œ íŠ¸ëœì­ì…˜ì€ í˜ì´ì§€ë¡œë¶€í„° CTSë¥¼ í• ë‹¹ ë°›ì€ í›„ì— Rowë¥¼
+ *     ë³€ê²½í•  ìˆ˜ ìˆë‹¤. í• ë‹¹ë°›ì€ CTSë¥¼ Row Pieceì— ë°”ì¸ë”©í• ë•Œ CTSlot
+ *     Numberë¥¼ ê¸°ë¡í•œë‹¤.
  *
  * (2) InfiniteSCN
- *     Row Piece º¯°æ½ÃÁ¡ÀÇ InfiniteSCNÀ» ±â·ÏÇÑ´Ù.
+ *     Row Piece ë³€ê²½ì‹œì ì˜ InfiniteSCNì„ ê¸°ë¡í•œë‹¤.
  *
  * (3) UndoSID
- *     Row PieceÀÇ º¯°æ¿¡ ´ëÇÑ ¸¶Áö¸· Undo RecordÀÇ Page¿Í SlotNum ÀÌ´Ù.
- *     Read-Only Æ®·£Àè¼ÇÀº Row PieceÀÇ UndoSID¸¦ µû¶ó¼­ Undo Record¿¡
- *     Á¢±ÙÇÏ¿© ÀÌÀü Row PieceÀÇ VersionÀ» »ı¼ºÇÒ ¼ö ÀÖ´Ù.
+ *     Row Pieceì˜ ë³€ê²½ì— ëŒ€í•œ ë§ˆì§€ë§‰ Undo Recordì˜ Pageì™€ SlotNum ì´ë‹¤.
+ *     Read-Only íŠ¸ëœì­ì…˜ì€ Row Pieceì˜ UndoSIDë¥¼ ë”°ë¼ì„œ Undo Recordì—
+ *     ì ‘ê·¼í•˜ì—¬ ì´ì „ Row Pieceì˜ Versionì„ ìƒì„±í•  ìˆ˜ ìˆë‹¤.
  *
  * (4) FLAG
- *     Row PieceÀÇ ±¸¼ºÁ¤º¸¸¦ ³ªÅ¸³½´Ù. 'H','F','L','P','N'ÀÇ ºñÆ®°ªÀ¸·Î
- *     ±¸¼ºµÈ´Ù.
+ *     Row Pieceì˜ êµ¬ì„±ì •ë³´ë¥¼ ë‚˜íƒ€ë‚¸ë‹¤. 'H','F','L','P','N'ì˜ ë¹„íŠ¸ê°’ìœ¼ë¡œ
+ *     êµ¬ì„±ëœë‹¤.
  *
  * (5) COLCNT
- *     Row Piece °¡ ÀúÀåÇÏ°í ÀÖ´Â Column °³¼öÀÌ´Ù.
+ *     Row Piece ê°€ ì €ì¥í•˜ê³  ìˆëŠ” Column ê°œìˆ˜ì´ë‹¤.
  *
- * (9) FSCNOrCSCNÀº row binding CTIÀÇ °æ¿ì CTS¿¡ ÇØ´çÇÏ´Â Á¤º¸¸¦ ±â·ÏÇÏ°í,
- *     commit ÀÌÈÄ¿¡´Â CommitSCNÀ» ¼³Á¤ÇÑ´Ù.
+ * (9) FSCNOrCSCNì€ row binding CTIì˜ ê²½ìš° CTSì— í•´ë‹¹í•˜ëŠ” ì •ë³´ë¥¼ ê¸°ë¡í•˜ê³ ,
+ *     commit ì´í›„ì—ëŠ” CommitSCNì„ ì„¤ì •í•œë‹¤.
  *
- * (6) ~ (9) ±îÁö´Â Row ¹ÙÀÎµùµÈ °æ¿ì¸¸ À¯È¿ÇÏ´Ù. Áï, RowPiece ³»¿¡ CTS
- * Á¤º¸¸¦ ÀúÀåÇÏ±â À§ÇÑ ÀÚ·á±¸Á¶ÀÌ¸ç, ¸ğµç RowPiece°¡ °¡Áö°í ÀÖ´Ù.
+ * (6) ~ (9) ê¹Œì§€ëŠ” Row ë°”ì¸ë”©ëœ ê²½ìš°ë§Œ ìœ íš¨í•˜ë‹¤. ì¦‰, RowPiece ë‚´ì— CTS
+ * ì •ë³´ë¥¼ ì €ì¥í•˜ê¸° ìœ„í•œ ìë£Œêµ¬ì¡°ì´ë©°, ëª¨ë“  RowPieceê°€ ê°€ì§€ê³  ìˆë‹¤.
  *
  */
 
-// Row Piece HeaderÀÇ °¢ ±¸¼º¿ä¼Ò¿¡ ´ëÇÑ Offset Á¤ÀÇ
+// Row Piece Headerì˜ ê° êµ¬ì„±ìš”ì†Œì— ëŒ€í•œ Offset ì •ì˜
 #define SDC_ROWHDR_CTSLOTIDX_SIZE      ( ID_SIZEOF(UChar) )
 #define SDC_ROWHDR_INFINITESCN_SIZE    ( ID_SIZEOF(smSCN) )
 #define SDC_ROWHDR_UNDOPAGEID_SIZE     ( ID_SIZEOF(scPageID) )
@@ -238,7 +238,7 @@ typedef struct sdcColumnDescSet
                                          SDC_ROWHDR_FSCREDIT_SIZE   + \
                                          SDC_ROWHDR_FSCNORCSCN_SIZE )
 
-// Row Piece HeaderÀÇ °¢ ±¸¼º¿ä¼Ò¿¡ ´ëÇÑ Size Á¤ÀÇ
+// Row Piece Headerì˜ ê° êµ¬ì„±ìš”ì†Œì— ëŒ€í•œ Size ì •ì˜
 #define SDC_ROWHDR_CTSLOTIDX_OFFSET    (0)
 #define SDC_ROWHDR_INFINITESCN_OFFSET  ( SDC_ROWHDR_CTSLOTIDX_OFFSET +  \
                                          SDC_ROWHDR_CTSLOTIDX_SIZE )
@@ -339,8 +339,8 @@ typedef struct sdcColumnDescSet
         == SMI_COLUMN_TYPE_LOB )                                \
       ? ID_TRUE : ID_FALSE )
 
-// BUG-31134 Insert Undo Record log¿¡ Ãß°¡µÇ´Â RP Info´Â
-//           Before Image¸¦ ±âÁØÀ¸·Î ÀÛ¼ºµÇ¾î¾ß ÇÕ´Ï´Ù.
+// BUG-31134 Insert Undo Record logì— ì¶”ê°€ë˜ëŠ” RP InfoëŠ”
+//           Before Imageë¥¼ ê¸°ì¤€ìœ¼ë¡œ ì‘ì„±ë˜ì–´ì•¼ í•©ë‹ˆë‹¤.
 // ( Is Update ) && (( Redo && New is In Mode ) || ( Undo && Old is In Mode ))
 #define SDC_IS_IN_MODE_UPDATE_COLUMN( aColumnInfo, aIsUndoRec )               \
     ((((aColumnInfo)->mColumn != NULL ) &&                                    \
@@ -437,9 +437,9 @@ typedef struct sdcColumnDescSet
       ( aRetryInfo->mRowRetryColLst.mCurColumn != NULL ) )
 
 /* PROJ-1784 DML without retry
- * Disk table¿ë Retry Info
- * ÇÏ³ªÀÇ column list¸¸ È®ÀÎÇÑ´Ù
- * ¿©·¯ page¿¡ °ÉÄ£ row¸¦ ºñ±³ÇÏ±â À§ÇØ »ç¿ë */
+ * Disk tableìš© Retry Info
+ * í•˜ë‚˜ì˜ column listë§Œ í™•ì¸í•œë‹¤
+ * ì—¬ëŸ¬ pageì— ê±¸ì¹œ rowë¥¼ ë¹„êµí•˜ê¸° ìœ„í•´ ì‚¬ìš© */
 typedef struct sdcRetryCompColumns
 {
     const smiColumnList * mCurColumn;
@@ -449,7 +449,7 @@ typedef struct sdcRetryCompColumns
 }sdcRetryColumns;
 
 /* PROJ-1784 DML without retry
- * Disk table¿ë Retry Info */
+ * Disk tableìš© Retry Info */
 typedef struct sdcRetryInfo
 {
     const smiDMLRetryInfo * mRetryInfo;
@@ -1526,8 +1526,8 @@ public:
                                  smrContType     aContType );
     
 
-    //TASK-4007 [SM]PBT¸¦ À§ÇÑ ±â´É Ãß°¡
-    //Page·ÎºÎÅÍ Row¸¦ DumpÇÏ¿© º¸¿©ÁØ´Ù.
+    //TASK-4007 [SM]PBTë¥¼ ìœ„í•œ ê¸°ëŠ¥ ì¶”ê°€
+    //Pageë¡œë¶€í„° Rowë¥¼ Dumpí•˜ì—¬ ë³´ì—¬ì¤€ë‹¤.
     static IDE_RC dump( UChar *aPage ,
                         SChar *aOutBuf ,
                         UInt   aOutSize );
@@ -1557,7 +1557,7 @@ public:
     /* 
      * BUG-37529 [sm-disk-collection] [DRDB] The change row piece logic
      * generates invalid undo record.
-     * GRID¸¦ ÀÌ¿ëÇØ slotÀÇ Æ÷ÀÎÅÍ¸¦ ±¸ÇÑ´Ù.
+     * GRIDë¥¼ ì´ìš©í•´ slotì˜ í¬ì¸í„°ë¥¼ êµ¬í•œë‹¤.
      */
     static IDE_RC getSlotPtr( sdrMtx  * aMtx,
                               scGRID    aSlotGRID,
@@ -1572,7 +1572,7 @@ public:
                                                 aMtx,
                                                 SC_MAKE_SPACE( aSlotGRID ),
                                                 SC_MAKE_PID( aSlotGRID ) );
-        /* À§ÂÊ ÇÔ¼ö¿¡¼­ ÀÌ¹Ì GetPageÇÑ Page¿©¾ß ÇÔ */
+        /* ìœ„ìª½ í•¨ìˆ˜ì—ì„œ ì´ë¯¸ GetPageí•œ Pageì—¬ì•¼ í•¨ */
         IDE_ASSERT( sPagePtr != NULL );
 
         sSlotDirPtr = sdpPhyPage::getSlotDirStartPtr( sPagePtr );
@@ -1642,8 +1642,8 @@ public:
 
         sColLen = ((UShort)*aColStartPtr + SDC_SMALL_COLUMN_LEN_STORE_SIZE);
 
-        /* sPrefixÀÇ °ªÀÌ SDC_LOB_DESC_COLUMN_PREFIX <253> º¸´Ù ÀÛÀ¸¸é ÀÏ¹İ 
-           small columnÀÌ´Ù */
+        /* sPrefixì˜ ê°’ì´ SDC_LOB_DESC_COLUMN_PREFIX <253> ë³´ë‹¤ ì‘ìœ¼ë©´ ì¼ë°˜ 
+           small columnì´ë‹¤ */
         if ( (UShort)*aColStartPtr < SDC_LOB_DESC_COLUMN_PREFIX )
         {
             return sColLen;
@@ -1667,11 +1667,11 @@ public:
 
 
 /***********************************************************************
- * Description : Column Piece¸¦ ÀĞ¾î¿Â´Ù.
+ * Description : Column Pieceë¥¼ ì½ì–´ì˜¨ë‹¤.
  *
- *   aColPtr    - [IN]  ÀĞÀ» Column PieceÀÇ Ptr
- *   aColLen    - [OUT] Column PieceÀÇ Å©±â
- *   aIsLobDesc - [OUT] LOB DescriptorÀÎÁö ¿©ºÎ¸¦ ¹İÈ¯
+ *   aColPtr    - [IN]  ì½ì„ Column Pieceì˜ Ptr
+ *   aColLen    - [OUT] Column Pieceì˜ í¬ê¸°
+ *   aIsLobDesc - [OUT] LOB Descriptorì¸ì§€ ì—¬ë¶€ë¥¼ ë°˜í™˜
  **********************************************************************/
 inline UChar* sdcRow::getColPiece( const UChar      * aColPtr,
                                    UInt             * aColLen,
@@ -1697,7 +1697,7 @@ inline UChar* sdcRow::getColPiece( const UChar      * aColPtr,
 /***********************************************************************
  * Description : get ColPieceLen And Column Prefix
  *
- *   aColPtr - [IN]  ±æÀÌ¸¦ È®ÀÎÇÒ Column PieceÀÇ Ptr
+ *   aColPtr - [IN]  ê¸¸ì´ë¥¼ í™•ì¸í•  Column Pieceì˜ Ptr
  *   aPrefix - [OUT] Column Prefix
  **********************************************************************/
 inline void sdcRow::getColPieceInfo( const UChar     * aColPtr,

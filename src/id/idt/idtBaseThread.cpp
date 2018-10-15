@@ -9,10 +9,10 @@
 
 /*****************************************************************************
  *   NAME
- *     idtBaseThread.cpp - ¾²·¹µå ±âº» Å¬·¡½º 
+ *     idtBaseThread.cpp - ì“°ë ˆë“œ ê¸°ë³¸ í´ëž˜ìŠ¤ 
  *
  *   DESCRIPTION
- *      iSpeener¿¡¼­ »ç¿ëµÉ ¸ðµç ¾²·¹µåµéÀÇ Base Thread Class·Î »ç¿ëµÊ
+ *      iSpeenerì—ì„œ ì‚¬ìš©ë  ëª¨ë“  ì“°ë ˆë“œë“¤ì˜ Base Thread Classë¡œ ì‚¬ìš©ë¨
  *
  *   PUBLIC FUNCTION(S)
  *
@@ -31,16 +31,16 @@
 #include <iduProperty.h>
 #include <iduFitManager.h>
 
-/*----------------------- idtBaseThread »ý¼ºÀÚ--------------------------------
+/*----------------------- idtBaseThread ìƒì„±ìž--------------------------------
      NAME
-	     idtBaseThread »ý¼ºÀÚ
+	     idtBaseThread ìƒì„±ìž
 
      DESCRIPTION
 
      ARGUMENTS
 
      RETURNS
-     	¾øÀ½
+     	ì—†ìŒ
 ----------------------------------------------------------------------------*/
 
 idtBaseThread::idtBaseThread(SInt aFlag)
@@ -110,13 +110,13 @@ IDE_RC idtBaseThread::join()
 	     start()
 
      DESCRIPTION
-     	ÇØ´ç Å¬·¡½º¸¦ ¾²·¹µå·Î µ¿ÀÛ½ÃÅ²´Ù. (run()ÀÌ È£ÃâµÊ)
+     	í•´ë‹¹ í´ëž˜ìŠ¤ë¥¼ ì“°ë ˆë“œë¡œ ë™ìž‘ì‹œí‚¨ë‹¤. (run()ì´ í˜¸ì¶œë¨)
         
      ARGUMENTS
-     	¾øÀ½
+     	ì—†ìŒ
         
      RETURNS
-     	idlOS::thr_create() ÇÔ¼öÀÇ ¸®ÅÏ°ª
+     	idlOS::thr_create() í•¨ìˆ˜ì˜ ë¦¬í„´ê°’
 ----------------------------------------------------------------------------*/
 IDE_RC idtBaseThread::start()
 {
@@ -162,7 +162,7 @@ IDE_RC idtBaseThread::start()
 }
 
 #define IDT_WAIT_LOOP_PER_SECOND     10
-// ¾²·¹µå·Î µ¿ÀÛÇÒ ¶§ ±îÁö ´ë±â
+// ì“°ë ˆë“œë¡œ ë™ìž‘í•  ë•Œ ê¹Œì§€ ëŒ€ê¸°
 IDE_RC idtBaseThread::waitToStart(UInt second)
 {
 
@@ -205,12 +205,12 @@ IDE_RC idtBaseThread::waitToStart(UInt second)
  */
 
 /*
- * ÇöÀç ½º·¹µå°¡ aCPUSet¿¡ ¼³Á¤µÈ CPU¿¡¼­ ÀÛµ¿ÇÏµµ·Ï
- * affinity¸¦ ¼³Á¤ÇÑ´Ù.
- * idtBaseThread¸¦ »ó¼Ó¹ÞÀº Å¬·¡½º¿¡¼­¸¸ »ç¿ë °¡´ÉÇÏ´Ù.
- * aCPUSet ³»ºÎÀÇ CPU°¡ ÇÏ³ªÀÌ¸é ¸ðµç ¿î¿µÃ¼Á¦¿¡¼­ ÀÛµ¿ÇÑ´Ù.
- * aCPUSet ³»ºÎÀÇ CPU°¡ µÑ ÀÌ»óÀÌ¸é Linux¿¡¼­¸¸ ÀÛµ¿ÇÏ¸ç ´Ù¸¥
- * ¿î¿µÃ¼Á¦¿¡¼­´Â TRC ¿À·ù ¸Þ½ÃÁö¸¦ Ãâ·ÂÇÏ°í IDE_FAILURE¸¦ ¸®ÅÏÇÑ´Ù.
+ * í˜„ìž¬ ìŠ¤ë ˆë“œê°€ aCPUSetì— ì„¤ì •ëœ CPUì—ì„œ ìž‘ë™í•˜ë„ë¡
+ * affinityë¥¼ ì„¤ì •í•œë‹¤.
+ * idtBaseThreadë¥¼ ìƒì†ë°›ì€ í´ëž˜ìŠ¤ì—ì„œë§Œ ì‚¬ìš© ê°€ëŠ¥í•˜ë‹¤.
+ * aCPUSet ë‚´ë¶€ì˜ CPUê°€ í•˜ë‚˜ì´ë©´ ëª¨ë“  ìš´ì˜ì²´ì œì—ì„œ ìž‘ë™í•œë‹¤.
+ * aCPUSet ë‚´ë¶€ì˜ CPUê°€ ë‘˜ ì´ìƒì´ë©´ Linuxì—ì„œë§Œ ìž‘ë™í•˜ë©° ë‹¤ë¥¸
+ * ìš´ì˜ì²´ì œì—ì„œëŠ” TRC ì˜¤ë¥˜ ë©”ì‹œì§€ë¥¼ ì¶œë ¥í•˜ê³  IDE_FAILUREë¥¼ ë¦¬í„´í•œë‹¤.
 */
 IDE_RC idtBaseThread::setAffinity(idtCPUSet& aCPUSet)
 {
@@ -223,9 +223,9 @@ IDE_RC idtBaseThread::setAffinity(idtCPUSet& aCPUSet)
 }
 
 /*
- * ÇöÀç ½º·¹µå°¡ aCPUNo¿¡¼­ ÀÛµ¿ÇÏµµ·Ï affinity¸¦ ¼³Á¤ÇÑ´Ù.
- * idtBaseThread¸¦ »ó¼Ó¹ÞÀº Å¬·¡½º¿¡¼­¸¸ »ç¿ë °¡´ÉÇÏ´Ù.
- * ¸ðµç ¿î¿µÃ¼Á¦¿¡¼­ ÀÛµ¿ÇÑ´Ù.
+ * í˜„ìž¬ ìŠ¤ë ˆë“œê°€ aCPUNoì—ì„œ ìž‘ë™í•˜ë„ë¡ affinityë¥¼ ì„¤ì •í•œë‹¤.
+ * idtBaseThreadë¥¼ ìƒì†ë°›ì€ í´ëž˜ìŠ¤ì—ì„œë§Œ ì‚¬ìš© ê°€ëŠ¥í•˜ë‹¤.
+ * ëª¨ë“  ìš´ì˜ì²´ì œì—ì„œ ìž‘ë™í•œë‹¤.
  */
 IDE_RC idtBaseThread::setAffinity(const SInt aCPUNo)
 {
@@ -240,11 +240,11 @@ IDE_RC idtBaseThread::setAffinity(const SInt aCPUNo)
 }
 
 /*
- * ÇöÀç ½º·¹µå°¡ aNUMANo¿¡ ÇØ´çÇÏ´Â CPU¿¡¼­ ÀÛµ¿ÇÏµµ·Ï
- * affinity¸¦ ¼³Á¤ÇÑ´Ù.
- * idtBaseThread¸¦ »ó¼Ó¹ÞÀº Å¬·¡½º¿¡¼­¸¸ »ç¿ë °¡´ÉÇÏ´Ù.
- * Linux¿¡¼­¸¸ ÀÛµ¿ÇÏ¸ç ´Ù¸¥ ¿î¿µÃ¼Á¦¿¡¼­´Â
- * TRC ¿À·ù ¸Þ½ÃÁö¸¦ Ãâ·ÂÇÏ°í IDE_FAILURE¸¦ ¸®ÅÏÇÑ´Ù.
+ * í˜„ìž¬ ìŠ¤ë ˆë“œê°€ aNUMANoì— í•´ë‹¹í•˜ëŠ” CPUì—ì„œ ìž‘ë™í•˜ë„ë¡
+ * affinityë¥¼ ì„¤ì •í•œë‹¤.
+ * idtBaseThreadë¥¼ ìƒì†ë°›ì€ í´ëž˜ìŠ¤ì—ì„œë§Œ ì‚¬ìš© ê°€ëŠ¥í•˜ë‹¤.
+ * Linuxì—ì„œë§Œ ìž‘ë™í•˜ë©° ë‹¤ë¥¸ ìš´ì˜ì²´ì œì—ì„œëŠ”
+ * TRC ì˜¤ë¥˜ ë©”ì‹œì§€ë¥¼ ì¶œë ¥í•˜ê³  IDE_FAILUREë¥¼ ë¦¬í„´í•œë‹¤.
  */
 IDE_RC idtBaseThread::setNUMAAffinity(const SInt aNUMANo)
 {
@@ -252,11 +252,11 @@ IDE_RC idtBaseThread::setNUMAAffinity(const SInt aNUMANo)
 }
 
 /*
- * ÇöÀç ½º·¹µåÀÇ affinity¸¦ ¾Ë¾Æ³» aCPUSet¿¡ ÀúÀåÇÑ´Ù.
- * idtBaseThread¸¦ »ó¼Ó¹ÞÀº Å¬·¡½º¿¡¼­¸¸ »ç¿ë °¡´ÉÇÏ´Ù.
- * unbind »óÅÂ¶ó¸é ÇöÀç DBMS ¼­¹ö°¡ »ç¿ë °¡´ÉÇÑ
- * CPU SetÀÌ aCPUSet¿¡ ÀúÀåµÈ´Ù.
- * ¶óÀÌ¼¾½º·Î CPU °³¼ö¸¦ Á¦ÇÑÇÑ °æ¿ì »ç¿ë °¡´ÉÇÑ CPUµé¸¸ÀÌ ÀúÀåµÈ´Ù.
+ * í˜„ìž¬ ìŠ¤ë ˆë“œì˜ affinityë¥¼ ì•Œì•„ë‚´ aCPUSetì— ì €ìž¥í•œë‹¤.
+ * idtBaseThreadë¥¼ ìƒì†ë°›ì€ í´ëž˜ìŠ¤ì—ì„œë§Œ ì‚¬ìš© ê°€ëŠ¥í•˜ë‹¤.
+ * unbind ìƒíƒœë¼ë©´ í˜„ìž¬ DBMS ì„œë²„ê°€ ì‚¬ìš© ê°€ëŠ¥í•œ
+ * CPU Setì´ aCPUSetì— ì €ìž¥ëœë‹¤.
+ * ë¼ì´ì„¼ìŠ¤ë¡œ CPU ê°œìˆ˜ë¥¼ ì œí•œí•œ ê²½ìš° ì‚¬ìš© ê°€ëŠ¥í•œ CPUë“¤ë§Œì´ ì €ìž¥ëœë‹¤.
  */
 IDE_RC idtBaseThread::getAffinity(idtCPUSet& aCPUSet)
 {
@@ -265,11 +265,11 @@ IDE_RC idtBaseThread::getAffinity(idtCPUSet& aCPUSet)
 }
 
 /*
- * ÇöÀç ½º·¹µåÀÇ affinity¸¦ ¾Ë¾Æ³» aCPUSet¿¡ ÀúÀåÇÑ´Ù.
- * idtBaseThread¸¦ »ó¼Ó¹ÞÀº Å¬·¡½º¿¡¼­¸¸ »ç¿ë °¡´ÉÇÏ´Ù.
- * unbind »óÅÂ¶ó¸é ÇöÀç DBMS ¼­¹ö°¡ »ç¿ë °¡´ÉÇÑ
- * CPU SetÀÌ aCPUSet¿¡ ÀúÀåµÈ´Ù.
- * ¶óÀÌ¼¾½º·Î CPU °³¼ö¸¦ Á¦ÇÑÇÑ °æ¿ì »ç¿ë °¡´ÉÇÑ CPUµé¸¸ÀÌ ÀúÀåµÈ´Ù.
+ * í˜„ìž¬ ìŠ¤ë ˆë“œì˜ affinityë¥¼ ì•Œì•„ë‚´ aCPUSetì— ì €ìž¥í•œë‹¤.
+ * idtBaseThreadë¥¼ ìƒì†ë°›ì€ í´ëž˜ìŠ¤ì—ì„œë§Œ ì‚¬ìš© ê°€ëŠ¥í•˜ë‹¤.
+ * unbind ìƒíƒœë¼ë©´ í˜„ìž¬ DBMS ì„œë²„ê°€ ì‚¬ìš© ê°€ëŠ¥í•œ
+ * CPU Setì´ aCPUSetì— ì €ìž¥ëœë‹¤.
+ * ë¼ì´ì„¼ìŠ¤ë¡œ CPU ê°œìˆ˜ë¥¼ ì œí•œí•œ ê²½ìš° ì‚¬ìš© ê°€ëŠ¥í•œ CPUë“¤ë§Œì´ ì €ìž¥ëœë‹¤.
  */
 IDE_RC idtBaseThread::getAffinity(idtCPUSet* aCPUSet)
 {
@@ -278,13 +278,13 @@ IDE_RC idtBaseThread::getAffinity(idtCPUSet* aCPUSet)
 }
 
 /*
- * ÇöÀç ½º·¹µåÀÇ affinity¸¦ ¾Ë¾Æ³» aCPUNo¿¡ ÀúÀåÇÑ´Ù.
- * idtBaseThread¸¦ »ó¼Ó¹ÞÀº Å¬·¡½º¿¡¼­¸¸ »ç¿ë °¡´ÉÇÏ´Ù.
- * ÇöÀç ½º·¹µå°¡ ÇÏ³ªÀÇ CPU¿¡¸¸ bindµÇ¾î ÀÖ´Ù¸é
- * ÇØ´ç CPU ¹øÈ£¸¦ aCPUNo¿¡ ¼³Á¤ÇÑ´Ù.
- * µÑ ÀÌ»óÀÇ CPU¿¡ bindµÇ¾î ÀÖ°Å³ª unbind »óÅÂ¶ó¸é
- * -1À» ¼³Á¤ÇÏ°í * trc ¿À·ù ¸Þ½ÃÁö¸¦ Ãâ·ÂÇÑ ÈÄ
- * IDE_FAILURE¸¦ ¸®ÅÏÇÑ´Ù.
+ * í˜„ìž¬ ìŠ¤ë ˆë“œì˜ affinityë¥¼ ì•Œì•„ë‚´ aCPUNoì— ì €ìž¥í•œë‹¤.
+ * idtBaseThreadë¥¼ ìƒì†ë°›ì€ í´ëž˜ìŠ¤ì—ì„œë§Œ ì‚¬ìš© ê°€ëŠ¥í•˜ë‹¤.
+ * í˜„ìž¬ ìŠ¤ë ˆë“œê°€ í•˜ë‚˜ì˜ CPUì—ë§Œ bindë˜ì–´ ìžˆë‹¤ë©´
+ * í•´ë‹¹ CPU ë²ˆí˜¸ë¥¼ aCPUNoì— ì„¤ì •í•œë‹¤.
+ * ë‘˜ ì´ìƒì˜ CPUì— bindë˜ì–´ ìžˆê±°ë‚˜ unbind ìƒíƒœë¼ë©´
+ * -1ì„ ì„¤ì •í•˜ê³  * trc ì˜¤ë¥˜ ë©”ì‹œì§€ë¥¼ ì¶œë ¥í•œ í›„
+ * IDE_FAILUREë¥¼ ë¦¬í„´í•œë‹¤.
  */
 IDE_RC idtBaseThread::getAffinity(SInt& aCPUNo)
 {
@@ -313,7 +313,7 @@ IDE_RC idtBaseThread::getAffinity(SInt* aCPUNo)
 }
 
 /*
- * ÇöÀç ½º·¹µåÀÇ CPU Affinity¸¦ ÇØÁ¦ÇÑ´Ù.
+ * í˜„ìž¬ ìŠ¤ë ˆë“œì˜ CPU Affinityë¥¼ í•´ì œí•œë‹¤.
  */
 IDE_RC idtBaseThread::unbindAffinity(void)
 {

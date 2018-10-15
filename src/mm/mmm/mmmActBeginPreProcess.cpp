@@ -34,7 +34,7 @@ static IDE_RC mmmPhaseActionBeginPreProcess(mmmPhase         /*aPhase*/,
     }
     else
     {
-        ideSetCallbackMessage(mmtAdminManager::sendMsgPreProcess); // BUGBUG : ÇÊ¿ä¾øÀ½.
+        ideSetCallbackMessage(mmtAdminManager::sendMsgPreProcess); // BUGBUG : í•„ìš”ì—†ìŒ.
     }
 
     ideSetCallbackNChar(mmtAdminManager::sendNChar);

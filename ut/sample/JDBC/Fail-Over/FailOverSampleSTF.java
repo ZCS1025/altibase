@@ -12,15 +12,15 @@ class  FailOverSampleSTF
         //---------------------------------------------------
         // Initialization
         //---------------------------------------------------
-        // AlternateServers°¡ °¡¿ë³ëµå propertyÀÌ´Ù.
+        // AlternateServersê°€ ê°€ìš©ë…¸ë“œ propertyì´ë‹¤.
         
-       /* ÀÌ·¸°Ô ±æ°Ô connection stringÀ» ±¸¼ºÇÏ±â ½ÈÀ¸¸é
-       altibase_cli.ini¿¡¼­ Data Source sectionÀ» ±â¼úÇÏ°í,
-       [DataSourceÀÌ¸§] 
+       /* ì´ë ‡ê²Œ ê¸¸ê²Œ connection stringì„ êµ¬ì„±í•˜ê¸° ì‹«ìœ¼ë©´
+       altibase_cli.iniì—ì„œ Data Source sectionì„ ê¸°ìˆ í•˜ê³ ,
+       [DataSourceì´ë¦„] 
        AlternateServers=(128.1.3.53:20300,128.1.3.52:20301)
        .......................
-       URLÀ» ´ÙÀ½°ú °°ÀÌ ±â¼úÇÏ¸é µÈ´Ù.
-       jdbc:Altibase://DataSourceÀÌ¸§
+       URLì„ ë‹¤ìŒê³¼ ê°™ì´ ê¸°ìˆ í•˜ë©´ ëœë‹¤.
+       jdbc:Altibase://DataSourceì´ë¦„
        */
         String sURL = "jdbc:Altibase://127.0.0.1:" + args[0]+"/mydb?AlternateServers=(128.1.3.53:20300,128.1.3.52:20301)&ConnectionRetryCount=3&ConnectionRetryDelay=10&SessionFailOver=on";
         try
@@ -49,7 +49,7 @@ class  FailOverSampleSTF
         sProp.put("password", "MANAGER");
         
         sCon = DriverManager.getConnection(sURL, sProp);
-        // Session Fail-Over¸¦ À§ÇÏ¿© ´ÙÀ½°°Àº Çü½ÄÀ¸·Î ÇÁ·Î±×·¥¹ÖÇØ¾ß ÇÕ´Ï´Ù.
+        // Session Fail-Overë¥¼ ìœ„í•˜ì—¬ ë‹¤ìŒê°™ì€ í˜•ì‹ìœ¼ë¡œ í”„ë¡œê·¸ë¨ë°í•´ì•¼ í•©ë‹ˆë‹¤.
         /*
           while (true)
           {
@@ -59,7 +59,7 @@ class  FailOverSampleSTF
             }
             catch(  SQLException e)
             {
-               //Fail-Over°¡ ¹ß»ı.
+               //Fail-Overê°€ ë°œìƒ.
                 if (e.getErrorCode() == ErrorDef.FAILOVER_SUCCESS)
                 {
                     continue;
@@ -85,7 +85,7 @@ class  FailOverSampleSTF
             
             catch ( SQLException e )
             {
-                //FailOver°¡ ¹ß»ıÇÏ¿´´Ù.
+                //FailOverê°€ ë°œìƒí•˜ì˜€ë‹¤.
                 if (e.getErrorCode() == ErrorDef.FAILOVER_SUCCESS)
                 {
                     continue;

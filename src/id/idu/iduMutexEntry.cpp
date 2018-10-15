@@ -90,8 +90,8 @@ iduMutexEntry::setName(SChar *aName)
 }
 
 /* 
- * BUG-43940 V$mutex¿¡¼­ mutex lockÀ» È¹µæÇÑ ½º·¹µå IDÃâ·Â
- * lockÀ» È¹µæÇÑ mOwner¸¦ 16Áø¼ö·Î Ãâ·ÂÇÏ±â À§ÇÑ ÇÔ¼ö
+ * BUG-43940 V$mutexì—ì„œ mutex lockì„ íšë“í•œ ìŠ¤ë ˆë“œ IDì¶œë ¥
+ * lockì„ íšë“í•œ mOwnerë¥¼ 16ì§„ìˆ˜ë¡œ ì¶œë ¥í•˜ê¸° ìœ„í•œ í•¨ìˆ˜
 */
 void
 iduMutexEntry::setThreadID()

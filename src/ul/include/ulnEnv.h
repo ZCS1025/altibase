@@ -21,11 +21,11 @@ struct ulnEnv
 {
     ulnObject mObj;
 
-    acp_uint32_t mDbcCount;          /* ENV°¡ °¡Áö°í ÀÖ´Â DBCÀÇ °¹¼ö  */
-    acp_list_t   mDbcList;           /* DBCÀÇ ¸®½ºÆ® Çìµå */
+    acp_uint32_t mDbcCount;          /* ENVê°€ ê°€ì§€ê³  ìˆëŠ” DBCì˜ ê°¯ìˆ˜  */
+    acp_list_t   mDbcList;           /* DBCì˜ ë¦¬ìŠ¤íŠ¸ í—¤ë“œ */
 
-    //acp_list_t    mDataSourceList;    /* DataSource ÀÇ ¸®½ºÆ® Çìµå */
-    //acp_uint32_t  mDataSourceCount;   /* ENV°¡ °¡Áö°í ÀÖ´Â DataSource ÀÇ °¹¼ö */
+    //acp_list_t    mDataSourceList;    /* DataSource ì˜ ë¦¬ìŠ¤íŠ¸ í—¤ë“œ */
+    //acp_uint32_t  mDataSourceCount;   /* ENVê°€ ê°€ì§€ê³  ìˆëŠ” DataSource ì˜ ê°¯ìˆ˜ */
 
     acp_sint32_t mOdbcVersion;       /* SQL_ATTR_ODBC_VERSION */
     acp_uint32_t mConnPooling;       /* SQL_ATTR_CONNECTION_POOLING */

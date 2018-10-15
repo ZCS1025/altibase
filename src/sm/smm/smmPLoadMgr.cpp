@@ -42,7 +42,7 @@ IDE_RC smmPLoadMgr::initializePloadMgr(smmTBSNode *     aTBSNode,
     IDU_FIT_POINT_RAISE( "smmPLoadMgr::initializePloadMgr::calloc",
                           insufficient_memory );
 
-    // client ¸Ş¸ğ¸® ÇÒ´ç 
+    // client ë©”ëª¨ë¦¬ í• ë‹¹ 
     IDE_TEST_RAISE(iduMemMgr::calloc(IDU_MEM_SM_SMM,
                                aThreadCount,
                                ID_SIZEOF(smmPLoadChild *),
@@ -63,7 +63,7 @@ IDE_RC smmPLoadMgr::initializePloadMgr(smmTBSNode *     aTBSNode,
         mChildArray[i] = new (mChildArray[i]) smmPLoadChild();
     }
     
-    // ¸Å´ÏÀú ÃÊ±âÈ­ 
+    // ë§¤ë‹ˆì € ì´ˆê¸°í™” 
     IDE_TEST(smtPJMgr::initialize(aThreadCount,
                                   (smtPJChild **)mChildArray,
                                   &mSuccess)
@@ -119,11 +119,11 @@ IDE_RC smmPLoadMgr::assignJob(SInt    aReqChild,
     
     if ( mCurrFileNumber < mMaxFileNumber)
     {
-        // ÀÌ ÆÄÀÏ¿¡ ±â·ÏÇÒ ¼ö ÀÖ´Â PageÀÇ ¼ö 
+        // ì´ íŒŒì¼ì— ê¸°ë¡í•  ìˆ˜ ìˆëŠ” Pageì˜ ìˆ˜ 
         sPageCountPerFile = smmManager::getPageCountPerFile( mTBSNode,
                                                              mCurrFileNumber );
         
-        // DB ÆÄÀÏÀÌ Disk¿¡ Á¸ÀçÇÑ´Ù¸é?
+        // DB íŒŒì¼ì´ Diskì— ì¡´ì¬í•œë‹¤ë©´?
         if ( smmDatabaseFile::isDBFileOnDisk( mTBSNode,
                                               mCurrentDB,
                                               mCurrFileNumber ) == ID_TRUE )
@@ -135,7 +135,7 @@ IDE_RC smmPLoadMgr::assignJob(SInt    aReqChild,
                       != IDE_SUCCESS );
             
         
-            // ½ÇÁ¦ ÆÄÀÏ¿¡ ±â·ÏµÈ PageÀÇ ¼ö¸¦ °è»êÇÑ´Ù.
+            // ì‹¤ì œ íŒŒì¼ì— ê¸°ë¡ëœ Pageì˜ ìˆ˜ë¥¼ ê³„ì‚°í•œë‹¤.
             IDE_TEST( s_DbFile->getFileSize(&s_nFileSize) 
                       != IDE_SUCCESS );
 
@@ -156,40 +156,40 @@ IDE_RC smmPLoadMgr::assignJob(SInt    aReqChild,
             else
             {
                 // To FIX BUG-18630
-                // 8Kº¸´Ù ÀÛÀº DBÆÄÀÏÀÌ Á¸ÀçÇÒ °æ¿ì Restart Recovery½ÇÆĞÇÔ
+                // 8Kë³´ë‹¤ ì‘ì€ DBíŒŒì¼ì´ ì¡´ì¬í•  ê²½ìš° Restart Recoveryì‹¤íŒ¨í•¨
                 //
-                // 8Kº¸´Ù ÀÛÀº Å©±âÀÇ DBÆÄÀÏ¿¡´Â
-                // µ¥ÀÌÅÍ ÆäÀÌÁö°¡ ±â·ÏµÇÁö ¾ÊÀº °ÍÀÌ¹Ç·Î
-                // DBÆÄÀÏ Restore¸¦ SKIPÇÑ´Ù.
+                // 8Kë³´ë‹¤ ì‘ì€ í¬ê¸°ì˜ DBíŒŒì¼ì—ëŠ”
+                // ë°ì´í„° í˜ì´ì§€ê°€ ê¸°ë¡ë˜ì§€ ì•Šì€ ê²ƒì´ë¯€ë¡œ
+                // DBíŒŒì¼ Restoreë¥¼ SKIPí•œë‹¤.
                 *aJobAssigned = ID_FALSE;
             }
         }
-        else // DBÆÄÀÏÀÌ Á¸ÀçÇÏÁö ¾Ê´Â °æ¿ì
+        else // DBíŒŒì¼ì´ ì¡´ì¬í•˜ì§€ ì•ŠëŠ” ê²½ìš°
         {
             /*
-             * To Fix BUG-13966  checkpointÁß DBÆÄÀÏ ¹ÌÃ³ »ı¼ºÇÏÁö ¸øÇÑ
-             *                   »óÈ²¿¡¼­ server Á×Àº ÈÄ, startupÀÌ ¾ÈµÊ 
+             * To Fix BUG-13966  checkpointì¤‘ DBíŒŒì¼ ë¯¸ì²˜ ìƒì„±í•˜ì§€ ëª»í•œ
+             *                   ìƒí™©ì—ì„œ server ì£½ì€ í›„, startupì´ ì•ˆë¨ 
              *
-             * Checkpoint Thread ¿Í Chunk¸¦ È®ÀåÇÏ´Â Insert Transaction
-             * »çÀÌÀÇ ÀÛ¾÷ÀÌ ´ÙÀ½°ú °°ÀÌ ¼öÇàµÇ¸é,
-             * CheckpointµµÁß DBÆÄÀÏÀÌ ¹ÌÃ³ »ı±âÁö ¾ÊÀ» ¼ö ÀÖ´Ù.
+             * Checkpoint Thread ì™€ Chunkë¥¼ í™•ì¥í•˜ëŠ” Insert Transaction
+             * ì‚¬ì´ì˜ ì‘ì—…ì´ ë‹¤ìŒê³¼ ê°™ì´ ìˆ˜í–‰ë˜ë©´,
+             * Checkpointë„ì¤‘ DBíŒŒì¼ì´ ë¯¸ì²˜ ìƒê¸°ì§€ ì•Šì„ ìˆ˜ ìˆë‹¤.
              *
-             * ÀÚ¼¼ÇÑ ³»¿ëÀº smmManager::loadSerial2ÀÇ ÁÖ¼®À» Âü°í
+             * ìì„¸í•œ ë‚´ìš©ì€ smmManager::loadSerial2ì˜ ì£¼ì„ì„ ì°¸ê³ 
              */
 
             // do nothing !
-            // JobÀÌ AssignµÇÁö ¾Ê¾ÒÀ¸¹Ç·Î Flag¼¼ÆÃ!
+            // Jobì´ Assignë˜ì§€ ì•Šì•˜ìœ¼ë¯€ë¡œ Flagì„¸íŒ…!
             *aJobAssigned = ID_FALSE;
         }
 
         // PROJ-1490
-        // DBÆÄÀÏ¾ÈÀÇ Free Page´Â Disk·Î ³»·Á°¡Áöµµ ¾Ê°í
-        // ¸Ş¸ğ¸®·Î ¿Ã¶ó°¡Áöµµ ¾Ê´Â´Ù.
-        // ±×·¯¹Ç·Î, DBÆÄÀÏÀÇ Å©±â¿Í DBÆÄÀÏ¿¡ ÀúÀåµÇ¾î¾ß ÇÒ Page¼ö¿Í´Â
-        // ¾Æ¹«·± °ü°è°¡ ¾ø´Ù.
+        // DBíŒŒì¼ì•ˆì˜ Free PageëŠ” Diskë¡œ ë‚´ë ¤ê°€ì§€ë„ ì•Šê³ 
+        // ë©”ëª¨ë¦¬ë¡œ ì˜¬ë¼ê°€ì§€ë„ ì•ŠëŠ”ë‹¤.
+        // ê·¸ëŸ¬ë¯€ë¡œ, DBíŒŒì¼ì˜ í¬ê¸°ì™€ DBíŒŒì¼ì— ì €ì¥ë˜ì–´ì•¼ í•  Pageìˆ˜ì™€ëŠ”
+        // ì•„ë¬´ëŸ° ê´€ê³„ê°€ ì—†ë‹¤.
         //
-        // °¢ DBÆÄÀÏÀÌ ±â·ÏÇØ¾ßÇÒ PageÀÇ ¼ö¸¦ °è»êÇÏ¿©
-        // °¢ DBÆÄÀÏÀÇ ·Îµå ½ÃÀÛ Page ID¸¦ °è»êÇÑ´Ù.
+        // ê° DBíŒŒì¼ì´ ê¸°ë¡í•´ì•¼í•  Pageì˜ ìˆ˜ë¥¼ ê³„ì‚°í•˜ì—¬
+        // ê° DBíŒŒì¼ì˜ ë¡œë“œ ì‹œì‘ Page IDë¥¼ ê³„ì‚°í•œë‹¤.
         mStartReadPageID += sPageCountPerFile ;
         
         mCurrFileNumber++;

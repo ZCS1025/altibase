@@ -198,7 +198,7 @@ ACP_EXPORT acp_rc_t acpSignalBlockDefault(void)
 {
     if (acpOSGetVersion() >= ACP_OS_WIN_2000)
     {
-        /* µî·ÏÇÑ ÄÁÆ®·Ñ ÇÚµé·¯µéÀ» ÇØÁ¦½ÃÅ²´Ù. */
+        /* ë“±ë¡í•œ ì»¨íŠ¸ë¡¤ í•¸ë“¤ëŸ¬ë“¤ì„ í•´ì œì‹œí‚¨ë‹¤. */
         SetConsoleCtrlHandler(acpSignalCtrlEventHandler, FALSE);
     }
     else
@@ -212,20 +212,20 @@ ACP_EXPORT acp_rc_t acpSignalBlockDefault(void)
 ACP_EXPORT acp_rc_t acpSignalBlockAll(void)
 {
     /*
-     * [0] À©µµ¿ì¿¡¼­ÀÇ ½Ã±×³Î
-     * ÇÔ¼ö¸¦ ÅëÇØ Ã³¸®ÇØ¾ß ÇÏ´Â À©µµ¿ì ½Ã±×³Î¿¡´Â fatal error¸¦ Á¦¿ÜÇÑ
-     * ´ÙÀ½°ú °°Àº °ÍµéÀÌ ÀÖ´Ù.
+     * [0] ìœˆë„ìš°ì—ì„œì˜ ì‹œê·¸ë„
+     * í•¨ìˆ˜ë¥¼ í†µí•´ ì²˜ë¦¬í•´ì•¼ í•˜ëŠ” ìœˆë„ìš° ì‹œê·¸ë„ì—ëŠ” fatal errorë¥¼ ì œì™¸í•œ
+     * ë‹¤ìŒê³¼ ê°™ì€ ê²ƒë“¤ì´ ìˆë‹¤.
      *    (a) SIGINT
      *    (b) SIGTERM
      *    (c) SIGBREAK
      *
-     * [1] À©µµ¿ì°¡ NT¹öÁ¯ ÀÌ»óÀÏ °æ¿ì
-     * CTRL_C_EVENT, CTRL_BREAK_EVENT µîÀ» Ã³¸®ÇÏ±â À§ÇÑ
-     * SetConsoleCtrlHandler()À» »ç¿ëÇÏ¿© ½Ã±×³ÎÀ» ºí·°½ÃÅ³ ¼ö°¡ ÀÖ´Ù.
+     * [1] ìœˆë„ìš°ê°€ NTë²„ì ¼ ì´ìƒì¼ ê²½ìš°
+     * CTRL_C_EVENT, CTRL_BREAK_EVENT ë“±ì„ ì²˜ë¦¬í•˜ê¸° ìœ„í•œ
+     * SetConsoleCtrlHandler()ì„ ì‚¬ìš©í•˜ì—¬ ì‹œê·¸ë„ì„ ë¸”ëŸ­ì‹œí‚¬ ìˆ˜ê°€ ìˆë‹¤.
      *
-     * [2] À©µµ¿ì°¡ 9x¹öÁ¯ ÀÏ °æ¿ì
-     * SetConsoleCtrlHandler()°¡ WIN-2000 ¹öÁ¯ ÀÌ»ó¿¡¼­¸¸ »ç¿ë°¡´ÉÇÏ¹Ç·Î
-     * Handler¸¦ Hooking ÇÏ±â À§ÇÑ ¿¡¹Ä·¹ÀÌ¼Ç ÇÔ¼ö¸¦ ÅëÇØ ±¸ÇöÇÑ´Ù.
+     * [2] ìœˆë„ìš°ê°€ 9xë²„ì ¼ ì¼ ê²½ìš°
+     * SetConsoleCtrlHandler()ê°€ WIN-2000 ë²„ì ¼ ì´ìƒì—ì„œë§Œ ì‚¬ìš©ê°€ëŠ¥í•˜ë¯€ë¡œ
+     * Handlerë¥¼ Hooking í•˜ê¸° ìœ„í•œ ì—ë®¬ë ˆì´ì…˜ í•¨ìˆ˜ë¥¼ í†µí•´ êµ¬í˜„í•œë‹¤.
      */
     if (acpOSGetVersion() >= ACP_OS_WIN_2000)
     {
@@ -271,7 +271,7 @@ ACP_EXPORT acp_rc_t acpSignalUnblock(acp_signal_set_t aSignalSet)
         case ACP_SIGNAL_SET_INT:
             if (acpOSGetVersion() >= ACP_OS_WIN_2000)
             {
-                /* µî·ÏÇÑ ÄÁÆ®·Ñ ÇÚµé·¯µéÀ» ÇØÁ¦½ÃÅ²´Ù. */
+                /* ë“±ë¡í•œ ì»¨íŠ¸ë¡¤ í•¸ë“¤ëŸ¬ë“¤ì„ í•´ì œì‹œí‚¨ë‹¤. */
                 SetConsoleCtrlHandler(acpSignalCtrlEventHandler, FALSE);
             }
             else

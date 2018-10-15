@@ -26,8 +26,8 @@ void ulnDataBuildColumnZero( ulnFnContext *aFnContext,
                              ulnRow       *aRow,
                              ulnColumn    *aColumn );
 
-/* PROJ-2160 CM Å¸ÀÔÁ¦°Å
-   ¿£µğ¾È¿¡ ¸ÂÃß¾î¼­ ÀúÀåÇÑ´Ù. */
+/* PROJ-2160 CM íƒ€ì…ì œê±°
+   ì—”ë””ì•ˆì— ë§ì¶”ì–´ì„œ ì €ì¥í•œë‹¤. */
 ACI_RC ulnDataBuildColumnFromMT(ulnFnContext *aFnContext,
                                 acp_uint8_t  *aSrc,
                                 ulnColumn    *aColumn);
@@ -46,8 +46,8 @@ void ulnDataWriteStringToUserBuffer(ulnFnContext *aFnContext,
                                     acp_uint32_t   aTargetBufferSize,
                                     acp_sint16_t  *aSourceStringSizePtr);
 
-/* PROJ-2160 CM Å¸ÀÔÁ¦°Å
-   µ¥ÀÌÅ¸ÀÇ ±æÀÌ¸¦ Ã£¾Æ¿Ã¶§ »ç¿ëµÈ´Ù. */
+/* PROJ-2160 CM íƒ€ì…ì œê±°
+   ë°ì´íƒ€ì˜ ê¸¸ì´ë¥¼ ì°¾ì•„ì˜¬ë•Œ ì‚¬ìš©ëœë‹¤. */
 ACI_RC ulnDataGetNextColumnOffset(ulnColumn    *aColumn,
                                   acp_uint8_t  *aSrc,
                                   acp_uint32_t *aOffset);

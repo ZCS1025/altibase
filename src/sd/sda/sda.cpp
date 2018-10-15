@@ -41,9 +41,9 @@ IDE_RC sda::checkStmt( qcStatement * aStatement )
 /***********************************************************************
  *
  * Description :
- *      ¼öÇà °¡´ÉÇÑ statement typeÀÎÁö È®ÀÎÇÑ´Ù.
+ *      ìˆ˜í–‰ ê°€ëŠ¥í•œ statement typeì¸ì§€ í™•ì¸í•œë‹¤.
  *
- *     *  ¼öÇà °¡´ÉÇÑ statement type
+ *     *  ìˆ˜í–‰ ê°€ëŠ¥í•œ statement type
  *           1. QCI_STMT_SELECT
  *              QCI_STMT_SELECT_FOR_UPDATE
  *           2. QCI_STMT_INSERT
@@ -98,9 +98,9 @@ IDE_RC sda::analyze( qcStatement * aStatement )
                 //------------------------------------------
                 // PROJ-2655 Composite shard key
                 //
-                // Shard key¿¡ ´ëÇØ¼­ ºĞ¼® ÇÑ °á°ú ¸¦ º¸°í,
-                // Sub-shard key¸¦ °¡Áø object°¡ Á¸ÀçÇÏ¸é,
-                // Sub-shard key¿¡ ´ëÇØ¼­ ºĞ¼®À» ¼öÇàÇÑ´Ù.
+                // Shard keyì— ëŒ€í•´ì„œ ë¶„ì„ í•œ ê²°ê³¼ ë¥¼ ë³´ê³ ,
+                // Sub-shard keyë¥¼ ê°€ì§„ objectê°€ ì¡´ì¬í•˜ë©´,
+                // Sub-shard keyì— ëŒ€í•´ì„œ ë¶„ì„ì„ ìˆ˜í–‰í•œë‹¤.
                 //
                 //------------------------------------------
                 IDE_TEST( analyzeSelect( aStatement, ID_TRUE ) != IDE_SUCCESS );
@@ -156,14 +156,14 @@ IDE_RC sda::analyzeSelect( qcStatement * aStatement,
 {
 /***********************************************************************
  *
- * Description : SELECT ±¸¹®ÀÇ ºĞ¼® °úÁ¤
+ * Description : SELECT êµ¬ë¬¸ì˜ ë¶„ì„ ê³¼ì •
  *
  * Implementation :
  *
  ***********************************************************************/
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_TEST_RAISE( aStatement == NULL, ERR_NULL_STATEMENT );
@@ -172,7 +172,7 @@ IDE_RC sda::analyzeSelect( qcStatement * aStatement,
     {
         //------------------------------------------
         // PROJ-1413
-        // Query Transformation ¼öÇà
+        // Query Transformation ìˆ˜í–‰
         //------------------------------------------
 
         IDE_TEST( qmo::doTransform( aStatement ) != IDE_SUCCESS );
@@ -184,7 +184,7 @@ IDE_RC sda::analyzeSelect( qcStatement * aStatement,
 
     //------------------------------------------
     // PROJ-2646 shard analyzer enhancement
-    // ParseTreeÀÇ ºĞ¼®
+    // ParseTreeì˜ ë¶„ì„
     //------------------------------------------
     IDE_TEST( analyzeParseTree( aStatement, aIsSubKey ) != IDE_SUCCESS );
 
@@ -209,7 +209,7 @@ IDE_RC sda::setAnalysis( qcStatement  * aStatement,
 /***********************************************************************
  *
  * Description :
- *      analyze info¸¦ qciStatement¿¡ ¼¼ÆÃÇÑ´Ù.
+ *      analyze infoë¥¼ qciStatementì— ì„¸íŒ…í•œë‹¤.
  *
  * Implementation :
  *
@@ -233,7 +233,7 @@ IDE_RC sda::setAnalysis( qcStatement  * aStatement,
     UShort               sSubValueListCount = 0;
 
     //---------------------------------------
-    // ÇÒ´ç
+    // í• ë‹¹
     //---------------------------------------
 
     IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF(sdiAnalyzeInfo),
@@ -242,7 +242,7 @@ IDE_RC sda::setAnalysis( qcStatement  * aStatement,
     SDI_INIT_ANALYZE_INFO( sAnalyzeInfo );
 
     //---------------------------------------
-    // ¼³Á¤
+    // ì„¤ì •
     //---------------------------------------
 
     sAnalyzeInfo->mSplitMethod   = aAnalysis->mShardInfo.mSplitMethod;
@@ -272,7 +272,7 @@ IDE_RC sda::setAnalysis( qcStatement  * aStatement,
 
     //---------------------------------------
     // PROJ-2685 online rebuild
-    // shard tableÀ» analysis¿¡ µî·Ï
+    // shard tableì„ analysisì— ë“±ë¡
     //---------------------------------------
 
     sAnalyzeInfo->mTableInfoList = aAnalysis->mTableInfoList;
@@ -531,7 +531,7 @@ IDE_RC sda::setAnalysis( qcStatement  * aStatement,
     }
 
     //---------------------------------------
-    // ±â·Ï
+    // ê¸°ë¡
     //---------------------------------------
 
     aStatement->myPlan->mShardAnalysis = sAnalyzeInfo;
@@ -551,7 +551,7 @@ IDE_RC sda::setAnalysis( qcStatement  * aStatement,
     }
     IDE_EXCEPTION(ERR_CANNOT_MERGE)
     {
-        // shard query°¡ ¾Æ´ÏÁö¸¸, shard view ¼öÇàÀ» À§ÇØ analysis´Â ±â·ÏÇÑ´Ù.
+        // shard queryê°€ ì•„ë‹ˆì§€ë§Œ, shard view ìˆ˜í–‰ì„ ìœ„í•´ analysisëŠ” ê¸°ë¡í•œë‹¤.
         sAnalyzeInfo->mIsCanMerge = ID_FALSE;
         aStatement->myPlan->mShardAnalysis = sAnalyzeInfo;
     }
@@ -688,7 +688,7 @@ IDE_RC sda::setShardInfo4Subquery( qcStatement         * aStatement,
             }
             else
             {
-                // ÀÓ½Ã·Î º¹»çÇÑ µÚ mergeÇÑ´Ù.
+                // ì„ì‹œë¡œ ë³µì‚¬í•œ ë’¤ mergeí•œë‹¤.
                 copyRangeInfo( sRangeInfoTmp,
                                sRangeInfo );
 
@@ -709,7 +709,7 @@ IDE_RC sda::setShardInfo4Subquery( qcStatement         * aStatement,
 
             //---------------------------------------
             // PROJ-2685 online rebuild
-            // shard tableÀ» analysis¿¡ µî·Ï
+            // shard tableì„ analysisì— ë“±ë¡
             //---------------------------------------
             IDE_TEST( addTableInfoList(
                           aStatement,
@@ -798,7 +798,7 @@ IDE_RC sda::setShardInfo4Subquery( qcStatement         * aStatement,
 
             //---------------------------------------
             // PROJ-2685 online rebuild
-            // shard tableÀ» analysis¿¡ µî·Ï
+            // shard tableì„ analysisì— ë“±ë¡
             //---------------------------------------
             IDE_TEST( addTableInfoList(
                           aStatement,
@@ -984,14 +984,14 @@ IDE_RC sda::analyzeParseTree( qcStatement * aStatement,
     }
 
     //------------------------------------------
-    // QuerySetÀÇ ºĞ¼®
+    // QuerySetì˜ ë¶„ì„
     //------------------------------------------
     IDE_TEST( analyzeQuerySet( aStatement,
                                sQuerySet,
                                aIsSubKey ) != IDE_SUCCESS );
 
     //------------------------------------------
-    // AnalysisÀÇ ÃÊ±âÈ­
+    // Analysisì˜ ì´ˆê¸°í™”
     //------------------------------------------
     sAnalysis->mQuerySetAnalysis = sQuerySet->mShardAnalysis;
 
@@ -1067,7 +1067,7 @@ IDE_RC sda::analyzeParseTree( qcStatement * aStatement,
               != IDE_SUCCESS );
 
     //------------------------------------------
-    // ¿¬°á
+    // ì—°ê²°
     //------------------------------------------
 
     if ( aIsSubKey == ID_TRUE )
@@ -1095,9 +1095,9 @@ IDE_RC sda::analyzeQuerySet( qcStatement * aStatement,
     if ( aQuerySet->setOp != QMS_NONE )
     {
         //------------------------------------------
-        // SET operatorÀÏ °æ¿ì
-        // Left, right query setÀ» °¢°¢ analyze ÇÑ ÈÄ
-        // µÎ °³ÀÇ analysis info·Î SET operatorÀÇ analyze Á¤º¸¸¦ »ı¼ºÇÑ´Ù.
+        // SET operatorì¼ ê²½ìš°
+        // Left, right query setì„ ê°ê° analyze í•œ í›„
+        // ë‘ ê°œì˜ analysis infoë¡œ SET operatorì˜ analyze ì •ë³´ë¥¼ ìƒì„±í•œë‹¤.
         //------------------------------------------
         IDE_TEST( analyzeQuerySet( aStatement,
                                    aQuerySet->left,
@@ -1119,7 +1119,7 @@ IDE_RC sda::analyzeQuerySet( qcStatement * aStatement,
     else
     {
         //------------------------------------------
-        // SELECT ~ HAVINGÀÇ ºĞ¼®
+        // SELECT ~ HAVINGì˜ ë¶„ì„
         //------------------------------------------
         IDE_TEST( analyzeSFWGH( aStatement,
                                 aQuerySet,
@@ -1157,13 +1157,13 @@ IDE_RC sda::analyzeSFWGH( qcStatement * aStatement,
     idBool                sIsOneNodeSQL     = ID_TRUE;
 
     //------------------------------------------
-    // Á¤ÇÕ¼º
+    // ì •í•©ì„±
     //------------------------------------------
 
     IDE_TEST_RAISE( aQuerySet->SFWGH == NULL, ERR_NULL_SFWGH );
 
     //------------------------------------------
-    // ÇÒ´ç
+    // í• ë‹¹
     //------------------------------------------
 
     if ( aIsSubKey == ID_FALSE )
@@ -1191,7 +1191,7 @@ IDE_RC sda::analyzeSFWGH( qcStatement * aStatement,
     }
 
     //------------------------------------------
-    // ÃÊ±âÈ­
+    // ì´ˆê¸°í™”
     //------------------------------------------
 
     SDI_SET_INIT_CAN_MERGE_REASON( sCantMergeReason );
@@ -1261,11 +1261,11 @@ IDE_RC sda::analyzeSFWGH( qcStatement * aStatement,
     if ( sShardFromInfo != NULL )
     {
         /*
-         * Query¿¡ »ç¿ë µÈ shard tableµéÀÇ ºĞ»ê ¼Ó¼ºÀÌ
-         * ¸ğµÎ cloneÀÌ°Å³ª, solo°¡ Æ÷ÇÔ µÇ¾î ÀÖÀ¸¸é
-         * Shard analysisÀÇ °á°ú´Â ¼öÇà ³ëµå°¡ ´ÜÀÏ ³ëµå·Î ÆÇº°µÇ°Å³ª,
-         * ¼öÇàµÉ ¼ö ¾ø´Â °Í À¸·Î ÆÇº° µÇ±â ¶§¹®¿¡
-         * Semi/anti-join°ú outer-joinÀÇ ÀÏºÎ Á¦¾à»çÇ×ÀÇ ¿µÇâÀ» ¹ŞÁö ¾Ê´Â´Ù.
+         * Queryì— ì‚¬ìš© ëœ shard tableë“¤ì˜ ë¶„ì‚° ì†ì„±ì´
+         * ëª¨ë‘ cloneì´ê±°ë‚˜, soloê°€ í¬í•¨ ë˜ì–´ ìˆìœ¼ë©´
+         * Shard analysisì˜ ê²°ê³¼ëŠ” ìˆ˜í–‰ ë…¸ë“œê°€ ë‹¨ì¼ ë…¸ë“œë¡œ íŒë³„ë˜ê±°ë‚˜,
+         * ìˆ˜í–‰ë  ìˆ˜ ì—†ëŠ” ê²ƒ ìœ¼ë¡œ íŒë³„ ë˜ê¸° ë•Œë¬¸ì—
+         * Semi/anti-joinê³¼ outer-joinì˜ ì¼ë¶€ ì œì•½ì‚¬í•­ì˜ ì˜í–¥ì„ ë°›ì§€ ì•ŠëŠ”ë‹¤.
          */
         IDE_TEST( isOneNodeSQL( sShardFromInfo,
                                 NULL,
@@ -1415,7 +1415,7 @@ IDE_RC sda::analyzeSFWGH( qcStatement * aStatement,
     else
     {
         //------------------------------------------
-        // Shard tableÀÌ Á¸ÀçÇÏÁö ¾Ê´Â SFWGH
+        // Shard tableì´ ì¡´ì¬í•˜ì§€ ì•ŠëŠ” SFWGH
         //------------------------------------------
         if ( aIsSubKey == ID_FALSE )
         {
@@ -1486,12 +1486,12 @@ IDE_RC sda::analyzeFrom( qcStatement  * aStatement,
             {
                 sViewParseTree = (qmsParseTree*)aFrom->tableRef->view->myPlan->parseTree;
 
-                // ¸í½ÃÀûÀ¸·Î »ç¿ëÇÑ FROM SHARD(...) ¿¡ ´ëÇØ¼­´Â ¿¡·¯¸¦ ¹ß»ı½ÃÅ²´Ù.
+                // ëª…ì‹œì ìœ¼ë¡œ ì‚¬ìš©í•œ FROM SHARD(...) ì— ëŒ€í•´ì„œëŠ” ì—ëŸ¬ë¥¼ ë°œìƒì‹œí‚¨ë‹¤.
                 IDE_TEST_RAISE( sViewParseTree->isShardView == ID_TRUE,
                                 ERR_SHARD_VIEW_EXISTS );
 
                 //---------------------------------------
-                // View statementÀÇ analyze ¼öÇà
+                // View statementì˜ analyze ìˆ˜í–‰
                 //---------------------------------------
                 IDE_TEST( analyzeSelect( aFrom->tableRef->view,
                                          aIsSubKey ) != IDE_SUCCESS );
@@ -1503,7 +1503,7 @@ IDE_RC sda::analyzeFrom( qcStatement  * aStatement,
                           != IDE_SUCCESS );
 
                 //---------------------------------------
-                // View¿¡ ´ëÇÑ shard from info¸¦ »ı¼ºÇÏ°í, list¿¡ ¿¬°áÇÑ´Ù.
+                // Viewì— ëŒ€í•œ shard from infoë¥¼ ìƒì„±í•˜ê³ , listì— ì—°ê²°í•œë‹¤.
                 //---------------------------------------
                 IDE_TEST( makeShardFromInfo4View( aStatement,
                                                   aFrom,
@@ -1516,7 +1516,7 @@ IDE_RC sda::analyzeFrom( qcStatement  * aStatement,
             else
             {
                 //---------------------------------------
-                // Table¿¡ ´ëÇÑ shard from info¸¦ »ı¼ºÇÏ°í, list¿¡ ¿¬°áÇÑ´Ù.
+                // Tableì— ëŒ€í•œ shard from infoë¥¼ ìƒì„±í•˜ê³ , listì— ì—°ê²°í•œë‹¤.
                 //---------------------------------------
                 if ( ( aFrom->tableRef->mShardObjInfo != NULL ) &&
                      ( aStatement->myPlan->parseTree->stmtShard != QC_STMT_SHARD_META ) )
@@ -1625,22 +1625,22 @@ IDE_RC sda::makeShardFromInfo4Table( qcStatement  * aStatement,
     UShort     * sKeyColumnOrder = NULL;
 
     //---------------------------------------
-    // Shard fromÀÇ ÇÒ´ç
+    // Shard fromì˜ í• ë‹¹
     //---------------------------------------
     IDE_TEST( STRUCT_ALLOC( QC_QMP_MEM(aStatement),
                             sdaFrom,
                             (void*) &sShardFrom )
               != IDE_SUCCESS );
 
-    // Can't-merge reasonÀÇ ÃÊ±âÈ­
+    // Can't-merge reasonì˜ ì´ˆê¸°í™”
     SDI_SET_INIT_CAN_MERGE_REASON(sShardFrom->mCantMergeReason);
 
     //---------------------------------------
-    // Shard fromÀÇ ¼³Á¤
+    // Shard fromì˜ ì„¤ì •
     //---------------------------------------
     sShardFrom->mTupleId  = aFrom->tableRef->table;
 
-    // Table infoÀÇ shard key·Î shardFromInfoÀÇ shard key¸¦ ¼¼ÆÃÇÑ´Ù.
+    // Table infoì˜ shard keyë¡œ shardFromInfoì˜ shard keyë¥¼ ì„¸íŒ…í•œë‹¤.
     sShardFrom->mKeyCount = 0;
 
     for ( sColumnOrder = 0;
@@ -1651,12 +1651,12 @@ IDE_RC sda::makeShardFromInfo4Table( qcStatement  * aStatement,
              ( aFrom->tableRef->mShardObjInfo->mKeyFlags[sColumnOrder] == 1 ) )
         {
             /*
-             * Ã¹ ¹ø Â° shard key¸¦ analyze ´ë»óÀ¸·Î ¼³Á¤ÇÑ´Ù.
+             * ì²« ë²ˆ ì§¸ shard keyë¥¼ analyze ëŒ€ìƒìœ¼ë¡œ ì„¤ì •í•œë‹¤.
              */
 
             sShardFrom->mKeyCount++;
 
-            // Shard key°¡ µÎ °³ÀÎ tableÀº Á¸Àç ÇÒ ¼ö ¾ø´Ù. ( break ÇÏÁö ¾Ê°í °Ë»ç )
+            // Shard keyê°€ ë‘ ê°œì¸ tableì€ ì¡´ì¬ í•  ìˆ˜ ì—†ë‹¤. ( break í•˜ì§€ ì•Šê³  ê²€ì‚¬ )
             IDE_TEST_RAISE( sShardFrom->mKeyCount != 1, ERR_MULTI_SHARD_KEY_ON_TABLE);
 
             IDE_TEST( STRUCT_ALLOC( QC_QMP_MEM(aStatement),
@@ -1670,7 +1670,7 @@ IDE_RC sda::makeShardFromInfo4Table( qcStatement  * aStatement,
                   ( aFrom->tableRef->mShardObjInfo->mKeyFlags[sColumnOrder] == 2 ) )
         {
             /*
-             * Ã¹ ¹ø Â° shard key¿¡ ´ëÇØ¼­ analyze ÇÒ ¶§, ÂüÁ¶µÇ´Â tableµé¿¡ sub-shard key°¡ ÀÖ´ÂÁö Ç¥½ÃÇÑ´Ù.
+             * ì²« ë²ˆ ì§¸ shard keyì— ëŒ€í•´ì„œ analyze í•  ë•Œ, ì°¸ì¡°ë˜ëŠ” tableë“¤ì— sub-shard keyê°€ ìˆëŠ”ì§€ í‘œì‹œí•œë‹¤.
              */
 
             sShardFrom->mCantMergeReason[SDI_SUB_KEY_EXISTS] = ID_TRUE;
@@ -1680,12 +1680,12 @@ IDE_RC sda::makeShardFromInfo4Table( qcStatement  * aStatement,
                   ( aFrom->tableRef->mShardObjInfo->mKeyFlags[sColumnOrder] == 2 ) )
         {
             /*
-             * µÎ ¹ø Â° shard key¸¦ analyze ´ë»óÀ¸·Î ¼³Á¤ÇÑ´Ù.
+             * ë‘ ë²ˆ ì§¸ shard keyë¥¼ analyze ëŒ€ìƒìœ¼ë¡œ ì„¤ì •í•œë‹¤.
              */
 
             sShardFrom->mKeyCount++;
 
-            // Shard key°¡ µÎ °³ÀÎ tableÀº Á¸Àç ÇÒ ¼ö ¾ø´Ù. ( break ÇÏÁö ¾Ê°í °Ë»ç )
+            // Shard keyê°€ ë‘ ê°œì¸ tableì€ ì¡´ì¬ í•  ìˆ˜ ì—†ë‹¤. ( break í•˜ì§€ ì•Šê³  ê²€ì‚¬ )
             IDE_TEST_RAISE( sShardFrom->mKeyCount != 1, ERR_MULTI_SUB_SHARD_KEY_ON_TABLE);
 
             IDE_TEST( STRUCT_ALLOC( QC_QMP_MEM(aStatement),
@@ -1703,17 +1703,17 @@ IDE_RC sda::makeShardFromInfo4Table( qcStatement  * aStatement,
 
     sShardFrom->mKey = sKeyColumnOrder;
 
-    // TableÀÇ °æ¿ì ¾ÆÁ÷ shard value info°¡ ¾ø´Ù.
+    // Tableì˜ ê²½ìš° ì•„ì§ shard value infoê°€ ì—†ë‹¤.
     sShardFrom->mValueCount = 0;
     sShardFrom->mValue = NULL;
 
-    // ÃÊ±âÈ­
+    // ì´ˆê¸°í™”
     sShardFrom->mIsCanMerge = ID_TRUE;
     sShardFrom->mIsJoined = ID_FALSE;
     sShardFrom->mIsNullPadding = ID_FALSE;
     sShardFrom->mIsAntiJoinInner = ID_FALSE;
 
-    // ³ª¸ÓÁö Á¤º¸´Â tableRef·Î ºÎÅÍ ±×´ë·Î assign
+    // ë‚˜ë¨¸ì§€ ì •ë³´ëŠ” tableRefë¡œ ë¶€í„° ê·¸ëŒ€ë¡œ assign
     if ( ( aFrom->tableRef->mShardObjInfo->mTableInfo.mSplitMethod == SDI_SPLIT_CLONE ) ||
          ( aFrom->tableRef->mShardObjInfo->mTableInfo.mSplitMethod == SDI_SPLIT_SOLO ) )
     {
@@ -1750,14 +1750,14 @@ IDE_RC sda::makeShardFromInfo4Table( qcStatement  * aStatement,
                    &(aFrom->tableRef->mShardObjInfo->mRangeInfo) );
 
     //---------------------------------------
-    // Shard from info¿¡ ¿¬°á ( tail to head )
+    // Shard from infoì— ì—°ê²° ( tail to head )
     //---------------------------------------
     sShardFrom->mNext = *aShardFromInfo;
     *aShardFromInfo   = sShardFrom;
 
     //---------------------------------------
     // PROJ-2685 online rebuild
-    // shard tableÀ» querySetAnalysis¿¡ µî·Ï
+    // shard tableì„ querySetAnalysisì— ë“±ë¡
     //---------------------------------------
     if ( aIsSubKey == ID_FALSE )
     {
@@ -1813,14 +1813,14 @@ IDE_RC sda::makeShardFromInfo4View( qcStatement  * aStatement,
     }
 
     //---------------------------------------
-    // IndividualÇÑ shard key ÀÇ °¹¼ö¸¸Å­ from list¸¦ »ı¼ºÇÑ´Ù.
+    // Individualí•œ shard key ì˜ ê°¯ìˆ˜ë§Œí¼ from listë¥¼ ìƒì„±í•œë‹¤.
     //---------------------------------------
     for ( ;
           sKeyInfo != NULL;
           sKeyInfo  = sKeyInfo->mNext )
     {
         //---------------------------------------
-        // Shard fromÀÇ ÇÒ´ç
+        // Shard fromì˜ í• ë‹¹
         //---------------------------------------
         IDE_TEST( STRUCT_ALLOC( QC_QMP_MEM(aStatement),
                                 sdaFrom,
@@ -1828,11 +1828,11 @@ IDE_RC sda::makeShardFromInfo4View( qcStatement  * aStatement,
                   != IDE_SUCCESS );
 
         //---------------------------------------
-        // Shard fromÀÇ ¼³Á¤
+        // Shard fromì˜ ì„¤ì •
         //---------------------------------------
         sShardFrom->mTupleId = aFrom->tableRef->table;
 
-        // ViewÀÇ target»óÀÇ shard key·Î shardFromInfoÀÇ shard key¸¦ ¼¼ÆÃÇÑ´Ù.
+        // Viewì˜ targetìƒì˜ shard keyë¡œ shardFromInfoì˜ shard keyë¥¼ ì„¸íŒ…í•œë‹¤.
         sShardFrom->mKeyCount = sKeyInfo->mKeyTargetCount;
 
         if ( sShardFrom->mKeyCount > 0 )
@@ -1852,7 +1852,7 @@ IDE_RC sda::makeShardFromInfo4View( qcStatement  * aStatement,
             // Nothing to do.
         }
 
-        // ViewÀÇ value info¸¦ ÃëÇÑ´Ù.
+        // Viewì˜ value infoë¥¼ ì·¨í•œë‹¤.
         sShardFrom->mValueCount = sKeyInfo->mValueCount;
 
         if ( sShardFrom->mValueCount > 0 )
@@ -1871,7 +1871,7 @@ IDE_RC sda::makeShardFromInfo4View( qcStatement  * aStatement,
             // Nothing to do.
         }
 
-        // ViewÀÇ can-merge reasonÀ» shardFromInfo°¡ ÀÌ¾î¹Ş´Â´Ù.
+        // Viewì˜ can-merge reasonì„ shardFromInfoê°€ ì´ì–´ë°›ëŠ”ë‹¤.
         IDE_DASSERT( aViewAnalysis != NULL );
         sShardFrom->mIsCanMerge = aViewAnalysis->mIsCanMerge;
 
@@ -1879,12 +1879,12 @@ IDE_RC sda::makeShardFromInfo4View( qcStatement  * aStatement,
                        (void*) aViewAnalysis->mCantMergeReason,
                        ID_SIZEOF(idBool) * SDI_SHARD_CAN_MERGE_REASON_ARRAY );
 
-        // ÃÊ±âÈ­
+        // ì´ˆê¸°í™”
         sShardFrom->mIsJoined = ID_FALSE;
         sShardFrom->mIsNullPadding = ID_FALSE;
         sShardFrom->mIsAntiJoinInner = ID_FALSE;
 
-        // ³ª¸ÓÁö Á¤º¸´Â viewÀÇ analysis info·Î ºÎÅÍ ±×´ë·Î assign
+        // ë‚˜ë¨¸ì§€ ì •ë³´ëŠ” viewì˜ analysis infoë¡œ ë¶€í„° ê·¸ëŒ€ë¡œ assign
         sShardFrom->mShardInfo.mKeyDataType   = sKeyInfo->mShardInfo.mKeyDataType;
         sShardFrom->mShardInfo.mDefaultNodeId = sKeyInfo->mShardInfo.mDefaultNodeId;
         sShardFrom->mShardInfo.mSplitMethod   = sKeyInfo->mShardInfo.mSplitMethod;
@@ -1893,7 +1893,7 @@ IDE_RC sda::makeShardFromInfo4View( qcStatement  * aStatement,
                        &(sKeyInfo->mShardInfo.mRangeInfo) );
 
         //---------------------------------------
-        // Shard from info¿¡ ¿¬°á ( tail to head )
+        // Shard from infoì— ì—°ê²° ( tail to head )
         //---------------------------------------
         sShardFrom->mNext = *aShardFromInfo;
         *aShardFromInfo   = sShardFrom;
@@ -1901,7 +1901,7 @@ IDE_RC sda::makeShardFromInfo4View( qcStatement  * aStatement,
 
     //---------------------------------------
     // PROJ-2685 online rebuild
-    // shard tableÀ» querySetAnalysis¿¡ µî·Ï
+    // shard tableì„ querySetAnalysisì— ë“±ë¡
     //---------------------------------------
     if ( aIsSubKey == ID_FALSE )
     {
@@ -1942,8 +1942,8 @@ IDE_RC sda::analyzePredicate( qcStatement  * aStatement,
         if ( aIsOneNodeSQL == ID_FALSE )
         {
             /*
-             * CNF·Î normalizeµÈ where predicateÀ» ¼øÈ¸ÇÏ¸ç
-             * Outer-join°ú semi/anti-joinÀÇ Á¦¾àÀ» °Ë»çÇÑ´Ù.
+             * CNFë¡œ normalizeëœ where predicateì„ ìˆœíšŒí•˜ë©°
+             * Outer-joinê³¼ semi/anti-joinì˜ ì œì•½ì„ ê²€ì‚¬í•œë‹¤.
              *
              */
             IDE_TEST( analyzePredJoin( aStatement,
@@ -2033,7 +2033,7 @@ IDE_RC sda::makeKeyInfoFromJoin( qcStatement  * aStatement,
     idBool    sIsSame         = ID_FALSE;
 
     //---------------------------------------
-    // CNF tree¸¦ ¼øÈ¸ÇÏ¸ç shard join conditionÀ» Ã£´Â´Ù.
+    // CNF treeë¥¼ ìˆœíšŒí•˜ë©° shard join conditionì„ ì°¾ëŠ”ë‹¤.
     //---------------------------------------
     for ( sCNFOr  = (qtcNode*)aCNF->node.arguments;
           sCNFOr != NULL;
@@ -2072,8 +2072,8 @@ IDE_RC sda::makeKeyInfoFromJoin( qcStatement  * aStatement,
                      ( sRightShardFrom->mShardInfo.mSplitMethod != SDI_SPLIT_NONE ) )
                 {
                     //---------------------------------------
-                    // Join µÈ left shard from°ú right shard fromÀÇ
-                    // ºĞ»êÁ¤ÀÇ°¡ µ¿ÀÏÇÑÁö È®ÀÎÇÑ´Ù.
+                    // Join ëœ left shard fromê³¼ right shard fromì˜
+                    // ë¶„ì‚°ì •ì˜ê°€ ë™ì¼í•œì§€ í™•ì¸í•œë‹¤.
                     //---------------------------------------
                     IDE_TEST( isSameShardInfo( &sLeftShardFrom->mShardInfo,
                                                &sRightShardFrom->mShardInfo,
@@ -2097,8 +2097,8 @@ IDE_RC sda::makeKeyInfoFromJoin( qcStatement  * aStatement,
                                                aKeyInfo )
                                   != IDE_SUCCESS );
 
-                        // µÎ shard fromÀÌ shard key equi-join µÇ¾úÀ½ÀÌ È®Á¤
-                        // Shard joinÀ¸·Î ºÎÅÍ ÀÌ¹Ì key info°¡ »ı¼º µÈ shard fromÀÓÀ» Ç¥½Ã
+                        // ë‘ shard fromì´ shard key equi-join ë˜ì—ˆìŒì´ í™•ì •
+                        // Shard joinìœ¼ë¡œ ë¶€í„° ì´ë¯¸ key infoê°€ ìƒì„± ëœ shard fromì„ì„ í‘œì‹œ
                         sLeftShardFrom->mIsJoined  = ID_TRUE;
                         sRightShardFrom->mIsJoined = ID_TRUE;
                     }
@@ -2148,11 +2148,11 @@ IDE_RC sda::getShardJoinTupleColumn( qcStatement * aStatement,
 
     idBool           sIsShardEquivalent = ID_TRUE;
 
-    // ÃÊ±âÈ­
+    // ì´ˆê¸°í™”
     *aIsFound = ID_FALSE;
 
     //---------------------------------------
-    // Shard join conditionÀ» Ã£´Â´Ù.
+    // Shard join conditionì„ ì°¾ëŠ”ë‹¤.
     //---------------------------------------
     IDE_TEST( getQtcNodeTypeWithShardFrom( aStatement,
                                            aShardFromInfo,
@@ -2181,13 +2181,13 @@ IDE_RC sda::getShardJoinTupleColumn( qcStatement * aStatement,
                       != IDE_SUCCESS );
 
             //---------------------------------------
-            // Shard join conditionÀ» Ã£À½
+            // Shard join conditionì„ ì°¾ìŒ
             //---------------------------------------
             if ( sQtcNodeType == SDA_KEY_COLUMN )
             {
                 //---------------------------------------
-                // Shard join condition¿¡ OR°¡ ÀÖÀ¸¸é(equal->next != NULL),
-                // shard equivalent expressionÀÌ¾î¾ß ÇÑ´Ù.
+                // Shard join conditionì— ORê°€ ìˆìœ¼ë©´(equal->next != NULL),
+                // shard equivalent expressionì´ì–´ì•¼ í•œë‹¤.
                 //---------------------------------------
                 if ( aCNF->node.next != NULL )
                 {
@@ -2226,7 +2226,7 @@ IDE_RC sda::getShardJoinTupleColumn( qcStatement * aStatement,
                 }
                 else
                 {
-                    // shard join predicateÀ¸·Î Ãë±ŞÇÏÁö ¾ÊÀ½.
+                    // shard join predicateìœ¼ë¡œ ì·¨ê¸‰í•˜ì§€ ì•ŠìŒ.
                     // Nothing to do.
                 }
             }
@@ -2278,7 +2278,7 @@ IDE_RC sda::getShardFromInfo( sdaFrom     * aShardFromInfo,
     sdaFrom * sShardFrom = NULL;
     UInt      sKeyCount  = ID_UINT_MAX;
 
-    // ÃÊ±âÈ­
+    // ì´ˆê¸°í™”
     *aRetShardFrom = NULL;
 
     for ( sShardFrom  = aShardFromInfo;
@@ -2331,17 +2331,17 @@ IDE_RC sda::makeKeyInfo( qcStatement * aStatement,
     if ( aLinkShardFrom != NULL )
     {
         //---------------------------------------
-        // keyList¸¦ Ãß°¡ÇÒ ´ë»ó keyInfo¸¦ ¾ò¾î¿Â´Ù.
+        // keyListë¥¼ ì¶”ê°€í•  ëŒ€ìƒ keyInfoë¥¼ ì–»ì–´ì˜¨ë‹¤.
         //---------------------------------------
 
-        // Link shard fromÀÇ key list°¡ µé¾îÀÖ´Â key info¸¦ Ã£´Â´Ù.
+        // Link shard fromì˜ key listê°€ ë“¤ì–´ìˆëŠ” key infoë¥¼ ì°¾ëŠ”ë‹¤.
         IDE_TEST( getKeyInfoForAddingKeyList( aLinkShardFrom,
                                               *aKeyInfo,
                                               aIsSubKey,
                                               &sKeyInfoForAddingKeyList )
                   != IDE_SUCCESS );
 
-        // ¸ø Ã£¾ÒÀ¸¸é, my shard fromÀÇ key list°¡ µé¾îÀÖ´Â key info¸¦ Ã£´Â´Ù.
+        // ëª» ì°¾ì•˜ìœ¼ë©´, my shard fromì˜ key listê°€ ë“¤ì–´ìˆëŠ” key infoë¥¼ ì°¾ëŠ”ë‹¤.
         if ( sKeyInfoForAddingKeyList == NULL )
         {
             IDE_TEST( getKeyInfoForAddingKeyList( aMyShardFrom,
@@ -2361,7 +2361,7 @@ IDE_RC sda::makeKeyInfo( qcStatement * aStatement,
     }
 
     //---------------------------------------
-    // KeyInfo¿¡ key list¸¦ Ãß°¡ÇÑ´Ù.
+    // KeyInfoì— key listë¥¼ ì¶”ê°€í•œë‹¤.
     //---------------------------------------
     IDE_TEST( addKeyList( aStatement,
                           aMyShardFrom,
@@ -2392,11 +2392,11 @@ IDE_RC sda::getKeyInfoForAddingKeyList( sdaFrom     * aShardFrom,
 
     IDE_DASSERT( aRetKeyInfo != NULL );
 
-    // ÃÊ±âÈ­
+    // ì´ˆê¸°í™”
     *aRetKeyInfo = NULL;
 
     //---------------------------------------
-    // shard fromÀÇ key list°¡ µé¾îÀÖ´Â key info¸¦ Ã£´Â´Ù.
+    // shard fromì˜ key listê°€ ë“¤ì–´ìˆëŠ” key infoë¥¼ ì°¾ëŠ”ë‹¤.
     //---------------------------------------
     for ( sKeyCount = 0;
           sKeyCount < aShardFrom->mKeyCount;
@@ -2407,8 +2407,8 @@ IDE_RC sda::getKeyInfoForAddingKeyList( sdaFrom     * aShardFrom,
               sKeyInfo  = sKeyInfo->mNext )
         {
             //---------------------------------------
-            // shard fromÀÇ ºĞ»êÁ¤ÀÇ¿Í keyInfoÀÇ ºĞ»êÁ¤ÀÇ°¡
-            // join µÉ ¼ö ÀÖ´Â °Í ÀÎÁö È®ÀÎÇÑ´Ù.
+            // shard fromì˜ ë¶„ì‚°ì •ì˜ì™€ keyInfoì˜ ë¶„ì‚°ì •ì˜ê°€
+            // join ë  ìˆ˜ ìˆëŠ” ê²ƒ ì¸ì§€ í™•ì¸í•œë‹¤.
             //---------------------------------------
             IDE_TEST( isSameShardInfo( &aShardFrom->mShardInfo,
                                        &sKeyInfo->mShardInfo,
@@ -2428,7 +2428,7 @@ IDE_RC sda::getKeyInfoForAddingKeyList( sdaFrom     * aShardFrom,
                            sKeyInfo->mKey[sKeyInfoKeyCount].mColumn ) )
                     {
                         //---------------------------------------
-                        // Ã£¾ÒÀ¸¸é, key list´Â ÀÌ °÷ ¿¡ Ãß°¡µÇ¾î¾ß ÇÑ´Ù.
+                        // ì°¾ì•˜ìœ¼ë©´, key listëŠ” ì´ ê³³ ì— ì¶”ê°€ë˜ì–´ì•¼ í•œë‹¤.
                         //---------------------------------------
                         sKeyInfoForAddingKeyList = sKeyInfo;
                         break;
@@ -2666,7 +2666,7 @@ IDE_RC sda::isSameShardInfo( sdiShardInfo * aShardInfo1,
     IDE_DASSERT( aShardInfo2 != NULL );
     IDE_DASSERT( aIsSame != NULL );
 
-    // ÃÊ±âÈ­
+    // ì´ˆê¸°í™”
     *aIsSame = ID_FALSE;
 
     if ( ( aShardInfo1->mSplitMethod   == aShardInfo2->mSplitMethod ) &&
@@ -2755,13 +2755,13 @@ IDE_RC sda::addKeyList( qcStatement * aStatement,
     if ( aKeyInfoForAdding != NULL )
     {
         //---------------------------------------
-        // Key list¸¦ Ãß°¡ÇÒ key info°¡ ÁöÁ¤ µÇ¾îÀÖ´Â °æ¿ì
-        // ÇØ´ç key info¿¡ Áßº¹¾øÀÌ Ãß°¡ÇÑ´Ù.
+        // Key listë¥¼ ì¶”ê°€í•  key infoê°€ ì§€ì • ë˜ì–´ìˆëŠ” ê²½ìš°
+        // í•´ë‹¹ key infoì— ì¤‘ë³µì—†ì´ ì¶”ê°€í•œë‹¤.
         //---------------------------------------
 
-        // Áßº¹°Ë»ç.
-        // Shard fromÀÇ key list¸¦ ÅëÂ°·Î µî·ÏÇÏ±â ¶§¹®¿¡
-        // Key list Áß ÇÏ³ª¶óµµ ¹ß°ßµÇ¸é, ÀüºÎ Áßº¹ÀÎ °Í À¸·Î ÆÇ´ÜÇÏ°í ³Ñ¾î°£´Ù.
+        // ì¤‘ë³µê²€ì‚¬.
+        // Shard fromì˜ key listë¥¼ í†µì§¸ë¡œ ë“±ë¡í•˜ê¸° ë•Œë¬¸ì—
+        // Key list ì¤‘ í•˜ë‚˜ë¼ë„ ë°œê²¬ë˜ë©´, ì „ë¶€ ì¤‘ë³µì¸ ê²ƒ ìœ¼ë¡œ íŒë‹¨í•˜ê³  ë„˜ì–´ê°„ë‹¤.
 
         for ( sKeyInfoKeyCount = 0;
               sKeyInfoKeyCount < aKeyInfoForAdding->mKeyCount;
@@ -2778,27 +2778,27 @@ IDE_RC sda::addKeyList( qcStatement * aStatement,
 
         if ( sIsFound == ID_FALSE )
         {
-            // Áßº¹¾øÀ½, 
+            // ì¤‘ë³µì—†ìŒ, 
 
             //---------------------------------------
-            // key list¸¦ »õ·Î Ãß°¡
+            // key listë¥¼ ìƒˆë¡œ ì¶”ê°€
             //---------------------------------------
             sKeyInfoKeyCount = aKeyInfoForAdding->mKeyCount;
             sMyKeyCount      = aFrom->mKeyCount;
 
-            // KeyInfoÀÇ key list°¹¼ö¿Í shard fromÀÇ key list °¹¼ö¸¦
-            // ´õÇÑ Å©±â ¸¸Å­ key list ¸¦ ÇÒ´çÇÑ´Ù.
+            // KeyInfoì˜ key listê°¯ìˆ˜ì™€ shard fromì˜ key list ê°¯ìˆ˜ë¥¼
+            // ë”í•œ í¬ê¸° ë§Œí¼ key list ë¥¼ í• ë‹¹í•œë‹¤.
             IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF(sdiKeyTupleColumn) *
                                                      ( sKeyInfoKeyCount + sMyKeyCount ),
                                                      (void**) & sNewKeyList )
                       != IDE_SUCCESS );
 
-            // ±âÁ¸ keyInfo¿¡ ÀÖ´ø key listµéÀ» º¹»ç
+            // ê¸°ì¡´ keyInfoì— ìˆë˜ key listë“¤ì„ ë³µì‚¬
             idlOS::memcpy( (void*) sNewKeyList,
                            (void*) aKeyInfoForAdding->mKey,
                            ID_SIZEOF(sdiKeyTupleColumn) * sKeyInfoKeyCount );
 
-            // ÀÌ¾î¼­ shard fromÀÇ key listµéÀ» Ãß°¡
+            // ì´ì–´ì„œ shard fromì˜ key listë“¤ì„ ì¶”ê°€
             for ( sCurrKeyIdx = sKeyInfoKeyCount;
                   sCurrKeyIdx < ( sKeyInfoKeyCount + sMyKeyCount );
                   sCurrKeyIdx++ )
@@ -2809,21 +2809,21 @@ IDE_RC sda::addKeyList( qcStatement * aStatement,
                 sNewKeyList[sCurrKeyIdx].mIsAntiJoinInner = aFrom->mIsAntiJoinInner;
             }
 
-            // »õ·Î¸¸µç key list¸¦ key info¿¡ ¿¬°á
+            // ìƒˆë¡œë§Œë“  key listë¥¼ key infoì— ì—°ê²°
             aKeyInfoForAdding->mKeyCount = (sKeyInfoKeyCount + sMyKeyCount);
             aKeyInfoForAdding->mKey      = sNewKeyList;
 
             //---------------------------------------
-            // Value list¸¦ °»½Å
+            // Value listë¥¼ ê°±ì‹ 
             //---------------------------------------
             if ( aFrom->mValueCount > 0 )
             {
                 //---------------------------------------
-                // CNF treeÀÇ AND's ORs Áß ¸ÕÀú ¼öÇàµÇ¾î keyInfo¿¡ ±¸¼º µÈ value info¿Í
-                // »õ·Î¿î CNF treeÀÇ AND's ORs»óÀÇ value info¿Í ANDÀÇ °³³äÀÌ´Ù.
-                // ´õ ÀûÀº °ÍÀ¸·Î µ¤¾î¾º¿î´Ù.
+                // CNF treeì˜ AND's ORs ì¤‘ ë¨¼ì € ìˆ˜í–‰ë˜ì–´ keyInfoì— êµ¬ì„± ëœ value infoì™€
+                // ìƒˆë¡œìš´ CNF treeì˜ AND's ORsìƒì˜ value infoì™€ ANDì˜ ê°œë…ì´ë‹¤.
+                // ë” ì ì€ ê²ƒìœ¼ë¡œ ë®ì–´ì”Œìš´ë‹¤.
                 //
-                // µ¤¾î¾²Áö ¾Ê°í, ±âÁ¸ value info¸¦ À¯Áö ÇØµµµÈ´Ù.
+                // ë®ì–´ì“°ì§€ ì•Šê³ , ê¸°ì¡´ value infoë¥¼ ìœ ì§€ í•´ë„ëœë‹¤.
                 //---------------------------------------
                 if ( ( aFrom->mValueCount < aKeyInfoForAdding->mValueCount ) ||
                      ( aKeyInfoForAdding->mValueCount == 0 ) )
@@ -2851,24 +2851,24 @@ IDE_RC sda::addKeyList( qcStatement * aStatement,
         }
         else
         {
-            // ÀÌ¹Ì ÀÖ´Â key list
+            // ì´ë¯¸ ìˆëŠ” key list
             // Nothing to do.
         }
     }
     else
     {
         //---------------------------------------
-        // Key list¸¦ Ãß°¡ÇÒ key info°¡ ÁöÁ¤ µÇÁö ¾ÊÀº °æ¿ì
-        // »õ·Î¿î Key info¸¦ »ı¼ºÇÏ¿© key list¸¦ Ãß°¡ÇÑ´Ù.
+        // Key listë¥¼ ì¶”ê°€í•  key infoê°€ ì§€ì • ë˜ì§€ ì•Šì€ ê²½ìš°
+        // ìƒˆë¡œìš´ Key infoë¥¼ ìƒì„±í•˜ì—¬ key listë¥¼ ì¶”ê°€í•œë‹¤.
         //---------------------------------------
 
-        // »õ·Î¿î key info ±¸Á¶Ã¼ ÇÒ´ç
+        // ìƒˆë¡œìš´ key info êµ¬ì¡°ì²´ í• ë‹¹
         IDE_TEST( STRUCT_ALLOC( QC_QMP_MEM(aStatement),
                                 sdiKeyInfo,
                                 (void*) &sNewKeyInfo )
                   != IDE_SUCCESS );
 
-        // »õ·Î¿î key info¿¡ shard fromÀÇ key list¸¦ Ãß°¡
+        // ìƒˆë¡œìš´ key infoì— shard fromì˜ key listë¥¼ ì¶”ê°€
         sNewKeyInfo->mKeyCount = aFrom->mKeyCount;
 
         if ( sNewKeyInfo->mKeyCount > 0 )
@@ -2895,7 +2895,7 @@ IDE_RC sda::addKeyList( qcStatement * aStatement,
 
         sNewKeyInfo->mKey = sNewKeyList;
 
-        // Shard From¿¡¼­ ¿Ã¶ó¿Â valueInfo¸¦ Àü´Ş.
+        // Shard Fromì—ì„œ ì˜¬ë¼ì˜¨ valueInfoë¥¼ ì „ë‹¬.
         sNewKeyInfo->mValueCount = aFrom->mValueCount;
 
         if ( aFrom->mValueCount > 0 )
@@ -2914,7 +2914,7 @@ IDE_RC sda::addKeyList( qcStatement * aStatement,
             sNewKeyInfo->mValue = NULL;
         }
 
-        // »õ·Î¿î key infoÀÇ Á¤º¸ »ı¼º
+        // ìƒˆë¡œìš´ key infoì˜ ì •ë³´ ìƒì„±
         sNewKeyInfo->mKeyTargetCount = 0;
         sNewKeyInfo->mKeyTarget      = NULL;
 
@@ -2930,7 +2930,7 @@ IDE_RC sda::addKeyList( qcStatement * aStatement,
         sNewKeyInfo->mLeft      = NULL;
         sNewKeyInfo->mRight     = NULL;
 
-        // ¿¬°á ( tail to head )
+        // ì—°ê²° ( tail to head )
         sNewKeyInfo->mNext      = *aKeyInfo;
         *aKeyInfo               = sNewKeyInfo;
     }
@@ -2954,8 +2954,8 @@ IDE_RC sda::makeKeyInfoFromNoJoin( qcStatement * aStatement,
           sShardFrom  = sShardFrom->mNext )
     {
         //---------------------------------------
-        // Shard join predicate¿¡ ÀÇÇØ ÀÌ¹Ì µî·Ï µÇÁö ¾ÊÀº
-        // Non-shard joined shard from( split clone Æ÷ÇÔ )¿¡ ´ëÇØ¼­ key info¸¦ »ı¼ºÇÑ´Ù.
+        // Shard join predicateì— ì˜í•´ ì´ë¯¸ ë“±ë¡ ë˜ì§€ ì•Šì€
+        // Non-shard joined shard from( split clone í¬í•¨ )ì— ëŒ€í•´ì„œ key infoë¥¼ ìƒì„±í•œë‹¤.
         //---------------------------------------
         if ( ( sShardFrom->mIsJoined == ID_FALSE ) &&
              ( sShardFrom->mShardInfo.mSplitMethod != SDI_SPLIT_NONE ) )
@@ -2988,8 +2988,8 @@ IDE_RC sda::makeValueInfo( qcStatement * aStatement,
     sdaValueList     * sValueList = NULL;
 
     //---------------------------------------
-    // CNF tree¸¦ ¼øÈ¸ÇÏ¸ç shard predicateÀ» Ã£°í,
-    // Shard value list¸¦ ÇØ´çÇÏ´Â key info¿¡ ¼¼ÆÃÇÑ´Ù.
+    // CNF treeë¥¼ ìˆœíšŒí•˜ë©° shard predicateì„ ì°¾ê³ ,
+    // Shard value listë¥¼ í•´ë‹¹í•˜ëŠ” key infoì— ì„¸íŒ…í•œë‹¤.
     //---------------------------------------
     if ( aCNF != NULL )
     {
@@ -3052,11 +3052,11 @@ IDE_RC sda::getShardValue( qcStatement       * aStatement,
 
     sdiShardInfo    * sShardInfo   = NULL;
 
-    //ÃÊ±âÈ­
+    //ì´ˆê¸°í™”
     *aValueList = NULL;
 
     //---------------------------------------
-    // OR list ÀüÃ¼°¡ shard conditionÀÎÁö È®ÀÎÇÑ´Ù.
+    // OR list ì „ì²´ê°€ shard conditionì¸ì§€ í™•ì¸í•œë‹¤.
     //---------------------------------------
     for ( sOrList  = aCNF;
           sOrList != NULL;
@@ -3079,8 +3079,8 @@ IDE_RC sda::getShardValue( qcStatement       * aStatement,
     }
 
     //---------------------------------------
-    // OR list ÀüÃ¼°¡ shard conditionÀÌ¾î¾ß¸¸,
-    // ÇØ´ç predicateÀÌ shard predicateÀÌ´Ù.
+    // OR list ì „ì²´ê°€ shard conditionì´ì–´ì•¼ë§Œ,
+    // í•´ë‹¹ predicateì´ shard predicateì´ë‹¤.
     //---------------------------------------
     if ( sIsShardCond == ID_TRUE )
     {
@@ -3111,7 +3111,7 @@ IDE_RC sda::getShardValue( qcStatement       * aStatement,
             }
 
             //---------------------------------------
-            // Value listÀÇ ÇÒ´ç
+            // Value listì˜ í• ë‹¹
             //---------------------------------------
             IDE_TEST( STRUCT_ALLOC( QC_QMP_MEM(aStatement),
                                     sdaValueList,
@@ -3119,7 +3119,7 @@ IDE_RC sda::getShardValue( qcStatement       * aStatement,
                       != IDE_SUCCESS );
 
             //---------------------------------------
-            // Value infoÀÇ ÇÒ´ç
+            // Value infoì˜ í• ë‹¹
             //---------------------------------------
             IDE_TEST( STRUCT_ALLOC( QC_QMP_MEM(aStatement),
                                     sdiValueInfo,
@@ -3127,7 +3127,7 @@ IDE_RC sda::getShardValue( qcStatement       * aStatement,
                       != IDE_SUCCESS );
 
             //---------------------------------------
-            // Value infoÀÇ ¼³Á¤
+            // Value infoì˜ ì„¤ì •
             //---------------------------------------
             IDE_TEST( getQtcNodeTypeWithKeyInfo( aStatement,
                                                  aKeyInfo,
@@ -3145,8 +3145,8 @@ IDE_RC sda::getShardValue( qcStatement       * aStatement,
                 sValueInfo->mType = 1;
 
                 /*
-                 * Constant value¸¦ °è»êÇÏ¿©,
-                 * Shard value¿¡ ´Ş¾ÆÁØ´Ù.
+                 * Constant valueë¥¼ ê³„ì‚°í•˜ì—¬,
+                 * Shard valueì— ë‹¬ì•„ì¤€ë‹¤.
                  */
                 IDE_TEST( getShardInfo( sKeyColumn,
                                         aKeyInfo,
@@ -3174,14 +3174,14 @@ IDE_RC sda::getShardValue( qcStatement       * aStatement,
             }
 
             //---------------------------------------
-            // Value listÀÇ ¼³Á¤
+            // Value listì˜ ì„¤ì •
             //---------------------------------------
 
             sValueList->mValue     = sValueInfo;
             sValueList->mKeyColumn = sKeyColumn;
 
             //---------------------------------------
-            // ¿¬°á
+            // ì—°ê²°
             //---------------------------------------
 
             sValueList->mNext = *aValueList;
@@ -3190,7 +3190,7 @@ IDE_RC sda::getShardValue( qcStatement       * aStatement,
     }
     else
     {
-        // Shard conditionÀÌ ¾Æ´Ï´Ù.
+        // Shard conditionì´ ì•„ë‹ˆë‹¤.
         // Nothing to do.
     }
 
@@ -3220,7 +3220,7 @@ IDE_RC sda::getShardInfo( qtcNode       * aNode,
     sdiKeyInfo * sKeyInfo = NULL;
     UInt         sKeyIdx  = 0;
 
-    // ÃÊ±âÈ­
+    // ì´ˆê¸°í™”
     *aShardInfo = NULL;
 
     for ( sKeyInfo  = aKeyInfo;
@@ -3271,7 +3271,7 @@ IDE_RC sda::isShardCondition( qcStatement  * aStatement,
 
     idBool          sIsAntiJoinInner = ID_FALSE;
 
-    // ÃÊ±âÈ­
+    // ì´ˆê¸°í™”
     *aIsShardCond = ID_FALSE;
 
     IDE_TEST( getQtcNodeTypeWithKeyInfo( aStatement,
@@ -3296,8 +3296,8 @@ IDE_RC sda::isShardCondition( qcStatement  * aStatement,
             /*
              * BUG-45391
              *
-             * Anti-joinÀÇ inner table¿¡ ´ëÇÑ shard condition( shard_key = value )Àº
-             * ¼öÇà ³ëµå¸¦ ÇÑÁ¤ ÇÒ ¼ö ÀÖ´Â shard conditionÀ¸·Î Ãë±ŞÇÏÁö ¾Ê´Â´Ù.
+             * Anti-joinì˜ inner tableì— ëŒ€í•œ shard condition( shard_key = value )ì€
+             * ìˆ˜í–‰ ë…¸ë“œë¥¼ í•œì • í•  ìˆ˜ ìˆëŠ” shard conditionìœ¼ë¡œ ì·¨ê¸‰í•˜ì§€ ì•ŠëŠ”ë‹¤.
              *
              */
             IDE_TEST( checkAntiJoinInner( aKeyInfo,
@@ -3422,18 +3422,18 @@ IDE_RC sda::addValueListOnKeyInfo( qcStatement  * aStatement,
                         if ( sKeyInfoForAdding != sKeyInfo )
                         {
                             /*
-                             * valueListÀÇ shard key columnÀÌ °°Àº keyInfo¿¡ ÀÖÀ» ¼ö µµ ÀÖ°í,
-                             * ´Ù¸¥ keyInfo¿¡ ÀÖÀ» ¼ö µµ ÀÖ´Ù.
+                             * valueListì˜ shard key columnì´ ê°™ì€ keyInfoì— ìˆì„ ìˆ˜ ë„ ìˆê³ ,
+                             * ë‹¤ë¥¸ keyInfoì— ìˆì„ ìˆ˜ ë„ ìˆë‹¤.
                              *
-                             * valueList´Â shard valueÀÇ OR listÀÌ±â ¶§¹®¿¡,
-                             * shard joinµÇÁö ¾Ê¾Æ¼­ º°°³·Î ±¸¼ºµÈ keyInfo¿¡ value·Î Ãß°¡µÉ ¼ö ¾ø´Ù.
+                             * valueListëŠ” shard valueì˜ OR listì´ê¸° ë•Œë¬¸ì—,
+                             * shard joinë˜ì§€ ì•Šì•„ì„œ ë³„ê°œë¡œ êµ¬ì„±ëœ keyInfoì— valueë¡œ ì¶”ê°€ë  ìˆ˜ ì—†ë‹¤.
                              *
                              * SELECT *
                              *   FROM T1, T2
                              *  WHERE T1.I1 = a OR T2.I1 = c;
                              *
-                             * À§¿Í °°ÀÌ shard joinµÇÁö ¾ÊÀº µÎ Å×ÀÌºíÀÇ shard key conditionÀÌ
-                             * or·Î ¾²¿´À» °æ¿ì´Â Shard value·Î Ãë±ŞÇÏÁö ¾Ê´Â °Í ÀÌ ¸Â´Ù.
+                             * ìœ„ì™€ ê°™ì´ shard joinë˜ì§€ ì•Šì€ ë‘ í…Œì´ë¸”ì˜ shard key conditionì´
+                             * orë¡œ ì“°ì˜€ì„ ê²½ìš°ëŠ” Shard valueë¡œ ì·¨ê¸‰í•˜ì§€ ì•ŠëŠ” ê²ƒ ì´ ë§ë‹¤.
                              */
                             sKeyInfoForAdding = NULL;
                             break;
@@ -3455,21 +3455,21 @@ IDE_RC sda::addValueListOnKeyInfo( qcStatement  * aStatement,
     if ( sKeyInfoForAdding != NULL )
     {
         //---------------------------------------
-        // CNF treeÀÇ AND's ORs Áß ¸ÕÀú ¼öÇàµÇ¾î keyInfo¿¡ ±¸¼º µÈ value info¿Í
-        // View analysis¸¦ ÅëÇØ ¿Ã¶ó¿Â value info´Â
-        // »õ·Î¿î CNF treeÀÇ AND's ORs¿Í ANDÀÇ °³³äÀÌ´Ù.
-        // ´õ ÀûÀº °ÍÀ¸·Î µ¤¾î¾º¿î´Ù.
+        // CNF treeì˜ AND's ORs ì¤‘ ë¨¼ì € ìˆ˜í–‰ë˜ì–´ keyInfoì— êµ¬ì„± ëœ value infoì™€
+        // View analysisë¥¼ í†µí•´ ì˜¬ë¼ì˜¨ value infoëŠ”
+        // ìƒˆë¡œìš´ CNF treeì˜ AND's ORsì™€ ANDì˜ ê°œë…ì´ë‹¤.
+        // ë” ì ì€ ê²ƒìœ¼ë¡œ ë®ì–´ì”Œìš´ë‹¤.
         //
-        // µ¤¾î¾²Áö ¾Ê°í, ±âÁ¸ value info¸¦ À¯Áö ÇØµµµÈ´Ù.
+        // ë®ì–´ì“°ì§€ ì•Šê³ , ê¸°ì¡´ value infoë¥¼ ìœ ì§€ í•´ë„ëœë‹¤.
         //
         // SELECT *
         //   FROM T1
         //  WHERE ( I1 = ? OR I1 = ? OR I1 = ? ) AND ( I1 = ? OR I1 = ? ) AND ( I1 = ? )
         //
-        // À§¿Í °°Àº °æ¿ì Ã³À½¿¡ ?,?,?ÀÌ key info¿¡ value·Î µî·ÏµÇ¾ú´Ù°¡,
-        // ´ÙÀ½ CNF tree¸¦ µ¹¸é¼­ µé¾î¿Â ?,?°¡ °¹ ¼ö°¡ ´õ Àû±â ¶§¹®¿¡ ?,? ·Î °»½ÅµÇ°í,
-        // ±× ´ÙÀ½ µé¾î¿À´Â ?°¡ ?,?º¸´Ù valueÀÇ °¹¼ö°¡ ´õ ÀûÀ¸¹Ç·Î
-        // ÃÖÁ¾ÀûÀ¸·Î ¸Ç µÚÀÇ ? ÇÏ³ª¸¸ shard value·Î¼­ À¯ÁöµÈ´Ù.
+        // ìœ„ì™€ ê°™ì€ ê²½ìš° ì²˜ìŒì— ?,?,?ì´ key infoì— valueë¡œ ë“±ë¡ë˜ì—ˆë‹¤ê°€,
+        // ë‹¤ìŒ CNF treeë¥¼ ëŒë©´ì„œ ë“¤ì–´ì˜¨ ?,?ê°€ ê°¯ ìˆ˜ê°€ ë” ì ê¸° ë•Œë¬¸ì— ?,? ë¡œ ê°±ì‹ ë˜ê³ ,
+        // ê·¸ ë‹¤ìŒ ë“¤ì–´ì˜¤ëŠ” ?ê°€ ?,?ë³´ë‹¤ valueì˜ ê°¯ìˆ˜ê°€ ë” ì ìœ¼ë¯€ë¡œ
+        // ìµœì¢…ì ìœ¼ë¡œ ë§¨ ë’¤ì˜ ? í•˜ë‚˜ë§Œ shard valueë¡œì„œ ìœ ì§€ëœë‹¤.
         //---------------------------------------
         if ( ( sValueCount < sKeyInfoForAdding->mValueCount ) ||
              ( sKeyInfoForAdding->mValueCount == 0 ) )
@@ -3577,7 +3577,7 @@ IDE_RC sda::getKeyInfoForAddingKeyTarget( qtcNode     * aTargetColumn,
     sdiKeyInfo        * sKeyInfo        = NULL;
     UInt                sKeyColumnCount = 0;
 
-    // ÃÊ±âÈ­
+    // ì´ˆê¸°í™”
     *aKeyInfoForAdding = NULL;
 
     for ( sKeyInfo  = aKeyInfo;
@@ -3694,7 +3694,7 @@ IDE_RC sda::setShardInfoWithKeyInfo( qcStatement  * aStatement,
                 }
                 else
                 {
-                    // ÀÓ½Ã·Î º¹»çÇÑ µÚ mergeÇÑ´Ù.
+                    // ì„ì‹œë¡œ ë³µì‚¬í•œ ë’¤ mergeí•œë‹¤.
                     copyRangeInfo( sCloneRangeTmp,
                                    sCloneRangeInfo );
 
@@ -3721,7 +3721,7 @@ IDE_RC sda::setShardInfoWithKeyInfo( qcStatement  * aStatement,
                 //---------------------------------------
                 if ( sBaseShardInfo == NULL )
                 {
-                    // Ã¹ ¹ø Â° shardInfo ( ºñ±³ÇÒ °Í ÀÌ ¾ø´Ù. )
+                    // ì²« ë²ˆ ì§¸ shardInfo ( ë¹„êµí•  ê²ƒ ì´ ì—†ë‹¤. )
                     sBaseShardInfo = &sKeyInfo->mShardInfo;
                 }
                 else
@@ -3820,8 +3820,8 @@ IDE_RC sda::setShardInfoWithKeyInfo( qcStatement  * aStatement,
                 else
                 {
                     /*
-                     *  SOLO split relationÀÌ Á¸ÀçÇÏ¸é,
-                     *  Split method¸¦ SOLO·Î Á¤ÀÇÇÑ´Ù.
+                     *  SOLO split relationì´ ì¡´ì¬í•˜ë©´,
+                     *  Split methodë¥¼ SOLOë¡œ ì •ì˜í•œë‹¤.
                      */
                     aShardInfo->mSplitMethod   = SDI_SPLIT_SOLO;
                     aShardInfo->mDefaultNodeId = ID_USHORT_MAX;
@@ -3834,7 +3834,7 @@ IDE_RC sda::setShardInfoWithKeyInfo( qcStatement  * aStatement,
             else
             {
                 //---------------------------------------
-                // Shard info°¡ ÀÏÄ¡ÇÏÁö ¾Ê´Â´Ù.
+                // Shard infoê°€ ì¼ì¹˜í•˜ì§€ ì•ŠëŠ”ë‹¤.
                 //---------------------------------------
                 // Nothing to do.
             }
@@ -3863,7 +3863,7 @@ IDE_RC sda::setShardInfoWithKeyInfo( qcStatement  * aStatement,
     else
     {
         //---------------------------------------
-        // Shard info°¡ ÀÏÄ¡ÇÏÁö ¾Ê´Â´Ù.
+        // Shard infoê°€ ì¼ì¹˜í•˜ì§€ ì•ŠëŠ”ë‹¤.
         //---------------------------------------
         // Nothing to do.
     }
@@ -4011,7 +4011,7 @@ IDE_RC sda::isCanMerge( idBool * aCantMergeReason,
 {
     UShort sCanMergeIdx = 0;
 
-    // ÃÊ±âÈ­
+    // ì´ˆê¸°í™”
     *aIsCanMerge = ID_TRUE;
 
     for ( sCanMergeIdx = 0;
@@ -4035,7 +4035,7 @@ IDE_RC sda::isCanMerge( idBool * aCantMergeReason,
 IDE_RC sda::isCanMergeAble( idBool * aCantMergeReason,
                             idBool * aIsCanMergeAble )
 {
-    // ÃÊ±âÈ­
+    // ì´ˆê¸°í™”
     *aIsCanMergeAble = ID_FALSE;
 
     // Except SDI_MULTI_NODES_JOIN_EXISTS
@@ -4068,7 +4068,7 @@ IDE_RC sda::isCanMergeAble( idBool * aCantMergeReason,
 IDE_RC sda::isTransformAble( idBool * aCantMergeReason,
                              idBool * aIsTransformAble )
 {
-    // ÃÊ±âÈ­
+    // ì´ˆê¸°í™”
     *aIsTransformAble = ID_FALSE;
 
     // Except SDI_SHARD_SUBQUERY_EXISTS
@@ -4156,7 +4156,7 @@ IDE_RC sda::setCantMergeReasonSFWGH( qcStatement * aStatement,
     }
     else
     {
-        // Shard key°¡ ¾ø°Å³ª, 2°³ ÀÌ»óÀÌ´Ù.
+        // Shard keyê°€ ì—†ê±°ë‚˜, 2ê°œ ì´ìƒì´ë‹¤.
         aCantMergeReason[SDI_MULTI_NODES_JOIN_EXISTS] = ID_TRUE;
     }
 
@@ -4337,8 +4337,8 @@ IDE_RC sda::setCantMergeReasonDistinct( qcStatement * aStatement,
 
             if ( sIsFound == ID_FALSE )
             {
-                // Target ¿¡ ¿Ã¶ó¿ÀÁö ¾ÊÀº shard key°¡ ÀÖ´Ù¸é,
-                // Distinct °¡ ºĞ»ê¼öÇà ºÒ°¡´É ÇÑ °ÍÀ¸·Î ÆÇ´ÜÇÑ´Ù.
+                // Target ì— ì˜¬ë¼ì˜¤ì§€ ì•Šì€ shard keyê°€ ìˆë‹¤ë©´,
+                // Distinct ê°€ ë¶„ì‚°ìˆ˜í–‰ ë¶ˆê°€ëŠ¥ í•œ ê²ƒìœ¼ë¡œ íŒë‹¨í•œë‹¤.
                 IDE_DASSERT( aCantMergeReason != NULL );
                 aCantMergeReason[SDI_DISTINCT_EXISTS] = ID_TRUE;
                 break;
@@ -4495,7 +4495,7 @@ IDE_RC sda::analyzeQuerySetAnalysis( qcStatement * aStatement,
     idBool           sIsOneNodeSQL     = ID_TRUE;
 
     //------------------------------------------
-    // ÇÒ´ç
+    // í• ë‹¹
     //------------------------------------------
     if ( aIsSubKey == ID_FALSE )
     {
@@ -4522,7 +4522,7 @@ IDE_RC sda::analyzeQuerySetAnalysis( qcStatement * aStatement,
     }
 
     //------------------------------------------
-    // ÃÊ±âÈ­
+    // ì´ˆê¸°í™”
     //------------------------------------------
 
     SDI_SET_INIT_CAN_MERGE_REASON(sCantMergeReason);
@@ -4584,7 +4584,7 @@ IDE_RC sda::analyzeQuerySetAnalysis( qcStatement * aStatement,
             {
                 if ( sKeyInfoCheck->mShardInfo.mSplitMethod != SDI_SPLIT_CLONE )
                 {
-                    // Target¿¡ ¸ğµç shard key°¡ ¿Ã¶ó¿À¸é union all°ú µ¿ÀÏÇÏ°Ô Ãë±Ş µÉ ¼ö ÀÖ´Ù.
+                    // Targetì— ëª¨ë“  shard keyê°€ ì˜¬ë¼ì˜¤ë©´ union allê³¼ ë™ì¼í•˜ê²Œ ì·¨ê¸‰ ë  ìˆ˜ ìˆë‹¤.
                     if ( ( ( sKeyInfoCheck->mLeft == NULL ) || ( sKeyInfoCheck->mRight == NULL ) ) &&
                          ( aMyQuerySet->setOp != QMS_UNION_ALL ) )
                     {
@@ -4592,10 +4592,10 @@ IDE_RC sda::analyzeQuerySetAnalysis( qcStatement * aStatement,
 
                         if ( sKeyInfoCheck->mValueCount == 0 )
                         {
-                            // Union allÀÌ ¾Æ´Ñ set operators(union,intersect,minus)ÀÇ
-                            // left, right analysis¿¡¼­ Target¿¡ ¿Ã¶ó¿ÀÁö ¾Ê°í,
-                            // shard value°¡ ÁöÁ¤µÇÁöµµ ¾ÊÀº key info°¡ ÀÖ´Ù¸é,
-                            // ÇØ´ç query set ºÎÅÍ´Â shard relationÀÌ ¾Æ´Ï°Ô µÈ´Ù.
+                            // Union allì´ ì•„ë‹Œ set operators(union,intersect,minus)ì˜
+                            // left, right analysisì—ì„œ Targetì— ì˜¬ë¼ì˜¤ì§€ ì•Šê³ ,
+                            // shard valueê°€ ì§€ì •ë˜ì§€ë„ ì•Šì€ key infoê°€ ìˆë‹¤ë©´,
+                            // í•´ë‹¹ query set ë¶€í„°ëŠ” shard relationì´ ì•„ë‹ˆê²Œ ëœë‹¤.
 
                             sShardInfo->mSplitMethod      = SDI_SPLIT_NONE;
                             sShardInfo->mDefaultNodeId    = ID_USHORT_MAX;
@@ -4615,12 +4615,12 @@ IDE_RC sda::analyzeQuerySetAnalysis( qcStatement * aStatement,
                 }
                 else
                 {
-                    // HASH, RANGE, LIST¿Í ÇÔ²² CLONE tableÀÌ SET operationµÇ¾ú´Ù.
-                    // Node º°·Î clone tableÀÇ µ¥ÀÌÅÍ°¡ µ¿¿øµÇ¾î Æ²¸° °á°ú¸¦ »ı¼ºÇÒ ¼ö ÀÖ´Ù.
+                    // HASH, RANGE, LISTì™€ í•¨ê»˜ CLONE tableì´ SET operationë˜ì—ˆë‹¤.
+                    // Node ë³„ë¡œ clone tableì˜ ë°ì´í„°ê°€ ë™ì›ë˜ì–´ í‹€ë¦° ê²°ê³¼ë¥¼ ìƒì„±í•  ìˆ˜ ìˆë‹¤.
                     //
                     // BUGBUG
-                    // SET-UNION, SET-DIFFERENCE(MINUS), SET-INTERCETÀÇ °æ¿ì
-                    // SET operatorÀÇ right query set¿¡ cloneÀÌ ¿À´Â °Í Àº Çã¿ë ÇÒ ¼ö ÀÖ´Ù. ( UNION ALLÀº ¾ÈµÊ )
+                    // SET-UNION, SET-DIFFERENCE(MINUS), SET-INTERCETì˜ ê²½ìš°
+                    // SET operatorì˜ right query setì— cloneì´ ì˜¤ëŠ” ê²ƒ ì€ í—ˆìš© í•  ìˆ˜ ìˆë‹¤. ( UNION ALLì€ ì•ˆë¨ )
 
                     sCantMergeReason[SDI_MULTI_NODES_SET_OP_EXISTS] = ID_TRUE;
                 }
@@ -4628,7 +4628,7 @@ IDE_RC sda::analyzeQuerySetAnalysis( qcStatement * aStatement,
         }
         else
         {
-            // CLONE¸¸ ÀÖ°Å³ª, SOLO°¡ Æ÷ÇÔµÇ¾î one node executionÀÌ º¸ÀåµÇ´Â °æ¿ì.
+            // CLONEë§Œ ìˆê±°ë‚˜, SOLOê°€ í¬í•¨ë˜ì–´ one node executionì´ ë³´ì¥ë˜ëŠ” ê²½ìš°.
             // Nothing to do.
         }
     }
@@ -4663,7 +4663,7 @@ IDE_RC sda::analyzeQuerySetAnalysis( qcStatement * aStatement,
     }
 
     //------------------------------------------
-    // ¿¬°á
+    // ì—°ê²°
     //------------------------------------------
 
     if ( aIsSubKey == ID_FALSE )
@@ -4703,7 +4703,7 @@ IDE_RC sda::analyzeSetLeftRight( qcStatement  * aStatement,
     sdiKeyInfo * sKeyInfoTmp = NULL;
 
     //---------------------------------------
-    // LeftÀÇ key info·Î ºÎÅÍ SETÀÇ key info¸¦ »ı¼ºÇÑ´Ù.
+    // Leftì˜ key infoë¡œ ë¶€í„° SETì˜ key infoë¥¼ ìƒì„±í•œë‹¤.
     //---------------------------------------
 
     /*
@@ -4724,12 +4724,12 @@ IDE_RC sda::analyzeSetLeftRight( qcStatement  * aStatement,
      * RIGHT :   T1.I1   T2.I1  T2.I1  T1.I1
      *
      *
-     * ÀÌ·¸°Ô ¼­·Î´Ù¸¥ key group³¢¸® SET-target merging µÉ ¼ö ÀÖ´Ù
+     * ì´ë ‡ê²Œ ì„œë¡œë‹¤ë¥¸ key groupë¼ë¦¬ SET-target merging ë  ìˆ˜ ìˆë‹¤
      *
-     * ¶§¹®¿¡ ÀÏ´Ü key groupÀ» ºĞÇÒÇØ¼­ SETÀÇ key info¸¦ ±¸¼ºÇÏ°í,
+     * ë•Œë¬¸ì— ì¼ë‹¨ key groupì„ ë¶„í• í•´ì„œ SETì˜ key infoë¥¼ êµ¬ì„±í•˜ê³ ,
      * (debideKeyInfo + mergeKeyInfo4Set)
      *
-     * ´Ù½Ã ÇÕÄ¥ ¼ö ÀÖ´Â key infoµéÀ» ÇÕÄ¡´Â ÀÛ¾÷À» ¼öÇàÇÑ´Ù.
+     * ë‹¤ì‹œ í•©ì¹  ìˆ˜ ìˆëŠ” key infoë“¤ì„ í•©ì¹˜ëŠ” ì‘ì—…ì„ ìˆ˜í–‰í•œë‹¤.
      * (mergeSameKeyInfo)
      */
 
@@ -4748,7 +4748,7 @@ IDE_RC sda::analyzeSetLeftRight( qcStatement  * aStatement,
           sLeftKeyInfo != NULL;
           sLeftKeyInfo  = sLeftKeyInfo->mNext )
     {
-        // Left query analysis¿¡¼­ ¿Ã¶ó¿Â key info ¸¦ °¢ key infoÀÇ target º°·Î ºĞÇÒÇÑ´Ù.
+        // Left query analysisì—ì„œ ì˜¬ë¼ì˜¨ key info ë¥¼ ê° key infoì˜ target ë³„ë¡œ ë¶„í• í•œë‹¤.
         IDE_TEST( devideKeyInfo( aStatement,
                                  sLeftKeyInfo,
                                  &sLeftDevidedKeyInfo )
@@ -4760,14 +4760,14 @@ IDE_RC sda::analyzeSetLeftRight( qcStatement  * aStatement,
           sRightKeyInfo != NULL;
           sRightKeyInfo  = sRightKeyInfo->mNext )
     {
-        // Right query analysis ¿Ã¶ó¿Â key info ¸¦ °¢ key infoÀÇ target º°·Î ºĞÇÒÇÑ´Ù.
+        // Right query analysis ì˜¬ë¼ì˜¨ key info ë¥¼ ê° key infoì˜ target ë³„ë¡œ ë¶„í• í•œë‹¤.
         IDE_TEST( devideKeyInfo( aStatement,
                                  sRightKeyInfo,
                                  &sRightDevidedKeyInfo )
                   != IDE_SUCCESS );
     }
 
-    // Left¿Í rightÀÇ keyInfo¸¦ º´ÇÕÇÑ´Ù.
+    // Leftì™€ rightì˜ keyInfoë¥¼ ë³‘í•©í•œë‹¤.
     IDE_TEST( mergeKeyInfo4Set( aStatement,
                                 sLeftDevidedKeyInfo,
                                 sRightDevidedKeyInfo,
@@ -4776,8 +4776,8 @@ IDE_RC sda::analyzeSetLeftRight( qcStatement  * aStatement,
               != IDE_SUCCESS );
 
     /*
-     * Key infoÀÇ left ³¢¸®, ¶Ç right ³¢¸® °°Àº key groupÀ¸·ÎºÎÅÍ »ı¼ºµÈ key infoµéÀº
-     * ´Ù½Ã ¹­¾îÁØ´Ù.
+     * Key infoì˜ left ë¼ë¦¬, ë˜ right ë¼ë¦¬ ê°™ì€ key groupìœ¼ë¡œë¶€í„° ìƒì„±ëœ key infoë“¤ì€
+     * ë‹¤ì‹œ ë¬¶ì–´ì¤€ë‹¤.
      */
     IDE_TEST( mergeSameKeyInfo( aStatement,
                                 sKeyInfoTmp,
@@ -4802,10 +4802,10 @@ IDE_RC sda::devideKeyInfo( qcStatement * aStatement,
         /*
          * SELECT I1,I1,I1...
          *
-         * À§¿Í°°ÀÌ µ¿ÀÏÇÑ shard key°¡ ¿©·¯¹ø »ç¿ë µÇ¾úÀ» ¶§
-         * ÇÑ °³ ÀÇ KeyInfo ¿¡ keyTargetCount°¡ 3°³·Î ±¸¼ºµÇ¾î ¿Ã¶ó¿ÀÁö¸¸,
+         * ìœ„ì™€ê°™ì´ ë™ì¼í•œ shard keyê°€ ì—¬ëŸ¬ë²ˆ ì‚¬ìš© ë˜ì—ˆì„ ë•Œ
+         * í•œ ê°œ ì˜ KeyInfo ì— keyTargetCountê°€ 3ê°œë¡œ êµ¬ì„±ë˜ì–´ ì˜¬ë¼ì˜¤ì§€ë§Œ,
          *
-         * SETÀ» Ã³¸®ÇÏ±â À§ÇØ µ¿ÀÏÇÑ key groupÀ» ´Ù½Ã keyTargetº°·Î ºĞÇÒÇÑ´Ù.
+         * SETì„ ì²˜ë¦¬í•˜ê¸° ìœ„í•´ ë™ì¼í•œ key groupì„ ë‹¤ì‹œ keyTargetë³„ë¡œ ë¶„í• í•œë‹¤.
          *
          */
         for ( sKeyTargetCount = 0;
@@ -4823,7 +4823,7 @@ IDE_RC sda::devideKeyInfo( qcStatement * aStatement,
     }
     else
     {
-        /* Target¿¡ ¾ø´Â keyInfo¿¡ ´ëÇØ¼­µµ »ı¼ºÇØÁØ´Ù. */
+        /* Targetì— ì—†ëŠ” keyInfoì— ëŒ€í•´ì„œë„ ìƒì„±í•´ì¤€ë‹¤. */
         IDE_TEST( makeKeyInfo4SetTarget( aStatement,
                                          aKeyInfo,
                                          ID_UINT_MAX,
@@ -4849,7 +4849,7 @@ IDE_RC sda::makeKeyInfo4SetTarget( qcStatement * aStatement,
 
     IDE_DASSERT( aKeyInfo != NULL );
 
-    // »õ·Î¿î key info ±¸Á¶Ã¼ ÇÒ´ç
+    // ìƒˆë¡œìš´ key info êµ¬ì¡°ì²´ í• ë‹¹
     IDE_TEST( STRUCT_ALLOC( QC_QMP_MEM(aStatement),
                             sdiKeyInfo,
                             (void*) &sNewKeyInfo )
@@ -4921,7 +4921,7 @@ IDE_RC sda::makeKeyInfo4SetTarget( qcStatement * aStatement,
     sNewKeyInfo->mLeft       = NULL;
     sNewKeyInfo->mRight      = NULL;
 
-    // ¿¬°á
+    // ì—°ê²°
     sNewKeyInfo->mNext = *aDevidedKeyInfo;
     *aDevidedKeyInfo = sNewKeyInfo;
 
@@ -4949,14 +4949,14 @@ IDE_RC sda::mergeKeyInfo4Set( qcStatement * aStatement,
           sLeftKeyInfo != NULL;
           sLeftKeyInfo  = sLeftKeyInfo->mNext )
     {
-        // Devided µÈ keyInfoÀÇ keyTargetCount´Â 1ÀÌ°Å³ª 0 ÀÏ ¼ö ÀÖ´Ù.
+        // Devided ëœ keyInfoì˜ keyTargetCountëŠ” 1ì´ê±°ë‚˜ 0 ì¼ ìˆ˜ ìˆë‹¤.
         if ( sLeftKeyInfo->mKeyTargetCount == 1 )
         {
             for ( sRightKeyInfo  = aRightKeyInfo;
                   sRightKeyInfo != NULL;
                   sRightKeyInfo  = sRightKeyInfo->mNext )
             {
-                // Devided µÈ keyInfoÀÇ keyTargetCount´Â 1ÀÌ°Å³ª 0 ÀÏ ¼ö ÀÖ´Ù.
+                // Devided ëœ keyInfoì˜ keyTargetCountëŠ” 1ì´ê±°ë‚˜ 0 ì¼ ìˆ˜ ìˆë‹¤.
                 if ( sRightKeyInfo->mKeyTargetCount == 1 )
                 {
                     if ( sLeftKeyInfo->mKeyTarget[0] == sRightKeyInfo->mKeyTarget[0] )
@@ -5082,7 +5082,7 @@ IDE_RC sda::mergeKeyInfo( qcStatement * aStatement,
     IDE_DASSERT( aLeftKeyInfo  != NULL );
     IDE_DASSERT( aRightKeyInfo != NULL );
 
-    // »õ·Î¿î key info ±¸Á¶Ã¼ ÇÒ´ç
+    // ìƒˆë¡œìš´ key info êµ¬ì¡°ì²´ í• ë‹¹
     IDE_TEST( STRUCT_ALLOC( QC_QMP_MEM(aStatement),
                             sdiKeyInfo,
                             (void*) &sNewKeyInfo )
@@ -5174,7 +5174,7 @@ IDE_RC sda::mergeKeyInfo( qcStatement * aStatement,
     aLeftKeyInfo->mIsJoined  = ID_TRUE;
     aRightKeyInfo->mIsJoined = ID_TRUE;
 
-    // ¿¬°á
+    // ì—°ê²°
     sNewKeyInfo->mNext = *aKeyInfo;
     *aKeyInfo = sNewKeyInfo;
 
@@ -5390,9 +5390,9 @@ IDE_RC sda::mergeSameKeyInfo( qcStatement * aStatement,
                      *       right1   right1   right2  right2   right1
                      *
                      *
-                     *      A,B,C,D´Â °°Àº left³¢¸® ¶Ç, right ³¢¸® °°Àº key groupÀ¸·ÎºÎÅÍ
-                     *      »ı¼ºµÇ¾ú´Ù.
-                     *      ¶§¹®¿¡, ÀÌ A,B,C,D key infoµéÀº ´Ù½Ã ÇÏ³ªÀÇ key·Î merge µÉ ¼ö ÀÖ´Ù.
+                     *      A,B,C,DëŠ” ê°™ì€ leftë¼ë¦¬ ë˜, right ë¼ë¦¬ ê°™ì€ key groupìœ¼ë¡œë¶€í„°
+                     *      ìƒì„±ë˜ì—ˆë‹¤.
+                     *      ë•Œë¬¸ì—, ì´ A,B,C,D key infoë“¤ì€ ë‹¤ì‹œ í•˜ë‚˜ì˜ keyë¡œ merge ë  ìˆ˜ ìˆë‹¤.
                      *
                      *      keyInfo1   keyInfo2
                      *
@@ -5449,9 +5449,9 @@ IDE_RC sda::mergeSameKeyInfo( qcStatement * aStatement,
      * SELECT I1  ,'C'
      *   FROM T1;
      *
-     * ¿¡¼­ B¿Í °°ÀÌ È¦·Î ¾²ÀÎ Shard key column ¿¡ ´ëÇØ¼­
-     * Set merge µÈ shard keyÁß µ¿ÀÏÇÑ key°¡ ÀÖÀ¸¸é ÇÕÃÄÁÖ°í,
-     * ¾øÀ¸¸é, º°µµÀÇ key·Î »ı¼ºÇÑ´Ù.
+     * ì—ì„œ Bì™€ ê°™ì´ í™€ë¡œ ì“°ì¸ Shard key column ì— ëŒ€í•´ì„œ
+     * Set merge ëœ shard keyì¤‘ ë™ì¼í•œ keyê°€ ìˆìœ¼ë©´ í•©ì³ì£¼ê³ ,
+     * ì—†ìœ¼ë©´, ë³„ë„ì˜ keyë¡œ ìƒì„±í•œë‹¤.
      *
      */
     for ( sKeyInfoTmp  = aKeyInfoTmp;
@@ -5630,7 +5630,7 @@ IDE_RC sda::setCantMergeReasonParseTree( qmsParseTree * aParseTree,
         {
             if ( aParseTree->forUpdate->isMoveAndDelete == ID_TRUE )
             {
-                // select for move and delete´Â limitÀ» Çã¿ëÇÑ´Ù.
+                // select for move and deleteëŠ” limitì„ í—ˆìš©í•œë‹¤.
                 sSkipLimit = ID_TRUE;
             }
             else
@@ -5984,38 +5984,38 @@ IDE_RC sda::analyzeInsert( qcStatement * aStatement )
 {
 /***********************************************************************
  *
- * Description : INSERT ±¸¹®ÀÇ ÃÖÀûÈ­
+ * Description : INSERT êµ¬ë¬¸ì˜ ìµœì í™”
  *
  * Implementation :
  *    (1) CASE 1 : INSERT...VALUE(...(subquery)...)
- *        qmoSubquery::optimizeExpr()ÀÇ ¼öÇà
+ *        qmoSubquery::optimizeExpr()ì˜ ìˆ˜í–‰
  *    (2) CASE 2 : INSERT...SELECT...
- *        qmoSubquery::optimizeSubquery()ÀÇ ¼öÇà (¹Ì±¸Çö)
+ *        qmoSubquery::optimizeSubquery()ì˜ ìˆ˜í–‰ (ë¯¸êµ¬í˜„)
  *
  ***********************************************************************/
 
     qmmInsParseTree * sInsParseTree;
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_TEST_RAISE( aStatement == NULL, ERR_NULL_STATEMENT );
 
     //------------------------------------------
-    // Parse Tree È¹µæ
+    // Parse Tree íšë“
     //------------------------------------------
 
     sInsParseTree = (qmmInsParseTree*) aStatement->myPlan->parseTree;
 
     //------------------------------------------
-    // °Ë»ç
+    // ê²€ì‚¬
     //------------------------------------------
 
     IDE_TEST( checkInsert( sInsParseTree ) != IDE_SUCCESS );
 
     //------------------------------------------
-    // ºĞ¼®
+    // ë¶„ì„
     //------------------------------------------
 
     IDE_TEST( setInsertAnalysis( aStatement ) != IDE_SUCCESS );
@@ -6037,7 +6037,7 @@ IDE_RC sda::analyzeUpdate( qcStatement * aStatement )
 {
 /***********************************************************************
  *
- * Description : UPDATE ±¸¹®ÀÇ ºĞ¼®
+ * Description : UPDATE êµ¬ë¬¸ì˜ ë¶„ì„
  *
  * Implementation :
  *
@@ -6046,20 +6046,20 @@ IDE_RC sda::analyzeUpdate( qcStatement * aStatement )
     qmmUptParseTree * sUptParseTree;
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_TEST_RAISE( aStatement == NULL, ERR_NULL_STATEMENT );
 
     //------------------------------------------
-    // Parse Tree È¹µæ
+    // Parse Tree íšë“
     //------------------------------------------
 
     IDE_DASSERT( aStatement->myPlan != NULL );
     sUptParseTree = (qmmUptParseTree *)aStatement->myPlan->parseTree;
 
     //------------------------------------------
-    // PROJ-1718 WhereÀı¿¡ ´ëÇÏ¿© subquery predicateÀ» transformÇÑ´Ù.
+    // PROJ-1718 Whereì ˆì— ëŒ€í•˜ì—¬ subquery predicateì„ transformí•œë‹¤.
     //------------------------------------------
 
     IDE_TEST( qmo::doTransformSubqueries( aStatement,
@@ -6067,13 +6067,13 @@ IDE_RC sda::analyzeUpdate( qcStatement * aStatement )
               != IDE_SUCCESS );
 
     //------------------------------------------
-    // °Ë»ç
+    // ê²€ì‚¬
     //------------------------------------------
 
     IDE_TEST( checkUpdate( sUptParseTree ) != IDE_SUCCESS );
 
     //------------------------------------------
-    // ºĞ¼®
+    // ë¶„ì„
     //------------------------------------------
 
     IDE_TEST( normalizePredicate( aStatement,
@@ -6101,7 +6101,7 @@ IDE_RC sda::analyzeDelete( qcStatement * aStatement )
 {
 /***********************************************************************
  *
- * Description : DELETE ±¸¹®ÀÇ ºĞ¼®
+ * Description : DELETE êµ¬ë¬¸ì˜ ë¶„ì„
  *
  * Implementation :
  *
@@ -6110,20 +6110,20 @@ IDE_RC sda::analyzeDelete( qcStatement * aStatement )
     qmmDelParseTree * sDelParseTree;
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_TEST_RAISE( aStatement == NULL, ERR_NULL_STATEMENT );
 
     //------------------------------------------
-    // Parse Tree È¹µæ
+    // Parse Tree íšë“
     //------------------------------------------
 
     IDE_DASSERT( aStatement->myPlan != NULL );
     sDelParseTree = (qmmDelParseTree *) aStatement->myPlan->parseTree;
 
     //------------------------------------------
-    // PROJ-1718 WhereÀı¿¡ ´ëÇÏ¿© subquery predicateÀ» transformÇÑ´Ù.
+    // PROJ-1718 Whereì ˆì— ëŒ€í•˜ì—¬ subquery predicateì„ transformí•œë‹¤.
     //------------------------------------------
 
     IDE_TEST( qmo::doTransformSubqueries( aStatement,
@@ -6131,13 +6131,13 @@ IDE_RC sda::analyzeDelete( qcStatement * aStatement )
               != IDE_SUCCESS );
 
     //------------------------------------------
-    // °Ë»ç
+    // ê²€ì‚¬
     //------------------------------------------
 
     IDE_TEST( checkDelete( sDelParseTree ) != IDE_SUCCESS );
 
     //------------------------------------------
-    // ºĞ¼®
+    // ë¶„ì„
     //------------------------------------------
 
     IDE_TEST( normalizePredicate( aStatement,
@@ -6164,7 +6164,7 @@ IDE_RC sda::analyzeExecProc( qcStatement * aStatement )
 {
 /***********************************************************************
  *
- * Description : EXEC ±¸¹®ÀÇ ºĞ¼®
+ * Description : EXEC êµ¬ë¬¸ì˜ ë¶„ì„
  *
  * Implementation :
  *
@@ -6173,25 +6173,25 @@ IDE_RC sda::analyzeExecProc( qcStatement * aStatement )
     qsExecParseTree * sExecParseTree;
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_TEST_RAISE( aStatement == NULL, ERR_NULL_STATEMENT );
 
     //------------------------------------------
-    // Parse Tree È¹µæ
+    // Parse Tree íšë“
     //------------------------------------------
 
     sExecParseTree = (qsExecParseTree*) aStatement->myPlan->parseTree;
 
     //------------------------------------------
-    // °Ë»ç
+    // ê²€ì‚¬
     //------------------------------------------
 
     IDE_TEST( checkExecProc( sExecParseTree ) != IDE_SUCCESS );
 
     //------------------------------------------
-    // ºĞ¼®
+    // ë¶„ì„
     //------------------------------------------
 
     IDE_TEST( setExecProcAnalysis( aStatement ) != IDE_SUCCESS );
@@ -6214,19 +6214,19 @@ IDE_RC sda::checkUpdate( qmmUptParseTree * aUptParseTree )
 /***********************************************************************
  *
  * Description :
- *      ¼öÇà °¡´ÉÇÑ SQLÀÎÁö ÆÇ´ÜÇÑ´Ù.
+ *      ìˆ˜í–‰ ê°€ëŠ¥í•œ SQLì¸ì§€ íŒë‹¨í•œë‹¤.
  *
- *     *  ¼öÇà °¡´ÉÇÑ SQLÀÇ Á¶°Ç
+ *     *  ìˆ˜í–‰ ê°€ëŠ¥í•œ SQLì˜ ì¡°ê±´
  *
  *         < UPDATE >
  *
- *             1. Non shard object°¡ ÀÖÀ¸¸é ¾ÈµÈ´Ù.
- *             2. Trigger°¡ ÀÖÀ¸¸é ¾ÈµÈ´Ù.
- *             3. Updatable view¸¦ »ç¿ë ÇÒ ¼ö ¾ø´Ù. ( must check )
- *             - 4. Return into°¡ ÀÖÀ¸¸é ¾ÈµÈ´Ù. ( optionally check )  20160608 Á¦¾àÁ¶°ÇÁ¦°Å
- *             - 5. LimitÀÌ ÀÖÀ¸¸é ¾ÈµÈ´Ù. ( optionally check ) 20160608 Á¦¾àÁ¶°ÇÁ¦°Å
- *             6. InsteadOfTrigger°¡ ÀÖÀ¸¸é ¾ÈµÈ´Ù. ( must check )
- *             7. key columnÀº update µÉ ¼ö ¾ø´Ù. ( must check )
+ *             1. Non shard objectê°€ ìˆìœ¼ë©´ ì•ˆëœë‹¤.
+ *             2. Triggerê°€ ìˆìœ¼ë©´ ì•ˆëœë‹¤.
+ *             3. Updatable viewë¥¼ ì‚¬ìš© í•  ìˆ˜ ì—†ë‹¤. ( must check )
+ *             - 4. Return intoê°€ ìˆìœ¼ë©´ ì•ˆëœë‹¤. ( optionally check )  20160608 ì œì•½ì¡°ê±´ì œê±°
+ *             - 5. Limitì´ ìˆìœ¼ë©´ ì•ˆëœë‹¤. ( optionally check ) 20160608 ì œì•½ì¡°ê±´ì œê±°
+ *             6. InsteadOfTriggerê°€ ìˆìœ¼ë©´ ì•ˆëœë‹¤. ( must check )
+ *             7. key columnì€ update ë  ìˆ˜ ì—†ë‹¤. ( must check )
  *
  * Implementation :
  *
@@ -6237,30 +6237,30 @@ IDE_RC sda::checkUpdate( qmmUptParseTree * aUptParseTree )
     qcmColumn       * sUpdateColumn = NULL;
     UInt              sColOrder;
 
-    /* 1. Non shard object°¡ ÀÖÀ¸¸é ¾ÈµÈ´Ù. */
+    /* 1. Non shard objectê°€ ìˆìœ¼ë©´ ì•ˆëœë‹¤. */
     IDE_TEST_RAISE( aUptParseTree->updateTableRef->mShardObjInfo == NULL,
                     ERR_NON_SHARD_OBJECT_EXIST );
 
-    /* 2. Trigger°¡ ÀÖÀ¸¸é ¾ÈµÈ´Ù. */
+    /* 2. Triggerê°€ ìˆìœ¼ë©´ ì•ˆëœë‹¤. */
     IDE_TEST_RAISE( aUptParseTree->updateTableRef->tableInfo->triggerCount != 0,
                     ERR_TRIGGER_EXIST );
 
-    /* 3. setÀı¿¡ subquery¸¦ »ç¿ë ÇÒ ¼ö ¾ø´Ù. */
+    /* 3. setì ˆì— subqueryë¥¼ ì‚¬ìš© í•  ìˆ˜ ì—†ë‹¤. */
     IDE_TEST_RAISE( aUptParseTree->subqueries != NULL, ERR_SET_SUBQUERY_EXIST );
 
-    /* 3. Updatable view¸¦ »ç¿ë ÇÒ ¼ö ¾ø´Ù. */
+    /* 3. Updatable viewë¥¼ ì‚¬ìš© í•  ìˆ˜ ì—†ë‹¤. */
     IDE_TEST_RAISE( aUptParseTree->querySet->SFWGH->from->tableRef->view != NULL,
                     ERR_VIEW_EXIST );
 
-    /* 4. Return into°¡ ÀÖÀ¸¸é ¾ÈµÈ´Ù. 20160608 Á¦¾àÁ¶°ÇÁ¦°Å  */
+    /* 4. Return intoê°€ ìˆìœ¼ë©´ ì•ˆëœë‹¤. 20160608 ì œì•½ì¡°ê±´ì œê±°  */
 
-    /* 5. LimitÀÌ ÀÖÀ¸¸é ¾ÈµÈ´Ù. 20160608 Á¦¾àÁ¶°ÇÁ¦°Å */
+    /* 5. Limitì´ ìˆìœ¼ë©´ ì•ˆëœë‹¤. 20160608 ì œì•½ì¡°ê±´ì œê±° */
 
-    /* 6. InsteadOfTrigger°¡ ÀÖÀ¸¸é ¾ÈµÈ´Ù. */
+    /* 6. InsteadOfTriggerê°€ ìˆìœ¼ë©´ ì•ˆëœë‹¤. */
     IDE_TEST_RAISE( aUptParseTree->insteadOfTrigger != ID_FALSE,
                     ERR_INSTEAD_OF_TRIGGER_EXIST );
 
-    /* 7.  Key columnÀº update µÉ ¼ö ¾ø´Ù. */
+    /* 7.  Key columnì€ update ë  ìˆ˜ ì—†ë‹¤. */
     for ( sUpdateColumn  = aUptParseTree->updateColumns;
           sUpdateColumn != NULL;
           sUpdateColumn  = sUpdateColumn->next )
@@ -6323,17 +6323,17 @@ IDE_RC sda::checkDelete( qmmDelParseTree * aDelParseTree )
 /***********************************************************************
  *
  * Description :
- *      ¼öÇà °¡´ÉÇÑ SQLÀÎÁö ÆÇ´ÜÇÑ´Ù.
+ *      ìˆ˜í–‰ ê°€ëŠ¥í•œ SQLì¸ì§€ íŒë‹¨í•œë‹¤.
  *
- *     *  ¼öÇà °¡´ÉÇÑ SQLÀÇ Á¶°Ç
+ *     *  ìˆ˜í–‰ ê°€ëŠ¥í•œ SQLì˜ ì¡°ê±´
  *
  *         < DELETE  >
- *             1. Non shard object°¡ ÀÖÀ¸¸é ¾ÈµÈ´Ù.
- *             2. Trigger°¡ ÀÖÀ¸¸é ¾ÈµÈ´Ù.
- *             3. Updatable view¸¦ »ç¿ë ÇÒ ¼ö ¾ø´Ù. ( must check )
- *             - 4. Return into°¡ ÀÖÀ¸¸é ¾ÈµÈ´Ù. ( optionally check )  20160608 Á¦¾àÁ¶°ÇÁ¦°Å
- *             - 5. LimitÀÌ ÀÖÀ¸¸é ¾ÈµÈ´Ù. ( optionally check ) 20160608 Á¦¾àÁ¶°ÇÁ¦°Å
- *             6. InsteadOfTrigger°¡ ÀÖÀ¸¸é ¾ÈµÈ´Ù. ( must check )
+ *             1. Non shard objectê°€ ìˆìœ¼ë©´ ì•ˆëœë‹¤.
+ *             2. Triggerê°€ ìˆìœ¼ë©´ ì•ˆëœë‹¤.
+ *             3. Updatable viewë¥¼ ì‚¬ìš© í•  ìˆ˜ ì—†ë‹¤. ( must check )
+ *             - 4. Return intoê°€ ìˆìœ¼ë©´ ì•ˆëœë‹¤. ( optionally check )  20160608 ì œì•½ì¡°ê±´ì œê±°
+ *             - 5. Limitì´ ìˆìœ¼ë©´ ì•ˆëœë‹¤. ( optionally check ) 20160608 ì œì•½ì¡°ê±´ì œê±°
+ *             6. InsteadOfTriggerê°€ ìˆìœ¼ë©´ ì•ˆëœë‹¤. ( must check )
  *
  * Implementation :
  *
@@ -6341,22 +6341,22 @@ IDE_RC sda::checkDelete( qmmDelParseTree * aDelParseTree )
  *
  ***********************************************************************/
 
-    /* 1. Non shard object°¡ ÀÖÀ¸¸é ¾ÈµÈ´Ù. */
+    /* 1. Non shard objectê°€ ìˆìœ¼ë©´ ì•ˆëœë‹¤. */
     IDE_TEST_RAISE( aDelParseTree->deleteTableRef->mShardObjInfo == NULL,
                     ERR_NON_SHARD_OBJECT_EXIST );
 
-    /* 2. Trigger°¡ ÀÖÀ¸¸é ¾ÈµÈ´Ù. */
+    /* 2. Triggerê°€ ìˆìœ¼ë©´ ì•ˆëœë‹¤. */
     IDE_TEST_RAISE( aDelParseTree->deleteTableRef->tableInfo->triggerCount != 0,
                     ERR_TRIGGER_EXIST );
 
-    /* 3. Updatable view¸¦ »ç¿ë ÇÒ ¼ö ¾ø´Ù. */
+    /* 3. Updatable viewë¥¼ ì‚¬ìš© í•  ìˆ˜ ì—†ë‹¤. */
     IDE_TEST_RAISE( aDelParseTree->deleteTableRef->view != NULL, ERR_VIEW_EXIST );
 
-    /* 4. Return into°¡ ÀÖÀ¸¸é ¾ÈµÈ´Ù. ( optionally check )  20160608 Á¦¾àÁ¶°ÇÁ¦°Å */
+    /* 4. Return intoê°€ ìˆìœ¼ë©´ ì•ˆëœë‹¤. ( optionally check )  20160608 ì œì•½ì¡°ê±´ì œê±° */
 
-    /* 5. LimitÀÌ ÀÖÀ¸¸é ¾ÈµÈ´Ù. 20160608 Á¦¾àÁ¶°ÇÁ¦°Å */
+    /* 5. Limitì´ ìˆìœ¼ë©´ ì•ˆëœë‹¤. 20160608 ì œì•½ì¡°ê±´ì œê±° */
 
-    /* 6. InsteadOfTrigger°¡ ÀÖÀ¸¸é ¾ÈµÈ´Ù. */
+    /* 6. InsteadOfTriggerê°€ ìˆìœ¼ë©´ ì•ˆëœë‹¤. */
     IDE_TEST_RAISE( aDelParseTree->insteadOfTrigger != ID_FALSE,
                     ERR_INSTEAD_OF_TRIGGER_EXIST );
 
@@ -6392,20 +6392,20 @@ IDE_RC sda::checkInsert( qmmInsParseTree * aInsParseTree )
 /***********************************************************************
  *
  * Description :
- *      ¼öÇà °¡´ÉÇÑ SQLÀÎÁö ÆÇ´ÜÇÑ´Ù.
+ *      ìˆ˜í–‰ ê°€ëŠ¥í•œ SQLì¸ì§€ íŒë‹¨í•œë‹¤.
  *
- *     *  ¼öÇà °¡´ÉÇÑ SQLÀÇ Á¶°Ç
+ *     *  ìˆ˜í–‰ ê°€ëŠ¥í•œ SQLì˜ ì¡°ê±´
  *
  *         < INSERT  >
  *
- *             1. Insert Values¸¸ ¼öÇà °¡´ÉÇÏ´Ù. ( must check )
- *             2. Non shard object°¡ ÀÖÀ¸¸é ¾ÈµÈ´Ù.
- *             3. Trigger°¡ ÀÖÀ¸¸é ¾ÈµÈ´Ù.
- *             4. Updatable view¸¦ »ç¿ë ÇÒ ¼ö ¾ø´Ù. ( must check )
- *             - 5. Return into°¡ ÀÖÀ¸¸é ¾ÈµÈ´Ù. ( optionally check )  20160608 Á¦¾àÁ¶°ÇÁ¦°Å
- *             6. InsteadOfTrigger°¡ ÀÖÀ¸¸é ¾ÈµÈ´Ù. ( must check )
- *             7. Multi-rows°¡ ÀÖÀ¸¸é ¾ÈµÈ´Ù. ( must check ) 20160123 Á¦¾àÁ¶°ÇÃß°¡
- *             8. Multi-tables°¡ ÀÖÀ¸¸é ¾ÈµÈ´Ù. ( must check ) 20160123 Á¦¾àÁ¶°ÇÃß°¡
+ *             1. Insert Valuesë§Œ ìˆ˜í–‰ ê°€ëŠ¥í•˜ë‹¤. ( must check )
+ *             2. Non shard objectê°€ ìˆìœ¼ë©´ ì•ˆëœë‹¤.
+ *             3. Triggerê°€ ìˆìœ¼ë©´ ì•ˆëœë‹¤.
+ *             4. Updatable viewë¥¼ ì‚¬ìš© í•  ìˆ˜ ì—†ë‹¤. ( must check )
+ *             - 5. Return intoê°€ ìˆìœ¼ë©´ ì•ˆëœë‹¤. ( optionally check )  20160608 ì œì•½ì¡°ê±´ì œê±°
+ *             6. InsteadOfTriggerê°€ ìˆìœ¼ë©´ ì•ˆëœë‹¤. ( must check )
+ *             7. Multi-rowsê°€ ìˆìœ¼ë©´ ì•ˆëœë‹¤. ( must check ) 20160123 ì œì•½ì¡°ê±´ì¶”ê°€
+ *             8. Multi-tablesê°€ ìˆìœ¼ë©´ ì•ˆëœë‹¤. ( must check ) 20160123 ì œì•½ì¡°ê±´ì¶”ê°€
  *
  * Implementation :
  *
@@ -6419,11 +6419,11 @@ IDE_RC sda::checkInsert( qmmInsParseTree * aInsParseTree )
     IDE_TEST_RAISE( aInsParseTree == NULL, ERR_NULL_PARSE_TREE );
     IDE_TEST_RAISE( aInsParseTree->rows == NULL, ERR_NULL_ROWS );
 
-    /* 1. InsertValues¸¸ ¼öÇà °¡´ÉÇÏ´Ù. */
+    /* 1. InsertValuesë§Œ ìˆ˜í–‰ ê°€ëŠ¥í•˜ë‹¤. */
     IDE_TEST_RAISE( aInsParseTree->common.parse != qmv::parseInsertValues,
                     ERR_NOT_INSERT_VALUES );
 
-    /* 2. Non shard object°¡ ÀÖÀ¸¸é ¾ÈµÈ´Ù. */
+    /* 2. Non shard objectê°€ ìˆìœ¼ë©´ ì•ˆëœë‹¤. */
     IDE_TEST_RAISE( aInsParseTree->tableRef->mShardObjInfo == NULL,
                     ERR_NON_SHARD_OBJECT_EXIST );
     for ( sCurrValue = aInsParseTree->rows->values;
@@ -6442,23 +6442,23 @@ IDE_RC sda::checkInsert( qmmInsParseTree * aInsParseTree )
         }
     }
 
-    /* 3. Trigger°¡ ÀÖÀ¸¸é ¾ÈµÈ´Ù. */
+    /* 3. Triggerê°€ ìˆìœ¼ë©´ ì•ˆëœë‹¤. */
     IDE_TEST_RAISE( aInsParseTree->tableRef->tableInfo->triggerCount != 0,
                     ERR_TRIGGER_EXIST );
 
-    /* 4. Updatable view¸¦ »ç¿ë ÇÒ ¼ö ¾ø´Ù. */
+    /* 4. Updatable viewë¥¼ ì‚¬ìš© í•  ìˆ˜ ì—†ë‹¤. */
     IDE_TEST_RAISE( aInsParseTree->tableRef->view != NULL, ERR_VIEW_EXIST );
 
-    /* 5. ReturnInto°¡ ÀÖÀ¸¸é ¾ÈµÈ´Ù. 20160608 Á¦¾àÁ¶°ÇÁ¦°Å */
+    /* 5. ReturnIntoê°€ ìˆìœ¼ë©´ ì•ˆëœë‹¤. 20160608 ì œì•½ì¡°ê±´ì œê±° */
 
-    /* 6. InsteadOfTrigger°¡ ÀÖÀ¸¸é ¾ÈµÈ´Ù. */
+    /* 6. InsteadOfTriggerê°€ ìˆìœ¼ë©´ ì•ˆëœë‹¤. */
     IDE_TEST_RAISE( aInsParseTree->insteadOfTrigger != ID_FALSE,
                     ERR_INSTEAD_OF_TRIGGER_EXIST );
 
-    /* 7. Multi-rows°¡ ÀÖÀ¸¸é ¾ÈµÈ´Ù. ( must check ) 20160123 Á¦¾àÁ¶°ÇÃß°¡ */
+    /* 7. Multi-rowsê°€ ìˆìœ¼ë©´ ì•ˆëœë‹¤. ( must check ) 20160123 ì œì•½ì¡°ê±´ì¶”ê°€ */
     IDE_TEST_RAISE( aInsParseTree->rows->next != NULL, ERR_MULTI_ROWS_INSERT );
 
-    /* 8. Multi-tables°¡ ÀÖÀ¸¸é ¾ÈµÈ´Ù. ( must check ) 20160123 Á¦¾àÁ¶°ÇÃß°¡ */
+    /* 8. Multi-tablesê°€ ìˆìœ¼ë©´ ì•ˆëœë‹¤. ( must check ) 20160123 ì œì•½ì¡°ê±´ì¶”ê°€ */
     IDE_TEST_RAISE( aInsParseTree->next != NULL, ERR_MULTI_TABLES_INSERT );
 
     return IDE_SUCCESS;
@@ -6520,14 +6520,14 @@ IDE_RC sda::checkExecProc( qsExecParseTree * aExecParseTree )
 /***********************************************************************
  *
  * Description :
- *      ¼öÇà °¡´ÉÇÑ SQLÀÎÁö ÆÇ´ÜÇÑ´Ù.
+ *      ìˆ˜í–‰ ê°€ëŠ¥í•œ SQLì¸ì§€ íŒë‹¨í•œë‹¤.
  *
- *     *  ¼öÇà °¡´ÉÇÑ SQLÀÇ Á¶°Ç
+ *     *  ìˆ˜í–‰ ê°€ëŠ¥í•œ SQLì˜ ì¡°ê±´
  *
  *         < EXEC >
  *
- *             1. Non shard object°¡ ÀÖÀ¸¸é ¾ÈµÈ´Ù.
- *             2. EXEC procedure¸¸ Áö¿øÇÑ´Ù.
+ *             1. Non shard objectê°€ ìˆìœ¼ë©´ ì•ˆëœë‹¤.
+ *             2. EXEC procedureë§Œ ì§€ì›í•œë‹¤.
  *
  * Implementation :
  *
@@ -6538,11 +6538,11 @@ IDE_RC sda::checkExecProc( qsExecParseTree * aExecParseTree )
     // BUG-42764
     IDE_TEST_RAISE( aExecParseTree == NULL, ERR_NULL_PARSE_TREE );
 
-    /* 1. Non shard object°¡ ÀÖÀ¸¸é ¾ÈµÈ´Ù. */
+    /* 1. Non shard objectê°€ ìˆìœ¼ë©´ ì•ˆëœë‹¤. */
     IDE_TEST_RAISE( aExecParseTree->mShardObjInfo == NULL,
                     ERR_NON_SHARD_OBJECT_EXIST );
 
-    /* 2. package´Â ¾ÈµÈ´Ù. */
+    /* 2. packageëŠ” ì•ˆëœë‹¤. */
     IDE_TEST_RAISE( aExecParseTree->subprogramID != QS_PSM_SUBPROGRAM_ID,
                     ERR_UNSUPPORTED_PACKAGE );
 
@@ -6588,7 +6588,7 @@ IDE_RC sda::setUpdateAnalysis( qcStatement * aStatement )
     sdiKeyTupleColumn   * sSubKeyColumn     = NULL;
 
     //------------------------------------------
-    // ÇÒ´ç
+    // í• ë‹¹
     //------------------------------------------
 
     IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF(sdiQuerySet),
@@ -6600,7 +6600,7 @@ IDE_RC sda::setUpdateAnalysis( qcStatement * aStatement )
               != IDE_SUCCESS );
 
     //------------------------------------------
-    // ÃÊ±âÈ­
+    // ì´ˆê¸°í™”
     //------------------------------------------
 
     sParseTree = (qmmUptParseTree*)aStatement->myPlan->parseTree;
@@ -6647,7 +6647,7 @@ IDE_RC sda::setUpdateAnalysis( qcStatement * aStatement )
         {
             sKeyInfo->mKeyCount++;
 
-            // Shard key°¡ µÎ °³ÀÎ tableÀº Á¸Àç ÇÒ ¼ö ¾ø´Ù. ( break ÇÏÁö ¾Ê°í °Ë»ç )
+            // Shard keyê°€ ë‘ ê°œì¸ tableì€ ì¡´ì¬ í•  ìˆ˜ ì—†ë‹¤. ( break í•˜ì§€ ì•Šê³  ê²€ì‚¬ )
             IDE_TEST_RAISE( sKeyInfo->mKeyCount != 1, ERR_INVALID_SHARD_KEY );
 
             IDE_TEST( STRUCT_ALLOC( QC_QMP_MEM(aStatement),
@@ -6740,7 +6740,7 @@ IDE_RC sda::setUpdateAnalysis( qcStatement * aStatement )
             {
                 sSubKeyInfo->mKeyCount++;
 
-                // Shard key°¡ µÎ °³ÀÎ tableÀº Á¸Àç ÇÒ ¼ö ¾ø´Ù. ( break ÇÏÁö ¾Ê°í °Ë»ç )
+                // Shard keyê°€ ë‘ ê°œì¸ tableì€ ì¡´ì¬ í•  ìˆ˜ ì—†ë‹¤. ( break í•˜ì§€ ì•Šê³  ê²€ì‚¬ )
                 IDE_TEST_RAISE( sSubKeyInfo->mKeyCount != 1, ERR_INVALID_SHARD_KEY );
 
                 IDE_TEST( STRUCT_ALLOC( QC_QMP_MEM(aStatement),
@@ -6790,7 +6790,7 @@ IDE_RC sda::setUpdateAnalysis( qcStatement * aStatement )
     }
 
     //------------------------------------------
-    // Sub-queryÀÇ ºĞ¼®
+    // Sub-queryì˜ ë¶„ì„
     //------------------------------------------
     if ( sParseTree->querySet->SFWGH->where != NULL )
     {
@@ -6813,7 +6813,7 @@ IDE_RC sda::setUpdateAnalysis( qcStatement * aStatement )
     }
 
     //------------------------------------------
-    // Sub-queryÀÇ ºĞ¼®
+    // Sub-queryì˜ ë¶„ì„
     //------------------------------------------
 
     for ( sUpdateValue  = sParseTree->values;
@@ -6853,9 +6853,9 @@ IDE_RC sda::setUpdateAnalysis( qcStatement * aStatement )
 
     if ( ( sParseTree->limit != NULL ) && ( sKeyInfo->mValueCount != 1 ) )
     {
-        // ´ÜÀÏ ³ëµå ¼öÇàÀ¸·Î È®Á¤µÇÁö ¾ÊÀº »óÅÂ¿¡¼­
-        // LIMITÀ» ¼öÇàÇÏ°Ô µÇ¸é ºĞ»ê Á¤ÀÇ¿¡ ¸ÂÁö ¾Ê¾Æ
-        // Can-merge µÉ ¼ö ¾øÀ¸¹Ç·Î flag checking
+        // ë‹¨ì¼ ë…¸ë“œ ìˆ˜í–‰ìœ¼ë¡œ í™•ì •ë˜ì§€ ì•Šì€ ìƒíƒœì—ì„œ
+        // LIMITì„ ìˆ˜í–‰í•˜ê²Œ ë˜ë©´ ë¶„ì‚° ì •ì˜ì— ë§ì§€ ì•Šì•„
+        // Can-merge ë  ìˆ˜ ì—†ìœ¼ë¯€ë¡œ flag checking
         sAnalysis->mCantMergeReason[SDI_LIMIT_EXISTS] = ID_TRUE;
     }
     else
@@ -6871,9 +6871,9 @@ IDE_RC sda::setUpdateAnalysis( qcStatement * aStatement )
     {
         if ( ( sParseTree->limit != NULL ) && ( sSubKeyInfo->mValueCount != 1 ) )
         {
-            // ´ÜÀÏ ³ëµå ¼öÇàÀ¸·Î È®Á¤µÇÁö ¾ÊÀº »óÅÂ¿¡¼­
-            // LIMITÀ» ¼öÇàÇÏ°Ô µÇ¸é ºĞ»ê Á¤ÀÇ¿¡ ¸ÂÁö ¾Ê¾Æ
-            // Can-merge µÉ ¼ö ¾øÀ¸¹Ç·Î flag checking
+            // ë‹¨ì¼ ë…¸ë“œ ìˆ˜í–‰ìœ¼ë¡œ í™•ì •ë˜ì§€ ì•Šì€ ìƒíƒœì—ì„œ
+            // LIMITì„ ìˆ˜í–‰í•˜ê²Œ ë˜ë©´ ë¶„ì‚° ì •ì˜ì— ë§ì§€ ì•Šì•„
+            // Can-merge ë  ìˆ˜ ì—†ìœ¼ë¯€ë¡œ flag checking
             sAnalysis->mCantMergeReason4SubKey[SDI_LIMIT_EXISTS] = ID_TRUE;
         }
         else
@@ -6907,7 +6907,7 @@ IDE_RC sda::setUpdateAnalysis( qcStatement * aStatement )
 
     //---------------------------------------
     // PROJ-2685 online rebuild
-    // shard tableÀ» analysis¿¡ µî·Ï
+    // shard tableì„ analysisì— ë“±ë¡
     //---------------------------------------
 
     IDE_TEST( addTableInfo( aStatement,
@@ -6957,7 +6957,7 @@ IDE_RC sda::setDeleteAnalysis( qcStatement * aStatement )
     sdiKeyTupleColumn   * sSubKeyColumn     = NULL;
 
     //------------------------------------------
-    // ÇÒ´ç
+    // í• ë‹¹
     //------------------------------------------
 
     IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF(sdiQuerySet),
@@ -6969,7 +6969,7 @@ IDE_RC sda::setDeleteAnalysis( qcStatement * aStatement )
               != IDE_SUCCESS );
 
     //------------------------------------------
-    // ÃÊ±âÈ­
+    // ì´ˆê¸°í™”
     //------------------------------------------
 
     sParseTree = (qmmDelParseTree*)aStatement->myPlan->parseTree;
@@ -7013,7 +7013,7 @@ IDE_RC sda::setDeleteAnalysis( qcStatement * aStatement )
         {
             sKeyInfo->mKeyCount++;
 
-            // Shard key°¡ µÎ °³ÀÎ tableÀº Á¸Àç ÇÒ ¼ö ¾ø´Ù. ( break ÇÏÁö ¾Ê°í °Ë»ç )
+            // Shard keyê°€ ë‘ ê°œì¸ tableì€ ì¡´ì¬ í•  ìˆ˜ ì—†ë‹¤. ( break í•˜ì§€ ì•Šê³  ê²€ì‚¬ )
             IDE_TEST_RAISE( sKeyInfo->mKeyCount != 1, ERR_INVALID_SHARD_KEY );
 
             IDE_TEST( STRUCT_ALLOC( QC_QMP_MEM(aStatement),
@@ -7106,7 +7106,7 @@ IDE_RC sda::setDeleteAnalysis( qcStatement * aStatement )
             {
                 sSubKeyInfo->mKeyCount++;
 
-                // Shard key°¡ µÎ °³ÀÎ tableÀº Á¸Àç ÇÒ ¼ö ¾ø´Ù. ( break ÇÏÁö ¾Ê°í °Ë»ç )
+                // Shard keyê°€ ë‘ ê°œì¸ tableì€ ì¡´ì¬ í•  ìˆ˜ ì—†ë‹¤. ( break í•˜ì§€ ì•Šê³  ê²€ì‚¬ )
                 IDE_TEST_RAISE( sSubKeyInfo->mKeyCount != 1, ERR_INVALID_SHARD_KEY );
 
                 IDE_TEST( STRUCT_ALLOC( QC_QMP_MEM(aStatement),
@@ -7156,7 +7156,7 @@ IDE_RC sda::setDeleteAnalysis( qcStatement * aStatement )
     }
 
     //------------------------------------------
-    // Sub-queryÀÇ ºĞ¼®
+    // Sub-queryì˜ ë¶„ì„
     //------------------------------------------
 
     if ( sParseTree->querySet->SFWGH->where != NULL )
@@ -7213,9 +7213,9 @@ IDE_RC sda::setDeleteAnalysis( qcStatement * aStatement )
     {
         if ( ( sParseTree->limit != NULL ) && ( sSubKeyInfo->mValueCount != 1 ) )
         {
-            // ´ÜÀÏ ³ëµå ¼öÇàÀ¸·Î È®Á¤µÇÁö ¾ÊÀº »óÅÂ¿¡¼­
-            // LIMITÀ» ¼öÇàÇÏ°Ô µÇ¸é ºĞ»ê Á¤ÀÇ¿¡ ¸ÂÁö ¾Ê¾Æ
-            // Can-merge µÉ ¼ö ¾øÀ¸¹Ç·Î flag checking
+            // ë‹¨ì¼ ë…¸ë“œ ìˆ˜í–‰ìœ¼ë¡œ í™•ì •ë˜ì§€ ì•Šì€ ìƒíƒœì—ì„œ
+            // LIMITì„ ìˆ˜í–‰í•˜ê²Œ ë˜ë©´ ë¶„ì‚° ì •ì˜ì— ë§ì§€ ì•Šì•„
+            // Can-merge ë  ìˆ˜ ì—†ìœ¼ë¯€ë¡œ flag checking
             sAnalysis->mCantMergeReason4SubKey[SDI_LIMIT_EXISTS] = ID_TRUE;
         }
         else
@@ -7249,7 +7249,7 @@ IDE_RC sda::setDeleteAnalysis( qcStatement * aStatement )
 
     //---------------------------------------
     // PROJ-2685 online rebuild
-    // shard tableÀ» analysis¿¡ µî·Ï
+    // shard tableì„ analysisì— ë“±ë¡
     //---------------------------------------
 
     IDE_TEST( addTableInfo( aStatement,
@@ -7301,7 +7301,7 @@ IDE_RC sda::setInsertAnalysis( qcStatement * aStatement )
     sdiKeyTupleColumn   * sSubKeyColumn     = NULL;
 
     //------------------------------------------
-    // ÇÒ´ç
+    // í• ë‹¹
     //------------------------------------------
 
     IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF(sdiQuerySet),
@@ -7313,7 +7313,7 @@ IDE_RC sda::setInsertAnalysis( qcStatement * aStatement )
               != IDE_SUCCESS );
 
     //------------------------------------------
-    // ÃÊ±âÈ­
+    // ì´ˆê¸°í™”
     //------------------------------------------
 
     sParseTree = (qmmInsParseTree*)aStatement->myPlan->parseTree;
@@ -7357,7 +7357,7 @@ IDE_RC sda::setInsertAnalysis( qcStatement * aStatement )
         {
             sKeyInfo->mKeyCount++;
 
-            // Shard key°¡ µÎ °³ÀÎ tableÀº Á¸Àç ÇÒ ¼ö ¾ø´Ù. ( break ÇÏÁö ¾Ê°í °Ë»ç )
+            // Shard keyê°€ ë‘ ê°œì¸ tableì€ ì¡´ì¬ í•  ìˆ˜ ì—†ë‹¤. ( break í•˜ì§€ ì•Šê³  ê²€ì‚¬ )
             IDE_TEST_RAISE( sKeyInfo->mKeyCount != 1, ERR_INVALID_SHARD_KEY );
 
             IDE_TEST( STRUCT_ALLOC( QC_QMP_MEM(aStatement),
@@ -7445,7 +7445,7 @@ IDE_RC sda::setInsertAnalysis( qcStatement * aStatement )
             {
                 sSubKeyInfo->mKeyCount++;
 
-                // Shard key°¡ µÎ °³ÀÎ tableÀº Á¸Àç ÇÒ ¼ö ¾ø´Ù. ( break ÇÏÁö ¾Ê°í °Ë»ç )
+                // Shard keyê°€ ë‘ ê°œì¸ tableì€ ì¡´ì¬ í•  ìˆ˜ ì—†ë‹¤. ( break í•˜ì§€ ì•Šê³  ê²€ì‚¬ )
                 IDE_TEST_RAISE( sSubKeyInfo->mKeyCount != 1, ERR_INVALID_SHARD_KEY );
 
                 IDE_TEST( STRUCT_ALLOC( QC_QMP_MEM(aStatement),
@@ -7551,7 +7551,7 @@ IDE_RC sda::setInsertAnalysis( qcStatement * aStatement )
 
     //---------------------------------------
     // PROJ-2685 online rebuild
-    // shard tableÀ» analysis¿¡ µî·Ï
+    // shard tableì„ analysisì— ë“±ë¡
     //---------------------------------------
 
     IDE_TEST( addTableInfo( aStatement,
@@ -7599,7 +7599,7 @@ IDE_RC sda::setExecProcAnalysis( qcStatement * aStatement )
     sdiKeyTupleColumn   * sSubKeyColumn     = NULL;
 
     //------------------------------------------
-    // ÇÒ´ç
+    // í• ë‹¹
     //------------------------------------------
 
     IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF(sdiQuerySet),
@@ -7611,7 +7611,7 @@ IDE_RC sda::setExecProcAnalysis( qcStatement * aStatement )
               != IDE_SUCCESS );
 
     //------------------------------------------
-    // ÃÊ±âÈ­
+    // ì´ˆê¸°í™”
     //------------------------------------------
 
     sExecParseTree = (qsExecParseTree*)aStatement->myPlan->parseTree;
@@ -7654,10 +7654,10 @@ IDE_RC sda::setExecProcAnalysis( qcStatement * aStatement )
                             (void*) &sKeyColumn )
               != IDE_SUCCESS );
 
-    sKeyColumn->mTupleId = 0;  // ÀÇ¹Ì¾øÀ½
-    sKeyColumn->mColumn  = 0;  // ÀÇ¹Ì¾øÀ½
-    sKeyColumn->mIsNullPadding = ID_FALSE; // ÀÇ¹Ì¾øÀ½
-    sKeyColumn->mIsAntiJoinInner = ID_FALSE; // ÀÇ¹Ì¾øÀ½
+    sKeyColumn->mTupleId = 0;  // ì˜ë¯¸ì—†ìŒ
+    sKeyColumn->mColumn  = 0;  // ì˜ë¯¸ì—†ìŒ
+    sKeyColumn->mIsNullPadding = ID_FALSE; // ì˜ë¯¸ì—†ìŒ
+    sKeyColumn->mIsAntiJoinInner = ID_FALSE; // ì˜ë¯¸ì—†ìŒ
 
     sKeyInfo->mKeyTargetCount = 0;
     sKeyInfo->mKeyTarget      = NULL;
@@ -7725,10 +7725,10 @@ IDE_RC sda::setExecProcAnalysis( qcStatement * aStatement )
                                 (void*) &sSubKeyColumn )
                   != IDE_SUCCESS );
 
-        sSubKeyColumn->mTupleId = 0;  // ÀÇ¹Ì¾øÀ½
-        sSubKeyColumn->mColumn  = 0;  // ÀÇ¹Ì¾øÀ½
-        sSubKeyColumn->mIsNullPadding = ID_FALSE; // ÀÇ¹Ì¾øÀ½
-        sSubKeyColumn->mIsAntiJoinInner = ID_FALSE; // ÀÇ¹Ì¾øÀ½
+        sSubKeyColumn->mTupleId = 0;  // ì˜ë¯¸ì—†ìŒ
+        sSubKeyColumn->mColumn  = 0;  // ì˜ë¯¸ì—†ìŒ
+        sSubKeyColumn->mIsNullPadding = ID_FALSE; // ì˜ë¯¸ì—†ìŒ
+        sSubKeyColumn->mIsAntiJoinInner = ID_FALSE; // ì˜ë¯¸ì—†ìŒ
 
         sSubKeyInfo->mKeyTargetCount = 0;
         sSubKeyInfo->mKeyTarget      = NULL;
@@ -7817,7 +7817,7 @@ IDE_RC sda::setExecProcAnalysis( qcStatement * aStatement )
 
     //---------------------------------------
     // PROJ-2685 online rebuild
-    // shard tableÀ» analysis¿¡ µî·Ï
+    // shard tableì„ analysisì— ë“±ë¡
     //---------------------------------------
 
     IDE_TEST( addTableInfo( aStatement,
@@ -7854,8 +7854,8 @@ IDE_RC sda::getKeyValueID4InsertValue( qcStatement   * aStatement,
 /***********************************************************************
  *
  * Description :
- *     Insert column Áß shard key column¿¡ ´ëÀÀÇÏ´Â insert value( shard key value )
- *     ¸¦ Ã£°í, ÇØ´ç insert value°¡ host variableÀÌ¸é bind parameter ID¸¦ ¹İÈ¯ÇÑ´Ù.
+ *     Insert column ì¤‘ shard key columnì— ëŒ€ì‘í•˜ëŠ” insert value( shard key value )
+ *     ë¥¼ ì°¾ê³ , í•´ë‹¹ insert valueê°€ host variableì´ë©´ bind parameter IDë¥¼ ë°˜í™˜í•œë‹¤.
  *
  * Implementation :
  *
@@ -7915,8 +7915,8 @@ IDE_RC sda::getKeyValueID4InsertValue( qcStatement   * aStatement,
                     aKeyInfo->mValue->mType = 1;
 
                     /*
-                     * Constant value¸¦ °è»êÇÏ¿©,
-                     * Shard value¿¡ ´Ş¾ÆÁØ´Ù.
+                     * Constant valueë¥¼ ê³„ì‚°í•˜ì—¬,
+                     * Shard valueì— ë‹¬ì•„ì¤€ë‹¤.
                      */
                     IDE_TEST( mtd::moduleById( &sKeyModule,
                                                aKeyInfo->mShardInfo.mKeyDataType )
@@ -7987,8 +7987,8 @@ IDE_RC sda::getKeyValueID4ProcArguments( qcStatement     * aStatement,
 /***********************************************************************
  *
  * Description :
- *     Procedure arguments Áß shard key column¿¡ ´ëÀÀÇÏ´Â value( shard key value )
- *     ¸¦ Ã£°í, ÇØ´ç value°¡ host variableÀÌ¸é bind parameter ID¸¦ ¹İÈ¯ÇÑ´Ù.
+ *     Procedure arguments ì¤‘ shard key columnì— ëŒ€ì‘í•˜ëŠ” value( shard key value )
+ *     ë¥¼ ì°¾ê³ , í•´ë‹¹ valueê°€ host variableì´ë©´ bind parameter IDë¥¼ ë°˜í™˜í•œë‹¤.
  *
  * Implementation :
  *
@@ -8046,8 +8046,8 @@ IDE_RC sda::getKeyValueID4ProcArguments( qcStatement     * aStatement,
                     aKeyInfo->mValue->mType = 1;
 
                     /*
-                     * Constant value¸¦ °è»êÇÏ¿©,
-                     * Shard value¿¡ ´Ş¾ÆÁØ´Ù.
+                     * Constant valueë¥¼ ê³„ì‚°í•˜ì—¬,
+                     * Shard valueì— ë‹¬ì•„ì¤€ë‹¤.
                      */
                     IDE_TEST( mtd::moduleById( &sKeyModule,
                                                aKeyInfo->mShardInfo.mKeyDataType )
@@ -8123,7 +8123,7 @@ IDE_RC sda::normalizePredicate( qcStatement  * aStatement,
     qtcNode       * sNNFFilter  = NULL;
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_TEST_RAISE( aStatement == NULL, ERR_NULL_STATEMENT );
@@ -8139,7 +8139,7 @@ IDE_RC sda::normalizePredicate( qcStatement  * aStatement,
     IDE_TEST_CONT( sQuerySet->SFWGH->where == NULL,
                    NORMAL_EXIT );
 
-    // PROJ-1413 constant exprssionÀÇ »ó¼ö º¯È¯
+    // PROJ-1413 constant exprssionì˜ ìƒìˆ˜ ë³€í™˜
     IDE_TEST( qmoConstExpr::processConstExpr( aStatement,
                                               sQuerySet->SFWGH )
               != IDE_SUCCESS );
@@ -8155,14 +8155,14 @@ IDE_RC sda::normalizePredicate( qcStatement  * aStatement,
     IDE_TEST_RAISE( sNormalType != QMO_NORMAL_TYPE_CNF,
                     ERR_CNF_NORMALIZATION );
 
-    // where ÀıÀ» CNF Normalization
+    // where ì ˆì„ CNF Normalization
     IDE_TEST( qmoNormalForm::normalizeCNF( aStatement,
                                            sQuerySet->SFWGH->where,
                                            &sNormalForm )
               != IDE_SUCCESS );
 
     // BUG-35155 Partial CNF
-    // Partial CNF ¿¡¼­ Á¦¿ÜµÈ qtcNode ¸¦ NNF ÇÊÅÍ·Î ¸¸µç´Ù.
+    // Partial CNF ì—ì„œ ì œì™¸ëœ qtcNode ë¥¼ NNF í•„í„°ë¡œ ë§Œë“ ë‹¤.
     IDE_TEST( qmoNormalForm::extractNNFFilter4CNF( aStatement,
                                                    sQuerySet->SFWGH->where,
                                                    &sNNFFilter )
@@ -8222,7 +8222,7 @@ IDE_RC sda::getQtcNodeTypeWithShardFrom( qcStatement         * aStatement,
 /***********************************************************************
  *
  * Description :
- *     qtcNodeÀÇ shard typeÀ» ¹İÈ¯ÇÑ´Ù.
+ *     qtcNodeì˜ shard typeì„ ë°˜í™˜í•œë‹¤.
  *
  *         < shard predicate type >
  *
@@ -8336,7 +8336,7 @@ IDE_RC sda::getQtcNodeTypeWithKeyInfo( qcStatement         * aStatement,
 /***********************************************************************
  *
  * Description :
- *     qtcNodeÀÇ shard typeÀ» ¹İÈ¯ÇÑ´Ù.
+ *     qtcNodeì˜ shard typeì„ ë°˜í™˜í•œë‹¤.
  *
  *         < shard predicate type >
  *
@@ -8554,7 +8554,7 @@ IDE_RC sda::analyzeAnsiJoin( qcStatement * aStatement,
                                                            aFrom,
                                                            aFrom->onCondition,
                                                            aQuerySet->SFWGH->hints,
-                                                           ID_TRUE, // CNF OnlyÀÓ
+                                                           ID_TRUE, // CNF Onlyì„
                                                            & sNormalType )
                           != IDE_SUCCESS );
 
@@ -8575,13 +8575,13 @@ IDE_RC sda::analyzeAnsiJoin( qcStatement * aStatement,
                                 ERR_EXIST_NNF_FILTER );
 
                 //------------------------------------------
-                // ¿¬°á
+                // ì—°ê²°
                 //------------------------------------------
                 sCNFList->mNext = *aCNFList;
                 *aCNFList = sCNFList;
 
                 //------------------------------------------
-                // Shard key columnÀÌ NULL-padding µÇ´ÂÁö È®ÀÎÇÑ´Ù.
+                // Shard key columnì´ NULL-padding ë˜ëŠ”ì§€ í™•ì¸í•œë‹¤.
                 //------------------------------------------
                 if ( aFrom->joinType == QMS_LEFT_OUTER_JOIN )
                 {
@@ -8596,27 +8596,27 @@ IDE_RC sda::analyzeAnsiJoin( qcStatement * aStatement,
                         /*
                          * BUG-45338
                          *
-                         * hash, range, list Å×ÀÌºíÀÇ outer join null-paddingÀ» Áö¿øÇÏ¸é¼­,
-                         * clone table°úÀÇ outer-join¿¡ ÀÇÇØ hash, range, list tableÀÌ null-padding µÇ¸é °á°ú°¡ ´Ù¸§
-                         * ÀÌ¿¡´ëÇØ ¼öÇà ºÒ°¡·Î ÆÇº°(SDI_INVALID_OUTER_JOIN_EXISTS) ÇÑ´Ù.
+                         * hash, range, list í…Œì´ë¸”ì˜ outer join null-paddingì„ ì§€ì›í•˜ë©´ì„œ,
+                         * clone tableê³¼ì˜ outer-joinì— ì˜í•´ hash, range, list tableì´ null-padding ë˜ë©´ ê²°ê³¼ê°€ ë‹¤ë¦„
+                         * ì´ì—ëŒ€í•´ ìˆ˜í–‰ ë¶ˆê°€ë¡œ íŒë³„(SDI_INVALID_OUTER_JOIN_EXISTS) í•œë‹¤.
                          *
-                         * hash, range, list Å×ÀÌºíÀÌ outer join¿¡ ÀÇÇØ null-padding µÉ °æ¿ì
-                         * join-tree »ó ¹İ´ëÂÊ¿¡ clone tableÀÌ "ÀÖÀ¸¸é¼­",
-                         * hash, range, list Å×ÀÌºíÀÌ "¾øÀ¸¸é" ¼öÇà ºÒ°¡·Î ÆÇ´ÜÇÑ´Ù.
+                         * hash, range, list í…Œì´ë¸”ì´ outer joinì— ì˜í•´ null-padding ë  ê²½ìš°
+                         * join-tree ìƒ ë°˜ëŒ€ìª½ì— clone tableì´ "ìˆìœ¼ë©´ì„œ",
+                         * hash, range, list í…Œì´ë¸”ì´ "ì—†ìœ¼ë©´" ìˆ˜í–‰ ë¶ˆê°€ë¡œ íŒë‹¨í•œë‹¤.
                          *
-                         *   LEFT     >> ¼öÇà°¡´É
+                         *   LEFT     >> ìˆ˜í–‰ê°€ëŠ¥
                          *   /  \
                          *  H    C    
                          *
-                         *   LEFT     >> ¼öÇàºÒ°¡
+                         *   LEFT     >> ìˆ˜í–‰ë¶ˆê°€
                          *   /  \     
                          *  C    H    
                          *
-                         *   FULL     >> ¼öÇàºÒ°¡
+                         *   FULL     >> ìˆ˜í–‰ë¶ˆê°€
                          *   /  \
                          *  H    C    
                          *
-                         *   FULL     >> ¼öÇà°¡´É( hash, range, list °¡ null-paddingµÇÁö ¾ÊÀ½)
+                         *   FULL     >> ìˆ˜í–‰ê°€ëŠ¥( hash, range, list ê°€ null-paddingë˜ì§€ ì•ŠìŒ)
                          *   /  \
                          *  C    C
                          *
@@ -9007,12 +9007,12 @@ IDE_RC sda::analyzePredJoin( qcStatement * aStatement,
         /*
          * BUG-45391
          *
-         * SEMI/ANTI JOIN ¿¡¼­ Shard SQLÆÇº° ±ÔÄ¢Àº ´ÙÀ½°ú °°´Ù.
+         * SEMI/ANTI JOIN ì—ì„œ Shard SQLíŒë³„ ê·œì¹™ì€ ë‹¤ìŒê³¼ ê°™ë‹¤.
          *
          * OUTER RELATION / INNER RELATION / SHARD SQL
          *        H               H             O
          *        H               C             O
-         *        C               H             X   << ÀÌ³ğÀ» Ã£¾Æ¼­ ¼öÇàºÒ°¡ Ã³¸®ÇÑ´Ù.
+         *        C               H             X   << ì´ë†ˆì„ ì°¾ì•„ì„œ ìˆ˜í–‰ë¶ˆê°€ ì²˜ë¦¬í•œë‹¤.
          *        C               C             O
          *
          */
@@ -9050,11 +9050,11 @@ IDE_RC sda::analyzePredJoin( qcStatement * aStatement,
                              ( sShardInfo->mSplitMethod != SDI_SPLIT_SOLO ) )
                         {
                             /*
-                             * SDI_SPLIT_HASH, SDI_SPLIT_RANGE, SDI_SPLIT_LIST ÀÏ ¼ö µµ ÀÖ°í,
-                             * SDI_SPLIT_NONE ÀÏ ¼ö ÀÖ´Ù.
+                             * SDI_SPLIT_HASH, SDI_SPLIT_RANGE, SDI_SPLIT_LIST ì¼ ìˆ˜ ë„ ìˆê³ ,
+                             * SDI_SPLIT_NONE ì¼ ìˆ˜ ìˆë‹¤.
                              *
-                             * SDI_PLIT_NONEÀº º»·¡ SPLIT HASH, RANGE, LIST, CLONE ÀÌ¾úÁö¸¸,
-                             * ºĞ»ê ¼öÇàÀÌ ºÒ°¡´ÉÇÏ´Ù°í ÆÇ´Ü µÅ NONEÀ¸·Î º¯°æ µÈ view´Ù.
+                             * SDI_PLIT_NONEì€ ë³¸ë˜ SPLIT HASH, RANGE, LIST, CLONE ì´ì—ˆì§€ë§Œ,
+                             * ë¶„ì‚° ìˆ˜í–‰ì´ ë¶ˆê°€ëŠ¥í•˜ë‹¤ê³  íŒë‹¨ ë¼ NONEìœ¼ë¡œ ë³€ê²½ ëœ viewë‹¤.
                              *
                              */
                             for ( sShardFrom = aShardFromInfo; sShardFrom != NULL; sShardFrom = sShardFrom->mNext )
@@ -9308,7 +9308,7 @@ IDE_RC sda::getRangeIndexByValue( qcTemplate     * aTemplate,
     /*
      * PROJ-2655 Composite shard key
      *
-     * shard range info¿¡¼­ shard valueÀÇ °ª ¿¡ ÇØ´çÇÏ´Â index¸¦ Ã£¾Æ ¹İÈ¯ÇÑ´Ù.
+     * shard range infoì—ì„œ shard valueì˜ ê°’ ì— í•´ë‹¹í•˜ëŠ” indexë¥¼ ì°¾ì•„ ë°˜í™˜í•œë‹¤.
      *
      * < sdiRangeInfo >
      *
@@ -9316,8 +9316,8 @@ IDE_RC sda::getRangeIndexByValue( qcTemplate     * aTemplate,
      *  sub value : [ A ][ B ][ C ][ A ][ B ][ C ][ A ][ B ][ C ]...
      *  nodeId    : [ 1 ][ 2 ][ 1 ][ 3 ][ 1 ][ 3 ][ 2 ][ 2 ][ 3 ]...
      *
-     *  value = '100' ÀÌ¶ó¸é
-     *  aRangeIndex ´Â 0,1,2 ÃÑ 3°³°¡ ¼¼ÆÃµÈ´Ù.
+     *  value = '100' ì´ë¼ë©´
+     *  aRangeIndex ëŠ” 0,1,2 ì´ 3ê°œê°€ ì„¸íŒ…ëœë‹¤.
      *
      */
 
@@ -9589,7 +9589,7 @@ IDE_RC sda::getRangeIndexFromHash( sdiRangeInfo    * aRangeInfo,
         {
             sHashMax = aRangeInfo->mRanges[i].mSubValue.mHashMax;
 
-            // BUG-45462 mValueÀÇ °ªÀ¸·Î new groupÀ» ÆÇ´ÜÇÑ´Ù.
+            // BUG-45462 mValueì˜ ê°’ìœ¼ë¡œ new groupì„ íŒë‹¨í•œë‹¤.
             if ( i == 0 )
             {
                 sNewPriorHashGroup = ID_TRUE;

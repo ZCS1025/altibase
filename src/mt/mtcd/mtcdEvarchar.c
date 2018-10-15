@@ -155,19 +155,19 @@ mtdModule mtcdEvarchar = {
     {
         // Key Comparison
         {
-            // mt valueµé °£ÀÇ compare 
+            // mt valueë“¤ ê°„ì˜ compare 
             mtdEvarcharMtdMtdKeyAscComp, // Ascending Key Comparison
             mtdEvarcharMtdMtdKeyDescComp // Descending Key Comparison
         }
         ,
         {
-            // mt value¿Í stored value°£ÀÇ compare 
+            // mt valueì™€ stored valueê°„ì˜ compare 
             mtdEvarcharStoredMtdKeyAscComp, // Ascending Key Comparison
             mtdEvarcharStoredMtdKeyDescComp // Descending Key Comparison
         }
         ,
         {
-            // stored valueµé °£ÀÇ compare 
+            // stored valueë“¤ ê°„ì˜ compare 
             mtdEvarcharStoredStoredKeyAscComp, // Ascending Key Comparison
             mtdEvarcharStoredStoredKeyDescComp // Descending Key Comparison
         }
@@ -194,7 +194,7 @@ ACI_RC mtdInitializeEvarchar( acp_uint32_t aNo )
     ACI_TEST( mtdInitializeModule( &mtcdEvarchar, aNo )
               != ACI_SUCCESS );
 
-    // mtdColumnÀÇ ÃÊ±âÈ­
+    // mtdColumnì˜ ì´ˆê¸°í™”
     ACI_TEST( mtcInitializeColumn( & mtdColumn,
                                    & mtcdEvarchar,
                                    0,   // arguments
@@ -267,8 +267,8 @@ ACI_RC mtdValue( mtcTemplate*  aTemplate,
     *aResult = ACI_SUCCESS;
 
     // To fix BUG-13444
-    // tokenFence¿Í RowFence´Â º°°³ÀÇ °Ë»ç°úÁ¤ÀÌ¹Ç·Î,
-    // ¸ÕÀú RowFence°Ë»ç ÈÄ TokenFence°Ë»ç¸¦ ÇØ¾ß ÇÑ´Ù.
+    // tokenFenceì™€ RowFenceëŠ” ë³„ê°œì˜ ê²€ì‚¬ê³¼ì •ì´ë¯€ë¡œ,
+    // ë¨¼ì € RowFenceê²€ì‚¬ í›„ TokenFenceê²€ì‚¬ë¥¼ í•´ì•¼ í•œë‹¤.
     sIterator = sValue->mValue;
     sFence    = (acp_uint8_t*)aValue + aValueSize;
     if( sIterator >= sFence )
@@ -299,12 +299,12 @@ ACI_RC mtdValue( mtcTemplate*  aTemplate,
     
     if( *aResult == ACI_SUCCESS )
     {
-        // value¿¡ cipher text length ¼ÂÆÃ
+        // valueì— cipher text length ì…‹íŒ…
         sValue->mCipherLength = sIterator - sValue->mValue;
 
         if( sValue->mCipherLength > 0 )
         {
-            // value¿¡ ecc value & ecc length ¼ÂÆÃ
+            // valueì— ecc value & ecc length ì…‹íŒ…
             ACI_TEST( aTemplate->encodeECC( (acp_uint8_t*)sValue->mValue,
                                             (acp_uint16_t)sValue->mCipherLength,
                                             sIterator,
@@ -318,7 +318,7 @@ ACI_RC mtdValue( mtcTemplate*  aTemplate,
         
         sValueLength = sValue->mCipherLength + sValue->mEccLength;
 
-        // precision, scale Àç ¼³Á¤ ÈÄ, estimate·Î semantic °Ë»ç
+        // precision, scale ì¬ ì„¤ì • í›„, estimateë¡œ semantic ê²€ì‚¬
         aColumn->flag         = 1;
         aColumn->precision    = sValue->mCipherLength != 0 ? sValue->mCipherLength : 1;
         aColumn->scale        = 0;
@@ -403,7 +403,7 @@ acp_uint32_t mtdHash( acp_uint32_t     aHash,
                            aFlag,
                            mtcdEvarchar.staticNull );
 
-    // ecc·Î ÇØ½Ã ¼öÇà
+    // eccë¡œ í•´ì‹œ ìˆ˜í–‰
     return mtcHash( aHash, sValue->mValue + sValue->mCipherLength,
                     sValue->mEccLength );
 }
@@ -448,7 +448,7 @@ mtdEvarcharMtdMtdKeyAscComp( mtdValueInfo* aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd Å¸ÀÔÀÇ Keyµé °£ÀÇ ascending compare
+ * Description : Mtd íƒ€ì…ì˜ Keyë“¤ ê°„ì˜ ascending compare
  *
  * Implementation :
  *
@@ -485,7 +485,7 @@ mtdEvarcharMtdMtdKeyAscComp( mtdValueInfo* aValueInfo1,
     // compare
     //---------
 
-    // ecc·Î ºñ±³
+    // eccë¡œ ë¹„êµ
     if( (sEccLength1 != 0) && (sEccLength2 != 0) )
     {
         sValue1  = sEvarcharValue1->mValue + sEvarcharValue1->mCipherLength;
@@ -530,7 +530,7 @@ mtdEvarcharMtdMtdKeyDescComp( mtdValueInfo* aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd Å¸ÀÔÀÇ Keyµé °£ÀÇ descending compare
+ * Description : Mtd íƒ€ì…ì˜ Keyë“¤ ê°„ì˜ descending compare
  *
  * Implementation :
  *
@@ -567,7 +567,7 @@ mtdEvarcharMtdMtdKeyDescComp( mtdValueInfo* aValueInfo1,
     // compare
     //---------
 
-    // ecc·Î ºñ±³
+    // eccë¡œ ë¹„êµ
     if( (sEccLength1 != 0) && (sEccLength2 != 0) )
     {
         sValue1  = sEvarcharValue1->mValue + sEvarcharValue1->mCipherLength;
@@ -612,7 +612,7 @@ mtdEvarcharStoredMtdKeyAscComp( mtdValueInfo* aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd Å¸ÀÔÀÇ Key¿Í Stored Key °£ÀÇ ascending compare
+ * Description : Mtd íƒ€ì…ì˜ Keyì™€ Stored Key ê°„ì˜ ascending compare
  *
  * Implementation :
  *
@@ -652,7 +652,7 @@ mtdEvarcharStoredMtdKeyAscComp( mtdValueInfo* aValueInfo1,
     // compare
     //---------
 
-    // ecc·Î ºñ±³
+    // eccë¡œ ë¹„êµ
     if( (sEccLength1 != 0) && (sEccLength2 != 0) )
     {
         MTC_SHORT_BYTE_ASSIGN( &sCipherLength1,
@@ -700,7 +700,7 @@ mtdEvarcharStoredMtdKeyDescComp( mtdValueInfo* aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd Å¸ÀÔÀÇ Key¿Í Stored Key °£ÀÇ descending compare
+ * Description : Mtd íƒ€ì…ì˜ Keyì™€ Stored Key ê°„ì˜ descending compare
  *
  * Implementation :
  *
@@ -740,7 +740,7 @@ mtdEvarcharStoredMtdKeyDescComp( mtdValueInfo* aValueInfo1,
     // compare
     //---------
 
-    // ecc·Î ºñ±³
+    // eccë¡œ ë¹„êµ
     if( (aValueInfo1->length != 0) && (sEccLength2 != 0) )
     {
         MTC_SHORT_BYTE_ASSIGN( &sCipherLength1,
@@ -788,7 +788,7 @@ mtdEvarcharStoredStoredKeyAscComp( mtdValueInfo* aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Stored Keyµé °£ÀÇ ascending compare
+ * Description : Stored Keyë“¤ ê°„ì˜ ascending compare
  *
  * Implementation :
  *
@@ -831,7 +831,7 @@ mtdEvarcharStoredStoredKeyAscComp( mtdValueInfo* aValueInfo1,
     // compare
     //---------
 
-    // ecc·Î ºñ±³
+    // eccë¡œ ë¹„êµ
     if( (aValueInfo1->length != 0) && (aValueInfo2->length != 0) )
     {
         MTC_SHORT_BYTE_ASSIGN( &sCipherLength1,
@@ -881,7 +881,7 @@ mtdEvarcharStoredStoredKeyDescComp( mtdValueInfo* aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Stored Keyµé °£ÀÇ descending compare
+ * Description : Stored Keyë“¤ ê°„ì˜ descending compare
  *
  * Implementation :
  *
@@ -924,7 +924,7 @@ mtdEvarcharStoredStoredKeyDescComp( mtdValueInfo* aValueInfo1,
     // compare
     //---------
 
-    // ecc·Î ºñ±³
+    // eccë¡œ ë¹„êµ
     if( (aValueInfo1->length != 0) && (aValueInfo2->length != 0) )
     {
         MTC_SHORT_BYTE_ASSIGN( &sCipherLength1,
@@ -986,7 +986,7 @@ static ACI_RC mtdCanonize( const mtcColumn* aCanon,
     sCanonized = (mtdEcharType*)*aCanonized;
     sPlain = sDecryptedBuf;
     
-    // ÄÃ·³ÀÇ º¸¾ÈÁ¤Ã¥À¸·Î ¾ÏÈ£È­
+    // ì»¬ëŸ¼ì˜ ë³´ì•ˆì •ì±…ìœ¼ë¡œ ì•”í˜¸í™”
     if( ( aColumn->policy[0] == '\0' ) && ( aCanon->policy[0] == '\0' ) )
     {
         //-----------------------------------------------------
@@ -1172,7 +1172,7 @@ ACI_RC mtdValidate( mtcColumn*   aColumn,
 {
 /***********************************************************************
  *
- * Description : valueÀÇ semantic °Ë»ç ¹× mtcColumn ÃÊ±âÈ­
+ * Description : valueì˜ semantic ê²€ì‚¬ ë° mtcColumn ì´ˆê¸°í™”
  *
  * Implementation :
  *
@@ -1186,9 +1186,9 @@ ACI_RC mtdValidate( mtcColumn*   aColumn,
                     + sizeof(acp_uint16_t) + sizeof(acp_uint16_t) != aValueSize,
                     ERR_INVALID_LENGTH );
     
-    // ÃÊ±âÈ­µÈ aColumnÀº cannonize() ½Ã¿¡ »ç¿ë
-    // ÀÌ¶§, data type moduleÀÇ precision Á¤º¸¸¸À» »ç¿ëÇÏ¹Ç·Î,
-    // language Á¤º¸ ¼³Á¤ÇÒ ÇÊ¿ä¾øÀ½ 
+    // ì´ˆê¸°í™”ëœ aColumnì€ cannonize() ì‹œì— ì‚¬ìš©
+    // ì´ë•Œ, data type moduleì˜ precision ì •ë³´ë§Œì„ ì‚¬ìš©í•˜ë¯€ë¡œ,
+    // language ì •ë³´ ì„¤ì •í•  í•„ìš”ì—†ìŒ 
     ACI_TEST( mtcInitializeColumn( aColumn,
                                    & mtcdEvarchar,
                                    1,                            // arguments
@@ -1219,8 +1219,8 @@ static ACI_RC mtdStoredValue2MtdValue( acp_uint32_t      aColumnSize,
 {
 /*******************************************************************
  * PROJ-1705
- * µğ½ºÅ©Å×ÀÌºíÄÃ·³ÀÇ µ¥ÀÌÅ¸¸¦
- * qp ·¹ÄÚµåÃ³¸®¿µ¿ªÀÇ ÇØ´ç ÄÃ·³À§Ä¡¿¡ º¹»ç
+ * ë””ìŠ¤í¬í…Œì´ë¸”ì»¬ëŸ¼ì˜ ë°ì´íƒ€ë¥¼
+ * qp ë ˆì½”ë“œì²˜ë¦¬ì˜ì—­ì˜ í•´ë‹¹ ì»¬ëŸ¼ìœ„ì¹˜ì— ë³µì‚¬
  *******************************************************************/
 
     mtdEcharType* sEvarcharValue;
@@ -1228,7 +1228,7 @@ static ACI_RC mtdStoredValue2MtdValue( acp_uint32_t      aColumnSize,
     
     if( ( aDestValueOffset == 0 ) && ( aLength == 0 ) )
     {
-        // NULL µ¥ÀÌÅ¸
+        // NULL ë°ì´íƒ€
         sEvarcharValue->mCipherLength = 0;
         sEvarcharValue->mEccLength = 0;
     }
@@ -1257,9 +1257,9 @@ acp_uint32_t mtdNullValueSize()
 {
 /*******************************************************************
  * PROJ-1705
- * °¢ µ¥ÀÌÅ¸Å¸ÀÔÀÇ null ValueÀÇ Å©±â ¹İÈ¯    
- * ¿¹ ) mtdEcharType( acp_uint16_t length; acp_uint8_t value[1] ) ¿¡¼­
- *      length Å¸ÀÔÀÎ acp_uint16_tÀÇ Å©±â¸¦ ¹İÈ¯
+ * ê° ë°ì´íƒ€íƒ€ì…ì˜ null Valueì˜ í¬ê¸° ë°˜í™˜    
+ * ì˜ˆ ) mtdEcharType( acp_uint16_t length; acp_uint8_t value[1] ) ì—ì„œ
+ *      length íƒ€ì…ì¸ acp_uint16_tì˜ í¬ê¸°ë¥¼ ë°˜í™˜
  *******************************************************************/
 
     return mtdActualSize( NULL,
@@ -1271,10 +1271,10 @@ static acp_uint32_t mtdHeaderSize()
 {
 /***********************************************************************
  * PROJ-1705
- * length¸¦ °¡Áö´Â µ¥ÀÌÅ¸Å¸ÀÔÀÇ length Á¤º¸¸¦ ÀúÀåÇÏ´Â º¯¼öÀÇ Å©±â ¹İÈ¯
- * ¿¹ ) mtdEcharType( acp_uint16_t length; acp_uint8_t value[1] ) ¿¡¼­
- *      length Å¸ÀÔÀÎ acp_uint16_tÀÇ Å©±â¸¦ ¹İÈ¯
- *  integer¿Í °°Àº °íÁ¤±æÀÌ µ¥ÀÌÅ¸Å¸ÀÔÀº 0 ¹İÈ¯
+ * lengthë¥¼ ê°€ì§€ëŠ” ë°ì´íƒ€íƒ€ì…ì˜ length ì •ë³´ë¥¼ ì €ì¥í•˜ëŠ” ë³€ìˆ˜ì˜ í¬ê¸° ë°˜í™˜
+ * ì˜ˆ ) mtdEcharType( acp_uint16_t length; acp_uint8_t value[1] ) ì—ì„œ
+ *      length íƒ€ì…ì¸ acp_uint16_tì˜ í¬ê¸°ë¥¼ ë°˜í™˜
+ *  integerì™€ ê°™ì€ ê³ ì •ê¸¸ì´ ë°ì´íƒ€íƒ€ì…ì€ 0 ë°˜í™˜
  **********************************************************************/
 
     return sizeof(acp_uint16_t) + sizeof(acp_uint16_t);

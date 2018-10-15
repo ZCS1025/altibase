@@ -50,7 +50,7 @@ static IDE_RC mtfDecodeMinEstimate( mtcNode*     aNode,
 mtfModule mtfDecodeMin = {
     2|MTC_NODE_OPERATOR_AGGREGATION,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
+    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìžê°€ ì•„ë‹˜)
     mtfDecodeMinFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -95,19 +95,19 @@ static const mtcExecute mtfDecodeMinExecute = {
 
 typedef struct mtfDecodeMinInfo
 {
-    // Ã¹¹øÂ° ÀÎÀÚ
+    // ì²«ë²ˆì§¸ ì¸ìž
     mtcExecute   * sMinColumnExecute;
     mtcNode      * sMinColumnNode;
 
-    // µÎ¹øÂ° ÀÎÀÚ
+    // ë‘ë²ˆì§¸ ì¸ìž
     mtcExecute   * sExprExecute;
     mtcNode      * sExprNode;
 
-    // ¼¼¹øÂ° ÀÎÀÚ
+    // ì„¸ë²ˆì§¸ ì¸ìž
     mtcExecute   * sSearchExecute;
     mtcNode      * sSearchNode;
 
-    // return ÀÎÀÚ
+    // return ì¸ìž
     mtcColumn    * sReturnColumn;
     void         * sReturnValue;
 
@@ -132,18 +132,18 @@ IDE_RC mtfDecodeMinEstimate( mtcNode*     aNode,
 
     sFence = aNode->lflag & MTC_NODE_ARGUMENT_COUNT_MASK;
 
-    // 1 È¤Àº 3°³ÀÇ ÀÎÀÚ
+    // 1 í˜¹ì€ 3ê°œì˜ ì¸ìž
     IDE_TEST_RAISE( (sFence != 1) && (sFence != 3),
                     ERR_INVALID_FUNCTION_ARGUMENT );
 
     // PROJ-2002 Column Security
-    // minÇÔ¼ö´Â ºñ±³¸¸À» ¼öÇàÇÏ¹Ç·Î minÇÔ¼ö ÀÚÃ¼´Â º¹È£È­°¡
-    // ÇÊ¿äÇÏÁö ¾Ê´Ù. ±×·¯³ª minÇÔ¼ö°¡ º¹È£È­ÇÑ °ªÀ» ¸®ÅÏÇÏ±â
-    // À§ÇØ¼­´Â ¸¶Áö¸· min°ª¿¡ ´ëÇØ º¹È£È­¸¦ ¼öÇàÇÒ ¼ö µµ ÀÖÁö¸¸
-    // ÀÌ °æ¿ì ¾ÏÈ£ Å¸ÀÔÀÇ ÀÓ½Ã º¯¼ö¸¦ ÀúÀåÇÒ °ø°£ÀÌ ÇÊ¿äÇÏ°í
-    // ¶Ç minÀÌ ÁßÃ¸µÇ´Â °æ¿ìµµ ÀÖÀ¸¹Ç·Î minÇÔ¼ö¿¡ º¸¾È Å¸ÀÔÀÌ
-    // ¿À´Â °æ¿ì º¸¾È Å¸ÀÔÀ¸·Î ¸®ÅÏÇÑ´Ù. ´Ü, º¹È£È­¸¦ À§ÇØ
-    // ÀÎÀÚÀÇ source¸¦ minÇÔ¼öÀÇ source·Î ¼³Á¤ÇÑ´Ù.
+    // miní•¨ìˆ˜ëŠ” ë¹„êµë§Œì„ ìˆ˜í–‰í•˜ë¯€ë¡œ miní•¨ìˆ˜ ìžì²´ëŠ” ë³µí˜¸í™”ê°€
+    // í•„ìš”í•˜ì§€ ì•Šë‹¤. ê·¸ëŸ¬ë‚˜ miní•¨ìˆ˜ê°€ ë³µí˜¸í™”í•œ ê°’ì„ ë¦¬í„´í•˜ê¸°
+    // ìœ„í•´ì„œëŠ” ë§ˆì§€ë§‰ minê°’ì— ëŒ€í•´ ë³µí˜¸í™”ë¥¼ ìˆ˜í–‰í•  ìˆ˜ ë„ ìžˆì§€ë§Œ
+    // ì´ ê²½ìš° ì•”í˜¸ íƒ€ìž…ì˜ ìž„ì‹œ ë³€ìˆ˜ë¥¼ ì €ìž¥í•  ê³µê°„ì´ í•„ìš”í•˜ê³ 
+    // ë˜ minì´ ì¤‘ì²©ë˜ëŠ” ê²½ìš°ë„ ìžˆìœ¼ë¯€ë¡œ miní•¨ìˆ˜ì— ë³´ì•ˆ íƒ€ìž…ì´
+    // ì˜¤ëŠ” ê²½ìš° ë³´ì•ˆ íƒ€ìž…ìœ¼ë¡œ ë¦¬í„´í•œë‹¤. ë‹¨, ë³µí˜¸í™”ë¥¼ ìœ„í•´
+    // ì¸ìžì˜ sourceë¥¼ miní•¨ìˆ˜ì˜ sourceë¡œ ì„¤ì •í•œë‹¤.
     //
     // ex) select _decrypt(min(i1)) from t1;
     //     select _decrypt(max(min(i2))) from t1 group by i1;
@@ -236,11 +236,11 @@ IDE_RC mtfDecodeMinEstimate( mtcNode*     aNode,
 
     aTemplate->rows[aNode->table].execute[aNode->column] = mtfDecodeMinExecute;
 
-    // min °á°ú¸¦ ÀúÀåÇÔ
+    // min ê²°ê³¼ë¥¼ ì €ìž¥í•¨
     // BUG-23102
-    // mtcColumnÀ¸·Î ÃÊ±âÈ­ÇÑ´Ù.
+    // mtcColumnìœ¼ë¡œ ì´ˆê¸°í™”í•œë‹¤.
     mtc::initializeColumn( aStack[0].column, aStack[1].column );
-    // min info Á¤º¸¸¦ mtdBinary¿¡ ÀúÀå
+    // min info ì •ë³´ë¥¼ mtdBinaryì— ì €ìž¥
     sBinaryPrecision = ID_SIZEOF(mtfDecodeMinInfo);
     IDE_TEST( mtc::initializeColumn( aStack[0].column + 1,
                                      & mtdBinary,
@@ -289,11 +289,11 @@ IDE_RC mtfDecodeMinInitialize( mtcNode*     aNode,
     sInfo = (mtfDecodeMinInfo*)(sValue->mValue);
 
     //-----------------------------
-    // min info ÃÊ±âÈ­
+    // min info ì´ˆê¸°í™”
     //-----------------------------
     sArgNode[0] = aNode->arguments;
 
-    // min column ¼³Á¤
+    // min column ì„¤ì •
     sInfo->sMinColumnExecute = aTemplate->rows[sArgNode[0]->table].execute + sArgNode[0]->column;
     sInfo->sMinColumnNode    = sArgNode[0];
 
@@ -302,11 +302,11 @@ IDE_RC mtfDecodeMinInitialize( mtcNode*     aNode,
         sArgNode[1] = sArgNode[0]->next;
         sArgNode[2] = sArgNode[1]->next;
 
-        // expression column ¼³Á¤
+        // expression column ì„¤ì •
         sInfo->sExprExecute = aTemplate->rows[sArgNode[1]->table].execute + sArgNode[1]->column;
         sInfo->sExprNode    = sArgNode[1];
 
-        // search value ¼³Á¤
+        // search value ì„¤ì •
         sInfo->sSearchExecute = aTemplate->rows[sArgNode[2]->table].execute + sArgNode[2]->column;
         sInfo->sSearchNode    = sArgNode[2];
     }
@@ -319,13 +319,13 @@ IDE_RC mtfDecodeMinInitialize( mtcNode*     aNode,
         sInfo->sSearchNode    = NULL;
     }
 
-    // return column ¼³Á¤
+    // return column ì„¤ì •
     sInfo->sReturnColumn = aTemplate->rows[aNode->table].columns + aNode->column;
     sInfo->sReturnValue  = (void *)
         ((UChar*) aTemplate->rows[aNode->table].row + sInfo->sReturnColumn->column.offset);
 
     //-----------------------------
-    // min °á°ú¸¦ ÃÊ±âÈ­
+    // min ê²°ê³¼ë¥¼ ì´ˆê¸°í™”
     //-----------------------------
 
     sInfo->sReturnColumn->module->null( sInfo->sReturnColumn,
@@ -367,7 +367,7 @@ IDE_RC mtfDecodeMinAggregate( mtcNode*     aNode,
     {
         IDE_TEST_RAISE( aRemain < 2, ERR_STACK_OVERFLOW );
 
-        // µÎ¹øÂ° ÀÎÀÚ
+        // ë‘ë²ˆì§¸ ì¸ìž
         IDE_TEST( sInfo->sExprExecute->calculate( sInfo->sExprNode,
                                                   aStack,
                                                   aRemain,
@@ -385,7 +385,7 @@ IDE_RC mtfDecodeMinAggregate( mtcNode*     aNode,
                       != IDE_SUCCESS );
         }
 
-        // ¼¼¹øÂ° ÀÎÀÚ
+        // ì„¸ë²ˆì§¸ ì¸ìž
         IDE_TEST( sInfo->sSearchExecute->calculate( sInfo->sSearchNode,
                                                     aStack + 1,
                                                     aRemain - 1,
@@ -403,7 +403,7 @@ IDE_RC mtfDecodeMinAggregate( mtcNode*     aNode,
                       != IDE_SUCCESS );
         }
 
-        // decode ¿¬»ê¼öÇà
+        // decode ì—°ì‚°ìˆ˜í–‰
         if ( aStack[0].column->module != &mtdList )
         {
             IDE_DASSERT( aStack[0].column->module == aStack[1].column->module );
@@ -427,7 +427,7 @@ IDE_RC mtfDecodeMinAggregate( mtcNode*     aNode,
                 sValueInfo2.value  = aStack[1].value;
                 sValueInfo2.flag   = MTD_OFFSET_USELESS;
 
-                // µÎ¹øÂ° ÀÎÀÚ¿Í ¼¼¹øÂ° ÀÎÀÚÀÇ ºñ±³
+                // ë‘ë²ˆì§¸ ì¸ìžì™€ ì„¸ë²ˆì§¸ ì¸ìžì˜ ë¹„êµ
                 sCompare = sModule->logicalCompare[MTD_COMPARE_ASCENDING]( &sValueInfo1,
                                                                            &sValueInfo2 );
             }
@@ -481,7 +481,7 @@ IDE_RC mtfDecodeMinAggregate( mtcNode*     aNode,
 
     if ( sCompare == 0 )
     {
-        // Ã¹¹øÂ° ÀÎÀÚ
+        // ì²«ë²ˆì§¸ ì¸ìž
         IDE_TEST( sInfo->sMinColumnExecute->calculate( sInfo->sMinColumnNode,
                                                        aStack,
                                                        aRemain,

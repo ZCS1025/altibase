@@ -39,7 +39,7 @@ void utString::eraseWhiteSpace(SChar *a_Str)
     SInt i, j;
     SInt len;
     
-    // 1. ¾Õ¿¡¼­ ºÎÅÍ °Ë»ç ½ÃÀÛ..
+    // 1. ì•ì—ì„œ ë¶€í„° ê²€ì‚¬ ì‹œì‘..
 
     len = idlOS::strlen(a_Str);
     if( len <= 0 )
@@ -49,7 +49,7 @@ void utString::eraseWhiteSpace(SChar *a_Str)
 
     for (i=0; i<len && a_Str[i]; i++)
     {
-        if (a_Str[i]==' ') // ½ºÆäÀÌ½º ÀÓ
+        if (a_Str[i]==' ') // ìŠ¤í˜ì´ìŠ¤ ì„
         {
             for (j=i; a_Str[j]; j++)
             {
@@ -63,7 +63,7 @@ void utString::eraseWhiteSpace(SChar *a_Str)
         }
     }
     
-    // 2. ³¡¿¡¼­ ºÎÅÍ °Ë»ç ½ÃÀÛ.. : ½ºÆäÀÌ½º ¾ø¾Ö±â
+    // 2. ëì—ì„œ ë¶€í„° ê²€ì‚¬ ì‹œì‘.. : ìŠ¤í˜ì´ìŠ¤ ì—†ì• ê¸°
 
     len = idlOS::strlen(a_Str);
     if( len <= 0 )
@@ -81,7 +81,7 @@ void utString::eraseWhiteSpace(SChar *a_Str)
         {
             break;
         }
-        else // if (a_Str[i]==' ' || a_Str[i] == '\r') ½ºÆäÀÌ½º ¾ø¾Ö±â
+        else // if (a_Str[i]==' ' || a_Str[i] == '\r') ìŠ¤í˜ì´ìŠ¤ ì—†ì• ê¸°
         {
             a_Str[i] = 0;
         }
@@ -108,7 +108,7 @@ void utString::removeLastSpace(SChar *a_Str)
         {
             break;
         }
-        else // if (a_Str[i]==' ' || a_Str[i] == '\r') ½ºÆäÀÌ½º ¾ø¾Ö±â
+        else // if (a_Str[i]==' ' || a_Str[i] == '\r') ìŠ¤í˜ì´ìŠ¤ ì—†ì• ê¸°
         {
             a_Str[i] = 0;
         }
@@ -125,10 +125,10 @@ IDE_RC utString::toUpper(SChar *a_Str)
     sFence = a_Str + idlOS::strlen(a_Str);
 
     // bug-26661: nls_use not applied to nls module for ut
-    // º¯°æÀü: mtl::defaultModule¸¸ »ç¿ë
-    // º¯°æÈÄ: gNlsModuleForUT¸¦ »ç¿ë
-    // ulnInitialze È£Ãâ Àü¿¡´Â nullÀÏ ¼ö ÀÖÀ½.
-    // ex) isql¿¡¼­ ÀÎÀÚ·Î user, passwd Ã³¸®½Ã null
+    // ë³€ê²½ì „: mtl::defaultModuleë§Œ ì‚¬ìš©
+    // ë³€ê²½í›„: gNlsModuleForUTë¥¼ ì‚¬ìš©
+    // ulnInitialze í˜¸ì¶œ ì „ì—ëŠ” nullì¼ ìˆ˜ ìˆìŒ.
+    // ex) isqlì—ì„œ ì¸ìë¡œ user, passwd ì²˜ë¦¬ì‹œ null
     if (gNlsModuleForUT == NULL)
     {
         sNlsModule = mtlDefaultModule();
@@ -183,8 +183,8 @@ utString::makeNameInSQL( SChar * aDstName,
  *
  * Description :
  *
- *    ÀÔ·ÂµÈ nameÀ» SQL ¹®Àå¿¡¼­ »ç¿ëÇÒ ÀÌ¸§À¸·Î º¯°æÇÔ.
- *    ÇâÈÄ Error Handling ÇÒ ¼ö ÀÖµµ·Ï ÇØ¾ß ÇÔ.
+ *    ì…ë ¥ëœ nameì„ SQL ë¬¸ì¥ì—ì„œ ì‚¬ìš©í•  ì´ë¦„ìœ¼ë¡œ ë³€ê²½í•¨.
+ *    í–¥í›„ Error Handling í•  ìˆ˜ ìˆë„ë¡ í•´ì•¼ í•¨.
  *
  * Implementation :
  *
@@ -195,9 +195,9 @@ utString::makeNameInSQL( SChar * aDstName,
     sSize = (aDstLen > aSrcLen ) ? aSrcLen : aDstLen - 1;
 
     // bug-26661: nls_use not applied to nls module for ut
-    // º¯°æÀü: mtl::defaultModuleÀ» »ç¿ëÇÑ makeNameInSQL È£Ãâ
-    // º¯°æÈÄ: gNlsModuleForUT¸¦ »ç¿ë
-    // ulnInitialze È£Ãâ Àü¿¡´Â nullÀÏ ¼ö ÀÖÀ½.
+    // ë³€ê²½ì „: mtl::defaultModuleì„ ì‚¬ìš©í•œ makeNameInSQL í˜¸ì¶œ
+    // ë³€ê²½í›„: gNlsModuleForUTë¥¼ ì‚¬ìš©
+    // ulnInitialze í˜¸ì¶œ ì „ì—ëŠ” nullì¼ ìˆ˜ ìˆìŒ.
     mtlMakeNameInSQL( (gNlsModuleForUT == NULL) ? mtlDefaultModule() : gNlsModuleForUT,
                        aDstName, aSrcName, sSize);
 }
@@ -212,8 +212,8 @@ utString::makeNameInCLI( SChar * aDstName,
  *
  * Description :
  *
- *    ÀÔ·ÂµÈ nameÀ» CLI ÇÔ¼ö¿¡¼­ »ç¿ëÇÒ ÀÌ¸§À¸·Î º¯°æÇÔ.
- *    ÇâÈÄ Error Handling ÇÒ ¼ö ÀÖµµ·Ï ÇØ¾ß ÇÔ.
+ *    ì…ë ¥ëœ nameì„ CLI í•¨ìˆ˜ì—ì„œ ì‚¬ìš©í•  ì´ë¦„ìœ¼ë¡œ ë³€ê²½í•¨.
+ *    í–¥í›„ Error Handling í•  ìˆ˜ ìˆë„ë¡ í•´ì•¼ í•¨.
  *
  * Implementation :
  *
@@ -224,10 +224,10 @@ utString::makeNameInCLI( SChar * aDstName,
     sSize = (aDstLen > aSrcLen ) ? aSrcLen : aDstLen - 1;
 
     // bug-26661: nls_use not applied to nls module for ut
-    // º¯°æÀü: mtl::defaultModuleÀ» »ç¿ëÇÑ makeNameInFunc È£Ãâ
-    // º¯°æÈÄ: gNlsModuleForUT¸¦ »ç¿ë
-    // ulnInitialze È£Ãâ Àü¿¡´Â nullÀÏ ¼ö ÀÖÀ½.
-    // ex) isql¿¡¼­ ÀÎÀÚ·Î user, passwd Ã³¸®½Ã null
+    // ë³€ê²½ì „: mtl::defaultModuleì„ ì‚¬ìš©í•œ makeNameInFunc í˜¸ì¶œ
+    // ë³€ê²½í›„: gNlsModuleForUTë¥¼ ì‚¬ìš©
+    // ulnInitialze í˜¸ì¶œ ì „ì—ëŠ” nullì¼ ìˆ˜ ìˆìŒ.
+    // ex) isqlì—ì„œ ì¸ìë¡œ user, passwd ì²˜ë¦¬ì‹œ null
     mtlMakeNameInFunc( (gNlsModuleForUT == NULL) ? mtlDefaultModule() : gNlsModuleForUT,
                        aDstName, aSrcName, sSize);
 }
@@ -241,12 +241,12 @@ utString::makeQuotedName( SChar * aDstName,
  *
  * Description :
  *
- *    ÀÔ·ÂµÈ name¿¡ ´ëÇÏ¿© Quoted NameÀ» »ı¼ºÇÑ´Ù.
- *    ¼­¹ö·ÎºÎÅÍ ¾ò¾î¿Â ÀÌ¸§À» Àç»ç¿ëÇÒ ¶§ »ç¿ëÇÑ´Ù.
+ *    ì…ë ¥ëœ nameì— ëŒ€í•˜ì—¬ Quoted Nameì„ ìƒì„±í•œë‹¤.
+ *    ì„œë²„ë¡œë¶€í„° ì–»ì–´ì˜¨ ì´ë¦„ì„ ì¬ì‚¬ìš©í•  ë•Œ ì‚¬ìš©í•œë‹¤.
  *
  * Implementation :
  *
- *    ¾ÕµÚ·Î Double QuotationÀ» ºÙÀÎ´Ù.
+ *    ì•ë’¤ë¡œ Double Quotationì„ ë¶™ì¸ë‹¤.
  *
  **********************************************************************/
 
@@ -261,13 +261,13 @@ utString::needQuotationMarksForFile( SChar * aSrcText )
  *
  * Description :
  *
- *    ÀÔ·ÂµÈ name¿¡ ¾ËÆÄºª, ¼ıÀÚ, _ ¿ÜÀÇ ¹®ÀÚ°¡ Æ÷ÇÔµÇ¾î ÀÖ´ÂÁö °Ë»çÇÑ´Ù.
- *    Æ÷ÇÔµÇ¾î ÀÖÀ¸¸é ID_TRUE¸¦(Áï µû¿ÈÇ¥°¡ ÇÊ¿äÇÔ),
- *    ±×·¸Áö ¾ÊÀ¸¸é ID_FALSE¸¦ ¹İÈ¯ÇÑ´Ù.
+ *    ì…ë ¥ëœ nameì— ì•ŒíŒŒë²³, ìˆ«ì, _ ì™¸ì˜ ë¬¸ìê°€ í¬í•¨ë˜ì–´ ìˆëŠ”ì§€ ê²€ì‚¬í•œë‹¤.
+ *    í¬í•¨ë˜ì–´ ìˆìœ¼ë©´ ID_TRUEë¥¼(ì¦‰ ë”°ì˜´í‘œê°€ í•„ìš”í•¨),
+ *    ê·¸ë ‡ì§€ ì•Šìœ¼ë©´ ID_FALSEë¥¼ ë°˜í™˜í•œë‹¤.
  *
  * Implementation :
  *
- *    idlOS::regcomp, regexec µîÀÌ ¾ø¾î¼­ ±×³É Ä³¸¯ÅÍ ºñ±³ÇÔ..
+ *    idlOS::regcomp, regexec ë“±ì´ ì—†ì–´ì„œ ê·¸ëƒ¥ ìºë¦­í„° ë¹„êµí•¨..
  *
  **********************************************************************/
 
@@ -319,16 +319,16 @@ utString::needQuotationMarksForObject( SChar * aSrcText,
  *
  * Description :
  *
- *    1. ÀÔ·ÂµÈ name¿¡ ¾ËÆÄºª ´ë¹®ÀÚ, ¼ıÀÚ, _ ¿ÜÀÇ ¹®ÀÚ°¡ Æ÷ÇÔµÇ¾î ÀÖ´ÂÁö °Ë»çÇÑ´Ù.
- *    Æ÷ÇÔµÇ¾î ÀÖÀ¸¸é ID_TRUE¸¦(Áï µû¿ÈÇ¥°¡ ÇÊ¿äÇÔ),
- *    ±×·¸Áö ¾ÊÀ¸¸é ID_FALSE¸¦ ¹İÈ¯ÇÑ´Ù.
+ *    1. ì…ë ¥ëœ nameì— ì•ŒíŒŒë²³ ëŒ€ë¬¸ì, ìˆ«ì, _ ì™¸ì˜ ë¬¸ìê°€ í¬í•¨ë˜ì–´ ìˆëŠ”ì§€ ê²€ì‚¬í•œë‹¤.
+ *    í¬í•¨ë˜ì–´ ìˆìœ¼ë©´ ID_TRUEë¥¼(ì¦‰ ë”°ì˜´í‘œê°€ í•„ìš”í•¨),
+ *    ê·¸ë ‡ì§€ ì•Šìœ¼ë©´ ID_FALSEë¥¼ ë°˜í™˜í•œë‹¤.
  *
- *    2. ÀÔ·Â ¹®ÀÚ¿­ÀÌ database keyword ÀÌ¶ó¸é µû¿ÈÇ¥°¡ ÇÊ¿äÇÏ´Ù.
- *    qcpll.l ÆÄÀÏ·ÎºÎÅÍ »ı¼ºÇÑ qpKeywords.c ÀÇ keywords¿Í ºñ±³
+ *    2. ì…ë ¥ ë¬¸ìì—´ì´ database keyword ì´ë¼ë©´ ë”°ì˜´í‘œê°€ í•„ìš”í•˜ë‹¤.
+ *    qcpll.l íŒŒì¼ë¡œë¶€í„° ìƒì„±í•œ qpKeywords.c ì˜ keywordsì™€ ë¹„êµ
  *
  * Implementation :
  *
- *    ±×³É Ä³¸¯ÅÍ ºñ±³ÇÔ..
+ *    ê·¸ëƒ¥ ìºë¦­í„° ë¹„êµí•¨..
  *
  **********************************************************************/
 
@@ -362,7 +362,7 @@ utString::needQuotationMarksForObject( SChar * aSrcText,
         else
         {
             sRet = ID_TRUE;
-            IDE_RAISE( STOP_COMPARING ); //BUGBUG: IDE_CONT·Î ¹Ù²Ü °Í
+            IDE_RAISE( STOP_COMPARING ); //BUGBUG: IDE_CONTë¡œ ë°”ê¿€ ê²ƒ
         }
         sNlsModule->nextCharPtr((UChar**)&sStr, (UChar*)sFence);
     }
@@ -370,14 +370,14 @@ utString::needQuotationMarksForObject( SChar * aSrcText,
     IDE_TEST_RAISE( aCheckKeywords == ID_FALSE, STOP_COMPARING );
 
     /*
-     * ÀÔ·Â ¹®ÀÚ¿­ÀÌ database keywordÀÎÁö °Ë»ç
+     * ì…ë ¥ ë¬¸ìì—´ì´ database keywordì¸ì§€ ê²€ì‚¬
      */
     for (i = 0; gQpKeywords[i] != NULL; i++)
     {
         if (idlOS::strcmp(aSrcText, gQpKeywords[i]) == 0)
         {
             sRet = ID_TRUE;
-            IDE_RAISE( STOP_COMPARING ); //BUGBUG: IDE_CONT·Î ¹Ù²Ü °Í
+            IDE_RAISE( STOP_COMPARING ); //BUGBUG: IDE_CONTë¡œ ë°”ê¿€ ê²ƒ
         }
     }
 

@@ -31,9 +31,9 @@
 
 #define STNDR_MAX_PATH_STACK_DEPTH  (256)
 
-// Key Buffer´Â stdGeometryHeader¿Í KeySizeº¸´Ù Ä¿¾ß ÇÑ´Ù.
-//  - makeKeyValueFromRow: stdGeometryHeader¸¦ ÀĞ±â À§ÇÑ Å©±â·Î »ç¿ë
-//  - nodeAging: ÀÓ½Ã Leaf Key¸¦ ´ã±â À§ÇÑ Å©±â·Î »ç¿ë
+// Key BufferëŠ” stdGeometryHeaderì™€ KeySizeë³´ë‹¤ ì»¤ì•¼ í•œë‹¤.
+//  - makeKeyValueFromRow: stdGeometryHeaderë¥¼ ì½ê¸° ìœ„í•œ í¬ê¸°ë¡œ ì‚¬ìš©
+//  - nodeAging: ì„ì‹œ Leaf Keyë¥¼ ë‹´ê¸° ìœ„í•œ í¬ê¸°ë¡œ ì‚¬ìš©
 #define STNDR_MAX_KEY_BUFFER_SIZE   ( ID_SIZEOF(stdGeometryHeader) +    \
                                       ID_SIZEOF(stndrLKeyEx) +          \
                                       ID_SIZEOF(stndrIKey) +            \
@@ -211,8 +211,8 @@ typedef struct stndrLBuildKey
 typedef struct stndrIBuildKey
 {
     stndrIKey           mInternalKey;
-    SChar               mAlign[4];      /* BUG-31024: AIX¿¡¼­ PaddingÀÌ ¾ÈµÇ´Â ¹®Á¦, Ã¹ ¸â¹ö°¡
-                                         * DoubleÀÌ ¾Æ´Ï¸é 4byte Á¤·ÄµÊ */
+    SChar               mAlign[4];      /* BUG-31024: AIXì—ì„œ Paddingì´ ì•ˆë˜ëŠ” ë¬¸ì œ, ì²« ë©¤ë²„ê°€
+                                         * Doubleì´ ì•„ë‹ˆë©´ 4byte ì •ë ¬ë¨ */
     stndrCenterPoint    mCenterPoint;
 } stndrIBuildKey;
 
@@ -495,8 +495,8 @@ typedef struct stndrColumn
 
     UInt                          mMtdHeaderLength;
 
-    smiColumn                     mKeyColumn;       // Key¿¡¼­ÀÇ column info
-    smiColumn                     mVRowColumn;      // fetchµÈ RowÀÇ column info
+    smiColumn                     mKeyColumn;       // Keyì—ì„œì˜ column info
+    smiColumn                     mVRowColumn;      // fetchëœ Rowì˜ column info
 }stndrColumn;
 
 typedef struct stndrPageStat
@@ -568,12 +568,12 @@ typedef struct stndrHeader
     UInt                    mSmoNoAtomicA;
     UInt                    mSmoNoAtomicB;
 
-    // BUG-29743: Root NodeÀÇ Split ¿©ºÎ¸¦ Àß¸ø ÆÇ´ÜÇÕ´Ï´Ù.
+    // BUG-29743: Root Nodeì˜ Split ì—¬ë¶€ë¥¼ ì˜ëª» íŒë‹¨í•©ë‹ˆë‹¤.
     stndrVirtualRootNode    mVirtualRootNode;
     UInt                    mVirtualRootNodeAtomicA;
     UInt                    mVirtualRootNodeAtomicB;
 
-    /* À§ °ªµé¿¡ ´ëÇØ Mtx RollbackÀÌ ÀÏ¾î³µÀ»¶§ º¹±¸ÇÏ±â À§ÇÑ ¹é¾÷º» */
+    /* ìœ„ ê°’ë“¤ì— ëŒ€í•´ Mtx Rollbackì´ ì¼ì–´ë‚¬ì„ë•Œ ë³µêµ¬í•˜ê¸° ìœ„í•œ ë°±ì—…ë³¸ */
     scPageID                mRootNode4MtxRollback;
     scPageID                mEmptyNodeHead4MtxRollback;
     scPageID                mEmptyNodeTail4MtxRollback;
@@ -650,14 +650,14 @@ typedef struct stndrIterator
     smSCN       mInfinite;
     void*       mTrans;
     void*       mTable;
-    SChar*      mCurRecPtr;  // MRDB scan module¿¡¼­¸¸ Á¤ÀÇÇØ¼­ ¾²µµ·Ï ¼öÁ¤?
+    SChar*      mCurRecPtr;  // MRDB scan moduleì—ì„œë§Œ ì •ì˜í•´ì„œ ì“°ë„ë¡ ìˆ˜ì •?
     SChar*      mLstFetchRecPtr;
     scGRID      mRowGRID;
     smTID       mTID;
     UInt        mFlag;
 
     smiCursorProperties  * mProperties;
-    /* smiIterator °øÅë º¯¼ö ³¡ */
+    /* smiIterator ê³µí†µ ë³€ìˆ˜ ë */
 
     void                * mIndex;
     const smiRange      * mKeyRange;

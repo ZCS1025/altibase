@@ -39,8 +39,8 @@ static ACI_RC ulnNumParamsCheckArgs(ulnFnContext *aContext, acp_sint16_t *aParam
 /**
  * ulnNumParams.
  *
- * IPD ÀÇ SQL_DESC_COUNT ¸¦ ¸®ÅÏÇÏ´Â °Í°ú
- * IRD ÀÇ °ÍÀ» ¸®ÅÏÇÏ´Â °Í »©°í´Â ulnNumResultCols ¿Í ¿ÏÀüÈ÷ identical ÇÑ ÇÔ¼öÀÌ´Ù.
+ * IPD ì˜ SQL_DESC_COUNT ë¥¼ ë¦¬í„´í•˜ëŠ” ê²ƒê³¼
+ * IRD ì˜ ê²ƒì„ ë¦¬í„´í•˜ëŠ” ê²ƒ ë¹¼ê³ ëŠ” ulnNumResultCols ì™€ ì™„ì „íˆ identical í•œ í•¨ìˆ˜ì´ë‹¤.
  */
 SQLRETURN ulnNumParams(ulnStmt *aStmt, acp_sint16_t *aParamCountPtr)
 {

@@ -140,7 +140,7 @@ IDE_RC mtfGetBlobValueCalculate( mtcNode*     aNode,
               != IDE_SUCCESS );
     
     // PROJ-1362
-    // Lob Locator¸¦ ¾ò´Âµ¥ ÇÊ¿äÇÑ Ä¿¼­Á¤º¸¸¦ °¡Á®¿Â´Ù.
+    // Lob Locatorë¥¼ ì–»ëŠ”ë° í•„ìš”í•œ ì»¤ì„œì •ë³´ë¥¼ ê°€ì ¸ì˜¨ë‹¤.
     IDE_TEST( aTemplate->getOpenedCursor( aTemplate,
                                           aNode->arguments->table,
                                           & sCursor,

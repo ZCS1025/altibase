@@ -78,7 +78,7 @@ idBool        * aIsPermitted)
     UChar                   sSearchingUserName[ QC_MAX_OBJECT_NAME_LEN + 1 ];
     
     smiCursorProperties     sCursorProperty;
-    scGRID                  sRid; // Disk Table¿ª ¿ß«— Record IDentifier
+    scGRID                  sRid; // Disk TableÏùÑ ÏúÑÌïú Record IDentifier
 
     mtdDateType             sSysDate;
     const mtdModule       * sDateModule;
@@ -340,7 +340,7 @@ UInt            aUserNameLen)
     UChar                   sSearchingUserDN[ QCM_DN_MAX_DN_SIZE + 1 ];
     
     smiCursorProperties     sCursorProperty;
-    scGRID                  sRid; // Disk Table¿ª ¿ß«— Record IDentifier
+    scGRID                  sRid; // Disk TableÏùÑ ÏúÑÌïú Record IDentifier
     UInt                    sUsrDNSize;
 
     PDL_Time_Value          sTimevalue;

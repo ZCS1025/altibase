@@ -38,7 +38,7 @@ public:
     static IDE_RC wakeupDequeue(qcStatement * aStatement);
     static IDE_RC waitForEnqueue(qcStatement * aStatement, idBool *aIsTimeOut);
 
-    // BUG-22346 : Queue TableÀÇ compact Áö¿ø 
+    // BUG-22346 : Queue Tableì˜ compact ì§€ì› 
     static IDE_RC validateAlterCompactQueue( qcStatement * aStatement);
     static IDE_RC executeCompactQueue( qcStatement * aStatement);
     

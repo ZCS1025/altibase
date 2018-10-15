@@ -22,14 +22,14 @@
 typedef void (*ulnDescRecSetNameFunc)(ulnDescRec *aRecord, acp_char_t *aName, acp_size_t aNameLen);
 
 /**
- * cmÀ» ÀÌ¿ëÇØ Name ¼Ó¼º(ColumnName, TableName µî)À» ¼³Á¤ÇÑ´Ù.
+ * cmì„ ì´ìš©í•´ Name ì†ì„±(ColumnName, TableName ë“±)ì„ ì„¤ì •í•œë‹¤.
  *
  * @param[in] aProtocolContext    CM Protocol Context
  * @param[in] aDescRecIrd         IRD Record
- * @param[in] aSetNameFunc        Name ¼Ó¼ºÀ» ¼³Á¤ÇÒ ÇÔ¼ö
+ * @param[in] aSetNameFunc        Name ì†ì„±ì„ ì„¤ì •í•  í•¨ìˆ˜
  * @param[in] aFnContext          Function Context
  *
- * @return ¼º°øÇÏ¸é ACI_SUCCESS, ¾Æ´Ï¸é ACI_FAILURE
+ * @return ì„±ê³µí•˜ë©´ ACI_SUCCESS, ì•„ë‹ˆë©´ ACI_FAILURE
  */
 static ACI_RC ulnBindSetDescRecName( cmiProtocolContext    *aProtocolContext,
                                      ulnDescRec            *aDescRecIrd,
@@ -57,7 +57,7 @@ static ACI_RC ulnBindSetDescRecName( cmiProtocolContext    *aProtocolContext,
     sState = 1;
 
     /* bug-37434 charset conversion for korean column name.
-       DB charset column nameÀ» client charsetÀ¸·Î º¯È¯.
+       DB charset column nameì„ client charsetìœ¼ë¡œ ë³€í™˜.
        data flow: cmBlock -> sNameBefore -> sNameAfter */
     ACI_TEST(ulnCharSetConvert(&sCharSet,
                 aFnContext,
@@ -139,7 +139,7 @@ ACI_RC ulnCallbackColumnInfoGetResult(cmiProtocolContext *aProtocolContext,
     ACI_TEST(sStmt->mCurrentResultSetID != sResultSetID);
 
     /*
-     * IRD Record ÁØºñ
+     * IRD Record ì¤€ë¹„
      */
     ACI_TEST_RAISE(ulnBindArrangeNewDescRec(sStmt->mAttrIrd,
                                             sColumnNumber,
@@ -147,7 +147,7 @@ ACI_RC ulnCallbackColumnInfoGetResult(cmiProtocolContext *aProtocolContext,
                    LABEL_NOT_ENOUGH_MEM);
 
     /*
-     * Å¸ÀÔ Á¤º¸ ¼¼ÆÃ
+     * íƒ€ìž… ì •ë³´ ì„¸íŒ…
      */
     sMTYPE = ulnTypeMap_MTD_MTYPE(sDataType);
 
@@ -227,7 +227,7 @@ ACI_RC ulnCallbackColumnInfoGetResult(cmiProtocolContext *aProtocolContext,
                     != ACI_SUCCESS, LABEL_NOT_ENOUGH_MEM);
 
     /*
-     * Display Size ¼¼ÆÃ
+     * Display Size ì„¸íŒ…
      */
     ulnDescRecSetDisplaySize(sDescRecIrd, ulnTypeGetDisplaySize(sMTYPE, &sDescRecIrd->mMeta));
 
@@ -243,7 +243,7 @@ ACI_RC ulnCallbackColumnInfoGetResult(cmiProtocolContext *aProtocolContext,
     }
 
     /*
-     * IRD record ¸¦ IRD ¿¡ Ãß°¡ÇÑ´Ù.
+     * IRD record ë¥¼ IRD ì— ì¶”ê°€í•œë‹¤.
      */
     ACI_TEST_RAISE(ulnDescAddDescRec(sStmt->mAttrIrd, sDescRecIrd) != ACI_SUCCESS,
                    LABEL_NOT_ENOUGH_MEM);
@@ -286,13 +286,13 @@ ACI_RC ulnCallbackColumnInfoGetResult(cmiProtocolContext *aProtocolContext,
     CMI_SKIP_READ_BLOCK(aProtocolContext, sNameLen);
 
     /*
-     * Note : ACI_SUCCESS ¸¦ ¸®ÅÏÇÏ´Â °ÍÀº ¹ö±×°¡ ¾Æ´Ï´Ù.
-     *        cm ÀÇ ÄÝ¹éÇÔ¼ö°¡ ACI_FAILURE ¸¦ ¸®ÅÏÇÏ¸é communication error ·Î Ãë±ÞµÇ¾î ¹ö¸®±â
-     *        ¶§¹®ÀÌ´Ù.
+     * Note : ACI_SUCCESS ë¥¼ ë¦¬í„´í•˜ëŠ” ê²ƒì€ ë²„ê·¸ê°€ ì•„ë‹ˆë‹¤.
+     *        cm ì˜ ì½œë°±í•¨ìˆ˜ê°€ ACI_FAILURE ë¥¼ ë¦¬í„´í•˜ë©´ communication error ë¡œ ì·¨ê¸‰ë˜ì–´ ë²„ë¦¬ê¸°
+     *        ë•Œë¬¸ì´ë‹¤.
      *
-     *        ¾îÂîµÇ¾ú´ø °£¿¡, Function Context ÀÇ ¸â¹öÀÎ mSqlReturn ¿¡ ÇÔ¼ö ¸®ÅÏ°ªÀÌ
-     *        ÀúÀåµÇ°Ô µÉ °ÍÀÌ¸ç, uln ÀÇ cmi ¸ÅÇÎ ÇÔ¼öÀÎ ulnReadProtocol() ÇÔ¼ö ¾È¿¡¼­
-     *        Function Context ÀÇ mSqlReturn À» Ã¼Å©ÇØ¼­ ÀûÀýÇÑ Á¶Ä¡¸¦ ÃëÇÏ°Ô µÉ °ÍÀÌ´Ù.
+     *        ì–´ì°Œë˜ì—ˆë˜ ê°„ì—, Function Context ì˜ ë©¤ë²„ì¸ mSqlReturn ì— í•¨ìˆ˜ ë¦¬í„´ê°’ì´
+     *        ì €ìž¥ë˜ê²Œ ë  ê²ƒì´ë©°, uln ì˜ cmi ë§¤í•‘ í•¨ìˆ˜ì¸ ulnReadProtocol() í•¨ìˆ˜ ì•ˆì—ì„œ
+     *        Function Context ì˜ mSqlReturn ì„ ì²´í¬í•´ì„œ ì ì ˆí•œ ì¡°ì¹˜ë¥¼ ì·¨í•˜ê²Œ ë  ê²ƒì´ë‹¤.
      */
     return ACI_SUCCESS;
 }
@@ -354,9 +354,9 @@ ACI_RC ulnCallbackColumnInfoGetListResult(cmiProtocolContext *aProtocolContext,
         sRemainSize = aProtocolContext->mReadBlock->mDataSize -
                       aProtocolContext->mReadBlock->mCursor;
 
-        /* IPCDAÀÇ µ¥ÀÌÅÍ´Â cmiProtocolContext¾ÈÀÇ mReadBlock¾È¿¡¼­ Àü¼ÛµË´Ï´Ù.
-         * ÀÌ ¹öÆÛ´Â Split_Read µÇÁö ¾ÊÀ¸¸ç, ¹öÆÛÀÇ ÃÖ´ë Å©±â³»¿¡¼­ ÇÑ ¹ø¿¡
-         * WRITE µË´Ï´Ù. µû¶ó¼­, cmiRecvNext´Â È£ÃâÇÏÁö ¾Ê½À´Ï´Ù.
+        /* IPCDAì˜ ë°ì´í„°ëŠ” cmiProtocolContextì•ˆì˜ mReadBlockì•ˆì—ì„œ ì „ì†¡ë©ë‹ˆë‹¤.
+         * ì´ ë²„í¼ëŠ” Split_Read ë˜ì§€ ì•Šìœ¼ë©°, ë²„í¼ì˜ ìµœëŒ€ í¬ê¸°ë‚´ì—ì„œ í•œ ë²ˆì—
+         * WRITE ë©ë‹ˆë‹¤. ë”°ë¼ì„œ, cmiRecvNextëŠ” í˜¸ì¶œí•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
          */
         ACI_TEST_RAISE(cmiGetLinkImpl(aProtocolContext) == CMI_LINK_IMPL_IPCDA,
                        SkipRecvNext);
@@ -381,7 +381,7 @@ ACI_RC ulnCallbackColumnInfoGetListResult(cmiProtocolContext *aProtocolContext,
         ACP_UNUSED(sArguments);
 
         /*
-         * IRD Record ÁØºñ
+         * IRD Record ì¤€ë¹„
          */
         ACI_TEST_RAISE(ulnBindArrangeNewDescRec(sStmt->mAttrIrd,
                                                 i,
@@ -438,7 +438,7 @@ ACI_RC ulnCallbackColumnInfoGetListResult(cmiProtocolContext *aProtocolContext,
                         != ACI_SUCCESS, LABEL_NOT_ENOUGH_MEM);
 
         /*
-         * Å¸ÀÔ Á¤º¸ ¼¼ÆÃ
+         * íƒ€ìž… ì •ë³´ ì„¸íŒ…
          */
         sMTYPE = ulnTypeMap_MTD_MTYPE(sDataType);
 
@@ -464,7 +464,7 @@ ACI_RC ulnCallbackColumnInfoGetListResult(cmiProtocolContext *aProtocolContext,
         ulnDescRecSetTypeName(sDescRecIrd, ulnTypeGetInfoName(sMTYPE));
 
         /*
-         * Display Size ¼¼ÆÃ
+         * Display Size ì„¸íŒ…
          */
         ulnDescRecSetDisplaySize(sDescRecIrd, ulnTypeGetDisplaySize(sMTYPE, &sDescRecIrd->mMeta));
 
@@ -481,7 +481,7 @@ ACI_RC ulnCallbackColumnInfoGetListResult(cmiProtocolContext *aProtocolContext,
 
 
         /*
-         * IRD record ¸¦ IRD ¿¡ Ãß°¡ÇÑ´Ù.
+         * IRD record ë¥¼ IRD ì— ì¶”ê°€í•œë‹¤.
          */
         ACI_TEST_RAISE(ulnDescAddDescRec(sStmt->mAttrIrd, sDescRecIrd) != ACI_SUCCESS,
                        LABEL_NOT_ENOUGH_MEM);
@@ -562,13 +562,13 @@ ACI_RC ulnCallbackColumnInfoGetListResult(cmiProtocolContext *aProtocolContext,
     }
 
     /*
-     * Note : ACI_SUCCESS ¸¦ ¸®ÅÏÇÏ´Â °ÍÀº ¹ö±×°¡ ¾Æ´Ï´Ù.
-     *        cm ÀÇ ÄÝ¹éÇÔ¼ö°¡ ACI_FAILURE ¸¦ ¸®ÅÏÇÏ¸é communication error ·Î Ãë±ÞµÇ¾î ¹ö¸®±â
-     *        ¶§¹®ÀÌ´Ù.
+     * Note : ACI_SUCCESS ë¥¼ ë¦¬í„´í•˜ëŠ” ê²ƒì€ ë²„ê·¸ê°€ ì•„ë‹ˆë‹¤.
+     *        cm ì˜ ì½œë°±í•¨ìˆ˜ê°€ ACI_FAILURE ë¥¼ ë¦¬í„´í•˜ë©´ communication error ë¡œ ì·¨ê¸‰ë˜ì–´ ë²„ë¦¬ê¸°
+     *        ë•Œë¬¸ì´ë‹¤.
      *
-     *        ¾îÂîµÇ¾ú´ø °£¿¡, Function Context ÀÇ ¸â¹öÀÎ mSqlReturn ¿¡ ÇÔ¼ö ¸®ÅÏ°ªÀÌ
-     *        ÀúÀåµÇ°Ô µÉ °ÍÀÌ¸ç, uln ÀÇ cmi ¸ÅÇÎ ÇÔ¼öÀÎ ulnReadProtocol() ÇÔ¼ö ¾È¿¡¼­
-     *        Function Context ÀÇ mSqlReturn À» Ã¼Å©ÇØ¼­ ÀûÀýÇÑ Á¶Ä¡¸¦ ÃëÇÏ°Ô µÉ °ÍÀÌ´Ù.
+     *        ì–´ì°Œë˜ì—ˆë˜ ê°„ì—, Function Context ì˜ ë©¤ë²„ì¸ mSqlReturn ì— í•¨ìˆ˜ ë¦¬í„´ê°’ì´
+     *        ì €ìž¥ë˜ê²Œ ë  ê²ƒì´ë©°, uln ì˜ cmi ë§¤í•‘ í•¨ìˆ˜ì¸ ulnReadProtocol() í•¨ìˆ˜ ì•ˆì—ì„œ
+     *        Function Context ì˜ mSqlReturn ì„ ì²´í¬í•´ì„œ ì ì ˆí•œ ì¡°ì¹˜ë¥¼ ì·¨í•˜ê²Œ ë  ê²ƒì´ë‹¤.
      */
     return ACI_SUCCESS;
 }
@@ -618,7 +618,7 @@ ACI_RC ulnCallbackParamInfoGetResult(cmiProtocolContext *aProtocolContext,
     ACI_TEST(sStmt->mStatementID != sStatementID);
 
     /*
-     * IPD Record ÁØºñ
+     * IPD Record ì¤€ë¹„
      */
     sDescIpd    = ulnStmtGetIpd(sStmt);
     ACI_TEST_RAISE(sDescIpd == NULL, LABEL_MEM_MANAGE_ERR);
@@ -628,7 +628,7 @@ ACI_RC ulnCallbackParamInfoGetResult(cmiProtocolContext *aProtocolContext,
     if (sDescRecIpd == NULL)
     {
         /*
-         * »ç¿ëÀÚ°¡ ¹ÙÀÎµåÇÏÁö ¾ÊÀº ÆÄ¶ó¹ÌÅÍ¿¡ ´ëÇØ¼­¸¸ IPD record »ý¼º ¹× Á¤º¸ ¼¼ÆÃ
+         * ì‚¬ìš©ìžê°€ ë°”ì¸ë“œí•˜ì§€ ì•Šì€ íŒŒë¼ë¯¸í„°ì— ëŒ€í•´ì„œë§Œ IPD record ìƒì„± ë° ì •ë³´ ì„¸íŒ…
          */
         ACI_TEST_RAISE(ulnDescRecCreate(sDescIpd,
                                         &sDescRecIpd,
@@ -641,7 +641,7 @@ ACI_RC ulnCallbackParamInfoGetResult(cmiProtocolContext *aProtocolContext,
         ulnBindInfoInitialize(&sDescRecIpd->mBindInfo);
 
         /*
-         * Å¸ÀÔ Á¤º¸
+         * íƒ€ìž… ì •ë³´
          */
         sMTYPE = ulnTypeMap_MTD_MTYPE(sDataType);
         ACI_TEST_RAISE(sMTYPE == ULN_MTYPE_MAX, LABEL_UNKNOWN_TYPEID);
@@ -652,19 +652,19 @@ ACI_RC ulnCallbackParamInfoGetResult(cmiProtocolContext *aProtocolContext,
         }
 
         /*
-         * ulnMeta ÃÊ±âÈ­ ¹× ºôµå
+         * ulnMeta ì´ˆê¸°í™” ë° ë¹Œë“œ
          */
         ulnMetaInitialize(&sDescRecIpd->mMeta);
 
         /*
-         * BUGBUG : ¾Æ·¡Ã³·³, columnsize ¿¡ mPrecision À», decimal digits ¿¡ mScale À»
-         *          ³ÖÀ¸¸é Å« ¹®Á¦°¡ ¾øÀÌ ´ëºÎºÐ Àû¿ëµÇ°ÚÁö¸¸,
-         *          DATE °ü·ÃÀÏ ¶§ ÀÇ¹Ì°¡ ¹Ù²î´Â ÀÏÀÌ ÀÖ´Ù.
+         * BUGBUG : ì•„ëž˜ì²˜ëŸ¼, columnsize ì— mPrecision ì„, decimal digits ì— mScale ì„
+         *          ë„£ìœ¼ë©´ í° ë¬¸ì œê°€ ì—†ì´ ëŒ€ë¶€ë¶„ ì ìš©ë˜ê² ì§€ë§Œ,
+         *          DATE ê´€ë ¨ì¼ ë•Œ ì˜ë¯¸ê°€ ë°”ë€ŒëŠ” ì¼ì´ ìžˆë‹¤.
          *
-         *          ±×·±µ¥, ½ÇÁ¦, DATE °ü·Ã Å¸ÀÔÀº precision, scale °³³äÀÌ ¾ËÆ¼º£ÀÌ½º¿¡´Â
-         *          ¾ø´Ù.
+         *          ê·¸ëŸ°ë°, ì‹¤ì œ, DATE ê´€ë ¨ íƒ€ìž…ì€ precision, scale ê°œë…ì´ ì•Œí‹°ë² ì´ìŠ¤ì—ëŠ”
+         *          ì—†ë‹¤.
          *
-         *          ÀÏ´Ü ÀÌ´ë·Î °¡ÀÚ.
+         *          ì¼ë‹¨ ì´ëŒ€ë¡œ ê°€ìž.
          */
         ulnMetaBuild4IpdByMeta(&sDescRecIpd->mMeta,
                                sMTYPE,
@@ -684,12 +684,12 @@ ACI_RC ulnCallbackParamInfoGetResult(cmiProtocolContext *aProtocolContext,
         (void) ulnDescRecSetParamInOut(sDescRecIpd, sUlnInOutType);
 
         /*
-         * Display Size ¼¼ÆÃ
+         * Display Size ì„¸íŒ…
          */
         ulnDescRecSetDisplaySize(sDescRecIpd, ulnTypeGetDisplaySize(sMTYPE, &sDescRecIpd->mMeta));
 
         /*
-         * IPD record ¸¦ IPD ¿¡ ¸Å´Þ¾ÆÁØ´Ù.
+         * IPD record ë¥¼ IPD ì— ë§¤ë‹¬ì•„ì¤€ë‹¤.
          */
         ACI_TEST_RAISE(ulnDescAddDescRec(sDescIpd, sDescRecIpd) != ACI_SUCCESS,
                        LABEL_NOT_ENOUGH_MEM);
@@ -700,7 +700,7 @@ ACI_RC ulnCallbackParamInfoGetResult(cmiProtocolContext *aProtocolContext,
     ACI_EXCEPTION(LABEL_MEM_MANAGE_ERR)
     {
         /*
-         * ÇÒ´çÇß´ø ¸Þ¸ð¸® ÇØÁ¦´Â »ý°¢ÇÏÁö ¸»ÀÚ. ¾îÂ÷ÇÇ ¸Þ¸ð¸® ²¿¿´´Ù.
+         * í• ë‹¹í–ˆë˜ ë©”ëª¨ë¦¬ í•´ì œëŠ” ìƒê°í•˜ì§€ ë§ìž. ì–´ì°¨í”¼ ë©”ëª¨ë¦¬ ê¼¬ì˜€ë‹¤.
          */
         ulnError(sFnContext,
                  ulERR_FATAL_MEMORY_MANAGEMENT_ERROR,
@@ -720,13 +720,13 @@ ACI_RC ulnCallbackParamInfoGetResult(cmiProtocolContext *aProtocolContext,
     ACI_EXCEPTION_END;
 
     /*
-     * Note : ACI_SUCCESS ¸¦ ¸®ÅÏÇÏ´Â °ÍÀº ¹ö±×°¡ ¾Æ´Ï´Ù.
-     *        cm ÀÇ ÄÝ¹éÇÔ¼ö°¡ ACI_FAILURE ¸¦ ¸®ÅÏÇÏ¸é communication error ·Î Ãë±ÞµÇ¾î ¹ö¸®±â
-     *        ¶§¹®ÀÌ´Ù.
+     * Note : ACI_SUCCESS ë¥¼ ë¦¬í„´í•˜ëŠ” ê²ƒì€ ë²„ê·¸ê°€ ì•„ë‹ˆë‹¤.
+     *        cm ì˜ ì½œë°±í•¨ìˆ˜ê°€ ACI_FAILURE ë¥¼ ë¦¬í„´í•˜ë©´ communication error ë¡œ ì·¨ê¸‰ë˜ì–´ ë²„ë¦¬ê¸°
+     *        ë•Œë¬¸ì´ë‹¤.
      *
-     *        ¾îÂîµÇ¾ú´ø °£¿¡, Function Context ÀÇ ¸â¹öÀÎ mSqlReturn ¿¡ ÇÔ¼ö ¸®ÅÏ°ªÀÌ
-     *        ÀúÀåµÇ°Ô µÉ °ÍÀÌ¸ç, uln ÀÇ cmi ¸ÅÇÎ ÇÔ¼öÀÎ ulnReadProtocol() ÇÔ¼ö ¾È¿¡¼­
-     *        Function Context ÀÇ mSqlReturn À» Ã¼Å©ÇØ¼­ ÀûÀýÇÑ Á¶Ä¡¸¦ ÃëÇÏ°Ô µÉ °ÍÀÌ´Ù.
+     *        ì–´ì°Œë˜ì—ˆë˜ ê°„ì—, Function Context ì˜ ë©¤ë²„ì¸ mSqlReturn ì— í•¨ìˆ˜ ë¦¬í„´ê°’ì´
+     *        ì €ìž¥ë˜ê²Œ ë  ê²ƒì´ë©°, uln ì˜ cmi ë§¤í•‘ í•¨ìˆ˜ì¸ ulnReadProtocol() í•¨ìˆ˜ ì•ˆì—ì„œ
+     *        Function Context ì˜ mSqlReturn ì„ ì²´í¬í•´ì„œ ì ì ˆí•œ ì¡°ì¹˜ë¥¼ ì·¨í•˜ê²Œ ë  ê²ƒì´ë‹¤.
      */
     return ACI_SUCCESS;
 }

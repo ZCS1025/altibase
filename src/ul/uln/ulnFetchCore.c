@@ -29,8 +29,8 @@ static ACI_RC ulnFetchCoreRetrieveAllRowsFromServer(ulnFnContext *aFnContext,
     SQLRETURN  sOriginalRC;
 
     /*
-     * Trick ; ºñ·Ï ¹«½Ä-_- ÇÏÁö¸¸,
-     * ÀÏ´Ü ¼­¹ö¿¡¼­ ¸ğµç µ¥ÀÌÅÍ¸¦ ´Ù ¹ŞÀº ÈÄ
+     * Trick ; ë¹„ë¡ ë¬´ì‹-_- í•˜ì§€ë§Œ,
+     * ì¼ë‹¨ ì„œë²„ì—ì„œ ëª¨ë“  ë°ì´í„°ë¥¼ ë‹¤ ë°›ì€ í›„
      */
 
     sOriginalRC = ULN_FNCONTEXT_GET_RC(aFnContext);
@@ -38,10 +38,10 @@ static ACI_RC ulnFetchCoreRetrieveAllRowsFromServer(ulnFnContext *aFnContext,
     ACI_TEST(ulnFetchAllFromServer(aFnContext, aPtContext) != ACI_SUCCESS);
 
     /*
-     * ulnFetchAllFromServer() ÇÔ¼ö´Â ÀÏ´Ü ´Ù ÆäÄ¡ÇØ ¿À¸é SQL_NO_DATA ¸¦ ÀÌ¿ëÇØ¼­
-     * ¸ğµÎ ÆäÄ¡ÇØ ¿Ô´ÂÁöÀÇ ¿©ºÎ¸¦ ÆÇ´ÜÇÏ¹Ç·Î
-     * ÆäÄ¡ÇØ ¿Â °á°ú°¡ ÀÖ¾îµµ SQL_NO_DATA ·Î ¼¼ÆÃµÇ¾î ÀÖ´Ù.
-     * ¿ø»óº¹±¸ÇØ Áà¾ß ÇÑ´Ù.
+     * ulnFetchAllFromServer() í•¨ìˆ˜ëŠ” ì¼ë‹¨ ë‹¤ í˜ì¹˜í•´ ì˜¤ë©´ SQL_NO_DATA ë¥¼ ì´ìš©í•´ì„œ
+     * ëª¨ë‘ í˜ì¹˜í•´ ì™”ëŠ”ì§€ì˜ ì—¬ë¶€ë¥¼ íŒë‹¨í•˜ë¯€ë¡œ
+     * í˜ì¹˜í•´ ì˜¨ ê²°ê³¼ê°€ ìˆì–´ë„ SQL_NO_DATA ë¡œ ì„¸íŒ…ë˜ì–´ ìˆë‹¤.
+     * ì›ìƒë³µêµ¬í•´ ì¤˜ì•¼ í•œë‹¤.
      */
 
     if (ULN_FNCONTEXT_GET_RC(aFnContext) == SQL_NO_DATA)
@@ -50,14 +50,14 @@ static ACI_RC ulnFetchCoreRetrieveAllRowsFromServer(ulnFnContext *aFnContext,
     }
 
     /*
-     * ÀÌ ÇÔ¼ö È£Ãâ ÈÄ Ä¿¼­ÀÇ À§Ä¡¸¦ ÀçÁ¶Á¤ ÇØ Áà¾ß ÇÑ´Ù.
-     * Áï, ÇÑ¹ø ´õ LAST È¤Àº ABSOLUTE(x) ·Î Ä¿¼­¸¦ ¿Å±ä´Ù. ±×¸®°í¼­ ¾Æ·¡ÂÊÀÇ
-     * ulnFetchFromCache() ÇÔ¼ö·Î Ä³½¬µÈ record µéÀ» µ¹·ÁÁØ´Ù.
+     * ì´ í•¨ìˆ˜ í˜¸ì¶œ í›„ ì»¤ì„œì˜ ìœ„ì¹˜ë¥¼ ì¬ì¡°ì • í•´ ì¤˜ì•¼ í•œë‹¤.
+     * ì¦‰, í•œë²ˆ ë” LAST í˜¹ì€ ABSOLUTE(x) ë¡œ ì»¤ì„œë¥¼ ì˜®ê¸´ë‹¤. ê·¸ë¦¬ê³ ì„œ ì•„ë˜ìª½ì˜
+     * ulnFetchFromCache() í•¨ìˆ˜ë¡œ ìºì‰¬ëœ record ë“¤ì„ ëŒë ¤ì¤€ë‹¤.
      *
-     * BUGBUG : ºÒÇàÈ÷µµ result set ÀÇ Å©±â°¡ ACP_SINT32_MAX ÀÎ °æ¿ì,
-     *          ¹ö±×ÀÇ ¼ÒÁö°¡ ÀÖÀ¸³ª Å×½ºÆ® ÇØ º¸Áö ¸øÇß´Ù. ´Ù½ÃÇÑ¹ø »ı°¢ÇØ º¸¸é ¹ö±×°¡
-     *          ¾øÀ» °Í °°±âµµ ÇÏ°í... rowset size ¸¸Å­ ´õÇØ¼­ ¼­¹ö·Î request
-     *          ÇÏ¹Ç·Î...
+     * BUGBUG : ë¶ˆí–‰íˆë„ result set ì˜ í¬ê¸°ê°€ ACP_SINT32_MAX ì¸ ê²½ìš°,
+     *          ë²„ê·¸ì˜ ì†Œì§€ê°€ ìˆìœ¼ë‚˜ í…ŒìŠ¤íŠ¸ í•´ ë³´ì§€ ëª»í–ˆë‹¤. ë‹¤ì‹œí•œë²ˆ ìƒê°í•´ ë³´ë©´ ë²„ê·¸ê°€
+     *          ì—†ì„ ê²ƒ ê°™ê¸°ë„ í•˜ê³ ... rowset size ë§Œí¼ ë”í•´ì„œ ì„œë²„ë¡œ request
+     *          í•˜ë¯€ë¡œ...
      */
 
     return ACI_SUCCESS;
@@ -87,19 +87,19 @@ ACI_RC ulnFetchCoreForIPCDASimpleQuery(ulnFnContext *aFnContext,
 
     if (aStmt->mCacheIPCDA.mRemainingLength == 0)
     {
-        /*´õ ÀÌ»ó ÀĞÀ» µ¥ÀÌÅÍ°¡ ¾øÀ½*/
+        /*ë” ì´ìƒ ì½ì„ ë°ì´í„°ê°€ ì—†ìŒ*/
     }
     else
     {
         sSrc += aStmt->mCacheIPCDA.mReadLength;
 
-        // ·Î¿ìÀÇ ÀüÃ¼ ±æÀÌ
+        // ë¡œìš°ì˜ ì „ì²´ ê¸¸ì´
         sDataRowSize = *((acp_uint32_t*)sSrc);
         sSrc +=8;
         aStmt->mCacheIPCDA.mReadLength      += 8;
         aStmt->mCacheIPCDA.mRemainingLength -= 8;
 
-        // ´ÙÀ½ µ¥ÀÌÅÍÀÇ À§Ä¡
+        // ë‹¤ìŒ ë°ì´í„°ì˜ ìœ„ì¹˜
         sNextDataPos = aStmt->mCacheIPCDA.mReadLength + sDataRowSize - 8;
 
         while (aStmt->mCacheIPCDA.mReadLength < sNextDataPos)
@@ -129,10 +129,10 @@ ACI_RC ulnFetchCoreForIPCDASimpleQuery(ulnFnContext *aFnContext,
     if (*aFetchedRowCount == 0)
     {
         /*
-         * BUGBUG : ulnFetchFromCache() ÇÔ¼ö ÁÖ¼®À» º¸¸é ¾Æ·¡¿Í °°ÀÌ ÀûÇô ÀÖ´Ù :
+         * BUGBUG : ulnFetchFromCache() í•¨ìˆ˜ ì£¼ì„ì„ ë³´ë©´ ì•„ë˜ì™€ ê°™ì´ ì í˜€ ìˆë‹¤ :
          *
-         * SQL_NO_DATA ¸¦ ¸®ÅÏÇØ ÁÖ±â À§ÇØ¼­ ¼¼ÆÃÀ» ÇØ¾ß ÇÏÁö¸¸,
-         * ÀÌ¹Ì ulnFetchUpdateAfterFetch() ÇÔ¼ö¿¡¼­ ¼¼ÆÃÇØ¹ö¸° °æ¿ìÀÌ´Ù.
+         * SQL_NO_DATA ë¥¼ ë¦¬í„´í•´ ì£¼ê¸° ìœ„í•´ì„œ ì„¸íŒ…ì„ í•´ì•¼ í•˜ì§€ë§Œ,
+         * ì´ë¯¸ ulnFetchUpdateAfterFetch() í•¨ìˆ˜ì—ì„œ ì„¸íŒ…í•´ë²„ë¦° ê²½ìš°ì´ë‹¤.
          */
         ULN_FNCONTEXT_SET_RC(aFnContext, SQL_NO_DATA);
     }
@@ -152,7 +152,7 @@ ACI_RC ulnCheckFetchOrientation(ulnFnContext *aFnContext,
     ulnStmt     *sStmt = aFnContext->mHandle.mStmt;
 
     /*
-     * FORWARD ONLY Ä¿¼­ÀÏ ¶§ FETCH_NEXT ¸»°í ´Ù¸¥°ÍÀ¸·Î È£ÃâÇÏ¸é ¿¡·¯.
+     * FORWARD ONLY ì»¤ì„œì¼ ë•Œ FETCH_NEXT ë§ê³  ë‹¤ë¥¸ê²ƒìœ¼ë¡œ í˜¸ì¶œí•˜ë©´ ì—ëŸ¬.
      */
     if ( (ulnCursorGetType(&sStmt->mCursor) == SQL_CURSOR_FORWARD_ONLY)
       || (ulnCursorGetScrollable(&sStmt->mCursor) == SQL_NONSCROLLABLE) )
@@ -162,7 +162,7 @@ ACI_RC ulnCheckFetchOrientation(ulnFnContext *aFnContext,
     }
 
     /* PROJ-1789 Updatable Scrollable Cursor
-     * SQL_FETCH_BOOKMARKÀÏ ¶§, °ü·Ã ¼Ó¼ºÀ» Á¦´ë·Î ¼³Á¤Çß³ª È®ÀÎ */
+     * SQL_FETCH_BOOKMARKì¼ ë•Œ, ê´€ë ¨ ì†ì„±ì„ ì œëŒ€ë¡œ ì„¤ì •í–ˆë‚˜ í™•ì¸ */
     if (aFetchOrientation == SQL_FETCH_BOOKMARK)
     {
         ACI_TEST_RAISE(ulnStmtGetAttrUseBookMarks(sStmt) == SQL_UB_OFF,
@@ -226,10 +226,10 @@ ACI_RC ulnFetchCore(ulnFnContext *aFnContext,
     sFetchOffset = aFetchOffset;
 
     /*
-     * GetData() ¸¦ À§ÇÑ ÃÊ±âÈ­ : Fetch ¸¦ ºÎ¸¦¶§¸¶´Ù ÀÏ¾î³ª¾ß ÇÑ´Ù.
+     * GetData() ë¥¼ ìœ„í•œ ì´ˆê¸°í™” : Fetch ë¥¼ ë¶€ë¥¼ë•Œë§ˆë‹¤ ì¼ì–´ë‚˜ì•¼ í•œë‹¤.
      *
-     * ¸¸¾à »ç¿ëÀÚ°¡ GetData() ·Î µ¥ÀÌÅÍ¸¦ Á¶±İ¸¸ °¡Á®°¡°í
-     * ´ÙÀ½ fetch ¸¦ ºÎ¸£°í, ±× ÈÄ getdata() ¸¦ ÇÏ´Â °æ¿ì¸¦ ´ëºñÇÔ.
+     * ë§Œì•½ ì‚¬ìš©ìê°€ GetData() ë¡œ ë°ì´í„°ë¥¼ ì¡°ê¸ˆë§Œ ê°€ì ¸ê°€ê³ 
+     * ë‹¤ìŒ fetch ë¥¼ ë¶€ë¥´ê³ , ê·¸ í›„ getdata() ë¥¼ í•˜ëŠ” ê²½ìš°ë¥¼ ëŒ€ë¹„í•¨.
      */
 
     if (sStmt->mGDColumnNumber != ULN_GD_COLUMN_NUMBER_INIT_VALUE)
@@ -241,7 +241,7 @@ ACI_RC ulnFetchCore(ulnFnContext *aFnContext,
 
     /*
      * ===============================================
-     * step 1. Ä¿¼­¸¦ »ç¿ëÀÚ°¡ ÁöÁ¤ÇÑ À§Ä¡·Î ¿Å±ä´Ù.
+     * step 1. ì»¤ì„œë¥¼ ì‚¬ìš©ìê°€ ì§€ì •í•œ ìœ„ì¹˜ë¡œ ì˜®ê¸´ë‹¤.
      * ===============================================
      */
 
@@ -330,14 +330,14 @@ ACI_RC ulnFetchCore(ulnFnContext *aFnContext,
             break;
     }
 
-    // bug-35198: row array(rowset) size°¡ º¯°æµÈÈÄ fetchÇÏ´Â °æ¿ì.
-    // cursor°¡ ¿Å°ÜÁ³´Ù¸é prev rowset size´Â ´õÀÌ»ó »ç¿ëÇØ¼­´Â ¾ÈµÊ.
-    // ex) FETCH_LAST ÇÑ ÈÄ¿¡ FETCH_NEXTÇÏ´Â °æ¿ì Áß°£¿¡ clear ÇØ¾ßÇÔ
+    // bug-35198: row array(rowset) sizeê°€ ë³€ê²½ëœí›„ fetchí•˜ëŠ” ê²½ìš°.
+    // cursorê°€ ì˜®ê²¨ì¡Œë‹¤ë©´ prev rowset sizeëŠ” ë”ì´ìƒ ì‚¬ìš©í•´ì„œëŠ” ì•ˆë¨.
+    // ex) FETCH_LAST í•œ í›„ì— FETCH_NEXTí•˜ëŠ” ê²½ìš° ì¤‘ê°„ì— clear í•´ì•¼í•¨
     sStmt->mPrevRowSetSize = 0;
 
     /*
      * ===============================================
-         * step 2. Ä³½¬¿¡¼­ fetchÇØ ¿Â´Ù.
+         * step 2. ìºì‰¬ì—ì„œ fetchí•´ ì˜¨ë‹¤.
      * ===============================================
      */
 
@@ -359,18 +359,18 @@ ACI_RC ulnFetchCore(ulnFnContext *aFnContext,
     if (*aNumberOfRowsFetched == 0)
     {
         /*
-         * BUGBUG : ulnFetchFromCache() ÇÔ¼ö ÁÖ¼®À» º¸¸é ¾Æ·¡¿Í °°ÀÌ ÀûÇô ÀÖ´Ù :
+         * BUGBUG : ulnFetchFromCache() í•¨ìˆ˜ ì£¼ì„ì„ ë³´ë©´ ì•„ë˜ì™€ ê°™ì´ ì í˜€ ìˆë‹¤ :
          *
-         *          SQL_NO_DATA ¸¦ ¸®ÅÏÇØ ÁÖ±â À§ÇØ¼­ ¼¼ÆÃÀ» ÇØ¾ß ÇÏÁö¸¸,
-         *          ÀÌ¹Ì ulnFetchUpdateAfterFetch() ÇÔ¼ö¿¡¼­ ¼¼ÆÃÇØ¹ö¸° °æ¿ìÀÌ´Ù.
+         *          SQL_NO_DATA ë¥¼ ë¦¬í„´í•´ ì£¼ê¸° ìœ„í•´ì„œ ì„¸íŒ…ì„ í•´ì•¼ í•˜ì§€ë§Œ,
+         *          ì´ë¯¸ ulnFetchUpdateAfterFetch() í•¨ìˆ˜ì—ì„œ ì„¸íŒ…í•´ë²„ë¦° ê²½ìš°ì´ë‹¤.
          */
         ULN_FNCONTEXT_SET_RC(aFnContext, SQL_NO_DATA);
     }
 
-    /* PROJ-2177: Cancel ÈÄ »óÅÂÀüÀÌ¸¦ À§ÇØ, ¸¶Áö¸·À¸·Î FetchÇÑ ÇÔ¼ö¸¦ ±â¾ïÇØµĞ´Ù. */
+    /* PROJ-2177: Cancel í›„ ìƒíƒœì „ì´ë¥¼ ìœ„í•´, ë§ˆì§€ë§‰ìœ¼ë¡œ Fetchí•œ í•¨ìˆ˜ë¥¼ ê¸°ì–µí•´ë‘”ë‹¤. */
     ulnStmtSetLastFetchFuncID(sStmt, aFnContext->mFuncID);
 
-    /* PROJ-1789 Rowset PositionÀº FetchÇÏ¸é ÃÊ±âÈ­µÈ´Ù. */
+    /* PROJ-1789 Rowset Positionì€ Fetchí•˜ë©´ ì´ˆê¸°í™”ëœë‹¤. */
     ulnCursorSetRowsetPosition(ulnStmtGetCursor(sStmt), 1);
 
     return ACI_SUCCESS;

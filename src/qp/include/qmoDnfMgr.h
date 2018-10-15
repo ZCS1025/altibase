@@ -21,12 +21,12 @@
  * Description :
  *     DNF Critical Path Manager
  *
- *     DNF Normalized Form¿¡ ´ëÇÑ ÃÖÀûÈ­¸¦ ¼öÇàÇÏ°í
- *     ÇØ´ç Graph¸¦ »ı¼ºÇÑ´Ù.
+ *     DNF Normalized Formì— ëŒ€í•œ ìµœì í™”ë¥¼ ìˆ˜í–‰í•˜ê³ 
+ *     í•´ë‹¹ Graphë¥¼ ìƒì„±í•œë‹¤.
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  **********************************************************************/
 
@@ -39,44 +39,44 @@
 #include <qmgDnf.h>
 
 //---------------------------------------------------
-// DNF Critical Path¸¦ °ü¸®ÇÏ±â À§ÇÑ ÀÚ·á ±¸Á¶
+// DNF Critical Pathë¥¼ ê´€ë¦¬í•˜ê¸° ìœ„í•œ ìë£Œ êµ¬ì¡°
 //---------------------------------------------------
 
 typedef struct qmoDNF
 {   
-    qtcNode       * normalDNF;    // whereÀıÀ» DNF·Î normalizeÇÑ °á°ú
-    qmgGraph      * myGraph;      // DNF Form °á°ú graphÀÇ top
+    qtcNode       * normalDNF;    // whereì ˆì„ DNFë¡œ normalizeí•œ ê²°ê³¼
+    qmgGraph      * myGraph;      // DNF Form ê²°ê³¼ graphì˜ top
     qmsQuerySet   * myQuerySet;
     SDouble         cost;        // DNF Total Cost
 
     //------------------------------------------------------
-    // CNF Graph °ü·Ã ÀÚ·á ±¸Á¶
+    // CNF Graph ê´€ë ¨ ìë£Œ êµ¬ì¡°
     //
-    //   - cnfCnt : CNFÀÇ °³¼ö ( = normalDNFÀÇ ANDÀÇ °³¼ö )
-    //   - myCNF  : CNF ¹è¿­
+    //   - cnfCnt : CNFì˜ ê°œìˆ˜ ( = normalDNFì˜ ANDì˜ ê°œìˆ˜ )
+    //   - myCNF  : CNF ë°°ì—´
     //------------------------------------------------------
     
-    UInt            cnfCnt;      // CNF ÀÇ °³¼ö
+    UInt            cnfCnt;      // CNF ì˜ ê°œìˆ˜
 
-    // PROJ-1446 Host variableÀ» Æ÷ÇÔÇÑ ÁúÀÇ ÃÖÀûÈ­
-    UInt            madeCnfCnt;  // optmization¶§ »ı¼ºµÈ cnfÀÇ °³¼ö
-                                 // removeOptimizationInfo¿¡¼­ »ç¿ëµÊ
+    // PROJ-1446 Host variableì„ í¬í•¨í•œ ì§ˆì˜ ìµœì í™”
+    UInt            madeCnfCnt;  // optmizationë•Œ ìƒì„±ëœ cnfì˜ ê°œìˆ˜
+                                 // removeOptimizationInfoì—ì„œ ì‚¬ìš©ë¨
 
-    qmoCNF        * myCNF;       // CNFµéÀÇ ¹è¿­
+    qmoCNF        * myCNF;       // CNFë“¤ì˜ ë°°ì—´
 
     //------------------------------------------------------
-    // DNF Graph °ü·Ã ÀÚ·á ±¸Á¶
+    // DNF Graph ê´€ë ¨ ìë£Œ êµ¬ì¡°
     //
-    //   - dnfGraphCnt : »ı¼ºÇØ¾ßÇÒ DNF Graph °³¼ö ( = CnfCount - 1 )
-    //   - dnfGraph    : Dnf Graph ¹è¿­
+    //   - dnfGraphCnt : ìƒì„±í•´ì•¼í•  DNF Graph ê°œìˆ˜ ( = CnfCount - 1 )
+    //   - dnfGraph    : Dnf Graph ë°°ì—´
     //------------------------------------------------------
     UInt            dnfGraphCnt;
     qmgDNF        * dnfGraph;
 
     //------------------------------------------------
-    // Not Normal Form : (~(ÀÌÀü DNFÀÇ Predicate))µéÀÇ List
-    //                   Áßº¹ data°¡ ¾øµµ·Ï ÇÏ±â À§ÇÔ
-    //    - notNormalFormÀÇ °³¼ö : dnfGraphCnt
+    // Not Normal Form : (~(ì´ì „ DNFì˜ Predicate))ë“¤ì˜ List
+    //                   ì¤‘ë³µ dataê°€ ì—†ë„ë¡ í•˜ê¸° ìœ„í•¨
+    //    - notNormalFormì˜ ê°œìˆ˜ : dnfGraphCnt
     //------------------------------------------------
     
     qtcNode      ** notNormal;
@@ -84,41 +84,41 @@ typedef struct qmoDNF
 } qmoDNF;
 
 //---------------------------------------------------
-// DNF Critical Path¸¦ °ü¸®ÇÏ±â À§ÇÑ ÇÔ¼ö
+// DNF Critical Pathë¥¼ ê´€ë¦¬í•˜ê¸° ìœ„í•œ í•¨ìˆ˜
 //---------------------------------------------------
 
 class qmoDnfMgr 
 {
 public:
 
-    // DNF Critical Path »ı¼º ¹× ÃÊ±âÈ­
+    // DNF Critical Path ìƒì„± ë° ì´ˆê¸°í™”
     static IDE_RC    init( qcStatement * aStatement,
                            qmoDNF      * aDNF,
                            qmsQuerySet * aQuerySet,
                            qtcNode     * aNormalDNF);
     
-    // DNF Critical Path¿¡ ´ëÇÑ ÃÖÀûÈ­ ¹× Graph »ı¼º
+    // DNF Critical Pathì— ëŒ€í•œ ìµœì í™” ë° Graph ìƒì„±
     static IDE_RC    optimize( qcStatement * aStatement,
                                qmoDNF      * aDNF,
                                SDouble       aCnfCost );
    
-    // PROJ-1446 Host variableÀ» Æ÷ÇÔÇÑ ÁúÀÇ ÃÖÀûÈ­
-    // optimization¶§ ¸¸µç Á¤º¸¸¦ Áö¿ï ÇÊ¿ä°¡ ÀÖÀ» ¶§
-    // ÀÌ ÇÔ¼ö¿¡ Ãß°¡ÇÏ¸é µÈ´Ù. 
+    // PROJ-1446 Host variableì„ í¬í•¨í•œ ì§ˆì˜ ìµœì í™”
+    // optimizationë•Œ ë§Œë“  ì •ë³´ë¥¼ ì§€ìš¸ í•„ìš”ê°€ ìˆì„ ë•Œ
+    // ì´ í•¨ìˆ˜ì— ì¶”ê°€í•˜ë©´ ëœë‹¤. 
     static IDE_RC    removeOptimizationInfo( qcStatement * aStatement,
                                              qmoDNF      * aDNF );
 
 private:
-    // Dnf Not Normal FormµéÀÇ ¹è¿­À» ¸¸µå´Â ÇÔ¼ö
+    // Dnf Not Normal Formë“¤ì˜ ë°°ì—´ì„ ë§Œë“œëŠ” í•¨ìˆ˜
     static IDE_RC    makeNotNormal( qcStatement * aStatement,
                                     qmoDNF      * aDNF );
     
-    // Dnf Not Normal Form ¸¸µå´Â ÇÔ¼ö
+    // Dnf Not Normal Form ë§Œë“œëŠ” í•¨ìˆ˜
     static IDE_RC    makeDnfNotNormal( qcStatement * aStatement,
                                        qtcNode     * aNormalForm,
                                        qtcNode    ** aDnfNotNormal );
 
-    // PROJ-1405 DNF normal form¿¡¼­ rownum predicateÀ» Á¦°ÅÇÑ´Ù.
+    // PROJ-1405 DNF normal formì—ì„œ rownum predicateì„ ì œê±°í•œë‹¤.
     static IDE_RC    removeRownumPredicate( qcStatement * aStatement,
                                             qmoDNF      * aDNF );
 };

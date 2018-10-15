@@ -180,7 +180,7 @@ static ace_rc_t getLogRecordValueMaxLength( oaContext    * aContext,
         case ALA_DATA_TYPE_BIGINT :
         case ALA_DATA_TYPE_INTEGER :
         case ALA_DATA_TYPE_SMALLINT :
-            /* ALA_GetAltibaseText() Âü°í */
+            /* ALA_GetAltibaseText() ì°¸ê³  */
             *aMaxLength = 49;
             break;
 
@@ -189,7 +189,7 @@ static ace_rc_t getLogRecordValueMaxLength( oaContext    * aContext,
             /* BUG-43020 "YYYY/MM/DD HH24:MI:SS.SSSSSS" */
             *aMaxLength = 26 + 1;
 #else
-            /* BUGBUG : "YYYY/MM/DD HH24:MI:SS" Format. BUG-32998 Âü°í */
+            /* BUGBUG : "YYYY/MM/DD HH24:MI:SS" Format. BUG-32998 ì°¸ê³  */
             *aMaxLength = 19 + 1;
 #endif
             break;
@@ -197,13 +197,13 @@ static ace_rc_t getLogRecordValueMaxLength( oaContext    * aContext,
         case ALA_DATA_TYPE_CHAR :
         case ALA_DATA_TYPE_VARCHAR :
 #if defined(ALTIADAPTER) || defined(JDBCADAPTER)
-            /* BUG-43183 altiadapter´Â value ³¡¿¡ NULLÀÌ µé¾î °¡¾ß ÇÑ´Ù.
-             * UTF-8ÀÏ °æ¿ì ÇÑ±ÛÀÌ 3byteÀÌ¹Ç·Î ³¡¿¡ NULLÀ» ³Ö¾î ÁÖ±â À§ÇØ + 3À» ÇÑ´Ù.
+            /* BUG-43183 altiadapterëŠ” value ëì— NULLì´ ë“¤ì–´ ê°€ì•¼ í•œë‹¤.
+             * UTF-8ì¼ ê²½ìš° í•œê¸€ì´ 3byteì´ë¯€ë¡œ ëì— NULLì„ ë„£ì–´ ì£¼ê¸° ìœ„í•´ + 3ì„ í•œë‹¤.
              */
             *aMaxLength = aColumn->mPrecision + MAX_CHARSET_PRECISION;
 #else            
-            /* Bind ½Ã SQLT_STRÀÌ ¾Æ´Ï¶ó SQLT_AFC/SQLT_CHRÀ¸·Î ÁöÁ¤ÇÑ´Ù.
-             * Null-terminated°¡ ¾Æ´Ï¹Ç·Î, (+1)Àº ÇÏÁö ¾Ê´Â´Ù.
+            /* Bind ì‹œ SQLT_STRì´ ì•„ë‹ˆë¼ SQLT_AFC/SQLT_CHRìœ¼ë¡œ ì§€ì •í•œë‹¤.
+             * Null-terminatedê°€ ì•„ë‹ˆë¯€ë¡œ, (+1)ì€ í•˜ì§€ ì•ŠëŠ”ë‹¤.
              */
             *aMaxLength = aColumn->mPrecision;
 #endif            
@@ -245,14 +245,14 @@ static ace_rc_t getLogRecordValueMaxLength( oaContext    * aContext,
 }
 
 /**
- * @breif  ColumnÀ» ÃÊ±âÈ­ÇÑ´Ù.
+ * @breif  Columnì„ ì´ˆê¸°í™”í•œë‹¤.
  *
  * @param  aContext         Context
  * @param  aTable           Table Meta Information
  * @param  aArrayDMLMaxSize Array DML Max Size
  * @param  aLogRecordColumn Log Record Column Array
  *
- * @return ¼º°ø/½ÇÆĞ
+ * @return ì„±ê³µ/ì‹¤íŒ¨
  */
 static ace_rc_t initializeLogRecordColumn( oaContext          * aContext,
                                            const ALA_ErrorMgr * aAlaErrorMgr,
@@ -352,14 +352,14 @@ static ace_rc_t initializeLogRecordColumn( oaContext          * aContext,
 }
 
 /**
- * @breif  Primary Key¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+ * @breif  Primary Keyë¥¼ ì´ˆê¸°í™”í•œë‹¤.
  *
  * @param  aContext         Context
  * @param  aTable           Table Meta Information
  * @param  aArrayDMLMaxSize Array DML Max Size
  * @param  aLogRecordColumn Log Record Column Array
  *
- * @return ¼º°ø/½ÇÆĞ
+ * @return ì„±ê³µ/ì‹¤íŒ¨
  */
 static ace_rc_t initializeLogRecordPrimaryKey( oaContext          * aContext,
                                                const ALA_ErrorMgr * aAlaErrorMgr,
@@ -459,7 +459,7 @@ static ace_rc_t initializeLogRecordPrimaryKey( oaContext          * aContext,
 }
 
 /**
- * @breif  ColumnÀ» Á¤¸®ÇÑ´Ù. (¸Ş¸ğ¸® ¹İ³³)
+ * @breif  Columnì„ ì •ë¦¬í•œë‹¤. (ë©”ëª¨ë¦¬ ë°˜ë‚©)
  *
  * @param  aColumnCount     Column Count
  * @param  aLogRecordColumn Log Record Column Array
@@ -1289,7 +1289,7 @@ static ace_rc_t convertToInsertLogRecord(oaContext *aContext,
     {
         sColumnID = aXLog->mColumn.mCIDArray[i];
 
-        /* Hint : ÄÃ·³ ID ¼ø¼­·Î Column Array°¡ ±¸¼ºµÇ¾î ÀÖ´Ù. */
+        /* Hint : ì»¬ëŸ¼ ID ìˆœì„œë¡œ Column Arrayê°€ êµ¬ì„±ë˜ì–´ ìˆë‹¤. */
         sColumn = &(aTableInfo->mAlaTable->mColumnArray[sColumnID]);
 
         sAceRC = convertToLogRecordColumn(aContext,
@@ -1343,7 +1343,7 @@ static ace_rc_t convertToUpdateLogRecord(oaContext *aContext,
     {
         sColumnID = aXLog->mColumn.mCIDArray[i];
 
-        /* Hint : ÄÃ·³ ID ¼ø¼­·Î Column Array°¡ ±¸¼ºµÇ¾î ÀÖ´Ù. */
+        /* Hint : ì»¬ëŸ¼ ID ìˆœì„œë¡œ Column Arrayê°€ êµ¬ì„±ë˜ì–´ ìˆë‹¤. */
         sColumn = &(aTableInfo->mAlaTable->mColumnArray[sColumnID]);
 
         sAceRC = convertToLogRecordColumn(aContext,
@@ -1531,9 +1531,9 @@ ace_rc_t oaAlaLogConverterDo(oaContext *aContext,
 }
 
 /**
- * @breif  Array DML Log Record List¿¡ Æ÷ÇÔµÉ NodeÀÎÁö °Ë»çÇÑ´Ù.
+ * @breif  Array DML Log Record Listì— í¬í•¨ë  Nodeì¸ì§€ ê²€ì‚¬í•œë‹¤.
  *
- * @param  aIsForced        °­Á¦ Æ÷ÇÔ ¿©ºÎ
+ * @param  aIsForced        ê°•ì œ í¬í•¨ ì—¬ë¶€
  * @param  aArrayDMLCount   Array DML Count
  * @param  aArrayDMLMaxSize Array DML Max Size
  *
@@ -1572,7 +1572,7 @@ static acp_bool_t isArrayDMLLogRecordNode( acp_bool_t   aIsForced,
 }
 
 /**
- * @breif  Æ¯Á¤ TableÀÇ Array DML Log Record ListÀ» ¸¸µç´Ù.
+ * @breif  íŠ¹ì • Tableì˜ Array DML Log Record Listì„ ë§Œë“ ë‹¤.
  *
  * @param  aHandle        Log Converter Handle
  * @param  aTableId       Table ID
@@ -1584,8 +1584,8 @@ static void makeArrayDMLLogRecordList( oaAlaLogConverterHandle  * aHandle,
                                        oaLogRecordType            aType,
                                        acp_list_t              ** aLogRecordList )
 {
-    /* Hint : oaLogRecordInsert, oaLogRecordUpdate, oaLogRecordDeleteÀÇ mTableId ¸â¹ö´Â
-     *        oaAlaLogConverterHandleÀÇ mTableInfo ¸â¹ö¿Í mLogRecordBox ¸â¹öÀÇ IndexÀÌ´Ù.
+    /* Hint : oaLogRecordInsert, oaLogRecordUpdate, oaLogRecordDeleteì˜ mTableId ë©¤ë²„ëŠ”
+     *        oaAlaLogConverterHandleì˜ mTableInfo ë©¤ë²„ì™€ mLogRecordBox ë©¤ë²„ì˜ Indexì´ë‹¤.
      */
     logRecordBox      * sLogRecordBox = &(aHandle->mLogRecordBox[aTableId]);
     oaLogRecordInsert * sLogRecordInsert = NULL;
@@ -1615,7 +1615,7 @@ static void makeArrayDMLLogRecordList( oaAlaLogConverterHandle  * aHandle,
         case OA_LOG_RECORD_TYPE_UPDATE :
             sIsInsertForced = ACP_TRUE;
             sIsDeleteForced = ACP_TRUE;
-            sIsUpdateForced = ACP_TRUE; /* Array DML ¹ÌÁö¿ø */
+            sIsUpdateForced = ACP_TRUE; /* Array DML ë¯¸ì§€ì› */
             break;
 
         case OA_LOG_RECORD_TYPE_DELETE :
@@ -1657,7 +1657,7 @@ static void makeArrayDMLLogRecordList( oaAlaLogConverterHandle  * aHandle,
         /* Nothing to do */
     }
 
-    /* UPDATE´Â Array DMLÀ» Áö¿øÇÏÁö ¾Ê±â ¶§¹®¿¡, ¸¶Áö¸·¿¡ Ã³¸®ÇØ¾ß ÇÑ´Ù. */
+    /* UPDATEëŠ” Array DMLì„ ì§€ì›í•˜ì§€ ì•Šê¸° ë•Œë¬¸ì—, ë§ˆì§€ë§‰ì— ì²˜ë¦¬í•´ì•¼ í•œë‹¤. */
     if ( isArrayDMLLogRecordNode( sIsUpdateForced,
                                   sLogRecordUpdate->mArrayDMLCount,
                                   aHandle->mArrayDMLMaxSize )
@@ -1675,7 +1675,7 @@ static void makeArrayDMLLogRecordList( oaAlaLogConverterHandle  * aHandle,
 }
 
 /**
- * @breif  CommitÀ» Àû¿ëÇÏ±â À§ÇØ, Áö±İ±îÁö ¸ğÀº DML·Î Log Record ListÀ» ¸¸µç´Ù.
+ * @breif  Commitì„ ì ìš©í•˜ê¸° ìœ„í•´, ì§€ê¸ˆê¹Œì§€ ëª¨ì€ DMLë¡œ Log Record Listì„ ë§Œë“ ë‹¤.
  *
  * @param  aHandle        Log Converter Handle
  * @param  aLogRecordList Log Record List
@@ -1689,9 +1689,9 @@ static void makeRecordListForCommit( oaAlaLogConverterHandle  * aHandle,
     oaLogRecordDelete * sLogRecordDelete = NULL;
     oaLogRecordUpdate * sLogRecordUpdate = NULL;
 
-    /* ¿ø·¡ÀÇ ·Î±×. Keep Alive Log or Stop Replication Log  */
+    /* ì›ë˜ì˜ ë¡œê·¸. Keep Alive Log or Stop Replication Log  */
     oaLogRecordCommon * sLogRecordCommon = NULL;
-    /* ¿ø·¡ÀÇ ·Î±× ´ë½ÅÇÏ¿© Ãß°¡ÇÒ Commit Log */
+    /* ì›ë˜ì˜ ë¡œê·¸ ëŒ€ì‹ í•˜ì—¬ ì¶”ê°€í•  Commit Log */
     oaLogRecordCommon * sLogRecordCommit = NULL;
     acp_sint32_t        sIndex = 0;
 
@@ -1703,8 +1703,8 @@ static void makeRecordListForCommit( oaAlaLogConverterHandle  * aHandle,
 
     for ( sIndex = 0; sIndex < aHandle->mTableCount; sIndex++ )
     {
-        /* Hint : oaLogRecordInsert, oaLogRecordUpdate, oaLogRecordDeleteÀÇ mTableId ¸â¹ö´Â
-         *        oaAlaLogConverterHandleÀÇ mTableInfo ¸â¹ö¿Í mLogRecordBox ¸â¹öÀÇ IndexÀÌ´Ù.
+        /* Hint : oaLogRecordInsert, oaLogRecordUpdate, oaLogRecordDeleteì˜ mTableId ë©¤ë²„ëŠ”
+         *        oaAlaLogConverterHandleì˜ mTableInfo ë©¤ë²„ì™€ mLogRecordBox ë©¤ë²„ì˜ Indexì´ë‹¤.
          */
         sLogRecordBox = &(aHandle->mLogRecordBox[sIndex]);
 
@@ -1751,8 +1751,8 @@ static void makeRecordListForCommit( oaAlaLogConverterHandle  * aHandle,
 
     sLogRecordCommon = &( aHandle->mCommonLogRecord );
    
-   /* Keep Alive ¿Í Stop Replication ´ë½Å Commit À» ¸®½ºÆ®ÀÇ ¸¶Áö¸·¿¡ Ãß°¡ÇÏ°í 
-    * ¿ø·¡ ·Î±×ÀÇ SN ¸¸ °¡Á®¿Â´Ù. */ 
+   /* Keep Alive ì™€ Stop Replication ëŒ€ì‹  Commit ì„ ë¦¬ìŠ¤íŠ¸ì˜ ë§ˆì§€ë§‰ì— ì¶”ê°€í•˜ê³  
+    * ì›ë˜ ë¡œê·¸ì˜ SN ë§Œ ê°€ì ¸ì˜¨ë‹¤. */ 
     sLogRecordCommit = &( aHandle->mCommitLogRecord );
     sLogRecordCommit->mSN = sLogRecordCommon->mSN; 
 
@@ -1763,7 +1763,7 @@ static void makeRecordListForCommit( oaAlaLogConverterHandle  * aHandle,
 }
 
 /**
- * @breif  New Log Record¸¦ Àû¿ëÇÏ±â À§ÇØ ÇÊ¿äÇÑ Log Record List¸¦ ¸¸µç´Ù.
+ * @breif  New Log Recordë¥¼ ì ìš©í•˜ê¸° ìœ„í•´ í•„ìš”í•œ Log Record Listë¥¼ ë§Œë“ ë‹¤.
  *
  * @param  aHandle        Log Converter Handle
  * @param  aNewLogRecord  New Log Record
@@ -1846,9 +1846,9 @@ void oaAlaLogConverterMakeLogRecordList( oaAlaLogConverterHandle  * aHandle,
 }
 
 /**
- * @breif  Log Record¸¦ Àç»ç¿ëÇÒ ¼ö ÀÖµµ·Ï Á¤¸®ÇÑ´Ù.
+ * @breif  Log Recordë¥¼ ì¬ì‚¬ìš©í•  ìˆ˜ ìˆë„ë¡ ì •ë¦¬í•œë‹¤.
  *
- *         ÇöÀç´Â Array DML µŞÁ¤¸®¿¡ »ç¿ëÇÑ´Ù.
+ *         í˜„ì¬ëŠ” Array DML ë’·ì •ë¦¬ì— ì‚¬ìš©í•œë‹¤.
  *
  * @param  aLogRecord Log Record
  */

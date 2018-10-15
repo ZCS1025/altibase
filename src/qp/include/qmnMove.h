@@ -21,11 +21,11 @@
  * Description :
  *     MOVE Node
  *
- *     °ü°èÇü ¸ğµ¨¿¡¼­ insert¸¦ ¼öÇàÇÏ´Â Plan Node ÀÌ´Ù.
+ *     ê´€ê³„í˜• ëª¨ë¸ì—ì„œ insertë¥¼ ìˆ˜í–‰í•˜ëŠ” Plan Node ì´ë‹¤.
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  **********************************************************************/
 
@@ -45,7 +45,7 @@
 //-----------------
 
 // qmncMOVE.flag
-// LimitÀ» °¡Áö´ÂÁö¿¡ ´ëÇÑ ¿©ºÎ
+// Limitì„ ê°€ì§€ëŠ”ì§€ì— ëŒ€í•œ ì—¬ë¶€
 # define QMNC_MOVE_LIMIT_MASK               (0x00000001)
 # define QMNC_MOVE_LIMIT_FALSE              (0x00000000)
 # define QMNC_MOVE_LIMIT_TRUE               (0x00000001)
@@ -87,7 +87,7 @@
 typedef struct qmncMOVE  
 {
     //---------------------------------
-    // Code ¿µ¿ª °øÅë Á¤º¸
+    // Code ì˜ì—­ ê³µí†µ ì •ë³´
     //---------------------------------
 
     qmnPlan               plan;
@@ -95,14 +95,14 @@ typedef struct qmncMOVE
     UInt                  planID;
 
     //---------------------------------
-    // querySet °ü·Ã Á¤º¸
+    // querySet ê´€ë ¨ ì •ë³´
     //---------------------------------
     
     qmsTableRef         * targetTableRef;  // target table
     qmsTableRef         * tableRef;        // source table
 
     //---------------------------------
-    // insert °ü·Ã Á¤º¸
+    // insert ê´€ë ¨ ì •ë³´
     //---------------------------------
 
     // insert columns
@@ -114,17 +114,17 @@ typedef struct qmncMOVE
     UInt                  canonizedTuple;
     // PROJ-2264 Dictionary table
     UInt                  compressedTuple;
-    // sequence Á¤º¸
+    // sequence ì •ë³´
     qcParseSeqCaches    * nextValSeqs;
     
     //---------------------------------
-    // Limitation °ü·Ã Á¤º¸
+    // Limitation ê´€ë ¨ ì •ë³´
     //---------------------------------
     
     qmsLimit            * limit;
 
     //---------------------------------
-    // constraint Ã³¸®¸¦ À§ÇÑ Á¤º¸
+    // constraint ì²˜ë¦¬ë¥¼ ìœ„í•œ ì •ë³´
     //---------------------------------
 
     qcmParentInfo       * parentConstraints;
@@ -132,7 +132,7 @@ typedef struct qmncMOVE
     qdConstraintSpec    * checkConstrList;
 
     //---------------------------------
-    // Display °ü·Ã Á¤º¸
+    // Display ê´€ë ¨ ì •ë³´
     //---------------------------------
 
     qmsNamePosition       tableOwnerName;     // Table Owner Name
@@ -159,7 +159,7 @@ typedef struct qmncMOVE
 typedef struct qmndMOVE
 {
     //---------------------------------
-    // Data ¿µ¿ª °øÅë Á¤º¸
+    // Data ì˜ì—­ ê³µí†µ ì •ë³´
     //---------------------------------
 
     qmndPlan              plan;
@@ -167,7 +167,7 @@ typedef struct qmndMOVE
     UInt                * flag;        
 
     //---------------------------------
-    // MOVE °íÀ¯ Á¤º¸
+    // MOVE ê³ ìœ  ì •ë³´
     //---------------------------------
 
     qmcInsertCursor       insertCursorMgr;
@@ -176,32 +176,32 @@ typedef struct qmndMOVE
     UShort                deleteTupleID;
     smiTableCursor      * deleteCursor;
 
-    /* PROJ-2464 hybrid partitioned table Áö¿ø */
+    /* PROJ-2464 hybrid partitioned table ì§€ì› */
     qcmTableInfo        * deletePartInfo;
 
     //---------------------------------
-    // lob Ã³¸®¸¦ À§ÇÑ Á¤º¸
+    // lob ì²˜ë¦¬ë¥¼ ìœ„í•œ ì •ë³´
     //---------------------------------
     
     struct qmxLobInfo   * lobInfo;
 
     //---------------------------------
-    // Limitation °ü·Ã Á¤º¸
+    // Limitation ê´€ë ¨ ì •ë³´
     //---------------------------------
     
-    ULong                 limitCurrent;    // ÇöÀç Limit °ª
-    ULong                 limitStart;      // ½ÃÀÛ Limit °ª
-    ULong                 limitEnd;        // ÃÖÁ¾ Limit °ª
+    ULong                 limitCurrent;    // í˜„ì¬ Limit ê°’
+    ULong                 limitStart;      // ì‹œì‘ Limit ê°’
+    ULong                 limitEnd;        // ìµœì¢… Limit ê°’
 
     //---------------------------------
-    // Trigger Ã³¸®¸¦ À§ÇÑ Á¤º¸
+    // Trigger ì²˜ë¦¬ë¥¼ ìœ„í•œ ì •ë³´
     //---------------------------------
 
-    // delete¸¦ À§ÇÑ old row
+    // deleteë¥¼ ìœ„í•œ old row
     qcmColumn           * columnsForRow;
     void                * oldRow;
     
-    // trigger row°¡ ÇÊ¿ä¿©ºÎ Á¤º¸
+    // trigger rowê°€ í•„ìš”ì—¬ë¶€ ì •ë³´
     idBool                needTriggerRowForInsert;
     idBool                existTriggerForInsert;
     
@@ -209,13 +209,13 @@ typedef struct qmndMOVE
     idBool                existTriggerForDelete;
    
     //---------------------------------
-    // index table Ã³¸®¸¦ À§ÇÑ Á¤º¸
+    // index table ì²˜ë¦¬ë¥¼ ìœ„í•œ ì •ë³´
     //---------------------------------
 
     qmsIndexTableCursors  insertIndexTableCursorInfo;
     qmsIndexTableCursors  deleteIndexTableCursorInfo;
     
-    // selection¿¡ »ç¿ëµÈ index table cursorÀÇ ÀÎÀÚ
+    // selectionì— ì‚¬ìš©ëœ index table cursorì˜ ì¸ì
     smiTableCursor      * indexDeleteCursor;
     
     //---------------------------------
@@ -246,11 +246,11 @@ public:
     // Base Function Pointer
     //------------------------
 
-    // ÃÊ±âÈ­
+    // ì´ˆê¸°í™”
     static IDE_RC init( qcTemplate * aTemplate,
                         qmnPlan    * aPlan );
 
-    // ¼öÇà ÇÔ¼ö
+    // ìˆ˜í–‰ í•¨ìˆ˜
     static IDE_RC doIt( qcTemplate * aTemplate,
                         qmnPlan    * aPlan,
                         qmcRowFlag * aFlag );
@@ -259,7 +259,7 @@ public:
     static IDE_RC padNull( qcTemplate * aTemplate,
                            qmnPlan    * aPlan );
     
-    // Plan Á¤º¸ Ãâ·Â
+    // Plan ì •ë³´ ì¶œë ¥
     static IDE_RC printPlan( qcTemplate   * aTemplate,
                              qmnPlan      * aPlan,
                              ULong          aDepth,
@@ -274,22 +274,22 @@ public:
     static IDE_RC checkDeleteRef( qcTemplate * aTemplate,
                                   qmnPlan    * aPlan );
     
-    // CursorÀÇ Close
+    // Cursorì˜ Close
     static IDE_RC closeCursor( qcTemplate * aTemplate,
                                qmnPlan    * aPlan );
     
 private:    
 
     //------------------------
-    // ÃÊ±âÈ­ °ü·Ã ÇÔ¼ö
+    // ì´ˆê¸°í™” ê´€ë ¨ í•¨ìˆ˜
     //------------------------
 
-    // ÃÖÃÊ ÃÊ±âÈ­
+    // ìµœì´ˆ ì´ˆê¸°í™”
     static IDE_RC firstInit( qcTemplate * aTemplate,
                              qmncMOVE   * aCodePlan,
                              qmndMOVE   * aDataPlan );
 
-    // cursor info »ı¼º
+    // cursor info ìƒì„±
     static IDE_RC allocCursorInfo( qcTemplate * aTemplate,
                                    qmncMOVE   * aCodePlan,
                                    qmndMOVE   * aDataPlan );
@@ -304,17 +304,17 @@ private:
                                          qmncMOVE   * aCodePlan,
                                          qmndMOVE   * aDataPlan );
     
-    // È£ÃâµÇ¾î¼­´Â ¾ÈµÊ.
+    // í˜¸ì¶œë˜ì–´ì„œëŠ” ì•ˆë¨.
     static IDE_RC doItDefault( qcTemplate * aTemplate,
                                qmnPlan    * aPlan,
                                qmcRowFlag * aFlag );
 
-    // ÃÖÃÊ MOVEÀ» ¼öÇà
+    // ìµœì´ˆ MOVEì„ ìˆ˜í–‰
     static IDE_RC doItFirst( qcTemplate * aTemplate,
                              qmnPlan    * aPlan,
                              qmcRowFlag * aFlag );
 
-    // ´ÙÀ½ MOVEÀ» ¼öÇà
+    // ë‹¤ìŒ MOVEì„ ìˆ˜í–‰
     static IDE_RC doItNext( qcTemplate * aTemplate,
                             qmnPlan    * aPlan,
                             qmcRowFlag * aFlag );
@@ -323,7 +323,7 @@ private:
     static IDE_RC checkTrigger( qcTemplate * aTemplate,
                                 qmnPlan    * aPlan );
     
-    // CursorÀÇ Open
+    // Cursorì˜ Open
     static IDE_RC openInsertCursor( qcTemplate * aTemplate,
                                     qmnPlan    * aPlan );
 
@@ -331,7 +331,7 @@ private:
     static IDE_RC insertOneRow( qcTemplate * aTemplate,
                                 qmnPlan    * aPlan );
     
-    // CursorÀÇ Get
+    // Cursorì˜ Get
     static IDE_RC getCursor( qcTemplate * aTemplate,
                              qmnPlan    * aPlan,
                              idBool     * aIsTableCursorChanged );

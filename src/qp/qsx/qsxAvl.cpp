@@ -37,13 +37,13 @@ void qsxAvl::initAvlTree( qsxAvlTree    * aAvlTree,
 {
 /***********************************************************************
  *
- * Description : PROJ-1075 avl-treeÀÇ ÃÊ±âÈ­
+ * Description : PROJ-1075 avl-treeì˜ ì´ˆê¸°í™”
  *
  * Implementation :
- *         (1) memory°ü¸®ÀÚ¸¦ ÃÊ±âÈ­.
- *         (1.1) ÇÒ´çÇÒ chunkÀÇ Å©±â ¹× dataoffsetÀ» °è»êÇÑ´Ù.
- *         (1.2) memory°ü¸®ÀÚ¸¦ chunkÅ©±â·Î ÇÒ´ç¹Þµµ·Ï ÃÊ±âÈ­
- *         (2) ÄÃ·³ Á¤º¸ ¹× timeoutÃ³¸®¸¦ À§ÇÑ Á¤º¸¸¦ ¿¬°á
+ *         (1) memoryê´€ë¦¬ìžë¥¼ ì´ˆê¸°í™”.
+ *         (1.1) í• ë‹¹í•  chunkì˜ í¬ê¸° ë° dataoffsetì„ ê³„ì‚°í•œë‹¤.
+ *         (1.2) memoryê´€ë¦¬ìžë¥¼ chunkí¬ê¸°ë¡œ í• ë‹¹ë°›ë„ë¡ ì´ˆê¸°í™”
+ *         (2) ì»¬ëŸ¼ ì •ë³´ ë° timeoutì²˜ë¦¬ë¥¼ ìœ„í•œ ì •ë³´ë¥¼ ì—°ê²°
  *
  ***********************************************************************/
 
@@ -70,13 +70,13 @@ IDE_RC qsxAvl::deleteAll( qsxAvlTree * aAvlTree )
 {
 /***********************************************************************
  *
- * Description : PROJ-1075 avl-tree¾ÈÀÇ ¸ðµç node »èÁ¦.
+ * Description : PROJ-1075 avl-treeì•ˆì˜ ëª¨ë“  node ì‚­ì œ.
  *
  * Implementation :
- *         (1) tree root ÀÇ leftºÎÅÍ rotationÀ» ÇÏ¿©
- *             left child node°¡ ¾ø´Â root·Î º¯Çü.
- *         (2) rootÀÇ child°¡ ¿ÞÂÊ¿¡ ¾ø´Ù¸é
- *             root¸¦ Áö¿ò.
+ *         (1) tree root ì˜ leftë¶€í„° rotationì„ í•˜ì—¬
+ *             left child nodeê°€ ì—†ëŠ” rootë¡œ ë³€í˜•.
+ *         (2) rootì˜ childê°€ ì™¼ìª½ì— ì—†ë‹¤ë©´
+ *             rootë¥¼ ì§€ì›€.
  *
  *       10
  *     /    \
@@ -227,11 +227,11 @@ IDE_RC qsxAvl::search( qsxAvlTree * aAvlTree,
  * Description : PROJ-1075 key search
  *
  * Implementation :
- *         (1) rootºÎÅÍ ½ÃÀÛ.
- *         (2) ¸¸¾à key°ªÀ» compareÇØ¼­ °°À¸¸é breakÇÏ°í rowPtrÀ» ¼¼ÆÃ.
- *         (3) ¸¸¾à ÀÛ°Å³ª Å©¸é link¸¦ µû¶ó°¨.
- *             sCmp°ªÀÌ 0º¸´Ù ÀÛÀ¸¸é ( left child ),
- *             sCmp°ªÀÌ 0º¸´Ù Å©¸é ( right child )
+ *         (1) rootë¶€í„° ì‹œìž‘.
+ *         (2) ë§Œì•½ keyê°’ì„ compareí•´ì„œ ê°™ìœ¼ë©´ breakí•˜ê³  rowPtrì„ ì„¸íŒ….
+ *         (3) ë§Œì•½ ìž‘ê±°ë‚˜ í¬ë©´ linkë¥¼ ë”°ë¼ê°.
+ *             sCmpê°’ì´ 0ë³´ë‹¤ ìž‘ìœ¼ë©´ ( left child ),
+ *             sCmpê°’ì´ 0ë³´ë‹¤ í¬ë©´ ( right child )
  *
  ***********************************************************************/
 #define IDE_FN "qsxAvl::search"
@@ -295,14 +295,14 @@ IDE_RC qsxAvl::insert( qsxAvlTree * aAvlTree,
  * Description : PROJ-1075 insert
  *
  * Implementation :
- *         (1) rootÀÇ parentºÎÅÍ ½ÃÀÛ.
- *         (2) ÇØ´ç Å°°ªÀÌ »ðÀÔµÉ À§Ä¡¸¦ °Ë»ö
- *         (2.1) °Ë»ö path¸¦ µû¶ó°¡¸é¼­ balance ÀçÁ¶Á¤ÀÌ ÇÊ¿äÇÑ node °Ë»ö
- *         (3) new node ¸¦ insert
- *         (4) balance °ªÀ» ´Ù½Ã ¼¼ÆÃ
- *         (5) balance°¡ 2ÀÌ»óÀÌ¸é rotationÀ» ÅëÇØ balance¸¦ ÀçÁ¶Á¤
- *         (6) balance Á¶Á¤ ÀÌÈÄ balancing nodeÀÇ parentÀÇ
- *             balance Á¶Á¤ ÀÌÀü node°¡ ÀÖ´ø ÀÚ¸®¿¡ balance Á¶Á¤ ÀÌÈÄÀÇ node¿¬°á
+ *         (1) rootì˜ parentë¶€í„° ì‹œìž‘.
+ *         (2) í•´ë‹¹ í‚¤ê°’ì´ ì‚½ìž…ë  ìœ„ì¹˜ë¥¼ ê²€ìƒ‰
+ *         (2.1) ê²€ìƒ‰ pathë¥¼ ë”°ë¼ê°€ë©´ì„œ balance ìž¬ì¡°ì •ì´ í•„ìš”í•œ node ê²€ìƒ‰
+ *         (3) new node ë¥¼ insert
+ *         (4) balance ê°’ì„ ë‹¤ì‹œ ì„¸íŒ…
+ *         (5) balanceê°€ 2ì´ìƒì´ë©´ rotationì„ í†µí•´ balanceë¥¼ ìž¬ì¡°ì •
+ *         (6) balance ì¡°ì • ì´í›„ balancing nodeì˜ parentì˜
+ *             balance ì¡°ì • ì´ì „ nodeê°€ ìžˆë˜ ìžë¦¬ì— balance ì¡°ì • ì´í›„ì˜ nodeì—°ê²°
  *
  * Ex) 4 insert. (..) : balance
  * 
@@ -362,7 +362,7 @@ IDE_RC qsxAvl::insert( qsxAvlTree * aAvlTree,
 
     qsxAvlNode   sHeadNode;       // parent node of root.
     qsxAvlNode * sCurrBalNode;    // balancing node
-    qsxAvlNode * sParentBalNode;  // balancing nodeÀÇ parent
+    qsxAvlNode * sParentBalNode;  // balancing nodeì˜ parent
     qsxAvlNode * sCurrIterNode;   // for iteration
     qsxAvlNode * sNextIterNode;   // for iteration
     qsxAvlNode * sNewNode;        // for new node
@@ -372,10 +372,10 @@ IDE_RC qsxAvl::insert( qsxAvlTree * aAvlTree,
     mtdValueInfo sValueInfo1;
     mtdValueInfo sValueInfo2;
     
-    // ¾Æ¹«°Íµµ ¾ø´Â °æ¿ì
+    // ì•„ë¬´ê²ƒë„ ì—†ëŠ” ê²½ìš°
     if ( aAvlTree->root == NULL )
     {
-        // root¿¡ ±×³É ºÙÀÓ
+        // rootì— ê·¸ëƒ¥ ë¶™ìž„
         IDE_TEST( _makeNode( aAvlTree,
                              aKeyCol,
                              aKey,
@@ -387,15 +387,15 @@ IDE_RC qsxAvl::insert( qsxAvlTree * aAvlTree,
     else
     {
         // (1)
-        // root°¡ balance Á¶Á¤ ÀÌÈÄ ¹Ù²ð ¶§¸¦ °í·ÁÇÏ¿©
-        // rootÀÇ parentºÎÅÍ ½ÃÀÛ.
+        // rootê°€ balance ì¡°ì • ì´í›„ ë°”ë€” ë•Œë¥¼ ê³ ë ¤í•˜ì—¬
+        // rootì˜ parentë¶€í„° ì‹œìž‘.
         sParentBalNode = &sHeadNode;
         sParentBalNode->link[AVL_RIGHT] = aAvlTree->root;
 
         // (2)
-        // insertµÉ ÀÚ¸®¸¦ searchÇÏ¸é¼­
-        // balancing node, balancing nodeÀÇ parent,
-        // node°¡ »ðÀÔµÉ À§Ä¡¸¦ ¼¼ÆÃÇÑ´Ù.
+        // insertë  ìžë¦¬ë¥¼ searchí•˜ë©´ì„œ
+        // balancing node, balancing nodeì˜ parent,
+        // nodeê°€ ì‚½ìž…ë  ìœ„ì¹˜ë¥¼ ì„¸íŒ…í•œë‹¤.
         for ( sCurrIterNode = sParentBalNode->link[AVL_RIGHT],
                   sCurrBalNode = sCurrIterNode;
               ;
@@ -420,14 +420,14 @@ IDE_RC qsxAvl::insert( qsxAvlTree * aAvlTree,
             sDir = CMPDIR( sCmp );
             sNextIterNode = sCurrIterNode->link[sDir];
 
-            // ´õÀÌ»ó Ã£À» °÷ÀÌ ¾ø´Ù¸é ±×ÀÚ¸®°¡ »ðÀÔµÉ ÀÚ¸®.
-            // sCurrIterNode->link[sDir] ¿¡ ¿¬°á µÇ¾î¾ß ÇÔ.
+            // ë”ì´ìƒ ì°¾ì„ ê³³ì´ ì—†ë‹¤ë©´ ê·¸ìžë¦¬ê°€ ì‚½ìž…ë  ìžë¦¬.
+            // sCurrIterNode->link[sDir] ì— ì—°ê²° ë˜ì–´ì•¼ í•¨.
             if ( sNextIterNode == NULL )
                 break;
 
             // (2.1)
-            // »ðÀÔµÉ nodeÀÇ parentÁß
-            // balancing node, balancing nodeÀÇ parentÀúÀå
+            // ì‚½ìž…ë  nodeì˜ parentì¤‘
+            // balancing node, balancing nodeì˜ parentì €ìž¥
             if ( sNextIterNode->balance != 0 ) {
                 sParentBalNode = sCurrIterNode;
                 sCurrBalNode = sNextIterNode;
@@ -435,25 +435,25 @@ IDE_RC qsxAvl::insert( qsxAvlTree * aAvlTree,
         }
 
         // (3)
-        // »ðÀÔµÉ ³ëµå¸¦ »ý¼º
+        // ì‚½ìž…ë  ë…¸ë“œë¥¼ ìƒì„±
         IDE_TEST( _makeNode( aAvlTree,
                              aKeyCol,
                              aKey,
                              &sNewNode )
                   != IDE_SUCCESS );
 
-        // »ðÀÔµÉ ³ëµåÀÇ data¸¦ output argument¿¡ ¼¼ÆÃ
+        // ì‚½ìž…ë  ë…¸ë“œì˜ dataë¥¼ output argumentì— ì„¸íŒ…
         *aRowPtr = sNewNode->row;
 
-        // ¿ø·¡ ¿¬°áµÉ ÀÚ¸®¿¡ ¿¬°á
+        // ì›ëž˜ ì—°ê²°ë  ìžë¦¬ì— ì—°ê²°
         sCurrIterNode->link[sDir] = sNewNode;
         aAvlTree->nodeCount++;
 
         // (4)
-        // balance°ªÀ» Á¶Á¤ÇÔ
-        // balance Á¶Á¤ ³ëµå¸¦ À§¿¡¼­ ¼±Á¤ÇÏ¿´À¸¹Ç·Î
-        // °Å±â¼­ºÎÅÍ ½ÃÀÛÇÏ¿© »ðÀÔµÈ ³ëµå±îÁö µû¶ó°¡¸é¼­
-        // top-down¹æ½ÄÀ¸·Î balanceÁõ°¨
+        // balanceê°’ì„ ì¡°ì •í•¨
+        // balance ì¡°ì • ë…¸ë“œë¥¼ ìœ„ì—ì„œ ì„ ì •í•˜ì˜€ìœ¼ë¯€ë¡œ
+        // ê±°ê¸°ì„œë¶€í„° ì‹œìž‘í•˜ì—¬ ì‚½ìž…ëœ ë…¸ë“œê¹Œì§€ ë”°ë¼ê°€ë©´ì„œ
+        // top-downë°©ì‹ìœ¼ë¡œ balanceì¦ê°
         for ( sCurrIterNode = sCurrBalNode;
               sCurrIterNode != sNewNode;
               sCurrIterNode = sCurrIterNode->link[sDir] )
@@ -476,12 +476,12 @@ IDE_RC qsxAvl::insert( qsxAvlTree * aAvlTree,
             sCurrIterNode->balance += ( ( sDir == AVL_LEFT ) ? -1 : 1 );
         }
 
-        // balanceÁ¶Á¤ ÀüÀÇ balancing node¸¦ ¹é¾÷
+        // balanceì¡°ì • ì „ì˜ balancing nodeë¥¼ ë°±ì—…
         sSavedBalNode = sCurrBalNode;
 
         // (5)
-        // balance°¡ 1ÀÌ»óÀÎ °æ¿ì ÀçÁ¶Á¤ÀÌ ÇÊ¿äÇÔ
-        // rotationÀ» ÅëÇØ balance¸¦ ÀçÁ¶Á¤
+        // balanceê°€ 1ì´ìƒì¸ ê²½ìš° ìž¬ì¡°ì •ì´ í•„ìš”í•¨
+        // rotationì„ í†µí•´ balanceë¥¼ ìž¬ì¡°ì •
         if ( abs( sCurrBalNode->balance ) > 1 )
         {
             sValueInfo1.column = aAvlTree->keyCol;
@@ -500,17 +500,17 @@ IDE_RC qsxAvl::insert( qsxAvlTree * aAvlTree,
         }
 
         // (6)
-        // balanceÁ¶Á¤ ÀÌÈÄ balance Á¶Á¤ ³ëµåÀÇ parent³ëµå¿¡ ´Ù½Ã ºÙÀÓ
+        // balanceì¡°ì • ì´í›„ balance ì¡°ì • ë…¸ë“œì˜ parentë…¸ë“œì— ë‹¤ì‹œ ë¶™ìž„
         if ( sSavedBalNode == sHeadNode.link[AVL_RIGHT] )
         {
-            // balance Á¶Á¤µÈ ÀÌÈÄ root°¡ ¹Ù²ï °æ¿ì
+            // balance ì¡°ì •ëœ ì´í›„ rootê°€ ë°”ë€ ê²½ìš°
             aAvlTree->root = sCurrBalNode;
         }
         else
         {
             // basic case.
-            // balance Á¶Á¤ ÀÌÀü ³ëµå°¡ ¾îµð ºÙ¾îÀÖ¾ú´ÂÁö Ã£Àº ´ÙÀ½
-            // balance Á¶Á¤ ÀÌÈÄÀÇ ³ëµå¸¦ ±×ÀÚ¸®¿¡ ´Ù½Ã ºÙÀÓ
+            // balance ì¡°ì • ì´ì „ ë…¸ë“œê°€ ì–´ë”” ë¶™ì–´ìžˆì—ˆëŠ”ì§€ ì°¾ì€ ë‹¤ìŒ
+            // balance ì¡°ì • ì´í›„ì˜ ë…¸ë“œë¥¼ ê·¸ìžë¦¬ì— ë‹¤ì‹œ ë¶™ìž„
             sDir = ( sSavedBalNode == sParentBalNode->link[AVL_RIGHT] ) ? AVL_RIGHT : AVL_LEFT;        
             sParentBalNode->link[sDir] = sCurrBalNode;
         }
@@ -540,22 +540,22 @@ IDE_RC qsxAvl::deleteKey( qsxAvlTree * aAvlTree,
  * Description : PROJ-1075 delete
  *
  * Implementation :
- *         (1) rootºÎÅÍ ½ÃÀÛ.
- *         (2) ÇØ´ç Å°°ªÀÌ »èÁ¦µÉ À§Ä¡¸¦ °Ë»ö
- *         (2.1) °Ë»ö path¸¦ ÀúÀå. path directionµµ ÇÔ²² ÀúÀå
- *         (3) node »èÁ¦
- *         (3.1) nodeÀÇ child°¡ ¾ø°Å³ª ÇÏ³ªÀÎ °æ¿ì
- *               child¸¦ Áö¿ï nodeÀÇ parent¿¡ ¿¬°áÇÏ°í node»èÁ¦
- *         (3.2) nodeÀÇ child°¡ µÑ´Ù ÀÖ´Â °æ¿ì
- *               ÇØ´ç node´ÙÀ½À¸·Î Å« node¸¦ Ã£¾Æ¼­
- *               µ¥ÀÌÅÍ¸¦ copyÇÑ ´ÙÀ½ ¿¬°á°ü°è Á¶Á¤.
- *               ÇØ´ç node¸¦ Áö¿ì´Â °ÍÀÌ ¾Æ´Ï¶ó ÇØ´ç node´ÙÀ½À¸·Î
- *               Å« node¸¦ »èÁ¦ÇÔ.(delete by copy algorithm)
- *         (4) balanceÀçÁ¶Á¤
- *             ÀúÀåÇØ µÎ¾ú´ø search path¸¦ µû¶ó°¡¸é¼­
- *             balanceÁ¶Á¤. ¸¸¾à balance°¡ 2ÀÌ»óÀÌ¶ó¸é rotationÀ¸·Î ÀçÁ¶Á¤.
- *             +-1ÀÎ°æ¿ì Á¶Á¤ÇÒ ÇÊ¿ä°¡ ¾øÀ½
- *             0ÀÎ °æ¿ì Á¶Á¤ÀÌ ¿Ï·áµÈ °æ¿ì°Å³ª ¾Æ¹«°Íµµ ÇÒ ÇÊ¿ä°¡ ¾ø´Â °æ¿ìÀÓ.
+ *         (1) rootë¶€í„° ì‹œìž‘.
+ *         (2) í•´ë‹¹ í‚¤ê°’ì´ ì‚­ì œë  ìœ„ì¹˜ë¥¼ ê²€ìƒ‰
+ *         (2.1) ê²€ìƒ‰ pathë¥¼ ì €ìž¥. path directionë„ í•¨ê»˜ ì €ìž¥
+ *         (3) node ì‚­ì œ
+ *         (3.1) nodeì˜ childê°€ ì—†ê±°ë‚˜ í•˜ë‚˜ì¸ ê²½ìš°
+ *               childë¥¼ ì§€ìš¸ nodeì˜ parentì— ì—°ê²°í•˜ê³  nodeì‚­ì œ
+ *         (3.2) nodeì˜ childê°€ ë‘˜ë‹¤ ìžˆëŠ” ê²½ìš°
+ *               í•´ë‹¹ nodeë‹¤ìŒìœ¼ë¡œ í° nodeë¥¼ ì°¾ì•„ì„œ
+ *               ë°ì´í„°ë¥¼ copyí•œ ë‹¤ìŒ ì—°ê²°ê´€ê³„ ì¡°ì •.
+ *               í•´ë‹¹ nodeë¥¼ ì§€ìš°ëŠ” ê²ƒì´ ì•„ë‹ˆë¼ í•´ë‹¹ nodeë‹¤ìŒìœ¼ë¡œ
+ *               í° nodeë¥¼ ì‚­ì œí•¨.(delete by copy algorithm)
+ *         (4) balanceìž¬ì¡°ì •
+ *             ì €ìž¥í•´ ë‘ì—ˆë˜ search pathë¥¼ ë”°ë¼ê°€ë©´ì„œ
+ *             balanceì¡°ì •. ë§Œì•½ balanceê°€ 2ì´ìƒì´ë¼ë©´ rotationìœ¼ë¡œ ìž¬ì¡°ì •.
+ *             +-1ì¸ê²½ìš° ì¡°ì •í•  í•„ìš”ê°€ ì—†ìŒ
+ *             0ì¸ ê²½ìš° ì¡°ì •ì´ ì™„ë£Œëœ ê²½ìš°ê±°ë‚˜ ì•„ë¬´ê²ƒë„ í•  í•„ìš”ê°€ ì—†ëŠ” ê²½ìš°ìž„.
  *
  * Ex) 2 delete. (..) : balance
  * 
@@ -691,12 +691,12 @@ IDE_RC qsxAvl::deleteKey( qsxAvlTree * aAvlTree,
     
     if ( aAvlTree->root != NULL )
     {
-        // (1) rootºÎÅÍ ½ÃÀÛ
+        // (1) rootë¶€í„° ì‹œìž‘
         sCurrNode = aAvlTree->root;
 
         // (2)
-        // deleteµÉ node¸¦ °Ë»öÇÏ¸é¼­
-        // path¸¦ ÀúÀå.
+        // deleteë  nodeë¥¼ ê²€ìƒ‰í•˜ë©´ì„œ
+        // pathë¥¼ ì €ìž¥.
         while(1)
         {
             if ( sCurrNode == NULL )
@@ -731,13 +731,13 @@ IDE_RC qsxAvl::deleteKey( qsxAvlTree * aAvlTree,
             }
         }
 
-        // (3) node¸¦ »èÁ¦.
+        // (3) nodeë¥¼ ì‚­ì œ.
         if ( sCurrNode->link[AVL_LEFT] == NULL || sCurrNode->link[AVL_RIGHT] == NULL )
         {
-            // (3.1) child°¡ ¾Æ¿¹ ¾ø°Å³ª ÇÏ³ª°¡ ÀÖ´Â °æ¿ì
+            // (3.1) childê°€ ì•„ì˜ˆ ì—†ê±°ë‚˜ í•˜ë‚˜ê°€ ìžˆëŠ” ê²½ìš°
             sDir = ( sCurrNode->link[AVL_LEFT] == NULL ) ? AVL_RIGHT : AVL_LEFT;
 
-            // »èÁ¦µÉ nodeÀÇ child node¸¦ »èÁ¦µÉ nodeÀÇ parent¿¡ ¿¬°á
+            // ì‚­ì œë  nodeì˜ child nodeë¥¼ ì‚­ì œë  nodeì˜ parentì— ì—°ê²°
             if ( sTop != 0 )
             {
                 // basic case
@@ -745,20 +745,20 @@ IDE_RC qsxAvl::deleteKey( qsxAvlTree * aAvlTree,
             }
             else
             {
-                // root°¡ »èÁ¦µÈ °æ¿ì
+                // rootê°€ ì‚­ì œëœ ê²½ìš°
                 aAvlTree->root = sCurrNode->link[sDir];
             }
 
             aAvlTree->nodeCount--;
 
-            // ÇØ´ç node¸¦ »èÁ¦
+            // í•´ë‹¹ nodeë¥¼ ì‚­ì œ
             IDE_TEST( _deleteNode( aAvlTree,
                                    sCurrNode )
                       != IDE_SUCCESS );
         }
         else
         {
-            // (3.2) child°¡ µÎ°³ ºÙ¾î ÀÖ´Â °æ¿ì.
+            // (3.2) childê°€ ë‘ê°œ ë¶™ì–´ ìžˆëŠ” ê²½ìš°.
             /* Find the inorder successor */
             sHeirNode = sCurrNode->link[AVL_RIGHT];
       
@@ -776,26 +776,26 @@ IDE_RC qsxAvl::deleteKey( qsxAvlTree * aAvlTree,
             // row copy
             _copyNodeRow( aAvlTree, sCurrNode, sHeirNode );
             
-            // node ¿¬°á
+            // node ì—°ê²°
             sPath[sTop - 1]->link[ ( ( sPath[sTop - 1] == sCurrNode ) ? AVL_RIGHT : AVL_LEFT ) ]  =
                 sHeirNode->link[AVL_RIGHT];
 
             aAvlTree->nodeCount--;
 
-            // ÇØ´ç node¸¦ »èÁ¦
+            // í•´ë‹¹ nodeë¥¼ ì‚­ì œ
             IDE_TEST( _deleteNode( aAvlTree,
                                    sHeirNode )
                       != IDE_SUCCESS );
         }
 
-        // (4) balance Á¶Á¤.
+        // (4) balance ì¡°ì •.
         while ( ( --sTop >= 0 ) &&
                 ( sDone == ID_FALSE ) )
         {
             sPath[sTop]->balance += ( ( sPathDir[sTop] != AVL_LEFT ) ? -1 : 1 );
 
-            // balance°ªÀÌ -1¶Ç´Â +1 ÀÌ¸é ±×³É Á¾·á.
-            // balance°¡ 2ÀÌ»óÀÌ¸é rotationÀ» ÅëÇØ balance Á¶Á¤
+            // balanceê°’ì´ -1ë˜ëŠ” +1 ì´ë©´ ê·¸ëƒ¥ ì¢…ë£Œ.
+            // balanceê°€ 2ì´ìƒì´ë©´ rotationì„ í†µí•´ balance ì¡°ì •
             if ( abs( sPath[sTop]->balance ) == 1 )
             {    
                 break;
@@ -804,7 +804,7 @@ IDE_RC qsxAvl::deleteKey( qsxAvlTree * aAvlTree,
             {
                 _remove_balance( &sPath[sTop], sPathDir[sTop], &sDone );
                 
-                // parentÁ¶Á¤
+                // parentì¡°ì •
                 if ( sTop != 0 )
                 {
                     // basic case
@@ -812,15 +812,15 @@ IDE_RC qsxAvl::deleteKey( qsxAvlTree * aAvlTree,
                 }
                 else
                 {
-                    // rootÀÎ °æ¿ì
+                    // rootì¸ ê²½ìš°
                     aAvlTree->root = sPath[0];
                 }
             }
             else
             {
                 // Nothing to do.
-                // balance°¡ 0ÀÎ °æ¿ì´Â ¾Æ¹«·± Á¶Á¤ÀÌ ¾ø¾ú°Å³ª,
-                // Á¶Á¤ÈÄ 0ÀÌ µÈ °æ¿ìÀÓ.
+                // balanceê°€ 0ì¸ ê²½ìš°ëŠ” ì•„ë¬´ëŸ° ì¡°ì •ì´ ì—†ì—ˆê±°ë‚˜,
+                // ì¡°ì •í›„ 0ì´ ëœ ê²½ìš°ìž„.
             }
         }
 
@@ -849,12 +849,12 @@ IDE_RC qsxAvl::searchMinMax( qsxAvlTree * aAvlTree,
 {
 /***********************************************************************
  *
- * Description : PROJ-1075 min, max °Ë»ö
+ * Description : PROJ-1075 min, max ê²€ìƒ‰
  *
  * Implementation :
- *          (1) directionÀÌ 0ÀÌ¸é min, directionÀÌ 1ÀÌ¸é max
- *          (2) ÇÑÂÊ ¹æÇâÀ¸·Î nodeÀÇ next°¡ nullÀÏ ¶§±îÁö µû¶ó°¨
- *          (3) ¸¸¾à root°¡ ¾ø´Ù¸é ¿¡·¯.
+ *          (1) directionì´ 0ì´ë©´ min, directionì´ 1ì´ë©´ max
+ *          (2) í•œìª½ ë°©í–¥ìœ¼ë¡œ nodeì˜ nextê°€ nullì¼ ë•Œê¹Œì§€ ë”°ë¼ê°
+ *          (3) ë§Œì•½ rootê°€ ì—†ë‹¤ë©´ ì—ëŸ¬.
  *
  ***********************************************************************/
 #define IDE_FN "qsxAvl::searchMinMax"
@@ -903,14 +903,14 @@ IDE_RC qsxAvl::searchNext( qsxAvlTree * aAvlTree,
 {
 /***********************************************************************
  *
- * Description : PROJ-1075 next, priv °Ë»ö
+ * Description : PROJ-1075 next, priv ê²€ìƒ‰
  *
  * Implementation :
- *          (1) ÀÏ¹Ý search¶û °°Àº logicÀÌÁö¸¸ next, priv¸¦ À§ÇØ stackÀ» »ç¿ë
- *          (2) ÇØ´ç key¸¦ Ã£À¸¸é sFound¸¦ TRUE·Î ¼¼ÆÃÇÏ°í ¸ØÃã.
- *          (3) ¸¸¾à currentºÎÅÍ ½ÃÀÛÀÌ°í key¸¦ Ã£¾Ò´Ù¸é
- *              ÇØ´ç À§Ä¡ÀÇ row¸¦ ¹ÝÈ¯.
- *          (4) ¸¸¾à currentºÎÅÍ ½ÃÀÛÀÌ ¾Æ´Ï¶ó¸é ´ÙÀ½ À§Ä¡ÀÇ row¹ÝÈ¯.
+ *          (1) ì¼ë°˜ searchëž‘ ê°™ì€ logicì´ì§€ë§Œ next, privë¥¼ ìœ„í•´ stackì„ ì‚¬ìš©
+ *          (2) í•´ë‹¹ keyë¥¼ ì°¾ìœ¼ë©´ sFoundë¥¼ TRUEë¡œ ì„¸íŒ…í•˜ê³  ë©ˆì¶¤.
+ *          (3) ë§Œì•½ currentë¶€í„° ì‹œìž‘ì´ê³  keyë¥¼ ì°¾ì•˜ë‹¤ë©´
+ *              í•´ë‹¹ ìœ„ì¹˜ì˜ rowë¥¼ ë°˜í™˜.
+ *          (4) ë§Œì•½ currentë¶€í„° ì‹œìž‘ì´ ì•„ë‹ˆë¼ë©´ ë‹¤ìŒ ìœ„ì¹˜ì˜ rowë°˜í™˜.
  *
  ***********************************************************************/
 #define IDE_FN "qsxAvl::searchNext"
@@ -929,7 +929,7 @@ IDE_RC qsxAvl::searchNext( qsxAvlTree * aAvlTree,
 
     if ( aAvlTree->root != NULL )
     {
-        // (1) rootºÎÅÍ ½ÃÀÛ
+        // (1) rootë¶€í„° ì‹œìž‘
         sCurrNode = aAvlTree->root;
 
         while ( sCurrNode != NULL )
@@ -959,33 +959,33 @@ IDE_RC qsxAvl::searchNext( qsxAvlTree * aAvlTree,
             {
                 sDir = CMPDIR(sCmp);
 
-                // sCurrNode->key < aKey ¸é right·Î
-                // sCurrNode->key > aKey ¸é left·Î
+                // sCurrNode->key < aKey ë©´ rightë¡œ
+                // sCurrNode->key > aKey ë©´ leftë¡œ
                 sCurrNode = sCurrNode->link[sDir];
             }
         }
 
         if( *aFound == ID_TRUE && aStart == AVL_CURRENT )
         {
-            // key°¡ °°Àº node¸¦ Ã£¾Ò°í, ½ÃÀÛ½ÃÁ¡ÀÌ currentÀÌ¸é
-            // Ã£Àº nodeÀÇ rowPtrÀ» ³Ñ°ÜÁÖ¸é µÈ´Ù.
+            // keyê°€ ê°™ì€ nodeë¥¼ ì°¾ì•˜ê³ , ì‹œìž‘ì‹œì ì´ currentì´ë©´
+            // ì°¾ì€ nodeì˜ rowPtrì„ ë„˜ê²¨ì£¼ë©´ ëœë‹¤.
             *aRowPtr = sCurrNode->row;
         }
         else
         {
             if( *aFound == ID_FALSE && sDir != aDir )
             {
-                // key°¡ °°Àº node¸¦ ¸øÃ£¾Ò°í,
-                // ÀÌµ¿ÇÒ ¹æÇâ°ú ¸¶Áö¸· search¹æÇâÀÌ ´Ù¸£¸é
-                // ¸¶Áö¸· path¿¡ ÀÖ´Â node·Î ¼³Á¤.
+                // keyê°€ ê°™ì€ nodeë¥¼ ëª»ì°¾ì•˜ê³ ,
+                // ì´ë™í•  ë°©í–¥ê³¼ ë§ˆì§€ë§‰ searchë°©í–¥ì´ ë‹¤ë¥´ë©´
+                // ë§ˆì§€ë§‰ pathì— ìžˆëŠ” nodeë¡œ ì„¤ì •.
                 *aRowPtr = sPath[--sTop]->row;
                 *aFound = ID_TRUE;
             }
             else
             {
-                // key°¡ °°Àº node¸¦ Ã£¾Ò°Å³ª,
-                // ÀÌµ¿ÇÒ ¹æÇâ°ú ¸¶Áö¸· search¹æÇâÀÌ °°´Ù¸é
-                // next·Î ÀÌµ¿.
+                // keyê°€ ê°™ì€ nodeë¥¼ ì°¾ì•˜ê±°ë‚˜,
+                // ì´ë™í•  ë°©í–¥ê³¼ ë§ˆì§€ë§‰ searchë°©í–¥ì´ ê°™ë‹¤ë©´
+                // nextë¡œ ì´ë™.
                 IDE_TEST( _move( sPath,
                                  &sTop,
                                  aDir,
@@ -1034,7 +1034,7 @@ IDE_RC qsxAvl::searchNext4DR( qsxAvlTree * aAvlTree,
 
     if ( aAvlTree->root != NULL )
     {
-        // (1) rootºÎÅÍ ½ÃÀÛ
+        // (1) rootë¶€í„° ì‹œìž‘
         sCurrNode = aAvlTree->root;
 
         while ( sCurrNode != NULL )
@@ -1064,16 +1064,16 @@ IDE_RC qsxAvl::searchNext4DR( qsxAvlTree * aAvlTree,
             {
                 sDir = CMPDIR(sCmp);
 
-                // sCurrNode->key < aKey ¸é right·Î
-                // sCurrNode->key > aKey ¸é left·Î
+                // sCurrNode->key < aKey ë©´ rightë¡œ
+                // sCurrNode->key > aKey ë©´ leftë¡œ
                 sCurrNode = sCurrNode->link[sDir];
             }
         }
 
         if( *aFound == ID_TRUE && aStart == AVL_CURRENT )
         {
-            // key°¡ °°Àº node¸¦ Ã£¾Ò°í, ½ÃÀÛ½ÃÁ¡ÀÌ currentÀÌ¸é
-            // Ã£Àº nodeÀÇ rowPtrÀ» ³Ñ°ÜÁÖ¸é µÈ´Ù.
+            // keyê°€ ê°™ì€ nodeë¥¼ ì°¾ì•˜ê³ , ì‹œìž‘ì‹œì ì´ currentì´ë©´
+            // ì°¾ì€ nodeì˜ rowPtrì„ ë„˜ê²¨ì£¼ë©´ ëœë‹¤.
             idlOS::memcpy( *aRowPtr,
                            sCurrNode->row,
                            aAvlTree->dataOffset );
@@ -1082,9 +1082,9 @@ IDE_RC qsxAvl::searchNext4DR( qsxAvlTree * aAvlTree,
         {
             if( *aFound == ID_FALSE && sDir != aDir )
             {
-                // key°¡ °°Àº node¸¦ ¸øÃ£¾Ò°í,
-                // ÀÌµ¿ÇÒ ¹æÇâ°ú ¸¶Áö¸· search¹æÇâÀÌ ´Ù¸£¸é
-                // ¸¶Áö¸· path¿¡ ÀÖ´Â node·Î ¼³Á¤.
+                // keyê°€ ê°™ì€ nodeë¥¼ ëª»ì°¾ì•˜ê³ ,
+                // ì´ë™í•  ë°©í–¥ê³¼ ë§ˆì§€ë§‰ searchë°©í–¥ì´ ë‹¤ë¥´ë©´
+                // ë§ˆì§€ë§‰ pathì— ìžˆëŠ” nodeë¡œ ì„¤ì •.
                 idlOS::memcpy( *aRowPtr,
                                sPath[--sTop]->row,
                                aAvlTree->dataOffset );
@@ -1092,9 +1092,9 @@ IDE_RC qsxAvl::searchNext4DR( qsxAvlTree * aAvlTree,
             }
             else
             {
-                // key°¡ °°Àº node¸¦ Ã£¾Ò°Å³ª,
-                // ÀÌµ¿ÇÒ ¹æÇâ°ú ¸¶Áö¸· search¹æÇâÀÌ °°´Ù¸é
-                // next·Î ÀÌµ¿.
+                // keyê°€ ê°™ì€ nodeë¥¼ ì°¾ì•˜ê±°ë‚˜,
+                // ì´ë™í•  ë°©í–¥ê³¼ ë§ˆì§€ë§‰ searchë°©í–¥ì´ ê°™ë‹¤ë©´
+                // nextë¡œ ì´ë™.
                 IDE_TEST( _move4DR( sPath,
                                     &sTop,
                                     aDir,
@@ -1129,8 +1129,8 @@ IDE_RC qsxAvl::searchNth( qsxAvlTree * aAvlTree,
  * Description : BUG-41311 table function
  *
  * Implementation :
- *     - aIndex´Â 0ºÎÅÍ ½ÃÀÛÇÑ´Ù.
- *     - keyÀÇ ¼ø¼­´ë·Î n¹øÂ° element¸¦ Ã£´Â´Ù.
+ *     - aIndexëŠ” 0ë¶€í„° ì‹œìž‘í•œë‹¤.
+ *     - keyì˜ ìˆœì„œëŒ€ë¡œ në²ˆì§¸ elementë¥¼ ì°¾ëŠ”ë‹¤.
  *
  ***********************************************************************/
 #define IDE_FN "qsxAvl::searchNth"
@@ -1190,12 +1190,12 @@ IDE_RC qsxAvl::deleteRange( qsxAvlTree * aAvlTree,
 {
 /***********************************************************************
  *
- * Description : PROJ-1075 next, priv °Ë»ö
+ * Description : PROJ-1075 next, priv ê²€ìƒ‰
  *
  * Implementation :
- *          (1) min, max¿¡ ±ÙÁ¢ÇÏ°Å³ª °°Àº(GE, LE) start, end key¸¦ Ã£¾Æ³õÀ½
- *          (2) minÀÇ startºÎÅÍ next·Î µû¶ó°¡¸é¼­ ÇÏ³ª¾¿ »èÁ¦
- *          (3) end key±îÁö ¿ÔÀ¸¸é Áß´Ü.
+ *          (1) min, maxì— ê·¼ì ‘í•˜ê±°ë‚˜ ê°™ì€(GE, LE) start, end keyë¥¼ ì°¾ì•„ë†“ìŒ
+ *          (2) minì˜ startë¶€í„° nextë¡œ ë”°ë¼ê°€ë©´ì„œ í•˜ë‚˜ì”© ì‚­ì œ
+ *          (3) end keyê¹Œì§€ ì™”ìœ¼ë©´ ì¤‘ë‹¨.
  *
  ***********************************************************************/
 #define IDE_FN "qsxAvl::deleteRange"
@@ -1244,7 +1244,7 @@ IDE_RC qsxAvl::deleteRange( qsxAvlTree * aAvlTree,
     
     IDE_TEST_CONT( sCmp > 0, invalid_range );
     
-    // minÀÇ start
+    // minì˜ start
     IDE_TEST( searchNext4DR( aAvlTree,
                              aKeyMinCol,
                              aKeyMin,
@@ -1256,7 +1256,7 @@ IDE_RC qsxAvl::deleteRange( qsxAvlTree * aAvlTree,
 
     IDE_TEST_CONT( sFound == ID_FALSE, invalid_range );
     
-    // maxÀÇ start
+    // maxì˜ start
     IDE_TEST( searchNext4DR( aAvlTree,
                              aKeyMaxCol,
                              aKeyMax,
@@ -1293,7 +1293,7 @@ IDE_RC qsxAvl::deleteRange( qsxAvlTree * aAvlTree,
                                  &sDeleted )
                       != IDE_SUCCESS );
 
-            // key¸¦ searchÇØ¼­ Áö¿ì´Â °ÍÀÌ¹Ç·Î ¹Ýµå½Ã Áö¿öÁ®¾ß ÇÔ.
+            // keyë¥¼ searchí•´ì„œ ì§€ìš°ëŠ” ê²ƒì´ë¯€ë¡œ ë°˜ë“œì‹œ ì§€ì›Œì ¸ì•¼ í•¨.
             IDE_DASSERT( sDeleted == ID_TRUE );
             
             (*aCount)++;
@@ -1316,7 +1316,7 @@ IDE_RC qsxAvl::deleteRange( qsxAvlTree * aAvlTree,
                                  sPrevKey,
                                  &sDeleted )
                       != IDE_SUCCESS );
-            // key¸¦ searchÇØ¼­ Áö¿ì´Â °ÍÀÌ¹Ç·Î ¹Ýµå½Ã Áö¿öÁ®¾ß ÇÔ.
+            // keyë¥¼ searchí•´ì„œ ì§€ìš°ëŠ” ê²ƒì´ë¯€ë¡œ ë°˜ë“œì‹œ ì§€ì›Œì ¸ì•¼ í•¨.
             IDE_DASSERT( sDeleted == ID_TRUE );
             
             (*aCount)++;
@@ -1406,11 +1406,11 @@ IDE_RC qsxAvl::_move( qsxAvlNode ** aPath,
 {
 /***********************************************************************
  *
- * Description : PROJ-1075 ÇöÀç À§Ä¡¿¡¼­ next, priv ÀÌµ¿
+ * Description : PROJ-1075 í˜„ìž¬ ìœ„ì¹˜ì—ì„œ next, priv ì´ë™
  *
  * Implementation :
- *          (1) ¾Æ·¡·Î ³»·Á°¡´Â °æ¿ì´Â ÇØ´ç nodeÀÇ direction¿¡ node°¡ ÀÖ´Â °æ¿ì
- *          (2) À§·Î ¿Ã¶ó°¡´Â °æ¿ì´Â ÇØ´ç nodeÀÇ directionÀÌ NULLÀÎ °æ¿ì
+ *          (1) ì•„ëž˜ë¡œ ë‚´ë ¤ê°€ëŠ” ê²½ìš°ëŠ” í•´ë‹¹ nodeì˜ directionì— nodeê°€ ìžˆëŠ” ê²½ìš°
+ *          (2) ìœ„ë¡œ ì˜¬ë¼ê°€ëŠ” ê²½ìš°ëŠ” í•´ë‹¹ nodeì˜ directionì´ NULLì¸ ê²½ìš°
  *
  *       10
  *     /    \
@@ -1569,11 +1569,11 @@ void qsxAvl::_rotate_single( qsxAvlNode ** aNode, SInt aDir )
 {
 /***********************************************************************
  *
- * Description : PROJ-1075 nodeÀÇ single rotate
+ * Description : PROJ-1075 nodeì˜ single rotate
  *
  * Implementation :
- *          (1) 3°³ ³ëµå Áß °¡¿îµ¥ ³ëµå¸¦ parent·Î ¿Ã¶ó¿À°Ô È¸Àü.
- *          (2) ÇÑÂÊ ¹æÇâÀ¸·Î Ä¡¿ìÄ£ °æ¿ì. L->L, R->R
+ *          (1) 3ê°œ ë…¸ë“œ ì¤‘ ê°€ìš´ë° ë…¸ë“œë¥¼ parentë¡œ ì˜¬ë¼ì˜¤ê²Œ íšŒì „.
+ *          (2) í•œìª½ ë°©í–¥ìœ¼ë¡œ ì¹˜ìš°ì¹œ ê²½ìš°. L->L, R->R
  *
  * 1. left rotation. direction is 0.
  * 
@@ -1619,11 +1619,11 @@ void qsxAvl::_rotate_double(qsxAvlNode ** aNode, SInt aDir )
 {
 /***********************************************************************
  *
- * Description : PROJ-1075 nodeÀÇ double rotate
+ * Description : PROJ-1075 nodeì˜ double rotate
  *
  * Implementation :
- *          (1) 3°³ ³ëµå Áß °¡¿îµ¥ ³ëµå¸¦ parent·Î ¿Ã¶ó¿À°Ô µÎ¹ø È¸Àü.
- *          (2) ÇÑÂÊ ¹æÇâÀ¸·Î Ä¡¿ìÄ£ °ÍÀÌ ¾Æ´Ï¶ó L->R, R->LÀÇ ÇüÅÂ.
+ *          (1) 3ê°œ ë…¸ë“œ ì¤‘ ê°€ìš´ë° ë…¸ë“œë¥¼ parentë¡œ ì˜¬ë¼ì˜¤ê²Œ ë‘ë²ˆ íšŒì „.
+ *          (2) í•œìª½ ë°©í–¥ìœ¼ë¡œ ì¹˜ìš°ì¹œ ê²ƒì´ ì•„ë‹ˆë¼ L->R, R->Lì˜ í˜•íƒœ.
  *
  * 1. right-left rotation
  *
@@ -1680,7 +1680,7 @@ void qsxAvl::_adjust_balance( qsxAvlNode ** aNode, SInt aDir, SInt sBalance )
 {
 /***********************************************************************
  *
- * Description : PROJ-1075 double rotationÀ» ÇÏ±â Àü¿¡ balance¸¦ Á¶Á¤ÇÑ´Ù.
+ * Description : PROJ-1075 double rotationì„ í•˜ê¸° ì „ì— balanceë¥¼ ì¡°ì •í•œë‹¤.
  *
  * Implementation :
  *
@@ -1814,14 +1814,14 @@ IDE_RC qsxAvl::_makeNode( qsxAvlTree  * aAvlTree,
     void * sCanonizedValue;
     UInt   sActualSize;
 
-    // ÀûÇÕ¼º °Ë»ç. key´Â nullÀÌ ¿Ã ¼ö ¾øÀ½.
+    // ì í•©ì„± ê²€ì‚¬. keyëŠ” nullì´ ì˜¬ ìˆ˜ ì—†ìŒ.
     IDE_DASSERT( aKey != NULL );
 
-    // ÀûÇÕ¼º °Ë»ç. keyÀÇ moduleÀº ¹Ýµå½Ã µ¿ÀÏÇØ¾ß ÇÔ.
+    // ì í•©ì„± ê²€ì‚¬. keyì˜ moduleì€ ë°˜ë“œì‹œ ë™ì¼í•´ì•¼ í•¨.
     IDE_DASSERT( aAvlTree->keyCol->module == aKeyCol->module );
 
-    // varchar, integer»ÓÀÌ ¿Ã ¼ö ¾øÀ¸¹Ç·Î canonizeÇÒ¶§ alloc¹ÞÁø ¾Ê´Â´Ù.
-    // ÃßÈÄ ´Ù¸¥ typeÀ» Áö¿øÇÏ°Ô µÇ¸é ¹Ù²Ù¾î¾ß ÇÔ.
+    // varchar, integerë¿ì´ ì˜¬ ìˆ˜ ì—†ìœ¼ë¯€ë¡œ canonizeí• ë•Œ allocë°›ì§„ ì•ŠëŠ”ë‹¤.
+    // ì¶”í›„ ë‹¤ë¥¸ typeì„ ì§€ì›í•˜ê²Œ ë˜ë©´ ë°”ê¾¸ì–´ì•¼ í•¨.
     if ( ( aAvlTree->keyCol->module->flag & MTD_CANON_MASK )
          == MTD_CANON_NEED )
     {

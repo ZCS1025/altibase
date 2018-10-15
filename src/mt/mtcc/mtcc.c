@@ -96,7 +96,7 @@ ACI_RC mtcInitializeForClient( acp_char_t* aDefaultNls )
     ACI_TEST_RAISE( ACP_RC_NOT_SUCCESS(acpThrMutexLock(&gMtcMutex)) ,
                     ERR_MUTEX_LOCK );
 
-    /* mtl.initialize()¿¡¼­ iduMemMgr.malloc()½Ã¿¡ ¿¡·¯°¡ ¹ß»ı. iduMemMgr ÃÊ±âÈ­ ÇØ¾ßÇÔ. */
+    /* mtl.initialize()ì—ì„œ iduMemMgr.malloc()ì‹œì— ì—ëŸ¬ê°€ ë°œìƒ. iduMemMgr ì´ˆê¸°í™” í•´ì•¼í•¨. */
 
     if( gMtcInitCount == 0 )
     {
@@ -187,12 +187,12 @@ acp_uint32_t mtcIsSameType( const mtcColumn* aColumn1,
 
 /********************************************************************
  * Description
- *    ÀÌ ÇÔ¼ö´Â »óÀ§ ·¹ÀÌ¾î¸¦ À§ÇÑ ÇÔ¼öÀÌ´Ù.
- *    Variable ÄÃ·³¿¡ ´ëÇØ NULLÀÌ ¹İÈ¯µÇ¸é
- *    ÀÌ ÇÔ¼ö´Â mtdModuleÀÇ NULL °ªÀ¸·Î ·¡ÇÎÇÑ ÈÄ ¹İÈ¯ÇÑ´Ù.
- *    ±×¸®°í SM¿¡¼­ callbackÀ¸·Î ÀÌ ÇÔ¼ö¸¦ È£ÃâµÇ¼­´Â ¾ÈµÈ´Ù.
- *    ¿Ö³ÄÇÏ¸é, aColumnÀÇ moduleÀ» ÂüÁ¶ÇÏ¹Ç·Î smiColumnÀ»
- *    ÀÎÀÚ·Î ³Ñ±â¸é ¾ÈµÈ´Ù.
+ *    ì´ í•¨ìˆ˜ëŠ” ìƒìœ„ ë ˆì´ì–´ë¥¼ ìœ„í•œ í•¨ìˆ˜ì´ë‹¤.
+ *    Variable ì»¬ëŸ¼ì— ëŒ€í•´ NULLì´ ë°˜í™˜ë˜ë©´
+ *    ì´ í•¨ìˆ˜ëŠ” mtdModuleì˜ NULL ê°’ìœ¼ë¡œ ë˜í•‘í•œ í›„ ë°˜í™˜í•œë‹¤.
+ *    ê·¸ë¦¬ê³  SMì—ì„œ callbackìœ¼ë¡œ ì´ í•¨ìˆ˜ë¥¼ í˜¸ì¶œë˜ì„œëŠ” ì•ˆëœë‹¤.
+ *    ì™œëƒí•˜ë©´, aColumnì˜ moduleì„ ì°¸ì¡°í•˜ë¯€ë¡œ smiColumnì„
+ *    ì¸ìë¡œ ë„˜ê¸°ë©´ ì•ˆëœë‹¤.
  *
  ********************************************************************/
 
@@ -242,7 +242,7 @@ acp_uint32_t mtcHash(acp_uint32_t       aHash,
     aHash >>= 8;
     sHash[0] = aHash;
     sFence--;
-    // little endianÀÌ±â ¶§¹®¿¡ value¸¦ ¿ª¼øÀ¸·Î ÇÑ´Ù.
+    // little endianì´ê¸° ë•Œë¬¸ì— valueë¥¼ ì—­ìˆœìœ¼ë¡œ í•œë‹¤.
     for(; sFence >= aValue; sFence--)
     {
         sHash[0] = mtcHashPermut[sHash[0]^*sFence];
@@ -255,11 +255,11 @@ acp_uint32_t mtcHash(acp_uint32_t       aHash,
 #endif
 
 // fix BUG-9496
-// float, numeric data type¿¡ ´ëÇÑ hash ÇÔ¼ö
-// (mtc::hash ÇÔ¼ö´Â endian¿¡ µû¸¥ ±¸ºĞÃ³¸®)
-// mtc::hashWithExponent´Â endian¿¡ µû¸¥ ±¸ºĞ Ã³¸®¸¦ ÇÏÁö ¾Ê´Â´Ù.
-// float, numeric data typeÀº mtdNumericType ±¸Á¶Ã¼¸¦ »ç¿ëÇÏ¹Ç·Î
-// endian¿¡ µû¸¥ ±¸ºĞ Ã³¸®¸¦ ÇÏÁö ¾Ê¾Æµµ µÊ.
+// float, numeric data typeì— ëŒ€í•œ hash í•¨ìˆ˜
+// (mtc::hash í•¨ìˆ˜ëŠ” endianì— ë”°ë¥¸ êµ¬ë¶„ì²˜ë¦¬)
+// mtc::hashWithExponentëŠ” endianì— ë”°ë¥¸ êµ¬ë¶„ ì²˜ë¦¬ë¥¼ í•˜ì§€ ì•ŠëŠ”ë‹¤.
+// float, numeric data typeì€ mtdNumericType êµ¬ì¡°ì²´ë¥¼ ì‚¬ìš©í•˜ë¯€ë¡œ
+// endianì— ë”°ë¥¸ êµ¬ë¶„ ì²˜ë¦¬ë¥¼ í•˜ì§€ ì•Šì•„ë„ ë¨.
 acp_uint32_t mtcHashWithExponent( acp_uint32_t       aHash,
                                   const acp_uint8_t* aValue,
                                   acp_uint32_t       aLength )
@@ -334,8 +334,8 @@ acp_uint32_t mtcHashWithoutSpace( acp_uint32_t       aHash,
                                   acp_uint32_t       aLength )
 {
     // To Fix PR-11941
-    // ¼ıÀÚÇü StringÀÎ °æ¿ì ¼º´É ÀúÇÏ°¡ ¸Å¿ì ½É°¢ÇÔ.
-    // µû¶ó¼­, Space¸¦ Á¦¿ÜÇÑ ¸ğµç StringÀ» ºñ±³ÇÏµµ·Ï ÇÔ.
+    // ìˆ«ìí˜• Stringì¸ ê²½ìš° ì„±ëŠ¥ ì €í•˜ê°€ ë§¤ìš° ì‹¬ê°í•¨.
+    // ë”°ë¼ì„œ, Spaceë¥¼ ì œì™¸í•œ ëª¨ë“  Stringì„ ë¹„êµí•˜ë„ë¡ í•¨.
 
     acp_uint8_t        sHash[4];
     const acp_uint8_t* sFence;
@@ -917,14 +917,14 @@ ACI_RC mtcNumericCanonize( mtdNumericType *aValue,
                     //               1  byte( sign & exponent ) +
                     //               20 byte( mantissa )
                     // 
-                    //     Numeric( 6 )ÀÏ ¶§, 100000.01111Àº ´ÙÀ½°ú °°ÀÌ
-                    //     ¼³Á¤µÇ¾î¾ß ÇÔ
+                    //     Numeric( 6 )ì¼ ë•Œ, 100000.01111ì€ ë‹¤ìŒê³¼ ê°™ì´
+                    //     ì„¤ì •ë˜ì–´ì•¼ í•¨
                     //     100000.0111 => length : 3
                     //                    sign & exponent : 197
                     //                    mantissa : 1
-                    //     ±×·¯³ª length°¡ 5·Î ¼³Á¤µÇ´Â ¹®Á¦°¡ ÀÖ¾úÀ½
-                    //     ¿øÀÎ : mantissa°ªÀÌ 0ÀÎ °æ¿ì, length¸¦
-                    //            ÁÙ¿©¾ß ÇÔ
+                    //     ê·¸ëŸ¬ë‚˜ lengthê°€ 5ë¡œ ì„¤ì •ë˜ëŠ” ë¬¸ì œê°€ ìˆì—ˆìŒ
+                    //     ì›ì¸ : mantissaê°’ì´ 0ì¸ ê²½ìš°, lengthë¥¼
+                    //            ì¤„ì—¬ì•¼ í•¨
                     //------------------------------------------------
                         
                     for( sCount=aCanonizedValue->length-2; sCount>0; sCount-- )
@@ -1267,15 +1267,15 @@ void mtcMakeNumeric2( mtdNumericType*        aNumeric,
  *    ACI_RC mtc::addFloat()
  *
  * Argument :
- *    aValue - point of value , °è»ê µÇ¾îÁö´Â °ª
+ *    aValue - point of value , ê³„ì‚° ë˜ì–´ì§€ëŠ” ê°’
  *    aArgument1
- *    aArgument2 - ÀÔ·Â°ª aValue = aArgument1 + aArgument2
- *    aPrecisionMaximum - ÀÚ¸®¼ö
+ *    aArgument2 - ì…ë ¥ê°’ aValue = aArgument1 + aArgument2
+ *    aPrecisionMaximum - ìë¦¬ìˆ˜
  *
  * Description :
- *    1. exponent°è»ê
- *    2. ÀÚ¸®¼ö´ë·Î µ¡¼À ; carry »ı°¢
- *    3. ¸Ç¾ÕÀÇ Ä³¸®´Â ÀÚ¸®¼ö+1 ÇØÁØ´Ù
+ *    1. exponentê³„ì‚°
+ *    2. ìë¦¬ìˆ˜ëŒ€ë¡œ ë§ì…ˆ ; carry ìƒê°
+ *    3. ë§¨ì•ì˜ ìºë¦¬ëŠ” ìë¦¬ìˆ˜+1 í•´ì¤€ë‹¤
  * ---------------------------------------------------------------------------*/
 
 
@@ -1382,7 +1382,7 @@ ACI_RC mtcAddFloat( mtdNumericType *aValue,
             }
         }
 
-        //¿Å°ÜÁ®¼­ 0À¸·Î Ã¤¿öÁø°÷ÀÌ 21¹ø¸¦ ³ÑÀ¸¸é
+        //ì˜®ê²¨ì ¸ì„œ 0ìœ¼ë¡œ ì±„ì›Œì§„ê³³ì´ 21ë²ˆë¥¼ ë„˜ìœ¼ë©´
         if( longLength - longArg->length > (acp_sint32_t)(aPrecisionMaximum / 2 + 2) )
         {
             aValue->length = shortArg->length;
@@ -1397,15 +1397,15 @@ ACI_RC mtcAddFloat( mtdNumericType *aValue,
         if( longLength > (acp_sint32_t) (aPrecisionMaximum / 2 + 2) )
         {
             // BUG-10557 fix
-            // maxLength°¡ 21ÀÌ ³ÑÀ» ¶§, 21·Î ÁÙÀÌ´Âµ¥
-            // ÀÌ¶§, argument1 ¶Ç´Â argument2ÀÇ ¿¬»ê¿¡ Æ÷ÇÔÇÒ ¹üÀ§¸¦
-            // maxLength°¡ ÁÙ¾îµç ¸¸Å­ »©Áà¾ß ÇÑ´Ù.
+            // maxLengthê°€ 21ì´ ë„˜ì„ ë•Œ, 21ë¡œ ì¤„ì´ëŠ”ë°
+            // ì´ë•Œ, argument1 ë˜ëŠ” argument2ì˜ ì—°ì‚°ì— í¬í•¨í•  ë²”ìœ„ë¥¼
+            // maxLengthê°€ ì¤„ì–´ë“  ë§Œí¼ ë¹¼ì¤˜ì•¼ í•œë‹¤.
             //
-            // ¿¹¸¦ µé¾î 158/10000*17/365 + 1¸¦ °è»êÇÒ ¶§,
-            // 158/10000*17/365´Â 0.00073589... (length=20) ÀÎµ¥,
-            // maxLength´Â 22¿¡¼­ 21·Î ÁÙÀÏ¶§,
-            // 0.00073589...ÀÇ ±æÀÌ¸¦ 19·Î ÁÙ¿© ¸¶Áö¸· ÇÑÀÚ¸®´Â Æ÷±âÇØ¾ß ÇÑ´Ù.
-            // subtractFloat¿¡¼­µµ ¸¶Âù°¡Áö·Î ÀÌ·± Ã³¸®¸¦ ÇØÁÖ¾î¾ß ÇÑ´Ù.
+            // ì˜ˆë¥¼ ë“¤ì–´ 158/10000*17/365 + 1ë¥¼ ê³„ì‚°í•  ë•Œ,
+            // 158/10000*17/365ëŠ” 0.00073589... (length=20) ì¸ë°,
+            // maxLengthëŠ” 22ì—ì„œ 21ë¡œ ì¤„ì¼ë•Œ,
+            // 0.00073589...ì˜ ê¸¸ì´ë¥¼ 19ë¡œ ì¤„ì—¬ ë§ˆì§€ë§‰ í•œìë¦¬ëŠ” í¬ê¸°í•´ì•¼ í•œë‹¤.
+            // subtractFloatì—ì„œë„ ë§ˆì°¬ê°€ì§€ë¡œ ì´ëŸ° ì²˜ë¦¬ë¥¼ í•´ì£¼ì–´ì•¼ í•œë‹¤.
             //
             lIndex = longArg->length - 2 - (longLength - 21);
             longLength = 21;
@@ -1425,12 +1425,12 @@ ACI_RC mtcAddFloat( mtdNumericType *aValue,
         //     1  : 2 :   3
         //   xxxxxxxxx________
         //+  ______xxxxxxxxxxx
-        //±×¸®°í °ãÄ¡Áö ¾Ê´Â °ø°£
-        //ºó°ø°£Àº POSITIVE : 0
+        //ê·¸ë¦¬ê³  ê²¹ì¹˜ì§€ ì•ŠëŠ” ê³µê°„
+        //ë¹ˆê³µê°„ì€ POSITIVE : 0
         //         NEGATIVE : 99
         for( mantissaIndex = longLength - 2 ; mantissaIndex >= 0 ; mantissaIndex-- )
         {
-            // 3±¸¿ª?
+            // 3êµ¬ì—­?
             if( mantissaIndex > (shortLength -2) && lIndex >= 0)
             {
                 if( sShortExponent == 0x80 )
@@ -1445,10 +1445,10 @@ ACI_RC mtcAddFloat( mtdNumericType *aValue,
                 }
                 lIndex--;
             }
-            //ºó°ø°£
+            //ë¹ˆê³µê°„
             else if( mantissaIndex > (shortLength -2) && lIndex < 0)
             {
-                //Ä³¸® »ı°¢
+                //ìºë¦¬ ìƒê°
                 aValue->mantissa[mantissaIndex] = 0;
                 if( sShortExponent == 0x00 )
                 {
@@ -1460,7 +1460,7 @@ ACI_RC mtcAddFloat( mtdNumericType *aValue,
                 }
                 aValue->mantissa[mantissaIndex] += sCarry;
             }
-            //2±¸¿ª
+            //2êµ¬ì—­
             else if( mantissaIndex <= (shortLength - 2) && lIndex >=0 && sIndex >=0)
             {
                 aValue->mantissa[mantissaIndex] =
@@ -1469,7 +1469,7 @@ ACI_RC mtcAddFloat( mtdNumericType *aValue,
                 lIndex--;
                 sIndex--;
             }
-            //1±¸¿ª
+            //1êµ¬ì—­
             else if( lIndex < 0 )
             {
                 if( sLongExponent == 0x80 )
@@ -1500,7 +1500,7 @@ ACI_RC mtcAddFloat( mtdNumericType *aValue,
                 lIndex--;
             }
 
-            //Ä³¸® ¼³Á¤
+            //ìºë¦¬ ì„¤ì •
             if( aValue->mantissa[mantissaIndex] >= 100 )
             {
                 aValue->mantissa[mantissaIndex] -= 100;
@@ -1512,8 +1512,8 @@ ACI_RC mtcAddFloat( mtdNumericType *aValue,
             }
         }
 
-        //À½¼ö·Î ÀÎÇÑ Ä³¸®´Â ÀÚ¸®¼ö ÀÌµ¿ÀÌ ¾ø´Ù ±×¸®°í +1À» ÇØÁØ´Ù
-        //¾ç¼ö´Â ÀÚ¸® ÀÌµ¿
+        //ìŒìˆ˜ë¡œ ì¸í•œ ìºë¦¬ëŠ” ìë¦¬ìˆ˜ ì´ë™ì´ ì—†ë‹¤ ê·¸ë¦¬ê³  +1ì„ í•´ì¤€ë‹¤
+        //ì–‘ìˆ˜ëŠ” ìë¦¬ ì´ë™
         if( sLongExponent != sShortExponent )
         {
             if( sCarry )
@@ -1534,8 +1534,8 @@ ACI_RC mtcAddFloat( mtdNumericType *aValue,
                 sCarry = 1;
             }
         }
-        //µÑ´Ù À½¼ö
-        //¹«Á¶°Ç1 ´õÇØÁØ´Ù
+        //ë‘˜ë‹¤ ìŒìˆ˜
+        //ë¬´ì¡°ê±´1 ë”í•´ì¤€ë‹¤
         else if( sLongExponent == 0x00 && sShortExponent == 0x00 )
         {
             if( sCarry == 0 )
@@ -1589,7 +1589,7 @@ ACI_RC mtcAddFloat( mtdNumericType *aValue,
              sCarry == 1 ) )
         {
 
-            //¾ÕÀÇ 0À» ¾÷¾ÖÁØ´Ù
+            //ì•ì˜ 0ì„ ì—…ì• ì¤€ë‹¤
             for( mantissaIndex = 0 ; mantissaIndex < longLength - 1 ; mantissaIndex++ )
             {
                 if( aValue->mantissa[mantissaIndex] == 0 )
@@ -1608,8 +1608,8 @@ ACI_RC mtcAddFloat( mtdNumericType *aValue,
             longLength -= checkIndex;
             sExponent1 -= checkIndex;
 
-            //¾ç¼ö
-            //µÚÀÇ 0
+            //ì–‘ìˆ˜
+            //ë’¤ì˜ 0
             mantissaIndex = longLength - 2;
 
             //BUG-fix 4733 - UMR remove
@@ -1630,7 +1630,7 @@ ACI_RC mtcAddFloat( mtdNumericType *aValue,
         }
         else
         {
-            //¾ÕÀÇ 99¸¦ ¾÷¾ÖÁØ´Ù
+            //ì•ì˜ 99ë¥¼ ì—…ì• ì¤€ë‹¤
             for( mantissaIndex = 0 ; mantissaIndex < longLength - 1 ; mantissaIndex++ )
             {
                 if( aValue->mantissa[mantissaIndex] == 99 )
@@ -1649,8 +1649,8 @@ ACI_RC mtcAddFloat( mtdNumericType *aValue,
             longLength -= checkIndex;
             sExponent1 -= checkIndex;
 
-            //À½¼ö
-            //µÚÀÇ 99
+            //ìŒìˆ˜
+            //ë’¤ì˜ 99
             mantissaIndex = longLength - 2;
 
             //BUG-fix 4733 UMR remove
@@ -1667,7 +1667,7 @@ ACI_RC mtcAddFloat( mtdNumericType *aValue,
                 }
             }
 
-            //-0ÀÌ µÇ¸é
+            //-0ì´ ë˜ë©´
             if( longLength == 1 )
             {
                 aValue->signExponent = 0x80;
@@ -1679,7 +1679,7 @@ ACI_RC mtcAddFloat( mtdNumericType *aValue,
         }
 
         // To fix BUG-12970
-        // ÃÖ´ë ±æÀÌ°¡ ³Ñ´Â °æ¿ì º¸Á¤ÇØ Áà¾ß ÇÔ.
+        // ìµœëŒ€ ê¸¸ì´ê°€ ë„˜ëŠ” ê²½ìš° ë³´ì •í•´ ì¤˜ì•¼ í•¨.
         if( longLength > 21 )
         {
             aValue->length = 21;
@@ -1690,8 +1690,8 @@ ACI_RC mtcAddFloat( mtdNumericType *aValue,
         }
 
         //BUGBUG
-        //precision°è»ê(À¯È¿¼ıÀÚ , length¿Í ¿¬°üÇØ¼­)
-        //precisionÀÚ¸®¿¡¼­ ¹İ¿Ã¸²ÇØÁØ´Ù.
+        //precisionê³„ì‚°(ìœ íš¨ìˆ«ì , lengthì™€ ì—°ê´€í•´ì„œ)
+        //precisionìë¦¬ì—ì„œ ë°˜ì˜¬ë¦¼í•´ì¤€ë‹¤.
         //aPrecisionMaximum
     }
 
@@ -1710,15 +1710,15 @@ ACI_RC mtcAddFloat( mtdNumericType *aValue,
  *    ACI_RC mtc::subtractFloat()
  *
  * Argument :
- *    aValue - point of value , °è»ê µÇ¾îÁö´Â °ª
+ *    aValue - point of value , ê³„ì‚° ë˜ì–´ì§€ëŠ” ê°’
  *    aArgument1
- *    aArgument2 - ÀÔ·Â°ª aValue = aArgument1 - aArgument2
- *    aPrecisionMaximum - ÀÚ¸®¼ö
+ *    aArgument2 - ì…ë ¥ê°’ aValue = aArgument1 - aArgument2
+ *    aPrecisionMaximum - ìë¦¬ìˆ˜
  *
  * Description :
- *    1. exponent°è»ê
- *    2. ÀÚ¸®¼ö´ë·Î »¬¼À ; borrow »ı°¢ À½¼öÀÏ°æ¿ì 99ÀÇ º¸¼ö·Î °è»ê
- *    3. ¸Ç¾ÕÀÇ Ä³¸®´Â ÀÚ¸®¼ö+1 ÇØÁØ´Ù
+ *    1. exponentê³„ì‚°
+ *    2. ìë¦¬ìˆ˜ëŒ€ë¡œ ëº„ì…ˆ ; borrow ìƒê° ìŒìˆ˜ì¼ê²½ìš° 99ì˜ ë³´ìˆ˜ë¡œ ê³„ì‚°
+ *    3. ë§¨ì•ì˜ ìºë¦¬ëŠ” ìë¦¬ìˆ˜+1 í•´ì¤€ë‹¤
  * ---------------------------------------------------------------------------*/
 
 ACI_RC mtcSubtractFloat( mtdNumericType *aValue,
@@ -1762,7 +1762,7 @@ ACI_RC mtcSubtractFloat( mtdNumericType *aValue,
     {
         aValue->length = aArgument2->length;
 
-        //ºÎÈ£ ¹Ù²Ù°í º¸¼ö( + -> - )
+        //ë¶€í˜¸ ë°”ê¾¸ê³  ë³´ìˆ˜( + -> - )
         aValue->signExponent = 256 - aArgument2->signExponent;
 
         for( mantissaIndex = 0 ;
@@ -1809,8 +1809,8 @@ ACI_RC mtcSubtractFloat( mtdNumericType *aValue,
         }
 
 
-        // To fix BUG-13569 addFloat°ú °°ÀÌ
-        // long argument¿Í short argument·Î ±¸ºĞ.
+        // To fix BUG-13569 addFloatê³¼ ê°™ì´
+        // long argumentì™€ short argumentë¡œ êµ¬ë¶„.
         //maxLength
         if( sExponent1 < sExponent2 )
         {
@@ -1854,7 +1854,7 @@ ACI_RC mtcSubtractFloat( mtdNumericType *aValue,
             }
         }
 
-        //¿Å°ÜÁ®¼­ 0À¸·Î Ã¤¿öÁø°÷ÀÌ 21¹ø¸¦ ³ÑÀ¸¸é
+        //ì˜®ê²¨ì ¸ì„œ 0ìœ¼ë¡œ ì±„ì›Œì§„ê³³ì´ 21ë²ˆë¥¼ ë„˜ìœ¼ë©´
         if( longLength - longArg->length > (acp_sint32_t)(aPrecisionMaximum / 2 + 2) )
         {
             if( shortArg == aArgument1 )
@@ -1886,15 +1886,15 @@ ACI_RC mtcSubtractFloat( mtdNumericType *aValue,
         if( longLength > (acp_sint32_t) (aPrecisionMaximum / 2 + 2) )
         {
             // BUG-10557 fix
-            // maxLength°¡ 21ÀÌ ³ÑÀ» ¶§, 21·Î ÁÙÀÌ´Âµ¥
-            // ÀÌ¶§, argument1 ¶Ç´Â argument2ÀÇ ¿¬»ê¿¡ Æ÷ÇÔÇÒ ¹üÀ§¸¦
-            // maxLength°¡ ÁÙ¾îµç ¸¸Å­ »©Áà¾ß ÇÑ´Ù.
+            // maxLengthê°€ 21ì´ ë„˜ì„ ë•Œ, 21ë¡œ ì¤„ì´ëŠ”ë°
+            // ì´ë•Œ, argument1 ë˜ëŠ” argument2ì˜ ì—°ì‚°ì— í¬í•¨í•  ë²”ìœ„ë¥¼
+            // maxLengthê°€ ì¤„ì–´ë“  ë§Œí¼ ë¹¼ì¤˜ì•¼ í•œë‹¤.
             //
-            // ¿¹¸¦ µé¾î 158/10000*17/365 + 1¸¦ °è»êÇÒ ¶§,
-            // 158/10000*17/365´Â 0.00073589... (length=20) ÀÎµ¥,
-            // maxLength´Â 22¿¡¼­ 21·Î ÁÙÀÏ¶§,
-            // 0.00073589...ÀÇ ±æÀÌ¸¦ 19·Î ÁÙ¿© ¸¶Áö¸· ÇÑÀÚ¸®´Â Æ÷±âÇØ¾ß ÇÑ´Ù.
-            // subtractFloat¿¡¼­µµ ¸¶Âù°¡Áö·Î ÀÌ·± Ã³¸®¸¦ ÇØÁÖ¾î¾ß ÇÑ´Ù.
+            // ì˜ˆë¥¼ ë“¤ì–´ 158/10000*17/365 + 1ë¥¼ ê³„ì‚°í•  ë•Œ,
+            // 158/10000*17/365ëŠ” 0.00073589... (length=20) ì¸ë°,
+            // maxLengthëŠ” 22ì—ì„œ 21ë¡œ ì¤„ì¼ë•Œ,
+            // 0.00073589...ì˜ ê¸¸ì´ë¥¼ 19ë¡œ ì¤„ì—¬ ë§ˆì§€ë§‰ í•œìë¦¬ëŠ” í¬ê¸°í•´ì•¼ í•œë‹¤.
+            // subtractFloatì—ì„œë„ ë§ˆì°¬ê°€ì§€ë¡œ ì´ëŸ° ì²˜ë¦¬ë¥¼ í•´ì£¼ì–´ì•¼ í•œë‹¤.
             //
             lIndex = longArg->length - 2 - (longLength - 21);
             longLength = 21;
@@ -1926,20 +1926,20 @@ ACI_RC mtcSubtractFloat( mtdNumericType *aValue,
         }
 
         sBorrow = 0;
-        //»©±â
+        //ë¹¼ê¸°
 
         //     1  : 2 :   3
         //   xxxxxxxxx________
         //-  ______xxxxxxxxxxx
-        //±×¸®°í °ãÄ¡Áö ¾Ê´Â °ø°£
-        //ºó°ø°£Àº POSITIVE : 0
+        //ê·¸ë¦¬ê³  ê²¹ì¹˜ì§€ ì•ŠëŠ” ê³µê°„
+        //ë¹ˆê³µê°„ì€ POSITIVE : 0
         //         NEGATIVE : 99
 
         for( mantissaIndex = maxLength - 2 ;
              mantissaIndex >= 0 ;
              mantissaIndex-- )
         {
-            //3±¸¿ª
+            //3êµ¬ì—­
             if( sArg1Length > sArg2Length && sArg1Index >= 0)
             {
                 if( sArgExponent2 == 0x00 )
@@ -1967,7 +1967,7 @@ ACI_RC mtcSubtractFloat( mtdNumericType *aValue,
             }
             else if( sArg1Length < sArg2Length && sArg2Index >= 0)
             {
-                //¾ç¼ö¸é
+                //ì–‘ìˆ˜ë©´
                 if( sArgExponent1 == 0x80 )
                 {
                     aValue->mantissa[mantissaIndex] =
@@ -1983,7 +1983,7 @@ ACI_RC mtcSubtractFloat( mtdNumericType *aValue,
                 sArg2Index--;
                 sArg2Length--;
             }
-            //°ãÄ¡´Â °ø°£(1ÀÌ ±æ°Å³ª 2°¡ ±æ°Å³ª)
+            //ê²¹ì¹˜ëŠ” ê³µê°„(1ì´ ê¸¸ê±°ë‚˜ 2ê°€ ê¸¸ê±°ë‚˜)
             else if( (sArg1Index == (sArg2Index + sDiffExp) ||
                       sArg2Index == (sArg1Index + sDiffExp)) &&
                      sArg1Index >= 0 && sArg2Index >= 0)
@@ -2006,13 +2006,13 @@ ACI_RC mtcSubtractFloat( mtdNumericType *aValue,
                 sArg1Index--;
                 sArg2Index--;
             }
-            //°ãÄ¡Áö ¾Ê´Â °ø°£
+            //ê²¹ì¹˜ì§€ ì•ŠëŠ” ê³µê°„
             else if( (sArg2Index < 0 && mantissaIndex > sArg1Index ) ||
                      (sArg1Index < 0 && mantissaIndex > sArg2Index ) )
             {
                 if(sBorrow)
                 {
-                    //¾ç¼ö
+                    //ì–‘ìˆ˜
                     if( sArgExponent1 == 0x80 )
                     {
                         if( sArgExponent2 == 0x80 )
@@ -2026,7 +2026,7 @@ ACI_RC mtcSubtractFloat( mtdNumericType *aValue,
                         sBorrow = 1;
 
                     }
-                    //À½¼ö
+                    //ìŒìˆ˜
                     else
                     {
                         if( sArgExponent2 == 0x80 )
@@ -2043,7 +2043,7 @@ ACI_RC mtcSubtractFloat( mtdNumericType *aValue,
                 }
                 else
                 {
-                    //¾ç¼ö
+                    //ì–‘ìˆ˜
                     if( sArgExponent1 == 0x80 )
                     {
                         if( sArgExponent2 == 0x80 )
@@ -2057,7 +2057,7 @@ ACI_RC mtcSubtractFloat( mtdNumericType *aValue,
                             sBorrow = 1;
                         }
                     }
-                    //À½¼ö
+                    //ìŒìˆ˜
                     else
                     {
                         if( sArgExponent2 == 0x80 )
@@ -2072,10 +2072,10 @@ ACI_RC mtcSubtractFloat( mtdNumericType *aValue,
                     }
                 }
             }
-            //1±¸¿ª
+            //1êµ¬ì—­
             else if( sArg2Index < 0 )
             {
-                //À½¼ö
+                //ìŒìˆ˜
                 if( sArgExponent2 == 0x00 )
                 {
                     if( aArgument1->mantissa[sArg1Index] - sBorrow < 99 )
@@ -2159,7 +2159,7 @@ ACI_RC mtcSubtractFloat( mtdNumericType *aValue,
         {
             if( sBorrow )
             {
-                //¾ç¼ö
+                //ì–‘ìˆ˜
                 for( mantissaIndex = maxLength - 2 ;
                      mantissaIndex >= 0 ;
                      mantissaIndex-- )
@@ -2176,11 +2176,11 @@ ACI_RC mtcSubtractFloat( mtdNumericType *aValue,
                 }
 
 
-                //¸Ç¾ÕÀÇ ¹Ù·Î¿ì ¹ß»ıÇŞ´Âµ¥ 99ÀÏ°æ¿ì¸¸ Áï »©±âÇØ¼­ 0ÀÌ ³ª¿Ã¶§
+                //ë§¨ì•ì˜ ë°”ë¡œìš° ë°œìƒí–‡ëŠ”ë° 99ì¼ê²½ìš°ë§Œ ì¦‰ ë¹¼ê¸°í•´ì„œ 0ì´ ë‚˜ì˜¬ë•Œ
                 if( aValue->mantissa[0] == 99 )
                 {
                     acp_sint16_t checkIndex = 0;
-                    //¾ÕÀÇ 99¸¦ ¾÷¾ÖÁØ´Ù
+                    //ì•ì˜ 99ë¥¼ ì—…ì• ì¤€ë‹¤
                     for( mantissaIndex = 0 ;
                          mantissaIndex < maxLength - 1 ;
                          mantissaIndex++ )
@@ -2211,7 +2211,7 @@ ACI_RC mtcSubtractFloat( mtdNumericType *aValue,
             else
             {
 
-                //À½¼ö°¡ µÈ´Ù.
+                //ìŒìˆ˜ê°€ ëœë‹¤.
                 isZero = 0;
                 mantissaIndex = 0;
 
@@ -2230,7 +2230,7 @@ ACI_RC mtcSubtractFloat( mtdNumericType *aValue,
 
 
 
-                //0ÀÏ¶§
+                //0ì¼ë•Œ
                 if( isZero == maxLength - 1)
                 {
                     aValue->length = 1;
@@ -2260,7 +2260,7 @@ ACI_RC mtcSubtractFloat( mtdNumericType *aValue,
         }
         else
         {
-            //¾ç¼ö
+            //ì–‘ìˆ˜
 
             if( sArgExponent1 == 0x80 )
             {
@@ -2302,7 +2302,7 @@ ACI_RC mtcSubtractFloat( mtdNumericType *aValue,
             else
             {
                 if( sBorrow ){
-                    //98´õÇØÁÜ
+                    //98ë”í•´ì¤Œ
                     for( mantissaIndex = maxLength - 1 ;
                          mantissaIndex > 0 ;
                          mantissaIndex-- )
@@ -2320,15 +2320,15 @@ ACI_RC mtcSubtractFloat( mtdNumericType *aValue,
         }
 
         // BUG-12334 fix
-        // '-' ¿¬»ê °á°ú ³¡ÀÚ¸®°¡ 99·Î ³¡³ª´Â °æ¿ì nomalize°¡ ÇÊ¿äÇÏ´Ù.
-        // ¿¹¸¦ µé¾î,
-        // -220 - 80 ÇÏ¸é
+        // '-' ì—°ì‚° ê²°ê³¼ ëìë¦¬ê°€ 99ë¡œ ëë‚˜ëŠ” ê²½ìš° nomalizeê°€ í•„ìš”í•˜ë‹¤.
+        // ì˜ˆë¥¼ ë“¤ì–´,
+        // -220 - 80 í•˜ë©´
         // -220: length=3, exponent=62,  mantissa=97,79
         // 80  : length=2, exponent=193, mantissa=80
-        // °á°ú: length=3, exponent=62,  mantissa=96,99
-        // ÀÎµ¥, -330Àº length=2, exponent=62, mantissa=96ÀÌ´Ù.
-        // °á·ĞÀûÀ¸·Î ¸¶Áö¸·ÀÇ 99, 0Àº ¾ø¾Ö°í length¸¦ 1 ÁÙ¿©¾ß ÇÑ´Ù.
-        // ¾ç¼öÀÏ °æ¿ì¿£ 0À» À½¼öÀÏ °æ¿ì¿£ 99¸¦ ¾ø¾Ø´Ù.
+        // ê²°ê³¼: length=3, exponent=62,  mantissa=96,99
+        // ì¸ë°, -330ì€ length=2, exponent=62, mantissa=96ì´ë‹¤.
+        // ê²°ë¡ ì ìœ¼ë¡œ ë§ˆì§€ë§‰ì˜ 99, 0ì€ ì—†ì• ê³  lengthë¥¼ 1 ì¤„ì—¬ì•¼ í•œë‹¤.
+        // ì–‘ìˆ˜ì¼ ê²½ìš°ì—” 0ì„ ìŒìˆ˜ì¼ ê²½ìš°ì—” 99ë¥¼ ì—†ì•¤ë‹¤.
         // by kumdory, 2005-07-11
         if( ( aValue->signExponent & 0x80 ) > 0 )
         {
@@ -2364,33 +2364,33 @@ ACI_RC mtcSubtractFloat( mtdNumericType *aValue,
         }
 
 /*
-  ¾ç ¾ç
-  ¹Ù·Î¿ì ¹ß»ı -> -1
-  ¹Ù·Î¿ì ¾øÀ½ -> 0
+  ì–‘ ì–‘
+  ë°”ë¡œìš° ë°œìƒ -> -1
+  ë°”ë¡œìš° ì—†ìŒ -> 0
 
-  À½ À½
-  ¹Ù·Î¿ì -> -1
-  ¹Ù·Î¿ì ¾øÀ½ -> 0
-
-
-  ¾çÀ½
-  ¹Ù·Î¿ì -> -1
-  ¹Ù·Î¿ì ¾øÀ½ -> -1
+  ìŒ ìŒ
+  ë°”ë¡œìš° -> -1
+  ë°”ë¡œìš° ì—†ìŒ -> 0
 
 
-  À½¾ç
-  ¹Ù·Î¿ì -> 0 ,98 ´õÇØÁÜ
-  ¹Ù·Î¿ì ¾øÀ½ -> 0
+  ì–‘ìŒ
+  ë°”ë¡œìš° -> -1
+  ë°”ë¡œìš° ì—†ìŒ -> -1
 
-  //µÚ¿¡ 0ÀÌ ¿¬¼ÓÇØ¼­ ¿Ã°æ¿ì
+
+  ìŒì–‘
+  ë°”ë¡œìš° -> 0 ,98 ë”í•´ì¤Œ
+  ë°”ë¡œìš° ì—†ìŒ -> 0
+
+  //ë’¤ì— 0ì´ ì—°ì†í•´ì„œ ì˜¬ê²½ìš°
 
 */
         //BUGBUG
-        //precision°è»ê(À¯È¿¼ıÀÚ , length¿Í ¿¬°üÇØ¼­)
-        //precisionÀÚ¸®¿¡¼­ ¹İ¿Ã¸²ÇØÁØ´Ù.
+        //precisionê³„ì‚°(ìœ íš¨ìˆ«ì , lengthì™€ ì—°ê´€í•´ì„œ)
+        //precisionìë¦¬ì—ì„œ ë°˜ì˜¬ë¦¼í•´ì¤€ë‹¤.
 
         // To fix BUG-12970
-        // ÃÖ´ë ±æÀÌ°¡ ³Ñ¾î°¡´Â °æ¿ì º¸Á¤ÇØÁà¾ß ÇÔ.
+        // ìµœëŒ€ ê¸¸ì´ê°€ ë„˜ì–´ê°€ëŠ” ê²½ìš° ë³´ì •í•´ì¤˜ì•¼ í•¨.
         if( maxLength > 21 )
         {
             aValue->length = 21;
@@ -2417,29 +2417,29 @@ ACI_RC mtcSubtractFloat( mtdNumericType *aValue,
  *    ACI_RC mtc::multiplyFloat()
  *
  * Argument :
- *    aValue - point of value , °è»ê µÇ¾îÁö´Â °ª
+ *    aValue - point of value , ê³„ì‚° ë˜ì–´ì§€ëŠ” ê°’
  *    aArgument1
- *    aArgument2 - ÀÔ·Â°ª aValue = aArgument1 * aArgument2
- *    aPrecisionMaximum - ÀÚ¸®¼ö
+ *    aArgument2 - ì…ë ¥ê°’ aValue = aArgument1 * aArgument2
+ *    aPrecisionMaximum - ìë¦¬ìˆ˜
  *
  * Description :
- *    »ç¿ë algorithm : grade school multiplication( ÀÏ¸í ÇÊ»ê¹ı)
+ *    ì‚¬ìš© algorithm : grade school multiplication( ì¼ëª… í•„ì‚°ë²•)
  *
- *    1. exponent°è»ê
- *    2. ÀÚ¸®¼ö´ë·Î °ö¼À ; À½¼öÀÏ°æ¿ì 99ÀÇ º¸¼ö·Î °è»ê
- *    2.1 ¼Óµµ¸¦ ºü¸£°Ô ÇÏ±â À§ÇØ ¾ç*¾ç, À½*À½, À½*¾ç ÀÎ °æ¿ì¸¦ µû·Î ¸¸µç´Ù
- *    3. ÇÑÀÚ¸®¾¿ °öÇØ¼­ ´õÇØÁØ´Ù.
- *    4. Ä³¸® °è»êÀº ¸Ç ¸¶Áö¸·¿¡ ÇÑ´Ù.(´õÇÒ¶§¸¶´Ù ÇÏ°ÔµÇ¸é carry°¡ cascadeµÉ °æ¿ì ºñÈ¿À²ÀûÀÓ)
- *    5. maximum mantissa(20)¸¦ ³Ñ¾î°¡¸é ¹ö¸²
- *    6. exponent´Â -63ÀÌÇÏ¸é 0, 63ÀÌ»óÀÌ¸é overflow
- *    7. À½¼ö¸é 99¸¦ »©¼­ ÀúÀå
+ *    1. exponentê³„ì‚°
+ *    2. ìë¦¬ìˆ˜ëŒ€ë¡œ ê³±ì…ˆ ; ìŒìˆ˜ì¼ê²½ìš° 99ì˜ ë³´ìˆ˜ë¡œ ê³„ì‚°
+ *    2.1 ì†ë„ë¥¼ ë¹ ë¥´ê²Œ í•˜ê¸° ìœ„í•´ ì–‘*ì–‘, ìŒ*ìŒ, ìŒ*ì–‘ ì¸ ê²½ìš°ë¥¼ ë”°ë¡œ ë§Œë“ ë‹¤
+ *    3. í•œìë¦¬ì”© ê³±í•´ì„œ ë”í•´ì¤€ë‹¤.
+ *    4. ìºë¦¬ ê³„ì‚°ì€ ë§¨ ë§ˆì§€ë§‰ì— í•œë‹¤.(ë”í• ë•Œë§ˆë‹¤ í•˜ê²Œë˜ë©´ carryê°€ cascadeë  ê²½ìš° ë¹„íš¨ìœ¨ì ì„)
+ *    5. maximum mantissa(20)ë¥¼ ë„˜ì–´ê°€ë©´ ë²„ë¦¼
+ *    6. exponentëŠ” -63ì´í•˜ë©´ 0, 63ì´ìƒì´ë©´ overflow
+ *    7. ìŒìˆ˜ë©´ 99ë¥¼ ë¹¼ì„œ ì €ì¥
  * ---------------------------------------------------------------------------*/
 ACI_RC mtcMultiplyFloat( mtdNumericType *aValue,
                          acp_uint32_t    aPrecisionMaximum,
                          mtdNumericType *aArgument1,
                          mtdNumericType *aArgument2 )
 {
-    acp_sint32_t sResultMantissa[40] = { 0, };   // °á°ú´Â ÃÖ´ë 80ÀÚ¸®±îÁö ³ª¿Ã ¼ö ÀÖ´Ù.
+    acp_sint32_t sResultMantissa[40] = { 0, };   // ê²°ê³¼ëŠ” ìµœëŒ€ 80ìë¦¬ê¹Œì§€ ë‚˜ì˜¬ ìˆ˜ ìˆë‹¤.
     acp_sint32_t i;                     // for multiplication
     acp_sint32_t j;                     // for multiplication
     acp_sint32_t sCarry;
@@ -2451,14 +2451,14 @@ ACI_RC mtcMultiplyFloat( mtdNumericType *aValue,
 
     ACP_UNUSED(aPrecisionMaximum);
 
-    // ÇÏ³ª¶óµµ nullÀÎ °æ¿ì nullÃ³¸®
+    // í•˜ë‚˜ë¼ë„ nullì¸ ê²½ìš° nullì²˜ë¦¬
     if( aArgument1->length == 0 || aArgument2->length == 0 )
     {
         aValue->length = 0;
         aValue->signExponent = 0;
         return ACI_SUCCESS;
     }
-    // ÇÏ³ª¶óµµ 0ÀÎ °æ¿ì 0À¸·Î
+    // í•˜ë‚˜ë¼ë„ 0ì¸ ê²½ìš° 0ìœ¼ë¡œ
     else if( aArgument1->length == 1 || aArgument2->length == 1 )
     {
         aValue->length       = 1;
@@ -2466,17 +2466,17 @@ ACI_RC mtcMultiplyFloat( mtdNumericType *aValue,
         return ACI_SUCCESS;
     }
 
-    // result mantissaÃÖ´ë ±æÀÌ ¼³Á¤
+    // result mantissaìµœëŒ€ ê¸¸ì´ ì„¤ì •
     sResultFence = aArgument1->length + aArgument2->length - 2;
-    // result mantissa¸¦ 0À¸·Î ÃÊ±âÈ­
+    // result mantissaë¥¼ 0ìœ¼ë¡œ ì´ˆê¸°í™”
     acpMemSet( sResultMantissa, 0, sizeof(acp_uint32_t) * sResultFence );
 
 
-    // ¾ç¼öÀÎÁö À½¼öÀÎÁö ºÎºĞ¸¸ ÃßÃâ
+    // ì–‘ìˆ˜ì¸ì§€ ìŒìˆ˜ì¸ì§€ ë¶€ë¶„ë§Œ ì¶”ì¶œ
     sArgExponent1 = aArgument1->signExponent & 0x80;
     sArgExponent2 = aArgument2->signExponent & 0x80;
 
-    //exponent ±¸ÇÏ±â
+    //exponent êµ¬í•˜ê¸°
     if( sArgExponent1 == 0x80 )
     {
         sResultExponent = (aArgument1->signExponent & 0x7F) - 64;
@@ -2495,8 +2495,8 @@ ACI_RC mtcMultiplyFloat( mtdNumericType *aValue,
         sResultExponent += 64 - (aArgument2->signExponent & 0x7F);
     }
 
-    // if¹® ºñ±³¸¦ ÇÑ¹ø¸¸ ÇÏ±â À§ÇØ ¸ğµç °æ¿ì¿¡ ´ëÇØ °è»ê
-    // ¾ç * ¾ç
+    // ifë¬¸ ë¹„êµë¥¼ í•œë²ˆë§Œ í•˜ê¸° ìœ„í•´ ëª¨ë“  ê²½ìš°ì— ëŒ€í•´ ê³„ì‚°
+    // ì–‘ * ì–‘
     if( (sArgExponent1 != 0) && (sArgExponent2 != 0) )
     {
         for(i = aArgument1->length-2; i >= 0; i--)
@@ -2509,7 +2509,7 @@ ACI_RC mtcMultiplyFloat( mtdNumericType *aValue,
             }
         }
     }
-    // ¾ç * À½
+    // ì–‘ * ìŒ
     else if( (sArgExponent1 != 0) /*&& (sArgExponent2 == 0)*/ )
     {
         for(i = aArgument1->length-2; i >= 0; i--)
@@ -2522,7 +2522,7 @@ ACI_RC mtcMultiplyFloat( mtdNumericType *aValue,
             }
         }
     }
-    // À½ * ¾ç
+    // ìŒ * ì–‘
     else if( /*(sArgExponent1 == 0) &&*/ (sArgExponent2 != 0) )
     {
         for(i = aArgument1->length-2; i >= 0; i--)
@@ -2535,7 +2535,7 @@ ACI_RC mtcMultiplyFloat( mtdNumericType *aValue,
             }
         }
     }
-    // À½ * À½
+    // ìŒ * ìŒ
     else
     {
         for(i = aArgument1->length-2; i >= 0; i--)
@@ -2549,7 +2549,7 @@ ACI_RC mtcMultiplyFloat( mtdNumericType *aValue,
         }
     }
 
-    // carry°è»ê
+    // carryê³„ì‚°
     for( i = sResultFence - 1; i > 0; i-- )
     {
         sCarry = sResultMantissa[i] / 100;
@@ -2557,7 +2557,7 @@ ACI_RC mtcMultiplyFloat( mtdNumericType *aValue,
         sResultMantissa[i] -= sCarry * 100;
     }
 
-    // ¾Õ Zero trim
+    // ì• Zero trim
     if( sResultMantissa[0] == 0 )
     {
         sMantissaStart = 1;
@@ -2568,7 +2568,7 @@ ACI_RC mtcMultiplyFloat( mtdNumericType *aValue,
         sMantissaStart = 0;
     }
 
-    // µÚ Zero trim
+    // ë’¤ Zero trim
     for( i = sResultFence - 1; i >= 0; i-- )
     {
         if( sResultMantissa[i] == 0 )
@@ -2590,10 +2590,10 @@ ACI_RC mtcMultiplyFloat( mtdNumericType *aValue,
         // Nothing to do.
     }
 
-    // exponent°¡ 63À» ³ÑÀ¸¸é ¿¡·¯(ÃÖ´ë 126ÀÌ¹Ç·Î)
+    // exponentê°€ 63ì„ ë„˜ìœ¼ë©´ ì—ëŸ¬(ìµœëŒ€ 126ì´ë¯€ë¡œ)
     ACI_TEST_RAISE( sResultExponent > 63, ERR_VALUE_OVERFLOW );
 
-    // exponent°¡ -63(-126)º¸´Ù ÀÛÀ¸¸é 0ÀÌ µÊ
+    // exponentê°€ -63(-126)ë³´ë‹¤ ì‘ìœ¼ë©´ 0ì´ ë¨
     if( sResultExponent < -63 )
     {
         aValue->length       = 1;
@@ -2601,8 +2601,8 @@ ACI_RC mtcMultiplyFloat( mtdNumericType *aValue,
     }
     else
     {
-        // ½ÇÁ¦ mantissa¿¡ °ª º¹»ç
-        // ºÎÈ£°¡ °°Àº °æ¿ì
+        // ì‹¤ì œ mantissaì— ê°’ ë³µì‚¬
+        // ë¶€í˜¸ê°€ ê°™ì€ ê²½ìš°
         if( sArgExponent1 == sArgExponent2 )
         {
             aValue->signExponent = sResultExponent + 192;
@@ -2612,7 +2612,7 @@ ACI_RC mtcMultiplyFloat( mtdNumericType *aValue,
             }
             aValue->length = sResultFence - sMantissaStart + 1;
         }
-        // ºÎÈ£°¡ ´Ù¸¥ °æ¿ì
+        // ë¶€í˜¸ê°€ ë‹¤ë¥¸ ê²½ìš°
         else
         {
             aValue->signExponent = 64 - sResultExponent;
@@ -2641,24 +2641,24 @@ ACI_RC mtcMultiplyFloat( mtdNumericType *aValue,
  *    ACI_RC mtc::divideFloat()
  *
  * Argument :
- *    aValue - point of value , °è»ê µÇ¾îÁö´Â °ª
+ *    aValue - point of value , ê³„ì‚° ë˜ì–´ì§€ëŠ” ê°’
  *    aArgument1
- *    aArgument2 - ÀÔ·Â°ª aValue = aArgument1 / aArgument2
- *    aPrecisionMaximum - ÀÚ¸®¼ö
+ *    aArgument2 - ì…ë ¥ê°’ aValue = aArgument1 / aArgument2
+ *    aPrecisionMaximum - ìë¦¬ìˆ˜
  *
  * Description :
- *    »ç¿ë algorithm : David M. SmithÀÇ ³í¹®
+ *    ì‚¬ìš© algorithm : David M. Smithì˜ ë…¼ë¬¸
  *                    'A Multiple-Precision Division Algorithm'
  *
- *    1. exponent°è»ê
- *    2. ÇÇÁ¦¼ö, Á¦¼ö¸¦ integer mantissa array¿¡ ÀúÀå.(¸ğµÎ ¾ç¼ö·Î normalization)
- *    2.1 ÇÇÁ¦¼ö´Â ÇÑÄ­ ¿À¸¥ÂÊ ½¬ÇÁÆ®ÇØ¼­ ÀúÀå.(³²Àº ºóÄ­¿¡´Â ¸òÀÌ ÀúÀåµÈ´Ù)
- *    3. ³ª´°¼À ¸òÀ» ÃßÃøÇÏ±â À§ÇÑ °ª ÀúÀå
- *    3.1 ÇÇÁ¦¼ö, Á¦¼ö¿¡¼­ °¢°¢ 4ÀÚ¸®¾¿ »©¼­ integer°ª¿¡ ÀúÀå
- *    3.2 ÃßÃø°ªÀ» ±¸ÇÔ
- *    4. ÇÇÁ¦¼ö = ÇÇÁ¦¼ö - Á¦¼ö * ÃßÃø°ª(º¸¼ö¿¬»ê ¾øÀÌ ±×³É »­)
- *    5. ¸òÀÌ maximum mantissa + 1ÀÌ µÉ¶§±îÁö 3~4 ¹İº¹
- *    6. ¸òÀ» normalization
+ *    1. exponentê³„ì‚°
+ *    2. í”¼ì œìˆ˜, ì œìˆ˜ë¥¼ integer mantissa arrayì— ì €ì¥.(ëª¨ë‘ ì–‘ìˆ˜ë¡œ normalization)
+ *    2.1 í”¼ì œìˆ˜ëŠ” í•œì¹¸ ì˜¤ë¥¸ìª½ ì‰¬í”„íŠ¸í•´ì„œ ì €ì¥.(ë‚¨ì€ ë¹ˆì¹¸ì—ëŠ” ëª«ì´ ì €ì¥ëœë‹¤)
+ *    3. ë‚˜ëˆ—ì…ˆ ëª«ì„ ì¶”ì¸¡í•˜ê¸° ìœ„í•œ ê°’ ì €ì¥
+ *    3.1 í”¼ì œìˆ˜, ì œìˆ˜ì—ì„œ ê°ê° 4ìë¦¬ì”© ë¹¼ì„œ integerê°’ì— ì €ì¥
+ *    3.2 ì¶”ì¸¡ê°’ì„ êµ¬í•¨
+ *    4. í”¼ì œìˆ˜ = í”¼ì œìˆ˜ - ì œìˆ˜ * ì¶”ì¸¡ê°’(ë³´ìˆ˜ì—°ì‚° ì—†ì´ ê·¸ëƒ¥ ëºŒ)
+ *    5. ëª«ì´ maximum mantissa + 1ì´ ë ë•Œê¹Œì§€ 3~4 ë°˜ë³µ
+ *    6. ëª«ì„ normalization
  *
  * ---------------------------------------------------------------------------*/
 ACI_RC mtcDivideFloat( mtdNumericType *aValue,
@@ -2667,13 +2667,13 @@ ACI_RC mtcDivideFloat( mtdNumericType *aValue,
                        mtdNumericType *aArgument2 )
     
 {
-    acp_sint32_t sMantissa1[42];        // ÇÇÁ¦¼ö ¹× ¸ò ÀúÀå.
-    acp_uint8_t  sMantissa2[20] = {0,}; // Á¦¼ö ÀúÀå.(À½¼ö¶ó¸é)
-    acp_sint32_t sMantissa3[21];        // Á¦¼ö * ºÎºĞ¸ò. ÃßÃø°ªÀÌ Å« °æ¿ì ´ëºñ.(ÃÖ´ë 1byte)
+    acp_sint32_t sMantissa1[42];        // í”¼ì œìˆ˜ ë° ëª« ì €ì¥.
+    acp_uint8_t  sMantissa2[20] = {0,}; // ì œìˆ˜ ì €ì¥.(ìŒìˆ˜ë¼ë©´)
+    acp_sint32_t sMantissa3[21];        // ì œìˆ˜ * ë¶€ë¶„ëª«. ì¶”ì¸¡ê°’ì´ í° ê²½ìš° ëŒ€ë¹„.(ìµœëŒ€ 1byte)
 
-    acp_sint32_t sNumerator;           // ÇÇÁ¦¼ö »ùÇÃ°ª.
-    acp_sint32_t sDenominator;         // Á¦¼ö »ùÇÃ°ª.
-    acp_sint32_t sPartialQ;            // ºÎºĞ¸ò.
+    acp_sint32_t sNumerator;           // í”¼ì œìˆ˜ ìƒ˜í”Œê°’.
+    acp_sint32_t sDenominator;         // ì œìˆ˜ ìƒ˜í”Œê°’.
+    acp_sint32_t sPartialQ;            // ë¶€ë¶„ëª«.
 
     acp_sint32_t i;                    // for Iterator
     acp_sint32_t j;                    // for Iterator
@@ -2694,18 +2694,18 @@ ACI_RC mtcDivideFloat( mtdNumericType *aValue,
 
     ACP_UNUSED(aPrecisionMaximum);
     
-    // ÇÏ³ª¶óµµ nullÀÌ¸é null
+    // í•˜ë‚˜ë¼ë„ nullì´ë©´ null
     if( aArgument1->length == 0 || aArgument2->length == 0 )
     {
         aValue->length = 0;
         return ACI_SUCCESS;
     }
-    // 0À¸·Î ³ª´« °æ¿ì
+    // 0ìœ¼ë¡œ ë‚˜ëˆˆ ê²½ìš°
     else if ( aArgument2->length == 1 )
     {
         ACI_RAISE(ERR_DIVIDE_BY_ZERO);
     }
-    // 0À» ³ª´« °æ¿ì
+    // 0ì„ ë‚˜ëˆˆ ê²½ìš°
     else if ( aArgument1->length == 1 )
     {
         aValue->length = 1;
@@ -2713,18 +2713,18 @@ ACI_RC mtcDivideFloat( mtdNumericType *aValue,
         return ACI_SUCCESS;
     }
 
-    // ¾ç¼öÀÎÁö À½¼öÀÎÁö ºÎºĞ¸¸ ÃßÃâ
+    // ì–‘ìˆ˜ì¸ì§€ ìŒìˆ˜ì¸ì§€ ë¶€ë¶„ë§Œ ì¶”ì¶œ
     sArgExponent1 = aArgument1->signExponent & 0x80;
     sArgExponent2 = aArgument2->signExponent & 0x80;
 
 
-    // ÇÇÁ¦¼ö º¹»ç.
-    // ¹«Á¶°Ç ¾ç¼ö ÇüÅÂ·Î ¹Ù²Ù¾î mantissaº¹»ç
+    // í”¼ì œìˆ˜ ë³µì‚¬.
+    // ë¬´ì¡°ê±´ ì–‘ìˆ˜ í˜•íƒœë¡œ ë°”ê¾¸ì–´ mantissaë³µì‚¬
     sMantissa1[0] = 0;
 
     if( sArgExponent1 == 0x80 )
     {
-        // ÇÇÁ¦¼ö´Â ÇÑÄ­ºñ¿ì°í º¹»ç(0¹øÂ° Ä­ºÎÅÍ ¸òÀÌ ÀúÀåµÉ°ÍÀÓ)
+        // í”¼ì œìˆ˜ëŠ” í•œì¹¸ë¹„ìš°ê³  ë³µì‚¬(0ë²ˆì§¸ ì¹¸ë¶€í„° ëª«ì´ ì €ì¥ë ê²ƒì„)
         for( i = 0; i < aArgument1->length - 1; i++ )
         {
             sMantissa1[i+1] = (acp_sint32_t)aArgument1->mantissa[i];
@@ -2733,7 +2733,7 @@ ACI_RC mtcDivideFloat( mtdNumericType *aValue,
     }
     else
     {
-        // ÇÇÁ¦¼ö´Â ÇÑÄ­ºñ¿ì°í º¹»ç(0¹øÂ° Ä­ºÎÅÍ ¸òÀÌ ÀúÀåµÉ°ÍÀÓ)
+        // í”¼ì œìˆ˜ëŠ” í•œì¹¸ë¹„ìš°ê³  ë³µì‚¬(0ë²ˆì§¸ ì¹¸ë¶€í„° ëª«ì´ ì €ì¥ë ê²ƒì„)
         for( i = 0; i < aArgument1->length - 1; i++ )
         {
             sMantissa1[i+1] = 99 - (acp_sint32_t)aArgument1->mantissa[i];
@@ -2742,11 +2742,11 @@ ACI_RC mtcDivideFloat( mtdNumericType *aValue,
         acpMemSet( &sMantissa1[i+1], 0, sizeof(acp_sint32_t) * (42 - i - 1) );
     }
 
-    // Á¦¼ö º¹»ç.
-    // Á¦¼ö´Â ¾ç¼öÀÏ¶§´Â º¹»ç¾ÈÇÔ.
+    // ì œìˆ˜ ë³µì‚¬.
+    // ì œìˆ˜ëŠ” ì–‘ìˆ˜ì¼ë•ŒëŠ” ë³µì‚¬ì•ˆí•¨.
     if( sArgExponent2 == 0x80 )
     {
-        // mantissaptrÀÌ Á÷Á¢ aArgument2->mantissa¸¦ °¡¸®Å´.
+        // mantissaptrì´ ì§ì ‘ aArgument2->mantissaë¥¼ ê°€ë¦¬í‚´.
         sMantissa2Ptr = aArgument2->mantissa;
     }
     else
@@ -2758,7 +2758,7 @@ ACI_RC mtcDivideFloat( mtdNumericType *aValue,
         sMantissa2Ptr = sMantissa2;
     }
 
-    //exponent ±¸ÇÏ±â
+    //exponent êµ¬í•˜ê¸°
     if( sArgExponent1 == 0x80 )
     {
         sResultExponent = (aArgument1->signExponent & 0x7F) - 64;
@@ -2777,7 +2777,7 @@ ACI_RC mtcDivideFloat( mtdNumericType *aValue,
         sResultExponent -= 64 - (aArgument2->signExponent & 0x7F) - 1;
     }
 
-    // Á¦¼ö »ùÇÃ°ª ±¸ÇÏ±â(ÃÖ´ë 3ÀÚ¸®±îÁö »ùÇÃ°ªÀ» ±¸ÇÏ¿© ¿ÀÂ÷¸¦ ÃÖ¼ÒÈ­ ÇÑ´Ù.)
+    // ì œìˆ˜ ìƒ˜í”Œê°’ êµ¬í•˜ê¸°(ìµœëŒ€ 3ìë¦¬ê¹Œì§€ ìƒ˜í”Œê°’ì„ êµ¬í•˜ì—¬ ì˜¤ì°¨ë¥¼ ìµœì†Œí™” í•œë‹¤.)
     if( aArgument2->length > 3 )
     {
         sDenominator = (acp_sint32_t)sMantissa2Ptr[0] * 10000 +
@@ -2795,28 +2795,28 @@ ACI_RC mtcDivideFloat( mtdNumericType *aValue,
     }
     ACI_TEST_RAISE(sDenominator == 0, ERR_DIVIDE_BY_ZERO);
 
-    sLastStep = 20 + 2; // ÃÖ´ë 21ÀÚ¸®±îÁö ³ª¿Ã ¼ö ÀÖµµ·Ï
+    sLastStep = 20 + 2; // ìµœëŒ€ 21ìë¦¬ê¹Œì§€ ë‚˜ì˜¬ ìˆ˜ ìˆë„ë¡
 
     for( sStep = 1; sStep < sLastStep; sStep++ )
     {
-        // ÇÇÁ¦¼ö »ùÇÃ°ª ±¸ÇÏ±â(ÇÇÁ¦¼öÀÇ ÀÚ¸®¼ö´Â ÃÖ´ë 42ÀÚ¸®ÀÌ±â ¶§¹®¿¡ abrÀÌ ³¯ ¼ö ¾øÀ½)
+        // í”¼ì œìˆ˜ ìƒ˜í”Œê°’ êµ¬í•˜ê¸°(í”¼ì œìˆ˜ì˜ ìë¦¬ìˆ˜ëŠ” ìµœëŒ€ 42ìë¦¬ì´ê¸° ë•Œë¬¸ì— abrì´ ë‚  ìˆ˜ ì—†ìŒ)
         sNumerator = sMantissa1[sStep] * 1000000 +
             sMantissa1[sStep+1] * 10000 +
             sMantissa1[sStep+2] * 100 +
             sMantissa1[sStep+3];
 
-        // ºÎºĞ¸òÀ» ±¸ÇÔ.
+        // ë¶€ë¶„ëª«ì„ êµ¬í•¨.
         sPartialQ = sNumerator / sDenominator;
 
-        // ºÎºĞ¸òÀÌ 0ÀÌ ¾Æ´Ï¶ó¸é ÇÇÁ¦¼ö - (Á¦¼ö*ºÎºĞ¸ò)
+        // ë¶€ë¶„ëª«ì´ 0ì´ ì•„ë‹ˆë¼ë©´ í”¼ì œìˆ˜ - (ì œìˆ˜*ë¶€ë¶„ëª«)
         if( sPartialQ != 0 )
         {
-            // sPartialQ * sMantissa2ÇÑ °ÍÀ» sMantissa1¿¡¼­ »«´Ù.
-            // ÀÚ¸®¼ö¸¦ ¸ÂÃç¼­ »©¾ß ÇÔ. º¸¼ö¿¬»ê »¬¼À »ç¿ëX
+            // sPartialQ * sMantissa2í•œ ê²ƒì„ sMantissa1ì—ì„œ ëº€ë‹¤.
+            // ìë¦¬ìˆ˜ë¥¼ ë§ì¶°ì„œ ë¹¼ì•¼ í•¨. ë³´ìˆ˜ì—°ì‚° ëº„ì…ˆ ì‚¬ìš©X
             // sPartialQ * sMantissa2
             sMantissa3[0] = 0;
 
-            // Á¦¼ö*ºÎºĞ¸ò
+            // ì œìˆ˜*ë¶€ë¶„ëª«
             for(k = aArgument2->length-2; k >= 0; k--)
             {
                 sMantissa3[k+1] = (acp_sint32_t)sMantissa2Ptr[k] * sPartialQ;
@@ -2825,15 +2825,15 @@ ACI_RC mtcDivideFloat( mtdNumericType *aValue,
             sCarry = 0;
 
             /** BUG-42773
-             * 99.999 / 111.112 ¸¦ ³ª´©°Ô µÇ¸é sPartialQ = 9000 ÀÎµ¥
-             * sMantissa3¿¡ sCaary¸¦ ÇÏ¸é 100Áø¹ıÀ» ³Ñ°ÔµÇ´Âµ¥ ÀÌ¿¡ °ü·ÃµÈ
-             * Ã³¸®°¡ ¾ø¾ú´Ù.
-             * Áï 100 Áø¹ıÀ¸·Î carryÀº ¹è¿­ÀÇ ³¡¿¡¼­ ºÎÅÍ 0 ·Î carry¸¦ ÇÏ´Âµ¥
-             * ¸¶Áö¸·¿¡ 100 Áø¹ıÀÌ ³Ñ¾î¼­ carry°ªÀÌ  1 ÀÌ ³²¾Ò´Âµ¥
-             * ÀÌ¿Í °ü·ÃµÈ Ã³¸®°¡ ¾ø¾î¼­ ¹«½ÃµÇ¸é¼­ °è»êÀÌ ²¿ÀÌ°Ô µÈ´Ù.
-             * µû¶ó¼­ ¸¶Áö¸· 0´Â carryÇÏÁö ¾Ê°í ±×´ë·Î Ã³¸®ÇÑ´Ù.
+             * 99.999 / 111.112 ë¥¼ ë‚˜ëˆ„ê²Œ ë˜ë©´ sPartialQ = 9000 ì¸ë°
+             * sMantissa3ì— sCaaryë¥¼ í•˜ë©´ 100ì§„ë²•ì„ ë„˜ê²Œë˜ëŠ”ë° ì´ì— ê´€ë ¨ëœ
+             * ì²˜ë¦¬ê°€ ì—†ì—ˆë‹¤.
+             * ì¦‰ 100 ì§„ë²•ìœ¼ë¡œ carryì€ ë°°ì—´ì˜ ëì—ì„œ ë¶€í„° 0 ë¡œ carryë¥¼ í•˜ëŠ”ë°
+             * ë§ˆì§€ë§‰ì— 100 ì§„ë²•ì´ ë„˜ì–´ì„œ carryê°’ì´  1 ì´ ë‚¨ì•˜ëŠ”ë°
+             * ì´ì™€ ê´€ë ¨ëœ ì²˜ë¦¬ê°€ ì—†ì–´ì„œ ë¬´ì‹œë˜ë©´ì„œ ê³„ì‚°ì´ ê¼¬ì´ê²Œ ëœë‹¤.
+             * ë”°ë¼ì„œ ë§ˆì§€ë§‰ 0ëŠ” carryí•˜ì§€ ì•Šê³  ê·¸ëŒ€ë¡œ ì²˜ë¦¬í•œë‹¤.
              */
-            // °ö¼ÀÀÌÈÄÀÇ carry°è»ê
+            // ê³±ì…ˆì´í›„ì˜ carryê³„ì‚°
             for ( k = aArgument2->length - 1 ; k > 0; k-- )
             {
                 sMantissa3[k] += sCarry;
@@ -2842,7 +2842,7 @@ ACI_RC mtcDivideFloat( mtdNumericType *aValue,
             }
             sMantissa3[0] += sCarry;
 
-            // ÇÇÁ¦¼ö - (Á¦¼ö*ºÎºĞ¸ò)
+            // í”¼ì œìˆ˜ - (ì œìˆ˜*ë¶€ë¶„ëª«)
             for( k = 0; k < aArgument2->length; k++ )
             {
                 sMantissa1[sStep + k] -=  sMantissa3[k];
@@ -2851,7 +2851,7 @@ ACI_RC mtcDivideFloat( mtdNumericType *aValue,
             sMantissa1[sStep+1] +=sMantissa1[sStep]*100;
             sMantissa1[sStep] = sPartialQ;
         }
-        // ºÎºĞ¸òÀÌ 0ÀÌ¶ó¸é ¸òÀº ±×³É 0
+        // ë¶€ë¶„ëª«ì´ 0ì´ë¼ë©´ ëª«ì€ ê·¸ëƒ¥ 0
         else
         {
             sMantissa1[sStep+1] +=sMantissa1[sStep]*100;
@@ -2860,8 +2860,8 @@ ACI_RC mtcDivideFloat( mtdNumericType *aValue,
     }
 
     // Final Normalization
-    // carry¹× Àß¸øµÈ °ªÀ» normalizationÇÑ´Ù.
-    // 22ÀÚ¸®±îÁö °è»êÇØ ³õ¾ÒÀ¸¹Ç·Î resultFence´Â 21ÀÓ.
+    // carryë° ì˜ëª»ëœ ê°’ì„ normalizationí•œë‹¤.
+    // 22ìë¦¬ê¹Œì§€ ê³„ì‚°í•´ ë†“ì•˜ìœ¼ë¯€ë¡œ resultFenceëŠ” 21ì„.
     sResultFence = 21;
 
     for( i = sResultFence; i > 0; i-- )
@@ -2874,10 +2874,10 @@ ACI_RC mtcDivideFloat( mtdNumericType *aValue,
         }
         else if ( sMantissa1[i] < 0 )
         {
-            // carry°¡ 100´ÜÀ§·Î ¶³¾îÁö´Â °Í Ã³¸®¸¦ À§ÇØ
-            // +1À» ÇÑ °ª¿¡¼­ /100À» ÇÏ°í ¿©±â¿¡ -1À» ÇÔ
-            // ex) -100 => carry´Â -1, -101 => carry´Â -2
-            //     -99  => carry´Â -1
+            // carryê°€ 100ë‹¨ìœ„ë¡œ ë–¨ì–´ì§€ëŠ” ê²ƒ ì²˜ë¦¬ë¥¼ ìœ„í•´
+            // +1ì„ í•œ ê°’ì—ì„œ /100ì„ í•˜ê³  ì—¬ê¸°ì— -1ì„ í•¨
+            // ex) -100 => carryëŠ” -1, -101 => carryëŠ” -2
+            //     -99  => carryëŠ” -1
             sCarry = ((sMantissa1[i] + 1) / 100) - 1;
             sMantissa1[i-1] += sCarry;
             sMantissa1[i] -= sCarry * 100;
@@ -2888,22 +2888,22 @@ ACI_RC mtcDivideFloat( mtdNumericType *aValue,
         }
     }
 
-    // mantissa1[0]ÀÌ 0ÀÎ °æ¿ì resultExponent°¡ 1 ÁÙ¾îµë.
-    // ex) ³ª´©¾îÁú Ã¹¹øÂ° ÀÚ¸®ºÎÅÍ Á¦¼ö°¡ ÇÇÁ¦¼öº¸´Ù Å« °æ¿ìÀÓ.
-    //     1234 / 23 -> Ã¹Â°ÀÚ¸® ³ª´­¼ö ¾ø¾î 0ÀÓ
+    // mantissa1[0]ì´ 0ì¸ ê²½ìš° resultExponentê°€ 1 ì¤„ì–´ë“¬.
+    // ex) ë‚˜ëˆ„ì–´ì§ˆ ì²«ë²ˆì§¸ ìë¦¬ë¶€í„° ì œìˆ˜ê°€ í”¼ì œìˆ˜ë³´ë‹¤ í° ê²½ìš°ì„.
+    //     1234 / 23 -> ì²«ì§¸ìë¦¬ ë‚˜ëˆŒìˆ˜ ì—†ì–´ 0ì„
     if( sMantissa1[0] == 0 )
     {
         sMantissaStart = 1;
         sResultExponent--;
     }
-    // 0ÀÌ ¾Æ´Ñ °æ¿ì ¾ÖÃÊ ¿¹»óÇß´ø ÀÚ¸®º¸´Ù ÇÑÀÚ¸®°¡ ¸¹À¸¹Ç·Î ÇÑÀÚ¸® °¨¼Ò
+    // 0ì´ ì•„ë‹Œ ê²½ìš° ì• ì´ˆ ì˜ˆìƒí–ˆë˜ ìë¦¬ë³´ë‹¤ í•œìë¦¬ê°€ ë§ìœ¼ë¯€ë¡œ í•œìë¦¬ ê°ì†Œ
     else
     {
         sMantissaStart = 0;
         sResultFence--;
     }
 
-    // µÚ Zero Trim
+    // ë’¤ Zero Trim
     for( i = sResultFence - 1; i > 0; i-- )
     {
         if( sMantissa1[i] == 0 )
@@ -2925,10 +2925,10 @@ ACI_RC mtcDivideFloat( mtdNumericType *aValue,
         // Nothing to do.
     }
 
-    // exponent°¡ 63À» ³ÑÀ¸¸é ¿¡·¯(ÃÖ´ë 126ÀÌ¹Ç·Î)
+    // exponentê°€ 63ì„ ë„˜ìœ¼ë©´ ì—ëŸ¬(ìµœëŒ€ 126ì´ë¯€ë¡œ)
     ACI_TEST_RAISE( sResultExponent > 63, ERR_VALUE_OVERFLOW );
 
-    // exponent°¡ -63(-126)º¸´Ù ÀÛÀ¸¸é 0ÀÌ µÊ
+    // exponentê°€ -63(-126)ë³´ë‹¤ ì‘ìœ¼ë©´ 0ì´ ë¨
     if( sResultExponent < -63 )
     {
         aValue->length       = 1;
@@ -2936,7 +2936,7 @@ ACI_RC mtcDivideFloat( mtdNumericType *aValue,
     }
     else
     {
-        // ºÎÈ£°¡ °°Àº °æ¿ì
+        // ë¶€í˜¸ê°€ ê°™ì€ ê²½ìš°
         if( sArgExponent1 == sArgExponent2 )
         {
             aValue->signExponent = sResultExponent + 192;
@@ -2946,7 +2946,7 @@ ACI_RC mtcDivideFloat( mtdNumericType *aValue,
             }
             aValue->length = sResultFence - sMantissaStart + 1;
         }
-        // ºÎÈ£°¡ ´Ù¸¥ °æ¿ì
+        // ë¶€í˜¸ê°€ ë‹¤ë¥¸ ê²½ìš°
         else
         {
             aValue->signExponent = 64 - sResultExponent;
@@ -2991,10 +2991,10 @@ ACI_RC mtcGetPrecisionScaleFloat( const mtdNumericType* aValue,
                                   acp_sint32_t        * aScale )
 {
 // To fix BUG-12944
-// precision°ú scaleÀ» Á¤È®È÷ ±¸ÇØÁÖ´Â ÇÔ¼ö.
-// ¸¸¾à maximum precisionÀ» ³Ñ´Â °æ¿ì´Â ÃÖ´ë 39, 40ÀÌ¹Ç·Î,
-// precision, scaleÀ» °­Á¦·Î 38·Î ³Ñ°ÜÁØ´Ù.(ÃÖ´ë mantissa¹è¿­ Å©±â¸¦ ³ÑÁö ¾ÊÀ¸¹Ç·Î ¹«°üÇÔ)
-// ¹«Á¶°Ç ¼º°øÇÔ. return IDE_SUCCESS;
+// precisionê³¼ scaleì„ ì •í™•íˆ êµ¬í•´ì£¼ëŠ” í•¨ìˆ˜.
+// ë§Œì•½ maximum precisionì„ ë„˜ëŠ” ê²½ìš°ëŠ” ìµœëŒ€ 39, 40ì´ë¯€ë¡œ,
+// precision, scaleì„ ê°•ì œë¡œ 38ë¡œ ë„˜ê²¨ì¤€ë‹¤.(ìµœëŒ€ mantissaë°°ì—´ í¬ê¸°ë¥¼ ë„˜ì§€ ì•Šìœ¼ë¯€ë¡œ ë¬´ê´€í•¨)
+// ë¬´ì¡°ê±´ ì„±ê³µí•¨. return IDE_SUCCESS;
     acp_sint32_t sExponent;
 
     if( aValue->length > 1 )
@@ -3054,7 +3054,7 @@ ACI_RC mtcGetPrecisionScaleFloat( const mtdNumericType* aValue,
 
         if( (*aPrecision) > MTD_NUMERIC_PRECISION_MAXIMUM )
         {
-            // precisionÀÌ °¨¼ÒÇÏ¸é¼­ scaleµµ ¸¶Âù°¡Áö·Î °¨¼ÒÇØ¾ß ÇÔ.
+            // precisionì´ ê°ì†Œí•˜ë©´ì„œ scaleë„ ë§ˆì°¬ê°€ì§€ë¡œ ê°ì†Œí•´ì•¼ í•¨.
             (*aScale)  -= (*aPrecision) - MTD_NUMERIC_PRECISION_MAXIMUM;
             (*aPrecision) = MTD_NUMERIC_PRECISION_MAXIMUM;
         }
@@ -3083,13 +3083,13 @@ mtcIsSamePhysicalImageByModule( const mtdModule* aModule,
      * Description :
      *
      *    BUG-30257
-     *    client¿ë ÇÔ¼ö·Î½á physical Image°¡ µ¿ÀÏÇÑÁö ºñ±³ÇÑ´Ù.
+     *    clientìš© í•¨ìˆ˜ë¡œì¨ physical Imageê°€ ë™ì¼í•œì§€ ë¹„êµí•œë‹¤.
      *
      * Implementation :
      *
-     *    NULLÀÎ °æ¿ì Garbage Data°¡ Á¸ÀçÇÒ ¼ö ÀÖÀ¸¹Ç·Î ¸ğµÎ NULLÀÎÁö ÆÇ´Ü
-     *    DataÀÇ ±æÀÌ°¡ µ¿ÀÏÇÑÁö °Ë»ç
-     *    Data ±æÀÌ°¡ µ¿ÀÏÇÒ °æ¿ì memcmp ·Î °Ë»ç
+     *    NULLì¸ ê²½ìš° Garbage Dataê°€ ì¡´ì¬í•  ìˆ˜ ìˆìœ¼ë¯€ë¡œ ëª¨ë‘ NULLì¸ì§€ íŒë‹¨
+     *    Dataì˜ ê¸¸ì´ê°€ ë™ì¼í•œì§€ ê²€ì‚¬
+     *    Data ê¸¸ì´ê°€ ë™ì¼í•  ê²½ìš° memcmp ë¡œ ê²€ì‚¬
      *
      ***********************************************************************/
 
@@ -3170,8 +3170,8 @@ ACI_RC mtcInitializeColumn( mtcColumn       *aColumn,
 {
 /***********************************************************************
  *
- * Description : mtcColumnÀÇ ÃÊ±âÈ­
- *              ( mtdModule ¹× mtlModuleÀ» ÁöÁ¤ÇØÁØ °æ¿ì )
+ * Description : mtcColumnì˜ ì´ˆê¸°í™”
+ *              ( mtdModule ë° mtlModuleì„ ì§€ì •í•´ì¤€ ê²½ìš° )
  *
  * Implementation :
  *
@@ -3831,7 +3831,7 @@ ACI_RC mtcMakeBit2( acp_uint8_t*       aBitValue,
     {
         ACI_TEST_RAISE( sHexBit[sToken[0]] > 1, ERR_INVALID_LITERAL );
 
-        // °ª ³Ö±â Àü¿¡ 0À¸·Î ÃÊ±âÈ­
+        // ê°’ ë„£ê¸° ì „ì— 0ìœ¼ë¡œ ì´ˆê¸°í™”
         acpMemSet( sIterator,
                    0x00,
                    1 );
@@ -4016,7 +4016,7 @@ ACI_RC mtcRoundFloat( mtdNumericType *aValue,
     acp_uint8_t  sMantissa[MTD_FLOAT_MANTISSA_MAXIMUM] = { 0, };
     acp_sint32_t   i;
 
-    /* null ÀÌ¸é null */
+    /* null ì´ë©´ null */
     if ( aArgument1->length == 0 )
     {
         aValue->length = 0;
@@ -4033,7 +4033,7 @@ ACI_RC mtcRoundFloat( mtdNumericType *aValue,
 
         sRound = -sRound;
 
-        /* exponent ±¸ÇÏ±â */
+        /* exponent êµ¬í•˜ê¸° */
         sArgExponent1 = aArgument1->signExponent & 0x80;
         if ( sArgExponent1 == 0x80 )
         {
@@ -4044,7 +4044,7 @@ ACI_RC mtcRoundFloat( mtdNumericType *aValue,
             sExponent = 64 - (aArgument1->signExponent & 0x7F);
         }
 
-        /* aArgument1 º¹»ç */
+        /* aArgument1 ë³µì‚¬ */
         aValue->signExponent = aArgument1->signExponent;
         aValue->length = aArgument1->length;
 
@@ -4072,7 +4072,7 @@ ACI_RC mtcRoundFloat( mtdNumericType *aValue,
                 sExponent++;
                 ACI_TEST_RAISE( sExponent > 63, ERR_OVERFLOW );
                 aValue->length = 2;
-                /* exponent ¼³Á¤ */
+                /* exponent ì„¤ì • */
                 if ( sArgExponent1 == 0x80 )
                 {
                     aValue->signExponent = sExponent + 192;
@@ -4204,7 +4204,7 @@ ACI_RC mtcRoundFloat( mtdNumericType *aValue,
                 sMantissa[0] = 1;
                 sExponent++;
                 ACI_TEST_RAISE( sExponent > 63, ERR_OVERFLOW );
-                /* exponent ¼³Á¤ */
+                /* exponent ì„¤ì • */
                 if ( sArgExponent1 == 0x80 )
                 {
                     aValue->signExponent = sExponent + 192;
@@ -4219,7 +4219,7 @@ ACI_RC mtcRoundFloat( mtdNumericType *aValue,
                 /* Nothing to do */
             }
 
-            /* length ¼³Á¤ */
+            /* length ì„¤ì • */
             for ( i = 0, aValue->length = 1; i < (acp_sint32_t)sizeof(sMantissa) - 1; i++ )
             {
                 if ( sMantissa[i] != 0 )
@@ -4295,7 +4295,7 @@ ACI_RC mtcNumeric2Slong( acp_sint64_t          *aValue,
                                     (acp_uint64_t)(100000000000000),
                                     (acp_uint64_t)(10000000000000000),
                                     (acp_uint64_t)(1000000000000000000) };
-    /* null ÀÌ¸é ¿¡·¯ */
+    /* null ì´ë©´ ì—ëŸ¬ */
     ACI_TEST_RAISE( aArgument1->length == 0, ERR_NULL_VALUE );
 
     if ( aArgument1->length == 1 )
@@ -4310,7 +4310,7 @@ ACI_RC mtcNumeric2Slong( acp_sint64_t          *aValue,
 
     sArgExponent1 = aArgument1->signExponent & 0x80;
 
-    /* ¾ç¼öÀÌ¸é ±×´ë·Î À½¼öÀÌ¸é ¾ç¼ö·Î º¯È¯ */
+    /* ì–‘ìˆ˜ì´ë©´ ê·¸ëŒ€ë¡œ ìŒìˆ˜ì´ë©´ ì–‘ìˆ˜ë¡œ ë³€í™˜ */
     if ( sArgExponent1 == 0x80 )
     {
         sExponent = (aArgument1->signExponent & 0x7F) - 64;
@@ -4345,14 +4345,14 @@ ACI_RC mtcNumeric2Slong( acp_sint64_t          *aValue,
         /* nothing to do. */
     }
 
-    //¾ç¼ö
+    //ì–‘ìˆ˜
     if ( sArgExponent1 == 0x80 )
     {
         ACI_TEST_RAISE( sULongValue > ACP_SLONG_MAX,
                         ERR_OVERFLOW );
         *aValue = sULongValue;
     }
-    //À½¼ö
+    //ìŒìˆ˜
     else
     {
         ACI_TEST_RAISE( sULongValue > 0x8000000000000000,//(acp_uint64_t)(9223372036854775808),
@@ -4389,30 +4389,30 @@ ACI_RC mtcNumeric2Slong( acp_sint64_t          *aValue,
 /***********************************************************************
  *
  * Description :
- *    ISO 8601 Ç¥ÁØ ÁÖÂ÷¸¦ ±¸ÇÕ´Ï´Ù.
- *      ÁÖÂ÷´Â ¿ù¿äÀÏºÎÅÍ ½ÃÀÛÇÕ´Ï´Ù.
- *      1¿ù 1ÀÏÀÌ ¸ñ¿äÀÏ ÀÌÀüÀÌ¸é, Ã¹ ÁÖ¿Í Àü³âµµÀÇ ¸¶Áö¸· ÁÖ´Â ´ç³âµµÀÇ 1ÁÖÂ÷ÀÔ´Ï´Ù.
- *      1¿ù 1ÀÏÀÌ ±İ¿äÀÏ ÀÌÈÄÀÌ¸é, Ã¹ ÁÖ´Â Àü³âµµÀÇ ¸¶Áö¸· ÁÖÂ÷ÀÔ´Ï´Ù.
+ *    ISO 8601 í‘œì¤€ ì£¼ì°¨ë¥¼ êµ¬í•©ë‹ˆë‹¤.
+ *      ì£¼ì°¨ëŠ” ì›”ìš”ì¼ë¶€í„° ì‹œì‘í•©ë‹ˆë‹¤.
+ *      1ì›” 1ì¼ì´ ëª©ìš”ì¼ ì´ì „ì´ë©´, ì²« ì£¼ì™€ ì „ë…„ë„ì˜ ë§ˆì§€ë§‰ ì£¼ëŠ” ë‹¹ë…„ë„ì˜ 1ì£¼ì°¨ì…ë‹ˆë‹¤.
+ *      1ì›” 1ì¼ì´ ê¸ˆìš”ì¼ ì´í›„ì´ë©´, ì²« ì£¼ëŠ” ì „ë…„ë„ì˜ ë§ˆì§€ë§‰ ì£¼ì°¨ì…ë‹ˆë‹¤.
  *
  * Implementation :
- *    1. ¿¬µµ¸¦ ±¸ÇÕ´Ï´Ù.
- *      1¿ù 1ÀÏ : 1¿ù 1ÀÏÀÌ ±İÅäÀÏÀÎ °æ¿ì, Àü³âµµ 12¿ù 31ÀÏÀÇ ÁÖÂ÷¸¦ ±¸ÇÕ´Ï´Ù. (Step 2)
- *      1¿ù 2ÀÏ : 1¿ù 1ÀÏÀÌ ±İÅäÀÎ °æ¿ì, Àü³âµµ 12¿ù 31ÀÏÀÇ ÁÖÂ÷¸¦ ±¸ÇÕ´Ï´Ù. (Step 2)
- *      1¿ù 3ÀÏ : 1¿ù 1ÀÏÀÌ ±İÀÎ °æ¿ì, Àü³âµµ 12¿ù 31ÀÏÀÇ ÁÖÂ÷¸¦ ±¸ÇÕ´Ï´Ù. (Step 2)
- *      12¿ù 29ÀÏ : 12¿ù 31ÀÏÀÌ ¼öÀÎ °æ¿ì, Â÷³âµµ 1ÁÖÂ÷ÀÔ´Ï´Ù.
- *      12¿ù 30ÀÏ : 12¿ù 31ÀÏÀÌ È­¼öÀÎ °æ¿ì, Â÷³âµµ 1ÁÖÂ÷ÀÔ´Ï´Ù.
- *      12¿ù 31ÀÏ : 12¿ù 31ÀÏÀÌ ¿ùÈ­¼öÀÎ °æ¿ì, Â÷³âµµ 1ÁÖÂ÷ÀÔ´Ï´Ù.
- *      ³ª¸ÓÁö : ´ç³âµµ ÁÖÂ÷¸¦ ±¸ÇÕ´Ï´Ù. (Step 2)
+ *    1. ì—°ë„ë¥¼ êµ¬í•©ë‹ˆë‹¤.
+ *      1ì›” 1ì¼ : 1ì›” 1ì¼ì´ ê¸ˆí† ì¼ì¸ ê²½ìš°, ì „ë…„ë„ 12ì›” 31ì¼ì˜ ì£¼ì°¨ë¥¼ êµ¬í•©ë‹ˆë‹¤. (Step 2)
+ *      1ì›” 2ì¼ : 1ì›” 1ì¼ì´ ê¸ˆí† ì¸ ê²½ìš°, ì „ë…„ë„ 12ì›” 31ì¼ì˜ ì£¼ì°¨ë¥¼ êµ¬í•©ë‹ˆë‹¤. (Step 2)
+ *      1ì›” 3ì¼ : 1ì›” 1ì¼ì´ ê¸ˆì¸ ê²½ìš°, ì „ë…„ë„ 12ì›” 31ì¼ì˜ ì£¼ì°¨ë¥¼ êµ¬í•©ë‹ˆë‹¤. (Step 2)
+ *      12ì›” 29ì¼ : 12ì›” 31ì¼ì´ ìˆ˜ì¸ ê²½ìš°, ì°¨ë…„ë„ 1ì£¼ì°¨ì…ë‹ˆë‹¤.
+ *      12ì›” 30ì¼ : 12ì›” 31ì¼ì´ í™”ìˆ˜ì¸ ê²½ìš°, ì°¨ë…„ë„ 1ì£¼ì°¨ì…ë‹ˆë‹¤.
+ *      12ì›” 31ì¼ : 12ì›” 31ì¼ì´ ì›”í™”ìˆ˜ì¸ ê²½ìš°, ì°¨ë…„ë„ 1ì£¼ì°¨ì…ë‹ˆë‹¤.
+ *      ë‚˜ë¨¸ì§€ : ë‹¹ë…„ë„ ì£¼ì°¨ë¥¼ êµ¬í•©ë‹ˆë‹¤. (Step 2)
  *
- *    2. ÁÖÂ÷¸¦ ±¸ÇÕ´Ï´Ù.
- *      (1) Ã¹ ÁÖ°¡ ÁÖÂ÷¿¡ Æ÷ÇÔµÇ´ÂÁö È®ÀÎÇÕ´Ï´Ù.
- *          1¿ù 1ÀÏÀÌ ¿ùÈ­¼ö¸ñÀÎ °æ¿ì, Ã¹ ÁÖ°¡ ÁÖÂ÷¿¡ Æ÷ÇÔµË´Ï´Ù.
- *          Ã¹ ÁÖÀÇ ¸¶Áö¸·ÀÏÀÚ(ÀÏ¿äÀÏ)¸¦ ±¸ÇÕ´Ï´Ù. (firstSunday)
+ *    2. ì£¼ì°¨ë¥¼ êµ¬í•©ë‹ˆë‹¤.
+ *      (1) ì²« ì£¼ê°€ ì£¼ì°¨ì— í¬í•¨ë˜ëŠ”ì§€ í™•ì¸í•©ë‹ˆë‹¤.
+ *          1ì›” 1ì¼ì´ ì›”í™”ìˆ˜ëª©ì¸ ê²½ìš°, ì²« ì£¼ê°€ ì£¼ì°¨ì— í¬í•¨ë©ë‹ˆë‹¤.
+ *          ì²« ì£¼ì˜ ë§ˆì§€ë§‰ì¼ì(ì¼ìš”ì¼)ë¥¼ êµ¬í•©ë‹ˆë‹¤. (firstSunday)
  *
- *      (2) ³ª¸ÓÁö ÁÖÀÇ ÁÖÂ÷¸¦ ±¸ÇÕ´Ï´Ù.
+ *      (2) ë‚˜ë¨¸ì§€ ì£¼ì˜ ì£¼ì°¨ë¥¼ êµ¬í•©ë‹ˆë‹¤.
  *          ( dayOfYear - firstSunday + 6 ) / 7
  *
- *      (3) 1°ú 2¸¦ ´õÇØ¼­ ÁÖÂ÷¸¦ ±¸ÇÕ´Ï´Ù.
+ *      (3) 1ê³¼ 2ë¥¼ ë”í•´ì„œ ì£¼ì°¨ë¥¼ êµ¬í•©ë‹ˆë‹¤.
  *
  ***********************************************************************/
 acp_sint32_t mtcWeekOfYearForStandard( acp_sint32_t aYear,
@@ -4425,14 +4425,14 @@ acp_sint32_t mtcWeekOfYearForStandard( acp_sint32_t aYear,
     acp_sint32_t    sFirstSunday = 0;
     acp_bool_t      sIsPrevYear  = ACP_FALSE;
 
-    /* Step 1. ¿¬µµ¸¦ ±¸ÇÕ´Ï´Ù. */
+    /* Step 1. ì—°ë„ë¥¼ êµ¬í•©ë‹ˆë‹¤. */
     if ( aMonth == 1 )
     {
         switch ( aDay )
         {
             case 1 :
                 sDayOfWeek = mtcDayOfWeek( aYear, 1, 1 );
-                if ( ( sDayOfWeek >= 5 ) || ( sDayOfWeek == 0 ) )   // ±İÅäÀÏ
+                if ( ( sDayOfWeek >= 5 ) || ( sDayOfWeek == 0 ) )   // ê¸ˆí† ì¼
                 {
                     sIsPrevYear = ACP_TRUE;
                 }
@@ -4444,7 +4444,7 @@ acp_sint32_t mtcWeekOfYearForStandard( acp_sint32_t aYear,
 
             case 2 :
                 sDayOfWeek = mtcDayOfWeek( aYear, 1, 1 );
-                if ( sDayOfWeek >= 5 )                              // ±İÅä
+                if ( sDayOfWeek >= 5 )                              // ê¸ˆí† 
                 {
                     sIsPrevYear = ACP_TRUE;
                 }
@@ -4456,7 +4456,7 @@ acp_sint32_t mtcWeekOfYearForStandard( acp_sint32_t aYear,
 
             case 3 :
                 sDayOfWeek = mtcDayOfWeek( aYear, 1, 1 );
-                if ( sDayOfWeek == 5 )                              // ±İ
+                if ( sDayOfWeek == 5 )                              // ê¸ˆ
                 {
                     sIsPrevYear = ACP_TRUE;
                 }
@@ -4476,7 +4476,7 @@ acp_sint32_t mtcWeekOfYearForStandard( acp_sint32_t aYear,
         {
             case 29 :
                 sDayOfWeek = mtcDayOfWeek( aYear, 12, 31 );
-                if ( sDayOfWeek == 3 )                                                      // ¼ö
+                if ( sDayOfWeek == 3 )                                                      // ìˆ˜
                 {
                     sWeekOfYear = 1;
                 }
@@ -4488,7 +4488,7 @@ acp_sint32_t mtcWeekOfYearForStandard( acp_sint32_t aYear,
 
             case 30 :
                 sDayOfWeek = mtcDayOfWeek( aYear, 12, 31 );
-                if ( ( sDayOfWeek == 2 ) || ( sDayOfWeek == 3 ) )                           // È­¼ö
+                if ( ( sDayOfWeek == 2 ) || ( sDayOfWeek == 3 ) )                           // í™”ìˆ˜
                 {
                     sWeekOfYear = 1;
                 }
@@ -4500,7 +4500,7 @@ acp_sint32_t mtcWeekOfYearForStandard( acp_sint32_t aYear,
 
             case 31 :
                 sDayOfWeek = mtcDayOfWeek( aYear, 12, 31 );
-                if ( ( sDayOfWeek == 1 ) || ( sDayOfWeek == 2 ) || ( sDayOfWeek == 3 ) )    // ¿ùÈ­¼ö
+                if ( ( sDayOfWeek == 1 ) || ( sDayOfWeek == 2 ) || ( sDayOfWeek == 3 ) )    // ì›”í™”ìˆ˜
                 {
                     sWeekOfYear = 1;
                 }
@@ -4519,7 +4519,7 @@ acp_sint32_t mtcWeekOfYearForStandard( acp_sint32_t aYear,
         /* Nothing to do */
     }
 
-    /* Step 2. ÁÖÂ÷¸¦ ±¸ÇÕ´Ï´Ù. */
+    /* Step 2. ì£¼ì°¨ë¥¼ êµ¬í•©ë‹ˆë‹¤. */
     if ( sWeekOfYear == 0 )
     {
         if ( sIsPrevYear == ACP_TRUE )
@@ -4534,7 +4534,7 @@ acp_sint32_t mtcWeekOfYearForStandard( acp_sint32_t aYear,
         }
 
         sFirstSunday = 8 - sDayOfWeek;
-        if ( sFirstSunday == 8 )    // 1¿ù 1ÀÏÀÌ ÀÏ¿äÀÏ
+        if ( sFirstSunday == 8 )    // 1ì›” 1ì¼ì´ ì¼ìš”ì¼
         {
             sFirstSunday = 1;
         }
@@ -4543,7 +4543,7 @@ acp_sint32_t mtcWeekOfYearForStandard( acp_sint32_t aYear,
             /* Nothing to do */
         }
 
-        if ( ( sDayOfWeek >= 1 ) && ( sDayOfWeek <= 4 ) )   // Ã¹ ÁÖ°¡ ¿ùÈ­¼ö¸ñ
+        if ( ( sDayOfWeek >= 1 ) && ( sDayOfWeek <= 4 ) )   // ì²« ì£¼ê°€ ì›”í™”ìˆ˜ëª©
         {
             sWeekOfYear = ( sDayOfYear - sFirstSunday + 6 ) / 7 + 1;
         }

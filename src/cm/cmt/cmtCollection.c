@@ -134,18 +134,18 @@ ACI_RC cmtCollectionReadAnyNext(acp_uint8_t   *aCollectionData, /*   [IN]   */
     acp_uint8_t   sInVariableDelimeter;
 
     /*
-     * Cursor À§Ä¡ º¹»ç
+     * Cursor ìœ„ì¹˜ ë³µì‚¬
      */
     sCursor = *aCursor;
     sData   = aCollectionData;
 
     /*
-     * Type ID ÀÐÀ½
+     * Type ID ì½ìŒ
      */
     CMT_COLLECTION_READ_BYTE1( sData, sCursor, &aAny->mType)
 
     /*
-     * Type º°·Î Data ÀÐÀ½
+     * Type ë³„ë¡œ Data ì½ìŒ
      */
     switch (aAny->mType)
     {
@@ -259,18 +259,18 @@ ACI_RC cmtCollectionReadDataNext(acp_uint8_t     *aCollectionData, /*   [IN]   *
     acp_uint64_t     sLocatorID;
 
     /*
-     * Cursor À§Ä¡ º¹»ç
+     * Cursor ìœ„ì¹˜ ë³µì‚¬
      */
     sCursor = *aCursor;
     sData   = aCollectionData;
 
     /*
-     * Type ID ÀÐÀ½
+     * Type ID ì½ìŒ
      */
     CMT_COLLECTION_READ_BYTE1( sData, sCursor, &sType );
 
     /*
-     * Type º°·Î Data ÀÐÀ½
+     * Type ë³„ë¡œ Data ì½ìŒ
      */
 
     switch (sType)
@@ -397,7 +397,7 @@ void cmtCollectionReadParamInfoSetNext(acp_uint8_t  *aCollectionData,
     cmpCollectionDBParamInfoSetA5 *sCollectionParamInfoSet;
 
     /*
-     * Cursor À§Ä¡ º¹»ç
+     * Cursor ìœ„ì¹˜ ë³µì‚¬
      */
     sCursor = *aCursor;
     sData   = aCollectionData;
@@ -423,7 +423,7 @@ void cmtCollectionWriteParamInfoSet(acp_uint8_t  *aCollectionData,
     cmpCollectionDBParamInfoSetA5 *sCollectionParamInfoSet;
 
     /*
-     * Cursor À§Ä¡ º¹»ç
+     * Cursor ìœ„ì¹˜ ë³µì‚¬
      */
     sCursor = *aCursor;
     sData   = aCollectionData;
@@ -574,23 +574,23 @@ void cmtCollectionWriteAny(acp_uint8_t     *aCollectionData, /*   [IN]   */
     acp_uint8_t   sInVariableDelimeter = 0;
 
     /*
-     * Cursor À§Ä¡ º¹»ç
+     * Cursor ìœ„ì¹˜ ë³µì‚¬
      */
     sCursor = *aCursor;
     sData   = aCollectionData;
 
     /*
-     * Type ID ¹üÀ§ °Ë»ç
+     * Type ID ë²”ìœ„ ê²€ì‚¬
      */
     ACE_DASSERT( aAny->mType != CMT_ID_VARIABLE );
 
     /*
-     * Type ID ¾¸
+     * Type ID ì”€
      */
     CMT_COLLECTION_WRITE_BYTE1( sData, sCursor, aAny->mType)
 
     /*
-     * Type º°·Î Data ¾¸
+     * Type ë³„ë¡œ Data ì”€
      */
     switch (aAny->mType)
     {

@@ -175,8 +175,8 @@ IDE_RC iduVarMemStringAppendLength(iduVarMemString *aString, const SChar *aCStri
 {
     iduVarMemStringPiece *sPiece;
     iduListNode          *sIterator;
-    UInt                  sLenLeft; /* º¹»çÇØ¾ßÇÒ ¹®ÀÚ¿­ÀÇ ³²Àº ±æÀÌ */
-    UInt                  sLenCopy; /* Piece¿¡ º¹»çÇÒ(ÇÑ) ±æÀÌ       */
+    UInt                  sLenLeft; /* ë³µì‚¬í•´ì•¼í•  ë¬¸ìžì—´ì˜ ë‚¨ì€ ê¸¸ì´ */
+    UInt                  sLenCopy; /* Pieceì— ë³µì‚¬í• (í•œ) ê¸¸ì´       */
 
     sIterator = aString->mPieceList.mPrev;
 

@@ -20,11 +20,11 @@
  *
  * Description :
  *
- * ½Ã°ø°£ ÀÎµ¦½º( Spatio-Temporal Index : stnmrModule.cpp )
+ * ì‹œê³µê°„ ì¸ë±ìŠ¤( Spatio-Temporal Index : stnmrModule.cpp )
  *
- * 1. ¼³°è°³¿ä
+ * 1. ì„¤ê³„ê°œìš”
  *
- * 2. ¼³°è±¸Á¶
+ * 2. ì„¤ê³„êµ¬ì¡°
  *
  **********************************************************************/
 
@@ -676,14 +676,14 @@ IDE_RC stnmrRTree::create( idvSQL*               /*aStatistics*/,
                    (ULong)(aIndex->mId));
 
 
-    //fix BUG-23023 ·±Å¸ÀÓ Çì´õ »ı¼º
+    //fix BUG-23023 ëŸ°íƒ€ì„ í—¤ë” ìƒì„±
     IDE_TEST( iduMemMgr::malloc( IDU_MEM_SM_SMN,
                                  ID_SIZEOF(stnmrHeader),
                                  (void**)&sHeader )
               != IDE_SUCCESS );
     sStage = 1;
 
-    //fix BUG-23023 Ä®·³ »ı¼º
+    //fix BUG-23023 ì¹¼ëŸ¼ ìƒì„±
     IDE_TEST( iduMemMgr::malloc( IDU_MEM_SM_SMN,
                                  ID_SIZEOF(stnmrColumn) * (aIndex->mColumnCount),
                                  (void**)&(sHeader->mColumns) )
@@ -843,7 +843,7 @@ IDE_RC stnmrRTree::buildIndex( idvSQL*               aStatistics,
 
         while( 1 )
         {
-            // BUG-29134: stnmrHeader¸¦ smnbHeader·Î »ç¿ëÇÏ´Â ¹®Á¦
+            // BUG-29134: stnmrHeaderë¥¼ smnbHeaderë¡œ ì‚¬ìš©í•˜ëŠ” ë¬¸ì œ
             IDE_TEST( aGetRowFunc( aTable,
                                    sPageID,
                                    &sFence,
@@ -1273,8 +1273,8 @@ void stnmrRTree::split( stnmrHeader*    aHeader,
                   aLNode->mSlots, 
                   STNMR_SLOT_MAX * ID_SIZEOF(stnmrSlot));
 
-    //aLNode¸¦ ÃÊ±âÈ­ÇÏ¸é next°¡ NULLÀÌ µÇ±â ¶§¹®¿¡ ¿©±â¼­ ¸ÕÀú 
-    //RNodeÀÇ Link¸¦ ¿¬°áÇÑ´Ù.
+    //aLNodeë¥¼ ì´ˆê¸°í™”í•˜ë©´ nextê°€ NULLì´ ë˜ê¸° ë•Œë¬¸ì— ì—¬ê¸°ì„œ ë¨¼ì € 
+    //RNodeì˜ Linkë¥¼ ì—°ê²°í•œë‹¤.
     aRNode->mNextSPtr = aLNode->mNextSPtr;
 
     initNode(aLNode, aLNode->mFlag, IDU_LATCH_LOCKED | aLNode->mLatch);
@@ -1492,8 +1492,8 @@ IDE_RC stnmrRTree::insertRow( idvSQL*           /* aStatistics */,
 
     sHeader  = (stnmrHeader*)((smnIndexHeader*)aIndex)->mHeader;
 
-    // Fix BUG-15844 :  Geometry°¡ NULL¶Ç´Â EmptyÀÎ °æ¿ì´Â »ğÀÔÇÏÁö
-    //                  ¾Ê´Â´Ù.
+    // Fix BUG-15844 :  Geometryê°€ NULLë˜ëŠ” Emptyì¸ ê²½ìš°ëŠ” ì‚½ì…í•˜ì§€
+    //                  ì•ŠëŠ”ë‹¤.
     IDE_TEST( getGeometryHeaderFromRow( sHeader, aRow, MTD_OFFSET_USE, &sGeoHeader )
               != IDE_SUCCESS );
     // BUG-27518
@@ -1579,7 +1579,7 @@ IDE_RC stnmrRTree::insertRow( idvSQL*           /* aStatistics */,
                         break;
                     }
 
-                    //propagate ¸¦ ÇÏ¸é µÇ°ÚÁö...
+                    //propagate ë¥¼ í•˜ë©´ ë˜ê² ì§€...
                     propagate(sHeader,
                               &(sHeader->mStmtStat),
                               sCurNode,
@@ -1717,8 +1717,8 @@ IDE_RC stnmrRTree::freeSlot( void*             aIndex,
     sHeader  = (stnmrHeader*)((smnIndexHeader*)aIndex)->mHeader;
     sCurNode = sHeader->mRoot;
 
-    // Fix BUG-15844 :  Geometry°¡ NULL¶Ç´Â EmptyÀÎ °æ¿ì´Â »ğÀÔÇÏÁö
-    //                  ¾Ê¾ÒÀ¸¹Ç·Î »èÁ¦ÇÏÁö ¾Ê´Â´Ù.
+    // Fix BUG-15844 :  Geometryê°€ NULLë˜ëŠ” Emptyì¸ ê²½ìš°ëŠ” ì‚½ì…í•˜ì§€
+    //                  ì•Šì•˜ìœ¼ë¯€ë¡œ ì‚­ì œí•˜ì§€ ì•ŠëŠ”ë‹¤.
     sHeader  = (stnmrHeader*)((smnIndexHeader*)aIndex)->mHeader;
     
     IDE_TEST( getGeometryHeaderFromRow( sHeader, aRow, MTD_OFFSET_USE, &sGeoHeader )
@@ -1854,11 +1854,11 @@ void stnmrRTree::deleteNode( stnmrNode* aNode,
 
     IDE_ASSERT( (aNode->mSlotCount != 0) && (aNode->mSlotCount > aPos) );
     
-    // fix BUG-15442 : µ¿½Ã¿¡ DeleteÇÒ°æ¿ì R-Tree¿¡¼­ ¼­¹ö ´Ù¿î
+    // fix BUG-15442 : ë™ì‹œì— Deleteí• ê²½ìš° R-Treeì—ì„œ ì„œë²„ ë‹¤ìš´
     for( i=aPos; i<aNode->mSlotCount-1; i++ )
     {
-        // mPtrÀº ¹İµå½Ã ¿øÀÚ¼ºÀ» À¯ÁöÇØ¾ß ÇÏ±â¶§¹®¿¡
-        // ±¸Á¶Ã¼¿¡ ´ëÇÑ AssignÀü¿¡ Æ÷ÀÎÅÍÀÇ AssignÇÑ´Ù.
+        // mPtrì€ ë°˜ë“œì‹œ ì›ìì„±ì„ ìœ ì§€í•´ì•¼ í•˜ê¸°ë•Œë¬¸ì—
+        // êµ¬ì¡°ì²´ì— ëŒ€í•œ Assignì „ì— í¬ì¸í„°ì˜ Assigní•œë‹¤.
         aNode->mSlots[ i ].mPtr = aNode->mSlots[ i + 1 ].mPtr;
         aNode->mSlots[ i ]      = aNode->mSlots[ i + 1 ];
     }
@@ -3158,7 +3158,7 @@ IDE_RC stnmrRTree::getGeometryHeaderFromRow( stnmrHeader*         aHeader,
 
 //======================================================================
 //  X$MEM_RTREE_HEADER
-//  memory rtree indexÀÇ run-time header¸¦ º¸¿©ÁÖ´Â peformance view
+//  memory rtree indexì˜ run-time headerë¥¼ ë³´ì—¬ì£¼ëŠ” peformance view
 //======================================================================
 
 IDE_RC stnmrRTree::buildRecordForMemRTreeHeader(idvSQL              * /*aStatistics*/,
@@ -3191,8 +3191,8 @@ IDE_RC stnmrRTree::buildRecordForMemRTreeHeader(idvSQL              * /*aStatist
     {
         /* BUG-32292 [sm-util] Self deadlock occur since fixed-table building
          * operation uses another transaction. 
-         * NestedTransactionÀ» »ç¿ëÇÏ¸é Self-deadlock ¿ì·Á°¡ ÀÖ´Ù.
-         * µû¶ó¼­ id Memory ¿µ¿ªÀ¸·ÎºÎÅÍ Iterator¸¦ ¾ò¾î TransactionÀ» ¾ò¾î³½´Ù. */
+         * NestedTransactionì„ ì‚¬ìš©í•˜ë©´ Self-deadlock ìš°ë ¤ê°€ ìˆë‹¤.
+         * ë”°ë¼ì„œ id Memory ì˜ì—­ìœ¼ë¡œë¶€í„° Iteratorë¥¼ ì–»ì–´ Transactionì„ ì–»ì–´ë‚¸ë‹¤. */
         sTrans = ((smiIterator*)aMemory->getContext())->trans;
     }
 
@@ -3208,7 +3208,7 @@ IDE_RC stnmrRTree::buildRecordForMemRTreeHeader(idvSQL              * /*aStatist
         
         if( SM_SCN_IS_INFINITE(sPtr->mCreateSCN) == ID_TRUE )
         {
-            /* BUG-14974: ¹«ÇÑ Loop¹ß»ı.*/
+            /* BUG-14974: ë¬´í•œ Loopë°œìƒ.*/
             sCurPtr = sNxtPtr;
             continue;
         }
@@ -3224,7 +3224,7 @@ IDE_RC stnmrRTree::buildRecordForMemRTreeHeader(idvSQL              * /*aStatist
             continue;
         }
         
-        // BUG-30867 Discard µÈ Tablespace¿¡ ¼ÓÇÑ TableÀÇ Indexµµ SkipµÇ¾î¾ß ÇÔ
+        // BUG-30867 Discard ëœ Tablespaceì— ì†í•œ Tableì˜ Indexë„ Skipë˜ì–´ì•¼ í•¨
         if(( smcTable::isDropedTable(sTableHeader) == ID_TRUE ) ||
            ( sctTableSpaceMgr::hasState( sTableHeader->mSpaceID,
                                          SCT_SS_INVALID_DISK_TBS ) == ID_TRUE ))
@@ -3237,13 +3237,13 @@ IDE_RC stnmrRTree::buildRecordForMemRTreeHeader(idvSQL              * /*aStatist
 
         if( sIndexCnt != 0  )
         {
-            //DDL À» ¹æÁö.
+            //DDL ì„ ë°©ì§€.
             IDE_TEST(smLayerCallback::lockTableModeIS(sTrans,
                                                       SMC_TABLE_LOCK( sTableHeader ))
                      != IDE_SUCCESS);
             
-            //lockÀ» Àâ¾ÒÁö¸¸ tableÀÌ dropµÈ °æ¿ì¿¡´Â skip;
-            // BUG-30867 Discard µÈ Tablespace¿¡ ¼ÓÇÑ TableÀÇ Indexµµ SkipµÇ¾î¾ß ÇÔ
+            //lockì„ ì¡ì•˜ì§€ë§Œ tableì´ dropëœ ê²½ìš°ì—ëŠ” skip;
+            // BUG-30867 Discard ëœ Tablespaceì— ì†í•œ Tableì˜ Indexë„ Skipë˜ì–´ì•¼ í•¨
             if(( smcTable::isDropedTable(sTableHeader) == ID_TRUE ) ||
                ( sctTableSpaceMgr::hasState( sTableHeader->mSpaceID,
                                              SCT_SS_INVALID_DISK_TBS ) == ID_TRUE ))
@@ -3252,10 +3252,10 @@ IDE_RC stnmrRTree::buildRecordForMemRTreeHeader(idvSQL              * /*aStatist
                 continue;
             }//if
 
-            // lockÀ» ´ë±âÇÏ´Â µ¿¾È index°¡ dropµÇ¾ú°Å³ª, »õ·Î¿î index°¡
-            // »ı¼ºµÇ¾úÀ» ¼ö ÀÖÀ¸¹Ç·Î Á¤È®ÇÑ index ¼ö¸¦ ´Ù½Ã ±¸ÇÑ´Ù.
-            // »Ó¸¸ ¾Æ´Ï¶ó, index cnt¸¦ Áõ°¡½ÃÅ² ÈÄ index¸¦ »ı¼ºÇÏ¹Ç·Î
-            // index°¡ ¿Ï·áµÇÁö ¸øÇÏ¸é index cnt°¡ °¨¼ÒÇÏ¹Ç·Î ´Ù½Ã ±¸ÇØ¾ß ÇÔ.
+            // lockì„ ëŒ€ê¸°í•˜ëŠ” ë™ì•ˆ indexê°€ dropë˜ì—ˆê±°ë‚˜, ìƒˆë¡œìš´ indexê°€
+            // ìƒì„±ë˜ì—ˆì„ ìˆ˜ ìˆìœ¼ë¯€ë¡œ ì •í™•í•œ index ìˆ˜ë¥¼ ë‹¤ì‹œ êµ¬í•œë‹¤.
+            // ë¿ë§Œ ì•„ë‹ˆë¼, index cntë¥¼ ì¦ê°€ì‹œí‚¨ í›„ indexë¥¼ ìƒì„±í•˜ë¯€ë¡œ
+            // indexê°€ ì™„ë£Œë˜ì§€ ëª»í•˜ë©´ index cntê°€ ê°ì†Œí•˜ë¯€ë¡œ ë‹¤ì‹œ êµ¬í•´ì•¼ í•¨.
             sIndexCnt = smcTable::getIndexCount(sTableHeader);
 
             for( i = 0; i < sIndexCnt; i++ )
@@ -3272,7 +3272,7 @@ IDE_RC stnmrRTree::buildRecordForMemRTreeHeader(idvSQL              * /*aStatist
                     /* BUG-32417 [sm-mem-index] The fixed table 
                      * 'X$MEM_BTREE_HEADER'
                      * doesn't consider that indices is disabled. 
-                     * IndexRuntimeHeader°¡ ¾ø´Â °æ¿ì´Â Á¦¿ÜÇÑ´Ù. */
+                     * IndexRuntimeHeaderê°€ ì—†ëŠ” ê²½ìš°ëŠ” ì œì™¸í•œë‹¤. */
                     idlOS::memset( &sIndexHeader4PerfV, 
                                    0x00, 
                                    ID_SIZEOF(stnmrHeader4PerfV) );
@@ -3303,7 +3303,7 @@ IDE_RC stnmrRTree::buildRecordForMemRTreeHeader(idvSQL              * /*aStatist
                             (void *)&sIndexHeader4PerfV )
                         != IDE_SUCCESS);
             }//for
-        }// if ÀÎµ¦½º°¡ ÀÖÀ¸¸é         
+        }// if ì¸ë±ìŠ¤ê°€ ìˆìœ¼ë©´         
         sCurPtr = sNxtPtr;
     }// while
 
@@ -3412,7 +3412,7 @@ iduFixedTableDesc  gMemRTreeHeaderDesc=
 
 //======================================================================
 //  X$MEM_RTREE_STAT
-//  memory indexÀÇ run-time statistic informationÀ» À§ÇÑ peformance view
+//  memory indexì˜ run-time statistic informationì„ ìœ„í•œ peformance view
 //======================================================================
 
 IDE_RC stnmrRTree::buildRecordForMemRTreeStat(idvSQL              * /*aStatistics*/,
@@ -3445,8 +3445,8 @@ IDE_RC stnmrRTree::buildRecordForMemRTreeStat(idvSQL              * /*aStatistic
     {
         /* BUG-32292 [sm-util] Self deadlock occur since fixed-table building
          * operation uses another transaction. 
-         * NestedTransactionÀ» »ç¿ëÇÏ¸é Self-deadlock ¿ì·Á°¡ ÀÖ´Ù.
-         * µû¶ó¼­ id Memory ¿µ¿ªÀ¸·ÎºÎÅÍ Iterator¸¦ ¾ò¾î TransactionÀ» ¾ò¾î³½´Ù. */
+         * NestedTransactionì„ ì‚¬ìš©í•˜ë©´ Self-deadlock ìš°ë ¤ê°€ ìˆë‹¤.
+         * ë”°ë¼ì„œ id Memory ì˜ì—­ìœ¼ë¡œë¶€í„° Iteratorë¥¼ ì–»ì–´ Transactionì„ ì–»ì–´ë‚¸ë‹¤. */
         sTrans = ((smiIterator*)aMemory->getContext())->trans;
     }
 
@@ -3462,7 +3462,7 @@ IDE_RC stnmrRTree::buildRecordForMemRTreeStat(idvSQL              * /*aStatistic
         
         if( SM_SCN_IS_INFINITE(sPtr->mCreateSCN) == ID_TRUE )
         {
-            /* BUG-14974: ¹«ÇÑ Loop¹ß»ı.*/
+            /* BUG-14974: ë¬´í•œ Loopë°œìƒ.*/
             sCurPtr = sNxtPtr;
             continue;
         }
@@ -3478,7 +3478,7 @@ IDE_RC stnmrRTree::buildRecordForMemRTreeStat(idvSQL              * /*aStatistic
             continue;
         }
 
-        // BUG-30867 Discard µÈ Tablespace¿¡ ¼ÓÇÑ Tableµµ SkipµÇ¾î¾ß ÇÔ
+        // BUG-30867 Discard ëœ Tablespaceì— ì†í•œ Tableë„ Skipë˜ì–´ì•¼ í•¨
         if(( smcTable::isDropedTable(sTableHeader) == ID_TRUE ) ||
            ( sctTableSpaceMgr::hasState( sTableHeader->mSpaceID,
                                              SCT_SS_INVALID_DISK_TBS ) == ID_TRUE ))
@@ -3491,13 +3491,13 @@ IDE_RC stnmrRTree::buildRecordForMemRTreeStat(idvSQL              * /*aStatistic
 
         if( sIndexCnt != 0  )
         {
-            //DDL À» ¹æÁö.
+            //DDL ì„ ë°©ì§€.
             IDE_TEST(smLayerCallback::lockTableModeIS(sTrans,
                                                       SMC_TABLE_LOCK( sTableHeader ))
                      != IDE_SUCCESS);
             
-            //lockÀ» Àâ¾ÒÁö¸¸ tableÀÌ dropµÈ °æ¿ì¿¡´Â skip;
-            // BUG-30867 Discard µÈ Tablespace¿¡ ¼ÓÇÑ Tableµµ SkipµÇ¾î¾ß ÇÔ
+            //lockì„ ì¡ì•˜ì§€ë§Œ tableì´ dropëœ ê²½ìš°ì—ëŠ” skip;
+            // BUG-30867 Discard ëœ Tablespaceì— ì†í•œ Tableë„ Skipë˜ì–´ì•¼ í•¨
             if(( smcTable::isDropedTable(sTableHeader) == ID_TRUE ) ||
                ( sctTableSpaceMgr::hasState( sTableHeader->mSpaceID,
                                              SCT_SS_INVALID_DISK_TBS ) == ID_TRUE ))
@@ -3506,10 +3506,10 @@ IDE_RC stnmrRTree::buildRecordForMemRTreeStat(idvSQL              * /*aStatistic
                 continue;
             }//if
 
-            // lockÀ» ´ë±âÇÏ´Â µ¿¾È index°¡ dropµÇ¾ú°Å³ª, »õ·Î¿î index°¡
-            // »ı¼ºµÇ¾úÀ» ¼ö ÀÖÀ¸¹Ç·Î Á¤È®ÇÑ index ¼ö¸¦ ´Ù½Ã ±¸ÇÑ´Ù.
-            // »Ó¸¸ ¾Æ´Ï¶ó, index cnt¸¦ Áõ°¡½ÃÅ² ÈÄ index¸¦ »ı¼ºÇÏ¹Ç·Î
-            // index°¡ ¿Ï·áµÇÁö ¸øÇÏ¸é index cnt°¡ °¨¼ÒÇÏ¹Ç·Î ´Ù½Ã ±¸ÇØ¾ß ÇÔ.
+            // lockì„ ëŒ€ê¸°í•˜ëŠ” ë™ì•ˆ indexê°€ dropë˜ì—ˆê±°ë‚˜, ìƒˆë¡œìš´ indexê°€
+            // ìƒì„±ë˜ì—ˆì„ ìˆ˜ ìˆìœ¼ë¯€ë¡œ ì •í™•í•œ index ìˆ˜ë¥¼ ë‹¤ì‹œ êµ¬í•œë‹¤.
+            // ë¿ë§Œ ì•„ë‹ˆë¼, index cntë¥¼ ì¦ê°€ì‹œí‚¨ í›„ indexë¥¼ ìƒì„±í•˜ë¯€ë¡œ
+            // indexê°€ ì™„ë£Œë˜ì§€ ëª»í•˜ë©´ index cntê°€ ê°ì†Œí•˜ë¯€ë¡œ ë‹¤ì‹œ êµ¬í•´ì•¼ í•¨.
             sIndexCnt = smcTable::getIndexCount(sTableHeader);
 
             for( i = 0; i < sIndexCnt; i++ )
@@ -3526,7 +3526,7 @@ IDE_RC stnmrRTree::buildRecordForMemRTreeStat(idvSQL              * /*aStatistic
                     /* BUG-32417 [sm-mem-index] The fixed table 
                      * 'X$MEM_BTREE_HEADER'
                      * doesn't consider that indices is disabled. 
-                     * IndexRuntimeHeader°¡ ¾ø´Â °æ¿ì´Â Á¦¿ÜÇÑ´Ù. */
+                     * IndexRuntimeHeaderê°€ ì—†ëŠ” ê²½ìš°ëŠ” ì œì™¸í•œë‹¤. */
                     idlOS::memset( &sIndexStat4PerfV, 
                                    0x00, 
                                    ID_SIZEOF(stnmrStat4PerfV) );
@@ -3566,7 +3566,7 @@ IDE_RC stnmrRTree::buildRecordForMemRTreeStat(idvSQL              * /*aStatistic
                             (void *)&sIndexStat4PerfV )
                         != IDE_SUCCESS);
             }//for
-        }// if ÀÎµ¦½º°¡ ÀÖÀ¸¸é         
+        }// if ì¸ë±ìŠ¤ê°€ ìˆìœ¼ë©´         
         sCurPtr = sNxtPtr;
     }// while
 
@@ -3747,7 +3747,7 @@ iduFixedTableDesc  gMemRTreeStatDesc=
 
 //======================================================================
 //  X$MEM_RTREE_NODEPOOL
-//  memory indexÀÇ node poolÀ» º¸¿©ÁÖ´Â peformance view
+//  memory indexì˜ node poolì„ ë³´ì—¬ì£¼ëŠ” peformance view
 //======================================================================
 IDE_RC stnmrRTree::buildRecordForMemRTreeNodePool(idvSQL              * /*aStatistics*/,
                                                   void                * aHeader,

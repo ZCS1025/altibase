@@ -172,8 +172,8 @@ ACI_RC ulnFreeStmtUnbind(ulnFnContext *aFnContext, ulnStmt *aStmt)
     acpListInit(&sTempStmtList);
 
     /*
-     * Note : IRD Á¤º¸´Â ¼­¹ö¿¡¼­ ¹Ş¾Æ¿Â Á¤º¸ÀÌ¹Ç·Î
-     *        ODBC ½ºÆå´ë·Î ARD ¸¸ ÃÊ±âÈ­ ½ÃÅ²´Ù.
+     * Note : IRD ì •ë³´ëŠ” ì„œë²„ì—ì„œ ë°›ì•„ì˜¨ ì •ë³´ì´ë¯€ë¡œ
+     *        ODBC ìŠ¤í™ëŒ€ë¡œ ARD ë§Œ ì´ˆê¸°í™” ì‹œí‚¨ë‹¤.
      */
 
     sDescArd = ulnStmtGetArd(aStmt);
@@ -182,7 +182,7 @@ ACI_RC ulnFreeStmtUnbind(ulnFnContext *aFnContext, ulnStmt *aStmt)
     sArdParentObject = sDescArd->mParentObject;
 
     /*
-     * Desc °¡ explicit desc ÀÌ¸ç, ¿¬°áµÈ stmt µéÀÌ Á¸ÀçÇÑ´Ù¸é, ¸®½ºÆ® ¹é¾÷
+     * Desc ê°€ explicit desc ì´ë©°, ì—°ê²°ëœ stmt ë“¤ì´ ì¡´ì¬í•œë‹¤ë©´, ë¦¬ìŠ¤íŠ¸ ë°±ì—…
      */
     if (acpListIsEmpty(&sDescArd->mAssociatedStmtList) != ACP_TRUE)
     {
@@ -194,18 +194,18 @@ ACI_RC ulnFreeStmtUnbind(ulnFnContext *aFnContext, ulnStmt *aStmt)
     }
 
     /*
-     * Desc ¸¦ °« »ı¼ºµÈ »óÅÂ·Î µÇµ¹¸®±â
+     * Desc ë¥¼ ê°“ ìƒì„±ëœ ìƒíƒœë¡œ ë˜ëŒë¦¬ê¸°
      */
     ACI_TEST_RAISE(ulnDescRollBackToInitial(sDescArd) != ACI_SUCCESS, LABEL_MEM_MAN_ERR);
     ACI_TEST_RAISE(ulnDescInitialize(sDescArd, sArdParentObject) != ACI_SUCCESS,
                    LABEL_NOT_ENOUGH_MEM);
 
     /*
-     * Note : number of result columns ´Â ÃÊ±âÈ­µÇ¸é ¾ÈµÈ´Ù. !!!!!!!!!!!!!!
+     * Note : number of result columns ëŠ” ì´ˆê¸°í™”ë˜ë©´ ì•ˆëœë‹¤. !!!!!!!!!!!!!!
      */
 
     /*
-     * º¹»çÇØ µĞ associated stmt °¡ Á¸ÀçÇÏ¸é desc ¿¡ ¿øº¹½ÃÅ²´Ù.
+     * ë³µì‚¬í•´ ë‘” associated stmt ê°€ ì¡´ì¬í•˜ë©´ desc ì— ì›ë³µì‹œí‚¨ë‹¤.
      */
     if (acpListIsEmpty(&sTempStmtList) != ACP_TRUE)
     {
@@ -246,8 +246,8 @@ ACI_RC ulnFreeStmtResetParams(ulnFnContext *aFnContext, ulnStmt *aStmt)
     acpListInit(&sTempStmtList);
 
     /*
-     * Note : APD, IPD ´Â µ¿½Ã¿¡ »ı±â´Â µ¥´Ù°¡, ¼­¹öÀÇ Á¤º¸¿Í´Â ÀüÇô ¹«°üÇÏ¹Ç·Î
-     *        ÇÔ²² ¾ø¾Ö Áà¾ß ÇÑ´Ù.
+     * Note : APD, IPD ëŠ” ë™ì‹œì— ìƒê¸°ëŠ” ë°ë‹¤ê°€, ì„œë²„ì˜ ì •ë³´ì™€ëŠ” ì „í˜€ ë¬´ê´€í•˜ë¯€ë¡œ
+     *        í•¨ê»˜ ì—†ì•  ì¤˜ì•¼ í•œë‹¤.
      */
 
     sDescApd = ulnStmtGetApd(aStmt);
@@ -260,7 +260,7 @@ ACI_RC ulnFreeStmtResetParams(ulnFnContext *aFnContext, ulnStmt *aStmt)
     sApdParentObject = sDescApd->mParentObject;
 
     /*
-     * Desc °¡ explicit desc ÀÌ¸ç, ¿¬°áµÈ stmt µéÀÌ Á¸ÀçÇÑ´Ù¸é, ¸®½ºÆ® ¹é¾÷
+     * Desc ê°€ explicit desc ì´ë©°, ì—°ê²°ëœ stmt ë“¤ì´ ì¡´ì¬í•œë‹¤ë©´, ë¦¬ìŠ¤íŠ¸ ë°±ì—…
      */
 
     if (acpListIsEmpty(&sDescApd->mAssociatedStmtList) != ACP_TRUE)
@@ -273,7 +273,7 @@ ACI_RC ulnFreeStmtResetParams(ulnFnContext *aFnContext, ulnStmt *aStmt)
     }
 
     /*
-     * Desc ¸¦ °« »ı¼ºµÈ »óÅÂ·Î µÇµ¹¸®±â
+     * Desc ë¥¼ ê°“ ìƒì„±ëœ ìƒíƒœë¡œ ë˜ëŒë¦¬ê¸°
      */
     ACI_TEST_RAISE(ulnDescRollBackToInitial(sDescApd) != ACI_SUCCESS, LABEL_MEM_MAN_ERR);
     ACI_TEST_RAISE(ulnDescInitialize(sDescIpd, sIpdParentObject) != ACI_SUCCESS,
@@ -284,13 +284,13 @@ ACI_RC ulnFreeStmtResetParams(ulnFnContext *aFnContext, ulnStmt *aStmt)
                    LABEL_NOT_ENOUGH_MEM);
 
     /*
-     * BUGBUG : ÆÄ¶ó¹ÌÅÍ Ä«¿îÆ®µµ ÃÊ±âÈ­ µÇ¾î¾ß ÇÑ´Ù.
-     *          ÃÊ±âÈ­½ÃÅ°¸é ¾ÈµÉ°Å °°µî
+     * BUGBUG : íŒŒë¼ë¯¸í„° ì¹´ìš´íŠ¸ë„ ì´ˆê¸°í™” ë˜ì–´ì•¼ í•œë‹¤.
+     *          ì´ˆê¸°í™”ì‹œí‚¤ë©´ ì•ˆë ê±° ê°™ë“±
      */
     // ulnStmtSetParamCount(aStmt, 0);
 
     /*
-     * º¹»çÇØ µĞ associated stmt °¡ Á¸ÀçÇÏ¸é desc ¿¡ ¿øº¹½ÃÅ²´Ù.
+     * ë³µì‚¬í•´ ë‘” associated stmt ê°€ ì¡´ì¬í•˜ë©´ desc ì— ì›ë³µì‹œí‚¨ë‹¤.
      */
     if (acpListIsEmpty(&sTempStmtList) != ACP_TRUE)
     {
@@ -322,14 +322,14 @@ ACI_RC ulnFreeStmtResetParams(ulnFnContext *aFnContext, ulnStmt *aStmt)
 
 /**
  * ulnFreeStmt
- * SQLFreeStmt() ÇÔ¼ö°¡ °ğÀå ¸ÅÇÎµÇ´Â ÇÔ¼öÀÌ´Ù.
- * ÀÌ ÇÔ¼ö´Â SQLFreeConnect() ¶óµçÁö SQLFreeEnv() Ã³·³ deprecate µÇÁö ¾Ê°í
- * SQLFreeHandle() °ú´Â ´Ù¸¥ ¿ëµµ·Î »ç¿ëµÈ´Ù.
+ * SQLFreeStmt() í•¨ìˆ˜ê°€ ê³§ì¥ ë§¤í•‘ë˜ëŠ” í•¨ìˆ˜ì´ë‹¤.
+ * ì´ í•¨ìˆ˜ëŠ” SQLFreeConnect() ë¼ë“ ì§€ SQLFreeEnv() ì²˜ëŸ¼ deprecate ë˜ì§€ ì•Šê³ 
+ * SQLFreeHandle() ê³¼ëŠ” ë‹¤ë¥¸ ìš©ë„ë¡œ ì‚¬ìš©ëœë‹¤.
  *
- * SQL_DROP ¿É¼ÇÀ¸·Î È£ÃâµÇ¸é
- * SQLFreeHandle()ÇÔ¼ö·Î °ğÀå ¸ÅÇÎµÈ´Ù.
- * SQL_DROP ¿É¼ÇÀÌ ÁÖ¾îÁö¸é Á¤¸» ¸ğµç ÇÚµéÀ» ÇÁ¸®ÇØ¹ö¸®°í ¸Ş¸ğ¸®±îÁö
- * ÇØÁ¦ÇÑ´Ù.
+ * SQL_DROP ì˜µì…˜ìœ¼ë¡œ í˜¸ì¶œë˜ë©´
+ * SQLFreeHandle()í•¨ìˆ˜ë¡œ ê³§ì¥ ë§¤í•‘ëœë‹¤.
+ * SQL_DROP ì˜µì…˜ì´ ì£¼ì–´ì§€ë©´ ì •ë§ ëª¨ë“  í•¸ë“¤ì„ í”„ë¦¬í•´ë²„ë¦¬ê³  ë©”ëª¨ë¦¬ê¹Œì§€
+ * í•´ì œí•œë‹¤.
  */
 SQLRETURN ulnFreeStmt(ulnStmt *aStmt, acp_uint16_t aOption)
 {
@@ -340,7 +340,7 @@ SQLRETURN ulnFreeStmt(ulnStmt *aStmt, acp_uint16_t aOption)
     if (aOption == SQL_DROP)
     {
         /*
-         * BUGBUG : Á» ´õ ¿ì¾ÆÇÏ°Ô ÄÚµå¸¦ ¹Ù²ã¾ß ÇÑ´Ù.
+         * BUGBUG : ì¢€ ë” ìš°ì•„í•˜ê²Œ ì½”ë“œë¥¼ ë°”ê¿”ì•¼ í•œë‹¤.
          */
         return ulnFreeHandle(SQL_HANDLE_STMT, (void *)aStmt);
     }

@@ -54,7 +54,7 @@ typedef enum mmdXaOperation
  * xa_prepare                               S3
  * xa_commit/xa_rollback                    S0      S0     S4
  * xa_forget                                               S0
- * ±× ¿Ü °æ¿ì¿¡´Â XAER_PROTO ¿¡·¯ ¹İÈ¯
+ * ê·¸ ì™¸ ê²½ìš°ì—ëŠ” XAER_PROTO ì—ëŸ¬ ë°˜í™˜
  ***************************************************************/
 typedef enum mmdXaState
 {
@@ -96,7 +96,7 @@ typedef enum mmdXaLogFlag
     MMD_XA_DO_LOG = 1
 }mmdXaLogFlag ;
 
- //fix BUG-27218 XA Load Heurisitc TransactionÇÔ¼ö ³»¿ëÀ» ¸íÈ®È÷ ÇØ¾ß ÇÑ´Ù.
+ //fix BUG-27218 XA Load Heurisitc Transactioní•¨ìˆ˜ ë‚´ìš©ì„ ëª…í™•íˆ í•´ì•¼ í•œë‹¤.
 typedef enum mmdXaLoadHeuristicXidFlag
 {
     MMD_LOAD_HEURISTIC_XIDS_AT_STARTUP = 0,
@@ -205,16 +205,16 @@ typedef enum mmdXaLoadHeuristicXidFlag
 #define XAER_OUTSIDE    -9              /* resource manager doing work */
                                         /* outside global transaction */
 
-//fix BUG-22306 XA ROLLBACK½Ã ÇØ´ç XID°¡ ACTIVEÀÏ¶§
-//´ë±â ¿Ï·áÈÄ ÀÌ¿¡ ´ëÇÑ rollbackÃ³¸® Á¤Ã¥ÀÌ Àß¸øµÊ.
+//fix BUG-22306 XA ROLLBACKì‹œ í•´ë‹¹ XIDê°€ ACTIVEì¼ë•Œ
+//ëŒ€ê¸° ì™„ë£Œí›„ ì´ì— ëŒ€í•œ rollbackì²˜ë¦¬ ì •ì±…ì´ ì˜ëª»ë¨.
 #define XA_ROLLBACK_DEFAULT_WAIT_TIME (600)  // default query timeout value.
 
-//fix BUG-23656 session,xid ,transactionÀ» ¿¬°èÇÑ performance view¸¦ Á¦°øÇÏ°í,
-//±×µé°£ÀÇ °ü°è¸¦ Á¤È®È÷ À¯ÁöÇØ¾ß ÇÔ.
+//fix BUG-23656 session,xid ,transactionì„ ì—°ê³„í•œ performance viewë¥¼ ì œê³µí•˜ê³ ,
+//ê·¸ë“¤ê°„ì˜ ê´€ê³„ë¥¼ ì •í™•íˆ ìœ ì§€í•´ì•¼ í•¨.
 #define XID_DATA_MAX_LEN   (256)
 
-//fix BUG-26844 mmdXa::rollbackÀÌ Àå½Ã°£ ÁøÇàµÉ¶§ ¾î¶°ÇÑ XA callµµ ÁøÇàÇÒ¼ö ¾ø½À´Ï´Ù
-//Bug Fix¸¦  mmdManager::checkXATimeOut¿¡µµ Àû¿ëÇØ¾ß ÇÕ´Ï´Ù.
+//fix BUG-26844 mmdXa::rollbackì´ ì¥ì‹œê°„ ì§„í–‰ë ë•Œ ì–´ë– í•œ XA callë„ ì§„í–‰í• ìˆ˜ ì—†ìŠµë‹ˆë‹¤
+//Bug Fixë¥¼  mmdManager::checkXATimeOutì—ë„ ì ìš©í•´ì•¼ í•©ë‹ˆë‹¤.
 #define MMD_XA_RETRY_SPIN_TIMEOUT  100000
 #define MMD_XA_NONE                0
 #define MMD_XA_ADD_IF_NOT_FOUND    0x01
@@ -223,7 +223,7 @@ typedef enum mmdXaLoadHeuristicXidFlag
 
 #define MMD_XA_XID_RESTART_FLAG(aFlag) (((aFlag) & TMJOIN) || ((aFlag) & TMRESUME))
 //----------------
-// X$XID ÀÇ ±¸Á¶
+// X$XID ì˜ êµ¬ì¡°
 //----------------
 typedef struct mmdXidInfo4PerfV
 {
@@ -231,10 +231,10 @@ typedef struct mmdXidInfo4PerfV
     mmcSessID   mAssocSessionID;     //ASSOC_SESSION_ID
     mmcTransID  mTransID;            //TRANS_ID
     mmdXaState  mState;              //STATE
-    UInt        mStateStartTime;     //STATE_START_TIME         //BUG-25078   State°¡ º¯°æµÈ ½Ã°¢
+    UInt        mStateStartTime;     //STATE_START_TIME         //BUG-25078   Stateê°€ ë³€ê²½ëœ ì‹œê°
     ULong       mStateDuration;      //STATE_DURATION
     idBool      mBeginFlag;          //GLOBAL_TX_BEGIN_FLAG
-    /* BUG-27968 XA Fix/Unfix Scalability¸¦ Çâ»ó½ÃÄÑ¾ß ÇÕ´Ï´Ù. FixCountÀ¸·Î ¿ë¾î ÅëÀÏ*/
+    /* BUG-27968 XA Fix/Unfix Scalabilityë¥¼ í–¥ìƒì‹œì¼œì•¼ í•©ë‹ˆë‹¤. FixCountìœ¼ë¡œ ìš©ì–´ í†µì¼*/
     UInt        mFixCount;            //REF_COUNT
 } mmdXidInfo4PerfV;
 /* fix BUG-35374 To improve scalability about XA, latch granularity of XID hash should be more better than now.
@@ -243,16 +243,16 @@ typedef struct mmdXidInfo4PerfV
 typedef struct mmdXidHashBucket
 {
     iduList     mChain;
-    // PROJ-2408 : iduLatchObject Á¦°Å
+    // PROJ-2408 : iduLatchObject ì œê±°
     iduLatch mBucketLatch;
     // bug-35382: mutex optimization during alloc and dealloc
-    // Àü¿ª iduMutexMgr ¿¡¼­ÀÇ xid mutex ÇÒ´ç º´¸ñÀ» ÇØ¼ÒÇÏ±â À§ÇØ
-    // mutex¸¦ hash¿¡ ¹Ì¸® ÁØºñÇØ µÎ°í, hashÅ©±â¸¸Å­ º´¸ñÀ» ºĞ»ê½ÃÅ´.
+    // ì „ì—­ iduMutexMgr ì—ì„œì˜ xid mutex í• ë‹¹ ë³‘ëª©ì„ í•´ì†Œí•˜ê¸° ìœ„í•´
+    // mutexë¥¼ hashì— ë¯¸ë¦¬ ì¤€ë¹„í•´ ë‘ê³ , hashí¬ê¸°ë§Œí¼ ë³‘ëª©ì„ ë¶„ì‚°ì‹œí‚´.
     iduList     mXidMutexChain;
     iduLatch mXidMutexBucketLatch;
 }mmdXidHashBucket;
 
-// mutex¸¦ hash¿¡ ¸Å´Ş±â À§ÇØ node ÀÖ´Â ±¸Á¶Ã¼ Ãß°¡
+// mutexë¥¼ hashì— ë§¤ë‹¬ê¸° ìœ„í•´ node ìˆëŠ” êµ¬ì¡°ì²´ ì¶”ê°€
 typedef struct mmdXidMutex
 {
     iduMutex     mMutex;

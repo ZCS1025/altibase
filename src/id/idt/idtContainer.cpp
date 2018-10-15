@@ -424,7 +424,7 @@ IDE_RC idtContainer::pop( idtContainer** aNewThread )
     idtContainer*   sCurrent;
 
     /*
-     * initializeStatic ÀÌÀü¿¡ ¼­¹ö ½º·¹µå¸¦ »ı¼ºÇÒ ¼ö ¾øÀ½
+     * initializeStatic ì´ì „ì— ì„œë²„ ìŠ¤ë ˆë“œë¥¼ ìƒì„±í•  ìˆ˜ ì—†ìŒ
      */
     IDE_ASSERT(mInitialized == ID_TRUE || mThreadType == IDU_CLIENT_TYPE);
 
@@ -752,7 +752,7 @@ void idtContainer::addIdleList( idtContainer* aContainer )
 }
 IDE_RC idtContainer::cleanIdleList()
 {
-    /* IdleListÀÇ containerµéÀ» join½ÃÅ°°í ¸Ş¸ğ¸®¸¦ Á¤¸®ÇÑ´Ù. */
+    /* IdleListì˜ containerë“¤ì„ joinì‹œí‚¤ê³  ë©”ëª¨ë¦¬ë¥¼ ì •ë¦¬í•œë‹¤. */
     idtContainer* sContainer = NULL;
     idtContainer* sNextContainer = NULL;
     idBool        sIsLocked = ID_FALSE;
@@ -816,7 +816,7 @@ void idtContainer::addFreeList( idtContainer* aContainer )
 
 IDE_RC idtContainer::cleanFreeList()
 {
-    /* FreeListÀÇ containerµéÀ» join½ÃÅ°°í ¸Ş¸ğ¸®¸¦ Á¤¸®ÇÑ´Ù. */
+    /* FreeListì˜ containerë“¤ì„ joinì‹œí‚¤ê³  ë©”ëª¨ë¦¬ë¥¼ ì •ë¦¬í•œë‹¤. */
     idtContainer* sContainer = NULL;
     idtContainer* sNextContainer = NULL;
     idBool        sIsLocked = ID_FALSE;

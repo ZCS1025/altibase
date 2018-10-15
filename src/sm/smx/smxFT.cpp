@@ -38,9 +38,9 @@
  *
  * Description :
  *
- *  smxTransMgr´Â ¸ğµÎ static ¸â¹ö¸¦ °¡Áö±â ¶§¹®¿¡ FixedTable·Î
- *  Á÷Á¢ º¯È¯ÇÒ ¼ö ¾ø´Ù. µû¶ó¼­, º¯È¯À» À§ÇÑ ±¸Á¶Ã¼¸¦ ¹Ì¸®
- *  ÃÊ±âÈ­ ½ÃÅ²´Ù.
+ *  smxTransMgrëŠ” ëª¨ë‘ static ë©¤ë²„ë¥¼ ê°€ì§€ê¸° ë•Œë¬¸ì— FixedTableë¡œ
+ *  ì§ì ‘ ë³€í™˜í•  ìˆ˜ ì—†ë‹¤. ë”°ë¼ì„œ, ë³€í™˜ì„ ìœ„í•œ êµ¬ì¡°ì²´ë¥¼ ë¯¸ë¦¬
+ *  ì´ˆê¸°í™” ì‹œí‚¨ë‹¤.
  *
  **********************************************************************/
 typedef struct smxTransMgrStatistics
@@ -187,8 +187,8 @@ static iduFixedTableColDesc gTxListTableColDesc[] =
         NULL,
         0, 0,NULL // for internal use
     },
-    //fix BUG-23656 session,xid ,transactionÀ» ¿¬°èÇÑ performance view¸¦ Á¦°øÇÏ°í,
-    //±×µé°£ÀÇ °ü°è¸¦ Á¤È®È÷ À¯ÁöÇØ¾ß ÇÔ.
+    //fix BUG-23656 session,xid ,transactionì„ ì—°ê³„í•œ performance viewë¥¼ ì œê³µí•˜ê³ ,
+    //ê·¸ë“¤ê°„ì˜ ê´€ê³„ë¥¼ ì •í™•íˆ ìœ ì§€í•´ì•¼ í•¨.
     {
         (SChar*)"SESSION_ID",
         IDU_FT_OFFSETOF(smxTransInfo4Perf, mSessionID),
@@ -536,18 +536,18 @@ IDE_RC smxFT::buildRecordForTxList( idvSQL              * /*aStatistics*/,
     {
         sTrans = &smxTransMgr::mArrTrans[i];
 
-        /* BUG-23314 V$Transaction¿¡¼­ Status°¡ EndÀÎ TransactionÀÌ ³ª¿À¸é
-         * ¾ÈµË´Ï´Ù. Status°¡ ENDÀÎ°ÍÀº °Ç³Ê¶Ùµµ·Ï ÇÏ¿´½À´Ï´Ù. */
-        /* BUG-43198 valgrind °æ°í ¼öÁ¤ */
+        /* BUG-23314 V$Transactionì—ì„œ Statusê°€ Endì¸ Transactionì´ ë‚˜ì˜¤ë©´
+         * ì•ˆë©ë‹ˆë‹¤. Statusê°€ ENDì¸ê²ƒì€ ê±´ë„ˆë›°ë„ë¡ í•˜ì˜€ìŠµë‹ˆë‹¤. */
+        /* BUG-43198 valgrind ê²½ê³  ìˆ˜ì • */
         if ( sTrans->mStatus4FT != SMX_TX_END )
         {
             /* BUG-43006 FixedTable Indexing Filter
-             * Column Index ¸¦ »ç¿ëÇØ¼­ ÀüÃ¼ Record¸¦ »ı¼ºÇÏÁö¾Ê°í
-             * ºÎºĞ¸¸ »ı¼ºÇØ Filtering ÇÑ´Ù.
-             * 1. void * ¹è¿­¿¡ IDU_FT_COLUMN_INDEX ·Î ÁöÁ¤µÈ ÄÃ·³¿¡
-             * ÇØ´çÇÏ´Â °ªÀ» ¼ø¼­´ë·Î ³Ö¾îÁÖ¾î¾ß ÇÑ´Ù.
-             * 2. IDU_FT_COLUMN_INDEXÀÇ ÄÃ·³¿¡ ÇØ´çÇÏ´Â °ªÀ» ¸ğµÎ ³Ö
-             * ¾î ÁÖ¾î¾ßÇÑ´Ù.
+             * Column Index ë¥¼ ì‚¬ìš©í•´ì„œ ì „ì²´ Recordë¥¼ ìƒì„±í•˜ì§€ì•Šê³ 
+             * ë¶€ë¶„ë§Œ ìƒì„±í•´ Filtering í•œë‹¤.
+             * 1. void * ë°°ì—´ì— IDU_FT_COLUMN_INDEX ë¡œ ì§€ì •ëœ ì»¬ëŸ¼ì—
+             * í•´ë‹¹í•˜ëŠ” ê°’ì„ ìˆœì„œëŒ€ë¡œ ë„£ì–´ì£¼ì–´ì•¼ í•œë‹¤.
+             * 2. IDU_FT_COLUMN_INDEXì˜ ì»¬ëŸ¼ì— í•´ë‹¹í•˜ëŠ” ê°’ì„ ëª¨ë‘ ë„£
+             * ì–´ ì£¼ì–´ì•¼í•œë‹¤.
              */
             sIndexValues[0] = &sTrans->mSessionID;
             sIndexValues[1] = &sTrans->mStatus4FT;
@@ -565,8 +565,8 @@ IDE_RC smxFT::buildRecordForTxList( idvSQL              * /*aStatistics*/,
             }
 
             sTransInfo.mTransID        = sTrans->mTransID;
-            //fix BUG-23656 session,xid ,transactionÀ» ¿¬°èÇÑ performance view¸¦ Á¦°øÇÏ°í,
-            //±×µé°£ÀÇ °ü°è¸¦ Á¤È®È÷ À¯ÁöÇØ¾ß ÇÔ.
+            //fix BUG-23656 session,xid ,transactionì„ ì—°ê³„í•œ performance viewë¥¼ ì œê³µí•˜ê³ ,
+            //ê·¸ë“¤ê°„ì˜ ê´€ê³„ë¥¼ ì •í™•íˆ ìœ ì§€í•´ì•¼ í•¨.
             sTransInfo.mSessionID             = sTrans->mSessionID;
             sTransInfo.mMscn                  = sTrans->mMinMemViewSCN;
             sTransInfo.mDscn                  = sTrans->mMinDskViewSCN;
@@ -678,7 +678,7 @@ static iduFixedTableColDesc gTxPendingTableColDesc[] =
         idaXaConvertXIDToString,
         0, 0,NULL // for internal use
     },
-/* prepared »óÅÂÀÇ transaction ¸¸ º¸¿©ÁÜ
+/* prepared ìƒíƒœì˜ transaction ë§Œ ë³´ì—¬ì¤Œ
     {
         (SChar*)"STATUS",
         IDU_FT_OFFSETOF(smxTrans, mCommitState),

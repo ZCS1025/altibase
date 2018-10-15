@@ -163,19 +163,19 @@ mtdModule mtcdBigint = {
     {
         // Key Comparison
         {
-            // mt valueµé °£ÀÇ compare 
+            // mt valueë“¤ ê°„ì˜ compare 
             mtdBigintMtdMtdKeyAscComp, // Ascending Key Comparison
             mtdBigintMtdMtdKeyDescComp // Descending Key Comparison
         }
         ,
         {
-            // mt value¿Í stored value°£ÀÇ compare 
+            // mt valueì™€ stored valueê°„ì˜ compare 
             mtdBigintStoredMtdKeyAscComp, // Ascending Key Comparison
             mtdBigintStoredMtdKeyDescComp // Descending Key Comparison
         }
         ,
         {
-            // stored valueµé °£ÀÇ compare 
+            // stored valueë“¤ ê°„ì˜ compare 
             mtdBigintStoredStoredKeyAscComp, // Ascending Key Comparison
             mtdBigintStoredStoredKeyDescComp // Descending Key Comparison
         }
@@ -200,7 +200,7 @@ ACI_RC mtdInitializeBigint( acp_uint32_t aNo )
 { 
     ACI_TEST( mtdInitializeModule( &mtcdBigint, aNo ) != ACI_SUCCESS );
     
-    // mtdColumnÀÇ ÃÊ±âÈ­
+    // mtdColumnì˜ ì´ˆê¸°í™”
     ACI_TEST( mtcInitializeColumn( & mtdColumn,
                                    & mtcdBigint,
                                    0,   // arguments
@@ -222,7 +222,7 @@ ACI_RC mtdEstimate( acp_uint32_t* aColumnSize,
 {
 /***********************************************************************
  *
- * Description : data type moduleÀÇ semantic °Ë»ç ¹× column size ¼³Á¤ 
+ * Description : data type moduleì˜ semantic ê²€ì‚¬ ë° column size ì„¤ì • 
  *
  * Implementation :
  *
@@ -427,7 +427,7 @@ mtdBigintMtdMtdKeyAscComp( mtdValueInfo* aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd Å¸ÀÔÀÇ Keyµé °£ÀÇ ascending compare
+ * Description : Mtd íƒ€ì…ì˜ Keyë“¤ ê°„ì˜ ascending compare
  *
  * Implementation :
  *
@@ -489,7 +489,7 @@ mtdBigintMtdMtdKeyDescComp( mtdValueInfo* aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd Å¸ÀÔÀÇ Keyµé °£ÀÇ descending compare
+ * Description : Mtd íƒ€ì…ì˜ Keyë“¤ ê°„ì˜ descending compare
  *
  * Implementation :
  *
@@ -550,7 +550,7 @@ mtdBigintStoredMtdKeyAscComp( mtdValueInfo* aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd Å¸ÀÔÀÇ Key¿Í Stored Key °£ÀÇ ascending compare
+ * Description : Mtd íƒ€ì…ì˜ Keyì™€ Stored Key ê°„ì˜ ascending compare
  *
  * Implementation :
  *
@@ -608,7 +608,7 @@ mtdBigintStoredMtdKeyDescComp( mtdValueInfo* aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd Å¸ÀÔÀÇ Key¿Í Stored Key °£ÀÇ descending compare
+ * Description : Mtd íƒ€ì…ì˜ Keyì™€ Stored Key ê°„ì˜ descending compare
  *
  * Implementation :
  *
@@ -665,7 +665,7 @@ mtdBigintStoredStoredKeyAscComp( mtdValueInfo* aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Stored Keyµé °£ÀÇ ascending compare
+ * Description : Stored Keyë“¤ ê°„ì˜ ascending compare
  *
  * Implementation :
  *
@@ -719,7 +719,7 @@ mtdBigintStoredStoredKeyDescComp( mtdValueInfo* aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Stored Keyµé °£ÀÇ descending compare
+ * Description : Stored Keyë“¤ ê°„ì˜ descending compare
  *
  * Implementation :
  *
@@ -851,7 +851,7 @@ ACI_RC mtdValidate( mtcColumn*   aColumn,
 {
 /***********************************************************************
  *
- * Description : valueÀÇ semantic °Ë»ç ¹× mtcColum ÃÊ±âÈ­
+ * Description : valueì˜ semantic ê²€ì‚¬ ë° mtcColum ì´ˆê¸°í™”
  *
  * Implementation :
  *
@@ -862,9 +862,9 @@ ACI_RC mtdValidate( mtcColumn*   aColumn,
     ACI_TEST_RAISE( aValueSize != sizeof(mtdBigintType),
                     ERR_INVALID_LENGTH );
 
-    // ÃÊ±âÈ­µÈ aColumnÀº cannonize() ½Ã¿¡ »ç¿ë
-    // ÀÌ¶§, data type moduleÀÇ precision Á¤º¸¸¸À» »ç¿ëÇÏ¹Ç·Î,
-    // language Á¤º¸ ¼³Á¤ÇÒ ÇÊ¿ä¾øÀ½ 
+    // ì´ˆê¸°í™”ëœ aColumnì€ cannonize() ì‹œì— ì‚¬ìš©
+    // ì´ë•Œ, data type moduleì˜ precision ì •ë³´ë§Œì„ ì‚¬ìš©í•˜ë¯€ë¡œ,
+    // language ì •ë³´ ì„¤ì •í•  í•„ìš”ì—†ìŒ 
     ACI_TEST( mtcInitializeColumn( aColumn,
                                    & mtcdBigint,
                                    0,   // arguments
@@ -896,12 +896,12 @@ acp_double_t mtdSelectivityBigint( void* aColumnMax,
 /***********************************************************************
  *
  * Description :
- *    BIGINTÀÇ Selectivity ÃßÃâ ÇÔ¼ö
+ *    BIGINTì˜ Selectivity ì¶”ì¶œ í•¨ìˆ˜
  *
  * Implementation :
  *
  *    Selectivity = (aValueMax - aValueMin) / (aColumnMax - aColumnMin)
- *    0 < Selectivity <= 1 ÀÇ °ªÀ» ¸®ÅÏÇÔ
+ *    0 < Selectivity <= 1 ì˜ ê°’ì„ ë¦¬í„´í•¨
  *
  ***********************************************************************/
     
@@ -910,8 +910,8 @@ acp_double_t mtdSelectivityBigint( void* aColumnMax,
     mtdBigintType * sValueMax;
     mtdBigintType * sValueMin;
     acp_double_t    sSelectivity;
-    acp_double_t    sDenominator;  // ºĞ¸ğ°ª
-    acp_double_t    sNumerator;    // ºĞÀÚ°ª
+    acp_double_t    sDenominator;  // ë¶„ëª¨ê°’
+    acp_double_t    sNumerator;    // ë¶„ìê°’
     mtdValueInfo    sValueInfo1;
     mtdValueInfo    sValueInfo2;
     mtdValueInfo    sValueInfo3;
@@ -923,8 +923,8 @@ acp_double_t mtdSelectivityBigint( void* aColumnMax,
     sValueMin  = (mtdBigintType*) aValueMin;
 
     //------------------------------------------------------
-    // DataÀÇ À¯È¿¼º °Ë»ç
-    //     NULL °Ë»ç : °è»êÇÒ ¼ö ¾øÀ½
+    // Dataì˜ ìœ íš¨ì„± ê²€ì‚¬
+    //     NULL ê²€ì‚¬ : ê³„ì‚°í•  ìˆ˜ ì—†ìŒ
     //------------------------------------------------------
 
     if ( ( mtdIsNull( NULL, aColumnMax, MTD_OFFSET_USELESS ) == ACP_TRUE ) ||
@@ -932,17 +932,17 @@ acp_double_t mtdSelectivityBigint( void* aColumnMax,
          ( mtdIsNull( NULL, aValueMax, MTD_OFFSET_USELESS ) == ACP_TRUE )  ||
          ( mtdIsNull( NULL, aValueMin, MTD_OFFSET_USELESS ) == ACP_TRUE ) )
     {
-        // DataÁß NULL ÀÌ ÀÖÀ» °æ¿ì
-        // ºÎµîÈ£ÀÇ Default SelectivityÀÎ 1/3À» SettingÇÔ
+        // Dataì¤‘ NULL ì´ ìˆì„ ê²½ìš°
+        // ë¶€ë“±í˜¸ì˜ Default Selectivityì¸ 1/3ì„ Settingí•¨
         sSelectivity = MTD_DEFAULT_SELECTIVITY;
     }
     else
     {
         //------------------------------------------------------
-        // À¯È¿¼º °Ë»ç
-        // ´ÙÀ½ÀÇ °æ¿ì´Â Á¶°ÇÀ» Àß¸øµÈ Åë°è Á¤º¸ÀÌ°Å³ª ÀÔ·Â Á¤º¸ÀÓ.
-        // ColumnÀÇ Min°ªº¸´Ù ValueÀÇ Max°ªÀÌ ÀÛÀº °æ¿ì
-        // ColumnÀÇ Max°ªº¸´Ù ValueÀÇ Min°ªÀÌ Å« °æ¿ì
+        // ìœ íš¨ì„± ê²€ì‚¬
+        // ë‹¤ìŒì˜ ê²½ìš°ëŠ” ì¡°ê±´ì„ ì˜ëª»ëœ í†µê³„ ì •ë³´ì´ê±°ë‚˜ ì…ë ¥ ì •ë³´ì„.
+        // Columnì˜ Minê°’ë³´ë‹¤ Valueì˜ Maxê°’ì´ ì‘ì€ ê²½ìš°
+        // Columnì˜ Maxê°’ë³´ë‹¤ Valueì˜ Minê°’ì´ í° ê²½ìš°
         //------------------------------------------------------
 
         sValueInfo1.column = NULL;
@@ -973,9 +973,9 @@ acp_double_t mtdSelectivityBigint( void* aColumnMax,
         else
         {
             //------------------------------------------------------
-            // Value°ª º¸Á¤
-            // ValueÀÇ Min°ªÀÌ ColumnÀÇ Min°ªº¸´Ù ÀÛ´Ù¸é º¸Á¤
-            // ValueÀÇ Max°ªÀÌ ColumnÀÇ Max°ªº¸´Ù Å©´Ù¸é º¸Á¤
+            // Valueê°’ ë³´ì •
+            // Valueì˜ Minê°’ì´ Columnì˜ Minê°’ë³´ë‹¤ ì‘ë‹¤ë©´ ë³´ì •
+            // Valueì˜ Maxê°’ì´ Columnì˜ Maxê°’ë³´ë‹¤ í¬ë‹¤ë©´ ë³´ì •
             //------------------------------------------------------
 
             sValueInfo1.column = NULL;
@@ -1015,34 +1015,34 @@ acp_double_t mtdSelectivityBigint( void* aColumnMax,
             }
 
             //------------------------------------------------------
-            // ºĞ¸ğ°ª (aColumnMax - aColumnMin) °ª È¹µæ
+            // ë¶„ëª¨ê°’ (aColumnMax - aColumnMin) ê°’ íšë“
             //------------------------------------------------------
         
             sDenominator = (acp_double_t)(*sColumnMax - *sColumnMin);
     
             if ( sDenominator <= 0.0 )
             {
-                // Àß¸øµÈ Åë°è Á¤º¸ÀÇ »ç¿ëÇÑ °æ¿ì
+                // ì˜ëª»ëœ í†µê³„ ì •ë³´ì˜ ì‚¬ìš©í•œ ê²½ìš°
                 sSelectivity = MTD_DEFAULT_SELECTIVITY;
             }
             else
             {
                 //------------------------------------------------------
-                // ºĞÀÚ°ª (aValueMax - aValueMin) °ª È¹µæ
+                // ë¶„ìê°’ (aValueMax - aValueMin) ê°’ íšë“
                 //------------------------------------------------------
             
                 sNumerator = (acp_double_t) (*sValueMax - *sValueMin);
             
                 if ( sNumerator <= 0.0 )
                 {
-                    // Àß¸øµÈ ÀÔ·Â Á¤º¸ÀÎ °æ¿ì
+                    // ì˜ëª»ëœ ì…ë ¥ ì •ë³´ì¸ ê²½ìš°
                     // To Fix PR-11858
                     sSelectivity = 0;
                 }
                 else
                 {
                     //------------------------------------------------------
-                    // Selectivity °è»ê
+                    // Selectivity ê³„ì‚°
                     //------------------------------------------------------
                 
                     sSelectivity = sNumerator / sDenominator;
@@ -1130,22 +1130,22 @@ ACI_RC mtdStoredValue2MtdValue( acp_uint32_t aColumnSize,
 {
 /*******************************************************************
  * PROJ-1705
- * µğ½ºÅ©Å×ÀÌºíÄÃ·³ÀÇ µ¥ÀÌÅ¸¸¦
- * qp ·¹ÄÚµåÃ³¸®¿µ¿ªÀÇ ÇØ´ç ÄÃ·³À§Ä¡¿¡ º¹»ç
+ * ë””ìŠ¤í¬í…Œì´ë¸”ì»¬ëŸ¼ì˜ ë°ì´íƒ€ë¥¼
+ * qp ë ˆì½”ë“œì²˜ë¦¬ì˜ì—­ì˜ í•´ë‹¹ ì»¬ëŸ¼ìœ„ì¹˜ì— ë³µì‚¬
  *******************************************************************/
 
     mtdBigintType* sBigintValue;
 
     ACP_UNUSED(aDestValueOffset);
     
-    // °íÁ¤±æÀÌ µ¥ÀÌÅ¸ Å¸ÀÔÀÇ °æ¿ì
-    // ÇÏ³ªÀÇ ÄÃ·³ µ¥ÀÌÅ¸°¡ ¿©·¯ÆäÀÌÁö¿¡ ³ª´©¾î ÀúÀåµÇ´Â °æ¿ì´Â ¾ø´Ù. 
+    // ê³ ì •ê¸¸ì´ ë°ì´íƒ€ íƒ€ì…ì˜ ê²½ìš°
+    // í•˜ë‚˜ì˜ ì»¬ëŸ¼ ë°ì´íƒ€ê°€ ì—¬ëŸ¬í˜ì´ì§€ì— ë‚˜ëˆ„ì–´ ì €ì¥ë˜ëŠ” ê²½ìš°ëŠ” ì—†ë‹¤. 
 
     sBigintValue = (mtdBigintType*)aDestValue;
     
     if( aLength == 0 )
     {
-        // NULL µ¥ÀÌÅ¸
+        // NULL ë°ì´íƒ€
         *sBigintValue = mtdBigintNull;        
     }
     else
@@ -1171,7 +1171,7 @@ acp_uint32_t mtdNullValueSize()
 {
 /*******************************************************************
  * PROJ-1705
- * °¢ µ¥ÀÌÅ¸Å¸ÀÔÀÇ null ValueÀÇ Å©±â ¹İÈ¯
+ * ê° ë°ì´íƒ€íƒ€ì…ì˜ null Valueì˜ í¬ê¸° ë°˜í™˜
  *******************************************************************/
 
     return mtdActualSize( NULL,

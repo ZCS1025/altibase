@@ -33,9 +33,9 @@ static acp_char_t g_ClientVerStr[ALTIBASE_MAX_VERSTR_LEN + 1] = {'\0', };
 
 
 /**
- * Å¬¶óÀÌ¾ğÆ® ¶óÀÌºê·¯¸® ¹öÀü ¹®ÀÚ¿­À» ¾ò´Â´Ù.
+ * í´ë¼ì´ì–¸íŠ¸ ë¼ì´ë¸ŒëŸ¬ë¦¬ ë²„ì „ ë¬¸ìì—´ì„ ì–»ëŠ”ë‹¤.
  *
- * @return "x.x.x.x.x" Çü½ÄÀÇ Å¬¶óÀÌ¾ğÆ® ¶óÀÌºê·¯¸® ¹öÀü ¹®ÀÚ¿­, ½ÇÆĞÇÏ¸é NULL
+ * @return "x.x.x.x.x" í˜•ì‹ì˜ í´ë¼ì´ì–¸íŠ¸ ë¼ì´ë¸ŒëŸ¬ë¦¬ ë²„ì „ ë¬¸ìì—´, ì‹¤íŒ¨í•˜ë©´ NULL
  */
 CDBC_EXPORT
 const acp_char_t * altibase_client_verstr (void)
@@ -72,9 +72,9 @@ const acp_char_t * altibase_client_verstr (void)
 }
 
 /**
- * Å¬¶óÀÌ¾ğÆ® ¶óÀÌºê·¯¸® ¹öÀü °ªÀ» ¾ò´Â´Ù.
+ * í´ë¼ì´ì–¸íŠ¸ ë¼ì´ë¸ŒëŸ¬ë¦¬ ë²„ì „ ê°’ì„ ì–»ëŠ”ë‹¤.
  *
- * @return MMmmttSSpp Çü½ÄÀÇ Å¬¶óÀÌ¾ğÆ® ¶óÀÌºê·¯¸® ¹öÀü
+ * @return MMmmttSSpp í˜•ì‹ì˜ í´ë¼ì´ì–¸íŠ¸ ë¼ì´ë¸ŒëŸ¬ë¦¬ ë²„ì „
  */
 CDBC_EXPORT
 acp_sint32_t altibase_client_version (void)
@@ -99,9 +99,9 @@ acp_sint32_t altibase_client_version (void)
 }
 
 /**
- * Åë½Å ÇÁ·ÎÅäÄİ ¹öÀü ¹®ÀÚ¿­À» ¾ò´Â´Ù.
+ * í†µì‹  í”„ë¡œí† ì½œ ë²„ì „ ë¬¸ìì—´ì„ ì–»ëŠ”ë‹¤.
  *
- * @return "x.x.0.0.x" Çü½ÄÀÇ Åë½Å ÇÁ·ÎÅäÄİ ¹öÀü ¹®ÀÚ¿­, ½ÇÆĞÇÏ¸é NULL
+ * @return "x.x.0.0.x" í˜•ì‹ì˜ í†µì‹  í”„ë¡œí† ì½œ ë²„ì „ ë¬¸ìì—´, ì‹¤íŒ¨í•˜ë©´ NULL
  */
 CDBC_EXPORT
 const acp_char_t * altibase_proto_verstr (ALTIBASE aABConn)
@@ -147,9 +147,9 @@ const acp_char_t * altibase_proto_verstr (ALTIBASE aABConn)
 }
 
 /**
- * Åë½Å ÇÁ·ÎÅäÄİ ¹öÀü °ªÀ» ¾ò´Â´Ù.
+ * í†µì‹  í”„ë¡œí† ì½œ ë²„ì „ ê°’ì„ ì–»ëŠ”ë‹¤.
  *
- * @return MMmm0000pp Çü½ÄÀÇ Åë½Å ÇÁ·ÎÅäÄİ ¹öÀü
+ * @return MMmm0000pp í˜•ì‹ì˜ í†µì‹  í”„ë¡œí† ì½œ ë²„ì „
  */
 CDBC_EXPORT
 acp_sint32_t altibase_proto_version (ALTIBASE aABConn)
@@ -209,9 +209,9 @@ acp_sint32_t altibase_proto_version (ALTIBASE aABConn)
 }
 
 /**
- * ¼­¹ö ¹öÀü ¹®ÀÚ¿­À» ¾ò´Â´Ù.
+ * ì„œë²„ ë²„ì „ ë¬¸ìì—´ì„ ì–»ëŠ”ë‹¤.
  *
- * @return "x.x.x.x.x" Çü½ÄÀÇ ¼­¹ö ¹öÀü ¹®ÀÚ¿­, ½ÇÆĞÇÏ¸é NULL
+ * @return "x.x.x.x.x" í˜•ì‹ì˜ ì„œë²„ ë²„ì „ ë¬¸ìì—´, ì‹¤íŒ¨í•˜ë©´ NULL
  */
 CDBC_EXPORT
 const acp_char_t * altibase_server_verstr (ALTIBASE aABConn)
@@ -256,9 +256,9 @@ const acp_char_t * altibase_server_verstr (ALTIBASE aABConn)
 }
 
 /**
- * ¼­¹ö ¹öÀü °ªÀ» ¾ò´Â´Ù.
+ * ì„œë²„ ë²„ì „ ê°’ì„ ì–»ëŠ”ë‹¤.
  *
- * @return MMmmttSSpp Çü½ÄÀÇ ¼­¹ö ¹öÀü, ½ÇÆĞÇÏ¸é ALTIBASE_INVALID_VERSION
+ * @return MMmmttSSpp í˜•ì‹ì˜ ì„œë²„ ë²„ì „, ì‹¤íŒ¨í•˜ë©´ ALTIBASE_INVALID_VERSION
  */
 CDBC_EXPORT
 acp_sint32_t altibase_server_version (ALTIBASE aABConn)
@@ -312,16 +312,16 @@ acp_sint32_t altibase_server_version (ALTIBASE aABConn)
 }
 
 /**
- * ¹öÀü ¹®ÀÚ¿­À» ¼ıÀÚ ¹è¿­·Î ÆÄ½ÌÇÑ´Ù.
+ * ë²„ì „ ë¬¸ìì—´ì„ ìˆ«ì ë°°ì—´ë¡œ íŒŒì‹±í•œë‹¤.
  *
- * @param[in,out] aDestVerArr ÆÄ½ÌµÈ ¹öÀü ¿ä¼Ò °ªÀ» ´ãÀ» ¹è¿­
- * @param[in] aDestVerArrCnt ÆÄ½ÌµÈ ¹öÀü ¿ä¼Ò °ªÀ» ´ãÀ» ¹è¿­ÀÇ ¿ä¼Ò °³¼ö
- * @param[in] aSrcVerStr ÆÄ½ÌÇÒ ¹öÀü ¹®ÀÚ¿­
- * @param[in] aSrcVerStrLen ÆÄ½ÌÇÒ ¹öÀü ¹®ÀÚ¿­ÀÇ ±æÀÌ
- * @return ÆÄ½ÌµÈ ¿ä¼Ò °³¼ö. ÆÄ½Ì¿¡ ½ÇÆĞÇßÀ¸¸é 0º¸´Ù ÀÛÀº ¼ö.
- *         CDBC_EXPNO_INVALID_ARGS : Àß¸øµÈ ÀÎÀÚ »ç¿ë
- *         CDBC_EXPNO_BUF_NOT_ENOUGH : Dest ÀÎÀÚ°¡ ¹öÀü ¿ä¼Ò¸¦ ´ã±â¿¡ ÃæºĞÇÏÁö ¾ÊÀ½
- *         CDBC_EXPNO_INVALID_VERFORM : Àß¸øµÈ ¹öÀü ¹®ÀÚ¿­ Çü½Ä
+ * @param[in,out] aDestVerArr íŒŒì‹±ëœ ë²„ì „ ìš”ì†Œ ê°’ì„ ë‹´ì„ ë°°ì—´
+ * @param[in] aDestVerArrCnt íŒŒì‹±ëœ ë²„ì „ ìš”ì†Œ ê°’ì„ ë‹´ì„ ë°°ì—´ì˜ ìš”ì†Œ ê°œìˆ˜
+ * @param[in] aSrcVerStr íŒŒì‹±í•  ë²„ì „ ë¬¸ìì—´
+ * @param[in] aSrcVerStrLen íŒŒì‹±í•  ë²„ì „ ë¬¸ìì—´ì˜ ê¸¸ì´
+ * @return íŒŒì‹±ëœ ìš”ì†Œ ê°œìˆ˜. íŒŒì‹±ì— ì‹¤íŒ¨í–ˆìœ¼ë©´ 0ë³´ë‹¤ ì‘ì€ ìˆ˜.
+ *         CDBC_EXPNO_INVALID_ARGS : ì˜ëª»ëœ ì¸ì ì‚¬ìš©
+ *         CDBC_EXPNO_BUF_NOT_ENOUGH : Dest ì¸ìê°€ ë²„ì „ ìš”ì†Œë¥¼ ë‹´ê¸°ì— ì¶©ë¶„í•˜ì§€ ì•ŠìŒ
+ *         CDBC_EXPNO_INVALID_VERFORM : ì˜ëª»ëœ ë²„ì „ ë¬¸ìì—´ í˜•ì‹
  */
 CDBC_INTERNAL
 acp_sint32_t altibase_parse_verstr (acp_sint32_t *aDestVerArr, acp_sint32_t aDestVerArrCnt, const acp_char_t *aSrcVerStr, acp_sint32_t aSrcVerStrLen)
@@ -363,7 +363,7 @@ acp_sint32_t altibase_parse_verstr (acp_sint32_t *aDestVerArr, acp_sint32_t aDes
 
     return (sVerIdx + 1);
 
-    /* ¿¡·¯ ¸Ş½ÃÁö´Â »óÀ§ ÀÎÅÍÆäÀÌ½º¿¡¼­ Ã³¸® */
+    /* ì—ëŸ¬ ë©”ì‹œì§€ëŠ” ìƒìœ„ ì¸í„°í˜ì´ìŠ¤ì—ì„œ ì²˜ë¦¬ */
 
     CDBC_EXCEPTION(InvalidNullPtr);
     {

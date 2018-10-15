@@ -105,7 +105,7 @@ static void ulaMetaFreeMetaMemory(ulaMeta *aMeta)
     acp_uint32_t       sIC;     // Index Count
     ulaTable * sTable;
 
-    /* Meta Á¤º¸ ¸Ş¸ğ¸® ÇØÁ¦ */
+    /* Meta ì •ë³´ ë©”ëª¨ë¦¬ í•´ì œ */
     if (aMeta->mReplication.mTableArray != NULL)
     {
         for (sTC = 0; sTC < aMeta->mReplication.mTableCount; sTC++)
@@ -167,7 +167,7 @@ static void ulaMetaFreeMetaMemory(ulaMeta *aMeta)
         aMeta->mReplication.mTableArray = NULL;
     }
 
-    /* Table OID, Table Name Á¤·Ä Á¤º¸ ¸Ş¸ğ¸® ÇØÁ¦ */
+    /* Table OID, Table Name ì •ë ¬ ì •ë³´ ë©”ëª¨ë¦¬ í•´ì œ */
     if (aMeta->mItemOrderByTableOID != NULL)
     {
         acpMemFree(aMeta->mItemOrderByTableOID);
@@ -221,7 +221,7 @@ ACI_RC ulaMetaRecvMeta(ulaMeta            * aMeta,
 
     ACI_TEST_RAISE(aOutTransTableSize == NULL, ERR_PARAMETER_NULL);
 
-    /* Replication Á¤º¸¸¦ ¹Ş´Â´Ù. */
+    /* Replication ì •ë³´ë¥¼ ë°›ëŠ”ë‹¤. */
     ACI_TEST_RAISE( ulaCommRecvMetaRepl( aProtocolContext,
                                          &sDummy,
                                          &aMeta->mReplication,
@@ -243,10 +243,10 @@ ACI_RC ulaMetaRecvMeta(ulaMeta            * aMeta,
     }
 #endif
 
-    /* Transaction Table Size¸¦ ¾ò´Â´Ù. */
+    /* Transaction Table Sizeë¥¼ ì–»ëŠ”ë‹¤. */
     *aOutTransTableSize = sTempInfo.mTransTableSize;
 
-    /* Table °³¼ö¿¡ µû¶ó¼­, Table ¸Ş¸ğ¸®¸¦ ÇÒ´çÇÑ´Ù. */
+    /* Table ê°œìˆ˜ì— ë”°ë¼ì„œ, Table ë©”ëª¨ë¦¬ë¥¼ í• ë‹¹í•œë‹¤. */
     sRc = acpMemAlloc((void **)&aMeta->mReplication.mTableArray,
                       aMeta->mReplication.mTableCount * ACI_SIZEOF(ulaTable));
     ACI_TEST_RAISE(ACP_RC_NOT_SUCCESS(sRc), ALA_ERR_MEM_ALLOC);
@@ -254,7 +254,7 @@ ACI_RC ulaMetaRecvMeta(ulaMeta            * aMeta,
               0x00,
               aMeta->mReplication.mTableCount * ACI_SIZEOF(ulaTable));
 
-    /* Table °³¼ö¸¸Å­ ¹İº¹ÇÏ¸ç Meta¸¦ ¹Ş´Â´Ù. */
+    /* Table ê°œìˆ˜ë§Œí¼ ë°˜ë³µí•˜ë©° Metaë¥¼ ë°›ëŠ”ë‹¤. */
     for (sTC = 0; sTC < aMeta->mReplication.mTableCount; sTC++)
     {
         sTable = &(aMeta->mReplication.mTableArray[sTC]);
@@ -273,7 +273,7 @@ ACI_RC ulaMetaRecvMeta(ulaMeta            * aMeta,
                   0x00,
                   sTable->mColumnCount * ACI_SIZEOF(ulaColumn));
 
-        /* Column °³¼ö¸¸Å­ ¹İº¹ÇÏ¸ç, °¢ ColumnÀÇ Á¤º¸¸¦ ¹Ş´Â´Ù. */
+        /* Column ê°œìˆ˜ë§Œí¼ ë°˜ë³µí•˜ë©°, ê° Columnì˜ ì •ë³´ë¥¼ ë°›ëŠ”ë‹¤. */
         for (sCC = 0; sCC < sTable->mColumnCount; sCC++)
         {
             ACI_TEST_RAISE( ulaCommRecvMetaReplCol( aProtocolContext,
@@ -291,7 +291,7 @@ ACI_RC ulaMetaRecvMeta(ulaMeta            * aMeta,
                   0x00,
                   sTable->mIndexCount * ACI_SIZEOF(ulaIndex));
 
-        /* Index °³¼ö¸¸Å­ ¹İº¹ÇÏ¸ç, °¢ IndexÀÇ Á¤º¸¸¦ ¹Ş´Â´Ù. */
+        /* Index ê°œìˆ˜ë§Œí¼ ë°˜ë³µí•˜ë©°, ê° Indexì˜ ì •ë³´ë¥¼ ë°›ëŠ”ë‹¤. */
         for (sIC = 0; sIC < sTable->mIndexCount; sIC++)
         {
             ACI_TEST_RAISE( ulaCommRecvMetaReplIdx( aProtocolContext,
@@ -347,15 +347,15 @@ ACI_RC ulaMetaRecvMeta(ulaMeta            * aMeta,
         }
     }
 
-    /* XLog Sender NameÀ» È®ÀÎÇÑ´Ù. */
+    /* XLog Sender Nameì„ í™•ì¸í•œë‹¤. */
     ACI_TEST_RAISE(acpCStrCaseCmp(aMeta->mReplication.mXLogSenderName,
                                   aXLogSenderName,
                                   ULA_NAME_LEN) != 0, ERR_XLOG_SENDER_NAME);
 
-    /* ROLEÀ» È®ÀÎÇÑ´Ù. */
+    /* ROLEì„ í™•ì¸í•œë‹¤. */
     ACI_TEST_RAISE(sTempInfo.mRole != ULA_ROLE_ANALYSIS, ERR_ROLE);
 
-    /* Replication Flags¸¦ È®ÀÎÇÑ´Ù. */
+    /* Replication Flagsë¥¼ í™•ì¸í•œë‹¤. */
     ACI_TEST_RAISE((sTempInfo.mFlags & ULA_WAKEUP_PEER_SENDER_MASK)
                    == ULA_WAKEUP_PEER_SENDER_FLAG_SET, ERR_WAKEUP_PEER_SENDER);
 
@@ -372,7 +372,7 @@ ACI_RC ulaMetaRecvMeta(ulaMeta            * aMeta,
     }
     ACI_EXCEPTION(ERR_NETWORK)
     {
-        // ÀÌ¹Ì ulaSetErrorCode() ¼öÇà
+        // ì´ë¯¸ ulaSetErrorCode() ìˆ˜í–‰
     }
     ACI_EXCEPTION(ERR_XLOG_SENDER_NAME)
     {
@@ -415,7 +415,7 @@ ACI_RC ulaMetaSortMeta(ulaMeta *aMeta, ulaErrorMgr *aOutErrorMgr)
     ACI_TEST_RAISE((aMeta->mReplication.mTableArray == NULL) ||
                    (aMeta->mReplication.mTableCount == 0), ERR_META_NOT_EXIST);
 
-    /* Table OID, Table Name Á¤·Ä ¸Ş¸ğ¸® ÇÒ´ç ¹× ÃÊ±âÈ­ */
+    /* Table OID, Table Name ì •ë ¬ ë©”ëª¨ë¦¬ í• ë‹¹ ë° ì´ˆê¸°í™” */
     sRc = acpMemAlloc((void **)&aMeta->mItemOrderByTableOID,
                       aMeta->mReplication.mTableCount * ACI_SIZEOF(ulaTable *));
     ACI_TEST_RAISE(ACP_RC_NOT_SUCCESS(sRc), ALA_ERR_MEM_ALLOC);
@@ -432,7 +432,7 @@ ACI_RC ulaMetaSortMeta(ulaMeta *aMeta, ulaErrorMgr *aOutErrorMgr)
                         &(aMeta->mReplication.mTableArray[sTC]);
     }
 
-    /* Table OID, Table Name Á¤·Ä */
+    /* Table OID, Table Name ì •ë ¬ */
     acpSortQuickSort(aMeta->mItemOrderByTableOID,
                      aMeta->mReplication.mTableCount,
                      ACI_SIZEOF(ulaTable *),
@@ -443,7 +443,7 @@ ACI_RC ulaMetaSortMeta(ulaMeta *aMeta, ulaErrorMgr *aOutErrorMgr)
                      ACI_SIZEOF(ulaTable *),
                      ulaMetaCompareTableName);
 
-    /* Column, Index Á¤·Ä */
+    /* Column, Index ì •ë ¬ */
     for (sTC = 0; sTC < aMeta->mReplication.mTableCount; sTC++)
     {
         sTable = &(aMeta->mReplication.mTableArray[sTC]);
@@ -459,7 +459,7 @@ ACI_RC ulaMetaSortMeta(ulaMeta *aMeta, ulaErrorMgr *aOutErrorMgr)
                          ulaMetaCompareIndex);
     }
 
-    /* PK Column ÀÛ¼º */
+    /* PK Column ì‘ì„± */
     for (sTC = 0; sTC < aMeta->mReplication.mTableCount; sTC++)
     {
         sTable = &(aMeta->mReplication.mTableArray[sTC]);
@@ -501,15 +501,15 @@ ACI_RC ulaMetaSortMeta(ulaMeta *aMeta, ulaErrorMgr *aOutErrorMgr)
     }
     ACI_EXCEPTION(ERR_GET_INDEX_INFO)
     {
-        // ÀÌ¹Ì ulaSetErrorCode() ¼öÇà
+        // ì´ë¯¸ ulaSetErrorCode() ìˆ˜í–‰
     }
     ACI_EXCEPTION(ERR_GET_COLUMN_INFO)
     {
-        // ÀÌ¹Ì ulaSetErrorCode() ¼öÇà
+        // ì´ë¯¸ ulaSetErrorCode() ìˆ˜í–‰
     }
     ACI_EXCEPTION_END;
 
-    /* Table OID, Table Name Á¤·Ä Á¤º¸ ¸Ş¸ğ¸® ÇØÁ¦ */
+    /* Table OID, Table Name ì •ë ¬ ì •ë³´ ë©”ëª¨ë¦¬ í•´ì œ */
     if (aMeta->mItemOrderByTableOID != NULL)
     {
         acpMemFree(aMeta->mItemOrderByTableOID);
@@ -522,7 +522,7 @@ ACI_RC ulaMetaSortMeta(ulaMeta *aMeta, ulaErrorMgr *aOutErrorMgr)
         aMeta->mItemOrderByTableName = NULL;
     }
 
-    /* PK Column ¸Ş¸ğ¸® ÇØÁ¦ */
+    /* PK Column ë©”ëª¨ë¦¬ í•´ì œ */
     if (aMeta->mReplication.mTableArray != NULL)
     {
         for (sTC = 0; sTC < aMeta->mReplication.mTableCount; sTC++)

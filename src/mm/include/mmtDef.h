@@ -50,7 +50,7 @@ typedef enum mmtServiceThreadRunMode
 } mmtServiceThreadRunMode;
 
 /* TASK-4324  Applying lessons learned from CPBS-CAESE to altibase
-   Service ThreadÀÇ ÇöÀç busy , idle¿©ºÎ.
+   Service Threadì˜ í˜„ì¬ busy , idleì—¬ë¶€.
 */
 typedef enum mmtServiceThreadRunStatus
 {
@@ -88,7 +88,7 @@ typedef struct mmtServiceThreadInfo
     idvTime               mExecuteBegin;
     idvTime               mExecuteEnd;
     /* TASK-4324  Applying lessons learned from CPBS-CAESE to altibase
-       load-balance ÀÌ·ÂÀ» ÃßÀûÇÏ±â À§ÇÏ¿© Ãß°¡ÇÑ ÇÊµåÀÓ.
+       load-balance ì´ë ¥ì„ ì¶”ì í•˜ê¸° ìœ„í•˜ì—¬ ì¶”ê°€í•œ í•„ë“œì„.
     */
     UInt                  mCurAddedTasks;
     UInt                  mInTaskCntFromIdle;
@@ -105,8 +105,8 @@ typedef struct mmtServiceThreadInfo
 } mmtServiceThreadInfo;
 
 /* ------------------------------------------------
- *  aBindData(cmtAny)ÀÇ ³»ºÎ Á¤º¸¸¦
- *  °¢ Å¸ÀÔ¿¡ ¸Â°Ô DescInfo¸¦ Ã¤¿î´Ù.
+ *  aBindData(cmtAny)ì˜ ë‚´ë¶€ ì •ë³´ë¥¼
+ *  ê° íƒ€ì…ì— ë§ê²Œ DescInfoë¥¼ ì±„ìš´ë‹¤.
  * ----------------------------------------------*/
 
 typedef struct mmtCmsBindProfContext

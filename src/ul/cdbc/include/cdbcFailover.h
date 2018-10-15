@@ -24,7 +24,7 @@ ACP_EXTERN_C_BEGIN
 #define SAFE_FAILOVER_POST_PROC(stmt) do {\
     if (altibase_stmt_errno(stmt) == ALTIBASE_FAILOVER_SUCCESS)\
     {\
-        /* error¸¦ ¹İÈ¯ÇÏ°í »ç¿ëÀÚ¿¡°Ô Ã³¸®¸¦ ¸Ã±â¹Ç·Î ¸®ÅÏ°ªÀº ¹«½ÃÇØµµ µÈ´Ù. */\
+        /* errorë¥¼ ë°˜í™˜í•˜ê³  ì‚¬ìš©ìì—ê²Œ ì²˜ë¦¬ë¥¼ ë§¡ê¸°ë¯€ë¡œ ë¦¬í„´ê°’ì€ ë¬´ì‹œí•´ë„ ëœë‹¤. */\
         sRC = altibase_stmt_failover_postproc(stmt);\
     }\
 } while (ACP_FALSE)

@@ -81,9 +81,9 @@ IDE_RC qdq::executeCreateQueue(qcStatement *aStatement)
     sSequenceOID = smiGetTableId(sSequenceHandle);
 
     // PROJ-1502 PARTITIONED DISK TABLE
-    // queue¥¬ partitionµ… ºˆ æ¯¿Ω.
+    // queueÎäî partitionÎê† Ïàò ÏóÜÏùå.
     // PROJ-1407 Temporary Table
-    // queue¥¬ temporary∑Œ ª˝º∫«“ ºˆ æ¯¿Ω
+    // queueÎäî temporaryÎ°ú ÏÉùÏÑ±Ìï† Ïàò ÏóÜÏùå
     IDE_TEST( qcmTablespace::getTBSAttrByID( SMI_ID_TABLESPACE_SYSTEM_MEMORY_DIC,
                                              & sTBSAttr )
               != IDE_SUCCESS );
@@ -162,7 +162,7 @@ IDE_RC qdq::executeDropQueue(qcStatement *aStatement)
     sParseTree = (qdDropParseTree *)aStatement->myPlan->parseTree;
 
     //---------------------------------------
-    // TASK-2176 Tableø° ¥Î«— Lock¿ª »πµÊ«—¥Ÿ.
+    // TASK-2176 TableÏóê ÎåÄÌïú LockÏùÑ ÌöçÎìùÌïúÎã§.
     //---------------------------------------
 
     IDE_TEST( qcm::validateAndLockTable(aStatement,
@@ -239,7 +239,7 @@ IDE_RC qdq::executeDropQueue(qcStatement *aStatement)
     sArgDropQueue.mTableID   = sTableID;
     sArgDropQueue.mMmSession = aStatement->session->mMmSession;
     
-    // MM¿« QUEUE∞¸∑√ µ•¿Ã≈Õ ªË¡¶ø‰√ª (commitΩ√ ªË¡¶µ )
+    // MMÏùò QUEUEÍ¥ÄÎ†® Îç∞Ïù¥ÌÑ∞ ÏÇ≠Ï†úÏöîÏ≤≠ (commitÏãú ÏÇ≠Ï†úÎê®)
     IDE_TEST( qcg::mDropQueueFuncPtr( (void *)&sArgDropQueue )
               != IDE_SUCCESS );
 
@@ -306,18 +306,18 @@ IDE_RC qdq::validateAlterCompactQueue(qcStatement * aStatement)
 {
 /***********************************************************************
  *
- * Description : ALTER QUEUE queue_name COMPACT ±∏πÆ¿« validation
+ * Description : ALTER QUEUE queue_name COMPACT Íµ¨Î¨∏Ïùò validation
  *
  * Implementation :
- *    (1) Queue∞° ¡∏¿Á«œ¥¬¡ˆ ∞ÀªÁ
- *    (2) ±««— ∞ÀªÁ
+ *    (1) QueueÍ∞Ä Ï°¥Ïû¨ÌïòÎäîÏßÄ Í≤ÄÏÇ¨
+ *    (2) Í∂åÌïú Í≤ÄÏÇ¨
  *
- *    replication æ»µ 
+ *    replication ÏïàÎê®
  * 
- *    ALTER TABLE±««—¿∫ ∏∑«Ù¿÷¿Ω! ø¿¡˜ COMPACT∏∏ µ 
- *    µ˚∂Ûº≠ 'qdbAlter::checkOperatable()' «‘ºˆ »£√‚«“ « ø‰æ¯¿Ω
- *    ∏∏æ‡ ALTER TABLE ±∏πÆ¿∏∑Œ Queue Table¿ª ∫Ø∞Ê«œ∞Ì¿⁄ «—¥Ÿ∏È
- *    ¿Ã ∫Œ∫–¿ª ø≠µµ∑œ «ÿæﬂ«‘
+ *    ALTER TABLEÍ∂åÌïúÏùÄ ÎßâÌòÄÏûàÏùå! Ïò§ÏßÅ COMPACTÎßå Îê®
+ *    Îî∞ÎùºÏÑú 'qdbAlter::checkOperatable()' Ìï®Ïàò Ìò∏Ï∂úÌï† ÌïÑÏöîÏóÜÏùå
+ *    ÎßåÏïΩ ALTER TABLE Íµ¨Î¨∏ÏúºÎ°ú Queue TableÏùÑ Î≥ÄÍ≤ΩÌïòÍ≥†Ïûê ÌïúÎã§Î©¥
+ *    Ïù¥ Î∂ÄÎ∂ÑÏùÑ Ïó¥ÎèÑÎ°ù Ìï¥ÏïºÌï®
  * 
  ***********************************************************************/    
 #define IDE_FN "qdq::validateAlterQueueCompact"
@@ -339,7 +339,7 @@ IDE_RC qdq::validateAlterCompactQueue(qcStatement * aStatement)
     }
 
     //----------------------------
-    // Queue ∞° ¡∏¿Á«œ¥¬¡ˆ ∞ÀªÁ
+    // Queue Í∞Ä Ï°¥Ïû¨ÌïòÎäîÏßÄ Í≤ÄÏÇ¨
     //----------------------------
     if ( qdbCommon::checkTableInfo( aStatement,
                                     sParseTree->userName,
@@ -350,10 +350,10 @@ IDE_RC qdq::validateAlterCompactQueue(qcStatement * aStatement)
                                     &(sParseTree->tableSCN))
          == IDE_SUCCESS )
     {
-        // tableInfo∞° ¿÷¥¬ ∞ÊøÏ
+        // tableInfoÍ∞Ä ÏûàÎäî Í≤ΩÏö∞
         if( sParseTree->tableInfo->tableType == QCM_QUEUE_TABLE )
         {
-            // Queue Table¿Œ¡ˆ ∞ÀªÁ
+            // Queue TableÏù∏ÏßÄ Í≤ÄÏÇ¨
         }
         else
         {
@@ -366,14 +366,14 @@ IDE_RC qdq::validateAlterCompactQueue(qcStatement * aStatement)
     }
 
     /* BUG-
-       ALTER TABLE ±««—¿∫ ∏∑«Ù¿÷¿Ω
+       ALTER TABLE Í∂åÌïúÏùÄ ÎßâÌòÄÏûàÏùå
     IDE_TEST( qdbAlter::checkOperatable( aStatement,
                                          sParseTree->tableInfo )
               != IDE_SUCCESS );
     */
     
     //----------------------------
-    // ≈◊¿Ã∫Ìø° LOCK(IS)
+    // ÌÖåÏù¥Î∏îÏóê LOCK(IS)
     //----------------------------
     IDE_TEST( qcm::lockTableForDDLValidation(aStatement,
                                              sParseTree->tableHandle,
@@ -397,7 +397,7 @@ IDE_RC qdq::validateAlterCompactQueue(qcStatement * aStatement)
     }
 
     //----------------------------
-    // ±««— ∞ÀªÁ
+    // Í∂åÌïú Í≤ÄÏÇ¨
     //----------------------------
 
     IDE_TEST( qdpRole::checkDDLAlterTablePriv( aStatement,
@@ -405,8 +405,8 @@ IDE_RC qdq::validateAlterCompactQueue(qcStatement * aStatement)
               != IDE_SUCCESS );
 
     //----------------------------
-    // PROJ-1723 [MDW/INTEGRATOR] Altibase Plugin ∞≥πﬂ
-    //   DDL Statement Text¿« ∑Œ±Î
+    // PROJ-1723 [MDW/INTEGRATOR] Altibase Plugin Í∞úÎ∞ú
+    //   DDL Statement TextÏùò Î°úÍπÖ
     //----------------------------
     
     if (QCU_DDL_SUPPLEMENTAL_LOG == 1)
@@ -418,7 +418,7 @@ IDE_RC qdq::validateAlterCompactQueue(qcStatement * aStatement)
     }
 
     //----------------------------
-    // Queue Table¿∫ MEMORY ±‚π› ≈◊¿Ã∫Ì ¿ÃæÓæﬂ∏∏ «‘
+    // Queue TableÏùÄ MEMORY Í∏∞Î∞ò ÌÖåÏù¥Î∏î Ïù¥Ïñ¥ÏïºÎßå Ìï®
     //----------------------------
     sTableType = sParseTree->tableInfo->tableFlag & SMI_TABLE_TYPE_MASK;
     IDE_TEST_RAISE( (sTableType != SMI_TABLE_MEMORY), 
@@ -457,7 +457,7 @@ IDE_RC qdq::executeCompactQueue(qcStatement * aStatement)
 {
 /***********************************************************************
  *
- * Description : ALTER QUEUE queue_name COMPACT ±∏πÆ¿« execution
+ * Description : ALTER QUEUE queue_name COMPACT Íµ¨Î¨∏Ïùò execution
  *
  * Implementation :
  *

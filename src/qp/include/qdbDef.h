@@ -19,11 +19,11 @@
  * $Id$
  *
  * Description :
- *     PROJ-1877 Alter Column Modify¿¡ ´ëÇÑ ÀÚ·á ±¸Á¶ Á¤ÀÇ
+ *     PROJ-1877 Alter Column Modifyì— ëŒ€í•œ ìë£Œ êµ¬ì¡° ì •ì˜
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  **********************************************************************/
 
@@ -38,14 +38,14 @@
 #define QDB_CONVERT_MATRIX_SIZE   (19)
 
 //----------------------------------------------------------------
-// PROJ-1877 Alter Table Modify Column¿¡ ´ëÇÑ °£·«ÇÑ ¼³¸íÀ» Ãß°¡ÇÕ´Ï´Ù.
+// PROJ-1877 Alter Table Modify Columnì— ëŒ€í•œ ê°„ëµí•œ ì„¤ëª…ì„ ì¶”ê°€í•©ë‹ˆë‹¤.
 //
-// [type º¯°æ]
+// [type ë³€ê²½]
 //
-// type º¯°æÀº Å©°Ô µÎ °¡Áö·Î ±¸ºĞµÈ´Ù.
+// type ë³€ê²½ì€ í¬ê²Œ ë‘ ê°€ì§€ë¡œ êµ¬ë¶„ëœë‹¤.
 //
-// 1. type º¯°æÀÌÁö¸¸ ÀÚ·á±¸Á¶°¡ µ¿ÀÏÇÏ¿© length º¯°æ°ú µ¿ÀÏÇÑ °æ¿ì
-//    8°¡Áö case
+// 1. type ë³€ê²½ì´ì§€ë§Œ ìë£Œêµ¬ì¡°ê°€ ë™ì¼í•˜ì—¬ length ë³€ê²½ê³¼ ë™ì¼í•œ ê²½ìš°
+//    8ê°€ì§€ case
 //    nchar->nvarchar
 //    nvarchar->nchar
 //    char->varchar
@@ -55,65 +55,65 @@
 //    float->numeric
 //    numeric->float
 //
-//    ÀÌ¸¦ Á» ´õ ºĞ·ùÇØº¸¸é Å©°Ô ¼¼°¡Áö·Î ±¸ºĞÇÒ ¼ö ÀÖ´Ù.
-//    a. padding type¿¡¼­ non-padding typeÀ¸·Î º¯È¯
-//       3°¡Áö case
+//    ì´ë¥¼ ì¢€ ë” ë¶„ë¥˜í•´ë³´ë©´ í¬ê²Œ ì„¸ê°€ì§€ë¡œ êµ¬ë¶„í•  ìˆ˜ ìˆë‹¤.
+//    a. padding typeì—ì„œ non-padding typeìœ¼ë¡œ ë³€í™˜
+//       3ê°€ì§€ case
 //       nchar->nvarchar
 //       char->varchar
 //       bit->varbit
 //
-//       length È®´ë´Â ½Ç½Ã°£ ddl·Î °¡´ÉÇÏ´Ù.
-//       length Ãà¼Ò´Â ¸ğµÎ nullÀÎ °æ¿ì ½Ç½Ã°£ ddl·Î ¼öÇàÀÌ °¡´ÉÇÏ¸ç
-//       nullÀÌ ¾Æ´Ï¶ó¸é ddlÀÌ ½ÇÆĞÇÑ´Ù.
+//       length í™•ëŒ€ëŠ” ì‹¤ì‹œê°„ ddlë¡œ ê°€ëŠ¥í•˜ë‹¤.
+//       length ì¶•ì†ŒëŠ” ëª¨ë‘ nullì¸ ê²½ìš° ì‹¤ì‹œê°„ ddlë¡œ ìˆ˜í–‰ì´ ê°€ëŠ¥í•˜ë©°
+//       nullì´ ì•„ë‹ˆë¼ë©´ ddlì´ ì‹¤íŒ¨í•œë‹¤.
 //
-//    b. non-padding type¿¡¼­ padding typeÀ¸·Î º¯È¯
-//       3°¡Áö case
+//    b. non-padding typeì—ì„œ padding typeìœ¼ë¡œ ë³€í™˜
+//       3ê°€ì§€ case
 //       nvarchar->nchar
 //       varchar->char
 //       varbit->bit
 //
-//       length È®´ë´Â pad ¹®ÀÚ¸¦ ºÙ¾î¾ß ÇÏ¹Ç·Î recreate
-//       length Ãà¼Ò´Â length Á¶°ÇÀ» ¸¸Á·ÇÏ´Â °æ¿ì ½Ç½Ã°£ ddlÀÌ °¡´ÉÇÏ¸ç
-//       length Á¶°ÇÀ» ¸¸Á·ÇÏÁö ¾Ê´Â °æ¿ì ddlÀÌ ½ÇÆĞÇÑ´Ù.
+//       length í™•ëŒ€ëŠ” pad ë¬¸ìë¥¼ ë¶™ì–´ì•¼ í•˜ë¯€ë¡œ recreate
+//       length ì¶•ì†ŒëŠ” length ì¡°ê±´ì„ ë§Œì¡±í•˜ëŠ” ê²½ìš° ì‹¤ì‹œê°„ ddlì´ ê°€ëŠ¥í•˜ë©°
+//       length ì¡°ê±´ì„ ë§Œì¡±í•˜ì§€ ì•ŠëŠ” ê²½ìš° ddlì´ ì‹¤íŒ¨í•œë‹¤.
 //
-//    c. float type¿¡¼­ numeric typeÀ¸·Î º¯È¯
-//       1°¡Áö case
+//    c. float typeì—ì„œ numeric typeìœ¼ë¡œ ë³€í™˜
+//       1ê°€ì§€ case
 //       float->numeric
 //
-//       length È®´ë¿Í Ãà¼Ò¸¦ schema·Î ±¸ºĞÇÒ ¼ö ¾øÀ¸¸ç
-//       floatÀÇ °ªÀÌ numericÀÇ length¸¦ ¸¸Á·ÇÏ´Â °æ¿ì ½Ç½Ã°£ ddlÀÌ °¡´ÉÇÏ´Ù.
-//       ±×·¸Áö ¾ÊÀº °æ¿ì ddlÀÌ ½ÇÆĞÇÑ´Ù.
-//       ´Ü, data loss ¿É¼ÇÀ» »ç¿ëÇÑ °æ¿ì length Á¶°ÇÀ» ¸¸Á·ÇÏÁö ¾Ê´õ¶óµµ
-//       float->numeric conversionÀ» ÅëÇØ recreateÇÑ´Ù.
-//       ÀÌ¶§ round-off°¡ ¹ß»ıÇÏ¿© data loss°¡ ¹ß»ıÇÒ ¼ö ÀÖ´Ù.
+//       length í™•ëŒ€ì™€ ì¶•ì†Œë¥¼ schemaë¡œ êµ¬ë¶„í•  ìˆ˜ ì—†ìœ¼ë©°
+//       floatì˜ ê°’ì´ numericì˜ lengthë¥¼ ë§Œì¡±í•˜ëŠ” ê²½ìš° ì‹¤ì‹œê°„ ddlì´ ê°€ëŠ¥í•˜ë‹¤.
+//       ê·¸ë ‡ì§€ ì•Šì€ ê²½ìš° ddlì´ ì‹¤íŒ¨í•œë‹¤.
+//       ë‹¨, data loss ì˜µì…˜ì„ ì‚¬ìš©í•œ ê²½ìš° length ì¡°ê±´ì„ ë§Œì¡±í•˜ì§€ ì•Šë”ë¼ë„
+//       float->numeric conversionì„ í†µí•´ recreateí•œë‹¤.
+//       ì´ë•Œ round-offê°€ ë°œìƒí•˜ì—¬ data lossê°€ ë°œìƒí•  ìˆ˜ ìˆë‹¤.
 //
-//    d. numeric type¿¡¼­ float typeÀ¸·Î º¯È¯
-//       1°¡Áö case
+//    d. numeric typeì—ì„œ float typeìœ¼ë¡œ ë³€í™˜
+//       1ê°€ì§€ case
 //       numeric->float
 //
-//       length È®´ë´Â ½Ç½Ã°£ ddl·Î °¡´ÉÇÏ´Ù.
-//       length Ãà¼Ò´Â length Á¶°ÇÀ» ¸¸Á·ÇÏ´Â °æ¿ì¸¸ ½Ç½Ã°£ ddlÀÌ °¡´ÉÇÏ´Ù.
-//       ´Ü, data loss ¿É¼ÇÀ» »ç¿ëÇÑ °æ¿ì length Á¶°ÇÀ» ¸¸Á·ÇÏÁö ¾Ê´õ¶óµµ
-//       numeric->float conversionÀ» ÅëÇØ recreateÇÑ´Ù.
-//       ÀÌ¶§ round-off°¡ ¹ß»ıÇÏ¿© data loss°¡ ¹ß»ıÇÒ ¼ö ÀÖ´Ù.
+//       length í™•ëŒ€ëŠ” ì‹¤ì‹œê°„ ddlë¡œ ê°€ëŠ¥í•˜ë‹¤.
+//       length ì¶•ì†ŒëŠ” length ì¡°ê±´ì„ ë§Œì¡±í•˜ëŠ” ê²½ìš°ë§Œ ì‹¤ì‹œê°„ ddlì´ ê°€ëŠ¥í•˜ë‹¤.
+//       ë‹¨, data loss ì˜µì…˜ì„ ì‚¬ìš©í•œ ê²½ìš° length ì¡°ê±´ì„ ë§Œì¡±í•˜ì§€ ì•Šë”ë¼ë„
+//       numeric->float conversionì„ í†µí•´ recreateí•œë‹¤.
+//       ì´ë•Œ round-offê°€ ë°œìƒí•˜ì—¬ data lossê°€ ë°œìƒí•  ìˆ˜ ìˆë‹¤.
 //
-// 2. type º¯°æÀÌ°í ÀÚ·á±¸Á¶°¡ ´Ù¸¥ °æ¿ì
-//    ³ª¸ÓÁö ¸ğµç °æ¿ì
-//    ¿¹)
+// 2. type ë³€ê²½ì´ê³  ìë£Œêµ¬ì¡°ê°€ ë‹¤ë¥¸ ê²½ìš°
+//    ë‚˜ë¨¸ì§€ ëª¨ë“  ê²½ìš°
+//    ì˜ˆ)
 //    char(4)->integer
 //    varchar(8)->date
 //
-//    type º¯°æÀº ¸ğµÎ recreateÀÌ¸ç
-//    data loss°¡ ¹ß»ıÇÏ´Â type º¯°æÀÎ °æ¿ì ¸ğµÎ nullÀÌ¾î¾ß °¡´ÉÇÏ´Ù.
-//    ´Ü, data loss ¿É¼ÇÀ» »ç¿ëÇÑ °æ¿ì nullÀÌ ¾Æ´Ï¾îµµ °¡´ÉÇÏ¸ç
-//    type conversionÀ» ÅëÇØ recreateÇÑ´Ù.
-//    ÀÌ¶§ ¼ıÀÚÇü typeÀÇ °æ¿ì round-off°¡ ¹ß»ıÇÏ¿© data loss°¡ ¹ß»ıÇÒ ¼ö ÀÖÀ¸¸ç
-//    date typeÀÇ °æ¿ì default_date_format property¿¡ ÀÇÇØ data loss°¡ ¹ß»ıÇÒ ¼ö ÀÖ´Ù.    
+//    type ë³€ê²½ì€ ëª¨ë‘ recreateì´ë©°
+//    data lossê°€ ë°œìƒí•˜ëŠ” type ë³€ê²½ì¸ ê²½ìš° ëª¨ë‘ nullì´ì–´ì•¼ ê°€ëŠ¥í•˜ë‹¤.
+//    ë‹¨, data loss ì˜µì…˜ì„ ì‚¬ìš©í•œ ê²½ìš° nullì´ ì•„ë‹ˆì–´ë„ ê°€ëŠ¥í•˜ë©°
+//    type conversionì„ í†µí•´ recreateí•œë‹¤.
+//    ì´ë•Œ ìˆ«ìí˜• typeì˜ ê²½ìš° round-offê°€ ë°œìƒí•˜ì—¬ data lossê°€ ë°œìƒí•  ìˆ˜ ìˆìœ¼ë©°
+//    date typeì˜ ê²½ìš° default_date_format propertyì— ì˜í•´ data lossê°€ ë°œìƒí•  ìˆ˜ ìˆë‹¤.    
 //
-// [length º¯°æ]
+// [length ë³€ê²½]
 //
-// type º¯°æ¾øÀÌ precisionÀÌ³ª scaleÀ» º¯°æÇÑ´Ù.
-//    10°¡Áö case
+// type ë³€ê²½ì—†ì´ precisionì´ë‚˜ scaleì„ ë³€ê²½í•œë‹¤.
+//    10ê°€ì§€ case
 //    nchar
 //    nvarchar
 //    char
@@ -125,123 +125,123 @@
 //    byte
 //    nibble
 //
-//    ÀÌ¸¦ Á» ´õ ºĞ·ùÇØº¸¸é Å©°Ô ³×°¡Áö·Î ±¸ºĞÇÒ ¼ö ÀÖ´Ù.
-//    a. padding typeÀÇ length º¯°æ
-//       4°¡Áö case
+//    ì´ë¥¼ ì¢€ ë” ë¶„ë¥˜í•´ë³´ë©´ í¬ê²Œ ë„¤ê°€ì§€ë¡œ êµ¬ë¶„í•  ìˆ˜ ìˆë‹¤.
+//    a. padding typeì˜ length ë³€ê²½
+//       4ê°€ì§€ case
 //       nchar
 //       char
 //       bit
 //       byte
 //
-//       length È®´ë´Â ¸ğµÎ nullÀÌ¶ó¸é ½Ç½Ã°£ ddlÀÌ °¡´ÉÇÏ³ª
-//       ±×·¸Áö ¾ÊÀº °æ¿ì´Â recreate
-//       length Ãà¼Ò´Â ¸ğµÎ nullÀÌ¶ó¸é ½Ç½Ã°£ ddlÀÌ °¡´ÉÇÏÁö¸¸
-//       ±×·¸Áö ¾ÊÀº °æ¿ì´Â ddlÀÌ ½ÇÆĞÇÑ´Ù.
+//       length í™•ëŒ€ëŠ” ëª¨ë‘ nullì´ë¼ë©´ ì‹¤ì‹œê°„ ddlì´ ê°€ëŠ¥í•˜ë‚˜
+//       ê·¸ë ‡ì§€ ì•Šì€ ê²½ìš°ëŠ” recreate
+//       length ì¶•ì†ŒëŠ” ëª¨ë‘ nullì´ë¼ë©´ ì‹¤ì‹œê°„ ddlì´ ê°€ëŠ¥í•˜ì§€ë§Œ
+//       ê·¸ë ‡ì§€ ì•Šì€ ê²½ìš°ëŠ” ddlì´ ì‹¤íŒ¨í•œë‹¤.
 //
-//    b. non-padding typeÀÇ length º¯°æ
-//       4°¡Áö case
+//    b. non-padding typeì˜ length ë³€ê²½
+//       4ê°€ì§€ case
 //       nvarchar
 //       varchar
 //       varbit
 //       nibble
 //
-//       length È®´ë´Â ½Ç½Ã°£ ddlÀÌ °¡´ÉÇÏ´Ù.
-//       length Ãà¼Ò´Â length Á¶°ÇÀ» ¸¸Á·ÇÏ´Â °æ¿ì¿¡¸¸ ½Ç½Ã°£ ddlÀÌ
-//       °¡´ÉÇÏ°í, length Á¶°ÇÀ» ¸¸Á·ÇÏÁö ¾Ê´Â °æ¿ì´Â ddlÀÌ ½ÇÆĞÇÑ´Ù.
+//       length í™•ëŒ€ëŠ” ì‹¤ì‹œê°„ ddlì´ ê°€ëŠ¥í•˜ë‹¤.
+//       length ì¶•ì†ŒëŠ” length ì¡°ê±´ì„ ë§Œì¡±í•˜ëŠ” ê²½ìš°ì—ë§Œ ì‹¤ì‹œê°„ ddlì´
+//       ê°€ëŠ¥í•˜ê³ , length ì¡°ê±´ì„ ë§Œì¡±í•˜ì§€ ì•ŠëŠ” ê²½ìš°ëŠ” ddlì´ ì‹¤íŒ¨í•œë‹¤.
 //
-//    c. float typeÀÇ length º¯°æ
-//       1°¡Áö case
+//    c. float typeì˜ length ë³€ê²½
+//       1ê°€ì§€ case
 //       float
 //
-//       length È®´ë´Â ½Ç½Ã°£ ddlÀÌ °¡´ÉÇÏ´Ù.
-//       length Ãà¼Ò´Â length Á¶°ÇÀ» ¸¸Á·ÇÏ´Â °æ¿ì¿¡¸¸ ½Ç½Ã°£ ddlÀÌ
-//       °¡´ÉÇÏ°í, length Á¶°ÇÀ» ¸¸Á·ÇÏÁö ¾Ê´Â °æ¿ì´Â ddlÀÌ ½ÇÆĞÇÑ´Ù.
-//       ´Ü, data loss ¿É¼ÇÀ» »ç¿ëÇÑ °æ¿ì length Á¶°ÇÀ» ¸¸Á·ÇÏÁö ¾Ê´õ¶óµµ
-//       float canonize¸¦ ÅëÇØ recreateÇÑ´Ù.
-//       ÀÌ¶§ round-off°¡ ¹ß»ıÇÏ¿© data loss°¡ ¹ß»ıÇÒ ¼ö ÀÖ´Ù.
+//       length í™•ëŒ€ëŠ” ì‹¤ì‹œê°„ ddlì´ ê°€ëŠ¥í•˜ë‹¤.
+//       length ì¶•ì†ŒëŠ” length ì¡°ê±´ì„ ë§Œì¡±í•˜ëŠ” ê²½ìš°ì—ë§Œ ì‹¤ì‹œê°„ ddlì´
+//       ê°€ëŠ¥í•˜ê³ , length ì¡°ê±´ì„ ë§Œì¡±í•˜ì§€ ì•ŠëŠ” ê²½ìš°ëŠ” ddlì´ ì‹¤íŒ¨í•œë‹¤.
+//       ë‹¨, data loss ì˜µì…˜ì„ ì‚¬ìš©í•œ ê²½ìš° length ì¡°ê±´ì„ ë§Œì¡±í•˜ì§€ ì•Šë”ë¼ë„
+//       float canonizeë¥¼ í†µí•´ recreateí•œë‹¤.
+//       ì´ë•Œ round-offê°€ ë°œìƒí•˜ì—¬ data lossê°€ ë°œìƒí•  ìˆ˜ ìˆë‹¤.
 //
-//    d. numeric typeÀÇ length º¯°æ
-//       1°¡Áö case
+//    d. numeric typeì˜ length ë³€ê²½
+//       1ê°€ì§€ case
 //       numeric
 //
-//       length È®´ë´Â ½Ç½Ã°£ ddlÀÌ °¡´ÉÇÏ´Ù.
-//       length Ãà¼Ò´Â ¸ğµÎ nullÀÌ ¾Æ´Ï¶ó¸é ddlÀÌ ½ÇÆĞÇÑ´Ù.
-//       ´Ü, data loss ¿É¼ÇÀ» »ç¿ëÇÑ °æ¿ì length Á¶°ÇÀ» ¸¸Á·ÇÏÁö ¾Ê´õ¶óµµ
-//       numeric canonize¸¦ ÅëÇØ recreateÇÑ´Ù.
-//       ÀÌ¶§ round-off°¡ ¹ß»ıÇÏ¿© data loss°¡ ¹ß»ıÇÒ ¼ö ÀÖ´Ù.
+//       length í™•ëŒ€ëŠ” ì‹¤ì‹œê°„ ddlì´ ê°€ëŠ¥í•˜ë‹¤.
+//       length ì¶•ì†ŒëŠ” ëª¨ë‘ nullì´ ì•„ë‹ˆë¼ë©´ ddlì´ ì‹¤íŒ¨í•œë‹¤.
+//       ë‹¨, data loss ì˜µì…˜ì„ ì‚¬ìš©í•œ ê²½ìš° length ì¡°ê±´ì„ ë§Œì¡±í•˜ì§€ ì•Šë”ë¼ë„
+//       numeric canonizeë¥¼ í†µí•´ recreateí•œë‹¤.
+//       ì´ë•Œ round-offê°€ ë°œìƒí•˜ì—¬ data lossê°€ ë°œìƒí•  ìˆ˜ ìˆë‹¤.
 //
-// [ÁÖÀÇ»çÇ×]
+// [ì£¼ì˜ì‚¬í•­]
 //
-// 1. ½Ç½Ã°£ ddlÀÌ¶óÇÔÀº ddlÀÇ executionÀÌ ½Ç½Ã°£(real-time)À» ¸»ÇÏ´Â °ÍÀ¸·Î
-//    ddlÀÇ validationÀÌ ½Ç½Ã°£ÀÌ ¾Æ´Ò ¼ö µµ ÀÖ´Ù.
+// 1. ì‹¤ì‹œê°„ ddlì´ë¼í•¨ì€ ddlì˜ executionì´ ì‹¤ì‹œê°„(real-time)ì„ ë§í•˜ëŠ” ê²ƒìœ¼ë¡œ
+//    ddlì˜ validationì´ ì‹¤ì‹œê°„ì´ ì•„ë‹ ìˆ˜ ë„ ìˆë‹¤.
 //
-//    ¿¹¸¦ µé¸é i1 varchar(5)¸¦ varchar(3)À¸·Î º¯°æÇÏ´Â ddlÀº
-//    execution ÀÚÃ¼´Â ½Ç½Ã°£ÀÌÁö¸¸, i1ÀÇ length°¡ ¸ğµÎ varchar(3)À»
-//    ¸¸Á·ÇÏ´ÂÁö °Ë»çÇÏ±â À§ÇÑ validation°úÁ¤Àº ½Ç½Ã°£ÀÌ ¾Æ´Ï´Ù.
-//    °á±¹ »ç¿ëÀÚ´Â ½Ç½Ã°£ÀÌ ¾Æ´Ï¶ó°í ´À³¥ ¼ö ÀÖÁö¸¸,
-//    °³³äÀûÀ¸·Î´Â ½Ç½Ã°£ ddlÀÌ¶ó°í °£ÁÖÇÑ´Ù. ¶ÇÇÑ ºñ½Ç½Ã°£ ddl¿¡ ºñÇØ¼­
-//    ¸Å¿ì ºü¸£°Ô ddlÀ» ¼öÇàÇÑ´Ù. (scan ÇÑ¹øÀÇ ½Ã°£ Á¤µµ)
+//    ì˜ˆë¥¼ ë“¤ë©´ i1 varchar(5)ë¥¼ varchar(3)ìœ¼ë¡œ ë³€ê²½í•˜ëŠ” ddlì€
+//    execution ìì²´ëŠ” ì‹¤ì‹œê°„ì´ì§€ë§Œ, i1ì˜ lengthê°€ ëª¨ë‘ varchar(3)ì„
+//    ë§Œì¡±í•˜ëŠ”ì§€ ê²€ì‚¬í•˜ê¸° ìœ„í•œ validationê³¼ì •ì€ ì‹¤ì‹œê°„ì´ ì•„ë‹ˆë‹¤.
+//    ê²°êµ­ ì‚¬ìš©ìëŠ” ì‹¤ì‹œê°„ì´ ì•„ë‹ˆë¼ê³  ëŠë‚„ ìˆ˜ ìˆì§€ë§Œ,
+//    ê°œë…ì ìœ¼ë¡œëŠ” ì‹¤ì‹œê°„ ddlì´ë¼ê³  ê°„ì£¼í•œë‹¤. ë˜í•œ ë¹„ì‹¤ì‹œê°„ ddlì— ë¹„í•´ì„œ
+//    ë§¤ìš° ë¹ ë¥´ê²Œ ddlì„ ìˆ˜í–‰í•œë‹¤. (scan í•œë²ˆì˜ ì‹œê°„ ì •ë„)
 //
-//    ½Ç½Ã°£ ddl
-//    - ½Ç½Ã°£ validation + ½Ç½Ã°£ execution  
-//    - ºñ½Ç½Ã°£ validation + ½Ç½Ã°£ execution
+//    ì‹¤ì‹œê°„ ddl
+//    - ì‹¤ì‹œê°„ validation + ì‹¤ì‹œê°„ execution  
+//    - ë¹„ì‹¤ì‹œê°„ validation + ì‹¤ì‹œê°„ execution
 //
-//    ºñ½Ç½Ã°£ ddl
-//    - ½Ç½Ã°£ validation + ºñ½Ç½Ã°£ execution  
-//    - ºñ½Ç½Ã°£ validation + ºñ½Ç½Ã°£ execution
+//    ë¹„ì‹¤ì‹œê°„ ddl
+//    - ì‹¤ì‹œê°„ validation + ë¹„ì‹¤ì‹œê°„ execution  
+//    - ë¹„ì‹¤ì‹œê°„ validation + ë¹„ì‹¤ì‹œê°„ execution
 //
-// 2. ½Ç½Ã°£ ddlÀÌ ¾ÆÁ÷Àº tableÀÇ record¿¡ ´ëÇØ¼­¸¸ °¡´ÉÇÑ °ÍÀ¸·Î
-//    indexÀÇ key¿¡ ´ëÇÑ ½Ç½Ã°£ ddlÀº ¾ÆÁ÷ ºÒ°¡´ÉÇÏ´Ù.
-//    ±×·¯¹Ç·Î ÄÃ·³¿¡ index°¡ ÀÖ´Â °æ¿ì ÇØ´ç index´Â Àç»ı¼ºµÇ¾î¾ß ÇÏ¸ç
-//    index Àç»ı¼ºÀ¸·Î ÀÎÇØ ddlÀÇ executionÀÌ ½Ç½Ã°£(real-time)À¸·Î
-//    ¼öÇàµÇÁö ¾ÊÀ» ¼ö ÀÖ´Ù.
+// 2. ì‹¤ì‹œê°„ ddlì´ ì•„ì§ì€ tableì˜ recordì— ëŒ€í•´ì„œë§Œ ê°€ëŠ¥í•œ ê²ƒìœ¼ë¡œ
+//    indexì˜ keyì— ëŒ€í•œ ì‹¤ì‹œê°„ ddlì€ ì•„ì§ ë¶ˆê°€ëŠ¥í•˜ë‹¤.
+//    ê·¸ëŸ¬ë¯€ë¡œ ì»¬ëŸ¼ì— indexê°€ ìˆëŠ” ê²½ìš° í•´ë‹¹ indexëŠ” ì¬ìƒì„±ë˜ì–´ì•¼ í•˜ë©°
+//    index ì¬ìƒì„±ìœ¼ë¡œ ì¸í•´ ddlì˜ executionì´ ì‹¤ì‹œê°„(real-time)ìœ¼ë¡œ
+//    ìˆ˜í–‰ë˜ì§€ ì•Šì„ ìˆ˜ ìˆë‹¤.
 //
-//    °³³äÀûÀ¸·Î º»´Ù¸é index°¡ ÀÖ´Â °æ¿ì ddlÀÇ executionÀº ºñ½Ç½Ã°£À¸·Î
-//    ¼öÇàµÇ¹Ç·Î ºñ½Ç½Ã°£ ddl·Î ±¸ºĞÇÑ´Ù.
+//    ê°œë…ì ìœ¼ë¡œ ë³¸ë‹¤ë©´ indexê°€ ìˆëŠ” ê²½ìš° ddlì˜ executionì€ ë¹„ì‹¤ì‹œê°„ìœ¼ë¡œ
+//    ìˆ˜í–‰ë˜ë¯€ë¡œ ë¹„ì‹¤ì‹œê°„ ddlë¡œ êµ¬ë¶„í•œë‹¤.
 //
-// 3. data loss¸¦ Çã¿ëÇÏ´Â ¿É¼ÇÀ» »ç¿ëÇÏ¿© typeÀÌ³ª length¸¦ º¯°æÇÏ´Â °æ¿ì
-//    °æ¿ì¿¡ µû¶ó modify°¡ ½ÇÆĞÇÏ´Â °æ¿ì°¡ ¹ß»ıÇÒ ¼ö ÀÖ´Ù.
+// 3. data lossë¥¼ í—ˆìš©í•˜ëŠ” ì˜µì…˜ì„ ì‚¬ìš©í•˜ì—¬ typeì´ë‚˜ lengthë¥¼ ë³€ê²½í•˜ëŠ” ê²½ìš°
+//    ê²½ìš°ì— ë”°ë¼ modifyê°€ ì‹¤íŒ¨í•˜ëŠ” ê²½ìš°ê°€ ë°œìƒí•  ìˆ˜ ìˆë‹¤.
 //
-//    ¿¹¸¦ µé¸é i1 float(2)¸¦ i1 integer·Î modifyÇÏ·Á°í ÇÒ¶§ i1¿¡ unique index°¡
-//    ÀÖ´Â °æ¿ì i1¿¡ ÀúÀåµÈ °ª¿¡ µû¶ó¼­ unique index »ı¼ºÀÌ ½ÇÆĞÇÒ ¼ö ÀÖ´Ù.
-//    ÀÌ°ÍÀº ddl ¼öÇàÀü¿¡ validation °úÁ¤¿¡¼­ °Ë»çµÇ¸é ÁÁ°ÚÁö¸¸,
-//    ÇöÀç´Â index »ı¼º°úÁ¤¿¡¼­ ¹ß°ßµÇ¾î ddlÀº rollbackÀÌ µÈ´Ù.
+//    ì˜ˆë¥¼ ë“¤ë©´ i1 float(2)ë¥¼ i1 integerë¡œ modifyí•˜ë ¤ê³  í• ë•Œ i1ì— unique indexê°€
+//    ìˆëŠ” ê²½ìš° i1ì— ì €ì¥ëœ ê°’ì— ë”°ë¼ì„œ unique index ìƒì„±ì´ ì‹¤íŒ¨í•  ìˆ˜ ìˆë‹¤.
+//    ì´ê²ƒì€ ddl ìˆ˜í–‰ì „ì— validation ê³¼ì •ì—ì„œ ê²€ì‚¬ë˜ë©´ ì¢‹ê² ì§€ë§Œ,
+//    í˜„ì¬ëŠ” index ìƒì„±ê³¼ì •ì—ì„œ ë°œê²¬ë˜ì–´ ddlì€ rollbackì´ ëœë‹¤.
 //    (1.1, 1.2) -> (1, 1) unique violation error
 //
 //----------------------------------------------------------------
 
 //----------------------------------------------------------------
 // PROJ-1877
-// Modify Column ¼öÇà½Ã,
-// Table ColumnÀÇ modify method ¹æ½Ä
+// Modify Column ìˆ˜í–‰ì‹œ,
+// Table Columnì˜ modify method ë°©ì‹
 //----------------------------------------------------------------
 
 typedef enum
 {
-    // ¾Æ¹«°Íµµ ÇÏÁö ¾Ê¾Æµµ alter table modify column ±â´É¼öÇà
+    // ì•„ë¬´ê²ƒë„ í•˜ì§€ ì•Šì•„ë„ alter table modify column ê¸°ëŠ¥ìˆ˜í–‰
     QD_TBL_COL_MODIFY_METHOD_NONE = 0,
 
-    // column °ü·Ã meta º¯°æ¸¸À¸·Î alter table modify column ±â´É¼öÇà
+    // column ê´€ë ¨ meta ë³€ê²½ë§Œìœ¼ë¡œ alter table modify column ê¸°ëŠ¥ìˆ˜í–‰
     QD_TBL_COL_MODIFY_METHOD_ALTER_META,
     
-    // table Àç»ı¼ºÀ¸·Î alter table modify column ±â´É¼öÇà
+    // table ì¬ìƒì„±ìœ¼ë¡œ alter table modify column ê¸°ëŠ¥ìˆ˜í–‰
     QD_TBL_COL_MODIFY_METHOD_RECREATE_TABLE
     
 } qdTblColModifyMethod;
 
 //----------------------------------------------------------------
 // PROJ-1911
-// Modify Column ¼öÇà ½Ã, 
-// Index ColumnÀÇ modify method ¹æ½Ä 
+// Modify Column ìˆ˜í–‰ ì‹œ, 
+// Index Columnì˜ modify method ë°©ì‹ 
 //----------------------------------------------------------------
 
 typedef enum
 {
-    // indexÀÇ Ä®·³¿¡ ´ëÇÑ meta º¯°æ¸¸À¸·Î
-    // alter table modify column ±â´É¼öÇà
+    // indexì˜ ì¹¼ëŸ¼ì— ëŒ€í•œ meta ë³€ê²½ë§Œìœ¼ë¡œ
+    // alter table modify column ê¸°ëŠ¥ìˆ˜í–‰
     QD_IDX_COL_MODIFY_METHOD_ALTER_META = 0,
 
-    // index Àç»ı¼ºÀ¸·Î alter table modify column ±â´É¼öÇà
+    // index ì¬ìƒì„±ìœ¼ë¡œ alter table modify column ê¸°ëŠ¥ìˆ˜í–‰
     QD_IDX_COL_MODIFY_METHOD_RECREATE_INDEX
 } qdIdxColModifyMethod;
 
@@ -259,81 +259,81 @@ typedef struct qdbIdxColModify
 typedef enum
 {
     //----------------------------------------------------------------
-    // function: ÃÊ±â°ª
-    // action  : ¾Æ¹«°Íµµ ÇÏÁö ¾Ê´Â´Ù.
+    // function: ì´ˆê¸°ê°’
+    // action  : ì•„ë¬´ê²ƒë„ í•˜ì§€ ì•ŠëŠ”ë‹¤.
     //----------------------------------------------------------------
     QD_VERIFY_NONE = 0,
 
     //----------------------------------------------------------------
-    // function: value°¡ ¸ğµÎ not nullÀÎ°¡?
+    // function: valueê°€ ëª¨ë‘ not nullì¸ê°€?
     //
-    // action  : null to not null¿¡ »ç¿ëµÇ¸ç nullÀÌ ¹ß°ßµÇ´Â °æ¿ì
-    //           DDLÀº ½ÇÆĞÇÑ´Ù.
+    // action  : null to not nullì— ì‚¬ìš©ë˜ë©° nullì´ ë°œê²¬ë˜ëŠ” ê²½ìš°
+    //           DDLì€ ì‹¤íŒ¨í•œë‹¤.
     //
     // example : create table t1(i1 integer null);
     //           alter table t1 modify (i1 not null);
-    //           i1Àº ¸ğµÎ not nullÀÌ¾î¾ß alter°¡ °¡´ÉÇÏ´Ù. ±×·¯³ª
-    //           i1ÀÌ nullÀÎ °æ¿ì alter°¡ ºÒ°¡´ÉÇÏ´Ù.
+    //           i1ì€ ëª¨ë‘ not nullì´ì–´ì•¼ alterê°€ ê°€ëŠ¥í•˜ë‹¤. ê·¸ëŸ¬ë‚˜
+    //           i1ì´ nullì¸ ê²½ìš° alterê°€ ë¶ˆê°€ëŠ¥í•˜ë‹¤.
     //----------------------------------------------------------------
     QD_VERIFY_NOT_NULL,
     
     //----------------------------------------------------------------
-    // function: value°¡ ¸ğµÎ null ÀÎ°¡?
+    // function: valueê°€ ëª¨ë‘ null ì¸ê°€?
     //
-    // action  : disk table¿¡¼­ value°¡ ¸ğµÎ nullÀÎ °æ¿ì ½Ç½Ã°£
-    //           ¿Ï¼ºÀ¸·Î ¼öÇà°¡´ÉÇÏ´Ù.
-    //           nullÀÌ ¾Æ´Ñ °æ¿ì DDLÀº ½ÇÆĞÇÑ´Ù.
+    // action  : disk tableì—ì„œ valueê°€ ëª¨ë‘ nullì¸ ê²½ìš° ì‹¤ì‹œê°„
+    //           ì™„ì„±ìœ¼ë¡œ ìˆ˜í–‰ê°€ëŠ¥í•˜ë‹¤.
+    //           nullì´ ì•„ë‹Œ ê²½ìš° DDLì€ ì‹¤íŒ¨í•œë‹¤.
     //
     // example : create table t1(i1 char(3));
     //           alter table t1 modify (i1 char(1));
-    //           i1ÀÌ ¸ğµÎ nullÀÌ¾î¾ß alter°¡ °¡´ÉÇÏ´Ù. ±×·¯³ª
-    //           i1ÀÌ nullÀÌ ¾Æ´Ñ °æ¿ì alter°¡ ºÒ°¡´ÉÇÏ´Ù.
+    //           i1ì´ ëª¨ë‘ nullì´ì–´ì•¼ alterê°€ ê°€ëŠ¥í•˜ë‹¤. ê·¸ëŸ¬ë‚˜
+    //           i1ì´ nullì´ ì•„ë‹Œ ê²½ìš° alterê°€ ë¶ˆê°€ëŠ¥í•˜ë‹¤.
     //----------------------------------------------------------------
     QD_VERIFY_NULL,
     
     //----------------------------------------------------------------
-    // function: value°¡ ¸ğµÎ null ÀÎ°¡?
+    // function: valueê°€ ëª¨ë‘ null ì¸ê°€?
     //
-    // action  : disk table¿¡¼­ value°¡ ¸ğµÎ nullÀÎ °æ¿ì ½Ç½Ã°£
-    //           ¿Ï¼ºÀ¸·Î ¼öÇà°¡´ÉÇÏ´Ù.
-    //           nullÀÌ ¾Æ´Ñ °æ¿ì ºñ½Ç½Ã°£À¸·Î ¼öÇàÇÑ´Ù.
+    // action  : disk tableì—ì„œ valueê°€ ëª¨ë‘ nullì¸ ê²½ìš° ì‹¤ì‹œê°„
+    //           ì™„ì„±ìœ¼ë¡œ ìˆ˜í–‰ê°€ëŠ¥í•˜ë‹¤.
+    //           nullì´ ì•„ë‹Œ ê²½ìš° ë¹„ì‹¤ì‹œê°„ìœ¼ë¡œ ìˆ˜í–‰í•œë‹¤.
     //
     // example : create table t1(i1 char(3));
     //           alter table t1 modify (i1 char(5));
-    //           i1ÀÌ ¸ğµÎ nullÀÎ °æ¿ì ½Ç½Ã°£ alter°¡ °¡´ÉÇÏ´Ù. ±×·¯³ª
-    //           i1ÀÌ nullÀÌ ¾Æ´Ñ °æ¿ì recreate tableÀ» ¼öÇàÇÑ´Ù.
+    //           i1ì´ ëª¨ë‘ nullì¸ ê²½ìš° ì‹¤ì‹œê°„ alterê°€ ê°€ëŠ¥í•˜ë‹¤. ê·¸ëŸ¬ë‚˜
+    //           i1ì´ nullì´ ì•„ë‹Œ ê²½ìš° recreate tableì„ ìˆ˜í–‰í•œë‹¤.
     //----------------------------------------------------------------
     QD_VERIFY_NULL_ONLY,
     
     //----------------------------------------------------------------
-    // function: value°¡ ¸ğµÎ nullÀÌ°Å³ª ÁöÁ¤µÈ sizeÀÌÇÏÀÎ°¡?
+    // function: valueê°€ ëª¨ë‘ nullì´ê±°ë‚˜ ì§€ì •ëœ sizeì´í•˜ì¸ê°€?
     //
-    // action  : value°¡ ¸ğµÎ nullÀÌ ¾Æ´Ï°í ÁöÁ¤µÈ sizeÀÌÇÏ°¡ ¾Æ´Ñ
-    //           °æ¿ì DDLÀº ½ÇÆĞÇÑ´Ù.
+    // action  : valueê°€ ëª¨ë‘ nullì´ ì•„ë‹ˆê³  ì§€ì •ëœ sizeì´í•˜ê°€ ì•„ë‹Œ
+    //           ê²½ìš° DDLì€ ì‹¤íŒ¨í•œë‹¤.
     //
     // example : create table t1(i1 varchar(5));
     //           alter table t1 modify (i1 varchar(3));
-    //           i1ÀÌ ¸ğµÎ nullÀÌ°Å³ª ±æÀÌ°¡ 3º¸´Ù ÀÛ°Å³ª °°Àº °æ¿ì¸¸
-    //           alter°¡ °¡´ÉÇÏ´Ù. ±×·¯³ª i1ÀÇ ±æÀÌ°¡ 3º¸´Ù Å« °æ¿ì alter°¡
-    //           ºÒ°¡´ÉÇÏ´Ù.
+    //           i1ì´ ëª¨ë‘ nullì´ê±°ë‚˜ ê¸¸ì´ê°€ 3ë³´ë‹¤ ì‘ê±°ë‚˜ ê°™ì€ ê²½ìš°ë§Œ
+    //           alterê°€ ê°€ëŠ¥í•˜ë‹¤. ê·¸ëŸ¬ë‚˜ i1ì˜ ê¸¸ì´ê°€ 3ë³´ë‹¤ í° ê²½ìš° alterê°€
+    //           ë¶ˆê°€ëŠ¥í•˜ë‹¤.
     //----------------------------------------------------------------
     QD_VERIFY_NULL_OR_UNDER_SIZE,
     
     //----------------------------------------------------------------
-    // function: value°¡ ¸ğµÎ nullÀÌ°Å³ª ÁöÁ¤µÈ sizeÀÎ°¡?
+    // function: valueê°€ ëª¨ë‘ nullì´ê±°ë‚˜ ì§€ì •ëœ sizeì¸ê°€?
     //
-    // action  : disk table¿¡¼­ value°¡ ¸ğµÎ nullÀÌ°Å³ª Æ¯Á¤ sizeÀÎ
-    //           °æ¿ì ½Ç½Ã°£ ¿Ï¼ºÀ¸·Î ¼öÇà°¡´ÉÇÏ´Ù.
-    //           ±×¸®°í disk table¿¡¼­ value°¡ ¸ğµÎ nullÀÌ°Å³ª
-    //           Æ¯Á¤ sizeº¸´Ù ÀÛÀº °æ¿ì ºñ½Ç½Ã°£À¸·Î ¼öÇàÇÑ´Ù.
-    //           ±×·¯³ª sizeº¸´Ù Å« °æ¿ì°¡ ÀÖÀ¸¸é DDLÀº ½ÇÆĞÇÑ´Ù.
+    // action  : disk tableì—ì„œ valueê°€ ëª¨ë‘ nullì´ê±°ë‚˜ íŠ¹ì • sizeì¸
+    //           ê²½ìš° ì‹¤ì‹œê°„ ì™„ì„±ìœ¼ë¡œ ìˆ˜í–‰ê°€ëŠ¥í•˜ë‹¤.
+    //           ê·¸ë¦¬ê³  disk tableì—ì„œ valueê°€ ëª¨ë‘ nullì´ê±°ë‚˜
+    //           íŠ¹ì • sizeë³´ë‹¤ ì‘ì€ ê²½ìš° ë¹„ì‹¤ì‹œê°„ìœ¼ë¡œ ìˆ˜í–‰í•œë‹¤.
+    //           ê·¸ëŸ¬ë‚˜ sizeë³´ë‹¤ í° ê²½ìš°ê°€ ìˆìœ¼ë©´ DDLì€ ì‹¤íŒ¨í•œë‹¤.
     //
     // example : create table t1(i1 varchar(5));
     //           alter table t1 modify (i1 char(3));
-    //           i1ÀÌ ¸ğµÎ nullÀÌ°Å³ª ±æÀÌ°¡ Á¤È®È÷ 3ÀÎ °æ¿ì ½Ç½Ã°£ alter°¡
-    //           °¡´ÉÇÏ°í, i1ÀÌ ¸ğµÎ nullÀÌ°Å³ª ±æÀÌ°¡ 3º¸´Ù ÀÛ°Å³ª °°Àº
-    //           °æ¿ì recreate tableÀ» ¼öÇàÇÑ´Ù. ±×·¯³ª i1ÀÇ ±æÀÌ°¡ 3º¸´Ù
-    //           Å« °æ¿ì alter°¡ ºÒ°¡´ÉÇÏ´Ù.
+    //           i1ì´ ëª¨ë‘ nullì´ê±°ë‚˜ ê¸¸ì´ê°€ ì •í™•íˆ 3ì¸ ê²½ìš° ì‹¤ì‹œê°„ alterê°€
+    //           ê°€ëŠ¥í•˜ê³ , i1ì´ ëª¨ë‘ nullì´ê±°ë‚˜ ê¸¸ì´ê°€ 3ë³´ë‹¤ ì‘ê±°ë‚˜ ê°™ì€
+    //           ê²½ìš° recreate tableì„ ìˆ˜í–‰í•œë‹¤. ê·¸ëŸ¬ë‚˜ i1ì˜ ê¸¸ì´ê°€ 3ë³´ë‹¤
+    //           í° ê²½ìš° alterê°€ ë¶ˆê°€ëŠ¥í•˜ë‹¤.
     //----------------------------------------------------------------
     QD_VERIFY_NULL_OR_EXACT_OR_UNDER_SIZE
     
@@ -341,26 +341,26 @@ typedef enum
 
 //----------------------------------------------------------------
 // PROJ-1911
-// modify column ¼öÇà ÈÄ, disk ÀúÀå Å¸ÀÔÀÌ º¯°æµÇ´ÂÁö ¿©ºÎ 
+// modify column ìˆ˜í–‰ í›„, disk ì €ì¥ íƒ€ì…ì´ ë³€ê²½ë˜ëŠ”ì§€ ì—¬ë¶€ 
 //----------------------------------------------------------------
 typedef enum
 {
-    // Disk¿¡ ÀúÀåµÇÁö ¾ÊÀ½ 
+    // Diskì— ì €ì¥ë˜ì§€ ì•ŠìŒ 
     QD_CHANGE_STORED_TYPE_NONE,
 
-    // Disk ÀúÀå Å¸ÀÔÀÌ º¯°æµÇÁö ¾ÊÀ½
-    // ex ) char->varchar, char->char µîµî 
+    // Disk ì €ì¥ íƒ€ì…ì´ ë³€ê²½ë˜ì§€ ì•ŠìŒ
+    // ex ) char->varchar, char->char ë“±ë“± 
     QD_CHANGE_STORED_TYPE_FALSE,
 
-    // Disk ÀúÀå Å¸ÀÔÀÌ º¯°æµÊ
-    // ex) char->integer, varchar->date µîµî 
+    // Disk ì €ì¥ íƒ€ì…ì´ ë³€ê²½ë¨
+    // ex) char->integer, varchar->date ë“±ë“± 
     QD_CHANGE_STORED_TYPE_TRUE
 } qdChangeStoredType;
 
 //----------------------------------------------------------------
 // PROJ-1877
-// verify column list´Â ÇÑ¹øÀÇ scanÀ¸·Î modify ´ë»ó ÄÃ·³À» ÇÑ²¨¹ø¿¡
-// °Ë»çÇÏ¿© alter°¡ ºÒ°¡´ÉÇÑÁö °Ë»çÇÏ°Å³ª modify method¸¦ ÃÖÁ¾ °áÁ¤ÇÑ´Ù.
+// verify column listëŠ” í•œë²ˆì˜ scanìœ¼ë¡œ modify ëŒ€ìƒ ì»¬ëŸ¼ì„ í•œêº¼ë²ˆì—
+// ê²€ì‚¬í•˜ì—¬ alterê°€ ë¶ˆê°€ëŠ¥í•œì§€ ê²€ì‚¬í•˜ê±°ë‚˜ modify methodë¥¼ ìµœì¢… ê²°ì •í•œë‹¤.
 //
 // example : create table t1(i1 varchar(5), i2 varchar(5), i3 char(3));
 //           alter table t1 modify (i1 varchar(3) not null, i2 char(3), i3 char(5));
@@ -426,16 +426,16 @@ typedef struct qdbConvertContext
 
 typedef struct qdbCallBackInfo
 {
-    // record ´ÜÀ§·Î convert¸¦ À§ÇÑ ¸Ş¸ğ¸® °ü¸®
+    // record ë‹¨ìœ„ë¡œ convertë¥¼ ìœ„í•œ ë©”ëª¨ë¦¬ ê´€ë¦¬
     iduMemoryStatus    * qmxMemStatus;
     iduMemory          * qmxMem;
 
-    // column valueÀÇ convert¸¦ À§ÇÑ ÀÚ·á±¸Á¶
+    // column valueì˜ convertë¥¼ ìœ„í•œ ìë£Œêµ¬ì¡°
     qcTemplate         * tmplate;
     qcmTableInfo       * tableInfo;
     qdbConvertContext  * convertContextList;
 
-    // convert context¸¦ Ã£±â À§ÇÑ pointer
+    // convert contextë¥¼ ì°¾ê¸° ìœ„í•œ pointer
     qdbConvertContext  * convertContextPtr;
 
     // null smiValue list
@@ -453,8 +453,8 @@ typedef struct qdbCallBackInfo
     qcmColumn          * dstColumns;
 
     // BUG-42920 DDL display data move progress
-    qcmTableInfo       * partitionInfo; // partition name, partition ±¸ºĞ.
-    ULong                progressRows;  // insertµÇ¾îÁø µ¥ÀÌÅ¸ÀÇ °³¼ö.
+    qcmTableInfo       * partitionInfo; // partition name, partition êµ¬ë¶„.
+    ULong                progressRows;  // insertë˜ì–´ì§„ ë°ì´íƒ€ì˜ ê°œìˆ˜.
     
 } qdbCallBackInfo;
 

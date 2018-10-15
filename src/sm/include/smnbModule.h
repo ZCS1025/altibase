@@ -144,10 +144,10 @@ public:
                              smiColumn  * aSmiColumn,
                              SChar      * aRow );
     
-    /* BUG-30074 disk tableÀÇ unique index¿¡¼­ NULL key »èÁ¦ ½Ã/
-    *           non-unique index¿¡¼­ deleted key Ãß°¡ ½Ã
-    *           CardinalityÀÇ Á¤È®¼ºÀÌ ¸¹ÀÌ ¶³¾îÁı´Ï´Ù.
-    * Key ÀüÃ¼°¡ NullÀÎÁö È®ÀÎÇÑ´Ù. ¸ğµÎ NullÀÌ¾î¾ß ÇÑ´Ù. */
+    /* BUG-30074 disk tableì˜ unique indexì—ì„œ NULL key ì‚­ì œ ì‹œ/
+    *           non-unique indexì—ì„œ deleted key ì¶”ê°€ ì‹œ
+    *           Cardinalityì˜ ì •í™•ì„±ì´ ë§ì´ ë–¨ì–´ì§‘ë‹ˆë‹¤.
+    * Key ì „ì²´ê°€ Nullì¸ì§€ í™•ì¸í•œë‹¤. ëª¨ë‘ Nullì´ì–´ì•¼ í•œë‹¤. */
     static idBool isNullKey( smnbHeader * aIndex,
                              SChar      * aRow );
  
@@ -367,7 +367,7 @@ public:
                                             SInt              a_nSlotPos );
 
     /* TASK-4990 changing the method of collecting index statistics
-     * ¼öµ¿ Åë°èÁ¤º¸ ¼öÁı ±â´É */
+     * ìˆ˜ë™ í†µê³„ì •ë³´ ìˆ˜ì§‘ ê¸°ëŠ¥ */
     static IDE_RC gatherStat( idvSQL         * aStatistics,
                               void           * aTrans,
                               SFloat           aPercentage,
@@ -481,9 +481,9 @@ public:
     static IDE_RC freeIterator( void * aIteratorMem);
 
     // To Fix BUG-15670
-    // Row Pointer¸¦ ÀÌ¿ëÇÏ¿© Key ColumnÀÇ ½ÇÁ¦ Value Ptr È¹µæ
+    // Row Pointerë¥¼ ì´ìš©í•˜ì—¬ Key Columnì˜ ì‹¤ì œ Value Ptr íšë“
     // To Fix BUG-24449
-    // Å° ±æÀÌ¸¦ ÀĞÀ»¶§´Â MT ÇÔ¼ö¸¦ ÀÌ¿ëÇØ¾ß ÇÑ´Ù
+    // í‚¤ ê¸¸ì´ë¥¼ ì½ì„ë•ŒëŠ” MT í•¨ìˆ˜ë¥¼ ì´ìš©í•´ì•¼ í•œë‹¤
     static IDE_RC getKeyValueAndSize( SChar         * aRowPtr,
                                       smnbColumn    * aIndexColumn,
                                       void          * aKeyValue,
@@ -685,11 +685,11 @@ inline UInt smnbBTree::getKeySize( UInt aKeyValueSize )
 
 /* PROJ-2433 
  *
- * internal node¸¦ ÃÊ±âÈ­ÇÑ´Ù
+ * internal nodeë¥¼ ì´ˆê¸°í™”í•œë‹¤
  *
- * - direct key index¸¦ »ç¿ëÇÏ´õ¶óµµ Ç×»ó row pointer °¡ ÀÖ¾î¾ßÇÑ´Ù
- *   : non-unique index¿¡¼­ µ¿ÀÏ key°¡ ¿©·¯°³ insertµÇ¸é, row Æ÷ÀÎÅÍ ÁÖ¼Ò ¼ø¼­·Î Á¤·ÄÇØ ÀúÀåÇÑ´Ù.
- *   : uninque index¶ó¸é »ı·«ÇÒ¼öÀÖ°ÚÁö¸¸, ¾îÂ÷ÇÇ index Å©±â¸¦ °áÁ¤ÇÏ´Â°ÍÀº leaf node ÀÌ´Ù.
+ * - direct key indexë¥¼ ì‚¬ìš©í•˜ë”ë¼ë„ í•­ìƒ row pointer ê°€ ìˆì–´ì•¼í•œë‹¤
+ *   : non-unique indexì—ì„œ ë™ì¼ keyê°€ ì—¬ëŸ¬ê°œ insertë˜ë©´, row í¬ì¸í„° ì£¼ì†Œ ìˆœì„œë¡œ ì •ë ¬í•´ ì €ì¥í•œë‹¤.
+ *   : uninque indexë¼ë©´ ìƒëµí• ìˆ˜ìˆê² ì§€ë§Œ, ì–´ì°¨í”¼ index í¬ê¸°ë¥¼ ê²°ì •í•˜ëŠ”ê²ƒì€ leaf node ì´ë‹¤.
  */
 inline void smnbBTree::initInternalNode( smnbINode  * a_pNode,
                                          smnbHeader * aIndexHeader,
@@ -712,7 +712,7 @@ inline void smnbBTree::initInternalNode( smnbINode  * a_pNode,
     a_pNode->mMaxSlotCount  = aIndexHeader->mINodeMaxSlotCount;
     a_pNode->mSlotCount     = 0;
 
-    /* Ç×»ó row poniter Á¸Àç */
+    /* í•­ìƒ row poniter ì¡´ì¬ */
     a_pNode->mRowPtrs = (SChar **)&(a_pNode->mChildPtrs[a_pNode->mMaxSlotCount]);
 
     if ( a_pNode->mKeySize == 0 )
@@ -727,7 +727,7 @@ inline void smnbBTree::initInternalNode( smnbINode  * a_pNode,
 
 /* PROJ-2433 
  *
- * leaf node¸¦ ÃÊ±âÈ­ÇÑ´Ù
+ * leaf nodeë¥¼ ì´ˆê¸°í™”í•œë‹¤
  */
 inline void smnbBTree::initLeafNode( smnbLNode  * a_pNode,
                                      smnbHeader * aIndexHeader,
@@ -847,10 +847,10 @@ inline IDU_LATCH smnbBTree::getLatchValueOfLNode(volatile smnbLNode* aNodePtr)
  * FUNCTION DESCRIPTION : smnbBTree::setInternalSlot                 *
  * ------------------------------------------------------------------*
  * PROJ-2433 Direct Key Index
- * INTERNAL NODEÀÇ aIdx¹øÂ° SLOT¿¡
- * child pointer, row pointer, direct key¸¦ ¼¼ÆÃÇÑ´Ù.
+ * INTERNAL NODEì˜ aIdxë²ˆì§¸ SLOTì—
+ * child pointer, row pointer, direct keyë¥¼ ì„¸íŒ…í•œë‹¤.
  *
- * - direct key´Â memcpy°¡ ÀÌ·ç¾îÁö´Â°Í¿¡ ÁÖÀÇ
+ * - direct keyëŠ” memcpyê°€ ì´ë£¨ì–´ì§€ëŠ”ê²ƒì— ì£¼ì˜
  *
  * aNode     - [IN]  INTERNAL NODE
  * aIdx      - [IN]  slot index
@@ -894,8 +894,8 @@ inline void smnbBTree::setInternalSlot( smnbINode   * aNode,
  * FUNCTION DESCRIPTION : smnbBTree::getInternalSlot                 *
  * ------------------------------------------------------------------*
  * PROJ-2433 Direct Key Index
- * INTERNAL NODEÀÇ aIdx¹øÂ° SLOTÀÇ
- * child pointer, row pointer, direct key pointer¸¦ °¡Á®¿Â´Ù.
+ * INTERNAL NODEì˜ aIdxë²ˆì§¸ SLOTì˜
+ * child pointer, row pointer, direct key pointerë¥¼ ê°€ì ¸ì˜¨ë‹¤.
  *
  * aChildPtr - [OUT] child pointer
  * aRowPtr   - [OUT] row pointer
@@ -935,7 +935,7 @@ inline void smnbBTree::getInternalSlot( smnbNode ** aChildPtr,
         }
         else
         {
-            *aKey = NULL; /* °ªÀÌ¼³Á¤¾ÈµÇ¾îÀÖ´Â°æ¿ìNULL¹İÈ¯*/
+            *aKey = NULL; /* ê°’ì´ì„¤ì •ì•ˆë˜ì–´ìˆëŠ”ê²½ìš°NULLë°˜í™˜*/
         }
     }
     else
@@ -948,17 +948,17 @@ inline void smnbBTree::getInternalSlot( smnbNode ** aChildPtr,
  * FUNCTION DESCRIPTION : smnbBTree::copyInternalSlots               *
  * ------------------------------------------------------------------*
  * PROJ-2433 Direct Key Index
- * INTERNAL NODE ³»ÀÇ Æ¯Á¤¹üÀ§ÀÇ slotµéÀ» ´Ù¸¥ INTERNAL NODE ·Î º¹»çÇÑ´Ù.
+ * INTERNAL NODE ë‚´ì˜ íŠ¹ì •ë²”ìœ„ì˜ slotë“¤ì„ ë‹¤ë¥¸ INTERNAL NODE ë¡œ ë³µì‚¬í•œë‹¤.
  *
- * - aSrcÀÇ aSrcSTartIdxºÎÅÍ aSrcEndIdx±îÁöÀÇ slotµéÀ»
- *   aDestÀÇ aDestStartIdex·Î º¹»çÇÑ´Ù.
- * - aSrc, aDest´Â ´Ù¸¥ NODE ÀÌ¾î¾ß ÇÑ´Ù.
+ * - aSrcì˜ aSrcSTartIdxë¶€í„° aSrcEndIdxê¹Œì§€ì˜ slotë“¤ì„
+ *   aDestì˜ aDestStartIdexë¡œ ë³µì‚¬í•œë‹¤.
+ * - aSrc, aDestëŠ” ë‹¤ë¥¸ NODE ì´ì–´ì•¼ í•œë‹¤.
  *
- * aDest         - [IN] ´ë»ó INTERNAL NODE
- * aDestStartIdx - [IN] ´ë»ó ½ÃÀÛ slot index
- * aSrc          - [IN] ¿øº» INTERNAL NODE
- * aSrcStartIdx  - [IN] º¹»çÇÒ ½ÃÀÛ slot index
- * aSrcEndIdx    - [IN] º¹»çÇÒ ¸¶Áö¸· slot index
+ * aDest         - [IN] ëŒ€ìƒ INTERNAL NODE
+ * aDestStartIdx - [IN] ëŒ€ìƒ ì‹œì‘ slot index
+ * aSrc          - [IN] ì›ë³¸ INTERNAL NODE
+ * aSrcStartIdx  - [IN] ë³µì‚¬í•  ì‹œì‘ slot index
+ * aSrcEndIdx    - [IN] ë³µì‚¬í•  ë§ˆì§€ë§‰ slot index
  *********************************************************************/
 inline void smnbBTree::copyInternalSlots( smnbINode * aDest,
                                           SShort      aDestStartIdx,
@@ -992,15 +992,15 @@ inline void smnbBTree::copyInternalSlots( smnbINode * aDest,
  * FUNCTION DESCRIPTION : smnbBTree::shiftInternalSlots              *
  * ------------------------------------------------------------------*
  * PROJ-2433 Direct Key Index
- * INTERNAL NODE ³»¿¡¼­ Æ¯Á¤¹üÀ§ÀÇ slotµéÀ» shift ½ÃÅ²´Ù.
+ * INTERNAL NODE ë‚´ì—ì„œ íŠ¹ì •ë²”ìœ„ì˜ slotë“¤ì„ shift ì‹œí‚¨ë‹¤.
  *
- * - aShift°¡ ¾ç¼öÀÌ¸é slotµéÀ» ¿À¸¥ÂÊÀ¸·Î shift ÇÏ°í,
- *   aShift°¡ À½¼öÀÌ¸é slotµéÀ» ¿ŞÂÊÀ¸·Î shift ÇÑ´Ù.
+ * - aShiftê°€ ì–‘ìˆ˜ì´ë©´ slotë“¤ì„ ì˜¤ë¥¸ìª½ìœ¼ë¡œ shift í•˜ê³ ,
+ *   aShiftê°€ ìŒìˆ˜ì´ë©´ slotë“¤ì„ ì™¼ìª½ìœ¼ë¡œ shift í•œë‹¤.
  *
  * aNode      - [IN] INTERNAL NODE
- * aStartIdx  - [IN] shift ½ÃÅ³ ½ÃÀÛ slot index
- * aEndIdx    - [IN] shift ½ÃÅ³ ¸¶Áö¸· slot index
- * aShift     - [IN] shift°ª
+ * aStartIdx  - [IN] shift ì‹œí‚¬ ì‹œì‘ slot index
+ * aEndIdx    - [IN] shift ì‹œí‚¬ ë§ˆì§€ë§‰ slot index
+ * aShift     - [IN] shiftê°’
  *********************************************************************/
 inline void smnbBTree::shiftInternalSlots( smnbINode * aNode,
                                            SShort      aStartIdx,
@@ -1012,11 +1012,11 @@ inline void smnbBTree::shiftInternalSlots( smnbINode * aNode,
     IDE_ASSERT( aStartIdx <= aEndIdx );
 
     /* BUG-41787
-     * ±âÁ¸¿¡´Â index nodeÀÇ slot ÀÌµ¿½Ã memmove() ÇÔ¼ö¸¦ »ç¿ëÇÏ¿´´Âµ¥
-     * slot ÀÌµ¿Áß¿¡ pointer¸¦ ÂüÁ¶ÇÏ¸é ¿Ï¼ºµÇÁö ¾ÊÀº ÁÖ¼Ò°ªÀ» ÀĞ¾î¼­ segment fault°¡ ¹ß»ıÇÒ¼öÀÖÀ½.
-     * ±×·¡¼­, ¾Æ·¡¿Í °°ÀÌ for¹®À» »ç¿ëÇÏ¿© slotÀ» ÇÏ³ª¾¿ ÀÌµ¿ÇÏµµ·Ï ¼öÁ¤ÇÏ¿´À½.
+     * ê¸°ì¡´ì—ëŠ” index nodeì˜ slot ì´ë™ì‹œ memmove() í•¨ìˆ˜ë¥¼ ì‚¬ìš©í•˜ì˜€ëŠ”ë°
+     * slot ì´ë™ì¤‘ì— pointerë¥¼ ì°¸ì¡°í•˜ë©´ ì™„ì„±ë˜ì§€ ì•Šì€ ì£¼ì†Œê°’ì„ ì½ì–´ì„œ segment faultê°€ ë°œìƒí• ìˆ˜ìˆìŒ.
+     * ê·¸ë˜ì„œ, ì•„ë˜ì™€ ê°™ì´ forë¬¸ì„ ì‚¬ìš©í•˜ì—¬ slotì„ í•˜ë‚˜ì”© ì´ë™í•˜ë„ë¡ ìˆ˜ì •í•˜ì˜€ìŒ.
      *
-     * direct keyÀÇ °æ¿ì´Â ÁÖ¼Ò°ªÀÌ ¾Æ´Ï¹Ç·Î, ¹®Á¦°¡ µÇÁö ¾ÊÀ½ */
+     * direct keyì˜ ê²½ìš°ëŠ” ì£¼ì†Œê°’ì´ ì•„ë‹ˆë¯€ë¡œ, ë¬¸ì œê°€ ë˜ì§€ ì•ŠìŒ */
 
     if ( aShift > 0 ) 
     {
@@ -1066,10 +1066,10 @@ inline void smnbBTree::shiftInternalSlots( smnbINode * aNode,
  * FUNCTION DESCRIPTION : smnbBTree::setLeafSlot                     *
  * ------------------------------------------------------------------*
  * PROJ-2433 Direct Key Index
- * LEAF NODEÀÇ aIdx¹øÂ° SLOT¿¡
- * row pointer, direct key¸¦ ¼¼ÆÃÇÑ´Ù.
+ * LEAF NODEì˜ aIdxë²ˆì§¸ SLOTì—
+ * row pointer, direct keyë¥¼ ì„¸íŒ…í•œë‹¤.
  *
- * - direct key´Â memcpy°¡ ÀÌ·ç¾îÁö´Â°Í¿¡ ÁÖÀÇ
+ * - direct keyëŠ” memcpyê°€ ì´ë£¨ì–´ì§€ëŠ”ê²ƒì— ì£¼ì˜
  *
  * aNode     - [IN]  LEAF NODE
  * aIdx      - [IN]  slot index
@@ -1110,8 +1110,8 @@ inline void smnbBTree::setLeafSlot( smnbLNode * aNode,
  * FUNCTION DESCRIPTION : smnbBTree::getLeafSlot                     *
  * ------------------------------------------------------------------*
  * PROJ-2433 Direct Key Index
- * LEAF NODEÀÇ aIdx¹øÂ° SLOTÀÇ
- * row pointer, direct key pointer¸¦ °¡Á®¿Â´Ù.
+ * LEAF NODEì˜ aIdxë²ˆì§¸ SLOTì˜
+ * row pointer, direct key pointerë¥¼ ê°€ì ¸ì˜¨ë‹¤.
  *
  * aRowPtr   - [OUT] row pointer
  * aKey      - [OUT] direct key pointer
@@ -1140,7 +1140,7 @@ inline void smnbBTree::getLeafSlot( SChar       ** aRowPtr,
         }
         else
         {
-            *aKey = NULL; /* °ªÀÌ¼³Á¤¾ÈµÇ¾îÀÖ´Â°æ¿ìNULL¹İÈ¯*/
+            *aKey = NULL; /* ê°’ì´ì„¤ì •ì•ˆë˜ì–´ìˆëŠ”ê²½ìš°NULLë°˜í™˜*/
         }
     }
     else
@@ -1153,17 +1153,17 @@ inline void smnbBTree::getLeafSlot( SChar       ** aRowPtr,
  * FUNCTION DESCRIPTION : smnbBTree::copyLeafSlots                   *
  * ------------------------------------------------------------------*
  * PROJ-2433 Direct Key Index
- * LEAF NODE ³»ÀÇ Æ¯Á¤¹üÀ§ÀÇ slotµéÀ» ´Ù¸¥ LEAF NODE ·Î º¹»çÇÑ´Ù.
+ * LEAF NODE ë‚´ì˜ íŠ¹ì •ë²”ìœ„ì˜ slotë“¤ì„ ë‹¤ë¥¸ LEAF NODE ë¡œ ë³µì‚¬í•œë‹¤.
  *
- * - aSrcÀÇ aSrcSTartIdxºÎÅÍ aSrcEndIdx±îÁöÀÇ slotµéÀ»
- *   aDestÀÇ aDestStartIdex·Î º¹»çÇÑ´Ù.
- * - aSrc, aDest´Â ´Ù¸¥ NODE ÀÌ¾î¾ß ÇÑ´Ù.
+ * - aSrcì˜ aSrcSTartIdxë¶€í„° aSrcEndIdxê¹Œì§€ì˜ slotë“¤ì„
+ *   aDestì˜ aDestStartIdexë¡œ ë³µì‚¬í•œë‹¤.
+ * - aSrc, aDestëŠ” ë‹¤ë¥¸ NODE ì´ì–´ì•¼ í•œë‹¤.
  *
- * aDest         - [IN] ´ë»ó LEAF NODE
- * aDestStartIdx - [IN] ´ë»ó ½ÃÀÛ slot index
- * aSrc          - [IN] ¿øº» LEAF NODE
- * aSrcStartIdx  - [IN] º¹»çÇÒ ½ÃÀÛ slot index
- * aSrcEndIdx    - [IN] º¹»çÇÒ ¸¶Áö¸· slot index
+ * aDest         - [IN] ëŒ€ìƒ LEAF NODE
+ * aDestStartIdx - [IN] ëŒ€ìƒ ì‹œì‘ slot index
+ * aSrc          - [IN] ì›ë³¸ LEAF NODE
+ * aSrcStartIdx  - [IN] ë³µì‚¬í•  ì‹œì‘ slot index
+ * aSrcEndIdx    - [IN] ë³µì‚¬í•  ë§ˆì§€ë§‰ slot index
  *********************************************************************/
 inline void smnbBTree::copyLeafSlots( smnbLNode * aDest,
                                       SShort      aDestStartIdx,
@@ -1193,15 +1193,15 @@ inline void smnbBTree::copyLeafSlots( smnbLNode * aDest,
  * FUNCTION DESCRIPTION : smnbBTree::shiftLeafSlots                  *
  * ------------------------------------------------------------------*
  * PROJ-2433 Direct Key Index
- * LEAF NODE ³»¿¡¼­ Æ¯Á¤¹üÀ§ÀÇ slotµéÀ» shift ½ÃÅ²´Ù.
+ * LEAF NODE ë‚´ì—ì„œ íŠ¹ì •ë²”ìœ„ì˜ slotë“¤ì„ shift ì‹œí‚¨ë‹¤.
  *
- * - aShift°¡ ¾ç¼öÀÌ¸é slotµéÀ» ¿À¸¥ÂÊÀ¸·Î shift ÇÏ°í,
- *   aShift°¡ À½¼öÀÌ¸é slotµéÀ» ¿ŞÂÊÀ¸·Î shift ÇÑ´Ù.
+ * - aShiftê°€ ì–‘ìˆ˜ì´ë©´ slotë“¤ì„ ì˜¤ë¥¸ìª½ìœ¼ë¡œ shift í•˜ê³ ,
+ *   aShiftê°€ ìŒìˆ˜ì´ë©´ slotë“¤ì„ ì™¼ìª½ìœ¼ë¡œ shift í•œë‹¤.
  *
  * aNode      - [IN] LEAF NODE
- * aStartIdx  - [IN] shift ½ÃÅ³ ½ÃÀÛ slot index
- * aEndIdx    - [IN] shift ½ÃÅ³ ¸¶Áö¸· slot index
- * aShift     - [IN] shift°ª
+ * aStartIdx  - [IN] shift ì‹œí‚¬ ì‹œì‘ slot index
+ * aEndIdx    - [IN] shift ì‹œí‚¬ ë§ˆì§€ë§‰ slot index
+ * aShift     - [IN] shiftê°’
  *********************************************************************/
 inline void smnbBTree::shiftLeafSlots( smnbLNode * aNode,
                                        SShort      aStartIdx,
@@ -1213,11 +1213,11 @@ inline void smnbBTree::shiftLeafSlots( smnbLNode * aNode,
     IDE_DASSERT( aStartIdx <= aEndIdx );
 
     /* BUG-41787
-     * ±âÁ¸¿¡´Â index nodeÀÇ slot ÀÌµ¿½Ã memmove() ÇÔ¼ö¸¦ »ç¿ëÇÏ¿´´Âµ¥
-     * slot ÀÌµ¿Áß¿¡ pointer¸¦ ÂüÁ¶ÇÏ¸é ¿Ï¼ºµÇÁö ¾ÊÀº ÁÖ¼Ò°ªÀ» ÀĞ¾î¼­ segment fault°¡ ¹ß»ıÇÒ¼öÀÖÀ½.
-     * ±×·¡¼­, ¾Æ·¡¿Í °°ÀÌ for¹®À» »ç¿ëÇÏ¿© slotÀ» ÇÏ³ª¾¿ ÀÌµ¿ÇÏµµ·Ï ¼öÁ¤ÇÏ¿´À½.
+     * ê¸°ì¡´ì—ëŠ” index nodeì˜ slot ì´ë™ì‹œ memmove() í•¨ìˆ˜ë¥¼ ì‚¬ìš©í•˜ì˜€ëŠ”ë°
+     * slot ì´ë™ì¤‘ì— pointerë¥¼ ì°¸ì¡°í•˜ë©´ ì™„ì„±ë˜ì§€ ì•Šì€ ì£¼ì†Œê°’ì„ ì½ì–´ì„œ segment faultê°€ ë°œìƒí• ìˆ˜ìˆìŒ.
+     * ê·¸ë˜ì„œ, ì•„ë˜ì™€ ê°™ì´ forë¬¸ì„ ì‚¬ìš©í•˜ì—¬ slotì„ í•˜ë‚˜ì”© ì´ë™í•˜ë„ë¡ ìˆ˜ì •í•˜ì˜€ìŒ.
      *
-     * direct keyÀÇ °æ¿ì´Â ÁÖ¼Ò°ªÀÌ ¾Æ´Ï¹Ç·Î, ¹®Á¦°¡ µÇÁö ¾ÊÀ½ */
+     * direct keyì˜ ê²½ìš°ëŠ” ì£¼ì†Œê°’ì´ ì•„ë‹ˆë¯€ë¡œ, ë¬¸ì œê°€ ë˜ì§€ ì•ŠìŒ */
 
     if ( aShift > 0 ) 
     {
@@ -1274,18 +1274,18 @@ inline UInt smnbBTree::getNodeSplitRate()
  * FUNCTION DESCRIPTION : smnbBTree::calcKeyRedistributionPosition   *
  * ------------------------------------------------------------------*
  * PROJ-2613 Key Redistribution in MRDB Index
- * Å° ÀçºĞ¹è°¡ ¼öÇàµÉÁö ¿©ºÎ¸¦ ÆÇ´ÜÇÑ´Ù.
- * ¼öÇà ¿©ºÎ¸¦ ÆÇ´ÜÇÏ´Â ±âÁØÀº ´ÙÀ½°ú °°´Ù.
- *  1. MEM_INDEX_KEY_REDISTRIBUTIONÀÌ ÄÑÁ®ÀÖÀ½(1)
- *  2. ÇØ´ç ÀÎµ¦½º°¡ Å° ÀçºĞ¹è ±â´ÉÀ» »ç¿ëÇÏµµ·Ï ¼¼ÆÃµÇ¾î ÀÖÀ½
- *  3. Å° ÀçºĞ¹è°¡ ¼öÇàÇÒ ³ëµåÀÇ ÀÌ¿ô ³ëµå°¡ Á¸Àç
- *  4. ÀÌ¿ô ³ëµå°¡ Å° ÀçºĞ¹è°¡ ¼öÇàÇÒ ³ëµå¿Í ºÎ¸ğ ³ëµå°¡ °°À½
- *  5. ÀÌ¿ô ³ëµåÀÇ ºó slotÀÌ ÃæºĞÈ÷ Á¸Àç
- * À§ÀÇ ´Ù¼¸°¡Áö Á¶°ÇÀ» ¸ğµÎ ¸¸Á·ÇÒ °æ¿ì¿¡¸¸ Å° ÀçºĞ¹è¸¦ ¼öÇàÇÑ´Ù.
+ * í‚¤ ì¬ë¶„ë°°ê°€ ìˆ˜í–‰ë ì§€ ì—¬ë¶€ë¥¼ íŒë‹¨í•œë‹¤.
+ * ìˆ˜í–‰ ì—¬ë¶€ë¥¼ íŒë‹¨í•˜ëŠ” ê¸°ì¤€ì€ ë‹¤ìŒê³¼ ê°™ë‹¤.
+ *  1. MEM_INDEX_KEY_REDISTRIBUTIONì´ ì¼œì ¸ìˆìŒ(1)
+ *  2. í•´ë‹¹ ì¸ë±ìŠ¤ê°€ í‚¤ ì¬ë¶„ë°° ê¸°ëŠ¥ì„ ì‚¬ìš©í•˜ë„ë¡ ì„¸íŒ…ë˜ì–´ ìˆìŒ
+ *  3. í‚¤ ì¬ë¶„ë°°ê°€ ìˆ˜í–‰í•  ë…¸ë“œì˜ ì´ì›ƒ ë…¸ë“œê°€ ì¡´ì¬
+ *  4. ì´ì›ƒ ë…¸ë“œê°€ í‚¤ ì¬ë¶„ë°°ê°€ ìˆ˜í–‰í•  ë…¸ë“œì™€ ë¶€ëª¨ ë…¸ë“œê°€ ê°™ìŒ
+ *  5. ì´ì›ƒ ë…¸ë“œì˜ ë¹ˆ slotì´ ì¶©ë¶„íˆ ì¡´ì¬
+ * ìœ„ì˜ ë‹¤ì„¯ê°€ì§€ ì¡°ê±´ì„ ëª¨ë‘ ë§Œì¡±í•  ê²½ìš°ì—ë§Œ í‚¤ ì¬ë¶„ë°°ë¥¼ ìˆ˜í–‰í•œë‹¤.
  *
  * aIndex    - [IN] Index Header
- * aLNode    - [IN] Å° ÀçºĞ¹è¸¦ ¼öÇàÇÒÁö ÆÇ´ÜÇØ¾ß ÇÏ´Â leaf node
- * aINode    - [IN] Å° ÀçºĞ¹è¸¦ ¼öÇàÇÒ leaf nodeÀÇ ºÎ¸ğ ³ëµå
+ * aLNode    - [IN] í‚¤ ì¬ë¶„ë°°ë¥¼ ìˆ˜í–‰í• ì§€ íŒë‹¨í•´ì•¼ í•˜ëŠ” leaf node
+ * aINode    - [IN] í‚¤ ì¬ë¶„ë°°ë¥¼ ìˆ˜í–‰í•  leaf nodeì˜ ë¶€ëª¨ ë…¸ë“œ
  *********************************************************************/
 inline idBool smnbBTree::checkEnableKeyRedistribution( smnbHeader      * aIndex,
                                                        const smnbLNode * aLNode,
@@ -1301,8 +1301,8 @@ inline idBool smnbBTree::checkEnableKeyRedistribution( smnbHeader      * aIndex,
             {
                 if ( aLNode->nextSPtr != NULL )
                 {
-                    /* ÀÌ¿ô ³ëµå¿¡ ÃæºĞÇÑ °ø°£ÀÌ ÀÖ´ÂÁö ÆÇ´ÜÇÏ´Â ±âÁØÀº
-                     * MEM_INDEX_KEY_REDISTRIBUTION_STANDARD_RATE ÇÁ·ÎÆÛÆ¼¸¦ »ç¿ëÇÑ´Ù. */
+                    /* ì´ì›ƒ ë…¸ë“œì— ì¶©ë¶„í•œ ê³µê°„ì´ ìˆëŠ”ì§€ íŒë‹¨í•˜ëŠ” ê¸°ì¤€ì€
+                     * MEM_INDEX_KEY_REDISTRIBUTION_STANDARD_RATE í”„ë¡œí¼í‹°ë¥¼ ì‚¬ìš©í•œë‹¤. */
                     if ( ( aLNode->nextSPtr->mSlotCount ) <
                          ( ( SMNB_LEAF_SLOT_MAX_COUNT( aIndex ) *
                              smuProperty::getMemIndexKeyRedistributionStandardRate() / 100 ) ) )
@@ -1311,28 +1311,28 @@ inline idBool smnbBTree::checkEnableKeyRedistribution( smnbHeader      * aIndex,
                     }
                     else
                     {
-                        /* ÀÌ¿ô ³ëµå¿¡ ÃæºĞÇÑ °ø°£ÀÌ ¾ø´Â °æ¿ì Å° ÀçºĞ¹è¸¦ ¼öÇàÇÏÁö ¾Ê´Â´Ù. */
+                        /* ì´ì›ƒ ë…¸ë“œì— ì¶©ë¶„í•œ ê³µê°„ì´ ì—†ëŠ” ê²½ìš° í‚¤ ì¬ë¶„ë°°ë¥¼ ìˆ˜í–‰í•˜ì§€ ì•ŠëŠ”ë‹¤. */
                     }
                 }
                 else
                 {
-                    /* ÀÌ¿ô ³ëµå°¡ ¾ø´Â °æ¿ì´Â Å° ÀçºĞ¹è¸¦ ¼öÇàÇÒ ¼ö ¾ø´Ù. */
+                    /* ì´ì›ƒ ë…¸ë“œê°€ ì—†ëŠ” ê²½ìš°ëŠ” í‚¤ ì¬ë¶„ë°°ë¥¼ ìˆ˜í–‰í•  ìˆ˜ ì—†ë‹¤. */
                 }
             }
             else
             {
-                /* ÇØ´ç ³ëµå°¡ ºÎ¸ğ³ëµåÀÇ ¸¶Áö¸· ÀÚ½ÄÀÏ °æ¿ì¿¡´Â Å° ÀçºĞ¹è¸¦ ¼öÇàÇÏÁö ¾Ê´Â´Ù. */
+                /* í•´ë‹¹ ë…¸ë“œê°€ ë¶€ëª¨ë…¸ë“œì˜ ë§ˆì§€ë§‰ ìì‹ì¼ ê²½ìš°ì—ëŠ” í‚¤ ì¬ë¶„ë°°ë¥¼ ìˆ˜í–‰í•˜ì§€ ì•ŠëŠ”ë‹¤. */
             }
         }
         else
         {
-            /* ÇÁ·ÎÆÛÆ¼°¡ ²¨Á® ÀÖ´Ù¸é Å° ÀçºĞ¹è¸¦ ¼öÇàÇÏÁö ¾Ê´Â´Ù. */
+            /* í”„ë¡œí¼í‹°ê°€ êº¼ì ¸ ìˆë‹¤ë©´ í‚¤ ì¬ë¶„ë°°ë¥¼ ìˆ˜í–‰í•˜ì§€ ì•ŠëŠ”ë‹¤. */
         }
     }
     else
     {
-        /* ·çÆ® ³ëµå¿¡ °ªÀÌ »ğÀÔ µÉ °æ¿ì ÇØ´ç ³ëµåÀÇ ºÎ¸ğ ³ëµå°¡ Á¸ÀçÇÏÁö ¾Ê´Â´Ù.
-         * ÀÌ °æ¿ì´Â ÀÌ¿ô ³ëµåµµ ¾ø±â ¶§¹®¿¡ Å° ÀçºĞ¹è¸¦ ¼öÇàÇÏÁö ¾Ê´Â´Ù. */
+        /* ë£¨íŠ¸ ë…¸ë“œì— ê°’ì´ ì‚½ì… ë  ê²½ìš° í•´ë‹¹ ë…¸ë“œì˜ ë¶€ëª¨ ë…¸ë“œê°€ ì¡´ì¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
+         * ì´ ê²½ìš°ëŠ” ì´ì›ƒ ë…¸ë“œë„ ì—†ê¸° ë•Œë¬¸ì— í‚¤ ì¬ë¶„ë°°ë¥¼ ìˆ˜í–‰í•˜ì§€ ì•ŠëŠ”ë‹¤. */
     }
     return sRet;
 }
@@ -1341,13 +1341,13 @@ inline idBool smnbBTree::checkEnableKeyRedistribution( smnbHeader      * aIndex,
  * FUNCTION DESCRIPTION : smnbBTree::calcKeyRedistributionPosition   *
  * ------------------------------------------------------------------*
  * PROJ-2613 Key Redistribution in MRDB Index
- * ÇØ´ç ³ëµå ³» Å° ÀçºĞ¹è°¡ ½ÃÀÛµÉ À§Ä¡¸¦ °è»êÇÑ´Ù.
- * ¿ø·¡ ÀÌ¿ô ³ëµå·Î ÀÌµ¿ÀÌ ½ÃÀÛµÉ À§Ä¡¸¦ °è»êÈÄ ¸®ÅÏÇØ¾ß ÇÏ³ª
- * ÄÚµåÀÇ °£Æí¼ºÀ» À§ÇØ ÀÌµ¿ÀÌ ½ÃÀÛµÉ À§Ä¡°¡ ¾Æ´Ñ, ÀÌµ¿ ½ÃÅ³ slotÀÇ ¼ö¸¦ ¸®ÅÏÇÏµµ·Ï ÇÑ´Ù.
+ * í•´ë‹¹ ë…¸ë“œ ë‚´ í‚¤ ì¬ë¶„ë°°ê°€ ì‹œì‘ë  ìœ„ì¹˜ë¥¼ ê³„ì‚°í•œë‹¤.
+ * ì›ë˜ ì´ì›ƒ ë…¸ë“œë¡œ ì´ë™ì´ ì‹œì‘ë  ìœ„ì¹˜ë¥¼ ê³„ì‚°í›„ ë¦¬í„´í•´ì•¼ í•˜ë‚˜
+ * ì½”ë“œì˜ ê°„í¸ì„±ì„ ìœ„í•´ ì´ë™ì´ ì‹œì‘ë  ìœ„ì¹˜ê°€ ì•„ë‹Œ, ì´ë™ ì‹œí‚¬ slotì˜ ìˆ˜ë¥¼ ë¦¬í„´í•˜ë„ë¡ í•œë‹¤.
  *
  * aIndex         - [IN] Index Header
- * aCurSlotCount  - [IN] Å° ÀçºĞ¹è°¡ ¼öÇàµÉ ³ëµå(src node)ÀÇ slot count
- * aNxtSlotCount  - [IN] Å° ÀçºĞ¹è·Î ÀÌµ¿µÉ ³ëµå(dest node)ÀÇ slot count
+ * aCurSlotCount  - [IN] í‚¤ ì¬ë¶„ë°°ê°€ ìˆ˜í–‰ë  ë…¸ë“œ(src node)ì˜ slot count
+ * aNxtSlotCount  - [IN] í‚¤ ì¬ë¶„ë°°ë¡œ ì´ë™ë  ë…¸ë“œ(dest node)ì˜ slot count
  *********************************************************************/
 inline SInt smnbBTree::calcKeyRedistributionPosition( smnbHeader    * aIndex,
                                                       SInt            aCurSlotCount,
@@ -1364,11 +1364,11 @@ inline SInt smnbBTree::calcKeyRedistributionPosition( smnbHeader    * aIndex,
  * FUNCTION DESCRIPTION : smnbBTree::checkEnableReorgInNode          *
  * ------------------------------------------------------------------*
  * PROJ-2614 Memory Index Reorganization
- * µÎ ³ëµå°£ ÅëÇÕ °¡´É ¿©ºÎ¸¦ È®ÀÎÇÏ¿© ¸®ÅÏÇÑ´Ù.
+ * ë‘ ë…¸ë“œê°„ í†µí•© ê°€ëŠ¥ ì—¬ë¶€ë¥¼ í™•ì¸í•˜ì—¬ ë¦¬í„´í•œë‹¤.
  *
- * aLNode         - [IN] ÅëÇÕ °¡´ÉÀ» È®ÀÎÇÏ±â À§ÇÑ leaf node
- * aINode         - [IN] ÅëÇÕ ´ë»ó leaf nodeÀÇ ºÎ¸ğ³ëµå
- * aSlotMaxCount  - [IN] ³ëµå°¡ ÃÖ´ë °¡Áú¼ö ÀÖ´Â slotÀÇ ¼ö
+ * aLNode         - [IN] í†µí•© ê°€ëŠ¥ì„ í™•ì¸í•˜ê¸° ìœ„í•œ leaf node
+ * aINode         - [IN] í†µí•© ëŒ€ìƒ leaf nodeì˜ ë¶€ëª¨ë…¸ë“œ
+ * aSlotMaxCount  - [IN] ë…¸ë“œê°€ ìµœëŒ€ ê°€ì§ˆìˆ˜ ìˆëŠ” slotì˜ ìˆ˜
  *********************************************************************/
 inline idBool smnbBTree::checkEnableReorgInNode( smnbLNode * aLNode,
                                                  smnbINode * aINode,
@@ -1393,25 +1393,25 @@ inline idBool smnbBTree::checkEnableReorgInNode( smnbLNode * aLNode,
                 }
                 else
                 {
-                    /* µÎ ³ëµå¸¦ ÇÕÃÆÀ» ¶§ ÇÏ³ªÀÇ ³ëµå¿¡ µé¾î°¡Áö ¾Ê´Â´Ù¸é
-                     * ÅëÇÕÀ» ¼öÇàÇÒ ¼ö ¾ø´Ù. */
+                    /* ë‘ ë…¸ë“œë¥¼ í•©ì³¤ì„ ë•Œ í•˜ë‚˜ì˜ ë…¸ë“œì— ë“¤ì–´ê°€ì§€ ì•ŠëŠ”ë‹¤ë©´
+                     * í†µí•©ì„ ìˆ˜í–‰í•  ìˆ˜ ì—†ë‹¤. */
                 }
             }
             else
             {
-                /* ÇöÀç ³ëµå°¡ ºÎ¸ğ ³ëµåÀÇ ¸¶Áö¸· ÀÚ½ÄÀÌ¶ó¸é ´ÙÀ½ ³ëµå¿Í
-                 * ºÎ¸ğ°¡ ´Ù¸£¹Ç·Î ÅëÇÕÀ» ¼öÇàÇÒ ¼ö ¾ø´Ù. */
+                /* í˜„ì¬ ë…¸ë“œê°€ ë¶€ëª¨ ë…¸ë“œì˜ ë§ˆì§€ë§‰ ìì‹ì´ë¼ë©´ ë‹¤ìŒ ë…¸ë“œì™€
+                 * ë¶€ëª¨ê°€ ë‹¤ë¥´ë¯€ë¡œ í†µí•©ì„ ìˆ˜í–‰í•  ìˆ˜ ì—†ë‹¤. */
             }
         }
         else
         {
-            /* fetchNext°¡ Æ®¸®ÀÇ ¸¶Áö¸· ³ëµå¿¡¼­ ´ë±â ÁßÀÏ °æ¿ì ¹®Á¦°¡ ¹ß»ıÇÒ ¼ö ÀÖÀ¸¹Ç·Î
-             * Æ®¸®ÀÇ ¸¶Áö¸· ³ëµå¿¡ ´ëÇØ¼­´Â ÅëÇÕÀ» ¼öÇàÇÏÁö ¾Ê´Â´Ù.*/
+            /* fetchNextê°€ íŠ¸ë¦¬ì˜ ë§ˆì§€ë§‰ ë…¸ë“œì—ì„œ ëŒ€ê¸° ì¤‘ì¼ ê²½ìš° ë¬¸ì œê°€ ë°œìƒí•  ìˆ˜ ìˆìœ¼ë¯€ë¡œ
+             * íŠ¸ë¦¬ì˜ ë§ˆì§€ë§‰ ë…¸ë“œì— ëŒ€í•´ì„œëŠ” í†µí•©ì„ ìˆ˜í–‰í•˜ì§€ ì•ŠëŠ”ë‹¤.*/
         }
     }
     else
     {
-        /* ÀÌÈÄ ³ëµå°¡ ¾ø°Å³ª Æ®¸®ÀÇ ¸¶Áö¸· ³ëµå¶ó¸é ÅëÇÕÀ» ¼öÇàÇÒ ¼ö ¾ø´Ù. */
+        /* ì´í›„ ë…¸ë“œê°€ ì—†ê±°ë‚˜ íŠ¸ë¦¬ì˜ ë§ˆì§€ë§‰ ë…¸ë“œë¼ë©´ í†µí•©ì„ ìˆ˜í–‰í•  ìˆ˜ ì—†ë‹¤. */
     }
     IDE_EXCEPTION_END;
 

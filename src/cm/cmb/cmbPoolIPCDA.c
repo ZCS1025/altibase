@@ -73,7 +73,7 @@ struct cmbPoolOP gCmbPoolOpIPCDAClient =
 ACI_RC cmbPoolMapIPCDA(cmbPool *aPool)
 {
     /*
-     * ÇÔ¼ö Æ÷ÀÎÅÍ ¼¼ÆÃ
+     * í•¨ìˆ˜ í¬ì¸í„° ì„¸íŒ…
      */
     aPool->mOp = &gCmbPoolOpIPCDAClient;
 

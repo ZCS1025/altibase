@@ -24,8 +24,8 @@
 #include <smErrorCode.h>
 #include <smuProperty.h>
 
-// DWFile headerÀÇ Ã¹ ºÎºĞ¿¡ µé¾î°¥ magic numberÀÌ´Ù.
-// ÀÌ °ªÀº 741ÀÌ´Ù.
+// DWFile headerì˜ ì²« ë¶€ë¶„ì— ë“¤ì–´ê°ˆ magic numberì´ë‹¤.
+// ì´ ê°’ì€ 741ì´ë‹¤.
 #define SDD_DWFILE_MAGIC_NUMBER \
           ((UInt)('A'+'L'+'T'+'I'+'D'+'W'+'F'+'I'+'L'+'E'))
 
@@ -86,7 +86,7 @@ IDE_RC sddDWFile::create(UInt           aFileID,
 
     if (idf::access(sFileName, F_OK) != 0)
     {
-        // ÆÄÀÏÀÌ ¾øÀ»¶§¸¸ ÆÄÀÏÀ» »ı¼ºÇÑ´Ù.
+        // íŒŒì¼ì´ ì—†ì„ë•Œë§Œ íŒŒì¼ì„ ìƒì„±í•œë‹¤.
         IDE_TEST( mFile.createUntilSuccess( smLayerCallback::setEmergency )
                   != IDE_SUCCESS );
     }
@@ -134,7 +134,7 @@ IDE_RC sddDWFile::writeHeader()
 
     idlOS::memset(sAlignedBufferPtr, 0, mPageSize * (mPageCount + 1));
 
-    // DWFile header¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+    // DWFile headerë¥¼ ì´ˆê¸°í™”í•œë‹¤.
     sHeader.mMagicNumber     = SDD_DWFILE_MAGIC_NUMBER;
     sHeader.mFileID          = mFileID;
     sHeader.mSMVersionNumber = smLayerCallback::getSmVersionIDFromLogAnchor();

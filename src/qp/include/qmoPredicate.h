@@ -21,12 +21,12 @@
  * Description :
  *     Predicate Manager
  *
- *     ºñ±³ ¿¬»êÀÚ¸¦ Æ÷ÇÔÇÏ´Â Predicateµé¿¡ ´ëÇÑ Àü¹İÀûÀÎ °ü¸®¸¦
- *     ´ã´çÇÑ´Ù.
+ *     ë¹„êµ ì—°ì‚°ìë¥¼ í¬í•¨í•˜ëŠ” Predicateë“¤ì— ëŒ€í•œ ì „ë°˜ì ì¸ ê´€ë¦¬ë¥¼
+ *     ë‹´ë‹¹í•œë‹¤.
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  **********************************************************************/
 
@@ -39,51 +39,51 @@
 
 
 //---------------------------------------------------
-// PredicateÀÇ columnID Á¤ÀÇ
+// Predicateì˜ columnID ì •ì˜
 //---------------------------------------------------
 
 /* qmoPredicate.id                                 */
-// QMO_COLUMNID_NOT_FOUND : ÃÊ±â°ª columnID, getColumnID() ¿¡¼­ »ç¿ë
-// QMO_COLUMNID_LIST : LIST¿¡ ´ëÇÑ Á¤ÀÇµÈ columnID
-// QMO_COLUMNID_NON_INDEXABLE : non-indexable¿¡ ´ëÇÑ Á¤ÀÇµÈ columnID
+// QMO_COLUMNID_NOT_FOUND : ì´ˆê¸°ê°’ columnID, getColumnID() ì—ì„œ ì‚¬ìš©
+// QMO_COLUMNID_LIST : LISTì— ëŒ€í•œ ì •ì˜ëœ columnID
+// QMO_COLUMNID_NON_INDEXABLE : non-indexableì— ëŒ€í•œ ì •ì˜ëœ columnID
 #define QMO_COLUMNID_NOT_FOUND             (ID_UINT_MAX-2)
 #define QMO_COLUMNID_LIST                  (ID_UINT_MAX-1)
 #define QMO_COLUMNID_NON_INDEXABLE         (  ID_UINT_MAX)
 
 //---------------------------------------------------
-// PredicateÀÇ flag Á¤ÀÇ
+// Predicateì˜ flag ì •ì˜
 //---------------------------------------------------
 
-/* qmoPredicate.flag¸¦ ÃÊ±âÈ­ ½ÃÅ´                    */
+/* qmoPredicate.flagë¥¼ ì´ˆê¸°í™” ì‹œí‚´                    */
 # define QMO_PRED_CLEAR                       (0x00000000)
 
 /* qmoPredicate.flag                                  */
-// Key RangeÀÇ ¿¬¼ÓÀûÀÎ »ç¿ë °¡´É ¿©ºÎ
-// keyRange ÃßÃâ, »ı¼º½Ã ÇÊ¿äÇÑ Á¤º¸
+// Key Rangeì˜ ì—°ì†ì ì¸ ì‚¬ìš© ê°€ëŠ¥ ì—¬ë¶€
+// keyRange ì¶”ì¶œ, ìƒì„±ì‹œ í•„ìš”í•œ ì •ë³´
 # define QMO_PRED_NEXT_KEY_USABLE_MASK        (0x00000001)
 # define QMO_PRED_NEXT_KEY_UNUSABLE           (0x00000000)
 # define QMO_PRED_NEXT_KEY_USABLE             (0x00000001)
 
 /* qmoPredicate.flag                                  */
-// join predicateÀÎÁö¿¡ ´ëÇÑ Á¤º¸
+// join predicateì¸ì§€ì— ëŒ€í•œ ì •ë³´
 # define QMO_PRED_JOIN_PRED_MASK              (0x00000002)
 # define QMO_PRED_JOIN_PRED_FALSE             (0x00000000)
 # define QMO_PRED_JOIN_PRED_TRUE              (0x00000002)
 
 /* qmoPredicate.flag                                  */
-// fixed or variableÀÎÁöÀÇ Á¤º¸
+// fixed or variableì¸ì§€ì˜ ì •ë³´
 # define QMO_PRED_VALUE_MASK                  (0x00000004)
 # define QMO_PRED_FIXED                       (0x00000000)
 # define QMO_PRED_VARIABLE                    (0x00000004)
 
 /* qmoPredicate.flag                                  */
-// joinable predicate Á¤º¸
+// joinable predicate ì •ë³´
 # define QMO_PRED_JOINABLE_PRED_MASK          (0x00000008)
 # define QMO_PRED_JOINABLE_PRED_FALSE         (0x00000000)
 # define QMO_PRED_JOINABLE_PRED_TRUE          (0x00000008)
 
 /* qmoPredicate.flag                                  */
-// ¼öÇà°¡´É join method ¼³Á¤
+// ìˆ˜í–‰ê°€ëŠ¥ join method ì„¤ì •
 # define QMO_PRED_JOINABLE_MASK ( QMO_PRED_INDEX_JOINABLE_MASK |        \
                                   QMO_PRED_HASH_JOINABLE_MASK  |        \
                                   QMO_PRED_SORT_JOINABLE_MASK  |        \
@@ -91,31 +91,31 @@
 # define QMO_PRED_JOINABLE_FALSE              (0x00000000)
 
 /* qmoPredicate.flag                                  */
-// index nested loop join method »ç¿ë°¡´É Á¤º¸ ¼³Á¤
+// index nested loop join method ì‚¬ìš©ê°€ëŠ¥ ì •ë³´ ì„¤ì •
 # define QMO_PRED_INDEX_JOINABLE_MASK         (0x00000010)
 # define QMO_PRED_INDEX_JOINABLE_FALSE        (0x00000000)
 # define QMO_PRED_INDEX_JOINABLE_TRUE         (0x00000010)
 
 /* qmoPredicate.flag                                  */
-// hash join method »ç¿ë°¡´É Á¤º¸ ¼³Á¤
+// hash join method ì‚¬ìš©ê°€ëŠ¥ ì •ë³´ ì„¤ì •
 # define QMO_PRED_HASH_JOINABLE_MASK          (0x00000020)
 # define QMO_PRED_HASH_JOINABLE_FALSE         (0x00000000)
 # define QMO_PRED_HASH_JOINABLE_TRUE          (0x00000020)
 
 /* qmoPredicate.flag                                  */
-// sort join method »ç¿ë°¡´É Á¤º¸ ¼³Á¤
+// sort join method ì‚¬ìš©ê°€ëŠ¥ ì •ë³´ ì„¤ì •
 # define QMO_PRED_SORT_JOINABLE_MASK          (0x00000040)
 # define QMO_PRED_SORT_JOINABLE_FALSE         (0x00000000)
 # define QMO_PRED_SORT_JOINABLE_TRUE          (0x00000040)
 
 /* qmoPredicate.flag                                  */
-// merge join method »ç¿ë°¡´É Á¤º¸ ¼³Á¤
+// merge join method ì‚¬ìš©ê°€ëŠ¥ ì •ë³´ ì„¤ì •
 # define QMO_PRED_MERGE_JOINABLE_MASK         (0x00000080)
 # define QMO_PRED_MERGE_JOINABLE_FALSE        (0x00000000)
 # define QMO_PRED_MERGE_JOINABLE_TRUE         (0x00000080)
 
 /* qmoPredicate.flag                                  */
-// index nested loop join ¼öÇà °¡´É ¹æÇâ ¼³Á¤
+// index nested loop join ìˆ˜í–‰ ê°€ëŠ¥ ë°©í–¥ ì„¤ì •
 # define QMO_PRED_INDEX_DIRECTION_MASK        (0x00000300)
 # define QMO_PRED_INDEX_NON_DIRECTION         (0x00000000)
 # define QMO_PRED_INDEX_LEFT_RIGHT            (0x00000100)
@@ -123,120 +123,120 @@
 # define QMO_PRED_INDEX_BIDIRECTION           (0x00000300)
 
 /* qmoPredicate.flag                                  */
-// merge join ¼öÇà °¡´É ¹æÇâ ¼³Á¤
+// merge join ìˆ˜í–‰ ê°€ëŠ¥ ë°©í–¥ ì„¤ì •
 # define QMO_PRED_MERGE_DIRECTION_MASK        (0x00003000)
 # define QMO_PRED_MERGE_NON_DIRECTION         (0x00000000)
 # define QMO_PRED_MERGE_LEFT_RIGHT            (0x00001000)
 # define QMO_PRED_MERGE_RIGHT_LEFT            (0x00002000)
 
 /* qmoPredicate.flag                                  */
-// joinGroup¿¡ Æ÷ÇÔµÇ¾ú´ÂÁö ¿©ºÎ
+// joinGroupì— í¬í•¨ë˜ì—ˆëŠ”ì§€ ì—¬ë¶€
 # define QMO_PRED_INCLUDE_JOINGROUP_MASK      (0x00010000)
 # define QMO_PRED_INCLUDE_JOINGROUP_FALSE     (0x00000000)
 # define QMO_PRED_INCLUDE_JOINGROUP_TRUE      (0x00010000)
 
 /* qmoPredicate.flag                                  */
-// Index Nested Loop JoinÀÇ joinable predicateÀÓÀ» Ç¥½ÃÇÏ´Â Á¤º¸
-// join predicateÀ» selection graph·Î ³»¸®°Ô µÇ°í,
-// keyRange ÃßÃâ½Ã, ÀÌ Á¤º¸°¡ ¼³Á¤µÇ¾î ÀÖ´Â predicateÀÌ ¿ì¼±ÀûÀ¸·Î Ã³¸®µÊ.
+// Index Nested Loop Joinì˜ joinable predicateì„ì„ í‘œì‹œí•˜ëŠ” ì •ë³´
+// join predicateì„ selection graphë¡œ ë‚´ë¦¬ê²Œ ë˜ê³ ,
+// keyRange ì¶”ì¶œì‹œ, ì´ ì •ë³´ê°€ ì„¤ì •ë˜ì–´ ìˆëŠ” predicateì´ ìš°ì„ ì ìœ¼ë¡œ ì²˜ë¦¬ë¨.
 # define QMO_PRED_INDEX_NESTED_JOINABLE_MASK  (0x00020000)
 # define QMO_PRED_INDEX_NESTED_JOINABLE_FALSE (0x00000000)
 # define QMO_PRED_INDEX_NESTED_JOINABLE_TRUE  (0x00020000)
 
 /* qmoPredicate.flag                                  */
-// keyRange·Î ÃßÃâµÈ predicateÀÌ
-// INÀıÀÇ subqueryKeyRangeÀÓÀ» Ç¥½ÃÇÏ´Â Á¤º¸
+// keyRangeë¡œ ì¶”ì¶œëœ predicateì´
+// INì ˆì˜ subqueryKeyRangeì„ì„ í‘œì‹œí•˜ëŠ” ì •ë³´
 # define QMO_PRED_INSUBQ_KEYRANGE_MASK        (0x00040000)
 # define QMO_PRED_INSUBQ_KEYRANGE_FALSE       (0x00000000)
 # define QMO_PRED_INSUBQ_KEYRANGE_TRUE        (0x00040000)
 
 /* qmoPredicate.flag                                  */
-// selectivity °è»ê ½Ã¿¡
-// composite index »ç¿ë °¡´ÉÇÏ¿© selectivity º¸Á¤ÀÌ ÇÊ¿äÇÑ °æ¿ì
+// selectivity ê³„ì‚° ì‹œì—
+// composite index ì‚¬ìš© ê°€ëŠ¥í•˜ì—¬ selectivity ë³´ì •ì´ í•„ìš”í•œ ê²½ìš°
 # define QMO_PRED_USABLE_COMP_IDX_MASK        (0x00080000)
 # define QMO_PRED_USABLE_COMP_IDX_FALSE       (0x00000000)
 # define QMO_PRED_USABLE_COMP_IDX_TRUE        (0x00080000)
 
 /* qmoPredicate.flag                                  */
-// °³º° indexable predicate¿¡ ´ëÇØ¼­ IN(subquery)¸¦ Æ÷ÇÔÇÏ´ÂÁöÀÇ Á¤º¸
-// IN(subquery)¿¡ ´ëÇØ¼­´Â keyRange¸¦ ´Üµ¶À¸·Î ±¸¼ºÇØ¾ßÇÏ¹Ç·Î,
-// ÀÌ Á¤º¸´Â keyRange ÃßÃâ½Ã »ç¿ëµÈ´Ù.
+// ê°œë³„ indexable predicateì— ëŒ€í•´ì„œ IN(subquery)ë¥¼ í¬í•¨í•˜ëŠ”ì§€ì˜ ì •ë³´
+// IN(subquery)ì— ëŒ€í•´ì„œëŠ” keyRangeë¥¼ ë‹¨ë…ìœ¼ë¡œ êµ¬ì„±í•´ì•¼í•˜ë¯€ë¡œ,
+// ì´ ì •ë³´ëŠ” keyRange ì¶”ì¶œì‹œ ì‚¬ìš©ëœë‹¤.
 # define QMO_PRED_INSUBQUERY_MASK             (0x00100000)
 # define QMO_PRED_INSUBQUERY_ABSENT           (0x00000000)
 # define QMO_PRED_INSUBQUERY_EXIST            (0x00100000)
 
 /* qmoPredicate.flag                                  */
-// joinable selectivity °è»ê½Ã,
-// ÀÌ¹Ì Ã³¸®µÈ predicate¿¡ ´ëÇÑ Áßº¹ ¼±ÅÃÀ» ¹æÁöÇÏ±â À§ÇÑ Á¤º¸
+// joinable selectivity ê³„ì‚°ì‹œ,
+// ì´ë¯¸ ì²˜ë¦¬ëœ predicateì— ëŒ€í•œ ì¤‘ë³µ ì„ íƒì„ ë°©ì§€í•˜ê¸° ìœ„í•œ ì •ë³´
 # define QMO_PRED_SEL_PROCESS_MASK            (0x00200000)
 # define QMO_PRED_SEL_PROCESS_FALSE           (0x00000000)
 # define QMO_PRED_SEL_PROCESS_TRUE            (0x00200000)
 
 /* qmoPredicate.flag                                  */
-// µ¿ÀÏ ÄÃ·³¸®½ºÆ®¿¡ equal, in ºñ±³¿¬»êÀÚ Á¸Àç¿©ºÎ
+// ë™ì¼ ì»¬ëŸ¼ë¦¬ìŠ¤íŠ¸ì— equal, in ë¹„êµì—°ì‚°ì ì¡´ì¬ì—¬ë¶€
 # define QMO_PRED_EQUAL_IN_MASK               (0x00400000)
 # define QMO_PRED_EQUAL_IN_ABSENT             (0x00000000)
 # define QMO_PRED_EQUAL_IN_EXIST              (0x00400000)
 
 /* qmoPredicate.flag                                  */
 
-// view¿¡ ´ëÇÑ push selectionµÇ°í, whereÀı¿¡ ³²¾Æ ÀÖ´Â predicateÀÎÁöÀÇ Á¤º¸
+// viewì— ëŒ€í•œ push selectionë˜ê³ , whereì ˆì— ë‚¨ì•„ ìˆëŠ” predicateì¸ì§€ì˜ ì •ë³´
 # define QMO_PRED_PUSH_REMAIN_MASK            (0x00800000)
 # define QMO_PRED_PUSH_REMAIN_FALSE           (0x00000000)
 # define QMO_PRED_PUSH_REMAIN_TRUE            (0x00800000)
 
 /* qmoPredicate.flag                                  */
 // Fix BUG-12934
-// constant filter¿¡ ´ëÇØ¼­´Â
-// subqueryÀÇ store and search ÃÖÀûÈ­ÆÁÀ» Àû¿ëÇÏÁö ¾Ê´Â´Ù.
-// ¿¹) 1 in subquery ...
+// constant filterì— ëŒ€í•´ì„œëŠ”
+// subqueryì˜ store and search ìµœì í™”íŒì„ ì ìš©í•˜ì§€ ì•ŠëŠ”ë‹¤.
+// ì˜ˆ) 1 in subquery ...
 #define QMO_PRED_CONSTANT_FILTER_MASK         (0x01000000)
 #define QMO_PRED_CONSTANT_FILTER_TRUE         (0x01000000)
 #define QMO_PRED_CONSTANT_FILTER_FALSE        (0x00000000)
 
-/* PROJ-1446 Host variableÀ» Æ÷ÇÔÇÑ ÁúÀÇ ÃÖÀûÈ­ */
-// ÇÏÀ§¿¡ host º¯¼ö¸¦ Æ÷ÇÔÇÑ ÁúÀÇ ÃÖÀûÈ­ °¡´ÉÇÑ predicate¿¡ ´ëÇØ
-// Á¤º¸¸¦ ¼¼ÆÃÇÑ´Ù.
-// ÀÌ Á¤º¸´Â predicateÀÇ selectivity¸¦ execution½Ã¿¡ ´Ù½Ã
-// ±¸ÇÒ ¶§, ÃÖÀûÈ­ ¿©ºÎ°¡ ¾ø´Â predicateµé¿¡ ´ëÇØ¼­´Â
-// ºÒÇÊ¿äÇÑ ÀÛ¾÷À» ¸·±â À§ÇÔÀÌ´Ù.
+/* PROJ-1446 Host variableì„ í¬í•¨í•œ ì§ˆì˜ ìµœì í™” */
+// í•˜ìœ„ì— host ë³€ìˆ˜ë¥¼ í¬í•¨í•œ ì§ˆì˜ ìµœì í™” ê°€ëŠ¥í•œ predicateì— ëŒ€í•´
+// ì •ë³´ë¥¼ ì„¸íŒ…í•œë‹¤.
+// ì´ ì •ë³´ëŠ” predicateì˜ selectivityë¥¼ executionì‹œì— ë‹¤ì‹œ
+// êµ¬í•  ë•Œ, ìµœì í™” ì—¬ë¶€ê°€ ì—†ëŠ” predicateë“¤ì— ëŒ€í•´ì„œëŠ”
+// ë¶ˆí•„ìš”í•œ ì‘ì—…ì„ ë§‰ê¸° ìœ„í•¨ì´ë‹¤.
 #define QMO_PRED_HOST_OPTIMIZE_MASK           (0x02000000)
 #define QMO_PRED_HOST_OPTIMIZE_TRUE           (0x02000000)
 #define QMO_PRED_HOST_OPTIMIZE_FALSE          (0x00000000)
 
-/* PROJ-1446 Host variableÀ» Æ÷ÇÔÇÑ ÁúÀÇ ÃÖÀûÈ­ */
-// more ¸®½ºÆ® Áß¿¡ ÇÏ³ª¶óµµ QMO_PRED_HOST_OPTIMIZE_TRUE°¡
-// ¼¼ÆÃµÇ¾î ÀÖÀ¸¸é more listÀÇ ¸Ç Ã³À½ predicate´Â
-// QMO_PRED_HEAD_HOST_OPTIMIZE_TRUE°¡ ¼¼ÆÃµÈ´Ù.
+/* PROJ-1446 Host variableì„ í¬í•¨í•œ ì§ˆì˜ ìµœì í™” */
+// more ë¦¬ìŠ¤íŠ¸ ì¤‘ì— í•˜ë‚˜ë¼ë„ QMO_PRED_HOST_OPTIMIZE_TRUEê°€
+// ì„¸íŒ…ë˜ì–´ ìˆìœ¼ë©´ more listì˜ ë§¨ ì²˜ìŒ predicateëŠ”
+// QMO_PRED_HEAD_HOST_OPTIMIZE_TRUEê°€ ì„¸íŒ…ëœë‹¤.
 #define QMO_PRED_HEAD_HOST_OPTIMIZE_MASK      (0x04000000)
 #define QMO_PRED_HEAD_HOST_OPTIMIZE_TRUE      (0x04000000)
 #define QMO_PRED_HEAD_HOST_OPTIMIZE_FALSE     (0x00000000)
 
-// QMO_PRED_HEAD_HOST_OPT_TOTAL_TRUE´Â more¿¡ µÎ°³ÀÇ
-// predicate°¡ ÀÖ°í ÅëÇÕ selectivity¸¦ ±¸ÇÒ ¼ö ÀÖ´Â
-// °æ¿ì¸¦ ÀÇ¹ÌÇÑ´Ù. ÀÌ °ªÀº setTotal¿¡¼­ ¼¼ÆÃµÈ´Ù.
+// QMO_PRED_HEAD_HOST_OPT_TOTAL_TRUEëŠ” moreì— ë‘ê°œì˜
+// predicateê°€ ìˆê³  í†µí•© selectivityë¥¼ êµ¬í•  ìˆ˜ ìˆëŠ”
+// ê²½ìš°ë¥¼ ì˜ë¯¸í•œë‹¤. ì´ ê°’ì€ setTotalì—ì„œ ì„¸íŒ…ëœë‹¤.
 #define QMO_PRED_HEAD_HOST_OPT_TOTAL_MASK     (0x08000000)
 #define QMO_PRED_HEAD_HOST_OPT_TOTAL_TRUE     (0x08000000)
 #define QMO_PRED_HEAD_HOST_OPT_TOTAL_FALSE    (0x00000000)
 
-/* PROJ-1446 Host variableÀ» Æ÷ÇÔÇÑ ÁúÀÇ ÃÖÀûÈ­ */
-// qmoPredicateÀÇ mySelectivityOffset°ú totalSelectivityOffset¿¡ »ç¿ëµÊ.
+/* PROJ-1446 Host variableì„ í¬í•¨í•œ ì§ˆì˜ ìµœì í™” */
+// qmoPredicateì˜ mySelectivityOffsetê³¼ totalSelectivityOffsetì— ì‚¬ìš©ë¨.
 #define QMO_SELECTIVITY_OFFSET_NOT_USED           UINT_MAX
 
-// PROJ-1446 Host variableÀ» Æ÷ÇÔÇÑ ÁúÀÇ ÃÖÀûÈ­
-// qmoPredWrapperPoolÀÇ poolÀÇ ÃÊ±â ¹è¿­ Å©±â
+// PROJ-1446 Host variableì„ í¬í•¨í•œ ì§ˆì˜ ìµœì í™”
+// qmoPredWrapperPoolì˜ poolì˜ ì´ˆê¸° ë°°ì—´ í¬ê¸°
 #define QMO_DEFAULT_WRAPPER_POOL_SIZE                 (32)
 
 /* qmoPredicate.flag                                  */
 // PROJ-1495
-// push_pred hint¿¡ ÀÇÇØ VIEW selection graph ³»·Î push µÈ predicate
+// push_pred hintì— ì˜í•´ VIEW selection graph ë‚´ë¡œ push ëœ predicate
 #define QMO_PRED_PUSH_PRED_HINT_MASK          (0x10000000)
 #define QMO_PRED_PUSH_PRED_HINT_FALSE         (0x00000000)
 #define QMO_PRED_PUSH_PRED_HINT_TRUE          (0x10000000)
 
 /* qmoPredicate.flag                                  */
 // PROJ-1404
-// transformationÀ¸·Î »ı¼ºµÈ µÈ transitive predicate
+// transformationìœ¼ë¡œ ìƒì„±ëœ ëœ transitive predicate
 #define QMO_PRED_TRANS_PRED_MASK              (0x20000000)
 #define QMO_PRED_TRANS_PRED_FALSE             (0x00000000)
 #define QMO_PRED_TRANS_PRED_TRUE              (0x20000000)
@@ -247,15 +247,15 @@
 #define QMO_PRED_INDEXABLE_EQUAL_FALSE         (0x00000000)
 
 /* qmoPredicate.flag                                  */
-// variable predicateÀÇ ÆÇ´Ü
-// variable ÆÇ´Ü Á¤º¸
-//   (1) join predicate Á¸Àç, (2) subquery Á¸Àç
-//   (3) prior column Á¸Àç  ,
-//   fix BUG-10524 (4) SYSDATE column Á¸Àç
-//   (5) procedure variableÀÇ Á¸Àç
-//   (6) host º¯¼ö Á¸Àç
+// variable predicateì˜ íŒë‹¨
+// variable íŒë‹¨ ì •ë³´
+//   (1) join predicate ì¡´ì¬, (2) subquery ì¡´ì¬
+//   (3) prior column ì¡´ì¬  ,
+//   fix BUG-10524 (4) SYSDATE column ì¡´ì¬
+//   (5) procedure variableì˜ ì¡´ì¬
+//   (6) host ë³€ìˆ˜ ì¡´ì¬
 //   To Fix PR-10209
-//   (7) Value°¡ VariableÀÎÁö¸¦ ÆÇ´Ü
+//   (7) Valueê°€ Variableì¸ì§€ë¥¼ íŒë‹¨
 
 # define QMO_PRED_IS_VARIABLE( aPredicate )                                \
     (                                                                      \
@@ -275,99 +275,99 @@
     QTC_IS_DYNAMIC_CONSTANT( (aPredicate)->node )
 
 //---------------------------------------------------
-// [subquery¿¡ ´ëÇÑ graph »ı¼º¿©ºÎ¸¦ ÆÇ´Ü.]
-//  1. subquery¿¡ ´ëÇÑ graph »ı¼º¿©ºÎ¸¦ ÆÇ´ÜÇÏ´Â ÀÌÀ¯´Â ´ÙÀ½°ú °°´Ù.
-//     (1) subquery°ü¸®ÀÚ°¡ subqueryÀÇ graph¸¦ Áßº¹»ı¼ºÇÏÁö ¾Êµµ·Ï
-//     (2) view ÃÖÀûÈ­ ÆÁ Àû¿ë½Ã graph »ı¼º¿©ºÎ È®ÀÎ
-//  2. subquery¿¡ ´ëÇÑ qcStatementÀÚ·á±¸Á¶¸¦ ÂüÁ¶ÇØ¼­,
-//     ÀÌ ÀÚ·á±¸Á¶ÀÇ graph°¡ NULLÀÌ ¾Æ´ÑÁö¸¦ °Ë»çÇÑ´Ù.
+// [subqueryì— ëŒ€í•œ graph ìƒì„±ì—¬ë¶€ë¥¼ íŒë‹¨.]
+//  1. subqueryì— ëŒ€í•œ graph ìƒì„±ì—¬ë¶€ë¥¼ íŒë‹¨í•˜ëŠ” ì´ìœ ëŠ” ë‹¤ìŒê³¼ ê°™ë‹¤.
+//     (1) subqueryê´€ë¦¬ìê°€ subqueryì˜ graphë¥¼ ì¤‘ë³µìƒì„±í•˜ì§€ ì•Šë„ë¡
+//     (2) view ìµœì í™” íŒ ì ìš©ì‹œ graph ìƒì„±ì—¬ë¶€ í™•ì¸
+//  2. subqueryì— ëŒ€í•œ qcStatementìë£Œêµ¬ì¡°ë¥¼ ì°¸ì¡°í•´ì„œ,
+//     ì´ ìë£Œêµ¬ì¡°ì˜ graphê°€ NULLì´ ì•„ë‹Œì§€ë¥¼ ê²€ì‚¬í•œë‹¤.
 //---------------------------------------------------
 
 //# define IS_EXIST_GRAPH_IN_SUBQUERY( aSubStatement )
 //    ( ( aSubStatement->graph != NULL ) ? ID_TRUE : ID_FALSE )
 
 //---------------------------------------------------
-// [subquery¿¡ ´ëÇÑ plan »ı¼º¿©ºÎ ÆÇ´Ü]
-//  1. subquery °ü¸®ÀÚ°¡ subquery¿¡ ´ëÇÑ planÀ» Áßº¹»ı¼ºÇÏÁö ¾Ê±â À§ÇØ.
-//  2. subquery¿¡ ´ëÇÑ qcStatementÀÚ·á±¸Á¶¸¦ ÂüÁ¶ÇØ¼­,
-//     ÀÌ ÀÚ·á±¸Á¶ÀÇ planÀÌ NULLÀÌ ¾Æ´ÑÁö¸¦ °Ë»çÇÑ´Ù.
+// [subqueryì— ëŒ€í•œ plan ìƒì„±ì—¬ë¶€ íŒë‹¨]
+//  1. subquery ê´€ë¦¬ìê°€ subqueryì— ëŒ€í•œ planì„ ì¤‘ë³µìƒì„±í•˜ì§€ ì•Šê¸° ìœ„í•´.
+//  2. subqueryì— ëŒ€í•œ qcStatementìë£Œêµ¬ì¡°ë¥¼ ì°¸ì¡°í•´ì„œ,
+//     ì´ ìë£Œêµ¬ì¡°ì˜ planì´ NULLì´ ì•„ë‹Œì§€ë¥¼ ê²€ì‚¬í•œë‹¤.
 //---------------------------------------------------
 
 //# define IS_EXIST_PLAN_IN_SUBQUERY( aSubStatement )
 //    ( ( aSubStatement->plan != NULL ) ? ID_TRUE : ID_FALSE )
 
 //---------------------------------------------------
-// PredicateÀ» °ü¸®ÇÏ±â À§ÇÑ ÀÚ·á ±¸Á¶
+// Predicateì„ ê´€ë¦¬í•˜ê¸° ìœ„í•œ ìë£Œ êµ¬ì¡°
 //---------------------------------------------------
 
 typedef struct qmoPredicate
 {
 
-    // filter ordering½Ã ÇÃ·§Æû°£ÀÇ diff ¹æÁö¸¦ À§ÇØ
-    // qsort½Ã compareÇÔ¼ö³»¿¡¼­ »ç¿ëµÊ.
+    // filter orderingì‹œ í”Œë«í¼ê°„ì˜ diff ë°©ì§€ë¥¼ ìœ„í•´
+    // qsortì‹œ compareí•¨ìˆ˜ë‚´ì—ì„œ ì‚¬ìš©ë¨.
     UInt       idx;
 
-    // predicate¿¡ ´ëÇÑ °¢Á¾ Á¤º¸
+    // predicateì— ëŒ€í•œ ê°ì¢… ì •ë³´
     UInt       flag;
 
     //-----------------------------------------------
     // [ id ] columnID
-    // (1)ÇÑ ÄÃ·³ÀÎ °æ¿ì: smiColum.id
-    // (2)LIST: Á¤ÀÇµÈ columnID
-    // (3)N/A : Á¤ÀÇµÈ columnID  (N/A=non-indexable)
+    // (1)í•œ ì»¬ëŸ¼ì¸ ê²½ìš°: smiColum.id
+    // (2)LIST: ì •ì˜ëœ columnID
+    // (3)N/A : ì •ì˜ëœ columnID  (N/A=non-indexable)
     //-----------------------------------------------
     UInt       id;
 
-    qtcNode  * node;        // OR³ª ºñ±³¿¬»êÀÚ ´ÜÀ§ÀÇ predicate
+    qtcNode  * node;        // ORë‚˜ ë¹„êµì—°ì‚°ì ë‹¨ìœ„ì˜ predicate
 
 
     //-----------------------------------------------
     // [ selectivity ]
-    // mySelectivity    : predicateÀÇ °³º° selectivity
-    // totalSelectivity : qmoPredicate.id°¡ °°Àº ¸ğµç predicate¿¡ ´ëÇÑ
-    //                    ´ëÇ¥ selectivity.
-    //                    qmoPredicate->moreÀÇ ¿¬°á¸®½ºÆ® Áß
-    //                    Ã¹¹øÂ° qmoPredicate¿¡¸¸ ÀÌ Á¤º¸°¡ ¼³Á¤µÈ´Ù.
+    // mySelectivity    : predicateì˜ ê°œë³„ selectivity
+    // totalSelectivity : qmoPredicate.idê°€ ê°™ì€ ëª¨ë“  predicateì— ëŒ€í•œ
+    //                    ëŒ€í‘œ selectivity.
+    //                    qmoPredicate->moreì˜ ì—°ê²°ë¦¬ìŠ¤íŠ¸ ì¤‘
+    //                    ì²«ë²ˆì§¸ qmoPredicateì—ë§Œ ì´ ì •ë³´ê°€ ì„¤ì •ëœë‹¤.
     //-----------------------------------------------
-    SDouble    mySelectivity;    // predicateÀÇ °³º° selectivity
-    SDouble    totalSelectivity; // ÄÃ·³ÀÇ ´ëÇ¥ selectivity
+    SDouble    mySelectivity;    // predicateì˜ ê°œë³„ selectivity
+    SDouble    totalSelectivity; // ì»¬ëŸ¼ì˜ ëŒ€í‘œ selectivity
 
-    // PROJ-1446 Host variableÀ» Æ÷ÇÔÇÑ ÁúÀÇ ÃÖÀûÈ­
-    UInt       mySelectivityOffset;   // ¹ÙÀÎµù ÈÄ my sel.À» ±¸ÇÏ±â À§ÇØ
-    UInt       totalSelectivityOffset;// ¹ÙÀÎµù ÈÄ total sel.À» ±¸ÇÏ±â À§ÇØ
+    // PROJ-1446 Host variableì„ í¬í•¨í•œ ì§ˆì˜ ìµœì í™”
+    UInt       mySelectivityOffset;   // ë°”ì¸ë”© í›„ my sel.ì„ êµ¬í•˜ê¸° ìœ„í•´
+    UInt       totalSelectivityOffset;// ë°”ì¸ë”© í›„ total sel.ì„ êµ¬í•˜ê¸° ìœ„í•´
 
     //-----------------------------------------------
-    // qmoPredicate ¿¬°á°ü·Ã ÀÚ·á±¸Á¶
-    // next : qmoPredicate.id°¡ ´Ù¸¥ predicateÀÇ ¿¬°á
-    // more : qmoPredicate.id°¡ °°Àº predicateÀÇ ¿¬°á
+    // qmoPredicate ì—°ê²°ê´€ë ¨ ìë£Œêµ¬ì¡°
+    // next : qmoPredicate.idê°€ ë‹¤ë¥¸ predicateì˜ ì—°ê²°
+    // more : qmoPredicate.idê°€ ê°™ì€ predicateì˜ ì—°ê²°
     //-----------------------------------------------
-    qmoPredicate  * next;        // qmoPredicate.id°¡ ´Ù¸¥ predicateÀÇ ¿¬°á
-    qmoPredicate  * more;        // qmoPredicate.id°¡ °°Àº predicateÀÇ ¿¬°á
+    qmoPredicate  * next;        // qmoPredicate.idê°€ ë‹¤ë¥¸ predicateì˜ ì—°ê²°
+    qmoPredicate  * more;        // qmoPredicate.idê°€ ê°™ì€ predicateì˜ ì—°ê²°
 
 } qmoPredicate;
 
 //---------------------------------------------------
-// qmoPredicate ¿¬°áÁ¤º¸¸¦ °ü¸®ÇÏ±â À§ÇÑ ÀÚ·á±¸Á¶
+// qmoPredicate ì—°ê²°ì •ë³´ë¥¼ ê´€ë¦¬í•˜ê¸° ìœ„í•œ ìë£Œêµ¬ì¡°
 //---------------------------------------------------
 
-// °¢ join selectivity °è»ê¿¡ Æ÷ÇÔµÈ predicateÀÇ ¿¬°áÁ¤º¸¸¦ À§ÇÑ ÀÚ·á±¸Á¶.
-// ÀÌ´Â, ¼±ÅÃµÈ join methodÀÇ predicateÀ» ½±°Ô Ã£±â À§ÇÔÀÌ´Ù.
+// ê° join selectivity ê³„ì‚°ì— í¬í•¨ëœ predicateì˜ ì—°ê²°ì •ë³´ë¥¼ ìœ„í•œ ìë£Œêµ¬ì¡°.
+// ì´ëŠ”, ì„ íƒëœ join methodì˜ predicateì„ ì‰½ê²Œ ì°¾ê¸° ìœ„í•¨ì´ë‹¤.
 typedef struct qmoPredInfo
 {
     qmoPredicate  * predicate;
 
     //-----------------------------------------------
-    // ¿¬°á°ü·Ã ÀÚ·á±¸Á¶
-    // next : qmoPredicate.id°¡ ´Ù¸¥ predicateÀÇ ¿¬°á
-    // more : qmoPredicate.id°¡ °°Àº predicateÀÇ ¿¬°á
+    // ì—°ê²°ê´€ë ¨ ìë£Œêµ¬ì¡°
+    // next : qmoPredicate.idê°€ ë‹¤ë¥¸ predicateì˜ ì—°ê²°
+    // more : qmoPredicate.idê°€ ê°™ì€ predicateì˜ ì—°ê²°
     //-----------------------------------------------
     qmoPredInfo   * next     ;
     qmoPredInfo   * more     ;
 } qmoPredInfo;
 
-// PROJ-1446 Host variableÀ» Æ÷ÇÔÇÑ ÁúÀÇ ÃÖÀûÈ­
-// predicateµéÀÇ ¿¬°á Á¤º¸¸¦ °ü¸®ÇÑ´Ù.
-// filter/key range/key filter/subquery filter¸¦ ºĞ·ùÇÑ °á°ú Å¸ÀÔ
+// PROJ-1446 Host variableì„ í¬í•¨í•œ ì§ˆì˜ ìµœì í™”
+// predicateë“¤ì˜ ì—°ê²° ì •ë³´ë¥¼ ê´€ë¦¬í•œë‹¤.
+// filter/key range/key filter/subquery filterë¥¼ ë¶„ë¥˜í•œ ê²°ê³¼ íƒ€ì…
 typedef struct qmoPredWrapper
 {
     qmoPredicate       * pred;
@@ -395,13 +395,13 @@ typedef enum
     QMO_FILTER
 } qmoPredType;
 
-// nodeTransform °è¿­ ÇÔ¼öµéÀÌ »ç¿ëÇÏ´Â ±¸Á¶Ã¼
+// nodeTransform ê³„ì—´ í•¨ìˆ˜ë“¤ì´ ì‚¬ìš©í•˜ëŠ” êµ¬ì¡°ì²´
 typedef struct qmoPredTrans
 {
-    // qmoPredTrans¸¦ »ı¼ºÇÒ ¶§ ÇÊ¿äÇÑ ¸â¹öµé
+    // qmoPredTransë¥¼ ìƒì„±í•  ë•Œ í•„ìš”í•œ ë©¤ë²„ë“¤
     qcStatement  * statement;
 
-    // qmoPredTransI¿¡¼­ ³»ºÎÀûÀ¸·Î »ç¿ëÇÏ´Â ¸â¹öµé
+    // qmoPredTransIì—ì„œ ë‚´ë¶€ì ìœ¼ë¡œ ì‚¬ìš©í•˜ëŠ” ë©¤ë²„ë“¤
     SChar          condition[3];
     SChar          logical[4];
     idBool         isGroupComparison;   // BUG-15816
@@ -409,8 +409,8 @@ typedef struct qmoPredTrans
     qmsQuerySet  * myQuerySet; // BUG-18242
 } qmoPredTrans;
 
-// qmoPredTrans ±¸Á¶Ã¼¸¦ manageÇÏ´Â Å¬·¡½º
-// ¸ğµÎ static ÇÔ¼öµé·Î ±¸¼ºµÇ¾î ÀÖ´Ù.
+// qmoPredTrans êµ¬ì¡°ì²´ë¥¼ manageí•˜ëŠ” í´ë˜ìŠ¤
+// ëª¨ë‘ static í•¨ìˆ˜ë“¤ë¡œ êµ¬ì„±ë˜ì–´ ìˆë‹¤.
 class qmoPredTransI
 {
 public:
@@ -499,23 +499,23 @@ private:
 };
 
 //---------------------------------------------------
-// PredicateÀ» °ü¸®ÇÏ±â À§ÇÑ ÇÔ¼ö
+// Predicateì„ ê´€ë¦¬í•˜ê¸° ìœ„í•œ í•¨ìˆ˜
 //---------------------------------------------------
 class qmoPred
 {
 public:
 
     //-----------------------------------------------
-    // Graph ¿¡¼­ È£ÃâÇÏ´Â ÇÔ¼ö
+    // Graph ì—ì„œ í˜¸ì¶œí•˜ëŠ” í•¨ìˆ˜
     //-----------------------------------------------
 
     // PROJ-1502 PARTITIONED DISK TABLE
-    // composite key¿Í °ü·ÃµÈ flag¸¦ predicate¿¡ ¼¼ÆÃÇÔ.
-    // µ¿ÀÏÄÃ·³¸®½ºÆ®¿¡ equal(IN) ¿¬»êÀÚ Á¸Àç¿©ºÎ ¼¼ÆÃ
-    // ¿¬¼ÓÀûÀÎ Å° ÄÃ·³ »ç¿ë°¡´É¿©ºÎ ¼¼ÆÃ
+    // composite keyì™€ ê´€ë ¨ëœ flagë¥¼ predicateì— ì„¸íŒ…í•¨.
+    // ë™ì¼ì»¬ëŸ¼ë¦¬ìŠ¤íŠ¸ì— equal(IN) ì—°ì‚°ì ì¡´ì¬ì—¬ë¶€ ì„¸íŒ…
+    // ì—°ì†ì ì¸ í‚¤ ì»¬ëŸ¼ ì‚¬ìš©ê°€ëŠ¥ì—¬ë¶€ ì„¸íŒ…
     static void setCompositeKeyUsableFlag( qmoPredicate * aPredicate );
 
-    // selection graphÀÇ predicate Àç¹èÄ¡
+    // selection graphì˜ predicate ì¬ë°°ì¹˜
     static IDE_RC  relocatePredicate( qcStatement     * aStatement,
                                       qmoPredicate    * aInPredicate,
                                       qcDepInfo       * aTableDependencies,
@@ -523,7 +523,7 @@ public:
                                       qmoStatistics   * aStatiscalData,
                                       qmoPredicate   ** aOutPredicate );
 
-    // partition graphÀÇ predicateÀç¹èÄ¡
+    // partition graphì˜ predicateì¬ë°°ì¹˜
     static IDE_RC  relocatePredicate4PartTable(
         qcStatement        * aStatement,
         qmoPredicate       * aInPredicate,
@@ -532,73 +532,73 @@ public:
         qcDepInfo          * aOuterDependencies,
         qmoPredicate      ** aOutPredicate );
 
-    // Join Predicate¿¡ ´ëÇÑ ºĞ·ù
+    // Join Predicateì— ëŒ€í•œ ë¶„ë¥˜
     static IDE_RC  classifyJoinPredicate( qcStatement  * aStatement,
                                           qmoPredicate * aPredicate,
                                           qmgGraph     * aLeftChildGraph,
                                           qmgGraph     * aRightChildGraph,
                                           qcDepInfo    * aFromDependencies );
 
-    // Index Nested Loop JoinÀÇ push down joinable predicate¸¦ »ı¼º.
+    // Index Nested Loop Joinì˜ push down joinable predicateë¥¼ ìƒì„±.
     static IDE_RC  makeJoinPushDownPredicate( qcStatement    * aStatement,
                                               qmoPredicate   * aNewPredicate,
                                               qcDepInfo      * aRightDependencies );
 
-    // Index Nested Loop JoinÀÇ push down non-joinable prediate
+    // Index Nested Loop Joinì˜ push down non-joinable prediate
     static IDE_RC  makeNonJoinPushDownPredicate( qcStatement   * aStatement,
                                                  qmoPredicate  * aNewPredicate,
                                                  qcDepInfo     * aRightDependencies,
                                                  UInt            aDirection );
 
     // PROJ-1405
-    // rownum predicateÀÇ ÆÇ´Ü
+    // rownum predicateì˜ íŒë‹¨
     static IDE_RC  isRownumPredicate( qmoPredicate  * aPredicate,
                                       idBool        * aIsTrue );
 
-    // constant predicateÀÇ ÆÇ´Ü
+    // constant predicateì˜ íŒë‹¨
     static IDE_RC  isConstantPredicate( qmoPredicate  * aPredicate,
                                         qcDepInfo     * aFromDependencies,
                                         idBool        * aIsTrue );
 
-    // one table predicateÀÇ ÆÇ´Ü
+    // one table predicateì˜ íŒë‹¨
     static IDE_RC  isOneTablePredicate( qmoPredicate  * aPredicate,
                                         qcDepInfo     * aFromDependencies,
                                         qcDepInfo     * aTableDependencies,
                                         idBool        * aIsTrue );
 
     // To Fix PR-11460, PR-11461
-    // Subquery Predicate¿¡ ´ëÇÑ ÃÖÀûÈ­ ½Ã ÀÏ¹İ Table¸¸ÀÌ
-    // In Subquery KeyRange ¿Í Subquery KeyRange ÃÖÀûÈ­°¡ °¡´ÉÇÏ´Ù.
-    // ÀÌ¸¦ ±¸ºĞÇÑ´Ù [aTryKeyRange]
+    // Subquery Predicateì— ëŒ€í•œ ìµœì í™” ì‹œ ì¼ë°˜ Tableë§Œì´
+    // In Subquery KeyRange ì™€ Subquery KeyRange ìµœì í™”ê°€ ê°€ëŠ¥í•˜ë‹¤.
+    // ì´ë¥¼ êµ¬ë¶„í•œë‹¤ [aTryKeyRange]
 
-    // predicate¿¡ Á¸ÀçÇÏ´Â ¸ğµç subquery¿¡ ´ëÇÑ Ã³¸®
+    // predicateì— ì¡´ì¬í•˜ëŠ” ëª¨ë“  subqueryì— ëŒ€í•œ ì²˜ë¦¬
     static IDE_RC  optimizeSubqueries( qcStatement  * aStatement,
                                        qmoPredicate * aPredicate,
                                        idBool         aTryKeyRange );
 
-    // qtcNode¿¡ Á¸ÀçÇÏ´Â ¸ğµç subquery¿¡ ´ëÇÑ Ã³¸®
+    // qtcNodeì— ì¡´ì¬í•˜ëŠ” ëª¨ë“  subqueryì— ëŒ€í•œ ì²˜ë¦¬
     static IDE_RC  optimizeSubqueryInNode( qcStatement * aStatement,
                                            qtcNode     * aNode,
                                            idBool        aTryKeyRange,
                                            idBool        aConstantPred );
 
-    // joinable predicate°ú non joinable predicateÀ» ºĞ¸®ÇÑ´Ù.
+    // joinable predicateê³¼ non joinable predicateì„ ë¶„ë¦¬í•œë‹¤.
     static IDE_RC  separateJoinPred( qmoPredicate  * aPredicate,
                                      qmoPredInfo   * aJoinablePredInfo,
                                      qmoPredicate ** aJoinPred,
                                      qmoPredicate ** aNonJoinPred );
 
-    // Join predicate¿¡ ´ëÇÑ columnID¸¦ qmoPredicate.id¿¡ ÀúÀå.
+    // Join predicateì— ëŒ€í•œ columnIDë¥¼ qmoPredicate.idì— ì €ì¥.
     static IDE_RC  setColumnIDToJoinPred( qcStatement  * aStatement,
                                           qmoPredicate * aPredicate,
                                           qcDepInfo    * aDependencies );
 
-    // Join predicate¿¡ ´ëÇÑ column node¸¦ ¹İÈ¯.
+    // Join predicateì— ëŒ€í•œ column nodeë¥¼ ë°˜í™˜.
     static qtcNode* getColumnNodeOfJoinPred( qcStatement  * aStatement,
                                              qmoPredicate * aPredicate,
                                              qcDepInfo    * aDependencies );
     
-    // PredicateÀÇ Indexable ¿©ºÎ ÆÇ´Ü
+    // Predicateì˜ Indexable ì—¬ë¶€ íŒë‹¨
     static IDE_RC  isIndexable( qcStatement   * aStatement,
                                 qmoPredicate  * aPredicate,
                                 qcDepInfo     * aTableDependencies,
@@ -610,7 +610,7 @@ public:
                                    qmoPredicate ** aNewPredicate );
 
     // PROJ-1502 PARTITIONED DISK TABLE
-    // PredicateÀÇ Partition Prunable ¿©ºÎ ÆÇ´Ü
+    // Predicateì˜ Partition Prunable ì—¬ë¶€ íŒë‹¨
     static IDE_RC  isPartitionPrunable(
         qcStatement        * aStatement,
         qmoPredicate       * aPredicate,
@@ -620,7 +620,7 @@ public:
         idBool             * aIsPartitionPrunable );
 
     // PROJ-1405 ROWNUM
-    // rownum predicateÀ» stopkey predicate°ú filter predicate·Î ºĞ¸®ÇÑ´Ù.
+    // rownum predicateì„ stopkey predicateê³¼ filter predicateë¡œ ë¶„ë¦¬í•œë‹¤.
     static IDE_RC  separateRownumPred( qcStatement   * aStatement,
                                        qmsQuerySet   * aQuerySet,
                                        qmoPredicate  * aPredicate,
@@ -629,36 +629,36 @@ public:
                                        SLong         * aStopRecordCount );
 
     //-----------------------------------------------
-    // Plan ¿¡¼­ È£ÃâÇÏ´Â ÇÔ¼ö
+    // Plan ì—ì„œ í˜¸ì¶œí•˜ëŠ” í•¨ìˆ˜
     //-----------------------------------------------
 
-    // ROWNUM columnÀÇ ÆÇ´Ü
+    // ROWNUM columnì˜ íŒë‹¨
     static idBool  isROWNUMColumn( qmsQuerySet  * aQuerySet,
                                    qtcNode      * aNode );
 
-    // prior columnÀÇ Á¸Àç ÆÇ´Ü
+    // prior columnì˜ ì¡´ì¬ íŒë‹¨
     static IDE_RC  setPriorNodeID( qcStatement  * aStatement,
                                    qmsQuerySet  * aQuerySet ,
                                    qtcNode      * aNode       );
 
-    // keyRange, keyFilter·Î ÃßÃâµÈ qmoPredicateÀÇ ¿¬°áÁ¤º¸·Î,
-    // ÇÏ³ªÀÇ qtcNodeÀÇ ±×·ìÀ¸·Î ¿¬°áÁ¤º¸¸¦ ¸¸µç´Ù.
+    // keyRange, keyFilterë¡œ ì¶”ì¶œëœ qmoPredicateì˜ ì—°ê²°ì •ë³´ë¡œ,
+    // í•˜ë‚˜ì˜ qtcNodeì˜ ê·¸ë£¹ìœ¼ë¡œ ì—°ê²°ì •ë³´ë¥¼ ë§Œë“ ë‹¤.
     static IDE_RC  linkPredicate( qcStatement   * aStatement,
                                   qmoPredicate  * aPredicate,
                                   qtcNode      ** aNode       );
 
-    // filter·Î ÃßÃâµÈ qmoPredicateÀÇ ¿¬°áÁ¤º¸·Î,
-    // ÇÏ³ªÀÇ qtcNodeÀÇ ±×·ìÀ¸·Î ¿¬°áÁ¤º¸¸¦ ¸¸µç´Ù.
+    // filterë¡œ ì¶”ì¶œëœ qmoPredicateì˜ ì—°ê²°ì •ë³´ë¡œ,
+    // í•˜ë‚˜ì˜ qtcNodeì˜ ê·¸ë£¹ìœ¼ë¡œ ì—°ê²°ì •ë³´ë¥¼ ë§Œë“ ë‹¤.
     static IDE_RC  linkFilterPredicate( qcStatement   * aStatement,
                                         qmoPredicate  * aPredicate,
                                         qtcNode      ** aNode      );
 
-    // BUG-38971 subQuery filter ¸¦ Á¤·ÄÇÒ ÇÊ¿ä°¡ ÀÖ½À´Ï´Ù.
+    // BUG-38971 subQuery filter ë¥¼ ì •ë ¬í•  í•„ìš”ê°€ ìˆìŠµë‹ˆë‹¤.
     static IDE_RC  sortORNodeBySubQ( qcStatement   * aStatement,
                                      qtcNode       * aNode );
 
     // BUG-35155 Partial CNF
-    // linkFilterPredicate ¿¡¼­ ¸¸µé¾îÁø qtcNode ±×·ì¿¡ NNF ÇÊÅÍ¸¦ Ãß°¡ÇÑ´Ù.
+    // linkFilterPredicate ì—ì„œ ë§Œë“¤ì–´ì§„ qtcNode ê·¸ë£¹ì— NNF í•„í„°ë¥¼ ì¶”ê°€í•œë‹¤.
     static IDE_RC addNNFFilter4linkedFilter( qcStatement   * aStatement,
                                              qtcNode       * aNNFFilter,
                                              qtcNode      ** aNode      );
@@ -676,7 +676,7 @@ public:
 
     // keyRange, keyFilter, filter,
     // outerFilter, outerMtrFilter,
-    // subqueryFilter ÃßÃâ ÇÔ¼ö
+    // subqueryFilter ì¶”ì¶œ í•¨ìˆ˜
     static IDE_RC  extractRangeAndFilter( qcStatement        * aStatement,
                                           qcTemplate         * aTemplate,
                                           idBool               aIsMemory,
@@ -691,9 +691,9 @@ public:
                                           qmoPredWrapperPool * aWrapperPool );
 
     // PROJ-1502 PARTITIONED DISK TABLE
-    // partition key range predicate¸¦ ÃßÃâÇÏ°í,
-    // subquery filter predicate¸¦ ÃßÃâÇÑ´Ù.
-    // ³ª¸ÓÁö predicateµéµµ µû·Î ºĞ·ùÇÑ´Ù.
+    // partition key range predicateë¥¼ ì¶”ì¶œí•˜ê³ ,
+    // subquery filter predicateë¥¼ ì¶”ì¶œí•œë‹¤.
+    // ë‚˜ë¨¸ì§€ predicateë“¤ë„ ë”°ë¡œ ë¶„ë¥˜í•œë‹¤.
     static IDE_RC makePartKeyRangePredicate(
         qcStatement        * aStatement,
         qmsQuerySet        * aQuerySet,
@@ -712,8 +712,8 @@ public:
         qmoPredicate      ** aRemain,
         qmoPredicate      ** aSubqueryFilter );
 
-    // extractRangeAndFilter È£ÃâÈÄ ÀÌ ÇÔÈÄ¸¦ È£ÃâÇÏ¸é
-    // ½ÇÁ¦ predicateµéÀÌ Àç¹èÄ¡µÈ´Ù.
+    // extractRangeAndFilter í˜¸ì¶œí›„ ì´ í•¨í›„ë¥¼ í˜¸ì¶œí•˜ë©´
+    // ì‹¤ì œ predicateë“¤ì´ ì¬ë°°ì¹˜ëœë‹¤.
     static IDE_RC fixPredToRangeAndFilter( qcStatement        * aStatement,
                                            qmsQuerySet        * aQuerySet,
                                            qmoPredWrapper    ** aKeyRange,
@@ -723,27 +723,27 @@ public:
                                            qmoPredWrapper    ** aSubqueryFilter,
                                            qmoPredWrapperPool * aWrapperPool );
 
-    // columnIDÀÇ ¼³Á¤
+    // columnIDì˜ ì„¤ì •
     static IDE_RC    getColumnID( qcStatement  * aStatement,
                                   qtcNode      * aNode,
                                   idBool         aIsIndexable,
                                   UInt         * aColumnID );
 
-    // LIST ÄÃ·³¸®½ºÆ®ÀÇ ÀÎµ¦½º »ç¿ë¿©ºÎ °Ë»ç
+    // LIST ì»¬ëŸ¼ë¦¬ìŠ¤íŠ¸ì˜ ì¸ë±ìŠ¤ ì‚¬ìš©ì—¬ë¶€ ê²€ì‚¬
     static IDE_RC    checkUsableIndex4List( qcTemplate   * aTemplate,
                                             qcmIndex     * aIndex,
                                             qmoPredicate * aPredicate,
                                             qmoPredType  * aPredType );
 
     // PROJ-1502 PARTITIONED DISK TABLE
-    // LIST ÄÃ·³¸®½ºÆ®ÀÇ partition key »ç¿ë¿©ºÎ °Ë»ç
+    // LIST ì»¬ëŸ¼ë¦¬ìŠ¤íŠ¸ì˜ partition key ì‚¬ìš©ì—¬ë¶€ ê²€ì‚¬
     static IDE_RC    checkUsablePartitionKey4List( qcStatement  * aStatement,
                                                    qcmColumn    * aPartKeyColumns,
                                                    qmoPredicate * aPredicate,
                                                    qmoPredType  * aPredType );
 
 
-    // ºñ±³¿¬»êÀÚ °¢ ÇÏÀ§ ³ëµå¿¡ ÇØ´çÇÏ´Â graph¸¦ Ã£´Â´Ù.
+    // ë¹„êµì—°ì‚°ì ê° í•˜ìœ„ ë…¸ë“œì— í•´ë‹¹í•˜ëŠ” graphë¥¼ ì°¾ëŠ”ë‹¤.
     static IDE_RC findChildGraph( qtcNode   * aCompareNode,
                                   qcDepInfo * aFromDependencies,
                                   qmgGraph  * aGraph1,
@@ -751,26 +751,26 @@ public:
                                   qmgGraph ** aLeftColumnGraph,
                                   qmgGraph ** aRightColumnGraph );
 
-    // column°ú value°¡ µ¿ÀÏ °è¿­ÀÇ data typeÀÎÁö¸¦ ÆÇ´Ü
+    // columnê³¼ valueê°€ ë™ì¼ ê³„ì—´ì˜ data typeì¸ì§€ë¥¼ íŒë‹¨
     static idBool isSameGroupType( qcTemplate  * aTemplate,
                                    qtcNode     * aColumn,
                                    qtcNode     * aValue );
 
-    // PROJ-1446 Host variableÀ» Æ÷ÇÔÇÑ ÁúÀÇ ÃÖÀûÈ­
-    // filter, key filter, key range¸¦ »ı¼ºÇÏ±â À§ÇØ¼­
-    // predicateÀÌ ÇÊ¿äÇÑµ¥, ÀÌµéÀÌ ¸¸µé¾îÁö´Â °úÁ¤¿¡¼­
-    // predicate ¿¬°á±¸Á¶³ª qtcNodeµéÀÇ Á¤º¸µéÀÌ ¹Ù²î±â ¶§¹®¿¡
-    // filterµîÀ» µÎ¹ø »ı¼ºÇÒ ¼ö ¾ø´Â ±¸Á¶·Î µÇ¾î ÀÖ´Ù.
-    // È£½ºÆ® º¯¼ö¿¡ ´ëÇØ filterµîÀ» ÈÄº¸·Î ¿©·¯¹ú ¸¸µé ÇÊ¿ä°¡ ÀÖ´Âµ¥
-    // ÀÌ¸¦ À§ÇØ graphÀÇ predicate¸¦ º¹»ç¸¦ ÇØ¼­ »ç¿ëÇØ¾ß ÇÑ´Ù.
+    // PROJ-1446 Host variableì„ í¬í•¨í•œ ì§ˆì˜ ìµœì í™”
+    // filter, key filter, key rangeë¥¼ ìƒì„±í•˜ê¸° ìœ„í•´ì„œ
+    // predicateì´ í•„ìš”í•œë°, ì´ë“¤ì´ ë§Œë“¤ì–´ì§€ëŠ” ê³¼ì •ì—ì„œ
+    // predicate ì—°ê²°êµ¬ì¡°ë‚˜ qtcNodeë“¤ì˜ ì •ë³´ë“¤ì´ ë°”ë€Œê¸° ë•Œë¬¸ì—
+    // filterë“±ì„ ë‘ë²ˆ ìƒì„±í•  ìˆ˜ ì—†ëŠ” êµ¬ì¡°ë¡œ ë˜ì–´ ìˆë‹¤.
+    // í˜¸ìŠ¤íŠ¸ ë³€ìˆ˜ì— ëŒ€í•´ filterë“±ì„ í›„ë³´ë¡œ ì—¬ëŸ¬ë²Œ ë§Œë“¤ í•„ìš”ê°€ ìˆëŠ”ë°
+    // ì´ë¥¼ ìœ„í•´ graphì˜ predicateë¥¼ ë³µì‚¬ë¥¼ í•´ì„œ ì‚¬ìš©í•´ì•¼ í•œë‹¤.
     static IDE_RC deepCopyPredicate( iduVarMemList * aMemory, //fix PROJ-1596
                                      qmoPredicate  * aSource,
                                      qmoPredicate ** aResult );
 
     // PROJ-1502 PARTITIONED DISK TABLE
-    // °¢ ÆÄÆ¼¼Ç º°·Î ÃÖÀûÈ­¸¦ ¼öÇàÇÏ±â À§ÇØ predicate¸¦ º¹»çÇÑ´Ù.
-    // ÀÌ ¶§, subquery´Â Á¦¿ÜÇÏ°í º¹»çÇÑ´Ù.
-    // partitioned tableÀÇ ³ëµå¸¦ partitionÀÇ ³ëµå·Î º¯È¯ÇÑ´Ù.
+    // ê° íŒŒí‹°ì…˜ ë³„ë¡œ ìµœì í™”ë¥¼ ìˆ˜í–‰í•˜ê¸° ìœ„í•´ predicateë¥¼ ë³µì‚¬í•œë‹¤.
+    // ì´ ë•Œ, subqueryëŠ” ì œì™¸í•˜ê³  ë³µì‚¬í•œë‹¤.
+    // partitioned tableì˜ ë…¸ë“œë¥¼ partitionì˜ ë…¸ë“œë¡œ ë³€í™˜í•œë‹¤.
     static IDE_RC copyPredicate4Partition(
         qcStatement   * aStatement,
         qmoPredicate  * aSource,
@@ -780,7 +780,7 @@ public:
         idBool          aCopyVariablePred );
 
     // PROJ-1502 PARTITIONED DISK TABLE
-    // ÇÏ³ªÀÇ predicate¸¦ º¹»çÇÑ´Ù.
+    // í•˜ë‚˜ì˜ predicateë¥¼ ë³µì‚¬í•œë‹¤.
     static IDE_RC copyOnePredicate4Partition(
         qcStatement   * aStatement,
         qmoPredicate  * aSource,
@@ -788,8 +788,8 @@ public:
         UShort          aSourceTable,
         UShort          aDestTable );
 
-    // ½ÇÁ¦ÀûÀÎ qmoPredicate º¹»ç ÀÛ¾÷À» ¼öÇàÇÑ´Ù.
-    // ³»ºÎÀÇ qtcNodeµµ º¹»çÇÑ´Ù.
+    // ì‹¤ì œì ì¸ qmoPredicate ë³µì‚¬ ì‘ì—…ì„ ìˆ˜í–‰í•œë‹¤.
+    // ë‚´ë¶€ì˜ qtcNodeë„ ë³µì‚¬í•œë‹¤.
     static IDE_RC copyOnePredicate( iduVarMemList * aMemory, //fix PROJ-1596
                                     qmoPredicate  * aSource,
                                     qmoPredicate ** aResult );
@@ -799,31 +799,31 @@ public:
                                          qmoPredicate  * aSource,
                                          qmoPredicate ** aResult );
 
-    // PROJ-1446 Host variableÀ» Æ÷ÇÔÇÑ ÁúÀÇ ÃÖÀûÈ­
-    // ÁÖ¾îÁø predicateÀÇ next, moreµéÀ» Å½»öÇÏ¸é¼­,
-    // host ÃÖÀûÈ­°¡ °¡´ÉÇÑÁö °Ë»çÇÑ´Ù.
+    // PROJ-1446 Host variableì„ í¬í•¨í•œ ì§ˆì˜ ìµœì í™”
+    // ì£¼ì–´ì§„ predicateì˜ next, moreë“¤ì„ íƒìƒ‰í•˜ë©´ì„œ,
+    // host ìµœì í™”ê°€ ê°€ëŠ¥í•œì§€ ê²€ì‚¬í•œë‹¤.
     static idBool checkPredicateForHostOpt( qmoPredicate * aPredicate );
 
-    // ÄÃ·³º°·Î ¿¬°á°ü°è ¸¸µé±â
+    // ì»¬ëŸ¼ë³„ë¡œ ì—°ê²°ê´€ê³„ ë§Œë“¤ê¸°
     static IDE_RC    linkPred4ColumnID( qmoPredicate * aDestPred,
                                         qmoPredicate * aSourcePred );
 
-    // Àç¹èÄ¡°¡ ¿Ï·áµÈ °¢ indexable column¿¡ ´ëÇÑ IN(subquery)¿¡ ´ëÇÑ Ã³¸®
+    // ì¬ë°°ì¹˜ê°€ ì™„ë£Œëœ ê° indexable columnì— ëŒ€í•œ IN(subquery)ì— ëŒ€í•œ ì²˜ë¦¬
     static IDE_RC  processIndexableInSubQ( qmoPredicate ** aPredicate );
 
     // PROJ-1404
-    // predicate¿¡¼­ »ı¼ºµÈ transitive predicateÀ» Á¦°ÅÇÑ´Ù.
+    // predicateì—ì„œ ìƒì„±ëœ transitive predicateì„ ì œê±°í•œë‹¤.
     static IDE_RC  removeTransitivePredicate( qmoPredicate ** aPredicate,
                                               idBool          aOnlyJoinPred );
 
     // PROJ-1404
-    // »ı¼ºµÈ transitive predicate°ú ³í¸®ÀûÀ¸·Î Áßº¹µÈ predicateÀÌ ÀÖ´Â °æ¿ì
-    // »èÁ¦ÇÑ´Ù.
+    // ìƒì„±ëœ transitive predicateê³¼ ë…¼ë¦¬ì ìœ¼ë¡œ ì¤‘ë³µëœ predicateì´ ìˆëŠ” ê²½ìš°
+    // ì‚­ì œí•œë‹¤.
     static IDE_RC  removeEquivalentTransitivePredicate( qcStatement   * aStatement,
                                                         qmoPredicate ** aPredicate );
 
-    // indexable predicate ÆÇ´Ü½Ã, ÄÃ·³ÀÌ ÇÑÂÊ¿¡¸¸ Á¸ÀçÇÏ´ÂÁö¸¦ ÆÇ´Ü
-    // (Á¶°Ç4ÀÇ ÆÇ´Ü)
+    // indexable predicate íŒë‹¨ì‹œ, ì»¬ëŸ¼ì´ í•œìª½ì—ë§Œ ì¡´ì¬í•˜ëŠ”ì§€ë¥¼ íŒë‹¨
+    // (ì¡°ê±´4ì˜ íŒë‹¨)
     static IDE_RC isExistColumnOneSide( qcStatement * aStatement,
                                         qtcNode     * aNode,
                                         qcDepInfo   * aTableDependencies,
@@ -835,10 +835,10 @@ public:
 private:
 
     //-----------------------------------------------
-    // Base Table¿¡ ´ëÇÑ Ã³¸®
+    // Base Tableì— ëŒ€í•œ ì²˜ë¦¬
     //-----------------------------------------------
 
-    // Base TableÀÇ Predicate¿¡ ´ëÇÑ ºĞ·ù
+    // Base Tableì˜ Predicateì— ëŒ€í•œ ë¶„ë¥˜
     static IDE_RC  classifyTablePredicate( qcStatement   * aStatement,
                                            qmoPredicate  * aPredicate,
                                            qcDepInfo     * aTableDependencies,
@@ -852,7 +852,7 @@ private:
                                                qcDepInfo        * aOuterDependencies );
 
 
-    // ÇÏ³ªÀÇ ºñ±³¿¬»êÀÚ ³ëµå¿¡ ´ëÇÑ indexable ¿©ºÎ ÆÇ´Ü
+    // í•˜ë‚˜ì˜ ë¹„êµì—°ì‚°ì ë…¸ë“œì— ëŒ€í•œ indexable ì—¬ë¶€ íŒë‹¨
     static IDE_RC  isIndexableUnitPred( qcStatement * aStatement,
                                         qtcNode     * aNode,
                                         qcDepInfo   * aTableDependencies,
@@ -860,7 +860,7 @@ private:
                                         idBool      * aIsIndexable );
 
     // PROJ-1502 PARTITIONED DISK TABLE
-    // ÇÏ³ªÀÇ ºñ±³¿¬»êÀÚ ³ëµå¿¡ ´ëÇÑ Partition Prunable ¿©ºÎ ÆÇ´Ü
+    // í•˜ë‚˜ì˜ ë¹„êµì—°ì‚°ì ë…¸ë“œì— ëŒ€í•œ Partition Prunable ì—¬ë¶€ íŒë‹¨
     static IDE_RC  isPartitionPrunableOnePred(
         qcStatement        * aStatement,
         qtcNode            * aNode,
@@ -869,70 +869,70 @@ private:
         qcDepInfo          * aOuterDependencies,
         idBool             * aIsPartitionPrunable );
 
-    // indexable predicate ÆÇ´Ü½Ã,
-    // column°ú value°¡ µ¿ÀÏ°è¿­¿¡ ¼ÓÇÏ´Â data typeÀÎÁö¸¦ °Ë»ç
-    // (Á¶°Ç5ÀÇ ÆÇ´Ü)
+    // indexable predicate íŒë‹¨ì‹œ,
+    // columnê³¼ valueê°€ ë™ì¼ê³„ì—´ì— ì†í•˜ëŠ” data typeì¸ì§€ë¥¼ ê²€ì‚¬
+    // (ì¡°ê±´5ì˜ íŒë‹¨)
     static IDE_RC checkSameGroupType( qcStatement * aStatement,
                                       qtcNode     * aNode,
                                       idBool      * aIsIndexable );
 
-    // indexable predicate ÆÇ´Ü½Ã, value¿¡ ´ëÇÑ Á¶°Ç °Ë»ç (Á¶°Ç6ÀÇ ÆÇ´Ü)
+    // indexable predicate íŒë‹¨ì‹œ, valueì— ëŒ€í•œ ì¡°ê±´ ê²€ì‚¬ (ì¡°ê±´6ì˜ íŒë‹¨)
     static IDE_RC isIndexableValue( qcStatement * aStatement,
                                     qtcNode     * aNode,
                                     qcDepInfo   * aOuterDependencies,
                                     idBool      * aIsIndexable );
 
     // PROJ-1502 PARTITIONED DISK TABLE
-    // partition prunable predicate ÆÇ´Ü½Ã, value¿¡ ´ëÇÑ Á¶°Ç °Ë»ç (Á¶°Ç6ÀÇ ÆÇ´Ü)
+    // partition prunable predicate íŒë‹¨ì‹œ, valueì— ëŒ€í•œ ì¡°ê±´ ê²€ì‚¬ (ì¡°ê±´6ì˜ íŒë‹¨)
     static IDE_RC isPartitionPrunableValue( qcStatement * aStatement,
                                             qtcNode     * aNode,
                                             qcDepInfo   * aOuterDependencies,
                                             idBool      * aIsPartitionPrunable );
 
-    // LIKE ¿¬»êÀÚÀÇ index »ç¿ë °¡´É ¿©ºÎ ÆÇ´Ü
+    // LIKE ì—°ì‚°ìì˜ index ì‚¬ìš© ê°€ëŠ¥ ì—¬ë¶€ íŒë‹¨
     static IDE_RC  isIndexableLIKE( qcStatement  * aStatement,
                                     qtcNode      * aNode,
                                     idBool       * aIsIndexable );
 
     //-----------------------------------------------
-    // Join ¿¡ ´ëÇÑ Ã³¸®
+    // Join ì— ëŒ€í•œ ì²˜ë¦¬
     //-----------------------------------------------
 
-    // joinable predicateÀÇ ÆÇ´Ü
+    // joinable predicateì˜ íŒë‹¨
     static IDE_RC isJoinablePredicate( qmoPredicate * aPredicate,
                                        qcDepInfo    * aFromDependencies,
                                        qcDepInfo    * aLeftChildDependencies,
                                        qcDepInfo    * aRightChildDependencies,
                                        idBool       * aIsOnlyIndexNestedLoop );
 
-    // ÇÏ³ªÀÇ ºñ±³¿¬»êÀÚ¿¡ ´ëÇÑ joinable predicate ÆÇ´Ü
+    // í•˜ë‚˜ì˜ ë¹„êµì—°ì‚°ìì— ëŒ€í•œ joinable predicate íŒë‹¨
     static IDE_RC isJoinableOnePred( qtcNode     * aNode,
                                      qcDepInfo   * aFromDependencies,
                                      qcDepInfo   * aLeftChildDependencies,
                                      qcDepInfo   * aRightChildDependencies,
                                      idBool      * aIsJoinable );
 
-    // indexable join predicateÀÇ ÆÇ´Ü
+    // indexable join predicateì˜ íŒë‹¨
     static IDE_RC  isIndexableJoinPredicate( qcStatement  * aStatement,
                                              qmoPredicate * aPredicate,
                                              qmgGraph     * aLeftChildGraph,
                                              qmgGraph     * aRightChildGraph );
 
-    // sort joinable predicateÀÇ ÆÇ´Ü ( key size limit °Ë»ç )
+    // sort joinable predicateì˜ íŒë‹¨ ( key size limit ê²€ì‚¬ )
     static IDE_RC  isSortJoinablePredicate( qmoPredicate * aPredicate,
                                             qtcNode      * aNode,
                                             qcDepInfo    * aFromDependencies,
                                             qmgGraph     * aLeftChildGraph,
                                             qmgGraph     * aRightChildGraph );
 
-    // hash joinable predicateÀÇ ÆÇ´Ü ( key size limit °Ë»ç )
+    // hash joinable predicateì˜ íŒë‹¨ ( key size limit ê²€ì‚¬ )
     static IDE_RC isHashJoinablePredicate( qmoPredicate * aPredicate,
                                            qtcNode      * aNode,
                                            qcDepInfo    * aFromDependencies,
                                            qmgGraph     * aLeftChildGraph,
                                            qmgGraph     * aRightChildGraph );
 
-    // merge joinable predicateÀÇ ÆÇ´Ü ( ¹æÇâ¼º °Ë»ç )
+    // merge joinable predicateì˜ íŒë‹¨ ( ë°©í–¥ì„± ê²€ì‚¬ )
     static IDE_RC isMergeJoinablePredicate( qmoPredicate * aPredicate,
                                             qtcNode      * aNode,
                                             qcDepInfo    * aFromDependencies,
@@ -940,10 +940,10 @@ private:
                                             qmgGraph     * aRightChildGraph );
 
     //-----------------------------------------------
-    // ±âÅ¸
+    // ê¸°íƒ€
     //-----------------------------------------------
 
-    // keyRange ÃßÃâ
+    // keyRange ì¶”ì¶œ
     static IDE_RC  extractKeyRange( qcmIndex        * aIndex,
                                     qmoPredWrapper ** aSource,
                                     qmoPredWrapper ** aKeyRange,
@@ -951,7 +951,7 @@ private:
                                     qmoPredWrapper ** aSubqueryFilter );
 
     // PROJ-1502 PARTITIONED DISK TABLE
-    // partition keyrange ÃßÃâ
+    // partition keyrange ì¶”ì¶œ
     static IDE_RC  extractPartKeyRangePredicate(
         qcStatement         * aStatement,
         qmoPredicate        * aPredicate,
@@ -963,20 +963,20 @@ private:
         qmoPredWrapper     ** aSubqueryFilter,
         qmoPredWrapperPool  * aWrapperPool );
 
-    // one column¿¡ ´ëÇÑ keyRange ÃßÃâ ÇÔ¼ö
+    // one columnì— ëŒ€í•œ keyRange ì¶”ì¶œ í•¨ìˆ˜
     static IDE_RC  extractKeyRange4Column( qcmIndex        * aIndex,
                                            qmoPredWrapper ** aSource,
                                            qmoPredWrapper ** aKeyRange );
 
     // PROJ-1502 PARTITIONED DISK TABLE
-    // one column¿¡ ´ëÇÑ partition keyRange ÃßÃâ ÇÔ¼ö
+    // one columnì— ëŒ€í•œ partition keyRange ì¶”ì¶œ í•¨ìˆ˜
     static IDE_RC  extractPartKeyRange4Column( qcmColumn        * aPartKeyColumns,
                                                qcmPartitionMethod aPartitionMethod,
                                                qmoPredWrapper  ** aSource,
                                                qmoPredWrapper  ** aPartKeyRange );
 
 
-    // keyFilter ÃßÃâ
+    // keyFilter ì¶”ì¶œ
     static IDE_RC extractKeyFilter( idBool            aIsMemory,
                                     qcmIndex        * aIndex,
                                     qmoPredWrapper ** aSource,
@@ -984,12 +984,12 @@ private:
                                     qmoPredWrapper ** aKeyFilter,
                                     qmoPredWrapper ** aFilter );
 
-    // one column¿¡ ´ëÇÑ keyRange, keyFilter, filter, subqueryFilter ÃßÃâ ÇÔ¼ö
+    // one columnì— ëŒ€í•œ keyRange, keyFilter, filter, subqueryFilter ì¶”ì¶œ í•¨ìˆ˜
     static IDE_RC  extractKeyFilter4Column( qcmIndex        * aIndex,
                                             qmoPredWrapper ** aSource,
                                             qmoPredWrapper ** aKeyFilter );
 
-    // LIST¿¡ ´ëÇÑ keyRange, keyFilter, filter, subqueryFilter ÃßÃâ ÇÔ¼ö
+    // LISTì— ëŒ€í•œ keyRange, keyFilter, filter, subqueryFilter ì¶”ì¶œ í•¨ìˆ˜
     static IDE_RC  extractRange4LIST( qcTemplate         * aTemplate,
                                       qcmIndex           * aIndex,
                                       qmoPredWrapper    ** aSouece,
@@ -1000,7 +1000,7 @@ private:
                                       qmoPredWrapperPool * aWrapperPool );
 
     // PROJ-1502 PARTITIONED DISK TABLE
-    // LIST¿¡ ´ëÇÑ keyRange, keyFilter, filter, subqueryFilter ÃßÃâ ÇÔ¼ö
+    // LISTì— ëŒ€í•œ keyRange, keyFilter, filter, subqueryFilter ì¶”ì¶œ í•¨ìˆ˜
     static IDE_RC  extractPartKeyRange4LIST( qcStatement        * aStatement,
                                              qcmColumn          * aPartKeyColumns,
                                              qmoPredWrapper    ** aSouece,
@@ -1008,15 +1008,15 @@ private:
                                              qmoPredWrapperPool * aWrapperPool );
 
 
-    // keyRange¿Í keyFilter·Î ºĞ·ùµÈ predicate¿¡ ´ëÇØ¼­
-    // quantify ºñ±³¿¬»êÀÚ¿¡ ´ëÇÑ ³ëµåº¯È¯, likeºñ±³¿¬»êÀÚÀÇ filter»ı¼º
+    // keyRangeì™€ keyFilterë¡œ ë¶„ë¥˜ëœ predicateì— ëŒ€í•´ì„œ
+    // quantify ë¹„êµì—°ì‚°ìì— ëŒ€í•œ ë…¸ë“œë³€í™˜, likeë¹„êµì—°ì‚°ìì˜ filterìƒì„±
     static IDE_RC  process4Range( qcStatement        * aStatement,
                                   qmsQuerySet        * aQuerySet,
                                   qmoPredicate       * aRange,
                                   qmoPredWrapper    ** aFilter,
                                   qmoPredWrapperPool * aWrapperPool );
 
-    // qmoPredicate ¸®½ºÆ®¿¡¼­ filter subqueryFilter¸¦ ºĞ¸®ÇÑ´Ù.
+    // qmoPredicate ë¦¬ìŠ¤íŠ¸ì—ì„œ filter subqueryFilterë¥¼ ë¶„ë¦¬í•œë‹¤.
     static IDE_RC separateFilters( qcTemplate         * aTemplate,
                                    qmoPredWrapper     * aSource,
                                    qmoPredWrapper    ** aFilter,
@@ -1024,91 +1024,91 @@ private:
                                    qmoPredWrapper    ** aSubqueryFilter,
                                    qmoPredWrapperPool * aWrapperPool );
 
-    // keyRange/keyFilter·Î ÃßÃâµÈ preidcateÀÇ ¿¬°á¸®½ºÆ® Áß ÁÂÃøÃÖ»ó´Ü¿¡
-    // fixed/variable/InSubquery-keyRange¿¡ ´ëÇÑ Á¤º¸¸¦ ÀúÀåÇÑ´Ù.
+    // keyRange/keyFilterë¡œ ì¶”ì¶œëœ preidcateì˜ ì—°ê²°ë¦¬ìŠ¤íŠ¸ ì¤‘ ì¢Œì¸¡ìµœìƒë‹¨ì—
+    // fixed/variable/InSubquery-keyRangeì— ëŒ€í•œ ì •ë³´ë¥¼ ì €ì¥í•œë‹¤.
     static IDE_RC setRangeInfo( qmsQuerySet  * aQuerySet,
                                 qmoPredicate * aPredicate );
 
     // To Fix PR-9679
-    // LIKE predicate°ú °°ÀÌ Range¸¦ »ı¼ºÇÏ´õ¶óµµ
-    // Filter°¡ ÇÊ¿äÇÑ °æ¿ì¿¡ ´ëÇÑ filter¸¦ ¸¸µç´Ù.
+    // LIKE predicateê³¼ ê°™ì´ Rangeë¥¼ ìƒì„±í•˜ë”ë¼ë„
+    // Filterê°€ í•„ìš”í•œ ê²½ìš°ì— ëŒ€í•œ filterë¥¼ ë§Œë“ ë‹¤.
     static IDE_RC makeFilterNeedPred( qcStatement   * aStatement,
                                       qmoPredicate  * aPredicate,
                                       qmoPredicate ** aLikeFilterPred );
 
 
 
-    // keyRange Àû¿ëÀ» À§ÇÑ ³ëµå º¯È¯(quantify ºñ±³¿¬»êÀÚ¿Í LIST)
+    // keyRange ì ìš©ì„ ìœ„í•œ ë…¸ë“œ ë³€í™˜(quantify ë¹„êµì—°ì‚°ìì™€ LIST)
     static IDE_RC nodeTransform( qcStatement  * aStatement,
                                  qtcNode      * aSourceNode,
                                  qtcNode     ** aTransformNode,
                                  qmsQuerySet  * aQuerySet );
 
-    // OR ³ëµå ÇÏÀ§ ÇÏ³ªÀÇ ºñ±³¿¬»êÀÚ ³ëµå ´ÜÀ§·Î ³ëµå º¯È¯
+    // OR ë…¸ë“œ í•˜ìœ„ í•˜ë‚˜ì˜ ë¹„êµì—°ì‚°ì ë…¸ë“œ ë‹¨ìœ„ë¡œ ë…¸ë“œ ë³€í™˜
     static IDE_RC nodeTransform4OneCond( qcStatement * aStatement,
                                          qtcNode     * aCompareNode,
                                          qtcNode    ** aTransformNode,
                                          qmsQuerySet * aQuerySet );
 
-    // ÇÏ³ªÀÇ list value node º¯È¯
+    // í•˜ë‚˜ì˜ list value node ë³€í™˜
     static IDE_RC nodeTransform4List( qmoPredTrans * aPredTrans,
                                       qtcNode      * aColumnNode,
                                       qtcNode      * sValueNode,
                                       qtcNode     ** aTransformNode );
 
-    // (i1, i2) in (1,2) °°Àº °æ¿ì
+    // (i1, i2) in (1,2) ê°™ì€ ê²½ìš°
     static IDE_RC nodeTransformListColumnListValue( qmoPredTrans * aPredTrans,
                                                     qtcNode      * aColumnNode,
                                                     qtcNode      * aValueNode,
                                                     qtcNode     ** aTransformNode );
 
-    // (i1, i2) in (1,2) °°Àº °æ¿ì
+    // (i1, i2) in (1,2) ê°™ì€ ê²½ìš°
     static IDE_RC nodeTransformOneColumnListValue( qmoPredTrans * aPredTrans,
                                                    qtcNode      * aColumnNode,
                                                    qtcNode      * aValueNode,
                                                    qtcNode     ** aTransformNode );
 
-    // ÇÏ³ªÀÇ node¿¡ ´ëÇÑ º¯È¯
+    // í•˜ë‚˜ì˜ nodeì— ëŒ€í•œ ë³€í™˜
     static IDE_RC nodeTransformOneNode( qmoPredTrans * aPredTrans,
                                         qtcNode      * aColumnNode,
                                         qtcNode      * aValueNode,
                                         qtcNode     ** aTransfromNode );
 
-    // subquery list¿¡ ´ëÇÑ º¯È¯
+    // subquery listì— ëŒ€í•œ ë³€í™˜
     static IDE_RC nodeTransform4OneRowSubQ( qmoPredTrans * aPredTrans,
                                             qtcNode      * aColumnNode,
                                             qtcNode      * aValueNode,
                                             qtcNode     ** aTransformNode );
 
-    // value node°¡ SUBQUERY ÀÎ °æ¿ìÀÇ ³ëµå º¯È¯
+    // value nodeê°€ SUBQUERY ì¸ ê²½ìš°ì˜ ë…¸ë“œ ë³€í™˜
     static IDE_RC nodeTransform4SubQ( qmoPredTrans * aPredTrans,
                                       qtcNode      * aCompareNode,
                                       qtcNode      * aColumnNode,
                                       qtcNode      * aValueNode,
                                       qtcNode     ** aTransfromNode );
 
-    // indexArgument ¼³Á¤
+    // indexArgument ì„¤ì •
     static IDE_RC    setIndexArgument( qtcNode      * aNode,
                                        qcDepInfo    * aDependencies );
 
-    // IN(subquery) ¶Ç´Â subquery keyRange ÃÖÀûÈ­ ÆÁ Àû¿ë predicateÀÌ
-    // keyRange·Î ÃßÃâµÇÁö ¸øÇÏ°í, filter·Î ºüÁö´Â °æ¿ì,
-    // ¼³Á¤µÇ¾î ÀÖ´Â IN(subquery)ÃÖÀûÈ­ ÆÁ Á¤º¸¸¦ »èÁ¦
+    // IN(subquery) ë˜ëŠ” subquery keyRange ìµœì í™” íŒ ì ìš© predicateì´
+    // keyRangeë¡œ ì¶”ì¶œë˜ì§€ ëª»í•˜ê³ , filterë¡œ ë¹ ì§€ëŠ” ê²½ìš°,
+    // ì„¤ì •ë˜ì–´ ìˆëŠ” IN(subquery)ìµœì í™” íŒ ì •ë³´ë¥¼ ì‚­ì œ
     static IDE_RC   removeIndexableSubQTip( qtcNode     * aNode );
 
-    // Filter¿¡ ´ëÇØ indexable Á¤º¸¸¦ Á¦°ÅÇÑ´Ù.
+    // Filterì— ëŒ€í•´ indexable ì •ë³´ë¥¼ ì œê±°í•œë‹¤.
     static IDE_RC removeIndexableFromFilter( qmoPredWrapper * aFilter );
 
-    // qmoPredWrapperÀÇ ¿¬°á ±¸Á¶´ë·Î qmoPredicateÀÇ ¿¬°á Á¤º¸¸¦ Àç¼³Á¤ÇÑ´Ù.
+    // qmoPredWrapperì˜ ì—°ê²° êµ¬ì¡°ëŒ€ë¡œ qmoPredicateì˜ ì—°ê²° ì •ë³´ë¥¼ ì¬ì„¤ì •í•œë‹¤.
     static IDE_RC relinkPredicate( qmoPredWrapper * aWrapper );
 
-    // moreÀÇ ¿¬°áµéÀ» ²÷´Â´Ù.
+    // moreì˜ ì—°ê²°ë“¤ì„ ëŠëŠ”ë‹¤.
     static IDE_RC removeMoreConnection( qmoPredWrapper * aWrapper,
                                         idBool aIfOnlyList );
 
-    // ¾Æ·¡ ¼¼ ÇÔ¼ö´Â deepCopyPredicate()·ÎºÎÅÍ ÆÄ»ıµÈ ¼­ºê ÇÔ¼öµéÀÌ´Ù.
-    // linkToMore´Â aLastÀÇ more¿¡ aNew¸¦ ´Ş°í,
-    // linkToNext´Â aLastÀÇ next¿¡ aNew¸¦ ´Ü´Ù.
+    // ì•„ë˜ ì„¸ í•¨ìˆ˜ëŠ” deepCopyPredicate()ë¡œë¶€í„° íŒŒìƒëœ ì„œë¸Œ í•¨ìˆ˜ë“¤ì´ë‹¤.
+    // linkToMoreëŠ” aLastì˜ moreì— aNewë¥¼ ë‹¬ê³ ,
+    // linkToNextëŠ” aLastì˜ nextì— aNewë¥¼ ë‹¨ë‹¤.
     static void linkToMore( qmoPredicate **aHead,
                             qmoPredicate **aLast,
                             qmoPredicate *aNew );

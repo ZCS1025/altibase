@@ -43,7 +43,7 @@ private:
       to should be decreased.*/
     UInt                mBusyExprienceCnt;
     idBool              mIsShutdownTask;
-    // fix BUG-27965 LoginTimeout πﬂª˝ ø©∫Œ √º≈©
+    // fix BUG-27965 LoginTimeout Î∞úÏÉù Ïó¨Î∂Ä Ï≤¥ÌÅ¨
     idBool              mIsLoginTimeoutTask;
 
     cmiProtocolContext  mProtocolContext;

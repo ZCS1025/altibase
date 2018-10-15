@@ -107,7 +107,7 @@ IDE_RC qsxProc::destroyProcObjectInfo(
 
     IDE_DASSERT( *aProcObjectInfo != NULL );
 
-    // iduLatch::destroy´Â ¹İµå½Ã ¼º°øÇÔ.
+    // iduLatch::destroyëŠ” ë°˜ë“œì‹œ ì„±ê³µí•¨.
     (void)(*aProcObjectInfo)->latchForStatus.destroy();
 
     (void)(*aProcObjectInfo)->latch.destroy();
@@ -554,9 +554,9 @@ IDE_RC qsxProc::latchXForRecompile( qsOID          aProcOID )
  *
  * Description :
  *   BUG-18854
- *   ÇÁ·Î½ÃÀú ½ÇÇà Áß ¹ß»ıÇÑ recompile¿¡ ÇÑÇØ¼­
- *   X latch ¸¦ ÀâÀ» ¶§ ½ÇÆĞÇÏ¸é rebuild¿¡·¯¸¦ ¿Ã·Á¼­
- *   abort resource busy¿¡·¯¿Í ±¸ºĞÇÑ´Ù.
+ *   í”„ë¡œì‹œì € ì‹¤í–‰ ì¤‘ ë°œìƒí•œ recompileì— í•œí•´ì„œ
+ *   X latch ë¥¼ ì¡ì„ ë•Œ ì‹¤íŒ¨í•˜ë©´ rebuildì—ëŸ¬ë¥¼ ì˜¬ë ¤ì„œ
+ *   abort resource busyì—ëŸ¬ì™€ êµ¬ë¶„í•œë‹¤.
  *
  *
  * Implementation :
@@ -662,7 +662,7 @@ IDE_RC qsxProc::makeStatusValid( qcStatement * aStatement,
               != IDE_SUCCESS );
     sState = 1;
 
-    // latch¸¦ Àâ¾Ò´Ù¸é procInfo°¡ ¹İµå½Ã ÀÖ¾î¾ß ÇÑ´Ù.
+    // latchë¥¼ ì¡ì•˜ë‹¤ë©´ procInfoê°€ ë°˜ë“œì‹œ ìˆì–´ì•¼ í•œë‹¤.
     IDE_ERROR( sObjInfo->procInfo != NULL );
 
     if( sObjInfo->procInfo->sessionID == QCG_GET_SESSION_ID( aStatement ) )
@@ -676,8 +676,8 @@ IDE_RC qsxProc::makeStatusValid( qcStatement * aStatement,
     }
     else
     {
-        // ´Ù¸¥ session ¿¡¼­ PSMÀ» invalid ½ÃÅ² °æ¿ì
-        // valid »óÅÂ·Î º¯°æÇÏÁö ¾Ê´Â´Ù.
+        // ë‹¤ë¥¸ session ì—ì„œ PSMì„ invalid ì‹œí‚¨ ê²½ìš°
+        // valid ìƒíƒœë¡œ ë³€ê²½í•˜ì§€ ì•ŠëŠ”ë‹¤.
     }
 
     sState = 0;
@@ -712,7 +712,7 @@ IDE_RC qsxProc::makeStatusValidTx( qcStatement * aStatement,
               != IDE_SUCCESS );
     sState = 1;
 
-    // latch¸¦ Àâ¾Ò´Ù¸é procInfo°¡ ¹İµå½Ã ÀÖ¾î¾ß ÇÑ´Ù.
+    // latchë¥¼ ì¡ì•˜ë‹¤ë©´ procInfoê°€ ë°˜ë“œì‹œ ìˆì–´ì•¼ í•œë‹¤.
     IDE_ERROR( sObjInfo->procInfo != NULL );
 
     if( sObjInfo->procInfo->sessionID == QCG_GET_SESSION_ID( aStatement ) )
@@ -726,8 +726,8 @@ IDE_RC qsxProc::makeStatusValidTx( qcStatement * aStatement,
     }
     else
     {
-        // ´Ù¸¥ session ¿¡¼­ PSMÀ» invalid ½ÃÅ² °æ¿ì
-        // valid »óÅÂ·Î º¯°æÇÏÁö ¾Ê´Â´Ù.
+        // ë‹¤ë¥¸ session ì—ì„œ PSMì„ invalid ì‹œí‚¨ ê²½ìš°
+        // valid ìƒíƒœë¡œ ë³€ê²½í•˜ì§€ ì•ŠëŠ”ë‹¤.
     }
 
     sState = 0;

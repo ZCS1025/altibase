@@ -29,7 +29,7 @@
 #define YY_READ_BUF_SIZE (16384)
 #define YY_BUF_SIZE (YY_READ_BUF_SIZE * 2) /* size of default yyinput buffer */
 
-// column À§Ä¡¸¦ °è»êÇÏ±âÀ§ÇÑ macro
+// column ìœ„ì¹˜ë¥¼ ê³„ì‚°í•˜ê¸°ìœ„í•œ macro
 #define YY_USER_ACTION if(YY_AT_BOL()) { yycolumnP = 0; }\
                        gFirstcolumnP = yycolumnP; gLastcolumnP = yycolumnP+yyleng-1; \
                        yycolumnP += yyleng;
@@ -54,34 +54,34 @@ extern SInt             gUlpPPPrevCond;
 extern ulpPPifstackMgr *gUlpPPifstackMgr[MAX_HEADER_FILE_NUM];
 extern SInt             gUlpPPifstackInd;
 
-/* BUG-27683 : iostream »ç¿ë Á¦°Å */
-// include¸¦ Ã³¸®ÇÏ±âÀ§ÇÑ buffer state ¹è¿­.
+/* BUG-27683 : iostream ì‚¬ìš© ì œê±° */
+// includeë¥¼ ì²˜ë¦¬í•˜ê¸°ìœ„í•œ buffer state ë°°ì—´.
 struct ulpPPBufState
 {
     YY_BUFFER_STATE         mPPIncludeStack;
     SInt                    mPPLinenum;
 } gUlpPPIncludeStack[MAX_HEADER_FILE_NUM];
-// gUlpPPIncludeStackÀÇ index °ª
+// gUlpPPIncludeStackì˜ index ê°’
 SInt                 gUlpPPIncludeIndex = 0;
 
-// ÇöÁ¦ #include file Ã³¸® ÁßÀÎÁö¸¦ ¾Ë·ÁÁÜ.
+// í˜„ì œ #include file ì²˜ë¦¬ ì¤‘ì¸ì§€ë¥¼ ì•Œë ¤ì¤Œ.
 idBool               gUlpPPisCInc   = ID_FALSE;
-// ÇöÁ¦ exec sql include file Ã³¸® ÁßÀÎÁö¸¦ ¾Ë·ÁÁÜ.
+// í˜„ì œ exec sql include file ì²˜ë¦¬ ì¤‘ì¸ì§€ë¥¼ ì•Œë ¤ì¤Œ.
 idBool               gUlpPPisSQLInc = ID_FALSE;
-// preprocessor parsing Áß ¹ß»ıÇÑ ¿¡·¯¿¡´ëÇÑ ÄÚµåÁ¤º¸.
+// preprocessor parsing ì¤‘ ë°œìƒí•œ ì—ëŸ¬ì—ëŒ€í•œ ì½”ë“œì •ë³´.
 SChar               *gUlpPPErrCode  = NULL;
-// column À§Ä¡¸¦ °è»êÇÏ±âÀ§ÇÑ º¯¼öµé.
+// column ìœ„ì¹˜ë¥¼ ê³„ì‚°í•˜ê¸°ìœ„í•œ ë³€ìˆ˜ë“¤.
 SInt                 gFirstcolumnP  = 0;
 SInt                 gLastcolumnP   = 0;
 SInt                 yycolumnP      = 0;
 
-// declare section error Ã³¸® ÇÏ±âÀ§ÇÑ º¯¼ö.
+// declare section error ì²˜ë¦¬ í•˜ê¸°ìœ„í•œ ë³€ìˆ˜.
 SInt                 gPPERRCheck4DECL = 0;
-/* BUG-28162 : SESC_DECLARE ºÎÈ°  */
-// -parse none ÀÏ°æ¿ì #ifdef SESC_DELCLARE ¿¡´ëÇÑ #endif¸¦ Ã£±âÀ§ÇÑ º¯¼ö.
+/* BUG-28162 : SESC_DECLARE ë¶€í™œ  */
+// -parse none ì¼ê²½ìš° #ifdef SESC_DELCLARE ì—ëŒ€í•œ #endifë¥¼ ì°¾ê¸°ìœ„í•œ ë³€ìˆ˜.
 SInt                 gUlpPPSescDec  = 0;
 
-// JIS Ã³¸®¸¦ À§ÇÑ º¯¼ö.
+// JIS ì²˜ë¦¬ë¥¼ ìœ„í•œ ë³€ìˆ˜.
 idnCharFeature       gUlpPPCharType4JIS = IDN_CF_UNKNOWN;
 //============================================================//
 
@@ -153,7 +153,7 @@ switch( gUlpPPStartCond )
         BEGIN(MACRO_IF_SKIP);
         break;
     default :
-        /* Æ¯Á¤ »óÅÂ·Î º¹±Í */
+        /* íŠ¹ì • ìƒíƒœë¡œ ë³µê·€ */
         BEGIN(gUlpPPStartCond);
         gUlpPPStartCond = PP_ST_NONE;
         break;
@@ -182,7 +182,7 @@ switch( gUlpPPStartCond )
         }
     }
 
-    // WriteBuf¿¡ ±×´ë·Î ¾´´Ù
+    // WriteBufì— ê·¸ëŒ€ë¡œ ì“´ë‹¤
     WRITESTR2BUFPP(yytext);
 
     BEGIN(MACRO);
@@ -209,7 +209,7 @@ switch( gUlpPPStartCond )
             PPerror( ulpGetErrorMSG(&sErrorMgr) );
         }
     }
-    // WriteBuf¿¡ ±×´ë·Î ¾´´Ù
+    // WriteBufì— ê·¸ëŒ€ë¡œ ì“´ë‹¤
     WRITESTR2BUFPP(yytext);
 
     BEGIN(MACRO);
@@ -237,7 +237,7 @@ switch( gUlpPPStartCond )
         }
     }
 
-    // WriteBuf¿¡ ±×´ë·Î ¾´´Ù
+    // WriteBufì— ê·¸ëŒ€ë¡œ ì“´ë‹¤
     WRITESTR2BUFPP(yytext);
 
     ulpPPRestoreCond();
@@ -265,13 +265,13 @@ switch( gUlpPPStartCond )
         }
     }
 
-    // WriteBuf¿¡ ±×´ë·Î ¾´´Ù
+    // WriteBufì— ê·¸ëŒ€ë¡œ ì“´ë‹¤
     WRITESTR2BUFPP(yytext);
 
     ulpPPRestoreCond();
 }
 <INIT_SKIP,MACRO>^([ \t]*{OPTION_INC}) {
-    // #include header file Ã³¸® ÁßÀÏ °æ¿ì¿¡´Â error¸¦ ¹ß»ı½ÃÅ²´Ù.
+    // #include header file ì²˜ë¦¬ ì¤‘ì¼ ê²½ìš°ì—ëŠ” errorë¥¼ ë°œìƒì‹œí‚¨ë‹¤.
     if( gUlpPPisCInc == ID_TRUE )
     {
         ulpErrorMgr sErrorMgr;
@@ -280,7 +280,7 @@ switch( gUlpPPStartCond )
         gUlpPPErrCode = ulpGetErrorSTATE( &sErrorMgr );
         PPerror( ulpGetErrorMSG(&sErrorMgr) );
     }
-    // ÇöÀç »óÅÂ ÀúÀå. (³ªÁß¿¡ ´Ù½Ã º¹±ÍÇÏ±â À§ÇÔ)
+    // í˜„ì¬ ìƒíƒœ ì €ì¥. (ë‚˜ì¤‘ì— ë‹¤ì‹œ ë³µê·€í•˜ê¸° ìœ„í•¨)
     gUlpPPPrevCond = YYSTATE;
 
     if( gUlpPPCharType4JIS == IDN_CF_SJIS )
@@ -296,12 +296,12 @@ switch( gUlpPPStartCond )
         BEGIN inc_opt_neg_trail;
     }
 
-    // option INCLUDE ÀÇ°æ¿ì ¿¡´Â WriteBuf¿¡ flushÇÒ ÇÊ¿ä ¾ø´Ù.
+    // option INCLUDE ì˜ê²½ìš° ì—ëŠ” WriteBufì— flushí•  í•„ìš” ì—†ë‹¤.
     return EM_OPTION_INC;
 
 }
 <INIT_SKIP,MACRO>(;[ \t]*{OPTION_INC}) {
-    // #include header file Ã³¸® ÁßÀÏ °æ¿ì¿¡´Â error¸¦ ¹ß»ı½ÃÅ²´Ù.
+    // #include header file ì²˜ë¦¬ ì¤‘ì¼ ê²½ìš°ì—ëŠ” errorë¥¼ ë°œìƒì‹œí‚¨ë‹¤.
     if( gUlpPPisCInc == ID_TRUE )
     {
         ulpErrorMgr sErrorMgr;
@@ -310,7 +310,7 @@ switch( gUlpPPStartCond )
         gUlpPPErrCode = ulpGetErrorSTATE( &sErrorMgr );
         PPerror( ulpGetErrorMSG(&sErrorMgr) );
     }
-    // ÇöÀç »óÅÂ ÀúÀå. (³ªÁß¿¡ ´Ù½Ã º¹±ÍÇÏ±â À§ÇÔ)
+    // í˜„ì¬ ìƒíƒœ ì €ì¥. (ë‚˜ì¤‘ì— ë‹¤ì‹œ ë³µê·€í•˜ê¸° ìœ„í•¨)
     gUlpPPPrevCond = YYSTATE;
 
     if( gUlpPPCharType4JIS == IDN_CF_SJIS )
@@ -326,7 +326,7 @@ switch( gUlpPPStartCond )
         BEGIN inc_opt_neg_trail;
     }
 
-    // option INCLUDE ÀÇ°æ¿ì ¿¡´Â WriteBuf¿¡ flushÇÒ ÇÊ¿ä ¾ø´Ù.
+    // option INCLUDE ì˜ê²½ìš° ì—ëŠ” WriteBufì— flushí•  í•„ìš” ì—†ë‹¤.
     return EM_OPTION_INC;
 
 }
@@ -363,7 +363,7 @@ switch( gUlpPPStartCond )
     gUlpCodeGen.ulpGenComment( yytext );
 }
 <INIT_SKIP,MACRO>^([ \t]*{INCLUDE})  {
-    // #include header file Ã³¸® ÁßÀÏ °æ¿ì¿¡´Â error¸¦ ¹ß»ı½ÃÅ²´Ù.
+    // #include header file ì²˜ë¦¬ ì¤‘ì¼ ê²½ìš°ì—ëŠ” errorë¥¼ ë°œìƒì‹œí‚¨ë‹¤.
     if( gUlpPPisCInc == ID_TRUE )
     {
         ulpErrorMgr sErrorMgr;
@@ -372,7 +372,7 @@ switch( gUlpPPStartCond )
         gUlpPPErrCode = ulpGetErrorSTATE( &sErrorMgr );
         PPerror( ulpGetErrorMSG(&sErrorMgr) );
     }
-    // ÇöÀç »óÅÂ ÀúÀå. (³ªÁß¿¡ ´Ù½Ã º¹±ÍÇÏ±â À§ÇÔ)
+    // í˜„ì¬ ìƒíƒœ ì €ì¥. (ë‚˜ì¤‘ì— ë‹¤ì‹œ ë³µê·€í•˜ê¸° ìœ„í•¨)
     gUlpPPPrevCond = YYSTATE;
 
     if( gUlpPPCharType4JIS == IDN_CF_SJIS )
@@ -388,13 +388,13 @@ switch( gUlpPPStartCond )
         BEGIN inc_neg_trail;
     }
 
-    // option INCLUDE ÀÇ°æ¿ì ¿¡´Â WriteBuf¿¡ flushÇÒ ÇÊ¿ä ¾ø´Ù.
-    // ´ÜÁö header fileÀ» embedded ½ÃÅ³ »ÓÀÌ´Ù.
+    // option INCLUDE ì˜ê²½ìš° ì—ëŠ” WriteBufì— flushí•  í•„ìš” ì—†ë‹¤.
+    // ë‹¨ì§€ header fileì„ embedded ì‹œí‚¬ ë¿ì´ë‹¤.
     return EM_INCLUDE;
 
 }
 <INIT_SKIP,MACRO>(;[ \t]*{INCLUDE})  {
-    // #include header file Ã³¸® ÁßÀÏ °æ¿ì¿¡´Â error¸¦ ¹ß»ı½ÃÅ²´Ù.
+    // #include header file ì²˜ë¦¬ ì¤‘ì¼ ê²½ìš°ì—ëŠ” errorë¥¼ ë°œìƒì‹œí‚¨ë‹¤.
     if( gUlpPPisCInc == ID_TRUE )
     {
         ulpErrorMgr sErrorMgr;
@@ -403,7 +403,7 @@ switch( gUlpPPStartCond )
         gUlpPPErrCode = ulpGetErrorSTATE( &sErrorMgr );
         PPerror( ulpGetErrorMSG(&sErrorMgr) );
     }
-    // ÇöÀç »óÅÂ ÀúÀå. (³ªÁß¿¡ ´Ù½Ã º¹±ÍÇÏ±â À§ÇÔ)
+    // í˜„ì¬ ìƒíƒœ ì €ì¥. (ë‚˜ì¤‘ì— ë‹¤ì‹œ ë³µê·€í•˜ê¸° ìœ„í•¨)
     gUlpPPPrevCond = YYSTATE;
 
     if( gUlpPPCharType4JIS == IDN_CF_SJIS )
@@ -419,8 +419,8 @@ switch( gUlpPPStartCond )
         BEGIN inc_neg_trail;
     }
 
-    // option INCLUDE ÀÇ°æ¿ì ¿¡´Â WriteBuf¿¡ flushÇÒ ÇÊ¿ä ¾ø´Ù.
-    // ´ÜÁö header fileÀ» embedded ½ÃÅ³ »ÓÀÌ´Ù.
+    // option INCLUDE ì˜ê²½ìš° ì—ëŠ” WriteBufì— flushí•  í•„ìš” ì—†ë‹¤.
+    // ë‹¨ì§€ header fileì„ embedded ì‹œí‚¬ ë¿ì´ë‹¤.
     return EM_INCLUDE;
 }
 
@@ -554,7 +554,7 @@ switch( gUlpPPStartCond )
 
     sCh  = yyinput();
 
-    // ÇÔ¼öÀÎÁö check
+    // í•¨ìˆ˜ì¸ì§€ check
     if (sCh == '(')
     {
         WRITESTR2BUFPP(yytext);
@@ -635,7 +635,7 @@ switch( gUlpPPStartCond )
 <MACRO_IFDEF>{L}({L}|{D})*                { return(M_IDENTIFIER); }
 <MACRO_IFDEF>{L}({L}|{D})*"("[^\n]*       {
     SChar *sStr;
-    // ÇÔ¼öÀÌ¸§ÀÏ°æ¿ì '(' ¼­ºÎÅÍÀÇ ÅäÅ«µéÀº ¹«½ÃµÈ´Ù.
+    // í•¨ìˆ˜ì´ë¦„ì¼ê²½ìš° '(' ì„œë¶€í„°ì˜ í† í°ë“¤ì€ ë¬´ì‹œëœë‹¤.
     sStr = idlOS::strstr( yytext, "(" );
     if( sStr != NULL )
     {
@@ -703,7 +703,7 @@ switch( gUlpPPStartCond )
 
 
 <MACRO_IF_SKIP>^([ \t]*"#"[ \t]*"if")      {
-    // ¾Æ·¡ regular expr. (\n[ \t]*"#"[ \t]*"if")¿Í ÇÕÄ¡¸é flex compile½Ã ¿¡·¯ ¹ß»ı. ÀÌÀ¯¸ğ¸§.
+    // ì•„ë˜ regular expr. (\n[ \t]*"#"[ \t]*"if")ì™€ í•©ì¹˜ë©´ flex compileì‹œ ì—ëŸ¬ ë°œìƒ. ì´ìœ ëª¨ë¦„.
     BEGIN(MACRO);
     yyless(0);
 }
@@ -785,7 +785,7 @@ switch( gUlpPPStartCond )
     gUlpPPSescDec++;
 }
 <MACRO_SESC_DEC>"#"[ \t]*"endif"      {
-    /* BUG-28162 : SESC_DECLARE ºÎÈ°  */
+    /* BUG-28162 : SESC_DECLARE ë¶€í™œ  */
     if ( gUlpPPSescDec > 0 )
     {
         WRITESTR2BUFPP(yytext);
@@ -889,12 +889,12 @@ IDE_RC ulpPPInitialize( SChar *aFileName )
     IDE_TEST_RAISE( (yyin = idlOS::fopen(aFileName, "r")) == NULL,
                     ERR_FILE_OPEN)
 
-    /* BUG-27683 : iostream »ç¿ë Á¦°Å */
-    // include Ã³¸®ÀÏ °æ¿ì »õ ¹öÆÛ¸¦ »ı¼ºÇÏ°í, switch½ÃÄÑÁØ´Ù.
+    /* BUG-27683 : iostream ì‚¬ìš© ì œê±° */
+    // include ì²˜ë¦¬ì¼ ê²½ìš° ìƒˆ ë²„í¼ë¥¼ ìƒì„±í•˜ê³ , switchì‹œì¼œì¤€ë‹¤.
     if ( gUlpPPIncludeIndex > 0 )
     {
         yy_switch_to_buffer ( yy_create_buffer( yyin, YY_BUF_SIZE) );
-        // »õfile ¿­¶§¸¶´Ù lineÁ¤º¸ ÃÊ±âÈ­.
+        // ìƒˆfile ì—´ë•Œë§ˆë‹¤ lineì •ë³´ ì´ˆê¸°í™”.
         yylineno = 1;
     }
 
@@ -927,18 +927,18 @@ IDE_RC ulpPPInitialize( SChar *aFileName )
 
 void ulpPPFinalize()
 {
-    /* ÇÏ³ªÀÇ include fileÃ³¸®°¡ ³¡³µÀ¸¹Ç·Î include index 1 °¨¼Ò */
+    /* í•˜ë‚˜ì˜ include fileì²˜ë¦¬ê°€ ëë‚¬ìœ¼ë¯€ë¡œ include index 1 ê°ì†Œ */
     gUlpProgOption.ulpPopIncList();
 
-    /* Ã³¸®°¡ ³¡³­ file close */
+    /* ì²˜ë¦¬ê°€ ëë‚œ file close */
     if( yyin != NULL )
     {
         idlOS::fclose(yyin);
         yyin = NULL;
     }
 
-    /* BUG-27683 : iostream »ç¿ë Á¦°Å */
-    // include Ã³¸®¸¦ ¸¶Ä£ °æ¿ì ÇöÁ¦ ¹öÆÛ¸¦ Áö¿ì°í, ÀÌÀü ¹öÆÛ·Î switch½ÃÄÑÁØ´Ù.
+    /* BUG-27683 : iostream ì‚¬ìš© ì œê±° */
+    // include ì²˜ë¦¬ë¥¼ ë§ˆì¹œ ê²½ìš° í˜„ì œ ë²„í¼ë¥¼ ì§€ìš°ê³ , ì´ì „ ë²„í¼ë¡œ switchì‹œì¼œì¤€ë‹¤.
     if ( gUlpPPIncludeIndex > 0 )
     {
         gUlpPPIncludeIndex--;
@@ -954,7 +954,7 @@ IDE_RC ulpPPCommentC()
 /***********************************************************************
  *
  * Description :
- *      C comment Ã³¸® ÇÔ¼ö. commentÀÇ ¸¶Áö¸·ÀÎ " * / " °¡ ¿Ã¶§±îÁö ÀĞ¾îµé¿© write ¹öÆÛ¿¡ ¾´´Ù.
+ *      C comment ì²˜ë¦¬ í•¨ìˆ˜. commentì˜ ë§ˆì§€ë§‰ì¸ " * / " ê°€ ì˜¬ë•Œê¹Œì§€ ì½ì–´ë“¤ì—¬ write ë²„í¼ì— ì“´ë‹¤.
  *
  ***********************************************************************/
     SChar sCh1;
@@ -964,7 +964,7 @@ IDE_RC ulpPPCommentC()
 
     for( sIndex = 0 ; ( sCh1 = yyinput() ) != (SChar) EOF ; )
     {
-        /* stack ÀÌ ²ËÃ¡À¸¸é, write buf¿¡ flush ÇÏ°í sIndexÃÊ±âÈ­ÈÄ ´Ù½Ã ÀĞ´Â´Ù. */
+        /* stack ì´ ê½‰ì°¼ìœ¼ë©´, write bufì— flush í•˜ê³  sIndexì´ˆê¸°í™”í›„ ë‹¤ì‹œ ì½ëŠ”ë‹¤. */
         if ( ( MAX_COMMENTSTR_LEN - 6 ) < sIndex )
         {
             unput(sCh1);
@@ -982,7 +982,7 @@ IDE_RC ulpPPCommentC()
         {
             sCh2 = yyinput();
             if( sCh2 == '/' )
-            {   /* ÁÖ¼®ÀÇ ¸¶Áö¸·ÀÌ ¿Ã°æ¿ì */
+            {   /* ì£¼ì„ì˜ ë§ˆì§€ë§‰ì´ ì˜¬ê²½ìš° */
                 sTmpStr[sIndex++] = sCh2;
                 sTmpStr[sIndex]   = '\0';
                 WRITESTR2BUFPP(sTmpStr);
@@ -996,7 +996,7 @@ IDE_RC ulpPPCommentC()
         }
     }
 
-    /* BUG-27854 : AIX¿¡¼­ commentÃ³¸®Áß hang°É¸². */
+    /* BUG-27854 : AIXì—ì„œ commentì²˜ë¦¬ì¤‘ hangê±¸ë¦¼. */
     IDE_TEST_RAISE ( sCh1 == (SChar) EOF, ERR_COMMENT_NO_CLOSE );
 
     return IDE_SUCCESS;
@@ -1026,7 +1026,7 @@ IDE_RC ulpPPCommentC4IF()
 /***********************************************************************
  *
  * Description :
- *      #if ¾ÈÀÇ C comment Ã³¸® ÇÔ¼ö (newline¸¸ file¿¡ writeÇÑ´Ù.)
+ *      #if ì•ˆì˜ C comment ì²˜ë¦¬ í•¨ìˆ˜ (newlineë§Œ fileì— writeí•œë‹¤.)
  *
  ***********************************************************************/
     SChar sCh1;
@@ -1039,7 +1039,7 @@ CommentC:
     {
         if( sCh1 == '\n' )
         {
-            // newline¸¸Àº write ÇÑ´Ù. (line number ¾ÅÅ©¸¦ ¸ÂÃß±âÀ§ÇÔ)
+            // newlineë§Œì€ write í•œë‹¤. (line number ì”½í¬ë¥¼ ë§ì¶”ê¸°ìœ„í•¨)
             WRITECH2BUFPP('\n');
         }
         sCh1 = yyinput();
@@ -1077,7 +1077,7 @@ void ulpPPCommentCplus()
 /***********************************************************************
  *
  * Description :
- *      C++ comment Ã³¸® ÇÔ¼ö
+ *      C++ comment ì²˜ë¦¬ í•¨ìˆ˜
  *
  ***********************************************************************/
     SChar sCh;
@@ -1105,7 +1105,7 @@ void ulpPPCommentCplus4IF()
 /***********************************************************************
  *
  * Description :
- *      #if ±¸¹®¾È¿¡¼­ÀÇ C++ comment Ã³¸® ÇÔ¼ö
+ *      #if êµ¬ë¬¸ì•ˆì—ì„œì˜ C++ comment ì²˜ë¦¬ í•¨ìˆ˜
  *
  ***********************************************************************/
     SChar sCh;
@@ -1126,9 +1126,9 @@ void ulpPPEraseBN4MacroText( SChar *aTmpDefinedStr,
 /***********************************************************************
  *
  * Description :
- *      #if <expr>, #define ID <text> ±¸¹® Ã³¸®½Ã <expr>¿Í <text> ¾È¿¡ Æ÷ÇÔµÇ¾î ÀÖ´Â
- *      backspace newline ¹®ÀÚÁ¦°Å¿Í ÁÖ¼®Á¦°Å Ã³¸®¸¦ ÇÏ¿©  aTmpDefinedStr ¹öÆÛ¿¡ º¹»çÇØÁÖ´Â
- *      ÇÔ¼ö.
+ *      #if <expr>, #define ID <text> êµ¬ë¬¸ ì²˜ë¦¬ì‹œ <expr>ì™€ <text> ì•ˆì— í¬í•¨ë˜ì–´ ìˆëŠ”
+ *      backspace newline ë¬¸ìì œê±°ì™€ ì£¼ì„ì œê±° ì²˜ë¦¬ë¥¼ í•˜ì—¬  aTmpDefinedStr ë²„í¼ì— ë³µì‚¬í•´ì£¼ëŠ”
+ *      í•¨ìˆ˜.
  *
  ***********************************************************************/
     SChar  sCh;
@@ -1142,12 +1142,12 @@ void ulpPPEraseBN4MacroText( SChar *aTmpDefinedStr,
     sBreak1    = ID_FALSE;
     sBreak2    = ID_FALSE;
 
-    // text ¾ÕºÎºĞ Ã³¸®.
+    // text ì•ë¶€ë¶„ ì²˜ë¦¬.
     while( sBreak1 != ID_TRUE )
     {
         switch ( (aIsIf == ID_TRUE)? sCh = yyinput() : sCh = ulpPPYYinput() )
         {
-            // Ã³À½ °ø¹é Á¦°Å
+            // ì²˜ìŒ ê³µë°± ì œê±°
             case '\t':
             case ' ' :
                 do
@@ -1156,11 +1156,11 @@ void ulpPPEraseBN4MacroText( SChar *aTmpDefinedStr,
                 } while( (sCh == ' ') || (sCh == '\t') );
                 sBreak1    = ID_TRUE;
                 break;
-            // Ã³À½¿¡ ±×³É newlineÀÌ ¿Â´Ù°í?
+            // ì²˜ìŒì— ê·¸ëƒ¥ newlineì´ ì˜¨ë‹¤ê³ ?
             case '\n':
                 sBreak1    = ID_TRUE;
                 break;
-            // Ã³À½ ÁÖ¼®ÀÌ ¿À´Â°æ¿ì Ã³¸®.
+            // ì²˜ìŒ ì£¼ì„ì´ ì˜¤ëŠ”ê²½ìš° ì²˜ë¦¬.
             case '/':
                 (aIsIf == ID_TRUE)? sCh = yyinput() : sCh = ulpPPYYinput();
                 if ( sCh == '/')
@@ -1190,7 +1190,7 @@ void ulpPPEraseBN4MacroText( SChar *aTmpDefinedStr,
 
     while ( ((aIsIf == ID_TRUE)? sCh = yyinput() : sCh = ulpPPYYinput()) != (SChar) EOF )
     {
-        /* BUG-30233 : #define ³»¿ëÀÌ 5KÀÌ»óÀÌ¸é apre segv¹ß»ıÇÔ. */
+        /* BUG-30233 : #define ë‚´ìš©ì´ 5Kì´ìƒì´ë©´ apre segvë°œìƒí•¨. */
         IDE_TEST_RAISE( sIndex >= MAX_MACRO_DEFINE_CONTENT_LEN-1,
                         ERR_DEFINE_MACRO_OVERFLOW );
         switch(sCh)
@@ -1199,7 +1199,7 @@ void ulpPPEraseBN4MacroText( SChar *aTmpDefinedStr,
                 (aIsIf == ID_TRUE)? sCh = yyinput() : sCh = ulpPPYYinput();
                 if ( sCh == '\n' )
                 {
-                    // newline¸¸Àº write ÇÑ´Ù. (line number ¾ÅÅ©¸¦ ¸ÂÃß±âÀ§ÇÔ)
+                    // newlineë§Œì€ write í•œë‹¤. (line number ì”½í¬ë¥¼ ë§ì¶”ê¸°ìœ„í•¨)
                     //WRITECH2BUFPP('\n');
                 }
                 else
@@ -1252,7 +1252,7 @@ void ulpPPEraseBN4MacroText( SChar *aTmpDefinedStr,
                 aTmpDefinedStr[sIndex] = '\0';
                 break;
 
-            // Áß°£¿¡ ÁÖ¼®ÀÌ ¿À´Â°æ¿ì Ã³¸®.
+            // ì¤‘ê°„ì— ì£¼ì„ì´ ì˜¤ëŠ”ê²½ìš° ì²˜ë¦¬.
             case '/':
                 (aIsIf == ID_TRUE)? sCh = yyinput() : sCh = ulpPPYYinput();
                 if ( sCh == '/')
@@ -1265,7 +1265,7 @@ void ulpPPEraseBN4MacroText( SChar *aTmpDefinedStr,
                     if( sCh == '*' )
                     {
                         (aIsIf == ID_TRUE)? ulpPPCommentC4IF() : ulpPPCommentC();
-                        // text Áß°£¿¡ /*~*/ ÀÌ¿À¸é ±×³É °ø¹éÇÏ³ª·Î °£ÁÖµÈ´Ù.
+                        // text ì¤‘ê°„ì— /*~*/ ì´ì˜¤ë©´ ê·¸ëƒ¥ ê³µë°±í•˜ë‚˜ë¡œ ê°„ì£¼ëœë‹¤.
                         aTmpDefinedStr[sIndex++] = ' ';
                     }
                     else
@@ -1302,7 +1302,7 @@ void ulpPPEraseBN4MacroText( SChar *aTmpDefinedStr,
 
     return;
 
-    /* BUG-30233 : #define ³»¿ëÀÌ 5KÀÌ»óÀÌ¸é apre segv¹ß»ıÇÔ. */
+    /* BUG-30233 : #define ë‚´ìš©ì´ 5Kì´ìƒì´ë©´ apre segvë°œìƒí•¨. */
     IDE_EXCEPTION (ERR_DEFINE_MACRO_OVERFLOW);
     {
         ulpErrorMgr sErrorMgr;
@@ -1322,7 +1322,7 @@ IDE_RC ulpPPSkipUnknownMacro()
 /***********************************************************************
  *
  * Description :
- *      Ã³¸® ÇÒÇÊ¿ä ¾ø´Â macro ±¸¹®À» skipÇØÁÖ´Â ÇÔ¼ö.
+ *      ì²˜ë¦¬ í• í•„ìš” ì—†ëŠ” macro êµ¬ë¬¸ì„ skipí•´ì£¼ëŠ” í•¨ìˆ˜.
  *
  ***********************************************************************/
     SInt  sIndex;
@@ -1400,7 +1400,7 @@ void ulpPPRestoreCond(void)
 /***********************************************************************
  *
  * Description :
- *      lexerÀÇ start conditionÀ» ¿øº¹ÇØÁÖ´Â ÇÔ¼ö.
+ *      lexerì˜ start conditionì„ ì›ë³µí•´ì£¼ëŠ” í•¨ìˆ˜.
  *
  ***********************************************************************/
     switch ( gUlpProgOption.mOptParseInfo )
@@ -1425,7 +1425,7 @@ SChar ulpPPYYinput(void)
 /***********************************************************************
  *
  * Description :
- *      yyinput() ÇÏ¿© ¹®ÀÚ ÇÏ³ª¸¦ ÀĞ¾î¿ÂÈÄ file buffer¿¡ ¾´´Ù.
+ *      yyinput() í•˜ì—¬ ë¬¸ì í•˜ë‚˜ë¥¼ ì½ì–´ì˜¨í›„ file bufferì— ì“´ë‹¤.
  *
  ***********************************************************************/
     SChar sCh;
@@ -1442,20 +1442,20 @@ void ulpPPYYunput( SChar aCh )
 /***********************************************************************
  *
  * Description :
- *      unput() ÇÏ¿© ¹®ÀÚ ÇÏ³ª¸¦ ³»¹ñÀºÈÄ file buffer¿¡¼­ Á¦°ÅÇÑ´Ù.
+ *      unput() í•˜ì—¬ ë¬¸ì í•˜ë‚˜ë¥¼ ë‚´ë±‰ì€í›„ file bufferì—ì„œ ì œê±°í•œë‹¤.
  *
  ***********************************************************************/
     unput(aCh);
     WRITEUNCH2BUFPP();
 }
 
-/* BUG-27683 : iostream »ç¿ë Á¦°Å */
+/* BUG-27683 : iostream ì‚¬ìš© ì œê±° */
 void ulpPPSaveBufferState()
 {
 /***********************************************************************
  *
  * Description :
- *      include Ã³¸®¸¦ ÇÏ±âÀ§ÇÑ ÇöÀç flex¹öÆÛ »óÅÂ¸¦ ÀúÀåÇÏ´Â ÇÔ¼ö.
+ *      include ì²˜ë¦¬ë¥¼ í•˜ê¸°ìœ„í•œ í˜„ì¬ flexë²„í¼ ìƒíƒœë¥¼ ì €ì¥í•˜ëŠ” í•¨ìˆ˜.
  *
  ***********************************************************************/
 
@@ -1479,7 +1479,7 @@ int PPlex( YYSTYPE *lvalp )
 /***********************************************************************
  *
  * Description :
- *      PPparser¿¡¼­ tokenÀ» ÀĞ¾î ¿À±âÀ§ÇØ È£ÃâµÇ´Â ÇÔ¼ö.
+ *      PPparserì—ì„œ tokenì„ ì½ì–´ ì˜¤ê¸°ìœ„í•´ í˜¸ì¶œë˜ëŠ” í•¨ìˆ˜.
  *
  ***********************************************************************/
     SInt   sRc;
@@ -1498,7 +1498,7 @@ int PPlex( YYSTYPE *lvalp )
 
         if( ( idlOS::strncmp( sNlsUse, (SChar*)"SHIFTJIS", 8 ) == 0 ) ||
             ( idlOS::strncmp( sNlsUse, (SChar*)"JAPANESE", 8 ) == 0 ) ||
-            /* PROJ-2590 [±â´É¼º] CP932 database character set Áö¿ø */
+            /* PROJ-2590 [ê¸°ëŠ¥ì„±] CP932 database character set ì§€ì› */
             ( idlOS::strncmp( sNlsUse, (SChar*)"MS932", 5 ) == 0 ) ||
             ( idlOS::strncmp( sNlsUse, (SChar*)"CP932", 5 ) == 0 ) ||
             ( idlOS::strncmp( sNlsUse, (SChar*)"WINDOWS932", 10 ) == 0 ) )
@@ -1508,7 +1508,7 @@ int PPlex( YYSTYPE *lvalp )
         else if( ( idlOS::strncmp( sNlsUse, (SChar*)"GB231280", 8 ) == 0 )   ||
                  ( idlOS::strncmp( sNlsUse, (SChar*)"ZHS16CGB231280", 14 )== 0) ||
                  ( idlOS::strncmp( sNlsUse, (SChar*)"CHINESE", 7 ) == 0 ) ||
-                 /* PROJ-2414 [±â´É¼º] GBK, CP936 character set Ãß°¡ */
+                 /* PROJ-2414 [ê¸°ëŠ¥ì„±] GBK, CP936 character set ì¶”ê°€ */
                  ( idlOS::strncmp( sNlsUse, (SChar*)"MS936", 5 ) == 0 ) ||
                  ( idlOS::strncmp( sNlsUse, (SChar*)"CP936", 5 ) == 0 ) ||
                  ( idlOS::strncmp( sNlsUse, (SChar*)"GBK", 3 ) == 0 ) ||
@@ -1551,7 +1551,7 @@ int PPlex( YYSTYPE *lvalp )
 
     PPerror( ulpGetErrorMSG(&sErrorMgr) );
 
-    return 0; // PPerror()¿¡¼­ °­Á¦ Á¾·á µÇ¹Ç·Î unreachable
+    return 0; // PPerror()ì—ì„œ ê°•ì œ ì¢…ë£Œ ë˜ë¯€ë¡œ unreachable
 }
 
 
@@ -1560,7 +1560,7 @@ void PPerror( const SChar* aErrMsg)
 /***********************************************************************
  *
  * Description :
- *      PPlexer/parserÀÇ errorÃ³¸® ÇÔ¼ö.
+ *      PPlexer/parserì˜ errorì²˜ë¦¬ í•¨ìˆ˜.
  *
  ***********************************************************************/
     idBool sSkip;
@@ -1588,7 +1588,7 @@ void PPerror( const SChar* aErrMsg)
                       aErrMsg);
     }
 
-    // file open error, file size error´Â skip
+    // file open error, file size errorëŠ” skip
     if( sSkip == ID_FALSE )
     {
         if( (gUlpPPisCInc == ID_TRUE) || (gUlpPPisSQLInc == ID_TRUE) )
@@ -1596,7 +1596,7 @@ void PPerror( const SChar* aErrMsg)
             idlOS::printf( "File  : %s\nLine  : %d\nOffset: %d-%d\nError_token:%s\n\n",
                        gUlpProgOption.mIncludeFileList[gUlpProgOption.mIncludeFileIndex].mFileName,
                        yylineno, gFirstcolumnP, gLastcolumnP,
-                       // ¾Æ·¡¿Í °°ÀÌ ¾ÈÇÏ¸é sunÀåºñ¿¡¼­ segmetation fault
+                       // ì•„ë˜ì™€ ê°™ì´ ì•ˆí•˜ë©´ sunì¥ë¹„ì—ì„œ segmetation fault
                        yytext);
         }
         else

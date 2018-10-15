@@ -54,7 +54,7 @@ static IDE_RC mtfSumEstimate( mtcNode*     aNode,
 mtfModule mtfSum = {
     2|MTC_NODE_OPERATOR_AGGREGATION|MTC_NODE_FUNCTION_WINDOWING_TRUE,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
+    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìê°€ ì•„ë‹˜)
     mtfSumFunctionName,
     NULL,
     mtfSumInitialize,
@@ -91,7 +91,7 @@ static mtfSubModule mtfSumEstimates[3] = {
 };
 
 // BUG-41994
-// high performance¿ë group table
+// high performanceìš© group table
 static mtfSubModule mtfSumEstimatesHighPerformance[2] = {
     { mtfSumEstimatesHighPerformance+1, mtfSumEstimateDouble },
     { NULL,                             mtfSumEstimateBigint }
@@ -255,7 +255,7 @@ IDE_RC mtfSumEstimateFloat( mtcNode*     aNode,
                                      0 )
               != IDE_SUCCESS );
 
-    // Sum °á°ú°¡ NullÀÎÁö ¾Æ´ÑÁö ÀúÀåÇÔ
+    // Sum ê²°ê³¼ê°€ Nullì¸ì§€ ì•„ë‹Œì§€ ì €ì¥í•¨
     IDE_TEST( mtc::initializeColumn( aStack[0].column + 1,
                                      & mtdBoolean,
                                      0,
@@ -346,7 +346,7 @@ IDE_RC mtfSumAggregateFloat( mtcNode*     aNode,
         sFloatArgument = (mtdNumericType*)aStack[0].value;
 
         // BUG-42171 The sum window function's value is wrong with nulls first
-        // ÀÌÀü dataµµ NullÀÏ ¼ö ÀÖÀ¸¹Ç·Î NULLÀÏ°æ¿ì µé¾î¿Â Data·Î ´ëÄ¡½ÃÅ²´Ù.
+        // ì´ì „ dataë„ Nullì¼ ìˆ˜ ìˆìœ¼ë¯€ë¡œ NULLì¼ê²½ìš° ë“¤ì–´ì˜¨ Dataë¡œ ëŒ€ì¹˜ì‹œí‚¨ë‹¤.
         if ( sColumn->module->isNull( sColumn,
                                       sFloatSum ) != ID_TRUE )
         {
@@ -404,7 +404,7 @@ IDE_RC mtfSumMergeFloat(    mtcNode*     aNode,
     sDstNotNull = *(mtdBooleanType*)(sDstRow + sColumn[1].column.offset);
     sSrcNotNull = *(mtdBooleanType*)(sSrcRow + sColumn[1].column.offset);
 
-    // ÇÑÂÊÀÌ MTD_BOOLEAN_FALSE °ªÀÌ¿©µµ ÃÊ±â°ªÀÌ 0 ÀÌ¹Ç·Î sum ÇØµµ ¹«¹æÇÏ´Ù.
+    // í•œìª½ì´ MTD_BOOLEAN_FALSE ê°’ì´ì—¬ë„ ì´ˆê¸°ê°’ì´ 0 ì´ë¯€ë¡œ sum í•´ë„ ë¬´ë°©í•˜ë‹¤.
     if ( (sDstNotNull == MTD_BOOLEAN_TRUE) ||
          (sSrcNotNull == MTD_BOOLEAN_TRUE) )
     {
@@ -534,8 +534,8 @@ static const mtcExecute mtfSumExecuteDouble = {
     mtk::extractRangeNA
 };
 
-// ÃÖÀûÀÇ sumÀ» ¼öÇàÇÏ´Â
-// aggregate ÇÔ¼ö¸¦ Æ÷ÇÔÇÏ°í ÀÖ´Â execute
+// ìµœì ì˜ sumì„ ìˆ˜í–‰í•˜ëŠ”
+// aggregate í•¨ìˆ˜ë¥¼ í¬í•¨í•˜ê³  ìˆëŠ” execute
 static const mtcExecute mtfSumExecuteDoubleFast = {
     mtfSumInitializeDouble,
     mtfSumAggregateDoubleFast,
@@ -571,19 +571,19 @@ IDE_RC mtfSumEstimateDouble( mtcNode*     aNode,
     
     aTemplate->rows[aNode->table].execute[aNode->column] = mtfSumExecuteDouble;
 
-    // ÃÖÀûÈ­µÈ aggregate ÇÔ¼ö
+    // ìµœì í™”ëœ aggregate í•¨ìˆ˜
     sArgModule = aNode->arguments->module;
 
-    // mtf::initializeTemplate¿¡¼­ °¢ subModule¿¡ ´ëÇØ 
-    // estimateBound¸¦ È£ÃâÇÏ´Âµ¥ ÀÌ¶§¿¡´Â node¿¡ moduleÀÌ
-    // ¾È´Ş·ÁÀÖ±â ¶§¹®¿¡ NULL Ã¼Å©¸¦ ÇØ¾ß ÇÑ´Ù.
+    // mtf::initializeTemplateì—ì„œ ê° subModuleì— ëŒ€í•´ 
+    // estimateBoundë¥¼ í˜¸ì¶œí•˜ëŠ”ë° ì´ë•Œì—ëŠ” nodeì— moduleì´
+    // ì•ˆë‹¬ë ¤ìˆê¸° ë•Œë¬¸ì— NULL ì²´í¬ë¥¼ í•´ì•¼ í•œë‹¤.
     if( sArgModule != NULL )
     {
-        // sum(i1) Ã³·³ i1°¡ ´ÜÀÏ ÄÃ·³ÀÌ°í conversionµÇÁö ¾Ê´Â´Ù¸é
-        // ÃÖÀûÈ­µÈ executionÀ» ´Ş¾ÆÁØ´Ù.
+        // sum(i1) ì²˜ëŸ¼ i1ê°€ ë‹¨ì¼ ì»¬ëŸ¼ì´ê³  conversionë˜ì§€ ì•ŠëŠ”ë‹¤ë©´
+        // ìµœì í™”ëœ executionì„ ë‹¬ì•„ì¤€ë‹¤.
         
         // BUG-19856
-        // view ÄÃ·³ÀÎ °æ¿ì ÃÖÀûÈ­µÈ executionÀ» ´ŞÁö¾Ê´Â´Ù.
+        // view ì»¬ëŸ¼ì¸ ê²½ìš° ìµœì í™”ëœ executionì„ ë‹¬ì§€ì•ŠëŠ”ë‹¤.
         if( ( ( aTemplate->rows[aNode->arguments->table].lflag
                 & MTC_TUPLE_VIEW_MASK )
               == MTC_TUPLE_VIEW_FALSE ) &&
@@ -606,7 +606,7 @@ IDE_RC mtfSumEstimateDouble( mtcNode*     aNode,
                                      0 )
               != IDE_SUCCESS );
 
-    // Sum °á°ú°¡ NullÀÎÁö ¾Æ´ÑÁö ÀúÀåÇÔ
+    // Sum ê²°ê³¼ê°€ Nullì¸ì§€ ì•„ë‹Œì§€ ì €ì¥í•¨
     IDE_TEST( mtc::initializeColumn( aStack[0].column + 1,
                                      & mtdBoolean,
                                      0,
@@ -677,17 +677,17 @@ IDE_RC mtfSumAggregateDouble( mtcNode*     aNode,
                   != IDE_SUCCESS );
     }
     
-    // mtdDouble.isNull() ¸¦ È£ÃâÇÏ´Â ´ë½Å
-    // Á÷Á¢ null °Ë»ç¸¦ ÇÑ´Ù.
-    // aStack->valueÀÇ µ¥ÀÌÅÍ Å¸ÀÔÀ» ¹Ì¸® ¾Ë±â ¶§¹®¿¡
-    // Á÷Á¢ null °Ë»ç¸¦ ÇÏ´Âµ¥ ¼öÇà ¼Óµµ¸¦ À§ÇØ¼­ÀÌ´Ù.
+    // mtdDouble.isNull() ë¥¼ í˜¸ì¶œí•˜ëŠ” ëŒ€ì‹ 
+    // ì§ì ‘ null ê²€ì‚¬ë¥¼ í•œë‹¤.
+    // aStack->valueì˜ ë°ì´í„° íƒ€ì…ì„ ë¯¸ë¦¬ ì•Œê¸° ë•Œë¬¸ì—
+    // ì§ì ‘ null ê²€ì‚¬ë¥¼ í•˜ëŠ”ë° ìˆ˜í–‰ ì†ë„ë¥¼ ìœ„í•´ì„œì´ë‹¤.
     if( ( *(ULong*)(aStack->value) & MTD_DOUBLE_EXPONENT_MASK )
         != MTD_DOUBLE_EXPONENT_MASK )
     {
         sColumn = aTemplate->rows[aNode->table].columns + aNode->column;
 
         // BUG-42171 The sum window function's value is wrong with nulls first
-        // ÀÌÀü dataµµ NullÀÏ ¼ö ÀÖÀ¸¹Ç·Î NULLÀÏ°æ¿ì µé¾î¿Â Data·Î ´ëÄ¡½ÃÅ²´Ù.
+        // ì´ì „ dataë„ Nullì¼ ìˆ˜ ìˆìœ¼ë¯€ë¡œ NULLì¼ê²½ìš° ë“¤ì–´ì˜¨ Dataë¡œ ëŒ€ì¹˜ì‹œí‚¨ë‹¤.
         if ( ( *(ULong*)((UChar*)aTemplate->rows[aNode->table].row +
                          sColumn->column.offset ) & MTD_DOUBLE_EXPONENT_MASK )
              != MTD_DOUBLE_EXPONENT_MASK )
@@ -734,10 +734,10 @@ IDE_RC mtfSumAggregateDoubleFast( mtcNode*     aSumNode,
                                          aTemplate->rows[sArgumentNode->table].row,
                                          MTD_OFFSET_USE );
 
-    // mtdDouble.isNull() ¸¦ È£ÃâÇÏ´Â ´ë½Å
-    // Á÷Á¢ null °Ë»ç¸¦ ÇÑ´Ù.
-    // aStack->valueÀÇ µ¥ÀÌÅÍ Å¸ÀÔÀ» ¹Ì¸® ¾Ë±â ¶§¹®¿¡
-    // Á÷Á¢ null °Ë»ç¸¦ ÇÏ´Âµ¥ ¼öÇà ¼Óµµ¸¦ À§ÇØ¼­ÀÌ´Ù.
+    // mtdDouble.isNull() ë¥¼ í˜¸ì¶œí•˜ëŠ” ëŒ€ì‹ 
+    // ì§ì ‘ null ê²€ì‚¬ë¥¼ í•œë‹¤.
+    // aStack->valueì˜ ë°ì´í„° íƒ€ì…ì„ ë¯¸ë¦¬ ì•Œê¸° ë•Œë¬¸ì—
+    // ì§ì ‘ null ê²€ì‚¬ë¥¼ í•˜ëŠ”ë° ìˆ˜í–‰ ì†ë„ë¥¼ ìœ„í•´ì„œì´ë‹¤.
     if( ( *(ULong*)(aStack->value) & MTD_DOUBLE_EXPONENT_MASK )
         != MTD_DOUBLE_EXPONENT_MASK )
     {
@@ -745,7 +745,7 @@ IDE_RC mtfSumAggregateDoubleFast( mtcNode*     aSumNode,
             + aSumNode->column;
 
         // BUG-42171 The sum window function's value is wrong with nulls first
-        // ÀÌÀü dataµµ NullÀÏ ¼ö ÀÖÀ¸¹Ç·Î NULLÀÏ°æ¿ì µé¾î¿Â Data·Î ´ëÄ¡½ÃÅ²´Ù.
+        // ì´ì „ dataë„ Nullì¼ ìˆ˜ ìˆìœ¼ë¯€ë¡œ NULLì¼ê²½ìš° ë“¤ì–´ì˜¨ Dataë¡œ ëŒ€ì¹˜ì‹œí‚¨ë‹¤.
         if ( ( *(ULong *)((UChar*)aTemplate->rows[aSumNode->table].row +
                            sSumColumn->column.offset ) & MTD_DOUBLE_EXPONENT_MASK )
              != MTD_DOUBLE_EXPONENT_MASK )
@@ -787,7 +787,7 @@ IDE_RC mtfSumMergeDouble(    mtcNode*     aNode,
     sDstNotNull = *(mtdBooleanType*)(sDstRow + sColumn[1].column.offset);
     sSrcNotNull = *(mtdBooleanType*)(sSrcRow + sColumn[1].column.offset);
 
-    // ÇÑÂÊÀÌ MTD_BOOLEAN_FALSE °ªÀÌ¿©µµ ÃÊ±â°ªÀÌ 0 ÀÌ¹Ç·Î sum ÇØµµ ¹«¹æÇÏ´Ù.
+    // í•œìª½ì´ MTD_BOOLEAN_FALSE ê°’ì´ì—¬ë„ ì´ˆê¸°ê°’ì´ 0 ì´ë¯€ë¡œ sum í•´ë„ ë¬´ë°©í•˜ë‹¤.
     if ( (sDstNotNull == MTD_BOOLEAN_TRUE) ||
          (sSrcNotNull == MTD_BOOLEAN_TRUE) )
     {
@@ -900,8 +900,8 @@ static const mtcExecute mtfSumExecuteBigint = {
 };
 
 
-// ÃÖÀûÀÇ sumÀ» ¼öÇàÇÏ´Â
-// aggregate ÇÔ¼ö¸¦ Æ÷ÇÔÇÏ°í ÀÖ´Â execute
+// ìµœì ì˜ sumì„ ìˆ˜í–‰í•˜ëŠ”
+// aggregate í•¨ìˆ˜ë¥¼ í¬í•¨í•˜ê³  ìˆëŠ” execute
 static const mtcExecute mtfSumExecuteBigintFast = {
     mtfSumInitializeBigint,
     mtfSumAggregateBigintFast,
@@ -937,19 +937,19 @@ IDE_RC mtfSumEstimateBigint( mtcNode*     aNode,
     
     aTemplate->rows[aNode->table].execute[aNode->column] = mtfSumExecuteBigint;
     
-    // ÃÖÀûÈ­µÈ aggregate ÇÔ¼ö
+    // ìµœì í™”ëœ aggregate í•¨ìˆ˜
     sArgModule = aNode->arguments->module;
 
-    // mtf::initializeTemplate¿¡¼­ °¢ subModule¿¡ ´ëÇØ
-    // estimateBound¸¦ È£ÃâÇÏ´Âµ¥ ÀÌ¶§¿¡´Â node¿¡ moduleÀÌ
-    // ¾È´Ş·ÁÀÖ±â ¶§¹®¿¡ NULL Ã¼Å©¸¦ ÇØ¾ß ÇÑ´Ù.
+    // mtf::initializeTemplateì—ì„œ ê° subModuleì— ëŒ€í•´
+    // estimateBoundë¥¼ í˜¸ì¶œí•˜ëŠ”ë° ì´ë•Œì—ëŠ” nodeì— moduleì´
+    // ì•ˆë‹¬ë ¤ìˆê¸° ë•Œë¬¸ì— NULL ì²´í¬ë¥¼ í•´ì•¼ í•œë‹¤.
     if( sArgModule != NULL )
     {
-        // sum(i1) Ã³·³ i1°¡ ´ÜÀÏ ÄÃ·³ÀÌ°í conversionµÇÁö ¾Ê´Â´Ù¸é
-        // ÃÖÀûÈ­µÈ executionÀ» ´Ş¾ÆÁØ´Ù.
+        // sum(i1) ì²˜ëŸ¼ i1ê°€ ë‹¨ì¼ ì»¬ëŸ¼ì´ê³  conversionë˜ì§€ ì•ŠëŠ”ë‹¤ë©´
+        // ìµœì í™”ëœ executionì„ ë‹¬ì•„ì¤€ë‹¤.
         
         // BUG-19856
-        // view ÄÃ·³ÀÎ °æ¿ì ÃÖÀûÈ­µÈ executionÀ» ´ŞÁö¾Ê´Â´Ù.
+        // view ì»¬ëŸ¼ì¸ ê²½ìš° ìµœì í™”ëœ executionì„ ë‹¬ì§€ì•ŠëŠ”ë‹¤.
         if( ( ( aTemplate->rows[aNode->arguments->table].lflag
                 & MTC_TUPLE_VIEW_MASK )
               == MTC_TUPLE_VIEW_FALSE ) &&
@@ -970,7 +970,7 @@ IDE_RC mtfSumEstimateBigint( mtcNode*     aNode,
                                      0 )
               != IDE_SUCCESS );
 
-    // Sum °á°ú°¡ NullÀÎÁö ¾Æ´ÑÁö ÀúÀåÇÔ
+    // Sum ê²°ê³¼ê°€ Nullì¸ì§€ ì•„ë‹Œì§€ ì €ì¥í•¨
     IDE_TEST( mtc::initializeColumn( aStack[0].column + 1,
                                      & mtdBoolean,
                                      0,
@@ -1041,16 +1041,16 @@ IDE_RC mtfSumAggregateBigint( mtcNode*     aNode,
                   != IDE_SUCCESS );
     }
     
-    // mtdBigint.isNull() ¸¦ È£ÃâÇÏ´Â ´ë½Å
-    // Á÷Á¢ null °Ë»ç¸¦ ÇÑ´Ù.
-    // aStack->valueÀÇ µ¥ÀÌÅÍ Å¸ÀÔÀ» ¹Ì¸® ¾Ë±â ¶§¹®¿¡
-    // Á÷Á¢ null °Ë»ç¸¦ ÇÏ´Âµ¥ ¼öÇà ¼Óµµ¸¦ À§ÇØ¼­ÀÌ´Ù.
+    // mtdBigint.isNull() ë¥¼ í˜¸ì¶œí•˜ëŠ” ëŒ€ì‹ 
+    // ì§ì ‘ null ê²€ì‚¬ë¥¼ í•œë‹¤.
+    // aStack->valueì˜ ë°ì´í„° íƒ€ì…ì„ ë¯¸ë¦¬ ì•Œê¸° ë•Œë¬¸ì—
+    // ì§ì ‘ null ê²€ì‚¬ë¥¼ í•˜ëŠ”ë° ìˆ˜í–‰ ì†ë„ë¥¼ ìœ„í•´ì„œì´ë‹¤.
     if( *(mtdBigintType*)aStack->value != MTD_BIGINT_NULL )
     {
         sColumn = aTemplate->rows[aNode->table].columns + aNode->column;
 
         // BUG-42171 The sum window function's value is wrong with nulls first
-        // ÀÌÀü dataµµ NullÀÏ ¼ö ÀÖÀ¸¹Ç·Î NULLÀÏ°æ¿ì µé¾î¿Â Data·Î ´ëÄ¡½ÃÅ²´Ù.
+        // ì´ì „ dataë„ Nullì¼ ìˆ˜ ìˆìœ¼ë¯€ë¡œ NULLì¼ê²½ìš° ë“¤ì–´ì˜¨ Dataë¡œ ëŒ€ì¹˜ì‹œí‚¨ë‹¤.
         if ( *(mtdBigintType *)((UChar *)aTemplate->rows[aNode->table].row + sColumn->column.offset )
              != MTD_BIGINT_NULL )
         {
@@ -1095,16 +1095,16 @@ IDE_RC mtfSumAggregateBigintFast( mtcNode*     aSumNode,
                                          aTemplate->rows[sArgumentNode->table].row,
                                          MTD_OFFSET_USE );
 
-    // mtdBigint.isNull() ¸¦ È£ÃâÇÏ´Â ´ë½Å
-    // Á÷Á¢ null °Ë»ç¸¦ ÇÑ´Ù.
-    // aStack->valueÀÇ µ¥ÀÌÅÍ Å¸ÀÔÀ» ¹Ì¸® ¾Ë±â ¶§¹®¿¡
-    // Á÷Á¢ null °Ë»ç¸¦ ÇÏ´Âµ¥ ¼öÇà ¼Óµµ¸¦ À§ÇØ¼­ÀÌ´Ù.
+    // mtdBigint.isNull() ë¥¼ í˜¸ì¶œí•˜ëŠ” ëŒ€ì‹ 
+    // ì§ì ‘ null ê²€ì‚¬ë¥¼ í•œë‹¤.
+    // aStack->valueì˜ ë°ì´í„° íƒ€ì…ì„ ë¯¸ë¦¬ ì•Œê¸° ë•Œë¬¸ì—
+    // ì§ì ‘ null ê²€ì‚¬ë¥¼ í•˜ëŠ”ë° ìˆ˜í–‰ ì†ë„ë¥¼ ìœ„í•´ì„œì´ë‹¤.
     if( *(mtdBigintType*)aStack->value != MTD_BIGINT_NULL )
     {
         sSumColumn = aTemplate->rows[aSumNode->table].columns + aSumNode->column;
 
         // BUG-42171 The sum window function's value is wrong with nulls first
-        // ÀÌÀü dataµµ NullÀÏ ¼ö ÀÖÀ¸¹Ç·Î NULLÀÏ°æ¿ì µé¾î¿Â Data·Î ´ëÄ¡½ÃÅ²´Ù.
+        // ì´ì „ dataë„ Nullì¼ ìˆ˜ ìˆìœ¼ë¯€ë¡œ NULLì¼ê²½ìš° ë“¤ì–´ì˜¨ Dataë¡œ ëŒ€ì¹˜ì‹œí‚¨ë‹¤.
         if ( *(mtdBigintType *)((UChar *)aTemplate->rows[aSumNode->table].row +
                                 sSumColumn->column.offset ) != MTD_BIGINT_NULL )
         {
@@ -1145,7 +1145,7 @@ IDE_RC mtfSumMergeBigint(    mtcNode*     aNode,
     sDstNotNull = *(mtdBooleanType*)(sDstRow + sColumn[1].column.offset);
     sSrcNotNull = *(mtdBooleanType*)(sSrcRow + sColumn[1].column.offset);
 
-    // ÇÑÂÊÀÌ MTD_BOOLEAN_FALSE °ªÀÌ¿©µµ ÃÊ±â°ªÀÌ 0 ÀÌ¹Ç·Î sum ÇØµµ ¹«¹æÇÏ´Ù.
+    // í•œìª½ì´ MTD_BOOLEAN_FALSE ê°’ì´ì—¬ë„ ì´ˆê¸°ê°’ì´ 0 ì´ë¯€ë¡œ sum í•´ë„ ë¬´ë°©í•˜ë‹¤.
     if ( (sDstNotNull == MTD_BOOLEAN_TRUE) ||
          (sSrcNotNull == MTD_BOOLEAN_TRUE) )
     {

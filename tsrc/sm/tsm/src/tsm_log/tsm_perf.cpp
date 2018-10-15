@@ -39,16 +39,16 @@ void * tsmDeleteTable( void * aThreadInfo );
 
 #define TSM_MAX_THREAD_COUNT 1024
 
-/* Test ThreadÀÇ µ¿½Ã¼º Á¦¾î¸¦ À§ÇØ¼­ */
+/* Test Threadì˜ ë™ì‹œì„± ì œì–´ë¥¼ ìœ„í•´ì„œ */
 static PDL_sema_t gThreadSema;
 
-/* µ¿½Ã¿¡ ·Î±× WriteÇÒ ThreadÀÇ °¹¼ö */
+/* ë™ì‹œì— ë¡œê·¸ Writeí•  Threadì˜ ê°¯ìˆ˜ */
 int gTotalThreadCount  = 0;
 
-/* ¸ğµç Threa°¡ write¸¦ ¼öÇàÇÒ ÃÑ logÀÇ writeÀÇ È½¼ö */
+/* ëª¨ë“  Threaê°€ writeë¥¼ ìˆ˜í–‰í•  ì´ logì˜ writeì˜ íšŸìˆ˜ */
 int gTotalLoopCount    = 0;
 
-/* °¢°¢ÀÇ Thread°¡ writeÇÒ ·Î±×ÀÇ °¹¼ö */
+/* ê°ê°ì˜ Threadê°€ writeí•  ë¡œê·¸ì˜ ê°¯ìˆ˜ */
 int gLoopCountOfThread = 0;
 
 static SChar gTableName1[100] = "Table1";
@@ -61,8 +61,8 @@ int main(SInt argc, SChar **argv)
         exit(-1);
     }
 
-    /* TSM¿¡¼­ Index¸¦ ÀÌ¿ëÇØ¼­ Key Range¸¦ ¸¸µé°ÔÇÑ´Ù. ÀÌ°Ô
-     * OffµÇ¾î ÀÖÀ¸¸é ¹«Á¶°Ç Full SCANÀ» ÇÑ´Ù.*/
+    /* TSMì—ì„œ Indexë¥¼ ì´ìš©í•´ì„œ Key Rangeë¥¼ ë§Œë“¤ê²Œí•œë‹¤. ì´ê²Œ
+     * Offë˜ì–´ ìˆìœ¼ë©´ ë¬´ì¡°ê±´ Full SCANì„ í•œë‹¤.*/
     gIndex = ID_TRUE;
 
     gTotalThreadCount = atoi(argv[1]);
@@ -159,7 +159,7 @@ IDE_RC tsmTestOperation(void *(*aFunction)(void *))
     IDE_ASSERT( PDL_OS::sema_init(&gThreadSema, gTotalThreadCount)
                 == 0);
 
-    /* Test½ÃÀÛ */
+    /* Testì‹œì‘ */
     for( i = 0 ; i < gTotalThreadCount; i++)
     {
         sArrArgInfo[i].min = i * ( gLoopCountOfThread );
@@ -201,7 +201,7 @@ IDE_RC tsmTestOperation(void *(*aFunction)(void *))
            sSec,
            sTPS);
 
-    /* Test³¡ */
+    /* Testë */
     IDE_ASSERT( PDL_OS::sema_destroy(&gThreadSema) == 0);
 
     IDE_ASSERT( smiCheckPoint(NULL, NULL) == IDE_SUCCESS );

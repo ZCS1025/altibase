@@ -171,7 +171,7 @@ public class ClobTest extends AltibaseTestCase
         sInsStmt.setString(2, CLOB_VAL2);
         assertEquals(false, sInsStmt.execute());
 
-        // 2¹øÂ° rowÀÇ clobÀ» 1¹øÂ° clobÀÇ °ªÀ¸·Î update
+        // 2ë²ˆì§¸ rowì˜ clobì„ 1ë²ˆì§¸ clobì˜ ê°’ìœ¼ë¡œ update
         Statement sUpdStmt = connection().createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE, ResultSet.CLOSE_CURSORS_AT_COMMIT);
         ResultSet sUpdRS = sUpdStmt.executeQuery("SELECT id, val1 FROM t1");
         assertEquals(true, sUpdRS.next());
@@ -205,7 +205,7 @@ public class ClobTest extends AltibaseTestCase
         sInsStmt.setString(2, CLOB_VAL2);
         assertEquals(false, sInsStmt.execute());
 
-        // 2¹øÂ° rowÀÇ clobÀ» 1¹øÂ° clobÀÇ °ªÀ¸·Î update
+        // 2ë²ˆì§¸ rowì˜ clobì„ 1ë²ˆì§¸ clobì˜ ê°’ìœ¼ë¡œ update
         Statement sUpdStmt = connection().createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE, ResultSet.CLOSE_CURSORS_AT_COMMIT);
         ResultSet sUpdRS = sUpdStmt.executeQuery("SELECT id, val1 FROM t1");
         assertEquals(true, sUpdRS.next());
@@ -564,14 +564,14 @@ public class ClobTest extends AltibaseTestCase
     public void testReadLength() throws SQLException, IOException
     {
         Statement sStmt = connection().createStatement();
-        assertEquals(1, sStmt.executeUpdate("INSERT INTO t1 (id, val1) values (1001, '°¡³ª´Ù')"));
+        assertEquals(1, sStmt.executeUpdate("INSERT INTO t1 (id, val1) values (1001, 'ê°€ë‚˜ë‹¤')"));
 
         ResultSet sRS = sStmt.executeQuery("SELECT val1 FROM t1 WHERE id = 1001");
         assertEquals(true, sRS.next());
         Reader sReader = sRS.getCharacterStream(1);
         char[] sBuf = new char[10];
         int sReaded = sReader.read(sBuf);
-        assertEquals("°¡³ª´Ù", String.valueOf(sBuf, 0, sReaded));
+        assertEquals("ê°€ë‚˜ë‹¤", String.valueOf(sBuf, 0, sReaded));
         assertEquals(3, sReaded);
         sRS.close();
         sStmt.close();

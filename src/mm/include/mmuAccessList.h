@@ -24,7 +24,7 @@
 #ifndef _O_MMU_ACCESS_LIST_H_
 #define _O_MMU_ACCESS_LIST_H_ 1
 
-/* PROJ-2624 [±â´É¼º] MM - À¯¿¬ÇÑ access_list °ü¸®¹æ¹ı Á¦°ø : 1024·Î ´Ã¸² */
+/* PROJ-2624 [ê¸°ëŠ¥ì„±] MM - ìœ ì—°í•œ access_list ê´€ë¦¬ë°©ë²• ì œê³µ : 1024ë¡œ ëŠ˜ë¦¼ */
 #define MM_IP_ACL_MAX_COUNT      (1024)
 #define MM_IP_ACL_MAX_ADDR_STR   (40)
 #define MM_IP_ACL_MAX_MASK_STR   (16)
@@ -124,10 +124,10 @@ inline UInt mmuAccessList::getIPACLCount()
 
 typedef struct mmuAccessListInfo
 {
-    UInt     mNumber;       // ÀÔ·Â ¼ø¼­; ´Ü¼ø °ü¸®¿ë, 1¹øºÎÅÍ ½ÃÀÛ
+    UInt     mNumber;       // ì…ë ¥ ìˆœì„œ; ë‹¨ìˆœ ê´€ë¦¬ìš©, 1ë²ˆë¶€í„° ì‹œì‘
     UInt     mOp;           // 0: DENY, 1: PERMIT
-    SChar    mAddress[MM_IP_ACL_MAX_ADDR_STR];  // ipv6 ÁÖ¼Ò ÃÖ´ë 39ÀÚ
-    SChar    mMask[MM_IP_ACL_MAX_MASK_STR];     // ipv4 mask ÃÖ´ë 15ÀÚ
+    SChar    mAddress[MM_IP_ACL_MAX_ADDR_STR];  // ipv6 ì£¼ì†Œ ìµœëŒ€ 39ì
+    SChar    mMask[MM_IP_ACL_MAX_MASK_STR];     // ipv4 mask ìµœëŒ€ 15ì
 } mmuAccessListInfo;
 
 #endif

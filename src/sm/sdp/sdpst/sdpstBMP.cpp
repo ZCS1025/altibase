@@ -19,8 +19,8 @@
  *
  * $Id: sdpstBMP.cpp 27229 2008-07-23 17:37:19Z newdaily $
  *
- * º» ÆÄÀÏÀº Treelist Managed SegmentÀÇ Internal Bitmap ÆäÀÌÁö °ü·Ã
- * STATIC ÀÎÅÍÆäÀÌ½º¸¦ °ü¸®ÇÑ´Ù.
+ * ë³¸ íŒŒì¼ì€ Treelist Managed Segmentì˜ Internal Bitmap í˜ì´ì§€ ê´€ë ¨
+ * STATIC ì¸í„°í˜ì´ìŠ¤ë¥¼ ê´€ë¦¬í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -47,10 +47,10 @@ sdpstBMPOps * sdpstBMP::mBMPOps[SDPST_BMP_TYPE_MAX] =
 };
 
 /***********************************************************************
- * Description : 1°³ÀÌ»óÀÇ Internal Bitmap ÆäÀÌÁö »ı¼º ¹× ÃÊ±âÈ­
+ * Description : 1ê°œì´ìƒì˜ Internal Bitmap í˜ì´ì§€ ìƒì„± ë° ì´ˆê¸°í™”
  *
- * internal bmp ÆäÀÌÁöµéÀº ÇÒ´çµÈ extentÀÇ lf-bmp ÆäÀÌÁöµéÀÌ ¸ğµÎ
- * »ı¼ºµÈ ÀÌÈÄ ÆäÀÌÁö¿¡¼­ºÎÅÍ À§Ä¡ÇÑ´Ù.
+ * internal bmp í˜ì´ì§€ë“¤ì€ í• ë‹¹ëœ extentì˜ lf-bmp í˜ì´ì§€ë“¤ì´ ëª¨ë‘
+ * ìƒì„±ëœ ì´í›„ í˜ì´ì§€ì—ì„œë¶€í„° ìœ„ì¹˜í•œë‹¤.
  ***********************************************************************/
 IDE_RC sdpstBMP::createAndInitPages( idvSQL               * aStatistics,
                                      sdrMtxStartInfo      * aStartInfo,
@@ -89,29 +89,29 @@ IDE_RC sdpstBMP::createAndInitPages( idvSQL               * aStatistics,
     IDE_DASSERT( aBMPType == SDPST_RTBMP || aBMPType == SDPST_ITBMP );
 
     /*
-     * Rt-BMP¿¡¼­´Â Parent°¡ ¾ø±â ¶§¹®¿¡ sParentBMPType º¯¼ö¸¦ »ç¿ëÇÏ¸é ¾ÈµÈ´Ù. 
-     * ¾Æ·¡ ¸ÅÅ©·Î´Â ÀÔ·Â°ª °ËÁõÀ» ¼öÇàÇÏÁö ¾Ê´Â´Ù.
+     * Rt-BMPì—ì„œëŠ” Parentê°€ ì—†ê¸° ë•Œë¬¸ì— sParentBMPType ë³€ìˆ˜ë¥¼ ì‚¬ìš©í•˜ë©´ ì•ˆëœë‹¤. 
+     * ì•„ë˜ ë§¤í¬ë¡œëŠ” ì…ë ¥ê°’ ê²€ì¦ì„ ìˆ˜í–‰í•˜ì§€ ì•ŠëŠ”ë‹¤.
      */
 
     sParentBMPType = SDPST_BMP_PARENT_TYPE( aBMPType );
     sChildBMPType  = SDPST_BMP_CHILD_TYPE( aBMPType );
 
-    /* createPage ÇÒ¶§, phyPage¿¡ ¼³Á¤ÇÒ page type À» ÁöÁ¤ÇÑ´Ù. */
+    /* createPage í• ë•Œ, phyPageì— ì„¤ì •í•  page type ì„ ì§€ì •í•œë‹¤. */
     sPageType      = aBMPType == SDPST_ITBMP ?
                      SDP_PAGE_TMS_ITBMP : SDP_PAGE_TMS_RTBMP;
 
-    /* »ı¼ºµÈ ¸¶Áö¸· ÇÏÀ§ BMP ´ÙÀ½ºÎÅÍ »ı¼ºÀ» ½ÃÀÛÇÑ´Ù.
-     * Extent°¡ ÇÒ´ç µÉ¶§, ExtDir, LfBMP, ItBMP, RtBMP ¼øÀ¸·Î »ı¼ºµÇ±â ¶§¹®.
-     * Áï, Ç×»ó ÇÏÀ§ BMP °¡ ¸Õ¼­ »ı¼ºµÈ´Ù. */
+    /* ìƒì„±ëœ ë§ˆì§€ë§‰ í•˜ìœ„ BMP ë‹¤ìŒë¶€í„° ìƒì„±ì„ ì‹œì‘í•œë‹¤.
+     * Extentê°€ í• ë‹¹ ë ë•Œ, ExtDir, LfBMP, ItBMP, RtBMP ìˆœìœ¼ë¡œ ìƒì„±ë˜ê¸° ë•Œë¬¸.
+     * ì¦‰, í•­ìƒ í•˜ìœ„ BMP ê°€ ë¨¼ì„œ ìƒì„±ëœë‹¤. */
     sCurPID     = aAftInfo->mLstPID[ sChildBMPType ] + 1;
     sMaxSlotCnt = aBfrInfo->mMaxSlotCnt[ aBMPType ];
     sPBS        = (SDPST_BITSET_PAGETP_META | SDPST_BITSET_PAGEFN_FUL);
 
-    /* »óÀ§ BMPÀÇ ÃÖ´ë slot °³¼ö¿Í
-     * »óÀ§ BMP¿¡¼­ ÀÌÀü ¸¶Áö¸· slot À§Ä¡ ´ÙÀ½À» ¼±ÅÃÇÑ´Ù. (»ğÀÔÀ§Ä¡)
-     * - RtBMP ¿¡¼­´Â ÀÇ¹Ì ¾ø´Ù.
+    /* ìƒìœ„ BMPì˜ ìµœëŒ€ slot ê°œìˆ˜ì™€
+     * ìƒìœ„ BMPì—ì„œ ì´ì „ ë§ˆì§€ë§‰ slot ìœ„ì¹˜ ë‹¤ìŒì„ ì„ íƒí•œë‹¤. (ì‚½ì…ìœ„ì¹˜)
+     * - RtBMP ì—ì„œëŠ” ì˜ë¯¸ ì—†ë‹¤.
      *
-     * ¶ÇÇÑ ÆäÀÌÁö¿¡ ¼³Á¤ÇÒ SeqNo¸¦ °è»êÇÑ´Ù. */
+     * ë˜í•œ í˜ì´ì§€ì— ì„¤ì •í•  SeqNoë¥¼ ê³„ì‚°í•œë‹¤. */
     if ( aBMPType == SDPST_ITBMP )
     {
         sMaxSlotCntInParent = aBfrInfo->mMaxSlotCnt[ sParentBMPType ];
@@ -132,11 +132,11 @@ IDE_RC sdpstBMP::createAndInitPages( idvSQL               * aStatistics,
                  aAftInfo->mPageCnt[SDPST_ITBMP];
     }
 
-    /* »õ·Î »ı¼ºÇÑ BMPÆäÀÌÁö¿¡ ±â·ÏµÈ ÇÏÀ§ BMP °³¼ö */
+    /* ìƒˆë¡œ ìƒì„±í•œ BMPí˜ì´ì§€ì— ê¸°ë¡ëœ í•˜ìœ„ BMP ê°œìˆ˜ */
     sNewSlotCnt    = aAftInfo->mPageCnt[ sChildBMPType ] -
                      aBfrInfo->mFreeSlotCnt[ aBMPType ];
 
-    /* Full »óÅÂ·Î ±â·ÏµÇ¾î¾ßÇÒ BMP ÆäÀÌÁö °³¼ö */
+    /* Full ìƒíƒœë¡œ ê¸°ë¡ë˜ì–´ì•¼í•  BMP í˜ì´ì§€ ê°œìˆ˜ */
     if ( aBfrInfo->mFreeSlotCnt[ aBMPType ] >=
          aAftInfo->mFullBMPCnt[ sChildBMPType ] )
     {
@@ -149,7 +149,7 @@ IDE_RC sdpstBMP::createAndInitPages( idvSQL               * aStatistics,
 
     }
 
-    /* »ı¼ºÇØ¾ßÇÒ ÆäÀÌÁö °³¼ö¸¸Å­ ¹İº¹ */
+    /* ìƒì„±í•´ì•¼í•  í˜ì´ì§€ ê°œìˆ˜ë§Œí¼ ë°˜ë³µ */
     for ( sLoop = 0; sLoop < aAftInfo->mPageCnt[ aBMPType ]; sLoop++ )
     {
         sState = 0;
@@ -162,9 +162,9 @@ IDE_RC sdpstBMP::createAndInitPages( idvSQL               * aStatistics,
 
         if ( aBMPType == SDPST_ITBMP )
         {
-            /* Rt-BMP°¡ ¾Æ´Ñ °æ¿ì ÃÊ±âÈ­½Ã »óÀ§ BMPÀÇ PID¸¦ ¼³Á¤ÇØ¾ß ÇÑ´Ù.
-             * Áö±İ »ı¼ºµÇ´Â ÆäÀÌÁö´Â ÀÌÈÄ  »õ·Î »ı¼ºµÉ »óÀ§ BMP ÆäÀÌÁö¿¡ ±â·Ï
-             * µÉ¼öµµ ÀÖ°í, ±âÁ¸ BMP¿¡ ±â·ÏµÉ ¼öµµ ÀÖ´Ù. */
+            /* Rt-BMPê°€ ì•„ë‹Œ ê²½ìš° ì´ˆê¸°í™”ì‹œ ìƒìœ„ BMPì˜ PIDë¥¼ ì„¤ì •í•´ì•¼ í•œë‹¤.
+             * ì§€ê¸ˆ ìƒì„±ë˜ëŠ” í˜ì´ì§€ëŠ” ì´í›„  ìƒˆë¡œ ìƒì„±ë  ìƒìœ„ BMP í˜ì´ì§€ì— ê¸°ë¡
+             * ë ìˆ˜ë„ ìˆê³ , ê¸°ì¡´ BMPì— ê¸°ë¡ë  ìˆ˜ë„ ìˆë‹¤. */
             if ( aBfrInfo->mFreeSlotCnt[ sParentBMPType ] > sLoop )
             {
                 sParentBMP = aBfrInfo->mLstPID[ sParentBMPType ];
@@ -195,11 +195,11 @@ IDE_RC sdpstBMP::createAndInitPages( idvSQL               * aStatistics,
                 }
             }
 
-            /* ¿©·¯°³ÀÇ Parent BMP¿¡ Çö BMP°¡ µé¾î°¥ slot ¼ø¹øÀ» °í·ÁÇØ¾ß ÇÏ¹Ç·Î
-             * ÇÑ ÆäÀÌÁö¿¡ µé¾î°¥ ¼ö ÀÖ´Â ÃÖ´ë slot°³¼ö·Î mod ¿¬»êÇÑ´Ù. */
+            /* ì—¬ëŸ¬ê°œì˜ Parent BMPì— í˜„ BMPê°€ ë“¤ì–´ê°ˆ slot ìˆœë²ˆì„ ê³ ë ¤í•´ì•¼ í•˜ë¯€ë¡œ
+             * í•œ í˜ì´ì§€ì— ë“¤ì–´ê°ˆ ìˆ˜ ìˆëŠ” ìµœëŒ€ slotê°œìˆ˜ë¡œ mod ì—°ì‚°í•œë‹¤. */
             sSlotNoInParent = sSlotNoInParent % sMaxSlotCntInParent;
 
-            /* »õ BMP ÆäÀÌÁö¿¡ ±â·ÏµÉ Ã¹¹øÂ° ÇÏÀ§ BMP ÆäÀÌÁöÀÇ PID¸¦ °è»êÇÑ´Ù */
+            /* ìƒˆ BMP í˜ì´ì§€ì— ê¸°ë¡ë  ì²«ë²ˆì§¸ í•˜ìœ„ BMP í˜ì´ì§€ì˜ PIDë¥¼ ê³„ì‚°í•œë‹¤ */
             sFstChildBMP = aExtDesc->mExtFstPID +
                            aAftInfo->mPageCnt[SDPST_EXTDIR] +
                            aBfrInfo->mFreeSlotCnt[SDPST_ITBMP] +
@@ -224,9 +224,9 @@ IDE_RC sdpstBMP::createAndInitPages( idvSQL               * aStatistics,
             sSlotCnt = sNewSlotCnt;
         }
 
-        /* ¸¶Áö¸· ÇÏÀ§ BMP */
+        /* ë§ˆì§€ë§‰ í•˜ìœ„ BMP */
         sLstChildBMP = sFstChildBMP + sSlotCnt - 1;
-        /* ±â·ÏÇßÀ¸¹Ç·Î ÀüÃ¼ ±â·ÏÇØ¾ßÇÒ °³¼ö¿¡¼­ »«´Ù. */
+        /* ê¸°ë¡í–ˆìœ¼ë¯€ë¡œ ì „ì²´ ê¸°ë¡í•´ì•¼í•  ê°œìˆ˜ì—ì„œ ëº€ë‹¤. */
         sNewSlotCnt -= sSlotCnt;
 
         IDE_TEST( sdpstAllocPage::createPage( aStatistics,
@@ -252,7 +252,7 @@ IDE_RC sdpstBMP::createAndInitPages( idvSQL               * aStatistics,
             sFullBMPCnt = 0;
         }
 
-        /* ItBMP ÃÊ±âÈ­ ¹× write logging */
+        /* ItBMP ì´ˆê¸°í™” ë° write logging */
         IDE_TEST( logAndInitBMPHdr( &sMtx,
                                     getHdrPtr( sNewPagePtr ),
                                     aBMPType,
@@ -266,14 +266,14 @@ IDE_RC sdpstBMP::createAndInitPages( idvSQL               * aStatistics,
 
         if ( sNeedToChangeMFNL == ID_TRUE )
         {
-            /* FULL »óÅÂ·Î º¯°æÇØ¾ßÇÒ »óÀ§ itslotÀÇ °³¼ö */
+            /* FULL ìƒíƒœë¡œ ë³€ê²½í•´ì•¼í•  ìƒìœ„ itslotì˜ ê°œìˆ˜ */
             aAftInfo->mFullBMPCnt[sParentBMPType]++;
         }
 
         if ( aBMPType == SDPST_RTBMP )
         {
-            /* ¸¶Áö¸·À¸·Î »ı¼ºµÉ RtBMP°¡ ¾Æ´Ñ °æ¿ì¿¡¸¸ ´ÙÀ½ »ı¼ºÇÒ RtBMP PID
-             * ¸¦ ¼³Á¤ÇÑ´Ù. */
+            /* ë§ˆì§€ë§‰ìœ¼ë¡œ ìƒì„±ë  RtBMPê°€ ì•„ë‹Œ ê²½ìš°ì—ë§Œ ë‹¤ìŒ ìƒì„±í•  RtBMP PID
+             * ë¥¼ ì„¤ì •í•œë‹¤. */
             if ( sLoop != aAftInfo->mPageCnt[ aBMPType ] - 1 )
             {
                 IDE_TEST( sdpstRtBMP::setNxtRtBMP( aStatistics,
@@ -288,13 +288,13 @@ IDE_RC sdpstBMP::createAndInitPages( idvSQL               * aStatistics,
         sState = 0;
         IDE_TEST( sdrMiniTrans::commit( &sMtx ) != IDE_SUCCESS );
 
-        /* µ¿ÀÏÇÑ Extent³»¿¡¼­ ´ÙÀ½ ÆäÀÌÁö ID¿Í slotNo¸¦ ±¸ÇÑ´Ù */
+        /* ë™ì¼í•œ Extentë‚´ì—ì„œ ë‹¤ìŒ í˜ì´ì§€ IDì™€ slotNoë¥¼ êµ¬í•œë‹¤ */
         sCurPID = sCurPID + 1;
         sSlotNoInParent++;
         sSeqNo++;
     }
 
-    /* »õ·Î¿î BMP ÆäÀÌÁö ±¸°£À» ¼³Á¤ÇÑ´Ù. */
+    /* ìƒˆë¡œìš´ BMP í˜ì´ì§€ êµ¬ê°„ì„ ì„¤ì •í•œë‹¤. */
     aAftInfo->mFstPID[aBMPType] = aAftInfo->mLstPID[sChildBMPType] + 1;
     aAftInfo->mLstPID[aBMPType] = aAftInfo->mLstPID[sChildBMPType] +
                                   aAftInfo->mPageCnt[aBMPType];
@@ -310,18 +310,18 @@ IDE_RC sdpstBMP::createAndInitPages( idvSQL               * aStatistics,
 
 
 /***********************************************************************
- * Description : It-BMP ÆäÀÌÁö Çì´õ¸¦ ÃÊ±âÈ­ ÇÑ´Ù.
+ * Description : It-BMP í˜ì´ì§€ í—¤ë”ë¥¼ ì´ˆê¸°í™” í•œë‹¤.
  *
  * aBMPHdr          - [IN] BMP header
  * aBMPType         - [IN] BMP Type ( IIBMP or RTBMP )
- * aBodyOffset      - [IN] Body Offset (RtBMP°¡ SegHdr¿¡ ÀÖÀ¸¸é ÀÌ °ªÀÌ ´Ş¶óÁü)
+ * aBodyOffset      - [IN] Body Offset (RtBMPê°€ SegHdrì— ìˆìœ¼ë©´ ì´ ê°’ì´ ë‹¬ë¼ì§)
  * aParentBMP       - [IN] Parent BMP PID
- * aSlotNoInParent  - [IN] Parent BMP¿¡¼­ÀÇ SlotNo
- * aFstBMP          - [IN] Ã¹¹øÂ° child BMP PID
- * aLstBMP          - [IN] ¸¶Áö¸· child BMP PID
- * aFullBMPs        - [IN] FULL »óÅÂ·Î ±â·ÏµÇ¾î¾ßÇÒ Child BMP °³¼ö
- * aMaxSlotCnt      - [IN] BMPÀÇ ÃÖ´ë Slot °³¼ö
- * aNeedToChangeMFNL    - [OUT] MFNL °»½Å ¿©ºÎ
+ * aSlotNoInParent  - [IN] Parent BMPì—ì„œì˜ SlotNo
+ * aFstBMP          - [IN] ì²«ë²ˆì§¸ child BMP PID
+ * aLstBMP          - [IN] ë§ˆì§€ë§‰ child BMP PID
+ * aFullBMPs        - [IN] FULL ìƒíƒœë¡œ ê¸°ë¡ë˜ì–´ì•¼í•  Child BMP ê°œìˆ˜
+ * aMaxSlotCnt      - [IN] BMPì˜ ìµœëŒ€ Slot ê°œìˆ˜
+ * aNeedToChangeMFNL    - [OUT] MFNL ê°±ì‹  ì—¬ë¶€
  ***********************************************************************/
 void  sdpstBMP::initBMPHdr( sdpstBMPHdr    * aBMPHdr,
                             sdpstBMPType     aBMPType,
@@ -341,7 +341,7 @@ void  sdpstBMP::initBMPHdr( sdpstBMPHdr    * aBMPHdr,
     IDE_DASSERT( aBMPHdr != NULL );
     IDE_DASSERT( aFstBMP <= aLstBMP );
 
-    /* µ¿ÀÏÇÑ Extent ³»ÀÇ ÆäÀÌÁöµéÀÌ¹Ç·Î PID·Î ÆäÀÌÁö °³¼ö¸¦ ±¸ÇÑ´Ù. */
+    /* ë™ì¼í•œ Extent ë‚´ì˜ í˜ì´ì§€ë“¤ì´ë¯€ë¡œ PIDë¡œ í˜ì´ì§€ ê°œìˆ˜ë¥¼ êµ¬í•œë‹¤. */
     sNewSlotCount = aLstBMP - aFstBMP + 1;
 
     if ( aMaxSlotCnt < sNewSlotCount )
@@ -366,8 +366,8 @@ void  sdpstBMP::initBMPHdr( sdpstBMPHdr    * aBMPHdr,
         IDE_ASSERT( 0 );
     }
 
-    /* it-bmp control header¸¦ ÃÊ±âÈ­ÇÏ¿´À¸¹Ç·Î sdpPhyPageHdrÀÇ
-     * freeOffset°ú total free size¸¦ º¯°æÇÑ´Ù. */
+    /* it-bmp control headerë¥¼ ì´ˆê¸°í™”í•˜ì˜€ìœ¼ë¯€ë¡œ sdpPhyPageHdrì˜
+     * freeOffsetê³¼ total free sizeë¥¼ ë³€ê²½í•œë‹¤. */
     sdpPhyPage::initLogicalHdr( sdpPhyPage::getHdr( (UChar*)aBMPHdr ),
                                 ID_SIZEOF( sdpstBMPHdr ) );
 
@@ -379,7 +379,7 @@ void  sdpstBMP::initBMPHdr( sdpstBMPHdr    * aBMPHdr,
     aBMPHdr->mMaxSlotCnt              = aMaxSlotCnt;
     aBMPHdr->mNxtRtBMP                = SD_NULL_PID;
 
-    /* ÆäÀÌÁö¿¡¼­ÀÇ Body ¿µ¿ªÀÇ Àı´ë OffsetÀ» ±¸ÇÑ´Ù. */
+    /* í˜ì´ì§€ì—ì„œì˜ Body ì˜ì—­ì˜ ì ˆëŒ€ Offsetì„ êµ¬í•œë‹¤. */
     aBMPHdr->mBodyOffset = aBodyOffset;
 
     for ( sLoop = 0; sLoop < SDPST_MFNL_MAX; sLoop++ )
@@ -399,7 +399,7 @@ void  sdpstBMP::initBMPHdr( sdpstBMPHdr    * aBMPHdr,
 
 
 /***********************************************************************
- * Description : Internal BMP Control Header ÃÊ±âÈ­
+ * Description : Internal BMP Control Header ì´ˆê¸°í™”
  ***********************************************************************/
 void  sdpstBMP::initBMPHdr( sdpstBMPHdr    * aBMPHdr,
                             sdpstBMPType     aBMPType,
@@ -425,18 +425,18 @@ void  sdpstBMP::initBMPHdr( sdpstBMPHdr    * aBMPHdr,
 
 
 /***********************************************************************
- * Description : Internal BMP Control Header ÃÊ±âÈ­ ¹× write logging
+ * Description : Internal BMP Control Header ì´ˆê¸°í™” ë° write logging
  *
  * aMtx             - [IN] Mini Transaction Pointer
  * aBMPHdr          - [IN] BMP Header
  * aBMPType         - [IN] BMP Type ( IIBMP or RTBMP )
  * aParentBMP       - [IN] Parent BMP PID
- * aSlotNoInParent  - [IN] Parent BMP¿¡¼­ÀÇ SlotNo
- * aFstBMP          - [IN] Ã¹¹øÂ° child BMP PID
- * aLstBMP          - [IN] ¸¶Áö¸· child BMP PID
- * aFullBMPs        - [IN] FULL »óÅÂ·Î ±â·ÏµÇ¾î¾ßÇÒ Child BMP °³¼ö
- * aMaxSlotCnt      - [IN] BMPÀÇ ÃÖ´ë Slot °³¼ö
- * aNeedToChangeMFNL    - [OUT] MFNL °»½Å ¿©ºÎ
+ * aSlotNoInParent  - [IN] Parent BMPì—ì„œì˜ SlotNo
+ * aFstBMP          - [IN] ì²«ë²ˆì§¸ child BMP PID
+ * aLstBMP          - [IN] ë§ˆì§€ë§‰ child BMP PID
+ * aFullBMPs        - [IN] FULL ìƒíƒœë¡œ ê¸°ë¡ë˜ì–´ì•¼í•  Child BMP ê°œìˆ˜
+ * aMaxSlotCnt      - [IN] BMPì˜ ìµœëŒ€ Slot ê°œìˆ˜
+ * aNeedToChangeMFNL    - [OUT] MFNL ê°±ì‹  ì—¬ë¶€
  ***********************************************************************/
 IDE_RC sdpstBMP::logAndInitBMPHdr( sdrMtx            * aMtx,
                                    sdpstBMPHdr       * aBMPHdr,
@@ -465,7 +465,7 @@ IDE_RC sdpstBMP::logAndInitBMPHdr( sdrMtx            * aMtx,
                 aMaxSlotCnt,
                 aNeedToChangeMFNL );
 
-    /* INIT_BMP ÆäÀÌÁö logging */
+    /* INIT_BMP í˜ì´ì§€ logging */
     sLogData.mType        = aBMPType;
     sLogData.mParentInfo.mParentPID   = aParentBMP;
     sLogData.mParentInfo.mIdxInParent = aSlotNoInParent;
@@ -488,7 +488,7 @@ IDE_RC sdpstBMP::logAndInitBMPHdr( sdrMtx            * aMtx,
 
 
 /***********************************************************************
- * Description : BMP ÆäÀÌÁö¿¡ SlotÀ» Ãß°¡ÇÑ´Ù.
+ * Description : BMP í˜ì´ì§€ì— Slotì„ ì¶”ê°€í•œë‹¤.
  ***********************************************************************/
 void sdpstBMP::addSlots( sdpstBMPHdr * aBMPHdr,
                          SShort        aLstSlotNo,
@@ -531,8 +531,8 @@ void sdpstBMP::addSlots( sdpstBMPHdr * aBMPHdr,
     }
     else
     {
-        /* ÀÌÀü MFNL»óÅÂ°¡ FULL¿¡¼­ FstFree°¡ ¸¶Áö¸· SlotÀÌ¾ú´Ù¸é,
-         * »õ·Î Ãß°¡µÈ SlotÀ¸·Î °»½ÅÇÑ´Ù. */
+        /* ì´ì „ MFNLìƒíƒœê°€ FULLì—ì„œ FstFreeê°€ ë§ˆì§€ë§‰ Slotì´ì—ˆë‹¤ë©´,
+         * ìƒˆë¡œ ì¶”ê°€ëœ Slotìœ¼ë¡œ ê°±ì‹ í•œë‹¤. */
         if ( (aBMPHdr->mMFNL == SDPST_MFNL_FUL ) &&
              (aBMPHdr->mFstFreeSlotNo + 1 == aLstSlotNo ))
         {
@@ -548,15 +548,15 @@ void sdpstBMP::addSlots( sdpstBMPHdr * aBMPHdr,
     }
     else
     {
-        /* slotÀÌ Ãß°¡µÇ¾îµµ MFNLÀÌ º¯°æµÇÁö ¾Ê´Â´Ù.  */
+        /* slotì´ ì¶”ê°€ë˜ì–´ë„ MFNLì´ ë³€ê²½ë˜ì§€ ì•ŠëŠ”ë‹¤.  */
         *aNeedToChangeMFNL = ID_FALSE;
         *aNewMFNL      = aBMPHdr->mMFNL;
     }
 }
 
 /***********************************************************************
- * Description : Internal Bitmap ÆäÀÌÁöÀÇ lf-slotµéÀ» Ãß°¡ÇÏ°í
- *               MFNLtbl°ú MFNLÀ» º¯°æÇÏ´Â ·Î±ëÀ» ÇÑ´Ù.
+ * Description : Internal Bitmap í˜ì´ì§€ì˜ lf-slotë“¤ì„ ì¶”ê°€í•˜ê³ 
+ *               MFNLtblê³¼ MFNLì„ ë³€ê²½í•˜ëŠ” ë¡œê¹…ì„ í•œë‹¤.
  ************************************************************************/
 IDE_RC sdpstBMP::logAndAddSlots( sdrMtx        * aMtx,
                                  sdpstBMPHdr   * aBMPHdr,
@@ -574,7 +574,7 @@ IDE_RC sdpstBMP::logAndAddSlots( sdrMtx        * aMtx,
     IDE_DASSERT( aNeedToChangeMFNL != NULL );
     IDE_DASSERT( aNewMFNL      != NULL );
 
-    // ÆäÀÌÁö ³»ÀÇ slot °³¼ö¸¦ ¾ò¾î¼­ ´ÙÀ½ ±â·ÏÇÒ slotÀ§Ä¡¸¦ ±¸ÇÑ´Ù.
+    // í˜ì´ì§€ ë‚´ì˜ slot ê°œìˆ˜ë¥¼ ì–»ì–´ì„œ ë‹¤ìŒ ê¸°ë¡í•  slotìœ„ì¹˜ë¥¼ êµ¬í•œë‹¤.
     sLstSlotNo = aBMPHdr->mSlotCnt;
 
     if ( aBMPHdr->mMaxSlotCnt <= sLstSlotNo )
@@ -611,7 +611,7 @@ IDE_RC sdpstBMP::logAndAddSlots( sdrMtx        * aMtx,
 
 
 /***********************************************************************
- * Description : Bitmap ÆäÀÌÁöÀÇ map ¿µ¿ª¿¡ slotÀ» Ãß°¡ÇÑ´Ù.
+ * Description : Bitmap í˜ì´ì§€ì˜ map ì˜ì—­ì— slotì„ ì¶”ê°€í•œë‹¤.
  ***********************************************************************/
 void sdpstBMP::addSlotsToMap( sdpstBMPSlot    * aMapPtr,
                               SShort            aSlotNo,
@@ -648,7 +648,7 @@ void sdpstBMP::addSlotsToMap( sdpstBMPSlot    * aMapPtr,
 }
 
 /***********************************************************************
- * Description : ÆäÀÌÁöÀÇ MFNL °³¼ö ¹× BMP ´ëÇ¥ MFNL °áÁ¤ÇÏ¿© °»½ÅÇÑ´Ù.
+ * Description : í˜ì´ì§€ì˜ MFNL ê°œìˆ˜ ë° BMP ëŒ€í‘œ MFNL ê²°ì •í•˜ì—¬ ê°±ì‹ í•œë‹¤.
  ***********************************************************************/
 IDE_RC sdpstBMP::logAndUpdateMFNL( sdrMtx            * aMtx,
                                    sdpstBMPHdr       * aBMPHdr,
@@ -692,16 +692,16 @@ IDE_RC sdpstBMP::logAndUpdateMFNL( sdrMtx            * aMtx,
 
 
 /***********************************************************************
- * Description : ÆäÀÌÁöÀÇ MFNL °³¼ö ¹× BMP ´ëÇ¥ MFNL °áÁ¤ÇÏ¿© °»½ÅÇÑ´Ù.
+ * Description : í˜ì´ì§€ì˜ MFNL ê°œìˆ˜ ë° BMP ëŒ€í‘œ MFNL ê²°ì •í•˜ì—¬ ê°±ì‹ í•œë‹¤.
  *
  * aBMPHdr           - [IN] BMP Header
  * aFmSlotNo         - [IN] From SlotNo
  * aToSlotNo         - [IN] To SlotNo
- * aOldSlotMFNL      - [IN] º¯°æÀü MFNL
- * aNewSlotMFNL      - [IN] º¯°æÈÄ MFNL
- * aPageCount        - [IN] º¯°æÇÒ CHILD ÆäÀÌÁö °³¼ö
- * aNewBMPMFNL       - [OUT] º¯°æµÈ ÇØ´ç BMPÀÇ MFNL
- * aNeedToChangeMFNL - [OUT] MFNL º¯°æ ¿©ºÎ
+ * aOldSlotMFNL      - [IN] ë³€ê²½ì „ MFNL
+ * aNewSlotMFNL      - [IN] ë³€ê²½í›„ MFNL
+ * aPageCount        - [IN] ë³€ê²½í•  CHILD í˜ì´ì§€ ê°œìˆ˜
+ * aNewBMPMFNL       - [OUT] ë³€ê²½ëœ í•´ë‹¹ BMPì˜ MFNL
+ * aNeedToChangeMFNL - [OUT] MFNL ë³€ê²½ ì—¬ë¶€
  ***********************************************************************/
 void sdpstBMP::updateMFNL( sdpstBMPHdr       * aBMPHdr,
                            SShort              aFmSlotNo,
@@ -736,7 +736,7 @@ void sdpstBMP::updateMFNL( sdpstBMPHdr       * aBMPHdr,
         IDE_ASSERT( 0 );
     }
 
-    /* Slot MFNL À» °»½ÅÇÑ´Ù. ´Ü, Lf-BMP¿¡¼­´Â °»½ÅÇÏÁö ¾Ê´Â´Ù. (¾ø±â¶§¹®) */
+    /* Slot MFNL ì„ ê°±ì‹ í•œë‹¤. ë‹¨, Lf-BMPì—ì„œëŠ” ê°±ì‹ í•˜ì§€ ì•ŠëŠ”ë‹¤. (ì—†ê¸°ë•Œë¬¸) */
     if ( (aBMPHdr->mType == SDPST_RTBMP) || (aBMPHdr->mType == SDPST_ITBMP) )
     {
         for ( sLoop = aFmSlotNo; sLoop <= aToSlotNo; sLoop++ )
@@ -746,11 +746,11 @@ void sdpstBMP::updateMFNL( sdpstBMPHdr       * aBMPHdr,
         }
     }
 
-    /* MFNL Table À» °»½ÅÇÑ´Ù. */
+    /* MFNL Table ì„ ê°±ì‹ í•œë‹¤. */
     aBMPHdr->mMFNLTbl[aOldSlotMFNL] -= aPageCount;
     aBMPHdr->mMFNLTbl[aNewSlotMFNL] += aPageCount;
 
-    /* BMPÀÇ ´ëÇ¥ MFNLÀ» °áÁ¤ÇÏ¿© °»½ÅÇÑ´Ù. */
+    /* BMPì˜ ëŒ€í‘œ MFNLì„ ê²°ì •í•˜ì—¬ ê°±ì‹ í•œë‹¤. */
     sNewBMPMFNL = sdpstAllocPage::calcMFNL( aBMPHdr->mMFNLTbl );
     if ( aBMPHdr->mMFNL != sNewBMPMFNL )
     {
@@ -841,7 +841,7 @@ IDE_RC sdpstBMP::verifyBMP( sdpstBMPHdr  * aBMPHdr )
 
     idlOS::memset( &sMFNLtbl, 0x00, ID_SIZEOF(UShort) * SDPST_MFNL_MAX );
 
-    /* MFNL Table °ª °ËÁõ */
+    /* MFNL Table ê°’ ê²€ì¦ */
     for( sLoop = 0; sLoop < sSlotCnt; sLoop++ )
     {
         if ( sSlotPtr[sLoop].mBMP == SD_NULL_PID )
@@ -890,11 +890,11 @@ IDE_RC sdpstBMP::verifyBMP( sdpstBMPHdr  * aBMPHdr )
 }
 
 /***********************************************************************
- * Description : Search Type¿¡ µû¶ó Å½»öÇÒ Lf BMP ÆäÀÌÁöÀÇ ÈÄº¸¸ñ·ÏÀ»
- *               ÀÛ¼ºÇÑ´Ù.
+ * Description : Search Typeì— ë”°ë¼ íƒìƒ‰í•  Lf BMP í˜ì´ì§€ì˜ í›„ë³´ëª©ë¡ì„
+ *               ì‘ì„±í•œë‹¤.
  *
- * °¡¿ë SlotÀ» Å½»ö´ë»óÀ» Å½»öÇÒ ¼öµµ ÀÖ°í, °¡¿ë ÆäÀÌÁö¸¦ Å½»ö´ë»óÀ¸·Î
- * Å½»öÇÒ¼öµµ ÀÖ´Ù.
+ * ê°€ìš© Slotì„ íƒìƒ‰ëŒ€ìƒì„ íƒìƒ‰í•  ìˆ˜ë„ ìˆê³ , ê°€ìš© í˜ì´ì§€ë¥¼ íƒìƒ‰ëŒ€ìƒìœ¼ë¡œ
+ * íƒìƒ‰í• ìˆ˜ë„ ìˆë‹¤.
  ***********************************************************************/
 void sdpstBMP::makeCandidateChild( sdpstSegCache    * aSegCache,
                                    UChar            * aPagePtr,
@@ -936,14 +936,14 @@ void sdpstBMP::makeCandidateChild( sdpstSegCache    * aSegCache,
 
     sMaxCandidateCount = sCurOps->mGetMaxCandidateCnt();
 
-    // Å½»ö ½ÃÀÛÀ§Ä¡¸¦ Hashing ÇØ¼­ ¼±ÅÃÇÑ´ÙÀ½, ÈÄº¸ ¸ñ·ÏÀ»
-    // ÃÖ´ë 10°³±îÁö ÀÛ¼ºÇÑ´Ù.
-    // (¾îÂ÷ÇÇ ÈùÆ®ÀÌ±â ¶§¹®¿¡ Race ConditionÀÌ ¹ß»ıÇØµµ »ó°ü¾ø´Ù)
+    // íƒìƒ‰ ì‹œì‘ìœ„ì¹˜ë¥¼ Hashing í•´ì„œ ì„ íƒí•œë‹¤ìŒ, í›„ë³´ ëª©ë¡ì„
+    // ìµœëŒ€ 10ê°œê¹Œì§€ ì‘ì„±í•œë‹¤.
+    // (ì–´ì°¨í”¼ íŒíŠ¸ì´ê¸° ë•Œë¬¸ì— Race Conditionì´ ë°œìƒí•´ë„ ìƒê´€ì—†ë‹¤)
     sHintIdx = aSegCache->mHint4CandidateChild++;
 
     /* BUG-33683 - [SM] in sdcRow::processOverflowData, Deadlock can occur
-     * Æ¯Á¤ ÆäÀÌÁö ÇÒ´çÀ» À¯µµÇÏ±â À§ÇØ ÇÁ·ÎÆÛÆ¼ ¼³Á¤µÈ °æ¿ì ÇØ´ç ÇÁ·ÎÆÛÆ¼
-     * °ªÀ¸·Î sSlotNo¸¦ ¼³Á¤ÇÑ´Ù. */
+     * íŠ¹ì • í˜ì´ì§€ í• ë‹¹ì„ ìœ ë„í•˜ê¸° ìœ„í•´ í”„ë¡œí¼í‹° ì„¤ì •ëœ ê²½ìš° í•´ë‹¹ í”„ë¡œí¼í‹°
+     * ê°’ìœ¼ë¡œ sSlotNoë¥¼ ì„¤ì •í•œë‹¤. */
     if ( aBMPType == SDPST_LFBMP )
     {
         sManualSlotNo = smuProperty::getTmsManualSlotNoInLfBMP();
@@ -971,7 +971,7 @@ void sdpstBMP::makeCandidateChild( sdpstSegCache    * aSegCache,
         sSlotCnt = sCurOps->mGetChildCount( aPagePtr, aHWM );
     }
 
-    /* ¸¶Áö¸·À» ³Ñ¾î¼­¸é ¸¶Áö¸· slot ºÎÅÍ */
+    /* ë§ˆì§€ë§‰ì„ ë„˜ì–´ì„œë©´ ë§ˆì§€ë§‰ slot ë¶€í„° */
     if ( sSlotNo > (sSlotCnt - 1) )
     {
         sSlotNo = sSlotCnt - 1;
@@ -1025,14 +1025,14 @@ void sdpstBMP::makeCandidateChild( sdpstSegCache    * aSegCache,
             sCandidateCount++;
         }
 
-        /* ¸ğµç ÈÄº¸¸¦ ¼±ÅÃÇÒ¶§±îÁö */
+        /* ëª¨ë“  í›„ë³´ë¥¼ ì„ íƒí• ë•Œê¹Œì§€ */
         if ( sCandidateCount > sMaxCandidateCount - 1)
         {
             break;
         }
 
-        /* ¸ğµç slotÀ» È®ÀÎ ÇØ¾ßÇÏ¹Ç·Î ¸¶Áö¸· slot±îÁö
-         * È®ÀÎÇß´Ù¸é ´Ù½Ã Ã¹¹øÂ° slotºÎÅÍ È®ÀÎÇÑ´Ù. */
+        /* ëª¨ë“  slotì„ í™•ì¸ í•´ì•¼í•˜ë¯€ë¡œ ë§ˆì§€ë§‰ slotê¹Œì§€
+         * í™•ì¸í–ˆë‹¤ë©´ ë‹¤ì‹œ ì²«ë²ˆì§¸ slotë¶€í„° í™•ì¸í•œë‹¤. */
         if ( sCurIdx == (sSlotCnt - 1) )
         {
             sCurIdx = 0;
@@ -1083,7 +1083,7 @@ void sdpstBMP::makeCandidateChild( sdpstSegCache    * aSegCache,
 }
 
 /***********************************************************************
- * Description : RtBMP/ItBMP Header¸¦ dumpÇÑ´Ù.
+ * Description : RtBMP/ItBMP Headerë¥¼ dumpí•œë‹¤.
  ***********************************************************************/
 IDE_RC sdpstBMP::dumpHdr( UChar    * aPagePtr,
                           SChar    * aOutBuf,
@@ -1142,7 +1142,7 @@ IDE_RC sdpstBMP::dumpHdr( UChar    * aPagePtr,
 }
 
 /***********************************************************************
- * Description : RtBMP/ItBMP Body¸¦ dumpÇÑ´Ù.
+ * Description : RtBMP/ItBMP Bodyë¥¼ dumpí•œë‹¤.
  ***********************************************************************/
 IDE_RC sdpstBMP::dumpBody( UChar    * aPagePtr,
                            SChar    * aOutBuf,
@@ -1189,7 +1189,7 @@ IDE_RC sdpstBMP::dumpBody( UChar    * aPagePtr,
 }
 
 /***********************************************************************
- * Description : RtBMP/ItBMP Header¸¦ dumpÇÑ´Ù.
+ * Description : RtBMP/ItBMP Headerë¥¼ dumpí•œë‹¤.
  ***********************************************************************/
 IDE_RC sdpstBMP::dump( UChar    * aPagePtr )
 {

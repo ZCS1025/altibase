@@ -77,7 +77,7 @@ void idvClockThread::run()
         sCurTime     = idlOS::gettimeofday();
         *mSecondArea = sCurTime.sec();
 
-        if (mGapOfTickAvg == 0) // ÃÊ±â »óÅÂ
+        if (mGapOfTickAvg == 0) // ì´ˆê¸° ìƒíƒœ
         {
             mGapOfTickAvg = sAfterTick - sBeforeTick;
         }
@@ -115,8 +115,8 @@ void    idvClockThread::changeClockResolution(UInt aTime)
 
 void   idvClockThread::waitServiceAvail() 
 {
-    // thread°¡ ½ÇÇàµÇ¾î¼­ clock ÃÊ±âÈ­°¡ µÉ¶§±îÁö 
-    // ´ë±âÇÏ´Ù ¸®ÅÏÇÑ´Ù. 
+    // threadê°€ ì‹¤í–‰ë˜ì–´ì„œ clock ì´ˆê¸°í™”ê°€ ë ë•Œê¹Œì§€ 
+    // ëŒ€ê¸°í•˜ë‹¤ ë¦¬í„´í•œë‹¤. 
     while( *mClockArea == 0 )
     {
         idlOS::sleep(1);
@@ -200,7 +200,7 @@ static IDE_RC startupClock(idvResource *aRsc)
     IDE_TEST(aRsc->mClockThread.start() != IDE_SUCCESS);
     IDE_TEST(aRsc->mClockThread.waitToStart(0) != IDE_SUCCESS);
 
-    // thread available ÇÒ¶§±îÁö ´ë±âÇÑ´Ù. 
+    // thread available í• ë•Œê¹Œì§€ ëŒ€ê¸°í•œë‹¤. 
     aRsc->mClockThread.waitServiceAvail();
 
     return IDE_SUCCESS;

@@ -135,12 +135,12 @@ IDE_RC mtf::initConversionNodeForInitialize( mtcNode** aConversionNode,
 /***********************************************************************
  *
  * Description :
- *    Conversion Node¸¦ »ı¼ºÇÏ°í ÃÊ±âÈ­ÇÔ
- *    mtcCallBack.initConversionNode ÀÇ ÇÔ¼ö Æ÷ÀÎÅÍ¿¡ ¼ÂÆÃµÊ.
+ *    Conversion Nodeë¥¼ ìƒì„±í•˜ê³  ì´ˆê¸°í™”í•¨
+ *    mtcCallBack.initConversionNode ì˜ í•¨ìˆ˜ í¬ì¸í„°ì— ì…‹íŒ…ë¨.
  *
  * Implementation :
  *
- *    Conversion Node¸¦ À§ÇÑ °ø°£À» ÇÒ´ç¹Ş°í, ´ë»ó Node¸¦ º¹»çÇÔ.
+ *    Conversion Nodeë¥¼ ìœ„í•œ ê³µê°„ì„ í• ë‹¹ë°›ê³ , ëŒ€ìƒ Nodeë¥¼ ë³µì‚¬í•¨.
  *
  ***********************************************************************/
     
@@ -392,7 +392,7 @@ IDE_RC mtf::initializeComparisonTable( void )
         }
     }
     /* BUG-40539
-     * PATCH TABLE : undef typeÀ» ºñ±³ÇÏ´Â °æ¿ì Ç×»ó undef typeÀ¸·Î º¯°æ
+     * PATCH TABLE : undef typeì„ ë¹„êµí•˜ëŠ” ê²½ìš° í•­ìƒ undef typeìœ¼ë¡œ ë³€ê²½
      */
     for ( sArgument1 = 0;
           sArgument1 < mtd::getNumberOfModules();
@@ -446,12 +446,12 @@ mtcNode* mtf::convertedNode( mtcNode*      aNode,
 {
 /***********************************************************************
  *
- * Description : conversion node ¹İÈ¯ 
+ * Description : conversion node ë°˜í™˜ 
  *               
  *
  * Implementation :
- *    conversion, indirect conversionÀ» °í·ÁÇØ¼­
- *    ÃÖÁ¾ conversion node¸¦ ¹İÈ¯ 
+ *    conversion, indirect conversionì„ ê³ ë ¤í•´ì„œ
+ *    ìµœì¢… conversion nodeë¥¼ ë°˜í™˜ 
  *
  ***********************************************************************/  
     mtcNode* sNode;
@@ -666,14 +666,14 @@ IDE_RC mtf::makeConversionNodes( mtcNode*          aNode,
             ( (*aModule)->id == MTD_UNDEF_ID ) )
         {
             // To fix BUG-15116
-            // UDT¿¡ ´ëÇØ¼­´Â conversion node¸¦ ´Ş ¼ö ¾øÀ½.
+            // UDTì— ëŒ€í•´ì„œëŠ” conversion nodeë¥¼ ë‹¬ ìˆ˜ ì—†ìŒ.
 
-            // PROJ-2163 : Undef Å¸ÀÔ¿¡ ´ëÇØ¼­µµ conversion node ¸¦ ´Ş ¼ö ¾ø´Ù.
+            // PROJ-2163 : Undef íƒ€ì…ì— ëŒ€í•´ì„œë„ conversion node ë¥¼ ë‹¬ ìˆ˜ ì—†ë‹¤.
             continue;
         }
         else
         {
-            // BUG-43858 ÀÎÀÚ°¡ Undef Å¸ÀÔÀÎ °æ¿ì aNode¿¡ Ç¥½ÃÇÑ´Ù.
+            // BUG-43858 ì¸ìê°€ Undef íƒ€ì…ì¸ ê²½ìš° aNodeì— í‘œì‹œí•œë‹¤.
             if ( aStack->column->module->id == MTD_UNDEF_ID )
             {
                 aNode->lflag &= ~MTC_NODE_UNDEF_TYPE_MASK;
@@ -755,12 +755,12 @@ IDE_RC mtf::makeLeftConversionNodes( mtcNode*          aNode,
         // PROJ-2163
         if( (*aModule)->id == MTD_UNDEF_ID )
         {
-            // undef Å¸ÀÔ¿¡ ´ëÇØ¼­´Â conversion node¸¦ ´Ş ¼ö ¾ø´Ù.
+            // undef íƒ€ì…ì— ëŒ€í•´ì„œëŠ” conversion nodeë¥¼ ë‹¬ ìˆ˜ ì—†ë‹¤.
             continue;
         }
         else
         {
-            // BUG-43858 ÀÎÀÚ°¡ Undef Å¸ÀÔÀÎ °æ¿ì aNode¿¡ Ç¥½ÃÇÑ´Ù.
+            // BUG-43858 ì¸ìê°€ Undef íƒ€ì…ì¸ ê²½ìš° aNodeì— í‘œì‹œí•œë‹¤.
             if ( aStack->column->module->id == MTD_UNDEF_ID )
             {
                 aNode->lflag &= ~MTC_NODE_UNDEF_TYPE_MASK;
@@ -877,8 +877,8 @@ IDE_RC mtf::initializeComparisonTemplate(
     sNode[2].module    = NULL;
 
     // PROJ-1358
-    // estimate() ÇÔ¼öÀÇ interface º¯°æÀ¸·Î
-    // °¡»óÀÇ Template À» »ı¼ºÇÏ¿© ÃÊ±âÈ­¿¡ »ç¿ëÇÑ´Ù.
+    // estimate() í•¨ìˆ˜ì˜ interface ë³€ê²½ìœ¼ë¡œ
+    // ê°€ìƒì˜ Template ì„ ìƒì„±í•˜ì—¬ ì´ˆê¸°í™”ì— ì‚¬ìš©í•œë‹¤.
     sTemplate.rows = & sTuple;
     sTemplate.rowArrayCount = 1;
     sTemplate.rowCount = 0;
@@ -1132,21 +1132,21 @@ IDE_RC mtf::finalizeTemplate( mtfSubModule*** aTable )
 IDE_RC mtf::getCharFuncResultModule( const mtdModule** aResultModule,
                                      const mtdModule*  aArgumentModule )
 {
-    // ¹®ÀÚ °ü·Ã ÇÔ¼ö(upper, lower, concat...)ÀÇ
-    // °á°úÀÇ Å¸ÀÔÀº ÀÎÀÚÀÇ Å¸ÀÔÀ» µû¸£µµ·Ï ÇÑ´Ù.
-    // Áï, upper(i1)¿¡¼­ i1ÀÌ CHAR Å¸ÀÔÀÌ¸é
-    // °á°úµµ CHARÀÌ°í i1ÀÌ VARCHARÀÌ¸é °á°úµµ VARCHARÀÌ´Ù.
-    // ÀÌ´Â ¿À¶óÅ¬°ú °°Àº Á¤Ã¥ÀÌ´Ù.
+    // ë¬¸ì ê´€ë ¨ í•¨ìˆ˜(upper, lower, concat...)ì˜
+    // ê²°ê³¼ì˜ íƒ€ì…ì€ ì¸ìì˜ íƒ€ì…ì„ ë”°ë¥´ë„ë¡ í•œë‹¤.
+    // ì¦‰, upper(i1)ì—ì„œ i1ì´ CHAR íƒ€ì…ì´ë©´
+    // ê²°ê³¼ë„ CHARì´ê³  i1ì´ VARCHARì´ë©´ ê²°ê³¼ë„ VARCHARì´ë‹¤.
+    // ì´ëŠ” ì˜¤ë¼í´ê³¼ ê°™ì€ ì •ì±…ì´ë‹¤.
     //
     // by kumdory, 2005-06-21    
 
     /***********************************************************************
      *  // PROJ-2002 Column Security
      *
-     *  ECHAR        => CHAR ¹İÈ¯
-     *  ECHAR_ECC    => CHAR ¹İÈ¯
-     *  EVARCHAR     => VARCHAR ¹İÈ¯
-     *  EVARCHAR_ECC => VARCHAR ¹İÈ¯
+     *  ECHAR        => CHAR ë°˜í™˜
+     *  ECHAR_ECC    => CHAR ë°˜í™˜
+     *  EVARCHAR     => VARCHAR ë°˜í™˜
+     *  EVARCHAR_ECC => VARCHAR ë°˜í™˜
      *
      ***********************************************************************/
     
@@ -1217,7 +1217,7 @@ IDE_RC mtf::getLikeModule( const mtdModule** aResultModule,
                            const mtdModule*  /*aPatternModule*/ )
 {
     // BUG-11194 fix
-    // like ÇÔ¼öÀÇ datatype Á¤Ã¥
+    // like í•¨ìˆ˜ì˜ datatype ì •ì±…
     //
     // char1 like char2 ( escape esc_char )
     //
@@ -1225,18 +1225,18 @@ IDE_RC mtf::getLikeModule( const mtdModule** aResultModule,
     //   - char2   : pattern
     //   - esc_char: escape character
     //
-    //   * char1, char2´Â CHAR ¶Ç´Â VARCHAR Å¸ÀÔÀÏ ¼ö ÀÖ´Ù.
-    //     ¿À¶óÅ¬°ú °°ÀÌ char1ÀÇ like ¸ğµâÀ» »ç¿ëÇÏ°Ô ÇÑ´Ù.
-    //     Áï, char1ÀÌ CHAR Å¸ÀÔÀÌ¸é char_like¸¦,
-    //     char1ÀÌ VARCHAR Å¸ÀÔÀÌ¸é varchar_like¸¦ »ç¿ëÇÏ°Ô ÇÏ±â À§ÇØ
-    //     char1ÀÇ Å¸ÀÔÀ» ¸®ÅÏÇÏµµ·Ï ÇÑ´Ù.
-    //     ¿ø·¡´Â char2ÀÇ Å¸ÀÔ°ú char1ÀÇ Å¸ÀÔÀÌ ´Ù¸£¸é,
-    //     char2ÀÇ Å¸ÀÔÀÌ char1ÀÇ Å¸ÀÔÀ¸·Î conversionµÇ¾ß ÇßÁö¸¸,
-    //     PROJ-1364·Î ÀÎÇØ ±×·² ÇÊ¿ä°¡ ¾ø°Ô µÇ¾ú´Ù.
+    //   * char1, char2ëŠ” CHAR ë˜ëŠ” VARCHAR íƒ€ì…ì¼ ìˆ˜ ìˆë‹¤.
+    //     ì˜¤ë¼í´ê³¼ ê°™ì´ char1ì˜ like ëª¨ë“ˆì„ ì‚¬ìš©í•˜ê²Œ í•œë‹¤.
+    //     ì¦‰, char1ì´ CHAR íƒ€ì…ì´ë©´ char_likeë¥¼,
+    //     char1ì´ VARCHAR íƒ€ì…ì´ë©´ varchar_likeë¥¼ ì‚¬ìš©í•˜ê²Œ í•˜ê¸° ìœ„í•´
+    //     char1ì˜ íƒ€ì…ì„ ë¦¬í„´í•˜ë„ë¡ í•œë‹¤.
+    //     ì›ë˜ëŠ” char2ì˜ íƒ€ì…ê³¼ char1ì˜ íƒ€ì…ì´ ë‹¤ë¥´ë©´,
+    //     char2ì˜ íƒ€ì…ì´ char1ì˜ íƒ€ì…ìœ¼ë¡œ conversionë˜ì•¼ í–ˆì§€ë§Œ,
+    //     PROJ-1364ë¡œ ì¸í•´ ê·¸ëŸ´ í•„ìš”ê°€ ì—†ê²Œ ë˜ì—ˆë‹¤.
     //
     // by kumdory, 2005-06-21
 
-    // BUGBUG language °ü·Ã ÄÚµå´Â PROJ-1361¿¡¼­ ¾ø¾îÁ®¾ß ÇÔ.
+    // BUGBUG language ê´€ë ¨ ì½”ë“œëŠ” PROJ-1361ì—ì„œ ì—†ì–´ì ¸ì•¼ í•¨.
     
     if( aSearchValueModule->id == MTD_CHAR_ID ) 
     {
@@ -1280,18 +1280,18 @@ IDE_RC mtf::getCharFuncCharResultModule( const mtdModule** aResultModule,
  *
  * Description : PROJ-1579 NCHAR
  *
- *      CHAR     => CHAR ¹İÈ¯
- *      NCHAR    => CHAR ¹İÈ¯
- *      VARCHAR  => VARCHAR ¹İÈ¯
- *      NVARCHAR => VARCHAR ¹İÈ¯
+ *      CHAR     => CHAR ë°˜í™˜
+ *      NCHAR    => CHAR ë°˜í™˜
+ *      VARCHAR  => VARCHAR ë°˜í™˜
+ *      NVARCHAR => VARCHAR ë°˜í™˜
  *
- *      ¹®ÀÚ ÇÔ¼ö¿¡¼­ NCHAR/NVARCHAR Å¸ÀÔÀ» µû·Î Ã³¸®ÇÏÁö ¾Ê°í,
- *      CHAR/VARCHAR Å¸ÀÔÀ¸·Î º¯È¯ÇØ¼­ ¿¬»êÀ» ÇÏ´Â ÇÔ¼öÀÇ °æ¿ì
- *      È£ÃâµÇ´Â ÇÔ¼öÀÌ´Ù.
+ *      ë¬¸ì í•¨ìˆ˜ì—ì„œ NCHAR/NVARCHAR íƒ€ì…ì„ ë”°ë¡œ ì²˜ë¦¬í•˜ì§€ ì•Šê³ ,
+ *      CHAR/VARCHAR íƒ€ì…ìœ¼ë¡œ ë³€í™˜í•´ì„œ ì—°ì‚°ì„ í•˜ëŠ” í•¨ìˆ˜ì˜ ê²½ìš°
+ *      í˜¸ì¶œë˜ëŠ” í•¨ìˆ˜ì´ë‹¤.
  *
  *      // PROJ-2002 Column Security
- *      ECHAR        => CHAR ¹İÈ¯
- *      EVARCHAR     => VARCHAR ¹İÈ¯
+ *      ECHAR        => CHAR ë°˜í™˜
+ *      EVARCHAR     => VARCHAR ë°˜í™˜
  *
  * Implementation :
  *
@@ -1337,11 +1337,11 @@ IDE_RC mtf::initialize( mtfModule *** aExtFuncModuleGroup,
     idBool            sChangeCost = ID_FALSE;
 
     // BUG-34342
-    // »ê¼ú¿¬»ê ¸ğµå°¡ performanceÀÎ °æ¿ì
+    // ì‚°ìˆ ì—°ì‚° ëª¨ë“œê°€ performanceì¸ ê²½ìš°
     if ( MTU_ARITHMETIC_OP_MODE >= MTC_ARITHMETIC_OPERATION_PERFORMANCE_LEVEL1 )
     {
-        // º¯È¯ Cost¸¦ º¯°æÇÏ°í ¿¬»êÀÚ ¼±ÅÃ ½Ã Native C Type (double µî)
-        // ÀÌ ¼±ÅÃµÉ È®·üÀ» ³ôÀÎ´Ù.
+        // ë³€í™˜ Costë¥¼ ë³€ê²½í•˜ê³  ì—°ì‚°ì ì„ íƒ ì‹œ Native C Type (double ë“±)
+        // ì´ ì„ íƒë  í™•ë¥ ì„ ë†’ì¸ë‹¤.
         IDE_TEST( changeConvertCost() != IDE_SUCCESS );
         sChangeCost = ID_TRUE;
     }
@@ -1351,7 +1351,7 @@ IDE_RC mtf::initialize( mtfModule *** aExtFuncModuleGroup,
     }
     
     //---------------------------------------------------------------
-    // °¢Á¾ ¿¬»êÀÚÀÇ º¯È¯ Å×ÀÌºí »ı¼º
+    // ê°ì¢… ì—°ì‚°ìì˜ ë³€í™˜ í…Œì´ë¸” ìƒì„±
     //---------------------------------------------------------------
     
     for( sModule = (mtfModule**) mInternalModule, mtfNumberOfModulesByName = 0;
@@ -1367,7 +1367,7 @@ IDE_RC mtf::initialize( mtfModule *** aExtFuncModuleGroup,
 
     if ( sChangeCost == ID_TRUE )
     {
-        // º¯°æÇß´ø Cost¸¦ ¿øº¹
+        // ë³€ê²½í–ˆë˜ Costë¥¼ ì›ë³µ
         IDE_TEST( restoreConvertCost() != IDE_SUCCESS );
     }
     else
@@ -1376,7 +1376,7 @@ IDE_RC mtf::initialize( mtfModule *** aExtFuncModuleGroup,
     }
     
     //---------------------------------------------------------------
-    // ¿ÜºÎ ¿¬»êÀÚÀÇ º¯È¯ Å×ÀÌºí »ı¼º
+    // ì™¸ë¶€ ì—°ì‚°ìì˜ ë³€í™˜ í…Œì´ë¸” ìƒì„±
     //---------------------------------------------------------------
 
     sExternalCntByName = 0;
@@ -1454,14 +1454,14 @@ IDE_RC mtf::initialize( mtfModule *** aExtFuncModuleGroup,
                   ID_SIZEOF(mtfNameIndex), (PDL_COMPARE_FUNC)mtfCompareByName );
 
     //---------------------------------------------------------------
-    // ºñ±³ ¿¬»êÀÚÀÇ º¯È¯ Å×ÀÌºí »ı¼º
+    // ë¹„êµ ì—°ì‚°ìì˜ ë³€í™˜ í…Œì´ë¸” ìƒì„±
     //---------------------------------------------------------------
     
     IDE_TEST( initializeComparisonTable() != IDE_SUCCESS );
 
     //---------------------------------------------------------------
     // PROJ-2527 WITHIN GROUP AGGR
-    // ÇÔ¼ö¿¡¼­ »ç¿ëÇÒ memory pool »ı¼º
+    // í•¨ìˆ˜ì—ì„œ ì‚¬ìš©í•  memory pool ìƒì„±
     //---------------------------------------------------------------
     
     IDE_TEST( mFuncMemoryPool.initialize( IDU_MEM_MT,
@@ -1566,41 +1566,41 @@ mtf::changeConvertCost()
  *
  * Description :
  *
- *    °¢Á¾ »ê¼ú ¿¬»êÀÚÀÇ ¼º´É Çâ»óÀ» ¸ñÀûÀ¸·Î
- *    Numeric ÇüÅÂÀÇ ¿¬»ê ÇÔ¼ö°¡ ¾Æ´Ñ Double°ú °°Àº C Type ÇüÅÂÀÇ
- *    ¿¬»ê ÇÔ¼ö°¡ ¼±ÅÃµÉ È®·üÀ» ³ôÀÎ´Ù.
+ *    ê°ì¢… ì‚°ìˆ  ì—°ì‚°ìì˜ ì„±ëŠ¥ í–¥ìƒì„ ëª©ì ìœ¼ë¡œ
+ *    Numeric í˜•íƒœì˜ ì—°ì‚° í•¨ìˆ˜ê°€ ì•„ë‹Œ Doubleê³¼ ê°™ì€ C Type í˜•íƒœì˜
+ *    ì—°ì‚° í•¨ìˆ˜ê°€ ì„ íƒë  í™•ë¥ ì„ ë†’ì¸ë‹¤.
  *
  * Implementation :
  *
- *    ÀÌ¹Ì »ı¼ºµÈ º¯È¯ CostÁß¿¡¼­ Á¤¼öÇü(Smallint, Integer, Bigint)¿¡¼­
- *    NumericÇüÀ¸·ÎÀÇ º¯È¯ ºñ¿ëÀ» ³ô°Ô ¼³Á¤ÇÏ¿©, º¯È¯ ÇÔ¼ö ¼±ÅÃ¿¡ ÀÖ¾î
- *    ¼º´ÉÀ» Çâ»ó½ÃÅ³ ¼ö ÀÖ´Â ÇÔ¼ö°¡ ¼±ÅÃµÇµµ·Ï ÇÑ´Ù.
+ *    ì´ë¯¸ ìƒì„±ëœ ë³€í™˜ Costì¤‘ì—ì„œ ì •ìˆ˜í˜•(Smallint, Integer, Bigint)ì—ì„œ
+ *    Numericí˜•ìœ¼ë¡œì˜ ë³€í™˜ ë¹„ìš©ì„ ë†’ê²Œ ì„¤ì •í•˜ì—¬, ë³€í™˜ í•¨ìˆ˜ ì„ íƒì— ìˆì–´
+ *    ì„±ëŠ¥ì„ í–¥ìƒì‹œí‚¬ ìˆ˜ ìˆëŠ” í•¨ìˆ˜ê°€ ì„ íƒë˜ë„ë¡ í•œë‹¤.
  *
- *        - A3¿¡¼­ 2/3 µî°ú °°Àº ¿¬»êÀº º¯È¯ Cost°è»ê¿¡ ÀÇÇØ
- *          Numeric'2' / Numeric'2'¿Í °°Àº ÇüÅÂÀÇ ¿¬»êÀÌ ¼±ÅÃµÈ´Ù.
- *        - A4¿¡¼­´Â Double'2' / Double'3'°ú °°Àº ÇüÅÂÀÇ ¿¬»êÀÌ
- *          ¼±ÅÃµÈ´Ù.
+ *        - A3ì—ì„œ 2/3 ë“±ê³¼ ê°™ì€ ì—°ì‚°ì€ ë³€í™˜ Costê³„ì‚°ì— ì˜í•´
+ *          Numeric'2' / Numeric'2'ì™€ ê°™ì€ í˜•íƒœì˜ ì—°ì‚°ì´ ì„ íƒëœë‹¤.
+ *        - A4ì—ì„œëŠ” Double'2' / Double'3'ê³¼ ê°™ì€ í˜•íƒœì˜ ì—°ì‚°ì´
+ *          ì„ íƒëœë‹¤.
  *
- *    ÀÌ¿Í °°Àº Convert CostÀÇ °­Á¦Àû º¯°æÀº ¸ğµç »ê¼ú ¿¬»êÀÚ¿¡ ´ëÇÏ¿©
- *    ´ÙÀ½°ú °°Àº ¿ì¼± ¼øÀ§¸¦ °®°Ô µÉ °¡´É¼ºÀÌ ³ô¾ÆÁø´Ù.
- *        - Á¤¼öÇü  op Á¤¼öÇü  : C Type
- *        - Á¤¼öÇü  op Numeric : C Type
+ *    ì´ì™€ ê°™ì€ Convert Costì˜ ê°•ì œì  ë³€ê²½ì€ ëª¨ë“  ì‚°ìˆ  ì—°ì‚°ìì— ëŒ€í•˜ì—¬
+ *    ë‹¤ìŒê³¼ ê°™ì€ ìš°ì„  ìˆœìœ„ë¥¼ ê°–ê²Œ ë  ê°€ëŠ¥ì„±ì´ ë†’ì•„ì§„ë‹¤.
+ *        - ì •ìˆ˜í˜•  op ì •ìˆ˜í˜•  : C Type
+ *        - ì •ìˆ˜í˜•  op Numeric : C Type
  *        - Numeric op Numeric : Numeric Type
- *    ÀÌ·¯ÇÑ Ã³¸®´Â ´ÙÀ½°ú °°Àº ÇüÅÂ¿¡¼­ Á¤È®µµ ¹®Á¦°¡ ¹ß»ıÇÒ ¼ö ÀÖ´Âµ¥,
- *    ¸í½ÃÀûÀ¸·Î ½Ç¼öÇüÀ¸·Î Ç¥ÇöÇÔÀ¸·Î¼­ ´ëÃ³ÇÒ ¼ö ÀÖ´Ù.
- *        - Numeric / 3   : Double ==> Loss ¹ß»ıÇÒ ¼ö ÀÖÀ½
- *        - Numeric / 3.0 : Numeric ==> Loss°¡ ¹ß»ıÇÏÁö ¾ÊÀ½
- *    ÀÌ·¯ÇÑ ÇØ°áÃ¥Àº C TypeÀÇ ¿¬»ê°ú Numeric TypeÀÇ ¿¬»êÀÇ ¼º´ÉÀÌ 10¹è
- *    ÀÌ»óÀÎ Á¡À» °¨¾ÈÇÏ¿© °áÁ¤ÇÏ¿´´Ù.
+ *    ì´ëŸ¬í•œ ì²˜ë¦¬ëŠ” ë‹¤ìŒê³¼ ê°™ì€ í˜•íƒœì—ì„œ ì •í™•ë„ ë¬¸ì œê°€ ë°œìƒí•  ìˆ˜ ìˆëŠ”ë°,
+ *    ëª…ì‹œì ìœ¼ë¡œ ì‹¤ìˆ˜í˜•ìœ¼ë¡œ í‘œí˜„í•¨ìœ¼ë¡œì„œ ëŒ€ì²˜í•  ìˆ˜ ìˆë‹¤.
+ *        - Numeric / 3   : Double ==> Loss ë°œìƒí•  ìˆ˜ ìˆìŒ
+ *        - Numeric / 3.0 : Numeric ==> Lossê°€ ë°œìƒí•˜ì§€ ì•ŠìŒ
+ *    ì´ëŸ¬í•œ í•´ê²°ì±…ì€ C Typeì˜ ì—°ì‚°ê³¼ Numeric Typeì˜ ì—°ì‚°ì˜ ì„±ëŠ¥ì´ 10ë°°
+ *    ì´ìƒì¸ ì ì„ ê°ì•ˆí•˜ì—¬ ê²°ì •í•˜ì˜€ë‹¤.
  *
- *    »ê¼ú ¿¬»êÀÚ¿¡ ´ëÇÑ ÇÔ¼ö °áÁ¤ÀÌ ³¡³ª¸é, ¿ø·¡ÀÇ Cost°ªÀ» µ¹·Á ÁÖ¾î
- *    ºñ±³ ¿¬»êÀÚ µî¿¡¼­´Â ¿Ã¹Ù¸¥ Ã³¸® ÇÔ¼ö°¡ °áÁ¤µÉ ¼ö ÀÖ°Ô ÇÑ´Ù.
+ *    ì‚°ìˆ  ì—°ì‚°ìì— ëŒ€í•œ í•¨ìˆ˜ ê²°ì •ì´ ëë‚˜ë©´, ì›ë˜ì˜ Costê°’ì„ ëŒë ¤ ì£¼ì–´
+ *    ë¹„êµ ì—°ì‚°ì ë“±ì—ì„œëŠ” ì˜¬ë°”ë¥¸ ì²˜ë¦¬ í•¨ìˆ˜ê°€ ê²°ì •ë  ìˆ˜ ìˆê²Œ í•œë‹¤.
  *
  ***********************************************************************/
     mtvTable * sTable;
 
     //-----------------------------------------------
-    // SMALLINT -> Áö¼öÇü ÀÇ Cost º¯°æ
+    // SMALLINT -> ì§€ìˆ˜í˜• ì˜ Cost ë³€ê²½
     //-----------------------------------------------
     
     IDE_TEST( mtv::tableByNo( (const mtvTable **) & sTable,
@@ -1628,7 +1628,7 @@ mtf::changeConvertCost()
     sTable->cost = MTV_COST_NATIVE2NUMERIC_PENALTY;
 
     //-----------------------------------------------
-    // INTEGER -> Áö¼öÇü ÀÇ Cost º¯°æ
+    // INTEGER -> ì§€ìˆ˜í˜• ì˜ Cost ë³€ê²½
     //-----------------------------------------------
     
     
@@ -1657,7 +1657,7 @@ mtf::changeConvertCost()
     sTable->cost = MTV_COST_NATIVE2NUMERIC_PENALTY;
 
     //-----------------------------------------------
-    // BIGINT -> Áö¼öÇü ÀÇ Cost º¯°æ
+    // BIGINT -> ì§€ìˆ˜í˜• ì˜ Cost ë³€ê²½
     //-----------------------------------------------
     
     IDE_TEST( mtv::tableByNo( (const mtvTable **) & sTable,
@@ -1699,7 +1699,7 @@ mtf::restoreConvertCost()
  *
  * Description :
  *
- *    ::changeCovertCost()¿¡¼­ ÀúÀåÇÑ °ªÀ» º¹¿ø½ÃÅ²´Ù.
+ *    ::changeCovertCost()ì—ì„œ ì €ì¥í•œ ê°’ì„ ë³µì›ì‹œí‚¨ë‹¤.
  *
  * Implementation :
  *
@@ -1708,7 +1708,7 @@ mtf::restoreConvertCost()
     mtvTable * sTable;
 
     //-----------------------------------------------
-    // SMALLINT -> Áö¼öÇü ÀÇ Cost º¹¿ø
+    // SMALLINT -> ì§€ìˆ˜í˜• ì˜ Cost ë³µì›
     //-----------------------------------------------
     
     IDE_TEST( mtv::tableByNo( (const mtvTable **) & sTable,
@@ -1727,7 +1727,7 @@ mtf::restoreConvertCost()
     sTable->cost = mtf::saveCost[0][2];
 
     //-----------------------------------------------
-    // INTEGER -> Áö¼öÇü ÀÇ Cost º¯°æ
+    // INTEGER -> ì§€ìˆ˜í˜• ì˜ Cost ë³€ê²½
     //-----------------------------------------------
     
     
@@ -1747,7 +1747,7 @@ mtf::restoreConvertCost()
     sTable->cost = mtf::saveCost[1][2];
 
     //-----------------------------------------------
-    // BIGINT -> Áö¼öÇü ÀÇ Cost º¯°æ
+    // BIGINT -> ì§€ìˆ˜í˜• ì˜ Cost ë³€ê²½
     //-----------------------------------------------
     
     IDE_TEST( mtv::tableByNo( (const mtvTable **) & sTable,
@@ -1778,7 +1778,7 @@ IDE_RC mtf::checkNeedFilter( mtcTemplate * aTmplate,
 {
 /***********************************************************************
  *
- * Description : Filter°¡ ÇÊ¿äÇÑÁö °Ë»ç
+ * Description : Filterê°€ í•„ìš”í•œì§€ ê²€ì‚¬
  *
  * Implementation :
  *
@@ -1787,7 +1787,7 @@ IDE_RC mtf::checkNeedFilter( mtcTemplate * aTmplate,
                          (SChar*)"LIKE",
                          4 ) == 0 )
     {
-        // Like ÀÎ °æ¿ì, Filter ÇÊ¿ä ¿©ºÎ °Ë»ç
+        // Like ì¸ ê²½ìš°, Filter í•„ìš” ì—¬ë¶€ ê²€ì‚¬
         IDE_TEST( checkNeedFilter4Like( aTmplate,
                                         aNode,
                                         aNeedFilter )
@@ -1795,7 +1795,7 @@ IDE_RC mtf::checkNeedFilter( mtcTemplate * aTmplate,
     }
     else
     {
-        // ´ÙÀ½°ú °°Àº ÇÔ¼ö »ç¿ë ½Ã, Filter ÇÊ¿äÇÔ
+        // ë‹¤ìŒê³¼ ê°™ì€ í•¨ìˆ˜ ì‚¬ìš© ì‹œ, Filter í•„ìš”í•¨
         // GeoContains, GeoCrosses, GeoDisjoint, GeoEquals, GeoIntersects,
         // GeoOverlaps, GeoTouches, GeoWithin, NotLike
         *aNeedFilter = ID_TRUE;
@@ -1814,7 +1814,7 @@ IDE_RC mtf::checkNeedFilter4Like( mtcTemplate * aTmplate,
 {
 /***********************************************************************
  *
- * Description : Filter°¡ ÇÊ¿äÇÑÁö °Ë»ç
+ * Description : Filterê°€ í•„ìš”í•œì§€ ê²€ì‚¬
  *
  * Implementation :
  *
@@ -1852,11 +1852,11 @@ IDE_RC mtf::checkNeedFilter4Like( mtcTemplate * aTmplate,
            == MTC_TUPLE_TYPE_CONSTANT ) )
     {
         //----------------------
-        // Host VariableÀÌ ¾ø°í »ó¼ö ÆĞÅÏÀÎ °æ¿ì
+        // Host Variableì´ ì—†ê³  ìƒìˆ˜ íŒ¨í„´ì¸ ê²½ìš°
         //----------------------
 
         //-------------------------------------------
-        // Like ¹®ÀÚ string ±¸ÇÔ
+        // Like ë¬¸ì string êµ¬í•¨
         //-------------------------------------------
         
         sIndexColumn = & aTmplate->rows[sIndexNode->table].columns[sIndexNode->column];
@@ -1870,7 +1870,7 @@ IDE_RC mtf::checkNeedFilter4Like( mtcTemplate * aTmplate,
             sLikeEcharString = (mtdEcharType*)
                 mtc::value( sColumn, sRowPtr, MTD_OFFSET_USE );
             
-            // default policy°¡ ¾Æ´Ñ°æ¿ì decrypt¸¦ ¼öÇàÇÑ´Ù.
+            // default policyê°€ ì•„ë‹Œê²½ìš° decryptë¥¼ ìˆ˜í–‰í•œë‹¤.
             if ( sColumn->policy[0] != '\0' )
             {
                 sFormatPlain = sDecryptedBuf;
@@ -1922,14 +1922,14 @@ IDE_RC mtf::checkNeedFilter4Like( mtcTemplate * aTmplate,
         sFence = sIndex + sFormatPlainLength;
             
         //-------------------------------------------
-        // Escape ¹®ÀÚ string ±¸ÇÔ
+        // Escape ë¬¸ì string êµ¬í•¨
         //-------------------------------------------
         
         sNode = aNode->arguments->next->next;
         
         if ( sNode != NULL )
         {
-            // escape ¹®ÀÚ¸¦ ÁöÁ¤ÇÑ °æ¿ì
+            // escape ë¬¸ìë¥¼ ì§€ì •í•œ ê²½ìš°
             sColumn = &aTmplate->rows[sNode->table].columns[sNode->column];
             sRowPtr = aTmplate->rows[sNode->table].row;
             sEscapeChar = (mtdCharType*)mtc::value( sColumn, sRowPtr,
@@ -1940,14 +1940,14 @@ IDE_RC mtf::checkNeedFilter4Like( mtcTemplate * aTmplate,
         }
         else
         {
-            // escape ¹®ÀÚ¸¦ ÁöÁ¤ÇÏÁö ¾ÊÀº °æ¿ì
+            // escape ë¬¸ìë¥¼ ì§€ì •í•˜ì§€ ì•Šì€ ê²½ìš°
             sEscape = '\0';
 
             sNullEscape = ID_TRUE;
         }
 
         //-------------------------------------------
-        // Key Filter°¡ ÇÊ¿ä¾ø´Â Key Range ÀÎÁö °Ë»ç
+        // Key Filterê°€ í•„ìš”ì—†ëŠ” Key Range ì¸ì§€ ê²€ì‚¬
         //-------------------------------------------
         
         while ( sIndex < sFence )
@@ -1973,15 +1973,15 @@ IDE_RC mtf::checkNeedFilter4Like( mtcTemplate * aTmplate,
             if( sIsEqual == ID_TRUE )
             {
                 // To Fix PR-13004
-                // ABR ¹æÁö¸¦ À§ÇÏ¿© Áõ°¡½ÃÅ² ÈÄ °Ë»çÇÏ¿©¾ß ÇÔ
+                // ABR ë°©ì§€ë¥¼ ìœ„í•˜ì—¬ ì¦ê°€ì‹œí‚¨ í›„ ê²€ì‚¬í•˜ì—¬ì•¼ í•¨
 
                 (void)mtf::nextChar( sFence,
                                      &sIndex,
                                      &sIndexPrev,
                                      sLanguage );
                 
-                // escape ¹®ÀÚÀÎ °æ¿ì,
-                // escape ´ÙÀ½ ¹®ÀÚ°¡ '%','_' ¹®ÀÚÀÎÁö °Ë»ç
+                // escape ë¬¸ìì¸ ê²½ìš°,
+                // escape ë‹¤ìŒ ë¬¸ìê°€ '%','_' ë¬¸ìì¸ì§€ ê²€ì‚¬
 
                 sSize =  mtl::getOneCharSize( sIndex,
                                               sFence,
@@ -2023,7 +2023,7 @@ IDE_RC mtf::checkNeedFilter4Like( mtcTemplate * aTmplate,
                 if( (sIsEqual1 == ID_TRUE) ||
                     (sIsEqual2 == ID_TRUE) )
                 {
-                    // Æ¯¼ö¹®ÀÚÀÎ °æ¿ì
+                    // íŠ¹ìˆ˜ë¬¸ìì¸ ê²½ìš°
                     (void)mtf::nextChar( sFence,
                                          &sIndex,
                                          &sIndexPrev,
@@ -2033,7 +2033,7 @@ IDE_RC mtf::checkNeedFilter4Like( mtcTemplate * aTmplate,
                 }
                 else
                 {
-                    // ÀÏ¹İ ¹®ÀÚÀÎ °æ¿ì
+                    // ì¼ë°˜ ë¬¸ìì¸ ê²½ìš°
                 }
             }
 
@@ -2076,11 +2076,11 @@ IDE_RC mtf::checkNeedFilter4Like( mtcTemplate * aTmplate,
 
                 if( sIsEqual == ID_TRUE )
                 {
-                    // 'aaa%'¿Í °°ÀÌ Æ¯¼ö ¹®ÀÚ µÚ¿¡ ÀÏ¹İ ¹®ÀÚ°¡ ¾ø´Â °æ¿ì,
-                    // Key Range ¸¸À¸·Î Like Ã³¸® °¡´ÉÇÔ
+                    // 'aaa%'ì™€ ê°™ì´ íŠ¹ìˆ˜ ë¬¸ì ë’¤ì— ì¼ë°˜ ë¬¸ìê°€ ì—†ëŠ” ê²½ìš°,
+                    // Key Range ë§Œìœ¼ë¡œ Like ì²˜ë¦¬ ê°€ëŠ¥í•¨
 
                     //----------------------------
-                    // ¿¹) i1 like '1234567890123456789012345678%'
+                    // ì˜ˆ) i1 like '1234567890123456789012345678%'
                     //----------------------------
 
                     *aNeedFilter = ID_FALSE;
@@ -2088,7 +2088,7 @@ IDE_RC mtf::checkNeedFilter4Like( mtcTemplate * aTmplate,
                 else
                 {
                     //----------------------------
-                    // ¿¹) i1 like '12345678901234567890123456789'
+                    // ì˜ˆ) i1 like '12345678901234567890123456789'
                     //     i1 like '1234567890123456789012345678_'
                     //----------------------------
 
@@ -2104,7 +2104,7 @@ IDE_RC mtf::checkNeedFilter4Like( mtcTemplate * aTmplate,
 
                 if ( sIsEqual == ID_TRUE )
                 {
-                    // 'aaa_'´Â filter Ã³¸®°¡ ÇÊ¿äÇÔ
+                    // 'aaa_'ëŠ” filter ì²˜ë¦¬ê°€ í•„ìš”í•¨
                     *aNeedFilter = ID_TRUE;
                 }
                 else
@@ -2112,9 +2112,9 @@ IDE_RC mtf::checkNeedFilter4Like( mtcTemplate * aTmplate,
                     if( sFormatPlainLength > MTC_LIKE_KEY_PRECISION )
                     {
                         //------------------------------------------
-                        // ¿¹) UTF8 ¿¡¼­ ¾Æ·¡ÀÇ like string = 39
+                        // ì˜ˆ) UTF8 ì—ì„œ ì•„ë˜ì˜ like string = 39
                         //
-                        //     I1 LIKE '°ø°£¿¡ Á¢±ÙÇÏ±â À§ÇÑ ¼³¸íÇÕ'
+                        //     I1 LIKE 'ê³µê°„ì— ì ‘ê·¼í•˜ê¸° ìœ„í•œ ì„¤ëª…í•©'
                         //             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
                         //     sIndex = 39
                         //     sPrevIndex = 36
@@ -2124,13 +2124,13 @@ IDE_RC mtf::checkNeedFilter4Like( mtcTemplate * aTmplate,
                     }
                     else
                     {
-                        // 'aaa%'¿Í °°ÀÌ Æ¯¼ö ¹®ÀÚ µÚ¿¡ ÀÏ¹İ ¹®ÀÚ°¡ ¾ø´Â °æ¿ì,
-                        // 'aaa'¿Í °°ÀÌ Æ¯¼ö ¹®ÀÚ°¡ ¾ø°í ÀÏ¹İ ¹®ÀÚ¸¸ ÀÖ´Â °æ¿ì
-                        // Key Range ¸¸À¸·Î Like Ã³¸® °¡´ÉÇÔ
+                        // 'aaa%'ì™€ ê°™ì´ íŠ¹ìˆ˜ ë¬¸ì ë’¤ì— ì¼ë°˜ ë¬¸ìê°€ ì—†ëŠ” ê²½ìš°,
+                        // 'aaa'ì™€ ê°™ì´ íŠ¹ìˆ˜ ë¬¸ìê°€ ì—†ê³  ì¼ë°˜ ë¬¸ìë§Œ ìˆëŠ” ê²½ìš°
+                        // Key Range ë§Œìœ¼ë¡œ Like ì²˜ë¦¬ ê°€ëŠ¥í•¨
 
                         // BUG-36014
-                        // ±×·¯³ª PROJ-1753ÀÌÈÄ like¿¡¼­ padding¹®ÀÚ¸¦ °í·ÁÇÏ°Ô µÇ¾î
-                        // patternÀÌ %·Î ³¡³ª´Â °æ¿ì°¡ ¾Æ´Ï¶ó¸é filter°¡ ÇÊ¿äÇÏ´Ù.
+                        // ê·¸ëŸ¬ë‚˜ PROJ-1753ì´í›„ likeì—ì„œ paddingë¬¸ìë¥¼ ê³ ë ¤í•˜ê²Œ ë˜ì–´
+                        // patternì´ %ë¡œ ëë‚˜ëŠ” ê²½ìš°ê°€ ì•„ë‹ˆë¼ë©´ filterê°€ í•„ìš”í•˜ë‹¤.
                         
                         sIsEqual = mtc::compareOneChar( sIndexPrev,
                                                         sSize,
@@ -2146,7 +2146,7 @@ IDE_RC mtf::checkNeedFilter4Like( mtcTemplate * aTmplate,
                              &&
                              ( ( sIsEqual == ID_FALSE ) ) )
                         {
-                            // i1 like 'a'´Â filter Ã³¸®°¡ ÇÊ¿äÇÔ
+                            // i1 like 'a'ëŠ” filter ì²˜ë¦¬ê°€ í•„ìš”í•¨
                             *aNeedFilter = ID_TRUE;
                         }
                         else
@@ -2159,7 +2159,7 @@ IDE_RC mtf::checkNeedFilter4Like( mtcTemplate * aTmplate,
         }
         else
         {
-            // Æ¯¼ö ¹®ÀÚ µÚ¿¡ stringÀÌ ³²Àº °æ¿ì
+            // íŠ¹ìˆ˜ ë¬¸ì ë’¤ì— stringì´ ë‚¨ì€ ê²½ìš°
             
             *aNeedFilter = ID_TRUE;
         }
@@ -2167,7 +2167,7 @@ IDE_RC mtf::checkNeedFilter4Like( mtcTemplate * aTmplate,
     else
     {
         //----------------------
-        // Host VariableÀÌ ÀÖ°Å³ª »ó¼ö ÆĞÅÏÀÌ ¾Æ´Ñ °æ¿ì, ¹«Á¶°Ç filter »ı¼º
+        // Host Variableì´ ìˆê±°ë‚˜ ìƒìˆ˜ íŒ¨í„´ì´ ì•„ë‹Œ ê²½ìš°, ë¬´ì¡°ê±´ filter ìƒì„±
         //----------------------
 
         *aNeedFilter = ID_TRUE;
@@ -2186,9 +2186,9 @@ IDE_RC mtf::checkNeedFilter4Like( mtcTemplate * aTmplate,
 }
 
 // PROJ-1075
-// comparison tableÀº primitive type¿¡ ´ëÇØ¼­¸¸
-// ±¸ÃàµÇ¾î ÀÖ±â ¶§¹®¿¡
-// UDT ÀÎ °æ¿ì´Â Ã¼Å©ÇØ¼­ ¿¡·¯¸¦ ³»ÁÖ¾î¾ß ÇÑ´Ù.
+// comparison tableì€ primitive typeì— ëŒ€í•´ì„œë§Œ
+// êµ¬ì¶•ë˜ì–´ ìˆê¸° ë•Œë¬¸ì—
+// UDT ì¸ ê²½ìš°ëŠ” ì²´í¬í•´ì„œ ì—ëŸ¬ë¥¼ ë‚´ì£¼ì–´ì•¼ í•œë‹¤.
 IDE_RC mtf::getComparisonModule( const mtdModule** aModule,
                                   UInt aNo1,
                                   UInt aNo2 )
@@ -2211,9 +2211,9 @@ IDE_RC mtf::getComparisonModule( const mtdModule** aModule,
 }
 
 // PROJ-1075
-// comparison tableÀº primitive type¿¡ ´ëÇØ¼­¸¸
-// ±¸ÃàµÇ¾î ÀÖ±â ¶§¹®¿¡
-// UDT ÀÎ °æ¿ì´Â Ã¼Å©ÇØ¼­ ¿¡·¯¸¦ ³»ÁÖ¾î¾ß ÇÑ´Ù.
+// comparison tableì€ primitive typeì— ëŒ€í•´ì„œë§Œ
+// êµ¬ì¶•ë˜ì–´ ìˆê¸° ë•Œë¬¸ì—
+// UDT ì¸ ê²½ìš°ëŠ” ì²´í¬í•´ì„œ ì—ëŸ¬ë¥¼ ë‚´ì£¼ì–´ì•¼ í•œë‹¤.
 IDE_RC mtf::getSubModule1Arg( const mtfSubModule** aModule,
                               mtfSubModule**       aTable,
                               UInt aNo )
@@ -2235,9 +2235,9 @@ IDE_RC mtf::getSubModule1Arg( const mtfSubModule** aModule,
 }
 
 // PROJ-1075
-// comparison tableÀº primitive type¿¡ ´ëÇØ¼­¸¸
-// ±¸ÃàµÇ¾î ÀÖ±â ¶§¹®¿¡
-// UDT ÀÎ °æ¿ì´Â Ã¼Å©ÇØ¼­ ¿¡·¯¸¦ ³»ÁÖ¾î¾ß ÇÑ´Ù.
+// comparison tableì€ primitive typeì— ëŒ€í•´ì„œë§Œ
+// êµ¬ì¶•ë˜ì–´ ìˆê¸° ë•Œë¬¸ì—
+// UDT ì¸ ê²½ìš°ëŠ” ì²´í¬í•´ì„œ ì—ëŸ¬ë¥¼ ë‚´ì£¼ì–´ì•¼ í•œë‹¤.
 IDE_RC mtf::getSubModule2Args( const mtfSubModule** aModule,
                                mtfSubModule***      aTable,
                                UInt                 aNo1,
@@ -2274,7 +2274,7 @@ idBool mtf::isEquiValidType( const mtdModule * aModule )
         case MTD_GROUP_NUMBER:
         case MTD_GROUP_DATE:
         case MTD_GROUP_INTERVAL:
-            // ¿¬»ê °¡´É
+            // ì—°ì‚° ê°€ëŠ¥
             break;
         case MTD_GROUP_MISC:
             if ( (aModule == &mtdBoolean) ||
@@ -2285,7 +2285,7 @@ idBool mtf::isEquiValidType( const mtdModule * aModule )
                  (aModule == &mtdVarbit) ||
                  (aModule == &mtdNull) )
             {
-                // ¿¬»ê °¡´É
+                // ì—°ì‚° ê°€ëŠ¥
             }
             else
             {
@@ -2319,7 +2319,7 @@ idBool mtf::isGreaterLessValidType( const mtdModule * aModule )
         case MTD_GROUP_NUMBER:
         case MTD_GROUP_DATE:
         case MTD_GROUP_INTERVAL:
-            // ¿¬»ê °¡´É
+            // ì—°ì‚° ê°€ëŠ¥
             break;
         case MTD_GROUP_MISC:
             if ( (aModule == &mtdByte) ||
@@ -2329,8 +2329,8 @@ idBool mtf::isGreaterLessValidType( const mtdModule * aModule )
                  (aModule == &mtdVarbit) ||
                  (aModule == &mtdNull) )
             {
-                // EquiValid ¿Í ´Ş¸® BLOB Àº ´ë¼Òºñ±³°¡ ¾ÈµÊ.
-                // ¿¬»ê °¡´É
+                // EquiValid ì™€ ë‹¬ë¦¬ BLOB ì€ ëŒ€ì†Œë¹„êµê°€ ì•ˆë¨.
+                // ì—°ì‚° ê°€ëŠ¥
             }
             else
             {
@@ -2447,11 +2447,11 @@ IDE_RC mtf::truncIncompletedString( UChar            * aString,
 /***********************************************************************
  *
  * Description : BUG-38842
- *     ¹®ÀÚ¿­ÀÇ ¸¶Áö¸·¿¡ ±úÁø±ÛÀÚ¸¦ truncateÇÑ´Ù.
+ *     ë¬¸ìì—´ì˜ ë§ˆì§€ë§‰ì— ê¹¨ì§„ê¸€ìë¥¼ truncateí•œë‹¤.
  *
  * Implementation :
- *     6 byteÀÌÇÏÀÎ °æ¿ì Ã³À½ºÎÅÍ ±ÛÀÚ¸¦ È®ÀÎÇÏ°í
- *     6 byteº¸´Ù Å« °æ¿ì ¸¶Áö¸· 6 byte¸¸ °Ë»çÇÑ´Ù.
+ *     6 byteì´í•˜ì¸ ê²½ìš° ì²˜ìŒë¶€í„° ê¸€ìë¥¼ í™•ì¸í•˜ê³ 
+ *     6 byteë³´ë‹¤ í° ê²½ìš° ë§ˆì§€ë§‰ 6 byteë§Œ ê²€ì‚¬í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -2467,13 +2467,13 @@ IDE_RC mtf::truncIncompletedString( UChar            * aString,
     {
         if ( aSize <= MTL_MAX_PRECISION + MTL_MAX_PRECISION )
         {
-            // Ã³À½ºÎÅÍ ±ÛÀÚ¸¦ È®ÀÎÇÑ´Ù.
+            // ì²˜ìŒë¶€í„° ê¸€ìë¥¼ í™•ì¸í•œë‹¤.
             sIndex = aString;
             sFence = aString + aSize;
         }
         else
         {
-            // ¸¶Áö¸· 6byte¸¸ È®ÀÎÇÑ´Ù.
+            // ë§ˆì§€ë§‰ 6byteë§Œ í™•ì¸í•œë‹¤.
             sIndex = aString + aSize - MTL_MAX_PRECISION - MTL_MAX_PRECISION;
             sFence = aString + aSize;
         }
@@ -2511,11 +2511,11 @@ IDE_RC mtf::makeUFromChar(
 /***********************************************************************
  *
  * Description : PROJ-1579 NCHAR
- *      NCHAR ¶Ç´Â CHAR Å¸ÀÔ ¹®ÀÚ¿­À» U Å¸ÀÔÀ¸·Î º¯°æÇÑ´Ù.
+ *      NCHAR ë˜ëŠ” CHAR íƒ€ì… ë¬¸ìì—´ì„ U íƒ€ì…ìœ¼ë¡œ ë³€ê²½í•œë‹¤.
  *
- *      ex) AB¾ÈCD => AB\C548CD
+ *      ex) ABì•ˆCD => AB\C548CD
  *
- *      µû¶ó¼­ °á°ú ¹®ÀÚ¿­Àº ¹«Á¶°Ç ASCIIÀÌ´Ù.
+ *      ë”°ë¼ì„œ ê²°ê³¼ ë¬¸ìì—´ì€ ë¬´ì¡°ê±´ ASCIIì´ë‹¤.
  *
  * Implementation :
  *
@@ -2542,10 +2542,10 @@ IDE_RC mtf::makeUFromChar(
     sIdnSourceCharSet = mtl::getIdnCharSet( aSourceCharSet );
     sIdnU16CharSet    = mtl::getIdnCharSet( sU16CharSet );
 
-    // Ä³¸¯ÅÍ ¼Â º¯È¯ ½Ã »ç¿ëÇÏ´Â ¹öÆÛÀÇ ±æÀÌ
+    // ìºë¦­í„° ì…‹ ë³€í™˜ ì‹œ ì‚¬ìš©í•˜ëŠ” ë²„í¼ì˜ ê¸¸ì´
     sDestRemain = aResultFence - aResultValue;
 
-    // ¼Ò½ºÀÇ ±æÀÌ
+    // ì†ŒìŠ¤ì˜ ê¸¸ì´
     sSrcRemain = aSourceFence - aSourceIndex;
 
     while( aSourceIndex < aSourceFence )
@@ -2587,17 +2587,17 @@ IDE_RC mtf::makeUFromChar(
         }
         else
         {
-            // aResultValue´Â ¹«Á¶°Ç ASCIIÀÌ´Ù. µû¶ó¼­ ++·Î ÀÌµ¿ÇØµµ ±¦ÂúÀ½.
+            // aResultValueëŠ” ë¬´ì¡°ê±´ ASCIIì´ë‹¤. ë”°ë¼ì„œ ++ë¡œ ì´ë™í•´ë„ ê´œì°®ìŒ.
             *aResultValue ++ = '\\';
             sDestRemain--;
 
-            // result °ø°£ÀÌ ÀÖ´ÂÁö ¹Ì¸® Ã¼Å©
+            // result ê³µê°„ì´ ìˆëŠ”ì§€ ë¯¸ë¦¬ ì²´í¬
             IDE_TEST_RAISE( aResultValue  >= aResultFence - 3,
                             ERR_INVALID_DATA_LENGTH );
 
             if( sIdnSourceCharSet != sIdnU16CharSet )
             {
-                // sU16Result¿¡ UTF16 °ªÀ» ¹Ş¾Æ¿Â´Ù.
+                // sU16Resultì— UTF16 ê°’ì„ ë°›ì•„ì˜¨ë‹¤.
                 IDE_TEST( convertCharSet( sIdnSourceCharSet,
                                           sIdnU16CharSet,
                                           aSourceIndex,
@@ -2607,9 +2607,9 @@ IDE_RC mtf::makeUFromChar(
                                           -1 /* mNlsNcharConvExcp */ )
                           != IDE_SUCCESS );
 
-                // UTF16°ªÀ» UTF16 ÄÚµåÆ÷ÀÎÆ®·Î º¯Çü½ÃÅ²´Ù.
-                // ¿¹¸¦ µé¾î 2 ¹ÙÀÌÆ® C5 48ÀÇ °æ¿ì
-                // 4 ¹ÙÀÌÆ®ÀÇ C 5 4 8·Î º¯ÇüÇÑ´Ù.
+                // UTF16ê°’ì„ UTF16 ì½”ë“œí¬ì¸íŠ¸ë¡œ ë³€í˜•ì‹œí‚¨ë‹¤.
+                // ì˜ˆë¥¼ ë“¤ì–´ 2 ë°”ì´íŠ¸ C5 48ì˜ ê²½ìš°
+                // 4 ë°”ì´íŠ¸ì˜ C 5 4 8ë¡œ ë³€í˜•í•œë‹¤.
                 *aResultValue ++ = sHexValue[(sU16Result[0] >> 4 )];
                 *aResultValue ++ = sHexValue[(sU16Result[0] & 0x0F )];
                 *aResultValue ++ = sHexValue[(sU16Result[1] >> 4 )];
@@ -2872,7 +2872,7 @@ IDE_RC mtf::buildQuantArgData( mtcNode *     aNode,
                     sData->mIsNullList[i] = sData->mIsNullList[j];
                     sData->mIsNullList[j] = sSwapBool;
 
-                    // BUG-43784 NULL°ú swapÇÏ¸é ºñ±³¸¦ ÁßÁöÇØ¾ß ÇÑ´Ù.
+                    // BUG-43784 NULLê³¼ swapí•˜ë©´ ë¹„êµë¥¼ ì¤‘ì§€í•´ì•¼ í•œë‹¤.
                     break;
                 }
             }

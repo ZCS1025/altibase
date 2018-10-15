@@ -25,10 +25,10 @@
 
 
 /**
- * ÀÏÁ¤ ½Ã°£µ¿¾È ´ë±âÇÑ´Ù.
+ * ì¼ì • ì‹œê°„ë™ì•ˆ ëŒ€ê¸°í•œë‹¤.
  *
- * @param[In] aSec ´ë±âÇÒ ½Ã°£(ÃÊ ´ÜÀ§)
- * @return ¼º°øÇÏ¸é 0, ¾Æ´Ï¸é 0ÀÌ ¾Æ´Ñ °ª
+ * @param[In] aSec ëŒ€ê¸°í•  ì‹œê°„(ì´ˆ ë‹¨ìœ„)
+ * @return ì„±ê³µí•˜ë©´ 0, ì•„ë‹ˆë©´ 0ì´ ì•„ë‹Œ ê°’
  */
 SInt mySleep(SInt aSec)
 {
@@ -40,7 +40,7 @@ SInt mySleep(SInt aSec)
 }
 
 /**
- * »ç¿ë ¹æ¹ı Ãâ·Â
+ * ì‚¬ìš© ë°©ë²• ì¶œë ¥
  */
 void printUsage()
 {
@@ -50,11 +50,11 @@ void printUsage()
 }
 
 /**
- * checkServer·Î ÀÔ·ÂµÇ´Â ¸ğµç ½Ã±×³Î¿¡ ´ëÇØ
- * Blocking ½ÃÅ°°í, ÇØ´ç ½Ã±×³ÎÀ» Ãâ·Â.
+ * checkServerë¡œ ì…ë ¥ë˜ëŠ” ëª¨ë“  ì‹œê·¸ë„ì— ëŒ€í•´
+ * Blocking ì‹œí‚¤ê³ , í•´ë‹¹ ì‹œê·¸ë„ì„ ì¶œë ¥.
  *
- * @param[IN] aHandle ÇÚµé
- * @return ¼º°øÇÏ¸é IDE_SUCCESS, ¾Æ´Ï¸é IDE_FAILURE
+ * @param[IN] aHandle í•¸ë“¤
+ * @return ì„±ê³µí•˜ë©´ IDE_SUCCESS, ì•„ë‹ˆë©´ IDE_FAILURE
  */
 IDE_RC setupSignalHandler(ALTIBASE_CHECK_SERVER_HANDLE aHandle)
 {
@@ -201,7 +201,7 @@ int main (SInt argc, SChar *argv[])
     sRC = altibase_check_server_set_attr(sHandle, ALTIBASE_CHECK_SERVER_ATTR_LOG, &sIntOpt);
     IDE_TEST_RAISE(sRC != ALTIBASE_CS_SUCCESS, CheckServerLibError);
 
-    /* BUG-45135 default sleep time º¯°æ 5 -> 500 (´ÜÀ§:millisecond) */
+    /* BUG-45135 default sleep time ë³€ê²½ 5 -> 500 (ë‹¨ìœ„:millisecond) */
     sIntOpt = 500;
     sRC = altibase_check_server_set_attr(sHandle, ALTIBASE_CHECK_SERVER_ATTR_SLEEP, &sIntOpt);
     IDE_TEST_RAISE(sRC != ALTIBASE_CS_SUCCESS, CheckServerLibError);
@@ -228,7 +228,7 @@ int main (SInt argc, SChar *argv[])
         }
     }
 
-    /* ÇÊ¿ä´Â ¾øÁö¸¸, Ãâ·ÂµÇ´Â ³»¿ëÀ» °¡±ŞÀû ±âÁ¸°Å¿Í ºñ½ÁÇÏ°Ô ÇÏ±â À§ÇÔ */
+    /* í•„ìš”ëŠ” ì—†ì§€ë§Œ, ì¶œë ¥ë˜ëŠ” ë‚´ìš©ì„ ê°€ê¸‰ì  ê¸°ì¡´ê±°ì™€ ë¹„ìŠ·í•˜ê²Œ í•˜ê¸° ìœ„í•¨ */
     idlOS::fprintf(stderr, "Initializing File Lock..\n");
     idlOS::fprintf(stderr, "Check Lock File Existence..\n");
     idlOS::fprintf(stderr, "[SUCCESS] ok. Lock File Existence..\n");
@@ -259,11 +259,11 @@ int main (SInt argc, SChar *argv[])
         if (sRC != ALTIBASE_CS_SERVER_STOPPED)
         {
 
-            /* pid fileÀÌ ÀÌ¹Ì ÀÖÀ¸¸é Àç½ÃµµÇÏÁö ¾Ê´Â´Ù. */
+            /* pid fileì´ ì´ë¯¸ ìˆìœ¼ë©´ ì¬ì‹œë„í•˜ì§€ ì•ŠëŠ”ë‹¤. */
             IDE_TEST_RAISE(sRC == ALTIBASE_CS_PID_FILE_ALREADY_EXIST,
                            CheckServerLibError);
 
-            /* ÇÊ¿ä´Â ¾øÁö¸¸, ·Î±× ÆÄÀÏÀ» °¡±ŞÀû ±âÁ¸°ú ¸ÂÃß±â À§ÇÔ. */
+            /* í•„ìš”ëŠ” ì—†ì§€ë§Œ, ë¡œê·¸ íŒŒì¼ì„ ê°€ê¸‰ì  ê¸°ì¡´ê³¼ ë§ì¶”ê¸° ìœ„í•¨. */
             if ((sRC == ALTIBASE_CS_SOCKET_OPEN_ERROR) || (sRC == ALTIBASE_CS_SOCKET_REUSE_ERROR) || (sRC == ALTIBASE_CS_SOCKET_CLOSE_ERROR))
             {
                 altibase_check_server_log(sHandle,
@@ -271,7 +271,7 @@ int main (SInt argc, SChar *argv[])
                                            "so, wait 5 second. ");
             }
 
-            /* ¿¡·¯°¡ ¹ß»ıÇß¾îµµ ¹«½ÃÇÏ°í ´Ù½Ã ½Ãµµ (±âÁ¸ checkServer µ¿ÀÛ) */
+            /* ì—ëŸ¬ê°€ ë°œìƒí–ˆì–´ë„ ë¬´ì‹œí•˜ê³  ë‹¤ì‹œ ì‹œë„ (ê¸°ì¡´ checkServer ë™ì‘) */
             continue;
         }
 

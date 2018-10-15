@@ -66,7 +66,7 @@ IDE_RC iduShmChunkMgr::destroy()
     return IDE_SUCCESS;
 }
 
-// System Chunk¸¦ »ı¼ºÇÑ´Ù.
+// System Chunkë¥¼ ìƒì„±í•œë‹¤.
 IDE_RC iduShmChunkMgr::createSysChunk( UInt      aSize,
                                        iduSCH ** aNewSCH )
 {
@@ -104,7 +104,7 @@ IDE_RC iduShmChunkMgr::allocSHMChunk( UInt          aSize,
         }
         else
         {
-            // °øÀ¯¸Ş¸ğ¸® Key ÈÄº¸¸¦ °¡Á®¿Â´Ù.
+            // ê³µìœ ë©”ëª¨ë¦¬ Key í›„ë³´ë¥¼ ê°€ì ¸ì˜¨ë‹¤.
             IDE_TEST( iduShmKeyMgr::getShmKeyCandidate( &sShmKeyCandidate )
                       != IDE_SUCCESS );
         }
@@ -120,8 +120,8 @@ IDE_RC iduShmChunkMgr::allocSHMChunk( UInt          aSize,
         }
         else
         {
-            /* System Chunk´Â ShmKey°¡ ÁöÁ¤µÇ¾î ÀÖ±â ¶§¹®¿¡ attach°¡
-             * ½ÇÆĞÇÏ¸é ¹Ù·Î error¸¦ ¸®ÅÏÇÑ´Ù. */
+            /* System ChunkëŠ” ShmKeyê°€ ì§€ì •ë˜ì–´ ìˆê¸° ë•Œë¬¸ì— attachê°€
+             * ì‹¤íŒ¨í•˜ë©´ ë°”ë¡œ errorë¥¼ ë¦¬í„´í•œë‹¤. */
             IDE_TEST( aShmType == IDU_SHM_TYPE_SYSTEM_SEGMENT );
         }
 
@@ -212,7 +212,7 @@ void iduShmChunkMgr::unregisterShmChunk( UInt aIndex )
     mArrSCH[aIndex] = NULL;
 }
 
-/* OS·ÎºÎÅÍ Shared Memory System Chunk¸¦ »ı¼ºÇÑ´Ù. */
+/* OSë¡œë¶€í„° Shared Memory System Chunkë¥¼ ìƒì„±í•œë‹¤. */
 IDE_RC iduShmChunkMgr::createSHMChunkFromOS( key_t           aShmKey,
                                              ULong           aSize,
                                              PDL_HANDLE    * aShmID,
@@ -225,10 +225,10 @@ IDE_RC iduShmChunkMgr::createSHMChunkFromOS( key_t           aShmKey,
 
     IDE_TEST_RAISE( aShmKey == 0, err_invalid_key );
 
-    /* [0] Arg °è»ê */
+    /* [0] Arg ê³„ì‚° */
     sFlag = 0666 | IPC_CREAT | IPC_EXCL;
 
-    /* [1] ShmID ¾ò±â */
+    /* [1] ShmID ì–»ê¸° */
     sShmID = idlOS::shmget( aShmKey, aSize, sFlag );
 
     if( sShmID == PDL_INVALID_HANDLE )
@@ -238,7 +238,7 @@ IDE_RC iduShmChunkMgr::createSHMChunkFromOS( key_t           aShmKey,
         IDE_RAISE( err_shmget );
     }
 
-    /* [2] Attach ¼öÇà  */
+    /* [2] Attach ìˆ˜í–‰  */
     sNewChunk  = idlOS::shmat( sShmID, 0, sFlag );
     IDE_TEST_RAISE( sNewChunk == (void *)-1, err_shmat );
     sState = 1;

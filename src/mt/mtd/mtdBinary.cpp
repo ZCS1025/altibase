@@ -20,7 +20,7 @@
  *
  * Description:
  *   PROJ-1583, PR-15722
- *   ODBC Ç¥ÁØÀÇ SQL_BINARY¿¡ ´ëÀÀÇÏ´Â mtdBinary Å¸ÀÔ Á¦°ø
+ *   ODBC í‘œì¤€ì˜ SQL_BINARYì— ëŒ€ì‘í•˜ëŠ” mtdBinary íƒ€ìž… ì œê³µ
  *
  **********************************************************************/
 
@@ -195,7 +195,7 @@ IDE_RC mtdInitialize( UInt aNo )
 {
     IDE_TEST( mtd::initializeModule( &mtdBinary, aNo ) != IDE_SUCCESS );
 
-    // mtdColumnÀÇ ÃÊ±âÈ­
+    // mtdColumnì˜ ì´ˆê¸°í™”
     IDE_TEST( mtc::initializeColumn( & mtdColumn,
                                      & mtdBinary,
                                      0,   // arguments
@@ -273,7 +273,7 @@ IDE_RC mtdValue( mtcTemplate* /* aTemplate */,
                                    aTokenLength )
                   != IDE_SUCCESS );
         
-        // precision, scale Àç ¼³Á¤ ÈÄ, estimate·Î semantic °Ë»ç
+        // precision, scale ìž¬ ì„¤ì • í›„, estimateë¡œ semantic ê²€ì‚¬
         aColumn->flag            = 1;
         aColumn->precision       = sValue->mLength;
         aColumn->scale           = 0;
@@ -358,7 +358,7 @@ IDE_RC mtdValidate( mtcColumn * aColumn,
 {
 /***********************************************************************
  *
- * Description : valueÀÇ semantic °Ë»ç ¹× mtcColum ÃÊ±âÈ­
+ * Description : valueì˜ semantic ê²€ì‚¬ ë° mtcColum ì´ˆê¸°í™”
  *
  * Implementation :
  *
@@ -374,9 +374,9 @@ IDE_RC mtdValidate( mtcColumn * aColumn,
 
     IDE_TEST_RAISE( sVal->mLength > aColumn->column.size, ERR_INVALID_VALUE );
 
-    // ÃÊ±âÈ­µÈ aColumnÀº cannonize() ½Ã¿¡ »ç¿ë
-    // ÀÌ¶§, data type moduleÀÇ precision Á¤º¸¸¸À» »ç¿ëÇÏ¹Ç·Î,
-    // language Á¤º¸ ¼³Á¤ÇÒ ÇÊ¿ä¾øÀ½
+    // ì´ˆê¸°í™”ëœ aColumnì€ cannonize() ì‹œì— ì‚¬ìš©
+    // ì´ë•Œ, data type moduleì˜ precision ì •ë³´ë§Œì„ ì‚¬ìš©í•˜ë¯€ë¡œ,
+    // language ì •ë³´ ì„¤ì •í•  í•„ìš”ì—†ìŒ
     IDE_TEST( mtc::initializeColumn( aColumn,
                                      & mtdBinary,
                                      1,            // arguments
@@ -411,8 +411,8 @@ static IDE_RC mtdStoredValue2MtdValue( UInt              aColumnSize,
 {
 /*******************************************************************
  * PROJ-1705
- * µð½ºÅ©Å×ÀÌºíÄÃ·³ÀÇ µ¥ÀÌÅ¸¸¦
- * qp ·¹ÄÚµåÃ³¸®¿µ¿ªÀÇ ÇØ´ç ÄÃ·³À§Ä¡¿¡ º¹»ç
+ * ë””ìŠ¤í¬í…Œì´ë¸”ì»¬ëŸ¼ì˜ ë°ì´íƒ€ë¥¼
+ * qp ë ˆì½”ë“œì²˜ë¦¬ì˜ì—­ì˜ í•´ë‹¹ ì»¬ëŸ¼ìœ„ì¹˜ì— ë³µì‚¬
  *******************************************************************/
 
     mtdBinaryType* sValue;
@@ -421,7 +421,7 @@ static IDE_RC mtdStoredValue2MtdValue( UInt              aColumnSize,
 
     if( ( aDestValueOffset == 0 ) && ( aLength == 0 ) )
     {
-        // NULL µ¥ÀÌÅ¸
+        // NULL ë°ì´íƒ€
         sValue->mLength = 0;
     }
     else
@@ -448,7 +448,7 @@ static UInt mtdHeaderSize()
 {
 /***********************************************************************
  * PROJ-1705
- * length¸¦ °¡Áö´Â µ¥ÀÌÅ¸Å¸ÀÔÀÇ length Á¤º¸¸¦ ÀúÀåÇÏ´Â º¯¼öÀÇ Å©±â ¹ÝÈ¯
+ * lengthë¥¼ ê°€ì§€ëŠ” ë°ì´íƒ€íƒ€ìž…ì˜ length ì •ë³´ë¥¼ ì €ìž¥í•˜ëŠ” ë³€ìˆ˜ì˜ í¬ê¸° ë°˜í™˜
  **********************************************************************/
 
     return offsetof(mtdBinaryType, mValue);
@@ -458,9 +458,9 @@ static UInt mtdStoreSize( const smiColumn * aColumn )
 {
 /***********************************************************************
  * PROJ-2399 row tmaplate 
- * sm¿¡ ÀúÀåµÇ´Â µ¥ÀÌÅÍÀÇ Å©±â¸¦ ¹ÝÈ¯ÇÑ´Ù. 
- * variable Å¸ÀÔÀÇ µ¥ÀÌÅÍ Å¸ÀÔÀº ID_UINT_MAX¸¦ ¹ÝÈ¯
- * mtheader°¡ sm¿¡ ÀúÀåµÈ°æ¿ì°¡ ¾Æ´Ï¸é mtheaderÅ©±â¸¦ »©¼­ ¹ÝÈ¯ 
+ * smì— ì €ìž¥ë˜ëŠ” ë°ì´í„°ì˜ í¬ê¸°ë¥¼ ë°˜í™˜í•œë‹¤. 
+ * variable íƒ€ìž…ì˜ ë°ì´í„° íƒ€ìž…ì€ ID_UINT_MAXë¥¼ ë°˜í™˜
+ * mtheaderê°€ smì— ì €ìž¥ëœê²½ìš°ê°€ ì•„ë‹ˆë©´ mtheaderí¬ê¸°ë¥¼ ë¹¼ì„œ ë°˜í™˜ 
  **********************************************************************/
 
     return aColumn->size - mtdHeaderSize();

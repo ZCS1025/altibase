@@ -279,7 +279,7 @@ IDE_RC mtfRegExp::expClass( mtfRegExpression *aExp, SInt *aOutNodeId )
     {
         switch ( *( aExp->p + 1 ) )
         {
-            /* aExp->p ¼º´ÉÀ» À§ÇØ NULL°Ë»ç¸¦ ÇÏÁö ¾Ê´Â´Ù. */
+            /* aExp->p ì„±ëŠ¥ì„ ìœ„í•´ NULLê²€ì‚¬ë¥¼ í•˜ì§€ ì•ŠëŠ”ë‹¤. */
             case 'a':
                 if ( ( *(aExp->p +2) == 'l' ) &&    //[:alnum:]
                      ( *(aExp->p +3) == 'n' ) &&
@@ -1371,7 +1371,7 @@ const SChar * mtfRegExp::matchNode( mtfRegExpression *aExp,
             }
         case OP_NCLASS:
         case OP_CLASS:
-            // OP_CLASS ¿Í OP_NCLASS [^ ÀÇ °á°ú´Â ¹İ´ëÀÓ
+            // OP_CLASS ì™€ OP_NCLASS [^ ì˜ ê²°ê³¼ëŠ” ë°˜ëŒ€ì„
             if ( aStr < aSearch->endOfLine )
             {
                 if ( matchClass( aExp, &aExp->nodes[aNode->left], *aStr ) ?
@@ -1688,7 +1688,7 @@ IDE_RC mtfRegExp::expCompile( mtfRegExpression *aExp,
     SInt  sRes;
     UInt  sSize = ( aPatternLen * 4);
 
-    /* BUG-43859 [mt-function] regexp_substr ÇÔ¼ö ¼öÇà Áß ¼­¹ö »ç¸ÁÇÒ ¼ö ÀÖ½À´Ï´Ù. */
+    /* BUG-43859 [mt-function] regexp_substr í•¨ìˆ˜ ìˆ˜í–‰ ì¤‘ ì„œë²„ ì‚¬ë§í•  ìˆ˜ ìˆìŠµë‹ˆë‹¤. */
     if ( sSize >= MTF_REGEXP_MAX_PATTERN_LENGTH )
     {
         sSize = MTF_REGEXP_MAX_PATTERN_LENGTH;
@@ -1789,8 +1789,8 @@ idBool mtfRegExp::searchRange( mtfRegExpression  *aExp,
     SInt         sNode    = aExp->first;
    
     // BUG-45386
-    // 'ABC', 'B*' ÀÌ·± °æ¿ì endOfLine¿¡¼­µµ ¸ÅÄ¡µÇ¾î¾ß ÇÑ´Ù.
-    // µû¶ó¼­ TextBegin = TextEndÀÎ °æ¿ì¿¡µµ search¸¦ ÇÑ´Ù.
+    // 'ABC', 'B*' ì´ëŸ° ê²½ìš° endOfLineì—ì„œë„ ë§¤ì¹˜ë˜ì–´ì•¼ í•œë‹¤.
+    // ë”°ë¼ì„œ TextBegin = TextEndì¸ ê²½ìš°ì—ë„ searchë¥¼ í•œë‹¤.
     if ( aTextBegin > aTextEnd )
     {
         sRes = ID_FALSE;

@@ -28,7 +28,7 @@
 typedef enum
 {
     ACCS_MODE_CHECK = 0,
-    ACCS_MODE_SYMBOL_GEN /* ÀÔ·ÂÈ­ÀÏ·Î ºÎÅÍ Ãâ·Â */ 
+    ACCS_MODE_SYMBOL_GEN /* ìž…ë ¥í™”ì¼ë¡œ ë¶€í„° ì¶œë ¥ */ 
 } ACCS_MODE;
 
 class accsMgr
@@ -39,7 +39,7 @@ class accsMgr
     SInt       tokenCol_;
     ACCS_MODE  mode_;
 
-    FILE      *outFp_; // È­¸é¿¡ ÁøÇàÀ» Ãâ·ÂÇØ ÁÖ±â À§ÇÔ
+    FILE      *outFp_; // í™”ë©´ì— ì§„í–‰ì„ ì¶œë ¥í•´ ì£¼ê¸° ìœ„í•¨
 
 public:
     accsMgr();

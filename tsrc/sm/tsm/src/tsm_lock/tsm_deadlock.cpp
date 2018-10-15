@@ -46,7 +46,7 @@ IDE_RC tsm_deadlock()
     }
     
     //Dead Lock Test
-    // 1) case 1: µÎ°³ÀÇ Æ®·£Àè¼ÇÀÇ Dead lock »óÈ²
+    // 1) case 1: ë‘ê°œì˜ íŠ¸ëœì­ì…˜ì˜ Dead lock ìƒí™©
     s_arrTrans[0].resume(TSM_OP_BEGIN, ID_UINT_MAX, SML_SLOCK);
     s_arrTrans[1].resume(TSM_OP_BEGIN, ID_UINT_MAX, SML_SLOCK);
 
@@ -60,7 +60,7 @@ IDE_RC tsm_deadlock()
     idlOS::fprintf(TSM_OUTPUT, 
 		   "[LOCK: DeadLock]: 1) two transaction\n");
 
-    // 2) case 2: lock converionÀ¸·Î ÀÎÇÑ deadlock »óÈ²
+    // 2) case 2: lock converionìœ¼ë¡œ ì¸í•œ deadlock ìƒí™©
     s_arrTrans[0].resume(TSM_OP_BEGIN, ID_UINT_MAX, SML_SLOCK);
     s_arrTrans[1].resume(TSM_OP_BEGIN, ID_UINT_MAX, SML_SLOCK);
 
@@ -75,7 +75,7 @@ IDE_RC tsm_deadlock()
     idlOS::fprintf(TSM_OUTPUT, 
 		   "[LOCK: DeadLock]: 2) lock conversion\n");
 
-    // 3) case 3: ¼¼°³ ÀÌ»óÀÇ Æ®·£Àè¼Ç¿¡ ÀÇÇÑ Dead lock»óÈ²
+    // 3) case 3: ì„¸ê°œ ì´ìƒì˜ íŠ¸ëœì­ì…˜ì— ì˜í•œ Dead lockìƒí™©
     s_arrTrans[0].resume(TSM_OP_BEGIN, ID_UINT_MAX, SML_SLOCK);
     s_arrTrans[1].resume(TSM_OP_BEGIN, ID_UINT_MAX, SML_SLOCK);
     s_arrTrans[2].resume(TSM_OP_BEGIN, ID_UINT_MAX, SML_SLOCK);
@@ -93,7 +93,7 @@ IDE_RC tsm_deadlock()
     idlOS::fprintf(TSM_OUTPUT, 
 		   "[LOCK: DeadLock]: 3) three transaction\n");
 
-    // 4) case 4: ¼¼°³ ÀÌ»óÀÇ Æ®·£Àè¼ÇÀÌ lock conversion¿¡ÀÇÇØ Dead lock¹ß»ı
+    // 4) case 4: ì„¸ê°œ ì´ìƒì˜ íŠ¸ëœì­ì…˜ì´ lock conversionì—ì˜í•´ Dead lockë°œìƒ
     s_arrTrans[0].resume(TSM_OP_BEGIN, ID_UINT_MAX, SML_SLOCK);
     s_arrTrans[1].resume(TSM_OP_BEGIN, ID_UINT_MAX, SML_SLOCK);
     s_arrTrans[2].resume(TSM_OP_BEGIN, ID_UINT_MAX, SML_SLOCK);

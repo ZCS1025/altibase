@@ -19,8 +19,8 @@
 
 
 /*
- * �� �Լ����� ODBC 3.x���� Deprecated �� �Լ�����
- * SQL_API_ALL_FUNCTIONS �ϸ� �� �Լ��鵵 ��밡���ϴٰ� �˷��ش�.
+ * 이 함수들은 ODBC 3.x에서 Deprecated 된 함수들임
+ * SQL_API_ALL_FUNCTIONS 하면 이 함수들도 사용가능하다고 알려준다.
  */
 static const acp_uint16_t ulnDeprecatedFunctions[] =
 {

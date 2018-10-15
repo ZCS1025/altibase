@@ -88,7 +88,7 @@ struct ulsdNodeInfo
 };
 
 /*
- * ulnDbc¿¡¼­ »şµå Ã³¸®¿¡ °üÇÑ Á¤º¸¸¦ Á¤ÀÇÇÑ ±¸Á¶Ã¼
+ * ulnDbcì—ì„œ ìƒ¤ë“œ ì²˜ë¦¬ì— ê´€í•œ ì •ë³´ë¥¼ ì •ì˜í•œ êµ¬ì¡°ì²´
  */
 struct ulsdDbcContext
 {
@@ -107,7 +107,7 @@ struct ulsdDbcContext
     ulsdFuncCallback   *mCallback;
 
     /* BUG-45411 */
-    acp_bool_t          mReadOnlyTx;  /* shard_prepare protocolÀÇ result */
+    acp_bool_t          mReadOnlyTx;  /* shard_prepare protocolì˜ result */
 };
 
 union ulsdValue
@@ -142,7 +142,7 @@ struct ulsdRangeInfo
 
 union ulsdKeyData
 {
-    acp_sint8_t   mValue[1];  /* ´ëÇ¥°ª */
+    acp_sint8_t   mValue[1];  /* ëŒ€í‘œê°’ */
     acp_sint16_t  mSmallintValue;
     acp_sint32_t  mIntegerValue;
     acp_sint64_t  mBigintValue;
@@ -198,7 +198,7 @@ struct ulsdStmtContext
     /* BUG-45499 result merger */
     acp_uint16_t         mNodeDbcIndexArr[ULSD_SD_NODE_MAX_COUNT];
     acp_uint16_t         mNodeDbcIndexCount;
-    acp_sint16_t         mNodeDbcIndexCur;  /* ÇöÀç fetchÁßÀÎ dbc index */
+    acp_sint16_t         mNodeDbcIndexCur;  /* í˜„ì¬ fetchì¤‘ì¸ dbc index */
 };
 
 struct ulsdRangeIndex

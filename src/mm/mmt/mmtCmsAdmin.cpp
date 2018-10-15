@@ -115,8 +115,8 @@ IDE_RC mmtServiceThread::shutdownDatabase(idvSQL */*aStatistics*/, void *aArg)
             /* TASK-5894 Permit sysdba via IPC */
             IDE_TEST_RAISE(sLinkImpl == CMN_LINK_IMPL_IPC, NotSupportedViaIPC)
 
-            /* BUG-20727 prepared transaction ÀÌ Á¸ÀçÇÏ´Â °æ¿ì transaction À»
-               »ì·ÁµÖ¾ß ÇÏ±â ¶§¹®¿¡ abort ·Î ¾ËÆ¼º£ÀÌ½º¸¦ Á¾·áÇÑ´Ù. */
+            /* BUG-20727 prepared transaction ì´ ì¡´ì¬í•˜ëŠ” ê²½ìš° transaction ì„
+               ì‚´ë ¤ë‘¬ì•¼ í•˜ê¸° ë•Œë¬¸ì— abort ë¡œ ì•Œí‹°ë² ì´ìŠ¤ë¥¼ ì¢…ë£Œí•œë‹¤. */
             (void)smiExistPreparedTrans(&sExist);
             if ( sExist == ID_TRUE )
             {
@@ -269,17 +269,17 @@ IDE_RC mmtServiceThread::closeSession(idvSQL */*aStatistics*/, void *aArg)
  * Description :
  *
  *    To Fix BUG-15361
- *    DB Á¦¾î¹®¿¡¼­ »ç¿ëµÇ´Â database nameÀÇ ÀÌ¸§À» °ËÁõÇÑ´Ù.
+ *    DB ì œì–´ë¬¸ì—ì„œ ì‚¬ìš©ë˜ëŠ” database nameì˜ ì´ë¦„ì„ ê²€ì¦í•œë‹¤.
  *
  *       Ex) ALTER DATABASE mydb
  *
  * Implementation :
  *
- *    DB NameÀº ´ÙÀ½ µÎ °¡Áö°¡ µ¿ÀÏÇÑ ÀÌ¸§À¸·Î Á¸ÀçÇÑ´Ù.
- *       - altibase.propertiesÀÇ DB_NAME
- *       - Database¿¡ ÀúÀåµÈ ÀÌ¸§
+ *    DB Nameì€ ë‹¤ìŒ ë‘ ê°€ì§€ê°€ ë™ì¼í•œ ì´ë¦„ìœ¼ë¡œ ì¡´ì¬í•œë‹¤.
+ *       - altibase.propertiesì˜ DB_NAME
+ *       - Databaseì— ì €ì¥ëœ ì´ë¦„
  *
- *    DATABASE¿¡ ÀúÀåµÈ ÀÌ¸§À» »ç¿ëÇÏ¿© °Ë»çÇÑ´Ù.
+ *    DATABASEì— ì €ì¥ëœ ì´ë¦„ì„ ì‚¬ìš©í•˜ì—¬ ê²€ì‚¬í•œë‹¤.
  *
  **********************************************************************/
 

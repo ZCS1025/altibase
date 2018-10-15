@@ -65,7 +65,7 @@ public:
                                                   UInt          aOldDicTableID,
                                                   UInt          aNewDicTableID );
 
-    /* BUG-45641 disk partitioned table¿¡ ¾ĞÃà ÄÃ·³À» Ãß°¡ÇÏ´Ù°¡ ½ÇÆĞÇÏ´Âµ¥, memory partitioned table ¿À·ù°¡ ³ª¿É´Ï´Ù. */
+    /* BUG-45641 disk partitioned tableì— ì••ì¶• ì»¬ëŸ¼ì„ ì¶”ê°€í•˜ë‹¤ê°€ ì‹¤íŒ¨í•˜ëŠ”ë°, memory partitioned table ì˜¤ë¥˜ê°€ ë‚˜ì˜µë‹ˆë‹¤. */
     static IDE_RC validateCompressColumn( qcStatement      * /* aStatement */,
                                           qdTableParseTree * aParseTree,
                                           smiTableSpaceType  aType );

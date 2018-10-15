@@ -20,8 +20,8 @@
 
 /*
  * BUGBUG:
- * SQLCHAR * ´Â C ÀÇ unsigned char * ·Î ¸ÅÇÎµÈ´Ù.
- * MSDN ODBC Appendix D:Data Types -> C Data Types ¿¡ º¸¸é Ç¥°¡ ³ª¿Â´Ù.
+ * SQLCHAR * ëŠ” C ì˜ unsigned char * ë¡œ ë§¤í•‘ëœë‹¤.
+ * MSDN ODBC Appendix D:Data Types -> C Data Types ì— ë³´ë©´ í‘œê°€ ë‚˜ì˜¨ë‹¤.
  */
 SQLRETURN ulnGetDiagRec(acp_sint16_t   aHandleType,
                         ulnObject     *aObject,
@@ -49,7 +49,7 @@ SQLRETURN ulnGetDiagRec(acp_sint16_t   aHandleType,
     sObject = aObject;
 
     /*
-     * ÇÚµé Å¸ÀÔ°ú °´Ã¼ÀÇ ½ÇÁ¦ Å¸ÀÔÀÌ ÀÏÄ¡ÇÏ´ÂÁö Ã¼Å©
+     * í•¸ë“¤ íƒ€ì…ê³¼ ê°ì²´ì˜ ì‹¤ì œ íƒ€ì…ì´ ì¼ì¹˜í•˜ëŠ”ì§€ ì²´í¬
      */
     switch (aHandleType)
     {
@@ -90,18 +90,18 @@ SQLRETURN ulnGetDiagRec(acp_sint16_t   aHandleType,
     ACI_TEST_RAISE(aBufferLength < 0, Error);
 
     /*
-     * Note : »óÅÂÀüÀÌ Å×ÀÌºíÀº ÇÊ¿ä ¾ø´Ù. ÇÚµé ÇÒ´ç ¾ÈµÇÀÖÀ¸¸é ¹«Á¶°Ç Invalid Handle
+     * Note : ìƒíƒœì „ì´ í…Œì´ë¸”ì€ í•„ìš” ì—†ë‹¤. í•¸ë“¤ í• ë‹¹ ì•ˆë˜ìˆìœ¼ë©´ ë¬´ì¡°ê±´ Invalid Handle
      */
 
     /*
-     * Diagnostic Record ¸¦ °¡¸®Å°´Â Æ÷ÀÎÅÍ¸¦ ¾ò´Â´Ù.
+     * Diagnostic Record ë¥¼ ê°€ë¦¬í‚¤ëŠ” í¬ì¸í„°ë¥¼ ì–»ëŠ”ë‹¤.
      */
     ACI_TEST_RAISE(ulnGetDiagRecFromObject(sObject, &sDiagRec, aRecNumber) != ACI_SUCCESS,
                    NoData);
 
     /*
-     * SQLSTATE String À» °¡¸®Å°´Â Æ÷ÀÎÅÍ¸¦ ¾ò±â
-     * Note : °ğÀå »ç¿ëÀÚ ¸Ş¸ğ¸®¿¡ º¹»ç¸¦ ÇÏÁö ¾ÊÀº ÀÌÀ¯´Â GetDiagField ¿¡¼­µµ ¾²±â ¶§¹®
+     * SQLSTATE String ì„ ê°€ë¦¬í‚¤ëŠ” í¬ì¸í„°ë¥¼ ì–»ê¸°
+     * Note : ê³§ì¥ ì‚¬ìš©ì ë©”ëª¨ë¦¬ì— ë³µì‚¬ë¥¼ í•˜ì§€ ì•Šì€ ì´ìœ ëŠ” GetDiagField ì—ì„œë„ ì“°ê¸° ë•Œë¬¸
      */
     ulnDiagRecGetSqlState(sDiagRec, &sSqlState);
 
@@ -113,21 +113,21 @@ SQLRETURN ulnGetDiagRec(acp_sint16_t   aHandleType,
     /*
      * Message Text
      */
-    // BUG-22887 Windows ODBC ¿¡·¯
-    // ÇÔ¼ö¾È¿¡¼­ ¾Ë¾Æ¼­ ÇØÁÖ°í ÀÖ´Ù.
+    // BUG-22887 Windows ODBC ì—ëŸ¬
+    // í•¨ìˆ˜ì•ˆì—ì„œ ì•Œì•„ì„œ í•´ì£¼ê³  ìˆë‹¤.
     ACI_TEST(ulnDiagRecGetMessageText(sDiagRec,
                                       aMessageText,
                                       aBufferLength,
                                       &sActualLength) != ACI_SUCCESS);
     /*
-     * Truncation ½Ã SQL_SUCCESS_WITH_INFO ¸®ÅÏ
+     * Truncation ì‹œ SQL_SUCCESS_WITH_INFO ë¦¬í„´
      */
     if ( sActualLength >= aBufferLength )
     {
         sSqlReturnCode = SQL_SUCCESS_WITH_INFO;
     }
 
-    // BUG-23965 aTextLengthPtr ÀÌ NULL ÀÌ µé¾î¿Ã¶§ Àß¸ø Ã³¸®ÇÔ
+    // BUG-23965 aTextLengthPtr ì´ NULL ì´ ë“¤ì–´ì˜¬ë•Œ ì˜ëª» ì²˜ë¦¬í•¨
     /*
      * TextLength
      */
@@ -153,8 +153,8 @@ SQLRETURN ulnGetDiagRec(acp_sint16_t   aHandleType,
     }
 
     /*
-     * SQLError() ¿¡ ÀÇÇØ¼­ È£Ãâ µÇ¾úÀ» °æ¿ì,
-     * »ç¿ëÀÚ¿¡°Ô ¾Ë¸ÂÀº °ªÀ» µ¹·ÁÁØ ÈÄ ÇØ´ç ·¹ÄÚµå¸¦ »èÁ¦ÇØ¾ß ÇÑ´Ù.
+     * SQLError() ì— ì˜í•´ì„œ í˜¸ì¶œ ë˜ì—ˆì„ ê²½ìš°,
+     * ì‚¬ìš©ìì—ê²Œ ì•Œë§ì€ ê°’ì„ ëŒë ¤ì¤€ í›„ í•´ë‹¹ ë ˆì½”ë“œë¥¼ ì‚­ì œí•´ì•¼ í•œë‹¤.
      */
     if(aRemoveAfterGet == ACP_TRUE)
     {

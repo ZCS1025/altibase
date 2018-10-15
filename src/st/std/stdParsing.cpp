@@ -23,8 +23,8 @@
  * $Id: stdParsing.cpp 18883 2006-11-14 01:48:40Z sabbra $
  *
  * Description:
- * ÀÔ·Â ¹öÆÛ·Î ºÎÅÍ WKT(Well Known Text) ¶Ç´Â WKB(Well Known Binary)¸¦ ÀĞ¾î
- * Geometry °´Ã¼·Î ÀúÀåÇÏ´Â ¸ğµâ ±¸Çö
+ * ì…ë ¥ ë²„í¼ë¡œ ë¶€í„° WKT(Well Known Text) ë˜ëŠ” WKB(Well Known Binary)ë¥¼ ì½ì–´
+ * Geometry ê°ì²´ë¡œ ì €ì¥í•˜ëŠ” ëª¨ë“ˆ êµ¬í˜„
  **********************************************************************/
 
 #include <idl.h>
@@ -48,25 +48,25 @@ extern mtdModule mtdDouble;
 
 /***********************************************************************
  * Description:
- * ´ÙÀ½¿¡ ÀĞ¾îµéÀÏ ÅäÅ«ÀÌ ¾î¶² À¯ÇüÀÎÁö ÆÇº°ÇÑ´Ù.
+ * ë‹¤ìŒì— ì½ì–´ë“¤ì¼ í† í°ì´ ì–´ë–¤ ìœ í˜•ì¸ì§€ íŒë³„í•œë‹¤.
  *
- * STT_NUM_TOKEN: ¼ıÀÚ
- * STT_LPAREN_TOKEN: ÁÂ¼Ò°ıÈ£
- * STT_RPAREN_TOKEN: ¿ì¼Ò°ıÈ£
- * STT_COMMA_TOKEN: ½°Ç¥
- * STT_SPACE_TOKEN: °ø¹é ¹®ÀÚ
- * STT_CHAR_TOKEN: ¹®ÀÚ
+ * STT_NUM_TOKEN: ìˆ«ì
+ * STT_LPAREN_TOKEN: ì¢Œì†Œê´„í˜¸
+ * STT_RPAREN_TOKEN: ìš°ì†Œê´„í˜¸
+ * STT_COMMA_TOKEN: ì‰¼í‘œ
+ * STT_SPACE_TOKEN: ê³µë°± ë¬¸ì
+ * STT_CHAR_TOKEN: ë¬¸ì
  *
- * UChar **aPtr(In): ÀĞ¾îµéÀÏ ¹®ÀÚ¿­ À§Ä¡.
- * UChar *aWKTFence(In): ¹®ÀÚ¿­ ¹öÆÛÀÇ Fence
+ * UChar **aPtr(In): ì½ì–´ë“¤ì¼ ë¬¸ìì—´ ìœ„ì¹˜.
+ * UChar *aWKTFence(In): ë¬¸ìì—´ ë²„í¼ì˜ Fence
  **********************************************************************/
 STT_TOKEN stdParsing::testNextToken(UChar **aPtr, UChar *aWKTFence)
 {
     STT_TOKEN sRet = STT_SPACE_TOKEN;    
     IDE_TEST(skipSpace(aPtr, aWKTFence) != IDE_SUCCESS);
 
-    // To Fix : BUG-15954  3D Point½Ã Z°¡ À½¼öÀÏ ¶§ ¿¡·¯³².
-    //          '-' Ã¼Å©¸¦ Ãß°¡ÇÔ
+    // To Fix : BUG-15954  3D Pointì‹œ Zê°€ ìŒìˆ˜ì¼ ë•Œ ì—ëŸ¬ë‚¨.
+    //          '-' ì²´í¬ë¥¼ ì¶”ê°€í•¨
     if( ((**aPtr >= '0') && (**aPtr <= '9')) || (**aPtr == '-' ) )
     {
         sRet = STT_NUM_TOKEN;
@@ -101,10 +101,10 @@ STT_TOKEN stdParsing::testNextToken(UChar **aPtr, UChar *aWKTFence)
 
 /***********************************************************************
  * Description:
- * °ø¹é ¹®ÀÚ¸¦ °Ç³Ê ¶Ú´Ù
+ * ê³µë°± ë¬¸ìë¥¼ ê±´ë„ˆ ë›´ë‹¤
  *
- * UChar **aPtr(InOut): ÀĞ¾îµéÀÏ ¹®ÀÚ¿­ À§Ä¡, ÀĞÀº ´ÙÀ½ ±× ¸¸Å­ Áõ°¡ÇÑ´Ù.
- * UChar *aWKTFence(In): ¹®ÀÚ¿­ ¹öÆÛÀÇ Fence
+ * UChar **aPtr(InOut): ì½ì–´ë“¤ì¼ ë¬¸ìì—´ ìœ„ì¹˜, ì½ì€ ë‹¤ìŒ ê·¸ ë§Œí¼ ì¦ê°€í•œë‹¤.
+ * UChar *aWKTFence(In): ë¬¸ìì—´ ë²„í¼ì˜ Fence
  **********************************************************************/
 IDE_RC stdParsing::skipSpace(UChar **aPtr, UChar *aWKTFence)
 {
@@ -134,10 +134,10 @@ IDE_RC stdParsing::skipSpace(UChar **aPtr, UChar *aWKTFence)
 /***********************************************************************
  * Description:
  * BUG-32531 Consider for GIS EMPTY
- * EMPTY ÀÌÈÄÀÇ °ø¹é ¹®ÀÚ¸¦ °Ç³Ê ¶Ú´Ù
+ * EMPTY ì´í›„ì˜ ê³µë°± ë¬¸ìë¥¼ ê±´ë„ˆ ë›´ë‹¤
  *
- * UChar **aPtr(InOut): ÀĞ¾îµéÀÏ ¹®ÀÚ¿­ À§Ä¡, ÀĞÀº ´ÙÀ½ ±× ¸¸Å­ Áõ°¡ÇÑ´Ù.
- * UChar *aWKTFence(In): ¹®ÀÚ¿­ ¹öÆÛÀÇ Fence
+ * UChar **aPtr(InOut): ì½ì–´ë“¤ì¼ ë¬¸ìì—´ ìœ„ì¹˜, ì½ì€ ë‹¤ìŒ ê·¸ ë§Œí¼ ì¦ê°€í•œë‹¤.
+ * UChar *aWKTFence(In): ë¬¸ìì—´ ë²„í¼ì˜ Fence
  **********************************************************************/
 IDE_RC stdParsing::emptyCheckSpace(UChar **aPtr, UChar *aWKTFence)
 {
@@ -168,11 +168,11 @@ IDE_RC stdParsing::emptyCheckSpace(UChar **aPtr, UChar *aWKTFence)
 /***********************************************************************
  * Description:
  * BUG-32531 Consider for GIS EMPTY
- * empty ÀÎÁö Ã¼Å© ÇÏ¿© emptyÀÎ °æ¿ì retrun IDE_SUCCESS.
- * empty ±¸¹® Ã¼Å© ÀÌ»ó½Ã error
+ * empty ì¸ì§€ ì²´í¬ í•˜ì—¬ emptyì¸ ê²½ìš° retrun IDE_SUCCESS.
+ * empty êµ¬ë¬¸ ì²´í¬ ì´ìƒì‹œ error
  *
- * UChar **aPtr(In): ºñ±³ ÇÒ ¹®ÀÚ
- * UChar *aWKTFence(In): ¹®ÀÚ¿­ ¹öÆÛÀÇ Fence
+ * UChar **aPtr(In): ë¹„êµ í•  ë¬¸ì
+ * UChar *aWKTFence(In): ë¬¸ìì—´ ë²„í¼ì˜ Fence
  **********************************************************************/
 IDE_RC stdParsing::checkValidEmpty(UChar** aPtr, UChar *aWKTFence)
 {
@@ -202,10 +202,10 @@ IDE_RC stdParsing::checkValidEmpty(UChar** aPtr, UChar *aWKTFence)
 
 /***********************************************************************
  * Description:
- * ÁÂ¼Ò°ıÈ£¸¦ °Ç³Ê ¶Ú´Ù
+ * ì¢Œì†Œê´„í˜¸ë¥¼ ê±´ë„ˆ ë›´ë‹¤
  *
- * UChar **aPtr(InOut): ÀĞ¾îµéÀÏ ¹®ÀÚ¿­ À§Ä¡, ÀĞÀº ´ÙÀ½ ±× ¸¸Å­ Áõ°¡ÇÑ´Ù.
- * UChar *aWKTFence(In): ¹®ÀÚ¿­ ¹öÆÛÀÇ Fence
+ * UChar **aPtr(InOut): ì½ì–´ë“¤ì¼ ë¬¸ìì—´ ìœ„ì¹˜, ì½ì€ ë‹¤ìŒ ê·¸ ë§Œí¼ ì¦ê°€í•œë‹¤.
+ * UChar *aWKTFence(In): ë¬¸ìì—´ ë²„í¼ì˜ Fence
  **********************************************************************/
 IDE_RC stdParsing::skipLParen(UChar** aPtr, UChar *aWKTFence)
 {
@@ -226,10 +226,10 @@ IDE_RC stdParsing::skipLParen(UChar** aPtr, UChar *aWKTFence)
 
 /***********************************************************************
  * Description:
- * ¿ì¼Ò°ıÈ£¸¦ °Ç³Ê ¶Ú´Ù
+ * ìš°ì†Œê´„í˜¸ë¥¼ ê±´ë„ˆ ë›´ë‹¤
  *
- * UChar **aPtr(InOut): ÀĞ¾îµéÀÏ ¹®ÀÚ¿­ À§Ä¡, ÀĞÀº ´ÙÀ½ ±× ¸¸Å­ Áõ°¡ÇÑ´Ù.
- * UChar *aWKTFence(In): ¹®ÀÚ¿­ ¹öÆÛÀÇ Fence
+ * UChar **aPtr(InOut): ì½ì–´ë“¤ì¼ ë¬¸ìì—´ ìœ„ì¹˜, ì½ì€ ë‹¤ìŒ ê·¸ ë§Œí¼ ì¦ê°€í•œë‹¤.
+ * UChar *aWKTFence(In): ë¬¸ìì—´ ë²„í¼ì˜ Fence
  **********************************************************************/
 IDE_RC stdParsing::skipRParen(UChar** aPtr, UChar *aWKTFence)
 {
@@ -252,10 +252,10 @@ IDE_RC stdParsing::skipRParen(UChar** aPtr, UChar *aWKTFence)
 
 /***********************************************************************
  * Description:
- * ¹®ÀåÀÇ ³¡±îÁö °ø¹éÀ¸·Î ³¡³ª´ÂÁö ÆÇº°ÇÑ´Ù.
+ * ë¬¸ì¥ì˜ ëê¹Œì§€ ê³µë°±ìœ¼ë¡œ ëë‚˜ëŠ”ì§€ íŒë³„í•œë‹¤.
  *
- * UChar **aPtr(InOut): ÀĞ¾îµéÀÏ ¹®ÀÚ¿­ À§Ä¡, ÀĞÀº ´ÙÀ½ ±× ¸¸Å­ Áõ°¡ÇÑ´Ù.
- * UChar *aWKTFence(In): ¹®ÀÚ¿­ ¹öÆÛÀÇ Fence
+ * UChar **aPtr(InOut): ì½ì–´ë“¤ì¼ ë¬¸ìì—´ ìœ„ì¹˜, ì½ì€ ë‹¤ìŒ ê·¸ ë§Œí¼ ì¦ê°€í•œë‹¤.
+ * UChar *aWKTFence(In): ë¬¸ìì—´ ë²„í¼ì˜ Fence
  **********************************************************************/
 IDE_RC stdParsing::skipToLast(UChar** aPtr, UChar *aWKTFence)
 {
@@ -274,11 +274,11 @@ IDE_RC stdParsing::skipToLast(UChar** aPtr, UChar *aWKTFence)
 
 /***********************************************************************
  * Description:
- * Collection ³»ºÎ °´Ã¼ÀÇ ´ÙÀ½ °´Ã¼°¡ ÀÖ´ÂÁö ÆÇº°ÇÏ±â À§ÇØ »ç¿ëÇÑ´Ù.
- * ´ÙÀ½ °´Ã¼°¡ ÀÖÀ¸¸é ÇØ´ç ¹®ÀÚ±îÁöÀÇ ÁÖ¼Ò¸¦ ¾øÀ¸¸é aWKTFenceÀ» ¸®ÅÏÇÑ´Ù.
+ * Collection ë‚´ë¶€ ê°ì²´ì˜ ë‹¤ìŒ ê°ì²´ê°€ ìˆëŠ”ì§€ íŒë³„í•˜ê¸° ìœ„í•´ ì‚¬ìš©í•œë‹¤.
+ * ë‹¤ìŒ ê°ì²´ê°€ ìˆìœ¼ë©´ í•´ë‹¹ ë¬¸ìê¹Œì§€ì˜ ì£¼ì†Œë¥¼ ì—†ìœ¼ë©´ aWKTFenceì„ ë¦¬í„´í•œë‹¤.
  *
- * UChar **aPtr(In): ÀĞ¾îµéÀÏ ¹®ÀÚ¿­ À§Ä¡
- * UChar *aWKTFence(In): ¹®ÀÚ¿­ ¹öÆÛÀÇ Fence
+ * UChar **aPtr(In): ì½ì–´ë“¤ì¼ ë¬¸ìì—´ ìœ„ì¹˜
+ * UChar *aWKTFence(In): ë¬¸ìì—´ ë²„í¼ì˜ Fence
  **********************************************************************/
 UChar* stdParsing::findSubObjFence(UChar** aPtr, UChar* aWKTFence)
 {
@@ -401,10 +401,10 @@ UChar* stdParsing::findSubObjFence(UChar** aPtr, UChar* aWKTFence)
 
 /***********************************************************************
  * Description:
- * ½°Ç¥¸¦ °Ç³Ê ¶Ú´Ù
+ * ì‰¼í‘œë¥¼ ê±´ë„ˆ ë›´ë‹¤
  *
- * UChar **aPtr(InOut): ÀĞ¾îµéÀÏ ¹®ÀÚ¿­ À§Ä¡, ÀĞÀº ´ÙÀ½ ±× ¸¸Å­ Áõ°¡ÇÑ´Ù.
- * UChar *aWKTFence(In): ¹®ÀÚ¿­ ¹öÆÛÀÇ Fence
+ * UChar **aPtr(InOut): ì½ì–´ë“¤ì¼ ë¬¸ìì—´ ìœ„ì¹˜, ì½ì€ ë‹¤ìŒ ê·¸ ë§Œí¼ ì¦ê°€í•œë‹¤.
+ * UChar *aWKTFence(In): ë¬¸ìì—´ ë²„í¼ì˜ Fence
  **********************************************************************/
 IDE_RC stdParsing::skipComma(UChar** aPtr, UChar *aWKTFence)
 {
@@ -425,10 +425,10 @@ IDE_RC stdParsing::skipComma(UChar** aPtr, UChar *aWKTFence)
 
 /***********************************************************************
  * Description:
- * ¼ıÀÚ °ªÀ» °Ç³Ê ¶Ú´Ù
+ * ìˆ«ì ê°’ì„ ê±´ë„ˆ ë›´ë‹¤
  *
- * UChar **aPtr(InOut): ÀĞ¾îµéÀÏ ¹®ÀÚ¿­ À§Ä¡, ÀĞÀº ´ÙÀ½ ±× ¸¸Å­ Áõ°¡ÇÑ´Ù.
- * UChar *aWKTFence(In): ¹®ÀÚ¿­ ¹öÆÛÀÇ Fence
+ * UChar **aPtr(InOut): ì½ì–´ë“¤ì¼ ë¬¸ìì—´ ìœ„ì¹˜, ì½ì€ ë‹¤ìŒ ê·¸ ë§Œí¼ ì¦ê°€í•œë‹¤.
+ * UChar *aWKTFence(In): ë¬¸ìì—´ ë²„í¼ì˜ Fence
  **********************************************************************/
 IDE_RC stdParsing::skipNumber(UChar** aPtr, UChar *aWKTFence)
 {
@@ -457,7 +457,7 @@ IDE_RC stdParsing::skipNumber(UChar** aPtr, UChar *aWKTFence)
     sPtr = NULL;
     sD = idlOS::strtod((SChar*)*aPtr, (SChar**)&sPtr);
 
-    // underfloaw½Ã ¿¡·¯Ã³¸®ºÎºĞÀº Á¦°ÅÇÔ. ±×³É ¼öÇà
+    // underfloawì‹œ ì—ëŸ¬ì²˜ë¦¬ë¶€ë¶„ì€ ì œê±°í•¨. ê·¸ëƒ¥ ìˆ˜í–‰
     IDE_TEST_RAISE((*aPtr == sPtr) || // no conversion is performed
              ((sD == HUGE_VAL) && (errno == ERANGE)), err_parsing); // range err
 
@@ -477,10 +477,10 @@ IDE_RC stdParsing::skipNumber(UChar** aPtr, UChar *aWKTFence)
 
 /***********************************************************************
  * Description:
- * ¼ıÀÚ °ªÀ» ÀĞ¾î¼­ aD¿¡ ÀúÀåÇÑ´Ù.
+ * ìˆ«ì ê°’ì„ ì½ì–´ì„œ aDì— ì €ì¥í•œë‹¤.
  *
- * UChar **aPtr(InOut): ÀĞ¾îµéÀÏ ¹®ÀÚ¿­ À§Ä¡, ÀĞÀº ´ÙÀ½ ±× ¸¸Å­ Áõ°¡ÇÑ´Ù.
- * UChar *aWKTFence(In): ¹®ÀÚ¿­ ¹öÆÛÀÇ Fence
+ * UChar **aPtr(InOut): ì½ì–´ë“¤ì¼ ë¬¸ìì—´ ìœ„ì¹˜, ì½ì€ ë‹¤ìŒ ê·¸ ë§Œí¼ ì¦ê°€í•œë‹¤.
+ * UChar *aWKTFence(In): ë¬¸ìì—´ ë²„í¼ì˜ Fence
  * SDouble* aD(Out): DateTime
  **********************************************************************/
 IDE_RC stdParsing::getNumber(UChar** aPtr, UChar *aWKTFence, SDouble* aD)
@@ -512,7 +512,7 @@ IDE_RC stdParsing::getNumber(UChar** aPtr, UChar *aWKTFence, SDouble* aD)
     sPtr = NULL;    
     *aD = idlOS::strtod((SChar*)*aPtr, (SChar**)&sPtr);
 
-    // underfloaw½Ã ¿¡·¯Ã³¸®ºÎºĞÀº Á¦°ÅÇÔ. ±×³É ¼öÇà
+    // underfloawì‹œ ì—ëŸ¬ì²˜ë¦¬ë¶€ë¶„ì€ ì œê±°í•¨. ê·¸ëƒ¥ ìˆ˜í–‰
     IDE_TEST_RAISE((*aPtr == sPtr) || // no conversion is performed
                    ((*aD == HUGE_VAL) && (errno == ERANGE)), err_parsing);
     // range err
@@ -532,15 +532,15 @@ IDE_RC stdParsing::getNumber(UChar** aPtr, UChar *aWKTFence, SDouble* aD)
 
 /***********************************************************************
  * Description:
- * WKT(Well Known Text)¸¦ ÀĞ¾îµé¿© 
- * stdPoint2DTypeÀÌ³ª stdPoint3DType °´Ã¼·Î ÀúÀåÇÑ´Ù.
- * 3Â÷¿ø ÁÂÇ¥°¡ µé¾îÀÖÀ¸¸é 3Â÷¿øÀ¸·Î °£ÁÖÇÏ¸ç, 2Â÷¿ø 3Â÷¿ø °ªÀ» È¥ÇÕ ÀÔ·ÂÇÏ´Â °ÍÀ» 
- * Çã¿ëÇÏÁö ¾Ê´Â´Ù.
+ * WKT(Well Known Text)ë¥¼ ì½ì–´ë“¤ì—¬ 
+ * stdPoint2DTypeì´ë‚˜ stdPoint3DType ê°ì²´ë¡œ ì €ì¥í•œë‹¤.
+ * 3ì°¨ì› ì¢Œí‘œê°€ ë“¤ì–´ìˆìœ¼ë©´ 3ì°¨ì›ìœ¼ë¡œ ê°„ì£¼í•˜ë©°, 2ì°¨ì› 3ì°¨ì› ê°’ì„ í˜¼í•© ì…ë ¥í•˜ëŠ” ê²ƒì„ 
+ * í—ˆìš©í•˜ì§€ ì•ŠëŠ”ë‹¤.
  *
- * UChar **aPtr(InOut): ÀĞ¾îµéÀÏ ¹®ÀÚ¿­ À§Ä¡, ÀĞÀº ´ÙÀ½ ±× ¸¸Å­ Áõ°¡ÇÑ´Ù.
- * UChar *aWKTFence(In): ¹®ÀÚ¿­ ¹öÆÛÀÇ Fence
- * stdGeometryHeader* aGeom(Out): ÀúÀåµÉ ¹öÆÛ(Geometry °´Ã¼)
- * void* aFence(In): ÀúÀåµÉ ¹öÆÛ(Geometry °´Ã¼)ÀÇ Fence
+ * UChar **aPtr(InOut): ì½ì–´ë“¤ì¼ ë¬¸ìì—´ ìœ„ì¹˜, ì½ì€ ë‹¤ìŒ ê·¸ ë§Œí¼ ì¦ê°€í•œë‹¤.
+ * UChar *aWKTFence(In): ë¬¸ìì—´ ë²„í¼ì˜ Fence
+ * stdGeometryHeader* aGeom(Out): ì €ì¥ë  ë²„í¼(Geometry ê°ì²´)
+ * void* aFence(In): ì €ì¥ë  ë²„í¼(Geometry ê°ì²´)ì˜ Fence
  * IDE_RC* aResult(Out): Error Code
  **********************************************************************/
 IDE_RC stdParsing::getPoint(
@@ -660,15 +660,15 @@ IDE_RC stdParsing::getPoint(
 
 /***********************************************************************
  * Description:
- * WKT(Well Known Text)¸¦ ÀĞ¾îµé¿© 
- * stdLineString2DTypeÀÌ³ª stdLineString3DType °´Ã¼·Î ÀúÀåÇÑ´Ù.
- * 3Â÷¿ø ÁÂÇ¥°¡ µé¾îÀÖÀ¸¸é 3Â÷¿øÀ¸·Î °£ÁÖÇÏ¸ç, 2Â÷¿ø 3Â÷¿ø °ªÀ» È¥ÇÕ ÀÔ·ÂÇÏ´Â °ÍÀ» 
- * Çã¿ëÇÏÁö ¾Ê´Â´Ù.
+ * WKT(Well Known Text)ë¥¼ ì½ì–´ë“¤ì—¬ 
+ * stdLineString2DTypeì´ë‚˜ stdLineString3DType ê°ì²´ë¡œ ì €ì¥í•œë‹¤.
+ * 3ì°¨ì› ì¢Œí‘œê°€ ë“¤ì–´ìˆìœ¼ë©´ 3ì°¨ì›ìœ¼ë¡œ ê°„ì£¼í•˜ë©°, 2ì°¨ì› 3ì°¨ì› ê°’ì„ í˜¼í•© ì…ë ¥í•˜ëŠ” ê²ƒì„ 
+ * í—ˆìš©í•˜ì§€ ì•ŠëŠ”ë‹¤.
  *
- * UChar **aPtr(InOut): ÀĞ¾îµéÀÏ ¹®ÀÚ¿­ À§Ä¡, ÀĞÀº ´ÙÀ½ ±× ¸¸Å­ Áõ°¡ÇÑ´Ù.
- * UChar *aWKTFence(In): ¹®ÀÚ¿­ ¹öÆÛÀÇ Fence
- * stdGeometryHeader* aGeom(Out): ÀúÀåµÉ ¹öÆÛ(Geometry °´Ã¼)
- * void* aFence(In): ÀúÀåµÉ ¹öÆÛ(Geometry °´Ã¼)ÀÇ Fence
+ * UChar **aPtr(InOut): ì½ì–´ë“¤ì¼ ë¬¸ìì—´ ìœ„ì¹˜, ì½ì€ ë‹¤ìŒ ê·¸ ë§Œí¼ ì¦ê°€í•œë‹¤.
+ * UChar *aWKTFence(In): ë¬¸ìì—´ ë²„í¼ì˜ Fence
+ * stdGeometryHeader* aGeom(Out): ì €ì¥ë  ë²„í¼(Geometry ê°ì²´)
+ * void* aFence(In): ì €ì¥ë  ë²„í¼(Geometry ê°ì²´)ì˜ Fence
  * IDE_RC* aResult(Out): Error Code
  **********************************************************************/
 IDE_RC stdParsing::getLineString(
@@ -855,15 +855,15 @@ IDE_RC stdParsing::getLineString(
 
 /***********************************************************************
  * Description:
- * WKT(Well Known Text)¸¦ ÀĞ¾îµé¿© 
- * stdPolygon2DTypeÀÌ³ª stdPolygon3DType °´Ã¼·Î ÀúÀåÇÑ´Ù.
- * 3Â÷¿ø ÁÂÇ¥°¡ µé¾îÀÖÀ¸¸é 3Â÷¿øÀ¸·Î °£ÁÖÇÏ¸ç, 2Â÷¿ø 3Â÷¿ø °ªÀ» È¥ÇÕ ÀÔ·ÂÇÏ´Â °ÍÀ» 
- * Çã¿ëÇÏÁö ¾Ê´Â´Ù.
+ * WKT(Well Known Text)ë¥¼ ì½ì–´ë“¤ì—¬ 
+ * stdPolygon2DTypeì´ë‚˜ stdPolygon3DType ê°ì²´ë¡œ ì €ì¥í•œë‹¤.
+ * 3ì°¨ì› ì¢Œí‘œê°€ ë“¤ì–´ìˆìœ¼ë©´ 3ì°¨ì›ìœ¼ë¡œ ê°„ì£¼í•˜ë©°, 2ì°¨ì› 3ì°¨ì› ê°’ì„ í˜¼í•© ì…ë ¥í•˜ëŠ” ê²ƒì„ 
+ * í—ˆìš©í•˜ì§€ ì•ŠëŠ”ë‹¤.
  *
- * UChar **aPtr(InOut): ÀĞ¾îµéÀÏ ¹®ÀÚ¿­ À§Ä¡, ÀĞÀº ´ÙÀ½ ±× ¸¸Å­ Áõ°¡ÇÑ´Ù.
- * UChar *aWKTFence(In): ¹®ÀÚ¿­ ¹öÆÛÀÇ Fence
- * stdGeometryHeader* aGeom(Out): ÀúÀåµÉ ¹öÆÛ(Geometry °´Ã¼)
- * void* aFence(In): ÀúÀåµÉ ¹öÆÛ(Geometry °´Ã¼)ÀÇ Fence
+ * UChar **aPtr(InOut): ì½ì–´ë“¤ì¼ ë¬¸ìì—´ ìœ„ì¹˜, ì½ì€ ë‹¤ìŒ ê·¸ ë§Œí¼ ì¦ê°€í•œë‹¤.
+ * UChar *aWKTFence(In): ë¬¸ìì—´ ë²„í¼ì˜ Fence
+ * stdGeometryHeader* aGeom(Out): ì €ì¥ë  ë²„í¼(Geometry ê°ì²´)
+ * void* aFence(In): ì €ì¥ë  ë²„í¼(Geometry ê°ì²´)ì˜ Fence
  * IDE_RC* aResult(Out): Error Code
  **********************************************************************/
 IDE_RC stdParsing::getPolygon(
@@ -1128,16 +1128,16 @@ IDE_RC stdParsing::getPolygon(
 
 /***********************************************************************
  * Description:
- *  WKT(Well Known Text)¸¦ ÀĞ¾îµé¿© stdPolygon2DTypeÀÌ³ª stdPolygon3DType °´Ã¼·Î ÀúÀåÇÑ´Ù.
- *  3Â÷¿ø ÁÂÇ¥°¡ µé¾îÀÖÀ¸¸é 3Â÷¿øÀ¸·Î °£ÁÖÇÏ¸ç, 2Â÷¿ø 3Â÷¿ø °ªÀ» È¥ÇÕ ÀÔ·ÂÇÏ´Â °ÍÀ» Çã¿ëÇÏÁö ¾Ê´Â´Ù.
+ *  WKT(Well Known Text)ë¥¼ ì½ì–´ë“¤ì—¬ stdPolygon2DTypeì´ë‚˜ stdPolygon3DType ê°ì²´ë¡œ ì €ì¥í•œë‹¤.
+ *  3ì°¨ì› ì¢Œí‘œê°€ ë“¤ì–´ìˆìœ¼ë©´ 3ì°¨ì›ìœ¼ë¡œ ê°„ì£¼í•˜ë©°, 2ì°¨ì› 3ì°¨ì› ê°’ì„ í˜¼í•© ì…ë ¥í•˜ëŠ” ê²ƒì„ í—ˆìš©í•˜ì§€ ì•ŠëŠ”ë‹¤.
  *
- *  ST_RECTANGLEÀº µÎ Á¡(ÁÂÇÏ´Ü, ¿ì»ó´Ü)À¸·Î ÀÌ·ç¾îÁö´Â Á÷»ç°¢ÇüÀ» Ç¥ÇöÇÑ´Ù.
+ *  ST_RECTANGLEì€ ë‘ ì (ì¢Œí•˜ë‹¨, ìš°ìƒë‹¨)ìœ¼ë¡œ ì´ë£¨ì–´ì§€ëŠ” ì§ì‚¬ê°í˜•ì„ í‘œí˜„í•œë‹¤.
  *  RECTANGLE(x1 y1, x2 y2) -> POLYGON((x1 y1, x2 y1, x2 y2, x1 y2, x1 y1))
  *
- *  UChar             ** aPtr(InOut)   : ÀĞ¾îµéÀÏ ¹®ÀÚ¿­ À§Ä¡, ÀĞÀº ´ÙÀ½ ±×¸¸Å­ Áõ°¡ÇÑ´Ù.
- *  UChar              * aWKTFence(In) : ¹®ÀÚ¿­ ¹öÆÛÀÇ Fence
- *  stdGeometryHeader  * aGeom(Out)    : ÀúÀåµÉ ¹öÆÛ(Geometry °´Ã¼)
- *  void               * aFence(In)    : ÀúÀåµÉ ¹öÆÛ(Geometry °´Ã¼)ÀÇ Fence
+ *  UChar             ** aPtr(InOut)   : ì½ì–´ë“¤ì¼ ë¬¸ìì—´ ìœ„ì¹˜, ì½ì€ ë‹¤ìŒ ê·¸ë§Œí¼ ì¦ê°€í•œë‹¤.
+ *  UChar              * aWKTFence(In) : ë¬¸ìì—´ ë²„í¼ì˜ Fence
+ *  stdGeometryHeader  * aGeom(Out)    : ì €ì¥ë  ë²„í¼(Geometry ê°ì²´)
+ *  void               * aFence(In)    : ì €ì¥ë  ë²„í¼(Geometry ê°ì²´)ì˜ Fence
  *  IDE_RC             * aResult(Out)  : Error Code
  **********************************************************************/
 IDE_RC stdParsing::getRectangle( iduMemory          * aQmxMem,
@@ -1282,15 +1282,15 @@ IDE_RC stdParsing::getRectangle( iduMemory          * aQmxMem,
 
 /***********************************************************************
  * Description:
- * WKT(Well Known Text)¸¦ ÀĞ¾îµé¿© 
- * stdMultiPoint2DTypeÀÌ³ª stdMultiPoint3DType °´Ã¼·Î ÀúÀåÇÑ´Ù.
- * 3Â÷¿ø ÁÂÇ¥°¡ µé¾îÀÖÀ¸¸é 3Â÷¿øÀ¸·Î °£ÁÖÇÏ¸ç, 2Â÷¿ø 3Â÷¿ø °ªÀ» È¥ÇÕ ÀÔ·ÂÇÏ´Â °ÍÀ» 
- * Çã¿ëÇÏÁö ¾Ê´Â´Ù.
+ * WKT(Well Known Text)ë¥¼ ì½ì–´ë“¤ì—¬ 
+ * stdMultiPoint2DTypeì´ë‚˜ stdMultiPoint3DType ê°ì²´ë¡œ ì €ì¥í•œë‹¤.
+ * 3ì°¨ì› ì¢Œí‘œê°€ ë“¤ì–´ìˆìœ¼ë©´ 3ì°¨ì›ìœ¼ë¡œ ê°„ì£¼í•˜ë©°, 2ì°¨ì› 3ì°¨ì› ê°’ì„ í˜¼í•© ì…ë ¥í•˜ëŠ” ê²ƒì„ 
+ * í—ˆìš©í•˜ì§€ ì•ŠëŠ”ë‹¤.
  *
- * UChar **aPtr(InOut): ÀĞ¾îµéÀÏ ¹®ÀÚ¿­ À§Ä¡, ÀĞÀº ´ÙÀ½ ±× ¸¸Å­ Áõ°¡ÇÑ´Ù.
- * UChar *aWKTFence(In): ¹®ÀÚ¿­ ¹öÆÛÀÇ Fence
- * stdGeometryHeader* aGeom(Out): ÀúÀåµÉ ¹öÆÛ(Geometry °´Ã¼)
- * void* aFence(In): ÀúÀåµÉ ¹öÆÛ(Geometry °´Ã¼)ÀÇ Fence
+ * UChar **aPtr(InOut): ì½ì–´ë“¤ì¼ ë¬¸ìì—´ ìœ„ì¹˜, ì½ì€ ë‹¤ìŒ ê·¸ ë§Œí¼ ì¦ê°€í•œë‹¤.
+ * UChar *aWKTFence(In): ë¬¸ìì—´ ë²„í¼ì˜ Fence
+ * stdGeometryHeader* aGeom(Out): ì €ì¥ë  ë²„í¼(Geometry ê°ì²´)
+ * void* aFence(In): ì €ì¥ë  ë²„í¼(Geometry ê°ì²´)ì˜ Fence
  * IDE_RC* aResult(Out): Error Code
  **********************************************************************/
 IDE_RC stdParsing::getMultiPoint(
@@ -1344,7 +1344,7 @@ IDE_RC stdParsing::getMultiPoint(
                 {
                     // bugbug praring error
                 }
-                // To Fix BUG-15954 : MultiPoint¿¡¼­ 2D Point°¡ ÇÏ³ªÀÏ ¶§ Ã³¸®
+                // To Fix BUG-15954 : MultiPointì—ì„œ 2D Pointê°€ í•˜ë‚˜ì¼ ë•Œ ì²˜ë¦¬
                 else if( sTokenType == STT_RPAREN_TOKEN )
                 {
                     sCurrentType = STD_MULTIPOINT_2D_TYPE;
@@ -1486,15 +1486,15 @@ IDE_RC stdParsing::getMultiPoint(
 
 /***********************************************************************
  * Description:
- * WKT(Well Known Text)¸¦ ÀĞ¾îµé¿© 
- * stdMultiLineString2DTypeÀÌ³ª stdMultiLineString3DType °´Ã¼·Î ÀúÀåÇÑ´Ù.
- * 3Â÷¿ø ÁÂÇ¥°¡ µé¾îÀÖÀ¸¸é 3Â÷¿øÀ¸·Î °£ÁÖÇÏ¸ç, 2Â÷¿ø 3Â÷¿ø °ªÀ» È¥ÇÕ ÀÔ·ÂÇÏ´Â °ÍÀ» 
- * Çã¿ëÇÏÁö ¾Ê´Â´Ù.
+ * WKT(Well Known Text)ë¥¼ ì½ì–´ë“¤ì—¬ 
+ * stdMultiLineString2DTypeì´ë‚˜ stdMultiLineString3DType ê°ì²´ë¡œ ì €ì¥í•œë‹¤.
+ * 3ì°¨ì› ì¢Œí‘œê°€ ë“¤ì–´ìˆìœ¼ë©´ 3ì°¨ì›ìœ¼ë¡œ ê°„ì£¼í•˜ë©°, 2ì°¨ì› 3ì°¨ì› ê°’ì„ í˜¼í•© ì…ë ¥í•˜ëŠ” ê²ƒì„ 
+ * í—ˆìš©í•˜ì§€ ì•ŠëŠ”ë‹¤.
  *
- * UChar **aPtr(InOut): ÀĞ¾îµéÀÏ ¹®ÀÚ¿­ À§Ä¡, ÀĞÀº ´ÙÀ½ ±× ¸¸Å­ Áõ°¡ÇÑ´Ù.
- * UChar *aWKTFence(In): ¹®ÀÚ¿­ ¹öÆÛÀÇ Fence
- * stdGeometryHeader* aGeom(Out): ÀúÀåµÉ ¹öÆÛ(Geometry °´Ã¼)
- * void* aFence(In): ÀúÀåµÉ ¹öÆÛ(Geometry °´Ã¼)ÀÇ Fence
+ * UChar **aPtr(InOut): ì½ì–´ë“¤ì¼ ë¬¸ìì—´ ìœ„ì¹˜, ì½ì€ ë‹¤ìŒ ê·¸ ë§Œí¼ ì¦ê°€í•œë‹¤.
+ * UChar *aWKTFence(In): ë¬¸ìì—´ ë²„í¼ì˜ Fence
+ * stdGeometryHeader* aGeom(Out): ì €ì¥ë  ë²„í¼(Geometry ê°ì²´)
+ * void* aFence(In): ì €ì¥ë  ë²„í¼(Geometry ê°ì²´)ì˜ Fence
  * IDE_RC* aResult(Out): Error Code
  **********************************************************************/
 IDE_RC stdParsing::getMultiLineString(
@@ -1737,15 +1737,15 @@ IDE_RC stdParsing::getMultiLineString(
 
 /***********************************************************************
  * Description:
- * WKT(Well Known Text)¸¦ ÀĞ¾îµé¿© 
- * stdMultiPolygon2DTypeÀÌ³ª stdMultiPolygon3DType °´Ã¼·Î ÀúÀåÇÑ´Ù.
- * 3Â÷¿ø ÁÂÇ¥°¡ µé¾îÀÖÀ¸¸é 3Â÷¿øÀ¸·Î °£ÁÖÇÏ¸ç, 2Â÷¿ø 3Â÷¿ø °ªÀ» È¥ÇÕ ÀÔ·ÂÇÏ´Â °ÍÀ» 
- * Çã¿ëÇÏÁö ¾Ê´Â´Ù.
+ * WKT(Well Known Text)ë¥¼ ì½ì–´ë“¤ì—¬ 
+ * stdMultiPolygon2DTypeì´ë‚˜ stdMultiPolygon3DType ê°ì²´ë¡œ ì €ì¥í•œë‹¤.
+ * 3ì°¨ì› ì¢Œí‘œê°€ ë“¤ì–´ìˆìœ¼ë©´ 3ì°¨ì›ìœ¼ë¡œ ê°„ì£¼í•˜ë©°, 2ì°¨ì› 3ì°¨ì› ê°’ì„ í˜¼í•© ì…ë ¥í•˜ëŠ” ê²ƒì„ 
+ * í—ˆìš©í•˜ì§€ ì•ŠëŠ”ë‹¤.
  *
- * UChar **aPtr(InOut): ÀĞ¾îµéÀÏ ¹®ÀÚ¿­ À§Ä¡, ÀĞÀº ´ÙÀ½ ±× ¸¸Å­ Áõ°¡ÇÑ´Ù.
- * UChar *aWKTFence(In): ¹®ÀÚ¿­ ¹öÆÛÀÇ Fence
- * stdGeometryHeader* aGeom(Out): ÀúÀåµÉ ¹öÆÛ(Geometry °´Ã¼)
- * void* aFence(In): ÀúÀåµÉ ¹öÆÛ(Geometry °´Ã¼)ÀÇ Fence
+ * UChar **aPtr(InOut): ì½ì–´ë“¤ì¼ ë¬¸ìì—´ ìœ„ì¹˜, ì½ì€ ë‹¤ìŒ ê·¸ ë§Œí¼ ì¦ê°€í•œë‹¤.
+ * UChar *aWKTFence(In): ë¬¸ìì—´ ë²„í¼ì˜ Fence
+ * stdGeometryHeader* aGeom(Out): ì €ì¥ë  ë²„í¼(Geometry ê°ì²´)
+ * void* aFence(In): ì €ì¥ë  ë²„í¼(Geometry ê°ì²´)ì˜ Fence
  * IDE_RC* aResult(Out): Error Code
  **********************************************************************/
 IDE_RC stdParsing::getMultiPolygon(
@@ -2067,15 +2067,15 @@ IDE_RC stdParsing::getMultiPolygon(
 
 /***********************************************************************
  * Description:
- * WKT(Well Known Text)¸¦ ÀĞ¾îµé¿© 
- * stdGeoCollection2DTypeÀÌ³ª stdGeoCollection3DType °´Ã¼·Î ÀúÀåÇÑ´Ù.
- * 3Â÷¿ø ÁÂÇ¥°¡ µé¾îÀÖÀ¸¸é 3Â÷¿øÀ¸·Î °£ÁÖÇÏ¸ç, 2Â÷¿ø 3Â÷¿ø °ªÀ» È¥ÇÕ ÀÔ·ÂÇÏ´Â °ÍÀ» 
- * Çã¿ëÇÏÁö ¾Ê´Â´Ù.
+ * WKT(Well Known Text)ë¥¼ ì½ì–´ë“¤ì—¬ 
+ * stdGeoCollection2DTypeì´ë‚˜ stdGeoCollection3DType ê°ì²´ë¡œ ì €ì¥í•œë‹¤.
+ * 3ì°¨ì› ì¢Œí‘œê°€ ë“¤ì–´ìˆìœ¼ë©´ 3ì°¨ì›ìœ¼ë¡œ ê°„ì£¼í•˜ë©°, 2ì°¨ì› 3ì°¨ì› ê°’ì„ í˜¼í•© ì…ë ¥í•˜ëŠ” ê²ƒì„ 
+ * í—ˆìš©í•˜ì§€ ì•ŠëŠ”ë‹¤.
  *
- * UChar **aPtr(InOut): ÀĞ¾îµéÀÏ ¹®ÀÚ¿­ À§Ä¡, ÀĞÀº ´ÙÀ½ ±× ¸¸Å­ Áõ°¡ÇÑ´Ù.
- * UChar *aWKTFence(In): ¹®ÀÚ¿­ ¹öÆÛÀÇ Fence
- * stdGeometryHeader* aGeom(Out): ÀúÀåµÉ ¹öÆÛ(Geometry °´Ã¼)
- * void* aFence(In): ÀúÀåµÉ ¹öÆÛ(Geometry °´Ã¼)ÀÇ Fence
+ * UChar **aPtr(InOut): ì½ì–´ë“¤ì¼ ë¬¸ìì—´ ìœ„ì¹˜, ì½ì€ ë‹¤ìŒ ê·¸ ë§Œí¼ ì¦ê°€í•œë‹¤.
+ * UChar *aWKTFence(In): ë¬¸ìì—´ ë²„í¼ì˜ Fence
+ * stdGeometryHeader* aGeom(Out): ì €ì¥ë  ë²„í¼(Geometry ê°ì²´)
+ * void* aFence(In): ì €ì¥ë  ë²„í¼(Geometry ê°ì²´)ì˜ Fence
  * IDE_RC* aResult(Out): Error Code
  **********************************************************************/
 IDE_RC stdParsing::getGeoCollection(
@@ -2090,7 +2090,7 @@ IDE_RC stdParsing::getGeoCollection(
     // 1.
     UChar*             sPtr = *aPtr;
     UChar*             sSubWKTFence;
-    stdGeometryHeader* sCurrObj = (stdGeometryHeader*)STD_FIRST_COLL2D(aGeom); // 2D 3D Å©±â °°´Ù.
+    stdGeometryHeader* sCurrObj = (stdGeometryHeader*)STD_FIRST_COLL2D(aGeom); // 2D 3D í¬ê¸° ê°™ë‹¤.
     UInt               sObjectCnt = 0;
     UInt               sTotalSize = 0;
     stdGeoTypes        sCurrentType = STD_NULL_TYPE;
@@ -2321,15 +2321,15 @@ IDE_RC stdParsing::getGeoCollection(
 /***********************************************************************
  * Description:
  * BUG-32531 Consider for GIS EMPTY
- * WKT(Well Known Text)¸¦ ÀĞ¾îµé¿©
- * stdMultiPoint2DTypeÀÌ³ª stdMultiPoint3DType °´Ã¼·Î ÀúÀåÇÑ´Ù.
- * 3Â÷¿ø ÁÂÇ¥°¡ µé¾îÀÖÀ¸¸é 3Â÷¿øÀ¸·Î °£ÁÖÇÏ¸ç, 2Â÷¿ø 3Â÷¿ø °ªÀ» È¥ÇÕ ÀÔ·ÂÇÏ´Â °ÍÀ»
- * Çã¿ëÇÏÁö ¾Ê´Â´Ù.
+ * WKT(Well Known Text)ë¥¼ ì½ì–´ë“¤ì—¬
+ * stdMultiPoint2DTypeì´ë‚˜ stdMultiPoint3DType ê°ì²´ë¡œ ì €ì¥í•œë‹¤.
+ * 3ì°¨ì› ì¢Œí‘œê°€ ë“¤ì–´ìˆìœ¼ë©´ 3ì°¨ì›ìœ¼ë¡œ ê°„ì£¼í•˜ë©°, 2ì°¨ì› 3ì°¨ì› ê°’ì„ í˜¼í•© ì…ë ¥í•˜ëŠ” ê²ƒì„
+ * í—ˆìš©í•˜ì§€ ì•ŠëŠ”ë‹¤.
  *
- * UChar **aPtr(InOut): ÀĞ¾îµéÀÏ ¹®ÀÚ¿­ À§Ä¡, ÀĞÀº ´ÙÀ½ ±× ¸¸Å­ Áõ°¡ÇÑ´Ù.
- * UChar *aWKTFence(In): ¹®ÀÚ¿­ ¹öÆÛÀÇ Fence
- * stdGeometryHeader* aGeom(Out): ÀúÀåµÉ ¹öÆÛ(Geometry °´Ã¼)
- * void* aFence(In): ÀúÀåµÉ ¹öÆÛ(Geometry °´Ã¼)ÀÇ Fence
+ * UChar **aPtr(InOut): ì½ì–´ë“¤ì¼ ë¬¸ìì—´ ìœ„ì¹˜, ì½ì€ ë‹¤ìŒ ê·¸ ë§Œí¼ ì¦ê°€í•œë‹¤.
+ * UChar *aWKTFence(In): ë¬¸ìì—´ ë²„í¼ì˜ Fence
+ * stdGeometryHeader* aGeom(Out): ì €ì¥ë  ë²„í¼(Geometry ê°ì²´)
+ * void* aFence(In): ì €ì¥ë  ë²„í¼(Geometry ê°ì²´)ì˜ Fence
  * IDE_RC* aResult(Out): Error Code
  **********************************************************************/
 IDE_RC stdParsing::getEmpty( stdGeometryHeader* aGeom,
@@ -2364,7 +2364,7 @@ IDE_RC stdParsing::getEmpty( stdGeometryHeader* aGeom,
 }
 
 
-// WKB ÇÔ¼ö ////////////////////////////////////////////////////////////////////
+// WKB í•¨ìˆ˜ ////////////////////////////////////////////////////////////////////
 
 UChar *stdParsing::readWKB_Char( UChar *aBuf, UChar *aVal, UInt *aOffset )
 {
@@ -2467,13 +2467,13 @@ UChar *stdParsing::readWKB_Point( UChar *aBuf, stdPoint2D *aPoint, UInt *aOffset
 
 /***********************************************************************
  * Description:
- * WKB(Well Known Binary)¸¦ ÀĞ¾îµé¿© stdPoint2DType °´Ã¼·Î ÀúÀåÇÑ´Ù.
- * WKB¿¡´Â 3Â÷¿ø µ¥ÀÌÅÍ°¡ Á¸ÀçÇÏÁö ¾Ê´Â´Ù.
+ * WKB(Well Known Binary)ë¥¼ ì½ì–´ë“¤ì—¬ stdPoint2DType ê°ì²´ë¡œ ì €ì¥í•œë‹¤.
+ * WKBì—ëŠ” 3ì°¨ì› ë°ì´í„°ê°€ ì¡´ì¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
  *
- * UChar **aPtr(InOut): ÀĞ¾îµéÀÏ WKB ¹öÆÛ À§Ä¡, ÀĞÀº ´ÙÀ½ ±× ¸¸Å­ Áõ°¡ÇÑ´Ù.
- * UChar *aWKTFence(In): WKB ¹öÆÛÀÇ Fence
- * stdGeometryHeader* aGeom(Out): ÀúÀåµÉ ¹öÆÛ(Geometry °´Ã¼)
- * void* aFence(In): ÀúÀåµÉ ¹öÆÛ(Geometry °´Ã¼)ÀÇ Fence
+ * UChar **aPtr(InOut): ì½ì–´ë“¤ì¼ WKB ë²„í¼ ìœ„ì¹˜, ì½ì€ ë‹¤ìŒ ê·¸ ë§Œí¼ ì¦ê°€í•œë‹¤.
+ * UChar *aWKTFence(In): WKB ë²„í¼ì˜ Fence
+ * stdGeometryHeader* aGeom(Out): ì €ì¥ë  ë²„í¼(Geometry ê°ì²´)
+ * void* aFence(In): ì €ì¥ë  ë²„í¼(Geometry ê°ì²´)ì˜ Fence
  * IDE_RC* aResult(Out): Error Code
  **********************************************************************/
 IDE_RC stdParsing::getWKBPoint(
@@ -2539,13 +2539,13 @@ IDE_RC stdParsing::getWKBPoint(
 
 /***********************************************************************
  * Description:
- * WKB(Well Known Binary)¸¦ ÀĞ¾îµé¿© stdLineString2DType °´Ã¼·Î ÀúÀåÇÑ´Ù.
- * WKB¿¡´Â 3Â÷¿ø µ¥ÀÌÅÍ°¡ Á¸ÀçÇÏÁö ¾Ê´Â´Ù.
+ * WKB(Well Known Binary)ë¥¼ ì½ì–´ë“¤ì—¬ stdLineString2DType ê°ì²´ë¡œ ì €ì¥í•œë‹¤.
+ * WKBì—ëŠ” 3ì°¨ì› ë°ì´í„°ê°€ ì¡´ì¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
  *
- * UChar **aPtr(InOut): ÀĞ¾îµéÀÏ WKB ¹öÆÛ À§Ä¡, ÀĞÀº ´ÙÀ½ ±× ¸¸Å­ Áõ°¡ÇÑ´Ù.
- * UChar *aWKTFence(In): WKB ¹öÆÛÀÇ Fence
- * stdGeometryHeader* aGeom(Out): ÀúÀåµÉ ¹öÆÛ(Geometry °´Ã¼)
- * void* aFence(In): ÀúÀåµÉ ¹öÆÛ(Geometry °´Ã¼)ÀÇ Fence
+ * UChar **aPtr(InOut): ì½ì–´ë“¤ì¼ WKB ë²„í¼ ìœ„ì¹˜, ì½ì€ ë‹¤ìŒ ê·¸ ë§Œí¼ ì¦ê°€í•œë‹¤.
+ * UChar *aWKTFence(In): WKB ë²„í¼ì˜ Fence
+ * stdGeometryHeader* aGeom(Out): ì €ì¥ë  ë²„í¼(Geometry ê°ì²´)
+ * void* aFence(In): ì €ì¥ë  ë²„í¼(Geometry ê°ì²´)ì˜ Fence
  * IDE_RC* aResult(Out): Error Code
  **********************************************************************/
 IDE_RC stdParsing::getWKBLineString(
@@ -2643,13 +2643,13 @@ IDE_RC stdParsing::getWKBLineString(
 
 /***********************************************************************
  * Description:
- * WKB(Well Known Binary)¸¦ ÀĞ¾îµé¿© stdPolygon2DType °´Ã¼·Î ÀúÀåÇÑ´Ù.
- * WKB¿¡´Â 3Â÷¿ø µ¥ÀÌÅÍ°¡ Á¸ÀçÇÏÁö ¾Ê´Â´Ù.
+ * WKB(Well Known Binary)ë¥¼ ì½ì–´ë“¤ì—¬ stdPolygon2DType ê°ì²´ë¡œ ì €ì¥í•œë‹¤.
+ * WKBì—ëŠ” 3ì°¨ì› ë°ì´í„°ê°€ ì¡´ì¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
  *
- * UChar **aPtr(InOut): ÀĞ¾îµéÀÏ WKB ¹öÆÛ À§Ä¡, ÀĞÀº ´ÙÀ½ ±× ¸¸Å­ Áõ°¡ÇÑ´Ù.
- * UChar *aWKTFence(In): WKB ¹öÆÛÀÇ Fence
- * stdGeometryHeader* aGeom(Out): ÀúÀåµÉ ¹öÆÛ(Geometry °´Ã¼)
- * void* aFence(In): ÀúÀåµÉ ¹öÆÛ(Geometry °´Ã¼)ÀÇ Fence
+ * UChar **aPtr(InOut): ì½ì–´ë“¤ì¼ WKB ë²„í¼ ìœ„ì¹˜, ì½ì€ ë‹¤ìŒ ê·¸ ë§Œí¼ ì¦ê°€í•œë‹¤.
+ * UChar *aWKTFence(In): WKB ë²„í¼ì˜ Fence
+ * stdGeometryHeader* aGeom(Out): ì €ì¥ë  ë²„í¼(Geometry ê°ì²´)
+ * void* aFence(In): ì €ì¥ë  ë²„í¼(Geometry ê°ì²´)ì˜ Fence
  * IDE_RC* aResult(Out): Error Code
  **********************************************************************/
 IDE_RC stdParsing::getWKBPolygon(
@@ -2813,16 +2813,16 @@ IDE_RC stdParsing::getWKBPolygon(
 
 /***********************************************************************
  * Description:
- *  WKB(Well Known Binary)¸¦ ÀĞ¾îµé¿© stdPolygon2DType °´Ã¼·Î ÀúÀåÇÑ´Ù.
- *  WKB¿¡´Â 3Â÷¿ø µ¥ÀÌÅÍ°¡ Á¸ÀçÇÏÁö ¾Ê´Â´Ù.
+ *  WKB(Well Known Binary)ë¥¼ ì½ì–´ë“¤ì—¬ stdPolygon2DType ê°ì²´ë¡œ ì €ì¥í•œë‹¤.
+ *  WKBì—ëŠ” 3ì°¨ì› ë°ì´í„°ê°€ ì¡´ì¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
  *
- *  ST_RECTANGLEÀº µÎ Á¡(ÁÂÇÏ´Ü, ¿ì»ó´Ü)À¸·Î ÀÌ·ç¾îÁö´Â Á÷»ç°¢ÇüÀ» Ç¥ÇöÇÑ´Ù.
+ *  ST_RECTANGLEì€ ë‘ ì (ì¢Œí•˜ë‹¨, ìš°ìƒë‹¨)ìœ¼ë¡œ ì´ë£¨ì–´ì§€ëŠ” ì§ì‚¬ê°í˜•ì„ í‘œí˜„í•œë‹¤.
  *  RECTANGLE(x1 y1, x2 y2) -> POLYGON((x1 y1, x2 y1, x2 y2, x1 y2, x1 y1))
  *
- *  UChar             ** aPtr(InOut)   : ÀĞ¾îµéÀÏ WKB ¹öÆÛ À§Ä¡, ÀĞÀº ´ÙÀ½ ±×¸¸Å­ Áõ°¡ÇÑ´Ù.
- *  UChar              * aWKTFence(In) : WKB ¹öÆÛÀÇ Fence
- *  stdGeometryHeader  * aGeom(Out)    : ÀúÀåµÉ ¹öÆÛ(Geometry °´Ã¼)
- *  void               * aFence(In)    : ÀúÀåµÉ ¹öÆÛ(Geometry °´Ã¼)ÀÇ Fence
+ *  UChar             ** aPtr(InOut)   : ì½ì–´ë“¤ì¼ WKB ë²„í¼ ìœ„ì¹˜, ì½ì€ ë‹¤ìŒ ê·¸ë§Œí¼ ì¦ê°€í•œë‹¤.
+ *  UChar              * aWKTFence(In) : WKB ë²„í¼ì˜ Fence
+ *  stdGeometryHeader  * aGeom(Out)    : ì €ì¥ë  ë²„í¼(Geometry ê°ì²´)
+ *  void               * aFence(In)    : ì €ì¥ë  ë²„í¼(Geometry ê°ì²´)ì˜ Fence
  *  IDE_RC             * aResult(Out)  : Error Code
  **********************************************************************/
 IDE_RC stdParsing::getWKBRectangle( UChar             ** aPtr,
@@ -2938,13 +2938,13 @@ IDE_RC stdParsing::getWKBRectangle( UChar             ** aPtr,
 
 /***********************************************************************
  * Description:
- * WKB(Well Known Binary)¸¦ ÀĞ¾îµé¿© stdMultiPoint2DType °´Ã¼·Î ÀúÀåÇÑ´Ù.
- * WKB¿¡´Â 3Â÷¿ø µ¥ÀÌÅÍ°¡ Á¸ÀçÇÏÁö ¾Ê´Â´Ù.
+ * WKB(Well Known Binary)ë¥¼ ì½ì–´ë“¤ì—¬ stdMultiPoint2DType ê°ì²´ë¡œ ì €ì¥í•œë‹¤.
+ * WKBì—ëŠ” 3ì°¨ì› ë°ì´í„°ê°€ ì¡´ì¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
  *
- * UChar **aPtr(InOut): ÀĞ¾îµéÀÏ WKB ¹öÆÛ À§Ä¡, ÀĞÀº ´ÙÀ½ ±× ¸¸Å­ Áõ°¡ÇÑ´Ù.
- * UChar *aWKTFence(In): WKB ¹öÆÛÀÇ Fence
- * stdGeometryHeader* aGeom(Out): ÀúÀåµÉ ¹öÆÛ(Geometry °´Ã¼)
- * void* aFence(In): ÀúÀåµÉ ¹öÆÛ(Geometry °´Ã¼)ÀÇ Fence
+ * UChar **aPtr(InOut): ì½ì–´ë“¤ì¼ WKB ë²„í¼ ìœ„ì¹˜, ì½ì€ ë‹¤ìŒ ê·¸ ë§Œí¼ ì¦ê°€í•œë‹¤.
+ * UChar *aWKTFence(In): WKB ë²„í¼ì˜ Fence
+ * stdGeometryHeader* aGeom(Out): ì €ì¥ë  ë²„í¼(Geometry ê°ì²´)
+ * void* aFence(In): ì €ì¥ë  ë²„í¼(Geometry ê°ì²´)ì˜ Fence
  * IDE_RC* aResult(Out): Error Code
  **********************************************************************/
 IDE_RC stdParsing::getWKBMultiPoint(
@@ -3051,13 +3051,13 @@ IDE_RC stdParsing::getWKBMultiPoint(
 
 /***********************************************************************
  * Description:
- * WKB(Well Known Binary)¸¦ ÀĞ¾îµé¿© stdMultiLineString2DType °´Ã¼·Î ÀúÀåÇÑ´Ù.
- * WKB¿¡´Â 3Â÷¿ø µ¥ÀÌÅÍ°¡ Á¸ÀçÇÏÁö ¾Ê´Â´Ù.
+ * WKB(Well Known Binary)ë¥¼ ì½ì–´ë“¤ì—¬ stdMultiLineString2DType ê°ì²´ë¡œ ì €ì¥í•œë‹¤.
+ * WKBì—ëŠ” 3ì°¨ì› ë°ì´í„°ê°€ ì¡´ì¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
  *
- * UChar **aPtr(InOut): ÀĞ¾îµéÀÏ WKB ¹öÆÛ À§Ä¡, ÀĞÀº ´ÙÀ½ ±× ¸¸Å­ Áõ°¡ÇÑ´Ù.
- * UChar *aWKTFence(In): WKB ¹öÆÛÀÇ Fence
- * stdGeometryHeader* aGeom(Out): ÀúÀåµÉ ¹öÆÛ(Geometry °´Ã¼)
- * void* aFence(In): ÀúÀåµÉ ¹öÆÛ(Geometry °´Ã¼)ÀÇ Fence
+ * UChar **aPtr(InOut): ì½ì–´ë“¤ì¼ WKB ë²„í¼ ìœ„ì¹˜, ì½ì€ ë‹¤ìŒ ê·¸ ë§Œí¼ ì¦ê°€í•œë‹¤.
+ * UChar *aWKTFence(In): WKB ë²„í¼ì˜ Fence
+ * stdGeometryHeader* aGeom(Out): ì €ì¥ë  ë²„í¼(Geometry ê°ì²´)
+ * void* aFence(In): ì €ì¥ë  ë²„í¼(Geometry ê°ì²´)ì˜ Fence
  * IDE_RC* aResult(Out): Error Code
  **********************************************************************/
 IDE_RC stdParsing::getWKBMultiLineString(
@@ -3160,13 +3160,13 @@ IDE_RC stdParsing::getWKBMultiLineString(
 
 /***********************************************************************
  * Description:
- * WKB(Well Known Binary)¸¦ ÀĞ¾îµé¿© stdMultiPolygon2DType °´Ã¼·Î ÀúÀåÇÑ´Ù.
- * WKB¿¡´Â 3Â÷¿ø µ¥ÀÌÅÍ°¡ Á¸ÀçÇÏÁö ¾Ê´Â´Ù.
+ * WKB(Well Known Binary)ë¥¼ ì½ì–´ë“¤ì—¬ stdMultiPolygon2DType ê°ì²´ë¡œ ì €ì¥í•œë‹¤.
+ * WKBì—ëŠ” 3ì°¨ì› ë°ì´í„°ê°€ ì¡´ì¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
  *
- * UChar **aPtr(InOut): ÀĞ¾îµéÀÏ WKB ¹öÆÛ À§Ä¡, ÀĞÀº ´ÙÀ½ ±× ¸¸Å­ Áõ°¡ÇÑ´Ù.
- * UChar *aWKTFence(In): WKB ¹öÆÛÀÇ Fence
- * stdGeometryHeader* aGeom(Out): ÀúÀåµÉ ¹öÆÛ(Geometry °´Ã¼)
- * void* aFence(In): ÀúÀåµÉ ¹öÆÛ(Geometry °´Ã¼)ÀÇ Fence
+ * UChar **aPtr(InOut): ì½ì–´ë“¤ì¼ WKB ë²„í¼ ìœ„ì¹˜, ì½ì€ ë‹¤ìŒ ê·¸ ë§Œí¼ ì¦ê°€í•œë‹¤.
+ * UChar *aWKTFence(In): WKB ë²„í¼ì˜ Fence
+ * stdGeometryHeader* aGeom(Out): ì €ì¥ë  ë²„í¼(Geometry ê°ì²´)
+ * void* aFence(In): ì €ì¥ë  ë²„í¼(Geometry ê°ì²´)ì˜ Fence
  * IDE_RC* aResult(Out): Error Code
  **********************************************************************/
 IDE_RC stdParsing::getWKBMultiPolygon(
@@ -3271,13 +3271,13 @@ IDE_RC stdParsing::getWKBMultiPolygon(
 
 /***********************************************************************
  * Description:
- * WKB(Well Known Binary)¸¦ ÀĞ¾îµé¿© stdGeoCollection2DType °´Ã¼·Î ÀúÀåÇÑ´Ù.
- * WKB¿¡´Â 3Â÷¿ø µ¥ÀÌÅÍ°¡ Á¸ÀçÇÏÁö ¾Ê´Â´Ù.
+ * WKB(Well Known Binary)ë¥¼ ì½ì–´ë“¤ì—¬ stdGeoCollection2DType ê°ì²´ë¡œ ì €ì¥í•œë‹¤.
+ * WKBì—ëŠ” 3ì°¨ì› ë°ì´í„°ê°€ ì¡´ì¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
  *
- * UChar **aPtr(InOut): ÀĞ¾îµéÀÏ WKB ¹öÆÛ À§Ä¡, ÀĞÀº ´ÙÀ½ ±× ¸¸Å­ Áõ°¡ÇÑ´Ù.
- * UChar *aWKTFence(In): WKB ¹öÆÛÀÇ Fence
- * stdGeometryHeader* aGeom(Out): ÀúÀåµÉ ¹öÆÛ(Geometry °´Ã¼)
- * void* aFence(In): ÀúÀåµÉ ¹öÆÛ(Geometry °´Ã¼)ÀÇ Fence
+ * UChar **aPtr(InOut): ì½ì–´ë“¤ì¼ WKB ë²„í¼ ìœ„ì¹˜, ì½ì€ ë‹¤ìŒ ê·¸ ë§Œí¼ ì¦ê°€í•œë‹¤.
+ * UChar *aWKTFence(In): WKB ë²„í¼ì˜ Fence
+ * stdGeometryHeader* aGeom(Out): ì €ì¥ë  ë²„í¼(Geometry ê°ì²´)
+ * void* aFence(In): ì €ì¥ë  ë²„í¼(Geometry ê°ì²´)ì˜ Fence
  * IDE_RC* aResult(Out): Error Code
  **********************************************************************/
 IDE_RC stdParsing::getWKBGeoCollection(
@@ -3397,14 +3397,14 @@ IDE_RC stdParsing::getWKBGeoCollection(
 
 /***********************************************************************
  * Description :
- * WKT(Well Known Text)¸¦ ÀĞ¾îµé¿© Geometry °´Ã¼¸¦ »ı¼ºÇÏ´Â Core ÇÔ¼ö.
- * 3Â÷¿ø ÁÂÇ¥°¡ µé¾îÀÖÀ¸¸é 3Â÷¿øÀ¸·Î °£ÁÖÇÏ¸ç, 2Â÷¿ø 3Â÷¿ø °ªÀ» È¥ÇÕ ÀÔ·ÂÇÏ´Â °ÍÀ» 
- * Çã¿ëÇÏÁö ¾Ê´Â´Ù.
+ * WKT(Well Known Text)ë¥¼ ì½ì–´ë“¤ì—¬ Geometry ê°ì²´ë¥¼ ìƒì„±í•˜ëŠ” Core í•¨ìˆ˜.
+ * 3ì°¨ì› ì¢Œí‘œê°€ ë“¤ì–´ìˆìœ¼ë©´ 3ì°¨ì›ìœ¼ë¡œ ê°„ì£¼í•˜ë©°, 2ì°¨ì› 3ì°¨ì› ê°’ì„ í˜¼í•© ì…ë ¥í•˜ëŠ” ê²ƒì„ 
+ * í—ˆìš©í•˜ì§€ ì•ŠëŠ”ë‹¤.
  *
- * UChar **aPtr(In): ÀĞ¾îµéÀÏ ¹®ÀÚ¿­ À§Ä¡
- * UInt aWKTLength(In): ¹®ÀÚ¿­ ¹öÆÛÀÇ ±æÀÌ
- * void* aBuf(Out): ÀúÀåµÉ ¹öÆÛ(Geometry °´Ã¼)
- * void* aFence(In): ÀúÀåµÉ ¹öÆÛ(Geometry °´Ã¼)ÀÇ Fence
+ * UChar **aPtr(In): ì½ì–´ë“¤ì¼ ë¬¸ìì—´ ìœ„ì¹˜
+ * UInt aWKTLength(In): ë¬¸ìì—´ ë²„í¼ì˜ ê¸¸ì´
+ * void* aBuf(Out): ì €ì¥ë  ë²„í¼(Geometry ê°ì²´)
+ * void* aFence(In): ì €ì¥ë  ë²„í¼(Geometry ê°ì²´)ì˜ Fence
  * IDE_RC* aResult(Out): Error Code
  **********************************************************************/
 IDE_RC stdParsing::stdValue( iduMemory*   aQmxMem,
@@ -3470,7 +3470,7 @@ IDE_RC stdParsing::stdValue( iduMemory*   aQmxMem,
             IDE_RAISE(err_parsing);
         }
         break;
-    case 'r' : /* BUG-44399 ST_RECTFROMTEXT(), ST_RECTFROMWKB()¸¦ Áö¿øÇØ¾ß ÇÕ´Ï´Ù. */
+    case 'r' : /* BUG-44399 ST_RECTFROMTEXT(), ST_RECTFROMWKB()ë¥¼ ì§€ì›í•´ì•¼ í•©ë‹ˆë‹¤. */
     case 'R' :
         if ( idlOS::strncasecmp( (SChar *)sPtr,
                                  STD_RECTANGLE_NAME,
@@ -3605,13 +3605,13 @@ IDE_RC stdParsing::stdValue( iduMemory*   aQmxMem,
 
 /***********************************************************************
  * Description :
- * WKB(Well Known Binary)¸¦ ÀĞ¾îµé¿© Geometry °´Ã¼¸¦ »ı¼ºÇÏ´Â Core ÇÔ¼ö.
- * WKB¿¡´Â 3Â÷¿ø µ¥ÀÌÅÍ°¡ Á¸ÀçÇÏÁö ¾Ê´Â´Ù.
+ * WKB(Well Known Binary)ë¥¼ ì½ì–´ë“¤ì—¬ Geometry ê°ì²´ë¥¼ ìƒì„±í•˜ëŠ” Core í•¨ìˆ˜.
+ * WKBì—ëŠ” 3ì°¨ì› ë°ì´í„°ê°€ ì¡´ì¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
  *
- * UChar  *aWKB(In): ÀĞ¾îµéÀÏ WKB ¹öÆÛ À§Ä¡
- * UInt    aWKBLength(In): WKB ¹öÆÛÀÇ ±æÀÌ
- * void   *aBuf(Out): ÀúÀåµÉ ¹öÆÛ(Geometry °´Ã¼)
- * void   *aFence(In): ÀúÀåµÉ ¹öÆÛ(Geometry °´Ã¼)ÀÇ Fence
+ * UChar  *aWKB(In): ì½ì–´ë“¤ì¼ WKB ë²„í¼ ìœ„ì¹˜
+ * UInt    aWKBLength(In): WKB ë²„í¼ì˜ ê¸¸ì´
+ * void   *aBuf(Out): ì €ì¥ë  ë²„í¼(Geometry ê°ì²´)
+ * void   *aFence(In): ì €ì¥ë  ë²„í¼(Geometry ê°ì²´)ì˜ Fence
  * IDE_RC *aResult(Out): Error Code
  **********************************************************************/
 IDE_RC stdParsing::stdBinValue( iduMemory*   aQmxMem,
@@ -3704,7 +3704,7 @@ IDE_RC stdParsing::stdBinValue( iduMemory*   aQmxMem,
                                 aResult) != IDE_SUCCESS, err_parsing);
             IDE_TEST_RAISE(*aResult != IDE_SUCCESS, retry_memory);    
             break;
-        case WKB_RECTANGLE_TYPE :   /* BUG-44399 ST_RECTFROMTEXT(), ST_RECTFROMWKB()¸¦ Áö¿øÇØ¾ß ÇÕ´Ï´Ù. */
+        case WKB_RECTANGLE_TYPE :   /* BUG-44399 ST_RECTFROMTEXT(), ST_RECTFROMWKB()ë¥¼ ì§€ì›í•´ì•¼ í•©ë‹ˆë‹¤. */
             IDE_TEST_RAISE( stdParsing::getWKBRectangle( &sPtr,
                                                          sWKBFence,
                                                          sGeom,
@@ -3769,8 +3769,8 @@ void stdParsing::setValidHeader( stdGeometryHeader * aGeom,
 {
     if (aValidateOption == STU_VALIDATION_ENABLE_FALSE)
     {
-        // validate disableÀÎ °æ¿ì validationÀÌ ¹«½ÃµÇ´Â °ÍµéÀÌ ¸¹¾Æ
-        // validÇÏ´Ù°í ÇÏ´õ¶óµµ unknownÀ¸·Î ±â·ÏÇÑ´Ù.
+        // validate disableì¸ ê²½ìš° validationì´ ë¬´ì‹œë˜ëŠ” ê²ƒë“¤ì´ ë§ì•„
+        // validí•˜ë‹¤ê³  í•˜ë”ë¼ë„ unknownìœ¼ë¡œ ê¸°ë¡í•œë‹¤.
         if (aIsValid == ID_TRUE)
         {
             aGeom->mIsValid = ST_UNKNOWN;

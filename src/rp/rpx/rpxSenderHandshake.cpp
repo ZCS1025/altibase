@@ -105,14 +105,14 @@ rpxSender::attemptHandshake(idBool *aHandshakeFlag)
 
                 IDE_TEST( ( mTryHandshakeOnce == ID_TRUE ) &&
                           ( sHostNum == sOldHostNum ) );
-                /* ³×Æ®¿öÅ© Àå¾Ö ¹ß»ı ÈÄ ÀçÁ¢¼Ó ÇÏ¿´´Âµ¥µµ Á¢¼ÓÀÌ ¾ÈµÇ´Â °æ¿ì¿¡´Â
-                 * ½ÇÁ¦ Àå¾Ö »óÈ²À¸·Î ÆÇ´ÜÇÔ 
+                /* ë„¤íŠ¸ì›Œí¬ ì¥ì•  ë°œìƒ í›„ ì¬ì ‘ì† í•˜ì˜€ëŠ”ë°ë„ ì ‘ì†ì´ ì•ˆë˜ëŠ” ê²½ìš°ì—ëŠ”
+                 * ì‹¤ì œ ì¥ì•  ìƒí™©ìœ¼ë¡œ íŒë‹¨í•¨ 
                  */
                 if( ( mIsRemoteFaultDetect == ID_TRUE ) && 
                     ( rpcManager::isStartupFailback() != ID_TRUE ) &&
-                    ( isParallelChild() != ID_TRUE ) ) /*ÀÇ¹Ì¸¦ ¸íÈ®È÷ ÇÏ±â À§ÇØ ³²°ÜµÒ*/ 
+                    ( isParallelChild() != ID_TRUE ) ) /*ì˜ë¯¸ë¥¼ ëª…í™•íˆ í•˜ê¸° ìœ„í•´ ë‚¨ê²¨ë‘ */ 
                 {
-                    // REMOTE_FAULT_DETECT_TIME ÄÃ·³À» ÇöÀç ½Ã°£À¸·Î °»½ÅÇÑ´Ù.
+                    // REMOTE_FAULT_DETECT_TIME ì»¬ëŸ¼ì„ í˜„ì¬ ì‹œê°„ìœ¼ë¡œ ê°±ì‹ í•œë‹¤.
                     IDE_TEST( updateRemoteFaultDetectTime() != IDE_SUCCESS );
                 }
                 else
@@ -126,8 +126,8 @@ rpxSender::attemptHandshake(idBool *aHandshakeFlag)
                 break;
             }
         }
-        // Parallel ChildÀÇ Network Àå¾Ö ½Ã Exit Flag¸¦ ¼³Á¤ÇÏ±â À§ÇØ,
-        // checkInterrupt()¸¦ »ç¿ëÇØ¾ß ÇÑ´Ù.
+        // Parallel Childì˜ Network ì¥ì•  ì‹œ Exit Flagë¥¼ ì„¤ì •í•˜ê¸° ìœ„í•´,
+        // checkInterrupt()ë¥¼ ì‚¬ìš©í•´ì•¼ í•œë‹¤.
         while(checkInterrupt() != RP_INTR_EXIT);
 
         if(sConnSuccess == IDE_SUCCESS)
@@ -188,13 +188,13 @@ rpxSender::attemptHandshake(idBool *aHandshakeFlag)
                     IDE_RAISE(ERR_INVALID_REPL);
 
                 default :
-                    // TODO : ÆĞÅ¶ÀÌ ±úÁø °ÍÀÏ±î? ¹º°¡ Ã³¸®¸¦ ÇØ¾ßÇÑ´Ù.
+                    // TODO : íŒ¨í‚·ì´ ê¹¨ì§„ ê²ƒì¼ê¹Œ? ë­”ê°€ ì²˜ë¦¬ë¥¼ í•´ì•¼í•œë‹¤.
                     IDE_CALLBACK_FATAL("[Repl Sender] Can't be here");
             } // switch
         } // if
     } // while
 
-    // Exit Flag°¡ ID_TRUE·Î ¼³Á¤µÇ¾úÀ» ¶§´Â ¾Æ·¡ÀÇ ÀÛ¾÷À» ÇÏ¸é ¾È µÈ´Ù.
+    // Exit Flagê°€ ID_TRUEë¡œ ì„¤ì •ë˜ì—ˆì„ ë•ŒëŠ” ì•„ë˜ì˜ ì‘ì—…ì„ í•˜ë©´ ì•ˆ ëœë‹¤.
     return IDE_SUCCESS;
 
     RP_LABEL(VALIDATE_SUCCESS);
@@ -272,7 +272,7 @@ rpxSender::attemptHandshake(idBool *aHandshakeFlag)
 // Called By:
 //
 // Description:
-//             Handshake½Ã ÇÒ´ç ¹ŞÀº Åë½Å ¸®¼Ò½º¸¦ ÇØÁ¦ÇÑ´Ù.
+//             Handshakeì‹œ í• ë‹¹ ë°›ì€ í†µì‹  ë¦¬ì†ŒìŠ¤ë¥¼ í•´ì œí•œë‹¤.
 //===================================================================
 void rpxSender::releaseHandshake()
 {
@@ -379,7 +379,7 @@ IDE_RC rpxSender::checkReplAvailable(rpMsgReturn *aRC,
                                      SInt        *aFailbackStatus,
                                      smSN        *aXSN)
 {
-    /* Server°¡ Startup ´Ü°èÀÎÁö ¿©ºÎ´Â À¯µ¿ÀûÀÌ´Ù. */
+    /* Serverê°€ Startup ë‹¨ê³„ì¸ì§€ ì—¬ë¶€ëŠ” ìœ ë™ì ì´ë‹¤. */
     if ( rpcManager::isStartupFailback() == ID_TRUE )
     {
         rpdMeta::setReplFlagFailbackServerStartup( &(mMeta.mReplication) );
@@ -404,7 +404,7 @@ IDE_RC rpxSender::checkReplAvailable(rpMsgReturn *aRC,
 }
 
 /***********************************************************************
- * Description : Network¸¦ Á¾·áÇÏÁö ¾Ê°í Handshake¸¦ ¼öÇàÇÑ´Ù.
+ * Description : Networkë¥¼ ì¢…ë£Œí•˜ì§€ ì•Šê³  Handshakeë¥¼ ìˆ˜í–‰í•œë‹¤.
  *
  ***********************************************************************/
 IDE_RC rpxSender::handshakeWithoutReconnect()
@@ -416,7 +416,7 @@ IDE_RC rpxSender::handshakeWithoutReconnect()
     if(mMeta.mReplication.mRole == RP_ROLE_ANALYSIS)
     {
         ideLog::log( IDE_RP_0, "[%s] XLog Sender: Send XLog for Meta change.\n", mMeta.mReplication.mRepName );
-        // Ala Receiver¿¡°Ô Handshake¸¦ ´Ù½Ã ÇÒ °ÍÀÌ¶ó°í ¾Ë¸®°í Á¾·áÇÑ´Ù.
+        // Ala Receiverì—ê²Œ Handshakeë¥¼ ë‹¤ì‹œ í•  ê²ƒì´ë¼ê³  ì•Œë¦¬ê³  ì¢…ë£Œí•œë‹¤.
         IDE_TEST(addXLogHandshake() != IDE_SUCCESS);
 
         /* Send Replication Stop Message */
@@ -427,7 +427,7 @@ IDE_RC rpxSender::handshakeWithoutReconnect()
         ideLog::log( IDE_RP_0, "SEND Stop Message SUCCESS!!!\n" );
 
         finalizeSenderApply();
-        // Altibase Log Analyzer·Î µ¿ÀÛÇÒ ¶§´Â Network ¿¬°áÀ» Á¾·áÇÑ´Ù.
+        // Altibase Log Analyzerë¡œ ë™ì‘í•  ë•ŒëŠ” Network ì—°ê²°ì„ ì¢…ë£Œí•œë‹¤.
         mNetworkError = ID_TRUE;
         mSenderInfo->deActivate(); //isDisconnect()
     }
@@ -437,17 +437,17 @@ IDE_RC rpxSender::handshakeWithoutReconnect()
 
         IDE_WARNING(IDE_RP_0, RP_TRC_SH_NTC_HANDSHAKE_XLOG);
 
-        // Receiver¿¡°Ô Handshake¸¦ ´Ù½Ã ÇÒ °ÍÀÌ¶ó°í ¾Ë¸°´Ù.
+        // Receiverì—ê²Œ Handshakeë¥¼ ë‹¤ì‹œ í•  ê²ƒì´ë¼ê³  ì•Œë¦°ë‹¤.
         IDE_TEST(addXLogHandshake() != IDE_SUCCESS);
 
-        // Sender Apply Thread°¡ Handshake Ready XLog¸¦ ¼ö½ÅÇÒ ¶§±îÁö ±â´Ù¸°´Ù.
+        // Sender Apply Threadê°€ Handshake Ready XLogë¥¼ ìˆ˜ì‹ í•  ë•Œê¹Œì§€ ê¸°ë‹¤ë¦°ë‹¤.
         while(mSenderApply->isSuspended() != ID_TRUE)
         {
             IDE_TEST_CONT(checkInterrupt() != RP_INTR_NONE, NORMAL_EXIT);
             idlOS::thr_yield();
         }
 
-        // Handshake¸¦ ¼öÇàÇÑ´Ù.
+        // Handshakeë¥¼ ìˆ˜í–‰í•œë‹¤.
         IDE_TEST(checkReplAvailable(&sRC,
                                     &sFailbackStatus, // Dummy
                                     &sDummyXSN)
@@ -458,7 +458,7 @@ IDE_RC rpxSender::handshakeWithoutReconnect()
             mSenderInfo->deActivate(); //isDisconnect()
         }
 
-        // Sender Apply Thread°¡ Á¤»ó µ¿ÀÛÇÏµµ·Ï ÇÑ´Ù.
+        // Sender Apply Threadê°€ ì •ìƒ ë™ì‘í•˜ë„ë¡ í•œë‹¤.
         mSenderApply->resume();
     }
 

@@ -54,8 +54,8 @@ public class CalendarTest extends AltibaseTestCase
 
     public void testGetWithCalendar() throws SQLException
     {
-        // session timezone°ú »ó°ü ¾øÀ» °Í.
-        // ¿Ö³ÄÇÏ¸é Altibase´Â TimeZoneÀ» Áö¿øÇÏÁö ¾Ê±â ¶§¹®ÀÌ´Ù.
+        // session timezoneê³¼ ìƒê´€ ì—†ì„ ê²ƒ.
+        // ì™œëƒí•˜ë©´ AltibaseëŠ” TimeZoneì„ ì§€ì›í•˜ì§€ ì•Šê¸° ë•Œë¬¸ì´ë‹¤.
         testGetWithCalendar("+09:00",
                             TIMESTAMP_STR,
                             TIMESTAMP_STR,

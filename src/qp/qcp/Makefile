@@ -61,10 +61,10 @@ clean:
 $(GENOBJS): $(GENSRCS)
 
 ##################################################################
-#  Æ¯Á¤ ÇÃ·§Æû(windows)¿¡¼­´Â ShellÀÇ environement·Î¼­
-#  BISON_SIMPLE, BISON_HAIRY °¡ Á¤ÀÇµÇ¾î ÀÖ¾î¾ß ÇÑ´Ù.
-#  ±âÁ¸¿¡´Â batch fileÀ» ÀÌ¿ëÇÏ¿´À¸³ª, º¹Àâ, ÀÌ½Ä¼ºÀÌ ¶³¾îÁö¹Ç·Î,
-#  GNU MakefileÀÇ ÀÎÀÚ·Î¼­ È¯°æº¯¼ö¸¦ ¼³Á¤ÇÏ´Â ±â´ÉÀ» ÀÌ¿ëÇÑ´Ù. ¾Æ½Î, ½ÉÇÃ!
+#  íŠ¹ì • í”Œëž«í¼(windows)ì—ì„œëŠ” Shellì˜ environementë¡œì„œ
+#  BISON_SIMPLE, BISON_HAIRY ê°€ ì •ì˜ë˜ì–´ ìžˆì–´ì•¼ í•œë‹¤.
+#  ê¸°ì¡´ì—ëŠ” batch fileì„ ì´ìš©í•˜ì˜€ìœ¼ë‚˜, ë³µìž¡, ì´ì‹ì„±ì´ ë–¨ì–´ì§€ë¯€ë¡œ,
+#  GNU Makefileì˜ ì¸ìžë¡œì„œ í™˜ê²½ë³€ìˆ˜ë¥¼ ì„¤ì •í•˜ëŠ” ê¸°ëŠ¥ì„ ì´ìš©í•œë‹¤. ì•„ì‹¸, ì‹¬í”Œ!
 ##################################################################
 
 %.cpp: %.y

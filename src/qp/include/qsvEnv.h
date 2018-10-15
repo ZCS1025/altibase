@@ -44,7 +44,7 @@
 
 // qsvEnvInfo.flag
 // To Fix PR-10735
-// TRIGGER¸¦ À§ÇÑ ProcedureÀÎÁö¸¦ ÆÇ´ÜÇÔ.
+// TRIGGERë¥¼ ìœ„í•œ Procedureì¸ì§€ë¥¼ íŒë‹¨í•¨.
 #define QSV_ENV_TRIGGER_MASK                  (0x00000008)
 #define QSV_ENV_TRIGGER_FALSE                 (0x00000000)
 #define QSV_ENV_TRIGGER_TRUE                  (0x00000008)
@@ -78,11 +78,11 @@ typedef struct qsvEnvInfo
     SInt                        sqlSize;
 
     // PROJ-1535
-    // procPlanListÀÇ latch»óÅÂ¸¦ °ü¸®ÇÔ
+    // procPlanListì˜ latchìƒíƒœë¥¼ ê´€ë¦¬í•¨
     idBool                      latched;
 
     // PROJ-1359 Trigger
-    // TriggerÀÇ Cycle DetectionÀ» À§ÇØ °ü¸®ÇÔ
+    // Triggerì˜ Cycle Detectionì„ ìœ„í•´ ê´€ë¦¬í•¨
     struct qsModifiedTable    * modifiedTableList;
 
     // To fix BUG-14129
@@ -96,14 +96,14 @@ typedef struct qsvEnvInfo
 
     // PROJ-1073 Package
     qsPkgParseTree            * createPkg;
-    // create package body ½Ã ÇØ´ç package body¿¡ ´ëÇÑ
-    // package specÀÇ parse tree¸¦ ¼ÂÆÃ
+    // create package body ì‹œ í•´ë‹¹ package bodyì— ëŒ€í•œ
+    // package specì˜ parse treeë¥¼ ì…‹íŒ…
     qsPkgParseTree            * pkgPlanTree;
     qsPkgStmts                * currSubprogram;
 
     /* BUG-39004
-       package intialize section¿¡ ´ëÇØ¼­
-       validation ÁøÇà ¿©ºÎ Ç¥½Ã */
+       package intialize sectionì— ëŒ€í•´ì„œ
+       validation ì§„í–‰ ì—¬ë¶€ í‘œì‹œ */
     idBool                      isPkgInitializeSection;
 } qsvEnvInfo;
 

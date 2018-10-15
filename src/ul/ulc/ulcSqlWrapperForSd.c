@@ -259,8 +259,8 @@ SQLRETURN  SQL_API SQLEndPendingTran(SQLHDBC      aConnectionHandle,
 
 SQLRETURN SQL_API SQLDisconnectLocal(SQLHDBC ConnectionHandle)
 {
-    /* ¼­¹ö°¡ »ç¸ÁÇÑ °æ¿ì disconnect protocolÀº Ç×»ó ½ÇÆĞÇÏ°Ô µÇ¹Ç·Î
-     * ¼­¹ö¿Í »ó°ü¾øÀÌ disconnect¸¦ ¼öÇàÇÒ ÇÊ¿ä°¡ ÀÖ´Ù.
+    /* ì„œë²„ê°€ ì‚¬ë§í•œ ê²½ìš° disconnect protocolì€ í•­ìƒ ì‹¤íŒ¨í•˜ê²Œ ë˜ë¯€ë¡œ
+     * ì„œë²„ì™€ ìƒê´€ì—†ì´ disconnectë¥¼ ìˆ˜í–‰í•  í•„ìš”ê°€ ìˆë‹¤.
      */
     return ulnDisconnectLocal((ulnDbc *)ConnectionHandle);
 }

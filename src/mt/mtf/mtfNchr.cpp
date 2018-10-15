@@ -44,7 +44,7 @@ static IDE_RC mtfNchrEstimate( mtcNode*     aNode,
 mtfModule mtfNchr = {
     1|MTC_NODE_OPERATOR_FUNCTION,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
+    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìžê°€ ì•„ë‹˜)
     mtfNchrFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -98,7 +98,7 @@ IDE_RC mtfNchrEstimate( mtcNode*     aNode,
 
     aTemplate->rows[aNode->table].execute[aNode->column] = mtfExecute;
 
-    // aStack[0].columnÀÇ ÃÊ±âÈ­ 
+    // aStack[0].columnì˜ ì´ˆê¸°í™” 
     IDE_TEST( mtc::initializeColumn( aStack[0].column,
                                      & mtdNvarchar,
                                      1,
@@ -132,11 +132,11 @@ IDE_RC mtfNchrCalculate( mtcNode*     aNode,
  * Implementation :
  *    NCHR( n )
  *
- *    aStack[0] : ÀÔ·ÂµÈ Integer¸¦ UniCode·Î º¯È¯ÇÑ °ª 
- *    aStack[1] : n ( ÀÔ·ÂµÈ Integer UniCode point )
+ *    aStack[0] : ìž…ë ¥ëœ Integerë¥¼ UniCodeë¡œ ë³€í™˜í•œ ê°’ 
+ *    aStack[1] : n ( ìž…ë ¥ëœ Integer UniCode point )
  *
- *    NCHRÀº CHR°ú ´Ù¸£°Ô ³»¼Å³Î Ä³¸¯ÅÍ ¼Â¿¡ µû¶ó¼­ ´Ù¸£°Ô º¯È¯µÇÁö ¾Ê°í,
- *    ¹«Á¶°Ç UCS2 ¹®ÀÚ¸¦ ¹ÝÈ¯ÇÑ´Ù.
+ *    NCHRì€ CHRê³¼ ë‹¤ë¥´ê²Œ ë‚´ì…”ë„ ìºë¦­í„° ì…‹ì— ë”°ë¼ì„œ ë‹¤ë¥´ê²Œ ë³€í™˜ë˜ì§€ ì•Šê³ ,
+ *    ë¬´ì¡°ê±´ UCS2 ë¬¸ìžë¥¼ ë°˜í™˜í•œë‹¤.
  *
  ***********************************************************************/
     
@@ -178,19 +178,19 @@ IDE_RC mtfNchrCalculate( mtcNode*     aNode,
             sResult->value[1] = sValue1;
             sResult->length = 2;
         }
-        // UTF8ÀÎ °æ¿ìÀÓ
+        // UTF8ì¸ ê²½ìš°ìž„
         else
         {
-            // 2¹ÙÀÌÆ®Â¥¸®ÀÏ °¡´É¼º
+            // 2ë°”ì´íŠ¸ì§œë¦¬ì¼ ê°€ëŠ¥ì„±
             if( sValue3 == 0 )
             {
-                // 1¹ÙÀÌÆ®Â¥¸®
+                // 1ë°”ì´íŠ¸ì§œë¦¬
                 if( sValue2 == 0 )
                 {
                     sResult->value[0] = sValue1;
                     sResult->length = 1;
                 }
-                // 2¹ÙÀÌÆ®Â¥¸®
+                // 2ë°”ì´íŠ¸ì§œë¦¬
                 else
                 {
                     sResult->value[0] = sValue2;
@@ -200,7 +200,7 @@ IDE_RC mtfNchrCalculate( mtcNode*     aNode,
             }
             else
             {
-                // 3¹ÙÀÌÆ®Â¥¸®
+                // 3ë°”ì´íŠ¸ì§œë¦¬
                 sResult->value[0] = sValue3;
                 sResult->value[1] = sValue2;
                 sResult->value[2] = sValue1;

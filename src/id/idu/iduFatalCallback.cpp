@@ -27,10 +27,10 @@ idBool              iduFatalCallback::mInit = ID_FALSE;
 
 
 /***********************************************************************
- * Description : Fatal Info ÃÊ±âÈ­
+ * Description : Fatal Info ì´ˆê¸°í™”
  *
- * Fatal ½Ã SM °ü·Ã Á¤º¸ Ãâ·Â callback ÃÊ±âÈ­ ¹×
- * idu callback¿¡ doCallback µî·Ï
+ * Fatal ì‹œ SM ê´€ë ¨ ì •ë³´ ì¶œë ¥ callback ì´ˆê¸°í™” ë°
+ * idu callbackì— doCallback ë“±ë¡
  *
  **********************************************************************/
 IDE_RC iduFatalCallback::initializeStatic()
@@ -59,7 +59,7 @@ IDE_RC iduFatalCallback::initializeStatic()
 }
 
 /***********************************************************************
- * Description : Fatal Info Á¤¸® ¹× IDÀÇ callback¿¡¼­ Á¦°Å
+ * Description : Fatal Info ì •ë¦¬ ë° IDì˜ callbackì—ì„œ ì œê±°
  *
  **********************************************************************/
 IDE_RC iduFatalCallback::destroyStatic()
@@ -76,7 +76,7 @@ IDE_RC iduFatalCallback::destroyStatic()
 }
 
 /***********************************************************************
- * Description : Fatal Info ÇÔ¼ö Ãß°¡
+ * Description : Fatal Info í•¨ìˆ˜ ì¶”ê°€
  *
  *
  **********************************************************************/
@@ -99,13 +99,13 @@ void iduFatalCallback::setCallback( iduCallbackFunction aCallbackFunction )
 
         unlock();
 
-        // ºóÀÚ¸®¸¦ ¹ß°ßÇÏÁö ¸øÇÑ°æ¿ì
+        // ë¹ˆìë¦¬ë¥¼ ë°œê²¬í•˜ì§€ ëª»í•œê²½ìš°
         IDE_DASSERT( i < IDU_FATAL_INFO_CALLBACK_ARR_SIZE );
     }
 }
 
 /***********************************************************************
- * Description : Fatal Info ÇÔ¼ö Á¦°Å
+ * Description : Fatal Info í•¨ìˆ˜ ì œê±°
  *
  *
  **********************************************************************/
@@ -131,7 +131,7 @@ void iduFatalCallback::unsetCallback( iduCallbackFunction aCallbackFunction )
 }
 
 /***********************************************************************
- * Description : µî·ÏµÈ Fatal Info ÇÔ¼ö ½ÇÇà - µğ¹ö±ë Á¤º¸ Ãâ·Â
+ * Description : ë“±ë¡ëœ Fatal Info í•¨ìˆ˜ ì‹¤í–‰ - ë””ë²„ê¹… ì •ë³´ ì¶œë ¥
  *
  *
  **********************************************************************/

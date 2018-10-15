@@ -29,18 +29,18 @@
 # include <sdpsfUpdate.h>
 
 /***********************************************************************
- * Description : Segment Merge¿¬»ê¿¡ ´ëÇÑ UndoÇÔ¼öÀÌ´Ù. µÎ SegmentÀÇ
- *               Extent List¿Í Target SegmentÀÇ ¸¶Áö¸· ExtentÀÇ NxtRID¸¦
- *               SD_NULL_RID·Î ¼³Á¤ÇÑ´Ù.
+ * Description : Segment Mergeì—°ì‚°ì— ëŒ€í•œ Undoí•¨ìˆ˜ì´ë‹¤. ë‘ Segmentì˜
+ *               Extent Listì™€ Target Segmentì˜ ë§ˆì§€ë§‰ Extentì˜ NxtRIDë¥¼
+ *               SD_NULL_RIDë¡œ ì„¤ì •í•œë‹¤.
  *
- * aStatistics          - [IN] Åë°èÁ¤º¸
+ * aStatistics          - [IN] í†µê³„ì •ë³´
  * aMtx                 - [IN] Mini Transaction Pointer
  * aSpaceID             - [IN] SpaceID
- * aToSegRID            - [IN] ToSegÀÇ PID
- * aLstExtRIDOfToSeg    - [IN] ToSegÀÇ ¸¶Áö¸· Alloc ExtRID
- * aFstPIDOfLstAllocExt - [IN] ToSegÀÇ ¸¶Áö¸· Alloc ExtentÀÇ First PID
- * aFmtPageCntOfToSeg   - [IN] ToSegÀÇ Format Page Count
- * aHWMOfToSeg          - [IN] ToSegÀÇ HWM PID
+ * aToSegRID            - [IN] ToSegì˜ PID
+ * aLstExtRIDOfToSeg    - [IN] ToSegì˜ ë§ˆì§€ë§‰ Alloc ExtRID
+ * aFstPIDOfLstAllocExt - [IN] ToSegì˜ ë§ˆì§€ë§‰ Alloc Extentì˜ First PID
+ * aFmtPageCntOfToSeg   - [IN] ToSegì˜ Format Page Count
+ * aHWMOfToSeg          - [IN] ToSegì˜ HWM PID
  ***********************************************************************/
 IDE_RC sdpsfUpdate::undo_SDPSF_MERGE_SEG_4DPATH( idvSQL     * aStatistics,
                                                  sdrMtx     * aMtx,
@@ -92,14 +92,14 @@ IDE_RC sdpsfUpdate::undo_SDPSF_MERGE_SEG_4DPATH( idvSQL     * aStatistics,
 }
 
 /***********************************************************************
- * Description : ÇÒ´çÇß´ø ÆäÀÌÁö¸¦ FreeÇÏ¿© Segment¿¡ UFmtPageList¿¡
- *               Ãß°¡ÇÑ´Ù.
+ * Description : í• ë‹¹í–ˆë˜ í˜ì´ì§€ë¥¼ Freeí•˜ì—¬ Segmentì— UFmtPageListì—
+ *               ì¶”ê°€í•œë‹¤.
  *
- * aStatistics  - [IN] Åë°èÁ¤º¸
+ * aStatistics  - [IN] í†µê³„ì •ë³´
  * aMtx         - [IN] Mini Transaction Pointer
  * aSpaceID     - [IN] SpaceID
- * aSegPID      - [IN] SegÀÇ PID
- * aPageID      - [IN] ÇÒ´çÇß´ø PageID
+ * aSegPID      - [IN] Segì˜ PID
+ * aPageID      - [IN] í• ë‹¹í–ˆë˜ PageID
  ***********************************************************************/
 IDE_RC sdpsfUpdate::undo_SDPSF_ALLOC_PAGE( idvSQL    * aStatistics,
                                            sdrMtx    * aMtx,
@@ -147,16 +147,16 @@ IDE_RC sdpsfUpdate::undo_SDPSF_ALLOC_PAGE( idvSQL    * aStatistics,
 }
 
 /***********************************************************************
- * Description : SegHdrÀÇ AllocExtRID, HWM, FmtPageCnt À» ¿øº¹ÇÑ´Ù.
+ * Description : SegHdrì˜ AllocExtRID, HWM, FmtPageCnt ì„ ì›ë³µí•œë‹¤.
  *
  * LogType: SDR_OP_SDPSF_UPDATE_HWMINFO_4DPATH
  *
- * aStatistics       - [IN] Åë°èÁ¤º¸
+ * aStatistics       - [IN] í†µê³„ì •ë³´
  * aMtx              - [IN] Mini Transaction Pointer
  * aSpaceID          - [IN] SpaceID
- * aSegPID           - [IN] SegÀÇ PID
+ * aSegPID           - [IN] Segì˜ PID
  * aAllocExtRID      - [IN] Alloc Extent RID
- * aFstPIDOfAllocExt - [IN] Alloc ExtentÀÇ First PID
+ * aFstPIDOfAllocExt - [IN] Alloc Extentì˜ First PID
  * aHWM              - [IN] HWM
  * aFmtPageCnt       - [IN] Format Page Count
  ***********************************************************************/
@@ -208,17 +208,17 @@ IDE_RC sdpsfUpdate::undo_UPDATE_HWM_4DPATH( idvSQL    * aStatistics,
 }
 
 /***********************************************************************
- * Description : Private PID List¿¡ ´ëÇÑ Add¿¬»êÀ» Ãë¼ÒÇÑ´Ù.
+ * Description : Private PID Listì— ëŒ€í•œ Addì—°ì‚°ì„ ì·¨ì†Œí•œë‹¤.
  *
  * LogType : SDR_OP_SDPSF_ADD_PIDLIST_PVTFREEPIDLIST_4DPATH
  *
- * aStatistics  - [IN] Åë°èÁ¤º¸
+ * aStatistics  - [IN] í†µê³„ì •ë³´
  * aMtx         - [IN] Mini Transaction Pointer
  * aSpaceID     - [IN] SpaceID
- * aSegPID      - [IN] SegÀÇ PID
- * aFstPID      - [IN] Ã¹¹øÂ° PageID
- * aLstPID      - [IN] ¸¶Áö¸· PageID
- * aPageCnt     - [IN] Page°¹¼ö
+ * aSegPID      - [IN] Segì˜ PID
+ * aFstPID      - [IN] ì²«ë²ˆì§¸ PageID
+ * aLstPID      - [IN] ë§ˆì§€ë§‰ PageID
+ * aPageCnt     - [IN] Pageê°¯ìˆ˜
  ***********************************************************************/
 IDE_RC sdpsfUpdate::undo_ADD_PIDLIST_PVTFREEPIDLIST_4DPATH( idvSQL    * aStatistics,
                                                             sdrMtx    * aMtx,
@@ -244,7 +244,7 @@ IDE_RC sdpsfUpdate::undo_ADD_PIDLIST_PVTFREEPIDLIST_4DPATH( idvSQL    * aStatist
 
     sPvtFreePIDList = sdpsfSH::getPvtFreePIDList( sSegHdr );
 
-    /* Private Page ListÀÇ Head ÆäÀÌÁö¸¦ ¿øº¹ÇÑ´Ù. */
+    /* Private Page Listì˜ Head í˜ì´ì§€ë¥¼ ì›ë³µí•œë‹¤. */
     IDE_TEST( sdpSglPIDList::setHeadOfList( sPvtFreePIDList,
                                             aFstPID,
                                             aMtx )
@@ -255,7 +255,7 @@ IDE_RC sdpsfUpdate::undo_ADD_PIDLIST_PVTFREEPIDLIST_4DPATH( idvSQL    * aStatist
                                             aMtx )
               != IDE_SUCCESS );
 
-    /* Private Page ListÀÇ ÆäÀÌÁö °¹¼ö¸¦ ¿øº¹ÇÑ´Ù. */
+    /* Private Page Listì˜ í˜ì´ì§€ ê°¯ìˆ˜ë¥¼ ì›ë³µí•œë‹¤. */
     IDE_TEST( sdpSglPIDList::setNodeCnt( sPvtFreePIDList,
                                          aPageCnt,
                                          aMtx )

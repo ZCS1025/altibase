@@ -44,7 +44,7 @@ static IDE_RC mtfReplace2Estimate( mtcNode*     aNode,
 mtfModule mtfReplace2 = {
     1|MTC_NODE_OPERATOR_FUNCTION,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
+    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìê°€ ì•„ë‹˜)
     mtfReplace2FunctionName,
     NULL,
     mtf::initializeDefault,
@@ -125,16 +125,16 @@ const mtcExecute mtfExecuteNcharFor3Args = {
  *    IDE_RC mtfReplace2Estimate()
  *
  * Argument :
- *    aNode - ÀÔ·ÂÁ¤º¸
- *    aStack - ÀÔ·Â°ª
+ *    aNode - ì…ë ¥ì •ë³´
+ *    aStack - ì…ë ¥ê°’
  *
  * Description :
- *    1. ¾Æ±Ô¸ÕÆ® ÀÔ·Â°³¼ö°¡ 2°³ÀÎÁö 3°³ÀÎÁö , ¾Æ´Ï¸é ¿¡·¯!
- *    2. ÀÔ·ÂÀÌ 2°³¸é *sModules[0]->language->replace22 ¸¦ ½ÇÇà
- *    3. precision °è»ê
+ *    1. ì•„ê·œë¨¼íŠ¸ ì…ë ¥ê°œìˆ˜ê°€ 2ê°œì¸ì§€ 3ê°œì¸ì§€ , ì•„ë‹ˆë©´ ì—ëŸ¬!
+ *    2. ì…ë ¥ì´ 2ê°œë©´ *sModules[0]->language->replace22 ë¥¼ ì‹¤í–‰
+ *    3. precision ê³„ì‚°
  *     or
- *    2. ÀÔ·ÂÀÌ 3°³¸é *sModules[0]->language->replace23 ¸¦ ½ÇÇà
- *    3. precision °è»ê
+ *    2. ì…ë ¥ì´ 3ê°œë©´ *sModules[0]->language->replace23 ë¥¼ ì‹¤í–‰
+ *    3. precision ê³„ì‚°
  * ---------------------------------------------------------------------------*/
 
 IDE_RC mtfReplace2Estimate( mtcNode*     aNode,
@@ -189,9 +189,9 @@ IDE_RC mtfReplace2Estimate( mtcNode*     aNode,
 
             if( aStack[2].column->precision > 0 )
             {
-                /* BUG-44082 REPLACE(CHAR, NCHAR, NCHAR/CHAR)°¡ ½ÇÆĞÇÒ ¼ö ÀÖ½À´Ï´Ù.
-                 * BUG-44129 REPLACE2()¿¡ Pattern StringÀ» ColumnÀ¸·Î ÁöÁ¤ÇÏ¸é, ½ÇÆĞÇÒ ¼ö ÀÖ½À´Ï´Ù.  
-                 * BUG-44137 REPLACE(NCHAR, CHAR, NCHAR/CHAR)°¡ ½ÇÆĞÇÒ ¼ö ÀÖ½À´Ï´Ù.
+                /* BUG-44082 REPLACE(CHAR, NCHAR, NCHAR/CHAR)ê°€ ì‹¤íŒ¨í•  ìˆ˜ ìˆìŠµë‹ˆë‹¤.
+                 * BUG-44129 REPLACE2()ì— Pattern Stringì„ Columnìœ¼ë¡œ ì§€ì •í•˜ë©´, ì‹¤íŒ¨í•  ìˆ˜ ìˆìŠµë‹ˆë‹¤.  
+                 * BUG-44137 REPLACE(NCHAR, CHAR, NCHAR/CHAR)ê°€ ì‹¤íŒ¨í•  ìˆ˜ ìˆìŠµë‹ˆë‹¤.
                  */
                 if( aStack[1].column->language->id == MTL_UTF16_ID )
                 {
@@ -229,32 +229,32 @@ IDE_RC mtfReplace2Estimate( mtcNode*     aNode,
             // arg2 : pattern string length
             // arg3 : replace string length
             // ret  : return string length **
-            // (1) = arg1 / arg2 : source¿¡¼­ ³ª¿Ã ¼ö ÀÖ´Â ÃÖ´ë ÆĞÅÏ °³¼ö
-            // (2) = (1) * arg3  : ÃÖ´ë ÆĞÅÏ °³¼ö * ¹Ù²ğ ½ºÆ®¸µÀÇ ±æÀÌ
+            // (1) = arg1 / arg2 : sourceì—ì„œ ë‚˜ì˜¬ ìˆ˜ ìˆëŠ” ìµœëŒ€ íŒ¨í„´ ê°œìˆ˜
+            // (2) = (1) * arg3  : ìµœëŒ€ íŒ¨í„´ ê°œìˆ˜ * ë°”ë€” ìŠ¤íŠ¸ë§ì˜ ê¸¸ì´
             // To fix BUG-15085
-            // ¸ÂÁö ¾Ê´Â ÆĞÅÏÀ» ÃÖ´ë·Î °è»êÇÏ¿©¾ß ÇÑ´Ù.
-            // (3) = arg1 : source¿¡¼­ ³ª¿Ã ¼ö ÀÖ´Â ÃÖ´ëÀÇ ¸ÂÁö¾Ê´Â ÆĞÅÏ °³¼ö
-            // (4) = (2) + (3)   : ÆĞÅÏ¿¡ ÃÖ´ëÇÑ µé¾î¸Â´Â´Ù°í ÇÒ¶§ÀÇ ÃÖÁ¾ ±æÀÌ
-            // ÇÏÁö¸¸ CHARÀÇ precision maximum¿¡ ³ÑÀ» ¼ö ¾ø±â ¶§¹®¿¡ ´ÙÀ½°ú °°ÀÌ
-            // Á¦¾àÀ» µĞ´Ù.
+            // ë§ì§€ ì•ŠëŠ” íŒ¨í„´ì„ ìµœëŒ€ë¡œ ê³„ì‚°í•˜ì—¬ì•¼ í•œë‹¤.
+            // (3) = arg1 : sourceì—ì„œ ë‚˜ì˜¬ ìˆ˜ ìˆëŠ” ìµœëŒ€ì˜ ë§ì§€ì•ŠëŠ” íŒ¨í„´ ê°œìˆ˜
+            // (4) = (2) + (3)   : íŒ¨í„´ì— ìµœëŒ€í•œ ë“¤ì–´ë§ëŠ”ë‹¤ê³  í• ë•Œì˜ ìµœì¢… ê¸¸ì´
+            // í•˜ì§€ë§Œ CHARì˜ precision maximumì— ë„˜ì„ ìˆ˜ ì—†ê¸° ë•Œë¬¸ì— ë‹¤ìŒê³¼ ê°™ì´
+            // ì œì•½ì„ ë‘”ë‹¤.
             // ret = MIN( (4), MTD_CHAR_PRECISION_MAXIMUM )
             //
-            // °ø½ÄÀ» Ç®¸é ´ÙÀ½°ú °°À½.
+            // ê³µì‹ì„ í’€ë©´ ë‹¤ìŒê³¼ ê°™ìŒ.
             // ret = MIN( ((arg1 / arg2) * arg3) + (arg1),
             //            MTD_CHAR_PRECISION_MAXIMUM )
-            // precisionÀÌ 0ÀÎ µ¥ÀÌÅÍ°¡ ¿Ã °æ¿ì¸¦ °í·ÁÇØ¾ß ÇÔ.
+            // precisionì´ 0ì¸ ë°ì´í„°ê°€ ì˜¬ ê²½ìš°ë¥¼ ê³ ë ¤í•´ì•¼ í•¨.
             // ex) create table t1( i1 varchar(0) );
             //     insert into t1 values( null );
             //     select replace2( 'aaa', i1, 'bb' ) from t1;
-            // À§¿Í °°Àº °æ¿ì argument 2¿¡ precisionÀÌ 0ÀÎ °ªÀÌ ¿Ã ¼ö ÀÖ´Ù.
-            // precisionÀÌ 0ÀÌ¸é divide by zero°¡ ¹ß»ıÇÏ¹Ç·Î ÀÌ¸¦ °í·ÁÇÏ¿©
-            // precisionÀÌ 0º¸´Ù Å©°Å³ª ±×·¸Áö ¾ÊÀº °æ¿ì·Î ³ª´«´Ù.
+            // ìœ„ì™€ ê°™ì€ ê²½ìš° argument 2ì— precisionì´ 0ì¸ ê°’ì´ ì˜¬ ìˆ˜ ìˆë‹¤.
+            // precisionì´ 0ì´ë©´ divide by zeroê°€ ë°œìƒí•˜ë¯€ë¡œ ì´ë¥¼ ê³ ë ¤í•˜ì—¬
+            // precisionì´ 0ë³´ë‹¤ í¬ê±°ë‚˜ ê·¸ë ‡ì§€ ì•Šì€ ê²½ìš°ë¡œ ë‚˜ëˆˆë‹¤.
 
             if( aStack[2].column->precision > 0 )
             {
-                /* BUG-44082 REPLACE(CHAR, NCHAR, NCHAR/CHAR)°¡ ½ÇÆĞÇÒ ¼ö ÀÖ½À´Ï´Ù.
-                 * BUG-44129 REPLACE2()¿¡ Pattern StringÀ» ColumnÀ¸·Î ÁöÁ¤ÇÏ¸é, ½ÇÆĞÇÒ ¼ö ÀÖ½À´Ï´Ù.  
-                 * BUG-44137 REPLACE(NCHAR, CHAR, NCHAR/CHAR)°¡ ½ÇÆĞÇÒ ¼ö ÀÖ½À´Ï´Ù.
+                /* BUG-44082 REPLACE(CHAR, NCHAR, NCHAR/CHAR)ê°€ ì‹¤íŒ¨í•  ìˆ˜ ìˆìŠµë‹ˆë‹¤.
+                 * BUG-44129 REPLACE2()ì— Pattern Stringì„ Columnìœ¼ë¡œ ì§€ì •í•˜ë©´, ì‹¤íŒ¨í•  ìˆ˜ ìˆìŠµë‹ˆë‹¤.  
+                 * BUG-44137 REPLACE(NCHAR, CHAR, NCHAR/CHAR)ê°€ ì‹¤íŒ¨í•  ìˆ˜ ìˆìŠµë‹ˆë‹¤.
                  */
                 sReturnLength = IDL_MIN( ( aStack[1].column->precision * aStack[3].column->precision ),
                                          MTD_CHAR_PRECISION_MAXIMUM );
@@ -265,8 +265,8 @@ IDE_RC mtfReplace2Estimate( mtcNode*     aNode,
             }
 
             // PROJ-1579 NCHAR
-            // NCHARÀÇ precisionÀº ¹®ÀÚ ¼öÀÌ±â ¶§¹®¿¡ langauge¿¡ ¸Â°Ô ÃÖ´ë
-            // byte precisionÀ» ±¸ÇÑ´Ù.
+            // NCHARì˜ precisionì€ ë¬¸ì ìˆ˜ì´ê¸° ë•Œë¬¸ì— langaugeì— ë§ê²Œ ìµœëŒ€
+            // byte precisionì„ êµ¬í•œë‹¤.
             if( (aStack[3].column->module->id == MTD_NCHAR_ID) ||
                 (aStack[3].column->module->id == MTD_NVARCHAR_ID) )
             {
@@ -339,7 +339,7 @@ IDE_RC mtfReplace2Calculate( const mtlModule * aLanguage,
     if ( aFromLen == 0 )
     {
         //------------------------------------
-        // FromÀÌ NULLÀÎ °æ¿ì, Source¸¦ ±×´ë·Î Result¿¡ º¹»çÇÑ´Ù
+        // Fromì´ NULLì¸ ê²½ìš°, Sourceë¥¼ ê·¸ëŒ€ë¡œ Resultì— ë³µì‚¬í•œë‹¤
         //------------------------------------
         
         idlOS::memcpy( aResult, aSource, aSourceLen );
@@ -349,7 +349,7 @@ IDE_RC mtfReplace2Calculate( const mtlModule * aLanguage,
     else
     {
         //------------------------------------
-        // Source¿¡¼­ From°ú µ¿ÀÏÇÑ string¸¦ Á¦¿ÜÇÑ ¹®ÀÚ¸¸ °á°ú¿¡ ÀúÀå
+        // Sourceì—ì„œ Fromê³¼ ë™ì¼í•œ stringë¥¼ ì œì™¸í•œ ë¬¸ìë§Œ ê²°ê³¼ì— ì €ì¥
         //------------------------------------
 
         sSourceIndex = aSource;
@@ -358,7 +358,7 @@ IDE_RC mtfReplace2Calculate( const mtlModule * aLanguage,
         while ( sSourceIndex < sSourceFence )
         {
             //------------------------------------
-            // from string°ú µ¿ÀÏÇÑ string Á¸ÀçÇÏ´ÂÁö °Ë»ç
+            // from stringê³¼ ë™ì¼í•œ string ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬
             //------------------------------------
 
             sIsSame = ID_FALSE;
@@ -388,12 +388,12 @@ IDE_RC mtfReplace2Calculate( const mtlModule * aLanguage,
                 }
                 else
                 {
-                    // µ¿ÀÏÇÏ¸é ´ÙÀ½ ¹®ÀÚ·Î ÁøÇà
+                    // ë™ì¼í•˜ë©´ ë‹¤ìŒ ë¬¸ìë¡œ ì§„í–‰
                     (void)aLanguage->nextCharPtr( & sFromIndex, sFromFence );
                                         
                     (void)aLanguage->nextCharPtr( & sCurSourceIndex, sSourceFence );
                     
-                    // Source´Â ¸¶Áö¸· ¹®ÀÚÀÎµ¥, FromÀº ¸¶Áö¸· ¹®ÀÚ°¡ ¾Æ´Ñ °æ¿ì
+                    // SourceëŠ” ë§ˆì§€ë§‰ ë¬¸ìì¸ë°, Fromì€ ë§ˆì§€ë§‰ ë¬¸ìê°€ ì•„ë‹Œ ê²½ìš°
                     if ( sCurSourceIndex == sSourceFence )
                     {
                         if ( sFromIndex < sFromFence )
@@ -416,12 +416,12 @@ IDE_RC mtfReplace2Calculate( const mtlModule * aLanguage,
             if ( sIsSame == ID_TRUE )
             {
                 //-------------------------------------------
-                // from string°ú µ¿ÀÏÇÑ stringÀÌ Á¸ÀçÇÏ´Â °æ¿ì
+                // from stringê³¼ ë™ì¼í•œ stringì´ ì¡´ì¬í•˜ëŠ” ê²½ìš°
                 //-------------------------------------------
                 
                 if ( aTo == NULL )
                 {
-                    // To°¡ NULLÀÎ °æ¿ì, From¿¡ ÇØ´çÇÏ´Â ¹®ÀÚ´Â Á¦°Å
+                    // Toê°€ NULLì¸ ê²½ìš°, Fromì— í•´ë‹¹í•˜ëŠ” ë¬¸ìëŠ” ì œê±°
 
                     // Nothing to do.
                 }
@@ -429,7 +429,7 @@ IDE_RC mtfReplace2Calculate( const mtlModule * aLanguage,
                 {
                     if ( aToLen > 0 )
                     {
-                        // To stringÀ» From string ´ë½Å¿¡ »ğÀÔ
+                        // To stringì„ From string ëŒ€ì‹ ì— ì‚½ì…
                         IDE_TEST_RAISE( sResultLen + aToLen > sResultFence,
                                         ERR_INVALID_LENGTH );
                         
@@ -449,18 +449,18 @@ IDE_RC mtfReplace2Calculate( const mtlModule * aLanguage,
             else
             {
                 //------------------------------------
-                // from string°ú µ¿ÀÏÇÑ stringÀÌ Á¸ÀçÇÏÁö ¾Ê´Â °æ¿ì
+                // from stringê³¼ ë™ì¼í•œ stringì´ ì¡´ì¬í•˜ì§€ ì•ŠëŠ” ê²½ìš°
                 //------------------------------------
 
                 // To Fix BUG-12606, 12696
-                // ´ÙÀ½ ¹®ÀÚ·Î ÁøÇà
+                // ë‹¤ìŒ ë¬¸ìë¡œ ì§„í–‰
                 sNextIndex = sSourceIndex;
                 
                 (void)aLanguage->nextCharPtr( & sNextIndex, sSourceFence );
                 
-                // ÇöÀç ¹®ÀÚ¸¦ °á°ú¿¡ ÀúÀå
-                // ÇöÀç ¹®ÀÚ°¡ 1byte ÀÌ»óÀÎ °æ¿ì¿¡µµ Á¤»ó ¼öÇàÇÏ±â À§ÇÏ¿©
-                // ´ÙÀ½ ¹®ÀÚ ÀÌÀü±îÁöÀÇ ¹®ÀÚ¸¦ result¿¡ copy
+                // í˜„ì¬ ë¬¸ìë¥¼ ê²°ê³¼ì— ì €ì¥
+                // í˜„ì¬ ë¬¸ìê°€ 1byte ì´ìƒì¸ ê²½ìš°ì—ë„ ì •ìƒ ìˆ˜í–‰í•˜ê¸° ìœ„í•˜ì—¬
+                // ë‹¤ìŒ ë¬¸ì ì´ì „ê¹Œì§€ì˜ ë¬¸ìë¥¼ resultì— copy
                 idlOS::memcpy( aResult + sResultLen,
                                sSourceIndex,
                                sNextIndex - sSourceIndex );
@@ -497,12 +497,12 @@ IDE_RC mtfReplace2CalculateFor2Args( mtcNode*     aNode,
  * Implementation :
  *    REPLACE2( char, string1 )
  *
- *    aStack[0] : char Áß string1¿¡ ÇØ´çÇÏ´Â ºÎºĞÀÌ »èÁ¦µÊ
+ *    aStack[0] : char ì¤‘ string1ì— í•´ë‹¹í•˜ëŠ” ë¶€ë¶„ì´ ì‚­ì œë¨
  *    aStack[1] : char 
- *    aStack[2] : string1 ( Ä¡È¯ ´ë»ó ¹®ÀÚ ) 
+ *    aStack[2] : string1 ( ì¹˜í™˜ ëŒ€ìƒ ë¬¸ì ) 
  *
- *    ex) REPLACE2( dname, 'ÆÀ' )
- *        ==> '°³¹ßÆÀ'ÀÌ '°³¹ß'·Î Ãâ·ÂµÊ, Áï Ä¡È¯ ´ë»ó ¹®ÀÚ »èÁ¦
+ *    ex) REPLACE2( dname, 'íŒ€' )
+ *        ==> 'ê°œë°œíŒ€'ì´ 'ê°œë°œ'ë¡œ ì¶œë ¥ë¨, ì¦‰ ì¹˜í™˜ ëŒ€ìƒ ë¬¸ì ì‚­ì œ
  *
  ***********************************************************************/
     
@@ -527,7 +527,7 @@ IDE_RC mtfReplace2CalculateFor2Args( mtcNode*     aNode,
     else
     {
         //------------------------------------
-        // ±âº» ÃÊ±âÈ­
+        // ê¸°ë³¸ ì´ˆê¸°í™”
         //------------------------------------
         
         sResult   = (mtdCharType*)aStack[0].value;
@@ -568,14 +568,14 @@ IDE_RC mtfReplace2CalculateFor3Args( mtcNode*     aNode,
  * Implementation :
  *    REPLACE2( char, string1, string2 )
  *
- *    aStack[0] : char Áß string1¿¡ ÇØ´çÇÏ´Â ºÎºĞÀÌ »èÁ¦µÊ
+ *    aStack[0] : char ì¤‘ string1ì— í•´ë‹¹í•˜ëŠ” ë¶€ë¶„ì´ ì‚­ì œë¨
  *    aStack[1] : char 
- *    aStack[2] : string1 ( Ä¡È¯ ´ë»ó ¹®ÀÚ )
- *    aStack[3] : string2 ( Ä¡È¯ ¹®ÀÚ ) 
+ *    aStack[2] : string1 ( ì¹˜í™˜ ëŒ€ìƒ ë¬¸ì )
+ *    aStack[3] : string2 ( ì¹˜í™˜ ë¬¸ì ) 
  *
- *    ex) REPLACE2( dname, 'ÆÀ', 'ºÎ¹®' )
- *        ==> '°³¹ßÆÀ'ÀÌ '°³¹ßºÎ¹®'·Î Ãâ·ÂµÊ,
- *             Áï Ä¡È¯ ´ë»ó ¹®ÀÚ°¡ Ä¡È¯¹®ÀÚ·Î º¯°æµÇ¾î Ãâ·ÂµÊ
+ *    ex) REPLACE2( dname, 'íŒ€', 'ë¶€ë¬¸' )
+ *        ==> 'ê°œë°œíŒ€'ì´ 'ê°œë°œë¶€ë¬¸'ë¡œ ì¶œë ¥ë¨,
+ *             ì¦‰ ì¹˜í™˜ ëŒ€ìƒ ë¬¸ìê°€ ì¹˜í™˜ë¬¸ìë¡œ ë³€ê²½ë˜ì–´ ì¶œë ¥ë¨
  *
  ***********************************************************************/
     
@@ -640,12 +640,12 @@ IDE_RC mtfReplace2CalculateNcharFor2Args( mtcNode*     aNode,
  * Implementation :
  *    REPLACE2( char, string1 )
  *
- *    aStack[0] : char Áß string1¿¡ ÇØ´çÇÏ´Â ºÎºĞÀÌ »èÁ¦µÊ
+ *    aStack[0] : char ì¤‘ string1ì— í•´ë‹¹í•˜ëŠ” ë¶€ë¶„ì´ ì‚­ì œë¨
  *    aStack[1] : char 
- *    aStack[2] : string1 ( Ä¡È¯ ´ë»ó ¹®ÀÚ ) 
+ *    aStack[2] : string1 ( ì¹˜í™˜ ëŒ€ìƒ ë¬¸ì ) 
  *
- *    ex) REPLACE2( dname, 'ÆÀ' )
- *        ==> '°³¹ßÆÀ'ÀÌ '°³¹ß'·Î Ãâ·ÂµÊ, Áï Ä¡È¯ ´ë»ó ¹®ÀÚ »èÁ¦
+ *    ex) REPLACE2( dname, 'íŒ€' )
+ *        ==> 'ê°œë°œíŒ€'ì´ 'ê°œë°œ'ë¡œ ì¶œë ¥ë¨, ì¦‰ ì¹˜í™˜ ëŒ€ìƒ ë¬¸ì ì‚­ì œ
  *
  ***********************************************************************/
     
@@ -672,7 +672,7 @@ IDE_RC mtfReplace2CalculateNcharFor2Args( mtcNode*     aNode,
     else
     {
         //------------------------------------
-        // ±âº» ÃÊ±âÈ­
+        // ê¸°ë³¸ ì´ˆê¸°í™”
         //------------------------------------
 
         sResult = (mtdNcharType*)aStack[0].value;
@@ -684,7 +684,7 @@ IDE_RC mtfReplace2CalculateNcharFor2Args( mtcNode*     aNode,
         sResultMaxLen = sSrcCharSet->maxPrecision(aStack[0].column->precision);
 
         // ------------------------------
-        // Replace2 °øÅë ÇÔ¼ö
+        // Replace2 ê³µí†µ í•¨ìˆ˜
         // ------------------------------
 
         // replace
@@ -721,14 +721,14 @@ IDE_RC mtfReplace2CalculateNcharFor3Args( mtcNode*     aNode,
  * Implementation :
  *    REPLACE2( char, string1, string2 )
  *
- *    aStack[0] : char Áß string1¿¡ ÇØ´çÇÏ´Â ºÎºĞÀÌ »èÁ¦µÊ
+ *    aStack[0] : char ì¤‘ string1ì— í•´ë‹¹í•˜ëŠ” ë¶€ë¶„ì´ ì‚­ì œë¨
  *    aStack[1] : char 
- *    aStack[2] : string1 ( Ä¡È¯ ´ë»ó ¹®ÀÚ )
- *    aStack[3] : string2 ( Ä¡È¯ ¹®ÀÚ ) 
+ *    aStack[2] : string1 ( ì¹˜í™˜ ëŒ€ìƒ ë¬¸ì )
+ *    aStack[3] : string2 ( ì¹˜í™˜ ë¬¸ì ) 
  *
- *    ex) REPLACE2( dname, 'ÆÀ', 'ºÎ¹®' )
- *        ==> '°³¹ßÆÀ'ÀÌ '°³¹ßºÎ¹®'·Î Ãâ·ÂµÊ,
- *             Áï Ä¡È¯ ´ë»ó ¹®ÀÚ°¡ Ä¡È¯¹®ÀÚ·Î º¯°æµÇ¾î Ãâ·ÂµÊ
+ *    ex) REPLACE2( dname, 'íŒ€', 'ë¶€ë¬¸' )
+ *        ==> 'ê°œë°œíŒ€'ì´ 'ê°œë°œë¶€ë¬¸'ë¡œ ì¶œë ¥ë¨,
+ *             ì¦‰ ì¹˜í™˜ ëŒ€ìƒ ë¬¸ìê°€ ì¹˜í™˜ë¬¸ìë¡œ ë³€ê²½ë˜ì–´ ì¶œë ¥ë¨
  *
  ***********************************************************************/
     
@@ -757,7 +757,7 @@ IDE_RC mtfReplace2CalculateNcharFor3Args( mtcNode*     aNode,
     else
     {
         //------------------------------------
-        // ±âº» ÃÊ±âÈ­
+        // ê¸°ë³¸ ì´ˆê¸°í™”
         //------------------------------------
 
         sResult = (mtdNcharType*)aStack[0].value;
@@ -770,7 +770,7 @@ IDE_RC mtfReplace2CalculateNcharFor3Args( mtcNode*     aNode,
         sResultMaxLen = sSrcCharSet->maxPrecision(aStack[0].column->precision);
 
         // ------------------------------
-        // Replace2 °øÅë ÇÔ¼ö
+        // Replace2 ê³µí†µ í•¨ìˆ˜
         // ------------------------------
 
         // replace

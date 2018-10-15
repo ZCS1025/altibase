@@ -19,7 +19,7 @@
  *
  * $Id: sdpstExtDir.h 27220 2008-07-23 14:56:22Z newdaily $
  *
- * º» ÆÄÀÏÀº Treelist Managed SegmentÀÇ ExtDir Page Çì´õÆÄÀÏÀÌ´Ù.
+ * ë³¸ íŒŒì¼ì€ Treelist Managed Segmentì˜ ExtDir Page í—¤ë”íŒŒì¼ì´ë‹¤.
  *
  ***********************************************************************/
 
@@ -214,7 +214,7 @@ private:
 
 };
 
-// Extent¿¡ Leaf Bitmap ÆäÀÌÁö¸¦ Æ÷ÇÔÇÏ´ÂÁö ¿©ºÎ ¹İÈ¯
+// Extentì— Leaf Bitmap í˜ì´ì§€ë¥¼ í¬í•¨í•˜ëŠ”ì§€ ì—¬ë¶€ ë°˜í™˜
 inline idBool sdpstExtDir::isExistLfBMPInExt( sdpExtInfo * aExtInfo )
 {
     IDE_ASSERT( aExtInfo != NULL );
@@ -228,7 +228,7 @@ inline idBool sdpstExtDir::isExistLfBMPInExt( sdpExtInfo * aExtInfo )
 }
 
 
-/* µ¿ÀÏÇÑ ExtDir¿¡¼­ ´ÙÀ½ ExtDescÀÇ À§Ä¡¸¦ ¹İÈ¯ÇÑ´Ù. */
+/* ë™ì¼í•œ ExtDirì—ì„œ ë‹¤ìŒ ExtDescì˜ ìœ„ì¹˜ë¥¼ ë°˜í™˜í•œë‹¤. */
 inline void sdpstExtDir::getNxtExtRID( sdpstExtDirHdr  * aExtDirHdr,
                                        SShort            aSlotNo,
                                        sdRID           * aAllocExtRID )
@@ -240,8 +240,8 @@ inline void sdpstExtDir::getNxtExtRID( sdpstExtDirHdr  * aExtDirHdr,
 
     if ( aSlotNo == (aExtDirHdr->mExtCnt - 1))
     {
-        // ¸¶Áö¸· SlotÀÌ¹Ç·Î ÇöÀç ExtDir ÆäÀÌÁö¿¡¼­´Â
-        // ´ÙÀ½ Extent SlotÀÌ Á¸ÀçÇÏÁö ¾Ê´Â´Ù.
+        // ë§ˆì§€ë§‰ Slotì´ë¯€ë¡œ í˜„ì¬ ExtDir í˜ì´ì§€ì—ì„œëŠ”
+        // ë‹¤ìŒ Extent Slotì´ ì¡´ì¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
         *aAllocExtRID = SD_NULL_RID;
     }
     else
@@ -256,10 +256,10 @@ inline void sdpstExtDir::getNxtExtRID( sdpstExtDirHdr  * aExtDirHdr,
 
 
 /*
- * Extent¿¡¼­ ÆäÀÌÁö¸¦ ÇÒ´çÇÒ ¼ö ÀÖ´ÂÁö ¿©ºÎ¸¦ ¹İÈ¯ÇÑ´Ù.
- * º» ÇÔ¼ö´Â allocNewPage4Append ¿¡¼­¸¸ »ç¿ëÇÒ ¼ö ÀÖ´Ù.
- * ¿Ö³ÄÇÏ¸é, ÀÎÀÚ·Î ÁÖ¾îÁø PIDÀÌÈÄ°¡ Extent ³»¿¡ Æ÷ÇÔµÈ´Ù¸é,
- * Free PageÀÓÀ» º¸ÀåÇÒ ¼ö ÀÖ±â ¶§¹®ÀÌ´Ù.
+ * Extentì—ì„œ í˜ì´ì§€ë¥¼ í• ë‹¹í•  ìˆ˜ ìˆëŠ”ì§€ ì—¬ë¶€ë¥¼ ë°˜í™˜í•œë‹¤.
+ * ë³¸ í•¨ìˆ˜ëŠ” allocNewPage4Append ì—ì„œë§Œ ì‚¬ìš©í•  ìˆ˜ ìˆë‹¤.
+ * ì™œëƒí•˜ë©´, ì¸ìë¡œ ì£¼ì–´ì§„ PIDì´í›„ê°€ Extent ë‚´ì— í¬í•¨ëœë‹¤ë©´,
+ * Free Pageì„ì„ ë³´ì¥í•  ìˆ˜ ìˆê¸° ë•Œë¬¸ì´ë‹¤.
  */
 inline idBool sdpstExtDir::isFreePIDInExt( sdpstExtDesc    * aExtDesc,
                                            scPageID          aPageID )
@@ -275,7 +275,7 @@ inline idBool sdpstExtDir::isFreePIDInExt( sdpstExtDesc    * aExtDesc,
     return ID_FALSE;
 }
 
-/* ExtDir ÆäÀÌÁö¿¡¼­ ExtDescÀÇ index¸¦ °è»êÇÑ´Ù. */
+/* ExtDir í˜ì´ì§€ì—ì„œ ExtDescì˜ indexë¥¼ ê³„ì‚°í•œë‹¤. */
 inline SShort sdpstExtDir::calcOffset2SlotNo( sdpstExtDirHdr * aExtDirHdr,
                                               scOffset         aOffset )
 {
@@ -292,7 +292,7 @@ inline SShort sdpstExtDir::calcOffset2SlotNo( sdpstExtDirHdr * aExtDirHdr,
     return (SShort)((aOffset - sBodyOffset) / ID_SIZEOF(sdpstExtDesc));
 }
 
-/* ExtDir ÆäÀÌÁö¿¡¼­ ExtDescÀÇ OffsetÀ» °è»êÇÑ´Ù. */
+/* ExtDir í˜ì´ì§€ì—ì„œ ExtDescì˜ Offsetì„ ê³„ì‚°í•œë‹¤. */
 inline scOffset sdpstExtDir::calcSlotNo2Offset( sdpstExtDirHdr * aExtDirHdr,
                                                 SShort           aExtDescIdx )
 {
@@ -310,7 +310,7 @@ inline scOffset sdpstExtDir::calcSlotNo2Offset( sdpstExtDirHdr * aExtDirHdr,
     return (scOffset)(sBodyOffset + ( aExtDescIdx * ID_SIZEOF(sdpstExtDesc)));
 }
 
-/* ExtDir ÆäÀÌÁöÀÇ map ptrÀ» ¹İÈ¯ÇÑ´Ù. */
+/* ExtDir í˜ì´ì§€ì˜ map ptrì„ ë°˜í™˜í•œë‹¤. */
 inline sdpstExtDesc * sdpstExtDir::getMapPtr( sdpstExtDirHdr * aExtDirHdr )
 {
     IDE_ASSERT( aExtDirHdr->mBodyOffset != 0 );
@@ -319,7 +319,7 @@ inline sdpstExtDesc * sdpstExtDir::getMapPtr( sdpstExtDirHdr * aExtDirHdr )
 }
 
 /*
- * ExtDir Control HeaderÀÇ Ptr ¹İÈ¯
+ * ExtDir Control Headerì˜ Ptr ë°˜í™˜
  */
 inline sdpstExtDirHdr * sdpstExtDir::getHdrPtr( UChar   * aPagePtr )
 {
@@ -343,7 +343,7 @@ inline sdpstExtDirHdr * sdpstExtDir::getHdrPtr( UChar   * aPagePtr )
     return sExtDirHdr;
 }
 
-/* ExtDir ÆäÀÌÁö¿¡¼­ÀÇ °¡¿ëÇÑ Extent Slot °³¼ö ¹İÈ¯ */
+/* ExtDir í˜ì´ì§€ì—ì„œì˜ ê°€ìš©í•œ Extent Slot ê°œìˆ˜ ë°˜í™˜ */
 inline UShort  sdpstExtDir::getFreeSlotCnt( sdpstExtDirHdr * aExtDirHdr )
 {
     IDE_ASSERT( aExtDirHdr != NULL );
@@ -351,7 +351,7 @@ inline UShort  sdpstExtDir::getFreeSlotCnt( sdpstExtDirHdr * aExtDirHdr )
 }
 
 /*
- * ExtDir ÆäÀÌÁö¿¡ ±â·ÏÇÒ ¼ö ÀÖ´Â ÃÖ´ë Extent SlotÀÇ °³¼ö¹İÈ¯
+ * ExtDir í˜ì´ì§€ì— ê¸°ë¡í•  ìˆ˜ ìˆëŠ” ìµœëŒ€ Extent Slotì˜ ê°œìˆ˜ë°˜í™˜
  */
 inline UInt sdpstExtDir::getMaxSlotCnt4Property()
 {
@@ -377,7 +377,7 @@ inline void sdpstExtDir::clearExtDesc( sdpstExtDirHdr * aExtDirHdr,
     return;
 }
 
-/* Ã¹¹øÂ° Extent SlotÀ» ¹İÈ¯ÇÑ´Ù. */
+/* ì²«ë²ˆì§¸ Extent Slotì„ ë°˜í™˜í•œë‹¤. */
 inline sdpstExtDesc * sdpstExtDir::getFstExtDesc( sdpstExtDirHdr * aExtDirHdr )
 {
     return getMapPtr( aExtDirHdr );
@@ -393,7 +393,7 @@ inline sdpstExtDesc * sdpstExtDir::getLstExtDesc( sdpstExtDirHdr * aExtDirHdr )
 }
 
 /***********************************************************************
- * Description : ext dir hdr¿¡ ExtDesc Count¼³Á¤
+ * Description : ext dir hdrì— ExtDesc Countì„¤ì •
  **********************************************************************/
 inline IDE_RC sdpstExtDir::setExtDescCnt( sdrMtx          * aMtx,
                                           sdpstExtDirHdr  * aExtDirPageHdr,
@@ -420,8 +420,8 @@ inline scPageID sdpstExtDir::getNxtExtDir ( sdpstExtDirHdr  * aExtDirHdr,
 
     sPhyPageHdr = sdpPhyPage::getHdr( sdpPhyPage::getPageStartPtr(aExtDirHdr) );
 
-    /* SegHdr ÆäÀÌÁöÀÌ¸é, PIDListÀÇ Ã¹¹øÂ° ExtDirÀ» °¡Á®¿Â´Ù.
-     * ¹°·Ğ SegHdr°¡ ¸¶Áö¸· ExtDir ÀÎ °æ¿ìµµ ÀÖ´Ù. */
+    /* SegHdr í˜ì´ì§€ì´ë©´, PIDListì˜ ì²«ë²ˆì§¸ ExtDirì„ ê°€ì ¸ì˜¨ë‹¤.
+     * ë¬¼ë¡  SegHdrê°€ ë§ˆì§€ë§‰ ExtDir ì¸ ê²½ìš°ë„ ìˆë‹¤. */
     if ( sdpPhyPage::getPageType( sPhyPageHdr ) == SDP_PAGE_TMS_SEGHDR )
     {
         sSegHdr  = (sdpstSegHdr*)sdpPhyPage::getLogicalHdrStartPtr(

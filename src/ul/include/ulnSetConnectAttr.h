@@ -26,7 +26,7 @@ ACI_RC ulnSFID_84(ulnFnContext *aContext);
 struct ulnDataSourceConnAttr;
 
 /*
- * Á÷Á¢ connection attribute ¸¦ ¼¼ÆÃÇÏ´Â ÇÔ¼ö
+ * ì§ì ‘ connection attribute ë¥¼ ì„¸íŒ…í•˜ëŠ” í•¨ìˆ˜
  */
 ACI_RC ulnSetConnAttrById(ulnFnContext  *aFnContext,
                           ulnConnAttrID  aConnAttr,
@@ -63,7 +63,7 @@ ACP_INLINE ACI_RC ulnSetDSNByConnString( ulnFnContext     *aContext,
 
 
 /*
- * Connection Attribute ¸¦ ¼¼ÆÃÇÏ±â À§ÇÑ exported ÇÔ¼ö
+ * Connection Attribute ë¥¼ ì„¸íŒ…í•˜ê¸° ìœ„í•œ exported í•¨ìˆ˜
  */
 
 ACI_RC ulnSetConnAttrByProfileFunc(ulnFnContext  *aContext,

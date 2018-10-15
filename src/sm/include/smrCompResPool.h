@@ -29,79 +29,79 @@
 #include <iduMemoryHandle.h>
 
 /*
-   Log CompressionÀ» À§ÇÑ Resource Pool
+   Log Compressionì„ ìœ„í•œ Resource Pool
 
-   º» Å¬·¡½º´Â ·Î±× ¾ÐÃàÀ» À§ÇÑ ¸®¼Ò½º¸¦ °ü¸®ÇÑ´Ù.
+   ë³¸ í´ëž˜ìŠ¤ëŠ” ë¡œê·¸ ì••ì¶•ì„ ìœ„í•œ ë¦¬ì†ŒìŠ¤ë¥¼ ê´€ë¦¬í•œë‹¤.
 
-   ·Î±× ¾ÐÃàÀ» À§ÇÑ ¸®¼Ò½º´Â ´ÙÀ½°ú °°´Ù
-     - ¾ÐÃàµÈ ·Î±×°¡ ±â·ÏµÉ ¸Þ¸ð¸®
-     - ·Î±× ¾ÐÃà¿¡ ÀÓ½ÃÀûÀ¸·Î »ç¿ëÇÒ ÀÛ¾÷ ¸Þ¸ð¸®
+   ë¡œê·¸ ì••ì¶•ì„ ìœ„í•œ ë¦¬ì†ŒìŠ¤ëŠ” ë‹¤ìŒê³¼ ê°™ë‹¤
+     - ì••ì¶•ëœ ë¡œê·¸ê°€ ê¸°ë¡ë  ë©”ëª¨ë¦¬
+     - ë¡œê·¸ ì••ì¶•ì— ìž„ì‹œì ìœ¼ë¡œ ì‚¬ìš©í•  ìž‘ì—… ë©”ëª¨ë¦¬
 
-µµÀÔ¹è°æ :
-   ·Î±× ¾ÐÃàÀº LogÀÇ ³¡´Ü Mutex¸¦ ÀâÁö ¾ÊÀº Ã¤·Î ÀÌ·ç¾îÁö±â ¶§¹®¿¡,
-   °°Àº ·Î±×ÆÄÀÏ¿¡ ±â·ÏÇÒ ¼­·Î ´Ù¸¥ ·Î±×¸¦
-   µ¿½Ã¿¡ ¿©·¯ Thread°¡ ÇÔ²² ¾ÐÃàÇÒ ¼ö ÀÖ´Ù.
+ë„ìž…ë°°ê²½ :
+   ë¡œê·¸ ì••ì¶•ì€ Logì˜ ëë‹¨ Mutexë¥¼ ìž¡ì§€ ì•Šì€ ì±„ë¡œ ì´ë£¨ì–´ì§€ê¸° ë•Œë¬¸ì—,
+   ê°™ì€ ë¡œê·¸íŒŒì¼ì— ê¸°ë¡í•  ì„œë¡œ ë‹¤ë¥¸ ë¡œê·¸ë¥¼
+   ë™ì‹œì— ì—¬ëŸ¬ Threadê°€ í•¨ê»˜ ì••ì¶•í•  ìˆ˜ ìžˆë‹¤.
    
-   ¼Õ½¬¿î ±¸Çö ¹æ¹ýÀ¸·Î´Â
-   TransactionÀÌ Log ¾ÐÃàÀ» À§ÇÑ Resource¸¦ °¡Áöµµ·Ï ÇÏ´Â °ÍÀ» »ý°¢ÇØ
-   º¼ ¼ö ÀÖ´Ù.
+   ì†ì‰¬ìš´ êµ¬í˜„ ë°©ë²•ìœ¼ë¡œëŠ”
+   Transactionì´ Log ì••ì¶•ì„ ìœ„í•œ Resourceë¥¼ ê°€ì§€ë„ë¡ í•˜ëŠ” ê²ƒì„ ìƒê°í•´
+   ë³¼ ìˆ˜ ìžˆë‹¤.
 
-   ÇÏÁö¸¸, Active TrasactionÀÌ ¸î°³ ¾ø´Â »óÈ²¿¡¼­
-   ActiveÇÏÁö ¾ÊÀº TransactionµéÀÌ Log ¾ÐÃàÀ» À§ÇÑ Resource¸¦
-   °¡Áö°Ô µÇ¾î ºÒÇÊ¿äÇÑ ¸Þ¸ð¸® ³¶ºñ°¡ ¹ß»ýÇÑ´Ù.
+   í•˜ì§€ë§Œ, Active Trasactionì´ ëª‡ê°œ ì—†ëŠ” ìƒí™©ì—ì„œ
+   Activeí•˜ì§€ ì•Šì€ Transactionë“¤ì´ Log ì••ì¶•ì„ ìœ„í•œ Resourceë¥¼
+   ê°€ì§€ê²Œ ë˜ì–´ ë¶ˆí•„ìš”í•œ ë©”ëª¨ë¦¬ ë‚­ë¹„ê°€ ë°œìƒí•œë‹¤.
 
-º» ¸ðµâÀÇ ¿ªÇÒ :   
-   Log¸¦ ±â·ÏÇÒ¶§¸¸ ÀÓ½ÃÀûÀ¸·Î »ç¿ëÇÏ´Â
-   ·Î±× ¾ÐÃàÀ» À§ÇÑ ¸®¼Ò½º(¸Þ¸ð¸®)¸¦
-   ¿©·¯ TransactionÀÌ ÀçÈ°¿ëÇÒ ¼ö ÀÖµµ·Ï Pool¿¡ ³Ö¾î °ü¸®ÇÑ´Ù.
+ë³¸ ëª¨ë“ˆì˜ ì—­í•  :   
+   Logë¥¼ ê¸°ë¡í• ë•Œë§Œ ìž„ì‹œì ìœ¼ë¡œ ì‚¬ìš©í•˜ëŠ”
+   ë¡œê·¸ ì••ì¶•ì„ ìœ„í•œ ë¦¬ì†ŒìŠ¤(ë©”ëª¨ë¦¬)ë¥¼
+   ì—¬ëŸ¬ Transactionì´ ìž¬í™œìš©í•  ìˆ˜ ìžˆë„ë¡ Poolì— ë„£ì–´ ê´€ë¦¬í•œë‹¤.
 */
 
 class smrCompResPool
 {
 public :
-    /* °´Ã¼ ÃÊ±âÈ­ */
+    /* ê°ì²´ ì´ˆê¸°í™” */
     IDE_RC initialize( SChar * aPoolName,
                        UInt    aInitialResourceCount,    
                        UInt    aMinimumResourceCount,
                        UInt    aGarbageCollectionSecond );
     
-    /* °´Ã¼ ÆÄ±« */
+    /* ê°ì²´ íŒŒê´´ */
     IDE_RC destroy();
 
-    /* ·Î±× ¾ÐÃàÀ» À§ÇÑ Resource ¸¦ ¾ò´Â´Ù */
+    /* ë¡œê·¸ ì••ì¶•ì„ ìœ„í•œ Resource ë¥¼ ì–»ëŠ”ë‹¤ */
     IDE_RC allocCompRes( smrCompRes ** aCompRes );
 
-    /* ·Î±× ¾ÐÃàÀ» À§ÇÑ Resource ¸¦ ¹Ý³³ */
+    /* ë¡œê·¸ ì••ì¶•ì„ ìœ„í•œ Resource ë¥¼ ë°˜ë‚© */
     IDE_RC freeCompRes( smrCompRes * aCompRes );
 
 private :
 
-    /* ·Î±× ¾ÐÃàÀ» À§ÇÑ Resource ¸¦ »ý¼ºÇÑ´Ù */
+    /* ë¡œê·¸ ì••ì¶•ì„ ìœ„í•œ Resource ë¥¼ ìƒì„±í•œë‹¤ */
     IDE_RC createCompRes( smrCompRes ** aCompRes );
 
-    /* ·Î±× ¾ÐÃàÀ» À§ÇÑ Resource ¸¦ ÆÄ±«ÇÑ´Ù */
+    /* ë¡œê·¸ ì••ì¶•ì„ ìœ„í•œ Resource ë¥¼ íŒŒê´´í•œë‹¤ */
     IDE_RC destroyCompRes( smrCompRes * aCompRes );
 
 
-    /* ¸®¼Ò½º Ç® ³»¿¡¼­ÀÇ °¡Àå ¿À·¡µÈ ¸®¼Ò½º ÇÏ³ª¿¡ ´ëÇØ
-       Garbage CollectionÀ» ½Ç½ÃÇÑ´Ù. */
+    /* ë¦¬ì†ŒìŠ¤ í’€ ë‚´ì—ì„œì˜ ê°€ìž¥ ì˜¤ëž˜ëœ ë¦¬ì†ŒìŠ¤ í•˜ë‚˜ì— ëŒ€í•´
+       Garbage Collectionì„ ì‹¤ì‹œí•œë‹¤. */
     IDE_RC garbageCollectOldestRes();
     
-    /* ÀÌ PoolÀÌ »ý¼ºÇÑ ¸ðµç ¾ÐÃà Resource ¸¦ ÆÄ±«ÇÑ´Ù */
+    /* ì´ Poolì´ ìƒì„±í•œ ëª¨ë“  ì••ì¶• Resource ë¥¼ íŒŒê´´í•œë‹¤ */
     IDE_RC destroyAllCompRes();
 
-    /* ¸®¼Ò½º°¡ ¸î ¸¶ÀÌÅ©·Î ÃÊ ÀÌ»ó »ç¿ëµÇÁö ¾ÊÀ» °æ¿ì
-       Garbage CollectionÇÒÁö? */
+    /* ë¦¬ì†ŒìŠ¤ê°€ ëª‡ ë§ˆì´í¬ë¡œ ì´ˆ ì´ìƒ ì‚¬ìš©ë˜ì§€ ì•Šì„ ê²½ìš°
+       Garbage Collectioní• ì§€? */
     UInt           mGarbageCollectionMicro; 
 
-    /* ¸®¼Ò½º Ç® ¾È¿¡ À¯ÁöÇÒ ÃÖ¼ÒÇÑÀÇ ¸®¼Ò½º °¹¼ö
-       Garbage CollectionÇÒ¸¸Å­ ¿À·§µ¿¾È »ç¿ëµÇÁö ¾Ê´õ¶óµµ
-       ÀÌ¸¸Å­ÀÇ ¸®¼Ò½º´Â Ç®¿¡ À¯ÁöÇÑ´Ù. 
+    /* ë¦¬ì†ŒìŠ¤ í’€ ì•ˆì— ìœ ì§€í•  ìµœì†Œí•œì˜ ë¦¬ì†ŒìŠ¤ ê°¯ìˆ˜
+       Garbage Collectioní• ë§Œí¼ ì˜¤ëž«ë™ì•ˆ ì‚¬ìš©ë˜ì§€ ì•Šë”ë¼ë„
+       ì´ë§Œí¼ì˜ ë¦¬ì†ŒìŠ¤ëŠ” í’€ì— ìœ ì§€í•œë‹¤. 
      */
     UInt           mMinimumResourceCount;
     
-    smrCompResList mCompResList;    /* Àç»ç¿ë List */
-    iduMemPool     mCompResMemPool; /* ¾ÐÃà ¸®¼Ò½º¸¦ À§ÇÑ ¸Þ¸ð¸® Ç® */
+    smrCompResList mCompResList;    /* ìž¬ì‚¬ìš© List */
+    iduMemPool     mCompResMemPool; /* ì••ì¶• ë¦¬ì†ŒìŠ¤ë¥¼ ìœ„í•œ ë©”ëª¨ë¦¬ í’€ */
 };
 
 #endif /* _O_SMR_COMP_RES_POOL_H_ */

@@ -21,71 +21,71 @@
 /**************************************************************
  * FILE DESCRIPTION : smlLockMgr.cpp                          *
  * -----------------------------------------------------------*
- ÀÌ ¸ðµâ¿¡¼­ Á¦°øÇÏ´Â ±â´ÉÀº ´ÙÀ½°ú Å©°Ô 4°¡ÁöÀÌ´Ù.
+ ì´ ëª¨ë“ˆì—ì„œ ì œê³µí•˜ëŠ” ê¸°ëŠ¥ì€ ë‹¤ìŒê³¼ í¬ê²Œ 4ê°€ì§€ì´ë‹¤.
 
  1. lock table
  2. unlock table
- 3. record lockÃ³¸®
+ 3. record lockì²˜ë¦¬
  4. dead lock detection
 
 
  - lock table
-  ±âº»ÀûÀ¸·Î tableÀÇ ´ëÇ¥¶ô°ú Áö±Ý Àâ°íÀÚ ÇÏ´Â ¶ô°ú È£È¯°¡´ÉÇÏ¸é,
-  grant list¿¡ ´Þ°í table lockÀ» Àâ°Ô µÇ°í,
-  lock conflictÀÌ ¹ß»ýÇÏ¸é table lock´ë±â ¸®½ºÆ®ÀÎ request list
-  ¿¡ ´Þ°Ô µÇ¸ç, lock waiting table¿¡ µî·ÏÇÏ°í dead lock°Ë»çÈÄ¿¡
-  waitingÇÏ°Ô µÈ´Ù.
+  ê¸°ë³¸ì ìœ¼ë¡œ tableì˜ ëŒ€í‘œë½ê³¼ ì§€ê¸ˆ ìž¡ê³ ìž í•˜ëŠ” ë½ê³¼ í˜¸í™˜ê°€ëŠ¥í•˜ë©´,
+  grant listì— ë‹¬ê³  table lockì„ ìž¡ê²Œ ë˜ê³ ,
+  lock conflictì´ ë°œìƒí•˜ë©´ table lockëŒ€ê¸° ë¦¬ìŠ¤íŠ¸ì¸ request list
+  ì— ë‹¬ê²Œ ë˜ë©°, lock waiting tableì— ë“±ë¡í•˜ê³  dead lockê²€ì‚¬í›„ì—
+  waitingí•˜ê²Œ ëœë‹¤.
 
-  altibase¿¡¼­´Â lock  optimizationÀ» ´ÙÀ½°ú °°ÀÌ ÇÏ¿©,
-  ÄÚµå°¡ º¹ÀâÇÏ°Ô µÇ¾ú´Ù.
+  altibaseì—ì„œëŠ” lock  optimizationì„ ë‹¤ìŒê³¼ ê°™ì´ í•˜ì—¬,
+  ì½”ë“œê°€ ë³µìž¡í•˜ê²Œ ë˜ì—ˆë‹¤.
 
-  : grant lock node »ý¼ºÀ» ÁÙÀÌ±â À§ÇÏ¿©  lock node¾ÈÀÇ
-    lock slotµµÀÔ¹× ÀÌ¿ë.
-    -> ÀÌÀü¿¡ Æ®·£Àè¼ÇÀÌ  table¿¡ ´ëÇÏ¿© lockÀ» Àâ¾Ò°í,
-      Áö±Ý ¿ä±¸ÇÏ´Â table lock mode°¡ È£È¯°¡´ÉÇÏ¸é, »õ·Î¿î
-      grant node¸¦ »ý¼ºÇÏ°í grant list¿¡ ´ÞÁö ¾Ê°í,
-      ±âÁ¸ grant nodeÀÇ lock mode¸¸ conversionÇÏ¿© °»½ÅÇÑ´Ù.
-    ->lock conflictÀÌÁö¸¸,   grantµÈ lock node°¡ 1°³ÀÌ°í,
-      ±×°ÍÀÌ ¹Ù·Î ±×  Æ®·¢Àè¼ÇÀÏ °æ¿ì, ±âÁ¸ grant lock nodeÀÇ
-      lock mode¸¦ conversionÇÏ¿© °»½ÅÇÑ´Ù.
+  : grant lock node ìƒì„±ì„ ì¤„ì´ê¸° ìœ„í•˜ì—¬  lock nodeì•ˆì˜
+    lock slotë„ìž…ë° ì´ìš©.
+    -> ì´ì „ì— íŠ¸ëžœìž­ì…˜ì´  tableì— ëŒ€í•˜ì—¬ lockì„ ìž¡ì•˜ê³ ,
+      ì§€ê¸ˆ ìš”êµ¬í•˜ëŠ” table lock modeê°€ í˜¸í™˜ê°€ëŠ¥í•˜ë©´, ìƒˆë¡œìš´
+      grant nodeë¥¼ ìƒì„±í•˜ê³  grant listì— ë‹¬ì§€ ì•Šê³ ,
+      ê¸°ì¡´ grant nodeì˜ lock modeë§Œ conversioní•˜ì—¬ ê°±ì‹ í•œë‹¤.
+    ->lock conflictì´ì§€ë§Œ,   grantëœ lock nodeê°€ 1ê°œì´ê³ ,
+      ê·¸ê²ƒì´ ë°”ë¡œ ê·¸  íŠ¸ëž™ìž­ì…˜ì¼ ê²½ìš°, ê¸°ì¡´ grant lock nodeì˜
+      lock modeë¥¼ conversioní•˜ì—¬ ê°±ì‹ í•œë‹¤.
 
-  : unlock table½Ã request list¿¡ ÀÖ´Â node¸¦
-    grant listÀ¸·Î moveµÇ´Â ºñ¿ëÀ» ÁÙÀÌ±â À§ÇÏ¿© lock node¾È¿¡
-    cvs lock node pointer¸¦ µµÀÔÇÏ¿´´Ù.
-    -> lock conflict ÀÌ°í Æ®·£Àè¼ÇÀÌ ÀÌÀü¿¡ table¿¡ ´ëÇÏ¿© grantµÈ
-      lock node¸¦ °¡Áö°í ÀÖ´Â °æ¿ì, request list¿¡ ´Þ »õ·Î¿î
-      lock nodeÀÇ cvs lock¸¦ ÀÌÀü¿¡ grant lock node¸¦ pointing
-      ÇÏ°ÔÇÔ.
-   %³ªÁß¿¡ ´Ù¸¥ Æ®·£Àè¼ÇÀÇ unlock table½Ã request¿¡ ÀÖ¾ú´ø lock
-   node°¡ »õ·Î °»½ÅµÈ grant mode¿Í È£È¯°¡´ÉÇÒ¶§ , ÀÌ lock node¸¦
-   grant listÀ¸·Î moveÇÏ´Â ´ë½Å, ±âÁ¸ grant lock nodeÀÇ lock mode
-   ¸¸ conversionÇÑ´Ù.
+  : unlock tableì‹œ request listì— ìžˆëŠ” nodeë¥¼
+    grant listìœ¼ë¡œ moveë˜ëŠ” ë¹„ìš©ì„ ì¤„ì´ê¸° ìœ„í•˜ì—¬ lock nodeì•ˆì—
+    cvs lock node pointerë¥¼ ë„ìž…í•˜ì˜€ë‹¤.
+    -> lock conflict ì´ê³  íŠ¸ëžœìž­ì…˜ì´ ì´ì „ì— tableì— ëŒ€í•˜ì—¬ grantëœ
+      lock nodeë¥¼ ê°€ì§€ê³  ìžˆëŠ” ê²½ìš°, request listì— ë‹¬ ìƒˆë¡œìš´
+      lock nodeì˜ cvs lockë¥¼ ì´ì „ì— grant lock nodeë¥¼ pointing
+      í•˜ê²Œí•¨.
+   %ë‚˜ì¤‘ì— ë‹¤ë¥¸ íŠ¸ëžœìž­ì…˜ì˜ unlock tableì‹œ requestì— ìžˆì—ˆë˜ lock
+   nodeê°€ ìƒˆë¡œ ê°±ì‹ ëœ grant modeì™€ í˜¸í™˜ê°€ëŠ¥í• ë•Œ , ì´ lock nodeë¥¼
+   grant listìœ¼ë¡œ moveí•˜ëŠ” ëŒ€ì‹ , ê¸°ì¡´ grant lock nodeì˜ lock mode
+   ë§Œ conversioní•œë‹¤.
 
  - unlock table.
-   lock node°¡ grantµÇ¾î ÀÖ´Â °æ¿ì¿¡´Â ´ÙÀ½°ú °°ÀÌ µ¿ÀÛÇÑ´Ù.
-    1> »õ·Î¿î tableÀÇ ´ëÇ¥¶ô°ú grant lock mode¸¦ °»½ÅÇÑ´Ù.
-    2>  grant list¿¡¼­ lock node¸¦ Á¦°Å½ÃÅ²´Ù.
-      -> Lock node¾È¿¡ lock slotÀÌ 2°³ ÀÌ»óÀÖ´Â °æ¿ì¿¡´Â
-       Á¦°Å¾ÈÇÔ.
-   lock node°¡ requestµÇ¾î ÀÖ¾ú´ø °æ¿ì¿¡´Â request list¿¡¼­
-   Á¦°ÅÇÑ´Ù.
+   lock nodeê°€ grantë˜ì–´ ìžˆëŠ” ê²½ìš°ì—ëŠ” ë‹¤ìŒê³¼ ê°™ì´ ë™ìž‘í•œë‹¤.
+    1> ìƒˆë¡œìš´ tableì˜ ëŒ€í‘œë½ê³¼ grant lock modeë¥¼ ê°±ì‹ í•œë‹¤.
+    2>  grant listì—ì„œ lock nodeë¥¼ ì œê±°ì‹œí‚¨ë‹¤.
+      -> Lock nodeì•ˆì— lock slotì´ 2ê°œ ì´ìƒìžˆëŠ” ê²½ìš°ì—ëŠ”
+       ì œê±°ì•ˆí•¨.
+   lock nodeê°€ requestë˜ì–´ ìžˆì—ˆë˜ ê²½ìš°ì—ëŠ” request listì—ì„œ
+   ì œê±°í•œë‹¤.
 
-   request list¿¡ ÀÖ´Â lock nodeÁß¿¡
-   ÇöÀç °»½ÅµÈ grant lock mode¿Í È£È¯°¡´ÉÇÑ
-   Transactionµé À» ´ÙÀ½°ú °°ÀÌ ±ú¿î´Ù.
-   1.  request list¿¡¼­ lock nodeÁ¦°Å.
-   2.  table lockÁ¤º¸¿¡¼­ grant lock mode¸¦ °»½Å.
-   3.  cvs lock node°¡ ÀÖÀ¸¸é,ÀÌ lock node¸¦
-      grant listÀ¸·Î moveÇÏ´Â ´ë½Å, ±âÁ¸ grant lock nodeÀÇ
-      lock mode ¸¸ conversionÇÑ´Ù.
-   4. cvs lock node°¡ ¾øÀ¸¸é grant list¿¡ lock node add.
-   5.  waiting table¿¡¼­ ÀÚ½ÅÀ» wainting ÇÏ°í ÀÖ´Â Æ®·£Àè¼Ç
-       ÀÇ ´ë±â »óÅÂ clear.
-   6.  waitingÇÏ°í ÀÖ´Â Æ®·£Àè¼ÇÀ» resume½ÃÅ²´Ù.
-   7.  lock slot, lock node Á¦°Å ½Ãµµ.
+   request listì— ìžˆëŠ” lock nodeì¤‘ì—
+   í˜„ìž¬ ê°±ì‹ ëœ grant lock modeì™€ í˜¸í™˜ê°€ëŠ¥í•œ
+   Transactionë“¤ ì„ ë‹¤ìŒê³¼ ê°™ì´ ê¹¨ìš´ë‹¤.
+   1.  request listì—ì„œ lock nodeì œê±°.
+   2.  table lockì •ë³´ì—ì„œ grant lock modeë¥¼ ê°±ì‹ .
+   3.  cvs lock nodeê°€ ìžˆìœ¼ë©´,ì´ lock nodeë¥¼
+      grant listìœ¼ë¡œ moveí•˜ëŠ” ëŒ€ì‹ , ê¸°ì¡´ grant lock nodeì˜
+      lock mode ë§Œ conversioní•œë‹¤.
+   4. cvs lock nodeê°€ ì—†ìœ¼ë©´ grant listì— lock node add.
+   5.  waiting tableì—ì„œ ìžì‹ ì„ wainting í•˜ê³  ìžˆëŠ” íŠ¸ëžœìž­ì…˜
+       ì˜ ëŒ€ê¸° ìƒíƒœ clear.
+   6.  waitingí•˜ê³  ìžˆëŠ” íŠ¸ëžœìž­ì…˜ì„ resumeì‹œí‚¨ë‹¤.
+   7.  lock slot, lock node ì œê±° ì‹œë„.
 
- - waiting table Ç¥Çö.
-   waiting tableÀº chained matrixÀÌ°í, ´ÙÀ½°ú °°ÀÌ Ç¥ÇöµÈ´Ù.
+ - waiting table í‘œí˜„.
+   waiting tableì€ chained matrixì´ê³ , ë‹¤ìŒê³¼ ê°™ì´ í‘œí˜„ëœë‹¤.
 
      T1   T2   T3   T4   T5   T6
 
@@ -103,35 +103,35 @@
     --------------------------------->
     table lock waiting or transaction waiting list
 
-    T3Àº T4, T6¿¡ ´ëÇÏ¿© table lock waiting¶Ç´Â
-    transaction waiting(record lockÀÏ °æ¿ì)ÇÏ°í ÀÖ´Ù.
+    T3ì€ T4, T6ì— ëŒ€í•˜ì—¬ table lock waitingë˜ëŠ”
+    transaction waiting(record lockì¼ ê²½ìš°)í•˜ê³  ìžˆë‹¤.
 
-    T2¿¡ ´ëÇÏ¿©  T4,T6°¡ record lock waitingÇÏ°í ÀÖÀ¸¸ç,
-    T2°¡ commit or rollback½Ã¿¡ T4,T6 ÇàÀÇ T2¿­ÀÇ ´ë±â
-    »óÅÂ¸¦ clearÇÏ°í resume½ÃÅ²´Ù.
+    T2ì— ëŒ€í•˜ì—¬  T4,T6ê°€ record lock waitingí•˜ê³  ìžˆìœ¼ë©°,
+    T2ê°€ commit or rollbackì‹œì— T4,T6 í–‰ì˜ T2ì—´ì˜ ëŒ€ê¸°
+    ìƒíƒœë¥¼ clearí•˜ê³  resumeì‹œí‚¨ë‹¤.
 
- -  record lockÃ³¸®
-   recod lock grant, request list¿Í node´Â ¾ø´Ù.
-   ´Ù¸¸ waiting table¿¡¼­  ´ë±âÇÏ·Á´Â transaction AÀÇ column¿¡
-   record lock ´ë±â¸¦ µî·Ï½ÃÅ°°í, transaction A abort,commitÀÌ
-   ¹ß»ýÇÏ¸é ÀÚ½Å¿¡°Ô µî·ÏµÈ record lock ´ë±â listÀ» ¼øÈ¸ÇÏ¸ç
-   record lock´ë±â»óÅÂ¸¦ clearÇÏ°í, Æ®·£Àè¼ÇµéÀ» ±ú¿î´Ù.
+ -  record lockì²˜ë¦¬
+   recod lock grant, request listì™€ nodeëŠ” ì—†ë‹¤.
+   ë‹¤ë§Œ waiting tableì—ì„œ  ëŒ€ê¸°í•˜ë ¤ëŠ” transaction Aì˜ columnì—
+   record lock ëŒ€ê¸°ë¥¼ ë“±ë¡ì‹œí‚¤ê³ , transaction A abort,commitì´
+   ë°œìƒí•˜ë©´ ìžì‹ ì—ê²Œ ë“±ë¡ëœ record lock ëŒ€ê¸° listì„ ìˆœíšŒí•˜ë©°
+   record lockëŒ€ê¸°ìƒíƒœë¥¼ clearí•˜ê³ , íŠ¸ëžœìž­ì…˜ë“¤ì„ ê¹¨ìš´ë‹¤.
 
 
  - dead lock detection.
-  dead lock dectioinÀº ´ÙÀ½°ú °°Àº µÎ°¡Áö °æ¿ì¿¡
-  ´ëÇÏ¿© ¼öÇàÇÑ´Ù.
+  dead lock dectioinì€ ë‹¤ìŒê³¼ ê°™ì€ ë‘ê°€ì§€ ê²½ìš°ì—
+  ëŒ€í•˜ì—¬ ìˆ˜í–‰í•œë‹¤.
 
-   1. Tx A°¡ table lock½Ã conflictÀÌ ¹ß»ýÇÏ¿© request list¿¡ ´Þ°í,
-     Tx AÀÇ ÇàÀÇ ¿­¿¡ waiting list¸¦ µî·ÏÇÒ¶§,waiting table¿¡¼­
-     Tx A¿¡ ´ëÇÏ¿© cycleÀÌ ¹ß»ýÇÏ¸é transactionÀ» abort½ÃÅ²´Ù.
+   1. Tx Aê°€ table lockì‹œ conflictì´ ë°œìƒí•˜ì—¬ request listì— ë‹¬ê³ ,
+     Tx Aì˜ í–‰ì˜ ì—´ì— waiting listë¥¼ ë“±ë¡í• ë•Œ,waiting tableì—ì„œ
+     Tx Aì— ëŒ€í•˜ì—¬ cycleì´ ë°œìƒí•˜ë©´ transactionì„ abortì‹œí‚¨ë‹¤.
 
 
-   2.Tx A°¡  record R1À» update½ÃµµÇÏ´Ù°¡,
-   ´Ù¸¥ Tx B¿¡ ÀÇÇÏ¿© ÀÌ¹Ì  active¿©¼­ record lockÀ» ´ë±âÇÒ¶§.
-    -  Tx BÀÇ record lock ´ë±â¿­¿¡¼­  Tx A¸¦ µî·ÏÇÏ°í,
-       Tx A°¡ Tx B¿¡ ´ë±âÇÔÀ» ±â·ÏÇÏ°í ³ª¼­  waiting table¿¡¼­
-       Tx A¿¡ ´ëÇÏ¿© cycleÀÌ ¹ß»ýÇÏ¸é transactionÀ» abort½ÃÅ²´Ù.
+   2.Tx Aê°€  record R1ì„ updateì‹œë„í•˜ë‹¤ê°€,
+   ë‹¤ë¥¸ Tx Bì— ì˜í•˜ì—¬ ì´ë¯¸  activeì—¬ì„œ record lockì„ ëŒ€ê¸°í• ë•Œ.
+    -  Tx Bì˜ record lock ëŒ€ê¸°ì—´ì—ì„œ  Tx Aë¥¼ ë“±ë¡í•˜ê³ ,
+       Tx Aê°€ Tx Bì— ëŒ€ê¸°í•¨ì„ ê¸°ë¡í•˜ê³  ë‚˜ì„œ  waiting tableì—ì„œ
+       Tx Aì— ëŒ€í•˜ì—¬ cycleì´ ë°œìƒí•˜ë©´ transactionì„ abortì‹œí‚¨ë‹¤.
 
 
 *************************************************************************/
@@ -152,16 +152,16 @@
 
 /*********************************************************
   function description: decTblLockModeAndTryUpdate
-  table lock Á¤º¸ÀÎ aLockItem¿¡¼­
-  Lock nodeÀÇ lock mode¿¡ ÇØ´çÇÏ´Â lock modeÀÇ °¹¼ö¸¦ ÁÙÀÌ°í,
-  ¸¸¾à 0ÀÌ µÈ´Ù¸é, tableÀÇ ´ëÇ¥¶ôÀ» º¯°æÇÑ´Ù.
+  table lock ì •ë³´ì¸ aLockItemì—ì„œ
+  Lock nodeì˜ lock modeì— í•´ë‹¹í•˜ëŠ” lock modeì˜ ê°¯ìˆ˜ë¥¼ ì¤„ì´ê³ ,
+  ë§Œì•½ 0ì´ ëœë‹¤ë©´, tableì˜ ëŒ€í‘œë½ì„ ë³€ê²½í•œë‹¤.
 ***********************************************************/
 void smlLockMgr::decTblLockModeAndTryUpdate( smlLockItemMutex*   aLockItem,
                                              smlLockMode         aLockMode )
 {
     --(aLockItem->mArrLockCount[aLockMode]);
     IDE_ASSERT(aLockItem->mArrLockCount[aLockMode] >= 0);
-    // tableÀÇ ´ëÇ¥ ¶ôÀ» º¯°æÇÑ´Ù.
+    // tableì˜ ëŒ€í‘œ ë½ì„ ë³€ê²½í•œë‹¤.
     if ( aLockItem->mArrLockCount[aLockMode] ==  0 )
     {
         aLockItem->mFlag &= ~(mLockModeToMask[aLockMode]);
@@ -170,9 +170,9 @@ void smlLockMgr::decTblLockModeAndTryUpdate( smlLockItemMutex*   aLockItem,
 
 /*********************************************************
   function description: incTblLockModeUpdate
-  table lock Á¤º¸ÀÎ aLockItem¿¡¼­
-  Lock nodeÀÇ lock mode¿¡ ÇØ´çÇÏ´Â lock modeÀÇ °¹¼ö¸¦ ´ÃÀÌ°í,
-   tableÀÇ ´ëÇ¥¶ôÀ» º¯°æÇÑ´Ù.
+  table lock ì •ë³´ì¸ aLockItemì—ì„œ
+  Lock nodeì˜ lock modeì— í•´ë‹¹í•˜ëŠ” lock modeì˜ ê°¯ìˆ˜ë¥¼ ëŠ˜ì´ê³ ,
+   tableì˜ ëŒ€í‘œë½ì„ ë³€ê²½í•œë‹¤.
 ***********************************************************/
 void smlLockMgr::incTblLockModeAndUpdate( smlLockItemMutex*  aLockItem,
                                           smlLockMode        aLockMode )
@@ -380,109 +380,109 @@ IDE_RC smlLockMgr::initLockItemMutex( scSpaceID       aSpaceID,
 
 /*********************************************************
   function description: lockTable
-  table¿¡ lockÀ» °É¶§ ´ÙÀ½°ú °°Àº case¿¡ µû¶ó °¢°¢ Ã³¸®ÇÑ´Ù.
+  tableì— lockì„ ê±¸ë•Œ ë‹¤ìŒê³¼ ê°™ì€ caseì— ë”°ë¼ ê°ê° ì²˜ë¦¬í•œë‹¤.
 
-  1. ÀÌÀü¿¡ Æ®·£Àè¼ÇÀÌ  table A¿¡  lockÀ» Àâ¾Ò°í,
-    ÀÌÀü¿¡ ÀâÀº lock mode¿Í Áö±Ý Àâ°íÀÚ ÇÏ´Â ¶ô¸ðµå º¯È¯°á°ú°¡
-    °°À¸¸é ¹Ù·Î return.
+  1. ì´ì „ì— íŠ¸ëžœìž­ì…˜ì´  table Aì—  lockì„ ìž¡ì•˜ê³ ,
+    ì´ì „ì— ìž¡ì€ lock modeì™€ ì§€ê¸ˆ ìž¡ê³ ìž í•˜ëŠ” ë½ëª¨ë“œ ë³€í™˜ê²°ê³¼ê°€
+    ê°™ìœ¼ë©´ ë°”ë¡œ return.
 
-  2. tableÀÇ grant lock mode°ú Áö±Ý Àâ°íÀÚ ÇÏ´Â ¶ô°ú È£È¯°¡´ÉÇÑ°æ¿ì.
+  2. tableì˜ grant lock modeê³¼ ì§€ê¸ˆ ìž¡ê³ ìž í•˜ëŠ” ë½ê³¼ í˜¸í™˜ê°€ëŠ¥í•œê²½ìš°.
 
-     2.1  table ¿¡ lock waitingÇÏ´Â Æ®·£Àè¼ÇÀÌ ÇÏ³ªµµ ¾ø°í,
-          ÀÌÀü¿¡ Æ®·£Àè¼ÇÀÌ table¿¡ ´ëÇÏ¿© lockÀ» ÀâÁö ¾Ê´Â °æ¿ì.
+     2.1  table ì— lock waitingí•˜ëŠ” íŠ¸ëžœìž­ì…˜ì´ í•˜ë‚˜ë„ ì—†ê³ ,
+          ì´ì „ì— íŠ¸ëžœìž­ì…˜ì´ tableì— ëŒ€í•˜ì—¬ lockì„ ìž¡ì§€ ì•ŠëŠ” ê²½ìš°.
 
-       -  lock node¸¦ ÇÒ´çÇÏ°í ÃÊ±âÈ­ÇÑ´Ù.
-       -  table lockÀÇ grant list tail¿¡ addÇÑ´Ù.
-       -  lock node°¡ grantµÇ¾úÀ½À» °»½ÅÇÏ°í,
-          table lockÀÇ grant count¸¦ 1Áõ°¡ ½ÃÅ²´Ù.
-       -  Æ®·¢Àè¼ÇÀÇ lock list¿¡  lock node¸¦  addÇÑ´Ù.
+       -  lock nodeë¥¼ í• ë‹¹í•˜ê³  ì´ˆê¸°í™”í•œë‹¤.
+       -  table lockì˜ grant list tailì— addí•œë‹¤.
+       -  lock nodeê°€ grantë˜ì—ˆìŒì„ ê°±ì‹ í•˜ê³ ,
+          table lockì˜ grant countë¥¼ 1ì¦ê°€ ì‹œí‚¨ë‹¤.
+       -  íŠ¸ëž™ìž­ì…˜ì˜ lock listì—  lock nodeë¥¼  addí•œë‹¤.
 
-     2.2  table ¿¡ lock waitingÇÏ´Â Æ®·£Àè¼ÇµéÀÌ ÀÖÁö¸¸,
-          ÀÌÀü¿¡ Æ®·£Àè¼ÇÀÌ  table¿¡ ´ëÇÏ¿© lockÀ» ÀâÀº °æ¿ì.
-         -  table¿¡¼­ grantµÈ lock mode array¿¡¼­
-            Æ®·£Àè¼ÇÀÇ lock nodeÀÇ   lock mode¸¦ 1°¨¼Ò.
-            table ÀÇ ´ëÇ¥¶ô °»½Å½Ãµµ.
+     2.2  table ì— lock waitingí•˜ëŠ” íŠ¸ëžœìž­ì…˜ë“¤ì´ ìžˆì§€ë§Œ,
+          ì´ì „ì— íŠ¸ëžœìž­ì…˜ì´  tableì— ëŒ€í•˜ì—¬ lockì„ ìž¡ì€ ê²½ìš°.
+         -  tableì—ì„œ grantëœ lock mode arrayì—ì„œ
+            íŠ¸ëžœìž­ì…˜ì˜ lock nodeì˜   lock modeë¥¼ 1ê°ì†Œ.
+            table ì˜ ëŒ€í‘œë½ ê°±ì‹ ì‹œë„.
 
-     2.1, 2.2ÀÇ °øÅëÀûÀ¸·Î  ´ÙÀ½À» ¼öÇàÇÏ°í 3¹øÂ° ´Ü°è·Î ³Ñ¾î°¨.
-     - ÇöÀç ¿äÃ»ÇÑ lock mode¿Í ÀÌÀü  lock mode¸¦
-      conversionÇÏ¿©, lock nodeÀÇ lock mode¸¦ °»½Å.
-     - lock nodeÀÇ °»½ÅµÈ  lock modeÀ» ÀÌ¿ëÇÏ¿©
-      table¿¡¼­ grantµÈ lock mode array¿¡¼­
-      »õ·Î¿î lockmode ¿¡ ÇØ´çÇÏ´Â lock mode¸¦ 1Áõ°¡ÇÏ°í
-      tableÀÇ ´ëÇ¥¶ôÀ» °»½Å.
-     - table lockÀÇ grant mode¸¦ °»½Å.
-     - grant lock nodeÀÇ lock°¹¼ö Áõ°¡.
+     2.1, 2.2ì˜ ê³µí†µì ìœ¼ë¡œ  ë‹¤ìŒì„ ìˆ˜í–‰í•˜ê³  3ë²ˆì§¸ ë‹¨ê³„ë¡œ ë„˜ì–´ê°.
+     - í˜„ìž¬ ìš”ì²­í•œ lock modeì™€ ì´ì „  lock modeë¥¼
+      conversioní•˜ì—¬, lock nodeì˜ lock modeë¥¼ ê°±ì‹ .
+     - lock nodeì˜ ê°±ì‹ ëœ  lock modeì„ ì´ìš©í•˜ì—¬
+      tableì—ì„œ grantëœ lock mode arrayì—ì„œ
+      ìƒˆë¡œìš´ lockmode ì— í•´ë‹¹í•˜ëŠ” lock modeë¥¼ 1ì¦ê°€í•˜ê³ 
+      tableì˜ ëŒ€í‘œë½ì„ ê°±ì‹ .
+     - table lockì˜ grant modeë¥¼ ê°±ì‹ .
+     - grant lock nodeì˜ lockê°¯ìˆ˜ ì¦ê°€.
 
-     2.3  ÀÌÀü¿¡ Æ®·£Àè¼ÇÀÌ table¿¡ ´ëÇÏ¿© lockÀ» ÀâÁö ¾Ê¾Ò°í,
-          tableÀÇ request list°¡ ºñ¾î ÀÖÁö ¾Ê´Â °æ¿ì.
-         - lockÀ» grantÇÏÁö ¾Ê°í 3.2Àý°ú °°ÀÌ lock´ë±âÃ³¸®¸¦
-           ÇÑ´Ù.
-           % ÇüÆò¼º ¹®Á¦ ¶§¹®¿¡ ÀÌ·¸°Ô Ã³¸®ÇÑ´Ù.
+     2.3  ì´ì „ì— íŠ¸ëžœìž­ì…˜ì´ tableì— ëŒ€í•˜ì—¬ lockì„ ìž¡ì§€ ì•Šì•˜ê³ ,
+          tableì˜ request listê°€ ë¹„ì–´ ìžˆì§€ ì•ŠëŠ” ê²½ìš°.
+         - lockì„ grantí•˜ì§€ ì•Šê³  3.2ì ˆê³¼ ê°™ì´ lockëŒ€ê¸°ì²˜ë¦¬ë¥¼
+           í•œë‹¤.
+           % í˜•í‰ì„± ë¬¸ì œ ë•Œë¬¸ì— ì´ë ‡ê²Œ ì²˜ë¦¬í•œë‹¤.
 
-  3. tableÀÇ grant lock mode°ú Áö±Ý Àâ°íÀÚ ÇÏ´Â ¶ô°ú È£È¯ºÒ°¡´ÉÇÑ °æ¿ì.
-     3.1 lock conflictÀÌÁö¸¸,   grantµÈ lock node°¡ 1°³ÀÌ°í,
-         ±×°ÍÀÌ ¹Ù·Î ±×  Æ®·¢Àè¼ÇÀÏ °æ¿ì.
-      - request list¿¡ ´ÞÁö ¾Ê°í
-        ±âÁ¸ grantµÈ  lock nodeÀÇ lock mode¿Í tableÀÇ ´ëÇ¥¶ô,
-        grant lock mode¸¦   °»½ÅÇÑ´Ù.
+  3. tableì˜ grant lock modeê³¼ ì§€ê¸ˆ ìž¡ê³ ìž í•˜ëŠ” ë½ê³¼ í˜¸í™˜ë¶ˆê°€ëŠ¥í•œ ê²½ìš°.
+     3.1 lock conflictì´ì§€ë§Œ,   grantëœ lock nodeê°€ 1ê°œì´ê³ ,
+         ê·¸ê²ƒì´ ë°”ë¡œ ê·¸  íŠ¸ëž™ìž­ì…˜ì¼ ê²½ìš°.
+      - request listì— ë‹¬ì§€ ì•Šê³ 
+        ê¸°ì¡´ grantëœ  lock nodeì˜ lock modeì™€ tableì˜ ëŒ€í‘œë½,
+        grant lock modeë¥¼   ê°±ì‹ í•œë‹¤.
 
-     3.2 lock conflict ÀÌ°í lock ´ë±â ½Ã°£ÀÌ 0ÀÌ ¾Æ´Ñ °æ¿ì.
-        -  request list¿¡ ´Þ lock node¸¦ »ý¼ºÇÏ°í
-         ¾Æ·¡ ¼¼ºÎ case¿¡ ´ëÇÏ¿©, ºÐ±â.
-        3.2.1 Æ®·£Àè¼ÇÀÌ ÀÌÀü¿¡ table¿¡ ´ëÇÏ¿© grantµÈ
-              lock node¸¦ °¡Áö°í ÀÖ´Â °æ¿ì.
-           -  request listÀÇ Çì´õ¿¡ »ý¼ºµÈ lock node¸¦ Ãß°¡.
-           -  request list¿¡ ¸Å´Ü lock nodeÀÇ cvs node¸¦
-               grantµÈ lock nodeÀÇ ÁÖ¼Ò·Î assgin.
-            -> ³ªÁß¿¡ ´Ù¸¥ Æ®·£Àè¼Ç¿¡¼­  unlock table½Ã¿¡
-                request list¿¡ ÀÖ´Â lock node¿Í
-               °»½ÅµÈ table grant mode¿Í È£È¯µÉ¶§,
-               grant list¿¡ º°µµ·Î insertÇÏÁö ¾Ê°í ,
-               ±âÁ¸ cvs lock nodeÀÇ lock mode¸¸ °»½Å½ÃÄÑ
-               grant list ¿¬»êÀ» ÁÙÀÌ·Á´Â ÀÇµµÀÓ.
+     3.2 lock conflict ì´ê³  lock ëŒ€ê¸° ì‹œê°„ì´ 0ì´ ì•„ë‹Œ ê²½ìš°.
+        -  request listì— ë‹¬ lock nodeë¥¼ ìƒì„±í•˜ê³ 
+         ì•„ëž˜ ì„¸ë¶€ caseì— ëŒ€í•˜ì—¬, ë¶„ê¸°.
+        3.2.1 íŠ¸ëžœìž­ì…˜ì´ ì´ì „ì— tableì— ëŒ€í•˜ì—¬ grantëœ
+              lock nodeë¥¼ ê°€ì§€ê³  ìžˆëŠ” ê²½ìš°.
+           -  request listì˜ í—¤ë”ì— ìƒì„±ëœ lock nodeë¥¼ ì¶”ê°€.
+           -  request listì— ë§¤ë‹¨ lock nodeì˜ cvs nodeë¥¼
+               grantëœ lock nodeì˜ ì£¼ì†Œë¡œ assgin.
+            -> ë‚˜ì¤‘ì— ë‹¤ë¥¸ íŠ¸ëžœìž­ì…˜ì—ì„œ  unlock tableì‹œì—
+                request listì— ìžˆëŠ” lock nodeì™€
+               ê°±ì‹ ëœ table grant modeì™€ í˜¸í™˜ë ë•Œ,
+               grant listì— ë³„ë„ë¡œ insertí•˜ì§€ ì•Šê³  ,
+               ê¸°ì¡´ cvs lock nodeì˜ lock modeë§Œ ê°±ì‹ ì‹œì¼œ
+               grant list ì—°ì‚°ì„ ì¤„ì´ë ¤ëŠ” ì˜ë„ìž„.
 
-        3.2.2 ÀÌÀü¿¡ grantµÈ lock node°¡ ¾ø´Â °æ¿ì.
-            -  table lock request list¿¡¼­ ÀÖ´Â Æ®·£Àè¼ÇµéÀÇ
-               slot idµéÀ»  waitingTable¿¡¼­ lockÀ» ¿ä±¸ÇÑ
-               Æ®·¢Àè¼ÇÀÇ slot id Çà¿¡ list·Î ¿¬°áÇÑ´Ù
-               %°æ·Î±æÀÌ´Â 1·Î
-            - request listÀÇ tail¿¡ »ý¼ºµÈ lock node¸¦ Ãß°¡.
+        3.2.2 ì´ì „ì— grantëœ lock nodeê°€ ì—†ëŠ” ê²½ìš°.
+            -  table lock request listì—ì„œ ìžˆëŠ” íŠ¸ëžœìž­ì…˜ë“¤ì˜
+               slot idë“¤ì„  waitingTableì—ì„œ lockì„ ìš”êµ¬í•œ
+               íŠ¸ëž™ìž­ì…˜ì˜ slot id í–‰ì— listë¡œ ì—°ê²°í•œë‹¤
+               %ê²½ë¡œê¸¸ì´ëŠ” 1ë¡œ
+            - request listì˜ tailì— ìƒì„±ëœ lock nodeë¥¼ ì¶”ê°€.
 
-        3.2.1, 3.2.2 °øÅëÀ¸·Î ¸¶¹«¸® ½ºÅÜÀ¸·Î ´ÙÀ½°ú °°ÀÌÇÑ´Ù.
+        3.2.1, 3.2.2 ê³µí†µìœ¼ë¡œ ë§ˆë¬´ë¦¬ ìŠ¤í…ìœ¼ë¡œ ë‹¤ìŒê³¼ ê°™ì´í•œë‹¤.
 
-        - waiting table¿¡¼­   Æ®·£Àè¼ÇÀÇ slot id Çà¿¡
-        grant list¿¡¼­     ÀÖ´ÂÆ®·¢Àè¼Çµé ÀÇ
-        slot id¸¦  table lock waiting ¸®½ºÆ®¿¡ µî·ÏÇÑ´Ù.
-        - dead lock ¸¦ °Ë»çÇÑ´Ù(isCycle)
-         -> smxTransMgr::waitForLock¿¡¼­ °Ë»çÇÏ¸ç,
-          dead lockÀÌ ¹ß»ýÇÏ¸é Æ®·£Àè¼Ç abort.
-        - waitingÇÏ°Ô µÈ´Ù(suspend).
-         ->smxTransMgr::waitForLock¿¡¼­ ¼öÇàÇÑ´Ù.
-        -  ´Ù¸¥ Æ®·£Àè¼ÇÀÌ commit/abortµÇ¸é¼­ wakeupµÇ¸é,
-          waiting table¿¡¼­ ÀÚ½ÅÀÇ Æ®·£Àè¼Ç slot id¿¡
-          ´ëÀÀÇÏ´Â Çà¿¡¼­  ´ë±â ÄÃ·³µéÀ» clearÇÑ´Ù.
-        -  Æ®·£Àè¼ÇÀÇ lock list¿¡ lock node¸¦ Ãß°¡ÇÑ´Ù.
-          : lockÀ» Àâ°Ô µÇ¾ú±â¶§¹®¿¡.
+        - waiting tableì—ì„œ   íŠ¸ëžœìž­ì…˜ì˜ slot id í–‰ì—
+        grant listì—ì„œ     ìžˆëŠ”íŠ¸ëž™ìž­ì…˜ë“¤ ì˜
+        slot idë¥¼  table lock waiting ë¦¬ìŠ¤íŠ¸ì— ë“±ë¡í•œë‹¤.
+        - dead lock ë¥¼ ê²€ì‚¬í•œë‹¤(isCycle)
+         -> smxTransMgr::waitForLockì—ì„œ ê²€ì‚¬í•˜ë©°,
+          dead lockì´ ë°œìƒí•˜ë©´ íŠ¸ëžœìž­ì…˜ abort.
+        - waitingí•˜ê²Œ ëœë‹¤(suspend).
+         ->smxTransMgr::waitForLockì—ì„œ ìˆ˜í–‰í•œë‹¤.
+        -  ë‹¤ë¥¸ íŠ¸ëžœìž­ì…˜ì´ commit/abortë˜ë©´ì„œ wakeupë˜ë©´,
+          waiting tableì—ì„œ ìžì‹ ì˜ íŠ¸ëžœìž­ì…˜ slot idì—
+          ëŒ€ì‘í•˜ëŠ” í–‰ì—ì„œ  ëŒ€ê¸° ì»¬ëŸ¼ë“¤ì„ clearí•œë‹¤.
+        -  íŠ¸ëžœìž­ì…˜ì˜ lock listì— lock nodeë¥¼ ì¶”ê°€í•œë‹¤.
+          : lockì„ ìž¡ê²Œ ë˜ì—ˆê¸°ë•Œë¬¸ì—.
 
-     3.3 lock conflict ÀÌ°í lock´ë±â ½Ã°£ÀÌ 0ÀÎ °æ¿ì.
-        : lock flag¸¦ ID_FALSE·Î °»½Å.
+     3.3 lock conflict ì´ê³  lockëŒ€ê¸° ì‹œê°„ì´ 0ì¸ ê²½ìš°.
+        : lock flagë¥¼ ID_FALSEë¡œ ê°±ì‹ .
 
-  4. Æ®·£Àè¼ÇÀÇ lock slot list¿¡  lock slot  Ãß°¡ .
+  4. íŠ¸ëžœìž­ì…˜ì˜ lock slot listì—  lock slot  ì¶”ê°€ .
 
 
- BUG-28752 lock table ... in row share mode ±¸¹®ÀÌ ¸ÔÈ÷Áö ¾Ê½À´Ï´Ù.
+ BUG-28752 lock table ... in row share mode êµ¬ë¬¸ì´ ë¨¹ížˆì§€ ì•ŠìŠµë‹ˆë‹¤.
 
- implicit/explicit lockÀ» ±¸ºÐÇÏ¿© °Ì´Ï´Ù.
- implicit is lock¸¸ statement end½Ã Ç®¾îÁÖ±â À§ÇÔÀÔ´Ï´Ù. 
+ implicit/explicit lockì„ êµ¬ë¶„í•˜ì—¬ ê²ë‹ˆë‹¤.
+ implicit is lockë§Œ statement endì‹œ í’€ì–´ì£¼ê¸° ìœ„í•¨ìž…ë‹ˆë‹¤. 
 
- ÀÌ °æ¿ì Upgrding Lock¿¡ ´ëÇØ °í·ÁÇÏÁö ¾Ê¾Æµµ µË´Ï´Ù.
-  Áï, Implicit IS LockÀÌ °É¸° »óÅÂ¿¡¼­ Explicit IS LockÀ» °É·Á ÇÏ°Å³ª
- Explicit IS LockÀÌ °É¸° »óÅÂ¿¡¼­ Implicit IS LockÀÌ °É¸° °æ¿ì¿¡ ´ëÇØ
- °í·ÁÇÏÁö ¾Ê¾Æµµ µË´Ï´Ù.
-  ¿Ö³ÄÇÏ¸é Imp°¡ ¸ÕÀú °É·ÁÀÖÀ» °æ¿ì, ¾îÂ÷ÇÇ Statement EndµÇ´Â Áï½Ã Ç®
- ¾îÁö±â ¶§¹®¿¡ ÀÌÈÄ Explicit LockÀ» °Å´Âµ¥ ¹®Á¦ ¾ø°í, Exp°¡ ¸ÕÀú °É·Á
- ÀÖÀ» °æ¿ì, ¾îÂ÷ÇÇ IS LockÀÌ °É·Á ÀÖ´Â »óÅÂÀÌ±â ¶§¹®¿¡ Imp LockÀ» ¶Ç
- °É ÇÊ¿ä´Â ¾ø±â ¶§¹®ÀÔ´Ï´Ù.
+ ì´ ê²½ìš° Upgrding Lockì— ëŒ€í•´ ê³ ë ¤í•˜ì§€ ì•Šì•„ë„ ë©ë‹ˆë‹¤.
+  ì¦‰, Implicit IS Lockì´ ê±¸ë¦° ìƒíƒœì—ì„œ Explicit IS Lockì„ ê±¸ë ¤ í•˜ê±°ë‚˜
+ Explicit IS Lockì´ ê±¸ë¦° ìƒíƒœì—ì„œ Implicit IS Lockì´ ê±¸ë¦° ê²½ìš°ì— ëŒ€í•´
+ ê³ ë ¤í•˜ì§€ ì•Šì•„ë„ ë©ë‹ˆë‹¤.
+  ì™œëƒí•˜ë©´ Impê°€ ë¨¼ì € ê±¸ë ¤ìžˆì„ ê²½ìš°, ì–´ì°¨í”¼ Statement Endë˜ëŠ” ì¦‰ì‹œ í’€
+ ì–´ì§€ê¸° ë•Œë¬¸ì— ì´í›„ Explicit Lockì„ ê±°ëŠ”ë° ë¬¸ì œ ì—†ê³ , Expê°€ ë¨¼ì € ê±¸ë ¤
+ ìžˆì„ ê²½ìš°, ì–´ì°¨í”¼ IS Lockì´ ê±¸ë ¤ ìžˆëŠ” ìƒíƒœì´ê¸° ë•Œë¬¸ì— Imp Lockì„ ë˜
+ ê±¸ í•„ìš”ëŠ” ì—†ê¸° ë•Œë¬¸ìž…ë‹ˆë‹¤.
 ***********************************************************/
 IDE_RC smlLockMgr::lockTableMutex( SInt          aSlot,
                                    smlLockItem  *aLockItem,
@@ -505,9 +505,9 @@ IDE_RC smlLockMgr::lockTableMutex( SInt          aSlot,
 
 
     /* BUG-32237 [sm_transaction] Free lock node when dropping table.
-     * DropTablePending ¿¡¼­ ¿¬±âÇØµÐ freeLockNode¸¦ ¼öÇàÇÕ´Ï´Ù. */
-    /* ÀÇµµÇÑ »óÈ²Àº ¾Æ´Ï±â¿¡ Debug¸ðµå¿¡¼­´Â DASSERT·Î Á¾·á½ÃÅ´.
-     * ÇÏÁö¸¸ release ¸ðµå¿¡¼­´Â ±×³É rebuild ÇÏ¸é ¹®Á¦ ¾øÀ½. */
+     * DropTablePending ì—ì„œ ì—°ê¸°í•´ë‘” freeLockNodeë¥¼ ìˆ˜í–‰í•©ë‹ˆë‹¤. */
+    /* ì˜ë„í•œ ìƒí™©ì€ ì•„ë‹ˆê¸°ì— Debugëª¨ë“œì—ì„œëŠ” DASSERTë¡œ ì¢…ë£Œì‹œí‚´.
+     * í•˜ì§€ë§Œ release ëª¨ë“œì—ì„œëŠ” ê·¸ëƒ¥ rebuild í•˜ë©´ ë¬¸ì œ ì—†ìŒ. */
     if ( sLockItem == NULL )
     {
         IDE_DASSERT( 0 );
@@ -524,11 +524,11 @@ IDE_RC smlLockMgr::lockTableMutex( SInt          aSlot,
     sSession = (sStat == NULL ? NULL : sStat->mSess);
 
     // To fix BUG-14951
-    // smuProperty::getTableLockEnableÀº TABLE¿¡¸¸ Àû¿ëµÇ¾î¾ß ÇÑ´Ù.
-    // (TBSLIST, TBS ¹× DBF¿¡´Â ÇØ´ç ¾ÈµÊ)
+    // smuProperty::getTableLockEnableì€ TABLEì—ë§Œ ì ìš©ë˜ì–´ì•¼ í•œë‹¤.
+    // (TBSLIST, TBS ë° DBFì—ëŠ” í•´ë‹¹ ì•ˆë¨)
     /* BUG-35453 -  add TABLESPACE_LOCK_ENABLE property
-     * TABLESPACE_LOCK_ENABLE µµ TABLE_LOCK_ENABLE °ú µ¿ÀÏÇÏ°Ô
-     * tablespace lock¿¡ ´ëÇØ Ã³¸®ÇÑ´Ù. */
+     * TABLESPACE_LOCK_ENABLE ë„ TABLE_LOCK_ENABLE ê³¼ ë™ì¼í•˜ê²Œ
+     * tablespace lockì— ëŒ€í•´ ì²˜ë¦¬í•œë‹¤. */
     switch ( sLockItem->mLockItemType )
     {
         case SMI_LOCK_ITEM_TABLE:
@@ -585,21 +585,21 @@ IDE_RC smlLockMgr::lockTableMutex( SInt          aSlot,
         *aLockSlot = NULL;
     }
 
-    // Æ®·£Àè¼ÇÀÌ ÀÌÀü statement¿¡ ÀÇÇÏ¿©,
-    // ÇöÀç table A¿¡ ´ëÇÏ¿© lockÀ» Àâ¾Ò´ø lock node¸¦ Ã£´Â´Ù.
+    // íŠ¸ëžœìž­ì…˜ì´ ì´ì „ statementì— ì˜í•˜ì—¬,
+    // í˜„ìž¬ table Aì— ëŒ€í•˜ì—¬ lockì„ ìž¡ì•˜ë˜ lock nodeë¥¼ ì°¾ëŠ”ë‹¤.
     sCurTransLockNode = findLockNode(sLockItem,aSlot);
-    // case 1: ÀÌÀü¿¡ Æ®·£Àè¼ÇÀÌ  table A¿¡  lockÀ» Àâ¾Ò°í,
-    // ÀÌÀü¿¡ ÀâÀº lock mode¿Í Áö±Ý Àâ°íÀÚ ÇÏ´Â ¶ô¸ðµå º¯È¯°á°ú°¡
-    // °°À¸¸é ¹Ù·Î return!
+    // case 1: ì´ì „ì— íŠ¸ëžœìž­ì…˜ì´  table Aì—  lockì„ ìž¡ì•˜ê³ ,
+    // ì´ì „ì— ìž¡ì€ lock modeì™€ ì§€ê¸ˆ ìž¡ê³ ìž í•˜ëŠ” ë½ëª¨ë“œ ë³€í™˜ê²°ê³¼ê°€
+    // ê°™ìœ¼ë©´ ë°”ë¡œ return!
     if ( sCurTransLockNode != NULL )
     {
         if ( mConversionTBL[sCurTransLockNode->mLockMode][aLockMode]
              == sCurTransLockNode->mLockMode )
         {
             /* PROJ-1381 Fetch Across Commits
-             * 1. IS LockÀÌ ¾Æ´Ñ °æ¿ì
-             * 2. ÀÌÀü¿¡ ÀâÀ¸·Á´Â Lock Mode·Î LockÀ» ÀâÀº °æ¿ì
-             * => LockÀ» ÀâÁö ¾Ê°í ¹Ù·Î return ÇÑ´Ù. */
+             * 1. IS Lockì´ ì•„ë‹Œ ê²½ìš°
+             * 2. ì´ì „ì— ìž¡ìœ¼ë ¤ëŠ” Lock Modeë¡œ Lockì„ ìž¡ì€ ê²½ìš°
+             * => Lockì„ ìž¡ì§€ ì•Šê³  ë°”ë¡œ return í•œë‹¤. */
             if ( ( aLockMode != SML_ISLOCK ) ||
                  ( sCurTransLockNode->mArrLockSlotList[aLockMode].mLockSequence != 0 ) )
             {
@@ -645,26 +645,26 @@ IDE_RC smlLockMgr::lockTableMutex( SInt          aSlot,
     sState = 1;
 
     //---------------------------------------
-    // tableÀÇ ´ëÇ¥¶ô°ú Áö±Ý Àâ°íÀÚ ÇÏ´Â ¶ôÀÌ È£È¯°¡´ÉÇÏ´ÂÁö È®ÀÎ.
+    // tableì˜ ëŒ€í‘œë½ê³¼ ì§€ê¸ˆ ìž¡ê³ ìž í•˜ëŠ” ë½ì´ í˜¸í™˜ê°€ëŠ¥í•˜ëŠ”ì§€ í™•ì¸.
     //---------------------------------------
     if ( mCompatibleTBL[sLockItem->mGrantLockMode][aLockMode] == ID_TRUE )
     {
-        if ( sCurTransLockNode != NULL ) /* ÀÌÀü statement ¼öÇà½Ã lockÀ» ÀâÀ½ */
+        if ( sCurTransLockNode != NULL ) /* ì´ì „ statement ìˆ˜í–‰ì‹œ lockì„ ìž¡ìŒ */
         {   
             decTblLockModeAndTryUpdate( sLockItem,
                                         sCurTransLockNode->mLockMode );
         }
-        else                      /* ÀÌÀü statement ¼öÇà ½Ã lockÀ» ÀâÁö ¸øÇÔ */
+        else                      /* ì´ì „ statement ìˆ˜í–‰ ì‹œ lockì„ ìž¡ì§€ ëª»í•¨ */
         {
-            if ( sLockItem->mRequestCnt != 0 ) /* ±â´Ù¸®´Â lockÀÌ ÀÖ´Â °æ¿ì */
+            if ( sLockItem->mRequestCnt != 0 ) /* ê¸°ë‹¤ë¦¬ëŠ” lockì´ ìžˆëŠ” ê²½ìš° */
             {
                 /* BUGBUG: BUG-16471, BUG-17522
-                 * ±â´Ù¸®´Â lockÀÌ ÀÖ´Â °æ¿ì ¹«Á¶°Ç lock conflict Ã³¸®ÇÑ´Ù. */
+                 * ê¸°ë‹¤ë¦¬ëŠ” lockì´ ìžˆëŠ” ê²½ìš° ë¬´ì¡°ê±´ lock conflict ì²˜ë¦¬í•œë‹¤. */
                 IDE_CONT(lock_conflict);
             }
             else
             {
-                /* ±â´Ù¸®´Â lockÀÌ ¾ø´Â °æ¿ì LockÀ» grant ÇÔ */
+                /* ê¸°ë‹¤ë¦¬ëŠ” lockì´ ì—†ëŠ” ê²½ìš° Lockì„ grant í•¨ */
             }
 
             /* allocate lock node and initialize */
@@ -686,7 +686,7 @@ IDE_RC smlLockMgr::lockTableMutex( SInt          aSlot,
             addLockNode( sCurTransLockNode, aSlot );
         }
 
-        /* Lock¿¡ ´ëÇØ¼­ ConversionÀ» ¼öÇàÇÑ´Ù. */
+        /* Lockì— ëŒ€í•´ì„œ Conversionì„ ìˆ˜í–‰í•œë‹¤. */
         sCurTransLockNode->mLockMode =
             mConversionTBL[sCurTransLockNode->mLockMode][aLockMode];
 
@@ -699,7 +699,7 @@ IDE_RC smlLockMgr::lockTableMutex( SInt          aSlot,
     }
 
     //---------------------------------------
-    // Lock Conflict Ã³¸®
+    // Lock Conflict ì²˜ë¦¬
     //---------------------------------------
 
     IDE_EXCEPTION_CONT(lock_conflict);
@@ -707,10 +707,10 @@ IDE_RC smlLockMgr::lockTableMutex( SInt          aSlot,
     if ( ( sLockItem->mGrantCnt == 1 ) && ( sCurTransLockNode != NULL ) )
     {
         //---------------------------------------
-        // lock conflictÀÌÁö¸¸, grantµÈ lock node°¡ 1°³ÀÌ°í,
-        // ±×°ÍÀÌ ¹Ù·Î ±×  Æ®·¢Àè¼ÇÀÏ °æ¿ì¿¡´Â request list¿¡ ´ÞÁö ¾Ê°í
-        // ±âÁ¸ grantµÈ  lock nodeÀÇ lock mode¿Í tableÀÇ ´ëÇ¥¶ô,
-        // grant lock mode¸¦  °»½ÅÇÑ´Ù.
+        // lock conflictì´ì§€ë§Œ, grantëœ lock nodeê°€ 1ê°œì´ê³ ,
+        // ê·¸ê²ƒì´ ë°”ë¡œ ê·¸  íŠ¸ëž™ìž­ì…˜ì¼ ê²½ìš°ì—ëŠ” request listì— ë‹¬ì§€ ì•Šê³ 
+        // ê¸°ì¡´ grantëœ  lock nodeì˜ lock modeì™€ tableì˜ ëŒ€í‘œë½,
+        // grant lock modeë¥¼  ê°±ì‹ í•œë‹¤.
         //---------------------------------------
 
         decTblLockModeAndTryUpdate( sLockItem,
@@ -736,8 +736,8 @@ IDE_RC smlLockMgr::lockTableMutex( SInt          aSlot,
         {
             sNewTransLockNode->mCvsLockNode = sCurTransLockNode;
 
-            //Lock node¸¦ Lock request ¸®½ºÆ®ÀÇ Çì´õ¿¡ Ãß°¡ÇÑ´Ù.
-            // ¿Ö³ÄÇÏ¸é ConversionÀÌ±â ¶§¹®ÀÌ´Ù.
+            //Lock nodeë¥¼ Lock request ë¦¬ìŠ¤íŠ¸ì˜ í—¤ë”ì— ì¶”ê°€í•œë‹¤.
+            // ì™œëƒí•˜ë©´ Conversionì´ê¸° ë•Œë¬¸ì´ë‹¤.
             addLockNodeToHead( sLockItem->mFstLockRequest,
                                sLockItem->mLstLockRequest,
                                sNewTransLockNode );
@@ -745,18 +745,18 @@ IDE_RC smlLockMgr::lockTableMutex( SInt          aSlot,
         else
         {
             sCurTransLockNode = sNewTransLockNode;
-            // waiting table¿¡¼­   Æ®·£Àè¼ÇÀÇ slot id Çà¿¡
-            // request list¿¡¼­  ´ë±âÇÏ°í ÀÖ´ÂÆ®·¢Àè¼Çµé ÀÇ
-            // slot id¸¦  table lock waiting ¸®½ºÆ®¿¡ µî·ÏÇÑ´Ù.
+            // waiting tableì—ì„œ   íŠ¸ëžœìž­ì…˜ì˜ slot id í–‰ì—
+            // request listì—ì„œ  ëŒ€ê¸°í•˜ê³  ìžˆëŠ”íŠ¸ëž™ìž­ì…˜ë“¤ ì˜
+            // slot idë¥¼  table lock waiting ë¦¬ìŠ¤íŠ¸ì— ë“±ë¡í•œë‹¤.
             registTblLockWaitListByReq(aSlot,sLockItem->mFstLockRequest);
-            //Lock node¸¦ Lock request ¸®½ºÆ®ÀÇ Tail¿¡ Ãß°¡ÇÑ´Ù.
+            //Lock nodeë¥¼ Lock request ë¦¬ìŠ¤íŠ¸ì˜ Tailì— ì¶”ê°€í•œë‹¤.
             addLockNodeToTail( sLockItem->mFstLockRequest,
                                sLockItem->mLstLockRequest,
                                sNewTransLockNode );
         }
-        // waiting table¿¡¼­   Æ®·£Àè¼ÇÀÇ slot id Çà¿¡
-        // grant list¿¡¼­     ÀÖ´ÂÆ®·¢Àè¼Çµé ÀÇ
-        // slot id¸¦  table lock waiting ¸®½ºÆ®¿¡ µî·ÏÇÑ´Ù.
+        // waiting tableì—ì„œ   íŠ¸ëžœìž­ì…˜ì˜ slot id í–‰ì—
+        // grant listì—ì„œ     ìžˆëŠ”íŠ¸ëž™ìž­ì…˜ë“¤ ì˜
+        // slot idë¥¼  table lock waiting ë¦¬ìŠ¤íŠ¸ì— ë“±ë¡í•œë‹¤.
         registTblLockWaitListByGrant( aSlot,sLockItem->mFstLockGrant );
         sLockItem->mRequestCnt++;
 
@@ -765,7 +765,7 @@ IDE_RC smlLockMgr::lockTableMutex( SInt          aSlot,
                                         &(sLockItem->mMutex),
                                         aLockWaitMicroSec )
                         != IDE_SUCCESS, err_wait_lock );
-        // lock waitÈÄ¿¡ wakeupµÇ¾î lockÀ» Áã°ÔµÊ.
+        // lock waití›„ì— wakeupë˜ì–´ lockì„ ì¥ê²Œë¨.
         // Add Lock Node to Transaction
         addLockNode( sNewTransLockNode, aSlot );
     }
@@ -782,8 +782,8 @@ IDE_RC smlLockMgr::lockTableMutex( SInt          aSlot,
     IDE_EXCEPTION_CONT(lock_SUCCESS);
 
 
-    //Æ®·£Àè¼ÇÀÇ Lock node°¡ ÀÖ¾ú°í,LockÀ» Àâ¾Ò´Ù¸é
-    // lock slotÀ» Ãß°¡ÇÑ´Ù
+    //íŠ¸ëžœìž­ì…˜ì˜ Lock nodeê°€ ìžˆì—ˆê³ ,Lockì„ ìž¡ì•˜ë‹¤ë©´
+    // lock slotì„ ì¶”ê°€í•œë‹¤
     setLockModeAndAddLockSlotMutex( aSlot,
                                     sCurTransLockNode,
                                     aCurLockMode,
@@ -831,10 +831,10 @@ IDE_RC smlLockMgr::lockTableMutex( SInt          aSlot,
     }
     IDE_EXCEPTION(err_wait_lock);
     {
-        // fix BUG-10202ÇÏ¸é¼­,
-        // dead lock , time outÀ» Æ¨°Ü ³ª¿Â Æ®·£Àè¼ÇµéÀÇ
-        // waiting table rowÀÇ ¿­À» clearÇÏ°í,
-        // request listÀÇ transactionÀÌ±ú¾î³ªµµ µÇ´ÂÁö Ã¼Å©ÇÑ´Ù.
+        // fix BUG-10202í•˜ë©´ì„œ,
+        // dead lock , time outì„ íŠ•ê²¨ ë‚˜ì˜¨ íŠ¸ëžœìž­ì…˜ë“¤ì˜
+        // waiting table rowì˜ ì—´ì„ clearí•˜ê³ ,
+        // request listì˜ transactionì´ê¹¨ì–´ë‚˜ë„ ë˜ëŠ”ì§€ ì²´í¬í•œë‹¤.
 
         (void)smlLockMgr::unlockTable( aSlot, 
                                        sNewTransLockNode,
@@ -846,7 +846,7 @@ IDE_RC smlLockMgr::lockTableMutex( SInt          aSlot,
         IDE_SET(ideSetErrorCode(smERR_ABORT_smcExceedLockTimeWait));
     }
     IDE_EXCEPTION_END;
-    //waiting table¿¡¼­ aSlotÀÇ Çà¿¡ ´ë±â¿­À» clearÇÑ´Ù.
+    //waiting tableì—ì„œ aSlotì˜ í–‰ì— ëŒ€ê¸°ì—´ì„ clearí•œë‹¤.
     clearWaitItemColsOfTransMutex(ID_TRUE, aSlot);
 
     if ( sState != 0 )
@@ -859,106 +859,106 @@ IDE_RC smlLockMgr::lockTableMutex( SInt          aSlot,
 }
 /*********************************************************
   function description: unlockTable
-  ¾Æ·¡¿Í °°ÀÌ ´Ù¾çÇÑ case¿¡ µû¶ó °¢°¢ Ã³¸®ÇÑ´Ù.
-  1. lock node°¡ ÀÌ¹ÌtableÀÇ grant or wait list¿¡¼­
-     ÀÌ¹Ì Á¦°Å µÇ¾î ÀÖ´Â °æ¿ì.
-     - lock node°¡ Æ®·£Àè¼ÇÀÇ lock list¿¡¼­ ´Þ·ÁÀÖÀ¸¸é,
-       lock node¸¦ Æ®·£Àè¼ÇÀÇ lock list¿¡¼­ Á¦°ÅÇÑ´Ù.
+  ì•„ëž˜ì™€ ê°™ì´ ë‹¤ì–‘í•œ caseì— ë”°ë¼ ê°ê° ì²˜ë¦¬í•œë‹¤.
+  1. lock nodeê°€ ì´ë¯¸tableì˜ grant or wait listì—ì„œ
+     ì´ë¯¸ ì œê±° ë˜ì–´ ìžˆëŠ” ê²½ìš°.
+     - lock nodeê°€ íŠ¸ëžœìž­ì…˜ì˜ lock listì—ì„œ ë‹¬ë ¤ìžˆìœ¼ë©´,
+       lock nodeë¥¼ íŠ¸ëžœìž­ì…˜ì˜ lock listì—ì„œ ì œê±°í•œë‹¤.
 
-  2. if (lock node°¡ grantµÈ »óÅÂ ÀÏ°æ¿ì)
+  2. if (lock nodeê°€ grantëœ ìƒíƒœ ì¼ê²½ìš°)
      then
-      table lockÁ¤º¸¿¡¼­ lock nodeÀÇ lock mode¸¦  1°¨¼Ò
-      ½ÃÅ°°í table ´ëÇ¥¶ô °»½Å½Ãµµ.
-      aLockNodeÀÇ ´ëÇ¥¶ô  &= ~(aLockSlotÀÇ mMask).
-      if( aLock nodeÀÇ ´ëÇ¥¶ô  != 0)
+      table lockì •ë³´ì—ì„œ lock nodeì˜ lock modeë¥¼  1ê°ì†Œ
+      ì‹œí‚¤ê³  table ëŒ€í‘œë½ ê°±ì‹ ì‹œë„.
+      aLockNodeì˜ ëŒ€í‘œë½  &= ~(aLockSlotì˜ mMask).
+      if( aLock nodeì˜ ëŒ€í‘œë½  != 0)
       then
-        aLockNodeÀÇ lockMode¸¦ °»½ÅÇÑ´Ù.
-        °»½ÅµÈ lock nodeÀÇ mLockMode¸¦ table lockÁ¤º¸¿¡¼­ 1Áõ°¡.
-        lock node»èÁ¦ ÇÏ¶ó´Â flag¸¦ off½ÃÅ²´Ù.
-        --> lockTableÀÇ 2.2Àý¿¡¼­ ÀÌÀü¿¡ Æ®·£Àè¼ÇÀÌ grant µÈ
-        lock node¿¡ ´ëÇÏ¿©, grant lock node¸¦ Ãß°¡ÇÏ´Â ´ë½Å¿¡
-        lock mode¸¦ conversionÇÏ¿© lock slotÀ»
-        addÇÑ °æ¿ìÀÌ´Ù. Áï node´Â ÇÏ³ªÀÌÁö¸¸, ±×¾È¿¡
-        lock slotÀÌ µÎ°³ ÀÌ»óÀÌ ÀÖ´Â °æ¿ìÀÌ´Ù.
-        4¹øÂ° ´Ü°è·Î ³Ñ¾î°£´Ù.
+        aLockNodeì˜ lockModeë¥¼ ê°±ì‹ í•œë‹¤.
+        ê°±ì‹ ëœ lock nodeì˜ mLockModeë¥¼ table lockì •ë³´ì—ì„œ 1ì¦ê°€.
+        lock nodeì‚­ì œ í•˜ë¼ëŠ” flagë¥¼ offì‹œí‚¨ë‹¤.
+        --> lockTableì˜ 2.2ì ˆì—ì„œ ì´ì „ì— íŠ¸ëžœìž­ì…˜ì´ grant ëœ
+        lock nodeì— ëŒ€í•˜ì—¬, grant lock nodeë¥¼ ì¶”ê°€í•˜ëŠ” ëŒ€ì‹ ì—
+        lock modeë¥¼ conversioní•˜ì—¬ lock slotì„
+        addí•œ ê²½ìš°ì´ë‹¤. ì¦‰ nodeëŠ” í•˜ë‚˜ì´ì§€ë§Œ, ê·¸ì•ˆì—
+        lock slotì´ ë‘ê°œ ì´ìƒì´ ìžˆëŠ” ê²½ìš°ì´ë‹¤.
+        4ë²ˆì§¸ ë‹¨ê³„ë¡œ ë„˜ì–´ê°„ë‹¤.
       fi
-      grant list¿¡¼­ lock node¸¦ Á¦°Å½ÃÅ²´Ù.
-      table lockÁ¤º¸¿¡¼­ grant count 1 °¨¼Ò.
-      »õ·Î¿î Grant Lock Mode¸¦ °áÁ¤ÇÑ´Ù.
+      grant listì—ì„œ lock nodeë¥¼ ì œê±°ì‹œí‚¨ë‹¤.
+      table lockì •ë³´ì—ì„œ grant count 1 ê°ì†Œ.
+      ìƒˆë¡œìš´ Grant Lock Modeë¥¼ ê²°ì •í•œë‹¤.
     else
-      // lock node°¡ request list¿¡ ´Þ·Á ÀÖ´Â °æ¿ì.
-       request list¿¡¼­ lock node¸¦ Á¦°Å.
-       request count°¨¼Ò.
-       grant count°¡ 0ÀÌ¸é 5¹ø´Ü°è·Î ³Ñ¾î°¨.
+      // lock nodeê°€ request listì— ë‹¬ë ¤ ìžˆëŠ” ê²½ìš°.
+       request listì—ì„œ lock nodeë¥¼ ì œê±°.
+       request countê°ì†Œ.
+       grant countê°€ 0ì´ë©´ 5ë²ˆë‹¨ê³„ë¡œ ë„˜ì–´ê°.
     fi
-  3. waiting tableÀ» clearÇÑ´Ù.
-     grant lock nodeÀÌ°Å³ª, request list¿¡ ÀÖ¾ú´ø lock node
-     °¡  ¿ÏÀüÈ÷ FreeµÉ °æ¿ì ÀÌ TransactionÀ» ±â´Ù¸®°í ÀÖ´Â
-     TransactionÀÇ  waiting table¿¡¼­ °»½ÅÇÏ¿© ÁØ´Ù.
-     ÇÏÁö¸¸ request¿¡ ÀÖ¾ú´ø lock nodeÀÇ °æ¿ì,
-     Grant List¿¡ Lock Node°¡
-     ³²¾Æ ÀÖ´Â°æ¿ì´Â ÇÏÁö ¾Ê´Â´Ù.
+  3. waiting tableì„ clearí•œë‹¤.
+     grant lock nodeì´ê±°ë‚˜, request listì— ìžˆì—ˆë˜ lock node
+     ê°€  ì™„ì „ížˆ Freeë  ê²½ìš° ì´ Transactionì„ ê¸°ë‹¤ë¦¬ê³  ìžˆëŠ”
+     Transactionì˜  waiting tableì—ì„œ ê°±ì‹ í•˜ì—¬ ì¤€ë‹¤.
+     í•˜ì§€ë§Œ requestì— ìžˆì—ˆë˜ lock nodeì˜ ê²½ìš°,
+     Grant Listì— Lock Nodeê°€
+     ë‚¨ì•„ ìžˆëŠ”ê²½ìš°ëŠ” í•˜ì§€ ì•ŠëŠ”ë‹¤.
 
 
-  4. lockÀ» waitÇÏ°í ÀÖ´Â TransactionÀ» ±ú¿î´Ù.
-     ÇöÀç lock node :=  table lockÁ¤º¸¿¡¼­ request list¿¡¼­
-                        ¸ÇÃ³À½ lock node.
-     while( ÇöÀç lock node != null)
+  4. lockì„ waití•˜ê³  ìžˆëŠ” Transactionì„ ê¹¨ìš´ë‹¤.
+     í˜„ìž¬ lock node :=  table lockì •ë³´ì—ì„œ request listì—ì„œ
+                        ë§¨ì²˜ìŒ lock node.
+     while( í˜„ìž¬ lock node != null)
      begin loop.
-      if( ÇöÀç tableÀÇ grant mode¿Í ÇöÀç lock nodeÀÇ lock mode°¡ È£È¯?)
+      if( í˜„ìž¬ tableì˜ grant modeì™€ í˜„ìž¬ lock nodeì˜ lock modeê°€ í˜¸í™˜?)
       then
-         request ¸®½ºÆ®¿¡¼­ Lock Node¸¦ Á¦°ÅÇÑ´Ù.
-         table lockÁ¤º¸¿¡¼­ grant lock mode¸¦ °»½ÅÇÑ´Ù.
-         if(ÇöÀç lock nodeÀÇ cvs node°¡ nullÀÌ ¾Æ´Ï¸é)
+         request ë¦¬ìŠ¤íŠ¸ì—ì„œ Lock Nodeë¥¼ ì œê±°í•œë‹¤.
+         table lockì •ë³´ì—ì„œ grant lock modeë¥¼ ê°±ì‹ í•œë‹¤.
+         if(í˜„ìž¬ lock nodeì˜ cvs nodeê°€ nullì´ ì•„ë‹ˆë©´)
          then
-            table lock Á¤º¸¿¡¼­ ÇöÀç lock nodeÀÇ
-            cvs nodeÀÇ lock mode¸¦ 1°¨¼Ò½ÃÅ°°í,´ëÇ¥¶ô °»½Å½Ãµµ.
-            cvs nodeÀÇ lock mode¸¦ °»½ÅÇÑ´Ù.
-            table lock Á¤º¸¿¡¼­ cvs nodeÀÇ
-            lock mode¸¦ 1Áõ°¡ ½ÃÅ°°í ´ëÇ¥¶ôÀ» °»½Å.
+            table lock ì •ë³´ì—ì„œ í˜„ìž¬ lock nodeì˜
+            cvs nodeì˜ lock modeë¥¼ 1ê°ì†Œì‹œí‚¤ê³ ,ëŒ€í‘œë½ ê°±ì‹ ì‹œë„.
+            cvs nodeì˜ lock modeë¥¼ ê°±ì‹ í•œë‹¤.
+            table lock ì •ë³´ì—ì„œ cvs nodeì˜
+            lock modeë¥¼ 1ì¦ê°€ ì‹œí‚¤ê³  ëŒ€í‘œë½ì„ ê°±ì‹ .
          else
-            table lock Á¤º¸¿¡¼­ ÇöÀç lock nodeÀÇ lock mode¸¦
-            1Áõ°¡ ½ÃÅ°°í ´ëÇ¥¶ôÀ» °»½Å.
-            Grant¸®½ºÆ®¿¡ »õ·Î¿î Lock Node¸¦ Ãß°¡ÇÑ´Ù.
-            ÇöÀç lock nodeÀÇ grant flag¸¦ on ½ÃÅ²´Ù.
-            grant count¸¦ 1Áõ°¡ ½ÃÅ²´Ù.
-         fi //ÇöÀç lock nodeÀÇ cvs node°¡ nullÀÌ ¾Æ´Ï¸é
+            table lock ì •ë³´ì—ì„œ í˜„ìž¬ lock nodeì˜ lock modeë¥¼
+            1ì¦ê°€ ì‹œí‚¤ê³  ëŒ€í‘œë½ì„ ê°±ì‹ .
+            Grantë¦¬ìŠ¤íŠ¸ì— ìƒˆë¡œìš´ Lock Nodeë¥¼ ì¶”ê°€í•œë‹¤.
+            í˜„ìž¬ lock nodeì˜ grant flagë¥¼ on ì‹œí‚¨ë‹¤.
+            grant countë¥¼ 1ì¦ê°€ ì‹œí‚¨ë‹¤.
+         fi //í˜„ìž¬ lock nodeì˜ cvs nodeê°€ nullì´ ì•„ë‹ˆë©´
       else
-      //ÇöÀç tableÀÇ grant mode¿Í ÇöÀç lock nodeÀÇ lock mode°¡
-      // È£È¯µÇÁö ¾Ê´Â °æ¿ì.
-        if(tableÀÇ grant count == 1)
+      //í˜„ìž¬ tableì˜ grant modeì™€ í˜„ìž¬ lock nodeì˜ lock modeê°€
+      // í˜¸í™˜ë˜ì§€ ì•ŠëŠ” ê²½ìš°.
+        if(tableì˜ grant count == 1)
         then
-           if(ÇöÀç lock nodeÀÇ cvs node°¡ ÀÖ´Â°¡?)
+           if(í˜„ìž¬ lock nodeì˜ cvs nodeê°€ ìžˆëŠ”ê°€?)
            then
-             //cvs node°¡ ¹Ù·Î  grantµÈ 1°³ nodeÀÌ´Ù.
-              table lock Á¤º¸¿¡¼­ cvs lock nodeÀÇ lock mode¸¦
-              1°¨¼Ò ½ÃÅ°°í, table ´ëÇ¥¶ô °»½Å½Ãµµ.
-              table lock Á¤º¸¿¡¼­ grant mode°»½Å.
-              cvs lock nodeÀÇ lock mode¸¦ ÇöÀç tableÀÇ grant mode
-              À¸·Î °»½Å.
-              table lock Á¤º¸¿¡¼­ ÇöÀç grant mode¸¦ 1Áõ°¡ ½ÃÅ°°í,
-              ´ëÇ¥¶ô °»½Å.
-              Request ¸®½ºÆ®¿¡¼­ Lock Node¸¦ Á¦°ÅÇÑ´Ù.
+             //cvs nodeê°€ ë°”ë¡œ  grantëœ 1ê°œ nodeì´ë‹¤.
+              table lock ì •ë³´ì—ì„œ cvs lock nodeì˜ lock modeë¥¼
+              1ê°ì†Œ ì‹œí‚¤ê³ , table ëŒ€í‘œë½ ê°±ì‹ ì‹œë„.
+              table lock ì •ë³´ì—ì„œ grant modeê°±ì‹ .
+              cvs lock nodeì˜ lock modeë¥¼ í˜„ìž¬ tableì˜ grant mode
+              ìœ¼ë¡œ ê°±ì‹ .
+              table lock ì •ë³´ì—ì„œ í˜„ìž¬ grant modeë¥¼ 1ì¦ê°€ ì‹œí‚¤ê³ ,
+              ëŒ€í‘œë½ ê°±ì‹ .
+              Request ë¦¬ìŠ¤íŠ¸ì—ì„œ Lock Nodeë¥¼ ì œê±°í•œë‹¤.
            else
               break; // nothint to do
            fi
         else
            break; // nothing to do.
         fi
-      fi// lock nodeÀÇ lock mode°¡ È£È¯µÇÁö ¾Ê´Â °æ¿ì.
+      fi// lock nodeì˜ lock modeê°€ í˜¸í™˜ë˜ì§€ ì•ŠëŠ” ê²½ìš°.
 
-      table lockÁ¤º¸¿¡¼­ request count 1°¨¼Ò.
-      ÇöÀç lock nodeÀÇ slot idÀ»  waitingÇÏ°í ÀÖ´Â rowµéÀ»
-      waiting table¿¡¼­ clearÇÑ´Ù.
-      waitingÇÏ°í ÀÖ´Â Æ®·£Àè¼ÇÀ» resume½ÃÅ²´Ù.
+      table lockì •ë³´ì—ì„œ request count 1ê°ì†Œ.
+      í˜„ìž¬ lock nodeì˜ slot idì„  waitingí•˜ê³  ìžˆëŠ” rowë“¤ì„
+      waiting tableì—ì„œ clearí•œë‹¤.
+      waitingí•˜ê³  ìžˆëŠ” íŠ¸ëžœìž­ì…˜ì„ resumeì‹œí‚¨ë‹¤.
      loop end.
 
-  5. lock slot, lock node Á¦°Å ½Ãµµ.
-     - lock slot ÀÌ nullÀÌ ¾Æ´Ï¸é,lock slotÀ» transaction
-        ÀÇ lock slot list¿¡¼­ Á¦°ÅÇÑ´Ù.
-     - 2¹ø ´Ü°è¿¡¼­ lock node¸¦ Á¦°ÅÇÏ¶ó´Â flag°¡ on
-     µÇ¾î ÀÖÀ¸¸é  lock node¸¦  Æ®·£Àè¼ÇÀÇ lock list¿¡¼­
-     Á¦°Å ÇÏ°í, lock node¸¦ freeÇÑ´Ù.
+  5. lock slot, lock node ì œê±° ì‹œë„.
+     - lock slot ì´ nullì´ ì•„ë‹ˆë©´,lock slotì„ transaction
+        ì˜ lock slot listì—ì„œ ì œê±°í•œë‹¤.
+     - 2ë²ˆ ë‹¨ê³„ì—ì„œ lock nodeë¥¼ ì œê±°í•˜ë¼ëŠ” flagê°€ on
+     ë˜ì–´ ìžˆìœ¼ë©´  lock nodeë¥¼  íŠ¸ëžœìž­ì…˜ì˜ lock listì—ì„œ
+     ì œê±° í•˜ê³ , lock nodeë¥¼ freeí•œë‹¤.
 ***********************************************************/
 
 IDE_RC smlLockMgr::unlockTableMutex( SInt          aSlot,
@@ -986,17 +986,17 @@ IDE_RC smlLockMgr::unlockTableMutex( SInt          aSlot,
         aLockNode = aLockSlot->mLockNode;
     }
 
-    // lock node°¡ ÀÌ¹Ì request or grant list¿¡¼­ Á¦°ÅµÈ »óÅÂ.
+    // lock nodeê°€ ì´ë¯¸ request or grant listì—ì„œ ì œê±°ëœ ìƒíƒœ.
     if ( aLockNode->mDoRemove == ID_TRUE )
     {
         IDE_ASSERT( ( aLockNode->mPrvLockNode == NULL ) &&
                     ( aLockNode->mNxtLockNode == NULL ) );
-        //Æ®·£Àè¼ÇÀÇ lock list¿¡¼­ ¾ÆÁ÷ Á¦°ÅµÇÁö ¾Ê¾Ò´ÀÁöÈ®ÀÎ.
+        //íŠ¸ëžœìž­ì…˜ì˜ lock listì—ì„œ ì•„ì§ ì œê±°ë˜ì§€ ì•Šì•˜ëŠì§€í™•ì¸.
         if ( aLockNode->mPrvTransLockNode != NULL )
         {
-            // Æ®·£Àè¼Ç lock list array¿¡¼­
-            // transactionÀÇ slot id¿¡ ÇØ´çÇÏ´Â
-            // list¿¡¼­ lock node¸¦ Á¦°ÅÇÑ´Ù.
+            // íŠ¸ëžœìž­ì…˜ lock list arrayì—ì„œ
+            // transactionì˜ slot idì— í•´ë‹¹í•˜ëŠ”
+            // listì—ì„œ lock nodeë¥¼ ì œê±°í•œë‹¤.
             removeLockNode(aLockNode);
         }
         else
@@ -1040,12 +1040,12 @@ IDE_RC smlLockMgr::unlockTableMutex( SInt          aSlot,
                 if ( aLockSlot != NULL )
                 {
                     aLockNode->mFlag  &= ~(aLockSlot->mMask);
-                    // lockTableÀÇ 2.2Àý¿¡¼­ ÀÌÀü¿¡ Æ®·£Àè¼ÇÀÌ grant µÈ
-                    // lock node¿¡ ´ëÇÏ¿©, grant lock node¸¦ Ãß°¡ÇÏ´Â ´ë½Å¿¡
-                    // lock mode¸¦ conversionÇÏ¿© lock slotÀ»
-                    // addÇÑ °æ¿ìÀÌ´Ù. Áï node´Â ÇÏ³ªÀÌÁö¸¸, ±×¾È¿¡
-                    // lock slotÀÌ µÎ°³ ÀÌ»óÀÌ ÀÖ´Â °æ¿ìÀÌ´Ù.
-                    // -> µû¶ó¼­ lock node¸¦ »èÁ¦ÇÏ¸é ¾ÈµÈ´Ù.
+                    // lockTableì˜ 2.2ì ˆì—ì„œ ì´ì „ì— íŠ¸ëžœìž­ì…˜ì´ grant ëœ
+                    // lock nodeì— ëŒ€í•˜ì—¬, grant lock nodeë¥¼ ì¶”ê°€í•˜ëŠ” ëŒ€ì‹ ì—
+                    // lock modeë¥¼ conversioní•˜ì—¬ lock slotì„
+                    // addí•œ ê²½ìš°ì´ë‹¤. ì¦‰ nodeëŠ” í•˜ë‚˜ì´ì§€ë§Œ, ê·¸ì•ˆì—
+                    // lock slotì´ ë‘ê°œ ì´ìƒì´ ìžˆëŠ” ê²½ìš°ì´ë‹¤.
+                    // -> ë”°ë¼ì„œ lock nodeë¥¼ ì‚­ì œí•˜ë©´ ì•ˆëœë‹¤.
                     //   sDoFreeLockNode = ID_FALSE;
                     if ( aLockNode->mFlag != 0 )
                     {
@@ -1063,12 +1063,12 @@ IDE_RC smlLockMgr::unlockTableMutex( SInt          aSlot,
                 sLockItem->mGrantCnt--;
                 break;
             } // inner while loop .
-            //»õ·Î¿î Grant Lock Mode¸¦ °áÁ¤ÇÑ´Ù.
+            //ìƒˆë¡œìš´ Grant Lock Modeë¥¼ ê²°ì •í•œë‹¤.
             sLockItem->mGrantLockMode = mDecisionTBL[sLockItem->mFlag];
         }//if aLockNode->mBeGrant == ID_TRUE
         else
         {
-            // Grant µÇ¾îÀÖÁö ¾Ê´Â »óÅÂ.
+            // Grant ë˜ì–´ìžˆì§€ ì•ŠëŠ” ìƒíƒœ.
             //remove lock node from lock request list
             removeLockNode( sLockItem->mFstLockRequest,
                             sLockItem->mLstLockRequest, 
@@ -1079,25 +1079,25 @@ IDE_RC smlLockMgr::unlockTableMutex( SInt          aSlot,
 
         if ( ( sDoFreeLockNode == ID_TRUE ) && ( aLockNode->mCvsLockNode == NULL ) )
         {
-            // grant lock nodeÀÌ°Å³ª, request list¿¡ ÀÖ¾ú´ø lock node
-            //°¡  ¿ÏÀüÈ÷ FreeµÉ °æ¿ì ÀÌ TransactionÀ» ±â´Ù¸®°í ÀÖ´Â
-            //TransactionÀÇ  waiting table¿¡¼­ °»½ÅÇÏ¿© ÁØ´Ù.
-            //ÇÏÁö¸¸ request¿¡ ÀÖ¾ú´ø lock nodeÀÇ °æ¿ì,
-            // Grant List¿¡ Lock Node°¡
-            //³²¾Æ ÀÖ´Â°æ¿ì´Â ÇÏÁö ¾Ê´Â´Ù.
+            // grant lock nodeì´ê±°ë‚˜, request listì— ìžˆì—ˆë˜ lock node
+            //ê°€  ì™„ì „ížˆ Freeë  ê²½ìš° ì´ Transactionì„ ê¸°ë‹¤ë¦¬ê³  ìžˆëŠ”
+            //Transactionì˜  waiting tableì—ì„œ ê°±ì‹ í•˜ì—¬ ì¤€ë‹¤.
+            //í•˜ì§€ë§Œ requestì— ìžˆì—ˆë˜ lock nodeì˜ ê²½ìš°,
+            // Grant Listì— Lock Nodeê°€
+            //ë‚¨ì•„ ìžˆëŠ”ê²½ìš°ëŠ” í•˜ì§€ ì•ŠëŠ”ë‹¤.
             clearWaitTableRows( sLockItem->mFstLockRequest,
                                 aSlot );
         }
 
-        //lockÀ» ±â´Ù¸®´Â TransactionÀ» ±ú¿î´Ù.
+        //lockì„ ê¸°ë‹¤ë¦¬ëŠ” Transactionì„ ê¹¨ìš´ë‹¤.
         sCurLockNode = sLockItem->mFstLockRequest;
         while ( sCurLockNode != NULL )
         {
             //Wake up requestors
-            //ÇöÀç tableÀÇ grant mode¿Í ÇöÀç lock nodeÀÇ lock mode°¡ È£È¯?
+            //í˜„ìž¬ tableì˜ grant modeì™€ í˜„ìž¬ lock nodeì˜ lock modeê°€ í˜¸í™˜?
             if ( mCompatibleTBL[sCurLockNode->mLockMode][sLockItem->mGrantLockMode] == ID_TRUE )
             {
-                //Request ¸®½ºÆ®¿¡¼­ Lock Node¸¦ Á¦°ÅÇÑ´Ù.
+                //Request ë¦¬ìŠ¤íŠ¸ì—ì„œ Lock Nodeë¥¼ ì œê±°í•œë‹¤.
                 removeLockNode( sLockItem->mFstLockRequest,
                                 sLockItem->mLstLockRequest,
                                 sCurLockNode );
@@ -1106,39 +1106,39 @@ IDE_RC smlLockMgr::unlockTableMutex( SInt          aSlot,
                     mConversionTBL[sLockItem->mGrantLockMode][sCurLockNode->mLockMode];
                 if ( sCurLockNode->mCvsLockNode != NULL )
                 {
-                    //table lock Á¤º¸¿¡¼­ ÇöÀç lock nodeÀÇ
-                    //cvs nodeÀÇ  lock mode¸¦ 1°¨¼Ò½ÃÅ°°í,´ëÇ¥¶ô °»½Å½Ãµµ.
+                    //table lock ì •ë³´ì—ì„œ í˜„ìž¬ lock nodeì˜
+                    //cvs nodeì˜  lock modeë¥¼ 1ê°ì†Œì‹œí‚¤ê³ ,ëŒ€í‘œë½ ê°±ì‹ ì‹œë„.
                     decTblLockModeAndTryUpdate( sLockItem,
                                                 sCurLockNode->mCvsLockNode->mLockMode );
-                    //cvs nodeÀÇ lock mode¸¦ °»½ÅÇÑ´Ù.
+                    //cvs nodeì˜ lock modeë¥¼ ê°±ì‹ í•œë‹¤.
                     sCurLockNode->mCvsLockNode->mLockMode =
                         mConversionTBL[sCurLockNode->mCvsLockNode->mLockMode][sCurLockNode->mLockMode];
-                    //table lock Á¤º¸¿¡¼­ cvs nodeÀÇ
-                    //lock mode¸¦ 1Áõ°¡ ½ÃÅ°°í ´ëÇ¥¶ôÀ» °»½Å.
+                    //table lock ì •ë³´ì—ì„œ cvs nodeì˜
+                    //lock modeë¥¼ 1ì¦ê°€ ì‹œí‚¤ê³  ëŒ€í‘œë½ì„ ê°±ì‹ .
                     incTblLockModeAndUpdate( sLockItem,
                                              sCurLockNode->mCvsLockNode->mLockMode );
                 }// if sCurLockNode->mCvsLockNode != NULL
                 else
                 {
                     incTblLockModeAndUpdate( sLockItem, sCurLockNode->mLockMode );
-                    //Grant¸®½ºÆ®¿¡ »õ·Î¿î Lock Node¸¦ Ãß°¡ÇÑ´Ù.
+                    //Grantë¦¬ìŠ¤íŠ¸ì— ìƒˆë¡œìš´ Lock Nodeë¥¼ ì¶”ê°€í•œë‹¤.
                     addLockNodeToTail( sLockItem->mFstLockGrant,
                                        sLockItem->mLstLockGrant,
                                        sCurLockNode );
                     sCurLockNode->mBeGrant = ID_TRUE;
                     sLockItem->mGrantCnt++;
-                }//else sCurLockNode->mCvsLockNode°¡ NULL
+                }//else sCurLockNode->mCvsLockNodeê°€ NULL
             }
-            // ÇöÀç tableÀÇ grant lock mode¿Í lock nodeÀÇ lockmode
-            // °¡ È£È¯ÇÏÁö ¾Ê´Â °æ¿ì.
+            // í˜„ìž¬ tableì˜ grant lock modeì™€ lock nodeì˜ lockmode
+            // ê°€ í˜¸í™˜í•˜ì§€ ì•ŠëŠ” ê²½ìš°.
             else
             {
                 if ( sLockItem->mGrantCnt == 1 )
                 {
                     if ( sCurLockNode->mCvsLockNode != NULL )
                     {
-                        // cvs node°¡ ¹Ù·Î grantµÈ 1°³ nodeÀÌ´Ù.
-                        //ÇöÀç lockÀº ÇöÀç table¿¡ ´ëÇÑ lockÀÇ Converion ÀÌ´Ù.
+                        // cvs nodeê°€ ë°”ë¡œ grantëœ 1ê°œ nodeì´ë‹¤.
+                        //í˜„ìž¬ lockì€ í˜„ìž¬ tableì— ëŒ€í•œ lockì˜ Converion ì´ë‹¤.
                         decTblLockModeAndTryUpdate( sLockItem,
                                                     sCurLockNode->mCvsLockNode->mLockMode );
 
@@ -1146,7 +1146,7 @@ IDE_RC smlLockMgr::unlockTableMutex( SInt          aSlot,
                             mConversionTBL[sLockItem->mGrantLockMode][sCurLockNode->mLockMode];
                         sCurLockNode->mCvsLockNode->mLockMode = sLockItem->mGrantLockMode;
                         incTblLockModeAndUpdate( sLockItem, sLockItem->mGrantLockMode );
-                        //Request ¸®½ºÆ®¿¡¼­ Lock Node¸¦ Á¦°ÅÇÑ´Ù.
+                        //Request ë¦¬ìŠ¤íŠ¸ì—ì„œ Lock Nodeë¥¼ ì œê±°í•œë‹¤.
                         removeLockNode( sLockItem->mFstLockRequest,
                                         sLockItem->mLstLockRequest, 
                                         sCurLockNode );
@@ -1154,7 +1154,7 @@ IDE_RC smlLockMgr::unlockTableMutex( SInt          aSlot,
                     else
                     {
                         break;
-                    } // sCurLockNode->mCvsLockNode°¡ null
+                    } // sCurLockNode->mCvsLockNodeê°€ null
                 }//sLockItem->mGrantCnt == 1
                 else
                 {
@@ -1163,9 +1163,9 @@ IDE_RC smlLockMgr::unlockTableMutex( SInt          aSlot,
             }//mCompatibleTBL
 
             sLockItem->mRequestCnt--;
-            //waiting table¿¡¼­ aSlotÀÇ Çà¿¡¼­  ´ë±â¿­À» clearÇÑ´Ù.
+            //waiting tableì—ì„œ aSlotì˜ í–‰ì—ì„œ  ëŒ€ê¸°ì—´ì„ clearí•œë‹¤.
             clearWaitItemColsOfTransMutex( ID_FALSE, sCurLockNode->mSlotID );
-            // waitingÇÏ°í ÀÖ´Â Æ®·£Àè¼ÇÀ» resume½ÃÅ²´Ù.
+            // waitingí•˜ê³  ìžˆëŠ” íŠ¸ëžœìž­ì…˜ì„ resumeì‹œí‚¨ë‹¤.
             IDE_TEST( smLayerCallback::resumeTrans( smLayerCallback::getTransBySID( sCurLockNode->mSlotID ) )
                       != IDE_SUCCESS );
             sCurLockNode = sLockItem->mFstLockRequest;
@@ -1187,9 +1187,9 @@ IDE_RC smlLockMgr::unlockTableMutex( SInt          aSlot,
     {
         if ( aLockNode->mPrvTransLockNode != NULL )
         {
-            // Æ®·£Àè¼Ç lock list array¿¡¼­
-            // transactionÀÇ slot id¿¡ ÇØ´çÇÏ´Â
-            // list¿¡¼­ lock node¸¦ Á¦°ÅÇÑ´Ù.
+            // íŠ¸ëžœìž­ì…˜ lock list arrayì—ì„œ
+            // transactionì˜ slot idì— í•´ë‹¹í•˜ëŠ”
+            // listì—ì„œ lock nodeë¥¼ ì œê±°í•œë‹¤.
             removeLockNode(aLockNode);
         }
         else
@@ -1248,14 +1248,14 @@ IDE_RC smlLockMgr::unlockTableMutex( SInt          aSlot,
   function description: detectDeadlockMutex
   SIGMOD RECORD, Vol.17, No,2 ,June,1988
   Bin Jang,
-  Dead Lock Detection is Really Cheap paperÀÇ
-  7 page³»¿ë°ú µ¿ÀÏ.
-  ³í¹® ³»¿ë°ú ´Ù¸¥Á¡Àº,
-  waiting tableÀÌ chained matrixÀÌ¾î¼­ ¾Ë·Î¸®µëÀÇ
-  º¹Àâµµ¸¦ ³·Ãß¾ú°í,
-  ¸¶Áö¸· loop¿¡¼­ ¾Æ·¡¿Í °°Àº Á¶°ÇÀ» ÁÖ¾î
-  ÀÚ±âÀÚ½Å°ú°æ·Î°¡ ¹ß»ýÇÏÀÚ¸¶ÀÚ ÀüÃ¼ loop¸¦ ºüÁ®³ª°£´Ù´Â
-  Á¡ÀÌ´Ù.
+  Dead Lock Detection is Really Cheap paperì˜
+  7 pageë‚´ìš©ê³¼ ë™ì¼.
+  ë…¼ë¬¸ ë‚´ìš©ê³¼ ë‹¤ë¥¸ì ì€,
+  waiting tableì´ chained matrixì´ì–´ì„œ ì•Œë¡œë¦¬ë“¬ì˜
+  ë³µìž¡ë„ë¥¼ ë‚®ì¶”ì—ˆê³ ,
+  ë§ˆì§€ë§‰ loopì—ì„œ ì•„ëž˜ì™€ ê°™ì€ ì¡°ê±´ì„ ì£¼ì–´
+  ìžê¸°ìžì‹ ê³¼ê²½ë¡œê°€ ë°œìƒí•˜ìžë§ˆìž ì „ì²´ loopë¥¼ ë¹ ì ¸ë‚˜ê°„ë‹¤ëŠ”
+  ì ì´ë‹¤.
   if(aSlot == j)
   {
    return ID_TRUE;
@@ -1265,9 +1265,9 @@ IDE_RC smlLockMgr::unlockTableMutex( SInt          aSlot,
 idBool smlLockMgr::detectDeadlockMutex( SInt aSlot )
 {
     UShort     i, j;
-    // node¿Í node°£¿¡ ´ë±â°æ·Î ±æÀÌ.
+    // nodeì™€ nodeê°„ì— ëŒ€ê¸°ê²½ë¡œ ê¸¸ì´.
     UShort sPathLen;
-    // node°£¿¡ ´ë±â °æ·Î°¡ ÀÖ´Â°¡ ¿¡´ëÇÑ flag
+    // nodeê°„ì— ëŒ€ê¸° ê²½ë¡œê°€ ìžˆëŠ”ê°€ ì—ëŒ€í•œ flag
     idBool     sExitPathFlag;
     void       *sTargetTrans;
     SInt       sSlotN;
@@ -1307,13 +1307,13 @@ idBool smlLockMgr::detectDeadlockMutex( SInt aSlot )
                             = mArrOfLockList[aSlot].mFstWaitTblTransItem;
 
                         mArrOfLockList[aSlot].mFstWaitTblTransItem = j;
-                        // aSlot == jÀÌ¸é,
-                        // dead lock ¹ß»ý ÀÌ´Ù..
-                        // ¿Ö³ÄÇÏ¸é
+                        // aSlot == jì´ë©´,
+                        // dead lock ë°œìƒ ì´ë‹¤..
+                        // ì™œëƒí•˜ë©´
                         // mWaitForTable[aSlot][aSlot].mIndex !=0
-                        // »óÅÂ°¡ µÇ¾ú±â ¶§¹®ÀÌ´Ù.
-                        // dead lock dectionÇÏÀÚ ¸¶ÀÚ,
-                        // ³ª¸ÓÁö loop »ý¶ô. ÀÌÁ¡ÀÌ ³í¹®°ú Æ²¸°Á¡.
+                        // ìƒíƒœê°€ ë˜ì—ˆê¸° ë•Œë¬¸ì´ë‹¤.
+                        // dead lock dectioní•˜ìž ë§ˆìž,
+                        // ë‚˜ë¨¸ì§€ loop ìƒë½. ì´ì ì´ ë…¼ë¬¸ê³¼ í‹€ë¦°ì .
                         if ( aSlot == j )
                         {
                             return ID_TRUE;
@@ -1333,12 +1333,12 @@ idBool smlLockMgr::detectDeadlockMutex( SInt aSlot )
 /*********************************************************
   function description:
 
-  aSlot¿¡ ÇØ´çÇÏ´Â Æ®·£Àè¼ÇÀÌ ´ë±âÇÏ°í ÀÖ¾ú´ø
-  Æ®·£Àè¼ÇµéÀÇ ´ë±â°æ·Î Á¤º¸¸¦ 0À¸·Î clearÇÑ´Ù.
-  -> waitTable¿¡¼­ aSlotÇà¿¡ ´ë±âÇÏ°í ÀÖ´Â ÄÃ·³µé¿¡¼­
-    °æ·Î±æÀÌ¸¦ 0·Î ÇÑ´Ù.
+  aSlotì— í•´ë‹¹í•˜ëŠ” íŠ¸ëžœìž­ì…˜ì´ ëŒ€ê¸°í•˜ê³  ìžˆì—ˆë˜
+  íŠ¸ëžœìž­ì…˜ë“¤ì˜ ëŒ€ê¸°ê²½ë¡œ ì •ë³´ë¥¼ 0ìœ¼ë¡œ clearí•œë‹¤.
+  -> waitTableì—ì„œ aSlotí–‰ì— ëŒ€ê¸°í•˜ê³  ìžˆëŠ” ì»¬ëŸ¼ë“¤ì—ì„œ
+    ê²½ë¡œê¸¸ì´ë¥¼ 0ë¡œ í•œë‹¤.
 
-  aDoInit¿¡¼­ ID_TRUEÀÌ¸ç ´ë±â¿¬°á Á¤º¸µµ ²÷¾î¹ö¸°´Ù.
+  aDoInitì—ì„œ ID_TRUEì´ë©° ëŒ€ê¸°ì—°ê²° ì •ë³´ë„ ëŠì–´ë²„ë¦°ë‹¤.
 ***********************************************************/
 void smlLockMgr::clearWaitItemColsOfTransMutex( idBool aDoInit, SInt aSlot )
 {
@@ -1369,8 +1369,8 @@ void smlLockMgr::clearWaitItemColsOfTransMutex( idBool aDoInit, SInt aSlot )
 
 /*********************************************************
   function description:
-  : Æ®·£Àè¼Ç a(aSlot)¿¡ ´ëÇÏ¿© waitingÇÏ°í ÀÖ¾ú´ø Æ®·£Àè¼ÇµéÀÇ
-    ´ë±â °æ·Î Á¤º¸¸¦ clearÇÑ´Ù.
+  : íŠ¸ëžœìž­ì…˜ a(aSlot)ì— ëŒ€í•˜ì—¬ waitingí•˜ê³  ìžˆì—ˆë˜ íŠ¸ëžœìž­ì…˜ë“¤ì˜
+    ëŒ€ê¸° ê²½ë¡œ ì •ë³´ë¥¼ clearí•œë‹¤.
 ***********************************************************/
 void  smlLockMgr::clearWaitTableRows( smlLockNode * aLockNode,
                                       SInt          aSlot )
@@ -1388,15 +1388,15 @@ void  smlLockMgr::clearWaitTableRows( smlLockNode * aLockNode,
 
 /*********************************************************
   function description: registRecordLockWait
-  ´ÙÀ½°ú °°Àº ¼ø¼­·Î  record¶ô ´ë±â¿Í
-  Æ®·£Àè¼Ç°£¿¡ waiting °ü°è¸¦ ¿¬°áÇÑ´Ù.
+  ë‹¤ìŒê³¼ ê°™ì€ ìˆœì„œë¡œ  recordë½ ëŒ€ê¸°ì™€
+  íŠ¸ëžœìž­ì…˜ê°„ì— waiting ê´€ê³„ë¥¼ ì—°ê²°í•œë‹¤.
 
-  1. waiting table¿¡¼­ aSlot ÀÌ aWaitSlot¿¡ waitingÇÏ°í
-     ÀÖ½¿À» Ç¥½ÃÇÑ´Ù.
-  2.  aWaitSlot column¿¡  aSlotÀ»
-     record lock list¿¡ ¿¬°á½ÃÅ²´Ù.
-  3.  aSlotÇà¿¡¼­ aWaitSlotÀ»  transaction waiting
-     list¿¡ ¿¬°á½ÃÅ²´Ù.
+  1. waiting tableì—ì„œ aSlot ì´ aWaitSlotì— waitingí•˜ê³ 
+     ìžˆìŠ´ì„ í‘œì‹œí•œë‹¤.
+  2.  aWaitSlot columnì—  aSlotì„
+     record lock listì— ì—°ê²°ì‹œí‚¨ë‹¤.
+  3.  aSlotí–‰ì—ì„œ aWaitSlotì„  transaction waiting
+     listì— ì—°ê²°ì‹œí‚¨ë‹¤.
 ***********************************************************/
 void   smlLockMgr::registRecordLockWaitMutex( SInt aSlot, SInt aWaitSlot )
 {
@@ -1406,18 +1406,18 @@ void   smlLockMgr::registRecordLockWaitMutex( SInt aSlot, SInt aWaitSlot )
     IDE_ASSERT( mArrOfLockList[aSlot].mFstWaitTblTransItem == SML_END_ITEM );
 
     /* BUG-24416
-     * smlLockMgr::registRecordLockWait() ¿¡¼­ ¹Ýµå½Ã
-     * mWaitForTable[aSlot][aWaitSlot].mIndex ÀÌ 1·Î ¼³Á¤µÇ¾î¾ß ÇÕ´Ï´Ù. */
+     * smlLockMgr::registRecordLockWait() ì—ì„œ ë°˜ë“œì‹œ
+     * mWaitForTable[aSlot][aWaitSlot].mIndex ì´ 1ë¡œ ì„¤ì •ë˜ì–´ì•¼ í•©ë‹ˆë‹¤. */
     mWaitForTable[aSlot][aWaitSlot].mIndex = 1;
 
     if ( mWaitForTable[aSlot][aWaitSlot].mNxtWaitRecTransItem
          == ID_USHORT_MAX )
     {
-        /* BUG-23823: Record Lock¿¡ ´ëÇÑ ´ë±â ¸®½ºÆ®¸¦ Waiting¼ø¼­´ë·Î ±ú¿ö
-         * ÁÖ¾î¾ß ÇÑ´Ù.
+        /* BUG-23823: Record Lockì— ëŒ€í•œ ëŒ€ê¸° ë¦¬ìŠ¤íŠ¸ë¥¼ Waitingìˆœì„œëŒ€ë¡œ ê¹¨ì›Œ
+         * ì£¼ì–´ì•¼ í•œë‹¤.
          *
-         * WaitÇÒ TransactionÀ» Target Wait Transaction ListÀÇ ¸¶Áö¸·¿¡ ¿¬°á
-         * ÇÑ´Ù. */
+         * Waití•  Transactionì„ Target Wait Transaction Listì˜ ë§ˆì§€ë§‰ì— ì—°ê²°
+         * í•œë‹¤. */
         mWaitForTable[aSlot][aWaitSlot].mNxtWaitRecTransItem = SML_END_ITEM;
 
         if ( mArrOfLockList[aWaitSlot].mFstWaitRecTransItem == SML_END_ITEM )
@@ -1449,9 +1449,9 @@ void   smlLockMgr::registRecordLockWaitMutex( SInt aSlot, SInt aWaitSlot )
 
 /*********************************************************
   function description: didLockReleased
-  Æ®·£Àè¼Ç¿¡ ´ëÀÀÇÏ´Â  aSlotÀÌ  aWaitSlot Æ®·£Àè¼Ç¿¡°Ô
-  record lock wait¶Ç´Â table lock waitÀÌ ÀÇ¹Ì clearµÇ¾î
-  ÀÖ´ÂÁö È®ÀÎÇÑ´Ù.
+  íŠ¸ëžœìž­ì…˜ì— ëŒ€ì‘í•˜ëŠ”  aSlotì´  aWaitSlot íŠ¸ëžœìž­ì…˜ì—ê²Œ
+  record lock waitë˜ëŠ” table lock waitì´ ì˜ë¯¸ clearë˜ì–´
+  ìžˆëŠ”ì§€ í™•ì¸í•œë‹¤.
   *********************************************************/
 idBool  smlLockMgr::didLockReleasedMutex( SInt aSlot, SInt aWaitSlot )
 {
@@ -1461,9 +1461,9 @@ idBool  smlLockMgr::didLockReleasedMutex( SInt aSlot, SInt aWaitSlot )
 
 /*********************************************************
   function description: freeAllRecordLock
-  aSlot¿¡ ÇØ´çÇÏ´Â Æ®·£Àè¼ÇÀ» record lockÀ¸·Î waitingÇÏ°í
-  ÀÖ´Â Æ®·£Àè¼Çµé°£ÀÇ ´ë±â °æ·Î¸¦ 0À¸·Î clearÇÑ´Ù.
-  record lockÀ» waitingÇÏ°í ÀÖ´Â Æ®·£Àè¼ÇÀ» resume½ÃÅ²´Ù.
+  aSlotì— í•´ë‹¹í•˜ëŠ” íŠ¸ëžœìž­ì…˜ì„ record lockìœ¼ë¡œ waitingí•˜ê³ 
+  ìžˆëŠ” íŠ¸ëžœìž­ì…˜ë“¤ê°„ì˜ ëŒ€ê¸° ê²½ë¡œë¥¼ 0ìœ¼ë¡œ clearí•œë‹¤.
+  record lockì„ waitingí•˜ê³  ìžˆëŠ” íŠ¸ëžœìž­ì…˜ì„ resumeì‹œí‚¨ë‹¤.
 ***********************************************************/
 IDE_RC  smlLockMgr::freeAllRecordLockMutex( SInt aSlot )
 {
@@ -1495,7 +1495,7 @@ IDE_RC  smlLockMgr::freeAllRecordLockMutex( SInt aSlot )
     }
 
     /* PROJ-1381 FAC
-     * Record LockÀ» ÇØÁ¦ÇÑ ´ÙÀ½ ÃÊ±âÈ­¸¦ ÇÑ´Ù. */
+     * Record Lockì„ í•´ì œí•œ ë‹¤ìŒ ì´ˆê¸°í™”ë¥¼ í•œë‹¤. */
     mArrOfLockList[aSlot].mFstWaitRecTransItem = SML_END_ITEM;
     mArrOfLockList[aSlot].mLstWaitRecTransItem = SML_END_ITEM;
 
@@ -1508,9 +1508,9 @@ IDE_RC  smlLockMgr::freeAllRecordLockMutex( SInt aSlot )
 
 /*********************************************************
   function description: registTblLockWaitListByReq
-  waiting table¿¡¼­   Æ®·£Àè¼ÇÀÇ slot id ÇàÀÇ ¿­µé¿¡
-  request list¿¡¼­  ´ë±âÇÏ°í ÀÖ´ÂÆ®·¢Àè¼Çµé ÀÇ
-  slot id¸¦  table lock waiting ¸®½ºÆ®¿¡ µî·ÏÇÑ´Ù.
+  waiting tableì—ì„œ   íŠ¸ëžœìž­ì…˜ì˜ slot id í–‰ì˜ ì—´ë“¤ì—
+  request listì—ì„œ  ëŒ€ê¸°í•˜ê³  ìžˆëŠ”íŠ¸ëž™ìž­ì…˜ë“¤ ì˜
+  slot idë¥¼  table lock waiting ë¦¬ìŠ¤íŠ¸ì— ë“±ë¡í•œë‹¤.
 ***********************************************************/
 void smlLockMgr::registTblLockWaitListByReq( SInt          aSlot,
                                              smlLockNode * aLockNode )
@@ -1536,9 +1536,9 @@ void smlLockMgr::registTblLockWaitListByReq( SInt          aSlot,
 
 /*********************************************************
   function description: registTblLockWaitListByGrant
-  waiting table¿¡¼­   Æ®·£Àè¼ÇÀÇ slot id Çà¿¡
-  grant list¿¡¼­     ÀÖ´ÂÆ®·¢Àè¼Çµé ÀÇ
-  slot id¸¦  table lock waiting ¸®½ºÆ®¿¡ µî·ÏÇÑ´Ù.
+  waiting tableì—ì„œ   íŠ¸ëžœìž­ì…˜ì˜ slot id í–‰ì—
+  grant listì—ì„œ     ìžˆëŠ”íŠ¸ëž™ìž­ì…˜ë“¤ ì˜
+  slot idë¥¼  table lock waiting ë¦¬ìŠ¤íŠ¸ì— ë“±ë¡í•œë‹¤.
 ***********************************************************/
 void smlLockMgr::registTblLockWaitListByGrant( SInt          aSlot,
                                                smlLockNode * aLockNode )
@@ -1563,10 +1563,10 @@ void smlLockMgr::registTblLockWaitListByGrant( SInt          aSlot,
 
 /*********************************************************
   function description: setLockModeAndAddLockSlot
-  Æ®·£Àè¼ÇÀÌ ÀÌÀü¿¡ table¿¡ lockÀ» ÀâÀº °æ¿ì¿¡ ÇÑÇÏ¿©,
-  ÇöÀç Æ®·£Àè¼ÇÀÇ lock mode¸¦ settingÇÏ°í,
-  ÀÌ¹ø¿¡µµ lockÀ» Àâ¾Ò´Ù¸é lock slotÀ» Æ®·£Àè¼ÇÀÇ lock
-  node¿¡ Ãß°¡ÇÑ´Ù.
+  íŠ¸ëžœìž­ì…˜ì´ ì´ì „ì— tableì— lockì„ ìž¡ì€ ê²½ìš°ì— í•œí•˜ì—¬,
+  í˜„ìž¬ íŠ¸ëžœìž­ì…˜ì˜ lock modeë¥¼ settingí•˜ê³ ,
+  ì´ë²ˆì—ë„ lockì„ ìž¡ì•˜ë‹¤ë©´ lock slotì„ íŠ¸ëžœìž­ì…˜ì˜ lock
+  nodeì— ì¶”ê°€í•œë‹¤.
 ***********************************************************/
 void smlLockMgr::setLockModeAndAddLockSlotMutex( SInt           aSlot,
                                                  smlLockNode  * aTxLockNode,
@@ -1581,7 +1581,7 @@ void smlLockMgr::setLockModeAndAddLockSlotMutex( SInt           aSlot,
         {
             *aCurLockMode = aTxLockNode->mLockMode;
         }
-        // Æ®·£Àè¼ÇÀÇ lock slot list¿¡  lock slot  Ãß°¡ .
+        // íŠ¸ëžœìž­ì…˜ì˜ lock slot listì—  lock slot  ì¶”ê°€ .
         if ( aIsLocked == ID_TRUE )
         {
             aTxLockNode->mFlag |= mLockModeToMask[aLockMode];

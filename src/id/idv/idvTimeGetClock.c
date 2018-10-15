@@ -23,10 +23,10 @@ ULong idvGetClockTickFromSystem()
 {
     register ULong sTick;
 
-/* BUG-18474 HPÀåºñ¿¡¼­ idvGetClockTickFromSystemÀÌ ¹®Á¦°¡ ÀÖ½À´Ï´Ù.
+/* BUG-18474 HPì¥ë¹„ì—ì„œ idvGetClockTickFromSystemì´ ë¬¸ì œê°€ ìˆìŠµë‹ˆë‹¤.
  *
- * HPÀåºñ¿¡¼­´Â Server´Â GCC·Î buildÇÏÁö ¾Ê±â¶§¹®¿¡ GCC´Â client¶ó°í °¡Á¤ÇÏ°í
- * 0À» ¹Ù·Î returnÇÏµµ·Ï ¼öÁ¤ÇÏ¿´½À´Ï´Ù.
+ * HPì¥ë¹„ì—ì„œëŠ” ServerëŠ” GCCë¡œ buildí•˜ì§€ ì•Šê¸°ë•Œë¬¸ì— GCCëŠ” clientë¼ê³  ê°€ì •í•˜ê³ 
+ * 0ì„ ë°”ë¡œ returní•˜ë„ë¡ ìˆ˜ì •í•˜ì˜€ìŠµë‹ˆë‹¤.
  * */
 #if defined(_USE_GCC_)
     sTick = 0;

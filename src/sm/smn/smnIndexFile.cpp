@@ -151,7 +151,7 @@ IDE_RC smnIndexFile::write(SChar *a_pRow, idBool a_bFinal)
     if(a_pRow != NULL)
     {
         /* BUG-40688 
-         * persistent index¸¦ ÀúÀåÇÒ¶§ freeµÈ row´Â ÀúÀåÇÏÁö¾Ê´Â´Ù */
+         * persistent indexë¥¼ ì €ì¥í• ë•Œ freeëœ rowëŠ” ì €ì¥í•˜ì§€ì•ŠëŠ”ë‹¤ */
         if ( SM_SCN_IS_FREE_ROW( ((smpSlotHeader *)a_pRow)->mCreateSCN ) == ID_FALSE )
         {
             *(m_pAlignedBuffer + m_cItemInBuffer) = SMP_SLOT_GET_OID( a_pRow );
@@ -202,36 +202,36 @@ IDE_RC smnIndexFile::write(SChar *a_pRow, idBool a_bFinal)
 /*********************************************************************
  * FUNCTION DESCRIPTION : smnIndexFile::read                         *
  * ------------------------------------------------------------------*
- * (BUG-40688 : ÀÌÀü ÇÔ¼ö ±¸ÇöÀÌ º¹ÀâÇØ¼­ ´Ù½Ã ÀÛ¼ºÇÔ.)
+ * (BUG-40688 : ì´ì „ í•¨ìˆ˜ êµ¬í˜„ì´ ë³µì¡í•´ì„œ ë‹¤ì‹œ ì‘ì„±í•¨.)
  *
- * aReadWantCnt ¸¸Å­ÀÇ OID¸¦ persistent ÆÄÀÏ·ÎºÎÅÍ ÀĞÀºÈÄ
- * row pointer·Î º¯È¯ÇØ aReadBuffer·Î ÀúÀåÇÑ´Ù.
+ * aReadWantCnt ë§Œí¼ì˜ OIDë¥¼ persistent íŒŒì¼ë¡œë¶€í„° ì½ì€í›„
+ * row pointerë¡œ ë³€í™˜í•´ aReadBufferë¡œ ì €ì¥í•œë‹¤.
  *
- * ½ÇÁ¦ ÀĞÀº OID °¹¼ö´Â aReadCnt¿¡ ¼³Á¤µÈ´Ù.
- * ÀÏ¹İÀûÀ¸·Î aReadCnt °ªÀº aReadWantCnt¿Í µ¿ÀÏÇÑ °ªÀÌ ¼³Á¤µÇ°í
- * ¸¸¾à 0ÀÌ³ª ReadWantCnt º¸´Ù ÀÛÀº°ªÀÌ ¼¼ÆÃµÈ °æ¿ì´Â ÆÄÀÏ ³¡±îÁö
- * ¸ğµÎ ÀĞ¾úÀ½À» ÀÇ¹ÌÇÑ´Ù.
+ * ì‹¤ì œ ì½ì€ OID ê°¯ìˆ˜ëŠ” aReadCntì— ì„¤ì •ëœë‹¤.
+ * ì¼ë°˜ì ìœ¼ë¡œ aReadCnt ê°’ì€ aReadWantCntì™€ ë™ì¼í•œ ê°’ì´ ì„¤ì •ë˜ê³ 
+ * ë§Œì•½ 0ì´ë‚˜ ReadWantCnt ë³´ë‹¤ ì‘ì€ê°’ì´ ì„¸íŒ…ëœ ê²½ìš°ëŠ” íŒŒì¼ ëê¹Œì§€
+ * ëª¨ë‘ ì½ì—ˆìŒì„ ì˜ë¯¸í•œë‹¤.
  *
- * ÀĞÁö¾Ê°í ³²¾ÆÀÖ´Â OID´Â smnIndexFIleÀÇ buffer (m_pAlignedBuffer)¿¡
- * ³²¾ÆÀÖ¾î ÀÌ ÇÔ¼ö°¡ ´Ù½Ã È£ÃâµÉ¶§ ÀÌ¿ëÇÑ´Ù.
+ * ì½ì§€ì•Šê³  ë‚¨ì•„ìˆëŠ” OIDëŠ” smnIndexFIleì˜ buffer (m_pAlignedBuffer)ì—
+ * ë‚¨ì•„ìˆì–´ ì´ í•¨ìˆ˜ê°€ ë‹¤ì‹œ í˜¸ì¶œë ë•Œ ì´ìš©í•œë‹¤.
  *
- * < parameter Á¤º¸ > 
+ * < parameter ì •ë³´ > 
  *
  * aSpaceID     - [IN]  table space ID
- * aReadBuffer  - [IN]  ÀĞÀº row pointer¸¦ ÀúÀåÇÒ ¹öÆÛ
- *                      ( smIndexFIleÀÇ buffer¿¡ ÀÖ´Â OID¸¦
- *                        row pointer·Î º¯È¯ÇÏ¿© ÀúÀåÇÏ°Ô µÈ´Ù. )
- * aReadWantCnt - [IN]  ÀĞ°íÀÚ ÇÏ´Â OID °¹¼ö.
- * aReadCnt     - [OUT] ÀĞ¾îÁø OID °¹¼ö.
- *                      : º¸Åë aReadWantCnt °ªÀÌ ¼¼ÆÃµÊ.
- *                      : ±×º¸´Ù ÀÛÀº°ªÀÌ³ª 0ÀÌ ¼¼ÆÃµÇ´Â °æ¿ì´Â
- *                        ¸¶Áö¸·ÀÌ¾î¼­ ´õÀÌ»ó OID°¡ ¾ø´Ù´Â ÀÇ¹ÌÀÌ´Ù.
+ * aReadBuffer  - [IN]  ì½ì€ row pointerë¥¼ ì €ì¥í•  ë²„í¼
+ *                      ( smIndexFIleì˜ bufferì— ìˆëŠ” OIDë¥¼
+ *                        row pointerë¡œ ë³€í™˜í•˜ì—¬ ì €ì¥í•˜ê²Œ ëœë‹¤. )
+ * aReadWantCnt - [IN]  ì½ê³ ì í•˜ëŠ” OID ê°¯ìˆ˜.
+ * aReadCnt     - [OUT] ì½ì–´ì§„ OID ê°¯ìˆ˜.
+ *                      : ë³´í†µ aReadWantCnt ê°’ì´ ì„¸íŒ…ë¨.
+ *                      : ê·¸ë³´ë‹¤ ì‘ì€ê°’ì´ë‚˜ 0ì´ ì„¸íŒ…ë˜ëŠ” ê²½ìš°ëŠ”
+ *                        ë§ˆì§€ë§‰ì´ì–´ì„œ ë”ì´ìƒ OIDê°€ ì—†ë‹¤ëŠ” ì˜ë¯¸ì´ë‹¤.
  *
- * < Ãß°¡Á¤º¸ >
- * m_pAlignedBuffer    : smnIndexFileÀÇ buffer
- * m_cItemInBuffer     : smnINdexFileÀÇ buffer¿¡ ÀÖ´Â ÀüÃ¼ OID °¹¼ö
- * m_cLeftInBuffer     : smnIndexFileÀÇ buffer¿¡ ÀĞÁö¾Ê°í ³²¾ÆÀÖ´Â OID °¹¼ö 
- * m_cReadItemInBuffer : smnIndexFileÀÇ buffer¿¡¼­ ÀĞÀº OID °¹¼ö
+ * < ì¶”ê°€ì •ë³´ >
+ * m_pAlignedBuffer    : smnIndexFileì˜ buffer
+ * m_cItemInBuffer     : smnINdexFileì˜ bufferì— ìˆëŠ” ì „ì²´ OID ê°¯ìˆ˜
+ * m_cLeftInBuffer     : smnIndexFileì˜ bufferì— ì½ì§€ì•Šê³  ë‚¨ì•„ìˆëŠ” OID ê°¯ìˆ˜ 
+ * m_cReadItemInBuffer : smnIndexFileì˜ bufferì—ì„œ ì½ì€ OID ê°¯ìˆ˜
  *
  *********************************************************************/
 IDE_RC smnIndexFile::read( scSpaceID    aSpaceID,
@@ -245,8 +245,8 @@ IDE_RC smnIndexFile::read( scSpaceID    aSpaceID,
 
     while ( sReadCnt < aReadWantCnt )
     {
-        /* smnIndexFileÀÇ buffer¿¡ OID°¡ ³²¾ÆÀÖÀ¸¸é
-         * OID => row pointer·Î º¯È¯ÇØ¼­ aReadBuffer·Î º¹»çÇÑ´Ù. */
+        /* smnIndexFileì˜ bufferì— OIDê°€ ë‚¨ì•„ìˆìœ¼ë©´
+         * OID => row pointerë¡œ ë³€í™˜í•´ì„œ aReadBufferë¡œ ë³µì‚¬í•œë‹¤. */
         if ( m_cLeftInBuffer > 0 )
         {
             IDE_ASSERT( smmManager::getOIDPtr( aSpaceID,
@@ -262,7 +262,7 @@ IDE_RC smnIndexFile::read( scSpaceID    aSpaceID,
             }
             else
             {
-                /* freeµÈ rowÀÌ¹Ç·Î skip ÇÑ´Ù. */
+                /* freeëœ rowì´ë¯€ë¡œ skip í•œë‹¤. */
             }
 
             m_cLeftInBuffer--;
@@ -276,16 +276,16 @@ IDE_RC smnIndexFile::read( scSpaceID    aSpaceID,
         }
 
         /*
-         * ¿©±â¿¡ µµÂøÇÑ´Ù¸é, 
-         * smnIndexFileÀÇ buffer°¡ ºñ¾îÀÖ°Å³ª ¸ğµÎ »ç¿ëÇÑ °æ¿ìÀÌ´Ù.
+         * ì—¬ê¸°ì— ë„ì°©í•œë‹¤ë©´, 
+         * smnIndexFileì˜ bufferê°€ ë¹„ì–´ìˆê±°ë‚˜ ëª¨ë‘ ì‚¬ìš©í•œ ê²½ìš°ì´ë‹¤.
          *
-         * ¾Æ·¡ ÄÚµå¿¡¼­´Â
-         * persistent ÆÄÀÏÀÇ ´ÙÀ½ ³»¿ëÀ» ÀĞ¾î¼­ smnIndexFileÀÇ buffer¿¡ ¼¼ÆÃÇÑ´Ù.
+         * ì•„ë˜ ì½”ë“œì—ì„œëŠ”
+         * persistent íŒŒì¼ì˜ ë‹¤ìŒ ë‚´ìš©ì„ ì½ì–´ì„œ smnIndexFileì˜ bufferì— ì„¸íŒ…í•œë‹¤.
          */
 
         if ( m_bEnd == ID_FALSE )
         {
-            /* ÆÄÀÏ ÀĞ¾î¼­ smnIndexFileÀÇ buffer¿¡ ³Ö±â */
+            /* íŒŒì¼ ì½ì–´ì„œ smnIndexFileì˜ bufferì— ë„£ê¸° */
             IDE_TEST( m_file.read( NULL, /* idvSQL* */
                                    m_nOffset,
                                    m_pAlignedBuffer,
@@ -296,7 +296,7 @@ IDE_RC smnIndexFile::read( scSpaceID    aSpaceID,
 
             if ( sReadBufferSize != (size_t)IDE_INDEX_FILE_BUFFER )
             {
-                /* ÆÄÀÏÀÇ ³¡±îÁö ¸ğµÎ ÀĞ¾úÀ½À» Ç¥½ÃÇÔ. */
+                /* íŒŒì¼ì˜ ëê¹Œì§€ ëª¨ë‘ ì½ì—ˆìŒì„ í‘œì‹œí•¨. */
                 m_bEnd = ID_TRUE;
             }
 
@@ -306,7 +306,7 @@ IDE_RC smnIndexFile::read( scSpaceID    aSpaceID,
         }
         else
         {
-            /* ÆÄÀÏÀ» ¸ğµÎ ÀĞ¾úÀ¸¹Ç·Î Á¾·áÇÔ. */
+            /* íŒŒì¼ì„ ëª¨ë‘ ì½ì—ˆìœ¼ë¯€ë¡œ ì¢…ë£Œí•¨. */
             break;
         }
     }

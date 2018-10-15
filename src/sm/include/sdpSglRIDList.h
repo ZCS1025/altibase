@@ -20,29 +20,29 @@
  *
  * Description :
  *
- * File Based RID Linked-List °ü¸®ÀÚ
+ * File Based RID Linked-List ê´€ë¦¬ì
  *
  *
- * # °³³ä
+ * # ê°œë…
  *
- * tablespaceÀÇ ³í¸®ÀûÀÎ ÀúÀå±¸Á¶¸¦ °ü¸®ÇÏ±â À§ÇÑ 
- * ÀÚ·á±¸Á¶ÀÌ´Ù.
+ * tablespaceì˜ ë…¼ë¦¬ì ì¸ ì €ì¥êµ¬ì¡°ë¥¼ ê´€ë¦¬í•˜ê¸° ìœ„í•œ 
+ * ìë£Œêµ¬ì¡°ì´ë‹¤.
  *
- * # ±¸Á¶
- *  + tablespace¿¡ ÀúÀåµÇ´Â °¢Á¾ ³í¸®ÀûÀÎ RID list °ü¸®
- *      - tablespaceÀÇ ext.desc free list   (base)
- *      - segment descÀÇ ext.desc.full list (base)
- *      - segment descÀÇ ext.desc.free list (base)
- *      - extent descÀÇ ext.desc.list       (node)
+ * # êµ¬ì¡°
+ *  + tablespaceì— ì €ì¥ë˜ëŠ” ê°ì¢… ë…¼ë¦¬ì ì¸ RID list ê´€ë¦¬
+ *      - tablespaceì˜ ext.desc free list   (base)
+ *      - segment descì˜ ext.desc.full list (base)
+ *      - segment descì˜ ext.desc.free list (base)
+ *      - extent descì˜ ext.desc.list       (node)
  *
- *    »Ó¸¸¾Æ´Ï¶ó,
+ *    ë¿ë§Œì•„ë‹ˆë¼,
  *
  *      - TSS RID list (base)
  *      - used USH list (base)
  *      - free USH list (base)
  *
  * 
- * # ±¸Á¶
+ * # êµ¬ì¡°
  *                 sdpSglRIDListBase
  *                  ______________
  *                  |____len_____|        
@@ -54,15 +54,15 @@
  *
  *         sdpSglRIDListNode
  *
- * RID ¸®½ºÆ®´Â µ¿ÀÏÇÑ tablespace¿¡¼­¸¸ À¯Áö °ü¸®°¡ °¡´ÉÇÏ¸ç, À§¿Í°°Àº
- * circular double linked-listÀÇ ±¸Á¶¸¦ À¯ÁöÇÑ´Ù. ¸®½ºÆ®¿¡ ´ëÇÑ º¯°æ¿¬»êÀº
- * base ³ëµå¸¦ fixÇÑ »óÅÂ¿¡¼­ ÀÌ·ç¾îÁ®¾ßÇÑ´Ù.
- * sdpPIDList¿Í ´Ş¸® µ¿ÀÏÇÑ page³»¿¡ ¸®½ºÆ®ÀÇ ¿©·¯ ³ëµå°¡ Á¸ÀçÇÒ ¼ö ÀÖ´Ù.
+ * RID ë¦¬ìŠ¤íŠ¸ëŠ” ë™ì¼í•œ tablespaceì—ì„œë§Œ ìœ ì§€ ê´€ë¦¬ê°€ ê°€ëŠ¥í•˜ë©°, ìœ„ì™€ê°™ì€
+ * circular double linked-listì˜ êµ¬ì¡°ë¥¼ ìœ ì§€í•œë‹¤. ë¦¬ìŠ¤íŠ¸ì— ëŒ€í•œ ë³€ê²½ì—°ì‚°ì€
+ * base ë…¸ë“œë¥¼ fixí•œ ìƒíƒœì—ì„œ ì´ë£¨ì–´ì ¸ì•¼í•œë‹¤.
+ * sdpPIDListì™€ ë‹¬ë¦¬ ë™ì¼í•œ pageë‚´ì— ë¦¬ìŠ¤íŠ¸ì˜ ì—¬ëŸ¬ ë…¸ë“œê°€ ì¡´ì¬í•  ìˆ˜ ìˆë‹¤.
  *
  * # Releate data structure
  *
- * sdpSglRIDListBase ±¸Á¶Ã¼
- * sdpSglRIDListNode ±¸Á¶Ã¼
+ * sdpSglRIDListBase êµ¬ì¡°ì²´
+ * sdpSglRIDListNode êµ¬ì¡°ì²´
  *
  **********************************************************************/
 
@@ -77,7 +77,7 @@ class sdpSglRIDList
 {
 public:
 
-    /* RID listÀÇ base ³ëµå¸¦ ÃÊ±âÈ­ */
+    /* RID listì˜ base ë…¸ë“œë¥¼ ì´ˆê¸°í™” */
     static IDE_RC initList( sdpSglRIDListBase*    aBaseNode,
                             sdrMtx*               aMtx );
 
@@ -87,7 +87,7 @@ public:
                             ULong              aNodeCnt,
                             sdrMtx*            aMtx );
 
-    /* RID listÀÇ head¿¡ ³ëµå¸¦ Ãß°¡ */
+    /* RID listì˜ headì— ë…¸ë“œë¥¼ ì¶”ê°€ */
     static IDE_RC addNode2Head( sdpSglRIDListBase   * aBaseNode,
                                 sdpSglRIDListNode   * aNewNode,
                                 sdrMtx              * aMtx );
@@ -98,7 +98,7 @@ public:
                                 sdRID                aNodeRID,
                                 sdrMtx             * aMtx );
 
-    /* RID listÀÇ tail¿¡ ³ëµå¸¦ Ãß°¡ */
+    /* RID listì˜ tailì— ë…¸ë“œë¥¼ ì¶”ê°€ */
     static IDE_RC addNode2Tail( idvSQL             * aStatistics,
                                 scSpaceID            aSpaceID,
                                 sdpSglRIDListBase  * aBaseNode,
@@ -130,23 +130,23 @@ public:
     static IDE_RC initNode( sdpSglRIDListNode   * aNode,
                             sdrMtx              * aMtx );
 
-    /* ¸®½ºÆ®ÀÇ ¸ğµç ³ëµå ¾ò±â */
+    /* ë¦¬ìŠ¤íŠ¸ì˜ ëª¨ë“  ë…¸ë“œ ì–»ê¸° */
     static IDE_RC dumpList( scSpaceID aSpaceID,
                             sdRID     aBaseNodeRID );
 
-    /* base ³ëµåÀÇ head ³ëµå ¾ò±â */
+    /* base ë…¸ë“œì˜ head ë…¸ë“œ ì–»ê¸° */
     static inline sdRID getBaseNodeRID(sdpSglRIDListBase*   aBaseNode);
 
-    /* base ³ëµåÀÇ length ¾ò±â */
+    /* base ë…¸ë“œì˜ length ì–»ê¸° */
     static inline ULong getNodeCnt(sdpSglRIDListBase*   aBaseNode);
 
-    /* base ³ëµåÀÇ head ³ëµå ¾ò±â */
+    /* base ë…¸ë“œì˜ head ë…¸ë“œ ì–»ê¸° */
     static inline sdRID getHeadOfList(sdpSglRIDListBase*   aBaseNode);
 
-    /* base ³ëµåÀÇ tail ³ëµå ¾ò±â */
+    /* base ë…¸ë“œì˜ tail ë…¸ë“œ ì–»ê¸° */
     static inline sdRID getTailOfList(sdpSglRIDListBase*   aBaseNode);
 
-    /* ³ëµåÀÇ next ³ëµå ¾ò±â */
+    /* ë…¸ë“œì˜ next ë…¸ë“œ ì–»ê¸° */
     static inline sdRID getNxtOfNode(sdpSglRIDListNode*   aNode);
 
     static inline IDE_RC setHeadOfList( sdpSglRIDListBase * aBaseNode,
@@ -157,18 +157,18 @@ public:
                                         sdRID                aTail,
                                         sdrMtx             * aMtx );
 
-    /* base ³ëµåÀÇ length ¼³Á¤ ¹× logging */
+    /* base ë…¸ë“œì˜ length ì„¤ì • ë° logging */
     static inline IDE_RC setNodeCnt( sdpSglRIDListBase*  aBaseNode,
                                      ULong               aNodeCnt,
                                      sdrMtx*             aMtx );
 
-    /* ³ëµåÀÇ next ³ëµå ¼³Á¤ ¹× logging */
+    /* ë…¸ë“œì˜ next ë…¸ë“œ ì„¤ì • ë° logging */
     static inline IDE_RC setNxtOfNode( sdpSglRIDListNode*  aNode,
                                        sdRID               aNextRID,
                                        sdrMtx*             aMtx );
 
 private:
-    // rid°¡ µ¿ÀÏÇÑ page¿¡ Á¸ÀçÇÏ´ÂÁö °Ë»ç
+    // ridê°€ ë™ì¼í•œ pageì— ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬
     inline static idBool isSamePage( sdRID*     aLhs,
                                      sdRID*     aRhs );
 
@@ -181,7 +181,7 @@ private:
 };
 
 /***********************************************************************
- * Description : base->mBase ptr¸¦ rid·Î º¯È¯ÇÏ¿© ¹İÈ¯
+ * Description : base->mBase ptrë¥¼ ridë¡œ ë³€í™˜í•˜ì—¬ ë°˜í™˜
  ***********************************************************************/
 inline sdRID sdpSglRIDList::getBaseNodeRID(sdpSglRIDListBase*  aBaseNode)
 {
@@ -190,7 +190,7 @@ inline sdRID sdpSglRIDList::getBaseNodeRID(sdpSglRIDListBase*  aBaseNode)
 }
 
 /***********************************************************************
- * Description : µ¿ÀÏÇÑ Page³»ÀÇ ridÀÎÁö °Ë»ç
+ * Description : ë™ì¼í•œ Pageë‚´ì˜ ridì¸ì§€ ê²€ì‚¬
  ***********************************************************************/
 inline idBool sdpSglRIDList::isSamePage( sdRID* aLhs, sdRID* aRhs )
 {
@@ -201,7 +201,7 @@ inline idBool sdpSglRIDList::isSamePage( sdRID* aLhs, sdRID* aRhs )
 }
 
 /***********************************************************************
- * Description : Base ³ëµåÀÇ length ¹İÈ¯
+ * Description : Base ë…¸ë“œì˜ length ë°˜í™˜
  ***********************************************************************/
 inline ULong sdpSglRIDList::getNodeCnt( sdpSglRIDListBase*   aBaseNode )
 {
@@ -211,7 +211,7 @@ inline ULong sdpSglRIDList::getNodeCnt( sdpSglRIDListBase*   aBaseNode )
 }
 
 /***********************************************************************
- * Description : ³ëµåÀÇ next ³ëµå ¹İÈ¯ È¤Àº base ³ëµåÀÇ tail ³ëµå ¹İÈ¯
+ * Description : ë…¸ë“œì˜ next ë…¸ë“œ ë°˜í™˜ í˜¹ì€ base ë…¸ë“œì˜ tail ë…¸ë“œ ë°˜í™˜
  ***********************************************************************/
 inline sdRID sdpSglRIDList::getNxtOfNode( sdpSglRIDListNode*  aNode)
 {
@@ -221,7 +221,7 @@ inline sdRID sdpSglRIDList::getNxtOfNode( sdpSglRIDListNode*  aNode)
 }
 
 /***********************************************************************
- * Description : base ³ëµåÀÇ head ³ëµå ¹İÈ¯
+ * Description : base ë…¸ë“œì˜ head ë…¸ë“œ ë°˜í™˜
  ***********************************************************************/
 inline sdRID sdpSglRIDList::getHeadOfList( sdpSglRIDListBase*   aBaseNode )
 {
@@ -232,7 +232,7 @@ inline sdRID sdpSglRIDList::getHeadOfList( sdpSglRIDListBase*   aBaseNode )
 }
 
 /***********************************************************************
- * Description : base ³ëµåÀÇ tail ³ëµå ¹İÈ¯
+ * Description : base ë…¸ë“œì˜ tail ë…¸ë“œ ë°˜í™˜
  ***********************************************************************/
 inline sdRID sdpSglRIDList::getTailOfList( sdpSglRIDListBase*   aBaseNode )
 {
@@ -242,8 +242,8 @@ inline sdRID sdpSglRIDList::getTailOfList( sdpSglRIDListBase*   aBaseNode )
 }
 
 /***********************************************************************
- * Description : base ³ëµåÀÇ length ¼³Á¤ ¹× logging
- * base ³ëµåÀÇ list lengthÀ» ¼³Á¤ÇÑ´Ù.
+ * Description : base ë…¸ë“œì˜ length ì„¤ì • ë° logging
+ * base ë…¸ë“œì˜ list lengthì„ ì„¤ì •í•œë‹¤.
  ***********************************************************************/
 inline IDE_RC sdpSglRIDList::setNodeCnt( sdpSglRIDListBase* aBaseNode,
                                          ULong              aNodeCnt,
@@ -266,7 +266,7 @@ inline IDE_RC sdpSglRIDList::setNodeCnt( sdpSglRIDListBase* aBaseNode,
 }
 
 /***********************************************************************
- * Description : ³ëµåÀÇ Head RID ¼³Á¤ ¹× logging
+ * Description : ë…¸ë“œì˜ Head RID ì„¤ì • ë° logging
  ***********************************************************************/
 inline IDE_RC sdpSglRIDList::setHeadOfList( sdpSglRIDListBase * aBaseNode,
                                             sdRID               aHead,
@@ -289,7 +289,7 @@ inline IDE_RC sdpSglRIDList::setHeadOfList( sdpSglRIDListBase * aBaseNode,
 }
 
 /***********************************************************************
- * Description : ³ëµåÀÇ Tail RID ¼³Á¤ ¹× logging
+ * Description : ë…¸ë“œì˜ Tail RID ì„¤ì • ë° logging
  ***********************************************************************/
 inline IDE_RC sdpSglRIDList::setTailOfList( sdpSglRIDListBase  * aBaseNode,
                                             sdRID                aTail,
@@ -312,7 +312,7 @@ inline IDE_RC sdpSglRIDList::setTailOfList( sdpSglRIDListBase  * aBaseNode,
 }
 
 /***********************************************************************
- * Description : ³ëµåÀÇ next RID ¼³Á¤ ¹× logging
+ * Description : ë…¸ë“œì˜ next RID ì„¤ì • ë° logging
  ***********************************************************************/
 inline IDE_RC sdpSglRIDList::setNxtOfNode( sdpSglRIDListNode * aNode,
                                            sdRID               aNextRID,

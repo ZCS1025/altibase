@@ -20,41 +20,41 @@
 #include <iduHeapSort.h>
 
 /*-------------------------------------------------------------------------
- * TASK-2457 heap sort¸¦ ±¸ÇöÇÕ´Ï´Ù.
+ * TASK-2457 heap sortë¥¼ êµ¬í˜„í•©ë‹ˆë‹¤.
  * 
- * ¾Æ·¡¿¡ »ç¿ëÇÑ ¸ÅÅ©·Î ÇÔ¼ö´Â iduHeapSort.h¿¡ Á¤ÀÇµÈ ¸ÅÅ©·Î ÇÔ¼ö¸¦ ±×´ë·Î »ç¿ë
- * ÇÏ°í ÀÖ´Ù. ÇÔ¼ö¿¡ ´ëÇÑ ÀÚ¼¼ÇÑ ¼³¸í°ú Heap¿¡ ´ëÇÑ ÀÚ¼¼ÇÑ ¼³¸íÀº
- * iduHeapSort.h¿¡ ±â¼úµÇ¾î ÀÖ´Ù. ¿©±â¼­´Â °£·«ÇÑ ¼³¸í¸¸À» ÇÑ´Ù.
+ * ì•„ëž˜ì— ì‚¬ìš©í•œ ë§¤í¬ë¡œ í•¨ìˆ˜ëŠ” iduHeapSort.hì— ì •ì˜ëœ ë§¤í¬ë¡œ í•¨ìˆ˜ë¥¼ ê·¸ëŒ€ë¡œ ì‚¬ìš©
+ * í•˜ê³  ìžˆë‹¤. í•¨ìˆ˜ì— ëŒ€í•œ ìžì„¸í•œ ì„¤ëª…ê³¼ Heapì— ëŒ€í•œ ìžì„¸í•œ ì„¤ëª…ì€
+ * iduHeapSort.hì— ê¸°ìˆ ë˜ì–´ ìžˆë‹¤. ì—¬ê¸°ì„œëŠ” ê°„ëžµí•œ ì„¤ëª…ë§Œì„ í•œë‹¤.
  * ----------------------------------------------------------------------*/
-//heap array³»¿¡¼­ n¹øÂ° ¿ø¼Ò¸¦ ¸®ÅÏÇÑ´Ù.  ¿ø¼Ò´Â 1ºÎÅÍ ½ÃÀÛÇÑ´Ù.
+//heap arrayë‚´ì—ì„œ në²ˆì§¸ ì›ì†Œë¥¼ ë¦¬í„´í•œë‹¤.  ì›ì†ŒëŠ” 1ë¶€í„° ì‹œìž‘í•œë‹¤.
 #define IDU_HEAP_GET_NTH_DATA(idx) \
     IDU_HEAPSORT_GET_NTH_DATA( idx, mArray, mDataSize)
 
-//µÎ ¿ø¼Ò¸¦ ¼­·Î ±³È¯ÇÑ´Ù.
+//ë‘ ì›ì†Œë¥¼ ì„œë¡œ êµí™˜í•œë‹¤.
 #define IDU_HEAP_SWAP(a,b)      IDU_HEAPSORT_SWAP(a,b,mDataSize)
 
-//'aSubRootÀÇ  °¢ child'¸¦ ·çÆ®·Î ÇÏ´Â µÎ ¼­ºêÆ®¸®°¡ ¸ðµÎ heapÆ®¸®ÀÇ Æ¯¼ºÀ»
-//¸¸Á·ÇÒ¶§,ÀÌ ¸ÅÅ©·Î ¼öÇàÇÏ¸é aSubRoot¸¦ ·çÆ®·Î ÇÏ´Â Æ®¸®°¡ heapÆ®¸®ÀÇ Æ¯¼ºÀ»
-//¸¸Á·ÇÑ´Ù.
+//'aSubRootì˜  ê° child'ë¥¼ ë£¨íŠ¸ë¡œ í•˜ëŠ” ë‘ ì„œë¸ŒíŠ¸ë¦¬ê°€ ëª¨ë‘ heapíŠ¸ë¦¬ì˜ íŠ¹ì„±ì„
+//ë§Œì¡±í• ë•Œ,ì´ ë§¤í¬ë¡œ ìˆ˜í–‰í•˜ë©´ aSubRootë¥¼ ë£¨íŠ¸ë¡œ í•˜ëŠ” íŠ¸ë¦¬ê°€ heapíŠ¸ë¦¬ì˜ íŠ¹ì„±ì„
+//ë§Œì¡±í•œë‹¤.
 #define IDU_HEAP_MAX_HEAPIFY(aSubRoot) \
     IDU_HEAPSORT_MAX_HEAPIFY(aSubRoot, mArray, mDataCnt, mDataSize, mCompar)
 
 
 
 /*------------------------------------------------------------------------------
-  iduHeap¸¦ ÃÊ±âÈ­ ÇÑ´Ù.
+  iduHeapë¥¼ ì´ˆê¸°í™” í•œë‹¤.
 
   aIndex        - [IN]  Memory Mgr Index
-  aDataMaxCnt   - [IN]  iduHeap°¡ °¡Áú ¼ö ÀÖ´Â DataÀÇ ÃÖ´ë °¹¼ö
-  aDataSize     - [IN]  DataÀÇ Å©±â, byte´ÜÀ§
-  aCompar       - [IN]  DataµéÀ» ºñ±³ÇÏ±â À§ÇØ »ç¿ëÇÏ´Â Function, 2°³ÀÇ data¸¦
-                        ÀÎÀÚ·Î ¹Þ¾Æ °ªÀ» ºñ±³ÇÑ´Ù. ÀÌ ÇÔ¼ö¸¦ ÀûÀýÇÏ°Ô »ç¿ëÇÏ¸é
-                        iduHeap¸¦ ÃÖ´ë¿ì¼±¼øÀ§Å¥ ¶Ç´Â ÃÖ¼Ò¿ì¼±¼øÀ§Å¥·Î »ç¿ëÇÒ ¼ö ÀÖ´Ù.
+  aDataMaxCnt   - [IN]  iduHeapê°€ ê°€ì§ˆ ìˆ˜ ìžˆëŠ” Dataì˜ ìµœëŒ€ ê°¯ìˆ˜
+  aDataSize     - [IN]  Dataì˜ í¬ê¸°, byteë‹¨ìœ„
+  aCompar       - [IN]  Dataë“¤ì„ ë¹„êµí•˜ê¸° ìœ„í•´ ì‚¬ìš©í•˜ëŠ” Function, 2ê°œì˜ dataë¥¼
+                        ì¸ìžë¡œ ë°›ì•„ ê°’ì„ ë¹„êµí•œë‹¤. ì´ í•¨ìˆ˜ë¥¼ ì ì ˆí•˜ê²Œ ì‚¬ìš©í•˜ë©´
+                        iduHeapë¥¼ ìµœëŒ€ìš°ì„ ìˆœìœ„í ë˜ëŠ” ìµœì†Œìš°ì„ ìˆœìœ„íë¡œ ì‚¬ìš©í•  ìˆ˜ ìžˆë‹¤.
                         
-    °¡Àå Å«°ªÀÌ   root =  aComparÇÔ¼ö³»¿¡¼­ Ã¹¹øÂ° ÀÎÀÚ°¡ ´õ Å¬¶§ 1À» ¸®ÅÏ,
-                       °°À»¶§ 0À» ¸®ÅÏ, µÎ¹øÂ° ÀÎÀÚ°¡ ´õ Å¬¶§ -1À» ¸®ÅÏÇÏ¸é µÈ´Ù.
-    °¡Àå ÀÛÀº°ªÀÌ root  = aComparÇÔ¼ö³»¿¡¼­ Ã¹¹øÂ° ÀÎÀÚ°¡ ´õ ÀÛÀ»¶§ 1À» ¸®ÅÏ,
-                       °°À»¶§ 0À» ¸®ÅÏ, µÎ¹øÂ° ÀÎÀÚ°¡ ´õ ÀÛÀ»¶§ -1À» ¸®ÅÏÇÏ¸é µÈ´Ù.
+    ê°€ìž¥ í°ê°’ì´   root =  aComparí•¨ìˆ˜ë‚´ì—ì„œ ì²«ë²ˆì§¸ ì¸ìžê°€ ë” í´ë•Œ 1ì„ ë¦¬í„´,
+                       ê°™ì„ë•Œ 0ì„ ë¦¬í„´, ë‘ë²ˆì§¸ ì¸ìžê°€ ë” í´ë•Œ -1ì„ ë¦¬í„´í•˜ë©´ ëœë‹¤.
+    ê°€ìž¥ ìž‘ì€ê°’ì´ root  = aComparí•¨ìˆ˜ë‚´ì—ì„œ ì²«ë²ˆì§¸ ì¸ìžê°€ ë” ìž‘ì„ë•Œ 1ì„ ë¦¬í„´,
+                       ê°™ì„ë•Œ 0ì„ ë¦¬í„´, ë‘ë²ˆì§¸ ì¸ìžê°€ ë” ìž‘ì„ë•Œ -1ì„ ë¦¬í„´í•˜ë©´ ëœë‹¤.
   -----------------------------------------------------------------------------*/
 IDE_RC iduHeap::initialize( iduMemoryClientIndex aIndex,
                             UInt                 aDataMaxCnt,
@@ -74,7 +74,7 @@ IDE_RC iduHeap::initialize( iduMemoryClientIndex aIndex,
                                 (void**)&mArray)
              != IDE_SUCCESS);
     
-    //heapÀº 1ºÎÅÍ ÀÎµ¦½º°¡ ½ÃÀÛÇÑ´Ù. ¿Ö³ÄÇÏ¸é, root°¡ 0ÀÌ¶ó¸é child¸¦ ±¸ÇÒ¼ö ¾ø±â ¶§¹®ÀÌ´Ù.
+    //heapì€ 1ë¶€í„° ì¸ë±ìŠ¤ê°€ ì‹œìž‘í•œë‹¤. ì™œëƒí•˜ë©´, rootê°€ 0ì´ë¼ë©´ childë¥¼ êµ¬í• ìˆ˜ ì—†ê¸° ë•Œë¬¸ì´ë‹¤.
     mArray = (void*)((SChar*)mArray - aDataSize);
 
     return IDE_SUCCESS;
@@ -100,7 +100,7 @@ IDE_RC iduHeap::initialize( iduMemory          * aMemory,
                              (void**)&mArray)
              != IDE_SUCCESS);
     
-    //heapÀº 1ºÎÅÍ ÀÎµ¦½º°¡ ½ÃÀÛÇÑ´Ù. ¿Ö³ÄÇÏ¸é, root°¡ 0ÀÌ¶ó¸é child¸¦ ±¸ÇÒ¼ö ¾ø±â ¶§¹®ÀÌ´Ù.
+    //heapì€ 1ë¶€í„° ì¸ë±ìŠ¤ê°€ ì‹œìž‘í•œë‹¤. ì™œëƒí•˜ë©´, rootê°€ 0ì´ë¼ë©´ childë¥¼ êµ¬í• ìˆ˜ ì—†ê¸° ë•Œë¬¸ì´ë‹¤.
     mArray = (void*)((SChar*)mArray - aDataSize);
 
     return IDE_SUCCESS;
@@ -118,7 +118,7 @@ IDE_RC iduHeap::destroy()
     }
     else
     {
-        // iduMemory´Â freeÇÒ ÇÊ¿ä°¡ ¾ø´Ù.
+        // iduMemoryëŠ” freeí•  í•„ìš”ê°€ ì—†ë‹¤.
     }
     
     mArray  = NULL;
@@ -130,11 +130,11 @@ IDE_RC iduHeap::destroy()
 }
 
 /*------------------------------------------------------------------------------
-  iduHeap¿¡ °ªÀ» ÀúÀåÇÑ´Ù.
+  iduHeapì— ê°’ì„ ì €ìž¥í•œë‹¤.
 
-  aData         - [IN]  ÇöÀç °ªÀ» º¹»çÇØ¼­ ÀúÀåÇÑ´Ù.
-  aOverflow     - [OUT] ÈüÀÌ overflowµÇ¾ú´Ù¸é ID_TRUE, ±×·¸Áö ¾Ê´Ù¸é ID_FALSE
-                        ¸¦ ¸®ÅÏÇÑ´Ù.
+  aData         - [IN]  í˜„ìž¬ ê°’ì„ ë³µì‚¬í•´ì„œ ì €ìž¥í•œë‹¤.
+  aOverflow     - [OUT] íž™ì´ overflowë˜ì—ˆë‹¤ë©´ ID_TRUE, ê·¸ë ‡ì§€ ì•Šë‹¤ë©´ ID_FALSE
+                        ë¥¼ ë¦¬í„´í•œë‹¤.
   -----------------------------------------------------------------------------*/
 void iduHeap::insert(void *aData, idBool *aOverflow)
 {
@@ -151,11 +151,11 @@ void iduHeap::insert(void *aData, idBool *aOverflow)
 
 
 /*------------------------------------------------------------------------------
-  iduHeapÀÇ °¡Àå Å« ¿ø¼Ò¸¦ ¸®ÅÏÇÑ´Ù. root°¡ °¡Àå Å« °ªÀ» °¡Áö°í ÀÖÀ¸¹Ç·Î root¸¦ ¸®ÅÏÇÑ´Ù.
+  iduHeapì˜ ê°€ìž¥ í° ì›ì†Œë¥¼ ë¦¬í„´í•œë‹¤. rootê°€ ê°€ìž¥ í° ê°’ì„ ê°€ì§€ê³  ìžˆìœ¼ë¯€ë¡œ rootë¥¼ ë¦¬í„´í•œë‹¤.
 
-  aData         - [OUT] °¡Àå Å« ¿ø¼ÒÀÇ °ªÀ» º¹»çÇÑÈÄ¿¡ ¸®ÅÏÇÑ´Ù.
-  aUnderflow    - [OUT] Èü¿¡ ¿ø¼Ò°¡ ´õÀÌ»ó ¾øÀ» °æ¿ì ID_TRUE¸¦ ¸®ÅÏÇÑ´Ù.
-                        ±×·¸Áö ¾ÊÀ» °æ¿ì ID_FALSE¸¦ ¸®ÅÏÇÑ´Ù.
+  aData         - [OUT] ê°€ìž¥ í° ì›ì†Œì˜ ê°’ì„ ë³µì‚¬í•œí›„ì— ë¦¬í„´í•œë‹¤.
+  aUnderflow    - [OUT] íž™ì— ì›ì†Œê°€ ë”ì´ìƒ ì—†ì„ ê²½ìš° ID_TRUEë¥¼ ë¦¬í„´í•œë‹¤.
+                        ê·¸ë ‡ì§€ ì•Šì„ ê²½ìš° ID_FALSEë¥¼ ë¦¬í„´í•œë‹¤.
   -----------------------------------------------------------------------------*/
 void iduHeap::remove (void *aData, idBool *aUnderflow)
 {
@@ -167,13 +167,13 @@ void iduHeap::remove (void *aData, idBool *aUnderflow)
     {
         *aUnderflow = ID_FALSE;
 
-        //Ã¹¹øÂ° ¿ø¼Ò°¡ °¡Àå Å« °ªÀ» °¡Áö°í ÀÖÀ¸¹Ç·Î ÀÌ°ªÀ» ¸®ÅÏ°ª¿¡ º¹»çÇÑ´Ù.
+        //ì²«ë²ˆì§¸ ì›ì†Œê°€ ê°€ìž¥ í° ê°’ì„ ê°€ì§€ê³  ìžˆìœ¼ë¯€ë¡œ ì´ê°’ì„ ë¦¬í„´ê°’ì— ë³µì‚¬í•œë‹¤.
         idlOS::memcpy( aData,
                        IDU_HEAP_GET_NTH_DATA(1),
                        mDataSize);
     
-        //°¡Àå ¸¶Áö¸·¿¡ ÀÖ´Â °ªÀ» °¡Àå ¾ÕÀ¸·Î º¹»çÇÑ´Ù. ÀÌ·¸°Ô µÇ¸é mArrayÀÇ ·çÆ®¸¸
-        //ÈüÀÇ Æ¯¼ºÀ» ¸¸Á·ÇÏÁö ¸øÇÏ°Ô µÈ´Ù.
+        //ê°€ìž¥ ë§ˆì§€ë§‰ì— ìžˆëŠ” ê°’ì„ ê°€ìž¥ ì•žìœ¼ë¡œ ë³µì‚¬í•œë‹¤. ì´ë ‡ê²Œ ë˜ë©´ mArrayì˜ ë£¨íŠ¸ë§Œ
+        //íž™ì˜ íŠ¹ì„±ì„ ë§Œì¡±í•˜ì§€ ëª»í•˜ê²Œ ëœë‹¤.
         if( mDataCnt != 1 )
         {
             idlOS::memcpy( IDU_HEAP_GET_NTH_DATA(1),
@@ -181,11 +181,11 @@ void iduHeap::remove (void *aData, idBool *aUnderflow)
                            mDataSize);
         }
         
-        //·çÆ®¸¦ Á¦¿ÜÇÑ ³ª¸ÓÁö data´Â ¸ðµÎ ÈüÀÇ Æ¯¼ºÀ» ¸¸Á·ÇÏ¹Ç·Î, ·çÆ®¿¡ ´ëÇØ¼­¸¸
-        //maxHeapify¸¦ ¼öÇàÇØÁÖ¸é µÈ´Ù.
+        //ë£¨íŠ¸ë¥¼ ì œì™¸í•œ ë‚˜ë¨¸ì§€ dataëŠ” ëª¨ë‘ íž™ì˜ íŠ¹ì„±ì„ ë§Œì¡±í•˜ë¯€ë¡œ, ë£¨íŠ¸ì— ëŒ€í•´ì„œë§Œ
+        //maxHeapifyë¥¼ ìˆ˜í–‰í•´ì£¼ë©´ ëœë‹¤.
         IDU_HEAP_MAX_HEAPIFY(1);
     
-        //mArray¿¡¼­ ÇÏ³ªÀÇ ¿ø¼Ò¸¦ Á¦°ÅÇßÀ¸¹Ç·Î mDataCnt¸¦ 1 ÁÙÀÎ´Ù.
+        //mArrayì—ì„œ í•˜ë‚˜ì˜ ì›ì†Œë¥¼ ì œê±°í–ˆìœ¼ë¯€ë¡œ mDataCntë¥¼ 1 ì¤„ì¸ë‹¤.
         mDataCnt--;
     }
 }
@@ -193,16 +193,16 @@ void iduHeap::remove (void *aData, idBool *aUnderflow)
 
 
 /*------------------------------------------------------------------------------
-  ÈüÀÇ Æ¯¼ºÀ» ¸¸Á·ÇÏ´Â ¹è¿­ aArray¿¡ ´ëÇØ, »õ·Î¿î ¿ø¼Ò¸¦ Ãß°¡ÇÑ´Ù. 
-  ÀÌ ÇÔ¼ö¸¦ È£ÃâÇÏ±â Àü¿¡ ÁöÄÑ¾ß ÇÒ Á¶°ÇÀº
-  1. aArray´Â ÈüÆ®¸®ÀÇ Æ¯¼ºÀ» ¹Ýµå½Ã ¸¸Á·ÇØ¾ß ÇÑ´Ù.
+  íž™ì˜ íŠ¹ì„±ì„ ë§Œì¡±í•˜ëŠ” ë°°ì—´ aArrayì— ëŒ€í•´, ìƒˆë¡œìš´ ì›ì†Œë¥¼ ì¶”ê°€í•œë‹¤. 
+  ì´ í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•˜ê¸° ì „ì— ì§€ì¼œì•¼ í•  ì¡°ê±´ì€
+  1. aArrayëŠ” íž™íŠ¸ë¦¬ì˜ íŠ¹ì„±ì„ ë°˜ë“œì‹œ ë§Œì¡±í•´ì•¼ í•œë‹¤.
  
-  ÀÌ ÇÔ¼ö¸¦ ¼öÇàÈÄ,
-  1. aArray´Â ÈüÆ®¸®ÀÇ Æ¯¼ºÀ» ¸¸Á·ÇÑ´Ù.
-  2. aKey°¡ »õ·Î¿î ¿ø¼Ò·Î aArray³»¿¡ µé¾î°¡ ÀÖ´Ù.
+  ì´ í•¨ìˆ˜ë¥¼ ìˆ˜í–‰í›„,
+  1. aArrayëŠ” íž™íŠ¸ë¦¬ì˜ íŠ¹ì„±ì„ ë§Œì¡±í•œë‹¤.
+  2. aKeyê°€ ìƒˆë¡œìš´ ì›ì†Œë¡œ aArrayë‚´ì— ë“¤ì–´ê°€ ìžˆë‹¤.
  
                                    
-  aKey         - [IN]      ÀÔ·ÂÇÒ ¿ø¼ÒÀÇ °ª
+  aKey         - [IN]      ìž…ë ¥í•  ì›ì†Œì˜ ê°’
   ------------------------------------------------------------------------------*/
 void iduHeap::maxHeapInsert(void *aKey)
 {
@@ -211,7 +211,7 @@ void iduHeap::maxHeapInsert(void *aKey)
     SChar  *sNode       = NULL;
     SChar  *sParentNode = NULL;
 
-    //mDataCnt´Â Àý´ë·Î mDataMaxCnt¸¦ ³Ñ¾î¼­¸é ¾ÈµÈ´Ù.
+    //mDataCntëŠ” ì ˆëŒ€ë¡œ mDataMaxCntë¥¼ ë„˜ì–´ì„œë©´ ì•ˆëœë‹¤.
     IDE_ASSERT( mDataCnt < mDataMaxCnt);
     
     mDataCnt++;

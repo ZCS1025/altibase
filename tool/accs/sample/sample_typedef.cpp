@@ -27,7 +27,7 @@ typedef enum {
 } AABB;
 
 /*
- * ÇöÀç ´ë¹®ÀÚ·Î ½ÃÀÛÇÏ´Â ÅäÅ«Àº TYPEÀÌ¶ó°í °¡Á¤ÇÔ. 
+ * í˜„ìž¬ ëŒ€ë¬¸ìžë¡œ ì‹œìž‘í•˜ëŠ” í† í°ì€ TYPEì´ë¼ê³  ê°€ì •í•¨. 
  */
 
 

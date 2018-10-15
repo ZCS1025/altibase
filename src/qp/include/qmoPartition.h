@@ -19,11 +19,11 @@
  * $Id: qmoPartition.h 14871 2006-01-13 01:39:23Z mhjeong $
  *
  * Description :
- *     ÆÄÆ¼¼Çµå Å×ÀÌºí °ü·Ã ÃÖÀûÈ­ Ã³¸®.
+ *     íŒŒí‹°ì…˜ë“œ í…Œì´ë¸” ê´€ë ¨ ìµœì í™” ì²˜ë¦¬.
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  **********************************************************************/
 
@@ -115,7 +115,7 @@ public:
         qcmColumn * aUptColumns,
         idBool    * aIsIntersect );
 
-    // partition¿ë update column list¸¦ »ı¼º
+    // partitionìš© update column listë¥¼ ìƒì„±
     static IDE_RC makePartUpdateColumnList(
         qcStatement      * aStatement,
         qmsPartitionRef  * aPartitionRef,

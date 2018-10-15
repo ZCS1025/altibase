@@ -30,7 +30,7 @@ public class TimezoneTest extends AltibaseTestCase
     public void testTimezone() throws SQLException
     {
         assertTimezone(DB_TIME_ZONE  , "DB_TZ"       , TIME_DIFF_EQUAL);
-        // BUG-44466 os local time zoneÀº Àåºñ¿¡ µû¶ó Æ²·ÁÁú ¼ö ÀÖ±â¶§¹®¿¡ Á¦¿Ü
+        // BUG-44466 os local time zoneì€ ì¥ë¹„ì— ë”°ë¼ í‹€ë ¤ì§ˆ ìˆ˜ ìˆê¸°ë•Œë¬¸ì— ì œì™¸
         // assertTimezone("Asia/Seoul"  , "OS_TZ"       , TIME_DIFF_EQUAL);
         assertTimezone("KST"         , "KST"         , TIME_DIFF_EQUAL);
         assertTimezone("+09:00"      , "+09:00"      , TIME_DIFF_EQUAL);
@@ -50,8 +50,8 @@ public class TimezoneTest extends AltibaseTestCase
         assertEquals(true, sRS.next());
         assertEquals(aExpTimeZone, sRS.getString(1));
         assertEquals(aExpTimeZone, sConn.getSessionTimeZone());
-        // SQL DATE Ä¿·³À» ¾òÀ» ¶§ session_timezone()À¸·Î ÀÚµ¿º¯È¯ µÇÁø ¾Ê´Â´Ù.
-        // DATE ÄÃ·³ÀÌ TIMEZONE °ªÀ» °®°íÀÖÁö ¾Ê±â ¶§¹®.
+        // SQL DATE ì»¤ëŸ¼ì„ ì–»ì„ ë•Œ session_timezone()ìœ¼ë¡œ ìë™ë³€í™˜ ë˜ì§„ ì•ŠëŠ”ë‹¤.
+        // DATE ì»¬ëŸ¼ì´ TIMEZONE ê°’ì„ ê°–ê³ ìˆì§€ ì•Šê¸° ë•Œë¬¸.
         Timestamp sTS1 = sRS.getTimestamp(2);
         Timestamp sTS2 = sRS.getTimestamp(3);
         long sTimeDiff = sTS2.getTime() - sTS1.getTime();

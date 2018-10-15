@@ -24,13 +24,13 @@
 
 /*
  * Diagnostic Header and Record
- *  ¸ðµç ENV, DBC, STMT, DESC ´Â °¡Àå ÃÖ±Ù¿¡ ¼öÇàÇÑ ODBC ÇÔ¼öÀÇ
- *  ¿¡·¯ ¸Þ¼¼Áö¸¦ ÀúÀåÇÏ±â À§ÇØ¼­ Diagnostic Header ¿Í Record ¸¦ °¡Áø´Ù.
- *  ¿¡·¯°¡ ¹ß»ýÇÏÁö ¾Ê´õ¶óµµ Diagnostic Header ´Â ±âº»À¸·Î °¡Áö°í ÀÖ´Â´Ù.
- *  ÇÏ³ªÀÇ Record ´Â ÇÏ³ªÀÇ ¿¡·¯ ¶Ç´Â ¿ö´×ÀÇ Á¤º¸¸¦ °¡Áø´Ù.
- *  Header ´Â Record µéÀÇ ¸®½ºÆ®¸¦ °¡Áø´Ù.
+ *  ëª¨ë“  ENV, DBC, STMT, DESC ëŠ” ê°€ìž¥ ìµœê·¼ì— ìˆ˜í–‰í•œ ODBC í•¨ìˆ˜ì˜
+ *  ì—ëŸ¬ ë©”ì„¸ì§€ë¥¼ ì €ìž¥í•˜ê¸° ìœ„í•´ì„œ Diagnostic Header ì™€ Record ë¥¼ ê°€ì§„ë‹¤.
+ *  ì—ëŸ¬ê°€ ë°œìƒí•˜ì§€ ì•Šë”ë¼ë„ Diagnostic Header ëŠ” ê¸°ë³¸ìœ¼ë¡œ ê°€ì§€ê³  ìžˆëŠ”ë‹¤.
+ *  í•˜ë‚˜ì˜ Record ëŠ” í•˜ë‚˜ì˜ ì—ëŸ¬ ë˜ëŠ” ì›Œë‹ì˜ ì •ë³´ë¥¼ ê°€ì§„ë‹¤.
+ *  Header ëŠ” Record ë“¤ì˜ ë¦¬ìŠ¤íŠ¸ë¥¼ ê°€ì§„ë‹¤.
  *
- * ÂüÁ¶¹®Çå : M$ ODBC Spec 3.0
+ * ì°¸ì¡°ë¬¸í—Œ : M$ ODBC Spec 3.0
  *      SQLGetDiagField()
  *      SQLGetDiagRec()
  *      ODBC->ODBC Programmer'sReference -> Developing Applications and Drivers
@@ -47,7 +47,7 @@ struct ulnDiagRec
 
     ulnDiagHeader   *mHeader;
 
-    acp_bool_t       mIsStatic;          /* BUGBUG : Å¸ÀÔÀ» ¸¸µéÀÚ. */
+    acp_bool_t       mIsStatic;          /* BUGBUG : íƒ€ìž…ì„ ë§Œë“¤ìž. */
 
     acp_char_t       mSQLSTATE[6];       /* SQL_DIAG_SQLSTATE */
     acp_uint32_t     mNativeErrorCode;   /* SQL_DIAG_NATIVE. Native Error Code */
@@ -57,11 +57,11 @@ struct ulnDiagRec
     acp_char_t      *mConnectionName;    /* SQL_DIAG_CONNECTION_NAME */
 
     acp_char_t      *mClassOrigin;       /* SQL_DIAG_CLASS_ORIGIN.
-                                            SQLSTATE °ªÀÇ Class ºÎºÐÀ» Á¤ÀÇÇÏ´Â ¹®¼­¸¦ °¡¸®Å°´Â
-                                            °ª. X/Open CLI ¿¡¼­ Á¤ÀÇÇÏ´Â Class ¿¡ ¼ÓÇÏ´Â
-                                            SQLSTATE ´Â "ISO 9075" ÀÇ Class Origin String À»
-                                            °¡Áø´Ù. ODBC ¿¡¼­ Á¤ÀÇÇÏ´Â Class ¿¡ ¼ÓÇÏ´Â ³à¼®µéÀº
-                                            "ODBC 3.0" ÀÇ °ªÀ» °¡Áø´Ù. */
+                                            SQLSTATE ê°’ì˜ Class ë¶€ë¶„ì„ ì •ì˜í•˜ëŠ” ë¬¸ì„œë¥¼ ê°€ë¦¬í‚¤ëŠ”
+                                            ê°’. X/Open CLI ì—ì„œ ì •ì˜í•˜ëŠ” Class ì— ì†í•˜ëŠ”
+                                            SQLSTATE ëŠ” "ISO 9075" ì˜ Class Origin String ì„
+                                            ê°€ì§„ë‹¤. ODBC ì—ì„œ ì •ì˜í•˜ëŠ” Class ì— ì†í•˜ëŠ” ë…€ì„ë“¤ì€
+                                            "ODBC 3.0" ì˜ ê°’ì„ ê°€ì§„ë‹¤. */
 
     acp_char_t      *mSubClassOrigin;    /* SQL_DIAG_SUBCLASS_ORIGIN.
                                             Identifies the defining portion of the subclass
@@ -69,8 +69,8 @@ struct ulnDiagRec
                                             The ODBC-specific SQLSTATES for which "ODBC 3.0" is
                                             returned include the following :
                                             01S00, 01S01, 01S02, .... IM012.
-                                            ÀÚ¼¼ÇÑ ³»¿ëÀº SQLGetDiagField() ÇÔ¼ö API ·¹ÆÛ·±½º
-                                            ÂüÁ¶. */
+                                            ìžì„¸í•œ ë‚´ìš©ì€ SQLGetDiagField() í•¨ìˆ˜ API ë ˆí¼ëŸ°ìŠ¤
+                                            ì°¸ì¡°. */
 
     acp_sint32_t     mColumnNumber;      /* SQL_DIAG_COLUMN_NUMBER */
     acp_sint32_t     mRowNumber;         /* SQL_DIAG_ROW_NUMBER */
@@ -80,27 +80,27 @@ struct ulnDiagRec
 
 struct ulnDiagHeader
 {
-    uluChunkPool *mPool;                /* DiagRec µéÀ» À§ÇÑ ¸Þ¸ð¸® Ç® */
+    uluChunkPool *mPool;                /* DiagRec ë“¤ì„ ìœ„í•œ ë©”ëª¨ë¦¬ í’€ */
 
-    uluMemory    *mMemory;              /* DiagRec µéÀ» À§ÇÑ ¸Þ¸ð¸® */
+    uluMemory    *mMemory;              /* DiagRec ë“¤ì„ ìœ„í•œ ë©”ëª¨ë¦¬ */
     ulnObject    *mParentObject;
 
     acp_list_t    mDiagRecList;         /* Diagnostic Records list */
 
-    acp_sint32_t  mNumber;              /* SQL_DIAG_NUMBER. status recordÀÇ °¹¼ö.
-                                           Áï, Diagnostic Record µéÀÇ °¹¼ö */
+    acp_sint32_t  mNumber;              /* SQL_DIAG_NUMBER. status recordì˜ ê°¯ìˆ˜.
+                                           ì¦‰, Diagnostic Record ë“¤ì˜ ê°¯ìˆ˜ */
 
-    acp_uint32_t  mAllocedDiagRecCount; /* DiagRecÀÌ ÇÒ´çµÉ ¶§ Áõ°¡ÇÏ°í, ÇØÁ¦µÉ ¶§ °¨¼ÒÇÑ´Ù. */
+    acp_uint32_t  mAllocedDiagRecCount; /* DiagRecì´ í• ë‹¹ë  ë•Œ ì¦ê°€í•˜ê³ , í•´ì œë  ë•Œ ê°ì†Œí•œë‹¤. */
 
     acp_sint32_t  mCursorRowCount;      /* SQL_DIAG_CURSOR_ROW_COUNT */
 
-    acp_sint64_t  mRowCount;            /* SQL_DIAG_ROW_COUNT. affected rowÀÇ °¹¼ö */
+    acp_sint64_t  mRowCount;            /* SQL_DIAG_ROW_COUNT. affected rowì˜ ê°¯ìˆ˜ */
     SQLRETURN     mReturnCode;          /* SQL_DIAG_RETURNCODE */
 
-    ulnDiagRec    mStaticDiagRec;       /* ¸Þ¸ð¸® ºÎÁ·»óÈ²À» À§ÇÑ Á¤Àû diag rec */
+    ulnDiagRec    mStaticDiagRec;       /* ë©”ëª¨ë¦¬ ë¶€ì¡±ìƒí™©ì„ ìœ„í•œ ì •ì  diag rec */
 
     acp_char_t    mStaticMessage[ULN_DIAG_CONTINGENCY_BUFFER_SIZE];
-                                        /* ¸Þ¸ð¸® ºÎÁ·»óÈ²½Ã ¾²´Â message ¿µ¿ª */
+                                        /* ë©”ëª¨ë¦¬ ë¶€ì¡±ìƒí™©ì‹œ ì“°ëŠ” message ì˜ì—­ */
 };
 
 #define ULN_DIAG_HDR_DESTROY_CHUNKPOOL    ACP_TRUE
@@ -139,9 +139,9 @@ void ulnDiagHeaderRemoveDiagRec(ulnDiagHeader *aDiagHeader, ulnDiagRec *aDiagRec
 ACP_INLINE ACI_RC ulnDiagSetReturnCode(ulnDiagHeader *aDiagHeader, SQLRETURN aReturnCode)
 {
     /*
-     * BUGBUG : °´Ã¼ÀÇ Diagnostic Header ¿¡ ÀÖ´Â SQL_DIAG_RETURNCODE ÇÊµå¸¦ ¼¼ÆÃÇÑ´Ù.
-     *          ¼¼ÆÃ½Ã¿¡ ¿¡·¯ÄÚµåÀÇ ¿ì¼±¼øÀ§ °Ë»çÇØ¼­  ±âÁ¸¿¡ Á¸ÀçÇÏ´ø ³à¼®ÀÌ ¿ì¼±¼øÀ§°¡
-     *          ³ôÀ¸¸é ±×´ë·Î µÖ¾ß ÇÑ´Ù.
+     * BUGBUG : ê°ì²´ì˜ Diagnostic Header ì— ìžˆëŠ” SQL_DIAG_RETURNCODE í•„ë“œë¥¼ ì„¸íŒ…í•œë‹¤.
+     *          ì„¸íŒ…ì‹œì— ì—ëŸ¬ì½”ë“œì˜ ìš°ì„ ìˆœìœ„ ê²€ì‚¬í•´ì„œ  ê¸°ì¡´ì— ì¡´ìž¬í•˜ë˜ ë…€ì„ì´ ìš°ì„ ìˆœìœ„ê°€
+     *          ë†’ìœ¼ë©´ ê·¸ëŒ€ë¡œ ë‘¬ì•¼ í•œë‹¤.
      */
 
     aDiagHeader->mReturnCode = aReturnCode;

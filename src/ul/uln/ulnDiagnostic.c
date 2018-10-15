@@ -34,7 +34,7 @@ static ACI_RC ulnInitializeDiagHeader(ulnDiagHeader *aHeader)
 static ACI_RC ulnDiagRecInitialize(ulnDiagHeader *aHeader, ulnDiagRec *aRec, acp_bool_t aIsStatic)
 {
     /*
-     * BUGBUG: ¾Æ·¡ÀÇ ÇÊµåµéÀÇ °ªÀ» ¾î¶»°Ô Á¤ÇÒ±î.
+     * BUGBUG: ì•„ë˜ì˜ í•„ë“œë“¤ì˜ ê°’ì„ ì–´ë–»ê²Œ ì •í• ê¹Œ.
      */
     acpListInitObj(&aRec->mList, aRec);
 
@@ -84,22 +84,22 @@ ACI_RC ulnCreateDiagHeader(ulnObject *aParentObject, uluChunkPool *aSrcPool)
     else
     {
         /*
-         * ¼Ò½º Ç®ÀÌ ÁöÁ¤µÇ¾úÀ» °æ¿ì¿¡´Â ÁöÁ¤ÇÑ Ç®À» Ã»Å© Ç®·Î »ç¿ëÇÑ´Ù.
-         * Áï, ¸ğµç ¸Ş¸ğ¸®¸¦ »óÀ§ °´Ã¼¿¡ ÀÖ´Â DiagHeader ÀÇ Ã»Å© Ç®·ÎºÎÅÍ
-         * ÇÒ´ç¹ŞÀ» ¼ö ÀÖ°Ô µÈ´Ù.
+         * ì†ŒìŠ¤ í’€ì´ ì§€ì •ë˜ì—ˆì„ ê²½ìš°ì—ëŠ” ì§€ì •í•œ í’€ì„ ì²­í¬ í’€ë¡œ ì‚¬ìš©í•œë‹¤.
+         * ì¦‰, ëª¨ë“  ë©”ëª¨ë¦¬ë¥¼ ìƒìœ„ ê°ì²´ì— ìˆëŠ” DiagHeader ì˜ ì²­í¬ í’€ë¡œë¶€í„°
+         * í• ë‹¹ë°›ì„ ìˆ˜ ìˆê²Œ ëœë‹¤.
          */
         sPool = aSrcPool;
     }
 
     /*
-     * uluMemory »ı¼º
+     * uluMemory ìƒì„±
      */
 
     ACI_TEST_RAISE(uluMemoryCreate(sPool, &sMemory) != ACI_SUCCESS,
                    LABEL_MEMORY_CREATE_FAIL);
 
     /*
-     * Note : ulnDiagHeader ´Â ulnObject ¿¡ static ÇÏ°Ô µé¾îÀÖ´Ù.
+     * Note : ulnDiagHeader ëŠ” ulnObject ì— static í•˜ê²Œ ë“¤ì–´ìˆë‹¤.
      */
 
     sDiagHeader                = &aParentObject->mDiagHeader;
@@ -131,31 +131,31 @@ ACI_RC ulnDestroyDiagHeader(ulnDiagHeader *aDiagHeader, acp_bool_t aDestroyChunk
     ACI_TEST(aDiagHeader->mPool == NULL);
 
     /*
-     * Ã»Å©Ç®À» ÆÄ±«ÇÒ ÇÊ¿ä°¡ ÀÖÀ¸¸é ÆÄ±«ÇÑ´Ù.
+     * ì²­í¬í’€ì„ íŒŒê´´í•  í•„ìš”ê°€ ìˆìœ¼ë©´ íŒŒê´´í•œë‹¤.
      */
     if (aDestroyChunkPool == ACP_TRUE)
     {
         /*
-         * È¤¿©¶óµµ ÀÚ½ÄµéÀÌ ÀÖÀ¸¸é ¾ø¾ÖÁö ¾Ê°í HY013À» ³½´Ù.
+         * í˜¹ì—¬ë¼ë„ ìì‹ë“¤ì´ ìˆìœ¼ë©´ ì—†ì• ì§€ ì•Šê³  HY013ì„ ë‚¸ë‹¤.
          */
         ACI_TEST(aDiagHeader->mPool->mOp->mGetRefCnt(aDiagHeader->mPool) == 0);
 
         /*
-         * ¸Ş¸ğ¸® ÀÎ½ºÅÏ½º ÆÄ±« :
-         * HY013 À» ³»¸é ±×°É ¸Å´Ş Diagnostic ±¸Á¶Ã¼°¡ ÀÖ¾î¾ß ÇÑ´Ù.
-         * ¹«Á¶°Ç ¸Ş¸ğ¸® ÀÎ½ºÅÏ½ººÎÅÍ ¾ø¾Öº¸ º¼ ÀÏÀÌ ¾Æ´Ï¹Ç·Î ÀÌ À§Ä¡·Î ¿Å±è.
+         * ë©”ëª¨ë¦¬ ì¸ìŠ¤í„´ìŠ¤ íŒŒê´´ :
+         * HY013 ì„ ë‚´ë©´ ê·¸ê±¸ ë§¤ë‹¬ Diagnostic êµ¬ì¡°ì²´ê°€ ìˆì–´ì•¼ í•œë‹¤.
+         * ë¬´ì¡°ê±´ ë©”ëª¨ë¦¬ ì¸ìŠ¤í„´ìŠ¤ë¶€í„° ì—†ì• ë³´ ë³¼ ì¼ì´ ì•„ë‹ˆë¯€ë¡œ ì´ ìœ„ì¹˜ë¡œ ì˜®ê¹€.
          */
         aDiagHeader->mMemory->mOp->mDestroyMyself(aDiagHeader->mMemory);
 
         /*
-         * Ã»Å© Ç® ÆÄ±«
+         * ì²­í¬ í’€ íŒŒê´´
          */
         aDiagHeader->mPool->mOp->mDestroyMyself(aDiagHeader->mPool);
     }
     else
     {
         /*
-         * ¸Ş¸ğ¸® ÀÎ½ºÅÏ½º¸¸ ÆÄ±«
+         * ë©”ëª¨ë¦¬ ì¸ìŠ¤í„´ìŠ¤ë§Œ íŒŒê´´
          */
         aDiagHeader->mMemory->mOp->mDestroyMyself(aDiagHeader->mMemory);
     }
@@ -175,11 +175,11 @@ void ulnDiagRecCreate(ulnDiagHeader *aHeader, ulnDiagRec **aDiagRec)
     sMemory = aHeader->mMemory;
 
     /*
-     * ·¹ÄÚµå¸¦ À§ÇÑ ¸Ş¸ğ¸®¸¦ Çì´õÀÇ uluMemory¸¦ ÀÌ¿ëÇØ ÇÒ´ç
+     * ë ˆì½”ë“œë¥¼ ìœ„í•œ ë©”ëª¨ë¦¬ë¥¼ í—¤ë”ì˜ uluMemoryë¥¼ ì´ìš©í•´ í• ë‹¹
      */
     if (sMemory->mOp->mMalloc(sMemory, (void **)&sDiagRec, ACI_SIZEOF(ulnDiagRec)) == ACI_SUCCESS)
     {
-        // BUG-21791 diag record¸¦ ÇÒ´çÇÒ ¶§ Áõ°¡½ÃÅ²´Ù.
+        // BUG-21791 diag recordë¥¼ í• ë‹¹í•  ë•Œ ì¦ê°€ì‹œí‚¨ë‹¤.
         aHeader->mAllocedDiagRecCount++;
     }
     else
@@ -188,7 +188,7 @@ void ulnDiagRecCreate(ulnDiagHeader *aHeader, ulnDiagRec **aDiagRec)
     }
 
     /*
-     * Diagnostic Record ¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+     * Diagnostic Record ë¥¼ ì´ˆê¸°í™”í•œë‹¤.
      */
     /* BUG-36729 Connection attribute will be added to unlock client mutex by force */
     if ( sDiagRec != NULL )
@@ -211,14 +211,14 @@ ACI_RC ulnDiagRecDestroy(ulnDiagRec *aRec)
 void ulnDiagHeaderAddDiagRec(ulnDiagHeader *aDiagHeader, ulnDiagRec *aDiagRec)
 {
     /*
-     * BUGBUG : rank ¿¡ ¸Â°Ô sort¸¦ ÇÏ°í ÀÎµ¦½º¸¦ Áı¾î³Ö¾î ÁÖ¾î¾ß ÇÑ´Ù.
+     * BUGBUG : rank ì— ë§ê²Œ sortë¥¼ í•˜ê³  ì¸ë±ìŠ¤ë¥¼ ì§‘ì–´ë„£ì–´ ì£¼ì–´ì•¼ í•œë‹¤.
      */
 
     if (aDiagRec->mNativeErrorCode == ulERR_FATAL_MEMORY_ALLOC_ERROR ||
         aDiagRec->mNativeErrorCode == ulERR_FATAL_MEMORY_MANAGEMENT_ERROR)
     {
         /*
-         * ¸Ş¸ğ¸® ºÎÁ· ¿¡·¯´Â ¸Ç ¾Õ¿¡ ³õÀÎ´Ù.
+         * ë©”ëª¨ë¦¬ ë¶€ì¡± ì—ëŸ¬ëŠ” ë§¨ ì•ì— ë†“ì¸ë‹¤.
          */
         acpListPrependNode(&(aDiagHeader->mDiagRecList), (acp_list_node_t *)aDiagRec);
     }
@@ -276,7 +276,7 @@ ACI_RC ulnGetDiagRecFromObject(ulnObject *aObject, ulnDiagRec **aDiagRec, acp_si
     sDiagRec = NULL;
 
     /*
-     * Note: DiagRec ´Â 1¹øºÎÅÍ ½ÃÀÛµÈ´Ù.
+     * Note: DiagRec ëŠ” 1ë²ˆë¶€í„° ì‹œì‘ëœë‹¤.
      */
     i = 1;
 
@@ -292,8 +292,8 @@ ACI_RC ulnGetDiagRecFromObject(ulnObject *aObject, ulnDiagRec **aDiagRec, acp_si
     }
 
     /*
-     * ¹ß°ß ¾ÈµÇ¾ú´Ù´Â °ÍÀº ½É°¢ÇÑ ¿¡·¯°¡ ÀÖ´Ù´Â ÀÌ¾ß±âÀÎµ¥...
-     * BUGBUG: Á×¾î¾ß ÇÒ±î?
+     * ë°œê²¬ ì•ˆë˜ì—ˆë‹¤ëŠ” ê²ƒì€ ì‹¬ê°í•œ ì—ëŸ¬ê°€ ìˆë‹¤ëŠ” ì´ì•¼ê¸°ì¸ë°...
+     * BUGBUG: ì£½ì–´ì•¼ í• ê¹Œ?
      */
     ACI_TEST(sDiagRec == NULL);
 
@@ -314,7 +314,7 @@ ulnDiagHeader *ulnGetDiagHeaderFromObject(ulnObject *aObject)
 }
 
 /*
- * Diagnostic Header ÀÇ ÇÊµåµéÀ» ÀĞ¾î¿À°Å³ª ¼³Á¤ÇÏ´Â ÇÔ¼öµé.
+ * Diagnostic Header ì˜ í•„ë“œë“¤ì„ ì½ì–´ì˜¤ê±°ë‚˜ ì„¤ì •í•˜ëŠ” í•¨ìˆ˜ë“¤.
  */
 
 ACI_RC ulnDiagGetReturnCode(ulnDiagHeader *aDiagHeader, SQLRETURN *aReturnCode)
@@ -377,7 +377,7 @@ ACI_RC ulnDiagGetNumber(ulnDiagHeader *aDiagHeader, acp_sint32_t *aNumberOfStatu
 }
 
 /*
- * Diagnostic Record ÀÇ ÇÊµåµéÀÇ °ªÀ» ÀĞ¾î¿À´Â ÇÔ¼öµé
+ * Diagnostic Record ì˜ í•„ë“œë“¤ì˜ ê°’ì„ ì½ì–´ì˜¤ëŠ” í•¨ìˆ˜ë“¤
  */
 
 void ulnDiagRecSetMessageText(ulnDiagRec *aDiagRec, acp_char_t *aMessageText)
@@ -397,7 +397,7 @@ void ulnDiagRecSetMessageText(ulnDiagRec *aDiagRec, acp_char_t *aMessageText)
         sMemory = aDiagRec->mHeader->mMemory;
 
         // fix BUG-30387
-        // ¼­¹öÀÇ ¿¡·¯ ¸Ş¼¼Áö ÃÖ´ë ±æÀÌ¿Í »ó°ü¾øÀÌ ¿¡·¯ ¸Ş¼¼Áö ¼³Á¤
+        // ì„œë²„ì˜ ì—ëŸ¬ ë©”ì„¸ì§€ ìµœëŒ€ ê¸¸ì´ì™€ ìƒê´€ì—†ì´ ì—ëŸ¬ ë©”ì„¸ì§€ ì„¤ì •
         sSizeMessageText = acpCStrLen(aMessageText, ACP_SINT32_MAX) + 1;
 
         if (sMemory->mOp->mMalloc(sMemory,
@@ -539,19 +539,19 @@ ACI_RC ulnDiagGetSubClassOrigin(ulnDiagRec *aDiagRec, acp_char_t **aSubClassOrig
 /**
  * ulnDiagGetDiagIdentifierClass.
  *
- * Diagnostic Identifier °¡ header ¿ëÀÎÁö record ¿ëÀÎÁö¸¦ ÆÇº°ÇÑ´Ù.
+ * Diagnostic Identifier ê°€ header ìš©ì¸ì§€ record ìš©ì¸ì§€ë¥¼ íŒë³„í•œë‹¤.
  *
  * @param[in] aDiagIdentifier
  * @param[out] aClass
- *  - ULN_DIAG_IDENTIFIER_CLASS_UNKNOWN : ¾Ë ¼ö ¾ø´Â Identifier
- *  - ULN_DIAG_IDENTIFIER_CLASS_HEADER : Çì´õÇÊµå
+ *  - ULN_DIAG_IDENTIFIER_CLASS_UNKNOWN : ì•Œ ìˆ˜ ì—†ëŠ” Identifier
+ *  - ULN_DIAG_IDENTIFIER_CLASS_HEADER : í—¤ë”í•„ë“œ
  *      - SQL_DIAG_CURSOR_ROW_COUNT
  *      - SQL_DIAG_DYNAMIC_FUNCTION
  *      - SQL_DIAG_DYNAMIC_FUNCTION_CODE
  *      - SQL_DIAG_NUMBER
  *      - SQL_DIAG_RETURNCODE
  *      - SQL_DIAG_ROW_COUNT
- *  - ULN_DIAG_IDENTIFIER_CLASS_RECORD : ·¹ÄÚµåÇÊµå
+ *  - ULN_DIAG_IDENTIFIER_CLASS_RECORD : ë ˆì½”ë“œí•„ë“œ
  *      - SQL_DIAG_CLASS_ORIGIN
  *      - SQL_DIAG_COLUMN_NUMBER
  *      - SQL_DIAG_CONNECTION_NAME
@@ -564,8 +564,8 @@ ACI_RC ulnDiagGetSubClassOrigin(ulnDiagRec *aDiagRec, acp_char_t **aSubClassOrig
  * @return
  *  - ACI_SUCCESS
  *  - ACI_FAILURE
- *    Á¤ÀÇµÇÁö ¾ÊÀº id °¡ µé¾î¿ÔÀ» ¶§.
- *    ÀÌ¶§´Â aClass °¡ °¡¸®Å°´Â Æ÷ÀÎÅÍ¿¡ ULN_DIAG_IDENTIFIER_CLASS_UNKNOWN ÀÌ µé¾î°£´Ù.
+ *    ì •ì˜ë˜ì§€ ì•Šì€ id ê°€ ë“¤ì–´ì™”ì„ ë•Œ.
+ *    ì´ë•ŒëŠ” aClass ê°€ ê°€ë¦¬í‚¤ëŠ” í¬ì¸í„°ì— ULN_DIAG_IDENTIFIER_CLASS_UNKNOWN ì´ ë“¤ì–´ê°„ë‹¤.
  */
 ACI_RC ulnDiagGetDiagIdentifierClass(acp_sint16_t aDiagIdentifier, ulnDiagIdentifierClass *aClass)
 {
@@ -608,10 +608,10 @@ ACI_RC ulnDiagGetDiagIdentifierClass(acp_sint16_t aDiagIdentifier, ulnDiagIdenti
 /* PROJ-1381 Fetch Across Commit */
 
 /**
- * DiagRecÀ» ¿Å±ä´Ù.
+ * DiagRecì„ ì˜®ê¸´ë‹¤.
  *
- * @param[in] aObjectTo   ¿Å±æ DiagRecÀ» ³ÖÀ»     Object Handle
- * @param[in] aObjectFrom ¿Å±æ DiagRecÀ» °®°íÀÖ´Â Object Handle
+ * @param[in] aObjectTo   ì˜®ê¸¸ DiagRecì„ ë„£ì„     Object Handle
+ * @param[in] aObjectFrom ì˜®ê¸¸ DiagRecì„ ê°–ê³ ìˆëŠ” Object Handle
  */
 void ulnDiagRecMoveAll(ulnObject *aObjectTo, ulnObject *aObjectFrom)
 {
@@ -634,9 +634,9 @@ void ulnDiagRecMoveAll(ulnObject *aObjectTo, ulnObject *aObjectFrom)
 }
 
 /**
- * DiagRecÀ» ¸ğµÎ Áö¿î´Ù.
+ * DiagRecì„ ëª¨ë‘ ì§€ìš´ë‹¤.
  *
- * @param[in] aObject DiagRecÀ» Áö¿ï Object Handle
+ * @param[in] aObject DiagRecì„ ì§€ìš¸ Object Handle
  */
 void ulnDiagRecRemoveAll(ulnObject *aObject)
 {

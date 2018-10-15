@@ -21,7 +21,7 @@
 #include <mmtSessionManager.h>
 
 /*
- * PROJ-2473 SNMP Áö¿ø
+ * PROJ-2473 SNMP ì§€ì›
  */
 
 time_t mmsSNMPModule::mStartTime;
@@ -51,7 +51,7 @@ IDE_RC mmsSNMPModule::getDBName(const idmModule * /*aModule*/,
     
     *aType = IDM_TYPE_STRING;
 
-    /* BUGBUG Å×ÀÌºí¿¡¼­ Á¶È¸ÇØ¾ß Á¤È®ÇÔ, ÇÏÁö¸¸ ÀÌ»óÇÏ°Ô ¾²´Â »ç¿ëÀÚ´Â ¾øÀ»µí... */
+    /* BUGBUG í…Œì´ë¸”ì—ì„œ ì¡°íšŒí•´ì•¼ ì •í™•í•¨, í•˜ì§€ë§Œ ì´ìƒí•˜ê²Œ ì“°ëŠ” ì‚¬ìš©ìžëŠ” ì—†ì„ë“¯... */
     sLength = idlOS::snprintf(sValue, ID_SIZEOF(sValue), mmuProperty::getDbName());
 
     IDE_TEST_RAISE(sLength > aMaximum, ERR_UNABLE_TO_GET_ATTRIBUTE);

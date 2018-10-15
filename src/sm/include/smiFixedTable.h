@@ -40,9 +40,9 @@ class smiFixedTable
                                  UChar              *aObj);
 
     /* ------------------------------------------------
-     * ·¹ÄÚµåÀÇ ¸Ş¸ğ¸®¸¦ ¼øÂ÷ÀûÀ¸·Î Áõ°¡ÇÏ¸é¼­ ÇÒ´ç¹ŞÀ½.
+     * ë ˆì½”ë“œì˜ ë©”ëª¨ë¦¬ë¥¼ ìˆœì°¨ì ìœ¼ë¡œ ì¦ê°€í•˜ë©´ì„œ í• ë‹¹ë°›ìŒ.
      * API Sets
-     *  - buildRecord()  : ÇÏ³ª¾¿ ÇÒ´çÈÄ Áõ°¡.
+     *  - buildRecord()  : í•˜ë‚˜ì”© í• ë‹¹í›„ ì¦ê°€.
      * ----------------------------------------------*/
     
     static IDE_RC buildRecord(void      *aHeader,
@@ -75,7 +75,7 @@ public:
     static SChar *getColumnName(void *aHeader, UInt aNum);
     static UInt   getColumnOffset(void *aHeader, UInt aNum);
 
-    static UInt   getColumnLength(void *aHeader, UInt aNum); // ½ÇÁ¦ µ¥ÀÌÅ¸ Å©±â
+    static UInt   getColumnLength(void *aHeader, UInt aNum); // ì‹¤ì œ ë°ì´íƒ€ í¬ê¸°
     static iduFixedTableDataType getColumnType(void *aHeader, UInt aNum);
     static void   setNullRow(void *aHeader, void *aNullRow);
     

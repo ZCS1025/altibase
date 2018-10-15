@@ -17,14 +17,14 @@
  *
  * PUBLIC FUNCTION(S)
  *   iduMemory( ULong BufferSize )
- *      BufferSize´Â ¸Ş¸ğ¸® ÇÒ´çÀ» À§ÇÑ Áß°£ ¹öÆÛÀÇ Å©±â ÇÒ´ç¹Ş´Â
- *      ¸Ş¸ğ¸®ÀÇ Å©±â´Â BufferSize¸¦ ÃÊ°úÇÒ ¼ö ¾ø½À´Ï´Ù.
+ *      BufferSizeëŠ” ë©”ëª¨ë¦¬ í• ë‹¹ì„ ìœ„í•œ ì¤‘ê°„ ë²„í¼ì˜ í¬ê¸° í• ë‹¹ë°›ëŠ”
+ *      ë©”ëª¨ë¦¬ì˜ í¬ê¸°ëŠ” BufferSizeë¥¼ ì´ˆê³¼í•  ìˆ˜ ì—†ìŠµë‹ˆë‹¤.
  *
  *   void* alloc( size_t Size )
- *      Size¸¸Å­ÀÇ ¸Ş¸ğ¸®¸¦ ÇÒ´çÇØ Áİ´Ï´Ù.
+ *      Sizeë§Œí¼ì˜ ë©”ëª¨ë¦¬ë¥¼ í• ë‹¹í•´ ì¤ë‹ˆë‹¤.
  *
  *   void clear( )
- *      ÇÒ´ç¹ŞÀº ¸ğµç ¸Ş¸ğ¸®¸¦ ÇØÁ¦ ÇÕ´Ï´Ù.
+ *      í• ë‹¹ë°›ì€ ëª¨ë“  ë©”ëª¨ë¦¬ë¥¼ í•´ì œ í•©ë‹ˆë‹¤.
  *
  * NOTES
  *
@@ -454,9 +454,9 @@ SInt  iduMemory::setStatus( iduMemoryStatus* aStatus )
         }
 
 #if defined(DEBUG)
-        // aStatus->mSavedCurr°¡ ¸®½ºÆ® »ó¿¡ Á¸ÀçÇÏ´ÂÁö È®ÀÎÇÑ´Ù.
-        // BUG-22287, °æ¿ì¿¡ µû¶ó ½Ã°£ÀÌ ¸¹ÀÌ °É¸®´Â ÀÛ¾÷À¸·Î ÀüÃ¼
-        // loop ¿¡¼­ ºĞ¸® ÇÏ¿© DEBUG »ó¿¡¼­¸¸ È®ÀÎ ÇÏµµ·Ï ÇÑ´Ù.
+        // aStatus->mSavedCurrê°€ ë¦¬ìŠ¤íŠ¸ ìƒì— ì¡´ì¬í•˜ëŠ”ì§€ í™•ì¸í•œë‹¤.
+        // BUG-22287, ê²½ìš°ì— ë”°ë¼ ì‹œê°„ì´ ë§ì´ ê±¸ë¦¬ëŠ” ì‘ì—…ìœ¼ë¡œ ì „ì²´
+        // loop ì—ì„œ ë¶„ë¦¬ í•˜ì—¬ DEBUG ìƒì—ì„œë§Œ í™•ì¸ í•˜ë„ë¡ í•œë‹¤.
 
         for( sHeader = mHead ; sHeader != NULL ; sHeader = sHeader->mNext )
         {
@@ -488,20 +488,20 @@ SInt  iduMemory::setStatus( iduMemoryStatus* aStatus )
         /* BUG-18098 [valgrind] 12,672 bytes in 72 blocks are indirectly
          * lost - by smnfInit()
          *
-         * ALTIBASE_MEMORY_CHECKÀÏ °æ¿ì iduMemory´Â alloc¶§ ¸¶´Ù ¸Ş¸ğ¸®¸¦
-         * ÇÒ´çÇÑ´Ù. ÇÒ´çµÈ ¸Ş¸ğ¸®³¢¸® ¸µÅ©µå ¸®½ºÆ®¸¦ À¯ÁöÇÏ°í Ãß°¡µÈ
-         * ¸Ş¸ğ¸®´Â ¸µÅ©µå ¸®½ºÆ®ÀÇ ³¡¿¡ Ãß°¡ÇÕ´Ï´Ù. ±×¸®°í ¸¸¾à setstatus°¡
-         * È£ÃâµÇ¸é iduMemoryStatus°¡ °¡¸®Å°´Â ¸µÅ©³ëµå·Î mCurHeadÀÇ °ªÀ»
-         * ¹Ù²ß´Ï´Ù. ±×·±µ¥ Ç×»ó mCurHead´Â ¸¶Áö¸· À§Ä¡¸¦ °¡¸®Å°±â ¶§¹®¿¡
-         * setstatus°¡ È£ÃâµÈÈÄ ´Ù½Ã allocÀÌ È£ÃâµÉ °æ¿ì mCurHead°¡ °¡¸®Å°´Â
-         * ³ëµå´ÙÀ½ÀÇ ³ëµéµîÀº °í¾Æ°¡ µÉ¼ö ÀÖ½À´Ï´Ù.
+         * ALTIBASE_MEMORY_CHECKì¼ ê²½ìš° iduMemoryëŠ” allocë•Œ ë§ˆë‹¤ ë©”ëª¨ë¦¬ë¥¼
+         * í• ë‹¹í•œë‹¤. í• ë‹¹ëœ ë©”ëª¨ë¦¬ë¼ë¦¬ ë§í¬ë“œ ë¦¬ìŠ¤íŠ¸ë¥¼ ìœ ì§€í•˜ê³  ì¶”ê°€ëœ
+         * ë©”ëª¨ë¦¬ëŠ” ë§í¬ë“œ ë¦¬ìŠ¤íŠ¸ì˜ ëì— ì¶”ê°€í•©ë‹ˆë‹¤. ê·¸ë¦¬ê³  ë§Œì•½ setstatusê°€
+         * í˜¸ì¶œë˜ë©´ iduMemoryStatusê°€ ê°€ë¦¬í‚¤ëŠ” ë§í¬ë…¸ë“œë¡œ mCurHeadì˜ ê°’ì„
+         * ë°”ê¿‰ë‹ˆë‹¤. ê·¸ëŸ°ë° í•­ìƒ mCurHeadëŠ” ë§ˆì§€ë§‰ ìœ„ì¹˜ë¥¼ ê°€ë¦¬í‚¤ê¸° ë•Œë¬¸ì—
+         * setstatusê°€ í˜¸ì¶œëœí›„ ë‹¤ì‹œ allocì´ í˜¸ì¶œë  ê²½ìš° mCurHeadê°€ ê°€ë¦¬í‚¤ëŠ”
+         * ë…¸ë“œë‹¤ìŒì˜ ë…¸ë“¤ë“±ì€ ê³ ì•„ê°€ ë ìˆ˜ ìˆìŠµë‹ˆë‹¤.
          *
-         * a -> b -> c -> dÀÏ °æ¿ì mCurHead = d°¡ µË´Ï´Ù. ¿©±â¼­ setstatus
-         * °¡ È£ÃâµÇ¾î ¸¸¾à mCurHead°¡ b°¡ µÇ¾ú´Ù°í ÇÏ°í ´Ù½Ã allocÀÌ µÇ¾î
-         * e°¡ Ãß°¡µÇ¸é
-         * a -> b -> e°¡ µË´Ï´Ù. °á°úÀûÀ¸·Î c, d¿Í Ã£À» ±æÀÌ ¾ø´Â Ãµ¿¹ÀÇ
-         * °í¾Æ°¡ µË´Ï´Ù. µû¶ó¼­ c, d´Â free½ÃÄÑÁÖ°í bÀÇ next´Â null·Î
-         * ¹Ù²Ù¾î¾ß ÇÕ´Ï´Ù. */
+         * a -> b -> c -> dì¼ ê²½ìš° mCurHead = dê°€ ë©ë‹ˆë‹¤. ì—¬ê¸°ì„œ setstatus
+         * ê°€ í˜¸ì¶œë˜ì–´ ë§Œì•½ mCurHeadê°€ bê°€ ë˜ì—ˆë‹¤ê³  í•˜ê³  ë‹¤ì‹œ allocì´ ë˜ì–´
+         * eê°€ ì¶”ê°€ë˜ë©´
+         * a -> b -> eê°€ ë©ë‹ˆë‹¤. ê²°ê³¼ì ìœ¼ë¡œ c, dì™€ ì°¾ì„ ê¸¸ì´ ì—†ëŠ” ì²œì˜ˆì˜
+         * ê³ ì•„ê°€ ë©ë‹ˆë‹¤. ë”°ë¼ì„œ c, dëŠ” freeì‹œì¼œì£¼ê³  bì˜ nextëŠ” nullë¡œ
+         * ë°”ê¾¸ì–´ì•¼ í•©ë‹ˆë‹¤. */
         if( sHeader->mNext != NULL )
         {
             IDE_ASSERT( release( sHeader->mNext ) == IDE_SUCCESS );
@@ -642,12 +642,12 @@ IDE_RC iduMemory::checkMemoryMaximumLimit(ULong aSize)
 {
 /***********************************************************************
  *
- * Description : prepare, execute memory Ã¼Å© (BUG-
+ * Description : prepare, execute memory ì²´í¬ (BUG-
  *
  * Implementation :
- *    extend½Ã¿¡ ºÒ¸®¸ç, ÇöÀç chunkcount +1¿¡ chunksize¸¦ °öÇÑ °ªÀÌ
- *    propertyÀÇ °ªº¸´Ù Å©¸é ¿¡·¯.
- *    query prepare, query execute ¸Ş¸ğ¸®¿¡ ÇÑÇÔ.
+ *    extendì‹œì— ë¶ˆë¦¬ë©°, í˜„ì¬ chunkcount +1ì— chunksizeë¥¼ ê³±í•œ ê°’ì´
+ *    propertyì˜ ê°’ë³´ë‹¤ í¬ë©´ ì—ëŸ¬.
+ *    query prepare, query execute ë©”ëª¨ë¦¬ì— í•œí•¨.
  *
  ***********************************************************************/
 #define IDE_FN "iduMemory::checkMemoryMaximum"

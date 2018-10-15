@@ -66,7 +66,7 @@ static iduFixedTableColDesc gMemoryMgrColDesc[] =
     },
     //===============================================================
     // To Fix PR-13959
-    // ÇöÀç±îÁö »ç¿ëÇÑ ÃÖ´ë ¸Þ¸ð¸® »ç¿ë·®
+    // í˜„ìž¬ê¹Œì§€ ì‚¬ìš©í•œ ìµœëŒ€ ë©”ëª¨ë¦¬ ì‚¬ìš©ëŸ‰
     //===============================================================
     {
         (SChar *)"MAX_TOTAL_SIZE",
@@ -114,10 +114,10 @@ static IDE_RC buildRecordForMemoryMgr(idvSQL      *,
     {
         for (i = 0; i < sNeedRecCount; i++)
         {
-            // To Fix BUG-16821 select name from v$memstat ½Ã °ø¹é ÇàÀÌ ³ª¿È
-            //   => iduMemoryClientIndex ¸¸ Ãß°¡ÇÏ°í
-            //      mClientInfo¸¦ Ãß°¡ÇÏÁö ¾ÊÀº °æ¿ì¸¦
-            //      IDE_DASSERT·Î DetectÇÏ±â À§ÇÔ 
+            // To Fix BUG-16821 select name from v$memstat ì‹œ ê³µë°± í–‰ì´ ë‚˜ì˜´
+            //   => iduMemoryClientIndex ë§Œ ì¶”ê°€í•˜ê³ 
+            //      mClientInfoë¥¼ ì¶”ê°€í•˜ì§€ ì•Šì€ ê²½ìš°ë¥¼
+            //      IDE_DASSERTë¡œ Detectí•˜ê¸° ìœ„í•¨ 
             IDE_DASSERT( (UInt)sContainer->mMemInfo[i].mClientIndex == i );
 
             IDE_TEST_RAISE( iduFixedTable::buildRecord(aHeader,
@@ -156,10 +156,10 @@ static IDE_RC buildRecordForMemoryMgr(idvSQL      *,
 
             for (i = 0; i < sNeedRecCount; i++)
             {
-                // To Fix BUG-16821 select name from v$memstat ½Ã °ø¹é ÇàÀÌ ³ª¿È
-                //   => iduMemoryClientIndex ¸¸ Ãß°¡ÇÏ°í
-                //      mClientInfo¸¦ Ãß°¡ÇÏÁö ¾ÊÀº °æ¿ì¸¦
-                //      IDE_DASSERT·Î DetectÇÏ±â À§ÇÔ 
+                // To Fix BUG-16821 select name from v$memstat ì‹œ ê³µë°± í–‰ì´ ë‚˜ì˜´
+                //   => iduMemoryClientIndex ë§Œ ì¶”ê°€í•˜ê³ 
+                //      mClientInfoë¥¼ ì¶”ê°€í•˜ì§€ ì•Šì€ ê²½ìš°ë¥¼
+                //      IDE_DASSERTë¡œ Detectí•˜ê¸° ìœ„í•¨ 
                 IDE_DASSERT( (UInt)sAlloc->mMemInfo[i].mClientIndex == i );
 
                 IDE_TEST_RAISE( iduFixedTable::buildRecord(aHeader,

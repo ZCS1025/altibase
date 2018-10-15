@@ -22,15 +22,15 @@ import java.util.List;
 public abstract class DynamicArray
 {
     /*
-     * chunkÀÇ ¸ğ¾çÀº ´ÙÀ½°ú °°´Ù.
-     * data[][]: 2Â÷¿ø ¹è¿­
-     * data[0] = [][][][][]... : 64°³
-     * data[1] = [][][][][][][][][][][][][][][][]... : 256°³ (4¹è¾¿ ´Ã¾î³­´Ù) ...
+     * chunkì˜ ëª¨ì–‘ì€ ë‹¤ìŒê³¼ ê°™ë‹¤.
+     * data[][]: 2ì°¨ì› ë°°ì—´
+     * data[0] = [][][][][]... : 64ê°œ
+     * data[1] = [][][][][][][][][][][][][][][][]... : 256ê°œ (4ë°°ì”© ëŠ˜ì–´ë‚œë‹¤) ...
      */
     private static final int     INIT_CHUNK_SIZE   = 64;
     private static final int     MAX_CHUNK_SIZE    = 65536;
     private static final int     GROW_FACTOR       = 4;
-    private static int           DYNAMIC_ARRY_SIZE = 349504; // BUG-43263 ±âÁ¸¿¡ DynamicArray¿¡ µé¾î°¥ ¼ö ÀÖ¾ú´ø ÃÖ´ëÄ¡
+    private static int           DYNAMIC_ARRY_SIZE = 349504; // BUG-43263 ê¸°ì¡´ì— DynamicArrayì— ë“¤ì–´ê°ˆ ìˆ˜ ìˆì—ˆë˜ ìµœëŒ€ì¹˜
     private static List<Integer> CHUNK_SIZES       = makeChunkSizeArray();
 
     protected DynamicArrayCursor mStoreCursor;
@@ -44,8 +44,8 @@ public abstract class DynamicArray
     }
 
     /**
-     * BUG-43263 DynamicArray¿¡ µé¾î°¥ ¼ö ÀÖ´Â ÃÖ´ë°ªÀ» ÀÌ¿ëÇØ CHUNK SIZE ¸®½ºÆ®¸¦ ¸¸µç´Ù.<br>
-     * CHUNK SIZEÀÇ ÃÊ±â°ªÀº 64ÀÌ°í 4¹è¾¿ Áõ°¡ÇÏ¸ç 65536À» ÃÊ°úÇÏÁö ¾Ê´Â´Ù.
+     * BUG-43263 DynamicArrayì— ë“¤ì–´ê°ˆ ìˆ˜ ìˆëŠ” ìµœëŒ€ê°’ì„ ì´ìš©í•´ CHUNK SIZE ë¦¬ìŠ¤íŠ¸ë¥¼ ë§Œë“ ë‹¤.<br>
+     * CHUNK SIZEì˜ ì´ˆê¸°ê°’ì€ 64ì´ê³  4ë°°ì”© ì¦ê°€í•˜ë©° 65536ì„ ì´ˆê³¼í•˜ì§€ ì•ŠëŠ”ë‹¤.
      * @return the list of chunk sizes.
      */
     private static List<Integer> makeChunkSizeArray()

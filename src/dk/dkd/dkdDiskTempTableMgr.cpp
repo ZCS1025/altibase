@@ -23,8 +23,8 @@
 
 
 /***********************************************************************
- * Description: Disk temp table manager ¸¦ ÃÊ±âÈ­ÇÑ´Ù.
- *              ³»ºÎÀûÀ¸·Î dkdDiskTempTable.cpp ÀÇ ÇÔ¼öµéÀ» È£ÃâÇÑ´Ù.
+ * Description: Disk temp table manager ë¥¼ ì´ˆê¸°í™”í•œë‹¤.
+ *              ë‚´ë¶€ì ìœ¼ë¡œ dkdDiskTempTable.cpp ì˜ í•¨ìˆ˜ë“¤ì„ í˜¸ì¶œí•œë‹¤.
  *
  **********************************************************************/
 IDE_RC  dkdDiskTempTableMgr::initialize( void       *aQcStatement,
@@ -49,9 +49,9 @@ IDE_RC  dkdDiskTempTableMgr::initialize( void       *aQcStatement,
 }
 
 /************************************************************************
- * Description : Disk temp table manager ¸¦ Á¤¸®ÇÑ´Ù. 
- *               ³»ºÎÀûÀ¸·Î dkdDiskTempTableDrop À» È£ÃâÇÏ¿© »ı¼ºÇÏ¿©
- *               °®°í ÀÖ´ø disk temp table À» drop ÇØÁØ´Ù. 
+ * Description : Disk temp table manager ë¥¼ ì •ë¦¬í•œë‹¤. 
+ *               ë‚´ë¶€ì ìœ¼ë¡œ dkdDiskTempTableDrop ì„ í˜¸ì¶œí•˜ì—¬ ìƒì„±í•˜ì—¬
+ *               ê°–ê³  ìˆë˜ disk temp table ì„ drop í•´ì¤€ë‹¤. 
  *
  ************************************************************************/
 IDE_RC  dkdDiskTempTableMgr::finalize()
@@ -74,9 +74,9 @@ IDE_RC  dkdDiskTempTableMgr::finalize()
 }
 
 /************************************************************************
- * Description : Disk temp table ·ÎºÎÅÍ record ÇÏ³ª¸¦ fetch ÇØ¿Â´Ù. 
+ * Description : Disk temp table ë¡œë¶€í„° record í•˜ë‚˜ë¥¼ fetch í•´ì˜¨ë‹¤. 
  *
- *  aRow        - [OUT] fetch ÇØ¿Ã record ¸¦ °¡¸®Å°´Â Æ÷ÀÎÅÍ
+ *  aRow        - [OUT] fetch í•´ì˜¬ record ë¥¼ ê°€ë¦¬í‚¤ëŠ” í¬ì¸í„°
  *
  ************************************************************************/
 IDE_RC  dkdDiskTempTableMgr::fetchRow( void **aRow )
@@ -113,10 +113,10 @@ IDE_RC  dkdDiskTempTableMgr::fetchRow( void **aRow )
 }
 
 /************************************************************************
- * Description : Record buffer È¤Àº disk temp table ·Î record ÇÏ³ª¸¦ 
- *               insert ÇÑ´Ù. 
+ * Description : Record buffer í˜¹ì€ disk temp table ë¡œ record í•˜ë‚˜ë¥¼ 
+ *               insert í•œë‹¤. 
  *
- *  aRecord     - [IN] insert ÇÒ record ¸¦ °¡¸®Å°´Â Æ÷ÀÎÅÍ
+ *  aRecord     - [IN] insert í•  record ë¥¼ ê°€ë¦¬í‚¤ëŠ” í¬ì¸í„°
  *
  ************************************************************************/
 IDE_RC  dkdDiskTempTableMgr::insertRow( dkdRecord   *aRecord )
@@ -132,8 +132,8 @@ IDE_RC  dkdDiskTempTableMgr::insertRow( dkdRecord   *aRecord )
 }
 
 /************************************************************************
- * Description : Record buffer È¤Àº disk temp table ÀÇ cursor ¸¦ restart
- *               ½ÃÅ²´Ù.
+ * Description : Record buffer í˜¹ì€ disk temp table ì˜ cursor ë¥¼ restart
+ *               ì‹œí‚¨ë‹¤.
  *
  ************************************************************************/
 IDE_RC  dkdDiskTempTableMgr::restart()

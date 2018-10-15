@@ -27,19 +27,19 @@
 #include <smrDef.h>
 
 /*
-    Dirty Page±â·Ï ¿É¼Ç
-    - writeDirtyPages4AllTBS ¿¡ ¿É¼ÇÀÎÀÚ·Î ³Ñ±ä´Ù.
+    Dirty Pageê¸°ë¡ ì˜µì…˜
+    - writeDirtyPages4AllTBS ì— ì˜µì…˜ì¸ìë¡œ ë„˜ê¸´ë‹¤.
  */
 typedef enum smrWriteDPOption
 {
     SMR_WDP_NONE = 0,
-    SMR_WDP_NO_PID_LOGGING = 1, // Media Recovery ¿Ï·áÈÄ¿¡´Â PID·Î±ë ¾ÈÇÔ
-    SMR_WDP_FINAL_WRITE    = 2  // Shutdown ÀÌÀüÀÇ ÃÖÁ¾ Flush
+    SMR_WDP_NO_PID_LOGGING = 1, // Media Recovery ì™„ë£Œí›„ì—ëŠ” PIDë¡œê¹… ì•ˆí•¨
+    SMR_WDP_FINAL_WRITE    = 2  // Shutdown ì´ì „ì˜ ìµœì¢… Flush
 } smrWriteDPOption;
 
 
-// ¿©·¯ TablespaceÀÇ Dirty Page°ü¸®ÀÚ °´Ã¼µé(smrDirtyPageList)À»
-// °ü¸®ÇÏ´Â Class.
+// ì—¬ëŸ¬ Tablespaceì˜ Dirty Pageê´€ë¦¬ì ê°ì²´ë“¤(smrDirtyPageList)ì„
+// ê´€ë¦¬í•˜ëŠ” Class.
 
 class smrDPListMgr
 {
@@ -49,26 +49,26 @@ private:
     
 public :
 
-    // Tablespaceº° Dirty Page°ü¸®ÀÚ¸¦ °ü¸®ÇÏ´Â smrDPListMgrÀ» ÃÊ±âÈ­
+    // Tablespaceë³„ Dirty Pageê´€ë¦¬ìë¥¼ ê´€ë¦¬í•˜ëŠ” smrDPListMgrì„ ì´ˆê¸°í™”
     static IDE_RC initializeStatic();
 
-    // Tablespaceº° Dirty Page°ü¸®ÀÚ¸¦ °ü¸®ÇÏ´Â smrDPListMgrÀ» ÆÄ±«
+    // Tablespaceë³„ Dirty Pageê´€ë¦¬ìë¥¼ ê´€ë¦¬í•˜ëŠ” smrDPListMgrì„ íŒŒê´´
     static IDE_RC destroyStatic();
 
-    // Æ¯Á¤ TablespaceÀÇ Dirty Page°ü¸®ÀÚ¿¡ Dirty Page¸¦ Ãß°¡ÇÑ´Ù.
+    // íŠ¹ì • Tablespaceì˜ Dirty Pageê´€ë¦¬ìì— Dirty Pageë¥¼ ì¶”ê°€í•œë‹¤.
     static IDE_RC add(scSpaceID aSpaceID,
                       smmPCH*   aPCHPtr,
                       scPageID  aPageID);
 
-    // ¸ğµç TablespaceÀÇ Dirty Page¼ö¸¦ ¸®ÅÏ 
+    // ëª¨ë“  Tablespaceì˜ Dirty Pageìˆ˜ë¥¼ ë¦¬í„´ 
     static IDE_RC getTotalDirtyPageCnt( ULong * aDirtyPageCount);
     
-    // Æ¯Á¤ TablespaceÀÇ Dirty Page¼ö¸¦ °è»êÇÑ´Ù.
+    // íŠ¹ì • Tablespaceì˜ Dirty Pageìˆ˜ë¥¼ ê³„ì‚°í•œë‹¤.
     static IDE_RC getDirtyPageCountOfTBS( scSpaceID   aTBSID,
                                           scPageID  * aDirtyPageCount );
 
 
-    // ¸ğµç TablespaceÀÇ Dirty Page¸¦ Checkpoint Image¿¡ ±â·Ï 
+    // ëª¨ë“  Tablespaceì˜ Dirty Pageë¥¼ Checkpoint Imageì— ê¸°ë¡ 
     static IDE_RC writeDirtyPages4AllTBS(
                        sctStateSet                  aStateSet,
                        ULong                      * aTotalCnt,
@@ -78,65 +78,65 @@ public :
                        smmGetFlushTargetDBNoFunc    aGetFlushTargetDBNoFunc,
                        smrWriteDPOption             aOption );
     
-    // ¸ğµç TablespaceÀÇ Dirty Page¸¦ SMM=>SMR·Î ÀÌµ¿ÇÑ´Ù.
+    // ëª¨ë“  Tablespaceì˜ Dirty Pageë¥¼ SMM=>SMRë¡œ ì´ë™í•œë‹¤.
     static IDE_RC moveDirtyPages4AllTBS ( 
                            sctStateSet  aStateSet,
                            ULong *      aNewCnt,
                            ULong *      aDupCnt );
 
-    // ¸ğµç TablespaceÀÇ Dirty Page¸¦ Discard ½ÃÅ²´Ù. 
+    // ëª¨ë“  Tablespaceì˜ Dirty Pageë¥¼ Discard ì‹œí‚¨ë‹¤. 
     static IDE_RC discardDirtyPages4AllTBS();
     
 private :
-    // Æ¯Á¤ Tablespace¸¦ À§ÇÑ Dirty Page°ü¸®ÀÚ¸¦ »ı¼ºÇÑ´Ù.
+    // íŠ¹ì • Tablespaceë¥¼ ìœ„í•œ Dirty Pageê´€ë¦¬ìë¥¼ ìƒì„±í•œë‹¤.
     static IDE_RC createDPList(scSpaceID aSpaceID );
 
-    // Æ¯Á¤ TablespaceÀÇ Dirty Page°ü¸®ÀÚ¸¦ Á¦°ÅÇÑ´Ù.
+    // íŠ¹ì • Tablespaceì˜ Dirty Pageê´€ë¦¬ìë¥¼ ì œê±°í•œë‹¤.
     static IDE_RC removeDPList( scSpaceID aSpaceID );
 
 
-    // Æ¯Á¤ Tablespace¸¦ À§ÇÑ Dirty Page°ü¸®ÀÚ¸¦ Ã£¾Æ³½´Ù.
-    // Ã£Áö ¸øÇÑ °æ¿ì NULLÀÌ ¸®ÅÏµÈ´Ù.
+    // íŠ¹ì • Tablespaceë¥¼ ìœ„í•œ Dirty Pageê´€ë¦¬ìë¥¼ ì°¾ì•„ë‚¸ë‹¤.
+    // ì°¾ì§€ ëª»í•œ ê²½ìš° NULLì´ ë¦¬í„´ëœë‹¤.
     static IDE_RC findDPList( scSpaceID           aSpaceID,
                               smrDirtyPageList ** aDPList );
 
-    // smrDirtyPageList::writeDirtyPage¸¦ ¼öÇàÇÏ´Â ActionÇÔ¼ö
+    // smrDirtyPageList::writeDirtyPageë¥¼ ìˆ˜í–‰í•˜ëŠ” Actioní•¨ìˆ˜
     static IDE_RC writeDirtyPageAction( idvSQL            * aStatistics,
                                         sctTableSpaceNode * aTBSNode,
                                         void * aActionArg );
 
-    // smrDirtyPageList::writePIDLogs¸¦ ¼öÇàÇÏ´Â ActionÇÔ¼ö
+    // smrDirtyPageList::writePIDLogsë¥¼ ìˆ˜í–‰í•˜ëŠ” Actioní•¨ìˆ˜
     static IDE_RC writePIDLogAction( idvSQL            * aStatistics,
                                      sctTableSpaceNode * aTBSNode,
                                      void              * aActionArg );
     
-    // °¢°¢ÀÇ Hash Element¿¡ ´ëÇØ È£ÃâµÉ VisitorÇÔ¼ö
+    // ê°ê°ì˜ Hash Elementì— ëŒ€í•´ í˜¸ì¶œë  Visitorí•¨ìˆ˜
     static IDE_RC destoyingVisitor( vULong   aKey,
                                     void   * aData,
                                     void   * aVisitorArg);
 
-    //  Hashtable¿¡ µî·ÏµÈ ¸ğµç smrDirtyPageList¸¦ destroyÇÑ´Ù.
+    //  Hashtableì— ë“±ë¡ëœ ëª¨ë“  smrDirtyPageListë¥¼ destroyí•œë‹¤.
     static IDE_RC destroyAllMgrs();
 
-    // Æ¯Á¤ TablespaceÀÇ Dirty Page¸¦ SMM=>SMR·Î ÀÌµ¿ÇÑ´Ù.
+    // íŠ¹ì • Tablespaceì˜ Dirty Pageë¥¼ SMM=>SMRë¡œ ì´ë™í•œë‹¤.
     static IDE_RC moveDirtyPages4TBS(scSpaceID aSpaceID,
                                      scPageID  * aNewCnt,
                                      scPageID  * aDupCnt );
 
-    //  moveDirtyPages4AllTBS ¸¦ À§ÇÑ ActionÇÔ¼ö 
+    //  moveDirtyPages4AllTBS ë¥¼ ìœ„í•œ Actioní•¨ìˆ˜ 
     static IDE_RC moveDPAction( idvSQL*             aStatistics,
                                 sctTableSpaceNode * aTBSNode,
                                 void * aActionArg );
 
-    // getTotalDirtyPageCnt ¸¦ À§ÇÑ ActionÇÔ¼ö 
+    // getTotalDirtyPageCnt ë¥¼ ìœ„í•œ Actioní•¨ìˆ˜ 
     static IDE_RC countDPAction( idvSQL*             aStatistics,
                                  sctTableSpaceNode * aSpaceNode,
                                  void * aActionArg );
 
-    // Æ¯Á¤ TablespaceÀÇ SMR¿¡ ÀÖ´Â Dirty Page¸¦ Á¦°ÅÇÑ´Ù. 
+    // íŠ¹ì • Tablespaceì˜ SMRì— ìˆëŠ” Dirty Pageë¥¼ ì œê±°í•œë‹¤. 
     static IDE_RC discardDirtyPages4TBS( scSpaceID aSpaceID );
 
-    //  discardDirtyPages4AllTBS ¸¦ À§ÇÑ ActionÇÔ¼ö 
+    //  discardDirtyPages4AllTBS ë¥¼ ìœ„í•œ Actioní•¨ìˆ˜ 
     static IDE_RC discardDPAction( idvSQL            * aStatistics,
                                    sctTableSpaceNode * aTBSNode,
                                    void * aActionArg );

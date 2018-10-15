@@ -23,7 +23,7 @@
  *      PROJ-2452 Result caching of Statement level
  *      PROJ-2448 Subquery caching
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
  **********************************************************************/
 
@@ -51,9 +51,9 @@ IDE_RC qtcCache::setIsCachableForFunction( qsVariableItems  * aParaDecls,
  *
  * Description : PROJ-2452 Result caching of Statement level
  *
- *          Function or Package ¿¡¼­ ¼±¾ðÇÑ function »ý¼º ±¸¹®ÀÇ
- *          validation °úÁ¤¿¡¼­ input parameters, return type ¿¡ ´ëÇÑ
- *          cache Á¦¾àÁ¶°ÇÀ» °Ë»çÇÏ°í °á°ú¸¦ ¹ÝÈ¯ÇÑ´Ù.
+ *          Function or Package ì—ì„œ ì„ ì–¸í•œ function ìƒì„± êµ¬ë¬¸ì˜
+ *          validation ê³¼ì •ì—ì„œ input parameters, return type ì— ëŒ€í•œ
+ *          cache ì œì•½ì¡°ê±´ì„ ê²€ì‚¬í•˜ê³  ê²°ê³¼ë¥¼ ë°˜í™˜í•œë‹¤.
  *
  *          ex) CREATE OR REPLACE FUNCTION
  *              CREATE OR REPLACE PACKAGE pkg
@@ -70,11 +70,11 @@ IDE_RC qtcCache::setIsCachableForFunction( qsVariableItems  * aParaDecls,
  *          4. Check isCachable and return type
  *           - Valid data type
  *
- *      cf) QCU_FORCE_FUNCTION_CACHE ´Â plan property °¡ ¾Æ´Ï¶ó
- *          ¾ö¹ÐÈ÷ µûÁö¸é validation °úÁ¤¿¡¼­ »ç¿ëÇÒ ¼ö ¾ø´Ù.
- *          validation °úÁ¤¿¡¼­ »ç¿ëÇÏ·Á¸é plan env ¿¡ µî·ÏÇØ¾ß ÇÏ´Âµ¥
- *          ¿À·ÎÁö NATC °ËÁõÀ» À§ÇÑ ¿ëµµ·Î¸¸ Ãß°¡µÇ¾úÀ¸¹Ç·Î
- *          plan env µî·ÏÀº skip ÇÑ´Ù.
+ *      cf) QCU_FORCE_FUNCTION_CACHE ëŠ” plan property ê°€ ì•„ë‹ˆë¼
+ *          ì—„ë°€ížˆ ë”°ì§€ë©´ validation ê³¼ì •ì—ì„œ ì‚¬ìš©í•  ìˆ˜ ì—†ë‹¤.
+ *          validation ê³¼ì •ì—ì„œ ì‚¬ìš©í•˜ë ¤ë©´ plan env ì— ë“±ë¡í•´ì•¼ í•˜ëŠ”ë°
+ *          ì˜¤ë¡œì§€ NATC ê²€ì¦ì„ ìœ„í•œ ìš©ë„ë¡œë§Œ ì¶”ê°€ë˜ì—ˆìœ¼ë¯€ë¡œ
+ *          plan env ë“±ë¡ì€ skip í•œë‹¤.
  *
  **********************************************************************/
 {
@@ -152,15 +152,15 @@ IDE_RC qtcCache::validateFunctionCache( qcTemplate * aTemplate,
  *
  * Description : PROJ-2452 Result caching of Statement level
  *
- *      Function ³ëµåÀÇ validation °úÁ¤¿¡¼­ cache Á¦¾àÁ¶°ÇÀ» °Ë»çÇÑ´Ù.
+ *      Function ë…¸ë“œì˜ validation ê³¼ì •ì—ì„œ cache ì œì•½ì¡°ê±´ì„ ê²€ì‚¬í•œë‹¤.
  *
  *          1. Check cache object count 
- *          2. CREATE SP ¿¡¼­ »ç¿ëµÈ function Á¦¿Ü
- *          3. qsExecParseTree->isCachable °Ë»ç
+ *          2. CREATE SP ì—ì„œ ì‚¬ìš©ëœ function ì œì™¸
+ *          3. qsExecParseTree->isCachable ê²€ì‚¬
  *
- *      cf) QCU_QUERY_EXECUTION_CACHE_MAX_COUNT(aTemplate->cacheMaxCnt) ´Â
- *          plan property °¡ ¾Æ´Ï¶ó validation °úÁ¤¿¡¼­ »ç¿ëÇÒ ¼ö ¾ø´Ù.
- *          µû¶ó¼­ cacheObjCnt ´Â ID_UINT_MAX ¹Ì¸¸±îÁö¸¸ Áõ°¡½ÃÅ²´Ù.
+ *      cf) QCU_QUERY_EXECUTION_CACHE_MAX_COUNT(aTemplate->cacheMaxCnt) ëŠ”
+ *          plan property ê°€ ì•„ë‹ˆë¼ validation ê³¼ì •ì—ì„œ ì‚¬ìš©í•  ìˆ˜ ì—†ë‹¤.
+ *          ë”°ë¼ì„œ cacheObjCnt ëŠ” ID_UINT_MAX ë¯¸ë§Œê¹Œì§€ë§Œ ì¦ê°€ì‹œí‚¨ë‹¤.
  *
  * Implementation :
  *
@@ -238,7 +238,7 @@ IDE_RC qtcCache::validateSubqueryCache( qcTemplate * aTemplate,
  *
  * Description : PROJ-2448 Subquery caching
  *
- *      Subquery ³ëµåÀÇ validation °úÁ¤¿¡¼­ cache Á¦¾àÁ¶°ÇÀ» °Ë»çÇÑ´Ù.
+ *      Subquery ë…¸ë“œì˜ validation ê³¼ì •ì—ì„œ cache ì œì•½ì¡°ê±´ì„ ê²€ì‚¬í•œë‹¤.
  *
  * Implementation : Check cachable
  *
@@ -277,8 +277,8 @@ IDE_RC qtcCache::validateSubqueryCache( qcTemplate * aTemplate,
     {
         IDE_ERROR_RAISE( sQuerySet->SFWGH != NULL, ERR_UNEXPECTED_CACHE_ERROR );
 
-        // BUG-44226 scalar subqueryÀÇ where Àý¿¡¸¸ ¿ÜºÎ ÂüÁ¶ ÄÃ·³ÀÌ ÀÖ´Â °æ¿ì
-        // subquery cachingÀ» Çã¿ëÇÕ´Ï´Ù.
+        // BUG-44226 scalar subqueryì˜ where ì ˆì—ë§Œ ì™¸ë¶€ ì°¸ì¡° ì»¬ëŸ¼ì´ ìžˆëŠ” ê²½ìš°
+        // subquery cachingì„ í—ˆìš©í•©ë‹ˆë‹¤.
         // target
         for ( sTarget = sQuerySet->SFWGH->target;
               sTarget != NULL;
@@ -356,7 +356,7 @@ IDE_RC qtcCache::validateSubqueryCache( qcTemplate * aTemplate,
 
         //---------------------------------------------------
         // 2. Check hierarchy
-        // ex) ´ÙÀ½ °æ¿ì´Â cache ¼öÇà
+        // ex) ë‹¤ìŒ ê²½ìš°ëŠ” cache ìˆ˜í–‰
         //     SELECT LEVEL, i1, i2, i3
         //       FROM ( SELECT ( SELECT max(i3) FROM t1 b WHERE i3 = a.i3 ) m, i1, i2, i3
         //                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -418,12 +418,12 @@ IDE_RC qtcCache::validateSubqueryCache( qcTemplate * aTemplate,
     {
         if ( aNode->node.info == ID_UINT_MAX )
         {
-            // ÃÖÃÊ validation
+            // ìµœì´ˆ validation
             aNode->node.info = aTemplate->cacheObjCnt++;
         }
         else
         {
-            // transform ÀÌÈÄ validation
+            // transform ì´í›„ validation
             // Nothing to do.
         }
     }
@@ -451,14 +451,14 @@ IDE_RC qtcCache::preprocessSubqueryCache( qcStatement * aStatement,
  *
  * Description : PROJ-2448 Subquery caching
  *
- *             Subquery optimization ¼öÇà Áß plan ÀÌ ¿Ï¼ºµÈ ÈÄ È£ÃâµÇ¾î
- *             STORENONLY tip ¿¡ ´ëÇØ cache disable À» ¼¼ÆÃÇÏ°í
- *             execution ¿¡ ÇÊ¿äÇÑ outer column ÀÇ À§Ä¡¸¦ È®º¸ÇÑ´Ù.
+ *             Subquery optimization ìˆ˜í–‰ ì¤‘ plan ì´ ì™„ì„±ëœ í›„ í˜¸ì¶œë˜ì–´
+ *             STORENONLY tip ì— ëŒ€í•´ cache disable ì„ ì„¸íŒ…í•˜ê³ 
+ *             execution ì— í•„ìš”í•œ outer column ì˜ ìœ„ì¹˜ë¥¼ í™•ë³´í•œë‹¤.
  *
  * Implementation :
  *
  *             1. Check avoid cache and set cache disable
- *              - »ó¼¼¼³°è issue 6
+ *              - ìƒì„¸ì„¤ê³„ issue 6
  *             2. Set mtrNode position of outer columns
  *              - PR-6365.sql
  *              - TC/Server/qp2disk/SQLSpec/Nist/Intermediate/yts798.sql
@@ -502,9 +502,9 @@ IDE_RC qtcCache::preprocessSubqueryCache( qcStatement * aStatement,
                   sOuter != NULL;
                   sOuter = sOuter->next )
             {
-                // BUG-44682 subquery cache µ¿ÀÛÁß Àß¸øµÈ ¸Þ¸ð¸®¸¦ ÀÐÀ»¼ö ÀÖ½À´Ï´Ù.
-                // cacheTable, cacheColumn ÀÌ Àß¸øµÈ À§Ä¡¸¦ °¡¸®Å°°í ÀÖ´Ù.
-                // Ã³À½ ¼öÇàÇÒ¶§¸¸ ±â·ÏÇÑ´Ù.
+                // BUG-44682 subquery cache ë™ìž‘ì¤‘ ìž˜ëª»ëœ ë©”ëª¨ë¦¬ë¥¼ ì½ì„ìˆ˜ ìžˆìŠµë‹ˆë‹¤.
+                // cacheTable, cacheColumn ì´ ìž˜ëª»ëœ ìœ„ì¹˜ë¥¼ ê°€ë¦¬í‚¤ê³  ìžˆë‹¤.
+                // ì²˜ìŒ ìˆ˜í–‰í• ë•Œë§Œ ê¸°ë¡í•œë‹¤.
                 if ( (sOuter->cacheTable  == ID_USHORT_MAX) &&
                      (sOuter->cacheColumn == ID_USHORT_MAX) )
                 {
@@ -513,9 +513,9 @@ IDE_RC qtcCache::preprocessSubqueryCache( qcStatement * aStatement,
                     if ( ( sNode->node.lflag & MTC_NODE_COLUMN_LOCATE_CHANGE_MASK )
                         == MTC_NODE_COLUMN_LOCATE_CHANGE_TRUE )
                     {
-                        // BUG-44873 ¼­ºêÄõ¸®³»ºÎ¿¡ temp table ¿¡ outerColumns ÀÌ ÀúÀåµÈ °æ¿ì °á°ú°¡ Æ²¸³´Ï´Ù.
-                        // findColumnLocate ¸¦ baseTable À» ÀÌ¿ëÇÏ¿© Ã£´Â´Ù.
-                        // baseTable·Î Ã£À¸¸é ¼­ºêÄõ¸®³»ºÎÀÇ temp table À» ÂüÁ¶ÇÏÁö ¾Ê´Â´Ù.
+                        // BUG-44873 ì„œë¸Œì¿¼ë¦¬ë‚´ë¶€ì— temp table ì— outerColumns ì´ ì €ìž¥ëœ ê²½ìš° ê²°ê³¼ê°€ í‹€ë¦½ë‹ˆë‹¤.
+                        // findColumnLocate ë¥¼ baseTable ì„ ì´ìš©í•˜ì—¬ ì°¾ëŠ”ë‹¤.
+                        // baseTableë¡œ ì°¾ìœ¼ë©´ ì„œë¸Œì¿¼ë¦¬ë‚´ë¶€ì˜ temp table ì„ ì°¸ì¡°í•˜ì§€ ì•ŠëŠ”ë‹¤.
                         IDE_TEST( qmg::findColumnLocate( aStatement,
                                                          ID_USHORT_MAX,
                                                          sNode->node.baseTable,
@@ -567,8 +567,8 @@ IDE_RC qtcCache::searchCache( qcTemplate     * aTemplate,
                               qtcCacheState  * aState )
 /***********************************************************************
  *
- * Description : À¯È¿ÇÑ cache object ¸¦ ¾ò¾î³»¾î
- *               input parameter ¿Í µ¿ÀÏÇÑ cache °ªÀ» Ã£´Â´Ù.
+ * Description : ìœ íš¨í•œ cache object ë¥¼ ì–»ì–´ë‚´ì–´
+ *               input parameter ì™€ ë™ì¼í•œ cache ê°’ì„ ì°¾ëŠ”ë‹¤.
  *
  * Implementation : 
  *
@@ -580,12 +580,12 @@ IDE_RC qtcCache::searchCache( qcTemplate     * aTemplate,
  *               - compare currRecord 
  *               - search hashTable
  *
- *              cf) state ´Â ¾Æ·¡ ´Ü°è Áß ÇÏ³ª·Î °áÁ¤µÈ´Ù.
+ *              cf) state ëŠ” ì•„ëž˜ ë‹¨ê³„ ì¤‘ í•˜ë‚˜ë¡œ ê²°ì •ëœë‹¤.
  *               - STATE_INVOKE_MAKE_RECORD
  *               - STATE_RETURN_CURR_RECORD
  *               - STATE_RETURN_INVOKE
  *
- * cf) Cache ¾Ë°í¸®Áò¿¡ ´ëÇÑ »óÅÂÀüÀÌ ´ÙÀÌ¾î±×·¥Àº ¾Æ·¡°æ·Î¸¦ ÂüÁ¶
+ * cf) Cache ì•Œê³ ë¦¬ì¦˜ì— ëŒ€í•œ ìƒíƒœì „ì´ ë‹¤ì´ì–´ê·¸ëž¨ì€ ì•„ëž˜ê²½ë¡œë¥¼ ì°¸ì¡°
  * http://nok.altibase.com/download/attachments/32923217/PROJ-2448_state_diagram.png
  *
  **********************************************************************/
@@ -755,8 +755,8 @@ IDE_RC qtcCache::executeCache( iduMemory     * aMemory,
                                qtcCacheState   aState )
 /***********************************************************************
  *
- * Description : Cache miss ÀÏ °æ¿ì ¼öÇà°á°ú·Î
- *               current record ¸¦ ±¸¼ºÇÏ°í hash table ¿¡ Ãß°¡ÇÑ´Ù.
+ * Description : Cache miss ì¼ ê²½ìš° ìˆ˜í–‰ê²°ê³¼ë¡œ
+ *               current record ë¥¼ êµ¬ì„±í•˜ê³  hash table ì— ì¶”ê°€í•œë‹¤.
  *
  * Implementation :
  *
@@ -913,20 +913,20 @@ IDE_RC qtcCache::getCacheValue( mtcNode     * aNode,
                                 qtcCacheObj * aCacheObj )
 /***********************************************************************
  *
- * Description : Cache hit ÀÏ °æ¿ì cache °ªÀ» currRecord ·Î ¹ÝÈ¯ÇÑ´Ù.
+ * Description : Cache hit ì¼ ê²½ìš° cache ê°’ì„ currRecord ë¡œ ë°˜í™˜í•œë‹¤.
  *
  * Implementation :
  *
  *   1. DETERMINISTIC_FUNCTION
- *    - aStack[0] ¿¡ cache °ªÀ» ¾ò¾î¿È
+ *    - aStack[0] ì— cache ê°’ì„ ì–»ì–´ì˜´
  *   2. SCALAR_SUBQUERY
- *    - aStack[0] ¿¡ stack position À» ¾ò¾î¿È
- *    - aStack[0].value ¿¡ cache value ÂüÁ¶
+ *    - aStack[0] ì— stack position ì„ ì–»ì–´ì˜´
+ *    - aStack[0].value ì— cache value ì°¸ì¡°
  *   3. LIST_SUBQUERY
- *    - aStack[0] ¿¡ stack position À» ¾ò¾î¿È
- *    - aStack[0].value ÀÇ sStack[0]~[n] ¿¡ target list ÀÇ cache value ÂüÁ¶
+ *    - aStack[0] ì— stack position ì„ ì–»ì–´ì˜´
+ *    - aStack[0].value ì˜ sStack[0]~[n] ì— target list ì˜ cache value ì°¸ì¡°
  *   4. [NOT] EXISTS
- *    - aStack[0].value ¿¡ cache value ÂüÁ¶
+ *    - aStack[0].value ì— cache value ì°¸ì¡°
  *
  **********************************************************************/
 {
@@ -951,7 +951,7 @@ IDE_RC qtcCache::getCacheValue( mtcNode     * aNode,
             break;
 
         // BUG-41915
-        // subquery ÀÇ °æ¿ì cache µÈ value °ªÀº pointer ¸¦ ÂüÁ¶ÇÑ´Ù.
+        // subquery ì˜ ê²½ìš° cache ëœ value ê°’ì€ pointer ë¥¼ ì°¸ì¡°í•œë‹¤.
         case QTC_CACHE_TYPE_SCALAR_SUBQUERY:
 
             // stack position copy
@@ -1017,7 +1017,7 @@ IDE_RC qtcCache::getColumnAndValue( qcTemplate    * aTemplate,
 /***********************************************************************
  *
  * Description : PROJ-2448 Subquery caching
- *               Outer column ¿¡ ´ëÇÑ column, value ¸¦ ¹ÝÈ¯ÇÑ´Ù.
+ *               Outer column ì— ëŒ€í•œ column, value ë¥¼ ë°˜í™˜í•œë‹¤.
  *
  * Implementation : 
  *
@@ -1081,8 +1081,8 @@ IDE_RC qtcCache::compareCurrRecord( mtcStack    * aStack,
                                     idBool      * aResult )
 /***********************************************************************
  *
- * Description : Input parameter ¿Í current record ¸¦ ºñ±³ÇÏ¿©
- *               °°À¸¸é TRUE, ´Ù¸£¸é FALSE ¸¦ ¹ÝÈ¯ÇÑ´Ù.
+ * Description : Input parameter ì™€ current record ë¥¼ ë¹„êµí•˜ì—¬
+ *               ê°™ìœ¼ë©´ TRUE, ë‹¤ë¥´ë©´ FALSE ë¥¼ ë°˜í™˜í•œë‹¤.
  *
  * Implementation :
  *
@@ -1167,8 +1167,8 @@ IDE_RC qtcCache::searchHashTable( mtcStack    * aStack,
                                   idBool      * aResult )
 /***********************************************************************
  *
- * Description : Input parameter ¿Í hash table ÀÇ record ¸¦ ºñ±³ÇÏ¿©
- *               °°À¸¸é TRUE, ´Ù¸£¸é FALSE ¸¦ ¹ÝÈ¯ÇÑ´Ù.
+ * Description : Input parameter ì™€ hash table ì˜ record ë¥¼ ë¹„êµí•˜ì—¬
+ *               ê°™ìœ¼ë©´ TRUE, ë‹¤ë¥´ë©´ FALSE ë¥¼ ë°˜í™˜í•œë‹¤.
  *
  * Implementation :
  *
@@ -1276,7 +1276,7 @@ IDE_RC qtcCache::allocAndSetCurrRecord( iduMemory   * aMemory,
                                         qtcCacheObj * aCacheObj )
 /***********************************************************************
  *
- * Description : ¼öÇà°á°úÀÎ stack °ªÀ¸·Î cacheObj->mCurrRecord ¸¦ »ý¼ºÇÑ´Ù.
+ * Description : ìˆ˜í–‰ê²°ê³¼ì¸ stack ê°’ìœ¼ë¡œ cacheObj->mCurrRecord ë¥¼ ìƒì„±í•œë‹¤.
  *
  * Implementation :
  *
@@ -1393,7 +1393,7 @@ IDE_RC qtcCache::resetCurrRecord( iduMemory   * aMemory,
                                   qtcCacheObj * aCacheObj )
 /***********************************************************************
  *
- * Description : ¼öÇà°á°úÀÎ stack °ªÀ¸·Î cacheObj->mCurrRecord ¸¦ Àç»ý¼ºÇÑ´Ù.
+ * Description : ìˆ˜í–‰ê²°ê³¼ì¸ stack ê°’ìœ¼ë¡œ cacheObj->mCurrRecord ë¥¼ ìž¬ìƒì„±í•œë‹¤.
  *
  * Implementation :
  *
@@ -1499,8 +1499,8 @@ IDE_RC qtcCache::getKeyAndSize( mtcNode     * aNode,
                                 UInt        * aValueSize )
 /***********************************************************************
  *
- * Description : »õ·Î¿î record ¸¦ »ý¼ºÇÒ ¶§ ÇÊ¿äÇÑ
- *               key °ª°ú size ¸¦ ¹ÝÈ¯ÇÑ´Ù.
+ * Description : ìƒˆë¡œìš´ record ë¥¼ ìƒì„±í•  ë•Œ í•„ìš”í•œ
+ *               key ê°’ê³¼ size ë¥¼ ë°˜í™˜í•œë‹¤.
  *
  * Implementation :
  *
@@ -1604,20 +1604,20 @@ IDE_RC qtcCache::setKeyAndSize( mtcNode     * aNode,
                                 UInt          aKey )
 /***********************************************************************
  *
- * Description : »õ·Î¿î record ¸¦ »ý¼ºÇÒ ¶§ ÇÊ¿äÇÑ °ªÀ» ¼¼ÆÃÇÑ´Ù.
+ * Description : ìƒˆë¡œìš´ record ë¥¼ ìƒì„±í•  ë•Œ í•„ìš”í•œ ê°’ì„ ì„¸íŒ…í•œë‹¤.
  *
  * Implementation :
  *
  *    1. Set key, keyLengthArr, keyData (input value)
  *    2. Set return value (output value -> currRecord.mValue)
- *      2.1. DETERMINISTIC_FUNCTION : aStack[0].value ¸¦ ¾ò¾î¿È
+ *      2.1. DETERMINISTIC_FUNCTION : aStack[0].value ë¥¼ ì–»ì–´ì˜´
  *      2.2. SCALAR_SUBQUERY
- *       - aStack[1+ParamCnt] position À» ¾ò¾î¿È
- *       - aStack[1+ParamCnt].value ¸¦ ¾ò¾î¿È
+ *       - aStack[1+ParamCnt] position ì„ ì–»ì–´ì˜´
+ *       - aStack[1+ParamCnt].value ë¥¼ ì–»ì–´ì˜´
  *      2.3. LIST_SUBQUERY
- *       - aStack[1+ParamCnt] position À» ¾ò¾î¿È
- *       - aStack[1+ParamCnt]~[1+ParamCnt+n].value ¸¦ ¾ò¾î¿È
- *      2.4. EXISTS : aStack[0].value ¸¦ ¾ò¾î¿È
+ *       - aStack[1+ParamCnt] position ì„ ì–»ì–´ì˜´
+ *       - aStack[1+ParamCnt]~[1+ParamCnt+n].value ë¥¼ ì–»ì–´ì˜´
+ *      2.4. EXISTS : aStack[0].value ë¥¼ ì–»ì–´ì˜´
  *    3. Set recordListNode
  *
  **********************************************************************/
@@ -1694,7 +1694,7 @@ IDE_RC qtcCache::setKeyAndSize( mtcNode     * aNode,
 
         case QTC_CACHE_TYPE_LIST_SUBQUERY:
 
-            // Subquery ÀÇ Target Á¤º¸°¡ »ý¼ºµÈ StackÀ» ÅëÂ°·Î ÁöÁ¤ÇÑ ¿µ¿ª¿¡ º¹»ç
+            // Subquery ì˜ Target ì •ë³´ê°€ ìƒì„±ëœ Stackì„ í†µì§¸ë¡œ ì§€ì •í•œ ì˜ì—­ì— ë³µì‚¬
             // BUG-41968 align
             sOffset = 0;
             sOffset = idlOS::align( sOffset, aStack[0].column->module->align );
@@ -1705,7 +1705,7 @@ IDE_RC qtcCache::setKeyAndSize( mtcNode     * aNode,
 
             sOffset += aStack[0].column->column.size;
 
-            // Subquery ÀÇ Target ¿¡ ´ëÇÑ value ¸¦ º¹»ç
+            // Subquery ì˜ Target ì— ëŒ€í•œ value ë¥¼ ë³µì‚¬
             IDE_ERROR_RAISE( aNode->arguments != NULL, ERR_UNEXPECTED_CACHE_ERROR );
 
             for ( sNode = aNode->arguments, i = 1 + sParamCnt;

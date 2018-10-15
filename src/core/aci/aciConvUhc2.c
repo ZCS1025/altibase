@@ -979,7 +979,7 @@ ACP_EXPORT acp_sint32_t aciConvConvertMbToWc4Uhc2( void    * aSrc,
 /***********************************************************************
  *
  * Description :
- *      CP949 ==> UTF16¿¡¼­ »ç¿ëÇÏ´Â ÇÔ¼ö
+ *      CP949 ==> UTF16ì—ì„œ ì‚¬ìš©í•˜ëŠ” í•¨ìˆ˜
  *
  * Implementation :
  *
@@ -1064,7 +1064,7 @@ ACP_EXPORT acp_sint32_t aciConvConvertWcToMb4Uhc2( void    * aSrc,
 /***********************************************************************
  *
  * Description :
- *      CP949 <== UTF16BE¿¡¼­ »ç¿ëÇÏ´Â ÇÔ¼ö
+ *      CP949 <== UTF16BEì—ì„œ ì‚¬ìš©í•˜ëŠ” í•¨ìˆ˜
  *
  * Implementation :
  *

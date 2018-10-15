@@ -63,7 +63,7 @@ static IDE_RC qsfEstimate( mtcNode*     aNode,
 mtfModule qsfGetIndexStatsModule = {
     1|MTC_NODE_OPERATOR_MISC|MTC_NODE_VARIABLE_TRUE,
     ~0,
-    1.0,                    // default selectivity (∫Ò±≥ ø¨ªÍ¿⁄ æ∆¥‘)
+    1.0,                    // default selectivity (ÎπÑÍµê Ïó∞ÏÇ∞Ïûê ÏïÑÎãò)
     qsfFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -221,9 +221,9 @@ IDE_RC qsfCalculate_GetIndexStats( mtcNode*     aNode,
     IDE_TEST( qsf::getArg( aStack, 7, ID_FALSE, QS_OUT, (void**)&sClusFctPtr )      != IDE_SUCCESS );
     IDE_TEST( qsf::getArg( aStack, 8, ID_FALSE, QS_OUT, (void**)&sIdxHeightPtr )    != IDE_SUCCESS );
     
-    /* BUG-42095 : PROJ-2281 "buffer poolø° loadµ» page ≈Î∞Ë ¡§∫∏ ¡¶∞¯" ±‚¥…¿ª ¡¶∞≈«—¥Ÿ. 
-     * sCachePagePtrøÕ ø¨∞·µ«¥¬ aStack¿Ã array¿Ã±‚ ∂ßπÆø° ¿Ã ƒ⁄µÂ∏¶ ªË¡¶«“ ∞ÊøÏ ∞˙µµ«—
-     * ºˆ¡§ ªÁ«◊¿Ã πﬂª˝«“ ∞Õ¿Ã±‚ ∂ßπÆø° ¥Ÿ¿Ω ƒ⁄µÂ¥¬ ªË¡¶ «œ¡ˆ æ ¥¬¥Ÿ. */ 
+    /* BUG-42095 : PROJ-2281 "buffer poolÏóê loadÎêú page ÌÜµÍ≥Ñ Ï†ïÎ≥¥ Ï†úÍ≥µ" Í∏∞Îä•ÏùÑ Ï†úÍ±∞ÌïúÎã§. 
+     * sCachePagePtrÏôÄ Ïó∞Í≤∞ÎêòÎäî aStackÏù¥ arrayÏù¥Í∏∞ ÎïåÎ¨∏Ïóê Ïù¥ ÏΩîÎìúÎ•º ÏÇ≠Ï†úÌï† Í≤ΩÏö∞ Í≥ºÎèÑÌïú
+     * ÏàòÏ†ï ÏÇ¨Ìï≠Ïù¥ Î∞úÏÉùÌï† Í≤ÉÏù¥Í∏∞ ÎïåÎ¨∏Ïóê Îã§Ïùå ÏΩîÎìúÎäî ÏÇ≠Ï†ú ÌïòÏßÄ ÏïäÎäîÎã§. */ 
     IDE_TEST( qsf::getArg( aStack, 9, ID_FALSE, QS_OUT, (void**)&sCachedPagePtr )   != IDE_SUCCESS );
     
     IDE_TEST( qsf::getArg( aStack, 10, ID_FALSE, QS_OUT, (void**)&sAvgSlotCntPtr )  != IDE_SUCCESS );
@@ -272,7 +272,7 @@ IDE_RC qsfCalculate_GetIndexStats( mtcNode*     aNode,
     IDE_TEST( smiValidateAndLockObjects( (QC_SMI_STMT(sStatement))->getTrans(),
                                          sTableHandle,
                                          sTableSCN,
-                                         SMI_TBSLV_DDL_DML, // TBS Validation ø…º«
+                                         SMI_TBSLV_DDL_DML, // TBS Validation ÏòµÏÖò
                                          SMI_TABLE_LOCK_IS,
                                          ID_ULONG_MAX,
                                          ID_FALSE )         // BUG-28752 isExplicitLock
@@ -289,7 +289,7 @@ IDE_RC qsfCalculate_GetIndexStats( mtcNode*     aNode,
                 NULL )
             != IDE_SUCCESS );
 
-    /* Partition «œ≥™ø° ¥Î«ÿº≠∏∏ ≈Î∞Ë¡§∫∏ »πµÊ */
+    /* Partition ÌïòÎÇòÏóê ÎåÄÌï¥ÏÑúÎßå ÌÜµÍ≥ÑÏ†ïÎ≥¥ ÌöçÎìù */
     if( sPartNameValue != NULL )
     {
         IDE_TEST( qcmPartition::getPartitionInfo( 
@@ -305,7 +305,7 @@ IDE_RC qsfCalculate_GetIndexStats( mtcNode*     aNode,
         IDE_TEST( qcmPartition::validateAndLockOnePartition( sStatement,
                                                              sTableHandle,
                                                              sTableSCN,
-                                                             SMI_TBSLV_DDL_DML, // TBS Validation ø…º«
+                                                             SMI_TBSLV_DDL_DML, // TBS Validation ÏòµÏÖò
                                                              SMI_TABLE_LOCK_IS,
                                                              ID_ULONG_MAX )
                   != IDE_SUCCESS );

@@ -19,11 +19,11 @@
  * $Id$
  *
  * Description :
- *     Semi join graph¸¦ À§ÇÑ Á¤ÀÇ
+ *     Semi join graphë¥¼ ìœ„í•œ ì •ì˜
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  **********************************************************************/
 
@@ -45,19 +45,19 @@ enum qmgSemiJoinMethod
 };
 
 //---------------------------------------------------
-// Semi join graph ¸¦ °ü¸®ÇÏ±â À§ÇÑ ÇÔ¼ö
+// Semi join graph ë¥¼ ê´€ë¦¬í•˜ê¸° ìœ„í•œ í•¨ìˆ˜
 //---------------------------------------------------
 
 class qmgSemiJoin
 {
 public:
-    // Join Relation¿¡ ´ëÀÀÇÏ´Â qmgJoin Graph ÀÇ ÃÊ±âÈ­
+    // Join Relationì— ëŒ€ì‘í•˜ëŠ” qmgJoin Graph ì˜ ì´ˆê¸°í™”
     static IDE_RC  init( qcStatement * aStatement,
                          qmgGraph    * aLeftGraph,
                          qmgGraph    * aRightGraph,
                          qmgGraph    * aGraph);
 
-    // GraphÀÇ ÃÖÀûÈ­ ¼öÇà
+    // Graphì˜ ìµœì í™” ìˆ˜í–‰
     static IDE_RC  optimize( qcStatement * aStatement, qmgGraph * aGraph );
 
     static void    setJoinMethodsSelectivity( qmgGraph * aGraph );

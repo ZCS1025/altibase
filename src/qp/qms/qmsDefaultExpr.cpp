@@ -33,7 +33,7 @@ qmsDefaultExpr::isFunctionBasedIndex( qcmTableInfo * aTableInfo,
 /***********************************************************************
  *
  * Description :
- *    Function-based IndexÀÎÁö È®ÀÎÇÑ´Ù.
+ *    Function-based Indexì¸ì§€ í™•ì¸í•œë‹¤.
  *
  * Implementation :
  *
@@ -86,7 +86,7 @@ qmsDefaultExpr::isBaseColumn( qcStatement  * aStatement,
 /***********************************************************************
  *
  * Description :
- *    Default Expression¿¡ ÇØ´ç ColumnÀÌ Æ÷ÇÔµÇ¾î ÀÖ´ÂÁö È®ÀÎÇÑ´Ù.
+ *    Default Expressionì— í•´ë‹¹ Columnì´ í¬í•¨ë˜ì–´ ìˆëŠ”ì§€ í™•ì¸í•œë‹¤.
  *
  * Implementation :
  *
@@ -162,14 +162,14 @@ qmsDefaultExpr::isRelatedToFunctionBasedIndex( qcStatement  * aStatement,
 /***********************************************************************
  *
  * Description :
- *    Function-based Index °ü·Ã ColumnÀÎÁö È®ÀÎÇÑ´Ù.
+ *    Function-based Index ê´€ë ¨ Columnì¸ì§€ í™•ì¸í•œë‹¤.
  *
  * Implementation :
- *    1. ÇØ´ç Index¸¦ ±¸¼ºÇÏ´Â Column¿¡ ÇØ´ç ColumnÀÌ Æ÷ÇÔµÇ¾î ÀÖ´ÂÁö È®ÀÎÇÑ´Ù.
- *    2. 1ÀÇ °á°ú¿¡ µû¶ó
- *      (1) ÀÖÀ¸¸é, ÇØ´ç Index°¡ Function-based IndexÀÎÁö È®ÀÎÇÑ´Ù.
- *      (2) ¾øÀ¸¸é, Hidden ColumnÀÇ Default Expression¿¡ ÇØ´ç ColumnÀÌ
- *          Æ÷ÇÔµÇ¾î ÀÖ´ÂÁö È®ÀÎÇÑ´Ù.
+ *    1. í•´ë‹¹ Indexë¥¼ êµ¬ì„±í•˜ëŠ” Columnì— í•´ë‹¹ Columnì´ í¬í•¨ë˜ì–´ ìˆëŠ”ì§€ í™•ì¸í•œë‹¤.
+ *    2. 1ì˜ ê²°ê³¼ì— ë”°ë¼
+ *      (1) ìˆìœ¼ë©´, í•´ë‹¹ Indexê°€ Function-based Indexì¸ì§€ í™•ì¸í•œë‹¤.
+ *      (2) ì—†ìœ¼ë©´, Hidden Columnì˜ Default Expressionì— í•´ë‹¹ Columnì´
+ *          í¬í•¨ë˜ì–´ ìˆëŠ”ì§€ í™•ì¸í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -203,7 +203,7 @@ qmsDefaultExpr::isRelatedToFunctionBasedIndex( qcStatement  * aStatement,
                                                &sQcmColumn )
                       != IDE_SUCCESS );
 
-            /* Hidden ColumnÀÎÁö È®ÀÎÇÑ´Ù. */
+            /* Hidden Columnì¸ì§€ í™•ì¸í•œë‹¤. */
             if ( ( (sQcmColumn->flag & QCM_COLUMN_HIDDEN_COLUMN_MASK)
                    == QCM_COLUMN_HIDDEN_COLUMN_TRUE ) &&
                  ( sQcmColumn->defaultValueStr != NULL ) )
@@ -215,7 +215,7 @@ qmsDefaultExpr::isRelatedToFunctionBasedIndex( qcStatement  * aStatement,
                 continue;
             }
 
-            /* Expression¿¡ ÇØ´ç ColumnÀÌ Æ÷ÇÔµÇ¾î ÀÖ´ÂÁö È®ÀÎÇÑ´Ù. */
+            /* Expressionì— í•´ë‹¹ Columnì´ í¬í•¨ë˜ì–´ ìˆëŠ”ì§€ í™•ì¸í•œë‹¤. */
             sDefaultExprStr = (SChar *)sQcmColumn->defaultValueStr;
 
             IDE_TEST( isBaseColumn( aStatement,
@@ -253,15 +253,15 @@ qmsDefaultExpr::makeColumnListFromExpression( qcStatement   * aStatement,
 /***********************************************************************
  *
  * Description :
- *  Function-based Index Column List¸¦ ¸¸µç´Ù.
- *      - subquery¸¦ Áö¿øÇÏÁö ¾Ê´Â´Ù.
+ *  Function-based Index Column Listë¥¼ ë§Œë“ ë‹¤.
+ *      - subqueryë¥¼ ì§€ì›í•˜ì§€ ì•ŠëŠ”ë‹¤.
  *
  * Implementation :
- *  (1) qtc::makeColumn()¿¡¼­ ÁöÁ¤ÇÑ Ç×¸ñÀ¸·Î ColumnÀÎÁö È®ÀÎÇÏ°í,
- *      Column Name Áßº¹ÀÌ ¾ø´Â Function-based Index Column List¸¦ ±¸¼ºÇÑ´Ù.
- *      - Function-based Index Column¿¡ User Name, Table NameÀ» ÁöÁ¤ÇÒ ¼ö ¾ø´Ù.
- *  (2) arguments¸¦ Recursive Call
- *  (3) next¸¦ Recursive Call
+ *  (1) qtc::makeColumn()ì—ì„œ ì§€ì •í•œ í•­ëª©ìœ¼ë¡œ Columnì¸ì§€ í™•ì¸í•˜ê³ ,
+ *      Column Name ì¤‘ë³µì´ ì—†ëŠ” Function-based Index Column Listë¥¼ êµ¬ì„±í•œë‹¤.
+ *      - Function-based Index Columnì— User Name, Table Nameì„ ì§€ì •í•  ìˆ˜ ì—†ë‹¤.
+ *  (2) argumentsë¥¼ Recursive Call
+ *  (3) nextë¥¼ Recursive Call
  *
  ***********************************************************************/
 
@@ -272,13 +272,13 @@ qmsDefaultExpr::makeColumnListFromExpression( qcStatement   * aStatement,
 
     IDU_FIT_POINT_FATAL( "qmsDefaultExpr::makeColumnListFromExpression::__FT__" );
 
-    /* qtc::makeColumn()¿¡¼­ ÁöÁ¤ÇÑ Ç×¸ñÀ¸·Î ColumnÀÎÁö È®ÀÎÇÏ°í,
-     * Column Name Áßº¹ÀÌ ¾ø´Â Function-based Index Column List¸¦ ±¸¼ºÇÑ´Ù.
+    /* qtc::makeColumn()ì—ì„œ ì§€ì •í•œ í•­ëª©ìœ¼ë¡œ Columnì¸ì§€ í™•ì¸í•˜ê³ ,
+     * Column Name ì¤‘ë³µì´ ì—†ëŠ” Function-based Index Column Listë¥¼ êµ¬ì„±í•œë‹¤.
      */
     if ( (QC_IS_NULL_NAME( aNode->columnName ) == ID_FALSE) &&
          (aNode->node.module == &qtc::columnModule) )
     {
-        /* Function-based Index Column¿¡ User Name, Table NameÀ» ÁöÁ¤ÇÒ ¼ö ¾ø´Ù. */
+        /* Function-based Index Columnì— User Name, Table Nameì„ ì§€ì •í•  ìˆ˜ ì—†ë‹¤. */
         if ( QC_IS_NULL_NAME( aNode->userName ) == ID_FALSE )
         {
             sqlInfo.setSourceInfo( aStatement,
@@ -336,7 +336,7 @@ qmsDefaultExpr::makeColumnListFromExpression( qcStatement   * aStatement,
         /* Nothing to do */
     }
 
-    /* user-defined functionÀÎ °æ¿ì user nameÀ» ¸í½ÃÇØ¾ßÇÑ´Ù. */
+    /* user-defined functionì¸ ê²½ìš° user nameì„ ëª…ì‹œí•´ì•¼í•œë‹¤. */
     if ( (QC_IS_NULL_NAME( aNode->columnName ) == ID_FALSE) &&
          (QC_IS_NULL_NAME( aNode->tableName ) == ID_TRUE) &&
          (aNode->node.module == &qtc::spFunctionCallModule) )
@@ -350,7 +350,7 @@ qmsDefaultExpr::makeColumnListFromExpression( qcStatement   * aStatement,
         /* Nothing to do */
     }
     
-    /* arguments¸¦ Recursive Call */
+    /* argumentsë¥¼ Recursive Call */
     if ( aNode->node.arguments != NULL )
     {
         IDE_TEST( makeColumnListFromExpression(
@@ -364,7 +364,7 @@ qmsDefaultExpr::makeColumnListFromExpression( qcStatement   * aStatement,
         /* Nothing to do */
     }
 
-    /* next¸¦ Recursive Call */
+    /* nextë¥¼ Recursive Call */
     if ( aNode->node.next != NULL )
     {
         IDE_TEST( makeColumnListFromExpression(
@@ -408,14 +408,14 @@ qmsDefaultExpr::makeFunctionNameListFromExpression( qcStatement         * aState
 /***********************************************************************
  *
  * Description :
- *  Expression¿¡¼­ Function Name List¸¦ ¸¸µç´Ù.
- *      - subquery¸¦ Áö¿øÇÏÁö ¾Ê´Â´Ù.
+ *  Expressionì—ì„œ Function Name Listë¥¼ ë§Œë“ ë‹¤.
+ *      - subqueryë¥¼ ì§€ì›í•˜ì§€ ì•ŠëŠ”ë‹¤.
  *
  * Implementation :
- *  (1) qtc::makeNode()¿¡¼­ ÁöÁ¤ÇÑ Ç×¸ñÀ¸·Î FunctionÀÎÁö È®ÀÎÇÏ°í,
- *      Áßº¹ÀÌ ¾ø´Â Function Name List¸¦ ±¸¼ºÇÑ´Ù.
- *  (2) arguments¸¦ Recursive Call
- *  (3) next¸¦ Recursive Call
+ *  (1) qtc::makeNode()ì—ì„œ ì§€ì •í•œ í•­ëª©ìœ¼ë¡œ Functionì¸ì§€ í™•ì¸í•˜ê³ ,
+ *      ì¤‘ë³µì´ ì—†ëŠ” Function Name Listë¥¼ êµ¬ì„±í•œë‹¤.
+ *  (2) argumentsë¥¼ Recursive Call
+ *  (3) nextë¥¼ Recursive Call
  *
  ***********************************************************************/
 
@@ -427,10 +427,10 @@ qmsDefaultExpr::makeFunctionNameListFromExpression( qcStatement         * aState
 
     IDU_FIT_POINT_FATAL( "qmsDefaultExpr::makeFunctionNameListFromExpression::__FT__" );
 
-    /* qtc::makeNode()¿¡¼­ ÁöÁ¤ÇÑ Ç×¸ñÀ¸·Î FunctionÀÎÁö È®ÀÎÇÏ°í,
-     * Áßº¹ÀÌ ¾ø´Â Function Name List¸¦ ±¸¼ºÇÑ´Ù.
-     * User-defined FunctionÀÎ °æ¿ì, User NameÀ» ¸í½ÃÇØ¾ß ÇÑ´Ù.
-     * (user.func1()Àº tableName.columnNameÀ¸·Î ÆÄ½ÌÇÑ´Ù.)
+    /* qtc::makeNode()ì—ì„œ ì§€ì •í•œ í•­ëª©ìœ¼ë¡œ Functionì¸ì§€ í™•ì¸í•˜ê³ ,
+     * ì¤‘ë³µì´ ì—†ëŠ” Function Name Listë¥¼ êµ¬ì„±í•œë‹¤.
+     * User-defined Functionì¸ ê²½ìš°, User Nameì„ ëª…ì‹œí•´ì•¼ í•œë‹¤.
+     * (user.func1()ì€ tableName.columnNameìœ¼ë¡œ íŒŒì‹±í•œë‹¤.)
      */
     if ( ( QC_IS_NULL_NAME( aTargetNode->tableName ) == ID_FALSE ) &&
          ( QC_IS_NULL_NAME( aTargetNode->columnName ) == ID_FALSE ) &&
@@ -438,7 +438,7 @@ qmsDefaultExpr::makeFunctionNameListFromExpression( qcStatement         * aState
     {
         if ( QC_IS_NULL_NAME( aTargetNode->userName ) == ID_FALSE )
         {
-            // USER,TABLE,COLUMNÀÌ ¸ğµÎ ÀÖÀ¸¸é PKG SUB FUNCTION CALL ÀÌ´Ù.
+            // USER,TABLE,COLUMNì´ ëª¨ë‘ ìˆìœ¼ë©´ PKG SUB FUNCTION CALL ì´ë‹¤.
             // USER.TABLE.COLUMN() => USER.PKG.FUNC()
             IDE_TEST( qcmUser::getUserID( aStatement,
                                           aTargetNode->userName,
@@ -449,7 +449,7 @@ qmsDefaultExpr::makeFunctionNameListFromExpression( qcStatement         * aState
         }
         else
         {
-            // TABLE,COLUMN¸¸ ÀÖÀ¸¸é FUNCTION CALL ÀÌ´Ù.
+            // TABLE,COLUMNë§Œ ìˆìœ¼ë©´ FUNCTION CALL ì´ë‹¤.
             // TABLE.COLUMN() => USER.FUNC()
             // TABLE.COLUMN() != PKG.FUNC()
             IDE_TEST( qcmUser::getUserID( aStatement,
@@ -524,7 +524,7 @@ qmsDefaultExpr::makeFunctionNameListFromExpression( qcStatement         * aState
         /* Nothing to do */
     }
 
-    /* arguments¸¦ Recursive Call */
+    /* argumentsë¥¼ Recursive Call */
     if ( aTargetNode->node.arguments != NULL )
     {
         IDE_TEST( makeFunctionNameListFromExpression(
@@ -539,7 +539,7 @@ qmsDefaultExpr::makeFunctionNameListFromExpression( qcStatement         * aState
         /* Nothing to do */
     }
 
-    /* next¸¦ Recursive Call */
+    /* nextë¥¼ Recursive Call */
     if ( aTargetNode->node.next != NULL )
     {
         IDE_TEST( makeFunctionNameListFromExpression(
@@ -570,7 +570,7 @@ qmsDefaultExpr::makeBaseColumn( qcStatement    * aStatement,
 /***********************************************************************
  *
  * Description :
- *    Default ExpressionÀ» ±¸¼ºÇÏ´Â Column List¸¦ ¸¸µç´Ù.
+ *    Default Expressionì„ êµ¬ì„±í•˜ëŠ” Column Listë¥¼ ë§Œë“ ë‹¤.
  *
  ***********************************************************************/
     
@@ -587,7 +587,7 @@ qmsDefaultExpr::makeBaseColumn( qcStatement    * aStatement,
           sDefaultColumn != NULL;
           sDefaultColumn = sDefaultColumn->next )
     {
-        /* Default ExprÀ» °¡Áø ColumnÀÎÁö È®ÀÎÇÑ´Ù. */
+        /* Default Exprì„ ê°€ì§„ Columnì¸ì§€ í™•ì¸í•œë‹¤. */
         if ( ( (sDefaultColumn->flag & QCM_COLUMN_HIDDEN_COLUMN_MASK)
                == QCM_COLUMN_HIDDEN_COLUMN_TRUE ) &&
              ( sDefaultColumn->defaultValueStr != NULL ) )
@@ -599,7 +599,7 @@ qmsDefaultExpr::makeBaseColumn( qcStatement    * aStatement,
             continue;
         }
 
-        /* Default ExprÀ» ±¸¼ºÇÏ´Â Column List¸¦ ±¸ÇÑ´Ù. */
+        /* Default Exprì„ êµ¬ì„±í•˜ëŠ” Column Listë¥¼ êµ¬í•œë‹¤. */
         sExprColumnList = NULL;
         IDE_TEST( makeColumnListFromExpression(
                       aStatement,
@@ -607,7 +607,7 @@ qmsDefaultExpr::makeBaseColumn( qcStatement    * aStatement,
                       sDefaultColumn->defaultValue )
                   != IDE_SUCCESS );
 
-        /* Áßº¹µÇÁö ¾Ê°Ô Base Column List¸¦ ±¸¼ºÇÑ´Ù. */
+        /* ì¤‘ë³µë˜ì§€ ì•Šê²Œ Base Column Listë¥¼ êµ¬ì„±í•œë‹¤. */
         sExprColumn = sExprColumnList;
         while ( sExprColumn != NULL )
         {
@@ -662,7 +662,7 @@ qmsDefaultExpr::setUsedColumnToTableRef( mtcTemplate  * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    TableRef¿¡ ÇØ´ç Column List¸¦ »ç¿ëÇÑ °ÍÀ¸·Î ¼³Á¤ÇÑ´Ù.
+ *    TableRefì— í•´ë‹¹ Column Listë¥¼ ì‚¬ìš©í•œ ê²ƒìœ¼ë¡œ ì„¤ì •í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -704,7 +704,7 @@ qmsDefaultExpr::setRowBufferFromBaseColumn( mtcTemplate  * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    Default ExpressionÀ» ±¸¼ºÇÏ´Â ColumnÀÇ °ªÀ» »õ·Î¿î Row Buffer¿¡ º¹»çÇÑ´Ù.
+ *    Default Expressionì„ êµ¬ì„±í•˜ëŠ” Columnì˜ ê°’ì„ ìƒˆë¡œìš´ Row Bufferì— ë³µì‚¬í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -753,7 +753,7 @@ qmsDefaultExpr::setRowBufferFromSmiValueArray( mtcTemplate  * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    smiValue ¹è¿­À» Row Buffer¿¡ º¹»çÇÑ´Ù.
+ *    smiValue ë°°ì—´ì„ Row Bufferì— ë³µì‚¬í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -778,13 +778,13 @@ qmsDefaultExpr::setRowBufferFromSmiValueArray( mtcTemplate  * aTemplate,
              ( sMtcColumn->module->id == MTD_CLOB_ID ) ||
              ( sMtcColumn->module->id == MTD_CLOB_LOCATOR_ID ) )
         {
-            /* LOBÀ» Áö¿øÇÏÁö ¾Ê´Â´Ù. */
+            /* LOBì„ ì§€ì›í•˜ì§€ ì•ŠëŠ”ë‹¤. */
         }
         else
         {
             sMtdValue = (void *)((UChar *)aRowBuffer + sMtcColumn->column.offset);
 
-            /* PROJ-2464 hybrid partitioned table Áö¿ø */
+            /* PROJ-2464 hybrid partitioned table ì§€ì› */
             if ( aIsValueArrDisk == ID_FALSE )
             {
                 if ( aValueArr[i].length == 0 )
@@ -831,8 +831,8 @@ qmsDefaultExpr::calculateDefaultExpression( qcTemplate   * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    Row BufferÀÇ µ¥ÀÌÅÍ·Î Default ExpressionÀÇ calculate¸¦ ¼öÇàÇÑ´Ù.
- *    SM Interface¿¡ ¹Ù·Î Àû¿ëÇÒ ¼ö ÀÖ´Â ÇüÅÂ·Î, °á°ú °ªÀ» ¹İÈ¯ÇÑ´Ù.
+ *    Row Bufferì˜ ë°ì´í„°ë¡œ Default Expressionì˜ calculateë¥¼ ìˆ˜í–‰í•œë‹¤.
+ *    SM Interfaceì— ë°”ë¡œ ì ìš©í•  ìˆ˜ ìˆëŠ” í˜•íƒœë¡œ, ê²°ê³¼ ê°’ì„ ë°˜í™˜í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -855,7 +855,7 @@ qmsDefaultExpr::calculateDefaultExpression( qcTemplate   * aTemplate,
                == QCM_COLUMN_HIDDEN_COLUMN_TRUE ) &&
              ( sColumn->defaultValue != NULL ) )
         {
-            /* °á°ú °ªÀ» ¾ò´Â´Ù. */
+            /* ê²°ê³¼ ê°’ì„ ì–»ëŠ”ë‹¤. */
             IDE_TEST( qtc::calculate( sColumn->defaultValue,
                                       aTemplate )
                       != IDE_SUCCESS );
@@ -872,7 +872,7 @@ qmsDefaultExpr::calculateDefaultExpression( qcTemplate   * aTemplate,
             IDE_DASSERT( sColumn->basicInfo->scale ==
                          sValueColumn->scale );
 
-            /* smiValue ¹è¿­ ³»ÀÇ À§Ä¡¸¦ ±¸ÇÑ´Ù. */
+            /* smiValue ë°°ì—´ ë‚´ì˜ ìœ„ì¹˜ë¥¼ êµ¬í•œë‹¤. */
             if ( aUpdateColumns != NULL )
             {
                 for ( sTargetColumn = aUpdateColumns, i = 0;
@@ -897,7 +897,7 @@ qmsDefaultExpr::calculateDefaultExpression( qcTemplate   * aTemplate,
                 i = sColumn->basicInfo->column.id & SMI_COLUMN_ID_MASK;
             }
 
-            /* PROJ-2464 hybrid partitioned table Áö¿ø */
+            /* PROJ-2464 hybrid partitioned table ì§€ì› */
             j = sColumn->basicInfo->column.id & SMI_COLUMN_ID_MASK;
 
             // PROJ-1705
@@ -943,10 +943,10 @@ qmsDefaultExpr::makeNodeListForFunctionBasedIndex( qcStatement   * aStatement,
 /***********************************************************************
  *
  * Description :
- *    Default ExpressionÀ» °¡Áø ColumnÀÇ Default Expression Node List¿Í
- *    Hidden Column Node List¸¦ ¸¸µç´Ù.
+ *    Default Expressionì„ ê°€ì§„ Columnì˜ Default Expression Node Listì™€
+ *    Hidden Column Node Listë¥¼ ë§Œë“ ë‹¤.
  *
- *    °ü·Ã ÇÔ¼ö : findAndReplaceNodeForFunctionBasedIndex()
+ *    ê´€ë ¨ í•¨ìˆ˜ : findAndReplaceNodeForFunctionBasedIndex()
  *
  ***********************************************************************/
 
@@ -968,7 +968,7 @@ qmsDefaultExpr::makeNodeListForFunctionBasedIndex( qcStatement   * aStatement,
           sColumn != NULL;
           sColumn = sColumn->next )
     {
-        /* Default ExpressionÀ» °¡Áø Hidden ColumnÀÎÁö È®ÀÎÇÑ´Ù. */
+        /* Default Expressionì„ ê°€ì§„ Hidden Columnì¸ì§€ í™•ì¸í•œë‹¤. */
         if ( ( (sColumn->flag & QCM_COLUMN_HIDDEN_COLUMN_MASK)
                == QCM_COLUMN_HIDDEN_COLUMN_TRUE ) &&
              ( sColumn->defaultValueStr != NULL ) )
@@ -980,7 +980,7 @@ qmsDefaultExpr::makeNodeListForFunctionBasedIndex( qcStatement   * aStatement,
             continue;
         }
 
-        /* Default Expression Node List¸¦ ¸¸µç´Ù. */
+        /* Default Expression Node Listë¥¼ ë§Œë“ ë‹¤. */
         sExpressionStr = (SChar *)sColumn->defaultValueStr;
         IDE_TEST( qcpUtil::makeDefaultExpression(
                       aStatement,
@@ -1038,8 +1038,8 @@ qmsDefaultExpr::findAndReplaceNodeForFunctionBasedIndex( qcStatement   * aStatem
 /***********************************************************************
  *
  * Description :
- *    Target Node¿¡¼­ Find Node List ³»ÀÇ Node¸¦ Ã£¾Æ¼­,
- *    Replace Node List ³»ÀÇ Node¸¦ º¹Á¦ÇÏ¿© ±³Ã¼ÇÑ´Ù.
+ *    Target Nodeì—ì„œ Find Node List ë‚´ì˜ Nodeë¥¼ ì°¾ì•„ì„œ,
+ *    Replace Node List ë‚´ì˜ Nodeë¥¼ ë³µì œí•˜ì—¬ êµì²´í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -1087,16 +1087,16 @@ qmsDefaultExpr::findAndReplaceNodeForFunctionBasedIndex( qcStatement   * aStatem
                               sColumnNode )
                           != IDE_SUCCESS );
                 
-                /* Disk TableÀÇ Fetch Column List¿¡ Hidden ColumnÀ» Ãß°¡ */
+                /* Disk Tableì˜ Fetch Column Listì— Hidden Columnì„ ì¶”ê°€ */
                 setUsedColumnToTableRef( &(QC_SHARED_TMPLATE(aStatement)->tmplate),
                                          sFindNode->tableRef,
                                          sFindNode->column,
                                          ID_FALSE );
                 
-                /* Plan¿¡ ExpressionÀ» Ç¥½ÃÇÏ±â À§ÇØ º¸°ü */
+                /* Planì— Expressionì„ í‘œì‹œí•˜ê¸° ìœ„í•´ ë³´ê´€ */
                 sColumnNode->node.orgNode = (mtcNode *)sTargetNode;
 
-                /* Conversion, Next, Flag¸¦ À¯Áö */
+                /* Conversion, Next, Flagë¥¼ ìœ ì§€ */
                 sColumnNode->node.conversion     = sTargetNode->node.conversion;
                 sColumnNode->node.leftConversion = sTargetNode->node.leftConversion;
                 sColumnNode->node.next           = sTargetNode->node.next;
@@ -1118,7 +1118,7 @@ qmsDefaultExpr::findAndReplaceNodeForFunctionBasedIndex( qcStatement   * aStatem
         /* Nothing to do */
     }
 
-    /* Arguments¸¦ Ã³¸®ÇÑ´Ù. */
+    /* Argumentsë¥¼ ì²˜ë¦¬í•œë‹¤. */
     if ( ( ( (sTargetNode->node.lflag & MTC_NODE_LOGICAL_CONDITION_MASK)
              == MTC_NODE_LOGICAL_CONDITION_TRUE )
            ||
@@ -1135,7 +1135,7 @@ qmsDefaultExpr::findAndReplaceNodeForFunctionBasedIndex( qcStatement   * aStatem
                       &sNeedToEstimate )
                   != IDE_SUCCESS );
 
-        /* Index¸¦ »ç¿ëÇÒ ¼ö ÀÖµµ·Ï ´Ù½Ã estimateÇÑ´Ù. */
+        /* Indexë¥¼ ì‚¬ìš©í•  ìˆ˜ ìˆë„ë¡ ë‹¤ì‹œ estimateí•œë‹¤. */
         if ( sNeedToEstimate == ID_TRUE )
         {
             IDE_TEST( qtc::estimateNodeWithArgument( aStatement,
@@ -1152,7 +1152,7 @@ qmsDefaultExpr::findAndReplaceNodeForFunctionBasedIndex( qcStatement   * aStatem
         /* Nothing to do */
     }
 
-    /* Next¸¦ Ã³¸®ÇÑ´Ù. */
+    /* Nextë¥¼ ì²˜ë¦¬í•œë‹¤. */
     if ( sTargetNode->node.next != NULL )
     {
         IDE_TEST( findAndReplaceNodeForFunctionBasedIndex(
@@ -1186,10 +1186,10 @@ qmsDefaultExpr::applyFunctionBasedIndex( qcStatement   * aStatement,
 /***********************************************************************
  *
  * Description :
- *    From ±¸Á¶¸¦ ¼øÈ¸ÇÏ¸é¼­ Function-based Index¸¦ Àû¿ëÇÑ´Ù.
+ *    From êµ¬ì¡°ë¥¼ ìˆœíšŒí•˜ë©´ì„œ Function-based Indexë¥¼ ì ìš©í•œë‹¤.
  *
- *    Target Node¿¡¼­ Find Node List ³»ÀÇ Node¸¦ Ã£¾Æ¼­,
- *    Replace Node List ³»ÀÇ Node¸¦ º¹Á¦ÇÏ¿© ±³Ã¼ÇÑ´Ù.
+ *    Target Nodeì—ì„œ Find Node List ë‚´ì˜ Nodeë¥¼ ì°¾ì•„ì„œ,
+ *    Replace Node List ë‚´ì˜ Nodeë¥¼ ë³µì œí•˜ì—¬ êµì²´í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -1280,15 +1280,15 @@ qmsDefaultExpr::addDefaultExpressionColumnsRelatedToColumn(
 /***********************************************************************
  *
  * Description :
- *    Æ¯Á¤ Column°ú °ü·ÃµÈ Default Expression Column List¸¦ ¾ò´Â´Ù.
+ *    íŠ¹ì • Columnê³¼ ê´€ë ¨ëœ Default Expression Column Listë¥¼ ì–»ëŠ”ë‹¤.
  *
  * Implementation :
- *    °¢ Default Expression¿¡ ´ëÇØ ¾Æ·¡¸¦ ¹İº¹ÇÑ´Ù.
- *    1. Hidden ColumnÀÎÁö È®ÀÎÇÑ´Ù.
- *    2. Expression¿¡ ÇØ´ç ColumnÀÌ Æ÷ÇÔµÇ¾î ÀÖ´ÂÁö È®ÀÎÇÑ´Ù.
- *    3. Áßº¹À» È®ÀÎÇÑ´Ù.
- *    4. ParsingÇÏ¿© Node¸¦ »ı¼ºÇÑ´Ù.
- *    5. Default Expression Column ListÀÇ ¸¶Áö¸·¿¡ Ãß°¡ÇÑ´Ù.
+ *    ê° Default Expressionì— ëŒ€í•´ ì•„ë˜ë¥¼ ë°˜ë³µí•œë‹¤.
+ *    1. Hidden Columnì¸ì§€ í™•ì¸í•œë‹¤.
+ *    2. Expressionì— í•´ë‹¹ Columnì´ í¬í•¨ë˜ì–´ ìˆëŠ”ì§€ í™•ì¸í•œë‹¤.
+ *    3. ì¤‘ë³µì„ í™•ì¸í•œë‹¤.
+ *    4. Parsingí•˜ì—¬ Nodeë¥¼ ìƒì„±í•œë‹¤.
+ *    5. Default Expression Column Listì˜ ë§ˆì§€ë§‰ì— ì¶”ê°€í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -1307,7 +1307,7 @@ qmsDefaultExpr::addDefaultExpressionColumnsRelatedToColumn(
           sColumn != NULL;
           sColumn = sColumn->next )
     {
-        /* Hidden ColumnÀÎÁö È®ÀÎÇÑ´Ù. */
+        /* Hidden Columnì¸ì§€ í™•ì¸í•œë‹¤. */
         if ( ( (sColumn->flag & QCM_COLUMN_HIDDEN_COLUMN_MASK)
                == QCM_COLUMN_HIDDEN_COLUMN_TRUE ) &&
              ( sColumn->defaultValueStr != NULL ) )
@@ -1319,7 +1319,7 @@ qmsDefaultExpr::addDefaultExpressionColumnsRelatedToColumn(
             continue;
         }
 
-        /* Expression¿¡ ÇØ´ç ColumnÀÌ Æ÷ÇÔµÇ¾î ÀÖ´ÂÁö È®ÀÎÇÑ´Ù. */
+        /* Expressionì— í•´ë‹¹ Columnì´ í¬í•¨ë˜ì–´ ìˆëŠ”ì§€ í™•ì¸í•œë‹¤. */
         sDefaultValueStr = (SChar *)sColumn->defaultValueStr;
 
         IDE_TEST( qmsDefaultExpr::isBaseColumn( aStatement,
@@ -1338,7 +1338,7 @@ qmsDefaultExpr::addDefaultExpressionColumnsRelatedToColumn(
             /* Nothing to do */
         }
 
-        /* Áßº¹À» È®ÀÎÇÑ´Ù. */
+        /* ì¤‘ë³µì„ í™•ì¸í•œë‹¤. */
         sLastColumn = NULL;
         for ( sCurrColumn = *aDefaultExprColumns;
               sCurrColumn != NULL;
@@ -1364,7 +1364,7 @@ qmsDefaultExpr::addDefaultExpressionColumnsRelatedToColumn(
             /* Nothing to do */
         }
 
-        /* ParsingÇÏ¿© Node¸¦ »ı¼ºÇÑ´Ù. */
+        /* Parsingí•˜ì—¬ Nodeë¥¼ ìƒì„±í•œë‹¤. */
         IDE_TEST( STRUCT_ALLOC( QC_QMP_MEM(aStatement),
                                 qcmColumn,
                                 &sNewColumn )
@@ -1385,7 +1385,7 @@ qmsDefaultExpr::addDefaultExpressionColumnsRelatedToColumn(
         sNewColumn->defaultValue->position.offset = 7; /* "RETURN " */
         sNewColumn->defaultValue->position.size   = idlOS::strlen( sDefaultValueStr );
 
-        /* Default Expression Column ListÀÇ ¸¶Áö¸·¿¡ Ãß°¡ÇÑ´Ù. */
+        /* Default Expression Column Listì˜ ë§ˆì§€ë§‰ì— ì¶”ê°€í•œë‹¤. */
         if ( *aDefaultExprColumns == NULL )
         {
             *aDefaultExprColumns = sNewColumn;
@@ -1412,13 +1412,13 @@ qmsDefaultExpr::makeDefaultExpressionColumnsRelatedToTable(
 /***********************************************************************
  *
  * Description :
- *    Table°ú °ü·ÃµÈ Default Expression Column List¸¦ ¾ò´Â´Ù.
+ *    Tableê³¼ ê´€ë ¨ëœ Default Expression Column Listë¥¼ ì–»ëŠ”ë‹¤.
  *
  * Implementation :
- *    °¢ Default Expression¿¡ ´ëÇØ ¾Æ·¡¸¦ ¹İº¹ÇÑ´Ù.
- *    1. Hidden ColumnÀÎÁö È®ÀÎÇÑ´Ù.
- *    2. ParsingÇÏ¿© Node¸¦ »ı¼ºÇÑ´Ù.
- *    3. Default Expression Column ListÀÇ ¸¶Áö¸·¿¡ Ãß°¡ÇÑ´Ù.
+ *    ê° Default Expressionì— ëŒ€í•´ ì•„ë˜ë¥¼ ë°˜ë³µí•œë‹¤.
+ *    1. Hidden Columnì¸ì§€ í™•ì¸í•œë‹¤.
+ *    2. Parsingí•˜ì—¬ Nodeë¥¼ ìƒì„±í•œë‹¤.
+ *    3. Default Expression Column Listì˜ ë§ˆì§€ë§‰ì— ì¶”ê°€í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -1437,7 +1437,7 @@ qmsDefaultExpr::makeDefaultExpressionColumnsRelatedToTable(
           sColumn != NULL;
           sColumn = sColumn->next )
     {
-        /* Hidden ColumnÀÎÁö È®ÀÎÇÑ´Ù. */
+        /* Hidden Columnì¸ì§€ í™•ì¸í•œë‹¤. */
         if ( ( (sColumn->flag & QCM_COLUMN_HIDDEN_COLUMN_MASK)
                == QCM_COLUMN_HIDDEN_COLUMN_TRUE ) &&
              ( sColumn->defaultValueStr != NULL ) )
@@ -1451,7 +1451,7 @@ qmsDefaultExpr::makeDefaultExpressionColumnsRelatedToTable(
 
         sDefaultValueStr = (SChar *)sColumn->defaultValueStr;
 
-        /* ParsingÇÏ¿© Node¸¦ »ı¼ºÇÑ´Ù. */
+        /* Parsingí•˜ì—¬ Nodeë¥¼ ìƒì„±í•œë‹¤. */
         IDE_TEST( STRUCT_ALLOC( QC_QMP_MEM(aStatement),
                                 qcmColumn,
                                 &sNewColumn )
@@ -1472,7 +1472,7 @@ qmsDefaultExpr::makeDefaultExpressionColumnsRelatedToTable(
         sNewColumn->defaultValue->position.offset = 7; /* "RETURN " */
         sNewColumn->defaultValue->position.size   = idlOS::strlen( sDefaultValueStr );
 
-        /* Default Expression Column ListÀÇ ¸¶Áö¸·¿¡ Ãß°¡ÇÑ´Ù. */
+        /* Default Expression Column Listì˜ ë§ˆì§€ë§‰ì— ì¶”ê°€í•œë‹¤. */
         if ( *aDefaultExprColumns == NULL )
         {
             *aDefaultExprColumns = sNewColumn;

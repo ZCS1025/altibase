@@ -36,7 +36,7 @@ UInt smiFixedTable::genHashValueFunc(void *aKey)
 {
     UInt   sValue = 0;
     SChar *sName;
-    // ÀúÀåµÈ Æ÷ÀÎÅÍ¸¦ ÀÌ¿ëÇÏ¿©, ÀÌ¸§ Æ÷ÀÎÅÍ ¾ò±â
+    // ì €ìž¥ëœ í¬ì¸í„°ë¥¼ ì´ìš©í•˜ì—¬, ì´ë¦„ í¬ì¸í„° ì–»ê¸°
     sName = (SChar *)(*((void **)aKey));
 
     while( (*sName++) != 0)
@@ -58,10 +58,10 @@ SInt smiFixedTable::compareFunc(void* aLhs, void* aRhs)
 
 
 /*
- * QP¿¡¼­ Ç¥ÇöµÉ ColumnÀÇ Å©±â¿Í OffsetÀ» °è»êÇÑ´Ù.
- * ¿ø·¡ ÀÌ °è»êÀº QP¿¡ ÀÇÇØ ¼öÇàµÇ¾î¾ß ÇÏ³ª,
- * A4ÀÇ Æ¯¼º»ó Meta ¾øÀÌµµ Á¢±ÙÇØ¾ß ÇÏ±â ¶§¹®¿¡ SM¿¡¼­ °è»êÇÑ´Ù.
- * BUGBUG : ½ÇÁ¦ QP°¡ »ç¿ëÇÏ´Â ¹æ½Ä°ú À¯»çÇÑÁö °ËÁõÇØ¾ß ÇÑ´Ù.
+ * QPì—ì„œ í‘œí˜„ë  Columnì˜ í¬ê¸°ì™€ Offsetì„ ê³„ì‚°í•œë‹¤.
+ * ì›ëž˜ ì´ ê³„ì‚°ì€ QPì— ì˜í•´ ìˆ˜í–‰ë˜ì–´ì•¼ í•˜ë‚˜,
+ * A4ì˜ íŠ¹ì„±ìƒ Meta ì—†ì´ë„ ì ‘ê·¼í•´ì•¼ í•˜ê¸° ë•Œë¬¸ì— SMì—ì„œ ê³„ì‚°í•œë‹¤.
+ * BUGBUG : ì‹¤ì œ QPê°€ ì‚¬ìš©í•˜ëŠ” ë°©ì‹ê³¼ ìœ ì‚¬í•œì§€ ê²€ì¦í•´ì•¼ í•œë‹¤.
  */
 void   smiFixedTable::initColumnInformation(iduFixedTableDesc *aDesc)
 {
@@ -100,10 +100,10 @@ void   smiFixedTable::initColumnInformation(iduFixedTableDesc *aDesc)
     }
 
     /* ------------------------------------------------
-     *  RecordÀÇ SetÀÌ ¿¬¼ÓÀûÀÌÁö ¾ÊÀ» ¼ö ÀÖ±â ¶§¹®¿¡
-     *  °¢ ·¹ÄÚµå³¢¸® Æ÷ÀÎÅÍ·Î ¿¬°áµÇ¾î ÀÖ´Ù.
-     *  ±×·¡¼­, ·¹ÄÚµåÀÇ Ã³À½ 8¹ÙÀÌÆ®¸¦
-     *  next record pointer·Î »ç¿ëÇÑ´Ù.
+     *  Recordì˜ Setì´ ì—°ì†ì ì´ì§€ ì•Šì„ ìˆ˜ ìžˆê¸° ë•Œë¬¸ì—
+     *  ê° ë ˆì½”ë“œë¼ë¦¬ í¬ì¸í„°ë¡œ ì—°ê²°ë˜ì–´ ìžˆë‹¤.
+     *  ê·¸ëž˜ì„œ, ë ˆì½”ë“œì˜ ì²˜ìŒ 8ë°”ì´íŠ¸ë¥¼
+     *  next record pointerë¡œ ì‚¬ìš©í•œë‹¤.
      * ----------------------------------------------*/
 
     aDesc->mSlotSize = (sOffset + idlOS::align8( ID_SIZEOF(void *)));
@@ -111,8 +111,8 @@ void   smiFixedTable::initColumnInformation(iduFixedTableDesc *aDesc)
 }
 
 
-// Fixed Table Çì´õ¸¦ ÃÊ±âÈ­ ÇÑ´Ù.
-// initializeStatic()À» ÅëÇØ ´Ü ÇÑ¹ø È£ÃâµÊ.
+// Fixed Table í—¤ë”ë¥¼ ì´ˆê¸°í™” í•œë‹¤.
+// initializeStatic()ì„ í†µí•´ ë‹¨ í•œë²ˆ í˜¸ì¶œë¨.
 void   smiFixedTable::initFixedTableHeader(smiFixedTableHeader *aHeader,
                                            iduFixedTableDesc   *aDesc)
 {
@@ -125,8 +125,8 @@ void   smiFixedTable::initFixedTableHeader(smiFixedTableHeader *aHeader,
     SMP_SLOT_SET_OFFSET( &(aHeader->mSlotHeader), 0 );
 
     // To Fix BUG-18186
-    //   Fixed TableÀÇ Cursor openµµÁß Table HeaderÀÇ
-    //   mIndexesÇÊµå¸¦ ÃÊ±âÈ­µÇÁö ¾ÊÀº Ã¤·Î ÀÐÀ½
+    //   Fixed Tableì˜ Cursor openë„ì¤‘ Table Headerì˜
+    //   mIndexesí•„ë“œë¥¼ ì´ˆê¸°í™”ë˜ì§€ ì•Šì€ ì±„ë¡œ ì½ìŒ
     idlOS::memset( &aHeader->mHeader, 0, ID_SIZEOF(aHeader->mHeader));
 
     // Table Header Init
@@ -163,7 +163,7 @@ void   smiFixedTable::initFixedTableHeader(smiFixedTableHeader *aHeader,
 
 }
 
-// µî·ÏµÈ ¸ðµç Fixed Table¿¡ ´ëÇØ °´Ã¼¸¦ »ý¼ºÇÏ°í, Hash¸¦ ±¸¼ºÇÑ´Ù.
+// ë“±ë¡ëœ ëª¨ë“  Fixed Tableì— ëŒ€í•´ ê°ì²´ë¥¼ ìƒì„±í•˜ê³ , Hashë¥¼ êµ¬ì„±í•œë‹¤.
 
 IDE_RC smiFixedTable::initializeStatic( SChar * aNameType )
 {
@@ -204,7 +204,7 @@ IDE_RC smiFixedTable::initializeStatic( SChar * aNameType )
         sTableNameLen = idlOS::strlen( sDesc->mTableName );
         for( i = 0; i < sTableNameLen; i++ )
         {
-            // PRJ-1678 : multi-byte character·Î µÈ fixed tableÀº ¾ø°ÚÁö...
+            // PRJ-1678 : multi-byte characterë¡œ ëœ fixed tableì€ ì—†ê² ì§€...
             sTableName[i] = idlOS::idlOS_toupper( sDesc->mTableName[i] );
         }
         sTableName[i] = '\0';
@@ -218,7 +218,7 @@ IDE_RC smiFixedTable::initializeStatic( SChar * aNameType )
             IDU_FIT_POINT_RAISE( "smiFixedTable::initializeStatic::malloc2",
                                   insufficient_memory );
 
-            // smcTable °´Ã¼ ÇÒ´ç
+            // smcTable ê°ì²´ í• ë‹¹
             IDE_TEST_RAISE(iduMemMgr::malloc(IDU_MEM_SM_SMI,
                                        ID_SIZEOF(smiFixedTableHeader),
                                        (void **)&sHeader) != IDE_SUCCESS,
@@ -232,7 +232,7 @@ IDE_RC smiFixedTable::initializeStatic( SChar * aNameType )
             IDU_FIT_POINT_RAISE( "smiFixedTable::initializeStatic::malloc3",
                                   insufficient_memory );
 
-            // Node °´Ã¼ ÇÒ´ç
+            // Node ê°ì²´ í• ë‹¹
             IDE_TEST_RAISE(iduMemMgr::malloc(IDU_MEM_SM_SMI,
                                        ID_SIZEOF(smiFixedTableNode),
                                        (void **)&sNode) != IDE_SUCCESS,
@@ -312,8 +312,8 @@ IDE_RC smiFixedTable::initializeTables(smiStartupPhase aPhase)
     {
         if (sDesc->mEnablePhase == (iduStartupPhase)aPhase)
         {
-            // ÃÊ±âÈ­¸¦ ÅëÇØ »ç¿ëÇÒ ¼ö ÀÖµµ·Ï ÇÑ´Ù.
-            // mHeader ÃÊ±âÈ­?..
+            // ì´ˆê¸°í™”ë¥¼ í†µí•´ ì‚¬ìš©í•  ìˆ˜ ìžˆë„ë¡ í•œë‹¤.
+            // mHeader ì´ˆê¸°í™”?..
         }
     }
 
@@ -390,11 +390,11 @@ iduFixedTableBuildFunc smiFixedTable::getBuildFunc(void *aHeader)
 }
 
 /* ------------------------------------------------
- *  ÀÌ ÇÔ¼ö´Â CHAR Å¸ÀÔÀÇ º¯È¯½Ã¿¡
- *  ÀÔ·ÂµÈ ½ºÆ®¸µÀÇ ±æÀÌ°¡ Null-Teminate°¡
- *  ¾Æ´Ò ¼ö ÀÖ±â ¶§¹®¿¡ ±× ±æÀÌÀÇ °Ë»ç¸¦
- *  ´ë»ó CHAR Å¸ÀÔÀÇ ±æÀÌ¸¸Å­¸¸ °Ë»çÇÏ¿©, ¹«ÇÑ·çÇÁ¸¦
- *  ¹æÁöÇÏ´Âµ¥ ÀÖ´Ù.
+ *  ì´ í•¨ìˆ˜ëŠ” CHAR íƒ€ìž…ì˜ ë³€í™˜ì‹œì—
+ *  ìž…ë ¥ëœ ìŠ¤íŠ¸ë§ì˜ ê¸¸ì´ê°€ Null-Teminateê°€
+ *  ì•„ë‹ ìˆ˜ ìžˆê¸° ë•Œë¬¸ì— ê·¸ ê¸¸ì´ì˜ ê²€ì‚¬ë¥¼
+ *  ëŒ€ìƒ CHAR íƒ€ìž…ì˜ ê¸¸ì´ë§Œí¼ë§Œ ê²€ì‚¬í•˜ì—¬, ë¬´í•œë£¨í”„ë¥¼
+ *  ë°©ì§€í•˜ëŠ”ë° ìžˆë‹¤.
  * ----------------------------------------------*/
 static UInt getCharLength(SChar *aChar, UInt aExpectedLength)
 {
@@ -433,7 +433,7 @@ void smiFixedTable::buildOneColumn( iduFixedTableDataType          aDataType,
 {
     UInt    sStrLen;
     UChar * sColPos;
-    UInt    sTargetSize; /* ÇØ´ç µ¥ÀÌÅ¸ Å¸ÀÔ¿¡ ¸Â´Â ´ë»óÀÇ ¸Þ¸ð¸® Å©±â */
+    UInt    sTargetSize; /* í•´ë‹¹ ë°ì´íƒ€ íƒ€ìž…ì— ë§žëŠ” ëŒ€ìƒì˜ ë©”ëª¨ë¦¬ í¬ê¸° */
 
     switch (IDU_FT_GET_TYPE(aDataType))
     {
@@ -446,13 +446,13 @@ void smiFixedTable::buildOneColumn( iduFixedTableDataType          aDataType,
         case IDU_FT_TYPE_DOUBLE:
         {
             /*
-             *  »ç¿ëÀÚ¿¡ ÀÇÇØ ¾î¶°ÇÑ Å¸ÀÔ ¿¹¸¦ µé¸é BIGINT(8)·Î Á¤ÀÇµÇ¾ú´õ¶óµµ
-             *  ½ÇÁ¦ °ªÀ» º¯È¯ÇÏ´Â ¿ø·¡ÀÇ Å¸ÀÔÀÌ 8¹ÙÀÌÆ®°¡ ¾Æ´Ò ¼ö ÀÖ´Ù.
-             *  typedef enum °°Àº °æ¿ì ±× Å©±â¸¦ ¾Ë ¼ö ¾ø±â¿¡ ÀÌ·¯ÇÑ Å©±âÀÇ
-             *  mismatch°¡ ¹ß»ýÇÒ ¼ö ÀÖ´Ù.
+             *  ì‚¬ìš©ìžì— ì˜í•´ ì–´ë– í•œ íƒ€ìž… ì˜ˆë¥¼ ë“¤ë©´ BIGINT(8)ë¡œ ì •ì˜ë˜ì—ˆë”ë¼ë„
+             *  ì‹¤ì œ ê°’ì„ ë³€í™˜í•˜ëŠ” ì›ëž˜ì˜ íƒ€ìž…ì´ 8ë°”ì´íŠ¸ê°€ ì•„ë‹ ìˆ˜ ìžˆë‹¤.
+             *  typedef enum ê°™ì€ ê²½ìš° ê·¸ í¬ê¸°ë¥¼ ì•Œ ìˆ˜ ì—†ê¸°ì— ì´ëŸ¬í•œ í¬ê¸°ì˜
+             *  mismatchê°€ ë°œìƒí•  ìˆ˜ ìžˆë‹¤.
              *
-             *  ±×·± ÀÌÀ¯·Î ¼­·Î°£ÀÇ µ¥ÀÌÅ¸ Å©±â¸¦ ºñ±³ÇÏ¿©, ÀûÀýÇÏ°Ô
-             *  ÀÚµ¿ÀûÀ¸·Î º¯È¯À» ÇØÁÖµµ·Ï ÇÑ´Ù.
+             *  ê·¸ëŸ° ì´ìœ ë¡œ ì„œë¡œê°„ì˜ ë°ì´íƒ€ í¬ê¸°ë¥¼ ë¹„êµí•˜ì—¬, ì ì ˆí•˜ê²Œ
+             *  ìžë™ì ìœ¼ë¡œ ë³€í™˜ì„ í•´ì£¼ë„ë¡ í•œë‹¤.
              *
              *   sObj                         aRowBuf
              *  +---------+                  +-----------------+
@@ -472,7 +472,7 @@ void smiFixedTable::buildOneColumn( iduFixedTableDataType          aDataType,
             else
             {
                 /*
-                 * 4°³ÀÇ ÀÎÀÚ¸¦ ÀÌ¿ëÇØ¼­ º¯È¯ ¿ä¸Á.
+                 * 4ê°œì˜ ì¸ìžë¥¼ ì´ìš©í•´ì„œ ë³€í™˜ ìš”ë§.
                  */
                 if (sTargetSize == aSourceSize)
                 {
@@ -481,9 +481,9 @@ void smiFixedTable::buildOneColumn( iduFixedTableDataType          aDataType,
                 else
                 {
                     /*
-                     *  Source°¡ Å« °æ¿ì´Â ¹ß»ýÇÒ ¼ö ¾øÀ½.
-                     *  ¸¸ÀÏ ÀÖ´Ù¸é, Fixed TableÀ» Àß¸ø Á¤ÀÇÇÑ °ÍÀÓ.
-                     *  º¯È¯ Á¶°Ç : 2->4, 2->8, 4->8 , ±×¿Ü´Â ¾øÀ½.
+                     *  Sourceê°€ í° ê²½ìš°ëŠ” ë°œìƒí•  ìˆ˜ ì—†ìŒ.
+                     *  ë§Œì¼ ìžˆë‹¤ë©´, Fixed Tableì„ ìž˜ëª» ì •ì˜í•œ ê²ƒìž„.
+                     *  ë³€í™˜ ì¡°ê±´ : 2->4, 2->8, 4->8 , ê·¸ì™¸ëŠ” ì—†ìŒ.
                      */
                     IDE_ASSERT(sTargetSize >= aSourceSize);
 
@@ -529,7 +529,7 @@ void smiFixedTable::buildOneColumn( iduFixedTableDataType          aDataType,
 
             if ( aConvCallback != NULL )
             {
-                // ÇØ´ç Object¸¦ CHAR·Î º¯È¯ÇÏ¶ó!
+                // í•´ë‹¹ Objectë¥¼ CHARë¡œ ë³€í™˜í•˜ë¼!
                 sStrLen = aConvCallback( aObj,
                                          aSourcePtr,
                                          sColPos,
@@ -556,7 +556,7 @@ void smiFixedTable::buildOneColumn( iduFixedTableDataType          aDataType,
 
             if ( aConvCallback != NULL )
             {
-                // ÇØ´ç Object¸¦ CHAR·Î º¯È¯ÇÏ¶ó!
+                // í•´ë‹¹ Objectë¥¼ CHARë¡œ ë³€í™˜í•˜ë¼!
                 sStrLen = aConvCallback( aObj,
                                          aSourcePtr,
                                          (sColPos + ID_SIZEOF(UShort)),
@@ -619,18 +619,18 @@ IDE_RC smiFixedTable::buildOneRecord(iduFixedTableDesc *aTabDesc,
             case IDU_FT_TYPE_DOUBLE:
             {
                 ULong sNullBuf[4] = { 0, 0, 0, 0 };
-                UInt  sSourceSize; /* »ç¿ëÀÚ°¡ ÁöÁ¤ÇÑ ¸Þ¸ð¸® Å©±â */
+                UInt  sSourceSize; /* ì‚¬ìš©ìžê°€ ì§€ì •í•œ ë©”ëª¨ë¦¬ í¬ê¸° */
                 void *sTargetPtr;
                 void *sSourcePtr;
 
                 /*
-                 *  »ç¿ëÀÚ¿¡ ÀÇÇØ ¾î¶°ÇÑ Å¸ÀÔ ¿¹¸¦ µé¸é BIGINT(8)·Î Á¤ÀÇµÇ¾ú´õ¶óµµ
-                 *  ½ÇÁ¦ °ªÀ» º¯È¯ÇÏ´Â ¿ø·¡ÀÇ Å¸ÀÔÀÌ 8¹ÙÀÌÆ®°¡ ¾Æ´Ò ¼ö ÀÖ´Ù.
-                 *  typedef enum °°Àº °æ¿ì ±× Å©±â¸¦ ¾Ë ¼ö ¾ø±â¿¡ ÀÌ·¯ÇÑ Å©±âÀÇ
-                 *  mismatch°¡ ¹ß»ýÇÒ ¼ö ÀÖ´Ù.
+                 *  ì‚¬ìš©ìžì— ì˜í•´ ì–´ë– í•œ íƒ€ìž… ì˜ˆë¥¼ ë“¤ë©´ BIGINT(8)ë¡œ ì •ì˜ë˜ì—ˆë”ë¼ë„
+                 *  ì‹¤ì œ ê°’ì„ ë³€í™˜í•˜ëŠ” ì›ëž˜ì˜ íƒ€ìž…ì´ 8ë°”ì´íŠ¸ê°€ ì•„ë‹ ìˆ˜ ìžˆë‹¤.
+                 *  typedef enum ê°™ì€ ê²½ìš° ê·¸ í¬ê¸°ë¥¼ ì•Œ ìˆ˜ ì—†ê¸°ì— ì´ëŸ¬í•œ í¬ê¸°ì˜
+                 *  mismatchê°€ ë°œìƒí•  ìˆ˜ ìžˆë‹¤.
                  *
-                 *  ±×·± ÀÌÀ¯·Î ¼­·Î°£ÀÇ µ¥ÀÌÅ¸ Å©±â¸¦ ºñ±³ÇÏ¿©, ÀûÀýÇÏ°Ô
-                 *  ÀÚµ¿ÀûÀ¸·Î º¯È¯À» ÇØÁÖµµ·Ï ÇÑ´Ù.
+                 *  ê·¸ëŸ° ì´ìœ ë¡œ ì„œë¡œê°„ì˜ ë°ì´íƒ€ í¬ê¸°ë¥¼ ë¹„êµí•˜ì—¬, ì ì ˆí•˜ê²Œ
+                 *  ìžë™ì ìœ¼ë¡œ ë³€í™˜ì„ í•´ì£¼ë„ë¡ í•œë‹¤.
                  *
                  *   sObj                         aRowBuf
                  *  +---------+                  +-----------------+
@@ -643,9 +643,9 @@ IDE_RC smiFixedTable::buildOneRecord(iduFixedTableDesc *aTabDesc,
                 sTargetPtr  = aRowBuf + sColDesc->mColOffset;
                 if (sObject == NULL)
                 {
-                    // 32 byte¸¦ 0À¸·Î Ã¤¿ì°í, memcpy¸¦ À§ÇØ »ç¿ëÇÑ´Ù.
-                    // Çö½ÇÀûÀ¸·Î 32byte ±æÀÌÀÇ µ¥ÀÌÅÍ Å¸ÀÔÀÌ ¾ø±â ¶§¹®¿¡
-                    // ¾ÈÀüÇÏ´Ù°í ÆÇ´ÜµÈ´Ù.
+                    // 32 byteë¥¼ 0ìœ¼ë¡œ ì±„ìš°ê³ , memcpyë¥¼ ìœ„í•´ ì‚¬ìš©í•œë‹¤.
+                    // í˜„ì‹¤ì ìœ¼ë¡œ 32byte ê¸¸ì´ì˜ ë°ì´í„° íƒ€ìž…ì´ ì—†ê¸° ë•Œë¬¸ì—
+                    // ì•ˆì „í•˜ë‹¤ê³  íŒë‹¨ëœë‹¤.
                     IDE_DASSERT(ID_SIZEOF(sNullBuf) >= sColDesc->mLength);
                     sSourcePtr  = sNullBuf;
                 }
@@ -753,10 +753,10 @@ IDE_RC smiFixedTable::buildRecord( void                * aHeader,
             IDE_TEST(aMemory->allocateRecord(sTabDesc->mSlotSize, (void **)&gConstRecord)
                      != IDE_SUCCESS);
 
-            // ÇØ´ç ·¹ÄÚµå¸¦ ¸Þ¸ð¸®¿¡ ±¸ÃàÇØ¾ß ÇÑ´Ù.
+            // í•´ë‹¹ ë ˆì½”ë“œë¥¼ ë©”ëª¨ë¦¬ì— êµ¬ì¶•í•´ì•¼ í•œë‹¤.
             (void)buildOneRecord(
                 sTabDesc,
-                gConstRecord + idlOS::align8(ID_SIZEOF(void *)), // ½ÇÁ¦ ·¹ÄÚµå À§Ä¡·Î
+                gConstRecord + idlOS::align8(ID_SIZEOF(void *)), // ì‹¤ì œ ë ˆì½”ë“œ ìœ„ì¹˜ë¡œ
                 (UChar *)aObj);
         }
         else
@@ -772,15 +772,15 @@ IDE_RC smiFixedTable::buildRecord( void                * aHeader,
         IDE_TEST(aMemory->allocateRecord(sTabDesc->mSlotSize, (void **)&sRecord)
                  != IDE_SUCCESS);
         
-        // ÇØ´ç ·¹ÄÚµå¸¦ ¸Þ¸ð¸®¿¡ ±¸ÃàÇØ¾ß ÇÑ´Ù.
+        // í•´ë‹¹ ë ˆì½”ë“œë¥¼ ë©”ëª¨ë¦¬ì— êµ¬ì¶•í•´ì•¼ í•œë‹¤.
         (void)buildOneRecord(
             sTabDesc,
-            sRecord + idlOS::align8(ID_SIZEOF(void *)), // ½ÇÁ¦ ·¹ÄÚµå À§Ä¡·Î
+            sRecord + idlOS::align8(ID_SIZEOF(void *)), // ì‹¤ì œ ë ˆì½”ë“œ ìœ„ì¹˜ë¡œ
             (UChar *)aObj);
     }
     
     /*
-     * 1. Filter Ã³¸®
+     * 1. Filter ì²˜ë¦¬
      */
     IDE_DASSERT( aMemory->getContext() != NULL );
 
@@ -806,7 +806,7 @@ IDE_RC smiFixedTable::buildRecord( void                * aHeader,
         if ( aMemory->useExternalMemory() == ID_FALSE )
         {
             /*
-             * 2. Limit Ã³¸®
+             * 2. Limit ì²˜ë¦¬
              */
             smnfCheckLimitAndMovePos( aMemory->getContext(),
                                       &sLimitResult,
@@ -838,7 +838,7 @@ IDE_RC smiFixedTable::buildRecord( void                * aHeader,
             if ( (((smcTableHeader*)aHeader)->mFlag & SMI_TABLE_DUAL_MASK)
                 == SMI_TABLE_DUAL_FALSE )
             {
-                aMemory->freeRecord(); // °á°ú ¼Â¿¡ Æ÷ÇÔµÇÁö ¾Ê´Â ·¹ÄÚµå´Â freeÇÑ´Ù.
+                aMemory->freeRecord(); // ê²°ê³¼ ì…‹ì— í¬í•¨ë˜ì§€ ì•ŠëŠ” ë ˆì½”ë“œëŠ” freeí•œë‹¤.
             }
             else
             {
@@ -847,7 +847,7 @@ IDE_RC smiFixedTable::buildRecord( void                * aHeader,
         }
         else
         {
-            aMemory->freeRecord(); // °á°ú ¼Â¿¡ Æ÷ÇÔµÇÁö ¾Ê´Â ·¹ÄÚµå´Â freeÇÑ´Ù.
+            aMemory->freeRecord(); // ê²°ê³¼ ì…‹ì— í¬í•¨ë˜ì§€ ì•ŠëŠ” ë ˆì½”ë“œëŠ” freeí•œë‹¤.
         }
     }
     
@@ -979,22 +979,22 @@ UInt smiFixedTable::convertSCN(void        * /*aBaseObj*/,
                                 sScnValue);
     }
     /* BUG-16564:
-     * SCNÀÌ INFINITEÀÎ °æ¿ì °ªÀÌ 0x8000000000000000ÀÏ ¼ö ÀÖ´Ù.
-     * ÀÌ °ªÀº query processor ÀÔÀå¿¡¼­´Â BIGINTÀÇ NULL °ª¿¡ ÇØ´çÇÑ´Ù.
-     * µû¶ó¼­, fixed table¿¡¼­ SCN °ª Ãâ·ÂÀ» À§ÇØ BIGINT Å¸ÀÔÀ» »ç¿ëÇÒ °æ¿ì
-     * INFINITEÀÌ NULL·Î Ã³¸®µÇ¾î¹ö¸®°Ô µÈ´Ù.
-     * °á°úÀûÀ¸·Î iSQL¿¡¼­ INFINITEÀÎ SCN °ªÀ» SELECTÇØº¸¸é,
-     * È­¸é¿¡´Â ¾Æ¹«·± °ªµµ Ãâ·ÂµÇÁö ¾Ê°Ô µÈ´Ù.
-     * NULLÀÎ SCNÀ» INFINITE·Î ÀÌÇØÇÏ¶ó°í »ç¿ëÀÚ¿¡°Ô °­¿äÇÒ ¼öµµ ÀÖÁö¸¸
-     * ÀÌ´Â »ç¿ëÀÚ Ä£È­ÀûÀÌÁö ¾ÊÀ¸¹Ç·Î,
-     * SCNÀÌ INFINITEÀÎ °æ¿ì SCN ÄÃ·³ °ªÀ» INFINITE(n) ÇüÅÂ·Î Ãâ·ÂÇÏµµ·Ï
-     * ÄÚµå¸¦ ¼öÁ¤ÇÑ´Ù.
-     * ÀÌ ¶§, nÀº SCN¿¡¼­ MSB 1bit(INFINITE bit)À» ²ö SCN °ªÀÌ´Ù.
+     * SCNì´ INFINITEì¸ ê²½ìš° ê°’ì´ 0x8000000000000000ì¼ ìˆ˜ ìžˆë‹¤.
+     * ì´ ê°’ì€ query processor ìž…ìž¥ì—ì„œëŠ” BIGINTì˜ NULL ê°’ì— í•´ë‹¹í•œë‹¤.
+     * ë”°ë¼ì„œ, fixed tableì—ì„œ SCN ê°’ ì¶œë ¥ì„ ìœ„í•´ BIGINT íƒ€ìž…ì„ ì‚¬ìš©í•  ê²½ìš°
+     * INFINITEì´ NULLë¡œ ì²˜ë¦¬ë˜ì–´ë²„ë¦¬ê²Œ ëœë‹¤.
+     * ê²°ê³¼ì ìœ¼ë¡œ iSQLì—ì„œ INFINITEì¸ SCN ê°’ì„ SELECTí•´ë³´ë©´,
+     * í™”ë©´ì—ëŠ” ì•„ë¬´ëŸ° ê°’ë„ ì¶œë ¥ë˜ì§€ ì•Šê²Œ ëœë‹¤.
+     * NULLì¸ SCNì„ INFINITEë¡œ ì´í•´í•˜ë¼ê³  ì‚¬ìš©ìžì—ê²Œ ê°•ìš”í•  ìˆ˜ë„ ìžˆì§€ë§Œ
+     * ì´ëŠ” ì‚¬ìš©ìž ì¹œí™”ì ì´ì§€ ì•Šìœ¼ë¯€ë¡œ,
+     * SCNì´ INFINITEì¸ ê²½ìš° SCN ì»¬ëŸ¼ ê°’ì„ INFINITE(n) í˜•íƒœë¡œ ì¶œë ¥í•˜ë„ë¡
+     * ì½”ë“œë¥¼ ìˆ˜ì •í•œë‹¤.
+     * ì´ ë•Œ, nì€ SCNì—ì„œ MSB 1bit(INFINITE bit)ì„ ëˆ SCN ê°’ì´ë‹¤.
      *
      * PROJ-1381 Fetch Across Commits
-     * SlotHeader Refactoring¿¡ ÀÇÇØ¼­ infinite SCNÀ»
-     * [4bytes infinite SCN + 4bytes TID]·Î º¯°æÇß´Ù.
-     * µû¶ó¼­ 4Bytes ¸¸Å­ shiftÇØ¼­ ÀÌÀü°ú µ¿ÀÏÇÏ°Ô infinite SCNÀ» Ãâ·ÂÇÑ´Ù.*/
+     * SlotHeader Refactoringì— ì˜í•´ì„œ infinite SCNì„
+     * [4bytes infinite SCN + 4bytes TID]ë¡œ ë³€ê²½í–ˆë‹¤.
+     * ë”°ë¼ì„œ 4Bytes ë§Œí¼ shiftí•´ì„œ ì´ì „ê³¼ ë™ì¼í•˜ê²Œ infinite SCNì„ ì¶œë ¥í•œë‹¤.*/
     else
     {
         sInfiniteMask = SM_SCN_INFINITE;
@@ -1161,7 +1161,7 @@ void smiFixedTable::checkLimitAndMovePos( void   * aProperty,
         /* Nothing to do */
     }
 
-    if ( sFirstLimitResult == ID_FALSE ) // ÀÐ¾î¾ß µÉ À§Ä¡º¸´Ù ¾Õ¿¡ ÀÖ´Â °æ¿ì.
+    if ( sFirstLimitResult == ID_FALSE ) // ì½ì–´ì•¼ ë  ìœ„ì¹˜ë³´ë‹¤ ì•žì— ìžˆëŠ” ê²½ìš°.
     {
         /*
          *         first           last
@@ -1171,7 +1171,7 @@ void smiFixedTable::checkLimitAndMovePos( void   * aProperty,
     }
     else
     {
-        if ( sLastLimitResult == ID_TRUE ) // ÀÐ¾î¾ß µÉ ¹üÀ§ ¾È¿¡ ÀÖ´Â °æ¿ì.
+        if ( sLastLimitResult == ID_TRUE ) // ì½ì–´ì•¼ ë  ë²”ìœ„ ì•ˆì— ìžˆëŠ” ê²½ìš°.
         {
             /*
              *         first           last
@@ -1180,7 +1180,7 @@ void smiFixedTable::checkLimitAndMovePos( void   * aProperty,
              */
             *aLimitResult = ID_TRUE;
         }
-        else // ÀÐ¾î¾ß µÉ À§Ä¡º¸´Ù µÚ¿¡ ÀÖ´Â °æ¿ì.
+        else // ì½ì–´ì•¼ ë  ìœ„ì¹˜ë³´ë‹¤ ë’¤ì— ìžˆëŠ” ê²½ìš°.
         {
             /*
              *         first           last
@@ -1211,7 +1211,7 @@ IDE_RC smiFixedTable::checkLastLimit( void   * aProperty,
 
     sProperty = ( smiFixedTableProperties * )aProperty;
 
-    // Session Event¸¦ °Ë»çÇÑ´Ù.
+    // Session Eventë¥¼ ê²€ì‚¬í•œë‹¤.
     IDE_TEST( iduCheckSessionEvent( sProperty->mStatistics ) != IDE_SUCCESS );
 
     if ( ( sProperty->mFirstReadRecordPos + sProperty->mReadRecordCount ) >
@@ -1221,7 +1221,7 @@ IDE_RC smiFixedTable::checkLastLimit( void   * aProperty,
     }
     else
     {
-        // ÀÐ¾î¾ß µÉ À§Ä¡º¸´Ù µÚ¿¡ ÀÖ´Â °æ¿ì.
+        // ì½ì–´ì•¼ ë  ìœ„ì¹˜ë³´ë‹¤ ë’¤ì— ìžˆëŠ” ê²½ìš°.
         /*
          *         first           last
          * ----------*---------------*---------->
@@ -1262,8 +1262,8 @@ idBool smiFixedTable::useTrans( void *aHeader )
 /**
  *  BUG-43006 Fixed Table Indexing Filter
  *
- *  FixedTable¿¡ Àû¿ëµÈ Key Range Filter¸¦ °Ë»çÇØ¼­
- *  ÇØ´ç ÄÃ·³ÀÌ ÇØ´çµÇ´ÂÁö ¾ÊµÇ´ÂÁö °Ë»çÇÑ´Ù.
+ *  FixedTableì— ì ìš©ëœ Key Range Filterë¥¼ ê²€ì‚¬í•´ì„œ
+ *  í•´ë‹¹ ì»¬ëŸ¼ì´ í•´ë‹¹ë˜ëŠ”ì§€ ì•Šë˜ëŠ”ì§€ ê²€ì‚¬í•œë‹¤.
  */
 idBool smiFixedTable::checkKeyRange( iduFixedTableMemory   * aMemory,
                                      iduFixedTableColDesc  * aColDesc,
@@ -1350,9 +1350,9 @@ idBool smiFixedTable::checkKeyRange( iduFixedTableMemory   * aMemory,
         sNullBuf[2] = 0;
         sNullBuf[3] = 0;
 
-        // 32 byte¸¦ 0À¸·Î Ã¤¿ì°í, memcpy¸¦ À§ÇØ »ç¿ëÇÑ´Ù.
-        // Çö½ÇÀûÀ¸·Î 32byte ±æÀÌÀÇ µ¥ÀÌÅÍ Å¸ÀÔÀÌ ¾ø±â ¶§¹®¿¡
-        // ¾ÈÀüÇÏ´Ù°í ÆÇ´ÜµÈ´Ù.
+        // 32 byteë¥¼ 0ìœ¼ë¡œ ì±„ìš°ê³ , memcpyë¥¼ ìœ„í•´ ì‚¬ìš©í•œë‹¤.
+        // í˜„ì‹¤ì ìœ¼ë¡œ 32byte ê¸¸ì´ì˜ ë°ì´í„° íƒ€ìž…ì´ ì—†ê¸° ë•Œë¬¸ì—
+        // ì•ˆì „í•˜ë‹¤ê³  íŒë‹¨ëœë‹¤.
         IDE_DASSERT(ID_SIZEOF(sNullBuf) >= sColIndexDesc->mLength);
         sSourcePtr  = sNullBuf;
     }
@@ -1370,8 +1370,8 @@ idBool smiFixedTable::checkKeyRange( iduFixedTableMemory   * aMemory,
 
     sOffset1 = sProperty->mMinColumn->offset;
     sOffset2 = sProperty->mMaxColumn->offset;
-    /* Column ÇÑ°³¸¸ ´ë»óÀ¸·Î ÇÏ±â¶§¹®¿¡ Column offset À» 0 À¸·Î
-     * ¹Ù²ã¼­ °Ë»çÇØÁà¾ßÇÑ´Ù
+    /* Column í•œê°œë§Œ ëŒ€ìƒìœ¼ë¡œ í•˜ê¸°ë•Œë¬¸ì— Column offset ì„ 0 ìœ¼ë¡œ
+     * ë°”ê¿”ì„œ ê²€ì‚¬í•´ì¤˜ì•¼í•œë‹¤
      */
     sProperty->mMinColumn->offset = 0;
     sProperty->mMaxColumn->offset = 0;

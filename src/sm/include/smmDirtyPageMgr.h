@@ -31,10 +31,10 @@
 class smmDirtyPageMgr
 {
 private:
-    // ÀÌ Dirty Page MgrÀº  ÀÌ Tablespace¿¡ ¼ÓÇÑ Dirty Page¸¸À» °ü¸®ÇÑ´Ù.
+    // ì´ Dirty Page Mgrì€  ì´ Tablespaceì— ì†í•œ Dirty Pageë§Œì„ ê´€ë¦¬í•œë‹¤.
     scSpaceID mSpaceID ; 
     
-    SInt m_listCount; // list °¹¼ö
+    SInt m_listCount; // list ê°¯ìˆ˜
     smmDirtyPageList *m_list;
     
     IDE_RC lockDirtyPageList(smmDirtyPageList **a_list);
@@ -43,10 +43,10 @@ public:
     IDE_RC initialize(scSpaceID aSpaceID, SInt a_listCount);
     IDE_RC destroy();
 
-    // ¸ğµç Dirty Page ListµéÀÇ Dirty PageµéÀ» Á¦°ÅÇÑ´Ù.
+    // ëª¨ë“  Dirty Page Listë“¤ì˜ Dirty Pageë“¤ì„ ì œê±°í•œë‹¤.
     IDE_RC removeAllDirtyPages();
     
-    // Dirty Page ¸®½ºÆ®¿¡ º¯°æµÈ Page¸¦ Ãß°¡ÇÑ´Ù.
+    // Dirty Page ë¦¬ìŠ¤íŠ¸ì— ë³€ê²½ëœ Pageë¥¼ ì¶”ê°€í•œë‹¤.
     IDE_RC insDirtyPage(scPageID aPageID ); 
     
     smmDirtyPageList* getDirtyPageList(SInt a_num)
@@ -59,27 +59,27 @@ public:
 
     
    /***********************************************************************
-      ¿©·¯ Tablespace¿¡ ´ëÇÑ Dirty Page¿¬»êÀ» °ü¸®ÇÏ´Â ÀÎÅÍÆäÀÌ½º
-      RefactoringÀ» ÅëÇØ ÃßÈÄ º°µµÀÇ Class·Î »©µµ·Ï ÇÑ´Ù.
+      ì—¬ëŸ¬ Tablespaceì— ëŒ€í•œ Dirty Pageì—°ì‚°ì„ ê´€ë¦¬í•˜ëŠ” ì¸í„°í˜ì´ìŠ¤
+      Refactoringì„ í†µí•´ ì¶”í›„ ë³„ë„ì˜ Classë¡œ ë¹¼ë„ë¡ í•œë‹¤.
     ***********************************************************************/
 public :
-    // Dirty Page ¸®½ºÆ®¿¡ º¯°æµÈ Page¸¦ Ãß°¡ÇÑ´Ù.
+    // Dirty Page ë¦¬ìŠ¤íŠ¸ì— ë³€ê²½ëœ Pageë¥¼ ì¶”ê°€í•œë‹¤.
     static IDE_RC insDirtyPage(scSpaceID aSpaceID, scPageID aPageID );
     static IDE_RC insDirtyPage(scSpaceID aSpaceID, void *   a_new_page);
     
-    // Dirty Page°ü¸®ÀÚ¸¦ »ı¼ºÇÑ´Ù.
+    // Dirty Pageê´€ë¦¬ìë¥¼ ìƒì„±í•œë‹¤.
     static IDE_RC initializeStatic();
 
-    // Dirty Page°ü¸®ÀÚ¸¦ ÆÄ±«ÇÑ´Ù.
+    // Dirty Pageê´€ë¦¬ìë¥¼ íŒŒê´´í•œë‹¤.
     static IDE_RC destroyStatic();
 
-    // Æ¯Á¤ Tablespace¸¦ À§ÇÑ Dirty Page°ü¸®ÀÚ¸¦ »ı¼ºÇÑ´Ù.
+    // íŠ¹ì • Tablespaceë¥¼ ìœ„í•œ Dirty Pageê´€ë¦¬ìë¥¼ ìƒì„±í•œë‹¤.
     static IDE_RC createDPMgr(smmTBSNode * aTBSNode );
     
-    // Æ¯Á¤ Tablespace¸¦ À§ÇÑ Dirty Page°ü¸®ÀÚ¸¦ Ã£¾Æ³½´Ù.
+    // íŠ¹ì • Tablespaceë¥¼ ìœ„í•œ Dirty Pageê´€ë¦¬ìë¥¼ ì°¾ì•„ë‚¸ë‹¤.
     static IDE_RC findDPMgr( scSpaceID aSpaceID, smmDirtyPageMgr ** aDPMgr );
     
-    // Æ¯Á¤ TablespaceÀÇ Dirty Page°ü¸®ÀÚ¸¦ Á¦°ÅÇÑ´Ù.
+    // íŠ¹ì • Tablespaceì˜ Dirty Pageê´€ë¦¬ìë¥¼ ì œê±°í•œë‹¤.
     static IDE_RC removeDPMgr(smmTBSNode * aTBSNode);
 };
 

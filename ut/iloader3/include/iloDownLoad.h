@@ -54,7 +54,7 @@ public:
     iloTableInfo       m_TableInfo;
     SInt               mTotalCount;    
 private:
-    SInt               m_LoadCount;      //Progress¸¦ È®ÀÎÇÏ±â À§ÇÔ..
+    SInt               m_LoadCount;      //Progressë¥¼ í™•ì¸í•˜ê¸° ìœ„í•¨..
     iloProgOption     *m_pProgOption;
     iloFormCompiler    m_FormCompiler;
     iloTableTree       m_TableTree;

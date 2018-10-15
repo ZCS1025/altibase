@@ -33,7 +33,7 @@ static IDE_RC answerPrepareResult(cmiProtocolContext *aProtocolContext, mmcState
     cmiWriteCheckState sWriteCheckState = CMI_WRITE_CHECK_DEACTIVATED;
 
     sWriteCheckState = CMI_WRITE_CHECK_ACTIVATED;
-    /* BUG-44125 [mm-cli] IPCDA ¸ðµå Å×½ºÆ® Áß hang - iloader CLOB */
+    /* BUG-44125 [mm-cli] IPCDA ëª¨ë“œ í…ŒìŠ¤íŠ¸ ì¤‘ hang - iloader CLOB */
     CMI_WRITE_CHECK_WITH_IPCDA(aProtocolContext, 13, 13 + 1);
     sWriteCheckState = CMI_WRITE_CHECK_DEACTIVATED;
 
@@ -60,7 +60,7 @@ static IDE_RC answerPrepareResult(cmiProtocolContext *aProtocolContext, mmcState
 
     IDE_EXCEPTION_END;
 
-    /* BUG-44124 ipcda ¸ðµå »ç¿ë Áß hang - iloader ÄÃ·³ÀÌ ¸¹Àº Å×ÀÌºí */
+    /* BUG-44124 ipcda ëª¨ë“œ ì‚¬ìš© ì¤‘ hang - iloader ì»¬ëŸ¼ì´ ë§Žì€ í…Œì´ë¸” */
     if( (sWriteCheckState == CMI_WRITE_CHECK_ACTIVATED) && (cmiGetLinkImpl(aProtocolContext) == CMI_LINK_IMPL_IPCDA) )
     {
         IDE_SET(ideSetErrorCode(mmERR_ABORT_IPCDA_MESSAGE_TOO_LONG, CMB_BLOCK_DEFAULT_SIZE));
@@ -106,7 +106,7 @@ static IDE_RC answerPlanGetResult(cmiProtocolContext *aProtocolContext,
 
     IDE_EXCEPTION_END;
 
-    /* BUG-44124 ipcda ¸ðµå »ç¿ë Áß hang - iloader ÄÃ·³ÀÌ ¸¹Àº Å×ÀÌºí */
+    /* BUG-44124 ipcda ëª¨ë“œ ì‚¬ìš© ì¤‘ hang - iloader ì»¬ëŸ¼ì´ ë§Žì€ í…Œì´ë¸” */
     if( (sWriteCheckState == CMI_WRITE_CHECK_ACTIVATED) && (cmiGetLinkImpl(aProtocolContext) == CMI_LINK_IMPL_IPCDA) )
     {
         IDE_SET(ideSetErrorCode(mmERR_ABORT_IPCDA_MESSAGE_TOO_LONG, CMB_BLOCK_DEFAULT_SIZE));
@@ -134,7 +134,7 @@ static IDE_RC answerFreeResult(cmiProtocolContext *aProtocolContext)
 
     IDE_EXCEPTION_END;
 
-    /* BUG-44124 ipcda ¸ðµå »ç¿ë Áß hang - iloader ÄÃ·³ÀÌ ¸¹Àº Å×ÀÌºí */
+    /* BUG-44124 ipcda ëª¨ë“œ ì‚¬ìš© ì¤‘ hang - iloader ì»¬ëŸ¼ì´ ë§Žì€ í…Œì´ë¸” */
     if( (sWriteCheckState == CMI_WRITE_CHECK_ACTIVATED) && (cmiGetLinkImpl(aProtocolContext) == CMI_LINK_IMPL_IPCDA) )
     {
         IDE_SET(ideSetErrorCode(mmERR_ABORT_IPCDA_MESSAGE_TOO_LONG, CMB_BLOCK_DEFAULT_SIZE));
@@ -162,8 +162,8 @@ IDE_RC mmtServiceThread::prepareProtocol(cmiProtocolContext *aProtocolContext,
     UInt              sRowSize;
     UChar             sMode;
 
-    /* PROJ-2160 CM Å¸ÀÔÁ¦°Å
-       ¸ðµÎ ÀÐÀº ´ÙÀ½¿¡ ÇÁ·ÎÅäÄÝÀ» Ã³¸®ÇØ¾ß ÇÑ´Ù. */
+    /* PROJ-2160 CM íƒ€ìž…ì œê±°
+       ëª¨ë‘ ì½ì€ ë‹¤ìŒì— í”„ë¡œí† ì½œì„ ì²˜ë¦¬í•´ì•¼ í•œë‹¤. */
     CMI_RD4(aProtocolContext, &sStatementID);
     CMI_RD1(aProtocolContext, sMode);
     CMI_RD4(aProtocolContext, &sStatementStringLen);
@@ -241,7 +241,7 @@ IDE_RC mmtServiceThread::prepareProtocol(cmiProtocolContext *aProtocolContext,
 
     sQuery[sStatementStringLen] = 0;
 
-    /* PROJ-1381 FAC : Mode ¼³Á¤ */
+    /* PROJ-1381 FAC : Mode ì„¤ì • */
     if ( (sMode & CMP_DB_PREPARE_MODE_EXEC_MASK) == CMP_DB_PREPARE_MODE_EXEC_PREPARE )
     {
         sStatement->setStmtExecMode(MMC_STMT_EXEC_PREPARED);
@@ -272,7 +272,7 @@ IDE_RC mmtServiceThread::prepareProtocol(cmiProtocolContext *aProtocolContext,
 
     IDE_TEST(sStatement->prepare(sQuery, sStatementStringLen) != IDE_SUCCESS);
 
-    /* bug-45569 ipcda¿¡¼­´Â queue¸¦ Áö¿øÇÏÁö ¾Ê´Â´Ù. */
+    /* bug-45569 ipcdaì—ì„œëŠ” queueë¥¼ ì§€ì›í•˜ì§€ ì•ŠëŠ”ë‹¤. */
     IDE_TEST_RAISE( (cmiGetLinkImpl(aProtocolContext) == CMI_LINK_IMPL_IPCDA) &&
                     (sStatement->getStmtType() == QCI_STMT_ENQUEUE || sStatement->getStmtType() == QCI_STMT_DEQUEUE ), ipcda_unsupported_queue);
    
@@ -349,8 +349,8 @@ IDE_RC mmtServiceThread::prepareByCIDProtocol(cmiProtocolContext *aProtocolConte
     UInt                    sRowSize;
     UChar                   sMode;
 
-    /* PROJ-2160 CM Å¸ÀÔÁ¦°Å
-       ¸ðµÎ ÀÐÀº ´ÙÀ½¿¡ ÇÁ·ÎÅäÄÝÀ» Ã³¸®ÇØ¾ß ÇÑ´Ù. */
+    /* PROJ-2160 CM íƒ€ìž…ì œê±°
+       ëª¨ë‘ ì½ì€ ë‹¤ìŒì— í”„ë¡œí† ì½œì„ ì²˜ë¦¬í•´ì•¼ í•œë‹¤. */
     CMI_RD4(aProtocolContext, &sStmtCID);
     CMI_RD1(aProtocolContext, sMode);
     CMI_RD4(aProtocolContext, &sStatementStringLen);
@@ -430,7 +430,7 @@ IDE_RC mmtServiceThread::prepareByCIDProtocol(cmiProtocolContext *aProtocolConte
 
     sQuery[sStatementStringLen] = '\0';
 
-    /* PROJ-1381 FAC : Mode ¼³Á¤ */
+    /* PROJ-1381 FAC : Mode ì„¤ì • */
     if ( (sMode & CMP_DB_PREPARE_MODE_EXEC_MASK) == CMP_DB_PREPARE_MODE_EXEC_PREPARE )
     {
         sStatement->setStmtExecMode(MMC_STMT_EXEC_PREPARED);
@@ -461,7 +461,7 @@ IDE_RC mmtServiceThread::prepareByCIDProtocol(cmiProtocolContext *aProtocolConte
 
     IDE_TEST(sStatement->prepare(sQuery, sStatementStringLen) != IDE_SUCCESS);
 
-    /* bug-45569 ipcda¿¡¼­´Â queue¸¦ Áö¿øÇÏÁö ¾Ê´Â´Ù. */
+    /* bug-45569 ipcdaì—ì„œëŠ” queueë¥¼ ì§€ì›í•˜ì§€ ì•ŠëŠ”ë‹¤. */
     IDE_TEST_RAISE( (cmiGetLinkImpl(aProtocolContext) == CMI_LINK_IMPL_IPCDA) &&
                     (sStatement->getStmtType() == QCI_STMT_ENQUEUE || sStatement->getStmtType() == QCI_STMT_DEQUEUE ), ipcda_unsupported_queue);
 
@@ -526,8 +526,8 @@ IDE_RC mmtServiceThread::planGetProtocol(cmiProtocolContext *aProtocolContext,
 
     UInt              sStatementID;
 
-    /* PROJ-2160 CM Å¸ÀÔÁ¦°Å
-       ¸ðµÎ ÀÐÀº ´ÙÀ½¿¡ ÇÁ·ÎÅäÄÝÀ» Ã³¸®ÇØ¾ß ÇÑ´Ù. */
+    /* PROJ-2160 CM íƒ€ìž…ì œê±°
+       ëª¨ë‘ ì½ì€ ë‹¤ìŒì— í”„ë¡œí† ì½œì„ ì²˜ë¦¬í•´ì•¼ í•œë‹¤. */
     CMI_RD4(aProtocolContext, &sStatementID);
 
     IDE_CLEAR();
@@ -536,7 +536,7 @@ IDE_RC mmtServiceThread::planGetProtocol(cmiProtocolContext *aProtocolContext,
 
     IDE_TEST(checkSessionState(sSession, MMC_SESSION_STATE_SERVICE) != IDE_SUCCESS);
 
-    /* BUG-32902 Explain Plan OFF ÀÏ ¶§´Â ¿¡·¯¸¦ ³»´Â°Ô ³´´Ù. */
+    /* BUG-32902 Explain Plan OFF ì¼ ë•ŒëŠ” ì—ëŸ¬ë¥¼ ë‚´ëŠ”ê²Œ ë‚«ë‹¤. */
     IDE_TEST_RAISE(sSession->getExplainPlan() == QCI_EXPLAIN_PLAN_OFF,
                    InvalidSessionStateException);
 
@@ -581,8 +581,8 @@ IDE_RC mmtServiceThread::freeProtocol(cmiProtocolContext *aProtocolContext,
     UShort            sResultSetID;
     UChar             sMode;
 
-    /* PROJ-2160 CM Å¸ÀÔÁ¦°Å
-       ¸ðµÎ ÀÐÀº ´ÙÀ½¿¡ ÇÁ·ÎÅäÄÝÀ» Ã³¸®ÇØ¾ß ÇÑ´Ù. */
+    /* PROJ-2160 CM íƒ€ìž…ì œê±°
+       ëª¨ë‘ ì½ì€ ë‹¤ìŒì— í”„ë¡œí† ì½œì„ ì²˜ë¦¬í•´ì•¼ í•œë‹¤. */
     CMI_RD4(aProtocolContext, &sStatementID);
     CMI_RD2(aProtocolContext, &sResultSetID);
     CMI_RD1(aProtocolContext, sMode);
@@ -601,8 +601,8 @@ IDE_RC mmtServiceThread::freeProtocol(cmiProtocolContext *aProtocolContext,
     switch (sMode)
     {
         case CMP_DB_FREE_CLOSE:
-            /* PROJ-2616 simple query selectÀÏ °æ¿ì cursor closeÇÒ ÇÊ¿ä°¡ ¾ø´Ù
-             * qci::fastExecute()¿¡¼­ close°¡ ÀÌ¹Ì ¼öÇàµÊ */
+            /* PROJ-2616 simple query selectì¼ ê²½ìš° cursor closeí•  í•„ìš”ê°€ ì—†ë‹¤
+             * qci::fastExecute()ì—ì„œ closeê°€ ì´ë¯¸ ìˆ˜í–‰ë¨ */
             if(sStatement->isSimpleQuerySelectExecuted() != ID_TRUE )
             {
                 if (sStatement->getStmtState() >= MMC_STMT_STATE_EXECUTED  &&

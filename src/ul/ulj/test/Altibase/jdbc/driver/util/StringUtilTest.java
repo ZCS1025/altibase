@@ -28,9 +28,9 @@ public class StringUtilTest extends TestCase
         assertEquals(0, StringUtils.compareIgnoreCase("asd", "ASD"));
         assertEquals(0, StringUtils.compareIgnoreCase("asd", "AsD"));
         assertEquals(1, StringUtils.compareIgnoreCase("asd", "asc"));
-        assertEquals(1, StringUtils.compareIgnoreCase("asd", "asa")); // ¸¹ÀÌ Â÷ÀÌ³ªµµ 1
+        assertEquals(1, StringUtils.compareIgnoreCase("asd", "asa")); // ë§ì´ ì°¨ì´ë‚˜ë„ 1
         assertEquals(-1, StringUtils.compareIgnoreCase("asd", "ase"));
-        assertEquals(-1, StringUtils.compareIgnoreCase("asd", "asz")); // ¸¹ÀÌ Â÷ÀÌ³ªµµ -1
+        assertEquals(-1, StringUtils.compareIgnoreCase("asd", "asz")); // ë§ì´ ì°¨ì´ë‚˜ë„ -1
         assertEquals(1, StringUtils.compareIgnoreCase("asdf", "asd"));
         assertEquals(1, StringUtils.compareIgnoreCase("asdfghijk", "asd"));
         assertEquals(-1, StringUtils.compareIgnoreCase("asd", "asdfghijk"));

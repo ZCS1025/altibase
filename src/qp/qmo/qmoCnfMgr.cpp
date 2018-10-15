@@ -21,12 +21,12 @@
  * Description :
  *     CNF Critical Path Manager
  *
- *     CNF Normalized Form¿¡ ´ëÇÑ ÃÖÀûÈ­¸¦ ¼öÇàÇÏ°í
- *     ÇØ´ç Graph¸¦ »ı¼ºÇÑ´Ù.
+ *     CNF Normalized Formì— ëŒ€í•œ ìµœì í™”ë¥¼ ìˆ˜í–‰í•˜ê³ 
+ *     í•´ë‹¹ Graphë¥¼ ìƒì„±í•œë‹¤.
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  **********************************************************************/
 
@@ -66,15 +66,15 @@ qmoCnfMgr::init( qcStatement * aStatement,
 {
 /***********************************************************************
  *
- * Description : qmoCnf »ı¼º ¹× ÃÊ±âÈ­
+ * Description : qmoCnf ìƒì„± ë° ì´ˆê¸°í™”
  *
  * Implementation :
- *    (1) aNormalCNF¸¦ qmoCNF::normalCNF¿¡ ¿¬°áÇÑ´Ù.
- *       ( aNormalCNF´Â whereÀıÀ» CNF·Î normalize ÇÑ °ªÀÌ´Ù. )
- *    (2) dependencies ¼³Á¤
- *    (3) base graph count ¼³Á¤
- *    (4) base graphÀÇ »ı¼º ¹× ÃÊ±âÈ­
- *    (5) joinGroup ¹è¿­ °ø°£ È®º¸
+ *    (1) aNormalCNFë¥¼ qmoCNF::normalCNFì— ì—°ê²°í•œë‹¤.
+ *       ( aNormalCNFëŠ” whereì ˆì„ CNFë¡œ normalize í•œ ê°’ì´ë‹¤. )
+ *    (2) dependencies ì„¤ì •
+ *    (3) base graph count ì„¤ì •
+ *    (4) base graphì˜ ìƒì„± ë° ì´ˆê¸°í™”
+ *    (5) joinGroup ë°°ì—´ ê³µê°„ í™•ë³´
  *
  ***********************************************************************/
 
@@ -90,7 +90,7 @@ qmoCnfMgr::init( qcStatement * aStatement,
     IDU_FIT_POINT_FATAL( "qmoCnfMgr::init::__FT__" );
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -98,14 +98,14 @@ qmoCnfMgr::init( qcStatement * aStatement,
     IDE_DASSERT( aCNF != NULL );
 
     //------------------------------------------
-    // ±âº» ÃÊ±âÈ­
+    // ê¸°ë³¸ ì´ˆê¸°í™”
     //------------------------------------------
 
     sQuerySet = aQuerySet;
     sFrom     = sQuerySet->SFWGH->from;
 
     //------------------------------------------
-    // CNF ÃÊ±âÈ­
+    // CNF ì´ˆê¸°í™”
     //------------------------------------------
 
     sCNF = aCNF;
@@ -129,7 +129,7 @@ qmoCnfMgr::init( qcStatement * aStatement,
     sCNF->outerJoinGraph = NULL;
 
     //------------------------------------------
-    // dependencies ¼³Á¤
+    // dependencies ì„¤ì •
     //------------------------------------------
 
     qtc::dependencySetWithDep( & sCNF->depInfo,
@@ -137,7 +137,7 @@ qmoCnfMgr::init( qcStatement * aStatement,
 
     //------------------------------------------
     // PROJ-2418
-    // Lateral View¿Í ÂüÁ¶ÇÏ´Â Relation °£ Left/Full-Outer Join °ËÁõ
+    // Lateral Viewì™€ ì°¸ì¡°í•˜ëŠ” Relation ê°„ Left/Full-Outer Join ê²€ì¦
     //------------------------------------------
 
     for ( sCurFrom = sFrom; sCurFrom != NULL; sCurFrom = sCurFrom->next )
@@ -148,7 +148,7 @@ qmoCnfMgr::init( qcStatement * aStatement,
 
     //------------------------------------------
     // PROJ-1405
-    // rownum predicate Ã³¸®
+    // rownum predicate ì²˜ë¦¬
     //------------------------------------------
 
     if ( aNnfFilter != NULL )
@@ -156,7 +156,7 @@ qmoCnfMgr::init( qcStatement * aStatement,
         if ( ( aNnfFilter->lflag & QTC_NODE_ROWNUM_MASK )
              == QTC_NODE_ROWNUM_EXIST )
         {
-            // NNF filter°¡ rownum predicateÀÎ °æ¿ì critical path·Î ¿Ã¸°´Ù.
+            // NNF filterê°€ rownum predicateì¸ ê²½ìš° critical pathë¡œ ì˜¬ë¦°ë‹¤.
             IDE_TEST( qmoCrtPathMgr::addRownumPredicateForNode( aStatement,
                                                                 aQuerySet,
                                                                 aNnfFilter,
@@ -174,7 +174,7 @@ qmoCnfMgr::init( qcStatement * aStatement,
     }
 
     //------------------------------------------
-    // baseGraph count, table count °è»ê
+    // baseGraph count, table count ê³„ì‚°
     //------------------------------------------
 
     sBaseGraphCnt = 0;
@@ -184,7 +184,7 @@ qmoCnfMgr::init( qcStatement * aStatement,
         sBaseGraphCnt++;
         if ( sCurFrom->joinType != QMS_NO_JOIN )
         {
-            // outer join¿¡ Âü°¡ÇÏ´Â table °³¼öÀÇ ÇÕ
+            // outer joinì— ì°¸ê°€í•˜ëŠ” table ê°œìˆ˜ì˜ í•©
             sTableCnt += qtc::getCountBitSet( & sCurFrom->depInfo );
         }
         else
@@ -198,10 +198,10 @@ qmoCnfMgr::init( qcStatement * aStatement,
     sCNF->tableCnt           = sTableCnt;
 
     //------------------------------------------
-    // baseGraphÀÇ »ı¼º ¹× ÃÊ±âÈ­
+    // baseGraphì˜ ìƒì„± ë° ì´ˆê¸°í™”
     //------------------------------------------
 
-    // baseGraph pointer ÀúÀåÇÒ °ø°£ ÇÒ´ç
+    // baseGraph pointer ì €ì¥í•  ê³µê°„ í• ë‹¹
     IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF(qmgGraph*) * sBaseGraphCnt,
                                              (void **) & sCNF->baseGraph )
               != IDE_SUCCESS );
@@ -213,7 +213,7 @@ qmoCnfMgr::init( qcStatement * aStatement,
                   != IDE_SUCCESS );
     }
 
-    // baseGraphµéÀÇ ÃÊ±âÈ­
+    // baseGraphë“¤ì˜ ì´ˆê¸°í™”
     for ( sFrom = aQuerySet->SFWGH->from, i = 0;
           sFrom != NULL;
           sFrom = sFrom->next, i++ )
@@ -237,7 +237,7 @@ qmoCnfMgr::init( qcStatement * aStatement,
     if ( sMaxJoinGroupCnt > 0 )
     {
         //------------------------------------------
-        // joinGroup ¹è¿­ °ø°£ È®º¸ ¹× ÃÊ±âÈ­
+        // joinGroup ë°°ì—´ ê³µê°„ í™•ë³´ ë° ì´ˆê¸°í™”
         //------------------------------------------
 
         IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF(qmoJoinGroup) *
@@ -245,14 +245,14 @@ qmoCnfMgr::init( qcStatement * aStatement,
                                                  (void **) &sCNF->joinGroup )
                   != IDE_SUCCESS );
 
-        // joinGroupµéÀÇ ÃÊ±âÈ­
+        // joinGroupë“¤ì˜ ì´ˆê¸°í™”
         IDE_TEST( initJoinGroup( aStatement, sCNF->joinGroup,
                                  sMaxJoinGroupCnt, sBaseGraphCnt )
                   != IDE_SUCCESS );
     }
     else
     {
-        // JoinÀÌ ¾Æ´Ô
+        // Joinì´ ì•„ë‹˜
         // Nothing To Do
     }
 
@@ -273,14 +273,14 @@ qmoCnfMgr::init( qcStatement * aStatement,
 {
 /***********************************************************************
  *
- * Description : on Condition CNF¸¦ À§ÇÑ  qmoCnf »ı¼º ¹× ÃÊ±âÈ­
+ * Description : on Condition CNFë¥¼ ìœ„í•œ  qmoCnf ìƒì„± ë° ì´ˆê¸°í™”
  *
  * Implementation :
- *    (1) aNormalCNF¸¦ qmoCNF::normalCNF¿¡ ¿¬°áÇÑ´Ù.
- *       (aNormalCNF´Â whereÀıÀ» CNF·Î normalize ÇÑ °ªÀÌ´Ù.)
- *    (2) dependencies ¼³Á¤
- *    (3) base graph count ¼³Á¤
- *    (4) base graphÀÇ »ı¼º ¹× ÃÊ±âÈ­
+ *    (1) aNormalCNFë¥¼ qmoCNF::normalCNFì— ì—°ê²°í•œë‹¤.
+ *       (aNormalCNFëŠ” whereì ˆì„ CNFë¡œ normalize í•œ ê°’ì´ë‹¤.)
+ *    (2) dependencies ì„¤ì •
+ *    (3) base graph count ì„¤ì •
+ *    (4) base graphì˜ ìƒì„± ë° ì´ˆê¸°í™”
  *
  ***********************************************************************/
 
@@ -290,7 +290,7 @@ qmoCnfMgr::init( qcStatement * aStatement,
     IDU_FIT_POINT_FATAL( "qmoCnfMgr::init::__FT__" );
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -299,7 +299,7 @@ qmoCnfMgr::init( qcStatement * aStatement,
     IDE_DASSERT( aFrom != NULL );
 
     //------------------------------------------
-    // CNF ÃÊ±âÈ­
+    // CNF ì´ˆê¸°í™”
     //------------------------------------------
 
     sCNF = aCNF;
@@ -322,14 +322,14 @@ qmoCnfMgr::init( qcStatement * aStatement,
     sCNF->tableOrder = NULL;
 
     //------------------------------------------
-    // dependencies ¼³Á¤
+    // dependencies ì„¤ì •
     //------------------------------------------
 
     qtc::dependencySetWithDep( & sCNF->depInfo, & aFrom->depInfo );
 
     //------------------------------------------
     // PROJ-1405
-    // rownum predicate Ã³¸®
+    // rownum predicate ì²˜ë¦¬
     //------------------------------------------
 
     if ( aNnfFilter != NULL )
@@ -337,7 +337,7 @@ qmoCnfMgr::init( qcStatement * aStatement,
         if ( ( aNnfFilter->lflag & QTC_NODE_ROWNUM_MASK )
              == QTC_NODE_ROWNUM_EXIST )
         {
-            // NNF filter°¡ rownum predicateÀÎ °æ¿ì critical path·Î ¿Ã¸°´Ù.
+            // NNF filterê°€ rownum predicateì¸ ê²½ìš° critical pathë¡œ ì˜¬ë¦°ë‹¤.
             IDE_TEST( qmoCrtPathMgr::addRownumPredicateForNode( aStatement,
                                                                 aQuerySet,
                                                                 aNnfFilter,
@@ -355,7 +355,7 @@ qmoCnfMgr::init( qcStatement * aStatement,
     }
 
     //------------------------------------------
-    // baseGraphÀÇ »ı¼º ¹× ÃÊ±âÈ­
+    // baseGraphì˜ ìƒì„± ë° ì´ˆê¸°í™”
     //------------------------------------------
 
     sCNF->graphCnt4BaseTable = 2;
@@ -404,12 +404,12 @@ qmoCnfMgr::optimize( qcStatement * aStatement,
 {
 /***********************************************************************
  *
- * Description : CNF ProcessorÀÇ ÃÖÀûÈ­( Áï, qmoCNFÀÇ ÃÖÀûÈ­)
+ * Description : CNF Processorì˜ ìµœì í™”( ì¦‰, qmoCNFì˜ ìµœì í™”)
  *
  * Implementation :
- *    (1) PredicateÀÇ ºĞ·ù
- *    (2) °¢ base graphÀÇ ÃÖÀûÈ­
- *    (3) JoinÀÇ Ã³¸®
+ *    (1) Predicateì˜ ë¶„ë¥˜
+ *    (2) ê° base graphì˜ ìµœì í™”
+ *    (3) Joinì˜ ì²˜ë¦¬
  *
  ***********************************************************************/
 
@@ -421,14 +421,14 @@ qmoCnfMgr::optimize( qcStatement * aStatement,
     IDU_FIT_POINT_FATAL( "qmoCnfMgr::optimize::__FT__" );
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aCNF != NULL );
 
     //------------------------------------------
-    // ±âº» ÃÊ±âÈ­
+    // ê¸°ë³¸ ì´ˆê¸°í™”
     //------------------------------------------
 
     sCNF = aCNF;
@@ -436,7 +436,7 @@ qmoCnfMgr::optimize( qcStatement * aStatement,
     sBaseGraphCnt = sCNF->graphCnt4BaseTable;
 
     //------------------------------------------
-    // PROJ-1404 Transitive Predicate »ı¼º
+    // PROJ-1404 Transitive Predicate ìƒì„±
     //------------------------------------------
 
     IDE_TEST( generateTransitivePredicate( aStatement,
@@ -445,14 +445,14 @@ qmoCnfMgr::optimize( qcStatement * aStatement,
               != IDE_SUCCESS );
 
     //------------------------------------------
-    // PredicateÀÇ ºĞ·ù
+    // Predicateì˜ ë¶„ë¥˜
     //------------------------------------------
 
     IDE_TEST( classifyPred4Where( aStatement, sCNF, sQuerySet )
               != IDE_SUCCESS );
 
     //------------------------------------------
-    // °¢ Base GraphÀÇ ÃÖÀûÈ­
+    // ê° Base Graphì˜ ìµœì í™”
     //------------------------------------------
 
     for ( i = 0; i < sBaseGraphCnt; i++ )
@@ -471,13 +471,13 @@ qmoCnfMgr::optimize( qcStatement * aStatement,
 
     //------------------------------------------
     // fix BUG-19203
-    // subquery¿¡ ´ëÇØ optimize¸¦ ÇÑ´Ù.
-    // selection graphÀÇ optimize¿¡¼­ view¿¡ ´ëÇÑ Åë°è Á¤º¸°¡ ±¸ÃàµÇ±â ¶§¹®¿¡
-    // ±× ÀÌÈÄ¿¡ ÇÏ´Â °ÍÀÌ ¸Â´Ù.
+    // subqueryì— ëŒ€í•´ optimizeë¥¼ í•œë‹¤.
+    // selection graphì˜ optimizeì—ì„œ viewì— ëŒ€í•œ í†µê³„ ì •ë³´ê°€ êµ¬ì¶•ë˜ê¸° ë•Œë¬¸ì—
+    // ê·¸ ì´í›„ì— í•˜ëŠ” ê²ƒì´ ë§ë‹¤.
     //------------------------------------------
 
     // To Fix BUG-8067, BUG-8742
-    // constant predicateÀÇ subquery Ã³¸®
+    // constant predicateì˜ subquery ì²˜ë¦¬
     if ( sCNF->constantPredicate != NULL )
     {
         IDE_TEST( qmoPred::optimizeSubqueries( aStatement,
@@ -491,7 +491,7 @@ qmoCnfMgr::optimize( qcStatement * aStatement,
     }
 
     // To Fix PR-12743
-    // NNF Filter Áö¿ø
+    // NNF Filter ì§€ì›
     if ( sCNF->nnfFilter != NULL )
     {
         IDE_TEST( qmoPred
@@ -508,7 +508,7 @@ qmoCnfMgr::optimize( qcStatement * aStatement,
     }
 
     //------------------------------------------
-    // JoinÀÇ Ã³¸®
+    // Joinì˜ ì²˜ë¦¬
     //------------------------------------------
 
     if ( sBaseGraphCnt == 1 )
@@ -522,37 +522,37 @@ qmoCnfMgr::optimize( qcStatement * aStatement,
     }
 
     // To Fix PR-9700
-    // Cost °áÁ¤ ½Ã Join Ordering ½ÃÁ¡ÀÌ ¾Æ´Ñ
-    // CNFÀÇ ÃÖÁ¾ Graph°¡ °áÁ¤µÈ ÈÄ¿¡ ¼³Á¤ÇÏ¿©¾ß ÇÔ.
+    // Cost ê²°ì • ì‹œ Join Ordering ì‹œì ì´ ì•„ë‹Œ
+    // CNFì˜ ìµœì¢… Graphê°€ ê²°ì •ëœ í›„ì— ì„¤ì •í•˜ì—¬ì•¼ í•¨.
     sCNF->cost    = sCNF->myGraph->costInfo.totalAllCost;
 
     //------------------------------------------
-    // Constant PredicateÀÇ Ã³¸®
+    // Constant Predicateì˜ ì²˜ë¦¬
     //------------------------------------------
 
     // fix BUG-9791, BUG-10419, BUG-29551
-    // constant filter¸¦ Ã³¸®°¡´ÉÇÑ ÃÖÇÏÀ§ left graph·Î ³»¸°´Ù (X)
-    // constant filter´Â Ã³¸®°¡´ÉÇÑ ÃÖ»óÀ§ graph¿¡ ¿¬°áÇÑ´Ù (O)
+    // constant filterë¥¼ ì²˜ë¦¬ê°€ëŠ¥í•œ ìµœí•˜ìœ„ left graphë¡œ ë‚´ë¦°ë‹¤ (X)
+    // constant filterëŠ” ì²˜ë¦¬ê°€ëŠ¥í•œ ìµœìƒìœ„ graphì— ì—°ê²°í•œë‹¤ (O)
     IDE_TEST( pushSelection4ConstantFilter( aStatement,
                                             sCNF->myGraph,
                                             sCNF )
               != IDE_SUCCESS );
 
     //------------------------------------------
-    // NNF FilterÀÇ ¿¬°á
+    // NNF Filterì˜ ì—°ê²°
     //------------------------------------------
 
     sCNF->myGraph->nnfFilter = sCNF->nnfFilter;
 
     //------------------------------------------
-    // Table Order ÀÇ ¼³Á¤
+    // Table Order ì˜ ì„¤ì •
     //------------------------------------------
 
     IDE_TEST( getTableOrder( aStatement, sCNF->myGraph, & sCNF->tableOrder )
               != IDE_SUCCESS );
 
-    // dependency ¼³Á¤À» À§ÇØ CNFÀÇ ÃÖ»óÀ§ graph´Â ÇØ´ç CNF¸¦ ÂüÁ¶ÇÏ°í
-    // ÀÖ¾î¾ß ÇÑ´Ù.
+    // dependency ì„¤ì •ì„ ìœ„í•´ CNFì˜ ìµœìƒìœ„ graphëŠ” í•´ë‹¹ CNFë¥¼ ì°¸ì¡°í•˜ê³ 
+    // ìˆì–´ì•¼ í•œë‹¤.
     sCNF->myGraph->myCNF = sCNF;
 
     return IDE_SUCCESS;
@@ -591,19 +591,19 @@ qmoCnfMgr::classifyPred4Where( qcStatement       * aStatement,
 {
 /***********************************************************************
  *
- * Description : WhereÀı Ã³¸®¸¦ À§ÇÑ PredicateÀÇ ºĞ·ù
- *               ( ÀÏ¹İ CNFÀÇ Predicate ºĞ·ù )
+ * Description : Whereì ˆ ì²˜ë¦¬ë¥¼ ìœ„í•œ Predicateì˜ ë¶„ë¥˜
+ *               ( ì¼ë°˜ CNFì˜ Predicate ë¶„ë¥˜ )
  *
  * Implementation :
- *    qmoCNF::normalCNFÀÇ °¢ Predicate¿¡ ´ëÇÏ¿© ´ÙÀ½À» ¼öÇà
- *    (1) Rownum Predicate ºĞ·ù
- *        rownum predicateÀº where¿¡¼­ Ã³¸®ÇÏÁö ¾Ê°í critical path¿¡¼­ Ã³¸®ÇÑ´Ù.
- *    (2) Constant Predicate ºĞ·ù
- *        constant predicate, level predicate, prior predicateÀÌ ¼±ÅÃµÈ´Ù.
- *        ÀÌ´Â addConstPred4Where() ÇÔ¼ö¿¡¼­ hierarhcy graph Á¸Àç À¯¹«¿¡ µû¶ó
- *        ºĞ¸®ÇÏ¿© Ã³¸®ÇÑ´Ù.
- *    (3) One Table PredicateÀÇ ºĞ·ù
- *    (4) Join PredicateÀÇ ºĞ·ù
+ *    qmoCNF::normalCNFì˜ ê° Predicateì— ëŒ€í•˜ì—¬ ë‹¤ìŒì„ ìˆ˜í–‰
+ *    (1) Rownum Predicate ë¶„ë¥˜
+ *        rownum predicateì€ whereì—ì„œ ì²˜ë¦¬í•˜ì§€ ì•Šê³  critical pathì—ì„œ ì²˜ë¦¬í•œë‹¤.
+ *    (2) Constant Predicate ë¶„ë¥˜
+ *        constant predicate, level predicate, prior predicateì´ ì„ íƒëœë‹¤.
+ *        ì´ëŠ” addConstPred4Where() í•¨ìˆ˜ì—ì„œ hierarhcy graph ì¡´ì¬ ìœ ë¬´ì— ë”°ë¼
+ *        ë¶„ë¦¬í•˜ì—¬ ì²˜ë¦¬í•œë‹¤.
+ *    (3) One Table Predicateì˜ ë¶„ë¥˜
+ *    (4) Join Predicateì˜ ë¶„ë¥˜
  *
  ***********************************************************************/
 
@@ -627,7 +627,7 @@ qmoCnfMgr::classifyPred4Where( qcStatement       * aStatement,
     IDU_FIT_POINT_FATAL( "qmoCnfMgr::classifyPred4Where::__FT__" );
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -635,7 +635,7 @@ qmoCnfMgr::classifyPred4Where( qcStatement       * aStatement,
     IDE_DASSERT( aQuerySet != NULL );
 
     //------------------------------------------
-    // ±âº» ÃÊ±âÈ­
+    // ê¸°ë³¸ ì´ˆê¸°í™”
     //------------------------------------------
 
     sCNF              = aCNF;
@@ -643,7 +643,7 @@ qmoCnfMgr::classifyPred4Where( qcStatement       * aStatement,
     sBaseGraphCnt     = sCNF->graphCnt4BaseTable;
     sBaseGraph        = sCNF->baseGraph;
 
-    // Hierarchy Á¸Àç À¯¹« È®ÀÎ
+    // Hierarchy ì¡´ì¬ ìœ ë¬´ í™•ì¸
     if ( sCNF->baseGraph[0]->type == QMG_HIERARCHY )
     {
         sExistHierarchy = ID_TRUE;
@@ -653,7 +653,7 @@ qmoCnfMgr::classifyPred4Where( qcStatement       * aStatement,
         sExistHierarchy = ID_FALSE;
     }
 
-    // Predicate ºĞ·ù ´ë»ó Node
+    // Predicate ë¶„ë¥˜ ëŒ€ìƒ Node
     if ( sCNF->normalCNF != NULL )
     {
         sNode = (qtcNode *)sCNF->normalCNF->node.arguments;
@@ -665,14 +665,14 @@ qmoCnfMgr::classifyPred4Where( qcStatement       * aStatement,
 
     while( sNode != NULL )
     {
-        // qmoPredicate »ı¼º
+        // qmoPredicate ìƒì„±
         IDE_TEST( qmoPred::createPredicate( QC_QMP_MEM(aStatement),
                                             sNode,
                                             &sNewPred )
                   != IDE_SUCCESS );
 
         //-------------------------------------------------
-        // Rownum Predicate °Ë»ç
+        // Rownum Predicate ê²€ì‚¬
         //-------------------------------------------------
 
         IDE_TEST( qmoPred::isRownumPredicate( sNewPred,
@@ -682,8 +682,8 @@ qmoCnfMgr::classifyPred4Where( qcStatement       * aStatement,
         if ( sIsRownum == ID_TRUE )
         {
             //---------------------------------------------
-            // Rownum Predicate ºĞ·ù
-            //    Rownum PredicateÀ» critical pathÀÇ rownumPredicate¿¡ ¿¬°á
+            // Rownum Predicate ë¶„ë¥˜
+            //    Rownum Predicateì„ critical pathì˜ rownumPredicateì— ì—°ê²°
             //---------------------------------------------
 
             IDE_TEST( qmoCrtPathMgr::addRownumPredicate( aQuerySet,
@@ -693,7 +693,7 @@ qmoCnfMgr::classifyPred4Where( qcStatement       * aStatement,
         else
         {
             //-------------------------------------------------
-            // Constant Predicate °Ë»ç
+            // Constant Predicate ê²€ì‚¬
             //-------------------------------------------------
 
             IDE_TEST( qmoPred::isConstantPredicate( sNewPred,
@@ -707,9 +707,9 @@ qmoCnfMgr::classifyPred4Where( qcStatement       * aStatement,
                 sNewPred->flag |= QMO_PRED_CONSTANT_FILTER_TRUE;
 
                 //-------------------------------------------------
-                // Constant Predicate ºĞ·ù
-                //   Hierarhcy Á¸Àç À¯¹«¿¡ µû¶ó constant predicate,
-                //   level predicate, prior predicatÀ» ºĞ·ùÇÏ¿© ÇØ´ç À§Ä¡¿¡ Ãß°¡
+                // Constant Predicate ë¶„ë¥˜
+                //   Hierarhcy ì¡´ì¬ ìœ ë¬´ì— ë”°ë¼ constant predicate,
+                //   level predicate, prior predicatì„ ë¶„ë¥˜í•˜ì—¬ í•´ë‹¹ ìœ„ì¹˜ì— ì¶”ê°€
                 //-------------------------------------------------
 
                 IDE_TEST( addConstPred4Where( sNewPred,
@@ -720,7 +720,7 @@ qmoCnfMgr::classifyPred4Where( qcStatement       * aStatement,
             else
             {
                 //---------------------------------------------
-                // One Table Predicate °Ë»ç
+                // One Table Predicate ê²€ì‚¬
                 //---------------------------------------------
 
                 for ( i = 0 ; i < sBaseGraphCnt; i++ )
@@ -744,9 +744,9 @@ qmoCnfMgr::classifyPred4Where( qcStatement       * aStatement,
                 if ( sIsOneTable == ID_TRUE )
                 {
                     //---------------------------------------------
-                    // One Table Predicate ºĞ·ù
-                    //    oneTablePredicateÀ» ÇØ´ç graphÀÇ myPredicate¿¡ ¿¬°á
-                    //    rid predicate ÀÌ¸é ÇØ´ç graphÀÇ ridPredicate¿¡ ¿¬°á
+                    // One Table Predicate ë¶„ë¥˜
+                    //    oneTablePredicateì„ í•´ë‹¹ graphì˜ myPredicateì— ì—°ê²°
+                    //    rid predicate ì´ë©´ í•´ë‹¹ graphì˜ ridPredicateì— ì—°ê²°
                     //---------------------------------------------
                     if ((sNewPred->node->lflag & QTC_NODE_COLUMN_RID_MASK) ==
                         QTC_NODE_COLUMN_RID_EXIST)
@@ -763,12 +763,12 @@ qmoCnfMgr::classifyPred4Where( qcStatement       * aStatement,
                 else
                 {
                     //---------------------------------------------
-                    // Join Predicate ºĞ·ù
-                    //  constantPredicate, oneTablePredicateÀÌ ¾Æ´Ï¸é
-                    //  1. PUSH_PRED hint°¡ Á¸ÀçÇÏ¸é,
-                    //     view ³»ºÎ·Î ³»¸®°í,
-                    //  2. PUSH_PRED hint°¡ Á¸ÀçÇÏÁö ¾ÊÀ¸¸é,
-                    //     joinPredicateÀÌ¹Ç·Î ÀÌ¸¦ sCNF->joinPredicate¿¡ ¿¬°á
+                    // Join Predicate ë¶„ë¥˜
+                    //  constantPredicate, oneTablePredicateì´ ì•„ë‹ˆë©´
+                    //  1. PUSH_PRED hintê°€ ì¡´ì¬í•˜ë©´,
+                    //     view ë‚´ë¶€ë¡œ ë‚´ë¦¬ê³ ,
+                    //  2. PUSH_PRED hintê°€ ì¡´ì¬í•˜ì§€ ì•Šìœ¼ë©´,
+                    //     joinPredicateì´ë¯€ë¡œ ì´ë¥¼ sCNF->joinPredicateì— ì—°ê²°
                     //---------------------------------------------
 
                     sIsPush = ID_FALSE;
@@ -777,8 +777,8 @@ qmoCnfMgr::classifyPred4Where( qcStatement       * aStatement,
                     {
                         //---------------------------------------------
                         // PROJ-1495
-                        // PUSH_PRED hint°¡ Á¸ÀçÇÏ´Â °æ¿ì
-                        // VIEW ³»ºÎ·Î join predicateÀ» ³»¸°´Ù.
+                        // PUSH_PRED hintê°€ ì¡´ì¬í•˜ëŠ” ê²½ìš°
+                        // VIEW ë‚´ë¶€ë¡œ join predicateì„ ë‚´ë¦°ë‹¤.
                         //---------------------------------------------
 
                         IDE_TEST( pushJoinPredInView( sNewPred,
@@ -801,9 +801,9 @@ qmoCnfMgr::classifyPred4Where( qcStatement       * aStatement,
                     else
                     {
                         //---------------------------------------------
-                        // constantPredicate, oneTablePredicateÀÌ ¾Æ´Ï°í,
-                        // PUSH_PRED hintµµ ¾ø´Â °æ¿ì ÀÌ¸¦
-                        // sCNF->joinPredicate¿¡ ¿¬°á
+                        // constantPredicate, oneTablePredicateì´ ì•„ë‹ˆê³ ,
+                        // PUSH_PRED hintë„ ì—†ëŠ” ê²½ìš° ì´ë¥¼
+                        // sCNF->joinPredicateì— ì—°ê²°
                         //---------------------------------------------
 
                         sNewPred->flag &= ~QMO_PRED_JOIN_PRED_MASK;
@@ -821,14 +821,14 @@ qmoCnfMgr::classifyPred4Where( qcStatement       * aStatement,
 
     //---------------------------------------------------------------------
     // BUG-34295 Join ordering ANSI style query
-    //     Where ÀıÀÇ predicate Áß outerJoinGraph ¿Í ¿¬°üµÈ
-    //     one table predicate À» Ã£¾Æ ÀÌµ¿½ÃÅ²´Ù.
-    //     outerJoinGraph ÀÇ one table predicate Àº baseGraph ¿Í
-    //     dependency °¡ °ãÄ¡Áö ¾Ê¾Æ¼­ predicate ºĞ·ù °úÁ¤¿¡¼­
-    //     constant predicate À¸·Î Àß¸ø ºĞ·ùµÈ´Ù.
-    //     ÀÌ¸¦ ¹Ù·ÎÀâ±â À§ÇØ sCNF->constantPredicate ÀÇ predicate µé¿¡¼­
-    //     outerJoinGraph ¿¡ °ü·ÃµÈ one table predicate µéÀ» Ã£¾Æ³»¾î
-    //     outerJoinGraph ·Î ÀÌµ¿½ÃÅ²´Ù.
+    //     Where ì ˆì˜ predicate ì¤‘ outerJoinGraph ì™€ ì—°ê´€ëœ
+    //     one table predicate ì„ ì°¾ì•„ ì´ë™ì‹œí‚¨ë‹¤.
+    //     outerJoinGraph ì˜ one table predicate ì€ baseGraph ì™€
+    //     dependency ê°€ ê²¹ì¹˜ì§€ ì•Šì•„ì„œ predicate ë¶„ë¥˜ ê³¼ì •ì—ì„œ
+    //     constant predicate ìœ¼ë¡œ ì˜ëª» ë¶„ë¥˜ëœë‹¤.
+    //     ì´ë¥¼ ë°”ë¡œì¡ê¸° ìœ„í•´ sCNF->constantPredicate ì˜ predicate ë“¤ì—ì„œ
+    //     outerJoinGraph ì— ê´€ë ¨ëœ one table predicate ë“¤ì„ ì°¾ì•„ë‚´ì–´
+    //     outerJoinGraph ë¡œ ì´ë™ì‹œí‚¨ë‹¤.
     //---------------------------------------------------------------------
     if( sCNF->outerJoinGraph != NULL )
     {
@@ -853,25 +853,25 @@ qmoCnfMgr::classifyPred4OnCondition( qcStatement     * aStatement,
 {
 /***********************************************************************
  *
- * Description : onConditionCNFÀÇ Predicate ºĞ·ù
+ * Description : onConditionCNFì˜ Predicate ë¶„ë¥˜
  *
  * Implementation :
- *    (1) onConditionCNF PredicateÀÇ ºĞ·ù
- *        °¢ onConditionCNFÀÇ predicate¿¡ ´ëÇÏ¿© ´ÙÀ½À» ¼öÇà
- *        A. Rownum PredicateÀÇ ºĞ·ù
- *        B. Constant PredicateÀÇ ºĞ·ù
- *        C. One Table PredicateÀÇ ºĞ·ù
- *        D. Join PredicateÀÇ ºĞ·ù
- *    (2) Join °è¿­ graphÀÇ myPredicate¿¡ ´ëÇÑ push selection ¼öÇà
- *        °¢ UpperPredicate¿¡ ´ëÇÏ¿© ´ÙÀ½À» ¼öÇà
- *        ( UpperPredicate : onConditionCNF¸¦ °¡Áö´Â Join GraphÀÇ myPredicate )
- *        °¢ UpperPredicate¿¡ ´ëÇÏ¿© ´ÙÀ½À» ¼öÇà
- *        A. One Table Predicate °Ë»ç
- *        B. One Table PredicateÀÌ¸é, Push Selection ¼öÇà
- *        Âü°í. One Table Predicate ¸¸ÀÌ push selection ´ë»óÀÎ ÀÌÀ¯
- *        - constant predicate : »óÀ§ predicate¿¡ Á¸ÀçÇÏÁö ¾ÊÀ½
+ *    (1) onConditionCNF Predicateì˜ ë¶„ë¥˜
+ *        ê° onConditionCNFì˜ predicateì— ëŒ€í•˜ì—¬ ë‹¤ìŒì„ ìˆ˜í–‰
+ *        A. Rownum Predicateì˜ ë¶„ë¥˜
+ *        B. Constant Predicateì˜ ë¶„ë¥˜
+ *        C. One Table Predicateì˜ ë¶„ë¥˜
+ *        D. Join Predicateì˜ ë¶„ë¥˜
+ *    (2) Join ê³„ì—´ graphì˜ myPredicateì— ëŒ€í•œ push selection ìˆ˜í–‰
+ *        ê° UpperPredicateì— ëŒ€í•˜ì—¬ ë‹¤ìŒì„ ìˆ˜í–‰
+ *        ( UpperPredicate : onConditionCNFë¥¼ ê°€ì§€ëŠ” Join Graphì˜ myPredicate )
+ *        ê° UpperPredicateì— ëŒ€í•˜ì—¬ ë‹¤ìŒì„ ìˆ˜í–‰
+ *        A. One Table Predicate ê²€ì‚¬
+ *        B. One Table Predicateì´ë©´, Push Selection ìˆ˜í–‰
+ *        ì°¸ê³ . One Table Predicate ë§Œì´ push selection ëŒ€ìƒì¸ ì´ìœ 
+ *        - constant predicate : ìƒìœ„ predicateì— ì¡´ì¬í•˜ì§€ ì•ŠìŒ
  *        - one table predicate : push selection
- *        - join predicate : ÃßÈÄ filter·Î »ç¿ëÇØ¾ß ÇÔÀ¸·Î ±×´ë·Î µÒ
+ *        - join predicate : ì¶”í›„ filterë¡œ ì‚¬ìš©í•´ì•¼ í•¨ìœ¼ë¡œ ê·¸ëŒ€ë¡œ ë‘ 
  *
  ***********************************************************************/
 
@@ -895,14 +895,14 @@ qmoCnfMgr::classifyPred4OnCondition( qcStatement     * aStatement,
     IDU_FIT_POINT_FATAL( "qmoCnfMgr::classifyPred4OnCondition::__FT__" );
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aCNF != NULL );
 
     //------------------------------------------
-    // ±âº» ÃÊ±âÈ­
+    // ê¸°ë³¸ ì´ˆê¸°í™”
     //------------------------------------------
 
     sCNF              = aCNF;
@@ -913,10 +913,10 @@ qmoCnfMgr::classifyPred4OnCondition( qcStatement     * aStatement,
     sBaseGraph        = sCNF->baseGraph;
 
     //------------------------------------------
-    // onCondition¿¡ ´ëÇÑ PredicateÀÇ ºĞ·ù
+    // onConditionì— ëŒ€í•œ Predicateì˜ ë¶„ë¥˜
     //------------------------------------------
 
-    // Predicate ºĞ·ù ´ë»ó Node
+    // Predicate ë¶„ë¥˜ ëŒ€ìƒ Node
     if ( sCNF->normalCNF != NULL )
     {
         sNode = (qtcNode *)sCNF->normalCNF->node.arguments;
@@ -926,7 +926,7 @@ qmoCnfMgr::classifyPred4OnCondition( qcStatement     * aStatement,
         sNode = NULL;
     }
 
-    // BUG-42968 ansi ½ºÅ¸ÀÏ Á¶ÀÎÀÏ¶§ push_pred ÈùÆ® Àû¿ë
+    // BUG-42968 ansi ìŠ¤íƒ€ì¼ ì¡°ì¸ì¼ë•Œ push_pred íŒíŠ¸ ì ìš©
     if ( sQuerySet->SFWGH->hints->pushPredHint != NULL )
     {
         sPushDownAble = checkPushPredHint( sCNF,
@@ -941,14 +941,14 @@ qmoCnfMgr::classifyPred4OnCondition( qcStatement     * aStatement,
     while( sNode != NULL )
     {
 
-        // qmoPredicate »ı¼º
+        // qmoPredicate ìƒì„±
         IDE_TEST( qmoPred::createPredicate( QC_QMP_MEM(aStatement),
                                             sNode,
                                             &sNewPred )
                   != IDE_SUCCESS );
 
         //-------------------------------------------------
-        // Rownum Predicate °Ë»ç
+        // Rownum Predicate ê²€ì‚¬
         //-------------------------------------------------
 
         IDE_TEST( qmoPred::isRownumPredicate( sNewPred,
@@ -958,8 +958,8 @@ qmoCnfMgr::classifyPred4OnCondition( qcStatement     * aStatement,
         if ( sIsRownum == ID_TRUE )
         {
             //---------------------------------------------
-            // Rownum Predicate ºĞ·ù
-            //    Rownum PredicateÀ» critical pathÀÇ rownumPredicate¿¡ ¿¬°á
+            // Rownum Predicate ë¶„ë¥˜
+            //    Rownum Predicateì„ critical pathì˜ rownumPredicateì— ì—°ê²°
             //---------------------------------------------
 
             IDE_TEST( qmoCrtPathMgr::addRownumPredicate( sQuerySet,
@@ -969,7 +969,7 @@ qmoCnfMgr::classifyPred4OnCondition( qcStatement     * aStatement,
         else
         {
             //-------------------------------------------------
-            // Constant Predicate °Ë»ç
+            // Constant Predicate ê²€ì‚¬
             //-------------------------------------------------
 
             IDE_TEST( qmoPred::isConstantPredicate( sNewPred,
@@ -980,8 +980,8 @@ qmoCnfMgr::classifyPred4OnCondition( qcStatement     * aStatement,
             if ( sIsConstant == ID_TRUE )
             {
                 //-------------------------------------------------
-                // Constant Predicate ºĞ·ù
-                //    onConditionCNFÀÇ constantPredicate¿¡ ¿¬°á
+                // Constant Predicate ë¶„ë¥˜
+                //    onConditionCNFì˜ constantPredicateì— ì—°ê²°
                 //-------------------------------------------------
 
                 sNewPred->next = sCNF->constantPredicate;
@@ -990,12 +990,12 @@ qmoCnfMgr::classifyPred4OnCondition( qcStatement     * aStatement,
             else
             {
                 //---------------------------------------------
-                // One Table Predicate °Ë»ç
+                // One Table Predicate ê²€ì‚¬
                 //---------------------------------------------
 
                 for ( i = 0 ; i < 2 ; i++ )
                 {
-                    // BUG-42944 ansi ½ºÅ¸ÀÏ Á¶ÀÎÀÏ¶§ push_pred ÈùÆ®¸¦ »ç¿ëÇØµµ 1°³ÀÇ ÇÁ¸®µğÅ¶¸¸ ³»·Á°©´Ï´Ù.
+                    // BUG-42944 ansi ìŠ¤íƒ€ì¼ ì¡°ì¸ì¼ë•Œ push_pred íŒíŠ¸ë¥¼ ì‚¬ìš©í•´ë„ 1ê°œì˜ í”„ë¦¬ë””í‚·ë§Œ ë‚´ë ¤ê°‘ë‹ˆë‹¤.
                     sGraphDependencies = & sBaseGraph[i]->myFrom->depInfo;
                     IDE_TEST( qmoPred::isOneTablePredicate( sNewPred,
                                                             sFromDependencies,
@@ -1024,13 +1024,13 @@ qmoCnfMgr::classifyPred4OnCondition( qcStatement     * aStatement,
                 if ( sIsOneTable == ID_TRUE )
                 {
                     //---------------------------------------------
-                    // One Table Predicate ºĞ·ù
-                    //    joinType°ú left/right graph ¹æÇâ¿¡ µû¶ó
-                    //    push selection ¿©ºÎ °áÁ¤ÇÏ¿© ÇØ´ç À§Ä¡¿¡ Ãß°¡
-                    //    - push selection °¡´ÉÇÑ °æ¿ì
-                    //      ÇØ´ç graphÀÇ myPredicate¿¡ ¿¬°á
-                    //    - push selection ÇÒ ¼ö ¾ø´Â °æ¿ì
-                    //      onConditionCNFÀÇ oneTablePredicate¿¡ ¿¬°á
+                    // One Table Predicate ë¶„ë¥˜
+                    //    joinTypeê³¼ left/right graph ë°©í–¥ì— ë”°ë¼
+                    //    push selection ì—¬ë¶€ ê²°ì •í•˜ì—¬ í•´ë‹¹ ìœ„ì¹˜ì— ì¶”ê°€
+                    //    - push selection ê°€ëŠ¥í•œ ê²½ìš°
+                    //      í•´ë‹¹ graphì˜ myPredicateì— ì—°ê²°
+                    //    - push selection í•  ìˆ˜ ì—†ëŠ” ê²½ìš°
+                    //      onConditionCNFì˜ oneTablePredicateì— ì—°ê²°
                     //---------------------------------------------
 
                     IDE_TEST( addOneTblPredOnJoinType( sCNF,
@@ -1044,9 +1044,9 @@ qmoCnfMgr::classifyPred4OnCondition( qcStatement     * aStatement,
                 else
                 {
                     //---------------------------------------------
-                    // Join Predicate ºĞ·ù
-                    //    constantPredicate, oneTablePredicateÀÌ ¾Æ´Ï¸é
-                    //    joinPredicateÀÌ¹Ç·Î ÀÌ¸¦ sCNF->joinPredicate¿¡ ¿¬°á
+                    // Join Predicate ë¶„ë¥˜
+                    //    constantPredicate, oneTablePredicateì´ ì•„ë‹ˆë©´
+                    //    joinPredicateì´ë¯€ë¡œ ì´ë¥¼ sCNF->joinPredicateì— ì—°ê²°
                     //---------------------------------------------
 
                     sIsPush = ID_FALSE;
@@ -1055,8 +1055,8 @@ qmoCnfMgr::classifyPred4OnCondition( qcStatement     * aStatement,
                     {
                         //---------------------------------------------
                         // PROJ-1495
-                        // PUSH_PRED hint°¡ Á¸ÀçÇÏ´Â °æ¿ì
-                        // VIEW ³»ºÎ·Î join predicateÀ» ³»¸°´Ù.
+                        // PUSH_PRED hintê°€ ì¡´ì¬í•˜ëŠ” ê²½ìš°
+                        // VIEW ë‚´ë¶€ë¡œ join predicateì„ ë‚´ë¦°ë‹¤.
                         //---------------------------------------------
                         IDE_TEST( pushJoinPredInView( sNewPred,
                                                       sQuerySet->SFWGH->hints->pushPredHint,
@@ -1091,27 +1091,27 @@ qmoCnfMgr::classifyPred4OnCondition( qcStatement     * aStatement,
 
     //---------------------------------------------
     //  PROJ-1404
-    //  Transitive Predicate GenerationÀ¸·Î ÇöÀç graph¿¡¼­ upper predicate°ú
-    //  onÀı·Î transitive predicateÀ» »ı¼ºÇÒ¼ö ÀÖ´Ù.
-    //  upper predicateÀº joinType¿¡ µû¶ó º¹»çÇØ¼­ ³»·Á°¡µç ¹Ù·Î ³»·Á°¡µç
-    //  °á±¹¿¡´Â ÇØ´ç graph·Î ³»·Á°£´Ù. (IS NULL, IS NOT NULLÀº Á¦¿Ü)
+    //  Transitive Predicate Generationìœ¼ë¡œ í˜„ì¬ graphì—ì„œ upper predicateê³¼
+    //  onì ˆë¡œ transitive predicateì„ ìƒì„±í• ìˆ˜ ìˆë‹¤.
+    //  upper predicateì€ joinTypeì— ë”°ë¼ ë³µì‚¬í•´ì„œ ë‚´ë ¤ê°€ë“  ë°”ë¡œ ë‚´ë ¤ê°€ë“ 
+    //  ê²°êµ­ì—ëŠ” í•´ë‹¹ graphë¡œ ë‚´ë ¤ê°„ë‹¤. (IS NULL, IS NOT NULLì€ ì œì™¸)
     //
-    //  upper predicate°ú onÀı¿¡ ÀÇÇØ »ı¼ºµÇ´Â transitive predicateÀº
-    //  IS NULL, IS NOT NULL predicateÀÌ ¾Æ´Ï¸ç joinType¿¡ »ó°ü¾øÀÌ ÇØ´ç
-    //  graph·Î ¹Ù·Î ³»¸± ¼ö ÀÖ´Âµ¥, ÀÌ´Â upper predicate°ú onÀı¿¡ÀÇÇØ
-    //  »ı¼ºµÈ lower predicateÀÌ±â ¶§¹®ÀÌ´Ù. (upper predicateÀº ¾î¶»°Ôµç
-    //  ³»·Á°¥ predicateÀÌ¹Ç·Î Ã³À½ºÎÅÍ lower predicateÀÌ¶ó°íµµ º¼ ¼ö ÀÖ´Ù.)
+    //  upper predicateê³¼ onì ˆì— ì˜í•´ ìƒì„±ë˜ëŠ” transitive predicateì€
+    //  IS NULL, IS NOT NULL predicateì´ ì•„ë‹ˆë©° joinTypeì— ìƒê´€ì—†ì´ í•´ë‹¹
+    //  graphë¡œ ë°”ë¡œ ë‚´ë¦´ ìˆ˜ ìˆëŠ”ë°, ì´ëŠ” upper predicateê³¼ onì ˆì—ì˜í•´
+    //  ìƒì„±ëœ lower predicateì´ê¸° ë•Œë¬¸ì´ë‹¤. (upper predicateì€ ì–´ë–»ê²Œë“ 
+    //  ë‚´ë ¤ê°ˆ predicateì´ë¯€ë¡œ ì²˜ìŒë¶€í„° lower predicateì´ë¼ê³ ë„ ë³¼ ìˆ˜ ìˆë‹¤.)
     //
-    //  lower predicateÀº graphÀÇ left³ª right¿¡ ´ëÇÑ one table predicateÀÌ°Å³ª
-    //  join predicateÀÏ ¼ö ÀÖ´Ù. join predicateÀÌ »ı¼ºµÈ °æ¿ì ÇØ´ç graph·Î
-    //  ³»¸± ¼ö ¾ø±â ¶§¹®¿¡ ÇöÀç graph¿¡¼­ Ã³¸®ÇØ¾ß ÇÏ³ª,
-    //  left outer joinÀÌ³ª full outer join¿¡¼­ filter·Î Ã³¸®ÇÏ°Ô µÇ¹Ç·Î
-    //  bad transitive predicateÀÌ µÇ¾î »èÁ¦ÇÑ´Ù.
+    //  lower predicateì€ graphì˜ leftë‚˜ rightì— ëŒ€í•œ one table predicateì´ê±°ë‚˜
+    //  join predicateì¼ ìˆ˜ ìˆë‹¤. join predicateì´ ìƒì„±ëœ ê²½ìš° í•´ë‹¹ graphë¡œ
+    //  ë‚´ë¦´ ìˆ˜ ì—†ê¸° ë•Œë¬¸ì— í˜„ì¬ graphì—ì„œ ì²˜ë¦¬í•´ì•¼ í•˜ë‚˜,
+    //  left outer joinì´ë‚˜ full outer joinì—ì„œ filterë¡œ ì²˜ë¦¬í•˜ê²Œ ë˜ë¯€ë¡œ
+    //  bad transitive predicateì´ ë˜ì–´ ì‚­ì œí•œë‹¤.
     //
-    //  lower predicateÀÇ Ã³¸®´Â one table predicateÀÏ ¶§ ÇØ´ç graph¿¡
-    //  ³»¸®¸é µÈ´Ù. ÀÌ°ÍÀº upper predicateÀ» Ã³¸®ÇÏ´Â pushSelectionOnJoinType
-    //  ÇÔ¼öÀÇ INNER_JOIN typeÀÏ¶§ÀÇ Ã³¸®¹æ¹ı°ú °°¾Æ ÀÌ ÇÔ¼ö¸¦ ±×´ë·Î
-    //  ÀÌ¿ëÇÑ´Ù.
+    //  lower predicateì˜ ì²˜ë¦¬ëŠ” one table predicateì¼ ë•Œ í•´ë‹¹ graphì—
+    //  ë‚´ë¦¬ë©´ ëœë‹¤. ì´ê²ƒì€ upper predicateì„ ì²˜ë¦¬í•˜ëŠ” pushSelectionOnJoinType
+    //  í•¨ìˆ˜ì˜ INNER_JOIN typeì¼ë•Œì˜ ì²˜ë¦¬ë°©ë²•ê³¼ ê°™ì•„ ì´ í•¨ìˆ˜ë¥¼ ê·¸ëŒ€ë¡œ
+    //  ì´ìš©í•œë‹¤.
     //---------------------------------------------
 
     if ( sLowerPred != NULL )
@@ -1122,7 +1122,7 @@ qmoCnfMgr::classifyPred4OnCondition( qcStatement     * aStatement,
 
         if ( aJoinType == QMS_INNER_JOIN )
         {
-            // INNER JOINÀÎ °æ¿ì join predicateÀ» upper predicate¿¡ ¿¬°áÇÑ´Ù.
+            // INNER JOINì¸ ê²½ìš° join predicateì„ upper predicateì— ì—°ê²°í•œë‹¤.
             IDE_TEST( qmoTransMgr::linkPredicate( sLowerPred,
                                                   aUpperPred )
                       != IDE_SUCCESS );
@@ -1131,8 +1131,8 @@ qmoCnfMgr::classifyPred4OnCondition( qcStatement     * aStatement,
         }
         else
         {
-            // INNER JOINÀÌ ¾Æ´Ñ °æ¿ì ³²Àº join predicateÀº bad transitive
-            // predicateÀÌ¹Ç·Î Á¦°ÅÇÑ´Ù.(¹ö¸°´Ù.)
+            // INNER JOINì´ ì•„ë‹Œ ê²½ìš° ë‚¨ì€ join predicateì€ bad transitive
+            // predicateì´ë¯€ë¡œ ì œê±°í•œë‹¤.(ë²„ë¦°ë‹¤.)
 
             // Nothing to do.
         }
@@ -1143,9 +1143,9 @@ qmoCnfMgr::classifyPred4OnCondition( qcStatement     * aStatement,
     }
 
     //---------------------------------------------
-    // Join °è¿­ GraphÀÇ myPredicate¿¡ ´ëÇÑ Push Selection
-    //    Upper PredicateÀÌ One Table PredicateÀÌ¸é Join Type¿¡ ¸Â°Ô
-    //    push selection ¼öÇà
+    // Join ê³„ì—´ Graphì˜ myPredicateì— ëŒ€í•œ Push Selection
+    //    Upper Predicateì´ One Table Predicateì´ë©´ Join Typeì— ë§ê²Œ
+    //    push selection ìˆ˜í–‰
     //---------------------------------------------
 
 
@@ -1173,13 +1173,13 @@ qmoCnfMgr::classifyPred4StartWith( qcStatement   * aStatement ,
 {
 /***********************************************************************
  *
- * Description : startWithCNFÀÇ PredicateÀÇ ºĞ·ù
+ * Description : startWithCNFì˜ Predicateì˜ ë¶„ë¥˜
  *
  * Implementation :
- *    (1) Constant PredicateÀÇ ºĞ·ù
- *    (2) One Table PredicateÀÇ ºĞ·ù
- *    Âü°í : Hierarchy Query´Â joinÀ» »ç¿ëÇÒ ¼ö ¾ø±â ¶§¹®¿¡
- *           startWithCNF¿¡´Â joinPredicateÀÌ ¿Ã ¼ö ¾øÀ½
+ *    (1) Constant Predicateì˜ ë¶„ë¥˜
+ *    (2) One Table Predicateì˜ ë¶„ë¥˜
+ *    ì°¸ê³  : Hierarchy QueryëŠ” joinì„ ì‚¬ìš©í•  ìˆ˜ ì—†ê¸° ë•Œë¬¸ì—
+ *           startWithCNFì—ëŠ” joinPredicateì´ ì˜¬ ìˆ˜ ì—†ìŒ
  *
  ***********************************************************************/
 
@@ -1194,20 +1194,20 @@ qmoCnfMgr::classifyPred4StartWith( qcStatement   * aStatement ,
     IDU_FIT_POINT_FATAL( "qmoCnfMgr::classifyPred4StartWith::__FT__" );
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aCNF != NULL );
 
     //------------------------------------------
-    // ±âº» ÃÊ±âÈ­
+    // ê¸°ë³¸ ì´ˆê¸°í™”
     //------------------------------------------
 
     sCNF              = aCNF;
     sFromDependencies = & sCNF->depInfo;
 
-    // Predicate ºĞ·ù ´ë»ó Node
+    // Predicate ë¶„ë¥˜ ëŒ€ìƒ Node
     if ( sCNF->normalCNF != NULL )
     {
         sNode = (qtcNode *)sCNF->normalCNF->node.arguments;
@@ -1220,14 +1220,14 @@ qmoCnfMgr::classifyPred4StartWith( qcStatement   * aStatement ,
     while( sNode != NULL )
     {
 
-        // qmoPredicate »ı¼º
+        // qmoPredicate ìƒì„±
         IDE_TEST( qmoPred::createPredicate( QC_QMP_MEM(aStatement),
                                             sNode,
                                             &sNewPred )
                   != IDE_SUCCESS );
 
         //-------------------------------------------------
-        // Constant Predicate °Ë»ç
+        // Constant Predicate ê²€ì‚¬
         //-------------------------------------------------
 
         IDE_TEST( qmoPred::isConstantPredicate( sNewPred,
@@ -1238,14 +1238,14 @@ qmoCnfMgr::classifyPred4StartWith( qcStatement   * aStatement ,
         if ( sIsConstant == ID_TRUE )
         {
             //-------------------------------------------------
-            // Constant Predicate ºĞ·ù
-            //    onConditionCNFÀÇ constantPredicate¿¡ ¿¬°á
+            // Constant Predicate ë¶„ë¥˜
+            //    onConditionCNFì˜ constantPredicateì— ì—°ê²°
             //-------------------------------------------------
 
             if ( ( sNewPred->node->lflag & QTC_NODE_LEVEL_MASK )
                  == QTC_NODE_LEVEL_EXIST )
             {
-                // level predicateÀÎ °æ¿ì, oneTablePredicate¿¡ ¿¬°á
+                // level predicateì¸ ê²½ìš°, oneTablePredicateì— ì—°ê²°
                 sNewPred->next = sCNF->oneTablePredicate;
                 sCNF->oneTablePredicate = sNewPred;
             }
@@ -1258,7 +1258,7 @@ qmoCnfMgr::classifyPred4StartWith( qcStatement   * aStatement ,
         else
         {
             //---------------------------------------------
-            // One Table Predicate ºĞ·ù
+            // One Table Predicate ë¶„ë¥˜
             //---------------------------------------------
 
             // To fix BUG-14370
@@ -1277,9 +1277,9 @@ qmoCnfMgr::classifyPred4StartWith( qcStatement   * aStatement ,
     }
 
     //---------------------------------------------
-    // start with CNFÀÇ °¢ PredicateÀÇ subuqery Ã³¸®
-    //    statr with CNFÀÇ °¢ PredicateÀº ÇØ´ç graphÀÇ myPredicate¿¡ ¿¬°áµÇÁö
-    //    ¾Ê¾Æ ÇØ´ç graphÀÇ myPredicateÃ³¸® ½Ã¿¡ subquery°¡ »ı¼ºµÇÁö ¾Ê´Â´Ù.
+    // start with CNFì˜ ê° Predicateì˜ subuqery ì²˜ë¦¬
+    //    statr with CNFì˜ ê° Predicateì€ í•´ë‹¹ graphì˜ myPredicateì— ì—°ê²°ë˜ì§€
+    //    ì•Šì•„ í•´ë‹¹ graphì˜ myPredicateì²˜ë¦¬ ì‹œì— subqueryê°€ ìƒì„±ë˜ì§€ ì•ŠëŠ”ë‹¤.
     //---------------------------------------------
 
     if ( sCNF->constantPredicate != NULL )
@@ -1295,7 +1295,7 @@ qmoCnfMgr::classifyPred4StartWith( qcStatement   * aStatement ,
     }
 
     // To Fix PR-12743
-    // NNF Filter Áö¿ø
+    // NNF Filter ì§€ì›
     if ( sCNF->nnfFilter != NULL )
     {
         IDE_TEST( qmoPred
@@ -1337,17 +1337,17 @@ qmoCnfMgr::classifyPred4ConnectBy( qcStatement     * aStatement,
 {
 /***********************************************************************
  *
- * Description : connectBy Ã³¸®¸¦ PredicateÀÇ ºĞ·ù
- *               ( connectByCNFÀÇ Predicate ºĞ·ù )
+ * Description : connectBy ì²˜ë¦¬ë¥¼ Predicateì˜ ë¶„ë¥˜
+ *               ( connectByCNFì˜ Predicate ë¶„ë¥˜ )
  *
  * Implementation :
- *    (1) Constant PredicateÀÇ ºĞ·ù
- *        constant predicate, level predicate, prior predicateÀÌ ¼±ÅÃµÈ´Ù.
- *        ÀÌ´Â addConstPred4ConnectBy() ÇÔ¼ö¿¡¼­ hierarhcy graph Á¸Àç À¯¹«¿¡
- *        µû¶ó ºĞ¸®ÇÏ¿© Ã³¸®ÇÑ´Ù.
- *    (2) One Table PredicateÀÇ ºĞ·ù
- *    Âü°í : Hierarchy Query´Â joinÀ» »ç¿ëÇÒ ¼ö ¾ø±â ¶§¹®¿¡
- *           connectByCNF¿¡´Â joinPredicateÀÌ ¿Ã ¼ö ¾øÀ½
+ *    (1) Constant Predicateì˜ ë¶„ë¥˜
+ *        constant predicate, level predicate, prior predicateì´ ì„ íƒëœë‹¤.
+ *        ì´ëŠ” addConstPred4ConnectBy() í•¨ìˆ˜ì—ì„œ hierarhcy graph ì¡´ì¬ ìœ ë¬´ì—
+ *        ë”°ë¼ ë¶„ë¦¬í•˜ì—¬ ì²˜ë¦¬í•œë‹¤.
+ *    (2) One Table Predicateì˜ ë¶„ë¥˜
+ *    ì°¸ê³  : Hierarchy QueryëŠ” joinì„ ì‚¬ìš©í•  ìˆ˜ ì—†ê¸° ë•Œë¬¸ì—
+ *           connectByCNFì—ëŠ” joinPredicateì´ ì˜¬ ìˆ˜ ì—†ìŒ
  *
  ***********************************************************************/
 
@@ -1362,14 +1362,14 @@ qmoCnfMgr::classifyPred4ConnectBy( qcStatement     * aStatement,
     IDU_FIT_POINT_FATAL( "qmoCnfMgr::classifyPred4ConnectBy::__FT__" );
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aCNF != NULL );
 
     //------------------------------------------
-    // ±âº» ÃÊ±âÈ­
+    // ê¸°ë³¸ ì´ˆê¸°í™”
     //------------------------------------------
 
     sCNF              = aCNF;
@@ -1388,14 +1388,14 @@ qmoCnfMgr::classifyPred4ConnectBy( qcStatement     * aStatement,
     while( sNode != NULL )
     {
 
-        // qmoPredicate »ı¼º
+        // qmoPredicate ìƒì„±
         IDE_TEST( qmoPred::createPredicate( QC_QMP_MEM(aStatement),
                                             sNode,
                                             &sNewPred )
                   != IDE_SUCCESS );
 
         //-------------------------------------------------
-        // Constant Predicate ºĞ·ù
+        // Constant Predicate ë¶„ë¥˜
         //-------------------------------------------------
 
         IDE_TEST( qmoPred::isConstantPredicate( sNewPred,
@@ -1405,7 +1405,7 @@ qmoCnfMgr::classifyPred4ConnectBy( qcStatement     * aStatement,
 
         if ( sIsConstant == ID_TRUE )
         {
-            // Rownum/Level/Prior/Constant Predicate ºĞ·ùÇÏ¿© predicate Ãß°¡
+            // Rownum/Level/Prior/Constant Predicate ë¶„ë¥˜í•˜ì—¬ predicate ì¶”ê°€
             IDE_TEST( addConstPred4ConnectBy( sCNF,
                                               sNewPred )
                       != IDE_SUCCESS );
@@ -1413,7 +1413,7 @@ qmoCnfMgr::classifyPred4ConnectBy( qcStatement     * aStatement,
         else
         {
             //-------------------------------------------------
-            // One Table Predicate ºĞ·ù
+            // One Table Predicate ë¶„ë¥˜
             //-------------------------------------------------
 
             // BUG-38675
@@ -1442,9 +1442,9 @@ qmoCnfMgr::classifyPred4ConnectBy( qcStatement     * aStatement,
     }
 
     //---------------------------------------------
-    // connect by CNFÀÇ °¢ PredicateÀÇ subuqery Ã³¸®
-    //    statr with CNFÀÇ °¢ PredicateÀº ÇØ´ç graphÀÇ myPredicate¿¡ ¿¬°áµÇÁö
-    //    ¾Ê¾Æ ÇØ´ç graphÀÇ myPredicateÃ³¸® ½Ã¿¡ subquery°¡ »ı¼ºµÇÁö ¾Ê´Â´Ù.
+    // connect by CNFì˜ ê° Predicateì˜ subuqery ì²˜ë¦¬
+    //    statr with CNFì˜ ê° Predicateì€ í•´ë‹¹ graphì˜ myPredicateì— ì—°ê²°ë˜ì§€
+    //    ì•Šì•„ í•´ë‹¹ graphì˜ myPredicateì²˜ë¦¬ ì‹œì— subqueryê°€ ìƒì„±ë˜ì§€ ì•ŠëŠ”ë‹¤.
     //---------------------------------------------
 
     if ( sCNF->constantPredicate != NULL )
@@ -1460,7 +1460,7 @@ qmoCnfMgr::classifyPred4ConnectBy( qcStatement     * aStatement,
     }
 
     // To Fix PR-12743
-    // NNF Filter Áö¿ø
+    // NNF Filter ì§€ì›
     if ( sCNF->nnfFilter != NULL )
     {
         IDE_TEST( qmoPred::optimizeSubqueryInNode( aStatement,
@@ -1527,10 +1527,10 @@ qmoCnfMgr::initBaseGraph( qcStatement * aStatement,
 {
 /***********************************************************************
  *
- * Description : Base GraphÀÇ »ı¼º ¹× ÃÊ±âÈ­
+ * Description : Base Graphì˜ ìƒì„± ë° ì´ˆê¸°í™”
  *
  * Implementation :
- *    aFromÀ» µû¶ó°¡¸é¼­ ÇØ´ç Table¿¡ ´ëÀÀÇÏ´Â base graphÀÇ ÃÊ±âÈ­ ÇÔ¼ö È£Ãâ
+ *    aFromì„ ë”°ë¼ê°€ë©´ì„œ í•´ë‹¹ Tableì— ëŒ€ì‘í•˜ëŠ” base graphì˜ ì´ˆê¸°í™” í•¨ìˆ˜ í˜¸ì¶œ
  *
  ***********************************************************************/
 
@@ -1541,14 +1541,14 @@ qmoCnfMgr::initBaseGraph( qcStatement * aStatement,
     IDU_FIT_POINT_FATAL( "qmoCnfMgr::initBaseGraph::__FT__" );
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aQuerySet != NULL );
 
     //------------------------------------------
-    // ±âº» ÃÊ±âÈ­
+    // ê¸°ë³¸ ì´ˆê¸°í™”
     //------------------------------------------
 
     sQuerySet      = aQuerySet;
@@ -1557,7 +1557,7 @@ qmoCnfMgr::initBaseGraph( qcStatement * aStatement,
     if ( sHierarchy != NULL )
     {
         //------------------------------------------
-        // Hierarchy Graph ÃÊ±âÈ­
+        // Hierarchy Graph ì´ˆê¸°í™”
         //------------------------------------------
 
         IDE_TEST( qmgHierarchy::init( aStatement,
@@ -1570,7 +1570,7 @@ qmoCnfMgr::initBaseGraph( qcStatement * aStatement,
     else
     {
         //------------------------------------------
-        // ±× ¿ÜÀÇ base Graph ÃÊ±âÈ­
+        // ê·¸ ì™¸ì˜ base Graph ì´ˆê¸°í™”
         //------------------------------------------
 
         switch( aFrom->joinType )
@@ -1581,8 +1581,8 @@ qmoCnfMgr::initBaseGraph( qcStatement * aStatement,
                      == QCM_PARTITIONED_TABLE ) )
                 {
                     // PROJ-1502 PARTITIONED DISK TABLE
-                    // base tableÀÌ°í partitioned tableÀÌ¸é
-                    // partition graph¸¦ »ı¼ºÇÑ´Ù.
+                    // base tableì´ê³  partitioned tableì´ë©´
+                    // partition graphë¥¼ ìƒì„±í•œë‹¤.
                     IDE_TEST( qmgPartition::init( aStatement,
                                                   sQuerySet,
                                                   aFrom,
@@ -1613,8 +1613,8 @@ qmoCnfMgr::initBaseGraph( qcStatement * aStatement,
                     else
                     {
                         // PROJ-1502 PARTITIONED DISK TABLE
-                        // base tableÀÌ°í non-partitioned tableÀÌ°Å³ª,
-                        // viewÀÌ¸é selection graph¸¦ »ı¼ºÇÑ´Ù.
+                        // base tableì´ê³  non-partitioned tableì´ê±°ë‚˜,
+                        // viewì´ë©´ selection graphë¥¼ ìƒì„±í•œë‹¤.
                         IDE_TEST( qmgSelection::init( aStatement,
                                                       sQuerySet,
                                                       aFrom,
@@ -1670,7 +1670,7 @@ qmoCnfMgr::initJoinGroup( qcStatement  * aStatement,
 {
 /***********************************************************************
  *
- * Description : Join GroupÀÇ ÃÊ±âÈ­
+ * Description : Join Groupì˜ ì´ˆê¸°í™”
  *
  * Implementation :
  *
@@ -1681,7 +1681,7 @@ qmoCnfMgr::initJoinGroup( qcStatement  * aStatement,
 
     IDU_FIT_POINT_FATAL( "qmoCnfMgr::initJoinGroup::__FT__" );
 
-    // °¢ Join GroupÀÇ ÃÊ±âÈ­
+    // ê° Join Groupì˜ ì´ˆê¸°í™”
     for ( i = 0; i < aJoinGroupCnt; i++ )
     {
         sCurJoinGroup = & aJoinGroup[i];
@@ -1713,17 +1713,17 @@ qmoCnfMgr::addConstPred4Where( qmoPredicate * aPredicate,
 {
 /***********************************************************************
  *
- * Description : WhereÀÇ Level/Prior/Constant PredicateÀÇ ºĞ·ù
+ * Description : Whereì˜ Level/Prior/Constant Predicateì˜ ë¶„ë¥˜
  *
  * Implementation :
- *    (1) Hierarchy°¡ Á¸ÀçÇÏ´Â °æ¿ì
- *        A. Level PredicateÀÎ °æ¿ì : qmgHierarchy::myPredicate¿¡ ¿¬°á
- *        B. Prior PredicateÀÎ °æ¿ì : qmgHierarchy::myPredicate¿¡ ¿¬°á
- *        C. ±× ¿Ü ÀÏ¹İ Constant Predicate : qmoCNF::constantPredicate¿¡ ¿¬°á
- *        Âü°í : qmgHierarhcy::myPredicateÀº PLAN NODE ±¸¼º ½Ã,
- *               filter·Î Ã³¸®µÊ
- *    (2) Hierarchy°¡ Á¸ÀçÇÏÁö ¾Ê´Â °æ¿ì
- *        qmoCnf::constantPredicate¿¡ ¿¬°á
+ *    (1) Hierarchyê°€ ì¡´ì¬í•˜ëŠ” ê²½ìš°
+ *        A. Level Predicateì¸ ê²½ìš° : qmgHierarchy::myPredicateì— ì—°ê²°
+ *        B. Prior Predicateì¸ ê²½ìš° : qmgHierarchy::myPredicateì— ì—°ê²°
+ *        C. ê·¸ ì™¸ ì¼ë°˜ Constant Predicate : qmoCNF::constantPredicateì— ì—°ê²°
+ *        ì°¸ê³  : qmgHierarhcy::myPredicateì€ PLAN NODE êµ¬ì„± ì‹œ,
+ *               filterë¡œ ì²˜ë¦¬ë¨
+ *    (2) Hierarchyê°€ ì¡´ì¬í•˜ì§€ ì•ŠëŠ” ê²½ìš°
+ *        qmoCnf::constantPredicateì— ì—°ê²°
  *
  ***********************************************************************/
 
@@ -1734,14 +1734,14 @@ qmoCnfMgr::addConstPred4Where( qmoPredicate * aPredicate,
     IDU_FIT_POINT_FATAL( "qmoCnfMgr::addConstPred4Where::__FT__" );
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_DASSERT( aPredicate != NULL );
     IDE_DASSERT( aCNF != NULL );
 
     //------------------------------------------
-    // ±âº» ¼³Á¤
+    // ê¸°ë³¸ ì„¤ì •
     //------------------------------------------
 
     sPredicate = aPredicate;
@@ -1750,18 +1750,18 @@ qmoCnfMgr::addConstPred4Where( qmoPredicate * aPredicate,
     if ( aExistHierarchy == ID_TRUE )
     {
         //------------------------------------------
-        // Hierarchy°¡ Á¸ÀçÇÏ´Â °æ¿ì,
+        // Hierarchyê°€ ì¡´ì¬í•˜ëŠ” ê²½ìš°,
         //     - Level Predicate,Prior Predicate  :
-        //       ( PLAN NODE »ı¼º ½Ã )filter·Î Ã³¸®µÉ ¼ö ÀÖµµ·Ï
-        //         Hierarchy GraphÀÇ myPredicate¿¡ ¿¬°á
-        //     - Prior Predicate : Hierarchy GraphÀÇ myPredicate¿¡ ¿¬°á
-        //     - Constant Predicate : CNFÀÇ constantPredicate¿¡ ¿¬°á
+        //       ( PLAN NODE ìƒì„± ì‹œ )filterë¡œ ì²˜ë¦¬ë  ìˆ˜ ìˆë„ë¡
+        //         Hierarchy Graphì˜ myPredicateì— ì—°ê²°
+        //     - Prior Predicate : Hierarchy Graphì˜ myPredicateì— ì—°ê²°
+        //     - Constant Predicate : CNFì˜ constantPredicateì— ì—°ê²°
         //------------------------------------------
 
         sHierGraph = sCNF->baseGraph[0];
 
 
-        /* Level, isLeaf, PredicateÀÇ Ã³¸® */
+        /* Level, isLeaf, Predicateì˜ ì²˜ë¦¬ */
         if ( ( (sPredicate->node->lflag & QTC_NODE_LEVEL_MASK )
              == QTC_NODE_LEVEL_EXIST) ||
              ( (sPredicate->node->lflag & QTC_NODE_ISLEAF_MASK )
@@ -1772,7 +1772,7 @@ qmoCnfMgr::addConstPred4Where( qmoPredicate * aPredicate,
         }
         else
         {
-            // Prior Predicate Ã³¸®
+            // Prior Predicate ì²˜ë¦¬
             if ( ( sPredicate->node->lflag & QTC_NODE_PRIOR_MASK )
                  == QTC_NODE_PRIOR_EXIST )
             {
@@ -1781,7 +1781,7 @@ qmoCnfMgr::addConstPred4Where( qmoPredicate * aPredicate,
             }
             else
             {
-                // Constant Predicate Ã³¸®
+                // Constant Predicate ì²˜ë¦¬
                 sPredicate->next = sCNF->constantPredicate;
                 sCNF->constantPredicate = sPredicate;
             }
@@ -1790,9 +1790,9 @@ qmoCnfMgr::addConstPred4Where( qmoPredicate * aPredicate,
     else
     {
         //------------------------------------------
-        // Hierarchy°¡ Á¸ÀçÇÏÁö ¾Ê´Â °æ¿ì,
-        // Level Predicate, Prior PredicateÀ» ºĞ·ùÇÏÁö ¾ÊÀ½
-        // ¸ğµÎ constant predicateÀ¸·Î ºĞ·ùÇÏ¿© Ã³¸®
+        // Hierarchyê°€ ì¡´ì¬í•˜ì§€ ì•ŠëŠ” ê²½ìš°,
+        // Level Predicate, Prior Predicateì„ ë¶„ë¥˜í•˜ì§€ ì•ŠìŒ
+        // ëª¨ë‘ constant predicateìœ¼ë¡œ ë¶„ë¥˜í•˜ì—¬ ì²˜ë¦¬
         //------------------------------------------
 
         sPredicate->next = sCNF->constantPredicate;
@@ -1808,20 +1808,20 @@ idBool qmoCnfMgr::checkPushPredHint( qmoCNF           * aCNF,
 {
 /***********************************************************************
  *
- * Description : BUG-42968 ansi ½ºÅ¸ÀÏ Á¶ÀÎÀÏ¶§ push_pred ÈùÆ® Àû¿ë¿©ºÎ¸¦ ÆÇ´ÜÇÑ´Ù.
+ * Description : BUG-42968 ansi ìŠ¤íƒ€ì¼ ì¡°ì¸ì¼ë•Œ push_pred íŒíŠ¸ ì ìš©ì—¬ë¶€ë¥¼ íŒë‹¨í•œë‹¤.
  *
  * Implementation :
- *                  1. inner join : ¸ğµÎ °¡´É
- *                  2. left outer : ON Àı¿¡ Á¶ÀÎ ÇÁ¸®µğÅ¶¸¸ Á¸ÀçÇÒ¶§ °¡´É
-                                    ¿À¸¥ÂÊ view·Î¸¸ ³»¸±¼ö ÀÖÀ½
- *                  3. full outer : ¸ğµÎ ºÒ°¡´É
+ *                  1. inner join : ëª¨ë‘ ê°€ëŠ¥
+ *                  2. left outer : ON ì ˆì— ì¡°ì¸ í”„ë¦¬ë””í‚·ë§Œ ì¡´ì¬í• ë•Œ ê°€ëŠ¥
+                                    ì˜¤ë¥¸ìª½ viewë¡œë§Œ ë‚´ë¦´ìˆ˜ ìˆìŒ
+ *                  3. full outer : ëª¨ë‘ ë¶ˆê°€ëŠ¥
  *
  ***********************************************************************/
     qtcNode          * sNode;
     qmsPushPredHints * sPushPredHint;
 
     // BUG-26800
-    // inner join onÀıÀÇ joinÁ¶°Ç¿¡ push_pred ÈùÆ® Àû¿ë
+    // inner join onì ˆì˜ joinì¡°ê±´ì— push_pred íŒíŠ¸ ì ìš©
     if ( aJoinType == QMS_INNER_JOIN )
     {
         // nothing to do
@@ -1831,7 +1831,7 @@ idBool qmoCnfMgr::checkPushPredHint( qmoCNF           * aCNF,
         sNode         = aNode;
 
         //------------------------------------------
-        // ÈùÆ®°¡ ¿À¸¥ÂÊ view ÀÎÁö °Ë»ç
+        // íŒíŠ¸ê°€ ì˜¤ë¥¸ìª½ view ì¸ì§€ ê²€ì‚¬
         //------------------------------------------
 
         for( sPushPredHint = aCNF->myQuerySet->SFWGH->hints->pushPredHint;
@@ -1849,7 +1849,7 @@ idBool qmoCnfMgr::checkPushPredHint( qmoCNF           * aCNF,
             }
         }
 
-        // ÈùÆ®Áß¿¡ 1°³¶óµµ »ç¿ë°¡´ÉÇÏ¸é push down ÇÑ´Ù.
+        // íŒíŠ¸ì¤‘ì— 1ê°œë¼ë„ ì‚¬ìš©ê°€ëŠ¥í•˜ë©´ push down í•œë‹¤.
         if ( sPushPredHint == NULL )
         {
             IDE_CONT( DISABLE );
@@ -1860,9 +1860,9 @@ idBool qmoCnfMgr::checkPushPredHint( qmoCNF           * aCNF,
         }
 
         //------------------------------------------
-        // ONÀı °Ë»ç
-        // 1. Á¶ÀÎ ÇÁ¸®µğÅ¶À¸·Î¸¸ ±¸¼ºµÇ¾ú´ÂÁö ¿©ºÎ
-        // 2. ¼­ºêÄõ¸®°¡ ¾ø´ÂÁö ¿©ºÎ
+        // ONì ˆ ê²€ì‚¬
+        // 1. ì¡°ì¸ í”„ë¦¬ë””í‚·ìœ¼ë¡œë§Œ êµ¬ì„±ë˜ì—ˆëŠ”ì§€ ì—¬ë¶€
+        // 2. ì„œë¸Œì¿¼ë¦¬ê°€ ì—†ëŠ”ì§€ ì—¬ë¶€
         //------------------------------------------
 
         while( sNode != NULL )
@@ -1911,21 +1911,21 @@ qmoCnfMgr::pushJoinPredInView( qmoPredicate     * aPredicate,
 {
 /***********************************************************************
  *
- * Description : join predicateÀ» VIEW ³»ºÎ·Î push
+ * Description : join predicateì„ VIEW ë‚´ë¶€ë¡œ push
  *
  * Implementation : PROJ-1495
  *
- *    1. PUSH_PRED(view)ÀÇ ÇØ´ç viewÀÇ base graph¸¦ Ã£´Â´Ù.
- *    2. Ã£¾ÒÀ¸¸é,
+ *    1. PUSH_PRED(view)ì˜ í•´ë‹¹ viewì˜ base graphë¥¼ ì°¾ëŠ”ë‹¤.
+ *    2. ì°¾ì•˜ìœ¼ë©´,
  *       (1) predicate
- *           . viewÀÇ base graph¿¡ ¿¬°á
- *           . predicate¿¡ PUSH_PRED hint¿¡ ÀÇÇØ ³»·ÁÁ³´Ù´Â Á¤º¸ ÀúÀå
- *       (2) viewÀÇ tableRef
- *           . PUSH_PRED hint viewÀÌ¸ç,
- *             ÀÌ¿¡ ´ëÇÑ predicateÀÌ ³»·ÁÁ³´Ù´Â Á¤º¸ Ç¥½Ã
- *           . tableRef¿¡ sameViewRef°¡ ÀÖÀ¸¸é, ÀÌ¸¦ Á¦°Å
- *           . view tableRefÀÇ view opt type ¼³Á¤ (QMO_VIEW_OPT_TYPE_PUSH)
- *           . view base graph¿¡ dependency oring
+ *           . viewì˜ base graphì— ì—°ê²°
+ *           . predicateì— PUSH_PRED hintì— ì˜í•´ ë‚´ë ¤ì¡Œë‹¤ëŠ” ì •ë³´ ì €ì¥
+ *       (2) viewì˜ tableRef
+ *           . PUSH_PRED hint viewì´ë©°,
+ *             ì´ì— ëŒ€í•œ predicateì´ ë‚´ë ¤ì¡Œë‹¤ëŠ” ì •ë³´ í‘œì‹œ
+ *           . tableRefì— sameViewRefê°€ ìˆìœ¼ë©´, ì´ë¥¼ ì œê±°
+ *           . view tableRefì˜ view opt type ì„¤ì • (QMO_VIEW_OPT_TYPE_PUSH)
+ *           . view base graphì— dependency oring
  *
  ***********************************************************************/
 
@@ -1940,7 +1940,7 @@ qmoCnfMgr::pushJoinPredInView( qmoPredicate     * aPredicate,
     IDU_FIT_POINT_FATAL( "qmoCnfMgr::pushJoinPredInView::__FT__" );
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_DASSERT( aPredicate != NULL );
@@ -1948,17 +1948,17 @@ qmoCnfMgr::pushJoinPredInView( qmoPredicate     * aPredicate,
     IDE_DASSERT( aBaseGraph != NULL );
 
     //------------------------------------------
-    // ±âº» ¼³Á¤
+    // ê¸°ë³¸ ì„¤ì •
     //------------------------------------------
 
     sBaseGraph = aBaseGraph;
     sBaseGraphCnt = aBaseGraphCnt;
 
     //------------------------------------------
-    // PUSH_PREDÀÇ ÇØ´ç VIEW¸¦ Ã£¾Æ¼­ join predicateÀ» ³»¸°´Ù.
+    // PUSH_PREDì˜ í•´ë‹¹ VIEWë¥¼ ì°¾ì•„ì„œ join predicateì„ ë‚´ë¦°ë‹¤.
     //------------------------------------------
 
-    // subquery Á¦¿Ü
+    // subquery ì œì™¸
     if( ( aPredicate->node->lflag & QTC_NODE_SUBQUERY_MASK )
         == QTC_NODE_SUBQUERY_EXIST )
     {
@@ -1967,8 +1967,8 @@ qmoCnfMgr::pushJoinPredInView( qmoPredicate     * aPredicate,
     else
     {
         //------------------------------------------
-        // PUSH_PREDÀÇ ÇØ´ç VIEW¸¦ Ã£¾Æ¼­
-        // join predicateÀ» ³»¸°´Ù.
+        // PUSH_PREDì˜ í•´ë‹¹ VIEWë¥¼ ì°¾ì•„ì„œ
+        // join predicateì„ ë‚´ë¦°ë‹¤.
         //------------------------------------------
 
         for( sPushPredHint = aPushPredHint;
@@ -2020,11 +2020,11 @@ qmoCnfMgr::pushJoinPredInView( qmoPredicate     * aPredicate,
                     aPredicate->next = sBaseGraph[sCnt]->myPredicate;
                     sBaseGraph[sCnt]->myPredicate = aPredicate;
 
-                    // predicate flag ¼³Á¤
+                    // predicate flag ì„¤ì •
                     aPredicate->flag &= ~QMO_PRED_PUSH_PRED_HINT_MASK;
                     aPredicate->flag |= QMO_PRED_PUSH_PRED_HINT_TRUE;
 
-                    // sameViewRef°¡ Á¸ÀçÇÏ´Â °æ¿ì, ÀÌ¸¦ Á¦°ÅÇÑ´Ù.
+                    // sameViewRefê°€ ì¡´ì¬í•˜ëŠ” ê²½ìš°, ì´ë¥¼ ì œê±°í•œë‹¤.
                     if( sBaseGraph[sCnt]->myFrom->tableRef->sameViewRef
                         != NULL )
                     {
@@ -2035,7 +2035,7 @@ qmoCnfMgr::pushJoinPredInView( qmoPredicate     * aPredicate,
                         // Nothing To Do
                     }
 
-                    // tableRef flag ¼³Á¤
+                    // tableRef flag ì„¤ì •
                     sBaseGraph[sCnt]->myFrom->tableRef->flag
                         &= ~ QMS_TABLE_REF_PUSH_PRED_HINT_MASK;
                     sBaseGraph[sCnt]->myFrom->tableRef->flag
@@ -2053,11 +2053,11 @@ qmoCnfMgr::pushJoinPredInView( qmoPredicate     * aPredicate,
                         // Nothing To Do
                     }
 
-                    // tableRef viewOpt flag ¼³Á¤
+                    // tableRef viewOpt flag ì„¤ì •
                     sBaseGraph[sCnt]->myFrom->tableRef->viewOptType
                         = QMO_VIEW_OPT_TYPE_PUSH;
 
-                    // dependency ¼³Á¤
+                    // dependency ì„¤ì •
                     IDE_TEST( qtc::dependencyOr( &(sBaseGraph[sCnt]->depInfo),
                                                  & aPredicate->node->depInfo,
                                                  &(sBaseGraph[sCnt]->depInfo) )
@@ -2098,20 +2098,20 @@ qmoCnfMgr::addOneTblPredOnJoinType( qmoCNF       * aCNF,
 {
 /***********************************************************************
  *
- * Description : Join Type¿¡ µû¶ó One Table PredicateÀ» Ã³¸®
+ * Description : Join Typeì— ë”°ë¼ One Table Predicateì„ ì²˜ë¦¬
  *
  * Implementation :
  *    (1) INNER_JOIN
- *        left, right »ó°ü¾øÀÌ push selection ¼öÇà °¡´É
- *        one table predicateÀ» ÇØ´ç graphÀÇ myPredicate¿¡ ³»·ÁÁÜ
+ *        left, right ìƒê´€ì—†ì´ push selection ìˆ˜í–‰ ê°€ëŠ¥
+ *        one table predicateì„ í•´ë‹¹ graphì˜ myPredicateì— ë‚´ë ¤ì¤Œ
  *    (2) FULL_OUTER_JOIN
- *        left, right »ó°ü¾øÀÌ push selection ¼öÇàÇÒ ¼ö ¾øÀ½
- *        onConditionCNF->oneTablePredicate¿¡ ¿¬°á
+ *        left, right ìƒê´€ì—†ì´ push selection ìˆ˜í–‰í•  ìˆ˜ ì—†ìŒ
+ *        onConditionCNF->oneTablePredicateì— ì—°ê²°
  *    (3) LEFT_OUTER_JOIN
- *        - left : push selection ¼öÇàÇÒ ¼ö ¾øÀ½,
- *                 µû¶ó¼­ onConditionCNF->oneTablePredicate¿¡ ¿¬°á
- *        - right : push selection ¼öÇà °¡´É
- *                  one table predicateÀ» ÇØ´ç graphÀÇ myPredicate¿¡ ³»·ÁÁÜ
+ *        - left : push selection ìˆ˜í–‰í•  ìˆ˜ ì—†ìŒ,
+ *                 ë”°ë¼ì„œ onConditionCNF->oneTablePredicateì— ì—°ê²°
+ *        - right : push selection ìˆ˜í–‰ ê°€ëŠ¥
+ *                  one table predicateì„ í•´ë‹¹ graphì˜ myPredicateì— ë‚´ë ¤ì¤Œ
  *
  ***********************************************************************/
 
@@ -2123,7 +2123,7 @@ qmoCnfMgr::addOneTblPredOnJoinType( qmoCNF       * aCNF,
     IDU_FIT_POINT_FATAL( "qmoCnfMgr::addOneTblPredOnJoinType::__FT__" );
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_DASSERT( aPredicate != NULL );
@@ -2131,7 +2131,7 @@ qmoCnfMgr::addOneTblPredOnJoinType( qmoCNF       * aCNF,
     IDE_DASSERT( aCNF != NULL );
 
     //------------------------------------------
-    // ±âº» ¼³Á¤
+    // ê¸°ë³¸ ì„¤ì •
     //------------------------------------------
 
     sPredicate = aPredicate;
@@ -2140,19 +2140,19 @@ qmoCnfMgr::addOneTblPredOnJoinType( qmoCNF       * aCNF,
 
     //------------------------------------------
     // To Fix BUG-10806
-    // Push Selection °¡´É Predicate ÀÎÁö °Ë»ç
+    // Push Selection ê°€ëŠ¥ Predicate ì¸ì§€ ê²€ì‚¬
     //------------------------------------------
 
     sPushApplicable = isPushApplicable(aPredicate, aJoinType);
 
-    // BUG-44805 QMO_PUSH_APPLICABLE_LEFT µµ Çã¿ëÇØ¾ß ÇÑ´Ù.
-    // aIsLeft º¯¼ö·Î ÀÎÇØ left ·Î´Â Push SelectionÀÌ ¾ÈµÊ
+    // BUG-44805 QMO_PUSH_APPLICABLE_LEFT ë„ í—ˆìš©í•´ì•¼ í•œë‹¤.
+    // aIsLeft ë³€ìˆ˜ë¡œ ì¸í•´ left ë¡œëŠ” Push Selectionì´ ì•ˆë¨
     if ( sPushApplicable != QMO_PUSH_APPLICABLE_FALSE )
     {
         switch( aJoinType )
         {
             case QMS_INNER_JOIN :
-                // push selection ¼öÇà
+                // push selection ìˆ˜í–‰
                 sPredicate->next = sBaseGraph->myPredicate;
                 sBaseGraph->myPredicate = sPredicate;
                 break;
@@ -2160,22 +2160,22 @@ qmoCnfMgr::addOneTblPredOnJoinType( qmoCNF       * aCNF,
             case QMS_LEFT_OUTER_JOIN :
                 if ( aIsLeft == ID_TRUE )
                 {
-                    // left conceptual table¿¡ ´ëÇÑ predicate
-                    // push selection ÇÒ ¼ö ¾øÀ½
+                    // left conceptual tableì— ëŒ€í•œ predicate
+                    // push selection í•  ìˆ˜ ì—†ìŒ
                     sPredicate->next = sCNF->oneTablePredicate;
                     sCNF->oneTablePredicate = sPredicate;
                 }
                 else
                 {
-                    // right conceptual table¿¡ ´ëÇÑ predicate
-                    // push selection ¼öÇà
+                    // right conceptual tableì— ëŒ€í•œ predicate
+                    // push selection ìˆ˜í–‰
                     sPredicate->next = sBaseGraph->myPredicate;
                     sBaseGraph->myPredicate = sPredicate;
                 }
                 break;
 
             case QMS_FULL_OUTER_JOIN :
-                // push selection ÇÒ ¼ö ¾øÀ½
+                // push selection í•  ìˆ˜ ì—†ìŒ
                 sPredicate->next = sCNF->oneTablePredicate;
                 sCNF->oneTablePredicate = sPredicate;
                 break;
@@ -2186,7 +2186,7 @@ qmoCnfMgr::addOneTblPredOnJoinType( qmoCNF       * aCNF,
     }
     else
     {
-        // push selection ÇÒ ¼ö ¾øÀ½
+        // push selection í•  ìˆ˜ ì—†ìŒ
         sPredicate->next = sCNF->oneTablePredicate;
         sCNF->oneTablePredicate = sPredicate;
     }
@@ -2204,26 +2204,26 @@ qmoCnfMgr::pushSelectionOnJoinType( qcStatement   * aStatement,
 {
 /***********************************************************************
  *
- * Description : Join Type¿¡ µû¶ó push selection ÃÖÀûÈ­ ¼öÇà
+ * Description : Join Typeì— ë”°ë¼ push selection ìµœì í™” ìˆ˜í–‰
  *
  * Implementation :
- *    upper predicate( whereÀı¿¡¼­ ³»·Á¿Â predicate ) Áß IS NULL, IS NOT NULL
- *    predicateÀ» Á¦¿ÜÇÏ°í ¾Æ·¡ °úÁ¤À» ¼öÇàÇÑ´Ù.
+ *    upper predicate( whereì ˆì—ì„œ ë‚´ë ¤ì˜¨ predicate ) ì¤‘ IS NULL, IS NOT NULL
+ *    predicateì„ ì œì™¸í•˜ê³  ì•„ë˜ ê³¼ì •ì„ ìˆ˜í–‰í•œë‹¤.
  *    (1) INNER_JOIN
- *        upper predicate¿¡¼­ ÇØ´ç graphÀÇ myPredicate¿¡ ³»·ÁÁÜ
+ *        upper predicateì—ì„œ í•´ë‹¹ graphì˜ myPredicateì— ë‚´ë ¤ì¤Œ
  *    (2) FULL_OUTER_JOIN
- *        upper predicate¿¡¼­ one table predicateÀ» º¹»çÇÏ¿©
- *        ÇØ´ç graphÀÇ myPredicate¿¡ ³»·ÁÁÜ
+ *        upper predicateì—ì„œ one table predicateì„ ë³µì‚¬í•˜ì—¬
+ *        í•´ë‹¹ graphì˜ myPredicateì— ë‚´ë ¤ì¤Œ
  *    (3) LEFT_OUTER_JOIN
- *        - left  : upper predicate¿¡¼­ ÇØ´ç graphÀÇ myPredicate¿¡ º¹»çÇÏ¿© ³»·ÁÁÜ
- *        - right : upper predicate¿¡¼­ one table predicateÀ» º¹»çÇÏ¿©
- *                  ÇØ´ç graphÀÇ myPredicate¿¡ ³»·ÁÁÜ
+ *        - left  : upper predicateì—ì„œ í•´ë‹¹ graphì˜ myPredicateì— ë³µì‚¬í•˜ì—¬ ë‚´ë ¤ì¤Œ
+ *        - right : upper predicateì—ì„œ one table predicateì„ ë³µì‚¬í•˜ì—¬
+ *                  í•´ë‹¹ graphì˜ myPredicateì— ë‚´ë ¤ì¤Œ
  *
  *    Ex)
- *       < »óÀ§ÀÇ Predicate¿¡¼­ ³»·ÁÁÙ PredicateÀ» ºĞ¸®ÇÏ¿© ÇÏÀ§ÀÇ Graph¿¡
- *         ´Ş¾ÆÁÖ´Â °æ¿ì >
+ *       < ìƒìœ„ì˜ Predicateì—ì„œ ë‚´ë ¤ì¤„ Predicateì„ ë¶„ë¦¬í•˜ì—¬ í•˜ìœ„ì˜ Graphì—
+ *         ë‹¬ì•„ì£¼ëŠ” ê²½ìš° >
  *
- *        [p2] PredicateÀ» ÇØ´ç Join Graph¿¡ ¿¬°áÇÏ´Â °æ¿ì
+ *        [p2] Predicateì„ í•´ë‹¹ Join Graphì— ì—°ê²°í•˜ëŠ” ê²½ìš°
  *
  *                             sPrevUpperPred
  *                               |
@@ -2233,10 +2233,10 @@ qmoCnfMgr::pushSelectionOnJoinType( qcStatement   * aStatement,
  *                               V        V
  *              [UpperPred] --> [p1] --> [p2] --> [p3]
  *
- *        [ÇØ´ç ÇÏÀ§ Graph] --> [q1] --> [q2] --> [q3]
+ *        [í•´ë‹¹ í•˜ìœ„ Graph] --> [q1] --> [q2] --> [q3]
  *
  *
- *         ==>   UpperPred¿¡¼­ ¿¬°áÀ» ²÷°í, sCurUpperPred¸¦ ´ÙÀ½À¸·Î ÁøÇà
+ *         ==>   UpperPredì—ì„œ ì—°ê²°ì„ ëŠê³ , sCurUpperPredë¥¼ ë‹¤ìŒìœ¼ë¡œ ì§„í–‰
  *
  *                             sPrevJoinPred
  *                               |
@@ -2248,10 +2248,10 @@ qmoCnfMgr::pushSelectionOnJoinType( qcStatement   * aStatement,
  *                                          V  V
  *              [UpperPred] --> [p1] -------> [p3]
  *
- *        [ÇØ´ç ÇÏÀ§ Graph] --> [q1] --> [q2] --> [q3]
+ *        [í•´ë‹¹ í•˜ìœ„ Graph] --> [q1] --> [q2] --> [q3]
  *
  *
- *         ==>  [p2] Predicate ¿¬°á
+ *         ==>  [p2] Predicate ì—°ê²°
  *
  *                             sPrevUpperPred
  *                               |
@@ -2263,10 +2263,10 @@ qmoCnfMgr::pushSelectionOnJoinType( qcStatement   * aStatement,
  *                           +[p2]
  *                          /      \
  *                         /        V
- *        [ÇØ´ç ÇÏÀ§ Graph] --X--> [q1] --> [q2] --> [q3]
+ *        [í•´ë‹¹ í•˜ìœ„ Graph] --X--> [q1] --> [q2] --> [q3]
  *
  *
- *         ==>  [p2] Predicate ¿¬°á ÈÄ
+ *         ==>  [p2] Predicate ì—°ê²° í›„
  *
  *                             sPrevUpperPred
  *                               |
@@ -2275,13 +2275,13 @@ qmoCnfMgr::pushSelectionOnJoinType( qcStatement   * aStatement,
  *                               V        V
  *              [UpperPred] --> [p1] --> [p3]
  *
- *        [ÇØ´ç ÇÏÀ§ Graph] --> [p2]-->[q1] --> [q2] --> [q3]
+ *        [í•´ë‹¹ í•˜ìœ„ Graph] --> [p2]-->[q1] --> [q2] --> [q3]
  *
  *
- *        < »óÀ§ÀÇ Predicate¿¡¼­ ³»·ÁÁÙ PredicateÀ» º¹»çÇÏ¿© ÇÏÀ§ÀÇ Graph¿¡
- *         ´Ş¾ÆÁÖ´Â °æ¿ì >
+ *        < ìƒìœ„ì˜ Predicateì—ì„œ ë‚´ë ¤ì¤„ Predicateì„ ë³µì‚¬í•˜ì—¬ í•˜ìœ„ì˜ Graphì—
+ *         ë‹¬ì•„ì£¼ëŠ” ê²½ìš° >
  *
- *         [p2] PredicateÀ» ÇØ´ç Join Graph¿¡ ¿¬°áÇÏ´Â °æ¿ì
+ *         [p2] Predicateì„ í•´ë‹¹ Join Graphì— ì—°ê²°í•˜ëŠ” ê²½ìš°
  *
  *                                  sPrevUpperPred
  *                                        |
@@ -2290,13 +2290,13 @@ qmoCnfMgr::pushSelectionOnJoinType( qcStatement   * aStatement,
  *                                        V        V
  *              [UpperPred] --> [p1] --> [p2] --> [p3]
  *
- *        [ÇØ´ç ÇÏÀ§ Graph] -X-> [q1] --> [q2] --> [q3]
+ *        [í•´ë‹¹ í•˜ìœ„ Graph] -X-> [q1] --> [q2] --> [q3]
  *                        \    +
  *                         V  /
  *                         [p2]
  *                          +
  *                          |
- *                        sAddNode ( º¹»çÇÑ Node )
+ *                        sAddNode ( ë³µì‚¬í•œ Node )
  *
  ***********************************************************************/
 
@@ -2307,17 +2307,17 @@ qmoCnfMgr::pushSelectionOnJoinType( qcStatement   * aStatement,
     UInt            sPredPos;
 
     //------------------------------------------------------
-    //  aUpperPred : »óÀ§¿¡¼­ ³»·Á¿Â Predicate
-    //  sCurUpperPred : »óÀ§¿¡¼­ ³»·Á¿Â predicateÀÇ Traverse °ü¸®
-    //  sPrevUpperPred : Push Selection ÇÒ ¼ö ¾ø´Â PredicateÀÇ ¿¬°á °ü¸®
-    //  sAddPred : Push Selection ´ë»ó PredicateÀÇ ¿¬°á °ü¸®
-    //  sPredPos : Base Graph¿¡¼­ PredicateÀÌ push selectionµÉ GraphÀÇ position
+    //  aUpperPred : ìƒìœ„ì—ì„œ ë‚´ë ¤ì˜¨ Predicate
+    //  sCurUpperPred : ìƒìœ„ì—ì„œ ë‚´ë ¤ì˜¨ predicateì˜ Traverse ê´€ë¦¬
+    //  sPrevUpperPred : Push Selection í•  ìˆ˜ ì—†ëŠ” Predicateì˜ ì—°ê²° ê´€ë¦¬
+    //  sAddPred : Push Selection ëŒ€ìƒ Predicateì˜ ì—°ê²° ê´€ë¦¬
+    //  sPredPos : Base Graphì—ì„œ Predicateì´ push selectionë  Graphì˜ position
     //------------------------------------------------------
 
     IDU_FIT_POINT_FATAL( "qmoCnfMgr::pushSelectionOnJoinType::__FT__" );
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -2326,7 +2326,7 @@ qmoCnfMgr::pushSelectionOnJoinType( qcStatement   * aStatement,
     IDE_DASSERT( aFromDependencies != NULL );
 
     //------------------------------------------
-    // ±âº» ¼³Á¤
+    // ê¸°ë³¸ ì„¤ì •
     //------------------------------------------
 
     sCurUpperPred     = *aUpperPred;
@@ -2337,9 +2337,9 @@ qmoCnfMgr::pushSelectionOnJoinType( qcStatement   * aStatement,
     while ( sCurUpperPred != NULL )
     {
         //------------------------------------------
-        // Push Selection °¡´ÉÇÑ PredicateÀÎ °æ¿ì,
-        // Push Selection ´ë»ó graphÀÇ À§Ä¡¸¦ Ã£´Â´Ù.
-        // ( Push Selection ÇÒ ¼ö ¾ø´Â °æ¿ì, ID_UINT_MAX °ªÀ» ¹İÈ¯ )
+        // Push Selection ê°€ëŠ¥í•œ Predicateì¸ ê²½ìš°,
+        // Push Selection ëŒ€ìƒ graphì˜ ìœ„ì¹˜ë¥¼ ì°¾ëŠ”ë‹¤.
+        // ( Push Selection í•  ìˆ˜ ì—†ëŠ” ê²½ìš°, ID_UINT_MAX ê°’ì„ ë°˜í™˜ )
         //------------------------------------------
 
         IDE_TEST( getPushPredPosition( sCurUpperPred,
@@ -2350,7 +2350,7 @@ qmoCnfMgr::pushSelectionOnJoinType( qcStatement   * aStatement,
                   != IDE_SUCCESS );
 
         //------------------------------------------
-        // ÇØ´ç graph¿¡ Predicate ¿¬°á
+        // í•´ë‹¹ graphì— Predicate ì—°ê²°
         //------------------------------------------
 
         if ( sPredPos != ID_UINT_MAX )
@@ -2358,7 +2358,7 @@ qmoCnfMgr::pushSelectionOnJoinType( qcStatement   * aStatement,
             switch( aJoinType )
             {
                 case QMS_INNER_JOIN :
-                    // Upper Predicate¿¡¼­ ¿¬°áÀ» ²÷À½
+                    // Upper Predicateì—ì„œ ì—°ê²°ì„ ëŠìŒ
                     if ( sPrevUpperPred == NULL )
                     {
                         *aUpperPred = sCurUpperPred->next;
@@ -2370,10 +2370,10 @@ qmoCnfMgr::pushSelectionOnJoinType( qcStatement   * aStatement,
 
                     sAddPred = sCurUpperPred;
 
-                    // ´ÙÀ½À¸·Î ÁøÇà
+                    // ë‹¤ìŒìœ¼ë¡œ ì§„í–‰
                     sCurUpperPred = sCurUpperPred->next;
 
-                    // ÇØ´ç graphÀÇ myPredicate¿¡ ¿¬°á
+                    // í•´ë‹¹ graphì˜ myPredicateì— ì—°ê²°
                     sAddPred->next = sBaseGraph[sPredPos]->myPredicate;
                     sBaseGraph[sPredPos]->myPredicate = sAddPred;
 
@@ -2381,7 +2381,7 @@ qmoCnfMgr::pushSelectionOnJoinType( qcStatement   * aStatement,
                 case QMS_LEFT_OUTER_JOIN :
                     if ( sPredPos == 0 )
                     {
-                        // Upper Predicate¿¡¼­ ¿¬°áÀ» ²÷À½
+                        // Upper Predicateì—ì„œ ì—°ê²°ì„ ëŠìŒ
                         if ( sPrevUpperPred == NULL )
                         {
                             *aUpperPred = sCurUpperPred->next;
@@ -2391,52 +2391,52 @@ qmoCnfMgr::pushSelectionOnJoinType( qcStatement   * aStatement,
                             sPrevUpperPred->next = sCurUpperPred->next;
                         }
 
-                        // BUG-40682 left outer join ÀÌ ÁßÃ¸À¸·Î »ç¿ëµÉ¶§
-                        // filter °¡ Àß¸øµÈ À§Ä¡¸¦ ÂüÁ¶ ÇÒ ¼ö ÀÖ´Ù.
-                        // predicate ¸¦ º¹»çÇØÁØ´Ù.
+                        // BUG-40682 left outer join ì´ ì¤‘ì²©ìœ¼ë¡œ ì‚¬ìš©ë ë•Œ
+                        // filter ê°€ ì˜ëª»ëœ ìœ„ì¹˜ë¥¼ ì°¸ì¡° í•  ìˆ˜ ìˆë‹¤.
+                        // predicate ë¥¼ ë³µì‚¬í•´ì¤€ë‹¤.
                         IDE_TEST( qmoPred::copyOnePredicate( QC_QMP_MEM(aStatement),
                                                              sCurUpperPred,
                                                              & sAddPred )
                                   != IDE_SUCCESS );
 
-                        // ´ÙÀ½À¸·Î ÁøÇà
+                        // ë‹¤ìŒìœ¼ë¡œ ì§„í–‰
                         sCurUpperPred = sCurUpperPred->next;
 
-                        // ÇØ´ç graphÀÇ myPredicate¿¡ ¿¬°á
+                        // í•´ë‹¹ graphì˜ myPredicateì— ì—°ê²°
                         sAddPred->next = sBaseGraph[sPredPos]->myPredicate;
                         sBaseGraph[sPredPos]->myPredicate = sAddPred;
                     }
                     else
                     {
-                        // Predicate º¹»ç
+                        // Predicate ë³µì‚¬
                         IDE_TEST( qmoPred::copyOnePredicate( QC_QMP_MEM(aStatement),
                                                              sCurUpperPred,
                                                              & sAddPred )
                                   != IDE_SUCCESS );
 
 
-                        // º¹»çÇÑ PredicateÀ» graphÀÇ myPredicate¿¡ ¿¬°á
+                        // ë³µì‚¬í•œ Predicateì„ graphì˜ myPredicateì— ì—°ê²°
                         sAddPred->next = sBaseGraph[sPredPos]->myPredicate;
                         sBaseGraph[sPredPos]->myPredicate = sAddPred;
 
-                        // ´ÙÀ½À¸·Î ÁøÇà
+                        // ë‹¤ìŒìœ¼ë¡œ ì§„í–‰
                         sPrevUpperPred = sCurUpperPred;
                         sCurUpperPred = sCurUpperPred->next;
                     }
 
                     break;
                 case QMS_FULL_OUTER_JOIN :
-                    // Predicate º¹»ç
+                    // Predicate ë³µì‚¬
                     IDE_TEST( qmoPred::copyOnePredicate( QC_QMP_MEM(aStatement),
                                                          sCurUpperPred,
                                                          & sAddPred )
                               != IDE_SUCCESS );
 
-                    // º¹»çÇÑ PredicateÀ» ÇØ´ç graphÀÇ myPredicate¿¡ ¿¬°á
+                    // ë³µì‚¬í•œ Predicateì„ í•´ë‹¹ graphì˜ myPredicateì— ì—°ê²°
                     sAddPred->next = sBaseGraph[sPredPos]->myPredicate;
                     sBaseGraph[sPredPos]->myPredicate = sAddPred;
 
-                    // ´ÙÀ½À¸·Î ÁøÇà
+                    // ë‹¤ìŒìœ¼ë¡œ ì§„í–‰
                     sPrevUpperPred = sCurUpperPred;
                     sCurUpperPred = sCurUpperPred->next;
                     break;
@@ -2448,8 +2448,8 @@ qmoCnfMgr::pushSelectionOnJoinType( qcStatement   * aStatement,
         }
         else
         {
-            // subquery¸¦ Æ÷ÇÔÇÏ´Â PredicateÀÌ°Å³ª,
-            // one table predicateÀÌ ¾Æ´Ñ °æ¿ì
+            // subqueryë¥¼ í¬í•¨í•˜ëŠ” Predicateì´ê±°ë‚˜,
+            // one table predicateì´ ì•„ë‹Œ ê²½ìš°
             sPrevUpperPred = sCurUpperPred;
             sCurUpperPred = sCurUpperPred->next;
         }
@@ -2468,13 +2468,13 @@ qmoCnfMgr::addConstPred4ConnectBy( qmoCNF       * aCNF,
 {
 /***********************************************************************
  *
- * Description : Connect ByÀÇ Level/Prior/Constant PredicateÀÇ ºĞ·ù
+ * Description : Connect Byì˜ Level/Prior/Constant Predicateì˜ ë¶„ë¥˜
  *
  * Implementation :
- *    (1) Connect by Rownum PredicateÀÎ °æ¿ì : qmoCNF::connectByRownumPredicate¿¡ ¿¬°á
- *    (2) Level PredicateÀÎ °æ¿ì : qmoCNF::levelPredicate¿¡ ¿¬°á
- *    (3) Prior PredicateÀÎ °æ¿ì : qmoCNF::oneTablePredicate¿¡ ¿¬°á
- *    (4) Constant PredicateÀÎ °æ¿ì : qmoCNF::constantPredicate¿¡ ¿¬°á
+ *    (1) Connect by Rownum Predicateì¸ ê²½ìš° : qmoCNF::connectByRownumPredicateì— ì—°ê²°
+ *    (2) Level Predicateì¸ ê²½ìš° : qmoCNF::levelPredicateì— ì—°ê²°
+ *    (3) Prior Predicateì¸ ê²½ìš° : qmoCNF::oneTablePredicateì— ì—°ê²°
+ *    (4) Constant Predicateì¸ ê²½ìš° : qmoCNF::constantPredicateì— ì—°ê²°
  *
  ***********************************************************************/
 
@@ -2484,14 +2484,14 @@ qmoCnfMgr::addConstPred4ConnectBy( qmoCNF       * aCNF,
     IDU_FIT_POINT_FATAL( "qmoCnfMgr::addConstPred4ConnectBy::__FT__" );
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_DASSERT( aCNF != NULL );
     IDE_DASSERT( aPredicate != NULL );
 
     //------------------------------------------
-    // ±âº» ¼³Á¤
+    // ê¸°ë³¸ ì„¤ì •
     //------------------------------------------
 
     sPredicate = aPredicate;
@@ -2513,9 +2513,9 @@ qmoCnfMgr::addConstPred4ConnectBy( qmoCNF       * aCNF,
     else
     {
         // To Fix PR-9050
-        // Prior NodeÀÇ Á¸Àç ¿©ºÎ¸¦ °Ë»çÇÏ±â À§ÇØ¼­´Â
-        // qtcNode->flagÀ» °Ë»çÇÏ¿©¾ß ÇÔ.
-        // Prior Predicate Ã³¸®
+        // Prior Nodeì˜ ì¡´ì¬ ì—¬ë¶€ë¥¼ ê²€ì‚¬í•˜ê¸° ìœ„í•´ì„œëŠ”
+        // qtcNode->flagì„ ê²€ì‚¬í•˜ì—¬ì•¼ í•¨.
+        // Prior Predicate ì²˜ë¦¬
         if ( ( sPredicate->node->lflag & QTC_NODE_PRIOR_MASK )
              == QTC_NODE_PRIOR_EXIST )
         {
@@ -2524,7 +2524,7 @@ qmoCnfMgr::addConstPred4ConnectBy( qmoCNF       * aCNF,
         }
         else
         {
-            // Constant Predicate Ã³¸®
+            // Constant Predicate ì²˜ë¦¬
             sPredicate->next = sCNF->constantPredicate;
             sCNF->constantPredicate = sPredicate;
         }
@@ -2539,17 +2539,17 @@ qmoCnfMgr::joinOrdering( qcStatement * aStatement,
 {
 /***********************************************************************
  *
- * Description : Join OrderÀÇ °áÁ¤
+ * Description : Join Orderì˜ ê²°ì •
  *
  * Implemenation :
- *    (1) Join GroupÀÇ ºĞ·ù
- *    (2) °¢ Join Group ³» Join RelationÀÇ Ç¥Çö
- *    (3) °¢ Join Group ³» joinPredicateµéÀÇ selectivity °è»ê
- *    (4) °¢ Join Group ³» Join OrderÀÇ °áÁ¤
- *       µû¶ó°¡¸é¼­ base graph°¡ µÎ°³ ÀÌ»óÀÌ¸é ´ÙÀ½À» ¼öÇà
- *        A. JoinGroup ³» qmgJoinÀÇ »ı¼º ¹× ÃÊ±âÈ­
- *        B. Join Order °áÁ¤ ¹× qmgJoinÀÇ ÃÖÀûÈ­
- *    (5) Join Group°£ Join OrderÀÇ °áÁ¤
+ *    (1) Join Groupì˜ ë¶„ë¥˜
+ *    (2) ê° Join Group ë‚´ Join Relationì˜ í‘œí˜„
+ *    (3) ê° Join Group ë‚´ joinPredicateë“¤ì˜ selectivity ê³„ì‚°
+ *    (4) ê° Join Group ë‚´ Join Orderì˜ ê²°ì •
+ *       ë”°ë¼ê°€ë©´ì„œ base graphê°€ ë‘ê°œ ì´ìƒì´ë©´ ë‹¤ìŒì„ ìˆ˜í–‰
+ *        A. JoinGroup ë‚´ qmgJoinì˜ ìƒì„± ë° ì´ˆê¸°í™”
+ *        B. Join Order ê²°ì • ë° qmgJoinì˜ ìµœì í™”
+ *    (5) Join Groupê°„ Join Orderì˜ ê²°ì •
  *
  ***********************************************************************/
 
@@ -2564,14 +2564,14 @@ qmoCnfMgr::joinOrdering( qcStatement * aStatement,
     IDU_FIT_POINT_FATAL( "qmoCnfMgr::joinOrdering::__FT__" );
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aCNF != NULL );
 
     //------------------------------------------
-    // ±âº» ÃÊ±âÈ­
+    // ê¸°ë³¸ ì´ˆê¸°í™”
     //------------------------------------------
 
     sCNF             = aCNF;
@@ -2581,13 +2581,13 @@ qmoCnfMgr::joinOrdering( qcStatement * aStatement,
     sQuerySet        = sCNF->myQuerySet;
 
     // fix BUG-11166
-    // ordered hintÀû¿ë½Ã join group¿¡ predicate¿¬°áÀ» ÇÏÁö ¾Ê±â ¶§¹®¿¡
-    // JoinPredicateÀÇ selectivity´Â
-    // join groupingÇÏ±â Àü¿¡ °è»êÇØ ³õ¾Æ¾ß ÇÔ
+    // ordered hintì ìš©ì‹œ join groupì— predicateì—°ê²°ì„ í•˜ì§€ ì•Šê¸° ë•Œë¬¸ì—
+    // JoinPredicateì˜ selectivityëŠ”
+    // join groupingí•˜ê¸° ì „ì— ê³„ì‚°í•´ ë†“ì•„ì•¼ í•¨
     if ( sCNF->joinPredicate != NULL )
     {
         //------------------------------------------
-        // joinPredicateµéÀÇ selectivity °è»ê
+        // joinPredicateë“¤ì˜ selectivity ê³„ì‚°
         //------------------------------------------
 
         IDE_TEST( qmoSelectivity::setMySelectivity4Join( aStatement,
@@ -2603,7 +2603,7 @@ qmoCnfMgr::joinOrdering( qcStatement * aStatement,
 
 
     //------------------------------------------
-    // Join GroupingÀÇ ºĞ·ù
+    // Join Groupingì˜ ë¶„ë¥˜
     //------------------------------------------
 
     // BUG-42447 leading hint support
@@ -2623,23 +2623,23 @@ qmoCnfMgr::joinOrdering( qcStatement * aStatement,
     sJoinGroupCnt    = sCNF->joinGroupCnt;
 
     //------------------------------------------
-    // °¢ Join GroupÀÇ Ã³¸®
-    //    (1) JoinRelationÀÇ Ç¥Çö
-    //    (2) Join PredicateÀÇ selectivity °è»ê
-    //    (3) Join OrderÀÇ °áÁ¤
+    // ê° Join Groupì˜ ì²˜ë¦¬
+    //    (1) JoinRelationì˜ í‘œí˜„
+    //    (2) Join Predicateì˜ selectivity ê³„ì‚°
+    //    (3) Join Orderì˜ ê²°ì •
     //------------------------------------------
 
     for ( i = 0; i < sJoinGroupCnt; i++ )
     {
         //------------------------------------------
-        // ÇØ´ç Join Group³» JoinRelationÀÇ Ç¥Çö
+        // í•´ë‹¹ Join Groupë‚´ JoinRelationì˜ í‘œí˜„
         //------------------------------------------
 
         IDE_TEST( joinRelationing( aStatement, & sJoinGroup[i] )
                   != IDE_SUCCESS );
 
         //------------------------------------------
-        // ÇØ´ç Join Group ³» Join OrderÀÇ °áÁ¤
+        // í•´ë‹¹ Join Group ë‚´ Join Orderì˜ ê²°ì •
         //------------------------------------------
 
         if ( sJoinGroup[i].baseGraphCnt > 1 )
@@ -2656,16 +2656,16 @@ qmoCnfMgr::joinOrdering( qcStatement * aStatement,
 
 
     //------------------------------------------
-    // °¢ Group °£ Join OrderÀÇ °áÁ¤
-    // base graph ¼ø¼­·Î Ã³¸® : base graph ¼ø¼­´Â SFWGH::fromÀÇ ¼ø¼­¿Í µ¿ÀÏ
-    //                          µû¶ó¼­ Ordered ¼ø¼­¸¦ µû¸§
+    // ê° Group ê°„ Join Orderì˜ ê²°ì •
+    // base graph ìˆœì„œë¡œ ì²˜ë¦¬ : base graph ìˆœì„œëŠ” SFWGH::fromì˜ ìˆœì„œì™€ ë™ì¼
+    //                          ë”°ë¼ì„œ Ordered ìˆœì„œë¥¼ ë”°ë¦„
     //------------------------------------------
 
     // PROJ-1495
-    // PUSH_PRED hint°¡ Àû¿ëµÈ °æ¿ì, join group Àç¹èÄ¡
+    // PUSH_PRED hintê°€ ì ìš©ëœ ê²½ìš°, join group ì¬ë°°ì¹˜
     if( sQuerySet->setOp == QMS_NONE )
     {
-        // hint´Â SFWGH ´ÜÀ§·Î ÁÙ ¼ö ÀÖ´Ù.
+        // hintëŠ” SFWGH ë‹¨ìœ„ë¡œ ì¤„ ìˆ˜ ìˆë‹¤.
 
         if( sQuerySet->SFWGH->hints->pushPredHint != NULL )
         {
@@ -2713,8 +2713,8 @@ qmoCnfMgr::joinOrdering( qcStatement * aStatement,
                 != IDE_SUCCESS );
 
             // To Fix PR-8266
-            // Cartesian Product¿¡µµ Åë°è Á¤º¸¸¦ ±¸ÃàÇØ¾ß ÇÔ.
-            // °¢ qmgJoin ÀÇ joinOrderFactor, joinSize °è»ê
+            // Cartesian Productì—ë„ í†µê³„ ì •ë³´ë¥¼ êµ¬ì¶•í•´ì•¼ í•¨.
+            // ê° qmgJoin ì˜ joinOrderFactor, joinSize ê³„ì‚°
             IDE_TEST( qmoSelectivity::setJoinOrderFactor( aStatement,
                                                           & sResultJoinGraph->graph,
                                                           sResultJoinGraph->graph.myPredicate,
@@ -2735,7 +2735,7 @@ qmoCnfMgr::joinOrdering( qcStatement * aStatement,
 
     //------------------------------------------
     // BUG-34295 Join ordering ANSI style query
-    //     outerJoinGraph ¿Í myGraph ¸¦ °áÇÕÇÑ´Ù.
+    //     outerJoinGraph ì™€ myGraph ë¥¼ ê²°í•©í•œë‹¤.
     //------------------------------------------
     if( sCNF->outerJoinGraph != NULL )
     {
@@ -2760,7 +2760,7 @@ void qmoCnfMgr::makeLeadingGroup( qmoCNF         * aCNF,
  *
  * Description : BUG-42447 leading hint support
  *
- * Implemenation : leading ÈùÆ®¿¡ »ç¿ëµÈ Å×ÀÌºíÀÇ ¼ø¼­´ë·Î Á¶ÀÎ ±×·ìÀ» »ı¼ºÇÑ´Ù.
+ * Implemenation : leading íŒíŠ¸ì— ì‚¬ìš©ëœ í…Œì´ë¸”ì˜ ìˆœì„œëŒ€ë¡œ ì¡°ì¸ ê·¸ë£¹ì„ ìƒì„±í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -2782,13 +2782,13 @@ void qmoCnfMgr::makeLeadingGroup( qmoCNF         * aCNF,
     {
         for( i = 0; i < sBaseGraphCnt; i++ )
         {
-            // ¾ø´Â Å×ÀÌºíÀ» »ç¿ëÇßÀ»¶§
+            // ì—†ëŠ” í…Œì´ë¸”ì„ ì‚¬ìš©í–ˆì„ë•Œ
             if ( sLeadingTables->table == NULL )
             {
                 continue;
             }
 
-            // ÀÌ¹Ì Á¶ÀÎ ±×·ìÀÌ »ı¼ºµÈ Å×ÀÌºí
+            // ì´ë¯¸ ì¡°ì¸ ê·¸ë£¹ì´ ìƒì„±ëœ í…Œì´ë¸”
             if ( (sBaseGraph[i]->flag & QMG_INCLUDE_JOIN_GROUP_MASK) ==
                  QMG_INCLUDE_JOIN_GROUP_TRUE )
             {
@@ -2829,19 +2829,19 @@ qmoCnfMgr::joinGrouping( qmoCNF      * aCNF )
 {
 /***********************************************************************
  *
- * Description : Join GroupÀÇ ºĞ·ù
+ * Description : Join Groupì˜ ë¶„ë¥˜
  *
  * Implemenation :
- *    (1) Ordered Hint°¡ ¾øÀ¸¸é¼­, Join PredicateÀÌ Á¸ÀçÇÏ´Â °æ¿ì
- *        A. Join PredicateÀ» ÀÌ¿ëÇÑ Join Grouping
- *        B. Join Group¿¡ ¼ÓÇÏ´Â base graph ¿¬°á
- *    (2) Join Group¿¡ Æ÷ÇÔµÇÁö ¾ÊÀº base graphµéÀ» ÇÏ³ªÀÇ Join GroupÀ¸·Î
- *        ±¸¼º
- *        < Join Group¿¡ Æ÷ÇÔµÇÁö ¾ÊÀº base graph >
- *        A. Ordered Hint°¡ Á¸ÀçÇÏ´Â °æ¿ì, ¸ğµç base graph
- *        B. Join PredicateÀÌ ¾ø´Â °æ¿ì, ¸ğµç base graph
- *        C. Join PredicateÀÌ Á¸ÀçÇÏÁö¸¸, ÇØ´ç base graph°¡ Âü¿©ÇÑ
- *           Join PredicateÀÌ ¾ø¾î Join Grouping µÇÁö ¾ÊÀº base graph
+ *    (1) Ordered Hintê°€ ì—†ìœ¼ë©´ì„œ, Join Predicateì´ ì¡´ì¬í•˜ëŠ” ê²½ìš°
+ *        A. Join Predicateì„ ì´ìš©í•œ Join Grouping
+ *        B. Join Groupì— ì†í•˜ëŠ” base graph ì—°ê²°
+ *    (2) Join Groupì— í¬í•¨ë˜ì§€ ì•Šì€ base graphë“¤ì„ í•˜ë‚˜ì˜ Join Groupìœ¼ë¡œ
+ *        êµ¬ì„±
+ *        < Join Groupì— í¬í•¨ë˜ì§€ ì•Šì€ base graph >
+ *        A. Ordered Hintê°€ ì¡´ì¬í•˜ëŠ” ê²½ìš°, ëª¨ë“  base graph
+ *        B. Join Predicateì´ ì—†ëŠ” ê²½ìš°, ëª¨ë“  base graph
+ *        C. Join Predicateì´ ì¡´ì¬í•˜ì§€ë§Œ, í•´ë‹¹ base graphê°€ ì°¸ì—¬í•œ
+ *           Join Predicateì´ ì—†ì–´ Join Grouping ë˜ì§€ ì•Šì€ base graph
  *
  ***********************************************************************/
 
@@ -2859,13 +2859,13 @@ qmoCnfMgr::joinGrouping( qmoCNF      * aCNF )
     IDU_FIT_POINT_FATAL( "qmoCnfMgr::joinGrouping::__FT__" );
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_DASSERT( aCNF != NULL );
 
     //------------------------------------------
-    // ±âº» ÃÊ±âÈ­
+    // ê¸°ë³¸ ì´ˆê¸°í™”
     //------------------------------------------
 
     sCNF             = aCNF;
@@ -2881,20 +2881,20 @@ qmoCnfMgr::joinGrouping( qmoCNF      * aCNF )
     if ( sJoinOrderHint == QMO_JOIN_ORDER_TYPE_OPTIMIZED )
     {
         //------------------------------------------
-        // Join Order Hint °¡ Á¸ÀçÇÏÁö ¾Ê´Â °æ¿ìÀÇ Ã³¸®
+        // Join Order Hint ê°€ ì¡´ì¬í•˜ì§€ ì•ŠëŠ” ê²½ìš°ì˜ ì²˜ë¦¬
         //------------------------------------------
 
         // PROJ-2418
-        // Lateral ViewÀÇ Join PredicateÀº Grouping¿¡¼­ °í·ÁÇÏÁö ¾Ê´Â´Ù.
-        // Àá½Ã Á¦¿Ü½ÃÄ×´Ù°¡, Grouping ÀÌÈÄ ´Ù½Ã º¹±¸ÇÑ´Ù.
+        // Lateral Viewì˜ Join Predicateì€ Groupingì—ì„œ ê³ ë ¤í•˜ì§€ ì•ŠëŠ”ë‹¤.
+        // ì ì‹œ ì œì™¸ì‹œì¼°ë‹¤ê°€, Grouping ì´í›„ ë‹¤ì‹œ ë³µêµ¬í•œë‹¤.
         IDE_TEST( discardLateralViewJoinPred( sCNF, & sLateralJoinPred )
                   != IDE_SUCCESS );
 
         if ( sCNF->joinPredicate != NULL )
         {
             //------------------------------------------
-            // Join PredicateµéÀ» ÀÌ¿ëÇÏ¿© Join GroupingÀ» ¼öÇàÇÏ°í,
-            // ÇØ´ç Join Group¿¡ JoinPredicateÀ» ¿¬°á
+            // Join Predicateë“¤ì„ ì´ìš©í•˜ì—¬ Join Groupingì„ ìˆ˜í–‰í•˜ê³ ,
+            // í•´ë‹¹ Join Groupì— JoinPredicateì„ ì—°ê²°
             //------------------------------------------
 
             IDE_TEST( joinGroupingWithJoinPred( sJoinGroup,
@@ -2903,9 +2903,9 @@ qmoCnfMgr::joinGrouping( qmoCNF      * aCNF )
                       != IDE_SUCCESS );
 
             //------------------------------------------
-            // JoinGroupÀÇ base graph ¼³Á¤
-            //    qmoCNFÀÇ baseGraphµé Áß ÇØ´ç Join Group¿¡ ¼ÓÇÏ´Â baseGraph¸¦
-            //    Join GroupÀÇ baseGraph¿¡ ¿¬°áÇÔ
+            // JoinGroupì˜ base graph ì„¤ì •
+            //    qmoCNFì˜ baseGraphë“¤ ì¤‘ í•´ë‹¹ Join Groupì— ì†í•˜ëŠ” baseGraphë¥¼
+            //    Join Groupì˜ baseGraphì— ì—°ê²°í•¨
             //------------------------------------------
 
             for ( i = 0; i < sJoinGroupCnt; i++ )
@@ -2919,12 +2919,12 @@ qmoCnfMgr::joinGrouping( qmoCNF      * aCNF )
         else
         {
             //------------------------------------------
-            // Join PredicateÀÌ ¾ø´Â °æ¿ìÀÇ Ã³¸®
-            //    °¢ base graph¸¦ ÇÏ³ªÀÇ Join GroupÀ¸·Î ¼³Á¤
+            // Join Predicateì´ ì—†ëŠ” ê²½ìš°ì˜ ì²˜ë¦¬
+            //    ê° base graphë¥¼ í•˜ë‚˜ì˜ Join Groupìœ¼ë¡œ ì„¤ì •
             //------------------------------------------
         }
 
-        // Á¦¿ÜÇß´ø Lateral ViewÀÇ Join PredicateÀ» ´Ù½Ã º¹±¸
+        // ì œì™¸í–ˆë˜ Lateral Viewì˜ Join Predicateì„ ë‹¤ì‹œ ë³µêµ¬
         if ( sLateralJoinPred != NULL )
         {
             for ( sJoinPred = sLateralJoinPred; 
@@ -2942,17 +2942,17 @@ qmoCnfMgr::joinGrouping( qmoCNF      * aCNF )
     else
     {
         //------------------------------------------
-        // Join Order Hint °¡ Á¸ÀçÇÏ´Â °æ¿ìÀÇ Ã³¸®
-        //    °¢ base graph¸¦ ÇÏ³ªÀÇ Join GroupÀ¸·Î ¼³Á¤
+        // Join Order Hint ê°€ ì¡´ì¬í•˜ëŠ” ê²½ìš°ì˜ ì²˜ë¦¬
+        //    ê° base graphë¥¼ í•˜ë‚˜ì˜ Join Groupìœ¼ë¡œ ì„¤ì •
         //------------------------------------------
     }
 
     //------------------------------------------
-    // Join Grouping µÇÁö ¾ÊÀº base graph¸¦ ÇÏ³ªÀÇ Join GroupÀ¸·Î ºĞ·ù
-    //    (1) Join PredicateÀÌ ¾ø´Â °æ¿ì
-    //    (2) Join PredicateÀÌ Á¸ÀçÇÏÁö¸¸, ÇØ´ç BaseGraph°¡
-    //        Âü¿©ÇÑ Join PredicateÀÌ ¾ø¾î Join Grouping µÇÁö ¾ÊÀº °æ¿ì
-    //    (3) Join Order Hint °¡ Á¸ÀçÇÏ´Â °æ¿ì
+    // Join Grouping ë˜ì§€ ì•Šì€ base graphë¥¼ í•˜ë‚˜ì˜ Join Groupìœ¼ë¡œ ë¶„ë¥˜
+    //    (1) Join Predicateì´ ì—†ëŠ” ê²½ìš°
+    //    (2) Join Predicateì´ ì¡´ì¬í•˜ì§€ë§Œ, í•´ë‹¹ BaseGraphê°€
+    //        ì°¸ì—¬í•œ Join Predicateì´ ì—†ì–´ Join Grouping ë˜ì§€ ì•Šì€ ê²½ìš°
+    //    (3) Join Order Hint ê°€ ì¡´ì¬í•˜ëŠ” ê²½ìš°
     //------------------------------------------
 
     for ( i = 0; i < sBaseGraphCnt; i++ )
@@ -2976,7 +2976,7 @@ qmoCnfMgr::joinGrouping( qmoCNF      * aCNF )
         }
     }
 
-    // ½ÇÁ¦ Join Group °³¼ö ¼³Á¤
+    // ì‹¤ì œ Join Group ê°œìˆ˜ ì„¤ì •
     sCNF->joinGroupCnt = sJoinGroupCnt;
 
     return IDE_SUCCESS;
@@ -2992,12 +2992,12 @@ qmoCnfMgr::joinRelationing( qcStatement      * aStatement,
 {
 /***********************************************************************
  *
- * Description : °¢ Join Group ³»ÀÇ Join Relation °ü°è µµÃâ
+ * Description : ê° Join Group ë‚´ì˜ Join Relation ê´€ê³„ ë„ì¶œ
  *
  * Implementation :
- *    (1) µÎ °³ÀÇ conceptual table·Î¸¸ ±¸¼ºµÈ Join PredicateÀÇ
- *        Join °ü°èÀÇ µµÃâ
- *    (2) operand°¡ µÎ °³ÀÇ conceptual table ·Î¸¸ ±¸¼ºµÈ Join °ü°èÀÇ µµÃâ
+ *    (1) ë‘ ê°œì˜ conceptual tableë¡œë§Œ êµ¬ì„±ëœ Join Predicateì˜
+ *        Join ê´€ê³„ì˜ ë„ì¶œ
+ *    (2) operandê°€ ë‘ ê°œì˜ conceptual table ë¡œë§Œ êµ¬ì„±ëœ Join ê´€ê³„ì˜ ë„ì¶œ
  *
  ***********************************************************************/
 
@@ -3013,14 +3013,14 @@ qmoCnfMgr::joinRelationing( qcStatement      * aStatement,
     IDU_FIT_POINT_FATAL( "qmoCnfMgr::joinRelationing::__FT__" );
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aJoinGroup != NULL );
 
     //------------------------------------------
-    // ±âº» ÃÊ±âÈ­
+    // ê¸°ë³¸ ì´ˆê¸°í™”
     //------------------------------------------
 
     sJoinGroup           = aJoinGroup;
@@ -3031,7 +3031,7 @@ qmoCnfMgr::joinRelationing( qcStatement      * aStatement,
     sIsTwoConceptTblNode = ID_FALSE;
 
     //------------------------------------------
-    // join relation °ü°è µµÃâ
+    // join relation ê´€ê³„ ë„ì¶œ
     //------------------------------------------
 
     for ( sCurPred = aJoinGroup->joinPredicate;
@@ -3051,7 +3051,7 @@ qmoCnfMgr::joinRelationing( qcStatement      * aStatement,
         if( ( sNode->lflag & QTC_NODE_JOIN_TYPE_MASK ) != QTC_NODE_JOIN_TYPE_INNER )
         {
             // PROJ-1718 Subquery unnesting
-            // Semi/anti joinÀÎ °æ¿ì º°µµÀÇ join relation »ı¼º ÇÔ¼ö¸¦ ÀÌ¿ëÇÑ´Ù.
+            // Semi/anti joinì¸ ê²½ìš° ë³„ë„ì˜ join relation ìƒì„± í•¨ìˆ˜ë¥¼ ì´ìš©í•œë‹¤.
 
             IDE_TEST( makeSemiAntiJoinRelationList( aStatement,
                                                     sNode,
@@ -3061,8 +3061,8 @@ qmoCnfMgr::joinRelationing( qcStatement      * aStatement,
         }
         else
         {
-            // BUG-37963 inner join ÀÏ¶§´Â or ³ëµåµµ Ã¼Å©ÇØ¾ß ÇÑ´Ù.
-            // Âü°í·Î OR ³ëµå¸¦ ¸ÕÃ³ Ã¼Å©ÇÏ¸é semi, anti Á¶ÀÎÀÌ ³ª¿ÀÁö ¾Ê´Â´Ù.
+            // BUG-37963 inner join ì¼ë•ŒëŠ” or ë…¸ë“œë„ ì²´í¬í•´ì•¼ í•œë‹¤.
+            // ì°¸ê³ ë¡œ OR ë…¸ë“œë¥¼ ë¨¼ì²˜ ì²´í¬í•˜ë©´ semi, anti ì¡°ì¸ì´ ë‚˜ì˜¤ì§€ ì•ŠëŠ”ë‹¤.
             if( sCurPred->node != sNode )
             {
                 IDE_TEST( isTwoConceptTblNode( sCurPred->node,
@@ -3091,7 +3091,7 @@ qmoCnfMgr::joinRelationing( qcStatement      * aStatement,
                 // nothing to do
             }
 
-            // µÎ °³ÀÇ conceptual table·Î¸¸ ±¸¼ºµÈ predicateÀÎÁö °Ë»ç
+            // ë‘ ê°œì˜ conceptual tableë¡œë§Œ êµ¬ì„±ëœ predicateì¸ì§€ ê²€ì‚¬
             IDE_TEST( isTwoConceptTblNode( sNode,
                                            sBaseGraph,
                                            sBaseGraphCnt,
@@ -3101,7 +3101,7 @@ qmoCnfMgr::joinRelationing( qcStatement      * aStatement,
             if ( sIsTwoConceptTblNode == ID_TRUE )
             {
                 //------------------------------------------
-                // µÎ °³ÀÇ conceptual table·Î¸¸ ±¸¼ºµÈ Join Predicate
+                // ë‘ ê°œì˜ conceptual tableë¡œë§Œ êµ¬ì„±ëœ Join Predicate
                 //------------------------------------------
 
                 IDE_TEST( makeJoinRelationList( aStatement,
@@ -3124,7 +3124,7 @@ qmoCnfMgr::joinRelationing( qcStatement      * aStatement,
                 }
 
                 // To Fix BUG-8789
-                // µÎ °³ÀÇ conceptual table·Î¸¸ ±¸¼ºµÇ¾ú´ÂÁö °Ë»ç
+                // ë‘ ê°œì˜ conceptual tableë¡œë§Œ êµ¬ì„±ë˜ì—ˆëŠ”ì§€ ê²€ì‚¬
                 for ( sNode = (qtcNode *) sNode;
                       sNode != NULL;
                       sNode = (qtcNode *) sNode->node.next )
@@ -3138,7 +3138,7 @@ qmoCnfMgr::joinRelationing( qcStatement      * aStatement,
                     if ( sIsTwoConceptTblNode == ID_TRUE )
                     {
                         //------------------------------------------
-                        // Operand°¡ µÎ °³ÀÇ conceptual table·Î¸¸ ±¸¼ºµÈ °æ¿ì
+                        // Operandê°€ ë‘ ê°œì˜ conceptual tableë¡œë§Œ êµ¬ì„±ëœ ê²½ìš°
                         // ex ) T1.I1 + T2.I1 = T3.I1
                         //------------------------------------------
 
@@ -3164,7 +3164,7 @@ qmoCnfMgr::joinRelationing( qcStatement      * aStatement,
                                          & sJoinRelationCnt )
               != IDE_SUCCESS );
 
-    // Join Group¿¡ Join Relation ¿¬°á
+    // Join Groupì— Join Relation ì—°ê²°
     sJoinGroup->joinRelation = sJoinRelationList;
     sJoinGroup->joinRelationCnt = sJoinRelationCnt;
 
@@ -3181,13 +3181,13 @@ qmoCnfMgr::joinOrderingInJoinGroup( qcStatement  * aStatement,
 {
 /***********************************************************************
  *
- * Description : Join Group ³»¿¡¼­ÀÇ Join Order °áÁ¤
- *               Join ordering ÀÇ ´ë»óÀº ¸ğµÎ inner join ÀÌ´Ù
+ * Description : Join Group ë‚´ì—ì„œì˜ Join Order ê²°ì •
+ *               Join ordering ì˜ ëŒ€ìƒì€ ëª¨ë‘ inner join ì´ë‹¤
  *
  * Implementation :
- *    (1) Join GraphÀÇ »ı¼º ¹× ÃÊ±âÈ­
- *    (2) ÃÖÃÊ Join Graph ¼±ÅÃ
- *    (3) Join GraphµéÀÇ join Ordering ¼öÇà
+ *    (1) Join Graphì˜ ìƒì„± ë° ì´ˆê¸°í™”
+ *    (2) ìµœì´ˆ Join Graph ì„ íƒ
+ *    (3) Join Graphë“¤ì˜ join Ordering ìˆ˜í–‰
  *
  ***********************************************************************/
 
@@ -3217,14 +3217,14 @@ qmoCnfMgr::joinOrderingInJoinGroup( qcStatement  * aStatement,
     IDU_FIT_POINT_FATAL( "qmoCnfMgr::joinOrderingInJoinGroup::__FT__" );
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aJoinGroup != NULL );
 
     //------------------------------------------
-    // ±âº» ÃÊ±âÈ­
+    // ê¸°ë³¸ ì´ˆê¸°í™”
     //------------------------------------------
 
     sBaseGraphCnt    = aJoinGroup->baseGraphCnt;
@@ -3232,7 +3232,7 @@ qmoCnfMgr::joinOrderingInJoinGroup( qcStatement  * aStatement,
     sJoinRelation    = aJoinGroup->joinRelation;
     sJoinRelationCnt = aJoinGroup->joinRelationCnt;
 
-    // Join Graph °³¼ö
+    // Join Graph ê°œìˆ˜
     if ( sJoinRelationCnt > sBaseGraphCnt - 1 )
     {
         sJoinGraphCnt = sJoinRelationCnt;
@@ -3242,7 +3242,7 @@ qmoCnfMgr::joinOrderingInJoinGroup( qcStatement  * aStatement,
         sJoinGraphCnt = sBaseGraphCnt - 1;
     }
 
-    // sTop, sEnd ¼³Á¤
+    // sTop, sEnd ì„¤ì •
     if ( sJoinRelation != NULL )
     {
         sEnd = sJoinRelationCnt;
@@ -3253,7 +3253,7 @@ qmoCnfMgr::joinOrderingInJoinGroup( qcStatement  * aStatement,
     }
 
     //------------------------------------------
-    // Join Graph »ı¼º ¹× ÃÊ±âÈ­
+    // Join Graph ìƒì„± ë° ì´ˆê¸°í™”
     //------------------------------------------
 
     IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF( qmgJOIN ) * sJoinGraphCnt,
@@ -3264,7 +3264,7 @@ qmoCnfMgr::joinOrderingInJoinGroup( qcStatement  * aStatement,
     {
         i = 0;
 
-        // Join Relation¿¡ ´ëÀÀµÇ´Â qmgJoin ÃÊ±âÈ­
+        // Join Relationì— ëŒ€ì‘ë˜ëŠ” qmgJoin ì´ˆê¸°í™”
         while ( sJoinRelation != NULL )
         {
             IDE_TEST( getTwoRelatedGraph( & sJoinRelation->depInfo,
@@ -3290,7 +3290,7 @@ qmoCnfMgr::joinOrderingInJoinGroup( qcStatement  * aStatement,
     }
     else
     {
-        // Join RelationÀÌ Á¸ÀçÇÏÁö ¾Ê´Â °æ¿ì, ÃÖÃÊÀÇ qmgJoin ÃÊ±âÈ­
+        // Join Relationì´ ì¡´ì¬í•˜ì§€ ì•ŠëŠ” ê²½ìš°, ìµœì´ˆì˜ qmgJoin ì´ˆê¸°í™”
         IDE_TEST( qmgJoin::init( aStatement,
                                  sBaseGraph[0],
                                  sBaseGraph[1],
@@ -3306,7 +3306,7 @@ qmoCnfMgr::joinOrderingInJoinGroup( qcStatement  * aStatement,
     if( (sBaseGraph[0])->myQuerySet->SFWGH->hints->optGoalType
          == QMO_OPT_GOAL_TYPE_FIRST_ROWS_N )
     {
-        // baseGraph Selectivity ÅëÇÕ
+        // baseGraph Selectivity í†µí•©
         for( sJoinGroupSelectivity  = 1,
              sJoinGroupOutputRecord = 1,
              i = 0; i < sBaseGraphCnt; i++ )
@@ -3316,7 +3316,7 @@ qmoCnfMgr::joinOrderingInJoinGroup( qcStatement  * aStatement,
             sJoinGroupOutputRecord *= sBaseGraph[i]->costInfo.outputRecordCnt;
         }
 
-        // Join predicate list ÀÇ selectivity °è»ê
+        // Join predicate list ì˜ selectivity ê³„ì‚°
         IDE_TEST( qmoSelectivity::setMySelectivity4Join( aStatement,
                                                          NULL,
                                                          aJoinGroup->joinPredicate,
@@ -3341,7 +3341,7 @@ qmoCnfMgr::joinOrderingInJoinGroup( qcStatement  * aStatement,
     }
 
     //------------------------------------------
-    // joinOrderFactor, joinSize ¸¦ ÀÌ¿ëÇÑ Join Ordering
+    // joinOrderFactor, joinSize ë¥¼ ì´ìš©í•œ Join Ordering
     //------------------------------------------
 
     for ( sTop = 0; sTop < sBaseGraphCnt - 1; sTop++ )
@@ -3350,7 +3350,7 @@ qmoCnfMgr::joinOrderingInJoinGroup( qcStatement  * aStatement,
 
         for ( i = sTop; i < sEnd; i ++ )
         {
-            // °¢ qmgJoin ÀÇ joinOrderFactor, joinSize °è»ê
+            // ê° qmgJoin ì˜ joinOrderFactor, joinSize ê³„ì‚°
             IDE_TEST( qmoSelectivity::setJoinOrderFactor( aStatement,
                                                           (qmgGraph *) & sJoinGraph[i],
                                                           aJoinGroup->joinPredicate,
@@ -3371,7 +3371,7 @@ qmoCnfMgr::joinOrderingInJoinGroup( qcStatement  * aStatement,
             sJoinGraph[i].joinOrderFactor = sCurJoinOrderFactor;
             sJoinGraph[i].joinSize        = sCurJoinSize;
 
-            // JoinOrderFactor °¡ °¡Àå ÁÁÀº qmgJoin ¼±ÅÃ
+            // JoinOrderFactor ê°€ ê°€ì¥ ì¢‹ì€ qmgJoin ì„ íƒ
             if ( sSelectedJoinGraph == NULL )
             {
                 sJoinOrderFactor = sCurJoinOrderFactor;
@@ -3383,13 +3383,13 @@ qmoCnfMgr::joinOrderingInJoinGroup( qcStatement  * aStatement,
             {
                 //--------------------------------------------------
                 // PROJ-1352
-                // Join Selectivity Threshold ¿Í Join Size ¸¦ °í·ÁÇÏ¿©
-                // Join Order¸¦ °áÁ¤ÇÑ´Ù.
+                // Join Selectivity Threshold ì™€ Join Size ë¥¼ ê³ ë ¤í•˜ì—¬
+                // Join Orderë¥¼ ê²°ì •í•œë‹¤.
                 //--------------------------------------------------
 
                 if ( sJoinOrderFactor > QMO_JOIN_SELECTIVITY_THRESHOLD )
                 {
-                    // ÃÖÀú JoinOrderFactor °¡ THRESHOLDº¸´Ù Å« °æ¿ì
+                    // ìµœì € JoinOrderFactor ê°€ THRESHOLDë³´ë‹¤ í° ê²½ìš°
                     if ( sJoinOrderFactor > sCurJoinOrderFactor )
                     {
                         sJoinOrderFactor = sCurJoinOrderFactor;
@@ -3404,7 +3404,7 @@ qmoCnfMgr::joinOrderingInJoinGroup( qcStatement  * aStatement,
                 }
                 else
                 {
-                    // ÃÖÀú JoinOrderFactor °¡ THRESHOLDº¸´Ù ÀÛÀº °æ¿ì
+                    // ìµœì € JoinOrderFactor ê°€ THRESHOLDë³´ë‹¤ ì‘ì€ ê²½ìš°
 
                     if ( sCurJoinOrderFactor > QMO_JOIN_SELECTIVITY_THRESHOLD )
                     {
@@ -3412,9 +3412,9 @@ qmoCnfMgr::joinOrderingInJoinGroup( qcStatement  * aStatement,
                     }
                     else
                     {
-                        // ÃÖÀú selectivity¿Í ÇöÀç selectivity°¡
-                        // ¸ğµÎ THRESHOLDº¸´Ù ÀÛÀº °æ¿ì Join Sizeµµ
-                        // °í·ÁÇÏ¿© ºñ±³ÇÑ´Ù.
+                        // ìµœì € selectivityì™€ í˜„ì¬ selectivityê°€
+                        // ëª¨ë‘ THRESHOLDë³´ë‹¤ ì‘ì€ ê²½ìš° Join Sizeë„
+                        // ê³ ë ¤í•˜ì—¬ ë¹„êµí•œë‹¤.
                         if ( sJoinOrderFactor * sJoinSize >
                              sCurJoinOrderFactor * sCurJoinSize )
                         {
@@ -3435,15 +3435,15 @@ qmoCnfMgr::joinOrderingInJoinGroup( qcStatement  * aStatement,
         IDE_TEST_RAISE( sSelectedJoinGraph == NULL,
                         ERR_INVALID_JOIN_GRAPH );
 
-        // ¼±ÅÃµÈ Join GraphÀÇ left¿Í right graph°¡
-        // Join Order °áÁ¤µÇ¾úÀ½À» ¼³Á¤
+        // ì„ íƒëœ Join Graphì˜ leftì™€ right graphê°€
+        // Join Order ê²°ì •ë˜ì—ˆìŒì„ ì„¤ì •
         sSelectedJoinGraph->graph.left->flag &= ~QMG_JOIN_ORDER_DECIDED_MASK;
         sSelectedJoinGraph->graph.left->flag |= QMG_JOIN_ORDER_DECIDED_TRUE;
 
         sSelectedJoinGraph->graph.right->flag &= ~QMG_JOIN_ORDER_DECIDED_MASK;
         sSelectedJoinGraph->graph.right->flag |= QMG_JOIN_ORDER_DECIDED_TRUE;
 
-        // top ¼³Á¤
+        // top ì„¤ì •
         IDE_TEST( initJoinGraph( aStatement,
                                  (UInt)sSelectedJoinGraph->graph.type,
                                  sSelectedJoinGraph->graph.left,
@@ -3460,7 +3460,7 @@ qmoCnfMgr::joinOrderingInJoinGroup( qcStatement  * aStatement,
                                &sSelectedJoinGraph->graph.costInfo )
             {
                 // To Fix PR-8266
-                // »ı¼ºÇÏ´Â Join GraphÀÇ CostÁ¤º¸¸¦ ¼³Á¤ÇÏ¿©¾ß ÇÔ.
+                // ìƒì„±í•˜ëŠ” Join Graphì˜ Costì •ë³´ë¥¼ ì„¤ì •í•˜ì—¬ì•¼ í•¨.
                 idlOS::memcpy( & sJoinGraph[sTop].graph.costInfo,
                                & sSelectedJoinGraph->graph.costInfo,
                                ID_SIZEOF(qmgCostInfo) );
@@ -3468,9 +3468,9 @@ qmoCnfMgr::joinOrderingInJoinGroup( qcStatement  * aStatement,
         }
 
 
-        // Join PredicateÀÇ ºĞ·ù :
-        // Join Group::joinPredicate¿¡¼­ ÇØ´ç predicateÀ» Join GraphÀÇ
-        // myPredicate¿¡ ¿¬°áÇÑ´Ù.
+        // Join Predicateì˜ ë¶„ë¥˜ :
+        // Join Group::joinPredicateì—ì„œ í•´ë‹¹ predicateì„ Join Graphì˜
+        // myPredicateì— ì—°ê²°í•œë‹¤.
         IDE_TEST( connectJoinPredToJoinGraph( aStatement,
                                               & aJoinGroup->joinPredicate,
                                               (qmgGraph *) & sJoinGraph[sTop] )
@@ -3486,12 +3486,12 @@ qmoCnfMgr::joinOrderingInJoinGroup( qcStatement  * aStatement,
             sJoinGraph[sTop].firstRowsFactor = QMO_COST_FIRST_ROWS_FACTOR_DEFAULT;
         }
 
-        // ¼±ÅÃµÈ qmgJoinÀÇ ÃÖÀûÈ­
+        // ì„ íƒëœ qmgJoinì˜ ìµœì í™”
         IDE_TEST( sJoinGraph[sTop].graph.optimize( aStatement,
                                                    &sJoinGraph[sTop].graph )
                   != IDE_SUCCESS );
 
-        //Join Order°¡ °áÁ¤µÇÁö ¾ÊÀº base graphµé·Î qmgJoinÀÇ ÃÊ±âÈ­
+        //Join Orderê°€ ê²°ì •ë˜ì§€ ì•Šì€ base graphë“¤ë¡œ qmgJoinì˜ ì´ˆê¸°í™”
         sEnd = sTop + 1;
 
         for ( i = 0; i < sBaseGraphCnt; i++ )
@@ -3539,15 +3539,15 @@ qmoCnfMgr::isSemiAntiJoinable( qmgGraph        * aJoinGraph,
  *
  * Description :
  *     PROJ-1718 Subquery unnesting
- *     Join ordering ½Ã semi/anti joinÀÌ °¡´ÉÇÑ ½ÃÁ¡ÀÎÁö È®ÀÎÇÑ´Ù.
- *     Semi/anti join ´ë»óÀÇ relationÀÌ ¿©·¯ outer relation°ú joinµÈ °æ¿ì
- *     outer relationµéÀÌ ¸ğµÎ ¸ÕÀú joinµÇ¾îÀÖ¾î¾ß ÇÑ´Ù.
+ *     Join ordering ì‹œ semi/anti joinì´ ê°€ëŠ¥í•œ ì‹œì ì¸ì§€ í™•ì¸í•œë‹¤.
+ *     Semi/anti join ëŒ€ìƒì˜ relationì´ ì—¬ëŸ¬ outer relationê³¼ joinëœ ê²½ìš°
+ *     outer relationë“¤ì´ ëª¨ë‘ ë¨¼ì € joinë˜ì–´ìˆì–´ì•¼ í•œë‹¤.
  *     ex) SELECT R.*, S.* FROM R, S, T WHERE R.A (semi)= T.A AND S.B (semi)= T.B;
- *         ÀÇ °æ¿ì R°ú S°¡ ¸ÕÀú join µÇ±â Àü±îÁö RÀÌ³ª S°¡ T¿Í joinµÉ ¼ö ¾ø´Ù.
+ *         ì˜ ê²½ìš° Rê³¼ Sê°€ ë¨¼ì € join ë˜ê¸° ì „ê¹Œì§€ Rì´ë‚˜ Sê°€ Tì™€ joinë  ìˆ˜ ì—†ë‹¤.
  *
  * Implementation :
- *     Join relationµé Áß inner relationÀÌ semi/anti join ´ë»ó¿¡ ÇØ´çÇÏ´Â
- *     °Íµé¸¸ Ã£¾Æ outer relationµé¿¡¼­ ¸ğµÎ Æ÷ÇÔÇÏ°í ÀÖ´ÂÁö È®ÀÎÇÑ´Ù.
+ *     Join relationë“¤ ì¤‘ inner relationì´ semi/anti join ëŒ€ìƒì— í•´ë‹¹í•˜ëŠ”
+ *     ê²ƒë“¤ë§Œ ì°¾ì•„ outer relationë“¤ì—ì„œ ëª¨ë‘ í¬í•¨í•˜ê³  ìˆëŠ”ì§€ í™•ì¸í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -3598,12 +3598,12 @@ qmoCnfMgr::isFeasibleJoinOrder( qmgGraph        * aJoinGraph,
  *
  * Description :
  *     PROJ-1718 Subquery unnesting
- *     ÁÖ¾îÁø typeÀÇ joinÀÌ °¡´ÉÇÑ ½ÃÁ¡ÀÎÁö È®ÀÎÇÑ´Ù.
+ *     ì£¼ì–´ì§„ typeì˜ joinì´ ê°€ëŠ¥í•œ ì‹œì ì¸ì§€ í™•ì¸í•œë‹¤.
  *
  * Implementation :
- *     1) Semi/anti joinÀÎ °æ¿ì isSemiAntiJoinableÀ» È£Ãâ
- *     2) inner join ÇÏ·Á´Â table ÀÌ
- *        semi/anti join ¿À¸¥ÂÊ table ÀÌ ¾Æ´Ï¾î¾ßÇÔ (BUG-39249)
+ *     1) Semi/anti joinì¸ ê²½ìš° isSemiAntiJoinableì„ í˜¸ì¶œ
+ *     2) inner join í•˜ë ¤ëŠ” table ì´
+ *        semi/anti join ì˜¤ë¥¸ìª½ table ì´ ì•„ë‹ˆì–´ì•¼í•¨ (BUG-39249)
  *
  ***********************************************************************/
 
@@ -3668,8 +3668,8 @@ qmoCnfMgr::initJoinGraph( qcStatement     * aStatement,
  *
  * Description :
  *     PROJ-1718 Subquery unnesting
- *     qmoJoinRelation ÀÚ·á±¸Á¶¸¦ ÆÄ¾ÇÇÏ¿© ¾Ë¸Â´Â typeÀÇ join graph¸¦
- *     »ı¼ºÇØÁØ´Ù.
+ *     qmoJoinRelation ìë£Œêµ¬ì¡°ë¥¼ íŒŒì•…í•˜ì—¬ ì•Œë§ëŠ” typeì˜ join graphë¥¼
+ *     ìƒì„±í•´ì¤€ë‹¤.
  *
  * Implementation :
  *
@@ -3691,14 +3691,14 @@ qmoCnfMgr::initJoinGraph( qcStatement     * aStatement,
     {
         if( sJoinRelation->joinType != QMO_JOIN_RELATION_TYPE_INNER )
         {
-            // Semi/anti join½Ã joinÀÇ ¹æÇâ¿¡ ¸ÂÃç graph¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+            // Semi/anti joinì‹œ joinì˜ ë°©í–¥ì— ë§ì¶° graphë¥¼ ì´ˆê¸°í™”í•œë‹¤.
             qtc::dependencySet( sJoinRelation->innerRelation,
                                 &sInnerDepInfo );
             qtc::dependencyRemove( sJoinRelation->innerRelation,
                                    &sJoinRelation->depInfo,
                                    &sOuterDepInfo );
 
-            // Left°¡ outer, right°¡ innerÀÎÁö È®ÀÎÇÑ´Ù.
+            // Leftê°€ outer, rightê°€ innerì¸ì§€ í™•ì¸í•œë‹¤.
             if( ( qtc::dependencyContains( &aLeft->depInfo, &sOuterDepInfo ) == ID_TRUE ) &&
                 ( qtc::dependencyContains( &aRight->depInfo, &sInnerDepInfo ) == ID_TRUE ) )
             {
@@ -3730,7 +3730,7 @@ qmoCnfMgr::initJoinGraph( qcStatement     * aStatement,
                 // Nothing to do.
             }
 
-            // Right°¡ outer, left°¡ innerÀÎÁö È®ÀÎÇÑ´Ù.
+            // Rightê°€ outer, leftê°€ innerì¸ì§€ í™•ì¸í•œë‹¤.
             if( ( qtc::dependencyContains( &aRight->depInfo, &sOuterDepInfo ) == ID_TRUE ) &&
                 ( qtc::dependencyContains( &aLeft->depInfo, &sInnerDepInfo ) == ID_TRUE ) )
             {
@@ -3803,7 +3803,7 @@ qmoCnfMgr::initJoinGraph( qcStatement     * aStatement,
  *
  * Description :
  *     PROJ-1718 Subquery unnesting
- *     ÁÖ¾îÁø join graphÀÇ type¿¡ µû¶ó join graph¸¦ »ı¼ºÇÑ´Ù.
+ *     ì£¼ì–´ì§„ join graphì˜ typeì— ë”°ë¼ join graphë¥¼ ìƒì„±í•œë‹¤.
  *
  * Implementation :
  *
@@ -3854,12 +3854,12 @@ qmoCnfMgr::relocateJoinGroup4PushPredHint( qcStatement      * aStatement,
 {
 /***********************************************************************
  *
- * Description : PUSH_PRED hint°¡ Àû¿ëµÇ¾úÀ» °æ¿ìÀÇ join group Àç¹èÄ¡
+ * Description : PUSH_PRED hintê°€ ì ìš©ë˜ì—ˆì„ ê²½ìš°ì˜ join group ì¬ë°°ì¹˜
  *
  * Implementation :
  *
- *   PUSH_PRED(view) hint°¡ Àû¿ëµÇ¾úÀ» °æ¿ì,
- *   join Á¶°ÇÀÇ ´Ù¸¥ Å×ÀÌºíÀÌ viewº¸´Ù ¸ÕÀú ¼öÇàµÇ¾î¾ß ÇÑ´Ù.
+ *   PUSH_PRED(view) hintê°€ ì ìš©ë˜ì—ˆì„ ê²½ìš°,
+ *   join ì¡°ê±´ì˜ ë‹¤ë¥¸ í…Œì´ë¸”ì´ viewë³´ë‹¤ ë¨¼ì € ìˆ˜í–‰ë˜ì–´ì•¼ í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -3872,7 +3872,7 @@ qmoCnfMgr::relocateJoinGroup4PushPredHint( qcStatement      * aStatement,
     IDU_FIT_POINT_FATAL( "qmoCnfMgr::relocateJoinGroup4PushPredHint::__FT__" );
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -3880,13 +3880,13 @@ qmoCnfMgr::relocateJoinGroup4PushPredHint( qcStatement      * aStatement,
     IDE_DASSERT( *aJoinGroup != NULL );
 
     //------------------------------------------
-    // ±âº» ÃÊ±âÈ­
+    // ê¸°ë³¸ ì´ˆê¸°í™”
     //------------------------------------------
 
     sJoinGroup = *aJoinGroup;
 
     //------------------------------------------
-    // PUSH_PRED(view)ÀÇ outer dependency¸¦ Ã£´Â´Ù.
+    // PUSH_PRED(view)ì˜ outer dependencyë¥¼ ì°¾ëŠ”ë‹¤.
     //------------------------------------------
 
     for( sPushPredHint = aPushPredHint;
@@ -3914,7 +3914,7 @@ qmoCnfMgr::relocateJoinGroup4PushPredHint( qcStatement      * aStatement,
                 for( sCnt = 0, i = 0; sCnt < aJoinGroupCnt; sCnt++ )
                 {
                     // PROJ-1495 BUG-
-                    // PUSH_PRED view¿Í ¿¬°üµÈ tableÀÌ ¸ÕÀú ¼öÇàµÇµµ·Ï ¹èÄ¡
+                    // PUSH_PRED viewì™€ ì—°ê´€ëœ tableì´ ë¨¼ì € ìˆ˜í–‰ë˜ë„ë¡ ë°°ì¹˜
                     if( qtc::dependencyContains( &(sJoinGroup[sCnt].depInfo),
                                                  &(sPushPredHint->table->table->depInfo) )
                         != ID_TRUE )
@@ -3930,7 +3930,7 @@ qmoCnfMgr::relocateJoinGroup4PushPredHint( qcStatement      * aStatement,
                     }
                 }
 
-                // PUSH_PRED view°¡ µÚ¿¡ ¼öÇàµÇµµ·Ï ¹èÄ¡
+                // PUSH_PRED viewê°€ ë’¤ì— ìˆ˜í–‰ë˜ë„ë¡ ë°°ì¹˜
                 for( sCnt = 0; sCnt < aJoinGroupCnt; sCnt++ )
                 {
                     // PROJ-1495 BUG-
@@ -3976,7 +3976,7 @@ qmoCnfMgr::getTableOrder( qcStatement    * aStatement,
 {
 /***********************************************************************
  *
- * Description : Table Order Á¤º¸ »ı¼º ¹× ¼³Á¤
+ * Description : Table Order ì •ë³´ ìƒì„± ë° ì„¤ì •
  *
  * Implementation :
  *
@@ -3990,14 +3990,14 @@ qmoCnfMgr::getTableOrder( qcStatement    * aStatement,
     IDU_FIT_POINT_FATAL( "qmoCnfMgr::getTableOrder::__FT__" );
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aGraph != NULL );
 
     //------------------------------------------
-    // ±âº» ÃÊ±âÈ­
+    // ê¸°ë³¸ ì´ˆê¸°í™”
     //------------------------------------------
 
     sGraph = aGraph;
@@ -4073,12 +4073,12 @@ qmoCnfMgr::connectJoinPredToJoinGraph( qcStatement   * aStatement,
 {
 /***********************************************************************
  *
- * Description : Join GroupÀÇ join predicate¿¡¼­ ÇöÀç Join Graph¿¡ ÇØ´çÇÏ´Â
- *               join predicateÀ» ºĞ¸®ÇÏ¿© Join Graph¿¡ ¿¬°áÇÑ´Ù.
+ * Description : Join Groupì˜ join predicateì—ì„œ í˜„ì¬ Join Graphì— í•´ë‹¹í•˜ëŠ”
+ *               join predicateì„ ë¶„ë¦¬í•˜ì—¬ Join Graphì— ì—°ê²°í•œë‹¤.
  *
  * Implementaion :
  *
- *     Ex)  [p2] PredicateÀ» Join Graph¿¡ ¿¬°áÇÏ´Â °æ¿ì
+ *     Ex)  [p2] Predicateì„ Join Graphì— ì—°ê²°í•˜ëŠ” ê²½ìš°
  *
  *                             sPrevJoinPred
  *                               |
@@ -4092,7 +4092,7 @@ qmoCnfMgr::connectJoinPredToJoinGraph( qcStatement   * aStatement,
  *                               |                  |
  *                             sJoinGraphPred      sCurJoinGraphPred
  *
- *         ==>  [p2] Predicate ¿¬°á ÈÄ
+ *         ==>  [p2] Predicate ì—°ê²° í›„
  *
  *                             sPrevJoinPred
  *                               |
@@ -4121,21 +4121,21 @@ qmoCnfMgr::connectJoinPredToJoinGraph( qcStatement   * aStatement,
     IDU_FIT_POINT_FATAL( "qmoCnfMgr::connectJoinPredToJoinGraph::__FT__" );
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_DASSERT( aJoinGraph != NULL );
 
     //------------------------------------------
-    // ±âº» ÃÊ±âÈ­
+    // ê¸°ë³¸ ì´ˆê¸°í™”
     //------------------------------------------
 
-    // join predicate ( Join Group ¶Ç´Â CNFÀÇ joinPredicate )
+    // join predicate ( Join Group ë˜ëŠ” CNFì˜ joinPredicate )
     sJoinPred            = *aJoinPred;
     sCurJoinPred         = *aJoinPred;
     sPrevJoinPred        = NULL;
 
-    // Join GraphÀÌ join predicate
+    // Join Graphì´ join predicate
     sJoinGraphPred       = NULL;
     sCurJoinGraphPred    = NULL;
     sJoinDependencies    = & aJoinGraph->depInfo;
@@ -4144,8 +4144,8 @@ qmoCnfMgr::connectJoinPredToJoinGraph( qcStatement   * aStatement,
     while( sCurJoinPred != NULL )
     {
         //------------------------------------------------
-        //  Join Graph¿¡ Æ÷ÇÔµÇ´Â Join PredicateÀÎÁö ÆÇ´Ü
-        //  ~(Graph Dep) & (From & Pred Dep) == 0 : Æ÷ÇÔµÊ
+        //  Join Graphì— í¬í•¨ë˜ëŠ” Join Predicateì¸ì§€ íŒë‹¨
+        //  ~(Graph Dep) & (From & Pred Dep) == 0 : í¬í•¨ë¨
         //------------------------------------------------
 
         qtc::dependencyAnd( sFromDependencies,
@@ -4156,10 +4156,10 @@ qmoCnfMgr::connectJoinPredToJoinGraph( qcStatement   * aStatement,
                                       & sAndDependencies ) == ID_TRUE )
         {
             //------------------------------------------
-            // Join GraphÀÇ join predicateÀÎ °æ¿ì
+            // Join Graphì˜ join predicateì¸ ê²½ìš°
             //------------------------------------------
 
-            // Join Group¶Ç´Â CNF¿¡¼­ ÇöÀç Join PredicateÀ» ºĞ¸®
+            // Join Groupë˜ëŠ” CNFì—ì„œ í˜„ì¬ Join Predicateì„ ë¶„ë¦¬
             if ( sPrevJoinPred == NULL )
             {
                 sJoinPred = sCurJoinPred->next;
@@ -4174,7 +4174,7 @@ qmoCnfMgr::connectJoinPredToJoinGraph( qcStatement   * aStatement,
                                                  &sCopiedJoinPred )
                       != IDE_SUCCESS );
 
-            // ºĞ¸®ÇÑ Join PredicateÀ» Join GraphÀÇ myPredicate¿¡ ¿¬°á
+            // ë¶„ë¦¬í•œ Join Predicateì„ Join Graphì˜ myPredicateì— ì—°ê²°
             if ( sJoinGraphPred == NULL )
             {
                 sJoinGraphPred = sCurJoinGraphPred = sCopiedJoinPred;
@@ -4195,7 +4195,7 @@ qmoCnfMgr::connectJoinPredToJoinGraph( qcStatement   * aStatement,
         else
         {
             //------------------------------------------
-            // Join GraphÀÇ join predicateÀÌ ¾Æ´Ñ °æ¿ì
+            // Join Graphì˜ join predicateì´ ì•„ë‹Œ ê²½ìš°
             //------------------------------------------
 
             sPrevJoinPred = sCurJoinPred;
@@ -4220,24 +4220,24 @@ qmoCnfMgr::joinGroupingWithJoinPred( qmoJoinGroup  * aJoinGroup,
 {
 /***********************************************************************
  *
- * Description : JoinPredicateÀ» ÀÌ¿ëÇÏ¿© Join GroupingÀ» ¼öÇà
+ * Description : JoinPredicateì„ ì´ìš©í•˜ì—¬ Join Groupingì„ ìˆ˜í–‰
  *
  * Implementation :
- *       Join Group¿¡ Æ÷ÇÔµÇÁö ¾ÊÀº Join PredicateÀÌÁ¸ÀçÇÏÁö ¾ÊÀ»¶§±îÁö
- *       ´ÙÀ½À» ¼öÇàÇÑ´Ù.
- *       (1) »õ·Î¿î Join Group ¼³Á¤
- *       (2) Join Group¿¡ Æ÷ÇÔµÇ´Â ¸ğµç Join PredicateÀ» µî·Ï
+ *       Join Groupì— í¬í•¨ë˜ì§€ ì•Šì€ Join Predicateì´ì¡´ì¬í•˜ì§€ ì•Šì„ë•Œê¹Œì§€
+ *       ë‹¤ìŒì„ ìˆ˜í–‰í•œë‹¤.
+ *       (1) ìƒˆë¡œìš´ Join Group ì„¤ì •
+ *       (2) Join Groupì— í¬í•¨ë˜ëŠ” ëª¨ë“  Join Predicateì„ ë“±ë¡
  *
- *        < Âü°í >
- *        µî·Ï ½Ã¿¡ ±âÁ¸ Join Predicate List¿¡¼­ ÇØ´ç PredicateÀÇ ¿¬°áÀ»
- *        ²÷´Â´Ù. µû¶ó¼­ Join Predicate List°¡ Á¸ÀçÇÏÁö ¾ÊÀ¸¸é
- *        Join Group¿¡ Æ÷ÇÔµÇÁö ¾ÊÀº Join PredicateÀÌ ¾øÀ½À» ÀÇ¹ÌÇÑ´Ù.
+ *        < ì°¸ê³  >
+ *        ë“±ë¡ ì‹œì— ê¸°ì¡´ Join Predicate Listì—ì„œ í•´ë‹¹ Predicateì˜ ì—°ê²°ì„
+ *        ëŠëŠ”ë‹¤. ë”°ë¼ì„œ Join Predicate Listê°€ ì¡´ì¬í•˜ì§€ ì•Šìœ¼ë©´
+ *        Join Groupì— í¬í•¨ë˜ì§€ ì•Šì€ Join Predicateì´ ì—†ìŒì„ ì˜ë¯¸í•œë‹¤.
  *
  *
  *    Ex)
- *        Join Group¿¡ Æ÷ÇÔµÇ´Â ¸ğµç Join PredicateÀÇ µî·Ï
+ *        Join Groupì— í¬í•¨ë˜ëŠ” ëª¨ë“  Join Predicateì˜ ë“±ë¡
  *
- *        [p2] PredicateÀ» ÇØ´ç Join Group¿¡ ¿¬°áÇÏ´Â °æ¿ì
+ *        [p2] Predicateì„ í•´ë‹¹ Join Groupì— ì—°ê²°í•˜ëŠ” ê²½ìš°
  *
  *                             sFirstPred
  *                               |
@@ -4251,7 +4251,7 @@ qmoCnfMgr::joinGroupingWithJoinPred( qmoJoinGroup  * aJoinGroup,
  *             [Join Group] --> [q1] --> [q2] --> [q3]
  *
  *
- *      ==> CNFÀÇ joinPredicate¿¡¼­ ¿¬°áÀ» ²÷°í, sCurUpperPred¸¦ ´ÙÀ½À¸·Î ÁøÇà
+ *      ==> CNFì˜ joinPredicateì—ì„œ ì—°ê²°ì„ ëŠê³ , sCurUpperPredë¥¼ ë‹¤ìŒìœ¼ë¡œ ì§„í–‰
  *
  *                             sFirstPred
  *                               |    sPrevJoinPred
@@ -4266,7 +4266,7 @@ qmoCnfMgr::joinGroupingWithJoinPred( qmoJoinGroup  * aJoinGroup,
  *             [Join Group] --> [q1] --> [q2] --> [q3]
  *
  *
- *     ==>  [p3] Predicate ¿¬°á
+ *     ==>  [p3] Predicate ì—°ê²°
  *
  *                             sFirstPred
  *                               |   sPrevUpperPred
@@ -4281,7 +4281,7 @@ qmoCnfMgr::joinGroupingWithJoinPred( qmoJoinGroup  * aJoinGroup,
  *             [Join Group] --X--> [q1] --> [q2] --> [q3]
  *
  *
- *    ==>  [p3] Predicate ¿¬°á ÈÄ
+ *    ==>  [p3] Predicate ì—°ê²° í›„
  *
  *                             sFirstPred
  *                               |   sPrevUpperPred
@@ -4307,10 +4307,10 @@ qmoCnfMgr::joinGroupingWithJoinPred( qmoJoinGroup  * aJoinGroup,
     IDU_FIT_POINT_FATAL( "qmoCnfMgr::joinGroupingWithJoinPred::__FT__" );
 
     //------------------------------------------------------
-    //  sFirstPred : »õ·Î¿î Join GroupÀÌ ÇÊ¿äÇÑ Predicate
-    //  sAddPred : Join Group¿¡ Æ÷ÇÔµÇ´Â Join PredicateÀÇ ¿¬°á °ü¸®
-    //  sCurPred : Join PredicateÀÇ Traverse °ü¸®
-    //  sPrevPred : Join Group¿¡ Æ÷ÇÔµÇÁö ¾ÊÀº Join PredicateÀÇ ¿¬°á °ü¸®
+    //  sFirstPred : ìƒˆë¡œìš´ Join Groupì´ í•„ìš”í•œ Predicate
+    //  sAddPred : Join Groupì— í¬í•¨ë˜ëŠ” Join Predicateì˜ ì—°ê²° ê´€ë¦¬
+    //  sCurPred : Join Predicateì˜ Traverse ê´€ë¦¬
+    //  sPrevPred : Join Groupì— í¬í•¨ë˜ì§€ ì•Šì€ Join Predicateì˜ ì—°ê²° ê´€ë¦¬
     //------------------------------------------------------
 
     qcDepInfo      sAndDependencies;
@@ -4321,14 +4321,14 @@ qmoCnfMgr::joinGroupingWithJoinPred( qmoJoinGroup  * aJoinGroup,
     qcDepInfo          sGraphDepInfo;
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_DASSERT( aJoinGroup != NULL );
     IDE_DASSERT( aCNF->joinPredicate != NULL );
 
     //------------------------------------------
-    // ±âº» ÃÊ±âÈ­
+    // ê¸°ë³¸ ì´ˆê¸°í™”
     //------------------------------------------
 
     sJoinGroup    = aJoinGroup;
@@ -4336,16 +4336,16 @@ qmoCnfMgr::joinGroupingWithJoinPred( qmoJoinGroup  * aJoinGroup,
     sFirstPred    = aCNF->joinPredicate;
 
     //------------------------------------------
-    // JoinGroupÀÇ dependencies ¼³Á¤ ¹× °ü·Ã JoinPredicate ¿¬°á
+    // JoinGroupì˜ dependencies ì„¤ì • ë° ê´€ë ¨ JoinPredicate ì—°ê²°
     //------------------------------------------
 
     while ( sFirstPred != NULL )
     {
 
         //------------------------------------------
-        // Join Group¿¡ ¼ÓÇÏÁö ¾Ê´Â Ã¹¹øÂ° Predicate Á¸Àç :
-        //    Join Group¿¡ ¼ÓÇÏÁö ¾ÊÀº Ã¹¹øÂ° PredicateÀÇ
-        //    dependencies·Î »õ·Î¿î Join GroupÀÇ dependencies¸¦ ¼³Á¤
+        // Join Groupì— ì†í•˜ì§€ ì•ŠëŠ” ì²«ë²ˆì§¸ Predicate ì¡´ì¬ :
+        //    Join Groupì— ì†í•˜ì§€ ì•Šì€ ì²«ë²ˆì§¸ Predicateì˜
+        //    dependenciesë¡œ ìƒˆë¡œìš´ Join Groupì˜ dependenciesë¥¼ ì„¤ì •
         //------------------------------------------
 
         sCurJoinGroup = & sJoinGroup[sJoinGroupCnt++];
@@ -4357,10 +4357,10 @@ qmoCnfMgr::joinGroupingWithJoinPred( qmoJoinGroup  * aJoinGroup,
 
         //------------------------------------------
         // BUG-19371
-        // base graph°¡ selectionÀÌ ¾Æ´Ñ joinÀÏ °æ¿ì
-        // join predicateÀ» ¾î¶»°Ô ÀÛ¼ºÇÏ´À³Ä¿¡µû¶ó
-        // join grouping¿¡ Áßº¹ Æ÷ÇÔµÉ ¼ö ÀÖ´Ù.
-        // Áßº¹ Æ÷ÇÔµÇÁö ¾Êµµ·Ï ÇØ¾ß ÇÔ.
+        // base graphê°€ selectionì´ ì•„ë‹Œ joinì¼ ê²½ìš°
+        // join predicateì„ ì–´ë–»ê²Œ ì‘ì„±í•˜ëŠëƒì—ë”°ë¼
+        // join groupingì— ì¤‘ë³µ í¬í•¨ë  ìˆ˜ ìˆë‹¤.
+        // ì¤‘ë³µ í¬í•¨ë˜ì§€ ì•Šë„ë¡ í•´ì•¼ í•¨.
         //------------------------------------------
 
         for( i = 0;
@@ -4393,8 +4393,8 @@ qmoCnfMgr::joinGroupingWithJoinPred( qmoJoinGroup  * aJoinGroup,
         }
 
         //------------------------------------------
-        // ÇöÀç JoinGroup°ú ¿¬°üµÈ ¸ğµç Join PredicateÀ» Ã£¾Æ
-        // JoinGroup¿¡ µî·Ï
+        // í˜„ì¬ JoinGroupê³¼ ì—°ê´€ëœ ëª¨ë“  Join Predicateì„ ì°¾ì•„
+        // JoinGroupì— ë“±ë¡
         //------------------------------------------
 
         sCurPred  = sFirstPred;
@@ -4411,25 +4411,25 @@ qmoCnfMgr::joinGroupingWithJoinPred( qmoJoinGroup  * aJoinGroup,
                                        & qtc::zeroDependencies )== ID_FALSE )
             {
                 //------------------------------------------
-                // Join Group°ú ¿¬°üµÈ Predicate
+                // Join Groupê³¼ ì—°ê´€ëœ Predicate
                 //------------------------------------------
 
-                // Join Group¿¡ »õ·Ó°Ô µî·ÏÇÏ´Â PredicateÀÌ Á¸Àç
+                // Join Groupì— ìƒˆë¡­ê²Œ ë“±ë¡í•˜ëŠ” Predicateì´ ì¡´ì¬
                 sIsInsert = ID_TRUE;
 
-                // Join GroupÀÇ µî·Ï
+                // Join Groupì˜ ë“±ë¡
                 IDE_TEST( qtc::dependencyOr( & sCurJoinGroup->depInfo,
                                              & sCurPred->node->depInfo,
                                              & sCurJoinGroup->depInfo )
                           != IDE_SUCCESS );
 
-                // Join GroupÀÇ µî·Ï
+                // Join Groupì˜ ë“±ë¡
                 //------------------------------------------
                 // BUG-19371
-                // base graph°¡ selectionÀÌ ¾Æ´Ñ joinÀÏ °æ¿ì
-                // join predicateÀ» ¾î¶»°Ô ÀÛ¼ºÇÏ´À³Ä¿¡µû¶ó
-                // join grouping¿¡ Áßº¹ Æ÷ÇÔµÉ ¼ö ÀÖ´Ù.
-                // Áßº¹ Æ÷ÇÔµÇÁö ¾Êµµ·Ï ÇØ¾ß ÇÔ.
+                // base graphê°€ selectionì´ ì•„ë‹Œ joinì¼ ê²½ìš°
+                // join predicateì„ ì–´ë–»ê²Œ ì‘ì„±í•˜ëŠëƒì—ë”°ë¼
+                // join groupingì— ì¤‘ë³µ í¬í•¨ë  ìˆ˜ ìˆë‹¤.
+                // ì¤‘ë³µ í¬í•¨ë˜ì§€ ì•Šë„ë¡ í•´ì•¼ í•¨.
                 //------------------------------------------
 
                 for( i = 0;
@@ -4461,12 +4461,12 @@ qmoCnfMgr::joinGroupingWithJoinPred( qmoJoinGroup  * aJoinGroup,
                     }
                 }
 
-                // PredicateÀÌ Join Group¿¡ Æ÷ÇÔµÇ¾úÀ½À» ¼³Á¤
+                // Predicateì´ Join Groupì— í¬í•¨ë˜ì—ˆìŒì„ ì„¤ì •
                 sCurPred->flag &= ~QMO_PRED_INCLUDE_JOINGROUP_MASK;
                 sCurPred->flag |= QMO_PRED_INCLUDE_JOINGROUP_TRUE;
 
-                // PredicateÀ» Join Predicate¿¡¼­ ¿¬°áÀ» ²÷°í,
-                // JoinGroupÀÇ joinPredicate¿¡ ¿¬°á½ÃÅ´
+                // Predicateì„ Join Predicateì—ì„œ ì—°ê²°ì„ ëŠê³ ,
+                // JoinGroupì˜ joinPredicateì— ì—°ê²°ì‹œí‚´
 
                 if ( sCurJoinGroup->joinPredicate == NULL )
                 {
@@ -4493,7 +4493,7 @@ qmoCnfMgr::joinGroupingWithJoinPred( qmoJoinGroup  * aJoinGroup,
             }
             else
             {
-                // Join Group°ú ¿¬°üµÇÁö ¾ÊÀº Predicate : nothing to do
+                // Join Groupê³¼ ì—°ê´€ë˜ì§€ ì•Šì€ Predicate : nothing to do
                 sPrevPred = sCurPred;
                 sCurPred = sCurPred->next;
             }
@@ -4501,8 +4501,8 @@ qmoCnfMgr::joinGroupingWithJoinPred( qmoJoinGroup  * aJoinGroup,
             if ( ( sCurPred == NULL ) && ( sIsInsert == ID_TRUE ) )
             {
                 //------------------------------------------
-                // Join Group¿¡ Ãß°¡ µî·ÏÇÑ PredicateÀÌ Á¸ÀçÇÏ´Â °æ¿ì,
-                // Ãß°¡µÈ Predicate°ú ¿¬°üµÈ Join PredicateÀÌ Á¸ÀçÇÒ ¼ö ÀÖÀ½
+                // Join Groupì— ì¶”ê°€ ë“±ë¡í•œ Predicateì´ ì¡´ì¬í•˜ëŠ” ê²½ìš°,
+                // ì¶”ê°€ëœ Predicateê³¼ ì—°ê´€ëœ Join Predicateì´ ì¡´ì¬í•  ìˆ˜ ìˆìŒ
                 //------------------------------------------
 
                 sCurPred = sFirstPred;
@@ -4511,13 +4511,13 @@ qmoCnfMgr::joinGroupingWithJoinPred( qmoJoinGroup  * aJoinGroup,
             }
             else
             {
-                // ´õ ÀÌ»ó ¿¬°üµÈ Predicate ¾øÀ½ : nothing to do
+                // ë” ì´ìƒ ì—°ê´€ëœ Predicate ì—†ìŒ : nothing to do
             }
         }
     }
 
     *aJoinGroupCnt = sJoinGroupCnt;
-    // CNFÀÇ joinPredicateÀ» joinGroupÀÇ joinPredicateÀ¸·Î ¸ğµÎ ºĞ·ù½ÃÅ´
+    // CNFì˜ joinPredicateì„ joinGroupì˜ joinPredicateìœ¼ë¡œ ëª¨ë‘ ë¶„ë¥˜ì‹œí‚´
 //    *aJoinPredicate = NULL;
     aCNF->joinPredicate = NULL;
 
@@ -4536,7 +4536,7 @@ qmoCnfMgr::connectBaseGraphToJoinGroup( qmoJoinGroup   * aJoinGroup,
 {
 /***********************************************************************
  *
- * Description : Join Group¿¡ ¼ÓÇÏ´Â base graph ¿¬°á
+ * Description : Join Groupì— ì†í•˜ëŠ” base graph ì—°ê²°
  *
  * Implementaion :
  *
@@ -4556,14 +4556,14 @@ qmoCnfMgr::connectBaseGraphToJoinGroup( qmoJoinGroup   * aJoinGroup,
     IDU_FIT_POINT_FATAL( "qmoCnfMgr::connectBaseGraphToJoinGroup::__FT__" );
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_DASSERT( aJoinGroup != NULL );
     IDE_DASSERT( aCNFBaseGraph != NULL );
 
     //------------------------------------------
-    // ±âº» ÃÊ±âÈ­
+    // ê¸°ë³¸ ì´ˆê¸°í™”
     //------------------------------------------
 
     sJoinGroup             = aJoinGroup;
@@ -4609,8 +4609,8 @@ qmoCnfMgr::connectBaseGraphToJoinGroup( qmoJoinGroup   * aJoinGroup,
                                    & qtc::zeroDependencies ) == ID_FALSE )
         {
             //------------------------------------------
-            // ( Join GroupÀÇ dependencies & BaseGraphÀÇ dependencies )
-            //  != 0 ÀÌ¸é, Join Group¿¡ ¼ÓÇÏ´Â Base Graph
+            // ( Join Groupì˜ dependencies & BaseGraphì˜ dependencies )
+            //  != 0 ì´ë©´, Join Groupì— ì†í•˜ëŠ” Base Graph
             //------------------------------------------
 
             sJoinGroup->baseGraph[sJoinGroupBaseGraphCnt++] =
@@ -4637,8 +4637,8 @@ qmoCnfMgr::existJoinRelation( qmoJoinRelation * aJoinRelationList,
  *
  * Description :
  *     PROJ-1718 Subquery Unnesting
- *     aDepInfo¿Í µ¿ÀÏÇÑ dependency¸¦ °®´Â join relationÀÌ Á¸ÀçÇÏ´ÂÁö
- *     È®ÀÎÇÑ´Ù.
+ *     aDepInfoì™€ ë™ì¼í•œ dependencyë¥¼ ê°–ëŠ” join relationì´ ì¡´ì¬í•˜ëŠ”ì§€
+ *     í™•ì¸í•œë‹¤.
  *
  * Implementation :
  *
@@ -4671,7 +4671,7 @@ qmoCnfMgr::getInnerTable( qcStatement * aStatement,
  *
  * Description :
  *     PROJ-1718 Subquery Unnesting
- *     Semi/anti joinÀÇ predicate¿¡¼­ inner tableÀÇ ID¸¦ ¾ò¾î¿Â´Ù.
+ *     Semi/anti joinì˜ predicateì—ì„œ inner tableì˜ IDë¥¼ ì–»ì–´ì˜¨ë‹¤.
  *
  * Implementation :
  *
@@ -4723,11 +4723,11 @@ qmoCnfMgr::makeSemiAntiJoinRelationList( qcStatement      * aStatement,
  *
  * Description :
  *     PROJ-1718 Subquery Unnesting
- *     makeJoinRelationList¿Í µ¿ÀÏ ¿ªÇÒÀ» ÇÏ´Â semi/anti join¿ë ÇÔ¼öÀÌ´Ù.
- *     makeJoinRelationList¿Í °ÅÀÇ À¯»çÇÏÁö¸¸ ´ÙÀ½°ú °°Àº »óÈ²¿¡¼­
- *     ´Ù¸£°Ô µ¿ÀÛÇÒ ¼ö ÀÖ´Ù.
- *     ex) T1.I1 + T3.I1 = T2.I1, ÀÌ ¶§ inner tableÀÌ T3ÀÎ °æ¿ì
- *         T1 -> T3, T2 -> T3 ·Î µÎ °³ÀÇ join relationÀ» »ı¼ºÇÑ´Ù.
+ *     makeJoinRelationListì™€ ë™ì¼ ì—­í• ì„ í•˜ëŠ” semi/anti joinìš© í•¨ìˆ˜ì´ë‹¤.
+ *     makeJoinRelationListì™€ ê±°ì˜ ìœ ì‚¬í•˜ì§€ë§Œ ë‹¤ìŒê³¼ ê°™ì€ ìƒí™©ì—ì„œ
+ *     ë‹¤ë¥´ê²Œ ë™ì‘í•  ìˆ˜ ìˆë‹¤.
+ *     ex) T1.I1 + T3.I1 = T2.I1, ì´ ë•Œ inner tableì´ T3ì¸ ê²½ìš°
+ *         T1 -> T3, T2 -> T3 ë¡œ ë‘ ê°œì˜ join relationì„ ìƒì„±í•œë‹¤.
  *
  * Implementation :
  *
@@ -4745,20 +4745,20 @@ qmoCnfMgr::makeSemiAntiJoinRelationList( qcStatement      * aStatement,
     IDU_FIT_POINT_FATAL( "qmoCnfMgr::makeSemiAntiJoinRelationList::__FT__" );
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aNode != NULL );
 
     //------------------------------------------
-    // ±âº» ÃÊ±âÈ­
+    // ê¸°ë³¸ ì´ˆê¸°í™”
     //------------------------------------------
 
     sJoinRelationCnt  = *aJoinRelationCnt;
     sLastJoinRelation = *aJoinRelationList;
 
-    // aJoinRelationListÀÇ ¸¶Áö¸· node¸¦ Ã£´Â´Ù.
+    // aJoinRelationListì˜ ë§ˆì§€ë§‰ nodeë¥¼ ì°¾ëŠ”ë‹¤.
     if( sLastJoinRelation != NULL )
     {
         while( sLastJoinRelation->next != NULL )
@@ -4780,7 +4780,7 @@ qmoCnfMgr::makeSemiAntiJoinRelationList( qcStatement      * aStatement,
             sJoinType = QMO_JOIN_RELATION_TYPE_ANTI;
             break;
         default:
-            // Semi/anti join ¿Ü ¿Ã ¼ö ¾ø´Ù.
+            // Semi/anti join ì™¸ ì˜¬ ìˆ˜ ì—†ë‹¤.
             IDE_FT_ERROR( 0 );
     }
 
@@ -4800,7 +4800,7 @@ qmoCnfMgr::makeSemiAntiJoinRelationList( qcStatement      * aStatement,
 
             if( existJoinRelation( *aJoinRelationList, &sDepInfo ) == ID_FALSE )
             {
-                // µ¿ÀÏÇÑ join relationÀÌ Á¸ÀçÇÏÁö ¾ÊÀ¸¸é »õ·Î »ı¼º
+                // ë™ì¼í•œ join relationì´ ì¡´ì¬í•˜ì§€ ì•Šìœ¼ë©´ ìƒˆë¡œ ìƒì„±
 
                 sJoinRelationCnt++;
 
@@ -4815,7 +4815,7 @@ qmoCnfMgr::makeSemiAntiJoinRelationList( qcStatement      * aStatement,
                 sNewJoinRelation->innerRelation = (UShort)sInnerTable;
                 sNewJoinRelation->next          = NULL;
 
-                // Join Relation ¿¬°á
+                // Join Relation ì—°ê²°
                 if ( *aJoinRelationList == NULL )
                 {
                     *aJoinRelationList = sNewJoinRelation;
@@ -4858,14 +4858,14 @@ qmoCnfMgr::makeCrossJoinRelationList( qcStatement      * aStatement,
  *
  * Description :
  *     PROJ-1718 Subquery unnesting
- *     Semi/anti joinÀÇ outer relationÀÌ ¿©·µÀÎ °æ¿ì °¢ outer relation°£
- *     cartesian product°¡ °¡´ÉÇÏµµ·Ï joinÀ» »ı¼ºÇÑ´Ù.
+ *     Semi/anti joinì˜ outer relationì´ ì—¬ëŸ¿ì¸ ê²½ìš° ê° outer relationê°„
+ *     cartesian productê°€ ê°€ëŠ¥í•˜ë„ë¡ joinì„ ìƒì„±í•œë‹¤.
  *
  * Implementation :
- *     Semi/anti joinÀÇ inner relationÀ» Ã£¾Æ outer relationµéÀÇ depInfo¸¦
- *     º¸°í °¢ joinÀ» »ı¼ºÇÑ´Ù.
- *     ÀÌ ¶§ cartesian productÀÇ ´ë»óÀÌ µÇ´Â µÎ relationÀÌ ÀÌ¹Ì
- *     ANSI style·Î joinµÇ¾î ÀÖ´Â °æ¿ì¿¡´Â »ı¼ºÇÏÁö ¾Êµµ·Ï ÇÑ´Ù.
+ *     Semi/anti joinì˜ inner relationì„ ì°¾ì•„ outer relationë“¤ì˜ depInfoë¥¼
+ *     ë³´ê³  ê° joinì„ ìƒì„±í•œë‹¤.
+ *     ì´ ë•Œ cartesian productì˜ ëŒ€ìƒì´ ë˜ëŠ” ë‘ relationì´ ì´ë¯¸
+ *     ANSI styleë¡œ joinë˜ì–´ ìˆëŠ” ê²½ìš°ì—ëŠ” ìƒì„±í•˜ì§€ ì•Šë„ë¡ í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -4885,7 +4885,7 @@ qmoCnfMgr::makeCrossJoinRelationList( qcStatement      * aStatement,
 
         if( qtc::haveDependencies( &sFrom->semiAntiJoinDepInfo ) == ID_TRUE )
         {
-            // Semi/anti joinÀÎ °æ¿ì
+            // Semi/anti joinì¸ ê²½ìš°
 
             sLastTable = -1;
             sOuterTable = qtc::getPosFirstBitSet( &sFrom->semiAntiJoinDepInfo );
@@ -4899,12 +4899,12 @@ qmoCnfMgr::makeCrossJoinRelationList( qcStatement      * aStatement,
                         sDepInfo.depend[0] = sLastTable;
                         sDepInfo.depend[1] = sOuterTable;
 
-                        // Cartesian product »ı¼º ´ë»óÀÎ µÎ relationÀÌ ansi style·Î joinµÇ¾îÀÖ´Ù¸é
-                        // »ı¼ºÇÏÁö ¾Ê°í ¹«½ÃÇØ¾ß ÇÑ´Ù.
+                        // Cartesian product ìƒì„± ëŒ€ìƒì¸ ë‘ relationì´ ansi styleë¡œ joinë˜ì–´ìˆë‹¤ë©´
+                        // ìƒì„±í•˜ì§€ ì•Šê³  ë¬´ì‹œí•´ì•¼ í•œë‹¤.
                         for( i = 0; i < aJoinGroup->baseGraphCnt; i++ )
                         {
-                            // Cartesian product ´ë»óÀÇ µÎ relationÀÌ ¸ğµÎ ÇÏ³ªÀÇ base graph¿¡
-                            // ¼ÓÇØÀÖ´Ù¸é ÀÌ¹Ì ANSI style·Î joinµÈ °æ¿ìÀÌ´Ù.
+                            // Cartesian product ëŒ€ìƒì˜ ë‘ relationì´ ëª¨ë‘ í•˜ë‚˜ì˜ base graphì—
+                            // ì†í•´ìˆë‹¤ë©´ ì´ë¯¸ ANSI styleë¡œ joinëœ ê²½ìš°ì´ë‹¤.
                             if( qtc::dependencyContains( &aJoinGroup->baseGraph[i]->depInfo,
                                                          &sDepInfo ) == ID_TRUE )
                             {
@@ -4926,7 +4926,7 @@ qmoCnfMgr::makeCrossJoinRelationList( qcStatement      * aStatement,
                         }
                         else
                         {
-                            // ANSI style·Î joinµÈ °æ¿ìÀÌ¹Ç·Î ¹«½Ã
+                            // ANSI styleë¡œ joinëœ ê²½ìš°ì´ë¯€ë¡œ ë¬´ì‹œ
                         }
                     }
                     else
@@ -4945,7 +4945,7 @@ qmoCnfMgr::makeCrossJoinRelationList( qcStatement      * aStatement,
         }
         else
         {
-            // Inner joinÀÎ °æ¿ì
+            // Inner joinì¸ ê²½ìš°
         }
         sJoinGroupTable = qtc::getPosNextBitSet( &aJoinGroup->depInfo, sJoinGroupTable );
     }
@@ -4965,35 +4965,35 @@ qmoCnfMgr::makeJoinRelationList( qcStatement      * aStatement,
 {
 /***********************************************************************
  *
- * Description : qmoJoinRelationÀÇ »ı¼º ¹× ÃÊ±âÈ­
+ * Description : qmoJoinRelationì˜ ìƒì„± ë° ì´ˆê¸°í™”
  *
  ***********************************************************************/
 
     qmoJoinRelation * sCurJoinRelation  = NULL;  // for traverse
     qmoJoinRelation * sLastJoinRelation = NULL;  // for traverse
-    qmoJoinRelation * sNewJoinRelation  = NULL;  // »õ·Î »ı¼ºµÈ join relation
+    qmoJoinRelation * sNewJoinRelation  = NULL;  // ìƒˆë¡œ ìƒì„±ëœ join relation
     idBool            sExistCommon;
     UInt              sJoinRelationCnt;
 
     IDU_FIT_POINT_FATAL( "qmoCnfMgr::makeJoinRelationList::__FT__" );
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aDependencies != NULL );
 
     //------------------------------------------
-    // ±âº» ÃÊ±âÈ­
+    // ê¸°ë³¸ ì´ˆê¸°í™”
     //------------------------------------------
 
     sExistCommon      = ID_FALSE;
     sJoinRelationCnt  = *aJoinRelationCnt;
 
     //------------------------------------------
-    // µ¿ÀÏ Join Relation Á¸Àç ¿©ºÎ °Ë»ç
-    // ( Join Relation ListÀÇ ¸¶Áö¸·À» sLastJoinRelationÀ» °¡¸®Å°µµ·Ï ¼³Á¤ )
+    // ë™ì¼ Join Relation ì¡´ì¬ ì—¬ë¶€ ê²€ì‚¬
+    // ( Join Relation Listì˜ ë§ˆì§€ë§‰ì„ sLastJoinRelationì„ ê°€ë¦¬í‚¤ë„ë¡ ì„¤ì • )
     //------------------------------------------
 
     sCurJoinRelation = *aJoinRelationList;
@@ -5013,8 +5013,8 @@ qmoCnfMgr::makeJoinRelationList( qcStatement      * aStatement,
     if ( sExistCommon == ID_FALSE )
     {
         //------------------------------------------
-        // µ¿ÀÏÇÑ Join RelationÀÌ Á¸ÀçÇÏÁö ¾ÊÀ¸¸é,
-        // Join Relation »ı¼º
+        // ë™ì¼í•œ Join Relationì´ ì¡´ì¬í•˜ì§€ ì•Šìœ¼ë©´,
+        // Join Relation ìƒì„±
         //------------------------------------------
 
         sJoinRelationCnt++;
@@ -5033,7 +5033,7 @@ qmoCnfMgr::makeJoinRelationList( qcStatement      * aStatement,
         sNewJoinRelation->innerRelation = ID_USHORT_MAX;
         sNewJoinRelation->next = NULL;
 
-        // Join Relation ¿¬°á
+        // Join Relation ì—°ê²°
         if ( *aJoinRelationList == NULL )
         {
             *aJoinRelationList = sNewJoinRelation;
@@ -5045,7 +5045,7 @@ qmoCnfMgr::makeJoinRelationList( qcStatement      * aStatement,
     }
     else
     {
-        // µ¿ÀÏÇÑ Join RelationÀÌ Á¸ÀçÇÏ´Â °æ¿ì
+        // ë™ì¼í•œ Join Relationì´ ì¡´ì¬í•˜ëŠ” ê²½ìš°
         // nothing to do
     }
 
@@ -5067,13 +5067,13 @@ qmoCnfMgr::isTwoConceptTblNode( qtcNode       * aNode,
 {
 /***********************************************************************
  *
- * Description : µÎ °³ÀÇ conceptual table·Î¸¸ ±¸¼ºµÈ Node ¿©ºÎ
+ * Description : ë‘ ê°œì˜ conceptual tableë¡œë§Œ êµ¬ì„±ëœ Node ì—¬ë¶€
  *
  * Implementation :
- *     (1) Ã¹¹øÂ° °ü·Ã Graph¸¦ Ã£´Â´Ù.
- *     (2) µÎ¹øÂ° °ü·Ã Graph¸¦ Ã£´Â´Ù.
- *     (3) µÎ °³ÀÇ Concpetual Table¸¸ÀÌ °ü·ÃµÈ NodeÀÎÁö °Ë»çÇÑ´Ù.
- *         Node & ~( Ã¹¹øÂ° Graph | µÎ ¹øÂ° Graph ) == 0
+ *     (1) ì²«ë²ˆì§¸ ê´€ë ¨ Graphë¥¼ ì°¾ëŠ”ë‹¤.
+ *     (2) ë‘ë²ˆì§¸ ê´€ë ¨ Graphë¥¼ ì°¾ëŠ”ë‹¤.
+ *     (3) ë‘ ê°œì˜ Concpetual Tableë§Œì´ ê´€ë ¨ëœ Nodeì¸ì§€ ê²€ì‚¬í•œë‹¤.
+ *         Node & ~( ì²«ë²ˆì§¸ Graph | ë‘ ë²ˆì§¸ Graph ) == 0
  *
  ***********************************************************************/
 
@@ -5085,19 +5085,19 @@ qmoCnfMgr::isTwoConceptTblNode( qtcNode       * aNode,
     IDU_FIT_POINT_FATAL( "qmoCnfMgr::isTwoConceptTblNode::__FT__" );
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_DASSERT( aNode != NULL );
     IDE_DASSERT( aBaseGraph != NULL );
 
     //------------------------------------------
-    // ±âº» ÃÊ±âÈ­
+    // ê¸°ë³¸ ì´ˆê¸°í™”
     //------------------------------------------
 
     sNode         = aNode;
 
-    // sNode¿Í ¿¬°üµÈ µÎ °³ÀÇ Graph¸¦ Ã£´Â´Ù.
+    // sNodeì™€ ì—°ê´€ëœ ë‘ ê°œì˜ Graphë¥¼ ì°¾ëŠ”ë‹¤.
     IDE_TEST( getTwoRelatedGraph( & sNode->depInfo,
                                   aBaseGraph,
                                   aBaseGraphCnt,
@@ -5106,7 +5106,7 @@ qmoCnfMgr::isTwoConceptTblNode( qtcNode       * aNode,
               != IDE_SUCCESS );
 
     //------------------------------------------
-    // µÎ °³ÀÇ Concpetual Table¸¸ÀÌ °ü·ÃµÈ NodeÀÎÁö °Ë»ç
+    // ë‘ ê°œì˜ Concpetual Tableë§Œì´ ê´€ë ¨ëœ Nodeì¸ì§€ ê²€ì‚¬
     //------------------------------------------
 
     if ( sFirstGraph != NULL && sSecondGraph != NULL )
@@ -5120,8 +5120,8 @@ qmoCnfMgr::isTwoConceptTblNode( qtcNode       * aNode,
         if ( qtc::dependencyContains( & sResultDependencies,
                                       & sNode->depInfo ) == ID_TRUE)
         {
-            // Predicate & ~( First Graph | Seconde Graph ) == 0 ÀÌ¸é,
-            // µÎ°³ÀÇ conceptual table¸¸ °ü·ÃµÈ Predicate
+            // Predicate & ~( First Graph | Seconde Graph ) == 0 ì´ë©´,
+            // ë‘ê°œì˜ conceptual tableë§Œ ê´€ë ¨ëœ Predicate
             *aIsTwoConceptTblNode = ID_TRUE;
         }
         else
@@ -5151,7 +5151,7 @@ qmoCnfMgr::getTwoRelatedGraph( qcDepInfo * aDependencies,
 {
 /***********************************************************************
  *
- * Description : base graphµé Áß¿¡¼­ ¿¬°üµÈ µÎ °³ÀÇ graph¸¦ ¹İÈ¯
+ * Description : base graphë“¤ ì¤‘ì—ì„œ ì—°ê´€ëœ ë‘ ê°œì˜ graphë¥¼ ë°˜í™˜
  *
  * Implementation :
  *
@@ -5170,14 +5170,14 @@ qmoCnfMgr::getTwoRelatedGraph( qcDepInfo * aDependencies,
     IDU_FIT_POINT_FATAL( "qmoCnfMgr::getTwoRelatedGraph::__FT__" );
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_DASSERT( aDependencies != NULL );
     IDE_DASSERT( aBaseGraph != NULL );
 
     //------------------------------------------
-    // ±âº» ÃÊ±âÈ­
+    // ê¸°ë³¸ ì´ˆê¸°í™”
     //------------------------------------------
 
     sDependencies = aDependencies;
@@ -5201,8 +5201,8 @@ qmoCnfMgr::getTwoRelatedGraph( qcDepInfo * aDependencies,
                                    & qtc::zeroDependencies ) == ID_FALSE )
         {
             //------------------------------------------
-            // ( NodeÀÇ dependencies & GraphÀÇ dependencies ) != 0 ÀÌ¸é,
-            // ÇöÀç Graph´Â Node¿Í °ü·ÃÀÖ´Â GraphÀÌ´Ù.
+            // ( Nodeì˜ dependencies & Graphì˜ dependencies ) != 0 ì´ë©´,
+            // í˜„ì¬ GraphëŠ” Nodeì™€ ê´€ë ¨ìˆëŠ” Graphì´ë‹¤.
             //------------------------------------------
 
             if ( sFirstGraph == NULL )
@@ -5232,12 +5232,12 @@ IDE_RC qmoCnfMgr::pushSelection4ConstantFilter(qcStatement *aStatement,
                                                qmoCNF      *aCNF)
 {
     /*
-     * BUG-29551: aggregationÀÌ ÀÖ´Â view¿¡ constant filter¸¦
-     *            pushdownÇÏ¸é ÁúÀÇ °á°ú°¡ Æ²¸³´Ï´Ù
+     * BUG-29551: aggregationì´ ìˆëŠ” viewì— constant filterë¥¼
+     *            pushdowní•˜ë©´ ì§ˆì˜ ê²°ê³¼ê°€ í‹€ë¦½ë‹ˆë‹¤
      *
-     * ÀÏ¹İ filter ÀÇ push selection °ú´Â ´Ù¸£°Ô
-     * const filter ¿¡ ´ëÇØ¼­´Â °¡´ÉÇÑ ÃÖ»óÀ§ ³ëµå¿¡ filter ¸¦ ¿¬°áÇÑ´Ù
-     * ±×·¸°Ô ÇÏ¸é ÇÏÀ§ plan À» ¼öÇàÇÏ±â Àü¿¡ ¹Ì¸® ¼öÇà ÇÒÁö ¸»Áö¸¦ ¾Ë ¼ö ÀÖ´Ù
+     * ì¼ë°˜ filter ì˜ push selection ê³¼ëŠ” ë‹¤ë¥´ê²Œ
+     * const filter ì— ëŒ€í•´ì„œëŠ” ê°€ëŠ¥í•œ ìµœìƒìœ„ ë…¸ë“œì— filter ë¥¼ ì—°ê²°í•œë‹¤
+     * ê·¸ë ‡ê²Œ í•˜ë©´ í•˜ìœ„ plan ì„ ìˆ˜í–‰í•˜ê¸° ì „ì— ë¯¸ë¦¬ ìˆ˜í–‰ í• ì§€ ë§ì§€ë¥¼ ì•Œ ìˆ˜ ìˆë‹¤
      */
     qmgGraph     * sCurGraph = NULL;
     qmoPredicate * sLastConstantPred = NULL;
@@ -5249,7 +5249,7 @@ IDE_RC qmoCnfMgr::pushSelection4ConstantFilter(qcStatement *aStatement,
     IDU_FIT_POINT_FATAL( "qmoCnfMgr::pushSelection4ConstantFilter::__FT__" );
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_DASSERT(aGraph != NULL);
@@ -5282,7 +5282,7 @@ IDE_RC qmoCnfMgr::pushSelection4ConstantFilter(qcStatement *aStatement,
         if (sCurGraph->type == QMG_SET)
         {
             // fix BUG-19093
-            // constant filter¸¦ SETÀı ¾ÈÀ¸·Î ³»¸°´Ù.
+            // constant filterë¥¼ SETì ˆ ì•ˆìœ¼ë¡œ ë‚´ë¦°ë‹¤.
             // BUG-36803 sCurGraph->left must not be null!
             IDE_TEST( pushSelection4ConstantFilter( aStatement,
                                                     sCurGraph->left,
@@ -5315,10 +5315,10 @@ IDE_RC qmoCnfMgr::pushSelection4ConstantFilter(qcStatement *aStatement,
         else
         {
             /*
-             * ÇöÀç graph °¡ selection ÀÎ °æ¿ì
-             * left graph °¡ view materialization ÀÎ °æ¿ì,
-             * ÇöÀç graph °¡ full, left outer join ÀÎ °æ¿ì,
-             * constant filter¸¦ ¿¬°áÇÑ´Ù.
+             * í˜„ì¬ graph ê°€ selection ì¸ ê²½ìš°
+             * left graph ê°€ view materialization ì¸ ê²½ìš°,
+             * í˜„ì¬ graph ê°€ full, left outer join ì¸ ê²½ìš°,
+             * constant filterë¥¼ ì—°ê²°í•œë‹¤.
              */
             if ( ( sCurGraph->type == QMG_SELECTION ) ||
                  ( sCurGraph->type == QMG_PARTITION ) )
@@ -5345,8 +5345,8 @@ IDE_RC qmoCnfMgr::pushSelection4ConstantFilter(qcStatement *aStatement,
                 }
 
                 /* PROJ-1715
-                 * HierarchyÀÎ °æ¿ì ¿ÜºÎ ÂüÁ¶¿¡ ÀÇÇÑ constantPredicateÀÏ °æ¿ì
-                 * SCANÀ¸·Î ³»¸®¸é ¾ÊµÇ°í »óÀ§¿¡¼­ Ã³¸®ÇØ¾ßÇÑ´Ù.
+                 * Hierarchyì¸ ê²½ìš° ì™¸ë¶€ ì°¸ì¡°ì— ì˜í•œ constantPredicateì¼ ê²½ìš°
+                 * SCANìœ¼ë¡œ ë‚´ë¦¬ë©´ ì•Šë˜ê³  ìƒìœ„ì—ì„œ ì²˜ë¦¬í•´ì•¼í•œë‹¤.
                  */
                 if ( ( sCurGraph->left->flag & QMG_PROJ_VIEW_OPT_TIP_CMTR_MASK )
                      == QMG_PROJ_VIEW_OPT_TIP_CMTR_TRUE )
@@ -5391,15 +5391,15 @@ IDE_RC qmoCnfMgr::pushSelection4ConstantFilter(qcStatement *aStatement,
         sCurGraph = sCurGraph->left;
     }
 
-    // constant predicate ¿¬°á
+    // constant predicate ì—°ê²°
     if( sCurGraph != NULL )
     {
         // fix BUG-19212
-        // subquery°¡ ÀÖÀ¸¸é º¹»çÇÏÁö ¾Ê°í, ÁÖ¼Ò¸¸ ´Ş¾Æ³õ´Â´Ù.
-        // SETÀı¿¡ ¾çÂÊÀ¸·Î (outer column reference°¡ ÀÖ´Â subquery)¸¦
-        // ³»¸®´Â °æ¿ì´Â ¾ø´Ù.
-        // outer column ref.°¡ ÀÖ´Â subquery¸¦ view¿¡
-        // ³»¸®Áö ¸øÇÏµµ·Ï À§ÀÇ while loop¿¡¼­ Ã³¸®Çß±â ¶§¹®ÀÌ´Ù.
+        // subqueryê°€ ìˆìœ¼ë©´ ë³µì‚¬í•˜ì§€ ì•Šê³ , ì£¼ì†Œë§Œ ë‹¬ì•„ë†“ëŠ”ë‹¤.
+        // SETì ˆì— ì–‘ìª½ìœ¼ë¡œ (outer column referenceê°€ ìˆëŠ” subquery)ë¥¼
+        // ë‚´ë¦¬ëŠ” ê²½ìš°ëŠ” ì—†ë‹¤.
+        // outer column ref.ê°€ ìˆëŠ” subqueryë¥¼ viewì—
+        // ë‚´ë¦¬ì§€ ëª»í•˜ë„ë¡ ìœ„ì˜ while loopì—ì„œ ì²˜ë¦¬í–ˆê¸° ë•Œë¬¸ì´ë‹¤.
 
         if( ( aCNF->constantPredicate->node->lflag & QTC_NODE_SUBQUERY_MASK )
             == QTC_NODE_SUBQUERY_EXIST )
@@ -5410,8 +5410,8 @@ IDE_RC qmoCnfMgr::pushSelection4ConstantFilter(qcStatement *aStatement,
             }
             else
             {
-                // ÇöÀç graph¿¡ ¶Ç´Ù¸¥ constant filter°¡ ÀÖ´Â °æ¿ì
-                // constant filterÀÇ ¿¬°á°ü°è±¸¼º
+                // í˜„ì¬ graphì— ë˜ë‹¤ë¥¸ constant filterê°€ ìˆëŠ” ê²½ìš°
+                // constant filterì˜ ì—°ê²°ê´€ê³„êµ¬ì„±
                 for( sLastConstantPred = sCurGraph->constantPredicate;
                      sLastConstantPred->next != NULL;
                      sLastConstantPred = sLastConstantPred->next ) ;
@@ -5421,13 +5421,13 @@ IDE_RC qmoCnfMgr::pushSelection4ConstantFilter(qcStatement *aStatement,
         }
         else
         {
-            // constant predicateÀ» º¹»çÇØ¼­ ³»¸°´Ù.
+            // constant predicateì„ ë³µì‚¬í•´ì„œ ë‚´ë¦°ë‹¤.
 
             for( sSrcConstantPred = aCNF->constantPredicate;
                  sSrcConstantPred != NULL;
                  sSrcConstantPred = sSrcConstantPred->next )
             {
-                // Predicate º¹»ç
+                // Predicate ë³µì‚¬
                 IDE_TEST( qmoPred::copyOneConstPredicate( QC_QMP_MEM( aStatement ),
                                                           sSrcConstantPred,
                                                           & sTempConstantPred )
@@ -5471,7 +5471,7 @@ qmoCnfMgr::getPushPredPosition( qmoPredicate  * aPredicate,
 {
 /***********************************************************************
  *
- * Description : Push SelectionÇÒ PredicateÀÌ ¼ÓÇÑ Base GraphÀÇ À§Ä¡¸¦ Ã£À½
+ * Description : Push Selectioní•  Predicateì´ ì†í•œ Base Graphì˜ ìœ„ì¹˜ë¥¼ ì°¾ìŒ
  *
  * Implementation :
  *
@@ -5488,14 +5488,14 @@ qmoCnfMgr::getPushPredPosition( qmoPredicate  * aPredicate,
     IDU_FIT_POINT_FATAL( "qmoCnfMgr::getPushPredPosition::__FT__" );
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_DASSERT( aPredicate != NULL );
     IDE_DASSERT( aBaseGraph != NULL );
 
     //------------------------------------------
-    // ±âº» ¼³Á¤
+    // ê¸°ë³¸ ì„¤ì •
     //------------------------------------------
 
     sPredicate      = aPredicate;
@@ -5505,7 +5505,7 @@ qmoCnfMgr::getPushPredPosition( qmoPredicate  * aPredicate,
 
     //------------------------------------------
     // To Fix BUG-10806
-    // Push Selection °¡´É Predicate ÀÎÁö °Ë»ç
+    // Push Selection ê°€ëŠ¥ Predicate ì¸ì§€ ê²€ì‚¬
     //------------------------------------------
 
     sPushApplicable = isPushApplicable(aPredicate, aJoinType);
@@ -5558,35 +5558,35 @@ qmoPushApplicableType qmoCnfMgr::isPushApplicable( qmoPredicate * aPredicate,
 {
 /***********************************************************************
  *
- * Description : Push Selection °¡´ÉÇÑ predicateÀÎÁö °Ë»ç
+ * Description : Push Selection ê°€ëŠ¥í•œ predicateì¸ì§€ ê²€ì‚¬
  *
  * Implementation :
- *    (1) Function PredicateÀÇ Push Down °¡´É ¿©ºÎ °Ë»ç
+ *    (1) Function Predicateì˜ Push Down ê°€ëŠ¥ ì—¬ë¶€ ê²€ì‚¬
  *
  ***********************************************************************/
 
     qmoPushApplicableType sResult;
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_DASSERT( aPredicate != NULL );
 
     /* --------------------------------------------------------------------
-        * fix BUG-22512 Outer Join °è¿­ Push Down Predicate ÇÒ °æ¿ì, °á°ú ¿À·ù
-        * Node¿¡ Push Down ÇÒ ¼ö ¾ø´Â FunctionÀÌ
-        * Á¸ÀçÇÏ´Â °æ¿ì, PredicateÀ» ³»¸®Áö ¾Ê´Â´Ù.
-        * Left/Full Outer JoinÀº Null Padding¶§¹®¿¡
-        * Push Selection ÇÏ¸é Æ²¸° °á°ú°¡ µµÃâµÊ
+        * fix BUG-22512 Outer Join ê³„ì—´ Push Down Predicate í•  ê²½ìš°, ê²°ê³¼ ì˜¤ë¥˜
+        * Nodeì— Push Down í•  ìˆ˜ ì—†ëŠ” Functionì´
+        * ì¡´ì¬í•˜ëŠ” ê²½ìš°, Predicateì„ ë‚´ë¦¬ì§€ ì•ŠëŠ”ë‹¤.
+        * Left/Full Outer Joinì€ Null Paddingë•Œë¬¸ì—
+        * Push Selection í•˜ë©´ í‹€ë¦° ê²°ê³¼ê°€ ë„ì¶œë¨
         *
         * BUG-41343
-        * EAT_NULLÀÌ ÀÖ¾îµµ null paddingÀ» ÇÏÁö ¾Ê´Â relationÀÇ predicate ÀÌ¶ó¸é
-        * push selectionÀÌ °¡´ÉÇÏ´Ù
+        * EAT_NULLì´ ìˆì–´ë„ null paddingì„ í•˜ì§€ ì•ŠëŠ” relationì˜ predicate ì´ë¼ë©´
+        * push selectionì´ ê°€ëŠ¥í•˜ë‹¤
         * --------------------------------------------------------------------
         */
-    // BUG-44805 ¼­ºêÄõ¸® Push Selection À» Àß¸øÇÏ°í ÀÖ½À´Ï´Ù.
-    // ¼­ºêÄõ¸®µµ EAT_NULL ¼Ó¼ºÀ» °¡Áö°í ÀÖÀ¸¹Ç·Î °°ÀÌ Ã³¸®ÇØ¾ß ÇÑ´Ù.
+    // BUG-44805 ì„œë¸Œì¿¼ë¦¬ Push Selection ì„ ì˜ëª»í•˜ê³  ìˆìŠµë‹ˆë‹¤.
+    // ì„œë¸Œì¿¼ë¦¬ë„ EAT_NULL ì†ì„±ì„ ê°€ì§€ê³  ìˆìœ¼ë¯€ë¡œ ê°™ì´ ì²˜ë¦¬í•´ì•¼ í•œë‹¤.
     if ( ((aPredicate->node->node.lflag & MTC_NODE_EAT_NULL_MASK) == MTC_NODE_EAT_NULL_TRUE) ||
          ((aPredicate->node->lflag & QTC_NODE_SUBQUERY_MASK) == QTC_NODE_SUBQUERY_EXIST) )
     {
@@ -5628,7 +5628,7 @@ qmoCnfMgr::generateTransitivePredicate( qcStatement * aStatement,
  * Description : PROJ-1404 Transitive Predicate Generation
  *
  * Implementation :
- *     whereÀı¿¡ ´ëÇÑ Transitive Predicate »ı¼º
+ *     whereì ˆì— ëŒ€í•œ Transitive Predicate ìƒì„±
  *
  ***********************************************************************/
 
@@ -5639,20 +5639,20 @@ qmoCnfMgr::generateTransitivePredicate( qcStatement * aStatement,
     IDU_FIT_POINT_FATAL( "qmoCnfMgr::generateTransitivePredicate::__FT__" );
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aCNF != NULL );
 
     //------------------------------------------
-    // ±âº» ÃÊ±âÈ­
+    // ê¸°ë³¸ ì´ˆê¸°í™”
     //------------------------------------------
 
     sQuerySet = aCNF->myQuerySet;
 
     //------------------------------------------
-    // whereÀı¿¡ ´ëÇÑ Transitive Predicate »ı¼º
+    // whereì ˆì— ëŒ€í•œ Transitive Predicate ìƒì„±
     //------------------------------------------
 
     if ( ( sQuerySet->SFWGH->hints->transitivePredType
@@ -5674,7 +5674,7 @@ qmoCnfMgr::generateTransitivePredicate( qcStatement * aStatement,
 
             if ( sTransitiveNode != NULL )
             {
-                // »ı¼ºµÈ transitive predicate¸¦ whereÀı¿¡ ¿¬°áÇÑ´Ù.
+                // ìƒì„±ëœ transitive predicateë¥¼ whereì ˆì— ì—°ê²°í•œë‹¤.
                 IDE_TEST( qmoTransMgr::linkPredicate( sTransitiveNode,
                                                       & sNode )
                           != IDE_SUCCESS );
@@ -5717,8 +5717,8 @@ qmoCnfMgr::generateTransitivePred4OnCondition( qcStatement   * aStatement,
  * Description : PROJ-1404 Transitive Predicate Generation
  *
  * Implementation :
- *     (1) onÀı¿¡ ´ëÇÑ Transitive Predicate »ı¼º
- *     (2) upper predicate°ú onÀı predicateÀ¸·Î lower predicate »ı¼º
+ *     (1) onì ˆì— ëŒ€í•œ Transitive Predicate ìƒì„±
+ *     (2) upper predicateê³¼ onì ˆ predicateìœ¼ë¡œ lower predicate ìƒì„±
  *
  ***********************************************************************/
 
@@ -5730,7 +5730,7 @@ qmoCnfMgr::generateTransitivePred4OnCondition( qcStatement   * aStatement,
     IDU_FIT_POINT_FATAL( "qmoCnfMgr::generateTransitivePred4OnCondition::__FT__" );
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -5738,24 +5738,24 @@ qmoCnfMgr::generateTransitivePred4OnCondition( qcStatement   * aStatement,
     IDE_DASSERT( aLowerPred != NULL );
 
     //------------------------------------------
-    // ±âº» ÃÊ±âÈ­
+    // ê¸°ë³¸ ì´ˆê¸°í™”
     //------------------------------------------
 
     sQuerySet = aCNF->myQuerySet;
 
     //------------------------------------------
-    // onCondition¿¡ ´ëÇÑ Transitive Predicate »ı¼º
+    // onConditionì— ëŒ€í•œ Transitive Predicate ìƒì„±
     //------------------------------------------
 
-    // whereÀı°ú µ¿ÀÏÇÏ°Ô »ı¼º
+    // whereì ˆê³¼ ë™ì¼í•˜ê²Œ ìƒì„±
     IDE_TEST( generateTransitivePredicate( aStatement,
                                            aCNF,
                                            ID_TRUE )
               != IDE_SUCCESS );
 
     //------------------------------------------
-    // upper predicate(whereÀı¿¡¼­ ³»·Á¿Â predicate)°ú onÀı¿¡ ´ëÇÑ
-    // Transitive Predicate »ı¼º
+    // upper predicate(whereì ˆì—ì„œ ë‚´ë ¤ì˜¨ predicate)ê³¼ onì ˆì— ëŒ€í•œ
+    // Transitive Predicate ìƒì„±
     //------------------------------------------
 
     if ( ( sQuerySet->SFWGH->hints->transitivePredType
@@ -5775,7 +5775,7 @@ qmoCnfMgr::generateTransitivePred4OnCondition( qcStatement   * aStatement,
 
             if ( sTransitiveNode != NULL )
             {
-                // »ı¼ºµÈ transitive predicate¸¦ qmoPredicate ÇüÅÂ·Î »ı¼ºÇÑ´Ù.
+                // ìƒì„±ëœ transitive predicateë¥¼ qmoPredicate í˜•íƒœë¡œ ìƒì„±í•œë‹¤.
                 IDE_TEST( qmoTransMgr::linkPredicate( aStatement,
                                                       sTransitiveNode,
                                                       & sLowerPred )
@@ -5815,17 +5815,17 @@ qmoCnfMgr::optimizeSubQ4OnCondition( qcStatement * aStatement,
  *
  * ------------------------------------------
  * fix BUG-19203
- * °¢ predicate º°·Î subquery¿¡ ´ëÇØ optimize¸¦ ÇÑ´Ù.
- * selection graphÀÇ optimize¿¡¼­ view¿¡ ´ëÇÑ Åë°è Á¤º¸°¡ ±¸ÃàµÇ±â ¶§¹®¿¡
- * left, right graphÀÇ ÃÖÀûÈ­°¡ ¼öÇàµÈ ÀÌÈÄ¿¡ ÇÏ´Â °ÍÀÌ ¸Â´Ù.
+ * ê° predicate ë³„ë¡œ subqueryì— ëŒ€í•´ optimizeë¥¼ í•œë‹¤.
+ * selection graphì˜ optimizeì—ì„œ viewì— ëŒ€í•œ í†µê³„ ì •ë³´ê°€ êµ¬ì¶•ë˜ê¸° ë•Œë¬¸ì—
+ * left, right graphì˜ ìµœì í™”ê°€ ìˆ˜í–‰ëœ ì´í›„ì— í•˜ëŠ” ê²ƒì´ ë§ë‹¤.
  * ------------------------------------------
  *
  * ---------------------------------------------
- * on Condition CNFÀÇ °¢ PredicateÀÇ subuqery Ã³¸®
- * on Condition CNFÀÇ °¢ PredicateÀº ÇØ´ç graphÀÇ myPredicate¿¡ ¿¬°áµÇÁö
- * ¾Ê¾Æ ÇØ´ç graphÀÇ myPredicateÃ³¸® ½Ã¿¡ subquery°¡ »ı¼ºµÇÁö ¾Ê´Â´Ù.
- * µû¶ó¼­ on Condition CNFÀÇ predicate ºĞ·ù ÈÄ¿¡ subqueryÀÇ graph¸¦
- * »ı¼ºÇØÁØ´Ù.
+ * on Condition CNFì˜ ê° Predicateì˜ subuqery ì²˜ë¦¬
+ * on Condition CNFì˜ ê° Predicateì€ í•´ë‹¹ graphì˜ myPredicateì— ì—°ê²°ë˜ì§€
+ * ì•Šì•„ í•´ë‹¹ graphì˜ myPredicateì²˜ë¦¬ ì‹œì— subqueryê°€ ìƒì„±ë˜ì§€ ì•ŠëŠ”ë‹¤.
+ * ë”°ë¼ì„œ on Condition CNFì˜ predicate ë¶„ë¥˜ í›„ì— subqueryì˜ graphë¥¼
+ * ìƒì„±í•´ì¤€ë‹¤.
  * ( To Fix BUG-8742 )
  * ---------------------------------------------
  *
@@ -5836,13 +5836,13 @@ qmoCnfMgr::optimizeSubQ4OnCondition( qcStatement * aStatement,
     IDU_FIT_POINT_FATAL( "qmoCnfMgr::optimizeSubQ4OnCondition::__FT__" );
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_DASSERT( aCNF != NULL );
 
     //------------------------------------------
-    // Display Á¤º¸ÀÇ Á¦°Å
+    // Display ì •ë³´ì˜ ì œê±°
     //------------------------------------------
 
     if ( aCNF->constantPredicate != NULL )
@@ -5858,7 +5858,7 @@ qmoCnfMgr::optimizeSubQ4OnCondition( qcStatement * aStatement,
     }
 
     // To Fix PR-12743
-    // NNF Filter Áö¿ø
+    // NNF Filter ì§€ì›
     if ( aCNF->nnfFilter != NULL )
     {
         IDE_TEST( qmoPred::optimizeSubqueryInNode( aStatement,
@@ -5911,17 +5911,17 @@ IDE_RC qmoCnfMgr::discardLateralViewJoinPred( qmoCNF        * aCNF,
  *
  * Description : PROJ-2418 Cross/Outer APPLY & Lateral View
  *  
- *   Lateral ViewÀÇ Join PredicateÀ» Àá½Ã Á¦¿Ü½ÃÄÑ¼­,
- *   Join Grouping °úÁ¤¿¡ Lateral View°¡ Âü¿©ÇÏÁö ¸øÇÏµµ·Ï ÇÑ´Ù.
+ *   Lateral Viewì˜ Join Predicateì„ ì ì‹œ ì œì™¸ì‹œì¼œì„œ,
+ *   Join Grouping ê³¼ì •ì— Lateral Viewê°€ ì°¸ì—¬í•˜ì§€ ëª»í•˜ë„ë¡ í•œë‹¤.
  *
  * Implementation :
  *  
- *   1) PredicateÀ» ¼øÂ÷ÀûÀ¸·Î Å½»öÇÏ¸é¼­, Predicate°ú °ü·ÃµÈ Base GraphÀÇ
- *      lateralDepInfo¸¦ ±¸ÇÑ´Ù.
- *   2) lateralDepInfo°¡ Á¸ÀçÇÏ¸é, ÇØ´ç PredicateÀº Lateral View¿¡ °ü·ÃµÈ
- *      Predicate ÀÌ¹Ç·Î, joinPredicateList¿¡¼­ »©°í discardPredList¿¡ ³Ö´Â´Ù.
- *   3) ¸ğµç Predicate¿¡ ´ëÇØ (1)-(2) °úÁ¤À» ¹İº¹ÇÑ´Ù.
- *   4) discardPredList¸¦ ¹İÈ¯ÇÑ´Ù.
+ *   1) Predicateì„ ìˆœì°¨ì ìœ¼ë¡œ íƒìƒ‰í•˜ë©´ì„œ, Predicateê³¼ ê´€ë ¨ëœ Base Graphì˜
+ *      lateralDepInfoë¥¼ êµ¬í•œë‹¤.
+ *   2) lateralDepInfoê°€ ì¡´ì¬í•˜ë©´, í•´ë‹¹ Predicateì€ Lateral Viewì— ê´€ë ¨ëœ
+ *      Predicate ì´ë¯€ë¡œ, joinPredicateListì—ì„œ ë¹¼ê³  discardPredListì— ë„£ëŠ”ë‹¤.
+ *   3) ëª¨ë“  Predicateì— ëŒ€í•´ (1)-(2) ê³¼ì •ì„ ë°˜ë³µí•œë‹¤.
+ *   4) discardPredListë¥¼ ë°˜í™˜í•œë‹¤.
  *
 ***********************************************************************/
 
@@ -5941,12 +5941,12 @@ IDE_RC qmoCnfMgr::discardLateralViewJoinPred( qmoCNF        * aCNF,
     sBaseGraphCnt    = aCNF->graphCnt4BaseTable;
     sBaseGraph       = aCNF->baseGraph;
 
-    // ÃÊ±âÈ­
+    // ì´ˆê¸°í™”
     sCurrPred        = aCNF->joinPredicate;
     sJoinPredHead    = aCNF->joinPredicate;
 
-    // Predicate depInfo¿¡ Á¸ÀçÇÏ´Â Base Graph°¡
-    // lateralDepInfo¸¦ °¡Áö°í ÀÖ´ÂÁö °Ë»çÇÑ´Ù.
+    // Predicate depInfoì— ì¡´ì¬í•˜ëŠ” Base Graphê°€
+    // lateralDepInfoë¥¼ ê°€ì§€ê³  ìˆëŠ”ì§€ ê²€ì‚¬í•œë‹¤.
     while ( sCurrPred != NULL )
     {
         for ( i = 0; i < sBaseGraphCnt; i++ )
@@ -5976,43 +5976,43 @@ IDE_RC qmoCnfMgr::discardLateralViewJoinPred( qmoCNF        * aCNF,
 
         if ( sInLateralView == ID_TRUE )
         {
-            // PredicateÀÌ Lateral View¿Í °ü·ÃÀÖ´Ù.
+            // Predicateì´ Lateral Viewì™€ ê´€ë ¨ìˆë‹¤.
             if ( sJoinPredTail == NULL )
             {
-                // Lateral View¿Í °ü·Ã ¾ø´Â PredicateÀÌ ¾ÆÁ÷ ³ª¿ÀÁö ¾ÊÀº °æ¿ì
+                // Lateral Viewì™€ ê´€ë ¨ ì—†ëŠ” Predicateì´ ì•„ì§ ë‚˜ì˜¤ì§€ ì•Šì€ ê²½ìš°
                 sJoinPredHead = sCurrPred->next;
             }
             else
             {
-                // Lateral View¿Í °ü·Ã ¾ø´Â PredicateÀÌ ÀÌÀü¿¡ ³ª¿Â °æ¿ì
+                // Lateral Viewì™€ ê´€ë ¨ ì—†ëŠ” Predicateì´ ì´ì „ì— ë‚˜ì˜¨ ê²½ìš°
                 sJoinPredTail->next = sCurrPred->next;
             }
 
             if ( sDiscardPredTail == NULL )
             {
-                // Lateral View PredicateÀÌ Ã³À½ ³ª¿Â °æ¿ì
+                // Lateral View Predicateì´ ì²˜ìŒ ë‚˜ì˜¨ ê²½ìš°
                 sDiscardPredHead = sCurrPred;
                 sDiscardPredTail = sCurrPred;
             }
             else
             {
-                // Lateral View PredicateÀÌ Ã³À½ÀÌ ¾Æ´Ñ °æ¿ì
+                // Lateral View Predicateì´ ì²˜ìŒì´ ì•„ë‹Œ ê²½ìš°
                 sDiscardPredTail->next = sCurrPred;
                 sDiscardPredTail       = sDiscardPredTail->next;
             }
         }
         else
         {
-            // Lateral View¿Í °ü·Ã¾ø´Â PredicateÀÎ °æ¿ì
+            // Lateral Viewì™€ ê´€ë ¨ì—†ëŠ” Predicateì¸ ê²½ìš°
             sJoinPredTail = sCurrPred;
         }
 
-        // ÃÊ±âÈ­
+        // ì´ˆê¸°í™”
         sInLateralView  = ID_FALSE;
         sCurrPred       = sCurrPred->next;
     }
 
-    // ¸®½ºÆ® ¹İÈ¯
+    // ë¦¬ìŠ¤íŠ¸ ë°˜í™˜
     aCNF->joinPredicate = sJoinPredHead;
     *aDiscardPredList   = sDiscardPredHead;
 
@@ -6030,19 +6030,19 @@ IDE_RC qmoCnfMgr::validateLateralViewJoin( qcStatement   * aStatement,
  *
  * Description : PROJ-2418 Cross/Outer APPLY & Lateral View
  *
- *   ´ÙÀ½ÀÇ °æ¿ì´Â ¼öÇàÇÒ ¼ö ¾ø´Ù. ¿¡·¯¸Ş½ÃÁö¸¦ Ãâ·ÂÇØ¾ß ÇÑ´Ù.
- *   - Left-Outer JoinÀÇ ¿ŞÂÊÀÌ LView, ¿À¸¥ÂÊÀÌ LView°¡ ÂüÁ¶ÇÏ´Â Relation
- *   - Full-Outer JoinÀÇ ÇÑ ÂÊÀÌ LView, ´Ù¸¥ ÂÊÀÌ LView°¡ ÂüÁ¶ÇÏ´Â Relation
+ *   ë‹¤ìŒì˜ ê²½ìš°ëŠ” ìˆ˜í–‰í•  ìˆ˜ ì—†ë‹¤. ì—ëŸ¬ë©”ì‹œì§€ë¥¼ ì¶œë ¥í•´ì•¼ í•œë‹¤.
+ *   - Left-Outer Joinì˜ ì™¼ìª½ì´ LView, ì˜¤ë¥¸ìª½ì´ LViewê°€ ì°¸ì¡°í•˜ëŠ” Relation
+ *   - Full-Outer Joinì˜ í•œ ìª½ì´ LView, ë‹¤ë¥¸ ìª½ì´ LViewê°€ ì°¸ì¡°í•˜ëŠ” Relation
  *
- *   qmv°¡ ¾Æ´Ñ qmo¿¡¼­ validationÀ» ÁøÇàÇÏ´Â ÀÌÀ¯´Â,
- *   qmo¿¡¼­ Oracle-style Outer Operator¸¦ ANSI-JoinÀ¸·Î º¯È¯ÇÏ±â ¶§¹®ÀÌ¸ç
- *   ±âÁ¸ ANSI-Join°ú ÇÔ²² ÇÑ¹ø¿¡ validation ÇÏ±â À§ÇØ¼­ÀÌ´Ù.
+ *   qmvê°€ ì•„ë‹Œ qmoì—ì„œ validationì„ ì§„í–‰í•˜ëŠ” ì´ìœ ëŠ”,
+ *   qmoì—ì„œ Oracle-style Outer Operatorë¥¼ ANSI-Joinìœ¼ë¡œ ë³€í™˜í•˜ê¸° ë•Œë¬¸ì´ë©°
+ *   ê¸°ì¡´ ANSI-Joinê³¼ í•¨ê»˜ í•œë²ˆì— validation í•˜ê¸° ìœ„í•´ì„œì´ë‹¤.
  *
  * Implementation :
  *
- *   - Left¿¡  Join Tree°¡ ÀÖ´Ù¸é, Left¿¡  ´ëÇØ¼­ Àç±ÍÈ£Ãâ
- *   - Right¿¡ Join Tree°¡ ÀÖ´Ù¸é, Right¿¡ ´ëÇØ¼­ Àç±ÍÈ£Ãâ
- *   - Left / Right¿¡¼­ ¾ò¾î¿Â lateralDepInfo¸¦ ÅëÇØ Right/Full Outer °ËÁõ
+ *   - Leftì—  Join Treeê°€ ìˆë‹¤ë©´, Leftì—  ëŒ€í•´ì„œ ì¬ê·€í˜¸ì¶œ
+ *   - Rightì— Join Treeê°€ ìˆë‹¤ë©´, Rightì— ëŒ€í•´ì„œ ì¬ê·€í˜¸ì¶œ
+ *   - Left / Rightì—ì„œ ì–»ì–´ì˜¨ lateralDepInfoë¥¼ í†µí•´ Right/Full Outer ê²€ì¦
  *
 ***********************************************************************/
 
@@ -6062,14 +6062,14 @@ IDE_RC qmoCnfMgr::validateLateralViewJoin( qcStatement   * aStatement,
 
         if ( aFrom->left->joinType != QMS_NO_JOIN )
         {
-            // LEFT¿¡ ´ëÇÑ Validation
+            // LEFTì— ëŒ€í•œ Validation
             IDE_TEST( validateLateralViewJoin( aStatement,
                                                aFrom->left )
                       != IDE_SUCCESS );
         }
         else
         {
-            // LEFTÀÇ lateralDepInfo °è»ê
+            // LEFTì˜ lateralDepInfo ê³„ì‚°
             IDE_TEST( qmvQTC::getFromLateralDepInfo( aFrom->left,
                                                      & sLeftLateralDepInfo )
                       != IDE_SUCCESS );
@@ -6077,20 +6077,20 @@ IDE_RC qmoCnfMgr::validateLateralViewJoin( qcStatement   * aStatement,
 
         if ( aFrom->right->joinType != QMS_NO_JOIN )
         {
-            // RIGHT¿¡ ´ëÇÑ Validation
+            // RIGHTì— ëŒ€í•œ Validation
             IDE_TEST( validateLateralViewJoin( aStatement,
                                                aFrom->right )
                       != IDE_SUCCESS );
         }
         else
         {
-            // RIGHTÀÇ lateralDepInfo °è»ê
+            // RIGHTì˜ lateralDepInfo ê³„ì‚°
             IDE_TEST( qmvQTC::getFromLateralDepInfo( aFrom->right,
                                                      & sRightLateralDepInfo )
                       != IDE_SUCCESS );
         }
 
-        // Left/Full-Outer JoinÀÎ °æ¿ì, Left->Right ÂüÁ¶ ¿©ºÎ °ËÁõ
+        // Left/Full-Outer Joinì¸ ê²½ìš°, Left->Right ì°¸ì¡° ì—¬ë¶€ ê²€ì¦
         if ( ( aFrom->joinType == QMS_LEFT_OUTER_JOIN ) ||
              ( aFrom->joinType == QMS_FULL_OUTER_JOIN ) )
         {
@@ -6098,7 +6098,7 @@ IDE_RC qmoCnfMgr::validateLateralViewJoin( qcStatement   * aStatement,
                                 & aFrom->right->depInfo,
                                 & sLateralDepInfo );
 
-            // ¿ÜºÎ ÂüÁ¶ÇÏ´Â °æ¿ì, Left/Full-Outer JoinÀ» ÇÒ ¼ö ¾ø´Ù.
+            // ì™¸ë¶€ ì°¸ì¡°í•˜ëŠ” ê²½ìš°, Left/Full-Outer Joinì„ í•  ìˆ˜ ì—†ë‹¤.
             IDE_TEST_RAISE( qtc::haveDependencies( & sLateralDepInfo ) == ID_TRUE,
                             ERR_LVIEW_LEFT_FULL_JOIN_WITH_REF );
         }
@@ -6107,14 +6107,14 @@ IDE_RC qmoCnfMgr::validateLateralViewJoin( qcStatement   * aStatement,
             // Nothing to do.
         }
 
-        // Full-Outer JoinÀÎ °æ¿ì, Right->Left ÂüÁ¶ ¿©ºÎµµ °ËÁõ
+        // Full-Outer Joinì¸ ê²½ìš°, Right->Left ì°¸ì¡° ì—¬ë¶€ë„ ê²€ì¦
         if ( aFrom->joinType == QMS_FULL_OUTER_JOIN )
         {
             qtc::dependencyAnd( & sRightLateralDepInfo,
                                 & aFrom->left->depInfo,
                                 & sLateralDepInfo );
 
-            // ¿ÜºÎ ÂüÁ¶ÇÏ´Â °æ¿ì, Full-Outer JoinÀ» ÇÒ ¼ö ¾ø´Ù.
+            // ì™¸ë¶€ ì°¸ì¡°í•˜ëŠ” ê²½ìš°, Full-Outer Joinì„ í•  ìˆ˜ ì—†ë‹¤.
             IDE_TEST_RAISE( qtc::haveDependencies( & sLateralDepInfo ) == ID_TRUE,
                             ERR_LVIEW_LEFT_FULL_JOIN_WITH_REF );
         }

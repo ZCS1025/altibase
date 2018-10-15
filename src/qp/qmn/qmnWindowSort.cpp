@@ -21,12 +21,12 @@
  * Description :
  *    WNST(WiNdow SorT) Node
  *
- * ¿ë¾î ¼³¸í :
- *    °°Àº ÀÇ¹Ì¸¦ °¡Áö´Â ¼­·Î ´Ù¸¥ ´Ü¾î¸¦ Á¤¸®ÇÏ¸é ¾Æ·¡¿Í °°´Ù.
+ * ìš©ì–´ ì„¤ëª… :
+ *    ê°™ì€ ì˜ë¯¸ë¥¼ ê°€ì§€ëŠ” ì„œë¡œ ë‹¤ë¥¸ ë‹¨ì–´ë¥¼ ì •ë¦¬í•˜ë©´ ì•„ë˜ì™€ ê°™ë‹¤.
  *    - Analytic Funtion = Window Function
  *    - Analytic Clause = Window Clause = Over Clause
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *    WNST(Window Sort)
  *
  **********************************************************************/
@@ -52,7 +52,7 @@ qmnWNST::init( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    WNST ³ëµåÀÇ ÃÊ±âÈ­
+ *    WNST ë…¸ë“œì˜ ì´ˆê¸°í™”
  *
  * Implementation :
  *
@@ -66,7 +66,7 @@ qmnWNST::init( qcTemplate * aTemplate,
     sDataPlan->doIt = qmnWNST::doItDefault;
 
     //----------------------------------------
-    // ÃÖÃÊ ÃÊ±âÈ­ ¼öÇà
+    // ìµœì´ˆ ì´ˆê¸°í™” ìˆ˜í–‰
     //----------------------------------------
 
     if ( (*sDataPlan->flag & QMND_WNST_INIT_DONE_MASK)
@@ -83,18 +83,18 @@ qmnWNST::init( qcTemplate * aTemplate,
     }
 
     //----------------------------------------
-    // Dependency¸¦ °Ë»çÇÏ¿© Àç ¼öÇà ¿©ºÎ °áÁ¤
+    // Dependencyë¥¼ ê²€ì‚¬í•˜ì—¬ ì¬ ìˆ˜í–‰ ì—¬ë¶€ ê²°ì •
     //----------------------------------------
     if( sDataPlan->depValue != sDataPlan->depTuple->modify )
     {
-        // Sort Manager ¼³Á¤
+        // Sort Manager ì„¤ì •
         if ( (sCodePlan->plan.flag & QMN_PLAN_STORAGE_MASK)
              == QMN_PLAN_STORAGE_DISK )
         {
-            // µğ½ºÅ© ¼ÒÆ® ÅÛÇÁÀÎ °æ¿ì
-            // Ã³À½ ¼öÇà½Ã sortMgr°¡ sortMgrForDisk¸¦ °¡¸®Å°°í ÀÖÀ½
-            // ÇÏÁö¸¸ ¹İº¹ ¼öÇà½Ã (firstInit)ÀÌ ¼öÇàµÇÁö ¾ÊÀ¸¹Ç·Î
-            // ÀÌ¸¦ ´ëºñÇØ¿© °ªÀ» ÃÊ±âÈ­
+            // ë””ìŠ¤í¬ ì†ŒíŠ¸ í…œí”„ì¸ ê²½ìš°
+            // ì²˜ìŒ ìˆ˜í–‰ì‹œ sortMgrê°€ sortMgrForDiskë¥¼ ê°€ë¦¬í‚¤ê³  ìˆìŒ
+            // í•˜ì§€ë§Œ ë°˜ë³µ ìˆ˜í–‰ì‹œ (firstInit)ì´ ìˆ˜í–‰ë˜ì§€ ì•Šìœ¼ë¯€ë¡œ
+            // ì´ë¥¼ ëŒ€ë¹„í•´ì—¬ ê°’ì„ ì´ˆê¸°í™”
             sDataPlan->sortMgr = sDataPlan->sortMgrForDisk;
         }
         else
@@ -124,13 +124,13 @@ qmnWNST::init( qcTemplate * aTemplate,
         if ( sIsSkip == ID_FALSE )
         {
             //----------------------------------------
-            // Temp Table ±¸Ãà Àü ÃÊ±âÈ­
+            // Temp Table êµ¬ì¶• ì „ ì´ˆê¸°í™”
             //----------------------------------------
             IDE_TEST( qmcSortTemp::clear( sDataPlan->sortMgr )
                       != IDE_SUCCESS );
 
             //----------------------------------------
-            // 1. Child¸¦ ¹İº¹ ¼öÇàÇÏ¿© Temp Table¿¡ Insert
+            // 1. Childë¥¼ ë°˜ë³µ ìˆ˜í–‰í•˜ì—¬ Temp Tableì— Insert
             //----------------------------------------
             IDE_TEST( sCodePlan->plan.left->init( aTemplate,
                                                   sCodePlan->plan.left )
@@ -165,7 +165,7 @@ qmnWNST::init( qcTemplate * aTemplate,
                                             sDataPlan )
                   != IDE_SUCCESS );
 
-        // Temp Table ±¸Ãà ÈÄ ÃÊ±âÈ­
+        // Temp Table êµ¬ì¶• í›„ ì´ˆê¸°í™”
         sDataPlan->depValue = sDataPlan->depTuple->modify;
     }
     else
@@ -173,7 +173,7 @@ qmnWNST::init( qcTemplate * aTemplate,
         // Nothing To Do
     }
 
-    // doIt ÇÔ¼ö ¼³Á¤
+    // doIt í•¨ìˆ˜ ì„¤ì •
     sDataPlan->doIt = qmnWNST::doItFirst;
     
     return IDE_SUCCESS;
@@ -191,10 +191,10 @@ qmnWNST::doIt( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    WNST ÀÇ doIt ÇÔ¼ö
+ *    WNST ì˜ doIt í•¨ìˆ˜
  *
  * Implementation :
- *    Analytic Function ¼öÇà °á°ú¸¦ ¼øÂ÷ÀûÀ¸·Î tuple¿¡ ¼³Á¤ÇÔ
+ *    Analytic Function ìˆ˜í–‰ ê²°ê³¼ë¥¼ ìˆœì°¨ì ìœ¼ë¡œ tupleì— ì„¤ì •í•¨
  *
  ***********************************************************************/
     qmndWNST * sDataPlan =
@@ -219,11 +219,11 @@ qmnWNST::padNull( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    WNST ³ëµåÀÇ Tuple¿¡ Null Row¸¦ ¼³Á¤ÇÑ´Ù.
+ *    WNST ë…¸ë“œì˜ Tupleì— Null Rowë¥¼ ì„¤ì •í•œë‹¤.
  *
  * Implementation :
- *    Child PlanÀÇ Null PaddingÀ» ¼öÇàÇÏ°í,
- *    ÀÚ½ÅÀÇ Null Row¸¦ Temp Table·ÎºÎÅÍ È¹µæÇÑ´Ù.
+ *    Child Planì˜ Null Paddingì„ ìˆ˜í–‰í•˜ê³ ,
+ *    ìì‹ ì˜ Null Rowë¥¼ Temp Tableë¡œë¶€í„° íšë“í•œë‹¤.
  *
  ***********************************************************************/
     qmncWNST * sCodePlan = (qmncWNST *) aPlan;
@@ -253,9 +253,9 @@ qmnWNST::padNull( qcTemplate * aTemplate,
     sDataPlan->plan.myTuple->modify++;
 
     // To Fix PR-9822
-    // padNull() ÇÔ¼ö´Â Child ÀÇ modify °ªÀ» º¯°æ½ÃÅ°°Ô µÈ´Ù.
-    // ÀÌ´Â Àç±¸Ãà ¿©ºÎ¿Í °ü°è°¡ ¾øÀ¸¹Ç·Î ±× °ªÀ» ÀúÀåÇÏ¿©
-    // Àç±¸ÃàÀÌ µÇÁö ¾Êµµ·Ï ÇÑ´Ù.
+    // padNull() í•¨ìˆ˜ëŠ” Child ì˜ modify ê°’ì„ ë³€ê²½ì‹œí‚¤ê²Œ ëœë‹¤.
+    // ì´ëŠ” ì¬êµ¬ì¶• ì—¬ë¶€ì™€ ê´€ê³„ê°€ ì—†ìœ¼ë¯€ë¡œ ê·¸ ê°’ì„ ì €ì¥í•˜ì—¬
+    // ì¬êµ¬ì¶•ì´ ë˜ì§€ ì•Šë„ë¡ í•œë‹¤.
     sDataPlan->depValue = sDataPlan->depTuple->modify;
     
     return IDE_SUCCESS;
@@ -275,7 +275,7 @@ qmnWNST::printPlan( qcTemplate   * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    WNST ³ëµåÀÇ ¼öÇà Á¤º¸¸¦ Ãâ·ÂÇÑ´Ù.
+ *    WNST ë…¸ë“œì˜ ìˆ˜í–‰ ì •ë³´ë¥¼ ì¶œë ¥í•œë‹¤.
  *
  * Implementation :
  *
@@ -293,47 +293,47 @@ qmnWNST::printPlan( qcTemplate   * aTemplate,
     UInt         sSortCount = 0;
 
     //----------------------------
-    // SORT COUNT °áÁ¤
+    // SORT COUNT ê²°ì •
     //----------------------------
     if( ( sCodePlan->flag & QMNC_WNST_STORE_MASK )
         == QMNC_WNST_STORE_SORTING )
     {
-        // ÀÏ¹İÀûÀÎ °æ¿ì
+        // ì¼ë°˜ì ì¸ ê²½ìš°
         sSortCount = sCodePlan->sortKeyCnt;
     }
     else if( ( sCodePlan->flag & QMNC_WNST_STORE_MASK )
         == QMNC_WNST_STORE_LIMIT_SORTING )
     {
-        /* pushed rankÀÎ °æ¿ì */
+        /* pushed rankì¸ ê²½ìš° */
         IDE_DASSERT( sCodePlan->sortKeyCnt == 1 );
         sSortCount = sCodePlan->sortKeyCnt;
     }
     else if( ( sCodePlan->flag & QMNC_WNST_STORE_MASK )
              == QMNC_WNST_STORE_PRESERVED_ORDER )
     {
-        // PRESERVED ORDER¸¦ °¡Áö´Â °æ¿ì
+        // PRESERVED ORDERë¥¼ ê°€ì§€ëŠ” ê²½ìš°
         sSortCount = sCodePlan->sortKeyCnt - 1;
     }
     else if( ( sCodePlan->flag & QMNC_WNST_STORE_MASK )
              == QMNC_WNST_STORE_LIMIT_PRESERVED_ORDER )
     {
-        /* pushed rankÀÎ °æ¿ì */
+        /* pushed rankì¸ ê²½ìš° */
         IDE_DASSERT( sCodePlan->sortKeyCnt == 1 );
     }
     else if( ( sCodePlan->flag & QMNC_WNST_STORE_MASK )
              == QMNC_WNST_STORE_ONLY )
     {
-        // ºó OVER()¸¸À» °¡Áö´Â Á¤·ÄÅ°
+        // ë¹ˆ OVER()ë§Œì„ ê°€ì§€ëŠ” ì •ë ¬í‚¤
         IDE_DASSERT( sCodePlan->sortKeyCnt == 1 );
     }
     else
     {
-        // °í·ÁÇÏÁö ¾ÊÀº ÇÃ·¡±× Á¤º¸
+        // ê³ ë ¤í•˜ì§€ ì•Šì€ í”Œë˜ê·¸ ì •ë³´
         IDE_DASSERT(0);
     }
     
     //----------------------------
-    // Display À§Ä¡ °áÁ¤ (µé¿©¾²±â)
+    // Display ìœ„ì¹˜ ê²°ì • (ë“¤ì—¬ì“°ê¸°)
     //----------------------------
 
     for ( i = 0; i < aDepth; i++ )
@@ -342,32 +342,32 @@ qmnWNST::printPlan( qcTemplate   * aTemplate,
     }
 
     //----------------------------
-    // ¼öÇà Á¤º¸ Ãâ·Â
+    // ìˆ˜í–‰ ì •ë³´ ì¶œë ¥
     //----------------------------
 
     if ( aMode == QMN_DISPLAY_ALL )
     {
         //----------------------------
-        // explain plan = on; ÀÎ °æ¿ì
+        // explain plan = on; ì¸ ê²½ìš°
         //----------------------------
 
         if ( (*sDataPlan->flag & QMND_WNST_INIT_DONE_MASK)
              == QMND_WNST_INIT_DONE_TRUE )
         {
             sIsInit = ID_TRUE;
-            // ÃÊ±âÈ­ µÈ °æ¿ì
+            // ì´ˆê¸°í™” ëœ ê²½ìš°
 
             // BUBBUG
-            // -> ¾îÂ÷ÇÇ DiskÀÇ °æ¿ìµµ ¿©·¯°³ÀÇ Sort Mgr°£¿¡ µ¥ÀÌÅÍ¸¦ ¿Å±â°í ³ª¸é,
-            // clear()¸¦ ¼öÇàÇÒ °ÍÀÎµ¥, ÀÌ °æ¿ìµµ °ø°£ÀÌ ¹İÈ¯µÇÁö ¾Ê´Â°¡?
-            // ¸ğµç Sort Temp¿¡ ´ëÇÑ °ø°£À» ´õÇØ¾ß ÇÒÁö °áÁ¤ÇØ¾ß ÇÔ
-            // Sort Temp Table·Î ºÎÅÍ record, page Á¤º¸ °¡Á®¿ò
+            // -> ì–´ì°¨í”¼ Diskì˜ ê²½ìš°ë„ ì—¬ëŸ¬ê°œì˜ Sort Mgrê°„ì— ë°ì´í„°ë¥¼ ì˜®ê¸°ê³  ë‚˜ë©´,
+            // clear()ë¥¼ ìˆ˜í–‰í•  ê²ƒì¸ë°, ì´ ê²½ìš°ë„ ê³µê°„ì´ ë°˜í™˜ë˜ì§€ ì•ŠëŠ”ê°€?
+            // ëª¨ë“  Sort Tempì— ëŒ€í•œ ê³µê°„ì„ ë”í•´ì•¼ í• ì§€ ê²°ì •í•´ì•¼ í•¨
+            // Sort Temp Tableë¡œ ë¶€í„° record, page ì •ë³´ ê°€ì ¸ì›€
             IDE_TEST( qmcSortTemp::getDisplayInfo( sDataPlan->sortMgr,
                                                    & sDiskPageCnt,
                                                    & sRecordCnt )
                       != IDE_SUCCESS );
             
-            // Memory/Disk¸¦ ±¸º°ÇÏ¿© Ãâ·ÂÇÔ
+            // Memory/Diskë¥¼ êµ¬ë³„í•˜ì—¬ ì¶œë ¥í•¨
             if ( (sCodePlan->plan.flag & QMN_PLAN_STORAGE_MASK)
                  == QMN_PLAN_STORAGE_MEMORY )
             {
@@ -388,7 +388,7 @@ qmnWNST::printPlan( qcTemplate   * aTemplate,
                 else
                 {
                     // BUG-29209
-                    // ITEM_SIZE Á¤º¸ º¸¿©ÁÖÁö ¾ÊÀ½
+                    // ITEM_SIZE ì •ë³´ ë³´ì—¬ì£¼ì§€ ì•ŠìŒ
                     iduVarStringAppendFormat(
                         aString,
                         "WINDOW SORT ( "
@@ -422,7 +422,7 @@ qmnWNST::printPlan( qcTemplate   * aTemplate,
                 else
                 {
                     // BUG-29209
-                    // ITEM_SIZE, DISK_PAGE_COUNT Á¤º¸ º¸¿©ÁÖÁö ¾ÊÀ½
+                    // ITEM_SIZE, DISK_PAGE_COUNT ì •ë³´ ë³´ì—¬ì£¼ì§€ ì•ŠìŒ
                     iduVarStringAppendFormat(
                         aString,
                         "WINDOW SORT ( "
@@ -440,7 +440,7 @@ qmnWNST::printPlan( qcTemplate   * aTemplate,
         }
         else
         {
-            // ÃÊ±âÈ­ µÇÁö ¾ÊÀº °æ¿ì
+            // ì´ˆê¸°í™” ë˜ì§€ ì•Šì€ ê²½ìš°
             iduVarStringAppendFormat( aString,
                                       "WINDOW SORT ( ITEM_SIZE: 0, "
                                       "ITEM_COUNT: 0, ACCESS: 0, "
@@ -451,7 +451,7 @@ qmnWNST::printPlan( qcTemplate   * aTemplate,
     else
     {
         //----------------------------
-        // explain plan = only; ÀÎ °æ¿ì
+        // explain plan = only; ì¸ ê²½ìš°
         //----------------------------
         iduVarStringAppendFormat( aString,
                                   "WINDOW SORT ( ITEM_SIZE: ??, "
@@ -461,7 +461,7 @@ qmnWNST::printPlan( qcTemplate   * aTemplate,
     }
 
     //----------------------------
-    // Cost Ãâ·Â
+    // Cost ì¶œë ¥
     //----------------------------
     qmn::printCost( aString,
                     sCodePlan->plan.qmgAllCost );
@@ -528,8 +528,8 @@ qmnWNST::printPlan( qcTemplate   * aTemplate,
     }
     else
     {
-        // TRCLOG_DETAIL_MTRNODE = 0 ÀÎ °æ¿ì
-        // ¾Æ¹« °Íµµ Ãâ·ÂÇÏÁö ¾Ê´Â´Ù.
+        // TRCLOG_DETAIL_MTRNODE = 0 ì¸ ê²½ìš°
+        // ì•„ë¬´ ê²ƒë„ ì¶œë ¥í•˜ì§€ ì•ŠëŠ”ë‹¤.
     }
     
     //----------------------------
@@ -537,8 +537,8 @@ qmnWNST::printPlan( qcTemplate   * aTemplate,
     //----------------------------
     if (QCG_GET_SESSION_TRCLOG_DETAIL_PREDICATE(aTemplate->stmt) == 1)
     {
-        // TRCLOG_DETAIL_PREDICATE = 1 ÀÎ °æ¿ì
-        // Á¤·Ä Å°¿Í °¢ Á¤·Ä Å°º° analytic clause Á¤º¸¸¦ Ãâ·ÂÇÑ´Ù
+        // TRCLOG_DETAIL_PREDICATE = 1 ì¸ ê²½ìš°
+        // ì •ë ¬ í‚¤ì™€ ê° ì •ë ¬ í‚¤ë³„ analytic clause ì •ë³´ë¥¼ ì¶œë ¥í•œë‹¤
         for ( i = 0; i < aDepth+1; i++ )
         {
             iduVarStringAppend( aString, " " );
@@ -546,7 +546,7 @@ qmnWNST::printPlan( qcTemplate   * aTemplate,
 
         iduVarStringAppend( aString, "[ ANALYTIC FUNCTION INFO ]\n" );
         
-        // ºĞ¼® ÇÔ¼ö Á¤º¸ Ãâ·Â
+        // ë¶„ì„ í•¨ìˆ˜ ì •ë³´ ì¶œë ¥
         IDE_TEST( printAnalyticFunctionInfo( aTemplate,
                                              sCodePlan,
                                              sDataPlan,
@@ -557,12 +557,12 @@ qmnWNST::printPlan( qcTemplate   * aTemplate,
     }
     else
     {
-        // TRCLOG_DETAIL_PREDICATE = 0 ÀÎ °æ¿ì
-        // ¾Æ¹«°Íµµ Ãâ·ÂÇÏÁö ¾Ê´Â´Ù
+        // TRCLOG_DETAIL_PREDICATE = 0 ì¸ ê²½ìš°
+        // ì•„ë¬´ê²ƒë„ ì¶œë ¥í•˜ì§€ ì•ŠëŠ”ë‹¤
     }
 
     //----------------------------
-    // Operatorº° °á°ú Á¤º¸ Ãâ·Â
+    // Operatorë³„ ê²°ê³¼ ì •ë³´ ì¶œë ¥
     //----------------------------
     if ( QCU_TRCLOG_RESULT_DESC == 1 )
     {
@@ -578,7 +578,7 @@ qmnWNST::printPlan( qcTemplate   * aTemplate,
     }
 
     //----------------------------
-    // Child Plan Á¤º¸ Ãâ·Â
+    // Child Plan ì •ë³´ ì¶œë ¥
     //----------------------------
 
     IDE_TEST( aPlan->left->printPlan( aTemplate,
@@ -602,7 +602,7 @@ qmnWNST::doItDefault( qcTemplate * /* aTemplate */,
 /***********************************************************************
  *
  * Description :
- *    ÀÌ ÇÔ¼ö°¡ ¼öÇàµÇ¸é ¾ÈµÊ.
+ *    ì´ í•¨ìˆ˜ê°€ ìˆ˜í–‰ë˜ë©´ ì•ˆë¨.
  *
  * Implementation :
  *
@@ -620,7 +620,7 @@ qmnWNST::doItFirst( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    ÃÖÃÊ ¼öÇà ÇÔ¼ö
+ *    ìµœì´ˆ ìˆ˜í–‰ í•¨ìˆ˜
  *
  * Implementation :
  *
@@ -631,11 +631,11 @@ qmnWNST::doItFirst( qcTemplate * aTemplate,
     void       * sOrgRow;
     void       * sSearchRow;
 
-    // Áú¹®: °Ë»çÇÏ´Â ³ëµåµµ ÀÖ°í, ¾Æ´Ñ ³ëµåµµ ÀÖ´Âµ¥, ÇØ¾ßÇÏ³ª?
+    // ì§ˆë¬¸: ê²€ì‚¬í•˜ëŠ” ë…¸ë“œë„ ìˆê³ , ì•„ë‹Œ ë…¸ë“œë„ ìˆëŠ”ë°, í•´ì•¼í•˜ë‚˜?
     IDE_TEST( iduCheckSessionEvent( aTemplate->stmt->mStatistics )
               != IDE_SUCCESS );
     
-    // Ã¹¹øÂ° ¼øÂ÷ °Ë»ö
+    // ì²«ë²ˆì§¸ ìˆœì°¨ ê²€ìƒ‰
     sOrgRow = sSearchRow = sDataPlan->plan.myTuple->row;
     IDE_TEST( qmcSortTemp::getFirstSequence( sDataPlan->sortMgr,
                                              & sSearchRow )
@@ -643,12 +643,12 @@ qmnWNST::doItFirst( qcTemplate * aTemplate,
     
     sDataPlan->plan.myTuple->row = (sSearchRow == NULL) ? sOrgRow : sSearchRow;
     
-    // Row Á¸Àç À¯¹« ¼³Á¤ ¹× Tuple Set º¹¿ø
+    // Row ì¡´ì¬ ìœ ë¬´ ì„¤ì • ë° Tuple Set ë³µì›
     if ( sSearchRow != NULL )
     {
         *aFlag = QMC_ROW_DATA_EXIST;
 
-        // Data°¡ Á¸ÀçÇÒ °æ¿ì Tuple Set º¹¿ø
+        // Dataê°€ ì¡´ì¬í•  ê²½ìš° Tuple Set ë³µì›
         IDE_TEST( setTupleSet( aTemplate,
                                sDataPlan->mtrNode,
                                sDataPlan->plan.myTuple->row ) != IDE_SUCCESS );
@@ -680,7 +680,7 @@ qmnWNST::doItNext( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    ´ÙÀ½ ¼øÂ÷ °Ë»öÀ» ¼öÇà
+ *    ë‹¤ìŒ ìˆœì°¨ ê²€ìƒ‰ì„ ìˆ˜í–‰
  *
  * Implementation :
  *
@@ -690,7 +690,7 @@ qmnWNST::doItNext( qcTemplate * aTemplate,
     void     * sOrgRow;
     void     * sSearchRow;
     
-    // ¼øÂ÷ °Ë»ö
+    // ìˆœì°¨ ê²€ìƒ‰
     sOrgRow = sSearchRow = sDataPlan->plan.myTuple->row;
     
     IDE_TEST( qmcSortTemp::getNextSequence( sDataPlan->sortMgr,
@@ -699,12 +699,12 @@ qmnWNST::doItNext( qcTemplate * aTemplate,
     
     sDataPlan->plan.myTuple->row = (sSearchRow == NULL) ? sOrgRow : sSearchRow;
 
-    // Row Á¸Àç À¯¹« ¼³Á¤ ¹× Tuple Set º¹¿ø
+    // Row ì¡´ì¬ ìœ ë¬´ ì„¤ì • ë° Tuple Set ë³µì›
     if ( sSearchRow != NULL )
     {
         *aFlag = QMC_ROW_DATA_EXIST;
 
-        // Data°¡ Á¸ÀçÇÒ °æ¿ì Tuple Set º¹¿ø
+        // Dataê°€ ì¡´ì¬í•  ê²½ìš° Tuple Set ë³µì›
         IDE_TEST( setTupleSet( aTemplate,
                                sDataPlan->mtrNode,
                                sDataPlan->plan.myTuple->row ) != IDE_SUCCESS );
@@ -734,7 +734,7 @@ qmnWNST::firstInit( qcTemplate     * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    Wnst NodeÀÇ Data Plan ÃÊ±âÈ­
+ *    Wnst Nodeì˜ Data Plan ì´ˆê¸°í™”
  *
  * Implementation :
  *
@@ -743,7 +743,7 @@ qmnWNST::firstInit( qcTemplate     * aTemplate,
     qmndWNST    * sCacheDataPlan = NULL;
 
     //---------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //---------------------------------    
     IDE_DASSERT( aCodePlan->mtrNodeOffset > 0 );
     IDE_DASSERT( aCodePlan->distNodeOffset > 0 );
@@ -753,7 +753,7 @@ qmnWNST::firstInit( qcTemplate     * aTemplate,
     IDE_DASSERT( aCodePlan->sortMgrOffset > 0 );
 
     //---------------------------------
-    // Data PlanÀÇ Data ¿µ¿ª ÁÖ¼Ò ÇÒ´ç
+    // Data Planì˜ Data ì˜ì—­ ì£¼ì†Œ í• ë‹¹
     //---------------------------------
     aDataPlan->mtrNode  = (qmdMtrNode*)  (sDataArea + aCodePlan->mtrNodeOffset);
     aDataPlan->distNode = (qmdDistNode*) (sDataArea + aCodePlan->distNodeOffset);
@@ -789,7 +789,7 @@ qmnWNST::firstInit( qcTemplate     * aTemplate,
     if ( (aCodePlan->plan.flag & QMN_PLAN_STORAGE_MASK)
          == QMN_PLAN_STORAGE_DISK  )
     {
-        // DISK ÀÎ °æ¿ì, sortMtrForDisk ¶ÇÇÑ ¼³Á¤
+        // DISK ì¸ ê²½ìš°, sortMtrForDisk ë˜í•œ ì„¤ì •
         aDataPlan->sortMgr        = (qmcdSortTemp*)
             (sDataArea + aCodePlan->sortMgrOffset);
         aDataPlan->sortMgrForDisk = (qmcdSortTemp*)
@@ -797,29 +797,29 @@ qmnWNST::firstInit( qcTemplate     * aTemplate,
     }
     else
     {
-        // MEMORYÀÎ °æ¿ì
+        // MEMORYì¸ ê²½ìš°
         aDataPlan->sortMgr        = (qmcdSortTemp*)
             (sDataArea + aCodePlan->sortMgrOffset);
         aDataPlan->sortMgrForDisk = NULL;
     }
 
     //---------------------------------
-    // Data Plan Á¤º¸ ÃÊ±âÈ­
+    // Data Plan ì •ë³´ ì´ˆê¸°í™”
     //---------------------------------
     
-    // ÀúÀå Ä®·³ Á¤º¸¸¦ (Materialize ³ëµå) ÃÊ±âÈ­
+    // ì €ì¥ ì¹¼ëŸ¼ ì •ë³´ë¥¼ (Materialize ë…¸ë“œ) ì´ˆê¸°í™”
     IDE_TEST( initMtrNode( aTemplate,
                            aCodePlan,
                            aDataPlan )
               != IDE_SUCCESS );
 
-    // ÃÊ±âÈ­µÈ mtrNode Á¤º¸¸¦ ÀÌ¿ëÇÏ¿© °ü·ÃµÈ ´Ù¸¥ Á¤º¸ ÃÊ±âÈ­
+    // ì´ˆê¸°í™”ëœ mtrNode ì •ë³´ë¥¼ ì´ìš©í•˜ì—¬ ê´€ë ¨ëœ ë‹¤ë¥¸ ì •ë³´ ì´ˆê¸°í™”
     aDataPlan->mtrRowSize = qmc::getMtrRowSize( aDataPlan->mtrNode );
     aDataPlan->plan.myTuple    = aDataPlan->mtrNode->dstTuple;
     aDataPlan->depTuple   = & aTemplate->tmplate.rows[aCodePlan->depTupleRowID];
     aDataPlan->depValue   = QMN_PLAN_DEFAULT_DEPENDENCY_VALUE;
     
-    // Analytic Function ÀÎÀÚ¾Ö DISTINCT°¡ ÀÖ´Â °æ¿ì Á¤º¸ ¼³Á¤
+    // Analytic Function ì¸ìì•  DISTINCTê°€ ìˆëŠ” ê²½ìš° ì •ë³´ ì„¤ì •
     if( aCodePlan->distNode != NULL )
     {
         IDE_TEST( initDistNode( aTemplate,
@@ -834,7 +834,7 @@ qmnWNST::firstInit( qcTemplate     * aTemplate,
         aDataPlan->distNode = NULL;
     }
 
-    // Reporting AggregationÀ» Ã³¸®ÇÏ´Â Ä®·³(Áß°£°ª) Á¤º¸ÀÇ ¼³Á¤
+    // Reporting Aggregationì„ ì²˜ë¦¬í•˜ëŠ” ì¹¼ëŸ¼(ì¤‘ê°„ê°’) ì •ë³´ì˜ ì„¤ì •
     IDE_TEST( initAggrNode( aTemplate,
                             aCodePlan->aggrNode,
                             aDataPlan->distNode,
@@ -856,7 +856,7 @@ qmnWNST::firstInit( qcTemplate     * aTemplate,
 
     
     //---------------------------------
-    // Temp TableÀÇ ÃÊ±âÈ­
+    // Temp Tableì˜ ì´ˆê¸°í™”
     //---------------------------------
     IDE_TEST( initTempTable( aTemplate,
                              aCodePlan,
@@ -865,7 +865,7 @@ qmnWNST::firstInit( qcTemplate     * aTemplate,
                != IDE_SUCCESS );
     
 
-    // ¼­·Î ´Ù¸¥ PartitionÀ» ±¸º°ÇÏ±â À§ÇÑ DataPlan->mtrRow[2]¿¡ ¸Ş¸ğ¸® °ø°£ ÇÒ´ç
+    // ì„œë¡œ ë‹¤ë¥¸ Partitionì„ êµ¬ë³„í•˜ê¸° ìœ„í•œ DataPlan->mtrRow[2]ì— ë©”ëª¨ë¦¬ ê³µê°„ í• ë‹¹
     IDE_TEST( allocMtrRow( aTemplate,
                            aCodePlan,
                            aDataPlan,
@@ -874,7 +874,7 @@ qmnWNST::firstInit( qcTemplate     * aTemplate,
 
     
     //---------------------------------
-    // ÃÊ±âÈ­ ¿Ï·á¸¦ Ç¥±â
+    // ì´ˆê¸°í™” ì™„ë£Œë¥¼ í‘œê¸°
     //---------------------------------
 
     *aDataPlan->flag &= ~QMND_WNST_INIT_DONE_MASK;
@@ -907,14 +907,14 @@ qmnWNST::initMtrNode( qcTemplate     * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    ÀúÀå Ä®·³ Á¤º¸¸¦ (Materialize ³ëµå) ÃÊ±âÈ­
+ *    ì €ì¥ ì¹¼ëŸ¼ ì •ë³´ë¥¼ (Materialize ë…¸ë“œ) ì´ˆê¸°í™”
  *
  * Implementation :
  *
  ***********************************************************************/
     UInt        sHeaderSize = 0;
 
-    // Memory/Disk¿©ºÎ¿¡ µû¶ó ÀûÀıÇÑ temp table header size ¼³Á¤
+    // Memory/Diskì—¬ë¶€ì— ë”°ë¼ ì ì ˆí•œ temp table header size ì„¤ì •
     if ( (aCodePlan->plan.flag & QMN_PLAN_STORAGE_MASK)
          == QMN_PLAN_STORAGE_MEMORY )
     {
@@ -940,26 +940,26 @@ qmnWNST::initMtrNode( qcTemplate     * aTemplate,
     }
 
     //---------------------------------
-    // ÀúÀå ColumnÀÇ ÃÊ±âÈ­
+    // ì €ì¥ Columnì˜ ì´ˆê¸°í™”
     //---------------------------------
 
-    // 1.  ÀúÀå ColumnÀÇ ¿¬°á Á¤º¸ »ı¼º
+    // 1.  ì €ì¥ Columnì˜ ì—°ê²° ì •ë³´ ìƒì„±
     IDE_TEST( qmc::linkMtrNode( aCodePlan->myNode,
                                 aDataPlan->mtrNode ) != IDE_SUCCESS );
 
-    // 2.  ÀúÀå ColumnÀÇ ÃÊ±âÈ­
+    // 2.  ì €ì¥ Columnì˜ ì´ˆê¸°í™”
     IDE_TEST( qmc::initMtrNode( aTemplate,
                                 aDataPlan->mtrNode,
                                 aCodePlan->baseTableCount )
               != IDE_SUCCESS );
 
-    // 3.  ÀúÀå ColumnÀÇ offsetÀ» ÀçÁ¶Á¤
+    // 3.  ì €ì¥ Columnì˜ offsetì„ ì¬ì¡°ì •
     IDE_TEST( qmc::refineOffsets( aDataPlan->mtrNode,
                                   sHeaderSize )
               != IDE_SUCCESS );
 
-    // 4.  Row SizeÀÇ °è»ê
-    //     - Disk Temp TableÀÇ °æ¿ì Row¸¦ À§ÇÑ Memoryµµ ÇÒ´ç¹ŞÀ½.
+    // 4.  Row Sizeì˜ ê³„ì‚°
+    //     - Disk Temp Tableì˜ ê²½ìš° Rowë¥¼ ìœ„í•œ Memoryë„ í• ë‹¹ë°›ìŒ.
     IDE_TEST( qmc::setRowSize( aTemplate->stmt->qmxMem,
                                & aTemplate->tmplate,
                                aDataPlan->mtrNode->dstNode->node.table )
@@ -981,14 +981,14 @@ qmnWNST::initDistNode( qcTemplate     * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    Analytic Function ÀÎÀÚ¾Ö DISTINCT°¡ ÀÖ´Â °æ¿ì Á¤º¸ ¼³Á¤
+ *    Analytic Function ì¸ìì•  DISTINCTê°€ ìˆëŠ” ê²½ìš° ì •ë³´ ì„¤ì •
  *
  * Implementation :
- *    ´Ù¸¥ ÀúÀå Column°ú ´Ş¸® Distinct Argument ColumnÁ¤º¸´Â
- *    ¼­·Î °£ÀÇ ¿¬°á Á¤º¸¸¦ À¯ÁöÇÏÁö ¾Ê´Â´Ù.
- *    ÀÌ´Â °¢ ColumnÁ¤º¸´Â º°µµÀÇ TupleÀ» »ç¿ëÇÏ¸ç, ¼­·Î °£ÀÇ ¿¬°ü
- *    °ü°è¸¦ °®Áö ¾ÊÀ» »Ó´õ·¯ Hash Temp TableÀÇ ¼öÁ¤ ¾øÀÌ ½±°Ô
- *    »ç¿ëÇÏ±â À§ÇØ¼­ÀÌ´Ù.
+ *    ë‹¤ë¥¸ ì €ì¥ Columnê³¼ ë‹¬ë¦¬ Distinct Argument Columnì •ë³´ëŠ”
+ *    ì„œë¡œ ê°„ì˜ ì—°ê²° ì •ë³´ë¥¼ ìœ ì§€í•˜ì§€ ì•ŠëŠ”ë‹¤.
+ *    ì´ëŠ” ê° Columnì •ë³´ëŠ” ë³„ë„ì˜ Tupleì„ ì‚¬ìš©í•˜ë©°, ì„œë¡œ ê°„ì˜ ì—°ê´€
+ *    ê´€ê³„ë¥¼ ê°–ì§€ ì•Šì„ ë¿ë”ëŸ¬ Hash Temp Tableì˜ ìˆ˜ì • ì—†ì´ ì‰½ê²Œ
+ *    ì‚¬ìš©í•˜ê¸° ìœ„í•´ì„œì´ë‹¤.
  *
  ***********************************************************************/
     const qmcMtrNode * sCodeNode;
@@ -999,9 +999,9 @@ qmnWNST::initDistNode( qcTemplate     * aTemplate,
     UInt               i;
      
     //------------------------------------------------------
-    // Distinct ÀúÀå ColumnÀÇ ±âº» Á¤º¸ ±¸¼º
-    // Distinct Node´Â °³º°ÀûÀ¸·Î ÀúÀå °ø°£À» °®°í Ã³¸®µÇ¸ç,
-    // µû¶ó¼­ Distinct Node°£¿¡ ¿¬°á Á¤º¸¸¦ »ı¼ºÇÏÁö ¾Ê´Â´Ù.
+    // Distinct ì €ì¥ Columnì˜ ê¸°ë³¸ ì •ë³´ êµ¬ì„±
+    // Distinct NodeëŠ” ê°œë³„ì ìœ¼ë¡œ ì €ì¥ ê³µê°„ì„ ê°–ê³  ì²˜ë¦¬ë˜ë©°,
+    // ë”°ë¼ì„œ Distinct Nodeê°„ì— ì—°ê²° ì •ë³´ë¥¼ ìƒì„±í•˜ì§€ ì•ŠëŠ”ë‹¤.
     //------------------------------------------------------
 
     for( sCodeNode = aCodePlan->distNode,
@@ -1019,12 +1019,12 @@ qmnWNST::initDistNode( qcTemplate     * aTemplate,
     *aDistNodeCnt = sDistNodeCnt;
     
     //------------------------------------------------------------
-    // [Hash Temp TableÀ» À§ÇÑ Á¤º¸ Á¤ÀÇ]
-    // Distinct ColumnÀº ÀúÀå ¸ÅÃ¼°¡/ Memory ¶Ç´Â DiskÀÏ ¼ö ÀÖ´Ù. ÀÌ
-    // Á¤º¸´Â plan.flagÀ» ÀÌ¿ëÇÏ¿© ÆÇº°ÇÏ¸ç, ÇØ´ç distinct columnÀ»
-    // ÀúÀåÇÏ±â À§ÇÑ Tuple Set¶ÇÇÑ µ¿ÀÏÇÑ ÀúÀå ¸ÅÃ¼¸¦ »ç¿ëÇÏ°í ÀÖ¾î¾ß
-    // ÇÑ´Ù.  ÀÌ¿¡ ´ëÇÑ ÀûÇÕ¼º °Ë»ç´Â Hash Temp Table¿¡¼­ °Ë»çÇÏ°Ô
-    // µÈ´Ù.
+    // [Hash Temp Tableì„ ìœ„í•œ ì •ë³´ ì •ì˜]
+    // Distinct Columnì€ ì €ì¥ ë§¤ì²´ê°€/ Memory ë˜ëŠ” Diskì¼ ìˆ˜ ìˆë‹¤. ì´
+    // ì •ë³´ëŠ” plan.flagì„ ì´ìš©í•˜ì—¬ íŒë³„í•˜ë©°, í•´ë‹¹ distinct columnì„
+    // ì €ì¥í•˜ê¸° ìœ„í•œ Tuple Setë˜í•œ ë™ì¼í•œ ì €ì¥ ë§¤ì²´ë¥¼ ì‚¬ìš©í•˜ê³  ìˆì–´ì•¼
+    // í•œë‹¤.  ì´ì— ëŒ€í•œ ì í•©ì„± ê²€ì‚¬ëŠ” Hash Temp Tableì—ì„œ ê²€ì‚¬í•˜ê²Œ
+    // ëœë‹¤.
     //------------------------------------------------------------
 
     if ( (aCodePlan->plan.flag & QMN_PLAN_STORAGE_MASK)
@@ -1046,12 +1046,12 @@ qmnWNST::initDistNode( qcTemplate     * aTemplate,
     }
 
     // PROJ-2553
-    // DISTINCT HashingÀº Bucket List Hashing ¹æ¹ıÀ» ½á¾ß ÇÑ´Ù.
+    // DISTINCT Hashingì€ Bucket List Hashing ë°©ë²•ì„ ì¨ì•¼ í•œë‹¤.
     sFlag &= ~QMCD_HASH_TMP_HASHING_TYPE;
     sFlag |= QMCD_HASH_TMP_HASHING_BUCKET;
 
     //----------------------------------------------------------
-    // °³º° Distinct ÀúÀå ColumnÀÇ ÃÊ±âÈ­
+    // ê°œë³„ Distinct ì €ì¥ Columnì˜ ì´ˆê¸°í™”
     //----------------------------------------------------------
 
     for ( i = 0, sDistNode = aDistNode;
@@ -1059,13 +1059,13 @@ qmnWNST::initDistNode( qcTemplate     * aTemplate,
           i++, sDistNode++ )
     {
         //---------------------------------------------------
-        // 1. Dist ColumnÀÇ ±¸¼º Á¤º¸ ÃÊ±âÈ­
-        // 2. Dist ColumnÀÇ offsetÀçÁ¶Á¤
-        // 3. Disk Temp TableÀ» »ç¿ëÇÏ´Â °æ¿ì memory °ø°£À» ÇÒ´ç¹ŞÀ¸¸ç,
-        //    Dist Node´Â ÀÌ Á¤º¸¸¦ °è¼Ó À¯ÁöÇÏ¿©¾ß ÇÑ´Ù.
-        //    Memory Temp TableÀ» »ç¿ëÇÏ´Â °æ¿ì º°µµÀÇ °ø°£À» ÇÒ´ç ¹ŞÁö
-        //    ¾Ê´Â´Ù.
-        // 4. Dist ColumnÀ» À§ÇÑ Hash Temp TableÀ» ÃÊ±âÈ­ÇÑ´Ù.
+        // 1. Dist Columnì˜ êµ¬ì„± ì •ë³´ ì´ˆê¸°í™”
+        // 2. Dist Columnì˜ offsetì¬ì¡°ì •
+        // 3. Disk Temp Tableì„ ì‚¬ìš©í•˜ëŠ” ê²½ìš° memory ê³µê°„ì„ í• ë‹¹ë°›ìœ¼ë©°,
+        //    Dist NodeëŠ” ì´ ì •ë³´ë¥¼ ê³„ì† ìœ ì§€í•˜ì—¬ì•¼ í•œë‹¤.
+        //    Memory Temp Tableì„ ì‚¬ìš©í•˜ëŠ” ê²½ìš° ë³„ë„ì˜ ê³µê°„ì„ í• ë‹¹ ë°›ì§€
+        //    ì•ŠëŠ”ë‹¤.
+        // 4. Dist Columnì„ ìœ„í•œ Hash Temp Tableì„ ì´ˆê¸°í™”í•œë‹¤.
         //---------------------------------------------------
 
         IDE_TEST( qmc::initMtrNode( aTemplate,
@@ -1082,16 +1082,16 @@ qmnWNST::initDistNode( qcTemplate     * aTemplate,
                                    sDistNode->dstNode->node.table )
                   != IDE_SUCCESS );
 
-        // Disk Temp TableÀ» »ç¿ëÇÏ´Â °æ¿ì¶ó¸é
-        // ÀÌ °ø°£À» ÀÒÁö ¾Êµµ·Ï ÇØ¾ß ÇÑ´Ù.
+        // Disk Temp Tableì„ ì‚¬ìš©í•˜ëŠ” ê²½ìš°ë¼ë©´
+        // ì´ ê³µê°„ì„ ìƒì§€ ì•Šë„ë¡ í•´ì•¼ í•œë‹¤.
         sDistNode->mtrRow = sDistNode->dstTuple->row;
         sDistNode->isDistinct = ID_TRUE;
 
         IDE_TEST( qmcHashTemp::init( & sDistNode->hashMgr,
                                      aTemplate,
                                      ID_UINT_MAX,
-                                     (qmdMtrNode*) sDistNode,  // ÀúÀå ´ë»ó
-                                     (qmdMtrNode*) sDistNode,  // ºñ±³ ´ë»ó
+                                     (qmdMtrNode*) sDistNode,  // ì €ì¥ ëŒ€ìƒ
+                                     (qmdMtrNode*) sDistNode,  // ë¹„êµ ëŒ€ìƒ
                                      NULL,
                                      sDistNode->myNode->bucketCnt,
                                      sFlag )
@@ -1116,7 +1116,7 @@ qmnWNST::initAggrNode( qcTemplate        * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    Reporting AggregationÀ» Ã³¸®ÇÏ´Â Ä®·³(Áß°£°ª) Á¤º¸ÀÇ ¼³Á¤
+ *    Reporting Aggregationì„ ì²˜ë¦¬í•˜ëŠ” ì¹¼ëŸ¼(ì¤‘ê°„ê°’) ì •ë³´ì˜ ì„¤ì •
  *
  * Implementation :
  *
@@ -1133,12 +1133,12 @@ qmnWNST::initAggrNode( qcTemplate        * aTemplate,
     sMemory = aTemplate->stmt->qmxMem;
     
     //-----------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //-----------------------------------------------
 
     //-----------------------------------------------
-    // Aggregation NodeÀÇ ¿¬°á Á¤º¸¸¦ ¼³Á¤ÇÏ°í ÃÊ±âÈ­
-    // ÃÊ±âÈ­ÇÏ¸é¼­ aggrNodeÀÇ °³¼ö °è»ê
+    // Aggregation Nodeì˜ ì—°ê²° ì •ë³´ë¥¼ ì„¤ì •í•˜ê³  ì´ˆê¸°í™”
+    // ì´ˆê¸°í™”í•˜ë©´ì„œ aggrNodeì˜ ê°œìˆ˜ ê³„ì‚°
     //-----------------------------------------------
     for( sCodeNode = aCodeNode,
              sAggrNode = aAggrNode;
@@ -1150,7 +1150,7 @@ qmnWNST::initAggrNode( qcTemplate        * aTemplate,
         sAggrNode->srcNode = NULL;
         sAggrNode->next = sAggrNode + 1;
 
-        // Aggregation NodeÀÇ °³¼ö ±â·Ï
+        // Aggregation Nodeì˜ ê°œìˆ˜ ê¸°ë¡
         sAggrNodeCnt++;
         
         if( sCodeNode->next == NULL )
@@ -1169,21 +1169,21 @@ qmnWNST::initAggrNode( qcTemplate        * aTemplate,
                                 (UShort)sAggrNodeCnt )
               != IDE_SUCCESS );
     
-    // Aggregation Column ÀÇ offsetÀ» ÀçÁ¶Á¤
+    // Aggregation Column ì˜ offsetì„ ì¬ì¡°ì •
     IDE_TEST( qmc::refineOffsets( (qmdMtrNode*)aAggrNode,
-                                  0 ) // º°µµÀÇ header°¡ ÇÊ¿ä ¾øÀ½
+                                  0 ) // ë³„ë„ì˜ headerê°€ í•„ìš” ì—†ìŒ
               != IDE_SUCCESS );
 
-    // aggrNode¸¦ À§ÇÑ tupelID
+    // aggrNodeë¥¼ ìœ„í•œ tupelID
     sAggrTupleRowID = aAggrNode->dstNode->node.table;
         
-    // set row size (ÇÊ¿äÇÑ ¸Ş¸ğ¸® ¹× Æ©ÇÃ ÇÒ´ç)
+    // set row size (í•„ìš”í•œ ë©”ëª¨ë¦¬ ë° íŠœí”Œ í• ë‹¹)
     IDE_TEST( qmc::setRowSize( aTemplate->stmt->qmxMem,
                                & aTemplate->tmplate,
                                (UShort)sAggrTupleRowID )
               != IDE_SUCCESS );
 
-    // aggrNodeÀÇ aggregation Áß°£ °á°ú ÀúÀåÀ» À§ÇÑ °ø°£ ÇÒ´ç
+    // aggrNodeì˜ aggregation ì¤‘ê°„ ê²°ê³¼ ì €ì¥ì„ ìœ„í•œ ê³µê°„ í• ë‹¹
     sAggrMtrRowSize = qmc::getMtrRowSize( (qmdMtrNode*)aAggrNode );
 
     IDE_TEST( sMemory->cralloc( sAggrMtrRowSize,
@@ -1193,8 +1193,8 @@ qmnWNST::initAggrNode( qcTemplate        * aTemplate,
                     err_mem_alloc );
     
     //-----------------------------------------------
-    // Distinct AggregationÀÇ °æ¿ì ÇØ´ç Distinct Node¸¦
-    // Ã£¾Æ ¿¬°áÇÑ´Ù.
+    // Distinct Aggregationì˜ ê²½ìš° í•´ë‹¹ Distinct Nodeë¥¼
+    // ì°¾ì•„ ì—°ê²°í•œë‹¤.
     //-----------------------------------------------
     for( sAggrNode = aAggrNode;
          sAggrNode != NULL;
@@ -1202,7 +1202,7 @@ qmnWNST::initAggrNode( qcTemplate        * aTemplate,
     {
         if( sAggrNode->myNode->myDist != NULL )
         {
-            // Distinct AggregationÀÎ °æ¿ì
+            // Distinct Aggregationì¸ ê²½ìš°
             for( i = 0, sDistNode = aDistNode;
                  i < aDistNodeCnt;
                  i++, sDistNode++ )
@@ -1221,7 +1221,7 @@ qmnWNST::initAggrNode( qcTemplate        * aTemplate,
         }
         else
         {
-            // ÀÏ¹İ AggregationÀÎ °æ¿ì
+            // ì¼ë°˜ Aggregationì¸ ê²½ìš°
             sAggrNode->myDist = NULL;
         }            
         
@@ -1248,7 +1248,7 @@ qmnWNST::initSortNode( const qmncWNST * aCodePlan,
 /***********************************************************************
  *
  * Description :
- *    ¸ğµç Á¤·ÄÅ°ÀÇ Á¤º¸¸¦ ¼³Á¤
+ *    ëª¨ë“  ì •ë ¬í‚¤ì˜ ì •ë³´ë¥¼ ì„¤ì •
  *
  * Implementation :
  *
@@ -1258,31 +1258,31 @@ qmnWNST::initSortNode( const qmncWNST * aCodePlan,
     const UInt         sSortKeyCnt = aCodePlan->sortKeyCnt;
     UInt               i;
 
-    // sSortNode À§Ä¡ ÃÊ±âÈ­
-    // ¾ÕºÎºĞ¿¡ °¢ Á¤·ÄÅ°¸¦ À§ÇÑ qmdMtrNode*¸¦ ÀúÀåÇÒ °ø°£À» Á¦¿ÜÇÑ À§Ä¡¸¦
-    // Á¤·ÄÅ°¸¦ À§ÇÑ Ä®·³ Á¤º¸°¡ ÀúÀåµÉ ½ÃÀÛ ÁÖ¼Ò
+    // sSortNode ìœ„ì¹˜ ì´ˆê¸°í™”
+    // ì•ë¶€ë¶„ì— ê° ì •ë ¬í‚¤ë¥¼ ìœ„í•œ qmdMtrNode*ë¥¼ ì €ì¥í•  ê³µê°„ì„ ì œì™¸í•œ ìœ„ì¹˜ë¥¼
+    // ì •ë ¬í‚¤ë¥¼ ìœ„í•œ ì¹¼ëŸ¼ ì •ë³´ê°€ ì €ì¥ë  ì‹œì‘ ì£¼ì†Œ
     sSortNode = (qmdMtrNode*)(aSortNode + sSortKeyCnt);
     
     for( i=0; i < sSortKeyCnt; i++ )
     {
-        // ÇöÀç Á¤·ÄÅ°¿¡ ÇØ´çÇÏ´Â Code Plan Á¤º¸ ¼³Á¤
+        // í˜„ì¬ ì •ë ¬í‚¤ì— í•´ë‹¹í•˜ëŠ” Code Plan ì •ë³´ ì„¤ì •
         sCodeNode = aCodePlan->sortNode[i];
         
-        // ÇöÀç Á¤·ÄÅ°ÀÇ ½ÃÀÛ Ä®·³À» ÀúÀå
+        // í˜„ì¬ ì •ë ¬í‚¤ì˜ ì‹œì‘ ì¹¼ëŸ¼ì„ ì €ì¥
         if( sCodeNode != NULL )
         {
             aSortNode[i] = sSortNode;
 
             //---------------------------------
-            // Á¤·ÄÅ°¸¦ À§ÇÑ ColumnÀÇ ÃÊ±âÈ­
+            // ì •ë ¬í‚¤ë¥¼ ìœ„í•œ Columnì˜ ì´ˆê¸°í™”
             //---------------------------------
             IDE_TEST( initCopiedMtrNode( aDataPlan,
                                          sCodeNode,
                                          sSortNode )
                       != IDE_SUCCESS );            
 
-            // sSortNode °ª º¯°æ
-            // ´ÙÀ½¿¡ Á¤·ÄÅ°¿¡¼­ »ç¿ëÇÒ À§Ä¡·Î ¼³Á¤
+            // sSortNode ê°’ ë³€ê²½
+            // ë‹¤ìŒì— ì •ë ¬í‚¤ì—ì„œ ì‚¬ìš©í•  ìœ„ì¹˜ë¡œ ì„¤ì •
             while( sSortNode->next != NULL )
             {
                 sSortNode++;
@@ -1292,7 +1292,7 @@ qmnWNST::initSortNode( const qmncWNST * aCodePlan,
         }
         else
         {
-            // OVERÀıÀÌ ºó°æ¿ì Á¤·ÄÅ°°¡ NULLÀ» °¡¸®Å³ ¼ö ÀÖÀ½
+            // OVERì ˆì´ ë¹ˆê²½ìš° ì •ë ¬í‚¤ê°€ NULLì„ ê°€ë¦¬í‚¬ ìˆ˜ ìˆìŒ
             aSortNode[i] = NULL;
         }
     }
@@ -1313,15 +1313,15 @@ qmnWNST::initCopiedMtrNode( const qmndWNST   * aDataPlan,
 /***********************************************************************
  *
  * Description :
- *    º¹»çÇÏ¿© »ç¿ëÇÏ´Â ÀúÀå Ä®·³ Á¤º¸¸¦ (Materialize ³ëµå) ÃÊ±âÈ­
- *    »ç¿ëµÇ´Â °÷: Á¤·ÄÅ°ÀÇ Ä®·³, PARTITION BY
+ *    ë³µì‚¬í•˜ì—¬ ì‚¬ìš©í•˜ëŠ” ì €ì¥ ì¹¼ëŸ¼ ì •ë³´ë¥¼ (Materialize ë…¸ë“œ) ì´ˆê¸°í™”
+ *    ì‚¬ìš©ë˜ëŠ” ê³³: ì •ë ¬í‚¤ì˜ ì¹¼ëŸ¼, PARTITION BY
  *
  * Implementation :
  *
- *    ÀÌ¹Ì initMtrNode¿¡¼­ ÃÊ±âÈ­ÇÑ Á¤º¸¸¦ ´Ù¸¥ next¸¦ °¡Áö´Â
- *    ³ëµå·Î Ç¥ÇöÇÏ¿© ÃÊ±âÈ­ÇÏ´Â °ÍÀÓ. µû¶ó¼­ ÀÌÀü¿¡ ÃÊ±âÈ­µÈ ³ëµåÀÇ Á¤º¸.
- *    1. ÀúÀå Ä®·³ÀÇ ¿¬°á Á¤º¸ »ı¼º
- *    2. ÀúÀå Ä®·³À» (next¸¦ Á¦¿ÜÇÑ Á¤º¸¸¦) °Ë»öÇÏ¿© º¹»ç
+ *    ì´ë¯¸ initMtrNodeì—ì„œ ì´ˆê¸°í™”í•œ ì •ë³´ë¥¼ ë‹¤ë¥¸ nextë¥¼ ê°€ì§€ëŠ”
+ *    ë…¸ë“œë¡œ í‘œí˜„í•˜ì—¬ ì´ˆê¸°í™”í•˜ëŠ” ê²ƒì„. ë”°ë¼ì„œ ì´ì „ì— ì´ˆê¸°í™”ëœ ë…¸ë“œì˜ ì •ë³´.
+ *    1. ì €ì¥ ì¹¼ëŸ¼ì˜ ì—°ê²° ì •ë³´ ìƒì„±
+ *    2. ì €ì¥ ì¹¼ëŸ¼ì„ (nextë¥¼ ì œì™¸í•œ ì •ë³´ë¥¼) ê²€ìƒ‰í•˜ì—¬ ë³µì‚¬
  *
  ***********************************************************************/
     qmdMtrNode    * sColumnNode;
@@ -1332,28 +1332,28 @@ qmnWNST::initCopiedMtrNode( const qmndWNST   * aDataPlan,
 
     
     //---------------------------------
-    // ÀúÀå ColumnÀÇ ÃÊ±âÈ­
+    // ì €ì¥ Columnì˜ ì´ˆê¸°í™”
     //---------------------------------
     
-    // 1.  ÀúÀå ColumnÀÇ ¿¬°á Á¤º¸ »ı¼º
+    // 1.  ì €ì¥ Columnì˜ ì—°ê²° ì •ë³´ ìƒì„±
     IDE_TEST( qmc::linkMtrNode( aCodeNode,
                                 aDataNode ) != IDE_SUCCESS );
 
 
-    // 2. ÀÌ¹Ì Á¸ÀçÇÏ´Â ³ëµå¸¦ °Ë»öÇÏ¿© º¹»ç
+    // 2. ì´ë¯¸ ì¡´ì¬í•˜ëŠ” ë…¸ë“œë¥¼ ê²€ìƒ‰í•˜ì—¬ ë³µì‚¬
     for( sColumnNode = aDataNode;
          sColumnNode != NULL;
          sColumnNode = sColumnNode->next )
     {
         sIsMatched = ID_FALSE;
         
-        // mtrNode¿¡¼­ µ¿ÀÏÇÑ ³ëµå¸¦ °Ë»öÇÏ´Â ºÎºĞ
+        // mtrNodeì—ì„œ ë™ì¼í•œ ë…¸ë“œë¥¼ ê²€ìƒ‰í•˜ëŠ” ë¶€ë¶„
         for( sFindNode = aDataPlan->mtrNode;
              sFindNode != NULL;
              sFindNode = sFindNode->next )
         {
-            // °Ë»öÇÏ´Â Á¤º¸´Â °á±¹ º¹»çµÇ¾î »ı¼ºµÈ Á¤º¸ÀÌ¹Ç·Î
-            // myNodeÀÇ next¸¦ Á¦¿ÜÇÑ Á¤º¸´Â ÀÏÄ¡ÇØ¾ß ÇÔ
+            // ê²€ìƒ‰í•˜ëŠ” ì •ë³´ëŠ” ê²°êµ­ ë³µì‚¬ë˜ì–´ ìƒì„±ëœ ì •ë³´ì´ë¯€ë¡œ
+            // myNodeì˜ nextë¥¼ ì œì™¸í•œ ì •ë³´ëŠ” ì¼ì¹˜í•´ì•¼ í•¨
             if( ( sColumnNode->myNode->srcNode == sFindNode->myNode->srcNode ) &&
                 ( sColumnNode->myNode->dstNode == sFindNode->myNode->dstNode ) )
             {
@@ -1396,8 +1396,8 @@ qmnWNST::initCopiedMtrNode( const qmndWNST   * aDataPlan,
 
                 if ( sIsMatched == ID_TRUE )
                 {
-                    // base tableÀÌ ¿À¸é ¾ÈµÊ
-                    // ¸¸¾à base tableÀÇ myNodeÁ¤º¸¿Í ÀÏÄ¡ÇÑ´Ù¸é ¿À·ù
+                    // base tableì´ ì˜¤ë©´ ì•ˆë¨
+                    // ë§Œì•½ base tableì˜ myNodeì •ë³´ì™€ ì¼ì¹˜í•œë‹¤ë©´ ì˜¤ë¥˜
                     IDE_DASSERT( ((sFindNode->flag & QMC_MTR_TYPE_MASK) != QMC_MTR_TYPE_MEMORY_TABLE) &&
                                  ((sFindNode->flag & QMC_MTR_TYPE_MASK) != QMC_MTR_TYPE_DISK_TABLE) );
                     
@@ -1415,16 +1415,16 @@ qmnWNST::initCopiedMtrNode( const qmndWNST   * aDataPlan,
             }
         }
 
-        // DataPlan->mtrNode¿¡ Ç×»ó ÀÏÄ¡ÇÏ´Â Ä®·³ÀÌ ÀÖ¾î¾ß ÇÔ
+        // DataPlan->mtrNodeì— í•­ìƒ ì¼ì¹˜í•˜ëŠ” ì¹¼ëŸ¼ì´ ìˆì–´ì•¼ í•¨
         IDE_TEST_RAISE( sIsMatched == ID_FALSE, ERR_COLUMN_NOT_FOUND );
 
-        // ÀÌÀü ³ëµå¸¦ º¹»çÇÏ±â Àü¿¡ next °ªÀ» ÀúÀå
+        // ì´ì „ ë…¸ë“œë¥¼ ë³µì‚¬í•˜ê¸° ì „ì— next ê°’ì„ ì €ì¥
         sNextNode = sColumnNode->next;
         
-        // qmdMtrNode º¹»ç
+        // qmdMtrNode ë³µì‚¬
         *sColumnNode = *sFindNode;
 
-        // next¸¦ Á¦´ë·Î ¼³Á¤
+        // nextë¥¼ ì œëŒ€ë¡œ ì„¤ì •
         sColumnNode->next = sNextNode;
     }
     
@@ -1449,15 +1449,15 @@ qmnWNST::initCopiedAggrNode( const qmndWNST   * aDataPlan,
 /***********************************************************************
  *
  * Description :
- *    º¹»çÇÏ¿© »ç¿ëÇÏ´Â ÀúÀå Ä®·³ Á¤º¸¸¦ (Materialize ³ëµå) ÃÊ±âÈ­
- *    »ç¿ëµÇ´Â °÷: Á¤·ÄÅ°ÀÇ Ä®·³, PARTITION BY, AGGREGATION RESULT
+ *    ë³µì‚¬í•˜ì—¬ ì‚¬ìš©í•˜ëŠ” ì €ì¥ ì¹¼ëŸ¼ ì •ë³´ë¥¼ (Materialize ë…¸ë“œ) ì´ˆê¸°í™”
+ *    ì‚¬ìš©ë˜ëŠ” ê³³: ì •ë ¬í‚¤ì˜ ì¹¼ëŸ¼, PARTITION BY, AGGREGATION RESULT
  *
  * Implementation :
  *
- *    ÀÌ¹Ì initMtrNode¿¡¼­ ÃÊ±âÈ­ÇÑ Á¤º¸¸¦ ´Ù¸¥ next¸¦ °¡Áö´Â
- *    ³ëµå·Î Ç¥ÇöÇÏ¿© ÃÊ±âÈ­ÇÏ´Â °ÍÀÓ. µû¶ó¼­ ÀÌÀü¿¡ ÃÊ±âÈ­µÈ ³ëµåÀÇ Á¤º¸.
- *    1. ÀúÀå Ä®·³ÀÇ ¿¬°á Á¤º¸ »ı¼º
- *    2. ÀúÀå Ä®·³À» (next¸¦ Á¦¿ÜÇÑ Á¤º¸¸¦) °Ë»öÇÏ¿© º¹»ç
+ *    ì´ë¯¸ initMtrNodeì—ì„œ ì´ˆê¸°í™”í•œ ì •ë³´ë¥¼ ë‹¤ë¥¸ nextë¥¼ ê°€ì§€ëŠ”
+ *    ë…¸ë“œë¡œ í‘œí˜„í•˜ì—¬ ì´ˆê¸°í™”í•˜ëŠ” ê²ƒì„. ë”°ë¼ì„œ ì´ì „ì— ì´ˆê¸°í™”ëœ ë…¸ë“œì˜ ì •ë³´.
+ *    1. ì €ì¥ ì¹¼ëŸ¼ì˜ ì—°ê²° ì •ë³´ ìƒì„±
+ *    2. ì €ì¥ ì¹¼ëŸ¼ì„ (nextë¥¼ ì œì™¸í•œ ì •ë³´ë¥¼) ê²€ìƒ‰í•˜ì—¬ ë³µì‚¬
  *
  ***********************************************************************/
     const qmcMtrNode  * sCodeNode;
@@ -1470,10 +1470,10 @@ qmnWNST::initCopiedAggrNode( const qmndWNST   * aDataPlan,
 
     
     //---------------------------------
-    // ÀúÀå ColumnÀÇ ÃÊ±âÈ­
+    // ì €ì¥ Columnì˜ ì´ˆê¸°í™”
     //---------------------------------
     
-    // 1.  ÀúÀå ColumnÀÇ ¿¬°á Á¤º¸ »ı¼º
+    // 1.  ì €ì¥ Columnì˜ ì—°ê²° ì •ë³´ ìƒì„±
     for( sCodeNode = aCodeNode,
              sAggrNode = aAggrNode;
          sCodeNode != NULL;
@@ -1490,24 +1490,24 @@ qmnWNST::initCopiedAggrNode( const qmndWNST   * aDataPlan,
         }
     }
 
-    // 2. ÀÌ¹Ì Á¸ÀçÇÏ´Â ³ëµå¸¦ °Ë»öÇÏ¿© º¹»ç
+    // 2. ì´ë¯¸ ì¡´ì¬í•˜ëŠ” ë…¸ë“œë¥¼ ê²€ìƒ‰í•˜ì—¬ ë³µì‚¬
     for( sAggrNode = aAggrNode;
          sAggrNode != NULL;
          sAggrNode = sAggrNode->next )
     {
         sIsMatched = ID_FALSE;
         
-        // DataPlan->aggrNode¿¡¼­ µ¿ÀÏÇÑ ³ëµå¸¦ °Ë»öÇÏ´Â ºÎºĞ
+        // DataPlan->aggrNodeì—ì„œ ë™ì¼í•œ ë…¸ë“œë¥¼ ê²€ìƒ‰í•˜ëŠ” ë¶€ë¶„
         for( sFindNode = aDataPlan->aggrNode;
              sFindNode != NULL;
              sFindNode = sFindNode->next )
         {
-            // °Ë»öÇÏ´Â Á¤º¸´Â °á±¹ º¹»çµÇ¾î »ı¼ºµÈ Á¤º¸ÀÌ¹Ç·Î
-            // myNodeÀÇ next¸¦ Á¦¿ÜÇÑ Á¤º¸´Â ÀÏÄ¡ÇØ¾ß ÇÔ
+            // ê²€ìƒ‰í•˜ëŠ” ì •ë³´ëŠ” ê²°êµ­ ë³µì‚¬ë˜ì–´ ìƒì„±ëœ ì •ë³´ì´ë¯€ë¡œ
+            // myNodeì˜ nextë¥¼ ì œì™¸í•œ ì •ë³´ëŠ” ì¼ì¹˜í•´ì•¼ í•¨
             if( ( sAggrNode->myNode->srcNode == sFindNode->myNode->srcNode ) &&
                 ( sAggrNode->myNode->dstNode == sFindNode->myNode->dstNode ) )
             {
-                // aggrNode¿¡´Â base tableÀÌ ¿À¸é ¾ÈµÊ
+                // aggrNodeì—ëŠ” base tableì´ ì˜¤ë©´ ì•ˆë¨
                 IDE_DASSERT( ((sFindNode->flag & QMC_MTR_TYPE_MASK) != QMC_MTR_TYPE_MEMORY_TABLE) &&
                              ((sFindNode->flag & QMC_MTR_TYPE_MASK) != QMC_MTR_TYPE_DISK_TABLE) );
                 
@@ -1520,16 +1520,16 @@ qmnWNST::initCopiedAggrNode( const qmndWNST   * aDataPlan,
             }
         }
 
-        // DataPlan->mtrNode¿¡ Ç×»ó ÀÏÄ¡ÇÏ´Â Ä®·³ÀÌ ÀÖ¾î¾ß ÇÔ
+        // DataPlan->mtrNodeì— í•­ìƒ ì¼ì¹˜í•˜ëŠ” ì¹¼ëŸ¼ì´ ìˆì–´ì•¼ í•¨
         IDE_TEST_RAISE( sIsMatched == ID_FALSE, ERR_COLUMN_NOT_FOUND );
 
-        // ÀÌÀü ³ëµå¸¦ º¹»çÇÏ±â Àü¿¡ next °ªÀ» ÀúÀå
+        // ì´ì „ ë…¸ë“œë¥¼ ë³µì‚¬í•˜ê¸° ì „ì— next ê°’ì„ ì €ì¥
         sNextNode = sAggrNode->next;
         
-        // qmdMtrNode º¹»ç
+        // qmdMtrNode ë³µì‚¬
         *sAggrNode = *sFindNode;
 
-        // netxt¸¦ Á¦´ë·Î ¼³Á¤
+        // netxtë¥¼ ì œëŒ€ë¡œ ì„¤ì •
         sAggrNode->next = sNextNode;
     }
     
@@ -1553,15 +1553,15 @@ IDE_RC qmnWNST::initAggrResultMtrNode(const qmndWNST   * aDataPlan,
 /***********************************************************************
  *
  * Description :
- *    Aggregation Result ÀúÀå Ä®·³ Á¤º¸ ÃÊ±âÈ­
- *    »ç¿ëµÇ´Â °÷: analytic result node
+ *    Aggregation Result ì €ì¥ ì¹¼ëŸ¼ ì •ë³´ ì´ˆê¸°í™”
+ *    ì‚¬ìš©ë˜ëŠ” ê³³: analytic result node
  *
  * Implementation :
  *
- *    ÀÌ¹Ì initMtrNode¿¡¼­ ÃÊ±âÈ­ÇÑ Á¤º¸¸¦ ´Ù¸¥ next¸¦ °¡Áö´Â
- *    ³ëµå·Î Ç¥ÇöÇÏ¿© ÃÊ±âÈ­ÇÏ´Â °ÍÀÓ. µû¶ó¼­ ÀÌÀü¿¡ ÃÊ±âÈ­µÈ ³ëµåÀÇ Á¤º¸.
- *    1. ÀúÀå Ä®·³ÀÇ ¿¬°á Á¤º¸ »ı¼º
- *    2. ÀúÀå Ä®·³À» (next¸¦ Á¦¿ÜÇÑ Á¤º¸¸¦) °Ë»öÇÏ¿© º¹»ç
+ *    ì´ë¯¸ initMtrNodeì—ì„œ ì´ˆê¸°í™”í•œ ì •ë³´ë¥¼ ë‹¤ë¥¸ nextë¥¼ ê°€ì§€ëŠ”
+ *    ë…¸ë“œë¡œ í‘œí˜„í•˜ì—¬ ì´ˆê¸°í™”í•˜ëŠ” ê²ƒì„. ë”°ë¼ì„œ ì´ì „ì— ì´ˆê¸°í™”ëœ ë…¸ë“œì˜ ì •ë³´.
+ *    1. ì €ì¥ ì¹¼ëŸ¼ì˜ ì—°ê²° ì •ë³´ ìƒì„±
+ *    2. ì €ì¥ ì¹¼ëŸ¼ì„ (nextë¥¼ ì œì™¸í•œ ì •ë³´ë¥¼) ê²€ìƒ‰í•˜ì—¬ ë³µì‚¬
  *
  ***********************************************************************/
 
@@ -1573,33 +1573,33 @@ IDE_RC qmnWNST::initAggrResultMtrNode(const qmndWNST   * aDataPlan,
 
     
     //---------------------------------
-    // ÀúÀå ColumnÀÇ ÃÊ±âÈ­
+    // ì €ì¥ Columnì˜ ì´ˆê¸°í™”
     //---------------------------------
     
-    // 1.  ÀúÀå ColumnÀÇ ¿¬°á Á¤º¸ »ı¼º
+    // 1.  ì €ì¥ Columnì˜ ì—°ê²° ì •ë³´ ìƒì„±
     IDE_TEST( qmc::linkMtrNode( aCodeNode,
                                 aDataNode ) != IDE_SUCCESS );
 
 
-    // 2. ÀÌ¹Ì Á¸ÀçÇÏ´Â ³ëµå¸¦ °Ë»öÇÏ¿© º¹»ç
+    // 2. ì´ë¯¸ ì¡´ì¬í•˜ëŠ” ë…¸ë“œë¥¼ ê²€ìƒ‰í•˜ì—¬ ë³µì‚¬
     for( sDataNode = aDataNode;
          sDataNode != NULL;
          sDataNode = sDataNode->next )
     {
         sIsMatched = ID_FALSE;
         
-        // mtrNode¿¡¼­ µ¿ÀÏÇÑ ³ëµå¸¦ °Ë»öÇÏ´Â ºÎºĞ
+        // mtrNodeì—ì„œ ë™ì¼í•œ ë…¸ë“œë¥¼ ê²€ìƒ‰í•˜ëŠ” ë¶€ë¶„
         for( sFindNode = aDataPlan->mtrNode;
              sFindNode != NULL;
              sFindNode = sFindNode->next )
         {
-            // °Ë»öÇÏ´Â Á¤º¸´Â °á±¹ º¹»çµÇ¾î »ı¼ºµÈ Á¤º¸ÀÌ¹Ç·Î
-            // myNodeÀÇ next¸¦ Á¦¿ÜÇÑ Á¤º¸´Â ÀÏÄ¡ÇØ¾ß ÇÔ
+            // ê²€ìƒ‰í•˜ëŠ” ì •ë³´ëŠ” ê²°êµ­ ë³µì‚¬ë˜ì–´ ìƒì„±ëœ ì •ë³´ì´ë¯€ë¡œ
+            // myNodeì˜ nextë¥¼ ì œì™¸í•œ ì •ë³´ëŠ” ì¼ì¹˜í•´ì•¼ í•¨
             if( ( sDataNode->myNode->srcNode == sFindNode->myNode->srcNode ) &&
                 ( sDataNode->myNode->dstNode == sFindNode->myNode->dstNode ) )
             {
-                // base tableÀÌ ¿À¸é ¾ÈµÊ
-                // ¸¸¾à base tableÀÇ myNodeÁ¤º¸¿Í ÀÏÄ¡ÇÑ´Ù¸é ¿À·ù
+                // base tableì´ ì˜¤ë©´ ì•ˆë¨
+                // ë§Œì•½ base tableì˜ myNodeì •ë³´ì™€ ì¼ì¹˜í•œë‹¤ë©´ ì˜¤ë¥˜
                 IDE_DASSERT( ((sFindNode->flag & QMC_MTR_TYPE_MASK) != QMC_MTR_TYPE_MEMORY_TABLE) &&
                              ((sFindNode->flag & QMC_MTR_TYPE_MASK) != QMC_MTR_TYPE_DISK_TABLE) );
                 
@@ -1612,10 +1612,10 @@ IDE_RC qmnWNST::initAggrResultMtrNode(const qmndWNST   * aDataPlan,
             }
         }
 
-        // DataPlan->mtrNode¿¡ Ç×»ó ÀÏÄ¡ÇÏ´Â Ä®·³ÀÌ ÀÖ¾î¾ß ÇÔ
+        // DataPlan->mtrNodeì— í•­ìƒ ì¼ì¹˜í•˜ëŠ” ì¹¼ëŸ¼ì´ ìˆì–´ì•¼ í•¨
         IDE_TEST_RAISE( sIsMatched == ID_FALSE, ERR_COLUMN_NOT_FOUND );
         
-        // ÀÌÀü ³ëµå¸¦ º¹»çÇÏ±â Àü¿¡ next °ªÀ» ÀúÀå
+        // ì´ì „ ë…¸ë“œë¥¼ ë³µì‚¬í•˜ê¸° ì „ì— next ê°’ì„ ì €ì¥
         sNextNode = sDataNode->next;        
 
         *sDataNode = *sFindNode;
@@ -1625,7 +1625,7 @@ IDE_RC qmnWNST::initAggrResultMtrNode(const qmndWNST   * aDataPlan,
         sDataNode->flag |= QMC_MTR_ANAL_FUNC_RESULT_OF_WND_NODE_TRUE;
         IDE_TEST( qmc::setFunctionPointer( sDataNode ) != IDE_SUCCESS );
 
-        // next¸¦ Á¦´ë·Î ¼³Á¤
+        // nextë¥¼ ì œëŒ€ë¡œ ì„¤ì •
         sDataNode->next = sNextNode;
     }
     
@@ -1650,7 +1650,7 @@ qmnWNST::initWndNode( const qmncWNST    * aCodePlan,
 /***********************************************************************
  *
  * Description :
- *    Window Clause (Analytic Clause) Á¤º¸¸¦ ´ã´Â qmdWndNode¸¦ ¼³Á¤
+ *    Window Clause (Analytic Clause) ì •ë³´ë¥¼ ë‹´ëŠ” qmdWndNodeë¥¼ ì„¤ì •
  *
  * Implementation :
  *
@@ -1661,39 +1661,39 @@ qmnWNST::initWndNode( const qmncWNST    * aCodePlan,
     UInt                sSortKeyCnt = aCodePlan->sortKeyCnt;
     UInt                i;
 
-    const qmdWndNode  * sNodeBase;   // ³ëµå°¡ ÀúÀåµÉ ½ÃÀÛ À§Ä¡
-    const void        * sNextNode;   // ´ÙÀ½ ³ëµå°¡ ÀúÀåµÉ À§Ä¡
-    const qmcMtrNode  * sNode;       // ³ëµå Å½»öÀ» À§ÇÑ ÀÓ½Ã º¯¼ö
+    const qmdWndNode  * sNodeBase;   // ë…¸ë“œê°€ ì €ì¥ë  ì‹œì‘ ìœ„ì¹˜
+    const void        * sNextNode;   // ë‹¤ìŒ ë…¸ë“œê°€ ì €ì¥ë  ìœ„ì¹˜
+    const qmcMtrNode  * sNode;       // ë…¸ë“œ íƒìƒ‰ì„ ìœ„í•œ ì„ì‹œ ë³€ìˆ˜
     
     
-    // sWNdNodeBase À§Ä¡ ÃÊ±âÈ­
-    // ¾Õ ºÎºĞ¿¡ °¢ Clause¸¦ À§ÇÑ qmdWndNode*¸¦ ÀúÀåÇÒ °ø°£À» Á¦¿ÜÇÑ À§Ä¡¸¦
-    // wndNode¸¦ À§ÇÑ Á¤º¸°¡ ÀúÀåµÉ ½ÃÀÛ ÁÖ¼Ò
-    // ¿¹¸¦ µé¾î ¾Æ·¡¿Í °°ÀÌ Á¤º¸°¡ ¿¬°áµÊ
+    // sWNdNodeBase ìœ„ì¹˜ ì´ˆê¸°í™”
+    // ì• ë¶€ë¶„ì— ê° Clauseë¥¼ ìœ„í•œ qmdWndNode*ë¥¼ ì €ì¥í•  ê³µê°„ì„ ì œì™¸í•œ ìœ„ì¹˜ë¥¼
+    // wndNodeë¥¼ ìœ„í•œ ì •ë³´ê°€ ì €ì¥ë  ì‹œì‘ ì£¼ì†Œ
+    // ì˜ˆë¥¼ ë“¤ì–´ ì•„ë˜ì™€ ê°™ì´ ì •ë³´ê°€ ì—°ê²°ë¨
     // [wndNode*][wndNode*][wndNode*]
     // [wndNode][overColumnNodes...][aggrNodes...][aggrResultNodes...]
     // [wndNode][overColumnNodes...][aggrNodes...][aggrResultNodes...]
     sNodeBase = (qmdWndNode*)(aWndNode + sSortKeyCnt);
     sNextNode = (void*)sNodeBase;
 
-    // °°Àº Á¤·ÄÅ°¸¦ °øÀ¯ÇÏ´Â Clause´Â next·Î ¿¬°áµÇ¾î ÀÖÀ½
+    // ê°™ì€ ì •ë ¬í‚¤ë¥¼ ê³µìœ í•˜ëŠ” ClauseëŠ” nextë¡œ ì—°ê²°ë˜ì–´ ìˆìŒ
     for( i = 0;
          i < sSortKeyCnt;
          i++ )
     {
-        // ÇöÀç sDataWndNodeÀÇ À§Ä¡ ¼³Á¤
+        // í˜„ì¬ sDataWndNodeì˜ ìœ„ì¹˜ ì„¤ì •
         sDataWndNode = (qmdWndNode*)sNextNode;
 
-        // ÇöÀç data wnd node À§Ä¡¸¦ ¼³Á¤
+        // í˜„ì¬ data wnd node ìœ„ì¹˜ë¥¼ ì„¤ì •
         aWndNode[i]  = sDataWndNode;
 
-        // Á¤·ÄÅ°¸¦ °øÀ¯ÇÏ´Â Wnd Node ¿¬°á
+        // ì •ë ¬í‚¤ë¥¼ ê³µìœ í•˜ëŠ” Wnd Node ì—°ê²°
         for( sCodeWndNode = aCodePlan->wndNode[i];
              sCodeWndNode != NULL;
              sCodeWndNode = sCodeWndNode->next,
                  sDataWndNode = sDataWndNode->next )
         {
-            // ´ÙÀ½ ³ëµå À§Ä¡ ¼³Á¤
+            // ë‹¤ìŒ ë…¸ë“œ ìœ„ì¹˜ ì„¤ì •
             sNextNode    = (UChar*)sNextNode + idlOS::align8( ID_SIZEOF(qmdWndNode) );
             
             //-----------------------------------------------    
@@ -1702,13 +1702,13 @@ qmnWNST::initWndNode( const qmncWNST    * aCodePlan,
 
             if( sCodeWndNode->overColumnNode != NULL )
             {
-                // PARTITION BY°¡ Á¸ÀçÇÏ´Â °æ¿ì
+                // PARTITION BYê°€ ì¡´ì¬í•˜ëŠ” ê²½ìš°
 
-                // overColumnNodeÀ§Ä¡ ÇÒ´ç
+                // overColumnNodeìœ„ì¹˜ í• ë‹¹
                 sDataWndNode->overColumnNode = (qmdMtrNode*)sNextNode;
                 sDataWndNode->orderByColumnNode = NULL;
 
-                // overColumnNode¿¡ ¿¬°áµÈ Ä®·³ ¼ö¸¦ °í·ÁÇÏ¿© ´ÙÀ½ ³ëµå°¡ »ç¿ëÇÒ À§Ä¡ ¼³Á¤
+                // overColumnNodeì— ì—°ê²°ëœ ì¹¼ëŸ¼ ìˆ˜ë¥¼ ê³ ë ¤í•˜ì—¬ ë‹¤ìŒ ë…¸ë“œê°€ ì‚¬ìš©í•  ìœ„ì¹˜ ì„¤ì •
                 for( sNode = sCodeWndNode->overColumnNode;
                      sNode != NULL;
                      sNode = sNode->next )
@@ -1739,7 +1739,7 @@ qmnWNST::initWndNode( const qmncWNST    * aCodePlan,
             }
             else
             {
-                // ºó OVER()¸¸À» À§ÇÑ wndNodeÀÎ °æ¿ì
+                // ë¹ˆ OVER()ë§Œì„ ìœ„í•œ wndNodeì¸ ê²½ìš°
                 sDataWndNode->overColumnNode  = NULL;
             }            
             
@@ -1747,10 +1747,10 @@ qmnWNST::initWndNode( const qmncWNST    * aCodePlan,
             // initAggrNode
             //-----------------------------------------------
 
-            // aggrNodeÀ§Ä¡ ÇÒ´ç
+            // aggrNodeìœ„ì¹˜ í• ë‹¹
             sDataWndNode->aggrNode = (qmdAggrNode*)sNextNode;
 
-            // aggrNode¿¡ ¿¬°áµÈ Ä®·³ÀÇ ¼ö¸¦ °í·ÁÇÏ¿© ´ÙÀ½ ³ëµå°¡ »ç¿ëÇÒ À§Ä¡ ¼³Á¤
+            // aggrNodeì— ì—°ê²°ëœ ì¹¼ëŸ¼ì˜ ìˆ˜ë¥¼ ê³ ë ¤í•˜ì—¬ ë‹¤ìŒ ë…¸ë“œê°€ ì‚¬ìš©í•  ìœ„ì¹˜ ì„¤ì •
             for( sNode = sCodeWndNode->aggrNode;
                  sNode != NULL;
                  sNode = sNode->next )
@@ -1768,10 +1768,10 @@ qmnWNST::initWndNode( const qmncWNST    * aCodePlan,
             // initAggrResultMtrNode
             //-----------------------------------------------
             
-            // aggrResultNodeÀ§Ä¡ ÇÒ´ç
+            // aggrResultNodeìœ„ì¹˜ í• ë‹¹
             sDataWndNode->aggrResultNode = (qmdMtrNode*)sNextNode;
 
-            // aggrResultNode¿¡ ¿¬°áµÈ Ä®·³ÀÇ ¼ö¸¦ °í·ÁÇÏ¿© ´ÙÀ½ ³ëµå°¡ »ç¿ëÇÒ À§Ä¡ ¼³Á¤
+            // aggrResultNodeì— ì—°ê²°ëœ ì¹¼ëŸ¼ì˜ ìˆ˜ë¥¼ ê³ ë ¤í•˜ì—¬ ë‹¤ìŒ ë…¸ë“œê°€ ì‚¬ìš©í•  ìœ„ì¹˜ ì„¤ì •
             for( sNode = sCodeWndNode->aggrResultNode;
                  sNode != NULL;
                  sNode = sNode->next )
@@ -1794,12 +1794,12 @@ qmnWNST::initWndNode( const qmncWNST    * aCodePlan,
 
             if( sCodeWndNode->next == NULL )
             {
-                // ¸¶Áö¸· ³ëµå´Â next°¡ ¾øÀ½
+                // ë§ˆì§€ë§‰ ë…¸ë“œëŠ” nextê°€ ì—†ìŒ
                 sDataWndNode->next = NULL;
             }
             else
             {
-                // WndNode->next À§Ä¡ ¼³Á¤
+                // WndNode->next ìœ„ì¹˜ ì„¤ì •
                 sDataWndNode->next = (qmdWndNode*)sNextNode;
             }
         }
@@ -1821,20 +1821,20 @@ qmnWNST::initTempTable( qcTemplate      * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    Sort Temp TableÀ» ÃÊ±âÈ­
+ *    Sort Temp Tableì„ ì´ˆê¸°í™”
  *
  * Implementation :
- *    DiskÀÎ °æ¿ì ¸ğµç Á¤·ÄÅ°¸¦ À§ÇÑ °¢°¢ÀÇ Sort Manager¸¦ ¹Ì¸® ÃÊ±âÈ­
+ *    Diskì¸ ê²½ìš° ëª¨ë“  ì •ë ¬í‚¤ë¥¼ ìœ„í•œ ê°ê°ì˜ Sort Managerë¥¼ ë¯¸ë¦¬ ì´ˆê¸°í™”
  *
  ***********************************************************************/
     UInt        sFlag;
     qmndWNST  * sCacheDataPlan = NULL;
     //-----------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //-----------------------------
 
     //-----------------------------
-    // Flag Á¤º¸ ÃÊ±âÈ­
+    // Flag ì •ë³´ ì´ˆê¸°í™”
     //-----------------------------
 
     sFlag = QMCD_SORT_TMP_INITIALIZE;
@@ -1849,14 +1849,14 @@ qmnWNST::initTempTable( qcTemplate      * aTemplate,
                      == MTC_TUPLE_STORAGE_MEMORY );
         
         //-----------------------------
-        // Temp Table ÃÊ±âÈ­
+        // Temp Table ì´ˆê¸°í™”
         //-----------------------------
 
         if ( ( *aDataPlan->flag & QMN_PLAN_RESULT_CACHE_EXIST_MASK )
              == QMN_PLAN_RESULT_CACHE_EXIST_FALSE )
         {
-            // Memory Sort Temp TableÀÇ °æ¿ì, Á¤·Ä Å°¸¦ º¯°æÇÏ¸ç
-            // ¹İº¹ Á¤·ÄÀÌ °¡´ÉÇÏ¹Ç·Î Ã¹¹øÂ° Á¤·ÄÅ°¿¡ ´ëÇØ¼­¸¸ ÃÊ±âÈ­¸¦ ¼öÇàÇÔ
+            // Memory Sort Temp Tableì˜ ê²½ìš°, ì •ë ¬ í‚¤ë¥¼ ë³€ê²½í•˜ë©°
+            // ë°˜ë³µ ì •ë ¬ì´ ê°€ëŠ¥í•˜ë¯€ë¡œ ì²«ë²ˆì§¸ ì •ë ¬í‚¤ì— ëŒ€í•´ì„œë§Œ ì´ˆê¸°í™”ë¥¼ ìˆ˜í–‰í•¨
             IDE_TEST( qmcSortTemp::init( aSortMgr,
                                          aTemplate,
                                          ID_UINT_MAX,
@@ -1901,7 +1901,7 @@ qmnWNST::initTempTable( qcTemplate      * aTemplate,
         sFlag |= QMCD_SORT_TMP_STORAGE_DISK;
 
         /* PROJ-2201 
-         * ÀçÁ¤·Ä, BackwardScanµîÀ» ÇÏ·Á¸é RangeFlag¸¦ Áà¾ßÇÔ */
+         * ì¬ì •ë ¬, BackwardScanë“±ì„ í•˜ë ¤ë©´ RangeFlagë¥¼ ì¤˜ì•¼í•¨ */
         sFlag &= ~QMCD_SORT_TMP_SEARCH_MASK;
         sFlag |= QMCD_SORT_TMP_SEARCH_RANGE;
 
@@ -1909,11 +1909,11 @@ qmnWNST::initTempTable( qcTemplate      * aTemplate,
                      == MTC_TUPLE_STORAGE_DISK );
         
         //-----------------------------
-        // Temp Table ÃÊ±âÈ­
+        // Temp Table ì´ˆê¸°í™”
         //-----------------------------
 
-        // Disk Sort Temp TableÀÇ °æ¿ì,
-        // ¸ğµç Á¤·Ä Å°¿¡ ´ëÇØ ¹Ì¸® ÃÊ±âÈ­¸¦ ¼öÇàÇÔ
+        // Disk Sort Temp Tableì˜ ê²½ìš°,
+        // ëª¨ë“  ì •ë ¬ í‚¤ì— ëŒ€í•´ ë¯¸ë¦¬ ì´ˆê¸°í™”ë¥¼ ìˆ˜í–‰í•¨
         IDE_TEST( qmcSortTemp::init( aSortMgr,
                                      aTemplate,
                                      ID_UINT_MAX,
@@ -1938,10 +1938,10 @@ qmnWNST::setMtrRow( qcTemplate     * aTemplate,
 /***********************************************************************
  *
  * Description :
- *     ÀúÀå Row¸¦ ±¸¼ºÇÑ´Ù.
+ *     ì €ì¥ Rowë¥¼ êµ¬ì„±í•œë‹¤.
  *
  * Implementation :
- *     ÀúÀå ColumnÀ» ¼øÈ¸ÇÏ¸ç, ÀúÀå Row¸¦ ±¸¼ºÇÑ´Ù.
+ *     ì €ì¥ Columnì„ ìˆœíšŒí•˜ë©°, ì €ì¥ Rowë¥¼ êµ¬ì„±í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -1972,7 +1972,7 @@ qmnWNST::setTupleSet( qcTemplate   * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    °Ë»öµÈ ÀúÀå Row¸¦ ±âÁØÀ¸·Î Tuple SetÀ» º¹¿øÇÑ´Ù.
+ *    ê²€ìƒ‰ëœ ì €ì¥ Rowë¥¼ ê¸°ì¤€ìœ¼ë¡œ Tuple Setì„ ë³µì›í•œë‹¤.
  *
  * Implementation :
  *
@@ -2005,43 +2005,43 @@ qmnWNST::performAnalyticFunctions( qcTemplate     * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    ¸ğµç Analytic FunctionÀ» ¼öÇàÇÏ¿© Temp Table¿¡ ÀúÀåÇÑ´Ù
+ *    ëª¨ë“  Analytic Functionì„ ìˆ˜í–‰í•˜ì—¬ Temp Tableì— ì €ì¥í•œë‹¤
  *
  * Implementation :
- *    1. Child¸¦ ¹İº¹ ¼öÇàÇÏ¿© Temp Table¿¡ Insert
- *    2. Ã¹ ¹øÂ° Á¤·Ä Å°¿¡ ´ëÇØ sort() ¼öÇà
- *    3. Reporting AggregationÀ» ¼öÇàÇÏ°í °á°ú¸¦ Temp Table¿¡ Update
- *    4. ¸¸¾à Á¤·ÄÅ°°¡ µÑ ÀÌ»óÀÌ¶ó¸é ¾Æ·¡¸¦ ¹İº¹
- *    4.1. Á¤·ÄÅ°¸¦ º¯°æ
- *    4.2. º¯°æµÈ Á¤·ÄÅ°¿¡ ´ëÇØ ´Ù½Ã Á¤·ÄÀ» ¼öÇà
- *    4.3. Reporting AggregationÀ» ¼öÇàÇÏ°í °á°ú¸¦ Temp Table¿¡ Update
+ *    1. Childë¥¼ ë°˜ë³µ ìˆ˜í–‰í•˜ì—¬ Temp Tableì— Insert
+ *    2. ì²« ë²ˆì§¸ ì •ë ¬ í‚¤ì— ëŒ€í•´ sort() ìˆ˜í–‰
+ *    3. Reporting Aggregationì„ ìˆ˜í–‰í•˜ê³  ê²°ê³¼ë¥¼ Temp Tableì— Update
+ *    4. ë§Œì•½ ì •ë ¬í‚¤ê°€ ë‘˜ ì´ìƒì´ë¼ë©´ ì•„ë˜ë¥¼ ë°˜ë³µ
+ *    4.1. ì •ë ¬í‚¤ë¥¼ ë³€ê²½
+ *    4.2. ë³€ê²½ëœ ì •ë ¬í‚¤ì— ëŒ€í•´ ë‹¤ì‹œ ì •ë ¬ì„ ìˆ˜í–‰
+ *    4.3. Reporting Aggregationì„ ìˆ˜í–‰í•˜ê³  ê²°ê³¼ë¥¼ Temp Tableì— Update
  *
  ***********************************************************************/
     UInt         i;
 
-    // Sort Manager ¼³Á¤
+    // Sort Manager ì„¤ì •
     if ( (aCodePlan->plan.flag & QMN_PLAN_STORAGE_MASK)
          == QMN_PLAN_STORAGE_DISK )
     {
-        // µğ½ºÅ© ¼ÒÆ® ÅÛÇÁÀÎ °æ¿ì
-        // Ã³À½ ¼öÇà½Ã sortMgr°¡ sortMgrForDisk¸¦ °¡¸®Å°°í ÀÖÀ½
-        // ÇÏÁö¸¸ ¹İº¹ ¼öÇà½Ã (firstInit)ÀÌ ¼öÇàµÇÁö ¾ÊÀ¸¹Ç·Î
-        // ÀÌ¸¦ ´ëºñÇØ¿© °ªÀ» ÃÊ±âÈ­
+        // ë””ìŠ¤í¬ ì†ŒíŠ¸ í…œí”„ì¸ ê²½ìš°
+        // ì²˜ìŒ ìˆ˜í–‰ì‹œ sortMgrê°€ sortMgrForDiskë¥¼ ê°€ë¦¬í‚¤ê³  ìˆìŒ
+        // í•˜ì§€ë§Œ ë°˜ë³µ ìˆ˜í–‰ì‹œ (firstInit)ì´ ìˆ˜í–‰ë˜ì§€ ì•Šìœ¼ë¯€ë¡œ
+        // ì´ë¥¼ ëŒ€ë¹„í•´ì—¬ ê°’ì„ ì´ˆê¸°í™”
         aDataPlan->sortMgr = aDataPlan->sortMgrForDisk;
     }
     else
     {
-        // ¸Ş¸ğ¸®ÀÎ °æ¿ì ÇÒÀÏÀÌ ¾øÀ½
+        // ë©”ëª¨ë¦¬ì¸ ê²½ìš° í• ì¼ì´ ì—†ìŒ
     }
 
     
     //----------------------------------------
-    // 2. Ã¹ ¹øÂ° Á¤·Ä Å°¿¡ ´ëÇØ sort() ¼öÇà
+    // 2. ì²« ë²ˆì§¸ ì •ë ¬ í‚¤ì— ëŒ€í•´ sort() ìˆ˜í–‰
     //----------------------------------------
     if( ( aCodePlan->plan.flag & QMN_PLAN_STORAGE_MASK )
         == QMN_PLAN_STORAGE_DISK )
     {
-        // diskÀÏ °æ¿ì SORTING or PRESEVED_ORDER ÀÏ °æ¿ì Á¤·ÄÀ» ÇÔ
+        // diskì¼ ê²½ìš° SORTING or PRESEVED_ORDER ì¼ ê²½ìš° ì •ë ¬ì„ í•¨
         if( ( ( aCodePlan->flag & QMNC_WNST_STORE_MASK )
               == QMNC_WNST_STORE_SORTING ) ||
             ( ( aCodePlan->flag & QMNC_WNST_STORE_MASK )
@@ -2057,7 +2057,7 @@ qmnWNST::performAnalyticFunctions( qcTemplate     * aTemplate,
     }
     else
     {
-        // memoryÀÏ °æ¿ì SORTING ÀÏ¶§¸¸ Á¤·ÄÀ» ÇÔ
+        // memoryì¼ ê²½ìš° SORTING ì¼ë•Œë§Œ ì •ë ¬ì„ í•¨
         if( ( aCodePlan->flag & QMNC_WNST_STORE_MASK )
             == QMNC_WNST_STORE_SORTING )
         {
@@ -2099,7 +2099,7 @@ qmnWNST::performAnalyticFunctions( qcTemplate     * aTemplate,
     }
 
     //----------------------------------------
-    // 3. Reporting AggregationÀ» ¼öÇàÇÏ°í °á°ú¸¦ Temp Table¿¡ Update
+    // 3. Reporting Aggregationì„ ìˆ˜í–‰í•˜ê³  ê²°ê³¼ë¥¼ Temp Tableì— Update
     //----------------------------------------
     IDE_TEST( aggregateAndUpdate( aTemplate,
                                   aDataPlan,
@@ -2108,23 +2108,23 @@ qmnWNST::performAnalyticFunctions( qcTemplate     * aTemplate,
 
     
     //----------------------------------------
-    // 4. ¸¸¾à Á¤·ÄÅ°°¡ µÑ ÀÌ»óÀÌ¶ó¸é ¾Æ·¡¸¦ ¹İº¹
+    // 4. ë§Œì•½ ì •ë ¬í‚¤ê°€ ë‘˜ ì´ìƒì´ë¼ë©´ ì•„ë˜ë¥¼ ë°˜ë³µ
     //----------------------------------------
     for( i = 1;
          i < aCodePlan->sortKeyCnt;
          i++ )
     {
-        // 4.1. Á¤·ÄÅ°¸¦ º¯°æ
+        // 4.1. ì •ë ¬í‚¤ë¥¼ ë³€ê²½
         IDE_TEST( qmcSortTemp::setSortNode( aDataPlan->sortMgr,
                                             aDataPlan->sortNode[i] )
                   != IDE_SUCCESS );
 
-        // 4.2. º¯°æµÈ Á¤·ÄÅ°¿¡ ´ëÇØ ´Ù½Ã Á¤·ÄÀ» ¼öÇà
-        // µÎ ¹øÂ° ÀÌÈÄ Á¤·ÄÅ°´Â PRESERVED ORDER°¡ Àû¿ëµÇÁö ¾ÊÀ¸¹Ç·Î ¹«Á¶°Ç Á¤·Ä
+        // 4.2. ë³€ê²½ëœ ì •ë ¬í‚¤ì— ëŒ€í•´ ë‹¤ì‹œ ì •ë ¬ì„ ìˆ˜í–‰
+        // ë‘ ë²ˆì§¸ ì´í›„ ì •ë ¬í‚¤ëŠ” PRESERVED ORDERê°€ ì ìš©ë˜ì§€ ì•Šìœ¼ë¯€ë¡œ ë¬´ì¡°ê±´ ì •ë ¬
         IDE_TEST( qmcSortTemp::sort( aDataPlan->sortMgr )
                   != IDE_SUCCESS );
 
-        // 4.3. Reporting AggregationÀ» ¼öÇàÇÏ°í °á°ú¸¦ Temp Table¿¡ Update
+        // 4.3. Reporting Aggregationì„ ìˆ˜í–‰í•˜ê³  ê²°ê³¼ë¥¼ Temp Tableì— Update
         IDE_TEST( aggregateAndUpdate( aTemplate,
                                       aDataPlan,
                                       aDataPlan->wndNode[i] )
@@ -2146,7 +2146,7 @@ qmnWNST::insertRowsFromChild( qcTemplate     * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    Child¸¦ ¹İº¹ ¼öÇàÇÏ¿© Temp TableÀ» ±¸Ãà
+ *    Childë¥¼ ë°˜ë³µ ìˆ˜í–‰í•˜ì—¬ Temp Tableì„ êµ¬ì¶•
  *
  * Implementation :
  *
@@ -2155,16 +2155,16 @@ qmnWNST::insertRowsFromChild( qcTemplate     * aTemplate,
     qmcRowFlag   sFlag = QMC_ROW_INITIALIZE;
     
     //------------------------------
-    // Child RecordÀÇ ÀúÀå
+    // Child Recordì˜ ì €ì¥
     //------------------------------
 
-    // aggrNode¿¡ ÃÊ±â °ªÀ» ¼³Á¤
-    // aggregation¿¡¼­ execution ¾øÀÌ initÈÄ ¹Ù·Î finalizeÇÏ¸é
-    // groupingÀÌ NULLÀÎ °æ¿ìÀÇ °ªÀÌ ¼³Á¤µÊ
+    // aggrNodeì— ì´ˆê¸° ê°’ì„ ì„¤ì •
+    // aggregationì—ì„œ execution ì—†ì´ inití›„ ë°”ë¡œ finalizeí•˜ë©´
+    // groupingì´ NULLì¸ ê²½ìš°ì˜ ê°’ì´ ì„¤ì •ë¨
     
     
 
-    // Child ¼öÇà
+    // Child ìˆ˜í–‰
     IDE_TEST( aCodePlan->plan.left->doIt( aTemplate,
                                           aCodePlan->plan.left,
                                           & sFlag )
@@ -2172,21 +2172,21 @@ qmnWNST::insertRowsFromChild( qcTemplate     * aTemplate,
     
     while ( (sFlag & QMC_ROW_DATA_MASK) == QMC_ROW_DATA_EXIST )
     {
-        // °ø°£ÀÇ ÇÒ´ç
+        // ê³µê°„ì˜ í• ë‹¹
         IDE_TEST( qmcSortTemp::alloc( aDataPlan->sortMgr,
                                       & aDataPlan->plan.myTuple->row )
                   != IDE_SUCCESS );
 
-        // ÀúÀå RowÀÇ ±¸¼º
+        // ì €ì¥ Rowì˜ êµ¬ì„±
         IDE_TEST( setMtrRow( aTemplate, aDataPlan )
                   != IDE_SUCCESS );
         
-        // RowÀÇ »ğÀÔ
+        // Rowì˜ ì‚½ì…
         IDE_TEST( qmcSortTemp::addRow( aDataPlan->sortMgr,
                                        aDataPlan->plan.myTuple->row )
                   != IDE_SUCCESS );
 
-        // Child ¼öÇà
+        // Child ìˆ˜í–‰
         IDE_TEST( aCodePlan->plan.left->doIt( aTemplate,
                                               aCodePlan->plan.left,
                                               & sFlag )
@@ -2220,7 +2220,7 @@ qmnWNST::insertLimitedRowsFromChild( qcTemplate     * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    Child¸¦ ¹İº¹ ¼öÇàÇÏ¿© »óÀ§ n°³ÀÇ rocord¸¸ °®´Â memory temp¸¦ ±¸Ãà
+ *    Childë¥¼ ë°˜ë³µ ìˆ˜í–‰í•˜ì—¬ ìƒìœ„ nê°œì˜ rocordë§Œ ê°–ëŠ” memory tempë¥¼ êµ¬ì¶•
  *
  * Implementation :
  *
@@ -2239,10 +2239,10 @@ qmnWNST::insertLimitedRowsFromChild( qcTemplate     * aTemplate,
               != IDE_SUCCESS );
     
     //------------------------------
-    // Child RecordÀÇ ÀúÀå
+    // Child Recordì˜ ì €ì¥
     //------------------------------
 
-    // Child ¼öÇà
+    // Child ìˆ˜í–‰
     IDE_TEST( aCodePlan->plan.left->doIt( aTemplate,
                                           aCodePlan->plan.left,
                                           & sFlag ) != IDE_SUCCESS );
@@ -2252,21 +2252,21 @@ qmnWNST::insertLimitedRowsFromChild( qcTemplate     * aTemplate,
     {
         sCount++;
         
-        // °ø°£ÀÇ ÇÒ´ç
+        // ê³µê°„ì˜ í• ë‹¹
         IDE_TEST( qmcSortTemp::alloc( aDataPlan->sortMgr,
                                       & aDataPlan->plan.myTuple->row )
                   != IDE_SUCCESS );
 
-        // ÀúÀå RowÀÇ ±¸¼º
+        // ì €ì¥ Rowì˜ êµ¬ì„±
         IDE_TEST( setMtrRow( aTemplate, aDataPlan )
                   != IDE_SUCCESS );
         
-        // RowÀÇ »ğÀÔ
+        // Rowì˜ ì‚½ì…
         IDE_TEST( qmcSortTemp::addRow( aDataPlan->sortMgr,
                                        aDataPlan->plan.myTuple->row )
                   != IDE_SUCCESS );
 
-        // Child ¼öÇà
+        // Child ìˆ˜í–‰
         IDE_TEST( aCodePlan->plan.left->doIt( aTemplate,
                                               aCodePlan->plan.left,
                                               & sFlag )
@@ -2274,7 +2274,7 @@ qmnWNST::insertLimitedRowsFromChild( qcTemplate     * aTemplate,
     }
     
     //------------------------------
-    // Á¤·Ä ¼öÇà
+    // ì •ë ¬ ìˆ˜í–‰
     //------------------------------
 
     if ( ( aCodePlan->flag & QMNC_WNST_STORE_MASK )
@@ -2284,19 +2284,19 @@ qmnWNST::insertLimitedRowsFromChild( qcTemplate     * aTemplate,
                   != IDE_SUCCESS );
 
         //------------------------------
-        // Limit Sorting ¼öÇà
+        // Limit Sorting ìˆ˜í–‰
         //------------------------------
 
         if ( (sFlag & QMC_ROW_DATA_MASK) == QMC_ROW_DATA_EXIST )
         {
-            // °ø°£ÀÇ ÇÒ´ç
+            // ê³µê°„ì˜ í• ë‹¹
             IDE_TEST( qmcSortTemp::alloc( aDataPlan->sortMgr,
                                           & aDataPlan->plan.myTuple->row )
                       != IDE_SUCCESS );
 
             while ( (sFlag & QMC_ROW_DATA_MASK) == QMC_ROW_DATA_EXIST )
             {
-                // ÀúÀå RowÀÇ ±¸¼º
+                // ì €ì¥ Rowì˜ êµ¬ì„±
                 IDE_TEST( setMtrRow( aTemplate, aDataPlan )
                           != IDE_SUCCESS );
 
@@ -2344,7 +2344,7 @@ qmnWNST::aggregateAndUpdate( qcTemplate       * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    Reporting AggregationÀ» ¼öÇàÇÏ°í °á°ú¸¦ Temp Table¿¡ Update
+ *    Reporting Aggregationì„ ìˆ˜í–‰í•˜ê³  ê²°ê³¼ë¥¼ Temp Tableì— Update
  *
  * Implementation :
  *
@@ -2359,7 +2359,7 @@ qmnWNST::aggregateAndUpdate( qcTemplate       * aTemplate,
         {
             case QMC_WND_EXEC_PARTITION_ORDER_UPDATE:
             {
-                // partition by¿Í order by°¡ ÇÔ²² ÀÖ´Â °æ¿ì
+                // partition byì™€ order byê°€ í•¨ê»˜ ìˆëŠ” ê²½ìš°
                 IDE_TEST( partitionOrderByAggregation( aTemplate,
                                                        aDataPlan,
                                                        sWndNode->overColumnNode,
@@ -2371,7 +2371,7 @@ qmnWNST::aggregateAndUpdate( qcTemplate       * aTemplate,
 
             case QMC_WND_EXEC_PARTITION_UPDATE:
             {
-                // partition by¸¸ ÀÖ´Â °æ¿ì
+                // partition byë§Œ ìˆëŠ” ê²½ìš°
                 IDE_TEST( partitionAggregation( aTemplate,
                                                 aDataPlan,
                                                 sWndNode->overColumnNode,
@@ -2383,7 +2383,7 @@ qmnWNST::aggregateAndUpdate( qcTemplate       * aTemplate,
 
             case QMC_WND_EXEC_ORDER_UPDATE:
             {
-                // order by¸¸ ÀÖ´Â °æ¿ì
+                // order byë§Œ ìˆëŠ” ê²½ìš°
                 IDE_TEST( orderByAggregation( aTemplate,
                                             aDataPlan,
                                             sWndNode->overColumnNode,
@@ -2395,7 +2395,7 @@ qmnWNST::aggregateAndUpdate( qcTemplate       * aTemplate,
 
             case QMC_WND_EXEC_AGGR_UPDATE:
             {
-                // ºó overÀıÀÎ °æ¿ì
+                // ë¹ˆ overì ˆì¸ ê²½ìš°
                 IDE_TEST( aggregationOnly( aTemplate,
                                            aDataPlan,
                                            sWndNode->aggrNode,
@@ -2517,12 +2517,12 @@ qmnWNST::aggregationOnly( qcTemplate        * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    ÆÄÆ¼¼ÇÀÌ ÁöÁ¤µÇÁö ¾ÊÀº °æ¿ì ÀüÃ¼¿¡ ´ëÇØ aggregationÀ» ¼öÇàÇÏ°í,
- *    ±× (´ÜÀÏ) °á°ú¸¦ Sort Temp¿¡ ¹İ¿µÇÔ
+ *    íŒŒí‹°ì…˜ì´ ì§€ì •ë˜ì§€ ì•Šì€ ê²½ìš° ì „ì²´ì— ëŒ€í•´ aggregationì„ ìˆ˜í–‰í•˜ê³ ,
+ *    ê·¸ (ë‹¨ì¼) ê²°ê³¼ë¥¼ Sort Tempì— ë°˜ì˜í•¨
  *
  * Implementation :
- *    1. °°Àº ÆÄÆ¼¼Ç¿¡ ´ëÇØ aggregation ¼öÇà
- *    2. Aggregation °á°ú¸¦ Sort Temp¿¡ ¹İ¿µ (update)
+ *    1. ê°™ì€ íŒŒí‹°ì…˜ì— ëŒ€í•´ aggregation ìˆ˜í–‰
+ *    2. Aggregation ê²°ê³¼ë¥¼ Sort Tempì— ë°˜ì˜ (update)
  *
  ***********************************************************************/
     qmcRowFlag         sFlag = QMC_ROW_INITIALIZE;
@@ -2538,14 +2538,14 @@ qmnWNST::aggregationOnly( qcTemplate        * aTemplate,
 
 
     //----------------------------------------
-    // 1. °°Àº ÆÄÆ¼¼Ç¿¡ ´ëÇØ aggregation ¼öÇà
+    // 1. ê°™ì€ íŒŒí‹°ì…˜ì— ëŒ€í•´ aggregation ìˆ˜í–‰
     //----------------------------------------    
 
     //---------------------------------
-    // Ã¹ ¹øÂ° ·¹ÄÚµå¸¦ °¡Á®¿È
+    // ì²« ë²ˆì§¸ ë ˆì½”ë“œë¥¼ ê°€ì ¸ì˜´
     //---------------------------------
 
-    // ÇöÀç row ¼³Á¤
+    // í˜„ì¬ row ì„¤ì •
     aDataPlan->mtrRowIdx = 0;
     aDataPlan->plan.myTuple->row = aDataPlan->mtrRow[aDataPlan->mtrRowIdx];
 
@@ -2585,10 +2585,10 @@ qmnWNST::aggregationOnly( qcTemplate        * aTemplate,
                       != IDE_SUCCESS );
 
             //---------------------------------
-            // ´ÙÀ½ ·¹ÄÚµå¸¦ °¡Á®¿È
+            // ë‹¤ìŒ ë ˆì½”ë“œë¥¼ ê°€ì ¸ì˜´
             //---------------------------------
 
-            // ÇöÀç row ¼³Á¤
+            // í˜„ì¬ row ì„¤ì •
             aDataPlan->mtrRowIdx = 1;
             aDataPlan->plan.myTuple->row = aDataPlan->mtrRow[aDataPlan->mtrRowIdx];
             
@@ -2598,7 +2598,7 @@ qmnWNST::aggregationOnly( qcTemplate        * aTemplate,
                       != IDE_SUCCESS );
 
             //---------------------------------
-            // ·¹ÄÚµå°¡ Á¸ÀçÇÏ¸é ¹İº¹
+            // ë ˆì½”ë“œê°€ ì¡´ì¬í•˜ë©´ ë°˜ë³µ
             //---------------------------------
         }
         while( (sFlag & QMC_ROW_DATA_MASK) == QMC_ROW_DATA_EXIST );
@@ -2611,14 +2611,14 @@ qmnWNST::aggregationOnly( qcTemplate        * aTemplate,
                   != IDE_SUCCESS );
 
         //----------------------------------------
-        // 2. Aggregation °á°ú¸¦ Sort Temp¿¡ ¹İ¿µ
+        // 2. Aggregation ê²°ê³¼ë¥¼ Sort Tempì— ë°˜ì˜
         //----------------------------------------
         
         //---------------------------------
-        // ´Ù½Ã Ã¹ ¹øÂ° ·¹ÄÚµå¸¦ °¡Á®¿È
+        // ë‹¤ì‹œ ì²« ë²ˆì§¸ ë ˆì½”ë“œë¥¼ ê°€ì ¸ì˜´
         //---------------------------------
 
-        // ÇöÀç row ¼³Á¤
+        // í˜„ì¬ row ì„¤ì •
         aDataPlan->mtrRowIdx = 0;
         aDataPlan->plan.myTuple->row = aDataPlan->mtrRow[aDataPlan->mtrRowIdx];
         
@@ -2633,15 +2633,15 @@ qmnWNST::aggregationOnly( qcTemplate        * aTemplate,
             // UPDATE
             //---------------------------------
 
-            // ÀúÀå RowÀÇ ±¸¼º
+            // ì €ì¥ Rowì˜ êµ¬ì„±
             for ( sNode = (qmdMtrNode*)aAggrResultNode;
                   sNode != NULL;
                   sNode = sNode->next )
             {
                 /* BUG-43087 support ratio_to_report
-                 * RATIO_TO_REPORT ÇÔ¼ö´Â finalize¿¡¼­ ºñÀ²À» °áÁ¤ÇÏ±â ¶§¹®¿¡
-                 * AggretationÀÇ Result¸¦ º¹»çÇÏ±â Àü ÇöÁ¦ row¸¦ ±¸ÇÒ ¶§ finalize
-                 * ¸¦ ¼öÇàÇÑ´Ù.
+                 * RATIO_TO_REPORT í•¨ìˆ˜ëŠ” finalizeì—ì„œ ë¹„ìœ¨ì„ ê²°ì •í•˜ê¸° ë•Œë¬¸ì—
+                 * Aggretationì˜ Resultë¥¼ ë³µì‚¬í•˜ê¸° ì „ í˜„ì œ rowë¥¼ êµ¬í•  ë•Œ finalize
+                 * ë¥¼ ìˆ˜í–‰í•œë‹¤.
                  */
                 if ( sNode->srcNode->node.module == &mtfRatioToReport )
                 {
@@ -2664,10 +2664,10 @@ qmnWNST::aggregationOnly( qcTemplate        * aTemplate,
             
 
             //---------------------------------
-            // ´ÙÀ½ ·¹ÄÚµå¸¦ °¡Á®¿È
+            // ë‹¤ìŒ ë ˆì½”ë“œë¥¼ ê°€ì ¸ì˜´
             //---------------------------------
 
-            // ÇöÀç row ¼³Á¤
+            // í˜„ì¬ row ì„¤ì •
             aDataPlan->mtrRowIdx = 1;
             aDataPlan->plan.myTuple->row = aDataPlan->mtrRow[aDataPlan->mtrRowIdx];
             
@@ -2678,7 +2678,7 @@ qmnWNST::aggregationOnly( qcTemplate        * aTemplate,
 
 
             //---------------------------------
-            // ·¹ÄÚµå°¡ Á¸ÀçÇÏ¸é ¹İº¹
+            // ë ˆì½”ë“œê°€ ì¡´ì¬í•˜ë©´ ë°˜ë³µ
             //---------------------------------
         }
         while( (sFlag & QMC_ROW_DATA_MASK) == QMC_ROW_DATA_EXIST );
@@ -2686,7 +2686,7 @@ qmnWNST::aggregationOnly( qcTemplate        * aTemplate,
     }
     else
     {
-        // ·¹ÄÚµå°¡ ÇÏ³ªµµ ¾ø´Â °æ¿ì ÇÒÀÏÀÌ ¾øÀ½
+        // ë ˆì½”ë“œê°€ í•˜ë‚˜ë„ ì—†ëŠ” ê²½ìš° í• ì¼ì´ ì—†ìŒ
     }
     
     return IDE_SUCCESS;
@@ -2706,16 +2706,16 @@ qmnWNST::partitionAggregation( qcTemplate        * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    ÆÄÆ¼¼Ç º°·Î aggregationÀ» ¼öÇàÇÏ°í, ±× °á°ú¸¦ Sort Temp¿¡ ¹İ¿µÇÔ
+ *    íŒŒí‹°ì…˜ ë³„ë¡œ aggregationì„ ìˆ˜í–‰í•˜ê³ , ê·¸ ê²°ê³¼ë¥¼ Sort Tempì— ë°˜ì˜í•¨
  *
  * Implementation :
- *    1. °°Àº ÆÄÆ¼¼Ç¿¡ ´ëÇØ aggregation ¼öÇà
- *    2. Aggregation °á°ú¸¦ Sort Temp¿¡ ¹İ¿µ (update)
+ *    1. ê°™ì€ íŒŒí‹°ì…˜ì— ëŒ€í•´ aggregation ìˆ˜í–‰
+ *    2. Aggregation ê²°ê³¼ë¥¼ Sort Tempì— ë°˜ì˜ (update)
  *
  ***********************************************************************/
     qmcRowFlag        sFlag = QMC_ROW_INITIALIZE;
     qmdMtrNode      * sNode;
-    SLong             sExecAggrCnt = 0;  // execAggregation()À» ¼öÇàÇÑ Ä«¿îÆ®
+    SLong             sExecAggrCnt = 0;  // execAggregation()ì„ ìˆ˜í–‰í•œ ì¹´ìš´íŠ¸
     mtcRankValueType  sRankValue;
 
     //---------------------------------
@@ -2727,14 +2727,14 @@ qmnWNST::partitionAggregation( qcTemplate        * aTemplate,
 
     
     //----------------------------------------
-    // 1. °°Àº ÆÄÆ¼¼Ç¿¡ ´ëÇØ aggregation ¼öÇà
+    // 1. ê°™ì€ íŒŒí‹°ì…˜ì— ëŒ€í•´ aggregation ìˆ˜í–‰
     //----------------------------------------    
 
     //---------------------------------
-    // Ã¹ ¹øÂ° ·¹ÄÚµå¸¦ °¡Á®¿È
+    // ì²« ë²ˆì§¸ ë ˆì½”ë“œë¥¼ ê°€ì ¸ì˜´
     //---------------------------------
 
-    // ÇöÀç row ¼³Á¤
+    // í˜„ì¬ row ì„¤ì •
     aDataPlan->mtrRowIdx = 0;
     aDataPlan->plan.myTuple->row = aDataPlan->mtrRow[aDataPlan->mtrRowIdx];
 
@@ -2745,13 +2745,13 @@ qmnWNST::partitionAggregation( qcTemplate        * aTemplate,
 
     if( (sFlag & QMC_ROW_DATA_MASK) == QMC_ROW_DATA_EXIST )
     {
-        // ·¹ÄÚµå°¡ Á¸ÀçÇÏ¸é ¾Æ·¡¸¦ ¹İº¹
+        // ë ˆì½”ë“œê°€ ì¡´ì¬í•˜ë©´ ì•„ë˜ë¥¼ ë°˜ë³µ
         do
         {   
             //---------------------------------
             // store cursor
             //---------------------------------
-            // ÇöÀç À§Ä¡ÀÇ Ä¿¼­¸¦ ÀúÀåÇÔ
+            // í˜„ì¬ ìœ„ì¹˜ì˜ ì»¤ì„œë¥¼ ì €ì¥í•¨
             IDE_TEST( qmcSortTemp::storeCursor( aDataPlan->sortMgr,
                                                 & aDataPlan->cursorInfo )
                       != IDE_SUCCESS );
@@ -2788,10 +2788,10 @@ qmnWNST::partitionAggregation( qcTemplate        * aTemplate,
                 sExecAggrCnt++;
 
                 //---------------------------------
-                // ´ÙÀ½ ·¹ÄÚµå¸¦ °¡Á®¿È
+                // ë‹¤ìŒ ë ˆì½”ë“œë¥¼ ê°€ì ¸ì˜´
                 //---------------------------------
 
-                // ÇöÀç row ¼³Á¤
+                // í˜„ì¬ row ì„¤ì •
                 aDataPlan->mtrRowIdx = 1;
                 aDataPlan->plan.myTuple->row = aDataPlan->mtrRow[aDataPlan->mtrRowIdx];
 
@@ -2801,7 +2801,7 @@ qmnWNST::partitionAggregation( qcTemplate        * aTemplate,
                           != IDE_SUCCESS );
 
                 //---------------------------------
-                // °°Àº ÆÄÆ¼¼ÇÀÎÁö °Ë»ç
+                // ê°™ì€ íŒŒí‹°ì…˜ì¸ì§€ ê²€ì‚¬
                 //---------------------------------
 
                 if ( (sFlag & QMC_ROW_DATA_MASK) == QMC_ROW_DATA_EXIST )
@@ -2813,12 +2813,12 @@ qmnWNST::partitionAggregation( qcTemplate        * aTemplate,
                 }
                 else
                 {
-                    // Data°¡ ¾øÀ¸¸é Á¾·á
+                    // Dataê°€ ì—†ìœ¼ë©´ ì¢…ë£Œ
                     break;
                 }
 
                 //---------------------------------
-                // °°Àº °ªÀÎÁö °Ë»ç
+                // ê°™ì€ ê°’ì¸ì§€ ê²€ì‚¬
                 //---------------------------------
                 
                 if ( (sFlag & QMC_ROW_COMPARE_MASK) == QMC_ROW_COMPARE_SAME )
@@ -2830,7 +2830,7 @@ qmnWNST::partitionAggregation( qcTemplate        * aTemplate,
                     sRankValue = MTC_RANK_VALUE_DIFF;
                 }
 
-                // °°Àº ÆÄÆ¼¼ÇÀÌ¸é ¹İº¹
+                // ê°™ì€ íŒŒí‹°ì…˜ì´ë©´ ë°˜ë³µ
             }
             while( (sFlag & QMC_ROW_GROUP_MASK) == QMC_ROW_GROUP_SAME );
             
@@ -2844,15 +2844,15 @@ qmnWNST::partitionAggregation( qcTemplate        * aTemplate,
 
             
             //----------------------------------------
-            // 2. Aggregation °á°ú¸¦ Sort Temp¿¡ ¹İ¿µ
+            // 2. Aggregation ê²°ê³¼ë¥¼ Sort Tempì— ë°˜ì˜
             //----------------------------------------
 
             //---------------------------------
             // restore cursor
             //---------------------------------
 
-            // ÇöÀç À§Ä¡ÀÇ Ä¿¼­¸¦ ÁöÁ¤µÈ À§Ä¡·Î º¹¿ø½ÃÅ´
-            // ÇöÀç row ¼³Á¤
+            // í˜„ì¬ ìœ„ì¹˜ì˜ ì»¤ì„œë¥¼ ì§€ì •ëœ ìœ„ì¹˜ë¡œ ë³µì›ì‹œí‚´
+            // í˜„ì¬ row ì„¤ì •
             aDataPlan->mtrRowIdx = 0;
             aDataPlan->plan.myTuple->row = aDataPlan->mtrRow[aDataPlan->mtrRowIdx];
             
@@ -2862,9 +2862,9 @@ qmnWNST::partitionAggregation( qcTemplate        * aTemplate,
 
             aDataPlan->mtrRow[aDataPlan->mtrRowIdx] = aDataPlan->plan.myTuple->row;
             
-            // °Ë»öµÈ Row¸¦ ÀÌ¿ëÇÑ Tuple Set º¹¿ø
-            // getFirst & NextRecord ÇÔ¼ö´Â setTupleSet ±â´ÉÀ» Æ÷ÇÔÇÏ°í ÀÖ¾î ÇÊ¿ä°¡ ¾ø°í,
-            // restoreCursorÀ» È£ÃâÇÑ °æ¿ì¿¡´Â setTupleSetÀ» ÇÔ²² È£ÃâÇØ¾ß ÇÔ
+            // ê²€ìƒ‰ëœ Rowë¥¼ ì´ìš©í•œ Tuple Set ë³µì›
+            // getFirst & NextRecord í•¨ìˆ˜ëŠ” setTupleSet ê¸°ëŠ¥ì„ í¬í•¨í•˜ê³  ìˆì–´ í•„ìš”ê°€ ì—†ê³ ,
+            // restoreCursorì„ í˜¸ì¶œí•œ ê²½ìš°ì—ëŠ” setTupleSetì„ í•¨ê»˜ í˜¸ì¶œí•´ì•¼ í•¨
             IDE_TEST( setTupleSet( aTemplate,
                                    aDataPlan->mtrNode,
                                    aDataPlan->plan.myTuple->row ) != IDE_SUCCESS );
@@ -2876,15 +2876,15 @@ qmnWNST::partitionAggregation( qcTemplate        * aTemplate,
                 // UPDATE
                 //---------------------------------
                 
-                // ÀúÀå RowÀÇ ±¸¼º
+                // ì €ì¥ Rowì˜ êµ¬ì„±
                 for ( sNode = (qmdMtrNode*)aAggrResultNode;
                       sNode != NULL;
                       sNode = sNode->next )
                 {
                     /* BUG-43087 support ratio_to_report
-                     * RATIO_TO_REPORT ÇÔ¼ö´Â finalize¿¡¼­ ºñÀ²À» °áÁ¤ÇÏ±â ¶§¹®¿¡
-                     * AggretationÀÇ Result¸¦ º¹»çÇÏ±â Àü ÇöÁ¦ row¸¦ ±¸ÇÒ ¶§ finalize
-                     * ¸¦ ¼öÇàÇÑ´Ù.
+                     * RATIO_TO_REPORT í•¨ìˆ˜ëŠ” finalizeì—ì„œ ë¹„ìœ¨ì„ ê²°ì •í•˜ê¸° ë•Œë¬¸ì—
+                     * Aggretationì˜ Resultë¥¼ ë³µì‚¬í•˜ê¸° ì „ í˜„ì œ rowë¥¼ êµ¬í•  ë•Œ finalize
+                     * ë¥¼ ìˆ˜í–‰í•œë‹¤.
                      */
                     if ( sNode->srcNode->node.module == &mtfRatioToReport )
                     {
@@ -2908,21 +2908,21 @@ qmnWNST::partitionAggregation( qcTemplate        * aTemplate,
                 sExecAggrCnt--;
 
                 //---------------------------------
-                // °°Àº ÆÄÆ¼¼ÇÀÎÁö °Ë»ç
+                // ê°™ì€ íŒŒí‹°ì…˜ì¸ì§€ ê²€ì‚¬
                 //---------------------------------
 
                 IDE_DASSERT( sExecAggrCnt >= 0 );
                 
                 if( sExecAggrCnt > 0 )
                 {
-                    // ÇöÀç row ¼³Á¤
+                    // í˜„ì¬ row ì„¤ì •
                     aDataPlan->mtrRowIdx = 1;
                     aDataPlan->plan.myTuple->row =
                         aDataPlan->mtrRow[aDataPlan->mtrRowIdx];
                 }
                 else
                 {
-                    // ÇöÀç row ¼³Á¤
+                    // í˜„ì¬ row ì„¤ì •
                     aDataPlan->mtrRowIdx = 0;
                     aDataPlan->plan.myTuple->row =
                         aDataPlan->mtrRow[aDataPlan->mtrRowIdx];
@@ -2930,8 +2930,8 @@ qmnWNST::partitionAggregation( qcTemplate        * aTemplate,
                 }
 
                 //---------------------------------
-                // °°Àº ÆÄÆ¼¼ÇÀÎ °æ¿ì,
-                // ´ÙÀ½ ·¹ÄÚµå¸¦ °¡Á®¿È
+                // ê°™ì€ íŒŒí‹°ì…˜ì¸ ê²½ìš°,
+                // ë‹¤ìŒ ë ˆì½”ë“œë¥¼ ê°€ì ¸ì˜´
                 //---------------------------------
                 IDE_TEST( getNextRecord( aTemplate,
                                          aDataPlan,
@@ -2948,20 +2948,20 @@ qmnWNST::partitionAggregation( qcTemplate        * aTemplate,
                     sFlag &= ~QMC_ROW_GROUP_MASK;
                     sFlag |= QMC_ROW_GROUP_NULL;
                 }
-                // ·¹ÄÚµå°¡ Á¸ÀçÇÏ°í, °°Àº ÆÄÆ¼¼ÇÀÌ¸é ¹İº¹
+                // ë ˆì½”ë“œê°€ ì¡´ì¬í•˜ê³ , ê°™ì€ íŒŒí‹°ì…˜ì´ë©´ ë°˜ë³µ
             }
             while( ( (sFlag & QMC_ROW_DATA_MASK) == QMC_ROW_DATA_EXIST ) &&
                    ( (sFlag & QMC_ROW_GROUP_MASK) == QMC_ROW_GROUP_SAME ) );
 
             
-            // ·¹ÄÚµå°¡ Á¸ÀçÇÏ°í, ´Ù¸¥ ÆÄÆ¼¼ÇÀÌ¸é »õ·Î¿î aggregationÀ» ¼öÇà
+            // ë ˆì½”ë“œê°€ ì¡´ì¬í•˜ê³ , ë‹¤ë¥¸ íŒŒí‹°ì…˜ì´ë©´ ìƒˆë¡œìš´ aggregationì„ ìˆ˜í–‰
         }
         while( ( (sFlag & QMC_ROW_DATA_MASK) == QMC_ROW_DATA_EXIST ) &&
                ( (sFlag & QMC_ROW_GROUP_MASK) != QMC_ROW_GROUP_SAME ) );
     }
     else
     {
-        // ·¹ÄÚµå°¡ ÇÏ³ªµµ ¾ø´Â °æ¿ì ÇÒÀÏÀÌ ¾øÀ½
+        // ë ˆì½”ë“œê°€ í•˜ë‚˜ë„ ì—†ëŠ” ê²½ìš° í• ì¼ì´ ì—†ìŒ
     }
 
     aDataPlan->mtrRowIdx = 0;
@@ -2978,7 +2978,7 @@ qmnWNST::partitionAggregation( qcTemplate        * aTemplate,
  * Partition By Order By Aggregation
  *
  *   partition By order by RANGE betwwen UNBOUNDED PRECEDING and CURRENT ROW
- *   ¿Í °°À½ ÇÏÁö¸¸ ÀÌ·¸°Ô À©µµ¿ì ±¸¹®¿¡¼­´Â Ranking°ü·Ã ÇÔ¼ö´Â ¾µ¼ö ¾øÀ½.
+ *   ì™€ ê°™ìŒ í•˜ì§€ë§Œ ì´ë ‡ê²Œ ìœˆë„ìš° êµ¬ë¬¸ì—ì„œëŠ” Rankingê´€ë ¨ í•¨ìˆ˜ëŠ” ì“¸ìˆ˜ ì—†ìŒ.
  */
 IDE_RC qmnWNST::partitionOrderByAggregation( qcTemplate  * aTemplate,
                                              qmndWNST    * aDataPlan,
@@ -3005,7 +3005,7 @@ IDE_RC qmnWNST::partitionOrderByAggregation( qcTemplate  * aTemplate,
         IDE_TEST( initAggregation( aTemplate, aAggrNode )
                   != IDE_SUCCESS );
 
-        /* ÇöÀç À§Ä¡¸¦ ÀúÀåÇÑ´Ù */
+        /* í˜„ì¬ ìœ„ì¹˜ë¥¼ ì €ì¥í•œë‹¤ */
         IDE_TEST( qmcSortTemp::storeCursor( aDataPlan->sortMgr,
                                             &aDataPlan->cursorInfo )
                   != IDE_SUCCESS );
@@ -3099,14 +3099,14 @@ IDE_RC qmnWNST::partitionOrderByAggregation( qcTemplate  * aTemplate,
 /**
  * update Aggregate Rows
  *
- *  Sort Temp¿¡ aExecAggrCount ¸¸Å­ aggregate µÈ °ªÀ» update ÇÑ´Ù.
+ *  Sort Tempì— aExecAggrCount ë§Œí¼ aggregate ëœ ê°’ì„ update í•œë‹¤.
  *
- *  partition by order by ÀÇ ÀÇ¹Ì´Â WindowÀÇ RangeÀÇ °³³äÀ» °¡Áö°í ÀÖ´Ù.
+ *  partition by order by ì˜ ì˜ë¯¸ëŠ” Windowì˜ Rangeì˜ ê°œë…ì„ ê°€ì§€ê³  ìˆë‹¤.
  *
- *  ±×·¡¼­ Aggrete µÈ °ªÀ» ¸ğµÎ °°Àº °ªÀ¸·Î updateÇÏ´Âµ¥ Rownumber´Â °°Àº °ªÀÏ Áö¶óµµ
- *  Áõ°¡ÇÏ±â ¶§¹®¿¡ update ¹Ù·ÎÀü¿¡ Aggregate¸¦ ¼öÇàÇØ¼­ update¸¦ ¼öÇàÇÑ´Ù.
+ *  ê·¸ë˜ì„œ Aggrete ëœ ê°’ì„ ëª¨ë‘ ê°™ì€ ê°’ìœ¼ë¡œ updateí•˜ëŠ”ë° RownumberëŠ” ê°™ì€ ê°’ì¼ ì§€ë¼ë„
+ *  ì¦ê°€í•˜ê¸° ë•Œë¬¸ì— update ë°”ë¡œì „ì— Aggregateë¥¼ ìˆ˜í–‰í•´ì„œ updateë¥¼ ìˆ˜í–‰í•œë‹¤.
  *
- *  ´Ù¸¥ ÇÔ¼öÀÇ °æ¿ì ÀÌ¹Ì Aggregate µÈ °ªÀ» aExecAggrCount ¸¸Å­ update ÇÑ´Ù.
+ *  ë‹¤ë¥¸ í•¨ìˆ˜ì˜ ê²½ìš° ì´ë¯¸ Aggregate ëœ ê°’ì„ aExecAggrCount ë§Œí¼ update í•œë‹¤.
  */
 IDE_RC qmnWNST::updateAggrRows( qcTemplate * aTemplate,
                                 qmndWNST   * aDataPlan,
@@ -3136,7 +3136,7 @@ IDE_RC qmnWNST::updateAggrRows( qcTemplate * aTemplate,
               sNode != NULL;
               sNode = sNode->next )
         {
-            /* mtfRowNumberÀÇ Aggregate¸¦ ¼öÇàÇÑ´Ù */
+            /* mtfRowNumberì˜ Aggregateë¥¼ ìˆ˜í–‰í•œë‹¤ */
             if ( ( sNode->srcNode->node.module == &mtfRowNumber ) ||
                  ( sNode->srcNode->node.module == &mtfRowNumberLimit ) )
             {
@@ -3154,7 +3154,7 @@ IDE_RC qmnWNST::updateAggrRows( qcTemplate * aTemplate,
                                           aDataPlan->plan.myTuple->row )
                       != IDE_SUCCESS );
         }
-        /* SortTemp ¿¡ Update¸¦ ¼öÇàÇÑ´Ù */
+        /* SortTemp ì— Updateë¥¼ ìˆ˜í–‰í•œë‹¤ */
         IDE_TEST( qmcSortTemp::updateRow( aDataPlan->sortMgr )
                   != IDE_SUCCESS );
         sUpdateCount++;
@@ -3209,7 +3209,7 @@ IDE_RC qmnWNST::updateAggrRows( qcTemplate * aTemplate,
  *  Order By Aggregation
  *
  *   order by RANGE betwwen UNBOUNDED PRECEDING and CURRENT ROW
- *   ¿Í °°À½. ÇÏÁö¸¸ ÀÌ·¸°Ô À©µµ¿ì ±¸¹®¿¡¼­´Â Ranking°ü·Ã ÇÔ¼ö´Â ¾µ¼ö ¾øÀ½.
+ *   ì™€ ê°™ìŒ. í•˜ì§€ë§Œ ì´ë ‡ê²Œ ìœˆë„ìš° êµ¬ë¬¸ì—ì„œëŠ” Rankingê´€ë ¨ í•¨ìˆ˜ëŠ” ì“¸ìˆ˜ ì—†ìŒ.
  */
 IDE_RC qmnWNST::orderByAggregation( qcTemplate  * aTemplate,
                                     qmndWNST    * aDataPlan,
@@ -3326,7 +3326,7 @@ qmnWNST::clearDistNode( qmdDistNode * aDistNode,
 /***********************************************************************
  *
  * Description :
- *    Distinct ColumnÀ» À§ÇÑ Temp TableÀ» Clear
+ *    Distinct Columnì„ ìœ„í•œ Temp Tableì„ Clear
  *
  * Implementation :
  *
@@ -3358,7 +3358,7 @@ qmnWNST::initAggregation( qcTemplate        * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    Aggregation ColumnÀ» ÃÊ±âÈ­
+ *    Aggregation Columnì„ ì´ˆê¸°í™”
  *
  * Implementation :
  *
@@ -3390,7 +3390,7 @@ qmnWNST::execAggregation( qcTemplate         * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    AggregationÀ» ¼öÇà
+ *    Aggregationì„ ìˆ˜í–‰
  *
  * Implementation :
  *
@@ -3421,7 +3421,7 @@ qmnWNST::execAggregation( qcTemplate         * aTemplate,
         
         if ( sAggrNode->myDist == NULL )
         {
-            // Non Distinct AggregationÀÎ °æ¿ì
+            // Non Distinct Aggregationì¸ ê²½ìš°
             IDE_TEST( qtc::aggregateWithInfo( sAggrNode->dstNode,
                                               aAggrInfo,
                                               aTemplate )
@@ -3429,10 +3429,10 @@ qmnWNST::execAggregation( qcTemplate         * aTemplate,
         }
         else
         {
-            // Distinct AggregationÀÎ °æ¿ì
+            // Distinct Aggregationì¸ ê²½ìš°
             if ( sAggrNode->myDist->isDistinct == ID_TRUE )
             {
-                // Distinct ArgumentÀÎ °æ¿ì
+                // Distinct Argumentì¸ ê²½ìš°
                 IDE_TEST( qtc::aggregateWithInfo( sAggrNode->dstNode,
                                                   aAggrInfo,
                                                   aTemplate )
@@ -3440,8 +3440,8 @@ qmnWNST::execAggregation( qcTemplate         * aTemplate,
             }
             else
             {
-                // Non-Distinct ArgumentÀÎ °æ¿ì
-                // AggregationÀ» ¼öÇàÇÏÁö ¾Ê´Â´Ù.
+                // Non-Distinct Argumentì¸ ê²½ìš°
+                // Aggregationì„ ìˆ˜í–‰í•˜ì§€ ì•ŠëŠ”ë‹¤.
             }
         }
     }
@@ -3462,11 +3462,11 @@ qmnWNST::setDistMtrColumns( qcTemplate        * aTemplate,
 /***********************************************************************
  *
  * Description :
- *     Distinct ColumnÀ» ±¸¼ºÇÑ´Ù.
+ *     Distinct Columnì„ êµ¬ì„±í•œë‹¤.
  *
  * Implementation :
- *     Memory °ø°£À» ÇÒ´ç ¹Ş°í, Distinct ColumnÀ» ±¸¼º
- *     Hash Temp Table¿¡ »ğÀÔÀ» ½ÃµµÇÑ´Ù.
+ *     Memory ê³µê°„ì„ í• ë‹¹ ë°›ê³ , Distinct Columnì„ êµ¬ì„±
+ *     Hash Temp Tableì— ì‚½ì…ì„ ì‹œë„í•œë‹¤.
  *
  ***********************************************************************/
     UInt i;
@@ -3478,8 +3478,8 @@ qmnWNST::setDistMtrColumns( qcTemplate        * aTemplate,
     {
         if ( sDistNode->isDistinct == ID_TRUE )
         {
-            // »õ·Î¿î ¸Ş¸ğ¸® °ø°£À» ÇÒ´ç
-            // Memory Temp TableÀÎ °æ¿ì¿¡¸¸ »õ·Î¿î °ø°£À» ÇÒ´ç¹Ş´Â´Ù.
+            // ìƒˆë¡œìš´ ë©”ëª¨ë¦¬ ê³µê°„ì„ í• ë‹¹
+            // Memory Temp Tableì¸ ê²½ìš°ì—ë§Œ ìƒˆë¡œìš´ ê³µê°„ì„ í• ë‹¹ë°›ëŠ”ë‹¤.
             IDE_TEST( qmcHashTemp::alloc( & sDistNode->hashMgr,
                                           & sDistNode->mtrRow )
                       != IDE_SUCCESS );
@@ -3489,17 +3489,17 @@ qmnWNST::setDistMtrColumns( qcTemplate        * aTemplate,
         else
         {
             // To Fix PR-8556
-            // ÀÌÀü ¸Ş¸ğ¸®¸¦ ±×´ë·Î »ç¿ëÇÒ ¼ö ÀÖ´Â °æ¿ì
+            // ì´ì „ ë©”ëª¨ë¦¬ë¥¼ ê·¸ëŒ€ë¡œ ì‚¬ìš©í•  ìˆ˜ ìˆëŠ” ê²½ìš°
             sDistNode->mtrRow = sDistNode->dstTuple->row;
         }
 
-        // Distinct ColumnÀ» ±¸¼º
+        // Distinct Columnì„ êµ¬ì„±
         IDE_TEST( sDistNode->func.setMtr( aTemplate,
                                           (qmdMtrNode*) sDistNode,
                                           sDistNode->mtrRow ) != IDE_SUCCESS );
 
-        // Hash Temp Table¿¡ »ğÀÔ
-        // Is DistinctÀÇ °á°ú·Î »ğÀÔ ¼º°ø ¿©ºÎ¸¦ ÆÇ´ÜÇÒ ¼ö ÀÖ´Ù.
+        // Hash Temp Tableì— ì‚½ì…
+        // Is Distinctì˜ ê²°ê³¼ë¡œ ì‚½ì… ì„±ê³µ ì—¬ë¶€ë¥¼ íŒë‹¨í•  ìˆ˜ ìˆë‹¤.
         IDE_TEST( qmcHashTemp::addDistRow( & sDistNode->hashMgr,
                                            & sDistNode->mtrRow,
                                            & sDistNode->isDistinct )
@@ -3522,7 +3522,7 @@ qmnWNST::finiAggregation( qcTemplate        * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    AggregationÀ» ¸¶¹«¸®
+ *    Aggregationì„ ë§ˆë¬´ë¦¬
  *
  * Implementation :
  *
@@ -3534,9 +3534,9 @@ qmnWNST::finiAggregation( qcTemplate        * aTemplate,
           sAggrNode = sAggrNode->next )
     {
         /* BUG-43087 support ratio_to_report
-         * RATIO_TO_REPORT ÇÔ¼ö´Â finalize¿¡¼­ ºñÀ²À» °áÁ¤ÇÏ±â ¶§¹®¿¡
-         * AggretationÀÇ Result¸¦ º¹»çÇÏ±â Àü ÇöÁ¦ row¸¦ ±¸ÇÒ¶§ finalize
-         * ¸¦ ¼öÇàÇÑ´Ù.
+         * RATIO_TO_REPORT í•¨ìˆ˜ëŠ” finalizeì—ì„œ ë¹„ìœ¨ì„ ê²°ì •í•˜ê¸° ë•Œë¬¸ì—
+         * Aggretationì˜ Resultë¥¼ ë³µì‚¬í•˜ê¸° ì „ í˜„ì œ rowë¥¼ êµ¬í• ë•Œ finalize
+         * ë¥¼ ìˆ˜í–‰í•œë‹¤.
          */
         if ( sAggrNode->dstNode->node.module != &mtfRatioToReport )
         {
@@ -3564,11 +3564,11 @@ qmnWNST::compareRows( const qmndWNST   * aDataPlan,
 /***********************************************************************
  *
  * Description :
- *    Window SortÀÇ Á¤º¸¸¦ Ãâ·ÂÇÔ
+ *    Window Sortì˜ ì •ë³´ë¥¼ ì¶œë ¥í•¨
  *
  * Implementation :
- *    1. over column¿¡¼­ partition by columnµé·Î µ¿ÀÏ ÆÄÆ¼¼ÇÀ» ºñ±³ÇÑ´Ù.
- *    2. over column¿¡¼­ order by columnµé·Î µ¿ÀÏ °ªÀ» ºñ±³ÇÑ´Ù.
+ *    1. over columnì—ì„œ partition by columnë“¤ë¡œ ë™ì¼ íŒŒí‹°ì…˜ì„ ë¹„êµí•œë‹¤.
+ *    2. over columnì—ì„œ order by columnë“¤ë¡œ ë™ì¼ ê°’ì„ ë¹„êµí•œë‹¤.
  *
  ***********************************************************************/
     const qmdMtrNode * sNode;
@@ -3655,13 +3655,13 @@ qmnWNST::allocMtrRow( qcTemplate     * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    MTR ROW¸¦ ÇÒ´ç
+ *    MTR ROWë¥¼ í• ë‹¹
  *
  * Implementation :
- *    Sort Temp Table¿¡¼­ ÀÛ¾÷ÇÏ¹Ç·Î ´ÙÀ½°ú °°ÀÌ ÇÒ´çÇÑ´Ù.
- *    1. Memory Sort Temp: °ø°£À» ÇÒ´çÇÒ ÇÊ¿ä°¡ ¾øÀ½
- *    2. Disk Sort Temp: ÀÌ¹Ì DataPlan->plan.myTuple->row¿¡ ÇÒ´çµÉ °ÍÀÌ ÀÖÀ¸¹Ç·Î
- *                       Ãß°¡·Î ÇÏ³ªÀÇ mtrRowSizeÅ©±â¸¦ ÇÒ´ç ¹Ş¾Æ »ç¿ë
+ *    Sort Temp Tableì—ì„œ ì‘ì—…í•˜ë¯€ë¡œ ë‹¤ìŒê³¼ ê°™ì´ í• ë‹¹í•œë‹¤.
+ *    1. Memory Sort Temp: ê³µê°„ì„ í• ë‹¹í•  í•„ìš”ê°€ ì—†ìŒ
+ *    2. Disk Sort Temp: ì´ë¯¸ DataPlan->plan.myTuple->rowì— í• ë‹¹ë  ê²ƒì´ ìˆìœ¼ë¯€ë¡œ
+ *                       ì¶”ê°€ë¡œ í•˜ë‚˜ì˜ mtrRowSizeí¬ê¸°ë¥¼ í• ë‹¹ ë°›ì•„ ì‚¬ìš©
  *
  ***********************************************************************/
     iduMemory * sMemory;
@@ -3669,7 +3669,7 @@ qmnWNST::allocMtrRow( qcTemplate     * aTemplate,
     sMemory = aTemplate->stmt->qmxMem;
 
     //-------------------------------------------
-    // µÎ RowÀÇ ºñ±³¸¦ À§ÇÑ °ø°£ ÇÒ´ç
+    // ë‘ Rowì˜ ë¹„êµë¥¼ ìœ„í•œ ê³µê°„ í• ë‹¹
     //-------------------------------------------
     
     if ( (aCodePlan->plan.flag & QMN_PLAN_STORAGE_MASK)
@@ -3679,11 +3679,11 @@ qmnWNST::allocMtrRow( qcTemplate     * aTemplate,
     }
     else
     {
-        // ÀÌ¹Ì ÇÒ´çµÈ °ø°£ÀÌ ÀÖÀ¸¹Ç·Î ÀÌ¸¦ ÀÌ¿ë
+        // ì´ë¯¸ í• ë‹¹ëœ ê³µê°„ì´ ìˆìœ¼ë¯€ë¡œ ì´ë¥¼ ì´ìš©
         IDE_DASSERT( aDataPlan->plan.myTuple->row != NULL );
         aMtrRow[0] = aDataPlan->plan.myTuple->row;
 
-        // ºñ±³¸¦ À§ÇÏ Ãß°¡·Î ÇÊ¿äÇÑ °ø°£À» ÇÒ´ç
+        // ë¹„êµë¥¼ ìœ„í•˜ ì¶”ê°€ë¡œ í•„ìš”í•œ ê³µê°„ì„ í• ë‹¹
         IDE_TEST( sMemory->alloc( aDataPlan->mtrRowSize,
                                   (void**)&(aMtrRow[1]))
                   != IDE_SUCCESS);
@@ -3710,7 +3710,7 @@ qmnWNST::getFirstRecord( qcTemplate  * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    ÇöÀç Temp TableÀÇ Ã¹ ¹øÂ° ·¹ÄÚµå¸¦ °¡Á®¿È
+ *    í˜„ì¬ Temp Tableì˜ ì²« ë²ˆì§¸ ë ˆì½”ë“œë¥¼ ê°€ì ¸ì˜´
  *
  * Implementation :
  *
@@ -3718,7 +3718,7 @@ qmnWNST::getFirstRecord( qcTemplate  * aTemplate,
     void       * sOrgRow;
     void       * sSearchRow;
     
-    // Ã¹ ¹øÂ° ·¹ÄÚµå¸¦ °¡Á® ¿È
+    // ì²« ë²ˆì§¸ ë ˆì½”ë“œë¥¼ ê°€ì ¸ ì˜´
     sOrgRow = sSearchRow = aDataPlan->plan.myTuple->row;
     
     IDE_TEST( qmcSortTemp::getFirstSequence( aDataPlan->sortMgr,
@@ -3727,15 +3727,15 @@ qmnWNST::getFirstRecord( qcTemplate  * aTemplate,
     
     aDataPlan->plan.myTuple->row = (sSearchRow == NULL) ? sOrgRow : sSearchRow;
 
-    // °Ë»öµÈ row·Î mtrRow º¯°æ
+    // ê²€ìƒ‰ëœ rowë¡œ mtrRow ë³€ê²½
     aDataPlan->mtrRow[aDataPlan->mtrRowIdx] = aDataPlan->plan.myTuple->row;
 
-    // Row Á¸Àç À¯¹« ¼³Á¤ ¹× Tuple Set º¹¿ø
+    // Row ì¡´ì¬ ìœ ë¬´ ì„¤ì • ë° Tuple Set ë³µì›
     if ( sSearchRow != NULL )
     {
         *aFlag = QMC_ROW_DATA_EXIST;
 
-        // Data°¡ Á¸ÀçÇÒ °æ¿ì Tuple Set º¹¿ø
+        // Dataê°€ ì¡´ì¬í•  ê²½ìš° Tuple Set ë³µì›
         IDE_TEST( setTupleSet( aTemplate,
                                aDataPlan->mtrNode,
                                aDataPlan->plan.myTuple->row ) != IDE_SUCCESS );
@@ -3764,7 +3764,7 @@ qmnWNST::getNextRecord( qcTemplate  * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    getFirstRecord ÀÌÈÄ ¹İº¹ÀûÀ¸·Î È£ÃâµÇ¸ç ·¹ÄÚµå¸¦ ¼ø¼­´ë·Î ÇÏ³ª¾¿ °¡Á®¿È
+ *    getFirstRecord ì´í›„ ë°˜ë³µì ìœ¼ë¡œ í˜¸ì¶œë˜ë©° ë ˆì½”ë“œë¥¼ ìˆœì„œëŒ€ë¡œ í•˜ë‚˜ì”© ê°€ì ¸ì˜´
  *
  * Implementation :
  *
@@ -3772,7 +3772,7 @@ qmnWNST::getNextRecord( qcTemplate  * aTemplate,
     void       * sOrgRow;
     void       * sSearchRow;
     
-    // Ã¹ ¹øÂ° ·¹ÄÚµå¸¦ °¡Á® ¿È
+    // ì²« ë²ˆì§¸ ë ˆì½”ë“œë¥¼ ê°€ì ¸ ì˜´
     sOrgRow = sSearchRow = aDataPlan->plan.myTuple->row;
     
     IDE_TEST( qmcSortTemp::getNextSequence( aDataPlan->sortMgr,
@@ -3781,15 +3781,15 @@ qmnWNST::getNextRecord( qcTemplate  * aTemplate,
     
     aDataPlan->plan.myTuple->row = (sSearchRow == NULL) ? sOrgRow : sSearchRow;
 
-    // °Ë»öµÈ row·Î mtrRow º¯°æ
+    // ê²€ìƒ‰ëœ rowë¡œ mtrRow ë³€ê²½
     aDataPlan->mtrRow[aDataPlan->mtrRowIdx] = aDataPlan->plan.myTuple->row;
 
-    // Row Á¸Àç À¯¹« ¼³Á¤ ¹× Tuple Set º¹¿ø
+    // Row ì¡´ì¬ ìœ ë¬´ ì„¤ì • ë° Tuple Set ë³µì›
     if ( sSearchRow != NULL )
     {
         *aFlag = QMC_ROW_DATA_EXIST;
 
-        // Data°¡ Á¸ÀçÇÒ °æ¿ì Tuple Set º¹¿ø
+        // Dataê°€ ì¡´ì¬í•  ê²½ìš° Tuple Set ë³µì›
         IDE_TEST( setTupleSet( aTemplate,
                                aDataPlan->mtrNode,
                                aDataPlan->plan.myTuple->row ) != IDE_SUCCESS );
@@ -3820,7 +3820,7 @@ qmnWNST::printAnalyticFunctionInfo( qcTemplate     * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    Window SortÀÇ Á¤º¸¸¦ Ãâ·ÂÇÔ
+ *    Window Sortì˜ ì •ë³´ë¥¼ ì¶œë ¥í•¨
  *
  * Implementation :
  *
@@ -3829,7 +3829,7 @@ qmnWNST::printAnalyticFunctionInfo( qcTemplate     * aTemplate,
     UInt     sSortKeyIdx;
 
     //-----------------------------
-    // Ã¹ ¹øÂ° Á¤·ÄÅ°¸¦ Ãâ·Â
+    // ì²« ë²ˆì§¸ ì •ë ¬í‚¤ë¥¼ ì¶œë ¥
     //-----------------------------
 
     for( sSortKeyIdx = 0;
@@ -3837,7 +3837,7 @@ qmnWNST::printAnalyticFunctionInfo( qcTemplate     * aTemplate,
          sSortKeyIdx++ )
     {
         //-----------------------------    
-        // 1. Á¤·ÄÅ°¸¦ Ãâ·Â
+        // 1. ì •ë ¬í‚¤ë¥¼ ì¶œë ¥
         //-----------------------------    
         for ( i = 0; i < aDepth; i++ )
         {
@@ -3848,7 +3848,7 @@ qmnWNST::printAnalyticFunctionInfo( qcTemplate     * aTemplate,
 
         if ( aMode == QMN_DISPLAY_ALL )
         {
-            // explain plan = on; ÀÎ °æ¿ì
+            // explain plan = on; ì¸ ê²½ìš°
             if ( (*aDataPlan->flag & QMND_WNST_INIT_DONE_MASK)
                  == QMND_WNST_INIT_DONE_TRUE )
             {
@@ -3867,7 +3867,7 @@ qmnWNST::printAnalyticFunctionInfo( qcTemplate     * aTemplate,
         }
         else
         {
-            // explain plan = only; ÀÎ °æ¿ì
+            // explain plan = only; ì¸ ê²½ìš°
             IDE_TEST( printLinkedColumns( aTemplate,
                                           aCodePlan->sortNode[sSortKeyIdx],
                                           aString )
@@ -3880,18 +3880,18 @@ qmnWNST::printAnalyticFunctionInfo( qcTemplate     * aTemplate,
                  ( ( aCodePlan->flag & QMNC_WNST_STORE_MASK )
                    == QMNC_WNST_STORE_LIMIT_PRESERVED_ORDER ) ) )
         {
-            // Ã¹ ¹øÂ° Á¤·ÄÅ°°¡ PRESERVED ORDERÀÎ °æ¿ì
-            // ÀÌ¸¦ Ãâ·ÂÇÏ°í ÁÙ¹Ù²Ş
+            // ì²« ë²ˆì§¸ ì •ë ¬í‚¤ê°€ PRESERVED ORDERì¸ ê²½ìš°
+            // ì´ë¥¼ ì¶œë ¥í•˜ê³  ì¤„ë°”ê¿ˆ
             iduVarStringAppend( aString, ") PRESERVED ORDER\n" );
         }
         else
         {
-            // ±× ¿ÜÀÇ °æ¿ì ±×³É ÁÙ¹Ù²Ş
+            // ê·¸ ì™¸ì˜ ê²½ìš° ê·¸ëƒ¥ ì¤„ë°”ê¿ˆ
             iduVarStringAppend( aString, ")\n" );  
         }
 
         //-----------------------------    
-        // 2. °ü·ÃµÈ  Analytic FunctionÀ» ¸ğµÎ Ãâ·Â
+        // 2. ê´€ë ¨ëœ  Analytic Functionì„ ëª¨ë‘ ì¶œë ¥
         //-----------------------------    
         IDE_TEST( printWindowNode( aTemplate,
                                    aCodePlan->wndNode[sSortKeyIdx],
@@ -3915,14 +3915,14 @@ qmnWNST::printLinkedColumns( qcTemplate       * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    ¿¬°áµÈ Ä®·³Á¤º¸(qmcMtrNode)¸¦ ½°Ç¥·Î ¿¬°áÇÏ¿© Ãâ·ÂÇÔ
+ *    ì—°ê²°ëœ ì¹¼ëŸ¼ì •ë³´(qmcMtrNode)ë¥¼ ì‰¼í‘œë¡œ ì—°ê²°í•˜ì—¬ ì¶œë ¥í•¨
  *
  * Implementation :
  *
  ***********************************************************************/
     const qmcMtrNode  * sNode;
 
-   // ¿¬°áµÈ Ä®·³ÀÇ Ãâ·Â
+   // ì—°ê²°ëœ ì¹¼ëŸ¼ì˜ ì¶œë ¥
     for( sNode = aNode;
          sNode != NULL;
          sNode = sNode->next )
@@ -3948,12 +3948,12 @@ qmnWNST::printLinkedColumns( qcTemplate       * aTemplate,
         
         if( sNode->next != NULL )
         {
-            // ½°Ç¥ Ãâ·Â
+            // ì‰¼í‘œ ì¶œë ¥
             iduVarStringAppend( aString, "," );                    
         }
         else
         {
-            // ¸¶Áö¸· Ä®·³
+            // ë§ˆì§€ë§‰ ì¹¼ëŸ¼
             break;
         }
     }
@@ -3973,14 +3973,14 @@ qmnWNST::printLinkedColumns( qcTemplate    * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    ¿¬°áµÈ Ä®·³Á¤º¸(qmcMtrNode)¸¦ ½°Ç¥·Î ¿¬°áÇÏ¿© Ãâ·ÂÇÔ
+ *    ì—°ê²°ëœ ì¹¼ëŸ¼ì •ë³´(qmcMtrNode)ë¥¼ ì‰¼í‘œë¡œ ì—°ê²°í•˜ì—¬ ì¶œë ¥í•¨
  *
  * Implementation :
  *
  ***********************************************************************/
     qmdMtrNode  * sNode;
 
-   // ¿¬°áµÈ Ä®·³ÀÇ Ãâ·Â
+   // ì—°ê²°ëœ ì¹¼ëŸ¼ì˜ ì¶œë ¥
     for( sNode = aNode;
          sNode != NULL;
          sNode = sNode->next )
@@ -4006,12 +4006,12 @@ qmnWNST::printLinkedColumns( qcTemplate    * aTemplate,
         
         if( sNode->next != NULL )
         {
-            // ½°Ç¥ Ãâ·Â
+            // ì‰¼í‘œ ì¶œë ¥
             iduVarStringAppend( aString, "," );                    
         }
         else
         {
-            // ¸¶Áö¸· Ä®·³
+            // ë§ˆì§€ë§‰ ì¹¼ëŸ¼
             break;
         }
     }
@@ -4032,8 +4032,8 @@ qmnWNST::printWindowNode( qcTemplate       * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    ¿¬°áµÈ Window Node¿Í °¢°¢ÀÇ Analytic Function Á¤º¸¸¦
- *    aDepth¸¸Å­ µé¿©½á¼­ Ãâ·ÂÇÔ
+ *    ì—°ê²°ëœ Window Nodeì™€ ê°ê°ì˜ Analytic Function ì •ë³´ë¥¼
+ *    aDepthë§Œí¼ ë“¤ì—¬ì¨ì„œ ì¶œë ¥í•¨
  *
  * Implementation :
  *
@@ -4075,7 +4075,7 @@ qmnWNST::printWindowNode( qcTemplate       * aTemplate,
 /**
  * windowAggregation
  *
- * À©µµ¿ì¿¡ »ç¿ëµÈ ¿É¼Ç¿¡ µû¶ó ÀûÀıÇÑ µ¿ÀÛÀ» ÇÏ´Â ÇÔ¼ö¸¦ È£ÃâÇÑ´Ù.
+ * ìœˆë„ìš°ì— ì‚¬ìš©ëœ ì˜µì…˜ì— ë”°ë¼ ì ì ˆí•œ ë™ì‘ì„ í•˜ëŠ” í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•œë‹¤.
  */
 IDE_RC qmnWNST::windowAggregation( qcTemplate   * aTemplate,
                                    qmndWNST     * aDataPlan,
@@ -4811,12 +4811,12 @@ IDE_RC qmnWNST::windowAggregation( qcTemplate   * aTemplate,
 /**
  * ROWS Partition By Order By UNBOUNDED PRECEDING - UNBOUNDED FOLLOWING
  *
- *  Start Point °¡ UNBOUNDED PRECEDING ÆÄÆ¼¼ÇÀÇ Ã³À½ºÎÅÍ ½ÃÀÛÇÑ´Ù.
- *  End   Point ´Â UNBOUNDED FOLLOWING ÆÄÆ¼¼ÇÀÇ ¸¶Áö¸· ±îÁö¸¦ ¹üÀ§·Î ÇÑ´Ù.
+ *  Start Point ê°€ UNBOUNDED PRECEDING íŒŒí‹°ì…˜ì˜ ì²˜ìŒë¶€í„° ì‹œì‘í•œë‹¤.
+ *  End   Point ëŠ” UNBOUNDED FOLLOWING íŒŒí‹°ì…˜ì˜ ë§ˆì§€ë§‰ ê¹Œì§€ë¥¼ ë²”ìœ„ë¡œ í•œë‹¤.
  *
- *  Temp Table¿¡¼­ Ã¹ Row¸¦ ÀĞ¾î¼­ °è¼Ó ´ÙÀ½ Row¸¦ ÀĞ¾îµéÀÌ¸é¼­ µÎ Row°¡ °°Àº ÆÄÆ¼¼ÇÀÎÁö¸¦
- *  °Ë»çÇÑ´Ù. °°Àº ÆÄÆ¼¼ÇÀÎ °æ¿ì AggregationÀ» ¼öÇàÇÏ°í ¾Æ´Ñ°æ¿ì AggregationÀ» ¸¶¹«¸®ÇÏ°í
- *  ÇØ´ç Temp TableÀÇ Aggretaion Column¿¡ Update ¸¦ ¼öÇàÇÑ´Ù.
+ *  Temp Tableì—ì„œ ì²« Rowë¥¼ ì½ì–´ì„œ ê³„ì† ë‹¤ìŒ Rowë¥¼ ì½ì–´ë“¤ì´ë©´ì„œ ë‘ Rowê°€ ê°™ì€ íŒŒí‹°ì…˜ì¸ì§€ë¥¼
+ *  ê²€ì‚¬í•œë‹¤. ê°™ì€ íŒŒí‹°ì…˜ì¸ ê²½ìš° Aggregationì„ ìˆ˜í–‰í•˜ê³  ì•„ë‹Œê²½ìš° Aggregationì„ ë§ˆë¬´ë¦¬í•˜ê³ 
+ *  í•´ë‹¹ Temp Tableì˜ Aggretaion Columnì— Update ë¥¼ ìˆ˜í–‰í•œë‹¤.
  */
 IDE_RC qmnWNST::partitionUnPrecedUnFollowRows( qcTemplate  * aTemplate,
                                                qmndWNST    * aDataPlan,
@@ -4838,7 +4838,7 @@ IDE_RC qmnWNST::partitionUnPrecedUnFollowRows( qcTemplate  * aTemplate,
 
     while ( ( sFlag & QMC_ROW_DATA_MASK ) == QMC_ROW_DATA_EXIST )
     {
-        /* ÃÊ±âÈ­ °úÁ¤ ¹× Ä¿¼­¸¦ ÀúÀåÇÑ´Ù */
+        /* ì´ˆê¸°í™” ê³¼ì • ë° ì»¤ì„œë¥¼ ì €ì¥í•œë‹¤ */
         IDE_TEST( initAggregation( aTemplate, aAggrNode )
                   != IDE_SUCCESS );
         IDE_TEST( qmcSortTemp::storeCursor( aDataPlan->sortMgr,
@@ -4863,7 +4863,7 @@ IDE_RC qmnWNST::partitionUnPrecedUnFollowRows( qcTemplate  * aTemplate,
 
             if ( (sFlag & QMC_ROW_DATA_MASK) == QMC_ROW_DATA_EXIST )
             {
-                /* ÀúÀåµÈ Row¿Í ÇöÀç Row°¡ °°Àº ÆÄÄ¡¼ÇÀÎÁö ºñ±³ÇÑ´Ù */
+                /* ì €ì¥ëœ Rowì™€ í˜„ì¬ Rowê°€ ê°™ì€ íŒŒì¹˜ì…˜ì¸ì§€ ë¹„êµí•œë‹¤ */
                 IDE_TEST( compareRows( aDataPlan,
                                        aOverColumnNode,
                                        &sFlag )
@@ -4873,13 +4873,13 @@ IDE_RC qmnWNST::partitionUnPrecedUnFollowRows( qcTemplate  * aTemplate,
             {
                 break;
             }
-            /* °°Àº ÆÄÆ¼¼ÇÀÎ °æ¿ì¿¡¸¸ AggregationÀ» ¼öÇàÇÑ´Ù. */
+            /* ê°™ì€ íŒŒí‹°ì…˜ì¸ ê²½ìš°ì—ë§Œ Aggregationì„ ìˆ˜í–‰í•œë‹¤. */
         } while ( ( sFlag & QMC_ROW_GROUP_MASK ) == QMC_ROW_GROUP_SAME );
 
-        /* °°Àº ÆÄÆ¼¼ÇÀÌ ¾Æ´Ñ°æ¿ì AggregatinoÀ» finiAggregation À» ÇÑ´Ù.*/
+        /* ê°™ì€ íŒŒí‹°ì…˜ì´ ì•„ë‹Œê²½ìš° Aggregatinoì„ finiAggregation ì„ í•œë‹¤.*/
         IDE_TEST( finiAggregation( aTemplate, aAggrNode )
                   != IDE_SUCCESS );
-        /* StoreµÈ Ä¿¼­·Î ÀÌµ¿ÇØ¼­ °°Àº ±×·ì RowÀÇ °ªÀ» updateÇÑ´Ù */
+        /* Storeëœ ì»¤ì„œë¡œ ì´ë™í•´ì„œ ê°™ì€ ê·¸ë£¹ Rowì˜ ê°’ì„ updateí•œë‹¤ */
         IDE_TEST( updateAggrRows( aTemplate,
                                   aDataPlan,
                                   aAggrResultNode,
@@ -4898,11 +4898,11 @@ IDE_RC qmnWNST::partitionUnPrecedUnFollowRows( qcTemplate  * aTemplate,
 /**
  * ROWS Order By UNBOUNDED PRECEDING - UNBOUNDED FOLLOWING
  *
- *  Start Point °¡ UNBOUNDED PRECEDING Ã³À½ºÎÅÍ ½ÃÀÛÇÑ´Ù.
- *  End   Point ´Â UNBOUNDED FOLLOWING ¸¶Áö¸· ±îÁö¸¦ ¹üÀ§·Î ÇÑ´Ù.
+ *  Start Point ê°€ UNBOUNDED PRECEDING ì²˜ìŒë¶€í„° ì‹œì‘í•œë‹¤.
+ *  End   Point ëŠ” UNBOUNDED FOLLOWING ë§ˆì§€ë§‰ ê¹Œì§€ë¥¼ ë²”ìœ„ë¡œ í•œë‹¤.
  *
- *  TempTalbeÀÇ Ã³À½ºÎÅÍ ³¡±îÁö ÀĞ¾îµéÀÌ¸é¼­ AggregationÀ» ¼öÇàÇÏ°í ´Ù µÈÈÄ Ã³À½ ºÎÅÍ ³¡±îÁö
- *  Update¸¦ ¼öÇàÇÑ´Ù.
+ *  TempTalbeì˜ ì²˜ìŒë¶€í„° ëê¹Œì§€ ì½ì–´ë“¤ì´ë©´ì„œ Aggregationì„ ìˆ˜í–‰í•˜ê³  ë‹¤ ëœí›„ ì²˜ìŒ ë¶€í„° ëê¹Œì§€
+ *  Updateë¥¼ ìˆ˜í–‰í•œë‹¤.
  */
 IDE_RC qmnWNST::orderUnPrecedUnFollowRows( qcTemplate  * aTemplate,
                                            qmndWNST    * aDataPlan,
@@ -4921,7 +4921,7 @@ IDE_RC qmnWNST::orderUnPrecedUnFollowRows( qcTemplate  * aTemplate,
     IDE_TEST( getFirstRecord( aTemplate, aDataPlan, &sFlag )
               != IDE_SUCCESS );
 
-    /* Row °¡ ÀÖ´Ù¸é ÃÊ±âÈ­¸¦ ¼öÇàÇÑ´Ù */
+    /* Row ê°€ ìˆë‹¤ë©´ ì´ˆê¸°í™”ë¥¼ ìˆ˜í–‰í•œë‹¤ */
     if ( ( sFlag & QMC_ROW_DATA_MASK ) == QMC_ROW_DATA_EXIST )
     {
         IDE_TEST( initAggregation( aTemplate, aAggrNode )
@@ -4936,7 +4936,7 @@ IDE_RC qmnWNST::orderUnPrecedUnFollowRows( qcTemplate  * aTemplate,
         /* Nothing to do */
     }
 
-    /* Row°¡ ÀÖ´Ù¸é ¸¶Áö¸·±îÁö AggregationÀ» ¼öÇàÇÑ´Ù. */
+    /* Rowê°€ ìˆë‹¤ë©´ ë§ˆì§€ë§‰ê¹Œì§€ Aggregationì„ ìˆ˜í–‰í•œë‹¤. */
     while ( ( sFlag & QMC_ROW_DATA_MASK ) == QMC_ROW_DATA_EXIST )
     {
         IDE_TEST( execAggregation( aTemplate,
@@ -4959,7 +4959,7 @@ IDE_RC qmnWNST::orderUnPrecedUnFollowRows( qcTemplate  * aTemplate,
         IDE_TEST( finiAggregation( aTemplate, aAggrNode )
                   != IDE_SUCCESS );
 
-        /* TableÀÇ Ã³À½À¸·Î ÀÌµ¿ÈÄ update¸¦ ¼öÇàÇÑ´Ù. */
+        /* Tableì˜ ì²˜ìŒìœ¼ë¡œ ì´ë™í›„ updateë¥¼ ìˆ˜í–‰í•œë‹¤. */
         IDE_TEST( updateAggrRows( aTemplate,
                                   aDataPlan,
                                   aAggrResultNode,
@@ -4978,11 +4978,11 @@ IDE_RC qmnWNST::orderUnPrecedUnFollowRows( qcTemplate  * aTemplate,
 /**
  * ROWS Partition By Order By UNBOUNDED PRECEDING - CURRENT ROW
  *
- *  Start Point °¡ UNBOUNDED PRECEDING ÆÄÆ¼¼ÇÀÇ Ã³À½ºÎÅÍ ½ÃÀÛÇÑ´Ù.
- *  End   Point ´Â CURRENT ROW ÇöÀç Row ±îÁö¸¦ ¹üÀ§·Î ÇÑ´Ù.
+ *  Start Point ê°€ UNBOUNDED PRECEDING íŒŒí‹°ì…˜ì˜ ì²˜ìŒë¶€í„° ì‹œì‘í•œë‹¤.
+ *  End   Point ëŠ” CURRENT ROW í˜„ì¬ Row ê¹Œì§€ë¥¼ ë²”ìœ„ë¡œ í•œë‹¤.
  *
- *  ÆÄÆ¼¼ÇÀÇ Ã³À½ºÎÅÍ ÇöÀç Row±îÁö AggregationÀ» ¼öÇàÇÏ¹Ç·Î Ã³À½ºÎÅÍ AggregationÀ» ¼öÇàÇÏ¸é¼­
- *  update¸¦ ¼öÇàÇÏ°í ¸¸¾à ´Ù¸¥ ±×·ìÀÌ¶ó¸é AggregationÀ» ÃÊ±âÈ­ÇÏ°í ¼öÇàÇÑ´Ù.
+ *  íŒŒí‹°ì…˜ì˜ ì²˜ìŒë¶€í„° í˜„ì¬ Rowê¹Œì§€ Aggregationì„ ìˆ˜í–‰í•˜ë¯€ë¡œ ì²˜ìŒë¶€í„° Aggregationì„ ìˆ˜í–‰í•˜ë©´ì„œ
+ *  updateë¥¼ ìˆ˜í–‰í•˜ê³  ë§Œì•½ ë‹¤ë¥¸ ê·¸ë£¹ì´ë¼ë©´ Aggregationì„ ì´ˆê¸°í™”í•˜ê³  ìˆ˜í–‰í•œë‹¤.
  */
 IDE_RC qmnWNST::partitionUnPrecedCurrentRows( qcTemplate  * aTemplate,
                                               qmndWNST    * aDataPlan,
@@ -5028,7 +5028,7 @@ IDE_RC qmnWNST::partitionUnPrecedCurrentRows( qcTemplate  * aTemplate,
                           != IDE_SUCCESS );
             }
 
-            /* Áö±İ±îÁö °è»êµÈ AggregationÀ» updateÇÑ´Ù. */
+            /* ì§€ê¸ˆê¹Œì§€ ê³„ì‚°ëœ Aggregationì„ updateí•œë‹¤. */
             IDE_TEST( qmcSortTemp::updateRow( aDataPlan->sortMgr )
                       != IDE_SUCCESS );
 
@@ -5049,7 +5049,7 @@ IDE_RC qmnWNST::partitionUnPrecedCurrentRows( qcTemplate  * aTemplate,
 
             if ( ( sFlag & QMC_ROW_DATA_MASK ) == QMC_ROW_DATA_EXIST )
             {
-                /* ÀúÀåµÈ Row¿Í ÇöÀç Row°¡ °°Àº ÆÄÄ¡¼ÇÀÎÁö ºñ±³ÇÑ´Ù */
+                /* ì €ì¥ëœ Rowì™€ í˜„ì¬ Rowê°€ ê°™ì€ íŒŒì¹˜ì…˜ì¸ì§€ ë¹„êµí•œë‹¤ */
                 IDE_TEST( compareRows( aDataPlan,
                                        aOverColumnNode,
                                        &sFlag )
@@ -5059,7 +5059,7 @@ IDE_RC qmnWNST::partitionUnPrecedCurrentRows( qcTemplate  * aTemplate,
             {
                 break;
             }
-            /* °°Àº ÆÄÆ¼¼ÇÀÎ °æ¿ì¿¡¸¸ AggregationÀ» ¼öÇàÇÑ´Ù. */
+            /* ê°™ì€ íŒŒí‹°ì…˜ì¸ ê²½ìš°ì—ë§Œ Aggregationì„ ìˆ˜í–‰í•œë‹¤. */
         } while ( ( sFlag & QMC_ROW_GROUP_MASK ) == QMC_ROW_GROUP_SAME );
     }
 
@@ -5073,11 +5073,11 @@ IDE_RC qmnWNST::partitionUnPrecedCurrentRows( qcTemplate  * aTemplate,
 /**
  * ROWS Order By UNBOUNDED PRECEDING - CURRENT ROW
  *
- *  Start Point °¡ UNBOUNDED PRECEDING Ã³À½ºÎÅÍ ½ÃÀÛÇÑ´Ù.
- *  End   Point ´Â CURRENT ROW ÇöÀç Row ±îÁö¸¦ ¹üÀ§·Î ÇÑ´Ù.
+ *  Start Point ê°€ UNBOUNDED PRECEDING ì²˜ìŒë¶€í„° ì‹œì‘í•œë‹¤.
+ *  End   Point ëŠ” CURRENT ROW í˜„ì¬ Row ê¹Œì§€ë¥¼ ë²”ìœ„ë¡œ í•œë‹¤.
  *
- *  Ã³À½ºÎÅÍ ÇöÀç Row±îÁö AggregationÀ» ¼öÇàÇÏ¹Ç·Î Ã³À½ºÎÅÍ AggregationÀ» ¼öÇàÇÏ¸é¼­
- *  update¸¦ ¼öÇàÇÑ´Ù.
+ *  ì²˜ìŒë¶€í„° í˜„ì¬ Rowê¹Œì§€ Aggregationì„ ìˆ˜í–‰í•˜ë¯€ë¡œ ì²˜ìŒë¶€í„° Aggregationì„ ìˆ˜í–‰í•˜ë©´ì„œ
+ *  updateë¥¼ ìˆ˜í–‰í•œë‹¤.
  */
 IDE_RC qmnWNST::orderUnPrecedCurrentRows( qcTemplate  * aTemplate,
                                           qmndWNST    * aDataPlan,
@@ -5127,7 +5127,7 @@ IDE_RC qmnWNST::orderUnPrecedCurrentRows( qcTemplate  * aTemplate,
                       != IDE_SUCCESS );
         }
 
-        /* Áö±İ±îÁö °è»êµÈ AggregationÀ» updateÇÑ´Ù. */
+        /* ì§€ê¸ˆê¹Œì§€ ê³„ì‚°ëœ Aggregationì„ updateí•œë‹¤. */
         IDE_TEST( qmcSortTemp::updateRow( aDataPlan->sortMgr )
                   != IDE_SUCCESS );
 
@@ -5157,12 +5157,12 @@ IDE_RC qmnWNST::orderUnPrecedCurrentRows( qcTemplate  * aTemplate,
 /**
  * ROWS Partition By Order By UNBOUNDED PRECEDING - N PRECEDING
  *
- *  Start Point °¡ UNBOUNDED PRECEDING ÆÄÆ¼¼ÇÀÇ Ã³À½ºÎÅÍ ½ÃÀÛÇÑ´Ù.
- *  End   Point ´Â N         PRECEDING ÇöÀç RowºÎÅÍ N ÀüÀÇ Row±îÁöÀÌ´Ù.
+ *  Start Point ê°€ UNBOUNDED PRECEDING íŒŒí‹°ì…˜ì˜ ì²˜ìŒë¶€í„° ì‹œì‘í•œë‹¤.
+ *  End   Point ëŠ” N         PRECEDING í˜„ì¬ Rowë¶€í„° N ì „ì˜ Rowê¹Œì§€ì´ë‹¤.
  *
- *  Ã³À½ ½ÃÀÛÇÏ¸é ÆÄÆ¼¼ÇÀÇ Ã³À½°ú ÇöÀç Row¸¦ Cursor·Î ÀúÀåÇÑ´Ù. ÇöÀç Row°¡ ¸î¹øÂ°ÀÎÁö¸¦
- *  ÀúÀåÇÏ¸é¼­ ÀÌº¸´Ù N °³ Àü±îÁö¸¦ AggregationÀ» ¼öÇàÇÑµÚ¿¡ ÇöÀç Row·Î RestoreÇÑµÚ¿¡
- *  Update¸¦ ¼öÇàÇÑ´Ù.
+ *  ì²˜ìŒ ì‹œì‘í•˜ë©´ íŒŒí‹°ì…˜ì˜ ì²˜ìŒê³¼ í˜„ì¬ Rowë¥¼ Cursorë¡œ ì €ì¥í•œë‹¤. í˜„ì¬ Rowê°€ ëª‡ë²ˆì§¸ì¸ì§€ë¥¼
+ *  ì €ì¥í•˜ë©´ì„œ ì´ë³´ë‹¤ N ê°œ ì „ê¹Œì§€ë¥¼ Aggregationì„ ìˆ˜í–‰í•œë’¤ì— í˜„ì¬ Rowë¡œ Restoreí•œë’¤ì—
+ *  Updateë¥¼ ìˆ˜í–‰í•œë‹¤.
  */
 IDE_RC qmnWNST::partitionUnPrecedPrecedRows( qcTemplate  * aTemplate,
                                              qmndWNST    * aDataPlan,
@@ -5189,13 +5189,13 @@ IDE_RC qmnWNST::partitionUnPrecedPrecedRows( qcTemplate  * aTemplate,
     {
         sWindowPos = 0;
 
-        /* ÆÄÆ¼¼ÇÀÇ Ã³À½ÀÇ cursor¸¦ ÀúÀåÇÑ´Ù */
+        /* íŒŒí‹°ì…˜ì˜ ì²˜ìŒì˜ cursorë¥¼ ì €ì¥í•œë‹¤ */
         IDE_TEST( qmcSortTemp::storeCursor( aDataPlan->sortMgr,
                                             &aDataPlan->partitionCursorInfo )
                   != IDE_SUCCESS );
         do
         {
-            /* ÇöÀç RowÀÇ cursor¸¦ ÀúÀåÇÑ´Ù. */
+            /* í˜„ì¬ Rowì˜ cursorë¥¼ ì €ì¥í•œë‹¤. */
             IDE_TEST( qmcSortTemp::storeCursor( aDataPlan->sortMgr,
                                                 &aDataPlan->cursorInfo )
                       != IDE_SUCCESS );
@@ -5206,7 +5206,7 @@ IDE_RC qmnWNST::partitionUnPrecedPrecedRows( qcTemplate  * aTemplate,
             aDataPlan->mtrRowIdx = 0;
             aDataPlan->plan.myTuple->row = aDataPlan->mtrRow[aDataPlan->mtrRowIdx];
 
-            /* ÆÄÆ¼¼ÇÀÇ Ã³À½À¸·Î Cursor·Î ÀÌµ¿ÇÑ´Ù. */
+            /* íŒŒí‹°ì…˜ì˜ ì²˜ìŒìœ¼ë¡œ Cursorë¡œ ì´ë™í•œë‹¤. */
             IDE_TEST( qmcSortTemp::restoreCursor( aDataPlan->sortMgr,
                                                   & aDataPlan->partitionCursorInfo )
                       != IDE_SUCCESS );
@@ -5217,7 +5217,7 @@ IDE_RC qmnWNST::partitionUnPrecedPrecedRows( qcTemplate  * aTemplate,
                                    aDataPlan->mtrNode,
                                    aDataPlan->plan.myTuple->row ) != IDE_SUCCESS );
 
-            /* Ã³À½ºÎÅÍ ÇöÀç RowÀÇ N°³ Àü±îÁö Record¸¦ ÀĞÀ¸¸é¼­ Aggregation À» ¼öÇàÇÑ´Ù */
+            /* ì²˜ìŒë¶€í„° í˜„ì¬ Rowì˜ Nê°œ ì „ê¹Œì§€ Recordë¥¼ ì½ìœ¼ë©´ì„œ Aggregation ì„ ìˆ˜í–‰í•œë‹¤ */
             for ( sCount = sWindowPos - sEndPoint;
                   sCount >= 0;
                   sCount-- )
@@ -5252,7 +5252,7 @@ IDE_RC qmnWNST::partitionUnPrecedPrecedRows( qcTemplate  * aTemplate,
             IDE_TEST( finiAggregation( aTemplate, aAggrNode )
                       != IDE_SUCCESS );
 
-            /* ÇöÀç Row·Î Ä¿¼­¸¦ ¿øº¹ÇÑ´Ù */
+            /* í˜„ì¬ Rowë¡œ ì»¤ì„œë¥¼ ì›ë³µí•œë‹¤ */
             aDataPlan->mtrRowIdx = 0;
             aDataPlan->plan.myTuple->row = aDataPlan->mtrRow[aDataPlan->mtrRowIdx];
 
@@ -5264,7 +5264,7 @@ IDE_RC qmnWNST::partitionUnPrecedPrecedRows( qcTemplate  * aTemplate,
             IDE_TEST( setTupleSet( aTemplate, aDataPlan->mtrNode, aDataPlan->plan.myTuple->row )
                       != IDE_SUCCESS );
 
-            /* AggregationµÈ °ªÀ» updateÇÏ°í ´ÙÀ½ Row¸¦ ÀĞ´Â´Ù. */
+            /* Aggregationëœ ê°’ì„ updateí•˜ê³  ë‹¤ìŒ Rowë¥¼ ì½ëŠ”ë‹¤. */
             IDE_TEST( updateOneRowNextRecord( aTemplate,
                                               aDataPlan,
                                               aAggrResultNode,
@@ -5283,7 +5283,7 @@ IDE_RC qmnWNST::partitionUnPrecedPrecedRows( qcTemplate  * aTemplate,
             {
                 break;
             }
-            /* °°Àº ÆÄÆ¼¼ÇÀÎ °æ¿ì¿¡¸¸ AggregationÀ» ¼öÇàÇÑ´Ù. */
+            /* ê°™ì€ íŒŒí‹°ì…˜ì¸ ê²½ìš°ì—ë§Œ Aggregationì„ ìˆ˜í–‰í•œë‹¤. */
         } while ( ( sFlag & QMC_ROW_GROUP_MASK ) == QMC_ROW_GROUP_SAME );
     }
 
@@ -5297,12 +5297,12 @@ IDE_RC qmnWNST::partitionUnPrecedPrecedRows( qcTemplate  * aTemplate,
 /**
  * ROWS Order By UNBOUNDED PRECEDING - N PRECEDING
  *
- *  Start Point °¡ UNBOUNDED PRECEDING Ã³À½ºÎÅÍ ½ÃÀÛÇÑ´Ù.
- *  End   Point ´Â N         PRECEDING ¸¶Áö¸· ±îÁö¸¦ ¹üÀ§·Î ÇÑ´Ù.
+ *  Start Point ê°€ UNBOUNDED PRECEDING ì²˜ìŒë¶€í„° ì‹œì‘í•œë‹¤.
+ *  End   Point ëŠ” N         PRECEDING ë§ˆì§€ë§‰ ê¹Œì§€ë¥¼ ë²”ìœ„ë¡œ í•œë‹¤.
  *
- *  ÇöÀç Row¸¦ Cursor·Î ÀúÀåÇÑ´Ù. ÇöÀç Row°¡ ¸î¹øÂ°ÀÎÁö¸¦
- *  ÀúÀåÇÏ¸é¼­ ÀÌº¸´Ù N °³ Àü±îÁö¸¦ AggregationÀ» ¼öÇàÇÑµÚ¿¡ ÇöÀç Row·Î RestoreÇÑµÚ¿¡
- *  Update¸¦ ¼öÇàÇÑ´Ù.
+ *  í˜„ì¬ Rowë¥¼ Cursorë¡œ ì €ì¥í•œë‹¤. í˜„ì¬ Rowê°€ ëª‡ë²ˆì§¸ì¸ì§€ë¥¼
+ *  ì €ì¥í•˜ë©´ì„œ ì´ë³´ë‹¤ N ê°œ ì „ê¹Œì§€ë¥¼ Aggregationì„ ìˆ˜í–‰í•œë’¤ì— í˜„ì¬ Rowë¡œ Restoreí•œë’¤ì—
+ *  Updateë¥¼ ìˆ˜í–‰í•œë‹¤.
  */
 IDE_RC qmnWNST::orderUnPrecedPrecedRows( qcTemplate  * aTemplate,
                                          qmndWNST    * aDataPlan,
@@ -5326,7 +5326,7 @@ IDE_RC qmnWNST::orderUnPrecedPrecedRows( qcTemplate  * aTemplate,
 
     while ( ( sFlag & QMC_ROW_DATA_MASK ) == QMC_ROW_DATA_EXIST )
     {
-        /* ÇöÀç RowÀÇ cursor¸¦ ÀúÀåÇÑ´Ù. */
+        /* í˜„ì¬ Rowì˜ cursorë¥¼ ì €ì¥í•œë‹¤. */
         IDE_TEST( qmcSortTemp::storeCursor( aDataPlan->sortMgr,
                                             &aDataPlan->cursorInfo )
                   != IDE_SUCCESS );
@@ -5337,7 +5337,7 @@ IDE_RC qmnWNST::orderUnPrecedPrecedRows( qcTemplate  * aTemplate,
         aDataPlan->mtrRowIdx = 0;
         aDataPlan->plan.myTuple->row = aDataPlan->mtrRow[aDataPlan->mtrRowIdx];
 
-        /* Ç×»ó Ã³À½ RowÀÇ Record¸¦ ÀĞ´Â´Ù. */
+        /* í•­ìƒ ì²˜ìŒ Rowì˜ Recordë¥¼ ì½ëŠ”ë‹¤. */
         IDE_TEST( getFirstRecord( aTemplate, aDataPlan, &sFlag )
                   != IDE_SUCCESS );
 
@@ -5346,7 +5346,7 @@ IDE_RC qmnWNST::orderUnPrecedPrecedRows( qcTemplate  * aTemplate,
                                aDataPlan->mtrNode,
                                aDataPlan->plan.myTuple->row ) != IDE_SUCCESS );
 
-        /* Ã³À½ºÎÅÍ ÇöÀç RowÀÇ N°³ Àü±îÁö Record¸¦ ÀĞÀ¸¸é¼­ Aggregation À» ¼öÇàÇÑ´Ù */
+        /* ì²˜ìŒë¶€í„° í˜„ì¬ Rowì˜ Nê°œ ì „ê¹Œì§€ Recordë¥¼ ì½ìœ¼ë©´ì„œ Aggregation ì„ ìˆ˜í–‰í•œë‹¤ */
         for ( sCount = sWindowPos - sEndPoint;
               sCount >= 0;
               sCount-- )
@@ -5381,7 +5381,7 @@ IDE_RC qmnWNST::orderUnPrecedPrecedRows( qcTemplate  * aTemplate,
         IDE_TEST( finiAggregation( aTemplate, aAggrNode )
                   != IDE_SUCCESS );
 
-        /* ÇöÀç Row·Î Ä¿¼­¸¦ ¿øº¹ÇÑ´Ù */
+        /* í˜„ì¬ Rowë¡œ ì»¤ì„œë¥¼ ì›ë³µí•œë‹¤ */
         aDataPlan->mtrRowIdx = 0;
         aDataPlan->plan.myTuple->row = aDataPlan->mtrRow[aDataPlan->mtrRowIdx];
 
@@ -5394,7 +5394,7 @@ IDE_RC qmnWNST::orderUnPrecedPrecedRows( qcTemplate  * aTemplate,
         IDE_TEST( setTupleSet( aTemplate, aDataPlan->mtrNode, aDataPlan->plan.myTuple->row )
                   != IDE_SUCCESS );
 
-        /* N °³ Àü±îÁö AggregationµÈ °ªÀ» updateÇÏ°í ´ÙÀ½ Row¸¦ ÀĞ´Â´Ù. */
+        /* N ê°œ ì „ê¹Œì§€ Aggregationëœ ê°’ì„ updateí•˜ê³  ë‹¤ìŒ Rowë¥¼ ì½ëŠ”ë‹¤. */
         IDE_TEST( updateOneRowNextRecord( aTemplate,
                                           aDataPlan,
                                           aAggrResultNode,
@@ -5413,12 +5413,12 @@ IDE_RC qmnWNST::orderUnPrecedPrecedRows( qcTemplate  * aTemplate,
 /**
  * ROWS Partition By Order By UNBOUNDED PRECEDING - N FOLLOWING
  *
- *  Start Point °¡ UNBOUNDED PRECEDING ÆÄÆ¼¼ÇÀÇ Ã³À½ºÎÅÍ ½ÃÀÛÇÑ´Ù.
- *  End   Point ´Â N         FOLLOWING ÇöÀç RowºÎÅÍ N ÈÄÀÇ Row±îÁöÀÌ´Ù.
+ *  Start Point ê°€ UNBOUNDED PRECEDING íŒŒí‹°ì…˜ì˜ ì²˜ìŒë¶€í„° ì‹œì‘í•œë‹¤.
+ *  End   Point ëŠ” N         FOLLOWING í˜„ì¬ Rowë¶€í„° N í›„ì˜ Rowê¹Œì§€ì´ë‹¤.
  *
- *  Ã³À½ ½ÃÀÛÇÏ¸é ÆÄÆ¼¼ÇÀÇ Ã³À½°ú ÇöÀç Row¸¦ Cursor·Î ÀúÀåÇÑ´Ù. ÇöÀç Row°¡ ¸î¹øÂ°ÀÎÁö¸¦
- *  ÀúÀåÇÏ¸é¼­ ÀÌº¸´Ù N °³ ÈÄ ±îÁö¸¦ AggregationÀ» ¼öÇàÇÑµÚ¿¡ ÇöÀç Row·Î RestoreÇÑµÚ¿¡
- *  Update¸¦ ¼öÇàÇÑ´Ù.
+ *  ì²˜ìŒ ì‹œì‘í•˜ë©´ íŒŒí‹°ì…˜ì˜ ì²˜ìŒê³¼ í˜„ì¬ Rowë¥¼ Cursorë¡œ ì €ì¥í•œë‹¤. í˜„ì¬ Rowê°€ ëª‡ë²ˆì§¸ì¸ì§€ë¥¼
+ *  ì €ì¥í•˜ë©´ì„œ ì´ë³´ë‹¤ N ê°œ í›„ ê¹Œì§€ë¥¼ Aggregationì„ ìˆ˜í–‰í•œë’¤ì— í˜„ì¬ Rowë¡œ Restoreí•œë’¤ì—
+ *  Updateë¥¼ ìˆ˜í–‰í•œë‹¤.
  */
 IDE_RC qmnWNST::partitionUnPrecedFollowRows( qcTemplate  * aTemplate,
                                              qmndWNST    * aDataPlan,
@@ -5443,7 +5443,7 @@ IDE_RC qmnWNST::partitionUnPrecedFollowRows( qcTemplate  * aTemplate,
 
     while ( ( sFlag & QMC_ROW_DATA_MASK ) == QMC_ROW_DATA_EXIST )
     {
-        /* ÆÄÆ¼¼ÇÀÇ Ã³À½ÀÇ cursor¸¦ ÀúÀåÇÑ´Ù */
+        /* íŒŒí‹°ì…˜ì˜ ì²˜ìŒì˜ cursorë¥¼ ì €ì¥í•œë‹¤ */
         IDE_TEST( qmcSortTemp::storeCursor( aDataPlan->sortMgr,
                                             &aDataPlan->partitionCursorInfo )
                   != IDE_SUCCESS );
@@ -5451,7 +5451,7 @@ IDE_RC qmnWNST::partitionUnPrecedFollowRows( qcTemplate  * aTemplate,
 
         do
         {
-            /* ÇöÀç RowÀÇ cursor¸¦ ÀúÀåÇÑ´Ù. */
+            /* í˜„ì¬ Rowì˜ cursorë¥¼ ì €ì¥í•œë‹¤. */
             IDE_TEST( qmcSortTemp::storeCursor( aDataPlan->sortMgr,
                                                 &aDataPlan->cursorInfo )
                       != IDE_SUCCESS );
@@ -5462,7 +5462,7 @@ IDE_RC qmnWNST::partitionUnPrecedFollowRows( qcTemplate  * aTemplate,
             aDataPlan->mtrRowIdx = 0;
             aDataPlan->plan.myTuple->row = aDataPlan->mtrRow[aDataPlan->mtrRowIdx];
 
-            /* ÆÄÆ¼¼ÇÀÇ Ã³À½À¸·Î Cursor·Î ÀÌµ¿ÇÑ´Ù. */
+            /* íŒŒí‹°ì…˜ì˜ ì²˜ìŒìœ¼ë¡œ Cursorë¡œ ì´ë™í•œë‹¤. */
             IDE_TEST( qmcSortTemp::restoreCursor( aDataPlan->sortMgr,
                                                   & aDataPlan->partitionCursorInfo )
                       != IDE_SUCCESS );
@@ -5472,7 +5472,7 @@ IDE_RC qmnWNST::partitionUnPrecedFollowRows( qcTemplate  * aTemplate,
                                    aDataPlan->mtrNode,
                                    aDataPlan->plan.myTuple->row ) != IDE_SUCCESS );
 
-            /* Ã³À½ºÎÅÍ ÇöÀç RowÀÇ N°³ ÈÄ±îÁö Record¸¦ ÀĞÀ¸¸é¼­ Aggregation À» ¼öÇàÇÑ´Ù */
+            /* ì²˜ìŒë¶€í„° í˜„ì¬ Rowì˜ Nê°œ í›„ê¹Œì§€ Recordë¥¼ ì½ìœ¼ë©´ì„œ Aggregation ì„ ìˆ˜í–‰í•œë‹¤ */
             for ( sCount = sWindowPos + sEndPoint;
                   sCount >= 0;
                   sCount-- )
@@ -5497,7 +5497,7 @@ IDE_RC qmnWNST::partitionUnPrecedFollowRows( qcTemplate  * aTemplate,
                           != IDE_SUCCESS );
                 if ( (sFlag & QMC_ROW_DATA_MASK) == QMC_ROW_DATA_EXIST )
                 {
-                    /* °°Àº ÆÄÆ¼¼ÇÀÎÁö¸¦ Ã¼Å©ÇÑ´Ù */
+                    /* ê°™ì€ íŒŒí‹°ì…˜ì¸ì§€ë¥¼ ì²´í¬í•œë‹¤ */
                     IDE_TEST( compareRows( aDataPlan,
                                            aOverColumnNode,
                                            &sFlag )
@@ -5519,7 +5519,7 @@ IDE_RC qmnWNST::partitionUnPrecedFollowRows( qcTemplate  * aTemplate,
             IDE_TEST( finiAggregation( aTemplate, aAggrNode )
                       != IDE_SUCCESS );
 
-            /* ÇöÀç Row·Î Ä¿¼­¸¦ ¿øº¹ÇÑ´Ù */
+            /* í˜„ì¬ Rowë¡œ ì»¤ì„œë¥¼ ì›ë³µí•œë‹¤ */
             aDataPlan->mtrRowIdx = 0;
             aDataPlan->plan.myTuple->row = aDataPlan->mtrRow[aDataPlan->mtrRowIdx];
             IDE_TEST( qmcSortTemp::restoreCursor( aDataPlan->sortMgr,
@@ -5531,7 +5531,7 @@ IDE_RC qmnWNST::partitionUnPrecedFollowRows( qcTemplate  * aTemplate,
             IDE_TEST( setTupleSet( aTemplate, aDataPlan->mtrNode, aDataPlan->plan.myTuple->row )
                       != IDE_SUCCESS );
 
-            /* AggregationµÈ °ªÀ» updateÇÏ°í ´ÙÀ½ Row¸¦ ÀĞ´Â´Ù. */
+            /* Aggregationëœ ê°’ì„ updateí•˜ê³  ë‹¤ìŒ Rowë¥¼ ì½ëŠ”ë‹¤. */
             IDE_TEST( updateOneRowNextRecord( aTemplate,
                                               aDataPlan,
                                               aAggrResultNode,
@@ -5541,7 +5541,7 @@ IDE_RC qmnWNST::partitionUnPrecedFollowRows( qcTemplate  * aTemplate,
             ++sWindowPos;
             if ( (sFlag & QMC_ROW_DATA_MASK) == QMC_ROW_DATA_EXIST )
             {
-                /* °°Àº ÆÄÆ¼¼ÇÀÎÁö¸¦ Ã¼Å©ÇÑ´Ù */
+                /* ê°™ì€ íŒŒí‹°ì…˜ì¸ì§€ë¥¼ ì²´í¬í•œë‹¤ */
                 IDE_TEST( compareRows( aDataPlan,
                                        aOverColumnNode,
                                        &sFlag )
@@ -5564,12 +5564,12 @@ IDE_RC qmnWNST::partitionUnPrecedFollowRows( qcTemplate  * aTemplate,
 /**
  * ROWS Order By UNBOUNDED PRECEDING - N FOLLOWING
  *
- *  Start Point °¡ UNBOUNDED PRECEDING Ã³À½ºÎÅÍ ½ÃÀÛÇÑ´Ù.
- *  End   Point ´Â N         FOLLOWING ¸¶Áö¸· ±îÁö¸¦ ¹üÀ§·Î ÇÑ´Ù.
+ *  Start Point ê°€ UNBOUNDED PRECEDING ì²˜ìŒë¶€í„° ì‹œì‘í•œë‹¤.
+ *  End   Point ëŠ” N         FOLLOWING ë§ˆì§€ë§‰ ê¹Œì§€ë¥¼ ë²”ìœ„ë¡œ í•œë‹¤.
  *
- *  ÇöÀç Row¸¦ Cursor·Î ÀúÀåÇÑ´Ù. ÇöÀç Row°¡ ¸î¹øÂ°ÀÎÁö¸¦
- *  ÀúÀåÇÏ¸é¼­ ÀÌº¸´Ù N °³ ÈÄ ±îÁö¸¦ AggregationÀ» ¼öÇàÇÑµÚ¿¡ ÇöÀç Row·Î RestoreÇÑµÚ¿¡
- *  Update¸¦ ¼öÇàÇÑ´Ù.
+ *  í˜„ì¬ Rowë¥¼ Cursorë¡œ ì €ì¥í•œë‹¤. í˜„ì¬ Rowê°€ ëª‡ë²ˆì§¸ì¸ì§€ë¥¼
+ *  ì €ì¥í•˜ë©´ì„œ ì´ë³´ë‹¤ N ê°œ í›„ ê¹Œì§€ë¥¼ Aggregationì„ ìˆ˜í–‰í•œë’¤ì— í˜„ì¬ Rowë¡œ Restoreí•œë’¤ì—
+ *  Updateë¥¼ ìˆ˜í–‰í•œë‹¤.
  */
 IDE_RC qmnWNST::orderUnPrecedFollowRows( qcTemplate  * aTemplate,
                                          qmndWNST    * aDataPlan,
@@ -5593,7 +5593,7 @@ IDE_RC qmnWNST::orderUnPrecedFollowRows( qcTemplate  * aTemplate,
 
     while ( ( sFlag & QMC_ROW_DATA_MASK ) == QMC_ROW_DATA_EXIST )
     {
-        /* ÇöÀç RowÀÇ cursor¸¦ ÀúÀåÇÑ´Ù. */
+        /* í˜„ì¬ Rowì˜ cursorë¥¼ ì €ì¥í•œë‹¤. */
         IDE_TEST( qmcSortTemp::storeCursor( aDataPlan->sortMgr,
                                             &aDataPlan->cursorInfo )
                   != IDE_SUCCESS );
@@ -5604,7 +5604,7 @@ IDE_RC qmnWNST::orderUnPrecedFollowRows( qcTemplate  * aTemplate,
         aDataPlan->mtrRowIdx = 0;
         aDataPlan->plan.myTuple->row = aDataPlan->mtrRow[aDataPlan->mtrRowIdx];
 
-        /* Ç×»ó Ã³À½ RowÀÇ Record¸¦ ÀĞ´Â´Ù. */
+        /* í•­ìƒ ì²˜ìŒ Rowì˜ Recordë¥¼ ì½ëŠ”ë‹¤. */
         IDE_TEST( getFirstRecord( aTemplate, aDataPlan, &sFlag )
                   != IDE_SUCCESS );
 
@@ -5613,7 +5613,7 @@ IDE_RC qmnWNST::orderUnPrecedFollowRows( qcTemplate  * aTemplate,
                                aDataPlan->mtrNode,
                                aDataPlan->plan.myTuple->row ) != IDE_SUCCESS );
 
-        /* Ã³À½ºÎÅÍ ÇöÀç RowÀÇ N°³ ÈÄ±îÁö Record¸¦ ÀĞÀ¸¸é¼­ Aggregation À» ¼öÇàÇÑ´Ù */
+        /* ì²˜ìŒë¶€í„° í˜„ì¬ Rowì˜ Nê°œ í›„ê¹Œì§€ Recordë¥¼ ì½ìœ¼ë©´ì„œ Aggregation ì„ ìˆ˜í–‰í•œë‹¤ */
         for ( sCount = sWindowPos + sEndPoint;
               sCount >= 0;
               sCount-- )
@@ -5651,7 +5651,7 @@ IDE_RC qmnWNST::orderUnPrecedFollowRows( qcTemplate  * aTemplate,
         aDataPlan->mtrRowIdx = 0;
         aDataPlan->plan.myTuple->row = aDataPlan->mtrRow[aDataPlan->mtrRowIdx];
 
-        /* ÇöÀç Row·Î Ä¿¼­¸¦ ¿øº¹ÇÑ´Ù */
+        /* í˜„ì¬ Rowë¡œ ì»¤ì„œë¥¼ ì›ë³µí•œë‹¤ */
         IDE_TEST( qmcSortTemp::restoreCursor( aDataPlan->sortMgr,
                                               &aDataPlan->cursorInfo )
                   != IDE_SUCCESS );
@@ -5661,7 +5661,7 @@ IDE_RC qmnWNST::orderUnPrecedFollowRows( qcTemplate  * aTemplate,
         IDE_TEST( setTupleSet( aTemplate, aDataPlan->mtrNode, aDataPlan->plan.myTuple->row )
                   != IDE_SUCCESS );
 
-        /* AggregationµÈ °ªÀ» updateÇÏ°í ´ÙÀ½ Row¸¦ ÀĞ´Â´Ù. */
+        /* Aggregationëœ ê°’ì„ updateí•˜ê³  ë‹¤ìŒ Rowë¥¼ ì½ëŠ”ë‹¤. */
         IDE_TEST( updateOneRowNextRecord( aTemplate,
                                           aDataPlan,
                                           aAggrResultNode,
@@ -5680,11 +5680,11 @@ IDE_RC qmnWNST::orderUnPrecedFollowRows( qcTemplate  * aTemplate,
 /**
  * ROWS Partition By Order By CURRENT ROW - UNBOUNDED FOLLOWING
  *
- *  Start Point °¡ CURRENT   ROW ÇöÀç Row ºÎÅÍ  ½ÃÀÛÇÑ´Ù.
- *  End   Point ´Â UNBOUNDED FOLLOWING ÆÄÆ¼¼ÇÀÇ ¸¶Áö¸· Row±îÁöÀÌ´Ù.
+ *  Start Point ê°€ CURRENT   ROW í˜„ì¬ Row ë¶€í„°  ì‹œì‘í•œë‹¤.
+ *  End   Point ëŠ” UNBOUNDED FOLLOWING íŒŒí‹°ì…˜ì˜ ë§ˆì§€ë§‰ Rowê¹Œì§€ì´ë‹¤.
  *
- *  Ã³À½ ½ÃÀÛÇÏ¸é ÇöÀç Row¸¦ Cursor·Î ÀúÀåÇÑ´Ù. ÇöÀç Row ºÎÅÍ ÆÄÆ¼¼ÇÀÇ ³¡±îÁö AggregationÀ»
- *  ¼öÇàÇÑ µÚ¿¡ ÇöÀç Row·Î restoreÈÄ¿¡ updateÇÑ µÚ¿¡ ´ÙÀ½ row¸¦ ¼öÇàÇÑ´Ù.
+ *  ì²˜ìŒ ì‹œì‘í•˜ë©´ í˜„ì¬ Rowë¥¼ Cursorë¡œ ì €ì¥í•œë‹¤. í˜„ì¬ Row ë¶€í„° íŒŒí‹°ì…˜ì˜ ëê¹Œì§€ Aggregationì„
+ *  ìˆ˜í–‰í•œ ë’¤ì— í˜„ì¬ Rowë¡œ restoreí›„ì— updateí•œ ë’¤ì— ë‹¤ìŒ rowë¥¼ ìˆ˜í–‰í•œë‹¤.
  */
 IDE_RC qmnWNST::partitionCurrentUnFollowRows( qcTemplate  * aTemplate,
                                               qmndWNST    * aDataPlan,
@@ -5707,14 +5707,14 @@ IDE_RC qmnWNST::partitionCurrentUnFollowRows( qcTemplate  * aTemplate,
     {
         do
         {
-            /* AggrÃÊ±âÈ­ ¹× ÇöÀç RowÀÇ cursor¸¦ ÀúÀåÇÑ´Ù. */
+            /* Aggrì´ˆê¸°í™” ë° í˜„ì¬ Rowì˜ cursorë¥¼ ì €ì¥í•œë‹¤. */
             IDE_TEST( initAggregation( aTemplate, aAggrNode )
                       != IDE_SUCCESS );
             IDE_TEST( qmcSortTemp::storeCursor( aDataPlan->sortMgr,
                                                 &aDataPlan->cursorInfo )
                       != IDE_SUCCESS );
 
-            /* °°Àº ÆÄÆ¼¼ÇÀÏ °æ¿ì ¸ğµÎ AggregationÀ» ¼öÇàÇÑ´Ù */
+            /* ê°™ì€ íŒŒí‹°ì…˜ì¼ ê²½ìš° ëª¨ë‘ Aggregationì„ ìˆ˜í–‰í•œë‹¤ */
             do
             {
                 IDE_TEST( execAggregation( aTemplate,
@@ -5731,7 +5731,7 @@ IDE_RC qmnWNST::partitionCurrentUnFollowRows( qcTemplate  * aTemplate,
 
                 if ( (sFlag & QMC_ROW_DATA_MASK) == QMC_ROW_DATA_EXIST )
                 {
-                    /* °°Àº ÆÄÆ¼¼ÇÀÎÁö¸¦ Ã¼Å©ÇÑ´Ù */
+                    /* ê°™ì€ íŒŒí‹°ì…˜ì¸ì§€ë¥¼ ì²´í¬í•œë‹¤ */
                     IDE_TEST( compareRows( aDataPlan,
                                            aOverColumnNode,
                                            &sFlag )
@@ -5746,7 +5746,7 @@ IDE_RC qmnWNST::partitionCurrentUnFollowRows( qcTemplate  * aTemplate,
             IDE_TEST( finiAggregation( aTemplate, aAggrNode )
                       != IDE_SUCCESS );
 
-            /* ÇöÀç Row·Î restoreÇÑµÚ¿¡ update ±×¸®°í Row¸¦ ÀĞ´Â´Ù. */
+            /* í˜„ì¬ Rowë¡œ restoreí•œë’¤ì— update ê·¸ë¦¬ê³  Rowë¥¼ ì½ëŠ”ë‹¤. */
             IDE_TEST( updateAggrRows( aTemplate,
                                       aDataPlan,
                                       aAggrResultNode,
@@ -5770,11 +5770,11 @@ IDE_RC qmnWNST::partitionCurrentUnFollowRows( qcTemplate  * aTemplate,
 /**
  * ROWS Order By CURRENT ROW - UNBOUNDED FOLLOWING
  *
- *  Start Point °¡ CURRENT   ROW ÇöÀç Row ºÎÅÍ  ½ÃÀÛÇÑ´Ù.
- *  End   Point ´Â UNBOUNDED FOLLOWING ÆÄÆ¼¼ÇÀÇ ¸¶Áö¸· Row±îÁöÀÌ´Ù.
+ *  Start Point ê°€ CURRENT   ROW í˜„ì¬ Row ë¶€í„°  ì‹œì‘í•œë‹¤.
+ *  End   Point ëŠ” UNBOUNDED FOLLOWING íŒŒí‹°ì…˜ì˜ ë§ˆì§€ë§‰ Rowê¹Œì§€ì´ë‹¤.
  *
- *  Ã³À½ ½ÃÀÛÇÏ¸é ÇöÀç Row¸¦ Cursor·Î ÀúÀåÇÑ´Ù. ÇöÀç Row ºÎÅÍ ³¡±îÁö AggregationÀ»
- *  ¼öÇàÇÑ µÚ¿¡ ÇöÀç Row·Î restoreÈÄ¿¡ updateÇÑ µÚ¿¡ ´ÙÀ½ row¸¦ ¼öÇàÇÑ´Ù.
+ *  ì²˜ìŒ ì‹œì‘í•˜ë©´ í˜„ì¬ Rowë¥¼ Cursorë¡œ ì €ì¥í•œë‹¤. í˜„ì¬ Row ë¶€í„° ëê¹Œì§€ Aggregationì„
+ *  ìˆ˜í–‰í•œ ë’¤ì— í˜„ì¬ Rowë¡œ restoreí›„ì— updateí•œ ë’¤ì— ë‹¤ìŒ rowë¥¼ ìˆ˜í–‰í•œë‹¤.
  */
 IDE_RC qmnWNST::orderCurrentUnFollowRows( qcTemplate  * aTemplate,
                                           qmndWNST    * aDataPlan,
@@ -5796,14 +5796,14 @@ IDE_RC qmnWNST::orderCurrentUnFollowRows( qcTemplate  * aTemplate,
     {
         do
         {
-            /* AggrÃÊ±âÈ­ ¹× ÇöÀç RowÀÇ cursor¸¦ ÀúÀåÇÑ´Ù. */
+            /* Aggrì´ˆê¸°í™” ë° í˜„ì¬ Rowì˜ cursorë¥¼ ì €ì¥í•œë‹¤. */
             IDE_TEST( initAggregation( aTemplate, aAggrNode )
                       != IDE_SUCCESS );
             IDE_TEST( qmcSortTemp::storeCursor( aDataPlan->sortMgr,
                                                 &aDataPlan->cursorInfo )
                       != IDE_SUCCESS );
 
-            /* ³¡±îÁö AggregationÀ» ¼öÇàÇÑ´Ù */
+            /* ëê¹Œì§€ Aggregationì„ ìˆ˜í–‰í•œë‹¤ */
             do
             {
                 IDE_TEST( execAggregation( aTemplate,
@@ -5830,7 +5830,7 @@ IDE_RC qmnWNST::orderCurrentUnFollowRows( qcTemplate  * aTemplate,
 
             IDE_TEST( finiAggregation( aTemplate, aAggrNode )
                       != IDE_SUCCESS );
-            /* ÇöÀç Row·Î restoreÇÑµÚ¿¡ update ±×¸®°í ´ÙÀ½ Row¸¦ ÀĞ´Â´Ù. */
+            /* í˜„ì¬ Rowë¡œ restoreí•œë’¤ì— update ê·¸ë¦¬ê³  ë‹¤ìŒ Rowë¥¼ ì½ëŠ”ë‹¤. */
             IDE_TEST( updateAggrRows( aTemplate,
                                       aDataPlan,
                                       aAggrResultNode,
@@ -5854,10 +5854,10 @@ IDE_RC qmnWNST::orderCurrentUnFollowRows( qcTemplate  * aTemplate,
 /**
  * ROWS Order By CURRENT ROW - CURRENT ROW
  *
- *  Start Point °¡ CURRENT   ROW ÇöÀç Row ºÎÅÍ  ½ÃÀÛÇÑ´Ù.
- *  End   Point ´Â CURRENT   ROW ÇöÀç Row±îÁöÀÌ´Ù.
+ *  Start Point ê°€ CURRENT   ROW í˜„ì¬ Row ë¶€í„°  ì‹œì‘í•œë‹¤.
+ *  End   Point ëŠ” CURRENT   ROW í˜„ì¬ Rowê¹Œì§€ì´ë‹¤.
  *
- *  ÇöÀç ROW¸¸ °è»êÇØ¼­ UPDATE ÇÑ´Ù.
+ *  í˜„ì¬ ROWë§Œ ê³„ì‚°í•´ì„œ UPDATE í•œë‹¤.
  */
 IDE_RC qmnWNST::currentCurrentRows( qcTemplate  * aTemplate,
                                     qmndWNST    * aDataPlan,
@@ -5929,11 +5929,11 @@ IDE_RC qmnWNST::currentCurrentRows( qcTemplate  * aTemplate,
 /**
  * ROWS Partition By Order By CURRENT ROW - N FOLLOWING
  *
- *  Start Point °¡ CURRENT   ROW ÇöÀç Row ºÎÅÍ  ½ÃÀÛÇÑ´Ù.
- *  End   Point ´Â N         FOLLOWING ÆÄÆ¼¼ÇÀÇ ¸¶Áö¸· Row±îÁöÀÌ´Ù.
+ *  Start Point ê°€ CURRENT   ROW í˜„ì¬ Row ë¶€í„°  ì‹œì‘í•œë‹¤.
+ *  End   Point ëŠ” N         FOLLOWING íŒŒí‹°ì…˜ì˜ ë§ˆì§€ë§‰ Rowê¹Œì§€ì´ë‹¤.
  *
- *  Ã³À½ ½ÃÀÛÇÏ¸é ÇöÀç Row¸¦ Cursor·Î ÀúÀåÇÑ´Ù. ÇöÀç Row ºÎÅÍ N°³ ÈÄ±îÁö AggregationÀ»
- *  ¼öÇàÇÑ µÚ¿¡ ÇöÀç Row·Î restoreÈÄ¿¡ updateÇÑ µÚ¿¡ ´ÙÀ½ row¸¦ ¼öÇàÇÑ´Ù.
+ *  ì²˜ìŒ ì‹œì‘í•˜ë©´ í˜„ì¬ Rowë¥¼ Cursorë¡œ ì €ì¥í•œë‹¤. í˜„ì¬ Row ë¶€í„° Nê°œ í›„ê¹Œì§€ Aggregationì„
+ *  ìˆ˜í–‰í•œ ë’¤ì— í˜„ì¬ Rowë¡œ restoreí›„ì— updateí•œ ë’¤ì— ë‹¤ìŒ rowë¥¼ ìˆ˜í–‰í•œë‹¤.
  */
 IDE_RC qmnWNST::partitionCurrentFollowRows( qcTemplate  * aTemplate,
                                             qmndWNST    * aDataPlan,
@@ -5963,7 +5963,7 @@ IDE_RC qmnWNST::partitionCurrentFollowRows( qcTemplate  * aTemplate,
         IDE_TEST( initAggregation( aTemplate, aAggrNode )
                   != IDE_SUCCESS );
 
-        /* ÇöÀç ºÎÅÍ N°³ ÈÄ±îÁö Record¸¦ ÀĞÀ¸¸é¼­ °è»êÀ» ¼öÇàÇÑ´Ù */
+        /* í˜„ì¬ ë¶€í„° Nê°œ í›„ê¹Œì§€ Recordë¥¼ ì½ìœ¼ë©´ì„œ ê³„ì‚°ì„ ìˆ˜í–‰í•œë‹¤ */
         for ( sExecAggrCnt = sEndPoint;
               sExecAggrCnt >= 0;
               sExecAggrCnt-- )
@@ -5987,7 +5987,7 @@ IDE_RC qmnWNST::partitionCurrentFollowRows( qcTemplate  * aTemplate,
                           != IDE_SUCCESS );
                 if ( ( sFlag & QMC_ROW_DATA_MASK ) == QMC_ROW_DATA_EXIST )
                 {
-                    /* °°Àº ÆÄÆ¼¼ÇÀÎÁö¸¦ Ã¼Å©ÇÑ´Ù */
+                    /* ê°™ì€ íŒŒí‹°ì…˜ì¸ì§€ë¥¼ ì²´í¬í•œë‹¤ */
                     IDE_TEST( compareRows( aDataPlan,
                                            aOverColumnNode,
                                            &sFlag )
@@ -6010,7 +6010,7 @@ IDE_RC qmnWNST::partitionCurrentFollowRows( qcTemplate  * aTemplate,
         IDE_TEST( finiAggregation( aTemplate, aAggrNode )
                   != IDE_SUCCESS );
 
-        /* ÇöÀç Row·Î restoreÇÑµÚ¿¡ update ±×¸®°í Row¸¦ ÀĞ´Â´Ù. */
+        /* í˜„ì¬ Rowë¡œ restoreí•œë’¤ì— update ê·¸ë¦¬ê³  Rowë¥¼ ì½ëŠ”ë‹¤. */
         IDE_TEST( updateAggrRows( aTemplate,
                                   aDataPlan,
                                   aAggrResultNode,
@@ -6029,11 +6029,11 @@ IDE_RC qmnWNST::partitionCurrentFollowRows( qcTemplate  * aTemplate,
 /**
  * ROWS Order By CURRENT ROW - N FOLLOWING
  *
- *  Start Point °¡ CURRENT ROW ÇöÀç Row ºÎÅÍ  ½ÃÀÛÇÑ´Ù.
- *  End   Point ´Â N       FOLLOWING ÆÄÆ¼¼ÇÀÇ ¸¶Áö¸· Row±îÁöÀÌ´Ù.
+ *  Start Point ê°€ CURRENT ROW í˜„ì¬ Row ë¶€í„°  ì‹œì‘í•œë‹¤.
+ *  End   Point ëŠ” N       FOLLOWING íŒŒí‹°ì…˜ì˜ ë§ˆì§€ë§‰ Rowê¹Œì§€ì´ë‹¤.
  *
- *  Ã³À½ ½ÃÀÛÇÏ¸é ÇöÀç Row¸¦ Cursor·Î ÀúÀåÇÑ´Ù. ÇöÀç Row ºÎÅÍ N°³ ÈÄ ±îÁöÀÇ AggregationÀ»
- *  ¼öÇàÇÑ µÚ¿¡ ÇöÀç Row·Î restoreÈÄ¿¡ updateÇÑ µÚ¿¡ ´ÙÀ½ row¸¦ ¼öÇàÇÑ´Ù.
+ *  ì²˜ìŒ ì‹œì‘í•˜ë©´ í˜„ì¬ Rowë¥¼ Cursorë¡œ ì €ì¥í•œë‹¤. í˜„ì¬ Row ë¶€í„° Nê°œ í›„ ê¹Œì§€ì˜ Aggregationì„
+ *  ìˆ˜í–‰í•œ ë’¤ì— í˜„ì¬ Rowë¡œ restoreí›„ì— updateí•œ ë’¤ì— ë‹¤ìŒ rowë¥¼ ìˆ˜í–‰í•œë‹¤.
  */
 IDE_RC qmnWNST::orderCurrentFollowRows( qcTemplate  * aTemplate,
                                         qmndWNST    * aDataPlan,
@@ -6063,7 +6063,7 @@ IDE_RC qmnWNST::orderCurrentFollowRows( qcTemplate  * aTemplate,
         IDE_TEST( initAggregation( aTemplate, aAggrNode )
                   != IDE_SUCCESS );
 
-        /* ÇöÀç RowÀÇ N°³ ÈÄ±îÁö Record¸¦ ÀĞÀ¸¸é¼­ Aggregation À» ¼öÇàÇÑ´Ù */
+        /* í˜„ì¬ Rowì˜ Nê°œ í›„ê¹Œì§€ Recordë¥¼ ì½ìœ¼ë©´ì„œ Aggregation ì„ ìˆ˜í–‰í•œë‹¤ */
         for ( sExecAggrCnt = sEndPoint;
               sExecAggrCnt >= 0;
               sExecAggrCnt-- )
@@ -6099,7 +6099,7 @@ IDE_RC qmnWNST::orderCurrentFollowRows( qcTemplate  * aTemplate,
         IDE_TEST( finiAggregation( aTemplate, aAggrNode )
                   != IDE_SUCCESS );
 
-        /* ÇöÀç Row·Î restoreÇÑµÚ¿¡ update ±×¸®°í Row¸¦ ÀĞ´Â´Ù. */
+        /* í˜„ì¬ Rowë¡œ restoreí•œë’¤ì— update ê·¸ë¦¬ê³  Rowë¥¼ ì½ëŠ”ë‹¤. */
         IDE_TEST( updateAggrRows( aTemplate,
                                   aDataPlan,
                                   aAggrResultNode,
@@ -6118,11 +6118,11 @@ IDE_RC qmnWNST::orderCurrentFollowRows( qcTemplate  * aTemplate,
 /**
  * ROWS Partition By Order By N PRECEDING - UNBOUNDED FOLLOWING
  *
- *  Start Point °¡ N         PRECEDING ÇöÀç RowÀÇ N °³ ÀüºÎÅÍ ½ÃÀÛÇÑ´Ù.
- *  End   Point ´Â UNBOUNDED FOLLOWING ÆÄÆ¼¼ÇÀÇ ¸¶Áö¸· Row±îÁöÀÌ´Ù.
+ *  Start Point ê°€ N         PRECEDING í˜„ì¬ Rowì˜ N ê°œ ì „ë¶€í„° ì‹œì‘í•œë‹¤.
+ *  End   Point ëŠ” UNBOUNDED FOLLOWING íŒŒí‹°ì…˜ì˜ ë§ˆì§€ë§‰ Rowê¹Œì§€ì´ë‹¤.
  *
- *  Ã³À½ ½ÃÀÛÇÏ¸é ÆÄÆ¼¼ÇÀÇ Ã³À½°ú ÇöÀç Row¸¦ Cursor·Î ÀúÀåÇÑ´Ù. ÆÄÆ¼¼ÇÀÇ Ã³À½À¸·Î
- *  µ¹¾Æ°¡¼­ ÇöÀç ROWÀÇ N°³ Àü±îÁö´Â SKIP ÇÏ°í ±× µÚ ºÎÅÍ ÆÄÆ¼¼ÇÀÇ ³¡±îÁö Aggregation ¼öÇà
+ *  ì²˜ìŒ ì‹œì‘í•˜ë©´ íŒŒí‹°ì…˜ì˜ ì²˜ìŒê³¼ í˜„ì¬ Rowë¥¼ Cursorë¡œ ì €ì¥í•œë‹¤. íŒŒí‹°ì…˜ì˜ ì²˜ìŒìœ¼ë¡œ
+ *  ëŒì•„ê°€ì„œ í˜„ì¬ ROWì˜ Nê°œ ì „ê¹Œì§€ëŠ” SKIP í•˜ê³  ê·¸ ë’¤ ë¶€í„° íŒŒí‹°ì…˜ì˜ ëê¹Œì§€ Aggregation ìˆ˜í–‰
  */
 IDE_RC qmnWNST::partitionPrecedUnFollowRows( qcTemplate  * aTemplate,
                                              qmndWNST    * aDataPlan,
@@ -6147,7 +6147,7 @@ IDE_RC qmnWNST::partitionPrecedUnFollowRows( qcTemplate  * aTemplate,
 
     while ( ( sFlag & QMC_ROW_DATA_MASK ) == QMC_ROW_DATA_EXIST )
     {
-        /* ÆÄÆ¼¼ÇÀÇ Ã³À½ À§Ä¡¸¦ ÀúÀåÇÑ´Ù. */
+        /* íŒŒí‹°ì…˜ì˜ ì²˜ìŒ ìœ„ì¹˜ë¥¼ ì €ì¥í•œë‹¤. */
         IDE_TEST( qmcSortTemp::storeCursor( aDataPlan->sortMgr,
                                             &aDataPlan->partitionCursorInfo )
                   != IDE_SUCCESS );
@@ -6155,7 +6155,7 @@ IDE_RC qmnWNST::partitionPrecedUnFollowRows( qcTemplate  * aTemplate,
 
         do
         {
-            /* ÇöÀç À§Ä¡¸¦ ÀúÀåÇÑ´Ù. */
+            /* í˜„ì¬ ìœ„ì¹˜ë¥¼ ì €ì¥í•œë‹¤. */
             IDE_TEST( qmcSortTemp::storeCursor( aDataPlan->sortMgr,
                                                 &aDataPlan->cursorInfo )
                       != IDE_SUCCESS );
@@ -6166,7 +6166,7 @@ IDE_RC qmnWNST::partitionPrecedUnFollowRows( qcTemplate  * aTemplate,
             aDataPlan->mtrRowIdx = 0;
             aDataPlan->plan.myTuple->row = aDataPlan->mtrRow[aDataPlan->mtrRowIdx];
 
-            /* ÆÄÆ¼¼ÇÀÇ Ã³À½À¸·Î µ¹¾Æ°£´Ù */
+            /* íŒŒí‹°ì…˜ì˜ ì²˜ìŒìœ¼ë¡œ ëŒì•„ê°„ë‹¤ */
             IDE_TEST( qmcSortTemp::restoreCursor( aDataPlan->sortMgr,
                                                   & aDataPlan->partitionCursorInfo )
                       != IDE_SUCCESS );
@@ -6176,7 +6176,7 @@ IDE_RC qmnWNST::partitionPrecedUnFollowRows( qcTemplate  * aTemplate,
                                    aDataPlan->mtrNode,
                                    aDataPlan->plan.myTuple->row ) != IDE_SUCCESS );
 
-            /* ÆÄÆ¼¼ÇÀÇ Ã³À½¿¡¼­ ÇöÀç Row¿¡¼­ N°³ Àü±îÁö SKIP ÇÑ´Ù */
+            /* íŒŒí‹°ì…˜ì˜ ì²˜ìŒì—ì„œ í˜„ì¬ Rowì—ì„œ Nê°œ ì „ê¹Œì§€ SKIP í•œë‹¤ */
             for ( sCount = sWindowPos - sStartPoint;
                   sCount > 0;
                   sCount-- )
@@ -6194,7 +6194,7 @@ IDE_RC qmnWNST::partitionPrecedUnFollowRows( qcTemplate  * aTemplate,
                           != IDE_SUCCESS );
             }
 
-            /* N°³ Àü RowºÎÅÍ ÆÄÆ¼¼ÇÀÇ ³¡±îÁö AggregationÀ» ¼öÇàÇÑ´Ù */
+            /* Nê°œ ì „ Rowë¶€í„° íŒŒí‹°ì…˜ì˜ ëê¹Œì§€ Aggregationì„ ìˆ˜í–‰í•œë‹¤ */
             do
             {
                 IDE_TEST( execAggregation( aTemplate,
@@ -6217,7 +6217,7 @@ IDE_RC qmnWNST::partitionPrecedUnFollowRows( qcTemplate  * aTemplate,
                           != IDE_SUCCESS );
                 if ( (sFlag & QMC_ROW_DATA_MASK) == QMC_ROW_DATA_EXIST )
                 {
-                    /* °°Àº ÆÄÆ¼¼ÇÀÎÁö¸¦ Ã¼Å©ÇÑ´Ù */
+                    /* ê°™ì€ íŒŒí‹°ì…˜ì¸ì§€ë¥¼ ì²´í¬í•œë‹¤ */
                     IDE_TEST( compareRows( aDataPlan,
                                            aOverColumnNode,
                                            &sFlag )
@@ -6235,7 +6235,7 @@ IDE_RC qmnWNST::partitionPrecedUnFollowRows( qcTemplate  * aTemplate,
             aDataPlan->mtrRowIdx = 0;
             aDataPlan->plan.myTuple->row = aDataPlan->mtrRow[aDataPlan->mtrRowIdx];
 
-            /* ÇöÀç Row À§Ä¡·Î µÇµ¹¾Æ¿Â´Ù */
+            /* í˜„ì¬ Row ìœ„ì¹˜ë¡œ ë˜ëŒì•„ì˜¨ë‹¤ */
             IDE_TEST( qmcSortTemp::restoreCursor( aDataPlan->sortMgr,
                                                   &aDataPlan->cursorInfo )
                       != IDE_SUCCESS );
@@ -6245,7 +6245,7 @@ IDE_RC qmnWNST::partitionPrecedUnFollowRows( qcTemplate  * aTemplate,
             IDE_TEST( setTupleSet( aTemplate, aDataPlan->mtrNode, aDataPlan->plan.myTuple->row )
                       != IDE_SUCCESS );
 
-            /* AggregationµÈ °ªÀ» updateÇÏ°í ´ÙÀ½ Row¸¦ ÀĞ´Â´Ù. */
+            /* Aggregationëœ ê°’ì„ updateí•˜ê³  ë‹¤ìŒ Rowë¥¼ ì½ëŠ”ë‹¤. */
             IDE_TEST( updateOneRowNextRecord( aTemplate,
                                               aDataPlan,
                                               aAggrResultNode,
@@ -6255,7 +6255,7 @@ IDE_RC qmnWNST::partitionPrecedUnFollowRows( qcTemplate  * aTemplate,
             ++sWindowPos;
             if ( ( sFlag & QMC_ROW_DATA_MASK) == QMC_ROW_DATA_EXIST )
             {
-                /* °°Àº ÆÄÆ¼¼ÇÀÎÁö¸¦ Ã¼Å©ÇÑ´Ù */
+                /* ê°™ì€ íŒŒí‹°ì…˜ì¸ì§€ë¥¼ ì²´í¬í•œë‹¤ */
                 IDE_TEST( compareRows( aDataPlan,
                                        aOverColumnNode,
                                        &sFlag )
@@ -6278,11 +6278,11 @@ IDE_RC qmnWNST::partitionPrecedUnFollowRows( qcTemplate  * aTemplate,
 /**
  * ROWS Order By N PRECEDING - UNBOUNDED FOLLOWING
  *
- *  Start Point °¡ N         PRECEDING ÇöÀç RowÀÇ N °³ ÀüºÎÅÍ ½ÃÀÛÇÑ´Ù.
- *  End   Point ´Â UNBOUNDED FOLLOWING ÆÄÆ¼¼ÇÀÇ ¸¶Áö¸· Row±îÁöÀÌ´Ù.
+ *  Start Point ê°€ N         PRECEDING í˜„ì¬ Rowì˜ N ê°œ ì „ë¶€í„° ì‹œì‘í•œë‹¤.
+ *  End   Point ëŠ” UNBOUNDED FOLLOWING íŒŒí‹°ì…˜ì˜ ë§ˆì§€ë§‰ Rowê¹Œì§€ì´ë‹¤.
  *
- *  Ã³À½ ½ÃÀÛÇÏ¸é ÆÄÆ¼¼ÇÀÇ Ã³À½°ú ÇöÀç Row¸¦ Cursor·Î ÀúÀåÇÑ´Ù. ÆÄÆ¼¼ÇÀÇ Ã³À½À¸·Î
- *  µ¹¾Æ°¡¼­ ÇöÀç ROWÀÇ N°³ Àü±îÁö´Â SKIP ÇÏ°í ±× µÚ ºÎÅÍ ³¡±îÁö Aggregation ¼öÇà
+ *  ì²˜ìŒ ì‹œì‘í•˜ë©´ íŒŒí‹°ì…˜ì˜ ì²˜ìŒê³¼ í˜„ì¬ Rowë¥¼ Cursorë¡œ ì €ì¥í•œë‹¤. íŒŒí‹°ì…˜ì˜ ì²˜ìŒìœ¼ë¡œ
+ *  ëŒì•„ê°€ì„œ í˜„ì¬ ROWì˜ Nê°œ ì „ê¹Œì§€ëŠ” SKIP í•˜ê³  ê·¸ ë’¤ ë¶€í„° ëê¹Œì§€ Aggregation ìˆ˜í–‰
  */
 IDE_RC qmnWNST::orderPrecedUnFollowRows( qcTemplate  * aTemplate,
                                          qmndWNST    * aDataPlan,
@@ -6319,7 +6319,7 @@ IDE_RC qmnWNST::orderPrecedUnFollowRows( qcTemplate  * aTemplate,
         IDE_TEST( getFirstRecord( aTemplate, aDataPlan, &sFlag )
                   != IDE_SUCCESS );
 
-        /* ÆÄÆ¼¼ÇÀÇ Ã³À½¿¡¼­ ÇöÀç Row¿¡¼­ N°³ Àü±îÁö SKIP ÇÑ´Ù */
+        /* íŒŒí‹°ì…˜ì˜ ì²˜ìŒì—ì„œ í˜„ì¬ Rowì—ì„œ Nê°œ ì „ê¹Œì§€ SKIP í•œë‹¤ */
         for ( sCount = sWindowPos - sStartPoint;
               sCount > 0;
               sCount-- )
@@ -6337,7 +6337,7 @@ IDE_RC qmnWNST::orderPrecedUnFollowRows( qcTemplate  * aTemplate,
                       != IDE_SUCCESS );
         }
 
-        /* N°³ Àü RowºÎÅÍ ³¡±îÁö AggregationÀ» ¼öÇàÇÑ´Ù */
+        /* Nê°œ ì „ Rowë¶€í„° ëê¹Œì§€ Aggregationì„ ìˆ˜í–‰í•œë‹¤ */
         do
         {
             IDE_TEST( execAggregation( aTemplate,
@@ -6366,7 +6366,7 @@ IDE_RC qmnWNST::orderPrecedUnFollowRows( qcTemplate  * aTemplate,
         aDataPlan->mtrRowIdx = 0;
         aDataPlan->plan.myTuple->row = aDataPlan->mtrRow[aDataPlan->mtrRowIdx];
 
-        /* ÇöÀç Row·Î µÇµ¹¾Æ¿Â´Ù */
+        /* í˜„ì¬ Rowë¡œ ë˜ëŒì•„ì˜¨ë‹¤ */
         IDE_TEST( qmcSortTemp::restoreCursor( aDataPlan->sortMgr,
                                               &aDataPlan->cursorInfo )
                   != IDE_SUCCESS );
@@ -6376,7 +6376,7 @@ IDE_RC qmnWNST::orderPrecedUnFollowRows( qcTemplate  * aTemplate,
         IDE_TEST( setTupleSet( aTemplate, aDataPlan->mtrNode, aDataPlan->plan.myTuple->row )
                   != IDE_SUCCESS );
 
-        /* AggregationµÈ °ªÀ» updateÇÏ°í ´ÙÀ½ Row¸¦ ÀĞ´Â´Ù. */
+        /* Aggregationëœ ê°’ì„ updateí•˜ê³  ë‹¤ìŒ Rowë¥¼ ì½ëŠ”ë‹¤. */
         IDE_TEST( updateOneRowNextRecord( aTemplate,
                                           aDataPlan,
                                           aAggrResultNode,
@@ -6395,11 +6395,11 @@ IDE_RC qmnWNST::orderPrecedUnFollowRows( qcTemplate  * aTemplate,
 /**
  * ROWS Partition By Order By N PRECEDING - CURRENT ROW
  *
- *  Start Point °¡ N       PRECEDING ÇöÀç RowÀÇ N °³ ÀüºÎÅÍ ½ÃÀÛÇÑ´Ù.
- *  End   Point ´Â CURRENT ROW ÇöÀç Row±îÁöÀÌ´Ù.
+ *  Start Point ê°€ N       PRECEDING í˜„ì¬ Rowì˜ N ê°œ ì „ë¶€í„° ì‹œì‘í•œë‹¤.
+ *  End   Point ëŠ” CURRENT ROW í˜„ì¬ Rowê¹Œì§€ì´ë‹¤.
  *
- *  Ã³À½ ½ÃÀÛÇÏ¸é ÆÄÆ¼¼ÇÀÇ Ã³À½°ú ÇöÀç Row¸¦ Cursor·Î ÀúÀåÇÑ´Ù. ÆÄÆ¼¼ÇÀÇ Ã³À½À¸·Î
- *  µ¹¾Æ°¡¼­ ÇöÀç ROWÀÇ N°³ Àü±îÁö´Â SKIP ÇÏ°í ±× µÚ ºÎÅÍ ÇöÀç Row±îÁö Aggregation ¼öÇà
+ *  ì²˜ìŒ ì‹œì‘í•˜ë©´ íŒŒí‹°ì…˜ì˜ ì²˜ìŒê³¼ í˜„ì¬ Rowë¥¼ Cursorë¡œ ì €ì¥í•œë‹¤. íŒŒí‹°ì…˜ì˜ ì²˜ìŒìœ¼ë¡œ
+ *  ëŒì•„ê°€ì„œ í˜„ì¬ ROWì˜ Nê°œ ì „ê¹Œì§€ëŠ” SKIP í•˜ê³  ê·¸ ë’¤ ë¶€í„° í˜„ì¬ Rowê¹Œì§€ Aggregation ìˆ˜í–‰
  */
 IDE_RC qmnWNST::partitionPrecedCurrentRows( qcTemplate  * aTemplate,
                                             qmndWNST    * aDataPlan,
@@ -6425,14 +6425,14 @@ IDE_RC qmnWNST::partitionPrecedCurrentRows( qcTemplate  * aTemplate,
 
     while ( ( sFlag & QMC_ROW_DATA_MASK ) == QMC_ROW_DATA_EXIST )
     {
-        /* ÆÄÆ¼¼ÇÀÇ Ã³À½ À§Ä¡¸¦ ÀúÀåÇÑ´Ù. */
+        /* íŒŒí‹°ì…˜ì˜ ì²˜ìŒ ìœ„ì¹˜ë¥¼ ì €ì¥í•œë‹¤. */
         IDE_TEST( qmcSortTemp::storeCursor( aDataPlan->sortMgr,
                                             &aDataPlan->partitionCursorInfo )
                   != IDE_SUCCESS );
         sWindowPos = 0;
         do
         {
-            /* ÇöÀç À§Ä¡¸¦ ÀúÀåÇÑ´Ù. */
+            /* í˜„ì¬ ìœ„ì¹˜ë¥¼ ì €ì¥í•œë‹¤. */
             IDE_TEST( qmcSortTemp::storeCursor( aDataPlan->sortMgr,
                                                 &aDataPlan->cursorInfo )
                       != IDE_SUCCESS );
@@ -6443,7 +6443,7 @@ IDE_RC qmnWNST::partitionPrecedCurrentRows( qcTemplate  * aTemplate,
             aDataPlan->mtrRowIdx = 0;
             aDataPlan->plan.myTuple->row = aDataPlan->mtrRow[aDataPlan->mtrRowIdx];
 
-            /* ÆÄÆ¼¼ÇÀÇ Ã³À½À¸·Î µ¹¾Æ°£´Ù */
+            /* íŒŒí‹°ì…˜ì˜ ì²˜ìŒìœ¼ë¡œ ëŒì•„ê°„ë‹¤ */
             IDE_TEST( qmcSortTemp::restoreCursor( aDataPlan->sortMgr,
                                                   & aDataPlan->partitionCursorInfo )
                       != IDE_SUCCESS );
@@ -6454,7 +6454,7 @@ IDE_RC qmnWNST::partitionPrecedCurrentRows( qcTemplate  * aTemplate,
                                    aDataPlan->plan.myTuple->row ) != IDE_SUCCESS );
 
 
-            /* ÆÄÆ¼¼ÇÀÇ Ã³À½¿¡¼­ ÇöÀç Row¿¡¼­ N°³ Àü±îÁö SKIP ÇÑ´Ù */
+            /* íŒŒí‹°ì…˜ì˜ ì²˜ìŒì—ì„œ í˜„ì¬ Rowì—ì„œ Nê°œ ì „ê¹Œì§€ SKIP í•œë‹¤ */
             for ( sCount = sWindowPos - sStartPoint, sExecAggrCnt = 0;
                   sCount > 0;
                   sCount--, sExecAggrCnt++ )
@@ -6474,7 +6474,7 @@ IDE_RC qmnWNST::partitionPrecedCurrentRows( qcTemplate  * aTemplate,
 
             do
             {
-                /* N°³ Àü RowºÎÅÍ ÇöÀç Row±îÁö AggregationÀ» ¼öÇàÇÑ´Ù */
+                /* Nê°œ ì „ Rowë¶€í„° í˜„ì¬ Rowê¹Œì§€ Aggregationì„ ìˆ˜í–‰í•œë‹¤ */
                 IDE_TEST( execAggregation( aTemplate,
                                            aAggrNode,
                                            NULL,
@@ -6503,7 +6503,7 @@ IDE_RC qmnWNST::partitionPrecedCurrentRows( qcTemplate  * aTemplate,
                           != IDE_SUCCESS );
                 if ( (sFlag & QMC_ROW_DATA_MASK) == QMC_ROW_DATA_EXIST )
                 {
-                    /* °°Àº ÆÄÆ¼¼ÇÀÎÁö¸¦ Ã¼Å©ÇÑ´Ù */
+                    /* ê°™ì€ íŒŒí‹°ì…˜ì¸ì§€ë¥¼ ì²´í¬í•œë‹¤ */
                     IDE_TEST( compareRows( aDataPlan,
                                            aOverColumnNode,
                                            &sFlag )
@@ -6521,7 +6521,7 @@ IDE_RC qmnWNST::partitionPrecedCurrentRows( qcTemplate  * aTemplate,
             aDataPlan->mtrRowIdx = 0;
             aDataPlan->plan.myTuple->row = aDataPlan->mtrRow[aDataPlan->mtrRowIdx];
 
-            /* ÇöÀç Row À§Ä¡·Î µÇµ¹¾Æ¿Â´Ù */
+            /* í˜„ì¬ Row ìœ„ì¹˜ë¡œ ë˜ëŒì•„ì˜¨ë‹¤ */
             IDE_TEST( qmcSortTemp::restoreCursor( aDataPlan->sortMgr,
                                                   &aDataPlan->cursorInfo )
                       != IDE_SUCCESS );
@@ -6531,7 +6531,7 @@ IDE_RC qmnWNST::partitionPrecedCurrentRows( qcTemplate  * aTemplate,
             IDE_TEST( setTupleSet( aTemplate, aDataPlan->mtrNode, aDataPlan->plan.myTuple->row )
                       != IDE_SUCCESS );
 
-            /* AggregationµÈ °ªÀ» updateÇÏ°í ´ÙÀ½ Row¸¦ ÀĞ´Â´Ù. */
+            /* Aggregationëœ ê°’ì„ updateí•˜ê³  ë‹¤ìŒ Rowë¥¼ ì½ëŠ”ë‹¤. */
             IDE_TEST( updateOneRowNextRecord( aTemplate,
                                               aDataPlan,
                                               aAggrResultNode,
@@ -6541,7 +6541,7 @@ IDE_RC qmnWNST::partitionPrecedCurrentRows( qcTemplate  * aTemplate,
             ++sWindowPos;
             if ( (sFlag & QMC_ROW_DATA_MASK) == QMC_ROW_DATA_EXIST )
             {
-                /* °°Àº ÆÄÆ¼¼ÇÀÎÁö¸¦ Ã¼Å©ÇÑ´Ù */
+                /* ê°™ì€ íŒŒí‹°ì…˜ì¸ì§€ë¥¼ ì²´í¬í•œë‹¤ */
                 IDE_TEST( compareRows( aDataPlan,
                                        aOverColumnNode,
                                        &sFlag )
@@ -6564,11 +6564,11 @@ IDE_RC qmnWNST::partitionPrecedCurrentRows( qcTemplate  * aTemplate,
 /**
  * ROWS Partition By Order By N PRECEDING - CURRENT ROW
  *
- *  Start Point °¡ N       PRECEDING ÇöÀç RowÀÇ N °³ ÀüºÎÅÍ ½ÃÀÛÇÑ´Ù.
- *  End   Point ´Â CURRENT ROW ÇöÀç Row±îÁöÀÌ´Ù.
+ *  Start Point ê°€ N       PRECEDING í˜„ì¬ Rowì˜ N ê°œ ì „ë¶€í„° ì‹œì‘í•œë‹¤.
+ *  End   Point ëŠ” CURRENT ROW í˜„ì¬ Rowê¹Œì§€ì´ë‹¤.
  *
- *  Ã³À½ ½ÃÀÛÇÏ¸é ÆÄÆ¼¼ÇÀÇ Ã³À½°ú ÇöÀç Row¸¦ Cursor·Î ÀúÀåÇÑ´Ù. ÆÄÆ¼¼ÇÀÇ Ã³À½À¸·Î
- *  µ¹¾Æ°¡¼­ ÇöÀç ROWÀÇ N°³ Àü±îÁö´Â SKIP ÇÏ°í ±× µÚ ºÎÅÍ ÇöÀç Row±îÁö Aggregation ¼öÇà
+ *  ì²˜ìŒ ì‹œì‘í•˜ë©´ íŒŒí‹°ì…˜ì˜ ì²˜ìŒê³¼ í˜„ì¬ Rowë¥¼ Cursorë¡œ ì €ì¥í•œë‹¤. íŒŒí‹°ì…˜ì˜ ì²˜ìŒìœ¼ë¡œ
+ *  ëŒì•„ê°€ì„œ í˜„ì¬ ROWì˜ Nê°œ ì „ê¹Œì§€ëŠ” SKIP í•˜ê³  ê·¸ ë’¤ ë¶€í„° í˜„ì¬ Rowê¹Œì§€ Aggregation ìˆ˜í–‰
  */
 IDE_RC qmnWNST::orderPrecedCurrentRows( qcTemplate  * aTemplate,
                                         qmndWNST    * aDataPlan,
@@ -6593,7 +6593,7 @@ IDE_RC qmnWNST::orderPrecedCurrentRows( qcTemplate  * aTemplate,
 
     while ( ( sFlag & QMC_ROW_DATA_MASK ) == QMC_ROW_DATA_EXIST )
     {
-        /* ÇöÀç À§Ä¡¸¦ ÀúÀåÇÑ´Ù. */
+        /* í˜„ì¬ ìœ„ì¹˜ë¥¼ ì €ì¥í•œë‹¤. */
         IDE_TEST( qmcSortTemp::storeCursor( aDataPlan->sortMgr,
                                             &aDataPlan->cursorInfo )
                   != IDE_SUCCESS );
@@ -6604,11 +6604,11 @@ IDE_RC qmnWNST::orderPrecedCurrentRows( qcTemplate  * aTemplate,
         aDataPlan->mtrRowIdx = 0;
         aDataPlan->plan.myTuple->row = aDataPlan->mtrRow[aDataPlan->mtrRowIdx];
 
-        /* Ã³À½À¸·Î µ¹¾Æ°£´Ù */
+        /* ì²˜ìŒìœ¼ë¡œ ëŒì•„ê°„ë‹¤ */
         IDE_TEST( getFirstRecord( aTemplate, aDataPlan, &sFlag )
                   != IDE_SUCCESS );
 
-        /* Ã³À½¿¡¼­ ÇöÀç Row¿¡¼­ N°³ Àü±îÁö SKIP ÇÑ´Ù */
+        /* ì²˜ìŒì—ì„œ í˜„ì¬ Rowì—ì„œ Nê°œ ì „ê¹Œì§€ SKIP í•œë‹¤ */
         for ( sCount = sWindowPos - sStartPoint, sExecAggrCnt = 0;
               sCount > 0;
               sCount--, sExecAggrCnt++ )
@@ -6628,7 +6628,7 @@ IDE_RC qmnWNST::orderPrecedCurrentRows( qcTemplate  * aTemplate,
 
         do
         {
-            /* N°³ Àü RowºÎÅÍ ÇöÀç Row±îÁö AggregationÀ» ¼öÇàÇÑ´Ù */
+            /* Nê°œ ì „ Rowë¶€í„° í˜„ì¬ Rowê¹Œì§€ Aggregationì„ ìˆ˜í–‰í•œë‹¤ */
             IDE_TEST( execAggregation( aTemplate,
                                        aAggrNode,
                                        NULL,
@@ -6664,7 +6664,7 @@ IDE_RC qmnWNST::orderPrecedCurrentRows( qcTemplate  * aTemplate,
         aDataPlan->mtrRowIdx = 0;
         aDataPlan->plan.myTuple->row = aDataPlan->mtrRow[aDataPlan->mtrRowIdx];
 
-        /* ÇöÀç Row À§Ä¡·Î µÇµ¹¾Æ¿Â´Ù */
+        /* í˜„ì¬ Row ìœ„ì¹˜ë¡œ ë˜ëŒì•„ì˜¨ë‹¤ */
         IDE_TEST( qmcSortTemp::restoreCursor( aDataPlan->sortMgr,
                                               &aDataPlan->cursorInfo )
                   != IDE_SUCCESS );
@@ -6674,7 +6674,7 @@ IDE_RC qmnWNST::orderPrecedCurrentRows( qcTemplate  * aTemplate,
         IDE_TEST( setTupleSet( aTemplate, aDataPlan->mtrNode, aDataPlan->plan.myTuple->row )
                   != IDE_SUCCESS );
 
-        /* AggregationµÈ °ªÀ» updateÇÏ°í ´ÙÀ½ Row¸¦ ÀĞ´Â´Ù. */
+        /* Aggregationëœ ê°’ì„ updateí•˜ê³  ë‹¤ìŒ Rowë¥¼ ì½ëŠ”ë‹¤. */
         IDE_TEST( updateOneRowNextRecord( aTemplate,
                                           aDataPlan,
                                           aAggrResultNode,
@@ -6693,11 +6693,11 @@ IDE_RC qmnWNST::orderPrecedCurrentRows( qcTemplate  * aTemplate,
 /**
  * ROWS Partition By Order By N PRECEDING - N PRECEDING
  *
- *  Start Point °¡ N PRECEDING ÇöÀç RowÀÇ N °³ ÀüºÎÅÍ ½ÃÀÛÇÑ´Ù.
- *  End   Point ´Â N PRECEDING ÇöÀç RowÀÇ N °³ Àü ±îÁöÀÌ´Ù.
+ *  Start Point ê°€ N PRECEDING í˜„ì¬ Rowì˜ N ê°œ ì „ë¶€í„° ì‹œì‘í•œë‹¤.
+ *  End   Point ëŠ” N PRECEDING í˜„ì¬ Rowì˜ N ê°œ ì „ ê¹Œì§€ì´ë‹¤.
  *
- *  Ã³À½ ½ÃÀÛÇÏ¸é ÆÄÆ¼¼ÇÀÇ Ã³À½°ú ÇöÀç Row¸¦ Cursor·Î ÀúÀåÇÑ´Ù. ÆÄÆ¼¼ÇÀÇ Ã³À½À¸·Î
- *  µ¹¾Æ°¡¼­ ÇöÀç ROWÀÇ N°³ Àü±îÁö´Â SKIP ÇÏ°í ±× µÚ ºÎÅÍ ÇöÀç Row±îÁö Aggregation ¼öÇà
+ *  ì²˜ìŒ ì‹œì‘í•˜ë©´ íŒŒí‹°ì…˜ì˜ ì²˜ìŒê³¼ í˜„ì¬ Rowë¥¼ Cursorë¡œ ì €ì¥í•œë‹¤. íŒŒí‹°ì…˜ì˜ ì²˜ìŒìœ¼ë¡œ
+ *  ëŒì•„ê°€ì„œ í˜„ì¬ ROWì˜ Nê°œ ì „ê¹Œì§€ëŠ” SKIP í•˜ê³  ê·¸ ë’¤ ë¶€í„° í˜„ì¬ Rowê¹Œì§€ Aggregation ìˆ˜í–‰
  */
 IDE_RC qmnWNST::partitionPrecedPrecedRows( qcTemplate  * aTemplate,
                                            qmndWNST    * aDataPlan,
@@ -6725,14 +6725,14 @@ IDE_RC qmnWNST::partitionPrecedPrecedRows( qcTemplate  * aTemplate,
 
     while ( ( sFlag & QMC_ROW_DATA_MASK ) == QMC_ROW_DATA_EXIST )
     {
-        /* ÆÄÆ¼¼ÇÀÇ Ã³À½ À§Ä¡¸¦ ÀúÀåÇÑ´Ù. */
+        /* íŒŒí‹°ì…˜ì˜ ì²˜ìŒ ìœ„ì¹˜ë¥¼ ì €ì¥í•œë‹¤. */
         IDE_TEST( qmcSortTemp::storeCursor( aDataPlan->sortMgr,
                                             &aDataPlan->partitionCursorInfo )
                   != IDE_SUCCESS );
         sWindowPos = 0;
         do
         {
-            /* ÇöÀç À§Ä¡¸¦ ÀúÀåÇÑ´Ù. */
+            /* í˜„ì¬ ìœ„ì¹˜ë¥¼ ì €ì¥í•œë‹¤. */
             IDE_TEST( qmcSortTemp::storeCursor( aDataPlan->sortMgr,
                                                 &aDataPlan->cursorInfo )
                       != IDE_SUCCESS );
@@ -6742,12 +6742,12 @@ IDE_RC qmnWNST::partitionPrecedPrecedRows( qcTemplate  * aTemplate,
 
             if ( sStartPoint < sEndPoint )
             {
-                /* EndPoint°ªÀÌ Å¬°æ¿ì °è»êÀ» ¸¶Ä£´Ù */
+                /* EndPointê°’ì´ í´ê²½ìš° ê³„ì‚°ì„ ë§ˆì¹œë‹¤ */
                 sWindowPos = sStartPoint;
             }
             else
             {
-                /* ÆÄÆ¼¼ÇÀÇ Ã³À½À¸·Î RestoreÇÑ´Ù */
+                /* íŒŒí‹°ì…˜ì˜ ì²˜ìŒìœ¼ë¡œ Restoreí•œë‹¤ */
                 aDataPlan->mtrRowIdx = 0;
                 aDataPlan->plan.myTuple->row = aDataPlan->mtrRow[aDataPlan->mtrRowIdx];
 
@@ -6763,13 +6763,13 @@ IDE_RC qmnWNST::partitionPrecedPrecedRows( qcTemplate  * aTemplate,
 
             if ( sWindowPos < sEndPoint )
             {
-                /* EndPoint°ªÀÌ Å¬°æ¿ì °è»êÀ» ¸¶Ä£´Ù */
+                /* EndPointê°’ì´ í´ê²½ìš° ê³„ì‚°ì„ ë§ˆì¹œë‹¤ */
                 IDE_TEST( finiAggregation( aTemplate, aAggrNode )
                           != IDE_SUCCESS );
             }
             else
             {
-                /* ÆÄÆ¼¼ÇÀÇ Ã³À½ºÎÅÍ StartPointÀÇ N°³ Àü±îÁö SKIPÇÑ´Ù */
+                /* íŒŒí‹°ì…˜ì˜ ì²˜ìŒë¶€í„° StartPointì˜ Nê°œ ì „ê¹Œì§€ SKIPí•œë‹¤ */
                 for ( sCount = sWindowPos - sStartPoint, sExecAggrCnt = 0;
                       sCount > 0;
                       sCount--, sExecAggrCnt++ )
@@ -6789,7 +6789,7 @@ IDE_RC qmnWNST::partitionPrecedPrecedRows( qcTemplate  * aTemplate,
 
                 do
                 {
-                    /* StartPointÀÇ N°³ ÀüºÎÅÍ EndPointÀÇ N°³ Àü°¡Áö AggrÇÑ´Ù. */
+                    /* StartPointì˜ Nê°œ ì „ë¶€í„° EndPointì˜ Nê°œ ì „ê°€ì§€ Aggrí•œë‹¤. */
                     IDE_TEST( execAggregation( aTemplate,
                                                aAggrNode,
                                                NULL,
@@ -6820,7 +6820,7 @@ IDE_RC qmnWNST::partitionPrecedPrecedRows( qcTemplate  * aTemplate,
                               != IDE_SUCCESS );
                     if ( (sFlag & QMC_ROW_DATA_MASK) == QMC_ROW_DATA_EXIST )
                     {
-                        /* °°Àº ÆÄÆ¼¼ÇÀÎÁö¸¦ Ã¼Å©ÇÑ´Ù */
+                        /* ê°™ì€ íŒŒí‹°ì…˜ì¸ì§€ë¥¼ ì²´í¬í•œë‹¤ */
                         IDE_TEST( compareRows( aDataPlan,
                                                aOverColumnNode,
                                                &sFlag )
@@ -6838,7 +6838,7 @@ IDE_RC qmnWNST::partitionPrecedPrecedRows( qcTemplate  * aTemplate,
                 aDataPlan->mtrRowIdx = 0;
                 aDataPlan->plan.myTuple->row = aDataPlan->mtrRow[aDataPlan->mtrRowIdx];
 
-                /* ÇöÀç Row À§Ä¡·Î µÇµ¹¾Æ¿Â´Ù */
+                /* í˜„ì¬ Row ìœ„ì¹˜ë¡œ ë˜ëŒì•„ì˜¨ë‹¤ */
                 IDE_TEST( qmcSortTemp::restoreCursor( aDataPlan->sortMgr,
                                                       &aDataPlan->cursorInfo )
                           != IDE_SUCCESS );
@@ -6850,7 +6850,7 @@ IDE_RC qmnWNST::partitionPrecedPrecedRows( qcTemplate  * aTemplate,
 
             }
 
-            /* AggregationµÈ °ªÀ» updateÇÏ°í ´ÙÀ½ Row¸¦ ÀĞ´Â´Ù. */
+            /* Aggregationëœ ê°’ì„ updateí•˜ê³  ë‹¤ìŒ Rowë¥¼ ì½ëŠ”ë‹¤. */
             IDE_TEST( updateOneRowNextRecord( aTemplate,
                                               aDataPlan,
                                               aAggrResultNode,
@@ -6860,7 +6860,7 @@ IDE_RC qmnWNST::partitionPrecedPrecedRows( qcTemplate  * aTemplate,
             ++sWindowPos;
             if ( (sFlag & QMC_ROW_DATA_MASK) == QMC_ROW_DATA_EXIST )
             {
-                /* °°Àº ÆÄÆ¼¼ÇÀÎÁö¸¦ Ã¼Å©ÇÑ´Ù */
+                /* ê°™ì€ íŒŒí‹°ì…˜ì¸ì§€ë¥¼ ì²´í¬í•œë‹¤ */
                 IDE_TEST( compareRows( aDataPlan,
                                        aOverColumnNode,
                                        &sFlag )
@@ -6883,11 +6883,11 @@ IDE_RC qmnWNST::partitionPrecedPrecedRows( qcTemplate  * aTemplate,
 /**
  * ROWS Order By N PRECEDING - N PRECEDING
  *
- *  Start Point °¡ N       PRECEDING ÇöÀç RowÀÇ N °³ ÀüºÎÅÍ ½ÃÀÛÇÑ´Ù.
- *  End   Point ´Â N       PRECEDING ÇöÀç RowÀÇ N °³ Àü ±îÁöÀÌ´Ù.
+ *  Start Point ê°€ N       PRECEDING í˜„ì¬ Rowì˜ N ê°œ ì „ë¶€í„° ì‹œì‘í•œë‹¤.
+ *  End   Point ëŠ” N       PRECEDING í˜„ì¬ Rowì˜ N ê°œ ì „ ê¹Œì§€ì´ë‹¤.
  *
- *  Ã³À½ ½ÃÀÛÇÏ¸é ÇöÀç RowÀÇ À§Ä¡¸¦ Cursor·Î ÀúÀåÇÑ´Ù. Ã³À½À¸·Î
- *  µ¹¾Æ°¡¼­ ÇöÀç ROWÀÇ N°³ Àü±îÁö´Â SKIP ÇÏ°í ±× µÚ ºÎÅÍ ÇöÀç Row±îÁö Aggregation ¼öÇà
+ *  ì²˜ìŒ ì‹œì‘í•˜ë©´ í˜„ì¬ Rowì˜ ìœ„ì¹˜ë¥¼ Cursorë¡œ ì €ì¥í•œë‹¤. ì²˜ìŒìœ¼ë¡œ
+ *  ëŒì•„ê°€ì„œ í˜„ì¬ ROWì˜ Nê°œ ì „ê¹Œì§€ëŠ” SKIP í•˜ê³  ê·¸ ë’¤ ë¶€í„° í˜„ì¬ Rowê¹Œì§€ Aggregation ìˆ˜í–‰
  */
 IDE_RC qmnWNST::orderPrecedPrecedRows( qcTemplate  * aTemplate,
                                        qmndWNST    * aDataPlan,
@@ -6914,7 +6914,7 @@ IDE_RC qmnWNST::orderPrecedPrecedRows( qcTemplate  * aTemplate,
 
     while ( ( sFlag & QMC_ROW_DATA_MASK ) == QMC_ROW_DATA_EXIST )
     {
-        /* ÇöÀç À§Ä¡¸¦ ÀúÀåÇÑ´Ù. */
+        /* í˜„ì¬ ìœ„ì¹˜ë¥¼ ì €ì¥í•œë‹¤. */
         IDE_TEST( qmcSortTemp::storeCursor( aDataPlan->sortMgr,
                                             &aDataPlan->cursorInfo )
                   != IDE_SUCCESS );
@@ -6924,12 +6924,12 @@ IDE_RC qmnWNST::orderPrecedPrecedRows( qcTemplate  * aTemplate,
 
         if ( sStartPoint < sEndPoint )
         {
-            /* EndPoint°ªÀÌ Å¬°æ¿ì °è»êÀ» ¸¶Ä£´Ù */
+            /* EndPointê°’ì´ í´ê²½ìš° ê³„ì‚°ì„ ë§ˆì¹œë‹¤ */
             sWindowPos = sStartPoint;
         }
         else
         {
-            /* Ã³À½ Row¸¦ ÀĞ´Â´Ù */
+            /* ì²˜ìŒ Rowë¥¼ ì½ëŠ”ë‹¤ */
             aDataPlan->mtrRowIdx = 0;
             aDataPlan->plan.myTuple->row = aDataPlan->mtrRow[aDataPlan->mtrRowIdx];
 
@@ -6939,13 +6939,13 @@ IDE_RC qmnWNST::orderPrecedPrecedRows( qcTemplate  * aTemplate,
 
         if ( sWindowPos < sEndPoint )
         {
-            /* EndPoint°ªÀÌ Å¬°æ¿ì °è»êÀ» ¸¶Ä£´Ù */
+            /* EndPointê°’ì´ í´ê²½ìš° ê³„ì‚°ì„ ë§ˆì¹œë‹¤ */
             IDE_TEST( finiAggregation( aTemplate, aAggrNode )
                       != IDE_SUCCESS );
         }
         else
         {
-            /* Ã³À½ºÎÅÍ StartPointÀÇ N°³ Àü±îÁö SKIPÇÑ´Ù */
+            /* ì²˜ìŒë¶€í„° StartPointì˜ Nê°œ ì „ê¹Œì§€ SKIPí•œë‹¤ */
             for ( sCount = sWindowPos - sStartPoint, sExecAggrCnt = 0;
                   sCount > 0;
                   sCount--, sExecAggrCnt++ )
@@ -6965,7 +6965,7 @@ IDE_RC qmnWNST::orderPrecedPrecedRows( qcTemplate  * aTemplate,
 
             do
             {
-                /* StartPointÀÇ N°³ ÀüºÎÅÍ EndPointÀÇ N°³ Àü°¡Áö AggrÇÑ´Ù. */
+                /* StartPointì˜ Nê°œ ì „ë¶€í„° EndPointì˜ Nê°œ ì „ê°€ì§€ Aggrí•œë‹¤. */
                 IDE_TEST( execAggregation( aTemplate,
                                            aAggrNode,
                                            NULL,
@@ -7002,7 +7002,7 @@ IDE_RC qmnWNST::orderPrecedPrecedRows( qcTemplate  * aTemplate,
             aDataPlan->mtrRowIdx = 0;
             aDataPlan->plan.myTuple->row = aDataPlan->mtrRow[aDataPlan->mtrRowIdx];
 
-            /* ÇöÀç Row À§Ä¡·Î µÇµ¹¾Æ¿Â´Ù */
+            /* í˜„ì¬ Row ìœ„ì¹˜ë¡œ ë˜ëŒì•„ì˜¨ë‹¤ */
             IDE_TEST( qmcSortTemp::restoreCursor( aDataPlan->sortMgr,
                                                   &aDataPlan->cursorInfo )
                       != IDE_SUCCESS );
@@ -7013,7 +7013,7 @@ IDE_RC qmnWNST::orderPrecedPrecedRows( qcTemplate  * aTemplate,
                       != IDE_SUCCESS );
         }
 
-        /* AggregationµÈ °ªÀ» updateÇÏ°í ´ÙÀ½ Row¸¦ ÀĞ´Â´Ù. */
+        /* Aggregationëœ ê°’ì„ updateí•˜ê³  ë‹¤ìŒ Rowë¥¼ ì½ëŠ”ë‹¤. */
         IDE_TEST( updateOneRowNextRecord( aTemplate,
                                           aDataPlan,
                                           aAggrResultNode,
@@ -7032,11 +7032,11 @@ IDE_RC qmnWNST::orderPrecedPrecedRows( qcTemplate  * aTemplate,
 /**
  * ROWS Partition By Order By N PRECEDING - N PRECEDING
  *
- *  Start Point °¡ N  PRECEDING ÇöÀç RowÀÇ N °³ ÀüºÎÅÍ ½ÃÀÛÇÑ´Ù.
- *  End   Point ´Â N  FOLLOWING ÇöÀç RowÀÇ N °³ ÈÄ ±îÁöÀÌ´Ù.
+ *  Start Point ê°€ N  PRECEDING í˜„ì¬ Rowì˜ N ê°œ ì „ë¶€í„° ì‹œì‘í•œë‹¤.
+ *  End   Point ëŠ” N  FOLLOWING í˜„ì¬ Rowì˜ N ê°œ í›„ ê¹Œì§€ì´ë‹¤.
  *
- *  Ã³À½ ½ÃÀÛÇÏ¸é ÆÄÆ¼¼ÇÀÇ Ã³À½°ú ÇöÀç Row¸¦ Cursor·Î ÀúÀåÇÑ´Ù. ÆÄÆ¼¼ÇÀÇ Ã³À½À¸·Î
- *  µ¹¾Æ°¡¼­ ÇöÀç ROWÀÇ N°³ Àü±îÁö´Â SKIP ÇÏ°í ±× µÚ ºÎÅÍ ÇöÀç Row±îÁö Aggregation ¼öÇà
+ *  ì²˜ìŒ ì‹œì‘í•˜ë©´ íŒŒí‹°ì…˜ì˜ ì²˜ìŒê³¼ í˜„ì¬ Rowë¥¼ Cursorë¡œ ì €ì¥í•œë‹¤. íŒŒí‹°ì…˜ì˜ ì²˜ìŒìœ¼ë¡œ
+ *  ëŒì•„ê°€ì„œ í˜„ì¬ ROWì˜ Nê°œ ì „ê¹Œì§€ëŠ” SKIP í•˜ê³  ê·¸ ë’¤ ë¶€í„° í˜„ì¬ Rowê¹Œì§€ Aggregation ìˆ˜í–‰
  */
 IDE_RC qmnWNST::partitionPrecedFollowRows( qcTemplate  * aTemplate,
                                            qmndWNST    * aDataPlan,
@@ -7064,14 +7064,14 @@ IDE_RC qmnWNST::partitionPrecedFollowRows( qcTemplate  * aTemplate,
 
     while ( ( sFlag & QMC_ROW_DATA_MASK ) == QMC_ROW_DATA_EXIST )
     {
-        /* ÆÄÆ¼¼ÇÀÇ Ã³À½ À§Ä¡¸¦ ÀúÀåÇÑ´Ù. */
+        /* íŒŒí‹°ì…˜ì˜ ì²˜ìŒ ìœ„ì¹˜ë¥¼ ì €ì¥í•œë‹¤. */
         IDE_TEST( qmcSortTemp::storeCursor( aDataPlan->sortMgr,
                                             &aDataPlan->partitionCursorInfo )
                   != IDE_SUCCESS );
         sWindowPos = 0;
         do
         {
-            /* ÇöÀç À§Ä¡¸¦ ÀúÀåÇÑ´Ù. */
+            /* í˜„ì¬ ìœ„ì¹˜ë¥¼ ì €ì¥í•œë‹¤. */
             IDE_TEST( qmcSortTemp::storeCursor( aDataPlan->sortMgr,
                                                 &aDataPlan->cursorInfo )
                       != IDE_SUCCESS );
@@ -7082,7 +7082,7 @@ IDE_RC qmnWNST::partitionPrecedFollowRows( qcTemplate  * aTemplate,
             aDataPlan->mtrRowIdx = 0;
             aDataPlan->plan.myTuple->row = aDataPlan->mtrRow[aDataPlan->mtrRowIdx];
 
-            /* ÆÄÆ¼¼ÇÀÇ Ã³À½À¸·Î RestoreÇÑ´Ù */
+            /* íŒŒí‹°ì…˜ì˜ ì²˜ìŒìœ¼ë¡œ Restoreí•œë‹¤ */
             IDE_TEST( qmcSortTemp::restoreCursor( aDataPlan->sortMgr,
                                                   & aDataPlan->partitionCursorInfo )
                       != IDE_SUCCESS );
@@ -7092,7 +7092,7 @@ IDE_RC qmnWNST::partitionPrecedFollowRows( qcTemplate  * aTemplate,
                                    aDataPlan->mtrNode,
                                    aDataPlan->plan.myTuple->row ) != IDE_SUCCESS );
 
-            /* ÆÄÆ¼¼ÇÀÇ Ã³À½ºÎÅÍ StartPointÀÇ N°³ Àü±îÁö SKIPÇÑ´Ù */
+            /* íŒŒí‹°ì…˜ì˜ ì²˜ìŒë¶€í„° StartPointì˜ Nê°œ ì „ê¹Œì§€ SKIPí•œë‹¤ */
             for ( sCount = sWindowPos - sStartPoint, sExecAggrCnt = 0;
                   sCount > 0;
                   sCount--, sExecAggrCnt++ )
@@ -7113,7 +7113,7 @@ IDE_RC qmnWNST::partitionPrecedFollowRows( qcTemplate  * aTemplate,
 
             do
             {
-                /* StartPointÀÇ N°³ ÀüºÎÅÍ EndPointÀÇ N°³ ÈÄ ±îÁö AggrÇÑ´Ù. */
+                /* StartPointì˜ Nê°œ ì „ë¶€í„° EndPointì˜ Nê°œ í›„ ê¹Œì§€ Aggrí•œë‹¤. */
                 IDE_TEST( execAggregation( aTemplate,
                                            aAggrNode,
                                            NULL,
@@ -7144,7 +7144,7 @@ IDE_RC qmnWNST::partitionPrecedFollowRows( qcTemplate  * aTemplate,
                           != IDE_SUCCESS );
                 if ( (sFlag & QMC_ROW_DATA_MASK) == QMC_ROW_DATA_EXIST )
                 {
-                    /* °°Àº ÆÄÆ¼¼ÇÀÎÁö¸¦ Ã¼Å©ÇÑ´Ù */
+                    /* ê°™ì€ íŒŒí‹°ì…˜ì¸ì§€ë¥¼ ì²´í¬í•œë‹¤ */
                     IDE_TEST( compareRows( aDataPlan,
                                            aOverColumnNode,
                                            &sFlag )
@@ -7162,7 +7162,7 @@ IDE_RC qmnWNST::partitionPrecedFollowRows( qcTemplate  * aTemplate,
             aDataPlan->mtrRowIdx = 0;
             aDataPlan->plan.myTuple->row = aDataPlan->mtrRow[aDataPlan->mtrRowIdx];
 
-            /* ÇöÀç Row À§Ä¡·Î µÇµ¹¾Æ¿Â´Ù */
+            /* í˜„ì¬ Row ìœ„ì¹˜ë¡œ ë˜ëŒì•„ì˜¨ë‹¤ */
             IDE_TEST( qmcSortTemp::restoreCursor( aDataPlan->sortMgr,
                                                   &aDataPlan->cursorInfo )
                       != IDE_SUCCESS );
@@ -7172,7 +7172,7 @@ IDE_RC qmnWNST::partitionPrecedFollowRows( qcTemplate  * aTemplate,
             IDE_TEST( setTupleSet( aTemplate, aDataPlan->mtrNode, aDataPlan->plan.myTuple->row )
                       != IDE_SUCCESS );
 
-            /* AggregationµÈ °ªÀ» updateÇÏ°í ´ÙÀ½ Row¸¦ ÀĞ´Â´Ù. */
+            /* Aggregationëœ ê°’ì„ updateí•˜ê³  ë‹¤ìŒ Rowë¥¼ ì½ëŠ”ë‹¤. */
             IDE_TEST( updateOneRowNextRecord( aTemplate,
                                               aDataPlan,
                                               aAggrResultNode,
@@ -7182,7 +7182,7 @@ IDE_RC qmnWNST::partitionPrecedFollowRows( qcTemplate  * aTemplate,
             ++sWindowPos;
             if ( (sFlag & QMC_ROW_DATA_MASK) == QMC_ROW_DATA_EXIST )
             {
-                /* °°Àº ÆÄÆ¼¼ÇÀÎÁö¸¦ Ã¼Å©ÇÑ´Ù */
+                /* ê°™ì€ íŒŒí‹°ì…˜ì¸ì§€ë¥¼ ì²´í¬í•œë‹¤ */
                 IDE_TEST( compareRows( aDataPlan,
                                        aOverColumnNode,
                                        &sFlag )
@@ -7205,11 +7205,11 @@ IDE_RC qmnWNST::partitionPrecedFollowRows( qcTemplate  * aTemplate,
 /**
  * ROWS Order By N PRECEDING - N FOLLOWING
  *
- *  Start Point °¡ N  PRECEDING ÇöÀç RowÀÇ N °³ ÀüºÎÅÍ ½ÃÀÛÇÑ´Ù.
- *  End   Point ´Â N  FOLLOWING ÇöÀç RowÀÇ N °³ ÈÄ ±îÁöÀÌ´Ù.
+ *  Start Point ê°€ N  PRECEDING í˜„ì¬ Rowì˜ N ê°œ ì „ë¶€í„° ì‹œì‘í•œë‹¤.
+ *  End   Point ëŠ” N  FOLLOWING í˜„ì¬ Rowì˜ N ê°œ í›„ ê¹Œì§€ì´ë‹¤.
  *
- *  Ã³À½ ½ÃÀÛÇÏ¸é ÇöÀç Row¸¦ Cursor·Î ÀúÀåÇÑ´Ù. Ã³À½À¸·Î µ¹¾Æ°¡¼­ ÇöÀç ROWÀÇ N°³ Àü±îÁö´Â SKIP
- *  ÇÏ°í ±× µÚ ºÎÅÍ ÇöÀç Row¿¡¼­ N°³ ÈÄ±îÁö Aggregation ¼öÇà
+ *  ì²˜ìŒ ì‹œì‘í•˜ë©´ í˜„ì¬ Rowë¥¼ Cursorë¡œ ì €ì¥í•œë‹¤. ì²˜ìŒìœ¼ë¡œ ëŒì•„ê°€ì„œ í˜„ì¬ ROWì˜ Nê°œ ì „ê¹Œì§€ëŠ” SKIP
+ *  í•˜ê³  ê·¸ ë’¤ ë¶€í„° í˜„ì¬ Rowì—ì„œ Nê°œ í›„ê¹Œì§€ Aggregation ìˆ˜í–‰
  */
 IDE_RC qmnWNST::orderPrecedFollowRows( qcTemplate  * aTemplate,
                                        qmndWNST    * aDataPlan,
@@ -7236,7 +7236,7 @@ IDE_RC qmnWNST::orderPrecedFollowRows( qcTemplate  * aTemplate,
 
     while ( ( sFlag & QMC_ROW_DATA_MASK ) == QMC_ROW_DATA_EXIST )
     {
-        /* ÇöÀç À§Ä¡¸¦ ÀúÀåÇÑ´Ù. */
+        /* í˜„ì¬ ìœ„ì¹˜ë¥¼ ì €ì¥í•œë‹¤. */
         IDE_TEST( qmcSortTemp::storeCursor( aDataPlan->sortMgr,
                                             &aDataPlan->cursorInfo )
                   != IDE_SUCCESS );
@@ -7250,7 +7250,7 @@ IDE_RC qmnWNST::orderPrecedFollowRows( qcTemplate  * aTemplate,
         IDE_TEST( getFirstRecord( aTemplate, aDataPlan, &sFlag )
                   != IDE_SUCCESS );
 
-        /* ÆÄÆ¼¼ÇÀÇ Ã³À½ºÎÅÍ StartPointÀÇ N°³ Àü±îÁö SKIPÇÑ´Ù */
+        /* íŒŒí‹°ì…˜ì˜ ì²˜ìŒë¶€í„° StartPointì˜ Nê°œ ì „ê¹Œì§€ SKIPí•œë‹¤ */
         for ( sCount = sWindowPos - sStartPoint, sExecAggrCnt = 0;
               sCount > 0;
               sCount--, sExecAggrCnt++ )
@@ -7271,7 +7271,7 @@ IDE_RC qmnWNST::orderPrecedFollowRows( qcTemplate  * aTemplate,
 
         do
         {
-            /* StartPointÀÇ N°³ ÀüºÎÅÍ EndPointÀÇ N°³ ÈÄ ±îÁö AggrÇÑ´Ù. */
+            /* StartPointì˜ Nê°œ ì „ë¶€í„° EndPointì˜ Nê°œ í›„ ê¹Œì§€ Aggrí•œë‹¤. */
             IDE_TEST( execAggregation( aTemplate,
                                        aAggrNode,
                                        NULL,
@@ -7307,7 +7307,7 @@ IDE_RC qmnWNST::orderPrecedFollowRows( qcTemplate  * aTemplate,
         aDataPlan->mtrRowIdx = 0;
         aDataPlan->plan.myTuple->row = aDataPlan->mtrRow[aDataPlan->mtrRowIdx];
 
-        /* ÇöÀç Row À§Ä¡·Î µÇµ¹¾Æ¿Â´Ù */
+        /* í˜„ì¬ Row ìœ„ì¹˜ë¡œ ë˜ëŒì•„ì˜¨ë‹¤ */
         IDE_TEST( qmcSortTemp::restoreCursor( aDataPlan->sortMgr,
                                               &aDataPlan->cursorInfo )
                   != IDE_SUCCESS );
@@ -7317,7 +7317,7 @@ IDE_RC qmnWNST::orderPrecedFollowRows( qcTemplate  * aTemplate,
         IDE_TEST( setTupleSet( aTemplate, aDataPlan->mtrNode, aDataPlan->plan.myTuple->row )
                   != IDE_SUCCESS );
 
-        /* AggregationµÈ °ªÀ» updateÇÏ°í ´ÙÀ½ Row¸¦ ÀĞ´Â´Ù. */
+        /* Aggregationëœ ê°’ì„ updateí•˜ê³  ë‹¤ìŒ Rowë¥¼ ì½ëŠ”ë‹¤. */
         IDE_TEST( updateOneRowNextRecord( aTemplate,
                                           aDataPlan,
                                           aAggrResultNode,
@@ -7336,11 +7336,11 @@ IDE_RC qmnWNST::orderPrecedFollowRows( qcTemplate  * aTemplate,
 /**
  * ROWS Partition By Order By N FOLLOWING - UNBOUNDED FOLLWOING
  *
- *  Start Point °¡ N         FOLLOWING ÇöÀç RowÀÇ N °³ ÈÄºÎÅÍ ½ÃÀÛÇÑ´Ù.
- *  End   Point ´Â UNBOUNDED FOLLOWING ÇöÀç ÆÄÆ¼¼ÇÀÇ ¸¶Áö¸· ±îÁöÀÌ´Ù.
+ *  Start Point ê°€ N         FOLLOWING í˜„ì¬ Rowì˜ N ê°œ í›„ë¶€í„° ì‹œì‘í•œë‹¤.
+ *  End   Point ëŠ” UNBOUNDED FOLLOWING í˜„ì¬ íŒŒí‹°ì…˜ì˜ ë§ˆì§€ë§‰ ê¹Œì§€ì´ë‹¤.
  *
- *  Ã³À½ ½ÃÀÛÇÏ¸é ÇöÀç Row¸¦ Cursor·Î ÀúÀåÇÑ´Ù.
- *  ÇöÀç ROWÀÇ N°³ ÈÄ ±îÁö´Â SKIP ÇÏ°í ±× µÚ ºÎÅÍ ÆÄÆ¼¼ÇÀÇ ¸¶Áö¸·±îÁö Aggregation ¼öÇà
+ *  ì²˜ìŒ ì‹œì‘í•˜ë©´ í˜„ì¬ Rowë¥¼ Cursorë¡œ ì €ì¥í•œë‹¤.
+ *  í˜„ì¬ ROWì˜ Nê°œ í›„ ê¹Œì§€ëŠ” SKIP í•˜ê³  ê·¸ ë’¤ ë¶€í„° íŒŒí‹°ì…˜ì˜ ë§ˆì§€ë§‰ê¹Œì§€ Aggregation ìˆ˜í–‰
  */
 IDE_RC qmnWNST::partitionFollowUnFollowRows( qcTemplate  * aTemplate,
                                              qmndWNST    * aDataPlan,
@@ -7368,12 +7368,12 @@ IDE_RC qmnWNST::partitionFollowUnFollowRows( qcTemplate  * aTemplate,
         IDE_TEST( initAggregation( aTemplate, aAggrNode )
                   != IDE_SUCCESS );
 
-        /* ÇöÀç À§Ä¡¸¦ ÀúÀåÇÑ´Ù. */
+        /* í˜„ì¬ ìœ„ì¹˜ë¥¼ ì €ì¥í•œë‹¤. */
         IDE_TEST( qmcSortTemp::storeCursor( aDataPlan->sortMgr,
                                             &aDataPlan->cursorInfo )
                   != IDE_SUCCESS );
 
-        /* ÇöÀç À§Ä¡¿¡¼­ N°³ ÈÄ ±îÁö SKIPÇÑ´Ù. ÀÌ¶§ ´Ù¸¥ ÆÄÆ¼¼ÇÀÎ °æ¿ì¸¦ Á¶»çÇØ¼­ SkipÀ» ¸ØÃá´Ù */
+        /* í˜„ì¬ ìœ„ì¹˜ì—ì„œ Nê°œ í›„ ê¹Œì§€ SKIPí•œë‹¤. ì´ë•Œ ë‹¤ë¥¸ íŒŒí‹°ì…˜ì¸ ê²½ìš°ë¥¼ ì¡°ì‚¬í•´ì„œ Skipì„ ë©ˆì¶˜ë‹¤ */
         for ( sCount = sStartPoint;
               sCount > 0;
               sCount-- )
@@ -7392,7 +7392,7 @@ IDE_RC qmnWNST::partitionFollowUnFollowRows( qcTemplate  * aTemplate,
 
             if ( (sFlag & QMC_ROW_DATA_MASK) == QMC_ROW_DATA_EXIST )
             {
-                /* °°Àº ÆÄÆ¼¼ÇÀÎÁö¸¦ Ã¼Å©ÇÑ´Ù */
+                /* ê°™ì€ íŒŒí‹°ì…˜ì¸ì§€ë¥¼ ì²´í¬í•œë‹¤ */
                 IDE_TEST( compareRows( aDataPlan,
                                        aOverColumnNode,
                                        &sFlag )
@@ -7415,7 +7415,7 @@ IDE_RC qmnWNST::partitionFollowUnFollowRows( qcTemplate  * aTemplate,
 
         if ( sCount <= 0 )
         {
-            /* N °³ ÈÄºÎÅÍ ÆÄÆ¼¼ÇÀÇ ¸¶Áö¸·±îÁö °è»êÀ» ÇÑ´Ù. */
+            /* N ê°œ í›„ë¶€í„° íŒŒí‹°ì…˜ì˜ ë§ˆì§€ë§‰ê¹Œì§€ ê³„ì‚°ì„ í•œë‹¤. */
             while ( 1 )
             {
                 IDE_TEST( execAggregation( aTemplate,
@@ -7438,7 +7438,7 @@ IDE_RC qmnWNST::partitionFollowUnFollowRows( qcTemplate  * aTemplate,
 
                 if ( (sFlag & QMC_ROW_DATA_MASK) == QMC_ROW_DATA_EXIST )
                 {
-                    /* °°Àº ÆÄÆ¼¼ÇÀÎÁö¸¦ Ã¼Å©ÇÑ´Ù */
+                    /* ê°™ì€ íŒŒí‹°ì…˜ì¸ì§€ë¥¼ ì²´í¬í•œë‹¤ */
                     IDE_TEST( compareRows( aDataPlan,
                                            aOverColumnNode,
                                            &sFlag )
@@ -7469,7 +7469,7 @@ IDE_RC qmnWNST::partitionFollowUnFollowRows( qcTemplate  * aTemplate,
         aDataPlan->mtrRowIdx = 0;
         aDataPlan->plan.myTuple->row = aDataPlan->mtrRow[aDataPlan->mtrRowIdx];
 
-        /* ÇöÀç Row À§Ä¡·Î µÇµ¹¾Æ¿Â´Ù */
+        /* í˜„ì¬ Row ìœ„ì¹˜ë¡œ ë˜ëŒì•„ì˜¨ë‹¤ */
         IDE_TEST( qmcSortTemp::restoreCursor( aDataPlan->sortMgr,
                                               &aDataPlan->cursorInfo )
                   != IDE_SUCCESS );
@@ -7488,7 +7488,7 @@ IDE_RC qmnWNST::partitionFollowUnFollowRows( qcTemplate  * aTemplate,
                                              aDataPlan->plan.myTuple->row )
                       != IDE_SUCCESS );
         }
-        /* Update¸¦ ¼öÇàÇÑ´Ù. */
+        /* Updateë¥¼ ìˆ˜í–‰í•œë‹¤. */
         IDE_TEST( qmcSortTemp::updateRow( aDataPlan->sortMgr )
                   != IDE_SUCCESS );
 
@@ -7503,7 +7503,7 @@ IDE_RC qmnWNST::partitionFollowUnFollowRows( qcTemplate  * aTemplate,
             aDataPlan->plan.myTuple->row = aDataPlan->mtrRow[aDataPlan->mtrRowIdx];
         }
 
-        /* ´ÙÀ½ Record¸¦ °¡Á®¿Â´Ù */
+        /* ë‹¤ìŒ Recordë¥¼ ê°€ì ¸ì˜¨ë‹¤ */
         IDE_TEST( getNextRecord( aTemplate, aDataPlan, &sFlag )
                   != IDE_SUCCESS );
     }
@@ -7518,11 +7518,11 @@ IDE_RC qmnWNST::partitionFollowUnFollowRows( qcTemplate  * aTemplate,
 /**
  * ROWS Order By N FOLLOWING - UNBOUNDED FOLLOWING
  *
- *  Start Point °¡ N         FOLLOWING ÇöÀç RowÀÇ N °³ ÈÄºÎÅÍ ½ÃÀÛÇÑ´Ù.
- *  End   Point ´Â UNBOUNDED FOLLOWING ÇöÀç ÆÄÆ¼¼ÇÀÇ ¸¶Áö¸· ±îÁöÀÌ´Ù.
+ *  Start Point ê°€ N         FOLLOWING í˜„ì¬ Rowì˜ N ê°œ í›„ë¶€í„° ì‹œì‘í•œë‹¤.
+ *  End   Point ëŠ” UNBOUNDED FOLLOWING í˜„ì¬ íŒŒí‹°ì…˜ì˜ ë§ˆì§€ë§‰ ê¹Œì§€ì´ë‹¤.
  *
- *  Ã³À½ ½ÃÀÛÇÏ¸é ÇöÀç Row¸¦ Cursor·Î ÀúÀåÇÑ´Ù.
- *  ÇöÀç ROWÀÇ N°³ ÈÄ±îÁö´Â SKIP ÇÏ°í ±× µÚ ºÎÅÍ ³¡±îÁö Aggregation ¼öÇà
+ *  ì²˜ìŒ ì‹œì‘í•˜ë©´ í˜„ì¬ Rowë¥¼ Cursorë¡œ ì €ì¥í•œë‹¤.
+ *  í˜„ì¬ ROWì˜ Nê°œ í›„ê¹Œì§€ëŠ” SKIP í•˜ê³  ê·¸ ë’¤ ë¶€í„° ëê¹Œì§€ Aggregation ìˆ˜í–‰
  */
 IDE_RC qmnWNST::orderFollowUnFollowRows( qcTemplate  * aTemplate,
                                          qmndWNST    * aDataPlan,
@@ -7552,7 +7552,7 @@ IDE_RC qmnWNST::orderFollowUnFollowRows( qcTemplate  * aTemplate,
                                             &aDataPlan->cursorInfo )
                   != IDE_SUCCESS );
 
-        /* ÇöÀç À§Ä¡¿¡¼­ N°³ ÈÄ ±îÁö SKIPÇÑ´Ù. */
+        /* í˜„ì¬ ìœ„ì¹˜ì—ì„œ Nê°œ í›„ ê¹Œì§€ SKIPí•œë‹¤. */
         for ( sCount = sStartPoint;
               sCount > 0;
               sCount-- )
@@ -7582,7 +7582,7 @@ IDE_RC qmnWNST::orderFollowUnFollowRows( qcTemplate  * aTemplate,
 
         if ( sCount <= 0 )
         {
-            /* N °³ ÈÄºÎÅÍ ¸¶Áö¸·±îÁö °è»êÀ» ÇÑ´Ù. */
+            /* N ê°œ í›„ë¶€í„° ë§ˆì§€ë§‰ê¹Œì§€ ê³„ì‚°ì„ í•œë‹¤. */
             while ( 1 )
             {
                 IDE_TEST( execAggregation( aTemplate,
@@ -7623,7 +7623,7 @@ IDE_RC qmnWNST::orderFollowUnFollowRows( qcTemplate  * aTemplate,
         aDataPlan->mtrRowIdx    = 0;
         aDataPlan->plan.myTuple->row = aDataPlan->mtrRow[aDataPlan->mtrRowIdx];
 
-        /* ÇöÀç Row·Î µÇµ¹¾Æ ¿Â´Ù */
+        /* í˜„ì¬ Rowë¡œ ë˜ëŒì•„ ì˜¨ë‹¤ */
         IDE_TEST( qmcSortTemp::restoreCursor( aDataPlan->sortMgr,
                                               &aDataPlan->cursorInfo )
                   != IDE_SUCCESS );
@@ -7633,7 +7633,7 @@ IDE_RC qmnWNST::orderFollowUnFollowRows( qcTemplate  * aTemplate,
         IDE_TEST( setTupleSet( aTemplate, aDataPlan->mtrNode, aDataPlan->plan.myTuple->row )
                   != IDE_SUCCESS );
 
-        /* AggregationµÈ °ªÀ» updateÇÏ°í ´ÙÀ½ Row¸¦ ÀĞ´Â´Ù. */
+        /* Aggregationëœ ê°’ì„ updateí•˜ê³  ë‹¤ìŒ Rowë¥¼ ì½ëŠ”ë‹¤. */
         IDE_TEST( updateOneRowNextRecord( aTemplate,
                                           aDataPlan,
                                           aAggrResultNode,
@@ -7651,11 +7651,11 @@ IDE_RC qmnWNST::orderFollowUnFollowRows( qcTemplate  * aTemplate,
 /**
  * ROWS Partition By Order By N FOLLOWING - N FOLLWOING
  *
- *  Start Point °¡ N FOLLOWING ÇöÀç RowÀÇ N °³ ÈÄºÎÅÍ ½ÃÀÛÇÑ´Ù.
- *  End   Point ´Â N FOLLOWING ÇöÀç RowÀÇ N °³ ÈÄ ±îÁöÀÌ´Ù.
+ *  Start Point ê°€ N FOLLOWING í˜„ì¬ Rowì˜ N ê°œ í›„ë¶€í„° ì‹œì‘í•œë‹¤.
+ *  End   Point ëŠ” N FOLLOWING í˜„ì¬ Rowì˜ N ê°œ í›„ ê¹Œì§€ì´ë‹¤.
  *
- *  Ã³À½ ½ÃÀÛÇÏ¸é ÇöÀç Row¸¦ Cursor·Î ÀúÀåÇÑ´Ù.
- *  ÇöÀç ROWÀÇ Start N°³ Àü±îÁö´Â SKIP ÇÏ°í ±× µÚ ºÎÅÍ End N °³ ÈÄ±îÁö Aggregation ¼öÇà
+ *  ì²˜ìŒ ì‹œì‘í•˜ë©´ í˜„ì¬ Rowë¥¼ Cursorë¡œ ì €ì¥í•œë‹¤.
+ *  í˜„ì¬ ROWì˜ Start Nê°œ ì „ê¹Œì§€ëŠ” SKIP í•˜ê³  ê·¸ ë’¤ ë¶€í„° End N ê°œ í›„ê¹Œì§€ Aggregation ìˆ˜í–‰
  */
 IDE_RC qmnWNST::partitionFollowFollowRows( qcTemplate  * aTemplate,
                                            qmndWNST    * aDataPlan,
@@ -7686,12 +7686,12 @@ IDE_RC qmnWNST::partitionFollowFollowRows( qcTemplate  * aTemplate,
         IDE_TEST( initAggregation( aTemplate, aAggrNode )
                   != IDE_SUCCESS );
 
-        /* ÇöÀç À§Ä¡¸¦ ÀúÀåÇÑ´Ù. */
+        /* í˜„ì¬ ìœ„ì¹˜ë¥¼ ì €ì¥í•œë‹¤. */
         IDE_TEST( qmcSortTemp::storeCursor( aDataPlan->sortMgr,
                                             &aDataPlan->cursorInfo )
                   != IDE_SUCCESS );
 
-        /* ÇöÀç À§Ä¡¿¡¼­ N°³ ÈÄ ±îÁö SKIPÇÑ´Ù. ÀÌ¶§ ´Ù¸¥ ÆÄÆ¼¼ÇÀÎ °æ¿ì¸¦ Á¶»çÇØ¼­ SkipÀ» ¸ØÃá´Ù */
+        /* í˜„ì¬ ìœ„ì¹˜ì—ì„œ Nê°œ í›„ ê¹Œì§€ SKIPí•œë‹¤. ì´ë•Œ ë‹¤ë¥¸ íŒŒí‹°ì…˜ì¸ ê²½ìš°ë¥¼ ì¡°ì‚¬í•´ì„œ Skipì„ ë©ˆì¶˜ë‹¤ */
         for ( sCount = sStartPoint;
               sCount > 0;
               sCount-- )
@@ -7719,7 +7719,7 @@ IDE_RC qmnWNST::partitionFollowFollowRows( qcTemplate  * aTemplate,
 
             if ( (sFlag & QMC_ROW_DATA_MASK) == QMC_ROW_DATA_EXIST )
             {
-                /* °°Àº ÆÄÆ¼¼ÇÀÎÁö¸¦ Ã¼Å©ÇÑ´Ù */
+                /* ê°™ì€ íŒŒí‹°ì…˜ì¸ì§€ë¥¼ ì²´í¬í•œë‹¤ */
                 IDE_TEST( compareRows( aDataPlan,
                                        aOverColumnNode,
                                        &sFlag )
@@ -7742,7 +7742,7 @@ IDE_RC qmnWNST::partitionFollowFollowRows( qcTemplate  * aTemplate,
 
         if ( sCount <= 0 )
         {
-            /* N °³ ÈÄ±îÁö °è»êÀ» ÇÑ´Ù. ÀÌ¶§ ´Ù¸¥ ÆÄÆ¼¼ÇÀÎÁö¸¦ Á¶»çÇÑ´Ù */
+            /* N ê°œ í›„ê¹Œì§€ ê³„ì‚°ì„ í•œë‹¤. ì´ë•Œ ë‹¤ë¥¸ íŒŒí‹°ì…˜ì¸ì§€ë¥¼ ì¡°ì‚¬í•œë‹¤ */
             for ( sExecCount = sEndPoint - sStartPoint;
                   sExecCount >= 0;
                   sExecCount-- )
@@ -7768,7 +7768,7 @@ IDE_RC qmnWNST::partitionFollowFollowRows( qcTemplate  * aTemplate,
 
                 if ( (sFlag & QMC_ROW_DATA_MASK) == QMC_ROW_DATA_EXIST )
                 {
-                    /* °°Àº ÆÄÆ¼¼ÇÀÎÁö¸¦ Ã¼Å©ÇÑ´Ù */
+                    /* ê°™ì€ íŒŒí‹°ì…˜ì¸ì§€ë¥¼ ì²´í¬í•œë‹¤ */
                     IDE_TEST( compareRows( aDataPlan,
                                            aOverColumnNode,
                                            &sFlag )
@@ -7798,7 +7798,7 @@ IDE_RC qmnWNST::partitionFollowFollowRows( qcTemplate  * aTemplate,
         aDataPlan->mtrRowIdx = 0;
         aDataPlan->plan.myTuple->row = aDataPlan->mtrRow[aDataPlan->mtrRowIdx];
 
-        /* ÇöÀç Row À§Ä¡·Î µÇµ¹¾Æ¿Â´Ù */
+        /* í˜„ì¬ Row ìœ„ì¹˜ë¡œ ë˜ëŒì•„ì˜¨ë‹¤ */
         IDE_TEST( qmcSortTemp::restoreCursor( aDataPlan->sortMgr,
                                               &aDataPlan->cursorInfo )
                   != IDE_SUCCESS );
@@ -7817,7 +7817,7 @@ IDE_RC qmnWNST::partitionFollowFollowRows( qcTemplate  * aTemplate,
                                              aDataPlan->plan.myTuple->row )
                       != IDE_SUCCESS );
         }
-        /* Update¸¦ ¼öÇàÇÑ´Ù. */
+        /* Updateë¥¼ ìˆ˜í–‰í•œë‹¤. */
         IDE_TEST( qmcSortTemp::updateRow( aDataPlan->sortMgr )
                   != IDE_SUCCESS );
 
@@ -7832,7 +7832,7 @@ IDE_RC qmnWNST::partitionFollowFollowRows( qcTemplate  * aTemplate,
             aDataPlan->plan.myTuple->row = aDataPlan->mtrRow[aDataPlan->mtrRowIdx];
         }
 
-        /* ´ÙÀ½ Record¸¦ °¡Á®¿Â´Ù */
+        /* ë‹¤ìŒ Recordë¥¼ ê°€ì ¸ì˜¨ë‹¤ */
         IDE_TEST( getNextRecord( aTemplate, aDataPlan, &sFlag )
                   != IDE_SUCCESS );
     }
@@ -7847,11 +7847,11 @@ IDE_RC qmnWNST::partitionFollowFollowRows( qcTemplate  * aTemplate,
 /**
  * ROWS Order By N FOLLOWING - N FOLLWOING
  *
- *  Start Point °¡ N FOLLOWING ÇöÀç RowÀÇ N °³ ÈÄºÎÅÍ ½ÃÀÛÇÑ´Ù.
- *  End   Point ´Â N FOLLOWING ÇöÀç RowÀÇ N °³ ÈÄ ±îÁöÀÌ´Ù.
+ *  Start Point ê°€ N FOLLOWING í˜„ì¬ Rowì˜ N ê°œ í›„ë¶€í„° ì‹œì‘í•œë‹¤.
+ *  End   Point ëŠ” N FOLLOWING í˜„ì¬ Rowì˜ N ê°œ í›„ ê¹Œì§€ì´ë‹¤.
  *
- *  Ã³À½ ½ÃÀÛÇÏ¸é ÇöÀç Row¸¦ Cursor·Î ÀúÀåÇÑ´Ù.
- *  ÇöÀç ROWÀÇ Start N°³ Àü±îÁö´Â SKIP ÇÏ°í ±× µÚ ºÎÅÍ End N °³ ÈÄ±îÁö Aggregation ¼öÇà
+ *  ì²˜ìŒ ì‹œì‘í•˜ë©´ í˜„ì¬ Rowë¥¼ Cursorë¡œ ì €ì¥í•œë‹¤.
+ *  í˜„ì¬ ROWì˜ Start Nê°œ ì „ê¹Œì§€ëŠ” SKIP í•˜ê³  ê·¸ ë’¤ ë¶€í„° End N ê°œ í›„ê¹Œì§€ Aggregation ìˆ˜í–‰
  */
 IDE_RC qmnWNST::orderFollowFollowRows( qcTemplate  * aTemplate,
                                        qmndWNST    * aDataPlan,
@@ -7884,7 +7884,7 @@ IDE_RC qmnWNST::orderFollowFollowRows( qcTemplate  * aTemplate,
                                             &aDataPlan->cursorInfo )
                   != IDE_SUCCESS );
 
-        /* ÇöÀç À§Ä¡¿¡¼­ N°³ ÈÄ ±îÁö SKIPÇÑ´Ù. */
+        /* í˜„ì¬ ìœ„ì¹˜ì—ì„œ Nê°œ í›„ ê¹Œì§€ SKIPí•œë‹¤. */
         for ( sCount = sStartPoint;
               sCount > 0;
               sCount-- )
@@ -7965,7 +7965,7 @@ IDE_RC qmnWNST::orderFollowFollowRows( qcTemplate  * aTemplate,
         aDataPlan->mtrRowIdx = 0;
         aDataPlan->plan.myTuple->row = aDataPlan->mtrRow[aDataPlan->mtrRowIdx];
 
-        /* ÇöÀç Row·Î µÇµ¹¾Æ ¿Â´Ù */
+        /* í˜„ì¬ Rowë¡œ ë˜ëŒì•„ ì˜¨ë‹¤ */
         IDE_TEST( qmcSortTemp::restoreCursor( aDataPlan->sortMgr,
                                               &aDataPlan->cursorInfo )
                   != IDE_SUCCESS );
@@ -7975,7 +7975,7 @@ IDE_RC qmnWNST::orderFollowFollowRows( qcTemplate  * aTemplate,
         IDE_TEST( setTupleSet( aTemplate, aDataPlan->mtrNode, aDataPlan->plan.myTuple->row )
                   != IDE_SUCCESS );
 
-        /* AggregationµÈ °ªÀ» updateÇÏ°í ´ÙÀ½ Row¸¦ ÀĞ´Â´Ù. */
+        /* Aggregationëœ ê°’ì„ updateí•˜ê³  ë‹¤ìŒ Rowë¥¼ ì½ëŠ”ë‹¤. */
         IDE_TEST( updateOneRowNextRecord( aTemplate,
                                           aDataPlan,
                                           aAggrResultNode,
@@ -7993,12 +7993,12 @@ IDE_RC qmnWNST::orderFollowFollowRows( qcTemplate  * aTemplate,
 /**
  * RANGE Partition By Order By CURRENT ROW - UNBOUNDED FOLLOWING
  *
- *  Start Point °¡ CURRENT   ROW       ÇöÀç Row ºÎÅÍ ½ÃÀÛÇÑ´Ù.
- *  End   Point ´Â UNBOUNDED FOLLOWING ÆÄÆ¼¼ÇÀÌ ¸¶Áö¸· ±îÁöÀÌ´Ù.
+ *  Start Point ê°€ CURRENT   ROW       í˜„ì¬ Row ë¶€í„° ì‹œì‘í•œë‹¤.
+ *  End   Point ëŠ” UNBOUNDED FOLLOWING íŒŒí‹°ì…˜ì´ ë§ˆì§€ë§‰ ê¹Œì§€ì´ë‹¤.
  *
- *  Ã³À½ ½ÃÀÛÇÏ¸é ÇöÀç RowÀÇ À§Ä¡¸¦ ÀúÀåÇÑ´Ù. ÇöÀç Row¿¡¼­ ÆÄÆ¼¼ÇÀÇ ³¡±îÁö AggrÀ» °è»êÇÏ´Âµ¥
- *  ÀÌ ¶§ ÇöÀç Row¿Í LogicalÇÏ°Ô °°Àº Áï Order by ±¸¹®ÀÇ ÄÃ·³±îÁö °°Àº Row¸¦ ¼¼¼­ ±×¸¸Å­
- *  Update¸¦ ¼öÇàÇÏ°í ´ÙÀ½ Record¸¦ ÀĞ´Â´Ù.
+ *  ì²˜ìŒ ì‹œì‘í•˜ë©´ í˜„ì¬ Rowì˜ ìœ„ì¹˜ë¥¼ ì €ì¥í•œë‹¤. í˜„ì¬ Rowì—ì„œ íŒŒí‹°ì…˜ì˜ ëê¹Œì§€ Aggrì„ ê³„ì‚°í•˜ëŠ”ë°
+ *  ì´ ë•Œ í˜„ì¬ Rowì™€ Logicalí•˜ê²Œ ê°™ì€ ì¦‰ Order by êµ¬ë¬¸ì˜ ì»¬ëŸ¼ê¹Œì§€ ê°™ì€ Rowë¥¼ ì„¸ì„œ ê·¸ë§Œí¼
+ *  Updateë¥¼ ìˆ˜í–‰í•˜ê³  ë‹¤ìŒ Recordë¥¼ ì½ëŠ”ë‹¤.
  */
 IDE_RC qmnWNST::partitionCurrentUnFollowRange( qcTemplate  * aTemplate,
                                                qmndWNST    * aDataPlan,
@@ -8026,7 +8026,7 @@ IDE_RC qmnWNST::partitionCurrentUnFollowRange( qcTemplate  * aTemplate,
             IDE_TEST( initAggregation( aTemplate, aAggrNode )
                       != IDE_SUCCESS );
 
-            /* ÇöÀç À§Ä¡¸¦ ÀúÀåÇÑ´Ù. */
+            /* í˜„ì¬ ìœ„ì¹˜ë¥¼ ì €ì¥í•œë‹¤. */
             IDE_TEST( qmcSortTemp::storeCursor( aDataPlan->sortMgr,
                                                 &aDataPlan->cursorInfo )
                       != IDE_SUCCESS );
@@ -8035,7 +8035,7 @@ IDE_RC qmnWNST::partitionCurrentUnFollowRange( qcTemplate  * aTemplate,
 
             do
             {
-                /* ÇöÀç Row ºÎÅÍ ÆÄÆ¼¼ÇÀÇ ³¡±îÁö AggrÀ» ¼öÇàÇÑ´Ù. */
+                /* í˜„ì¬ Row ë¶€í„° íŒŒí‹°ì…˜ì˜ ëê¹Œì§€ Aggrì„ ìˆ˜í–‰í•œë‹¤. */
                 IDE_TEST( execAggregation( aTemplate,
                                            aAggrNode,
                                            NULL,
@@ -8061,7 +8061,7 @@ IDE_RC qmnWNST::partitionCurrentUnFollowRange( qcTemplate  * aTemplate,
                     break;
                 }
 
-                /* Partitioy By ÄÃ·³°ú Order By ÄÃ·³ÀÌ ¸ğµÎ °°Àº °æ¿ì ÀÌ´Ù */
+                /* Partitioy By ì»¬ëŸ¼ê³¼ Order By ì»¬ëŸ¼ì´ ëª¨ë‘ ê°™ì€ ê²½ìš° ì´ë‹¤ */
                 if ( ( sFlag & QMC_ROW_COMPARE_MASK ) == QMC_ROW_COMPARE_SAME )
                 {
                     ++sSameAggrCnt;
@@ -8076,8 +8076,8 @@ IDE_RC qmnWNST::partitionCurrentUnFollowRange( qcTemplate  * aTemplate,
             IDE_TEST( finiAggregation( aTemplate, aAggrNode )
                       != IDE_SUCCESS );
 
-            /* ÇöÀç À§Ä¡·Î µ¹¾Æ°¡¼­ Order By ÄÃ·³±îÁö °°Àº °æ¿ì ±îÁö Update¸¦ ¼öÇàÇÏ°í
-             * ´ÙÀ½ Record¸¦ ÀĞ´Â´Ù.
+            /* í˜„ì¬ ìœ„ì¹˜ë¡œ ëŒì•„ê°€ì„œ Order By ì»¬ëŸ¼ê¹Œì§€ ê°™ì€ ê²½ìš° ê¹Œì§€ Updateë¥¼ ìˆ˜í–‰í•˜ê³ 
+             * ë‹¤ìŒ Recordë¥¼ ì½ëŠ”ë‹¤.
              */
             IDE_TEST( updateAggrRows( aTemplate,
                                       aDataPlan,
@@ -8118,12 +8118,12 @@ IDE_RC qmnWNST::partitionCurrentUnFollowRange( qcTemplate  * aTemplate,
 /**
  * RANGE Order By CURRENT ROW- UNBOUNDED FOLLOWING
  *
- *  Start Point °¡ CURRENT   ROW       ÇöÀç Row ºÎÅÍ ½ÃÀÛÇÑ´Ù.
- *  End   Point ´Â UNBOUNDED FOLLOWING ¸¶Áö¸· ±îÁöÀÌ´Ù.
+ *  Start Point ê°€ CURRENT   ROW       í˜„ì¬ Row ë¶€í„° ì‹œì‘í•œë‹¤.
+ *  End   Point ëŠ” UNBOUNDED FOLLOWING ë§ˆì§€ë§‰ ê¹Œì§€ì´ë‹¤.
  *
- *  Ã³À½ ½ÃÀÛÇÏ¸é ÇöÀç RowÀÇ À§Ä¡¸¦ ÀúÀåÇÑ´Ù. ÇöÀç Row¿¡¼­ ÆÄÆ¼¼ÇÀÇ ³¡±îÁö AggrÀ» °è»êÇÏ´Âµ¥
- *  ÀÌ ¶§ ÇöÀç Row¿Í LogicalÇÏ°Ô °°Àº Áï Order by ±¸¹®ÀÇ ÄÃ·³±îÁö °°Àº Row¸¦ ¼¼¼­ ±×¸¸Å­
- *  Update¸¦ ¼öÇàÇÏ°í ´ÙÀ½ Record¸¦ ÀĞ´Â´Ù.
+ *  ì²˜ìŒ ì‹œì‘í•˜ë©´ í˜„ì¬ Rowì˜ ìœ„ì¹˜ë¥¼ ì €ì¥í•œë‹¤. í˜„ì¬ Rowì—ì„œ íŒŒí‹°ì…˜ì˜ ëê¹Œì§€ Aggrì„ ê³„ì‚°í•˜ëŠ”ë°
+ *  ì´ ë•Œ í˜„ì¬ Rowì™€ Logicalí•˜ê²Œ ê°™ì€ ì¦‰ Order by êµ¬ë¬¸ì˜ ì»¬ëŸ¼ê¹Œì§€ ê°™ì€ Rowë¥¼ ì„¸ì„œ ê·¸ë§Œí¼
+ *  Updateë¥¼ ìˆ˜í–‰í•˜ê³  ë‹¤ìŒ Recordë¥¼ ì½ëŠ”ë‹¤.
  */
 IDE_RC qmnWNST::orderCurrentUnFollowRange( qcTemplate  * aTemplate,
                                            qmndWNST    * aDataPlan,
@@ -8150,7 +8150,7 @@ IDE_RC qmnWNST::orderCurrentUnFollowRange( qcTemplate  * aTemplate,
         {
             IDE_TEST( initAggregation( aTemplate, aAggrNode )
                       != IDE_SUCCESS );
-            /* ÇöÀç À§Ä¡¸¦ ÀúÀåÇÑ´Ù */
+            /* í˜„ì¬ ìœ„ì¹˜ë¥¼ ì €ì¥í•œë‹¤ */
             IDE_TEST( qmcSortTemp::storeCursor( aDataPlan->sortMgr,
                                                 &aDataPlan->cursorInfo )
                       != IDE_SUCCESS );
@@ -8160,7 +8160,7 @@ IDE_RC qmnWNST::orderCurrentUnFollowRange( qcTemplate  * aTemplate,
 
             do
             {
-                /* ÇöÀç RowºÎÅÍ ¸¶Áö¸· Row°¡Áö AggrÀ» ¼öÇàÇÑ´Ù */
+                /* í˜„ì¬ Rowë¶€í„° ë§ˆì§€ë§‰ Rowê°€ì§€ Aggrì„ ìˆ˜í–‰í•œë‹¤ */
                 IDE_TEST( execAggregation( aTemplate,
                                            aAggrNode,
                                            NULL,
@@ -8186,7 +8186,7 @@ IDE_RC qmnWNST::orderCurrentUnFollowRange( qcTemplate  * aTemplate,
                     break;
                 }
 
-                /* Partitioy By ÄÃ·³°ú Order By ÄÃ·³ÀÌ ¸ğµÎ °°Àº °æ¿ì ÀÌ´Ù */
+                /* Partitioy By ì»¬ëŸ¼ê³¼ Order By ì»¬ëŸ¼ì´ ëª¨ë‘ ê°™ì€ ê²½ìš° ì´ë‹¤ */
                 if ( (sFlag & QMC_ROW_COMPARE_MASK) == QMC_ROW_COMPARE_SAME )
                 {
                     ++sSameAggrCnt;
@@ -8200,8 +8200,8 @@ IDE_RC qmnWNST::orderCurrentUnFollowRange( qcTemplate  * aTemplate,
             IDE_TEST( finiAggregation( aTemplate, aAggrNode )
                       != IDE_SUCCESS );
 
-            /* ÇöÀç À§Ä¡·Î µ¹¾Æ°¡¼­ Order By ÄÃ·³±îÁö °°Àº °æ¿ì ±îÁö Update¸¦ ¼öÇàÇÏ°í
-             * ´ÙÀ½ Record¸¦ ÀĞ´Â´Ù.
+            /* í˜„ì¬ ìœ„ì¹˜ë¡œ ëŒì•„ê°€ì„œ Order By ì»¬ëŸ¼ê¹Œì§€ ê°™ì€ ê²½ìš° ê¹Œì§€ Updateë¥¼ ìˆ˜í–‰í•˜ê³ 
+             * ë‹¤ìŒ Recordë¥¼ ì½ëŠ”ë‹¤.
              */
             IDE_TEST( updateAggrRows( aTemplate,
                                       aDataPlan,
@@ -8226,11 +8226,11 @@ IDE_RC qmnWNST::orderCurrentUnFollowRange( qcTemplate  * aTemplate,
 /**
  * RANGE CURRENT ROW - CURRENT ROW
  *
- *  Start Point °¡ CURRENT ROW ÇöÀç Row ºÎÅÍ ½ÃÀÛÇÑ´Ù.
- *  End   Point ´Â CURRENT ROW ÇöÀç Row ±îÁöÀÌ´Ù.
+ *  Start Point ê°€ CURRENT ROW í˜„ì¬ Row ë¶€í„° ì‹œì‘í•œë‹¤.
+ *  End   Point ëŠ” CURRENT ROW í˜„ì¬ Row ê¹Œì§€ì´ë‹¤.
  *
- *  Ã³À½ ½ÃÀÛÇÏ¸é ÇöÀç RowÀÇ À§Ä¡¸¦ ÀúÀåÇÑ´Ù. ÇöÀç Row¿¡¼­ ÇöÀç Row¿Í LogicalÇÏ°Ô °°Àº
- *  Áï Order by ±¸¹®ÀÇ ÄÃ·³±îÁö °°Àº Row¸¦ ¼¼¼­ ±×¸¸Å­ Update¸¦ ¼öÇàÇÏ°í ´ÙÀ½ Record¸¦ ÀĞ´Â´Ù.
+ *  ì²˜ìŒ ì‹œì‘í•˜ë©´ í˜„ì¬ Rowì˜ ìœ„ì¹˜ë¥¼ ì €ì¥í•œë‹¤. í˜„ì¬ Rowì—ì„œ í˜„ì¬ Rowì™€ Logicalí•˜ê²Œ ê°™ì€
+ *  ì¦‰ Order by êµ¬ë¬¸ì˜ ì»¬ëŸ¼ê¹Œì§€ ê°™ì€ Rowë¥¼ ì„¸ì„œ ê·¸ë§Œí¼ Updateë¥¼ ìˆ˜í–‰í•˜ê³  ë‹¤ìŒ Recordë¥¼ ì½ëŠ”ë‹¤.
  */
 IDE_RC qmnWNST::currentCurrentRange( qcTemplate  * aTemplate,
                                      qmndWNST    * aDataPlan,
@@ -8256,7 +8256,7 @@ IDE_RC qmnWNST::currentCurrentRange( qcTemplate  * aTemplate,
         {
             IDE_TEST( initAggregation( aTemplate, aAggrNode )
                       != IDE_SUCCESS );
-            /* ÇöÀç À§Ä¡¸¦ ÀúÀåÇÑ´Ù */
+            /* í˜„ì¬ ìœ„ì¹˜ë¥¼ ì €ì¥í•œë‹¤ */
             IDE_TEST( qmcSortTemp::storeCursor( aDataPlan->sortMgr,
                                                 &aDataPlan->cursorInfo )
                       != IDE_SUCCESS );
@@ -8264,7 +8264,7 @@ IDE_RC qmnWNST::currentCurrentRange( qcTemplate  * aTemplate,
 
             do
             {
-                /* ÇöÀç Row¿¡¼­ Order by ±¸¹®ÀÇ ÄÃ·³±îÁö °°Àº Row¸¦ Aggr ÇÑ´Ù */
+                /* í˜„ì¬ Rowì—ì„œ Order by êµ¬ë¬¸ì˜ ì»¬ëŸ¼ê¹Œì§€ ê°™ì€ Rowë¥¼ Aggr í•œë‹¤ */
                 IDE_TEST( execAggregation( aTemplate,
                                            aAggrNode,
                                            NULL,
@@ -8280,7 +8280,7 @@ IDE_RC qmnWNST::currentCurrentRange( qcTemplate  * aTemplate,
 
                 if ( (sFlag & QMC_ROW_DATA_MASK) == QMC_ROW_DATA_EXIST )
                 {
-                    /* LogicalÇÏ°Ô °°Àº Áö ºñ±³ÇÑ´Ù */
+                    /* Logicalí•˜ê²Œ ê°™ì€ ì§€ ë¹„êµí•œë‹¤ */
                     IDE_TEST( compareRows( aDataPlan,
                                            aOverColumnNode,
                                            &sFlag )
@@ -8295,8 +8295,8 @@ IDE_RC qmnWNST::currentCurrentRange( qcTemplate  * aTemplate,
             IDE_TEST( finiAggregation( aTemplate, aAggrNode )
                       != IDE_SUCCESS );
 
-            /* ÇöÀç À§Ä¡·Î µ¹¾Æ°¡¼­ Order By ÄÃ·³±îÁö °°Àº °æ¿ì ±îÁö Update¸¦ ¼öÇàÇÏ°í
-             * ´ÙÀ½ Record¸¦ ÀĞ´Â´Ù.
+            /* í˜„ì¬ ìœ„ì¹˜ë¡œ ëŒì•„ê°€ì„œ Order By ì»¬ëŸ¼ê¹Œì§€ ê°™ì€ ê²½ìš° ê¹Œì§€ Updateë¥¼ ìˆ˜í–‰í•˜ê³ 
+             * ë‹¤ìŒ Recordë¥¼ ì½ëŠ”ë‹¤.
              */
             IDE_TEST( updateAggrRows( aTemplate,
                                       aDataPlan,
@@ -8321,20 +8321,20 @@ IDE_RC qmnWNST::currentCurrentRange( qcTemplate  * aTemplate,
 /**
  * Calculate Interval
  *
- *   Range ±¸¹®¿¡¼­¸¸ »ç¿ëµÇ¸ç N PRECEDING, N FOLLOWING¿¡¼­ »ç¿ëµÇ´Â N¿¡ ´ëÇØ¼­
- *   ÇöÀç Row¿Í °è»êÀ» ¼öÇàÇÑ´Ù.
+ *   Range êµ¬ë¬¸ì—ì„œë§Œ ì‚¬ìš©ë˜ë©° N PRECEDING, N FOLLOWINGì—ì„œ ì‚¬ìš©ë˜ëŠ” Nì— ëŒ€í•´ì„œ
+ *   í˜„ì¬ Rowì™€ ê³„ì‚°ì„ ìˆ˜í–‰í•œë‹¤.
  *
- *   Ç×»ó ORDER BY¿¡ »ç¿ëµÇ´Â ÄÃ·³ÀÌ 1 °³ ¿©¾ß¸¸ ÇÑ´Ù.
+ *   í•­ìƒ ORDER BYì— ì‚¬ìš©ë˜ëŠ” ì»¬ëŸ¼ì´ 1 ê°œ ì—¬ì•¼ë§Œ í•œë‹¤.
  *
- *   aInterval     - NÀ» ÀÇ¹ÌÇÑ´Ù. Range¿¡¼­´Â NÀÇ LogicalÇÑ °£°İÀ» ÀÇÈ÷ÇÔ´Ù.
- *   aIntervalType - NÀº Á¤¼öÇü¸¸ °¡´ÉÇÑµ¥ Order By ÄÃ·³ÀÌ ¼ıÀÚÀÌ°Å³ª DateÀÎ°æ¿ì¸¸
- *                   °¡´ÉÇÏ´Ù.
- *   aValue        - ÇöÀç Row¿¡¼­ Interval °ª¸¸Å­ »©°Å³ª ´õÇÑ °ªÀ» ¿©±â·Î ³Ñ°ÜÁØ´Ù.
- *   aIsPreceding  - PRECEDING ÀÎ °æ¿ì¿¡´Â ÇöÀç Row¿¡¼­ °ªÀ» »«°ªÀÌ°í,
- *                   FOLLOWING ÀÎ °æ¿ì¿¡´Â ÇöÀç Row¿¡¼­ °ªÀ» ´õÇÏ´Â°ÍÀ» ÀÇ¹ÌÇÑ´Ù.
+ *   aInterval     - Nì„ ì˜ë¯¸í•œë‹¤. Rangeì—ì„œëŠ” Nì˜ Logicalí•œ ê°„ê²©ì„ ì˜íˆí•¨ë‹¤.
+ *   aIntervalType - Nì€ ì •ìˆ˜í˜•ë§Œ ê°€ëŠ¥í•œë° Order By ì»¬ëŸ¼ì´ ìˆ«ìì´ê±°ë‚˜ Dateì¸ê²½ìš°ë§Œ
+ *                   ê°€ëŠ¥í•˜ë‹¤.
+ *   aValue        - í˜„ì¬ Rowì—ì„œ Interval ê°’ë§Œí¼ ë¹¼ê±°ë‚˜ ë”í•œ ê°’ì„ ì—¬ê¸°ë¡œ ë„˜ê²¨ì¤€ë‹¤.
+ *   aIsPreceding  - PRECEDING ì¸ ê²½ìš°ì—ëŠ” í˜„ì¬ Rowì—ì„œ ê°’ì„ ëº€ê°’ì´ê³ ,
+ *                   FOLLOWING ì¸ ê²½ìš°ì—ëŠ” í˜„ì¬ Rowì—ì„œ ê°’ì„ ë”í•˜ëŠ”ê²ƒì„ ì˜ë¯¸í•œë‹¤.
  *
- *   ÇöÀç ROWÀÇ ORDER BY ÄÄ·³ÀÇ ÄÃ·³ Type°ú value¸¦ ¾ò´Â´Ù.
- *   °ªÀÌ NULL ÀÎ°æ¿ì¿¡´Â °è»êÇÏÁö ¾Ê°í NULL TypeÀÓÀ» ¸í½Ã¸¸ ÇÑ´Ù.
+ *   í˜„ì¬ ROWì˜ ORDER BY ì»´ëŸ¼ì˜ ì»¬ëŸ¼ Typeê³¼ valueë¥¼ ì–»ëŠ”ë‹¤.
+ *   ê°’ì´ NULL ì¸ê²½ìš°ì—ëŠ” ê³„ì‚°í•˜ì§€ ì•Šê³  NULL Typeì„ì„ ëª…ì‹œë§Œ í•œë‹¤.
  */
 IDE_RC qmnWNST::calculateInterval( qcTemplate        * aTemplate,
                                    qmcdSortTemp      * aTempTable,
@@ -8354,7 +8354,7 @@ IDE_RC qmnWNST::calculateInterval( qcTemplate        * aTemplate,
     SChar            sBuffer[MTD_NUMERIC_SIZE_MAXIMUM];
     mtcColumn      * sColumn;
 
-    /* Temp Table ÀÌ Value ÀÎ °æ¿ì */
+    /* Temp Table ì´ Value ì¸ ê²½ìš° */
     if ( ( ( aNode->myNode->flag & QMC_MTR_TYPE_MASK )
            == QMC_MTR_TYPE_COPY_VALUE ) ||
          ( ( ( aNode->myNode->flag & QMC_MTR_TYPE_MASK )
@@ -8362,17 +8362,17 @@ IDE_RC qmnWNST::calculateInterval( qcTemplate        * aTemplate,
            ( ( aTempTable->flag & QMCD_SORT_TMP_STORAGE_TYPE )
              == QMCD_SORT_TMP_STORAGE_DISK ) ) ||
          ( ( aNode->myNode->flag & QMC_MTR_TYPE_MASK )
-           == QMC_MTR_TYPE_HYBRID_PARTITION_KEY_COLUMN ) ) /* PROJ-2464 hybrid partitioned table Áö¿ø */
+           == QMC_MTR_TYPE_HYBRID_PARTITION_KEY_COLUMN ) ) /* PROJ-2464 hybrid partitioned table ì§€ì› */
     {
         sColumn = aNode->dstColumn;
         
-        /* ValueÀÎ °æ¿ì Dst ÄÃ·³¿¡¼­ ÀĞ´Â´Ù */
+        /* Valueì¸ ê²½ìš° Dst ì»¬ëŸ¼ì—ì„œ ì½ëŠ”ë‹¤ */
         sRowValue = mtc::value( sColumn, aNode->dstTuple->row, MTD_OFFSET_USE );
 
         if ( sColumn->module->isNull( sColumn, sRowValue )
              == ID_TRUE )
         {
-            /* NULL ÀÎ°æ¿ì °è»êÇÏÁö ¾Ê´Â´Ù. */
+            /* NULL ì¸ê²½ìš° ê³„ì‚°í•˜ì§€ ì•ŠëŠ”ë‹¤. */
             aValue->type = QMC_WND_WINDOW_VALUE_NULL;
             IDE_CONT( NORMAL_EXIT );
         }
@@ -8383,7 +8383,7 @@ IDE_RC qmnWNST::calculateInterval( qcTemplate        * aTemplate,
     }
     else
     {
-        /* Value°¡ ¾Æ´Ñ °æ¿ì ¿øº¹ ÈÄ¿¡ srcColumn¿¡¼­ ÀĞ´Â´Ù. */
+        /* Valueê°€ ì•„ë‹Œ ê²½ìš° ì›ë³µ í›„ì— srcColumnì—ì„œ ì½ëŠ”ë‹¤. */
         IDE_TEST( aNode->func.setTuple( aTemplate, aNode, aRow ) != IDE_SUCCESS );
 
         sColumn = aNode->srcColumn;
@@ -8393,7 +8393,7 @@ IDE_RC qmnWNST::calculateInterval( qcTemplate        * aTemplate,
         if ( sColumn->module->isNull( sColumn, sRowValue )
              == ID_TRUE )
         {
-            /* NULL ÀÎ°æ¿ì °è»êÇÏÁö ¾Ê´Â´Ù. */
+            /* NULL ì¸ê²½ìš° ê³„ì‚°í•˜ì§€ ì•ŠëŠ”ë‹¤. */
             aValue->type = QMC_WND_WINDOW_VALUE_NULL;
             IDE_CONT( NORMAL_EXIT );
         }
@@ -8405,7 +8405,7 @@ IDE_RC qmnWNST::calculateInterval( qcTemplate        * aTemplate,
 
     if ( sColumn->module->id == MTD_SMALLINT_ID )
     {
-        /* SMALLINT ÀÎ°æ¿ì LONGÀ¸·Î Ã³¸®ÇÑ´Ù */
+        /* SMALLINT ì¸ê²½ìš° LONGìœ¼ë¡œ ì²˜ë¦¬í•œë‹¤ */
         aValue->type = QMC_WND_WINDOW_VALUE_LONG;
         sLong = (SLong)(*(mtdSmallintType*)sRowValue);
         IDE_TEST_RAISE( MTD_SMALLINT_MAXIMUM < aInterval,
@@ -8413,7 +8413,7 @@ IDE_RC qmnWNST::calculateInterval( qcTemplate        * aTemplate,
     }
     else if ( sColumn->module->id == MTD_INTEGER_ID )
     {
-        /* INTEGER ÀÎ°æ¿ì LONGÀ¸·Î Ã³¸®ÇÑ´Ù */
+        /* INTEGER ì¸ê²½ìš° LONGìœ¼ë¡œ ì²˜ë¦¬í•œë‹¤ */
         aValue->type = QMC_WND_WINDOW_VALUE_LONG;
         sLong = (SLong)(*(mtdIntegerType*)sRowValue);
         IDE_TEST_RAISE( MTD_INTEGER_MAXIMUM < aInterval,
@@ -8421,25 +8421,25 @@ IDE_RC qmnWNST::calculateInterval( qcTemplate        * aTemplate,
     }
     else if ( sColumn->module->id == MTD_BIGINT_ID )
     {
-        /* BIGINT ÀÎ°æ¿ì LONGÀ¸·Î Ã³¸®ÇÑ´Ù */
+        /* BIGINT ì¸ê²½ìš° LONGìœ¼ë¡œ ì²˜ë¦¬í•œë‹¤ */
         aValue->type = QMC_WND_WINDOW_VALUE_LONG;
         sLong = (SLong)(*(mtdBigintType*)sRowValue);
     }
     else if ( sColumn->module->id == MTD_DOUBLE_ID )
     {
-        /* DOUBLE ÀÎ°æ¿ì DOUBLEÀ¸·Î Ã³¸®ÇÑ´Ù */
+        /* DOUBLE ì¸ê²½ìš° DOUBLEìœ¼ë¡œ ì²˜ë¦¬í•œë‹¤ */
         aValue->type = QMC_WND_WINDOW_VALUE_DOUBLE;
         sDouble = (SDouble)(*(mtdDoubleType*)sRowValue);
     }
     else if ( sColumn->module->id == MTD_REAL_ID )
     {
-        /* REAL ÀÎ°æ¿ì DOUBLEÀ¸·Î Ã³¸®ÇÑ´Ù */
+        /* REAL ì¸ê²½ìš° DOUBLEìœ¼ë¡œ ì²˜ë¦¬í•œë‹¤ */
         aValue->type = QMC_WND_WINDOW_VALUE_DOUBLE;
         sDouble = (SDouble)(*(mtdRealType*)sRowValue);
     }
     else if ( sColumn->module->id == MTD_DATE_ID )
     {
-        /* DATE ÀÎ°æ¿ì DATEÀ¸·Î Ã³¸®ÇÑ´Ù */
+        /* DATE ì¸ê²½ìš° DATEìœ¼ë¡œ ì²˜ë¦¬í•œë‹¤ */
         aValue->type = QMC_WND_WINDOW_VALUE_DATE;
         sDateType = (*(mtdDateType*)sRowValue);
     }
@@ -8447,7 +8447,7 @@ IDE_RC qmnWNST::calculateInterval( qcTemplate        * aTemplate,
               ( sColumn->module->id == MTD_NUMERIC_ID ) ||
               ( sColumn->module->id == MTD_NUMBER_ID ) )
     {
-        /* Float, Numeric, Number´Â NUMERICÀ¸·Î Ã³¸®ÇÑ´Ù */
+        /* Float, Numeric, NumberëŠ” NUMERICìœ¼ë¡œ ì²˜ë¦¬í•œë‹¤ */
         aValue->type = QMC_WND_WINDOW_VALUE_NUMERIC;
         sNumeric1 = (mtdNumericType*)sRowValue;
         IDE_TEST( mtv::nativeN2Numeric( aInterval, (mtdNumericType * )sBuffer )
@@ -8458,7 +8458,7 @@ IDE_RC qmnWNST::calculateInterval( qcTemplate        * aTemplate,
         IDE_RAISE( ERR_INVALID_WINDOW_SPECIFICATION );
     }
 
-    /* PRECEDING ÀÎ °æ¿ì ÇöÀç ROWºÎÅÍ »¬¼ÀÀ» ¼öÇàÇÑ´Ù */
+    /* PRECEDING ì¸ ê²½ìš° í˜„ì¬ ROWë¶€í„° ëº„ì…ˆì„ ìˆ˜í–‰í•œë‹¤ */
     if ( aIsPreceding == ID_TRUE )
     {
         switch ( aValue->type )
@@ -8556,7 +8556,7 @@ IDE_RC qmnWNST::calculateInterval( qcTemplate        * aTemplate,
                 break;
         }
     }
-    else /* FOLLOWING ÀÎ °æ¿ì ÇöÀç ROWºÎÅÍ µ¡¼ÀÀ» ¼öÇàÇÑ´Ù */
+    else /* FOLLOWING ì¸ ê²½ìš° í˜„ì¬ ROWë¶€í„° ë§ì…ˆì„ ìˆ˜í–‰í•œë‹¤ */
     {
         switch ( aValue->type )
         {
@@ -8671,14 +8671,14 @@ IDE_RC qmnWNST::calculateInterval( qcTemplate        * aTemplate,
 /**
  * Compare RANGE Value
  *
- *  RANGE¿¡¸¸ »ç¿ëµÈ´Ù. calculateµÈ value ¿Í »õ·Î ÀĞÀº Record¿Í ºñ±³¸¦ ÇØ¼­ ÀÌ Reocrd°¡
- *  ¹üÀ§¿¡ µå´Â RecordÀÎÁö¸¦ ÆÇ´ÜÇÑ´Ù.
+ *  RANGEì—ë§Œ ì‚¬ìš©ëœë‹¤. calculateëœ value ì™€ ìƒˆë¡œ ì½ì€ Recordì™€ ë¹„êµë¥¼ í•´ì„œ ì´ Reocrdê°€
+ *  ë²”ìœ„ì— ë“œëŠ” Recordì¸ì§€ë¥¼ íŒë‹¨í•œë‹¤.
  *
- *  aRow             - »õ·Î ÀĞÀº RowÀÌ´Ù.
- *  aValue           - ºñ±³ÇØ¾ßÇÒ °ªÀÌ´Ù.
- *  aIsLessThanEqual - ORDER BY ±¸¹®ÀÌ ASC, ÀÎÁö DESCÀÎÁö¿¡ µû¶ó ÀÛ°Å³ª °°Àº°É
- *                     ÂüÀ¸·Î ÇØ¾ßÇÒÁö Å©°Å³ª °°Àº°É ÂüÀ¸·Î ÇØ¾ßÇÒÁö°¡ ´Ş¶óÁø´Ù.
- *  aResult          - À©µµÀÇ ¿µ¿ªÀÎÁö ¾Æ´Ñ Áö¸¦ ÆÇ´ÜÇÑ´Ù.
+ *  aRow             - ìƒˆë¡œ ì½ì€ Rowì´ë‹¤.
+ *  aValue           - ë¹„êµí•´ì•¼í•  ê°’ì´ë‹¤.
+ *  aIsLessThanEqual - ORDER BY êµ¬ë¬¸ì´ ASC, ì¸ì§€ DESCì¸ì§€ì— ë”°ë¼ ì‘ê±°ë‚˜ ê°™ì€ê±¸
+ *                     ì°¸ìœ¼ë¡œ í•´ì•¼í• ì§€ í¬ê±°ë‚˜ ê°™ì€ê±¸ ì°¸ìœ¼ë¡œ í•´ì•¼í• ì§€ê°€ ë‹¬ë¼ì§„ë‹¤.
+ *  aResult          - ìœˆë„ì˜ ì˜ì—­ì¸ì§€ ì•„ë‹Œ ì§€ë¥¼ íŒë‹¨í•œë‹¤.
  *
  */
 IDE_RC qmnWNST::compareRangeValue( qcTemplate        * aTemplate,
@@ -8699,7 +8699,7 @@ IDE_RC qmnWNST::compareRangeValue( qcTemplate        * aTemplate,
     idBool           sResult = ID_FALSE;
     mtcColumn      * sColumn;
 
-    /* Temp Table ÀÌ Value ÀÎ °æ¿ì */
+    /* Temp Table ì´ Value ì¸ ê²½ìš° */
     if ( ( ( aNode->myNode->flag & QMC_MTR_TYPE_MASK )
            == QMC_MTR_TYPE_COPY_VALUE ) ||
          ( ( ( aNode->myNode->flag & QMC_MTR_TYPE_MASK )
@@ -8707,17 +8707,17 @@ IDE_RC qmnWNST::compareRangeValue( qcTemplate        * aTemplate,
            ( ( aTempTable->flag & QMCD_SORT_TMP_STORAGE_TYPE )
              == QMCD_SORT_TMP_STORAGE_DISK ) ) ||
          ( ( aNode->myNode->flag & QMC_MTR_TYPE_MASK )
-           == QMC_MTR_TYPE_HYBRID_PARTITION_KEY_COLUMN ) ) /* PROJ-2464 hybrid partitioned table Áö¿ø */
+           == QMC_MTR_TYPE_HYBRID_PARTITION_KEY_COLUMN ) ) /* PROJ-2464 hybrid partitioned table ì§€ì› */
     {
         sColumn = aNode->dstColumn;
         
-        /* ValueÀÎ °æ¿ì Dst ÄÃ·³¿¡¼­ ÀĞ´Â´Ù */
+        /* Valueì¸ ê²½ìš° Dst ì»¬ëŸ¼ì—ì„œ ì½ëŠ”ë‹¤ */
         sRowValue = mtc::value( sColumn, aNode->dstTuple->row, MTD_OFFSET_USE );
 
         if ( sColumn->module->isNull( sColumn, sRowValue )
              == ID_TRUE )
         {
-            /* NULL ÀÎ °æ¿ì ºñ±³ÇÏÁö ¾Ê°í FALSEÀÌ´Ù.. */
+            /* NULL ì¸ ê²½ìš° ë¹„êµí•˜ì§€ ì•Šê³  FALSEì´ë‹¤.. */
             IDE_CONT( NORMAL_EXIT );
         }
         else
@@ -8727,7 +8727,7 @@ IDE_RC qmnWNST::compareRangeValue( qcTemplate        * aTemplate,
     }
     else
     {
-        /* Value°¡ ¾Æ´Ñ °æ¿ì ¿øº¹ ÈÄ¿¡ srcColumn¿¡¼­ ÀĞ´Â´Ù. */
+        /* Valueê°€ ì•„ë‹Œ ê²½ìš° ì›ë³µ í›„ì— srcColumnì—ì„œ ì½ëŠ”ë‹¤. */
         IDE_TEST( aNode->func.setTuple( aTemplate, aNode, aRow ) != IDE_SUCCESS );
         
         sColumn = aNode->srcColumn;
@@ -8737,7 +8737,7 @@ IDE_RC qmnWNST::compareRangeValue( qcTemplate        * aTemplate,
         if ( sColumn->module->isNull( sColumn, sRowValue )
              == ID_TRUE )
         {
-            /* NULL ÀÎ °æ¿ì ºñ±³ÇÏÁö ¾Ê°í FALSEÀÌ´Ù. */
+            /* NULL ì¸ ê²½ìš° ë¹„êµí•˜ì§€ ì•Šê³  FALSEì´ë‹¤. */
             IDE_CONT( NORMAL_EXIT );
         }
         else
@@ -8748,39 +8748,39 @@ IDE_RC qmnWNST::compareRangeValue( qcTemplate        * aTemplate,
 
     if ( sColumn->module->id == MTD_SMALLINT_ID )
     {
-        /* SMALLINT ÀÎ°æ¿ì LONGÀ¸·Î Ã³¸®ÇÑ´Ù */
+        /* SMALLINT ì¸ê²½ìš° LONGìœ¼ë¡œ ì²˜ë¦¬í•œë‹¤ */
         sLong = (SLong)(*(mtdSmallintType*)sRowValue);
     }
     else if ( sColumn->module->id == MTD_INTEGER_ID )
     {
-        /* INTEGER ÀÎ°æ¿ì LONGÀ¸·Î Ã³¸®ÇÑ´Ù */
+        /* INTEGER ì¸ê²½ìš° LONGìœ¼ë¡œ ì²˜ë¦¬í•œë‹¤ */
         sLong = (SLong)(*(mtdIntegerType*)sRowValue);
     }
     else if ( sColumn->module->id == MTD_BIGINT_ID )
     {
-        /* BIGINT ÀÎ°æ¿ì LONGÀ¸·Î Ã³¸®ÇÑ´Ù */
+        /* BIGINT ì¸ê²½ìš° LONGìœ¼ë¡œ ì²˜ë¦¬í•œë‹¤ */
         sLong = (SLong)(*(mtdBigintType*)sRowValue);
     }
     else if ( sColumn->module->id == MTD_DOUBLE_ID )
     {
-        /* DOUBLE ÀÎ°æ¿ì DOUBLEÀ¸·Î Ã³¸®ÇÑ´Ù */
+        /* DOUBLE ì¸ê²½ìš° DOUBLEìœ¼ë¡œ ì²˜ë¦¬í•œë‹¤ */
         sDouble = (SDouble)(*(mtdDoubleType*)sRowValue);
     }
     else if ( sColumn->module->id == MTD_REAL_ID )
     {
-        /* REAL ÀÎ°æ¿ì DOUBLEÀ¸·Î Ã³¸®ÇÑ´Ù */
+        /* REAL ì¸ê²½ìš° DOUBLEìœ¼ë¡œ ì²˜ë¦¬í•œë‹¤ */
         sDouble = (SDouble)(*(mtdRealType*)sRowValue);
     }
     else if ( sColumn->module->id == MTD_DATE_ID )
     {
-        /* DATE ÀÎ°æ¿ì DATEÀ¸·Î Ã³¸®ÇÑ´Ù */
+        /* DATE ì¸ê²½ìš° DATEìœ¼ë¡œ ì²˜ë¦¬í•œë‹¤ */
         sDateType = (*(mtdDateType*)sRowValue);
     }
     else if ( ( sColumn->module->id == MTD_FLOAT_ID )   ||
               ( sColumn->module->id == MTD_NUMERIC_ID ) ||
               ( sColumn->module->id == MTD_NUMBER_ID ) )
     {
-        /* Float, Numeric, Number´Â NUMERICÀ¸·Î Ã³¸®ÇÑ´Ù */
+        /* Float, Numeric, NumberëŠ” NUMERICìœ¼ë¡œ ì²˜ë¦¬í•œë‹¤ */
         sNumeric1 = (mtdNumericType*)sRowValue;
     }
     else
@@ -8932,7 +8932,7 @@ IDE_RC qmnWNST::compareRangeValue( qcTemplate        * aTemplate,
 /**
  * Update One ROW and NEXT Record
  *
- *   Temp Table¿¡¼­ Update°¡ ÇÊ¿äÇÑ ÇÑ RowÀÇ ÄÃ·³À» UPDATE ÇÏ°í ´ÙÀ½ ·¹ÄÚµå¸¦ ÀĞ´Â´Ù.
+ *   Temp Tableì—ì„œ Updateê°€ í•„ìš”í•œ í•œ Rowì˜ ì»¬ëŸ¼ì„ UPDATE í•˜ê³  ë‹¤ìŒ ë ˆì½”ë“œë¥¼ ì½ëŠ”ë‹¤.
  */
 IDE_RC qmnWNST::updateOneRowNextRecord( qcTemplate * aTemplate,
                                         qmndWNST   * aDataPlan,
@@ -8973,15 +8973,15 @@ IDE_RC qmnWNST::updateOneRowNextRecord( qcTemplate * aTemplate,
 /**
  * RANGE Partition By Order By UNBOUNDED PRECEDING - N PRECEDING or N FOLLOWING
  *
- *  Start Point °¡ UNBOUNDED PRECEDING ÆÄÆ¼¼ÇÀÇ Ã³À½ ºÎÅÍ ½ÃÀÛÇÑ´Ù.
- *  End   Point ´Â N PRECEDING ÇöÀç RowÀÇ N °³ Àü ±îÁöÀÌ´Ù.
- *                 N FOLLOWING ÇöÀç RowÀÇ N °³ ÈÄ ±îÁöÀÌ´Ù.
+ *  Start Point ê°€ UNBOUNDED PRECEDING íŒŒí‹°ì…˜ì˜ ì²˜ìŒ ë¶€í„° ì‹œì‘í•œë‹¤.
+ *  End   Point ëŠ” N PRECEDING í˜„ì¬ Rowì˜ N ê°œ ì „ ê¹Œì§€ì´ë‹¤.
+ *                 N FOLLOWING í˜„ì¬ Rowì˜ N ê°œ í›„ ê¹Œì§€ì´ë‹¤.
  *
- *  ORDER BY ±¸¹®¿¡ »ç¿ëµÈ ÄÃ·³ÀÌ ASCÀÎÁö DESCÀÎÁö¸¦ Á¶»çÇØ¼­ ºñ±³ÇØ¾ßÇÒ ¿É¼ÇÀ» ¼±ÅÃÇÑ´Ù.
+ *  ORDER BY êµ¬ë¬¸ì— ì‚¬ìš©ëœ ì»¬ëŸ¼ì´ ASCì¸ì§€ DESCì¸ì§€ë¥¼ ì¡°ì‚¬í•´ì„œ ë¹„êµí•´ì•¼í•  ì˜µì…˜ì„ ì„ íƒí•œë‹¤.
  *
- *  Ã³À½ ½ÃÀÛÇÏ¸é ÆÄÄ¡¼ÇÀÇ Ã³À½°ú ÇöÀç RowÀÇ À§Ä¡¸¦ ÀúÀåÇÑ´Ù. ÇöÀç Row¿¡¼­ EndPoint
- *  °ªÀÇ Value¸¦ ¾ò´ÂÀÌ ÀÌ¸¦ ÅëÇØ¼­ ÆÄÆ¼¼ÇÀÇ Ã³À½ºÎÅÍ N PRECEDINGÀÌ¶ó¸é N Àü °ª±îÁö °è»êÇÏ°í
- *  N FOLLOWING ÀÌ¶ó¸é N ÈÄ °ª±îÁö °è»êÇÑ´Ù.
+ *  ì²˜ìŒ ì‹œì‘í•˜ë©´ íŒŒì¹˜ì…˜ì˜ ì²˜ìŒê³¼ í˜„ì¬ Rowì˜ ìœ„ì¹˜ë¥¼ ì €ì¥í•œë‹¤. í˜„ì¬ Rowì—ì„œ EndPoint
+ *  ê°’ì˜ Valueë¥¼ ì–»ëŠ”ì´ ì´ë¥¼ í†µí•´ì„œ íŒŒí‹°ì…˜ì˜ ì²˜ìŒë¶€í„° N PRECEDINGì´ë¼ë©´ N ì „ ê°’ê¹Œì§€ ê³„ì‚°í•˜ê³ 
+ *  N FOLLOWING ì´ë¼ë©´ N í›„ ê°’ê¹Œì§€ ê³„ì‚°í•œë‹¤.
  */
 IDE_RC qmnWNST::partitionUnPrecedPrecedFollowRange( qcTemplate  * aTemplate,
                                                     qmndWNST    * aDataPlan,
@@ -8999,7 +8999,7 @@ IDE_RC qmnWNST::partitionUnPrecedPrecedFollowRange( qcTemplate  * aTemplate,
     idBool             sIsLess;
     idBool             sIsPreceding;
 
-    /* ORDER BY ±¸¹®¿¡ ASCÀÎÁö DESCÀÎÁö¿¡ µû¶ó °è»ê ÀÌ ´Ş¶óÁø´Ù */
+    /* ORDER BY êµ¬ë¬¸ì— ASCì¸ì§€ DESCì¸ì§€ì— ë”°ë¼ ê³„ì‚° ì´ ë‹¬ë¼ì§„ë‹¤ */
     if ( ( aOrderByColumn->myNode->flag & QMC_MTR_SORT_ORDER_MASK ) ==
             QMC_MTR_SORT_ASCENDING )
     {
@@ -9023,13 +9023,13 @@ IDE_RC qmnWNST::partitionUnPrecedPrecedFollowRange( qcTemplate  * aTemplate,
 
     while ( ( sFlag & QMC_ROW_DATA_MASK ) == QMC_ROW_DATA_EXIST )
     {
-        /* ÆÄÆ¼¼ÇÀÇ Ã³À½ À§Ä¡¸¦ ÀúÀåÇÑ´Ù */
+        /* íŒŒí‹°ì…˜ì˜ ì²˜ìŒ ìœ„ì¹˜ë¥¼ ì €ì¥í•œë‹¤ */
         IDE_TEST( qmcSortTemp::storeCursor( aDataPlan->sortMgr,
                                             &aDataPlan->partitionCursorInfo )
                   != IDE_SUCCESS );
         do
         {
-            /* ÇöÀç Row·Î ºÎÅÍ End PointÀÇ N °ªÀ» °è»êÇÑ´Ù. */
+            /* í˜„ì¬ Rowë¡œ ë¶€í„° End Pointì˜ N ê°’ì„ ê³„ì‚°í•œë‹¤. */
             IDE_TEST( calculateInterval( aTemplate,
                                          aDataPlan->sortMgr,
                                          aOrderByColumn,
@@ -9040,7 +9040,7 @@ IDE_RC qmnWNST::partitionUnPrecedPrecedFollowRange( qcTemplate  * aTemplate,
                                          sIsPreceding )
                       != IDE_SUCCESS );
 
-            /* ÇöÀç À§Ä¡¸¦ ÀúÀåÇÑ´Ù */
+            /* í˜„ì¬ ìœ„ì¹˜ë¥¼ ì €ì¥í•œë‹¤ */
             IDE_TEST( qmcSortTemp::storeCursor( aDataPlan->sortMgr,
                                                 &aDataPlan->cursorInfo )
                       != IDE_SUCCESS );
@@ -9051,7 +9051,7 @@ IDE_RC qmnWNST::partitionUnPrecedPrecedFollowRange( qcTemplate  * aTemplate,
             aDataPlan->mtrRowIdx = 0;
             aDataPlan->plan.myTuple->row = aDataPlan->mtrRow[aDataPlan->mtrRowIdx];
 
-            /* ÆÄÆ¼¼ÇÀÇ Ã³À½À¸·Î µÇµ¹¾Æ¿Â´Ù */
+            /* íŒŒí‹°ì…˜ì˜ ì²˜ìŒìœ¼ë¡œ ë˜ëŒì•„ì˜¨ë‹¤ */
             IDE_TEST( qmcSortTemp::restoreCursor( aDataPlan->sortMgr,
                                                   & aDataPlan->partitionCursorInfo )
                       != IDE_SUCCESS );
@@ -9063,7 +9063,7 @@ IDE_RC qmnWNST::partitionUnPrecedPrecedFollowRange( qcTemplate  * aTemplate,
 
             do
             {
-                /* ÇöÀç °ª°ú EndPointÀÇ °ª°ú ºñ±³ÇÑ´Ù. */
+                /* í˜„ì¬ ê°’ê³¼ EndPointì˜ ê°’ê³¼ ë¹„êµí•œë‹¤. */
                 IDE_TEST( compareRangeValue( aTemplate,
                                              aDataPlan->sortMgr,
                                              aOrderByColumn,
@@ -9088,13 +9088,13 @@ IDE_RC qmnWNST::partitionUnPrecedPrecedFollowRange( qcTemplate  * aTemplate,
                 aDataPlan->mtrRowIdx    = 1;
                 aDataPlan->plan.myTuple->row = aDataPlan->mtrRow[aDataPlan->mtrRowIdx];
 
-                /* ´ÙÀ½ Row¸¦ ¾ò´Â´Ù */
+                /* ë‹¤ìŒ Rowë¥¼ ì–»ëŠ”ë‹¤ */
                 IDE_TEST( getNextRecord( aTemplate, aDataPlan, &sFlag )
                           != IDE_SUCCESS );
 
                 if ( (sFlag & QMC_ROW_DATA_MASK) == QMC_ROW_DATA_EXIST )
                 {
-                    /* Row¸¦ ºñ±³ÇÑ´Ù */
+                    /* Rowë¥¼ ë¹„êµí•œë‹¤ */
                     IDE_TEST( compareRows( aDataPlan,
                                            aOverColumnNode,
                                            &sFlag )
@@ -9112,7 +9112,7 @@ IDE_RC qmnWNST::partitionUnPrecedPrecedFollowRange( qcTemplate  * aTemplate,
             aDataPlan->mtrRowIdx = 0;
             aDataPlan->plan.myTuple->row = aDataPlan->mtrRow[aDataPlan->mtrRowIdx];
 
-            /* ÇöÀç Row À§Ä¡·Î µÇµ¹¾Æ¿Â´Ù */
+            /* í˜„ì¬ Row ìœ„ì¹˜ë¡œ ë˜ëŒì•„ì˜¨ë‹¤ */
             IDE_TEST( qmcSortTemp::restoreCursor( aDataPlan->sortMgr,
                                                   &aDataPlan->cursorInfo )
                       != IDE_SUCCESS );
@@ -9122,7 +9122,7 @@ IDE_RC qmnWNST::partitionUnPrecedPrecedFollowRange( qcTemplate  * aTemplate,
             IDE_TEST( setTupleSet( aTemplate, aDataPlan->mtrNode, aDataPlan->plan.myTuple->row )
                       != IDE_SUCCESS );
 
-            /* AggregationµÈ °ªÀ» updateÇÏ°í ´ÙÀ½ Row¸¦ ÀĞ´Â´Ù. */
+            /* Aggregationëœ ê°’ì„ updateí•˜ê³  ë‹¤ìŒ Rowë¥¼ ì½ëŠ”ë‹¤. */
             IDE_TEST( updateOneRowNextRecord( aTemplate,
                                               aDataPlan,
                                               aAggrResultNode,
@@ -9153,15 +9153,15 @@ IDE_RC qmnWNST::partitionUnPrecedPrecedFollowRange( qcTemplate  * aTemplate,
 /**
  * RANGE Order By UNBOUNDED PRECEDING - N PRECEDING or N FOLLOWING
  *
- *  Start Point °¡ UNBOUNDED PRECEDING ÆÄÆ¼¼ÇÀÇ Ã³À½ ºÎÅÍ ½ÃÀÛÇÑ´Ù.
- *  End   Point ´Â N PRECEDING ÇöÀç RowÀÇ N °³ Àü ±îÁöÀÌ´Ù.
- *                 N FOLLOWING ÇöÀç RowÀÇ N °³ ÈÄ ±îÁöÀÌ´Ù.
+ *  Start Point ê°€ UNBOUNDED PRECEDING íŒŒí‹°ì…˜ì˜ ì²˜ìŒ ë¶€í„° ì‹œì‘í•œë‹¤.
+ *  End   Point ëŠ” N PRECEDING í˜„ì¬ Rowì˜ N ê°œ ì „ ê¹Œì§€ì´ë‹¤.
+ *                 N FOLLOWING í˜„ì¬ Rowì˜ N ê°œ í›„ ê¹Œì§€ì´ë‹¤.
  *
- *  ORDER BY ±¸¹®¿¡ »ç¿ëµÈ ÄÃ·³ÀÌ ASCÀÎÁö DESCÀÎÁö¸¦ Á¶»çÇØ¼­ ºñ±³ÇØ¾ßÇÒ ¿É¼ÇÀ» ¼±ÅÃÇÑ´Ù.
+ *  ORDER BY êµ¬ë¬¸ì— ì‚¬ìš©ëœ ì»¬ëŸ¼ì´ ASCì¸ì§€ DESCì¸ì§€ë¥¼ ì¡°ì‚¬í•´ì„œ ë¹„êµí•´ì•¼í•  ì˜µì…˜ì„ ì„ íƒí•œë‹¤.
  *
- *  Ã³À½ ½ÃÀÛÇÏ¸é ÇöÀç RowÀÇ À§Ä¡¸¦ ÀúÀåÇÑ´Ù. ÇöÀç Row¿¡¼­ EndPoint
- *  °ªÀÇ Value¸¦ ¾ò´ÂÀÌ ÀÌ¸¦ ÅëÇØ¼­ Ã³À½ºÎÅÍ ÇöÀç Row¸¦ ±âÁØÀ¸·Î N PRECEDINGÀÌ¶ó¸é
- *  N Àü °ª±îÁö °è»êÇÏ°í N FOLLOWING ÀÌ¶ó¸é N ÈÄ °ª±îÁö °è»êÇÑ´Ù.
+ *  ì²˜ìŒ ì‹œì‘í•˜ë©´ í˜„ì¬ Rowì˜ ìœ„ì¹˜ë¥¼ ì €ì¥í•œë‹¤. í˜„ì¬ Rowì—ì„œ EndPoint
+ *  ê°’ì˜ Valueë¥¼ ì–»ëŠ”ì´ ì´ë¥¼ í†µí•´ì„œ ì²˜ìŒë¶€í„° í˜„ì¬ Rowë¥¼ ê¸°ì¤€ìœ¼ë¡œ N PRECEDINGì´ë¼ë©´
+ *  N ì „ ê°’ê¹Œì§€ ê³„ì‚°í•˜ê³  N FOLLOWING ì´ë¼ë©´ N í›„ ê°’ê¹Œì§€ ê³„ì‚°í•œë‹¤.
  */
 IDE_RC qmnWNST::orderUnPrecedPrecedFollowRange( qcTemplate  * aTemplate,
                                                 qmndWNST    * aDataPlan,
@@ -9178,7 +9178,7 @@ IDE_RC qmnWNST::orderUnPrecedPrecedFollowRange( qcTemplate  * aTemplate,
     idBool             sIsLess;
     idBool             sIsPreceding;
 
-    /* ORDER BY ±¸¹®¿¡ ASCÀÎÁö DESCÀÎÁö¿¡ µû¶ó °è»ê ÀÌ ´Ş¶óÁø´Ù */
+    /* ORDER BY êµ¬ë¬¸ì— ASCì¸ì§€ DESCì¸ì§€ì— ë”°ë¼ ê³„ì‚° ì´ ë‹¬ë¼ì§„ë‹¤ */
     if ( ( aOrderByColumn->myNode->flag & QMC_MTR_SORT_ORDER_MASK ) ==
             QMC_MTR_SORT_ASCENDING )
     {
@@ -9203,7 +9203,7 @@ IDE_RC qmnWNST::orderUnPrecedPrecedFollowRange( qcTemplate  * aTemplate,
 
     while ( ( sFlag & QMC_ROW_DATA_MASK ) == QMC_ROW_DATA_EXIST )
     {
-        /* ÇöÀç Row·Î ºÎÅÍ End PointÀÇ N°³ °ªÀ» °è»êÇÑ´Ù. */
+        /* í˜„ì¬ Rowë¡œ ë¶€í„° End Pointì˜ Nê°œ ê°’ì„ ê³„ì‚°í•œë‹¤. */
         IDE_TEST( calculateInterval( aTemplate,
                                      aDataPlan->sortMgr,
                                      aOrderByColumn,
@@ -9214,7 +9214,7 @@ IDE_RC qmnWNST::orderUnPrecedPrecedFollowRange( qcTemplate  * aTemplate,
                                      sIsPreceding )
                   != IDE_SUCCESS );
 
-        /* ÇöÀç À§Ä¡¸¦ ÀúÀåÇÑ´Ù */
+        /* í˜„ì¬ ìœ„ì¹˜ë¥¼ ì €ì¥í•œë‹¤ */
         IDE_TEST( qmcSortTemp::storeCursor( aDataPlan->sortMgr,
                                             &aDataPlan->cursorInfo )
                   != IDE_SUCCESS );
@@ -9225,13 +9225,13 @@ IDE_RC qmnWNST::orderUnPrecedPrecedFollowRange( qcTemplate  * aTemplate,
         aDataPlan->mtrRowIdx = 0;
         aDataPlan->plan.myTuple->row = aDataPlan->mtrRow[aDataPlan->mtrRowIdx];
 
-        /* Ã³À½À¸·Î µÇµ¹¾Æ ¿Â´Ù */
+        /* ì²˜ìŒìœ¼ë¡œ ë˜ëŒì•„ ì˜¨ë‹¤ */
         IDE_TEST( getFirstRecord( aTemplate, aDataPlan, &sFlag )
                   != IDE_SUCCESS );
 
         while( ( sFlag & QMC_ROW_DATA_MASK ) == QMC_ROW_DATA_EXIST )
         {
-            /* ÇöÀç °ª°ú EndPointÀÇ °ª°ú ºñ±³ÇÑ´Ù. */
+            /* í˜„ì¬ ê°’ê³¼ EndPointì˜ ê°’ê³¼ ë¹„êµí•œë‹¤. */
             IDE_TEST( compareRangeValue( aTemplate,
                                          aDataPlan->sortMgr,
                                          aOrderByColumn,
@@ -9256,7 +9256,7 @@ IDE_RC qmnWNST::orderUnPrecedPrecedFollowRange( qcTemplate  * aTemplate,
             aDataPlan->mtrRowIdx    = 1;
             aDataPlan->plan.myTuple->row = aDataPlan->mtrRow[aDataPlan->mtrRowIdx];
 
-            /* ´ÙÀ½ Row¸¦ ¾ò´Â´Ù */
+            /* ë‹¤ìŒ Rowë¥¼ ì–»ëŠ”ë‹¤ */
             IDE_TEST( getNextRecord( aTemplate, aDataPlan, &sFlag )
                       != IDE_SUCCESS );
         }
@@ -9267,7 +9267,7 @@ IDE_RC qmnWNST::orderUnPrecedPrecedFollowRange( qcTemplate  * aTemplate,
         aDataPlan->mtrRowIdx = 0;
         aDataPlan->plan.myTuple->row = aDataPlan->mtrRow[aDataPlan->mtrRowIdx];
 
-        /* ÇöÀç Row À§Ä¡·Î µÇµ¹¾Æ¿Â´Ù */
+        /* í˜„ì¬ Row ìœ„ì¹˜ë¡œ ë˜ëŒì•„ì˜¨ë‹¤ */
         IDE_TEST( qmcSortTemp::restoreCursor( aDataPlan->sortMgr,
                                               &aDataPlan->cursorInfo )
                   != IDE_SUCCESS );
@@ -9277,7 +9277,7 @@ IDE_RC qmnWNST::orderUnPrecedPrecedFollowRange( qcTemplate  * aTemplate,
         IDE_TEST( setTupleSet( aTemplate, aDataPlan->mtrNode, aDataPlan->plan.myTuple->row )
                   != IDE_SUCCESS );
 
-        /* AggregationµÈ °ªÀ» updateÇÏ°í ´ÙÀ½ Row¸¦ ÀĞ´Â´Ù. */
+        /* Aggregationëœ ê°’ì„ updateí•˜ê³  ë‹¤ìŒ Rowë¥¼ ì½ëŠ”ë‹¤. */
         IDE_TEST( updateOneRowNextRecord( aTemplate,
                                           aDataPlan,
                                           aAggrResultNode,
@@ -9295,10 +9295,10 @@ IDE_RC qmnWNST::orderUnPrecedPrecedFollowRange( qcTemplate  * aTemplate,
 /**
  * RANGE Partition By Order By CURRENT ROW - N FOLLOWING
  *
- *  Start Point °¡ CURRENT ROW       ÇöÀç RowºÎÅÍ ½ÃÀÛÇÑ´Ù.
- *  End   Point ´Â N       FOLLOWING ÇöÀç RowÀÇ N °³ ÈÄ ±îÁöÀÌ´Ù.
+ *  Start Point ê°€ CURRENT ROW       í˜„ì¬ Rowë¶€í„° ì‹œì‘í•œë‹¤.
+ *  End   Point ëŠ” N       FOLLOWING í˜„ì¬ Rowì˜ N ê°œ í›„ ê¹Œì§€ì´ë‹¤.
  *
- *  ORDER BY ±¸¹®¿¡ »ç¿ëµÈ ÄÃ·³ÀÌ ASCÀÎÁö DESCÀÎÁö¸¦ Á¶»çÇØ¼­ ºñ±³ÇØ¾ßÇÒ ¿É¼ÇÀ» ¼±ÅÃÇÑ´Ù.
+ *  ORDER BY êµ¬ë¬¸ì— ì‚¬ìš©ëœ ì»¬ëŸ¼ì´ ASCì¸ì§€ DESCì¸ì§€ë¥¼ ì¡°ì‚¬í•´ì„œ ë¹„êµí•´ì•¼í•  ì˜µì…˜ì„ ì„ íƒí•œë‹¤.
  *
  */
 IDE_RC qmnWNST::partitionCurrentFollowRange( qcTemplate  * aTemplate,
@@ -9316,7 +9316,7 @@ IDE_RC qmnWNST::partitionCurrentFollowRange( qcTemplate  * aTemplate,
     idBool              sIsLess;
     idBool              sIsPreceding;
 
-    /* ORDER BY ±¸¹®¿¡ ASCÀÎÁö DESCÀÎÁö¿¡ µû¶ó °è»ê ÀÌ ´Ş¶óÁø´Ù */
+    /* ORDER BY êµ¬ë¬¸ì— ASCì¸ì§€ DESCì¸ì§€ì— ë”°ë¼ ê³„ì‚° ì´ ë‹¬ë¼ì§„ë‹¤ */
     if ( ( aOrderByColumn->myNode->flag & QMC_MTR_SORT_ORDER_MASK ) ==
             QMC_MTR_SORT_ASCENDING )
     {
@@ -9340,7 +9340,7 @@ IDE_RC qmnWNST::partitionCurrentFollowRange( qcTemplate  * aTemplate,
 
     while ( ( sFlag & QMC_ROW_DATA_MASK ) == QMC_ROW_DATA_EXIST )
     {
-        /* ÇöÀç À§Ä¡¸¦ ÀúÀåÇÑ´Ù */
+        /* í˜„ì¬ ìœ„ì¹˜ë¥¼ ì €ì¥í•œë‹¤ */
         IDE_TEST( qmcSortTemp::storeCursor( aDataPlan->sortMgr,
                                             &aDataPlan->cursorInfo )
                   != IDE_SUCCESS );
@@ -9348,7 +9348,7 @@ IDE_RC qmnWNST::partitionCurrentFollowRange( qcTemplate  * aTemplate,
         IDE_TEST( initAggregation( aTemplate, aAggrNode )
                   != IDE_SUCCESS );
 
-        /* ÇöÀç Row·Î ºÎÅÍ End PointÀÇ N °ªÀ» °è»êÇÑ´Ù. */
+        /* í˜„ì¬ Rowë¡œ ë¶€í„° End Pointì˜ N ê°’ì„ ê³„ì‚°í•œë‹¤. */
         IDE_TEST( calculateInterval( aTemplate,
                                      aDataPlan->sortMgr,
                                      aOrderByColumn,
@@ -9371,22 +9371,22 @@ IDE_RC qmnWNST::partitionCurrentFollowRange( qcTemplate  * aTemplate,
             aDataPlan->mtrRowIdx    = 1;
             aDataPlan->plan.myTuple->row = aDataPlan->mtrRow[aDataPlan->mtrRowIdx];
 
-            /* ´ÙÀ½ Record¸¦ ÀĞ´Â´Ù */
+            /* ë‹¤ìŒ Recordë¥¼ ì½ëŠ”ë‹¤ */
             IDE_TEST( getNextRecord( aTemplate, aDataPlan, &sFlag )
                       != IDE_SUCCESS );
 
             if ( (sFlag & QMC_ROW_DATA_MASK) == QMC_ROW_DATA_EXIST )
             {
-                /* ·¹ÄÚµå¸¦ ºñ±³ÇØµÈ´Ù. */
+                /* ë ˆì½”ë“œë¥¼ ë¹„êµí•´ëœë‹¤. */
                 IDE_TEST( compareRows( aDataPlan,
                                        aOverColumnNode,
                                        &sFlag )
                           != IDE_SUCCESS );
 
-                /* °°Àº ÆÄÆ¼¼Ç¿¡ ¼ÓÇÑÁö Ã¼Å©ÇØº»´Ù */
+                /* ê°™ì€ íŒŒí‹°ì…˜ì— ì†í•œì§€ ì²´í¬í•´ë³¸ë‹¤ */
                 if ( ( sFlag & QMC_ROW_GROUP_MASK ) == QMC_ROW_GROUP_SAME )
                 {
-                    /* EndPoint¿¡ ÀÇ °è»êµÈ °á°ú¿Í ºñ±³ÇØº»´Ù. */
+                    /* EndPointì— ì˜ ê³„ì‚°ëœ ê²°ê³¼ì™€ ë¹„êµí•´ë³¸ë‹¤. */
                     IDE_TEST( compareRangeValue( aTemplate,
                                                  aDataPlan->sortMgr,
                                                  aOrderByColumn,
@@ -9426,7 +9426,7 @@ IDE_RC qmnWNST::partitionCurrentFollowRange( qcTemplate  * aTemplate,
         aDataPlan->mtrRowIdx = 0;
         aDataPlan->plan.myTuple->row = aDataPlan->mtrRow[aDataPlan->mtrRowIdx];
 
-        /* ÇöÀç Row À§Ä¡·Î µÇµ¹¾Æ¿Â´Ù */
+        /* í˜„ì¬ Row ìœ„ì¹˜ë¡œ ë˜ëŒì•„ì˜¨ë‹¤ */
         IDE_TEST( qmcSortTemp::restoreCursor( aDataPlan->sortMgr,
                                               &aDataPlan->cursorInfo )
                   != IDE_SUCCESS );
@@ -9440,7 +9440,7 @@ IDE_RC qmnWNST::partitionCurrentFollowRange( qcTemplate  * aTemplate,
                                             &aDataPlan->partitionCursorInfo )
                   != IDE_SUCCESS );
 
-        /* AggregationµÈ °ªÀ» updateÇÏ°í ´ÙÀ½ Row¸¦ ÀĞ´Â´Ù. */
+        /* Aggregationëœ ê°’ì„ updateí•˜ê³  ë‹¤ìŒ Rowë¥¼ ì½ëŠ”ë‹¤. */
         IDE_TEST( updateOneRowNextRecord( aTemplate,
                                           aDataPlan,
                                           aAggrResultNode,
@@ -9506,10 +9506,10 @@ IDE_RC qmnWNST::partitionCurrentFollowRange( qcTemplate  * aTemplate,
 /**
  * RANGE Order By CURRENT ROW - N FOLLOWING
  *
- *  Start Point °¡ CURRENT ROW       ÇöÀç RowºÎÅÍ ½ÃÀÛÇÑ´Ù.
- *  End   Point ´Â N       FOLLOWING ÇöÀç RowÀÇ N °³ ÈÄ ±îÁöÀÌ´Ù.
+ *  Start Point ê°€ CURRENT ROW       í˜„ì¬ Rowë¶€í„° ì‹œì‘í•œë‹¤.
+ *  End   Point ëŠ” N       FOLLOWING í˜„ì¬ Rowì˜ N ê°œ í›„ ê¹Œì§€ì´ë‹¤.
  *
- *  ORDER BY ±¸¹®¿¡ »ç¿ëµÈ ÄÃ·³ÀÌ ASCÀÎÁö DESCÀÎÁö¸¦ Á¶»çÇØ¼­ ºñ±³ÇØ¾ßÇÒ ¿É¼ÇÀ» ¼±ÅÃÇÑ´Ù.
+ *  ORDER BY êµ¬ë¬¸ì— ì‚¬ìš©ëœ ì»¬ëŸ¼ì´ ASCì¸ì§€ DESCì¸ì§€ë¥¼ ì¡°ì‚¬í•´ì„œ ë¹„êµí•´ì•¼í•  ì˜µì…˜ì„ ì„ íƒí•œë‹¤.
  *
  */
 IDE_RC qmnWNST::orderCurrentFollowRange( qcTemplate  * aTemplate,
@@ -9695,16 +9695,16 @@ IDE_RC qmnWNST::orderCurrentFollowRange( qcTemplate  * aTemplate,
 /**
  * RANGE Partition By Order By N PRECEDING or N FOLLOWING - UNBOUNDED FOLLOWING
  *
- *  Start Point °¡ N         PRECEDING ÇöÀç Row ºÎÅÍ N °ªÀ» »« °ª ºÎÅÍ ½ÃÀÛÇÏ°Å³ª È¤Àº
- *                 N         FOLLOWINg ÇöÀç Row ºÎÅÍ N °ªÀ» ´õÇÑ °ª ºÎÅÍ ½ÃÀÛÇØ¼­
- *  End   Point ´Â UNBOUNDED FOLLOWING ÆÄÆ¼¼ÇÀÌ ¸¶Áö¸· ±îÁöÀÌ´Ù.
+ *  Start Point ê°€ N         PRECEDING í˜„ì¬ Row ë¶€í„° N ê°’ì„ ëº€ ê°’ ë¶€í„° ì‹œì‘í•˜ê±°ë‚˜ í˜¹ì€
+ *                 N         FOLLOWINg í˜„ì¬ Row ë¶€í„° N ê°’ì„ ë”í•œ ê°’ ë¶€í„° ì‹œì‘í•´ì„œ
+ *  End   Point ëŠ” UNBOUNDED FOLLOWING íŒŒí‹°ì…˜ì´ ë§ˆì§€ë§‰ ê¹Œì§€ì´ë‹¤.
  *
- *  ORDER BY ±¸¹®¿¡ »ç¿ëµÈ ÄÃ·³ÀÌ ASCÀÎÁö DESCÀÎÁö¸¦ Á¶»çÇØ¼­ ºñ±³ÇØ¾ßÇÒ ¿É¼ÇÀ» ¼±ÅÃÇÑ´Ù.
- *  PRECEDINGÀÌ »ç¿ëµÇ¾ú´ÂÁö FOLLOWINGÀÌ »ç¿ëµÇ¾ú´ÂÁö¿¡ µû¶ó °è»êÀÌ ´Ş¶óÁø´Ù.
+ *  ORDER BY êµ¬ë¬¸ì— ì‚¬ìš©ëœ ì»¬ëŸ¼ì´ ASCì¸ì§€ DESCì¸ì§€ë¥¼ ì¡°ì‚¬í•´ì„œ ë¹„êµí•´ì•¼í•  ì˜µì…˜ì„ ì„ íƒí•œë‹¤.
+ *  PRECEDINGì´ ì‚¬ìš©ë˜ì—ˆëŠ”ì§€ FOLLOWINGì´ ì‚¬ìš©ë˜ì—ˆëŠ”ì§€ì— ë”°ë¼ ê³„ì‚°ì´ ë‹¬ë¼ì§„ë‹¤.
  *
- *  Ã³À½ ½ÃÀÛ ÇÏ¸é ÆÄÆ¼¼ÇÀÇ Ã³À½°ú ÇöÀç RowÀÇ À§Ä¡¸¦ ÀúÀåÇÑ´Ù.
- *  ÇöÀç Row¿¡¼­ START PointÀÇ value¸¦ ¾ò´Â´Ù. ±× ÈÄ ÆÄÆ¼¼ÇÀÇ Ã³À½À¸·Î µ¹¾Æ°¡ ÀÌ value¿Í
- *  ºñ±³ÇØ¼­ SkipÇÑµÚ¿¡ ÆÄÆ¼¼ÇÀÇ ³¡±îÁö AggregationÀ» ¼öÇàÇÑ´Ù.
+ *  ì²˜ìŒ ì‹œì‘ í•˜ë©´ íŒŒí‹°ì…˜ì˜ ì²˜ìŒê³¼ í˜„ì¬ Rowì˜ ìœ„ì¹˜ë¥¼ ì €ì¥í•œë‹¤.
+ *  í˜„ì¬ Rowì—ì„œ START Pointì˜ valueë¥¼ ì–»ëŠ”ë‹¤. ê·¸ í›„ íŒŒí‹°ì…˜ì˜ ì²˜ìŒìœ¼ë¡œ ëŒì•„ê°€ ì´ valueì™€
+ *  ë¹„êµí•´ì„œ Skipí•œë’¤ì— íŒŒí‹°ì…˜ì˜ ëê¹Œì§€ Aggregationì„ ìˆ˜í–‰í•œë‹¤.
  */
 IDE_RC qmnWNST::partitionPrecedFollowUnFollowRange( qcTemplate  * aTemplate,
                                                     qmndWNST    * aDataPlan,
@@ -9723,7 +9723,7 @@ IDE_RC qmnWNST::partitionPrecedFollowUnFollowRange( qcTemplate  * aTemplate,
     idBool             sIsLess;
     idBool             sIsPreceding;
 
-    /* ORDER BY ±¸¹®¿¡ ASCÀÎÁö DESCÀÎÁö¿¡ µû¶ó °è»ê ÀÌ ´Ş¶óÁø´Ù */
+    /* ORDER BY êµ¬ë¬¸ì— ASCì¸ì§€ DESCì¸ì§€ì— ë”°ë¼ ê³„ì‚° ì´ ë‹¬ë¼ì§„ë‹¤ */
     if ( ( aOrderByColumn->myNode->flag & QMC_MTR_SORT_ORDER_MASK ) ==
             QMC_MTR_SORT_ASCENDING )
     {
@@ -9747,13 +9747,13 @@ IDE_RC qmnWNST::partitionPrecedFollowUnFollowRange( qcTemplate  * aTemplate,
 
     while ( ( sFlag & QMC_ROW_DATA_MASK ) == QMC_ROW_DATA_EXIST )
     {
-        /* ÆÄÆ¼¼ÇÀÇ Ã³À½ À§Ä¡¸¦ ÀúÀåÇÑ´Ù */
+        /* íŒŒí‹°ì…˜ì˜ ì²˜ìŒ ìœ„ì¹˜ë¥¼ ì €ì¥í•œë‹¤ */
         IDE_TEST( qmcSortTemp::storeCursor( aDataPlan->sortMgr,
                                             &aDataPlan->partitionCursorInfo )
                   != IDE_SUCCESS );
         do
         {
-            /* ÇöÀç Row·Î ºÎÅÍ Start PointÀÇ N °ªÀ» °è»êÇÑ´Ù. */
+            /* í˜„ì¬ Rowë¡œ ë¶€í„° Start Pointì˜ N ê°’ì„ ê³„ì‚°í•œë‹¤. */
             IDE_TEST( calculateInterval( aTemplate,
                                          aDataPlan->sortMgr,
                                          aOrderByColumn,
@@ -9764,7 +9764,7 @@ IDE_RC qmnWNST::partitionPrecedFollowUnFollowRange( qcTemplate  * aTemplate,
                                          sIsPreceding )
                       != IDE_SUCCESS );
 
-            /* ÇöÀç À§Ä¡¸¦ ÀúÀåÇÑ´Ù */
+            /* í˜„ì¬ ìœ„ì¹˜ë¥¼ ì €ì¥í•œë‹¤ */
             IDE_TEST( qmcSortTemp::storeCursor( aDataPlan->sortMgr,
                                                 &aDataPlan->cursorInfo )
                       != IDE_SUCCESS );
@@ -9775,7 +9775,7 @@ IDE_RC qmnWNST::partitionPrecedFollowUnFollowRange( qcTemplate  * aTemplate,
             aDataPlan->mtrRowIdx = 0;
             aDataPlan->plan.myTuple->row = aDataPlan->mtrRow[aDataPlan->mtrRowIdx];
 
-            /* ÆÄÆ¼¼ÇÀÇ Ã³À½À¸·Î µÇµ¹¾Æ¿Â´Ù */
+            /* íŒŒí‹°ì…˜ì˜ ì²˜ìŒìœ¼ë¡œ ë˜ëŒì•„ì˜¨ë‹¤ */
             IDE_TEST( qmcSortTemp::restoreCursor( aDataPlan->sortMgr,
                                                   & aDataPlan->partitionCursorInfo )
                       != IDE_SUCCESS );
@@ -9788,7 +9788,7 @@ IDE_RC qmnWNST::partitionPrecedFollowUnFollowRange( qcTemplate  * aTemplate,
             {
                 if ( sSkipEnd == ID_FALSE )
                 {
-                    /* ÇöÀç °ª°ú StartPointÀÇ °ª°ú ºñ±³ÇÑ´Ù. */
+                    /* í˜„ì¬ ê°’ê³¼ StartPointì˜ ê°’ê³¼ ë¹„êµí•œë‹¤. */
                     IDE_TEST( compareRangeValue( aTemplate,
                                                  aDataPlan->sortMgr,
                                                  aOrderByColumn,
@@ -9804,7 +9804,7 @@ IDE_RC qmnWNST::partitionPrecedFollowUnFollowRange( qcTemplate  * aTemplate,
                 }
                 if ( sResult == ID_TRUE )
                 {
-                    /* Start °ª ÀÌÈÄÀÌ¹Ç·Î °è»êÀ» ¼öÇàÇÑ´Ù. */
+                    /* Start ê°’ ì´í›„ì´ë¯€ë¡œ ê³„ì‚°ì„ ìˆ˜í–‰í•œë‹¤. */
                     IDE_TEST( execAggregation( aTemplate,
                                                aAggrNode,
                                                NULL,
@@ -9815,19 +9815,19 @@ IDE_RC qmnWNST::partitionPrecedFollowUnFollowRange( qcTemplate  * aTemplate,
                 }
                 else
                 {
-                    /* Start °ª ÀüÀÌ¹Ç·Î SkipÇÑ´Ù */
+                    /* Start ê°’ ì „ì´ë¯€ë¡œ Skipí•œë‹¤ */
                     sSkipEnd = ID_FALSE;
                 }
                 aDataPlan->mtrRowIdx    = 1;
                 aDataPlan->plan.myTuple->row = aDataPlan->mtrRow[aDataPlan->mtrRowIdx];
 
-                /* ´ÙÀ½ Row¸¦ ÀĞ´Â´Ù */
+                /* ë‹¤ìŒ Rowë¥¼ ì½ëŠ”ë‹¤ */
                 IDE_TEST( getNextRecord( aTemplate, aDataPlan, &sFlag )
                           != IDE_SUCCESS );
 
                 if ( (sFlag & QMC_ROW_DATA_MASK) == QMC_ROW_DATA_EXIST )
                 {
-                    /* Row¸¦ ºñ±³ÇÑ´Ù */
+                    /* Rowë¥¼ ë¹„êµí•œë‹¤ */
                     IDE_TEST( compareRows( aDataPlan,
                                            aOverColumnNode,
                                            &sFlag )
@@ -9845,7 +9845,7 @@ IDE_RC qmnWNST::partitionPrecedFollowUnFollowRange( qcTemplate  * aTemplate,
             aDataPlan->mtrRowIdx = 0;
             aDataPlan->plan.myTuple->row = aDataPlan->mtrRow[aDataPlan->mtrRowIdx];
 
-            /* ÇöÀç Row À§Ä¡·Î µÇµ¹¾Æ¿Â´Ù */
+            /* í˜„ì¬ Row ìœ„ì¹˜ë¡œ ë˜ëŒì•„ì˜¨ë‹¤ */
             IDE_TEST( qmcSortTemp::restoreCursor( aDataPlan->sortMgr,
                                                   &aDataPlan->cursorInfo )
                       != IDE_SUCCESS );
@@ -9855,7 +9855,7 @@ IDE_RC qmnWNST::partitionPrecedFollowUnFollowRange( qcTemplate  * aTemplate,
             IDE_TEST( setTupleSet( aTemplate, aDataPlan->mtrNode, aDataPlan->plan.myTuple->row )
                       != IDE_SUCCESS );
 
-            /* AggregationµÈ °ªÀ» updateÇÏ°í ´ÙÀ½ Row¸¦ ÀĞ´Â´Ù. */
+            /* Aggregationëœ ê°’ì„ updateí•˜ê³  ë‹¤ìŒ Rowë¥¼ ì½ëŠ”ë‹¤. */
             IDE_TEST( updateOneRowNextRecord( aTemplate,
                                               aDataPlan,
                                               aAggrResultNode,
@@ -9864,7 +9864,7 @@ IDE_RC qmnWNST::partitionPrecedFollowUnFollowRange( qcTemplate  * aTemplate,
 
             if ( (sFlag & QMC_ROW_DATA_MASK) == QMC_ROW_DATA_EXIST )
             {
-                /* °°Àº ÆÄÆ¼¼ÇÀÎÁö¸¦ Ã¼Å©ÇÑ´Ù */
+                /* ê°™ì€ íŒŒí‹°ì…˜ì¸ì§€ë¥¼ ì²´í¬í•œë‹¤ */
                 IDE_TEST( compareRows( aDataPlan,
                                        aOverColumnNode,
                                        &sFlag )
@@ -9887,16 +9887,16 @@ IDE_RC qmnWNST::partitionPrecedFollowUnFollowRange( qcTemplate  * aTemplate,
 /**
  * RANGE Order By N PRECEDING or N FOLLOWING - UNBOUNDED FOLLOWING
  *
- *  Start Point °¡ N         PRECEDING ÇöÀç Row ºÎÅÍ N °ªÀ» »« °ª ºÎÅÍ ½ÃÀÛÇÏ°Å³ª È¤Àº
- *                 N         FOLLOWINg ÇöÀç Row ºÎÅÍ N °ªÀ» ´õÇÑ °ª ºÎÅÍ ½ÃÀÛÇØ¼­
- *  End   Point ´Â UNBOUNDED FOLLOWING ÆÄÆ¼¼ÇÀÌ ¸¶Áö¸· ±îÁöÀÌ´Ù.
+ *  Start Point ê°€ N         PRECEDING í˜„ì¬ Row ë¶€í„° N ê°’ì„ ëº€ ê°’ ë¶€í„° ì‹œì‘í•˜ê±°ë‚˜ í˜¹ì€
+ *                 N         FOLLOWINg í˜„ì¬ Row ë¶€í„° N ê°’ì„ ë”í•œ ê°’ ë¶€í„° ì‹œì‘í•´ì„œ
+ *  End   Point ëŠ” UNBOUNDED FOLLOWING íŒŒí‹°ì…˜ì´ ë§ˆì§€ë§‰ ê¹Œì§€ì´ë‹¤.
  *
- *  ORDER BY ±¸¹®¿¡ »ç¿ëµÈ ÄÃ·³ÀÌ ASCÀÎÁö DESCÀÎÁö¸¦ Á¶»çÇØ¼­ ºñ±³ÇØ¾ßÇÒ ¿É¼ÇÀ» ¼±ÅÃÇÑ´Ù.
- *  PRECEDINGÀÌ »ç¿ëµÇ¾ú´ÂÁö FOLLOWINGÀÌ »ç¿ëµÇ¾ú´ÂÁö¿¡ µû¶ó °è»êÀÌ ´Ş¶óÁø´Ù.
+ *  ORDER BY êµ¬ë¬¸ì— ì‚¬ìš©ëœ ì»¬ëŸ¼ì´ ASCì¸ì§€ DESCì¸ì§€ë¥¼ ì¡°ì‚¬í•´ì„œ ë¹„êµí•´ì•¼í•  ì˜µì…˜ì„ ì„ íƒí•œë‹¤.
+ *  PRECEDINGì´ ì‚¬ìš©ë˜ì—ˆëŠ”ì§€ FOLLOWINGì´ ì‚¬ìš©ë˜ì—ˆëŠ”ì§€ì— ë”°ë¼ ê³„ì‚°ì´ ë‹¬ë¼ì§„ë‹¤.
  *
- *  Ã³À½ ÇöÀç RowÀÇ À§Ä¡¸¦ ÀúÀåÇÑ´Ù.
- *  ÇöÀç Row¿¡¼­ START PointÀÇ value¸¦ ¾ò´Â´Ù. ±× ÈÄ Ã³À½À¸·Î µ¹¾Æ°¡ ÀÌ value¿Í
- *  ºñ±³ÇØ¼­ SkipÇÑµÚ¿¡ ³¡±îÁö AggregationÀ» ¼öÇàÇÑ´Ù.
+ *  ì²˜ìŒ í˜„ì¬ Rowì˜ ìœ„ì¹˜ë¥¼ ì €ì¥í•œë‹¤.
+ *  í˜„ì¬ Rowì—ì„œ START Pointì˜ valueë¥¼ ì–»ëŠ”ë‹¤. ê·¸ í›„ ì²˜ìŒìœ¼ë¡œ ëŒì•„ê°€ ì´ valueì™€
+ *  ë¹„êµí•´ì„œ Skipí•œë’¤ì— ëê¹Œì§€ Aggregationì„ ìˆ˜í–‰í•œë‹¤.
  */
 IDE_RC qmnWNST::orderPrecedFollowUnFollowRange( qcTemplate  * aTemplate,
                                                 qmndWNST    * aDataPlan,
@@ -9914,7 +9914,7 @@ IDE_RC qmnWNST::orderPrecedFollowUnFollowRange( qcTemplate  * aTemplate,
     idBool             sIsLess;
     idBool             sIsPreceding;
 
-    /* ORDER BY ±¸¹®¿¡ ASCÀÎÁö DESCÀÎÁö¿¡ µû¶ó °è»ê ÀÌ ´Ş¶óÁø´Ù */
+    /* ORDER BY êµ¬ë¬¸ì— ASCì¸ì§€ DESCì¸ì§€ì— ë”°ë¼ ê³„ì‚° ì´ ë‹¬ë¼ì§„ë‹¤ */
     if ( ( aOrderByColumn->myNode->flag & QMC_MTR_SORT_ORDER_MASK ) ==
             QMC_MTR_SORT_ASCENDING )
     {
@@ -9938,7 +9938,7 @@ IDE_RC qmnWNST::orderPrecedFollowUnFollowRange( qcTemplate  * aTemplate,
 
     while ( ( sFlag & QMC_ROW_DATA_MASK ) == QMC_ROW_DATA_EXIST )
     {
-        /* ÇöÀç Row·Î ºÎÅÍ Start PointÀÌ N°³ Àü °ªÀ» °è»êÇÑ´Ù. */
+        /* í˜„ì¬ Rowë¡œ ë¶€í„° Start Pointì´ Nê°œ ì „ ê°’ì„ ê³„ì‚°í•œë‹¤. */
         IDE_TEST( calculateInterval( aTemplate,
                                      aDataPlan->sortMgr,
                                      aOrderByColumn,
@@ -9949,7 +9949,7 @@ IDE_RC qmnWNST::orderPrecedFollowUnFollowRange( qcTemplate  * aTemplate,
                                      sIsPreceding )
                   != IDE_SUCCESS );
 
-        /* ÇöÀç RowÀÇ À§Ä¡¸¦ ÀúÀåÇÑ´Ù. */
+        /* í˜„ì¬ Rowì˜ ìœ„ì¹˜ë¥¼ ì €ì¥í•œë‹¤. */
         IDE_TEST( qmcSortTemp::storeCursor( aDataPlan->sortMgr,
                                             &aDataPlan->cursorInfo )
                   != IDE_SUCCESS );
@@ -9982,7 +9982,7 @@ IDE_RC qmnWNST::orderPrecedFollowUnFollowRange( qcTemplate  * aTemplate,
             }
             if ( sResult == ID_TRUE )
             {
-                /* Start °ª ÀÌÈÄÀÌ¹Ç·Î °è»êÀ» ¼öÇàÇÑ´Ù. */
+                /* Start ê°’ ì´í›„ì´ë¯€ë¡œ ê³„ì‚°ì„ ìˆ˜í–‰í•œë‹¤. */
                 IDE_TEST( execAggregation( aTemplate,
                                            aAggrNode,
                                            NULL,
@@ -9993,7 +9993,7 @@ IDE_RC qmnWNST::orderPrecedFollowUnFollowRange( qcTemplate  * aTemplate,
             }
             else
             {
-                /* Start °ª ÀÌÀü ÀÌ¹Ç·Î SkipÇÑ´Ù. */
+                /* Start ê°’ ì´ì „ ì´ë¯€ë¡œ Skipí•œë‹¤. */
                 sSkipEnd = ID_FALSE;
             }
             aDataPlan->mtrRowIdx    = 1;
@@ -10009,7 +10009,7 @@ IDE_RC qmnWNST::orderPrecedFollowUnFollowRange( qcTemplate  * aTemplate,
         aDataPlan->mtrRowIdx = 0;
         aDataPlan->plan.myTuple->row = aDataPlan->mtrRow[aDataPlan->mtrRowIdx];
 
-        /* ÇöÀç À§Ä¡·Î µÇµ¹¾Æ ¿Â´Ù */
+        /* í˜„ì¬ ìœ„ì¹˜ë¡œ ë˜ëŒì•„ ì˜¨ë‹¤ */
         IDE_TEST( qmcSortTemp::restoreCursor( aDataPlan->sortMgr,
                                               &aDataPlan->cursorInfo )
                   != IDE_SUCCESS );
@@ -10019,7 +10019,7 @@ IDE_RC qmnWNST::orderPrecedFollowUnFollowRange( qcTemplate  * aTemplate,
         IDE_TEST( setTupleSet( aTemplate, aDataPlan->mtrNode, aDataPlan->plan.myTuple->row )
                   != IDE_SUCCESS );
 
-        /* AggregationµÈ °ªÀ» updateÇÏ°í ´ÙÀ½ Row¸¦ ÀĞ´Â´Ù. */
+        /* Aggregationëœ ê°’ì„ updateí•˜ê³  ë‹¤ìŒ Rowë¥¼ ì½ëŠ”ë‹¤. */
         IDE_TEST( updateOneRowNextRecord( aTemplate,
                                           aDataPlan,
                                           aAggrResultNode,
@@ -10037,14 +10037,14 @@ IDE_RC qmnWNST::orderPrecedFollowUnFollowRange( qcTemplate  * aTemplate,
 /**
  * RANGE Partition By Order By N PRECEDING - CURRENT ROW
  *
- *  Start Point °¡ N       PRECEDING ÇöÀç RowÀÇ N °³ ÀüºÎÅÍ ½ÃÀÛÇÑ´Ù.
- *  End   Point ´Â CURRENT ROW       ÇöÀç Row ±îÁöÀÌ´Ù.
+ *  Start Point ê°€ N       PRECEDING í˜„ì¬ Rowì˜ N ê°œ ì „ë¶€í„° ì‹œì‘í•œë‹¤.
+ *  End   Point ëŠ” CURRENT ROW       í˜„ì¬ Row ê¹Œì§€ì´ë‹¤.
  *
- *  ORDER BY ±¸¹®¿¡ »ç¿ëµÈ ÄÃ·³ÀÌ ASCÀÎÁö DESCÀÎÁö¸¦ Á¶»çÇØ¼­ ºñ±³ÇØ¾ßÇÒ ¿É¼ÇÀ» ¼±ÅÃÇÑ´Ù.
+ *  ORDER BY êµ¬ë¬¸ì— ì‚¬ìš©ëœ ì»¬ëŸ¼ì´ ASCì¸ì§€ DESCì¸ì§€ë¥¼ ì¡°ì‚¬í•´ì„œ ë¹„êµí•´ì•¼í•  ì˜µì…˜ì„ ì„ íƒí•œë‹¤.
  *
- *  Ã³À½ ½ÃÀÛÇÏ¸é ÆÄÆ¼¼ÇÀÇ Ã³À½°ú ÇöÀç RowÀÇ À§Ä¡¸¦ ÀúÀåÇÑ´Ù. ÇöÀç Row¿¡¼­ StartPoint
- *  °ªÀÇ Value¸¦ ¾ò´ÂÀÌ ÀÌ¸¦ ÅëÇØ¼­ ÆÄÆ¼¼ÇÀÇ Ã³À½ºÎÅÍ N°³ Àü Value±îÁö SkipÇÏ°í ÇöÀç RowÀÇ
- *  °ª ±îÁö AggregationÀ» ¼öÇàÇÑ´Ù.
+ *  ì²˜ìŒ ì‹œì‘í•˜ë©´ íŒŒí‹°ì…˜ì˜ ì²˜ìŒê³¼ í˜„ì¬ Rowì˜ ìœ„ì¹˜ë¥¼ ì €ì¥í•œë‹¤. í˜„ì¬ Rowì—ì„œ StartPoint
+ *  ê°’ì˜ Valueë¥¼ ì–»ëŠ”ì´ ì´ë¥¼ í†µí•´ì„œ íŒŒí‹°ì…˜ì˜ ì²˜ìŒë¶€í„° Nê°œ ì „ Valueê¹Œì§€ Skipí•˜ê³  í˜„ì¬ Rowì˜
+ *  ê°’ ê¹Œì§€ Aggregationì„ ìˆ˜í–‰í•œë‹¤.
  */
 IDE_RC qmnWNST::partitionPrecedCurrentRange( qcTemplate  * aTemplate,
                                              qmndWNST    * aDataPlan,
@@ -10064,7 +10064,7 @@ IDE_RC qmnWNST::partitionPrecedCurrentRange( qcTemplate  * aTemplate,
     idBool             sIsMore;
     idBool             sIsPreceding;
 
-    /* ORDER BY ±¸¹®¿¡ ASCÀÎÁö DESCÀÎÁö¿¡ µû¶ó °è»ê ÀÌ ´Ş¶óÁø´Ù */
+    /* ORDER BY êµ¬ë¬¸ì— ASCì¸ì§€ DESCì¸ì§€ì— ë”°ë¼ ê³„ì‚° ì´ ë‹¬ë¼ì§„ë‹¤ */
     if ( ( aOrderByColumn->myNode->flag & QMC_MTR_SORT_ORDER_MASK ) ==
             QMC_MTR_SORT_ASCENDING )
     {
@@ -10090,13 +10090,13 @@ IDE_RC qmnWNST::partitionPrecedCurrentRange( qcTemplate  * aTemplate,
 
     while ( ( sFlag & QMC_ROW_DATA_MASK ) == QMC_ROW_DATA_EXIST )
     {
-        /* ÆÄÆ¼¼ÇÀÇ Ã³À½ À§Ä¡¸¦ ÀúÀåÇÑ´Ù. */
+        /* íŒŒí‹°ì…˜ì˜ ì²˜ìŒ ìœ„ì¹˜ë¥¼ ì €ì¥í•œë‹¤. */
         IDE_TEST( qmcSortTemp::storeCursor( aDataPlan->sortMgr,
                                             &aDataPlan->partitionCursorInfo )
                   != IDE_SUCCESS );
         do
         {
-            /* ÇöÀç Row·Î ºÎÅÍ Start PointÀÌ N°³ Àü °ªÀ» °è»êÇÑ´Ù. */
+            /* í˜„ì¬ Rowë¡œ ë¶€í„° Start Pointì´ Nê°œ ì „ ê°’ì„ ê³„ì‚°í•œë‹¤. */
             IDE_TEST( calculateInterval( aTemplate,
                                          aDataPlan->sortMgr,
                                          aOrderByColumn,
@@ -10107,7 +10107,7 @@ IDE_RC qmnWNST::partitionPrecedCurrentRange( qcTemplate  * aTemplate,
                                          sIsPreceding )
                       != IDE_SUCCESS );
 
-            /* ÇöÀç Row·Î ºÎÅÍ CURRENT ROW °ªÀ» °è»êÇÑ´Ù. */
+            /* í˜„ì¬ Rowë¡œ ë¶€í„° CURRENT ROW ê°’ì„ ê³„ì‚°í•œë‹¤. */
             IDE_TEST( calculateInterval( aTemplate,
                                          aDataPlan->sortMgr,
                                          aOrderByColumn,
@@ -10118,7 +10118,7 @@ IDE_RC qmnWNST::partitionPrecedCurrentRange( qcTemplate  * aTemplate,
                                          ID_TRUE )
                       != IDE_SUCCESS );
 
-            /* ÇöÀç À§Ä¡¸¦ ÀúÀåÇÑ´Ù. */
+            /* í˜„ì¬ ìœ„ì¹˜ë¥¼ ì €ì¥í•œë‹¤. */
             IDE_TEST( qmcSortTemp::storeCursor( aDataPlan->sortMgr,
                                                 &aDataPlan->cursorInfo )
                       != IDE_SUCCESS );
@@ -10129,7 +10129,7 @@ IDE_RC qmnWNST::partitionPrecedCurrentRange( qcTemplate  * aTemplate,
             aDataPlan->mtrRowIdx = 0;
             aDataPlan->plan.myTuple->row = aDataPlan->mtrRow[aDataPlan->mtrRowIdx];
 
-            /* ÆÄÆ¼¼ÇÀÇ Ã³À½À§Ä¡·Î ÀÌµ¿ÇÑ´Ù. */
+            /* íŒŒí‹°ì…˜ì˜ ì²˜ìŒìœ„ì¹˜ë¡œ ì´ë™í•œë‹¤. */
             IDE_TEST( qmcSortTemp::restoreCursor( aDataPlan->sortMgr,
                                                   & aDataPlan->partitionCursorInfo )
                       != IDE_SUCCESS );
@@ -10142,7 +10142,7 @@ IDE_RC qmnWNST::partitionPrecedCurrentRange( qcTemplate  * aTemplate,
             {
                 if ( sSkipEnd == ID_FALSE )
                 {
-                    /* ÇöÀç °ª°ú StartPointÀÇ °ª°ú ºñ±³ÇÑ´Ù. */
+                    /* í˜„ì¬ ê°’ê³¼ StartPointì˜ ê°’ê³¼ ë¹„êµí•œë‹¤. */
                     IDE_TEST( compareRangeValue( aTemplate,
                                                  aDataPlan->sortMgr,
                                                  aOrderByColumn,
@@ -10158,7 +10158,7 @@ IDE_RC qmnWNST::partitionPrecedCurrentRange( qcTemplate  * aTemplate,
                 }
                 if ( sResult == ID_TRUE )
                 {
-                    /* Start °ª ÀÌÈÄÀÌ¹Ç·Î °è»êÀ» ¼öÇàÇÑ´Ù. */
+                    /* Start ê°’ ì´í›„ì´ë¯€ë¡œ ê³„ì‚°ì„ ìˆ˜í–‰í•œë‹¤. */
                     IDE_TEST( execAggregation( aTemplate,
                                                aAggrNode,
                                                NULL,
@@ -10169,7 +10169,7 @@ IDE_RC qmnWNST::partitionPrecedCurrentRange( qcTemplate  * aTemplate,
                 }
                 else
                 {
-                    /* Start °ª ÀÌÀü ÀÌ¹Ç·Î SkipÇÑ´Ù. */
+                    /* Start ê°’ ì´ì „ ì´ë¯€ë¡œ Skipí•œë‹¤. */
                     sSkipEnd = ID_FALSE;
                 }
                 aDataPlan->mtrRowIdx    = 1;
@@ -10192,7 +10192,7 @@ IDE_RC qmnWNST::partitionPrecedCurrentRange( qcTemplate  * aTemplate,
 
                 if ( sSkipEnd == ID_TRUE )
                 {
-                    /* ´ÙÀ½ Row°¡ ÇöÀç RowÀÇ Value¿¡ ¼ÓÇÑÁö ºñ±³ÇØº»´Ù */
+                    /* ë‹¤ìŒ Rowê°€ í˜„ì¬ Rowì˜ Valueì— ì†í•œì§€ ë¹„êµí•´ë³¸ë‹¤ */
                     IDE_TEST( compareRangeValue( aTemplate,
                                                  aDataPlan->sortMgr,
                                                  aOrderByColumn,
@@ -10222,7 +10222,7 @@ IDE_RC qmnWNST::partitionPrecedCurrentRange( qcTemplate  * aTemplate,
             aDataPlan->mtrRowIdx = 0;
             aDataPlan->plan.myTuple->row = aDataPlan->mtrRow[aDataPlan->mtrRowIdx];
 
-            /* ÇöÀç Row À§Ä¡·Î µÇµ¹¾Æ¿Â´Ù */
+            /* í˜„ì¬ Row ìœ„ì¹˜ë¡œ ë˜ëŒì•„ì˜¨ë‹¤ */
             IDE_TEST( qmcSortTemp::restoreCursor( aDataPlan->sortMgr,
                                                   &aDataPlan->cursorInfo )
                       != IDE_SUCCESS );
@@ -10232,7 +10232,7 @@ IDE_RC qmnWNST::partitionPrecedCurrentRange( qcTemplate  * aTemplate,
             IDE_TEST( setTupleSet( aTemplate, aDataPlan->mtrNode, aDataPlan->plan.myTuple->row )
                       != IDE_SUCCESS );
 
-            /* AggregationµÈ °ªÀ» updateÇÏ°í ´ÙÀ½ Row¸¦ ÀĞ´Â´Ù. */
+            /* Aggregationëœ ê°’ì„ updateí•˜ê³  ë‹¤ìŒ Rowë¥¼ ì½ëŠ”ë‹¤. */
             IDE_TEST( updateOneRowNextRecord( aTemplate,
                                               aDataPlan,
                                               aAggrResultNode,
@@ -10240,7 +10240,7 @@ IDE_RC qmnWNST::partitionPrecedCurrentRange( qcTemplate  * aTemplate,
                        != IDE_SUCCESS );
             if ( (sFlag & QMC_ROW_DATA_MASK) == QMC_ROW_DATA_EXIST )
             {
-                /* °°Àº ÆÄÆ¼¼ÇÀÎÁö¸¦ Ã¼Å©ÇÑ´Ù */
+                /* ê°™ì€ íŒŒí‹°ì…˜ì¸ì§€ë¥¼ ì²´í¬í•œë‹¤ */
                 IDE_TEST( compareRows( aDataPlan,
                                        aOverColumnNode,
                                        &sFlag )
@@ -10263,14 +10263,14 @@ IDE_RC qmnWNST::partitionPrecedCurrentRange( qcTemplate  * aTemplate,
 /**
  * RANGE Order By N PRECEDING - CURRENT ROW
  *
- *  Start Point °¡ N       PRECEDING ÇöÀç RowÀÇ N °³ ÀüºÎÅÍ ½ÃÀÛÇÑ´Ù.
- *  End   Point ´Â CURRENT ROW       ÇöÀç Row ±îÁöÀÌ´Ù.
+ *  Start Point ê°€ N       PRECEDING í˜„ì¬ Rowì˜ N ê°œ ì „ë¶€í„° ì‹œì‘í•œë‹¤.
+ *  End   Point ëŠ” CURRENT ROW       í˜„ì¬ Row ê¹Œì§€ì´ë‹¤.
  *
- *  ORDER BY ±¸¹®¿¡ »ç¿ëµÈ ÄÃ·³ÀÌ ASCÀÎÁö DESCÀÎÁö¸¦ Á¶»çÇØ¼­ ºñ±³ÇØ¾ßÇÒ ¿É¼ÇÀ» ¼±ÅÃÇÑ´Ù.
+ *  ORDER BY êµ¬ë¬¸ì— ì‚¬ìš©ëœ ì»¬ëŸ¼ì´ ASCì¸ì§€ DESCì¸ì§€ë¥¼ ì¡°ì‚¬í•´ì„œ ë¹„êµí•´ì•¼í•  ì˜µì…˜ì„ ì„ íƒí•œë‹¤.
  *
- *  Ã³À½ ½ÃÀÛÇÏ¸é ÇöÀç RowÀÇ À§Ä¡¸¦ ÀúÀåÇÑ´Ù. ÇöÀç Row¿¡¼­ StartPoint
- *  °ªÀÇ Value¸¦ ¾ò´ÂÀÌ ÀÌ¸¦ ÅëÇØ¼­ Ã³À½ºÎÅÍ N°³ Àü Value±îÁö SkipÇÏ°í ÇöÀç RowÀÇ
- *  °ª ±îÁö AggregationÀ» ¼öÇàÇÑ´Ù.
+ *  ì²˜ìŒ ì‹œì‘í•˜ë©´ í˜„ì¬ Rowì˜ ìœ„ì¹˜ë¥¼ ì €ì¥í•œë‹¤. í˜„ì¬ Rowì—ì„œ StartPoint
+ *  ê°’ì˜ Valueë¥¼ ì–»ëŠ”ì´ ì´ë¥¼ í†µí•´ì„œ ì²˜ìŒë¶€í„° Nê°œ ì „ Valueê¹Œì§€ Skipí•˜ê³  í˜„ì¬ Rowì˜
+ *  ê°’ ê¹Œì§€ Aggregationì„ ìˆ˜í–‰í•œë‹¤.
  */
 IDE_RC qmnWNST::orderPrecedCurrentRange( qcTemplate  * aTemplate,
                                          qmndWNST    * aDataPlan,
@@ -10289,7 +10289,7 @@ IDE_RC qmnWNST::orderPrecedCurrentRange( qcTemplate  * aTemplate,
     idBool             sIsMore;
     idBool             sIsPreceding;
 
-    /* ORDER BY ±¸¹®¿¡ ASCÀÎÁö DESCÀÎÁö¿¡ µû¶ó °è»ê ÀÌ ´Ş¶óÁø´Ù */
+    /* ORDER BY êµ¬ë¬¸ì— ASCì¸ì§€ DESCì¸ì§€ì— ë”°ë¼ ê³„ì‚° ì´ ë‹¬ë¼ì§„ë‹¤ */
     if ( ( aOrderByColumn->myNode->flag & QMC_MTR_SORT_ORDER_MASK ) ==
             QMC_MTR_SORT_ASCENDING )
     {
@@ -10315,7 +10315,7 @@ IDE_RC qmnWNST::orderPrecedCurrentRange( qcTemplate  * aTemplate,
 
     while ( ( sFlag & QMC_ROW_DATA_MASK ) == QMC_ROW_DATA_EXIST )
     {
-        /* ÇöÀç Row·Î ºÎÅÍ Start PointÀÌ N°³ Àü °ªÀ» °è»êÇÑ´Ù. */
+        /* í˜„ì¬ Rowë¡œ ë¶€í„° Start Pointì´ Nê°œ ì „ ê°’ì„ ê³„ì‚°í•œë‹¤. */
         IDE_TEST( calculateInterval( aTemplate,
                                      aDataPlan->sortMgr,
                                      aOrderByColumn,
@@ -10326,7 +10326,7 @@ IDE_RC qmnWNST::orderPrecedCurrentRange( qcTemplate  * aTemplate,
                                      sIsPreceding )
                   != IDE_SUCCESS );
 
-        /* ÇöÀç Row·Î ºÎÅÍ °ªÀ» °è»êÇÑ´Ù. */
+        /* í˜„ì¬ Rowë¡œ ë¶€í„° ê°’ì„ ê³„ì‚°í•œë‹¤. */
         IDE_TEST( calculateInterval( aTemplate,
                                      aDataPlan->sortMgr,
                                      aOrderByColumn,
@@ -10337,7 +10337,7 @@ IDE_RC qmnWNST::orderPrecedCurrentRange( qcTemplate  * aTemplate,
                                      ID_TRUE )
                   != IDE_SUCCESS );
 
-        /* ÇöÀç À§Ä¡¸¦ ÀúÀåÇÑ´Ù. */
+        /* í˜„ì¬ ìœ„ì¹˜ë¥¼ ì €ì¥í•œë‹¤. */
         IDE_TEST( qmcSortTemp::storeCursor( aDataPlan->sortMgr,
                                             &aDataPlan->cursorInfo )
                   != IDE_SUCCESS );
@@ -10349,7 +10349,7 @@ IDE_RC qmnWNST::orderPrecedCurrentRange( qcTemplate  * aTemplate,
         aDataPlan->mtrRowIdx    = 0;
         aDataPlan->plan.myTuple->row = aDataPlan->mtrRow[aDataPlan->mtrRowIdx];
 
-        /* Ã³À½ Record¸¦ °¡Á®¿Â´Ù */
+        /* ì²˜ìŒ Recordë¥¼ ê°€ì ¸ì˜¨ë‹¤ */
         IDE_TEST( getFirstRecord( aTemplate, aDataPlan, &sFlag )
                   != IDE_SUCCESS );
 
@@ -10357,7 +10357,7 @@ IDE_RC qmnWNST::orderPrecedCurrentRange( qcTemplate  * aTemplate,
         {
             if ( sSkipEnd == ID_FALSE )
             {
-                /* ÇöÀç °ª°ú StartPointÀÇ °ª°ú ºñ±³ÇÑ´Ù. */
+                /* í˜„ì¬ ê°’ê³¼ StartPointì˜ ê°’ê³¼ ë¹„êµí•œë‹¤. */
                 IDE_TEST( compareRangeValue( aTemplate,
                                              aDataPlan->sortMgr,
                                              aOrderByColumn,
@@ -10373,7 +10373,7 @@ IDE_RC qmnWNST::orderPrecedCurrentRange( qcTemplate  * aTemplate,
             }
             if ( sResult == ID_TRUE )
             {
-                /* Start °ª ÀÌÈÄÀÌ¹Ç·Î °è»êÀ» ¼öÇàÇÑ´Ù. */
+                /* Start ê°’ ì´í›„ì´ë¯€ë¡œ ê³„ì‚°ì„ ìˆ˜í–‰í•œë‹¤. */
                 IDE_TEST( execAggregation( aTemplate,
                                            aAggrNode,
                                            NULL,
@@ -10384,7 +10384,7 @@ IDE_RC qmnWNST::orderPrecedCurrentRange( qcTemplate  * aTemplate,
             }
             else
             {
-                /* Start °ª ÀÌÀü ÀÌ¹Ç·Î SkipÇÑ´Ù. */
+                /* Start ê°’ ì´ì „ ì´ë¯€ë¡œ Skipí•œë‹¤. */
                 sSkipEnd = ID_FALSE;
             }
             aDataPlan->mtrRowIdx    = 1;
@@ -10395,7 +10395,7 @@ IDE_RC qmnWNST::orderPrecedCurrentRange( qcTemplate  * aTemplate,
 
             if ( sSkipEnd == ID_TRUE )
             {
-                /* ´ÙÀ½ Row°¡ ÇöÀç Value¿¡ ¼ÓÇÑÁö ºñ±³ÇØº»´Ù */
+                /* ë‹¤ìŒ Rowê°€ í˜„ì¬ Valueì— ì†í•œì§€ ë¹„êµí•´ë³¸ë‹¤ */
                 IDE_TEST( compareRangeValue( aTemplate,
                                              aDataPlan->sortMgr,
                                              aOrderByColumn,
@@ -10425,7 +10425,7 @@ IDE_RC qmnWNST::orderPrecedCurrentRange( qcTemplate  * aTemplate,
         aDataPlan->mtrRowIdx = 0;
         aDataPlan->plan.myTuple->row = aDataPlan->mtrRow[aDataPlan->mtrRowIdx];
 
-        /* ÇöÀç Row À§Ä¡·Î µÇµ¹¾Æ¿Â´Ù */
+        /* í˜„ì¬ Row ìœ„ì¹˜ë¡œ ë˜ëŒì•„ì˜¨ë‹¤ */
         IDE_TEST( qmcSortTemp::restoreCursor( aDataPlan->sortMgr,
                                               &aDataPlan->cursorInfo )
                   != IDE_SUCCESS );
@@ -10435,7 +10435,7 @@ IDE_RC qmnWNST::orderPrecedCurrentRange( qcTemplate  * aTemplate,
         IDE_TEST( setTupleSet( aTemplate, aDataPlan->mtrNode, aDataPlan->plan.myTuple->row )
                   != IDE_SUCCESS );
 
-        /* AggregationµÈ °ªÀ» updateÇÏ°í ´ÙÀ½ Row¸¦ ÀĞ´Â´Ù. */
+        /* Aggregationëœ ê°’ì„ updateí•˜ê³  ë‹¤ìŒ Rowë¥¼ ì½ëŠ”ë‹¤. */
         IDE_TEST( updateOneRowNextRecord( aTemplate,
                                           aDataPlan,
                                           aAggrResultNode,
@@ -10453,14 +10453,14 @@ IDE_RC qmnWNST::orderPrecedCurrentRange( qcTemplate  * aTemplate,
 /**
  * RANGE Partition By Order By N PRECEDING - N PRECEDING
  *
- *  Start Point °¡ N PRECEDING ÇöÀç RowÀÇ N °³ ÀüºÎÅÍ ½ÃÀÛÇÑ´Ù.
- *  End   Point ´Â N PRECEDING ÇöÀç RowÀÇ N °³ Àü ±îÁöÀÌ´Ù.
+ *  Start Point ê°€ N PRECEDING í˜„ì¬ Rowì˜ N ê°œ ì „ë¶€í„° ì‹œì‘í•œë‹¤.
+ *  End   Point ëŠ” N PRECEDING í˜„ì¬ Rowì˜ N ê°œ ì „ ê¹Œì§€ì´ë‹¤.
  *
- *  ORDER BY ±¸¹®¿¡ »ç¿ëµÈ ÄÃ·³ÀÌ ASCÀÎÁö DESCÀÎÁö¸¦ Á¶»çÇØ¼­ ºñ±³ÇØ¾ßÇÒ ¿É¼ÇÀ» ¼±ÅÃÇÑ´Ù.
+ *  ORDER BY êµ¬ë¬¸ì— ì‚¬ìš©ëœ ì»¬ëŸ¼ì´ ASCì¸ì§€ DESCì¸ì§€ë¥¼ ì¡°ì‚¬í•´ì„œ ë¹„êµí•´ì•¼í•  ì˜µì…˜ì„ ì„ íƒí•œë‹¤.
  *
- *  Ã³À½ ½ÃÀÛÇÏ¸é ÆÄÆ¼¼ÇÀÇ Ã³À½°ú ÇöÀç RowÀÇ À§Ä¡¸¦ ÀúÀåÇÑ´Ù. ÇöÀç Row¿¡¼­ StartPoint,EndPoint
- *  °ªÀÇ Value¸¦ ¾ò´ÂÀÌ ÀÌ¸¦ ÅëÇØ¼­ ÆÄÆ¼¼ÇÀÇ Ã³À½ºÎÅÍ N°³ Àü Value±îÁö SkipÇÏ°í N°³ Àü Value
- *  ±îÁö AggregationÀ» ¼öÇàÇÑ´Ù.
+ *  ì²˜ìŒ ì‹œì‘í•˜ë©´ íŒŒí‹°ì…˜ì˜ ì²˜ìŒê³¼ í˜„ì¬ Rowì˜ ìœ„ì¹˜ë¥¼ ì €ì¥í•œë‹¤. í˜„ì¬ Rowì—ì„œ StartPoint,EndPoint
+ *  ê°’ì˜ Valueë¥¼ ì–»ëŠ”ì´ ì´ë¥¼ í†µí•´ì„œ íŒŒí‹°ì…˜ì˜ ì²˜ìŒë¶€í„° Nê°œ ì „ Valueê¹Œì§€ Skipí•˜ê³  Nê°œ ì „ Value
+ *  ê¹Œì§€ Aggregationì„ ìˆ˜í–‰í•œë‹¤.
  */
 IDE_RC qmnWNST::partitionPrecedPrecedRange( qcTemplate  * aTemplate,
                                             qmndWNST    * aDataPlan,
@@ -10482,7 +10482,7 @@ IDE_RC qmnWNST::partitionPrecedPrecedRange( qcTemplate  * aTemplate,
     idBool             sIsMore;
     idBool             sIsPreceding;
 
-    /* ORDER BY ±¸¹®¿¡ ASCÀÎÁö DESCÀÎÁö¿¡ µû¶ó °è»ê ÀÌ ´Ş¶óÁø´Ù */
+    /* ORDER BY êµ¬ë¬¸ì— ASCì¸ì§€ DESCì¸ì§€ì— ë”°ë¼ ê³„ì‚° ì´ ë‹¬ë¼ì§„ë‹¤ */
     if ( ( aOrderByColumn->myNode->flag & QMC_MTR_SORT_ORDER_MASK ) ==
            QMC_MTR_SORT_ASCENDING )
     {
@@ -10508,13 +10508,13 @@ IDE_RC qmnWNST::partitionPrecedPrecedRange( qcTemplate  * aTemplate,
 
     while ( ( sFlag & QMC_ROW_DATA_MASK ) == QMC_ROW_DATA_EXIST )
     {
-        /* ÆÄÆ¼¼ÇÀÇ Ã³À½ À§Ä¡¸¦ ÀúÀåÇÑ´Ù. */
+        /* íŒŒí‹°ì…˜ì˜ ì²˜ìŒ ìœ„ì¹˜ë¥¼ ì €ì¥í•œë‹¤. */
         IDE_TEST( qmcSortTemp::storeCursor( aDataPlan->sortMgr,
                                             &aDataPlan->partitionCursorInfo )
                   != IDE_SUCCESS );
         do
         {
-            /* ÇöÀç Row·Î ºÎÅÍ Start PointÀÌ N°³ Àü °ªÀ» °è»êÇÑ´Ù. */
+            /* í˜„ì¬ Rowë¡œ ë¶€í„° Start Pointì´ Nê°œ ì „ ê°’ì„ ê³„ì‚°í•œë‹¤. */
             IDE_TEST( calculateInterval( aTemplate,
                                          aDataPlan->sortMgr,
                                          aOrderByColumn,
@@ -10525,7 +10525,7 @@ IDE_RC qmnWNST::partitionPrecedPrecedRange( qcTemplate  * aTemplate,
                                          sIsPreceding )
                       != IDE_SUCCESS );
 
-            /* ÇöÀç Row·Î ºÎÅÍ End PointÀÌ N°³ Àü °ªÀ» °è»êÇÑ´Ù. */
+            /* í˜„ì¬ Rowë¡œ ë¶€í„° End Pointì´ Nê°œ ì „ ê°’ì„ ê³„ì‚°í•œë‹¤. */
             IDE_TEST( calculateInterval( aTemplate,
                                          aDataPlan->sortMgr,
                                          aOrderByColumn,
@@ -10536,7 +10536,7 @@ IDE_RC qmnWNST::partitionPrecedPrecedRange( qcTemplate  * aTemplate,
                                          sIsPreceding )
                       != IDE_SUCCESS );
 
-            /* ÇöÀç À§Ä¡¸¦ ÀúÀåÇÑ´Ù. */
+            /* í˜„ì¬ ìœ„ì¹˜ë¥¼ ì €ì¥í•œë‹¤. */
             IDE_TEST( qmcSortTemp::storeCursor( aDataPlan->sortMgr,
                                                 &aDataPlan->cursorInfo )
                       != IDE_SUCCESS );
@@ -10547,7 +10547,7 @@ IDE_RC qmnWNST::partitionPrecedPrecedRange( qcTemplate  * aTemplate,
             aDataPlan->mtrRowIdx = 0;
             aDataPlan->plan.myTuple->row = aDataPlan->mtrRow[aDataPlan->mtrRowIdx];
 
-            /* ÆÄÆ¼¼ÇÀÇ Ã³À½À§Ä¡·Î ÀÌµ¿ÇÑ´Ù. */
+            /* íŒŒí‹°ì…˜ì˜ ì²˜ìŒìœ„ì¹˜ë¡œ ì´ë™í•œë‹¤. */
             IDE_TEST( qmcSortTemp::restoreCursor( aDataPlan->sortMgr,
                                                   & aDataPlan->partitionCursorInfo )
                       != IDE_SUCCESS );
@@ -10559,7 +10559,7 @@ IDE_RC qmnWNST::partitionPrecedPrecedRange( qcTemplate  * aTemplate,
 
             do
             {
-                /* ½ÃÀÛ °ªº¸´Ù ¸¶Áö¸·ÀÌ Å©´Ù¸é ¸ØÃá´Ù */
+                /* ì‹œì‘ ê°’ë³´ë‹¤ ë§ˆì§€ë§‰ì´ í¬ë‹¤ë©´ ë©ˆì¶˜ë‹¤ */
                 if ( aStartValue < aEndValue )
                 {
                     break;
@@ -10570,7 +10570,7 @@ IDE_RC qmnWNST::partitionPrecedPrecedRange( qcTemplate  * aTemplate,
                 }
                 if ( sSkipEnd == ID_FALSE )
                 {
-                    /* ÇöÀç °ª°ú EndPointÀÇ °ª°ú ºñ±³ÇØ¼­ ÇöÀç Row°Ô End°ª¿¡ ¼ÓÇÏÁö ¾Ê´Â´Ù¸é ³¡³½´Ù */
+                    /* í˜„ì¬ ê°’ê³¼ EndPointì˜ ê°’ê³¼ ë¹„êµí•´ì„œ í˜„ì¬ Rowê²Œ Endê°’ì— ì†í•˜ì§€ ì•ŠëŠ”ë‹¤ë©´ ëë‚¸ë‹¤ */
                     IDE_TEST( compareRangeValue( aTemplate,
                                                  aDataPlan->sortMgr,
                                                  aOrderByColumn,
@@ -10587,7 +10587,7 @@ IDE_RC qmnWNST::partitionPrecedPrecedRange( qcTemplate  * aTemplate,
                     {
                         /* Nothing to do */
                     }
-                    /* ÇöÀç °ª°ú StartPointÀÇ °ª°ú ºñ±³ÇÑ´Ù. */
+                    /* í˜„ì¬ ê°’ê³¼ StartPointì˜ ê°’ê³¼ ë¹„êµí•œë‹¤. */
                     IDE_TEST( compareRangeValue( aTemplate,
                                                  aDataPlan->sortMgr,
                                                  aOrderByColumn,
@@ -10603,7 +10603,7 @@ IDE_RC qmnWNST::partitionPrecedPrecedRange( qcTemplate  * aTemplate,
                 }
                 if ( sResult == ID_TRUE )
                 {
-                    /* Start °ª ÀÌÈÄÀÌ¹Ç·Î °è»êÀ» ¼öÇàÇÑ´Ù. */
+                    /* Start ê°’ ì´í›„ì´ë¯€ë¡œ ê³„ì‚°ì„ ìˆ˜í–‰í•œë‹¤. */
                     IDE_TEST( execAggregation( aTemplate,
                                                aAggrNode,
                                                NULL,
@@ -10614,19 +10614,19 @@ IDE_RC qmnWNST::partitionPrecedPrecedRange( qcTemplate  * aTemplate,
                 }
                 else
                 {
-                    /* Start °ª ÀÌÀü ÀÌ¹Ç·Î SkipÇÑ´Ù. */
+                    /* Start ê°’ ì´ì „ ì´ë¯€ë¡œ Skipí•œë‹¤. */
                     sSkipEnd = ID_FALSE;
                 }
                 aDataPlan->mtrRowIdx    = 1;
                 aDataPlan->plan.myTuple->row = aDataPlan->mtrRow[aDataPlan->mtrRowIdx];
 
-                /* ´ÙÀ½ Row¸¦ ÀĞ´Â´Ù */
+                /* ë‹¤ìŒ Rowë¥¼ ì½ëŠ”ë‹¤ */
                 IDE_TEST( getNextRecord( aTemplate, aDataPlan, &sFlag )
                           != IDE_SUCCESS );
 
                 if ( (sFlag & QMC_ROW_DATA_MASK) == QMC_ROW_DATA_EXIST )
                 {
-                    /* Row¸¦ ºñ±³ÇÑ´Ù */
+                    /* Rowë¥¼ ë¹„êµí•œë‹¤ */
                     IDE_TEST( compareRows( aDataPlan,
                                            aOverColumnNode,
                                            &sFlag )
@@ -10638,7 +10638,7 @@ IDE_RC qmnWNST::partitionPrecedPrecedRange( qcTemplate  * aTemplate,
                 }
                 if ( sSkipEnd == ID_TRUE )
                 {
-                    /* ´ÙÀ½ Row°¡ EndPointÀÇ Value¿¡ ¼ÓÇÑÁö ºñ±³ÇØº»´Ù */
+                    /* ë‹¤ìŒ Rowê°€ EndPointì˜ Valueì— ì†í•œì§€ ë¹„êµí•´ë³¸ë‹¤ */
                     IDE_TEST( compareRangeValue( aTemplate,
                                                  aDataPlan->sortMgr,
                                                  aOrderByColumn,
@@ -10668,7 +10668,7 @@ IDE_RC qmnWNST::partitionPrecedPrecedRange( qcTemplate  * aTemplate,
             aDataPlan->mtrRowIdx = 0;
             aDataPlan->plan.myTuple->row = aDataPlan->mtrRow[aDataPlan->mtrRowIdx];
 
-            /* ÇöÀç Row À§Ä¡·Î µÇµ¹¾Æ¿Â´Ù */
+            /* í˜„ì¬ Row ìœ„ì¹˜ë¡œ ë˜ëŒì•„ì˜¨ë‹¤ */
             IDE_TEST( qmcSortTemp::restoreCursor( aDataPlan->sortMgr,
                                                   &aDataPlan->cursorInfo )
                       != IDE_SUCCESS );
@@ -10678,7 +10678,7 @@ IDE_RC qmnWNST::partitionPrecedPrecedRange( qcTemplate  * aTemplate,
             IDE_TEST( setTupleSet( aTemplate, aDataPlan->mtrNode, aDataPlan->plan.myTuple->row )
                       != IDE_SUCCESS );
 
-            /* AggregationµÈ °ªÀ» updateÇÏ°í ´ÙÀ½ Row¸¦ ÀĞ´Â´Ù. */
+            /* Aggregationëœ ê°’ì„ updateí•˜ê³  ë‹¤ìŒ Rowë¥¼ ì½ëŠ”ë‹¤. */
             IDE_TEST( updateOneRowNextRecord( aTemplate,
                                               aDataPlan,
                                               aAggrResultNode,
@@ -10686,7 +10686,7 @@ IDE_RC qmnWNST::partitionPrecedPrecedRange( qcTemplate  * aTemplate,
                        != IDE_SUCCESS );
             if ( (sFlag & QMC_ROW_DATA_MASK) == QMC_ROW_DATA_EXIST )
             {
-                /* °°Àº ÆÄÆ¼¼ÇÀÎÁö¸¦ Ã¼Å©ÇÑ´Ù */
+                /* ê°™ì€ íŒŒí‹°ì…˜ì¸ì§€ë¥¼ ì²´í¬í•œë‹¤ */
                 IDE_TEST( compareRows( aDataPlan,
                                        aOverColumnNode,
                                        &sFlag )
@@ -10709,14 +10709,14 @@ IDE_RC qmnWNST::partitionPrecedPrecedRange( qcTemplate  * aTemplate,
 /**
  * RANGE Order By N PRECEDING - N PRECEDING
  *
- *  Start Point °¡ N PRECEDING ÇöÀç RowÀÇ N °³ ÀüºÎÅÍ ½ÃÀÛÇÑ´Ù.
- *  End   Point ´Â N PRECEDING ÇöÀç RowÀÇ N °³ Àü ±îÁöÀÌ´Ù.
+ *  Start Point ê°€ N PRECEDING í˜„ì¬ Rowì˜ N ê°œ ì „ë¶€í„° ì‹œì‘í•œë‹¤.
+ *  End   Point ëŠ” N PRECEDING í˜„ì¬ Rowì˜ N ê°œ ì „ ê¹Œì§€ì´ë‹¤.
  *
- *  ORDER BY ±¸¹®¿¡ »ç¿ëµÈ ÄÃ·³ÀÌ ASCÀÎÁö DESCÀÎÁö¸¦ Á¶»çÇØ¼­ ºñ±³ÇØ¾ßÇÒ ¿É¼ÇÀ» ¼±ÅÃÇÑ´Ù.
+ *  ORDER BY êµ¬ë¬¸ì— ì‚¬ìš©ëœ ì»¬ëŸ¼ì´ ASCì¸ì§€ DESCì¸ì§€ë¥¼ ì¡°ì‚¬í•´ì„œ ë¹„êµí•´ì•¼í•  ì˜µì…˜ì„ ì„ íƒí•œë‹¤.
  *
- *  Ã³À½ ½ÃÀÛÇÏ¸é ÇöÀç RowÀÇ À§Ä¡¸¦ ÀúÀåÇÑ´Ù. ÇöÀç Row¿¡¼­ StartPoint,EndPoint
- *  °ªÀÇ Value¸¦ ¾ò´ÂÀÌ ÀÌ¸¦ ÅëÇØ¼­ ÆÄÆ¼¼ÇÀÇ Ã³À½ºÎÅÍ N°³ Àü Value±îÁö SkipÇÏ°í N°³ Àü Value
- *  ±îÁö AggregationÀ» ¼öÇàÇÑ´Ù.
+ *  ì²˜ìŒ ì‹œì‘í•˜ë©´ í˜„ì¬ Rowì˜ ìœ„ì¹˜ë¥¼ ì €ì¥í•œë‹¤. í˜„ì¬ Rowì—ì„œ StartPoint,EndPoint
+ *  ê°’ì˜ Valueë¥¼ ì–»ëŠ”ì´ ì´ë¥¼ í†µí•´ì„œ íŒŒí‹°ì…˜ì˜ ì²˜ìŒë¶€í„° Nê°œ ì „ Valueê¹Œì§€ Skipí•˜ê³  Nê°œ ì „ Value
+ *  ê¹Œì§€ Aggregationì„ ìˆ˜í–‰í•œë‹¤.
  */
 IDE_RC qmnWNST::orderPrecedPrecedRange( qcTemplate  * aTemplate,
                                         qmndWNST    * aDataPlan,
@@ -10737,7 +10737,7 @@ IDE_RC qmnWNST::orderPrecedPrecedRange( qcTemplate  * aTemplate,
     idBool             sIsMore;
     idBool             sIsPreceding;
 
-    /* ORDER BY ±¸¹®¿¡ ASCÀÎÁö DESCÀÎÁö¿¡ µû¶ó °è»ê ÀÌ ´Ş¶óÁø´Ù */
+    /* ORDER BY êµ¬ë¬¸ì— ASCì¸ì§€ DESCì¸ì§€ì— ë”°ë¼ ê³„ì‚° ì´ ë‹¬ë¼ì§„ë‹¤ */
     if ( ( aOrderByColumn->myNode->flag & QMC_MTR_SORT_ORDER_MASK ) ==
             QMC_MTR_SORT_ASCENDING )
     {
@@ -10763,7 +10763,7 @@ IDE_RC qmnWNST::orderPrecedPrecedRange( qcTemplate  * aTemplate,
 
     while ( ( sFlag & QMC_ROW_DATA_MASK ) == QMC_ROW_DATA_EXIST )
     {
-        /* ÇöÀç Row·Î ºÎÅÍ Start PointÀÌ N°³ Àü °ªÀ» °è»êÇÑ´Ù. */
+        /* í˜„ì¬ Rowë¡œ ë¶€í„° Start Pointì´ Nê°œ ì „ ê°’ì„ ê³„ì‚°í•œë‹¤. */
         IDE_TEST( calculateInterval( aTemplate,
                                      aDataPlan->sortMgr,
                                      aOrderByColumn,
@@ -10774,7 +10774,7 @@ IDE_RC qmnWNST::orderPrecedPrecedRange( qcTemplate  * aTemplate,
                                      sIsPreceding )
                   != IDE_SUCCESS );
 
-        /* ÇöÀç Row·Î ºÎÅÍ End PointÀÌ N°³ Àü °ªÀ» °è»êÇÑ´Ù. */
+        /* í˜„ì¬ Rowë¡œ ë¶€í„° End Pointì´ Nê°œ ì „ ê°’ì„ ê³„ì‚°í•œë‹¤. */
         IDE_TEST( calculateInterval( aTemplate,
                                      aDataPlan->sortMgr,
                                      aOrderByColumn,
@@ -10785,7 +10785,7 @@ IDE_RC qmnWNST::orderPrecedPrecedRange( qcTemplate  * aTemplate,
                                      sIsPreceding )
                   != IDE_SUCCESS );
 
-        /* ÇöÀç À§Ä¡¸¦ ÀúÀåÇÑ´Ù. */
+        /* í˜„ì¬ ìœ„ì¹˜ë¥¼ ì €ì¥í•œë‹¤. */
         IDE_TEST( qmcSortTemp::storeCursor( aDataPlan->sortMgr,
                                             &aDataPlan->cursorInfo )
                   != IDE_SUCCESS );
@@ -10801,7 +10801,7 @@ IDE_RC qmnWNST::orderPrecedPrecedRange( qcTemplate  * aTemplate,
 
         while ( (sFlag & QMC_ROW_DATA_MASK) == QMC_ROW_DATA_EXIST )
         {
-            /* ½ÃÀÛ °ªº¸´Ù ¸¶Áö¸·ÀÌ Å©´Ù¸é ¸ØÃá´Ù */
+            /* ì‹œì‘ ê°’ë³´ë‹¤ ë§ˆì§€ë§‰ì´ í¬ë‹¤ë©´ ë©ˆì¶˜ë‹¤ */
             if ( aStartValue < aEndValue )
             {
                 break;
@@ -10813,7 +10813,7 @@ IDE_RC qmnWNST::orderPrecedPrecedRange( qcTemplate  * aTemplate,
 
             if ( sSkipEnd == ID_FALSE )
             {
-                /* ÇöÀç °ª°ú EndPointÀÇ °ª°ú ºñ±³ÇØ¼­ ÇöÀç Row°Ô End°ª¿¡ ¼ÓÇÏÁö ¾Ê´Â´Ù¸é ³¡³½´Ù */
+                /* í˜„ì¬ ê°’ê³¼ EndPointì˜ ê°’ê³¼ ë¹„êµí•´ì„œ í˜„ì¬ Rowê²Œ Endê°’ì— ì†í•˜ì§€ ì•ŠëŠ”ë‹¤ë©´ ëë‚¸ë‹¤ */
                 IDE_TEST( compareRangeValue( aTemplate,
                                              aDataPlan->sortMgr,
                                              aOrderByColumn,
@@ -10831,7 +10831,7 @@ IDE_RC qmnWNST::orderPrecedPrecedRange( qcTemplate  * aTemplate,
                     /* Nothing to do */
                 }
 
-                /* ÇöÀç °ª°ú StartPointÀÇ °ª°ú ºñ±³ÇÑ´Ù. */
+                /* í˜„ì¬ ê°’ê³¼ StartPointì˜ ê°’ê³¼ ë¹„êµí•œë‹¤. */
                 IDE_TEST( compareRangeValue( aTemplate,
                                              aDataPlan->sortMgr,
                                              aOrderByColumn,
@@ -10847,7 +10847,7 @@ IDE_RC qmnWNST::orderPrecedPrecedRange( qcTemplate  * aTemplate,
             }
             if ( sResult == ID_TRUE )
             {
-                /* Start °ª ÀÌÈÄÀÌ¹Ç·Î °è»êÀ» ¼öÇàÇÑ´Ù. */
+                /* Start ê°’ ì´í›„ì´ë¯€ë¡œ ê³„ì‚°ì„ ìˆ˜í–‰í•œë‹¤. */
                 IDE_TEST( execAggregation( aTemplate,
                                            aAggrNode,
                                            NULL,
@@ -10858,19 +10858,19 @@ IDE_RC qmnWNST::orderPrecedPrecedRange( qcTemplate  * aTemplate,
             }
             else
             {
-                /* Start °ª ÀÌÀü ÀÌ¹Ç·Î SkIPÇÑ´Ù */
+                /* Start ê°’ ì´ì „ ì´ë¯€ë¡œ SkIPí•œë‹¤ */
                 sSkipEnd = ID_FALSE;
             }
             aDataPlan->mtrRowIdx    = 1;
             aDataPlan->plan.myTuple->row = aDataPlan->mtrRow[aDataPlan->mtrRowIdx];
 
-            /* ´ÙÀ½ Row¸¦ ÀĞ´Â´Ù */
+            /* ë‹¤ìŒ Rowë¥¼ ì½ëŠ”ë‹¤ */
             IDE_TEST( getNextRecord( aTemplate, aDataPlan, &sFlag )
                       != IDE_SUCCESS );
 
             if ( sSkipEnd == ID_TRUE )
             {
-                /* ´ÙÀ½ Row°¡ EndPointÀÇ Value¿¡ ¼ÓÇÑÁö ºñ±³ÇØº»´Ù */
+                /* ë‹¤ìŒ Rowê°€ EndPointì˜ Valueì— ì†í•œì§€ ë¹„êµí•´ë³¸ë‹¤ */
                 IDE_TEST( compareRangeValue( aTemplate,
                                              aDataPlan->sortMgr,
                                              aOrderByColumn,
@@ -10900,7 +10900,7 @@ IDE_RC qmnWNST::orderPrecedPrecedRange( qcTemplate  * aTemplate,
         aDataPlan->mtrRowIdx = 0;
         aDataPlan->plan.myTuple->row = aDataPlan->mtrRow[aDataPlan->mtrRowIdx];
 
-        /* ÇöÀç Row À§Ä¡·Î µÇµ¹¾Æ¿Â´Ù */
+        /* í˜„ì¬ Row ìœ„ì¹˜ë¡œ ë˜ëŒì•„ì˜¨ë‹¤ */
         IDE_TEST( qmcSortTemp::restoreCursor( aDataPlan->sortMgr,
                                               &aDataPlan->cursorInfo )
                   != IDE_SUCCESS );
@@ -10910,7 +10910,7 @@ IDE_RC qmnWNST::orderPrecedPrecedRange( qcTemplate  * aTemplate,
         IDE_TEST( setTupleSet( aTemplate, aDataPlan->mtrNode, aDataPlan->plan.myTuple->row )
                   != IDE_SUCCESS );
 
-        /* AggregationµÈ °ªÀ» updateÇÏ°í ´ÙÀ½ Row¸¦ ÀĞ´Â´Ù. */
+        /* Aggregationëœ ê°’ì„ updateí•˜ê³  ë‹¤ìŒ Rowë¥¼ ì½ëŠ”ë‹¤. */
         IDE_TEST( updateOneRowNextRecord( aTemplate,
                                           aDataPlan,
                                           aAggrResultNode,
@@ -10928,14 +10928,14 @@ IDE_RC qmnWNST::orderPrecedPrecedRange( qcTemplate  * aTemplate,
 /**
  * RANGE Partition By Order By N PRECEDING - N FOLLOWING
  *
- *  Start Point °¡ N PRECEDING ÇöÀç RowÀÇ N °³ ÀüºÎÅÍ ½ÃÀÛÇÑ´Ù.
- *  End   Point ´Â N FOLLOWING ÇöÀç RowÀÇ N °³ ÈÄ ±îÁöÀÌ´Ù.
+ *  Start Point ê°€ N PRECEDING í˜„ì¬ Rowì˜ N ê°œ ì „ë¶€í„° ì‹œì‘í•œë‹¤.
+ *  End   Point ëŠ” N FOLLOWING í˜„ì¬ Rowì˜ N ê°œ í›„ ê¹Œì§€ì´ë‹¤.
  *
- *  ORDER BY ±¸¹®¿¡ »ç¿ëµÈ ÄÃ·³ÀÌ ASCÀÎÁö DESCÀÎÁö¸¦ Á¶»çÇØ¼­ ºñ±³ÇØ¾ßÇÒ ¿É¼ÇÀ» ¼±ÅÃÇÑ´Ù.
+ *  ORDER BY êµ¬ë¬¸ì— ì‚¬ìš©ëœ ì»¬ëŸ¼ì´ ASCì¸ì§€ DESCì¸ì§€ë¥¼ ì¡°ì‚¬í•´ì„œ ë¹„êµí•´ì•¼í•  ì˜µì…˜ì„ ì„ íƒí•œë‹¤.
  *
- *  Ã³À½ ½ÃÀÛÇÏ¸é ÆÄÆ¼¼ÇÀÇ Ã³À½°ú ÇöÀç RowÀÇ À§Ä¡¸¦ ÀúÀåÇÑ´Ù. ÇöÀç Row¿¡¼­ StartPoint,EndPoint
- *  °ªÀÇ Value¸¦ ¾ò´ÂÀÌ ÀÌ¸¦ ÅëÇØ¼­ ÆÄÆ¼¼ÇÀÇ Ã³À½ºÎÅÍ N°³ Àü Value±îÁö SkipÇÏ°í N°³ ÈÄ Value
- *  ±îÁö AggregationÀ» ¼öÇàÇÑ´Ù.
+ *  ì²˜ìŒ ì‹œì‘í•˜ë©´ íŒŒí‹°ì…˜ì˜ ì²˜ìŒê³¼ í˜„ì¬ Rowì˜ ìœ„ì¹˜ë¥¼ ì €ì¥í•œë‹¤. í˜„ì¬ Rowì—ì„œ StartPoint,EndPoint
+ *  ê°’ì˜ Valueë¥¼ ì–»ëŠ”ì´ ì´ë¥¼ í†µí•´ì„œ íŒŒí‹°ì…˜ì˜ ì²˜ìŒë¶€í„° Nê°œ ì „ Valueê¹Œì§€ Skipí•˜ê³  Nê°œ í›„ Value
+ *  ê¹Œì§€ Aggregationì„ ìˆ˜í–‰í•œë‹¤.
  */
 IDE_RC qmnWNST::partitionPrecedFollowRange( qcTemplate  * aTemplate,
                                             qmndWNST    * aDataPlan,
@@ -10958,7 +10958,7 @@ IDE_RC qmnWNST::partitionPrecedFollowRange( qcTemplate  * aTemplate,
     idBool             sIsPreceding;
     idBool             sIsFollowing;
 
-    /* ORDER BY ±¸¹®¿¡ ASCÀÎÁö DESCÀÎÁö¿¡ µû¶ó °è»ê ÀÌ ´Ş¶óÁø´Ù */
+    /* ORDER BY êµ¬ë¬¸ì— ASCì¸ì§€ DESCì¸ì§€ì— ë”°ë¼ ê³„ì‚° ì´ ë‹¬ë¼ì§„ë‹¤ */
     if ( ( aOrderByColumn->myNode->flag & QMC_MTR_SORT_ORDER_MASK ) ==
             QMC_MTR_SORT_ASCENDING )
     {
@@ -10986,13 +10986,13 @@ IDE_RC qmnWNST::partitionPrecedFollowRange( qcTemplate  * aTemplate,
 
     while ( ( sFlag & QMC_ROW_DATA_MASK ) == QMC_ROW_DATA_EXIST )
     {
-        /* ÆÄÆ¼¼ÇÀÇ Ã³À½ À§Ä¡¸¦ ÀúÀåÇÑ´Ù. */
+        /* íŒŒí‹°ì…˜ì˜ ì²˜ìŒ ìœ„ì¹˜ë¥¼ ì €ì¥í•œë‹¤. */
         IDE_TEST( qmcSortTemp::storeCursor( aDataPlan->sortMgr,
                                             &aDataPlan->partitionCursorInfo )
                   != IDE_SUCCESS );
         do
         {
-            /* ÇöÀç Row·Î ºÎÅÍ Start PointÀÌ N°³ Àü °ªÀ» °è»êÇÑ´Ù. */
+            /* í˜„ì¬ Rowë¡œ ë¶€í„° Start Pointì´ Nê°œ ì „ ê°’ì„ ê³„ì‚°í•œë‹¤. */
             IDE_TEST( calculateInterval( aTemplate,
                                          aDataPlan->sortMgr,
                                          aOrderByColumn,
@@ -11003,7 +11003,7 @@ IDE_RC qmnWNST::partitionPrecedFollowRange( qcTemplate  * aTemplate,
                                          sIsPreceding )
                       != IDE_SUCCESS );
 
-            /* ÇöÀç Row·Î ºÎÅÍ End PointÀÌ N°³ ÈÄ °ªÀ» °è»êÇÑ´Ù. */
+            /* í˜„ì¬ Rowë¡œ ë¶€í„° End Pointì´ Nê°œ í›„ ê°’ì„ ê³„ì‚°í•œë‹¤. */
             IDE_TEST( calculateInterval( aTemplate,
                                          aDataPlan->sortMgr,
                                          aOrderByColumn,
@@ -11014,7 +11014,7 @@ IDE_RC qmnWNST::partitionPrecedFollowRange( qcTemplate  * aTemplate,
                                          sIsFollowing )
                       != IDE_SUCCESS );
 
-            /* ÇöÀç À§Ä¡¸¦ ÀúÀåÇÑ´Ù */
+            /* í˜„ì¬ ìœ„ì¹˜ë¥¼ ì €ì¥í•œë‹¤ */
             IDE_TEST( qmcSortTemp::storeCursor( aDataPlan->sortMgr,
                                                 &aDataPlan->cursorInfo )
                       != IDE_SUCCESS );
@@ -11025,7 +11025,7 @@ IDE_RC qmnWNST::partitionPrecedFollowRange( qcTemplate  * aTemplate,
             aDataPlan->mtrRowIdx = 0;
             aDataPlan->plan.myTuple->row = aDataPlan->mtrRow[aDataPlan->mtrRowIdx];
 
-            /* ÆÄÆ¼¼ÇÀÇ Ã³À½À§Ä¡·Î ÀÌµ¿ÇÑ´Ù. */
+            /* íŒŒí‹°ì…˜ì˜ ì²˜ìŒìœ„ì¹˜ë¡œ ì´ë™í•œë‹¤. */
             IDE_TEST( qmcSortTemp::restoreCursor( aDataPlan->sortMgr,
                                                   &aDataPlan->partitionCursorInfo )
                       != IDE_SUCCESS );
@@ -11038,7 +11038,7 @@ IDE_RC qmnWNST::partitionPrecedFollowRange( qcTemplate  * aTemplate,
             {
                 if ( sSkipEnd == ID_FALSE )
                 {
-                    /* ÇöÀç °ª°ú StartPointÀÇ °ª°ú ºñ±³ÇÑ´Ù. */
+                    /* í˜„ì¬ ê°’ê³¼ StartPointì˜ ê°’ê³¼ ë¹„êµí•œë‹¤. */
                     IDE_TEST( compareRangeValue( aTemplate,
                                                  aDataPlan->sortMgr,
                                                  aOrderByColumn,
@@ -11054,7 +11054,7 @@ IDE_RC qmnWNST::partitionPrecedFollowRange( qcTemplate  * aTemplate,
                 }
                 if ( sResult == ID_TRUE )
                 {
-                    /* Start °ª ÀÌÈÄÀÌ¹Ç·Î °è»êÀ» ¼öÇàÇÑ´Ù. */
+                    /* Start ê°’ ì´í›„ì´ë¯€ë¡œ ê³„ì‚°ì„ ìˆ˜í–‰í•œë‹¤. */
                     IDE_TEST( execAggregation( aTemplate,
                                                aAggrNode,
                                                NULL,
@@ -11065,7 +11065,7 @@ IDE_RC qmnWNST::partitionPrecedFollowRange( qcTemplate  * aTemplate,
                 }
                 else
                 {
-                    /* Start °ª ÀÌÀü ÀÌ¹Ç·Î SkipÇÑ´Ù. */
+                    /* Start ê°’ ì´ì „ ì´ë¯€ë¡œ Skipí•œë‹¤. */
                     sSkipEnd = ID_FALSE;
                 }
                 aDataPlan->mtrRowIdx    = 1;
@@ -11087,7 +11087,7 @@ IDE_RC qmnWNST::partitionPrecedFollowRange( qcTemplate  * aTemplate,
                 }
                 if ( sSkipEnd == ID_TRUE )
                 {
-                    /* ´ÙÀ½ Row°¡ EndPointÀÇ Value¿¡ ¼ÓÇÑÁö ºñ±³ÇØº»´Ù */
+                    /* ë‹¤ìŒ Rowê°€ EndPointì˜ Valueì— ì†í•œì§€ ë¹„êµí•´ë³¸ë‹¤ */
                     IDE_TEST( compareRangeValue( aTemplate,
                                                  aDataPlan->sortMgr,
                                                  aOrderByColumn,
@@ -11117,7 +11117,7 @@ IDE_RC qmnWNST::partitionPrecedFollowRange( qcTemplate  * aTemplate,
             aDataPlan->mtrRowIdx = 0;
             aDataPlan->plan.myTuple->row = aDataPlan->mtrRow[aDataPlan->mtrRowIdx];
 
-            /* ÇöÀç Row À§Ä¡·Î µÇµ¹¾Æ¿Â´Ù */
+            /* í˜„ì¬ Row ìœ„ì¹˜ë¡œ ë˜ëŒì•„ì˜¨ë‹¤ */
             IDE_TEST( qmcSortTemp::restoreCursor( aDataPlan->sortMgr,
                                                   &aDataPlan->cursorInfo )
                       != IDE_SUCCESS );
@@ -11127,7 +11127,7 @@ IDE_RC qmnWNST::partitionPrecedFollowRange( qcTemplate  * aTemplate,
             IDE_TEST( setTupleSet( aTemplate, aDataPlan->mtrNode, aDataPlan->plan.myTuple->row )
                       != IDE_SUCCESS );
 
-            /* AggregationµÈ °ªÀ» updateÇÏ°í ´ÙÀ½ Row¸¦ ÀĞ´Â´Ù. */
+            /* Aggregationëœ ê°’ì„ updateí•˜ê³  ë‹¤ìŒ Rowë¥¼ ì½ëŠ”ë‹¤. */
             IDE_TEST( updateOneRowNextRecord( aTemplate,
                                               aDataPlan,
                                               aAggrResultNode,
@@ -11135,7 +11135,7 @@ IDE_RC qmnWNST::partitionPrecedFollowRange( qcTemplate  * aTemplate,
                        != IDE_SUCCESS );
             if ( (sFlag & QMC_ROW_DATA_MASK) == QMC_ROW_DATA_EXIST )
             {
-                /* °°Àº ÆÄÆ¼¼ÇÀÎÁö¸¦ Ã¼Å©ÇÑ´Ù */
+                /* ê°™ì€ íŒŒí‹°ì…˜ì¸ì§€ë¥¼ ì²´í¬í•œë‹¤ */
                 IDE_TEST( compareRows( aDataPlan,
                                        aOverColumnNode,
                                        &sFlag )
@@ -11158,14 +11158,14 @@ IDE_RC qmnWNST::partitionPrecedFollowRange( qcTemplate  * aTemplate,
 /**
  * RANGE Order By N PRECEDING - N FOLLOWING
  *
- *  Start Point °¡ N PRECEDING ÇöÀç RowÀÇ N °³ ÀüºÎÅÍ ½ÃÀÛÇÑ´Ù.
- *  End   Point ´Â N FOLLOWING ÇöÀç RowÀÇ N °³ ÈÄ ±îÁöÀÌ´Ù.
+ *  Start Point ê°€ N PRECEDING í˜„ì¬ Rowì˜ N ê°œ ì „ë¶€í„° ì‹œì‘í•œë‹¤.
+ *  End   Point ëŠ” N FOLLOWING í˜„ì¬ Rowì˜ N ê°œ í›„ ê¹Œì§€ì´ë‹¤.
  *
- *  ORDER BY ±¸¹®¿¡ »ç¿ëµÈ ÄÃ·³ÀÌ ASCÀÎÁö DESCÀÎÁö¸¦ Á¶»çÇØ¼­ ºñ±³ÇØ¾ßÇÒ ¿É¼ÇÀ» ¼±ÅÃÇÑ´Ù.
+ *  ORDER BY êµ¬ë¬¸ì— ì‚¬ìš©ëœ ì»¬ëŸ¼ì´ ASCì¸ì§€ DESCì¸ì§€ë¥¼ ì¡°ì‚¬í•´ì„œ ë¹„êµí•´ì•¼í•  ì˜µì…˜ì„ ì„ íƒí•œë‹¤.
  *
- *  Ã³À½ ½ÃÀÛÇÏ¸é ÇöÀç RowÀÇ À§Ä¡¸¦ ÀúÀåÇÑ´Ù. ÇöÀç Row¿¡¼­ StartPoint,EndPoint
- *  °ªÀÇ Value¸¦ ¾ò´ÂÀÌ ÀÌ¸¦ ÅëÇØ¼­ Ã³À½ºÎÅÍ N°³ Àü Value±îÁö SkipÇÏ°í N°³ ÈÄ Value
- *  ±îÁö AggregationÀ» ¼öÇàÇÑ´Ù.
+ *  ì²˜ìŒ ì‹œì‘í•˜ë©´ í˜„ì¬ Rowì˜ ìœ„ì¹˜ë¥¼ ì €ì¥í•œë‹¤. í˜„ì¬ Rowì—ì„œ StartPoint,EndPoint
+ *  ê°’ì˜ Valueë¥¼ ì–»ëŠ”ì´ ì´ë¥¼ í†µí•´ì„œ ì²˜ìŒë¶€í„° Nê°œ ì „ Valueê¹Œì§€ Skipí•˜ê³  Nê°œ í›„ Value
+ *  ê¹Œì§€ Aggregationì„ ìˆ˜í–‰í•œë‹¤.
  */
 IDE_RC qmnWNST::orderPrecedFollowRange( qcTemplate  * aTemplate,
                                         qmndWNST    * aDataPlan,
@@ -11187,7 +11187,7 @@ IDE_RC qmnWNST::orderPrecedFollowRange( qcTemplate  * aTemplate,
     idBool             sIsPreceding;
     idBool             sIsFollowing;
 
-    /* ORDER BY ±¸¹®¿¡ ASCÀÎÁö DESCÀÎÁö¿¡ µû¶ó °è»ê ÀÌ ´Ş¶óÁø´Ù */
+    /* ORDER BY êµ¬ë¬¸ì— ASCì¸ì§€ DESCì¸ì§€ì— ë”°ë¼ ê³„ì‚° ì´ ë‹¬ë¼ì§„ë‹¤ */
     if ( ( aOrderByColumn->myNode->flag & QMC_MTR_SORT_ORDER_MASK ) ==
             QMC_MTR_SORT_ASCENDING )
     {
@@ -11215,7 +11215,7 @@ IDE_RC qmnWNST::orderPrecedFollowRange( qcTemplate  * aTemplate,
 
     while ( ( sFlag & QMC_ROW_DATA_MASK ) == QMC_ROW_DATA_EXIST )
     {
-        /* ÇöÀç Row·Î ºÎÅÍ Start PointÀÌ N°³ Àü °ªÀ» °è»êÇÑ´Ù. */
+        /* í˜„ì¬ Rowë¡œ ë¶€í„° Start Pointì´ Nê°œ ì „ ê°’ì„ ê³„ì‚°í•œë‹¤. */
         IDE_TEST( calculateInterval( aTemplate,
                                      aDataPlan->sortMgr,
                                      aOrderByColumn,
@@ -11226,7 +11226,7 @@ IDE_RC qmnWNST::orderPrecedFollowRange( qcTemplate  * aTemplate,
                                      sIsPreceding )
                   != IDE_SUCCESS );
 
-        /* ÇöÀç Row·Î ºÎÅÍ End PointÀÌ N°³ ÈÄ °ªÀ» °è»êÇÑ´Ù. */
+        /* í˜„ì¬ Rowë¡œ ë¶€í„° End Pointì´ Nê°œ í›„ ê°’ì„ ê³„ì‚°í•œë‹¤. */
         IDE_TEST( calculateInterval( aTemplate,
                                      aDataPlan->sortMgr,
                                      aOrderByColumn,
@@ -11237,7 +11237,7 @@ IDE_RC qmnWNST::orderPrecedFollowRange( qcTemplate  * aTemplate,
                                      sIsFollowing )
                   != IDE_SUCCESS );
 
-        /* ÇöÀç À§Ä¡¸¦ ÀúÀåÇÑ´Ù. */
+        /* í˜„ì¬ ìœ„ì¹˜ë¥¼ ì €ì¥í•œë‹¤. */
         IDE_TEST( qmcSortTemp::storeCursor( aDataPlan->sortMgr,
                                             &aDataPlan->cursorInfo )
                   != IDE_SUCCESS );
@@ -11255,7 +11255,7 @@ IDE_RC qmnWNST::orderPrecedFollowRange( qcTemplate  * aTemplate,
         {
             if ( sSkipEnd == ID_FALSE )
             {
-                /* ÇöÀç °ª°ú StartPointÀÇ °ª°ú ºñ±³ÇÑ´Ù. */
+                /* í˜„ì¬ ê°’ê³¼ StartPointì˜ ê°’ê³¼ ë¹„êµí•œë‹¤. */
                 IDE_TEST( compareRangeValue( aTemplate,
                                              aDataPlan->sortMgr,
                                              aOrderByColumn,
@@ -11271,7 +11271,7 @@ IDE_RC qmnWNST::orderPrecedFollowRange( qcTemplate  * aTemplate,
             }
             if ( sResult == ID_TRUE )
             {
-                /* Start °ª ÀÌÈÄÀÌ¹Ç·Î °è»êÀ» ¼öÇàÇÑ´Ù. */
+                /* Start ê°’ ì´í›„ì´ë¯€ë¡œ ê³„ì‚°ì„ ìˆ˜í–‰í•œë‹¤. */
                 IDE_TEST( execAggregation( aTemplate,
                                            aAggrNode,
                                            NULL,
@@ -11282,7 +11282,7 @@ IDE_RC qmnWNST::orderPrecedFollowRange( qcTemplate  * aTemplate,
             }
             else
             {
-                /* Start °ª ÀÌÀü ÀÌ¹Ç·Î SKIPÇÑ´Ù */
+                /* Start ê°’ ì´ì „ ì´ë¯€ë¡œ SKIPí•œë‹¤ */
                 sSkipEnd = ID_FALSE;
             }
             aDataPlan->mtrRowIdx    = 1;
@@ -11293,7 +11293,7 @@ IDE_RC qmnWNST::orderPrecedFollowRange( qcTemplate  * aTemplate,
 
             if ( sSkipEnd == ID_TRUE )
             {
-                /* ´ÙÀ½ Row°¡ EndPointÀÇ Value¿¡ ¼ÓÇÑÁö ºñ±³ÇØº»´Ù */
+                /* ë‹¤ìŒ Rowê°€ EndPointì˜ Valueì— ì†í•œì§€ ë¹„êµí•´ë³¸ë‹¤ */
                 IDE_TEST( compareRangeValue( aTemplate,
                                              aDataPlan->sortMgr,
                                              aOrderByColumn,
@@ -11323,7 +11323,7 @@ IDE_RC qmnWNST::orderPrecedFollowRange( qcTemplate  * aTemplate,
         aDataPlan->mtrRowIdx = 0;
         aDataPlan->plan.myTuple->row = aDataPlan->mtrRow[aDataPlan->mtrRowIdx];
 
-        /* ÇöÀç Row À§Ä¡·Î µÇµ¹¾Æ¿Â´Ù */
+        /* í˜„ì¬ Row ìœ„ì¹˜ë¡œ ë˜ëŒì•„ì˜¨ë‹¤ */
         IDE_TEST( qmcSortTemp::restoreCursor( aDataPlan->sortMgr,
                                               &aDataPlan->cursorInfo )
                   != IDE_SUCCESS );
@@ -11333,7 +11333,7 @@ IDE_RC qmnWNST::orderPrecedFollowRange( qcTemplate  * aTemplate,
         IDE_TEST( setTupleSet( aTemplate, aDataPlan->mtrNode, aDataPlan->plan.myTuple->row )
                   != IDE_SUCCESS );
 
-        /* AggregationµÈ °ªÀ» updateÇÏ°í ´ÙÀ½ Row¸¦ ÀĞ´Â´Ù. */
+        /* Aggregationëœ ê°’ì„ updateí•˜ê³  ë‹¤ìŒ Rowë¥¼ ì½ëŠ”ë‹¤. */
         IDE_TEST( updateOneRowNextRecord( aTemplate,
                                           aDataPlan,
                                           aAggrResultNode,
@@ -11351,14 +11351,14 @@ IDE_RC qmnWNST::orderPrecedFollowRange( qcTemplate  * aTemplate,
 /**
  * RANGE Partition By Order By N FOLLOWING - N FOLLOWING
  *
- *  Start Point °¡ N FOLLOWING ÇöÀç RowÀÇ N °³ ÈÄ ºÎÅÍ ½ÃÀÛÇÑ´Ù.
- *  End   Point ´Â N FOLLOWING ÇöÀç RowÀÇ N °³ ÈÄ ±îÁöÀÌ´Ù.
+ *  Start Point ê°€ N FOLLOWING í˜„ì¬ Rowì˜ N ê°œ í›„ ë¶€í„° ì‹œì‘í•œë‹¤.
+ *  End   Point ëŠ” N FOLLOWING í˜„ì¬ Rowì˜ N ê°œ í›„ ê¹Œì§€ì´ë‹¤.
  *
- *  ORDER BY ±¸¹®¿¡ »ç¿ëµÈ ÄÃ·³ÀÌ ASCÀÎÁö DESCÀÎÁö¸¦ Á¶»çÇØ¼­ ºñ±³ÇØ¾ßÇÒ ¿É¼ÇÀ» ¼±ÅÃÇÑ´Ù.
+ *  ORDER BY êµ¬ë¬¸ì— ì‚¬ìš©ëœ ì»¬ëŸ¼ì´ ASCì¸ì§€ DESCì¸ì§€ë¥¼ ì¡°ì‚¬í•´ì„œ ë¹„êµí•´ì•¼í•  ì˜µì…˜ì„ ì„ íƒí•œë‹¤.
  *
- *  Ã³À½ ½ÃÀÛÇÏ¸é ÆÄÆ¼¼ÇÀÇ Ã³À½°ú ÇöÀç RowÀÇ À§Ä¡¸¦ ÀúÀåÇÑ´Ù. ÇöÀç Row¿¡¼­ StartPoint,EndPoint
- *  °ªÀÇ Value¸¦ ¾ò´ÂÀÌ ÀÌ¸¦ ÅëÇØ¼­ ÇöÀçºÎÅÍ Start ValueÀÇ  N°³ ÈÄ °ªºÎÅÍ End ValueÀÇ N°³ ÈÄ
- *  °ª ±îÁö AggregationÀ» ¼öÇàÇÑ´Ù.
+ *  ì²˜ìŒ ì‹œì‘í•˜ë©´ íŒŒí‹°ì…˜ì˜ ì²˜ìŒê³¼ í˜„ì¬ Rowì˜ ìœ„ì¹˜ë¥¼ ì €ì¥í•œë‹¤. í˜„ì¬ Rowì—ì„œ StartPoint,EndPoint
+ *  ê°’ì˜ Valueë¥¼ ì–»ëŠ”ì´ ì´ë¥¼ í†µí•´ì„œ í˜„ì¬ë¶€í„° Start Valueì˜  Nê°œ í›„ ê°’ë¶€í„° End Valueì˜ Nê°œ í›„
+ *  ê°’ ê¹Œì§€ Aggregationì„ ìˆ˜í–‰í•œë‹¤.
  */
 IDE_RC qmnWNST::partitionFollowFollowRange( qcTemplate  * aTemplate,
                                             qmndWNST    * aDataPlan,
@@ -11381,7 +11381,7 @@ IDE_RC qmnWNST::partitionFollowFollowRange( qcTemplate  * aTemplate,
     idBool             sIsMore;
     idBool             sIsPreceding;
 
-    /* ORDER BY ±¸¹®¿¡ ASCÀÎÁö DESCÀÎÁö¿¡ µû¶ó °è»ê ÀÌ ´Ş¶óÁø´Ù */
+    /* ORDER BY êµ¬ë¬¸ì— ASCì¸ì§€ DESCì¸ì§€ì— ë”°ë¼ ê³„ì‚° ì´ ë‹¬ë¼ì§„ë‹¤ */
     if ( ( aOrderByColumn->myNode->flag & QMC_MTR_SORT_ORDER_MASK ) ==
            QMC_MTR_SORT_ASCENDING )
     {
@@ -11412,7 +11412,7 @@ IDE_RC qmnWNST::partitionFollowFollowRange( qcTemplate  * aTemplate,
                   != IDE_SUCCESS );
         do
         {
-            /* ÇöÀç Row·Î ºÎÅÍ Start PointÀÌ N°³ ÈÄ °ªÀ» °è»êÇÑ´Ù. */
+            /* í˜„ì¬ Rowë¡œ ë¶€í„° Start Pointì´ Nê°œ í›„ ê°’ì„ ê³„ì‚°í•œë‹¤. */
             IDE_TEST( calculateInterval( aTemplate,
                                          aDataPlan->sortMgr,
                                          aOrderByColumn,
@@ -11423,7 +11423,7 @@ IDE_RC qmnWNST::partitionFollowFollowRange( qcTemplate  * aTemplate,
                                          sIsPreceding )
                       != IDE_SUCCESS );
 
-            /* ÇöÀç Row·Î ºÎÅÍ End PointÀÌ N°³ ÈÄ °ªÀ» °è»êÇÑ´Ù. */
+            /* í˜„ì¬ Rowë¡œ ë¶€í„° End Pointì´ Nê°œ í›„ ê°’ì„ ê³„ì‚°í•œë‹¤. */
             IDE_TEST( calculateInterval( aTemplate,
                                          aDataPlan->sortMgr,
                                          aOrderByColumn,
@@ -11434,7 +11434,7 @@ IDE_RC qmnWNST::partitionFollowFollowRange( qcTemplate  * aTemplate,
                                          sIsPreceding )
                       != IDE_SUCCESS );
 
-            /* ÇöÀç À§Ä¡¸¦ ÀúÀåÇÑ´Ù */
+            /* í˜„ì¬ ìœ„ì¹˜ë¥¼ ì €ì¥í•œë‹¤ */
             IDE_TEST( qmcSortTemp::storeCursor( aDataPlan->sortMgr,
                                                 &aDataPlan->cursorInfo )
                       != IDE_SUCCESS );
@@ -11445,7 +11445,7 @@ IDE_RC qmnWNST::partitionFollowFollowRange( qcTemplate  * aTemplate,
             aDataPlan->mtrRowIdx = 0;
             aDataPlan->plan.myTuple->row = aDataPlan->mtrRow[aDataPlan->mtrRowIdx];
 
-            /* ÆÄÆ¼¼ÇÀÇ Ã³À½À§Ä¡·Î ÀÌµ¿ÇÑ´Ù. */
+            /* íŒŒí‹°ì…˜ì˜ ì²˜ìŒìœ„ì¹˜ë¡œ ì´ë™í•œë‹¤. */
             IDE_TEST( qmcSortTemp::restoreCursor( aDataPlan->sortMgr,
                                                   &aDataPlan->partitionCursorInfo )
                       != IDE_SUCCESS );
@@ -11456,7 +11456,7 @@ IDE_RC qmnWNST::partitionFollowFollowRange( qcTemplate  * aTemplate,
             sSkipEnd = ID_FALSE;
             do
             {
-                /* ½ÃÀÛ °ªÀÌ ¸¶Áö¸·°ª º¸´Ù Å©´Ù¸é ¸ØÃá´Ù */
+                /* ì‹œì‘ ê°’ì´ ë§ˆì§€ë§‰ê°’ ë³´ë‹¤ í¬ë‹¤ë©´ ë©ˆì¶˜ë‹¤ */
                 if ( aStartValue > aEndValue )
                 {
                     break;
@@ -11467,7 +11467,7 @@ IDE_RC qmnWNST::partitionFollowFollowRange( qcTemplate  * aTemplate,
                 }
                 if ( sSkipEnd == ID_FALSE )
                 {
-                    /* ÇöÀç Row¿Í StartPoint °ª°ú ºñ±³ÇÑ´Ù */
+                    /* í˜„ì¬ Rowì™€ StartPoint ê°’ê³¼ ë¹„êµí•œë‹¤ */
                     IDE_TEST( compareRangeValue( aTemplate,
                                                  aDataPlan->sortMgr,
                                                  aOrderByColumn,
@@ -11482,7 +11482,7 @@ IDE_RC qmnWNST::partitionFollowFollowRange( qcTemplate  * aTemplate,
                     sResult1 = ID_TRUE;
                 }
 
-                /* ÇöÀç Row°ú EndPoint°ª°ú ºñ±³ÇÑ´Ù */
+                /* í˜„ì¬ Rowê³¼ EndPointê°’ê³¼ ë¹„êµí•œë‹¤ */
                 IDE_TEST( compareRangeValue( aTemplate,
                                              aDataPlan->sortMgr,
                                              aOrderByColumn,
@@ -11502,7 +11502,7 @@ IDE_RC qmnWNST::partitionFollowFollowRange( qcTemplate  * aTemplate,
 
                 if ( sResult1 == ID_TRUE )
                 {
-                    /* Start°ª ÀÌÈÄÀÌ¹Ç·Î AggregationÇÑ´Ù */
+                    /* Startê°’ ì´í›„ì´ë¯€ë¡œ Aggregationí•œë‹¤ */
                     IDE_TEST( execAggregation( aTemplate,
                                                aAggrNode,
                                                NULL,
@@ -11513,7 +11513,7 @@ IDE_RC qmnWNST::partitionFollowFollowRange( qcTemplate  * aTemplate,
                 }
                 else
                 {
-                    /* Start°ª ÀÌÀü ÀÌ¹Ç·Î SKIPÇÑ´Ù */
+                    /* Startê°’ ì´ì „ ì´ë¯€ë¡œ SKIPí•œë‹¤ */
                     sSkipEnd = ID_FALSE;
                 }
                 aDataPlan->mtrRowIdx    = 1;
@@ -11541,7 +11541,7 @@ IDE_RC qmnWNST::partitionFollowFollowRange( qcTemplate  * aTemplate,
             aDataPlan->mtrRowIdx = 0;
             aDataPlan->plan.myTuple->row = aDataPlan->mtrRow[aDataPlan->mtrRowIdx];
 
-            /* ÇöÀç Row·Î µÇµ¹¾Æ ¿Â´Ù */
+            /* í˜„ì¬ Rowë¡œ ë˜ëŒì•„ ì˜¨ë‹¤ */
             IDE_TEST( qmcSortTemp::restoreCursor( aDataPlan->sortMgr,
                                                   &aDataPlan->cursorInfo )
                       != IDE_SUCCESS );
@@ -11551,7 +11551,7 @@ IDE_RC qmnWNST::partitionFollowFollowRange( qcTemplate  * aTemplate,
             IDE_TEST( setTupleSet( aTemplate, aDataPlan->mtrNode, aDataPlan->plan.myTuple->row )
                       != IDE_SUCCESS );
 
-            /* AggregationµÈ °ªÀ» updateÇÏ°í ´ÙÀ½ Row¸¦ ÀĞ´Â´Ù. */
+            /* Aggregationëœ ê°’ì„ updateí•˜ê³  ë‹¤ìŒ Rowë¥¼ ì½ëŠ”ë‹¤. */
             IDE_TEST( updateOneRowNextRecord( aTemplate,
                                               aDataPlan,
                                               aAggrResultNode,
@@ -11559,7 +11559,7 @@ IDE_RC qmnWNST::partitionFollowFollowRange( qcTemplate  * aTemplate,
                        != IDE_SUCCESS );
             if ( (sFlag & QMC_ROW_DATA_MASK) == QMC_ROW_DATA_EXIST )
             {
-                /* °°Àº ÆÄÆ¼¼ÇÀÎÁö¸¦ Ã¼Å©ÇÑ´Ù */
+                /* ê°™ì€ íŒŒí‹°ì…˜ì¸ì§€ë¥¼ ì²´í¬í•œë‹¤ */
                 IDE_TEST( compareRows( aDataPlan,
                                        aOverColumnNode,
                                        &sFlag )
@@ -11582,14 +11582,14 @@ IDE_RC qmnWNST::partitionFollowFollowRange( qcTemplate  * aTemplate,
 /**
  * RANGE Order By N FOLLOWING - N FOLLOWING
  *
- *  Start Point °¡ N FOLLOWING ÇöÀç RowÀÇ N °³ ÈÄ ºÎÅÍ ½ÃÀÛÇÑ´Ù.
- *  End   Point ´Â N FOLLOWING ÇöÀç RowÀÇ N °³ ÈÄ ±îÁöÀÌ´Ù.
+ *  Start Point ê°€ N FOLLOWING í˜„ì¬ Rowì˜ N ê°œ í›„ ë¶€í„° ì‹œì‘í•œë‹¤.
+ *  End   Point ëŠ” N FOLLOWING í˜„ì¬ Rowì˜ N ê°œ í›„ ê¹Œì§€ì´ë‹¤.
  *
- *  ORDER BY ±¸¹®¿¡ »ç¿ëµÈ ÄÃ·³ÀÌ ASCÀÎÁö DESCÀÎÁö¸¦ Á¶»çÇØ¼­ ºñ±³ÇØ¾ßÇÒ ¿É¼ÇÀ» ¼±ÅÃÇÑ´Ù.
+ *  ORDER BY êµ¬ë¬¸ì— ì‚¬ìš©ëœ ì»¬ëŸ¼ì´ ASCì¸ì§€ DESCì¸ì§€ë¥¼ ì¡°ì‚¬í•´ì„œ ë¹„êµí•´ì•¼í•  ì˜µì…˜ì„ ì„ íƒí•œë‹¤.
  *
- *  Ã³À½ ½ÃÀÛÇÏ¸é ÇöÀç RowÀÇ À§Ä¡¸¦ ÀúÀåÇÑ´Ù. ÇöÀç Row¿¡¼­ StartPoint,EndPoint
- *  °ªÀÇ Value¸¦ ¾ò´ÂÀÌ ÀÌ¸¦ ÅëÇØ¼­ ÇöÀçºÎÅÍ Start ValueÀÇ  N°³ ÈÄ °ªºÎÅÍ End ValueÀÇ N°³ ÈÄ
- *  °ª ±îÁö AggregationÀ» ¼öÇàÇÑ´Ù.
+ *  ì²˜ìŒ ì‹œì‘í•˜ë©´ í˜„ì¬ Rowì˜ ìœ„ì¹˜ë¥¼ ì €ì¥í•œë‹¤. í˜„ì¬ Rowì—ì„œ StartPoint,EndPoint
+ *  ê°’ì˜ Valueë¥¼ ì–»ëŠ”ì´ ì´ë¥¼ í†µí•´ì„œ í˜„ì¬ë¶€í„° Start Valueì˜  Nê°œ í›„ ê°’ë¶€í„° End Valueì˜ Nê°œ í›„
+ *  ê°’ ê¹Œì§€ Aggregationì„ ìˆ˜í–‰í•œë‹¤.
  */
 IDE_RC qmnWNST::orderFollowFollowRange( qcTemplate  * aTemplate,
                                         qmndWNST    * aDataPlan,
@@ -11611,7 +11611,7 @@ IDE_RC qmnWNST::orderFollowFollowRange( qcTemplate  * aTemplate,
     idBool             sIsMore;
     idBool             sIsPreceding;
 
-    /* ORDER BY ±¸¹®¿¡ ASCÀÎÁö DESCÀÎÁö¿¡ µû¶ó °è»ê ÀÌ ´Ş¶óÁø´Ù */
+    /* ORDER BY êµ¬ë¬¸ì— ASCì¸ì§€ DESCì¸ì§€ì— ë”°ë¼ ê³„ì‚° ì´ ë‹¬ë¼ì§„ë‹¤ */
     if ( ( aOrderByColumn->myNode->flag & QMC_MTR_SORT_ORDER_MASK ) ==
             QMC_MTR_SORT_ASCENDING )
     {
@@ -11637,7 +11637,7 @@ IDE_RC qmnWNST::orderFollowFollowRange( qcTemplate  * aTemplate,
 
     while ( ( sFlag & QMC_ROW_DATA_MASK ) == QMC_ROW_DATA_EXIST )
     {
-        /* ÇöÀç Row·Î ºÎÅÍ Start PointÀÌ N°³ ÈÄ °ªÀ» °è»êÇÑ´Ù. */
+        /* í˜„ì¬ Rowë¡œ ë¶€í„° Start Pointì´ Nê°œ í›„ ê°’ì„ ê³„ì‚°í•œë‹¤. */
         IDE_TEST( calculateInterval( aTemplate,
                                      aDataPlan->sortMgr,
                                      aOrderByColumn,
@@ -11648,7 +11648,7 @@ IDE_RC qmnWNST::orderFollowFollowRange( qcTemplate  * aTemplate,
                                      sIsPreceding )
                   != IDE_SUCCESS );
 
-        /* ÇöÀç Row·Î ºÎÅÍ End PointÀÌ N°³ ÈÄ °ªÀ» °è»êÇÑ´Ù. */
+        /* í˜„ì¬ Rowë¡œ ë¶€í„° End Pointì´ Nê°œ í›„ ê°’ì„ ê³„ì‚°í•œë‹¤. */
         IDE_TEST( calculateInterval( aTemplate,
                                      aDataPlan->sortMgr,
                                      aOrderByColumn,
@@ -11659,7 +11659,7 @@ IDE_RC qmnWNST::orderFollowFollowRange( qcTemplate  * aTemplate,
                                      sIsPreceding )
                   != IDE_SUCCESS );
 
-        /* ÇöÀç À§Ä¡¸¦ ÀúÀåÇÑ´Ù */
+        /* í˜„ì¬ ìœ„ì¹˜ë¥¼ ì €ì¥í•œë‹¤ */
         IDE_TEST( qmcSortTemp::storeCursor( aDataPlan->sortMgr,
                                             &aDataPlan->cursorInfo )
                   != IDE_SUCCESS );
@@ -11675,7 +11675,7 @@ IDE_RC qmnWNST::orderFollowFollowRange( qcTemplate  * aTemplate,
 
         while ( (sFlag & QMC_ROW_DATA_MASK) == QMC_ROW_DATA_EXIST )
         {
-            /* ½ÃÀÛ °ªÀÌ ¸¶Áö¸·°ª º¸´Ù Å©´Ù¸é ¸ØÃá´Ù */
+            /* ì‹œì‘ ê°’ì´ ë§ˆì§€ë§‰ê°’ ë³´ë‹¤ í¬ë‹¤ë©´ ë©ˆì¶˜ë‹¤ */
             if ( aStartValue > aEndValue )
             {
                 break;
@@ -11687,7 +11687,7 @@ IDE_RC qmnWNST::orderFollowFollowRange( qcTemplate  * aTemplate,
 
             if ( sSkipEnd == ID_FALSE )
             {
-                /* ÇöÀç Row¿Í StartPoint °ª°ú ºñ±³ÇÑ´Ù */
+                /* í˜„ì¬ Rowì™€ StartPoint ê°’ê³¼ ë¹„êµí•œë‹¤ */
                 IDE_TEST( compareRangeValue( aTemplate,
                                              aDataPlan->sortMgr,
                                              aOrderByColumn,
@@ -11702,7 +11702,7 @@ IDE_RC qmnWNST::orderFollowFollowRange( qcTemplate  * aTemplate,
                 sResult1 = ID_TRUE;
             }
 
-            /* ÇöÀç Row°ú EndPoint°ª°ú ºñ±³ÇÑ´Ù */
+            /* í˜„ì¬ Rowê³¼ EndPointê°’ê³¼ ë¹„êµí•œë‹¤ */
             IDE_TEST( compareRangeValue( aTemplate,
                                          aDataPlan->sortMgr,
                                          aOrderByColumn,
@@ -11722,7 +11722,7 @@ IDE_RC qmnWNST::orderFollowFollowRange( qcTemplate  * aTemplate,
 
             if ( sResult1 == ID_TRUE )
             {
-                /* Start°ª ÀÌÈÄÀÌ¹Ç·Î AggregationÇÑ´Ù */
+                /* Startê°’ ì´í›„ì´ë¯€ë¡œ Aggregationí•œë‹¤ */
                 IDE_TEST( execAggregation( aTemplate,
                                            aAggrNode,
                                            NULL,
@@ -11733,7 +11733,7 @@ IDE_RC qmnWNST::orderFollowFollowRange( qcTemplate  * aTemplate,
             }
             else
             {
-                /* Start°ª ÀÌÀü ÀÌ¹Ç·Î SKIPÇÑ´Ù */
+                /* Startê°’ ì´ì „ ì´ë¯€ë¡œ SKIPí•œë‹¤ */
                 sSkipEnd = ID_FALSE;
             }
             aDataPlan->mtrRowIdx    = 1;
@@ -11749,7 +11749,7 @@ IDE_RC qmnWNST::orderFollowFollowRange( qcTemplate  * aTemplate,
         aDataPlan->mtrRowIdx = 0;
         aDataPlan->plan.myTuple->row = aDataPlan->mtrRow[aDataPlan->mtrRowIdx];
 
-        /* ÇöÀç Row·Î µÇµ¹¾Æ ¿Â´Ù */
+        /* í˜„ì¬ Rowë¡œ ë˜ëŒì•„ ì˜¨ë‹¤ */
         IDE_TEST( qmcSortTemp::restoreCursor( aDataPlan->sortMgr,
                                               &aDataPlan->cursorInfo )
                   != IDE_SUCCESS );
@@ -11759,7 +11759,7 @@ IDE_RC qmnWNST::orderFollowFollowRange( qcTemplate  * aTemplate,
         IDE_TEST( setTupleSet( aTemplate, aDataPlan->mtrNode, aDataPlan->plan.myTuple->row )
                   != IDE_SUCCESS );
 
-        /* AggregationµÈ °ªÀ» updateÇÏ°í ´ÙÀ½ Row¸¦ ÀĞ´Â´Ù. */
+        /* Aggregationëœ ê°’ì„ updateí•˜ê³  ë‹¤ìŒ Rowë¥¼ ì½ëŠ”ë‹¤. */
         IDE_TEST( updateOneRowNextRecord( aTemplate,
                                           aDataPlan,
                                           aAggrResultNode,
@@ -11783,7 +11783,7 @@ IDE_RC qmnWNST::getPositionValue( qcTemplate  * aTemplate,
     mtcNode   * sArg2;
     SLong       sNumberValue = 0;
 
-    /* lag, lead ÇÔ¼ö´Â next°¡ ¾ø´Ù. */
+    /* lag, lead í•¨ìˆ˜ëŠ” nextê°€ ì—†ë‹¤. */
     IDE_DASSERT( aAggrNode->next == NULL );
     
     sArg1 = aAggrNode->dstNode->node.arguments;
@@ -11796,7 +11796,7 @@ IDE_RC qmnWNST::getPositionValue( qcTemplate  * aTemplate,
 
         sStack = aTemplate->tmplate.stack;
         
-        /* bigint·Î ¹Ş¾ÒÀ½ */
+        /* bigintë¡œ ë°›ì•˜ìŒ */
         IDE_TEST_RAISE( sStack->column->module->id != MTD_BIGINT_ID,
                         ERR_INVALID_WINDOW_SPECIFICATION );
         
@@ -11829,7 +11829,7 @@ IDE_RC qmnWNST::checkNullAggregation( qcTemplate  * aTemplate,
     mtcStack  * sStack;
     mtcNode   * sArg1;
 
-    /* lag, lead ÇÔ¼ö´Â next°¡ ¾ø´Ù. */
+    /* lag, lead í•¨ìˆ˜ëŠ” nextê°€ ì—†ë‹¤. */
     IDE_DASSERT( aAggrNode->next == NULL );
     
     sArg1 = aAggrNode->dstNode->node.arguments;
@@ -11884,7 +11884,7 @@ IDE_RC qmnWNST::partitionOrderByLagAggr( qcTemplate  * aTemplate,
 
     while ( ( sFlag & QMC_ROW_DATA_MASK ) == QMC_ROW_DATA_EXIST )
     {
-        /* ÆÄÆ¼¼ÇÀÇ Ã³À½ À§Ä¡¸¦ ÀúÀåÇÑ´Ù. */
+        /* íŒŒí‹°ì…˜ì˜ ì²˜ìŒ ìœ„ì¹˜ë¥¼ ì €ì¥í•œë‹¤. */
         IDE_TEST( qmcSortTemp::storeCursor( aDataPlan->sortMgr,
                                             &aDataPlan->partitionCursorInfo )
                   != IDE_SUCCESS );
@@ -11892,7 +11892,7 @@ IDE_RC qmnWNST::partitionOrderByLagAggr( qcTemplate  * aTemplate,
 
         do
         {
-            /* ÇöÀç À§Ä¡¸¦ ÀúÀåÇÑ´Ù. */
+            /* í˜„ì¬ ìœ„ì¹˜ë¥¼ ì €ì¥í•œë‹¤. */
             IDE_TEST( qmcSortTemp::storeCursor( aDataPlan->sortMgr,
                                                 &aDataPlan->cursorInfo )
                       != IDE_SUCCESS );
@@ -11903,7 +11903,7 @@ IDE_RC qmnWNST::partitionOrderByLagAggr( qcTemplate  * aTemplate,
             IDE_TEST( initAggregation( aTemplate, aAggrNode )
                       != IDE_SUCCESS );
 
-            /* ÆÄÆ¼¼ÇÀÇ Ã³À½À¸·Î µ¹¾Æ°£´Ù */
+            /* íŒŒí‹°ì…˜ì˜ ì²˜ìŒìœ¼ë¡œ ëŒì•„ê°„ë‹¤ */
             IDE_TEST( qmcSortTemp::restoreCursor( aDataPlan->sortMgr,
                                                   & aDataPlan->partitionCursorInfo )
                       != IDE_SUCCESS );
@@ -11913,13 +11913,13 @@ IDE_RC qmnWNST::partitionOrderByLagAggr( qcTemplate  * aTemplate,
                                    aDataPlan->mtrNode,
                                    aDataPlan->plan.myTuple->row ) != IDE_SUCCESS );
 
-            /* ÆÄÆ¼¼ÇÀÇ Ã³À½¿¡¼­ ÇöÀç Row¿¡¼­ N°³ Àü±îÁö SKIP ÇÑ´Ù */
+            /* íŒŒí‹°ì…˜ì˜ ì²˜ìŒì—ì„œ í˜„ì¬ Rowì—ì„œ Nê°œ ì „ê¹Œì§€ SKIP í•œë‹¤ */
             for ( sCount = sWindowPos - sLagPoint;
                   sCount > 0;
                   sCount-- )
             {
                 /* BUG-40279 lead, lag with ignore nulls */
-                /* ignore nulls¸¦ °í·ÁÇÏ¿© ÀÌÀü±îÁöÀÇ nullÀÌ ¾Æ´Ñ °ªµéÀ» ÃëÇÑ´Ù. */
+                /* ignore nullsë¥¼ ê³ ë ¤í•˜ì—¬ ì´ì „ê¹Œì§€ì˜ nullì´ ì•„ë‹Œ ê°’ë“¤ì„ ì·¨í•œë‹¤. */
                 if ( aAggrNode->dstNode->node.module == &mtfLagIgnoreNulls )
                 {
                     if ( sWindowPos >= sLagPoint )
@@ -11993,7 +11993,7 @@ IDE_RC qmnWNST::partitionOrderByLagAggr( qcTemplate  * aTemplate,
             aDataPlan->mtrRowIdx = 0;
             aDataPlan->plan.myTuple->row = aDataPlan->mtrRow[aDataPlan->mtrRowIdx];
 
-            /* ÇöÀç Row À§Ä¡·Î µÇµ¹¾Æ¿Â´Ù */
+            /* í˜„ì¬ Row ìœ„ì¹˜ë¡œ ë˜ëŒì•„ì˜¨ë‹¤ */
             IDE_TEST( qmcSortTemp::restoreCursor( aDataPlan->sortMgr,
                                                   &aDataPlan->cursorInfo )
                       != IDE_SUCCESS );
@@ -12003,7 +12003,7 @@ IDE_RC qmnWNST::partitionOrderByLagAggr( qcTemplate  * aTemplate,
             IDE_TEST( setTupleSet( aTemplate, aDataPlan->mtrNode, aDataPlan->plan.myTuple->row )
                       != IDE_SUCCESS );
 
-            /* AggregationµÈ °ªÀ» updateÇÏ°í ´ÙÀ½ Row¸¦ ÀĞ´Â´Ù. */
+            /* Aggregationëœ ê°’ì„ updateí•˜ê³  ë‹¤ìŒ Rowë¥¼ ì½ëŠ”ë‹¤. */
             IDE_TEST( updateOneRowNextRecord( aTemplate,
                                               aDataPlan,
                                               aAggrResultNode,
@@ -12013,7 +12013,7 @@ IDE_RC qmnWNST::partitionOrderByLagAggr( qcTemplate  * aTemplate,
             ++sWindowPos;
             if ( (sFlag & QMC_ROW_DATA_MASK) == QMC_ROW_DATA_EXIST )
             {
-                /* °°Àº ÆÄÆ¼¼ÇÀÎÁö¸¦ Ã¼Å©ÇÑ´Ù */
+                /* ê°™ì€ íŒŒí‹°ì…˜ì¸ì§€ë¥¼ ì²´í¬í•œë‹¤ */
                 IDE_TEST( compareRows( aDataPlan,
                                        aOverColumnNode,
                                        &sFlag )
@@ -12057,7 +12057,7 @@ IDE_RC qmnWNST::orderByLagAggr( qcTemplate  * aTemplate,
 
     while ( ( sFlag & QMC_ROW_DATA_MASK ) == QMC_ROW_DATA_EXIST )
     {
-        /* ÇöÀç À§Ä¡¸¦ ÀúÀåÇÑ´Ù. */
+        /* í˜„ì¬ ìœ„ì¹˜ë¥¼ ì €ì¥í•œë‹¤. */
         IDE_TEST( qmcSortTemp::storeCursor( aDataPlan->sortMgr,
                                             &aDataPlan->cursorInfo )
                   != IDE_SUCCESS );
@@ -12068,17 +12068,17 @@ IDE_RC qmnWNST::orderByLagAggr( qcTemplate  * aTemplate,
         IDE_TEST( initAggregation( aTemplate, aAggrNode )
                   != IDE_SUCCESS );
 
-        /* Ã³À½À¸·Î µ¹¾Æ°£´Ù */
+        /* ì²˜ìŒìœ¼ë¡œ ëŒì•„ê°„ë‹¤ */
         IDE_TEST( getFirstRecord( aTemplate, aDataPlan, &sFlag )
                   != IDE_SUCCESS );
 
-        /* ÆÄÆ¼¼ÇÀÇ Ã³À½¿¡¼­ ÇöÀç Row¿¡¼­ N°³ Àü±îÁö SKIP ÇÑ´Ù */
+        /* íŒŒí‹°ì…˜ì˜ ì²˜ìŒì—ì„œ í˜„ì¬ Rowì—ì„œ Nê°œ ì „ê¹Œì§€ SKIP í•œë‹¤ */
         for ( sCount = sWindowPos - sLagPoint;
               sCount > 0;
               sCount-- )
         {
             /* BUG-40279 lead, lag with ignore nulls */
-            /* ignore nulls¸¦ °í·ÁÇÏ¿© ÀÌÀü±îÁöÀÇ nullÀÌ ¾Æ´Ñ °ªµéÀ» ÃëÇÑ´Ù. */
+            /* ignore nullsë¥¼ ê³ ë ¤í•˜ì—¬ ì´ì „ê¹Œì§€ì˜ nullì´ ì•„ë‹Œ ê°’ë“¤ì„ ì·¨í•œë‹¤. */
             if ( aAggrNode->dstNode->node.module == &mtfLagIgnoreNulls )
             {
                 if ( sWindowPos >= sLagPoint )
@@ -12149,7 +12149,7 @@ IDE_RC qmnWNST::orderByLagAggr( qcTemplate  * aTemplate,
         IDE_TEST( finiAggregation( aTemplate, aAggrNode )
                   != IDE_SUCCESS );
 
-        /* ÇöÀç Row À§Ä¡·Î µÇµ¹¾Æ¿Â´Ù */
+        /* í˜„ì¬ Row ìœ„ì¹˜ë¡œ ë˜ëŒì•„ì˜¨ë‹¤ */
         IDE_TEST( qmcSortTemp::restoreCursor( aDataPlan->sortMgr,
                                               &aDataPlan->cursorInfo )
                   != IDE_SUCCESS );
@@ -12159,7 +12159,7 @@ IDE_RC qmnWNST::orderByLagAggr( qcTemplate  * aTemplate,
         IDE_TEST( setTupleSet( aTemplate, aDataPlan->mtrNode, aDataPlan->plan.myTuple->row )
                   != IDE_SUCCESS );
 
-        /* AggregationµÈ °ªÀ» updateÇÏ°í ´ÙÀ½ Row¸¦ ÀĞ´Â´Ù. */
+        /* Aggregationëœ ê°’ì„ updateí•˜ê³  ë‹¤ìŒ Rowë¥¼ ì½ëŠ”ë‹¤. */
         IDE_TEST( updateOneRowNextRecord( aTemplate,
                                           aDataPlan,
                                           aAggrResultNode,
@@ -12198,7 +12198,7 @@ IDE_RC qmnWNST::partitionOrderByLeadAggr( qcTemplate  * aTemplate,
 
     while ( ( sFlag & QMC_ROW_DATA_MASK ) == QMC_ROW_DATA_EXIST )
     {
-        /* ÇöÀç À§Ä¡¸¦ ÀúÀåÇÑ´Ù. */
+        /* í˜„ì¬ ìœ„ì¹˜ë¥¼ ì €ì¥í•œë‹¤. */
         IDE_TEST( qmcSortTemp::storeCursor( aDataPlan->sortMgr,
                                             &aDataPlan->cursorInfo )
                   != IDE_SUCCESS );
@@ -12218,7 +12218,7 @@ IDE_RC qmnWNST::partitionOrderByLeadAggr( qcTemplate  * aTemplate,
                       != IDE_SUCCESS );
             if ( ( sFlag & QMC_ROW_DATA_MASK ) == QMC_ROW_DATA_EXIST )
             {
-                /* °°Àº ÆÄÆ¼¼ÇÀÎÁö¸¦ Ã¼Å©ÇÑ´Ù */
+                /* ê°™ì€ íŒŒí‹°ì…˜ì¸ì§€ë¥¼ ì²´í¬í•œë‹¤ */
                 IDE_TEST( compareRows( aDataPlan,
                                        aOverColumnNode,
                                        &sFlag )
@@ -12241,7 +12241,7 @@ IDE_RC qmnWNST::partitionOrderByLeadAggr( qcTemplate  * aTemplate,
         if ( sCount == 0 )
         {
             /* BUG-40279 lead, lag with ignore nulls */
-            /* ignore nulls¸¦ °í·ÁÇÏ¿© ÀÌÈÄÀÇ nullÀÌ ¾Æ´Ñ °ªµéÀ» Ã£´Â´Ù. */
+            /* ignore nullsë¥¼ ê³ ë ¤í•˜ì—¬ ì´í›„ì˜ nullì´ ì•„ë‹Œ ê°’ë“¤ì„ ì°¾ëŠ”ë‹¤. */
             if ( aAggrNode->dstNode->node.module == &mtfLeadIgnoreNulls )
             {
                 while ( 1 )
@@ -12261,7 +12261,7 @@ IDE_RC qmnWNST::partitionOrderByLeadAggr( qcTemplate  * aTemplate,
                               != IDE_SUCCESS );
                     if ( ( sFlag & QMC_ROW_DATA_MASK ) == QMC_ROW_DATA_EXIST )
                     {
-                        /* °°Àº ÆÄÆ¼¼ÇÀÎÁö¸¦ Ã¼Å©ÇÑ´Ù */
+                        /* ê°™ì€ íŒŒí‹°ì…˜ì¸ì§€ë¥¼ ì²´í¬í•œë‹¤ */
                         IDE_TEST( compareRows( aDataPlan,
                                                aOverColumnNode,
                                                &sFlag )
@@ -12344,7 +12344,7 @@ IDE_RC qmnWNST::orderByLeadAggr( qcTemplate  * aTemplate,
 
     while ( ( sFlag & QMC_ROW_DATA_MASK ) == QMC_ROW_DATA_EXIST )
     {
-        /* ÇöÀç À§Ä¡¸¦ ÀúÀåÇÑ´Ù. */
+        /* í˜„ì¬ ìœ„ì¹˜ë¥¼ ì €ì¥í•œë‹¤. */
         IDE_TEST( qmcSortTemp::storeCursor( aDataPlan->sortMgr,
                                             &aDataPlan->cursorInfo )
                   != IDE_SUCCESS );
@@ -12372,7 +12372,7 @@ IDE_RC qmnWNST::orderByLeadAggr( qcTemplate  * aTemplate,
         if ( sCount == 0 )
         {
             /* BUG-40279 lead, lag with ignore nulls */
-            /* ignore nulls¸¦ °í·ÁÇÏ¿© ÀÌÈÄÀÇ nullÀÌ ¾Æ´Ñ °ªµéÀ» Ã£´Â´Ù. */
+            /* ignore nullsë¥¼ ê³ ë ¤í•˜ì—¬ ì´í›„ì˜ nullì´ ì•„ë‹Œ ê°’ë“¤ì„ ì°¾ëŠ”ë‹¤. */
             if ( aAggrNode->dstNode->node.module == &mtfLeadIgnoreNulls )
             {
                 while ( 1 )
@@ -12427,7 +12427,7 @@ IDE_RC qmnWNST::orderByLeadAggr( qcTemplate  * aTemplate,
         IDE_TEST( finiAggregation( aTemplate, aAggrNode )
                   != IDE_SUCCESS );
 
-        /* ÇöÀç Row À§Ä¡·Î µÇµ¹¾Æ¿Â´Ù */
+        /* í˜„ì¬ Row ìœ„ì¹˜ë¡œ ë˜ëŒì•„ì˜¨ë‹¤ */
         IDE_TEST( qmcSortTemp::restoreCursor( aDataPlan->sortMgr,
                                               &aDataPlan->cursorInfo )
                   != IDE_SUCCESS );
@@ -12437,7 +12437,7 @@ IDE_RC qmnWNST::orderByLeadAggr( qcTemplate  * aTemplate,
         IDE_TEST( setTupleSet( aTemplate, aDataPlan->mtrNode, aDataPlan->plan.myTuple->row )
                   != IDE_SUCCESS );
 
-        /* AggregationµÈ °ªÀ» updateÇÏ°í ´ÙÀ½ Row¸¦ ÀĞ´Â´Ù. */
+        /* Aggregationëœ ê°’ì„ updateí•˜ê³  ë‹¤ìŒ Rowë¥¼ ì½ëŠ”ë‹¤. */
         IDE_TEST( updateOneRowNextRecord( aTemplate,
                                           aDataPlan,
                                           aAggrResultNode,
@@ -12484,7 +12484,7 @@ IDE_RC qmnWNST::getMinLimitValue( qcTemplate * aTemplate,
 
                 sStack = aTemplate->tmplate.stack;
         
-                /* bigint·Î ¹Ş¾ÒÀ½ */
+                /* bigintë¡œ ë°›ì•˜ìŒ */
                 IDE_TEST_RAISE( sStack->column->module->id != MTD_BIGINT_ID,
                                 ERR_INVALID_WINDOW_SPECIFICATION );
         
@@ -12541,7 +12541,7 @@ IDE_RC qmnWNST::getNtileValue( qcTemplate  * aTemplate,
 
     sStack = aTemplate->tmplate.stack;
 
-    /* bigint·Î ¹Ş¾ÒÀ½ */
+    /* bigintë¡œ ë°›ì•˜ìŒ */
     IDE_TEST_RAISE( sStack->column->module->id != MTD_BIGINT_ID,
             ERR_INVALID_WINDOW_SPECIFICATION );
 
@@ -12588,7 +12588,7 @@ IDE_RC qmnWNST::partitionOrderByNtileAggr( qcTemplate  * aTemplate,
     
     while ( ( sFlag & QMC_ROW_DATA_MASK ) == QMC_ROW_DATA_EXIST )
     {
-        /* ÆÄÆ¼¼ÇÀÇ Ã³À½ÀÇ cursor¸¦ ÀúÀåÇÑ´Ù */
+        /* íŒŒí‹°ì…˜ì˜ ì²˜ìŒì˜ cursorë¥¼ ì €ì¥í•œë‹¤ */
         IDE_TEST( qmcSortTemp::storeCursor( aDataPlan->sortMgr,
                                             &aDataPlan->partitionCursorInfo )
                   != IDE_SUCCESS );
@@ -12613,14 +12613,14 @@ IDE_RC qmnWNST::partitionOrderByNtileAggr( qcTemplate  * aTemplate,
             }
             else
             {
-                // Data°¡ ¾øÀ¸¸é Á¾·á
+                // Dataê°€ ì—†ìœ¼ë©´ ì¢…ë£Œ
                 break;
             }
         } while( (sFlag & QMC_ROW_GROUP_MASK) == QMC_ROW_GROUP_SAME );
 
         if ( (sFlag & QMC_ROW_DATA_MASK) == QMC_ROW_DATA_EXIST )
         {
-            /* ÇöÀç À§Ä¡¸¦ ÀúÀåÇÑ´Ù */
+            /* í˜„ì¬ ìœ„ì¹˜ë¥¼ ì €ì¥í•œë‹¤ */
             IDE_TEST( qmcSortTemp::storeCursor( aDataPlan->sortMgr,
                                                 &aDataPlan->cursorInfo )
                       != IDE_SUCCESS );
@@ -12633,7 +12633,7 @@ IDE_RC qmnWNST::partitionOrderByNtileAggr( qcTemplate  * aTemplate,
         IDE_TEST( initAggregation( aTemplate, aAggrNode )
                   != IDE_SUCCESS );
 
-        /* ÆÄÆ¼¼ÇÀÇ Ã³À½À¸·Î Cursor·Î ÀÌµ¿ÇÑ´Ù. */
+        /* íŒŒí‹°ì…˜ì˜ ì²˜ìŒìœ¼ë¡œ Cursorë¡œ ì´ë™í•œë‹¤. */
         IDE_TEST( qmcSortTemp::restoreCursor( aDataPlan->sortMgr,
                                               & aDataPlan->partitionCursorInfo )
                   != IDE_SUCCESS );
@@ -12657,7 +12657,7 @@ IDE_RC qmnWNST::partitionOrderByNtileAggr( qcTemplate  * aTemplate,
                 }
                 else
                 {
-                    // Data°¡ ¾øÀ¸¸é Á¾·á
+                    // Dataê°€ ì—†ìœ¼ë©´ ì¢…ë£Œ
                     break;
                 }
             }
@@ -12697,7 +12697,7 @@ IDE_RC qmnWNST::partitionOrderByNtileAggr( qcTemplate  * aTemplate,
                           != IDE_SUCCESS );
                 aDataPlan->mtrRow[aDataPlan->mtrRowIdx] = aDataPlan->plan.myTuple->row;
 
-                /* AggregationµÈ °ªÀ» updateÇÏ°í ´ÙÀ½ Row¸¦ ÀĞ´Â´Ù. */
+                /* Aggregationëœ ê°’ì„ updateí•˜ê³  ë‹¤ìŒ Rowë¥¼ ì½ëŠ”ë‹¤. */
                 IDE_TEST( updateOneRowNextRecord( aTemplate,
                                                   aDataPlan,
                                                   aAggrResultNode,
@@ -12713,7 +12713,7 @@ IDE_RC qmnWNST::partitionOrderByNtileAggr( qcTemplate  * aTemplate,
                 }
                 else
                 {
-                    // Data°¡ ¾øÀ¸¸é Á¾·á
+                    // Dataê°€ ì—†ìœ¼ë©´ ì¢…ë£Œ
                     break;
                 }
             } while ( (sFlag & QMC_ROW_GROUP_MASK) == QMC_ROW_GROUP_SAME );
@@ -12727,7 +12727,7 @@ IDE_RC qmnWNST::partitionOrderByNtileAggr( qcTemplate  * aTemplate,
             aDataPlan->mtrRowIdx = 0;
             aDataPlan->plan.myTuple->row = aDataPlan->mtrRow[aDataPlan->mtrRowIdx];
 
-            /* ÇöÀç Row À§Ä¡·Î µÇµ¹¾Æ¿Â´Ù */
+            /* í˜„ì¬ Row ìœ„ì¹˜ë¡œ ë˜ëŒì•„ì˜¨ë‹¤ */
             IDE_TEST( qmcSortTemp::restoreCursor( aDataPlan->sortMgr,
                                                   &aDataPlan->cursorInfo )
                       != IDE_SUCCESS );
@@ -12804,7 +12804,7 @@ IDE_RC qmnWNST::orderByNtileAggr( qcTemplate  * aTemplate,
             sQuotient  = sRowCount / sNtileValue;
             sRemainder = sRowCount % sNtileValue;
 
-            /* Ã³À½ Row À§Ä¡·Î µÇµ¹¾Æ¿Â´Ù */
+            /* ì²˜ìŒ Row ìœ„ì¹˜ë¡œ ë˜ëŒì•„ì˜¨ë‹¤ */
             IDE_TEST( getFirstRecord( aTemplate, aDataPlan, &sFlag )
                       != IDE_SUCCESS );
 
@@ -12838,7 +12838,7 @@ IDE_RC qmnWNST::orderByNtileAggr( qcTemplate  * aTemplate,
                           != IDE_SUCCESS );
                 aDataPlan->mtrRow[aDataPlan->mtrRowIdx] = aDataPlan->plan.myTuple->row;
 
-                /* AggregationµÈ °ªÀ» updateÇÏ°í ´ÙÀ½ Row¸¦ ÀĞ´Â´Ù. */
+                /* Aggregationëœ ê°’ì„ updateí•˜ê³  ë‹¤ìŒ Rowë¥¼ ì½ëŠ”ë‹¤. */
                 IDE_TEST( updateOneRowNextRecord( aTemplate,
                                                   aDataPlan,
                                                   aAggrResultNode,

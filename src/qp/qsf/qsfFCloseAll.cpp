@@ -20,7 +20,7 @@
  *
  * Description :
  *     PROJ-1371 PSM File Handling
- *     ÇöÀç ¼¼¼Ç¿¡ ¿­·Á ÀÖ´Â FILEÀ» closeÇÏ´Â ÇÔ¼ö
+ *     í˜„ì¬ ì„¸ì…˜ì— ì—´ë ¤ ìˆëŠ” FILEì„ closeí•˜ëŠ” í•¨ìˆ˜
  *
  * Syntax :
  *     FILE_CLOSEALL( dummy BOOLEAN );
@@ -49,7 +49,7 @@ static IDE_RC qsfEstimate( mtcNode*     aNode,
 mtfModule qsfFCloseAllModule = {
     1|MTC_NODE_OPERATOR_MISC|MTC_NODE_VARIABLE_TRUE,
     ~0,
-    1.0,                    // default selectivity (ºñ±³ ¿¬»êÀÚ ¾Æ´Ô)
+    1.0,                    // default selectivity (ë¹„êµ ì—°ì‚°ì ì•„ë‹˜)
     qsfFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -139,9 +139,9 @@ IDE_RC qsfCalculate_FCloseAll( mtcNode*     aNode,
  *     file_closeall calculate
  *
  * Implementation :
- *     1. ¼¼¼Ç¿¡ Á¸ÀçÇÏ´Â openµÈ fileµéÀ» ¸ğµÎ close
- *     2. argument´Â dummyÀÌ¹Ç·Î °Ë»çÇÏÁö ¾ÊÀ½
- *     3. return value´Â true·Î ¼¼ÆÃÇÑ´Ù.
+ *     1. ì„¸ì…˜ì— ì¡´ì¬í•˜ëŠ” openëœ fileë“¤ì„ ëª¨ë‘ close
+ *     2. argumentëŠ” dummyì´ë¯€ë¡œ ê²€ì‚¬í•˜ì§€ ì•ŠìŒ
+ *     3. return valueëŠ” trueë¡œ ì„¸íŒ…í•œë‹¤.
  *
  ***********************************************************************/
     

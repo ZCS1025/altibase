@@ -46,7 +46,7 @@
 #include <sdm_mgnt_public.h>
 #endif
 
-/* SM¿¡¼­ »ç¿ëÇÒ Äİ¹éÇÔ¼öµé */
+/* SMì—ì„œ ì‚¬ìš©í•  ì½œë°±í•¨ìˆ˜ë“¤ */
 smiGlobalCallBackList gSmiGlobalCallBackList;
 
 /* The NULL GRID */
@@ -69,8 +69,8 @@ sdm_handle_t * gLogSDMHandle;
 #endif
 
 /********************************************************************
- * Description : MEM_MAX_DB_SIZE°¡ EXPAND_CHUNK_PAGE_COUNTº¸´Ù Å«Áö
- *               °Ë»çÇÑ´Ù.
+ * Description : MEM_MAX_DB_SIZEê°€ EXPAND_CHUNK_PAGE_COUNTë³´ë‹¤ í°ì§€
+ *               ê²€ì‚¬í•œë‹¤.
  ********************************************************************/
 IDE_RC smiCheckMemMaxDBSize()
 {
@@ -88,15 +88,15 @@ IDE_RC smiCheckMemMaxDBSize()
     return IDE_FAILURE;
 }
 
-/* »ç¿ëÀÚ°¡ ÁöÁ¤ÇÑ µ¥ÀÌÅÍº£ÀÌ½º Å©±â¸¦ Åä´ë·Î
- * ½ÇÁ¦·Î »ı¼ºÇÒ µ¥ÀÌÅÍº£ÀÌ½º Å©±â¸¦ °è»êÇÑ´Ù.
+/* ì‚¬ìš©ìê°€ ì§€ì •í•œ ë°ì´í„°ë² ì´ìŠ¤ í¬ê¸°ë¥¼ í† ëŒ€ë¡œ
+ * ì‹¤ì œë¡œ ìƒì„±í•  ë°ì´í„°ë² ì´ìŠ¤ í¬ê¸°ë¥¼ ê³„ì‚°í•œë‹¤.
  *
- * ÇÏ³ªÀÇ µ¥ÀÌÅÍº£ÀÌ½º ÆÄÀÏÀÌ ¿©·¯°³ÀÇ Expand Chunk·Î ±¸¼ºµÇ±â ¶§¹®¿¡,
- * »ç¿ëÀÚ°¡ ÁöÁ¤ÇÑ µ¥ÀÌÅÍº£ÀÌ½º Å©±â¿Í Á¤È®È÷ ÀÏÄ¡ÇÏÁö ¾Ê´Â
- * Å©±â·Î µ¥ÀÌÅÍº£ÀÌ½º°¡ »ı¼ºµÉ ¼ö ÀÖ±â ¶§¹®¿¡ ÀÌ ÇÔ¼ö°¡ ÇÊ¿äÇÏ´Ù.
+ * í•˜ë‚˜ì˜ ë°ì´í„°ë² ì´ìŠ¤ íŒŒì¼ì´ ì—¬ëŸ¬ê°œì˜ Expand Chunkë¡œ êµ¬ì„±ë˜ê¸° ë•Œë¬¸ì—,
+ * ì‚¬ìš©ìê°€ ì§€ì •í•œ ë°ì´í„°ë² ì´ìŠ¤ í¬ê¸°ì™€ ì •í™•íˆ ì¼ì¹˜í•˜ì§€ ì•ŠëŠ”
+ * í¬ê¸°ë¡œ ë°ì´í„°ë² ì´ìŠ¤ê°€ ìƒì„±ë  ìˆ˜ ìˆê¸° ë•Œë¬¸ì— ì´ í•¨ìˆ˜ê°€ í•„ìš”í•˜ë‹¤.
  *
- * aUserDbCreatePageCount [IN] »ç¿ëÀÚ°¡ ÁöÁ¤ÇÑ ÃÊ±â µ¥ÀÌÅÍ º£ÀÌ½ºÀÇ Page¼ö
- * aDbCreatePageCount     [OUT] ½Ã½ºÅÛÀÌ °è»êÇÑ ÃÊ±â µ¥ÀÌÅÍ º£ÀÌ½ºÀÇ Page¼ö
+ * aUserDbCreatePageCount [IN] ì‚¬ìš©ìê°€ ì§€ì •í•œ ì´ˆê¸° ë°ì´í„° ë² ì´ìŠ¤ì˜ Pageìˆ˜
+ * aDbCreatePageCount     [OUT] ì‹œìŠ¤í…œì´ ê³„ì‚°í•œ ì´ˆê¸° ë°ì´í„° ë² ì´ìŠ¤ì˜ Pageìˆ˜
  */
 IDE_RC smiCalculateDBSize( scPageID   aUserDbCreatePageCount,
                            scPageID * aDbCreatePageCount )
@@ -108,8 +108,8 @@ IDE_RC smiCalculateDBSize( scPageID   aUserDbCreatePageCount,
     IDE_ASSERT( sChunkPageCount > 0 );
 
     // BUG-15288
-    // create½Ã page count´Â chunk page count·Î alignÇÏÁö ¾Ê°í
-    // smmManager¸¦ ÅëÇØ¼­ ±¸ÇÑ´Ù.
+    // createì‹œ page countëŠ” chunk page countë¡œ aligní•˜ì§€ ì•Šê³ 
+    // smmManagerë¥¼ í†µí•´ì„œ êµ¬í•œë‹¤.
     *aDbCreatePageCount = smmManager::calculateDbPageCount(
                               aUserDbCreatePageCount * SM_PAGE_SIZE,
                               sChunkPageCount );
@@ -118,9 +118,9 @@ IDE_RC smiCalculateDBSize( scPageID   aUserDbCreatePageCount,
 }
 
 
-/* ÇÏ³ªÀÇ µ¥ÀÌÅÍº£ÀÌ½º ÆÄÀÏÀÌ Áö´Ï´Â PageÀÇ ¼ö¸¦ ¸®ÅÏÇÑ´Ù
+/* í•˜ë‚˜ì˜ ë°ì´í„°ë² ì´ìŠ¤ íŒŒì¼ì´ ì§€ë‹ˆëŠ” Pageì˜ ìˆ˜ë¥¼ ë¦¬í„´í•œë‹¤
  *
- * aDBFilePageCount [IN] ÇÏ³ªÀÇ µ¥ÀÌÅÍº£ÀÌ½º ÆÄÀÏÀÌ Áö´Ï´Â PageÀÇ ¼ö
+ * aDBFilePageCount [IN] í•˜ë‚˜ì˜ ë°ì´í„°ë² ì´ìŠ¤ íŒŒì¼ì´ ì§€ë‹ˆëŠ” Pageì˜ ìˆ˜
  */
 IDE_RC smiGetDBFilePageCount( scSpaceID aSpaceID, scPageID * aDBFilePageCount)
 {
@@ -152,7 +152,7 @@ IDE_RC smiGetDBFilePageCount( scSpaceID aSpaceID, scPageID * aDBFilePageCount)
 
 
 
-/* µ¥ÀÌÅÍº£ÀÌ½º°¡ »ı¼ºÇÒ ¼ö ÀÖ´Â ÃÖ´ë Page¼ö¸¦ °è»ê
+/* ë°ì´í„°ë² ì´ìŠ¤ê°€ ìƒì„±í•  ìˆ˜ ìˆëŠ” ìµœëŒ€ Pageìˆ˜ë¥¼ ê³„ì‚°
  *
  */
 scPageID smiGetMaxDBPageCount()
@@ -169,8 +169,8 @@ scPageID smiGetMaxDBPageCount()
                                              sChunkPageCount);
 }
 
-/* µ¥ÀÌÅÍº£ÀÌ½º°¡ »ı¼ºÇÒ ¼ö ÀÖ´Â ÃÖ¼Ò Page ¼ö¸¦ °è»ê
- * ÃÖ¼ÒÇÑ expand_chunk_page_countº¸´Ü Ä¿¾ß ÇÑ´Ù.
+/* ë°ì´í„°ë² ì´ìŠ¤ê°€ ìƒì„±í•  ìˆ˜ ìˆëŠ” ìµœì†Œ Page ìˆ˜ë¥¼ ê³„ì‚°
+ * ìµœì†Œí•œ expand_chunk_page_countë³´ë‹¨ ì»¤ì•¼ í•œë‹¤.
  */
 scPageID smiGetMinDBPageCount()
 {
@@ -178,16 +178,16 @@ scPageID smiGetMinDBPageCount()
 }
 
 /*
- * µ¥ÀÌÅÍº£ÀÌ½º¸¦ »ı¼ºÇÑ´Ù.
- * createdb ¿¡¼­ ºÎ¸¥´Ù.
+ * ë°ì´í„°ë² ì´ìŠ¤ë¥¼ ìƒì„±í•œë‹¤.
+ * createdb ì—ì„œ ë¶€ë¥¸ë‹¤.
  *
- * aDBName          [IN] µ¥ÀÌÅÍº£ÀÌ½º ÀÌ¸§
- * aCreatePageCount [IN] »ı¼ºÇÒ µ¥ÀÌÅÍº£ÀÌ½º°¡ °¡Áú PageÀÇ ¼ö
- *                       Membase°¡ ±â·ÏµÇ´Â Meta Page(0¹ø Page)ÀÇ ¼ö´Â
- *                       Æ÷ÇÔµÇÁö ¾Ê´Â´Ù.
- * aDBCharSet       [IN] µ¥ÀÌÅÍº£ÀÌ½º Ä³¸¯ÅÍ ¼Â
- * aNationalCharSet [IN] ³»¼Å³Î Ä³¸¯ÅÍ ¼Â
- * aArchiveLog      [IN] ¾ÆÄ«ÀÌºê ·Î±× ¸ğµå
+ * aDBName          [IN] ë°ì´í„°ë² ì´ìŠ¤ ì´ë¦„
+ * aCreatePageCount [IN] ìƒì„±í•  ë°ì´í„°ë² ì´ìŠ¤ê°€ ê°€ì§ˆ Pageì˜ ìˆ˜
+ *                       Membaseê°€ ê¸°ë¡ë˜ëŠ” Meta Page(0ë²ˆ Page)ì˜ ìˆ˜ëŠ”
+ *                       í¬í•¨ë˜ì§€ ì•ŠëŠ”ë‹¤.
+ * aDBCharSet       [IN] ë°ì´í„°ë² ì´ìŠ¤ ìºë¦­í„° ì…‹
+ * aNationalCharSet [IN] ë‚´ì…”ë„ ìºë¦­í„° ì…‹
+ * aArchiveLog      [IN] ì•„ì¹´ì´ë¸Œ ë¡œê·¸ ëª¨ë“œ
  */
 IDE_RC smiCreateDB(SChar         * aDBName,
                    scPageID        aCreatePageCount,
@@ -218,7 +218,7 @@ IDE_RC smiCreateDB(SChar         * aDBName,
 
     IDE_CALLBACK_SEND_MSG("[SUCCESS]\n");
 
-    /* FOR A4 : DRDB¸¦ À§ÇÑ DB Create ÀÛ¾÷ ¼öÇà */
+    /* FOR A4 : DRDBë¥¼ ìœ„í•œ DB Create ì‘ì—… ìˆ˜í–‰ */
 
     IDE_CALLBACK_SEND_SYM("\tCreating DRDB FILES     ");
 
@@ -239,12 +239,12 @@ IDE_RC smiCreateDB(SChar         * aDBName,
 }
 
 /*
-   Createdb½Ã¿¡ Memory TablespaceµéÀ» »ı¼ºÇÑ´Ù.
+   Createdbì‹œì— Memory Tablespaceë“¤ì„ ìƒì„±í•œë‹¤.
 
-   aDBName          [IN] µ¥ÀÌÅÍº£ÀÌ½º ÀÌ¸§
-   aCreatePageCount [IN] »ı¼ºÇÒ µ¥ÀÌÅÍº£ÀÌ½º°¡ °¡Áú PageÀÇ ¼ö
-                         Membase°¡ ±â·ÏµÇ´Â Meta Page(0¹ø Page)ÀÇ ¼ö´Â
-                         Æ÷ÇÔµÇÁö ¾Ê´Â´Ù.
+   aDBName          [IN] ë°ì´í„°ë² ì´ìŠ¤ ì´ë¦„
+   aCreatePageCount [IN] ìƒì„±í•  ë°ì´í„°ë² ì´ìŠ¤ê°€ ê°€ì§ˆ Pageì˜ ìˆ˜
+                         Membaseê°€ ê¸°ë¡ë˜ëŠ” Meta Page(0ë²ˆ Page)ì˜ ìˆ˜ëŠ”
+                         í¬í•¨ë˜ì§€ ì•ŠëŠ”ë‹¤.
  */
 static IDE_RC smiCreateMemoryTableSpaces(
                        SChar         * aDBName,
@@ -256,40 +256,40 @@ static IDE_RC smiCreateMemoryTableSpaces(
     smxTrans *         sTrans = NULL;
     smSCN              sDummySCN;
     SChar              sOutputMsg[256];
-    // ½Ã½ºÅÛÀÌ °¡Áú ¼ö ÀÖ´Â ÃÖ´ë Page °¹¼ö
+    // ì‹œìŠ¤í…œì´ ê°€ì§ˆ ìˆ˜ ìˆëŠ” ìµœëŒ€ Page ê°¯ìˆ˜
     scPageID           sHighLimitPageCnt;
     scPageID           sTotalPageCount;
     scPageID           sSysDicPageCount;
     scPageID           sSysDataPageCount;
 
-    // SYSTEM DICTIONARY TABLESPACEÀÇ ÃÊ±â Å©±â
-    // -> TablespaceÀÇ ÃÖ¼Ò Å©±âÀÎ EXPAND_CHUNK_PAGE_COUNT·Î ¼³Á¤
+    // SYSTEM DICTIONARY TABLESPACEì˜ ì´ˆê¸° í¬ê¸°
+    // -> Tablespaceì˜ ìµœì†Œ í¬ê¸°ì¸ EXPAND_CHUNK_PAGE_COUNTë¡œ ì„¤ì •
     sSysDicPageCount  = smuProperty::getExpandChunkPageCount();
 
-    // SYSTEM DATA TABLESPACEÀÇ ÃÊ±â Å©±â
-    // -> »ç¿ëÀÚ°¡ create database±¸¹®¿¡ ÁöÁ¤ÇÑ ÃÊ±âÅ©±âÀÎ,
-    //    aCreatePageCount·Î ¼³Á¤
+    // SYSTEM DATA TABLESPACEì˜ ì´ˆê¸° í¬ê¸°
+    // -> ì‚¬ìš©ìê°€ create databaseêµ¬ë¬¸ì— ì§€ì •í•œ ì´ˆê¸°í¬ê¸°ì¸,
+    //    aCreatePageCountë¡œ ì„¤ì •
     sSysDataPageCount = aCreatePageCount;
 
-    // ¿¡·¯Ã¼Å© ½Ç½Ã
+    // ì—ëŸ¬ì²´í¬ ì‹¤ì‹œ
     {
-        // MEM_MAX_DB_SIZE¿¡ °É¸®Áö ¾Ê´ÂÁö °Ë»ç
+        // MEM_MAX_DB_SIZEì— ê±¸ë¦¬ì§€ ì•ŠëŠ”ì§€ ê²€ì‚¬
         sHighLimitPageCnt = smiGetMaxDBPageCount();
 
         sTotalPageCount = sSysDicPageCount + sSysDataPageCount;
 
-        // »ç¿ëÀÚ°¡ ÃÊ±â Å©±â·Î ÁöÁ¤ÇÑ Page°¡ 0°³ÀÌ¸é ¿¡·¯
+        // ì‚¬ìš©ìê°€ ì´ˆê¸° í¬ê¸°ë¡œ ì§€ì •í•œ Pageê°€ 0ê°œì´ë©´ ì—ëŸ¬
         IDE_TEST_RAISE( aCreatePageCount <= 0, page_range_error);
 
-        // »ç¿ëÀÚ°¡ ÁöÁ¤ÇÑ Page¼ö + SYSTEM DICTIONARY TablespaceÅ©±â°¡
-        // MEM_MAX_DB_SIZE ¸¦ ³Ñ¾î¼­¸é ¿¡·¯
+        // ì‚¬ìš©ìê°€ ì§€ì •í•œ Pageìˆ˜ + SYSTEM DICTIONARY Tablespaceí¬ê¸°ê°€
+        // MEM_MAX_DB_SIZE ë¥¼ ë„˜ì–´ì„œë©´ ì—ëŸ¬
         IDE_TEST_RAISE( sTotalPageCount > sHighLimitPageCnt,
                         page_range_error );
 
-        // BUG-29607 Create DB¿¡¼­ Memory Tablespace¸¦ »ı¼ºÇÏ±â Àü
-        //           µ¿ÀÏ ÀÌ¸§ÀÇ FileÀÌ ÀÌ¹Ì Á¸ÀçÇÏ´ÂÁö È®ÀÎÇÑ´Ù.
-        //        Create Tablespace¿¡¼­µµ °Ë»ç ÇÏÁö¸¸
-        //        ¹İÈ¯ÇÏ´Â ¿À·ùÀÇ ³»¿ëÀÌ ´Ù¸£´Ù.
+        // BUG-29607 Create DBì—ì„œ Memory Tablespaceë¥¼ ìƒì„±í•˜ê¸° ì „
+        //           ë™ì¼ ì´ë¦„ì˜ Fileì´ ì´ë¯¸ ì¡´ì¬í•˜ëŠ”ì§€ í™•ì¸í•œë‹¤.
+        //        Create Tablespaceì—ì„œë„ ê²€ì‚¬ í•˜ì§€ë§Œ
+        //        ë°˜í™˜í•˜ëŠ” ì˜¤ë¥˜ì˜ ë‚´ìš©ì´ ë‹¤ë¥´ë‹¤.
         IDE_TEST_RAISE( smmDatabaseFile::chkExistDBFileByProp(
                             SMI_TABLESPACE_NAME_SYSTEM_MEMORY_DIC ) != IDE_SUCCESS,
             error_already_exist_datafile );
@@ -426,21 +426,21 @@ static IDE_RC smiCreateDiskTableSpaces( )
     /* 1. system tablespace
        2. undo  tablespace
        3. temp  tablespace
-       ¼øÀ¸·Î »ı¼ºÇÑ´Ù.
+       ìˆœìœ¼ë¡œ ìƒì„±í•œë‹¤.
 
-       // system tablespace¸¦ »ı¼º.
-      sdpTableSpace::createSystemTBS()¸¦ È£Ãâ
-       //  undo tablespace »ı¼º.
+       // system tablespaceë¥¼ ìƒì„±.
+      sdpTableSpace::createSystemTBS()ë¥¼ í˜¸ì¶œ
+       //  undo tablespace ìƒì„±.
       sdpTableSpace::createUndoTBS();
-       //  temp tablespace »ı¼º.
-       //->temp  Å×ÀÌºí ½ºÆäÀÌ½º ÀÌ¸§,
+       //  temp tablespace ìƒì„±.
+       //->temp  í…Œì´ë¸” ìŠ¤í˜ì´ìŠ¤ ì´ë¦„,
        sdpTableSpace::createTempTBS(.....)
      */
 
     // ===== create system Table Space =====
     // BUG-27911
-    // smuProperty ÀÇ ÇÔ¼ö¸¦ Á÷Á¢ È£ÃâÇÏÁö ¾Ê°í
-    // smiTableSpace ÀÇ ÀÎÅÍÆäÀÌ½º ÇÔ¼ö¸¦ È£ÃâÇÏ´Â ¹æ½ÄÀ¸·Î º¯°æÇÕ´Ï´Ù.
+    // smuProperty ì˜ í•¨ìˆ˜ë¥¼ ì§ì ‘ í˜¸ì¶œí•˜ì§€ ì•Šê³ 
+    // smiTableSpace ì˜ ì¸í„°í˜ì´ìŠ¤ í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•˜ëŠ” ë°©ì‹ìœ¼ë¡œ ë³€ê²½í•©ë‹ˆë‹¤.
     sExtentSize = smiTableSpace::getSysDataTBSExtentSize();
     sInitSize   = smiTableSpace::getSysDataFileInitSize();
     sMaxSize    = smiTableSpace::getSysDataFileMaxSize();
@@ -455,7 +455,7 @@ static IDE_RC smiCreateDiskTableSpaces( )
     idlOS::memset(&sSysDFAttr, 0x00, ID_SIZEOF(smiDataFileAttr));
 
     // PRJ-1548 User Memory Tablespace
-    // DISK SYSTEM TBSÀÇ TBS Node Attribute ¼³Á¤
+    // DISK SYSTEM TBSì˜ TBS Node Attribute ì„¤ì •
 
     sTbsAttr.mAttrType = SMI_TBS_ATTR;
     sTbsAttr.mAttrFlag = SMI_TABLESPACE_ATTRFLAG_SYSTEM_DISK_DATA;
@@ -471,29 +471,29 @@ static IDE_RC smiCreateDiskTableSpaces( )
                     sDir,
                     IDL_FILE_SEPARATOR);
 
-    // BUG-29607 Create DB¿¡¼­ Disk Tablespace¸¦ »ı¼ºÇÏ±â Àü
-    //           µ¿ÀÏ ÀÌ¸§ÀÇ FileÀÌ ÀÌ¹Ì Á¸ÀçÇÏ´ÂÁö È®ÀÎÇÑ´Ù.
-    //        Create Tablespace¿¡¼­µµ °Ë»ç ÇÏÁö¸¸
-    //        ¹İÈ¯ÇÏ´Â ¿À·ùÀÇ ³»¿ëÀÌ ´Ù¸£´Ù.
+    // BUG-29607 Create DBì—ì„œ Disk Tablespaceë¥¼ ìƒì„±í•˜ê¸° ì „
+    //           ë™ì¼ ì´ë¦„ì˜ Fileì´ ì´ë¯¸ ì¡´ì¬í•˜ëŠ”ì§€ í™•ì¸í•œë‹¤.
+    //        Create Tablespaceì—ì„œë„ ê²€ì‚¬ í•˜ì§€ë§Œ
+    //        ë°˜í™˜í•˜ëŠ” ì˜¤ë¥˜ì˜ ë‚´ìš©ì´ ë‹¤ë¥´ë‹¤.
     IDE_TEST_RAISE( idf::access( sSysDFAttr.mName, F_OK) == 0,
                     error_already_exist_datafile );
 
     // PRJ-1548 User Memory Tablespace
-    // DISK SYSTEM TBSÀÇ DBF Node Attribute ¼³Á¤
+    // DISK SYSTEM TBSì˜ DBF Node Attribute ì„¤ì •
     sSysDFAttr.mAttrType     = SMI_DBF_ATTR;
     sSysDFAttr.mNameLength   = idlOS::strlen(sSysDFAttr.mName);
     sSysDFAttr.mIsAutoExtend = ID_TRUE;
     sSysDFAttr.mState        = SMI_FILE_ONLINE;
 
     // BUG-27911
-    // alignByPageSize() ´Â size ¿¡ ´ëÇØ Àß¸øµÈ °è»êÀ» ÇÏ°í ÀÖ¾ú½À´Ï´Ù.
-    // smiTableSpace ÀÇ ÀÎÅÍÆäÀÌ½º ÇÔ¼ö¸¦ ÅëÇØ ¾ò¾î¿Â°ªÀº
-    // valide ÇÏ±â ¶§¹®¿¡ ÀÌ °ªÀ» ¹Ù·Î »ç¿ëÇÕ´Ï´Ù.
+    // alignByPageSize() ëŠ” size ì— ëŒ€í•´ ì˜ëª»ëœ ê³„ì‚°ì„ í•˜ê³  ìˆì—ˆìŠµë‹ˆë‹¤.
+    // smiTableSpace ì˜ ì¸í„°í˜ì´ìŠ¤ í•¨ìˆ˜ë¥¼ í†µí•´ ì–»ì–´ì˜¨ê°’ì€
+    // valide í•˜ê¸° ë•Œë¬¸ì— ì´ ê°’ì„ ë°”ë¡œ ì‚¬ìš©í•©ë‹ˆë‹¤.
     sSysDFAttr.mMaxSize      = sMaxSize  / SD_PAGE_SIZE;
     sSysDFAttr.mNextSize     = sNextSize / SD_PAGE_SIZE;
     sSysDFAttr.mCurrSize     = sInitSize / SD_PAGE_SIZE;
     sSysDFAttr.mInitSize     = sInitSize / SD_PAGE_SIZE;
-    // BUG-29607 µ¿ÀÏ ÆÄÀÏ¸íÀÌ ÀÖÀ¸¸é Àç»ç¿ëÇÏÁö ¸»°í ¿À·ù ¹İÈ¯ÇÏµµ·Ï ¼öÁ¤
+    // BUG-29607 ë™ì¼ íŒŒì¼ëª…ì´ ìˆìœ¼ë©´ ì¬ì‚¬ìš©í•˜ì§€ ë§ê³  ì˜¤ë¥˜ ë°˜í™˜í•˜ë„ë¡ ìˆ˜ì •
     sSysDFAttr.mCreateMode   = SMI_DATAFILE_CREATE;
 
     IDE_TEST( smxTransMgr::alloc( &sTx ) != IDE_SUCCESS );
@@ -505,7 +505,7 @@ static IDE_RC smiCreateDiskTableSpaces( )
               != IDE_SUCCESS );
 
     /* PROJ-1671 Bitmap-base Tablespace And Segment Space Management
-     * Create Database °úÁ¤¿¡¼­´Â ±âº» ½Ã½ºÅÛ ÇÁ·ÎÆÛÆ¼°ªÀ» ÆÇµ¶ÇÑ´Ù */
+     * Create Database ê³¼ì •ì—ì„œëŠ” ê¸°ë³¸ ì‹œìŠ¤í…œ í”„ë¡œí¼í‹°ê°’ì„ íŒë…í•œë‹¤ */
     sTbsAttr.mDiskAttr.mSegMgmtType  =
              (smiSegMgmtType)smuProperty::getDefaultSegMgmtType();
     sTbsAttr.mDiskAttr.mExtMgmtType  =  SMI_EXTENT_MGMT_BITMAP_TYPE;
@@ -524,8 +524,8 @@ static IDE_RC smiCreateDiskTableSpaces( )
 
     // ===== create undo Table Space =====
     // BUG-27911
-    // smuProperty ÀÇ ÇÔ¼ö¸¦ Á÷Á¢ È£ÃâÇÏÁö ¾Ê°í
-    // smiTableSpace ÀÇ ÀÎÅÍÆäÀÌ½º ÇÔ¼ö¸¦ È£ÃâÇÏ´Â ¹æ½ÄÀ¸·Î º¯°æÇÕ´Ï´Ù.
+    // smuProperty ì˜ í•¨ìˆ˜ë¥¼ ì§ì ‘ í˜¸ì¶œí•˜ì§€ ì•Šê³ 
+    // smiTableSpace ì˜ ì¸í„°í˜ì´ìŠ¤ í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•˜ëŠ” ë°©ì‹ìœ¼ë¡œ ë³€ê²½í•©ë‹ˆë‹¤.
     sExtentSize = smiTableSpace::getSysUndoTBSExtentSize();
     sInitSize   = smiTableSpace::getSysUndoFileInitSize();
     sMaxSize    = smiTableSpace::getSysUndoFileMaxSize();
@@ -542,7 +542,7 @@ static IDE_RC smiCreateDiskTableSpaces( )
     sTbsAttr.mID = 0;
 
     // PRJ-1548 User Memory Tablespace
-    // UNDO TBSÀÇ TBS Node Attribute ¼³Á¤
+    // UNDO TBSì˜ TBS Node Attribute ì„¤ì •
     sTbsAttr.mAttrType = SMI_TBS_ATTR;
     sTbsAttr.mAttrFlag = SMI_TABLESPACE_ATTRFLAG_SYSTEM_DISK_UNDO;
 
@@ -556,7 +556,7 @@ static IDE_RC smiCreateDiskTableSpaces( )
     sTbsAttr.mTBSStateOnLA = SMI_TBS_ONLINE;
 
     // PRJ-1548 User Memory Tablespace
-    // UNDO TBSÀÇ DBF Node Attribute ¼³Á¤
+    // UNDO TBSì˜ DBF Node Attribute ì„¤ì •
 
     sDFAttr.mAttrType  = SMI_DBF_ATTR;
 
@@ -565,10 +565,10 @@ static IDE_RC smiCreateDiskTableSpaces( )
                    sDir,
                    IDL_FILE_SEPARATOR);
 
-    // BUG-29607 Create DB¿¡¼­ Disk Tablespace¸¦ »ı¼ºÇÏ±â Àü
-    //           µ¿ÀÏ ÀÌ¸§ÀÇ FileÀÌ ÀÌ¹Ì Á¸ÀçÇÏ´ÂÁö È®ÀÎÇÑ´Ù.
-    //        Create Tablespace¿¡¼­µµ °Ë»ç ÇÏÁö¸¸
-    //        ¹İÈ¯ÇÏ´Â ¿À·ùÀÇ ³»¿ëÀÌ ´Ù¸£´Ù.
+    // BUG-29607 Create DBì—ì„œ Disk Tablespaceë¥¼ ìƒì„±í•˜ê¸° ì „
+    //           ë™ì¼ ì´ë¦„ì˜ Fileì´ ì´ë¯¸ ì¡´ì¬í•˜ëŠ”ì§€ í™•ì¸í•œë‹¤.
+    //        Create Tablespaceì—ì„œë„ ê²€ì‚¬ í•˜ì§€ë§Œ
+    //        ë°˜í™˜í•˜ëŠ” ì˜¤ë¥˜ì˜ ë‚´ìš©ì´ ë‹¤ë¥´ë‹¤.
     IDE_TEST_RAISE( idf::access( sDFAttr.mName, F_OK) == 0,
                     error_already_exist_datafile );
 
@@ -577,15 +577,15 @@ static IDE_RC smiCreateDiskTableSpaces( )
     sDFAttr.mState        = SMI_FILE_ONLINE;
 
     // BUG-27911
-    // alignByPageSize() ´Â size ¿¡ ´ëÇØ Àß¸øµÈ °è»êÀ» ÇÏ°í ÀÖ¾ú½À´Ï´Ù.
-    // smiTableSpace ÀÇ ÀÎÅÍÆäÀÌ½º ÇÔ¼ö¸¦ ÅëÇØ ¾ò¾î¿Â°ªÀº
-    // valide ÇÏ±â ¶§¹®¿¡ ÀÌ °ªÀ» ¹Ù·Î »ç¿ëÇÕ´Ï´Ù.
+    // alignByPageSize() ëŠ” size ì— ëŒ€í•´ ì˜ëª»ëœ ê³„ì‚°ì„ í•˜ê³  ìˆì—ˆìŠµë‹ˆë‹¤.
+    // smiTableSpace ì˜ ì¸í„°í˜ì´ìŠ¤ í•¨ìˆ˜ë¥¼ í†µí•´ ì–»ì–´ì˜¨ê°’ì€
+    // valide í•˜ê¸° ë•Œë¬¸ì— ì´ ê°’ì„ ë°”ë¡œ ì‚¬ìš©í•©ë‹ˆë‹¤.
     sSysDFAttr.mMaxSize   = sMaxSize  / SD_PAGE_SIZE;
     sDFAttr.mMaxSize      = sMaxSize  / SD_PAGE_SIZE;
     sDFAttr.mNextSize     = sNextSize / SD_PAGE_SIZE;
     sDFAttr.mCurrSize     = sInitSize / SD_PAGE_SIZE;
     sDFAttr.mInitSize     = sInitSize / SD_PAGE_SIZE;
-    // BUG-29607 µ¿ÀÏ ÆÄÀÏ¸íÀÌ ÀÖÀ¸¸é Àç»ç¿ëÇÏÁö ¸»°í ¿À·ù ¹İÈ¯ÇÏµµ·Ï ¼öÁ¤
+    // BUG-29607 ë™ì¼ íŒŒì¼ëª…ì´ ìˆìœ¼ë©´ ì¬ì‚¬ìš©í•˜ì§€ ë§ê³  ì˜¤ë¥˜ ë°˜í™˜í•˜ë„ë¡ ìˆ˜ì •
     sDFAttr.mCreateMode   = SMI_DATAFILE_CREATE;
 
     sDFAttrPtr = &sDFAttr;
@@ -606,12 +606,12 @@ static IDE_RC smiCreateDiskTableSpaces( )
                                         sTx)
               != IDE_SUCCESS );
 
-    /* To Fix BUG-24090 createdb½Ã undo001.dbf Å©±â°¡ ÀÌ»óÇÕ´Ï´Ù.
-     * Æ®·£Àè¼Ç Commit PendingÀ¸·Î Add DataFile ¿¬»êÀÌ ¼öÇàµÇ¾î
-     * SpaceCacheÀÇ FreenessOfGGs¸¦ setBitÇÏ°ÔµÇ¾î ÀÖ´Âµ¥
-     * Segment »ı¼º°ú ÇÔ²² ÇÏ³ªÀÇ Æ®·£Àè¼ÇÀ¸·Î Ã³¸®µÇ¾î Segment
-     * »ı¼º½Ã¿¡´Â À¯È¿ÇÏÁö ¾ÊÀº Freeness·Î ÀÎÇØ ÆÄÀÏ È®ÀåÀÌ ¹ß»ıÇÏ¿©
-     * Å©±â°¡ Áõ°¡ÇÏ¿´´Ù. */
+    /* To Fix BUG-24090 createdbì‹œ undo001.dbf í¬ê¸°ê°€ ì´ìƒí•©ë‹ˆë‹¤.
+     * íŠ¸ëœì­ì…˜ Commit Pendingìœ¼ë¡œ Add DataFile ì—°ì‚°ì´ ìˆ˜í–‰ë˜ì–´
+     * SpaceCacheì˜ FreenessOfGGsë¥¼ setBití•˜ê²Œë˜ì–´ ìˆëŠ”ë°
+     * Segment ìƒì„±ê³¼ í•¨ê»˜ í•˜ë‚˜ì˜ íŠ¸ëœì­ì…˜ìœ¼ë¡œ ì²˜ë¦¬ë˜ì–´ Segment
+     * ìƒì„±ì‹œì—ëŠ” ìœ íš¨í•˜ì§€ ì•Šì€ Freenessë¡œ ì¸í•´ íŒŒì¼ í™•ì¥ì´ ë°œìƒí•˜ì—¬
+     * í¬ê¸°ê°€ ì¦ê°€í•˜ì˜€ë‹¤. */
     IDE_TEST( sTx->commit(&sDummySCN) != IDE_SUCCESS );
 
     IDE_TEST( sTx->begin( NULL,
@@ -621,12 +621,12 @@ static IDE_RC smiCreateDiskTableSpaces( )
               != IDE_SUCCESS );
 
     /***********************************************************************
-     * PROJ-1704 DISK MVCC ¸®´º¾ó
-     * Æ®·£Àè¼Ç ¼¼±×¸ÕÆ®´Â TSS Segment¿Í Undo Segment¸¦ ¹­¾î¼­ ÀÏÄÂ´Â
-     * ¿ë¾îÀÌ´Ù. Create Database °úÁ¤¿¡¼­ Undo Tablespace¸¦ »ı¼ºÇÑ ÈÄ¿¡
-     * »ç¿ëÀÚ ÇÁ·ÎÆÛÆ¼ TRANSACTION SEGMENT¿¡ ¸í½ÃµÈ °³¼ö¸¦ º¸Á¤ÇÏ¿©
-     * TSS Segment ¿Í Undo Segment¸¦ »ı¼ºÇÏ°í, ÀÌ¸¦ °ü¸®ÇÏ´Â Transaction
-     * Segment Manager¸¦ ÃÊ±âÈ­ ÇÑ´Ù.
+     * PROJ-1704 DISK MVCC ë¦¬ë‰´ì–¼
+     * íŠ¸ëœì­ì…˜ ì„¸ê·¸ë¨¼íŠ¸ëŠ” TSS Segmentì™€ Undo Segmentë¥¼ ë¬¶ì–´ì„œ ì¼ì»«ëŠ”
+     * ìš©ì–´ì´ë‹¤. Create Database ê³¼ì •ì—ì„œ Undo Tablespaceë¥¼ ìƒì„±í•œ í›„ì—
+     * ì‚¬ìš©ì í”„ë¡œí¼í‹° TRANSACTION SEGMENTì— ëª…ì‹œëœ ê°œìˆ˜ë¥¼ ë³´ì •í•˜ì—¬
+     * TSS Segment ì™€ Undo Segmentë¥¼ ìƒì„±í•˜ê³ , ì´ë¥¼ ê´€ë¦¬í•˜ëŠ” Transaction
+     * Segment Managerë¥¼ ì´ˆê¸°í™” í•œë‹¤.
      ***********************************************************************/
     sEntryCnt = smuProperty::getTXSEGEntryCnt();
 
@@ -644,8 +644,8 @@ static IDE_RC smiCreateDiskTableSpaces( )
 
     // ===== create temp Table Space =====
     // BUG-27911
-    // smuProperty ÀÇ ÇÔ¼ö¸¦ Á÷Á¢ È£ÃâÇÏÁö ¾Ê°í
-    // smiTableSpace ÀÇ ÀÎÅÍÆäÀÌ½º ÇÔ¼ö¸¦ È£ÃâÇÏ´Â ¹æ½ÄÀ¸·Î º¯°æÇÕ´Ï´Ù.    
+    // smuProperty ì˜ í•¨ìˆ˜ë¥¼ ì§ì ‘ í˜¸ì¶œí•˜ì§€ ì•Šê³ 
+    // smiTableSpace ì˜ ì¸í„°í˜ì´ìŠ¤ í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•˜ëŠ” ë°©ì‹ìœ¼ë¡œ ë³€ê²½í•©ë‹ˆë‹¤.    
     sExtentSize = smiTableSpace::getSysTempTBSExtentSize();
     sInitSize   = smiTableSpace::getSysTempFileInitSize();
     sMaxSize    = smiTableSpace::getSysTempFileMaxSize();
@@ -662,7 +662,7 @@ static IDE_RC smiCreateDiskTableSpaces( )
     sTbsAttr.mID = 0;
 
     // PRJ-1548 User Memory Tablespace
-    // DISK TEMP TBSÀÇ TBS Node Attribute ¼³Á¤
+    // DISK TEMP TBSì˜ TBS Node Attribute ì„¤ì •
     sTbsAttr.mAttrType = SMI_TBS_ATTR;
     sTbsAttr.mAttrFlag = SMI_TABLESPACE_ATTRFLAG_SYSTEM_DISK_TEMP;
 
@@ -676,7 +676,7 @@ static IDE_RC smiCreateDiskTableSpaces( )
     sTbsAttr.mTBSStateOnLA = SMI_TBS_ONLINE;
 
     // PRJ-1548 User Memory Tablespace
-    // DISK TEMP TBSÀÇ DBF Node Attribute ¼³Á¤
+    // DISK TEMP TBSì˜ DBF Node Attribute ì„¤ì •
     sDFAttr.mAttrType  = SMI_DBF_ATTR;
 
     idlOS::snprintf(sDFAttr.mName,
@@ -685,10 +685,10 @@ static IDE_RC smiCreateDiskTableSpaces( )
                     sDir,
                     IDL_FILE_SEPARATOR);
 
-    // BUG-29607 Create DB¿¡¼­ Disk Tablespace¸¦ »ı¼ºÇÏ±â Àü
-    //           µ¿ÀÏ ÀÌ¸§ÀÇ FileÀÌ ÀÌ¹Ì Á¸ÀçÇÏ´ÂÁö È®ÀÎÇÑ´Ù.
-    //        Create Tablespace¿¡¼­µµ °Ë»ç ÇÏÁö¸¸
-    //        ¹İÈ¯ÇÏ´Â ¿À·ùÀÇ ³»¿ëÀÌ ´Ù¸£´Ù.
+    // BUG-29607 Create DBì—ì„œ Disk Tablespaceë¥¼ ìƒì„±í•˜ê¸° ì „
+    //           ë™ì¼ ì´ë¦„ì˜ Fileì´ ì´ë¯¸ ì¡´ì¬í•˜ëŠ”ì§€ í™•ì¸í•œë‹¤.
+    //        Create Tablespaceì—ì„œë„ ê²€ì‚¬ í•˜ì§€ë§Œ
+    //        ë°˜í™˜í•˜ëŠ” ì˜¤ë¥˜ì˜ ë‚´ìš©ì´ ë‹¤ë¥´ë‹¤.
     IDE_TEST_RAISE( idf::access( sDFAttr.mName, F_OK) == 0,
                     error_already_exist_datafile );
 
@@ -697,14 +697,14 @@ static IDE_RC smiCreateDiskTableSpaces( )
     sDFAttr.mState        = SMI_FILE_ONLINE;
 
     // BUG-27911
-    // alignByPageSize() ´Â size ¿¡ ´ëÇØ Àß¸øµÈ °è»êÀ» ÇÏ°í ÀÖ¾ú½À´Ï´Ù.
-    // smiTableSpace ÀÇ ÀÎÅÍÆäÀÌ½º ÇÔ¼ö¸¦ ÅëÇØ ¾ò¾î¿Â°ªÀº
-    // valide ÇÏ±â ¶§¹®¿¡ ÀÌ °ªÀ» ¹Ù·Î »ç¿ëÇÕ´Ï´Ù.
+    // alignByPageSize() ëŠ” size ì— ëŒ€í•´ ì˜ëª»ëœ ê³„ì‚°ì„ í•˜ê³  ìˆì—ˆìŠµë‹ˆë‹¤.
+    // smiTableSpace ì˜ ì¸í„°í˜ì´ìŠ¤ í•¨ìˆ˜ë¥¼ í†µí•´ ì–»ì–´ì˜¨ê°’ì€
+    // valide í•˜ê¸° ë•Œë¬¸ì— ì´ ê°’ì„ ë°”ë¡œ ì‚¬ìš©í•©ë‹ˆë‹¤.
     sDFAttr.mMaxSize      = sMaxSize  / SD_PAGE_SIZE;
     sDFAttr.mNextSize     = sNextSize / SD_PAGE_SIZE;
     sDFAttr.mCurrSize     = sInitSize / SD_PAGE_SIZE;
     sDFAttr.mInitSize     = sInitSize / SD_PAGE_SIZE;
-    // BUG-29607 µ¿ÀÏ ÆÄÀÏ¸íÀÌ ÀÖÀ¸¸é Àç»ç¿ëÇÏÁö ¸»°í ¿À·ù ¹İÈ¯ÇÏµµ·Ï ¼öÁ¤
+    // BUG-29607 ë™ì¼ íŒŒì¼ëª…ì´ ìˆìœ¼ë©´ ì¬ì‚¬ìš©í•˜ì§€ ë§ê³  ì˜¤ë¥˜ ë°˜í™˜í•˜ë„ë¡ ìˆ˜ì •
     sDFAttr.mCreateMode   = SMI_DATAFILE_CREATE;
 
     sDFAttrPtr = &sDFAttr;
@@ -747,25 +747,25 @@ static IDE_RC smiCreateDiskTableSpaces( )
 }
 
 // ======================= for supporting Multi Phase Startup =================
-// BUGBUG : ±¸Çö ¿¹Á¤
+// BUGBUG : êµ¬í˜„ ì˜ˆì •
 static smiStartupPhase gStartupPhase = SMI_STARTUP_INIT;
 
 /*
- * ±¸Çö Guide:
- * QP/MMÀ¸·Î ºÎÅÍ ÀÓÀÇÀÇ aPhase°¡ ³Ñ¾î¿Ã ¼ö ÀÖÀ½.
- * ±×°Í¿¡ ´ëÇÑ ¿¡·¯ ÄÚµå¸¦ ¿Ã·Á¾ß ÇÔ(Not Killed!!)
+ * êµ¬í˜„ Guide:
+ * QP/MMìœ¼ë¡œ ë¶€í„° ì„ì˜ì˜ aPhaseê°€ ë„˜ì–´ì˜¬ ìˆ˜ ìˆìŒ.
+ * ê·¸ê²ƒì— ëŒ€í•œ ì—ëŸ¬ ì½”ë“œë¥¼ ì˜¬ë ¤ì•¼ í•¨(Not Killed!!)
  *
- * Phase°¡ Áõ°¡µÉ ¶§ ÇöÀçÀÇ Phase·Î ºÎÅÍ ¸í½ÃµÈ Phase±îÁö ´Ü°è¸¦ ¹â¾Æ
- * ÃÊ±âÈ­¸¦ ¼öÇàÇØ¾ß ÇÔ.
+ * Phaseê°€ ì¦ê°€ë  ë•Œ í˜„ì¬ì˜ Phaseë¡œ ë¶€í„° ëª…ì‹œëœ Phaseê¹Œì§€ ë‹¨ê³„ë¥¼ ë°Ÿì•„
+ * ì´ˆê¸°í™”ë¥¼ ìˆ˜í–‰í•´ì•¼ í•¨.
  */
 
 /*
- * ÇöÀçÀÇ Phase·Î ºÎÅÍ INIT ¸ğµå±îÁö ´Ü°èÀûÀ¸·Î ShutdownÀ» ¼öÇàÇØ¾ß ÇÔ.
+ * í˜„ì¬ì˜ Phaseë¡œ ë¶€í„° INIT ëª¨ë“œê¹Œì§€ ë‹¨ê³„ì ìœ¼ë¡œ Shutdownì„ ìˆ˜í–‰í•´ì•¼ í•¨.
  */
 
 
 /**************************************************/
-/* TSM¿¡¼­ CreateDB ½Ã¿¡ »ç¿ëµÇ´Â ÃÊ±âÈ­ Callback */
+/* TSMì—ì„œ CreateDB ì‹œì— ì‚¬ìš©ë˜ëŠ” ì´ˆê¸°í™” Callback */
 /**************************************************/
 IDE_RC smiCreateDBCoreInit(smiGlobalCallBackList *   /*aCallBack*/)
 {
@@ -774,10 +774,10 @@ IDE_RC smiCreateDBCoreInit(smiGlobalCallBackList *   /*aCallBack*/)
     /* -------------------------
      * [0] Get Properties
      * ------------------------*/
-    /* BUG-22201: Disk DataFileÀÇ ÃÖ´ëÅ©±â°¡ 32G¸¦ ³Ñ¾î¼­´Â ÆÄÀÏ»ı¼ºÀÌ ¼º°øÇÏ°í
-     * ÀÖ½À´Ï´Ù.
+    /* BUG-22201: Disk DataFileì˜ ìµœëŒ€í¬ê¸°ê°€ 32Gë¥¼ ë„˜ì–´ì„œëŠ” íŒŒì¼ìƒì„±ì´ ì„±ê³µí•˜ê³ 
+     * ìˆìŠµë‹ˆë‹¤.
      *
-     * ÃÖ´ëÅ©±â°¡ 32G¸¦ ³ÑÁö ¾Êµµ·Ï º¸Á¤ÇÔ. ( SD_MAX_FPID_COUNT: 1<<22, 2^21 )
+     * ìµœëŒ€í¬ê¸°ê°€ 32Gë¥¼ ë„˜ì§€ ì•Šë„ë¡ ë³´ì •í•¨. ( SD_MAX_FPID_COUNT: 1<<22, 2^21 )
      * */
     IDE_TEST(idlOS::getrlimit( RLIMIT_FSIZE, &sLimit) != 0 );
     gDBFileMaxPageCntOfDRDB = sLimit.rlim_cur / SD_PAGE_SIZE;
@@ -786,50 +786,50 @@ IDE_RC smiCreateDBCoreInit(smiGlobalCallBackList *   /*aCallBack*/)
 
     ideLog::log(IDE_SERVER_0,"\n");
 
-    /* 1.¸Ş¸ğ¸® Å×ÀÌºí½ºÆäÀÌ½º °ü¸®ÀÚ */
+    /* 1.ë©”ëª¨ë¦¬ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ê´€ë¦¬ì */
     ideLog::log(IDE_SERVER_0," [SM-PREPARE] TableSpace Manager");
     IDE_TEST( sctTableSpaceMgr::initialize( ) != IDE_SUCCESS );
     
-    /* 2.Dirty Page °ü¸®ÀÚ */
+    /* 2.Dirty Page ê´€ë¦¬ì */
     ideLog::log(IDE_SERVER_0," [SM-PREPARE] Dirty Page Manager");
     IDE_TEST( smmDirtyPageMgr::initializeStatic() != IDE_SUCCESS );
 
-    /* 3.¸Ş¸ğ¸® °ü¸®ÀÚ */
+    /* 3.ë©”ëª¨ë¦¬ ê´€ë¦¬ì */
     ideLog::log(IDE_SERVER_0," [SM-PREPARE] Memory Manager");
     IDE_TEST( smmManager::initializeStatic( ) != IDE_SUCCESS );
 
-    /* 4.Å×ÀÌºí½ºÆäÀÌ½º °ü¸® */
+    /* 4.í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ê´€ë¦¬ */
     ideLog::log(IDE_SERVER_0," [SM-PREPARE] Memory Tablespace");
     IDE_TEST( smmTBSStartupShutdown::initializeStatic( ) != IDE_SUCCESS );
 
-    /* 5.µğ½ºÅ© °ü¸®ÀÚ */
+    /* 5.ë””ìŠ¤í¬ ê´€ë¦¬ì */
     ideLog::log(IDE_SERVER_0," [SM-PREPARE] Disk Manager");
     IDE_TEST( sddDiskMgr::initialize( (UInt)gDBFileMaxPageCntOfDRDB )
               != IDE_SUCCESS );
 
-    /* 6.¹öÆÛ °ü¸®ÀÚ */
+    /* 6.ë²„í¼ ê´€ë¦¬ì */
     ideLog::log(IDE_SERVER_0," [SM-PREPARE] Buffer Manager");
     IDE_TEST( sdbBufferMgr::initialize() != IDE_SUCCESS );
 
-    /* 0¹ø ÆÄÀÏ »ı¼º : º¹±¸ °ü¸®ÀÚº¸´Ù ¸ÕÀú »ı¼ºÀÌ µÇ¾î ÀÖ¾î¾ß ÇÔ. */
+    /* 0ë²ˆ íŒŒì¼ ìƒì„± : ë³µêµ¬ ê´€ë¦¬ìë³´ë‹¤ ë¨¼ì € ìƒì„±ì´ ë˜ì–´ ìˆì–´ì•¼ í•¨. */
     IDE_TEST( smrRecoveryMgr::create() != IDE_SUCCESS );
 
-    /* 7.º¹±¸ °ü¸®ÀÚ */
+    /* 7.ë³µêµ¬ ê´€ë¦¬ì */
     ideLog::log(IDE_SERVER_0," [SM-PREPARE] Recovery Manager");
     IDE_TEST( smrRecoveryMgr::initialize() != IDE_SUCCESS );
 
-    /* 8.·Î±× °ü¸®ÀÚ */
+    /* 8.ë¡œê·¸ ê´€ë¦¬ì */
     ideLog::log(IDE_SERVER_0," [SM-PREPARE] Log File");
     IDE_TEST( smrLogMgr::initialize() != IDE_SUCCESS );
 
-    /* 9.µğ½ºÅ© Å×ÀÌºí½ºÆäÀÌ½º °ü¸®ÀÚ */
+    /* 9.ë””ìŠ¤í¬ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ê´€ë¦¬ì */
     ideLog::log(IDE_SERVER_0," [SM-PREPARE] Tablespace Manager");
     IDE_TEST( sdpTableSpace::initialize() != IDE_SUCCESS );
 
-    /* 10.¹é¾÷ °ü¸®ÀÚ */
+    /* 10.ë°±ì—… ê´€ë¦¬ì */
     IDE_TEST( smrBackupMgr::initialize() != IDE_SUCCESS );
 
-    /* prepare Thread ½ÃÀÛ */ 
+    /* prepare Thread ì‹œì‘ */ 
     IDE_TEST( smrLogMgr::startupLogPrepareThread() != IDE_SUCCESS );
 
     ideLog::log(IDE_SERVER_0," [SM-PREPARE] Buffer Flusher");
@@ -844,12 +844,12 @@ IDE_RC smiCreateDBCoreInit(smiGlobalCallBackList *   /*aCallBack*/)
 }
 
 /************************************************/
-/* MM¿¡¼­ CreateDB½Ã¿¡ »ç¿ëµÇ´Â ÃÊ±âÈ­ Callback */
+/* MMì—ì„œ CreateDBì‹œì— ì‚¬ìš©ë˜ëŠ” ì´ˆê¸°í™” Callback */
 /************************************************/
 IDE_RC smiCreateDBMetaInit(smiGlobalCallBackList*    /*aCallBack*/)
 {
     /* -------------------------
-     * [1] CheckPoint & GC°ü·Ã µ¥ÀÌÅÍ ÃÊ±âÈ­
+     * [1] CheckPoint & GCê´€ë ¨ ë°ì´í„° ì´ˆê¸°í™”
      * ------------------------*/
 
     ideLog::log(IDE_SERVER_0," [SM-PREPARE] CheckPoint Manager");
@@ -877,56 +877,56 @@ IDE_RC smiCreateDBMetaInit(smiGlobalCallBackList*    /*aCallBack*/)
 
 
 /***************************************************/
-/* TSM¿¡¼­ CreateDB½Ã¿¡ »ç¿ëµÇ´Â Shutdown Callback */
+/* TSMì—ì„œ CreateDBì‹œì— ì‚¬ìš©ë˜ëŠ” Shutdown Callback */
 /***************************************************/
 IDE_RC smiCreateDBCoreShutdown(smiGlobalCallBackList*    /*aCallBack*/)
 {
     ideLog::log(IDE_SERVER_0," [SM-SHUTDOWN] Flush All DirtyPages And Checkpoint Database");
     IDE_TEST( smrRecoveryMgr::finalize() != IDE_SUCCESS );
 
-    /* ·Î±× °ü¸®ÀÚ ÀÛ¾÷ Á¾·á*/
+    /* ë¡œê·¸ ê´€ë¦¬ì ì‘ì—… ì¢…ë£Œ*/
     IDE_TEST( smrLogMgr::shutdown() != IDE_SUCCESS );
 
     ideLog::log(IDE_SERVER_0," [SM-SHUTDOWN] Flush Manager");
     IDE_TEST( sdbFlushMgr::destroy() != IDE_SUCCESS );
 
-    /* 10.¹é¾÷ °ü¸®ÀÚ */
+    /* 10.ë°±ì—… ê´€ë¦¬ì */
     ideLog::log(IDE_SERVER_0," [SM-SHUTDOWN] Backup Manager");
     IDE_TEST( smrBackupMgr::destroy() != IDE_SUCCESS );
 
-    /* 9.µğ½ºÅ© Å×ÀÌºí½ºÆäÀÌ½º °ü¸®ÀÚ */
+    /* 9.ë””ìŠ¤í¬ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ê´€ë¦¬ì */
     ideLog::log(IDE_SERVER_0," [SM-SHUTDOWN] Tablespace Manager");
     IDE_TEST( sdpTableSpace::destroy() != IDE_SUCCESS );
 
-    /* 8.·Î±× °ü¸®ÀÚ */
+    /* 8.ë¡œê·¸ ê´€ë¦¬ì */
     ideLog::log(IDE_SERVER_0," [SM-SHUTDOWN] Log Manager");
     IDE_TEST( smrLogMgr::destroy() != IDE_SUCCESS );
 
-    /* 7.º¹±¸ °ü¸®ÀÚ */
+    /* 7.ë³µêµ¬ ê´€ë¦¬ì */
     ideLog::log(IDE_SERVER_0," [SM-SHUTDOWN] Recovery Manager");
     IDE_TEST( smrRecoveryMgr::destroy() != IDE_SUCCESS );
 
-    /* 6.¹öÆÛ °ü¸®ÀÚ */
+    /* 6.ë²„í¼ ê´€ë¦¬ì */
     ideLog::log(IDE_SERVER_0," [SM-SHUTDOWN] Buffer Manager");
     IDE_TEST( sdbBufferMgr::destroy() != IDE_SUCCESS );
 
-    /* 5.µğ½ºÅ© °ü¸®ÀÚ */
+    /* 5.ë””ìŠ¤í¬ ê´€ë¦¬ì */
     ideLog::log(IDE_SERVER_0," [SM-SHUTDOWN] Disk Manager");
     IDE_TEST( sddDiskMgr::destroy() != IDE_SUCCESS );
 
-    /* 4.Å×ÀÌºí½ºÆäÀÌ½º  */
+    /* 4.í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤  */
     ideLog::log(IDE_SERVER_0," [SM-SHUTDOWN] Memory Tablespace");
     IDE_TEST( smmTBSStartupShutdown::destroyStatic() != IDE_SUCCESS );
 
-    /* 3.¸Ş¸ğ¸® °ü¸®ÀÚ */
+    /* 3.ë©”ëª¨ë¦¬ ê´€ë¦¬ì */
     ideLog::log(IDE_SERVER_0," [SM-SHUTDOWN] Memory Manager");
     IDE_TEST( smmManager::destroyStatic() != IDE_SUCCESS );
 
-    /* 2.Dirty Page °ü¸®ÀÚ */
+    /* 2.Dirty Page ê´€ë¦¬ì */
     ideLog::log(IDE_SERVER_0," [SM-SHUTDOWN] Dirty Page Manager");
     IDE_TEST( smmDirtyPageMgr::destroyStatic() != IDE_SUCCESS );
 
-    /* 1.¸Ş¸ğ¸® Å×ÀÌºí½ºÆäÀÌ½º °ü¸®ÀÚ */
+    /* 1.ë©”ëª¨ë¦¬ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ê´€ë¦¬ì */
     ideLog::log(IDE_SERVER_0," [SM-SHUTDOWN] TableSpace Manager");
     IDE_TEST( sctTableSpaceMgr::destroy() != IDE_SUCCESS );
 
@@ -939,11 +939,11 @@ IDE_RC smiCreateDBCoreShutdown(smiGlobalCallBackList*    /*aCallBack*/)
 
 
 /***************************************************/
-/* MM¿¡¼­ CreateDB½Ã¿¡ »ç¿ëµÇ´Â Shutdown Callback  */
+/* MMì—ì„œ CreateDBì‹œì— ì‚¬ìš©ë˜ëŠ” Shutdown Callback  */
 /***************************************************/
 IDE_RC smiCreateDBMetaShutdown(smiGlobalCallBackList* /*aCallBack*/)
 {
-    // Start up½Ã¿Í ¹İ´ë ¼ø¼­·Î ÁøÇà
+    // Start upì‹œì™€ ë°˜ëŒ€ ìˆœì„œë¡œ ì§„í–‰
 
     ideLog::log(IDE_SERVER_0," [SM-SHUTDOWN] Index Storage");
     IDE_TEST( smnManager::destroyIndexes() != IDE_SUCCESS );
@@ -952,8 +952,8 @@ IDE_RC smiCreateDBMetaShutdown(smiGlobalCallBackList* /*aCallBack*/)
     IDE_TEST( smaLogicalAger::shutdownAll() != IDE_SUCCESS );
 
     //BUG-35886 server startup will fail in a test case
-    //smaDeleteThread´Â smaLogicalAger::destroyStatic() ¼öÇàÀü¿¡ shutdown
-    //µÇ¾ßÇÑ´Ù.
+    //smaDeleteThreadëŠ” smaLogicalAger::destroyStatic() ìˆ˜í–‰ì „ì— shutdown
+    //ë˜ì•¼í•œë‹¤.
     ideLog::log(IDE_SERVER_0," [SM-SHUTDOWN] Delete Manager Shutdown");
     IDE_TEST( smaDeleteThread::shutdownAll() != IDE_SUCCESS );
 
@@ -975,18 +975,18 @@ IDE_RC smiCreateDBMetaShutdown(smiGlobalCallBackList* /*aCallBack*/)
 
 
 /****************************************************/
-/* Utility ÇÁ·Î±×·¥¿¡¼­ »ç¿ëµÇ´Â ÃÊ±âÈ­ Callback  */
-/* Utility ÇÁ·Î±×·¥Àº Process´Ü°è¸¦ °ÅÄ¡Áö ¾ÊÀ½.  */
+/* Utility í”„ë¡œê·¸ë¨ì—ì„œ ì‚¬ìš©ë˜ëŠ” ì´ˆê¸°í™” Callback  */
+/* Utility í”„ë¡œê·¸ë¨ì€ Processë‹¨ê³„ë¥¼ ê±°ì¹˜ì§€ ì•ŠìŒ.  */
 /****************************************************/
 IDE_RC smiSmUtilInit(smiGlobalCallBackList*    aCallBack)
 {
     struct rlimit sLimit;
     UInt          sTransCnt = 0;
 
-    /* BUG-22201: Disk DataFileÀÇ ÃÖ´ëÅ©±â°¡ 32G¸¦ ³Ñ¾î¼­´Â ÆÄÀÏ»ı¼ºÀÌ ¼º°øÇÏ°í
-     * ÀÖ½À´Ï´Ù.
+    /* BUG-22201: Disk DataFileì˜ ìµœëŒ€í¬ê¸°ê°€ 32Gë¥¼ ë„˜ì–´ì„œëŠ” íŒŒì¼ìƒì„±ì´ ì„±ê³µí•˜ê³ 
+     * ìˆìŠµë‹ˆë‹¤.
      *
-     * ÃÖ´ëÅ©±â°¡ 32G¸¦ ³ÑÁö ¾Êµµ·Ï º¸Á¤ÇÔ. ( SD_MAX_FPID_COUNT: 2^22 )
+     * ìµœëŒ€í¬ê¸°ê°€ 32Gë¥¼ ë„˜ì§€ ì•Šë„ë¡ ë³´ì •í•¨. ( SD_MAX_FPID_COUNT: 2^22 )
      * */
     IDE_TEST(idlOS::getrlimit( RLIMIT_FSIZE, &sLimit) != 0 );
     gDBFileMaxPageCntOfDRDB = sLimit.rlim_cur / SD_PAGE_SIZE;
@@ -1025,7 +1025,7 @@ IDE_RC smiSmUtilInit(smiGlobalCallBackList*    aCallBack)
     }
 
     /* ---------------------------
-     * [4] ±âº» SM Manager ÃÊ±âÈ­
+     * [4] ê¸°ë³¸ SM Manager ì´ˆê¸°í™”
      * --------------------------*/
     IDE_TEST( idvManager::initializeStatic() != IDE_SUCCESS );
     IDE_TEST( idvManager::startupService() != IDE_SUCCESS );
@@ -1070,7 +1070,7 @@ IDE_RC smiSmUtilInit(smiGlobalCallBackList*    aCallBack)
 
 
 /******************************************************/
-/* Utility ÇÁ·Î±×·¥¿¡¼­ »ç¿ëµÇ´Â Shutdown Callback  */
+/* Utility í”„ë¡œê·¸ë¨ì—ì„œ ì‚¬ìš©ë˜ëŠ” Shutdown Callback  */
 /******************************************************/
 IDE_RC smiSmUtilShutdown(smiGlobalCallBackList* /*aCallBack*/)
 {
@@ -1153,7 +1153,7 @@ static IDE_RC smiSDMClose( sdm_handle_t * aSDMHandle )
 #endif /* ALTIBASE_ENABLE_SMARTSSD */
 
 /******************************************************/
-/* Normal Start-Up¿¡¼­ »ç¿ëµÇ´Â ÃÊ±âÈ­ Callback  */
+/* Normal Start-Upì—ì„œ ì‚¬ìš©ë˜ëŠ” ì´ˆê¸°í™” Callback  */
 /******************************************************/
 
 static IDE_RC smiStartupPreProcess(smiGlobalCallBackList*   aCallBack )
@@ -1175,7 +1175,7 @@ static IDE_RC smiStartupPreProcess(smiGlobalCallBackList*   aCallBack )
     gSmiGlobalCallBackList = *aCallBack;
 
     /* -------------------------
-     * [2] SM Manager ÃÊ±âÈ­
+     * [2] SM Manager ì´ˆê¸°í™”
      * ------------------------*/
     IDE_TEST( smxTransMgr::calibrateTransCount(&sTransCnt)
               != IDE_SUCCESS );
@@ -1249,34 +1249,34 @@ static IDE_RC smiStartupControl(smiGlobalCallBackList* /*aCallBack*/)
     /* -------------------------
      * [0] Get Properties
      * ------------------------*/
-    /* BUG-22201: Disk DataFileÀÇ ÃÖ´ëÅ©±â°¡ 32G¸¦ ³Ñ¾î¼­´Â ÆÄÀÏ»ı¼ºÀÌ ¼º°øÇÏ°í
-     * ÀÖ½À´Ï´Ù.
+    /* BUG-22201: Disk DataFileì˜ ìµœëŒ€í¬ê¸°ê°€ 32Gë¥¼ ë„˜ì–´ì„œëŠ” íŒŒì¼ìƒì„±ì´ ì„±ê³µí•˜ê³ 
+     * ìˆìŠµë‹ˆë‹¤.
      *
-     * ÃÖ´ëÅ©±â°¡ 32G¸¦ ³ÑÁö ¾Êµµ·Ï º¸Á¤ÇÔ. ( SD_MAX_FPID_COUNT: 2^22 )
+     * ìµœëŒ€í¬ê¸°ê°€ 32Gë¥¼ ë„˜ì§€ ì•Šë„ë¡ ë³´ì •í•¨. ( SD_MAX_FPID_COUNT: 2^22 )
      * */
     IDE_TEST(idlOS::getrlimit( RLIMIT_FSIZE, &sLimit) != 0 );
     gDBFileMaxPageCntOfDRDB = sLimit.rlim_cur / SD_PAGE_SIZE;
     gDBFileMaxPageCntOfDRDB = gDBFileMaxPageCntOfDRDB > SD_MAX_FPID_COUNT ? SD_MAX_FPID_COUNT : gDBFileMaxPageCntOfDRDB;
 
     /* ---------------------------
-     * [1] ±âº» SM Manager ÃÊ±âÈ­
+     * [1] ê¸°ë³¸ SM Manager ì´ˆê¸°í™”
      * --------------------------*/
 
     ideLog::log(IDE_SERVER_0,"\n");
 
-    /* 1.¸Ş¸ğ¸® Å×ÀÌºí½ºÆäÀÌ½º °ü¸®ÀÚ */
+    /* 1.ë©”ëª¨ë¦¬ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ê´€ë¦¬ì */
     ideLog::log(IDE_SERVER_0," [SM-PREPARE] TableSpace Manager");
     IDE_TEST( sctTableSpaceMgr::initialize() != IDE_SUCCESS );
 
-    /* 2.Dirty Page °ü¸®ÀÚ */
+    /* 2.Dirty Page ê´€ë¦¬ì */
     ideLog::log(IDE_SERVER_0," [SM-PREPARE] Dirty Page Manager");
     IDE_TEST( smmDirtyPageMgr::initializeStatic() != IDE_SUCCESS );
 
-    /* 3.¸Ş¸ğ¸® °ü¸®ÀÚ */
+    /* 3.ë©”ëª¨ë¦¬ ê´€ë¦¬ì */
     ideLog::log(IDE_SERVER_0," [SM-PREPARE] Memory Manager");
     IDE_TEST( smmManager::initializeStatic() != IDE_SUCCESS );
 
-    /* 4.Å×ÀÌºí½ºÆäÀÌ½º °ü¸® */
+    /* 4.í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ê´€ë¦¬ */
     ideLog::log(IDE_SERVER_0," [SM-PREPARE] Memory Tablespace");
     IDE_TEST( smmTBSStartupShutdown::initializeStatic() != IDE_SUCCESS );
 
@@ -1288,7 +1288,7 @@ static IDE_RC smiStartupControl(smiGlobalCallBackList* /*aCallBack*/)
     IDE_TEST( svmTBSStartupShutdown::initializeStatic()
               != IDE_SUCCESS );
 
-    /* 5.µğ½ºÅ© °ü¸®ÀÚ */
+    /* 5.ë””ìŠ¤í¬ ê´€ë¦¬ì */
     ideLog::log(IDE_SERVER_0," [SM-PREPARE] Disk Manager");
     IDE_TEST( sddDiskMgr::initialize( (UInt)gDBFileMaxPageCntOfDRDB )
               != IDE_SUCCESS );
@@ -1297,34 +1297,34 @@ static IDE_RC smiStartupControl(smiGlobalCallBackList* /*aCallBack*/)
     ideLog::log( IDE_SERVER_0," [SM-PREPARE] Secondary Buffer Manager" );
     IDE_TEST( sdsBufferMgr::initialize() != IDE_SUCCESS );
 
-    /* 6.¹öÆÛ °ü¸®ÀÚ */
+    /* 6.ë²„í¼ ê´€ë¦¬ì */
     ideLog::log(IDE_SERVER_0," [SM-PREPARE] Buffer Manager");
     IDE_TEST( sdbBufferMgr::initialize() != IDE_SUCCESS );
 
     /* ------------------------------------
-     * [2] Recovery °ü·Ã SM Manager ÃÊ±âÈ­
+     * [2] Recovery ê´€ë ¨ SM Manager ì´ˆê¸°í™”
      * ----------------------------------*/
 
-    /* 7.º¹±¸ °ü¸®ÀÚ */
+    /* 7.ë³µêµ¬ ê´€ë¦¬ì */
     ideLog::log(IDE_SERVER_0," [SM-PREPARE] Recovery Manager");
     IDE_TEST( smrRecoveryMgr::initialize() != IDE_SUCCESS );
 
-    /* 8.·Î±× °ü¸®ÀÚ */
+    /* 8.ë¡œê·¸ ê´€ë¦¬ì */
     ideLog::log(IDE_SERVER_0," [SM-PREPARE] Log Manager");
     IDE_TEST( smrLogMgr::initialize() != IDE_SUCCESS );
 
-    /* 9. µğ½ºÅ© Å×ÀÌºí½ºÆäÀÌ½º : ¸®Ä¿¹ö¸® ¹®Á¦·Î º¹±¸ °ü¸®ÀÚ º¸´Ù ´Ê°Ô ÃÊ±âÈ­ */
+    /* 9. ë””ìŠ¤í¬ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ : ë¦¬ì»¤ë²„ë¦¬ ë¬¸ì œë¡œ ë³µêµ¬ ê´€ë¦¬ì ë³´ë‹¤ ëŠ¦ê²Œ ì´ˆê¸°í™” */
     ideLog::log(IDE_SERVER_0," [SM-PREPARE] Tablespace");
     IDE_TEST( sdpTableSpace::initialize() != IDE_SUCCESS );
 
-    /* 10.¹é¾÷ °ü¸®ÀÚ */
+    /* 10.ë°±ì—… ê´€ë¦¬ì */
     ideLog::log(IDE_SERVER_0," [SM-PREPARE] Backup Manager");
     IDE_TEST( smrBackupMgr::initialize() != IDE_SUCCESS );
 
     ideLog::log(IDE_SERVER_0," [SM-PREPARE] Index Pool");
     IDE_TEST( smcTable::initialize() != IDE_SUCCESS );
     
-    /* 11.ÅÛÇÁ Å×ÀÌºí °ü¸®ÀÚ */
+    /* 11.í…œí”„ í…Œì´ë¸” ê´€ë¦¬ì */
     ideLog::log(IDE_SERVER_0," [SM-PREPARE] TempTable Manager      ");
     IDE_TEST( smiTempTable::initializeStatic() != IDE_SUCCESS );
     ideLog::log(IDE_SERVER_0,"[SUCCESS]\n");
@@ -1343,7 +1343,7 @@ static IDE_RC smiStartupMetaFirstHalf( UInt     aActionFlag )
     UInt         sEntryCnt;
     UInt         sCurEntryCnt;
 
-    // aActionFlag°¡ SMI_STARTUP_RESETLOGSÀÌ¸é resetlog¸¦ ÇÑ´Ù.
+    // aActionFlagê°€ SMI_STARTUP_RESETLOGSì´ë©´ resetlogë¥¼ í•œë‹¤.
     ideLog::log(IDE_SERVER_0,"\n");
 
     // To fix BUG-22158
@@ -1379,10 +1379,10 @@ static IDE_RC smiStartupMetaFirstHalf( UInt     aActionFlag )
 
     ideLog::log(IDE_SERVER_0," [SM-PREPARE] Identify Database");
 
-    //[0] Secondary BufferÀÇ ¼Ó¼º °Ë»ç 
+    //[0] Secondary Bufferì˜ ì†ì„± ê²€ì‚¬ 
     IDE_TEST( sdsBufferMgr::identify( NULL /*aStatistics*/ ) != IDE_SUCCESS );
 
-    // [1] ¸ğµç µ¥ÀÌÅ¸ÆÄÀÏµéÀÇ ¹Ìµğ¾î¿À·ù¸¦ °Ë»çÇÑ´Ù
+    // [1] ëª¨ë“  ë°ì´íƒ€íŒŒì¼ë“¤ì˜ ë¯¸ë””ì–´ì˜¤ë¥˜ë¥¼ ê²€ì‚¬í•œë‹¤
     IDE_TEST( smrRecoveryMgr::identifyDatabase( aActionFlag ) != IDE_SUCCESS );
 
     if ((aActionFlag & SMI_STARTUP_ACTION_MASK) != SMI_STARTUP_RESETLOGS)
@@ -1396,8 +1396,8 @@ static IDE_RC smiStartupMetaFirstHalf( UInt     aActionFlag )
                   != IDE_SUCCESS );
     }
 
-    // DWFileÀ» ÂüÁ¶ÇÑ DATA pageÀÇ corruption °Ë»ç°¡ ³¡³­ ÈÄ
-    // flusher¸¦ »ı¼º, ÃÊ±âÈ­ÇÑ´Ù.
+    // DWFileì„ ì°¸ì¡°í•œ DATA pageì˜ corruption ê²€ì‚¬ê°€ ëë‚œ í›„
+    // flusherë¥¼ ìƒì„±, ì´ˆê¸°í™”í•œë‹¤.
     ideLog::log( IDE_SERVER_0," [SM-PREPARE] Secondary Buffer Flusher" );
     IDE_TEST( sdsFlushMgr::initialize( smuProperty::getSBufferFlusherCnt() ) 
               != IDE_SUCCESS );
@@ -1416,16 +1416,16 @@ static IDE_RC smiStartupMetaFirstHalf( UInt     aActionFlag )
     IDE_TEST( sdcTXSegMgr::initialize( ID_FALSE /* aIsAttachSegment */ ) 
               != IDE_SUCCESS );
 
-    /* FOR A4 : Disk TableÀÇ °æ¿ì Undo ½Ã¿¡ Index¸¦ ÂüÁ¶ÇÑ´Ù.
-                ÀÌ¸¦ À§ÇÏ¿© ¸ğµç tableÀÇ index´Â undo Àü¿¡ »ç¿ëÇÒ
-                ÁØºñ°¡ ¿Ï·áµÇ¾î ÀÖ¾î¾ß ÇÑ´Ù.
-                µû¶ó¼­ ´ÙÀ½°ú °°ÀÌ restart ¼ø¼­¸¦ ¹Ù²Û´Ù.
+    /* FOR A4 : Disk Tableì˜ ê²½ìš° Undo ì‹œì— Indexë¥¼ ì°¸ì¡°í•œë‹¤.
+                ì´ë¥¼ ìœ„í•˜ì—¬ ëª¨ë“  tableì˜ indexëŠ” undo ì „ì— ì‚¬ìš©í• 
+                ì¤€ë¹„ê°€ ì™„ë£Œë˜ì–´ ìˆì–´ì•¼ í•œë‹¤.
+                ë”°ë¼ì„œ ë‹¤ìŒê³¼ ê°™ì´ restart ìˆœì„œë¥¼ ë°”ê¾¼ë‹¤.
 
                 redo --> prepare index header --> undo
     */
 
     /* BUG-38962
-     * restart recovery ÀÌÀü¿¡ MinSCNBuilder¸¦ ÃÊ±âÈ­ ÇÑ´Ù. */
+     * restart recovery ì´ì „ì— MinSCNBuilderë¥¼ ì´ˆê¸°í™” í•œë‹¤. */
     ideLog::log(IDE_SERVER_0," [SM-PREPARE] Initialize Minimum SCN Builder ");
     IDE_TEST( smxTransMgr::initializeMinSCNBuilder() != IDE_SUCCESS );
     ideLog::log(IDE_SERVER_0,"[SUCCESS]\n");
@@ -1471,7 +1471,7 @@ static IDE_RC smiStartupMetaLatterHalf()
      * [3] start system threads
      * ------------------------*/
     /* BUG-38962
-     * restart recovery ¿Ï·á ÈÄ MinSCNBuilder ¾²·¹µå¸¦ run ÇÑ´Ù. */
+     * restart recovery ì™„ë£Œ í›„ MinSCNBuilder ì“°ë ˆë“œë¥¼ run í•œë‹¤. */
     ideLog::log(IDE_SERVER_0," [SM-PREPARE] Minimum SCN Builder ");
     IDE_TEST( smxTransMgr::startupMinSCNBuilder() != IDE_SUCCESS );
 
@@ -1501,9 +1501,9 @@ static IDE_RC smiStartupMetaLatterHalf()
     // For In-Doubt transaction
     IDE_TEST( smrRecoveryMgr::acquireLockForInDoubt() != IDE_SUCCESS );
 
-    // BUG-28819 [SM] REBUILD_MIN_VIEWSCN_INTERVAL_À» 0À¸·Î À¯ÁöÇÏ°í
-    // ¼­¹ö restartÇÏ¸é ºñÁ¤»ó Á¾·áÇÕ´Ï´Ù.
-    // refile´Ü°è ¸¶Áö¸·¿¡ Min View SCNÀ» rebuildÇÕ´Ï´Ù.
+    // BUG-28819 [SM] REBUILD_MIN_VIEWSCN_INTERVAL_ì„ 0ìœ¼ë¡œ ìœ ì§€í•˜ê³ 
+    // ì„œë²„ restartí•˜ë©´ ë¹„ì •ìƒ ì¢…ë£Œí•©ë‹ˆë‹¤.
+    // refileë‹¨ê³„ ë§ˆì§€ë§‰ì— Min View SCNì„ rebuildí•©ë‹ˆë‹¤.
     IDE_TEST( smxTransMgr::rebuildMinViewSCN( NULL /*idvSQL*/) != IDE_SUCCESS );
 
     /* ----------------------------
@@ -1513,9 +1513,9 @@ static IDE_RC smiStartupMetaLatterHalf()
     ideLog::log(IDE_SERVER_0," [SM-PREPARE] Index Rebuilding");
     IDE_TEST( smnManager::rebuildIndexes() != IDE_SUCCESS );
 
-    /* BUG-42724 : server Àç½ÃÀÛ ÈÄ XA Æ®·¡Àè¼ÇÀ¸·Î commit/rollbackµÇ´Â °æ¿ì agingÇÒ ¶§
-     * ºüÁø ÇÃ·¡±×°¡ Á¸ÀçÇÏ¿© Á×´Â Çö»óÀÌ ¹ß»ıÇÑ´Ù. µû¶ó¼­ ÀÎµ¦½º ¸®ºôµå ¿Ï·á ÈÄ XA TX¿¡
-     * ÀÇÇØ insert/updateµÈ ·¹ÄÚµåÀÇ °ü·Ã OID flagµéÀ» Ãß°¡/¼öÁ¤ ÇÑ´Ù. */
+    /* BUG-42724 : server ì¬ì‹œì‘ í›„ XA íŠ¸ë˜ì­ì…˜ìœ¼ë¡œ commit/rollbackë˜ëŠ” ê²½ìš° agingí•  ë•Œ
+     * ë¹ ì§„ í”Œë˜ê·¸ê°€ ì¡´ì¬í•˜ì—¬ ì£½ëŠ” í˜„ìƒì´ ë°œìƒí•œë‹¤. ë”°ë¼ì„œ ì¸ë±ìŠ¤ ë¦¬ë¹Œë“œ ì™„ë£Œ í›„ XA TXì—
+     * ì˜í•´ insert/updateëœ ë ˆì½”ë“œì˜ ê´€ë ¨ OID flagë“¤ì„ ì¶”ê°€/ìˆ˜ì • í•œë‹¤. */
     IDE_TEST( smxTransMgr::setOIDFlagForInDoubtTrans() != IDE_SUCCESS );
     
     /* ----------------------------
@@ -1566,7 +1566,7 @@ static IDE_RC smiStartupService(smiGlobalCallBackList* /*aCallBack*/)
                   != IDE_SUCCESS );
     }
 
-    /* service startup ´Ü°è¿¡¼­ volatile tableµéÀ» ÃÊ±âÈ­ÇÑ´Ù. */
+    /* service startup ë‹¨ê³„ì—ì„œ volatile tableë“¤ì„ ì´ˆê¸°í™”í•œë‹¤. */
     IDE_TEST( smaRefineDB::initAllVolatileTables() != IDE_SUCCESS );
 
     return IDE_SUCCESS;
@@ -1608,8 +1608,8 @@ static IDE_RC smiStartupShutdown(smiGlobalCallBackList* /*aCallBack*/)
             IDE_TEST( smaLogicalAger::shutdownAll() != IDE_SUCCESS );
 
             //BUG-35886 server startup will fail in a test case
-            //smaDeleteThread´Â smaLogicalAger::destroyStatic() ¼öÇàÀü¿¡ shutdown
-            //µÇ¾ßÇÑ´Ù.
+            //smaDeleteThreadëŠ” smaLogicalAger::destroyStatic() ìˆ˜í–‰ì „ì— shutdown
+            //ë˜ì•¼í•œë‹¤.
             ideLog::log(IDE_SERVER_0," [SM-SHUTDOWN] Delete Manager Thread");
             IDE_TEST( smaDeleteThread::shutdownAll() != IDE_SUCCESS );
 
@@ -1622,13 +1622,13 @@ static IDE_RC smiStartupShutdown(smiGlobalCallBackList* /*aCallBack*/)
             ideLog::log(IDE_SERVER_0," [SM-SHUTDOWN] Minimum SCN Builder");
             IDE_TEST( smxTransMgr::shutdownMinSCNBuilder() != IDE_SUCCESS );
 
-            /* BUG-41541 __FORCE_INDEX_PERSISTENCE_MODEÀÇ °ªÀÌ 0ÀÎ °æ¿ì 
-             * persistent index ±â´ÉÀ» »ç¿ëÇÏÁö ¾Ê´Â´Ù.*/
+            /* BUG-41541 __FORCE_INDEX_PERSISTENCE_MODEì˜ ê°’ì´ 0ì¸ ê²½ìš° 
+             * persistent index ê¸°ëŠ¥ì„ ì‚¬ìš©í•˜ì§€ ì•ŠëŠ”ë‹¤.*/
             if( smuProperty::forceIndexPersistenceMode() != SMN_INDEX_PERSISTENCE_NOUSE )
             {
-                /* BUG-34504 - smaLogicalAger¿¡¼­ index header¿¡ Á¢±ÙÇÏ±â ¶§¹®¿¡,
-                 * °¢Á¾ threadµéÀ» ¸ğµÎ shutdown ÇÑ ÈÄ, persistent indexµéÀ» ¾²°í,
-                 * ¸¶Áö¸·À¸·Î runtime»óÀÇ index µéÀ» ÆÄ±«ÇÑ´Ù. */
+                /* BUG-34504 - smaLogicalAgerì—ì„œ index headerì— ì ‘ê·¼í•˜ê¸° ë•Œë¬¸ì—,
+                 * ê°ì¢… threadë“¤ì„ ëª¨ë‘ shutdown í•œ í›„, persistent indexë“¤ì„ ì“°ê³ ,
+                 * ë§ˆì§€ë§‰ìœ¼ë¡œ runtimeìƒì˜ index ë“¤ì„ íŒŒê´´í•œë‹¤. */
                 ideLog::log(IDE_SERVER_0," [SM-SHUTDOWN] Write Persistent Indice");
                 IDE_TEST( smnpIWManager::doIt((SInt)sParallelFactor) != IDE_SUCCESS );
             }
@@ -1640,8 +1640,8 @@ static IDE_RC smiStartupShutdown(smiGlobalCallBackList* /*aCallBack*/)
             IDE_TEST( sdcTXSegMgr::destroy() != IDE_SUCCESS );
 
             /*
-             * BUG-24518 [MDB] Shutdown Phase¿¡¼­ ¸Ş¸ğ¸® Å×ÀÌºí CompactionÀÌ
-             * ÇÊ¿äÇÕ´Ï´Ù.
+             * BUG-24518 [MDB] Shutdown Phaseì—ì„œ ë©”ëª¨ë¦¬ í…Œì´ë¸” Compactionì´
+             * í•„ìš”í•©ë‹ˆë‹¤.
              */
             if( smuProperty::getTableCompactAtShutdown() == 1 )
             {
@@ -1653,9 +1653,9 @@ static IDE_RC smiStartupShutdown(smiGlobalCallBackList* /*aCallBack*/)
             IDE_TEST( smcCatalogTable::finalizeCatalogTable() != IDE_SUCCESS );
 
 
-            /* BUG-24781 ¼­¹öÁ¾·á°úÁ¤¿¡¼­ ÇÃ·¯½¬°ü¸®ÀÚ°¡ º¹±¸°ü¸®ÀÚº¸´Ù
-             * ÀÌÀü¿¡ destroyµÇ¾î¾ßÇÔ. flushForCheckpoint ¼öÇà°úÁ¤Áß¿¡ LFG¿¡
-             * Á¢±ÙÇÏ±â ¶§¹®¿¡ º¹±¸°ü¸®ÀÚ°¡ ÇØÁ¦µÇ¸é ¼­¹ö°¡ ºñÁ¤»óÁ¾·áÇÑ´Ù. */
+            /* BUG-24781 ì„œë²„ì¢…ë£Œê³¼ì •ì—ì„œ í”ŒëŸ¬ì‰¬ê´€ë¦¬ìê°€ ë³µêµ¬ê´€ë¦¬ìë³´ë‹¤
+             * ì´ì „ì— destroyë˜ì–´ì•¼í•¨. flushForCheckpoint ìˆ˜í–‰ê³¼ì •ì¤‘ì— LFGì—
+             * ì ‘ê·¼í•˜ê¸° ë•Œë¬¸ì— ë³µêµ¬ê´€ë¦¬ìê°€ í•´ì œë˜ë©´ ì„œë²„ê°€ ë¹„ì •ìƒì¢…ë£Œí•œë‹¤. */
             ideLog::log(IDE_SERVER_0," [SM-SHUTDOWN] Flush All DirtyPages And Checkpoint Database...");
             IDE_TEST( smrRecoveryMgr::finalize() != IDE_SUCCESS );
 
@@ -1670,40 +1670,40 @@ static IDE_RC smiStartupShutdown(smiGlobalCallBackList* /*aCallBack*/)
 
         case SMI_STARTUP_CONTROL:
 
-            /* ·Î±× °ü¸®ÀÚ ÀÛ¾÷ Á¾·á*/
+            /* ë¡œê·¸ ê´€ë¦¬ì ì‘ì—… ì¢…ë£Œ*/
             IDE_TEST( smrLogMgr::shutdown() != IDE_SUCCESS );
 
-            /* 11.ÅÛÇÁ Å×ÀÌºí °ü¸®ÀÚ */ 
+            /* 11.í…œí”„ í…Œì´ë¸” ê´€ë¦¬ì */ 
             ideLog::log(IDE_SERVER_0," [SM-SHUTDOWN] TempTable Manager");
             IDE_TEST( smiTempTable::destroyStatic() != IDE_SUCCESS );
 
             ideLog::log(IDE_SERVER_0," [SM-SHUTDOWN] Index Pool Manager");
             IDE_TEST( smcTable::destroy() != IDE_SUCCESS );
  
-            /* 10.¹é¾÷ °ü¸®ÀÚ */
+            /* 10.ë°±ì—… ê´€ë¦¬ì */
             ideLog::log(IDE_SERVER_0," [SM-SHUTDOWN] Backup Manager");
             IDE_TEST( smrBackupMgr::destroy() != IDE_SUCCESS );
 
-            /* 9.µğ½ºÅ© Å×ÀÌºí½ºÆäÀÌ½º °ü¸®ÀÚ */
+            /* 9.ë””ìŠ¤í¬ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ê´€ë¦¬ì */
             ideLog::log(IDE_SERVER_0," [SM-SHUTDOWN] Tablespace Manager");
             IDE_TEST( sdpTableSpace::destroy() != IDE_SUCCESS );
             
-            /* 8.·Î±× °ü¸®ÀÚ */
+            /* 8.ë¡œê·¸ ê´€ë¦¬ì */
             ideLog::log(IDE_SERVER_0," [SM-SHUTDOWN] Log Manager");
             IDE_TEST( smrLogMgr::destroy() != IDE_SUCCESS );
  
-            /* 7.º¹±¸ °ü¸®ÀÚ */
+            /* 7.ë³µêµ¬ ê´€ë¦¬ì */
             ideLog::log(IDE_SERVER_0," [SM-SHUTDOWN] Recovery Manager");
             IDE_TEST( smrRecoveryMgr::destroy() != IDE_SUCCESS );
 
-            /* 6.¹öÆÛ °ü¸®ÀÚ */
+            /* 6.ë²„í¼ ê´€ë¦¬ì */
             ideLog::log(IDE_SERVER_0," [SM-SHUTDOWN] Buffer Manager");
             IDE_TEST( sdbBufferMgr::destroy() != IDE_SUCCESS );
 
             ideLog::log( IDE_SERVER_0," [SM-SHUTDOWN] Secondary Buffer Manager" );
             IDE_TEST( sdsBufferMgr::destroy() != IDE_SUCCESS );
 
-            /* 5.µğ½ºÅ© °ü¸®ÀÚ */
+            /* 5.ë””ìŠ¤í¬ ê´€ë¦¬ì */
             ideLog::log(IDE_SERVER_0," [SM-SHUTDOWN] Disk Manager");
             IDE_TEST( sddDiskMgr::destroy() != IDE_SUCCESS );
 
@@ -1714,19 +1714,19 @@ static IDE_RC smiStartupShutdown(smiGlobalCallBackList* /*aCallBack*/)
             ideLog::log( IDE_SERVER_0, " [SM-SHUTDOWN] Volatile Manager" );
             IDE_TEST( svmManager::destroyStatic() != IDE_SUCCESS );
             
-            /* 4.Å×ÀÌºí½ºÆäÀÌ½º */
+            /* 4.í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ */
             ideLog::log(IDE_SERVER_0," [SM-SHUTDOWN] Memory Tablespace Destroy...");
             IDE_TEST( smmTBSStartupShutdown::destroyStatic() != IDE_SUCCESS );
 
-            /* 3.¸Ş¸ğ¸® °ü¸®ÀÚ */
+            /* 3.ë©”ëª¨ë¦¬ ê´€ë¦¬ì */
             ideLog::log(IDE_SERVER_0," [SM-SHUTDOWN] Memory Manager");
             IDE_TEST( smmManager::destroyStatic() != IDE_SUCCESS );
 
-            /* 2.Dirty Page °ü¸®ÀÚ */
+            /* 2.Dirty Page ê´€ë¦¬ì */
             ideLog::log(IDE_SERVER_0," [SM-SHUTDOWN] Dirty Page Manager");
             IDE_TEST( smmDirtyPageMgr::destroyStatic() != IDE_SUCCESS );
 
-            /* 1.¸Ş¸ğ¸® Å×ÀÌºí½ºÆäÀÌ½º °ü¸®ÀÚ */
+            /* 1.ë©”ëª¨ë¦¬ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ê´€ë¦¬ì */
             ideLog::log(IDE_SERVER_0," [SM-SHUTDOWN] TableSpace Manager");
             IDE_TEST( sctTableSpaceMgr::destroy() != IDE_SUCCESS );
 

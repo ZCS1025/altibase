@@ -237,8 +237,8 @@ UInt mtdActualSize( const mtcColumn* aColumn,
 }
 
 // PROJ-1904 Extend UDT
-// Row/record typeÀÌ array typeÀ» column typeÀ¸·Î °®°í ÀÖÀ¸¸é,
-// °¢ column ¸¶´Ù null ÇÔ¼ö¸¦ È£ÃâÇÑ´Ù.
+// Row/record typeì´ array typeì„ column typeìœ¼ë¡œ ê°–ê³  ìˆìœ¼ë©´,
+// ê° column ë§ˆë‹¤ null í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•œë‹¤.
 void mtdSetNull( const mtcColumn* aColumn,
                  void*            aRow )
 {

@@ -21,13 +21,13 @@
  * Description :
  *     Query Optimizer
  *
- *     Optimizer¸¦ Á¢±ÙÇÏ´Â ÃÖ»óÀ§ Interface·Î ±¸¼ºµÊ
- *     Graph »ı¼º ¹× Plan Tree¸¦ »ı¼ºÇÑ´Ù.
+ *     Optimizerë¥¼ ì ‘ê·¼í•˜ëŠ” ìµœìƒìœ„ Interfaceë¡œ êµ¬ì„±ë¨
+ *     Graph ìƒì„± ë° Plan Treeë¥¼ ìƒì„±í•œë‹¤.
  *
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  **********************************************************************/
 
@@ -64,12 +64,12 @@ qmo::optimizeSelect( qcStatement * aStatement )
 {
 /***********************************************************************
  *
- * Description : SELECT ±¸¹®ÀÇ ÃÖÀûÈ­ °úÁ¤
+ * Description : SELECT êµ¬ë¬¸ì˜ ìµœì í™” ê³¼ì •
  *
  * Implementation :
- *    (1) makeGraphÀÇ ¼öÇà
- *    (2) Top Projection Graph¿¡ Åë½Å ¹öÆÛ¿¡ ¾µ TOP PROJ¸¦ »ı¼ºÇØ¾ß ÇÔÀ» ¼³Á¤
- *    (3) makePlanÀÇ ¼öÇà
+ *    (1) makeGraphì˜ ìˆ˜í–‰
+ *    (2) Top Projection Graphì— í†µì‹  ë²„í¼ì— ì“¸ TOP PROJë¥¼ ìƒì„±í•´ì•¼ í•¨ì„ ì„¤ì •
+ *    (3) makePlanì˜ ìˆ˜í–‰
  *
  ***********************************************************************/
 
@@ -78,34 +78,34 @@ qmo::optimizeSelect( qcStatement * aStatement )
     IDU_FIT_POINT_FATAL( "qmo::optimizeSelect::__FT__" );
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
 
     //------------------------------------------
-    // Parse Tree È¹µæ
+    // Parse Tree íšë“
     //------------------------------------------
 
     sParseTree = (qmsParseTree*) aStatement->myPlan->parseTree;
 
     // BUG-20652
-    // client·ÎÀÇ Àü¼ÛÀ» À§ÇØ tagetÀÇ geometry typeÀ»
-    // binary typeÀ¸·Î º¯È¯
+    // clientë¡œì˜ ì „ì†¡ì„ ìœ„í•´ tagetì˜ geometry typeì„
+    // binary typeìœ¼ë¡œ ë³€í™˜
     IDE_TEST( qmvQuerySet::changeTargetForCommunication( aStatement,
                                                          sParseTree->querySet )
               != IDE_SUCCESS );
 
     //------------------------------------------
     // PROJ-1413
-    // Query Transformation ¼öÇà
+    // Query Transformation ìˆ˜í–‰
     //------------------------------------------
 
     IDE_TEST( qmo::doTransform( aStatement ) != IDE_SUCCESS );
 
     //------------------------------------------
     // PROJ-2469 Optimize View Materialization
-    // Useless Column¿¡ ´ëÇÑ flag Ã³¸®
+    // Useless Columnì— ëŒ€í•œ flag ì²˜ë¦¬
     //------------------------------------------
 
     IDE_TEST( qmoCheckViewColumnRef::checkViewColumnRef( aStatement,
@@ -114,7 +114,7 @@ qmo::optimizeSelect( qcStatement * aStatement )
               != IDE_SUCCESS );
 
     //------------------------------------------
-    // Graph »ı¼º
+    // Graph ìƒì„±
     //------------------------------------------
 
     IDE_TEST( qmo::makeGraph( aStatement ) != IDE_SUCCESS );
@@ -134,7 +134,7 @@ qmo::optimizeSelect( qcStatement * aStatement )
         QC_SHARED_TMPLATE(aStatement)->resultCache.flag |= QC_RESULT_CACHE_DISABLE_TRUE;
     }
 
-    // Top Projection Graph ¼³Á¤
+    // Top Projection Graph ì„¤ì •
     IDE_DASSERT( aStatement->myPlan->graph != NULL );
     IDE_DASSERT( aStatement->myPlan->graph->type == QMG_PROJECTION );
 
@@ -142,14 +142,14 @@ qmo::optimizeSelect( qcStatement * aStatement )
     aStatement->myPlan->graph->flag |= QMG_PROJ_COMMUNICATION_TOP_PROJ_TRUE;
 
     // BUG-32258
-    // directionÀÌ °áÁ¤µÇÁö ¾ÊÀ» °æ¿ì,
-    // preserved orderÀÇ direction ºÒÀÏÄ¡·Î ÀÎÇØ ¿¡·¯ »óÈ²ÀÌ ¹ß»ıÇÏ¹Ç·Î
-    // preserved orderÀÇ directionÀ» ¸íÈ®ÇÏ°Ô ¼³Á¤ÇØÁÖµµ·Ï ÇÑ´Ù.
+    // directionì´ ê²°ì •ë˜ì§€ ì•Šì„ ê²½ìš°,
+    // preserved orderì˜ direction ë¶ˆì¼ì¹˜ë¡œ ì¸í•´ ì—ëŸ¬ ìƒí™©ì´ ë°œìƒí•˜ë¯€ë¡œ
+    // preserved orderì˜ directionì„ ëª…í™•í•˜ê²Œ ì„¤ì •í•´ì£¼ë„ë¡ í•œë‹¤.
     IDE_TEST( qmg::finalizePreservedOrder( aStatement->myPlan->graph )
               != IDE_SUCCESS );
 
     //------------------------------------------
-    // Plan Tree »ı¼º
+    // Plan Tree ìƒì„±
     //------------------------------------------
 
     IDE_TEST( aStatement->myPlan->graph->makePlan( aStatement,
@@ -160,7 +160,7 @@ qmo::optimizeSelect( qcStatement * aStatement )
     aStatement->myPlan->plan = aStatement->myPlan->graph->myPlan;
 
     //------------------------------------------
-    // Optimization ¸¶¹«¸®
+    // Optimization ë§ˆë¬´ë¦¬
     //------------------------------------------
 
     IDE_TEST( qtc::fixAfterValidation( QC_QMP_MEM(aStatement),
@@ -179,26 +179,26 @@ qmo::optimizeInsert( qcStatement * aStatement )
 {
 /***********************************************************************
  *
- * Description : INSERT ±¸¹®ÀÇ ÃÖÀûÈ­
+ * Description : INSERT êµ¬ë¬¸ì˜ ìµœì í™”
  *
  * Implementation :
  *    (1) CASE 1 : INSERT...VALUE(...(subquery)...)
- *        qmoSubquery::optimizeExpr()ÀÇ ¼öÇà
+ *        qmoSubquery::optimizeExpr()ì˜ ìˆ˜í–‰
  *    (2) CASE 2 : INSERT...SELECT...
- *        qmoSubquery::optimizeSubquery()ÀÇ ¼öÇà
+ *        qmoSubquery::optimizeSubquery()ì˜ ìˆ˜í–‰
  *
  ***********************************************************************/
 
     IDU_FIT_POINT_FATAL( "qmo::optimizeInsert::__FT__" );
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
 
     //------------------------------------------
-    // Graph »ı¼º
+    // Graph ìƒì„±
     //------------------------------------------
 
     IDE_TEST( qmo::makeInsertGraph( aStatement ) != IDE_SUCCESS );
@@ -207,7 +207,7 @@ qmo::optimizeInsert( qcStatement * aStatement )
     IDE_DASSERT( aStatement->myPlan->graph->type == QMG_INSERT );
 
     //------------------------------------------
-    // Plan Tree »ı¼º
+    // Plan Tree ìƒì„±
     //------------------------------------------
 
     IDE_TEST( aStatement->myPlan->graph->makePlan( aStatement,
@@ -218,7 +218,7 @@ qmo::optimizeInsert( qcStatement * aStatement )
     aStatement->myPlan->plan = aStatement->myPlan->graph->myPlan;
 
     //------------------------------------------
-    // Optimization ¸¶¹«¸®
+    // Optimization ë§ˆë¬´ë¦¬
     //------------------------------------------
 
     IDE_TEST( qtc::fixAfterValidation( QC_QMP_MEM( aStatement ),
@@ -237,24 +237,24 @@ qmo::optimizeMultiInsertSelect( qcStatement * aStatement )
 {
 /***********************************************************************
  *
- * Description : INSERT ±¸¹®ÀÇ ÃÖÀûÈ­
+ * Description : INSERT êµ¬ë¬¸ì˜ ìµœì í™”
  *
  * Implementation :
  *    (1) INSERT ALL INTO... INTO... SELECT...
- *        qmoSubquery::optimizeSubquery()ÀÇ ¼öÇà
+ *        qmoSubquery::optimizeSubquery()ì˜ ìˆ˜í–‰
  *
  ***********************************************************************/
 
     IDU_FIT_POINT_FATAL( "qmo::optimizeMultiInsertSelect::__FT__" );
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
 
     //------------------------------------------
-    // Graph »ı¼º
+    // Graph ìƒì„±
     //------------------------------------------
 
     IDE_TEST( qmo::makeMultiInsertGraph( aStatement ) != IDE_SUCCESS );
@@ -263,7 +263,7 @@ qmo::optimizeMultiInsertSelect( qcStatement * aStatement )
     IDE_DASSERT( aStatement->myPlan->graph->type == QMG_MULTI_INSERT );
 
     //------------------------------------------
-    // Plan Tree »ı¼º
+    // Plan Tree ìƒì„±
     //------------------------------------------
 
     IDE_TEST( aStatement->myPlan->graph->makePlan( aStatement,
@@ -274,7 +274,7 @@ qmo::optimizeMultiInsertSelect( qcStatement * aStatement )
     aStatement->myPlan->plan = aStatement->myPlan->graph->myPlan;
 
     //------------------------------------------
-    // Optimization ¸¶¹«¸®
+    // Optimization ë§ˆë¬´ë¦¬
     //------------------------------------------
 
     IDE_TEST( qtc::fixAfterValidation( QC_QMP_MEM( aStatement ),
@@ -293,13 +293,13 @@ qmo::optimizeUpdate( qcStatement * aStatement )
 {
 /***********************************************************************
  *
- * Description : UPDATE ±¸¹®ÀÇ ÃÖÀûÈ­
+ * Description : UPDATE êµ¬ë¬¸ì˜ ìµœì í™”
  *
  * Implementation :
- *   (1) where Àı CNF Normalization ¼öÇà
- *   (2) GraphÀÇ »ı¼º
- *   (3) makePlanÀÇ ¼öÇà
- *   (4) »ı¼ºÇÑ PlanÀ» aStatementÀÇ plan¿¡ ¿¬°á
+ *   (1) where ì ˆ CNF Normalization ìˆ˜í–‰
+ *   (2) Graphì˜ ìƒì„±
+ *   (3) makePlanì˜ ìˆ˜í–‰
+ *   (4) ìƒì„±í•œ Planì„ aStatementì˜ planì— ì—°ê²°
  *
  ***********************************************************************/
 
@@ -308,13 +308,13 @@ qmo::optimizeUpdate( qcStatement * aStatement )
     IDU_FIT_POINT_FATAL( "qmo::optimizeUpdate::__FT__" );
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
 
     //------------------------------------------
-    // PROJ-1718 WhereÀı¿¡ ´ëÇÏ¿© subquery predicateÀ» transformÇÑ´Ù.
+    // PROJ-1718 Whereì ˆì— ëŒ€í•˜ì—¬ subquery predicateì„ transformí•œë‹¤.
     //------------------------------------------
 
     sUptParseTree = (qmmUptParseTree *) aStatement->myPlan->parseTree;
@@ -324,7 +324,7 @@ qmo::optimizeUpdate( qcStatement * aStatement )
               != IDE_SUCCESS );
 
     //------------------------------------------
-    // Graph »ı¼º
+    // Graph ìƒì„±
     //------------------------------------------
 
     IDE_TEST( qmo::makeUpdateGraph( aStatement ) != IDE_SUCCESS );
@@ -333,7 +333,7 @@ qmo::optimizeUpdate( qcStatement * aStatement )
     IDE_DASSERT( aStatement->myPlan->graph->type == QMG_UPDATE );
 
     //------------------------------------------
-    // Plan Tree »ı¼º
+    // Plan Tree ìƒì„±
     //------------------------------------------
 
     IDE_TEST( aStatement->myPlan->graph->makePlan( aStatement,
@@ -344,7 +344,7 @@ qmo::optimizeUpdate( qcStatement * aStatement )
     aStatement->myPlan->plan = aStatement->myPlan->graph->myPlan;
 
     //------------------------------------------
-    // Optimization ¸¶¹«¸®
+    // Optimization ë§ˆë¬´ë¦¬
     //------------------------------------------
 
     IDE_TEST( qtc::fixAfterValidation( QC_QMP_MEM(aStatement),
@@ -363,13 +363,13 @@ qmo::optimizeDelete( qcStatement * aStatement )
 {
 /***********************************************************************
  *
- * Description : DELETE ±¸¹®ÀÇ ÃÖÀûÈ­
+ * Description : DELETE êµ¬ë¬¸ì˜ ìµœì í™”
  *
  * Implementation :
- *   (1) where Àı CNF Normalization ¼öÇà
- *   (2) GraphÀÇ »ı¼º
- *   (3) makePlanÀÇ ¼öÇà
- *   (4) »ı¼ºÇÑ PlanÀ» aStatementÀÇ plan¿¡ ¿¬°á
+ *   (1) where ì ˆ CNF Normalization ìˆ˜í–‰
+ *   (2) Graphì˜ ìƒì„±
+ *   (3) makePlanì˜ ìˆ˜í–‰
+ *   (4) ìƒì„±í•œ Planì„ aStatementì˜ planì— ì—°ê²°
  *
  ***********************************************************************/
 
@@ -378,13 +378,13 @@ qmo::optimizeDelete( qcStatement * aStatement )
     IDU_FIT_POINT_FATAL( "qmo::optimizeDelete::__FT__" );
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
 
     //------------------------------------------
-    // PROJ-1718 WhereÀı¿¡ ´ëÇÏ¿© subquery predicateÀ» transformÇÑ´Ù.
+    // PROJ-1718 Whereì ˆì— ëŒ€í•˜ì—¬ subquery predicateì„ transformí•œë‹¤.
     //------------------------------------------
 
     sDelParseTree = (qmmDelParseTree *) aStatement->myPlan->parseTree;
@@ -394,7 +394,7 @@ qmo::optimizeDelete( qcStatement * aStatement )
               != IDE_SUCCESS );
 
     //------------------------------------------
-    // Graph »ı¼º
+    // Graph ìƒì„±
     //------------------------------------------
 
     IDE_TEST( qmo::makeDeleteGraph( aStatement ) != IDE_SUCCESS );
@@ -403,7 +403,7 @@ qmo::optimizeDelete( qcStatement * aStatement )
     IDE_DASSERT( aStatement->myPlan->graph->type == QMG_DELETE );
 
     //------------------------------------------
-    // Plan Tree »ı¼º
+    // Plan Tree ìƒì„±
     //------------------------------------------
 
     IDE_TEST( aStatement->myPlan->graph->makePlan( aStatement,
@@ -414,7 +414,7 @@ qmo::optimizeDelete( qcStatement * aStatement )
     aStatement->myPlan->plan = aStatement->myPlan->graph->myPlan;
 
     //------------------------------------------
-    // Optimization ¸¶¹«¸®
+    // Optimization ë§ˆë¬´ë¦¬
     //------------------------------------------
 
     IDE_TEST( qtc::fixAfterValidation( QC_QMP_MEM(aStatement),
@@ -432,15 +432,15 @@ IDE_RC qmo::optimizeMove( qcStatement * aStatement )
 {
 /***********************************************************************
  *
- * Description : MOVE ±¸¹®ÀÇ ÃÖÀûÈ­
+ * Description : MOVE êµ¬ë¬¸ì˜ ìµœì í™”
  *
  * Implementation :
- *   (1) source expression¿¡ ´ëÇØ subqueryÃÖÀûÈ­ ¹× hostº¯¼ö µî·Ï
- *   (2) limitÀÇ host º¯¼ö µî·Ï
- *   (3) where Àı CNF Normalization ¼öÇà
- *   (4) GraphÀÇ »ı¼º
- *   (5) makePlanÀÇ ¼öÇà
- *   (6) »ı¼ºÇÑ PlanÀ» aStatementÀÇ plan¿¡ ¿¬°á
+ *   (1) source expressionì— ëŒ€í•´ subqueryìµœì í™” ë° hostë³€ìˆ˜ ë“±ë¡
+ *   (2) limitì˜ host ë³€ìˆ˜ ë“±ë¡
+ *   (3) where ì ˆ CNF Normalization ìˆ˜í–‰
+ *   (4) Graphì˜ ìƒì„±
+ *   (5) makePlanì˜ ìˆ˜í–‰
+ *   (6) ìƒì„±í•œ Planì„ aStatementì˜ planì— ì—°ê²°
  *
  ***********************************************************************/
 
@@ -449,13 +449,13 @@ IDE_RC qmo::optimizeMove( qcStatement * aStatement )
     IDU_FIT_POINT_FATAL( "qmo::optimizeMove::__FT__" );
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
 
     //------------------------------------------
-    // PROJ-1718 WhereÀı¿¡ ´ëÇÏ¿© subquery predicateÀ» transformÇÑ´Ù.
+    // PROJ-1718 Whereì ˆì— ëŒ€í•˜ì—¬ subquery predicateì„ transformí•œë‹¤.
     //------------------------------------------
 
     sMoveParseTree = (qmmMoveParseTree *) aStatement->myPlan->parseTree;
@@ -465,7 +465,7 @@ IDE_RC qmo::optimizeMove( qcStatement * aStatement )
               != IDE_SUCCESS );
 
     //------------------------------------------
-    // Graph »ı¼º
+    // Graph ìƒì„±
     //------------------------------------------
 
     IDE_TEST( qmo::makeMoveGraph( aStatement ) != IDE_SUCCESS );
@@ -474,7 +474,7 @@ IDE_RC qmo::optimizeMove( qcStatement * aStatement )
     IDE_DASSERT( aStatement->myPlan->graph->type == QMG_MOVE );
 
     //-------------------------
-    // Plan »ı¼º
+    // Plan ìƒì„±
     //-------------------------
 
     IDE_TEST( aStatement->myPlan->graph->makePlan( aStatement,
@@ -485,7 +485,7 @@ IDE_RC qmo::optimizeMove( qcStatement * aStatement )
     aStatement->myPlan->plan = aStatement->myPlan->graph->myPlan;
 
     //------------------------------------------
-    // Optimization ¸¶¹«¸®
+    // Optimization ë§ˆë¬´ë¦¬
     //------------------------------------------
 
     IDE_TEST( qtc::fixAfterValidation( QC_QMP_MEM(aStatement),
@@ -504,7 +504,7 @@ qmo::optimizeCreateSelect( qcStatement * aStatement )
 {
 /***********************************************************************
  *
- * Description : CREATE AS SUBQUERYÀÇ SubqueryÀÇ ÃÖÀûÈ­
+ * Description : CREATE AS SUBQUERYì˜ Subqueryì˜ ìµœì í™”
  *
  * Implementation :
  *
@@ -513,21 +513,21 @@ qmo::optimizeCreateSelect( qcStatement * aStatement )
     IDU_FIT_POINT_FATAL( "qmo::optimizeCreateSelect::__FT__" );
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
 
     //------------------------------------------
     // PROJ-1413
-    // Query Transformation ¼öÇà
+    // Query Transformation ìˆ˜í–‰
     //------------------------------------------
 
     IDE_TEST( qmo::doTransform( aStatement ) != IDE_SUCCESS );
 
     //------------------------------------------
     // PROJ-2469 Optimize View Materialization
-    // Useless Column¿¡ ´ëÇÑ flag Ã³¸®
+    // Useless Columnì— ëŒ€í•œ flag ì²˜ë¦¬
     //------------------------------------------
 
     IDE_TEST( qmoCheckViewColumnRef::checkViewColumnRef( aStatement,
@@ -536,17 +536,17 @@ qmo::optimizeCreateSelect( qcStatement * aStatement )
               != IDE_SUCCESS );
 
     //------------------------------------------
-    // Graph »ı¼º
+    // Graph ìƒì„±
     //------------------------------------------
 
     IDE_TEST( qmo::makeGraph( aStatement ) != IDE_SUCCESS );
 
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     IDE_DASSERT( aStatement->myPlan->graph != NULL );
     IDE_DASSERT( aStatement->myPlan->graph->type == QMG_PROJECTION );
 
     //------------------------------------------
-    // Plan Tree »ı¼º
+    // Plan Tree ìƒì„±
     //------------------------------------------
 
     IDE_TEST( aStatement->myPlan->graph->makePlan( aStatement,
@@ -555,12 +555,12 @@ qmo::optimizeCreateSelect( qcStatement * aStatement )
               != IDE_SUCCESS );
     aStatement->myPlan->plan = aStatement->myPlan->graph->myPlan;
 
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     IDE_DASSERT( aStatement->myPlan->plan != NULL );
     IDE_DASSERT( aStatement->myPlan->plan->type == QMN_PROJ );
 
     //------------------------------------------
-    // Optimization ¸¶¹«¸®
+    // Optimization ë§ˆë¬´ë¦¬
     //------------------------------------------
 
     IDE_TEST( qtc::fixAfterValidation( QC_QMP_MEM(aStatement),
@@ -579,11 +579,11 @@ qmo::makeGraph( qcStatement * aStatement )
 {
 /***********************************************************************
  *
- * Description : GraphÀÇ »ı¼º ¹× ÃÖÀûÈ­
+ * Description : Graphì˜ ìƒì„± ë° ìµœì í™”
  *
  * Implementation :
- *    (1) Non Critical PathÀÇ »ı¼º ¹× ÃÊ±âÈ­
- *    (2) Non Critical PathÀÇ ÃÖÀûÈ­
+ *    (1) Non Critical Pathì˜ ìƒì„± ë° ì´ˆê¸°í™”
+ *    (2) Non Critical Pathì˜ ìµœì í™”
  *
  ***********************************************************************/
 
@@ -593,25 +593,25 @@ qmo::makeGraph( qcStatement * aStatement )
     IDU_FIT_POINT_FATAL( "qmo::makeGraph::__FT__" );
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
 
     //------------------------------------------
-    // Non Critical PathÀÇ »ı¼º ¹× ÃÊ±âÈ­
+    // Non Critical Pathì˜ ìƒì„± ë° ì´ˆê¸°í™”
     //------------------------------------------
 
     sParseTree = (qmsParseTree *) aStatement->myPlan->parseTree;
 
     IDE_TEST( qmoNonCrtPathMgr::init( aStatement,
                                       sParseTree->querySet,
-                                      ID_TRUE, // ÃÖ»óÀ§ Query Set
+                                      ID_TRUE, // ìµœìƒìœ„ Query Set
                                       & sNonCrt )
               != IDE_SUCCESS );
 
     //------------------------------------------
-    // Non Critical PathÀÇ ÃÖÀûÈ­
+    // Non Critical Pathì˜ ìµœì í™”
     //------------------------------------------
 
     IDE_TEST( qmoNonCrtPathMgr::optimize( aStatement,
@@ -619,7 +619,7 @@ qmo::makeGraph( qcStatement * aStatement )
               != IDE_SUCCESS );
 
     //------------------------------------------
-    // ÃÖÁ¾ Graph ¼³Á¤
+    // ìµœì¢… Graph ì„¤ì •
     //------------------------------------------
 
     aStatement->myPlan->graph = sNonCrt->myGraph;
@@ -636,10 +636,10 @@ qmo::makeInsertGraph( qcStatement * aStatement )
 {
 /***********************************************************************
  *
- * Description : GraphÀÇ »ı¼º ¹× ÃÖÀûÈ­
+ * Description : Graphì˜ ìƒì„± ë° ìµœì í™”
  *
  * Implementation :
- *    (1) Critical PathÀÇ »ı¼º ¹× ÃÊ±âÈ­
+ *    (1) Critical Pathì˜ ìƒì„± ë° ì´ˆê¸°í™”
  *
  ***********************************************************************/
 
@@ -650,7 +650,7 @@ qmo::makeInsertGraph( qcStatement * aStatement )
     IDU_FIT_POINT_FATAL( "qmo::makeInsertGraph::__FT__" );
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -658,7 +658,7 @@ qmo::makeInsertGraph( qcStatement * aStatement )
     sInsParseTree = (qmmInsParseTree *) aStatement->myPlan->parseTree;
 
     //-------------------------
-    // INSERT ... SELECT ±¸¹®ÀÇ Subquery ÃÖÀûÈ­
+    // INSERT ... SELECT êµ¬ë¬¸ì˜ Subquery ìµœì í™”
     //-------------------------
 
     if ( sInsParseTree->select != NULL )
@@ -675,7 +675,7 @@ qmo::makeInsertGraph( qcStatement * aStatement )
     }
 
     //-------------------------
-    // insert graph »ı¼º
+    // insert graph ìƒì„±
     //-------------------------
 
     IDE_TEST( qmgInsert::init( aStatement,
@@ -702,10 +702,10 @@ qmo::makeMultiInsertGraph( qcStatement * aStatement )
 {
 /***********************************************************************
  *
- * Description : GraphÀÇ »ı¼º ¹× ÃÖÀûÈ­
+ * Description : Graphì˜ ìƒì„± ë° ìµœì í™”
  *
  * Implementation :
- *    (1) Critical PathÀÇ »ı¼º ¹× ÃÊ±âÈ­
+ *    (1) Critical Pathì˜ ìƒì„± ë° ì´ˆê¸°í™”
  *
  ***********************************************************************/
 
@@ -716,7 +716,7 @@ qmo::makeMultiInsertGraph( qcStatement * aStatement )
     IDU_FIT_POINT_FATAL( "qmo::makeMultiInsertGraph::__FT__" );
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -726,7 +726,7 @@ qmo::makeMultiInsertGraph( qcStatement * aStatement )
     IDE_DASSERT( sInsParseTree->select != NULL );
 
     //-------------------------
-    // INSERT ... SELECT ±¸¹®ÀÇ Subquery ÃÖÀûÈ­
+    // INSERT ... SELECT êµ¬ë¬¸ì˜ Subquery ìµœì í™”
     //-------------------------
 
     sSubQStatement = sInsParseTree->select;
@@ -736,7 +736,7 @@ qmo::makeMultiInsertGraph( qcStatement * aStatement )
     sMyGraph = sSubQStatement->myPlan->graph;
 
     //-------------------------
-    // insert graph »ı¼º
+    // insert graph ìƒì„±
     //-------------------------
 
     IDE_TEST( qmgMultiInsert::init( aStatement,
@@ -762,10 +762,10 @@ qmo::makeUpdateGraph( qcStatement * aStatement )
 {
 /***********************************************************************
  *
- * Description : GraphÀÇ »ı¼º ¹× ÃÖÀûÈ­
+ * Description : Graphì˜ ìƒì„± ë° ìµœì í™”
  *
  * Implementation :
- *    (1) Critical PathÀÇ »ı¼º ¹× ÃÊ±âÈ­
+ *    (1) Critical Pathì˜ ìƒì„± ë° ì´ˆê¸°í™”
  *
  ***********************************************************************/
 
@@ -776,7 +776,7 @@ qmo::makeUpdateGraph( qcStatement * aStatement )
     IDU_FIT_POINT_FATAL( "qmo::makeUpdateGraph::__FT__" );
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -784,7 +784,7 @@ qmo::makeUpdateGraph( qcStatement * aStatement )
     sUptParseTree = (qmmUptParseTree *) aStatement->myPlan->parseTree;
 
     //-------------------------
-    // critical-path Graph »ı¼º
+    // critical-path Graph ìƒì„±
     //-------------------------
 
     IDE_TEST( qmoCrtPathMgr::init( aStatement,
@@ -799,7 +799,7 @@ qmo::makeUpdateGraph( qcStatement * aStatement )
     sMyGraph = sCrtPath->myGraph;
 
     //-------------------------
-    // update graph »ı¼º
+    // update graph ìƒì„±
     //-------------------------
 
     IDE_TEST( qmgUpdate::init( aStatement,
@@ -826,10 +826,10 @@ qmo::makeDeleteGraph( qcStatement * aStatement )
 {
 /***********************************************************************
  *
- * Description : GraphÀÇ »ı¼º ¹× ÃÖÀûÈ­
+ * Description : Graphì˜ ìƒì„± ë° ìµœì í™”
  *
  * Implementation :
- *    (1) Critical PathÀÇ »ı¼º ¹× ÃÊ±âÈ­
+ *    (1) Critical Pathì˜ ìƒì„± ë° ì´ˆê¸°í™”
  *
  ***********************************************************************/
 
@@ -840,7 +840,7 @@ qmo::makeDeleteGraph( qcStatement * aStatement )
     IDU_FIT_POINT_FATAL( "qmo::makeDeleteGraph::__FT__" );
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -848,7 +848,7 @@ qmo::makeDeleteGraph( qcStatement * aStatement )
     sDelParseTree = (qmmDelParseTree *) aStatement->myPlan->parseTree;
 
     //-------------------------
-    // critical-path Graph »ı¼º
+    // critical-path Graph ìƒì„±
     //-------------------------
 
     IDE_TEST( qmoCrtPathMgr::init( aStatement,
@@ -863,7 +863,7 @@ qmo::makeDeleteGraph( qcStatement * aStatement )
     sMyGraph = sCrtPath->myGraph;
 
     //-------------------------
-    // delete graph »ı¼º
+    // delete graph ìƒì„±
     //-------------------------
 
     IDE_TEST( qmgDelete::init( aStatement,
@@ -890,10 +890,10 @@ qmo::makeMoveGraph( qcStatement * aStatement )
 {
 /***********************************************************************
  *
- * Description : GraphÀÇ »ı¼º ¹× ÃÖÀûÈ­
+ * Description : Graphì˜ ìƒì„± ë° ìµœì í™”
  *
  * Implementation :
- *    (1) Critical PathÀÇ »ı¼º ¹× ÃÊ±âÈ­
+ *    (1) Critical Pathì˜ ìƒì„± ë° ì´ˆê¸°í™”
  *
  ***********************************************************************/
 
@@ -904,7 +904,7 @@ qmo::makeMoveGraph( qcStatement * aStatement )
     IDU_FIT_POINT_FATAL( "qmo::makeMoveGraph::__FT__" );
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -912,7 +912,7 @@ qmo::makeMoveGraph( qcStatement * aStatement )
     sMoveParseTree = (qmmMoveParseTree *) aStatement->myPlan->parseTree;
 
     //-------------------------
-    // critical-path Graph »ı¼º
+    // critical-path Graph ìƒì„±
     //-------------------------
 
     IDE_TEST( qmoCrtPathMgr::init( aStatement,
@@ -927,7 +927,7 @@ qmo::makeMoveGraph( qcStatement * aStatement )
     sMyGraph = sCrtPath->myGraph;
 
     //-------------------------
-    // delete graph »ı¼º
+    // delete graph ìƒì„±
     //-------------------------
 
     IDE_TEST( qmgMove::init( aStatement,
@@ -954,10 +954,10 @@ qmo::makeMergeGraph( qcStatement * aStatement )
 {
 /***********************************************************************
  *
- * Description : GraphÀÇ »ı¼º ¹× ÃÖÀûÈ­
+ * Description : Graphì˜ ìƒì„± ë° ìµœì í™”
  *
  * Implementation :
- *    (1) mergeÀÇ »ı¼º ¹× ÃÊ±âÈ­
+ *    (1) mergeì˜ ìƒì„± ë° ì´ˆê¸°í™”
  *
  ***********************************************************************/
 
@@ -966,13 +966,13 @@ qmo::makeMergeGraph( qcStatement * aStatement )
     IDU_FIT_POINT_FATAL( "qmo::makeMoveGraph::__FT__" );
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
 
     //-------------------------
-    // mrege graph »ı¼º
+    // mrege graph ìƒì„±
     //-------------------------
 
     IDE_TEST( qmgMerge::init( aStatement,
@@ -996,10 +996,10 @@ IDE_RC qmo::makeShardInsertGraph( qcStatement * aStatement )
 {
 /***********************************************************************
  *
- * Description : GraphÀÇ »ı¼º ¹× ÃÖÀûÈ­
+ * Description : Graphì˜ ìƒì„± ë° ìµœì í™”
  *
  * Implementation :
- *    (1) Critical PathÀÇ »ı¼º ¹× ÃÊ±âÈ­
+ *    (1) Critical Pathì˜ ìƒì„± ë° ì´ˆê¸°í™”
  *
  ***********************************************************************/
 
@@ -1010,7 +1010,7 @@ IDE_RC qmo::makeShardInsertGraph( qcStatement * aStatement )
     IDU_FIT_POINT_FATAL( "qmo::makeShardInsertGraph::__FT__" );
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_FT_ASSERT( aStatement != NULL );
@@ -1021,7 +1021,7 @@ IDE_RC qmo::makeShardInsertGraph( qcStatement * aStatement )
                     ERR_UNSUPPORTED_FUNCTION );
 
     //-------------------------
-    // INSERT ... SELECT ±¸¹®ÀÇ Subquery ÃÖÀûÈ­
+    // INSERT ... SELECT êµ¬ë¬¸ì˜ Subquery ìµœì í™”
     //-------------------------
 
     if ( sInsParseTree->select != NULL )
@@ -1038,7 +1038,7 @@ IDE_RC qmo::makeShardInsertGraph( qcStatement * aStatement )
     }
 
     //-------------------------
-    // insert graph »ı¼º
+    // insert graph ìƒì„±
     //-------------------------
 
     IDE_TEST( qmgShardInsert::init( aStatement,
@@ -1071,17 +1071,17 @@ qmo::currentJoinDependencies( qmgGraph  * aJoinGraph,
 {
 /***********************************************************************
  *
- * Description : ÇöÀç Join°ú °ü·ÃµÈ DependenciesÀÎÁö °Ë»ç
+ * Description : í˜„ì¬ Joinê³¼ ê´€ë ¨ëœ Dependenciesì¸ì§€ ê²€ì‚¬
  *
  * Implementation :
- *      Hint ¶Ç´Â ( ºĞ·ùµÇ±â ÀüÀÇ ) Join PredicateÀÌ ÇöÀç Join Graph¿¡
- *      ¼ÓÇÏ¸é¼­ ÇÏÀ§ ÇÑÂÊ¿¡¸¸ ¼ÓÇÏÁö ¾Ê´Â °æ¿ìÀÎÁö °Ë»çÇÑ´Ù.
- *      ÇÏÀ§ ÇÑÂÊ¿¡¸¸ ¼ÓÇÏ´Â °æ¿ì, ÀÌ¹Ì Àû¿ëµÈ °ÍÀÌ±â ¶§¹®ÀÌ´Ù.
+ *      Hint ë˜ëŠ” ( ë¶„ë¥˜ë˜ê¸° ì „ì˜ ) Join Predicateì´ í˜„ì¬ Join Graphì—
+ *      ì†í•˜ë©´ì„œ í•˜ìœ„ í•œìª½ì—ë§Œ ì†í•˜ì§€ ì•ŠëŠ” ê²½ìš°ì¸ì§€ ê²€ì‚¬í•œë‹¤.
+ *      í•˜ìœ„ í•œìª½ì—ë§Œ ì†í•˜ëŠ” ê²½ìš°, ì´ë¯¸ ì ìš©ëœ ê²ƒì´ê¸° ë•Œë¬¸ì´ë‹¤.
  *
  *      ex ) USE_NL( T1, T2 ) USE_NL( T1, T3 )
  *
- *                 Join <---- USE_NL( T1, T2 ) Hint : skip ÀÌ¹Ì Àû¿ë
- *                 /  \       USE_NL( T1, T3 ) Hint : Àû¿ë
+ *                 Join <---- USE_NL( T1, T2 ) Hint : skip ì´ë¯¸ ì ìš©
+ *                 /  \       USE_NL( T1, T3 ) Hint : ì ìš©
  *                /    \
  *              Join   T3.I1
  *              /  \
@@ -1095,28 +1095,28 @@ qmo::currentJoinDependencies( qmgGraph  * aJoinGraph,
     IDU_FIT_POINT_FATAL( "qmo::currentJoinDependencies::__FT__" );
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_DASSERT( aJoinGraph != NULL );
     IDE_DASSERT( aDependencies != NULL );
 
     //------------------------------------------
-    // ±âº» ÃÊ±âÈ­
+    // ê¸°ë³¸ ì´ˆê¸°í™”
     //------------------------------------------
 
     if ( qtc::dependencyEqual( &aJoinGraph->depInfo,
                                aDependencies ) == ID_TRUE )
     {
         // Hint == Join Graph
-        // ÈùÆ®¸¦ Àû¿ëÇÑ´Ù.
+        // íŒíŠ¸ë¥¼ ì ìš©í•œë‹¤.
         sIsCurrent = ID_TRUE;
     }
     else if ( qtc::dependencyContains( &aJoinGraph->depInfo,
                                        aDependencies ) == ID_TRUE )
     {
         // Hint < Join Graph
-        // »ç¿ëµÇÁö ¾Ê´Â ÈùÆ®¸¸ Àû¿ëÇÑ´Ù.
+        // ì‚¬ìš©ë˜ì§€ ì•ŠëŠ” íŒíŠ¸ë§Œ ì ìš©í•œë‹¤.
         if ( (qtc::dependencyContains( &aJoinGraph->left->depInfo, aDependencies ) == ID_TRUE) ||
              (qtc::dependencyContains( &aJoinGraph->right->depInfo, aDependencies ) == ID_TRUE) )
         {
@@ -1130,9 +1130,9 @@ qmo::currentJoinDependencies( qmgGraph  * aJoinGraph,
     else if ( qtc::dependencyContains( aDependencies,
                                        &aJoinGraph->depInfo ) == ID_TRUE )
     {
-        // BUG-43528 use_XXX ÈùÆ®¿¡¼­ ¿©·¯°³ÀÇ Å×ÀÌºíÀ» Áö¿øÇØ¾ß ÇÕ´Ï´Ù.
+        // BUG-43528 use_XXX íŒíŠ¸ì—ì„œ ì—¬ëŸ¬ê°œì˜ í…Œì´ë¸”ì„ ì§€ì›í•´ì•¼ í•©ë‹ˆë‹¤.
         // Hint > Join Graph
-        // ÈùÆ®¸¦ Àû¿ëÇÑ´Ù.
+        // íŒíŠ¸ë¥¼ ì ìš©í•œë‹¤.
         sIsCurrent = ID_TRUE;
     }
     else
@@ -1151,7 +1151,7 @@ IDE_RC qmo::currentJoinDependencies4JoinOrder( qmgGraph  * aJoinGraph,
 {
 /***********************************************************************
  *
- * Description : ÇöÀç Join°ú °ü·ÃµÈ DependenciesÀÎÁö °Ë»ç
+ * Description : í˜„ì¬ Joinê³¼ ê´€ë ¨ëœ Dependenciesì¸ì§€ ê²€ì‚¬
  *
  ***********************************************************************/
 
@@ -1160,24 +1160,24 @@ IDE_RC qmo::currentJoinDependencies4JoinOrder( qmgGraph  * aJoinGraph,
     IDU_FIT_POINT_FATAL( "qmo::currentJoinDependencies4JoinOrder::__FT__" );
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_DASSERT( aJoinGraph != NULL );
     IDE_DASSERT( aDependencies != NULL );
 
     //------------------------------------------
-    // ±âº» ÃÊ±âÈ­
+    // ê¸°ë³¸ ì´ˆê¸°í™”
     //------------------------------------------
 
     if ( qtc::dependencyContains( &aJoinGraph->depInfo,
                                   aDependencies ) == ID_TRUE )
     {
         //------------------------------------------
-        // ÇöÀç qmgJoin°ú °ü·ÃµÈ joinPredicateÀÎ °æ¿ì
-        // ÀÌ¹Ì Àû¿ëÇÑ Join Predicate ÀÎÁö °Ë»çÇÑ´Ù.
-        // ( left ¶Ç´Â right ÇÑÂÊ¿¡¸¸ ¼ÓÇÏ´Â Join PredicateÀº ÀÌ¹Ì Àû¿ëµÈ
-        //   Join Predicate ÀÌ´Ù. )
+        // í˜„ì¬ qmgJoinê³¼ ê´€ë ¨ëœ joinPredicateì¸ ê²½ìš°
+        // ì´ë¯¸ ì ìš©í•œ Join Predicate ì¸ì§€ ê²€ì‚¬í•œë‹¤.
+        // ( left ë˜ëŠ” right í•œìª½ì—ë§Œ ì†í•˜ëŠ” Join Predicateì€ ì´ë¯¸ ì ìš©ëœ
+        //   Join Predicate ì´ë‹¤. )
         //------------------------------------------
 
         if ( qtc::dependencyContains( & aJoinGraph->left->depInfo,
@@ -1212,9 +1212,9 @@ IDE_RC qmo::optimizeForHost( qcStatement * aStatement )
 {
 /***********************************************************************
  *
- * Description : host º¯¼ö¿¡ °ªÀÌ ¹ÙÀÎµùµÈ ÈÄ scan method¸¦ Àç±¸ÃàÇÑ´Ù.
+ * Description : host ë³€ìˆ˜ì— ê°’ì´ ë°”ì¸ë”©ëœ í›„ scan methodë¥¼ ì¬êµ¬ì¶•í•œë‹¤.
  *
- * Implementation : prepare ¿µ¿ªÀÇ °ªÀ» Àı´ë ¹Ù²Ù¸é ¾ÈµÈ´Ù.
+ * Implementation : prepare ì˜ì—­ì˜ ê°’ì„ ì ˆëŒ€ ë°”ê¾¸ë©´ ì•ˆëœë‹¤.
  *
  ***********************************************************************/
 
@@ -1234,11 +1234,11 @@ IDE_RC qmo::optimizeForHost( qcStatement * aStatement )
 
     while( sSDF != NULL )
     {
-        // qmoOneNonPlan¿¡ ÀÇÇØ candidateCount°¡ ¼¼ÆÃµÇ¾î¾ß ÇÑ´Ù.
+        // qmoOneNonPlanì— ì˜í•´ candidateCountê°€ ì„¸íŒ…ë˜ì–´ì•¼ í•œë‹¤.
         IDE_DASSERT( sSDF->candidateCount != 0 );
 
-        // table¿¡ lockÀ» °É±â À§ÇØ basePlanÀ» ÅëÇØ
-        // tableHandle°ú scnÀ» ¾ò¾î¿Â´Ù.
+        // tableì— lockì„ ê±¸ê¸° ìœ„í•´ basePlanì„ í†µí•´
+        // tableHandleê³¼ scnì„ ì–»ì–´ì˜¨ë‹¤.
         IDE_TEST( qmn::getReferencedTableInfo( sSDF->basePlan,
                                                & sTableHandle,
                                                & sTableSCN,
@@ -1247,14 +1247,14 @@ IDE_RC qmo::optimizeForHost( qcStatement * aStatement )
 
         if ( sIsFixedTable == ID_FALSE )
         {
-            // Table¿¡ IS LockÀ» °Ç´Ù.
+            // Tableì— IS Lockì„ ê±´ë‹¤.
             IDE_TEST( smiValidateAndLockObjects( (QC_SMI_STMT(aStatement))->getTrans(),
                                                  sTableHandle,
                                                  sTableSCN,
-                                                 SMI_TBSLV_DDL_DML, // TBS Validation ¿É¼Ç
+                                                 SMI_TBSLV_DDL_DML, // TBS Validation ì˜µì…˜
                                                  SMI_TABLE_LOCK_IS,
                                                  ID_ULONG_MAX,
-                                                 ID_FALSE ) // BUG-28752 ¸í½ÃÀû Lock°ú ³»ÀçÀû LockÀ» ±¸ºĞÇÕ´Ï´Ù.
+                                                 ID_FALSE ) // BUG-28752 ëª…ì‹œì  Lockê³¼ ë‚´ì¬ì  Lockì„ êµ¬ë¶„í•©ë‹ˆë‹¤.
                       != IDE_SUCCESS );
         }
         else
@@ -1306,14 +1306,14 @@ IDE_RC qmo::optimizeForHost( qcStatement * aStatement )
             }
         }
 
-        // selected access methodÀÇ À§Ä¡¸¦ ÀúÀåÇÑ´Ù.
+        // selected access methodì˜ ìœ„ì¹˜ë¥¼ ì €ì¥í•œë‹¤.
         if( i == sSDF->candidateCount )
         {
-            // i == sSDF->candidateCount ÀÌ¸é
-            // candidate Áß¿¡ ¼±ÅÃµÈ index¿Í °°Àº ÈÄº¸°¡ ¾ø´Ù´Â ÀÇ¹Ì
-            // ÀÌ¶© scan plan¿¡ ¼³Á¤µÇ¾î ÀÖ´Â, Áï prepare ½ÃÁ¡¿¡
-            // Á¤ÇØÁø index¸¦ »ç¿ëÇÏ¸é µÈ´Ù.
-            // ÀÌ ¼±ÅÃÀº qmnScan::getScanMethod()¿¡ ÀÖ´Ù.
+            // i == sSDF->candidateCount ì´ë©´
+            // candidate ì¤‘ì— ì„ íƒëœ indexì™€ ê°™ì€ í›„ë³´ê°€ ì—†ë‹¤ëŠ” ì˜ë¯¸
+            // ì´ë• scan planì— ì„¤ì •ë˜ì–´ ìˆëŠ”, ì¦‰ prepare ì‹œì ì—
+            // ì •í•´ì§„ indexë¥¼ ì‚¬ìš©í•˜ë©´ ëœë‹¤.
+            // ì´ ì„ íƒì€ qmnScan::getScanMethod()ì— ìˆë‹¤.
             *(UInt*)( sData + sSDF->selectedMethodOffset ) =
                 QMO_SCAN_METHOD_UNSELECTED;
         }
@@ -1370,17 +1370,17 @@ qmo::doTransform( qcStatement * aStatement )
 {
 /***********************************************************************
  *
- * Description : Parse tree¸¦ ÀÌ¿ëÇÏ¿© transformÀ» ¼öÇàÇÑ´Ù.
+ * Description : Parse treeë¥¼ ì´ìš©í•˜ì—¬ transformì„ ìˆ˜í–‰í•œë‹¤.
  *
- *    SELECT ±¸¹®¿¡ query transformationÀ» ¼öÇàÇÑ´Ù.
+ *    SELECT êµ¬ë¬¸ì— query transformationì„ ìˆ˜í–‰í•œë‹¤.
  *
  * Implementation :
  *
- *     1. Common subexpression elimination ¼öÇà
- *     2. Constant filter subsumption ¼öÇà
- *     3. Simple view merging ¼öÇà
- *     4. Subquery unnesting ¼öÇà
- *      a. ¸¸¾à unnestingµÈ subquery°¡ ÀÖ´Ù¸é simple view meringÀ» Àç¼öÇà
+ *     1. Common subexpression elimination ìˆ˜í–‰
+ *     2. Constant filter subsumption ìˆ˜í–‰
+ *     3. Simple view merging ìˆ˜í–‰
+ *     4. Subquery unnesting ìˆ˜í–‰
+ *      a. ë§Œì•½ unnestingëœ subqueryê°€ ìˆë‹¤ë©´ simple view meringì„ ì¬ìˆ˜í–‰
  *
  ***********************************************************************/
 
@@ -1390,13 +1390,13 @@ qmo::doTransform( qcStatement * aStatement )
     IDU_FIT_POINT_FATAL( "qmo::doTransform::__FT__" );
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
 
     //------------------------------------------
-    // Parse Tree È¹µæ
+    // Parse Tree íšë“
     //------------------------------------------
 
     sParseTree = (qmsParseTree *) aStatement->myPlan->parseTree;
@@ -1409,7 +1409,7 @@ qmo::doTransform( qcStatement * aStatement )
               != IDE_SUCCESS );
 
     //------------------------------------------
-    // PROJ-2242 : CSE transformation ¼öÇà
+    // PROJ-2242 : CSE transformation ìˆ˜í–‰
     //------------------------------------------
 
     IDE_TEST( qmoCSETransform::doTransform4NNF( aStatement,
@@ -1418,7 +1418,7 @@ qmo::doTransform( qcStatement * aStatement )
               != IDE_SUCCESS );
 
     //------------------------------------------
-    // PROJ-2242 : CFS transformation ¼öÇà
+    // PROJ-2242 : CFS transformation ìˆ˜í–‰
     //------------------------------------------
 
     IDE_TEST( qmoCFSTransform::doTransform4NNF( aStatement,
@@ -1440,7 +1440,7 @@ qmo::doTransform( qcStatement * aStatement )
               != IDE_SUCCESS );
 
     //------------------------------------------
-    // Simple View Merging ¼öÇà
+    // Simple View Merging ìˆ˜í–‰
     //------------------------------------------
 
     IDE_TEST( qmoViewMerging::doTransform( aStatement,
@@ -1448,7 +1448,7 @@ qmo::doTransform( qcStatement * aStatement )
               != IDE_SUCCESS );
 
     //------------------------------------------
-    // Subquery unnesting ¼öÇà
+    // Subquery unnesting ìˆ˜í–‰
     //------------------------------------------
 
     IDE_TEST( qmoUnnesting::doTransform( aStatement,
@@ -1457,7 +1457,7 @@ qmo::doTransform( qcStatement * aStatement )
 
     if( sChanged == ID_TRUE )
     {
-        // Subqury unnesting ½Ã query°¡ º¯°æµÈ °æ¿ì view mergingÀ» ÇÑ¹ø ´õ ¼öÇàÇÑ´Ù.
+        // Subqury unnesting ì‹œ queryê°€ ë³€ê²½ëœ ê²½ìš° view mergingì„ í•œë²ˆ ë” ìˆ˜í–‰í•œë‹¤.
         IDE_TEST( qmoViewMerging::doTransform( aStatement,
                                                sParseTree->querySet )
                   != IDE_SUCCESS );
@@ -1468,7 +1468,7 @@ qmo::doTransform( qcStatement * aStatement )
     }
 
     //------------------------------------------
-    // BUG-38339 Outer Join Elimination ¼öÇà
+    // BUG-38339 Outer Join Elimination ìˆ˜í–‰
     //------------------------------------------
 
     IDE_TEST( qmoOuterJoinElimination::doTransform( aStatement,
@@ -1490,8 +1490,8 @@ qmo::doTransformSubqueries( qcStatement * aStatement,
 /***********************************************************************
  *
  * Description :
- *     SELECT¸¦ Á¦¿ÜÇÑ ±¸¹®µéÀÌ Æ÷ÇÔÇÏ´Â predicateµé¿¡ ´ëÇÏ¿©
- *     transformationÀ» ¼öÇàÇÑ´Ù.
+ *     SELECTë¥¼ ì œì™¸í•œ êµ¬ë¬¸ë“¤ì´ í¬í•¨í•˜ëŠ” predicateë“¤ì— ëŒ€í•˜ì—¬
+ *     transformationì„ ìˆ˜í–‰í•œë‹¤.
  *
  * Implementation :
  *
@@ -1502,7 +1502,7 @@ qmo::doTransformSubqueries( qcStatement * aStatement,
     IDU_FIT_POINT_FATAL( "qmo::doTransformSubqueries::__FT__" );
 
     //------------------------------------------
-    // Simple View Merging ¼öÇà
+    // Simple View Merging ìˆ˜í–‰
     //------------------------------------------
 
     IDE_TEST( qmoViewMerging::doTransformSubqueries( aStatement,
@@ -1510,7 +1510,7 @@ qmo::doTransformSubqueries( qcStatement * aStatement,
               != IDE_SUCCESS );
 
     //------------------------------------------
-    // Subquery unnesting ¼öÇà
+    // Subquery unnesting ìˆ˜í–‰
     //------------------------------------------
 
     IDE_TEST( qmoUnnesting::doTransformSubqueries( aStatement,
@@ -1520,7 +1520,7 @@ qmo::doTransformSubqueries( qcStatement * aStatement,
 
     if( sChanged == ID_TRUE )
     {
-        // Subqury unnesting ½Ã query°¡ º¯°æµÈ °æ¿ì view mergingÀ» ÇÑ¹ø ´õ ¼öÇàÇÑ´Ù.
+        // Subqury unnesting ì‹œ queryê°€ ë³€ê²½ëœ ê²½ìš° view mergingì„ í•œë²ˆ ë” ìˆ˜í–‰í•œë‹¤.
         IDE_TEST( qmoViewMerging::doTransformSubqueries( aStatement,
                                                          aPredicate )
                   != IDE_SUCCESS );
@@ -1549,13 +1549,13 @@ IDE_RC qmo::optimizeMerge( qcStatement * aStatement )
     IDU_FIT_POINT_FATAL( "qmo::optimizeMerge::__FT__" );
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
 
     //------------------------------------------
-    // PROJ-1718 WhereÀı¿¡ ´ëÇÏ¿© subquery predicateÀ» transformÇÑ´Ù.
+    // PROJ-1718 Whereì ˆì— ëŒ€í•˜ì—¬ subquery predicateì„ transformí•œë‹¤.
     //------------------------------------------
 
     sMergeParseTree = (qmmMergeParseTree *) aStatement->myPlan->parseTree;
@@ -1589,7 +1589,7 @@ IDE_RC qmo::optimizeMerge( qcStatement * aStatement )
     }
 
     //------------------------------------------
-    // Graph »ı¼º
+    // Graph ìƒì„±
     //------------------------------------------
 
     IDE_TEST( qmo::makeMergeGraph( aStatement ) != IDE_SUCCESS );
@@ -1598,7 +1598,7 @@ IDE_RC qmo::optimizeMerge( qcStatement * aStatement )
     IDE_DASSERT( aStatement->myPlan->graph->type == QMG_MERGE );
 
     //-------------------------
-    // Plan »ı¼º
+    // Plan ìƒì„±
     //-------------------------
 
     IDE_TEST( aStatement->myPlan->graph->makePlan( aStatement,
@@ -1608,17 +1608,17 @@ IDE_RC qmo::optimizeMerge( qcStatement * aStatement )
 
     aStatement->myPlan->plan = aStatement->myPlan->graph->myPlan;
 
-    /* BUG-44228  merge ½ÇÇà½Ã disk tableÀÌ°í hash join ÀÎ °æ¿ì ÀÇµµÇÏÁö ¾Ê´Â °ªÀ¸·Î º¯°æ µË´Ï´Ù.
-     *  1. Plan¸¦ °Ë»öÇÑ´Ù.
-     *  2. Update ParseTreeÀÇ ValueÀÇ Node Info¸¦ º¯°æÇÑ´Ù.
-     *  3. Insert ParseTreeÀÇ ValueÀÇ Node Info¸¦ º¯°æÇÑ´Ù.
+    /* BUG-44228  merge ì‹¤í–‰ì‹œ disk tableì´ê³  hash join ì¸ ê²½ìš° ì˜ë„í•˜ì§€ ì•ŠëŠ” ê°’ìœ¼ë¡œ ë³€ê²½ ë©ë‹ˆë‹¤.
+     *  1. Planë¥¼ ê²€ìƒ‰í•œë‹¤.
+     *  2. Update ParseTreeì˜ Valueì˜ Node Infoë¥¼ ë³€ê²½í•œë‹¤.
+     *  3. Insert ParseTreeì˜ Valueì˜ Node Infoë¥¼ ë³€ê²½í•œë‹¤.
      */
 
-    /* 1. Plan¸¦ °Ë»öÇÑ´Ù. */
+    /* 1. Planë¥¼ ê²€ìƒ‰í•œë‹¤. */
     sMyGraph = (qmgMRGE*) aStatement->myPlan->graph;
     sMyPlan  = sMyGraph->graph.children[QMO_MERGE_SELECT_SOURCE_IDX].childGraph->myPlan;
 
-    /* 2. Update ParseTreeÀÇ ValueÀÇ Node Info¸¦ º¯°æÇÑ´Ù. */
+    /* 2. Update ParseTreeì˜ Valueì˜ Node Infoë¥¼ ë³€ê²½í•œë‹¤. */
     if( sMergeParseTree->updateStatement != NULL )
     {
         IDE_TEST( qmo::adjustValueNodeForMerge( aStatement,
@@ -1631,7 +1631,7 @@ IDE_RC qmo::optimizeMerge( qcStatement * aStatement )
         /* Nothing to do */
     }
 
-    /* 3. Insert ParseTreeÀÇ ValueÀÇ Node Info¸¦ º¯°æÇÑ´Ù. */
+    /* 3. Insert ParseTreeì˜ Valueì˜ Node Infoë¥¼ ë³€ê²½í•œë‹¤. */
     if( sMergeParseTree->insertStatement != NULL )
     {
         for ( sMultiRows = sMergeParseTree->insertParseTree->rows;
@@ -1650,7 +1650,7 @@ IDE_RC qmo::optimizeMerge( qcStatement * aStatement )
     }
 
     //------------------------------------------
-    // Optimization ¸¶¹«¸®
+    // Optimization ë§ˆë¬´ë¦¬
     //------------------------------------------
 
     IDE_TEST( qtc::fixAfterValidation( QC_QMP_MEM(aStatement),
@@ -1668,7 +1668,7 @@ IDE_RC qmo::optimizeShardDML( qcStatement * aStatement )
 {
 /***********************************************************************
  *
- * Description : Shard DML ±¸¹®ÀÇ ÃÖÀûÈ­
+ * Description : Shard DML êµ¬ë¬¸ì˜ ìµœì í™”
  *
  * Implementation :
  *
@@ -1679,13 +1679,13 @@ IDE_RC qmo::optimizeShardDML( qcStatement * aStatement )
     IDU_FIT_POINT_FATAL( "qmo::optimizeShardDML::__FT__" );
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_FT_ASSERT( aStatement != NULL );
 
     //------------------------------------------
-    // Graph »ı¼º
+    // Graph ìƒì„±
     //------------------------------------------
 
     IDE_TEST( qmgShardDML::init( aStatement,
@@ -1703,7 +1703,7 @@ IDE_RC qmo::optimizeShardDML( qcStatement * aStatement )
     aStatement->myPlan->graph = sMyGraph;
 
     //------------------------------------------
-    // Plan Tree »ı¼º
+    // Plan Tree ìƒì„±
     //------------------------------------------
 
     IDE_TEST( aStatement->myPlan->graph->makePlan( aStatement,
@@ -1714,7 +1714,7 @@ IDE_RC qmo::optimizeShardDML( qcStatement * aStatement )
     aStatement->myPlan->plan = aStatement->myPlan->graph->myPlan;
 
     //------------------------------------------
-    // Optimization ¸¶¹«¸®
+    // Optimization ë§ˆë¬´ë¦¬
     //------------------------------------------
 
     IDE_TEST( qtc::fixAfterValidation( QC_QMP_MEM(aStatement),
@@ -1732,7 +1732,7 @@ IDE_RC qmo::optimizeShardInsert( qcStatement * aStatement )
 {
 /***********************************************************************
  *
- * Description : Shard DML ±¸¹®ÀÇ ÃÖÀûÈ­
+ * Description : Shard DML êµ¬ë¬¸ì˜ ìµœì í™”
  *
  * Implementation :
  *
@@ -1741,13 +1741,13 @@ IDE_RC qmo::optimizeShardInsert( qcStatement * aStatement )
     IDU_FIT_POINT_FATAL( "qmo::optimizeShardInsert::__FT__" );
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_FT_ASSERT( aStatement != NULL );
 
     //------------------------------------------
-    // Graph »ı¼º
+    // Graph ìƒì„±
     //------------------------------------------
 
     IDE_TEST( qmo::makeShardInsertGraph( aStatement ) != IDE_SUCCESS );
@@ -1756,7 +1756,7 @@ IDE_RC qmo::optimizeShardInsert( qcStatement * aStatement )
     IDE_FT_ASSERT( aStatement->myPlan->graph->type == QMG_SHARD_INSERT );
 
     //------------------------------------------
-    // Plan Tree »ı¼º
+    // Plan Tree ìƒì„±
     //------------------------------------------
 
     IDE_TEST( aStatement->myPlan->graph->makePlan( aStatement,
@@ -1767,7 +1767,7 @@ IDE_RC qmo::optimizeShardInsert( qcStatement * aStatement )
     aStatement->myPlan->plan = aStatement->myPlan->graph->myPlan;
 
     //------------------------------------------
-    // Optimization ¸¶¹«¸®
+    // Optimization ë§ˆë¬´ë¦¬
     //------------------------------------------
 
     IDE_TEST( qtc::fixAfterValidation( QC_QMP_MEM(aStatement),
@@ -1834,7 +1834,7 @@ IDE_RC qmo::setResultCacheFlag( qcStatement * aStatement )
         /* Nothing to do */
     }
 
-    // top_result_cache Hint ·Î ¼³Á¤µÉ ¼ö ÀÖ´Ù.
+    // top_result_cache Hint ë¡œ ì„¤ì •ë  ìˆ˜ ìˆë‹¤.
     if ( ( QC_SHARED_TMPLATE(aStatement)->resultCache.flag & QC_RESULT_CACHE_TOP_MASK )
          == QC_RESULT_CACHE_TOP_TRUE )
     {
@@ -1852,7 +1852,7 @@ IDE_RC qmo::setResultCacheFlag( qcStatement * aStatement )
         if ( sIsTopResultCache == ID_TRUE )
         {
             sMyGraph = aStatement->myPlan->graph;
-            // Top Result Cache True ¼³Á¤
+            // Top Result Cache True ì„¤ì •
             sMyGraph->flag &= ~QMG_PROJ_TOP_RESULT_CACHE_MASK;
             sMyGraph->flag |= QMG_PROJ_TOP_RESULT_CACHE_TRUE;
         }
@@ -1887,12 +1887,12 @@ IDE_RC qmo::setResultCacheFlag( qcStatement * aStatement )
 /**
  * PROJ-2462 ResultCache
  *
- * Optimize °úÁ¤¿¡¼­ Cache·Î »ç¿ë°¡´ÉÇÑ Plan¿¡ ´ëÇØ
- * Result Cache StackÀ» ±¸¼ºÇÑ´Ù.
+ * Optimize ê³¼ì •ì—ì„œ Cacheë¡œ ì‚¬ìš©ê°€ëŠ¥í•œ Planì— ëŒ€í•´
+ * Result Cache Stackì„ êµ¬ì„±í•œë‹¤.
  *
- * ÀÌ Stack¿¡´Â ComponentInfo¿Í PlanID·Î ±¸Á¤µÇ´Â µ¥ ÀÌ Á¤º¸·Î
- * Result CacheµÈ TempTableÀÌ ¾î¶² Table¿¡ ÀÇÁ¸¼ºÀÌ ÀÖ´ÂÁö¸¦
- * ¾Ë ¼ö ÀÖ°Ô µÈ´Ù.
+ * ì´ Stackì—ëŠ” ComponentInfoì™€ PlanIDë¡œ êµ¬ì •ë˜ëŠ” ë° ì´ ì •ë³´ë¡œ
+ * Result Cacheëœ TempTableì´ ì–´ë–¤ Tableì— ì˜ì¡´ì„±ì´ ìˆëŠ”ì§€ë¥¼
+ * ì•Œ ìˆ˜ ìˆê²Œ ëœë‹¤.
  */
 IDE_RC qmo::initResultCacheStack( qcStatement   * aStatement,
                                   qmsQuerySet   * aQuerySet,
@@ -1908,8 +1908,8 @@ IDE_RC qmo::initResultCacheStack( qcStatement   * aStatement,
     sMemory   = QC_QMP_MEM( aStatement );
     sTemplate = QC_SHARED_TMPLATE( aStatement );
 
-    // QuerySet¿¡ Reuslt Cache°¡ »ç¿ëµÇÁö ¸øÇÏ´Â Äõ¸®°¡ ¿Ã °æ¿ì¿Í
-    // ÀüÃ¼ Äõ¸®°¡ Result Cache¸¦ »ç¿ëÇÏÁö ¸øÇÏ´Â °æ¿ì¿¡ ´Â StackÀ» ÃÊ±âÈ­ÇÑ´Ù.
+    // QuerySetì— Reuslt Cacheê°€ ì‚¬ìš©ë˜ì§€ ëª»í•˜ëŠ” ì¿¼ë¦¬ê°€ ì˜¬ ê²½ìš°ì™€
+    // ì „ì²´ ì¿¼ë¦¬ê°€ Result Cacheë¥¼ ì‚¬ìš©í•˜ì§€ ëª»í•˜ëŠ” ê²½ìš°ì— ëŠ” Stackì„ ì´ˆê¸°í™”í•œë‹¤.
     if ( ( ( aQuerySet->flag & QMV_QUERYSET_RESULT_CACHE_INVALID_MASK )
              == QMV_QUERYSET_RESULT_CACHE_INVALID_TRUE ) ||
          ( ( sTemplate->resultCache.flag & QC_RESULT_CACHE_DISABLE_MASK )
@@ -1923,7 +1923,7 @@ IDE_RC qmo::initResultCacheStack( qcStatement   * aStatement,
         /* Nothing to do */
     }
 
-    /* Top Result CacheÀÇ °æ¿ì Ç×»ó ComponentInfo¸¦ »ı¼ºÇÑ´Ù. */
+    /* Top Result Cacheì˜ ê²½ìš° í•­ìƒ ComponentInfoë¥¼ ìƒì„±í•œë‹¤. */
     if ( aIsTopResult == ID_TRUE )
     {
         IDE_TEST( pushComponentInfo( sTemplate,
@@ -1935,13 +1935,13 @@ IDE_RC qmo::initResultCacheStack( qcStatement   * aStatement,
     else
     {
         /* PROJ-2462 ResultCache
-         * result_cache_enable Property¿¡ µû¶ó Component Info¸¦ »ı¼º
-         * ÇÒÁö ¸»Áö °áÁ¤ÇÑ´Ù.
+         * result_cache_enable Propertyì— ë”°ë¼ Component Infoë¥¼ ìƒì„±
+         * í• ì§€ ë§ì§€ ê²°ì •í•œë‹¤.
          */
         if ( ( sTemplate->resultCache.flag & QC_RESULT_CACHE_MASK )
              == QC_RESULT_CACHE_ENABLE )
         {
-            /* NO_RESULT_CACHE Hint °¡ ¾ø´Ù¸é ComponentInfo¸¦ »ı¼ºÇÑ´Ù. */
+            /* NO_RESULT_CACHE Hint ê°€ ì—†ë‹¤ë©´ ComponentInfoë¥¼ ìƒì„±í•œë‹¤. */
             if ( ( aQuerySet->flag & QMV_QUERYSET_RESULT_CACHE_MASK )
                  != QMV_QUERYSET_RESULT_CACHE_NO )
             {
@@ -1958,7 +1958,7 @@ IDE_RC qmo::initResultCacheStack( qcStatement   * aStatement,
         }
         else
         {
-            /* RESULT_CACHE Hint°¡ ÀÖ´Ù¸é ComponentInfo¸¦ »ı¼ºÇÑ´Ù */
+            /* RESULT_CACHE Hintê°€ ìˆë‹¤ë©´ ComponentInfoë¥¼ ìƒì„±í•œë‹¤ */
             if ( ( aQuerySet->flag & QMV_QUERYSET_RESULT_CACHE_MASK )
                  == QMV_QUERYSET_RESULT_CACHE )
             {
@@ -1987,9 +1987,9 @@ IDE_RC qmo::initResultCacheStack( qcStatement   * aStatement,
 /**
  * PROJ-2462 Result Cache
  *
- * PlanÀÌ make µÇ´Â °úÁ¤¿¡¼­ È£ÃâµÇ´Â ÇÔ¼ö·Î
- * ¸¸¾à ÀÌ PlanÀÌ Cache°¡ °¡´ÉÇÏ´Ù¸é Stack¿¡¼­ ²¨³»¼­
- * List·Î ¿Å°Ü µĞ´Ù. ±×·¸Áö ¸øÇÒ °æ¿ì ±×³É Stack¿¡¼­ ²¨³»¹ö¸°´Ù.
+ * Planì´ make ë˜ëŠ” ê³¼ì •ì—ì„œ í˜¸ì¶œë˜ëŠ” í•¨ìˆ˜ë¡œ
+ * ë§Œì•½ ì´ Planì´ Cacheê°€ ê°€ëŠ¥í•˜ë‹¤ë©´ Stackì—ì„œ êº¼ë‚´ì„œ
+ * Listë¡œ ì˜®ê²¨ ë‘”ë‹¤. ê·¸ë ‡ì§€ ëª»í•  ê²½ìš° ê·¸ëƒ¥ Stackì—ì„œ êº¼ë‚´ë²„ë¦°ë‹¤.
  */
 void qmo::makeResultCacheStack( qcStatement      * aStatement,
                                 qmsQuerySet      * aQuerySet,
@@ -2012,8 +2012,8 @@ void qmo::makeResultCacheStack( qcStatement      * aStatement,
     IDE_TEST_CONT( sTemplate->resultCache.stack == NULL, normal_exit );
 
     /**
-     * Outer Dependency °¡ ÀÖ´Â °æ¿ì, Parallel Grag, Disk TempÀÎ°æ¿ì
-     * ¿Í MtrNode°¡ ¾ø´Â °æ¿ì ResultCache¸¦ »ç¿ëÇÏÁö ¾Ê´Â´Ù.
+     * Outer Dependency ê°€ ìˆëŠ” ê²½ìš°, Parallel Grag, Disk Tempì¸ê²½ìš°
+     * ì™€ MtrNodeê°€ ì—†ëŠ” ê²½ìš° ResultCacheë¥¼ ì‚¬ìš©í•˜ì§€ ì•ŠëŠ”ë‹¤.
      */
     if ( ( ( aPlanFlag & QMN_PLAN_OUTER_REF_MASK )
            == QMN_PLAN_OUTER_REF_FALSE ) &&
@@ -2026,8 +2026,8 @@ void qmo::makeResultCacheStack( qcStatement      * aStatement,
         sIsPossible = ID_TRUE;
 
         /* PROJ-2462 ResultCache
-         * Node°¡ LobÀÌ Á¸ÀçÇÏ°Å³ª Disk TableÀÌ°Å³ª Disk Partitioned
-         * ÀÌ¸é Cache¸¦ »ç¿ëÇÒ ¼ö ¾ø´Ù.
+         * Nodeê°€ Lobì´ ì¡´ì¬í•˜ê±°ë‚˜ Disk Tableì´ê±°ë‚˜ Disk Partitioned
+         * ì´ë©´ Cacheë¥¼ ì‚¬ìš©í•  ìˆ˜ ì—†ë‹¤.
          */
         for ( sMtrNode = aMtrNode; sMtrNode != NULL; sMtrNode = sMtrNode->next )
         {
@@ -2040,10 +2040,10 @@ void qmo::makeResultCacheStack( qcStatement      * aStatement,
                  ( ( sMtrNode->flag & QMC_MTR_PRIOR_EXIST_MASK )
                    == QMC_MTR_PRIOR_EXIST_TRUE ) )
             {
-                // ÀÌ¿Í°°ÀÌ Cache¸¦ »ç¿ëÇÏÁö ¸øÇÑ´Ù¸é Stack Dep flag¸¦ ¼³Á¤ÇÏ°í
-                // ´ÙÀ½ ViewMtr ÀÌÀüÀÇ »óÀ§ Plan ¿ª½Ã Cache ÇÏÁö ¾Êµµ·Ï ÇÑ´Ù.
-                // ¿Ö³ÄÇÏ¸é °°Àº QuerySet³»¿¡¼­´Â ¸ğµÎ Cache¸¦ »ç¿ëÇÏ´ø°¡
-                // ¾Æ´Ï¸é ¸ğµÎ »ç¿ëÇÏÁö ¾Ê¾Æ¾ßÇÏ±â ¶§¹®ÀÌ´Ù.
+                // ì´ì™€ê°™ì´ Cacheë¥¼ ì‚¬ìš©í•˜ì§€ ëª»í•œë‹¤ë©´ Stack Dep flagë¥¼ ì„¤ì •í•˜ê³ 
+                // ë‹¤ìŒ ViewMtr ì´ì „ì˜ ìƒìœ„ Plan ì—­ì‹œ Cache í•˜ì§€ ì•Šë„ë¡ í•œë‹¤.
+                // ì™œëƒí•˜ë©´ ê°™ì€ QuerySetë‚´ì—ì„œëŠ” ëª¨ë‘ Cacheë¥¼ ì‚¬ìš©í•˜ë˜ê°€
+                // ì•„ë‹ˆë©´ ëª¨ë‘ ì‚¬ìš©í•˜ì§€ ì•Šì•„ì•¼í•˜ê¸° ë•Œë¬¸ì´ë‹¤.
                 sTemplate->resultCache.flag &= ~QC_RESULT_CACHE_STACK_DEP_MASK;
                 sTemplate->resultCache.flag |= QC_RESULT_CACHE_STACK_DEP_TRUE;
                 sIsPossible = ID_FALSE;
@@ -2064,10 +2064,10 @@ void qmo::makeResultCacheStack( qcStatement      * aStatement,
              ( ( aPlanFlag & QMN_PLAN_GARG_PARALLEL_MASK )
                == QMN_PLAN_GARG_PARALLEL_TRUE ) )
         {
-            // ÀÌ¿Í°°ÀÌ Cache¸¦ »ç¿ëÇÏÁö ¸øÇÑ´Ù¸é Stack Dep flag¸¦ ¼³Á¤ÇÏ°í
-            // ´ÙÀ½ ViewMtr ÀÌÀüÀÇ »óÀ§ Plan ¿ª½Ã Cache ÇÏÁö ¾Êµµ·Ï ÇÑ´Ù.
-            // ¿Ö³ÄÇÏ¸é °°Àº QuerySet³»¿¡¼­´Â ¸ğµÎ Cache¸¦ »ç¿ëÇÏ´ø°¡
-            // ¾Æ´Ï¸é ¸ğµÎ »ç¿ëÇÏÁö ¾Ê¾Æ¾ßÇÏ±â ¶§¹®ÀÌ´Ù.
+            // ì´ì™€ê°™ì´ Cacheë¥¼ ì‚¬ìš©í•˜ì§€ ëª»í•œë‹¤ë©´ Stack Dep flagë¥¼ ì„¤ì •í•˜ê³ 
+            // ë‹¤ìŒ ViewMtr ì´ì „ì˜ ìƒìœ„ Plan ì—­ì‹œ Cache í•˜ì§€ ì•Šë„ë¡ í•œë‹¤.
+            // ì™œëƒí•˜ë©´ ê°™ì€ QuerySetë‚´ì—ì„œëŠ” ëª¨ë‘ Cacheë¥¼ ì‚¬ìš©í•˜ë˜ê°€
+            // ì•„ë‹ˆë©´ ëª¨ë‘ ì‚¬ìš©í•˜ì§€ ì•Šì•„ì•¼í•˜ê¸° ë•Œë¬¸ì´ë‹¤.
             sTemplate->resultCache.flag &= ~QC_RESULT_CACHE_STACK_DEP_MASK;
             sTemplate->resultCache.flag |= QC_RESULT_CACHE_STACK_DEP_TRUE;
         }
@@ -2086,13 +2086,13 @@ void qmo::makeResultCacheStack( qcStatement      * aStatement,
     else
     {
         /* PROJ-2462 ResultCache
-         * result_cache_enable Property¿¡ µû¶ó Component Info¸¦ Pop
-         * ÇÒÁö ¸»Áö °áÁ¤ÇÑ´Ù.
+         * result_cache_enable Propertyì— ë”°ë¼ Component Infoë¥¼ Pop
+         * í• ì§€ ë§ì§€ ê²°ì •í•œë‹¤.
          */
         if ( ( sTemplate->resultCache.flag & QC_RESULT_CACHE_MASK )
              == QC_RESULT_CACHE_ENABLE )
         {
-            /* NO_RESULT_CACHE hint°¡ ¾øÀ» °æ¿ì*/
+            /* NO_RESULT_CACHE hintê°€ ì—†ì„ ê²½ìš°*/
             if ( ( aQuerySet->flag & QMV_QUERYSET_RESULT_CACHE_MASK )
                  != QMV_QUERYSET_RESULT_CACHE_NO )
             {
@@ -2107,7 +2107,7 @@ void qmo::makeResultCacheStack( qcStatement      * aStatement,
         }
         else
         {
-            /* RESULT_CACHE Hint °¡ ÀÖÀ» °æ¿ì */
+            /* RESULT_CACHE Hint ê°€ ìˆì„ ê²½ìš° */
             if ( ( aQuerySet->flag & QMV_QUERYSET_RESULT_CACHE_MASK )
                  == QMV_QUERYSET_RESULT_CACHE )
             {
@@ -2127,7 +2127,7 @@ void qmo::makeResultCacheStack( qcStatement      * aStatement,
 
 /**
  * PROJ-2462 Reuslt Cache
- * Result Cache Stack À» ÃÊ±âÈ­ ÇÑ´Ù.
+ * Result Cache Stack ì„ ì´ˆê¸°í™” í•œë‹¤.
  */
 void qmo::flushResultCacheStack( qcStatement * aStatement )
 {
@@ -2136,10 +2136,10 @@ void qmo::flushResultCacheStack( qcStatement * aStatement )
 
 /**
  * PROJ-2462 Reuslt Cache
- * Result Cache »ı¼ºÀ» À§ÇÑ ComponentInfo¸¦ »ı¼ºÇÏ°í
- * Stack ¿¡ ´Ş¾Æ µĞ´Ù. ÀÌ ComponentInfo¸¦ ÀÌ¿ëÇØ °¢
- * CacheÇÒ Temp Table ÀÌ ¾î¶² Table¿¡ ÀÇÁ¸ÀûÀÎÁö¸¦
- * ¾Ë ¼ö ÀÖ°ÔµÈ´Ù.
+ * Result Cache ìƒì„±ì„ ìœ„í•œ ComponentInfoë¥¼ ìƒì„±í•˜ê³ 
+ * Stack ì— ë‹¬ì•„ ë‘”ë‹¤. ì´ ComponentInfoë¥¼ ì´ìš©í•´ ê°
+ * Cacheí•  Temp Table ì´ ì–´ë–¤ Tableì— ì˜ì¡´ì ì¸ì§€ë¥¼
+ * ì•Œ ìˆ˜ ìˆê²Œëœë‹¤.
  */
 IDE_RC qmo::pushComponentInfo( qcTemplate    * aTemplate,
                                iduVarMemList * aMemory,
@@ -2182,8 +2182,8 @@ IDE_RC qmo::pushComponentInfo( qcTemplate    * aTemplate,
 
 /**
  * PROJ-2462 Reuslt Cache
- * Result Cache »ı¼ºÀ» À§ÇÑ ComponentInfo¸¦ Stack¿¡¼­ List·Î
- * ¿Å±ä´Ù. »ç¿ëÇÏÁö ¸øÇÏ´Â ComponentInfo´Â list·Î ¿Å°ÜÁöÁö ¾Ê´Â´Ù.
+ * Result Cache ìƒì„±ì„ ìœ„í•œ ComponentInfoë¥¼ Stackì—ì„œ Listë¡œ
+ * ì˜®ê¸´ë‹¤. ì‚¬ìš©í•˜ì§€ ëª»í•˜ëŠ” ComponentInfoëŠ” listë¡œ ì˜®ê²¨ì§€ì§€ ì•ŠëŠ”ë‹¤.
  */
 void qmo::popComponentInfo( qcTemplate       * aTemplate,
                             idBool             aIsPossible,
@@ -2200,10 +2200,10 @@ void qmo::popComponentInfo( qcTemplate       * aTemplate,
     sIsTrue = aIsPossible;
 
     /**
-     * Lob ÀÌ »ç¿ëµÈ °æ¿ì¿Í °°ÀÌ ResultCache¸¦ »ç¿ëÇÏÁö ¸øÇÑ °æ¿ì¿¡
-     * °°Àº QuerySet ³»ÀÇ ´Ù¸¥ TempTableµµ CacheÇÒ¼ö ¾ø´Ù.
-     * µû¶ó¼­ View °¡ ¿À´Â »õ·Î¿î QuerySetÀÌ µÉ¶§ ±îÁö list¿¡
-     * ´ŞÁö ¾Ê´Â´Ù.
+     * Lob ì´ ì‚¬ìš©ëœ ê²½ìš°ì™€ ê°™ì´ ResultCacheë¥¼ ì‚¬ìš©í•˜ì§€ ëª»í•œ ê²½ìš°ì—
+     * ê°™ì€ QuerySet ë‚´ì˜ ë‹¤ë¥¸ TempTableë„ Cacheí• ìˆ˜ ì—†ë‹¤.
+     * ë”°ë¼ì„œ View ê°€ ì˜¤ëŠ” ìƒˆë¡œìš´ QuerySetì´ ë ë•Œ ê¹Œì§€ listì—
+     * ë‹¬ì§€ ì•ŠëŠ”ë‹¤.
      */
     if ( ( aTemplate->resultCache.flag & QC_RESULT_CACHE_STACK_DEP_MASK )
          == QC_RESULT_CACHE_STACK_DEP_TRUE )
@@ -2240,8 +2240,8 @@ void qmo::popComponentInfo( qcTemplate       * aTemplate,
 
 /**
  * PROJ-2462 ResultCache
- * MakeScanµî¿¡¼­ È£ÃâµÇ´Â ÇÔ¼ö·Î °ü·Ã Table TupleID¸¦
- * Stack¿¡ ÀÖ´Â ¸ğµç ComponentInfo¿¡ µî·ÏÇØÁØ´Ù.
+ * MakeScanë“±ì—ì„œ í˜¸ì¶œë˜ëŠ” í•¨ìˆ˜ë¡œ ê´€ë ¨ Table TupleIDë¥¼
+ * Stackì— ìˆëŠ” ëª¨ë“  ComponentInfoì— ë“±ë¡í•´ì¤€ë‹¤.
  *
  */
 void qmo::addTupleID2ResultCacheStack( qcStatement * aStatement,
@@ -2380,12 +2380,12 @@ IDE_RC qmo::adjustValueNodeForMerge( qcStatement  * aStatement,
 /***********************************************************************
  *
  * Description :
- *   BUG-44228  merge ½ÇÇà½Ã disk tableÀÌ°í hash join ÀÎ °æ¿ì ÀÇµµÇÏÁö ¾Ê´Â °ªÀ¸·Î º¯°æ µË´Ï´Ù.
- *    1. Mtc Node¸¦ ¼øÈ¸ÇÑ´Ù.
- *    2. Src Argument Node´Â Recursive È£Ãâ·Î Ã³¸®ÇÑ´Ù.
- *    3. Dst Argument Node´Â Recursive È£Ãâ·Î Ã³¸®ÇÑ´Ù.
- *    4. ColumÀÎ Node¸¸ º¯°æÇÑ´Ù.
- *    5. Dst NodeÀÇ À§Ä¡Á¤º¸¸¦ º¯°æÇÑ´Ù.
+ *   BUG-44228  merge ì‹¤í–‰ì‹œ disk tableì´ê³  hash join ì¸ ê²½ìš° ì˜ë„í•˜ì§€ ì•ŠëŠ” ê°’ìœ¼ë¡œ ë³€ê²½ ë©ë‹ˆë‹¤.
+ *    1. Mtc Nodeë¥¼ ìˆœíšŒí•œë‹¤.
+ *    2. Src Argument NodeëŠ” Recursive í˜¸ì¶œë¡œ ì²˜ë¦¬í•œë‹¤.
+ *    3. Dst Argument NodeëŠ” Recursive í˜¸ì¶œë¡œ ì²˜ë¦¬í•œë‹¤.
+ *    4. Columì¸ Nodeë§Œ ë³€ê²½í•œë‹¤.
+ *    5. Dst Nodeì˜ ìœ„ì¹˜ì •ë³´ë¥¼ ë³€ê²½í•œë‹¤.
  *
  * Implementation :
  *
@@ -2403,12 +2403,12 @@ IDE_RC qmo::adjustValueNodeForMerge( qcStatement  * aStatement,
           sResultDesc != NULL;
           sResultDesc  = sResultDesc->next )
     {
-        /* 1. Mtc Node¸¦ ¼øÈ¸ÇÑ´Ù. */
+        /* 1. Mtc Nodeë¥¼ ìˆœíšŒí•œë‹¤. */
         for ( sSrcNode  = &( sResultDesc->expr->node );
               sSrcNode != NULL;
               sSrcNode  = sSrcNode->next )
         {
-            /* 2. Src Argument Node´Â Recursive È£Ãâ·Î Ã³¸®ÇÑ´Ù. */
+            /* 2. Src Argument NodeëŠ” Recursive í˜¸ì¶œë¡œ ì²˜ë¦¬í•œë‹¤. */
             if ( sSrcNode->arguments != NULL )
             {
                 IDE_TEST( qmo::adjustArgumentNodeForMerge( aStatement,
@@ -2425,7 +2425,7 @@ IDE_RC qmo::adjustValueNodeForMerge( qcStatement  * aStatement,
                   sValueNode != NULL;
                   sValueNode  = sValueNode->next )
             {
-                /* 3. Dst Argument Node´Â Recursive È£Ãâ·Î Ã³¸®ÇÑ´Ù. */
+                /* 3. Dst Argument NodeëŠ” Recursive í˜¸ì¶œë¡œ ì²˜ë¦¬í•œë‹¤. */
                 for ( sDstNode  = &( sValueNode->value->node );
                       sDstNode != NULL;
                       sDstNode  = sDstNode->next )
@@ -2442,7 +2442,7 @@ IDE_RC qmo::adjustValueNodeForMerge( qcStatement  * aStatement,
                         /* Nothing to do */
                     }
 
-                    /* 4. ColumÀÎ Node¸¸ º¯°æÇÑ´Ù. */
+                    /* 4. Columì¸ Nodeë§Œ ë³€ê²½í•œë‹¤. */
                     if ( ( sSrcNode->module != &( qtc::columnModule ) ) ||
                          ( sDstNode->module != &( qtc::columnModule ) ) )
                     {
@@ -2453,7 +2453,7 @@ IDE_RC qmo::adjustValueNodeForMerge( qcStatement  * aStatement,
                         /* Nothing to do */
                     }
 
-                    /* 5. Dst NodeÀÇ À§Ä¡Á¤º¸¸¦ º¯°æÇÑ´Ù. */
+                    /* 5. Dst Nodeì˜ ìœ„ì¹˜ì •ë³´ë¥¼ ë³€ê²½í•œë‹¤. */
                     if ( ( sDstNode->baseTable  == sSrcNode->baseTable ) &&
                          ( sDstNode->baseColumn == sSrcNode->baseColumn ) )
                     {
@@ -2483,12 +2483,12 @@ IDE_RC qmo::adjustArgumentNodeForMerge( qcStatement  * aStatement,
 /***********************************************************************
  *
  * Description :
- *   BUG-44228  merge ½ÇÇà½Ã disk tableÀÌ°í hash join ÀÎ °æ¿ì ÀÇµµÇÏÁö ¾Ê´Â °ªÀ¸·Î º¯°æ µË´Ï´Ù.
- *    1. Mtc Node¸¦ ¼øÈ¸ÇÑ´Ù.
- *    2. Src Argument Node´Â Recursive È£Ãâ·Î Ã³¸®ÇÑ´Ù.
- *    3. Dst Argument Node´Â Recursive È£Ãâ·Î Ã³¸®ÇÑ´Ù.
- *    4. ColumÀÎ Node¸¸ º¯°æÇÑ´Ù.
- *    5. Dst NodeÀÇ À§Ä¡Á¤º¸¸¦ º¯°æÇÑ´Ù.
+ *   BUG-44228  merge ì‹¤í–‰ì‹œ disk tableì´ê³  hash join ì¸ ê²½ìš° ì˜ë„í•˜ì§€ ì•ŠëŠ” ê°’ìœ¼ë¡œ ë³€ê²½ ë©ë‹ˆë‹¤.
+ *    1. Mtc Nodeë¥¼ ìˆœíšŒí•œë‹¤.
+ *    2. Src Argument NodeëŠ” Recursive í˜¸ì¶œë¡œ ì²˜ë¦¬í•œë‹¤.
+ *    3. Dst Argument NodeëŠ” Recursive í˜¸ì¶œë¡œ ì²˜ë¦¬í•œë‹¤.
+ *    4. Columì¸ Nodeë§Œ ë³€ê²½í•œë‹¤.
+ *    5. Dst Nodeì˜ ìœ„ì¹˜ì •ë³´ë¥¼ ë³€ê²½í•œë‹¤.
  *
  * Implementation :
  *
@@ -2500,12 +2500,12 @@ IDE_RC qmo::adjustArgumentNodeForMerge( qcStatement  * aStatement,
     sSrcNode = aSrcNode;
     sDstNode = aDstNode;
 
-    /* 1. Mtc Node¸¦ ¼øÈ¸ÇÑ´Ù. */
+    /* 1. Mtc Nodeë¥¼ ìˆœíšŒí•œë‹¤. */
     for ( sSrcNode  = aSrcNode;
           sSrcNode != NULL;
           sSrcNode  = sSrcNode->next )
     {
-        /* 2. Src Argument Node´Â Recursive È£Ãâ·Î Ã³¸®ÇÑ´Ù. */
+        /* 2. Src Argument NodeëŠ” Recursive í˜¸ì¶œë¡œ ì²˜ë¦¬í•œë‹¤. */
         if ( sSrcNode->arguments != NULL )
         {
             IDE_TEST( qmo::adjustArgumentNodeForMerge( aStatement,
@@ -2522,7 +2522,7 @@ IDE_RC qmo::adjustArgumentNodeForMerge( qcStatement  * aStatement,
               sDstNode != NULL;
               sDstNode  = sDstNode->next )
         {
-            /* 3. Dst Argument Node´Â Recursive È£Ãâ·Î Ã³¸®ÇÑ´Ù. */
+            /* 3. Dst Argument NodeëŠ” Recursive í˜¸ì¶œë¡œ ì²˜ë¦¬í•œë‹¤. */
             if ( sDstNode->arguments != NULL )
             {
                 IDE_TEST( qmo::adjustArgumentNodeForMerge( aStatement,
@@ -2535,7 +2535,7 @@ IDE_RC qmo::adjustArgumentNodeForMerge( qcStatement  * aStatement,
                 /* Nothing to do */
             }
 
-            /* 4. ColumÀÎ Node¸¸ º¯°æÇÑ´Ù. */
+            /* 4. Columì¸ Nodeë§Œ ë³€ê²½í•œë‹¤. */
             if ( ( sSrcNode->module != &( qtc::columnModule ) ) ||
                  ( sDstNode->module != &( qtc::columnModule ) ) )
             {
@@ -2546,7 +2546,7 @@ IDE_RC qmo::adjustArgumentNodeForMerge( qcStatement  * aStatement,
                 /* Nothing to do */
             }
 
-            /* 5. Dst NodeÀÇ À§Ä¡Á¤º¸¸¦ º¯°æÇÑ´Ù. */
+            /* 5. Dst Nodeì˜ ìœ„ì¹˜ì •ë³´ë¥¼ ë³€ê²½í•œë‹¤. */
             if ( ( sDstNode->baseTable  == sSrcNode->baseTable ) &&
                  ( sDstNode->baseColumn == sSrcNode->baseColumn ) )
             {

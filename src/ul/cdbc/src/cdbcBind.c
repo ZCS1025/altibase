@@ -19,12 +19,12 @@
 
 
 /**
- * µ¥ÀÌÅ¸ Å©±â°¡ Á¤ÇØÁ®ÀÖ´Â ¹ÙÀÎµå Å¸ÀÔÀÇ ¹öÆÛ Å©±â¸¦ ¾ò´Â´Ù.
+ * ë°ì´íƒ€ í¬ê¸°ê°€ ì •í•´ì ¸ìˆëŠ” ë°”ì¸ë“œ íƒ€ì…ì˜ ë²„í¼ í¬ê¸°ë¥¼ ì–»ëŠ”ë‹¤.
  *
- * @param[in] aBind ¹öÆÛ Å©±â¸¦ Á¤ÇÏ´Âµ¥ »ç¿ëÇÒ ¹ÙÀÎµå Á¤º¸
- * @return ¹öÆÛ Å©±â (>= 0),
- *         µ¥ÀÌÅ¸ Å©±â°¡ Á¤ÇØÁ®ÀÖÁö ¾ÊÀº Å¸ÀÔÀÌ¸é CDBC_EXPNO_VARSIZE_TYPE,
- *         À¯È¿ÇÏÁö ¾ÊÀº Å¸ÀÔÀÌ¸é CDBC_EXPNO_INVALID_BIND_TYPE
+ * @param[in] aBind ë²„í¼ í¬ê¸°ë¥¼ ì •í•˜ëŠ”ë° ì‚¬ìš©í•  ë°”ì¸ë“œ ì •ë³´
+ * @return ë²„í¼ í¬ê¸° (>= 0),
+ *         ë°ì´íƒ€ í¬ê¸°ê°€ ì •í•´ì ¸ìˆì§€ ì•Šì€ íƒ€ì…ì´ë©´ CDBC_EXPNO_VARSIZE_TYPE,
+ *         ìœ íš¨í•˜ì§€ ì•Šì€ íƒ€ì…ì´ë©´ CDBC_EXPNO_INVALID_BIND_TYPE
  */
 CDBC_INTERNAL
 acp_sint32_t altibase_bind_max_typesize (ALTIBASE_BIND_TYPE aBindType)
@@ -76,7 +76,7 @@ acp_sint32_t altibase_bind_max_typesize (ALTIBASE_BIND_TYPE aBindType)
 
     CDBC_EXCEPTION(InvalidType);
     {
-        /* »óÀ§ ÀÎÅÍÆäÀÌ½º¿¡¼­ Ã³¸® */
+        /* ìƒìœ„ ì¸í„°í˜ì´ìŠ¤ì—ì„œ ì²˜ë¦¬ */
     }
     CDBC_EXCEPTION_END;
 
@@ -88,17 +88,17 @@ acp_sint32_t altibase_bind_max_typesize (ALTIBASE_BIND_TYPE aBindType)
 }
 
 /**
- * ÇÊµå Á¤º¸¿¡ µû¶ó, ¹ÙÀÌ³Ê¸® ¶Ç´Â ¹®ÀÚ¿­·Î ¾ò¾úÀ» ¶§ÀÇ ÃÖ´ë ¹öÆÛ Å©±â¸¦ ¾ò´Â´Ù.
+ * í•„ë“œ ì •ë³´ì— ë”°ë¼, ë°”ì´ë„ˆë¦¬ ë˜ëŠ” ë¬¸ìì—´ë¡œ ì–»ì—ˆì„ ë•Œì˜ ìµœëŒ€ ë²„í¼ í¬ê¸°ë¥¼ ì–»ëŠ”ë‹¤.
  *
- * ÇÊµå Å¸ÀÔÀÌ IS_BIN_TYPE()ÀÌ¸é ¹ÙÀÌ³Ê¸®,
- * ±×·¸Áö ¾ÊÀ¸¸é ¹®ÀÚ¿­·Î ¾ò¾úÀ» ¶§ÀÇ ÃÖ´ë ¹öÆÛ Å©±â¸¦ ¹İÈ¯ÇÑ´Ù.
+ * í•„ë“œ íƒ€ì…ì´ IS_BIN_TYPE()ì´ë©´ ë°”ì´ë„ˆë¦¬,
+ * ê·¸ë ‡ì§€ ì•Šìœ¼ë©´ ë¬¸ìì—´ë¡œ ì–»ì—ˆì„ ë•Œì˜ ìµœëŒ€ ë²„í¼ í¬ê¸°ë¥¼ ë°˜í™˜í•œë‹¤.
  *
- * LOBÀº LOCATOR¸¦ ÀÌ¿ëÇÏ¹Ç·Î LOCATOR Å©±â¸¦ ¾ò´Â´Ù.
+ * LOBì€ LOCATORë¥¼ ì´ìš©í•˜ë¯€ë¡œ LOCATOR í¬ê¸°ë¥¼ ì–»ëŠ”ë‹¤.
  *
- * printf() µî¿¡¼­ ¹®Á¦°¡ ÀÏ¾î³¯ ¼öµµ ÀÖÀ¸¹Ç·Î alignment¸¦ ÇÑ´Ù.
+ * printf() ë“±ì—ì„œ ë¬¸ì œê°€ ì¼ì–´ë‚  ìˆ˜ë„ ìˆìœ¼ë¯€ë¡œ alignmentë¥¼ í•œë‹¤.
  *
- * @param[in] aFieldInfo ¹öÆÛ Å©±â¸¦ Á¤ÇÏ´Âµ¥ »ç¿ëÇÒ ÇÊµå Á¤º¸
- * @return ¹öÆÛ Å©±â. À¯È¿ÇÏÁö ¾ÊÀº ÇÊµå Å¸ÀÔÀÌ¸é CDBC_EXPNO_INVALID_FIELD_TYPE
+ * @param[in] aFieldInfo ë²„í¼ í¬ê¸°ë¥¼ ì •í•˜ëŠ”ë° ì‚¬ìš©í•  í•„ë“œ ì •ë³´
+ * @return ë²„í¼ í¬ê¸°. ìœ íš¨í•˜ì§€ ì•Šì€ í•„ë“œ íƒ€ì…ì´ë©´ CDBC_EXPNO_INVALID_FIELD_TYPE
  */
 CDBC_INTERNAL
 acp_sint32_t altibase_bind_max_sbinsize (ALTIBASE_FIELD *aFieldInfo)
@@ -124,21 +124,21 @@ acp_sint32_t altibase_bind_max_sbinsize (ALTIBASE_FIELD *aFieldInfo)
             break;
 
         case ALTIBASE_TYPE_NUMERIC:
-            /* ºÎÈ£(-) 1±ÛÀÚ, ¼Ò¼öÁ¡ 1±ÛÀÚ,
-               Áö¼öºÎ ½ÃÀÛ(E, e) 1±ÛÀÚ, Áö¼öºÎ ºÎÈ£(+, -) 1±ÛÀÚ, Áö¼öºÎ ¼ıÀÚ ÃÖ´ë 2±ÛÀÚ,
-               ¸ğµÎ ´õÇÏ¸é 168±ÛÀÚº¸´Ù 6±ÛÀÚ±îÁö ´Ã¾î³¯ ¼ö ÀÖÀ½.
-               176¹ÙÀÌÆ®¸é µÇ³ª ³Ë³ËÇÏ°Ô ÇÒ´çÇÔ. */
+            /* ë¶€í˜¸(-) 1ê¸€ì, ì†Œìˆ˜ì  1ê¸€ì,
+               ì§€ìˆ˜ë¶€ ì‹œì‘(E, e) 1ê¸€ì, ì§€ìˆ˜ë¶€ ë¶€í˜¸(+, -) 1ê¸€ì, ì§€ìˆ˜ë¶€ ìˆ«ì ìµœëŒ€ 2ê¸€ì,
+               ëª¨ë‘ ë”í•˜ë©´ 168ê¸€ìë³´ë‹¤ 6ê¸€ìê¹Œì§€ ëŠ˜ì–´ë‚  ìˆ˜ ìˆìŒ.
+               176ë°”ì´íŠ¸ë©´ ë˜ë‚˜ ë„‰ë„‰í•˜ê²Œ í• ë‹¹í•¨. */
             sBufSize = 191 + CDBC_NULLTERM_SIZE;
             break;
         case ALTIBASE_TYPE_FLOAT:
-            /* ¼Ò¼öÁ¡ 1±ÛÀÚ,
-               Áö¼öºÎ ½ÃÀÛ(E, e) 1±ÛÀÚ, Áö¼öºÎ ºÎÈ£(+, -) 1±ÛÀÚ, Áö¼öºÎ ¼ıÀÚ ÃÖ´ë 3±ÛÀÚ,
-               ¸ğµÎ ´õÇÏ¸é 168±ÛÀÚº¸´Ù 6±ÛÀÚ±îÁö ´Ã¾î³¯ ¼ö ÀÖÀ½.
-               176¹ÙÀÌÆ®¸é µÇ³ª ³Ë³ËÇÏ°Ô ÇÒ´çÇÔ. */
+            /* ì†Œìˆ˜ì  1ê¸€ì,
+               ì§€ìˆ˜ë¶€ ì‹œì‘(E, e) 1ê¸€ì, ì§€ìˆ˜ë¶€ ë¶€í˜¸(+, -) 1ê¸€ì, ì§€ìˆ˜ë¶€ ìˆ«ì ìµœëŒ€ 3ê¸€ì,
+               ëª¨ë‘ ë”í•˜ë©´ 168ê¸€ìë³´ë‹¤ 6ê¸€ìê¹Œì§€ ëŠ˜ì–´ë‚  ìˆ˜ ìˆìŒ.
+               176ë°”ì´íŠ¸ë©´ ë˜ë‚˜ ë„‰ë„‰í•˜ê²Œ í• ë‹¹í•¨. */
             sBufSize = 191 + CDBC_NULLTERM_SIZE;
             break;
 
-        /* ÃÖ´ë ÀÚ¸´¼ö + ºÎÈ£ + NULL-Term */
+        /* ìµœëŒ€ ìë¦¿ìˆ˜ + ë¶€í˜¸ + NULL-Term */
         case ALTIBASE_TYPE_DOUBLE:
         case ALTIBASE_TYPE_REAL:
             sBufSize = 383 + CDBC_NULLTERM_SIZE;
@@ -154,8 +154,8 @@ acp_sint32_t altibase_bind_max_sbinsize (ALTIBASE_FIELD *aFieldInfo)
             break;
 
         case ALTIBASE_TYPE_DATE:
-            /* DATE_FORMATÀÌ ÃÖ´ë 64±ÛÀÚÀÌ°í
-               FF Çü½ÄÁöÁ¤¹®ÀÚ¸¦ »ç¿ëÇÏ¸é ±æÀÌ°¡ 3¹è±îÁö ´Ã¾î³¯ ¼ö ÀÖÀ½ */
+            /* DATE_FORMATì´ ìµœëŒ€ 64ê¸€ìì´ê³ 
+               FF í˜•ì‹ì§€ì •ë¬¸ìë¥¼ ì‚¬ìš©í•˜ë©´ ê¸¸ì´ê°€ 3ë°°ê¹Œì§€ ëŠ˜ì–´ë‚  ìˆ˜ ìˆìŒ */
             sBufSize = (64 * 3) + CDBC_NULLTERM_SIZE;
             break;
 
@@ -195,7 +195,7 @@ acp_sint32_t altibase_bind_max_sbinsize (ALTIBASE_FIELD *aFieldInfo)
 
     CDBC_EXCEPTION(InvalidType);
     {
-        /* »óÀ§ ÀÎÅÍÆäÀÌ½º¿¡¼­ Ã³¸® */
+        /* ìƒìœ„ ì¸í„°í˜ì´ìŠ¤ì—ì„œ ì²˜ë¦¬ */
     }
     CDBC_EXCEPTION_END;
 
@@ -207,16 +207,16 @@ acp_sint32_t altibase_bind_max_sbinsize (ALTIBASE_FIELD *aFieldInfo)
 }
 
 /**
- * ÇÊµå Á¤º¸¿Í ¹ÙÀÎµå Á¤º¸¿¡ µû¸¥ ÃÖ´ë ¹öÆÛ Å©±â¸¦ ¾ò´Â´Ù.
+ * í•„ë“œ ì •ë³´ì™€ ë°”ì¸ë“œ ì •ë³´ì— ë”°ë¥¸ ìµœëŒ€ ë²„í¼ í¬ê¸°ë¥¼ ì–»ëŠ”ë‹¤.
  *
- * LOBÀº LOCATOR¸¦ ÀÌ¿ëÇÏ¹Ç·Î LOCATOR Å©±â¸¦ ¾ò´Â´Ù.
- * printf() µî¿¡¼­ ¹®Á¦°¡ ÀÏ¾î³¯ ¼öµµ ÀÖÀ¸¹Ç·Î alignment¸¦ ÇÑ´Ù.
+ * LOBì€ LOCATORë¥¼ ì´ìš©í•˜ë¯€ë¡œ LOCATOR í¬ê¸°ë¥¼ ì–»ëŠ”ë‹¤.
+ * printf() ë“±ì—ì„œ ë¬¸ì œê°€ ì¼ì–´ë‚  ìˆ˜ë„ ìˆìœ¼ë¯€ë¡œ alignmentë¥¼ í•œë‹¤.
  *
- * @param[in] aFieldInfo ¹öÆÛ Å©±â¸¦ Á¤ÇÏ´Âµ¥ »ç¿ëÇÒ ÇÊµå Á¤º¸
- * @param[in] aBaseBindInfo ¹öÆÛ Å©±â¸¦ Á¤ÇÏ´Âµ¥ »ç¿ëÇÒ ¹ÙÀÎµå Á¤º¸.
- * @return ¹öÆÛ Å©±â.
- *         À¯È¿ÇÏÁö ¾ÊÀº ÇÊµå Å¸ÀÔÀÌ¸é CDBC_EXPNO_INVALID_FIELD_TYPE
- *         À¯È¿ÇÏÁö ¾ÊÀº ¹ÙÀÎµå Å¸ÀÔÀÌ¸é CDBC_EXPNO_INVALID_BIND_TYPE
+ * @param[in] aFieldInfo ë²„í¼ í¬ê¸°ë¥¼ ì •í•˜ëŠ”ë° ì‚¬ìš©í•  í•„ë“œ ì •ë³´
+ * @param[in] aBaseBindInfo ë²„í¼ í¬ê¸°ë¥¼ ì •í•˜ëŠ”ë° ì‚¬ìš©í•  ë°”ì¸ë“œ ì •ë³´.
+ * @return ë²„í¼ í¬ê¸°.
+ *         ìœ íš¨í•˜ì§€ ì•Šì€ í•„ë“œ íƒ€ì…ì´ë©´ CDBC_EXPNO_INVALID_FIELD_TYPE
+ *         ìœ íš¨í•˜ì§€ ì•Šì€ ë°”ì¸ë“œ íƒ€ì…ì´ë©´ CDBC_EXPNO_INVALID_BIND_TYPE
  */
 CDBC_INTERNAL
 acp_sint32_t altibase_bind_max_bufsize (ALTIBASE_FIELD *aFieldInfo, ALTIBASE_BIND *aBaseBindInfo)
@@ -260,18 +260,18 @@ acp_sint32_t altibase_bind_max_bufsize (ALTIBASE_FIELD *aFieldInfo, ALTIBASE_BIN
 }
 
 /**
- * ¹ÙÀÎµå¸¦ À§ÇÑ °ø°£À» ÇÒ´çÇÑ´Ù.
+ * ë°”ì¸ë“œë¥¼ ìœ„í•œ ê³µê°„ì„ í• ë‹¹í•œë‹¤.
  *
- * altibase_query(), altibase_fetch_row() ÇÔ¼ö¸¦ À§ÇØ¼­ »ç¿ëµÈ´Ù.
+ * altibase_query(), altibase_fetch_row() í•¨ìˆ˜ë¥¼ ìœ„í•´ì„œ ì‚¬ìš©ëœë‹¤.
  *
- * @param[in] aABRes °á°ú ÇÚµé
- * @param[in] aBaseBindInfo ¹öÆÛ Å©±â¸¦ Á¤ÇÏ´Âµ¥ »ç¿ëÇÒ ¹ÙÀÎµå Á¤º¸.
- * @param[in] aBufAlloc µ¥ÀÌÅ¸¸¦ ´ãÀ» ¹öÆÛ °ø°£µµ ÇÒ´çÇÒÁö ¿©ºÎ.
- *                      CDBC_ALLOC_BUF_ON : ¹öÆÛ °ø°£µµ ÇÒ´ç
- *                      CDBC_ALLOC_BUF_OFF: ¹öÆÛ °ø°£À» Á¦¿ÜÇÏ°í length, is_null¸¸ ÇÒ´ç
- *                                          »ç¿ëÀÚ°¡ ¼³Á¤ÇÑ ¹ÙÀÎµå Á¤º¸¸¦ ±×´ë·Î ÀÌ¿ëÇÏ¹Ç·Î
- *                                          aBaseBindInfo´Â ¹İµå½Ã NULLÀÌ ¾Æ´Ï¾î¾ß ÇÑ´Ù.
- * @return ¼º°øÇßÀ¸¸é ALTIBASE_SUCCESS, ±×·¸Áö ¾ÊÀ¸¸é ALTIBASE_ERROR
+ * @param[in] aABRes ê²°ê³¼ í•¸ë“¤
+ * @param[in] aBaseBindInfo ë²„í¼ í¬ê¸°ë¥¼ ì •í•˜ëŠ”ë° ì‚¬ìš©í•  ë°”ì¸ë“œ ì •ë³´.
+ * @param[in] aBufAlloc ë°ì´íƒ€ë¥¼ ë‹´ì„ ë²„í¼ ê³µê°„ë„ í• ë‹¹í• ì§€ ì—¬ë¶€.
+ *                      CDBC_ALLOC_BUF_ON : ë²„í¼ ê³µê°„ë„ í• ë‹¹
+ *                      CDBC_ALLOC_BUF_OFF: ë²„í¼ ê³µê°„ì„ ì œì™¸í•˜ê³  length, is_nullë§Œ í• ë‹¹
+ *                                          ì‚¬ìš©ìê°€ ì„¤ì •í•œ ë°”ì¸ë“œ ì •ë³´ë¥¼ ê·¸ëŒ€ë¡œ ì´ìš©í•˜ë¯€ë¡œ
+ *                                          aBaseBindInfoëŠ” ë°˜ë“œì‹œ NULLì´ ì•„ë‹ˆì–´ì•¼ í•œë‹¤.
+ * @return ì„±ê³µí–ˆìœ¼ë©´ ALTIBASE_SUCCESS, ê·¸ë ‡ì§€ ì•Šìœ¼ë©´ ALTIBASE_ERROR
  */
 CDBC_INTERNAL
 ALTIBASE_RC altibase_result_bind_init (cdbcABRes *aABRes, ALTIBASE_BIND *aBaseBindInfo, CDBC_ALLOC_BUF aBufAlloc)
@@ -298,7 +298,7 @@ ALTIBASE_RC altibase_result_bind_init (cdbcABRes *aABRes, ALTIBASE_BIND *aBaseBi
     sRC = altibase_ensure_basic_fieldinfos(aABRes);
     CDBC_TEST(ALTIBASE_NOT_SUCCEEDED(sRC));
 
-    /* ÀüÃ¼ Å©±â ±¸ÇÏ±â */
+    /* ì „ì²´ í¬ê¸° êµ¬í•˜ê¸° */
     sLen = aABRes->mFieldCount * ACI_SIZEOF(ALTIBASE_BIND);
     for (i = 0; i < aABRes->mFieldCount; i++)
     {
@@ -308,7 +308,7 @@ ALTIBASE_RC altibase_result_bind_init (cdbcABRes *aABRes, ALTIBASE_BIND *aBaseBi
             if (aBaseBindInfo != NULL)
             {
                 sBaseBind = &(aBaseBindInfo[i]);
-                /* ALTIBASE_BIND_NULLÀº ÆÄ¶ó¹ÌÅÍ Àü¿ë Å¸ÀÔ */
+                /* ALTIBASE_BIND_NULLì€ íŒŒë¼ë¯¸í„° ì „ìš© íƒ€ì… */
                 CDBC_TEST_RAISE(sBaseBind->buffer_type == ALTIBASE_BIND_NULL,
                                 InvalidBindType);
             }
@@ -332,7 +332,7 @@ ALTIBASE_RC altibase_result_bind_init (cdbcABRes *aABRes, ALTIBASE_BIND *aBaseBi
         /* for length  */
         sBufSize += ACI_SIZEOF(ALTIBASE_LONG);
 
-        /* is_nullÀº fetchÇÒ ¶§ length °ªÀ» ÀÌ¿ëÇØ ¼³Á¤ÇÏ¹Ç·Î alloc ÇÏÁö ¾Ê´Â´Ù. */
+        /* is_nullì€ fetchí•  ë•Œ length ê°’ì„ ì´ìš©í•´ ì„¤ì •í•˜ë¯€ë¡œ alloc í•˜ì§€ ì•ŠëŠ”ë‹¤. */
 
         sBufSize *= aABRes->mArrayFetchSize;
 
@@ -340,7 +340,7 @@ ALTIBASE_RC altibase_result_bind_init (cdbcABRes *aABRes, ALTIBASE_BIND *aBaseBi
     }
     CDBCLOG_PRINT_VAL("%d", sLen);
 
-    /* ¸Ş¸ğ¸® ÇÒ´ç */
+    /* ë©”ëª¨ë¦¬ í• ë‹¹ */
     sBufItm = altibase_new_buffer(&(aABRes->mBindBuffer), sLen,
                                   CDBC_BUFFER_TAIL);
     CDBC_TEST_RAISE(sBufItm == NULL, MAllocError);
@@ -349,7 +349,7 @@ ALTIBASE_RC altibase_result_bind_init (cdbcABRes *aABRes, ALTIBASE_BIND *aBaseBi
     sBindResult = (ALTIBASE_BIND *) sBufPtr;
     sBufPtr += aABRes->mFieldCount * ACI_SIZEOF(ALTIBASE_BIND);
 
-    /* buffer, length Æ÷ÀÎÅÍ ¼³Á¤. */
+    /* buffer, length í¬ì¸í„° ì„¤ì •. */
     for (i = 0; i < aABRes->mFieldCount; i++)
     {
         CDBC_DASSERT(sBufPtr < (sBufItm->mBuffer + sBufItm->mBufferLength));
@@ -377,8 +377,8 @@ ALTIBASE_RC altibase_result_bind_init (cdbcABRes *aABRes, ALTIBASE_BIND *aBaseBi
         }
         else /* if (not bin type) */
         {
-            /* altibase_fetch_row()°°Àº ÀÎÅÍÆäÀÌ½ºÇÏ°í¸¸ ÇÔ²² ¾²ÀÌ¹Ç·Î
-               µ¥ÀÌÅ¸´Â ¾ğÁ¦³ª ¹®ÀÚ¿­·Î ¹Ş´Â´Ù. */
+            /* altibase_fetch_row()ê°™ì€ ì¸í„°í˜ì´ìŠ¤í•˜ê³ ë§Œ í•¨ê»˜ ì“°ì´ë¯€ë¡œ
+               ë°ì´íƒ€ëŠ” ì–¸ì œë‚˜ ë¬¸ìì—´ë¡œ ë°›ëŠ”ë‹¤. */
             sBindResult[i].buffer_type = ALTIBASE_BIND_STRING;
         }
 
@@ -389,7 +389,7 @@ ALTIBASE_RC altibase_result_bind_init (cdbcABRes *aABRes, ALTIBASE_BIND *aBaseBi
         }
         else
         {
-            /* »ç¿ëÀÚ°¡ ¼³Á¤ÇÑ ¹ÙÀÎµå Á¤º¸ º¹»ç. */
+            /* ì‚¬ìš©ìê°€ ì„¤ì •í•œ ë°”ì¸ë“œ ì •ë³´ ë³µì‚¬. */
             sBindResult[i].buffer = aBaseBindInfo[i].buffer;
             if (aBaseBindInfo[i].buffer_length != 0)
             {
@@ -397,10 +397,10 @@ ALTIBASE_RC altibase_result_bind_init (cdbcABRes *aABRes, ALTIBASE_BIND *aBaseBi
             }
             else /* if (aBaseBindInfo[i].buffer_length == 0) */
             {
-                /* Å©±â°¡ Á¤ÇØÁ®ÀÖ´Â ¹ÙÀÎµå Å¸ÀÔÀÇ buffer_size°¡ 0ÀÌ¸é
-                   ÀÚµ¿À¸·Î ÀûÀıÇÑ °ªÀ» ¼³Á¤ÇÑ´Ù.
-                   Å©±â°¡ Á¤ÇØÁ®ÀÖÁö ¾ÊÀº ¹ÙÀÎµå Å¸ÀÔÀÇ buffer_size´Â
-                   0ÀÌ¶óµµ À¯È¿ÇÑ °ªÀ» ¼³Á¤ÇÑ °ÍÀ¸·Î °£ÁÖÇÑ´Ù. */
+                /* í¬ê¸°ê°€ ì •í•´ì ¸ìˆëŠ” ë°”ì¸ë“œ íƒ€ì…ì˜ buffer_sizeê°€ 0ì´ë©´
+                   ìë™ìœ¼ë¡œ ì ì ˆí•œ ê°’ì„ ì„¤ì •í•œë‹¤.
+                   í¬ê¸°ê°€ ì •í•´ì ¸ìˆì§€ ì•Šì€ ë°”ì¸ë“œ íƒ€ì…ì˜ buffer_sizeëŠ”
+                   0ì´ë¼ë„ ìœ íš¨í•œ ê°’ì„ ì„¤ì •í•œ ê²ƒìœ¼ë¡œ ê°„ì£¼í•œë‹¤. */
                 sLen = altibase_bind_max_typesize(sBindResult[i].buffer_type);
                 CDBCLOG_PRINT_VAL("%d", sLen);
                 if (sLen > 0)
@@ -461,11 +461,11 @@ ALTIBASE_RC altibase_result_bind_init (cdbcABRes *aABRes, ALTIBASE_BIND *aBaseBi
 }
 
 /**
- * ¹ÙÀÎµå¸¦ À§ÇØ ÇÒ´çÇÑ °ø°£À» ÇØÁ¦ÇÑ´Ù.
+ * ë°”ì¸ë“œë¥¼ ìœ„í•´ í• ë‹¹í•œ ê³µê°„ì„ í•´ì œí•œë‹¤.
  *
- * altibase_query(), altibase_fetch_row() ÇÔ¼ö¸¦ À§ÇØ¼­ »ç¿ëµÈ´Ù.
+ * altibase_query(), altibase_fetch_row() í•¨ìˆ˜ë¥¼ ìœ„í•´ì„œ ì‚¬ìš©ëœë‹¤.
  *
- * @param[in] aABRes °á°ú ÇÚµé
+ * @param[in] aABRes ê²°ê³¼ í•¸ë“¤
  */
 CDBC_INTERNAL
 void altibase_result_bind_free (cdbcABRes *aABRes)
@@ -478,7 +478,7 @@ void altibase_result_bind_free (cdbcABRes *aABRes)
 
     if (aABRes->mBindResult != NULL)
     {
-        /* ½ÇÁ¦ ¸Ş¸ğ¸®´Â altibase_new_buffer()·Î Àâ¾ÒÀ¸¹Ç·Î º¯¼ö¸¸ ÃÊ±âÈ­ */
+        /* ì‹¤ì œ ë©”ëª¨ë¦¬ëŠ” altibase_new_buffer()ë¡œ ì¡ì•˜ìœ¼ë¯€ë¡œ ë³€ìˆ˜ë§Œ ì´ˆê¸°í™” */
         aABRes->mBindResult = NULL;
 
         altibase_clean_buffer(&(aABRes->mBindBuffer));
@@ -490,13 +490,13 @@ void altibase_result_bind_free (cdbcABRes *aABRes)
 }
 
 /**
- * ¹ÙÀÎµå¸¦ À§ÇÑ °ø°£À» »ı¼ºÇÏ°í ¹ÙÀÎµå ÇÑ´Ù.
+ * ë°”ì¸ë“œë¥¼ ìœ„í•œ ê³µê°„ì„ ìƒì„±í•˜ê³  ë°”ì¸ë“œ í•œë‹¤.
  *
- * @param[in] aABRes °á°ú ÇÚµé
- * @param[in] aUseLocator LOBÀ» LOCATOR·Î ¹ÙÀÎµå ÇÒÁö ¿©ºÎ.
- *                        CDBC_USE_LOCATOR_ON : LOBÀº LOCATOR·Î ¹ÙÀÎµå.
- *                        CDBC_USE_LOCATOR_OFF: ÁöÁ¤ÇÑ ¹ÙÀÎµå Å¸ÀÔÀ¸·Î ¹ÙÀÎµå.
- * @return ¼º°øÇßÀ¸¸é ALTIBASE_SUCCESS, ±×·¸Áö ¾ÊÀ¸¸é ALTIBASE_ERROR
+ * @param[in] aABRes ê²°ê³¼ í•¸ë“¤
+ * @param[in] aUseLocator LOBì„ LOCATORë¡œ ë°”ì¸ë“œ í• ì§€ ì—¬ë¶€.
+ *                        CDBC_USE_LOCATOR_ON : LOBì€ LOCATORë¡œ ë°”ì¸ë“œ.
+ *                        CDBC_USE_LOCATOR_OFF: ì§€ì •í•œ ë°”ì¸ë“œ íƒ€ì…ìœ¼ë¡œ ë°”ì¸ë“œ.
+ * @return ì„±ê³µí–ˆìœ¼ë©´ ALTIBASE_SUCCESS, ê·¸ë ‡ì§€ ì•Šìœ¼ë©´ ALTIBASE_ERROR
  */
 CDBC_INTERNAL
 ALTIBASE_RC altibase_result_bind_proc (cdbcABRes *aABRes, CDBC_USE_LOCATOR aUseLocator)
@@ -539,12 +539,12 @@ ALTIBASE_RC altibase_result_bind_proc (cdbcABRes *aABRes, CDBC_USE_LOCATOR aUseL
         CDBCLOG_PRINT_VAL("%p", &aABRes->mBindResult[i]);
         if (aUseLocator == CDBC_USE_LOCATOR_ON)
         {
-            /* LOBÀº LOCATOR¸¦ ÀÌ¿ëÇØ ¾ò¾î¿Í¾ß ÇÏ¹Ç·Î sTargetCTypeÀ» LOCATOR·Î ¼³Á¤ */
+            /* LOBì€ LOCATORë¥¼ ì´ìš©í•´ ì–»ì–´ì™€ì•¼ í•˜ë¯€ë¡œ sTargetCTypeì„ LOCATORë¡œ ì„¤ì • */
             if (aABRes->mFieldInfos[i].type == ALTIBASE_TYPE_BLOB)
             {
                 sTargetCType = SQL_BLOB_LOCATOR;
 
-                /* ³»ºÎ¿¡¼­¸¸ È£ÃâµÇ¹Ç·Î assert·Î È®ÀÎ */
+                /* ë‚´ë¶€ì—ì„œë§Œ í˜¸ì¶œë˜ë¯€ë¡œ assertë¡œ í™•ì¸ */
                 CDBC_DASSERT((acp_uint32_t)aABRes->mBindResult[i].buffer_length
                             >= ACI_SIZEOF(ALTIBASE_LOBLOCATOR));
             }
@@ -552,7 +552,7 @@ ALTIBASE_RC altibase_result_bind_proc (cdbcABRes *aABRes, CDBC_USE_LOCATOR aUseL
             {
                 sTargetCType = SQL_CLOB_LOCATOR;
 
-                /* ³»ºÎ¿¡¼­¸¸ È£ÃâµÇ¹Ç·Î assert·Î È®ÀÎ */
+                /* ë‚´ë¶€ì—ì„œë§Œ í˜¸ì¶œë˜ë¯€ë¡œ assertë¡œ í™•ì¸ */
                 CDBC_DASSERT((acp_uint32_t)aABRes->mBindResult[i].buffer_length
                             >= ACI_SIZEOF(ALTIBASE_LOBLOCATOR));
             }
@@ -618,10 +618,10 @@ ALTIBASE_RC altibase_result_bind_proc (cdbcABRes *aABRes, CDBC_USE_LOCATOR aUseL
 }
 
 /**
- * LOBÀ» LOCATOR·Î ´Ù½Ã ¹ÙÀÎµåÇÑ´Ù.
+ * LOBì„ LOCATORë¡œ ë‹¤ì‹œ ë°”ì¸ë“œí•œë‹¤.
  *
- * @param[in] aABRes °á°ú ÇÚµé
- * @return ¼º°øÇßÀ¸¸é ALTIBASE_SUCCESS, ±×·¸Áö ¾ÊÀ¸¸é ALTIBASE_ERROR
+ * @param[in] aABRes ê²°ê³¼ í•¸ë“¤
+ * @return ì„±ê³µí–ˆìœ¼ë©´ ALTIBASE_SUCCESS, ê·¸ë ‡ì§€ ì•Šìœ¼ë©´ ALTIBASE_ERROR
  */
 CDBC_INTERNAL
 ALTIBASE_RC altibase_result_rebind_for_lob (cdbcABRes *aABRes)
@@ -647,7 +647,7 @@ ALTIBASE_RC altibase_result_rebind_for_lob (cdbcABRes *aABRes)
     sErrorExist = ACP_FALSE;
     for (i = 0; i < aABRes->mFieldCount; i++)
     {
-        /* LOBÀº LOCATOR¸¦ ÀÌ¿ëÇØ ¾ò¾î¿Í¾ß ÇÏ¹Ç·Î sTargetCTypeÀ» LOCATOR·Î ¼³Á¤ */
+        /* LOBì€ LOCATORë¥¼ ì´ìš©í•´ ì–»ì–´ì™€ì•¼ í•˜ë¯€ë¡œ sTargetCTypeì„ LOCATORë¡œ ì„¤ì • */
         if (aABRes->mFieldInfos[i].type == ALTIBASE_TYPE_BLOB)
         {
             sTargetCType = SQL_BLOB_LOCATOR;
@@ -661,7 +661,7 @@ ALTIBASE_RC altibase_result_rebind_for_lob (cdbcABRes *aABRes)
             continue;
         }
 
-        /* LOB LOCATOR¸¦ ´ãÀ» °ø°£ÀÌ ¾ÈµÇ¸é buffer ÇÒ´ç */
+        /* LOB LOCATORë¥¼ ë‹´ì„ ê³µê°„ì´ ì•ˆë˜ë©´ buffer í• ë‹¹ */
         sTotBufSize = aABRes->mBindResult[i].buffer_length * aABRes->mArrayFetchSize;
         sExpBufSize = ACI_SIZEOF(ALTIBASE_LOBLOCATOR) * aABRes->mArrayFetchSize;
         sLocatorBufPtr = aABRes->mBindResult[i].buffer;
@@ -744,9 +744,9 @@ ALTIBASE_RC altibase_result_rebind_for_lob (cdbcABRes *aABRes)
 }
 
 /**
- * ¹ÙÀÎµå °ªÀÌ ¹Ù²¸¼­ ¹ÙÀÎµå¸¦ ´Ù½Ã ÇØ¾ßÇÏ´ÂÁö È®ÀÎ
+ * ë°”ì¸ë“œ ê°’ì´ ë°”ê»´ì„œ ë°”ì¸ë“œë¥¼ ë‹¤ì‹œ í•´ì•¼í•˜ëŠ”ì§€ í™•ì¸
  *
- * @return ¹ÙÀÎµå¸¦ ´Ù½Ã ÇØ¾ßÇÏ¸é ALTIBASE_TRUE, ±×·¸Áö ¾ÊÀ¸¸é ALTIBASE_FALSE
+ * @return ë°”ì¸ë“œë¥¼ ë‹¤ì‹œ í•´ì•¼í•˜ë©´ ALTIBASE_TRUE, ê·¸ë ‡ì§€ ì•Šìœ¼ë©´ ALTIBASE_FALSE
  */
 CDBC_INTERNAL
 ALTIBASE_BOOL altibase_stmt_parambind_changed (cdbcABStmt *aABStmt, ALTIBASE_BIND *aBind)
@@ -821,7 +821,7 @@ ALTIBASE_BOOL altibase_stmt_parambind_changed (cdbcABStmt *aABStmt, ALTIBASE_BIN
 
     CDBC_EXCEPTION(IsChanged)
     {
-        /* ¿¡·¯°¡ ¾Æ´Ï¹Ç·Î, ¿¡·¯Á¤º¸´Â ¼³Á¤ÇÒ ÇÊ¿ä ¾ø´Ù */
+        /* ì—ëŸ¬ê°€ ì•„ë‹ˆë¯€ë¡œ, ì—ëŸ¬ì •ë³´ëŠ” ì„¤ì •í•  í•„ìš” ì—†ë‹¤ */
     }
     CDBC_EXCEPTION_END;
 
@@ -833,10 +833,10 @@ ALTIBASE_BOOL altibase_stmt_parambind_changed (cdbcABStmt *aABStmt, ALTIBASE_BIN
 }
 
 /**
- * ÆÄ¶ó¹ÌÅÍ ¹ÙÀÎµå Á¤º¸¸¦ ¹é¾÷ÇÏ´Âµ¥ »ç¿ëÇÒ ¸Ş¸ğ¸®¸¦ ÇÒ´çÇÑ´Ù.
+ * íŒŒë¼ë¯¸í„° ë°”ì¸ë“œ ì •ë³´ë¥¼ ë°±ì—…í•˜ëŠ”ë° ì‚¬ìš©í•  ë©”ëª¨ë¦¬ë¥¼ í• ë‹¹í•œë‹¤.
  *
- * @param[in] aABStmt ¸í·É¹® ÇÚµé
- * @return ¼º°øÇßÀ¸¸é ALTIBASE_SUCCESS, ±×·¸Áö ¾ÊÀ¸¸é ALTIBASE_ERROR
+ * @param[in] aABStmt ëª…ë ¹ë¬¸ í•¸ë“¤
+ * @return ì„±ê³µí–ˆìœ¼ë©´ ALTIBASE_SUCCESS, ê·¸ë ‡ì§€ ì•Šìœ¼ë©´ ALTIBASE_ERROR
  */
 CDBC_INTERNAL
 ALTIBASE_RC altibase_stmt_parambind_alloc (cdbcABStmt *aABStmt)
@@ -903,10 +903,10 @@ ALTIBASE_RC altibase_stmt_parambind_alloc (cdbcABStmt *aABStmt)
 }
 
 /**
- * ÆÄ¶ó¹ÌÅÍ ¹ÙÀÎµå Á¤º¸¸¦ ¹é¾÷ÇÑ´Ù.
+ * íŒŒë¼ë¯¸í„° ë°”ì¸ë“œ ì •ë³´ë¥¼ ë°±ì—…í•œë‹¤.
  *
- * @param[in] aABStmt ¸í·É¹® ÇÚµé
- * @param[in] aBind ¹é¾÷ÇÒ ¹ÙÀÎµå Á¤º¸
+ * @param[in] aABStmt ëª…ë ¹ë¬¸ í•¸ë“¤
+ * @param[in] aBind ë°±ì—…í•  ë°”ì¸ë“œ ì •ë³´
  */
 CDBC_INTERNAL
 void altibase_stmt_parambind_backup (cdbcABStmt *aABStmt, ALTIBASE_BIND *aBind)
@@ -929,7 +929,7 @@ void altibase_stmt_parambind_backup (cdbcABStmt *aABStmt, ALTIBASE_BIND *aBind)
 
     sBakBind = aABStmt->mBakBindParam;
 
-    /* »ç¿ëÀÚ ¼³Á¤ º¹»ç */
+    /* ì‚¬ìš©ì ì„¤ì • ë³µì‚¬ */
     CDBCLOG_PRINT_VAL("%p", aBind);
     CDBCLOG_PRINT_VAL("%p", aABStmt->mBakBindParam);
     CDBCLOG_PRINT_VAL("%d", aABStmt->mParamCount);
@@ -959,9 +959,9 @@ void altibase_stmt_parambind_backup (cdbcABStmt *aABStmt, ALTIBASE_BIND *aBind)
 }
 
 /**
- * ÆÄ¶ó¹ÌÅÍ ¹ÙÀÎµå Á¤º¸¸¦ ¹é¾÷ÇÏ±â À§ÇØ ÇÒ´çÇÑ ¸Ş¸ğ¸®¸¦ ÇØÁ¦ÇÑ´Ù.
+ * íŒŒë¼ë¯¸í„° ë°”ì¸ë“œ ì •ë³´ë¥¼ ë°±ì—…í•˜ê¸° ìœ„í•´ í• ë‹¹í•œ ë©”ëª¨ë¦¬ë¥¼ í•´ì œí•œë‹¤.
  *
- * @param[in] aABStmt ¸í·É¹® ÇÚµé
+ * @param[in] aABStmt ëª…ë ¹ë¬¸ í•¸ë“¤
  */
 CDBC_INTERNAL
 void altibase_stmt_parambind_free (cdbcABStmt *aABStmt)
@@ -1012,11 +1012,11 @@ acp_char_t * cdbc_bind_check_string (CDBC_BIND_CHECK aCheck)
 }
 
 /**
- * ÆÄ¶ó¹ÌÅÍ ¹ÙÀÎµå¸¦ ¼öÇàÇÑ´Ù.
+ * íŒŒë¼ë¯¸í„° ë°”ì¸ë“œë¥¼ ìˆ˜í–‰í•œë‹¤.
  *
- * @param[in] aABStmt ¸í·É¹® ÇÚµé
- * @param[in] aBind ¹ÙÀÎµå Á¤º¸
- * @return ¼º°øÇßÀ¸¸é ALTIBASE_SUCCESS, ±×·¸Áö ¾ÊÀ¸¸é ALTIBASE_ERROR
+ * @param[in] aABStmt ëª…ë ¹ë¬¸ í•¸ë“¤
+ * @param[in] aBind ë°”ì¸ë“œ ì •ë³´
+ * @return ì„±ê³µí–ˆìœ¼ë©´ ALTIBASE_SUCCESS, ê·¸ë ‡ì§€ ì•Šìœ¼ë©´ ALTIBASE_ERROR
  */
 CDBC_INTERNAL
 ALTIBASE_RC altibase_stmt_parambind_core (cdbcABStmt *aABStmt, ALTIBASE_BIND *aBind)
@@ -1075,7 +1075,7 @@ ALTIBASE_RC altibase_stmt_parambind_core (cdbcABStmt *aABStmt, ALTIBASE_BIND *aB
         CDBCLOG_PRINT_VAL("%d", i);
         aBind[i].error = 0; /* init */
 
-        /* IndLenÀ» Á¶ÀÛÇÒ ÇÊ¿ä°¡ ¾ø´Ù¸é length¸¦ Á÷Á¢ ½á ¼º´ÉÀúÇÏ¸¦ ÁÙÀÓ */
+        /* IndLenì„ ì¡°ì‘í•  í•„ìš”ê°€ ì—†ë‹¤ë©´ lengthë¥¼ ì§ì ‘ ì¨ ì„±ëŠ¥ì €í•˜ë¥¼ ì¤„ì„ */
         if ( (aBind[i].buffer_type != ALTIBASE_BIND_NULL) &&
              (aBind[i].is_null == NULL) )
         {
@@ -1139,7 +1139,7 @@ ALTIBASE_RC altibase_stmt_parambind_core (cdbcABStmt *aABStmt, ALTIBASE_BIND *aB
         {
             CDBCLOG_PRINTF_ARG1("sCheckBind = %s", cdbc_bind_check_string(sCheckBind));
 
-            /* ¹ÙÀÎµå Á¤º¸°¡ ¾È¹Ù²¼À¸¸é ³Ñ¾î°¡µµ µÈ´Ù */
+            /* ë°”ì¸ë“œ ì •ë³´ê°€ ì•ˆë°”ê¼ˆìœ¼ë©´ ë„˜ì–´ê°€ë„ ëœë‹¤ */
             if (sCheckBind == CDBC_BIND_CHECK_CHANGED)
             {
                 CDBCLOG_CALL("acpMemCmp");
@@ -1179,7 +1179,7 @@ ALTIBASE_RC altibase_stmt_parambind_core (cdbcABStmt *aABStmt, ALTIBASE_BIND *aB
             {
                 case ALTIBASE_BIND_NULL:
                     CDBCLOG_PRINT("sBufType = ALTIBASE_BIND_NULL");
-                    /* ¹ÙÀÎµå Å¸ÀÔÀ» ÀÌ¿ëÇØ NULL·Î ¹ÙÀÎµå ÇÒ ¼ö ¾øÀ¸¹Ç·Î Å¸ÀÔ º¯°æ */
+                    /* ë°”ì¸ë“œ íƒ€ì…ì„ ì´ìš©í•´ NULLë¡œ ë°”ì¸ë“œ í•  ìˆ˜ ì—†ìœ¼ë¯€ë¡œ íƒ€ì… ë³€ê²½ */
                     sBufType = ALTIBASE_BIND_STRING;
                     sSqlType = SQL_CHAR;
 
@@ -1289,11 +1289,11 @@ ALTIBASE_RC altibase_stmt_parambind_core (cdbcABStmt *aABStmt, ALTIBASE_BIND *aB
 }
 
 /**
- * ÆÄ¶ó¹ÌÅÍ ¹ÙÀÎµå¸¦ ¼öÇàÇÑ´Ù.
+ * íŒŒë¼ë¯¸í„° ë°”ì¸ë“œë¥¼ ìˆ˜í–‰í•œë‹¤.
  *
- * @param[in] aABStmt ¸í·É¹® ÇÚµé
- * @param[in] aBind ¹ÙÀÎµå Á¤º¸
- * @return ¼º°øÇßÀ¸¸é ALTIBASE_SUCCESS, ±×·¸Áö ¾ÊÀ¸¸é ALTIBASE_ERROR
+ * @param[in] aABStmt ëª…ë ¹ë¬¸ í•¸ë“¤
+ * @param[in] aBind ë°”ì¸ë“œ ì •ë³´
+ * @return ì„±ê³µí–ˆìœ¼ë©´ ALTIBASE_SUCCESS, ê·¸ë ‡ì§€ ì•Šìœ¼ë©´ ALTIBASE_ERROR
  */
 CDBC_EXPORT
 ALTIBASE_RC altibase_stmt_bind_param (ALTIBASE_STMT aABStmt, ALTIBASE_BIND *aBind)
@@ -1359,7 +1359,7 @@ ALTIBASE_RC altibase_stmt_bind_param (ALTIBASE_STMT aABStmt, ALTIBASE_BIND *aBin
 
     if (sRC != ALTIBASE_INVALID_HANDLE)
     {
-        /* failover ÈÄÃ³¸®¿¡ ¼º°øÇÏ¸é retry ÇÏ¹Ç·Î reset ÇØÁØ´Ù. */
+        /* failover í›„ì²˜ë¦¬ì— ì„±ê³µí•˜ë©´ retry í•˜ë¯€ë¡œ reset í•´ì¤€ë‹¤. */
         CDBCLOG_CALL("SQLFreeStmt : SQL_RESET_PARAMS");
         sCliRC = SQLFreeStmt(sABStmt->mHstmt, SQL_RESET_PARAMS);
         CDBCLOG_BACK_VAL("SQLFreeStmt", "%d", sCliRC);
@@ -1377,11 +1377,11 @@ ALTIBASE_RC altibase_stmt_bind_param (ALTIBASE_STMT aABStmt, ALTIBASE_BIND *aBin
 }
 
 /**
- * °á°ú ¹ÙÀÎµå¸¦ ¼öÇàÇÑ´Ù.
+ * ê²°ê³¼ ë°”ì¸ë“œë¥¼ ìˆ˜í–‰í•œë‹¤.
  *
- * @param[in] aABStmt ¸í·É¹® ÇÚµé
- * @param[in] aBind ¹ÙÀÎµå Á¤º¸
- * @return ¼º°øÇßÀ¸¸é ALTIBASE_SUCCESS, ±×·¸Áö ¾ÊÀ¸¸é ALTIBASE_ERROR
+ * @param[in] aABStmt ëª…ë ¹ë¬¸ í•¸ë“¤
+ * @param[in] aBind ë°”ì¸ë“œ ì •ë³´
+ * @return ì„±ê³µí–ˆìœ¼ë©´ ALTIBASE_SUCCESS, ê·¸ë ‡ì§€ ì•Šìœ¼ë©´ ALTIBASE_ERROR
  */
 CDBC_INTERNAL
 ALTIBASE_RC altibase_stmt_resultbind_proc (cdbcABStmt *aABStmt, ALTIBASE_BIND *aBind, ALTIBASE_BOOL aUseAllocLoc)
@@ -1399,14 +1399,14 @@ ALTIBASE_RC altibase_stmt_resultbind_proc (cdbcABStmt *aABStmt, ALTIBASE_BIND *a
     sFieldCount = altibase_stmt_field_count(aABStmt);
     CDBC_TEST(sFieldCount == ALTIBASE_INVALID_FIELDCOUNT);
 
-    /* buffer type, array size¿¡ µû¶ó ÇÒ´çÇØ¾ßÇÒ °ø°£ÀÌ ´Ş¶óÁö¹Ç·Î ´Ù½Ã ÇÒ´ç */
+    /* buffer type, array sizeì— ë”°ë¼ í• ë‹¹í•´ì•¼í•  ê³µê°„ì´ ë‹¬ë¼ì§€ë¯€ë¡œ ë‹¤ì‹œ í• ë‹¹ */
     altibase_result_bind_free(aABStmt->mRes);
 
     sRC = altibase_result_bind_init(aABStmt->mRes, aBind, (CDBC_ALLOC_BUF) aUseAllocLoc);
     CDBC_TEST(ALTIBASE_NOT_SUCCEEDED(sRC));
 
     sRC = altibase_result_bind_proc(aABStmt->mRes, (CDBC_USE_LOCATOR) aUseAllocLoc);
-    /* ¹ÙÀÎµå ¿¡·¯ Á¤º¸ º¹»ç */
+    /* ë°”ì¸ë“œ ì—ëŸ¬ ì •ë³´ ë³µì‚¬ */
     for (i = 0; i < sFieldCount; i++)
     {
         aBind[i].error = (aABStmt->mRes->mBindResult[i]).error;
@@ -1427,11 +1427,11 @@ ALTIBASE_RC altibase_stmt_resultbind_proc (cdbcABStmt *aABStmt, ALTIBASE_BIND *a
 }
 
 /**
- * °á°ú ¹ÙÀÎµå¸¦ ¼öÇàÇÑ´Ù.
+ * ê²°ê³¼ ë°”ì¸ë“œë¥¼ ìˆ˜í–‰í•œë‹¤.
  *
- * @param[in] aABStmt ¸í·É¹® ÇÚµé
- * @param[in] aBind ¹ÙÀÎµå Á¤º¸
- * @return ¼º°øÇßÀ¸¸é ALTIBASE_SUCCESS, ±×·¸Áö ¾ÊÀ¸¸é ALTIBASE_ERROR
+ * @param[in] aABStmt ëª…ë ¹ë¬¸ í•¸ë“¤
+ * @param[in] aBind ë°”ì¸ë“œ ì •ë³´
+ * @return ì„±ê³µí–ˆìœ¼ë©´ ALTIBASE_SUCCESS, ê·¸ë ‡ì§€ ì•Šìœ¼ë©´ ALTIBASE_ERROR
  */
 CDBC_EXPORT
 ALTIBASE_RC altibase_stmt_bind_result (ALTIBASE_STMT aABStmt, ALTIBASE_BIND *aBind)

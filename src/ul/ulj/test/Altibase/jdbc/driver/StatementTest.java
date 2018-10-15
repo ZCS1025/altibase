@@ -36,7 +36,7 @@ public class StatementTest extends AltibaseTestCase
 
     public void testMaxStmt() throws SQLException
     {
-        // ÃÖ´ë 65536°³±îÁö ¸¸µé ¼ö ÀÖÁö¸¸, Connection¿¡¼­ ³»ºÎ Ã³¸®¿ëÀ¸·Î 1°³ ¾²¹Ç·Î 65535±îÁö¸¸ ¸¸µé ¼ö ÀÖ´Ù.
+        // ìµœëŒ€ 65536ê°œê¹Œì§€ ë§Œë“¤ ìˆ˜ ìˆì§€ë§Œ, Connectionì—ì„œ ë‚´ë¶€ ì²˜ë¦¬ìš©ìœ¼ë¡œ 1ê°œ ì“°ë¯€ë¡œ 65535ê¹Œì§€ë§Œ ë§Œë“¤ ìˆ˜ ìˆë‹¤.
         Statement[] sStmt = new Statement[65535];
         for (int i=0; i<sStmt.length; i++)
         {
@@ -51,7 +51,7 @@ public class StatementTest extends AltibaseTestCase
             assertEquals(ErrorDef.TOO_MANY_STATEMENTS, sEx.getErrorCode());
         }
 
-        // ´İ°í ¸¸µé¸é ¸¸µé¾îÁ®¾ßÇÑ´Ù. (»ç¿ëÁßÀÎ CID¼ÂÀÌ Á¦´ë·Î Á¤¸®µÇ´ÂÁö È®ÀÎ)
+        // ë‹«ê³  ë§Œë“¤ë©´ ë§Œë“¤ì–´ì ¸ì•¼í•œë‹¤. (ì‚¬ìš©ì¤‘ì¸ CIDì…‹ì´ ì œëŒ€ë¡œ ì •ë¦¬ë˜ëŠ”ì§€ í™•ì¸)
         sStmt[0].close();
         sStmt[0] = connection().createStatement();
     }

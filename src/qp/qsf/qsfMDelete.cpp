@@ -19,19 +19,19 @@
  * $Id: qsfMDelete.cpp 82075 2018-01-17 06:39:52Z jina.kim $
  *
  * Description :
- *     PROJ-1075 array typeº¯¼öÀÇ member function DELETE
+ *     PROJ-1075 array typeë³€ìˆ˜ì˜ member function DELETE
  *
  * Syntax :
  *     arr_var.DELETE( [ index | index_lower, index_upper ] );
- *     RETURN INTEGER  <= deleteµÈ count.
+ *     RETURN INTEGER  <= deleteëœ count.
  *
  * Implementation :
- *     spec»ó procedure°¡ µÇ¾î¾ß ÇÏÁö¸¸, functionÀ¸·Î Ã³¸®. ´ë½Å
- *     deleteµÈ count¸¦ returnÇÑ´Ù.
+ *     specìƒ procedureê°€ ë˜ì–´ì•¼ í•˜ì§€ë§Œ, functionìœ¼ë¡œ ì²˜ë¦¬. ëŒ€ì‹ 
+ *     deleteëœ countë¥¼ returní•œë‹¤.
  *
- *     1. index°¡ ¾øÀ¸¸é ¸ğµÎ »èÁ¦.
- *     2. index°¡ ÇÏ³ª¶ó¸é ÇØ´ç indexÀÇ element¸¦ »èÁ¦.
- *     3. index°¡ µÎ°³¶ó¸é index_lower ~ index_upper±îÁöÀÇ element¸¦ »èÁ¦.
+ *     1. indexê°€ ì—†ìœ¼ë©´ ëª¨ë‘ ì‚­ì œ.
+ *     2. indexê°€ í•˜ë‚˜ë¼ë©´ í•´ë‹¹ indexì˜ elementë¥¼ ì‚­ì œ.
+ *     3. indexê°€ ë‘ê°œë¼ë©´ index_lower ~ index_upperê¹Œì§€ì˜ elementë¥¼ ì‚­ì œ.
  *
  **********************************************************************/
 
@@ -81,7 +81,7 @@ IDE_RC qsfMDeleteCalculate2Args(mtcNode*     aNode,
 mtfModule qsfMDeleteModule = {
     1|MTC_NODE_OPERATOR_FUNCTION|MTC_NODE_VARIABLE_TRUE,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
+    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìê°€ ì•„ë‹˜)
     qsfMDeleteFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -130,25 +130,25 @@ IDE_RC qsfMDeleteEstimate( mtcNode*     aNode,
 {
 /***********************************************************************
  *
- * Description : PROJ-1075 deleteÇÔ¼öÀÇ estimate
+ * Description : PROJ-1075 deleteí•¨ìˆ˜ì˜ estimate
  *
  * Implementation :
- *               ±âº»ÀûÀÎ routineÀº ÀÏ¹İ qsf~ÇÔ¼öµé°ú °°À¸³ª,
- *               host variable bindingÀ» Çã¿ëÇÏÁö ¾Ê°í
- *               psm³»ºÎ¿¡¼­¸¸ »ç¿ëÀÌ °¡´ÉÇÏ´Ù.
- *               deleteÇÔ¼öÀÇ argument´Â 0~2°³±îÁö ¿Ã ¼ö ÀÖ´Ù.
+ *               ê¸°ë³¸ì ì¸ routineì€ ì¼ë°˜ qsf~í•¨ìˆ˜ë“¤ê³¼ ê°™ìœ¼ë‚˜,
+ *               host variable bindingì„ í—ˆìš©í•˜ì§€ ì•Šê³ 
+ *               psmë‚´ë¶€ì—ì„œë§Œ ì‚¬ìš©ì´ ê°€ëŠ¥í•˜ë‹¤.
+ *               deleteí•¨ìˆ˜ì˜ argumentëŠ” 0~2ê°œê¹Œì§€ ì˜¬ ìˆ˜ ìˆë‹¤.
  *
- *            ´ÙÀ½°ú °°Àº À¯ÇüÀ¸·Î µé¾î¿Ã ¼ö ÀÖ´Ù.
+ *            ë‹¤ìŒê³¼ ê°™ì€ ìœ í˜•ìœ¼ë¡œ ë“¤ì–´ì˜¬ ìˆ˜ ìˆë‹¤.
  *            (1.1) var_name.delete()
  *            (1.2) var_name.delete(index)
  *            (1.3) var_name.delete(index_lower, index_upper)
  *            (2.1) label_name.var_name.delete()
  *            (2.2) label_name.var_name.delete(index)
  *            (2.3) label_name.var_name.delete(index_lower, index_upper)
- *            var_nameÀº qtcNodeÀÇ tableName¿¡ ÇØ´çµÇ¹Ç·Î ¹«Á¶°Ç Á¸ÀçÇØ¾ß ÇÑ´Ù.
- *            qtcNode->userName, tableNameÀ» ÀÌ¿ëÇÏ¿© array type variableÀ» °Ë»ö.
- *            execute->calculateInfo¿¡ Ã£Àº º¯¼öÀÇ Á¤º¸¸¦ ¿¬°áÇÏ¿© ÁØ´Ù.
- *            index, return valueÀÇ À¯ÇüÀº ÇØ´ç º¯¼öÀÇ key column type°ú µ¿ÀÏÇÏ°Ô »ı¼º.
+ *            var_nameì€ qtcNodeì˜ tableNameì— í•´ë‹¹ë˜ë¯€ë¡œ ë¬´ì¡°ê±´ ì¡´ì¬í•´ì•¼ í•œë‹¤.
+ *            qtcNode->userName, tableNameì„ ì´ìš©í•˜ì—¬ array type variableì„ ê²€ìƒ‰.
+ *            execute->calculateInfoì— ì°¾ì€ ë³€ìˆ˜ì˜ ì •ë³´ë¥¼ ì—°ê²°í•˜ì—¬ ì¤€ë‹¤.
+ *            index, return valueì˜ ìœ í˜•ì€ í•´ë‹¹ ë³€ìˆ˜ì˜ key column typeê³¼ ë™ì¼í•˜ê²Œ ìƒì„±.
  *
  ***********************************************************************/
 
@@ -175,10 +175,10 @@ IDE_RC qsfMDeleteEstimate( mtcNode*     aNode,
 
     aStack[0].column = aTemplate->rows[aNode->table].columns + aNode->column;
 
-    // ÀûÇÕ¼º °Ë»ç. tableNameÀº ¹İµå½Ã Á¸ÀçÇØ¾ß ÇÔ.
+    // ì í•©ì„± ê²€ì‚¬. tableNameì€ ë°˜ë“œì‹œ ì¡´ì¬í•´ì•¼ í•¨.
     IDE_DASSERT( QC_IS_NULL_NAME(sNode->tableName) == ID_FALSE );
 
-    // array type º¯¼ö¸¦ °Ë»ö.
+    // array type ë³€ìˆ˜ë¥¼ ê²€ìƒ‰.
     IDE_TEST( qsvProcVar::searchArrayVar( sStatement,
                                           sNode,
                                           &sIsFound,
@@ -193,7 +193,7 @@ IDE_RC qsfMDeleteEstimate( mtcNode*     aNode,
     }
     else
     {
-        // return°ªÀº integer.
+        // returnê°’ì€ integer.
         IDE_TEST( mtc::initializeColumn( aStack[0].column,
                                          &mtdInteger,
                                          0,
@@ -224,7 +224,7 @@ IDE_RC qsfMDeleteEstimate( mtcNode*     aNode,
                 aTemplate->rows[aNode->table].execute[aNode->column] = qsfExecute1Arg;
                 aTemplate->rows[aNode->table].execute[aNode->column].calculateInfo = (void*)sColumnInfo;
 
-                // typeInfoÀÇ Ã¹¹øÂ° ÄÃ·³ÀÌ index columnÀÓ.
+                // typeInfoì˜ ì²«ë²ˆì§¸ ì»¬ëŸ¼ì´ index columnì„.
                 sModule = sArrayVariable->typeInfo->columns->basicInfo->module;
                 IDE_TEST( mtf::makeConversionNodes( aNode,
                                                     aNode->arguments,
@@ -239,7 +239,7 @@ IDE_RC qsfMDeleteEstimate( mtcNode*     aNode,
                 aTemplate->rows[aNode->table].execute[aNode->column] = qsfExecute2Args;
                 aTemplate->rows[aNode->table].execute[aNode->column].calculateInfo = (void*)sColumnInfo;
 
-                // typeInfoÀÇ Ã¹¹øÂ° ÄÃ·³ÀÌ index columnÀÓ.
+                // typeInfoì˜ ì²«ë²ˆì§¸ ì»¬ëŸ¼ì´ index columnì„.
                 sModules[0] = sArrayVariable->typeInfo->columns->basicInfo->module;
                 sModules[1] = sModules[0];
                 IDE_TEST( mtf::makeConversionNodes( aNode,
@@ -287,12 +287,12 @@ IDE_RC qsfMDeleteCalculateNoArg(mtcNode*     aNode,
 {
 /***********************************************************************
  *
- * Description : PROJ-1075 delete()ÇÔ¼öÀÇ calculate
+ * Description : PROJ-1075 delete()í•¨ìˆ˜ì˜ calculate
  *
  * Implementation :
- *          aInfo¿¡¼­ qsxArrayInfo¸¦ °¡Á®¿Í¼­
- *          truncateÇÔ¼ö¸¦ È£ÃâÇÑ´Ù.
- *          argument°¡ ¾ø´Â °æ¿ìÀÌ¹Ç·Î ¸ğµÎ »èÁ¦ÇÑ´Ù.
+ *          aInfoì—ì„œ qsxArrayInfoë¥¼ ê°€ì ¸ì™€ì„œ
+ *          truncateí•¨ìˆ˜ë¥¼ í˜¸ì¶œí•œë‹¤.
+ *          argumentê°€ ì—†ëŠ” ê²½ìš°ì´ë¯€ë¡œ ëª¨ë‘ ì‚­ì œí•œë‹¤.
  *
  ***********************************************************************/    
 
@@ -312,8 +312,8 @@ IDE_RC qsfMDeleteCalculateNoArg(mtcNode*     aNode,
               != IDE_SUCCESS );
 
     /* BUG-38243
-       array method »ç¿ë ½Ã, ÇØ´ç array´Â ÇØ´ç aTemplateÀÌ ¾Æ´Ñ
-       ´Ù¸¥ template¿¡ Á¤º¸°¡ ÀÖÀ» ¼ö ÀÖ´Ù. */
+       array method ì‚¬ìš© ì‹œ, í•´ë‹¹ arrayëŠ” í•´ë‹¹ aTemplateì´ ì•„ë‹Œ
+       ë‹¤ë¥¸ templateì— ì •ë³´ê°€ ìˆì„ ìˆ˜ ìˆë‹¤. */
     if ( sColumnInfo->objectId == QS_EMPTY_OID )
     {
         sTemplateForArrayVar = aTemplate;
@@ -336,12 +336,12 @@ IDE_RC qsfMDeleteCalculateNoArg(mtcNode*     aNode,
     sArrayInfo = *((qsxArrayInfo ** )( (UChar*) sTemplateForArrayVar->rows[sColumnInfo->table].row
                                     + sArrayColumn->column.offset ));
 
-    // ÀûÇÕ¼º °Ë»ç.
+    // ì í•©ì„± ê²€ì‚¬.
     IDE_TEST_RAISE( sArrayInfo == NULL, ERR_INVALID_ARRAY );
 
     sReturnValue = (mtdIntegerType*)aStack[0].value;
 
-    // ´Ù Áö¿öÁö´Â °ÍÀÌ¹Ç·Î Áö¿ì±â ÀüÀÇ count¸¦ ±¸ÇÔ.
+    // ë‹¤ ì§€ì›Œì§€ëŠ” ê²ƒì´ë¯€ë¡œ ì§€ìš°ê¸° ì „ì˜ countë¥¼ êµ¬í•¨.
     *sReturnValue = qsxArray::getElementsCount( sArrayInfo );
 
     IDE_TEST( qsxArray::truncateArray( sArrayInfo )
@@ -366,13 +366,13 @@ IDE_RC qsfMDeleteCalculate1Arg(mtcNode*     aNode,
 {
 /***********************************************************************
  *
- * Description : PROJ-1075 delete(index)ÇÔ¼öÀÇ calculate
+ * Description : PROJ-1075 delete(index)í•¨ìˆ˜ì˜ calculate
  *
  * Implementation :
- *          aInfo¿¡¼­ qsxArrayInfo¸¦ °¡Á®¿Í¼­
- *          deleteOneElementÇÔ¼ö¸¦ È£ÃâÇÑ´Ù.
- *          argument°¡ ÇÏ³ªÀÎ °æ¿ìÀÌ¹Ç·Î
- *          Áö¿öÁø °³¼ö(return°ª)´Â 1 ¶Ç´Â 0ÀÌ´Ù.
+ *          aInfoì—ì„œ qsxArrayInfoë¥¼ ê°€ì ¸ì™€ì„œ
+ *          deleteOneElementí•¨ìˆ˜ë¥¼ í˜¸ì¶œí•œë‹¤.
+ *          argumentê°€ í•˜ë‚˜ì¸ ê²½ìš°ì´ë¯€ë¡œ
+ *          ì§€ì›Œì§„ ê°œìˆ˜(returnê°’)ëŠ” 1 ë˜ëŠ” 0ì´ë‹¤.
  ***********************************************************************/    
 
     qsxArrayInfo   * sArrayInfo;
@@ -392,8 +392,8 @@ IDE_RC qsfMDeleteCalculate1Arg(mtcNode*     aNode,
               != IDE_SUCCESS );
 
     /* BUG-38243
-       array method »ç¿ë ½Ã, ÇØ´ç array´Â ÇØ´ç aTemplateÀÌ ¾Æ´Ñ
-       ´Ù¸¥ template¿¡ Á¤º¸°¡ ÀÖÀ» ¼ö ÀÖ´Ù. */
+       array method ì‚¬ìš© ì‹œ, í•´ë‹¹ arrayëŠ” í•´ë‹¹ aTemplateì´ ì•„ë‹Œ
+       ë‹¤ë¥¸ templateì— ì •ë³´ê°€ ìˆì„ ìˆ˜ ìˆë‹¤. */
     if ( sColumnInfo->objectId == QS_EMPTY_OID )
     {
         sTemplateForArrayVar = aTemplate;
@@ -416,7 +416,7 @@ IDE_RC qsfMDeleteCalculate1Arg(mtcNode*     aNode,
     sArrayInfo = *((qsxArrayInfo ** )( (UChar*) sTemplateForArrayVar->rows[sColumnInfo->table].row
                                     + sArrayColumn->column.offset ));
 
-    // ÀûÇÕ¼º °Ë»ç.
+    // ì í•©ì„± ê²€ì‚¬.
     IDE_TEST_RAISE( sArrayInfo == NULL, ERR_INVALID_ARRAY );
 
     sReturnValue = (mtdIntegerType*)aStack[0].value;
@@ -424,12 +424,12 @@ IDE_RC qsfMDeleteCalculate1Arg(mtcNode*     aNode,
     if( aStack[1].column->module->isNull( aStack[1].column,
                                           aStack[1].value ) == ID_TRUE )
     {
-        // argument°¡ NULLÀÎ °æ¿ì´Â ¹«Á¶°Ç 0(null key´Â ¾ø´Ù)
+        // argumentê°€ NULLì¸ ê²½ìš°ëŠ” ë¬´ì¡°ê±´ 0(null keyëŠ” ì—†ë‹¤)
         *sReturnValue = 0;
     }
     else
     {
-        // index¿¡ ÇØ´çÇÏ´Â elementÇÏ³ª¸¦ »èÁ¦.
+        // indexì— í•´ë‹¹í•˜ëŠ” elementí•˜ë‚˜ë¥¼ ì‚­ì œ.
         IDE_TEST( qsxArray::deleteOneElement( sArrayInfo,
                                               aStack[1].column,
                                               aStack[1].value,
@@ -438,12 +438,12 @@ IDE_RC qsfMDeleteCalculate1Arg(mtcNode*     aNode,
 
         if( sDeleted == ID_TRUE )
         {
-            // »èÁ¦¿¡ ¼º°øÇÏ¸é 1(Áö¿öÁø °³¼ö)
+            // ì‚­ì œì— ì„±ê³µí•˜ë©´ 1(ì§€ì›Œì§„ ê°œìˆ˜)
             *sReturnValue = 1;
         }
         else
         {
-            // »èÁ¦¿¡ ½ÇÆĞÇÏ¸é 0(Áö¿öÁø °³¼ö)
+            // ì‚­ì œì— ì‹¤íŒ¨í•˜ë©´ 0(ì§€ì›Œì§„ ê°œìˆ˜)
             *sReturnValue = 0;
         }
     }
@@ -467,13 +467,13 @@ IDE_RC qsfMDeleteCalculate2Args(mtcNode*     aNode,
 {
 /***********************************************************************
  *
- * Description : PROJ-1075 delete(index_lower, index_upper)ÇÔ¼öÀÇ calculate
+ * Description : PROJ-1075 delete(index_lower, index_upper)í•¨ìˆ˜ì˜ calculate
  *
  * Implementation :
- *          aInfo¿¡¼­ qsxArrayInfo¸¦ °¡Á®¿Í¼­
- *          deleteElementsRangeÇÔ¼ö¸¦ È£ÃâÇÑ´Ù.
- *          argument°¡ µÑÀÎ °æ¿ìÀÌ¹Ç·Î
- *          Áö¿öÁø °³¼ö(return°ª)´Â 0 ~ ÀÌ´Ù.
+ *          aInfoì—ì„œ qsxArrayInfoë¥¼ ê°€ì ¸ì™€ì„œ
+ *          deleteElementsRangeí•¨ìˆ˜ë¥¼ í˜¸ì¶œí•œë‹¤.
+ *          argumentê°€ ë‘˜ì¸ ê²½ìš°ì´ë¯€ë¡œ
+ *          ì§€ì›Œì§„ ê°œìˆ˜(returnê°’)ëŠ” 0 ~ ì´ë‹¤.
  ***********************************************************************/    
 
     qsxArrayInfo   * sArrayInfo;
@@ -492,8 +492,8 @@ IDE_RC qsfMDeleteCalculate2Args(mtcNode*     aNode,
               != IDE_SUCCESS );
 
     /* BUG-38243
-       array method »ç¿ë ½Ã, ÇØ´ç array´Â ÇØ´ç aTemplateÀÌ ¾Æ´Ñ
-       ´Ù¸¥ template¿¡ Á¤º¸°¡ ÀÖÀ» ¼ö ÀÖ´Ù. */
+       array method ì‚¬ìš© ì‹œ, í•´ë‹¹ arrayëŠ” í•´ë‹¹ aTemplateì´ ì•„ë‹Œ
+       ë‹¤ë¥¸ templateì— ì •ë³´ê°€ ìˆì„ ìˆ˜ ìˆë‹¤. */
     if ( sColumnInfo->objectId == QS_EMPTY_OID )
     {
         sTemplateForArrayVar = aTemplate;
@@ -516,7 +516,7 @@ IDE_RC qsfMDeleteCalculate2Args(mtcNode*     aNode,
     sArrayInfo = *((qsxArrayInfo ** )( (UChar*) sTemplateForArrayVar->rows[sColumnInfo->table].row
                                     + sArrayColumn->column.offset ));
 
-    // ÀûÇÕ¼º °Ë»ç.
+    // ì í•©ì„± ê²€ì‚¬.
     IDE_TEST_RAISE( sArrayInfo == NULL, ERR_INVALID_ARRAY );
 
     sReturnValue = (mtdIntegerType*)aStack[0].value;
@@ -526,13 +526,13 @@ IDE_RC qsfMDeleteCalculate2Args(mtcNode*     aNode,
         (aStack[2].column->module->isNull( aStack[2].column,
                                            aStack[2].value ) == ID_TRUE) )
     {
-        // µÎ argumentÁß ÇÏ³ª¶óµµ NULLÀÌ Á¸ÀçÇÏ¸é 0
+        // ë‘ argumentì¤‘ í•˜ë‚˜ë¼ë„ NULLì´ ì¡´ì¬í•˜ë©´ 0
         *sReturnValue = 0;
     }
     else
     {
-        // index¿¡ ÇØ´çÇÏ´Â elementµéÀ» »èÁ¦.
-        // index_lower <= index_upperÁ¶°ÇÀº ³»ºÎ¿¡¼­ Ã¼Å©ÇÔ.
+        // indexì— í•´ë‹¹í•˜ëŠ” elementë“¤ì„ ì‚­ì œ.
+        // index_lower <= index_upperì¡°ê±´ì€ ë‚´ë¶€ì—ì„œ ì²´í¬í•¨.
         IDE_TEST( qsxArray::deleteElementsRange( sArrayInfo,
                                                  aStack[1].column,
                                                  aStack[1].value,

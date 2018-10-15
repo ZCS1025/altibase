@@ -516,7 +516,7 @@ qsxExtProc::fillParamInfo( iduMemory        * aQxeMem,
             break;
     }
 
-    /*** 3. Type ID (Property Parameter µµ ¸¶Âù°¡Áö·Î ¼ÒÀ¯) */
+    /*** 3. Type ID (Property Parameter ë„ ë§ˆì°¬ê°€ì§€ë¡œ ì†Œìœ ) */
     aParamInfo->mType = getParamType( sColumn->type.dataTypeId );
 
     /*** 4. Property Type */
@@ -557,7 +557,7 @@ qsxExtProc::fillParamInfo( iduMemory        * aQxeMem,
         /* Nothing to do. */
     }
 
-    /*** 5. Æ÷ÀÎÅÍ ¿©ºÎ */
+    /*** 5. í¬ì¸í„° ì—¬ë¶€ */
     if ( ( aParamInfo->mMode == IDX_MODE_OUT )   ||
          ( aParamInfo->mMode == IDX_MODE_INOUT ) ||
          ( aParamInfo->mType == IDX_TYPE_CHAR )  ||
@@ -570,7 +570,7 @@ qsxExtProc::fillParamInfo( iduMemory        * aQxeMem,
         aParamInfo->mIsPtr = ID_FALSE;
     }
 
-    /*** 6. Property Value (ÀÏ¹İ Parameter µµ ¸¶Âù°¡Áö·Î ¼ÒÀ¯) */
+    /*** 6. Property Value (ì¼ë°˜ Parameter ë„ ë§ˆì°¬ê°€ì§€ë¡œ ì†Œìœ ) */
     IDE_TEST( fillParamAndPropValue( aQxeMem,
                                      sColumn,
                                      sRow,
@@ -659,7 +659,7 @@ qsxExtProc::returnParamValue( iduMemory        * aQxeMem,
     sTuple  = &aTmplate->tmplate.rows[aParamInfo->mTable];
     sColumn = &sTuple->columns[aParamInfo->mColumn];
     sRow    = (SChar*)sTuple->row + sColumn->column.offset;
-    /* BUG-41818 º¯¼ö ÃÊ±âÈ­ ( valgrind ) */
+    /* BUG-41818 ë³€ìˆ˜ ì´ˆê¸°í™” ( valgrind ) */
     IDX_INIT_TIMESTAMP( sTime );
     sDate = mtdDateNull;
     sInterval = mtdIntervalNull;
@@ -847,26 +847,26 @@ qsxExtProc::returnParamProperty( idxParamInfo     * aParamInfo,
     sColumn = &sTuple->columns[aParamInfo->mColumn];
     sRow    = (SChar*)sTuple->row + sColumn->column.offset;
 
-    /* Property¸¦ ³ªÁß¿¡ Àû¿ëÇÑ´Ù. */
+    /* Propertyë¥¼ ë‚˜ì¤‘ì— ì ìš©í•œë‹¤. */
     switch( aParamInfo->mPropType )
     {
         case IDX_TYPE_PROP_IND:
         {
             if( aParamInfo->mIndicator == ID_TRUE )
             {
-                /* ¾Æ±î ³Ö¾ú°Ç ³ÖÁö ¾Ê¾Ò°Ç °£¿¡ null ·Î ¸¸µç´Ù. */
+                /* ì•„ê¹Œ ë„£ì—ˆê±´ ë„£ì§€ ì•Šì•˜ê±´ ê°„ì— null ë¡œ ë§Œë“ ë‹¤. */
                 sColumn->module->null( sColumn, sRow );
             }
             else
             {
                 /* Nothing to do.
-                 * IN ¸ğµå¿¡¼­ indicator Á¶ÀÛÀ¸·Î ÀÎÇÑ ¿¹¿ÜÃ³¸®´Â agent¿¡¼­ ÀÌ¹Ì Çß´Ù. */
+                 * IN ëª¨ë“œì—ì„œ indicator ì¡°ì‘ìœ¼ë¡œ ì¸í•œ ì˜ˆì™¸ì²˜ë¦¬ëŠ” agentì—ì„œ ì´ë¯¸ í–ˆë‹¤. */
             }
             break;
         }
         case IDX_TYPE_PROP_LEN:
         {
-            /* CHAR type¿¡¼­¸¸ º¯µ¿ */
+            /* CHAR typeì—ì„œë§Œ ë³€ë™ */
             if( aParamInfo->mType == IDX_TYPE_CHAR )
             {
                 sCharData = (mtdCharType*)sRow;
@@ -875,16 +875,16 @@ qsxExtProc::returnParamProperty( idxParamInfo     * aParamInfo,
             else
             {
                 /* Nothing to do.
-                 * CHAR TypeÀÌ ¾Æ´Ñ °æ¿ì length ºñÁ¤»ó Á¶ÀÛÀ¸·Î ÀÎÇÑ ¿¹¿ÜÃ³¸®´Â agent¿¡¼­ ÀÌ¹Ì Çß´Ù. */
+                 * CHAR Typeì´ ì•„ë‹Œ ê²½ìš° length ë¹„ì •ìƒ ì¡°ì‘ìœ¼ë¡œ ì¸í•œ ì˜ˆì™¸ì²˜ë¦¬ëŠ” agentì—ì„œ ì´ë¯¸ í–ˆë‹¤. */
             }
             break;
         }
         case IDX_TYPE_PROP_MAX:
-            /* assertion. OUT ¸ğµåÀÎ MAXLEN parameter´Â Á¸ÀçÇÏÁö ¾Ê´Â´Ù. */
+            /* assertion. OUT ëª¨ë“œì¸ MAXLEN parameterëŠ” ì¡´ì¬í•˜ì§€ ì•ŠëŠ”ë‹¤. */
             IDE_DASSERT( ID_FALSE );
             break;
         default:
-            /* property parameter°¡ ¾Æ´Ï´Ù. */
+            /* property parameterê°€ ì•„ë‹ˆë‹¤. */
             break;
     }
 }

@@ -74,12 +74,12 @@ private:
     sdbBCBHash     * mHashTable;
     sdbCPListSet   * mCPListSet;
 
-    /* BufferMgr Statistic ÀüÃ¼ÀÇ ÀÚ·á±¸Á¶. */ 
+    /* BufferMgr Statistic ì „ì²´ì˜ ìë£Œêµ¬ì¡°. */ 
     sdsBufferMgrStatData  mBufferStatistics;
 };
 
 /***********************************************************************
- * Description : »ı¼ºÀÚ
+ * Description : ìƒì„±ì
  ***********************************************************************/
 void sdsBufferMgrStat::initialize( sdsBufferArea * aBufferArea, 
                                    sdbBCBHash    * aHashTable,
@@ -217,9 +217,9 @@ void sdsBufferMgrStat::applyAfterSingleWritePage( idvSQL *aStatistics )
     IDV_END_WAIT_EVENT( aStatistics, &sWeArgs );
 }
 
-/* BUG-21307: VS6.0¿¡¼­ Compile Error¹ß»ı.
+/* BUG-21307: VS6.0ì—ì„œ Compile Errorë°œìƒ.
  *
- * ULongÀÌ double·Î casting½Ã win32¿¡¼­ ¿¡·¯ ¹ß»ı */
+ * ULongì´ doubleë¡œ castingì‹œ win32ì—ì„œ ì—ëŸ¬ ë°œìƒ */
 /***********************************************************************
  * Description : 
  ***********************************************************************/
@@ -233,7 +233,7 @@ SDouble sdsBufferMgrStat::getHitRatio( ULong aGetPages,
 }
 
 /***********************************************************************
- * Description : Get Page Åë°èÁ¤º¸¸¦ °»½ÅÇÑ´Ù.
+ * Description : Get Page í†µê³„ì •ë³´ë¥¼ ê°±ì‹ í•œë‹¤.
  ***********************************************************************/
 void sdsBufferMgrStat::applyGetPages()
 {
@@ -241,7 +241,7 @@ void sdsBufferMgrStat::applyGetPages()
 }
 
 /***********************************************************************
- * Description :  Read Page Åë°èÁ¤º¸¸¦ °»½ÅÇÑ´Ù.
+ * Description :  Read Page í†µê³„ì •ë³´ë¥¼ ê°±ì‹ í•œë‹¤.
  ***********************************************************************/
 void sdsBufferMgrStat::applyReadPages( ULong  aChecksumTime, 
                                        ULong  aReadTime )
@@ -252,7 +252,7 @@ void sdsBufferMgrStat::applyReadPages( ULong  aChecksumTime,
 }
 
 /***********************************************************************
- * Description : Write Page Åë°èÁ¤º¸¸¦ °»½ÅÇÑ´Ù.
+ * Description : Write Page í†µê³„ì •ë³´ë¥¼ ê°±ì‹ í•œë‹¤.
  ***********************************************************************/
 void sdsBufferMgrStat::applyWritePages( ULong  aChecksumTime, 
                                         ULong  aWriteTime )
@@ -263,7 +263,7 @@ void sdsBufferMgrStat::applyWritePages( ULong  aChecksumTime,
 }
 
 /***********************************************************************
- * Description : Multi Read Page Åë°èÁ¤º¸¸¦ °»½ÅÇÑ´Ù.
+ * Description : Multi Read Page í†µê³„ì •ë³´ë¥¼ ê°±ì‹ í•œë‹¤.
  ***********************************************************************/
 void sdsBufferMgrStat::applyMultiReadPages( ULong  aChecksumTime,
                                             ULong  aReadTime,

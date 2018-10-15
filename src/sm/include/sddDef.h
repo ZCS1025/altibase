@@ -20,7 +20,7 @@
  *
  * Description :
  *
- * º» ÆÄÀÏÀº Resource Layer ÀÚ·á±¸Á¶ÀÇ Çì´õ ÆÄÀÏÀÌ´Ù.
+ * ë³¸ íŒŒì¼ì€ Resource Layer ìë£Œêµ¬ì¡°ì˜ í—¤ë” íŒŒì¼ì´ë‹¤.
  *
  **********************************************************************/
 
@@ -33,12 +33,12 @@
 #include <smriDef.h>
 
 /* --------------------------------------------------------------------
- * Description : tablespace¿¡ ´ëÇÑ ÇØ½¬ Å×ÀÌºíÀÇ Å©±â
+ * Description : tablespaceì— ëŒ€í•œ í•´ì‰¬ í…Œì´ë¸”ì˜ í¬ê¸°
  * ----------------------------------------------------------------- */
 #define SDD_HASH_TABLE_SIZE  (128)
 
 /* ------------------------------------------------
- * IO ¸ğµå : sddDiskMgr::completeIO¿¡¼­ Ã³¸®ÇÔ
+ * IO ëª¨ë“œ : sddDiskMgr::completeIOì—ì„œ ì²˜ë¦¬í•¨
  * ----------------------------------------------*/
 typedef enum
 {
@@ -52,86 +52,86 @@ typedef enum
 
 typedef enum sddSyncType
 {
-    /* µğ½ºÅ© °ø°£ ÇÒ´ç/ÇØÁ¦ ¹× º¯°æ¿¡ ´ëÇÑ Å¸ÀÔ */
+    /* ë””ìŠ¤í¬ ê³µê°„ í• ë‹¹/í•´ì œ ë° ë³€ê²½ì— ëŒ€í•œ íƒ€ì… */
     SDD_SYNC_NORMAL = 0,
     SDD_SYNC_CHKPT
 } sddSyncType;
 
-// µğ½ºÅ© µ¥ÀÌÅ¸ÆÄÀÏÀÇ ¸ŞÅ¸Çì´õ
+// ë””ìŠ¤í¬ ë°ì´íƒ€íŒŒì¼ì˜ ë©”íƒ€í—¤ë”
 typedef struct sddDataFileHdr
 {
     UInt    mSmVersion;
 
-     // ¹Ìµğ¾îº¹±¸¸¦ À§ÇÑ RedoLSN
+     // ë¯¸ë””ì–´ë³µêµ¬ë¥¼ ìœ„í•œ RedoLSN
     smLSN   mRedoLSN;
 
-     // ¹Ìµğ¾îº¹±¸¸¦ À§ÇÑ CreateLSN
+     // ë¯¸ë””ì–´ë³µêµ¬ë¥¼ ìœ„í•œ CreateLSN
     smLSN   mCreateLSN;
 
-     // ¹Ìµğ¾îº¹±¸¸¦ À§ÇÑ DiskLstLSN
+     // ë¯¸ë””ì–´ë³µêµ¬ë¥¼ ìœ„í•œ DiskLstLSN
     smLSN   mMustRedoToLSN;
 
     // PROJ-2133 incremental backup
     smiDataFileDescSlotID    mDataFileDescSlotID;
     
     // PROJ-2133 incremental backup
-    // incremental backupµÈ ÆÄÀÏ¿¡¸¸ Á¸ÀçÇÏ´Â Á¤º¸
+    // incremental backupëœ íŒŒì¼ì—ë§Œ ì¡´ì¬í•˜ëŠ” ì •ë³´
     smriBISlot  mBackupInfo;
 
 } sddDataFileHdr;
 
 /* --------------------------------------------------------------------
- * Description : µ¥ÀÌÅ¸ È­ÀÏ¿¡ ´ëÇÑ Á¤º¸
+ * Description : ë°ì´íƒ€ í™”ì¼ì— ëŒ€í•œ ì •ë³´
  * ----------------------------------------------------------------- */
 typedef struct sddDataFileNode
 {
-    // tablespaceº°·Î À¯ÀÏÇÏ°Ô ½Äº°µÇ´Â µ¥ÀÌÅ¸ È­ÀÏÀÇ ID
+    // tablespaceë³„ë¡œ ìœ ì¼í•˜ê²Œ ì‹ë³„ë˜ëŠ” ë°ì´íƒ€ í™”ì¼ì˜ ID
     scSpaceID        mSpaceID;
     sdFileID         mID;
     // state of the data file node(not used, but will be used by msjung)
     UInt             mState;
     sddDataFileHdr   mDBFileHdr;
     /* ------------------------------------------------
-     * ´ÙÀ½ÀÇ mNextSize ºÎÅÍ mIsAutoExtend ¼Ó¼ºÀÌ sddDataFileAttr¿¡µµ
-     * Á¤ÀÇµÇ¾î ÀÖ´Ù. ¿Ö³ÄÇÏ¸é, ·Î±×¾ŞÄ¿¿¡ ÀúÀåµÈ sddDataFileAttr¸¦
-     * ÀĞ¾î¼­ datafile ³ëµå¸¦ ÃÊ±âÈ­ÇÏµµ·Ï ÇÏ±â À§ÇÔÀÌ´Ù.
+     * ë‹¤ìŒì˜ mNextSize ë¶€í„° mIsAutoExtend ì†ì„±ì´ sddDataFileAttrì—ë„
+     * ì •ì˜ë˜ì–´ ìˆë‹¤. ì™œëƒí•˜ë©´, ë¡œê·¸ì•µì»¤ì— ì €ì¥ëœ sddDataFileAttrë¥¼
+     * ì½ì–´ì„œ datafile ë…¸ë“œë¥¼ ì´ˆê¸°í™”í•˜ë„ë¡ í•˜ê¸° ìœ„í•¨ì´ë‹¤.
      * ------------------------------------------------ */
-    ULong            mNextSize;       // È®ÀåµÉ ÆäÀÌÁö °³¼ö
-    ULong            mMaxSize;        // ÃÖ´ë ÆäÀÌÁö °³¼ö
-    ULong            mInitSize;       // ÃÊ±â ÆäÀÌÁö °³¼ö
+    ULong            mNextSize;       // í™•ì¥ë  í˜ì´ì§€ ê°œìˆ˜
+    ULong            mMaxSize;        // ìµœëŒ€ í˜ì´ì§€ ê°œìˆ˜
+    ULong            mInitSize;       // ì´ˆê¸° í˜ì´ì§€ ê°œìˆ˜
 
     /* ------------------------------------------------
-     * - µ¥ÀÌÅ¸ÆÄÀÏÀÇ ÇöÀç ÆäÀÌÁö °³¼ö
-     * Ã³À½¿¡ INIT SIZE°¡ ÇÒ´çµÇ°í È­ÀÏÀÌ autoextend, resizeµÉ¶§
-     * È®ÀåµÈ´Ù.
-     * startup½Ã ÀÌ Å©±â¿Í ½ÇÁ¦ È­ÀÏÀÇ Å©±â¸¦ ºñ±³ÇÒ ÇÊ¿ä°¡ ¾ø´Ù.
-     * È­ÀÏ È®Àå ÈÄ, ·Î±×¾ŞÄ¿¿¡ ¾²±â Àü¿¡ ½Ã½ºÅÛÀÌ abort°¡ ¹ß»ıÇÏ´õ¶óµµ
-     * È®ÀåµÈ ºÎºĞÀº ÃÊ±âÈ­°¡ ¿Ï·áµÇÁö ¸øÇÑ »óÈ²ÀÌ¶ó »ç¿ëÇÏÁö ¸øÇÑ´Ù.
-     * ¹°·Ğ restart recovery½Ã¿¡ undo Ã³¸®°úÁ¤¿¡¼­ ´Ù½Ã È®Àå¿¡ ´ëÇÑ
-     * ¿ä±¸»çÇ×ÀÌ ¹ß»ıÇÏ°Å³ª ¼­ºñ½º ½ÃÀÛÈÄ¿¡ ÀçÈ®Àå ¹× ÃÊ±âÈ­¸¦ ½ÃµµµÉ
-     * ¼ö ÀÖ´Ù.
+     * - ë°ì´íƒ€íŒŒì¼ì˜ í˜„ì¬ í˜ì´ì§€ ê°œìˆ˜
+     * ì²˜ìŒì— INIT SIZEê°€ í• ë‹¹ë˜ê³  í™”ì¼ì´ autoextend, resizeë ë•Œ
+     * í™•ì¥ëœë‹¤.
+     * startupì‹œ ì´ í¬ê¸°ì™€ ì‹¤ì œ í™”ì¼ì˜ í¬ê¸°ë¥¼ ë¹„êµí•  í•„ìš”ê°€ ì—†ë‹¤.
+     * í™”ì¼ í™•ì¥ í›„, ë¡œê·¸ì•µì»¤ì— ì“°ê¸° ì „ì— ì‹œìŠ¤í…œì´ abortê°€ ë°œìƒí•˜ë”ë¼ë„
+     * í™•ì¥ëœ ë¶€ë¶„ì€ ì´ˆê¸°í™”ê°€ ì™„ë£Œë˜ì§€ ëª»í•œ ìƒí™©ì´ë¼ ì‚¬ìš©í•˜ì§€ ëª»í•œë‹¤.
+     * ë¬¼ë¡  restart recoveryì‹œì— undo ì²˜ë¦¬ê³¼ì •ì—ì„œ ë‹¤ì‹œ í™•ì¥ì— ëŒ€í•œ
+     * ìš”êµ¬ì‚¬í•­ì´ ë°œìƒí•˜ê±°ë‚˜ ì„œë¹„ìŠ¤ ì‹œì‘í›„ì— ì¬í™•ì¥ ë° ì´ˆê¸°í™”ë¥¼ ì‹œë„ë 
+     * ìˆ˜ ìˆë‹¤.
      * ----------------------------------------------*/
     ULong            mCurrSize;
-    smiDataFileMode  mCreateMode;     // datafile »ı¼º ¸ğµå
-    SChar*           mName;           // È­ÀÏ ÀÌ¸§
-    idBool           mIsAutoExtend;   // ÀÚµ¿È®Àå ¿©ºÎ
-    UInt             mIOCount;        // IO°¡ ÇöÀç ¸î°³°¡ ÁøÇà ÁßÀÎ°¡
-    idBool           mIsOpened;       // Open µÈ »óÅÂ¿©ºÎ
-    idBool           mIsModified;     // ÆÄÀÏÀÇ ¼öÁ¤¿©ºÎ ¹× flushÇÒ¶§ ÇÊ¿ä
-    smuList          mNode4LRUList;   // openµÈ datafile ¸®½ºÆ®
-    iduFile          mFile;           // µ¥ÀÌÅ¸ È­ÀÏ
+    smiDataFileMode  mCreateMode;     // datafile ìƒì„± ëª¨ë“œ
+    SChar*           mName;           // í™”ì¼ ì´ë¦„
+    idBool           mIsAutoExtend;   // ìë™í™•ì¥ ì—¬ë¶€
+    UInt             mIOCount;        // IOê°€ í˜„ì¬ ëª‡ê°œê°€ ì§„í–‰ ì¤‘ì¸ê°€
+    idBool           mIsOpened;       // Open ëœ ìƒíƒœì—¬ë¶€
+    idBool           mIsModified;     // íŒŒì¼ì˜ ìˆ˜ì •ì—¬ë¶€ ë° flushí• ë•Œ í•„ìš”
+    smuList          mNode4LRUList;   // openëœ datafile ë¦¬ìŠ¤íŠ¸
+    iduFile          mFile;           // ë°ì´íƒ€ í™”ì¼
 
-    UInt             mAnchorOffset;    // Loganchor ¸Ş¸ğ¸® ¹öÆÛ³»ÀÇ DBF ¼Ó¼º À§Ä¡
+    UInt             mAnchorOffset;    // Loganchor ë©”ëª¨ë¦¬ ë²„í¼ë‚´ì˜ DBF ì†ì„± ìœ„ì¹˜
 
     UChar*           mPageBuffPtr;
     UChar*           mAlignedPageBuff;
 } sddDataFileNode;
 
 /* ------------------------------------------------
- * Description : tablespace Á¤º¸¸¦ ÀúÀåÇÏ´Â ÀÚ·á±¸Á¶
+ * Description : tablespace ì •ë³´ë¥¼ ì €ì¥í•˜ëŠ” ìë£Œêµ¬ì¡°
  *
- * ¹°¸®ÀûÀÎ tablespace ¿¡ ´ëÇÑ ¸Ş¸ğ¸® ³ëµå¸¦ Ç¥ÇöÇÏ´Â
- * ÀÚ·á±¸Á¶ÀÌ´Ù.
+ * ë¬¼ë¦¬ì ì¸ tablespace ì— ëŒ€í•œ ë©”ëª¨ë¦¬ ë…¸ë“œë¥¼ í‘œí˜„í•˜ëŠ”
+ * ìë£Œêµ¬ì¡°ì´ë‹¤.
  * ----------------------------------------------*/
 typedef struct sddTableSpaceNode
 {
@@ -141,43 +141,43 @@ typedef struct sddTableSpaceNode
      * Space Management */
     void              * mSpaceCache;     /* Space Cache */
 
-    /* loganchor·ÎºÎÅÍ ÃÊ±âÈ­µÇ°Å³ª, Å×ÀÌºí½ºÆäÀÌ½º »ı¼º½Ã ¼³Á¤µÊ */
-    smiExtMgmtType     mExtMgmtType;     /* ExtemtÀÇ °ø°£°ü¸® ¹æ½Ä */
-    smiSegMgmtType     mSegMgmtType;     /* SegmentÀÇ °ø°£°ü¸® ¹æ½Ä */
-    UInt               mExtPageCount;    /* Extent ÆäÀÌÁö °³¼ö */
+    /* loganchorë¡œë¶€í„° ì´ˆê¸°í™”ë˜ê±°ë‚˜, í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ìƒì„±ì‹œ ì„¤ì •ë¨ */
+    smiExtMgmtType     mExtMgmtType;     /* Extemtì˜ ê³µê°„ê´€ë¦¬ ë°©ì‹ */
+    smiSegMgmtType     mSegMgmtType;     /* Segmentì˜ ê³µê°„ê´€ë¦¬ ë°©ì‹ */
+    UInt               mExtPageCount;    /* Extent í˜ì´ì§€ ê°œìˆ˜ */
 
-    // tablespace ¼Ó¼º Flag
-    // ( ex> Tablespace¾ÈÀÇ µ¥ÀÌÅÍ º¯°æ¿¡ ´ëÇØ Log Compress¿©ºÎ )
+    // tablespace ì†ì„± Flag
+    // ( ex> Tablespaceì•ˆì˜ ë°ì´í„° ë³€ê²½ì— ëŒ€í•´ Log Compressì—¬ë¶€ )
     UInt               mAttrFlag; 
 
-    sdFileID           mNewFileID; // tablespace¿¡ ¼ÓÇÑ µ¥ÀÌÅ¸È­ÀÏ¿¡ idºÎ¿©
+    sdFileID           mNewFileID; // tablespaceì— ì†í•œ ë°ì´íƒ€í™”ì¼ì— idë¶€ì—¬
 
-    UInt               mDataFileCount; // Å×ÀÌºí½ºÆäÀÌ½ºÀÇ ¼Ò¼ÓµÈ ÆÄÀÏ°³¼ö
+    UInt               mDataFileCount; // í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì˜ ì†Œì†ëœ íŒŒì¼ê°œìˆ˜
 
     //PRJ-1671  Bitmap-based Tablespace And Segment Space Management
-    //data file node¸¦ ¿ä¼Ò·Î °®´Â ¹è¿­
+    //data file nodeë¥¼ ìš”ì†Œë¡œ ê°–ëŠ” ë°°ì—´
     sddDataFileNode  * mFileNodeArr[ SD_MAX_FID_COUNT] ; 
 
-    ULong              mTotalPageCount;     // TBSÀÇ Æ÷ÇÔµÈ ÃÑ ÆäÀÌÁö °³¼ö
+    ULong              mTotalPageCount;     // TBSì˜ í¬í•¨ëœ ì´ í˜ì´ì§€ ê°œìˆ˜
 
-    /* Alter Tablespace OfflineÀÇ °úÁ¤Áß Aging¿Ï·áÈÄ¿¡
-       ¼³Á¤ÇÑ SystemÀÇ SCN
+    /* Alter Tablespace Offlineì˜ ê³¼ì •ì¤‘ Agingì™„ë£Œí›„ì—
+       ì„¤ì •í•œ Systemì˜ SCN
 
-       Alter Tablespace OfflineÀÌ Aging¿Ï·áµÇ°í AbortµÉ °æ¿ì,
-       Aging¿Ï·áµÈ ½ÃÁ¡ÀÌÀüÀÇ SCNÀ» º¸·Á°í ÇÏ´Â
-       ´Ù¸¥ TransactionµéÀ» Abort½ÃÅ°´Âµ¥ »ç¿ëÇÑ´Ù.
+       Alter Tablespace Offlineì´ Agingì™„ë£Œë˜ê³  Abortë  ê²½ìš°,
+       Agingì™„ë£Œëœ ì‹œì ì´ì „ì˜ SCNì„ ë³´ë ¤ê³  í•˜ëŠ”
+       ë‹¤ë¥¸ Transactionë“¤ì„ Abortì‹œí‚¤ëŠ”ë° ì‚¬ìš©í•œë‹¤.
     */
     smSCN              mOfflineSCN;
 
-    /* fix BUG-17456 Disk Tablespace onlineÀÌÈÄ update ¹ß»ı½Ã index ¹«ÇÑ·çÇÁ
-     * ÃÊ±â°ªÀº (0,0)ÀÌ¸ç, Online ½Ã¿¡´Â Online TBS LSNÀÌ ±â·ÏµÈ´Ù. */
+    /* fix BUG-17456 Disk Tablespace onlineì´í›„ update ë°œìƒì‹œ index ë¬´í•œë£¨í”„
+     * ì´ˆê¸°ê°’ì€ (0,0)ì´ë©°, Online ì‹œì—ëŠ” Online TBS LSNì´ ê¸°ë¡ëœë‹¤. */
     smLSN              mOnlineTBSLSN4Idx;
     
-    /* fix BUG-24403 Disk Tablespace onlineÀÌÈÄ hang ¹ß»ı ¹æÁö¸¦ À§ÇØ
-     * offline ÇÒ¶§ SMO °ªÀ» ÀúÀåÇÑ´Ù. */
+    /* fix BUG-24403 Disk Tablespace onlineì´í›„ hang ë°œìƒ ë°©ì§€ë¥¼ ìœ„í•´
+     * offline í• ë•Œ SMO ê°’ì„ ì €ì¥í•œë‹¤. */
     ULong              mMaxSmoNoForOffline;
 
-    UInt               mAnchorOffset;       // Loganchor ¸Ş¸ğ¸® ¹öÆÛ³»ÀÇ TBS ¼Ó¼º À§Ä¡
+    UInt               mAnchorOffset;       // Loganchor ë©”ëª¨ë¦¬ ë²„í¼ë‚´ì˜ TBS ì†ì„± ìœ„ì¹˜
 } sddTableSpaceNode;
 
 typedef IDE_RC (*sddReadPageFunc)(idvSQL          * aStatistics,
@@ -194,10 +194,10 @@ typedef IDE_RC (*sddWritePageFunc)(idvSQL          * aStatistics,
                                    UChar           * aBuffer,
                                    UInt            * aState );
 
-/* DoubleWrite File Prefix Á¤ÀÇ */
+/* DoubleWrite File Prefix ì •ì˜ */
 #define   SDD_DWFILE_NAME_PREFIX     "dwfile"
 
-/* DoubleWrite File Prefix Á¤ÀÇ2 */
+/* DoubleWrite File Prefix ì •ì˜2 */
 #define   SDD_SBUFFER_DWFILE_NAME_PREFIX    "sdwfile"
 
 

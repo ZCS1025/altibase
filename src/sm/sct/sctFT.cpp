@@ -20,7 +20,7 @@
  *
  * Description :
  *
- * Å×ÀÌºí½ºÆäÀÌ½º °ü·Ã Dump
+ * í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ê´€ë ¨ Dump
  *
  * X$TABLESPACES
  * X$TABLESPACES_HEADER
@@ -44,8 +44,8 @@
 /* ------------------------------------------------
  *  Fixed Table Define for TableSpace
  *
- * Disk, Memory, Volatile Tablespace¿¡ °øÅëÀûÀ¸·Î
- * Á¸ÀçÇÏ´Â Field¸¦ ¸ğÀº Fixed Table
+ * Disk, Memory, Volatile Tablespaceì— ê³µí†µì ìœ¼ë¡œ
+ * ì¡´ì¬í•˜ëŠ” Fieldë¥¼ ëª¨ì€ Fixed Table
  *
  * X$TABLESPACES_HEADER
  * ----------------------------------------------*/
@@ -127,11 +127,11 @@ iduFixedTableDesc gTbsHeaderTableDesc =
 
 
 /*
-    Tablespace Header Performance View±¸Á¶Ã¼ÀÇ
-    Attribute Flag ÇÊµåµéÀ» ¼³Á¤ÇÑ´Ù.
+    Tablespace Header Performance Viewêµ¬ì¡°ì²´ì˜
+    Attribute Flag í•„ë“œë“¤ì„ ì„¤ì •í•œë‹¤.
 
-    [IN] aSpaceNode - TablespaceÀÇ  Node
-    [OUT] aSpaceHeader - TablespaceÀÇ Header±¸Á¶Ã¼
+    [IN] aSpaceNode - Tablespaceì˜  Node
+    [OUT] aSpaceHeader - Tablespaceì˜ Headerêµ¬ì¡°ì²´
  */
 IDE_RC sctFT::getSpaceHeaderAttrFlags(
                              sctTableSpaceNode * aSpaceNode,
@@ -176,12 +176,12 @@ IDE_RC sctFT::getSpaceHeaderAttrFlags(
 }
 
 /******************************************************************************
- * Abstraction : TBSÀÇ state bitsetÀ» ¹Ş¾Æ¼­ Stable state¸¦ ¹®ÀÚ¿­·Î
- *               ¹İÈ¯ÇÑ´Ù. X$TABLESPACES_HEADER¿¡ TBSÀÇ state¸¦
- *               ¹®ÀÚ¿­·Î Ãâ·ÂÇÏ±â À§ÇØ »ç¿ëÇÑ´Ù.
+ * Abstraction : TBSì˜ state bitsetì„ ë°›ì•„ì„œ Stable stateë¥¼ ë¬¸ìì—´ë¡œ
+ *               ë°˜í™˜í•œë‹¤. X$TABLESPACES_HEADERì— TBSì˜ stateë¥¼
+ *               ë¬¸ìì—´ë¡œ ì¶œë ¥í•˜ê¸° ìœ„í•´ ì‚¬ìš©í•œë‹¤.
  *
- *  aTBSStateBitset - [IN]  ¹®ÀÚ¿­·Î º¯È¯ ÇÒ State BitSet
- *  aTBSStateName   - [OUT] ¹®ÀÚ¿­À» ¹İÈ¯ÇÒ Æ÷ÀÎÅÍ
+ *  aTBSStateBitset - [IN]  ë¬¸ìì—´ë¡œ ë³€í™˜ í•  State BitSet
+ *  aTBSStateName   - [OUT] ë¬¸ìì—´ì„ ë°˜í™˜í•  í¬ì¸í„°
  *****************************************************************************/
 void sctFT::getTBSStateName( UInt    aTBSStateBitset,
                              UChar*  aTBSStateName )
@@ -215,7 +215,7 @@ void sctFT::getTBSStateName( UInt    aTBSStateBitset,
 
 
 
-// table space headerÁ¤º¸¸¦ º¸¿©ÁÖ±âÀ§ÇÑ
+// table space headerì •ë³´ë¥¼ ë³´ì—¬ì£¼ê¸°ìœ„í•œ
 IDE_RC sctFT::buildRecordForTableSpaceHeader(idvSQL              * /*aStatistics*/,
                                              void                *aHeader,
                                              void        * /* aDumpObj */,
@@ -247,12 +247,12 @@ IDE_RC sctFT::buildRecordForTableSpaceHeader(idvSQL              * /*aStatistics
         }
 
         /* BUG-43006 FixedTable Indexing Filter
-         * Indexing Filter¸¦ »ç¿ëÇØ¼­ ÀüÃ¼ Record¸¦ »ı¼ºÇÏÁö¾Ê°í
-         * ºÎºĞ¸¸ »ı¼ºÇØ Filtering ÇÑ´Ù.
-         * 1. void * ¹è¿­¿¡ IDU_FT_COLUMN_INDEX ·Î ÁöÁ¤µÈ ÄÃ·³¿¡
-         * ÇØ´çÇÏ´Â °ªÀ» ¼ø¼­´ë·Î ³Ö¾îÁÖ¾î¾ß ÇÑ´Ù.
-         * 2. IDU_FT_COLUMN_INDEXÀÇ ÄÃ·³¿¡ ÇØ´çÇÏ´Â °ªÀ» ¸ğµÎ ³Ö
-         * ¾î ÁÖ¾î¾ßÇÑ´Ù.
+         * Indexing Filterë¥¼ ì‚¬ìš©í•´ì„œ ì „ì²´ Recordë¥¼ ìƒì„±í•˜ì§€ì•Šê³ 
+         * ë¶€ë¶„ë§Œ ìƒì„±í•´ Filtering í•œë‹¤.
+         * 1. void * ë°°ì—´ì— IDU_FT_COLUMN_INDEX ë¡œ ì§€ì •ëœ ì»¬ëŸ¼ì—
+         * í•´ë‹¹í•˜ëŠ” ê°’ì„ ìˆœì„œëŒ€ë¡œ ë„£ì–´ì£¼ì–´ì•¼ í•œë‹¤.
+         * 2. IDU_FT_COLUMN_INDEXì˜ ì»¬ëŸ¼ì— í•´ë‹¹í•˜ëŠ” ê°’ì„ ëª¨ë‘ ë„£
+         * ì–´ ì£¼ì–´ì•¼í•œë‹¤.
          */
         sIndexValues[0] = &sSpaceNode->mID;
         sIndexValues[1] = &sSpaceNode->mType;
@@ -412,7 +412,7 @@ iduFixedTableDesc gTableSpaceTableDesc =
 };
 
 /*
-    Disk TablespaceÀÇ Á¤º¸¸¦ Fix Table ±¸Á¶Ã¼¿¡ ÀúÀåÇÑ´Ù.
+    Disk Tablespaceì˜ ì •ë³´ë¥¼ Fix Table êµ¬ì¡°ì²´ì— ì €ì¥í•œë‹¤.
  */
 IDE_RC sctFT::getDiskTBSInfo( sddTableSpaceNode * aDiskSpaceNode,
                               sctTbsInfo        * aSpaceInfo )
@@ -465,8 +465,8 @@ IDE_RC sctFT::getDiskTBSInfo( sddTableSpaceNode * aDiskSpaceNode,
     }
     else
     {
-        /* discardµÈ tablespaceÀÎ °æ¿ì¿¡´Â µ¥ÀÌÅÍÆÄÀÏÀÌ Á¸ÀçÇÏÁö ¾ÊÀ»¼ö ÀÖ´Ù.
-         * µû¶ó¼­ mAllocPageCount¸¦ ¾Ë ¼ö ¾øÀ½À¸·Î 0À¸·Î ¼¼ÆÃÇÑ´Ù */
+        /* discardëœ tablespaceì¸ ê²½ìš°ì—ëŠ” ë°ì´í„°íŒŒì¼ì´ ì¡´ì¬í•˜ì§€ ì•Šì„ìˆ˜ ìˆë‹¤.
+         * ë”°ë¼ì„œ mAllocPageCountë¥¼ ì•Œ ìˆ˜ ì—†ìŒìœ¼ë¡œ 0ìœ¼ë¡œ ì„¸íŒ…í•œë‹¤ */
         aSpaceInfo->mAllocPageCount = 0;
     }
 
@@ -483,7 +483,7 @@ IDE_RC sctFT::getDiskTBSInfo( sddTableSpaceNode * aDiskSpaceNode,
 }
 
 /*
-    Memory TablespaceÀÇ Á¤º¸¸¦ Fix Table ±¸Á¶Ã¼¿¡ ÀúÀåÇÑ´Ù.
+    Memory Tablespaceì˜ ì •ë³´ë¥¼ Fix Table êµ¬ì¡°ì²´ì— ì €ì¥í•œë‹¤.
  */
 IDE_RC sctFT::getMemTBSInfo( smmTBSNode   * aMemSpaceNode,
                              sctTbsInfo   * aSpaceInfo )
@@ -507,7 +507,7 @@ IDE_RC sctFT::getMemTBSInfo( smmTBSNode   * aMemSpaceNode,
     }
     else
     {
-        // OfflineÀÌ°Å³ª ¾ÆÁ÷ RestoreµÇÁö ¾ÊÀº TablespaceÀÇ °æ¿ì mMemBase°¡ NULL
+        // Offlineì´ê±°ë‚˜ ì•„ì§ Restoreë˜ì§€ ì•Šì€ Tablespaceì˜ ê²½ìš° mMemBaseê°€ NULL
         aSpaceInfo->mAllocPageCount = 0 ;
         aSpaceInfo->mDataFileCount  = 0;
         aSpaceInfo->mTotalPageCount = 0;
@@ -519,7 +519,7 @@ IDE_RC sctFT::getMemTBSInfo( smmTBSNode   * aMemSpaceNode,
 
 
 /*
-    Volatile TablespaceÀÇ Á¤º¸¸¦ Fixed Table ±¸Á¶Ã¼¿¡ ÀúÀåÇÑ´Ù.
+    Volatile Tablespaceì˜ ì •ë³´ë¥¼ Fixed Table êµ¬ì¡°ì²´ì— ì €ì¥í•œë‹¤.
  */
 IDE_RC sctFT::getVolTBSInfo( svmTBSNode   * aVolSpaceNode,
                              sctTbsInfo   * aSpaceInfo )
@@ -532,7 +532,7 @@ IDE_RC sctFT::getVolTBSInfo( svmTBSNode   * aVolSpaceNode,
     aSpaceInfo->mPageSize           = SM_PAGE_SIZE;
     aSpaceInfo->mCachedFreeExtCount = 0;
 
-    // Volatile TablespaceÀÇ °æ¿ì Data FileÀÌ ¾ø´Ù.
+    // Volatile Tablespaceì˜ ê²½ìš° Data Fileì´ ì—†ë‹¤.
     aSpaceInfo->mDataFileCount      = 0;
 
     aSpaceInfo->mAllocPageCount =
@@ -545,11 +545,11 @@ IDE_RC sctFT::getVolTBSInfo( svmTBSNode   * aVolSpaceNode,
 
 /***********************************************************************
  *
- * Description : ¸ğµç µğ½ºÅ© TablesapceÀÇ TablespaceµéÀÇ ³ëµå Á¤º¸¸¦ Ãâ·ÂÇÑ´Ù.
+ * Description : ëª¨ë“  ë””ìŠ¤í¬ Tablesapceì˜ Tablespaceë“¤ì˜ ë…¸ë“œ ì •ë³´ë¥¼ ì¶œë ¥í•œë‹¤.
  *
- * aHeader  - [IN] Fixed Table Çì´õÆ÷ÀÎÅÍ
- * aDumpObj - [IN] D$¸¦ À§ÇÑ ÀÎÀÚ ¸®½ºÆ® Æ÷ÀÎÅÍ
- * aMemory  - [IN] Fixed TableÀ» À§ÇÑ Memory Manger
+ * aHeader  - [IN] Fixed Table í—¤ë”í¬ì¸í„°
+ * aDumpObj - [IN] D$ë¥¼ ìœ„í•œ ì¸ì ë¦¬ìŠ¤íŠ¸ í¬ì¸í„°
+ * aMemory  - [IN] Fixed Tableì„ ìœ„í•œ Memory Manger
  *
  **********************************************************************/
 IDE_RC sctFT::buildRecordForTABLESPACES(idvSQL              * /*aStatistics*/,
@@ -573,15 +573,15 @@ IDE_RC sctFT::buildRecordForTABLESPACES(idvSQL              * /*aStatistics*/,
     sState = 1;
 
     //----------------------------------------
-    // X$TABLESPACES¸¦ À§ÇÑ Record »ğÀÔ
+    // X$TABLESPACESë¥¼ ìœ„í•œ Record ì‚½ì…
     //----------------------------------------
 
     sctTableSpaceMgr::getFirstSpaceNode( (void**)&sCurrSpaceNode );
 
     while( sCurrSpaceNode != NULL )
     {
-        // First SpaceNode´Â System TBSÀÌ±â¿¡ dropÀÏ ¼ö ¾ø´Ù.
-        // ÀÌÈÄ¿¡´Â DropµÇÁö ¾ÊÀº TBS¸¸ ÀĞ¾î¿Â´Ù.
+        // First SpaceNodeëŠ” System TBSì´ê¸°ì— dropì¼ ìˆ˜ ì—†ë‹¤.
+        // ì´í›„ì—ëŠ” Dropë˜ì§€ ì•Šì€ TBSë§Œ ì½ì–´ì˜¨ë‹¤.
         IDE_ASSERT( (sCurrSpaceNode->mState & SMI_TBS_DROPPED)
                     != SMI_TBS_DROPPED );
 
@@ -595,12 +595,12 @@ IDE_RC sctFT::buildRecordForTABLESPACES(idvSQL              * /*aStatistics*/,
         IDE_ASSERT( sctTableSpaceMgr::unlock() == IDE_SUCCESS );
 
         /* BUG-43006 FixedTable Indexing Filter
-         * Column Index ¸¦ »ç¿ëÇØ¼­ ÀüÃ¼ Record¸¦ »ı¼ºÇÏÁö¾Ê°í
-         * ºÎºĞ¸¸ »ı¼ºÇØ Filtering ÇÑ´Ù.
-         * 1. void * ¹è¿­¿¡ IDU_FT_COLUMN_INDEX ·Î ÁöÁ¤µÈ ÄÃ·³¿¡
-         * ÇØ´çÇÏ´Â °ªÀ» ¼ø¼­´ë·Î ³Ö¾îÁÖ¾î¾ß ÇÑ´Ù.
-         * 2. IDU_FT_COLUMN_INDEXÀÇ ÄÃ·³¿¡ ÇØ´çÇÏ´Â °ªÀ» ¸ğµÎ ³Ö
-         * ¾î ÁÖ¾î¾ßÇÑ´Ù.
+         * Column Index ë¥¼ ì‚¬ìš©í•´ì„œ ì „ì²´ Recordë¥¼ ìƒì„±í•˜ì§€ì•Šê³ 
+         * ë¶€ë¶„ë§Œ ìƒì„±í•´ Filtering í•œë‹¤.
+         * 1. void * ë°°ì—´ì— IDU_FT_COLUMN_INDEX ë¡œ ì§€ì •ëœ ì»¬ëŸ¼ì—
+         * í•´ë‹¹í•˜ëŠ” ê°’ì„ ìˆœì„œëŒ€ë¡œ ë„£ì–´ì£¼ì–´ì•¼ í•œë‹¤.
+         * 2. IDU_FT_COLUMN_INDEXì˜ ì»¬ëŸ¼ì— í•´ë‹¹í•˜ëŠ” ê°’ì„ ëª¨ë‘ ë„£
+         * ì–´ ì£¼ì–´ì•¼í•œë‹¤.
          */
         sIndexValues[0] = &sSpaceInfo.mSpaceID;
         if ( iduFixedTable::checkKeyRange( aMemory,
@@ -610,8 +610,8 @@ IDE_RC sctFT::buildRecordForTABLESPACES(idvSQL              * /*aStatistics*/,
         {
             IDE_ASSERT( sctTableSpaceMgr::lock( NULL ) == IDE_SUCCESS );
             sState = 1;
-            /* MEM TBSÀÇ °æ¿ì¿¡´Â Drop Pending »óÅÂµµ DropµÈ °ÍÀÌ±â ¶§¹®¿¡
-             * Á¦¿Ü½ÃÅ²´Ù */
+            /* MEM TBSì˜ ê²½ìš°ì—ëŠ” Drop Pending ìƒíƒœë„ Dropëœ ê²ƒì´ê¸° ë•Œë¬¸ì—
+             * ì œì™¸ì‹œí‚¨ë‹¤ */
             sctTableSpaceMgr::getNextSpaceNodeWithoutDropped ( (void*)sCurrSpaceNode,
                                                                (void**)&sNextSpaceNode );
             sCurrSpaceNode = sNextSpaceNode;
@@ -626,9 +626,9 @@ IDE_RC sctFT::buildRecordForTABLESPACES(idvSQL              * /*aStatistics*/,
         {
             case SMI_TBS_DISK:
 
-                // smLayerCallback::getAllocPageCount µµÁß¿¡
-                // sddDiskMgr::read ¼öÇàÇÏ´Ù°¡ sctTableSpaceMgr::lockÀ» Àâ´Â´Ù
-                // ¿©±â¿¡¼­ lockÇØÁ¦ÇÑ´Ù.
+                // smLayerCallback::getAllocPageCount ë„ì¤‘ì—
+                // sddDiskMgr::read ìˆ˜í–‰í•˜ë‹¤ê°€ sctTableSpaceMgr::lockì„ ì¡ëŠ”ë‹¤
+                // ì—¬ê¸°ì—ì„œ lockí•´ì œí•œë‹¤.
                 IDE_ASSERT( sctTableSpaceMgr::lockGlobalPageCountCheckMutex() 
                     == IDE_SUCCESS );
                 sState = 2;
@@ -645,9 +645,9 @@ IDE_RC sctFT::buildRecordForTABLESPACES(idvSQL              * /*aStatistics*/,
 
             case SMI_TBS_MEMORY:
 
-                /* To Fix BUG-23912 [AT-F5 ART] MemTBS Á¤º¸ Ãâ·Â½Ã Membase¿¡ Á¢±ÙÇÒ¶§
-                 * lockGlobalPageCountCheckMutexfmf È¹µæÇØ¾ßÇÔ
-                 * Dirty Read Áß¿¡ membase°¡ °©ÀÚ±â NullÀÌ µÉ¼ö ÀÖ´Ù. */
+                /* To Fix BUG-23912 [AT-F5 ART] MemTBS ì •ë³´ ì¶œë ¥ì‹œ Membaseì— ì ‘ê·¼í• ë•Œ
+                 * lockGlobalPageCountCheckMutexfmf íšë“í•´ì•¼í•¨
+                 * Dirty Read ì¤‘ì— membaseê°€ ê°‘ìê¸° Nullì´ ë ìˆ˜ ìˆë‹¤. */
 
                 IDE_ASSERT( smmFPLManager::lockGlobalPageCountCheckMutex()
                             == IDE_SUCCESS );
@@ -664,8 +664,8 @@ IDE_RC sctFT::buildRecordForTABLESPACES(idvSQL              * /*aStatistics*/,
 
             case SMI_TBS_VOLATILE:
 
-                /* Membase°¡ NullÀÌ µÇ´Â °æ¿ì°¡ Á¸ÀçÇÏÁö ¾ÊÀ¸¹Ç·Î,
-                 * Dirty ReadÇØµµ ¹«¹æÇÏ´Ù */
+                /* Membaseê°€ Nullì´ ë˜ëŠ” ê²½ìš°ê°€ ì¡´ì¬í•˜ì§€ ì•Šìœ¼ë¯€ë¡œ,
+                 * Dirty Readí•´ë„ ë¬´ë°©í•˜ë‹¤ */
                 IDE_TEST( getVolTBSInfo( (svmTBSNode*)sCurrSpaceNode,
                                          & sSpaceInfo )
                           != IDE_SUCCESS );
@@ -685,8 +685,8 @@ IDE_RC sctFT::buildRecordForTABLESPACES(idvSQL              * /*aStatistics*/,
                                               &sSpaceInfo )
                   != IDE_SUCCESS );
 
-        /* MEM TBSÀÇ °æ¿ì¿¡´Â Drop Pending »óÅÂµµ DropµÈ °ÍÀÌ±â ¶§¹®¿¡
-         * Á¦¿Ü½ÃÅ²´Ù */
+        /* MEM TBSì˜ ê²½ìš°ì—ëŠ” Drop Pending ìƒíƒœë„ Dropëœ ê²ƒì´ê¸° ë•Œë¬¸ì—
+         * ì œì™¸ì‹œí‚¨ë‹¤ */
         sctTableSpaceMgr::getNextSpaceNodeWithoutDropped ( (void*)sCurrSpaceNode,
                                                            (void**)&sNextSpaceNode );
 

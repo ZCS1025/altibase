@@ -58,7 +58,7 @@ int main()
     ALTIBASE_ILOADER_ERROR       err;
     int rc;
 
-    /* handle ª˝º∫ */
+    /* handle ÏÉùÏÑ± */
     rc = altibase_iloader_init(&handle);
     
     if ( rc != ALTIBASE_ILO_SUCCESS )
@@ -67,7 +67,7 @@ int main()
         return 1;
     }        
     
-    /* option √ ±‚»≠ */
+    /* option Ï¥àÍ∏∞Ìôî */
     altibase_iloader_options_init(ALTIBASE_ILOADER_V1, &opt);
     
     strcpy(opt.serverName, "127.0.0.1");    

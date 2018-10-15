@@ -42,7 +42,7 @@ iduShmHashLatchFunc iduShmHash::mLatchVector[2] =
     }
 };
 
-// °¢ ÇÔ¼öº°·Î Á÷Á¢ ±¸Çö
+// ê° í•¨ìˆ˜ë³„ë¡œ ì§ì ‘ êµ¬í˜„
 iduShmHashGenFunc  iduShmHash::mArrHashFunction[2] = {
     genHashValueFunc, //IDU_SHMHASH_ID_SMXTRANS_GEN_HASH_VALUE_FUNC
     hashFunc,         //IDU_SHMHASH_ID_SMXTABLEINFOMGR_HASHFUNC
@@ -103,8 +103,8 @@ IDE_RC iduShmHash::allocChain( idvSQL               * aStatistics,
     idShmAddr sAddr4Obj;
 
     /*
-     *  Chain °´Ã¼¸¦  mempool·Î ºÎÅÍ ÇÒ´ç¹Ş¾Æ µÇµ¹¸°´Ù.
-     *  aBase °´Ã¼¿¡ µî·ÏµÈ MemoryMgr·Î ºÎÅÍ ÇÒ´ç¹Ş´Â´Ù.
+     *  Chain ê°ì²´ë¥¼  mempoolë¡œ ë¶€í„° í• ë‹¹ë°›ì•„ ë˜ëŒë¦°ë‹¤.
+     *  aBase ê°ì²´ì— ë“±ë¡ëœ MemoryMgrë¡œ ë¶€í„° í• ë‹¹ë°›ëŠ”ë‹¤.
      */
     IDE_TEST( iduShmMemPool::alloc( aStatistics,
                                     aShmTxInfo,
@@ -138,7 +138,7 @@ IDE_RC iduShmHash::freeChain( idvSQL            * aStatistics,
     }
 
     /*
-     *  Chain °´Ã¼¸¦  mempool·Î ÇØÁ¦ÇÑ´Ù.
+     *  Chain ê°ì²´ë¥¼  mempoolë¡œ í•´ì œí•œë‹¤.
      */
     IDE_TEST( iduShmMemPool::memfree( aStatistics,
                                       aShmTxInfo,
@@ -174,14 +174,14 @@ IDE_RC iduShmHash::initialize( idvSQL              * aStatistics,
                                iduLtShmHashBase    * aLtHashBase )
 {
 /*
- *  È£ÃâÀÚ´Â °´Ã¼ iduStShmHashBase¸¦ ¹Ì¸® ÇÒ´ç¹Ş¾Æ È£ÃâÇÑ´Ù.
- *  aConcurrencyLevel¿¡ µû¶ó mempool ÃÊ±âÈ­½Ã °í·ÁÇØ¼­ ÀÎÀÚ·Î ³Ñ±ä´Ù.
- *  aBucketCount ¸¸Å­ callocÇØ¼­ aBase¿¡ ¸Å´Ü´Ù.
- *  aKeyLength¸¦ ÀÌ¿ëÇÏ¿©, iduStShmHashChainÀÇ ½ÇÁ¦ alignµÈ Å©±â¸¦ °è»êÇÏ°í,
- *  [ (ID_SIZEOF(iduStShmHashChain) + aKeyLength)ÀÇ 8ÀÇ align ]
- *  ÀÌ °ªÀ» mempool ÃÊ±âÈ­½Ã¿¡ ÀÎÀÚ·Î ³Ñ±ä´Ù.
- *  Hash, Comp Callback ÇÔ¼ö¸¦ ¼³Á¤ÇÑ´Ù.
- *  aUseLatch¸¦ ÀÌ¿ëÇÏ¿©, ÇÔ¼ö Æ÷ÀÎÅÍ Array vector¸¦ ¼³Á¤ÇÑ´Ù.
+ *  í˜¸ì¶œìëŠ” ê°ì²´ iduStShmHashBaseë¥¼ ë¯¸ë¦¬ í• ë‹¹ë°›ì•„ í˜¸ì¶œí•œë‹¤.
+ *  aConcurrencyLevelì— ë”°ë¼ mempool ì´ˆê¸°í™”ì‹œ ê³ ë ¤í•´ì„œ ì¸ìë¡œ ë„˜ê¸´ë‹¤.
+ *  aBucketCount ë§Œí¼ callocí•´ì„œ aBaseì— ë§¤ë‹¨ë‹¤.
+ *  aKeyLengthë¥¼ ì´ìš©í•˜ì—¬, iduStShmHashChainì˜ ì‹¤ì œ alignëœ í¬ê¸°ë¥¼ ê³„ì‚°í•˜ê³ ,
+ *  [ (ID_SIZEOF(iduStShmHashChain) + aKeyLength)ì˜ 8ì˜ align ]
+ *  ì´ ê°’ì„ mempool ì´ˆê¸°í™”ì‹œì— ì¸ìë¡œ ë„˜ê¸´ë‹¤.
+ *  Hash, Comp Callback í•¨ìˆ˜ë¥¼ ì„¤ì •í•œë‹¤.
+ *  aUseLatchë¥¼ ì´ìš©í•˜ì—¬, í•¨ìˆ˜ í¬ì¸í„° Array vectorë¥¼ ì„¤ì •í•œë‹¤.
  */
     UInt                   i = 0;
     UInt                   sChainSize;
@@ -413,8 +413,8 @@ IDE_RC iduShmHash::destroy( idvSQL           * aStatistics,
     iduStShmHashBucket    * sBucket;
     idrSVP                  sSavepoint;
 
-    /*  mempoolÀ» ÇØÁ¦ÇÑ´Ù.
-     *  ´Ü, ÇöÀç ¸Å´Ş¸° chainÀÌ 0ÀÌ¾î¾ß ÇÑ´Ù. ¾Æ´Ò °æ¿ì ASSERT!!*/
+    /*  mempoolì„ í•´ì œí•œë‹¤.
+     *  ë‹¨, í˜„ì¬ ë§¤ë‹¬ë¦° chainì´ 0ì´ì–´ì•¼ í•œë‹¤. ì•„ë‹ ê²½ìš° ASSERT!!*/
     sCurChain = NULL;
 
     idrLogMgr::setSavepoint( aShmTxInfo, &sSavepoint );
@@ -499,7 +499,7 @@ IDE_RC iduShmHash::findNode( idvSQL            * aStatistics,
 {
     UInt aHashValue;
 
-    // Vector È£Ãâ
+    // Vector í˜¸ì¶œ
     aHashValue = aBase->mHashFunc( aBase->mStShmHashBase, aKeyPtr );
     return (*aBase->mLatchVector->findNode)( aStatistics,
                                              aShmTxInfo,
@@ -518,7 +518,7 @@ IDE_RC iduShmHash::insertNode( idvSQL            * aStatistics,
 {
     UInt aHashValue;
 
-    // Vector È£Ãâ
+    // Vector í˜¸ì¶œ
     aHashValue = aBase->mHashFunc( aBase->mStShmHashBase, aKeyPtr );
     IDE_TEST( (*aBase->mLatchVector->insertNode)( aStatistics,
                                                   aShmTxInfo,
@@ -546,7 +546,7 @@ IDE_RC iduShmHash::deleteNode( idvSQL            * aStatistics,
 {
     UInt aHashValue;
 
-    // Vector È£Ãâ
+    // Vector í˜¸ì¶œ
     aHashValue = aBase->mHashFunc( aBase->mStShmHashBase, aKeyPtr );
     return (*aBase->mLatchVector->deleteNode)( aStatistics,
                                                aShmTxInfo,
@@ -593,8 +593,8 @@ IDE_RC iduShmHash::findNodeNoLatch( idvSQL               * /*aStatistics*/,
                                     void                ** aNode )
 {
     /*
-     *  ChainÀ» µû¶ó°¡¸é¼­, µ¿ÀÏÇÑ key °ªÀÌ Á¸ÀçÇÏ´ÂÁö °Ë»çÇÑ´Ù.
-     *  ÀÖ´Ù¸é ÇØ´ç Æ÷ÀÎÅÍ, ¾øÀ¸¸é NULLÀ» ¼³Á¤ÇÑ´Ù.
+     *  Chainì„ ë”°ë¼ê°€ë©´ì„œ, ë™ì¼í•œ key ê°’ì´ ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬í•œë‹¤.
+     *  ìˆë‹¤ë©´ í•´ë‹¹ í¬ì¸í„°, ì—†ìœ¼ë©´ NULLì„ ì„¤ì •í•œë‹¤.
      */
     iduStShmHashChain * sChain;
 
@@ -616,9 +616,9 @@ IDE_RC iduShmHash::insertNodeNoLatch( idvSQL              * aStatistics,
                                       void                * aNode )
 {
     /*
-     *  HashCahinÀ» mempool·Î ºÎÅÍ ÇÒ´ç¹Ş°í, Å°¸¦ º¹»çÇÏ°í,
-     *  ³ëµå Æ÷ÀÎÅÍ¸¦ assignÇÑ´Ù.
-     *  ÀÌ ChainÀ» ÇØ´ç Bucket ¸®½ºÆ® Çì´õ¿¡ »ğÀÔÇÑ´Ù.
+     *  HashCahinì„ mempoolë¡œ ë¶€í„° í• ë‹¹ë°›ê³ , í‚¤ë¥¼ ë³µì‚¬í•˜ê³ ,
+     *  ë…¸ë“œ í¬ì¸í„°ë¥¼ assigní•œë‹¤.
+     *  ì´ Chainì„ í•´ë‹¹ Bucket ë¦¬ìŠ¤íŠ¸ í—¤ë”ì— ì‚½ì…í•œë‹¤.
      */
     iduStShmHashChain *sChain;
     idShmAddr          sAddrObj;
@@ -676,10 +676,10 @@ IDE_RC iduShmHash::deleteNodeNoLatch( idvSQL               * aStatistics,
                                       void                ** aNode )
 {
     /*
-     *  ChainÀ» µû¶ó°¡¸é¼­, µ¿ÀÏÇÑ key °ªÀÌ Á¸ÀçÇÏ´ÂÁö °Ë»çÇÑ´Ù.
-     *  Ã£À»  ChainÀ» ÇØ´ç Bucket ¸®½ºÆ®¿¡¼­ Á¦°ÅÇÑ´Ù.
-     *  aNode¿¡ ÇØ´ç Node°ªÀ» ¼³Á¤ÇÑ´Ù.
-     *  HashChainÀ» mempool·Î ÇØÁ¦ÇÑ´Ù.
+     *  Chainì„ ë”°ë¼ê°€ë©´ì„œ, ë™ì¼í•œ key ê°’ì´ ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬í•œë‹¤.
+     *  ì°¾ì„  Chainì„ í•´ë‹¹ Bucket ë¦¬ìŠ¤íŠ¸ì—ì„œ ì œê±°í•œë‹¤.
+     *  aNodeì— í•´ë‹¹ Nodeê°’ì„ ì„¤ì •í•œë‹¤.
+     *  HashChainì„ mempoolë¡œ í•´ì œí•œë‹¤.
      */
     iduStShmHashChain *sChain;
     idrSVP             sSavepoint;
@@ -693,8 +693,8 @@ IDE_RC iduShmHash::deleteNodeNoLatch( idvSQL               * aStatistics,
 
     sChain = iduShmHash::findNodeInternal( aBase, aBucket, aKeyPtr );
 
-    /* Runtime Recovery¿¡ÀÇÇØ¼­ µÎ¹ø DeleteµÇ¾î Hash¿¡¼­ ÀÌ¹Ì »èÁ¦µÇ¾úÀ» ¼ö
-     * ÀÖ´Ù. */
+    /* Runtime Recoveryì—ì˜í•´ì„œ ë‘ë²ˆ Deleteë˜ì–´ Hashì—ì„œ ì´ë¯¸ ì‚­ì œë˜ì—ˆì„ ìˆ˜
+     * ìˆë‹¤. */
     if( sChain != NULL )
     {
         iduShmList::remove( aShmTxInfo, &sChain->mList );
@@ -737,8 +737,8 @@ IDE_RC iduShmHash::findNodeLatch( idvSQL               * aStatistics,
 
     idrLogMgr::setSavepoint( aShmTxInfo, &sSavepoint );
 
-    /* LockÀ» Àâ´Â´Ù.
-     * findNodeNoLatch() È£Ãâ
+    /* Lockì„ ì¡ëŠ”ë‹¤.
+     * findNodeNoLatch() í˜¸ì¶œ
      * UnLock();
      */
     IDE_TEST( iduShmSXLatchAcquire( aStatistics,
@@ -777,8 +777,8 @@ IDE_RC iduShmHash::insertNodeLatch( idvSQL             * aStatistics,
                                     idShmAddr            aAddr4Node,
                                     void               * aNode )
 {
-    /* LockÀ» Àâ´Â´Ù.
-     * insertNodeNoLatch() È£Ãâ
+    /* Lockì„ ì¡ëŠ”ë‹¤.
+     * insertNodeNoLatch() í˜¸ì¶œ
      * UnLock();
      */
     idrSVP  sSavepoint;
@@ -860,7 +860,7 @@ void iduShmHash::lock( idvSQL            * aStatistics,
                        iduLtShmHashBase  * aBase )
 {
     /*
-     * Hash ¸Å´ÏÀú¿¡ ´ëÇÑ mutex¸¦ Àâ´Â´Ù.
+     * Hash ë§¤ë‹ˆì €ì— ëŒ€í•œ mutexë¥¼ ì¡ëŠ”ë‹¤.
      */
     iduShmLatchAcquire( aStatistics,
                         aShmTxInfo,
@@ -871,7 +871,7 @@ void iduShmHash::lock( idvSQL            * aStatistics,
 //  Use Latch
 // =============================================================================
 /*
- *  Open½Ã¿¡ È£ÃâµÇ¸ç,  Ã¹¹øÂ° HashNode¸¦ Ã£¾Æ ³õ´Â´Ù.
+ *  Openì‹œì— í˜¸ì¶œë˜ë©°,  ì²«ë²ˆì§¸ HashNodeë¥¼ ì°¾ì•„ ë†“ëŠ”ë‹¤.
  */
 iduStShmHashChain *iduShmHash::searchFirstNode( iduLtShmHashBase *aLtHashBase )
 {

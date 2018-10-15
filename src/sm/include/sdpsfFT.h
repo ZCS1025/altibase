@@ -38,15 +38,15 @@
 typedef struct sdpsfDumpSegHdr
 {
     scPageID           mSegHdrPID;     // Segment Hdr PageID 
-    SChar              mSegType;       // ½ÇÁ¦ SegmentType
-    UShort             mState;         // ÇÒ´ç »óÅÂ 
+    SChar              mSegType;       // ì‹¤ì œ SegmentType
+    UShort             mState;         // í• ë‹¹ ìƒíƒœ 
     UInt               mPageCntInExt;  // PageCnt In Ext 
     sdpSglPIDListBase  mPvtFreePIDList;// Private page list
     sdpSglPIDListBase  mUFmtPIDList;   // Unformated page list/
-    sdpSglPIDListBase  mFreePIDList;   // InsertÇÒ °ø°£ÀÌ ÀÖ´Â PageList 
-    ULong              mFmtPageCnt;    // Segment¿¡¼­ ÇÑ¹øÀÌ¶óµµ ÇÒ´çµÈ PageÀÇ °¹¼ö 
-    scPageID           mHWMPID;        // Segment¿¡¼­ FormatµÈ ¸¶Áö¸· ÆäÀÌÁö¸¦ °¡¸®Å²´Ù. 
-    sdRID              mAllocExtRID;   // Segment¿¡¼­ ÇöÀç Page AllocÀ» À§ÇØ »ç¿ëÁßÀÎ Ext RID 
+    sdpSglPIDListBase  mFreePIDList;   // Insertí•  ê³µê°„ì´ ìˆëŠ” PageList 
+    ULong              mFmtPageCnt;    // Segmentì—ì„œ í•œë²ˆì´ë¼ë„ í• ë‹¹ëœ Pageì˜ ê°¯ìˆ˜ 
+    scPageID           mHWMPID;        // Segmentì—ì„œ Formatëœ ë§ˆì§€ë§‰ í˜ì´ì§€ë¥¼ ê°€ë¦¬í‚¨ë‹¤. 
+    sdRID              mAllocExtRID;   // Segmentì—ì„œ í˜„ì¬ Page Allocì„ ìœ„í•´ ì‚¬ìš©ì¤‘ì¸ Ext RID 
 } sdpsfDumpSegHdr;
 
 //------------------------------------------------------
@@ -54,12 +54,12 @@ typedef struct sdpsfDumpSegHdr
 //------------------------------------------------------
 typedef struct sdpsfPageInfoOfFreeLst
 {
-    SChar              mSegType;    // ½ÇÁ¦ SegmentType
+    SChar              mSegType;    // ì‹¤ì œ SegmentType
     scPageID           mPID;        // Free Page ID
-    UInt               mRecCnt;     // Page ³» Record Count
-    UInt               mFreeSize;   // Page ÀÇ FreeSize
+    UInt               mRecCnt;     // Page ë‚´ Record Count
+    UInt               mFreeSize;   // Page ì˜ FreeSize
     UInt               mPageType;   // Page Type
-    UInt               mState;      // Page »óÅÂ
+    UInt               mState;      // Page ìƒíƒœ
 } sdpsfPageInfoOfFreeLst;
 
 //------------------------------------------------------
@@ -67,7 +67,7 @@ typedef struct sdpsfPageInfoOfFreeLst
 //------------------------------------------------------
 typedef struct sdpsfPageInfoOfPvtFreeLst
 {
-    SChar              mSegType;    // ½ÇÁ¦ SegmentType
+    SChar              mSegType;    // ì‹¤ì œ SegmentType
     scPageID           mPID;        // Private Page ID
 } sdpsfPageInfoOfPvtFreeLst;
 
@@ -76,7 +76,7 @@ typedef struct sdpsfPageInfoOfPvtFreeLst
 //------------------------------------------------------
 typedef struct sdpsfPageInfoOfUFmtFreeLst
 {
-    SChar              mSegType;    // ½ÇÁ¦ SegmentType
+    SChar              mSegType;    // ì‹¤ì œ SegmentType
     scPageID           mPID;        // Unformatedd Page ID
 } sdpsfPageInfoOfUFmtFreeLst;
 

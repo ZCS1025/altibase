@@ -218,7 +218,7 @@ void   {
 }
 
 {identifier}        {
-    /* symbol tableÀ» Ã£¾Æ¼­ yes=> TK_KIND_TYPEDEF
+    /* symbol tableì„ ì°¾ì•„ì„œ yes=> TK_KIND_TYPEDEF
        no => IDENTIFIER */
 	idlOS::strcpy(symbol_lval.name, yytext);
 	return IDENTIFIER;

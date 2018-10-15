@@ -19,16 +19,16 @@
  * $Id: idnCharMap.h 24174 2007-11-19 01:23:49Z copyrei $
  *
  * Description :
- *     gNlsCaseCharMap : uppercase, lowercase º¯È¯ ¹®ÀÚÇ¥
+ *     gNlsCaseCharMap : uppercase, lowercase ë³€í™˜ ë¬¸ìí‘œ
  *
- *     uppercase/lowercase À¯´ÏÄÚµå ¹üÀ§ : U+0000 ~ U+2D26
+ *     uppercase/lowercase ìœ ë‹ˆì½”ë“œ ë²”ìœ„ : U+0000 ~ U+2D26
  *
  **********************************************************************/
 
 #ifndef _O_MTCASECONVMAP_H_
 #define _O_MTCASECONVMAP_H_ 1
 
-// 0x2D26 ÀÌÈÄÀÇ À¯´ÏÄÚµå¿¡ ´ëÇØ¼­´Â ´ë¼Ò¹®ÀÚ º¯È¯ÀÌ ÀÇ¹Ì°¡ ¾øÀ½
+// 0x2D26 ì´í›„ì˜ ìœ ë‹ˆì½”ë“œì— ëŒ€í•´ì„œëŠ” ëŒ€ì†Œë¬¸ì ë³€í™˜ì´ ì˜ë¯¸ê°€ ì—†ìŒ
 #define MTN_NLS_CASE_UNICODE_MAX        (0x2D26)  /* 11558 */
 
 typedef struct mtnNlsCaseConvMap

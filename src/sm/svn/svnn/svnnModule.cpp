@@ -145,7 +145,7 @@ smnIndexModule svnnModule = {
     (smnRebuildIndexColumn) NULL,
     (smnSetIndexConsistency)NULL,
     (smnGatherStat)         svnnGatherStat
-    /*BUGBUG ³ªÁß¿¡ smnnGatherStat À¸·Î ¹Ù²ã¾ß ÇÔ */
+    /*BUGBUG ë‚˜ì¤‘ì— smnnGatherStat ìœ¼ë¡œ ë°”ê¿”ì•¼ í•¨ */
 };
 
 static const smSeekFunc svnnSeekFunctions[32][12] =
@@ -722,12 +722,12 @@ static IDE_RC svnnBeforeFirst( svnnIterator* aIterator,
          ( aIterator->page != SM_SPECIAL_PID ) &&
          ( aIterator->mProperties->mReadRecordCount > 0 ) )
     {
-        /* BUG-39423 : trace log Ãâ·Â ½Ã ¼º´É ÀúÇÏ ¹× Á¤»ó ÀÛµ¿ °æ¿ì Ãâ·Â ¹æÁö */
+        /* BUG-39423 : trace log ì¶œë ¥ ì‹œ ì„±ëŠ¥ ì €í•˜ ë° ì •ìƒ ì‘ë™ ê²½ìš° ì¶œë ¥ ë°©ì§€ */
 #ifdef DEBUG
         if(   ( aIterator->page < svpManager::getFirstScanPageID(sFixed) )
             ||( aIterator->page > svpManager::getLastScanPageID(sFixed)  ) )
         {
-            /* Scan Page List¿¡ µé¾î¿ÂÀûÀÌ ¾ø´Â pageÀÏ °æ¿ì */  
+            /* Scan Page Listì— ë“¤ì–´ì˜¨ì ì´ ì—†ëŠ” pageì¼ ê²½ìš° */  
             if( aIterator->mModifySeqForScan == 0 )
             {
                 ideLog::log(IDE_SM_0,
@@ -876,12 +876,12 @@ static IDE_RC svnnAfterLast( svnnIterator* aIterator,
 
     if( aIterator->page != SM_NULL_PID && aIterator->mProperties->mReadRecordCount > 0)
     {
-        /* BUG-39423 : trace log Ãâ·Â ½Ã ¼º´É ÀúÇÏ ¹× Á¤»ó ÀÛµ¿ °æ¿ì Ãâ·Â ¹æÁö */
+        /* BUG-39423 : trace log ì¶œë ¥ ì‹œ ì„±ëŠ¥ ì €í•˜ ë° ì •ìƒ ì‘ë™ ê²½ìš° ì¶œë ¥ ë°©ì§€ */
 #ifdef DEBUG
         if(   ( aIterator->page < svpManager::getFirstScanPageID(sFixed) )
             ||( aIterator->page > svpManager::getLastScanPageID(sFixed)  ) )
         {
-            /* Scan Page List¿¡ µé¾î¿ÂÀûÀÌ ¾ø´Â pageÀÏ °æ¿ì */  
+            /* Scan Page Listì— ë“¤ì–´ì˜¨ì ì´ ì—†ëŠ” pageì¼ ê²½ìš° */  
             if( aIterator->mModifySeqForScan == 0 )
             {
                 ideLog::log(IDE_SM_0,
@@ -1104,20 +1104,20 @@ static IDE_RC svnnMoveNext( svnnIterator   * aIterator )
 }
 /****************************************************************************
  *
- * BUG-25179 [SMM] Full ScanÀ» À§ÇÑ ÆäÀÌÁö°£ Scan List°¡ ÇÊ¿äÇÕ´Ï´Ù.
+ * BUG-25179 [SMM] Full Scanì„ ìœ„í•œ í˜ì´ì§€ê°„ Scan Listê°€ í•„ìš”í•©ë‹ˆë‹¤.
  *
- * ÇöÀç Scan Page·ÎºÎÅÍ ´ÙÀ½ ÀĞÀ» Scan Page¸¦ ±¸ÇÔ.
+ * í˜„ì¬ Scan Pageë¡œë¶€í„° ë‹¤ìŒ ì½ì„ Scan Pageë¥¼ êµ¬í•¨.
  *
- * Iterator°¡ °¡¸®Å°´Â Page°¡ CacheµÈ ÀÌÈÄ¿¡ ¼öÁ¤µÉ¼ö ÀÖ±â ¶§¹®¿¡ Next Link°¡
- * À¯È¿ÇÏÁö ¾ÊÀ»¼ö ÀÖ´Ù. ÀÌ¿¡ ´ëÇÑ º¸Á¤ÀÌ ÇÊ¿äÇÏ¸ç ÀÌ´Â Modify Sequence¸¦ ÀÌ¿ëÇÑ´Ù.
- * CacheµÈ ÀÌÈÄ¿¡ Scan List¿¡¼­ Á¦°ÅµÇ¾ú´Ù¸é Modify Sequence°¡ Áõ°¡µÇ±â ¶§¹®¿¡
- * ÀÌ¸¦ È®ÀÎÇÑÈÄ À¯È¿ÇÑ Next Link¸¦ È®º¸ÇÑ´Ù.
+ * Iteratorê°€ ê°€ë¦¬í‚¤ëŠ” Pageê°€ Cacheëœ ì´í›„ì— ìˆ˜ì •ë ìˆ˜ ìˆê¸° ë•Œë¬¸ì— Next Linkê°€
+ * ìœ íš¨í•˜ì§€ ì•Šì„ìˆ˜ ìˆë‹¤. ì´ì— ëŒ€í•œ ë³´ì •ì´ í•„ìš”í•˜ë©° ì´ëŠ” Modify Sequenceë¥¼ ì´ìš©í•œë‹¤.
+ * Cacheëœ ì´í›„ì— Scan Listì—ì„œ ì œê±°ë˜ì—ˆë‹¤ë©´ Modify Sequenceê°€ ì¦ê°€ë˜ê¸° ë•Œë¬¸ì—
+ * ì´ë¥¼ í™•ì¸í•œí›„ ìœ íš¨í•œ Next Linkë¥¼ í™•ë³´í•œë‹¤.
  *
- * ¶ÇÇÑ ÇöÀç Page°¡ Scan List»ó¿¡ Á¸ÀçÇÏÁö ¾ÊÀ»¼ö ÀÖ±â ¶§¹®¿¡ Scan Back Page·Î
- * ÀÌµ¿ÈÄ ´Ù½Ã Àç½ÃÀÛÇÑ´Ù.
+ * ë˜í•œ í˜„ì¬ Pageê°€ Scan Listìƒì— ì¡´ì¬í•˜ì§€ ì•Šì„ìˆ˜ ìˆê¸° ë•Œë¬¸ì— Scan Back Pageë¡œ
+ * ì´ë™í›„ ë‹¤ì‹œ ì¬ì‹œì‘í•œë‹¤.
  *
- * Scan Back Page´Â ÇÑ°ÇÀÌ¶óµµ À¯È¿ÇÑ ·¹ÄÚµå°¡ ÀÖ´Â ÆäÀÌÁö¸¦ ÀÇ¹ÌÇÑ´Ù. Áï,
- * Àı´ë·Î Scan List¿¡¼­ Á¦°ÅµÇÁö ¾Ê´Â ÆäÀÌÁö¸¦ ÀÇ¹ÌÇÑ´Ù.
+ * Scan Back PageëŠ” í•œê±´ì´ë¼ë„ ìœ íš¨í•œ ë ˆì½”ë“œê°€ ìˆëŠ” í˜ì´ì§€ë¥¼ ì˜ë¯¸í•œë‹¤. ì¦‰,
+ * ì ˆëŒ€ë¡œ Scan Listì—ì„œ ì œê±°ë˜ì§€ ì•ŠëŠ” í˜ì´ì§€ë¥¼ ì˜ë¯¸í•œë‹¤.
  *
  ****************************************************************************/
 
@@ -1143,9 +1143,9 @@ static IDE_RC svnnMoveNextBlock( svnnIterator * aIterator )
         IDE_TEST( sScanPageList->mMutex->lock( NULL ) != IDE_SUCCESS );
 
         /*
-         * ÀÌÀü¿¡ Iterator¿¡¼­ QP·Î °á°ú¸¦ ¿Ã¸°ÀûÀÌ ¾ø´Â °æ¿ì
-         * 1. beforeFirst°¡ È£ÃâµÈ °æ¿ì
-         * 2. page°¡ NULLÀ» °®´Â ScanBackPID·ÎºÎÅÍ ¼³Á¤µÈ °æ¿ì
+         * ì´ì „ì— Iteratorì—ì„œ QPë¡œ ê²°ê³¼ë¥¼ ì˜¬ë¦°ì ì´ ì—†ëŠ” ê²½ìš°
+         * 1. beforeFirstê°€ í˜¸ì¶œëœ ê²½ìš°
+         * 2. pageê°€ NULLì„ ê°–ëŠ” ScanBackPIDë¡œë¶€í„° ì„¤ì •ëœ ê²½ìš°
          */
         if( aIterator->page == SM_NULL_PID )
         {
@@ -1173,9 +1173,9 @@ static IDE_RC svnnMoveNextBlock( svnnIterator * aIterator )
                                                              aIterator->page );
 
             /*
-             * ÇöÀç Page°¡ Scan List»óÀÇ ¸¶Áö¸· Page¶ó¸é ´õÀÌ»ó Next¸µÅ©¸¦
-             * ¾òÀ» ÇÊ¿ä°¡ ¾ø´Ù. ¶ÇÇÑ, ÇöÀç Page°¡ Scan List¿¡¼­ Á¦°ÅµÈ »óÅÂ¶ó¸é
-             * ScanBackPID·ÎºÎÅÍ Next Page¸¦ º¸Á¤ÇÑ´Ù.
+             * í˜„ì¬ Pageê°€ Scan Listìƒì˜ ë§ˆì§€ë§‰ Pageë¼ë©´ ë”ì´ìƒ Nextë§í¬ë¥¼
+             * ì–»ì„ í•„ìš”ê°€ ì—†ë‹¤. ë˜í•œ, í˜„ì¬ Pageê°€ Scan Listì—ì„œ ì œê±°ëœ ìƒíƒœë¼ë©´
+             * ScanBackPIDë¡œë¶€í„° Next Pageë¥¼ ë³´ì •í•œë‹¤.
              */
             if( (aIterator->page != SM_SPECIAL_PID) &&
                 (aIterator->page != SM_NULL_PID) )
@@ -1190,8 +1190,8 @@ static IDE_RC svnnMoveNextBlock( svnnIterator * aIterator )
         IDE_TEST( sScanPageList->mMutex->unlock() != IDE_SUCCESS );
 
         /*
-         * ÇöÀç Page°¡ Scan List¿¡¼­ Á¦°ÅµÇ¾ú°Å³ª, Á¦°ÅµÈ ÀÌÈÄ¿¡ ´Ù½Ã Scan List¿¡
-         * »ğÀÔµÈ °æ¿ì¶ó¸é µÈ »óÅÂ¶ó¸é ScanBackPID·ÎºÎÅÍ Next Page¸¦ º¸Á¤ÇÑ´Ù.
+         * í˜„ì¬ Pageê°€ Scan Listì—ì„œ ì œê±°ë˜ì—ˆê±°ë‚˜, ì œê±°ëœ ì´í›„ì— ë‹¤ì‹œ Scan Listì—
+         * ì‚½ì…ëœ ê²½ìš°ë¼ë©´ ëœ ìƒíƒœë¼ë©´ ScanBackPIDë¡œë¶€í„° Next Pageë¥¼ ë³´ì •í•œë‹¤.
          */
         if( sCurScanModifySeq != aIterator->mModifySeqForScan )
         {
@@ -1209,8 +1209,8 @@ static IDE_RC svnnMoveNextBlock( svnnIterator * aIterator )
     if ( ( aIterator->page != SM_SPECIAL_PID ) &&
          ( aIterator->page != SM_NULL_PID) )
     {
-        // Next PageID¸¦ ±â¹İÀ¸·Î Current page°¡ ¸¶Áö¸· pageÀÎÁö È®ÀÎÇÑ´Ù.
-        // BUG-43463 Next Page ID¸¦ ¹İÈ¯ ÇÏÁö ¾Ê°í, Iterator¿¡ ¹Ù·Î ¼³Á¤ÇÑ´Ù
+        // Next PageIDë¥¼ ê¸°ë°˜ìœ¼ë¡œ Current pageê°€ ë§ˆì§€ë§‰ pageì¸ì§€ í™•ì¸í•œë‹¤.
+        // BUG-43463 Next Page IDë¥¼ ë°˜í™˜ í•˜ì§€ ì•Šê³ , Iteratorì— ë°”ë¡œ ì„¤ì •í•œë‹¤
         aIterator->highest = ( SM_SPECIAL_PID == sNextPID ) ? ID_TRUE : ID_FALSE;
     }
 
@@ -1224,12 +1224,12 @@ static IDE_RC svnnMoveNextBlock( svnnIterator * aIterator )
 }
 
 /****************************************************************************
- * BUG-43463 memory full scan page list mutex º´¸ñ Á¦°Å
+ * BUG-43463 memory full scan page list mutex ë³‘ëª© ì œê±°
  *
- *     Fullscan½Ã¿¡ iterator¸¦ Next Page·Î ¿Å±â´Â ÇÔ¼ö,
- *     svnnMoveNextBlock() ÇÔ¼ö¿Í µ¿ÀÏÇÑ ¿ªÇÒÀ» ÇÑ´Ù,
- *     sScanPageList->mMutex ¸¦ ÀâÁö ¾Êµµ·Ï ¼öÁ¤µÇ¾ú´Ù.
- *     µ¿ÀÛ ¿ø¸®´Â smnnSeq::moveNextNonBlock() ÁÖ¼®À» Âü°íÇÏ¶ó
+ *     Fullscanì‹œì— iteratorë¥¼ Next Pageë¡œ ì˜®ê¸°ëŠ” í•¨ìˆ˜,
+ *     svnnMoveNextBlock() í•¨ìˆ˜ì™€ ë™ì¼í•œ ì—­í• ì„ í•œë‹¤,
+ *     sScanPageList->mMutex ë¥¼ ì¡ì§€ ì•Šë„ë¡ ìˆ˜ì •ë˜ì—ˆë‹¤.
+ *     ë™ì‘ ì›ë¦¬ëŠ” smnnSeq::moveNextNonBlock() ì£¼ì„ì„ ì°¸ê³ í•˜ë¼
  *
  * aIterator    - [IN/OUT]  Iterator
  *
@@ -1256,9 +1256,9 @@ static IDE_RC svnnMoveNextNonBlock( svnnIterator * aIterator )
     while( 1 )
     {
         /*
-         * ÀÌÀü¿¡ Iterator¿¡¼­ QP·Î °á°ú¸¦ ¿Ã¸°ÀûÀÌ ¾ø´Â °æ¿ì
-         * 1. beforeFirst°¡ È£ÃâµÈ °æ¿ì
-         * 2. page°¡ NULLÀ» °®´Â ScanBackPID·ÎºÎÅÍ ¼³Á¤µÈ °æ¿ì
+         * ì´ì „ì— Iteratorì—ì„œ QPë¡œ ê²°ê³¼ë¥¼ ì˜¬ë¦°ì ì´ ì—†ëŠ” ê²½ìš°
+         * 1. beforeFirstê°€ í˜¸ì¶œëœ ê²½ìš°
+         * 2. pageê°€ NULLì„ ê°–ëŠ” ScanBackPIDë¡œë¶€í„° ì„¤ì •ëœ ê²½ìš°
          */
         if( aIterator->page == SM_NULL_PID )
         {
@@ -1308,9 +1308,9 @@ static IDE_RC svnnMoveNextNonBlock( svnnIterator * aIterator )
                                                       sCurrPID );
 
             /*
-             * ÇöÀç Page°¡ Scan List»óÀÇ ¸¶Áö¸· Page¶ó¸é ´õÀÌ»ó Next¸µÅ©¸¦
-             * ¾òÀ» ÇÊ¿ä°¡ ¾ø´Ù. ¶ÇÇÑ, ÇöÀç Page°¡ Scan List¿¡¼­ Á¦°ÅµÈ »óÅÂ¶ó¸é
-             * ScanBackPID·ÎºÎÅÍ Next Page¸¦ º¸Á¤ÇÑ´Ù.
+             * í˜„ì¬ Pageê°€ Scan Listìƒì˜ ë§ˆì§€ë§‰ Pageë¼ë©´ ë”ì´ìƒ Nextë§í¬ë¥¼
+             * ì–»ì„ í•„ìš”ê°€ ì—†ë‹¤. ë˜í•œ, í˜„ì¬ Pageê°€ Scan Listì—ì„œ ì œê±°ëœ ìƒíƒœë¼ë©´
+             * ScanBackPIDë¡œë¶€í„° Next Pageë¥¼ ë³´ì •í•œë‹¤.
              */
             if( ( sNextPID != SM_SPECIAL_PID) &&
                 ( sNextPID != SM_NULL_PID) )
@@ -1336,8 +1336,8 @@ static IDE_RC svnnMoveNextNonBlock( svnnIterator * aIterator )
             {
                 IDE_DASSERT( sCurrPID != aIterator->mScanBackPID );
 
-                /* ÇöÀç Page°¡ Scan List¿¡¼­ Á¦°ÅµÇ¾ú°Å³ª, Á¦°ÅµÈ ÀÌÈÄ¿¡ ´Ù½Ã Scan List¿¡
-                * »ğÀÔµÈ °æ¿ì¶ó¸é µÈ »óÅÂ¶ó¸é ScanBackPID·ÎºÎÅÍ Next Page¸¦ º¸Á¤ÇÑ´Ù.
+                /* í˜„ì¬ Pageê°€ Scan Listì—ì„œ ì œê±°ë˜ì—ˆê±°ë‚˜, ì œê±°ëœ ì´í›„ì— ë‹¤ì‹œ Scan Listì—
+                * ì‚½ì…ëœ ê²½ìš°ë¼ë©´ ëœ ìƒíƒœë¼ë©´ ScanBackPIDë¡œë¶€í„° Next Pageë¥¼ ë³´ì •í•œë‹¤.
                 */
                 aIterator->page              = aIterator->mScanBackPID;
                 aIterator->mModifySeqForScan = aIterator->mScanBackModifySeq;
@@ -1357,8 +1357,8 @@ static IDE_RC svnnMoveNextNonBlock( svnnIterator * aIterator )
     if ( ( aIterator->page != SM_SPECIAL_PID ) &&
          ( aIterator->page != SM_NULL_PID) )
     {
-        // Next PageID¸¦ ±â¹İÀ¸·Î Current page°¡ ¸¶Áö¸· pageÀÎÁö È®ÀÎÇÑ´Ù.
-        // BUG-43463 Next Page ID¸¦ ¹İÈ¯ ÇÏÁö ¾Ê°í, Iterator¿¡ ¹Ù·Î ¼³Á¤ÇÑ´Ù
+        // Next PageIDë¥¼ ê¸°ë°˜ìœ¼ë¡œ Current pageê°€ ë§ˆì§€ë§‰ pageì¸ì§€ í™•ì¸í•œë‹¤.
+        // BUG-43463 Next Page IDë¥¼ ë°˜í™˜ í•˜ì§€ ì•Šê³ , Iteratorì— ë°”ë¡œ ì„¤ì •í•œë‹¤
         aIterator->highest = ( SM_SPECIAL_PID == sNextNextPID ) ? ID_TRUE : ID_FALSE;
     }
 
@@ -1407,9 +1407,9 @@ static IDE_RC svnnMoveNextParallelBlock( svnnIterator * aIterator )
         IDE_TEST( sScanPageList->mMutex->lock( NULL ) != IDE_SUCCESS );
 
         /*
-         * ÀÌÀü¿¡ Iterator¿¡¼­ QP·Î °á°ú¸¦ ¿Ã¸°ÀûÀÌ ¾ø´Â °æ¿ì
-         * 1. beforeFirst°¡ È£ÃâµÈ °æ¿ì
-         * 2. page°¡ NULLÀ» °®´Â ScanBackPID·ÎºÎÅÍ ¼³Á¤µÈ °æ¿ì
+         * ì´ì „ì— Iteratorì—ì„œ QPë¡œ ê²°ê³¼ë¥¼ ì˜¬ë¦°ì ì´ ì—†ëŠ” ê²½ìš°
+         * 1. beforeFirstê°€ í˜¸ì¶œëœ ê²½ìš°
+         * 2. pageê°€ NULLì„ ê°–ëŠ” ScanBackPIDë¡œë¶€í„° ì„¤ì •ëœ ê²½ìš°
          */
         if ( aIterator->page == SM_NULL_PID )
         {
@@ -1440,9 +1440,9 @@ static IDE_RC svnnMoveNextParallelBlock( svnnIterator * aIterator )
                                                              aIterator->page );
 
             /*
-             * ÇöÀç Page°¡ Scan List»óÀÇ ¸¶Áö¸· Page¶ó¸é ´õÀÌ»ó Next¸µÅ©¸¦
-             * ¾òÀ» ÇÊ¿ä°¡ ¾ø´Ù. ¶ÇÇÑ, ÇöÀç Page°¡ Scan List¿¡¼­ Á¦°ÅµÈ »óÅÂ¶ó¸é
-             * ScanBackPID·ÎºÎÅÍ Next Page¸¦ º¸Á¤ÇÑ´Ù.
+             * í˜„ì¬ Pageê°€ Scan Listìƒì˜ ë§ˆì§€ë§‰ Pageë¼ë©´ ë”ì´ìƒ Nextë§í¬ë¥¼
+             * ì–»ì„ í•„ìš”ê°€ ì—†ë‹¤. ë˜í•œ, í˜„ì¬ Pageê°€ Scan Listì—ì„œ ì œê±°ëœ ìƒíƒœë¼ë©´
+             * ScanBackPIDë¡œë¶€í„° Next Pageë¥¼ ë³´ì •í•œë‹¤.
              */
             if ( ( aIterator->page != SM_SPECIAL_PID ) &&
                  ( aIterator->page != SM_NULL_PID) )
@@ -1465,8 +1465,8 @@ static IDE_RC svnnMoveNextParallelBlock( svnnIterator * aIterator )
         IDE_TEST( sScanPageList->mMutex->unlock() != IDE_SUCCESS );
 
         /*
-         * ÇöÀç Page°¡ Scan List¿¡¼­ Á¦°ÅµÇ¾ú°Å³ª, Á¦°ÅµÈ ÀÌÈÄ¿¡ ´Ù½Ã Scan List¿¡
-         * »ğÀÔµÈ °æ¿ì¶ó¸é µÈ »óÅÂ¶ó¸é ScanBackPID·ÎºÎÅÍ Next Page¸¦ º¸Á¤ÇÑ´Ù.
+         * í˜„ì¬ Pageê°€ Scan Listì—ì„œ ì œê±°ë˜ì—ˆê±°ë‚˜, ì œê±°ëœ ì´í›„ì— ë‹¤ì‹œ Scan Listì—
+         * ì‚½ì…ëœ ê²½ìš°ë¼ë©´ ëœ ìƒíƒœë¼ë©´ ScanBackPIDë¡œë¶€í„° Next Pageë¥¼ ë³´ì •í•œë‹¤.
          */
         if ( sCurScanModifySeq != aIterator->mModifySeqForScan )
         {
@@ -1502,8 +1502,8 @@ static IDE_RC svnnMoveNextParallelBlock( svnnIterator * aIterator )
     if ( ( aIterator->page != SM_SPECIAL_PID ) &&
          ( aIterator->page != SM_NULL_PID) )
     {
-        // Next PageID¸¦ ±â¹İÀ¸·Î Current page°¡ ¸¶Áö¸· pageÀÎÁö È®ÀÎÇÑ´Ù.
-        // BUG-43463 Next Page ID¸¦ ¹İÈ¯ ÇÏÁö ¾Ê°í, Iterator¿¡ ¹Ù·Î ¼³Á¤ÇÑ´Ù
+        // Next PageIDë¥¼ ê¸°ë°˜ìœ¼ë¡œ Current pageê°€ ë§ˆì§€ë§‰ pageì¸ì§€ í™•ì¸í•œë‹¤.
+        // BUG-43463 Next Page IDë¥¼ ë°˜í™˜ í•˜ì§€ ì•Šê³ , Iteratorì— ë°”ë¡œ ì„¤ì •í•œë‹¤
         aIterator->highest = ( SM_SPECIAL_PID == sNextPID ) ? ID_TRUE : ID_FALSE;
     }
 
@@ -1517,12 +1517,12 @@ static IDE_RC svnnMoveNextParallelBlock( svnnIterator * aIterator )
 }
 
 /****************************************************************************
- * BUG-43463 memory full scan page list mutex º´¸ñ Á¦°Å
+ * BUG-43463 memory full scan page list mutex ë³‘ëª© ì œê±°
  *
- *     Fullscan½Ã¿¡ iterator¸¦ Next Page·Î ¿Å±â´Â ÇÔ¼ö,
- *     svnnMoveNextParallelBlock() ÇÔ¼ö¿Í µ¿ÀÏÇÑ ¿ªÇÒÀ» ÇÑ´Ù,
- *     sScanPageList->mMutex ¸¦ ÀâÁö ¾Êµµ·Ï ¼öÁ¤µÇ¾ú´Ù.
- *     µ¿ÀÛ ¿ø¸®´Â smnnSeq::moveNextNonBlock() ÁÖ¼®À» Âü°íÇÏ¶ó
+ *     Fullscanì‹œì— iteratorë¥¼ Next Pageë¡œ ì˜®ê¸°ëŠ” í•¨ìˆ˜,
+ *     svnnMoveNextParallelBlock() í•¨ìˆ˜ì™€ ë™ì¼í•œ ì—­í• ì„ í•œë‹¤,
+ *     sScanPageList->mMutex ë¥¼ ì¡ì§€ ì•Šë„ë¡ ìˆ˜ì •ë˜ì—ˆë‹¤.
+ *     ë™ì‘ ì›ë¦¬ëŠ” smnnSeq::moveNextNonBlock() ì£¼ì„ì„ ì°¸ê³ í•˜ë¼
  *
  * aIterator    - [IN/OUT]  Iterator
  *
@@ -1551,9 +1551,9 @@ static IDE_RC svnnMoveNextParallelNonBlock( svnnIterator * aIterator )
     while ( 1 )
     {
         /*
-         * ÀÌÀü¿¡ Iterator¿¡¼­ QP·Î °á°ú¸¦ ¿Ã¸°ÀûÀÌ ¾ø´Â °æ¿ì
-         * 1. beforeFirst°¡ È£ÃâµÈ °æ¿ì
-         * 2. page°¡ NULLÀ» °®´Â ScanBackPID·ÎºÎÅÍ ¼³Á¤µÈ °æ¿ì
+         * ì´ì „ì— Iteratorì—ì„œ QPë¡œ ê²°ê³¼ë¥¼ ì˜¬ë¦°ì ì´ ì—†ëŠ” ê²½ìš°
+         * 1. beforeFirstê°€ í˜¸ì¶œëœ ê²½ìš°
+         * 2. pageê°€ NULLì„ ê°–ëŠ” ScanBackPIDë¡œë¶€í„° ì„¤ì •ëœ ê²½ìš°
          */
         if ( aIterator->page == SM_NULL_PID )
         {
@@ -1613,9 +1613,9 @@ static IDE_RC svnnMoveNextParallelNonBlock( svnnIterator * aIterator )
             sNextPID = svpManager::getNextScanPageID( sSpaceID,
                                                       sCurrPID );
             /*
-             * ÇöÀç Page°¡ Scan List»óÀÇ ¸¶Áö¸· Page¶ó¸é ´õÀÌ»ó Next¸µÅ©¸¦
-             * ¾òÀ» ÇÊ¿ä°¡ ¾ø´Ù. ¶ÇÇÑ, ÇöÀç Page°¡ Scan List¿¡¼­ Á¦°ÅµÈ »óÅÂ¶ó¸é
-             * ScanBackPID·ÎºÎÅÍ Next Page¸¦ º¸Á¤ÇÑ´Ù.
+             * í˜„ì¬ Pageê°€ Scan Listìƒì˜ ë§ˆì§€ë§‰ Pageë¼ë©´ ë”ì´ìƒ Nextë§í¬ë¥¼
+             * ì–»ì„ í•„ìš”ê°€ ì—†ë‹¤. ë˜í•œ, í˜„ì¬ Pageê°€ Scan Listì—ì„œ ì œê±°ëœ ìƒíƒœë¼ë©´
+             * ScanBackPIDë¡œë¶€í„° Next Pageë¥¼ ë³´ì •í•œë‹¤.
              */
             if ( ( sNextPID != SM_SPECIAL_PID ) &&
                  ( sNextPID != SM_NULL_PID) )
@@ -1641,8 +1641,8 @@ static IDE_RC svnnMoveNextParallelNonBlock( svnnIterator * aIterator )
             }
 
             /*
-             * ÇöÀç Page°¡ Scan List¿¡¼­ Á¦°ÅµÇ¾ú°Å³ª, Á¦°ÅµÈ ÀÌÈÄ¿¡ ´Ù½Ã Scan List¿¡
-             * »ğÀÔµÈ °æ¿ì¶ó¸é µÈ »óÅÂ¶ó¸é ScanBackPID·ÎºÎÅÍ Next Page¸¦ º¸Á¤ÇÑ´Ù.
+             * í˜„ì¬ Pageê°€ Scan Listì—ì„œ ì œê±°ë˜ì—ˆê±°ë‚˜, ì œê±°ëœ ì´í›„ì— ë‹¤ì‹œ Scan Listì—
+             * ì‚½ì…ëœ ê²½ìš°ë¼ë©´ ëœ ìƒíƒœë¼ë©´ ScanBackPIDë¡œë¶€í„° Next Pageë¥¼ ë³´ì •í•œë‹¤.
              */
             if( svpManager::getModifySeqForScan( sSpaceID,
                                                  sCurrPID ) != sCurScanModifySeq )
@@ -1680,8 +1680,8 @@ static IDE_RC svnnMoveNextParallelNonBlock( svnnIterator * aIterator )
     if ( ( aIterator->page != SM_SPECIAL_PID ) &&
          ( aIterator->page != SM_NULL_PID) )
     {
-        // Next PageID¸¦ ±â¹İÀ¸·Î Current page°¡ ¸¶Áö¸· pageÀÎÁö È®ÀÎÇÑ´Ù.
-        // BUG-43463 Next Page ID¸¦ ¹İÈ¯ ÇÏÁö ¾Ê°í, Iterator¿¡ ¹Ù·Î ¼³Á¤ÇÑ´Ù
+        // Next PageIDë¥¼ ê¸°ë°˜ìœ¼ë¡œ Current pageê°€ ë§ˆì§€ë§‰ pageì¸ì§€ í™•ì¸í•œë‹¤.
+        // BUG-43463 Next Page IDë¥¼ ë°˜í™˜ í•˜ì§€ ì•Šê³ , Iteratorì— ë°”ë¡œ ì„¤ì •í•œë‹¤
         aIterator->highest = ( SM_SPECIAL_PID == sNextNextPID ) ? ID_TRUE : ID_FALSE;
     }
 
@@ -1708,20 +1708,20 @@ static IDE_RC svnnMovePrev( svnnIterator*       aIterator )
 
 /****************************************************************************
  *
- * BUG-25179 [SMM] Full ScanÀ» À§ÇÑ ÆäÀÌÁö°£ Scan List°¡ ÇÊ¿äÇÕ´Ï´Ù.
+ * BUG-25179 [SMM] Full Scanì„ ìœ„í•œ í˜ì´ì§€ê°„ Scan Listê°€ í•„ìš”í•©ë‹ˆë‹¤.
  *
- * ÇöÀç Scan Page·ÎºÎÅÍ ´ÙÀ½ ÀĞÀ» Scan Page¸¦ ±¸ÇÔ.
+ * í˜„ì¬ Scan Pageë¡œë¶€í„° ë‹¤ìŒ ì½ì„ Scan Pageë¥¼ êµ¬í•¨.
  *
- * Iterator°¡ °¡¸®Å°´Â Page°¡ CacheµÈ ÀÌÈÄ¿¡ ¼öÁ¤µÉ¼ö ÀÖ±â ¶§¹®¿¡ Previous Link°¡
- * À¯È¿ÇÏÁö ¾ÊÀ»¼ö ÀÖ´Ù. ÀÌ¿¡ ´ëÇÑ º¸Á¤ÀÌ ÇÊ¿äÇÏ¸ç ÀÌ´Â Modify Sequence¸¦ ÀÌ¿ëÇÑ´Ù.
- * CacheµÈ ÀÌÈÄ¿¡ Scan List¿¡¼­ Á¦°ÅµÇ¾ú´Ù¸é Modify Sequence°¡ Áõ°¡µÇ±â ¶§¹®¿¡
- * ÀÌ¸¦ È®ÀÎÇÑÈÄ À¯È¿ÇÑ Previous Link¸¦ È®º¸ÇÑ´Ù.
+ * Iteratorê°€ ê°€ë¦¬í‚¤ëŠ” Pageê°€ Cacheëœ ì´í›„ì— ìˆ˜ì •ë ìˆ˜ ìˆê¸° ë•Œë¬¸ì— Previous Linkê°€
+ * ìœ íš¨í•˜ì§€ ì•Šì„ìˆ˜ ìˆë‹¤. ì´ì— ëŒ€í•œ ë³´ì •ì´ í•„ìš”í•˜ë©° ì´ëŠ” Modify Sequenceë¥¼ ì´ìš©í•œë‹¤.
+ * Cacheëœ ì´í›„ì— Scan Listì—ì„œ ì œê±°ë˜ì—ˆë‹¤ë©´ Modify Sequenceê°€ ì¦ê°€ë˜ê¸° ë•Œë¬¸ì—
+ * ì´ë¥¼ í™•ì¸í•œí›„ ìœ íš¨í•œ Previous Linkë¥¼ í™•ë³´í•œë‹¤.
  *
- * ¶ÇÇÑ ÇöÀç Page°¡ Scan List»ó¿¡ Á¸ÀçÇÏÁö ¾ÊÀ»¼ö ÀÖ±â ¶§¹®¿¡ Scan Back Page·Î
- * ÀÌµ¿ÈÄ ´Ù½Ã Àç½ÃÀÛÇÑ´Ù.
+ * ë˜í•œ í˜„ì¬ Pageê°€ Scan Listìƒì— ì¡´ì¬í•˜ì§€ ì•Šì„ìˆ˜ ìˆê¸° ë•Œë¬¸ì— Scan Back Pageë¡œ
+ * ì´ë™í›„ ë‹¤ì‹œ ì¬ì‹œì‘í•œë‹¤.
  *
- * Scan Back Page´Â ÇÑ°ÇÀÌ¶óµµ À¯È¿ÇÑ ·¹ÄÚµå°¡ ÀÖ´Â ÆäÀÌÁö¸¦ ÀÇ¹ÌÇÑ´Ù. Áï,
- * Àı´ë·Î Scan List¿¡¼­ Á¦°ÅµÇÁö ¾Ê´Â ÆäÀÌÁö¸¦ ÀÇ¹ÌÇÑ´Ù.
+ * Scan Back PageëŠ” í•œê±´ì´ë¼ë„ ìœ íš¨í•œ ë ˆì½”ë“œê°€ ìˆëŠ” í˜ì´ì§€ë¥¼ ì˜ë¯¸í•œë‹¤. ì¦‰,
+ * ì ˆëŒ€ë¡œ Scan Listì—ì„œ ì œê±°ë˜ì§€ ì•ŠëŠ” í˜ì´ì§€ë¥¼ ì˜ë¯¸í•œë‹¤.
  *
  ****************************************************************************/
 
@@ -1747,9 +1747,9 @@ static IDE_RC svnnMovePrevBlock( svnnIterator * aIterator )
         IDE_TEST( sScanPageList->mMutex->lock( NULL ) != IDE_SUCCESS );
 
         /*
-         * ÀÌÀü¿¡ Iterator¿¡¼­ QP·Î °á°ú¸¦ ¿Ã¸°ÀûÀÌ ¾ø´Â °æ¿ì
-         * 1. beforeFirst°¡ È£ÃâµÈ °æ¿ì
-         * 2. page°¡ NULLÀ» °®´Â ScanBackPID·ÎºÎÅÍ ¼³Á¤µÈ °æ¿ì
+         * ì´ì „ì— Iteratorì—ì„œ QPë¡œ ê²°ê³¼ë¥¼ ì˜¬ë¦°ì ì´ ì—†ëŠ” ê²½ìš°
+         * 1. beforeFirstê°€ í˜¸ì¶œëœ ê²½ìš°
+         * 2. pageê°€ NULLì„ ê°–ëŠ” ScanBackPIDë¡œë¶€í„° ì„¤ì •ëœ ê²½ìš°
          */
         if( aIterator->page == SM_NULL_PID )
         {
@@ -1773,9 +1773,9 @@ static IDE_RC svnnMovePrevBlock( svnnIterator * aIterator )
                                                              aIterator->page );
 
             /*
-             * ÇöÀç Page°¡ Scan List»óÀÇ Ã³À½ Page¶ó¸é ´õÀÌ»ó Prev¸µÅ©¸¦
-             * ¾òÀ» ÇÊ¿ä°¡ ¾ø´Ù. ¶ÇÇÑ, ÇöÀç Page°¡ Scan List¿¡¼­ Á¦°ÅµÈ »óÅÂ¶ó¸é
-             * ScanBackPID·ÎºÎÅÍ Previous Page¸¦ º¸Á¤ÇÑ´Ù.
+             * í˜„ì¬ Pageê°€ Scan Listìƒì˜ ì²˜ìŒ Pageë¼ë©´ ë”ì´ìƒ Prevë§í¬ë¥¼
+             * ì–»ì„ í•„ìš”ê°€ ì—†ë‹¤. ë˜í•œ, í˜„ì¬ Pageê°€ Scan Listì—ì„œ ì œê±°ëœ ìƒíƒœë¼ë©´
+             * ScanBackPIDë¡œë¶€í„° Previous Pageë¥¼ ë³´ì •í•œë‹¤.
              */
             if( (aIterator->page != SM_SPECIAL_PID) &&
                 (aIterator->page != SM_NULL_PID) )
@@ -1790,8 +1790,8 @@ static IDE_RC svnnMovePrevBlock( svnnIterator * aIterator )
         IDE_TEST( sScanPageList->mMutex->unlock() != IDE_SUCCESS );
 
         /*
-         * ÇöÀç Page°¡ Scan List¿¡¼­ Á¦°ÅµÇ¾ú°Å³ª, Á¦°ÅµÈ ÀÌÈÄ¿¡ ´Ù½Ã Scan List¿¡
-         * »ğÀÔµÈ °æ¿ì¶ó¸é µÈ »óÅÂ¶ó¸é ScanBackPID·ÎºÎÅÍ Previous Page¸¦ º¸Á¤ÇÑ´Ù.
+         * í˜„ì¬ Pageê°€ Scan Listì—ì„œ ì œê±°ë˜ì—ˆê±°ë‚˜, ì œê±°ëœ ì´í›„ì— ë‹¤ì‹œ Scan Listì—
+         * ì‚½ì…ëœ ê²½ìš°ë¼ë©´ ëœ ìƒíƒœë¼ë©´ ScanBackPIDë¡œë¶€í„° Previous Pageë¥¼ ë³´ì •í•œë‹¤.
          */
         if( sCurScanModifySeq != aIterator->mModifySeqForScan )
         {
@@ -1808,8 +1808,8 @@ static IDE_RC svnnMovePrevBlock( svnnIterator * aIterator )
     if ( ( aIterator->page != SM_SPECIAL_PID ) &&
          ( aIterator->page != SM_NULL_PID) )
     {
-        // Prev PageID¸¦ ±â¹İÀ¸·Î Current page°¡ ¸¶Áö¸· pageÀÎÁö È®ÀÎÇÑ´Ù.
-        // BUG-43463 Prev Page ID¸¦ ¹İÈ¯ ÇÏÁö ¾Ê°í, Iterator¿¡ ¹Ù·Î ¼³Á¤ÇÑ´Ù
+        // Prev PageIDë¥¼ ê¸°ë°˜ìœ¼ë¡œ Current pageê°€ ë§ˆì§€ë§‰ pageì¸ì§€ í™•ì¸í•œë‹¤.
+        // BUG-43463 Prev Page IDë¥¼ ë°˜í™˜ í•˜ì§€ ì•Šê³ , Iteratorì— ë°”ë¡œ ì„¤ì •í•œë‹¤
         aIterator->least = ( SM_SPECIAL_PID == sPrevPID ) ? ID_TRUE : ID_FALSE ;
     }
 
@@ -1823,12 +1823,12 @@ static IDE_RC svnnMovePrevBlock( svnnIterator * aIterator )
 }
 
 /****************************************************************************
- * BUG-43463 memory full scan page list mutex º´¸ñ Á¦°Å
+ * BUG-43463 memory full scan page list mutex ë³‘ëª© ì œê±°
  *
- *     Fullscan½Ã¿¡ iterator¸¦ Prev Page·Î ¿Å±â´Â ÇÔ¼ö,
- *     svnnMovePrevBlock() ÇÔ¼ö¿Í µ¿ÀÏÇÑ ¿ªÇÒÀ» ÇÑ´Ù,
- *     sScanPageList->mMutex ¸¦ ÀâÁö ¾Êµµ·Ï ¼öÁ¤µÇ¾ú´Ù.
- *     µ¿ÀÛ ¿ø¸®´Â smnnSeq::moveNextNonBlock() ÁÖ¼®À» Âü°íÇÏ¶ó
+ *     Fullscanì‹œì— iteratorë¥¼ Prev Pageë¡œ ì˜®ê¸°ëŠ” í•¨ìˆ˜,
+ *     svnnMovePrevBlock() í•¨ìˆ˜ì™€ ë™ì¼í•œ ì—­í• ì„ í•œë‹¤,
+ *     sScanPageList->mMutex ë¥¼ ì¡ì§€ ì•Šë„ë¡ ìˆ˜ì •ë˜ì—ˆë‹¤.
+ *     ë™ì‘ ì›ë¦¬ëŠ” smnnSeq::moveNextNonBlock() ì£¼ì„ì„ ì°¸ê³ í•˜ë¼
  *
  * aIterator    - [IN/OUT]  Iterator
  *
@@ -1855,9 +1855,9 @@ static IDE_RC svnnMovePrevNonBlock( svnnIterator * aIterator )
     while( 1 )
     {
         /*
-         * ÀÌÀü¿¡ Iterator¿¡¼­ QP·Î °á°ú¸¦ ¿Ã¸°ÀûÀÌ ¾ø´Â °æ¿ì
-         * 1. beforeFirst°¡ È£ÃâµÈ °æ¿ì
-         * 2. page°¡ NULLÀ» °®´Â ScanBackPID·ÎºÎÅÍ ¼³Á¤µÈ °æ¿ì
+         * ì´ì „ì— Iteratorì—ì„œ QPë¡œ ê²°ê³¼ë¥¼ ì˜¬ë¦°ì ì´ ì—†ëŠ” ê²½ìš°
+         * 1. beforeFirstê°€ í˜¸ì¶œëœ ê²½ìš°
+         * 2. pageê°€ NULLì„ ê°–ëŠ” ScanBackPIDë¡œë¶€í„° ì„¤ì •ëœ ê²½ìš°
          */
         if( aIterator->page == SM_NULL_PID )
         {
@@ -1903,9 +1903,9 @@ static IDE_RC svnnMovePrevNonBlock( svnnIterator * aIterator )
             sPrevPID = svpManager::getPrevScanPageID( sSpaceID,
                                                       sCurrPID );
             /*
-             * ÇöÀç Page°¡ Scan List»óÀÇ Ã³À½ Page¶ó¸é ´õÀÌ»ó Prev¸µÅ©¸¦
-             * ¾òÀ» ÇÊ¿ä°¡ ¾ø´Ù. ¶ÇÇÑ, ÇöÀç Page°¡ Scan List¿¡¼­ Á¦°ÅµÈ »óÅÂ¶ó¸é
-             * ScanBackPID·ÎºÎÅÍ Previous Page¸¦ º¸Á¤ÇÑ´Ù.
+             * í˜„ì¬ Pageê°€ Scan Listìƒì˜ ì²˜ìŒ Pageë¼ë©´ ë”ì´ìƒ Prevë§í¬ë¥¼
+             * ì–»ì„ í•„ìš”ê°€ ì—†ë‹¤. ë˜í•œ, í˜„ì¬ Pageê°€ Scan Listì—ì„œ ì œê±°ëœ ìƒíƒœë¼ë©´
+             * ScanBackPIDë¡œë¶€í„° Previous Pageë¥¼ ë³´ì •í•œë‹¤.
              */
             if( ( sPrevPID != SM_SPECIAL_PID ) &&
                 ( sPrevPID != SM_NULL_PID) )
@@ -1927,8 +1927,8 @@ static IDE_RC svnnMovePrevNonBlock( svnnIterator * aIterator )
             }
 
             /*
-             * ÇöÀç Page°¡ Scan List¿¡¼­ Á¦°ÅµÇ¾ú°Å³ª, Á¦°ÅµÈ ÀÌÈÄ¿¡ ´Ù½Ã Scan List¿¡
-             * »ğÀÔµÈ °æ¿ì¶ó¸é µÈ »óÅÂ¶ó¸é ScanBackPID·ÎºÎÅÍ Previous Page¸¦ º¸Á¤ÇÑ´Ù.
+             * í˜„ì¬ Pageê°€ Scan Listì—ì„œ ì œê±°ë˜ì—ˆê±°ë‚˜, ì œê±°ëœ ì´í›„ì— ë‹¤ì‹œ Scan Listì—
+             * ì‚½ì…ëœ ê²½ìš°ë¼ë©´ ëœ ìƒíƒœë¼ë©´ ScanBackPIDë¡œë¶€í„° Previous Pageë¥¼ ë³´ì •í•œë‹¤.
              */
             if( svpManager::getModifySeqForScan( sSpaceID,
                                                  sCurrPID ) != sCurScanModifySeq )
@@ -1951,8 +1951,8 @@ static IDE_RC svnnMovePrevNonBlock( svnnIterator * aIterator )
     if ( ( aIterator->page != SM_SPECIAL_PID ) &&
          ( aIterator->page != SM_NULL_PID) )
     {
-        // Prev PageID¸¦ ±â¹İÀ¸·Î Current page°¡ ¸¶Áö¸· pageÀÎÁö È®ÀÎÇÑ´Ù.
-        // BUG-43463 Prev Page ID¸¦ ¹İÈ¯ ÇÏÁö ¾Ê°í, Iterator¿¡ ¹Ù·Î ¼³Á¤ÇÑ´Ù
+        // Prev PageIDë¥¼ ê¸°ë°˜ìœ¼ë¡œ Current pageê°€ ë§ˆì§€ë§‰ pageì¸ì§€ í™•ì¸í•œë‹¤.
+        // BUG-43463 Prev Page IDë¥¼ ë°˜í™˜ í•˜ì§€ ì•Šê³ , Iteratorì— ë°”ë¡œ ì„¤ì •í•œë‹¤
         aIterator->least = ( SM_SPECIAL_PID == sPrevPrevPID ) ? ID_TRUE : ID_FALSE ;
     }
 
@@ -2017,9 +2017,9 @@ static IDE_RC svnnFetchNext( svnnIterator* aIterator,
         }
 
         /*
-         * page°¡ NULLÀÎ °æ¿ì´Â beforeFirst¿¡¼­ °á°ú°¡ ¾øÀ»¶§ ¹ß»ıÇÒ¼ö ÀÖÀ¸¸ç,
-         * page°¡ SPECIALÀÎ °æ¿ì´Â next page°¡ ¾øÀ½À» ÀÇ¹ÌÇÑ´Ù.
-         * ÀÌ·¯ÇÑ 2°¡Áö °æ¿ì´Â ´õÀÌ»ó ÀĞÀ» ·¹ÄÚµå°¡ ¾øÀ½À» ÀÇ¹ÌÇÑ´Ù.
+         * pageê°€ NULLì¸ ê²½ìš°ëŠ” beforeFirstì—ì„œ ê²°ê³¼ê°€ ì—†ì„ë•Œ ë°œìƒí• ìˆ˜ ìˆìœ¼ë©°,
+         * pageê°€ SPECIALì¸ ê²½ìš°ëŠ” next pageê°€ ì—†ìŒì„ ì˜ë¯¸í•œë‹¤.
+         * ì´ëŸ¬í•œ 2ê°€ì§€ ê²½ìš°ëŠ” ë”ì´ìƒ ì½ì„ ë ˆì½”ë“œê°€ ì—†ìŒì„ ì˜ë¯¸í•œë‹¤.
          */
         IDE_TEST_CONT( (aIterator->page == SM_NULL_PID) ||
                        (aIterator->page == SM_SPECIAL_PID), RETURN_SUCCESS );
@@ -2027,12 +2027,12 @@ static IDE_RC svnnFetchNext( svnnIterator* aIterator,
         aIterator->slot = aIterator->highFence = ( aIterator->lowFence = aIterator->rows ) - 1;
         aIterator->least = ID_FALSE;
 
-        /* BUG-39423 : trace log Ãâ·Â ½Ã ¼º´É ÀúÇÏ ¹× Á¤»ó ÀÛµ¿ °æ¿ì Ãâ·Â ¹æÁö */
+        /* BUG-39423 : trace log ì¶œë ¥ ì‹œ ì„±ëŠ¥ ì €í•˜ ë° ì •ìƒ ì‘ë™ ê²½ìš° ì¶œë ¥ ë°©ì§€ */
 #ifdef DEBUG
         if(   ( aIterator->page < svpManager::getFirstScanPageID(sFixed) )
             ||( aIterator->page > svpManager::getLastScanPageID(sFixed)  ) )
         {
-            /* Scan Page List¿¡ µé¾î¿ÂÀûÀÌ ¾ø´Â pageÀÏ °æ¿ì */  
+            /* Scan Page Listì— ë“¤ì–´ì˜¨ì ì´ ì—†ëŠ” pageì¼ ê²½ìš° */  
             if( aIterator->mModifySeqForScan == 0 )
             {
                 ideLog::log(IDE_SM_0,
@@ -2191,9 +2191,9 @@ restart:
         IDE_TEST( svnnMovePrev( aIterator ) != IDE_SUCCESS );
 
         /*
-         * page°¡ NULLÀÎ °æ¿ì´Â beforeFirst¿¡¼­ °á°ú°¡ ¾øÀ»¶§ ¹ß»ıÇÒ¼ö ÀÖÀ¸¸ç,
-         * page°¡ SPECIALÀÎ °æ¿ì´Â previous page°¡ ¾øÀ½À» ÀÇ¹ÌÇÑ´Ù.
-         * ÀÌ·¯ÇÑ 2°¡Áö °æ¿ì´Â ´õÀÌ»ó ÀĞÀ» ·¹ÄÚµå°¡ ¾øÀ½À» ÀÇ¹ÌÇÑ´Ù.
+         * pageê°€ NULLì¸ ê²½ìš°ëŠ” beforeFirstì—ì„œ ê²°ê³¼ê°€ ì—†ì„ë•Œ ë°œìƒí• ìˆ˜ ìˆìœ¼ë©°,
+         * pageê°€ SPECIALì¸ ê²½ìš°ëŠ” previous pageê°€ ì—†ìŒì„ ì˜ë¯¸í•œë‹¤.
+         * ì´ëŸ¬í•œ 2ê°€ì§€ ê²½ìš°ëŠ” ë”ì´ìƒ ì½ì„ ë ˆì½”ë“œê°€ ì—†ìŒì„ ì˜ë¯¸í•œë‹¤.
          */
         IDE_TEST_CONT( (aIterator->page == SM_NULL_PID) ||
                        (aIterator->page == SM_SPECIAL_PID), RETURN_SUCCESS );
@@ -2202,12 +2202,12 @@ restart:
             ( aIterator->slot = aIterator->lowFence = aIterator->rows + SVNN_ROWS_CACHE ) - 1;
         aIterator->highest = ID_TRUE;
 
-        /* BUG-39423 : trace log Ãâ·Â ½Ã ¼º´É ÀúÇÏ ¹× Á¤»ó ÀÛµ¿ °æ¿ì Ãâ·Â ¹æÁö */
+        /* BUG-39423 : trace log ì¶œë ¥ ì‹œ ì„±ëŠ¥ ì €í•˜ ë° ì •ìƒ ì‘ë™ ê²½ìš° ì¶œë ¥ ë°©ì§€ */
 #ifdef DEBUG
         if(   ( aIterator->page < svpManager::getFirstScanPageID(sFixed) )
             ||( aIterator->page > svpManager::getLastScanPageID(sFixed)  ) )
         {
-            /* Scan Page List¿¡ µé¾î¿ÂÀûÀÌ ¾ø´Â pageÀÏ °æ¿ì */  
+            /* Scan Page Listì— ë“¤ì–´ì˜¨ì ì´ ì—†ëŠ” pageì¼ ê²½ìš° */  
             if( aIterator->mModifySeqForScan == 0 )
             {
                 ideLog::log(IDE_SM_0,
@@ -2371,9 +2371,9 @@ restart:
         IDE_TEST( svnnMoveNext( aIterator ) != IDE_SUCCESS );
 
         /*
-         * page°¡ NULLÀÎ °æ¿ì´Â beforeFirst¿¡¼­ °á°ú°¡ ¾øÀ»¶§ ¹ß»ıÇÒ¼ö ÀÖÀ¸¸ç,
-         * page°¡ SPECIALÀÎ °æ¿ì´Â next page°¡ ¾øÀ½À» ÀÇ¹ÌÇÑ´Ù.
-         * ÀÌ·¯ÇÑ 2°¡Áö °æ¿ì´Â ´õÀÌ»ó ÀĞÀ» ·¹ÄÚµå°¡ ¾øÀ½À» ÀÇ¹ÌÇÑ´Ù.
+         * pageê°€ NULLì¸ ê²½ìš°ëŠ” beforeFirstì—ì„œ ê²°ê³¼ê°€ ì—†ì„ë•Œ ë°œìƒí• ìˆ˜ ìˆìœ¼ë©°,
+         * pageê°€ SPECIALì¸ ê²½ìš°ëŠ” next pageê°€ ì—†ìŒì„ ì˜ë¯¸í•œë‹¤.
+         * ì´ëŸ¬í•œ 2ê°€ì§€ ê²½ìš°ëŠ” ë”ì´ìƒ ì½ì„ ë ˆì½”ë“œê°€ ì—†ìŒì„ ì˜ë¯¸í•œë‹¤.
          */
         IDE_TEST_CONT( (aIterator->page == SM_NULL_PID) ||
                        (aIterator->page == SM_SPECIAL_PID), RETURN_SUCCESS );
@@ -2381,12 +2381,12 @@ restart:
         aIterator->slot = aIterator->highFence = ( aIterator->lowFence = aIterator->rows ) - 1;
         aIterator->least = ID_FALSE;
 
-        /* BUG-39423 : trace log Ãâ·Â ½Ã ¼º´É ÀúÇÏ ¹× Á¤»ó ÀÛµ¿ °æ¿ì Ãâ·Â ¹æÁö */
+        /* BUG-39423 : trace log ì¶œë ¥ ì‹œ ì„±ëŠ¥ ì €í•˜ ë° ì •ìƒ ì‘ë™ ê²½ìš° ì¶œë ¥ ë°©ì§€ */
 #ifdef DEBUG
         if(   ( aIterator->page < svpManager::getFirstScanPageID(sFixed) )
             ||( aIterator->page > svpManager::getLastScanPageID(sFixed)  ) )
         {
-            /* Scan Page List¿¡ µé¾î¿ÂÀûÀÌ ¾ø´Â pageÀÏ °æ¿ì */  
+            /* Scan Page Listì— ë“¤ì–´ì˜¨ì ì´ ì—†ëŠ” pageì¼ ê²½ìš° */  
             if( aIterator->mModifySeqForScan == 0 )
             {
                 ideLog::log(IDE_SM_0,
@@ -2551,9 +2551,9 @@ restart:
         IDE_TEST( svnnMovePrev( aIterator ) != IDE_SUCCESS );
 
         /*
-         * page°¡ NULLÀÎ °æ¿ì´Â beforeFirst¿¡¼­ °á°ú°¡ ¾øÀ»¶§ ¹ß»ıÇÒ¼ö ÀÖÀ¸¸ç,
-         * page°¡ SPECIALÀÎ °æ¿ì´Â previous page°¡ ¾øÀ½À» ÀÇ¹ÌÇÑ´Ù.
-         * ÀÌ·¯ÇÑ 2°¡Áö °æ¿ì´Â ´õÀÌ»ó ÀĞÀ» ·¹ÄÚµå°¡ ¾øÀ½À» ÀÇ¹ÌÇÑ´Ù.
+         * pageê°€ NULLì¸ ê²½ìš°ëŠ” beforeFirstì—ì„œ ê²°ê³¼ê°€ ì—†ì„ë•Œ ë°œìƒí• ìˆ˜ ìˆìœ¼ë©°,
+         * pageê°€ SPECIALì¸ ê²½ìš°ëŠ” previous pageê°€ ì—†ìŒì„ ì˜ë¯¸í•œë‹¤.
+         * ì´ëŸ¬í•œ 2ê°€ì§€ ê²½ìš°ëŠ” ë”ì´ìƒ ì½ì„ ë ˆì½”ë“œê°€ ì—†ìŒì„ ì˜ë¯¸í•œë‹¤.
          */
         IDE_TEST_CONT( (aIterator->page == SM_NULL_PID) ||
                        (aIterator->page == SM_SPECIAL_PID), RETURN_SUCCESS );
@@ -2562,12 +2562,12 @@ restart:
             ( aIterator->slot = aIterator->lowFence = aIterator->rows + SVNN_ROWS_CACHE ) - 1;
         aIterator->highest = ID_TRUE;
 
-        /* BUG-39423 : trace log Ãâ·Â ½Ã ¼º´É ÀúÇÏ ¹× Á¤»ó ÀÛµ¿ °æ¿ì Ãâ·Â ¹æÁö */
+        /* BUG-39423 : trace log ì¶œë ¥ ì‹œ ì„±ëŠ¥ ì €í•˜ ë° ì •ìƒ ì‘ë™ ê²½ìš° ì¶œë ¥ ë°©ì§€ */
 #ifdef DEBUG
         if(   ( aIterator->page < svpManager::getFirstScanPageID(sFixed) )
             ||( aIterator->page > svpManager::getLastScanPageID(sFixed)  ) )
         {
-            /* Scan Page List¿¡ µé¾î¿ÂÀûÀÌ ¾ø´Â pageÀÏ °æ¿ì */  
+            /* Scan Page Listì— ë“¤ì–´ì˜¨ì ì´ ì—†ëŠ” pageì¼ ê²½ìš° */  
             if( aIterator->mModifySeqForScan == 0 )
             {
                 ideLog::log(IDE_SM_0,
@@ -2722,9 +2722,9 @@ restart:
         IDE_TEST( svnnMoveNext( aIterator ) != IDE_SUCCESS );
 
         /*
-         * page°¡ NULLÀÎ °æ¿ì´Â beforeFirst¿¡¼­ °á°ú°¡ ¾øÀ»¶§ ¹ß»ıÇÒ¼ö ÀÖÀ¸¸ç,
-         * page°¡ SPECIALÀÎ °æ¿ì´Â next page°¡ ¾øÀ½À» ÀÇ¹ÌÇÑ´Ù.
-         * ÀÌ·¯ÇÑ 2°¡Áö °æ¿ì´Â ´õÀÌ»ó ÀĞÀ» ·¹ÄÚµå°¡ ¾øÀ½À» ÀÇ¹ÌÇÑ´Ù.
+         * pageê°€ NULLì¸ ê²½ìš°ëŠ” beforeFirstì—ì„œ ê²°ê³¼ê°€ ì—†ì„ë•Œ ë°œìƒí• ìˆ˜ ìˆìœ¼ë©°,
+         * pageê°€ SPECIALì¸ ê²½ìš°ëŠ” next pageê°€ ì—†ìŒì„ ì˜ë¯¸í•œë‹¤.
+         * ì´ëŸ¬í•œ 2ê°€ì§€ ê²½ìš°ëŠ” ë”ì´ìƒ ì½ì„ ë ˆì½”ë“œê°€ ì—†ìŒì„ ì˜ë¯¸í•œë‹¤.
          */
         IDE_TEST_CONT( (aIterator->page == SM_NULL_PID) ||
                        (aIterator->page == SM_SPECIAL_PID), RETURN_SUCCESS );
@@ -2732,12 +2732,12 @@ restart:
         aIterator->slot = aIterator->highFence = ( aIterator->lowFence = aIterator->rows ) - 1;
         aIterator->least = ID_FALSE;
         
-        /* BUG-39423 : trace log Ãâ·Â ½Ã ¼º´É ÀúÇÏ ¹× Á¤»ó ÀÛµ¿ °æ¿ì Ãâ·Â ¹æÁö */
+        /* BUG-39423 : trace log ì¶œë ¥ ì‹œ ì„±ëŠ¥ ì €í•˜ ë° ì •ìƒ ì‘ë™ ê²½ìš° ì¶œë ¥ ë°©ì§€ */
 #ifdef DEBUG
         if(   ( aIterator->page < svpManager::getFirstScanPageID(sFixed) )
             ||( aIterator->page > svpManager::getLastScanPageID(sFixed)  ) )
         {
-            /* Scan Page List¿¡ µé¾î¿ÂÀûÀÌ ¾ø´Â pageÀÏ °æ¿ì */  
+            /* Scan Page Listì— ë“¤ì–´ì˜¨ì ì´ ì—†ëŠ” pageì¼ ê²½ìš° */  
             if( aIterator->mModifySeqForScan == 0 )
             {
                 ideLog::log(IDE_SM_0,
@@ -2774,7 +2774,7 @@ restart:
             {
                 *(++sHighFence) = sRowPtr;
                 aIterator->mScanBackPID = aIterator->page;
-                // BUG-30538 ScanBackModifySeq ¸¦ Àß¸ø ±â·ÏÇÏ°í ÀÖ½À´Ï´Ù.
+                // BUG-30538 ScanBackModifySeq ë¥¼ ì˜ëª» ê¸°ë¡í•˜ê³  ìˆìŠµë‹ˆë‹¤.
                 aIterator->mScanBackModifySeq = aIterator->mModifySeqForScan;
             }
         }
@@ -2869,8 +2869,8 @@ static IDE_RC svnnFreeIterator( void * /* aIteratorMem */ )
 /*********************************************************************
  * FUNCTION DESCRIPTION : svnnGatherStat                             *
  * ------------------------------------------------------------------*
- * Åë°èÁ¤º¸¸¦ ±¸ÃàÇÑ´Ù.
- * BUGBUG ³ªÁß¿¡ smnnGatherStat À¸·Î ¹Ù²ã¾ß ÇÔ. Áßº¹ÀÓ
+ * í†µê³„ì •ë³´ë¥¼ êµ¬ì¶•í•œë‹¤.
+ * BUGBUG ë‚˜ì¤‘ì— smnnGatherStat ìœ¼ë¡œ ë°”ê¿”ì•¼ í•¨. ì¤‘ë³µì„
  *********************************************************************/
 IDE_RC svnnGatherStat( idvSQL         * aStatistics,
                        void           * aTrans,

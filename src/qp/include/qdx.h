@@ -449,7 +449,7 @@ private:
                                           smiSegStorageAttr aSegStoAttr, 
                                           ULong             aDirectKeyMaxSize );
 
-    /* PROJ-2464 hybrid partitioned table ¡ˆø¯ */
+    /* PROJ-2464 hybrid partitioned table ÏßÄÏõê */
     static IDE_RC validateIndexRestriction( qcStatement * aStatement,
                                             idBool        aCheckKeySizeLimit,
                                             UInt          aIndexType );

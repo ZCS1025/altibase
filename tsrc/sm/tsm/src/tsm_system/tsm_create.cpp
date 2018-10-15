@@ -29,7 +29,7 @@ IDE_RC ensurePageMemoryAlloced( smmTBSNode * aTBSNode,
     scPageID      sPID;
     smmPCH      * sPCH;
 
-    // BUGBUG kmkim Restart RecoveryÁß¿¡ ºÒ¸°°ÍÀÎÁö IDE_ASSERT!
+    // BUGBUG kmkim Restart Recoveryì¤‘ì— ë¶ˆë¦°ê²ƒì¸ì§€ IDE_ASSERT!
     for ( sPID = aFromPID ;
           sPID <= aToPID ;
           sPID ++ )
@@ -42,7 +42,7 @@ IDE_RC ensurePageMemoryAlloced( smmTBSNode * aTBSNode,
         {
             IDE_TEST( smmManager::allocAndLinkPageMemory(
                                       aTBSNode,
-                                      NULL, // ·Î±ë¾ÈÇÔ
+                                      NULL, // ë¡œê¹…ì•ˆí•¨
                                       sPID, // Page ID 
                                       SM_NULL_PID,  // Prev PID
                                       SM_NULL_PID ) // Next PID

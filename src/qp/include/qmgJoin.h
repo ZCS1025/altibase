@@ -19,11 +19,11 @@
  * $Id: qmgJoin.h 82075 2018-01-17 06:39:52Z jina.kim $
  *
  * Description :
- *     Join Graph¸¦ À§ÇÑ Á¤ÀÇ
+ *     Join Graphë¥¼ ìœ„í•œ ì •ì˜
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  **********************************************************************/
 
@@ -49,28 +49,28 @@ enum qmgInnerJoinMethod
 };
 
 //---------------------------------------------------
-// Join Graph ¸¦ °ü¸®ÇÏ±â À§ÇÑ ÀÚ·á ±¸Á¶
+// Join Graph ë¥¼ ê´€ë¦¬í•˜ê¸° ìœ„í•œ ìë£Œ êµ¬ì¡°
 //---------------------------------------------------
 
 typedef struct qmgJOIN
 {
-    qmgGraph graph;  // °øÅë Graph Á¤º¸
+    qmgGraph graph;  // ê³µí†µ Graph ì •ë³´
 
-    // Join Graph¸¦ À§ÇÑ Á¤º¸
+    // Join Graphë¥¼ ìœ„í•œ ì •ë³´
 
     qmoCNF            * onConditionCNF;
 
     //-----------------------------------------------
-    // Join Method Á¤º¸
+    // Join Method ì •ë³´
     //-----------------------------------------------
 
     qmoJoinMethod     * joinMethods;
 
-    qmoJoinMethodCost * selectedJoinMethod; // °¡Àå cost°¡ ³·Àº Join Method
+    qmoJoinMethodCost * selectedJoinMethod; // ê°€ì¥ costê°€ ë‚®ì€ Join Method
 
     //----------------------------------------------
-    // Join Predicate Á¤º¸:
-    //    ¼±ÅÃµÈ Join Method Type¿¡ µû¶ó ´ÙÀ½°ú °°ÀÌ Join PredicateÀÌ ºĞ·ùµÈ´Ù.
+    // Join Predicate ì •ë³´:
+    //    ì„ íƒëœ Join Method Typeì— ë”°ë¼ ë‹¤ìŒê³¼ ê°™ì´ Join Predicateì´ ë¶„ë¥˜ëœë‹¤.
     //
     //    - joinablePredicate
     //      Index Nested Loop or Anti Outer      : indexablePredicate
@@ -87,15 +87,15 @@ typedef struct qmgJOIN
     qmoPredicate      * nonJoinablePredicate;
 
     // PROJ-2179/BUG-35484
-    // Full/index nested loop join½Ã push downµÈ predicateÀ» ´ã¾ÆµĞ´Ù.
+    // Full/index nested loop joinì‹œ push downëœ predicateì„ ë‹´ì•„ë‘”ë‹¤.
     qmoPredicate      * pushedDownPredicate;
 
     //---------------------------------------------
-    // Join Method TypeÀÌ Hash Based JoinÀÎ °æ¿ì, »ç¿ë
+    // Join Method Typeì´ Hash Based Joinì¸ ê²½ìš°, ì‚¬ìš©
     //---------------------------------------------
 
     UInt            hashBucketCnt;        // hash bucket count
-    UInt            hashTmpTblCnt;        // hash temp table °³¼ö
+    UInt            hashTmpTblCnt;        // hash temp table ê°œìˆ˜
 
     // PROJ-2242
     SDouble         firstRowsFactor;      // FIRST_ROWS_N
@@ -104,29 +104,29 @@ typedef struct qmgJOIN
 } qmgJOIN;
 
 //---------------------------------------------------
-// Join Graph ¸¦ °ü¸®ÇÏ±â À§ÇÑ ÇÔ¼ö
+// Join Graph ë¥¼ ê´€ë¦¬í•˜ê¸° ìœ„í•œ í•¨ìˆ˜
 //---------------------------------------------------
 
 class qmgJoin
 {
 public:
-    // Inner Join¿¡ ´ëÀÀÇÏ´Â qmgJoin Graph ÀÇ ÃÊ±âÈ­
+    // Inner Joinì— ëŒ€ì‘í•˜ëŠ” qmgJoin Graph ì˜ ì´ˆê¸°í™”
     static IDE_RC  init( qcStatement * aStatement,
                          qmsQuerySet * aQuerySet,
                          qmsFrom     * aFrom,
                          qmgGraph   ** aGraph );
 
-    // Join Relation¿¡ ´ëÀÀÇÏ´Â qmgJoin Graph ÀÇ ÃÊ±âÈ­
+    // Join Relationì— ëŒ€ì‘í•˜ëŠ” qmgJoin Graph ì˜ ì´ˆê¸°í™”
     static IDE_RC  init( qcStatement * aStatement,
                          qmgGraph    * aLeftGraph,
                          qmgGraph    * aRightGraph,
                          qmgGraph    * aGraph,
                          idBool        aExistOrderFactor );
 
-    // GraphÀÇ ÃÖÀûÈ­ ¼öÇà
+    // Graphì˜ ìµœì í™” ìˆ˜í–‰
     static IDE_RC  optimize( qcStatement * aStatement, qmgGraph * aGraph );
 
-    // GraphÀÇ Plan Tree »ı¼º
+    // Graphì˜ Plan Tree ìƒì„±
     static IDE_RC  makePlan( qcStatement * aStatement, const qmgGraph * aParent, qmgGraph * aGraph );
 
     static IDE_RC  makeChildPlan( qcStatement * aStatement,
@@ -165,14 +165,14 @@ public:
     static IDE_RC  makeMergeJoin( qcStatement     * aStatement,
                                   qmgJOIN         * aMyGraph );
 
-    // Join method¿¡ µû¶ó joinable predicateÀ¸·Î ºĞ¸®µÇÁö ¸øÇÑ
-    // predicateµéÀ» ¸ğ¾Æ filter·Î »ı¼º
+    // Join methodì— ë”°ë¼ joinable predicateìœ¼ë¡œ ë¶„ë¦¬ë˜ì§€ ëª»í•œ
+    // predicateë“¤ì„ ëª¨ì•„ filterë¡œ ìƒì„±
     static IDE_RC  extractFilter( qcStatement   * aStatement,
                                   qmgJOIN       * aMyGraph,
                                   qmoPredicate  * aPredicate,
                                   qtcNode      ** aFilter );
 
-    // Constant predicateÀÌ ÀÖÀ» °æ¿ì¿¡¸¸ »ı¼º
+    // Constant predicateì´ ìˆì„ ê²½ìš°ì—ë§Œ ìƒì„±
     static IDE_RC  initFILT( qcStatement   * aStatement,
                              qmgJOIN       * aMyGraph,
                              qmnPlan      ** aFILT );
@@ -181,20 +181,20 @@ public:
                              qmgJOIN      * aMyGraph,
                              qmnPlan      * aFILT );
 
-    // GraphÀÇ °øÅë Á¤º¸¸¦ Ãâ·ÂÇÔ.
+    // Graphì˜ ê³µí†µ ì •ë³´ë¥¼ ì¶œë ¥í•¨.
     static IDE_RC  printGraph( qcStatement  * aStatement,
                                qmgGraph     * aGraph,
                                ULong          aDepth,
                                iduVarString * aString );
 
-    // °¡Àå cost°¡ ÁÁÀº Join Method Cost¸¦ ¼±ÅÃ
+    // ê°€ì¥ costê°€ ì¢‹ì€ Join Method Costë¥¼ ì„ íƒ
     static IDE_RC selectJoinMethodCost( qcStatement        * aStatement,
                                         qmgGraph           * aGraph,
                                         qmoPredicate       * aJoinPredicate,
                                         qmoJoinMethod      * aJoinMethods,
                                         qmoJoinMethodCost ** aSelected );
 
-    // Join Method °áÁ¤ ÈÄ Ã³¸®
+    // Join Method ê²°ì • í›„ ì²˜ë¦¬
     static
         IDE_RC afterJoinMethodDecision( qcStatement       * aStatement,
                                         qmgGraph          * aGraph,
@@ -204,7 +204,7 @@ public:
                                         qmoPredicate     ** aNonJoinablePredicate);
 
 
-    // Preserved Order »ı¼º
+    // Preserved Order ìƒì„±
     static IDE_RC makePreservedOrder( qcStatement       * aStatement,
                                       qmgGraph          * aGraph,
                                       qmoJoinMethodCost * aSelectedMethod,
@@ -214,7 +214,7 @@ public:
 
 private:
 
-    // bucket count°ú temp table countÀ» ±¸ÇÏ´Â ÇÔ¼ö
+    // bucket countê³¼ temp table countì„ êµ¬í•˜ëŠ” í•¨ìˆ˜
     static
         IDE_RC getBucketCntNTmpTblCnt( qmoJoinMethodCost * aSelectedMethod,
                                        qmgGraph          * aGraph,
@@ -223,61 +223,61 @@ private:
                                        UInt              * aTmpTblCnt );
 
     // BUG-13257
-    // Temporary_TableÀÇ °¹¼ö¸¦ Temporary_TableSpaceÀÇ ÇöÀç Å©±â¸¦ °í·ÁÇÏ¿© °è»êÇÑ´Ù
+    // Temporary_Tableì˜ ê°¯ìˆ˜ë¥¼ Temporary_TableSpaceì˜ í˜„ì¬ í¬ê¸°ë¥¼ ê³ ë ¤í•˜ì—¬ ê³„ì‚°í•œë‹¤
     static IDE_RC decideTmpTblCnt(  qcStatement       * aStatement,
                                     qmgGraph          * aGraph,
                                     SDouble             aMemoryBufCnt,
                                     UInt              * aTmpTblCnt );
 
-    // ChildÀÇ Graph·ÎºÎÅÍ Preserved Order¸¦ »ı¼ºÇÑ´Ù.
+    // Childì˜ Graphë¡œë¶€í„° Preserved Orderë¥¼ ìƒì„±í•œë‹¤.
     static IDE_RC makeOrderFromChild( qcStatement * aStatement,
                                       qmgGraph    * aGraph,
                                       idBool        aIsRightGraph );
 
-    // Two Pass Sort, Merge JoinÀÇ Join PredicateÀ¸·ÎºÎÅÍ Preserved Order »ı¼º
+    // Two Pass Sort, Merge Joinì˜ Join Predicateìœ¼ë¡œë¶€í„° Preserved Order ìƒì„±
     static IDE_RC makeOrderFromJoin( qcStatement        * aStatement,
                                      qmgGraph           * aGraph,
                                      qmoJoinMethodCost  * aSelectedMethod,
                                      qmgDirectionType     aDirection,
                                      qmoPredicate       * aJoinablePredicate );
 
-    // »õ·Î¿î Preserved Order »ı¼º ¹× ¼³Á¤
+    // ìƒˆë¡œìš´ Preserved Order ìƒì„± ë° ì„¤ì •
     static IDE_RC makeNewOrder( qcStatement       * aStatement,
                                 qmgGraph          * aGraph,
                                 qcmIndex          * aSelectedIndex );
     
-    // »õ·Î¿î Preserved Order »ı¼º ¹× ¼³Á¤
+    // ìƒˆë¡œìš´ Preserved Order ìƒì„± ë° ì„¤ì •
     static IDE_RC makeNewOrder4Selection( qcStatement       * aStatement,
                                           qmgGraph          * aGraph,
                                           qcmIndex          * aSelectedIndex );
 
     // PROJ-1502 PARTITIONED DISK TABLE
-    // partition graph¿¡ ´ëÇØ »õ·Î¿î preserved order »ı¼º ¹× ¼³Á¤.
+    // partition graphì— ëŒ€í•´ ìƒˆë¡œìš´ preserved order ìƒì„± ë° ì„¤ì •.
     static IDE_RC makeNewOrder4Partition( qcStatement       * aStatement,
                                           qmgGraph          * aGraph,
                                           qcmIndex          * aSelectedIndex );
 
-    // push-down join predicate¸¦ ¹Ş¾Æ¼­ ±×·¡ÇÁ¿¡ ¿¬°á.
+    // push-down join predicateë¥¼ ë°›ì•„ì„œ ê·¸ë˜í”„ì— ì—°ê²°.
     static IDE_RC setJoinPushDownPredicate( qcStatement   * aStatement,
                                             qmgGraph      * aGraph,
                                             qmoPredicate ** aPredicate );
     
-    // push-down non-join predicate¸¦ ¹Ş¾Æ¼­ ÀÚ½ÅÀÇ ±×·¡ÇÁ¿¡ ¿¬°á.
+    // push-down non-join predicateë¥¼ ë°›ì•„ì„œ ìì‹ ì˜ ê·¸ë˜í”„ì— ì—°ê²°.
     static IDE_RC setNonJoinPushDownPredicate( qcStatement   * aStatement,
                                                qmgGraph      * aGraph,
                                                qmoPredicate ** aPredicate );
     
-    // PROJ-1446 Host variableÀ» Æ÷ÇÔÇÑ ÁúÀÇ ÃÖÀûÈ­
-    // »óÀ§ graph¿¡ ÀÇÇØ access method°¡ ¹Ù²ï °æ¿ì
-    // selection graphÀÇ sdf¸¦ disable ½ÃÅ²´Ù.
+    // PROJ-1446 Host variableì„ í¬í•¨í•œ ì§ˆì˜ ìµœì í™”
+    // ìƒìœ„ graphì— ì˜í•´ access methodê°€ ë°”ë€ ê²½ìš°
+    // selection graphì˜ sdfë¥¼ disable ì‹œí‚¨ë‹¤.
     static IDE_RC alterSelectedIndex( qcStatement * aStatement,
                                       qmgGraph    * aGraph,
                                       qcmIndex    * aNewIndex );
 
-    // PROJ-1446 Host variableÀ» Æ÷ÇÔÇÑ ÁúÀÇ ÃÖÀûÈ­
-    // »óÀ§ JOIN graph¿¡¼­ ANTI·Î Ã³¸®ÇÒ ¶§
-    // ÇÏÀ§ SELT graph¸¦ º¹»çÇÏ´Âµ¥ ÀÌ¶§ ÀÌ ÇÔ¼ö¸¦
-    // ÅëÇØ¼­ º¹»çÇÏµµ·Ï ÇØ¾ß ¾ÈÀüÇÏ´Ù.
+    // PROJ-1446 Host variableì„ í¬í•¨í•œ ì§ˆì˜ ìµœì í™”
+    // ìƒìœ„ JOIN graphì—ì„œ ANTIë¡œ ì²˜ë¦¬í•  ë•Œ
+    // í•˜ìœ„ SELT graphë¥¼ ë³µì‚¬í•˜ëŠ”ë° ì´ë•Œ ì´ í•¨ìˆ˜ë¥¼
+    // í†µí•´ì„œ ë³µì‚¬í•˜ë„ë¡ í•´ì•¼ ì•ˆì „í•˜ë‹¤.
     static IDE_RC copyGraphAndAlterSelectedIndex( qcStatement * aStatement,
                                                   qmgGraph    * aSource,
                                                   qmgGraph   ** aTarget,

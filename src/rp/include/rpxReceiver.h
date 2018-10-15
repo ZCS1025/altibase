@@ -116,7 +116,7 @@ public:
     IDE_RC  threadJoinMutex_lock()    { return mThreadJoinMutex.lock(NULL /* idvSQL* */); }
     IDE_RC  threadJoinMutex_unlock()  { return mThreadJoinMutex.unlock();}
 
-    /* BUG-31545 Åë°è Á¤º¸¸¦ ½Ã½ºÅÛ¿¡ ¹İ¿µÇÑ´Ù. */
+    /* BUG-31545 í†µê³„ ì •ë³´ë¥¼ ì‹œìŠ¤í…œì— ë°˜ì˜í•œë‹¤. */
     inline void applyStatisticsToSystem()
     {
         idvManager::applyStatisticsToSystem(&mStatSession, &mOldStatSession);
@@ -218,7 +218,7 @@ private:
     iduMutex           mThreadJoinMutex;
     iduCond            mThreadJoinCV;
 
-    /* BUG-31545 ¼öÇà½Ã°£ Åë°èÁ¤º¸ */
+    /* BUG-31545 ìˆ˜í–‰ì‹œê°„ í†µê³„ì •ë³´ */
     idvSQL             mOpStatistics;
     idvSession         mStatSession;
     idvSession         mOldStatSession;
@@ -353,16 +353,16 @@ public:
 
     UInt                mParallelID;
 
-    /* PROJ-1915 ¸®½Ã¹ö¿¡¼­ restart snÀ» º¸°ü mRemoteMeta->mReplication.mXSN¿¡ ÇÒ´ç
-     * PROJ-1915 ¸®½Ã¹ö¿¡¼­ Meta¸¦ º¸°ü
+    /* PROJ-1915 ë¦¬ì‹œë²„ì—ì„œ restart snì„ ë³´ê´€ mRemoteMeta->mReplication.mXSNì— í• ë‹¹
+     * PROJ-1915 ë¦¬ì‹œë²„ì—ì„œ Metaë¥¼ ë³´ê´€
      */
-    rpdMeta           * mRemoteMeta; //rpcExecutor¿¡¼­ ÁöÁ¤ ÇÑ°Í
+    rpdMeta           * mRemoteMeta; //rpcExecutorì—ì„œ ì§€ì • í•œê²ƒ
     rpxReceiverErrorInfo mErrorInfo;
 
     iduMemAllocator   * mAllocator;
     SInt                mAllocatorState;
 
-    SInt              * mTransToApplierIndex;  /* Transaction º°·Î ºĞ¹èµÈ Thread Index */
+    SInt              * mTransToApplierIndex;  /* Transaction ë³„ë¡œ ë¶„ë°°ëœ Thread Index */
     UInt                mTransactionTableSize;
     /* PROJ-2453 */
 public:

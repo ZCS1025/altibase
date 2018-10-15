@@ -277,7 +277,7 @@ static idBool mmmCanFaultTolerate(SInt        aSigNum,
 }
 
 /* ------------------------------------------------------------
- *   altibase Signal handler ¼öÇà
+ *   altibase Signal handler ìˆ˜í–‰
  * ---------------------------------------------------------- */
 // called by SIGINT In Debug Mode
 IDL_EXTERN_C void mmmExitHandler(SInt aSignal, siginfo_t*, void*)

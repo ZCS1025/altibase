@@ -15,7 +15,7 @@
 #include <idm.h>
 
 /* 
- * PROJ-2473 SNMP Áö¿ø
+ * PROJ-2473 SNMP ì§€ì›
  */
 
 typedef struct idmSNMPTrap idmSNMPTrap;

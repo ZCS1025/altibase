@@ -120,9 +120,9 @@ const smxOidSavePointMaskType  smxOidSavePointMask[SM_OID_OP_COUNT] = {
         ~( SM_OID_ACT_SAVEPOINT),
         0x00000000
     },
-    /* BUG-27742 Partial Rollback½Ã LPCH°¡ µÎ¹ø FreeµÇ´Â ¹®Á¦°¡ ÀÖ½À´Ï´Ù.
-     * Partial Rollback½Ã TxÀÇ Commit, Rollback°ú ¹«°üÇÏ°Ô
-     * Old LPCH´Â º¸Á¸ µÇ¾î¾ß ÇÏ°í, New LPCH´Â Á¦°ÅµÇ¾î¾ß ÇÕ´Ï´Ù. */
+    /* BUG-27742 Partial Rollbackì‹œ LPCHê°€ ë‘ë²ˆ Freeë˜ëŠ” ë¬¸ì œê°€ ìˆìŠµë‹ˆë‹¤.
+     * Partial Rollbackì‹œ Txì˜ Commit, Rollbackê³¼ ë¬´ê´€í•˜ê²Œ
+     * Old LPCHëŠ” ë³´ì¡´ ë˜ì–´ì•¼ í•˜ê³ , New LPCHëŠ” ì œê±°ë˜ì–´ì•¼ í•©ë‹ˆë‹¤. */
     {/* SM_OID_OP_FREE_OLD_LPCH                          */
         ~( SM_OID_ACT_SAVEPOINT    |
            SM_OID_ACT_AGING_COMMIT ),
@@ -415,7 +415,7 @@ IDE_RC smxOIDList::addOIDWithCheckFlag(smOID           aTableOID,
 
     if( aFlag != SM_OID_NEW_INSERT_FIXED_SLOT )
     {
-        /* Insert ¿ÜÀÇ ¿¬»ê¿¡ ÀÇÇÑ OID°¡ ¿ÔÀ¸¹Ç·Î Ager¿¡ ´Ş ÇÊ¿ä°¡ ÀÖ´Ù. */
+        /* Insert ì™¸ì˜ ì—°ì‚°ì— ì˜í•œ OIDê°€ ì™”ìœ¼ë¯€ë¡œ Agerì— ë‹¬ í•„ìš”ê°€ ìˆë‹¤. */
         mNeedAging = ID_TRUE;
     }//if aFlag
 
@@ -459,15 +459,15 @@ IDE_RC smxOIDList::addOIDWithCheckFlag(smOID           aTableOID,
 
 /***********************************************************************
  *
- * Description : Áßº¹µÈ OID¸¦ °ü¸®ÇÏÁö ¾Ê°í, VerifyÇÒ OID¸¦ Ãß°¡ÇÑ´Ù.
+ * Description : ì¤‘ë³µëœ OIDë¥¼ ê´€ë¦¬í•˜ì§€ ì•Šê³ , Verifyí•  OIDë¥¼ ì¶”ê°€í•œë‹¤.
  *
- * BUG-27122 Restart Recovery ½Ã Undo Trans°¡ Á¢±ÙÇÏ´Â ÀÎµ¦½º¿¡ ´ëÇÑ
- * Integrity Ã¼Å©±â´É Ãß°¡ (__SM_CHECK_DISK_INDEX_INTEGRITY=2)
+ * BUG-27122 Restart Recovery ì‹œ Undo Transê°€ ì ‘ê·¼í•˜ëŠ” ì¸ë±ìŠ¤ì— ëŒ€í•œ
+ * Integrity ì²´í¬ê¸°ëŠ¥ ì¶”ê°€ (__SM_CHECK_DISK_INDEX_INTEGRITY=2)
  *
- * aTableOID  - [IN] Å×ÀÌºí OID
- * aTargetOID - [IN] Integrity Ã¼Å©ÇÒ ÀÎµ¦½º OID
- * aSpaceID   - [IN] Å×ÀÌºí½ºÆäÀÌ½º ID
- * aFlag      - [IN] OID Ã³¸®¿¡ ´ëÇÑ Flag
+ * aTableOID  - [IN] í…Œì´ë¸” OID
+ * aTargetOID - [IN] Integrity ì²´í¬í•  ì¸ë±ìŠ¤ OID
+ * aSpaceID   - [IN] í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ID
+ * aFlag      - [IN] OID ì²˜ë¦¬ì— ëŒ€í•œ Flag
  *
  **********************************************************************/
 IDE_RC smxOIDList::addOIDToVerify( smOID           aTableOID,
@@ -567,16 +567,16 @@ IDE_RC smxOIDList::cloneInsertCachedOID()
 }
 
 /***********************************************************************
- * Description : TransactionÀÌ EndÇÏ±âÀü¿¡ OID List¿¡ ´ëÇØ¼­ SetSCNÀÌ³ª Drop
- *               Table Pending¿¬»êÀ» ¼öÇàÇÑ´Ù.
+ * Description : Transactionì´ Endí•˜ê¸°ì „ì— OID Listì— ëŒ€í•´ì„œ SetSCNì´ë‚˜ Drop
+ *               Table Pendingì—°ì‚°ì„ ìˆ˜í–‰í•œë‹¤.
  *
  * aAgingState     - [IN] if Commit, SM_OID_ACT_AGING_COMMIT, else
  *                        SM_OID_ACT_AGING_ROLLBACK.
- * aLSN            - [IN] Commit Log³ª Abort LogÀÇ LSN
- * aScn            - [IN] Row¿¡ SettingÇÒ SCN
- * aProcessOIDOpt  - [IN] if Ager°¡ OID List¸¦ Ã³¸®ÇÑ´Ù¸é, SMX_OIDLIST_INIT
+ * aLSN            - [IN] Commit Logë‚˜ Abort Logì˜ LSN
+ * aScn            - [IN] Rowì— Settingí•  SCN
+ * aProcessOIDOpt  - [IN] if Agerê°€ OID Listë¥¼ ì²˜ë¦¬í•œë‹¤ë©´, SMX_OIDLIST_INIT
  *                        else SMX_OIDLIST_DEST
- * aAgingCnt       - [OUT] AgingµÉ OID °¹¼ö
+ * aAgingCnt       - [OUT] Agingë  OID ê°¯ìˆ˜
  **********************************************************************/
 IDE_RC smxOIDList::processOIDList(SInt                 aAgingState,
                                   smLSN*               aLSN,
@@ -606,16 +606,16 @@ IDE_RC smxOIDList::processOIDList(SInt                 aAgingState,
 
         for(i = 0; i < sItemCnt; i++)
         {
-            /* ÇöÀç OID¸®½ºÆ®ÀÇ OID°¡ Aging´ë»óÀÌ¸é Aging°¹¼ö¸¦ ´õÇÑ´Ù. */
+            /* í˜„ì¬ OIDë¦¬ìŠ¤íŠ¸ì˜ OIDê°€ AgingëŒ€ìƒì´ë©´ Agingê°¯ìˆ˜ë¥¼ ë”í•œë‹¤. */
             if( checkIsAgingTarget( aAgingState, sCurOIDInfo + i ) == ID_TRUE )
             {
                 sAgingCnt++;
             }
             
             /* PROJ-1381 Fetch Across Commits
-             * Legacy Trans¸¦ Á¾·áÇÒ ¶§ OID List¿¡ ´ëÇÑ pending jobÀ» ¼öÇàÇÑ´Ù.
-             * CommitÇÒ ¶§ ager¿¡ aging ´ë»ó OID °³¼ö¸¦ Áà¾ßÇÏ¹Ç·Î
-             * aging ÇÒ OID °³¼ö(sAgingCnt)´Â ¼¼µµ·Ï ÇÑ´Ù. */
+             * Legacy Transë¥¼ ì¢…ë£Œí•  ë•Œ OID Listì— ëŒ€í•œ pending jobì„ ìˆ˜í–‰í•œë‹¤.
+             * Commití•  ë•Œ agerì— aging ëŒ€ìƒ OID ê°œìˆ˜ë¥¼ ì¤˜ì•¼í•˜ë¯€ë¡œ
+             * aging í•  OID ê°œìˆ˜(sAgingCnt)ëŠ” ì„¸ë„ë¡ í•œë‹¤. */
             if( aIsLegacyTrans == ID_TRUE )
             {
                 continue;
@@ -630,7 +630,7 @@ IDE_RC smxOIDList::processOIDList(SInt                 aAgingState,
 
             sFlag = sCurOIDInfo[i].mFlag;
 
-            /* AgingÇØ¾ß ÇÑ´Ù¸é */
+            /* Agingí•´ì•¼ í•œë‹¤ë©´ */
             if( (sFlag & aAgingState) == aAgingState )
             {
                 if((sFlag & SM_OID_TYPE_MASK) == SM_OID_TYPE_DROP_TABLE)
@@ -639,9 +639,9 @@ IDE_RC smxOIDList::processOIDList(SInt                 aAgingState,
                              != IDE_SUCCESS);
                 }
 
-                /* BUG-16161: Add ColumnÀÌ ½ÇÆĞÇÑ ÈÄ ´Ù½Ã Add ColumnÀ» ¼öÇà
-                 * ÇÏ¸é SessionÀÌ Hang»óÅÂ¿¡ ºüÁı´Ï´Ù.: TransactionÀÌ CommitÀÌ
-                 * ³ª Abort½ÃBackupÆÄÀÏÀ» »èÁ¦ÇÑ´Ù. */
+                /* BUG-16161: Add Columnì´ ì‹¤íŒ¨í•œ í›„ ë‹¤ì‹œ Add Columnì„ ìˆ˜í–‰
+                 * í•˜ë©´ Sessionì´ Hangìƒíƒœì— ë¹ ì§‘ë‹ˆë‹¤.: Transactionì´ Commitì´
+                 * ë‚˜ Abortì‹œBackupíŒŒì¼ì„ ì‚­ì œí•œë‹¤. */
                 if((sFlag & SM_OID_TYPE_MASK) 
                    == SM_OID_TYPE_DELETE_TABLE_BACKUP)
                 {
@@ -650,8 +650,8 @@ IDE_RC smxOIDList::processOIDList(SInt                 aAgingState,
                             sCurOIDInfo + i) != IDE_SUCCESS);
 
                     /* BUG-31881 
-                     * TableBackup¿¡ °üÇÑ ¿¬»êÀ» ÇßÀ»¶§, PageReservation
-                     * ÀÌ ÀÖÀ¸¹Ç·Î, ÀÌ¸¦ ÇØÁ¦ÇØ¾ß ÇÑ´Ù.*/
+                     * TableBackupì— ê´€í•œ ì—°ì‚°ì„ í–ˆì„ë•Œ, PageReservation
+                     * ì´ ìˆìœ¼ë¯€ë¡œ, ì´ë¥¼ í•´ì œí•´ì•¼ í•œë‹¤.*/
                     IDE_ASSERT( smcTable::getTableHeaderFromOID(
                                     sCurOIDInfo[i].mTableOID,
                                     (void**)&sTableHeader )
@@ -676,20 +676,20 @@ IDE_RC smxOIDList::processOIDList(SInt                 aAgingState,
     {
         if( aProcessOIDOpt == SMX_OIDLIST_INIT )
         {
-            /* OID List¸¦ Ager°¡ Ã³¸®ÇÏ°í Free½ÃÅ°±â ¶§¹®¿¡
-               OID LIst Header¸¦ ´Ü¼øÈ÷ ÃÊ±âÈ­ÇÑ´Ù.*/
+            /* OID Listë¥¼ Agerê°€ ì²˜ë¦¬í•˜ê³  Freeì‹œí‚¤ê¸° ë•Œë¬¸ì—
+               OID LIst Headerë¥¼ ë‹¨ìˆœíˆ ì´ˆê¸°í™”í•œë‹¤.*/
             init();
         }
         else
         {
-            /* AgingÇÒ ÀÛ¾÷ÀÌ ¾ø¾î¾ß ÇÑ´Ù. */
+            /* Agingí•  ì‘ì—…ì´ ì—†ì–´ì•¼ í•œë‹¤. */
             IDE_ASSERT( sAgingCnt == 0 );
 
-            /* OID List¸¦ Ager¿¡°Ô ³Ñ±âÁö ¾Ê¾Ò±â ¶§¹®¿¡ Á÷Á¢ FreeÇÑ´Ù.*/
+            /* OID Listë¥¼ Agerì—ê²Œ ë„˜ê¸°ì§€ ì•Šì•˜ê¸° ë•Œë¬¸ì— ì§ì ‘ Freeí•œë‹¤.*/
             IDE_ASSERT(aProcessOIDOpt == SMX_OIDLIST_DEST);
 
-            /* TransactionÀÌ Insert¸¸À» ÇÏ°í CommitÀÏ °æ¿ì¿¡¸¸
-               Ager°¡ OID List¸¦ ³Ñ°Ü¹ŞÁö ¾Ê´Â´Ù.*/
+            /* Transactionì´ Insertë§Œì„ í•˜ê³  Commitì¼ ê²½ìš°ì—ë§Œ
+               Agerê°€ OID Listë¥¼ ë„˜ê²¨ë°›ì§€ ì•ŠëŠ”ë‹¤.*/
             IDE_ASSERT(aAgingState == SM_OID_ACT_AGING_COMMIT);
             IDE_TEST( freeOIDList() != IDE_SUCCESS);
         }
@@ -708,9 +708,9 @@ IDE_RC smxOIDList::processOIDList(SInt                 aAgingState,
 /*
    BUG-42760
 
-   LEAGACY Transaction ÀÌ Á¾·áµÉ¶§ È£ÃâÇÏ¸ç,
-   smxOIDList::processOIDList() ÇÔ¼ö¸¦ ¼öÁ¤ÇÏ¿©
-   dropµÈ tableÀÇ OID¸¦ SKIPÇÏ´Â ÄÚµå¸¦ Ãß°¡ÇÏ¿´½À´Ï´Ù.
+   LEAGACY Transaction ì´ ì¢…ë£Œë ë•Œ í˜¸ì¶œí•˜ë©°,
+   smxOIDList::processOIDList() í•¨ìˆ˜ë¥¼ ìˆ˜ì •í•˜ì—¬
+   dropëœ tableì˜ OIDë¥¼ SKIPí•˜ëŠ” ì½”ë“œë¥¼ ì¶”ê°€í•˜ì˜€ìŠµë‹ˆë‹¤.
 */
 IDE_RC smxOIDList::processOIDList4LegacyTx( smLSN   * aLSN,
                                             smSCN     aScn )
@@ -746,7 +746,7 @@ IDE_RC smxOIDList::processOIDList4LegacyTx( smLSN   * aLSN,
 
             IDU_FIT_POINT( "smxOIDList::processOIDList4LegacyTx::isDropedTable::sleep" );
 
-            /* ÇöÀç OID¸®½ºÆ®ÀÇ OID°¡ Aging´ë»óÀÌ¸é Aging°¹¼ö¸¦ ´õÇÑ´Ù. */
+            /* í˜„ì¬ OIDë¦¬ìŠ¤íŠ¸ì˜ OIDê°€ AgingëŒ€ìƒì´ë©´ Agingê°¯ìˆ˜ë¥¼ ë”í•œë‹¤. */
             if ( checkIsAgingTarget( sAgingState, sCurOIDInfo + i ) == ID_TRUE )
             {
                 sAgingCnt++;
@@ -757,7 +757,7 @@ IDE_RC smxOIDList::processOIDList4LegacyTx( smLSN   * aLSN,
 
             sFlag = sCurOIDInfo[i].mFlag;
 
-            /* AgingÇØ¾ß ÇÑ´Ù¸é */
+            /* Agingí•´ì•¼ í•œë‹¤ë©´ */
             if ( ( sFlag & sAgingState ) == sAgingState )
             {
                 if ( ( sFlag & SM_OID_TYPE_MASK ) == SM_OID_TYPE_DROP_TABLE )
@@ -766,17 +766,17 @@ IDE_RC smxOIDList::processOIDList4LegacyTx( smLSN   * aLSN,
                               != IDE_SUCCESS);
                 }
 
-                /* BUG-16161: Add ColumnÀÌ ½ÇÆĞÇÑ ÈÄ ´Ù½Ã Add ColumnÀ» ¼öÇà
-                 * ÇÏ¸é SessionÀÌ Hang»óÅÂ¿¡ ºüÁı´Ï´Ù.: TransactionÀÌ CommitÀÌ
-                 * ³ª Abort½ÃBackupÆÄÀÏÀ» »èÁ¦ÇÑ´Ù. */
+                /* BUG-16161: Add Columnì´ ì‹¤íŒ¨í•œ í›„ ë‹¤ì‹œ Add Columnì„ ìˆ˜í–‰
+                 * í•˜ë©´ Sessionì´ Hangìƒíƒœì— ë¹ ì§‘ë‹ˆë‹¤.: Transactionì´ Commitì´
+                 * ë‚˜ Abortì‹œBackupíŒŒì¼ì„ ì‚­ì œí•œë‹¤. */
                 if ( ( sFlag & SM_OID_TYPE_MASK ) == SM_OID_TYPE_DELETE_TABLE_BACKUP )
                 {
                     IDE_TEST( processDeleteBackupFile( aLSN, sCurOIDInfo + i )
                               != IDE_SUCCESS );
 
                     /* BUG-31881 
-                     * TableBackup¿¡ °üÇÑ ¿¬»êÀ» ÇßÀ»¶§, PageReservation
-                     * ÀÌ ÀÖÀ¸¹Ç·Î, ÀÌ¸¦ ÇØÁ¦ÇØ¾ß ÇÑ´Ù.*/
+                     * TableBackupì— ê´€í•œ ì—°ì‚°ì„ í–ˆì„ë•Œ, PageReservation
+                     * ì´ ìˆìœ¼ë¯€ë¡œ, ì´ë¥¼ í•´ì œí•´ì•¼ í•œë‹¤.*/
                     sSpaceID = smcTable::getSpaceID( sTableHeader );
                     IDE_TEST( smmFPLManager::finalizePageReservation( mTrans, sSpaceID )
                               != IDE_SUCCESS );
@@ -799,8 +799,8 @@ IDE_RC smxOIDList::processOIDList4LegacyTx( smLSN   * aLSN,
         sCurOIDNode = sCurOIDNode->mNxtNode;
     }//While
 
-    /* OID List¸¦ Ager°¡ Ã³¸®ÇÏ°í Free½ÃÅ°±â ¶§¹®¿¡
-       OID LIst Header¸¦ ´Ü¼øÈ÷ ÃÊ±âÈ­ÇÑ´Ù.*/
+    /* OID Listë¥¼ Agerê°€ ì²˜ë¦¬í•˜ê³  Freeì‹œí‚¤ê¸° ë•Œë¬¸ì—
+       OID LIst Headerë¥¼ ë‹¨ìˆœíˆ ì´ˆê¸°í™”í•œë‹¤.*/
     init();
 
     return IDE_SUCCESS;
@@ -812,13 +812,13 @@ IDE_RC smxOIDList::processOIDList4LegacyTx( smLSN   * aLSN,
 
 
 /***********************************************************************
- * Description : rowÀÇ mNext¸¦ SCNÀ¸·Î º¯°æÇÑ´Ù.
- *               slotHeader¸¦ º¯°æÇÏ´Â ¿¬»êÀÌÁö¸¸ loggingÀ» ÇÏÁö ¾Ê´Â´Ù.
- *               ¿Ö³ÄÇÏ¸é ÀÌÇÔ¼ö´Â commitÀÌ µÈ ÀÌÈÄ¿¡µµ ºÒ¸±¼ö ÀÖ±â ¶§¹®ÀÌ´Ù. commit
- *               ÀÌÈÄ¿¡´Â Àı´ë·Î ±× Æ®·£Àè¼ÇÀÌ ÇÑ ÇàÀ§¿¡ ´ëÇØ ·Î±ëÀ» ÇÏÁö ¾Ê´Â´Ù.
+ * Description : rowì˜ mNextë¥¼ SCNìœ¼ë¡œ ë³€ê²½í•œë‹¤.
+ *               slotHeaderë¥¼ ë³€ê²½í•˜ëŠ” ì—°ì‚°ì´ì§€ë§Œ loggingì„ í•˜ì§€ ì•ŠëŠ”ë‹¤.
+ *               ì™œëƒí•˜ë©´ ì´í•¨ìˆ˜ëŠ” commitì´ ëœ ì´í›„ì—ë„ ë¶ˆë¦´ìˆ˜ ìˆê¸° ë•Œë¬¸ì´ë‹¤. commit
+ *               ì´í›„ì—ëŠ” ì ˆëŒ€ë¡œ ê·¸ íŠ¸ëœì­ì…˜ì´ í•œ í–‰ìœ„ì— ëŒ€í•´ ë¡œê¹…ì„ í•˜ì§€ ì•ŠëŠ”ë‹¤.
  *
- * aOIDInfo - [IN] Delete ¿¬»êÀÌ ¼öÇàµÈ row¿¡´ëÇÑ Á¤º¸°¡ µé¾îÀÖ´Â smxOIDInfo
- * aSCN     - [IN] ÇöÀç Æ®·£Àè¼ÇÀÇ commitSCN | deleteBit
+ * aOIDInfo - [IN] Delete ì—°ì‚°ì´ ìˆ˜í–‰ëœ rowì—ëŒ€í•œ ì •ë³´ê°€ ë“¤ì–´ìˆëŠ” smxOIDInfo
+ * aSCN     - [IN] í˜„ì¬ íŠ¸ëœì­ì…˜ì˜ commitSCN | deleteBit
  *
  **********************************************************************/
 IDE_RC smxOIDList::setSlotNextToSCN(smxOIDInfo* aOIDInfo,
@@ -885,8 +885,8 @@ IDE_RC smxOIDList::processOIDListAtCommit(smxOIDInfo* aOIDInfo,
                 break;
 
             case SM_OID_OP_DDL_TABLE:
-                /* Tablespace¿¡ DDLÀÌ ¹ß»ıÇß´Ù´Â ¾Ë¸®±â À§ÇØ TableSpaceÀÇ
-                   DDL SCNÀ» º¯°æÇÑ´Ù.*/
+                /* Tablespaceì— DDLì´ ë°œìƒí–ˆë‹¤ëŠ” ì•Œë¦¬ê¸° ìœ„í•´ TableSpaceì˜
+                   DDL SCNì„ ë³€ê²½í•œë‹¤.*/
                 sctTableSpaceMgr::updateTblDDLCommitSCN(
                     aOIDInfo->mSpaceID,
                     aSCN );
@@ -898,7 +898,7 @@ IDE_RC smxOIDList::processOIDListAtCommit(smxOIDInfo* aOIDInfo,
                 IDE_ASSERT(aOIDInfo->mTargetOID != 0);
 
                 /* PROJ-1594 Volatile TBS
-                 * Ã³¸®ÇÒ OID°¡ volatile TBS¿¡ ¼ÓÇØ ÀÖÀ¸¸é svc ¸ğµâÀ» È£ÃâÇØ¾ß ÇÑ´Ù.*/
+                 * ì²˜ë¦¬í•  OIDê°€ volatile TBSì— ì†í•´ ìˆìœ¼ë©´ svc ëª¨ë“ˆì„ í˜¸ì¶œí•´ì•¼ í•œë‹¤.*/
                 if (sctTableSpaceMgr::isVolatileTableSpace(aOIDInfo->mSpaceID)
                     == ID_TRUE )
                 {
@@ -932,7 +932,7 @@ IDE_RC smxOIDList::processOIDListAtCommit(smxOIDInfo* aOIDInfo,
                 break;
             case SM_OID_OP_UNLOCK_FIXED_SLOT:
                 /* PROJ-1594 Volatile TBS
-                   Ã³¸®ÇÒ OID°¡ volatile TBS¿¡ ¼ÓÇØ ÀÖÀ¸¸é svc ¸ğµâÀ» È£ÃâÇØ¾ß ÇÑ´Ù.*/
+                   ì²˜ë¦¬í•  OIDê°€ volatile TBSì— ì†í•´ ìˆìœ¼ë©´ svc ëª¨ë“ˆì„ í˜¸ì¶œí•´ì•¼ í•œë‹¤.*/
                 if (sctTableSpaceMgr::isVolatileTableSpace(aOIDInfo->mSpaceID)
                     == ID_TRUE )
                 {
@@ -1015,10 +1015,10 @@ IDE_RC smxOIDList::processOIDListAtCommit(smxOIDInfo* aOIDInfo,
 }
 
 /***********************************************************************
- * Description : Alter Table Add Column, Drop Column½Ã ¹ß»ıÇÑ BackupÆÄÀÏ
- *               À» »èÁ¦ÇÑ´Ù.
+ * Description : Alter Table Add Column, Drop Columnì‹œ ë°œìƒí•œ BackupíŒŒì¼
+ *               ì„ ì‚­ì œí•œë‹¤.
  *
- * aLSN     - [IN] Commit Log³ª Abort·Î±×ÀÇ LSN
+ * aLSN     - [IN] Commit Logë‚˜ Abortë¡œê·¸ì˜ LSN
  * aOIDInfo - [IN] OID Information
  *
  **********************************************************************/
@@ -1027,10 +1027,10 @@ IDE_RC smxOIDList::processDeleteBackupFile(smLSN*      aLSN,
 {
     SChar sStrFileName[SM_MAX_FILE_NAME];
 
-    /* Abort³ª Commit·Î±×¸¦ µğ½ºÅ©¿¡ ¿ÏÀüÈ÷ ³»¸°ÈÄ¿¡
-     * BackupÆÄÀÏ »èÁ¦¸¦ ¼öÇàÇÏ¿©¾ß ÇÑ´Ù. ¿Ö³ÄÇÏ¸é Backup FileÀ»
-     * »èÁ¦Çß´Âµ¥ Commit·Î±×°¡ ±â·ÏµÇÁö ¾Ê¾Æ¼­ TransactionÀÌ AbortÇØ¾ßÇÏ´Â
-     * °æ¿ì°¡ »ı±â±â¶§¹®ÀÌ´Ù. */
+    /* Abortë‚˜ Commitë¡œê·¸ë¥¼ ë””ìŠ¤í¬ì— ì™„ì „íˆ ë‚´ë¦°í›„ì—
+     * BackupíŒŒì¼ ì‚­ì œë¥¼ ìˆ˜í–‰í•˜ì—¬ì•¼ í•œë‹¤. ì™œëƒí•˜ë©´ Backup Fileì„
+     * ì‚­ì œí–ˆëŠ”ë° Commitë¡œê·¸ê°€ ê¸°ë¡ë˜ì§€ ì•Šì•„ì„œ Transactionì´ Abortí•´ì•¼í•˜ëŠ”
+     * ê²½ìš°ê°€ ìƒê¸°ê¸°ë•Œë¬¸ì´ë‹¤. */
     IDE_TEST( smrLogMgr::syncLFThread( SMR_LOG_SYNC_BY_TRX, aLSN )
               != IDE_SUCCESS );
 
@@ -1080,14 +1080,14 @@ IDE_RC smxOIDList::processDropTblPending(smxOIDInfo* aOIDInfo)
 
     IDE_ASSERT((sFlag & SM_OID_TYPE_MASK) == SM_OID_TYPE_DROP_TABLE);
 
-    /* BUG-15047: TableÀÌ CommitÈÄ¿¡ Drop Table Pending¿¬»êÀ»
-       ¼öÇàÈÄ Return */
-    /* Ager°¡ DropµÈ Table¿¡ ´ëÇØ Á¢±ÙÇÏ´Â °ÍÀ» ¹æÁö*/
+    /* BUG-15047: Tableì´ Commití›„ì— Drop Table Pendingì—°ì‚°ì„
+       ìˆ˜í–‰í›„ Return */
+    /* Agerê°€ Dropëœ Tableì— ëŒ€í•´ ì ‘ê·¼í•˜ëŠ” ê²ƒì„ ë°©ì§€*/
     smLayerCallback::waitForNoAccessAftDropTbl();
 
     //added for A4
-    // disk table¿¡ ´ëÇÑ dropTable Pending¿¬»êÀº
-    //  disk GC°¡ ÇØ¾ßÇÑ´Ù.
+    // disk tableì— ëŒ€í•œ dropTable Pendingì—°ì‚°ì€
+    //  disk GCê°€ í•´ì•¼í•œë‹¤.
     IDE_ASSERT( smcTable::getTableHeaderFromOID( aOIDInfo->mTableOID,
                                                  (void**)&sTableHeader )
                 == IDE_SUCCESS );
@@ -1113,14 +1113,14 @@ IDE_RC smxOIDList::processDropTblPending(smxOIDInfo* aOIDInfo)
             IDE_ASSERT( sTrans->commit(&sDummySCN) == IDE_SUCCESS );
             IDE_ASSERT( smxTransMgr::freeTrans(sTrans) == IDE_SUCCESS);
 
-            /* Drop Table¿¬»êÀÌ ¼öÇàµÇ¾ú±â ¶§¹®¿¡ OID Flag Off½ÃÅ°°í
-               Ager¿¡¼­ ÀÌ·± ¿¬»êÀÌ ¶Ç Ã³¸®µÇ´ÂÁö¸¦ checkÇÏ±âÀ§ÇØ
-               IDE_ASSERT·Î È®ÀÎÇÑ´Ù.*/
+            /* Drop Tableì—°ì‚°ì´ ìˆ˜í–‰ë˜ì—ˆê¸° ë•Œë¬¸ì— OID Flag Offì‹œí‚¤ê³ 
+               Agerì—ì„œ ì´ëŸ° ì—°ì‚°ì´ ë˜ ì²˜ë¦¬ë˜ëŠ”ì§€ë¥¼ checkí•˜ê¸°ìœ„í•´
+               IDE_ASSERTë¡œ í™•ì¸í•œë‹¤.*/
             /* BUG-32237 [sm_transaction] Free lock node when dropping table.
-             * DropTablePending ´Ü°è¿¡¼­´Â freeLockNode¸¦ ÇÒ ¼ö ¾ø½À´Ï´Ù.
-             * Commit´Ü°èÀÌ±â ¶§¹®¿¡, LockÀ» Ç®¾îÁÖ´Â ÀÛ¾÷À» ÇØ¾ß ÇÏ±â ¶§¹®ÀÔ´Ï´Ù.
-             * µû¶ó¼­ Ager¿¡ ÀÌ Flag¸¦ ÄÑµÎ°í, Ager¿¡¼­ LockNode¸¦ FreeÇÏ°Ô
-             * ÇØÁİ´Ï´Ù. */
+             * DropTablePending ë‹¨ê³„ì—ì„œëŠ” freeLockNodeë¥¼ í•  ìˆ˜ ì—†ìŠµë‹ˆë‹¤.
+             * Commitë‹¨ê³„ì´ê¸° ë•Œë¬¸ì—, Lockì„ í’€ì–´ì£¼ëŠ” ì‘ì—…ì„ í•´ì•¼ í•˜ê¸° ë•Œë¬¸ì…ë‹ˆë‹¤.
+             * ë”°ë¼ì„œ Agerì— ì´ Flagë¥¼ ì¼œë‘ê³ , Agerì—ì„œ LockNodeë¥¼ Freeí•˜ê²Œ
+             * í•´ì¤ë‹ˆë‹¤. */
         }
     }
 
@@ -1128,12 +1128,12 @@ IDE_RC smxOIDList::processDropTblPending(smxOIDInfo* aOIDInfo)
 }
 
 /*******************************************************************************
- * Description: ALL INDEX DISABLE ±¸¹®ÀÇ pending ¿¬»êÀ» Ã³¸®ÇÏ´Â ÇÔ¼ö.
+ * Description: ALL INDEX DISABLE êµ¬ë¬¸ì˜ pending ì—°ì‚°ì„ ì²˜ë¦¬í•˜ëŠ” í•¨ìˆ˜.
  *
  * Related Issues:
- *      PROJ-2184 RP Sync ¼º´É Çâ»ó
+ *      PROJ-2184 RP Sync ì„±ëŠ¥ í–¥ìƒ
  *
- * aOIDInfo     - [IN] SM_OID_OP_ALL_INDEX_DISABLE Å¸ÀÔÀ» °¡Áø smxOIDInfo
+ * aOIDInfo     - [IN] SM_OID_OP_ALL_INDEX_DISABLE íƒ€ì…ì„ ê°€ì§„ smxOIDInfo
  *****************************************************************************/
 IDE_RC smxOIDList::processAllIndexDisablePending( smxOIDInfo  * aOIDInfo )
 {
@@ -1147,7 +1147,7 @@ IDE_RC smxOIDList::processAllIndexDisablePending( smxOIDInfo  * aOIDInfo )
     IDE_ASSERT( (sFlag & SM_OID_OP_MASK) == SM_OID_OP_ALL_INDEX_DISABLE );
 
 
-    /* Ager°¡ DropµÈ TableÀÇ index¿¡ ´ëÇØ Á¢±ÙÇÏ´Â °ÍÀ» ¹æÁö*/
+    /* Agerê°€ Dropëœ Tableì˜ indexì— ëŒ€í•´ ì ‘ê·¼í•˜ëŠ” ê²ƒì„ ë°©ì§€*/
     smLayerCallback::waitForNoAccessAftDropTbl();
 
     IDE_ASSERT( smcTable::getTableHeaderFromOID( aOIDInfo->mTableOID,
@@ -1174,12 +1174,12 @@ IDE_RC smxOIDList::processAllIndexDisablePending( smxOIDInfo  * aOIDInfo )
 
 /***********************************************************************
  *
- * Description : OID¿¡ ÇØ´çÇÏ´Â µğ½ºÅ© ÀÎµ¦½ºÀÇ Integrity¸¦ Verify ÇÑ´Ù.
+ * Description : OIDì— í•´ë‹¹í•˜ëŠ” ë””ìŠ¤í¬ ì¸ë±ìŠ¤ì˜ Integrityë¥¼ Verify í•œë‹¤.
  *
- * BUG-27122 Restart Recovery ½Ã Undo Trans°¡ Á¢±ÙÇÏ´Â ÀÎµ¦½º¿¡ ´ëÇÑ
- * Integrity Ã¼Å©±â´É Ãß°¡ (__SM_CHECK_DISK_INDEX_INTEGRITY=2)
+ * BUG-27122 Restart Recovery ì‹œ Undo Transê°€ ì ‘ê·¼í•˜ëŠ” ì¸ë±ìŠ¤ì— ëŒ€í•œ
+ * Integrity ì²´í¬ê¸°ëŠ¥ ì¶”ê°€ (__SM_CHECK_DISK_INDEX_INTEGRITY=2)
  *
- * aStatistics  - [IN] Åë°èÁ¤º¸
+ * aStatistics  - [IN] í†µê³„ì •ë³´
  *
  **********************************************************************/
 IDE_RC smxOIDList::processOIDListToVerify( idvSQL * aStatistics )
@@ -1239,7 +1239,7 @@ IDE_RC smxOIDList::processOIDListToVerify( idvSQL * aStatistics )
 
             if ( sIsFail == ID_TRUE )
             {
-                continue; // À§¿¡ WarnningÀÎ °æ¿ì´Â ¹«½ÃÇÑ´Ù.
+                continue; // ìœ„ì— Warnningì¸ ê²½ìš°ëŠ” ë¬´ì‹œí•œë‹¤.
             }
 
             if ( sdnbBTree::verifyIndexIntegrity(
@@ -1261,8 +1261,8 @@ IDE_RC smxOIDList::processOIDListToVerify( idvSQL * aStatistics )
     return IDE_SUCCESS;
 }
 
-/* BUG-42724 : XA Æ®·£Àè¼Ç¿¡ ÀÇÇØ insert/updateµÈ ·¹ÄÚµåÀÇ OID ÇÃ·¡±×¸¦
- * ¼öÁ¤ÇÑ´Ù.
+/* BUG-42724 : XA íŠ¸ëœì­ì…˜ì— ì˜í•´ insert/updateëœ ë ˆì½”ë“œì˜ OID í”Œë˜ê·¸ë¥¼
+ * ìˆ˜ì •í•œë‹¤.
  */ 
 IDE_RC smxOIDList::setOIDFlagForInDoubt()
 {
@@ -1293,8 +1293,8 @@ IDE_RC smxOIDList::setOIDFlagForInDoubt()
  
             if ( SM_SCN_IS_FREE_ROW(sSlotHdr->mCreateSCN) == ID_TRUE )
             {
-                /* BUG-42724 : insert/update µµÁß Unique ViolationÀ¸·Î ½ÇÆĞÇÑ °æ¿ì ¿©±â¼­ °É¸®¸é
-                 * ÀÌ¹Ì ¸®ÆÄÀÎµÈ new ¹öÀüÀÌ¶ó´Â ¶æÀÌ´Ù. ÀÌ¹Ì ¸®ÆÄÀÎµÈ slotÀÌ¹Ç·Î ¹«½ÃÇÑ´Ù.
+                /* BUG-42724 : insert/update ë„ì¤‘ Unique Violationìœ¼ë¡œ ì‹¤íŒ¨í•œ ê²½ìš° ì—¬ê¸°ì„œ ê±¸ë¦¬ë©´
+                 * ì´ë¯¸ ë¦¬íŒŒì¸ëœ new ë²„ì „ì´ë¼ëŠ” ëœ»ì´ë‹¤. ì´ë¯¸ ë¦¬íŒŒì¸ëœ slotì´ë¯€ë¡œ ë¬´ì‹œí•œë‹¤.
                  */
                 continue;
             }
@@ -1308,9 +1308,9 @@ IDE_RC smxOIDList::setOIDFlagForInDoubt()
                 case SM_OID_OLD_UPDATE_FIXED_SLOT:
                     if( SM_SCN_IS_FREE_ROW( sSlotHdr->mLimitSCN ) )
                     {
-                        /* BUG-42724 : update µµÁß Unique ViolationÀ¸·Î ½ÇÆĞÇÑ °æ¿ì ( ¿©±â¼­ °É¸®¸é
-                         * old ¹öÀüÀÌ¶ó´Â ¶æÀÌ´Ù. ) old versionÀ» Aging ÇÏ¸é ¾ÈµÈ´Ù. µû¶ó¼­ Ager¿¡¼­
-                         * commit ½Ã ¹«½ÃÇÏµµ·Ï ÇÃ·¡±×¸¦ Á¦°ÅÇØ ÁÖ¾î¾ß ÇÑ´Ù.
+                        /* BUG-42724 : update ë„ì¤‘ Unique Violationìœ¼ë¡œ ì‹¤íŒ¨í•œ ê²½ìš° ( ì—¬ê¸°ì„œ ê±¸ë¦¬ë©´
+                         * old ë²„ì „ì´ë¼ëŠ” ëœ»ì´ë‹¤. ) old versionì„ Aging í•˜ë©´ ì•ˆëœë‹¤. ë”°ë¼ì„œ Agerì—ì„œ
+                         * commit ì‹œ ë¬´ì‹œí•˜ë„ë¡ í”Œë˜ê·¸ë¥¼ ì œê±°í•´ ì£¼ì–´ì•¼ í•œë‹¤.
                          */
                         sCurOIDNode->mArrOIDInfo[i].mFlag &= ~SM_OID_OLD_UPDATE_FIXED_SLOT;
                     }
@@ -1322,8 +1322,8 @@ IDE_RC smxOIDList::setOIDFlagForInDoubt()
                     break;
                 
                 case SM_OID_XA_INSERT_UPDATE_ROLLBACK:
-                    /* BUG-42724 XA¿¡¼­ insert/updateµÇ´Â new versionÀÌ ·Ñ¹éµÇ´Â °æ¿ì ÀÎµ¦½º
-                     * agingÀ» À§ÇØ¼­ ´ÙÀ½ÀÇ SM_OID_ACT_AGING_INDEX ÇÃ·¡±×¸¦ Ãß°¡ÇØ¾ß ÇÑ´Ù.
+                    /* BUG-42724 XAì—ì„œ insert/updateë˜ëŠ” new versionì´ ë¡¤ë°±ë˜ëŠ” ê²½ìš° ì¸ë±ìŠ¤
+                     * agingì„ ìœ„í•´ì„œ ë‹¤ìŒì˜ SM_OID_ACT_AGING_INDEX í”Œë˜ê·¸ë¥¼ ì¶”ê°€í•´ì•¼ í•œë‹¤.
                      */
                     sCurOIDNode->mArrOIDInfo[i].mFlag |= SM_OID_ACT_AGING_INDEX;
                     break;
@@ -1374,26 +1374,26 @@ IDE_RC smxOIDList::setSCNForInDoubt(smTID aTID)
 
             sSlotHdr = (smpSlotHeader*)sRecord;
 
-            /* SCNÀ» ¹«ÇÑ´ë·Î ¼³Á¤ÇÏ¿© record lockÀ» È¹µæÇÑ °æ¿ì*/
+            /* SCNì„ ë¬´í•œëŒ€ë¡œ ì„¤ì •í•˜ì—¬ record lockì„ íšë“í•œ ê²½ìš°*/
             switch(sFlag)
             {
                 case SM_OID_NEW_INSERT_FIXED_SLOT:
                 case SM_OID_NEW_UPDATE_FIXED_SLOT:
                     /*
-                     * [BUG-26415] XA Æ®·£Àè¼ÇÁß Partial Rollback(Unique Volation)µÈ Prepare
-                     *             Æ®·£Àè¼ÇÀÌ Á¸ÀçÇÏ´Â °æ¿ì ¼­¹ö Àç±¸µ¿ÀÌ ½ÇÆĞÇÕ´Ï´Ù.
-                     * : Insert µµÁß Unique VolationÀ¸·Î ½ÇÆĞÇÑ °æ¿ì´Â ±âÁ¸ÀÇ Delete Bit¸¦
-                     *   À¯ÁöÇØ¾ß ÇÑ´Ù.
+                     * [BUG-26415] XA íŠ¸ëœì­ì…˜ì¤‘ Partial Rollback(Unique Volation)ëœ Prepare
+                     *             íŠ¸ëœì­ì…˜ì´ ì¡´ì¬í•˜ëŠ” ê²½ìš° ì„œë²„ ì¬êµ¬ë™ì´ ì‹¤íŒ¨í•©ë‹ˆë‹¤.
+                     * : Insert ë„ì¤‘ Unique Volationìœ¼ë¡œ ì‹¤íŒ¨í•œ ê²½ìš°ëŠ” ê¸°ì¡´ì˜ Delete Bitë¥¼
+                     *   ìœ ì§€í•´ì•¼ í•œë‹¤.
                      */
                     IDE_TEST(smcRecord::setSCN4InDoubtTrans(sCurOIDNode->mArrOIDInfo[i].mSpaceID,
                                                             aTID,
                                                             sRecord)
                              != IDE_SUCCESS);
                     
-                    /* BUG-42724 : new ¹öÀü¿¡ delete bit°¡ ÀÖ´Ù¸é Partial RollbackÇÏ¿´±â ¶§¹®¿¡
-                     * undoALL ³¡³ª°í refineµÉ °ÍÀÌ´Ù. restart ¿Ï·áÈÄ commit/rollbackµÉ ¶§
-                     * ÀÌ ÇÃ·¡±×¸¦ º¸°í SCNÀ» setÇÏ°Å³ª ´Ù½Ã aging ÇÏÁö ¾Êµµ·Ï OID ÇÃ·¡±× ¼¼Æ®¸¦
-                     *  ¼öÁ¤ÇÑ´Ù.
+                    /* BUG-42724 : new ë²„ì „ì— delete bitê°€ ìˆë‹¤ë©´ Partial Rollbackí•˜ì˜€ê¸° ë•Œë¬¸ì—
+                     * undoALL ëë‚˜ê³  refineë  ê²ƒì´ë‹¤. restart ì™„ë£Œí›„ commit/rollbackë  ë•Œ
+                     * ì´ í”Œë˜ê·¸ë¥¼ ë³´ê³  SCNì„ setí•˜ê±°ë‚˜ ë‹¤ì‹œ aging í•˜ì§€ ì•Šë„ë¡ OID í”Œë˜ê·¸ ì„¸íŠ¸ë¥¼
+                     *  ìˆ˜ì •í•œë‹¤.
                      */   
                     if ( SM_SCN_IS_DELETED( sSlotHdr->mCreateSCN ) )
                     {
@@ -1409,14 +1409,14 @@ IDE_RC smxOIDList::setSCNForInDoubt(smTID aTID)
                 case SM_OID_LOCK_FIXED_SLOT:
                     /*
                      * TO Fix BUG-14596
-                     * XA Txµé¿¡ ÇÑÇØ redo ÀÌÈÄ¿¡ LockÀ» ¼¼ÆÃÇÑ´Ù.
+                     * XA Txë“¤ì— í•œí•´ redo ì´í›„ì— Lockì„ ì„¸íŒ…í•œë‹¤.
                      */
                     SMP_SLOT_SET_LOCK( ((smpSlotHeader*)sRecord), aTID );
                     break;
                 case SM_OID_OLD_VARIABLE_SLOT:
                    /*
-                    * record deleteÀÇ °æ¿ì variable column¿¡ ´ëÇØ
-                    * delete flag¸¦ FALSE·Î ¼³Á¤
+                    * record deleteì˜ ê²½ìš° variable columnì— ëŒ€í•´
+                    * delete flagë¥¼ FALSEë¡œ ì„¤ì •
                     */
                     sVCPieceHeader = (smVCPieceHeader *)sRecord;
                     sVCPieceHeader->flag &= ~SM_VCPIECE_FREE_MASK;
@@ -1429,14 +1429,14 @@ IDE_RC smxOIDList::setSCNForInDoubt(smTID aTID)
                               != IDE_SUCCESS);
                     break;
                 case SM_OID_OLD_UPDATE_FIXED_SLOT:
-                    /* BUG-31062 ÀÏ¹İÀûÀÎ UpdateÀÇ Old VersionÀº Refine ½Ã FreeµÇÁö¸¸
-                     * XA Prepare TransactionÀÌ UpdateÇÑ °æ¿ì´Â
-                     * ¾ÆÁ÷ CommitµÇÁö ¾Ê¾ÒÀ¸¹Ç·Î FreeÇÏ¸é ¾ÈµÈ´Ù.
-                     * refine½Ã FreeÇÏÁö ¾Êµµ·Ï Slot Header Flag¿¡ Ç¥½ÃÇØµĞ´Ù. */
+                    /* BUG-31062 ì¼ë°˜ì ì¸ Updateì˜ Old Versionì€ Refine ì‹œ Freeë˜ì§€ë§Œ
+                     * XA Prepare Transactionì´ Updateí•œ ê²½ìš°ëŠ”
+                     * ì•„ì§ Commitë˜ì§€ ì•Šì•˜ìœ¼ë¯€ë¡œ Freeí•˜ë©´ ì•ˆëœë‹¤.
+                     * refineì‹œ Freeí•˜ì§€ ì•Šë„ë¡ Slot Header Flagì— í‘œì‹œí•´ë‘”ë‹¤. */
                     SMP_SLOT_SET_SKIP_REFINE( (smpSlotHeader*)sRecord );
                     
-                    /* BUG-42724 : free°¡ ¾Æ´Ñ °æ¿ì¿¡¸¸ ¹«ÇÑ´ë·Î ¼³Á¤ÇÑ´Ù. XA¿¡¼­´Â old versionÀÇ
-                     * limitÀÌ free¸é ÀÌ¹Ì new°¡ partial rollbackµÈ oldÀÌ´Ù.
+                    /* BUG-42724 : freeê°€ ì•„ë‹Œ ê²½ìš°ì—ë§Œ ë¬´í•œëŒ€ë¡œ ì„¤ì •í•œë‹¤. XAì—ì„œëŠ” old versionì˜
+                     * limitì´ freeë©´ ì´ë¯¸ newê°€ partial rollbackëœ oldì´ë‹¤.
                      */
                     if ( !(SM_SCN_IS_FREE_ROW( sSlotHdr->mLimitSCN )) )
                     {

@@ -19,11 +19,11 @@
  * $Id: qmcMemPartHashTempTable.cpp 82075 2018-01-17 06:39:52Z jina.kim $
  *
  * Description :
- *     Memory Partitioned Hash Temp TableÀ» À§ÇÑ ÇÔ¼ö
+ *     Memory Partitioned Hash Temp Tableì„ ìœ„í•œ í•¨ìˆ˜
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  **********************************************************************/
 
@@ -42,21 +42,21 @@ IDE_RC qmcMemPartHash::init( qmcdMemPartHashTemp * aTempTable,
 /***********************************************************************
  *
  * Description :
- *    Memory Partitioned Hash Temp TableÀ» ÃÊ±âÈ­ÇÑ´Ù.
+ *    Memory Partitioned Hash Temp Tableì„ ì´ˆê¸°í™”í•œë‹¤.
  *
  * Implementation :
- *    - ±âº» Á¤º¸ ¼³Á¤
- *    - »ğÀÔ Á¤º¸ ¼³Á¤
- *    - °Ë»ö Á¤º¸ ¼³Á¤
+ *    - ê¸°ë³¸ ì •ë³´ ì„¤ì •
+ *    - ì‚½ì… ì •ë³´ ì„¤ì •
+ *    - ê²€ìƒ‰ ì •ë³´ ì„¤ì •
  *
  ***********************************************************************/
 
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     IDE_DASSERT( aTempTable  != NULL );
     IDE_DASSERT( aRecordNode != NULL && aHashNode != NULL );
 
     //----------------------------------------------------
-    // Memory Partitioned Hash Temp TableÀÇ ±âº» Á¤º¸ ¼³Á¤
+    // Memory Partitioned Hash Temp Tableì˜ ê¸°ë³¸ ì •ë³´ ì„¤ì •
     //----------------------------------------------------
 
     aTempTable->mFlag         = QMC_MEM_PART_HASH_INITIALIZE;
@@ -67,9 +67,9 @@ IDE_RC qmcMemPartHash::init( qmcdMemPartHashTemp * aTempTable,
     aTempTable->mBucketCnt    = aBucketCnt;
 
     //----------------------------------------------------
-    // Partitioned Hashing ¿¡ ¾²ÀÏ Á¤º¸
-    // - readyForSearch() ¿¡¼­ Á¤ÇÑ´Ù.
-    // - Partition °³¼öÀÇ ÃÊ±â °ªÀº Bucket °³¼ö°¡ µÈ´Ù.
+    // Partitioned Hashing ì— ì“°ì¼ ì •ë³´
+    // - readyForSearch() ì—ì„œ ì •í•œë‹¤.
+    // - Partition ê°œìˆ˜ì˜ ì´ˆê¸° ê°’ì€ Bucket ê°œìˆ˜ê°€ ëœë‹¤.
     //----------------------------------------------------
 
     aTempTable->mRadixBit     = 0;
@@ -78,7 +78,7 @@ IDE_RC qmcMemPartHash::init( qmcdMemPartHashTemp * aTempTable,
     aTempTable->mSearchArray  = NULL;
 
     //----------------------------------------------------
-    // »ğÀÔÀ» À§ÇÑ Á¤º¸
+    // ì‚½ì…ì„ ìœ„í•œ ì •ë³´
     //----------------------------------------------------
 
     aTempTable->mHead         = NULL;
@@ -86,7 +86,7 @@ IDE_RC qmcMemPartHash::init( qmcdMemPartHashTemp * aTempTable,
     aTempTable->mRecordCnt    = 0;
 
     //----------------------------------------------------
-    // °Ë»öÀ» À§ÇÑ Á¤º¸
+    // ê²€ìƒ‰ì„ ìœ„í•œ ì •ë³´
     //----------------------------------------------------
 
     aTempTable->mNextElem     = NULL;  
@@ -103,27 +103,27 @@ IDE_RC qmcMemPartHash::clear( qmcdMemPartHashTemp * aTempTable )
 /***********************************************************************
  *
  * Description :
- *     Memory Partitioned Hash Temp TableÀ» ÃÊ±âÈ­ÇÑ´Ù.
+ *     Memory Partitioned Hash Temp Tableì„ ì´ˆê¸°í™”í•œë‹¤.
  *
  * Implementation :
  *
  ***********************************************************************/
 
     //----------------------------------------------------
-    // ±âº» Á¤º¸ ÃÊ±âÈ­
+    // ê¸°ë³¸ ì •ë³´ ì´ˆê¸°í™”
     //----------------------------------------------------
 
     aTempTable->mHead         = NULL;
     aTempTable->mTail         = NULL;
 
-    // ÃÖÃÊ °Ë»ö ½Ã, ÁØºñ¸¦ ÇÏµµ·Ï ÇÑ´Ù.
+    // ìµœì´ˆ ê²€ìƒ‰ ì‹œ, ì¤€ë¹„ë¥¼ í•˜ë„ë¡ í•œë‹¤.
     aTempTable->mFlag &= ~QMC_MEM_PART_HASH_SEARCH_READY_MASK;
     aTempTable->mFlag |= QMC_MEM_PART_HASH_SEARCH_READY_FALSE;
 
-    // mTemplate, mRecordNode, mHashNode, mBucketCnt´Â ÃÊ±âÈ­ÇÏÁö ¾Ê´Â´Ù.
+    // mTemplate, mRecordNode, mHashNode, mBucketCntëŠ” ì´ˆê¸°í™”í•˜ì§€ ì•ŠëŠ”ë‹¤.
 
     //----------------------------------------------------
-    // Partitioned Hashing ¿¡ ¾²ÀÏ Á¤º¸ ÃÊ±âÈ­
+    // Partitioned Hashing ì— ì“°ì¼ ì •ë³´ ì´ˆê¸°í™”
     //----------------------------------------------------
 
     aTempTable->mRadixBit     = 0;
@@ -132,7 +132,7 @@ IDE_RC qmcMemPartHash::clear( qmcdMemPartHashTemp * aTempTable )
     aTempTable->mSearchArray  = NULL;
 
     //----------------------------------------------------
-    // »ğÀÔ Á¤º¸ÀÇ ÃÊ±âÈ­
+    // ì‚½ì… ì •ë³´ì˜ ì´ˆê¸°í™”
     //----------------------------------------------------
 
     aTempTable->mHead         = NULL;
@@ -140,7 +140,7 @@ IDE_RC qmcMemPartHash::clear( qmcdMemPartHashTemp * aTempTable )
     aTempTable->mRecordCnt    = 0;
 
     //----------------------------------------------------
-    // °Ë»ö Á¤º¸ÀÇ ÃÊ±âÈ­
+    // ê²€ìƒ‰ ì •ë³´ì˜ ì´ˆê¸°í™”
     //----------------------------------------------------
     
     aTempTable->mNextElem     = NULL;  
@@ -157,23 +157,23 @@ IDE_RC qmcMemPartHash::clearHitFlag( qmcdMemPartHashTemp * aTempTable )
 /***********************************************************************
  *
  * Description :
- *    Temp Table³»ÀÇ ¸ğµç RecordµéÀÇ Hit FlagÀ» ÃÊ±âÈ­ÇÑ´Ù.
+ *    Temp Tableë‚´ì˜ ëª¨ë“  Recordë“¤ì˜ Hit Flagì„ ì´ˆê¸°í™”í•œë‹¤.
  *
  * Implementation :
- *    ·¹ÄÚµå°¡ Á¸ÀçÇÒ ¶§±îÁö ¼øÂ÷ °Ë»öÇÏ¿© RecordµéÀÇ Hit FlagÀ» ÃÊ±âÈ­
+ *    ë ˆì½”ë“œê°€ ì¡´ì¬í•  ë•Œê¹Œì§€ ìˆœì°¨ ê²€ìƒ‰í•˜ì—¬ Recordë“¤ì˜ Hit Flagì„ ì´ˆê¸°í™”
  *
  ***********************************************************************/
 
     qmcMemHashElement * sElement = NULL;
 
-    // ÃÖÃÊ Record¸¦ ÀĞ´Â´Ù.
+    // ìµœì´ˆ Recordë¥¼ ì½ëŠ”ë‹¤.
     IDE_TEST( qmcMemPartHash::getFirstSequence( aTempTable,
                                                 (void**) & sElement )
               != IDE_SUCCESS );
 
     while ( sElement != NULL )
     {
-        // Hit FlagÀ» ÃÊ±âÈ­ÇÔ.
+        // Hit Flagì„ ì´ˆê¸°í™”í•¨.
         sElement->flag &= ~QMC_ROW_HIT_MASK;
         sElement->flag |= QMC_ROW_HIT_FALSE;
 
@@ -198,10 +198,10 @@ IDE_RC qmcMemPartHash::insertAny( qmcdMemPartHashTemp  * aTempTable,
 /***********************************************************************
  *
  * Description :
- *    Record¸¦ »ğÀÔÇÑ´Ù.
+ *    Recordë¥¼ ì‚½ì…í•œë‹¤.
  * 
  * Implementation :
- *    ´ÜÀÏ List °¡Àå ¸¶Áö¸·¿¡ »õ Element¸¦ »ğÀÔÇÑ´Ù.
+ *    ë‹¨ì¼ List ê°€ì¥ ë§ˆì§€ë§‰ì— ìƒˆ Elementë¥¼ ì‚½ì…í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -209,26 +209,26 @@ IDE_RC qmcMemPartHash::insertAny( qmcdMemPartHashTemp  * aTempTable,
 
     if ( sElement == NULL )
     {
-        // mTailÀÌ NULL = Ã¹ Element¸¦ »ğÀÔÇÏ´Â °æ¿ì
+        // mTailì´ NULL = ì²« Elementë¥¼ ì‚½ì…í•˜ëŠ” ê²½ìš°
         // mHead = mTail = aElement
         aTempTable->mHead = (qmcMemHashElement*) aElement;
         aTempTable->mTail = (qmcMemHashElement*) aElement;
     }
     else
     {
-        // Ã¹ Element »ğÀÔÀÌ ¾Æ´Ñ °æ¿ì
+        // ì²« Element ì‚½ì…ì´ ì•„ë‹Œ ê²½ìš°
         // mTail->next = aElement; mTail = aElement
         aTempTable->mTail = (qmcMemHashElement *) aElement;
         sElement->next    = (qmcMemHashElement *) aElement;
     }
 
-    // Hash Key ÀúÀå
+    // Hash Key ì €ì¥
     ((qmcMemHashElement*) aElement)->key = aHash;
 
-    // »ğÀÔÀÌ ¼º°øÇßÀ½À» Ç¥±â
+    // ì‚½ì…ì´ ì„±ê³µí–ˆìŒì„ í‘œê¸°
     *aOutElement = NULL;
 
-    // Record °³¼ö Áõ°¡
+    // Record ê°œìˆ˜ ì¦ê°€
     aTempTable->mRecordCnt++;
     
     return IDE_SUCCESS;
@@ -240,10 +240,10 @@ IDE_RC qmcMemPartHash::getFirstSequence( qmcdMemPartHashTemp  * aTempTable,
 /***********************************************************************
  *
  * Description :
- *    Ã¹ ¼øÂ÷ °Ë»öÀ» ¼öÇà
+ *    ì²« ìˆœì°¨ ê²€ìƒ‰ì„ ìˆ˜í–‰
  *
  * Implementation :
- *    ´ÜÀÏ List¿¡¼­ Ã¹ Element¸¦ ¹İÈ¯ÇÑ´Ù.
+ *    ë‹¨ì¼ Listì—ì„œ ì²« Elementë¥¼ ë°˜í™˜í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -252,7 +252,7 @@ IDE_RC qmcMemPartHash::getFirstSequence( qmcdMemPartHashTemp  * aTempTable,
     if ( sElement != NULL )
     {   
         //-----------------------------------
-        // ´ÙÀ½ Record°¡ Á¸ÀçÇÏ´Â °æ¿ì
+        // ë‹¤ìŒ Recordê°€ ì¡´ì¬í•˜ëŠ” ê²½ìš°
         //-----------------------------------
         *aElement = sElement;
         aTempTable->mNextElem = sElement->next;
@@ -272,10 +272,10 @@ IDE_RC qmcMemPartHash::getNextSequence( qmcdMemPartHashTemp  * aTempTable,
 /***********************************************************************
  *
  * Description :
- *    ´ÙÀ½ ¼øÂ÷ °Ë»öÀ» ¼öÇà
+ *    ë‹¤ìŒ ìˆœì°¨ ê²€ìƒ‰ì„ ìˆ˜í–‰
  *
  * Implementation :
- *    ´ÜÀÏ List¿¡¼­ ´ÙÀ½ Element¸¦ ¹İÈ¯ÇÑ´Ù.
+ *    ë‹¨ì¼ Listì—ì„œ ë‹¤ìŒ Elementë¥¼ ë°˜í™˜í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -285,7 +285,7 @@ IDE_RC qmcMemPartHash::getNextSequence( qmcdMemPartHashTemp  * aTempTable,
     if ( sElement != NULL )
     {   
         //-----------------------------------
-        // ´ÙÀ½ Record°¡ Á¸ÀçÇÏ´Â °æ¿ì
+        // ë‹¤ìŒ Recordê°€ ì¡´ì¬í•˜ëŠ” ê²½ìš°
         //-----------------------------------
         *aElement = sElement;
         aTempTable->mNextElem = sElement->next;
@@ -307,12 +307,12 @@ IDE_RC qmcMemPartHash::getFirstRange( qmcdMemPartHashTemp  * aTempTable,
 /***********************************************************************
  *
  * Description :
- *     ÁÖ¾îÁø Key °ª°ú Filter¸¦ ÀÌ¿ëÇÏ¿© Range °Ë»öÀ» ÇÑ´Ù.
+ *     ì£¼ì–´ì§„ Key ê°’ê³¼ Filterë¥¼ ì´ìš©í•˜ì—¬ Range ê²€ìƒ‰ì„ í•œë‹¤.
  *
  * Implementation :
- *    Key °ªÀ¸·Î Histogram¿¡ Á¢±ÙÇØ Search ArrayÀÇ ½ÃÀÛ ItemºÎÅÍ Å½»öÇÑ´Ù.
- *    ÀÏÄ¡ÇÏ´Â Key¸¦ °¡Áø ItemÀÌ °¡¸®Å°´Â Element¿Í Á¶°ÇÀ» °Ë»çÇÑ´Ù.
- *    Á¶°ÇÀÌ ÂüÀÌ¶ó¸é, ÇØ´ç Element¸¦ ¹İÈ¯ÇÑ´Ù.
+ *    Key ê°’ìœ¼ë¡œ Histogramì— ì ‘ê·¼í•´ Search Arrayì˜ ì‹œì‘ Itemë¶€í„° íƒìƒ‰í•œë‹¤.
+ *    ì¼ì¹˜í•˜ëŠ” Keyë¥¼ ê°€ì§„ Itemì´ ê°€ë¦¬í‚¤ëŠ” Elementì™€ ì¡°ê±´ì„ ê²€ì‚¬í•œë‹¤.
+ *    ì¡°ê±´ì´ ì°¸ì´ë¼ë©´, í•´ë‹¹ Elementë¥¼ ë°˜í™˜í•œë‹¤.
  *     
  ***********************************************************************/
 
@@ -323,10 +323,10 @@ IDE_RC qmcMemPartHash::getFirstRange( qmcdMemPartHashTemp  * aTempTable,
     idBool           sJudge       = ID_FALSE;
 
     //-------------------------------------------------
-    // ÃÖÃÊ °Ë»ö ½Ã, Histogram / Search Array ÁØºñ
+    // ìµœì´ˆ ê²€ìƒ‰ ì‹œ, Histogram / Search Array ì¤€ë¹„
     //-------------------------------------------------
 
-    // Record°¡ Á¸ÀçÇÏÁö ¾ÊÀ¸¸é readyForSearch()¸¦ È£ÃâÇÒ ÇÊ¿ä°¡ ¾ø´Ù.
+    // Recordê°€ ì¡´ì¬í•˜ì§€ ì•Šìœ¼ë©´ readyForSearch()ë¥¼ í˜¸ì¶œí•  í•„ìš”ê°€ ì—†ë‹¤.
     IDE_TEST_CONT( aTempTable->mRecordCnt == 0, NO_ELEMENT );
 
     if ( ( aTempTable->mFlag & QMC_MEM_PART_HASH_SEARCH_READY_MASK )
@@ -340,36 +340,36 @@ IDE_RC qmcMemPartHash::getFirstRange( qmcdMemPartHashTemp  * aTempTable,
     }
 
     //-------------------------------------------------
-    // °Ë»ö ÁØºñ
+    // ê²€ìƒ‰ ì¤€ë¹„
     //-------------------------------------------------
 
-    // Histogram / SearchArray´Â Á¸ÀçÇØ¾ß ÇÑ´Ù.
+    // Histogram / SearchArrayëŠ” ì¡´ì¬í•´ì•¼ í•œë‹¤.
     IDE_DASSERT( aTempTable->mHistogram   != NULL );
     IDE_DASSERT( aTempTable->mSearchArray != NULL );
 
-    // ´ÙÀ½ Range °Ë»öÀ» À§ÇØ Key°ª°ú Filter¸¦ ÀúÀå
+    // ë‹¤ìŒ Range ê²€ìƒ‰ì„ ìœ„í•´ Keyê°’ê³¼ Filterë¥¼ ì €ì¥
     aTempTable->mKey    = aHash;
     aTempTable->mFilter = aFilter;
 
-    // Hash Key¸¦ ÅëÇØ, Histogram¿¡ Á¢±ÙÇÒ Index È¹µæ
+    // Hash Keyë¥¼ í†µí•´, Histogramì— ì ‘ê·¼í•  Index íšë“
     sPartIdx     = ( aHash & ( ( 1 << aTempTable->mRadixBit ) - 1 ) );
 
-    // HistogramÀÌ °¡¸®Å°´Â ÇöÀç Partition / ´ÙÀ½ PartitionÀÇ ½ÃÀÛ Item Index È¹µæ
+    // Histogramì´ ê°€ë¦¬í‚¤ëŠ” í˜„ì¬ Partition / ë‹¤ìŒ Partitionì˜ ì‹œì‘ Item Index íšë“
     sTargetIdx   = aTempTable->mHistogram[sPartIdx];
     sBoundaryIdx = aTempTable->mHistogram[sPartIdx+1];
 
-    // Search Array °¡Á®¿À±â
+    // Search Array ê°€ì ¸ì˜¤ê¸°
     sSearchArray = aTempTable->mSearchArray;
 
     //-------------------------------------------------
-    // °Ë»ö ½ÃÀÛ
+    // ê²€ìƒ‰ ì‹œì‘
     //-------------------------------------------------
 
     while ( sTargetIdx < sBoundaryIdx ) 
     {
         if ( sSearchArray[sTargetIdx].mKey == aHash )
         {
-            // µ¿ÀÏÇÑ Key°ªÀ» °®´Â °æ¿ì, FilterÁ¶°Çµµ °Ë»ç.
+            // ë™ì¼í•œ Keyê°’ì„ ê°–ëŠ” ê²½ìš°, Filterì¡°ê±´ë„ ê²€ì‚¬.
             IDE_TEST( qmcMemPartHash::judgeFilter( aTempTable,
                                                    sSearchArray[sTargetIdx].mPtr,
                                                    & sJudge )
@@ -378,9 +378,9 @@ IDE_RC qmcMemPartHash::getFirstRange( qmcdMemPartHashTemp  * aTempTable,
             if ( sJudge == ID_TRUE )
             {
                 // To Fix PR-8645
-                // Hash Key °ªÀ» °Ë»çÇÏ±â À§ÇÑ Filter¿¡¼­ Access°ªÀ»
-                // Áõ°¡ÇÏ¿´°í, ÀÌ ÈÄ Execution Node¿¡¼­ ÀÌ¸¦ ´Ù½Ã Áõ°¡½ÃÅ´.
-                // µû¶ó¼­, ¸¶Áö¸· ÇÑ¹øÀÇ °Ë»ç¿¡ ´ëÇØ¼­´Â accessÈ¸¼ö¸¦ °¨¼Ò½ÃÅ´
+                // Hash Key ê°’ì„ ê²€ì‚¬í•˜ê¸° ìœ„í•œ Filterì—ì„œ Accessê°’ì„
+                // ì¦ê°€í•˜ì˜€ê³ , ì´ í›„ Execution Nodeì—ì„œ ì´ë¥¼ ë‹¤ì‹œ ì¦ê°€ì‹œí‚´.
+                // ë”°ë¼ì„œ, ë§ˆì§€ë§‰ í•œë²ˆì˜ ê²€ì‚¬ì— ëŒ€í•´ì„œëŠ” accessíšŒìˆ˜ë¥¼ ê°ì†Œì‹œí‚´
                 aTempTable->mRecordNode->dstTuple->modify--;
                 break;
             }
@@ -401,19 +401,19 @@ IDE_RC qmcMemPartHash::getFirstRange( qmcdMemPartHashTemp  * aTempTable,
 
     if ( sJudge == ID_TRUE )
     {
-        // °Ë»ö ¼º°ø
+        // ê²€ìƒ‰ ì„±ê³µ
         *aElement = sSearchArray[sTargetIdx].mPtr;
 
-        // ´ÙÀ½ °Ë»öÀ» À§ÇÑ Á¤º¸ ÀúÀå
+        // ë‹¤ìŒ ê²€ìƒ‰ì„ ìœ„í•œ ì •ë³´ ì €ì¥
         aTempTable->mNextIdx     = sTargetIdx + 1;
         aTempTable->mBoundaryIdx = sBoundaryIdx;
     }
     else
     {
-        // °Ë»ö ½ÇÆĞ
+        // ê²€ìƒ‰ ì‹¤íŒ¨
         *aElement = NULL;
 
-        // ´ÙÀ½ °Ë»öÀ» ÇÏÁö ¸øÇÏµµ·Ï Á¤º¸ ÃÊ±âÈ­
+        // ë‹¤ìŒ ê²€ìƒ‰ì„ í•˜ì§€ ëª»í•˜ë„ë¡ ì •ë³´ ì´ˆê¸°í™”
         aTempTable->mNextIdx     = 0;
         aTempTable->mBoundaryIdx = 0;
     }
@@ -431,12 +431,12 @@ IDE_RC qmcMemPartHash::getNextRange( qmcdMemPartHashTemp  * aTempTable,
 /***********************************************************************
  *
  * Description :
- *    ´ÙÀ½ Range °Ë»öÀ» ¼öÇàÇÑ´Ù.
+ *    ë‹¤ìŒ Range ê²€ìƒ‰ì„ ìˆ˜í–‰í•œë‹¤.
  *
  * Implementation :
- *    ÀÌ¹Ì ÀúÀåµÈ Á¤º¸¸¦ ÀÌ¿ëÇÏ¿©, Search ArrayÀÇ ´ÙÀ½ ItemºÎÅÍ Å½»öÇÑ´Ù.
- *    ÀÏÄ¡ÇÏ´Â Key¸¦ °¡Áø ItemÀÌ °¡¸®Å°´Â Element¿Í Á¶°ÇÀ» °Ë»çÇÑ´Ù.
- *    Á¶°ÇÀÌ ÂüÀÌ¶ó¸é, ÇØ´ç Element¸¦ ¹İÈ¯ÇÑ´Ù.
+ *    ì´ë¯¸ ì €ì¥ëœ ì •ë³´ë¥¼ ì´ìš©í•˜ì—¬, Search Arrayì˜ ë‹¤ìŒ Itemë¶€í„° íƒìƒ‰í•œë‹¤.
+ *    ì¼ì¹˜í•˜ëŠ” Keyë¥¼ ê°€ì§„ Itemì´ ê°€ë¦¬í‚¤ëŠ” Elementì™€ ì¡°ê±´ì„ ê²€ì‚¬í•œë‹¤.
+ *    ì¡°ê±´ì´ ì°¸ì´ë¼ë©´, í•´ë‹¹ Elementë¥¼ ë°˜í™˜í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -447,28 +447,28 @@ IDE_RC qmcMemPartHash::getNextRange( qmcdMemPartHashTemp  * aTempTable,
     idBool           sJudge       = ID_FALSE;
 
     //-------------------------------------------------
-    // °Ë»ö ÁØºñ
+    // ê²€ìƒ‰ ì¤€ë¹„
     //-------------------------------------------------
 
-    // Search Array °¡Á®¿À±â
+    // Search Array ê°€ì ¸ì˜¤ê¸°
     sSearchArray = aTempTable->mSearchArray;
 
-    // Key°ª °¡Á®¿À±â
+    // Keyê°’ ê°€ì ¸ì˜¤ê¸°
     sKey         = aTempTable->mKey;
 
-    // ÇöÀç Item Index / ´ÙÀ½ Partition ½ÃÀÛ Item Index °¡Á®¿À±â
+    // í˜„ì¬ Item Index / ë‹¤ìŒ Partition ì‹œì‘ Item Index ê°€ì ¸ì˜¤ê¸°
     sTargetIdx   = aTempTable->mNextIdx;
     sBoundaryIdx = aTempTable->mBoundaryIdx;
 
     //-------------------------------------------------
-    // °Ë»ö ½ÃÀÛ
+    // ê²€ìƒ‰ ì‹œì‘
     //-------------------------------------------------
 
     while ( sTargetIdx < sBoundaryIdx ) 
     {
         if ( sSearchArray[sTargetIdx].mKey == sKey )
         {
-            // µ¿ÀÏÇÑ Key°ªÀ» °®´Â °æ¿ì, FilterÁ¶°Çµµ °Ë»ç.
+            // ë™ì¼í•œ Keyê°’ì„ ê°–ëŠ” ê²½ìš°, Filterì¡°ê±´ë„ ê²€ì‚¬.
             IDE_TEST( qmcMemPartHash::judgeFilter( aTempTable,
                                                    sSearchArray[sTargetIdx].mPtr,
                                                    & sJudge )
@@ -477,9 +477,9 @@ IDE_RC qmcMemPartHash::getNextRange( qmcdMemPartHashTemp  * aTempTable,
             if ( sJudge == ID_TRUE )
             {
                 // To Fix PR-8645
-                // Hash Key °ªÀ» °Ë»çÇÏ±â À§ÇÑ Filter¿¡¼­ Access°ªÀ»
-                // Áõ°¡ÇÏ¿´°í, ÀÌ ÈÄ Execution Node¿¡¼­ ÀÌ¸¦ ´Ù½Ã Áõ°¡½ÃÅ´.
-                // µû¶ó¼­, ¸¶Áö¸· ÇÑ¹øÀÇ °Ë»ç¿¡ ´ëÇØ¼­´Â accessÈ¸¼ö¸¦ °¨¼Ò½ÃÅ´
+                // Hash Key ê°’ì„ ê²€ì‚¬í•˜ê¸° ìœ„í•œ Filterì—ì„œ Accessê°’ì„
+                // ì¦ê°€í•˜ì˜€ê³ , ì´ í›„ Execution Nodeì—ì„œ ì´ë¥¼ ë‹¤ì‹œ ì¦ê°€ì‹œí‚´.
+                // ë”°ë¼ì„œ, ë§ˆì§€ë§‰ í•œë²ˆì˜ ê²€ì‚¬ì— ëŒ€í•´ì„œëŠ” accessíšŒìˆ˜ë¥¼ ê°ì†Œì‹œí‚´
                 aTempTable->mRecordNode->dstTuple->modify--;
                 break;
             }
@@ -498,19 +498,19 @@ IDE_RC qmcMemPartHash::getNextRange( qmcdMemPartHashTemp  * aTempTable,
 
     if ( sJudge == ID_TRUE )
     {
-        // °Ë»ö ¼º°ø
+        // ê²€ìƒ‰ ì„±ê³µ
         *aElement = sSearchArray[sTargetIdx].mPtr;
 
-        // ´ÙÀ½ °Ë»öÀ» À§ÇÑ Á¤º¸ ÀúÀå
+        // ë‹¤ìŒ ê²€ìƒ‰ì„ ìœ„í•œ ì •ë³´ ì €ì¥
         aTempTable->mNextIdx     = sTargetIdx + 1;
         aTempTable->mBoundaryIdx = sBoundaryIdx;
     }
     else
     {
-        // °Ë»ö ½ÇÆĞ
+        // ê²€ìƒ‰ ì‹¤íŒ¨
         *aElement = NULL;
 
-        // ´ÙÀ½ °Ë»öÀ» ÇÏÁö ¸øÇÏµµ·Ï Á¤º¸ ÃÊ±âÈ­
+        // ë‹¤ìŒ ê²€ìƒ‰ì„ í•˜ì§€ ëª»í•˜ë„ë¡ ì •ë³´ ì´ˆê¸°í™”
         aTempTable->mNextIdx     = 0;
         aTempTable->mBoundaryIdx = 0;
     }
@@ -528,10 +528,10 @@ IDE_RC qmcMemPartHash::getFirstHit( qmcdMemPartHashTemp  * aTempTable,
 /***********************************************************************
  *
  * Description :
- *    ¼øÂ÷ °Ë»öÇÏ¿© HitµÈ Record¸¦ ¸®ÅÏÇÑ´Ù.
+ *    ìˆœì°¨ ê²€ìƒ‰í•˜ì—¬ Hitëœ Recordë¥¼ ë¦¬í„´í•œë‹¤.
  *
  * Implementation :
- *    Hit µÈ record¸¦ Ã£À» ¶§±îÁö ¹İº¹ÀûÀ¸·Î ¼öÇàÇÑ´Ù.
+ *    Hit ëœ recordë¥¼ ì°¾ì„ ë•Œê¹Œì§€ ë°˜ë³µì ìœ¼ë¡œ ìˆ˜í–‰í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -545,12 +545,12 @@ IDE_RC qmcMemPartHash::getFirstHit( qmcdMemPartHashTemp  * aTempTable,
 
         if ( ( sElement->flag & QMC_ROW_HIT_MASK ) == QMC_ROW_HIT_TRUE )
         {
-            // ¿øÇÏ´Â Record¸¦ Ã£À½
+            // ì›í•˜ëŠ” Recordë¥¼ ì°¾ìŒ
             break;
         }
         else
         {
-            // ´ÙÀ½ record¸¦ °Ë»ö
+            // ë‹¤ìŒ recordë¥¼ ê²€ìƒ‰
             IDE_TEST( getNextSequence( aTempTable, aElement ) != IDE_SUCCESS );
         }
     }
@@ -568,10 +568,10 @@ IDE_RC qmcMemPartHash::getNextHit( qmcdMemPartHashTemp  * aTempTable,
 /***********************************************************************
  *
  * Description :
- *    ¼øÂ÷ °Ë»öÇÏ¿© HitµÈ Record¸¦ ¸®ÅÏÇÑ´Ù.
+ *    ìˆœì°¨ ê²€ìƒ‰í•˜ì—¬ Hitëœ Recordë¥¼ ë¦¬í„´í•œë‹¤.
  *
  * Implementation :
- *    Hit µÈ record¸¦ Ã£À» ¶§±îÁö ¹İº¹ÀûÀ¸·Î ¼öÇàÇÑ´Ù.
+ *    Hit ëœ recordë¥¼ ì°¾ì„ ë•Œê¹Œì§€ ë°˜ë³µì ìœ¼ë¡œ ìˆ˜í–‰í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -584,12 +584,12 @@ IDE_RC qmcMemPartHash::getNextHit( qmcdMemPartHashTemp  * aTempTable,
         sElement = (qmcMemHashElement*) *aElement;
         if ( ( sElement->flag & QMC_ROW_HIT_MASK ) == QMC_ROW_HIT_TRUE )
         {
-            // ¿øÇÏ´Â Record¸¦ Ã£À½
+            // ì›í•˜ëŠ” Recordë¥¼ ì°¾ìŒ
             break;
         }
         else
         {
-            // ´ÙÀ½ record¸¦ °Ë»ö
+            // ë‹¤ìŒ recordë¥¼ ê²€ìƒ‰
             IDE_TEST( getNextSequence( aTempTable, aElement ) != IDE_SUCCESS );
         }
     }
@@ -607,10 +607,10 @@ IDE_RC qmcMemPartHash::getFirstNonHit( qmcdMemPartHashTemp  * aTempTable,
 /***********************************************************************
  *
  * Description :
- *    ¼øÂ÷ °Ë»öÇÏ¿© NonHitµÈ Record¸¦ ¸®ÅÏÇÑ´Ù.
+ *    ìˆœì°¨ ê²€ìƒ‰í•˜ì—¬ NonHitëœ Recordë¥¼ ë¦¬í„´í•œë‹¤.
  *
  * Implementation :
- *    NonHit µÈ record¸¦ Ã£À» ¶§±îÁö ¹İº¹ÀûÀ¸·Î ¼öÇàÇÑ´Ù.
+ *    NonHit ëœ recordë¥¼ ì°¾ì„ ë•Œê¹Œì§€ ë°˜ë³µì ìœ¼ë¡œ ìˆ˜í–‰í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -623,12 +623,12 @@ IDE_RC qmcMemPartHash::getFirstNonHit( qmcdMemPartHashTemp  * aTempTable,
         sElement = (qmcMemHashElement*) *aElement;
         if ( ( sElement->flag & QMC_ROW_HIT_MASK ) == QMC_ROW_HIT_FALSE )
         {
-            // ¿øÇÏ´Â Record¸¦ Ã£À½
+            // ì›í•˜ëŠ” Recordë¥¼ ì°¾ìŒ
             break;
         }
         else
         {
-            // ´ÙÀ½ record¸¦ °Ë»ö
+            // ë‹¤ìŒ recordë¥¼ ê²€ìƒ‰
             IDE_TEST( getNextSequence( aTempTable, aElement ) != IDE_SUCCESS );
         }
     }
@@ -646,10 +646,10 @@ IDE_RC qmcMemPartHash::getNextNonHit( qmcdMemPartHashTemp  * aTempTable,
 /***********************************************************************
  *
  * Description :
- *    ¼øÂ÷ °Ë»öÇÏ¿© NonHitµÈ Record¸¦ ¸®ÅÏÇÑ´Ù.
+ *    ìˆœì°¨ ê²€ìƒ‰í•˜ì—¬ NonHitëœ Recordë¥¼ ë¦¬í„´í•œë‹¤.
  *
  * Implementation :
- *    NonHit µÈ record¸¦ Ã£À» ¶§±îÁö ¹İº¹ÀûÀ¸·Î ¼öÇàÇÑ´Ù.
+ *    NonHit ëœ recordë¥¼ ì°¾ì„ ë•Œê¹Œì§€ ë°˜ë³µì ìœ¼ë¡œ ìˆ˜í–‰í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -662,12 +662,12 @@ IDE_RC qmcMemPartHash::getNextNonHit( qmcdMemPartHashTemp  * aTempTable,
         sElement = (qmcMemHashElement*) *aElement;
         if ( ( sElement->flag & QMC_ROW_HIT_MASK ) == QMC_ROW_HIT_FALSE )
         {
-            // ¿øÇÏ´Â Record¸¦ Ã£À½
+            // ì›í•˜ëŠ” Recordë¥¼ ì°¾ìŒ
             break;
         }
         else
         {
-            // ´ÙÀ½ record¸¦ °Ë»ö
+            // ë‹¤ìŒ recordë¥¼ ê²€ìƒ‰
             IDE_TEST( getNextSequence( aTempTable, aElement ) != IDE_SUCCESS );
         }
     }
@@ -686,11 +686,11 @@ IDE_RC qmcMemPartHash::getDisplayInfo( qmcdMemPartHashTemp * aTempTable,
 /***********************************************************************
  *
  * Description :
- *    »ğÀÔµÇ¾î ÀÖ´Â Record °³¼ö, Partition °³¼ö¸¦ ¹İÈ¯ÇÑ´Ù.
+ *    ì‚½ì…ë˜ì–´ ìˆëŠ” Record ê°œìˆ˜, Partition ê°œìˆ˜ë¥¼ ë°˜í™˜í•œë‹¤.
  *
  * Implementation :
- *    ¿ÜºÎ¿¡¼­´Â DISTINCT Hash Temp Table°ú ±¸º°ÇÒ ¼ö ¾øÀ¸¹Ç·Î
- *    'Bucket °³¼ö' ¶ó´Â °³³ä¿¡ 'Partition °³¼ö'¸¦ ¹İÈ¯ÇÑ´Ù.
+ *    ì™¸ë¶€ì—ì„œëŠ” DISTINCT Hash Temp Tableê³¼ êµ¬ë³„í•  ìˆ˜ ì—†ìœ¼ë¯€ë¡œ
+ *    'Bucket ê°œìˆ˜' ë¼ëŠ” ê°œë…ì— 'Partition ê°œìˆ˜'ë¥¼ ë°˜í™˜í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -707,23 +707,23 @@ IDE_RC qmcMemPartHash::judgeFilter( qmcdMemPartHashTemp * aTempTable,
 /***********************************************************************
  *
  * Description :
- *     ÁÖ¾îÁø Record°¡ Filter Á¶°ÇÀ» ¸¸Á·ÇÏ´Â Áö °Ë»ç.
+ *     ì£¼ì–´ì§„ Recordê°€ Filter ì¡°ê±´ì„ ë§Œì¡±í•˜ëŠ” ì§€ ê²€ì‚¬.
  *
  * Implementation :
- *     Filter¿¡ Àû¿ëÇÒ ¼ö ÀÖµµ·Ï ÇØ´ç Hash ColumnµéÀ» º¹¿ø½ÃÅ°°í
- *     Filter¸¦ Àû¿ëÇÑ´Ù.  ¿¹¸¦ µé¾î memory columnÀÇ °æ¿ì ÇØ´ç recordÀÇ
- *     pointer°¡ ÀúÀåµÇ¾î ÀÖ¾î ÀÌ pointer¸¦ tuple set¿¡ º¹¿ø½ÃÄÑ¾ß ÇÑ´Ù.
+ *     Filterì— ì ìš©í•  ìˆ˜ ìˆë„ë¡ í•´ë‹¹ Hash Columnë“¤ì„ ë³µì›ì‹œí‚¤ê³ 
+ *     Filterë¥¼ ì ìš©í•œë‹¤.  ì˜ˆë¥¼ ë“¤ì–´ memory columnì˜ ê²½ìš° í•´ë‹¹ recordì˜
+ *     pointerê°€ ì €ì¥ë˜ì–´ ìˆì–´ ì´ pointerë¥¼ tuple setì— ë³µì›ì‹œì¼œì•¼ í•œë‹¤.
  *
  ***********************************************************************/
 
     qmdMtrNode * sNode = NULL;
     
     //------------------------------------
-    // Hashing ´ë»ó columnµéÀ» º¹¿ø½ÃÅ´
+    // Hashing ëŒ€ìƒ columnë“¤ì„ ë³µì›ì‹œí‚´
     //------------------------------------
 
     // To Fix PR-8024
-    // ÇöÀç ¼±ÅÃµÈ Row¸¦ Tuple Set¿¡ µî·Ï½ÃÄÑµÎ°í Ã³¸®ÇØ¾ß ÇÔ
+    // í˜„ì¬ ì„ íƒëœ Rowë¥¼ Tuple Setì— ë“±ë¡ì‹œì¼œë‘ê³  ì²˜ë¦¬í•´ì•¼ í•¨
     aTempTable->mHashNode->dstTuple->row = aElem;
     
     for ( sNode = aTempTable->mHashNode; 
@@ -735,7 +735,7 @@ IDE_RC qmcMemPartHash::judgeFilter( qmcdMemPartHashTemp * aTempTable,
     }
 
     //------------------------------------
-    // Filter ¼öÇà °á°ú¸¦ È¹µæ
+    // Filter ìˆ˜í–‰ ê²°ê³¼ë¥¼ íšë“
     //------------------------------------
     
     IDE_TEST( qtc::judge( aResult, 
@@ -743,8 +743,8 @@ IDE_RC qmcMemPartHash::judgeFilter( qmcdMemPartHashTemp * aTempTable,
                           aTempTable->mTemplate ) != IDE_SUCCESS );
 
     // To Fix PR-8645
-    // Hash Key°ª¿¡ ´ëÇÑ °Ë»ç´Â ½ÇÁ¦ Record¸¦ Á¢±ÙÇÏ´Â °Ë»çÀÌ¸ç,
-    // Access È¸¼ö¸¦ Áõ°¡½ÃÄÑ¾ß Hash È¿°ú¸¦ ÃøÁ¤ÇÒ ¼ö ÀÖ´Ù.
+    // Hash Keyê°’ì— ëŒ€í•œ ê²€ì‚¬ëŠ” ì‹¤ì œ Recordë¥¼ ì ‘ê·¼í•˜ëŠ” ê²€ì‚¬ì´ë©°,
+    // Access íšŒìˆ˜ë¥¼ ì¦ê°€ì‹œì¼œì•¼ Hash íš¨ê³¼ë¥¼ ì¸¡ì •í•  ìˆ˜ ìˆë‹¤.
     aTempTable->mRecordNode->dstTuple->modify++;
     
     return IDE_SUCCESS;
@@ -759,21 +759,21 @@ UInt qmcMemPartHash::calcRadixBit( qmcdMemPartHashTemp * aTempTable )
 /***********************************************************************
  *
  * Description :
- *     Radix Bit PartitioningÀ» À§ÇÑ Radix Bit¸¦ °è»êÇÑ´Ù.
- *     Radix Bit¸¦ 2ÀÇ Áö¼ö·Î µĞ °ªÀÌ PartitionÀÇ °³¼ö°¡ µÈ´Ù.
+ *     Radix Bit Partitioningì„ ìœ„í•œ Radix Bitë¥¼ ê³„ì‚°í•œë‹¤.
+ *     Radix Bitë¥¼ 2ì˜ ì§€ìˆ˜ë¡œ ë‘” ê°’ì´ Partitionì˜ ê°œìˆ˜ê°€ ëœë‹¤.
  *
  * Implementation :
- *     ´ÙÀ½ Áß ÇÑ °¡Áö ¹æ¹ıÀ¸·Î ÃÖÀûÀÇ Partition °³¼ö¸¦ ¸ÕÀú ±¸ÇÑ´Ù.
+ *     ë‹¤ìŒ ì¤‘ í•œ ê°€ì§€ ë°©ë²•ìœ¼ë¡œ ìµœì ì˜ Partition ê°œìˆ˜ë¥¼ ë¨¼ì € êµ¬í•œë‹¤.
  *
- *     - AUTO_BUCKETCNT_DISABLE °¡ 0 ·Î ¼³Á¤µÇ¾î ÀÖ´Â °æ¿ì :
- *       ( ½ÇÁ¦ Record °³¼ö ) / AVG_RECORD_COUNT
- *     - AUTO_BUCKETCNT_DISABLE °¡ 1 ·Î ¼³Á¤µÇ¾î ÀÖ´Â °æ¿ì :
- *       ( ÃÊ±â¿¡ ÀÔ·ÂµÈ Bucket °³¼ö )
+ *     - AUTO_BUCKETCNT_DISABLE ê°€ 0 ë¡œ ì„¤ì •ë˜ì–´ ìˆëŠ” ê²½ìš° :
+ *       ( ì‹¤ì œ Record ê°œìˆ˜ ) / AVG_RECORD_COUNT
+ *     - AUTO_BUCKETCNT_DISABLE ê°€ 1 ë¡œ ì„¤ì •ë˜ì–´ ìˆëŠ” ê²½ìš° :
+ *       ( ì´ˆê¸°ì— ì…ë ¥ëœ Bucket ê°œìˆ˜ )
  *
- *     ±× ´ÙÀ½, ÃÖ¼Ò/ÃÖ´ë°ªÀ» º¸Á¤ÇÑ µÚ ¾Æ·¡ ½ÄÀ¸·Î Radix Bit¸¦ ±¸ÇÑ´Ù.
+ *     ê·¸ ë‹¤ìŒ, ìµœì†Œ/ìµœëŒ€ê°’ì„ ë³´ì •í•œ ë’¤ ì•„ë˜ ì‹ìœ¼ë¡œ Radix Bitë¥¼ êµ¬í•œë‹¤.
  *
  *       RadixBit = ceil( Log(Optimal Partition Count) )
- *       ( LogÀÇ ¹ØÀº 2 )
+ *       ( Logì˜ ë°‘ì€ 2 )
  *
  ***********************************************************************/
 
@@ -782,24 +782,24 @@ UInt qmcMemPartHash::calcRadixBit( qmcdMemPartHashTemp * aTempTable )
 
     IDE_DASSERT( aTempTable->mRecordCnt > 0 );
 
-    // 1. Optimal Partition Count¸¦ ±¸ÇÑ´Ù.
+    // 1. Optimal Partition Countë¥¼ êµ¬í•œë‹¤.
     if ( aTempTable->mTemplate->memHashTempManualBucketCnt == ID_TRUE )
     {
         // [ Estimation Mode ]
-        // ÀÔ·ÂµÈ Bucket Count¸¦ ±âÁØÀ¸·Î ÇÑ´Ù.
+        // ì…ë ¥ëœ Bucket Countë¥¼ ê¸°ì¤€ìœ¼ë¡œ í•œë‹¤.
         sOptPartCnt = aTempTable->mBucketCnt;
     }
     else
     {
         // [ Calculation Mode ]
-        // ±âÁ¸ Bucket Count °è»ê ¹æ½ÄÀ» µû¸¥´Ù. (qmgJoin::getBucketCntNTmpTblCnt)
-        // ´Ü, ¿¹Ãø Record °³¼ö°¡ ¾Æ´Ñ ½ÇÁ¦ Record °³¼ö¿¡ ±â¹İÇÏ¸ç
-        // Partition ´ç Æò±Õ Element °³¼ö·Î ÁöÁ¤µÈ »ó¼ö·Î ³ª´² °è»êÇÑ´Ù.
+        // ê¸°ì¡´ Bucket Count ê³„ì‚° ë°©ì‹ì„ ë”°ë¥¸ë‹¤. (qmgJoin::getBucketCntNTmpTblCnt)
+        // ë‹¨, ì˜ˆì¸¡ Record ê°œìˆ˜ê°€ ì•„ë‹Œ ì‹¤ì œ Record ê°œìˆ˜ì— ê¸°ë°˜í•˜ë©°
+        // Partition ë‹¹ í‰ê·  Element ê°œìˆ˜ë¡œ ì§€ì •ëœ ìƒìˆ˜ë¡œ ë‚˜ëˆ  ê³„ì‚°í•œë‹¤.
         sOptPartCnt = 
             aTempTable->mRecordCnt / QMC_MEM_PART_HASH_AVG_RECORD_COUNT; 
     }
 
-    // 2. Optimal Partition CountÀÇ ÃÖ¼Ò/ÃÖ´ë°ª º¸Á¤
+    // 2. Optimal Partition Countì˜ ìµœì†Œ/ìµœëŒ€ê°’ ë³´ì •
     if ( sOptPartCnt < QMC_MEM_PART_HASH_MIN_PART_COUNT )
     {
         sOptPartCnt = QMC_MEM_PART_HASH_MIN_PART_COUNT;
@@ -813,8 +813,8 @@ UInt qmcMemPartHash::calcRadixBit( qmcdMemPartHashTemp * aTempTable )
         // Nothing to do.
     }
 
-    // 3. Optimal Partition Countº¸´Ù Å©¸é¼­ °¡Àå °¡±î¿î
-    //    Partition Count¸¦ ±¸ÇÒ ¼ö ÀÖ´Â Radix Bit¸¦ °è»êÇÑ´Ù.
+    // 3. Optimal Partition Countë³´ë‹¤ í¬ë©´ì„œ ê°€ì¥ ê°€ê¹Œìš´
+    //    Partition Countë¥¼ êµ¬í•  ìˆ˜ ìˆëŠ” Radix Bitë¥¼ ê³„ì‚°í•œë‹¤.
     sRBit = ceilLog2( sOptPartCnt );
 
     return sRBit;
@@ -825,25 +825,25 @@ IDE_RC qmcMemPartHash::readyForSearch( qmcdMemPartHashTemp * aTempTable )
 /***********************************************************************
  *
  * Description :
- *      ÃÖÃÊ ¹üÀ§ °Ë»ö Àü¿¡, È÷½ºÅä±×·¥°ú °Ë»ö ¹è¿­À» ÁØºñÇÑ´Ù.
+ *      ìµœì´ˆ ë²”ìœ„ ê²€ìƒ‰ ì „ì—, íˆìŠ¤í† ê·¸ë¨ê³¼ ê²€ìƒ‰ ë°°ì—´ì„ ì¤€ë¹„í•œë‹¤.
  *
  * Implementation :
  *
- *  (1) °è»êÀ» ÇÏ°Å³ª, ÀÔ·ÂµÈ Bucket °³¼ö¸¦ ÅëÇØ Partition °³¼ö¸¦ Á¤ÇÑ´Ù.
+ *  (1) ê³„ì‚°ì„ í•˜ê±°ë‚˜, ì…ë ¥ëœ Bucket ê°œìˆ˜ë¥¼ í†µí•´ Partition ê°œìˆ˜ë¥¼ ì •í•œë‹¤.
  *
- *  (2) Partition °³¼ö, Record °³¼ö¿¡ ¸Â´Â
- *      È÷½ºÅä±×·¥, °Ë»ö ¹è¿­À» ÇÒ´çÇÑ´Ù.
+ *  (2) Partition ê°œìˆ˜, Record ê°œìˆ˜ì— ë§ëŠ”
+ *      íˆìŠ¤í† ê·¸ë¨, ê²€ìƒ‰ ë°°ì—´ì„ í• ë‹¹í•œë‹¤.
  *
- *  (3) È÷½ºÅä±×·¥¿¡, °¢ Partition¿¡ ¼ÓÇÑ Element °³¼ö¸¦ ¼¾´Ù.
- *    - °¢ Element Hash Key¿¡ Radix Bit MaskingÀ» ÇØ¼­ Partition ÀÎµ¦½º¸¦ ±¸ÇÑ´Ù.
- *    - Partition ÀÎµ¦½º°¡ °¡¸®Å°´Â È÷½ºÅä±×·¥ °ªÀ» 1 Áõ°¡½ÃÅ²´Ù.
+ *  (3) íˆìŠ¤í† ê·¸ë¨ì—, ê° Partitionì— ì†í•œ Element ê°œìˆ˜ë¥¼ ì„¼ë‹¤.
+ *    - ê° Element Hash Keyì— Radix Bit Maskingì„ í•´ì„œ Partition ì¸ë±ìŠ¤ë¥¼ êµ¬í•œë‹¤.
+ *    - Partition ì¸ë±ìŠ¤ê°€ ê°€ë¦¬í‚¤ëŠ” íˆìŠ¤í† ê·¸ë¨ ê°’ì„ 1 ì¦ê°€ì‹œí‚¨ë‹¤.
  *
- *  (4) È÷½ºÅä±×·¥¿¡¼­, i¹øÂ° °ªÀº 0 ~ (i-1)¹øÂ° °ªÀÇ ÇÕ°è·Î ¼³Á¤ÇÑ´Ù.
- *      ÃÖÁ¾ °á°ú´Â, °Ë»ö ¹è¿­¿¡¼­ °¢ PartitionÀÇ ½ÃÀÛ ÀÎµ¦½º°¡ µÈ´Ù.
+ *  (4) íˆìŠ¤í† ê·¸ë¨ì—ì„œ, ië²ˆì§¸ ê°’ì€ 0 ~ (i-1)ë²ˆì§¸ ê°’ì˜ í•©ê³„ë¡œ ì„¤ì •í•œë‹¤.
+ *      ìµœì¢… ê²°ê³¼ëŠ”, ê²€ìƒ‰ ë°°ì—´ì—ì„œ ê° Partitionì˜ ì‹œì‘ ì¸ë±ìŠ¤ê°€ ëœë‹¤.
  *
- *  (5) Partition °³¼ö¿¡ µû¶ó ÇÑ ¹ø¿¡ °Ë»ö ¹è¿­·Î »ğÀÔÇÒ °ÍÀÎÁö,
- *      µÎ ¹ø¿¡ ³ª´² »ğÀÔÇÒ °ÍÀÎÁö °áÁ¤ÇÑ µÚ, ÇØ´ç ÇÔ¼ö¸¦ ¼öÇàÇÑ´Ù.
- *      (ÇÔ¼ö´Â fanoutSingle / fanoutDouble ·Î ±¸º°µÈ´Ù.)
+ *  (5) Partition ê°œìˆ˜ì— ë”°ë¼ í•œ ë²ˆì— ê²€ìƒ‰ ë°°ì—´ë¡œ ì‚½ì…í•  ê²ƒì¸ì§€,
+ *      ë‘ ë²ˆì— ë‚˜ëˆ  ì‚½ì…í•  ê²ƒì¸ì§€ ê²°ì •í•œ ë’¤, í•´ë‹¹ í•¨ìˆ˜ë¥¼ ìˆ˜í–‰í•œë‹¤.
+ *      (í•¨ìˆ˜ëŠ” fanoutSingle / fanoutDouble ë¡œ êµ¬ë³„ëœë‹¤.)
  *
  ***********************************************************************/
 
@@ -859,7 +859,7 @@ IDE_RC qmcMemPartHash::readyForSearch( qmcdMemPartHashTemp * aTempTable )
 
 
     //---------------------------------------------------------------------
-    // Radix Bit / Partition Count °è»ê
+    // Radix Bit / Partition Count ê³„ì‚°
     //---------------------------------------------------------------------
 
     IDE_DASSERT( aTempTable->mRecordCnt > 0 );
@@ -868,7 +868,7 @@ IDE_RC qmcMemPartHash::readyForSearch( qmcdMemPartHashTemp * aTempTable )
     aTempTable->mPartitionCnt = (UInt)( 1 << aTempTable->mRadixBit );
 
     //---------------------------------------------------------------------
-    // Histogram ÇÒ´ç
+    // Histogram í• ë‹¹
     //---------------------------------------------------------------------
 
     IDU_FIT_POINT( "qmcMemPartHash::readyForSearch::malloc1",
@@ -877,14 +877,14 @@ IDE_RC qmcMemPartHash::readyForSearch( qmcdMemPartHashTemp * aTempTable )
                                             (void**) & sHistogram )
               != IDE_SUCCESS );
  
-    // HistogramÀÇ ¸¶Áö¸·Àº Record Count¿©¾ß ÇÑ´Ù.
+    // Histogramì˜ ë§ˆì§€ë§‰ì€ Record Countì—¬ì•¼ í•œë‹¤.
     sHistogram[aTempTable->mPartitionCnt] = aTempTable->mRecordCnt;
 
     //---------------------------------------------------------------------
-    // Histogram¿¡, °¢ PartitionÀÇ Element °³¼ö ¼öÁı
+    // Histogramì—, ê° Partitionì˜ Element ê°œìˆ˜ ìˆ˜ì§‘
     //
-    //  ´ÜÀÏ List¸¦ ¼øÈ¸ÇÏ¸é¼­ Hash Key¿¡ Radix Bit MaskingÀ» ÇÑ´Ù.
-    //  Masking °á°ú°¡ °¡¸®Å°´Â Histogram °ªÀ» 1 Áõ°¡½ÃÅ²´Ù.
+    //  ë‹¨ì¼ Listë¥¼ ìˆœíšŒí•˜ë©´ì„œ Hash Keyì— Radix Bit Maskingì„ í•œë‹¤.
+    //  Masking ê²°ê³¼ê°€ ê°€ë¦¬í‚¤ëŠ” Histogram ê°’ì„ 1 ì¦ê°€ì‹œí‚¨ë‹¤.
     //---------------------------------------------------------------------
 
     sElement  = aTempTable->mHead;
@@ -898,10 +898,10 @@ IDE_RC qmcMemPartHash::readyForSearch( qmcdMemPartHashTemp * aTempTable )
     }
 
     //---------------------------------------------------------------------
-    // Histogram¿¡, ´©Àû ÇÕ°è ¼öÇà
+    // Histogramì—, ëˆ„ì  í•©ê³„ ìˆ˜í–‰
     //
-    //  Ã³À½¿¡´Â, °¢ Partition¿¡ ¼ÓÇÑ ElementÀÇ °³¼ö¸¦ ¼¼¾î ÀúÀåÇßÁö¸¸
-    //  Á÷Àü PartitionÀÇ Element °³¼ö ÇÕÀ» ÅëÇØ ½ÃÀÛ À§Ä¡¸¦ ÀúÀåÇÏµµ·Ï ÇÑ´Ù.
+    //  ì²˜ìŒì—ëŠ”, ê° Partitionì— ì†í•œ Elementì˜ ê°œìˆ˜ë¥¼ ì„¸ì–´ ì €ì¥í–ˆì§€ë§Œ
+    //  ì§ì „ Partitionì˜ Element ê°œìˆ˜ í•©ì„ í†µí•´ ì‹œì‘ ìœ„ì¹˜ë¥¼ ì €ì¥í•˜ë„ë¡ í•œë‹¤.
     //
     //           Histogram             Histogram 
     //           ----------            ----------
@@ -927,11 +927,11 @@ IDE_RC qmcMemPartHash::readyForSearch( qmcdMemPartHashTemp * aTempTable )
         sHistoSum += sHistoTemp;
     }
 
-    // ¿Ï¼ºµÈ HistogramÀ» Temp Table¿¡ ¼³Á¤
+    // ì™„ì„±ëœ Histogramì„ Temp Tableì— ì„¤ì •
     aTempTable->mHistogram = sHistogram;
 
     //---------------------------------------------------------------------
-    // Search Array ÇÒ´ç
+    // Search Array í• ë‹¹
     //---------------------------------------------------------------------
 
     IDU_FIT_POINT( "qmcMemPartHash::readyForSearch::malloc2",
@@ -941,12 +941,12 @@ IDE_RC qmcMemPartHash::readyForSearch( qmcdMemPartHashTemp * aTempTable )
               != IDE_SUCCESS );
     
     //---------------------------------------------------------------------
-    // Single Fanout ±âÁØ Radix Bit °è»ê
+    // Single Fanout ê¸°ì¤€ Radix Bit ê³„ì‚°
     //
-    // (1) TLB Entry Count * Page Size * È®Àå »ó¼ö = TLB¿¡ ¸Â´Â ¸Ş¸ğ¸® ¿µ¿ª
-    // (2) ¿©±â¿¡ Histogram Item (ULong) Å©±â¸¸Å­ ³ª´« °ª 
-    //     = Single FanoutÀÇ ÀÌ»óÀûÀÎ Partition °³¼ö
-    // (3) ¿©±â¿¡ ceil(log2())¸¦ ÇÏ¸é Single Fanout ±âÁØ Radix Bit°¡ °è»êµÈ´Ù.
+    // (1) TLB Entry Count * Page Size * í™•ì¥ ìƒìˆ˜ = TLBì— ë§ëŠ” ë©”ëª¨ë¦¬ ì˜ì—­
+    // (2) ì—¬ê¸°ì— Histogram Item (ULong) í¬ê¸°ë§Œí¼ ë‚˜ëˆˆ ê°’ 
+    //     = Single Fanoutì˜ ì´ìƒì ì¸ Partition ê°œìˆ˜
+    // (3) ì—¬ê¸°ì— ceil(log2())ë¥¼ í•˜ë©´ Single Fanout ê¸°ì¤€ Radix Bitê°€ ê³„ì‚°ëœë‹¤.
     //---------------------------------------------------------------------
 
     sSingleRadixBit = ceilLog2( ( QMC_MEM_PART_HASH_TLB_ENTRY_MULTIPLIER * 
@@ -954,12 +954,12 @@ IDE_RC qmcMemPartHash::readyForSearch( qmcdMemPartHashTemp * aTempTable )
                                   QMC_MEM_PART_HASH_PAGE_SIZE ) / ID_SIZEOF(ULong) );
 
     //---------------------------------------------------------------------
-    // Partitioning ¼öÇà
+    // Partitioning ìˆ˜í–‰
     //---------------------------------------------------------------------
 
     if ( QCU_FORCE_HSJN_MEM_TEMP_FANOUT_MODE == 0 )
     {
-        // 0 : Single / Double Fanout Áß ¼±ÅÃ
+        // 0 : Single / Double Fanout ì¤‘ ì„ íƒ
         if ( aTempTable->mRadixBit <= sSingleRadixBit )
         {
             IDE_TEST( fanoutSingle( aTempTable ) != IDE_SUCCESS );  
@@ -971,18 +971,18 @@ IDE_RC qmcMemPartHash::readyForSearch( qmcdMemPartHashTemp * aTempTable )
     }
     else if ( QCU_FORCE_HSJN_MEM_TEMP_FANOUT_MODE == 1 )
     {
-        // 1 : Single Fanout ¸¸ ¼±ÅÃ
+        // 1 : Single Fanout ë§Œ ì„ íƒ
         IDE_TEST( fanoutSingle( aTempTable ) != IDE_SUCCESS );  
     }
     else
     {
-        // 2 : Double Fanout ¸¸ ¼±ÅÃ
+        // 2 : Double Fanout ë§Œ ì„ íƒ
         IDE_DASSERT( QCU_FORCE_HSJN_MEM_TEMP_FANOUT_MODE == 2 );
         IDE_TEST( fanoutDouble( aTempTable ) != IDE_SUCCESS );  
     }
 
     //---------------------------------------------------------------------
-    // ¸¶¹«¸® : Flag ÀüÈ¯
+    // ë§ˆë¬´ë¦¬ : Flag ì „í™˜
     //---------------------------------------------------------------------
 
     aTempTable->mFlag &= ~QMC_MEM_PART_HASH_SEARCH_READY_MASK;
@@ -1000,7 +1000,7 @@ IDE_RC qmcMemPartHash::fanoutSingle( qmcdMemPartHashTemp * aTempTable )
 /***********************************************************************
  *
  * Description :
- *     ÇÑ ¹ø¿¡ Search Array¿¡ ItemÀ» »ğÀÔÇÑ´Ù.
+ *     í•œ ë²ˆì— Search Arrayì— Itemì„ ì‚½ì…í•œë‹¤.
  *
  *                         TempHist.            SearchArr. 
  *      LIST                 -----                -----
@@ -1013,20 +1013,20 @@ IDE_RC qmcMemPartHash::fanoutSingle( qmcdMemPartHashTemp * aTempTable )
  *     ------                |---|                |---|
  *                           -----                -----
  *
- *     °¢ Partition¿¡¼­ »ğÀÔ °¡´ÉÇÑ À§Ä¡¸¦ ÀúÀåÇÒ 'ÀÓ½Ã Histogram'ÀÌ ÇÊ¿äÇÏ´Ù.
- *     »ğÀÔÀÌ ÀÌ·ç¾îÁú ¶§ ¸¶´Ù ÇØ´ç °ªÀÌ +1 Áõ°¡ÇÑ´Ù.
- *     ±âÁ¸ HistogramÀº ½ÃÀÛ À§Ä¡ Á¤º¸¸¦ ÀúÀåÇØ¾ß ÇÏ¹Ç·Î º¯°æÇÒ ¼ö ¾ø±â ¶§¹®¿¡
- *     ÀÓ½Ã °ø°£À» »ç¿ëÇÏ´Â °ÍÀÌ´Ù.
+ *     ê° Partitionì—ì„œ ì‚½ì… ê°€ëŠ¥í•œ ìœ„ì¹˜ë¥¼ ì €ì¥í•  'ì„ì‹œ Histogram'ì´ í•„ìš”í•˜ë‹¤.
+ *     ì‚½ì…ì´ ì´ë£¨ì–´ì§ˆ ë•Œ ë§ˆë‹¤ í•´ë‹¹ ê°’ì´ +1 ì¦ê°€í•œë‹¤.
+ *     ê¸°ì¡´ Histogramì€ ì‹œì‘ ìœ„ì¹˜ ì •ë³´ë¥¼ ì €ì¥í•´ì•¼ í•˜ë¯€ë¡œ ë³€ê²½í•  ìˆ˜ ì—†ê¸° ë•Œë¬¸ì—
+ *     ì„ì‹œ ê³µê°„ì„ ì‚¬ìš©í•˜ëŠ” ê²ƒì´ë‹¤.
  *
  * Implementation :
  *
- *   (1) 'ÀÓ½Ã Histogram'À» ÇÒ´çÇÑ´Ù.
- *   (2) 'ÀÓ½Ã Histogram'¿¡, Histogram ³»¿ëÀ» º¹»çÇÑ´Ù.
- *   (3) List¿¡ ÀÖ´Â °¢ Element¸¶´Ù, ´ÙÀ½À» ¼öÇàÇÑ´Ù.
- *     - Hash Key¸¦ Radix Bit Masking ÇØ¼­ Partition ÀÎµ¦½º¸¦ ±¸ÇÑ´Ù.
- *     - Partition ÀÎµ¦½º·Î 'ÀÓ½Ã Histogram'¿¡ Á¢±ÙÇØ Array ÀÎµ¦½º¸¦ ±¸ÇÑ´Ù.
- *       ÀÌ ¶§, ÇØ´çÇÏ´Â 'ÀÓ½Ã Histogram °ª'À» +1 Áõ°¡½ÃÅ²´Ù.
- *     - Array ÀÎµ¦½º·Î Search Array¿¡ Element Á¤º¸¸¦ ÀúÀåÇÑ´Ù.  
+ *   (1) 'ì„ì‹œ Histogram'ì„ í• ë‹¹í•œë‹¤.
+ *   (2) 'ì„ì‹œ Histogram'ì—, Histogram ë‚´ìš©ì„ ë³µì‚¬í•œë‹¤.
+ *   (3) Listì— ìˆëŠ” ê° Elementë§ˆë‹¤, ë‹¤ìŒì„ ìˆ˜í–‰í•œë‹¤.
+ *     - Hash Keyë¥¼ Radix Bit Masking í•´ì„œ Partition ì¸ë±ìŠ¤ë¥¼ êµ¬í•œë‹¤.
+ *     - Partition ì¸ë±ìŠ¤ë¡œ 'ì„ì‹œ Histogram'ì— ì ‘ê·¼í•´ Array ì¸ë±ìŠ¤ë¥¼ êµ¬í•œë‹¤.
+ *       ì´ ë•Œ, í•´ë‹¹í•˜ëŠ” 'ì„ì‹œ Histogram ê°’'ì„ +1 ì¦ê°€ì‹œí‚¨ë‹¤.
+ *     - Array ì¸ë±ìŠ¤ë¡œ Search Arrayì— Element ì •ë³´ë¥¼ ì €ì¥í•œë‹¤.  
  *
  ***********************************************************************/
 
@@ -1042,7 +1042,7 @@ IDE_RC qmcMemPartHash::fanoutSingle( qmcdMemPartHashTemp * aTempTable )
     UInt                 sState        = 0;
 
     //--------------------------------------------------------------------
-    // ±âº» Á¤º¸ ¼³Á¤
+    // ê¸°ë³¸ ì •ë³´ ì„¤ì •
     //--------------------------------------------------------------------
 
     sPartitionCnt = aTempTable->mPartitionCnt; 
@@ -1050,10 +1050,10 @@ IDE_RC qmcMemPartHash::fanoutSingle( qmcdMemPartHashTemp * aTempTable )
     sSearchArray  = aTempTable->mSearchArray;
 
     //--------------------------------------------------------------------
-    // ÀÓ½Ã Histogram ÇÒ´ç
+    // ì„ì‹œ Histogram í• ë‹¹
     //--------------------------------------------------------------------
 
-    // ¿ø·¡ Histogram°ú´Â ´Ş¸®, ¸¶Áö¸·¿¡ Record °³¼ö¸¦ ´ãÀ» ÇÊ¿ä°¡ ¾ø´Ù.
+    // ì›ë˜ Histogramê³¼ëŠ” ë‹¬ë¦¬, ë§ˆì§€ë§‰ì— Record ê°œìˆ˜ë¥¼ ë‹´ì„ í•„ìš”ê°€ ì—†ë‹¤.
     IDU_FIT_POINT( "qmcMemPartHash::fanoutSingle::malloc",
                    idERR_ABORT_InsufficientMemory );
     IDE_TEST( iduMemMgr::malloc( IDU_MEM_QMC,
@@ -1063,7 +1063,7 @@ IDE_RC qmcMemPartHash::fanoutSingle( qmcdMemPartHashTemp * aTempTable )
     sState = 1;
 
     //--------------------------------------------------------------------
-    // ÀÓ½Ã Histogram¿¡ Histogram °ª º¹»ç
+    // ì„ì‹œ Histogramì— Histogram ê°’ ë³µì‚¬
     //--------------------------------------------------------------------
 
     idlOS::memcpy( sInsertHist,
@@ -1071,39 +1071,39 @@ IDE_RC qmcMemPartHash::fanoutSingle( qmcdMemPartHashTemp * aTempTable )
                    sPartitionCnt * ID_SIZEOF(ULong) ); 
 
     //--------------------------------------------------------------------
-    // ¼øÂ÷ °Ë»öÇÏ¸é¼­, Search Array¿¡ Item »ğÀÔ
+    // ìˆœì°¨ ê²€ìƒ‰í•˜ë©´ì„œ, Search Arrayì— Item ì‚½ì…
     //--------------------------------------------------------------------
 
-    // Ã¹ Element¿Í Mask ÁØºñ
+    // ì²« Elementì™€ Mask ì¤€ë¹„
     sElement = aTempTable->mHead;
     sMask    = ( 1 << aTempTable->mRadixBit ) - 1;
 
     while ( sElement != NULL )
     {
-        // Radix-bit MaskingÀ¸·Î Partition Index °è»ê
+        // Radix-bit Maskingìœ¼ë¡œ Partition Index ê³„ì‚°
         sHashKey      = sElement->key;
         sPartitionIdx = sHashKey & sMask;
 
         IDE_DASSERT( sPartitionIdx < sPartitionCnt );
 
-        // ÀÓ½Ã Histogram °ªÀ¸·Î Search Array Index °è»ê
+        // ì„ì‹œ Histogram ê°’ìœ¼ë¡œ Search Array Index ê³„ì‚°
         sArrayIdx = sInsertHist[sPartitionIdx];
-        sInsertHist[sPartitionIdx]++; // ´ÙÀ½ ÁöÁ¡À» °¡¸®Å°µµ·Ï ¹Ì¸® Áõ°¡
+        sInsertHist[sPartitionIdx]++; // ë‹¤ìŒ ì§€ì ì„ ê°€ë¦¬í‚¤ë„ë¡ ë¯¸ë¦¬ ì¦ê°€
 
-        // Search Array Index´Â Record °³¼öº¸´Ù ÀÛ¾Æ¾ß ÇÏ¸ç,
-        // ´ÙÀ½ PartitionÀÇ °æ°è¸¦ ³Ñ´Â °æ¿ìµµ ¾ø¾î¾ß ÇÑ´Ù.
+        // Search Array IndexëŠ” Record ê°œìˆ˜ë³´ë‹¤ ì‘ì•„ì•¼ í•˜ë©°,
+        // ë‹¤ìŒ Partitionì˜ ê²½ê³„ë¥¼ ë„˜ëŠ” ê²½ìš°ë„ ì—†ì–´ì•¼ í•œë‹¤.
         IDE_DASSERT( sArrayIdx < (UInt)aTempTable->mRecordCnt );
         IDE_DASSERT( sArrayIdx < sHistogram[sPartitionIdx+1] );
 
-        // Search Array¿¡ Á¤º¸ »ğÀÔ
+        // Search Arrayì— ì •ë³´ ì‚½ì…
         sSearchArray[sArrayIdx].mKey = sHashKey;
         sSearchArray[sArrayIdx].mPtr = sElement;
 
-        // ´ÙÀ½ Element Å½»ö
+        // ë‹¤ìŒ Element íƒìƒ‰
         sElement = sElement->next;
     }
 
-    // ÇØÁ¦
+    // í•´ì œ
     sState = 0;
     IDE_TEST( iduMemMgr::free( sInsertHist ) != IDE_SUCCESS );
     sInsertHist = NULL;
@@ -1133,7 +1133,7 @@ IDE_RC qmcMemPartHash::fanoutDouble( qmcdMemPartHashTemp * aTempTable )
 /***********************************************************************
  *
  * Description :
- *     µÎ ¹ø¿¡ °ÉÃÄ Search Array¿¡ ItemÀ» »ğÀÔÇÑ´Ù.
+ *     ë‘ ë²ˆì— ê±¸ì³ Search Arrayì— Itemì„ ì‚½ì…í•œë‹¤.
  *
  *                          TempHist1            TempArr. 
  *      LIST                  -----                -----
@@ -1146,7 +1146,7 @@ IDE_RC qmcMemPartHash::fanoutDouble( qmcdMemPartHashTemp * aTempTable )
  *     ------                 |   |                |   |
  *                            -----                -----
  *
- *     Temp ArrayÀÇ °¢ Partition¸¶´Ù,
+ *     Temp Arrayì˜ ê° Partitionë§ˆë‹¤,
  *
  *                        TempHist2            SearchArr. 
  *     |---|                -----                |---|
@@ -1154,7 +1154,7 @@ IDE_RC qmcMemPartHash::fanoutDouble( qmcdMemPartHashTemp * aTempTable )
  *     |---|    (RBit2)     -----                |---|
  *
  *
- *     Fanout °á°ú´Â,
+ *     Fanout ê²°ê³¼ëŠ”,
  *
  *               SearchArr. 
  *      LIST       -----
@@ -1167,30 +1167,30 @@ IDE_RC qmcMemPartHash::fanoutDouble( qmcdMemPartHashTemp * aTempTable )
  *     ------      |---|
  *                 -----
  *
- *     Ã¹ ¹øÂ°·Î ³ª´­ Radix Bit (RBit1)´Â, ÀüÃ¼ Radix BitÀÇ 1/2·Î Á¤ÇÑ´Ù.
- *     µÎ ¹øÂ°·Î ³ª´­ Radix Bit (RBit2)´Â, ÀüÃ¼ Radix Bit¿¡¼­ rB1À» »« °ªÀÌ´Ù.
+ *     ì²« ë²ˆì§¸ë¡œ ë‚˜ëˆŒ Radix Bit (RBit1)ëŠ”, ì „ì²´ Radix Bitì˜ 1/2ë¡œ ì •í•œë‹¤.
+ *     ë‘ ë²ˆì§¸ë¡œ ë‚˜ëˆŒ Radix Bit (RBit2)ëŠ”, ì „ì²´ Radix Bitì—ì„œ rB1ì„ ëº€ ê°’ì´ë‹¤.
  *
- *     RBit1Àº ÀüÃ¼ Radix Bit¿¡¼­ »óÀ§ Bit¸¦ ³ªÅ¸³»¸ç,
- *     RBit2´Â ÀüÃ¼ Radix Bit¿¡¼­ ÇÏÀ§ Bit¸¦ ³ªÅ¸³½´Ù.
+ *     RBit1ì€ ì „ì²´ Radix Bitì—ì„œ ìƒìœ„ Bitë¥¼ ë‚˜íƒ€ë‚´ë©°,
+ *     RBit2ëŠ” ì „ì²´ Radix Bitì—ì„œ í•˜ìœ„ Bitë¥¼ ë‚˜íƒ€ë‚¸ë‹¤.
  *
  *     (e.g.) 01010100110101 = 0101010 0110101
  *            |  RadixBit  |   | RB1 | | RB2 |
  *
- *     Áï, rB1 MaskingÀ¸·Î ³ªÅ¸³»´Â Partition 1°³ ¾È¿¡¼­
- *         rB2 MaskingÀ¸·Î ³ªÅ¸³»´Â Partition ¿©·¯ °³·Î ´Ù½Ã ÂÉ°³Áú ¼ö ÀÖ´Ù.
+ *     ì¦‰, rB1 Maskingìœ¼ë¡œ ë‚˜íƒ€ë‚´ëŠ” Partition 1ê°œ ì•ˆì—ì„œ
+ *         rB2 Maskingìœ¼ë¡œ ë‚˜íƒ€ë‚´ëŠ” Partition ì—¬ëŸ¬ ê°œë¡œ ë‹¤ì‹œ ìª¼ê°œì§ˆ ìˆ˜ ìˆë‹¤.
  *
- *     µÎ ¹ø¿¡ °ÉÃÄ »ğÀÔµÇ¹Ç·Î, °°Àº Å©±âÀÇ ÀÓ½Ã Search Array°¡ ´õ ÇÊ¿äÇÏ´Ù. (TempArr.)
- *     ÇÏÁö¸¸ ÀÓ½Ã Search Array´Â °Ë»ö °úÁ¤¿¡¼­ ¾²Áö ¾Ê°í, ÃÖÁ¾ Search Array¸¸ »ç¿ëÇÑ´Ù.
+ *     ë‘ ë²ˆì— ê±¸ì³ ì‚½ì…ë˜ë¯€ë¡œ, ê°™ì€ í¬ê¸°ì˜ ì„ì‹œ Search Arrayê°€ ë” í•„ìš”í•˜ë‹¤. (TempArr.)
+ *     í•˜ì§€ë§Œ ì„ì‹œ Search ArrayëŠ” ê²€ìƒ‰ ê³¼ì •ì—ì„œ ì“°ì§€ ì•Šê³ , ìµœì¢… Search Arrayë§Œ ì‚¬ìš©í•œë‹¤.
  *
- *     ¸Ş¸ğ¸® ³¶ºñ°¡ ÀÖÁö¸¸, ´Ù¼öÀÇ PartitionÀ¸·Î ³ª´²¾ß ÇÒ ¶§¿£
- *     Single Fanout ´ëºñ ¼Óµµ°¡ ºü¸£´Ù. (TLB Miss ÃÖ¼ÒÈ­)
+ *     ë©”ëª¨ë¦¬ ë‚­ë¹„ê°€ ìˆì§€ë§Œ, ë‹¤ìˆ˜ì˜ Partitionìœ¼ë¡œ ë‚˜ëˆ ì•¼ í•  ë•Œì—”
+ *     Single Fanout ëŒ€ë¹„ ì†ë„ê°€ ë¹ ë¥´ë‹¤. (TLB Miss ìµœì†Œí™”)
  *
  * Implementation :
  *
- *    RBit1, RBit2¸¦ ±¸ÇÑ ´ÙÀ½, °¢°¢¿¡ ´ëÇØ Single FanoutÀ» 2È¸ ¼öÇàÇÑ´Ù.
+ *    RBit1, RBit2ë¥¼ êµ¬í•œ ë‹¤ìŒ, ê°ê°ì— ëŒ€í•´ Single Fanoutì„ 2íšŒ ìˆ˜í–‰í•œë‹¤.
  *    
- *    µÎ ¹øÂ° Fanout °úÁ¤Àº, Ã¹ ¹øÂ° Fanout¿¡¼­ ³ª´²Áø °¢ Partition¸¶´Ù ¹İº¹¼öÇà ÇÑ´Ù.
- *    ±×·¡¼­, µÎ ¹øÂ° ÀÓ½Ã HistogramÀº Àç»ç¿ëÇÑ´Ù.
+ *    ë‘ ë²ˆì§¸ Fanout ê³¼ì •ì€, ì²« ë²ˆì§¸ Fanoutì—ì„œ ë‚˜ëˆ ì§„ ê° Partitionë§ˆë‹¤ ë°˜ë³µìˆ˜í–‰ í•œë‹¤.
+ *    ê·¸ë˜ì„œ, ë‘ ë²ˆì§¸ ì„ì‹œ Histogramì€ ì¬ì‚¬ìš©í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -1216,7 +1216,7 @@ IDE_RC qmcMemPartHash::fanoutDouble( qmcdMemPartHashTemp * aTempTable )
     UInt                 j                  = 0;
 
     //--------------------------------------------------------------------
-    // ±âº» Á¤º¸ ¼³Á¤
+    // ê¸°ë³¸ ì •ë³´ ì„¤ì •
     //--------------------------------------------------------------------
 
     sRecCount    = aTempTable->mRecordCnt; 
@@ -1224,22 +1224,22 @@ IDE_RC qmcMemPartHash::fanoutDouble( qmcdMemPartHashTemp * aTempTable )
     sSearchArray = aTempTable->mSearchArray;
 
     //--------------------------------------------------------------------
-    // Ã¹ Partition / ¸¶Áö¸· Partition °³¼ö °è»ê
+    // ì²« Partition / ë§ˆì§€ë§‰ Partition ê°œìˆ˜ ê³„ì‚°
     //--------------------------------------------------------------------
 
-    // Ã¹ Radix Bit : 1/2
+    // ì²« Radix Bit : 1/2
     sFirstRBit    = aTempTable->mRadixBit / 2;
     sFirstPartCnt = (UInt)( 1 << sFirstRBit );
 
-    // ¸¶Áö¸· Radix Bit : (ÀüÃ¼ rBit) - (Ã¹ rBit)
+    // ë§ˆì§€ë§‰ Radix Bit : (ì „ì²´ rBit) - (ì²« rBit)
     sLastRBit     = aTempTable->mRadixBit - sFirstRBit;
     sLastPartCnt  = (UInt)( 1 << sLastRBit );
 
     //--------------------------------------------------------------------
-    // Ã¹ / ¸¶Áö¸· Histogram + ÀÓ½Ã Search Array ÇÒ´ç
+    // ì²« / ë§ˆì§€ë§‰ Histogram + ì„ì‹œ Search Array í• ë‹¹
     //--------------------------------------------------------------------
 
-    // Ã¹ Histogram
+    // ì²« Histogram
     IDU_FIT_POINT( "qmcMemPartHash::fanoutDouble::malloc1",
                    idERR_ABORT_InsufficientMemory );
     IDE_TEST( iduMemMgr::malloc( IDU_MEM_QMC,
@@ -1248,10 +1248,10 @@ IDE_RC qmcMemPartHash::fanoutDouble( qmcdMemPartHashTemp * aTempTable )
               != IDE_SUCCESS );
     sState = 1;
 
-    // Ã³À½ HistogramÀº ¸¶Áö¸· Record °³¼ö °ªÀ» °¡Áö°í ÀÖ¾î¾ß ÇÑ´Ù.
+    // ì²˜ìŒ Histogramì€ ë§ˆì§€ë§‰ Record ê°œìˆ˜ ê°’ì„ ê°€ì§€ê³  ìˆì–´ì•¼ í•œë‹¤.
     sFirstInsertHist[sFirstPartCnt] = sRecCount;
 
-    // ÀÓ½Ã Search Array
+    // ì„ì‹œ Search Array
     IDU_FIT_POINT( "qmcMemPartHash::fanoutDouble::malloc2",
                    idERR_ABORT_InsufficientMemory );
     IDE_TEST( iduMemMgr::malloc( IDU_MEM_QMC,
@@ -1260,7 +1260,7 @@ IDE_RC qmcMemPartHash::fanoutDouble( qmcdMemPartHashTemp * aTempTable )
               != IDE_SUCCESS );
     sState = 2;
  
-    // ¸¶Áö¸· Histogram
+    // ë§ˆì§€ë§‰ Histogram
     IDU_FIT_POINT( "qmcMemPartHash::fanoutDouble::malloc3",
                    idERR_ABORT_InsufficientMemory );
     IDE_TEST( iduMemMgr::malloc( IDU_MEM_QMC,
@@ -1270,64 +1270,64 @@ IDE_RC qmcMemPartHash::fanoutDouble( qmcdMemPartHashTemp * aTempTable )
     sState = 3;
 
     //--------------------------------------------------------------------
-    // Ã¹ Histogram¿¡ Histogram °ª º¹»ç
+    // ì²« Histogramì— Histogram ê°’ ë³µì‚¬
     //--------------------------------------------------------------------
 
-    // ±âÁ¸ Histogram¿¡¼­ Last Partition °³¼ö¸¸Å­ °Ç³Ê¶Ù¸é¼­ °¡Á®¿Â´Ù
+    // ê¸°ì¡´ Histogramì—ì„œ Last Partition ê°œìˆ˜ë§Œí¼ ê±´ë„ˆë›°ë©´ì„œ ê°€ì ¸ì˜¨ë‹¤
     for ( i = 0; i < sFirstPartCnt; i++ )
     {
         sFirstInsertHist[i] = sHistogram[i*sLastPartCnt];
     }
 
     //--------------------------------------------------------------------
-    // ÀÓ½Ã Search Array¿¡ »ğÀÔ
+    // ì„ì‹œ Search Arrayì— ì‚½ì…
     //--------------------------------------------------------------------
 
-    // Ã¹ Element¿Í Mask ÁØºñ
+    // ì²« Elementì™€ Mask ì¤€ë¹„
     sElement = aTempTable->mHead;
     sMask    = ( 1 << aTempTable->mRadixBit ) - 1;
 
     while ( sElement != NULL )
     {
-        // »óÀ§ Bit¿¡ ´ëÇÑ Radix-bit MaskingÀ¸·Î Partition Index °è»ê
+        // ìƒìœ„ Bitì— ëŒ€í•œ Radix-bit Maskingìœ¼ë¡œ Partition Index ê³„ì‚°
         sHashKey = sElement->key;
         sPartitionIdx = ( sHashKey & sMask ) >> sLastRBit;
 
         IDE_DASSERT( sPartitionIdx < sFirstPartCnt );
 
-        // Ã¹ Histogram °ªÀ¸·Î ÀÓ½Ã Search Array Index °è»ê
+        // ì²« Histogram ê°’ìœ¼ë¡œ ì„ì‹œ Search Array Index ê³„ì‚°
         sArrayIdx = sFirstInsertHist[sPartitionIdx];
-        sFirstInsertHist[sPartitionIdx]++; // ´ÙÀ½ ÁöÁ¡À» °¡¸®Å°µµ·Ï ¹Ì¸® Áõ°¡
+        sFirstInsertHist[sPartitionIdx]++; // ë‹¤ìŒ ì§€ì ì„ ê°€ë¦¬í‚¤ë„ë¡ ë¯¸ë¦¬ ì¦ê°€
 
-        // ÀÓ½Ã Search Array Index´Â Record °³¼öº¸´Ù ÀÛ¾Æ¾ß ÇÏ¸ç,
-        // ´ÙÀ½ PartitionÀÇ °æ°è¸¦ ³Ñ´Â °æ¿ìµµ ¾ø¾î¾ß ÇÑ´Ù.
+        // ì„ì‹œ Search Array IndexëŠ” Record ê°œìˆ˜ë³´ë‹¤ ì‘ì•„ì•¼ í•˜ë©°,
+        // ë‹¤ìŒ Partitionì˜ ê²½ê³„ë¥¼ ë„˜ëŠ” ê²½ìš°ë„ ì—†ì–´ì•¼ í•œë‹¤.
         IDE_DASSERT( sArrayIdx < sRecCount );
         IDE_DASSERT( sArrayIdx < sHistogram[(sPartitionIdx+1)*sLastPartCnt] );
 
-        // Search Array¿¡ Á¤º¸ »ğÀÔ
+        // Search Arrayì— ì •ë³´ ì‚½ì…
         sTempSearchArray[sArrayIdx].mKey = sHashKey;
         sTempSearchArray[sArrayIdx].mPtr = sElement;
 
-        // ´ÙÀ½ Element °Ë»ö
+        // ë‹¤ìŒ Element ê²€ìƒ‰
         sElement = sElement->next;
     }
 
 
-    // Ã¹ HistogramÀ¸·Î ÂÉ°µ °¢ Partition ¸¶´Ù ÁøÇà
-    // ÇÏÀ§ RBit¿¡ ´ëÇØ¼­¸¸ MaskingÀ» ÇÑ´Ù.
+    // ì²« Histogramìœ¼ë¡œ ìª¼ê°  ê° Partition ë§ˆë‹¤ ì§„í–‰
+    // í•˜ìœ„ RBitì— ëŒ€í•´ì„œë§Œ Maskingì„ í•œë‹¤.
     sMask = ( 1 << sLastRBit ) - 1;
 
     for ( i = 0 ; i < sFirstPartCnt; i++ )
     {
         //--------------------------------------------
-        // Ã¹ Search ArrayÀÇ i¹øÂ° Partition Á¤º¸ ¼³Á¤
-        // - i¹øÂ° PartitionÀÇ Search Array ½ÃÀÛ À§Ä¡
-        // - i¹øÂ° PartitionÀÇ Search Array ³¡ À§Ä¡
+        // ì²« Search Arrayì˜ ië²ˆì§¸ Partition ì •ë³´ ì„¤ì •
+        // - ië²ˆì§¸ Partitionì˜ Search Array ì‹œì‘ ìœ„ì¹˜
+        // - ië²ˆì§¸ Partitionì˜ Search Array ë ìœ„ì¹˜
         //--------------------------------------------
-        // Ã¹ HistogramÀÇ °ªÀ¸·Î ½ÃÀÛ/³¡ À§Ä¡¸¦ Á¤ÇÏ´Âµ¥
-        // i / i+1ÀÌ ¾Æ´Ñ i-1 / i¸¦ »ç¿ëÇÑ´Ù.
-        // Ã¹ Fanout °úÁ¤¿¡¼­ ÀÌ¹Ì Ã¹ Histogram °ªµéÀÌ 
-        // ´ÙÀ½ Partition ½ÃÀÛ À§Ä¡±îÁö Áõ°¡µÇ¾ú±â ¶§¹®ÀÌ´Ù.
+        // ì²« Histogramì˜ ê°’ìœ¼ë¡œ ì‹œì‘/ë ìœ„ì¹˜ë¥¼ ì •í•˜ëŠ”ë°
+        // i / i+1ì´ ì•„ë‹Œ i-1 / ië¥¼ ì‚¬ìš©í•œë‹¤.
+        // ì²« Fanout ê³¼ì •ì—ì„œ ì´ë¯¸ ì²« Histogram ê°’ë“¤ì´ 
+        // ë‹¤ìŒ Partition ì‹œì‘ ìœ„ì¹˜ê¹Œì§€ ì¦ê°€ë˜ì—ˆê¸° ë•Œë¬¸ì´ë‹¤.
         // Link : http://nok.altibase.com/x/u9ACAg
         //--------------------------------------------
 
@@ -1343,7 +1343,7 @@ IDE_RC qmcMemPartHash::fanoutDouble( qmcdMemPartHashTemp * aTempTable )
         sEndArrIdx = sFirstInsertHist[i];
 
         //--------------------------------------------------------------------
-        // i¹øÂ° Partition¿¡ ÇØ´çÇÏ´Â Histogram °ªµéÀ» ¸¶Áö¸· Histogram¿¡ º¹»ç
+        // ië²ˆì§¸ Partitionì— í•´ë‹¹í•˜ëŠ” Histogram ê°’ë“¤ì„ ë§ˆì§€ë§‰ Histogramì— ë³µì‚¬
         //--------------------------------------------------------------------
 
         idlOS::memcpy( sLastInsertHist,
@@ -1351,32 +1351,32 @@ IDE_RC qmcMemPartHash::fanoutDouble( qmcdMemPartHashTemp * aTempTable )
                        ID_SIZEOF(ULong) * sLastPartCnt );
 
         //--------------------------------------------------------------------
-        // i¹øÂ° PartitionÀÇ ³»¿ëÀ» ÃÖÁ¾ Search Array¿¡ »ğÀÔ
+        // ië²ˆì§¸ Partitionì˜ ë‚´ìš©ì„ ìµœì¢… Search Arrayì— ì‚½ì…
         //--------------------------------------------------------------------
 
         for ( j = sStartArrIdx; j < sEndArrIdx; j++ )
         {
-            // Radix-bit MaskingÀ¸·Î Partition Index °è»ê
+            // Radix-bit Maskingìœ¼ë¡œ Partition Index ê³„ì‚°
             sPartitionIdx = sTempSearchArray[j].mKey & sMask;
 
             IDE_DASSERT( sPartitionIdx < sLastPartCnt );
 
-            // ¸¶Áö¸· Histogram °ªÀ¸·Î ÃÖÁ¾ Search Array Index °è»ê
+            // ë§ˆì§€ë§‰ Histogram ê°’ìœ¼ë¡œ ìµœì¢… Search Array Index ê³„ì‚°
             sArrayIdx = sLastInsertHist[sPartitionIdx];
-            sLastInsertHist[sPartitionIdx]++; // ´ÙÀ½ ÁöÁ¡À» °¡¸®Å°µµ·Ï ¹Ì¸® Áõ°¡
+            sLastInsertHist[sPartitionIdx]++; // ë‹¤ìŒ ì§€ì ì„ ê°€ë¦¬í‚¤ë„ë¡ ë¯¸ë¦¬ ì¦ê°€
 
-            // ÃÖÁ¾ Search Array Index´Â Record °³¼öº¸´Ù ÀÛ¾Æ¾ß ÇÏ¸ç,
-            // ´ÙÀ½ PartitionÀÇ °æ°è¸¦ ³Ñ´Â °æ¿ìµµ ¾ø¾î¾ß ÇÑ´Ù.
+            // ìµœì¢… Search Array IndexëŠ” Record ê°œìˆ˜ë³´ë‹¤ ì‘ì•„ì•¼ í•˜ë©°,
+            // ë‹¤ìŒ Partitionì˜ ê²½ê³„ë¥¼ ë„˜ëŠ” ê²½ìš°ë„ ì—†ì–´ì•¼ í•œë‹¤.
             IDE_DASSERT( sArrayIdx < sRecCount );
             IDE_DASSERT( sArrayIdx < sHistogram[(sLastPartCnt*i)+sPartitionIdx+1] );
 
-            // ÃÖÁ¾ Search Array¿¡ Á¤º¸ »ğÀÔ
+            // ìµœì¢… Search Arrayì— ì •ë³´ ì‚½ì…
             sSearchArray[sArrayIdx].mKey = sTempSearchArray[j].mKey;
             sSearchArray[sArrayIdx].mPtr = sTempSearchArray[j].mPtr;
         }
     }
 
-    // ÇØÁ¦
+    // í•´ì œ
     sState = 2;
     IDE_TEST( iduMemMgr::free( sLastInsertHist  ) != IDE_SUCCESS );
     sLastInsertHist  = NULL;
@@ -1418,7 +1418,7 @@ IDE_RC qmcMemPartHash::fanoutDouble( qmcdMemPartHashTemp * aTempTable )
 }
 
 /*
- * 2^n >= aNumber ¸¦ ¸¸Á·ÇÏ´Â °¡Àå ÀÛÀº n À» ±¸ÇÑ´Ù
+ * 2^n >= aNumber ë¥¼ ë§Œì¡±í•˜ëŠ” ê°€ì¥ ì‘ì€ n ì„ êµ¬í•œë‹¤
  */
 UInt qmcMemPartHash::ceilLog2( ULong aNumber )
 {

@@ -48,7 +48,7 @@ SInt iloBadFile::OpenFile(SChar *szFileName)
     }
     else
     {
-        m_BadFp = ilo_fopen(szFileName, "wb");      //BUG-24511 ¸ðµç FopenÀº binary typeÀ¸·Î ¼³Á¤ÇØ¾ßÇÔ
+        m_BadFp = ilo_fopen(szFileName, "wb");      //BUG-24511 ëª¨ë“  Fopenì€ binary typeìœ¼ë¡œ ì„¤ì •í•´ì•¼í•¨
     }
     IDE_TEST( m_BadFp == NULL );
 
@@ -136,15 +136,15 @@ SInt iloBadFile::PrintOneRecord( ALTIBASE_ILOADER_HANDLE   aHandle,
         case ISP_ATTR_VARCHAR :
         case ISP_ATTR_NCHAR :
         case ISP_ATTR_NVARCHAR :
-        // BUG-27633: geometry µ¥ÀÌÅ¸µµ bad ÆÄÀÏ¿¡ ±â·Ï
+        // BUG-27633: geometry ë°ì´íƒ€ë„ bad íŒŒì¼ì— ê¸°ë¡
         case ISP_ATTR_GEOMETRY :
 
             // TASK-2657
             //=======================================================
             // proj1778 nchar
-            // ±âÁ¸¿¡´Â csvÀÌ¸é fwrite¸¦ »ç¿ëÇÏ°í ¾Æ´Ï¸é fprintf(%s)¸¦ »ç¿ëÇß´Âµ¥ utf16
-            // nchar°¡ Ãß°¡µÇ¸é¼­ nullÁ¾·áÀÚ°¡ ¹®ÀÚ¾È¿¡ ÀÖÀ»¼ö ÀÖÀ¸¹Ç·Î fwrite·Î ÅëÀÏ½ÃÅ²´Ù
-            // mAttrFailLen[i] °¡ 0ÀÌ ¾Æ´Ï¶ó¸é read file½ÃÀÇ failed columnÀÌ µé¾îÀÖ´Ù´Â ¾ê±â
+            // ê¸°ì¡´ì—ëŠ” csvì´ë©´ fwriteë¥¼ ì‚¬ìš©í•˜ê³  ì•„ë‹ˆë©´ fprintf(%s)ë¥¼ ì‚¬ìš©í–ˆëŠ”ë° utf16
+            // ncharê°€ ì¶”ê°€ë˜ë©´ì„œ nullì¢…ë£Œìžê°€ ë¬¸ìžì•ˆì— ìžˆì„ìˆ˜ ìžˆìœ¼ë¯€ë¡œ fwriteë¡œ í†µì¼ì‹œí‚¨ë‹¤
+            // mAttrFailLen[i] ê°€ 0ì´ ì•„ë‹ˆë¼ë©´ read fileì‹œì˜ failed columnì´ ë“¤ì–´ìžˆë‹¤ëŠ” ì–˜ê¸°
             if (pTableInfo->mAttrFailLen[i] != 0)
             {
                 sDataPtr = pTableInfo->GetAttrFail( i );
@@ -158,7 +158,7 @@ SInt iloBadFile::PrintOneRecord( ALTIBASE_ILOADER_HANDLE   aHandle,
 
             if (sDataLen > 0)
             {
-                // BUG-28069: log, bad¿¡µµ csv Çü½ÄÀ¸·Î ±â·Ï
+                // BUG-28069: log, badì—ë„ csv í˜•ì‹ìœ¼ë¡œ ê¸°ë¡
                 if ((mIsCSV == ILO_TRUE) && (pTableInfo->mAttrFailLen[i] == 0))
                 {
                     IDE_TEST_RAISE( iloDataFile::csvWrite( sHandle,
@@ -193,7 +193,7 @@ SInt iloBadFile::PrintOneRecord( ALTIBASE_ILOADER_HANDLE   aHandle,
         case ISP_ATTR_VARBIT:
 
             // BUG - 18804
-            // mAttrFail¿¡ fail³­ ÇÊµå°¡ ÀÖ´ÂÁö È®ÀÎÇÑ ÈÄ ¾øÀ¸¸é mAttrCVal¿¡¼­ °¡Á®¿È.
+            // mAttrFailì— failë‚œ í•„ë“œê°€ ìžˆëŠ”ì§€ í™•ì¸í•œ í›„ ì—†ìœ¼ë©´ mAttrCValì—ì„œ ê°€ì ¸ì˜´.
             if (pTableInfo->mAttrFailLen[i] != 0)
             {
                 sDataPtr = pTableInfo->GetAttrFail( i );
@@ -207,7 +207,7 @@ SInt iloBadFile::PrintOneRecord( ALTIBASE_ILOADER_HANDLE   aHandle,
 
             break;
         /* BUG-24583 
-         * BAD FileÀ» ÀÌ¿ëÇØ BLOB, CLOB µ¥ÀÌÅÍ¸¦ ´Ù½Ã ¾÷·Îµå ÇÒ ¼ö ÀÖµµ·Ï ÇÑ´Ù. 
+         * BAD Fileì„ ì´ìš©í•´ BLOB, CLOB ë°ì´í„°ë¥¼ ë‹¤ì‹œ ì—…ë¡œë“œ í•  ìˆ˜ ìžˆë„ë¡ í•œë‹¤. 
          */
         case ISP_ATTR_BLOB :
             if ( aIsOpt == ILO_TRUE )

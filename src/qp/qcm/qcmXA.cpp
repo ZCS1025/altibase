@@ -46,8 +46,8 @@ IDE_RC qcmXA::insert(
                    QCM_XID_FIELD_STRING_SIZE + 1 );
 
     /* bug-36037: invalid xid
-       ¸¸¾à invalid xid°¡ Á¸ÀçÇÏ¿© heuristic rollback ÇÏ´õ¶óµµ
-       view¿¡ ³²Áö ¾Ê°Ô ÇØ¾ß ÇÑ´Ù. remove°¡ ¾ÈµÇ¹Ç·Î */
+       ë§Œì•½ invalid xidê°€ ì¡´ìž¬í•˜ì—¬ heuristic rollback í•˜ë”ë¼ë„
+       viewì— ë‚¨ì§€ ì•Šê²Œ í•´ì•¼ í•œë‹¤. removeê°€ ì•ˆë˜ë¯€ë¡œ */
     IDE_TEST(idaXaXidToString( aXid,
                  & sXaHeuristicTrans.formatId,
                  sXaHeuristicTrans.globalTxId,
@@ -415,8 +415,8 @@ IDE_RC qcmXA::setMember(
         aRow,
         sTramsFormatIDMtcColumn,
         & sSLongID );
-    // BUGBUG 32bit machine¿¡¼­ µ¿ÀÛ ½Ã SLong(64bit)º¯¼ö¸¦ uVLong(32bit)º¯¼ö·Î
-    // º¯È¯ÇÏ¹Ç·Î µ¥ÀÌÅÍ ¼Õ½Ç °¡´É¼º ÀÖÀ½
+    // BUGBUG 32bit machineì—ì„œ ë™ìž‘ ì‹œ SLong(64bit)ë³€ìˆ˜ë¥¼ uVLong(32bit)ë³€ìˆ˜ë¡œ
+    // ë³€í™˜í•˜ë¯€ë¡œ ë°ì´í„° ì†ì‹¤ ê°€ëŠ¥ì„± ìžˆìŒ
     aXaHeuristicTrans->formatId = (vULong)sSLongID;
 
     IDE_TEST( smiGetTableColumns( gQcmXaHeuristicTrans,

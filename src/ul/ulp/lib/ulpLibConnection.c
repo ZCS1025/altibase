@@ -22,9 +22,9 @@
 ulpLibConnMgr gUlpConnMgr;
 
 /* extern for ulpLibInterface.cpp */
-/* connection hash table¿Ã √ ±‚»≠ µ«æ˙¥¬¡ˆø°¥Î«— flag*/
+/* connection hash tableÏù¥ Ï¥àÍ∏∞Ìôî ÎêòÏóàÎäîÏßÄÏóêÎåÄÌïú flag*/
 extern acp_bool_t        gUlpLibDoInitProc;
-/* √ ±‚»≠ ƒ⁄µÂ «—π¯»£√˙øÔ ∫∏¿Â«œ±‚ ¿ß«— latch*/
+/* Ï¥àÍ∏∞Ìôî ÏΩîÎìú ÌïúÎ≤àÌò∏Ï∏®Ïö∏ Î≥¥Ïû•ÌïòÍ∏∞ ÏúÑÌïú latch*/
 extern acp_thr_rwlock_t  gUlpLibLatch4Init;
 
 /* initilizer */
@@ -99,7 +99,7 @@ void ulpLibConFinalize( void )
     ACI_TEST_RAISE( acpThrRwlockDestroy( & gUlpLibLatch4Init )
                     != ACP_RC_SUCCESS, ERR_LATCH_DESTROY )
 
-    /* Fix BUG-27644 Apre ¿« ulpConnMgr::ulpInitialzie, finalize∞° ¿ﬂ∏¯µ . */
+    /* Fix BUG-27644 Apre Ïùò ulpConnMgr::ulpInitialzie, finalizeÍ∞Ä ÏûòÎ™ªÎê®. */
     ACE_ASSERT(ulnFinalize() == ACI_SUCCESS);
 
     return;
@@ -126,21 +126,21 @@ ACI_RC ulpLibConInitConnMgr( void )
 /***********************************************************************
  *
  * Description :
- *    √≥¿Ω ulpDoEmsql¿Ã »£√‚µ«∏È ¿Ã«‘ºˆ∞° »£√‚µ«æÓ connection hash table∞˙
- *    XA∏¶ √ ±‚»≠ Ω√ƒ—¡ÿ¥Ÿ.
+ *    Ï≤òÏùå ulpDoEmsqlÏù¥ Ìò∏Ï∂úÎêòÎ©¥ Ïù¥Ìï®ÏàòÍ∞Ä Ìò∏Ï∂úÎêòÏñ¥ connection hash tableÍ≥º
+ *    XAÎ•º Ï¥àÍ∏∞Ìôî ÏãúÏºúÏ§ÄÎã§.
  * Implementation :
  *
  ***********************************************************************/
     ACI_RC sRes = ACI_FAILURE;
 
-    /* fix BUG-25597 APREø°º≠ AIX«√∑ß∆˚ ≈ŒΩ√µµ ø¨µøπÆ¡¶∏¶ «ÿ∞·«ÿæﬂ «’¥œ¥Ÿ.
-    ulConnMgr √ ±‚»≠¿¸ø° ¿ÃπÃ ª˝º∫µ» CLI ¿« XA ConnectionµÈ¿ª
-    Loading«—¥Ÿ. */
+    /* fix BUG-25597 APREÏóêÏÑú AIXÌîåÎû´Ìèº ÌÑ±ÏãúÎèÑ Ïó∞ÎèôÎ¨∏Ï†úÎ•º Ìï¥Í≤∞Ìï¥Ïïº Ìï©ÎãàÎã§.
+    ulConnMgr Ï¥àÍ∏∞ÌôîÏ†ÑÏóê Ïù¥ÎØ∏ ÏÉùÏÑ±Îêú CLI Ïùò XA ConnectionÎì§ÏùÑ
+    LoadingÌïúÎã§. */
     ULP_SERIAL_BEGIN(sRes = ulpLibConInitialize());
     ULP_SERIAL_EXEC(gUlpLibDoInitProc = ACP_FALSE,1);
-    /* ulpConnMgr∞° √ ±‚»≠∞° øœ∑·µ»»ƒ
-    CLI¿« XA ConnectionµÈ¿« HDBC, HENV∏¶ APRE¿«
-    Connection listø° µÓ∑œ«—¥Ÿ */
+    /* ulpConnMgrÍ∞Ä Ï¥àÍ∏∞ÌôîÍ∞Ä ÏôÑÎ£åÎêúÌõÑ
+    CLIÏùò XA ConnectionÎì§Ïùò HDBC, HENVÎ•º APREÏùò
+    Connection listÏóê Îì±Î°ùÌïúÎã§ */
 
     ULP_SERIAL_END(ulnLoadOpenedXaConnections2APRE());
     return sRes;
@@ -286,7 +286,7 @@ void ulpLibConInitDefaultConn( void )
     }
 }
 
-/* default connection ∞¥√º∏¶ æÚæÓø¬¥Ÿ */
+/* default connection Í∞ùÏ≤¥Î•º ÏñªÏñ¥Ïò®Îã§ */
 ulpLibConnNode *ulpLibConGetDefaultConn()
 {
     return gUlpConnMgr.mConnHashTab.mTable[0];
@@ -298,7 +298,7 @@ ulpLibConnNode *ulpLibConLookupConn( acp_char_t* aConName )
 /***********************************************************************
  *
  * Description :
- *    connection ¿Ã∏ß¿ª ∞°¡ˆ∞Ì «ÿ¥Á connection∞¥√º∏¶ √£¥¬¥Ÿ
+ *    connection Ïù¥Î¶ÑÏùÑ Í∞ÄÏßÄÍ≥† Ìï¥Îãπ connectionÍ∞ùÏ≤¥Î•º Ï∞æÎäîÎã§
  * Implementation :
  *
  ***********************************************************************/
@@ -387,7 +387,7 @@ ulpLibConnNode *ulpLibConAddConn( ulpLibConnNode *aConnNode )
 /***********************************************************************
  *
  * Description :
- *    «ÿ¥Á connection ∞¥√º∏¶ √ﬂ∞°«—¥Ÿ.
+ *    Ìï¥Îãπ connection Í∞ùÏ≤¥Î•º Ï∂îÍ∞ÄÌïúÎã§.
  * Implementation :
  *
  ***********************************************************************/
@@ -425,7 +425,7 @@ ulpLibConnNode *ulpLibConAddConn( ulpLibConnNode *aConnNode )
     ACI_TEST( sConnNode != NULL );
 
     /* link */
-    /* list ¡¶¿œ æ’ø°∏≈¥„.*/
+    /* list Ï†úÏùº ÏïûÏóêÎß§Îã¥.*/
     aConnNode->mNext = gUlpConnMgr.mConnHashTab.mTable[ sI ];
     gUlpConnMgr.mConnHashTab.mTable[ sI ] = aConnNode;
 
@@ -480,7 +480,7 @@ ACI_RC ulpLibConDelConn( acp_char_t* aConName )
 /***********************************************************************
  *
  * Description :
- *    ¡÷æÓ¡¯ ¿Ã∏ß¿« connection¿ª ¡¶∞≈«—¥Ÿ
+ *    Ï£ºÏñ¥ÏßÑ Ïù¥Î¶ÑÏùò connectionÏùÑ Ï†úÍ±∞ÌïúÎã§
  * Implementation :
  *
  ***********************************************************************/
@@ -524,9 +524,9 @@ ACI_RC ulpLibConDelConn( acp_char_t* aConName )
     {
         sConnNodeP->mNext = sConnNode->mNext;
     }
-    /* BUG-28791 : multi-thread ªÛø°º≠ connection¿Ã ∫Ò¡§ªÛ¿˚¿∏∑Œ ¡◊¥¬ πÆ¡¶. */
+    /* BUG-28791 : multi-thread ÏÉÅÏóêÏÑú connectionÏù¥ ÎπÑÏ†ïÏÉÅÏ†ÅÏúºÎ°ú Ï£ΩÎäî Î¨∏Ï†ú. */
     else
-    {   /* sConnNodeP∞° null¿Œ∞ÊøÏ¥¬ list¿« ¡¶¿œ √≥¿Ω¿œ ∞ÊøÏ¿Ã¥Ÿ.*/
+    {   /* sConnNodePÍ∞Ä nullÏù∏Í≤ΩÏö∞Îäî listÏùò Ï†úÏùº Ï≤òÏùåÏùº Í≤ΩÏö∞Ïù¥Îã§.*/
         gUlpConnMgr.mConnHashTab.mTable[ sIndex ] = sConnNode->mNext;
     }
 
@@ -541,7 +541,7 @@ ACI_RC ulpLibConDelConn( acp_char_t* aConName )
         sIsLatched = ACP_FALSE;
     }
 
-    /* ∏ﬁ∏∏Æ «ÿ¡¶.*/
+    /* Î©îÎ™®Î¶¨ Ìï¥Ï†ú.*/
     ulpLibConFreeConnNode( sConnNode );
 
     return ACI_SUCCESS;
@@ -584,8 +584,8 @@ void ulpLibConFreeConnNode( ulpLibConnNode *aConnNode )
 /***********************************************************************
  *
  * Description :
- *    ¡÷æÓ¡¯ connection node¿« ¿⁄∑·±∏¡∂µÈ¿ª ∏µŒ «ÿ¡¶«—¥Ÿ.
- *    stmt. hash node «ÿ¡¶ -> latch «ÿ¡¶ -> connection node «ÿ¡¶
+ *    Ï£ºÏñ¥ÏßÑ connection nodeÏùò ÏûêÎ£åÍµ¨Ï°∞Îì§ÏùÑ Î™®Îëê Ìï¥Ï†úÌïúÎã§.
+ *    stmt. hash node Ìï¥Ï†ú -> latch Ìï¥Ï†ú -> connection node Ìï¥Ï†ú
  * Implementation :
  *
  ***********************************************************************/
@@ -656,7 +656,7 @@ void ulpLibConDelAllConn( void )
 /***********************************************************************
  *
  * Description :
- *    hash table¿« ∏µÁ ConnNodeµÈ¿ª ¡¶∞≈«—¥Ÿ.
+ *    hash tableÏùò Î™®Îì† ConnNodeÎì§ÏùÑ Ï†úÍ±∞ÌïúÎã§.
  * Implementation :
  *
  ***********************************************************************/
@@ -674,13 +674,13 @@ void ulpLibConDelAllConn( void )
             if (sConnNode->mNext != NULL)
             {
                 sConnNodeN = sConnNode->mNext;
-                /* ConnNode ¿⁄∑·±∏¡∂ «ÿ¡¶.*/
+                /* ConnNode ÏûêÎ£åÍµ¨Ï°∞ Ìï¥Ï†ú.*/
                 ulpLibConFreeConnNode( sConnNode );
                 sConnNode = sConnNodeN;
             }
             else
             {
-                /* ConnNode ¿⁄∑·±∏¡∂ «ÿ¡¶.*/
+                /* ConnNode ÏûêÎ£åÍµ¨Ï°∞ Ìï¥Ï†ú.*/
                 ulpLibConFreeConnNode( sConnNode );
                 sConnNode = NULL;
             }

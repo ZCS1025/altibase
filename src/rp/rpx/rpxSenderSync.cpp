@@ -59,7 +59,7 @@ rpxSender::syncStart()
 
     mMeta.mReplication.mIsStarted = sOld;
 
-    /* PROJ-2184 RP sync ¼º´É°³¼± */
+    /* PROJ-2184 RP sync ì„±ëŠ¥ê°œì„  */
     IDE_TEST_RAISE( sendRebuildIndicesRemoteSyncTables() != IDE_SUCCESS, ERR_SYNC );
     ideLog::log(IDE_RP_0, "Succeeded to rebuild indexes.\n");
 
@@ -72,7 +72,7 @@ rpxSender::syncStart()
         mCurrentType = RP_NORMAL;
     }
 
-    /* ´õ ÀÌ»ó Service Thread°¡ ´ë±âÇÏÁö ¾Ê´Â´Ù. */
+    /* ë” ì´ìƒ Service Threadê°€ ëŒ€ê¸°í•˜ì§€ ì•ŠëŠ”ë‹¤. */
     mSvcThrRootStmt = NULL;
 
     return IDE_SUCCESS;
@@ -122,7 +122,7 @@ rpxSender::syncALAStart()
         sTablename = mMeta.mItemsOrderByTableOID[i]->mItem.mLocalTablename;
         sPartitionname = mMeta.mItemsOrderByTableOID[i]->mItem.mLocalPartname;
 
-        // Replication TableÀÌ ÁöÁ¤ÇÑ Sync TableÀÎ °æ¿ì¿¡¸¸ °è¼Ó ÁøÇàÇÑ´Ù.
+        // Replication Tableì´ ì§€ì •í•œ Sync Tableì¸ ê²½ìš°ì—ë§Œ ê³„ì† ì§„í–‰í•œë‹¤.
         if ( isSyncItem( mSyncItems,
                          sUsername,
                          sTablename,
@@ -189,8 +189,8 @@ rpxSender::syncALAStart()
 }
 
 /***********************************************************************
- * Description : ÆÄ¶ó¹ÌÅÍ·Î ÁÖ¾îÁø User Name°ú Table NameÀÌ
- *               »ç¿ëÀÚ°¡ ÁöÁ¤ÇÑ Sync Item¿¡ ¼ÓÇØ ÀÖ´ÂÁö È®ÀÎÇÑ´Ù.
+ * Description : íŒŒë¼ë¯¸í„°ë¡œ ì£¼ì–´ì§„ User Nameê³¼ Table Nameì´
+ *               ì‚¬ìš©ìê°€ ì§€ì •í•œ Sync Itemì— ì†í•´ ìˆëŠ”ì§€ í™•ì¸í•œë‹¤.
  *
  **********************************************************************/
 idBool rpxSender::isSyncItem( qciSyncItems *aSyncItems,
@@ -233,7 +233,7 @@ idBool rpxSender::isSyncItem( qciSyncItems *aSyncItems,
     }
     else
     {
-        // Sync ItemÀ» ¸í½ÃÀûÀ¸·Î ÁöÁ¤ÇÏÁö ¾ÊÀº °æ¿ì, ¸ğµÎ Sync ItemÀ¸·Î °£ÁÖÇÑ´Ù.
+        // Sync Itemì„ ëª…ì‹œì ìœ¼ë¡œ ì§€ì •í•˜ì§€ ì•Šì€ ê²½ìš°, ëª¨ë‘ Sync Itemìœ¼ë¡œ ê°„ì£¼í•œë‹¤.
         sResult = ID_TRUE;
     }
 
@@ -242,17 +242,17 @@ idBool rpxSender::isSyncItem( qciSyncItems *aSyncItems,
 
 /*******************************************************************************
  *
- * Description : smÀ¸·ÎºÎÅÍ ·¹ÄÚµåÆĞÄ¡½Ã º¹»ç°¡ ÇÊ¿äÇÑ ÄÃ·³Á¤º¸»ı¼º
+ * Description : smìœ¼ë¡œë¶€í„° ë ˆì½”ë“œíŒ¨ì¹˜ì‹œ ë³µì‚¬ê°€ í•„ìš”í•œ ì»¬ëŸ¼ì •ë³´ìƒì„±
  *
  * Implementation :  PROJ-1705
  *
- *   PROJ-1705 Àû¿ëÀ¸·Î sm¿¡¼­ ·¹ÄÚµå ÆĞÄ¡¹æ¹ıÀÌ
- *   ÀÌÀü ·¹ÄÚµå´ÜÀ§ÀÇ ÆĞÄ¡¿¡¼­ ÄÃ·³´ÜÀ§ÀÇ ÆĞÄ¡·Î ÆĞÄ¡¹æ¹ıÀÌ º¯°æµÊ.
- *   sm¿¡¼­ ÄÃ·³´ÜÀ§ÀÇ ÆĞÄ¡°¡ ÀÌ·ç¾îÁú ¼ö ÀÖµµ·Ï
- *   Ä¿¼­ ¿ÀÇÂ½Ã,
- *   ÆĞÄ¡ÇÒ ÄÃ·³Á¤º¸¸¦ ±¸¼ºÇØ¼­ ÀÌ Á¤º¸¸¦ smiCursorProperties·Î ³Ñ°ÜÁØ´Ù.
+ *   PROJ-1705 ì ìš©ìœ¼ë¡œ smì—ì„œ ë ˆì½”ë“œ íŒ¨ì¹˜ë°©ë²•ì´
+ *   ì´ì „ ë ˆì½”ë“œë‹¨ìœ„ì˜ íŒ¨ì¹˜ì—ì„œ ì»¬ëŸ¼ë‹¨ìœ„ì˜ íŒ¨ì¹˜ë¡œ íŒ¨ì¹˜ë°©ë²•ì´ ë³€ê²½ë¨.
+ *   smì—ì„œ ì»¬ëŸ¼ë‹¨ìœ„ì˜ íŒ¨ì¹˜ê°€ ì´ë£¨ì–´ì§ˆ ìˆ˜ ìˆë„ë¡
+ *   ì»¤ì„œ ì˜¤í”ˆì‹œ,
+ *   íŒ¨ì¹˜í•  ì»¬ëŸ¼ì •ë³´ë¥¼ êµ¬ì„±í•´ì„œ ì´ ì •ë³´ë¥¼ smiCursorPropertiesë¡œ ë„˜ê²¨ì¤€ë‹¤.
  *
- *   ÇÑ Å×ÀÌºí ÀüÃ¼ ÄÃ·³¿¡ ´ëÇÑ ÆĞÄ¡ÄÃ·³¸®½ºÆ® »ı¼º
+ *   í•œ í…Œì´ë¸” ì „ì²´ ì»¬ëŸ¼ì— ëŒ€í•œ íŒ¨ì¹˜ì»¬ëŸ¼ë¦¬ìŠ¤íŠ¸ ìƒì„±
  *
  ******************************************************************************/
 IDE_RC rpxSender::makeFetchColumnList(const smOID          aTableOID,
@@ -324,8 +324,8 @@ IDE_RC rpxSender::makeFetchColumnList(const smOID          aTableOID,
 }
 
 /***********************************************************************
- * Description : Æ¯Á¤ Column Array·Î Key Range¸¦ ¸¸µç´Ù.
- *               ÇØ´ç Table¿¡ IS LockÀ» Àâ¾Ò´Ù°í °¡Á¤ÇÑ´Ù.
+ * Description : íŠ¹ì • Column Arrayë¡œ Key Rangeë¥¼ ë§Œë“ ë‹¤.
+ *               í•´ë‹¹ Tableì— IS Lockì„ ì¡ì•˜ë‹¤ê³  ê°€ì •í•œë‹¤.
  *
  **********************************************************************/
 IDE_RC rpxSender::getKeyRange(smOID               aTableOID,
@@ -345,9 +345,9 @@ IDE_RC rpxSender::getKeyRange(smOID               aTableOID,
 
     sItemInfo = (qcmTableInfo *)rpdCatalog::rpdGetTableTempInfo(smiGetTable( aTableOID ));
 
-    /* Proj-1872 DiskIndex ÃÖÀûÈ­
-     * Range¸¦ Àû¿ëÇÏ´Â ´ë»óÀÌ DiskIndexÀÏ °æ¿ì, Stored Å¸ÀÔÀ» °í·ÁÇÑ
-     * Range°¡ Àû¿ë µÇ¾î¾ß ÇÑ´Ù. */
+    /* Proj-1872 DiskIndex ìµœì í™”
+     * Rangeë¥¼ ì ìš©í•˜ëŠ” ëŒ€ìƒì´ DiskIndexì¼ ê²½ìš°, Stored íƒ€ì…ì„ ê³ ë ¤í•œ
+     * Rangeê°€ ì ìš© ë˜ì–´ì•¼ í•œë‹¤. */
     sFlag = (sItemInfo->primaryKey->keyColumns)->column.flag;
     if(((sFlag & SMI_COLUMN_STORAGE_MASK) == SMI_COLUMN_STORAGE_DISK) &&
        ((sFlag & SMI_COLUMN_USAGE_MASK)   == SMI_COLUMN_USAGE_INDEX))
@@ -399,7 +399,7 @@ IDE_RC rpxSender::sendRebuildIndicesRemoteSyncTables()
 {
     IDE_TEST_RAISE( mMessenger.sendRebuildIndex() != IDE_SUCCESS, ERR_REBUILD_INDEX );
 
-    /* receiver°¡ drop indices¸¦ ¸ğµÎ ³¡³¾¶§±îÁö ±â´Ù¸°´Ù */
+    /* receiverê°€ drop indicesë¥¼ ëª¨ë‘ ëë‚¼ë•Œê¹Œì§€ ê¸°ë‹¤ë¦°ë‹¤ */
     while ( ( mSenderInfo->getFlagRebuildIndex() == ID_FALSE ) &&
             ( checkInterrupt() == RP_INTR_NONE ) )
     {
@@ -430,7 +430,7 @@ IDE_RC rpxSender::sendSyncTableInfo()
     SInt sSyncTableNumber = 0;
     SInt i;
 
-    if ( mSyncItems == NULL ) /* sync tableÀÌ ÁöÁ¤µÇÁö ¾ÊÀº°æ¿ì */
+    if ( mSyncItems == NULL ) /* sync tableì´ ì§€ì •ë˜ì§€ ì•Šì€ê²½ìš° */
     {
         sSyncTableNumber = mMeta.mReplication.mItemCount;
     }
@@ -451,7 +451,7 @@ IDE_RC rpxSender::sendSyncTableInfo()
         sUsername  = mMeta.mItemsOrderByTableOID[i]->mItem.mLocalUsername;
         sTablename = mMeta.mItemsOrderByTableOID[i]->mItem.mLocalTablename;
         sPartname = mMeta.mItemsOrderByTableOID[i]->mItem.mLocalPartname;
-        // Replication TableÀÌ ÁöÁ¤ÇÑ Sync TableÀÎ °æ¿ì¿¡¸¸ °è¼Ó ÁøÇàÇÑ´Ù.
+        // Replication Tableì´ ì§€ì •í•œ Sync Tableì¸ ê²½ìš°ì—ë§Œ ê³„ì† ì§„í–‰í•œë‹¤.
         if ( isSyncItem( mSyncItems,
                          sUsername,
                          sTablename,

@@ -46,7 +46,7 @@ static IDE_RC mtfRaw_to_numericEstimate( mtcNode*     aNode,
 mtfModule mtfRaw_to_numeric = {
     1|MTC_NODE_OPERATOR_FUNCTION,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
+    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìžê°€ ì•„ë‹˜)
     mtfRaw_to_numericFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -154,7 +154,7 @@ IDE_RC mtfRaw_to_numericCalculate( mtcNode*     aNode,
     if ( sModule->isNull( aStack[1].column,
                           aStack[1].value ) == ID_TRUE )
     {
-        // ÀÔ·ÂµÈ ÀÚ·á°¡ NULLÀÎ °æ¿ì
+        // ìž…ë ¥ëœ ìžë£Œê°€ NULLì¸ ê²½ìš°
         aStack[0].column->module->null( aStack[0].column,
                                         aStack[0].value );
     }

@@ -15,18 +15,18 @@
  */
 
 /*
- * ÀÌ ÆÄÀÏÀº ¾Æ·¡ÀÇ µÎ°¡Áö¸¦ ±¸ÇöÇÏ°í ÀÖ´Ù.
- * °¡È÷ ul ÀÇ ÇÙ½ÉºÎµé ÁßÀÇ ÇÏ³ª¶ó°í ÇÒ ¼ö ÀÖ´Ù.
- * ±×·¸Áö¸¸, ÁöÀúºĞÇÏ´Ù. ¾îÂ¿ ¼ö ¾ø´Ù.
+ * ì´ íŒŒì¼ì€ ì•„ë˜ì˜ ë‘ê°€ì§€ë¥¼ êµ¬í˜„í•˜ê³  ìˆë‹¤.
+ * ê°€íˆ ul ì˜ í•µì‹¬ë¶€ë“¤ ì¤‘ì˜ í•˜ë‚˜ë¼ê³  í•  ìˆ˜ ìˆë‹¤.
+ * ê·¸ë ‡ì§€ë§Œ, ì§€ì €ë¶„í•˜ë‹¤. ì–´ì©” ìˆ˜ ì—†ë‹¤.
  *
- *      1. ¼­¹ö·ÎºÎÅÍ ³Ñ°Ü¹ŞÀº µ¥ÀÌÅÍ¸¦ »ç¿ëÀÚ ¹öÆÛ È¤Àº ulnCache ÀÇ ¹öÆÛ¿¡ ¾²´Â ·çÆ¾µé
- *      2. »ç¿ëÀÚ ¹öÆÛ¿¡¼­ ¼­¹ö·Î ³Ñ°ÜÁÙ µ¥ÀÌÅÍ¸¦ cmtAny ¿¡ ¾²´Â ·çÆ¾µé
+ *      1. ì„œë²„ë¡œë¶€í„° ë„˜ê²¨ë°›ì€ ë°ì´í„°ë¥¼ ì‚¬ìš©ì ë²„í¼ í˜¹ì€ ulnCache ì˜ ë²„í¼ì— ì“°ëŠ” ë£¨í‹´ë“¤
+ *      2. ì‚¬ìš©ì ë²„í¼ì—ì„œ ì„œë²„ë¡œ ë„˜ê²¨ì¤„ ë°ì´í„°ë¥¼ cmtAny ì— ì“°ëŠ” ë£¨í‹´ë“¤
  *
- * Áï, Data ÀÇ ÀÔ/Ãâ·Â¿¡ °ü·ÃµÈ ·çÆ¾µéÀ» ±¸ÇöÇÏ°í ÀÖ´Ù.
+ * ì¦‰, Data ì˜ ì…/ì¶œë ¥ì— ê´€ë ¨ëœ ë£¨í‹´ë“¤ì„ êµ¬í˜„í•˜ê³  ìˆë‹¤.
  *
  * =================================================================
- *      ¼­¹ö·Î µ¥ÀÌÅÍ¸¦ Àü¼ÛÇÏ±â À§ÇØ¼­
- *      »ç¿ëÀÚ ¹öÆÛ¿¡¼­ ÀĞ¾î¼­ cmtAny ¿¡ ¾²´Â ·çÆ¾µé
+ *      ì„œë²„ë¡œ ë°ì´í„°ë¥¼ ì „ì†¡í•˜ê¸° ìœ„í•´ì„œ
+ *      ì‚¬ìš©ì ë²„í¼ì—ì„œ ì½ì–´ì„œ cmtAny ì— ì“°ëŠ” ë£¨í‹´ë“¤
  *
  *       ------------+   +---------- ulnData ---------+  +--------
  *       Buffer      |   |                            |  |
@@ -36,8 +36,8 @@
  *       ulnCache    |   |                            |  |
  *       ------------+   +----------------------------+  +--------
  *
- *      ¼­¹ö·ÎºÎÅÍ Àü´ŞµÇ¾î ¿Â µ¥ÀÌÅÍ¸¦ »ç¿ëÀÚÀÇ ¹öÆÛ
- *      È¤Àº ulnCache ÀÇ ¹öÆÛ¿¡ ¾²´Â ·çÆ¾µé
+ *      ì„œë²„ë¡œë¶€í„° ì „ë‹¬ë˜ì–´ ì˜¨ ë°ì´í„°ë¥¼ ì‚¬ìš©ìì˜ ë²„í¼
+ *      í˜¹ì€ ulnCache ì˜ ë²„í¼ì— ì“°ëŠ” ë£¨í‹´ë“¤
  * =================================================================
  */
 
@@ -60,11 +60,11 @@
 
 /*
  * =====================================================================
- * SQLBIGINT ¿Í °ü·ÃÇØ¼­
- * ÄÄÆÄÀÏ Å¸ÀÓ¿¡ ±¸Á¶Ã¼ÀÎÁö, 64ºñÆ®integer ÀÎÁö ÆÇ´ÜÇØ¼­ Ã³¸®ÇÏ´Â ÇÔ¼öµé
+ * SQLBIGINT ì™€ ê´€ë ¨í•´ì„œ
+ * ì»´íŒŒì¼ íƒ€ì„ì— êµ¬ì¡°ì²´ì¸ì§€, 64ë¹„íŠ¸integer ì¸ì§€ íŒë‹¨í•´ì„œ ì²˜ë¦¬í•˜ëŠ” í•¨ìˆ˜ë“¤
  *
- * Note : ¾Æ·¡ ÇÔ¼öµéÀÇ prototype Àº uln.h ¿¡ Á¸ÀçÇÑ´Ù. uln ÀÌ¿ÜÀÇ ¸ğµâ¿¡¼­µµ
- *        È£ÃâÇØ¾ß ÇÏ´Â ÇÔ¼öµéÀÌ±â ¶§¹®ÀÌ´Ù.
+ * Note : ì•„ë˜ í•¨ìˆ˜ë“¤ì˜ prototype ì€ uln.h ì— ì¡´ì¬í•œë‹¤. uln ì´ì™¸ì˜ ëª¨ë“ˆì—ì„œë„
+ *        í˜¸ì¶œí•´ì•¼ í•˜ëŠ” í•¨ìˆ˜ë“¤ì´ê¸° ë•Œë¬¸ì´ë‹¤.
  * =====================================================================
  */
 
@@ -92,8 +92,8 @@ void ulnTypeConvertULongToUBIGINT(acp_uint64_t aInputLongValue, SQLUBIGINT *aOut
     *(acp_uint64_t *)aOutputLongValuePtr = aInputLongValue;
 #else
     /*
-     * Note : bitwise shift ¿¬»êÀ» ¾²Áö ¾Ê°í ¾Æ·¡¿Í °°ÀÌ arithmetic ¿¬»êÀ» ¾´ ÀÌÀ¯´Â
-     *        byte order ¿¡ ´ëÇÑ Â÷ÀÌ¸¦ ¾ø¾Ö±â À§ÇØ¼­ÀÌ´Ù.
+     * Note : bitwise shift ì—°ì‚°ì„ ì“°ì§€ ì•Šê³  ì•„ë˜ì™€ ê°™ì´ arithmetic ì—°ì‚°ì„ ì“´ ì´ìœ ëŠ”
+     *        byte order ì— ëŒ€í•œ ì°¨ì´ë¥¼ ì—†ì• ê¸° ìœ„í•´ì„œì´ë‹¤.
      */
     aOutputLongValuePtr->hiword =
         (acp_uint32_t)(aInputLongValue / ACP_UINT64_LITERAL(0x100000000));
@@ -140,15 +140,15 @@ void ulnDataBuildColumnZero( ulnFnContext *aFnContext,
 {
     ulnStmt      *sStmt       = aFnContext->mHandle.mStmt;
 
-    /* PROJ-1789 Updatable Scrollable Cursor: (Impl.) ºÏ¸¶Å© == Position */
+    /* PROJ-1789 Updatable Scrollable Cursor: (Impl.) ë¶ë§ˆí¬ == Position */
 
-    /* memory access violation ¹®Á¦¸¦ ÇÇÇÏ±âÀ§ÇØ alignÀ» ¸ÂÃçÁØ´Ù.
-        * mBufferÀÇ Å©±â(ULN_CACHE_MAX_SIZE_FOR_FIXED_TYPE)´Â
-        * ACI_SIZEOF(acp_sint64_t) * 2 º¸´Ù Å©¹Ç·Î ÀÌ·¸°Ô ÇØµµ ¹®Á¦ ¾ø´Ù. */
+    /* memory access violation ë¬¸ì œë¥¼ í”¼í•˜ê¸°ìœ„í•´ alignì„ ë§ì¶°ì¤€ë‹¤.
+        * mBufferì˜ í¬ê¸°(ULN_CACHE_MAX_SIZE_FOR_FIXED_TYPE)ëŠ”
+        * ACI_SIZEOF(acp_sint64_t) * 2 ë³´ë‹¤ í¬ë¯€ë¡œ ì´ë ‡ê²Œ í•´ë„ ë¬¸ì œ ì—†ë‹¤. */
     aColumn->mBuffer = (acp_uint8_t *) ACP_ALIGN8_PTR(aColumn->mBuffer);
 
-    /* VARIABLEÀÏ ¶§ÀÇ ÃÖ´ë°ªÀ» 64bit signed int·Î Á¦ÇÑÇÏ´Â ÀÌÀ¯´Â
-        * CursorPositionÀÌ sint64¶ó ±× ÀÌ»óÀº ÀÇ¹Ì°¡ ¾ø±â ¶§¹®. */
+    /* VARIABLEì¼ ë•Œì˜ ìµœëŒ€ê°’ì„ 64bit signed intë¡œ ì œí•œí•˜ëŠ” ì´ìœ ëŠ”
+        * CursorPositionì´ sint64ë¼ ê·¸ ì´ìƒì€ ì˜ë¯¸ê°€ ì—†ê¸° ë•Œë¬¸. */
     if (ulnStmtGetAttrUseBookMarks(sStmt) == SQL_UB_VARIABLE)
     {
         *((acp_sint64_t *) aColumn->mBuffer) = aRow->mRowNumber;
@@ -224,8 +224,8 @@ ACI_RC ulnCopyToUserBufferForSimpleQuery(ulnFnContext     *aFnContext,
                     (sDbc->mCharsetLangModule->id == sDbc->mClientCharsetLangModule->id))
                 {
                     /*
-                     * BUG-45568 ulnConvFunctionÀ» »ç¿ëÇÏÁö ¾Ê±â(¼º´É¶§¹®ÀÎ°¡?)¿¡
-                     *           »ç¿ëÀÚ ¹öÆÛ Å©±â¸¦ °í·ÁÇØ¾ß ÇÑ´Ù.
+                     * BUG-45568 ulnConvFunctionì„ ì‚¬ìš©í•˜ì§€ ì•Šê¸°(ì„±ëŠ¥ë•Œë¬¸ì¸ê°€?)ì—
+                     *           ì‚¬ìš©ì ë²„í¼ í¬ê¸°ë¥¼ ê³ ë ¤í•´ì•¼ í•œë‹¤.
                      */
                     if (sLen16 >= sAppBuff.mBufferSize)
                     {
@@ -385,16 +385,16 @@ ACI_RC ulnCopyToUserBufferForSimpleQuery(ulnFnContext     *aFnContext,
         {
             ACI_EXCEPTION_CONT(LABEL_SKIP_CONVERSION);
             /*
-             * »ç¿ëÀÚ¿¡°Ô ¸®ÅÏÇÏ´Â ±æÀÌ
+             * ì‚¬ìš©ìì—ê²Œ ë¦¬í„´í•˜ëŠ” ê¸¸ì´
              */
             if (ulnBindSetUserIndLenValue(&sUserIndLenPair, sLengthPair.mNeeded) != ACI_SUCCESS)
             {
                 /*
                  * 22002 :
                  *
-                 * NULL ÀÌ ÄÃ·³¿¡ fetch µÇ¾î ¿Í¼­, SQL_NULL_DATA ¸¦ »ç¿ëÀÚ°¡ ÁöÁ¤ÇÑ
-                 * StrLen_or_IndPtr ¿¡ ½á Áà¾ß ÇÏ´Âµ¥, ÀÌ³à¼®ÀÌ NULL Æ÷ÀÎÅÍÀÌ´Ù.
-                 * ±×·²¶§¿¡ ¹ß»ı½ÃÄÑ ÁÖ´Â ¿¡·¯.
+                 * NULL ì´ ì»¬ëŸ¼ì— fetch ë˜ì–´ ì™€ì„œ, SQL_NULL_DATA ë¥¼ ì‚¬ìš©ìê°€ ì§€ì •í•œ
+                 * StrLen_or_IndPtr ì— ì¨ ì¤˜ì•¼ í•˜ëŠ”ë°, ì´ë…€ì„ì´ NULL í¬ì¸í„°ì´ë‹¤.
+                 * ê·¸ëŸ´ë•Œì— ë°œìƒì‹œì¼œ ì£¼ëŠ” ì—ëŸ¬.
                  */
                 ulnErrorExtended(aFnContext,
                                  1,
@@ -653,7 +653,7 @@ ACI_RC ulnDataBuildColumnFromMT(ulnFnContext *aFnContext,
                 /* 
                  * PROJ-2047 Strengthening LOB - LOBCACHE
                  *
-                 * HasData°¡ TrueÀÌ¸é LOB CachingÀ» ÇÑ´Ù.
+                 * HasDataê°€ Trueì´ë©´ LOB Cachingì„ í•œë‹¤.
                  */
                 if (aSrc[LOB_MT_HASDATA_OFFSET] == ACP_TRUE)
                 {
@@ -779,7 +779,7 @@ void ulnDataWriteStringToUserBuffer(ulnFnContext *aFnContext,
     }
 
     /*
-     * ¿ø·¡ ±æÀÌ¸¦ ¸®ÅÏÇÑ´Ù.
+     * ì›ë˜ ê¸¸ì´ë¥¼ ë¦¬í„´í•œë‹¤.
      */
     if (aSourceStringSizePtr != NULL)
     {
@@ -803,7 +803,7 @@ void ulnDataWriteStringToUserBuffer(ulnFnContext *aFnContext,
         }
 
         /*
-         * ÀÌ¸§À» º¹»çÇÏ°í, NULL Terminate ¸¦ ÇÑ´Ù.
+         * ì´ë¦„ì„ ë³µì‚¬í•˜ê³ , NULL Terminate ë¥¼ í•œë‹¤.
          */
         if (aSourceString == NULL)
         {
@@ -881,7 +881,7 @@ ACI_RC ulnDataGetNextColumnOffset(ulnColumn    *aColumn,
             /* 
              * PROJ-2047 Strengthening LOB - LOBCACHE
              *
-             * sHasData°¡ TrueÀÌ¸é Data ±æÀÌ¸¸Å­ sOffsetÀ» ´õÇØÁà¾ß ÇÑ´Ù.
+             * sHasDataê°€ Trueì´ë©´ Data ê¸¸ì´ë§Œí¼ sOffsetì„ ë”í•´ì¤˜ì•¼ í•œë‹¤.
              */
             sOffset += LOB_MT_SIZE;
 

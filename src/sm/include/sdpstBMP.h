@@ -19,7 +19,7 @@
  *
  * $Id: sdpstBMP.h 27220 2008-07-23 14:56:22Z newdaily $
  *
- * º» ÆÄÀÏÀº Treelist Managed SegmentÀÇ BMPÀÇ Çì´õÆÄÀÏÀÌ´Ù.
+ * ë³¸ íŒŒì¼ì€ Treelist Managed Segmentì˜ BMPì˜ í—¤ë”íŒŒì¼ì´ë‹¤.
  *
  ***********************************************************************/
 
@@ -182,7 +182,7 @@ public:
     static sdpstBMPOps  * mBMPOps[SDPST_BMP_TYPE_MAX];
 };
 
-/* aNxtSlotNo ÀÌÈÄ¿¡ °¡¿ë°ø°£ÀÌ ÀÖ´Â slotNo¸¦ Ã£¾Æ ¹ÝÈ¯ÇÑ´Ù. */
+/* aNxtSlotNo ì´í›„ì— ê°€ìš©ê³µê°„ì´ ìžˆëŠ” slotNoë¥¼ ì°¾ì•„ ë°˜í™˜í•œë‹¤. */
 inline SShort sdpstBMP::getNxtFreeSlot( sdpstBMPHdr     * aBMPHdr,
                                         SShort            aNxtSlotNo )
 {
@@ -219,19 +219,19 @@ inline SShort sdpstBMP::getNxtFreeSlot( sdpstBMPHdr     * aBMPHdr,
     return sNxtIdx;
 }
 
-/* it-bmp ÆäÀÌÁö¿¡¼­ÀÇ Å½»ö ½ÃÀÛ À§Ä¡¸¦ Hash ÇÏ¿© ¾ò´Â´Ù */
+/* it-bmp íŽ˜ì´ì§€ì—ì„œì˜ íƒìƒ‰ ì‹œìž‘ ìœ„ì¹˜ë¥¼ Hash í•˜ì—¬ ì–»ëŠ”ë‹¤ */
 inline UShort sdpstBMP::doHash( UShort  aHintIdx, SShort  aSlotCnt )
 {
     UShort  sSlotNo;
 
     IDE_ASSERT( aSlotCnt > 0 );
 
-    sSlotNo = aHintIdx % aSlotCnt; // hash »ç¿ë
+    sSlotNo = aHintIdx % aSlotCnt; // hash ì‚¬ìš©
 
     return sSlotNo;
 }
 
-/* BMPÀÇ map ptrÀ» ¹ÝÈ¯ÇÑ´Ù. */
+/* BMPì˜ map ptrì„ ë°˜í™˜í•œë‹¤. */
 inline sdpstBMPSlot * sdpstBMP::getMapPtr( sdpstBMPHdr * aBMPHdr )
 {
     IDE_ASSERT( aBMPHdr->mBodyOffset != 0 );
@@ -241,7 +241,7 @@ inline sdpstBMPSlot * sdpstBMP::getMapPtr( sdpstBMPHdr * aBMPHdr )
 }
 
 /*
- * BMP¿¡¼­ Internal Control HeaderÀÇ Ptr ¹ÝÈ¯
+ * BMPì—ì„œ Internal Control Headerì˜ Ptr ë°˜í™˜
  */
 inline sdpstBMPHdr * sdpstBMP::getHdrPtr( UChar   * aPagePtr )
 {
@@ -261,7 +261,7 @@ inline sdpstBMPHdr * sdpstBMP::getHdrPtr( UChar   * aPagePtr )
     return sBMPHdr;
 }
 
-/* sdpstBMPOps¿¡¼­ »ç¿ëÇÑ´Ù. */
+/* sdpstBMPOpsì—ì„œ ì‚¬ìš©í•œë‹¤. */
 inline SShort sdpstBMP::getFstFreeSlotNo( UChar * aPagePtr )
 {
     IDE_ASSERT( aPagePtr != NULL);
@@ -269,7 +269,7 @@ inline SShort sdpstBMP::getFstFreeSlotNo( UChar * aPagePtr )
 }
 
 /*
- * BMP¿¡¼­ÀÇ °¡¿ëÇÑ Slot °³¼ö ¹ÝÈ¯
+ * BMPì—ì„œì˜ ê°€ìš©í•œ Slot ê°œìˆ˜ ë°˜í™˜
  */
 inline UShort sdpstBMP::getFreeSlotCnt( sdpstBMPHdr * aBMPHdr )
 {
@@ -277,7 +277,7 @@ inline UShort sdpstBMP::getFreeSlotCnt( sdpstBMPHdr * aBMPHdr )
     return (UShort)( aBMPHdr->mMaxSlotCnt - aBMPHdr->mSlotCnt );
 }
 
-/* leaf slotÀ» ¹ÝÈ¯ÇÑ´Ù */
+/* leaf slotì„ ë°˜í™˜í•œë‹¤ */
 inline sdpstBMPSlot * sdpstBMP::getSlot( sdpstBMPHdr * aBMPHdr,
                                          UShort        aSlotNo )
 {
@@ -286,7 +286,7 @@ inline sdpstBMPSlot * sdpstBMP::getSlot( sdpstBMPHdr * aBMPHdr,
     return &(getMapPtr( aBMPHdr )[ aSlotNo ] );
 }
 
-/* lf-bmp ÆäÀÌÁöÀÇ PID·Î leaf slot ¼ø¹ø Å½»ö */
+/* lf-bmp íŽ˜ì´ì§€ì˜ PIDë¡œ leaf slot ìˆœë²ˆ íƒìƒ‰ */
 inline SShort sdpstBMP::findSlotNoByBMP( sdpstBMPHdr  * aBMPHdr,
                                          scPageID       aBMP )
 {
@@ -311,7 +311,7 @@ inline SShort sdpstBMP::findSlotNoByBMP( sdpstBMPHdr  * aBMPHdr,
     return sSlotNo;
 }
 
-/* ¸¶Áö¸· slotNo ¿©ºÎ¸¦ È®ÀÎÇÑ´Ù. */
+/* ë§ˆì§€ë§‰ slotNo ì—¬ë¶€ë¥¼ í™•ì¸í•œë‹¤. */
 inline idBool sdpstBMP::isLstSlotNo ( UChar * aPagePtr, SShort aIndex )
 {
     return (aIndex == ( getHdrPtr( aPagePtr )->mSlotCnt - 1 ) ?

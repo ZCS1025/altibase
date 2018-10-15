@@ -81,7 +81,7 @@ static void ulnPropertiesSetIntegerAsEnv(ulnProperties *aProperties,
 /**
  *  gUlnPropertiesConfDef
  *
- *  ÀĞÀ» ÇÁ·ÎÆÛÆ¼ Á¤ÀÇ ±¸Á¶Ã¼
+ *  ì½ì„ í”„ë¡œí¼í‹° ì •ì˜ êµ¬ì¡°ì²´
  */
 static acl_conf_def_t gUlnPropertiesConfDef[] =
 {
@@ -155,7 +155,7 @@ void ulnPropertiesCreate(ulnProperties *aProperties)
             /* Nothing */
         }
 
-        /* ÇÁ·ÎÆÛÆ¼ ÆÄÀÏÀÌ ¾øÀ»¼öµµ ÀÖ±â ¶§¹®¿¡ ¸®ÅÏ°ª Ã¼Å©´Â »ı·«ÇÑ´Ù. */
+        /* í”„ë¡œí¼í‹° íŒŒì¼ì´ ì—†ì„ìˆ˜ë„ ìˆê¸° ë•Œë¬¸ì— ë¦¬í„´ê°’ ì²´í¬ëŠ” ìƒëµí•œë‹¤. */
         aclConfLoad(&aProperties->mConfFilepath,
                     gUlnPropertiesConfDef,
                     NULL,
@@ -168,7 +168,7 @@ void ulnPropertiesCreate(ulnProperties *aProperties)
         /* Nothing */
     }
 
-    /* È¯°æ º¯¼ö°¡ ÀÖÀ¸¸é ÀĞ´Â´Ù */
+    /* í™˜ê²½ ë³€ìˆ˜ê°€ ìˆìœ¼ë©´ ì½ëŠ”ë‹¤ */
     ulnPropertiesSetStringAsEnv(aProperties,
                                 &aProperties->mUnixdomainFilepath,
                                 ULN_PROPERTIES_ENV_UNIXPATH,
@@ -184,18 +184,18 @@ void ulnPropertiesCreate(ulnProperties *aProperties)
                                 ULN_PROPERTIES_ENV_IPCDAPATH,
                                 ACP_TRUE);
     
-    /* ClientExpireCount¸¦ ÀĞ¾î µéÀÎ´Ù. */
+    /* ClientExpireCountë¥¼ ì½ì–´ ë“¤ì¸ë‹¤. */
     ulnPropertiesSetIntegerAsEnv(aProperties,
                                  &aProperties->mIpcDaClientExpireCount,
                                  ULN_PROPERTIES_ENV_IPCDACLIENTEXPIRECOUNT);
 
-    /* mIpcDaClientSleepTimeÀ» ÀĞ¾î µéÀÎ´Ù. */
+    /* mIpcDaClientSleepTimeì„ ì½ì–´ ë“¤ì¸ë‹¤. */
 
     ulnPropertiesSetIntegerAsEnv(aProperties,
                                  &aProperties->mIpcDaClientSleepTime,
                                  ULN_PROPERTIES_ENV_IPCDACLIENTSLEEPTIME);
 
-    /* ¸Ş¼¼Áö Å¥ÀÇ TIME_OUTÀ» ÀĞ¾î µéÀÎ´Ù. */
+    /* ë©”ì„¸ì§€ íì˜ TIME_OUTì„ ì½ì–´ ë“¤ì¸ë‹¤. */
     ulnPropertiesSetIntegerAsEnv(aProperties,
                                  &aProperties->mIpcDaClientMessageQTimeout,
                                  ULN_PROPERTIES_ENV_IPCDACLIENTMESSAGEQTIMEOUT);
@@ -228,7 +228,7 @@ void ulnPropertiesDestroy(ulnProperties *aProperties)
 /*
  * ulnPropertiesCallbackInt32
  * 
- * È¯°æÆÄÀÏÀÇ ÇÁ·ÎÆÛÆ¼¸¦ aProperties ±¸Á¶Ã¼¿¡ ÀúÀåÇÑ´Ù.
+ * í™˜ê²½íŒŒì¼ì˜ í”„ë¡œí¼í‹°ë¥¼ aProperties êµ¬ì¡°ì²´ì— ì €ì¥í•œë‹¤.
  **/
 static acp_sint32_t ulnPropertiesCallbackInt32(
     acp_sint32_t    aDepth,
@@ -282,7 +282,7 @@ static acp_sint32_t ulnPropertiesCallbackInt32(
 /**
  *  ulnPropertiesCallbackString
  *
- *  È¯°æÆÄÀÏÀÇ ÇÁ·ÎÆÛÆ¼¸¦ aProperties ±¸Á¶Ã¼¿¡ ÀúÀåÇÑ´Ù.
+ *  í™˜ê²½íŒŒì¼ì˜ í”„ë¡œí¼í‹°ë¥¼ aProperties êµ¬ì¡°ì²´ì— ì €ì¥í•œë‹¤.
  */
 acp_sint32_t ulnPropertiesCallbackString(acp_sint32_t    aDepth,
                                          acl_conf_key_t *aKey,
@@ -344,7 +344,7 @@ acp_sint32_t ulnPropertiesCallbackString(acp_sint32_t    aDepth,
 /**
  *  ulnPropertiesExpandValuesStr
  *
- *  ?¸¦ $ALTIBASE_HOME °æ·Î·Î È®ÀåÇÑ´Ù.
+ *  ?ë¥¼ $ALTIBASE_HOME ê²½ë¡œë¡œ í™•ì¥í•œë‹¤.
  */
 void ulnPropertiesExpandValuesStr(ulnProperties *aProperties,
                                   acp_str_t     *aDest,
@@ -378,8 +378,8 @@ void ulnPropertiesExpandValuesStr(ulnProperties *aProperties,
 /**
  *  ulnPropertiesSetDefault
  *
- *  $ALTIBASE_HOMEÀº ÄÄÆÄÀÏ ½Ã°£¿¡ ¾Ë ¼ö ¾ø±â ¶§¹®¿¡
- *  gUlnPropertiesConfDef¿¡ default °ªÀ» ¼³Á¤ÇÒ ¼ö ¾ø´Ù.
+ *  $ALTIBASE_HOMEì€ ì»´íŒŒì¼ ì‹œê°„ì— ì•Œ ìˆ˜ ì—†ê¸° ë•Œë¬¸ì—
+ *  gUlnPropertiesConfDefì— default ê°’ì„ ì„¤ì •í•  ìˆ˜ ì—†ë‹¤.
  */
 void ulnPropertiesSetDefault(ulnProperties *aProperties,
                              acp_char_t    *aHomepath)
@@ -430,7 +430,7 @@ void ulnPropertiesSetDefault(ulnProperties *aProperties,
 /**
  *  ulnPropertiesSetIntegerAsEnv
  *
- *  È¯°æº¯¼ö·Î ÇÁ·ÎÆÛÆ¼¸¦ INTEGER·Î ¼³Á¤ÇÑ´Ù.
+ *  í™˜ê²½ë³€ìˆ˜ë¡œ í”„ë¡œí¼í‹°ë¥¼ INTEGERë¡œ ì„¤ì •í•œë‹¤.
  */
 void ulnPropertiesSetIntegerAsEnv(ulnProperties *aProperties,
                                   acp_uint32_t  *aProperty,
@@ -477,8 +477,8 @@ void ulnPropertiesSetIntegerAsEnv(ulnProperties *aProperties,
 /**
  *  ulnPropertiesSetStringAsEnv
  *
- *  È¯°æº¯¼ö·Î ÇÁ·ÎÆÛÆ¼¸¦ ¼³Á¤ÇÑ´Ù.
- *  aNeedExpansionÀÌ TRUEÀÌ¸é ?¸¦ $ALTIBASE_HOMEÀ¸·Î È®ÀåÇÑ´Ù.
+ *  í™˜ê²½ë³€ìˆ˜ë¡œ í”„ë¡œí¼í‹°ë¥¼ ì„¤ì •í•œë‹¤.
+ *  aNeedExpansionì´ TRUEì´ë©´ ?ë¥¼ $ALTIBASE_HOMEìœ¼ë¡œ í™•ì¥í•œë‹¤.
  */
 void ulnPropertiesSetStringAsEnv(ulnProperties *aProperties,
                                  acp_str_t     *aProperty,
@@ -534,7 +534,7 @@ void ulnPropertiesSetStringAsEnv(ulnProperties *aProperties,
 /**
  *  ulnPropertiesExpandValues
  *
- *  ?¸¦ $ALTIBASE_HOMEÀ¸·Î È®ÀåÇÑ´Ù.
+ *  ?ë¥¼ $ALTIBASE_HOMEìœ¼ë¡œ í™•ì¥í•œë‹¤.
  */
 ACI_RC ulnPropertiesExpandValues( ulnProperties *aProperties,
                                   acp_char_t    *aDest,

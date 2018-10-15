@@ -18,11 +18,11 @@
 /***********************************************************************
  * $Id: qmgShardSELT.cpp 77650 2016-10-17 02:19:47Z timmy.kim $
  *
- * Description : Shard Graph¸¦ À§ÇÑ ¼öÇà ÇÔ¼ö
+ * Description : Shard Graphë¥¼ ìœ„í•œ ìˆ˜í–‰ í•¨ìˆ˜
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  **********************************************************************/
 
@@ -42,7 +42,7 @@ IDE_RC qmgShardSelect::init( qcStatement  * aStatement,
 {
 /***********************************************************************
  *
- * Description : qmgShardSELT GraphÀÇ ÃÊ±âÈ­
+ * Description : qmgShardSELT Graphì˜ ì´ˆê¸°í™”
  *
  * Implementation :
  *
@@ -56,7 +56,7 @@ IDE_RC qmgShardSelect::init( qcStatement  * aStatement,
     IDU_FIT_POINT_FATAL( "qmgShardSelect::init::__FT__" );
 
     //---------------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //---------------------------------------------------
 
     IDE_FT_ASSERT( aStatement != NULL );
@@ -64,15 +64,15 @@ IDE_RC qmgShardSelect::init( qcStatement  * aStatement,
     IDE_FT_ASSERT( aFrom != NULL );
 
     //---------------------------------------------------
-    // Shard Graph¸¦ À§ÇÑ ±âº» ÃÊ±âÈ­
+    // Shard Graphë¥¼ ìœ„í•œ ê¸°ë³¸ ì´ˆê¸°í™”
     //---------------------------------------------------
 
-    // qmgShardSELTÀ» À§ÇÑ °ø°£ ÇÒ´ç
+    // qmgShardSELTì„ ìœ„í•œ ê³µê°„ í• ë‹¹
     IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF( qmgShardSELT ),
                                              (void**) &sMyGraph )
               != IDE_SUCCESS );
 
-    // Graph °øÅë Á¤º¸ÀÇ ÃÊ±âÈ­
+    // Graph ê³µí†µ ì •ë³´ì˜ ì´ˆê¸°í™”
     IDE_TEST( qmg::initGraph( & sMyGraph->graph ) != IDE_SUCCESS );
 
     sMyGraph->graph.type = QMG_SHARD_SELECT;
@@ -86,13 +86,13 @@ IDE_RC qmgShardSelect::init( qcStatement  * aStatement,
     sMyGraph->graph.printGraph = qmgShardSelect::printGraph;
 
     // BUGBUG
-    // SDSE ÀÚÃ¼´Â disk ·Î »ı¼ºÇÏ³ª
-    // SDSE ÀÇ »óÀ§ plan ÀÇ interResultType Àº memory temp ·Î ¼öÇàµÇ¾î¾ß ÇÑ´Ù.
+    // SDSE ìì²´ëŠ” disk ë¡œ ìƒì„±í•˜ë‚˜
+    // SDSE ì˜ ìƒìœ„ plan ì˜ interResultType ì€ memory temp ë¡œ ìˆ˜í–‰ë˜ì–´ì•¼ í•œë‹¤.
     sMyGraph->graph.flag &= ~QMG_GRAPH_TYPE_MASK;
     sMyGraph->graph.flag |=  QMG_GRAPH_TYPE_DISK;
 
     //---------------------------------------------------
-    // Shard °íÀ¯ Á¤º¸ÀÇ ÃÊ±âÈ­
+    // Shard ê³ ìœ  ì •ë³´ì˜ ì´ˆê¸°í™”
     //---------------------------------------------------
 
     SET_POSITION( sMyGraph->shardQuery,
@@ -106,7 +106,7 @@ IDE_RC qmgShardSelect::init( qcStatement  * aStatement,
     sMyGraph->accessMethodCnt = 0;
     sMyGraph->flag = QMG_SHARD_FLAG_CLEAR;
 
-    // out ¼³Á¤
+    // out ì„¤ì •
     *aGraph = (qmgGraph *)sMyGraph;
 
     return IDE_SUCCESS;
@@ -121,18 +121,18 @@ IDE_RC qmgShardSelect::optimize( qcStatement * aStatement,
 {
 /***********************************************************************
  *
- * Description : qmgShardSELT ÀÇ ÃÖÀûÈ­
+ * Description : qmgShardSELT ì˜ ìµœì í™”
  *
  * Implementation :
  *
- *      - Åë°èÁ¤º¸ ±¸Ãà
- *      - Subquery Graph »ı¼º
- *      - °øÅë ºñ¿ë Á¤º¸ ¼³Á¤ (recordSize, inputRecordCnt)
- *      - Predicate Àç¹èÄ¡ ¹× °³º° PredicateÀÇ selectivity °è»ê
- *      - ÀüÃ¼ selectivity °è»ê ¹× °øÅë ºñ¿ë Á¤º¸ÀÇ selectivity¿¡ ÀúÀå
- *      - Access Method ¼±ÅÃ
- *      - Preserved Order ¼³Á¤
- *      - °øÅë ºñ¿ë Á¤º¸ ¼³Á¤ (outputRecordCnt, myCost, totalCost)
+ *      - í†µê³„ì •ë³´ êµ¬ì¶•
+ *      - Subquery Graph ìƒì„±
+ *      - ê³µí†µ ë¹„ìš© ì •ë³´ ì„¤ì • (recordSize, inputRecordCnt)
+ *      - Predicate ì¬ë°°ì¹˜ ë° ê°œë³„ Predicateì˜ selectivity ê³„ì‚°
+ *      - ì „ì²´ selectivity ê³„ì‚° ë° ê³µí†µ ë¹„ìš© ì •ë³´ì˜ selectivityì— ì €ì¥
+ *      - Access Method ì„ íƒ
+ *      - Preserved Order ì„¤ì •
+ *      - ê³µí†µ ë¹„ìš© ì •ë³´ ì„¤ì • (outputRecordCnt, myCost, totalCost)
  *
  ***********************************************************************/
 
@@ -148,14 +148,14 @@ IDE_RC qmgShardSelect::optimize( qcStatement * aStatement,
     IDU_FIT_POINT_FATAL( "qmgShardSelect::optimize::__FT__" );
 
     //---------------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //---------------------------------------------------
 
     IDE_FT_ASSERT( aStatement != NULL );
     IDE_FT_ASSERT( aGraph != NULL );
 
     //---------------------------------------------------
-    // ±âº» ÃÊ±âÈ­
+    // ê¸°ë³¸ ì´ˆê¸°í™”
     //---------------------------------------------------
 
     sMyGraph = (qmgShardSELT *)aGraph;
@@ -165,7 +165,7 @@ IDE_RC qmgShardSelect::optimize( qcStatement * aStatement,
     IDE_FT_ASSERT( sTableRef->view != NULL );
 
     //---------------------------------------------------
-    // Åë°è Á¤º¸ ±¸Ãà
+    // í†µê³„ ì •ë³´ êµ¬ì¶•
     //---------------------------------------------------
 
     IDE_TEST( qmoStat::getStatInfo4RemoteTable( aStatement,
@@ -174,7 +174,7 @@ IDE_RC qmgShardSelect::optimize( qcStatement * aStatement,
               != IDE_SUCCESS );
 
     //---------------------------------------------------
-    // SubqueryÀÇ Graph »ı¼º
+    // Subqueryì˜ Graph ìƒì„±
     //---------------------------------------------------
 
     if ( sMyGraph->graph.myPredicate != NULL )
@@ -190,7 +190,7 @@ IDE_RC qmgShardSelect::optimize( qcStatement * aStatement,
     }
 
     //---------------------------------------------------
-    // °øÅë ºñ¿ë Á¤º¸ ¼³Á¤ (recordSize, inputRecordCnt)
+    // ê³µí†µ ë¹„ìš© ì •ë³´ ì„¤ì • (recordSize, inputRecordCnt)
     //---------------------------------------------------
 
     sParseTree = (qmsParseTree *)sTableRef->view->myPlan->parseTree;
@@ -211,7 +211,7 @@ IDE_RC qmgShardSelect::optimize( qcStatement * aStatement,
         }
     }
 
-    // recordSize ¼³Á¤
+    // recordSize ì„¤ì •
     // To Fix BUG-8241
     IDE_FT_ASSERT( sQuerySet != NULL );
     IDE_FT_ASSERT( sQuerySet->SFWGH != NULL );
@@ -252,15 +252,15 @@ IDE_RC qmgShardSelect::optimize( qcStatement * aStatement,
         sRecordSize += sTargetColumn->column.size;
     }
 
-    // BUG-36463 sRecordSize ´Â 0ÀÌ µÇ¾î¼­´Â ¾ÈµÈ´Ù.
+    // BUG-36463 sRecordSize ëŠ” 0ì´ ë˜ì–´ì„œëŠ” ì•ˆëœë‹¤.
     sRecordSize = IDL_MAX( sRecordSize, 1 );
     sMyGraph->graph.costInfo.recordSize = sRecordSize;
 
-    // inputRecordCnt ¼³Á¤
+    // inputRecordCnt ì„¤ì •
     sMyGraph->graph.costInfo.inputRecordCnt = sTableRef->statInfo->totalRecordCnt;
 
     //---------------------------------------------------
-    // PredicateÀÇ Àç¹èÄ¡ ¹× °³º° PredicateÀÇ Selectivity °è»ê
+    // Predicateì˜ ì¬ë°°ì¹˜ ë° ê°œë³„ Predicateì˜ Selectivity ê³„ì‚°
     //---------------------------------------------------
 
     if ( sMyGraph->graph.myPredicate != NULL )
@@ -296,19 +296,19 @@ IDE_RC qmgShardSelect::optimize( qcStatement * aStatement,
     sMyGraph->accessMethodCnt = 1;
 
     //---------------------------------------------------
-    // Preserved Order ¼³Á¤
+    // Preserved Order ì„¤ì •
     //---------------------------------------------------
 
     sMyGraph->graph.flag &= ~QMG_PRESERVED_ORDER_MASK;
     sMyGraph->graph.flag |=  QMG_PRESERVED_ORDER_NEVER;
 
     //---------------------------------------------------
-    // °øÅë ºñ¿ë Á¤º¸ ¼³Á¤ (outputRecordCnt, myCost, totalCost)
+    // ê³µí†µ ë¹„ìš© ì •ë³´ ì„¤ì • (outputRecordCnt, myCost, totalCost)
     //---------------------------------------------------
 
     sMyGraph->graph.costInfo.selectivity = sMyGraph->accessMethod->methodSelectivity;
 
-    // output record count ¼³Á¤
+    // output record count ì„¤ì •
     sOutputRecordCnt = sMyGraph->graph.costInfo.selectivity *
         sMyGraph->graph.costInfo.inputRecordCnt;
 
@@ -343,9 +343,9 @@ IDE_RC qmgShardSelect::makePlan( qcStatement    * aStatement,
 {
 /***********************************************************************
  *
- *  Description : qmgShardSELT ·Î ºÎÅÍ PlanÀ» »ı¼ºÇÑ´Ù.
+ *  Description : qmgShardSELT ë¡œ ë¶€í„° Planì„ ìƒì„±í•œë‹¤.
  *
- *  Implementation : SHARD°¡ ÀÖÀ» °æ¿ì ¾Æ·¡¿Í °°Àº planÀ» »ı¼ºÇÑ´Ù.
+ *  Implementation : SHARDê°€ ìˆì„ ê²½ìš° ì•„ë˜ì™€ ê°™ì€ planì„ ìƒì„±í•œë‹¤.
  *
  *          [PARENT]
  *            |
@@ -361,7 +361,7 @@ IDE_RC qmgShardSelect::makePlan( qcStatement    * aStatement,
     IDU_FIT_POINT_FATAL( "qmgShardSelect::makePlan::__FT__" );
 
     //---------------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //---------------------------------------------------
 
     IDE_FT_ASSERT( aStatement != NULL );
@@ -371,7 +371,7 @@ IDE_RC qmgShardSelect::makePlan( qcStatement    * aStatement,
     sMyGraph = (qmgShardSELT*)aGraph;
 
     //---------------------------------------------------
-    // Current CNFÀÇ µî·Ï
+    // Current CNFì˜ ë“±ë¡
     //---------------------------------------------------
 
     if ( sMyGraph->graph.myCNF != NULL )
@@ -428,7 +428,7 @@ IDE_RC qmgShardSelect::printGraph( qcStatement  * aStatement,
 {
 /***********************************************************************
  *
- * Description : Graph¸¦ ±¸¼ºÇÏ´Â °øÅë Á¤º¸¸¦ Ãâ·ÂÇÑ´Ù.
+ * Description : Graphë¥¼ êµ¬ì„±í•˜ëŠ” ê³µí†µ ì •ë³´ë¥¼ ì¶œë ¥í•œë‹¤.
  *
  * Implementation :
  *
@@ -442,7 +442,7 @@ IDE_RC qmgShardSelect::printGraph( qcStatement  * aStatement,
     IDU_FIT_POINT_FATAL( "qmgShardSelect::printGraph::__FT__" );
 
     //-----------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //-----------------------------------
 
     IDE_FT_ASSERT( aStatement != NULL );
@@ -452,7 +452,7 @@ IDE_RC qmgShardSelect::printGraph( qcStatement  * aStatement,
     sMyGraph = (qmgShardSELT *)aGraph;
 
     //-----------------------------------
-    // GraphÀÇ ½ÃÀÛ Ãâ·Â
+    // Graphì˜ ì‹œì‘ ì¶œë ¥
     //-----------------------------------
 
     if (aDepth == 0)
@@ -467,7 +467,7 @@ IDE_RC qmgShardSelect::printGraph( qcStatement  * aStatement,
     }
 
     //-----------------------------------
-    // Graph °øÅë Á¤º¸ÀÇ Ãâ·Â
+    // Graph ê³µí†µ ì •ë³´ì˜ ì¶œë ¥
     //-----------------------------------
 
     IDE_TEST( qmg::printGraph( aStatement,
@@ -477,7 +477,7 @@ IDE_RC qmgShardSelect::printGraph( qcStatement  * aStatement,
               != IDE_SUCCESS );
 
     //-----------------------------------
-    // Graph °íÀ¯ Á¤º¸ÀÇ Ãâ·Â
+    // Graph ê³ ìœ  ì •ë³´ì˜ ì¶œë ¥
     //-----------------------------------
 
     IDE_TEST( qmoStat::printStat( aGraph->myFrom,
@@ -486,7 +486,7 @@ IDE_RC qmgShardSelect::printGraph( qcStatement  * aStatement,
               != IDE_SUCCESS );
 
     //-----------------------------------
-    // Access method Á¤º¸ Ãâ·Â
+    // Access method ì •ë³´ ì¶œë ¥
     //-----------------------------------
 
     QMG_PRINT_LINE_FEED( i, aDepth, aString );
@@ -500,7 +500,7 @@ IDE_RC qmgShardSelect::printGraph( qcStatement  * aStatement,
               != IDE_SUCCESS );
 
     //-----------------------------------
-    // Subquery Graph Á¤º¸ÀÇ Ãâ·Â
+    // Subquery Graph ì •ë³´ì˜ ì¶œë ¥
     //-----------------------------------
 
     for ( sPredicate = aGraph->myPredicate;
@@ -536,7 +536,7 @@ IDE_RC qmgShardSelect::printGraph( qcStatement  * aStatement,
     }
 
     //-----------------------------------
-    // shard Á¤º¸ Ãâ·Â
+    // shard ì •ë³´ ì¶œë ¥
     //-----------------------------------
 
     IDE_TEST( qmgShardDML::printShardInfo( aStatement,
@@ -547,7 +547,7 @@ IDE_RC qmgShardSelect::printGraph( qcStatement  * aStatement,
               != IDE_SUCCESS );
 
     //-----------------------------------
-    // GraphÀÇ ¸¶Áö¸· Ãâ·Â
+    // Graphì˜ ë§ˆì§€ë§‰ ì¶œë ¥
     //-----------------------------------
 
     if (aDepth == 0)

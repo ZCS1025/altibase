@@ -23,29 +23,29 @@ class svpFixedPageList
 {
 public:
     
-    // Runtime ItemÀ» NULL·Î ¼³Á¤ÇÑ´Ù.
+    // Runtime Itemì„ NULLë¡œ ì„¤ì •í•œë‹¤.
     static IDE_RC setRuntimeNull( smpPageListEntry* aFixedEntry );
 
-    /* FOR A4 : runtime Á¤º¸ ¹× mutex ÃÊ±âÈ­ ¶Ç´Â ÇØÁ¦ */
+    /* FOR A4 : runtime ì •ë³´ ë° mutex ì´ˆê¸°í™” ë˜ëŠ” í•´ì œ */
     static IDE_RC initEntryAtRuntime( smOID                  aTableOID,
                                       smpPageListEntry*      aFixedEntry,
                                       smpAllocPageListEntry* aAllocPageList );
 
-    /* runtime Á¤º¸ ¹× mutex ÇØÁ¦ */
+    /* runtime ì •ë³´ ë° mutex í•´ì œ */
     static IDE_RC finEntryAtRuntime( smpPageListEntry*  aFixedEntry );
 
-    // PageList¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+    // PageListë¥¼ ì´ˆê¸°í™”í•œë‹¤.
     static void   initializePageListEntry( smpPageListEntry* aFixedEntry,
                                            smOID             aTableOID,
                                            vULong            aSlotSize );
 
-    // aFixedEntry¸¦ Á¦°ÅÇÏ°í DB·Î PageList ¹İ³³
+    // aFixedEntryë¥¼ ì œê±°í•˜ê³  DBë¡œ PageList ë°˜ë‚©
     static IDE_RC freePageListToDB( void*             aTrans,
                                     scSpaceID         aSpaceID,
                                     smOID             aTableOID,
                                     smpPageListEntry* aFixedEntry );
 
-    // aPage¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+    // aPageë¥¼ ì´ˆê¸°í™”í•œë‹¤.
     static void   initializePage( vULong       aSlotSize,
                                   vULong       aSlotCount,
                                   UInt         aPageListID,
@@ -53,8 +53,8 @@ public:
                                   smpPersPage* aPage );
 
     /* ------------------------------------------------
-     * temporary table header¸¦ ÀúÀåÇÏ±â À§ÇÑ fixed row¸¦
-     * ·Î±ëÃ³¸®ÇÏÁö ¾Ê°í ÇÒ´çÇÏ´Â ÇÔ¼ö
+     * temporary table headerë¥¼ ì €ì¥í•˜ê¸° ìœ„í•œ fixed rowë¥¼
+     * ë¡œê¹…ì²˜ë¦¬í•˜ì§€ ì•Šê³  í• ë‹¹í•˜ëŠ” í•¨ìˆ˜
      * ----------------------------------------------*/
     static IDE_RC allocSlotForTempTableHdr( scSpaceID         aSpaceID,
                                             smOID             aTableOID,
@@ -62,7 +62,7 @@ public:
                                             SChar**           aRow,
                                             smSCN             aInfinite );
 
-    // slotÀ» ÇÒ´çÇÑ´Ù.
+    // slotì„ í• ë‹¹í•œë‹¤.
     static IDE_RC allocSlot( void*             aTrans,
                              scSpaceID         aSpaceID,
                              void*             aTableInfoPtr,
@@ -73,37 +73,37 @@ public:
                              ULong             aMaxRow,
                              SInt              aOptFlag);
     
-    // FreeSlotList¿¡¼­ SlotÀ» ²¨³»¿Â´Ù.
+    // FreeSlotListì—ì„œ Slotì„ êº¼ë‚´ì˜¨ë‹¤.
     static void   removeSlotFromFreeSlotList(
         smpFreePageHeader* aFreePageHeader,
         SChar**            aRow );
 
-    // slotÀ» freeÇÑ´Ù.
+    // slotì„ freeí•œë‹¤.
     static IDE_RC freeSlot ( void*              aTrans,
                              scSpaceID          aSpaceID,
                              smpPageListEntry*  aFixedEntry,
                              SChar*             aRow,
                              smpTableType       aTableType );
 
-    // FreeSlot Á¤º¸¸¦ ±â·ÏÇÑ´Ù.
+    // FreeSlot ì •ë³´ë¥¼ ê¸°ë¡í•œë‹¤.
     static IDE_RC setFreeSlot( void         * aTrans,
                                scSpaceID      aSpaceID,
                                scPageID       aPageID,
                                SChar        * aRow,
                                smpTableType   aTableType );
 
-    // FreePageHeaderÀÇ FreeSlotList¿¡ FreeSlotÀ» Ãß°¡ÇÑ´Ù.
+    // FreePageHeaderì˜ FreeSlotListì— FreeSlotì„ ì¶”ê°€í•œë‹¤.
     static void   addFreeSlotToFreeSlotList( smpFreePageHeader* aFreePageHeader,
                                              SChar*             aRow );
 
-    // ½ÇÁ¦ FreeSlotÀ» FreeSlotList¿¡ Ãß°¡ÇÑ´Ù.
+    // ì‹¤ì œ FreeSlotì„ FreeSlotListì— ì¶”ê°€í•œë‹¤.
     static IDE_RC addFreeSlotPending( void*             aTrans,
                                       scSpaceID         aSpaceID,
                                       smpPageListEntry* aFixedEntry,
                                       SChar*            aRow );
 
     /*
-     * BUG-25179 [SMM] Full ScanÀ» À§ÇÑ ÆäÀÌÁö°£ Scan List°¡ ÇÊ¿äÇÕ´Ï´Ù.
+     * BUG-25179 [SMM] Full Scanì„ ìœ„í•œ í˜ì´ì§€ê°„ Scan Listê°€ í•„ìš”í•©ë‹ˆë‹¤.
      */
     static IDE_RC linkScanList( scSpaceID          aSpaceID,
                                 scPageID           aPageID,
@@ -113,7 +113,7 @@ public:
                                   scPageID           aPageID,
                                   smpPageListEntry * aFixedEntry );
     
-    // PageListÀÇ Record °¹¼ö¸¦ ¸®ÅÏÇÑ´Ù.
+    // PageListì˜ Record ê°¯ìˆ˜ë¥¼ ë¦¬í„´í•œë‹¤.
     static IDE_RC getRecordCount( smpPageListEntry* aFixedEntry,
                                   ULong*            aRecordCount );
 
@@ -126,7 +126,7 @@ public:
     static void setAllocatedSlot( smSCN  aInfinite,
                                   SChar *aRow );
     
-    // Slot Header¸¦ altibase_sm.log¿¡ ´ıÇÁÇÑ´Ù
+    // Slot Headerë¥¼ altibase_sm.logì— ë¤í”„í•œë‹¤
     static IDE_RC dumpSlotHeader( smpSlotHeader     * aSlotHeader );
 
     static IDE_RC dumpFixedPage( scSpaceID         aSpaceID,
@@ -134,19 +134,19 @@ public:
                                  smpPageListEntry *aFixedEntry );
     
 private:
-    // DB·ÎºÎÅÍ PersPages(¸®½ºÆ®)¸¦ ¹Ş¾Æ¿Í aFixedEntry¿¡ ¸Å´Ü´Ù.
+    // DBë¡œë¶€í„° PersPages(ë¦¬ìŠ¤íŠ¸)ë¥¼ ë°›ì•„ì™€ aFixedEntryì— ë§¤ë‹¨ë‹¤.
     static IDE_RC allocPersPages( void*             aTrans,
                                   scSpaceID         aSpaceID,
                                   smpPageListEntry* aFixedEntry );
     
-    // nextOIDallÀ» À§ÇØ aRow¿¡¼­ ÇØ´ç Page¸¦ Ã£¾ÆÁØ´Ù.
+    // nextOIDallì„ ìœ„í•´ aRowì—ì„œ í•´ë‹¹ Pageë¥¼ ì°¾ì•„ì¤€ë‹¤.
     static inline void initForScan( scSpaceID          aSpaceID,
                                     smpPageListEntry*  aFixedEntry,
                                     SChar*             aRow,
                                     smpPersPage**      sPage,
                                     SChar**            sPtr );
     
-    // allocSlotÇÏ±âÀ§ÇØ PrivatePageList¸¦ °Ë»çÇÏ¿© ½Ãµµ
+    // allocSlotí•˜ê¸°ìœ„í•´ PrivatePageListë¥¼ ê²€ì‚¬í•˜ì—¬ ì‹œë„
     static IDE_RC tryForAllocSlotFromPrivatePageList(
         void             * aTrans,
         scSpaceID          aSpaceID,
@@ -154,7 +154,7 @@ private:
         smpPageListEntry * aFixedEntry,
         SChar           ** aRow );
 
-    // allocSlotÇÏ±âÀ§ÇØ FreePageList°ú FreePagePoolÀ» °Ë»çÇÏ¿© ½Ãµµ
+    // allocSlotí•˜ê¸°ìœ„í•´ FreePageListê³¼ FreePagePoolì„ ê²€ì‚¬í•˜ì—¬ ì‹œë„
     static IDE_RC tryForAllocSlotFromFreePageList(
         void*             aTrans,
         scSpaceID         aSpaceID,
@@ -162,14 +162,14 @@ private:
         UInt              aPageListID,
         SChar**           aRow );
 
-    // FreeSlotList ±¸Ãà
+    // FreeSlotList êµ¬ì¶•
     static IDE_RC buildFreeSlotList( void*             aTrans,
                                      scSpaceID         aSpaceID,
                                      UInt              aTableType,
                                      smpPageListEntry* aPageListEntry,
                                      iduPtrList*       aPtrList );
 
-    // Slot¿¡ ´ëÇÑ FreeSlot È®ÀÎ
+    // Slotì— ëŒ€í•œ FreeSlot í™•ì¸
     static IDE_RC refineSlot( void*             aTrans,
                               scSpaceID         aSpaceID,
                               UInt              aTableType,
@@ -180,7 +180,7 @@ private:
                               idBool          * aRefined,
                               iduPtrList*       aPtrList );
 
-    // Page³»ÀÇ FreeSlotListÀÇ ¿¬°áÀÌ ¿Ã¹Ù¸¥Áö °Ë»çÇÑ´Ù.
+    // Pageë‚´ì˜ FreeSlotListì˜ ì—°ê²°ì´ ì˜¬ë°”ë¥¸ì§€ ê²€ì‚¬í•œë‹¤.
     static inline idBool isValidFreeSlotList(
         smpFreePageHeader* aFreePageHeader );
 };

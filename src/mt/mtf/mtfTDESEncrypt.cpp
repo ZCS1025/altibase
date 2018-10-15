@@ -46,7 +46,7 @@ static IDE_RC mtfTDESEncryptEstimate( mtcNode*     aNode,
 mtfModule mtfTDESEncrypt = {
     1|MTC_NODE_OPERATOR_FUNCTION,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (∫Ò±≥ ø¨ªÍ¿⁄∞° æ∆¥‘)
+    1.0,  // default selectivity (ÎπÑÍµê Ïó∞ÏÇ∞ÏûêÍ∞Ä ÏïÑÎãò)
     mtfTDESEncryptFunctionName,
     NULL,
     mtf::initializeDefault,

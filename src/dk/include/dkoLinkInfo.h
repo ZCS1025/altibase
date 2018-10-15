@@ -42,9 +42,9 @@ typedef enum
 /* Define DB-Link linformation for performance view */
 typedef struct dkoLinkInfo
 {
-    UInt               mId;        /* ÀÌ µ¥ÀÌÅÍº£ÀÌ½º ¸µÅ©ÀÇ ½Äº°ÀÚ        */
-    dkoLinkInfoStatus  mStatus;    /* ¸µÅ© °´Ã¼ÀÇ »óÅÂ                     */
-    UInt               mRefCnt;    /* ¸µÅ© °´Ã¼¸¦ ÂüÁ¶ÇÏ´Â session ÀÇ °³¼ö */
+    UInt               mId;        /* ì´ ë°ì´í„°ë² ì´ìŠ¤ ë§í¬ì˜ ì‹ë³„ì        */
+    dkoLinkInfoStatus  mStatus;    /* ë§í¬ ê°ì²´ì˜ ìƒíƒœ                     */
+    UInt               mRefCnt;    /* ë§í¬ ê°ì²´ë¥¼ ì°¸ì¡°í•˜ëŠ” session ì˜ ê°œìˆ˜ */
 } dkoLinkInfo;
 
 IDE_RC dkoLinkInfoInitialize( void );

@@ -260,7 +260,7 @@ IDE_RC iduShmMsgMgr::sendRequest( idvSQL             * aStatistics,
 
     if( aReqMode == IDU_SHM_MSG_SYNC )
     {
-        /* ¿äÃ»ÇÑ ÀÛ¾÷ÀÌ ¿Ï·áµÉ ¶§ ±îÁö ´ë±â ÇÑ´Ù. */
+        /* ìš”ì²­í•œ ìž‘ì—…ì´ ì™„ë£Œë  ë•Œ ê¹Œì§€ ëŒ€ê¸° í•œë‹¤. */
         while(1)
         {
             IDE_TEST( idwPMMgr::checkProcAliveByLPID( IDW_THRID_LPID( mTgtThrID ),
@@ -366,15 +366,15 @@ IDE_RC iduShmMsgMgr::recvRequest( idvSQL          * aStatistics,
 
             if( sCurShmMsg->mState == IDU_SHM_MSG_STATE_CHECKED_BY_REQUESTOR )
             {
-                /* Request¿¡ ÀÇÇØ Ã³¸®µÈ°ÍÀÌ È®ÀÎµÇ¾ú±â ¶§¹®¿¡ »èÁ¦ */
+                /* Requestì— ì˜í•´ ì²˜ë¦¬ëœê²ƒì´ í™•ì¸ë˜ì—ˆê¸° ë•Œë¬¸ì— ì‚­ì œ */
             }
             else
             {
                 if( sCurShmMsg->mState   == IDU_SHM_MSG_STATE_FINISH &&
                     sCurShmMsg->mReqMode == IDU_SHM_MSG_ASYNC )
                 {
-                    /* Request¿¡ ÀÇÇØ Ã³¸®µÇ¾ú°í Requestor¿¡ ÀÇÇØ¼­ Ã³¸®µÈ°ÍÀ»
-                     * È®ÀÎÇÏÁö ¾Ê´Â Async ModeÀÌ±â ¶§¹®¿¡ Msg Node¸¦ »èÁ¦ÇÑ´Ù. */
+                    /* Requestì— ì˜í•´ ì²˜ë¦¬ë˜ì—ˆê³  Requestorì— ì˜í•´ì„œ ì²˜ë¦¬ëœê²ƒì„
+                     * í™•ì¸í•˜ì§€ ì•ŠëŠ” Async Modeì´ê¸° ë•Œë¬¸ì— Msg Nodeë¥¼ ì‚­ì œí•œë‹¤. */
                 }
                 else
                 {

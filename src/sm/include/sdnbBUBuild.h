@@ -40,7 +40,7 @@ class sdnbBUBuild : public idtBaseThread
 {
 public:
 
-    /* ¾²·¹µå ÃÊ±âÈ­ */
+    /* ì“°ë ˆë“œ ì´ˆê¸°í™” */
     IDE_RC initialize( UInt             aTotalThreadCnt,
                        UInt             aID,
                        smcTableHeader * aTable,
@@ -53,7 +53,7 @@ public:
                        UInt             aBuildFlag,
                        idvSQL*          aStatistics );
 
-    IDE_RC destroy();         /* ¾²·¹µå ÇØÁ¦ */
+    IDE_RC destroy();         /* ì“°ë ˆë“œ í•´ì œ */
 
     /* Index Build Main */
     static IDE_RC main( idvSQL          *aStatistics,
@@ -85,44 +85,44 @@ public:
                                     UInt             aStatFlag );
 
 private:
-    UInt               mLeftSizeThreshold;  // ÃßÃâÅ°¸¦ ÀúÀåÇÒÁö ¸»Áö¸¦ ³ª´©´Â ±âÁØ
+    UInt               mLeftSizeThreshold;  // ì¶”ì¶œí‚¤ë¥¼ ì €ì¥í• ì§€ ë§ì§€ë¥¼ ë‚˜ëˆ„ëŠ” ê¸°ì¤€
 
-    idBool             mFinished;    /* ¾²·¹µå ½ÇÇà ¿©ºÎ flag */
-    idBool *           mContinue;    /* ¾²·¹µå Áß´Ü ¿©ºÎ flag */
+    idBool             mFinished;    /* ì“°ë ˆë“œ ì‹¤í–‰ ì—¬ë¶€ flag */
+    idBool *           mContinue;    /* ì“°ë ˆë“œ ì¤‘ë‹¨ ì—¬ë¶€ flag */
     UInt               mErrorCode;
     ideErrorMgr        mErrorMgr;
 
     UInt               mTotalThreadCnt;
     UInt               mTotalMergeCnt;
-    UInt               mID;          /* ¾²·¹µå ¹øÈ£ */
+    UInt               mID;          /* ì“°ë ˆë“œ ë²ˆí˜¸ */
     
     idvSQL*            mStatistics; /* TASK-2356 Altibase Wait Interface
-                                     * Åë°èÁ¤º¸¸¦ Á¤È®È÷ ÃøÁ¤ÇÏ·Á¸é,
-                                     * ¾²·¹µå °³¼ö¸¸Å­ ÀÖ¾î¾ß ÇÑ´Ù.
-                                     * ÇöÀç´Â Åë°èÁ¤º¸¸¦ ¼öÁıÇÏÁö ¾Ê°í,
-                                     * SessionEvent¸¸ Ã¼Å©ÇÏ´Â ¿ëµµ·Î »ç¿ëÇÑ´Ù. */
+                                     * í†µê³„ì •ë³´ë¥¼ ì •í™•íˆ ì¸¡ì •í•˜ë ¤ë©´,
+                                     * ì“°ë ˆë“œ ê°œìˆ˜ë§Œí¼ ìˆì–´ì•¼ í•œë‹¤.
+                                     * í˜„ì¬ëŠ” í†µê³„ì •ë³´ë¥¼ ìˆ˜ì§‘í•˜ì§€ ì•Šê³ ,
+                                     * SessionEventë§Œ ì²´í¬í•˜ëŠ” ìš©ë„ë¡œ ì‚¬ìš©í•œë‹¤. */
     void             * mTrans;
     smcTableHeader   * mTable;
     smnIndexHeader   * mIndex;
-    sdnbLKey         **mKeyMap;       /* ÀÛ¾÷°ø°£   ref-map */
-    UChar            * mKeyBuffer;    /* ÀÛ¾÷°ø°£   Pointer */
-    UInt               mKeyBufferSize;/* ÀÛ¾÷°ø°£ÀÇ Å©±â */
+    sdnbLKey         **mKeyMap;       /* ì‘ì—…ê³µê°„   ref-map */
+    UChar            * mKeyBuffer;    /* ì‘ì—…ê³µê°„   Pointer */
+    UInt               mKeyBufferSize;/* ì‘ì—…ê³µê°„ì˜ í¬ê¸° */
     iduStackMgr        mSortStack;        //BUG-27403 for Quicksort
 
-    UInt               mInsertableMaxKeyCnt; /* ÀÛ¾÷ °ø°£¿¡¼­ ÀÛ¾÷ °¡´ÉÇÑ
-                                             KeyMapÀÇ ÃÖ´ë °³¼ö */
-    smuQueueMgr        mPIDBlkQueue;      /* merge block¿¡ ´ëÇÑ queue */
+    UInt               mInsertableMaxKeyCnt; /* ì‘ì—… ê³µê°„ì—ì„œ ì‘ì—… ê°€ëŠ¥í•œ
+                                             KeyMapì˜ ìµœëŒ€ ê°œìˆ˜ */
+    smuQueueMgr        mPIDBlkQueue;      /* merge blockì— ëŒ€í•œ queue */
     UInt               mFreePageCnt;
     idBool             mIsNeedValidation;
     sdrMtxLogMode      mLoggingMode;
     idBool             mIsForceMode;
     UInt               mBuildFlag;
-    UInt               mPhase;         /* ¾²·¹µåÀÇ ÀÛ¾÷ ´Ü°è */
+    UInt               mPhase;         /* ì“°ë ˆë“œì˜ ì‘ì—… ë‹¨ê³„ */
     iduStackMgr        mFreePage;      /* Free temp page head */
     UInt               mMergePageCount;
     idBool             mIsSuccess;
 
-    virtual void run();                         /* main ½ÇÇà ·çÆ¾ */
+    virtual void run();                         /* main ì‹¤í–‰ ë£¨í‹´ */
 
     /* Phase 1. Key Extraction & In-Memory Sort */
     IDE_RC extractNSort( sdnbStatistic * aIndexStat );
@@ -135,7 +135,7 @@ private:
                      sdnbStatistic  * aIndexStat,
                      UInt             aStatFlag );
 
-    /* ¾²·¹µå ÀÛ¾÷ ½ÃÀÛ ·çÆ¾ */
+    /* ì“°ë ˆë“œ ì‘ì—… ì‹œì‘ ë£¨í‹´ */
     static IDE_RC threadRun( UInt         aPhase,
                              UInt         aThreadCnt,
                              sdnbBUBuild *aThreads );
@@ -150,7 +150,7 @@ private:
                       UInt           aHead,
                       UInt           aTail );
 
-    /* ÀÛ¾÷ °ø°£¿¡ ÀÖ´Â sorted blockÀ» Temp °ø°£À¸·Î ÀÌµ¿ */
+    /* ì‘ì—… ê³µê°„ì— ìˆëŠ” sorted blockì„ Temp ê³µê°„ìœ¼ë¡œ ì´ë™ */
     IDE_RC storeSortedRun( UInt    aHead,
                            UInt    aTail,
                            UInt  * aLeftPos,
@@ -158,7 +158,7 @@ private:
 
     IDE_RC preparePages( UInt aNeedPageCnt );
 
-    /* Temp °ø°£À» À§ÇÑ free list À¯Áö */
+    /* Temp ê³µê°„ì„ ìœ„í•œ free list ìœ ì§€ */
     IDE_RC allocPage( sdrMtx         * aMtx,
                       scPageID       * aPageID,
                       sdpPhyPageHdr ** aPageHdr,
@@ -172,10 +172,10 @@ private:
                           UInt           aThreadCnt );
     IDE_RC removeFreePage();
     
-    /* KeyValue·ÎºÎÅÍ KeySize¸¦ ¾ò´Â´Ù*/
+    /* KeyValueë¡œë¶€í„° KeySizeë¥¼ ì–»ëŠ”ë‹¤*/
     UShort getKeySize( UChar *aKeyValue );
 
-    /* KeyMap¿¡¼­ swap */
+    /* KeyMapì—ì„œ swap */
     void   swapKeyMap( UInt aPos1,
                        UInt aPos2 );
 

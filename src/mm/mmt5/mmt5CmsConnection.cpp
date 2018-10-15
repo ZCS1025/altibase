@@ -270,7 +270,7 @@ IDE_RC mmtServiceThread::connectProtocolA5(cmiProtocolContext *aProtocolContext,
     idlOS::memset(&sUserInfo, 0, ID_SIZEOF(sUserInfo));
 
     /*
-     * ÇÁ·ÎÅäÄİ·ÎºÎÅÍ UserName, Password È¹µæ
+     * í”„ë¡œí† ì½œë¡œë¶€í„° UserName, Password íšë“
      */
 
     sUserNameLen = cmtVariableGetSize(&sArg->mUserName);
@@ -297,20 +297,20 @@ IDE_RC mmtServiceThread::connectProtocolA5(cmiProtocolContext *aProtocolContext,
                    != IDE_SUCCESS, ConnectionNotPermitted);
 
     // To Fix BUG-17430
-    // ¹«Á¶°Ç ´ë¹®ÀÚ·Î º¯°æÇÏ¸é ¾ÈµÊ.
+    // ë¬´ì¡°ê±´ ëŒ€ë¬¸ìë¡œ ë³€ê²½í•˜ë©´ ì•ˆë¨.
     // idlOS::strUpper(sUserInfo.loginID, sUserNameLen);
     sUserName[sUserNameLen] = '\0';
     mtl::makeNameInSQL( sUserInfo.loginID, sUserName, sUserNameLen );
 
     // To fix BUG-21137
-    // password¿¡µµ double quotationÀÌ ¿Ã ¼ö ÀÖ´Ù.
-    // ÀÌ¸¦ makeNameInSQLÇÔ¼ö·Î Á¦°ÅÇÑ´Ù.
+    // passwordì—ë„ double quotationì´ ì˜¬ ìˆ˜ ìˆë‹¤.
+    // ì´ë¥¼ makeNameInSQLí•¨ìˆ˜ë¡œ ì œê±°í•œë‹¤.
     sPassword[sPasswordLen] = '\0';
     mtl::makePasswordInSQL( sUserInfo.loginPassword, sPassword, sPasswordLen );
 
     // PROJ-2002 Column Security
-    // login IP(session login IP)´Â ¸ğµç ·¹ÄÚµåÀÇ ÄÃ·³¸¶´Ù
-    // È£ÃâÇÏ¿© È£Ãâ È½¼ö°¡ ¸¹¾Æ IP¸¦ º°µµ·Î ÀúÀåÇÑ´Ù.
+    // login IP(session login IP)ëŠ” ëª¨ë“  ë ˆì½”ë“œì˜ ì»¬ëŸ¼ë§ˆë‹¤
+    // í˜¸ì¶œí•˜ì—¬ í˜¸ì¶œ íšŸìˆ˜ê°€ ë§ì•„ IPë¥¼ ë³„ë„ë¡œ ì €ì¥í•œë‹¤.
     if( cmiGetLinkInfo( sTask->getLink(),
                         sUserInfo.loginIP,
                         QCI_MAX_IP_LEN,
@@ -364,13 +364,13 @@ IDE_RC mmtServiceThread::connectProtocolA5(cmiProtocolContext *aProtocolContext,
     IDE_TEST(sTask->authenticate(&sUserInfo) != IDE_SUCCESS);
 
     /*
-     * Session »ı¼º
+     * Session ìƒì„±
      */
 
     IDE_TEST(mmtSessionManager::allocSession(sTask, sUserInfo.mIsSysdba) != IDE_SUCCESS);
 
     /*
-     * Session »óÅÂ È®ÀÎ
+     * Session ìƒíƒœ í™•ì¸
      */
 
     sSession = sTask->getSession();
@@ -379,7 +379,7 @@ IDE_RC mmtServiceThread::connectProtocolA5(cmiProtocolContext *aProtocolContext,
     IDE_TEST_RAISE(sSession->getSessionState() >= MMC_SESSION_STATE_AUTH, AlreadyConnectedError);
 
     /*
-     * Session¿¡ ·Î±×ÀÎÁ¤º¸ ÀúÀå
+     * Sessionì— ë¡œê·¸ì¸ì •ë³´ ì €ì¥
      */
 
     sTask->getSession()->setUserInfo(&sUserInfo);
@@ -558,9 +558,9 @@ IDE_RC mmtServiceThread::propertyGetProtocolA5(cmiProtocolContext *aProtocolCont
         /*
          * BUG-36256 Improve property's communication
          *
-         * ulnCallbackDBPropertySetResult ÇÔ¼ö¸¦ ÀÌ¿ëÇÒ ¼ö ¾ø±â¿¡ Get()µµ
-         * ÅëÀÏ¼ºÀ» À§ÇØ answerErrorResult¸¦ ÀÌ¿ëÇØ ¿¡·¯¸¦ ¹ß»ı½ÃÅ°Áö ¾Ê°í
-         * Client¿¡°Ô ÀÀ´äÀ» ÁØ´Ù.
+         * ulnCallbackDBPropertySetResult í•¨ìˆ˜ë¥¼ ì´ìš©í•  ìˆ˜ ì—†ê¸°ì— Get()ë„
+         * í†µì¼ì„±ì„ ìœ„í•´ answerErrorResultë¥¼ ì´ìš©í•´ ì—ëŸ¬ë¥¼ ë°œìƒì‹œí‚¤ì§€ ì•Šê³ 
+         * Clientì—ê²Œ ì‘ë‹µì„ ì¤€ë‹¤.
          */
         ideLog::log(IDE_MM_0,
                     MM_TRC_GET_UNSUPPORTED_PROPERTY,
@@ -681,8 +681,8 @@ IDE_RC mmtServiceThread::propertySetProtocolA5(cmiProtocolContext *aProtocolCont
             sInfo->mClientAppInfo[sLen] = 0;
 
             /* PROJ-2626 Snapshot Export
-             * iloader ÀÎÁö ¾Æ´ÑÁö¸¦ ±¸ºĞÇØ¾ß µÉ °æ¿ì ¸Å¹ø string compare¸¦ ÇÏ±â
-             * º¸´Ù ¹Ì¸® °ªÀ» Á¤ÇØ ³õ´Â´Ù.
+             * iloader ì¸ì§€ ì•„ë‹Œì§€ë¥¼ êµ¬ë¶„í•´ì•¼ ë  ê²½ìš° ë§¤ë²ˆ string compareë¥¼ í•˜ê¸°
+             * ë³´ë‹¤ ë¯¸ë¦¬ ê°’ì„ ì •í•´ ë†“ëŠ”ë‹¤.
              */
             if ( ( sLen == 7 ) &&
                  ( idlOS::strncmp( sInfo->mClientAppInfo, "iloader", sLen ) == 0 ) )
@@ -844,10 +844,10 @@ IDE_RC mmtServiceThread::propertySetProtocolA5(cmiProtocolContext *aProtocolCont
         /*
          * BUG-36256 Improve property's communication
          *
-         * CMP_OP_DB_ProprtySetResult´Â OP(2)¸¸ º¸³»±â ¶§¹®¿¡ ÇÏÀ§ È£È¯¼ºÀ»
-         * À¯ÁöÇÏ±â À§ÇØ¼­´Â ulnCallbackDBPropertySetResult ÇÔ¼ö¸¦ ÀÌ¿ëÇÒ ¼ö ¾ø´Ù.
-         * answerErrorResult¸¦ ÀÌ¿ëÇØ ¿¡·¯¸¦ ¹ß»ı½ÃÅ°Áö ¾Ê°í Client¿¡°Ô ÀÀ´äÀ» ÁØ´Ù.
-         * ÃÊ±â ¼³°è°¡ ¾Æ½¬¿î ºÎºĞÀÌ´Ù.
+         * CMP_OP_DB_ProprtySetResultëŠ” OP(2)ë§Œ ë³´ë‚´ê¸° ë•Œë¬¸ì— í•˜ìœ„ í˜¸í™˜ì„±ì„
+         * ìœ ì§€í•˜ê¸° ìœ„í•´ì„œëŠ” ulnCallbackDBPropertySetResult í•¨ìˆ˜ë¥¼ ì´ìš©í•  ìˆ˜ ì—†ë‹¤.
+         * answerErrorResultë¥¼ ì´ìš©í•´ ì—ëŸ¬ë¥¼ ë°œìƒì‹œí‚¤ì§€ ì•Šê³  Clientì—ê²Œ ì‘ë‹µì„ ì¤€ë‹¤.
+         * ì´ˆê¸° ì„¤ê³„ê°€ ì•„ì‰¬ìš´ ë¶€ë¶„ì´ë‹¤.
          */
         ideLog::log(IDE_MM_0,
                     MM_TRC_SET_UNSUPPORTED_PROPERTY,

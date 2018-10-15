@@ -23,45 +23,45 @@
  ***********************************************************************/
 
 /***********************************************************************
- * Description : ¹öÆÛÇ®¿¡¼­ »ç¿ëÇÏ´Â LRU list¸¦ ±¸ÇöÇÑ ÆÄÀÏÀÌ´Ù.
- *               LRU list´Â °´Ã¼·Î »ç¿ëµÇ¸ç µ¿±âÈ­ Á¦¾î´Â ³»ºÎÀûÀ¸·Î
- *               ¼öÇàµÇ±â ¶§¹®¿¡ µû·Î lock, unlock ÀÎÅÍÆäÀÌ½º¸¦
- *               Á¦°øÇÏÁö ¾Ê´Â´Ù.
- *               ¾Ë°í¸®ÁòÀº HOT-COLD LRU ¾Ë°í¸®ÁòÀ» »ç¿ëÇÑ´Ù.
+ * Description : ë²„í¼í’€ì—ì„œ ì‚¬ìš©í•˜ëŠ” LRU listë¥¼ êµ¬í˜„í•œ íŒŒì¼ì´ë‹¤.
+ *               LRU listëŠ” ê°ì²´ë¡œ ì‚¬ìš©ë˜ë©° ë™ê¸°í™” ì œì–´ëŠ” ë‚´ë¶€ì ìœ¼ë¡œ
+ *               ìˆ˜í–‰ë˜ê¸° ë•Œë¬¸ì— ë”°ë¡œ lock, unlock ì¸í„°í˜ì´ìŠ¤ë¥¼
+ *               ì œê³µí•˜ì§€ ì•ŠëŠ”ë‹¤.
+ *               ì•Œê³ ë¦¬ì¦˜ì€ HOT-COLD LRU ì•Œê³ ë¦¬ì¦˜ì„ ì‚¬ìš©í•œë‹¤.
  *
- *   + Á¦¾à»çÇ×
- *     - ÃÊ±âÈ­ÇÒ ¶§ aHotMax´Â ÃÖ¼ÒÇÑ 1º¸´Ù Ä¿¾ßÇÑ´Ù.
- *       Áï hot ¿µ¿ªÀÇ ÃÖ´ë Å©±â´Â ÃÖ¼ÒÇÑ 1ÀÌ°Å³ª ±×º¸´Ù Ä¿¾ßÇÑ´Ù.
- *       ±âÁ¸ ¹öÆÛ ¾Ë°í¸®Áò(´Ü¼ø LRU)°ú µ¿ÀÏÇÑ ¾Ë°í¸®ÁòÀ»
- *       »ç¿ëÇÏ±âÀ§ÇØ¼­´Â aHotMax¸¦ 1·ÎÇÏ¸éµÈ´Ù.
+ *   + ì œì•½ì‚¬í•­
+ *     - ì´ˆê¸°í™”í•  ë•Œ aHotMaxëŠ” ìµœì†Œí•œ 1ë³´ë‹¤ ì»¤ì•¼í•œë‹¤.
+ *       ì¦‰ hot ì˜ì—­ì˜ ìµœëŒ€ í¬ê¸°ëŠ” ìµœì†Œí•œ 1ì´ê±°ë‚˜ ê·¸ë³´ë‹¤ ì»¤ì•¼í•œë‹¤.
+ *       ê¸°ì¡´ ë²„í¼ ì•Œê³ ë¦¬ì¦˜(ë‹¨ìˆœ LRU)ê³¼ ë™ì¼í•œ ì•Œê³ ë¦¬ì¦˜ì„
+ *       ì‚¬ìš©í•˜ê¸°ìœ„í•´ì„œëŠ” aHotMaxë¥¼ 1ë¡œí•˜ë©´ëœë‹¤.
  *
- *   + µ¥ÀÌÅÍ ±¸Á¶ ¹× ¾Ë°í¸®Áò
- *      . mHotLength¿Í mColdLength´Â ¹ÂÅØ½º¸¦ ÀâÀº µ¿¾È¿£ Ç×»ó Á¤È®ÇÑ Á¤º¸¸¦
- *          À¯ÁöÇÏ°í ÀÖ´Ù.
- *      . hotBCB°¡ ÀüÇô ¾ø´Â °æ¿ì¿£ mMid´Â mBase¸¦ °¡¸®Å°°í ÀÖ´Ù.
- *      . hotBCB°¡ ÇÏ³ª¶óµµ ÀÖ´Ù¸é  mMid´Â hotLast¸¦ °¡¸®Å°°í ÀÖ´Ù.
- *      . Áï, mMid¿Í mBase°¡ °°´Ù´Â °ÍÀº hot¿µ¿ª¿¡ bcb°¡ ÀüÇô ¾øÀ½À» ÀÇ¹ÌÇÑ´Ù.
+ *   + ë°ì´í„° êµ¬ì¡° ë° ì•Œê³ ë¦¬ì¦˜
+ *      . mHotLengthì™€ mColdLengthëŠ” ë®¤í…ìŠ¤ë¥¼ ì¡ì€ ë™ì•ˆì—” í•­ìƒ ì •í™•í•œ ì •ë³´ë¥¼
+ *          ìœ ì§€í•˜ê³  ìˆë‹¤.
+ *      . hotBCBê°€ ì „í˜€ ì—†ëŠ” ê²½ìš°ì—” mMidëŠ” mBaseë¥¼ ê°€ë¦¬í‚¤ê³  ìˆë‹¤.
+ *      . hotBCBê°€ í•˜ë‚˜ë¼ë„ ìˆë‹¤ë©´  mMidëŠ” hotLastë¥¼ ê°€ë¦¬í‚¤ê³  ìˆë‹¤.
+ *      . ì¦‰, mMidì™€ mBaseê°€ ê°™ë‹¤ëŠ” ê²ƒì€ hotì˜ì—­ì— bcbê°€ ì „í˜€ ì—†ìŒì„ ì˜ë¯¸í•œë‹¤.
  *      
- *      . cold·Î »ğÀÔÀº Ç×»ó mMid->mNext ·ÎÀÌ·ç¾î Áø´Ù. ÀÌ¶§, mMidÆ÷ÀÎÆ®ÀÇ
- *          ÀÌµ¿ÀÌ ÀüÇô ¾øÀ½À» ÁÖ¸ñ. ¿Ö³Ä¸é mMidÆ÷ÀÎÆ®´Â hotLast¸¦ °¡¸®Å°±â ¶§¹®.
- *      . HotÀ¸·Î »ğÀÔ¶§¿¡ ¸¸¾à mHotMax±îÁö BCB°¡ Â÷Áö ¾Ê¾Ò´Ù¸é, ¿ª½Ã mMidÆ÷ÀÎÆ®
- *          ÀÌµ¿ÀÌ ÀüÇô ¾øÀ½À» ÁÖ¸ñ. ¿Ö³Ä¸é mMidÆ÷ÀÎÆ®´Â hotLast¸¦ °¡¸®Å°±â ¶§¹®.
- *      . HotÀ¸·Î »ğÀÔ¶§¿¡ ¸¸¾à mHotMax±îÁö BCB°¡ Ã¡´Ù¸é, mMid->mPrev·Î
- *          mMidÆ÷ÀÎÅÍ ÀÌµ¿
+ *      . coldë¡œ ì‚½ì…ì€ í•­ìƒ mMid->mNext ë¡œì´ë£¨ì–´ ì§„ë‹¤. ì´ë•Œ, mMidí¬ì¸íŠ¸ì˜
+ *          ì´ë™ì´ ì „í˜€ ì—†ìŒì„ ì£¼ëª©. ì™œëƒë©´ mMidí¬ì¸íŠ¸ëŠ” hotLastë¥¼ ê°€ë¦¬í‚¤ê¸° ë•Œë¬¸.
+ *      . Hotìœ¼ë¡œ ì‚½ì…ë•Œì— ë§Œì•½ mHotMaxê¹Œì§€ BCBê°€ ì°¨ì§€ ì•Šì•˜ë‹¤ë©´, ì—­ì‹œ mMidí¬ì¸íŠ¸
+ *          ì´ë™ì´ ì „í˜€ ì—†ìŒì„ ì£¼ëª©. ì™œëƒë©´ mMidí¬ì¸íŠ¸ëŠ” hotLastë¥¼ ê°€ë¦¬í‚¤ê¸° ë•Œë¬¸.
+ *      . Hotìœ¼ë¡œ ì‚½ì…ë•Œì— ë§Œì•½ mHotMaxê¹Œì§€ BCBê°€ ì°¼ë‹¤ë©´, mMid->mPrevë¡œ
+ *          mMidí¬ì¸í„° ì´ë™
  *
- *      . cold »ğÀÔ => mMid->mNext·Î »ğÀÔ
- *      . cold »èÁ¦ => (if cold°¡ Á¸ÀçÇÒ¶§¸¸) mBase->mPrevÁ¦°Å
- *      . hot »ğÀÔ  => (if hotÀÌ ¾ø´Ù¸é) mBase->mNext·Î »ğÀÔ; mMidÆ÷ÀÎÅÍ º¯°æ
- *                    (if hotÀÌ ÀÖ´Ù¸é) mBase->mNext·Î »ğÀÔ
+ *      . cold ì‚½ì… => mMid->mNextë¡œ ì‚½ì…
+ *      . cold ì‚­ì œ => (if coldê°€ ì¡´ì¬í• ë•Œë§Œ) mBase->mPrevì œê±°
+ *      . hot ì‚½ì…  => (if hotì´ ì—†ë‹¤ë©´) mBase->mNextë¡œ ì‚½ì…; mMidí¬ì¸í„° ë³€ê²½
+ *                    (if hotì´ ìˆë‹¤ë©´) mBase->mNextë¡œ ì‚½ì…
  *
- *      . ¸®½ºÆ® Áß°£¿¡¼­ »èÁ¦ => ±×³É »èÁ¦ÇÏ¸é µÇÁö¸¸, ¸¸¾à »èÁ¦ ´ë»óÀÌ mMid¶ó¸é
- *                              mMidÆ÷ÀÎÅÍ¸¦ mMid->mPrev·Î º¯°æ..
+ *      . ë¦¬ìŠ¤íŠ¸ ì¤‘ê°„ì—ì„œ ì‚­ì œ => ê·¸ëƒ¥ ì‚­ì œí•˜ë©´ ë˜ì§€ë§Œ, ë§Œì•½ ì‚­ì œ ëŒ€ìƒì´ mMidë¼ë©´
+ *                              mMidí¬ì¸í„°ë¥¼ mMid->mPrevë¡œ ë³€ê²½..
  *
  ***********************************************************************/
 
 #include <sdbLRUList.h>
 
-/* Hot¿µ¿ª¿¡ ÀÖ´ø BCB¸¦ Cold¿µ¿ªÀ¸·Î ¿Å°Ü¿Ã¶§ ¼³Á¤ÇÏ´Â Á¤º¸ */
+/* Hotì˜ì—­ì— ìˆë˜ BCBë¥¼ Coldì˜ì—­ìœ¼ë¡œ ì˜®ê²¨ì˜¬ë•Œ ì„¤ì •í•˜ëŠ” ì •ë³´ */
 #define SDB_MAKE_BCB_COLD(node) {                                       \
         ((sdbBCB*)(node)->mData)->mTouchCnt    = 1;                     \
         ((sdbBCB*)(node)->mData)->mBCBListType = SDB_BCB_LRU_COLD;      \
@@ -70,11 +70,11 @@
 
 /***********************************************************************
  * Description :
- *  LRUList¸¦ ÃÊ±âÈ­ ÇÑ´Ù.
+ *  LRUListë¥¼ ì´ˆê¸°í™” í•œë‹¤.
  * 
- *  aListID     - [IN]  ¸®½ºÆ® ID
- *  aHotMax     - [IN]  ¸®½ºÆ®¿¡¼­ hotÀÌ Â÷ÁöÇÒ ¼ö ÀÖ´Â ÃÖ´ë °¹¼ö.
- *  aStat       - [IN]  ¹öÆÛÇ® Åë°èÁ¤º¸
+ *  aListID     - [IN]  ë¦¬ìŠ¤íŠ¸ ID
+ *  aHotMax     - [IN]  ë¦¬ìŠ¤íŠ¸ì—ì„œ hotì´ ì°¨ì§€í•  ìˆ˜ ìˆëŠ” ìµœëŒ€ ê°¯ìˆ˜.
+ *  aStat       - [IN]  ë²„í¼í’€ í†µê³„ì •ë³´
  ***********************************************************************/
 IDE_RC sdbLRUList::initialize(UInt               aListID,
                               UInt               aHotMax,
@@ -83,7 +83,7 @@ IDE_RC sdbLRUList::initialize(UInt               aListID,
     SChar sMutexName[128];
     SInt  sState = 0;
 
-    // aHotMax´Â 1 ÀÌ»óÀÌ¾î¾ß ÇÑ´Ù.
+    // aHotMaxëŠ” 1 ì´ìƒì´ì–´ì•¼ í•œë‹¤.
     if (aHotMax == 0)
     {
         aHotMax = 1;
@@ -124,7 +124,7 @@ IDE_RC sdbLRUList::initialize(UInt               aListID,
 
 /***********************************************************************
  * Description :
- *  Á¦°ÅÇÔ¼ö
+ *  ì œê±°í•¨ìˆ˜
  ***********************************************************************/
 IDE_RC sdbLRUList::destroy()
 {
@@ -139,9 +139,9 @@ IDE_RC sdbLRUList::destroy()
 
 /****************************************************************
  * Description:
- *  ColdLast¿¡¼­ BCB¸¦ ÇÏ³ª ¸®ÅÏÇÑ´Ù. cold¿µ¿ª¿¡ BCB°¡ ÀüÇô ¾ø´Ù¸é NULLÀ» ¸®ÅÏ.
+ *  ColdLastì—ì„œ BCBë¥¼ í•˜ë‚˜ ë¦¬í„´í•œë‹¤. coldì˜ì—­ì— BCBê°€ ì „í˜€ ì—†ë‹¤ë©´ NULLì„ ë¦¬í„´.
  *  
- *  aStatistics - [IN]  Åë°èÁ¤º¸
+ *  aStatistics - [IN]  í†µê³„ì •ë³´
  ****************************************************************/
 sdbBCB* sdbLRUList::removeColdLast(idvSQL *aStatistics)
 {
@@ -150,7 +150,7 @@ sdbBCB* sdbLRUList::removeColdLast(idvSQL *aStatistics)
 
     if( mColdLength == 0 )
     {
-        // ¹ÂÅØ½º¸¦ ÀâÁö ¾Ê¾Ò±â ¶§¹®¿¡ Á¤È®ÇÏÁö ¾ÊÀ» ¼ö ÀÖ´Ù.
+        // ë®¤í…ìŠ¤ë¥¼ ì¡ì§€ ì•Šì•˜ê¸° ë•Œë¬¸ì— ì •í™•í•˜ì§€ ì•Šì„ ìˆ˜ ìˆë‹¤.
         sRet = NULL;
     }
     else
@@ -188,12 +188,12 @@ sdbBCB* sdbLRUList::removeColdLast(idvSQL *aStatistics)
 
 /****************************************************************
  * Description:
- *  MidÆ÷ÀÎÅÍ¸¦ Hot ¹æÇâÀ¸·Î aMoveCnt¸¸Å­ ÀÌµ¿½ÃÅ²´Ù.
- *  ¸¸¾à aMoveCnt°¡ mHotLengthº¸´Ù Å«°æ¿ì¿¡´Â °ªÀ» º¸Á¤ÇÏ¿©,
- *  mHotLength¸¸Å­¸¸ ¿Å±ä´Ù.
+ *  Midí¬ì¸í„°ë¥¼ Hot ë°©í–¥ìœ¼ë¡œ aMoveCntë§Œí¼ ì´ë™ì‹œí‚¨ë‹¤.
+ *  ë§Œì•½ aMoveCntê°€ mHotLengthë³´ë‹¤ í°ê²½ìš°ì—ëŠ” ê°’ì„ ë³´ì •í•˜ì—¬,
+ *  mHotLengthë§Œí¼ë§Œ ì˜®ê¸´ë‹¤.
  *  
- *  aStatistics - [IN]  Åë°èÁ¤º¸
- *  aMoveCnt    - [IN]  hot¹æÇâÀ¸·Î ÀÌµ¿ÇÏ´Â È½¼ö
+ *  aStatistics - [IN]  í†µê³„ì •ë³´
+ *  aMoveCnt    - [IN]  hotë°©í–¥ìœ¼ë¡œ ì´ë™í•˜ëŠ” íšŸìˆ˜
  ****************************************************************/
 UInt sdbLRUList::moveMidPtrForward(idvSQL *aStatistics, UInt aMoveCnt)
 {
@@ -225,16 +225,16 @@ UInt sdbLRUList::moveMidPtrForward(idvSQL *aStatistics, UInt aMoveCnt)
 
 /****************************************************************
  * Description:
- *  LRUÀÇ Hot¿µ¿ª¿¡ BCB¸¦ ÇÑ°³ »ğÀÔÇÑ´Ù.
- *  ÀÌ¶§, ±âÁ¸¿¡ Hot¿µ¿ª¿¡ BCB°¡ ÇÑ°³µµ ¾ø´Ù¸é, mBase¿Í mMid´Â °°°í,
- *  »ğÀÔ ÈÄ¿¡ mMid¸¦ »ğÀÔÇÑ BCB·Î ¼³Á¤ÇÑ´Ù. ¿Ö³Ä¸é, mMid´Â hotLast¸¦ °¡¸®
- *  Å°±â ¶§¹®ÀÌ´Ù.
- *  ±×·¸Áö ¾Ê°í Hot¿µ¿ª¿¡ BCB°¡ ÀÖ´Ù¸é, ±×³É mBase->mNext¿¡ »ğÀÔÇÏ¸é µÈ´Ù.
- *  ¸¸¾à mHotMax¸¦ ³ÑÀ» °æ¿ì¿£ mMid°¡ °¡¸®Å°´Â BCB¸¦ cold·Î ¸¸µé°í,
- *  mMid¸¦ mMid->mPrev·Î º¯°æÇÑ´Ù. 
+ *  LRUì˜ Hotì˜ì—­ì— BCBë¥¼ í•œê°œ ì‚½ì…í•œë‹¤.
+ *  ì´ë•Œ, ê¸°ì¡´ì— Hotì˜ì—­ì— BCBê°€ í•œê°œë„ ì—†ë‹¤ë©´, mBaseì™€ mMidëŠ” ê°™ê³ ,
+ *  ì‚½ì… í›„ì— mMidë¥¼ ì‚½ì…í•œ BCBë¡œ ì„¤ì •í•œë‹¤. ì™œëƒë©´, mMidëŠ” hotLastë¥¼ ê°€ë¦¬
+ *  í‚¤ê¸° ë•Œë¬¸ì´ë‹¤.
+ *  ê·¸ë ‡ì§€ ì•Šê³  Hotì˜ì—­ì— BCBê°€ ìˆë‹¤ë©´, ê·¸ëƒ¥ mBase->mNextì— ì‚½ì…í•˜ë©´ ëœë‹¤.
+ *  ë§Œì•½ mHotMaxë¥¼ ë„˜ì„ ê²½ìš°ì—” mMidê°€ ê°€ë¦¬í‚¤ëŠ” BCBë¥¼ coldë¡œ ë§Œë“¤ê³ ,
+ *  mMidë¥¼ mMid->mPrevë¡œ ë³€ê²½í•œë‹¤. 
  *  
- *  aStatistics - [IN]  Åë°èÁ¤º¸
- *  aBCB        - [IN]  ÇØ´ç BCB
+ *  aStatistics - [IN]  í†µê³„ì •ë³´
+ *  aBCB        - [IN]  í•´ë‹¹ BCB
  ****************************************************************/
 void sdbLRUList::addToHot(idvSQL *aStatistics, sdbBCB *aBCB)
 {
@@ -242,10 +242,10 @@ void sdbLRUList::addToHot(idvSQL *aStatistics, sdbBCB *aBCB)
 
     IDE_ASSERT(mMutex.lock(aStatistics) == IDE_SUCCESS);
 
-    /* BUG-22550: mHotLength°ªÀ» LockÀ» ÀâÁö¾Ê°í IDE_DASSERT·Î
-     * È®ÀÎÇÏ°í ÀÖ½À´Ï´Ù.
+    /* BUG-22550: mHotLengthê°’ì„ Lockì„ ì¡ì§€ì•Šê³  IDE_DASSERTë¡œ
+     * í™•ì¸í•˜ê³  ìˆìŠµë‹ˆë‹¤.
      *
-     * LockÀ» ÀâÀº »óÅÂ¿¡¼­ °ªÀ» È®ÀÎÇØ¾ß ÇÕ´Ï´Ù.
+     * Lockì„ ì¡ì€ ìƒíƒœì—ì„œ ê°’ì„ í™•ì¸í•´ì•¼ í•©ë‹ˆë‹¤.
      * */
     IDE_DASSERT(mHotLength <= mHotMax);
 
@@ -256,8 +256,8 @@ void sdbLRUList::addToHot(idvSQL *aStatistics, sdbBCB *aBCB)
     mHotLength++;
     mStat->applyHotInsertions();
 
-    /* mHotLength°¡ 1ÀÎ°æ¿ì¿£ mMid°¡ mBase¸¦ °¡¸®Å°Áö ¾Ê°í,
-     * HotLast¸¦ °¡¸®ÄÑ¾ß ÇÑ´Ù.
+    /* mHotLengthê°€ 1ì¸ê²½ìš°ì—” mMidê°€ mBaseë¥¼ ê°€ë¦¬í‚¤ì§€ ì•Šê³ ,
+     * HotLastë¥¼ ê°€ë¦¬ì¼œì•¼ í•œë‹¤.
      */
     if( mHotLength == 1 )
     {
@@ -267,8 +267,8 @@ void sdbLRUList::addToHot(idvSQL *aStatistics, sdbBCB *aBCB)
 
     if ( mHotLength > mHotMax )
     {
-        // hot ¿µ¿ªÀÌ °¡µæÂù »óÅÂÀÌ´Ù.
-        // ÀÌ °æ¿ì mMid¸¦ ´ç°Ü¾ß ÇÑ´Ù.
+        // hot ì˜ì—­ì´ ê°€ë“ì°¬ ìƒíƒœì´ë‹¤.
+        // ì´ ê²½ìš° mMidë¥¼ ë‹¹ê²¨ì•¼ í•œë‹¤.
         SDB_MAKE_BCB_COLD(mMid);
         mMid = SMU_LIST_GET_PREV(mMid);
         mColdLength ++;
@@ -282,10 +282,10 @@ void sdbLRUList::addToHot(idvSQL *aStatistics, sdbBCB *aBCB)
 
 /****************************************************************
  * Description:
- *  mMid µÚ¿¡ BCB¸¦ ÇÑ°³ »ğÀÔÇÑ´Ù. 
+ *  mMid ë’¤ì— BCBë¥¼ í•œê°œ ì‚½ì…í•œë‹¤. 
  *  
- *  aStatistics - [IN]  Åë°èÁ¤º¸
- *  aBCB        - [IN]  ÇØ´ç BCB
+ *  aStatistics - [IN]  í†µê³„ì •ë³´
+ *  aBCB        - [IN]  í•´ë‹¹ BCB
  ****************************************************************/
 void sdbLRUList::insertBCB2BehindMid(idvSQL *aStatistics, sdbBCB *aBCB)
 {
@@ -310,12 +310,12 @@ void sdbLRUList::insertBCB2BehindMid(idvSQL *aStatistics, sdbBCB *aBCB)
 
 /****************************************************************
  * Description:
- *  LRU ¸®½ºÆ®¿¡ Á¸ÀçÇÏ´Â aBCB¸¦ ¸®½ºÆ®¿¡¼­ »èÁ¦ÇÑ´Ù.
- *  ¸¸¾à aBCB°¡ ¸®½ºÆ®¿¡ Á¸ÀçÇÏÁö ¾Ê´Â´Ù¸é, ID_FALSE¸¦ ¸®ÅÏÇÑ´Ù.
- *  ±×¿Ü¿£ ID_TRUE¸¦ ¸®ÅÏ.
+ *  LRU ë¦¬ìŠ¤íŠ¸ì— ì¡´ì¬í•˜ëŠ” aBCBë¥¼ ë¦¬ìŠ¤íŠ¸ì—ì„œ ì‚­ì œí•œë‹¤.
+ *  ë§Œì•½ aBCBê°€ ë¦¬ìŠ¤íŠ¸ì— ì¡´ì¬í•˜ì§€ ì•ŠëŠ”ë‹¤ë©´, ID_FALSEë¥¼ ë¦¬í„´í•œë‹¤.
+ *  ê·¸ì™¸ì—” ID_TRUEë¥¼ ë¦¬í„´.
  *
- *  aStatistics - [IN]  Åë°èÁ¤º¸
- *  aBCB        - [IN]  »èÁ¦ ÇÏ°íÀÚ ÇÏ´Â BCB
+ *  aStatistics - [IN]  í†µê³„ì •ë³´
+ *  aBCB        - [IN]  ì‚­ì œ í•˜ê³ ì í•˜ëŠ” BCB
  ****************************************************************/
 idBool sdbLRUList::removeBCB(idvSQL *aStatistics, sdbBCB *aBCB )
 {
@@ -327,8 +327,8 @@ idBool sdbLRUList::removeBCB(idvSQL *aStatistics, sdbBCB *aBCB )
     sListType   = aBCB->mBCBListType;
     sRet        = ID_FALSE;    
     
-    /* ±âº»ÀûÀ¸·Î ¹ÂÅØ½º ÀâÁö ¾Ê°í, ÇöÀç list¿Í bcbÀÇ Á¤º¸°¡ µ¿ÀÏÇÑÁö È®ÀÎÇÑ´Ù.
-     * ±× ÀÌÈÄ¿¡ ´Ù½Ã ¹ÂÅØ½º Àâ°í¼± Á¤È®È÷ È®ÀÎÇÑ´Ù.*/
+    /* ê¸°ë³¸ì ìœ¼ë¡œ ë®¤í…ìŠ¤ ì¡ì§€ ì•Šê³ , í˜„ì¬ listì™€ bcbì˜ ì •ë³´ê°€ ë™ì¼í•œì§€ í™•ì¸í•œë‹¤.
+     * ê·¸ ì´í›„ì— ë‹¤ì‹œ ë®¤í…ìŠ¤ ì¡ê³ ì„  ì •í™•íˆ í™•ì¸í•œë‹¤.*/
     if(((sListType == SDB_BCB_LRU_HOT) ||
         (sListType == SDB_BCB_LRU_COLD )) &&
        (aBCB->mBCBListNo == mID ))
@@ -339,8 +339,8 @@ idBool sdbLRUList::removeBCB(idvSQL *aStatistics, sdbBCB *aBCB )
             (aBCB->mBCBListType == SDB_BCB_LRU_COLD )) &&
            (aBCB->mBCBListNo == mID ))
         {
-            /* aBCB°¡ mMidÀÎ °æ¿ì¿£ mMid¸¦ mPrev·Î ÇÑÄ­ ÀÌµ¿ÇÏ°í,
-             * ±×¿Ü¿£ ±×³É »èÁ¦¸¸ ÇÏ¸é µÈ´Ù.*/
+            /* aBCBê°€ mMidì¸ ê²½ìš°ì—” mMidë¥¼ mPrevë¡œ í•œì¹¸ ì´ë™í•˜ê³ ,
+             * ê·¸ì™¸ì—” ê·¸ëƒ¥ ì‚­ì œë§Œ í•˜ë©´ ëœë‹¤.*/
             if( aBCB->mBCBListType == SDB_BCB_LRU_HOT )
             {
                 if( mMid == &(aBCB->mBCBListItem ))
@@ -367,13 +367,13 @@ idBool sdbLRUList::removeBCB(idvSQL *aStatistics, sdbBCB *aBCB )
 
 /****************************************************************
  * Description:
- *  mHotMax°ªÀ» »õ·Î ¼³Á¤ÇÑ´Ù.
- *  ¸¸¾à »õ·Î ¼³Á¤ÇÏ´Â  mHotMax°ªÀÌ ±âÁ¸ÀÇ mHotMaxº¸´Ù Å©´Ù¸é
- *  ±×³É ¼³Á¤ÇÏ¸é µÇÁö¸¸, ÀÛ´Ù¸é ±âÁ¸¿¡ hot¿µ¿ª¿¡ Á¸ÀçÇÏ´Â BCB¸¦
- *  cold¿µ¿ªÀ¸·Î ÀÌµ¿À» ½ÃÄÑ¾ß ÇÑ´Ù.
+ *  mHotMaxê°’ì„ ìƒˆë¡œ ì„¤ì •í•œë‹¤.
+ *  ë§Œì•½ ìƒˆë¡œ ì„¤ì •í•˜ëŠ”  mHotMaxê°’ì´ ê¸°ì¡´ì˜ mHotMaxë³´ë‹¤ í¬ë‹¤ë©´
+ *  ê·¸ëƒ¥ ì„¤ì •í•˜ë©´ ë˜ì§€ë§Œ, ì‘ë‹¤ë©´ ê¸°ì¡´ì— hotì˜ì—­ì— ì¡´ì¬í•˜ëŠ” BCBë¥¼
+ *  coldì˜ì—­ìœ¼ë¡œ ì´ë™ì„ ì‹œì¼œì•¼ í•œë‹¤.
  *  
- *  aStatistics - [IN]  Åë°èÁ¤º¸
- *  aNewHotMax  - [IN]  »õ·Î ¼³Á¤ÇÒ hotMax°ª. BCB °³¼ö¸¦ ³ªÅ¸³¿
+ *  aStatistics - [IN]  í†µê³„ì •ë³´
+ *  aNewHotMax  - [IN]  ìƒˆë¡œ ì„¤ì •í•  hotMaxê°’. BCB ê°œìˆ˜ë¥¼ ë‚˜íƒ€ëƒ„
  ****************************************************************/
 void sdbLRUList::setHotMax(idvSQL *aStatistics, UInt aNewHotMax)
 {
@@ -384,7 +384,7 @@ void sdbLRUList::setHotMax(idvSQL *aStatistics, UInt aNewHotMax)
     mHotMax = aNewHotMax;
 }
 
-/* LRUList¸¦ dumpÇÑ´Ù.*/
+/* LRUListë¥¼ dumpí•œë‹¤.*/
 void sdbLRUList::dump()
 {
     smuList *sListNode;
@@ -469,9 +469,9 @@ void sdbLRUList::dump()
 
 /***********************************************************************
  * Description :
- *  sdbLRUListÀÇ ¸ğµç BCBµéÀÌ Á¦´ë·Î ¿¬°áµÇ¾î ÀÖ´ÂÁö È®ÀÎÇÑ´Ù.
+ *  sdbLRUListì˜ ëª¨ë“  BCBë“¤ì´ ì œëŒ€ë¡œ ì—°ê²°ë˜ì–´ ìˆëŠ”ì§€ í™•ì¸í•œë‹¤.
  *  
- *  aStatistics - [IN]  Åë°èÁ¤º¸
+ *  aStatistics - [IN]  í†µê³„ì •ë³´
  ***********************************************************************/
 IDE_RC sdbLRUList::checkValidation(idvSQL *aStatistics)
 {
@@ -482,7 +482,7 @@ IDE_RC sdbLRUList::checkValidation(idvSQL *aStatistics)
 
     IDE_ASSERT(mMutex.lock(aStatistics) == IDE_SUCCESS);
 
-    /* hot °¹¼ö È®ÀÎ*/
+    /* hot ê°¯ìˆ˜ í™•ì¸*/
     sListNode = mBase;
     sPrevNode = SMU_LIST_GET_PREV( sListNode );
     for( i = 0 ; i < mHotLength; i++)
@@ -494,7 +494,7 @@ IDE_RC sdbLRUList::checkValidation(idvSQL *aStatistics)
         IDE_ASSERT( sBCB->mBCBListType == SDB_BCB_LRU_HOT);
     }
 
-    //hotLast´Â mMid ¿Í °°´Ù.
+    //hotLastëŠ” mMid ì™€ ê°™ë‹¤.
     IDE_ASSERT(sListNode == mMid);
 
     if( mHotLength != 0 )
@@ -507,7 +507,7 @@ IDE_RC sdbLRUList::checkValidation(idvSQL *aStatistics)
         IDE_ASSERT( mMid == mBase);
     }
 
-    /* cold °¹¼ö È®ÀÎ*/
+    /* cold ê°¯ìˆ˜ í™•ì¸*/
     sListNode = mMid;
     sPrevNode = SMU_LIST_GET_PREV( sListNode );
     for( i = 0 ; i < mColdLength; i++)

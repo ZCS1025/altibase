@@ -19,11 +19,11 @@
 
 
 /**
- * Array BindingÀ» ¼³Á¤ÇÑ´Ù.
+ * Array Bindingì„ ì„¤ì •í•œë‹¤.
  *
- * @param[in] aABRes °á°ú ÇÚµé
+ * @param[in] aABRes ê²°ê³¼ í•¸ë“¤
  * @param[in] aArraySize Array size
- * @return ¼º°øÇßÀ¸¸é ALTIBASE_SUCCESS, ±×·¸Áö ¾ÊÀ¸¸é ALTIBASE_ERROR
+ * @return ì„±ê³µí–ˆìœ¼ë©´ ALTIBASE_SUCCESS, ê·¸ë ‡ì§€ ì•Šìœ¼ë©´ ALTIBASE_ERROR
  */
 CDBC_INTERNAL
 ALTIBASE_RC altibase_result_set_array_bind (cdbcABRes *aABRes, acp_sint32_t aArraySize)
@@ -146,11 +146,11 @@ ALTIBASE_RC altibase_result_set_array_bind (cdbcABRes *aABRes, acp_sint32_t aArr
 }
 
 /**
- * Array BindingÀ» ¼³Á¤ÇÑ´Ù.
+ * Array Bindingì„ ì„¤ì •í•œë‹¤.
  *
- * @param[in] aABStmt ¸í·É¹® ÇÚµé
+ * @param[in] aABStmt ëª…ë ¹ë¬¸ í•¸ë“¤
  * @param[in] aArraySize Array size
- * @return ¼º°øÇßÀ¸¸é ALTIBASE_SUCCESS, ±×·¸Áö ¾ÊÀ¸¸é ALTIBASE_ERROR
+ * @return ì„±ê³µí–ˆìœ¼ë©´ ALTIBASE_SUCCESS, ê·¸ë ‡ì§€ ì•Šìœ¼ë©´ ALTIBASE_ERROR
  */
 CDBC_EXPORT
 ALTIBASE_RC altibase_stmt_set_array_bind (ALTIBASE_STMT aABStmt, acp_sint32_t aArraySize)
@@ -199,11 +199,11 @@ ALTIBASE_RC altibase_stmt_set_array_bind (ALTIBASE_STMT aABStmt, acp_sint32_t aA
 }
 
 /**
- * Array Fetch¸¦ ¼³Á¤ÇÑ´Ù.
+ * Array Fetchë¥¼ ì„¤ì •í•œë‹¤.
  *
- * @param[in] aABRes °á°ú ÇÚµé
+ * @param[in] aABRes ê²°ê³¼ í•¸ë“¤
  * @param[in] aArraySize Array size
- * @return ¼º°øÇßÀ¸¸é ALTIBASE_SUCCESS, ±×·¸Áö ¾ÊÀ¸¸é ALTIBASE_ERROR
+ * @return ì„±ê³µí–ˆìœ¼ë©´ ALTIBASE_SUCCESS, ê·¸ë ‡ì§€ ì•Šìœ¼ë©´ ALTIBASE_ERROR
  */
 CDBC_INTERNAL
 ALTIBASE_RC altibase_result_set_array_fetch (cdbcABRes *aABRes, acp_sint32_t aArraySize)
@@ -327,11 +327,11 @@ ALTIBASE_RC altibase_result_set_array_fetch (cdbcABRes *aABRes, acp_sint32_t aAr
 }
 
 /**
- * Array Fetch¸¦ ¼³Á¤ÇÑ´Ù.
+ * Array Fetchë¥¼ ì„¤ì •í•œë‹¤.
  *
- * @param[in] aABStmt ¸í·É¹® ÇÚµé
+ * @param[in] aABStmt ëª…ë ¹ë¬¸ í•¸ë“¤
  * @param[in] aArraySize Array size
- * @return ¼º°øÇßÀ¸¸é ALTIBASE_SUCCESS, ±×·¸Áö ¾ÊÀ¸¸é ALTIBASE_ERROR
+ * @return ì„±ê³µí–ˆìœ¼ë©´ ALTIBASE_SUCCESS, ê·¸ë ‡ì§€ ì•Šìœ¼ë©´ ALTIBASE_ERROR
  */
 CDBC_EXPORT
 ALTIBASE_RC altibase_stmt_set_array_fetch (ALTIBASE_STMT aABStmt, acp_sint32_t aArraySize)
@@ -375,10 +375,10 @@ ALTIBASE_RC altibase_stmt_set_array_fetch (ALTIBASE_STMT aABStmt, acp_sint32_t a
 }
 
 /**
- * Array Binding/Fetch ¼öÇà °á°ú¸¦ ¾ò´Â´Ù.
+ * Array Binding/Fetch ìˆ˜í–‰ ê²°ê³¼ë¥¼ ì–»ëŠ”ë‹¤.
  *
- * @param[in] aABRes °á°ú ÇÚµé
- * @return Array Binding/Fetch ¼öÇà °á°ú¸¦ ´ãÀº ¹è¿­, ½ÇÆĞÇÏ¸é NULL
+ * @param[in] aABRes ê²°ê³¼ í•¸ë“¤
+ * @return Array Binding/Fetch ìˆ˜í–‰ ê²°ê³¼ë¥¼ ë‹´ì€ ë°°ì—´, ì‹¤íŒ¨í•˜ë©´ NULL
  */
 CDBC_INTERNAL
 acp_uint16_t * altibase_result_status (cdbcABRes *aABRes)
@@ -423,10 +423,10 @@ acp_uint16_t * altibase_result_status (cdbcABRes *aABRes)
 }
 
 /**
- * Array Binding/Fetch ¼öÇà °á°ú¸¦ ¾ò´Â´Ù.
+ * Array Binding/Fetch ìˆ˜í–‰ ê²°ê³¼ë¥¼ ì–»ëŠ”ë‹¤.
  *
- * @param[in] aABStmt ¸í·É¹® ÇÚµé
- * @return Array Binding/Fetch ¼öÇà °á°ú¸¦ ´ãÀº ¹è¿­, ½ÇÆĞÇÏ¸é NULL
+ * @param[in] aABStmt ëª…ë ¹ë¬¸ í•¸ë“¤
+ * @return Array Binding/Fetch ìˆ˜í–‰ ê²°ê³¼ë¥¼ ë‹´ì€ ë°°ì—´, ì‹¤íŒ¨í•˜ë©´ NULL
  */
 CDBC_EXPORT
 acp_uint16_t * altibase_stmt_status (ALTIBASE_STMT aABStmt)
@@ -469,11 +469,11 @@ acp_uint16_t * altibase_stmt_status (ALTIBASE_STMT aABStmt)
 }
 
 /**
- * Array Binding ¼öÇà ÈÄ Ã³¸®µÈ ÇàÀÇ °³¼ö¸¦ ¾ò´Â´Ù.
+ * Array Binding ìˆ˜í–‰ í›„ ì²˜ë¦¬ëœ í–‰ì˜ ê°œìˆ˜ë¥¼ ì–»ëŠ”ë‹¤.
  *
- * @param[in] aABStmt ¸í·É¹® ÇÚµé
- * @return Array Binding ¼öÇà ÈÄ Ã³¸®µÈ ÇàÀÇ °³¼ö.
- *         ½ÇÆĞÇÏ¸é ALTIBASE_INVALID_PROCESSED
+ * @param[in] aABStmt ëª…ë ¹ë¬¸ í•¸ë“¤
+ * @return Array Binding ìˆ˜í–‰ í›„ ì²˜ë¦¬ëœ í–‰ì˜ ê°œìˆ˜.
+ *         ì‹¤íŒ¨í•˜ë©´ ALTIBASE_INVALID_PROCESSED
  */
 CDBC_EXPORT
 ALTIBASE_LONG altibase_stmt_processed (ALTIBASE_STMT aABStmt)
@@ -511,10 +511,10 @@ ALTIBASE_LONG altibase_stmt_processed (ALTIBASE_STMT aABStmt)
 }
 
 /**
- * Array Fetch·Î °¡Á®¿Â ÇàÀÇ °³¼ö¸¦ ¾ò´Â´Ù.
+ * Array Fetchë¡œ ê°€ì ¸ì˜¨ í–‰ì˜ ê°œìˆ˜ë¥¼ ì–»ëŠ”ë‹¤.
  *
- * @param[in] aABStmt ¸í·É¹® ÇÚµé
- * @return Array Fetch·Î °¡Á®¿Â ÇàÀÇ °³¼ö. ½ÇÆĞÇÏ¸é ALTIBASE_INVALID_FETCHED
+ * @param[in] aABStmt ëª…ë ¹ë¬¸ í•¸ë“¤
+ * @return Array Fetchë¡œ ê°€ì ¸ì˜¨ í–‰ì˜ ê°œìˆ˜. ì‹¤íŒ¨í•˜ë©´ ALTIBASE_INVALID_FETCHED
  */
 CDBC_EXPORT
 ALTIBASE_LONG altibase_stmt_fetched (ALTIBASE_STMT aABStmt)

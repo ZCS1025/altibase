@@ -91,9 +91,9 @@ IDE_RC mmtSnapshotExportManager::finalize()
 /**
  * PROJ-2626 Snapshot Export
  *
- * alter database begin/end snapshot ±¸¹®¿¡¼­ È£ÃâÇÏ´Â Callback ÇÔ¼öÀÌ´Ù.
+ * alter database begin/end snapshot êµ¬ë¬¸ì—ì„œ í˜¸ì¶œí•˜ëŠ” Callback í•¨ìˆ˜ì´ë‹¤.
  *
- * begin ½Ã¿¡ SnapshotExport Thread¸¦ »ı¼ºÇÏ°í End½Ã¿¡ Thread¸¦ Á¾·áÇÑ´Ù.
+ * begin ì‹œì— SnapshotExport Threadë¥¼ ìƒì„±í•˜ê³  Endì‹œì— Threadë¥¼ ì¢…ë£Œí•œë‹¤.
  */
 IDE_RC mmtSnapshotExportManager::beginEndCallback( idBool aIsBegin )
 {
@@ -105,7 +105,7 @@ IDE_RC mmtSnapshotExportManager::beginEndCallback( idBool aIsBegin )
 
     if ( aIsBegin == ID_TRUE )
     {
-        /* Begin ½Ã¿¡ ÀÌ¹Ì iloader ¼¼¼ÇÀÌ ÀÖ´Ù¸é error¸¦ ¹ß»ı½ÃÅ²´Ù */
+        /* Begin ì‹œì— ì´ë¯¸ iloader ì„¸ì…˜ì´ ìˆë‹¤ë©´ errorë¥¼ ë°œìƒì‹œí‚¨ë‹¤ */
         IDE_TEST_RAISE( mmtSessionManager::existClientAppInfoType( MMC_CLIENT_APP_INFO_TYPE_ILOADER ) == ID_TRUE,
                         ERR_BEGIN_SNAPSHOT_HAVE_ILOADER );
 
@@ -114,8 +114,8 @@ IDE_RC mmtSnapshotExportManager::beginEndCallback( idBool aIsBegin )
 
         if ( mThread != NULL )
         {
-            /* Threshold °¡ ³Ñ¾î¼­ ½º½º·Î Á¾·á µÉ °æ¿ì mThread ¸Ş¸ğ¸®´Â
-             * Á¦°ÅµÇÁö¾Ê°í mInfoÀÇ Begin ¿ª½Ã ÃÊ±âÈ­µÇÁö ¾Ê¾Ò´Ù
+            /* Threshold ê°€ ë„˜ì–´ì„œ ìŠ¤ìŠ¤ë¡œ ì¢…ë£Œ ë  ê²½ìš° mThread ë©”ëª¨ë¦¬ëŠ”
+             * ì œê±°ë˜ì§€ì•Šê³  mInfoì˜ Begin ì—­ì‹œ ì´ˆê¸°í™”ë˜ì§€ ì•Šì•˜ë‹¤
              */
             if ( mThread->isRun() == ID_FALSE )
             {
@@ -129,7 +129,7 @@ IDE_RC mmtSnapshotExportManager::beginEndCallback( idBool aIsBegin )
             }
             else
             {
-                /* begin ÀÌ 2 ¹ø µé¾î¿Â°Ü¿ì error¸¦ ¹ß»ı½ÃÅ²´Ù */
+                /* begin ì´ 2 ë²ˆ ë“¤ì–´ì˜¨ê²¨ìš° errorë¥¼ ë°œìƒì‹œí‚¨ë‹¤ */
                 IDE_RAISE( ERR_BEGIN_SNAPSHOT );
             }
         }
@@ -153,7 +153,7 @@ IDE_RC mmtSnapshotExportManager::beginEndCallback( idBool aIsBegin )
 
         sIsInit = ID_TRUE;
 
-        /* Ã³À½ ½ÇÇà½Ã Threshold¸¦ Ã¼Å©ÇÑ´Ù. */
+        /* ì²˜ìŒ ì‹¤í–‰ì‹œ Thresholdë¥¼ ì²´í¬í•œë‹¤. */
         IDE_TEST_RAISE( mThread->checkThreshold( ID_TRUE ) == ID_TRUE, ERR_SNAPSHOT_OVER_THRESHOLD );
 
         IDE_TEST( mThread->start() != IDE_SUCCESS );
@@ -163,8 +163,8 @@ IDE_RC mmtSnapshotExportManager::beginEndCallback( idBool aIsBegin )
 
         mInfo.mBeginTime = (SLong)mmtSessionManager::getCurrentTime()->sec();
 
-        /* Memory¿Í Disk Undo Percentage¸¦ ±¸ÇØ¼­ Info¿¡ ¼³Á¤ÇÑ´Ù.
-         * ÀÌ info ´Â x$snapshot¿¡¼­ È°¿ëµÈ´Ù */
+        /* Memoryì™€ Disk Undo Percentageë¥¼ êµ¬í•´ì„œ Infoì— ì„¤ì •í•œë‹¤.
+         * ì´ info ëŠ” x$snapshotì—ì„œ í™œìš©ëœë‹¤ */
         (void)qciMisc::getMemMaxAndUsedSize( &sMax, &sUsed );
 
         mInfo.mBeginMemUsage = (UInt)( ( ( sUsed / 1024 ) * 100 ) / ( sMax / 1024 ) );
@@ -179,19 +179,19 @@ IDE_RC mmtSnapshotExportManager::beginEndCallback( idBool aIsBegin )
     }
     else
     {
-        /* alter database end snapshot ½Ã¿¡ iloader¼¼¼ÇÀÌ ÀÖ´Ù¸é ¸ğµÎ terminate ÇÑ´Ù. */
+        /* alter database end snapshot ì‹œì— iloaderì„¸ì…˜ì´ ìˆë‹¤ë©´ ëª¨ë‘ terminate í•œë‹¤. */
         mmtSessionManager::terminateAllClientAppInoType( MMC_CLIENT_APP_INFO_TYPE_ILOADER );
 
         lock();
         sIsLocked = ID_TRUE;
 
-        /* ÀÌ¹Ì End °¡ µÇ¾ú´Ù¸é Error¸¦ ¹ß»ı½ÃÅ²´Ù */
+        /* ì´ë¯¸ End ê°€ ë˜ì—ˆë‹¤ë©´ Errorë¥¼ ë°œìƒì‹œí‚¨ë‹¤ */
         IDE_TEST_RAISE( mThread == NULL, ERR_END_SNAPSHOT );
 
         if ( mThread->isRun() == ID_TRUE )
         {
-            /* Thread°¡ NULL¾Æ ¾Æ´Ï°í mRun ÀÌ µ¿ÀÛÁßÀÌ¶ó¸é Thread¸¦ Á¾·áÇÏ°í
-             * Info¸¦ ÃÊ±âÈ­ÇÑ´Ù */
+            /* Threadê°€ NULLì•„ ì•„ë‹ˆê³  mRun ì´ ë™ì‘ì¤‘ì´ë¼ë©´ Threadë¥¼ ì¢…ë£Œí•˜ê³ 
+             * Infoë¥¼ ì´ˆê¸°í™”í•œë‹¤ */
             IDE_TEST( mThread->endSnapshot() != IDE_SUCCESS );
 
             mThread->stop();
@@ -207,8 +207,8 @@ IDE_RC mmtSnapshotExportManager::beginEndCallback( idBool aIsBegin )
         }
         else
         {
-            /* Threshold°¡ ³Ñ¾î¼­ EndµÇ¾ú´Ù¸é Thread memory ¸¦ ÇØÀçÇÏ°í
-             * mInfo¸¦ ÃÊ±âÈ­ÇÑ µÚ¿¡ error¸¦ ¹ß»ı½ÃÅ²´Ù*/
+            /* Thresholdê°€ ë„˜ì–´ì„œ Endë˜ì—ˆë‹¤ë©´ Thread memory ë¥¼ í•´ì¬í•˜ê³ 
+             * mInfoë¥¼ ì´ˆê¸°í™”í•œ ë’¤ì— errorë¥¼ ë°œìƒì‹œí‚¨ë‹¤*/
             ( void )iduMemMgr::free( mThread );
             mThread = NULL;
 
@@ -283,7 +283,7 @@ IDE_RC mmtSnapshotExportManager::beginEndCallback( idBool aIsBegin )
 /**
  * PROJ-2626 Snapshot Export
  *
- * ÇöÁ¦ Snapshot ÀÌ begin µÇ¾ú´ÂÁö ¾Æ´ÑÁö ¹İÈ¯ÇÑ´Ù.
+ * í˜„ì œ Snapshot ì´ begin ë˜ì—ˆëŠ”ì§€ ì•„ë‹Œì§€ ë°˜í™˜í•œë‹¤.
  */
 idBool mmtSnapshotExportManager::isBeginSnapshot( void )
 {
@@ -311,7 +311,7 @@ idBool mmtSnapshotExportManager::isBeginSnapshot( void )
 /**
  * PROJ-2626 Snapshot Export
  *
- * begin ½Ã¿¡ ¼³Á¤ÇÑ SCNÀ» °¡Á®¿Â´Ù.
+ * begin ì‹œì— ì„¤ì •í•œ SCNì„ ê°€ì ¸ì˜¨ë‹¤.
  */
 IDE_RC mmtSnapshotExportManager::getSnapshotSCN( smSCN * aSCN )
 {
@@ -371,24 +371,24 @@ void mmtSnapshotExportThread::run()
 
             sCount++;
 
-            /* 10ÃÊ¿¡ ÇÑ¹ø ¸ğµÎ Memory¿Í Disk Undo¸¦ ¸ğµÎ Ã¼Å©ÇÑ´Ù.
-             * Disk Undo Usage Ã¼Å©´Â ºñ¿ëÀÌ ¸Å¿ì ¸¹ÀÌ µé°í ¿À·¡ °É¸± ¼ö ÀÖ´Â
-             * ÀÏÀÌ°í °£´ÜÇÏ°Ô Á¶»çÇÒ¼ö ¾ø´Ù°í SMÀ¸·Î ºÎÅÍ ÀÇ°ßÀÌ ÀÖ¾î¼­
-             * 10ÃÊ¿¡ ÇÑ¹ø¾¿ CheckÇÏ±â·Î ÇÏ¿´´Ù.
+            /* 10ì´ˆì— í•œë²ˆ ëª¨ë‘ Memoryì™€ Disk Undoë¥¼ ëª¨ë‘ ì²´í¬í•œë‹¤.
+             * Disk Undo Usage ì²´í¬ëŠ” ë¹„ìš©ì´ ë§¤ìš° ë§ì´ ë“¤ê³  ì˜¤ë˜ ê±¸ë¦´ ìˆ˜ ìˆëŠ”
+             * ì¼ì´ê³  ê°„ë‹¨í•˜ê²Œ ì¡°ì‚¬í• ìˆ˜ ì—†ë‹¤ê³  SMìœ¼ë¡œ ë¶€í„° ì˜ê²¬ì´ ìˆì–´ì„œ
+             * 10ì´ˆì— í•œë²ˆì”© Checkí•˜ê¸°ë¡œ í•˜ì˜€ë‹¤.
              */
             if ( ( sCount % 10 ) == 0 )
             {
-                /* Memory / Disk Undo ¸ğµÎ Check ÇÑ´Ù */
+                /* Memory / Disk Undo ëª¨ë‘ Check í•œë‹¤ */
                 sIsOverThreshold = checkThreshold( ID_TRUE );
             }
             else
             {
-                /* Memory Check ÇÑ´Ù */
+                /* Memory Check í•œë‹¤ */
                 sIsOverThreshold = checkThreshold( ID_FALSE );
             }
 
-            /* Threshold°¡ ³Ñ¾úÀ» °æ¿ì iloader SessionÀ» Á¾·áÇÏ°í endSnapshot
-             * ÇÑ´Ù*/
+            /* Thresholdê°€ ë„˜ì—ˆì„ ê²½ìš° iloader Sessionì„ ì¢…ë£Œí•˜ê³  endSnapshot
+             * í•œë‹¤*/
             if ( sIsOverThreshold == ID_TRUE )
             {
                 mmtSessionManager::terminateAllClientAppInoType( MMC_CLIENT_APP_INFO_TYPE_ILOADER );
@@ -431,8 +431,8 @@ idBool mmtSnapshotExportThread::isBegin()
 /**
  * PROJ-2626 Snapshot Export
  *
- * 1. ³»ºÎ SCN ÀúÀå¿ë Transaction°ú Statement¸¦ beginÇÑ´Ù.
- * 2. Inplace update¸¦ ÇÏÁö ¾Êµµ·Ï qp¿¡ ¼³Á¤ÇÑ´Ù.
+ * 1. ë‚´ë¶€ SCN ì €ì¥ìš© Transactionê³¼ Statementë¥¼ beginí•œë‹¤.
+ * 2. Inplace updateë¥¼ í•˜ì§€ ì•Šë„ë¡ qpì— ì„¤ì •í•œë‹¤.
  */
 IDE_RC mmtSnapshotExportThread::beginSnapshot( ULong * aSCN )
 {
@@ -504,10 +504,10 @@ IDE_RC mmtSnapshotExportThread::beginSnapshot( ULong * aSCN )
 /**
  * PROJ-2626 Snapshot Export
  *
- * 1. Inplace update disable ÇÑ ºÎºĞÀ» ¿øº¹ÇÑ´Ù.
- * 2. transaction°ú statement¸¦ Á¾·áÇÑ´Ù.
- *    ÀÌ ³»ºÎ transactionÀº ´Ù¸¥ ÀÏÀº ÇÏÁö ¾Ê°í ¿ÀÁ÷ SCN
- *    ÀúÀå¿ëÀÌ±â ¶§¹®¿¡ Ç×»ó SUCCESS ÀÌ´Ù.
+ * 1. Inplace update disable í•œ ë¶€ë¶„ì„ ì›ë³µí•œë‹¤.
+ * 2. transactionê³¼ statementë¥¼ ì¢…ë£Œí•œë‹¤.
+ *    ì´ ë‚´ë¶€ transactionì€ ë‹¤ë¥¸ ì¼ì€ í•˜ì§€ ì•Šê³  ì˜¤ì§ SCN
+ *    ì €ì¥ìš©ì´ê¸° ë•Œë¬¸ì— í•­ìƒ SUCCESS ì´ë‹¤.
  */
 IDE_RC mmtSnapshotExportThread::endSnapshot( void )
 {
@@ -565,7 +565,7 @@ IDE_RC mmtSnapshotExportThread::endSnapshot( void )
 /**
  * PROJ-2626 Snapshot Export
  *
- * Memory Usage ¿Í Disk Undo UsageÀÇ Threshold¸¦ check ÇÑ´Ù.
+ * Memory Usage ì™€ Disk Undo Usageì˜ Thresholdë¥¼ check í•œë‹¤.
  */
 idBool mmtSnapshotExportThread::checkThreshold( idBool aCheckAll )
 {
@@ -637,7 +637,7 @@ IDE_RC mmtSnapshotExportManager::buildRecordForSnapshot(idvSQL              *,
     lock();
     if ( mThread != NULL )
     {
-        /* Threshold°¡ ³Ñ¾î¼­ end µÈ°æ¿ì Á¤¸®ÇØµĞ´Ù */
+        /* Thresholdê°€ ë„˜ì–´ì„œ end ëœê²½ìš° ì •ë¦¬í•´ë‘”ë‹¤ */
         if ( mThread->isRun() == ID_FALSE )
         {
             mInfo.mSCN = 0;
@@ -658,8 +658,8 @@ IDE_RC mmtSnapshotExportManager::buildRecordForSnapshot(idvSQL              *,
 
     mInfo.mCurrentTime = (SLong)mmtSessionManager::getCurrentTime()->sec();
 
-    /* ÇöÀç Memory ¿Í Disk Undo Percengate¸¦ ±¸ÇØ¼­ mInfo ¿¡ ¼³Á¤ÈÄ¿¡
-     * x$snapshotÀ» buildRecord ÇÑ´Ù */
+    /* í˜„ì¬ Memory ì™€ Disk Undo Percengateë¥¼ êµ¬í•´ì„œ mInfo ì— ì„¤ì •í›„ì—
+     * x$snapshotì„ buildRecord í•œë‹¤ */
     qciMisc::getMemMaxAndUsedSize( &sMax, &sUsed );
 
     mInfo.mCurrentMemUsage = (UInt)(( ( sUsed / 1024 ) * 100 ) / ( sMax / 1024 ) );

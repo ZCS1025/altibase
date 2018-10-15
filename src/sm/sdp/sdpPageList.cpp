@@ -20,55 +20,55 @@
  *
  * Description :
  *
- * # sdp layerÀÇ ±â´É ±¸ºĞ
+ * # sdp layerì˜ ê¸°ëŠ¥ êµ¬ë¶„
  *
- * sdc°¡ page¿¡ ÀúÀåµÇ´Â ·¹ÄÚµå¿¡ °ü·ÃµÈ ±â´ÉÀ» ¼öÇàÇÑ´Ù.
- * sdc´Â logical header, keymap, slotµîÀÇ ÀÛ¾÷À» À§ÇÏ¿©
- * sdp¸¦ È£ÃâÇÏ°í sdp´Â ÀÌ·¯ÇÑ ±â´ÉÀ» sdc¿¡ Á¦°øÇÑ´Ù.
+ * sdcê°€ pageì— ì €ì¥ë˜ëŠ” ë ˆì½”ë“œì— ê´€ë ¨ëœ ê¸°ëŠ¥ì„ ìˆ˜í–‰í•œë‹¤.
+ * sdcëŠ” logical header, keymap, slotë“±ì˜ ì‘ì—…ì„ ìœ„í•˜ì—¬
+ * sdpë¥¼ í˜¸ì¶œí•˜ê³  sdpëŠ” ì´ëŸ¬í•œ ê¸°ëŠ¥ì„ sdcì— ì œê³µí•œë‹¤.
  *
  *
- *      sdc - record internal - ÄÃ·³, ·¹ÄÚµå Çì´õ, var col hdr°ü¸®
- *            page¿¡ ·¹ÄÚµå insert, delete, update
+ *      sdc - record internal - ì»¬ëŸ¼, ë ˆì½”ë“œ í—¤ë”, var col hdrê´€ë¦¬
+ *            pageì— ë ˆì½”ë“œ insert, delete, update
  *
  * -------------------------------------
  *
  *
- *      sdp - physical page °ü¸®
- *            logical page °ü¸®
- *            keymap °ü¸®
- *            slot °ü¸® ( alloc, free )
+ *      sdp - physical page ê´€ë¦¬
+ *            logical page ê´€ë¦¬
+ *            keymap ê´€ë¦¬
+ *            slot ê´€ë¦¬ ( alloc, free )
  *
  *
- * sdp layer´Â page internalÀÇ °ü¸®¸¦ Áö¿ø index, temp tableÀ» Áö¿øÇÏ±â À§ÇÑ
- * sdpPage ¸ğµâ°ú tableÀ» Áö¿øÇÏ±â À§ÇÑ sdpPageList ¸ğµâ, sdpDataPage ¸ğµâ·Î
- * ±¸ºĞÇÑ´Ù. sdpPageList, sdpDataPage, index, temp table¿¡¼­´Â
- * sdpPageÀÇ ±â´ÉÀ» È£ÃâÇÑ´Ù.
+ * sdp layerëŠ” page internalì˜ ê´€ë¦¬ë¥¼ ì§€ì› index, temp tableì„ ì§€ì›í•˜ê¸° ìœ„í•œ
+ * sdpPage ëª¨ë“ˆê³¼ tableì„ ì§€ì›í•˜ê¸° ìœ„í•œ sdpPageList ëª¨ë“ˆ, sdpDataPage ëª¨ë“ˆë¡œ
+ * êµ¬ë¶„í•œë‹¤. sdpPageList, sdpDataPage, index, temp tableì—ì„œëŠ”
+ * sdpPageì˜ ê¸°ëŠ¥ì„ í˜¸ì¶œí•œë‹¤.
  *
- *       sdpDataPage - data page internal ÀÛ¾÷À» À§ÇÑ ±â´É Á¦°ø
+ *       sdpDataPage - data page internal ì‘ì—…ì„ ìœ„í•œ ê¸°ëŠ¥ ì œê³µ
  *
- *       sdpPageList - tableÀ» Áö¿øÇÏ±â À§ÇÑ ±â´É Á¦°ø
- *                     sdpPageListEntry Å¬·¡½º °ü¸®
+ *       sdpPageList - tableì„ ì§€ì›í•˜ê¸° ìœ„í•œ ê¸°ëŠ¥ ì œê³µ
+ *                     sdpPageListEntry í´ë˜ìŠ¤ ê´€ë¦¬
  *
  * -------------------------------------------------
  *
- *       sdpPage  - index, temp tableÀÇ ÆäÀÌÁö internalÀÛ¾÷À» À§ÇÑ
- *                  ±â´É Á¦°ø
- *                  pageÀÇ physical header°ü¸®
- *                  pageÀÇ free size°ü¸®
- *                  keymapÀÇ °ü¸®
- *                  pageÀÇ free offset°ü¸®
+ *       sdpPage  - index, temp tableì˜ í˜ì´ì§€ internalì‘ì—…ì„ ìœ„í•œ
+ *                  ê¸°ëŠ¥ ì œê³µ
+ *                  pageì˜ physical headerê´€ë¦¬
+ *                  pageì˜ free sizeê´€ë¦¬
+ *                  keymapì˜ ê´€ë¦¬
+ *                  pageì˜ free offsetê´€ë¦¬
  *
- * ÀÌ ¿Ü¿¡µµ sdp layer¿¡´Â Segment, TableSpace, Extent°¡ ÀÖÀ¸¸ç
- * page, extent¸¦ °ü¸®ÇÑ´Ù.
+ * ì´ ì™¸ì—ë„ sdp layerì—ëŠ” Segment, TableSpace, Extentê°€ ìˆìœ¼ë©°
+ * page, extentë¥¼ ê´€ë¦¬í•œë‹¤.
  *
- * # data page-list entry ±¸Çö
+ * # data page-list entry êµ¬í˜„
  *
- * ÇÏ³ªÀÇ Å×ÀÌºí¿¡ ´ëÇÑ ÆäÀÌÁö ÇÒ´ç,
- * ÆäÀÌÁö ³»¿¡¼­ slotÀÇ °ü¸®¿¡ ´ëÇÑ ±â´ÉÀ» ¼öÇàÇÑ´Ù.
+ * í•˜ë‚˜ì˜ í…Œì´ë¸”ì— ëŒ€í•œ í˜ì´ì§€ í• ë‹¹,
+ * í˜ì´ì§€ ë‚´ì—ì„œ slotì˜ ê´€ë¦¬ì— ëŒ€í•œ ê¸°ëŠ¥ì„ ìˆ˜í–‰í•œë‹¤.
  *
- * - parameter typeÀÇ ¿øÄ¢
- *   logical header°¡ ÇÊ¿äÇÑ °÷Àº sdpDataPageHdr * typeÀ» ¹Ş´Â´Ù.
- *   insertable page list entry°¡ ÇÊ¿äÇÑ °÷Àº sdpTableMetaPageHdr * typeÀ» ¹Ş´Â´Ù.
+ * - parameter typeì˜ ì›ì¹™
+ *   logical headerê°€ í•„ìš”í•œ ê³³ì€ sdpDataPageHdr * typeì„ ë°›ëŠ”ë‹¤.
+ *   insertable page list entryê°€ í•„ìš”í•œ ê³³ì€ sdpTableMetaPageHdr * typeì„ ë°›ëŠ”ë‹¤.
  *
  **********************************************************************/
 #include <smErrorCode.h>
@@ -90,7 +90,7 @@
 #include <sdpPhyPage.h>
 
 /***********************************************************************
- * Description : page list entry ÃÊ±âÈ­
+ * Description : page list entry ì´ˆê¸°í™”
  ***********************************************************************/
 void sdpPageList::initializePageListEntry( sdpPageListEntry*  aPageEntry,
                                            vULong             aSlotSize,
@@ -112,9 +112,9 @@ void sdpPageList::initializePageListEntry( sdpPageListEntry*  aPageEntry,
 }
 
 /*
-  Page List EntryÀÇ Runtime ItemÀ» NULL·Î ¼¼ÆÃÇÑ´Ù.
+  Page List Entryì˜ Runtime Itemì„ NULLë¡œ ì„¸íŒ…í•œë‹¤.
 
-  OFFLINE/DISCARDµÈ Tablespace¾ÈÀÇ Table¿¡ ´ëÇØ ¼öÇàµÈ´Ù.
+  OFFLINE/DISCARDëœ Tablespaceì•ˆì˜ Tableì— ëŒ€í•´ ìˆ˜í–‰ëœë‹¤.
 */
 IDE_RC sdpPageList::setRuntimeNull( sdpPageListEntry* aPageEntry )
 {
@@ -125,7 +125,7 @@ IDE_RC sdpPageList::setRuntimeNull( sdpPageListEntry* aPageEntry )
     sSegMgmtOp = sdpSegDescMgr::getSegMgmtOp(aPageEntry);
     IDE_ERROR( sSegMgmtOp != NULL );
 
-    // Segment °ø°£°ü¸® Cache¸¦ ÇØÁ¦ÇÑ´Ù.
+    // Segment ê³µê°„ê´€ë¦¬ Cacheë¥¼ í•´ì œí•œë‹¤.
     IDE_TEST ( sSegMgmtOp->mDestroy( &(aPageEntry->mSegDesc.mSegHandle) )
                != IDE_SUCCESS );
 
@@ -139,7 +139,7 @@ IDE_RC sdpPageList::setRuntimeNull( sdpPageListEntry* aPageEntry )
 }
 
 /***********************************************************************
- * Description : page list entryÀÇ runtime Á¤º¸ ÃÊ±âÈ­
+ * Description : page list entryì˜ runtime ì •ë³´ ì´ˆê¸°í™”
  ***********************************************************************/
 IDE_RC sdpPageList::initEntryAtRuntime( scSpaceID         aSpaceID,
                                         smOID             aTableOID,
@@ -181,7 +181,7 @@ IDE_RC sdpPageList::initEntryAtRuntime( scSpaceID         aSpaceID,
         aPageEntry->mMutex = NULL;
     }
 
-    // Segment Cache ÃÊ±âÈ­
+    // Segment Cache ì´ˆê¸°í™”
     IDE_TEST( sdpSegDescMgr::initSegDesc(
                   &aPageEntry->mSegDesc,
                   aSpaceID,
@@ -203,7 +203,7 @@ IDE_RC sdpPageList::initEntryAtRuntime( scSpaceID         aSpaceID,
 }
 
 /***********************************************************************
- * Description : page list entryÀÇ runtime Á¤º¸ ÇØÁ¦
+ * Description : page list entryì˜ runtime ì •ë³´ í•´ì œ
  ***********************************************************************/
 IDE_RC sdpPageList::finEntryAtRuntime( sdpPageListEntry* aPageEntry )
 {
@@ -211,7 +211,7 @@ IDE_RC sdpPageList::finEntryAtRuntime( sdpPageListEntry* aPageEntry )
 
     if ( aPageEntry->mMutex != NULL )
     {
-        /* page list entryÀÇ mutex ÇØÁ¦ */
+        /* page list entryì˜ mutex í•´ì œ */
         IDE_TEST(aPageEntry->mMutex->destroy() != IDE_SUCCESS);
 
         IDE_TEST(iduMemMgr::free(aPageEntry->mMutex) != IDE_SUCCESS);
@@ -220,22 +220,22 @@ IDE_RC sdpPageList::finEntryAtRuntime( sdpPageListEntry* aPageEntry )
     else
     {
         // Do Nothing
-        // OFFLINE/DISCARD Tablespace¿¡ ¼ÓÇÑ TableÀÇ °æ¿ì
-        // mMutex°¡ NULLÀÏ ¼öµµ ÀÖ´Ù.
+        // OFFLINE/DISCARD Tablespaceì— ì†í•œ Tableì˜ ê²½ìš°
+        // mMutexê°€ NULLì¼ ìˆ˜ë„ ìˆë‹¤.
     }
 
     if ( aPageEntry->mSegDesc.mSegHandle.mCache != NULL )
     {
-        /* BUG-29941 - SDP ¸ğµâ¿¡ ¸Ş¸ğ¸® ´©¼ö°¡ Á¸ÀçÇÕ´Ï´Ù.
-         * ¿©±â¼­ initEntryAtRuntime¿¡¼­ ÇÒ´çÇÑ ¸Ş¸ğ¸®¸¦ ÇØÁ¦ÇÑ´Ù. */
+        /* BUG-29941 - SDP ëª¨ë“ˆì— ë©”ëª¨ë¦¬ ëˆ„ìˆ˜ê°€ ì¡´ì¬í•©ë‹ˆë‹¤.
+         * ì—¬ê¸°ì„œ initEntryAtRuntimeì—ì„œ í• ë‹¹í•œ ë©”ëª¨ë¦¬ë¥¼ í•´ì œí•œë‹¤. */
         IDE_TEST( sdpSegDescMgr::destSegDesc( &aPageEntry->mSegDesc )
                   != IDE_SUCCESS );
     }
     else
     {
         // Do Nothing
-        // OFFLINE/DISCARD Tablespace¿¡ ¼ÓÇÑ TableÀÇ °æ¿ì
-        // Segment Cache°¡ NULLÀÏ ¼öµµ ÀÖ´Ù.
+        // OFFLINE/DISCARD Tablespaceì— ì†í•œ Tableì˜ ê²½ìš°
+        // Segment Cacheê°€ NULLì¼ ìˆ˜ë„ ìˆë‹¤.
     }
 
     return IDE_SUCCESS;
@@ -249,12 +249,12 @@ IDE_RC sdpPageList::finEntryAtRuntime( sdpPageListEntry* aPageEntry )
  *
  * PROJ-1566
  *
- * Description : record¸¦ appendÇÒ free page¸¦ Ã£À½
+ * Description : recordë¥¼ appendí•  free pageë¥¼ ì°¾ìŒ
  *
  * Implementation :
- *    (1) Free Page ÇÒ´ç¹ŞÀ½
- *    (2) ÀÌÀü Page¿Í ¿¬°á Á¤º¸ ¼³Á¤
- *    sdpPageList::findSlot4AppendRec()¿¡¼­ È£Ãâ
+ *    (1) Free Page í• ë‹¹ë°›ìŒ
+ *    (2) ì´ì „ Pageì™€ ì—°ê²° ì •ë³´ ì„¤ì •
+ *    sdpPageList::findSlot4AppendRec()ì—ì„œ í˜¸ì¶œ
  *
  *    - In
  *      aStatistics     : statistics
@@ -263,12 +263,12 @@ IDE_RC sdpPageList::finEntryAtRuntime( sdpPageListEntry* aPageEntry )
  *      aPageEntry      : page list entry
  *      aDPathSegInfo   : Direct-Path Insert Information
  *      aMtx            : mini transaction
- *      aPrevPhyPageHdr : ÀÌÀü physical page header
- *      aPrevPageID     : ÀÌÀü page ID
- *      aStartExtRID    : free page°¡ Á¸ÀçÇÏ´Â Ã¹¹øÂ° extent RID
- *      aIsLogging      : Logging ¿©ºÎ
+ *      aPrevPhyPageHdr : ì´ì „ physical page header
+ *      aPrevPageID     : ì´ì „ page ID
+ *      aStartExtRID    : free pageê°€ ì¡´ì¬í•˜ëŠ” ì²«ë²ˆì§¸ extent RID
+ *      aIsLogging      : Logging ì—¬ë¶€
  *    - Out
- *      aFindPagePtr     : Ã£Àº free page pointer
+ *      aFindPagePtr     : ì°¾ì€ free page pointer
  **********************************************************************/
 IDE_RC sdpPageList::allocPage4AppendRec( idvSQL           * aStatistics,
                                          scSpaceID          aSpaceID,
@@ -320,17 +320,17 @@ IDE_RC sdpPageList::allocPage4AppendRec( idvSQL           * aStatistics,
     // PROJ-1665
     if ( aIsLogging == ID_FALSE )
     {
-        // no logging modeÀÏ °æ¿ì,
-        // page»óÅÂ°¡ inconsistent ÇÏ´Ù´Â °ÍÀ» Á¤º¸¸¦ ·Î±ë
-        // ´Ü, page »óÅÂ°¡ inconsistent ÇÏ´Ù°í ¼³Á¤ÇÏÁö´Â ¾ÊÀ½
+        // no logging modeì¼ ê²½ìš°,
+        // pageìƒíƒœê°€ inconsistent í•˜ë‹¤ëŠ” ê²ƒì„ ì •ë³´ë¥¼ ë¡œê¹…
+        // ë‹¨, page ìƒíƒœê°€ inconsistent í•˜ë‹¤ê³  ì„¤ì •í•˜ì§€ëŠ” ì•ŠìŒ
         //---------------------------------------------------------
-        // < ÀÌ¿Í °°ÀÌ Ã³¸®ÇÏ´Â ÀÌÀ¯ >
-        // Media Recovery ½Ã¿¡ Direct-Path INSERT°¡ nologgingÀ¸·Î
-        // ¼öÇà ¿Ï·áµÈ Page¿¡ ´ëÇÏ¿© DML ±¸¹®ÀÌ ¿À¸é ÇØ´ç Page¿¡
-        // ¾Æ¹« ³»¿ëÀÌ ÀûÇô ÀÖÁö ¾Ê±â ¶§¹®¿¡ ¿Àµ¿ÀÛ ÇÒ ¼ö ÀÖ´Ù.
-        // µû¶ó¼­ ÀÌ·± ¹®Á¦¸¦ ¹æÁöÇÏ±â À§ÇÏ¿©
-        // media recovery½Ã¿¡ ¾Æ·¡¿Í °°Àº log¸¦ º¸¸é
-        // ÇØ´ç Page »óÅÂ¸¦ in-consistent·Î º¯°æÇÑ´Ù.
+        // < ì´ì™€ ê°™ì´ ì²˜ë¦¬í•˜ëŠ” ì´ìœ  >
+        // Media Recovery ì‹œì— Direct-Path INSERTê°€ nologgingìœ¼ë¡œ
+        // ìˆ˜í–‰ ì™„ë£Œëœ Pageì— ëŒ€í•˜ì—¬ DML êµ¬ë¬¸ì´ ì˜¤ë©´ í•´ë‹¹ Pageì—
+        // ì•„ë¬´ ë‚´ìš©ì´ ì í˜€ ìˆì§€ ì•Šê¸° ë•Œë¬¸ì— ì˜¤ë™ì‘ í•  ìˆ˜ ìˆë‹¤.
+        // ë”°ë¼ì„œ ì´ëŸ° ë¬¸ì œë¥¼ ë°©ì§€í•˜ê¸° ìœ„í•˜ì—¬
+        // media recoveryì‹œì— ì•„ë˜ì™€ ê°™ì€ logë¥¼ ë³´ë©´
+        // í•´ë‹¹ Page ìƒíƒœë¥¼ in-consistentë¡œ ë³€ê²½í•œë‹¤.
         sIsConsistent = SDP_PAGE_INCONSISTENT;
 
         IDE_TEST( smrLogMgr::writePageConsistentLogRec( aStatistics,
@@ -340,9 +340,9 @@ IDE_RC sdpPageList::allocPage4AppendRec( idvSQL           * aStatistics,
                   != IDE_SUCCESS );
     }
 
-    /* DPath½Ã ÇÒ´çÇÑ ¸¶Áö¸· ÆäÀÌÁö¿Í ±× ÆäÀÌÁö°¡ ¼ÓÇÑ ExtRID¸¦
-     * °¡Áö°í ÀÖ´Â´Ù. ¿Ö³ÄÇÏ¸é Commit½Ã Target Å×ÀÌºíÀÇ ExtList¿Í
-     * ¿¬°á°ú HWMÀÇ °»½ÅÀ» À§ÇØ¼­ ÀÌ´Ù. */
+    /* DPathì‹œ í• ë‹¹í•œ ë§ˆì§€ë§‰ í˜ì´ì§€ì™€ ê·¸ í˜ì´ì§€ê°€ ì†í•œ ExtRIDë¥¼
+     * ê°€ì§€ê³  ìˆëŠ”ë‹¤. ì™œëƒí•˜ë©´ Commitì‹œ Target í…Œì´ë¸”ì˜ ExtListì™€
+     * ì—°ê²°ê³¼ HWMì˜ ê°±ì‹ ì„ ìœ„í•´ì„œ ì´ë‹¤. */
 
     aDPathSegInfo->mLstAllocPID         = sAllocPID;
     aDPathSegInfo->mLstAllocExtRID      = sAllocExtRID;
@@ -362,13 +362,13 @@ IDE_RC sdpPageList::allocPage4AppendRec( idvSQL           * aStatistics,
 /***********************************************************************
  * PROJ-1566
  *
- * Description : append¸¦ À§ÇÑ slotÀ» Ã£À½
+ * Description : appendë¥¼ ìœ„í•œ slotì„ ì°¾ìŒ
  * Implementation :
- *    (1) Max Row¸¦ ³ÑÁö ¾Ê´ÂÁö °Ë»ç
- *    (2) »õ·Î¿î Free page°¡ ÇÊ¿äÇÑ Áö °Ë»çÇÑ ÈÄ,
- *        »õ·Î¿î Free Page°¡ ÇÊ¿äÇÏ¸é »õ·Î ÇÒ´ç ¹ŞÀ½
- *    (3) ±âÁ¸ ¸¶Áö¸· Page ¶Ç´Â »õ·Î¿î Free page¿¡ AppendÇÒ slot À§Ä¡
- *        Ã£¾Æ ¼³Á¤ÇØÁÜ
+ *    (1) Max Rowë¥¼ ë„˜ì§€ ì•ŠëŠ”ì§€ ê²€ì‚¬
+ *    (2) ìƒˆë¡œìš´ Free pageê°€ í•„ìš”í•œ ì§€ ê²€ì‚¬í•œ í›„,
+ *        ìƒˆë¡œìš´ Free Pageê°€ í•„ìš”í•˜ë©´ ìƒˆë¡œ í• ë‹¹ ë°›ìŒ
+ *    (3) ê¸°ì¡´ ë§ˆì§€ë§‰ Page ë˜ëŠ” ìƒˆë¡œìš´ Free pageì— Appendí•  slot ìœ„ì¹˜
+ *        ì°¾ì•„ ì„¤ì •í•´ì¤Œ
  *
  *    - In
  *      aStatistics    : statistics
@@ -377,12 +377,12 @@ IDE_RC sdpPageList::allocPage4AppendRec( idvSQL           * aStatistics,
  *      aPageEntry     : page list entry
  *      aTableInfo     : table info
  *      aRecSize       : record size
- *      aMaxRow        : tableÀÌ °¡Áú¼ö ÀÖ´Â max row °³¼ö
- *      aIsLoggingMode : Direct-Path INSERT°¡ Logging ModeÀÓ
+ *      aMaxRow        : tableì´ ê°€ì§ˆìˆ˜ ìˆëŠ” max row ê°œìˆ˜
+ *      aIsLoggingMode : Direct-Path INSERTê°€ Logging Modeì„
  *      aStartInfo     : mini transaction start info
  *    - Out
- *      aPageHdr       : append ÇÒ record°¡ ¼ÓÇÑ page header
- *      aAllocSlotRID  : append ÇÒ record°¡ ÀúÀåµÉ slotÀÇ RID
+ *      aPageHdr       : append í•  recordê°€ ì†í•œ page header
+ *      aAllocSlotRID  : append í•  recordê°€ ì €ì¥ë  slotì˜ RID
  **********************************************************************/
 IDE_RC sdpPageList::findSlot4AppendRec( idvSQL           * aStatistics,
                                         scSpaceID          aSpaceID,
@@ -406,8 +406,8 @@ IDE_RC sdpPageList::findSlot4AppendRec( idvSQL           * aStatistics,
     sFreePagePtr   = NULL;
     sIsNeedNewPage = ID_TRUE;
 
-    /* AppendÀÌ±â¶§¹®¿¡ ¸¶Áö¸· ÆäÀÌÁö¿¡¼­ °ø°£ÀÌ ÀÖ´ÂÁö °Ë»ç¿©
-     * »õ·Î¿î Free Page ÇÒ´ç ¿©ºÎ¸¦ °áÁ¤ÇÑ´Ù. */
+    /* Appendì´ê¸°ë•Œë¬¸ì— ë§ˆì§€ë§‰ í˜ì´ì§€ì—ì„œ ê³µê°„ì´ ìˆëŠ”ì§€ ê²€ì‚¬ì—¬
+     * ìƒˆë¡œìš´ Free Page í• ë‹¹ ì—¬ë¶€ë¥¼ ê²°ì •í•œë‹¤. */
     sLstAllocPagePtr    = aDPathSegInfo->mLstAllocPagePtr;
 
     if( sLstAllocPagePtr != NULL )
@@ -436,8 +436,8 @@ IDE_RC sdpPageList::findSlot4AppendRec( idvSQL           * aStatistics,
 
         if( sLstAllocPagePtr != NULL )
         {
-            /* update only·Î º¯ÇÑ Page¸¦ DPath BufferÀÇ flush list¿¡
-             * ¿¬°áÇÔ */
+            /* update onlyë¡œ ë³€í•œ Pageë¥¼ DPath Bufferì˜ flush listì—
+             * ì—°ê²°í•¨ */
             IDE_TEST( sdbDPathBufferMgr::setDirtyPage( (void*)sLstAllocPagePtr )
                       != IDE_SUCCESS );
         }
@@ -453,7 +453,7 @@ IDE_RC sdpPageList::findSlot4AppendRec( idvSQL           * aStatistics,
 
     }
 
-    // Direct-Path Insert´Â ¹«Á¶°Ç 0¹øÂ° CTS¸¦ ÇÒ´çÇÑ´Ù.
+    // Direct-Path InsertëŠ” ë¬´ì¡°ê±´ 0ë²ˆì§¸ CTSë¥¼ í• ë‹¹í•œë‹¤.
     IDE_ASSERT( smLayerCallback::allocCTS( aStatistics,
                                            aMtx,   /* aFixMtx */
                                            aMtx,   /* aLogMtx */
@@ -473,7 +473,7 @@ IDE_RC sdpPageList::findSlot4AppendRec( idvSQL           * aStatistics,
 }
 
 /***********************************************************************
- * Description : Insert °¡´ÉÇÑ ÆäÀÌÁö¸¦ Å½»öÇÑ´Ù.
+ * Description : Insert ê°€ëŠ¥í•œ í˜ì´ì§€ë¥¼ íƒìƒ‰í•œë‹¤.
  ***********************************************************************/
 IDE_RC sdpPageList::findPage( idvSQL            *aStatistics,
                               scSpaceID          aSpaceID,
@@ -504,7 +504,7 @@ IDE_RC sdpPageList::findPage( idvSQL            *aStatistics,
 
     if (aTableInfoPtr != NULL)
     {
-        // max row¸¦ ³ÑÁö ¾Ê´ÂÁö °Ë»ç
+        // max rowë¥¼ ë„˜ì§€ ì•ŠëŠ”ì§€ ê²€ì‚¬
         IDE_TEST( validateMaxRow( aStatistics,
                                   aPageEntry,
                                   aTableInfoPtr,
@@ -555,7 +555,7 @@ IDE_RC sdpPageList::findPage( idvSQL            *aStatistics,
     }
     else
     {
-        /* Insert ½Ã¿¡´Â °¡¿ëÆäÀÌÁö°¡ ÀÖ´ÂÇÑ CTS¸¦ ÇÒ´ç ¸øÇÒ ¼ö°¡ ¾ø´Ù. */
+        /* Insert ì‹œì—ëŠ” ê°€ìš©í˜ì´ì§€ê°€ ìˆëŠ”í•œ CTSë¥¼ í• ë‹¹ ëª»í•  ìˆ˜ê°€ ì—†ë‹¤. */
     }
 
     IDE_ASSERT( sPagePtr != NULL );
@@ -572,8 +572,8 @@ IDE_RC sdpPageList::findPage( idvSQL            *aStatistics,
 
 
 /***********************************************************************
- * Description : ½ÇÁ¦·Î insert¸¦ À§ÇÑ slot ÇÒ´ç
- * findSlot4InsRecÀ» ¸ÕÀú ¼öÇàÇÏ¿© slotÀ» È®º¸ÇÏ°Ô µÈ ÈÄ È£ÃâµÈ´Ù.
+ * Description : ì‹¤ì œë¡œ insertë¥¼ ìœ„í•œ slot í• ë‹¹
+ * findSlot4InsRecì„ ë¨¼ì € ìˆ˜í–‰í•˜ì—¬ slotì„ í™•ë³´í•˜ê²Œ ëœ í›„ í˜¸ì¶œëœë‹¤.
  **********************************************************************/
 IDE_RC sdpPageList::allocSlot( UChar*       aPagePtr,
                                UShort       aSlotSize,
@@ -610,7 +610,7 @@ IDE_RC sdpPageList::allocSlot( UChar*       aPagePtr,
 }
 
 
-// °ø°£ÇÒ´çÀÌÈÄ ÆäÀÌÁöÀÇ °¡¿ëµµ ¹× °ü·Ã Segment ÀÚ·á±¸Á¶¸¦ º¯°æÇÑ´Ù.
+// ê³µê°„í• ë‹¹ì´í›„ í˜ì´ì§€ì˜ ê°€ìš©ë„ ë° ê´€ë ¨ Segment ìë£Œêµ¬ì¡°ë¥¼ ë³€ê²½í•œë‹¤.
 IDE_RC sdpPageList::updatePageState( idvSQL            * aStatistics,
                                      scSpaceID           aSpaceID,
                                      sdpPageListEntry  * aEntry,
@@ -634,7 +634,7 @@ IDE_RC sdpPageList::updatePageState( idvSQL            * aStatistics,
 }
 
 /***********************************************************************
- * Description : slotÀ» free ÇÑ´Ù.
+ * Description : slotì„ free í•œë‹¤.
  **********************************************************************/
 IDE_RC sdpPageList::freeSlot( idvSQL            *aStatistics,
                               scSpaceID          aTableSpaceID,
@@ -673,7 +673,7 @@ IDE_RC sdpPageList::freeSlot( idvSQL            *aStatistics,
 
     if( sdpSlotDirectory::getCount(sSlotDirPtr) == 0 )
     {
-        /* ¿ÏÀüÈ÷ ºóÆäÀÌÁö´Â UnFormat Page List¿¡ ³Ö¾îÁØ´Ù. */
+        /* ì™„ì „íˆ ë¹ˆí˜ì´ì§€ëŠ” UnFormat Page Listì— ë„£ì–´ì¤€ë‹¤. */
         IDE_TEST( sdpSegDescMgr::getSegMgmtOp( aPageEntry )->mFreePage(
                                               aStatistics,
                                               aMtx,
@@ -705,7 +705,7 @@ IDE_RC sdpPageList::freeSlot( idvSQL            *aStatistics,
 
 
 /***********************************************************************
- * Description : ·Î±ë¿¡ ÇÊ¿äÇÑ page list entry Á¤º¸ ¹İÈ¯(request api)
+ * Description : ë¡œê¹…ì— í•„ìš”í•œ page list entry ì •ë³´ ë°˜í™˜(request api)
  **********************************************************************/
 void sdpPageList::getPageListEntryInfo( void*       aPageEntry,
                                         scPageID*   aSegPID )
@@ -723,24 +723,24 @@ void sdpPageList::getPageListEntryInfo( void*       aPageEntry,
 /***********************************************************************
  *
  * Description :
- *  insert rowpiece ¿¬»ê½Ã¿¡, allocNewPage¸¦ ÇÒÁö ¶Ç´Â findPage¸¦ ÇÒÁö
- *  ¿©ºÎ¸¦ °Ë»çÇÏ´Â ÇÔ¼öÀÌ´Ù.
+ *  insert rowpiece ì—°ì‚°ì‹œì—, allocNewPageë¥¼ í• ì§€ ë˜ëŠ” findPageë¥¼ í• ì§€
+ *  ì—¬ë¶€ë¥¼ ê²€ì‚¬í•˜ëŠ” í•¨ìˆ˜ì´ë‹¤.
  *
- *  empty page¿¡ aDataSize Å©±âÀÇ row¸¦ ³Ö´Â °æ¿ì¿¡,
- *  PCTFREE Á¶°ÇÀ» ¸¸Á·ÇÏ´ÂÁö Ã¼Å©ÇÑ´Ù.
+ *  empty pageì— aDataSize í¬ê¸°ì˜ rowë¥¼ ë„£ëŠ” ê²½ìš°ì—,
+ *  PCTFREE ì¡°ê±´ì„ ë§Œì¡±í•˜ëŠ”ì§€ ì²´í¬í•œë‹¤.
  *
- *  1. ÆäÀÌÁöÀÇ freespaceÀÇ ºñÀ²ÀÌ PCTFREEº¸´Ù ÀÛÀ¸¸é
- *     ¹«Á¶°Ç allocNewPage¸¦ ÇØ¾ßÇÑ´Ù.
- *     ¿Ö³ªÇÏ¸é ±âÁ¸ÆäÀÌÁö¿¡ row¸¦ ³Ö°ÔµÇ¸é
- *     ±× ÆäÀÌÁö´Â 100% PCTFREE Á¶°ÇÀ» ¸¸Á·ÇÏÁö ¾ÊÀ» °ÍÀÌ±â ¶§¹®ÀÌ´Ù.
- *     (empty page¿¡ row¸¦ ³Ö¾îµµ PCTFREE Á¶°ÇÀ» ¸¸Á·ÇÏÁö ¾Ê¾Ò´Ù.)
- *     ±âÁ¸¿¡ ÀúÀåµÈ row°¡ update½Ã »ç¿ëÇÒ °ø°£À» ³²°ÜµÎ¾î¾ß ÇÑ´Ù.
+ *  1. í˜ì´ì§€ì˜ freespaceì˜ ë¹„ìœ¨ì´ PCTFREEë³´ë‹¤ ì‘ìœ¼ë©´
+ *     ë¬´ì¡°ê±´ allocNewPageë¥¼ í•´ì•¼í•œë‹¤.
+ *     ì™œë‚˜í•˜ë©´ ê¸°ì¡´í˜ì´ì§€ì— rowë¥¼ ë„£ê²Œë˜ë©´
+ *     ê·¸ í˜ì´ì§€ëŠ” 100% PCTFREE ì¡°ê±´ì„ ë§Œì¡±í•˜ì§€ ì•Šì„ ê²ƒì´ê¸° ë•Œë¬¸ì´ë‹¤.
+ *     (empty pageì— rowë¥¼ ë„£ì–´ë„ PCTFREE ì¡°ê±´ì„ ë§Œì¡±í•˜ì§€ ì•Šì•˜ë‹¤.)
+ *     ê¸°ì¡´ì— ì €ì¥ëœ rowê°€ updateì‹œ ì‚¬ìš©í•  ê³µê°„ì„ ë‚¨ê²¨ë‘ì–´ì•¼ í•œë‹¤.
  *
- *  2. ÆäÀÌÁöÀÇ freespaceÀÇ ºñÀ²ÀÌ PCTFREEº¸´Ù Å©¸é
- *     findPage¸¦ ½ÃµµÇØº»´Ù.
+ *  2. í˜ì´ì§€ì˜ freespaceì˜ ë¹„ìœ¨ì´ PCTFREEë³´ë‹¤ í¬ë©´
+ *     findPageë¥¼ ì‹œë„í•´ë³¸ë‹¤.
  *
  *  aEntry    - [IN] page list entry
- *  aDataSize - [IN] insertÇÏ·Á´Â dataÀÇ Å©±â
+ *  aDataSize - [IN] insertí•˜ë ¤ëŠ” dataì˜ í¬ê¸°
  *
  **********************************************************************/
 idBool sdpPageList::needAllocNewPage( sdpPageListEntry *aEntry,
@@ -766,18 +766,18 @@ idBool sdpPageList::needAllocNewPage( sdpPageListEntry *aEntry,
 
     if( sRemainSize < sPctFreeSize )
     {
-        /* ÆäÀÌÁöÀÇ freespaceÀÇ ºñÀ²ÀÌ PCTFREEº¸´Ù ÀÛÀ¸¸é
-         * ¹«Á¶°Ç allocNewPage¸¦ ÇØ¾ßÇÑ´Ù.
-         * ¿Ö³ªÇÏ¸é ±âÁ¸ÆäÀÌÁö¿¡ row¸¦ ³Ö°ÔµÇ¸é
-         * ±× ÆäÀÌÁö´Â 100% PCTFREE Á¶°ÇÀ» ¸¸Á·ÇÏÁö ¾ÊÀ» °ÍÀÌ±â ¶§¹®ÀÌ´Ù.
-         * (empty page¿¡ row¸¦ ³Ö¾îµµ PCTFREE Á¶°ÇÀ» ¸¸Á·ÇÏÁö ¾Ê¾Ò´Ù.)
-         * ±âÁ¸¿¡ ÀúÀåµÈ row°¡ update½Ã »ç¿ëÇÒ °ø°£À» ³²°ÜµÎ¾î¾ß ÇÑ´Ù. */
+        /* í˜ì´ì§€ì˜ freespaceì˜ ë¹„ìœ¨ì´ PCTFREEë³´ë‹¤ ì‘ìœ¼ë©´
+         * ë¬´ì¡°ê±´ allocNewPageë¥¼ í•´ì•¼í•œë‹¤.
+         * ì™œë‚˜í•˜ë©´ ê¸°ì¡´í˜ì´ì§€ì— rowë¥¼ ë„£ê²Œë˜ë©´
+         * ê·¸ í˜ì´ì§€ëŠ” 100% PCTFREE ì¡°ê±´ì„ ë§Œì¡±í•˜ì§€ ì•Šì„ ê²ƒì´ê¸° ë•Œë¬¸ì´ë‹¤.
+         * (empty pageì— rowë¥¼ ë„£ì–´ë„ PCTFREE ì¡°ê±´ì„ ë§Œì¡±í•˜ì§€ ì•Šì•˜ë‹¤.)
+         * ê¸°ì¡´ì— ì €ì¥ëœ rowê°€ updateì‹œ ì‚¬ìš©í•  ê³µê°„ì„ ë‚¨ê²¨ë‘ì–´ì•¼ í•œë‹¤. */
         return ID_TRUE;
     }
     else
     {
-        /* ÆäÀÌÁöÀÇ freespaceÀÇ ºñÀ²ÀÌ PCTFREEº¸´Ù Å©¸é
-         * findPage¸¦ ½ÃµµÇØº»´Ù. */
+        /* í˜ì´ì§€ì˜ freespaceì˜ ë¹„ìœ¨ì´ PCTFREEë³´ë‹¤ í¬ë©´
+         * findPageë¥¼ ì‹œë„í•´ë³¸ë‹¤. */
         return ID_FALSE;
     }
 }
@@ -785,15 +785,15 @@ idBool sdpPageList::needAllocNewPage( sdpPageListEntry *aEntry,
 /***********************************************************************
  *
  * Description :
- *  ÀÌ ÆäÀÌÁö¿¡ µ¥ÀÌÅÍ¸¦ insertÇÒ ¼ö ÀÖ´ÂÁö Ã¼Å©ÇÑ´Ù.
- *  1. canAllocSlot °¡´ÉÇÑÁö Ã¼Å©
- *  2. ÀÌ ÆäÀÌÁö¿¡ µ¥ÀÌÅÍ¸¦ ³Ö¾úÀ» °æ¿ì,
- *     freespaceÀÇ ºñÀ²ÀÌ PCTFREE º¸´Ù ÀÛ¾ÆÁöÁö´Â
- *     ¾Ê´ÂÁö Ã¼Å©
+ *  ì´ í˜ì´ì§€ì— ë°ì´í„°ë¥¼ insertí•  ìˆ˜ ìˆëŠ”ì§€ ì²´í¬í•œë‹¤.
+ *  1. canAllocSlot ê°€ëŠ¥í•œì§€ ì²´í¬
+ *  2. ì´ í˜ì´ì§€ì— ë°ì´í„°ë¥¼ ë„£ì—ˆì„ ê²½ìš°,
+ *     freespaceì˜ ë¹„ìœ¨ì´ PCTFREE ë³´ë‹¤ ì‘ì•„ì§€ì§€ëŠ”
+ *     ì•ŠëŠ”ì§€ ì²´í¬
  *
  *  aEntry    - [IN] page list entry
  *  aPagePtr  - [IN] page ptr
- *  aDataSize - [IN] insertÇÏ·Á´Â dataÀÇ Å©±â
+ *  aDataSize - [IN] insertí•˜ë ¤ëŠ” dataì˜ í¬ê¸°
  *
  **********************************************************************/
 idBool sdpPageList::canInsert2Page4Append( sdpPageListEntry *aEntry,
@@ -829,10 +829,10 @@ idBool sdpPageList::canInsert2Page4Append( sdpPageListEntry *aEntry,
 
         if( sRemainSize < sPctFreeSize )
         {
-            /* ÀÌ ÆäÀÌÁö¿¡ »õ·Î¿î row¸¦ ³Ö°ÔµÇ¸é,
-             * ÆäÀÌÁö³» freespaceÀÇ ºñÀ²ÀÌ
-             * PCTFREE º¸´Ù ÀÛ¾ÆÁö°Ô µÈ´Ù.
-             * ±×·¡¼­ ÀÌ ÆäÀÌÁö¿¡ insertÇÒ ¼ö ¾ø´Ù. */
+            /* ì´ í˜ì´ì§€ì— ìƒˆë¡œìš´ rowë¥¼ ë„£ê²Œë˜ë©´,
+             * í˜ì´ì§€ë‚´ freespaceì˜ ë¹„ìœ¨ì´
+             * PCTFREE ë³´ë‹¤ ì‘ì•„ì§€ê²Œ ëœë‹¤.
+             * ê·¸ë˜ì„œ ì´ í˜ì´ì§€ì— insertí•  ìˆ˜ ì—†ë‹¤. */
             sCanAllocSlot = ID_FALSE;
         }
     }
@@ -841,8 +841,8 @@ idBool sdpPageList::canInsert2Page4Append( sdpPageListEntry *aEntry,
 }
 
 /***********************************************************************
- * Description : record count ¹İÈ¯
- * record count´Â insertµÈ record - deleteµÈ record·Î °áÁ¤
+ * Description : record count ë°˜í™˜
+ * record countëŠ” insertëœ record - deleteëœ recordë¡œ ê²°ì •
  ***********************************************************************/
 #ifndef COMPILE_64BIT
 IDE_RC sdpPageList::getRecordCount( idvSQL*           aStatistics,
@@ -861,19 +861,19 @@ IDE_RC sdpPageList::getRecordCount( idvSQL*           /* aStatistics */,
 
     /*
      * TASK-4690
-     * 64ºñÆ®¿¡¼­´Â 64ºñÆ® º¯¼ö¸¦ atomicÇÏ°Ô read/writeÇÒ ¼ö ÀÖ´Ù.
-     * Áï, ¾Æ·¡ mutex¸¦ Àâ°í Çª´Â °ÍÀº ºÒÇÊ¿äÇÑ lockÀÌ´Ù.
-     * µû¶ó¼­ 64ºñÆ®ÀÎ °æ¿ì¿£ lockÀ» ÀâÁö ¾Êµµ·Ï ÇÑ´Ù.
+     * 64ë¹„íŠ¸ì—ì„œëŠ” 64ë¹„íŠ¸ ë³€ìˆ˜ë¥¼ atomicí•˜ê²Œ read/writeí•  ìˆ˜ ìˆë‹¤.
+     * ì¦‰, ì•„ë˜ mutexë¥¼ ì¡ê³  í‘¸ëŠ” ê²ƒì€ ë¶ˆí•„ìš”í•œ lockì´ë‹¤.
+     * ë”°ë¼ì„œ 64ë¹„íŠ¸ì¸ ê²½ìš°ì—” lockì„ ì¡ì§€ ì•Šë„ë¡ í•œë‹¤.
      */
 #ifndef COMPILE_64BIT
-    /* mutex lock È¹µæ */
+    /* mutex lock íšë“ */
     if (aLockMutex == ID_TRUE)
     {
         IDE_TEST( lock( aStatistics, aPageEntry ) != IDE_SUCCESS );
     }
 #endif
 
-    /* record count °è»ê */
+    /* record count ê³„ì‚° */
     *aRecordCount = getRecCnt( aPageEntry );
 
 #ifndef COMPILE_64BIT
@@ -894,7 +894,7 @@ IDE_RC sdpPageList::getRecordCount( idvSQL*           /* aStatistics */,
 }
 
 /***********************************************************************
- * Description : page list entryÀÇ item size¸¦ align½ÃÅ² slot size ¹İÈ¯
+ * Description : page list entryì˜ item sizeë¥¼ alignì‹œí‚¨ slot size ë°˜í™˜
  **********************************************************************/
 UInt sdpPageList::getSlotSize( sdpPageListEntry* aPageEntry )
 {
@@ -906,7 +906,7 @@ UInt sdpPageList::getSlotSize( sdpPageListEntry* aPageEntry )
 }
 
 /***********************************************************************
- * Description : page list entryÀÇ seg desc rID ¹İÈ¯
+ * Description : page list entryì˜ seg desc rID ë°˜í™˜
  **********************************************************************/
 scPageID sdpPageList::getTableSegDescPID( sdpPageListEntry*   aPageEntry )
 {
@@ -916,8 +916,8 @@ scPageID sdpPageList::getTableSegDescPID( sdpPageListEntry*   aPageEntry )
 }
 
 /***********************************************************************
- * Description : page list entryÀÇ insert count¸¦ get
- * ÀÌ ÇÔ¼ö°¡ È£ÃâµÇ±âÀü¿¡ ¹İµå½Ã entryÀÇ mutex°¡ È¹µæµÈ »óÅÂ¿©¾ßÇÑ´Ù.
+ * Description : page list entryì˜ insert countë¥¼ get
+ * ì´ í•¨ìˆ˜ê°€ í˜¸ì¶œë˜ê¸°ì „ì— ë°˜ë“œì‹œ entryì˜ mutexê°€ íšë“ëœ ìƒíƒœì—¬ì•¼í•œë‹¤.
  * return aPageEntry->insert count
  **********************************************************************/
 ULong sdpPageList::getRecCnt( sdpPageListEntry*  aPageEntry )
@@ -927,7 +927,7 @@ ULong sdpPageList::getRecCnt( sdpPageListEntry*  aPageEntry )
 
 /***********************************************************************
  PROJ-1566
- Description : write pointerÀÇ page°¡ table pageÀÎÁö °Ë»ç
+ Description : write pointerì˜ pageê°€ table pageì¸ì§€ ê²€ì‚¬
 
 ***********************************************************************/
 idBool sdpPageList::isTablePageType ( UChar * aWritePtr )
@@ -948,7 +948,7 @@ idBool sdpPageList::isTablePageType ( UChar * aWritePtr )
 
 /***********************************************************************
 
-  Description : MAX ROW¸¦ ³Ñ´ÂÁö °Ë»ç
+  Description : MAX ROWë¥¼ ë„˜ëŠ”ì§€ ê²€ì‚¬
 
 ***********************************************************************/
 IDE_RC sdpPageList::validateMaxRow( idvSQL*            aStatistics,
@@ -959,8 +959,8 @@ IDE_RC sdpPageList::validateMaxRow( idvSQL*            aStatistics,
     UInt sState = 0;
     UInt sRecordCnt;
 
-    /* BUG-19573 TableÀÇ Max Row°¡ DisableµÇ¾îÀÖÀ¸¸é ÀÌ °ªÀ» insert½Ã¿¡
-     *           CheckÇÏÁö ¾Ê¾Æ¾ß ÇÑ´Ù. */
+    /* BUG-19573 Tableì˜ Max Rowê°€ Disableë˜ì–´ìˆìœ¼ë©´ ì´ ê°’ì„ insertì‹œì—
+     *           Checkí•˜ì§€ ì•Šì•„ì•¼ í•œë‹¤. */
     if( aMaxRow != ID_ULONG_MAX )
     {
         IDE_TEST( lock( aStatistics, aPageEntry ) != IDE_SUCCESS);
@@ -1111,10 +1111,10 @@ IDE_RC sdpPageList::addPage4TempSeg( idvSQL           *aStatistics,
 }
 
 /***********************************************************************
- * Description :  Data Page »ı¼º½Ã ÃÊ±â CTL Size¸¦ °è»êÇÏ¿© ¹İÈ¯
+ * Description :  Data Page ìƒì„±ì‹œ ì´ˆê¸° CTL Sizeë¥¼ ê³„ì‚°í•˜ì—¬ ë°˜í™˜
  *
- * DataPage´Â InitTrans ¼Ó¼º°ªÀ» °í·ÁÇÏ¿© Max RowPiece¸¦
- * Å©±â¸¦ Á¦ÇÑÇÒ ¼ö ÀÖ´Ù.
+ * DataPageëŠ” InitTrans ì†ì„±ê°’ì„ ê³ ë ¤í•˜ì—¬ Max RowPieceë¥¼
+ * í¬ê¸°ë¥¼ ì œí•œí•  ìˆ˜ ìˆë‹¤.
  **********************************************************************/
 UShort sdpPageList::getSizeOfInitTrans( sdpPageListEntry * aPageEntry )
 {

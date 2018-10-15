@@ -56,9 +56,9 @@ void mmtJobThread::finalize()
 /**
  * mmtJobThread::initialize()
  *
- *  JobThread¸¦ initialize ÇÑ´Ù.
+ *  JobThreadë¥¼ initialize í•œë‹¤.
  *
- *  Queue Size ´Â JobThreadQueueSize ¸¸Å­ ÇÒ´çÇÑ´Ù.
+ *  Queue Size ëŠ” JobThreadQueueSize ë§Œí¼ í• ë‹¹í•œë‹¤.
  */
 IDE_RC mmtJobThread::initializeThread()
 {
@@ -88,7 +88,7 @@ IDE_RC mmtJobThread::initializeThread()
 /**
  * mmtJobThread::finalize()
  *
- *  Queue¸¦ finalize ÇÏ°í mutex¿Í cond¸¦ destory ÇÑ´Ù.
+ *  Queueë¥¼ finalize í•˜ê³  mutexì™€ condë¥¼ destory í•œë‹¤.
  */
 void mmtJobThread::finalizeThread()
 {
@@ -99,7 +99,7 @@ void mmtJobThread::finalizeThread()
 /**
  * mmtJobThread::signalToJobThread()
  *
- *  ÇöÀç Thread¿¡ sianlÀ» º¸³½´Ù.
+ *  í˜„ì¬ Threadì— sianlì„ ë³´ë‚¸ë‹¤.
  */
 void mmtJobThread::signalToJobThread()
 {
@@ -111,8 +111,8 @@ void mmtJobThread::signalToJobThread()
 /**
  * mmtJobThread::run()
  *
- *  Job À» ½ÇÇàÇÑ´Ù. ½ÇÇàÇÒ Job ÀÌ ¾ø´Ù¸é ´ë±â »óÅÂ·Î ´ë±âÇÏ´Ù°¡ Job Scheduler
- *  ·Î ºÎÅÍ signalÀ» ¹ŞÀ¸¸é Queue¸¦ µÚÁ®¼­ ½ÇÇàÇÒ JobID¸¦ ²¨³»°í ÀÌ¸¦ ½ÇÇàÇÑ´Ù.
+ *  Job ì„ ì‹¤í–‰í•œë‹¤. ì‹¤í–‰í•  Job ì´ ì—†ë‹¤ë©´ ëŒ€ê¸° ìƒíƒœë¡œ ëŒ€ê¸°í•˜ë‹¤ê°€ Job Scheduler
+ *  ë¡œ ë¶€í„° signalì„ ë°›ìœ¼ë©´ Queueë¥¼ ë’¤ì ¸ì„œ ì‹¤í–‰í•  JobIDë¥¼ êº¼ë‚´ê³  ì´ë¥¼ ì‹¤í–‰í•œë‹¤.
  */
 void mmtJobThread::run()
 {
@@ -123,7 +123,7 @@ void mmtJobThread::run()
     SInt           sSleep = 1;
     SInt           i;
 
-    // internal userinfo¸¦ »ı¼ºÇÑ´Ù.
+    // internal userinfoë¥¼ ìƒì„±í•œë‹¤.
     idlOS::memset(&sUserInfo, 0, ID_SIZEOF(sUserInfo));
     mtl::makeNameInSQL( sUserInfo.loginID, (SChar *) "SYS", 3 );
     sUserInfo.loginUserID      = QC_SYS_USER_ID;   /* BUG-41561 */
@@ -185,7 +185,7 @@ void mmtJobThread::run()
                     /* Nothing to do */
                 }
                 
-                /* Max 1½Ã°£( 3600 ÃÊ )À¸·Î Á¡Á¡ Sleep ½Ã°£ÀÌ ´Ã¾î³­´Ù. */
+                /* Max 1ì‹œê°„( 3600 ì´ˆ )ìœ¼ë¡œ ì ì  Sleep ì‹œê°„ì´ ëŠ˜ì–´ë‚œë‹¤. */
                 if ( sSleep < 3600 )
                 {
                     sSleep = sSleep << 1;
@@ -205,7 +205,7 @@ void mmtJobThread::run()
                 /* Nothing to do */
             }
             
-            /* 1 session¿¡ 1 job¸¸ ½ÇÇàÇÑ´Ù. */
+            /* 1 sessionì— 1 jobë§Œ ì‹¤í–‰í•œë‹¤. */
             qciMisc::executeJobItem( mIndex, sJob, (void *)mSession );
 
             mSession->setSessionState( MMC_SESSION_STATE_END );
@@ -241,10 +241,10 @@ void mmtJobThread::run()
 /**
  * mmtJobThread::stop()
  *
- *   Job Thread ¸¦ Stop ÇÑ´Ù.
+ *   Job Thread ë¥¼ Stop í•œë‹¤.
  *
- *   START SHUTDOWN IMMEDIATE ¿Í °°Àº °æ¿ì Session¿¡ CLOSED flag¸¦ ¼¼ÆÃÇØ
- *   Job ÀÌ ½ÇÇàÁßÀÌ´õ¶óµµ Job À» Á¾·áÇÒ ¼ö ÀÖµµ·Ï ÇÑ´Ù.
+ *   START SHUTDOWN IMMEDIATE ì™€ ê°™ì€ ê²½ìš° Sessionì— CLOSED flagë¥¼ ì„¸íŒ…í•´
+ *   Job ì´ ì‹¤í–‰ì¤‘ì´ë”ë¼ë„ Job ì„ ì¢…ë£Œí•  ìˆ˜ ìˆë„ë¡ í•œë‹¤.
  */
 void mmtJobThread::stop()
 {
@@ -284,9 +284,9 @@ void mmtJobScheduler::finalize()
 /**
  * mmtJobScheduler::initialize()
  *
- * Job Scheduler ¸¦ initialize ÇÑ´Ù.
+ * Job Scheduler ë¥¼ initialize í•œë‹¤.
  *
- *  Job JobThreadCount ¸¸Å­ Job Thread¸¦ »ı¼ºÇÑ´Ù.
+ *  Job JobThreadCount ë§Œí¼ Job Threadë¥¼ ìƒì„±í•œë‹¤.
  *
  */
 IDE_RC mmtJobScheduler::initializeThread()
@@ -393,9 +393,9 @@ IDE_RC mmtJobScheduler::initializeThread()
 /**
  * mmtJobScheduler::finalize()
  *
- *  Job Scheduler ¸¦ Á¾·áÇÑ´Ù.
+ *  Job Scheduler ë¥¼ ì¢…ë£Œí•œë‹¤.
  *
- *   Job ThreadÀÇ ¼ö¸¸Å­ StopÇÏ¸é¼­ Á¾·áµÉ¶§ ±îÁö ´ë±âÇÑ´Ù.
+ *   Job Threadì˜ ìˆ˜ë§Œí¼ Stopí•˜ë©´ì„œ ì¢…ë£Œë ë•Œ ê¹Œì§€ ëŒ€ê¸°í•œë‹¤.
  */
 void mmtJobScheduler::finalizeThread()
 {
@@ -423,12 +423,12 @@ void mmtJobScheduler::finalizeThread()
 /**
  * mmtJobScheduler::run()
  *
- *  JobScheduler ´Â ÁÖ±âÀûÀ¸·Î Meta¸¦ Á¶È¸ÇØ¼­ JobÀ» ½ÇÇàÇÑ´Ù.
+ *  JobScheduler ëŠ” ì£¼ê¸°ì ìœ¼ë¡œ Metaë¥¼ ì¡°íšŒí•´ì„œ Jobì„ ì‹¤í–‰í•œë‹¤.
  *
- *  1. JOB_SCHEDULER_ENABLE ÇÁ·¯ÆÛÆ¼°¡ È°¼ºÈ­ µÇ¾îÀÖ´Ù¸é Meta¸¦ Á¶È¸ÇÑ´Ù.
- *  2. ½ÇÇàÇÒ JOBÀÌ ÀÖ´Ù¸é ÀÌ¸¦ JOB_THREADÀÇ QUEUE¿¡ ³Ö¾î ÁØ´Ù.
- *  3. ´ë±âÁßÀÎ Job Thread¸¦ ±ú¿î´Ù.
- *  4. ´ÙÀ½ ºĞ±îÁö Sleep ÇÑ´Ù.
+ *  1. JOB_SCHEDULER_ENABLE í”„ëŸ¬í¼í‹°ê°€ í™œì„±í™” ë˜ì–´ìˆë‹¤ë©´ Metaë¥¼ ì¡°íšŒí•œë‹¤.
+ *  2. ì‹¤í–‰í•  JOBì´ ìˆë‹¤ë©´ ì´ë¥¼ JOB_THREADì˜ QUEUEì— ë„£ì–´ ì¤€ë‹¤.
+ *  3. ëŒ€ê¸°ì¤‘ì¸ Job Threadë¥¼ ê¹¨ìš´ë‹¤.
+ *  4. ë‹¤ìŒ ë¶„ê¹Œì§€ Sleep í•œë‹¤.
  */
 void mmtJobScheduler::run()
 {
@@ -472,7 +472,7 @@ void mmtJobScheduler::run()
         sCurTime = idlOS::gettimeofday();
         sTime1   = (time_t)sCurTime.sec();
 
-        /* 1. JOB_START ÇÁ·¯ÆÛÆ¼°¡ È°¼ºÈ­ µÇ¾îÀÖ´Ù¸é Meta¸¦ Á¶È¸ÇÑ´Ù. */
+        /* 1. JOB_START í”„ëŸ¬í¼í‹°ê°€ í™œì„±í™” ë˜ì–´ìˆë‹¤ë©´ Metaë¥¼ ì¡°íšŒí•œë‹¤. */
         sCount   = 0;
         if ( mmuProperty::getJobSchedulerEnable() == 1 )
         {
@@ -485,7 +485,7 @@ void mmtJobScheduler::run()
             /* Nothing to do */
         }
 
-        /* 2. ½ÇÇàÇÒ JOBÀÌ ÀÖ´Ù¸é ÀÌ¸¦ JOB SCHEDULERÀÇ QUEUE¿¡ ³Ö¾îÁØ´Ù. */
+        /* 2. ì‹¤í–‰í•  JOBì´ ìˆë‹¤ë©´ ì´ë¥¼ JOB SCHEDULERì˜ QUEUEì— ë„£ì–´ì¤€ë‹¤. */
         for ( i = 0; ( i < sCount ) && ( mRun == ID_TRUE ); i++ )
         {
             sJob = (vSLong)sItems[i];
@@ -503,7 +503,7 @@ void mmtJobScheduler::run()
                     /* Nothing to do */
                 }
 
-                /* Shutdown ¸í·É¾î°¡ µé¾î¿À´ÂÁö Ã¼Å©ÇÑ´Ù */
+                /* Shutdown ëª…ë ¹ì–´ê°€ ë“¤ì–´ì˜¤ëŠ”ì§€ ì²´í¬í•œë‹¤ */
                 if ( mRun == ID_FALSE )
                 {
                     break;
@@ -516,7 +516,7 @@ void mmtJobScheduler::run()
                 idlOS::thr_yield();
             }
             
-            /* enqueue°¡ ¼º°øÇÏ¸é ÀüÃ¼ broadcastÇÑ´Ù. */
+            /* enqueueê°€ ì„±ê³µí•˜ë©´ ì „ì²´ broadcastí•œë‹¤. */
             for ( sThreadID = 0; sThreadID < mThreadCount; sThreadID++ )
             {
                 mJobThreads[sThreadID]->signalToJobThread();
@@ -526,7 +526,7 @@ void mmtJobScheduler::run()
         sCurTime = idlOS::gettimeofday();
         sTime2   = (time_t)sCurTime.sec();
 
-        /* 4. ´ÙÀ½ ºĞ±îÁö Sleep ÇÑ´Ù. */
+        /* 4. ë‹¤ìŒ ë¶„ê¹Œì§€ Sleep í•œë‹¤. */
         if ( ( qciMisc::isExecuteForNatc() == ID_FALSE ) &&
              ( mmuProperty::getJobSchedulerEnable() == 1 ) )
 
@@ -542,10 +542,10 @@ void mmtJobScheduler::run()
                 sRemainSeconds = ( 60 - sLocaltime.tm_sec );
             }
 
-            /* ´ÙÀ½ ºĞÀÌ µÉ¶§ ±îÁö 1ÃÊ¾¿ ½¬¸é¼­ ´ë±âÇÑ´Ù */
+            /* ë‹¤ìŒ ë¶„ì´ ë ë•Œ ê¹Œì§€ 1ì´ˆì”© ì‰¬ë©´ì„œ ëŒ€ê¸°í•œë‹¤ */
             for ( i = 0; i < sRemainSeconds; i++ )
             {
-                /* Shutdown ¸í·É¾î°¡ µé¾î¿À´ÂÁö Ã¼Å©ÇÑ´Ù */
+                /* Shutdown ëª…ë ¹ì–´ê°€ ë“¤ì–´ì˜¤ëŠ”ì§€ ì²´í¬í•œë‹¤ */
                 if ( ( mRun == ID_FALSE ) ||
                      ( qciMisc::isExecuteForNatc() == ID_TRUE ) )
                 {
@@ -560,7 +560,7 @@ void mmtJobScheduler::run()
         }
         else
         {
-            /* Natc ¼öÇàÁß¿¡´Â 1 ÃÊ ¸¸ SleepÇÑ´Ù */
+            /* Natc ìˆ˜í–‰ì¤‘ì—ëŠ” 1 ì´ˆ ë§Œ Sleepí•œë‹¤ */
             idlOS::sleep(1);
         }
     }
@@ -576,7 +576,7 @@ void mmtJobScheduler::stop()
 /**
  * mmtJobManager::initialize()
  *
- * JobThreadCount °¡ 0 º¸´Ù Å¬°æ¿ì Job Scheduler ¸¦ »ı¼ºÇÑ´Ù.
+ * JobThreadCount ê°€ 0 ë³´ë‹¤ í´ê²½ìš° Job Scheduler ë¥¼ ìƒì„±í•œë‹¤.
  */
 IDE_RC mmtJobManager::initialize()
 {
@@ -655,7 +655,7 @@ IDE_RC mmtJobManager::initialize()
 /**
  * mmtJobManager::finalize()
  *
- *  Job Manager ¸¦ Á¾·áÇÑ´Ù. JobScheduler¸¦ Á¾·áÇÏµµ·Ï È£ÃâÇÑ´Ù.
+ *  Job Manager ë¥¼ ì¢…ë£Œí•œë‹¤. JobSchedulerë¥¼ ì¢…ë£Œí•˜ë„ë¡ í˜¸ì¶œí•œë‹¤.
  */
 IDE_RC mmtJobManager::finalize()
 {

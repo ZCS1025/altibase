@@ -33,10 +33,10 @@ IDE_RC cmnDispatcherInitializeIPCDA(cmnDispatcher *aDispatcher, UInt /*aMaxLink*
 {
     cmnDispatcherIPCDA *sDispatcher = (cmnDispatcherIPCDA *)aDispatcher;
 
-    /* ¸â¹ö ÃÊ±âÈ­ */
+    /* ë©¤ë²„ ì´ˆê¸°í™” */
     sDispatcher->mMaxHandle  = PDL_INVALID_SOCKET;
 
-    /* fdset ÃÊ±âÈ­ */
+    /* fdset ì´ˆê¸°í™” */
     FD_ZERO(&sDispatcher->mFdSet);
 
     return IDE_SUCCESS;
@@ -52,20 +52,20 @@ IDE_RC cmnDispatcherAddLinkIPCDA(cmnDispatcher *aDispatcher, cmnLink *aLink)
     cmnDispatcherIPCDA  *sDispatcher = (cmnDispatcherIPCDA *)aDispatcher;
     PDL_SOCKET         sHandle;
 
-    /* DispatcherÀÇ Link List¿¡ Ãß°¡ */
+    /* Dispatcherì˜ Link Listì— ì¶”ê°€ */
     IDE_TEST(cmnDispatcherAddLink(aDispatcher, aLink) != IDE_SUCCESS);
 
-    /* LinkÀÇ socket È¹µæ */
+    /* Linkì˜ socket íšë“ */
     IDE_TEST(aLink->mOp->mGetHandle(aLink, &sHandle) != IDE_SUCCESS);
 
-    /* MaxHandle ¼¼ÆÃ */
+    /* MaxHandle ì„¸íŒ… */
     if ((sDispatcher->mMaxHandle == PDL_INVALID_SOCKET) ||
         (sDispatcher->mMaxHandle < sHandle))
     {
         sDispatcher->mMaxHandle = sHandle;
     }
 
-    /* FdSet¿¡ socket ¼¼ÆÃ */
+    /* FdSetì— socket ì„¸íŒ… */
     FD_SET(sHandle, &sDispatcher->mFdSet);
 
     return IDE_SUCCESS;
@@ -78,7 +78,7 @@ IDE_RC cmnDispatcherRemoveLinkIPCDA(cmnDispatcher */*aDispatcher*/, cmnLink *aLi
     cmnLinkPeer *sLink = (cmnLinkPeer*)aLink;
 
     /* bug-28277 ipc: server stop failed when idle clis exist
-     * server stop½Ã¿¡¸¸ shutdown_mode_force ³Ñ±âµµ·Ï ÇÔ. */
+     * server stopì‹œì—ë§Œ shutdown_mode_force ë„˜ê¸°ë„ë¡ í•¨. */
     IDE_TEST(sLink->mPeerOp->mShutdown(sLink, CMN_DIRECTION_RDWR,
                                        CMN_SHUTDOWN_MODE_NORMAL)
              != IDE_SUCCESS);
@@ -117,7 +117,7 @@ IDE_RC cmnDispatcherSelectIPCDA(cmnDispatcher  *aDispatcher,
 
     IDU_LIST_INIT(aReadyList);
 
-    /* select ¼öÇà */
+    /* select ìˆ˜í–‰ */
     sResult = idlOS::select(sDispatcher->mMaxHandle + 1,
             &sDispatcher->mFdSet,
             NULL,
@@ -126,21 +126,21 @@ IDE_RC cmnDispatcherSelectIPCDA(cmnDispatcher  *aDispatcher,
 
     IDE_TEST_RAISE(sResult < 0, SelectError);
 
-    /* Ready Count ¼¼ÆÃ */
+    /* Ready Count ì„¸íŒ… */
     if (aReadyCount != NULL)
     {
         *aReadyCount = sResult;
     }
 
-    /* Ready Link °Ë»ö */
+    /* Ready Link ê²€ìƒ‰ */
     IDU_LIST_ITERATE(&aDispatcher->mLinkList, sIterator)
     {
         sLink = (cmnLink *)sIterator->mObj;
 
-        /* LinkÀÇ socketÀ» È¹µæ */
+        /* Linkì˜ socketì„ íšë“ */
         IDE_TEST(sLink->mOp->mGetHandle(sLink, &sHandle) != IDE_SUCCESS);
 
-        /* ready °Ë»ç */
+        /* ready ê²€ì‚¬ */
         if (FD_ISSET(sHandle, &sDispatcher->mFdSet))
         {
             IDU_LIST_ADD_LAST(aReadyList, &sLink->mReadyListNode);
@@ -179,7 +179,7 @@ struct cmnDispatcherOP gCmnDispatcherOpIPCDA =
 
 IDE_RC cmnDispatcherMapIPCDA(cmnDispatcher *aDispatcher)
 {
-    /* ÇÔ¼ö Æ÷ÀÎÅÍ ¼¼ÆÃ */
+    /* í•¨ìˆ˜ í¬ì¸í„° ì„¸íŒ… */
     aDispatcher->mOp = &gCmnDispatcherOpIPCDA;
 
     return IDE_SUCCESS;
@@ -201,16 +201,16 @@ IDE_RC cmnDispatcherWaitLinkIPCDA(cmnLink         *aLink,
     /* bug-27250 free Buf list can be crushed when client killed */
     if (aDirection == CMN_DIRECTION_WR)
     {
-        /* receiver°¡ ¼Û½Å Çã¶ô ½ÅÈ£¸¦ ÁÙ¶§±îÁö ¹«ÇÑ ´ë±â
-         * cmiWriteBlock¿¡¼­ protocol end packet ¼Û½Å½Ã
-         * pending blockÀÌ ÀÖ´Â °æ¿ì ÀÌ ÄÚµå ¼öÇà */
+        /* receiverê°€ ì†¡ì‹  í—ˆë½ ì‹ í˜¸ë¥¼ ì¤„ë•Œê¹Œì§€ ë¬´í•œ ëŒ€ê¸°
+         * cmiWriteBlockì—ì„œ protocol end packet ì†¡ì‹ ì‹œ
+         * pending blockì´ ìˆëŠ” ê²½ìš° ì´ ì½”ë“œ ìˆ˜í–‰ */
         if (aTimeout == NULL)
         {
             /* cmnLinkPeerIPCDA (defined in cmnLinkPeerIPCDA.cpp)
-             * ±¸Á¶Ã¼¸¦ Á÷Á¢ Á¢±ÙÇÒ ¼ö ¾ø¾î¼­,ÇÑ¹ø´õ È£ÃâÃ³¸®. */
+             * êµ¬ì¡°ì²´ë¥¼ ì§ì ‘ ì ‘ê·¼í•  ìˆ˜ ì—†ì–´ì„œ,í•œë²ˆë” í˜¸ì¶œì²˜ë¦¬. */
             sRet = cmnLinkPeerWaitSendServerIPCDA(aLink);
         }
-        /* cmiWriteBlock¿¡¼­ ¼Û½Å ´ë±â list¸¦ ³Ñ¾î¼± °æ¿ì ¼öÇà. */
+        /* cmiWriteBlockì—ì„œ ì†¡ì‹  ëŒ€ê¸° listë¥¼ ë„˜ì–´ì„  ê²½ìš° ìˆ˜í–‰. */
         else
         {
             sSleepTime.set(0, 1000); /* wait 1 msec */

@@ -48,7 +48,7 @@ static IDE_RC mtfVarSampEstimate( mtcNode*     aNode,
 mtfModule mtfVarSamp = {
     4 | MTC_NODE_OPERATOR_AGGREGATION | MTC_NODE_FUNCTION_WINDOWING_TRUE,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  /* default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô) */
+    1.0,  /* default selectivity (ë¹„êµ ì—°ì‚°ìê°€ ì•„ë‹˜) */
     mtfVarSampFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -284,7 +284,7 @@ IDE_RC mtfVarSampMerge( mtcNode*     aNode,
     sSrcRow = (UChar*)aInfo;
     sColumn = aTemplate->rows[aNode->table].columns + aNode->column;
 
-    /* Merge ÀÛ¾÷À» ¼öÇàÇÑ´Ù. */
+    /* Merge ì‘ì—…ì„ ìˆ˜í–‰í•œë‹¤. */
 
     /* Pow */
     *(mtdDoubleType*)(sDstRow + sColumn[1].column.offset) +=

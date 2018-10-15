@@ -29,7 +29,7 @@
 
     SInt sqlTypeToAltibase(SInt type)
     {
-        //ulnGetDefaultCTypdForSqlTypeÀ» ±×´ë·Î º¹»çÇØ¿È.
+        //ulnGetDefaultCTypdForSqlTypeì„ ê·¸ëŒ€ë¡œ ë³µì‚¬í•´ì˜´.
         switch(type)
         {
             case SQL_CHAR:

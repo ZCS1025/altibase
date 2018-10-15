@@ -19,8 +19,8 @@
  * $Id: stdMethod.cpp 18883 2006-11-14 01:48:40Z sabbra $
  *
  * Description:
- * Geometry °´Ã¼¸¦ WKT(Well Known Text) ¶Ç´Â WKB(Well Known Binary)·Î 
- * Ãâ·ÂÇÏ´Â ¸ğµâ ±¸Çö
+ * Geometry ê°ì²´ë¥¼ WKT(Well Known Text) ë˜ëŠ” WKB(Well Known Binary)ë¡œ 
+ * ì¶œë ¥í•˜ëŠ” ëª¨ë“ˆ êµ¬í˜„
  **********************************************************************/
 
 #include <idl.h>
@@ -31,12 +31,12 @@
 
 /***********************************************************************
  * Description:
- * aPoint °´Ã¼¸¦ ÀĞ¾î¼­ ¹öÆÛ¿¡ ¹®ÀÚ¿­·Î Ãâ·ÂÇÑ´Ù.
+ * aPoint ê°ì²´ë¥¼ ì½ì–´ì„œ ë²„í¼ì— ë¬¸ìì—´ë¡œ ì¶œë ¥í•œë‹¤.
  * 
- * stdPoint2DType*            aPoint(In): Ãâ·ÂÇÒ °´Ã¼
- * UChar*                     aBuf(Out): ¹öÆÛ
- * UInt                       aMaxSize(In): ¹öÆÛÀÇ ÃÖ´ë°ª 
- * UInt*                      aOffset(Out): Ãâ·ÂµÈ ¸¶Áö¸· ¹®ÀÚ¿­ À§Ä¡
+ * stdPoint2DType*            aPoint(In): ì¶œë ¥í•  ê°ì²´
+ * UChar*                     aBuf(Out): ë²„í¼
+ * UInt                       aMaxSize(In): ë²„í¼ì˜ ìµœëŒ€ê°’ 
+ * UInt*                      aOffset(Out): ì¶œë ¥ëœ ë§ˆì§€ë§‰ ë¬¸ìì—´ ìœ„ì¹˜
  **********************************************************************/
 IDE_RC stdMethod::writePointWKT2D(
                     stdPoint2DType*            aPoint,
@@ -74,12 +74,12 @@ IDE_RC stdMethod::writePointWKT2D(
 
 /***********************************************************************
  * Description:
- * aLine °´Ã¼¸¦ ÀĞ¾î¼­ ¹öÆÛ¿¡ ¹®ÀÚ¿­·Î Ãâ·ÂÇÑ´Ù.
+ * aLine ê°ì²´ë¥¼ ì½ì–´ì„œ ë²„í¼ì— ë¬¸ìì—´ë¡œ ì¶œë ¥í•œë‹¤.
  * 
- * stdLineString2DType*       aLine(In): Ãâ·ÂÇÒ °´Ã¼
- * UChar*                     aBuf(Out): ¹öÆÛ
- * UInt                       aMaxSize(In): ¹öÆÛÀÇ ÃÖ´ë°ª 
- * UInt*                      aOffset(Out): Ãâ·ÂµÈ ¸¶Áö¸· ¹®ÀÚ¿­ À§Ä¡
+ * stdLineString2DType*       aLine(In): ì¶œë ¥í•  ê°ì²´
+ * UChar*                     aBuf(Out): ë²„í¼
+ * UInt                       aMaxSize(In): ë²„í¼ì˜ ìµœëŒ€ê°’ 
+ * UInt*                      aOffset(Out): ì¶œë ¥ëœ ë§ˆì§€ë§‰ ë¬¸ìì—´ ìœ„ì¹˜
  **********************************************************************/
 IDE_RC stdMethod::writeLineStringWKT2D(
                     stdLineString2DType*       aLine,
@@ -133,12 +133,12 @@ IDE_RC stdMethod::writeLineStringWKT2D(
 
 /***********************************************************************
  * Description:
- * aPolygon °´Ã¼¸¦ ÀĞ¾î¼­ ¹öÆÛ¿¡ ¹®ÀÚ¿­·Î Ãâ·ÂÇÑ´Ù.
+ * aPolygon ê°ì²´ë¥¼ ì½ì–´ì„œ ë²„í¼ì— ë¬¸ìì—´ë¡œ ì¶œë ¥í•œë‹¤.
  * 
- * stdPolygon2DType*          aPolygon(In): Ãâ·ÂÇÒ °´Ã¼
- * UChar*                     aBuf(Out): ¹öÆÛ
- * UInt                       aMaxSize(In): ¹öÆÛÀÇ ÃÖ´ë°ª 
- * UInt*                      aOffset(Out): Ãâ·ÂµÈ ¸¶Áö¸· ¹®ÀÚ¿­ À§Ä¡
+ * stdPolygon2DType*          aPolygon(In): ì¶œë ¥í•  ê°ì²´
+ * UChar*                     aBuf(Out): ë²„í¼
+ * UInt                       aMaxSize(In): ë²„í¼ì˜ ìµœëŒ€ê°’ 
+ * UInt*                      aOffset(Out): ì¶œë ¥ëœ ë§ˆì§€ë§‰ ë¬¸ìì—´ ìœ„ì¹˜
  **********************************************************************/
 IDE_RC stdMethod::writePolygonWKT2D(
                     stdPolygon2DType*          aPolygon,
@@ -213,12 +213,12 @@ IDE_RC stdMethod::writePolygonWKT2D(
 
 /***********************************************************************
  * Description:
- * aMPoint °´Ã¼¸¦ ÀĞ¾î¼­ ¹öÆÛ¿¡ ¹®ÀÚ¿­·Î Ãâ·ÂÇÑ´Ù.
+ * aMPoint ê°ì²´ë¥¼ ì½ì–´ì„œ ë²„í¼ì— ë¬¸ìì—´ë¡œ ì¶œë ¥í•œë‹¤.
  * 
- * stdMultiPoint2DType*       aMPoint(In): Ãâ·ÂÇÒ °´Ã¼
- * UChar*                     aBuf(Out): ¹öÆÛ
- * UInt                       aMaxSize(In): ¹öÆÛÀÇ ÃÖ´ë°ª 
- * UInt*                      aOffset(Out): Ãâ·ÂµÈ ¸¶Áö¸· ¹®ÀÚ¿­ À§Ä¡
+ * stdMultiPoint2DType*       aMPoint(In): ì¶œë ¥í•  ê°ì²´
+ * UChar*                     aBuf(Out): ë²„í¼
+ * UInt                       aMaxSize(In): ë²„í¼ì˜ ìµœëŒ€ê°’ 
+ * UInt*                      aOffset(Out): ì¶œë ¥ëœ ë§ˆì§€ë§‰ ë¬¸ìì—´ ìœ„ì¹˜
  **********************************************************************/
 IDE_RC stdMethod::writeMultiPointWKT2D(
                     stdMultiPoint2DType*       aMPoint,
@@ -272,12 +272,12 @@ IDE_RC stdMethod::writeMultiPointWKT2D(
 
 /***********************************************************************
  * Description:
- * aMLine °´Ã¼¸¦ ÀĞ¾î¼­ ¹öÆÛ¿¡ ¹®ÀÚ¿­·Î Ãâ·ÂÇÑ´Ù.
+ * aMLine ê°ì²´ë¥¼ ì½ì–´ì„œ ë²„í¼ì— ë¬¸ìì—´ë¡œ ì¶œë ¥í•œë‹¤.
  * 
- * stdMultiLineString2DType*  aMLine(In): Ãâ·ÂÇÒ °´Ã¼
- * UChar*                     aBuf(Out): ¹öÆÛ
- * UInt                       aMaxSize(In): ¹öÆÛÀÇ ÃÖ´ë°ª 
- * UInt*                      aOffset(Out): Ãâ·ÂµÈ ¸¶Áö¸· ¹®ÀÚ¿­ À§Ä¡
+ * stdMultiLineString2DType*  aMLine(In): ì¶œë ¥í•  ê°ì²´
+ * UChar*                     aBuf(Out): ë²„í¼
+ * UInt                       aMaxSize(In): ë²„í¼ì˜ ìµœëŒ€ê°’ 
+ * UInt*                      aOffset(Out): ì¶œë ¥ëœ ë§ˆì§€ë§‰ ë¬¸ìì—´ ìœ„ì¹˜
  **********************************************************************/
 IDE_RC stdMethod::writeMultiLineStringWKT2D(
                     stdMultiLineString2DType*  aMLine,
@@ -354,12 +354,12 @@ IDE_RC stdMethod::writeMultiLineStringWKT2D(
 
 /***********************************************************************
  * Description:
- * aMPolygon °´Ã¼¸¦ ÀĞ¾î¼­ ¹öÆÛ¿¡ ¹®ÀÚ¿­·Î Ãâ·ÂÇÑ´Ù.
+ * aMPolygon ê°ì²´ë¥¼ ì½ì–´ì„œ ë²„í¼ì— ë¬¸ìì—´ë¡œ ì¶œë ¥í•œë‹¤.
  * 
- * stdMultiPolygon2DType*     aMPolygon(In): Ãâ·ÂÇÒ °´Ã¼
- * UChar*                     aBuf(Out): ¹öÆÛ
- * UInt                       aMaxSize(In): ¹öÆÛÀÇ ÃÖ´ë°ª 
- * UInt*                      aOffset(Out): Ãâ·ÂµÈ ¸¶Áö¸· ¹®ÀÚ¿­ À§Ä¡
+ * stdMultiPolygon2DType*     aMPolygon(In): ì¶œë ¥í•  ê°ì²´
+ * UChar*                     aBuf(Out): ë²„í¼
+ * UInt                       aMaxSize(In): ë²„í¼ì˜ ìµœëŒ€ê°’ 
+ * UInt*                      aOffset(Out): ì¶œë ¥ëœ ë§ˆì§€ë§‰ ë¬¸ìì—´ ìœ„ì¹˜
  **********************************************************************/
 IDE_RC stdMethod::writeMultiPolygonWKT2D(
                     stdMultiPolygon2DType*     aMPolygon,
@@ -458,12 +458,12 @@ IDE_RC stdMethod::writeMultiPolygonWKT2D(
 
 /***********************************************************************
  * Description:
- * aCollection °´Ã¼¸¦ ÀĞ¾î¼­ ¹öÆÛ¿¡ ¹®ÀÚ¿­·Î Ãâ·ÂÇÑ´Ù.
+ * aCollection ê°ì²´ë¥¼ ì½ì–´ì„œ ë²„í¼ì— ë¬¸ìì—´ë¡œ ì¶œë ¥í•œë‹¤.
  * 
- * stdGeoCollection2DType*    aCollection(In): Ãâ·ÂÇÒ °´Ã¼
- * UChar*                     aBuf(Out): ¹öÆÛ
- * UInt                       aMaxSize(In): ¹öÆÛÀÇ ÃÖ´ë°ª 
- * UInt*                      aOffset(Out): Ãâ·ÂµÈ ¸¶Áö¸· ¹®ÀÚ¿­ À§Ä¡
+ * stdGeoCollection2DType*    aCollection(In): ì¶œë ¥í•  ê°ì²´
+ * UChar*                     aBuf(Out): ë²„í¼
+ * UInt                       aMaxSize(In): ë²„í¼ì˜ ìµœëŒ€ê°’ 
+ * UInt*                      aOffset(Out): ì¶œë ¥ëœ ë§ˆì§€ë§‰ ë¬¸ìì—´ ìœ„ì¹˜
  **********************************************************************/
 IDE_RC stdMethod::writeGeoCollectionWKT2D(
                     stdGeoCollection2DType*    aCollection,
@@ -680,18 +680,18 @@ UChar *stdMethod::writeWKB_Point2Ds( UChar            * aBuf,
 /***********************************************************************
  * Description: 	835	* Description:
  * BUG-32531 Consider for GIS EMPTY
- * aMPoint °´Ã¼¸¦ ÀĞ¾î¼­ ¹öÆÛ¿¡ WKB(Well Known Binary)·Î Ãâ·ÂÇÑ´Ù.
- * Empty´Â Multi pointÀÇ point °¹¼ö°¡ 0 ÀÏ°æ¿ì empty·Î Ã³¸®ÇÑ´Ù.
+ * aMPoint ê°ì²´ë¥¼ ì½ì–´ì„œ ë²„í¼ì— WKB(Well Known Binary)ë¡œ ì¶œë ¥í•œë‹¤.
+ * EmptyëŠ” Multi pointì˜ point ê°¯ìˆ˜ê°€ 0 ì¼ê²½ìš° emptyë¡œ ì²˜ë¦¬í•œë‹¤.
  *
  * BUGBUG
- * ASBINARY ·Î TYPE Á¤º¸¸¦ Ãâ·ÂÇÏ°Ô µÇ¸é EMPTYÀÇ TYPEÀº ¹«Á¶°Ç
- * MULTIPOINT °ªÀÎ 4·Î Ãâ·Â µÈ´Ù. ÃßÈÄ WKB HEADERÀÇ TYPE¿¡ EMPTY¸¦
- * °í·Á ÇØ¾ß ÇÑ´Ù.
+ * ASBINARY ë¡œ TYPE ì •ë³´ë¥¼ ì¶œë ¥í•˜ê²Œ ë˜ë©´ EMPTYì˜ TYPEì€ ë¬´ì¡°ê±´
+ * MULTIPOINT ê°’ì¸ 4ë¡œ ì¶œë ¥ ëœë‹¤. ì¶”í›„ WKB HEADERì˜ TYPEì— EMPTYë¥¼
+ * ê³ ë ¤ í•´ì•¼ í•œë‹¤.
  *
- * stdMultiPoint2DType* aMPoint(In): Ãâ·ÂÇÒ °´Ã¼
- * UChar* aBuf(Out): ¹öÆÛ
- * UInt aMaxSize(In): ¹öÆÛÀÇ ÃÖ´ë°ª
- * UInt* aOffset(Out): Ãâ·ÂµÈ ¸¶Áö¸· ¹®ÀÚ¿­ À§Ä¡
+ * stdMultiPoint2DType* aMPoint(In): ì¶œë ¥í•  ê°ì²´
+ * UChar* aBuf(Out): ë²„í¼
+ * UInt aMaxSize(In): ë²„í¼ì˜ ìµœëŒ€ê°’
+ * UInt* aOffset(Out): ì¶œë ¥ëœ ë§ˆì§€ë§‰ ë¬¸ìì—´ ìœ„ì¹˜
  **********************************************************************/
 IDE_RC stdMethod::writeEmptyWKB2D( stdMultiPoint2DType* /* aMPoint */,
                                    UChar*               aBuf,
@@ -730,12 +730,12 @@ IDE_RC stdMethod::writeEmptyWKB2D( stdMultiPoint2DType* /* aMPoint */,
 
 /***********************************************************************
  * Description:
- * aPoint °´Ã¼¸¦ ÀĞ¾î¼­ ¹öÆÛ¿¡ WKB(Well Known Binary)·Î Ãâ·ÂÇÑ´Ù.
+ * aPoint ê°ì²´ë¥¼ ì½ì–´ì„œ ë²„í¼ì— WKB(Well Known Binary)ë¡œ ì¶œë ¥í•œë‹¤.
  * 
- * stdPoint2DType*            aPoint(In): Ãâ·ÂÇÒ °´Ã¼
- * UChar*                     aBuf(Out): ¹öÆÛ
- * UInt                       aMaxSize(In): ¹öÆÛÀÇ ÃÖ´ë°ª 
- * UInt*                      aOffset(Out): Ãâ·ÂµÈ ¸¶Áö¸· ¹®ÀÚ¿­ À§Ä¡
+ * stdPoint2DType*            aPoint(In): ì¶œë ¥í•  ê°ì²´
+ * UChar*                     aBuf(Out): ë²„í¼
+ * UInt                       aMaxSize(In): ë²„í¼ì˜ ìµœëŒ€ê°’ 
+ * UInt*                      aOffset(Out): ì¶œë ¥ëœ ë§ˆì§€ë§‰ ë¬¸ìì—´ ìœ„ì¹˜
  **********************************************************************/
 IDE_RC stdMethod::writePointWKB2D(
                     stdPoint2DType*            aPoint,
@@ -775,12 +775,12 @@ IDE_RC stdMethod::writePointWKB2D(
 
 /***********************************************************************
  * Description:
- * aLine °´Ã¼¸¦ ÀĞ¾î¼­ ¹öÆÛ¿¡ WKB(Well Known Binary)·Î Ãâ·ÂÇÑ´Ù.
+ * aLine ê°ì²´ë¥¼ ì½ì–´ì„œ ë²„í¼ì— WKB(Well Known Binary)ë¡œ ì¶œë ¥í•œë‹¤.
  * 
- * stdLineString2DType*       aLine(In): Ãâ·ÂÇÒ °´Ã¼
- * UChar*                     aBuf(Out): ¹öÆÛ
- * UInt                       aMaxSize(In): ¹öÆÛÀÇ ÃÖ´ë°ª 
- * UInt*                      aOffset(Out): Ãâ·ÂµÈ ¸¶Áö¸· ¹®ÀÚ¿­ À§Ä¡
+ * stdLineString2DType*       aLine(In): ì¶œë ¥í•  ê°ì²´
+ * UChar*                     aBuf(Out): ë²„í¼
+ * UInt                       aMaxSize(In): ë²„í¼ì˜ ìµœëŒ€ê°’ 
+ * UInt*                      aOffset(Out): ì¶œë ¥ëœ ë§ˆì§€ë§‰ ë¬¸ìì—´ ìœ„ì¹˜
  **********************************************************************/
 IDE_RC stdMethod::writeLineStringWKB2D(
                     stdLineString2DType*       aLine,
@@ -820,12 +820,12 @@ IDE_RC stdMethod::writeLineStringWKB2D(
 
 /***********************************************************************
  * Description:
- * aPolygon °´Ã¼¸¦ ÀĞ¾î¼­ ¹öÆÛ¿¡ WKB(Well Known Binary)·Î Ãâ·ÂÇÑ´Ù.
+ * aPolygon ê°ì²´ë¥¼ ì½ì–´ì„œ ë²„í¼ì— WKB(Well Known Binary)ë¡œ ì¶œë ¥í•œë‹¤.
  * 
- * stdPolygon2DType*          aPolygon(In): Ãâ·ÂÇÒ °´Ã¼
- * UChar*                     aBuf(Out): ¹öÆÛ
- * UInt                       aMaxSize(In): ¹öÆÛÀÇ ÃÖ´ë°ª 
- * UInt*                      aOffset(Out): Ãâ·ÂµÈ ¸¶Áö¸· ¹®ÀÚ¿­ À§Ä¡
+ * stdPolygon2DType*          aPolygon(In): ì¶œë ¥í•  ê°ì²´
+ * UChar*                     aBuf(Out): ë²„í¼
+ * UInt                       aMaxSize(In): ë²„í¼ì˜ ìµœëŒ€ê°’ 
+ * UInt*                      aOffset(Out): ì¶œë ¥ëœ ë§ˆì§€ë§‰ ë¬¸ìì—´ ìœ„ì¹˜
  **********************************************************************/
 IDE_RC stdMethod::writePolygonWKB2D(
                     stdPolygon2DType*          aPolygon,
@@ -895,12 +895,12 @@ IDE_RC stdMethod::writePolygonWKB2D(
 
 /***********************************************************************
  * Description:
- * aMPoint °´Ã¼¸¦ ÀĞ¾î¼­ ¹öÆÛ¿¡ WKB(Well Known Binary)·Î Ãâ·ÂÇÑ´Ù.
+ * aMPoint ê°ì²´ë¥¼ ì½ì–´ì„œ ë²„í¼ì— WKB(Well Known Binary)ë¡œ ì¶œë ¥í•œë‹¤.
  * 
- * stdMultiPoint2DType*       aMPoint(In): Ãâ·ÂÇÒ °´Ã¼
- * UChar*                     aBuf(Out): ¹öÆÛ
- * UInt                       aMaxSize(In): ¹öÆÛÀÇ ÃÖ´ë°ª 
- * UInt*                      aOffset(Out): Ãâ·ÂµÈ ¸¶Áö¸· ¹®ÀÚ¿­ À§Ä¡
+ * stdMultiPoint2DType*       aMPoint(In): ì¶œë ¥í•  ê°ì²´
+ * UChar*                     aBuf(Out): ë²„í¼
+ * UInt                       aMaxSize(In): ë²„í¼ì˜ ìµœëŒ€ê°’ 
+ * UInt*                      aOffset(Out): ì¶œë ¥ëœ ë§ˆì§€ë§‰ ë¬¸ìì—´ ìœ„ì¹˜
  **********************************************************************/
 IDE_RC stdMethod::writeMultiPointWKB2D(
                     stdMultiPoint2DType*       aMPoint,
@@ -952,12 +952,12 @@ IDE_RC stdMethod::writeMultiPointWKB2D(
 
 /***********************************************************************
  * Description:
- * aMLine °´Ã¼¸¦ ÀĞ¾î¼­ ¹öÆÛ¿¡ WKB(Well Known Binary)·Î Ãâ·ÂÇÑ´Ù.
+ * aMLine ê°ì²´ë¥¼ ì½ì–´ì„œ ë²„í¼ì— WKB(Well Known Binary)ë¡œ ì¶œë ¥í•œë‹¤.
  * 
- * stdMultiLineString2DType*  aMLine(In): Ãâ·ÂÇÒ °´Ã¼
- * UChar*                     aBuf(Out): ¹öÆÛ
- * UInt                       aMaxSize(In): ¹öÆÛÀÇ ÃÖ´ë°ª 
- * UInt*                      aOffset(Out): Ãâ·ÂµÈ ¸¶Áö¸· ¹®ÀÚ¿­ À§Ä¡
+ * stdMultiLineString2DType*  aMLine(In): ì¶œë ¥í•  ê°ì²´
+ * UChar*                     aBuf(Out): ë²„í¼
+ * UInt                       aMaxSize(In): ë²„í¼ì˜ ìµœëŒ€ê°’ 
+ * UInt*                      aOffset(Out): ì¶œë ¥ëœ ë§ˆì§€ë§‰ ë¬¸ìì—´ ìœ„ì¹˜
  **********************************************************************/
 IDE_RC stdMethod::writeMultiLineStringWKB2D(
                     stdMultiLineString2DType*  aMLine,
@@ -1030,12 +1030,12 @@ IDE_RC stdMethod::writeMultiLineStringWKB2D(
 
 /***********************************************************************
  * Description:
- * aMPolygon °´Ã¼¸¦ ÀĞ¾î¼­ ¹öÆÛ¿¡ WKB(Well Known Binary)·Î Ãâ·ÂÇÑ´Ù.
+ * aMPolygon ê°ì²´ë¥¼ ì½ì–´ì„œ ë²„í¼ì— WKB(Well Known Binary)ë¡œ ì¶œë ¥í•œë‹¤.
  * 
- * stdMultiPolygon2DType*     aMPolygon(In): Ãâ·ÂÇÒ °´Ã¼
- * UChar*                     aBuf(Out): ¹öÆÛ
- * UInt                       aMaxSize(In): ¹öÆÛÀÇ ÃÖ´ë°ª 
- * UInt*                      aOffset(Out): Ãâ·ÂµÈ ¸¶Áö¸· ¹®ÀÚ¿­ À§Ä¡
+ * stdMultiPolygon2DType*     aMPolygon(In): ì¶œë ¥í•  ê°ì²´
+ * UChar*                     aBuf(Out): ë²„í¼
+ * UInt                       aMaxSize(In): ë²„í¼ì˜ ìµœëŒ€ê°’ 
+ * UInt*                      aOffset(Out): ì¶œë ¥ëœ ë§ˆì§€ë§‰ ë¬¸ìì—´ ìœ„ì¹˜
  **********************************************************************/
 IDE_RC stdMethod::writeMultiPolygonWKB2D(
                     stdMultiPolygon2DType*     aMPolygon,
@@ -1126,12 +1126,12 @@ IDE_RC stdMethod::writeMultiPolygonWKB2D(
 
 /***********************************************************************
  * Description:
- * aCollection °´Ã¼¸¦ ÀĞ¾î¼­ ¹öÆÛ¿¡ WKB(Well Known Binary)·Î Ãâ·ÂÇÑ´Ù.
+ * aCollection ê°ì²´ë¥¼ ì½ì–´ì„œ ë²„í¼ì— WKB(Well Known Binary)ë¡œ ì¶œë ¥í•œë‹¤.
  * 
- * stdGeoCollection2DType*    aCollection(In): Ãâ·ÂÇÒ °´Ã¼
- * UChar*                     aBuf(Out): ¹öÆÛ
- * UInt                       aMaxSize(In): ¹öÆÛÀÇ ÃÖ´ë°ª 
- * UInt*                      aOffset(Out): Ãâ·ÂµÈ ¸¶Áö¸· ¹®ÀÚ¿­ À§Ä¡
+ * stdGeoCollection2DType*    aCollection(In): ì¶œë ¥í•  ê°ì²´
+ * UChar*                     aBuf(Out): ë²„í¼
+ * UInt                       aMaxSize(In): ë²„í¼ì˜ ìµœëŒ€ê°’ 
+ * UInt*                      aOffset(Out): ì¶œë ¥ëœ ë§ˆì§€ë§‰ ë¬¸ìì—´ ìœ„ì¹˜
  **********************************************************************/
 IDE_RC stdMethod::writeGeoCollectionWKB2D(
                     stdGeoCollection2DType*    aCollection,
@@ -1231,13 +1231,13 @@ void stdMethod::fill2DCoordString( SChar      * aBuffer,
     sTempOffset = 0;
 
     //--------------------------------
-    // ÂüÁ¶) iSQLSpool::PrintWithDouble
-    // Coord X Ãâ·Â
+    // ì°¸ì¡°) iSQLSpool::PrintWithDouble
+    // Coord X ì¶œë ¥
     //--------------------------------
     
     if( ( aPoint->mX < 1E-7 ) && ( aPoint->mX > -1E-7 ) )
     {
-        // 0¿¡ °¡±î¿î ÀÛÀº °ªÀº 0À¸·Î Ãâ·ÂÇÔ.
+        // 0ì— ê°€ê¹Œìš´ ì‘ì€ ê°’ì€ 0ìœ¼ë¡œ ì¶œë ¥í•¨.
         sTempOffset += idlOS::snprintf( sTemp,
                                         ID_SIZEOF(sTemp),
                                         "0 ");
@@ -1251,12 +1251,12 @@ void stdMethod::fill2DCoordString( SChar      * aBuffer,
     }
 
     //--------------------------------
-    // Coord Y Ãâ·Â
+    // Coord Y ì¶œë ¥
     //--------------------------------
     
     if( ( aPoint->mY < 1E-7 ) && ( aPoint->mY > -1E-7 ) )
     {
-        // 0¿¡ °¡±î¿î ÀÛÀº °ªÀº 0À¸·Î Ãâ·ÂÇÔ.
+        // 0ì— ê°€ê¹Œìš´ ì‘ì€ ê°’ì€ 0ìœ¼ë¡œ ì¶œë ¥í•¨.
         sTempOffset += idlOS::snprintf( sTemp + sTempOffset,
                                         ID_SIZEOF(sTemp) - sTempOffset,
                                         "0");

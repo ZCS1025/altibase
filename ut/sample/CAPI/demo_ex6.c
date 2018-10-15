@@ -40,7 +40,7 @@ int main()
         goto end;
     }
 
-    /* procedure ½ÇÇà */
+    /* procedure ì‹¤í–‰ */
     rc = execute_proc(ab);
     if ( rc != ALTIBASE_SUCCESS )
     {

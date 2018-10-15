@@ -19,8 +19,8 @@
  * $Id: stdParsing.h 18883 2006-11-14 01:48:40Z sabbra $
  *
  * Description:
- * �Է� ���۷� ���� WKT(Well Known Text) �Ǵ� WKB(Well Known Binary)�� �о�
- * Geometry ��ü�� �����ϴ� ���
+ * 입력 버퍼로 부터 WKT(Well Known Text) 또는 WKB(Well Known Binary)를 읽어
+ * Geometry 객체로 저장하는 모듈
  **********************************************************************/
 
 #ifndef _O_STD_GEO_PARSING_H_
@@ -30,8 +30,8 @@
 #include <mtcDef.h>
 #include <stdTypes.h>
 
-/* BUG-44399 ST_RECTFROMTEXT(), ST_RECTFROMWKB()�� �����ؾ� �մϴ�.
- *  ST_RECTFROMTEXT(), ST_RECTFROMWKB()������ ����ϴ� ����� Ÿ���̹Ƿ�, �ܺο� �������� �ʴ´�.
+/* BUG-44399 ST_RECTFROMTEXT(), ST_RECTFROMWKB()를 지원해야 합니다.
+ *  ST_RECTFROMTEXT(), ST_RECTFROMWKB()에서만 사용하는 비공식 타입이므로, 외부에 공개하지 않는다.
  */
 #define WKB_RECTANGLE_TYPE  (8)
 
@@ -119,7 +119,7 @@ public:
                     IDE_RC*                    aResult,
                     UInt                       aValidateOption);
 
-    /* BUG-44399 ST_RECTFROMTEXT(), ST_RECTFROMWKB()�� �����ؾ� �մϴ�. */
+    /* BUG-44399 ST_RECTFROMTEXT(), ST_RECTFROMWKB()를 지원해야 합니다. */
     static IDE_RC getRectangle(
                     iduMemory                * aQmxMem,
                     UChar                   ** aPtr,
@@ -220,7 +220,7 @@ public:
                     void*                      aFence,
                     IDE_RC*                    aResult);
 
-    /* BUG-44399 ST_RECTFROMTEXT(), ST_RECTFROMWKB()�� �����ؾ� �մϴ�. */
+    /* BUG-44399 ST_RECTFROMTEXT(), ST_RECTFROMWKB()를 지원해야 합니다. */
     static IDE_RC getWKBRectangle(
                     UChar**                    aPtr,
                     UChar*                     aWKBFence,
@@ -263,7 +263,7 @@ public:
                                   UInt      * aOffset,
                                   UChar    ** aNext );
 
-    // WKB �Լ� ////////////////////////////////////////////////////////////////
+    // WKB 함수 ////////////////////////////////////////////////////////////////
     //  { Internal WKB read Function
 private:
     static UChar *readWKB_Char( UChar  * aBuf,

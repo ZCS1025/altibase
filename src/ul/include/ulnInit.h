@@ -27,7 +27,7 @@ ACI_RC ulnInitialize();
 ACI_RC ulnFinalize();
 void   ulnDestroy();
 
- /*fix BUG-25597 APRE���� AIX�÷��� �νõ� ���������� �ذ��ؾ� �մϴ�.
+ /*fix BUG-25597 APRE에서 AIX플랫폼 턱시도 연동문제를 해결해야 합니다.
  */
 void   ulnLoadOpenedXaConnections2APRE();
 

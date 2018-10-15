@@ -20,7 +20,7 @@
  *
  * Description :
  *
- * File-Based PID Double Linked-List ±¸Çö
+ * File-Based PID Double Linked-List êµ¬í˜„
  *
  **********************************************************************/
 
@@ -29,13 +29,13 @@
 #include <sdpPhyPage.h>
 
 /***********************************************************************
- * Description : page listÀÇ base ³ëµå¸¦ ÃÊ±âÈ­
+ * Description : page listì˜ base ë…¸ë“œë¥¼ ì´ˆê¸°í™”
  *
  * + 2nd.code desgin
- *   - base ³ëµåÀÇ page ID¸¦ ¾ò´Â´Ù.
- *   - base ³ëµåÀÇ mNodeCnt¸¦ 0À¸·Î ·Î±ëÇÑ´Ù. (SDR_4BYTE)
- *   - base ³ëµåÀÇ mHead¸¦ Page ID¸¦ self Page ID·Î ·Î±ëÇÑ´Ù.(SDR_4BYTE)
- *   - base ³ëµåÀÇ mTail¸¦ Page ID¸¦ self Page ID·Î ·Î±ëÇÑ´Ù.(SDR_4BYTE)
+ *   - base ë…¸ë“œì˜ page IDë¥¼ ì–»ëŠ”ë‹¤.
+ *   - base ë…¸ë“œì˜ mNodeCntë¥¼ 0ìœ¼ë¡œ ë¡œê¹…í•œë‹¤. (SDR_4BYTE)
+ *   - base ë…¸ë“œì˜ mHeadë¥¼ Page IDë¥¼ self Page IDë¡œ ë¡œê¹…í•œë‹¤.(SDR_4BYTE)
+ *   - base ë…¸ë“œì˜ mTailë¥¼ Page IDë¥¼ self Page IDë¡œ ë¡œê¹…í•œë‹¤.(SDR_4BYTE)
  ***********************************************************************/
 IDE_RC sdpDblPIDList::initBaseNode(sdpDblPIDListBase  * aBaseNode,
                                    sdrMtx             * aMtx)
@@ -65,10 +65,10 @@ IDE_RC sdpDblPIDList::initBaseNode(sdpDblPIDListBase  * aBaseNode,
 }
 
 /***********************************************************************
- * Description : page listÀÇ head¿¡ ³ëµå¸¦ Ãß°¡
+ * Description : page listì˜ headì— ë…¸ë“œë¥¼ ì¶”ê°€
  *
  * + 2nd. code design
- *   => sdpDblPIDList::insertNodeAfter¸¦ È£ÃâÇÔ
+ *   => sdpDblPIDList::insertNodeAfterë¥¼ í˜¸ì¶œí•¨
  ***********************************************************************/
 IDE_RC sdpDblPIDList::insertHeadNode(idvSQL            * aStatistics,
                                      sdpDblPIDListBase * aBaseNode,
@@ -94,10 +94,10 @@ IDE_RC sdpDblPIDList::insertHeadNode(idvSQL            * aStatistics,
 }
 
 /***********************************************************************
- * Description :  page listÀÇ tail¿¡ ³ëµå¸¦ Ãß°¡
+ * Description :  page listì˜ tailì— ë…¸ë“œë¥¼ ì¶”ê°€
  *
  * + 2nd. code design
- *   => sdpDblPIDList::insertNodeBefore¸¦ È£ÃâÇÔ
+ *   => sdpDblPIDList::insertNodeBeforeë¥¼ í˜¸ì¶œí•¨
  ***********************************************************************/
 IDE_RC sdpDblPIDList::insertTailNode(idvSQL              * aStatistics,
                                      sdpDblPIDListBase   * aBaseNode,
@@ -125,7 +125,7 @@ IDE_RC sdpDblPIDList::insertTailNode(idvSQL              * aStatistics,
 
 
 /***********************************************************************
- * Description :  page listÀÇ tail¿¡ Node List¸¦ Ãß°¡
+ * Description :  page listì˜ tailì— Node Listë¥¼ ì¶”ê°€
  ***********************************************************************/
 IDE_RC sdpDblPIDList::insertTailList( idvSQL             * aStatistics,
                                       sdpDblPIDListBase  * aBaseNode,
@@ -142,8 +142,8 @@ IDE_RC sdpDblPIDList::insertTailList( idvSQL             * aStatistics,
     scPageID        sLstPID;
     ULong           sListLen;
     idBool          sTrySuccess;
-    UChar*          sPagePtr;      // base ³ëµåÀÇ page
-    UChar*          sPrevPagePtr;  // ±âÁØ ³ëµåÀÇ previous page
+    UChar*          sPagePtr;      // base ë…¸ë“œì˜ page
+    UChar*          sPrevPagePtr;  // ê¸°ì¤€ ë…¸ë“œì˜ previous page
     sdpDblPIDListNode* sPrevNode;
 
     IDE_DASSERT( aBaseNode != NULL );
@@ -167,7 +167,7 @@ IDE_RC sdpDblPIDList::insertTailList( idvSQL             * aStatistics,
     IDE_TEST( setNxtOfNode(aLstNode, sBasePID, aMtx) != IDE_SUCCESS );
     IDE_TEST( setPrvOfNode(aFstNode, sPrevPID, aMtx) != IDE_SUCCESS );
 
-    // PREVNODEÀÇ next ³ëµå¸¦ »õ·Î¿î ³ëµå·Î ¼³Á¤ÇÑ´Ù.
+    // PREVNODEì˜ next ë…¸ë“œë¥¼ ìƒˆë¡œìš´ ë…¸ë“œë¡œ ì„¤ì •í•œë‹¤.
     if (sPrevPID != sBasePID )
     {
         sPrevPagePtr = sdrMiniTrans::getPagePtrFromPageID( aMtx,
@@ -199,10 +199,10 @@ IDE_RC sdpDblPIDList::insertTailList( idvSQL             * aStatistics,
 
     IDE_TEST( setNxtOfNode(sPrevNode, sFstPID, aMtx) != IDE_SUCCESS );
 
-    // ±âÁØ ³ëµåÀÇ prev ³ëµå¸¦ »õ·Î¿î ³ëµå·Î ¼³Á¤ÇÑ´Ù.
+    // ê¸°ì¤€ ë…¸ë“œì˜ prev ë…¸ë“œë¥¼ ìƒˆë¡œìš´ ë…¸ë“œë¡œ ì„¤ì •í•œë‹¤.
     IDE_TEST( setPrvOfNode(&aBaseNode->mBase, sLstPID, aMtx) != IDE_SUCCESS );
 
-    // »õ·Î¿î ³ëµå Ãß°¡·Î ÀÎÇÑ base ³ëµåÀÇ ¸®½ºÆ® °³¼ö aListLen Áõ°¡
+    // ìƒˆë¡œìš´ ë…¸ë“œ ì¶”ê°€ë¡œ ì¸í•œ base ë…¸ë“œì˜ ë¦¬ìŠ¤íŠ¸ ê°œìˆ˜ aListLen ì¦ê°€
     sListLen = getNodeCnt(aBaseNode);
     IDE_TEST( setNodeCnt(aBaseNode, (sListLen + aListLen), aMtx) != IDE_SUCCESS );
 
@@ -216,26 +216,26 @@ IDE_RC sdpDblPIDList::insertTailList( idvSQL             * aStatistics,
 
 
 /***********************************************************************
- * Description : page listÀÇ Æ¯Á¤ ³ëµå µÚ¿¡ »õ·Î¿î ³ëµå Ãß°¡
+ * Description : page listì˜ íŠ¹ì • ë…¸ë“œ ë’¤ì— ìƒˆë¡œìš´ ë…¸ë“œ ì¶”ê°€
  *
  * + 2nd. code design
- *   - ±âÁØ ³ëµåÀÇ page ID¿Í space ID¸¦ ¾ò´Â´Ù.
- *   - newnodeÀÇ page ID¸¦ ¾ò´Â´Ù.
- *   - ±âÁØ ³ëµåÀÇ NEXTNODE¸¦ ¾ò´Â´Ù.
- *   - newnodeÀÇ prev ³ëµå¸¦ ±âÁØ ³ëµå·Î ¼³Á¤ (SDR_4BYTES)
- *   - newnodeÀÇ next ³ëµå¸¦ NEXTNODE·Î ¼³Á¤ (SDR_4BYTES)
- *   - if newnode¿Í NEXTNODE¿Í µ¿ÀÏÇÑ pageÀÎ °æ¿ì
+ *   - ê¸°ì¤€ ë…¸ë“œì˜ page IDì™€ space IDë¥¼ ì–»ëŠ”ë‹¤.
+ *   - newnodeì˜ page IDë¥¼ ì–»ëŠ”ë‹¤.
+ *   - ê¸°ì¤€ ë…¸ë“œì˜ NEXTNODEë¥¼ ì–»ëŠ”ë‹¤.
+ *   - newnodeì˜ prev ë…¸ë“œë¥¼ ê¸°ì¤€ ë…¸ë“œë¡œ ì„¤ì • (SDR_4BYTES)
+ *   - newnodeì˜ next ë…¸ë“œë¥¼ NEXTNODEë¡œ ì„¤ì • (SDR_4BYTES)
+ *   - if newnodeì™€ NEXTNODEì™€ ë™ì¼í•œ pageì¸ ê²½ìš°
  *     : !! assert
- *   - else ±×·¸Áö ¾ÊÀº °æ¿ì
- *     : NEXTNODE¸¦ ¹öÆÛ°ü¸®ÀÚ¿¡ ¿äÃ»ÇÏ¿© fix½ÃÅ²ÈÄ,
- *       Æ÷ÀÎÅÍ ¾òÀ½
- *     => NEXTNODEÀÇ prev ³ëµå¸¦ newnode·Î ¼³Á¤ (SDR_4BYTES)
- *   - ±âÁØ ³ëµåÀÇ next ³ëµå¸¦ newnode·Î ¼³Á¤(SDR_4BYTES)
- *   - basenodeÀÇ ±æÀÌ¸¦ ±¸ÇØ¼­ +1 (SDR_4BYTES)
+ *   - else ê·¸ë ‡ì§€ ì•Šì€ ê²½ìš°
+ *     : NEXTNODEë¥¼ ë²„í¼ê´€ë¦¬ìì— ìš”ì²­í•˜ì—¬ fixì‹œí‚¨í›„,
+ *       í¬ì¸í„° ì–»ìŒ
+ *     => NEXTNODEì˜ prev ë…¸ë“œë¥¼ newnodeë¡œ ì„¤ì • (SDR_4BYTES)
+ *   - ê¸°ì¤€ ë…¸ë“œì˜ next ë…¸ë“œë¥¼ newnodeë¡œ ì„¤ì •(SDR_4BYTES)
+ *   - basenodeì˜ ê¸¸ì´ë¥¼ êµ¬í•´ì„œ +1 (SDR_4BYTES)
  *
- * - ÁÖÀÇ
- *   1) ÀÎÀÚ°¡ ¸ğµÎ not null È®ÀÎ
- *   2) node != newnode È®ÀÎ
+ * - ì£¼ì˜
+ *   1) ì¸ìê°€ ëª¨ë‘ not null í™•ì¸
+ *   2) node != newnode í™•ì¸
  ***********************************************************************/
 IDE_RC sdpDblPIDList::insertNodeAfter(idvSQL              * aStatistics,
                                       sdpDblPIDListBase   * aBaseNode,
@@ -261,12 +261,12 @@ IDE_RC sdpDblPIDList::insertNodeAfter(idvSQL              * aStatistics,
     IDE_DASSERT( aMtx      != NULL );
     IDE_DASSERT( aNode     != aNewNode );
 
-    // ±âÁØ ³ëµåÀÇ page ID¸¦ ¾ò´Â´Ù. tnode
+    // ê¸°ì¤€ ë…¸ë“œì˜ page IDë¥¼ ì–»ëŠ”ë‹¤. tnode
     sPagePtr    = sdpPhyPage::getPageStartPtr((UChar*)aNode);
     sSpaceID    = sdpPhyPage::getSpaceID(sPagePtr);
     sPID        = sdpPhyPage::getPageID(sPagePtr);
 
-    // »õ·Î¿î ³ëµåÀÇ page ID¸¦ ¾ò´Â´Ù. node
+    // ìƒˆë¡œìš´ ë…¸ë“œì˜ page IDë¥¼ ì–»ëŠ”ë‹¤. node
     sNewPagePtr = sdpPhyPage::getPageStartPtr((UChar*)aNewNode);
     sNewPID     = sdpPhyPage::getPageID(sNewPagePtr);
 
@@ -274,13 +274,13 @@ IDE_RC sdpDblPIDList::insertNodeAfter(idvSQL              * aStatistics,
     IDE_ASSERT(sSpaceID == sdpPhyPage::getSpaceID(
                    (UChar*)sdpPhyPage::getHdr((UChar*)aNode)));
 
-    // »õ·Î¿î ³ëµåÀÇ prev/next¸¦ ¼³Á¤ÇÑ´Ù.
+    // ìƒˆë¡œìš´ ë…¸ë“œì˜ prev/nextë¥¼ ì„¤ì •í•œë‹¤.
     sNextPID = getNxtOfNode(aNode); // get NEXTNODE
 
-    // µ¿ÀÏÇÑ pageÀÏ °æ¿ì Assert!!
+    // ë™ì¼í•œ pageì¼ ê²½ìš° Assert!!
     IDE_ASSERT( sNewPID != sNextPID );
 
-    // NEXTNODE¸¦ fix ½ÃÅ²´Ù.
+    // NEXTNODEë¥¼ fix ì‹œí‚¨ë‹¤.
     IDE_TEST( sdbBufferMgr::getPageByPID( aStatistics,
                                           sSpaceID,
                                           sNextPID,
@@ -298,7 +298,7 @@ IDE_RC sdpDblPIDList::insertNodeAfter(idvSQL              * aStatistics,
     IDE_TEST( setPrvOfNode(aNewNode, sPID, aMtx) != IDE_SUCCESS ); // node->prev = tnode
     IDE_TEST( setNxtOfNode(aNewNode, sNextPID, aMtx) != IDE_SUCCESS ); // node->next = tnode->next
 
-    // NEXTNODEÀÇ prev ³ëµå¸¦ »õ·Î¿î ³ëµå·Î ¼³Á¤ÇÑ´Ù.
+    // NEXTNODEì˜ prev ë…¸ë“œë¥¼ ìƒˆë¡œìš´ ë…¸ë“œë¡œ ì„¤ì •í•œë‹¤.
     if (sNextPagePtr != sdpPhyPage::getPageStartPtr((UChar*)aBaseNode))
     {
         sNextNode = sdpPhyPage::getDblPIDListNode((sdpPhyPageHdr*)sNextPagePtr);
@@ -310,10 +310,10 @@ IDE_RC sdpDblPIDList::insertNodeAfter(idvSQL              * aStatistics,
 
     IDE_TEST( setPrvOfNode(sNextNode, sNewPID, aMtx) != IDE_SUCCESS ); // tnode->next->prev = node
 
-    // ±âÁØ ³ëµåÀÇ next ³ëµå¸¦ »õ·Î¿î ³ëµå·Î ¼³Á¤ÇÑ´Ù.
+    // ê¸°ì¤€ ë…¸ë“œì˜ next ë…¸ë“œë¥¼ ìƒˆë¡œìš´ ë…¸ë“œë¡œ ì„¤ì •í•œë‹¤.
     IDE_TEST( setNxtOfNode(aNode, sNewPID, aMtx) != IDE_SUCCESS ); // tnode->next = node
 
-    // »õ·Î¿î ³ëµå Ãß°¡·Î ÀÎÇÑ base ³ëµåÀÇ ¸®½ºÆ® °³¼ö 1 Áõ°¡
+    // ìƒˆë¡œìš´ ë…¸ë“œ ì¶”ê°€ë¡œ ì¸í•œ base ë…¸ë“œì˜ ë¦¬ìŠ¤íŠ¸ ê°œìˆ˜ 1 ì¦ê°€
     sListLen = getNodeCnt(aBaseNode);
     IDE_TEST( setNodeCnt(aBaseNode, (sListLen + 1), aMtx) != IDE_SUCCESS );
 
@@ -326,25 +326,25 @@ IDE_RC sdpDblPIDList::insertNodeAfter(idvSQL              * aStatistics,
 }
 
 /***********************************************************************
- * Description : page listÀÇ Æ¯Á¤ ³ëµå ¾Õ¿¡ »õ·Î¿î ³ëµå Ãß°¡
+ * Description : page listì˜ íŠ¹ì • ë…¸ë“œ ì•ì— ìƒˆë¡œìš´ ë…¸ë“œ ì¶”ê°€
  *
  * + 2nd. code design
- *   - ±âÁØ ³ëµåÀÇ page ID¿Í space id¸¦ ¾Ë¾Æ³¿
- *   - newnodeÀÇ page ID¸¦ ¾òÀ½
- *   - ±âÁØ ³ëµåÀÇ PREVNODE¸¦ ¾òÀ½
- *   - newnodeÀÇ prev ³ëµå¸¦ PREVNODE·Î ¼³Á¤ (SDR_4BYTES)
- *   - newnodeÀÇ next ³ëµå¸¦ ±âÁØ ³ëµå·Î ¼³Á¤ (SDR_4BYTES)
- *   - if newnode¿Í PREVNODE¿Í µ¿ÀÏÇÑ pageÀÎ °æ¿ì
+ *   - ê¸°ì¤€ ë…¸ë“œì˜ page IDì™€ space idë¥¼ ì•Œì•„ëƒ„
+ *   - newnodeì˜ page IDë¥¼ ì–»ìŒ
+ *   - ê¸°ì¤€ ë…¸ë“œì˜ PREVNODEë¥¼ ì–»ìŒ
+ *   - newnodeì˜ prev ë…¸ë“œë¥¼ PREVNODEë¡œ ì„¤ì • (SDR_4BYTES)
+ *   - newnodeì˜ next ë…¸ë“œë¥¼ ê¸°ì¤€ ë…¸ë“œë¡œ ì„¤ì • (SDR_4BYTES)
+ *   - if newnodeì™€ PREVNODEì™€ ë™ì¼í•œ pageì¸ ê²½ìš°
  *     : !! assert
  *   - else
- *     : PREVNODE¸¦ ¹öÆÛ°ü¸®ÀÚ¿¡ ¿äÃ»ÇÏ¿© fix½ÃÅ²ÈÄ, Æ÷ÀÎÅÍ ¾òÀ½
- *     => PREVNODEÀÇ next ³ëµå¸¦ new ³ëµå·Î ¼³Á¤(SDR_4BYTES)
- *   - ±âÁØ ³ëµåÀÇ prev ³ëµå¸¦ newnodeÀÇ ³ëµå·Î ¼³Á¤(SDR_4BYTES)
- *   - basenodeÀÇ ±æÀÌ¸¦ ±¸ÇØ¼­ +1 (SDR_4BYTES)
+ *     : PREVNODEë¥¼ ë²„í¼ê´€ë¦¬ìì— ìš”ì²­í•˜ì—¬ fixì‹œí‚¨í›„, í¬ì¸í„° ì–»ìŒ
+ *     => PREVNODEì˜ next ë…¸ë“œë¥¼ new ë…¸ë“œë¡œ ì„¤ì •(SDR_4BYTES)
+ *   - ê¸°ì¤€ ë…¸ë“œì˜ prev ë…¸ë“œë¥¼ newnodeì˜ ë…¸ë“œë¡œ ì„¤ì •(SDR_4BYTES)
+ *   - basenodeì˜ ê¸¸ì´ë¥¼ êµ¬í•´ì„œ +1 (SDR_4BYTES)
  *
- * - ÁÖÀÇ
- *   1) ÀÎÀÚ°¡ ¸ğµÎ not null È®ÀÎ
- *   2) node != newnode È®ÀÎ
+ * - ì£¼ì˜
+ *   1) ì¸ìê°€ ëª¨ë‘ not null í™•ì¸
+ *   2) node != newnode í™•ì¸
  ***********************************************************************/
 IDE_RC sdpDblPIDList::insertNodeBeforeLow(idvSQL             * aStatistics,
                                           sdpDblPIDListBase  * aBaseNode,
@@ -359,9 +359,9 @@ IDE_RC sdpDblPIDList::insertNodeBeforeLow(idvSQL             * aStatistics,
     scSpaceID           sSpaceID;
     ULong               sListLen;
     idBool              sTrySuccess;
-    UChar             * sPagePtr;      // ±âÁØ ³ëµåÀÇ page
-    UChar             * sNewPagePtr;   // »õ·Î¿î ³ëµåÀÇ page
-    UChar             * sPrevPagePtr;  // ±âÁØ ³ëµåÀÇ previous page
+    UChar             * sPagePtr;      // ê¸°ì¤€ ë…¸ë“œì˜ page
+    UChar             * sNewPagePtr;   // ìƒˆë¡œìš´ ë…¸ë“œì˜ page
+    UChar             * sPrevPagePtr;  // ê¸°ì¤€ ë…¸ë“œì˜ previous page
     sdpDblPIDListNode * sPrevNode;
 
     IDE_DASSERT( aBaseNode != NULL );
@@ -370,12 +370,12 @@ IDE_RC sdpDblPIDList::insertNodeBeforeLow(idvSQL             * aStatistics,
     IDE_DASSERT( aMtx      != NULL );
     IDE_DASSERT( aNode     != aNewNode );
 
-    // ±âÁØ ³ëµåÀÇ page ID¸¦ ¾ò´Â´Ù. tnode
+    // ê¸°ì¤€ ë…¸ë“œì˜ page IDë¥¼ ì–»ëŠ”ë‹¤. tnode
     sPagePtr = sdpPhyPage::getPageStartPtr((UChar*)aNode);
     sPID     = sdpPhyPage::getPageID(sPagePtr);
     sSpaceID = sdpPhyPage::getSpaceID(sPagePtr);
 
-    // »õ·Î¿î ³ëµåÀÇ page ID¸¦ ¾ò´Â´Ù. node
+    // ìƒˆë¡œìš´ ë…¸ë“œì˜ page IDë¥¼ ì–»ëŠ”ë‹¤. node
     sNewPagePtr = sdpPhyPage::getPageStartPtr((UChar*)aNewNode);
     sNewPID     = sdpPhyPage::getPageID(sNewPagePtr);
 
@@ -383,12 +383,12 @@ IDE_RC sdpDblPIDList::insertNodeBeforeLow(idvSQL             * aStatistics,
     IDE_ASSERT(sSpaceID == sdpPhyPage::getSpaceID(
                    (UChar*)sdpPhyPage::getHdr((UChar*)aNode)));
 
-    // »õ·Î¿î ³ëµåÀÇ prev/next¸¦ ¼³Á¤ÇÑ´Ù.
+    // ìƒˆë¡œìš´ ë…¸ë“œì˜ prev/nextë¥¼ ì„¤ì •í•œë‹¤.
     sPrevPID = getPrvOfNode(aNode); // get PREVNODE
 
     if( ( aNeedGetPage == ID_TRUE ) && ( sNewPID != sPrevPID ) )
     {
-        // PREVNODE fix ½ÃÅ²´Ù.
+        // PREVNODE fix ì‹œí‚¨ë‹¤.
         IDE_TEST( sdbBufferMgr::getPageByPID( aStatistics,
                                               sSpaceID,
                                               sPrevPID,
@@ -414,10 +414,10 @@ IDE_RC sdpDblPIDList::insertNodeBeforeLow(idvSQL             * aStatistics,
     IDE_TEST( setNxtOfNode(aNewNode, sPID, aMtx) != IDE_SUCCESS );     // node->next = tnode
     IDE_TEST( setPrvOfNode(aNewNode, sPrevPID, aMtx) != IDE_SUCCESS ); // node->prev = tnode->prev
 
-    // »õ·Î¿î ³ëµå Ãß°¡·Î ÀÎÇÑ base ³ëµåÀÇ ¸®½ºÆ® °³¼ö 1 Áõ°¡
+    // ìƒˆë¡œìš´ ë…¸ë“œ ì¶”ê°€ë¡œ ì¸í•œ base ë…¸ë“œì˜ ë¦¬ìŠ¤íŠ¸ ê°œìˆ˜ 1 ì¦ê°€
     sListLen = getNodeCnt(aBaseNode);
 
-    // PREVNODEÀÇ next ³ëµå¸¦ »õ·Î¿î ³ëµå·Î ¼³Á¤ÇÑ´Ù.
+    // PREVNODEì˜ next ë…¸ë“œë¥¼ ìƒˆë¡œìš´ ë…¸ë“œë¡œ ì„¤ì •í•œë‹¤.
     if (sPrevPagePtr != sdpPhyPage::getPageStartPtr((UChar*)aBaseNode) || sListLen != 0 )
     {
         sPrevNode = sdpPhyPage::getDblPIDListNode((sdpPhyPageHdr*)sPrevPagePtr);
@@ -429,7 +429,7 @@ IDE_RC sdpDblPIDList::insertNodeBeforeLow(idvSQL             * aStatistics,
 
     IDE_TEST( setNxtOfNode(sPrevNode, sNewPID, aMtx) != IDE_SUCCESS ); // tnode->prev->next = node
 
-    // ±âÁØ ³ëµåÀÇ prev ³ëµå¸¦ »õ·Î¿î ³ëµå·Î ¼³Á¤ÇÑ´Ù.
+    // ê¸°ì¤€ ë…¸ë“œì˜ prev ë…¸ë“œë¥¼ ìƒˆë¡œìš´ ë…¸ë“œë¡œ ì„¤ì •í•œë‹¤.
     IDE_TEST( setPrvOfNode(aNode, sNewPID, aMtx) != IDE_SUCCESS );  // tnode->prev = node
 
     IDE_TEST( setNodeCnt(aBaseNode, sListLen + 1, aMtx) != IDE_SUCCESS );
@@ -499,26 +499,26 @@ IDE_RC sdpDblPIDList::insertNodeBeforeWithNoFix(idvSQL             * aStatistics
 }
 
 /***********************************************************************
- * Description : page list¿¡¼­ Æ¯Á¤³ëµå Á¦°Å
+ * Description : page listì—ì„œ íŠ¹ì •ë…¸ë“œ ì œê±°
  *
  * + 2nd. code design
- *   - »èÁ¦ÇÒ ³ëµåÀÇÀÇ PREVNODE/NEXTNODEÀÇ page ID¸¦ ¾ò´Â´Ù
- *   - if PREVNODE == »èÁ¦ÇÒ ³ëµå then
+ *   - ì‚­ì œí•  ë…¸ë“œì˜ì˜ PREVNODE/NEXTNODEì˜ page IDë¥¼ ì–»ëŠ”ë‹¤
+ *   - if PREVNODE == ì‚­ì œí•  ë…¸ë“œ then
  *     :!! assert
  *   - else
- *     :PREVNODE¸¦ fix ¿äÃ»
- *   - PREVNODEÀÇ next ³ëµå¸¦ NEXTNODE·Î ¼³Á¤(SDR_4BYTES)
- *   - if NEXTNODE == »èÁ¦ÇÒ ³ëµå then
+ *     :PREVNODEë¥¼ fix ìš”ì²­
+ *   - PREVNODEì˜ next ë…¸ë“œë¥¼ NEXTNODEë¡œ ì„¤ì •(SDR_4BYTES)
+ *   - if NEXTNODE == ì‚­ì œí•  ë…¸ë“œ then
  *     :!! assert
  *   - else
- *     :NEXTNODE¸¦ fix ¿äÃ»
- *   - NEXTNODEÀÇ prevnode¸¦ PREVNODE·Î ¼³Á¤ (SDR_4BYTES)
- *   - basenodeÀÇ ±æÀÌ¸¦ ±¸ÇØ¼­ 1 °¨¼Ò (SDR_4BYTES)
+ *     :NEXTNODEë¥¼ fix ìš”ì²­
+ *   - NEXTNODEì˜ prevnodeë¥¼ PREVNODEë¡œ ì„¤ì • (SDR_4BYTES)
+ *   - basenodeì˜ ê¸¸ì´ë¥¼ êµ¬í•´ì„œ 1 ê°ì†Œ (SDR_4BYTES)
  *
- * - ÁÖÀÇ
- *   1) ÀÎÀÚ°¡ ¸ğµÎ not null È®ÀÎ
+ * - ì£¼ì˜
+ *   1) ì¸ìê°€ ëª¨ë‘ not null í™•ì¸
  *   2) basenode != node
- *   3) basenode, node¿¡ ´ëÇÑ fix(x-latch) È®ÀÎ
+ *   3) basenode, nodeì— ëŒ€í•œ fix(x-latch) í™•ì¸
  ***********************************************************************/
 IDE_RC sdpDblPIDList::removeNodeLow( idvSQL             * aStatistics,
                                      sdpDblPIDListBase  * aBaseNode,
@@ -541,19 +541,19 @@ IDE_RC sdpDblPIDList::removeNodeLow( idvSQL             * aStatistics,
     IDE_DASSERT( aNode     != NULL );
     IDE_DASSERT( aMtx      != NULL );
 
-    // ±âÁØ ³ëµåÀÇ page ID¿Í space ID¸¦ ¾ò´Â´Ù.
+    // ê¸°ì¤€ ë…¸ë“œì˜ page IDì™€ space IDë¥¼ ì–»ëŠ”ë‹¤.
     sPagePtr = sdpPhyPage::getPageStartPtr((UChar*)aNode);
     sSpaceID = sdpPhyPage::getSpaceID(sPagePtr);
 
     IDE_ASSERT(sSpaceID == sdpPhyPage::getSpaceID(sPagePtr));
 
-    // ±âÁØ ³ëµåÀÇ PREVNODE/NEXTNODE¸¦ ¾ò´Â´Ù.
+    // ê¸°ì¤€ ë…¸ë“œì˜ PREVNODE/NEXTNODEë¥¼ ì–»ëŠ”ë‹¤.
     sPrevPID = getPrvOfNode(aNode);
     sNextPID = getNxtOfNode(aNode);
 
     if(aCheckMtxStack == ID_FALSE)
     {
-        // PREVNODE fix ½ÃÅ²´Ù.
+        // PREVNODE fix ì‹œí‚¨ë‹¤.
         IDE_TEST( sdbBufferMgr::getPageByPID( aStatistics,
                                               sSpaceID,
                                               sPrevPID,
@@ -566,7 +566,7 @@ IDE_RC sdpDblPIDList::removeNodeLow( idvSQL             * aStatistics,
                                               NULL /*IsCorruptPage*/ )
                   != IDE_SUCCESS );
 
-        // NEXTNODE fix ½ÃÅ²´Ù.
+        // NEXTNODE fix ì‹œí‚¨ë‹¤.
         IDE_TEST( sdbBufferMgr::getPageByPID( aStatistics,
                                               sSpaceID,
                                               sNextPID,
@@ -586,7 +586,7 @@ IDE_RC sdpDblPIDList::removeNodeLow( idvSQL             * aStatistics,
             sPrevPID );
         if ( sPrevPagePtr == NULL )
         {
-            // PREVNODE fix ½ÃÅ²´Ù.
+            // PREVNODE fix ì‹œí‚¨ë‹¤.
             IDE_TEST( sdbBufferMgr::getPageByPID( aStatistics,
                                                   sSpaceID,
                                                   sPrevPID,
@@ -606,7 +606,7 @@ IDE_RC sdpDblPIDList::removeNodeLow( idvSQL             * aStatistics,
             sNextPID );
         if (sNextPagePtr == NULL)
         {
-            // NEXTNODE fix ½ÃÅ²´Ù.
+            // NEXTNODE fix ì‹œí‚¨ë‹¤.
             IDE_TEST( sdbBufferMgr::getPageByPID( aStatistics,
                                                   sSpaceID,
                                                   sNextPID,
@@ -624,7 +624,7 @@ IDE_RC sdpDblPIDList::removeNodeLow( idvSQL             * aStatistics,
     IDE_ASSERT(sSpaceID == sdpPhyPage::getSpaceID(sNextPagePtr));
     IDE_ASSERT(sSpaceID == sdpPhyPage::getSpaceID(sPrevPagePtr));
 
-    // PREVNODEÀÇ next ³ëµå¸¦ NEXTNODE·Î ¼³Á¤
+    // PREVNODEì˜ next ë…¸ë“œë¥¼ NEXTNODEë¡œ ì„¤ì •
     if (sPrevPagePtr != sdpPhyPage::getPageStartPtr((UChar*)aBaseNode))
     {
         sPrevNode = sdpPhyPage::getDblPIDListNode((sdpPhyPageHdr*)sPrevPagePtr);
@@ -635,7 +635,7 @@ IDE_RC sdpDblPIDList::removeNodeLow( idvSQL             * aStatistics,
     }
     IDE_TEST( setNxtOfNode(sPrevNode, sNextPID, aMtx) != IDE_SUCCESS );
 
-    // NEXTNODEÀÇ prev ³ëµå¸¦ »õ·Î¿î ³ëµå·Î ¼³Á¤ÇÑ´Ù.
+    // NEXTNODEì˜ prev ë…¸ë“œë¥¼ ìƒˆë¡œìš´ ë…¸ë“œë¡œ ì„¤ì •í•œë‹¤.
     if (sNextPagePtr != sdpPhyPage::getPageStartPtr((UChar*)aBaseNode))
     {
         sNextNode = sdpPhyPage::getDblPIDListNode((sdpPhyPageHdr*)sNextPagePtr);
@@ -646,7 +646,7 @@ IDE_RC sdpDblPIDList::removeNodeLow( idvSQL             * aStatistics,
     }
     IDE_TEST( setPrvOfNode(sNextNode, sPrevPID, aMtx) != IDE_SUCCESS );
 
-    // ³ëµå Á¦°Å·Î ÀÎÇÑ base ³ëµåÀÇ ¸®½ºÆ® °³¼ö 1 °¨¼Ò
+    // ë…¸ë“œ ì œê±°ë¡œ ì¸í•œ base ë…¸ë“œì˜ ë¦¬ìŠ¤íŠ¸ ê°œìˆ˜ 1 ê°ì†Œ
     sListLen = getNodeCnt(aBaseNode);
     IDE_ASSERT( sListLen != 0 );
     IDE_TEST( setNodeCnt(aBaseNode, (sListLen - 1), aMtx) != IDE_SUCCESS );
@@ -705,8 +705,8 @@ IDE_RC sdpDblPIDList::removeNodeWithNoFix(idvSQL              * aStatistics,
 }
 
 /***********************************************************************
- * Description : base ³ëµåÀÇ length ¼³Á¤ ¹× logging
- * base ³ëµåÀÇ list lengthÀ» ¼³Á¤ÇÑ´Ù.
+ * Description : base ë…¸ë“œì˜ length ì„¤ì • ë° logging
+ * base ë…¸ë“œì˜ list lengthì„ ì„¤ì •í•œë‹¤.
  ***********************************************************************/
 IDE_RC sdpDblPIDList::setNodeCnt( sdpDblPIDListBase *aBaseNode,
                                   ULong              aLen,
@@ -730,9 +730,9 @@ IDE_RC sdpDblPIDList::setNodeCnt( sdpDblPIDListBase *aBaseNode,
 }
 
 /***********************************************************************
- * Description : ³ëµåÀÇ prev page ID ¼³Á¤ ¹× logging
- * aNode°¡ base ³ëµåÀÌ¸é tail ³ëµå¸¦ ¼³Á¤ÇÏ°í, ±×·¸Áö ¾ÊÀ¸¸é next ³ëµå¸¦
- * ¼³Á¤ÇÑ´Ù.
+ * Description : ë…¸ë“œì˜ prev page ID ì„¤ì • ë° logging
+ * aNodeê°€ base ë…¸ë“œì´ë©´ tail ë…¸ë“œë¥¼ ì„¤ì •í•˜ê³ , ê·¸ë ‡ì§€ ì•Šìœ¼ë©´ next ë…¸ë“œë¥¼
+ * ì„¤ì •í•œë‹¤.
  ***********************************************************************/
 IDE_RC sdpDblPIDList::setPrvOfNode(sdpDblPIDListNode  * aNode,
                                    scPageID             aPageID,
@@ -755,7 +755,7 @@ IDE_RC sdpDblPIDList::setPrvOfNode(sdpDblPIDListNode  * aNode,
 }
 
 /***********************************************************************
- * Description : ³ëµåÀÇ prev page ID ¼³Á¤ ¹× logging
+ * Description : ë…¸ë“œì˜ prev page ID ì„¤ì • ë° logging
  ***********************************************************************/
 IDE_RC sdpDblPIDList::setNxtOfNode(sdpDblPIDListNode  * aNode,
                                    scPageID             aPageID,
@@ -778,7 +778,7 @@ IDE_RC sdpDblPIDList::setNxtOfNode(sdpDblPIDListNode  * aNode,
 }
 
 /***********************************************************************
- * Description : ¸®½ºÆ®ÀÇ ¸ğµç node Ãâ·Â
+ * Description : ë¦¬ìŠ¤íŠ¸ì˜ ëª¨ë“  node ì¶œë ¥
  ***********************************************************************/
 IDE_RC sdpDblPIDList::dumpList( scSpaceID  aSpaceID,
                                 sdRID      aBaseNodeRID )
@@ -867,7 +867,7 @@ IDE_RC sdpDblPIDList::dumpList( scSpaceID  aSpaceID,
 }
 
 /***********************************************************************
- * Description : ¸®½ºÆ®ÀÇ dump check.
+ * Description : ë¦¬ìŠ¤íŠ¸ì˜ dump check.
  ***********************************************************************/
 IDE_RC sdpDblPIDList::dumpCheck( sdpDblPIDListBase  * aBaseNode,
                                  scSpaceID            aSpaceID,

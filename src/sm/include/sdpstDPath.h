@@ -19,8 +19,8 @@
  *
  * $Id: sdpstDPath.h 27220 2008-07-23 14:56:22Z newdaily $
  *
- * º» ÆÄÀÏÀº Treelist Managed Segment¿¡¼­ Direct-Path Insert ¿¬»ê¿¡ °ü·ÃµÈ
- * Çì´õÆÄÀÏÀÌ´Ù.
+ * ë³¸ íŒŒì¼ì€ Treelist Managed Segmentì—ì„œ Direct-Path Insert ì—°ì‚°ì— ê´€ë ¨ëœ
+ * í—¤ë”íŒŒì¼ì´ë‹¤.
  *
  ***********************************************************************/
 
@@ -119,7 +119,7 @@ public:
 
     /* BUG-32164 [sm-disk-page] If Table Segment is expanded to 12gb by
      * Direct-path insert operation, Server fatal
-     * RootBMP °³¼ö¸¦ ³Ñ¾î¼³ Á¤µµ·Î °»½ÅÇÒ °æ¿ì, VirtualBMP±îÁö Á¢±ÙÇÔ */
+     * RootBMP ê°œìˆ˜ë¥¼ ë„˜ì–´ì„¤ ì •ë„ë¡œ ê°±ì‹ í•  ê²½ìš°, VirtualBMPê¹Œì§€ ì ‘ê·¼í•¨ */
     static IDE_RC updateBMPUntilHWMInVtBMP(
                               idvSQL            * aStatistics,
                               sdrMtxStartInfo   * /*aStartInfo*/,
@@ -151,7 +151,7 @@ inline void  sdpstDPath::calcExtInfo2ExtRID( scPageID             aSegPID,
     IDE_ASSERT( aSegPagePtr != NULL );
     IDE_ASSERT( aExtRID != NULL );
 
-    // ÇöÀç HWMÀÇ ExtRID ±¸ÇÑ´Ù.
+    // í˜„ì¬ HWMì˜ ExtRID êµ¬í•œë‹¤.
     if ( aSegPID != aExtMapPID )
     {
         *aExtRID = SD_MAKE_RID( aExtMapPID,
@@ -180,7 +180,7 @@ inline void  sdpstDPath::calcExtRID2ExtInfo( scPageID             aSegPID,
     IDE_ASSERT( aExtMapPID != NULL );
     IDE_ASSERT( aSlotNo != NULL );
 
-    // ÇöÀç HWMÀÇ ExtRID ±¸ÇÑ´Ù.
+    // í˜„ì¬ HWMì˜ ExtRID êµ¬í•œë‹¤.
     if ( aSegPID != SD_MAKE_PID( aExtRID ) )
     {
         *aSlotNo = sdpstExtDir::calcOffset2SlotNo(

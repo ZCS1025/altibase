@@ -47,7 +47,7 @@ mtfModule mtfPercentRankWithinGroup = {
     3 |
     MTC_NODE_OPERATOR_AGGREGATION,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
+    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìê°€ ì•„ë‹˜)
     mtfPercentRankWGFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -115,13 +115,13 @@ IDE_RC mtfPercentRankWGEstimate( mtcNode     * aNode,
     IDE_TEST_RAISE( aNode->funcArguments == NULL,
                     ERR_WITHIN_GORUP_MISSING_WITHIN_GROUP );
 
-    // ÃÑ ÀÎÀÚ ¼ö
+    // ì´ ì¸ì ìˆ˜
     sCountTotal = ( aNode->lflag & MTC_NODE_ARGUMENT_COUNT_MASK );
 
     IDE_TEST_RAISE( (sCountTotal < 2) || ( (sCountTotal % 2) != 0 ),
                     ERR_INVALID_FUNCTION_ARGUMENT );
 
-    // within group() ÀÎÀÚ ¼ö °è»ê
+    // within group() ì¸ì ìˆ˜ ê³„ì‚°
     sCountWG = 0;
     for ( sNode = aNode->funcArguments;
           sNode != NULL;
@@ -130,7 +130,7 @@ IDE_RC mtfPercentRankWGEstimate( mtcNode     * aNode,
         sCountWG++;
     }
 
-    // percent_rank() ÀÇ ÀÎÀÚ ¼ö == within group() ÀÇ ÀÎÀÚ ¼ö.
+    // percent_rank() ì˜ ì¸ì ìˆ˜ == within group() ì˜ ì¸ì ìˆ˜.
     IDE_TEST_RAISE( (sCountWG * 2) != sCountTotal,
                     ERR_INVALID_FUNCTION_ARGUMENT );
 
@@ -140,11 +140,11 @@ IDE_RC mtfPercentRankWGEstimate( mtcNode     * aNode,
           sIdx < sCountWG;
           sIdx++, sIdxWG++, sIdxFunc++ )
     {
-        // percent_rank(..) ¿Í Within Group(..) ÀÇ °¢°¢ ´ëÀÀµÇ´Â ÀÎÀÚÀÇ ´ëÇ¥Å¸ÀÔÀ» ±¸ÇÏ¿© ¼³Á¤ÇÑ´Ù.
+        // percent_rank(..) ì™€ Within Group(..) ì˜ ê°ê° ëŒ€ì‘ë˜ëŠ” ì¸ìì˜ ëŒ€í‘œíƒ€ì…ì„ êµ¬í•˜ì—¬ ì„¤ì •í•œë‹¤.
         if ( aStack[ sIdxFunc ].column->module->id !=
              aStack[ sIdxWG   ].column->module->id )
         {
-            // ´Ù¸¥ ¸ğµâÀÌ¸é ´ëÇ¥ Å¸ÀÔ ¸ğµâÀ» ±¸ÇÑ´Ù.
+            // ë‹¤ë¥¸ ëª¨ë“ˆì´ë©´ ëŒ€í‘œ íƒ€ì… ëª¨ë“ˆì„ êµ¬í•œë‹¤.
             IDE_TEST( mtf::getComparisonModule(
                            &sRepModule,
                            aStack[ sIdxFunc ].column->module->no,
@@ -159,7 +159,7 @@ IDE_RC mtfPercentRankWGEstimate( mtcNode     * aNode,
             sRepModule = aStack[ sIdxFunc ].column->module;
         }
 
-        // ´ë¼Ò ºñ±³ °¡´É Å¸ÀÔÀÎÁö È®ÀÎÇÑ´Ù.
+        // ëŒ€ì†Œ ë¹„êµ ê°€ëŠ¥ íƒ€ì…ì¸ì§€ í™•ì¸í•œë‹¤.
         IDE_TEST_RAISE( mtf::isGreaterLessValidType( sRepModule )
                         != ID_TRUE,
                         ERR_CONVERSION_NOT_APPLICABLE );
@@ -182,7 +182,7 @@ IDE_RC mtfPercentRankWGEstimate( mtcNode     * aNode,
     aTemplate->rows[ aNode->table ].execute[ aNode->column ]
             = mtfExecute;
 
-    // °á°ú
+    // ê²°ê³¼
     IDE_TEST( mtc::initializeColumn( aStack[ 0 ].column,
                                      & mtdDouble,
                                      0,
@@ -190,7 +190,7 @@ IDE_RC mtfPercentRankWGEstimate( mtcNode     * aNode,
                                      0 )
               != IDE_SUCCESS );
 
-    // µî¼ö
+    // ë“±ìˆ˜
     IDE_TEST( mtc::initializeColumn( aStack[ 0 ].column + 1,
                                      & mtdBigint,
                                      0,
@@ -198,7 +198,7 @@ IDE_RC mtfPercentRankWGEstimate( mtcNode     * aNode,
                                      0 )
               != IDE_SUCCESS );
 
-    // ÃÑ ·Î¿ì ¼ö
+    // ì´ ë¡œìš° ìˆ˜
     IDE_TEST( mtc::initializeColumn( aStack[ 0 ].column + 2,
                                      & mtdBigint,
                                      0,
@@ -234,13 +234,13 @@ IDE_RC mtfPercentRankWGInitialize( mtcNode     * aNode,
     sColumn = aTemplate->rows[ aNode->table ].columns + aNode->column;
     sRow    = ( UChar * )aTemplate->rows[ aNode->table ].row;
     
-    // °á°ú
+    // ê²°ê³¼
     *( mtdDoubleType * )( sRow + sColumn[ 0 ].column.offset ) = 0.0;
     
-    // µî¼ö
+    // ë“±ìˆ˜
     *( mtdBigintType * )( sRow + sColumn[ 1 ].column.offset ) = 1;
 
-    // ÃÑ ·Î¿ì ¼ö
+    // ì´ ë¡œìš° ìˆ˜
     *( mtdBigintType * )( sRow + sColumn[ 2 ].column.offset ) = 1;
 
     return IDE_SUCCESS;
@@ -276,7 +276,7 @@ IDE_RC mtfPercentRankWGAggregate( mtcNode     * aNode,
     sRank    = ( mtdBigintType * )( sRow + sColumn[ 1 ].column.offset );
     sRows    = ( mtdBigintType * )( sRow + sColumn[ 2 ].column.offset );
 
-    // ÃÑ ·Î¿ì ¼ö Áõ°¡
+    // ì´ ë¡œìš° ìˆ˜ ì¦ê°€
     IDE_TEST_RAISE( *sRows == MTD_BIGINT_MAXIMUM, ERR_VALUE_OVERFLOW );
     *sRows += 1;
 
@@ -404,7 +404,7 @@ IDE_RC mtfPercentRankWGMerge( mtcNode     * aNode,
     sSrcRow = ( UChar * )aInfo;
     sColumn = aTemplate->rows[ aNode->table ].columns + aNode->column;
 
-    // µî¼ö
+    // ë“±ìˆ˜
     sDstRank = ( mtdBigintType * )( sDstRow + sColumn[ 1 ].column.offset );
     sSrcRank = ( mtdBigintType * )( sSrcRow + sColumn[ 1 ].column.offset );
 
@@ -413,7 +413,7 @@ IDE_RC mtfPercentRankWGMerge( mtcNode     * aNode,
 
     *sDstRank += ( *sSrcRank - 1 );
 
-    // ÃÑ ·Î¿ì ¼ö
+    // ì´ ë¡œìš° ìˆ˜
     sDstRowsNum = ( mtdBigintType * )( sDstRow + sColumn[ 2 ].column.offset );
     sSrcRowsNum = ( mtdBigintType * )( sSrcRow + sColumn[ 2 ].column.offset );
 

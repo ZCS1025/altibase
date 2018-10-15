@@ -199,8 +199,8 @@ SInt Formlex(YYSTYPE * yylval_param, yyscan_t yyscanner, void *param );
 void Formerror ( yyscan_t yyscanner, void *, const SChar *s);
 SChar *ltrim(SChar *s);
 SChar *rtrim(SChar *s);
-/* BUG-17563 : iloader ¿¡¼­ Å«µû¿ÈÇ¥ ÀÌ¿ëÇÑ Naming Rule Á¦¾à Á¦°Å  */
-/* src string¿¡¼­ "..." -> ... À¸·Î º¯°æÇØÁÜ. */
+/* BUG-17563 : iloader ì—ì„œ í°ë”°ì˜´í‘œ ì´ìš©í•œ Naming Rule ì œì•½ ì œê±°  */
+/* src stringì—ì„œ "..." -> ... ìœ¼ë¡œ ë³€ê²½í•´ì¤Œ. */
 SChar *eraseDQuotes(SChar *aSrc);
 
 /* BUG-40310 [ux-iloader] Fail to handle where condition when 'WHERE' keyword has mixed case.
@@ -1583,7 +1583,7 @@ yyreduce:
     {
         if( PARAM->mParser.mTableNode->m_Condition == NULL)
         {
-            /* BUG-17563 : iloader ¿¡¼­ Å«µû¿ÈÇ¥ ÀÌ¿ëÇÑ Naming Rule Á¦¾à Á¦°Å  */
+            /* BUG-17563 : iloader ì—ì„œ í°ë”°ì˜´í‘œ ì´ìš©í•œ Naming Rule ì œì•½ ì œê±°  */
             (yyval.pNode) = new iloTableNode(DOWN_NODE, eraseDQuotes((yyvsp[(3) - (3)].str)), NULL, NULL);
             PARAM->mParser.mTableNode->m_Condition = (yyval.pNode);
         }
@@ -1607,7 +1607,7 @@ yyreduce:
     {
         if( PARAM->mParser.mTableNode->m_Condition == NULL)
         {
-            /* BUG-17563 : iloader ¿¡¼­ Å«µû¿ÈÇ¥ ÀÌ¿ëÇÑ Naming Rule Á¦¾à Á¦°Å  */
+            /* BUG-17563 : iloader ì—ì„œ í°ë”°ì˜´í‘œ ì´ìš©í•œ Naming Rule ì œì•½ ì œê±°  */
             (yyval.pNode) = new iloTableNode(DOWN_NODE, eraseDQuotes((yyvsp[(3) - (5)].str)), NULL, NULL, eraseDQuotes((yyvsp[(5) - (5)].str)));
             PARAM->mParser.mTableNode->m_Condition = (yyval.pNode);
         }
@@ -1803,7 +1803,7 @@ yyreduce:
 /* Line 1455 of yacc.c  */
 #line 298 "/home/daramix/work/hdb_trunk2/ut/iloader3/src/iloFormParser.y"
     {
-        /* BUG-17563 : iloader ¿¡¼­ Å«µû¿ÈÇ¥ ÀÌ¿ëÇÑ Naming Rule Á¦¾à Á¦°Å  */
+        /* BUG-17563 : iloader ì—ì„œ í°ë”°ì˜´í‘œ ì´ìš©í•œ Naming Rule ì œì•½ ì œê±°  */
         (yyval.str) = eraseDQuotes((yyvsp[(1) - (1)].str));
     ;}
     break;
@@ -1828,8 +1828,8 @@ yyreduce:
           {
               pAttrType = new iloTableNode(ATTRTYPE_NODE, (SChar *)"char", NULL, NULL);
               pAttrName = new iloTableNode(ATTRNAME_NODE, (yyvsp[(1) - (8)].str), NULL, pAttrType);
-              /* BUG-26485 iloader ¿¡ trim ±â´ÉÀ» Ãß°¡ÇØ¾ß ÇÕ´Ï´Ù. */
-              /* »ç¿ëÀÚ°¡ ÀÔ·ÂÇÑ ¹®ÀÚ¿­À» ÀúÀåÇÕ´Ï´Ù. */
+              /* BUG-26485 iloader ì— trim ê¸°ëŠ¥ì„ ì¶”ê°€í•´ì•¼ í•©ë‹ˆë‹¤. */
+              /* ì‚¬ìš©ìê°€ ì…ë ¥í•œ ë¬¸ìì—´ì„ ì €ì¥í•©ë‹ˆë‹¤. */
               (yyval.pNode) = new iloTableNode(ATTR_NODE, (yyvsp[(7) - (8)].str), pAttrName, NULL);
               (yyval.pNode)->setSkipFlag((yyvsp[(6) - (8)].num) & SKIP_MASK);
               (yyval.pNode)->setBinaryFlag((yyvsp[(6) - (8)].num) & BINARY_MASK);
@@ -2012,8 +2012,8 @@ yyreduce:
           {
               pAttrType = new iloTableNode(ATTRTYPE_NODE, (SChar *)"bit", NULL, NULL);
               pAttrName = new iloTableNode(ATTRNAME_NODE, (yyvsp[(1) - (8)].str), NULL, pAttrType);
-              /* BUG-26485 iloader ¿¡ trim ±â´ÉÀ» Ãß°¡ÇØ¾ß ÇÕ´Ï´Ù. */
-              /* »ç¿ëÀÚ°¡ ÀÔ·ÂÇÑ ¹®ÀÚ¿­À» ÀúÀåÇÕ´Ï´Ù. */
+              /* BUG-26485 iloader ì— trim ê¸°ëŠ¥ì„ ì¶”ê°€í•´ì•¼ í•©ë‹ˆë‹¤. */
+              /* ì‚¬ìš©ìê°€ ì…ë ¥í•œ ë¬¸ìì—´ì„ ì €ì¥í•©ë‹ˆë‹¤. */
               (yyval.pNode) = new iloTableNode(ATTR_NODE, (yyvsp[(7) - (8)].str), pAttrName, NULL);
               (yyval.pNode)->setSkipFlag((yyvsp[(6) - (8)].num) & SKIP_MASK);
               (yyval.pNode)->setPrecision((yyvsp[(4) - (8)].num), 0);
@@ -2122,8 +2122,8 @@ yyreduce:
               PARAM->mParser.mDateForm[0] = '\0';
               pAttrType = new iloTableNode(ATTRTYPE_NODE, (SChar *)"date", NULL, NULL);
               pAttrName = new iloTableNode(ATTRNAME_NODE, (yyvsp[(1) - (6)].str), NULL, pAttrType);
-              // nodeValue ¸¦ dateFormat ÀúÀåÀå¼Ò·Î »ç¿ë
-              /* BUG-17563 : iloader ¿¡¼­ Å«µû¿ÈÇ¥ ÀÌ¿ëÇÑ Naming Rule Á¦¾à Á¦°Å  */
+              // nodeValue ë¥¼ dateFormat ì €ì¥ì¥ì†Œë¡œ ì‚¬ìš©
+              /* BUG-17563 : iloader ì—ì„œ í°ë”°ì˜´í‘œ ì´ìš©í•œ Naming Rule ì œì•½ ì œê±°  */
               (yyval.pNode) = new iloTableNode(ATTR_NODE, eraseDQuotes((yyvsp[(4) - (6)].str)), pAttrName, NULL);
               (yyval.pNode)->setSkipFlag((yyvsp[(5) - (6)].num));
 #ifdef _ILOADER_DEBUG
@@ -2159,8 +2159,8 @@ yyreduce:
           {
               pAttrType = new iloTableNode(ATTRTYPE_NODE, (SChar *)"double", NULL, NULL);
               pAttrName = new iloTableNode(ATTRNAME_NODE, (yyvsp[(1) - (5)].str), NULL, pAttrType);
-              /* BUG-26485 iloader ¿¡ trim ±â´ÉÀ» Ãß°¡ÇØ¾ß ÇÕ´Ï´Ù. */
-              /* »ç¿ëÀÚ°¡ ÀÔ·ÂÇÑ ¹®ÀÚ¿­À» ÀúÀåÇÕ´Ï´Ù. */
+              /* BUG-26485 iloader ì— trim ê¸°ëŠ¥ì„ ì¶”ê°€í•´ì•¼ í•©ë‹ˆë‹¤. */
+              /* ì‚¬ìš©ìê°€ ì…ë ¥í•œ ë¬¸ìì—´ì„ ì €ì¥í•©ë‹ˆë‹¤. */
               (yyval.pNode) = new iloTableNode(ATTR_NODE, (yyvsp[(4) - (5)].str), pAttrName, NULL);
               (yyval.pNode)->setSkipFlag((yyvsp[(3) - (5)].num) & SKIP_MASK);
               (yyval.pNode)->setPrecision(0, 0);
@@ -2540,8 +2540,8 @@ yyreduce:
 
               pAttrType = new iloTableNode(ATTRTYPE_NODE, (SChar *)"numeric_long", NULL, NULL);
               pAttrName = new iloTableNode(ATTRNAME_NODE, (yyvsp[(1) - (10)].str), NULL, pAttrType);
-              /* BUG-26485 iloader ¿¡ trim ±â´ÉÀ» Ãß°¡ÇØ¾ß ÇÕ´Ï´Ù. */
-              /* »ç¿ëÀÚ°¡ ÀÔ·ÂÇÑ ¹®ÀÚ¿­À» ÀúÀåÇÕ´Ï´Ù. */
+              /* BUG-26485 iloader ì— trim ê¸°ëŠ¥ì„ ì¶”ê°€í•´ì•¼ í•©ë‹ˆë‹¤. */
+              /* ì‚¬ìš©ìê°€ ì…ë ¥í•œ ë¬¸ìì—´ì„ ì €ì¥í•©ë‹ˆë‹¤. */
               (yyval.pNode) = new iloTableNode(ATTR_NODE, (yyvsp[(9) - (10)].str), pAttrName, NULL);
               (yyval.pNode)->setSkipFlag((yyvsp[(8) - (10)].num) & SKIP_MASK);
               (yyval.pNode)->setNoExpFlag((yyvsp[(8) - (10)].num) & NOEXP_MASK);
@@ -2580,8 +2580,8 @@ yyreduce:
           {
               pAttrType = new iloTableNode(ATTRTYPE_NODE, (SChar *)"numeric_double", NULL, NULL);
               pAttrName = new iloTableNode(ATTRNAME_NODE, (yyvsp[(1) - (10)].str), NULL, pAttrType);
-              /* BUG-26485 iloader ¿¡ trim ±â´ÉÀ» Ãß°¡ÇØ¾ß ÇÕ´Ï´Ù. */
-              /* »ç¿ëÀÚ°¡ ÀÔ·ÂÇÑ ¹®ÀÚ¿­À» ÀúÀåÇÕ´Ï´Ù. */
+              /* BUG-26485 iloader ì— trim ê¸°ëŠ¥ì„ ì¶”ê°€í•´ì•¼ í•©ë‹ˆë‹¤. */
+              /* ì‚¬ìš©ìê°€ ì…ë ¥í•œ ë¬¸ìì—´ì„ ì €ì¥í•©ë‹ˆë‹¤. */
               (yyval.pNode) = new iloTableNode(ATTR_NODE, (yyvsp[(9) - (10)].str), pAttrName, NULL);
               (yyval.pNode)->setSkipFlag((yyvsp[(8) - (10)].num) & SKIP_MASK);
               (yyval.pNode)->setNoExpFlag((yyvsp[(8) - (10)].num) & NOEXP_MASK);
@@ -2785,8 +2785,8 @@ yyreduce:
 /* Line 1455 of yacc.c  */
 #line 1142 "/home/daramix/work/hdb_trunk2/ut/iloader3/src/iloFormParser.y"
     {
-          /* BUG-17563 : iloader ¿¡¼­ Å«µû¿ÈÇ¥ ÀÌ¿ëÇÑ Naming Rule Á¦¾à Á¦°Å  */
-          /* table/column ÀÌ¸§À¸·Î case±¸ºĞÀ» À§ÇØ "..."¿Í°°Àº stringÀÌ ¿Ã¼ö ÀÖ¾î¾ßÇÔ */
+          /* BUG-17563 : iloader ì—ì„œ í°ë”°ì˜´í‘œ ì´ìš©í•œ Naming Rule ì œì•½ ì œê±°  */
+          /* table/column ì´ë¦„ìœ¼ë¡œ caseêµ¬ë¶„ì„ ìœ„í•´ "..."ì™€ê°™ì€ stringì´ ì˜¬ìˆ˜ ìˆì–´ì•¼í•¨ */
           (yyval.str) = (yyvsp[(1) - (1)].str);
       ;}
     break;

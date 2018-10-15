@@ -181,12 +181,12 @@ const acp_uint8_t gInputST[256] = {
 
 const acp_uint8_t gDaysOfMonth[2][13] = {
     { 0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 } ,  // 
-    { 0, 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 }    // À±³â
+    { 0, 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 }    // ìœ¤ë…„
 };
 
 const acp_uint32_t gAccDaysOfMonth[2][13] = {
     { 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365 }, // 
-    { 0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 366 }  // À±³â
+    { 0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 366 }  // ìœ¤ë…„
 };
 
 acp_uint32_t gHashMonth[12];
@@ -341,19 +341,19 @@ mtdModule mtcdDate = {
     {
         // Key Comparison
         {
-            // mt valueµé °£ÀÇ compare 
+            // mt valueë“¤ ê°„ì˜ compare 
             mtdDateMtdMtdKeyAscComp, // Ascending Key Comparison
             mtdDateMtdMtdKeyDescComp // Descending Key Comparison
         }
         ,
         {
-            // mt value¿Í stored value°£ÀÇ compare 
+            // mt valueì™€ stored valueê°„ì˜ compare 
             mtdDateStoredMtdKeyAscComp, // Ascending Key Comparison
             mtdDateStoredMtdKeyDescComp // Descending Key Comparison
         }
         ,
         {
-            // stored valueµé °£ÀÇ compare 
+            // stored valueë“¤ ê°„ì˜ compare 
             mtdDateStoredStoredKeyAscComp, // Ascending Key Comparison
             mtdDateStoredStoredKeyDescComp // Descending Key Comparison
         }
@@ -383,7 +383,7 @@ ACI_RC mtdInitializeDate( acp_uint32_t aNo )
 {
     ACI_TEST( mtdInitializeModule( &mtcdDate, aNo ) != ACI_SUCCESS );
 
-    // mtdColumnÀÇ ÃÊ±âÈ­
+    // mtdColumnì˜ ì´ˆê¸°í™”
     ACI_TEST( mtcInitializeColumn( & mtdColumn,
                                    & mtcdDate,
                                    0,   // arguments
@@ -458,7 +458,7 @@ ACI_RC mtdValue( mtcTemplate*  aTemplate,
                       != ACI_SUCCESS );
 
             // PROJ-1436
-            // dateFormatÀ» ÂüÁ¶ÇßÀ½À» Ç¥½ÃÇÑ´Ù.
+            // dateFormatì„ ì°¸ì¡°í–ˆìŒì„ í‘œì‹œí•œë‹¤.
             aTemplate->dateFormatRef = ACP_TRUE;
         }
         
@@ -602,7 +602,7 @@ mtdDateMtdMtdKeyAscComp( mtdValueInfo* aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd Å¸ÀÔÀÇ Keyµé °£ÀÇ ascending compare
+ * Description : Mtd íƒ€ì…ì˜ Keyë“¤ ê°„ì˜ ascending compare
  *
  * Implementation :
  *
@@ -640,14 +640,14 @@ mtdDateMtdMtdKeyAscComp( mtdValueInfo* aValueInfo1,
     
     if( !sNull1 && !sNull2 )
     {
-        // Enhancement-13065 Date ºñ±³ ¼º´É °³¼± 
-        // mtdDateInterface¿¡ compare ÇÔ¼ö¸¦ ±¸ÇöÇØ¼­
-        // ºñ±³ ¿¬»êÀÇ Ã¥ÀÓÀ» mtdDateInterface¿¡ À§ÀÓÇÔ.
+        // Enhancement-13065 Date ë¹„êµ ì„±ëŠ¥ ê°œì„  
+        // mtdDateInterfaceì— compare í•¨ìˆ˜ë¥¼ êµ¬í˜„í•´ì„œ
+        // ë¹„êµ ì—°ì‚°ì˜ ì±…ì„ì„ mtdDateInterfaceì— ìœ„ì„í•¨.
         //
-        // null¿¡ ´ëÇÑ ºñ±³ Á¤Ã¥Àº mtdDateModuleÀÌ °¡Áö°í ÀÖ´Â´Ù.
-        // mtdDateInterfaceCompare´Â ´Ü¼øÈ÷ °ªÀÇ Å©±â¸¦ ºñ±³ÇÒ »Ó,
-        // null¿¡ ´ëÇÑ ºñ±³ Á¤Ã¥Àº °¡Áö°í ÀÖÁö ¾Ê±â ¶§¹®¿¡
-        // null Ã¼Å©´Â mtcdDate¿¡¼­ ÇØÁØ´Ù.
+        // nullì— ëŒ€í•œ ë¹„êµ ì •ì±…ì€ mtdDateModuleì´ ê°€ì§€ê³  ìˆëŠ”ë‹¤.
+        // mtdDateInterfaceCompareëŠ” ë‹¨ìˆœíˆ ê°’ì˜ í¬ê¸°ë¥¼ ë¹„êµí•  ë¿,
+        // nullì— ëŒ€í•œ ë¹„êµ ì •ì±…ì€ ê°€ì§€ê³  ìˆì§€ ì•Šê¸° ë•Œë¬¸ì—
+        // null ì²´í¬ëŠ” mtcdDateì—ì„œ í•´ì¤€ë‹¤.
 
         return mtdDateInterfaceCompare( sValue1, sValue2 );
     }
@@ -668,7 +668,7 @@ mtdDateMtdMtdKeyDescComp( mtdValueInfo* aValueInfo1,
 {
     /***********************************************************************
      *
-     * Description : Mtd Å¸ÀÔÀÇ Keyµé °£ÀÇ ascending compare
+     * Description : Mtd íƒ€ì…ì˜ Keyë“¤ ê°„ì˜ ascending compare
      *
      * Implementation :
      *
@@ -726,7 +726,7 @@ mtdDateStoredMtdKeyAscComp( mtdValueInfo* aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd Å¸ÀÔÀÇ Key¿Í Stored Key °£ÀÇ ascending compare
+ * Description : Mtd íƒ€ì…ì˜ Keyì™€ Stored Key ê°„ì˜ ascending compare
  *
  * Implementation :
  *
@@ -774,14 +774,14 @@ mtdDateStoredMtdKeyAscComp( mtdValueInfo* aValueInfo1,
 
     if( !sNull1 && !sNull2 )
     {
-        // Enhancement-13065 Date ºñ±³ ¼º´É °³¼± 
-        // mtdDateInterface¿¡ compare ÇÔ¼ö¸¦ ±¸ÇöÇØ¼­
-        // ºñ±³ ¿¬»êÀÇ Ã¥ÀÓÀ» mtdDateInterface¿¡ À§ÀÓÇÔ.
+        // Enhancement-13065 Date ë¹„êµ ì„±ëŠ¥ ê°œì„  
+        // mtdDateInterfaceì— compare í•¨ìˆ˜ë¥¼ êµ¬í˜„í•´ì„œ
+        // ë¹„êµ ì—°ì‚°ì˜ ì±…ì„ì„ mtdDateInterfaceì— ìœ„ì„í•¨.
         //
-        // null¿¡ ´ëÇÑ ºñ±³ Á¤Ã¥Àº mtdDateModuleÀÌ °¡Áö°í ÀÖ´Â´Ù.
-        // mtdDateInterfaceCompare´Â ´Ü¼øÈ÷ °ªÀÇ Å©±â¸¦ ºñ±³ÇÒ »Ó,
-        // null¿¡ ´ëÇÑ ºñ±³ Á¤Ã¥Àº °¡Áö°í ÀÖÁö ¾Ê±â ¶§¹®¿¡
-        // null Ã¼Å©´Â mtcdDate¿¡¼­ ÇØÁØ´Ù.
+        // nullì— ëŒ€í•œ ë¹„êµ ì •ì±…ì€ mtdDateModuleì´ ê°€ì§€ê³  ìˆëŠ”ë‹¤.
+        // mtdDateInterfaceCompareëŠ” ë‹¨ìˆœíˆ ê°’ì˜ í¬ê¸°ë¥¼ ë¹„êµí•  ë¿,
+        // nullì— ëŒ€í•œ ë¹„êµ ì •ì±…ì€ ê°€ì§€ê³  ìˆì§€ ì•Šê¸° ë•Œë¬¸ì—
+        // null ì²´í¬ëŠ” mtcdDateì—ì„œ í•´ì¤€ë‹¤.
 
         return mtdDateInterfaceCompare( &sValue1, sValue2 );
     }
@@ -802,7 +802,7 @@ mtdDateStoredMtdKeyDescComp( mtdValueInfo* aValueInfo1,
 {
     /***********************************************************************
      *
-     * Description : Mtd Å¸ÀÔÀÇ Key¿Í Stored Key °£ÀÇ ascending compare
+     * Description : Mtd íƒ€ì…ì˜ Keyì™€ Stored Key ê°„ì˜ ascending compare
      *
      * Implementation :
      *
@@ -869,7 +869,7 @@ mtdDateStoredStoredKeyAscComp( mtdValueInfo* aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd Å¸ÀÔÀÇ Key¿Í Stored Key °£ÀÇ ascending compare
+ * Description : Mtd íƒ€ì…ì˜ Keyì™€ Stored Key ê°„ì˜ ascending compare
  *
  * Implementation :
  *
@@ -926,14 +926,14 @@ mtdDateStoredStoredKeyAscComp( mtdValueInfo* aValueInfo1,
 
     if( !sNull1 && !sNull2 )
     {
-        // Enhancement-13065 Date ºñ±³ ¼º´É °³¼±
-        // mtdDateInterface¿¡ compare ÇÔ¼ö¸¦ ±¸ÇöÇØ¼­
-        // ºñ±³ ¿¬»êÀÇ Ã¥ÀÓÀ» mtdDateInterface¿¡ À§ÀÓÇÔ.
+        // Enhancement-13065 Date ë¹„êµ ì„±ëŠ¥ ê°œì„ 
+        // mtdDateInterfaceì— compare í•¨ìˆ˜ë¥¼ êµ¬í˜„í•´ì„œ
+        // ë¹„êµ ì—°ì‚°ì˜ ì±…ì„ì„ mtdDateInterfaceì— ìœ„ì„í•¨.
         //
-        // null¿¡ ´ëÇÑ ºñ±³ Á¤Ã¥Àº mtdDateModuleÀÌ °¡Áö°í ÀÖ´Â´Ù.
-        // mtdDateInterfaceCompare´Â ´Ü¼øÈ÷ °ªÀÇ Å©±â¸¦ ºñ±³ÇÒ »Ó,
-        // null¿¡ ´ëÇÑ ºñ±³ Á¤Ã¥Àº °¡Áö°í ÀÖÁö ¾Ê±â ¶§¹®¿¡
-        // null Ã¼Å©´Â mtcdDate¿¡¼­ ÇØÁØ´Ù.
+        // nullì— ëŒ€í•œ ë¹„êµ ì •ì±…ì€ mtdDateModuleì´ ê°€ì§€ê³  ìˆëŠ”ë‹¤.
+        // mtdDateInterfaceCompareëŠ” ë‹¨ìˆœíˆ ê°’ì˜ í¬ê¸°ë¥¼ ë¹„êµí•  ë¿,
+        // nullì— ëŒ€í•œ ë¹„êµ ì •ì±…ì€ ê°€ì§€ê³  ìˆì§€ ì•Šê¸° ë•Œë¬¸ì—
+        // null ì²´í¬ëŠ” mtcdDateì—ì„œ í•´ì¤€ë‹¤.
 
         return mtdDateInterfaceCompare( &sValue1, &sValue2 );
     }
@@ -954,7 +954,7 @@ mtdDateStoredStoredKeyDescComp( mtdValueInfo* aValueInfo1,
 {
     /***********************************************************************
      *
-     * Description : Mtd Å¸ÀÔÀÇ Key¿Í Stored Key °£ÀÇ ascending compare
+     * Description : Mtd íƒ€ì…ì˜ Keyì™€ Stored Key ê°„ì˜ ascending compare
      *
      * Implementation :
      *
@@ -1061,7 +1061,7 @@ ACI_RC mtdValidate( mtcColumn*   aColumn,
 {
 /***********************************************************************
  *
- * Description : valueÀÇ semantic °Ë»ç ¹× mtcColum ÃÊ±âÈ­
+ * Description : valueì˜ semantic ê²€ì‚¬ ë° mtcColum ì´ˆê¸°í™”
  *
  * Implementation :
  *
@@ -1073,9 +1073,9 @@ ACI_RC mtdValidate( mtcColumn*   aColumn,
 
     ACI_TEST_RAISE( aValueSize != sizeof(mtdDateType), ERR_INVALID_LENGTH );
 
-    // ÃÊ±âÈ­µÈ aColumnÀº cannonize() ½Ã¿¡ »ç¿ë
-    // ÀÌ¶§, data type moduleÀÇ precision Á¤º¸¸¸À» »ç¿ëÇÏ¹Ç·Î,
-    // language Á¤º¸ ¼³Á¤ÇÒ ÇÊ¿ä¾øÀ½
+    // ì´ˆê¸°í™”ëœ aColumnì€ cannonize() ì‹œì— ì‚¬ìš©
+    // ì´ë•Œ, data type moduleì˜ precision ì •ë³´ë§Œì„ ì‚¬ìš©í•˜ë¯€ë¡œ,
+    // language ì •ë³´ ì„¤ì •í•  í•„ìš”ì—†ìŒ
     ACI_TEST( mtcInitializeColumn( aColumn,
                                    & mtcdDate,
                                    0,   // arguments
@@ -1116,7 +1116,7 @@ ACI_RC mtdValidate( mtcColumn*   aColumn,
             }
         }
 
-        /* BUG-36296 1582³â 10¿ù 4ÀÏ(¸ñ)¿¡¼­ 10¿ù 15ÀÏ(±İ)À¸·Î ¹Ù·Î °Ç³Ê¶Ú´Ù. */
+        /* BUG-36296 1582ë…„ 10ì›” 4ì¼(ëª©)ì—ì„œ 10ì›” 15ì¼(ê¸ˆ)ìœ¼ë¡œ ë°”ë¡œ ê±´ë„ˆë›´ë‹¤. */
         ACI_TEST_RAISE( ( mtdDateInterfaceYear( sVal ) == 1582 ) &&
                         ( mtdDateInterfaceMonth( sVal ) == 10 ) &&
                         ( 4 < mtdDateInterfaceDay( sVal ) ) && ( mtdDateInterfaceDay( sVal ) < 15 ),
@@ -1150,12 +1150,12 @@ acp_double_t mtdSelectivityDate( void* aColumnMax,
 /***********************************************************************
  *
  * Description :
- *    DATE ÀÇ Selectivity ÃßÃâ ÇÔ¼ö
+ *    DATE ì˜ Selectivity ì¶”ì¶œ í•¨ìˆ˜
  *
  * Implementation :
  *
  *    Selectivity = (aValueMax - aValueMin) / (aColumnMax - aColumnMin)
- *    0 < Selectivity <= 1 ÀÇ °ªÀ» ¸®ÅÏÇÔ
+ *    0 < Selectivity <= 1 ì˜ ê°’ì„ ë¦¬í„´í•¨
  *
  ***********************************************************************/
     
@@ -1165,8 +1165,8 @@ acp_double_t mtdSelectivityDate( void* aColumnMax,
     mtdDateType*    sValueMax;
     mtdDateType*    sValueMin;
     acp_double_t    sSelectivity;
-    acp_double_t    sDenominator;  // ºĞ¸ğ°ª
-    acp_double_t    sNumerator;    // ºĞÀÚ°ª
+    acp_double_t    sDenominator;  // ë¶„ëª¨ê°’
+    acp_double_t    sNumerator;    // ë¶„ìê°’
     mtdIntervalType sInterval1;
     mtdIntervalType sInterval2;
     mtdIntervalType sInterval3;
@@ -1183,7 +1183,7 @@ acp_double_t mtdSelectivityDate( void* aColumnMax,
     sValueMin  = (mtdDateType*) aValueMin;
     
     //------------------------------------------------------
-    // DataÀÇ À¯È¿¼º °Ë»ç
+    // Dataì˜ ìœ íš¨ì„± ê²€ì‚¬
     //------------------------------------------------------
 
     if ( ( mtdIsNull( NULL, aColumnMax, MTD_OFFSET_USELESS ) == ACP_TRUE ) ||
@@ -1191,17 +1191,17 @@ acp_double_t mtdSelectivityDate( void* aColumnMax,
          ( mtdIsNull( NULL, aValueMax, MTD_OFFSET_USELESS )  == ACP_TRUE ) ||
          ( mtdIsNull( NULL, aValueMin, MTD_OFFSET_USELESS )  == ACP_TRUE ) )
     {
-        // DataÁß NULL ÀÌ ÀÖÀ» °æ¿ì
-        // ºÎµîÈ£ÀÇ Default SelectivityÀÎ 1/3À» SettingÇÔ
+        // Dataì¤‘ NULL ì´ ìˆì„ ê²½ìš°
+        // ë¶€ë“±í˜¸ì˜ Default Selectivityì¸ 1/3ì„ Settingí•¨
         sSelectivity = MTD_DEFAULT_SELECTIVITY;
     }
     else
     {
         //------------------------------------------------------
-        // À¯È¿¼º °Ë»ç
-        // ´ÙÀ½ÀÇ °æ¿ì´Â Á¶°ÇÀ» Àß¸øµÈ Åë°è Á¤º¸ÀÌ°Å³ª ÀÔ·Â Á¤º¸ÀÓ.
-        // ColumnÀÇ Min°ªº¸´Ù ValueÀÇ Max°ªÀÌ ÀÛÀº °æ¿ì
-        // ColumnÀÇ Max°ªº¸´Ù ValueÀÇ Min°ªÀÌ Å« °æ¿ì
+        // ìœ íš¨ì„± ê²€ì‚¬
+        // ë‹¤ìŒì˜ ê²½ìš°ëŠ” ì¡°ê±´ì„ ì˜ëª»ëœ í†µê³„ ì •ë³´ì´ê±°ë‚˜ ì…ë ¥ ì •ë³´ì„.
+        // Columnì˜ Minê°’ë³´ë‹¤ Valueì˜ Maxê°’ì´ ì‘ì€ ê²½ìš°
+        // Columnì˜ Maxê°’ë³´ë‹¤ Valueì˜ Minê°’ì´ í° ê²½ìš°
         //------------------------------------------------------
 
         sValueInfo1.column = NULL;
@@ -1233,9 +1233,9 @@ acp_double_t mtdSelectivityDate( void* aColumnMax,
         else
         {
             //------------------------------------------------------
-            // Value°ª º¸Á¤
-            // ValueÀÇ Min°ªÀÌ ColumnÀÇ Min°ªº¸´Ù ÀÛ´Ù¸é º¸Á¤
-            // ValueÀÇ Max°ªÀÌ ColumnÀÇ Max°ªº¸´Ù Å©´Ù¸é º¸Á¤
+            // Valueê°’ ë³´ì •
+            // Valueì˜ Minê°’ì´ Columnì˜ Minê°’ë³´ë‹¤ ì‘ë‹¤ë©´ ë³´ì •
+            // Valueì˜ Maxê°’ì´ Columnì˜ Maxê°’ë³´ë‹¤ í¬ë‹¤ë©´ ë³´ì •
             //------------------------------------------------------
 
             sValueInfo1.column = NULL;
@@ -1276,13 +1276,13 @@ acp_double_t mtdSelectivityDate( void* aColumnMax,
             }
 
             //------------------------------------------------------
-            // ºĞ¸ğ°ª (aColumnMax - aColumnMin) °ª È¹µæ
+            // ë¶„ëª¨ê°’ (aColumnMax - aColumnMin) ê°’ íšë“
             //------------------------------------------------------
 
-            // Date(aColumnMax) -> interval1 ·Î ÀüÈ¯
-            // Date(aColumnMin) -> interval2 ·Î ÀüÈ¯
-            // Date(aValueMax) -> interval1 ·Î ÀüÈ¯
-            // Date(aValueMin) -> interval2 ·Î ÀüÈ¯
+            // Date(aColumnMax) -> interval1 ë¡œ ì „í™˜
+            // Date(aColumnMin) -> interval2 ë¡œ ì „í™˜
+            // Date(aValueMax) -> interval1 ë¡œ ì „í™˜
+            // Date(aValueMin) -> interval2 ë¡œ ì „í™˜
             if ( ( mtdDateInterfaceConvertDate2Interval( sColumnMax,
                                                          &sInterval1 )
                    == ACI_SUCCESS ) &&
@@ -1296,7 +1296,7 @@ acp_double_t mtdSelectivityDate( void* aColumnMax,
                                                          &sInterval4 )
                    == ACI_SUCCESS ) )
             {
-                // ºĞ¸ğÀÇ Interval °è»ê
+                // ë¶„ëª¨ì˜ Interval ê³„ì‚°
                 sInterval1.second      -= sInterval2.second;
                 sInterval1.microsecond -= sInterval2.microsecond;
         
@@ -1311,22 +1311,22 @@ acp_double_t mtdSelectivityDate( void* aColumnMax,
                     sInterval1.microsecond -= 1000000;
                 }
 
-                // Double TypeÀ¸·Î ÀüÈ¯
+                // Double Typeìœ¼ë¡œ ì „í™˜
                 sDenominator = (acp_double_t) sInterval1.second/864e2 +
                     (acp_double_t) sInterval1.microsecond/864e8;
         
                 if ( sDenominator <= 0.0 )
                 {
-                    // Àß¸øµÈ Åë°è Á¤º¸ÀÇ »ç¿ëÇÑ °æ¿ì
+                    // ì˜ëª»ëœ í†µê³„ ì •ë³´ì˜ ì‚¬ìš©í•œ ê²½ìš°
                     sSelectivity = MTD_DEFAULT_SELECTIVITY;
                 }
                 else
                 {
                     //------------------------------------------------------
-                    // ºĞÀÚ°ª (aValueMax - aValueMin) °ª È¹µæ
+                    // ë¶„ìê°’ (aValueMax - aValueMin) ê°’ íšë“
                     //------------------------------------------------------
 
-                    // ºĞÀÚÀÇ Interval °è»ê
+                    // ë¶„ìì˜ Interval ê³„ì‚°
                     sInterval3.second      -= sInterval4.second;
                     sInterval3.microsecond -= sInterval4.microsecond;
             
@@ -1341,7 +1341,7 @@ acp_double_t mtdSelectivityDate( void* aColumnMax,
                         sInterval3.microsecond -= 1000000;
                     }
             
-                    // Double TypeÀ¸·Î ÀüÈ¯
+                    // Double Typeìœ¼ë¡œ ì „í™˜
                     sNumerator =
                         (acp_double_t) sInterval3.second/864e2 +
                         (acp_double_t) sInterval3.microsecond/864e8;
@@ -1354,7 +1354,7 @@ acp_double_t mtdSelectivityDate( void* aColumnMax,
                     else
                     {
                         //-----------------------------------------------------
-                        // Selectivity °è»ê
+                        // Selectivity ê³„ì‚°
                         //-----------------------------------------------------
                
                         sSelectivity = sNumerator / sDenominator;
@@ -1365,7 +1365,7 @@ acp_double_t mtdSelectivityDate( void* aColumnMax,
                     }
                 }
             }
-            // Date -> IntervalÀÌ ¿¡·¯°¡ ³­´Ù¸é
+            // Date -> Intervalì´ ì—ëŸ¬ê°€ ë‚œë‹¤ë©´
             else
             {
                 sSelectivity = 0.0;
@@ -2086,7 +2086,7 @@ ACI_RC mtdDateInterfaceSetHour(mtdDateType* aDate, acp_uint8_t aHour)
 
     ACE_ASSERT( aDate != NULL );
 
-    // acp_uint8_tÀÌ¹Ç·Î lower bound´Â °Ë»çÇÏÁö ¾ÊÀ½
+    // acp_uint8_tì´ë¯€ë¡œ lower boundëŠ” ê²€ì‚¬í•˜ì§€ ì•ŠìŒ
     ACI_TEST_RAISE( sHour > 23,
                     ERR_INVALID_HOUR24 );
 
@@ -2109,7 +2109,7 @@ ACI_RC mtdDateInterfaceSetMinute(mtdDateType* aDate, acp_uint8_t aMinute)
 
     ACE_ASSERT( aDate != NULL );
 
-    // acp_uint8_tÀÌ¹Ç·Î lower bound´Â °Ë»çÇÏÁö ¾ÊÀ½
+    // acp_uint8_tì´ë¯€ë¡œ lower boundëŠ” ê²€ì‚¬í•˜ì§€ ì•ŠìŒ
     ACI_TEST_RAISE( sMinute > 59,
                     ERR_INVALID_MINUTE );
 
@@ -2132,7 +2132,7 @@ ACI_RC mtdDateInterfaceSetSecond(mtdDateType* aDate, acp_uint8_t aSec)
 
     ACE_ASSERT( aDate != NULL );
 
-    // acp_uint8_tÀÌ¹Ç·Î lower bound´Â °Ë»çÇÏÁö ¾ÊÀ½
+    // acp_uint8_tì´ë¯€ë¡œ lower boundëŠ” ê²€ì‚¬í•˜ì§€ ì•ŠìŒ
     ACI_TEST_RAISE( sSec > 59,
                     ERR_INVALID_SECOND );
 
@@ -2153,7 +2153,7 @@ ACI_RC mtdDateInterfaceSetMicroSecond(mtdDateType* aDate, acp_uint32_t aMicroSec
 {
     ACE_ASSERT( aDate != NULL );
 
-    // acp_uint32_tÀÌ¹Ç·Î lower bound´Â °Ë»çÇÏÁö ¾ÊÀ½
+    // acp_uint32_tì´ë¯€ë¡œ lower boundëŠ” ê²€ì‚¬í•˜ì§€ ì•ŠìŒ
     ACI_TEST_RAISE( aMicroSec > 999999,
                     ERR_INVALID_MICROSECOND );
 
@@ -2254,7 +2254,7 @@ ACI_RC mtdDateInterfaceAddMonth( mtdDateType* aResult, mtdDateType* aDate, acp_s
     }
     else
     {
-        /* BUG-36296 1582³â 10¿ù 4ÀÏ(¸ñ)¿¡¼­ 10¿ù 15ÀÏ(±İ)À¸·Î ¹Ù·Î °Ç³Ê¶Ú´Ù. */
+        /* BUG-36296 1582ë…„ 10ì›” 4ì¼(ëª©)ì—ì„œ 10ì›” 15ì¼(ê¸ˆ)ìœ¼ë¡œ ë°”ë¡œ ê±´ë„ˆë›´ë‹¤. */
         if ( ( sEndYear == 1582 ) &&
              ( sEndMonth == 10 ) &&
              ( 4 < sStartDay ) && ( sStartDay < 15 ) )
@@ -2296,7 +2296,7 @@ ACI_RC mtdDateInterfaceAddDay( mtdDateType* aResult, mtdDateType* aDate, acp_sin
 {
     mtdIntervalType sInterval = { ACP_SINT64_LITERAL(0), ACP_SINT64_LITERAL(0) };
 
-    /* BUG-36296 Date¸¦ Interval·Î º¯È¯ÇÏ¿© ÀÛ¾÷ÇÏ°í, ´Ù½Ã Date·Î º¯È¯ÇÑ´Ù. */
+    /* BUG-36296 Dateë¥¼ Intervalë¡œ ë³€í™˜í•˜ì—¬ ì‘ì—…í•˜ê³ , ë‹¤ì‹œ Dateë¡œ ë³€í™˜í•œë‹¤. */
     ACI_TEST( mtdDateInterfaceConvertDate2Interval( aDate,
                                                     &sInterval )
               != ACI_SUCCESS );
@@ -2336,7 +2336,7 @@ ACI_RC mtdDateInterfaceAddSecond( mtdDateType* aResult,
 {
     mtdIntervalType sInterval = { ACP_SINT64_LITERAL(0), ACP_SINT64_LITERAL(0) };
 
-    /* BUG-36296 Date¸¦ Interval·Î º¯È¯ÇÏ¿© ÀÛ¾÷ÇÏ°í, ´Ù½Ã Date·Î º¯È¯ÇÑ´Ù. */
+    /* BUG-36296 Dateë¥¼ Intervalë¡œ ë³€í™˜í•˜ì—¬ ì‘ì—…í•˜ê³ , ë‹¤ì‹œ Dateë¡œ ë³€í™˜í•œë‹¤. */
     ACI_TEST( mtdDateInterfaceConvertDate2Interval( aDate,
                                                     &sInterval )
               != ACI_SUCCESS );
@@ -2374,7 +2374,7 @@ ACI_RC mtdDateInterfaceAddMicroSecond( mtdDateType* aResult, mtdDateType* aDate,
 {
     mtdIntervalType sInterval = { ACP_SINT64_LITERAL(0), ACP_SINT64_LITERAL(0) };
 
-    /* BUG-36296 Date¸¦ Interval·Î º¯È¯ÇÏ¿© ÀÛ¾÷ÇÏ°í, ´Ù½Ã Date·Î º¯È¯ÇÑ´Ù. */
+    /* BUG-36296 Dateë¥¼ Intervalë¡œ ë³€í™˜í•˜ì—¬ ì‘ì—…í•˜ê³ , ë‹¤ì‹œ Dateë¡œ ë³€í™˜í•œë‹¤. */
     ACI_TEST( mtdDateInterfaceConvertDate2Interval( aDate,
                                                     &sInterval )
               != ACI_SUCCESS );
@@ -2417,14 +2417,14 @@ mtdDateInterfaceMakeDate( mtdDateType* aDate,
                           acp_uint32_t aMicroSec )
 {
     // Bug-10600 UMR error
-    // aDateÀÇ °¢ ¸É¹ö¸¦ ÃÊ±âÈ­ ÇØ¾ß ÇÑ´Ù.
+    // aDateì˜ ê° ë§´ë²„ë¥¼ ì´ˆê¸°í™” í•´ì•¼ í•œë‹¤.
     // by kumdory, 2005-03-04
     aDate->mon_day_hour = 0;
     aDate->min_sec_mic = 0;
 
     // BUG-31389
-    // ³¯Â¥ÀÇ À¯È¿¼ºÀ» Ã¼Å© ÇÏ±â À§ÇØ¼± ³â/¿ù/ÀÏÀÌ ÇÊ¿ä ÇÏ´Ù.
-    // ÀÌ¿¡ ¹İÇØ ½Ã/ºĞ/ÃÊµîÀº ´Üµ¶À¸·Î °Ë»ç °¡´ÉÇÏ´Ù.
+    // ë‚ ì§œì˜ ìœ íš¨ì„±ì„ ì²´í¬ í•˜ê¸° ìœ„í•´ì„  ë…„/ì›”/ì¼ì´ í•„ìš” í•˜ë‹¤.
+    // ì´ì— ë°˜í•´ ì‹œ/ë¶„/ì´ˆë“±ì€ ë‹¨ë…ìœ¼ë¡œ ê²€ì‚¬ ê°€ëŠ¥í•˜ë‹¤.
     ACI_TEST( mtdDateInterfaceCheckYearMonthDayAndSetDateValue( aDate,
                                                                 aYear,
                                                                 aMonth,
@@ -2449,13 +2449,13 @@ ACI_RC mtdDateInterfaceConvertDate2Interval( mtdDateType*     aDate,
 /***********************************************************************
  *
  * Description :
- *    Date ¿¬»êÀ» À§ÇØ Date -> Interval·Î º¯È¯ÇÏ´Â ÇÔ¼ö
+ *    Date ì—°ì‚°ì„ ìœ„í•´ Date -> Intervalë¡œ ë³€í™˜í•˜ëŠ” í•¨ìˆ˜
  *
  * Implementation :
- *    1) ÇØ´ç ÀÏ Àü³¯±îÁö ÃÑ ÀÏ¼ö¸¦ ±¸ÇÏ¿© ÇÏ·ç´ç ÃÊ¼ö(86400ÃÊ)·Î °öÇÏ¿© ±¸ÇÑ´Ù.
- *    2) ½Ã°£´ÜÀ§´Â °¢°¢ ´ÜÀ§´ç ÃÊ¼ö·Î °öÇÏ¿© ±¸ÇÑ´Ù.
- *    3) À§¿¡¼­ ±¸ÇÑ°ÍµéÀ» ÀüºÎ ´õÇØÁØ´Ù.
- *    4) ±×·¹°í¸®·Â¸¸ »ç¿ëÇÑ´Ù´Â °¡Á¤ÇÏ¿¡ °è»êÇÑ´Ù.
+ *    1) í•´ë‹¹ ì¼ ì „ë‚ ê¹Œì§€ ì´ ì¼ìˆ˜ë¥¼ êµ¬í•˜ì—¬ í•˜ë£¨ë‹¹ ì´ˆìˆ˜(86400ì´ˆ)ë¡œ ê³±í•˜ì—¬ êµ¬í•œë‹¤.
+ *    2) ì‹œê°„ë‹¨ìœ„ëŠ” ê°ê° ë‹¨ìœ„ë‹¹ ì´ˆìˆ˜ë¡œ ê³±í•˜ì—¬ êµ¬í•œë‹¤.
+ *    3) ìœ„ì—ì„œ êµ¬í•œê²ƒë“¤ì„ ì „ë¶€ ë”í•´ì¤€ë‹¤.
+ *    4) ê·¸ë ˆê³ ë¦¬ë ¥ë§Œ ì‚¬ìš©í•œë‹¤ëŠ” ê°€ì •í•˜ì— ê³„ì‚°í•œë‹¤.
  ***********************************************************************/
 {
     ACI_TEST_RAISE( MTD_DATE_IS_NULL(aDate) == ACP_TRUE, ERR_INVALID_NULL );
@@ -2470,7 +2470,7 @@ ACI_RC mtdDateInterfaceConvertDate2Interval( mtdDateType*     aDate,
         + mtdDateInterfaceSecond(aDate);
     aInterval->microsecond = mtdDateInterfaceMicroSecond(aDate);
 
-    /* DATEÀÇ MicroSecond´Â Ç×»ó 0 ÀÌ»óÀÌ´Ù. Second°¡ À½¼öÀÌ¸é, MicroSecondµµ À½¼ö·Î ¸¸µç´Ù. */
+    /* DATEì˜ MicroSecondëŠ” í•­ìƒ 0 ì´ìƒì´ë‹¤. Secondê°€ ìŒìˆ˜ì´ë©´, MicroSecondë„ ìŒìˆ˜ë¡œ ë§Œë“ ë‹¤. */
     if ( ( aInterval->second < 0 ) && ( aInterval->microsecond > 0 ) )
     {
         aInterval->second++;
@@ -2505,15 +2505,15 @@ ACI_RC mtdDateInterfaceConvertInterval2Date( mtdIntervalType* aInterval,
 /***********************************************************************
  *
  * Description :
- *    Date ¿¬»ê ÈÄ Date·Î ´Ù½Ã º¯È¯À» À§ÇØ Interval -> Date·Î º¯È¯ÇÏ´Â ÇÔ¼ö
+ *    Date ì—°ì‚° í›„ Dateë¡œ ë‹¤ì‹œ ë³€í™˜ì„ ìœ„í•´ Interval -> Dateë¡œ ë³€í™˜í•˜ëŠ” í•¨ìˆ˜
  *
  * Implementation :
- *    1) BCÀÎÁö ADÀÎÁö ±¸ºĞÇÑ´Ù.
- *      - IntervalÀÌ À½¼öÀÌ¸é, BCÀÌ´Ù.
- *      - IntervalÀÌ 0ÀÌ¸é, AD 0001³â 1¿ù 1ÀÏ 0½Ã 0ÃÊÀÌ´Ù.
+ *    1) BCì¸ì§€ ADì¸ì§€ êµ¬ë¶„í•œë‹¤.
+ *      - Intervalì´ ìŒìˆ˜ì´ë©´, BCì´ë‹¤.
+ *      - Intervalì´ 0ì´ë©´, AD 0001ë…„ 1ì›” 1ì¼ 0ì‹œ 0ì´ˆì´ë‹¤.
  *
- *    2) 1582³â 10¿ù 4ÀÏ ÀÌÀüÀº À²¸®¿ì½º·ÂÀ» Àû¿ëÇÏ°í, 1582³â 10¿ù 15ÀÏ ÀÌÈÄ´Â ±×·¹°í¸®·ÂÀ» Àû¿ëÇÑ´Ù.
- *      - 1582³â 10¿ù 4ÀÏ(¸ñ)¿¡¼­ 10¿ù 15ÀÏ(±İ)À¸·Î ¹Ù·Î °Ç³Ê¶Ú´Ù.
+ *    2) 1582ë…„ 10ì›” 4ì¼ ì´ì „ì€ ìœ¨ë¦¬ìš°ìŠ¤ë ¥ì„ ì ìš©í•˜ê³ , 1582ë…„ 10ì›” 15ì¼ ì´í›„ëŠ” ê·¸ë ˆê³ ë¦¬ë ¥ì„ ì ìš©í•œë‹¤.
+ *      - 1582ë…„ 10ì›” 4ì¼(ëª©)ì—ì„œ 10ì›” 15ì¼(ê¸ˆ)ìœ¼ë¡œ ë°”ë¡œ ê±´ë„ˆë›´ë‹¤.
  ***********************************************************************/
 {
 #define DAY_PER_SECOND      86400
@@ -2551,7 +2551,7 @@ ACI_RC mtdDateInterfaceConvertInterval2Date( mtdIntervalType* aInterval,
                       ( aInterval->microsecond < 0 ) ),
                     ERR_INVALID_YEAR );
 
-    // ÀÏ´ÜÀ§¿Í ÃÊ´ÜÀ§·Î ³ª´²ÁØ´Ù.
+    // ì¼ë‹¨ìœ„ì™€ ì´ˆë‹¨ìœ„ë¡œ ë‚˜ëˆ ì¤€ë‹¤.
     sDays    = aInterval->second / DAY_PER_SECOND;
     sSeconds = aInterval->second % DAY_PER_SECOND;
 
@@ -2564,7 +2564,7 @@ ACI_RC mtdDateInterfaceConvertInterval2Date( mtdIntervalType* aInterval,
         ACE_DASSERT( sSeconds <= 0 );
         ACE_DASSERT( sMicroSecond <= 0 );
 
-        /* DATE¿¡¼­ ¿¬µµ¸¸ À½¼ö°¡ °¡´ÉÇÏ´Ù. Second¿Í Microsecond¸¦ ¾ç¼ö·Î º¸Á¤ÇÑ´Ù. */
+        /* DATEì—ì„œ ì—°ë„ë§Œ ìŒìˆ˜ê°€ ê°€ëŠ¥í•˜ë‹¤. Secondì™€ Microsecondë¥¼ ì–‘ìˆ˜ë¡œ ë³´ì •í•œë‹¤. */
         if ( sMicroSecond < 0 )
         {
             sSeconds--;
@@ -2585,13 +2585,13 @@ ACI_RC mtdDateInterfaceConvertInterval2Date( mtdIntervalType* aInterval,
             /* Nothing to do */
         }
 
-        /* BUG-36296 ±â¿øÀü¿¡´Â 4³â¸¶´Ù À±³âÀÌ¶ó°í °¡Á¤ÇÑ´Ù.
-         *  - °í´ë ·Î¸¶ÀÇ Á¤Ä¡°¡ À²¸®¿ì½º Ä«ÀÌ»ç¸£°¡ ±â¿øÀü 45³âºÎÅÍ À²¸®¿ì½º·ÂÀ» ½ÃÇàÇÏ¿´´Ù.
-         *  - ÃÊ±âÀÇ À²¸®¿ì½º·Â(±â¿øÀü 45³â ~ ±â¿øÀü 8³â)¿¡¼­´Â À±³âÀ» 3³â¿¡ ÇÑ ¹ø ½Ç½ÃÇÏ¿´´Ù. (Oracle 11g ¹ÌÀû¿ë)
-         *  - BC 4713³âºÎÅÍ À²¸®¿ì½ºÀÏÀ» °è»êÇÑ´Ù. Ãµ¹®ÇĞÀÚµéÀÌ À²¸®¿ì½ºÀÏÀ» »ç¿ëÇÑ´Ù. 4³â¸¶´Ù À±³âÀÌ´Ù.
+        /* BUG-36296 ê¸°ì›ì „ì—ëŠ” 4ë…„ë§ˆë‹¤ ìœ¤ë…„ì´ë¼ê³  ê°€ì •í•œë‹¤.
+         *  - ê³ ëŒ€ ë¡œë§ˆì˜ ì •ì¹˜ê°€ ìœ¨ë¦¬ìš°ìŠ¤ ì¹´ì´ì‚¬ë¥´ê°€ ê¸°ì›ì „ 45ë…„ë¶€í„° ìœ¨ë¦¬ìš°ìŠ¤ë ¥ì„ ì‹œí–‰í•˜ì˜€ë‹¤.
+         *  - ì´ˆê¸°ì˜ ìœ¨ë¦¬ìš°ìŠ¤ë ¥(ê¸°ì›ì „ 45ë…„ ~ ê¸°ì›ì „ 8ë…„)ì—ì„œëŠ” ìœ¤ë…„ì„ 3ë…„ì— í•œ ë²ˆ ì‹¤ì‹œí•˜ì˜€ë‹¤. (Oracle 11g ë¯¸ì ìš©)
+         *  - BC 4713ë…„ë¶€í„° ìœ¨ë¦¬ìš°ìŠ¤ì¼ì„ ê³„ì‚°í•œë‹¤. ì²œë¬¸í•™ìë“¤ì´ ìœ¨ë¦¬ìš°ìŠ¤ì¼ì„ ì‚¬ìš©í•œë‹¤. 4ë…„ë§ˆë‹¤ ìœ¤ë…„ì´ë‹¤.
          *
-         *  AD 0³âÀº Á¸ÀçÇÏÁö ¾Ê´Â´Ù. DATEÀÇ ¿¬µµ°¡ 0ÀÌ¸é, BC 1³âÀÌ´Ù. Áï, BC 1³âÀÇ ´ÙÀ½Àº AD 1³âÀÌ´Ù.
-         *  BC 0001³â 12¿ù 31ÀÏÀº Day -1 ÀÌ´Ù. ±×¸®°í, BC 1³â(aYear == 0)ÀÌ À±³âÀÌ´Ù.
+         *  AD 0ë…„ì€ ì¡´ì¬í•˜ì§€ ì•ŠëŠ”ë‹¤. DATEì˜ ì—°ë„ê°€ 0ì´ë©´, BC 1ë…„ì´ë‹¤. ì¦‰, BC 1ë…„ì˜ ë‹¤ìŒì€ AD 1ë…„ì´ë‹¤.
+         *  BC 0001ë…„ 12ì›” 31ì¼ì€ Day -1 ì´ë‹¤. ê·¸ë¦¬ê³ , BC 1ë…„(aYear == 0)ì´ ìœ¤ë…„ì´ë‹¤.
          */
         s4Years = sDays / YEAR4_PER_DAY;
         sDays   = sDays % YEAR4_PER_DAY;
@@ -2609,28 +2609,28 @@ ACI_RC mtdDateInterfaceConvertInterval2Date( mtdIntervalType* aInterval,
         {
             s1Years = -3;
 
-            /* DATE¿¡¼­ ¿¬µµ¸¸ À½¼ö°¡ °¡´ÉÇÏ´Ù. Days¸¦ ¾ç¼ö·Î º¸Á¤ÇÑ´Ù. */
+            /* DATEì—ì„œ ì—°ë„ë§Œ ìŒìˆ˜ê°€ ê°€ëŠ¥í•˜ë‹¤. Daysë¥¼ ì–‘ìˆ˜ë¡œ ë³´ì •í•œë‹¤. */
             sDays = sDays + 1461;
         }
         else if ( sDays < -731 ) // && sDays >= -1096
         {
             s1Years = -2;
 
-            /* DATE¿¡¼­ ¿¬µµ¸¸ À½¼ö°¡ °¡´ÉÇÏ´Ù. Days¸¦ ¾ç¼ö·Î º¸Á¤ÇÑ´Ù. */
+            /* DATEì—ì„œ ì—°ë„ë§Œ ìŒìˆ˜ê°€ ê°€ëŠ¥í•˜ë‹¤. Daysë¥¼ ì–‘ìˆ˜ë¡œ ë³´ì •í•œë‹¤. */
             sDays = sDays + 1096;
         }
         else if ( sDays < -366 ) // && sDays >= -731
         {
             s1Years = -1;
 
-            /* DATE¿¡¼­ ¿¬µµ¸¸ À½¼ö°¡ °¡´ÉÇÏ´Ù. Days¸¦ ¾ç¼ö·Î º¸Á¤ÇÑ´Ù. */
+            /* DATEì—ì„œ ì—°ë„ë§Œ ìŒìˆ˜ê°€ ê°€ëŠ¥í•˜ë‹¤. Daysë¥¼ ì–‘ìˆ˜ë¡œ ë³´ì •í•œë‹¤. */
             sDays = sDays + 731;
         }
         else                     // sDays >= -366
         {
             s1Years = 0;
 
-            /* DATE¿¡¼­ ¿¬µµ¸¸ À½¼ö°¡ °¡´ÉÇÏ´Ù. Days¸¦ ¾ç¼ö·Î º¸Á¤ÇÑ´Ù. */
+            /* DATEì—ì„œ ì—°ë„ë§Œ ìŒìˆ˜ê°€ ê°€ëŠ¥í•˜ë‹¤. Daysë¥¼ ì–‘ìˆ˜ë¡œ ë³´ì •í•œë‹¤. */
             sDays = sDays + 366;
         }
 
@@ -2645,17 +2645,17 @@ ACI_RC mtdDateInterfaceConvertInterval2Date( mtdIntervalType* aInterval,
 
         if ( sDays < FIRST_GREGORIAN_DAY )
         {
-            /* BUG-36296 ±×·¹°í¸®·ÂÀÇ À±³â ±ÔÄ¢Àº 1583³âºÎÅÍ Àû¿ëÇÑ´Ù. 1582³â ÀÌÀü¿¡´Â 4³â¸¶´Ù À±³âÀÌ´Ù. */
+            /* BUG-36296 ê·¸ë ˆê³ ë¦¬ë ¥ì˜ ìœ¤ë…„ ê·œì¹™ì€ 1583ë…„ë¶€í„° ì ìš©í•œë‹¤. 1582ë…„ ì´ì „ì—ëŠ” 4ë…„ë§ˆë‹¤ ìœ¤ë…„ì´ë‹¤. */
             s4Years = sDays / YEAR4_PER_DAY;
             sDays   = sDays % YEAR4_PER_DAY;
         }
-        /* BUG-36296 ±×·¹°í¸®·ÂÀº 1582³â 10¿ù 15ÀÏºÎÅÍ ½ÃÀÛÇÑ´Ù. */
+        /* BUG-36296 ê·¸ë ˆê³ ë¦¬ë ¥ì€ 1582ë…„ 10ì›” 15ì¼ë¶€í„° ì‹œì‘í•œë‹¤. */
         else
         {
-            /* 1582³â 10¿ù 4ÀÏ(¸ñ)¿¡¼­ 10¿ù 15ÀÏ(±İ)À¸·Î ¹Ù·Î °Ç³Ê¶Ú´Ù. */
+            /* 1582ë…„ 10ì›” 4ì¼(ëª©)ì—ì„œ 10ì›” 15ì¼(ê¸ˆ)ìœ¼ë¡œ ë°”ë¡œ ê±´ë„ˆë›´ë‹¤. */
             sDays += 10;
 
-            /* BUG-36296 1600³â ÀÌÀüÀº À²¸®¿ì½º·Â°ú ±×·¹°í¸®·ÂÀÇ À±³âÀÌ °°´Ù. */
+            /* BUG-36296 1600ë…„ ì´ì „ì€ ìœ¨ë¦¬ìš°ìŠ¤ë ¥ê³¼ ê·¸ë ˆê³ ë¦¬ë ¥ì˜ ìœ¤ë…„ì´ ê°™ë‹¤. */
             if ( sDays <= ( 400 * YEAR4_PER_DAY ) )
             {
                 s4Years = sDays / YEAR4_PER_DAY;
@@ -2663,7 +2663,7 @@ ACI_RC mtdDateInterfaceConvertInterval2Date( mtdIntervalType* aInterval,
             }
             else
             {
-                /* BUG-36296 ±×·¹°í¸®·ÂÀÇ À±³â ±ÔÄ¢Àº 1583³âºÎÅÍ Àû¿ëÇÑ´Ù. 1582³â ÀÌÀü¿¡´Â 4³â¸¶´Ù À±³âÀÌ´Ù. */
+                /* BUG-36296 ê·¸ë ˆê³ ë¦¬ë ¥ì˜ ìœ¤ë…„ ê·œì¹™ì€ 1583ë…„ë¶€í„° ì ìš©í•œë‹¤. 1582ë…„ ì´ì „ì—ëŠ” 4ë…„ë§ˆë‹¤ ìœ¤ë…„ì´ë‹¤. */
                 s4Years = 400;
                 sDays  -= ( 400 * YEAR4_PER_DAY );
 
@@ -2674,7 +2674,7 @@ ACI_RC mtdDateInterfaceConvertInterval2Date( mtdIntervalType* aInterval,
                 sDays     = sDays % YEAR100_PER_DAY;
                 if ( s100Years == 4 )
                 {
-                    /* 400³â ÁÖ±â > (100³â ÁÖ±â * 4)ÀÌ¹Ç·Î, 100³â ÁÖ±â È½¼ö¸¦ Á¶Á¤ÇÑ´Ù. */
+                    /* 400ë…„ ì£¼ê¸° > (100ë…„ ì£¼ê¸° * 4)ì´ë¯€ë¡œ, 100ë…„ ì£¼ê¸° íšŸìˆ˜ë¥¼ ì¡°ì •í•œë‹¤. */
                     s100Years = 3;
                     sDays    += YEAR100_PER_DAY;
                 }
@@ -2712,12 +2712,12 @@ ACI_RC mtdDateInterfaceConvertInterval2Date( mtdIntervalType* aInterval,
               + s100Years * 100
               + s4Years   * 4
               + s1Years
-              + 1; /* AD 0001³âºÎÅÍ ½ÃÀÛÇÑ´Ù. */
+              + 1; /* AD 0001ë…„ë¶€í„° ì‹œì‘í•œë‹¤. */
     }
 
-    sDays++;    /* 0ÀÏÀº Á¸ÀçÇÏÁö ¾ÊÀ¸¹Ç·Î, +1·Î º¸Á¤ÇÑ´Ù. */
+    sDays++;    /* 0ì¼ì€ ì¡´ì¬í•˜ì§€ ì•Šìœ¼ë¯€ë¡œ, +1ë¡œ ë³´ì •í•œë‹¤. */
 
-    // ´Ş, ÀÏ ±¸ÇÏ±â
+    // ë‹¬, ì¼ êµ¬í•˜ê¸°
     if ( mtdDateInterfaceIsLeapYear( sYear ) == ACP_TRUE )
     {
         sLeap = 1;
@@ -2737,7 +2737,7 @@ ACI_RC mtdDateInterfaceConvertInterval2Date( mtdIntervalType* aInterval,
 
     sDay = sDays - sStartDayOfMonth[sLeap][sMonth - 1];
     
-    // ½Ã°£ ±¸ÇÏ±â
+    // ì‹œê°„ êµ¬í•˜ê¸°
     sHour = sSeconds / 3600;
     sSeconds %= 3600;
     sMinute = sSeconds / 60;
@@ -2772,14 +2772,14 @@ mtdDateInterfaceToDateGetInteger( acp_uint8_t** aString,
 /***********************************************************************
  *
  * Description :
- *    string->number·Î º¯È¯(format lengthº¸´Ù Âª¾Æµµ Çã¿ë)
- *    YYYY, RRRR, DD, MM µî °¡º¯±æÀÌ Çã¿ëÇÏ´Â formatÀ» À§ÇØ »ç¿ë
+ *    string->numberë¡œ ë³€í™˜(format lengthë³´ë‹¤ ì§§ì•„ë„ í—ˆìš©)
+ *    YYYY, RRRR, DD, MM ë“± ê°€ë³€ê¸¸ì´ í—ˆìš©í•˜ëŠ” formatì„ ìœ„í•´ ì‚¬ìš©
  *
  * Implementation :
- *    1) ¼ıÀÚ·Î µÈ ¹®ÀÚ¸¦ ¸¸³ª¸é acp_uint32_t value·Î º¯È¯.
- *       ¼ıÀÚ·Î º¯È¯µÈ ºÎºĞ ¸¸Å­ ¹®ÀÚ¿­ Æ÷ÀÎÅÍ ÀÌµ¿ ¹× ±æÀÌ Á¶Á¤
- *    2) ¼ıÀÚ°¡ ¾Æ´Ñ ¹®ÀÚ¸¦ ¸¸³ª¸é break
- *    3) ¸¸¾à ÇÑ ¹®ÀÚµµ º¯È¯ÀÌ µÇÁö ¾Ê¾Ò´Ù¸é error
+ *    1) ìˆ«ìë¡œ ëœ ë¬¸ìë¥¼ ë§Œë‚˜ë©´ acp_uint32_t valueë¡œ ë³€í™˜.
+ *       ìˆ«ìë¡œ ë³€í™˜ëœ ë¶€ë¶„ ë§Œí¼ ë¬¸ìì—´ í¬ì¸í„° ì´ë™ ë° ê¸¸ì´ ì¡°ì •
+ *    2) ìˆ«ìê°€ ì•„ë‹Œ ë¬¸ìë¥¼ ë§Œë‚˜ë©´ break
+ *    3) ë§Œì•½ í•œ ë¬¸ìë„ ë³€í™˜ì´ ë˜ì§€ ì•Šì•˜ë‹¤ë©´ error
  ***********************************************************************/
     acp_uint8_t* sInitStr;
 
@@ -2792,11 +2792,11 @@ mtdDateInterfaceToDateGetInteger( acp_uint8_t** aString,
 
     sInitStr = *aString;
     
-    // »ç¿ëÀÚ°¡ ¿¹»óÇÑ ÃÖ´ë °ª°ú ÇöÀç ¹®ÀÚ¿­ÀÇ ±æÀÌ¿Í ºñ±³ÇÏ¿© ÀÛÀº
-    // °ÍÀ» ÀúÀåÇÔ
+    // ì‚¬ìš©ìê°€ ì˜ˆìƒí•œ ìµœëŒ€ ê°’ê³¼ í˜„ì¬ ë¬¸ìì—´ì˜ ê¸¸ì´ì™€ ë¹„êµí•˜ì—¬ ì‘ì€
+    // ê²ƒì„ ì €ì¥í•¨
     aMax = ( *aLength < aMax ) ? *aLength : aMax;
     
-    // ¼ıÀÚ·Î µÈ ¹®ÀÚ¸¦ ¸¸³ª¸é acp_uint32_t value·Î º¯È¯.
+    // ìˆ«ìë¡œ ëœ ë¬¸ìë¥¼ ë§Œë‚˜ë©´ acp_uint32_t valueë¡œ ë³€í™˜.
     for( *aValue = 0;
          aMax    > 0;
          aMax--, (*aString)++, (*aLength)-- )
@@ -2807,12 +2807,12 @@ mtdDateInterfaceToDateGetInteger( acp_uint8_t** aString,
         }
         else
         {
-            // ¼ıÀÚ°¡ ¾Æ´Ñ ¹®ÀÚ¸¦ ¸¸³ª¸é break
+            // ìˆ«ìê°€ ì•„ë‹Œ ë¬¸ìë¥¼ ë§Œë‚˜ë©´ break
             break;
         }
     }
 
-    // ¸¸¾à ÇÑ ¹®ÀÚµµ º¯È¯ÀÌ µÇÁö ¾Ê¾Ò´Ù¸é error
+    // ë§Œì•½ í•œ ë¬¸ìë„ ë³€í™˜ì´ ë˜ì§€ ì•Šì•˜ë‹¤ë©´ error
     ACI_TEST_RAISE( *aString == sInitStr,
                     ERR_NON_NUMERIC_INPUT );
 
@@ -2835,20 +2835,20 @@ mtdDateInterfaceToDateGetMonth( acp_uint8_t** aString,
                                 acp_uint32_t* aMonth )
 { 
 /***********************************************************************
- * Description : '¿ù'¿¡ ÇØ´çÇÏ´Â ¹®ÀÚ¿­À» ÀĞ°í, aMonth¿¡ ÀûÀıÇÑ °ªÀ» ¸®ÅÏ(1~12)
- *                ÀÇ¹Ì ÀÖ´Â '¿ù'À» ÀÇ¹ÌÇÏ´Â ¹®ÀÚ¿­ÀÎ °æ¿ì ±× ±æÀÌ ¸¸Å­
- *                aString°ú aLength¸¦ Á¶Á¤
- * Implementation : '¿ù'À» ÀÇ¹ÌÇÏ´Â °¢ ¹®ÀÚ¿­¿¡ ´ëÇØ ¾ÕÂÊ 3ÀÚ¸¦ ¹Ì¸® ÇØ½ÃÇÏ¿©
- *                  ±× °ªÀ» ¹Ì¸® ¹è¿­¿¡ ÀúÀåÇÏ¿© ÇØ½Ã°ªÀ» ºñ±³ÇÑ µÚ, ¹®ÀÚ¿­ ºñ±³
- *                  ±¸Çö ¿ëÀÌ¸¦ À§ÇØ ÇØ½Ã Å×ÀÌºíÀ» ±¸¼ºÇÏÁö ¾Ê°í, ¸ğµç °æ¿ì¸¦ ºñ±³
+ * Description : 'ì›”'ì— í•´ë‹¹í•˜ëŠ” ë¬¸ìì—´ì„ ì½ê³ , aMonthì— ì ì ˆí•œ ê°’ì„ ë¦¬í„´(1~12)
+ *                ì˜ë¯¸ ìˆëŠ” 'ì›”'ì„ ì˜ë¯¸í•˜ëŠ” ë¬¸ìì—´ì¸ ê²½ìš° ê·¸ ê¸¸ì´ ë§Œí¼
+ *                aStringê³¼ aLengthë¥¼ ì¡°ì •
+ * Implementation : 'ì›”'ì„ ì˜ë¯¸í•˜ëŠ” ê° ë¬¸ìì—´ì— ëŒ€í•´ ì•ìª½ 3ìë¥¼ ë¯¸ë¦¬ í•´ì‹œí•˜ì—¬
+ *                  ê·¸ ê°’ì„ ë¯¸ë¦¬ ë°°ì—´ì— ì €ì¥í•˜ì—¬ í•´ì‹œê°’ì„ ë¹„êµí•œ ë’¤, ë¬¸ìì—´ ë¹„êµ
+ *                  êµ¬í˜„ ìš©ì´ë¥¼ ìœ„í•´ í•´ì‹œ í…Œì´ë¸”ì„ êµ¬ì„±í•˜ì§€ ì•Šê³ , ëª¨ë“  ê²½ìš°ë¥¼ ë¹„êµ
  ***********************************************************************/
     acp_sint32_t       sIdx;
     acp_sint32_t       sMax;
     acp_uint32_t       sHashVal;
     acp_uint8_t        sString[10] = {0};
     acp_sint32_t       sLength;
-    acp_uint32_t       sMonthLength[12] = { 7, 8, 5, 5, 3, 4,   // ÇØ´ç '¿ù'À» ÀÇ¹ÌÇÏ´Â
-                                            4, 6, 9, 7, 8, 8 }; // ¹®ÀÚ¿­ÀÇ ±æÀÌ
+    acp_uint32_t       sMonthLength[12] = { 7, 8, 5, 5, 3, 4,   // í•´ë‹¹ 'ì›”'ì„ ì˜ë¯¸í•˜ëŠ”
+                                            4, 6, 9, 7, 8, 8 }; // ë¬¸ìì—´ì˜ ê¸¸ì´
 
     static acp_bool_t sHashInit = ACP_FALSE;
     
@@ -2856,16 +2856,16 @@ mtdDateInterfaceToDateGetMonth( acp_uint8_t** aString,
     ACE_ASSERT( aLength != NULL );
     ACE_ASSERT( aMonth  != NULL );
 
-    // ¿ùÀ» ÀÇ¹ÌÇÏ´Â ¹®ÀÚ¿­À» ÃÖ¼Ò 3ÀÚ ÀÌ»óÀÌ¾î¾ß ÇÔ
+    // ì›”ì„ ì˜ë¯¸í•˜ëŠ” ë¬¸ìì—´ì„ ìµœì†Œ 3ì ì´ìƒì´ì–´ì•¼ í•¨
     ACI_TEST_RAISE( *aLength < 3,
                     ERR_NOT_ENOUGH_INPUT );
 
 
-    // ¿ùÀ» ÀÇ¹ÌÇÏ´Â ¹®ÀÚ¿­ Áß °¡Àå ±ä °ÍÀÌ 9ÀÚ = september
-    // ÇöÀç ¹®ÀÚ¿­ÀÇ ±æÀÌ¿Í ºñ±³ÇÏ¿© ÀÛÀº °ÍÀ» ÀúÀåÇÔ
+    // ì›”ì„ ì˜ë¯¸í•˜ëŠ” ë¬¸ìì—´ ì¤‘ ê°€ì¥ ê¸´ ê²ƒì´ 9ì = september
+    // í˜„ì¬ ë¬¸ìì—´ì˜ ê¸¸ì´ì™€ ë¹„êµí•˜ì—¬ ì‘ì€ ê²ƒì„ ì €ì¥í•¨
     sMax = ACP_MIN(*aLength, 9);
         
-    // ¹®ÀÚ¿­ÀÇ ÃÖ´ë ±æÀÌ¸¦ °è»ê
+    // ë¬¸ìì—´ì˜ ìµœëŒ€ ê¸¸ì´ë¥¼ ê³„ì‚°
     for( sLength = 0;
          sLength < sMax;
          sLength++)
@@ -2876,12 +2876,12 @@ mtdDateInterfaceToDateGetMonth( acp_uint8_t** aString,
         }
     }
 
-    // ¹®ÀÚ¿­À» º¹»çÇÏ°í, ¸ğµÎ ´ë¹®ÀÚ·Î º¯È¯
+    // ë¬¸ìì—´ì„ ë³µì‚¬í•˜ê³ , ëª¨ë‘ ëŒ€ë¬¸ìë¡œ ë³€í™˜
     acpMemCpy( sString, *aString, sLength );
 
     acpCStrToUpper( (acp_char_t*)sString, sLength );
 
-    // ¾ÕÀÚ¸® 3ÀÚ¸®¸¸À» ÀÌ¿ëÇÏ¿© ÇØ½Ã °ª »ı¼º
+    // ì•ìë¦¬ 3ìë¦¬ë§Œì„ ì´ìš©í•˜ì—¬ í•´ì‹œ ê°’ ìƒì„±
     sHashVal = mtcHash(mtcHashInitialValue,
                        sString,
                        3);
@@ -2906,33 +2906,33 @@ mtdDateInterfaceToDateGetMonth( acp_uint8_t** aString,
                             gMONName[sIdx],
                             3 ) == 0 )
             {
-                // ÀÏ´Ü ¾Õ 3ÀÚ°¡ ÀÏÄ¡ÇÏ¹Ç·Î ÇØ´ç ´Ş·Î ÀÎ½ÄÇÒ ¼ö ÀÖÀ½
-                // ÇÏÁö¸¸, ¾àÀÚ°¡ ¾Æ´Ñ '¿ù'ÀÌ¸§À¸·Î ÀÔ·ÂÇÒ ¼ö ÀÖÀ¸¹Ç·Î
-                // °¡´ÉÇÏ¸é, ¸ğµç ÀÔ·Â ¹®ÀÚ¸¦ ¼ÒºñÇØ¾ß ÇÔ
+                // ì¼ë‹¨ ì• 3ìê°€ ì¼ì¹˜í•˜ë¯€ë¡œ í•´ë‹¹ ë‹¬ë¡œ ì¸ì‹í•  ìˆ˜ ìˆìŒ
+                // í•˜ì§€ë§Œ, ì•½ìê°€ ì•„ë‹Œ 'ì›”'ì´ë¦„ìœ¼ë¡œ ì…ë ¥í•  ìˆ˜ ìˆìœ¼ë¯€ë¡œ
+                // ê°€ëŠ¥í•˜ë©´, ëª¨ë“  ì…ë ¥ ë¬¸ìë¥¼ ì†Œë¹„í•´ì•¼ í•¨
                 if( sLength >= (acp_sint32_t) sMonthLength[sIdx] )
                 {
                     if( acpCStrCmp( (acp_char_t*)sString,
                                     gMONTHName[sIdx],
                                     sMonthLength[sIdx] ) == 0 )
                     {
-                        // ÁÙÀÌÁö ¾ÊÀº ¿ø·¡ ÀÌ¸§À¸·Î ¸ÅÄªÀÌ ¼º°øÇÑ °æ¿ì
+                        // ì¤„ì´ì§€ ì•Šì€ ì›ë˜ ì´ë¦„ìœ¼ë¡œ ë§¤ì¹­ì´ ì„±ê³µí•œ ê²½ìš°
                         sLength = sMonthLength[sIdx];
                     }
                     else
                     {
-                        // ÁÙ¿©¾´ ÀÌ¸§À¸·Î ¸ÅÄªÀÌ ¼º°øÇÑ °æ¿ì
+                        // ì¤„ì—¬ì“´ ì´ë¦„ìœ¼ë¡œ ë§¤ì¹­ì´ ì„±ê³µí•œ ê²½ìš°
                         sLength = 3;
                     }
                 }
                 else
                 {
-                    // '¿ù'¿ø·¡ ¿ùÀÇ ±æÀÌÀÌ°Å³ª 3ÀÌ¾î¾ß ÇÑ´Ù.
-                    // ¿¹¸¦ µé¾î to_date( 'SEPMON','MONDAY' )°ú °°Àº
-                    // ÀÔ·ÂÀÌ ÀÖÀ» ¼ö ÀÖÀ½
+                    // 'ì›”'ì›ë˜ ì›”ì˜ ê¸¸ì´ì´ê±°ë‚˜ 3ì´ì–´ì•¼ í•œë‹¤.
+                    // ì˜ˆë¥¼ ë“¤ì–´ to_date( 'SEPMON','MONDAY' )ê³¼ ê°™ì€
+                    // ì…ë ¥ì´ ìˆì„ ìˆ˜ ìˆìŒ
                     sLength = 3;
                 }
 
-                // ¸ÅÄªÀÌ ¼º°øÇßÀ¸¹Ç·Î ¿ùÀ» ¼³Á¤ÇÏ°í ¹İº¹¹® Á¾·á
+                // ë§¤ì¹­ì´ ì„±ê³µí–ˆìœ¼ë¯€ë¡œ ì›”ì„ ì„¤ì •í•˜ê³  ë°˜ë³µë¬¸ ì¢…ë£Œ
                 *aMonth = sIdx + 1;
                 *aString += sLength;
                 *aLength -= sLength;
@@ -2940,12 +2940,12 @@ mtdDateInterfaceToDateGetMonth( acp_uint8_t** aString,
             }
             else
             {
-                // ´ÙÀ½ '¿ù'¿¡ ´ëÇÑ °ª ºñ±³
+                // ë‹¤ìŒ 'ì›”'ì— ëŒ€í•œ ê°’ ë¹„êµ
             }
         }
     }
 
-    // ¸ğµç °æ¿ì¸¦ °Ë»çÇÏµµ°í ¸ÅÄªµÇ´Â ¹®ÀÚ¿­À» Ã£Áö ¸øÇÏ¸é ¿¡·¯
+    // ëª¨ë“  ê²½ìš°ë¥¼ ê²€ì‚¬í•˜ë„ê³  ë§¤ì¹­ë˜ëŠ” ë¬¸ìì—´ì„ ì°¾ì§€ ëª»í•˜ë©´ ì—ëŸ¬
     ACI_TEST_RAISE( sIdx == 12, ERR_INVALID_DATE );                    
 
     return ACI_SUCCESS;
@@ -2968,10 +2968,10 @@ mtdDateInterfaceToDateGetRMMonth( acp_uint8_t** aString,
                                   acp_uint32_t* aMonth )
 { 
 /***********************************************************************
- * Description : '¿ù'¿¡ ÇØ´çÇÏ´Â ·Î¸¶ÀÚ ¹®ÀÚ¿­À» ÀĞ°í, aMonth¿¡ ÀûÀıÇÑ
- *                °ªÀ» ¸®ÅÏ(1~12) ÀÇ¹Ì ÀÖ´Â '¿ù'À» ÀÇ¹ÌÇÏ´Â ¹®ÀÚ¿­ÀÎ
- *                °æ¿ì ±× ±æÀÌ ¸¸Å­ aString°ú aLength¸¦ Á¶Á¤
- * Implementation : ³ª¿Ã ¼ö ÀÖ´Â ¹®ÀÚÀÇ °æ¿ì°¡ 3°³ÀÌ¹Ç·Î ¹İº¹¹®À¸·Î °è»ê
+ * Description : 'ì›”'ì— í•´ë‹¹í•˜ëŠ” ë¡œë§ˆì ë¬¸ìì—´ì„ ì½ê³ , aMonthì— ì ì ˆí•œ
+ *                ê°’ì„ ë¦¬í„´(1~12) ì˜ë¯¸ ìˆëŠ” 'ì›”'ì„ ì˜ë¯¸í•˜ëŠ” ë¬¸ìì—´ì¸
+ *                ê²½ìš° ê·¸ ê¸¸ì´ ë§Œí¼ aStringê³¼ aLengthë¥¼ ì¡°ì •
+ * Implementation : ë‚˜ì˜¬ ìˆ˜ ìˆëŠ” ë¬¸ìì˜ ê²½ìš°ê°€ 3ê°œì´ë¯€ë¡œ ë°˜ë³µë¬¸ìœ¼ë¡œ ê³„ì‚°
  ***********************************************************************/
 
     acp_sint32_t   sIdx       = 0;
@@ -2990,16 +2990,16 @@ mtdDateInterfaceToDateGetRMMonth( acp_uint8_t** aString,
     ACE_ASSERT( aLength != NULL );
     ACE_ASSERT( aMonth  != NULL );
 
-    // ¿ùÀ» ÀÇ¹ÌÇÏ´Â ¹®ÀÚ¿­À» ÃÖ¼Ò 1ÀÚ ÀÌ»óÀÌ¾î¾ß ÇÔ
+    // ì›”ì„ ì˜ë¯¸í•˜ëŠ” ë¬¸ìì—´ì„ ìµœì†Œ 1ì ì´ìƒì´ì–´ì•¼ í•¨
     ACI_TEST_RAISE( *aLength < 1,
                     ERR_NOT_ENOUGH_INPUT );
 
 
-    // ¿ùÀ» ÀÇ¹ÌÇÏ´Â ¹®ÀÚ¿­ Áß °¡Àå ±ä °ÍÀÌ 4ÀÚ = VIII
-    // ÇöÀç ¹®ÀÚ¿­ÀÇ ±æÀÌ¿Í ºñ±³ÇÏ¿© ÀÛÀº °ÍÀ» ÀúÀåÇÔ
+    // ì›”ì„ ì˜ë¯¸í•˜ëŠ” ë¬¸ìì—´ ì¤‘ ê°€ì¥ ê¸´ ê²ƒì´ 4ì = VIII
+    // í˜„ì¬ ë¬¸ìì—´ì˜ ê¸¸ì´ì™€ ë¹„êµí•˜ì—¬ ì‘ì€ ê²ƒì„ ì €ì¥í•¨
     sMax = ACP_MIN(*aLength, 4);
         
-    // ¹®ÀÚ¿­ÀÇ ÃÖ´ë ±æÀÌ¸¦ °è»ê
+    // ë¬¸ìì—´ì˜ ìµœëŒ€ ê¸¸ì´ë¥¼ ê³„ì‚°
     for( sLength = 0;
          sLength < sMax;
          sLength++)
@@ -3010,7 +3010,7 @@ mtdDateInterfaceToDateGetRMMonth( acp_uint8_t** aString,
         }
     }
 
-    // ¹®ÀÚ¿­À» º¹»çÇÏ°í, ¸ğµÎ ´ë¹®ÀÚ·Î º¯È¯
+    // ë¬¸ìì—´ì„ ë³µì‚¬í•˜ê³ , ëª¨ë‘ ëŒ€ë¬¸ìë¡œ ë³€í™˜
     acpMemCpy( sString, *aString, sLength );
     acpCStrToUpper( (acp_char_t*)sString, sLength );
     
@@ -3111,22 +3111,22 @@ mtdDateInterfaceToDate( mtdDateType* aDate,
 
     // Local Variable
     acp_sint32_t     sIdx;
-    acp_sint32_t     sLeap         = 0;         // 0:ÀÏ¹İ, 1:À±³â
+    acp_sint32_t     sLeap         = 0;         // 0:ì¼ë°˜, 1:ìœ¤ë…„
     acp_uint32_t     sNumber;
     acp_uint32_t     sFormatLen;
-    acp_bool_t       sIsAM         = ACP_TRUE;   // ±âº»Àº AM
-    acp_bool_t       sPrecededWHSP = ACP_FALSE;  // ÀÔ·Â ¹®ÀÚ¿­¿¡
-    // °ø¹é,ÅÇ,ÁÙ¹Ù²ŞÀÌ
-    // ÀÖ¾ú´ÂÁö °Ë»ç
-    acp_uint32_t     sOldLen;                   // ¹®ÀÚ¿­ ±æÀÌ ºñ±³ °Ë»ç µîÀ» À§ÇØ
+    acp_bool_t       sIsAM         = ACP_TRUE;   // ê¸°ë³¸ì€ AM
+    acp_bool_t       sPrecededWHSP = ACP_FALSE;  // ì…ë ¥ ë¬¸ìì—´ì—
+    // ê³µë°±,íƒ­,ì¤„ë°”ê¿ˆì´
+    // ìˆì—ˆëŠ”ì§€ ê²€ì‚¬
+    acp_uint32_t     sOldLen;                   // ë¬¸ìì—´ ê¸¸ì´ ë¹„êµ ê²€ì‚¬ ë“±ì„ ìœ„í•´
     acp_uint8_t*     sString;
     acp_uint32_t     sStringLen;
-    acp_uint8_t*     sFormat;                   // ÇöÀç Ã³¸®ÇÏ°í ÀÖ´Â Æ÷¸ËÀÇ À§Ä¡¸¦ °¡¸®Å´
+    acp_uint8_t*     sFormat;                   // í˜„ì¬ ì²˜ë¦¬í•˜ê³  ìˆëŠ” í¬ë§·ì˜ ìœ„ì¹˜ë¥¼ ê°€ë¦¬í‚´
     acp_uint8_t      sErrorFormat[MTC_TO_CHAR_MAX_PRECISION+1];
 
-    // °°Àº °ª¿¡ ´ëÇØ Áßº¹µÈ ÀÔ·ÂÀÌ ÀÖ´Â °æ¿ì¸¦ ´ëºñÇÏ¿©
-    // aDate¿¡ °ªÀ» Á÷Á¢ Àû¿ëÇÏÁö ¾Ê°í, º¸°üÇÏ±â À§ÇÑ º¯¼ö
-    // °¡´ÉÇÑ Æ÷¸Ëµé: 'SSSSS', 'DDD', 'DAY'
+    // ê°™ì€ ê°’ì— ëŒ€í•´ ì¤‘ë³µëœ ì…ë ¥ì´ ìˆëŠ” ê²½ìš°ë¥¼ ëŒ€ë¹„í•˜ì—¬
+    // aDateì— ê°’ì„ ì§ì ‘ ì ìš©í•˜ì§€ ì•Šê³ , ë³´ê´€í•˜ê¸° ìœ„í•œ ë³€ìˆ˜
+    // ê°€ëŠ¥í•œ í¬ë§·ë“¤: 'SSSSS', 'DDD', 'DAY'
     acp_uint32_t     sHour         = 0;
     acp_uint32_t     sMinute       = 0;
     acp_uint32_t     sSecond       = 0;
@@ -3134,7 +3134,7 @@ mtdDateInterfaceToDate( mtdDateType* aDate,
     acp_uint8_t      sDay          = 0;
     acp_uint32_t     sDayOfYear    = 0;         // Day of year (1-366)
 
-    // Date format element°¡ Áßº¹À¸·Î ÃâÇöÇÏ´Â °ÍÀ» ¸·±â À§ÇÑ º¯¼ö
+    // Date format elementê°€ ì¤‘ë³µìœ¼ë¡œ ì¶œí˜„í•˜ëŠ” ê²ƒì„ ë§‰ê¸° ìœ„í•œ ë³€ìˆ˜
     // To fix BUG-14516
     acp_bool_t       sSetYY        = ACP_FALSE;
     acp_bool_t       sSetMM        = ACP_FALSE;
@@ -3146,16 +3146,16 @@ mtdDateInterfaceToDate( mtdDateType* aDate,
     acp_bool_t       sSetSS        = ACP_FALSE;
     acp_bool_t       sSetMS        = ACP_FALSE;  // microsecond
     acp_bool_t       sSetSID       = ACP_FALSE;  // seconds in day
-//  acp_bool_t       sSetDOW       = ACP_FALSE;  // day of week (±¸Çöº¸·ù)
+//  acp_bool_t       sSetDOW       = ACP_FALSE;  // day of week (êµ¬í˜„ë³´ë¥˜)
     acp_bool_t       sSetDDD       = ACP_FALSE;  // day of year
 
     ACE_ASSERT( aDate   != NULL );
     ACE_ASSERT( aString != NULL );
     ACE_ASSERT( aFormat != NULL );
 
-    // aString°ú aFormatÀÇ ¾çÂÊ °ø¹éÀ» Á¦°ÅÇÑ´Ù.
+    // aStringê³¼ aFormatì˜ ì–‘ìª½ ê³µë°±ì„ ì œê±°í•œë‹¤.
     // To fix BUG-15087
-    // ¾ÕÂÊ °ø¹éÀº while loop¾È¿¡¼­ Ã³¸®ÇÑ´Ù.    
+    // ì•ìª½ ê³µë°±ì€ while loopì•ˆì—ì„œ ì²˜ë¦¬í•œë‹¤.    
     while( aStringLen > 0 )
     {
         if( gInputST[aString[aStringLen-1]] == gWHSP )
@@ -3194,9 +3194,9 @@ mtdDateInterfaceToDate( mtdDateType* aDate,
     while( sToken != 0 )
     {
 
-        // °ø¹é, ÅÇ, ÁÙ¹Ù²ŞµîÀÌ ÀÖ´Ù¸é ¹«½Ã
+        // ê³µë°±, íƒ­, ì¤„ë°”ê¿ˆë“±ì´ ìˆë‹¤ë©´ ë¬´ì‹œ
         sPrecededWHSP = ACP_FALSE;
-        // BUG-18788 sStringLenÀ» °Ë»çÇØ¾ß ÇÔ
+        // BUG-18788 sStringLenì„ ê²€ì‚¬í•´ì•¼ í•¨
         while( sStringLen > 0 )
         {
             if ( gInputST[*sString] == gWHSP )
@@ -3214,13 +3214,13 @@ mtdDateInterfaceToDate( mtdDateType* aDate,
         switch( sToken )
         {
             /***********************************
-             * Á¤¼ö ÀÔ·ÂÀ» ¹Ş´Â °æ¿ì
+             * ì •ìˆ˜ ì…ë ¥ì„ ë°›ëŠ” ê²½ìš°
              ***********************************/
             // Year: YCYYY, RRRR, RR, SYYYY, YYYY, YYY, YY, Y
             case MTD_DATE_FORMAT_YCYYY:
             {
-                // YCYYYÀÏ¶§ : YYYY¿Í µ¿ÀÏÇÏ³ª
-                //            ¼¼¹øÂÅ ÀÚ¸®¿¡ ½°Ç¥(,)¸¦ Æ÷ÇÔÇÑ ¿¬µµµµ ÀÔ·Â °¡´É
+                // YCYYYì¼ë•Œ : YYYYì™€ ë™ì¼í•˜ë‚˜
+                //            ì„¸ë²ˆì©¨ ìë¦¬ì— ì‰¼í‘œ(,)ë¥¼ í¬í•¨í•œ ì—°ë„ë„ ì…ë ¥ ê°€ëŠ¥
                 ACI_TEST_RAISE( sSetYY != ACP_FALSE,
                                 ERR_CONFLICT_FORMAT );
                 sSetYY = ACP_TRUE;
@@ -3234,21 +3234,21 @@ mtdDateInterfaceToDate( mtdDateType* aDate,
 
                 if( ( ( sOldLen - sStringLen ) == 1 ) && ( sStringLen > 0 ) )
                 {
-                    // ÇÑ ÀÚ¸® ¼ıÀÚ¸¸ ³ª¿Â °æ¿ì ÀÏ¹İÀûÀ¸·Î ','°¡ ¿¹»óµÈ´Ù
+                    // í•œ ìë¦¬ ìˆ«ìë§Œ ë‚˜ì˜¨ ê²½ìš° ì¼ë°˜ì ìœ¼ë¡œ ','ê°€ ì˜ˆìƒëœë‹¤
                     if( *sString == ',' )
                     {
-                        // ¼ıÀÚ°¡ ³ª¿À°í ½°Ç¥(,)°¡ ÀÖ´Ù¸é ¹«Á¶°Ç 4ÀÚ¸®
-                        // ¿¬µµ ÀÔ·ÂÀ¸·Î °¡Á¤ÇÑ´Ù. ¹°·Ğ ´Ù¸¥ Æ÷¸ËÀ»
-                        // À§ÇÑ ±¸ºĞÀÚÀÏ ¼ö ÀÖÁö¸¸, YCYYY¿Í ÇÔ²² ½°Ç¥¸¦
-                        // ±¸ºĞÀÚ·Î »ç¿ëÇÏ¸é¼­ ´õ ºÒ¾î ÇÑÀÚ¸®ÀÇ ¿¬µµ¸¦
-                        // ÀÔ·ÂÇÏ´Â ºñ¾ç½ÉÀûÀÎ ÀÔ·Â °ªÀº ¿¡·¯·Î °£ÁÖÇÔ
-                        // ¿¹) to_date( '9,9,9', 'YCYYY,MM,DD' )
+                        // ìˆ«ìê°€ ë‚˜ì˜¤ê³  ì‰¼í‘œ(,)ê°€ ìˆë‹¤ë©´ ë¬´ì¡°ê±´ 4ìë¦¬
+                        // ì—°ë„ ì…ë ¥ìœ¼ë¡œ ê°€ì •í•œë‹¤. ë¬¼ë¡  ë‹¤ë¥¸ í¬ë§·ì„
+                        // ìœ„í•œ êµ¬ë¶„ìì¼ ìˆ˜ ìˆì§€ë§Œ, YCYYYì™€ í•¨ê»˜ ì‰¼í‘œë¥¼
+                        // êµ¬ë¶„ìë¡œ ì‚¬ìš©í•˜ë©´ì„œ ë” ë¶ˆì–´ í•œìë¦¬ì˜ ì—°ë„ë¥¼
+                        // ì…ë ¥í•˜ëŠ” ë¹„ì–‘ì‹¬ì ì¸ ì…ë ¥ ê°’ì€ ì—ëŸ¬ë¡œ ê°„ì£¼í•¨
+                        // ì˜ˆ) to_date( '9,9,9', 'YCYYY,MM,DD' )
 
-                        // ÃµÀÇ ÀÚ¸® ÀÔ·Â
+                        // ì²œì˜ ìë¦¬ ì…ë ¥
                         ACI_TEST( mtdDateInterfaceSetYear( aDate, sNumber * 1000 )
                                   != ACI_SUCCESS );
 
-                        // ','°¡ ÀÖÀ¸¸é ³ª¸ÓÁö 3ÀÚ¸®(°íÁ¤) ÀĞ¾î¼­ ¿Ï¼º
+                        // ','ê°€ ìˆìœ¼ë©´ ë‚˜ë¨¸ì§€ 3ìë¦¬(ê³ ì •) ì½ì–´ì„œ ì™„ì„±
                         sOldLen = sStringLen;
                         ACI_TEST( mtdDateInterfaceToDateGetInteger( &sString,
                                                                     &sStringLen,
@@ -3260,21 +3260,21 @@ mtdDateInterfaceToDate( mtdDateType* aDate,
                             ( sOldLen - sStringLen ) != 3,
                             ERR_NOT_ENOUGH_INPUT );
 
-                        // ³ª¸ÓÁö ¼¼ ÀÚ¸® Ãß°¡
+                        // ë‚˜ë¨¸ì§€ ì„¸ ìë¦¬ ì¶”ê°€
                         ACI_TEST( mtdDateInterfaceSetYear( aDate, mtdDateInterfaceYear(aDate) + sNumber )
                                   != ACI_SUCCESS );
 
                     }
                     else
                     {
-                        // ¾øÀ¸¸é ±×´ë·Î ÀúÀå (1ÀÚ¸® ¼öÀÇ ¿¬µµ¸¦ ÀÇ¹Ì)
+                        // ì—†ìœ¼ë©´ ê·¸ëŒ€ë¡œ ì €ì¥ (1ìë¦¬ ìˆ˜ì˜ ì—°ë„ë¥¼ ì˜ë¯¸)
                         ACI_TEST( mtdDateInterfaceSetYear( aDate, sNumber )
                                   != ACI_SUCCESS );                    
                     }
                 }
                 else
                 {
-                    // ±× ¿ÜÀÇ °æ¿ì »ç¿ëÀÚ°¡ ÀÔ·ÂÇÑ ±×´ë·Î ÀúÀå
+                    // ê·¸ ì™¸ì˜ ê²½ìš° ì‚¬ìš©ìê°€ ì…ë ¥í•œ ê·¸ëŒ€ë¡œ ì €ì¥
                     ACI_TEST( mtdDateInterfaceSetYear( aDate, sNumber )
                               != ACI_SUCCESS );                    
                 }
@@ -3284,20 +3284,20 @@ mtdDateInterfaceToDate( mtdDateType* aDate,
 
             case MTD_DATE_FORMAT_RRRR:
             {
-                // RRRRÀÏ¶§ : 4ÀÚ¸® ÀÏ ¶§´Â ¾×¸é ±×´ë·Î
-                //           4ÀÚ¸®°¡ ¾Æ´Ò °æ¿ì ¾Æ·¡ÀÇ ±ÔÄ¢À» µû¸§
-                //            RRRR < 50  ÀÌ¸é 2000À» ´õÇÑ´Ù. 
-                //            RRRR < 100 ÀÌ¸é 1900À» ´õÇÑ´Ù. 
-                //            RRRR >=100 ÀÌ¸é ¾×¸é ±×´ë·Î
-                //     '2005' : 2005³â
-                //     '0005' : 5³â
-                //     '005'  : 2005³â
-                //     '05'   : 2005³â
-                //     '5'    : 2005³â
-                //     '100'  : 0100³â
-                //     '99'   : 1999³â
-                //     '50'   : 1950³â
-                //     '49'   : 2049³â
+                // RRRRì¼ë•Œ : 4ìë¦¬ ì¼ ë•ŒëŠ” ì•¡ë©´ ê·¸ëŒ€ë¡œ
+                //           4ìë¦¬ê°€ ì•„ë‹ ê²½ìš° ì•„ë˜ì˜ ê·œì¹™ì„ ë”°ë¦„
+                //            RRRR < 50  ì´ë©´ 2000ì„ ë”í•œë‹¤. 
+                //            RRRR < 100 ì´ë©´ 1900ì„ ë”í•œë‹¤. 
+                //            RRRR >=100 ì´ë©´ ì•¡ë©´ ê·¸ëŒ€ë¡œ
+                //     '2005' : 2005ë…„
+                //     '0005' : 5ë…„
+                //     '005'  : 2005ë…„
+                //     '05'   : 2005ë…„
+                //     '5'    : 2005ë…„
+                //     '100'  : 0100ë…„
+                //     '99'   : 1999ë…„
+                //     '50'   : 1950ë…„
+                //     '49'   : 2049ë…„
                 ACI_TEST_RAISE( sSetYY != ACP_FALSE,
                                 ERR_CONFLICT_FORMAT );
                 sSetYY = ACP_TRUE;
@@ -3310,7 +3310,7 @@ mtdDateInterfaceToDate( mtdDateType* aDate,
 
                 if( sOldLen - sStringLen < 4 )
                 {
-                    // 4ÀÚ¸®°¡ ¾Æ´Ñ °æ¿ì ¾Æ·¡¿Í °°ÀÌ
+                    // 4ìë¦¬ê°€ ì•„ë‹Œ ê²½ìš° ì•„ë˜ì™€ ê°™ì´
                     if( sNumber < 50 )
                     {
                         sNumber += 2000;
@@ -3322,7 +3322,7 @@ mtdDateInterfaceToDate( mtdDateType* aDate,
                 }
                 else
                 {
-                    // 4ÀÚ¸® ÀÏ ¶§´Â ÀÔ·Â°ª ±×´ë·Î
+                    // 4ìë¦¬ ì¼ ë•ŒëŠ” ì…ë ¥ê°’ ê·¸ëŒ€ë¡œ
                     // do nothing
                 }
 
@@ -3334,16 +3334,16 @@ mtdDateInterfaceToDate( mtdDateType* aDate,
 
             case MTD_DATE_FORMAT_RR:
             {
-                // RRÀÏ¶§   : RR < 50  ÀÌ¸é 2000À» ´õÇÑ´Ù.  
-                //           RR < 100 ÀÌ¸é 1900À» ´õÇÑ´Ù. 
-                //     '2005' : ¿¡·¯
-                //     '005'  : ¿¡·¯
-                //     '05'   : 2005³â
-                //     '5'    : 2005³â
-                //     '100'  : ¿¡·¯
-                //     '99'   : 1999³â
-                //     '50    : 1950³â
-                //     '49'   : 2049³â
+                // RRì¼ë•Œ   : RR < 50  ì´ë©´ 2000ì„ ë”í•œë‹¤.  
+                //           RR < 100 ì´ë©´ 1900ì„ ë”í•œë‹¤. 
+                //     '2005' : ì—ëŸ¬
+                //     '005'  : ì—ëŸ¬
+                //     '05'   : 2005ë…„
+                //     '5'    : 2005ë…„
+                //     '100'  : ì—ëŸ¬
+                //     '99'   : 1999ë…„
+                //     '50    : 1950ë…„
+                //     '49'   : 2049ë…„
                 ACI_TEST_RAISE( sSetYY != ACP_FALSE,
                                 ERR_CONFLICT_FORMAT );
                 sSetYY = ACP_TRUE;
@@ -3368,30 +3368,30 @@ mtdDateInterfaceToDate( mtdDateType* aDate,
                 break;
             }
 
-            case MTD_DATE_FORMAT_SYYYY :    /* BUG-36296 SYYYY Format Áö¿ø */
+            case MTD_DATE_FORMAT_SYYYY :    /* BUG-36296 SYYYY Format ì§€ì› */
             {
-                // SYYYYÀÏ ¶§ : '-'°¡ ¸ÕÀú ¿À¸é À½¼öÀÌ°í, '+'/''ÀÌ¸é ¾ç¼öÀÌ´Ù.
-                //     '-2005' : -2006³â
-                //     '-0005' : -6³â
-                //     '-005'  : -6³â
-                //     '-05'   : -6³â
-                //     '-5'    : -6³â
-                //     '2005'  : 2005³â
-                //     '0005'  : 5³â
-                //     '005'   : 5³â
-                //     '05'    : 5³â
-                //     '5'     : 5³â
-                //     '1970'  : 1970³â
-                //     '70'    : 70³â
-                //     '170'   : 170³â
-                //     '7'     : 7³â
+                // SYYYYì¼ ë•Œ : '-'ê°€ ë¨¼ì € ì˜¤ë©´ ìŒìˆ˜ì´ê³ , '+'/''ì´ë©´ ì–‘ìˆ˜ì´ë‹¤.
+                //     '-2005' : -2006ë…„
+                //     '-0005' : -6ë…„
+                //     '-005'  : -6ë…„
+                //     '-05'   : -6ë…„
+                //     '-5'    : -6ë…„
+                //     '2005'  : 2005ë…„
+                //     '0005'  : 5ë…„
+                //     '005'   : 5ë…„
+                //     '05'    : 5ë…„
+                //     '5'     : 5ë…„
+                //     '1970'  : 1970ë…„
+                //     '70'    : 70ë…„
+                //     '170'   : 170ë…„
+                //     '7'     : 7ë…„
                 ACI_TEST_RAISE( sSetYY != ACP_FALSE,
                                 ERR_CONFLICT_FORMAT );
                 sSetYY = ACP_TRUE;
 
                 if ( *sString == '-' )
                 {
-                    // ºÎÈ£ ±æÀÌ¸¸Å­ ÀÔ·Â ¹®ÀÚ¿­ ÁÙÀÓ
+                    // ë¶€í˜¸ ê¸¸ì´ë§Œí¼ ì…ë ¥ ë¬¸ìì—´ ì¤„ì„
                     sString++;
                     sStringLen--;
 
@@ -3409,7 +3409,7 @@ mtdDateInterfaceToDate( mtdDateType* aDate,
                 {
                     if ( *sString == '+' )
                     {
-                        // ºÎÈ£ ±æÀÌ¸¸Å­ ÀÔ·Â ¹®ÀÚ¿­ ÁÙÀÓ
+                        // ë¶€í˜¸ ê¸¸ì´ë§Œí¼ ì…ë ¥ ë¬¸ìì—´ ì¤„ì„
                         sString++;
                         sStringLen--;
                     }
@@ -3434,16 +3434,16 @@ mtdDateInterfaceToDate( mtdDateType* aDate,
 
             case MTD_DATE_FORMAT_YYYY:
             {
-                // YYYYÀÏ¶§ : ÀÔ·Â°ªÀ» ±×´ë·Î ¼ıÀÚ·Î ¹Ù²Û´Ù.
-                //     '2005' : 2005³â
-                //     '0005' : 5³â
-                //     '005'  : 5³â
-                //     '05'   : 5³â
-                //     '5'    : 5³â
-                //     '1970' : 1970³â
-                //     '70'   : 70³â
-                //     '170'  : 170³â
-                //     '7'    : 7³â
+                // YYYYì¼ë•Œ : ì…ë ¥ê°’ì„ ê·¸ëŒ€ë¡œ ìˆ«ìë¡œ ë°”ê¾¼ë‹¤.
+                //     '2005' : 2005ë…„
+                //     '0005' : 5ë…„
+                //     '005'  : 5ë…„
+                //     '05'   : 5ë…„
+                //     '5'    : 5ë…„
+                //     '1970' : 1970ë…„
+                //     '70'   : 70ë…„
+                //     '170'  : 170ë…„
+                //     '7'    : 7ë…„
                 ACI_TEST_RAISE( sSetYY != ACP_FALSE,
                                 ERR_CONFLICT_FORMAT );
                 sSetYY = ACP_TRUE;
@@ -3462,13 +3462,13 @@ mtdDateInterfaceToDate( mtdDateType* aDate,
 
             case MTD_DATE_FORMAT_YYY:
             {
-                // YYYÀÏ¶§   : °ª¿¡ 2000À» ´õÇÑ´Ù.
-                //     '005'  : 2005³â
-                //     '05'   : 2005³â
-                //     '5'    : 2005³â
-                //     '70'   : 2070³â
-                //     '170'  : 2170³â
-                //     '7'    : 2007³â
+                // YYYì¼ë•Œ   : ê°’ì— 2000ì„ ë”í•œë‹¤.
+                //     '005'  : 2005ë…„
+                //     '05'   : 2005ë…„
+                //     '5'    : 2005ë…„
+                //     '70'   : 2070ë…„
+                //     '170'  : 2170ë…„
+                //     '7'    : 2007ë…„
                 ACI_TEST_RAISE( sSetYY != ACP_FALSE,
                                 ERR_CONFLICT_FORMAT );
                 sSetYY = ACP_TRUE;
@@ -3487,12 +3487,12 @@ mtdDateInterfaceToDate( mtdDateType* aDate,
 
             case MTD_DATE_FORMAT_YY:
             {
-                // YYÀÏ¶§   : °ª¿¡ 2000À» ´õÇÑ´Ù.
-                //     '05'   : 2005³â
-                //     '5'    : 2005³â
-                //     '99'   : 2099³â
-                //     '50    : 2050³â
-                //     '49'   : 2049³â
+                // YYì¼ë•Œ   : ê°’ì— 2000ì„ ë”í•œë‹¤.
+                //     '05'   : 2005ë…„
+                //     '5'    : 2005ë…„
+                //     '99'   : 2099ë…„
+                //     '50    : 2050ë…„
+                //     '49'   : 2049ë…„
                 ACI_TEST_RAISE( sSetYY != ACP_FALSE,
                                 ERR_CONFLICT_FORMAT );
                 sSetYY = ACP_TRUE;
@@ -3511,8 +3511,8 @@ mtdDateInterfaceToDate( mtdDateType* aDate,
 
             case MTD_DATE_FORMAT_Y:
             {
-                // YÀÏ¶§   : °ª¿¡ 2000À» ´õÇÑ´Ù.
-                //     '5'    : 2005³â
+                // Yì¼ë•Œ   : ê°’ì— 2000ì„ ë”í•œë‹¤.
+                //     '5'    : 2005ë…„
                 ACI_TEST_RAISE( sSetYY != ACP_FALSE,
                                 ERR_CONFLICT_FORMAT );
                 sSetYY = ACP_TRUE;
@@ -3529,7 +3529,7 @@ mtdDateInterfaceToDate( mtdDateType* aDate,
                 break;
             }
             
-            // Month: MM (Á¤¼ö·Î ÀÔ·ÂÇÏ´Â '¿ù'À» ÀÇ¹ÌÇÏ´Â format)
+            // Month: MM (ì •ìˆ˜ë¡œ ì…ë ¥í•˜ëŠ” 'ì›”'ì„ ì˜ë¯¸í•˜ëŠ” format)
             case MTD_DATE_FORMAT_MM:
             {
                 ACI_TEST_RAISE( sSetMM != ACP_FALSE,
@@ -3581,8 +3581,8 @@ mtdDateInterfaceToDate( mtdDateType* aDate,
                                                             &sDayOfYear )
                           != ACI_SUCCESS );
                 
-                // ´Ù¸¥ ÀÔ·Â °ª(³â,¿ù,ÀÏ)¿¡ µû¶ó ´Ù¸¥ Á¶°ÇÀ» °Ë»çÇØ¾ß
-                // ÇÏ¹Ç·Î, ¸ğµç ÀÔ·ÂÀÌ Á¾·áµÈ ÈÄ ½ÇÁ¦ °ªÀ» ÀÔ·Â
+                // ë‹¤ë¥¸ ì…ë ¥ ê°’(ë…„,ì›”,ì¼)ì— ë”°ë¼ ë‹¤ë¥¸ ì¡°ê±´ì„ ê²€ì‚¬í•´ì•¼
+                // í•˜ë¯€ë¡œ, ëª¨ë“  ì…ë ¥ì´ ì¢…ë£Œëœ í›„ ì‹¤ì œ ê°’ì„ ì…ë ¥
 
                 break;
             }
@@ -3590,7 +3590,7 @@ mtdDateInterfaceToDate( mtdDateType* aDate,
             // Hour: HH, HH12, HH24
             case MTD_DATE_FORMAT_HH12:
             {
-                // 12½Ã°£ ´ÜÀ§
+                // 12ì‹œê°„ ë‹¨ìœ„
                 ACI_TEST_RAISE( ( sSetHH12 != ACP_FALSE ) ||
                                 ( sSetHH24 != ACP_FALSE ),
                                 ERR_CONFLICT_FORMAT );
@@ -3602,8 +3602,8 @@ mtdDateInterfaceToDate( mtdDateType* aDate,
                                                             &sNumber )
                           != ACI_SUCCESS );
 
-                // aDate¿¡ ÀÔ·ÂµÇ´Â ¹üÀ§´Â 1~24 ÀÌÁö¸¸,
-                // ¸¸¾à PMÀÌ ¸í½ÃµÈ °æ¿ì ÇÔ¼ö Á¾·á Àü¿¡ +12
+                // aDateì— ì…ë ¥ë˜ëŠ” ë²”ìœ„ëŠ” 1~24 ì´ì§€ë§Œ,
+                // ë§Œì•½ PMì´ ëª…ì‹œëœ ê²½ìš° í•¨ìˆ˜ ì¢…ë£Œ ì „ì— +12
                 ACI_TEST_RAISE( sNumber > 12 || sNumber < 1,
                                 ERR_INVALID_HOUR );
 
@@ -3616,7 +3616,7 @@ mtdDateInterfaceToDate( mtdDateType* aDate,
             case MTD_DATE_FORMAT_HH:
             case MTD_DATE_FORMAT_HH24:
             {
-                // 24½Ã°£ ´ÜÀ§
+                // 24ì‹œê°„ ë‹¨ìœ„
                 ACI_TEST_RAISE( ( sSetHH24 != ACP_FALSE ) ||
                                 ( sSetHH12 != ACP_FALSE ) ||
                                 ( sSetAMPM != ACP_FALSE ),
@@ -3710,7 +3710,7 @@ mtdDateInterfaceToDate( mtdDateType* aDate,
                 ACI_TEST_RAISE( (sOldLen - sStringLen) != 1,
                                 ERR_NOT_ENOUGH_INPUT );
 
-                // microsecond¸¦ ÀúÀåÇÏ´Â °÷¿¡ millisecondÀúÀå
+                // microsecondë¥¼ ì €ì¥í•˜ëŠ” ê³³ì— millisecondì €ì¥
                 ACI_TEST( mtdDateInterfaceSetMicroSecond( aDate, sNumber * 100000 )
                           != ACI_SUCCESS );
                 
@@ -3736,7 +3736,7 @@ mtdDateInterfaceToDate( mtdDateType* aDate,
                 ACI_TEST_RAISE( (sOldLen - sStringLen) != 2,
                                 ERR_NOT_ENOUGH_INPUT );
 
-                // microsecond¸¦ ÀúÀåÇÏ´Â °÷¿¡ millisecondÀúÀå
+                // microsecondë¥¼ ì €ì¥í•˜ëŠ” ê³³ì— millisecondì €ì¥
                 ACI_TEST( mtdDateInterfaceSetMicroSecond( aDate, sNumber * 10000 )
                           != ACI_SUCCESS );
                 
@@ -3762,7 +3762,7 @@ mtdDateInterfaceToDate( mtdDateType* aDate,
                 ACI_TEST_RAISE( (sOldLen - sStringLen) != 3,
                                 ERR_NOT_ENOUGH_INPUT );
 
-                // microsecond¸¦ ÀúÀåÇÏ´Â °÷¿¡ millisecondÀúÀå
+                // microsecondë¥¼ ì €ì¥í•˜ëŠ” ê³³ì— millisecondì €ì¥
                 ACI_TEST( mtdDateInterfaceSetMicroSecond( aDate, sNumber * 1000 )
                           != ACI_SUCCESS );
                 
@@ -3788,7 +3788,7 @@ mtdDateInterfaceToDate( mtdDateType* aDate,
                 ACI_TEST_RAISE( (sOldLen - sStringLen) != 4,
                                 ERR_NOT_ENOUGH_INPUT );
 
-                // microsecond¸¦ ÀúÀåÇÏ´Â °÷¿¡ millisecondÀúÀå
+                // microsecondë¥¼ ì €ì¥í•˜ëŠ” ê³³ì— millisecondì €ì¥
                 ACI_TEST( mtdDateInterfaceSetMicroSecond( aDate, sNumber * 100 )
                           != ACI_SUCCESS );
                 
@@ -3814,7 +3814,7 @@ mtdDateInterfaceToDate( mtdDateType* aDate,
                 ACI_TEST_RAISE( (sOldLen - sStringLen) != 5,
                                 ERR_NOT_ENOUGH_INPUT );
 
-                // microsecond¸¦ ÀúÀåÇÏ´Â °÷¿¡ millisecondÀúÀå
+                // microsecondë¥¼ ì €ì¥í•˜ëŠ” ê³³ì— millisecondì €ì¥
                 ACI_TEST( mtdDateInterfaceSetMicroSecond( aDate, sNumber * 10 )
                           != ACI_SUCCESS );
                 
@@ -3899,14 +3899,14 @@ mtdDateInterfaceToDate( mtdDateType* aDate,
                 sMinute = ( sNumber - sHour * 3600 ) / 60;
                 sSecond = sNumber % 60;
 
-                // switch¹®ÀÌ Á¾·áµÈ ÀÌÈÄ¿¡
-                // ±âÁ¸¿¡ ¼³Á¤µÈ ½Ã°£/ºĞ/ÃÊ°¡ ÀÖ´Ù¸é Ãæµ¹ÇÏ´ÂÁö °Ë»ç
+                // switchë¬¸ì´ ì¢…ë£Œëœ ì´í›„ì—
+                // ê¸°ì¡´ì— ì„¤ì •ëœ ì‹œê°„/ë¶„/ì´ˆê°€ ìˆë‹¤ë©´ ì¶©ëŒí•˜ëŠ”ì§€ ê²€ì‚¬
                 
                 break;
             }
 
             /***********************************
-             * ¿ÀÀü/¿ÀÈÄ¸¦ ³ªÅ¸³»´Â FORMAT
+             * ì˜¤ì „/ì˜¤í›„ë¥¼ ë‚˜íƒ€ë‚´ëŠ” FORMAT
              ***********************************/
             case MTD_DATE_FORMAT_AM_U:
             case MTD_DATE_FORMAT_AM_UL:
@@ -3937,12 +3937,12 @@ mtdDateInterfaceToDate( mtdDateType* aDate,
                 sString    += 2;
                 sStringLen -= 2;
                 
-                // ½ÇÁ¦ aDate¿¡ ¹İ¿µÀº loop Á¾·á ÈÄ
+                // ì‹¤ì œ aDateì— ë°˜ì˜ì€ loop ì¢…ë£Œ í›„
                 break;
             }
             
             /***********************************
-             * ¿µ¹®À¸·Î ÀÔ·ÂµÈ '¿ù'À» ³ªÅ¸³»´Â ¹®ÀÚ¿­
+             * ì˜ë¬¸ìœ¼ë¡œ ì…ë ¥ëœ 'ì›”'ì„ ë‚˜íƒ€ë‚´ëŠ” ë¬¸ìì—´
              ***********************************/
             case MTD_DATE_FORMAT_MON_U:
             case MTD_DATE_FORMAT_MON_UL:
@@ -3967,7 +3967,7 @@ mtdDateInterfaceToDate( mtdDateType* aDate,
                 break;
             }
             
-            // ·Î¸¶ÀÚ·Î µÈ ¿ù
+            // ë¡œë§ˆìë¡œ ëœ ì›”
             case MTD_DATE_FORMAT_RM_U:
             case MTD_DATE_FORMAT_RM_L:
             {
@@ -3987,15 +3987,15 @@ mtdDateInterfaceToDate( mtdDateType* aDate,
             }
             
             /***********************************
-             * ""·Î ¹­ÀÎ ¹®ÀÚ¿­
+             * ""ë¡œ ë¬¶ì¸ ë¬¸ìì—´
              ***********************************/
             case MTD_DATE_FORMAT_DOUBLE_QUOTE_STRING:
             {
-                // ¾çÂÊ ½Ö µû¿ÈÇ¥´Â Á¦¿ÜÇÏ°í ¹®ÀÚ¿­À» ºñ±³ÇØ¾ß ÇÑ´Ù
-                // µû¶ó¼­ ±æÀÌ´Â -2¸¸Å­ ÁÙÀÌ°í
-                // ÅäÅ«ÀÇ ½ÃÀÛÀº +1¸¸Å­ °Ç³Ê¶Ù¾î ½ÃÀÛÇÏ¸é µÈ´Ù
+                // ì–‘ìª½ ìŒ ë”°ì˜´í‘œëŠ” ì œì™¸í•˜ê³  ë¬¸ìì—´ì„ ë¹„êµí•´ì•¼ í•œë‹¤
+                // ë”°ë¼ì„œ ê¸¸ì´ëŠ” -2ë§Œí¼ ì¤„ì´ê³ 
+                // í† í°ì˜ ì‹œì‘ì€ +1ë§Œí¼ ê±´ë„ˆë›°ì–´ ì‹œì‘í•˜ë©´ ëœë‹¤
 
-                // double quote stringÀÇ ±æÀÌ °è»ê
+                // double quote stringì˜ ê¸¸ì´ ê³„ì‚°
                 sFormatLen = (acp_uint32_t) mtddlget_leng( sScanner ) - 2;
 
                 ACI_TEST_RAISE( sStringLen < sFormatLen,
@@ -4007,7 +4007,7 @@ mtdDateInterfaceToDate( mtdDateType* aDate,
                                 sFormatLen ),
                     ERR_LITERAL_MISMATCH );
 
-                // ¹®ÀÚ¿­ÀÇ ±æÀÌ¸¸Å­ ÀÔ·Â ¹®ÀÚ¿­ ÁÙÀÓ
+                // ë¬¸ìì—´ì˜ ê¸¸ì´ë§Œí¼ ì…ë ¥ ë¬¸ìì—´ ì¤„ì„
                 sString    += sFormatLen;
                 sStringLen -= sFormatLen;
                 
@@ -4015,13 +4015,13 @@ mtdDateInterfaceToDate( mtdDateType* aDate,
             }
             
             /***********************************
-             * ±¸ºĞÀÚ -/,.:;'
+             * êµ¬ë¶„ì -/,.:;'
              ***********************************/
             case MTD_DATE_FORMAT_SEPARATOR:
             {
-                // FORMAT¿¡ separator°¡ µîÀåÇÏ¸é,
-                // input string¿¡ seperator³ª white space°¡ ²À ³ª¿Í¾ß ÇÔ
-                // BUG-18788 sStringLenÀ» °Ë»çÇØ¾ß ÇÔ
+                // FORMATì— separatorê°€ ë“±ì¥í•˜ë©´,
+                // input stringì— seperatorë‚˜ white spaceê°€ ê¼­ ë‚˜ì™€ì•¼ í•¨
+                // BUG-18788 sStringLenì„ ê²€ì‚¬í•´ì•¼ í•¨
                 if ( sStringLen > 0 )
                 {
                     ACI_TEST_RAISE( ( gInputST[*sString] != gSEPAR )
@@ -4034,11 +4034,11 @@ mtdDateInterfaceToDate( mtdDateType* aDate,
                 }
                 
 
-                // white space°¡ ±¸ºĞÀÚ·Î »ç¿ëµÈ °æ¿ì´Â ÀÌ¹Ì switch¹® ÀÌÀü¿¡ Á¦°ÅµÇ¾úÀ» °ÍÀÌ¹Ç·Î
-                // ±¸ºĞÀÚÀÎ °æ¿ì¿¡¸¸ ÀÔ·Â ¹®ÀÚ¿­ À§Ä¡¸¦ º¯°æÇÏ°í, ±æÀÌ¸¦ Á¶Á¤ÇÔ
-                // ±¸ºĞÀÚ°¡ ¿©·¯ ¹®ÀÚ·Î ±¸¼ºµÈ °æ¿ì, ÇØ´ç ¹®ÀÚ¿­ ±æÀÌ ¸¸Å­ ÁÙÀÓ
+                // white spaceê°€ êµ¬ë¶„ìë¡œ ì‚¬ìš©ëœ ê²½ìš°ëŠ” ì´ë¯¸ switchë¬¸ ì´ì „ì— ì œê±°ë˜ì—ˆì„ ê²ƒì´ë¯€ë¡œ
+                // êµ¬ë¶„ìì¸ ê²½ìš°ì—ë§Œ ì…ë ¥ ë¬¸ìì—´ ìœ„ì¹˜ë¥¼ ë³€ê²½í•˜ê³ , ê¸¸ì´ë¥¼ ì¡°ì •í•¨
+                // êµ¬ë¶„ìê°€ ì—¬ëŸ¬ ë¬¸ìë¡œ êµ¬ì„±ëœ ê²½ìš°, í•´ë‹¹ ë¬¸ìì—´ ê¸¸ì´ ë§Œí¼ ì¤„ì„
                 sFormatLen = (acp_uint32_t) mtddlget_leng( sScanner );
-                // BUG-18788 sStringLenÀ» °Ë»çÇØ¾ß ÇÔ
+                // BUG-18788 sStringLenì„ ê²€ì‚¬í•´ì•¼ í•¨
                 for( sIdx=0;
                      ( sIdx < (acp_sint32_t)sFormatLen ) && ( sStringLen > 0 );
                      sIdx++ )
@@ -4054,7 +4054,7 @@ mtdDateInterfaceToDate( mtdDateType* aDate,
             }
             
             /***********************************
-             * ÀÌµµ Àúµµ ¾Æ´Ï¸é ÀÎ½ÄÇÒ ¼ö ¾ø´Â Æ÷¸Ë
+             * ì´ë„ ì €ë„ ì•„ë‹ˆë©´ ì¸ì‹í•  ìˆ˜ ì—†ëŠ” í¬ë§·
              ***********************************/
             default:
             {
@@ -4070,7 +4070,7 @@ mtdDateInterfaceToDate( mtdDateType* aDate,
             
         }
 
-        // ´ÙÀ½ Æ÷¸ËÀÇ ½ÃÀÛÀ§Ä¡¸¦ °¡¸®Å´
+        // ë‹¤ìŒ í¬ë§·ì˜ ì‹œì‘ìœ„ì¹˜ë¥¼ ê°€ë¦¬í‚´
         sFormat += mtddlget_leng( sScanner );
         
         // get next token
@@ -4081,12 +4081,12 @@ mtdDateInterfaceToDate( mtdDateType* aDate,
     sInitScanner = ACP_FALSE;
 
 
-    // ½ºÄµÀ» ¸ğµÎ ³¡³Â´Âµ¥, stringÀÌ ³²¾Æ ÀÖ´Ù¸é ¿¡·¯
+    // ìŠ¤ìº”ì„ ëª¨ë‘ ëëƒˆëŠ”ë°, stringì´ ë‚¨ì•„ ìˆë‹¤ë©´ ì—ëŸ¬
     ACI_TEST_RAISE( sStringLen != 0,
                     ERR_NOT_ENOUGH_FORMAT );
 
     //-----------------------------------------------------------
-    // ³â/¿ù/ÀÏ °ü·Ã °ËÁõ
+    // ë…„/ì›”/ì¼ ê´€ë ¨ ê²€ì¦
     //-----------------------------------------------------------
 
     if( mtdDateInterfaceIsLeapYear( mtdDateInterfaceYear(aDate) ) == ACP_TRUE )
@@ -4098,22 +4098,22 @@ mtdDateInterfaceToDate( mtdDateType* aDate,
         sLeap = 0;
     }
 
-    // Day of year°¡ ÀÔ·ÂµÇ¾î ÀÖ´Â °æ¿ì È®ÀÎÇÏ¿© ÀûÀıÇÏ°Ô ÀÔ·ÂÇÔ
-    // DDD´Â ¾Æ·¡¿Í °°Àº °æ¿ì¿¡ ¹®Á¦°¡ ÀÖÀ½.
-    // TO_DATE( '366-2004', 'DDD-YYYY' ) => ¿Ã¹Ù¸¥ °á°ú´Â 2004³â 12¿ù 31ÀÏ
-    // ÇÏÁö¸¸ ÇöÀç ³¯Â¥°¡ 2005³âµµÀÌ±â ¶§¹®¿¡ 366ÀÌ µé¾î°¡¸é 12¿ù
-    // 31ÀÏÀ» ³Ñ±â ¶§¹®¿¡ INVALID_DAY ¿¡·¯ ¹ß»ıÇÔ.  ¹®Á¦ÀÇ ¿øÀÎÀº date
-    // format modelÀ» ¾Õ¿¡¼­ºÎÅÍ ¼ø¼­´ë·Î ÀĞ±â ¶§¹®ÀÓ.
-    // => µû¶ó¼­ ¸ğµç ÀÔ·ÂÀ» Ã³¸®ÇÑµÚ, ¸¶Áö¸·À¸·Î ÀûÇÕ¼ºÀ» °Ë»çÇÏ¿© °ªÀ» ÀÔ·Â
+    // Day of yearê°€ ì…ë ¥ë˜ì–´ ìˆëŠ” ê²½ìš° í™•ì¸í•˜ì—¬ ì ì ˆí•˜ê²Œ ì…ë ¥í•¨
+    // DDDëŠ” ì•„ë˜ì™€ ê°™ì€ ê²½ìš°ì— ë¬¸ì œê°€ ìˆìŒ.
+    // TO_DATE( '366-2004', 'DDD-YYYY' ) => ì˜¬ë°”ë¥¸ ê²°ê³¼ëŠ” 2004ë…„ 12ì›” 31ì¼
+    // í•˜ì§€ë§Œ í˜„ì¬ ë‚ ì§œê°€ 2005ë…„ë„ì´ê¸° ë•Œë¬¸ì— 366ì´ ë“¤ì–´ê°€ë©´ 12ì›”
+    // 31ì¼ì„ ë„˜ê¸° ë•Œë¬¸ì— INVALID_DAY ì—ëŸ¬ ë°œìƒí•¨.  ë¬¸ì œì˜ ì›ì¸ì€ date
+    // format modelì„ ì•ì—ì„œë¶€í„° ìˆœì„œëŒ€ë¡œ ì½ê¸° ë•Œë¬¸ì„.
+    // => ë”°ë¼ì„œ ëª¨ë“  ì…ë ¥ì„ ì²˜ë¦¬í•œë’¤, ë§ˆì§€ë§‰ìœ¼ë¡œ ì í•©ì„±ì„ ê²€ì‚¬í•˜ì—¬ ê°’ì„ ì…ë ¥
     if( sSetDDD == ACP_TRUE )
     {
 
         ACI_TEST_RAISE( (sDayOfYear < 1 ) || ( sDayOfYear > (acp_uint32_t)(365+sLeap) ),
                         ERR_INVALID_DAY_OF_YEAR );
 
-        // '¿ù'À» °è»ê
-        // day of year¸¦ 30À¸·Î ³ª´« °ªÀº Ç×»ó ÇØ´ç '¿ù'ÀÌ°Å³ª
-        // ÇØ´ç '¿ù'º¸´Ù 1ÀÛÀº '¿ù'ÀÌ ³ª¿À¹Ç·Î ¾Æ·¡¿Í °°ÀÌ °è»ê °¡´É
+        // 'ì›”'ì„ ê³„ì‚°
+        // day of yearë¥¼ 30ìœ¼ë¡œ ë‚˜ëˆˆ ê°’ì€ í•­ìƒ í•´ë‹¹ 'ì›”'ì´ê±°ë‚˜
+        // í•´ë‹¹ 'ì›”'ë³´ë‹¤ 1ì‘ì€ 'ì›”'ì´ ë‚˜ì˜¤ë¯€ë¡œ ì•„ë˜ì™€ ê°™ì´ ê³„ì‚° ê°€ëŠ¥
         sMonth = (acp_uint8_t)(sDayOfYear/30);
         if( sDayOfYear > gAccDaysOfMonth[sLeap][sMonth] )
         {
@@ -4127,20 +4127,20 @@ mtdDateInterfaceToDate( mtdDateType* aDate,
         ACI_TEST_RAISE( sMonth == 0,
                         ERR_INVALID_DAY_OF_YEAR );
 
-        // 'ÀÏ'À» °è»ê
+        // 'ì¼'ì„ ê³„ì‚°
         sDay = sDayOfYear - gAccDaysOfMonth[sLeap][sMonth-1];
         
-        // ÀÌ¹Ì '¿ù'ÀÌ ÀÔ·ÂµÇ¾ú´Ù¸é, day of year·Î ÁöÁ¤ÇÑ '¿ù'°ú ÀÏÄ¡ÇÏ¿©¾ß ÇÔ
+        // ì´ë¯¸ 'ì›”'ì´ ì…ë ¥ë˜ì—ˆë‹¤ë©´, day of yearë¡œ ì§€ì •í•œ 'ì›”'ê³¼ ì¼ì¹˜í•˜ì—¬ì•¼ í•¨
         ACI_TEST_RAISE( ( sSetMM == ACP_TRUE ) &&
                         ( sMonth != mtdDateInterfaceMonth(aDate) ),
                         ERR_DDD_CONFLICT_MM );
         
-        // ÀÌ¹Ì 'ÀÏ'ÀÌ ÀÔ·ÂµÇ¾ú´Ù¸é, day of year·Î ÁöÁ¤µÈ 'ÀÏ'°ú ÀÏÄ¡ÇÏ¿©¾ß ÇÔ 
+        // ì´ë¯¸ 'ì¼'ì´ ì…ë ¥ë˜ì—ˆë‹¤ë©´, day of yearë¡œ ì§€ì •ëœ 'ì¼'ê³¼ ì¼ì¹˜í•˜ì—¬ì•¼ í•¨ 
         ACI_TEST_RAISE( ( sSetDD == ACP_TRUE ) &&
                         ( sDay != mtdDateInterfaceDay(aDate) ),
                         ERR_DDD_CONFLICT_DD );
 
-        // À§ÀÇ ¿¡·¯ °Ë»ç¸¦ ¸ğµÎ Åë°úÇÏ¸é °ªÀ» ÀÔ·Â
+        // ìœ„ì˜ ì—ëŸ¬ ê²€ì‚¬ë¥¼ ëª¨ë‘ í†µê³¼í•˜ë©´ ê°’ì„ ì…ë ¥
         ACI_TEST( mtdDateInterfaceSetMonth( aDate, sMonth ) != ACI_SUCCESS );
         ACI_TEST( mtdDateInterfaceSetDay( aDate, sDay ) != ACI_SUCCESS );
 
@@ -4149,11 +4149,11 @@ mtdDateInterfaceToDate( mtdDateType* aDate,
     }
     else
     {
-        // 'DDD'Æ÷¸ËÀ» ÀÌ¿ëÇÏ¿© day of year°¡ ÀÔ·ÂµÇÁö ¾ÊÀº °æ¿ì
+        // 'DDD'í¬ë§·ì„ ì´ìš©í•˜ì—¬ day of yearê°€ ì…ë ¥ë˜ì§€ ì•Šì€ ê²½ìš°
         // do nothing
     }
 
-    /* BUG-36296 1582³â 10¿ù 4ÀÏ(¸ñ)¿¡¼­ 10¿ù 15ÀÏ(±İ)À¸·Î ¹Ù·Î °Ç³Ê¶Ú´Ù. */
+    /* BUG-36296 1582ë…„ 10ì›” 4ì¼(ëª©)ì—ì„œ 10ì›” 15ì¼(ê¸ˆ)ìœ¼ë¡œ ë°”ë¡œ ê±´ë„ˆë›´ë‹¤. */
     if ( ( mtdDateInterfaceYear( aDate ) == 1582 ) &&
          ( mtdDateInterfaceMonth( aDate ) == 10 ) &&
          ( 4 < mtdDateInterfaceDay( aDate ) ) && ( mtdDateInterfaceDay( aDate ) < 15 ) )
@@ -4166,13 +4166,13 @@ mtdDateInterfaceToDate( mtdDateType* aDate,
     }
 
     // fix BUG-18787
-    // year ¶Ç´Â month°¡ ¼¼ÆÃÀÌ ¾ÈµÇ¾îÀÖÀ» °æ¿ì¿¡´Â
-    // ³ªÁß¿¡ Ã¼Å©ÇÑ´Ù.
+    // year ë˜ëŠ” monthê°€ ì„¸íŒ…ì´ ì•ˆë˜ì–´ìˆì„ ê²½ìš°ì—ëŠ”
+    // ë‚˜ì¤‘ì— ì²´í¬í•œë‹¤.
     if ( ( mtdDateInterfaceYear( aDate ) != ACP_SINT16_MAX ) &&
          ( mtdDateInterfaceMonth( aDate ) != 0 ) )
     {
-        // 'ÀÏ'ÀÌ Á¦´ë·Î (À±³âµîÀ» °í·ÁÇÏ¿©) ¼³Á¤µÇ¾ú´ÂÁö °Ë»ç
-        // lower bound´Â mtdDateInterfaceSetDay¿¡¼­ °Ë»çÇßÀ¸¹Ç·Î upper bound¸¸ °Ë»ç
+        // 'ì¼'ì´ ì œëŒ€ë¡œ (ìœ¤ë…„ë“±ì„ ê³ ë ¤í•˜ì—¬) ì„¤ì •ë˜ì—ˆëŠ”ì§€ ê²€ì‚¬
+        // lower boundëŠ” mtdDateInterfaceSetDayì—ì„œ ê²€ì‚¬í–ˆìœ¼ë¯€ë¡œ upper boundë§Œ ê²€ì‚¬
         ACI_TEST_RAISE( mtdDateInterfaceDay(aDate) > gDaysOfMonth[sLeap][mtdDateInterfaceMonth(aDate)],
                         ERR_INVALID_DAY );
     }
@@ -4182,12 +4182,12 @@ mtdDateInterfaceToDate( mtdDateType* aDate,
     }
     
     //-----------------------------------------------------------
-    // ½Ã/ºĞ/ÃÊ °ü·Ã °ËÁõ
+    // ì‹œ/ë¶„/ì´ˆ ê´€ë ¨ ê²€ì¦
     //-----------------------------------------------------------    
     // To fix BUG-14516
-    // am/pm formatÀ» »ç¿ëÇÑ °æ¿ì HH³ª HH24¸¦ »ç¿ëÇÒ ¼ö ¾ø´Ù.
-    // -> sSetXXXX ¸¦ ÀÌ¿ëÇÏ¿© ¸ğµç Æ÷¸Ë »ç¿ëÀÇ Áßº¹À» °Ë»çÇÏ¹Ç·Î
-    // ÀÌ ´Ü°è¿¡¼­ µû·Î °Ë»ç¸¦ ¼öÇàÇÒ ÇÊ¿ä°¡ ¾ø´Ù.
+    // am/pm formatì„ ì‚¬ìš©í•œ ê²½ìš° HHë‚˜ HH24ë¥¼ ì‚¬ìš©í•  ìˆ˜ ì—†ë‹¤.
+    // -> sSetXXXX ë¥¼ ì´ìš©í•˜ì—¬ ëª¨ë“  í¬ë§· ì‚¬ìš©ì˜ ì¤‘ë³µì„ ê²€ì‚¬í•˜ë¯€ë¡œ
+    // ì´ ë‹¨ê³„ì—ì„œ ë”°ë¡œ ê²€ì‚¬ë¥¼ ìˆ˜í–‰í•  í•„ìš”ê°€ ì—†ë‹¤.
     if( ( sSetHH12 == ACP_TRUE ) ||
         ( sSetAMPM == ACP_TRUE ) )
     {
@@ -4196,7 +4196,7 @@ mtdDateInterfaceToDate( mtdDateType* aDate,
             if( mtdDateInterfaceHour(aDate) == 12 )
             {
                 // BUG-15640
-                // 12AMÀº 00AMÀÌ´Ù.
+                // 12AMì€ 00AMì´ë‹¤.
                 mtdDateInterfaceSetHour( aDate, 0 );
             }
             else
@@ -4209,7 +4209,7 @@ mtdDateInterfaceToDate( mtdDateType* aDate,
             if( mtdDateInterfaceHour(aDate) == 12 )
             {
                 // BUG-15640
-                // 12PMÀº 12PMÀÌ´Ù.
+                // 12PMì€ 12PMì´ë‹¤.
                 // Nothing to do.
             }
             else
@@ -4220,49 +4220,49 @@ mtdDateInterfaceToDate( mtdDateType* aDate,
     }
     else
     {
-        // 24½Ã°£ ´ÜÀ§ÀÇ ÀÔ·ÂÀÎ °æ¿ì
+        // 24ì‹œê°„ ë‹¨ìœ„ì˜ ì…ë ¥ì¸ ê²½ìš°
         // do nothing
     }    
     
-    // 'SSSSS' Æ÷¸ËÀ» ÅëÇØ °ªÀÌ ÀÔ·ÂµÈ °æ¿ì, HH[12|24]?, MI, SS·Î
-    // ÀÔ·ÂµÈ °ªÀÌ ÀÖ´Ù¸é ÀÏÄ¡ÇØ¾ß ÇÔ
+    // 'SSSSS' í¬ë§·ì„ í†µí•´ ê°’ì´ ì…ë ¥ëœ ê²½ìš°, HH[12|24]?, MI, SSë¡œ
+    // ì…ë ¥ëœ ê°’ì´ ìˆë‹¤ë©´ ì¼ì¹˜í•´ì•¼ í•¨
     if( sSetSID == ACP_TRUE )
     {
-        // ÀÌ¹Ì '½Ã'°¡ ÀÔ·Â µÇ¾ú´Ù¸é, seconds in day·Î ÀÔ·ÂµÈ °ª°ú ÀÏÄ¡ÇÏ¿©¾ß ÇÔ
+        // ì´ë¯¸ 'ì‹œ'ê°€ ì…ë ¥ ë˜ì—ˆë‹¤ë©´, seconds in dayë¡œ ì…ë ¥ëœ ê°’ê³¼ ì¼ì¹˜í•˜ì—¬ì•¼ í•¨
         ACI_TEST_RAISE( ( ( sSetHH12 == ACP_TRUE ) || ( sSetHH24 == ACP_TRUE ) ) &&
                         ( sHour != mtdDateInterfaceHour(aDate) ),
                         ERR_SSSSS_CONFLICT_HH );
         
-        // ÀÌ¹Ì 'ºĞ'ÀÌ ÀÔ·Â µÇ¾ú´Ù¸é, seconds in day·Î ÀÔ·ÂµÈ °ª°ú ÀÏÄ¡ÇÏ¿©¾ß ÇÔ
+        // ì´ë¯¸ 'ë¶„'ì´ ì…ë ¥ ë˜ì—ˆë‹¤ë©´, seconds in dayë¡œ ì…ë ¥ëœ ê°’ê³¼ ì¼ì¹˜í•˜ì—¬ì•¼ í•¨
         ACI_TEST_RAISE( ( sSetMI == ACP_TRUE ) &&
                         ( sMinute != mtdDateInterfaceMinute(aDate) ),
                         ERR_SSSSS_CONFLICT_MI );
 
-        // ÀÌ¹Ì 'ÃÊ'°¡ ÀÔ·Â µÇ¾ú´Ù¸é, seconds in day·Î ÀÔ·ÂµÈ °ª°ú ÀÏÄ¡ÇÏ¿©¾ß ÇÔ
+        // ì´ë¯¸ 'ì´ˆ'ê°€ ì…ë ¥ ë˜ì—ˆë‹¤ë©´, seconds in dayë¡œ ì…ë ¥ëœ ê°’ê³¼ ì¼ì¹˜í•˜ì—¬ì•¼ í•¨
         ACI_TEST_RAISE( ( sSetSS == ACP_TRUE ) &&
                         ( sSecond != mtdDateInterfaceSecond(aDate) ),
                         ERR_SSSSS_CONFLICT_SS );
 
-        // À§ÀÇ ¿¡·¯ °Ë»ç¸¦ ¸ğµÎ Åë°úÇÏ¸é °ªÀ» ÀÔ·Â
+        // ìœ„ì˜ ì—ëŸ¬ ê²€ì‚¬ë¥¼ ëª¨ë‘ í†µê³¼í•˜ë©´ ê°’ì„ ì…ë ¥
         ACI_TEST( mtdDateInterfaceSetHour( aDate, sHour ) != ACI_SUCCESS );        
         ACI_TEST( mtdDateInterfaceSetMinute( aDate, sMinute ) != ACI_SUCCESS );
         ACI_TEST( mtdDateInterfaceSetSecond( aDate, sSecond ) != ACI_SUCCESS );
     }
     else
     {
-        // 'SSSSS'Æ÷¸ËÀ» ÀÌ¿ëÇÏ¿© seconds in day°¡ ÀÔ·ÂµÇÁö ¾ÊÀº °æ¿ì
+        // 'SSSSS'í¬ë§·ì„ ì´ìš©í•˜ì—¬ seconds in dayê°€ ì…ë ¥ë˜ì§€ ì•Šì€ ê²½ìš°
         // do nothing        
     }
     
     
-//  // dat of weekµµ day of year¿Í °°Àº ÀÌÀ¯·Î ¿©±â¼­ ÀÔ·ÂµÇ¾î¾ß ÇÔ
+//  // dat of weekë„ day of yearì™€ ê°™ì€ ì´ìœ ë¡œ ì—¬ê¸°ì„œ ì…ë ¥ë˜ì–´ì•¼ í•¨
 //  // day of week
 //  if( sSetDOW == ACP_TRUE )
 //  {
 //  }
 
 
-    // format ÀÌ³ª inputÀÌ ³²´Â °æ¿ì °Ë»ç
+    // format ì´ë‚˜ inputì´ ë‚¨ëŠ” ê²½ìš° ê²€ì‚¬
     
     return ACI_SUCCESS;
 
@@ -4343,7 +4343,7 @@ mtdDateInterfaceToDate( mtdDateType* aDate,
 ACI_RC
 mtdDateInterfaceToChar( mtdDateType*  aDate,
                         acp_uint8_t*  aString,
-                        acp_uint32_t* aStringLen,    // ½ÇÁ¦ ±â·ÏµÈ ±æÀÌ ÀúÀå
+                        acp_uint32_t* aStringLen,    // ì‹¤ì œ ê¸°ë¡ëœ ê¸¸ì´ ì €ì¥
                         acp_sint32_t  aStringMaxLen,
                         acp_uint8_t*  aFormat,
                         acp_uint32_t  aFormatLen )
@@ -4370,7 +4370,7 @@ mtdDateInterfaceToChar( mtdDateType*  aDate,
     acp_uint32_t sLength       = 0;
 
     // for error msg
-    acp_uint8_t* sFormat;     // ÇöÀç Ã³¸®ÇÏ°í ÀÖ´Â Æ÷¸ËÀÇ À§Ä¡¸¦ °¡¸®Å´
+    acp_uint8_t* sFormat;     // í˜„ì¬ ì²˜ë¦¬í•˜ê³  ìˆëŠ” í¬ë§·ì˜ ìœ„ì¹˜ë¥¼ ê°€ë¦¬í‚´
     acp_uint8_t  sErrorFormat[MTC_TO_CHAR_MAX_PRECISION+1];
     acp_uint32_t sFormatLen;
     acp_double_t sCeilResult;
@@ -4384,8 +4384,8 @@ mtdDateInterfaceToChar( mtdDateType*  aDate,
         sAbsYear = sYear;
     }
 
-    // terminate character¸¦ °í·ÁÇÏ¿© ½ÇÁ¦·Î ¹®ÀÚ¸¦ ÀúÀåÇÒ ¼ö ÀÖ´Â ÃÖ´ë
-    // ±æÀÌ´Â ÇÏ³ª ÁÙÀÓ
+    // terminate characterë¥¼ ê³ ë ¤í•˜ì—¬ ì‹¤ì œë¡œ ë¬¸ìë¥¼ ì €ì¥í•  ìˆ˜ ìˆëŠ” ìµœëŒ€
+    // ê¸¸ì´ëŠ” í•˜ë‚˜ ì¤„ì„
     sStringMaxLen--;
     
     ACI_TEST_RAISE( mtddllex_init ( &sScanner ) != 0, ERR_LEX_INIT_FAILED );
@@ -4398,15 +4398,15 @@ mtdDateInterfaceToChar( mtdDateType*  aDate,
     sToken = mtddllex( sScanner );
     while( sToken != 0 )
     {
-        /* BUG-36296 FMÀº °ø°£À» Â÷ÁöÇÏÁö ¾Ê´Â´Ù. */
+        /* BUG-36296 FMì€ ê³µê°„ì„ ì°¨ì§€í•˜ì§€ ì•ŠëŠ”ë‹¤. */
         sLength = 0;
 
         switch ( sToken )
         {
-            // ¹İº¹ÀûÀ¸·Î appendFORMATÀ» È£ÃâÇÔ¿¡ µû¶ó
-            // '·¯½Ã¾Æ ÆäÀÎÆ®°ø ¾Ë°í¸®Áò'ÀÇ ¹®Á¦°¡ ¹ß»ıÇÔ
-            // µû¶ó¼­ appendFORMATÀ» snprintf·Î ¹Ù²Ù°í,
-            // Ãâ·ÂµÇ´Â ±æÀÌ¿¡µû¶ó ¹®ÀÚ¿­ Æ÷ÀÎÅÍ¸¦ Á¶Á¤
+            // ë°˜ë³µì ìœ¼ë¡œ appendFORMATì„ í˜¸ì¶œí•¨ì— ë”°ë¼
+            // 'ëŸ¬ì‹œì•„ í˜ì¸íŠ¸ê³µ ì•Œê³ ë¦¬ì¦˜'ì˜ ë¬¸ì œê°€ ë°œìƒí•¨
+            // ë”°ë¼ì„œ appendFORMATì„ snprintfë¡œ ë°”ê¾¸ê³ ,
+            // ì¶œë ¥ë˜ëŠ” ê¸¸ì´ì—ë”°ë¼ ë¬¸ìì—´ í¬ì¸í„°ë¥¼ ì¡°ì •
             case MTD_DATE_FORMAT_SEPARATOR :
                 sLength = ACP_MIN( sStringMaxLen, mtddlget_leng(sScanner) );
                 acpMemCpy( sString,
@@ -4459,7 +4459,7 @@ mtdDateInterfaceToChar( mtdDateType*  aDate,
             case MTD_DATE_FORMAT_SCC :
                 if ( sYear <= 0 )
                 {
-                    /* Year 0Àº BC -1³âÀÌ´Ù. Àı´ë°ªÀ» ±¸ÇÏ±â Àü¿¡ º¸Á¤ÇÑ´Ù. */
+                    /* Year 0ì€ BC -1ë…„ì´ë‹¤. ì ˆëŒ€ê°’ì„ êµ¬í•˜ê¸° ì „ì— ë³´ì •í•œë‹¤. */
                     if ( sIsFillMode == ACP_FALSE )
                     {
                         acpSnprintf( (acp_char_t *)sString,
@@ -4499,8 +4499,8 @@ mtdDateInterfaceToChar( mtdDateType*  aDate,
             case MTD_DATE_FORMAT_CC :
                 if ( sYear <= 0 )
                 {
-                    /* Year 0Àº BC -1³âÀÌ´Ù. Àı´ë°ªÀ» ±¸ÇÏ±â Àü¿¡ º¸Á¤ÇÑ´Ù.
-                     * À½¼öÀÏ ¶§, ºÎÈ£¸¦ Á¦°ÅÇÑ´Ù. (Oracle)
+                    /* Year 0ì€ BC -1ë…„ì´ë‹¤. ì ˆëŒ€ê°’ì„ êµ¬í•˜ê¸° ì „ì— ë³´ì •í•œë‹¤.
+                     * ìŒìˆ˜ì¼ ë•Œ, ë¶€í˜¸ë¥¼ ì œê±°í•œë‹¤. (Oracle)
                      */
                     if ( sIsFillMode == ACP_FALSE )
                     {
@@ -5120,7 +5120,7 @@ mtdDateInterfaceToChar( mtdDateType*  aDate,
                 }
                 break;
 
-            case MTD_DATE_FORMAT_IW :   /* BUG-42926 TO_CHAR()¿¡ IW Ãß°¡ */
+            case MTD_DATE_FORMAT_IW :   /* BUG-42926 TO_CHAR()ì— IW ì¶”ê°€ */
                 if ( sIsFillMode == ACP_FALSE )
                 {
                     acpSnprintf( (acp_char_t *) sString,
@@ -5138,7 +5138,7 @@ mtdDateInterfaceToChar( mtdDateType*  aDate,
                 sLength = acpCStrLen( (acp_char_t *) sString, ACP_UINT32_MAX );
                 break;
 
-            case MTD_DATE_FORMAT_WW2 :  /* BUG-42941 TO_CHAR()¿¡ WW2(Oracle Version WW) Ãß°¡ */
+            case MTD_DATE_FORMAT_WW2 :  /* BUG-42941 TO_CHAR()ì— WW2(Oracle Version WW) ì¶”ê°€ */
                 if ( sIsFillMode == ACP_FALSE )
                 {
                     acpSnprintf( (acp_char_t *) sString,
@@ -5165,7 +5165,7 @@ mtdDateInterfaceToChar( mtdDateType*  aDate,
                 break;
 
             case MTD_DATE_FORMAT_YCYYY :
-                /* À½¼öÀÏ ¶§, ºÎÈ£¸¦ Á¦°ÅÇÑ´Ù. (Oracle) */
+                /* ìŒìˆ˜ì¼ ë•Œ, ë¶€í˜¸ë¥¼ ì œê±°í•œë‹¤. (Oracle) */
                 if ( sIsFillMode == ACP_FALSE )
                 {
                     acpSnprintf( (acp_char_t *)sString,
@@ -5196,7 +5196,7 @@ mtdDateInterfaceToChar( mtdDateType*  aDate,
                 sLength = acpCStrLen( (acp_char_t *)sString, ACP_UINT32_MAX );
                 break;
 
-            case MTD_DATE_FORMAT_SYYYY :    /* BUG-36296 SYYYY Format Áö¿ø */
+            case MTD_DATE_FORMAT_SYYYY :    /* BUG-36296 SYYYY Format ì§€ì› */
                 if ( sYear < 0 )
                 {
                     if ( sIsFillMode == ACP_FALSE )
@@ -5319,8 +5319,8 @@ mtdDateInterfaceToChar( mtdDateType*  aDate,
                              "%s", mtddlget_text(sScanner) + 1 );
                 sLength = acpCStrLen( (acp_char_t*)sString, ACP_UINT32_MAX);
                 // BUG-27290
-                // ºó double-quoted stringÀÌ¶óÇÏ´õ¶óµµ Àû¾îµµ '"'´Â
-                // º¹»çµÇ¹Ç·Î sLength´Â 1º¸´Ù ÀÛÀ» ¼ö ¾ø´Ù.
+                // ë¹ˆ double-quoted stringì´ë¼í•˜ë”ë¼ë„ ì ì–´ë„ '"'ëŠ”
+                // ë³µì‚¬ë˜ë¯€ë¡œ sLengthëŠ” 1ë³´ë‹¤ ì‘ì„ ìˆ˜ ì—†ë‹¤.
                 sLength--;
                 break;
 
@@ -5339,14 +5339,14 @@ mtdDateInterfaceToChar( mtdDateType*  aDate,
         sString       += sLength;
         sStringMaxLen -= sLength;
         
-        // ´ÙÀ½ Æ÷¸ËÀÇ ½ÃÀÛÀ§Ä¡¸¦ °¡¸®Å´
+        // ë‹¤ìŒ í¬ë§·ì˜ ì‹œì‘ìœ„ì¹˜ë¥¼ ê°€ë¦¬í‚´
         sFormat += mtddlget_leng( sScanner );
 
         // get next token
         sToken = mtddllex( sScanner );
     }
 
-    // snprintf¿¡¼­ '\0' terminationÀ» ¾È ÇÒ ¼ö ÀÖÀ¸¹Ç·Î
+    // snprintfì—ì„œ '\0' terminationì„ ì•ˆ í•  ìˆ˜ ìˆìœ¼ë¯€ë¡œ
     sString[0] = '\0';
 
     mtddllex_destroy ( sScanner );
@@ -5587,7 +5587,7 @@ mtdDateInterfaceCheckYearMonthDayAndSetDateValue(
     ACI_TEST( mtdDateInterfaceSetYear( aDate, aYear ) != ACI_SUCCESS );
     ACI_TEST( mtdDateInterfaceSetMonth( aDate, aMonth ) != ACI_SUCCESS );
 
-    /* BUG-36296 1582³â 10¿ù 4ÀÏ(¸ñ)¿¡¼­ 10¿ù 15ÀÏ(±İ)À¸·Î ¹Ù·Î °Ç³Ê¶Ú´Ù. */
+    /* BUG-36296 1582ë…„ 10ì›” 4ì¼(ëª©)ì—ì„œ 10ì›” 15ì¼(ê¸ˆ)ìœ¼ë¡œ ë°”ë¡œ ê±´ë„ˆë›´ë‹¤. */
     if ( ( aYear == 1582 ) &&
          ( aMonth == 10 ) &&
          ( 4 < aDay ) && ( aDay < 15 ) )
@@ -5626,14 +5626,14 @@ static ACI_RC mtdStoredValue2MtdValue( acp_uint32_t aColumnSize,
 {
 /******************************************************************
  * PROJ-1705
- * µğ½ºÅ©Å×ÀÌºíÄÃ·³ÀÇ µ¥ÀÌÅ¸¸¦
- * qp ·¹ÄÚµåÃ³¸®¿µ¿ªÀÇ ÇØ´ç ÄÃ·³À§Ä¡¿¡ º¹»ç
+ * ë””ìŠ¤í¬í…Œì´ë¸”ì»¬ëŸ¼ì˜ ë°ì´íƒ€ë¥¼
+ * qp ë ˆì½”ë“œì²˜ë¦¬ì˜ì—­ì˜ í•´ë‹¹ ì»¬ëŸ¼ìœ„ì¹˜ì— ë³µì‚¬
  *******************************************************************/
 
     mtdDateType  * sDateValue;
 
-    // °íÁ¤±æÀÌ µ¥ÀÌÅ¸ Å¸ÀÔÀÇ °æ¿ì
-    // ÇÏ³ªÀÇ ÄÃ·³ µ¥ÀÌÅ¸°¡ ¿©·¯ÆäÀÌÁö¿¡ ³ª´©¾î ÀúÀåµÇ´Â °æ¿ì´Â ¾ø´Ù.
+    // ê³ ì •ê¸¸ì´ ë°ì´íƒ€ íƒ€ì…ì˜ ê²½ìš°
+    // í•˜ë‚˜ì˜ ì»¬ëŸ¼ ë°ì´íƒ€ê°€ ì—¬ëŸ¬í˜ì´ì§€ì— ë‚˜ëˆ„ì–´ ì €ì¥ë˜ëŠ” ê²½ìš°ëŠ” ì—†ë‹¤.
 
     ACP_UNUSED(aDestValueOffset);
     
@@ -5641,7 +5641,7 @@ static ACI_RC mtdStoredValue2MtdValue( acp_uint32_t aColumnSize,
     
     if( aLength == 0 )
     {
-        // NULL µ¥ÀÌÅ¸
+        // NULL ë°ì´íƒ€
         *sDateValue = mtcdDateNull;
     }
     else
@@ -5668,7 +5668,7 @@ acp_uint32_t mtdNullValueSize()
 {
 /*******************************************************************
  * PROJ-1705
- * °¢ µ¥ÀÌÅ¸Å¸ÀÔÀÇ null ValueÀÇ Å©±â ¹İÈ¯    
+ * ê° ë°ì´íƒ€íƒ€ì…ì˜ null Valueì˜ í¬ê¸° ë°˜í™˜    
  *******************************************************************/
 
     return mtdActualSize( NULL,

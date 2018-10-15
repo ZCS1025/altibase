@@ -25,13 +25,13 @@
  * RANDOM_STRING( aOption, aLength )
  *
  * aOption
- * 'u', 'U' - alpha characters Áß ´ë¹®ÀÚ·Î Random ÇÏ°Ô »ı¼º
- * 'l', 'L' - alpha characters Áß ¼Ò¹®ÀÚ·Î Random ÇÏ°Ô »ı¼º
- * 'a', 'A' - ´ë ¼Ò ¹®ÀÚ¸¦ ±¸ºĞÇÏÁö ¾Ê°í Random ÇÏ°Ô »ı¼º
- * 'x', 'X' - ´ëºĞÀÚ¿Í ¼ıÀÚ·Î Random ÇÏ°Ô »ı¼º
- * 'p', 'P' - ASCII Code 0x20(' ') ~ 0x7E( ~ ) ±îÁö 95 °³ÀÇ ¹®ÀÚ
+ * 'u', 'U' - alpha characters ì¤‘ ëŒ€ë¬¸ìë¡œ Random í•˜ê²Œ ìƒì„±
+ * 'l', 'L' - alpha characters ì¤‘ ì†Œë¬¸ìë¡œ Random í•˜ê²Œ ìƒì„±
+ * 'a', 'A' - ëŒ€ ì†Œ ë¬¸ìë¥¼ êµ¬ë¶„í•˜ì§€ ì•Šê³  Random í•˜ê²Œ ìƒì„±
+ * 'x', 'X' - ëŒ€ë¶„ìì™€ ìˆ«ìë¡œ Random í•˜ê²Œ ìƒì„±
+ * 'p', 'P' - ASCII Code 0x20(' ') ~ 0x7E( ~ ) ê¹Œì§€ 95 ê°œì˜ ë¬¸ì
  *
- * aLength - »ı¼ºÇÒ ¹®ÀÚ ±æÀÌ( MAX 4000 )
+ * aLength - ìƒì„±í•  ë¬¸ì ê¸¸ì´( MAX 4000 )
  *
  **********************************************************************/
 
@@ -60,7 +60,7 @@ static IDE_RC mtfRandomStringEstimate( mtcNode     * aNode,
 mtfModule mtfRandomString = {
     1 | MTC_NODE_OPERATOR_FUNCTION | MTC_NODE_VARIABLE_TRUE,
     ~(MTC_NODE_INDEX_MASK),
-    1.0, // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
+    1.0, // default selectivity (ë¹„êµ ì—°ì‚°ìê°€ ì•„ë‹˜)
     mtfRandomStringFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -107,7 +107,7 @@ static IDE_RC mtfRandomStringGetOption( mtcColumn   * aOptColumn,
 
     sOptValue = ( mtdCharType * )aOptValue;
 
-    /* aOption Àº ±âº»ÀûÀ¸·Î 'u' optionÀ» »ç¿ëÇÑ´Ù */
+    /* aOption ì€ ê¸°ë³¸ì ìœ¼ë¡œ 'u' optionì„ ì‚¬ìš©í•œë‹¤ */
     if ( aOptColumn->module->isNull( aOptColumn, aOptValue ) == ID_TRUE )
     {
         sOption = RANDOM_STRING_OPTION_U;
@@ -158,7 +158,7 @@ static IDE_RC mtfRandomStringGetLength( mtcColumn      * aLengthColumn,
 {
     mtdIntegerType sLength = 0;
 
-    /* Length ´Â NullÀÏ °æ¿ì Error Ã³¸® */
+    /* Length ëŠ” Nullì¼ ê²½ìš° Error ì²˜ë¦¬ */
     if ( aLengthColumn->module->isNull( aLengthColumn, aLengthValue ) == ID_TRUE )
     {
         IDE_RAISE( ERR_INVALID_FUNCTION_ARGUMENT );
@@ -304,7 +304,7 @@ static IDE_RC mtfRandomStringEstimate( mtcNode     * aNode,
         aNode->lflag &= ~MTC_NODE_REESTIMATE_MASK;
         aNode->lflag |= MTC_NODE_REESTIMATE_TRUE;
 
-        // BUG-38070 undef typeÀ¸·Î re-estimateÇÏÁö ¾Ê´Â´Ù.
+        // BUG-38070 undef typeìœ¼ë¡œ re-estimateí•˜ì§€ ì•ŠëŠ”ë‹¤.
         if ( ( aTemplate->variableRow != ID_USHORT_MAX ) &&
              ( ( aNode->lflag & MTC_NODE_BIND_MASK ) == MTC_NODE_BIND_EXIST ) )
         {
@@ -354,7 +354,7 @@ static IDE_RC mtfRandomStringMakeString( SInt          aOption,
     SInt sValue  = 0;
     SInt i;
 
-    /* ¼Ò¹®ÀÚ 26, ´ë¹®ÀÚ 26, ¼ıÀÚ 10 */
+    /* ì†Œë¬¸ì 26, ëŒ€ë¬¸ì 26, ìˆ«ì 10 */
     const SChar * sRandomStrings = "abcdefghijklmnopqrstuvwxyz"
                                    "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
                                    "0123456789";

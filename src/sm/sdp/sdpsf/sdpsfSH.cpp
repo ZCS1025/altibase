@@ -30,9 +30,9 @@
 # include <sdpsfSH.h>
 
 /***********************************************************************
- * Description : SegmentÀÇ Cache¿µ¿ªÀ» ÇÒ´çÇÏ°í ÃÊ±âÈ­ ÇÑ´Ù.
+ * Description : Segmentì˜ Cacheì˜ì—­ì„ í• ë‹¹í•˜ê³  ì´ˆê¸°í™” í•œë‹¤.
  *
- * aSegCache     - [IN] SegmentÀÌ CacheÁ¤º¸°¡ ³Ñ¾î¿Â´Ù.
+ * aSegCache     - [IN] Segmentì´ Cacheì •ë³´ê°€ ë„˜ì–´ì˜¨ë‹¤.
  ***********************************************************************/
 IDE_RC sdpsfSH::initialize( sdpSegHandle * aSegHandle,
                             scSpaceID    /*aSpaceID*/,
@@ -76,9 +76,9 @@ IDE_RC sdpsfSH::initialize( sdpSegHandle * aSegHandle,
 }
 
 /***********************************************************************
- * Description : SegmentÀÇ Cache¿µ¿ªÀ» FreeÇÑ´Ù.
+ * Description : Segmentì˜ Cacheì˜ì—­ì„ Freeí•œë‹¤.
  *
- * aSegCache      - [IN] SegmentÀÇ Cache Pointer°¡ ³Ñ¾î¿Â´Ù.
+ * aSegCache      - [IN] Segmentì˜ Cache Pointerê°€ ë„˜ì–´ì˜¨ë‹¤.
  ***********************************************************************/
 IDE_RC sdpsfSH::destroy( sdpSegHandle * aSegHandle)
 {
@@ -95,15 +95,15 @@ IDE_RC sdpsfSH::destroy( sdpSegHandle * aSegHandle)
 }
 
 /***********************************************************************
- * Description : SegmentÀÇ Desc¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+ * Description : Segmentì˜ Descë¥¼ ì´ˆê¸°í™”í•œë‹¤.
  *
- * aStatistics    - [IN] Åë°èÁ¤º¸
+ * aStatistics    - [IN] í†µê³„ì •ë³´
  * aMtx           - [IN] Mini Transaction Pointer
  * aSpaceID       - [IN] SpaceID
- * aSegHdr        - [IN] SegmentÀÇ Cache Pointer°¡ ³Ñ¾î¿Â´Ù.
+ * aSegHdr        - [IN] Segmentì˜ Cache Pointerê°€ ë„˜ì–´ì˜¨ë‹¤.
  * aSegPageID     - [IN] Segment Header PageID
- * aHWM           - [IN] HWM À¸·Î ÇÑ¹øÀÌ¶óµµ ÇÒ´çµÈ ÆäÀÌÁöÁß Á¦ÀÏ ³¡ ÆäÀÌÁöID
- * aPageCntInExt  - [IN] Extent³»ÀÇ ÆäÀÌÁö °¹¼ö
+ * aHWM           - [IN] HWM ìœ¼ë¡œ í•œë²ˆì´ë¼ë„ í• ë‹¹ëœ í˜ì´ì§€ì¤‘ ì œì¼ ë í˜ì´ì§€ID
+ * aPageCntInExt  - [IN] Extentë‚´ì˜ í˜ì´ì§€ ê°¯ìˆ˜
  * aType          - [IN] Segment Type
  ***********************************************************************/
 IDE_RC sdpsfSH::init( idvSQL           * aStatistics,
@@ -168,7 +168,7 @@ IDE_RC sdpsfSH::init( idvSQL           * aStatistics,
                                        aMtx )
               != IDE_SUCCESS );
 
-    /* Meta Page ID¸¦ ÃÊ±âÈ­ ÇÑ´Ù. */
+    /* Meta Page IDë¥¼ ì´ˆê¸°í™” í•œë‹¤. */
     for( i = 0; i < SDP_MAX_SEG_PID_CNT; i ++ )
     {
         IDE_TEST( setMetaPID( aMtx,
@@ -178,22 +178,22 @@ IDE_RC sdpsfSH::init( idvSQL           * aStatistics,
                   != IDE_SUCCESS );
     }
 
-    /* ÇÑ¹øÀÌ¶óµµ ÇÒ´çµÈ ÆäÀÌÁöÀÇ °¹¼ö ¼³Á¤ */
+    /* í•œë²ˆì´ë¼ë„ í• ë‹¹ëœ í˜ì´ì§€ì˜ ê°¯ìˆ˜ ì„¤ì • */
     IDE_TEST( setFmtPageCnt( aMtx, aSegHdr, 1 )
               != IDE_SUCCESS );
 
     IDE_TEST( setHWM( aMtx, aSegHdr, aHWM )
               != IDE_SUCCESS );
 
-    /* Extent Directory Page List ÃÊ±âÈ­ */
+    /* Extent Directory Page List ì´ˆê¸°í™” */
     IDE_TEST( sdpsfExtDirPageList::initialize( aMtx,
                                                aSegHdr )
               != IDE_SUCCESS );
 
-    /* Segment°¡ °¡Áö°í ÀÖ´Â Total Extent °¹¼ö ¼³Á¤ */
+    /* Segmentê°€ ê°€ì§€ê³  ìˆëŠ” Total Extent ê°¯ìˆ˜ ì„¤ì • */
     IDE_TEST( setTotExtCnt( aMtx, aSegHdr, 1 ) != IDE_SUCCESS );
 
-    /* Extent Directory Page List ÃÊ±âÈ­ */
+    /* Extent Directory Page List ì´ˆê¸°í™” */
     IDE_TEST( sdpsfExtDirPage::initialize( aMtx,
                                            &aSegHdr->mExtDirCntlHdr,
                                            aSegHdr->mMaxExtCntInSegHdrPage )
@@ -207,7 +207,7 @@ IDE_RC sdpsfSH::init( idvSQL           * aStatistics,
 
     sFlag = SDP_SF_EXTDESC_FST_IS_EXTDIRPAGE_TRUE;
 
-    /* Extent DescÃß°¡ */
+    /* Extent Descì¶”ê°€ */
     IDE_TEST( sdpsfExtDirPage::addNewExtDescAtLst( aMtx,
                                                    &aSegHdr->mExtDirCntlHdr,
                                                    aSegPageID,
@@ -217,7 +217,7 @@ IDE_RC sdpsfSH::init( idvSQL           * aStatistics,
 
     sFstExtRID = sdpPhyPage::getRIDFromPtr( sExtDesc );
 
-    /* ÇöÀç AllocÀ» À§ÇØ¼­ »ç¿ëÁßÀÎ Ext RID¼³Á¤ */
+    /* í˜„ì¬ Allocì„ ìœ„í•´ì„œ ì‚¬ìš©ì¤‘ì¸ Ext RIDì„¤ì • */
     IDE_TEST( setAllocExtRID( aMtx,
                               aSegHdr,
                               sFstExtRID )
@@ -236,16 +236,16 @@ IDE_RC sdpsfSH::init( idvSQL           * aStatistics,
 }
 
 /***********************************************************************
- * Description : SegmentÀÇ Desc¿¡ ÀÖ´Â ÆäÀÌÁö¿¡ ´ëÇØ XLatch¸¦ Àâ°í
- *               SegmentÀÇ Desc¸¦ ³Ñ°ÜÁØ´Ù.
+ * Description : Segmentì˜ Descì— ìˆëŠ” í˜ì´ì§€ì— ëŒ€í•´ XLatchë¥¼ ì¡ê³ 
+ *               Segmentì˜ Descë¥¼ ë„˜ê²¨ì¤€ë‹¤.
  *
- * aStatistics    - [IN] Åë°ÔÁ¤º¸
+ * aStatistics    - [IN] í†µê²Œì •ë³´
  * aSpaceID       - [IN] TableSpace ID
  * aSegPID        - [IN] Segment RID
  * aMtx           - [IN] Mini Transaction Pointer
  *
- * aSegHdr        - [OUT] Segment DescriptorÀÇ ÆäÀÌÁö¿¡ XLatch¸¦ Àâ°í
- *                        Segment Descriptor ´ëÇÑ Æ÷ÀÎÅÍ¸¦ ¸®ÅÏÇÑ´Ù.
+ * aSegHdr        - [OUT] Segment Descriptorì˜ í˜ì´ì§€ì— XLatchë¥¼ ì¡ê³ 
+ *                        Segment Descriptor ëŒ€í•œ í¬ì¸í„°ë¥¼ ë¦¬í„´í•œë‹¤.
  ***********************************************************************/
 IDE_RC sdpsfSH::fixAndGetSegHdr4Update( idvSQL        * aStatistics,
                                         sdrMtx        * aMtx,
@@ -285,15 +285,15 @@ IDE_RC sdpsfSH::fixAndGetSegHdr4Update( idvSQL        * aStatistics,
 }
 
 /***********************************************************************
- * Description : SegmentÀÇ Desc¿¡ ÀÖ´Â ÆäÀÌÁö¿¡ ´ëÇØ XLatch¸¦ Àâ°í
- *               SegmentÀÇ Desc¸¦ ³Ñ°ÜÁØ´Ù.
+ * Description : Segmentì˜ Descì— ìˆëŠ” í˜ì´ì§€ì— ëŒ€í•´ XLatchë¥¼ ì¡ê³ 
+ *               Segmentì˜ Descë¥¼ ë„˜ê²¨ì¤€ë‹¤.
  *
- * aStatistics    - [IN] Åë°ÔÁ¤º¸
+ * aStatistics    - [IN] í†µê²Œì •ë³´
  * aSpaceID       - [IN] TableSpace ID
  * aSegRID        - [IN] Segment RID
  *
- * aSegHdr        - [OUT] Segment DescriptorÀÇ ÆäÀÌÁö¿¡ XLatch¸¦ Àâ°í
- *                        Segment Descriptor ´ëÇÑ Æ÷ÀÎÅÍ¸¦ ¸®ÅÏÇÑ´Ù.
+ * aSegHdr        - [OUT] Segment Descriptorì˜ í˜ì´ì§€ì— XLatchë¥¼ ì¡ê³ 
+ *                        Segment Descriptor ëŒ€í•œ í¬ì¸í„°ë¥¼ ë¦¬í„´í•œë‹¤.
  ***********************************************************************/
 IDE_RC sdpsfSH::fixAndGetSegHdr4Update( idvSQL        * aStatistics,
                                         scSpaceID       aSpaceID,
@@ -332,15 +332,15 @@ IDE_RC sdpsfSH::fixAndGetSegHdr4Update( idvSQL        * aStatistics,
 }
 
 /***********************************************************************
- * Description : SegmentÀÇ Desc¿¡ ÀÖ´Â ÆäÀÌÁö¿¡ ´ëÇØ SLatch¸¦ Àâ°í
- *               SegmentÀÇ Desc¸¦ ³Ñ°ÜÁØ´Ù.
+ * Description : Segmentì˜ Descì— ìˆëŠ” í˜ì´ì§€ì— ëŒ€í•´ SLatchë¥¼ ì¡ê³ 
+ *               Segmentì˜ Descë¥¼ ë„˜ê²¨ì¤€ë‹¤.
  *
- * aStatistics    - [IN] Åë°ÔÁ¤º¸
+ * aStatistics    - [IN] í†µê²Œì •ë³´
  * aSpaceID       - [IN] TableSpace ID
  * aSegRID        - [IN] Segment RID
  *
- * aSegHdr        - [OUT] Segment DescriptorÀÇ ÆäÀÌÁö¿¡ SLatch¸¦ Àâ°í
- *                        Segment Descriptor ´ëÇÑ Æ÷ÀÎÅÍ¸¦ ¸®ÅÏÇÑ´Ù.
+ * aSegHdr        - [OUT] Segment Descriptorì˜ í˜ì´ì§€ì— SLatchë¥¼ ì¡ê³ 
+ *                        Segment Descriptor ëŒ€í•œ í¬ì¸í„°ë¥¼ ë¦¬í„´í•œë‹¤.
  ***********************************************************************/
 IDE_RC sdpsfSH::fixAndGetSegHdr4Read( idvSQL        * aStatistics,
                                       scSpaceID       aSpaceID,
@@ -377,9 +377,9 @@ IDE_RC sdpsfSH::fixAndGetSegHdr4Read( idvSQL        * aStatistics,
 }
 
 /***********************************************************************
- * Description : aSegHdr°¡ ¼ÓÇØÀÖ´Â ÆäÀÌÁö¸¦ releaseÇÑ´Ù.
+ * Description : aSegHdrê°€ ì†í•´ìˆëŠ” í˜ì´ì§€ë¥¼ releaseí•œë‹¤.
  *
- * aStatistics    - [IN] Åë°ÔÁ¤º¸
+ * aStatistics    - [IN] í†µê²Œì •ë³´
  * aSegHdr        - [IN] Segment Desc
  ***********************************************************************/
 IDE_RC sdpsfSH::releaseSegHdr( idvSQL        * aStatistics,
@@ -401,13 +401,13 @@ IDE_RC sdpsfSH::releaseSegHdr( idvSQL        * aStatistics,
 }
 
 /***********************************************************************
- * Description : FmtPageCnt¸¦ ¾ò¾îÁØ´Ù.
+ * Description : FmtPageCntë¥¼ ì–»ì–´ì¤€ë‹¤.
  *
- * aStatistics  - [IN] Åë°è Á¤º¸
+ * aStatistics  - [IN] í†µê³„ ì •ë³´
  * aSpaceID     - [IN] TableSpace ID
  * aSegHandle   - [IN] Segment Handle
  *
- * aSegCache    - [OUT] SegInfo°¡ ¼³Á¤µÈ´Ù.
+ * aSegCache    - [OUT] SegInfoê°€ ì„¤ì •ëœë‹¤.
  *
  ***********************************************************************/
 IDE_RC sdpsfSH::getFmtPageCnt( idvSQL        *aStatistics,
@@ -437,13 +437,13 @@ IDE_RC sdpsfSH::getFmtPageCnt( idvSQL        *aStatistics,
 
 
 /***********************************************************************
- * Description : SegInfo¸¦ ¾ò¾îÁØ´Ù.
+ * Description : SegInfoë¥¼ ì–»ì–´ì¤€ë‹¤.
  *
- * aStatistics  - [IN] Åë°è Á¤º¸
+ * aStatistics  - [IN] í†µê³„ ì •ë³´
  * aSpaceID     - [IN] TableSpace ID
  * aSegRID      - [IN] Segment RID
  *
- * aSegCache    - [OUT] SegInfo°¡ ¼³Á¤µÈ´Ù.
+ * aSegCache    - [OUT] SegInfoê°€ ì„¤ì •ëœë‹¤.
  *
  ***********************************************************************/
 IDE_RC sdpsfSH::getSegInfo( idvSQL       * aStatistics,
@@ -460,7 +460,7 @@ IDE_RC sdpsfSH::getSegInfo( idvSQL       * aStatistics,
     IDE_ASSERT( aSegPID  != SD_NULL_PID );
     IDE_ASSERT( aSegInfo != NULL );
 
-    /* SegHdr¸¦ ÀĞ±â À§ÇØ¼­ SLatch¸¦ °Ç´Ù. */
+    /* SegHdrë¥¼ ì½ê¸° ìœ„í•´ì„œ SLatchë¥¼ ê±´ë‹¤. */
     IDE_TEST( sdpsfSH::fixAndGetSegHdr4Read( aStatistics,
                                              aSpaceID,
                                              aSegPID,
@@ -506,12 +506,12 @@ IDE_RC sdpsfSH::getSegInfo( idvSQL       * aStatistics,
 }
 
 /***********************************************************************
- * Description : SegCacheInfo¸¦ ¾ò¾îÁØ´Ù.
+ * Description : SegCacheInfoë¥¼ ì–»ì–´ì¤€ë‹¤.
  *
- * aStatistics   - [IN] Åë°è Á¤º¸
+ * aStatistics   - [IN] í†µê³„ ì •ë³´
  * aSegHandle    - [IN] Segment Handle
  *
- * aSegCacheInfo - [OUT] SegCacheInfo°¡ ¼³Á¤µÈ´Ù.
+ * aSegCacheInfo - [OUT] SegCacheInfoê°€ ì„¤ì •ëœë‹¤.
  *
  ***********************************************************************/
 IDE_RC sdpsfSH::getSegCacheInfo( idvSQL          * /*aStatistics*/,
@@ -528,14 +528,14 @@ IDE_RC sdpsfSH::getSegCacheInfo( idvSQL          * /*aStatistics*/,
 }
 
 /***********************************************************************
- * Description : SegmentÀÇ »óÅÂ¸¦ ±¸ÇÑ´Ù. sdnbModule.cpp¿¡ create¿¡¼­ »ç¿ë
- *               ÇÑ´Ù.
+ * Description : Segmentì˜ ìƒíƒœë¥¼ êµ¬í•œë‹¤. sdnbModule.cppì— createì—ì„œ ì‚¬ìš©
+ *               í•œë‹¤.
  *
- * aStatistics  - [IN] Åë°è Á¤º¸
+ * aStatistics  - [IN] í†µê³„ ì •ë³´
  * aSpaceID     - [IN] TableSpace ID
  * aSegPID      - [IN] Segment PID
  *
- * aSegState    - [OUT] SegmentÀÇ »óÅÂ¸¦ ¸®ÅÏÇÑ´Ù.
+ * aSegState    - [OUT] Segmentì˜ ìƒíƒœë¥¼ ë¦¬í„´í•œë‹¤.
  *
  ***********************************************************************/
 IDE_RC sdpsfSH::getSegState( idvSQL        *aStatistics,
@@ -572,13 +572,13 @@ IDE_RC sdpsfSH::getSegState( idvSQL        *aStatistics,
 }
 
 /***********************************************************************
- * Description : Segment Header¿¡ Meta PID¸¦ ¼³Á¤ÇÑ´Ù.
+ * Description : Segment Headerì— Meta PIDë¥¼ ì„¤ì •í•œë‹¤.
  *
- * aStatistics  - [IN] Åë°è Á¤º¸
+ * aStatistics  - [IN] í†µê³„ ì •ë³´
  * aMtx         - [IN] Mini Transaction Pointer
  * aSpaceID     - [IN] TableSpace ID
  * aSegPID      - [IN] Segment PID
- * aIndex       - [IN] Segment HeaderÀÇ ¸î¹øÂ° Meta PID¸¦ ¼³Á¤ÇÒ °ÍÀÎ°¡?
+ * aIndex       - [IN] Segment Headerì˜ ëª‡ë²ˆì§¸ Meta PIDë¥¼ ì„¤ì •í•  ê²ƒì¸ê°€?
  * aMetaPID     - [IN] Meta PageID
  ************************************************************************/
 IDE_RC sdpsfSH::setMetaPID( idvSQL        *aStatistics,
@@ -615,14 +615,14 @@ IDE_RC sdpsfSH::setMetaPID( idvSQL        *aStatistics,
 }
 
 /***********************************************************************
- * Description : aSegPID°¡ °¡¸®Å°´Â SegHdr¿¡¼­ aIndex¹øÀç Meta PID¸¦ ±¸
- *               ÇÑ´Ù.
+ * Description : aSegPIDê°€ ê°€ë¦¬í‚¤ëŠ” SegHdrì—ì„œ aIndexë²ˆì¬ Meta PIDë¥¼ êµ¬
+ *               í•œë‹¤.
  *
- * aStatistics - [IN] Åë°è Á¤º¸
+ * aStatistics - [IN] í†µê³„ ì •ë³´
  * aSpaceID    - [IN] SpaceID
  * aSegPID     - [IN] Segment PID
  * aIndex      - [IN] Meta PID Array Index
- * aMetaPID    - [OUT] Meta PID¸¦ ¾ò´Â´Ù.
+ * aMetaPID    - [OUT] Meta PIDë¥¼ ì–»ëŠ”ë‹¤.
  ************************************************************************/
 IDE_RC sdpsfSH::getMetaPID( idvSQL        *aStatistics,
                             scSpaceID      aSpaceID,
@@ -662,19 +662,19 @@ IDE_RC sdpsfSH::getMetaPID( idvSQL        *aStatistics,
 }
 
 /***********************************************************************
- * Description : HWMÀ» ¼³Á¤ÇÑ´Ù.
+ * Description : HWMì„ ì„¤ì •í•œë‹¤.
  *
- * aStatistics           - [IN] Åë°è Á¤º¸
+ * aStatistics           - [IN] í†µê³„ ì •ë³´
  * aStartInfo            - [IN] Mini Transaction Start Info
  * aSpaceID              - [IN] TableSpace ID
  * aSegHandle            - [IN] Segment Handle
- * aLstAllocExtRID       - [IN] ÇÑ¹øµµ »ç¿ëµÇÁö ¾ÊÀº ÆäÀÌÁö°¡ °¡Àå ¸¶Áö¸·À¸·Î
- *                              ÇÒ´çµÈ Extent RID, Áï HWMÀÌ °¡¸®Å°´Â ÆäÀÌÁö°¡
- *                              ¼ÓÇÑ Extent RID
- * aFstPIDOfLstAllocExt  - [IN] LstAllocExtÀÇ Ã¹¹øÂ° PID
- * aLstAllocPID          - [IN] ÇÑ¹øµµ »ç¿ëµÇÁö ¾ÊÀº ÆäÀÌÁö°¡ °¡Àå ¸¶Áö¸·À¸·Î
- *                              ÇÒ´çµÈ PID, Áï »õ·Î¿î HWM
- * aAllocPageCnt         - [IN] ÇÒ´çÇÑ ÆäÀÌÁö °³¼ö
+ * aLstAllocExtRID       - [IN] í•œë²ˆë„ ì‚¬ìš©ë˜ì§€ ì•Šì€ í˜ì´ì§€ê°€ ê°€ì¥ ë§ˆì§€ë§‰ìœ¼ë¡œ
+ *                              í• ë‹¹ëœ Extent RID, ì¦‰ HWMì´ ê°€ë¦¬í‚¤ëŠ” í˜ì´ì§€ê°€
+ *                              ì†í•œ Extent RID
+ * aFstPIDOfLstAllocExt  - [IN] LstAllocExtì˜ ì²«ë²ˆì§¸ PID
+ * aLstAllocPID          - [IN] í•œë²ˆë„ ì‚¬ìš©ë˜ì§€ ì•Šì€ í˜ì´ì§€ê°€ ê°€ì¥ ë§ˆì§€ë§‰ìœ¼ë¡œ
+ *                              í• ë‹¹ëœ PID, ì¦‰ ìƒˆë¡œìš´ HWM
+ * aAllocPageCnt         - [IN] í• ë‹¹í•œ í˜ì´ì§€ ê°œìˆ˜
  ***********************************************************************/
 IDE_RC sdpsfSH::updateHWMInfo4DPath( idvSQL           *aStatistics,
                                      sdrMtxStartInfo  *aStartInfo,
@@ -741,7 +741,7 @@ IDE_RC sdpsfSH::updateHWMInfo4DPath( idvSQL           *aStatistics,
     IDE_TEST( setFmtPageCnt( &sMtx, sSegHdr, aAllocPageCnt )
               != IDE_SUCCESS );
 
-    /* Merge¸¦ RollbackÇÏ´Â Logical Undo Log¸¦ ±â·ÏÇÑ´Ù. */
+    /* Mergeë¥¼ Rollbackí•˜ëŠ” Logical Undo Logë¥¼ ê¸°ë¡í•œë‹¤. */
     sdrMiniTrans::setNTA( &sMtx,
                           aSpaceID,
                           SDR_OP_SDPSF_UPDATE_HWMINFO_4DPATH,
@@ -771,7 +771,7 @@ IDE_RC sdpsfSH::reformatPage4DPath( idvSQL           * /*aStatistics*/,
                                     sdRID              /*aLstAllocExtRID*/,
                                     scPageID           /*aLstPID*/ )
 {
-    /* FMS¿¡¼­´Â ºÒÇÊ¿äÇÑ ÇÔ¼öÀÌ´Ù. */
+    /* FMSì—ì„œëŠ” ë¶ˆí•„ìš”í•œ í•¨ìˆ˜ì´ë‹¤. */
     return IDE_SUCCESS;
 }
 
@@ -780,6 +780,6 @@ IDE_RC sdpsfSH::setLstAllocPage( idvSQL         * /*aStatistics*/,
                                  scPageID         /*aLstAllocPID*/,
                                  ULong            /*aLstAllocSeqNo*/ )
 {
-    /* TMS°¡ ¾Æ´Ï¸é ¾Æ¹«°Íµµ ¾ÈÇÑ´Ù. */
+    /* TMSê°€ ì•„ë‹ˆë©´ ì•„ë¬´ê²ƒë„ ì•ˆí•œë‹¤. */
     return IDE_SUCCESS;
 }

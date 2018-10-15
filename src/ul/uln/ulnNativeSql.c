@@ -35,18 +35,18 @@ ACI_RC ulnNativeSqlCheckArgs(ulnFnContext *aFnContext,
     if (aOutputBufferSize < 0)
     {
         /*
-         * Note : DB2 cli ¿Í M$ odbc ÀÇ ¼³¸íÀÌ ´Ù¸£´Ù.
-         *        DB2 CLI ´Â aOutputStatement °¡ NULL ÀÌ¸é Invalid use of null pointer ¿¡·¯.
-         *        M$ odbc ´Â ¾Æ·¡Ã³·³ ¼³¸íÇÑ´Ù :
+         * Note : DB2 cli ì™€ M$ odbc ì˜ ì„¤ëª…ì´ ë‹¤ë¥´ë‹¤.
+         *        DB2 CLI ëŠ” aOutputStatement ê°€ NULL ì´ë©´ Invalid use of null pointer ì—ëŸ¬.
+         *        M$ odbc ëŠ” ì•„ëž˜ì²˜ëŸ¼ ì„¤ëª…í•œë‹¤ :
          *          The argument BufferLength was less than 0 and the argument 
          *          OutStatementText was not a null pointer.
-         *        ÀÌ ¸»Àº, OutStatementText °¡ NULL ÀÌ¾îµµ µÈ´Ù´Â ¶æÀ» ÇÔÃàÇÏ°í ÀÖ´Ù.
+         *        ì´ ë§ì€, OutStatementText ê°€ NULL ì´ì–´ë„ ëœë‹¤ëŠ” ëœ»ì„ í•¨ì¶•í•˜ê³  ìžˆë‹¤.
          *
-         *        ¾Æ¸¶µµ, ¿©±â¿¡ NULL À» ÁØ ÈÄ¿¡ ¸®ÅÏµÇ´Â aOutputLength ¸¦ º¸°í
-         *        malloc À» ÇÑ ÈÄ¿¡ ´Ù½Ã È£ÃâÇÏ´Â ½ÃÄö½º·Î »ç¿ëÇÏ±â À§ÇØ¼­
-         *        ¿¡·¯ Á¶°ÇÀ» Àú·¸°Ô ¸¸µé¾î µÐ µí ÇÏ´Ù.
+         *        ì•„ë§ˆë„, ì—¬ê¸°ì— NULL ì„ ì¤€ í›„ì— ë¦¬í„´ë˜ëŠ” aOutputLength ë¥¼ ë³´ê³ 
+         *        malloc ì„ í•œ í›„ì— ë‹¤ì‹œ í˜¸ì¶œí•˜ëŠ” ì‹œí€€ìŠ¤ë¡œ ì‚¬ìš©í•˜ê¸° ìœ„í•´ì„œ
+         *        ì—ëŸ¬ ì¡°ê±´ì„ ì €ë ‡ê²Œ ë§Œë“¤ì–´ ë‘” ë“¯ í•˜ë‹¤.
          *
-         *        ±ôºý ¼ÓÀ»»· Çß´Ù -_-;;;
+         *        ê¹œë¹¡ ì†ì„ë»” í–ˆë‹¤ -_-;;;
          */
         ACI_TEST_RAISE(aOutputStatement != NULL, LABEL_INVALID_BUFFER_LENGTH);
     }

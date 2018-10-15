@@ -35,7 +35,7 @@ IDE_RC sdpTBSDump::destroy()
 }
 
 //------------------------------------------------------
-// D$DISK_TBS_FREEEXTLIST Dump TableÀÇ Column Description
+// D$DISK_TBS_FREEEXTLIST Dump Tableì˜ Column Description
 //------------------------------------------------------
 static iduFixedTableColDesc gDumpDiskTBSFreeEXTListColDesc[]=
 {
@@ -90,7 +90,7 @@ static iduFixedTableColDesc gDumpDiskTBSFreeEXTListColDesc[]=
 };
 
 //------------------------------------------------------
-// D$DISK_TBS_FREEEXTLIST Dump TableÀÇ Table Description
+// D$DISK_TBS_FREEEXTLIST Dump Tableì˜ Table Description
 //------------------------------------------------------
 iduFixedTableDesc  gDumpDiskTBSFreeEXTListTableDesc =
 {
@@ -105,7 +105,7 @@ iduFixedTableDesc  gDumpDiskTBSFreeEXTListTableDesc =
 };
 
 //------------------------------------------------------
-// D$DISK_TBS_FREEEXTLIST Dump TableÀÇ ·¹ÄÚµå Build
+// D$DISK_TBS_FREEEXTLIST Dump Tableì˜ ë ˆì½”ë“œ Build
 //------------------------------------------------------
 IDE_RC sdpTBSDump::buildRecord4ExtFreeList(
     idvSQL              * /*aStatistics*/,
@@ -121,11 +121,11 @@ IDE_RC sdpTBSDump::buildRecord4ExtFreeList(
 
     IDE_TEST_RAISE( aDumpObj == NULL, ERR_EMPTY_OBJECT );
 
-    /* TBS°¡ Á¸ÀçÇÏ´ÂÁö °Ë»çÇÏ°í DumpÁß¿¡ DropµÇÁö ¾Êµµ·Ï LockÀ» Àâ´Â´Ù. */
-    /* BUG-28678  [SM] qmsDumpObjList::mObjInfo¿¡ ¼³Á¤µÉ ¸Ş¸ğ¸® ÁÖ¼Ò´Â 
-     * ¹İµå½Ã °ø°£À» ÇÒ´çÇØ¼­ ¼³Á¤ÇØ¾ßÇÕ´Ï´Ù. 
+    /* TBSê°€ ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬í•˜ê³  Dumpì¤‘ì— Dropë˜ì§€ ì•Šë„ë¡ Lockì„ ì¡ëŠ”ë‹¤. */
+    /* BUG-28678  [SM] qmsDumpObjList::mObjInfoì— ì„¤ì •ë  ë©”ëª¨ë¦¬ ì£¼ì†ŒëŠ” 
+     * ë°˜ë“œì‹œ ê³µê°„ì„ í• ë‹¹í•´ì„œ ì„¤ì •í•´ì•¼í•©ë‹ˆë‹¤. 
      * 
-     * aDumpObj´Â Pointer·Î µ¥ÀÌÅÍ°¡ ¿À±â ¶§¹®¿¡ °ªÀ» °¡Á®¿Í¾ß ÇÕ´Ï´Ù. */
+     * aDumpObjëŠ” Pointerë¡œ ë°ì´í„°ê°€ ì˜¤ê¸° ë•Œë¬¸ì— ê°’ì„ ê°€ì ¸ì™€ì•¼ í•©ë‹ˆë‹¤. */
     sSpaceID  = *( (scSpaceID*)aDumpObj );
     IDE_ASSERT( sctTableSpaceMgr::isDiskTableSpace( sSpaceID ) == ID_TRUE );
 

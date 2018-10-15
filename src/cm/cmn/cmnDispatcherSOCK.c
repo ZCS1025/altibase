@@ -24,7 +24,7 @@ ACI_RC cmnDispatcherWaitLinkSOCK(cmnLink *aLink, cmnDirection aDirection, acp_ti
     acp_rc_t    sResult;
 
     /*
-     * LinkÀÇ socket È¹µæ
+     * Linkì˜ socket íšë“
      */
     ACI_TEST(aLink->mOp->mGetSocket(aLink, (void**)&sSock) != ACI_SUCCESS);
     
@@ -32,7 +32,7 @@ ACI_RC cmnDispatcherWaitLinkSOCK(cmnLink *aLink, cmnDirection aDirection, acp_ti
     ACI_EXCEPTION_CONT(Restart);
 
     /*
-     * select ¼öÇà
+     * select ìˆ˜í–‰
      */
     switch (aDirection)
     {

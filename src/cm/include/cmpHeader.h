@@ -36,7 +36,7 @@ typedef enum
 {
     CMP_PACKET_TYPE_A5 = 0,
     CMP_PACKET_TYPE_A7 = 1,
-    CMP_PACKET_TYPE_UNKNOWN = 255  // √÷√ ¿« ∞™
+    CMP_PACKET_TYPE_UNKNOWN = 255  // ÏµúÏ¥àÏùò Í∞í
 } cmpPacketType;
 
 //=========================================================

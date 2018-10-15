@@ -23,20 +23,20 @@
 
 #include <iduFile.h>
 
-/* Shared Memory¸¦ »ı¼ºÇÑ XDB Deamon ProcessÀÇ Startup½Ã°£À»
- * °¡Áö´Â ÆÄÀÏÀÇ ÀÌ¸§ */
+/* Shared Memoryë¥¼ ìƒì„±í•œ XDB Deamon Processì˜ Startupì‹œê°„ì„
+ * ê°€ì§€ëŠ” íŒŒì¼ì˜ ì´ë¦„ */
 #define IDU_SHM_KEY_FILENAME PRODUCT_PREFIX"altibase_shm.info"
 
-/* IDU_SHM_KEY_FILENAME¿¡ ±â·ÏµÈ µ¥ÀÌÅ¸ ±¸Á¶·Î¼­
- * XDB Deamon ProcessÀÇ Startup½Ã°£À» ÀÇ¹ÌÇÏ°í °°Àº °ªÀ» µÎ¹ø
- * ±â·ÏÇÑ ÀÌÀ¯´Â ÆÄÀÏÀÌ ValidÇÑÁö¸¦ CheckÇÏ±â À§ÇØ¼­ ÀÌ´Ù. */
+/* IDU_SHM_KEY_FILENAMEì— ê¸°ë¡ëœ ë°ì´íƒ€ êµ¬ì¡°ë¡œì„œ
+ * XDB Deamon Processì˜ Startupì‹œê°„ì„ ì˜ë¯¸í•˜ê³  ê°™ì€ ê°’ì„ ë‘ë²ˆ
+ * ê¸°ë¡í•œ ì´ìœ ëŠ” íŒŒì¼ì´ Validí•œì§€ë¥¼ Checkí•˜ê¸° ìœ„í•´ì„œ ì´ë‹¤. */
 typedef struct iduStartupInfoOfXDB
 {
-    /* XDB Deamon ProcessÀÇ Startup½Ã°£ */
+    /* XDB Deamon Processì˜ Startupì‹œê°„ */
     struct timeval mStartupTime1;
-    /* mStartupTime1°ú µ¿ÀÏÇÑ °ªÀ» °¡Áø´Ù. */
+    /* mStartupTime1ê³¼ ë™ì¼í•œ ê°’ì„ ê°€ì§„ë‹¤. */
     struct timeval mStartupTime2;
-    /* »ı¼ºÇÒ ¶§ÀÇ SHM_DB_KEY¸¦ °®´Â´Ù. */
+    /* ìƒì„±í•  ë•Œì˜ SHM_DB_KEYë¥¼ ê°–ëŠ”ë‹¤. */
     UInt           mShmDBKey;
 } iduStartupInfoOfXDB;
 

@@ -19,7 +19,7 @@
  *
  * $Id: sdpstItBMP.h 27220 2008-07-23 14:56:22Z newdaily $
  *
- * º» ÆÄÀÏÀº Treelist Managed SegmentÀÇ Internal Bitmap ÆäÀÌÁöÀÇ Çì´õÆÄÀÏÀÌ´Ù.
+ * ë³¸ íŒŒì¼ì€ Treelist Managed Segmentì˜ Internal Bitmap íŽ˜ì´ì§€ì˜ í—¤ë”íŒŒì¼ì´ë‹¤.
  *
  ***********************************************************************/
 
@@ -96,8 +96,8 @@ inline UShort sdpstItBMP::getStartSlotNo( UChar       * aPagePtr,
     sBMPHdr = sdpstBMP::getHdrPtr( aPagePtr );
 
     sFreeSlotCnt = sBMPHdr->mSlotCnt - sBMPHdr->mFstFreeSlotNo;
-    /* freeslotÀÌ ¾øÀ»¶§µµ mFstFreeSlotNo°¡ ¸¶Áö¸· SlotÀ» °¡¸®Å°±â ¶§¹®¿¡
-     *      * ÃÑ °³¼ö¿¡¼­ »©µµ 0ÀÌ ³ª¿Ã¼ö°¡ ¾ø´Ù. */
+    /* freeslotì´ ì—†ì„ë•Œë„ mFstFreeSlotNoê°€ ë§ˆì§€ë§‰ Slotì„ ê°€ë¦¬í‚¤ê¸° ë•Œë¬¸ì—
+     *      * ì´ ê°œìˆ˜ì—ì„œ ë¹¼ë„ 0ì´ ë‚˜ì˜¬ìˆ˜ê°€ ì—†ë‹¤. */
     IDE_ASSERT( sFreeSlotCnt > 0 );
 
     sSlotNo = sdpstBMP::doHash( aHintIdx, sFreeSlotCnt );

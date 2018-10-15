@@ -20,9 +20,9 @@
 #include <ulnTypes.h>
 
 /*
- * BUGBUG : Áö±İÀÇ ulnBindInfo.cpp ´Â ´Ù¸¥ ÀÌ¸§À¸·Î ¹Ù²Ù°í,
- *          ¼ø¼öÇÏ°Ô ulnBindInfo ¸¸ ´Ù·ç´Â ¸ğµâÀ» ulnBindInfo.cpp ·Î ¸¸µé°í,
- *          ¾Æ·¡ÀÇ ulnBindInfo ±¸Á¶Ã¼¸¦ ulnBindInfo.h ·Î ¿Å°Ü¾ß ÇÑ´Ù.
+ * BUGBUG : ì§€ê¸ˆì˜ ulnBindInfo.cpp ëŠ” ë‹¤ë¥¸ ì´ë¦„ìœ¼ë¡œ ë°”ê¾¸ê³ ,
+ *          ìˆœìˆ˜í•˜ê²Œ ulnBindInfo ë§Œ ë‹¤ë£¨ëŠ” ëª¨ë“ˆì„ ulnBindInfo.cpp ë¡œ ë§Œë“¤ê³ ,
+ *          ì•„ë˜ì˜ ulnBindInfo êµ¬ì¡°ì²´ë¥¼ ulnBindInfo.h ë¡œ ì˜®ê²¨ì•¼ í•œë‹¤.
  */
 struct ulnMeta
 {
@@ -34,7 +34,7 @@ struct ulnMeta
     acp_uint32_t mLanguage;
 
     /*
-     * ¾Æ·¡ÀÇ ¸â¹öµéÀº M$ ODBC ¿¡¼­ Á¤ÀÇÇÏ°í ÀÖ´Â °ÍµéÀÌ´Ù. ÀûÀıÇÏ°Ô Àß ¸ÅÇÎ½ÃÄÑ ÁÖ¾î¾ß ÇÑ´Ù.
+     * ì•„ë˜ì˜ ë©¤ë²„ë“¤ì€ M$ ODBC ì—ì„œ ì •ì˜í•˜ê³  ìˆëŠ” ê²ƒë“¤ì´ë‹¤. ì ì ˆí•˜ê²Œ ì˜ ë§¤í•‘ì‹œì¼œ ì£¼ì–´ì•¼ í•œë‹¤.
      */
     ulvULen      mLength;               /* SQL_DESC_LENGTH */
     ulvSLen      mOctetLength;          /* SQL_DESC_OCTET_LENGTH */
@@ -54,12 +54,12 @@ struct ulnMeta
 };
 
 /*
- * ÃÊ±âÈ­
+ * ì´ˆê¸°í™”
  */
 void   ulnMetaInitialize(ulnMeta *aMeta);
 
 /*
- * ¸â¹ö ÀĞ±â / ¾²±â
+ * ë©¤ë²„ ì½ê¸° / ì“°ê¸°
  */
 
 ACP_INLINE void ulnMetaSetCTYPE(ulnMeta *aMeta, ulnCTypeID aCTYPE)
@@ -145,14 +145,14 @@ ACP_INLINE ulvULen ulnMetaGetOdbcLength(ulnMeta *aMeta)
 ACP_INLINE void ulnMetaSetOctetLength(ulnMeta *aMeta, ulvSLen aOctetLength)
 {
     /*
-     * Octet Length ´Â
-     *      APD, ARD ¿¡¼­´Â bind parameter, bind col ¿¡¼­ ÁÖ´Â ¹öÆÛ »çÀÌÁî.
-     *      IPD ¿¡¼­´Â ???
-     *      IRD ¿¡¼­´Â bind column info ·Î ³Ñ¾î¿Â precision.
-     *          ¿©±â¼­, ±×°ÍÀ» ´ã´Âµ¥ ÇÊ¿äÇÑ ¹öÆÛÀÇ Å©±â¸¦ °è»êÇÑ °ª.
+     * Octet Length ëŠ”
+     *      APD, ARD ì—ì„œëŠ” bind parameter, bind col ì—ì„œ ì£¼ëŠ” ë²„í¼ ì‚¬ì´ì¦ˆ.
+     *      IPD ì—ì„œëŠ” ???
+     *      IRD ì—ì„œëŠ” bind column info ë¡œ ë„˜ì–´ì˜¨ precision.
+     *          ì—¬ê¸°ì„œ, ê·¸ê²ƒì„ ë‹´ëŠ”ë° í•„ìš”í•œ ë²„í¼ì˜ í¬ê¸°ë¥¼ ê³„ì‚°í•œ ê°’.
      *
-     *      imp desc ¿¡¼­´Â null term À» À§ÇÑ °ø°£À» Á¦¿ÜÇÑ ±æÀÌ.
-     *      app desc ¿¡¼­´Â null term À» À§ÇÑ °ø°£À» Æ÷ÇÔÇÑ ±æÀÌ.
+     *      imp desc ì—ì„œëŠ” null term ì„ ìœ„í•œ ê³µê°„ì„ ì œì™¸í•œ ê¸¸ì´.
+     *      app desc ì—ì„œëŠ” null term ì„ ìœ„í•œ ê³µê°„ì„ í¬í•¨í•œ ê¸¸ì´.
      */
     aMeta->mOctetLength = aOctetLength;
 }
@@ -213,7 +213,7 @@ ACP_INLINE acp_sint16_t ulnMetaGetNullable(ulnMeta *aMeta)
 }
 
 /*
- * ulnMeta ÀÇ Á¤º¸µéÀ» Ã¤¿ì´Â ÇÔ¼öµé
+ * ulnMeta ì˜ ì •ë³´ë“¤ì„ ì±„ìš°ëŠ” í•¨ìˆ˜ë“¤
  */
 void ulnMetaBuild4IpdByMeta(ulnMeta     *aMeta,
                             ulnMTypeID   aMTYPE,
@@ -251,7 +251,7 @@ void ulnMetaBuild4ArdApd(ulnMeta      *aAppMeta,
 /* PROJ-1789 Updatable Scrollable Cursor */
 
 /**
- * Updatable ¼³Á¤À» ¾ò´Â´Ù.
+ * Updatable ì„¤ì •ì„ ì–»ëŠ”ë‹¤.
  *
  * @param[in] aMeta   Meta object
  *
@@ -263,7 +263,7 @@ void ulnMetaBuild4ArdApd(ulnMeta      *aAppMeta,
     ( (aMetaPtr)->mUpdatable )
 
 /**
- * UpdtableÀ» ¼³Á¤ÇÑ´Ù.
+ * Updtableì„ ì„¤ì •í•œë‹¤.
  *
  * @param[in] aMeta        Meta object
  * @param[in] aUpdatable   Updatable: SQL_ATTR_WRITE,

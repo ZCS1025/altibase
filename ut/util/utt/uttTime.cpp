@@ -355,7 +355,7 @@ void uttTime::showAutoScale()
     }
 }
 
-// BUG-24096 : iloader °æ°ú ½Ã°£ Ç¥½Ã
+// BUG-24096 : iloader ê²½ê³¼ ì‹œê°„ í‘œì‹œ
 void uttTime::showAutoScale4Wall()
 {
     if ( m_microseconds_wallclock >= 1000000 )

@@ -125,9 +125,9 @@ IDE_RC qcmPkg::insert (
     }
     else
     {
-        /* PKG Body¸¦ »ý¼ºÇÒ ¶§´Â paraInsert¸¦ È£ÃâÇÏÁö ¾Ê´Â´Ù.
-         * SYS_PACKAGE_PARAS_´Â spec¿¡ ÀÖ´Â procedure/function¿¡
-         * ´ëÇØ¼­¸¸ parameter Á¤º¸¸¦ ÀúÀåÇÑ´Ù.*/
+        /* PKG Bodyë¥¼ ìƒì„±í•  ë•ŒëŠ” paraInsertë¥¼ í˜¸ì¶œí•˜ì§€ ì•ŠëŠ”ë‹¤.
+         * SYS_PACKAGE_PARAS_ëŠ” specì— ìžˆëŠ” procedure/functionì—
+         * ëŒ€í•´ì„œë§Œ parameter ì •ë³´ë¥¼ ì €ìž¥í•œë‹¤.*/
     }
 
     IDE_TEST( qcmPkg::prsInsert( aStatement,
@@ -135,8 +135,8 @@ IDE_RC qcmPkg::insert (
               != IDE_SUCCESS );
 
     /* PROJ-2197 PSM Renewal
-       aStatement->spvEnv->relatedObjects ´ë½Å
-       aPkgParse->PkgInfo->relatedObjects¸¦ »ç¿ëÇÑ´Ù. */
+       aStatement->spvEnv->relatedObjects ëŒ€ì‹ 
+       aPkgParse->PkgInfo->relatedObjectsë¥¼ ì‚¬ìš©í•œë‹¤. */
     for( sRelObjs = aPkgParse->pkgInfo->relatedObjects ;
          sRelObjs != NULL ;
          sRelObjs = sRelObjs->next )
@@ -217,7 +217,7 @@ IDE_RC qcmPkg::insert (
             else
             {
                 // Nothing to do.
-                // package¸¸ spec°ú body·Î ±¸ºÐµÈ´Ù.
+                // packageë§Œ specê³¼ bodyë¡œ êµ¬ë¶„ëœë‹¤.
             }
         }
         else
@@ -349,11 +349,11 @@ IDE_RC qcmPkg::pkgInsert(
 /***********************************************************************
  *
  * Description :
- *    createPkgOrFunc ½Ã¿¡ ¸ÞÅ¸ Å×ÀÌºí¿¡ ÀÔ·Â
+ *    createPkgOrFunc ì‹œì— ë©”íƒ€ í…Œì´ë¸”ì— ìž…ë ¥
  *
  * Implementation :
- *    ¸í½ÃµÈ ParseTree ·ÎºÎÅÍ SYS_PACKAGES_ ¸ÞÅ¸ Å×ÀÌºí¿¡ ÀÔ·ÂÇÒ µ¥ÀÌÅÍ¸¦
- *    ÃßÃâÇÑ ÈÄ¿¡ ÀÔ·Â Äõ¸®¸¦ ¸¸µé¾î¼­ ¼öÇà
+ *    ëª…ì‹œëœ ParseTree ë¡œë¶€í„° SYS_PACKAGES_ ë©”íƒ€ í…Œì´ë¸”ì— ìž…ë ¥í•  ë°ì´í„°ë¥¼
+ *    ì¶”ì¶œí•œ í›„ì— ìž…ë ¥ ì¿¼ë¦¬ë¥¼ ë§Œë“¤ì–´ì„œ ìˆ˜í–‰
  *
  ***********************************************************************/
     vSLong      sRowCnt;
@@ -431,8 +431,8 @@ IDE_RC qcmSetPkgOIDOfQcmPkgs(
         aRow,
         sPkgOIDMtcColumn,
         & sSLongID );
-    // BUGBUG 32bit machine¿¡¼­ µ¿ÀÛ ½Ã SLong(64bit)º¯¼ö¸¦ uVLong(32bit)º¯¼ö·Î
-    // º¯È¯ÇÏ¹Ç·Î µ¥ÀÌÅÍ ¼Õ½Ç °¡´É¼º ÀÖÀ½
+    // BUGBUG 32bit machineì—ì„œ ë™ìž‘ ì‹œ SLong(64bit)ë³€ìˆ˜ë¥¼ uVLong(32bit)ë³€ìˆ˜ë¡œ
+    // ë³€í™˜í•˜ë¯€ë¡œ ë°ì´í„° ì†ì‹¤ ê°€ëŠ¥ì„± ìžˆìŒ
     *aPkgID = (qsOID)sSLongID;
 
     return IDE_SUCCESS;
@@ -586,11 +586,11 @@ IDE_RC qcmPkg::pkgUpdateStatus(
 /***********************************************************************
  *
  * Description :
- *    alterPkgOrFunc, recompile, rebuild ½Ã¿¡ ¸ÞÅ¸ Å×ÀÌºí º¯°æ
+ *    alterPkgOrFunc, recompile, rebuild ì‹œì— ë©”íƒ€ í…Œì´ë¸” ë³€ê²½
  *
  * Implementation :
- *    ¸í½ÃµÈ pkgOID, status °ªÀ¸·Î SYS_PACKAGES_ ¸ÞÅ¸ Å×ÀÌºíÀÇ
- *    STATUS °ªÀ» º¯°æÇÑ´Ù.
+ *    ëª…ì‹œëœ pkgOID, status ê°’ìœ¼ë¡œ SYS_PACKAGES_ ë©”íƒ€ í…Œì´ë¸”ì˜
+ *    STATUS ê°’ì„ ë³€ê²½í•œë‹¤.
  *
  ***********************************************************************/
     SChar  sBuffer[QD_MAX_SQL_LENGTH];
@@ -732,11 +732,11 @@ IDE_RC qcmPkg::pkgRemove(
 /***********************************************************************
  *
  * Description :
- *    replace, drop ½Ã¿¡ ¸ÞÅ¸ Å×ÀÌºí¿¡¼­ »èÁ¦
+ *    replace, drop ì‹œì— ë©”íƒ€ í…Œì´ë¸”ì—ì„œ ì‚­ì œ
  *
  * Implementation :
- *    ¸í½ÃµÈ PkgOID ¿¡ ÇØ´çÇÏ´Â µ¥ÀÌÅÍ¸¦ SYS_PACKAGES_ ¸ÞÅ¸ Å×ÀÌºí¿¡¼­
- *    »èÁ¦ÇÑ´Ù.
+ *    ëª…ì‹œëœ PkgOID ì— í•´ë‹¹í•˜ëŠ” ë°ì´í„°ë¥¼ SYS_PACKAGES_ ë©”íƒ€ í…Œì´ë¸”ì—ì„œ
+ *    ì‚­ì œí•œë‹¤.
  *
  ***********************************************************************/
     SChar    * sBuffer;
@@ -963,11 +963,11 @@ IDE_RC qcmPkg::paraInsert(
 /***********************************************************************
  *
  * Description :
- *    create ½Ã¿¡ ¸ÞÅ¸ Å×ÀÌºí¿¡ ÇÁ·Î½ÃÁ®ÀÇ ÀÎÀÚ Á¤º¸ ÀÔ·Â
+ *    create ì‹œì— ë©”íƒ€ í…Œì´ë¸”ì— í”„ë¡œì‹œì ¸ì˜ ì¸ìž ì •ë³´ ìž…ë ¥
  *
  * Implementation :
- *    ¸í½ÃµÈ ParseTree ·ÎºÎÅÍ ÀÎÀÚÁ¤º¸¸¦ ÃßÃâÇÏ¿© SYS_PACKAGE_PARAS_
- *    ¸ÞÅ¸ Å×ÀÌºí¿¡ ÀÔ·ÂÇÏ´Â Äõ¸®¹®À» ¸¸µç ÈÄ ¼öÇà
+ *    ëª…ì‹œëœ ParseTree ë¡œë¶€í„° ì¸ìžì •ë³´ë¥¼ ì¶”ì¶œí•˜ì—¬ SYS_PACKAGE_PARAS_
+ *    ë©”íƒ€ í…Œì´ë¸”ì— ìž…ë ¥í•˜ëŠ” ì¿¼ë¦¬ë¬¸ì„ ë§Œë“  í›„ ìˆ˜í–‰
  *
  ***********************************************************************/
 
@@ -990,8 +990,8 @@ IDE_RC qcmPkg::paraInsert(
     qsProcParseTree    * sProcParseTree = NULL;
 
     /* PROJ-1973 Package
-     * qcmPkg::paraInsert ÇÔ¼ö´Â package specÀ» »ý¼ºÇÒ ¶§¸¸
-     * È£ÃâÇÒ ¼ö ÀÖ´Ù. */
+     * qcmPkg::paraInsert í•¨ìˆ˜ëŠ” package specì„ ìƒì„±í•  ë•Œë§Œ
+     * í˜¸ì¶œí•  ìˆ˜ ìžˆë‹¤. */
     IDE_DASSERT( aPkgParseTree->objType == QS_PKG );
 
     sPkgStmt = aPkgParseTree->block->subprograms;
@@ -1248,11 +1248,11 @@ IDE_RC qcmPkg::paraRemoveAll(
 /***********************************************************************
  *
  * Description :
- *    »èÁ¦½Ã¿¡ ¸ÞÅ¸ Å×ÀÌºí¿¡ ÇÁ·Î½ÃÁ®ÀÇ ÀÎÀÚ Á¤º¸ »èÁ¦
+ *    ì‚­ì œì‹œì— ë©”íƒ€ í…Œì´ë¸”ì— í”„ë¡œì‹œì ¸ì˜ ì¸ìž ì •ë³´ ì‚­ì œ
  *
  * Implementation :
- *    ¸í½ÃµÈ PkgOID ¿¡ ÇØ´çÇÑ´Â µ¥ÀÌÅÍ¸¦ SYS_PACKAGE_PARAS_ ¸ÞÅ¸ Å×ÀÌºí¿¡¼­
- *    »èÁ¦ÇÏ´Â Äõ¸®¹®À» ¸¸µç ÈÄ ¼öÇà
+ *    ëª…ì‹œëœ PkgOID ì— í•´ë‹¹í•œëŠ” ë°ì´í„°ë¥¼ SYS_PACKAGE_PARAS_ ë©”íƒ€ í…Œì´ë¸”ì—ì„œ
+ *    ì‚­ì œí•˜ëŠ” ì¿¼ë¦¬ë¬¸ì„ ë§Œë“  í›„ ìˆ˜í–‰
  *
  ***********************************************************************/
 
@@ -1310,15 +1310,15 @@ IDE_RC qcmPkg::prsInsert(
     sNcharList = aPkgParse->ncharList;
 
     /* PROJ-2550 PSM Encryption
-       system_.sys_package_parse_ÀÇ ¸ÞÅ¸Å×ÀÌºí¿¡¼­´Â
-       ÀÔ·Â¹ÞÀº Äõ¸®°¡ insertµÇ¾î¾ß ÇÑ´Ù.
-       Áï, encrypted text·Î ÀÔ·Â¹Þ¾ÒÀ¸¸é, encrypted text°¡
-       ÀÏ¹Ý Äõ¸®·Î ÀÔ·Â¹Þ¾ÒÀ¸¸é, ÇØ´ç Äõ¸®°¡ insert µÈ´Ù. */
+       system_.sys_package_parse_ì˜ ë©”íƒ€í…Œì´ë¸”ì—ì„œëŠ”
+       ìž…ë ¥ë°›ì€ ì¿¼ë¦¬ê°€ insertë˜ì–´ì•¼ í•œë‹¤.
+       ì¦‰, encrypted textë¡œ ìž…ë ¥ë°›ì•˜ìœ¼ë©´, encrypted textê°€
+       ì¼ë°˜ ì¿¼ë¦¬ë¡œ ìž…ë ¥ë°›ì•˜ìœ¼ë©´, í•´ë‹¹ ì¿¼ë¦¬ê°€ insert ëœë‹¤. */
     if ( aStatement->myPlan->encryptedText == NULL )
     {
         // PROJ-1579 NCHAR
-        // ¸ÞÅ¸Å×ÀÌºí¿¡ ÀúÀåÇÏ±â À§ÇØ ½ºÆ®¸µÀ» ºÐÇÒÇÏ±â Àü¿¡
-        // N Å¸ÀÔÀÌ ÀÖ´Â °æ¿ì U Å¸ÀÔÀ¸·Î º¯È¯ÇÑ´Ù.
+        // ë©”íƒ€í…Œì´ë¸”ì— ì €ìž¥í•˜ê¸° ìœ„í•´ ìŠ¤íŠ¸ë§ì„ ë¶„í• í•˜ê¸° ì „ì—
+        // N íƒ€ìž…ì´ ìžˆëŠ” ê²½ìš° U íƒ€ìž…ìœ¼ë¡œ ë³€í™˜í•œë‹¤.
         if ( sNcharList != NULL )
         {
             for ( sTempNamePosList = sNcharList;
@@ -1327,14 +1327,14 @@ IDE_RC qcmPkg::prsInsert(
             {
                 sNamePos = sTempNamePosList->namePos;
 
-                // U Å¸ÀÔÀ¸·Î º¯È¯ÇÏ¸é¼­ ´Ã¾î³ª´Â »çÀÌÁî °è»ê
-                // N'¾È' => U'\C548' À¸·Î º¯È¯µÈ´Ù¸é
-                // '¾È'ÀÇ Ä³¸¯ÅÍ ¼ÂÀÌ KSC5601ÀÌ¶ó°í °¡Á¤ÇßÀ» ¶§,
-                // single-quote¾ÈÀÇ ¹®ÀÚ´Â 2 byte -> 5byte·Î º¯°æµÈ´Ù.
-                // Áï, 1.5¹è°¡ ´Ã¾î³ª´Â °ÍÀÌ´Ù.
-                //(ÀüÃ¼ »çÀÌÁî°¡ ¾Æ´Ï¶ó Áõ°¡ÇÏ´Â »çÀÌÁî¸¸ °è»êÇÏ´Â °ÍÀÓ)
-                // ÇÏÁö¸¸, ¾î¶² ¿¹¿ÜÀûÀÎ Ä³¸¯ÅÍ ¼ÂÀÌ µé¾î¿ÃÁö ¸ð¸£¹Ç·Î
-                // * 2·Î ÃæºÐÈ÷ Àâ´Â´Ù.
+                // U íƒ€ìž…ìœ¼ë¡œ ë³€í™˜í•˜ë©´ì„œ ëŠ˜ì–´ë‚˜ëŠ” ì‚¬ì´ì¦ˆ ê³„ì‚°
+                // N'ì•ˆ' => U'\C548' ìœ¼ë¡œ ë³€í™˜ëœë‹¤ë©´
+                // 'ì•ˆ'ì˜ ìºë¦­í„° ì…‹ì´ KSC5601ì´ë¼ê³  ê°€ì •í–ˆì„ ë•Œ,
+                // single-quoteì•ˆì˜ ë¬¸ìžëŠ” 2 byte -> 5byteë¡œ ë³€ê²½ëœë‹¤.
+                // ì¦‰, 1.5ë°°ê°€ ëŠ˜ì–´ë‚˜ëŠ” ê²ƒì´ë‹¤.
+                //(ì „ì²´ ì‚¬ì´ì¦ˆê°€ ì•„ë‹ˆë¼ ì¦ê°€í•˜ëŠ” ì‚¬ì´ì¦ˆë§Œ ê³„ì‚°í•˜ëŠ” ê²ƒìž„)
+                // í•˜ì§€ë§Œ, ì–´ë–¤ ì˜ˆì™¸ì ì¸ ìºë¦­í„° ì…‹ì´ ë“¤ì–´ì˜¬ì§€ ëª¨ë¥´ë¯€ë¡œ
+                // * 2ë¡œ ì¶©ë¶„ížˆ ìž¡ëŠ”ë‹¤.
                 sAddSize += (sNamePos.size - 3) * 2;
             }
 
@@ -1372,10 +1372,10 @@ IDE_RC qcmPkg::prsInsert(
     sIndex = sStartIndex;
 
     // To fix BUG-21299
-    // 100bytes ´ÜÀ§·Î ÀÚ¸£µÇ, Ä³¸¯ÅÍ¼Â¿¡ ¸Â°Ô ¹®ÀÚ¸¦ ÀÚ¸¥´Ù.
-    // Áï, ´ÙÀ½ Ä³¸¯ÅÍ¸¦ ÀÐ¾úÀ» ¶§ 100¹ÙÀÌÆ®¸¦ ³Ñ´Â °æ¿ì°¡ »ý±â´Âµ¥,
-    // ÀÌ¶§´Â ±× ÀÌÀü Ä³¸¯ÅÍ¸¦ ÀÐ¾úÀ» ¶§·Î µ¹¾Æ°¡¼­ °Å±â±îÁö¸¸ Àß¶ó¼­ ±â·ÏÀ» ÇÏ°í,
-    // ±× ´ÙÀ½¿¡ ÀÌ¾î¼­ ±â·ÏÀ» ÇÑ´Ù.
+    // 100bytes ë‹¨ìœ„ë¡œ ìžë¥´ë˜, ìºë¦­í„°ì…‹ì— ë§žê²Œ ë¬¸ìžë¥¼ ìžë¥¸ë‹¤.
+    // ì¦‰, ë‹¤ìŒ ìºë¦­í„°ë¥¼ ì½ì—ˆì„ ë•Œ 100ë°”ì´íŠ¸ë¥¼ ë„˜ëŠ” ê²½ìš°ê°€ ìƒê¸°ëŠ”ë°,
+    // ì´ë•ŒëŠ” ê·¸ ì´ì „ ìºë¦­í„°ë¥¼ ì½ì—ˆì„ ë•Œë¡œ ëŒì•„ê°€ì„œ ê±°ê¸°ê¹Œì§€ë§Œ ìž˜ë¼ì„œ ê¸°ë¡ì„ í•˜ê³ ,
+    // ê·¸ ë‹¤ìŒì— ì´ì–´ì„œ ê¸°ë¡ì„ í•œë‹¤.
     while (1)
     {
         sPrevIndex = sIndex;
@@ -1387,8 +1387,8 @@ IDE_RC qcmPkg::prsInsert(
         if( (sStmtBuffer +
              sStmtBufferLen) <= sIndex )
         {
-            // ³¡±îÁö °£ °æ¿ì.
-            // ±â·ÏÀ» ÇÑ ÈÄ break.
+            // ëê¹Œì§€ ê°„ ê²½ìš°.
+            // ê¸°ë¡ì„ í•œ í›„ break.
             sSeqNo++;
 
             sCurrPos = sStartIndex - sStmtBuffer;
@@ -1409,19 +1409,19 @@ IDE_RC qcmPkg::prsInsert(
         {
             if( sIndex - sStartIndex >= QCM_MAX_PKG_LEN )
             {
-                // ¾ÆÁ÷ ³¡°¡Áö ¾È °¬°í, ÀÐ´Ùº¸´Ï 100¹ÙÀÌÆ® ¶Ç´Â ÃÊ°úÇÑ °ªÀÌ
-                // µÇ¾úÀ» ¶§ Àß¶ó¼­ ±â·Ï
+                // ì•„ì§ ëê°€ì§€ ì•ˆ ê°”ê³ , ì½ë‹¤ë³´ë‹ˆ 100ë°”ì´íŠ¸ ë˜ëŠ” ì´ˆê³¼í•œ ê°’ì´
+                // ë˜ì—ˆì„ ë•Œ ìž˜ë¼ì„œ ê¸°ë¡
                 sCurrPos = sStartIndex - sStmtBuffer;
 
                 if( sIndex - sStartIndex == QCM_MAX_PKG_LEN )
                 {
-                    // µü ¶³¾îÁö´Â °æ¿ì
+                    // ë”± ë–¨ì–´ì§€ëŠ” ê²½ìš°
                     sCurrLen = QCM_MAX_PKG_LEN;
                     sStartIndex = sIndex;
                 }
                 else
                 {
-                    // »ßÁ®³ª°£ °æ¿ì ±× ÀÌÀü Ä³¸¯ÅÍ À§Ä¡±îÁö ±â·Ï
+                    // ì‚ì ¸ë‚˜ê°„ ê²½ìš° ê·¸ ì´ì „ ìºë¦­í„° ìœ„ì¹˜ê¹Œì§€ ê¸°ë¡
                     sCurrLen = sPrevIndex - sStartIndex;
                     sStartIndex = sPrevIndex;
                 }
@@ -1488,11 +1488,11 @@ IDE_RC qcmPkg::prsInsertFragment(
 /***********************************************************************
  *
  * Description :
- *    »ý¼º½Ã¿¡ »ç¿ëµÈ Äõ¸®¹®ÀåÀ» SYS_PACKAGE_PARSE_ ¿¡ ÀúÀå
+ *    ìƒì„±ì‹œì— ì‚¬ìš©ëœ ì¿¼ë¦¬ë¬¸ìž¥ì„ SYS_PACKAGE_PARSE_ ì— ì €ìž¥
  *
  * Implementation :
- *    »ý¼º½Ã¿¡ »ç¿ëµÈ Äõ¸®¹®ÀåÀÌ ÀûÀýÇÑ »çÀÌÁî·Î ½ÃÄö½º¿Í ÇÔ²² Àü´ÞµÇ¸é,
- *    SYS_PACKAGE_PARSE_ ¸ÞÅ¸ Å×ÀÌºí¿¡ ÀÔ·ÂÇÏ´Â Äõ¸®¸¦ ¸¸µé¾î¼­ ¼öÇà
+ *    ìƒì„±ì‹œì— ì‚¬ìš©ëœ ì¿¼ë¦¬ë¬¸ìž¥ì´ ì ì ˆí•œ ì‚¬ì´ì¦ˆë¡œ ì‹œí€€ìŠ¤ì™€ í•¨ê»˜ ì „ë‹¬ë˜ë©´,
+ *    SYS_PACKAGE_PARSE_ ë©”íƒ€ í…Œì´ë¸”ì— ìž…ë ¥í•˜ëŠ” ì¿¼ë¦¬ë¥¼ ë§Œë“¤ì–´ì„œ ìˆ˜í–‰
  *
  ***********************************************************************/
 
@@ -1560,10 +1560,10 @@ IDE_RC qcmPkg::prsRemoveAll(
 /***********************************************************************
  *
  * Description :
- *    drop ½Ã¿¡ SYS_PACKAGE_PARSE_ Å×ÀÌºí·ÎºÎÅÍ »èÁ¦
+ *    drop ì‹œì— SYS_PACKAGE_PARSE_ í…Œì´ë¸”ë¡œë¶€í„° ì‚­ì œ
  *
  * Implementation :
- *    SYS_PACKAGE_PARSE_ ¸ÞÅ¸ Å×ÀÌºí¿¡¼­ ¸í½ÃµÈ PkgID ÀÇ µ¥ÀÌÅÍ¸¦ »èÁ¦ÇÑ´Ù.
+ *    SYS_PACKAGE_PARSE_ ë©”íƒ€ í…Œì´ë¸”ì—ì„œ ëª…ì‹œëœ PkgID ì˜ ë°ì´í„°ë¥¼ ì‚­ì œí•œë‹¤.
  *
  ***********************************************************************/
 
@@ -1606,28 +1606,28 @@ IDE_RC qcmPkg::convertToUTypeString( qcStatement   * aStatement,
  * Description :
  *      PROJ-1579 NCHAR
  *
- *      N'¾È'°ú °°Àº ½ºÆ®¸µÀ» ¸ÞÅ¸Å×ÀÌºí¿¡ ÀúÀåÇÒ °æ¿ì
- *      ALTIBASE_NLS_NCHAR_LITERAL_REPLACE = 1 ÀÎ °æ¿ì
- *      U'\C548'°ú °°ÀÌ ÀúÀåµÈ´Ù.
+ *      N'ì•ˆ'ê³¼ ê°™ì€ ìŠ¤íŠ¸ë§ì„ ë©”íƒ€í…Œì´ë¸”ì— ì €ìž¥í•  ê²½ìš°
+ *      ALTIBASE_NLS_NCHAR_LITERAL_REPLACE = 1 ì¸ ê²½ìš°
+ *      U'\C548'ê³¼ ê°™ì´ ì €ìž¥ëœë‹¤.
  *
  * Implementation :
  *
- *      aStatement->namePosList°¡ stmt¿¡ ³ª¿Â ¼ø¼­´ë·Î Á¤·ÄµÇ¾î ÀÖ´Ù°í
- *      °¡Á¤ÇÑ´Ù.
+ *      aStatement->namePosListê°€ stmtì— ë‚˜ì˜¨ ìˆœì„œëŒ€ë¡œ ì •ë ¬ë˜ì–´ ìžˆë‹¤ê³ 
+ *      ê°€ì •í•œë‹¤.
  *
  *      EX) create view v1
- *          as select * from t1 where i1 = n'¾È' and i2 = n'³ç' and i3 = 'A';
+ *          as select * from t1 where i1 = n'ì•ˆ' and i2 = n'ë…•' and i3 = 'A';
  *
- *      1. loop(n typeÀÌ ÀÖ´Â µ¿¾È)
- *          1-1. 'n'-1±îÁö memcpy
+ *      1. loop(n typeì´ ìžˆëŠ” ë™ì•ˆ)
+ *          1-1. 'n'-1ê¹Œì§€ memcpy
  *          1-2. u' memcpy
  *
- *          1-3. loop(n type literalÀ» Ä³¸¯ÅÍ ´ÜÀ§·Î ¹Ýº¹)
- *              1) \ º¹»ç
- *              2) ¾È => C548¿Í °°ÀÌ À¯´ÏÄÚµå Æ÷ÀÎÆ® ÇüÅÂ·Î º¯ÇüÇØ¼­ º¹»ç
- *                 (ASCII´Â ±×´ë·Î º¹»çÇÑ´Ù.)
+ *          1-3. loop(n type literalì„ ìºë¦­í„° ë‹¨ìœ„ë¡œ ë°˜ë³µ)
+ *              1) \ ë³µì‚¬
+ *              2) ì•ˆ => C548ì™€ ê°™ì´ ìœ ë‹ˆì½”ë“œ í¬ì¸íŠ¸ í˜•íƒœë¡œ ë³€í˜•í•´ì„œ ë³µì‚¬
+ *                 (ASCIIëŠ” ê·¸ëŒ€ë¡œ ë³µì‚¬í•œë‹¤.)
  *
- *      2. stmtÀÇ ¸Ç µÞºÎºÐ º¹»ç
+ *      2. stmtì˜ ë§¨ ë’·ë¶€ë¶„ ë³µì‚¬
  *
  ***********************************************************************/
 
@@ -1663,7 +1663,7 @@ IDE_RC qcmPkg::convertToUTypeString( qcStatement   * aStatement,
             sNamePos = sTempNamePosList->namePos;
 
             // -----------------------------------
-            // N ¹Ù·Î Àü±îÁö º¹»ç
+            // N ë°”ë¡œ ì „ê¹Œì§€ ë³µì‚¬
             // -----------------------------------
             idlOS::memcpy( aDest + sDestOffset,
                            sSrcVal + sSrcValOffset,
@@ -1672,7 +1672,7 @@ IDE_RC qcmPkg::convertToUTypeString( qcStatement   * aStatement,
             sDestOffset += (sNamePos.offset - sSrcValOffset );
 
             // -----------------------------------
-            // U'\ º¹»ç
+            // U'\ ë³µì‚¬
             // -----------------------------------
             idlOS::memcpy( aDest + sDestOffset,
                            "U\'",
@@ -1681,8 +1681,8 @@ IDE_RC qcmPkg::convertToUTypeString( qcStatement   * aStatement,
             sDestOffset += 2;
 
             // -----------------------------------
-            // N Å¸ÀÔ ¸®ÅÍ·²ÀÇ Ä³¸¯ÅÍ ¼Â º¯È¯
-            // Å¬¶óÀÌ¾ðÆ® Ä³¸¯ÅÍ ¼Â => ³»¼Å³Î Ä³¸¯ÅÍ ¼Â
+            // N íƒ€ìž… ë¦¬í„°ëŸ´ì˜ ìºë¦­í„° ì…‹ ë³€í™˜
+            // í´ë¼ì´ì–¸íŠ¸ ìºë¦­í„° ì…‹ => ë‚´ì…”ë„ ìºë¦­í„° ì…‹
             // -----------------------------------
             sNTypeVal = aStatement->myPlan->stmtText + sNamePos.offset + 2;
             sNTypeLen = sNamePos.size - 3;
@@ -1702,7 +1702,7 @@ IDE_RC qcmPkg::convertToUTypeString( qcStatement   * aStatement,
         }
 
         // -----------------------------------
-        // 'ºÎÅÍ ³¡±îÁö º¹»ç
+        // 'ë¶€í„° ëê¹Œì§€ ë³µì‚¬
         // -----------------------------------
         idlOS::memcpy( aDest + sDestOffset,
                        sSrcVal + sNamePos.offset + sNamePos.size - 1,
@@ -1714,7 +1714,7 @@ IDE_RC qcmPkg::convertToUTypeString( qcStatement   * aStatement,
     }
     else
     {
-        // N¸®ÅÍ·²ÀÌ ¾øÀ¸¹Ç·Î memcpyÇÔ.
+        // Në¦¬í„°ëŸ´ì´ ì—†ìœ¼ë¯€ë¡œ memcpyí•¨.
         idlOS::memcpy( aDest, sSrcVal, sSrcLen );
 
         aDest[sSrcLen] = '\0';
@@ -1739,10 +1739,10 @@ IDE_RC qcmPkg::relInsert(
 /***********************************************************************
  *
  * Description :
- *    ÇÁ·Î½ÃÁ® »ý¼º°ú °ü·ÃµÈ ¿ÀºêÁ§Æ®¿¡ ´ëÇÑ Á¤º¸¸¦ ÀÔ·ÂÇÑ´Ù.
+ *    í”„ë¡œì‹œì ¸ ìƒì„±ê³¼ ê´€ë ¨ëœ ì˜¤ë¸Œì íŠ¸ì— ëŒ€í•œ ì •ë³´ë¥¼ ìž…ë ¥í•œë‹¤.
  *
  * Implementation :
- *    SYS_PACKAGE_RELATED_ ¸ÞÅ¸ Å×ÀÌºí¿¡ ¸í½ÃÇÑ ¿ÀºêÁ§Æ®µéÀ» ÀÔ·ÂÇÑ´Ù.
+ *    SYS_PACKAGE_RELATED_ ë©”íƒ€ í…Œì´ë¸”ì— ëª…ì‹œí•œ ì˜¤ë¸Œì íŠ¸ë“¤ì„ ìž…ë ¥í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -1821,8 +1821,8 @@ IDE_RC qcmModifyStatusOfRelatedPkgToInvalid (
         aRow,
         sPkgOIDMtcColumn,
         & sSLongOID );
-    // BUGBUG 32bit machine¿¡¼­ µ¿ÀÛ ½Ã SLong(64bit)º¯¼ö¸¦ uVLong(32bit)º¯¼ö·Î
-    // º¯È¯ÇÏ¹Ç·Î µ¥ÀÌÅÍ ¼Õ½Ç °¡´É¼º ÀÖÀ½
+    // BUGBUG 32bit machineì—ì„œ ë™ìž‘ ì‹œ SLong(64bit)ë³€ìˆ˜ë¥¼ uVLong(32bit)ë³€ìˆ˜ë¡œ
+    // ë³€í™˜í•˜ë¯€ë¡œ ë°ì´í„° ì†ì‹¤ ê°€ëŠ¥ì„± ìžˆìŒ
     sPkgOID = (qsOID)sSLongOID;
 
     IDE_TEST( qsxPkg::makeStatusInvalid( aStatement,
@@ -1939,8 +1939,8 @@ IDE_RC qcmModifyStatusOfRelatedPkgBodyToInvalid (
         sPkgOIDMtcColumn,
         & sSLongOID );
 
-    // BUGBUG 32bit machine¿¡¼­ µ¿ÀÛ ½Ã SLong(64bit)º¯¼ö¸¦ uVLong(32bit)º¯¼ö·Î
-    // º¯È¯ÇÏ¹Ç·Î µ¥ÀÌÅÍ ¼Õ½Ç °¡´É¼º ÀÖÀ½
+    // BUGBUG 32bit machineì—ì„œ ë™ìž‘ ì‹œ SLong(64bit)ë³€ìˆ˜ë¥¼ uVLong(32bit)ë³€ìˆ˜ë¡œ
+    // ë³€í™˜í•˜ë¯€ë¡œ ë°ì´í„° ì†ì‹¤ ê°€ëŠ¥ì„± ìžˆìŒ
     sPkgOID = (qsOID)sSLongOID;
 
     IDE_TEST( qsxPkg::makeStatusInvalid( aStatement,
@@ -2043,11 +2043,11 @@ IDE_RC qcmPkg::relRemoveAll(
 /***********************************************************************
  *
  * Description :
- *    ÇÁ·Î½ÃÁ®¿Í °ü·ÃµÈ ¿ÀºêÁ§Æ®¿¡ ´ëÇÑ Á¤º¸¸¦ »èÁ¦ÇÑ´Ù.
+ *    í”„ë¡œì‹œì ¸ì™€ ê´€ë ¨ëœ ì˜¤ë¸Œì íŠ¸ì— ëŒ€í•œ ì •ë³´ë¥¼ ì‚­ì œí•œë‹¤.
  *
  * Implementation :
- *    SYS_PACKAGE_RELATED_ ¸ÞÅ¸ Å×ÀÌºí¿¡¼­ ¸í½ÃÇÑ PkgOID ¿¡ ÇØ´çÇÏ´Â
- *    µ¥ÀÌÅÍ¸¦ »èÁ¦ÇÑ´Ù.
+ *    SYS_PACKAGE_RELATED_ ë©”íƒ€ í…Œì´ë¸”ì—ì„œ ëª…ì‹œí•œ PkgOID ì— í•´ë‹¹í•˜ëŠ”
+ *    ë°ì´í„°ë¥¼ ì‚­ì œí•œë‹¤.
  *
  ***********************************************************************/
 
@@ -2088,7 +2088,7 @@ IDE_RC qcmSetPkgUserIDOfQcmPkgs(
 {
 /*******************************************************************
  * Description : To Fix BUG-19839
- *               Pkg oid ¸¦ »ç¿ëÇØ ¼ÒÀ¯ÀÚÀÇ UserID¸¦ °Ë»ö
+ *               Pkg oid ë¥¼ ì‚¬ìš©í•´ ì†Œìœ ìžì˜ UserIDë¥¼ ê²€ìƒ‰
  *
  * Implementation :
  ********************************************************************/
@@ -2118,7 +2118,7 @@ IDE_RC qcmPkg::getPkgUserID ( qcStatement * aStatement,
 {
 /*******************************************************************
  * Description : To Fix BUG-19839
- *               Pkg oid ¸¦ »ç¿ëÇØ ¼ÒÀ¯ÀÚÀÇ UserID¸¦ °Ë»ö
+ *               Pkg oid ë¥¼ ì‚¬ìš©í•´ ì†Œìœ ìžì˜ UserIDë¥¼ ê²€ìƒ‰
  *
  * Implementation :
  ********************************************************************/
@@ -2269,8 +2269,8 @@ IDE_RC qcmPkg::pkgSetMember(
         aRow,
         sPkgOIDMtcColumn,
         & sSLongOID);
-    // BUGBUG 32bit machine¿¡¼­ µ¿ÀÛ ½Ã SLong(64bit)º¯¼ö¸¦ uVLong(32bit)º¯¼ö·Î
-    // º¯È¯ÇÏ¹Ç·Î µ¥ÀÌÅÍ ¼Õ½Ç °¡´É¼º ÀÖÀ½
+    // BUGBUG 32bit machineì—ì„œ ë™ìž‘ ì‹œ SLong(64bit)ë³€ìˆ˜ë¥¼ uVLong(32bit)ë³€ìˆ˜ë¡œ
+    // ë³€í™˜í•˜ë¯€ë¡œ ë°ì´í„° ì†ì‹¤ ê°€ëŠ¥ì„± ìžˆìŒ
     aPkgs->pkgOID = (qsOID)sSLongOID;
 
     IDE_TEST( smiGetTableColumns( gQcmPkgs,
@@ -2359,7 +2359,7 @@ static iduFixedTableColDesc gPkgTEXTColDesc[] =
   For Fixed Table
  **************************************************************/
 
-// ÀÎÀÚ¸¦ ÀÓ½Ã·Î ³Ñ±â±â À§ÇÔ.
+// ì¸ìžë¥¼ ìž„ì‹œë¡œ ë„˜ê¸°ê¸° ìœ„í•¨.
 typedef struct qcmTempFixedTableInfo
 {
     void                  *mHeader;
@@ -2458,8 +2458,8 @@ IDE_RC qcmPkg::buildPkgText( idvSQL        * aStatistics,
         aRow,
         sPkgOIDMtcColumn,
         & sSLongOID);
-    // BUGBUG 32bit machine¿¡¼­ µ¿ÀÛ ½Ã SLong(64bit)º¯¼ö¸¦ uVLong(32bit)º¯¼ö·Î
-    // º¯È¯ÇÏ¹Ç·Î µ¥ÀÌÅÍ ¼Õ½Ç °¡´É¼º ÀÖÀ½
+    // BUGBUG 32bit machineì—ì„œ ë™ìž‘ ì‹œ SLong(64bit)ë³€ìˆ˜ë¥¼ uVLong(32bit)ë³€ìˆ˜ë¡œ
+    // ë³€í™˜í•˜ë¯€ë¡œ ë°ì´í„° ì†ì‹¤ ê°€ëŠ¥ì„± ìžˆìŒ
     sOID = (qsOID)sSLongOID;
 
     /* ------------------------------------------------
@@ -2501,8 +2501,8 @@ IDE_RC qcmPkg::buildPkgText( idvSQL        * aStatistics,
 
             if (( sPkgBuf + sPkgLen ) <= sIndex )
             {
-                // ³¡±îÁö °£ °æ¿ì.
-                // ±â·ÏÀ» ÇÑ ÈÄ break.
+                // ëê¹Œì§€ ê°„ ê²½ìš°.
+                // ê¸°ë¡ì„ í•œ í›„ break.
                 sSeqNo++;
 
                 sCurrPos = sStartIndex - sPkgBuf;
@@ -2525,19 +2525,19 @@ IDE_RC qcmPkg::buildPkgText( idvSQL        * aStatistics,
             {
                 if( sIndex - sStartIndex >= QCM_PKG_TEXT_LEN )
                 {
-                    // ¾ÆÁ÷ ³¡°¡Áö ¾È °¬°í, ÀÐ´Ùº¸´Ï 64¹ÙÀÌÆ® ¶Ç´Â ÃÊ°úÇÑ °ªÀÌ
-                    // µÇ¾úÀ» ¶§ Àß¶ó¼­ ±â·Ï
+                    // ì•„ì§ ëê°€ì§€ ì•ˆ ê°”ê³ , ì½ë‹¤ë³´ë‹ˆ 64ë°”ì´íŠ¸ ë˜ëŠ” ì´ˆê³¼í•œ ê°’ì´
+                    // ë˜ì—ˆì„ ë•Œ ìž˜ë¼ì„œ ê¸°ë¡
                     sCurrPos = sStartIndex - sPkgBuf;
                 
                     if( sIndex - sStartIndex == QCM_PKG_TEXT_LEN )
                     {
-                        // µü ¶³¾îÁö´Â °æ¿ì
+                        // ë”± ë–¨ì–´ì§€ëŠ” ê²½ìš°
                         sCurrLen = QCM_PKG_TEXT_LEN;
                         sStartIndex = sIndex;
                     }
                     else
                     {
-                        // »ßÁ®³ª°£ °æ¿ì ±× ÀÌÀü Ä³¸¯ÅÍ À§Ä¡±îÁö ±â·Ï
+                        // ì‚ì ¸ë‚˜ê°„ ê²½ìš° ê·¸ ì´ì „ ìºë¦­í„° ìœ„ì¹˜ê¹Œì§€ ê¸°ë¡
                         sCurrLen = sPrevIndex - sStartIndex;
                         sStartIndex = sPrevIndex;
                     }

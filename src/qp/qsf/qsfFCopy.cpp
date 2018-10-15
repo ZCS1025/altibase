@@ -20,7 +20,7 @@
  *
  * Description :
  *     PROJ-1371 PSM File Handling
- *     FILEÀ» copyÇÏ´Â ÇÔ¼ö
+ *     FILEì„ copyí•˜ëŠ” í•¨ìˆ˜
  *
  * Syntax :
  *     FILE_COPY( location VARCHAR, filename VARCHAR,
@@ -57,7 +57,7 @@ static IDE_RC qsfEstimate( mtcNode*     aNode,
 mtfModule qsfFCopyModule = {
     1|MTC_NODE_OPERATOR_MISC|MTC_NODE_VARIABLE_TRUE,
     ~0,
-    1.0,                    // default selectivity (ºñ±³ ¿¬»êÀÚ ¾Æ´Ô)
+    1.0,                    // default selectivity (ë¹„êµ ì—°ì‚°ì ì•„ë‹˜)
     qsfFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -156,11 +156,11 @@ IDE_RC qsfCalculate_FCopy( mtcNode*     aNode,
  *     file_close calculate
  *
  * Implementation :
- *     1. argument°¡ ÇÏ³ª¶óµµ nullÀÌ¸é ¿¡·¯(endlineÀº nullÀÎ °æ¿ì ¹«ÇÑ´ë·Î °£ÁÖ)
- *     2. system path¸¦ meta·ÎºÎÅÍ °¡Á®¿À°í, ±ÇÇÑ °Ë»ç ¼öÇà
- *     2.1 source´Â read, destinationÀº write±ÇÇÑ °Ë»ç
- *     3. path, filename, directory indicator¸¦ Á¶ÇÕÇÏ¿© path»ı¼º
- *     4. startline~endline±îÁö file copy
+ *     1. argumentê°€ í•˜ë‚˜ë¼ë„ nullì´ë©´ ì—ëŸ¬(endlineì€ nullì¸ ê²½ìš° ë¬´í•œëŒ€ë¡œ ê°„ì£¼)
+ *     2. system pathë¥¼ metaë¡œë¶€í„° ê°€ì ¸ì˜¤ê³ , ê¶Œí•œ ê²€ì‚¬ ìˆ˜í–‰
+ *     2.1 sourceëŠ” read, destinationì€ writeê¶Œí•œ ê²€ì‚¬
+ *     3. path, filename, directory indicatorë¥¼ ì¡°í•©í•˜ì—¬ pathìƒì„±
+ *     4. startline~endlineê¹Œì§€ file copy
  *
  ***********************************************************************/
     
@@ -226,7 +226,7 @@ IDE_RC qsfCalculate_FCopy( mtcNode*     aNode,
         sSrcPathValue = (mtdCharType*)aStack[1].value;
         sDestPathValue = (mtdCharType*)aStack[3].value;
         
-        // ¸ŞÅ¸¿¡¼­ ½ÇÁ¦ path¸¦ ¾ò¾î¿È
+        // ë©”íƒ€ì—ì„œ ì‹¤ì œ pathë¥¼ ì–»ì–´ì˜´
         sDummyStmt = QC_SMI_STMT(sStatement);
 
         sSmiStmtFlag &= ~SMI_STATEMENT_MASK;

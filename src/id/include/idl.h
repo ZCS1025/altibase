@@ -14,9 +14,9 @@
  *
  * DESCRIPTION
  *   InDependent Layer for PDL WRAPPER
- *   PDL ¶óÀÌºê·¯¸®¸¦ ¼Ò½º¼öÁØ¿¡¼­ idlVA ¸ÅÅ©·Î·Î ´ëÄ¡ÇÔ
- *   ÁÖÀÇ : PDL.h ´ë½Å¿¡ ÀÌ È­ÀÏÀ» include ÇØ¾ß ÇÔ.
- *         (¸í½ÃÀûÀ¸·Î PDL.h¸¦ ÇÏ´Â °ÍÀº ÀÌ È­ÀÏÀÇ ÀÇµµ¿Í ¾î±ß³²)
+ *   PDL ë¼ì´ë¸ŒëŸ¬ë¦¬ë¥¼ ì†ŒìŠ¤ìˆ˜ì¤€ì—ì„œ idlVA ë§¤í¬ë¡œë¡œ ëŒ€ì¹˜í•¨
+ *   ì£¼ì˜ : PDL.h ëŒ€ì‹ ì— ì´ í™”ì¼ì„ include í•´ì•¼ í•¨.
+ *         (ëª…ì‹œì ìœ¼ë¡œ PDL.hë¥¼ í•˜ëŠ” ê²ƒì€ ì´ í™”ì¼ì˜ ì˜ë„ì™€ ì–´ê¸‹ë‚¨)
  *
  * MODIFIED    (MM/DD/YYYY)
  *    sjkim     01/07/2000 - Created
@@ -138,14 +138,14 @@ class idlOS
 private:
 //===================================================================
 // To Fix PR-13963
-// ´ë¿ë·® Èü ¿ä±¸¸¦ °Ë»çÇÏ°í, ÀÌ¸¦ ·Î±×¿¡ Ãâ·ÂÇÏ±â À§ÇÑ ³»ºÎ ÇÔ¼ö
+// ëŒ€ìš©ëŸ‰ íž™ ìš”êµ¬ë¥¼ ê²€ì‚¬í•˜ê³ , ì´ë¥¼ ë¡œê·¸ì— ì¶œë ¥í•˜ê¸° ìœ„í•œ ë‚´ë¶€ í•¨ìˆ˜
 //===================================================================
     static inline void checkLargeHeapUse(size_t nbytes);
 
 #if defined(DEC_TRU64) && (OS_MAJORVER <= 4)
 //===================================================================
 // To Fix PR-17754
-// ÀÏºÎ ÇÃ·§Æû¿¡ ¾ø´Â vsnprintf() ±¸ÇöÀ» À§ÇÑ ³»ºÎ ÇÔ¼ö
+// ì¼ë¶€ í”Œëž«í¼ì— ì—†ëŠ” vsnprintf() êµ¬í˜„ì„ ìœ„í•œ ë‚´ë¶€ í•¨ìˆ˜
 //===================================================================
     static SInt int_vasprintf( SChar**      aResult,
                                const SChar* aFormat,
@@ -158,7 +158,7 @@ private:
 public:
 //===================================================================
 // To Fix PR-13963
-// PDL_OSÀÇ Èü ÇÒ´ç ÇÔ¼ö »ç¿ëÀ» idlOS·Î Ã³¸®ÇÏ±â À§ÇÑ ÇÔ¼ö
+// PDL_OSì˜ íž™ í• ë‹¹ í•¨ìˆ˜ ì‚¬ìš©ì„ idlOSë¡œ ì²˜ë¦¬í•˜ê¸° ìœ„í•œ í•¨ìˆ˜
 //===================================================================
     static void *malloc (size_t nbytes);
     static void *calloc (size_t elements, size_t sizeof_elements);
@@ -255,9 +255,9 @@ public:
 
 #if (defined( IBM_AIX ) && !defined (__GNUG__) && defined(COMPILE_64BIT)) || (defined(VC_WIN32) && !defined(COMPILE_64BIT)) || defined(X86_64_DARWIN)
     /*
-     * AIX ÄÄÆÄÀÏ·¯ÀÇ °æ¿ì vULong, vSLongÀ» º°µµÀÇ Å¸ÀÔÀ¸·Î ÀÎ½ÄÇÑ´Ù.
-     * Windows 32ºñÆ® ÄÄÆÄÀÏ·¯µµ ¸¶Âù°¡Áö.
-     * µû¶ó¼­, ÇØ´ç Å¸ÀÔ¿¡ µû¸¥ alignÀ» º°µµ·Î ±¸ÇöÇÔ.
+     * AIX ì»´íŒŒì¼ëŸ¬ì˜ ê²½ìš° vULong, vSLongì„ ë³„ë„ì˜ íƒ€ìž…ìœ¼ë¡œ ì¸ì‹í•œë‹¤.
+     * Windows 32ë¹„íŠ¸ ì»´íŒŒì¼ëŸ¬ë„ ë§ˆì°¬ê°€ì§€.
+     * ë”°ë¼ì„œ, í•´ë‹¹ íƒ€ìž…ì— ë”°ë¥¸ alignì„ ë³„ë„ë¡œ êµ¬í˜„í•¨.
      */
     static vSLong  align(vSLong Size);
     static vULong  align(vULong Size);
@@ -359,7 +359,7 @@ public:
     static SChar toupper(SChar c);
     static SChar tolower(SChar c);
 
-    /* memory check½Ã¿¡¸¸ ¸Þ¸ð¸®¸¦ ÃÊ±âÈ­ÇÏ´Â ÇÔ¼ö */
+    /* memory checkì‹œì—ë§Œ ë©”ëª¨ë¦¬ë¥¼ ì´ˆê¸°í™”í•˜ëŠ” í•¨ìˆ˜ */
     static void *memsetOnMemCheck(void *s, int c, size_t len);
 
     static UInt hex2dec(UChar * src, UInt length);
@@ -414,12 +414,12 @@ class idlVA : public PDL
 
     static SInt getMacAddress(ID_HOST_ID *mac, UInt *aNoValues);
 
-    // ´Ù¾çÇÑ ÇüÅÂÀÇ ½ºÆ®¸µ ¼ýÀÚÇü Áö¿øÇÔ¼ö : 12M, 12K, -1238 µî
+    // ë‹¤ì–‘í•œ í˜•íƒœì˜ ìŠ¤íŠ¸ë§ ìˆ«ìží˜• ì§€ì›í•¨ìˆ˜ : 12M, 12K, -1238 ë“±
     static SLong fstrToLong(SChar *str, idBool *aValidity = NULL);
 
-    // Network API : PDLÀÇ API´Â fcntlÀÇ °úµµÇÑ È£Ãâ·Î ÀÎÇØ
-    // ¼º´ÉÀÌ ¸¹ÀÌ ´À¸². ÀÌ ºÎºÐÀ» »èÁ¦ÇÑ APIÀÓ
-    // ÁÖÀÇ!!! : ¹Ýµå½Ã fd¸¦ non-blocking ÇÑ ÈÄ ¼öÇàÇØ¾ß ÇÔ.!!
+    // Network API : PDLì˜ APIëŠ” fcntlì˜ ê³¼ë„í•œ í˜¸ì¶œë¡œ ì¸í•´
+    // ì„±ëŠ¥ì´ ë§Žì´ ëŠë¦¼. ì´ ë¶€ë¶„ì„ ì‚­ì œí•œ APIìž„
+    // ì£¼ì˜!!! : ë°˜ë“œì‹œ fdë¥¼ non-blocking í•œ í›„ ìˆ˜í–‰í•´ì•¼ í•¨.!!
 
     static ssize_t recv_nn (PDL_SOCKET handle,
                            void *buf,
@@ -429,13 +429,13 @@ class idlVA : public PDL
                            size_t len,
                            const PDL_Time_Value *timeout);
 
-    // To Fix BUG-15181 [A3/A4] recv_nn_i°¡ timeoutÀ» ¹«½ÃÇÕ´Ï´Ù.
-    // recv_nn Àº Á¶±ÝÀÌ¶óµµ ¹ÞÀº µ¥ÀÌÅÍ°¡ ÀÖÀ¸¸é timeoutÀ» ¹«½ÃÇÑ´Ù.
-    // ( replication¿¡¼­ ÀÌ·¯ÇÑ ½ºÅ°¸¶·Î recv_nnÀ» »ç¿ëÇÏ°í ÀÖ¾î¼­
-    //   recv_nnÀ» Á÷Á¢ ¼öÁ¤ÇÒ ¼ö ¾øÀ½.)
+    // To Fix BUG-15181 [A3/A4] recv_nn_iê°€ timeoutì„ ë¬´ì‹œí•©ë‹ˆë‹¤.
+    // recv_nn ì€ ì¡°ê¸ˆì´ë¼ë„ ë°›ì€ ë°ì´í„°ê°€ ìžˆìœ¼ë©´ timeoutì„ ë¬´ì‹œí•œë‹¤.
+    // ( replicationì—ì„œ ì´ëŸ¬í•œ ìŠ¤í‚¤ë§ˆë¡œ recv_nnì„ ì‚¬ìš©í•˜ê³  ìžˆì–´ì„œ
+    //   recv_nnì„ ì§ì ‘ ìˆ˜ì •í•  ìˆ˜ ì—†ìŒ.)
     //
-    // recv_nn_to´Â Á¶±ÝÀÌ¶óµµ ¹ÞÀº µ¥ÀÌÅÍ°¡ ÀÖ¾îµµ
-    // timeout°É¸®¸é ¿¡·¯¸¦ ¸®ÅÏÇÑ´Ù.
+    // recv_nn_toëŠ” ì¡°ê¸ˆì´ë¼ë„ ë°›ì€ ë°ì´í„°ê°€ ìžˆì–´ë„
+    // timeoutê±¸ë¦¬ë©´ ì—ëŸ¬ë¥¼ ë¦¬í„´í•œë‹¤.
     static ssize_t recv_nn_to (PDL_SOCKET handle,
                                void *buf,
                                size_t len,
@@ -449,7 +449,7 @@ class idlVA : public PDL
                              size_t len,
                              const PDL_Time_Value *timeout);
 
-    // recv_nn_to °¡ È£ÃâÇÏ´Â ±¸ÇöÇÔ¼ö
+    // recv_nn_to ê°€ í˜¸ì¶œí•˜ëŠ” êµ¬í˜„í•¨ìˆ˜
     static ssize_t recv_nn_to_i (PDL_SOCKET handle,
                                  void *buf,
                                  size_t len,
@@ -485,16 +485,16 @@ class idlVA : public PDL
     static SInt getSystemUptime(SChar *aBuffer, SInt aBuffSize);
 
     /*
-     * appendFormat ÇÔ¼öÀÇ ÀÎÀÚ ¹× ¸®ÅÏ°ªÀÇ specÀº snprintf¿Í °°´Ù.
-     *   aBuffer:      Ãâ·ÂµÇ´Â ¹öÆÛ
-     *   aBufferSize:  aBuffer¿¡ ÇÒ´çµÈ »çÀÌÁî
-     *   aFormat:      snprintf Æ÷¸Ë
+     * appendFormat í•¨ìˆ˜ì˜ ì¸ìž ë° ë¦¬í„´ê°’ì˜ specì€ snprintfì™€ ê°™ë‹¤.
+     *   aBuffer:      ì¶œë ¥ë˜ëŠ” ë²„í¼
+     *   aBufferSize:  aBufferì— í• ë‹¹ëœ ì‚¬ì´ì¦ˆ
+     *   aFormat:      snprintf í¬ë§·
      *
-     *   Return Value: aFormat, ... À¸·Î Ãâ·ÂµÈ ¹®ÀÚ¿­ ±æÀÌ (sprintf¿Í °°´Ù)
-     *                 ¸¸¾à ÀÌ °ªÀÌ aBufferSize¿Í °°°Å³ª Å©¸é ¹öÆÛ ÃÊ°ú·Î Â©¸° °ÍÀÓ
-     *                 ÃÖ´ë ¹®ÀÚ¿­ ±æÀÌ´Â aBufferSize - 1 ÀÌ¸ç null-terminated µÈ´Ù.
+     *   Return Value: aFormat, ... ìœ¼ë¡œ ì¶œë ¥ëœ ë¬¸ìžì—´ ê¸¸ì´ (sprintfì™€ ê°™ë‹¤)
+     *                 ë§Œì•½ ì´ ê°’ì´ aBufferSizeì™€ ê°™ê±°ë‚˜ í¬ë©´ ë²„í¼ ì´ˆê³¼ë¡œ ì§¤ë¦° ê²ƒìž„
+     *                 ìµœëŒ€ ë¬¸ìžì—´ ê¸¸ì´ëŠ” aBufferSize - 1 ì´ë©° null-terminated ëœë‹¤.
      *
-     * Â÷ÀÌÁ¡Àº Ãâ·Â°á°ú°¡ aBuffer¿¡ concatenateµÈ´Ù´Â Á¡ÀÌ´Ù.
+     * ì°¨ì´ì ì€ ì¶œë ¥ê²°ê³¼ê°€ aBufferì— concatenateëœë‹¤ëŠ” ì ì´ë‹¤.
      */
     static SInt appendFormat(char *aBuffer, size_t aBufferSize, const char *aFormat, ...);
     static SInt appendString(char *aBuffer, size_t aBufferSize, char *aString, UInt aLen);
@@ -751,8 +751,8 @@ volatile UInt vstSeed = 0;\
 #define ID_ULTODB(aData) (SDouble)(aData)
 #endif /* VC_WINCE */
 
-// Direct I/O ÃÖ´ë PageÅ©±â = 8K
-// idpDescResource.cppÀÇ IDP_MAX_DIO_PAGE_SIZE ¿Í µ¿ÀÏÇÑ °ªÀÌ¾î¾ß ÇÑ´Ù.
+// Direct I/O ìµœëŒ€ Pageí¬ê¸° = 8K
+// idpDescResource.cppì˜ IDP_MAX_DIO_PAGE_SIZE ì™€ ë™ì¼í•œ ê°’ì´ì–´ì•¼ í•œë‹¤.
 #define ID_MAX_DIO_PAGE_SIZE ( 8 * 1024 )
 
 /* fix BUG-17606, BUG-17724 */
@@ -764,7 +764,7 @@ volatile UInt vstSeed = 0;\
 
 /* fix BUG-17606 ,BUG-17724*/
 #if defined(HP_HPUX) ||  defined(IA64_HP_HPUX)
-/* fix BUG-22936 64bit SQLLENÀÌ 32bit , 64bit ¸ðµÎ Á¦°øÇØ¾ß ÇÕ´Ï´Ù. */
+/* fix BUG-22936 64bit SQLLENì´ 32bit , 64bit ëª¨ë‘ ì œê³µí•´ì•¼ í•©ë‹ˆë‹¤. */
 #if defined(COMPILE_64BIT)
 #if defined(BUILD_REAL_64_BIT_MODE)
 #define IDL_ALTIBASE_ODBC_NAME "lib"PRODUCT_PREFIX"altibase_odbc-64bit-ul64.sl"
@@ -778,7 +778,7 @@ volatile UInt vstSeed = 0;\
 #if defined(PDL_WIN32)
 #define IDL_ALTIBASE_ODBC_NAME PRODUCT_PREFIX"altiodbc.dll"
 #else /* PDL_WIN32 */
-/* fix BUG-22936 64bit SQLLENÀÌ 32bit , 64bit ¸ðµÎ Á¦°øÇØ¾ß ÇÕ´Ï´Ù. */
+/* fix BUG-22936 64bit SQLLENì´ 32bit , 64bit ëª¨ë‘ ì œê³µí•´ì•¼ í•©ë‹ˆë‹¤. */
 #if defined(COMPILE_64BIT)
 #if defined(BUILD_REAL_64_BIT_MODE)
 #define IDL_ALTIBASE_ODBC_NAME "lib"PRODUCT_PREFIX"altibase_odbc-64bit-ul64.so"
@@ -791,15 +791,15 @@ volatile UInt vstSeed = 0;\
 #endif /* PDL_WIN32 */
 #endif /* HP_HPUX  */
 
-/* BUG-22358: [ID] CPU°¹¼ö¸¦ ÀÌ¿ëÇÏ´Â ÄÚµå¿¡¼­ »óÇÑÄ¡¸¦ ÁÙ¼ö ÀÖ´Â ÇÁ·ÎÆÛÆ¼
- * °¡ ÇÊ¿ä ÇÕ´Ï´Ù.
+/* BUG-22358: [ID] CPUê°¯ìˆ˜ë¥¼ ì´ìš©í•˜ëŠ” ì½”ë“œì—ì„œ ìƒí•œì¹˜ë¥¼ ì¤„ìˆ˜ ìžˆëŠ” í”„ë¡œí¼í‹°
+ * ê°€ í•„ìš” í•©ë‹ˆë‹¤.
  *
- * ID_SCALABILITY_SYS¸¦ »ç¿ëÇÏµµ·Ï ¼öÁ¤
+ * ID_SCALABILITY_SYSë¥¼ ì‚¬ìš©í•˜ë„ë¡ ìˆ˜ì •
  * */
 
-/* BUG-22235: CPU°¹¼ö°¡ ´Ù·®ÀÏ¶§ Memory¸¦ ¸¹ÀÌ »ç¿ëÇÏ´Â ¹®Á¦°¡ ÀÖ½À´Ï´Ù.
+/* BUG-22235: CPUê°¯ìˆ˜ê°€ ë‹¤ëŸ‰ì¼ë•Œ Memoryë¥¼ ë§Žì´ ì‚¬ìš©í•˜ëŠ” ë¬¸ì œê°€ ìžˆìŠµë‹ˆë‹¤.
  *
- * ´ÙÁßÈ­ °¹¼ö°¡ MAX_SCALABILITY °ªÀ» ³Ñ¾î°¡¸é ÀÌ °ªÀ¸·Î º¸Á¤ÇÑ´Ù.
+ * ë‹¤ì¤‘í™” ê°¯ìˆ˜ê°€ MAX_SCALABILITY ê°’ì„ ë„˜ì–´ê°€ë©´ ì´ ê°’ìœ¼ë¡œ ë³´ì •í•œë‹¤.
  * */
 #define ID_SCALABILITY_CLIENT_CPU    1
 #define ID_SCALABILITY_CLIENT_MAX   32

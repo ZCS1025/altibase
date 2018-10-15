@@ -30,9 +30,9 @@ import java.util.Calendar;
 
 abstract class AbstractColumn implements Column
 {
-    // JDBC ½ºÆå¿¡¼­ Á¤ÇÑ null value
-    // ÀÌ °ªÀº ¾ËÆ¼º£ÀÌ½º¿¡¼­ ÀúÀåÇÒ ¶§ »ç¿ëÇÏ´Â null value°¡ ¾Æ´Ï´Ù.
-    // mt type¿¡¼­ Á¤ÇÑ null value´Â °¢ Å¸ÀÔº° class¿¡ Á¤ÀÇµÇ¾î ÀÖ´Ù.
+    // JDBC ìŠ¤í™ì—ì„œ ì •í•œ null value
+    // ì´ ê°’ì€ ì•Œí‹°ë² ì´ìŠ¤ì—ì„œ ì €ì¥í•  ë•Œ ì‚¬ìš©í•˜ëŠ” null valueê°€ ì•„ë‹ˆë‹¤.
+    // mt typeì—ì„œ ì •í•œ null valueëŠ” ê° íƒ€ì…ë³„ classì— ì •ì˜ë˜ì–´ ìˆë‹¤.
     private static final boolean BOOLEAN_NULL_VALUE = false;
     private static final byte    BYTE_NULL_VALUE    = 0;
     private static final short   SHORT_NULL_VALUE   = 0;
@@ -47,7 +47,7 @@ abstract class AbstractColumn implements Column
     protected int                mMaxBinaryLength   = 0;
 
     /**
-     * fetch½Ã ÄÃ·³ÀÇ ¼ø¼­¸¦ ÀúÀåÇÏ°í ÀÖ´Ù.
+     * fetchì‹œ ì»¬ëŸ¼ì˜ ìˆœì„œë¥¼ ì €ì¥í•˜ê³  ìˆë‹¤.
      */
     private int                  mColumnIdx;
 
@@ -60,10 +60,10 @@ abstract class AbstractColumn implements Column
     protected abstract void readFromSub(CmChannel aChannel) throws SQLException;
 
     /**
-     * Ã¤³Î·ÎºÎÅÍ ÄÃ·³µ¥ÀÌÅÍ¸¦ ÀĞ¾î ¹Ù·Î DynamicArray¿¡ ÀúÀåÇÑ´Ù.
-     * @param aChannel ¼ÒÄÏÅë½ÅÀ» À§ÇÑ Ã¤³Î°´Ã¼
-     * @param aArray ÄÃ·³µ¥ÀÌÅÍ¸¦ ÀúÀåÇÒ DynamicArray°´Ã¼
-     * @throws SQLException Á¤»óÀûÀ¸·Î ÄÃ·³µ¥ÀÌÅÍ¸¦ ·ÎµåÇÏÁö ¸øÇÑ °æ¿ì
+     * ì±„ë„ë¡œë¶€í„° ì»¬ëŸ¼ë°ì´í„°ë¥¼ ì½ì–´ ë°”ë¡œ DynamicArrayì— ì €ì¥í•œë‹¤.
+     * @param aChannel ì†Œì¼“í†µì‹ ì„ ìœ„í•œ ì±„ë„ê°ì²´
+     * @param aArray ì»¬ëŸ¼ë°ì´í„°ë¥¼ ì €ì¥í•  DynamicArrayê°ì²´
+     * @throws SQLException ì •ìƒì ìœ¼ë¡œ ì»¬ëŸ¼ë°ì´í„°ë¥¼ ë¡œë“œí•˜ì§€ ëª»í•œ ê²½ìš°
      */
     protected abstract void readFromSub(CmChannel aChannel, DynamicArray aArray) throws SQLException;
 
@@ -264,8 +264,8 @@ abstract class AbstractColumn implements Column
         }
         else
         {
-            /* BUG-43807 TotalReceivedRowCount°¡ MaxRowCountº¸´Ù Å©°Å³ª °°´õ¶óµµ ÇÁ·ÎÅäÄİ »óÀ¸·Î´Â
-               µ¥ÀÌÅÍ°¡ ³¯¾Æ¿À±â ¶§¹®¿¡ ÇØ´ç µ¥ÀÌÅÍ¸¦ ÀĞ¾îµéÀÎ´Ù.  */
+            /* BUG-43807 TotalReceivedRowCountê°€ MaxRowCountë³´ë‹¤ í¬ê±°ë‚˜ ê°™ë”ë¼ë„ í”„ë¡œí† ì½œ ìƒìœ¼ë¡œëŠ”
+               ë°ì´í„°ê°€ ë‚ ì•„ì˜¤ê¸° ë•Œë¬¸ì— í•´ë‹¹ ë°ì´í„°ë¥¼ ì½ì–´ë“¤ì¸ë‹¤.  */
             readFromSub(aChannel);
         }
     }
@@ -505,7 +505,7 @@ abstract class AbstractColumn implements Column
         return getObjectSub();
     }
 
-    // BUG-37418 LOBÀº null locator¸¸ ¾Æ´Ï¶ó¸é °´Ã¼¸¦ ¾òÀ» ¼ö ÀÖ¾î¾ß ÇÑ´Ù.
+    // BUG-37418 LOBì€ null locatorë§Œ ì•„ë‹ˆë¼ë©´ ê°ì²´ë¥¼ ì–»ì„ ìˆ˜ ìˆì–´ì•¼ í•œë‹¤.
     private boolean canReturnNullObject()
     {
         if (this instanceof LobLocatorColumn)

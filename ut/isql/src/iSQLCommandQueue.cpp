@@ -120,7 +120,7 @@ iSQLCommandQueue::AddCommand( iSQLCommand * a_Command )
             i = m_CurHisNum;
         }
 
-        /* ÀÌÀü ¸í·É¾î¿Í °°Àº ¸í·É¾î ¼öÇà½Ã history¿¡ Ãß°¡ÇÏÁö ¾ÊÀ½ */
+        /* ì´ì „ ëª…ë ¹ì–´ì™€ ê°™ì€ ëª…ë ¹ì–´ ìˆ˜í–‰ì‹œ historyì— ì¶”ê°€í•˜ì§€ ì•ŠìŒ */
         if ( strcmp(m_Queue[i-1].GetCommandStr(), a_Command->GetCommandStr()) == 0 )
         {
             return;
@@ -195,7 +195,7 @@ iSQLCommandQueue::DisplayHistory()
                 }
                 else
                 {
-                    // ¿©±â µé¾î¿Ã ¼ö ÀÖ³ª?
+                    // ì—¬ê¸° ë“¤ì–´ì˜¬ ìˆ˜ ìžˆë‚˜?
                     idlOS::sprintf(m_tmpBuf2, "%s", pos);
                     break;
                 }

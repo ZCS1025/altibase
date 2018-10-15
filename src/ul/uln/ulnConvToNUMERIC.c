@@ -257,10 +257,10 @@ ACI_RC ulncREAL_NUMERIC(ulnFnContext  *aFnContext,
 
 
     /*
-     * single precision floating point number ´Â 23(24) ºñÆ®ÀÇ significand ¸¦ °®´Â´Ù.
-     * ÃÖ´ë Àý´ë°ªÀº 16777216 ·Î½á, 8ÀÚ¸®ÀÌ´Ù. ¿©±â¿¡ ¼Ò¼ýÁ¡ ÀÌÇÏ 7ÀÚ¸®, ¼Ò¼ýÁ¡, ºÎÈ£, 
-     * null term ±îÁö ´õÇÏ¸é 8 + 7 + 1 + 1 + 1 = 18 ÀÚ¸®°¡ ÇÊ¿äÇÏ´Ù.
-     * ±×³É ³Ë³ËÈ÷ 20¹ÙÀÌÆ®·Î ÇÒ´çÇÏÀÚ.
+     * single precision floating point number ëŠ” 23(24) ë¹„íŠ¸ì˜ significand ë¥¼ ê°–ëŠ”ë‹¤.
+     * ìµœëŒ€ ì ˆëŒ€ê°’ì€ 16777216 ë¡œì¨, 8ìžë¦¬ì´ë‹¤. ì—¬ê¸°ì— ì†Œìˆ«ì  ì´í•˜ 7ìžë¦¬, ì†Œìˆ«ì , ë¶€í˜¸, 
+     * null term ê¹Œì§€ ë”í•˜ë©´ 8 + 7 + 1 + 1 + 1 = 18 ìžë¦¬ê°€ í•„ìš”í•˜ë‹¤.
+     * ê·¸ëƒ¥ ë„‰ë„‰ížˆ 20ë°”ì´íŠ¸ë¡œ í• ë‹¹í•˜ìž.
      */
     acp_char_t          sTmpBuffer[20];
 
@@ -353,10 +353,10 @@ ACI_RC ulncDOUBLE_NUMERIC(ulnFnContext  *aFnContext,
 
 
     /*
-     * double precision floating point number ´Â 52(53) ºñÆ®ÀÇ significand ¸¦ °®´Â´Ù.
-     * ÃÖ´ë Àý´ë°ªÀº 9007199254740992 ·Î½á, 16ÀÚ¸®ÀÌ´Ù. ¿©±â¿¡ ¼Ò¼ýÁ¡ ÀÌÇÏ 15ÀÚ¸®, ¼Ò¼ýÁ¡, ºÎÈ£, 
-     * null term ±îÁö ´õÇÏ¸é 16 + 15 + 1 + 1 + 1 = 34 ÀÚ¸®°¡ ÇÊ¿äÇÏ´Ù.
-     * ±×³É ³Ë³ËÈ÷ 40¹ÙÀÌÆ®·Î ÇÒ´çÇÏÀÚ.
+     * double precision floating point number ëŠ” 52(53) ë¹„íŠ¸ì˜ significand ë¥¼ ê°–ëŠ”ë‹¤.
+     * ìµœëŒ€ ì ˆëŒ€ê°’ì€ 9007199254740992 ë¡œì¨, 16ìžë¦¬ì´ë‹¤. ì—¬ê¸°ì— ì†Œìˆ«ì  ì´í•˜ 15ìžë¦¬, ì†Œìˆ«ì , ë¶€í˜¸, 
+     * null term ê¹Œì§€ ë”í•˜ë©´ 16 + 15 + 1 + 1 + 1 = 34 ìžë¦¬ê°€ í•„ìš”í•˜ë‹¤.
+     * ê·¸ëƒ¥ ë„‰ë„‰ížˆ 40ë°”ì´íŠ¸ë¡œ í• ë‹¹í•˜ìž.
      */
     acp_char_t           sTmpBuffer[40];
 
@@ -476,14 +476,14 @@ ACI_RC ulncNUMERIC_NUMERIC(ulnFnContext  *aFnContext,
     sSqlNumeric = (SQL_NUMERIC_STRUCT *)aAppBuffer->mBuffer;
 
     /*
-     * BUGBUG : cmtNumeric ÀÇ scale Àº acp_sint16_t ÀÎµ¥, SQL_NUMERIC_STRUCT ÀÇ scale Àº acp_char_t ÀÌ´Ù.
-     *          ½ºÄÉÀÏ ¿À¹öÇÃ·Î¿ì°¡ ³ª¸é ¾î¶»°Ô ÇÏ³ª?
-     *          fractional truncation À» ³»¾îÁÖ°í, ÀûÀýÈ÷ Á¶Á¤ÇØ¾ß Á¤´äÀÌÁö¸¸,
-     *          ÀÏ´Ü, ±×³É ¿¡·¯¸¦ ³»°í¼­ ¸ð¸£´ÂÃ¼ ÇÏÀÚ -_-;
+     * BUGBUG : cmtNumeric ì˜ scale ì€ acp_sint16_t ì¸ë°, SQL_NUMERIC_STRUCT ì˜ scale ì€ acp_char_t ì´ë‹¤.
+     *          ìŠ¤ì¼€ì¼ ì˜¤ë²„í”Œë¡œìš°ê°€ ë‚˜ë©´ ì–´ë–»ê²Œ í•˜ë‚˜?
+     *          fractional truncation ì„ ë‚´ì–´ì£¼ê³ , ì ì ˆížˆ ì¡°ì •í•´ì•¼ ì •ë‹µì´ì§€ë§Œ,
+     *          ì¼ë‹¨, ê·¸ëƒ¥ ì—ëŸ¬ë¥¼ ë‚´ê³ ì„œ ëª¨ë¥´ëŠ”ì²´ í•˜ìž -_-;
      *
-     *          ±×·±µ¥, ¾î¶² °æ¿ì¿¡ Àú·¸°Ô ½ºÄÉÀÏÀÌ Ä¿Áö³ª?
+     *          ê·¸ëŸ°ë°, ì–´ë–¤ ê²½ìš°ì— ì €ë ‡ê²Œ ìŠ¤ì¼€ì¼ì´ ì»¤ì§€ë‚˜?
      *
-     *          e-90 ÀÌ numeric scale overflow ³ª´Â ÇÑ°èÁ¡ÀÓ.
+     *          e-90 ì´ numeric scale overflow ë‚˜ëŠ” í•œê³„ì ìž„.
      *          e-90 OK
      *          e-91 Overflow
      *
@@ -504,7 +504,7 @@ ACI_RC ulncNUMERIC_NUMERIC(ulnFnContext  *aFnContext,
     ACI_TEST_RAISE(sDescARD == NULL, SKIP_PRECSCALE_CONV); /* BUG-37256 */
     sDescRec = ulnDescGetDescRec(sDescARD, aColumn->mColumnNumber);
     ACI_TEST_RAISE(sDescRec == NULL, SKIP_PRECSCALE_CONV); /* BUG-45453 */
-    /* user precision, scale¿¡ ¸Â°Ô º¯È¯ */
+    /* user precision, scaleì— ë§žê²Œ ë³€í™˜ */
     {
         sUserPrecision = ulnMetaGetPrecision(&sDescRec->mMeta);
         sUserScale = ulnMetaGetScale(&sDescRec->mMeta);
@@ -529,7 +529,7 @@ ACI_RC ulncNUMERIC_NUMERIC(ulnFnContext  *aFnContext,
                                     SQL_MAX_NUMERIC_LEN,
                                     sTmpNumMantissaLen);
 
-            /* user-scaleÀº value°¡ Â©¸®Áö ¾ÊÀ» Á¤µµ¿©¾ß ÇÑ´Ù. */
+            /* user-scaleì€ valueê°€ ì§¤ë¦¬ì§€ ì•Šì„ ì •ë„ì—¬ì•¼ í•œë‹¤. */
             if (sScaleDiff > 0)
             {
                 for (; sScaleDiff != 0; sScaleDiff--)
@@ -578,7 +578,7 @@ ACI_RC ulncNUMERIC_NUMERIC(ulnFnContext  *aFnContext,
             {
                 sUserPrecision = ULN_NUMERIC_MAX_PRECISION;
             }
-            /* user-precisionÀº value¸¦ ´Ù ´ãÀ» ¼ö ÀÖÀ» Á¤µµ¿©¾ß ÇÑ´Ù. */
+            /* user-precisionì€ valueë¥¼ ë‹¤ ë‹´ì„ ìˆ˜ ìžˆì„ ì •ë„ì—¬ì•¼ í•œë‹¤. */
             ACI_TEST_RAISE(sValuePrecision > sUserPrecision,
                            LABEL_PRECISION_OUT_OF_RANGE);
 

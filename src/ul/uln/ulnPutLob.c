@@ -19,11 +19,11 @@
 #include <ulnLob.h>
 
 /*
- * ex) LOB_LOCATOR ·Î ¹ÙÀÎµùÇÑ´Ù.
- *     execute ¸¦ ÇÏ¸é LOCATOR ¸¦ ¾òÀ» ¼ö ÀÖ´Ù.
- *     ( get length ¸¦ ÇÑ´Ù. )
- *     put lob À» ÀÌ¿ëÇØ¼­ ¸¶Áö¸· ºÎºÐ¿¡ µ¡ºÙÀÎ´Ù
- *                         È¤Àº offset »ý°¢ ¾Ê°í Ã³À½ºÎÅÍ ¿ì·ç·ç·ç ´Ù ÇØ ¹ö¸°´Ù.
+ * ex) LOB_LOCATOR ë¡œ ë°”ì¸ë”©í•œë‹¤.
+ *     execute ë¥¼ í•˜ë©´ LOCATOR ë¥¼ ì–»ì„ ìˆ˜ ìžˆë‹¤.
+ *     ( get length ë¥¼ í•œë‹¤. )
+ *     put lob ì„ ì´ìš©í•´ì„œ ë§ˆì§€ë§‰ ë¶€ë¶„ì— ë§ë¶™ì¸ë‹¤
+ *                         í˜¹ì€ offset ìƒê° ì•Šê³  ì²˜ìŒë¶€í„° ìš°ë£¨ë£¨ë£¨ ë‹¤ í•´ ë²„ë¦°ë‹¤.
  */
 SQLRETURN ulnPutLob(ulnStmt      *aStmt,
                     acp_sint16_t  aLocatorCType,
@@ -60,13 +60,13 @@ SQLRETURN ulnPutLob(ulnStmt      *aStmt,
     ULN_FLAG_UP(sNeedExit);
 
     sPtContext = &(aStmt->mParentDbc->mPtContext);
-    /* BUG-44125 [mm-cli] IPCDA ¸ðµå Å×½ºÆ® Áß hang - iloader CLOB */
+    /* BUG-44125 [mm-cli] IPCDA ëª¨ë“œ í…ŒìŠ¤íŠ¸ ì¤‘ hang - iloader CLOB */
     ACI_TEST_RAISE(cmiGetLinkImpl(&sPtContext->mCmiPtContext) == CMI_LINK_IMPL_IPCDA,
                    IPCDANotSupport);
     /*
-     * BUGBUG : ÀúÀåµÈ LOB µ¥ÀÌÅÍÀÇ Å©±â¸¦ ³Ñ¾î¼± offset ÀÌ ÀÔ·ÂµÇ¸é ¿¡·¯¸¦ ³½´Ù
+     * BUGBUG : ì €ìž¥ëœ LOB ë°ì´í„°ì˜ í¬ê¸°ë¥¼ ë„˜ì–´ì„  offset ì´ ìž…ë ¥ë˜ë©´ ì—ëŸ¬ë¥¼ ë‚¸ë‹¤
      *          aFromPosition + aLength > ID_UINT_MAX --> ERROR!!!
-     *          Ã³¸®ÇØ ... ÁÙ±î, ¸»±î.. -_-;; ¼­¹ö¿¡¼­ Ã³¸®ÇÏ°Ô ³ö µÑ±î...
+     *          ì²˜ë¦¬í•´ ... ì¤„ê¹Œ, ë§ê¹Œ.. -_-;; ì„œë²„ì—ì„œ ì²˜ë¦¬í•˜ê²Œ ë†” ë‘˜ê¹Œ...
      */
 
     ACI_TEST_RAISE(aBuffer == NULL, LABEL_INVALID_NULL);
@@ -105,7 +105,7 @@ SQLRETURN ulnPutLob(ulnStmt      *aStmt,
     }
 
     /*
-     * ulnLob ±¸Á¶Ã¼ ÃÊ±âÈ­
+     * ulnLob êµ¬ì¡°ì²´ ì´ˆê¸°í™”
      */
 
     ulnLobInitialize(&sLob, sMTYPE);                        /* ULN_LOB_ST_INITIALIZED */
@@ -113,7 +113,7 @@ SQLRETURN ulnPutLob(ulnStmt      *aStmt,
     sLob.mState = ULN_LOB_ST_OPENED;                        /* ULN_LOB_ST_OPENED */
 
     /*
-     * ulnLobBuffer ÃÊ±âÈ­ ¹× ÁØºñ
+     * ulnLobBuffer ì´ˆê¸°í™” ë° ì¤€ë¹„
      */
 
     ulnLobBufferInitialize(&sLobBuffer,
@@ -126,7 +126,7 @@ SQLRETURN ulnPutLob(ulnStmt      *aStmt,
     sLobBuffer.mOp->mPrepare(&sFnContext, &sLobBuffer);
 
     /*
-     * LOB µ¥ÀÌÅÍ Àü¼Û
+     * LOB ë°ì´í„° ì „ì†¡
      */
     // fix BUG-17722
     ACI_TEST(ulnInitializeProtocolContext(&sFnContext,
@@ -148,7 +148,7 @@ SQLRETURN ulnPutLob(ulnStmt      *aStmt,
                         &(aStmt->mParentDbc->mPtContext)) != ACI_SUCCESS);
 
     /*
-     * ulnLobBuffer Á¤¸®
+     * ulnLobBuffer ì •ë¦¬
      */
 
     sLobBuffer.mOp->mFinalize(&sFnContext, &sLobBuffer);

@@ -21,18 +21,18 @@
  * Description :
  *     LOJN(Left Outer JoiN) Node
  *
- *     °ü°èÇü ¸ğµ¨¿¡¼­ Left Outer Join¸¦ ¼öÇàÇÏ´Â Plan Node ÀÌ´Ù.
- *     ´Ù¾çÇÑ Join MethodµéÀº ÇÏÀ§ ³ëµåÀÇ ÇüÅÂ¿¡ µû¶ó °áÁ¤µÈ´Ù.
+ *     ê´€ê³„í˜• ëª¨ë¸ì—ì„œ Left Outer Joinë¥¼ ìˆ˜í–‰í•˜ëŠ” Plan Node ì´ë‹¤.
+ *     ë‹¤ì–‘í•œ Join Methodë“¤ì€ í•˜ìœ„ ë…¸ë“œì˜ í˜•íƒœì— ë”°ë¼ ê²°ì •ëœë‹¤.
  *  
- *     ´ÙÀ½°ú °°Àº ±â´ÉÀ» À§ÇØ »ç¿ëµÈ´Ù.
- *         - Nested Loop Join °è¿­
- *         - Sort-based Join °è¿­
- *         - Hash-based Join °è¿­
- *         - Full Outer JoinÀÇ Anti-Outer ÃÖÀûÈ­ Àû¿ë½Ã
+ *     ë‹¤ìŒê³¼ ê°™ì€ ê¸°ëŠ¥ì„ ìœ„í•´ ì‚¬ìš©ëœë‹¤.
+ *         - Nested Loop Join ê³„ì—´
+ *         - Sort-based Join ê³„ì—´
+ *         - Hash-based Join ê³„ì—´
+ *         - Full Outer Joinì˜ Anti-Outer ìµœì í™” ì ìš©ì‹œ
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  **********************************************************************/
 
@@ -60,7 +60,7 @@
 typedef struct qmncLOJN
 {
     //---------------------------------
-    // Code ¿µ¿ª °øÅë Á¤º¸
+    // Code ì˜ì—­ ê³µí†µ ì •ë³´
     //---------------------------------
 
     qmnPlan        plan;
@@ -68,17 +68,17 @@ typedef struct qmncLOJN
     UInt           planID;
 
     //---------------------------------
-    // LOJN °íÀ¯ Á¤º¸
+    // LOJN ê³ ìœ  ì •ë³´
     //---------------------------------
 
-    qtcNode      * filter;    // ON Condition³»ÀÇ Filter Á¶°Ç
+    qtcNode      * filter;    // ON Conditionë‚´ì˜ Filter ì¡°ê±´
     
 } qmncLOJN;
 
 typedef struct qmndLOJN
 {
     //---------------------------------
-    // Data ¿µ¿ª °øÅë Á¤º¸
+    // Data ì˜ì—­ ê³µí†µ ì •ë³´
     //---------------------------------
 
     qmndPlan            plan;
@@ -86,10 +86,10 @@ typedef struct qmndLOJN
     UInt              * flag;
 
     //---------------------------------
-    // LOJN °íÀ¯ Á¤º¸
+    // LOJN ê³ ìœ  ì •ë³´
     //---------------------------------
     
-    setHitFlagFunc      setHitFlag;  // Child(HASH)¿¡ µû¸¥ ÇÔ¼ö
+    setHitFlagFunc      setHitFlag;  // Child(HASH)ì— ë”°ë¥¸ í•¨ìˆ˜
 
 } qmndLOJN;
 
@@ -101,11 +101,11 @@ public:
     // Base Function Pointer
     //------------------------
 
-    // ÃÊ±âÈ­
+    // ì´ˆê¸°í™”
     static IDE_RC init( qcTemplate * aTemplate,
                         qmnPlan    * aPlan );
 
-    // ¼öÇà ÇÔ¼ö
+    // ìˆ˜í–‰ í•¨ìˆ˜
     static IDE_RC doIt( qcTemplate * aTemplate,
                         qmnPlan    * aPlan,
                         qmcRowFlag * aFlag );
@@ -114,7 +114,7 @@ public:
     static IDE_RC padNull( qcTemplate * aTemplate,
                            qmnPlan    * aPlan );
 
-    // Plan Á¤º¸ Ãâ·Â
+    // Plan ì •ë³´ ì¶œë ¥
     static IDE_RC printPlan( qcTemplate   * aTemplate,
                              qmnPlan      * aPlan,
                              ULong          aDepth,
@@ -127,17 +127,17 @@ private:
     // mapping by doIt() function pointer
     //------------------------
 
-    // È£ÃâµÇ¸é ¾ÈµÊ
+    // í˜¸ì¶œë˜ë©´ ì•ˆë¨
     static IDE_RC doItDefault( qcTemplate * aTemplate,
                                qmnPlan    * aPlan,
                                qmcRowFlag * aFlag );
 
-    // »õ·Î¿î Left Row¿¡ ´ëÇÑ Ã³¸®
+    // ìƒˆë¡œìš´ Left Rowì— ëŒ€í•œ ì²˜ë¦¬
     static IDE_RC doItLeft( qcTemplate * aTemplate,
                             qmnPlan    * aPlan,
                             qmcRowFlag * aFlag );
 
-    // »õ·Î¿î Right Row¿¡ ´ëÇÑ Ã³¸®
+    // ìƒˆë¡œìš´ Right Rowì— ëŒ€í•œ ì²˜ë¦¬
     static IDE_RC doItRight( qcTemplate * aTemplate,
                              qmnPlan    * aPlan,
                              qmcRowFlag * aFlag );
@@ -160,10 +160,10 @@ private:
                                          qmcRowFlag * aFlag );
 
     //------------------------
-    // ÃÊ±âÈ­ °ü·Ã ÇÔ¼ö
+    // ì´ˆê¸°í™” ê´€ë ¨ í•¨ìˆ˜
     //------------------------
 
-    // ÃÖÃÊ ÃÊ±âÈ­
+    // ìµœì´ˆ ì´ˆê¸°í™”
     static IDE_RC firstInit( qmncLOJN   * aCodePlan,
                              qmndLOJN   * aDataPlan );
 

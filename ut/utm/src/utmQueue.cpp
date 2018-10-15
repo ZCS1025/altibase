@@ -74,7 +74,7 @@ SQLRETURN getQueueInfo( SChar *a_user,
     }
     else
     {
-        /* BUG-36593 ¼Ò¹®ÀÚ,°ø¹éÀÌ Æ÷ÇÔµÈ ÀÌ¸§(quoted identifier) Ã³¸® */
+        /* BUG-36593 ì†Œë¬¸ì,ê³µë°±ì´ í¬í•¨ëœ ì´ë¦„(quoted identifier) ì²˜ë¦¬ */
         utString::makeQuotedName(sQuotedUserName, a_user, idlOS::strlen(a_user));
 
         IDE_TEST_RAISE(SQLTables(s_tblStmt,
@@ -209,7 +209,7 @@ SQLRETURN getQueueQuery( SChar *a_user,
     idBool sIsStructQeueue = ID_FALSE;
     idBool sIsFirst = ID_TRUE;
 
-    // BUG-24764 aexport create table±¸¹®¿¡ ÄÃ·³µéÀÌ µÎ¹ø¾¿ µé¾î°¨
+    // BUG-24764 aexport create tableêµ¬ë¬¸ì— ì»¬ëŸ¼ë“¤ì´ ë‘ë²ˆì”© ë“¤ì–´ê°
     SInt      s_pos;
     SChar     s_user[UTM_NAME_LEN+1];
     SChar     s_table[UTM_NAME_LEN+1];
@@ -233,7 +233,7 @@ SQLRETURN getQueueQuery( SChar *a_user,
     IDE_TEST_RAISE(SQLAllocStmt(m_hdbc, &s_colStmt) != SQL_SUCCESS,
                    alloc_error);
 
-    /* BUG-36593 ¼Ò¹®ÀÚ,°ø¹éÀÌ Æ÷ÇÔµÈ ÀÌ¸§(quoted identifier) Ã³¸® */
+    /* BUG-36593 ì†Œë¬¸ì,ê³µë°±ì´ í¬í•¨ëœ ì´ë¦„(quoted identifier) ì²˜ë¦¬ */
     utString::makeQuotedName(sQuotedUserName, a_user, idlOS::strlen(a_user));
     utString::makeQuotedName(sQuotedTableName, a_table, idlOS::strlen(a_table));
     IDE_TEST_RAISE(SQLColumns(s_colStmt,
@@ -243,7 +243,7 @@ SQLRETURN getQueueQuery( SChar *a_user,
                               NULL, 0)
                    != SQL_SUCCESS,col_error);
 
-    // BUG-24764 aexport create table±¸¹®¿¡ ÄÃ·³µéÀÌ µÎ¹ø¾¿ µé¾î°¨
+    // BUG-24764 aexport create tableêµ¬ë¬¸ì— ì»¬ëŸ¼ë“¤ì´ ë‘ë²ˆì”© ë“¤ì–´ê°
     IDE_TEST_RAISE(
         SQLBindCol(s_colStmt, 2, SQL_C_CHAR, (SQLPOINTER)s_user,
                    (SQLLEN)ID_SIZEOF(s_user), NULL)
@@ -293,8 +293,8 @@ SQLRETURN getQueueQuery( SChar *a_user,
     {
         IDE_TEST_RAISE(sRet != SQL_SUCCESS, col_error);
 
-        // BUG-24764 aexport create table±¸¹®¿¡ ÄÃ·³µéÀÌ µÎ¹ø¾¿ µé¾î°¨
-        // µ¿ÀÏÇÑ À¯Àú¸í, Å×ÀÌºí¸íÀÎÁö °Ë»çÇÔ
+        // BUG-24764 aexport create tableêµ¬ë¬¸ì— ì»¬ëŸ¼ë“¤ì´ ë‘ë²ˆì”© ë“¤ì–´ê°
+        // ë™ì¼í•œ ìœ ì €ëª…, í…Œì´ë¸”ëª…ì¸ì§€ ê²€ì‚¬í•¨
         if((idlOS::strncmp(a_user, s_user, ID_SIZEOF(a_user)) != 0) ||
            (idlOS::strncmp(a_table, s_table, ID_SIZEOF(a_table)) != 0))
         {
@@ -310,7 +310,7 @@ SQLRETURN getQueueQuery( SChar *a_user,
                                  s_precision );
         }
 
-        // struct queueÀÎ °æ¿ì »ç¿ëÀÚ Á¤ÀÇ ÄÃ·³Àº Ç×»ó enqueue_timeÀÌÈÄÀÇ ¼ø¼­ÀÌ´Ù.
+        // struct queueì¸ ê²½ìš° ì‚¬ìš©ì ì •ì˜ ì»¬ëŸ¼ì€ í•­ìƒ enqueue_timeì´í›„ì˜ ìˆœì„œì´ë‹¤.
         if (idlOS::strcmp(s_col_name, "ENQUEUE_TIME") == 0)
         {
             sIsStructQeueue = ID_TRUE;
@@ -350,7 +350,7 @@ SQLRETURN getQueueQuery( SChar *a_user,
     idlOS::fprintf(a_crt_fp, "--############################\n");
     if ( gProgOption.mbExistDrop == ID_TRUE )
     {
-        // BUG-20943 drop ±¸¹®¿¡¼­ user °¡ ¸í½ÃµÇÁö ¾Ê¾Æ drop ÀÌ ½ÇÆĞÇÕ´Ï´Ù.
+        // BUG-20943 drop êµ¬ë¬¸ì—ì„œ user ê°€ ëª…ì‹œë˜ì§€ ì•Šì•„ drop ì´ ì‹¤íŒ¨í•©ë‹ˆë‹¤.
         idlOS::fprintf(a_crt_fp, "drop queue \"%s\".\"%s\";\n", a_user, a_table);
     }
 

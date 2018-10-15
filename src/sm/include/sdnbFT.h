@@ -18,7 +18,7 @@
 /***********************************************************************
  * $Id: sdnbFT.h 19550 2007-02-07 03:09:40Z leekmo $
  *
- * Disk BTree Index¿« DUMP∏¶ ¿ß«— «‘ºˆ
+ * Disk BTree IndexÏùò DUMPÎ•º ÏúÑÌïú Ìï®Ïàò
  *
  **********************************************************************/
 
@@ -30,7 +30,7 @@
 # include <sdnbDef.h>
 
 //-------------------------------
-// D$DISK_INDEX_BTREE_STRUCTURE ¿« ±∏¡∂
+// D$DISK_INDEX_BTREE_STRUCTURE Ïùò Íµ¨Ï°∞
 //-------------------------------
 
 typedef struct sdnbDumpTreePage       // for sdnbNodeHdr
@@ -58,7 +58,7 @@ typedef struct sdnbDumpTreePage       // for sdnbNodeHdr
 } sdnbDumpTreePage;
 
 //-------------------------------
-// D$DISK_INDEX_BTREE_KEY ¿« ±∏¡∂
+// D$DISK_INDEX_BTREE_KEY Ïùò Íµ¨Ï°∞
 //-------------------------------
 
 typedef struct sdnbDumpKey            // for sdnbIKey, sdnbLKey
@@ -90,7 +90,7 @@ typedef struct sdnbDumpKey            // for sdnbIKey, sdnbLKey
 } sdnbDumpKey;
 
 //-------------------------------
-// X$DISK_BTREE_HEADER ¿« ±∏¡∂
+// X$DISK_BTREE_HEADER Ïùò Íµ¨Ï°∞
 //-------------------------------
 
 typedef struct sdnbHeader4PerfV
@@ -118,7 +118,7 @@ typedef struct sdnbHeader4PerfV
     SChar             mIsConsistent;     // IS_CONSISTENT
 
     // BUG-17957
-    // X$DISK_BTREE_HEADERø° creation option(logging, force) √ﬂ∞°
+    // X$DISK_BTREE_HEADERÏóê creation option(logging, force) Ï∂îÍ∞Ä
     SChar             mIsCreatedWithLogging;  // IS_CREATED_WITH_LOGGING
     SChar             mIsCreatedWithForce;    // IS_CREATED_WITH_FORCE
 
@@ -129,7 +129,7 @@ typedef struct sdnbHeader4PerfV
 } sdnbHeader4PerfV;
 
 //-------------------------------
-// X$DISK_BTREE_STAT ¿« ±∏¡∂
+// X$DISK_BTREE_STAT Ïùò Íµ¨Ï°∞
 //-------------------------------
 
 typedef struct sdnbStat4PerfV

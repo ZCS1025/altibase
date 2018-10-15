@@ -25,7 +25,7 @@
 #define IDV_SEC2MICRO_TABLE_SIZE (10)
 
 // copy from  idvTimeFunctionLibrary.cpp
-// ( ÃÊ -> micro ÃÊ ) º¯È¯ Å×ÀÌºí
+// ( ì´ˆ -> micro ì´ˆ ) ë³€í™˜ í…Œì´ë¸”
 static ULong gIdvSec2MicroTable[] = {
           0,
     1000000,
@@ -54,9 +54,9 @@ static inline SLong sec2micro ( SLong aSec )
 }
 
 /*
- * nano second => micro second·ÎÀÇ º¯È¯
+ * nano second => micro secondë¡œì˜ ë³€í™˜
  *
- * aSec - º¯È¯µÉ nano ÃÊ
+ * aSec - ë³€í™˜ë  nano ì´ˆ
  */
 static inline SLong nano2micro( SLong aNanoSec )
 {
@@ -81,10 +81,10 @@ static void gLibraryGet(idvTime *aValue)
 }
 
 /*
- * µÎ ½Ã°¢ °£ÀÇ ½Ã°£Â÷ÀÌ¸¦ Micro Second´ÜÀ§·Î ¸®ÅÏÇÑ´Ù.
+ * ë‘ ì‹œê° ê°„ì˜ ì‹œê°„ì°¨ì´ë¥¼ Micro Secondë‹¨ìœ„ë¡œ ë¦¬í„´í•œë‹¤.
  *
- * aBefore : ºñ±³ÇÏ·Á´Â ½Ã°¢ Áß ÀÛÀº °ªÀ» °¡Áö´Â ½Ã°¢
- * aAfter  : ºñ±³ÇÏ·Á´Â ½Ã°¢ Áß Å«°ªÀ» °¡Áö´Â ½Ã°¢
+ * aBefore : ë¹„êµí•˜ë ¤ëŠ” ì‹œê° ì¤‘ ìž‘ì€ ê°’ì„ ê°€ì§€ëŠ” ì‹œê°
+ * aAfter  : ë¹„êµí•˜ë ¤ëŠ” ì‹œê° ì¤‘ í°ê°’ì„ ê°€ì§€ëŠ” ì‹œê°
  */
 static ULong gLibraryDiff(idvTime *aBefore, idvTime *aAfter)
 {
@@ -109,7 +109,7 @@ static ULong gLibraryDiff(idvTime *aBefore, idvTime *aAfter)
                                             (aBefore)->iTime.mSpec.tb_low ) )
                    );
 #else
-    // ´Ù¸¥ ÇÃ·§ÆûÀÇ °æ¿ì ÀÌ ÇÔ¼ö·Î µé¾î¿Í¼­´Â ¾ÈµÈ´Ù.
+    // ë‹¤ë¥¸ í”Œëž«í¼ì˜ ê²½ìš° ì´ í•¨ìˆ˜ë¡œ ë“¤ì–´ì™€ì„œëŠ” ì•ˆëœë‹¤.
     IDE_ASSERT(0);
     
     return 0;
@@ -125,7 +125,7 @@ static ULong gLibraryMicro(idvTime *aValue)
     return (ULong)( sec2micro( (SLong) (aValue)->iTime.mSpec.tb_high ) +
                     (aValue)->iTime.mSpec.tb_low / 1000);
 #else
-    // ´Ù¸¥ ÇÃ·§ÆûÀÇ °æ¿ì ÀÌ ÇÔ¼ö·Î µé¾î¿Í¼­´Â ¾ÈµÈ´Ù.
+    // ë‹¤ë¥¸ í”Œëž«í¼ì˜ ê²½ìš° ì´ í•¨ìˆ˜ë¡œ ë“¤ì–´ì™€ì„œëŠ” ì•ˆëœë‹¤.
     IDE_ASSERT(0)
     return 0;
 #endif

@@ -518,7 +518,7 @@ SInt utAtbConnection::checkState(SInt status, SQLHSTMT aStmt)
                 {
                     idlOS::sprintf(_error,"SQLCLI  SQLError FAILURE!\n");
 
-                    status = 1; // ¿¡·¯°¡ ¹ß»ı Çß´Ù´Â °Í¸¸À» ÀÇ¹Ì
+                    status = 1; // ì—ëŸ¬ê°€ ë°œìƒ í–ˆë‹¤ëŠ” ê²ƒë§Œì„ ì˜ë¯¸
                     idlOS::snprintf(_error, _errorSize,
                                     "Unable to retrieve error information from CLI driver");
                 }

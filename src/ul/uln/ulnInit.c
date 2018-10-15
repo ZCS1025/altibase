@@ -32,7 +32,7 @@ static acp_sint32_t       gUlnInitCount;
 ACP_EXTERN_C_BEGIN
 
 // bug-26661: nls_use not applied to nls module for ut
-// UT¿¡¼­ »ç¿ëÇÒ º¯°æ°¡´ÉÇÑ nls module Àü¿ª Æ÷ÀÎÅÍ Á¤ÀÇ
+// UTì—ì„œ ì‚¬ìš©í•  ë³€ê²½ê°€ëŠ¥í•œ nls module ì „ì—­ í¬ì¸í„° ì •ì˜
 
 mtlModule* gNlsModuleForUT = NULL;
 
@@ -48,9 +48,9 @@ ACP_EXTERN_C_END
 /*
  * ulnInitializeDBProtocolCallbackFunctions.
  *
- * Åë½Å¸ðµâÀÇ ÄÝ¹é ÇÔ¼öµéÀ» ¼¼ÆÃÇÏ´Â ÇÔ¼öÀÌ´Ù.
- * ENV ¸¦ ÇÒ´çÇÒ ¶§ ÇÑ¹ø¸¸ ÇØ ÁÖ¸é µÈ´Ù.
- * cmiInitialize() ¸¦ È£ÃâÇÏ¸é¼­ ÇÔ²² È£ÃâÇØ¼­ ¼¼ÆÃÇÏ¸é ÀÌ»óÀûÀÌ°Ú´Ù.
+ * í†µì‹ ëª¨ë“ˆì˜ ì½œë°± í•¨ìˆ˜ë“¤ì„ ì„¸íŒ…í•˜ëŠ” í•¨ìˆ˜ì´ë‹¤.
+ * ENV ë¥¼ í• ë‹¹í•  ë•Œ í•œë²ˆë§Œ í•´ ì£¼ë©´ ëœë‹¤.
+ * cmiInitialize() ë¥¼ í˜¸ì¶œí•˜ë©´ì„œ í•¨ê»˜ í˜¸ì¶œí•´ì„œ ì„¸íŒ…í•˜ë©´ ì´ìƒì ì´ê² ë‹¤.
  */
 
 static ACI_RC ulnInitializeDBProtocolCallbackFunctions(void)
@@ -246,15 +246,15 @@ ACI_RC ulnInitialize()
     {
         ACI_TEST(cmiInitialize(ACP_UINT32_MAX) != ACI_SUCCESS);
 
-        // BUG-20859 Àß¸øµÈ NLS_USE ¸¦ »ç¿ë½Ã Å¬¶óÀÌ¾ðÆ®°¡ Á×½À´Ï´Ù.
-        // ulnDbcInitialize ¿¡¼­ È¯°æº¯¼ö¸¦ ÀÐ¾î¼­ ´Ù½Ã ¼¼ÆÃÇÏ±â ¶§¹®¿¡ ¹®Á¦°¡ ¾ø´Ù.
+        // BUG-20859 ìž˜ëª»ëœ NLS_USE ë¥¼ ì‚¬ìš©ì‹œ í´ë¼ì´ì–¸íŠ¸ê°€ ì£½ìŠµë‹ˆë‹¤.
+        // ulnDbcInitialize ì—ì„œ í™˜ê²½ë³€ìˆ˜ë¥¼ ì½ì–´ì„œ ë‹¤ì‹œ ì„¸íŒ…í•˜ê¸° ë•Œë¬¸ì— ë¬¸ì œê°€ ì—†ë‹¤.
         ACI_TEST(mtlInitialize(sDefaultNls, ACP_TRUE ) != ACI_SUCCESS);
 
         // bug-26661: nls_use not applied to ul nls module
-        // UT¿¡¼­´Â À§ÀÇ mtl::defModuleÀ» »ç¿ë¾ÈÇÏ°í ´ë½Å
-        // gNlsModuleForUT¸¦ »ç¿ëÇÒ °ÍÀÌ´Ù.
-        // ÃÖÃÊ¿¡ gNlsModuleForUT°¡ NULL ÀÌ¹Ç·Î ÀÏ´Ü
-        // US7ASCII ¸ðµâÀÌ¶óµµ ¼¼ÆÃÀ» ÇØ¾ß ÇÑ´Ù.
+        // UTì—ì„œëŠ” ìœ„ì˜ mtl::defModuleì„ ì‚¬ìš©ì•ˆí•˜ê³  ëŒ€ì‹ 
+        // gNlsModuleForUTë¥¼ ì‚¬ìš©í•  ê²ƒì´ë‹¤.
+        // ìµœì´ˆì— gNlsModuleForUTê°€ NULL ì´ë¯€ë¡œ ì¼ë‹¨
+        // US7ASCII ëª¨ë“ˆì´ë¼ë„ ì„¸íŒ…ì„ í•´ì•¼ í•œë‹¤.
         ACI_TEST(mtlModuleByName((const mtlModule **)&gNlsModuleForUT,
                                  sDefaultNls,
                                  strlen(sDefaultNls))
@@ -265,8 +265,8 @@ ACI_RC ulnInitialize()
         ACI_TEST(ulnInitializeDBProtocolCallbackFunctions() != ACI_SUCCESS);
 
         /* bug-35142 cli trace log
-           trace level, file ÁöÁ¤°ú latch »ý¼º.
-           ¼º´É»óÀÇ ÀÌÀ¯·Î levelÀº ÃÖÃÊ¿¡ ÇÑ¹ø¸¸ Á¤ÇÑ´Ù */
+           trace level, file ì§€ì •ê³¼ latch ìƒì„±.
+           ì„±ëŠ¥ìƒì˜ ì´ìœ ë¡œ levelì€ ìµœì´ˆì— í•œë²ˆë§Œ ì •í•œë‹¤ */
         ulnInitTraceLog();
 
         /* PROJ-2625 Semi-async Prefetch, Prefetch Auto-tuning */
@@ -336,9 +336,9 @@ void ulnDestroy()
     cmiDestroy();
 }
 
-/*fix BUG-25597 APRE¿¡¼­ AIXÇÃ·§Æû ÅÎ½Ãµµ ¿¬µ¿¹®Á¦¸¦ ÇØ°áÇØ¾ß ÇÕ´Ï´Ù.
-APREÀÇ ulpConnMgrÃÊ±âÈ­Àü¿¡ ÀÌ¹Ì Xa OpenµÈ ConnectionÀ»
-APRE¿¡ LoadingÇÏ´Â ÇÔ¼ö.
+/*fix BUG-25597 APREì—ì„œ AIXí”Œëž«í¼ í„±ì‹œë„ ì—°ë™ë¬¸ì œë¥¼ í•´ê²°í•´ì•¼ í•©ë‹ˆë‹¤.
+APREì˜ ulpConnMgrì´ˆê¸°í™”ì „ì— ì´ë¯¸ Xa Openëœ Connectionì„
+APREì— Loadingí•˜ëŠ” í•¨ìˆ˜.
 */
 
 void ulnLoadOpenedXaConnections2APRE()

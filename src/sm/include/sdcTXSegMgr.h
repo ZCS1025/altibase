@@ -48,8 +48,8 @@ public:
                               sdrMtxStartInfo * aStartInfo, 
                               sdcTXSegEntry  ** aEntry );
 
-    // BUG-29839 Àç»ç¿ëµÈ undo page¿¡¼­ ÀÌÀü CTS¸¦ º¸·Á°í ÇÒ ¼ö ÀÖÀ½.
-    // ÀçÇöÇÏ±â À§ÇØ transaction¿¡ Æ¯Á¤ segment entry¸¦ bindingÇÏ´Â ±â´É Ãß°¡
+    // BUG-29839 ì¬ì‚¬ìš©ëœ undo pageì—ì„œ ì´ì „ CTSë¥¼ ë³´ë ¤ê³  í•  ìˆ˜ ìˆìŒ.
+    // ì¬í˜„í•˜ê¸° ìœ„í•´ transactionì— íŠ¹ì • segment entryë¥¼ bindingí•˜ëŠ” ê¸°ëŠ¥ ì¶”ê°€
     static IDE_RC allocEntryBySegEntryID( UInt             aEntryID,
                                           sdcTXSegEntry ** aEntry );
 
@@ -140,9 +140,9 @@ public:
 
 /***********************************************************************
  *
- * Description : ÇÒ´ç¹ŞÀº Æ®·£Àè¼Ç ¼¼±×¸ÕÆ® ¿£Æ®¸® ÇØÁ¦
+ * Description : í• ë‹¹ë°›ì€ íŠ¸ëœì­ì…˜ ì„¸ê·¸ë¨¼íŠ¸ ì—”íŠ¸ë¦¬ í•´ì œ
  *
- * aEntry - [IN] Æ®·£Àè¼Ç ¼¼±×¸ÕÆ® ¿£Æ®¸® Æ÷ÀÎÅÍ
+ * aEntry - [IN] íŠ¸ëœì­ì…˜ ì„¸ê·¸ë¨¼íŠ¸ ì—”íŠ¸ë¦¬ í¬ì¸í„°
  *
  ***********************************************************************/
 inline void sdcTXSegMgr::freeEntry( sdcTXSegEntry * aEntry,
@@ -156,7 +156,7 @@ inline void sdcTXSegMgr::freeEntry( sdcTXSegEntry * aEntry,
 
 /***********************************************************************
  *
- * Description : Æ®·£Àè¼Ç ¼¼±×¸ÕÆ® ¿£Æ®¸® °³¼ö ¹İÈ¯
+ * Description : íŠ¸ëœì­ì…˜ ì„¸ê·¸ë¨¼íŠ¸ ì—”íŠ¸ë¦¬ ê°œìˆ˜ ë°˜í™˜
  *
  ***********************************************************************/
 inline UInt sdcTXSegMgr::getTotEntryCnt()
@@ -166,13 +166,13 @@ inline UInt sdcTXSegMgr::getTotEntryCnt()
 
 /***********************************************************************
  *
- * Description : Entry ID¿¡ ÇØ´çÇÏ´Â Entry Æ÷ÀÎÅÍ ¹İÈ¯
+ * Description : Entry IDì— í•´ë‹¹í•˜ëŠ” Entry í¬ì¸í„° ë°˜í™˜
  *
- * aEntryIdx  - [IN] Æ®·£Àè¼Ç ¼¼±×¸ÕÆ® ¿£Æ®¸® ID
+ * aEntryIdx  - [IN] íŠ¸ëœì­ì…˜ ì„¸ê·¸ë¨¼íŠ¸ ì—”íŠ¸ë¦¬ ID
  *
- * [ ¹İÈ¯°ª ]
+ * [ ë°˜í™˜ê°’ ]
  *
- * Æ®·£Àè¼Ç ¼¼±×¸ÕÆ® Entry Æ÷ÀÎÅÍ
+ * íŠ¸ëœì­ì…˜ ì„¸ê·¸ë¨¼íŠ¸ Entry í¬ì¸í„°
  *
  ***********************************************************************/
 inline sdcTXSegEntry * sdcTXSegMgr::getEntryByIdx( UInt aEntryIdx )
@@ -182,13 +182,13 @@ inline sdcTXSegEntry * sdcTXSegMgr::getEntryByIdx( UInt aEntryIdx )
 
 /***********************************************************************
  *
- * Description : Entry·ÎºÎÅÍ TSS °´Ã¼ Æ÷ÀÎÅÍ ¹İÈ¯
+ * Description : Entryë¡œë¶€í„° TSS ê°ì²´ í¬ì¸í„° ë°˜í™˜
  *
- * aEntry  - [IN] Æ®·£Àè¼ÇÀÇ Æ®·£Àè¼Ç ¼¼±×¸ÕÆ® Entry Æ÷ÀÎÅÍ
+ * aEntry  - [IN] íŠ¸ëœì­ì…˜ì˜ íŠ¸ëœì­ì…˜ ì„¸ê·¸ë¨¼íŠ¸ Entry í¬ì¸í„°
  *
- * [ ¹İÈ¯°ª ]
+ * [ ë°˜í™˜ê°’ ]
  *
- * TSSÀÇ °´Ã¼ Æ÷ÀÎÅÍ
+ * TSSì˜ ê°ì²´ í¬ì¸í„°
  *
  ***********************************************************************/
 inline sdcTSSegment* sdcTXSegMgr::getTSSegPtr( sdcTXSegEntry * aEntry )
@@ -198,13 +198,13 @@ inline sdcTSSegment* sdcTXSegMgr::getTSSegPtr( sdcTXSegEntry * aEntry )
 
 /***********************************************************************
  *
- * Description : Entry·ÎºÎÅÍ UDS °´Ã¼ Æ÷ÀÎÅÍ ¹İÈ¯
+ * Description : Entryë¡œë¶€í„° UDS ê°ì²´ í¬ì¸í„° ë°˜í™˜
  *
- * aEntry  - [IN] Æ®·£Àè¼ÇÀÇ Æ®·£Àè¼Ç ¼¼±×¸ÕÆ® Entry Æ÷ÀÎÅÍ
+ * aEntry  - [IN] íŠ¸ëœì­ì…˜ì˜ íŠ¸ëœì­ì…˜ ì„¸ê·¸ë¨¼íŠ¸ Entry í¬ì¸í„°
  *
- * [ ¹İÈ¯°ª ]
+ * [ ë°˜í™˜ê°’ ]
  *
- * UDSÀÇ °´Ã¼ Æ÷ÀÎÅÍ
+ * UDSì˜ ê°ì²´ í¬ì¸í„°
  *
  ***********************************************************************/
 inline sdcUndoSegment* sdcTXSegMgr::getUDSegPtr( sdcTXSegEntry * aEntry )

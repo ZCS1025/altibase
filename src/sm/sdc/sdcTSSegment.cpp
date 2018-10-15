@@ -20,7 +20,7 @@
  *
  * Description :
  *
- * º» ÆÄÀÏÀº Transaction Status Slot Segment ±¸ÇöÆÄÀÏÀÔ´Ï´Ù.
+ * ë³¸ íŒŒì¼ì€ Transaction Status Slot Segment êµ¬í˜„íŒŒì¼ì…ë‹ˆë‹¤.
  *
  **********************************************************************/
 
@@ -38,10 +38,10 @@
 
 /***********************************************************************
  *
- * Description : TSS Segment ÇÒ´ç
+ * Description : TSS Segment í• ë‹¹
  *
- * Undo TablespaceÀÇ TSS Segment¸¦ »ı¼ºÇÏ°í,
- * 0¹øÆäÀÌÁöÀÇ TSS Segment Á¤º¸¸¦ ÀúÀåÇÑ´Ù.
+ * Undo Tablespaceì˜ TSS Segmentë¥¼ ìƒì„±í•˜ê³ ,
+ * 0ë²ˆí˜ì´ì§€ì˜ TSS Segment ì •ë³´ë¥¼ ì €ì¥í•œë‹¤.
  *
  ***********************************************************************/
 IDE_RC sdcTSSegment::create( idvSQL          * aStatistics,
@@ -114,14 +114,14 @@ IDE_RC sdcTSSegment::create( idvSQL          * aStatistics,
 }
 
 /***********************************************************************
- * Description : TSS ¼¼±×¸ÕÆ® ÃÊ±âÈ­
+ * Description : TSS ì„¸ê·¸ë¨¼íŠ¸ ì´ˆê¸°í™”
  *
- * ½Ã½ºÅÛ ±¸µ¿½Ã undo tablespace meta page(0¹ø) ÆäÀÌÁö¸¦ ÆÇµ¶ÇÏ¿©
- * tss segment Á¤º¸¸¦ sdcTSSegment¿¡ ¼³Á¤ÇÑ´Ù.
+ * ì‹œìŠ¤í…œ êµ¬ë™ì‹œ undo tablespace meta page(0ë²ˆ) í˜ì´ì§€ë¥¼ íŒë…í•˜ì—¬
+ * tss segment ì •ë³´ë¥¼ sdcTSSegmentì— ì„¤ì •í•œë‹¤.
  *
- * aStatistics  - [IN] Åë°èÁ¤º¸
- * aEntry       - [IN] ÀÚ½ÅÀÌ ¼Ò¼ÓµÈ Æ®·£Àè¼Ç ¼¼±×¸ÕÆ® ¿£Æ®¸® Æ÷ÀÎÅÍ
- * aTSSegPID    - [IN] TSS ¼¼±×¸ÕÆ® Çì´õ ÆäÀÌÁö ID
+ * aStatistics  - [IN] í†µê³„ì •ë³´
+ * aEntry       - [IN] ìì‹ ì´ ì†Œì†ëœ íŠ¸ëœì­ì…˜ ì„¸ê·¸ë¨¼íŠ¸ ì—”íŠ¸ë¦¬ í¬ì¸í„°
+ * aTSSegPID    - [IN] TSS ì„¸ê·¸ë¨¼íŠ¸ í—¤ë” í˜ì´ì§€ ID
  *
  ***********************************************************************/
 IDE_RC sdcTSSegment::initialize( idvSQL        * aStatistics,
@@ -139,8 +139,8 @@ IDE_RC sdcTSSegment::initialize( idvSQL        * aStatistics,
     // codesonar::Null Pointer Dereference
     IDE_ERROR( sSegMgmtOp != NULL );
 
-    /* Undo Tablespace´Â ½Ã½ºÅÛ¿¡ ÀÇÇØ¼­ ÀÚµ¿À¸·Î °ü¸®µÇ¹Ç·Î
-     * Segment Storage Parameter µéÀ» ¸ğµÎ ¹«½ÃÇÑ´Ù */
+    /* Undo TablespaceëŠ” ì‹œìŠ¤í…œì— ì˜í•´ì„œ ìë™ìœ¼ë¡œ ê´€ë¦¬ë˜ë¯€ë¡œ
+     * Segment Storage Parameter ë“¤ì„ ëª¨ë‘ ë¬´ì‹œí•œë‹¤ */
     sdpSegDescMgr::setDefaultSegAttr(
             sdpSegDescMgr::getSegAttr( &mTSSegDesc),
             SDP_SEG_TYPE_TSS );
@@ -160,7 +160,7 @@ IDE_RC sdcTSSegment::initialize( idvSQL        * aStatistics,
     mAlignSlotSize  = idlOS::align8(mSlotSize);
     mEntryPtr       = aEntry;
     /* BUG-40014 [PROJ-2506] Insure++ Warning
-     * - ¸â¹ö º¯¼öÀÇ ÃÊ±âÈ­°¡ ÇÊ¿äÇÕ´Ï´Ù.
+     * - ë©¤ë²„ ë³€ìˆ˜ì˜ ì´ˆê¸°í™”ê°€ í•„ìš”í•©ë‹ˆë‹¤.
      */
     mCurAllocExtRID = ID_ULONG_MAX;
     mFstPIDOfCurAllocExt = ID_UINT_MAX;
@@ -175,7 +175,7 @@ IDE_RC sdcTSSegment::initialize( idvSQL        * aStatistics,
 
     setCurAllocInfo( sSegInfo.mFstExtRID,
                      sSegInfo.mFstPIDOfLstAllocExt,
-                     SD_NULL_PID );  // CurAllocPID ÃÊ±âÈ­
+                     SD_NULL_PID );  // CurAllocPID ì´ˆê¸°í™”
 
     return IDE_SUCCESS;
 
@@ -185,10 +185,10 @@ IDE_RC sdcTSSegment::initialize( idvSQL        * aStatistics,
 }
 
 /***********************************************************************
- * Description : TSS ¼¼±×¸ÕÆ® ±â¼úÀÚ ÇØÁ¦
+ * Description : TSS ì„¸ê·¸ë¨¼íŠ¸ ê¸°ìˆ ì í•´ì œ
  *
- * ¼¼±×¸ÕÆ® ±â¼úÀÚ¿¡´Â ·±Å¸ÀÓ ¸Ş¸ğ¸® ÀÚ·á±¸Á¶°¡ ÇÒ´çµÇ¾î
- * ÀÖ±â ¶§¹®¿¡ ¸Ş¸ğ¸® ÇØÁ¦ÇÑ´Ù.
+ * ì„¸ê·¸ë¨¼íŠ¸ ê¸°ìˆ ìì—ëŠ” ëŸ°íƒ€ì„ ë©”ëª¨ë¦¬ ìë£Œêµ¬ì¡°ê°€ í• ë‹¹ë˜ì–´
+ * ìˆê¸° ë•Œë¬¸ì— ë©”ëª¨ë¦¬ í•´ì œí•œë‹¤.
  *
  ***********************************************************************/
 IDE_RC sdcTSSegment::destroy()
@@ -201,10 +201,10 @@ IDE_RC sdcTSSegment::destroy()
 
 
 /***********************************************************************
- * Description : Transaction Status Slot ÇÒ´ç
+ * Description : Transaction Status Slot í• ë‹¹
  *
- * pending ¿¬»êÀ» ¼öÇàÇØ¾ßÇÏ´Â Æ®·£Àè¼ÇÀÌ³ª dmlÀ» ¼öÇàÇÏ´Â Æ®·£Àè¼Ç¿¡
- * ´ëÇØ¼­¸¸ tsslotÀ» ÇÒ´çÇÑ´Ù.
+ * pending ì—°ì‚°ì„ ìˆ˜í–‰í•´ì•¼í•˜ëŠ” íŠ¸ëœì­ì…˜ì´ë‚˜ dmlì„ ìˆ˜í–‰í•˜ëŠ” íŠ¸ëœì­ì…˜ì—
+ * ëŒ€í•´ì„œë§Œ tsslotì„ í• ë‹¹í•œë‹¤.
  *
  * *********************************************************************/
 IDE_RC sdcTSSegment::bindTSS( idvSQL          * aStatistics,
@@ -372,15 +372,15 @@ IDE_RC sdcTSSegment::bindTSS( idvSQL          * aStatistics,
 
 /***********************************************************************
  *
- * Description : TSS PageÀÇ CntlHdr ÃÊ±âÈ­ ¹× ·Î±ë
+ * Description : TSS Pageì˜ CntlHdr ì´ˆê¸°í™” ë° ë¡œê¹…
  *
- * TSS Page Control Header¿¡ ÃÖ±Ù »ç¿ëÇÑ Æ®·£Àè¼ÇÀÇ Á¤º¸¸¦ ÀúÀåÇÏ¿©
- * TSS Page°¡ Àç»ç¿ëµÇ¾ú´ÂÁö ÆÇ´ÜÇÒ ¼ö ÀÖ°Ô ÇÑ´Ù.
+ * TSS Page Control Headerì— ìµœê·¼ ì‚¬ìš©í•œ íŠ¸ëœì­ì…˜ì˜ ì •ë³´ë¥¼ ì €ì¥í•˜ì—¬
+ * TSS Pageê°€ ì¬ì‚¬ìš©ë˜ì—ˆëŠ”ì§€ íŒë‹¨í•  ìˆ˜ ìˆê²Œ í•œë‹¤.
  *
- * aStatistics    - [IN] Åë°èÁ¤º¸
- * aPagePtr       - [IN] ÇÒ´çÇÑ ÆäÀÌÁö Æ÷ÀÎÅÍ
- * aTransID       - [IN] ÆäÀÌÁö¸¦ ÇÒ´çÇÑ Æ®·£Àè¼Ç ID
- * aFstDskViewSCN - [IN] ÆäÀÌÁö¸¦ ÇÒ´çÇÑ Æ®·£Àè¼ÇÀÇ Begin SCN
+ * aStatistics    - [IN] í†µê³„ì •ë³´
+ * aPagePtr       - [IN] í• ë‹¹í•œ í˜ì´ì§€ í¬ì¸í„°
+ * aTransID       - [IN] í˜ì´ì§€ë¥¼ í• ë‹¹í•œ íŠ¸ëœì­ì…˜ ID
+ * aFstDskViewSCN - [IN] í˜ì´ì§€ë¥¼ í• ë‹¹í•œ íŠ¸ëœì­ì…˜ì˜ Begin SCN
  *
  **********************************************************************/
 IDE_RC sdcTSSegment::logAndInitPage( sdrMtx      * aMtx,
@@ -420,15 +420,15 @@ IDE_RC sdcTSSegment::logAndInitPage( sdrMtx      * aMtx,
 
 /***********************************************************************
  *
- * Description : TSS¸¦ ÇÒ´çÇÑ ExtDirÀÇ CntlHdr¿¡ SCNÀ» ¼³Á¤
+ * Description : TSSë¥¼ í• ë‹¹í•œ ExtDirì˜ CntlHdrì— SCNì„ ì„¤ì •
  *
- * unbind TSS °úÁ¤¿¡¼­ CommitSCN È¤Àº AbortSCN À» ExtDir ÆäÀÌÁö¿¡ ±â·ÏÇÑ´Ù.
+ * unbind TSS ê³¼ì •ì—ì„œ CommitSCN í˜¹ì€ AbortSCN ì„ ExtDir í˜ì´ì§€ì— ê¸°ë¡í•œë‹¤.
  *
- * aStatistics - [IN] Åë°èÁ¤º¸
- * aSpaceID    - [IN] Å×ÀÌºí½ºÆäÀÌ½º ID
- * aSegPID     - [IN] TSSÀÇ Segment PID
- * aFstExtRID  - [IN] Æ®·£Àè¼ÇÀÌ »ç¿ëÇÑ Ã¹¹øÂ° ExtRID
- * aCSCNorASCN - [IN] ¼³Á¤ÇÒ CommitSCN È¤Àº AbortSCN
+ * aStatistics - [IN] í†µê³„ì •ë³´
+ * aSpaceID    - [IN] í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ID
+ * aSegPID     - [IN] TSSì˜ Segment PID
+ * aFstExtRID  - [IN] íŠ¸ëœì­ì…˜ì´ ì‚¬ìš©í•œ ì²«ë²ˆì§¸ ExtRID
+ * aCSCNorASCN - [IN] ì„¤ì •í•  CommitSCN í˜¹ì€ AbortSCN
  *
  ***********************************************************************/
 IDE_RC sdcTSSegment::markSCN4ReCycle( idvSQL   * aStatistics,
@@ -470,7 +470,7 @@ IDE_RC sdcTSSegment::markSCN4ReCycle( idvSQL   * aStatistics,
  *
  * Description : Unbinding TSS For Commit Trans
  *
- * µğ½ºÅ© °»½Å Æ®·£Àè¼Ç¿¡ ´ëÇÑ Commit ÀÛ¾÷À» ¼öÇàÇÑ´Ù.
+ * ë””ìŠ¤í¬ ê°±ì‹  íŠ¸ëœì­ì…˜ì— ëŒ€í•œ Commit ì‘ì—…ì„ ìˆ˜í–‰í•œë‹¤.
  *
  ***********************************************************************/
 IDE_RC sdcTSSegment::unbindTSS4Commit( idvSQL  * aStatistics,
@@ -548,7 +548,7 @@ IDE_RC sdcTSSegment::unbindTSS4Commit( idvSQL  * aStatistics,
  *
  * Description : Unbinding TSS For Transaction Abort
  *
- * µğ½ºÅ© °»½Å Æ®·£Àè¼Ç¿¡ ´ëÇÑ Abort ÀÛ¾÷À» ¼öÇàÇÑ´Ù.
+ * ë””ìŠ¤í¬ ê°±ì‹  íŠ¸ëœì­ì…˜ì— ëŒ€í•œ Abort ì‘ì—…ì„ ìˆ˜í–‰í•œë‹¤.
  *
  ***********************************************************************/
 IDE_RC sdcTSSegment::unbindTSS4Abort( idvSQL  * aStatistics,
@@ -608,22 +608,22 @@ IDE_RC sdcTSSegment::unbindTSS4Abort( idvSQL  * aStatistics,
 
 /***********************************************************************
  *
- * Description : TSS¿¡ ´ëÇÑ Àç»ç¿ë¿©ºÎ¿Í CommitSCN ¹İÈ¯
+ * Description : TSSì— ëŒ€í•œ ì¬ì‚¬ìš©ì—¬ë¶€ì™€ CommitSCN ë°˜í™˜
  *
- * Ä¿¹ÔµÈ TSS¿¡ ´ëÇØ¼­´Â Æ¯Á¤½ÃÁ¡ÀÌ Áö³ª¸é TSS´Â Àç»ç¿ëÀÌ °¡´ÉÇÏ´Ù. Àç»ç¿ëÀÌ µÇÁö ¾ÊÀº°æ¿ì
- * ´Ù¸¥ Æ®·£Àè¼ÇÀÌ TSS¸¦ ¹æ¹®ÇÏ¿© CommitSCNÀ» ÇÒ´çÇÏ´Ù°í ÇÒ¶§, Á¤È®ÇÑ °ªÀ» ¾òÀ» ¼ö ÀÖÁö¸¸,
- * Àç»ç¿ëµÈ °æ¿ì¿¡´Â Unbound CommitSCN(0x0000000000000000)À» ¾òÀ» ¼ö ¹Û¿¡ ¾ø´Ù.
- * Unbound CommitSCNÀº RowPiece°¡ ¾î¶°ÇÑ Statmentµµ ¸ğµÎ º¼¼ö ÀÖ°Å³ª
- * °»½ÅÇÒ ¼ö ÀÖµµ·Ï ÇØÁØ´Ù.
- * ¶ÇÇÑ, ¾ÆÁ÷ Ä¿¹ÔµÇÁö ¾ÊÀº Æ®·£Àè¼ÇÀÇ TSS¶ó¸é CommitSCNÀº ¾øÀ¸¹Ç·Î, TSSÀ» ¼ÒÀ¯ÇÑ
- * Æ®·£Àè¼Ç BeginSCNÀ» ¹İÈ¯ÇÑ´Ù.
+ * ì»¤ë°‹ëœ TSSì— ëŒ€í•´ì„œëŠ” íŠ¹ì •ì‹œì ì´ ì§€ë‚˜ë©´ TSSëŠ” ì¬ì‚¬ìš©ì´ ê°€ëŠ¥í•˜ë‹¤. ì¬ì‚¬ìš©ì´ ë˜ì§€ ì•Šì€ê²½ìš°
+ * ë‹¤ë¥¸ íŠ¸ëœì­ì…˜ì´ TSSë¥¼ ë°©ë¬¸í•˜ì—¬ CommitSCNì„ í• ë‹¹í•˜ë‹¤ê³  í• ë•Œ, ì •í™•í•œ ê°’ì„ ì–»ì„ ìˆ˜ ìˆì§€ë§Œ,
+ * ì¬ì‚¬ìš©ëœ ê²½ìš°ì—ëŠ” Unbound CommitSCN(0x0000000000000000)ì„ ì–»ì„ ìˆ˜ ë°–ì— ì—†ë‹¤.
+ * Unbound CommitSCNì€ RowPieceê°€ ì–´ë– í•œ Statmentë„ ëª¨ë‘ ë³¼ìˆ˜ ìˆê±°ë‚˜
+ * ê°±ì‹ í•  ìˆ˜ ìˆë„ë¡ í•´ì¤€ë‹¤.
+ * ë˜í•œ, ì•„ì§ ì»¤ë°‹ë˜ì§€ ì•Šì€ íŠ¸ëœì­ì…˜ì˜ TSSë¼ë©´ CommitSCNì€ ì—†ìœ¼ë¯€ë¡œ, TSSì„ ì†Œìœ í•œ
+ * íŠ¸ëœì­ì…˜ BeginSCNì„ ë°˜í™˜í•œë‹¤.
  *
- * aStatistics     - [IN]  Åë°èÁ¤º¸
- * aTSSlotRID      - [IN]  CTS È¤Àº RowEx¿¡ ±â·ÏµÈ TSSÀÇ RID
- * aFstDskViewSCN  - [IN]  CTS È¤Àº RowEx¿¡ ±â·ÏµÈ Æ®·£Àè¼ÇÀÇ FstDskViewSCN
- * aTID4Wait       - [OUT] ¸¸¾à Æ®·£Àè¼ÇÀÌ Active »óÅÂÀÎ °æ¿ì ÇØ´ç Æ®·£Àè¼ÇÀÇ TID
- * aCommitSCN      - [OUT] Æ®·£Àè¼ÇÀÇ CommitSCNÀÌ³ª Unbound CommitSCN È¤Àº TSS¸¦
- *                         ¼ÒÀ¯ÇÑ Æ®·£Àè¼ÇÀÇ BeginSCNÀÏ¼ö ÀÖ´Ù.
+ * aStatistics     - [IN]  í†µê³„ì •ë³´
+ * aTSSlotRID      - [IN]  CTS í˜¹ì€ RowExì— ê¸°ë¡ëœ TSSì˜ RID
+ * aFstDskViewSCN  - [IN]  CTS í˜¹ì€ RowExì— ê¸°ë¡ëœ íŠ¸ëœì­ì…˜ì˜ FstDskViewSCN
+ * aTID4Wait       - [OUT] ë§Œì•½ íŠ¸ëœì­ì…˜ì´ Active ìƒíƒœì¸ ê²½ìš° í•´ë‹¹ íŠ¸ëœì­ì…˜ì˜ TID
+ * aCommitSCN      - [OUT] íŠ¸ëœì­ì…˜ì˜ CommitSCNì´ë‚˜ Unbound CommitSCN í˜¹ì€ TSSë¥¼
+ *                         ì†Œìœ í•œ íŠ¸ëœì­ì…˜ì˜ BeginSCNì¼ìˆ˜ ìˆë‹¤.
  *
  ***********************************************************************/
 IDE_RC sdcTSSegment::getCommitSCN( idvSQL      * aStatistics,
@@ -650,25 +650,25 @@ IDE_RC sdcTSSegment::getCommitSCN( idvSQL      * aStatistics,
     SM_INIT_SCN( &sCommitSCN );
 
     /*
-     * CTS¿¡ ¹ÙÀÎµùµÈ Æ®·£Àè¼ÇÀÇ BeginSCN°ú System MinDskFstSCNÀ» È®ÀÎÇØº¸°í
-     * Àç»ç¿ë¿©ºÎ¸¦ È®ÀÎÇÑ´Ù.
+     * CTSì— ë°”ì¸ë”©ëœ íŠ¸ëœì­ì…˜ì˜ BeginSCNê³¼ System MinDskFstSCNì„ í™•ì¸í•´ë³´ê³ 
+     * ì¬ì‚¬ìš©ì—¬ë¶€ë¥¼ í™•ì¸í•œë‹¤.
      *
-     * ÁÖÀÇÇÒ Á¡Àº ¿©±â¼­ ÆÇ´ÜÇÑ´Ù°í ÇØ¼­ Åë°úÇØµµ TSSlotRID¸¦ getPageÇÏ±âÀü¿¡
-     * ÆäÀÌÁö°¡ ´Ù¸¥Æ®·£Àè¼Ç¿¡ ÀÇÇØ¼­ Àç»ç¿ëµÉ¼ö ÀÖ´Ù´Â °ÍÀ» ¾Ë¾Æ¾ß ÇÑ´Ù.
-     * Áï, ÆÇ´Ü½Ã¿¡ System Agable SCNº¸´Ù aTransFstSCNÀÌ Ä¿¼­ Åë°úÇØµµ
-     * getPageÇÏ±âÀü¿¡ System Agable SCNÀÌ Áõ°¡ÇÏ¿© aTransFstSCNº¸´Ù Ä¿Áú¼ö
-     * ÀÖ´Ù. ±×·¯¹Ç·Î BufferPool¿¡¼­ CreatePage¿Í GetPage°¡ µ¿ÀÏÇÑ ÆäÀÌÁö¿¡
-     * ´ëÇØ¼­ Ãæµ¹ÇÒ ¼ö ÀÖ´Ù. ÀÌ·¯ÇÑ Çö»óÀº TSS ÆäÀÌÁö¿¡¼­¸¸ ¹ß»ıÇÑ´Ù.
+     * ì£¼ì˜í•  ì ì€ ì—¬ê¸°ì„œ íŒë‹¨í•œë‹¤ê³  í•´ì„œ í†µê³¼í•´ë„ TSSlotRIDë¥¼ getPageí•˜ê¸°ì „ì—
+     * í˜ì´ì§€ê°€ ë‹¤ë¥¸íŠ¸ëœì­ì…˜ì— ì˜í•´ì„œ ì¬ì‚¬ìš©ë ìˆ˜ ìˆë‹¤ëŠ” ê²ƒì„ ì•Œì•„ì•¼ í•œë‹¤.
+     * ì¦‰, íŒë‹¨ì‹œì— System Agable SCNë³´ë‹¤ aTransFstSCNì´ ì»¤ì„œ í†µê³¼í•´ë„
+     * getPageí•˜ê¸°ì „ì— System Agable SCNì´ ì¦ê°€í•˜ì—¬ aTransFstSCNë³´ë‹¤ ì»¤ì§ˆìˆ˜
+     * ìˆë‹¤. ê·¸ëŸ¬ë¯€ë¡œ BufferPoolì—ì„œ CreatePageì™€ GetPageê°€ ë™ì¼í•œ í˜ì´ì§€ì—
+     * ëŒ€í•´ì„œ ì¶©ëŒí•  ìˆ˜ ìˆë‹¤. ì´ëŸ¬í•œ í˜„ìƒì€ TSS í˜ì´ì§€ì—ì„œë§Œ ë°œìƒí•œë‹¤.
      *
-     * ¿©±â¼­ ÆÇ´ÜÇÏ´Â °ÍÀº Á¤È®ÇÏ°Ô ÇÏ±â º¸´Ù´Â ÇÑ¹ø ´õ Ã¼Å©ÇØ¼­ I/O¸¦
-     * ÁÙ¿©º¸ÀÚ´Â °ÍÀÌ´Ù.
+     * ì—¬ê¸°ì„œ íŒë‹¨í•˜ëŠ” ê²ƒì€ ì •í™•í•˜ê²Œ í•˜ê¸° ë³´ë‹¤ëŠ” í•œë²ˆ ë” ì²´í¬í•´ì„œ I/Oë¥¼
+     * ì¤„ì—¬ë³´ìëŠ” ê²ƒì´ë‹¤.
      */
-    // BUG-26881 Àß¸øµÈ CTS stampingÀ¸·Î accesÇÒ ¼ö ¾ø´Â row¸¦ Á¢±ÙÇÔ
-    // active Æ®·£Àè¼Çµé Áß °¡Àå ¿À·¡µÈ OldestFstViewSCNÀ» ±¸ÇÔ
+    // BUG-26881 ì˜ëª»ëœ CTS stampingìœ¼ë¡œ accesí•  ìˆ˜ ì—†ëŠ” rowë¥¼ ì ‘ê·¼í•¨
+    // active íŠ¸ëœì­ì…˜ë“¤ ì¤‘ ê°€ì¥ ì˜¤ë˜ëœ OldestFstViewSCNì„ êµ¬í•¨
     smxTransMgr::getSysAgableSCN( &sSysAgableSCN );
 
-    // OldestViewSCNº¸´Ù CTSÀÇ SCNÀÌ ÀÛÀ¸¸é ÀÌ¹Ì ¿Ï·áµÈ Æ®·£Àè¼ÇÀÌ¹Ç·Î
-    // TSS¸¦ º¼ ÇÊ¿ä ¾øÀ½.
+    // OldestViewSCNë³´ë‹¤ CTSì˜ SCNì´ ì‘ìœ¼ë©´ ì´ë¯¸ ì™„ë£Œëœ íŠ¸ëœì­ì…˜ì´ë¯€ë¡œ
+    // TSSë¥¼ ë³¼ í•„ìš” ì—†ìŒ.
     IDE_TEST_CONT( SM_SCN_IS_LT( aFstDskViewSCN, &sSysAgableSCN )
                     == ID_TRUE, CONT_ALREADY_FINISHED_TRANS );
 
@@ -686,14 +686,14 @@ IDE_RC sdcTSSegment::getCommitSCN( idvSQL      * aStatistics,
     sState = 1;
 
     /*
-     * Page¸¦ S-Latch·Î È¹µæÇÑ »óÅÂ¿¡¼­ SysOldestViewSCNÀ» Ã¼Å©ÇØº»´Ù.
+     * Pageë¥¼ S-Latchë¡œ íšë“í•œ ìƒíƒœì—ì„œ SysOldestViewSCNì„ ì²´í¬í•´ë³¸ë‹¤.
      */
-    // BUG-26881 Àß¸øµÈ CTS stampingÀ¸·Î accesÇÒ ¼ö ¾ø´Â row¸¦ Á¢±ÙÇÔ
-    // active Æ®·£Àè¼Çµé Áß °¡Àå ¿À·¡µÈ OldestViewSCNÀ» ±¸ÇÔ
+    // BUG-26881 ì˜ëª»ëœ CTS stampingìœ¼ë¡œ accesí•  ìˆ˜ ì—†ëŠ” rowë¥¼ ì ‘ê·¼í•¨
+    // active íŠ¸ëœì­ì…˜ë“¤ ì¤‘ ê°€ì¥ ì˜¤ë˜ëœ OldestViewSCNì„ êµ¬í•¨
     smxTransMgr::getSysAgableSCN( &sSysAgableSCN );
 
-    // OldestViewSCNº¸´Ù CTSÀÇ SCNÀÌ ÀÛÀ¸¸é ÀÌ¹Ì ¿Ï·áµÈ Æ®·£Àè¼ÇÀÌ¹Ç·Î
-    // TSS¸¦ º¼ ÇÊ¿ä ¾øÀ½.
+    // OldestViewSCNë³´ë‹¤ CTSì˜ SCNì´ ì‘ìœ¼ë©´ ì´ë¯¸ ì™„ë£Œëœ íŠ¸ëœì­ì…˜ì´ë¯€ë¡œ
+    // TSSë¥¼ ë³¼ í•„ìš” ì—†ìŒ.
     IDE_TEST_CONT( SM_SCN_IS_LT( aFstDskViewSCN, &sSysAgableSCN )
                     == ID_TRUE, CONT_ALREADY_FINISHED_TRANS );
 
@@ -702,9 +702,9 @@ IDE_RC sdcTSSegment::getCommitSCN( idvSQL      * aStatistics,
     IDE_TEST_CONT( sPageType != SDP_PAGE_TSS,
                     CONT_ALREADY_FINISHED_TRANS );
 
-    /* BUG-32650 TSSlotÀÌ ÀÌ¹Ì freeµÇ¾úÀ» ¼öµµ ÀÖ½À´Ï´Ù.
-     * ¸¸¾à Slot Number°¡ Slot Entry Countº¸´Ù Å©¸é
-     * ÀÌ¹Ì ¿Ï·áµÈ TransactionÀÌ´Ù. */
+    /* BUG-32650 TSSlotì´ ì´ë¯¸ freeë˜ì—ˆì„ ìˆ˜ë„ ìˆìŠµë‹ˆë‹¤.
+     * ë§Œì•½ Slot Numberê°€ Slot Entry Countë³´ë‹¤ í¬ë©´
+     * ì´ë¯¸ ì™„ë£Œëœ Transactionì´ë‹¤. */
     sSlotDirHdr = (sdpSlotDirHdr*)sdpPhyPage::getSlotDirStartPtr( sPagePtr );
 
     IDE_TEST_CONT( ( SD_MAKE_SLOTNUM( aTSSlotSID )>= sSlotDirHdr->mSlotEntryCount ),
@@ -728,27 +728,27 @@ IDE_RC sdcTSSegment::getCommitSCN( idvSQL      * aStatistics,
     sTSState = sdcTSSlot::getState( sTSS );
 
     // BUG-31504: During the cached row's rollback, it can be read.
-    // ÀÌ¹Ì abortµÈ Æ®·£Àè¼ÇÀÇ CommitSCNÀº È®ÀÎÇÒ ÇÊ¿ä°¡ ¾ø´Ù.
+    // ì´ë¯¸ abortëœ íŠ¸ëœì­ì…˜ì˜ CommitSCNì€ í™•ì¸í•  í•„ìš”ê°€ ì—†ë‹¤.
     if ( sTSState != SDC_TSS_STATE_ABORT )
     {
         if ( SM_SCN_IS_INFINITE( sCommitSCN ) )
         {
-            // [4-2] ¹«ÇÑ´ëÀÓ¿¡µµ transactionÀÌ commitµÈ °æ¿ì°¡ ÀÖ´Ù.
+            // [4-2] ë¬´í•œëŒ€ì„ì—ë„ transactionì´ commitëœ ê²½ìš°ê°€ ìˆë‹¤.
 
-            // ¿Ö³ÄÇÏ¸é commit °úÁ¤Àº
-            // 1. system SCN Áõ°¡
-            // 2. TSS¿¡ commit SCN set
+            // ì™œëƒí•˜ë©´ commit ê³¼ì •ì€
+            // 1. system SCN ì¦ê°€
+            // 2. TSSì— commit SCN set
 
-            // ±×·±µ¥ 2°³ ÀÌ»óÀÇ thread°¡ 1,2»çÀÌ¿¡ ³¢¾î µé¶§
-            // Áï system SCNÀº Áõ°¡ÇÑ »óÅÂ¿¡¼­ stmt beginÇÏ°í,
-            // ¾ÆÁ÷ TSS commitÀÌ ¾È¹ÚÈù »óÅÂ¿¡¼­ record¸¦ µû¶ó TSS¸¦ µû¶ó°¡¸é
-            // ÀÌ trans°¡ commitÀÌ µÇ¾úÀ½¿¡µµ ºÒ±¸ÇÏ°í TSS slotÀº ¾ÆÁ÷
-            // commit ¾ÈµÈ »óÅÂ°¡ µÉ ¼ö ÀÖ´Ù.
-            // ÀÌ·Î ÀÎÇØ getValidVersionÀÌ Àß¸øµÈ ·¹ÄÚµå¸¦ ¾ò¾î¿Ã ¼ö ÀÖ´Ù.
-            // ÀÌ¸¦ ¹æÁöÇÏ±â À§ÇØ A3°¡ ÇÏ´Â °Í°ú ¸¶Âù°¡Áö·Î
-            // trans°¡ commitµÇÁö ¾ÊÀº »óÅÂ¶ó ÇÒÁö¶óµµ
-            // TID¸¦ °¡Áö°í transÀÇ commit SCNÀ» ½ÇÁ¦·Î È®ÀÎÇØ ºÁ¾ß ÇÑ´Ù.
-            // ÀÌ °ªÀÌ ¹«ÇÑ´ë°¡ ¾Æ´Ï¸é commitµÈ°ÍÀÓÀ» ¾Ë¼ö ÀÖ´Ù.
+            // ê·¸ëŸ°ë° 2ê°œ ì´ìƒì˜ threadê°€ 1,2ì‚¬ì´ì— ë¼ì–´ ë“¤ë•Œ
+            // ì¦‰ system SCNì€ ì¦ê°€í•œ ìƒíƒœì—ì„œ stmt beginí•˜ê³ ,
+            // ì•„ì§ TSS commitì´ ì•ˆë°•íŒ ìƒíƒœì—ì„œ recordë¥¼ ë”°ë¼ TSSë¥¼ ë”°ë¼ê°€ë©´
+            // ì´ transê°€ commitì´ ë˜ì—ˆìŒì—ë„ ë¶ˆêµ¬í•˜ê³  TSS slotì€ ì•„ì§
+            // commit ì•ˆëœ ìƒíƒœê°€ ë  ìˆ˜ ìˆë‹¤.
+            // ì´ë¡œ ì¸í•´ getValidVersionì´ ì˜ëª»ëœ ë ˆì½”ë“œë¥¼ ì–»ì–´ì˜¬ ìˆ˜ ìˆë‹¤.
+            // ì´ë¥¼ ë°©ì§€í•˜ê¸° ìœ„í•´ A3ê°€ í•˜ëŠ” ê²ƒê³¼ ë§ˆì°¬ê°€ì§€ë¡œ
+            // transê°€ commitë˜ì§€ ì•Šì€ ìƒíƒœë¼ í• ì§€ë¼ë„
+            // TIDë¥¼ ê°€ì§€ê³  transì˜ commit SCNì„ ì‹¤ì œë¡œ í™•ì¸í•´ ë´ì•¼ í•œë‹¤.
+            // ì´ ê°’ì´ ë¬´í•œëŒ€ê°€ ì•„ë‹ˆë©´ commitëœê²ƒì„ì„ ì•Œìˆ˜ ìˆë‹¤.
 
             smxTrans::getTransCommitSCN( sTransID,
                                          &sCommitSCN, /* IN */
@@ -769,8 +769,8 @@ IDE_RC sdcTSSegment::getCommitSCN( idvSQL      * aStatistics,
                   != IDE_SUCCESS );
     }
 
-    /* sCommitSCNÀº CommitÀÌ µÇ¾úÀ¸¸é À¯ÇÑÇÑ °ªÀÌ°í,
-     * Active »óÅÂ¶ó¸é ¹«ÇÑ´ë°ªÀÌ´Ù. */
+    /* sCommitSCNì€ Commitì´ ë˜ì—ˆìœ¼ë©´ ìœ í•œí•œ ê°’ì´ê³ ,
+     * Active ìƒíƒœë¼ë©´ ë¬´í•œëŒ€ê°’ì´ë‹¤. */
     if ( SM_SCN_IS_NOT_INFINITE( sCommitSCN ) )
     {
         sTransID = SM_NULL_TID;
@@ -795,7 +795,7 @@ IDE_RC sdcTSSegment::getCommitSCN( idvSQL      * aStatistics,
 
 /***********************************************************************
  *
- * Description : X$TSSEGÀÇ ·¹ÄÚµå¸¦ ±¸¼ºÇÑ´Ù.
+ * Description : X$TSSEGì˜ ë ˆì½”ë“œë¥¼ êµ¬ì„±í•œë‹¤.
  *
  ***********************************************************************/
 IDE_RC sdcTSSegment::build4SegmentPerfV( void                * aHeader,
@@ -849,7 +849,7 @@ IDE_RC sdcTSSegment::build4SegmentPerfV( void                * aHeader,
 
 /***********************************************************************
  *
- * Description : X$DISK_TSS_RECORDSÀÇ ·¹ÄÚµå¸¦ ±¸¼ºÇÑ´Ù.
+ * Description : X$DISK_TSS_RECORDSì˜ ë ˆì½”ë“œë¥¼ êµ¬ì„±í•œë‹¤.
  *
  ***********************************************************************/
 IDE_RC sdcTSSegment::build4RecordPerfV( UInt                  aSegSeq,
@@ -878,7 +878,7 @@ IDE_RC sdcTSSegment::build4RecordPerfV( UInt                  aSegSeq,
     IDE_ERROR( aHeader != NULL );
     IDE_ERROR( aMemory != NULL );
 
-    /* ¼¼±×¸ÕÆ®°¡ ¸®¼ÂµÈ °æ¿ì mCurAllocPID°¡ SD_NULL_PIDÀÌ´Ù. */
+    /* ì„¸ê·¸ë¨¼íŠ¸ê°€ ë¦¬ì…‹ëœ ê²½ìš° mCurAllocPIDê°€ SD_NULL_PIDì´ë‹¤. */
     IDE_TEST_CONT( mCurAllocPID == SD_NULL_PID, CONT_NO_TSS_PAGE ); 
 
     //------------------------------------------
@@ -1007,12 +1007,12 @@ IDE_RC sdcTSSegment::build4RecordPerfV( UInt                  aSegSeq,
 }
 
 /***********************************************************************
- * TASK-4007 [SM]PBT¸¦ À§ÇÑ ±â´É Ãß°¡
- * Description : page¸¦ DumpÇÏ¿© tableÀÇ ctlÀ» Ãâ·ÂÇÑ´Ù.
+ * TASK-4007 [SM]PBTë¥¼ ìœ„í•œ ê¸°ëŠ¥ ì¶”ê°€
+ * Description : pageë¥¼ Dumpí•˜ì—¬ tableì˜ ctlì„ ì¶œë ¥í•œë‹¤.
  *
- * BUG-28379 [SD] sdnbBTree::dumpNodeHdr( UChar *aPage ) ³»¿¡¼­
- * local ArrayÀÇ ptr¸¦ ¹İÈ¯ÇÏ°í ÀÖ½À´Ï´Ù.
- * Local Array´ë½Å OutBuf¸¦ ¹Ş¾Æ ¸®ÅÏÇÏµµ·Ï ¼öÁ¤ÇÕ´Ï´Ù.
+ * BUG-28379 [SD] sdnbBTree::dumpNodeHdr( UChar *aPage ) ë‚´ì—ì„œ
+ * local Arrayì˜ ptrë¥¼ ë°˜í™˜í•˜ê³  ìˆìŠµë‹ˆë‹¤.
+ * Local ArrayëŒ€ì‹  OutBufë¥¼ ë°›ì•„ ë¦¬í„´í•˜ë„ë¡ ìˆ˜ì •í•©ë‹ˆë‹¤.
  ***********************************************************************/
 IDE_RC sdcTSSegment::dump( UChar *aPage ,
                            SChar *aOutBuf ,
@@ -1086,16 +1086,16 @@ IDE_RC sdcTSSegment::dump( UChar *aPage ,
 
 /******************************************************************************
  *
- * Description : °¡¿ëÇÑ ¾ğµÎ ÆäÀÌÁö¸¦ ÇÒ´çÇÑ´Ù.
+ * Description : ê°€ìš©í•œ ì–¸ë‘ í˜ì´ì§€ë¥¼ í• ë‹¹í•œë‹¤.
  *
- * ÇØ´ç ¼¼±×¸ÕÆ®¿¡ Á¸ÀçÇÏÁö ¾Ê´Â´Ù¸é, ¿ÀÇÁ¶óÀÎ ¿£Æ®¸®·ÎºÎÅÍ °¡¿ëÇÑ
- * ÀÍ½ºÅÙÆ® Dir.¸¦ ¾ò´Â´Ù.
+ * í•´ë‹¹ ì„¸ê·¸ë¨¼íŠ¸ì— ì¡´ì¬í•˜ì§€ ì•ŠëŠ”ë‹¤ë©´, ì˜¤í”„ë¼ì¸ ì—”íŠ¸ë¦¬ë¡œë¶€í„° ê°€ìš©í•œ
+ * ìµìŠ¤í…íŠ¸ Dir.ë¥¼ ì–»ëŠ”ë‹¤.
  *
- * aStatistics     - [IN]  Åë°èÁ¤º¸
- * aStartInfo      - [IN]  Mtx ½ÃÀÛÁ¤º¸
- * aTransID        - [IN]  Æ®·£Àè¼Ç ID
- * aFstDskViewSCN  - [IN]  ÆäÀÌÁö¸¦ ÇÒ´çÇÑ Æ®·£Àè¼ÇÀÇ FstDskViewSCN
- * aPhyPagePtr     - [OUT] ÇÒ´ç¹ŞÀº ÆäÀÌÁö Æ÷ÀÎÅÍ
+ * aStatistics     - [IN]  í†µê³„ì •ë³´
+ * aStartInfo      - [IN]  Mtx ì‹œì‘ì •ë³´
+ * aTransID        - [IN]  íŠ¸ëœì­ì…˜ ID
+ * aFstDskViewSCN  - [IN]  í˜ì´ì§€ë¥¼ í• ë‹¹í•œ íŠ¸ëœì­ì…˜ì˜ FstDskViewSCN
+ * aPhyPagePtr     - [OUT] í• ë‹¹ë°›ì€ í˜ì´ì§€ í¬ì¸í„°
  *
  ******************************************************************************/
 IDE_RC sdcTSSegment::allocNewPage( idvSQL  * aStatistics,
@@ -1157,7 +1157,7 @@ IDE_RC sdcTSSegment::allocNewPage( idvSQL  * aStatistics,
                                             &sTrySuccess ) 
                   != IDE_SUCCESS );
 
-        /* BUG-42975 °°Àº SegType¿¡¼­ StealÇÏÁö ¸øÇßÀ¸¸é ´Ù¸¥ SegType¿¡¼­ ½ºÆ¿ */
+        /* BUG-42975 ê°™ì€ SegTypeì—ì„œ Stealí•˜ì§€ ëª»í–ˆìœ¼ë©´ ë‹¤ë¥¸ SegTypeì—ì„œ ìŠ¤í‹¸ */
         if ( sTrySuccess == ID_FALSE )
         {
             IDE_TEST( sdcTXSegMgr::tryStealFreeExtsFromOtherEntry(
@@ -1182,11 +1182,11 @@ IDE_RC sdcTSSegment::allocNewPage( idvSQL  * aStatistics,
                               aFstDskViewSCN ) 
               != IDE_SUCCESS );
 
-    /* Mtx°¡ AbortµÇ¸é, PageImage¸¸ RollbackµÇÁö RuntimeValud´Â
-     * º¹±¸µÇÁö ¾Ê½À´Ï´Ù.
-     * µû¶ó¼­ Rollback½Ã ÀÌÀü °ªÀ¸·Î º¹±¸ÇÏµµ·Ï ÇÕ´Ï´Ù.
-     * ¾îÂ÷ÇÇ Segment´Â Transaction´ç ÇÏ³ª¾¿ È¥ÀÚ¾²´Â °´Ã¼ÀÌ±â
-     * ¶§¹®¿¡ ¹é¾÷º»Àº ÇÏ³ª¸¸ ÀÖÀ¸¸é µË´Ï´Ù.*/
+    /* Mtxê°€ Abortë˜ë©´, PageImageë§Œ Rollbackë˜ì§€ RuntimeValudëŠ”
+     * ë³µêµ¬ë˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
+     * ë”°ë¼ì„œ Rollbackì‹œ ì´ì „ ê°’ìœ¼ë¡œ ë³µêµ¬í•˜ë„ë¡ í•©ë‹ˆë‹¤.
+     * ì–´ì°¨í”¼ SegmentëŠ” Transactionë‹¹ í•˜ë‚˜ì”© í˜¼ìì“°ëŠ” ê°ì²´ì´ê¸°
+     * ë•Œë¬¸ì— ë°±ì—…ë³¸ì€ í•˜ë‚˜ë§Œ ìˆìœ¼ë©´ ë©ë‹ˆë‹¤.*/
     IDE_TEST( sdrMiniTrans::addPendingJob( aMtx,
                                            ID_FALSE, // isCommitJob
                                            ID_FALSE, // aFreeData
@@ -1213,14 +1213,14 @@ IDE_RC sdcTSSegment::allocNewPage( idvSQL  * aStatistics,
 
 /***********************************************************************
  *
- * Description : ±âÁ¸ÀÇ ÇÒ´ç Á¤º¸·Î º¹±¸
+ * Description : ê¸°ì¡´ì˜ í• ë‹¹ ì •ë³´ë¡œ ë³µêµ¬
  *
- *               MtxRollbackÀ» ÇÒ °æ¿ì, DiskPage´Â º¹±¸µÇÁö¸¸ Runtime
- *               Á¤º¸´Â º¹±¸µÇÁö ¾Ê´Â´Ù. µû¶ó¼­ º¹±¸ÇÏ±â À§ÇØ
- *               °ªÀ» ÀúÀåÇØµÎ°í, MtxRollback½Ã º¹±¸ÇÑ´Ù.
+ *               MtxRollbackì„ í•  ê²½ìš°, DiskPageëŠ” ë³µêµ¬ë˜ì§€ë§Œ Runtime
+ *               ì •ë³´ëŠ” ë³µêµ¬ë˜ì§€ ì•ŠëŠ”ë‹¤. ë”°ë¼ì„œ ë³µêµ¬í•˜ê¸° ìœ„í•´
+ *               ê°’ì„ ì €ì¥í•´ë‘ê³ , MtxRollbackì‹œ ë³µêµ¬í•œë‹¤.
  *
- * [IN] aIsCommitJob         - ÀÌ°ÍÀÌ CommitÀ» À§ÇÑ ÀÛ¾÷ÀÌ³Ä, ¾Æ´Ï³Ä
- * [IN] aTSSegment           - AbortÇÏ·Á´Â TSSegment
+ * [IN] aIsCommitJob         - ì´ê²ƒì´ Commitì„ ìœ„í•œ ì‘ì—…ì´ëƒ, ì•„ë‹ˆëƒ
+ * [IN] aTSSegment           - Abortí•˜ë ¤ëŠ” TSSegment
  *
  **********************************************************************/
 IDE_RC sdcTSSegment::abortCurAllocInfo( void * aTSSegment )

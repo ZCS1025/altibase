@@ -22,7 +22,7 @@
 #define IDU_INVALID_CLIENT_INDEX ID_UINT_MAX
 
 /*
- * mem pool mgr¸¦ ¸¸µé¾î¾ßÇÏ´Â°¡?
+ * mem pool mgrë¥¼ ë§Œë“¤ì–´ì•¼í•˜ëŠ”ê°€?
  */
 #define IDU_MAKE_MEMPOOL_MGR ( (IDU_USE_MEMORY_POOL == 1)                 &&\
                               (iduMemMgr::isServerMemType() == ID_TRUE) )
@@ -150,8 +150,8 @@ IDE_RC iduMemAlloc::destroy(void)
     return IDE_FAILURE;
 }
 
-// iduMemMgr¸¦ ÃÊ±âÈ­.
-// IDU_SERVER_TYPEÀÏ °æ¿ì mutex¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+// iduMemMgrë¥¼ ì´ˆê¸°í™”.
+// IDU_SERVER_TYPEì¼ ê²½ìš° mutexë¥¼ ì´ˆê¸°í™”í•œë‹¤.
 IDE_RC iduMemMgr::initializeStatic(iduPeerType aType)
 {
 #define IDE_FN "iduMemMgr::initializeStatic()"
@@ -300,8 +300,8 @@ IDE_RC iduMemMgr::initializeStatic(iduPeerType aType)
 #undef IDE_FN
 }
 
-// iduMemMgr¸¦ Á¾·á.
-// IDU_SERVER_TYPEÀÏ °æ¿ì mutex¸¦ ÇØÁ¦ÇÏ°í IDU_SINGLE_TYPEÀ¸·Î ÀüÈ¯ÇÑ´Ù.
+// iduMemMgrë¥¼ ì¢…ë£Œ.
+// IDU_SERVER_TYPEì¼ ê²½ìš° mutexë¥¼ í•´ì œí•˜ê³  IDU_SINGLE_TYPEìœ¼ë¡œ ì „í™˜í•œë‹¤.
 IDE_RC iduMemMgr::destroyStatic()
 {
 #define IDE_FN "iduMemMgr::destroyStatic()"

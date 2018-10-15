@@ -35,10 +35,10 @@ typedef enum isqlFmtType
  * BUG-40426 COLUMN col FORMAT fmt
  * mType   : FMT_CHR for CHARacter type
  *           FMT_NUM for NUMber type
- * mOnOff  : Æ÷¸Ë Àû¿ë ¿©ºÎ ¼³Á¤
+ * mOnOff  : í¬ë§· ì ìš© ì—¬ë¶€ ì„¤ì •
  * mKey    : Column Name
- * mColSize: CHAR Å¸ÀÔÀ» À§ÇÑ »çÀÌÁî ÀúÀå
- * mFmt    : Æ÷¸Ë ¹®ÀÚ¿­ ÀúÀå
+ * mColSize: CHAR íƒ€ì…ì„ ìœ„í•œ ì‚¬ì´ì¦ˆ ì €ì¥
+ * mFmt    : í¬ë§· ë¬¸ìì—´ ì €ì¥
  */
 typedef struct isqlFmtNode
 {
@@ -75,7 +75,7 @@ public:
     void            SetTiming(SChar *a_CommandStr, idBool a_IsTiming);
     idBool          GetTiming()      { return m_Timing; }
 
-    // BUG-22685 set vertical on ±¸¹®Ãß°¡
+    // BUG-22685 set vertical on êµ¬ë¬¸ì¶”ê°€
     void            SetVertical(SChar *a_CommandStr, idBool a_IsVertical);
     idBool          GetVertical()    { return m_Vertical; }
 
@@ -132,7 +132,7 @@ public:
                                    idBool a_ShowPartitions );
     idBool          GetPartitions() { return m_ShowPartitions; }
 
-    /* PROJ-1107 Check Constraint Áö¿ø */
+    /* PROJ-1107 Check Constraint ì§€ì› */
     void            SetCheckConstraints( SChar *a_CommandStr,
                                          idBool a_ShowCheckConstraints );
     idBool          GetCheckConstraints() { return m_ShowCheckConstraints; }
@@ -247,7 +247,7 @@ private:
     idBool          m_Vertical; // BUG-22685
     idBool          m_Heading;
     idBool          m_IsDisplayComment;
-    idBool          m_ShowCheckConstraints; /* PROJ-1107 Check Constraint Áö¿ø */
+    idBool          m_ShowCheckConstraints; /* PROJ-1107 Check Constraint ì§€ì› */
     idBool          m_ShowForeignKeys;
     idBool          m_ShowPartitions; /* BUG-43516 */
     idBool          m_PlanCommit;

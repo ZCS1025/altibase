@@ -312,8 +312,8 @@ void testLOBException_cursor_and_lobinterface1()
     idlOS::fprintf( TSM_OUTPUT,
                     "testLOBException_cursor_and_lobinterface:\n"
                     "Update End By LOB Cursor: must fail\n");
-    /* ¾Õ¿¡¼­ smiTableCursor·Î UpdateÇÏ¿´±â ¶§¹®¿¡
-       ´ÙÀ½ LOB Locator¿¡ ÀÇÇÑ Update´Â Error°¡ ¹ß»ıÇÏ¿©¾ß ÇÑ´Ù.*/
+    /* ì•ì—ì„œ smiTableCursorë¡œ Updateí•˜ì˜€ê¸° ë•Œë¬¸ì—
+       ë‹¤ìŒ LOB Locatorì— ì˜í•œ UpdateëŠ” Errorê°€ ë°œìƒí•˜ì—¬ì•¼ í•œë‹¤.*/
     TSM_ASSERT(tsmUpdateAll(sLOBCnt,
                             aArrLOBLocator,
                             TSM_LOB_VALUE_1,
@@ -394,8 +394,8 @@ void testLOBException_cursor_and_lobinterface2()
                     "testLOBException_cursor_and_lobinterface:\n"
                     "Update End By LOB Cursor: must fail\n");
     
-    /* ¾Õ¿¡¼­ smiTableCursor·Î UpdateÇÏ¿´±â ¶§¹®¿¡
-       ´ÙÀ½ LOB Locator¿¡ ÀÇÇÑ Update´Â Error°¡ ¹ß»ıÇÏ¿©¾ß ÇÑ´Ù.*/
+    /* ì•ì—ì„œ smiTableCursorë¡œ Updateí•˜ì˜€ê¸° ë•Œë¬¸ì—
+       ë‹¤ìŒ LOB Locatorì— ì˜í•œ UpdateëŠ” Errorê°€ ë°œìƒí•˜ì—¬ì•¼ í•œë‹¤.*/
     TSM_ASSERT(tsmUpdateAll(sLOBCnt,
                             aArrLOBLocator,
                             TSM_LOB_VALUE_1,
@@ -504,8 +504,8 @@ void testLOBException_cursor_and_lobinterface3()
                     "testLOBException_cursor_and_lobinterface:\n"
                     "Update End By LOB Cursor: must fail\n");
     
-    /* ¾Õ¿¡¼­ ´Ù¸¥ Cursor·Î UpdateÇÏ¿´±â ¶§¹®¿¡
-       ´ÙÀ½ LOB Locator¿¡ ÀÇÇÑ Update´Â Error°¡ ¹ß»ıÇÏ¿©¾ß ÇÑ´Ù.*/
+    /* ì•ì—ì„œ ë‹¤ë¥¸ Cursorë¡œ Updateí•˜ì˜€ê¸° ë•Œë¬¸ì—
+       ë‹¤ìŒ LOB Locatorì— ì˜í•œ UpdateëŠ” Errorê°€ ë°œìƒí•˜ì—¬ì•¼ í•œë‹¤.*/
     TSM_ASSERT(tsmUpdateAll(sLOBCnt2,
                             aArrLOBLocator2,
                             TSM_LOB_VALUE_2,
@@ -684,8 +684,8 @@ void testLOBException_cursor_and_savepoint()
                     "testLOBException_cursor_and_lobinterface:\n"
                     "Update End By LOB Cursor: must fail\n");
     
-    /* ¾Õ¿¡¼­ ´Ù¸¥ Cursor·Î UpdateÇÏ¿´±â ¶§¹®¿¡
-       ´ÙÀ½ LOB Locator¿¡ ÀÇÇÑ Update´Â Error°¡ ¹ß»ıÇÏ¿©¾ß ÇÑ´Ù.*/
+    /* ì•ì—ì„œ ë‹¤ë¥¸ Cursorë¡œ Updateí•˜ì˜€ê¸° ë•Œë¬¸ì—
+       ë‹¤ìŒ LOB Locatorì— ì˜í•œ UpdateëŠ” Errorê°€ ë°œìƒí•˜ì—¬ì•¼ í•œë‹¤.*/
     TSM_ASSERT(tsmUpdateAll(sLOBCnt2,
                             aArrLOBLocator2,
                             TSM_LOB_VALUE_2,

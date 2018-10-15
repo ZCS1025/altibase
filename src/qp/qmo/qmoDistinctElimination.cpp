@@ -28,7 +28,7 @@ IDE_RC qmoDistinctElimination::doTransform( qcStatement * aStatement,
                                             qmsQuerySet * aQuerySet )
 {
 /***********************************************************************
- * Description : DISTINCT Keyword Á¦°Å
+ * Description : DISTINCT Keyword ì œê±°
  ***********************************************************************/
 
     idBool sChanged = ID_FALSE;
@@ -36,13 +36,13 @@ IDE_RC qmoDistinctElimination::doTransform( qcStatement * aStatement,
     IDU_FIT_POINT_FATAL( "qmoDistinctElimination::doTransform::__FT__" );
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_DASSERT( aQuerySet != NULL );
 
     //------------------------------------------
-    // Á¶°Ç °Ë»ç
+    // ì¡°ê±´ ê²€ì‚¬
     //------------------------------------------
 
     if ( QCU_OPTIMIZER_DISTINCT_ELIMINATION_ENABLE == 1 )
@@ -69,7 +69,7 @@ IDE_RC qmoDistinctElimination::doTransform( qcStatement * aStatement,
     }
 
     //------------------------------------------
-    // environmentÀÇ ±â·Ï
+    // environmentì˜ ê¸°ë¡
     //------------------------------------------
 
     qcgPlan::registerPlanProperty(
@@ -90,9 +90,9 @@ IDE_RC qmoDistinctElimination::doTransformSFWGH( qcStatement * aStatement,
 /****************************************************************************************
  *
  *  Description : BUG-39522 / BUG-39665
- *                Target ÀüÃ¼°¡ ÀÌ¹Ì DISTINCT ÇÏ´Ù¸é ¾ÕÀÇ DISTINCT Å°¿öµå¸¦ »ı·«ÇÑ´Ù.
+ *                Target ì „ì²´ê°€ ì´ë¯¸ DISTINCT í•˜ë‹¤ë©´ ì•ì˜ DISTINCT í‚¤ì›Œë“œë¥¼ ìƒëµí•œë‹¤.
  *
- *   DISTINCT Keyword°¡ Target ¿¡ Á¸ÀçÇÏ¸é, ¾Æ·¡ 2°³ÀÇ ÇÔ¼ö¸¦ Â÷·Ê´ë·Î È£ÃâÇÑ´Ù.
+ *   DISTINCT Keywordê°€ Target ì— ì¡´ì¬í•˜ë©´, ì•„ë˜ 2ê°œì˜ í•¨ìˆ˜ë¥¼ ì°¨ë¡€ëŒ€ë¡œ í˜¸ì¶œí•œë‹¤.
  *
  *   - isDistTargetByGroup()
  *   - isDistTargetByUniqueIdx()
@@ -108,7 +108,7 @@ IDE_RC qmoDistinctElimination::doTransformSFWGH( qcStatement * aStatement,
 
     /****************************************************************************
      * Bottom-up Distinct Elimination
-     * FROM Àı¿¡ ÀÖ´Â Inline View / Lateral View¿¡ ´ëÇØ ¸ÕÀú Ã³¸®ÇÑ´Ù.
+     * FROM ì ˆì— ìˆëŠ” Inline View / Lateral Viewì— ëŒ€í•´ ë¨¼ì € ì²˜ë¦¬í•œë‹¤.
      ****************************************************************************/
 
     for ( sFrom = aSFWGH->from; sFrom != NULL; sFrom = sFrom->next )
@@ -134,13 +134,13 @@ IDE_RC qmoDistinctElimination::doTransformSFWGH( qcStatement * aStatement,
     }
 
     /****************************************************************************
-     * DISTINCT »ı·« ºÒ°¡´ÉÇÑ È¯°æÀÎÁö È®ÀÎ
+     * DISTINCT ìƒëµ ë¶ˆê°€ëŠ¥í•œ í™˜ê²½ì¸ì§€ í™•ì¸
      ****************************************************************************/
 
     IDE_TEST_CONT( ( canTransform( aSFWGH ) == ID_FALSE ), NO_TRANSFORMATION );  
 
     /****************************************************************************
-     * Group By Àı·Î Target DISTINCT »ı·« °¡´É È®ÀÎ
+     * Group By ì ˆë¡œ Target DISTINCT ìƒëµ ê°€ëŠ¥ í™•ì¸
      ****************************************************************************/
 
     IDE_TEST( isDistTargetByGroup( aStatement,
@@ -149,7 +149,7 @@ IDE_RC qmoDistinctElimination::doTransformSFWGH( qcStatement * aStatement,
               != IDE_SUCCESS );
 
     /****************************************************************************
-     * Unique NOT NULL Index·Î Target DISTINCT »ı·« °¡´É È®ÀÎ
+     * Unique NOT NULL Indexë¡œ Target DISTINCT ìƒëµ ê°€ëŠ¥ í™•ì¸
      ****************************************************************************/
 
     if ( sIsDistTarget == ID_TRUE )
@@ -158,7 +158,7 @@ IDE_RC qmoDistinctElimination::doTransformSFWGH( qcStatement * aStatement,
     }
     else
     {
-        // ANSI-JoinÀ¸·Î ÀÎÇØ °¢ From ¸¶´Ù È£ÃâÇØ¾ß ÇÑ´Ù.
+        // ANSI-Joinìœ¼ë¡œ ì¸í•´ ê° From ë§ˆë‹¤ í˜¸ì¶œí•´ì•¼ í•œë‹¤.
         for ( sFrom = aSFWGH->from; sFrom != NULL; sFrom = sFrom->next )
         {
             IDE_TEST( isDistTargetByUniqueIdx( aStatement,
@@ -167,22 +167,22 @@ IDE_RC qmoDistinctElimination::doTransformSFWGH( qcStatement * aStatement,
                                                & sIsDistFromTarget )
                       != IDE_SUCCESS );
 
-            // ¸ğµç FromÀÌ DISTINCT ÇØ¾ß, TARGETÀÇ DISTINCT¸¦ »ı·«ÇÒ ¼ö ÀÖÀ¸¹Ç·Î,
-            // ¾î´À ÇÑ FromÀÌ¶óµµ DISTINCTÇÏÁö ¾ÊÀ¸¸é °ËÁõÀ» Á¾·áÇÑ´Ù.
+            // ëª¨ë“  Fromì´ DISTINCT í•´ì•¼, TARGETì˜ DISTINCTë¥¼ ìƒëµí•  ìˆ˜ ìˆìœ¼ë¯€ë¡œ,
+            // ì–´ëŠ í•œ Fromì´ë¼ë„ DISTINCTí•˜ì§€ ì•Šìœ¼ë©´ ê²€ì¦ì„ ì¢…ë£Œí•œë‹¤.
             if ( sIsDistFromTarget == ID_FALSE )
             {
                 break;
             }
             else
             {
-                // ÇöÀç FromÀÌ DISTINCT¸¦ º¸Àå
+                // í˜„ì¬ Fromì´ DISTINCTë¥¼ ë³´ì¥
                 // Nothing to do.
             }
         }
 
         if ( sIsDistFromTarget == ID_TRUE )
         {
-            // ¸ğµç From¿¡¼­ Target DISTINCT¸¦ º¸ÀåÇÑ´Ù.
+            // ëª¨ë“  Fromì—ì„œ Target DISTINCTë¥¼ ë³´ì¥í•œë‹¤.
             sIsDistTarget = ID_TRUE;
         }
         else
@@ -192,7 +192,7 @@ IDE_RC qmoDistinctElimination::doTransformSFWGH( qcStatement * aStatement,
     }
 
     /****************************************************************************
-     * (3-3) Target DISTINCT »ı·«
+     * (3-3) Target DISTINCT ìƒëµ
      ****************************************************************************/
 
     if ( sIsDistTarget == ID_TRUE )
@@ -219,27 +219,27 @@ idBool qmoDistinctElimination::canTransform( qmsSFWGH * aSFWGH )
 {
 /****************************************************************************************
  *
- *  Description : Distinct Elimination ÇÔ¼ö¸¦ ½ÇÇàÇÒ ÇÊ¿ä°¡ ÀÖ´ÂÁö È®ÀÎÇÑ´Ù.
+ *  Description : Distinct Elimination í•¨ìˆ˜ë¥¼ ì‹¤í–‰í•  í•„ìš”ê°€ ìˆëŠ”ì§€ í™•ì¸í•œë‹¤.
  *
- *  Implementation : ´ÙÀ½À» °ËÁõÇÑ´Ù.
+ *  Implementation : ë‹¤ìŒì„ ê²€ì¦í•œë‹¤.
  *
- *    (1) Target¿¡ DISTINCT Keyword°¡ ÀÖ´ÂÁö
- *    (2) GROUP BY Àı¿¡ ROLLUP / CUBE / GROUPING SETSÀÌ Á¸ÀçÇÏ´ÂÁö
+ *    (1) Targetì— DISTINCT Keywordê°€ ìˆëŠ”ì§€
+ *    (2) GROUP BY ì ˆì— ROLLUP / CUBE / GROUPING SETSì´ ì¡´ì¬í•˜ëŠ”ì§€
  *
  ****************************************************************************************/
 
     qmsConcatElement * sConcatElement   = NULL;
     idBool             sCanTransform    = ID_FALSE;
 
-    // DISTINCT Keyword°¡ SFWGH¿¡ Á¸ÀçÇØ¾ß ÇÑ´Ù.
+    // DISTINCT Keywordê°€ SFWGHì— ì¡´ì¬í•´ì•¼ í•œë‹¤.
     IDE_TEST_CONT( aSFWGH->selectType != QMS_DISTINCT, SKIP_TRANSFORMATION );
 
-    // GROUPING SETSÀ» °¡Áö°í ÀÖÁö ¾Ê¾Æ¾ß ÇÑ´Ù.
+    // GROUPING SETSì„ ê°€ì§€ê³  ìˆì§€ ì•Šì•„ì•¼ í•œë‹¤.
     IDE_TEST_CONT( ( aSFWGH->flag & QMV_SFWGH_GBGS_TRANSFORM_MASK ) 
                      != QMV_SFWGH_GBGS_TRANSFORM_NONE, 
                    SKIP_TRANSFORMATION );
 
-    // ROLLUP / CUBE¸¦ °¡Áö°í ÀÖÁö ¾Ê¾Æ¾ß ÇÑ´Ù.
+    // ROLLUP / CUBEë¥¼ ê°€ì§€ê³  ìˆì§€ ì•Šì•„ì•¼ í•œë‹¤.
     for ( sConcatElement = aSFWGH->group;
           sConcatElement != NULL;
           sConcatElement = sConcatElement->next )
@@ -249,7 +249,7 @@ idBool qmoDistinctElimination::canTransform( qmsSFWGH * aSFWGH )
                        SKIP_TRANSFORMATION );
     }
 
-    // Á¶°Ç °Ë»ç ¿Ï·á. »ı·« °¡´É.
+    // ì¡°ê±´ ê²€ì‚¬ ì™„ë£Œ. ìƒëµ ê°€ëŠ¥.
     sCanTransform = ID_TRUE;
 
     IDE_EXCEPTION_CONT( SKIP_TRANSFORMATION );
@@ -264,26 +264,26 @@ IDE_RC qmoDistinctElimination::isDistTargetByGroup( qcStatement  * aStatement,
 /****************************************************************************************
  *
  *  Description : BUG-39665
- *                Grouping Expression (ÀÌÇÏ Exp.) ÀüºÎ Target¿¡ Á¸ÀçÇÏ´Â °æ¿ì
- *                TargetÀº ÀÌ¹Ì DISTINCT ÇÏ¸ç, DISTINCT Å°¿öµå¸¦ »ı·«ÇÒ ¼ö ÀÖ´Ù.
+ *                Grouping Expression (ì´í•˜ Exp.) ì „ë¶€ Targetì— ì¡´ì¬í•˜ëŠ” ê²½ìš°
+ *                Targetì€ ì´ë¯¸ DISTINCT í•˜ë©°, DISTINCT í‚¤ì›Œë“œë¥¼ ìƒëµí•  ìˆ˜ ìˆë‹¤.
  *
- *   (¿¹) SELECT DISTINCT i1          FROM T1 GROUP BY i1;     -- °¡´É
- *        SELECT DISTINCT i1, SUM(i2) FROM T1 GROUP BY i1;     -- °¡´É
- *        SELECT DISTINCT i1*2        FROM T1 GROUP BY i1*2;   -- °¡´É   (µ¿ÀÏ Expression)
- *        SELECT DISTINCT i1, i2      FROM T1 GROUP BY i1, i2; -- °¡´É   (ÀüºÎ Target¿¡ ÀÖÀ½)
- *        SELECT DISTINCT i1          FROM T1 GROUP BY i1, i2; -- ºÒ°¡´É (i2°¡ Target¿¡ ¾øÀ½)
- *        SELECT DISTINCT i1*2        FROM T1 GROUP BY i1;     -- ºÒ°¡´É (Á¤È®È÷ ÀÏÄ¡ÇÏÁö ¾ÊÀ½)
- *                                    [*Áö±İÀº °¡´ÉÇØµµ, Expression¿¡ µû¶ó ±×·¸Áö ¾ÊÀ» ¼ö ÀÖ´Ù.]
+ *   (ì˜ˆ) SELECT DISTINCT i1          FROM T1 GROUP BY i1;     -- ê°€ëŠ¥
+ *        SELECT DISTINCT i1, SUM(i2) FROM T1 GROUP BY i1;     -- ê°€ëŠ¥
+ *        SELECT DISTINCT i1*2        FROM T1 GROUP BY i1*2;   -- ê°€ëŠ¥   (ë™ì¼ Expression)
+ *        SELECT DISTINCT i1, i2      FROM T1 GROUP BY i1, i2; -- ê°€ëŠ¥   (ì „ë¶€ Targetì— ìˆìŒ)
+ *        SELECT DISTINCT i1          FROM T1 GROUP BY i1, i2; -- ë¶ˆê°€ëŠ¥ (i2ê°€ Targetì— ì—†ìŒ)
+ *        SELECT DISTINCT i1*2        FROM T1 GROUP BY i1;     -- ë¶ˆê°€ëŠ¥ (ì •í™•íˆ ì¼ì¹˜í•˜ì§€ ì•ŠìŒ)
+ *                                    [*ì§€ê¸ˆì€ ê°€ëŠ¥í•´ë„, Expressionì— ë”°ë¼ ê·¸ë ‡ì§€ ì•Šì„ ìˆ˜ ìˆë‹¤.]
  *
- *   - ÀÏ¹İ Grouping¿¡ ´ëÇØ¼­¸¸ Ã³¸®ÇÑ´Ù.
+ *   - ì¼ë°˜ Groupingì— ëŒ€í•´ì„œë§Œ ì²˜ë¦¬í•œë‹¤.
  *
- *   - ROLLUP / CUBE / GROUPING SETS´Â Ã³¸®ÇÏÁö ¾Ê´Â´Ù.
- *     ÀÌµé Grouping Exp. Áß ÇÏ³ª°¡, ÀÏ¹İ Grouping Exp. ÀÇ Base Column°ú Áßº¹µÇ´Â °æ¿ì¿£
- *     DISTINCT º¸ÀåÀ» ÇÒ ¼ö ¾ø±â ¶§¹®ÀÌ´Ù.
+ *   - ROLLUP / CUBE / GROUPING SETSëŠ” ì²˜ë¦¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
+ *     ì´ë“¤ Grouping Exp. ì¤‘ í•˜ë‚˜ê°€, ì¼ë°˜ Grouping Exp. ì˜ Base Columnê³¼ ì¤‘ë³µë˜ëŠ” ê²½ìš°ì—”
+ *     DISTINCT ë³´ì¥ì„ í•  ìˆ˜ ì—†ê¸° ë•Œë¬¸ì´ë‹¤.
  *
- *     (¿¹) SELECT DISTINCT i1, i2, SUM(i3) FROM T1 GROUP BY i1, ROLLUP( i1, i2 );
- *          >> ¸ğµÎ Target¿¡ Á¸ÀçÇÏÁö¸¸, ÀÏ¹İ Grouping Column i1ÀÌ ROLLUP¿¡µµ ÀÖÀ¸¹Ç·Î
- *             i1ÀÌ Áßº¹µÇ¾î ³ª¿Â´Ù.
+ *     (ì˜ˆ) SELECT DISTINCT i1, i2, SUM(i3) FROM T1 GROUP BY i1, ROLLUP( i1, i2 );
+ *          >> ëª¨ë‘ Targetì— ì¡´ì¬í•˜ì§€ë§Œ, ì¼ë°˜ Grouping Column i1ì´ ROLLUPì—ë„ ìˆìœ¼ë¯€ë¡œ
+ *             i1ì´ ì¤‘ë³µë˜ì–´ ë‚˜ì˜¨ë‹¤.
  *
  ****************************************************************************************/
 
@@ -293,25 +293,25 @@ IDE_RC qmoDistinctElimination::isDistTargetByGroup( qcStatement  * aStatement,
 
     IDU_FIT_POINT_FATAL( "qmoDistinctElimination::isDistTargetByGroup::__FT__" );
 
-    // GROUP BY°¡ ¾ø´Â °æ¿ì, ¾Æ¹« ÀÏµµ ÇÏÁö ¾Ê´Â´Ù.
+    // GROUP BYê°€ ì—†ëŠ” ê²½ìš°, ì•„ë¬´ ì¼ë„ í•˜ì§€ ì•ŠëŠ”ë‹¤.
     IDE_TEST_CONT( aSFWGH->group == NULL, NO_GROUP_BY );
 
     /**********************************************************************************
-     * Grouping Exp. ·Î Target DISTINCT °ËÁõ
+     * Grouping Exp. ë¡œ Target DISTINCT ê²€ì¦
      *********************************************************************************/
 
     for ( sGroup = aSFWGH->group;
           sGroup != NULL;
           sGroup = sGroup->next )
     {
-        // ÇöÀç GroupÀÇ °ËÁõÀ» À§ÇÑ ÃÊ±âÈ­
+        // í˜„ì¬ Groupì˜ ê²€ì¦ì„ ìœ„í•œ ì´ˆê¸°í™”
         sGroupNodeFound = ID_FALSE;
 
         switch ( sGroup->type )
         {
             case QMS_GROUPBY_NORMAL:
 
-                // ÀÏ¹İ Grouping ExpressionÀº LIST ÇüÅÂ·Î ¿Ã ¼ö ¾ø´Ù.
+                // ì¼ë°˜ Grouping Expressionì€ LIST í˜•íƒœë¡œ ì˜¬ ìˆ˜ ì—†ë‹¤.
                 IDE_DASSERT( ( sGroup->arithmeticOrList->node.lflag & MTC_NODE_OPERATOR_MASK )
                                != MTC_NODE_OPERATOR_LIST );
 
@@ -319,7 +319,7 @@ IDE_RC qmoDistinctElimination::isDistTargetByGroup( qcStatement  * aStatement,
                       sTarget != NULL;
                       sTarget = sTarget->next )
                 {
-                    // TargetÀÌ Grouping ExpressionÀÎ °æ¿ì passModuleÀÌ ¾º¿öÁ® ÀÖ´Ù.
+                    // Targetì´ Grouping Expressionì¸ ê²½ìš° passModuleì´ ì”Œì›Œì ¸ ìˆë‹¤.
                     if ( sTarget->targetColumn->node.module == &qtc::passModule )
                     {
                         IDE_TEST( qtc::isEquivalentExpression( aStatement,
@@ -339,7 +339,7 @@ IDE_RC qmoDistinctElimination::isDistTargetByGroup( qcStatement  * aStatement,
                     }
                     else
                     {
-                        // TargetÀÌ Grouping ExpressionÀÌ ¾Æ´Ñ °æ¿ì
+                        // Targetì´ Grouping Expressionì´ ì•„ë‹Œ ê²½ìš°
                         // Nothing to do.
                     }
                 }
@@ -348,7 +348,7 @@ IDE_RC qmoDistinctElimination::isDistTargetByGroup( qcStatement  * aStatement,
             case QMS_GROUPBY_ROLLUP:
             case QMS_GROUPBY_CUBE:
             case QMS_GROUPBY_NULL:
-                // ROLLUP / CUBE / GROUPING SETS ¿¡ ´ëÇØ¼­ Ã³¸®ÇÏÁö ¾Ê´Â´Ù.
+                // ROLLUP / CUBE / GROUPING SETS ì— ëŒ€í•´ì„œ ì²˜ë¦¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
                 break;
             default:
                 IDE_DASSERT(0);
@@ -357,7 +357,7 @@ IDE_RC qmoDistinctElimination::isDistTargetByGroup( qcStatement  * aStatement,
 
         if ( sGroupNodeFound == ID_FALSE )
         {
-            // ÇöÀç ±×·ìÀÌ Target¿¡ Á¸ÀçÇÏÁö ¾Ê´Â °æ¿ì
+            // í˜„ì¬ ê·¸ë£¹ì´ Targetì— ì¡´ì¬í•˜ì§€ ì•ŠëŠ” ê²½ìš°
             break;
         }
         else
@@ -368,7 +368,7 @@ IDE_RC qmoDistinctElimination::isDistTargetByGroup( qcStatement  * aStatement,
 
     IDE_EXCEPTION_CONT( NO_GROUP_BY );
 
-    // TargetÀÇ DISTINCT »ı·« °¡´É ¿©ºÎ
+    // Targetì˜ DISTINCT ìƒëµ ê°€ëŠ¥ ì—¬ë¶€
     *aIsDistTarget = sGroupNodeFound;
 
     return IDE_SUCCESS;
@@ -387,32 +387,32 @@ IDE_RC qmoDistinctElimination::isDistTargetByUniqueIdx( qcStatement  * aStatemen
  *
  *  Description : BUG-39522
  *
- *   FROM ÀıÀÇ qmsFrom ÇÏ³ª°¡, ´ÙÀ½ Á¶°ÇÀ» ¸¸Á·ÇÏ´ÂÁö È®ÀÎÇÑ´Ù.
+ *   FROM ì ˆì˜ qmsFrom í•˜ë‚˜ê°€, ë‹¤ìŒ ì¡°ê±´ì„ ë§Œì¡±í•˜ëŠ”ì§€ í™•ì¸í•œë‹¤.
  *
- *     (1) ÇØ´ç qmsFrom¿¡¼­ ³ª¿Â Target(µé)ÀÌ Á¸Àç
- *     (2) (1)ÀÇ Target(µé) Áß¿¡¼­, ÇØ´ç qmsFromÀÇ Unique Index¿¡ ¼ÓÇÏ´Â Target(µé)ÀÌ Á¸Àç
- *     (3) (2)ÀÇ Target(µé) ¸ğµÎ NOT NULL
+ *     (1) í•´ë‹¹ qmsFromì—ì„œ ë‚˜ì˜¨ Target(ë“¤)ì´ ì¡´ì¬
+ *     (2) (1)ì˜ Target(ë“¤) ì¤‘ì—ì„œ, í•´ë‹¹ qmsFromì˜ Unique Indexì— ì†í•˜ëŠ” Target(ë“¤)ì´ ì¡´ì¬
+ *     (3) (2)ì˜ Target(ë“¤) ëª¨ë‘ NOT NULL
  *
- *   ÀÌ ÀÛ¾÷À» FROM ÀıÀÇ ¸ğµç qmsFrom¿¡ ´ëÇØ ¼öÇàÇÑ´Ù.
- *   ¸ğµç qmsFromÀÌ À§ Á¶°ÇÀ» ¸¸Á·ÇØ¾ß, TargetÀÇ DISTINCT¸¦ »ı·«ÇÒ ¼ö ÀÖ´Ù.
+ *   ì´ ì‘ì—…ì„ FROM ì ˆì˜ ëª¨ë“  qmsFromì— ëŒ€í•´ ìˆ˜í–‰í•œë‹¤.
+ *   ëª¨ë“  qmsFromì´ ìœ„ ì¡°ê±´ì„ ë§Œì¡±í•´ì•¼, Targetì˜ DISTINCTë¥¼ ìƒëµí•  ìˆ˜ ìˆë‹¤.
  *
  *
- *   (¿¹) CREATE TABLE T1 ( i1 INT NOT NULL, i2 INT, i3 INT,
+ *   (ì˜ˆ) CREATE TABLE T1 ( i1 INT NOT NULL, i2 INT, i3 INT,
  *                          PRIMARY KEY(i3) );
  *        CREATE UNIQUE INDEX T1_UIDX1 ON T1(i1);
  *        CREATE UNIQUE INDEX T1_UIDX2 ON T1(i2);
  *
  *        -- [T1.i1 : NOT NULL UNIQUE, T1.i2 : UNIQUE, T1.i3 : PRIMARY KEY]
  *
- *        SELECT DISTINCT i1     FROM T1; -- °¡´É
- *        SELECT DISTINCT i2     FROM T1; -- ºÒ°¡´É (NULL Áßº¹ °¡´É)
- *        SELECT DISTINCT i3     FROM T1; -- °¡´É
- *        SELECT DISTINCT i1, i2 FROM T1; -- °¡´É
- *                                           (i1ÀÌ DISTINCT ÇÏ¹Ç·Î (i1, i2) ÁıÇÕÀº DISTINCT)
+ *        SELECT DISTINCT i1     FROM T1; -- ê°€ëŠ¥
+ *        SELECT DISTINCT i2     FROM T1; -- ë¶ˆê°€ëŠ¥ (NULL ì¤‘ë³µ ê°€ëŠ¥)
+ *        SELECT DISTINCT i3     FROM T1; -- ê°€ëŠ¥
+ *        SELECT DISTINCT i1, i2 FROM T1; -- ê°€ëŠ¥
+ *                                           (i1ì´ DISTINCT í•˜ë¯€ë¡œ (i1, i2) ì§‘í•©ì€ DISTINCT)
  *
- *        SELECT DISTINCT i1     FROM T1 GROUP BY i1, i2; -- Group By·Î´Â ºÒ°¡´É, ¿©±â¼± °¡´É
- *        SELECT DISTINCT i2     FROM T1 GROUP BY i1, i2; -- Group By·Î´Â ºÒ°¡´É, ¿©±â¼­µµ ºÒ°¡´É
- *        SELECT DISTINCT i1, i2 FROM T1 GROUP BY i1, i2; -- Group By·Î ÀÌ¹Ì °¡´É (Skipped)
+ *        SELECT DISTINCT i1     FROM T1 GROUP BY i1, i2; -- Group Byë¡œëŠ” ë¶ˆê°€ëŠ¥, ì—¬ê¸°ì„  ê°€ëŠ¥
+ *        SELECT DISTINCT i2     FROM T1 GROUP BY i1, i2; -- Group Byë¡œëŠ” ë¶ˆê°€ëŠ¥, ì—¬ê¸°ì„œë„ ë¶ˆê°€ëŠ¥
+ *        SELECT DISTINCT i1, i2 FROM T1 GROUP BY i1, i2; -- Group Byë¡œ ì´ë¯¸ ê°€ëŠ¥ (Skipped)
  *
  *        CREATE TABLE T2 ( i1 INT NOT NULL, i2 INT NOT NULL,
  *                          FOREIGN KEY (i2) REFERENCES T1(i2) );
@@ -420,24 +420,24 @@ IDE_RC qmoDistinctElimination::isDistTargetByUniqueIdx( qcStatement  * aStatemen
  *
  *        -- [T2.i1 : NOT NULL UNIQUE, T2.i2 : NOT NULL FOREIGN KEY]
  *
- *        SELECT DISTINCT T1.i1               FROM T1, T2; -- ºÒ°¡´É (T2ÀÇ TargetÀÌ ¾øÀ½)
- *        SELECT DISTINCT T1.i1, T2.i1        FROM T1, T2; -- °¡´É
- *        SELECT DISTINCT T1.i1, T1.i2, T2.i1 FROM T1, T2; -- °¡´É
- *        SELECT DISTINCT T1.i1, T2.i2        FROM T1, T2; -- ºÒ°¡´É
- *                                                            (T2.i2°¡ FK¶óµµ Áßº¹µÉ ¼ö ÀÖÀ½)
+ *        SELECT DISTINCT T1.i1               FROM T1, T2; -- ë¶ˆê°€ëŠ¥ (T2ì˜ Targetì´ ì—†ìŒ)
+ *        SELECT DISTINCT T1.i1, T2.i1        FROM T1, T2; -- ê°€ëŠ¥
+ *        SELECT DISTINCT T1.i1, T1.i2, T2.i1 FROM T1, T2; -- ê°€ëŠ¥
+ *        SELECT DISTINCT T1.i1, T2.i2        FROM T1, T2; -- ë¶ˆê°€ëŠ¥
+ *                                                            (T2.i2ê°€ FKë¼ë„ ì¤‘ë³µë  ìˆ˜ ìˆìŒ)
  *
  *
- *   Note : ´ÙÀ½ÀÇ °æ¿ì´Â DISTINCT¸¦ º¸ÀåÇÒ ¼ö ¾ø´Ù.
+ *   Note : ë‹¤ìŒì˜ ê²½ìš°ëŠ” DISTINCTë¥¼ ë³´ì¥í•  ìˆ˜ ì—†ë‹¤.
  *
- *   - qmsFromÀÌ ANSI Join TreeÀÌ°í, ÇÑÂÊÀÌ¶óµµ DISTINCT°¡ º¸ÀåµÇÁö ¸øÇÏ´Â °æ¿ì
+ *   - qmsFromì´ ANSI Join Treeì´ê³ , í•œìª½ì´ë¼ë„ DISTINCTê°€ ë³´ì¥ë˜ì§€ ëª»í•˜ëŠ” ê²½ìš°
  *
- *   - Composite Unique Index¿¡ ÀÖ´Â Key Column 'ÀÏºÎ'¸¸ Target¿¡ Á¸ÀçÇÏ´Â °æ¿ì
- *     (Á¶°Ç¿¡¼­ ¸»Çßµí, Key Column ¸ğµÎ Target Á¸ÀçÇØ¾ß ÀÎÁ¤)
+ *   - Composite Unique Indexì— ìˆëŠ” Key Column 'ì¼ë¶€'ë§Œ Targetì— ì¡´ì¬í•˜ëŠ” ê²½ìš°
+ *     (ì¡°ê±´ì—ì„œ ë§í–ˆë“¯, Key Column ëª¨ë‘ Target ì¡´ì¬í•´ì•¼ ì¸ì •)
  *
- *   - From ¿¡ Inline View, Lateral View, Subquery Factoring (WITH)ÀÌ ¿À´Â °æ¿ì
+ *   - From ì— Inline View, Lateral View, Subquery Factoring (WITH)ì´ ì˜¤ëŠ” ê²½ìš°
  *
- *   - Partitioned Table qmsFrom ¿¡¼­, LOCALUNIQUE Index´Â È®ÀÎÇÏÁö ¾Ê´Â´Ù.
- *     >> qmsFromÀÌ Æ¯Á¤ PartitionÀÎ °æ¿ì¿¡´Â È®ÀÎÇÑ´Ù.
+ *   - Partitioned Table qmsFrom ì—ì„œ, LOCALUNIQUE IndexëŠ” í™•ì¸í•˜ì§€ ì•ŠëŠ”ë‹¤.
+ *     >> qmsFromì´ íŠ¹ì • Partitionì¸ ê²½ìš°ì—ëŠ” í™•ì¸í•œë‹¤.
  *
 ****************************************************************************************/
 
@@ -457,7 +457,7 @@ IDE_RC qmoDistinctElimination::isDistTargetByUniqueIdx( qcStatement  * aStatemen
 
     IDU_FIT_POINT_FATAL( "qmoDistinctElimination::isDistTargetByGroup::__FT__" );
 
-    // ´ÜÀÏ From Object°¡ ¾Æ´Ñ °æ¿ì, LEFT/RIGHT¿¡ ´ëÇØ Àç±Í È£Ãâ
+    // ë‹¨ì¼ From Objectê°€ ì•„ë‹Œ ê²½ìš°, LEFT/RIGHTì— ëŒ€í•´ ì¬ê·€ í˜¸ì¶œ
     if ( aFrom->joinType != QMS_NO_JOIN )
     {
         IDE_TEST( isDistTargetByUniqueIdx( aStatement,
@@ -466,8 +466,8 @@ IDE_RC qmoDistinctElimination::isDistTargetByUniqueIdx( qcStatement  * aStatemen
                                            & sIsDistTarget )
                   != IDE_SUCCESS );
 
-        // LEFT¿¡¼­ DISTINCT¸¦ º¸ÀåÇÒ ¼ö ¾ø°í, DistIdxÀ» ¼öÁıÇÏÁö ¾Ê¾Æµµ µÇ¸é
-        // ÇØ´ç From Object´Â DISTINCT¸¦ º¸ÀåÇÒ ¼ö ¾øÀ¸¹Ç·Î °ğ¹Ù·Î Á¾·á (¹İÈ¯°ª : FALSE)
+        // LEFTì—ì„œ DISTINCTë¥¼ ë³´ì¥í•  ìˆ˜ ì—†ê³ , DistIdxì„ ìˆ˜ì§‘í•˜ì§€ ì•Šì•„ë„ ë˜ë©´
+        // í•´ë‹¹ From ObjectëŠ” DISTINCTë¥¼ ë³´ì¥í•  ìˆ˜ ì—†ìœ¼ë¯€ë¡œ ê³§ë°”ë¡œ ì¢…ë£Œ (ë°˜í™˜ê°’ : FALSE)
         IDE_TEST_CONT( sIsDistTarget == ID_FALSE, NORMAL_EXIT );
 
         IDE_TEST( isDistTargetByUniqueIdx( aStatement,
@@ -481,7 +481,7 @@ IDE_RC qmoDistinctElimination::isDistTargetByUniqueIdx( qcStatement  * aStatemen
         IDE_DASSERT( aFrom->tableRef != NULL );
 
         /**********************************************************************************
-         * PartitionÀ» Á÷Á¢ Å½»öÇÏ´Â °æ¿ì, LOCALUNIQUE Index·Î °ËÁõ
+         * Partitionì„ ì§ì ‘ íƒìƒ‰í•˜ëŠ” ê²½ìš°, LOCALUNIQUE Indexë¡œ ê²€ì¦
          *********************************************************************************/
 
         if ( aFrom->tableRef->partitionRef != NULL )
@@ -497,7 +497,7 @@ IDE_RC qmoDistinctElimination::isDistTargetByUniqueIdx( qcStatement  * aStatemen
 
 
         /**********************************************************************************
-         * ÇöÀç From¿¡ ¼ÓÇÑ TargetÀÌ Á¸ÀçÇÏ´ÂÁö È®ÀÎ
+         * í˜„ì¬ Fromì— ì†í•œ Targetì´ ì¡´ì¬í•˜ëŠ”ì§€ í™•ì¸
          *********************************************************************************/
 
         for ( sFromColumn = sTableInfo->columns;
@@ -508,7 +508,7 @@ IDE_RC qmoDistinctElimination::isDistTargetByUniqueIdx( qcStatement  * aStatemen
                   sTarget != NULL;
                   sTarget = sTarget->next )
             {
-                // TargetÀÌ Grouping ExpressionÀÎ °æ¿ì passModuleÀÌ ¾º¿öÁ® ÀÖ´Ù.
+                // Targetì´ Grouping Expressionì¸ ê²½ìš° passModuleì´ ì”Œì›Œì ¸ ìˆë‹¤.
                 if ( sTarget->targetColumn->node.module == &qtc::passModule )
                 {
                     sTargetNode = (qtcNode *)sTarget->targetColumn->node.arguments;
@@ -537,7 +537,7 @@ IDE_RC qmoDistinctElimination::isDistTargetByUniqueIdx( qcStatement  * aStatemen
                     // Nothing to do.
                 }
 
-            } /* End of loop : ¸ğµç Target Å½»ö ¿Ï·á */
+            } /* End of loop : ëª¨ë“  Target íƒìƒ‰ ì™„ë£Œ */
 
             if ( sHasTarget == ID_TRUE )
             {
@@ -548,14 +548,14 @@ IDE_RC qmoDistinctElimination::isDistTargetByUniqueIdx( qcStatement  * aStatemen
                 // Nothing to do.
             }
 
-        } /* End of loop : ´ÜÀÏ From ObjectÀÇ ¸ğµç Column Å½»ö ¿Ï·á */
+        } /* End of loop : ë‹¨ì¼ From Objectì˜ ëª¨ë“  Column íƒìƒ‰ ì™„ë£Œ */
 
-        // ÇöÀç From¿¡ °ü·ÃÀÖ´Â TargetÀÌ Á¸ÀçÇÏÁö ¾ÊÀ¸¸é
-        // DISTINCT¸¦ º¸ÀåÇÒ ¼ö ¾øÀ¸¹Ç·Î °ğ¹Ù·Î Á¾·á (¹İÈ¯°ª : FALSE)
+        // í˜„ì¬ Fromì— ê´€ë ¨ìˆëŠ” Targetì´ ì¡´ì¬í•˜ì§€ ì•Šìœ¼ë©´
+        // DISTINCTë¥¼ ë³´ì¥í•  ìˆ˜ ì—†ìœ¼ë¯€ë¡œ ê³§ë°”ë¡œ ì¢…ë£Œ (ë°˜í™˜ê°’ : FALSE)
         IDE_TEST_CONT( sHasTarget == ID_FALSE, NORMAL_EXIT );
 
         /**********************************************************************************
-         * Unique Index·Î DISTINCT °ËÁõ
+         * Unique Indexë¡œ DISTINCT ê²€ì¦
          *********************************************************************************/
 
         for ( i = 0; i < sTableInfo->indexCount; i++ )
@@ -565,14 +565,14 @@ IDE_RC qmoDistinctElimination::isDistTargetByUniqueIdx( qcStatement  * aStatemen
             // Unique Index?
             if ( sIndex->isUnique == ID_FALSE )
             {
-                // PartitionÀ» Á÷Á¢ Å½»öÇÏ´Â °æ¿ì, ÇöÀç Index°¡ LocalUnique ¶ó¸é Unique º¸Áõ
+                // Partitionì„ ì§ì ‘ íƒìƒ‰í•˜ëŠ” ê²½ìš°, í˜„ì¬ Indexê°€ LocalUnique ë¼ë©´ Unique ë³´ì¦
                 if ( ( sIsParttition == ID_TRUE ) && ( sIndex->isLocalUnique == ID_TRUE ) )
                 {
                     // Nothing to do.
                 }
                 else
                 {
-                    // UniqueÇÏÁö ¾ÊÀº Index¶ó¸é ´Ù¸¥ Index¸¦ Å½»ö
+                    // Uniqueí•˜ì§€ ì•Šì€ Indexë¼ë©´ ë‹¤ë¥¸ Indexë¥¼ íƒìƒ‰
                     continue;
                 }
             }
@@ -610,10 +610,10 @@ IDE_RC qmoDistinctElimination::isDistTargetByUniqueIdx( qcStatement  * aStatemen
             }
 
             /**********************************************************************************
-             * Unique IndexÀÇ ¸ğµç Key°¡ Target¿¡ ÀÖ´ÂÁö °Ë»ç
+             * Unique Indexì˜ ëª¨ë“  Keyê°€ Targetì— ìˆëŠ”ì§€ ê²€ì‚¬
              *********************************************************************************/
 
-            // °ËÁõÀ» À§ÇÑ ÃÊ±âÈ­
+            // ê²€ì¦ì„ ìœ„í•œ ì´ˆê¸°í™”
             sIsDistTarget = ID_TRUE;
 
             for ( j = 0; j < sIndex->keyColCount; j++ )
@@ -625,7 +625,7 @@ IDE_RC qmoDistinctElimination::isDistTargetByUniqueIdx( qcStatement  * aStatemen
                       sTarget != NULL;
                       sTarget = sTarget->next )
                 {
-                    // TargetÀÌ Grouping ExpressionÀÎ °æ¿ì passModuleÀÌ ¾º¿öÁ® ÀÖ´Ù.
+                    // Targetì´ Grouping Expressionì¸ ê²½ìš° passModuleì´ ì”Œì›Œì ¸ ìˆë‹¤.
                     if ( sTarget->targetColumn->node.module == &qtc::passModule )
                     {
                         sTargetNode = (qtcNode *)sTarget->targetColumn->node.arguments;
@@ -639,11 +639,11 @@ IDE_RC qmoDistinctElimination::isDistTargetByUniqueIdx( qcStatement  * aStatemen
                     {
                         sTargetColumn = QTC_STMT_COLUMN( aStatement, sTargetNode );
 
-                        // ÇöÀç Key Column°ú ÀÏÄ¡ÇÏ´Â TargetÀ» Ã£´Â´Ù.
-                        // ÀÏÄ¡ÇÏ´Â Key ColumnÀÌ NOT NullÀÌ ¾Æ´Ï¶ó¸é, Key Column°ú ÀÏÄ¡ÇØµµ ¹«½ÃÇÑ´Ù.
+                        // í˜„ì¬ Key Columnê³¼ ì¼ì¹˜í•˜ëŠ” Targetì„ ì°¾ëŠ”ë‹¤.
+                        // ì¼ì¹˜í•˜ëŠ” Key Columnì´ NOT Nullì´ ì•„ë‹ˆë¼ë©´, Key Columnê³¼ ì¼ì¹˜í•´ë„ ë¬´ì‹œí•œë‹¤.
 
-                        // Key ColumnÀÌ NOT NULLÀÌ¶óµµ TargetÀÌ NULLÀÏ ¼ö ÀÖ´Âµ¥ (Outer Join)
-                        // ÀÌ °æ¿ì¿¡µµ Key Column¸¸ NOT NULLÀÌ¸é DISTINCT´Â º¸ÀåµÈ´Ù.
+                        // Key Columnì´ NOT NULLì´ë¼ë„ Targetì´ NULLì¼ ìˆ˜ ìˆëŠ”ë° (Outer Join)
+                        // ì´ ê²½ìš°ì—ë„ Key Columnë§Œ NOT NULLì´ë©´ DISTINCTëŠ” ë³´ì¥ëœë‹¤.
                         if ( ( sKeyColumn->column.id == sTargetColumn->column.id ) &&
                              ( sKeyColumn->flag & MTC_COLUMN_NOTNULL_MASK ) ==
                              MTC_COLUMN_NOTNULL_TRUE )
@@ -663,7 +663,7 @@ IDE_RC qmoDistinctElimination::isDistTargetByUniqueIdx( qcStatement  * aStatemen
 
                 }
 
-                // KeyColumn Áß ÇÏ³ª°¡ Target¿¡ ¾øÀ¸¹Ç·Î, ÇØ´ç Index·Î DISTINCT°¡ µÉ ¼ö ¾ø´Ù.
+                // KeyColumn ì¤‘ í•˜ë‚˜ê°€ Targetì— ì—†ìœ¼ë¯€ë¡œ, í•´ë‹¹ Indexë¡œ DISTINCTê°€ ë  ìˆ˜ ì—†ë‹¤.
                 if ( sKeyColFound == ID_FALSE )
                 {
                     sIsDistTarget = ID_FALSE;
@@ -674,12 +674,12 @@ IDE_RC qmoDistinctElimination::isDistTargetByUniqueIdx( qcStatement  * aStatemen
                     // Nothing to do.
                 }
 
-            } /* End of loop : ´ÜÀÏ Unique IndexÀÇ ¸ğµç Key Column Å½»ö ¿Ï·á */
+            } /* End of loop : ë‹¨ì¼ Unique Indexì˜ ëª¨ë“  Key Column íƒìƒ‰ ì™„ë£Œ */
 
-            // ÇØ´ç Unique Index·Î DISTINCT¸¦ º¸ÀåÇÒ ¼ö ÀÖ´Ù¸é °ğ¹Ù·Î Á¾·á (¹İÈ¯°ª : TRUE)
+            // í•´ë‹¹ Unique Indexë¡œ DISTINCTë¥¼ ë³´ì¥í•  ìˆ˜ ìˆë‹¤ë©´ ê³§ë°”ë¡œ ì¢…ë£Œ (ë°˜í™˜ê°’ : TRUE)
             IDE_TEST_CONT( sIsDistTarget == ID_TRUE, NORMAL_EXIT );
 
-        } /* End of loop : ¸ğµç Index Å½»ö ¿Ï·á */
+        } /* End of loop : ëª¨ë“  Index íƒìƒ‰ ì™„ë£Œ */
     }
 
     IDE_EXCEPTION_CONT( NORMAL_EXIT );

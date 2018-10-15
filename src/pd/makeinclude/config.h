@@ -16,9 +16,9 @@
  
 /*
  * create by gamestar 2000/8/4
- * - config-minimal.h¸¦ ÀÚµ¿À¸·Î include ÇÏ±â À§ÇØ »ı¼º.
- *   porting½Ã¿¡ À§ È­ÀÏÀ» includeÇÏ±â À§ÇØ º°µµ·Î ¼Ò½º ¼öÁ¤ÀÌ ÇÊ¿ä ¾øÀ½
- *   °¢ ÇÃ·§Æû¿¡ µû¸¥ Çì´õÈ­ÀÏÀº config-lankage.h¿Í ¸µÅ©µÇµµ·Ï ÇÔ. 
+ * - config-minimal.hë¥¼ ìë™ìœ¼ë¡œ include í•˜ê¸° ìœ„í•´ ìƒì„±.
+ *   portingì‹œì— ìœ„ í™”ì¼ì„ includeí•˜ê¸° ìœ„í•´ ë³„ë„ë¡œ ì†ŒìŠ¤ ìˆ˜ì •ì´ í•„ìš” ì—†ìŒ
+ *   ê° í”Œë«í¼ì— ë”°ë¥¸ í—¤ë”í™”ì¼ì€ config-lankage.hì™€ ë§í¬ë˜ë„ë¡ í•¨. 
  */
 
 #ifndef _PDL_O_CONFIG_H_

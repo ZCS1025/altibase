@@ -50,7 +50,7 @@ void ulpScopeTable::ulpFinalize()
     }
 }
 
-/* Æ¯Á¤ scopeÀÇ symbol table¿¡ ÀÎÀÚ·Î ¹ŞÀº symbolÀ» Ãß°¡ÇÑ´Ù. */
+/* íŠ¹ì • scopeì˜ symbol tableì— ì¸ìë¡œ ë°›ì€ symbolì„ ì¶”ê°€í•œë‹¤. */
 ulpSymTNode *ulpScopeTable::ulpSAdd ( ulpSymTElement *aSym, SInt aScope )
 {
     ulpSymTable    *sSymT;
@@ -63,7 +63,7 @@ ulpSymTNode *ulpScopeTable::ulpSAdd ( ulpSymTElement *aSym, SInt aScope )
     sSymT = mScopeTable[aScope];
     if( sSymT == NULL )
     {
-        // ±×³É new ¸¦ »ç¿ëÇÔ. ³ªÁß¿¡ delete ÇØ¾ßÇÔ.
+        // ê·¸ëƒ¥ new ë¥¼ ì‚¬ìš©í•¨. ë‚˜ì¤‘ì— delete í•´ì•¼í•¨.
         IDE_TEST_RAISE( (sSymT = new ulpSymTable) == NULL,
                         ERR_MEMORY_ALLOC );
         sSymT->ulpInit();
@@ -71,20 +71,20 @@ ulpSymTNode *ulpScopeTable::ulpSAdd ( ulpSymTElement *aSym, SInt aScope )
     }
     else
     {
-        // ÀÌ¹Ì °°Àº scope¿¡¼­ ÇØ´ç symbolÀÌ Á¸ÀçÇÏ´ÂÁö È®ÀÎ.
+        // ì´ë¯¸ ê°™ì€ scopeì—ì„œ í•´ë‹¹ symbolì´ ì¡´ì¬í•˜ëŠ”ì§€ í™•ì¸.
         IDE_TEST_RAISE( sSymT->ulpSymLookup( aSym->mName ) != NULL,
                         ERR_COMP_SYM_AREADY_EXIST  );
     }
 
-    // struct type¿¡ ´ëÇÑ °í·Á
-    // typedef struct ÀÏ°æ¿ì¿¡´Â ³ªÁß¿¡ º¯¼ö ¼±¾ğ½Ã struct table¿¡¼­ °Ë»öÇÑ´Ù.
-    // ¶ÇÇÑ struct ÀÌ¸§ÀÌ ¸í½Ã µÇÁö ¾Ê¾ÒÀ» °æ¿ì¿¡´Â struct table¿¡¼­ °Ë»öÇÏÁö ¾ÊÀ½.
-    // ±×¿ÜÀÇ °æ¿ì ¾Æ·¡¿¡¼­ Ã³¸®.
+    // struct typeì— ëŒ€í•œ ê³ ë ¤
+    // typedef struct ì¼ê²½ìš°ì—ëŠ” ë‚˜ì¤‘ì— ë³€ìˆ˜ ì„ ì–¸ì‹œ struct tableì—ì„œ ê²€ìƒ‰í•œë‹¤.
+    // ë˜í•œ struct ì´ë¦„ì´ ëª…ì‹œ ë˜ì§€ ì•Šì•˜ì„ ê²½ìš°ì—ëŠ” struct tableì—ì„œ ê²€ìƒ‰í•˜ì§€ ì•ŠìŒ.
+    // ê·¸ì™¸ì˜ ê²½ìš° ì•„ë˜ì—ì„œ ì²˜ë¦¬.
 
-    /* BUG-28118 : system Çì´õÆÄÀÏµéµµ ÆÄ½ÌµÅ¾ßÇÔ.            *
-     * 5th. problem : Á¤ÀÇµÇÁö ¾ÊÀº ±¸Á¶Ã¼ Æ÷ÀÎÅÍ º¯¼ö ¼±¾ğ¾ÈµÊ. *
+    /* BUG-28118 : system í—¤ë”íŒŒì¼ë“¤ë„ íŒŒì‹±ë¼ì•¼í•¨.            *
+     * 5th. problem : ì •ì˜ë˜ì§€ ì•Šì€ êµ¬ì¡°ì²´ í¬ì¸í„° ë³€ìˆ˜ ì„ ì–¸ì•ˆë¨. *
      * 8th. problem : can't resolve extern variable type at declaring section. */
-    // struct pointer or extern º¯¼öÀÏ °æ¿ì¿¡µµ °Ë»öÇÏÁö ¾ÊÀ½.
+    // struct pointer or extern ë³€ìˆ˜ì¼ ê²½ìš°ì—ë„ ê²€ìƒ‰í•˜ì§€ ì•ŠìŒ.
     if( (aSym->mIsstruct      == ID_TRUE)  &&
         (aSym->mIsTypedef     == ID_FALSE) &&
         (aSym->mStructName[0] != '\0' )    &&
@@ -92,7 +92,7 @@ ulpSymTNode *ulpScopeTable::ulpSAdd ( ulpSymTElement *aSym, SInt aScope )
         (aSym->mIsExtern      == ID_FALSE)
       )
     {
-        // struct table¿¡¼­ structÀÌ¸§À» °Ë»öÇØº»´Ù.
+        // struct tableì—ì„œ structì´ë¦„ì„ ê²€ìƒ‰í•´ë³¸ë‹¤.
         sStructNode = gUlpStructT.ulpStructLookupAll( aSym->mStructName,
                                                       aScope );
 
@@ -101,7 +101,7 @@ ulpSymTNode *ulpScopeTable::ulpSAdd ( ulpSymTElement *aSym, SInt aScope )
         aSym->mStructLink = sStructNode;
     }
 
-    // symbol Ãß°¡
+    // symbol ì¶”ê°€
     IDE_TEST( (sSymNode = sSymT->ulpSymAdd( aSym )) == NULL );
 
     return sSymNode;
@@ -148,7 +148,7 @@ ulpSymTNode *ulpScopeTable::ulpSAdd ( ulpSymTElement *aSym, SInt aScope )
 }
 
 
-/* Æ¯Á¤ ÀÌ¸§À» °®´Â º¯¼ö¸¦ symbol table¿¡¼­ scope¸¦ ÁÙ¿©°¡¸é¼­ °Ë»öÇÑ´Ù. */
+/* íŠ¹ì • ì´ë¦„ì„ ê°–ëŠ” ë³€ìˆ˜ë¥¼ symbol tableì—ì„œ scopeë¥¼ ì¤„ì—¬ê°€ë©´ì„œ ê²€ìƒ‰í•œë‹¤. */
 ulpSymTElement *ulpScopeTable::ulpSLookupAll( SChar *aName, SInt aScope )
 {
     SChar           sTmpStr[MAX_HOSTVAR_NAME_SIZE * 2];
@@ -157,7 +157,7 @@ ulpSymTElement *ulpScopeTable::ulpSLookupAll( SChar *aName, SInt aScope )
     ulpStructTNode *sStructNode;
     ulpSymTable    *sSymT;
     ulpSymTElement *sSymTE;
-   /* BUG-28118 : system Çì´õÆÄÀÏµéµµ ÆÄ½ÌµÅ¾ßÇÔ. *
+   /* BUG-28118 : system í—¤ë”íŒŒì¼ë“¤ë„ íŒŒì‹±ë¼ì•¼í•¨. *
     * 5th., 8th. problems                     */
     SInt            sScope;
     sStrPos     = NULL;
@@ -168,7 +168,7 @@ ulpSymTElement *ulpScopeTable::ulpSLookupAll( SChar *aName, SInt aScope )
     IDE_TEST_RAISE( (aScope < 0) || (aScope > MAX_SCOPE_DEPTH),
                     ERR_COMP_SCOPE_DEPTH );
 
-    // host º¯¼ö ¾ÕÀÇ ':' Á¦°Å
+    // host ë³€ìˆ˜ ì•ì˜ ':' ì œê±°
     if ( aName[0] == ':' )
     {
         idlOS::snprintf( sTmpStr, MAX_HOSTVAR_NAME_SIZE * 2,
@@ -188,7 +188,7 @@ ulpSymTElement *ulpScopeTable::ulpSLookupAll( SChar *aName, SInt aScope )
         {
             *sStrPos = '\0';
             sStrPos += 2;
-            /*BUG-26376 [valgrind bug] : '['Ã³¸®ÇÔ. */
+            /*BUG-26376 [valgrind bug] : '['ì²˜ë¦¬í•¨. */
             sBracketPos = idlOS::strchr( sTmpStr, '[' );
             if ( sBracketPos != NULL )
             {
@@ -197,7 +197,7 @@ ulpSymTElement *ulpScopeTable::ulpSLookupAll( SChar *aName, SInt aScope )
         }
         else
         {
-            /*BUG-26376 [valgrind bug] : '['Ã³¸®ÇÔ. */
+            /*BUG-26376 [valgrind bug] : '['ì²˜ë¦¬í•¨. */
             sBracketPos = idlOS::strchr( sTmpStr, '[' );
             if ( sBracketPos != NULL )
             {
@@ -209,7 +209,7 @@ ulpSymTElement *ulpScopeTable::ulpSLookupAll( SChar *aName, SInt aScope )
     {
         *sStrPos = '\0';
         sStrPos += 1;
-        /*BUG-26376 [valgrind bug] : '['Ã³¸®ÇÔ. */
+        /*BUG-26376 [valgrind bug] : '['ì²˜ë¦¬í•¨. */
         sBracketPos = idlOS::strchr( sTmpStr, '[' );
         if ( sBracketPos != NULL )
         {
@@ -232,7 +232,7 @@ ulpSymTElement *ulpScopeTable::ulpSLookupAll( SChar *aName, SInt aScope )
     }
 
     // :xxx, :xxx.yyy, :xxx->yyy,
-    // :xxx[], :xxx[].yyy, :xxx[]->yyy ÀÇ xxx ºÎºĞÀ» °Ë»öÇÑ´Ù.
+    // :xxx[], :xxx[].yyy, :xxx[]->yyy ì˜ xxx ë¶€ë¶„ì„ ê²€ìƒ‰í•œë‹¤.
     for ( ; sScope >= 0 ; sScope-- )
     {
         sSymT = mScopeTable[sScope];
@@ -250,12 +250,12 @@ ulpSymTElement *ulpScopeTable::ulpSLookupAll( SChar *aName, SInt aScope )
         }
     }
 
-    /* BUG-30379 : Àß¸øµÈ structÆ÷ÀÎÅÍ¸¦ È£½ºÆ® º¯¼ö·Î »ç¿ë½Ã ÇÊµå¸¦ ÁöÁ¤ÇÏ¸é ÆÄ½ÌÁß segV¹ß»ı. */
-    // NULLÀ» ¸®ÅÏÇÏ¸é ÆÄ¼­¿¡¼­ ¿¡·¯¸Ş½ÃÁö Ãâ·ÂÇØÁÜ.
+    /* BUG-30379 : ì˜ëª»ëœ structí¬ì¸í„°ë¥¼ í˜¸ìŠ¤íŠ¸ ë³€ìˆ˜ë¡œ ì‚¬ìš©ì‹œ í•„ë“œë¥¼ ì§€ì •í•˜ë©´ íŒŒì‹±ì¤‘ segVë°œìƒ. */
+    // NULLì„ ë¦¬í„´í•˜ë©´ íŒŒì„œì—ì„œ ì—ëŸ¬ë©”ì‹œì§€ ì¶œë ¥í•´ì¤Œ.
     IDE_TEST( sSymTE == NULL );
 
-    /* BUG-28118 : system Çì´õÆÄÀÏµéµµ ÆÄ½ÌµÅ¾ßÇÔ.            *
-     * 5th. problem : Á¤ÀÇµÇÁö ¾ÊÀº ±¸Á¶Ã¼ Æ÷ÀÎÅÍ º¯¼ö ¼±¾ğ¾ÈµÊ. *
+    /* BUG-28118 : system í—¤ë”íŒŒì¼ë“¤ë„ íŒŒì‹±ë¼ì•¼í•¨.            *
+     * 5th. problem : ì •ì˜ë˜ì§€ ì•Šì€ êµ¬ì¡°ì²´ í¬ì¸í„° ë³€ìˆ˜ ì„ ì–¸ì•ˆë¨. *
      * 8th. problem : can't resolve extern variable type at declaring section. */
     if( (sSymTE -> mIsstruct == ID_TRUE)   &&
         (sSymTE -> mStructName[0] != '\0') &&
@@ -264,10 +264,10 @@ ulpSymTElement *ulpScopeTable::ulpSLookupAll( SChar *aName, SInt aScope )
     {
         if ( (sSymTE -> mPointer > 0) ||
              (sSymTE -> mIsExtern == ID_TRUE) )
-        {   // Á¤ÀÇµÇÁö ¾ÊÀº ±¸Á¶Ã¼ Æ÷ÀÎÅÍ º¯¼ö È¤Àº externº¯¼ö ¶ó¸é
-            // º¯¼ö »ç¿ë½Ã late binding.
-            // ulpStructLookupAll scopeÀÎÀÚ¿¡ aScope°¡ ¾Æ´Ñ
-            // ¼±¾ğµÈ ½ÃÁ¡ÀÇ scopeÀÎ sScope¸¦ »ç¿ëÇØ¾ßÇÔ.
+        {   // ì •ì˜ë˜ì§€ ì•Šì€ êµ¬ì¡°ì²´ í¬ì¸í„° ë³€ìˆ˜ í˜¹ì€ externë³€ìˆ˜ ë¼ë©´
+            // ë³€ìˆ˜ ì‚¬ìš©ì‹œ late binding.
+            // ulpStructLookupAll scopeì¸ìì— aScopeê°€ ì•„ë‹Œ
+            // ì„ ì–¸ëœ ì‹œì ì˜ scopeì¸ sScopeë¥¼ ì‚¬ìš©í•´ì•¼í•¨.
             sStructNode = gUlpStructT.ulpStructLookupAll( sSymTE->mStructName,
                                                           sScope );
 
@@ -278,27 +278,27 @@ ulpSymTElement *ulpScopeTable::ulpSLookupAll( SChar *aName, SInt aScope )
     }
 
     // :xxx.yyy, :xxx->yyy,
-    // :xxx[].yyy, :xxx[]->yyy ÀÇ yyy ºÎºĞÀ» °Ë»öÇÑ´Ù.
+    // :xxx[].yyy, :xxx[]->yyy ì˜ yyy ë¶€ë¶„ì„ ê²€ìƒ‰í•œë‹¤.
     if( sStrPos != NULL )
     {
         IDE_ASSERT( sSymTE != NULL );
 
-        // struct table °Ë»öÈÄ attribute °Ë»öÇÔ.
+        // struct table ê²€ìƒ‰í›„ attribute ê²€ìƒ‰í•¨.
         sStructNode = sSymTE->mStructLink;
         IDE_TEST( sStructNode == NULL );
 
         sSymTE = sStructNode->mChild->ulpSymLookup( sStrPos );
         IDE_TEST( sSymTE == NULL );
 
-        /* BUG-28118 : system Çì´õÆÄÀÏµéµµ ÆÄ½ÌµÅ¾ßÇÔ.            *
-         * 5th. problem : Á¤ÀÇµÇÁö ¾ÊÀº ±¸Á¶Ã¼ Æ÷ÀÎÅÍ º¯¼ö ¼±¾ğ¾ÈµÊ. */
+        /* BUG-28118 : system í—¤ë”íŒŒì¼ë“¤ë„ íŒŒì‹±ë¼ì•¼í•¨.            *
+         * 5th. problem : ì •ì˜ë˜ì§€ ì•Šì€ êµ¬ì¡°ì²´ í¬ì¸í„° ë³€ìˆ˜ ì„ ì–¸ì•ˆë¨. */
         if( (sSymTE -> mIsstruct == ID_TRUE)   &&
             (sSymTE -> mPointer > 0)           &&
             (sSymTE -> mStructName[0] != '\0') &&
             (sSymTE -> mStructLink == NULL)
           )
-        {   // Á¤ÀÇµÇÁö ¾ÊÀº ±¸Á¶Ã¼ Æ÷ÀÎÅÍ º¯¼ö¶ó¸é,
-            // º¯¼ö »ç¿ë½Ã late binding.
+        {   // ì •ì˜ë˜ì§€ ì•Šì€ êµ¬ì¡°ì²´ í¬ì¸í„° ë³€ìˆ˜ë¼ë©´,
+            // ë³€ìˆ˜ ì‚¬ìš©ì‹œ late binding.
             sStructNode = gUlpStructT.ulpStructLookupAll( sSymTE->mStructName,
                                                           sScope );
 
@@ -319,8 +319,8 @@ ulpSymTElement *ulpScopeTable::ulpSLookupAll( SChar *aName, SInt aScope )
         ulpPrintfErrorCode( stderr,
                             &mErrorMgr);
     }
-   /* BUG-28118 : system Çì´õÆÄÀÏµéµµ ÆÄ½ÌµÅ¾ßÇÔ.            *
-    * 5th. problem : Á¤ÀÇµÇÁö ¾ÊÀº ±¸Á¶Ã¼ Æ÷ÀÎÅÍ º¯¼ö ¼±¾ğ¾ÈµÊ. *
+   /* BUG-28118 : system í—¤ë”íŒŒì¼ë“¤ë„ íŒŒì‹±ë¼ì•¼í•¨.            *
+    * 5th. problem : ì •ì˜ë˜ì§€ ì•Šì€ êµ¬ì¡°ì²´ í¬ì¸í„° ë³€ìˆ˜ ì„ ì–¸ì•ˆë¨. *
     * 8th. problem : can't resolve extern variable type at declaring section. */
     IDE_EXCEPTION ( ERR_COMP_STRUCT_NOT_EXIST );
     {
@@ -337,7 +337,7 @@ ulpSymTElement *ulpScopeTable::ulpSLookupAll( SChar *aName, SInt aScope )
 }
 
 
-/* °°Àº scope»óÀÇ ¸ğµç º¯¼öÁ¤º¸¸¦ symbol table¿¡¼­ Á¦°ÅÇÑ´Ù. */
+/* ê°™ì€ scopeìƒì˜ ëª¨ë“  ë³€ìˆ˜ì •ë³´ë¥¼ symbol tableì—ì„œ ì œê±°í•œë‹¤. */
 void ulpScopeTable::ulpSDelScope( SInt aScope )
 {
     if( mScopeTable[aScope] != NULL )

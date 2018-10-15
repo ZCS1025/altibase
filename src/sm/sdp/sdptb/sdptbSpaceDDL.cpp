@@ -17,7 +17,7 @@
 /***********************************************************************
  * $Id: sdptbSpaceDDL.cpp 27228 2008-07-23 17:36:52Z newdaily $
  *
- * DDL¿¡ °ü·ÃµÈ ÇÔ¼öµéÀÌ´Ù.
+ * DDLì— ê´€ë ¨ëœ í•¨ìˆ˜ë“¤ì´ë‹¤.
  **********************************************************************/
 
 #include <smErrorCode.h>
@@ -36,7 +36,7 @@
 
 /***********************************************************************
  * Description:
- *  ¸ğµç create TBS¿¡¼­ È£ÃâµÇ¾îÁö´Â °øÅëÀûÀÎ ÇÙ½É·çÆ¾
+ *  ëª¨ë“  create TBSì—ì„œ í˜¸ì¶œë˜ì–´ì§€ëŠ” ê³µí†µì ì¸ í•µì‹¬ë£¨í‹´
  ***********************************************************************/
 IDE_RC sdptbSpaceDDL::createTBS( idvSQL             * aStatistics,
                                  sdrMtxStartInfo    * aStartInfo,
@@ -56,7 +56,7 @@ IDE_RC sdptbSpaceDDL::createTBS( idvSQL             * aStatistics,
     IDE_ASSERT( aStartInfo->mTrans  != NULL );
     IDE_ASSERT( aTableSpaceAttr->mDiskAttr.mExtPageCount > 0 );
 
-    //1025°³ ÀÌ»óÀÇ ÆÄÀÏÀº »ı¼ºÇÒ¼ö ¾ø´Ù.
+    //1025ê°œ ì´ìƒì˜ íŒŒì¼ì€ ìƒì„±í• ìˆ˜ ì—†ë‹¤.
     IDE_TEST_RAISE( aFileAttrCount > SD_MAX_FID_COUNT,
                     error_data_file_is_too_many );
 
@@ -70,13 +70,13 @@ IDE_RC sdptbSpaceDDL::createTBS( idvSQL             * aStatistics,
                                                 sValidSmallSize )
               != IDE_SUCCESS );
 
-    //auto extend mode ¼¼ÆÃ ¹× next »çÀÌÁî µîÀ» Ã¼Å©ÇÑ´Ù.
+    //auto extend mode ì„¸íŒ… ë° next ì‚¬ì´ì¦ˆ ë“±ì„ ì²´í¬í•œë‹¤.
     checkDataFileSize( aFileAttr,
                        aFileAttrCount,
                        sPagesPerExt );
 
     /* ------------------------------------------------
-     * disk °ü¸®ÀÚ¸¦ ÅëÇÑ tablespace »ı¼º
+     * disk ê´€ë¦¬ìë¥¼ í†µí•œ tablespace ìƒì„±
      * ----------------------------------------------*/
     IDE_TEST(sddDiskMgr::createTableSpace(aStatistics,
                                           aStartInfo->mTrans,
@@ -86,7 +86,7 @@ IDE_RC sdptbSpaceDDL::createTBS( idvSQL             * aStatistics,
                                           SMI_EACH_BYMODE) != IDE_SUCCESS);
     sSpaceID = aTableSpaceAttr->mID;
 
-    /* Space ¸ğµâÀ» À§ÇÑ Space Cache¸¦ ÇÒ´ç ¹× ÃÊ±âÈ­ÇÑ´Ù. */
+    /* Space ëª¨ë“ˆì„ ìœ„í•œ Space Cacheë¥¼ í• ë‹¹ ë° ì´ˆê¸°í™”í•œë‹¤. */
     IDE_TEST( sdptbGroup::allocAndInitSpaceCache(
                           sSpaceID,
                           aTableSpaceAttr->mDiskAttr.mExtMgmtType,
@@ -100,8 +100,8 @@ IDE_RC sdptbSpaceDDL::createTBS( idvSQL             * aStatistics,
                    "(tablespace ID :%"ID_UINT32_FMT")\n",
                     sSpaceID );
 
-    /* BUG-27368 [SM] Å×ÀÌºí½ºÆäÀÌ½ºÀÇ Data File ID°¡ ¼øÂ÷ÀûÀÌÁö ¾ÊÀº 
-     *           °æ¿ì¿¡ ´ëÇÑ °í·Á°¡ ÇÊ¿äÇÕ´Ï´Ù. */
+    /* BUG-27368 [SM] í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì˜ Data File IDê°€ ìˆœì°¨ì ì´ì§€ ì•Šì€ 
+     *           ê²½ìš°ì— ëŒ€í•œ ê³ ë ¤ê°€ í•„ìš”í•©ë‹ˆë‹¤. */
     for( i = 0 ; i < aFileAttrCount ; i++ )
     {
         aFileAttr[i]->mID = i ;
@@ -129,8 +129,8 @@ IDE_RC sdptbSpaceDDL::createTBS( idvSQL             * aStatistics,
 /***********************************************************************
  * Description:
  * PROJ-1923 ALTIBASE HDB Disaster Recovery
- * redo_SCT_UPDATE_DRDB_CREATE_TBS ¿¡¼­ È£ÃâÇÏ´Â redo ÇÏÀ§ ·çÆ¾
- * sdptbSpaceDDL::createTBS()¿Í À¯»çÇÑ redo ÇÔ¼ö
+ * redo_SCT_UPDATE_DRDB_CREATE_TBS ì—ì„œ í˜¸ì¶œí•˜ëŠ” redo í•˜ìœ„ ë£¨í‹´
+ * sdptbSpaceDDL::createTBS()ì™€ ìœ ì‚¬í•œ redo í•¨ìˆ˜
  ***********************************************************************/
 IDE_RC sdptbSpaceDDL::createTBS4Redo( void                * aTrans,
                                       smiTableSpaceAttr   * aTableSpaceAttr )
@@ -139,7 +139,7 @@ IDE_RC sdptbSpaceDDL::createTBS4Redo( void                * aTrans,
     sdptbSpaceCache * sCache;
 
     /* ------------------------------------------------
-     * disk °ü¸®ÀÚ¸¦ ÅëÇÑ tablespace »ı¼º
+     * disk ê´€ë¦¬ìë¥¼ í†µí•œ tablespace ìƒì„±
      * ----------------------------------------------*/
     IDE_TEST( sddDiskMgr::createTableSpace4Redo( aTrans,
                                                  aTableSpaceAttr )
@@ -147,7 +147,7 @@ IDE_RC sdptbSpaceDDL::createTBS4Redo( void                * aTrans,
 
     sSpaceID = aTableSpaceAttr->mID;
 
-    /* Space ¸ğµâÀ» À§ÇÑ Space Cache¸¦ ÇÒ´ç ¹× ÃÊ±âÈ­ÇÑ´Ù. */
+    /* Space ëª¨ë“ˆì„ ìœ„í•œ Space Cacheë¥¼ í• ë‹¹ ë° ì´ˆê¸°í™”í•œë‹¤. */
     IDE_TEST( sdptbGroup::allocAndInitSpaceCache(
                   sSpaceID,
                   aTableSpaceAttr->mDiskAttr.mExtMgmtType,
@@ -158,7 +158,7 @@ IDE_RC sdptbSpaceDDL::createTBS4Redo( void                * aTrans,
     sCache = (sdptbSpaceCache *)sddDiskMgr::getSpaceCache( sSpaceID );
     IDE_ASSERT( sCache != NULL );
 
-    // sdptbGroup::makeMetaHeaders() ¸¦ »ı·«ÇÏÁö¸¸, ¾Æ·¡´Â ÇØ¾ß ÇÔ.
+    // sdptbGroup::makeMetaHeaders() ë¥¼ ìƒëµí•˜ì§€ë§Œ, ì•„ë˜ëŠ” í•´ì•¼ í•¨.
     sCache->mGGIDHint   = 0;
 
     return IDE_SUCCESS;
@@ -171,8 +171,8 @@ IDE_RC sdptbSpaceDDL::createTBS4Redo( void                * aTrans,
 /***********************************************************************
  * Description:
  * PROJ-1923 ALTIBASE HDB Disaster Recovery
- * redo_SCT_UPDATE_DRDB_CREATE_DBF ¿¡¼­ È£ÃâÇÏ´Â redo ÇÏÀ§ ·çÆ¾
- * sdptbSpaceDDl::createDataFilesFEBT()¿Í À¯»ç
+ * redo_SCT_UPDATE_DRDB_CREATE_DBF ì—ì„œ í˜¸ì¶œí•˜ëŠ” redo í•˜ìœ„ ë£¨í‹´
+ * sdptbSpaceDDl::createDataFilesFEBT()ì™€ ìœ ì‚¬
  ***********************************************************************/
 IDE_RC sdptbSpaceDDL::createDBF4Redo( void            * aTrans,
                                       smLSN             aCurLSN,
@@ -198,15 +198,15 @@ IDE_RC sdptbSpaceDDL::createDBF4Redo( void            * aTrans,
     IDE_ASSERT( sSpaceNode  != NULL );
     IDE_ASSERT( sCache      != NULL );
 
-    /* ¾Æ·¡ sddDiskMgr::createDataFiles()¿¡¼­ mNewFileID°¡ º¯°æµÉ ¼ö ÀÖ´Ù. */
+    /* ì•„ë˜ sddDiskMgr::createDataFiles()ì—ì„œ mNewFileIDê°€ ë³€ê²½ë  ìˆ˜ ìˆë‹¤. */
     sNewFileID  = sSpaceNode->mNewFileID;
 
-    /* ·Î±× ¾ŞÄ¿ÀÇ newFileID ¿Í redo ·Î±×ÀÇ mID°¡ °°Áö ¾Ê´Ù¸é,
-     * ·Î±× ¾ŞÄ¿¿Í redo ·Î±×°¡ Â¦ÀÌ ¸ÂÁö ¾Ê´Ù´Â °ÍÀÌ¹Ç·Î,
-     * redoÇÏ¸é ¾ÈµÈ´Ù */
+    /* ë¡œê·¸ ì•µì»¤ì˜ newFileID ì™€ redo ë¡œê·¸ì˜ mIDê°€ ê°™ì§€ ì•Šë‹¤ë©´,
+     * ë¡œê·¸ ì•µì»¤ì™€ redo ë¡œê·¸ê°€ ì§ì´ ë§ì§€ ì•Šë‹¤ëŠ” ê²ƒì´ë¯€ë¡œ,
+     * redoí•˜ë©´ ì•ˆëœë‹¤ */
     IDE_TEST( sNewFileID != aDataFileAttr->mID );
 
-    /* 1025°³ ÀÌ»óÀÇ ÆÄÀÏÀº »ı¼ºÇÒ¼ö ¾ø´Ù. */
+    /* 1025ê°œ ì´ìƒì˜ íŒŒì¼ì€ ìƒì„±í• ìˆ˜ ì—†ë‹¤. */
     IDE_TEST_RAISE( (sSpaceNode->mNewFileID + (UInt)1) > SD_MAX_FID_COUNT,
                     error_data_file_is_too_many );
 
@@ -215,18 +215,18 @@ IDE_RC sdptbSpaceDDL::createDBF4Redo( void            * aTrans,
                                                 sValidSmallSize )
               != IDE_SUCCESS );
 
-    /* redo ÀÌ¹Ç·Î TBS lock / unlockÀº ¹«½ÃÇÑ´Ù. */
+    /* redo ì´ë¯€ë¡œ TBS lock / unlockì€ ë¬´ì‹œí•œë‹¤. */
 
-    /* auto extend mode ¼¼ÆÃ ¹× next »çÀÌÁî µîÀ» Ã¼Å©ÇÑ´Ù. */
+    /* auto extend mode ì„¸íŒ… ë° next ì‚¬ì´ì¦ˆ ë“±ì„ ì²´í¬í•œë‹¤. */
     checkDataFileSize( &aDataFileAttr,
                        1,
                        sCache->mCommon.mPagesPerExt );
 
-    /* ¾Æ·¡ ÇÔ¼ö¿¡¼­ µ¥ÀÌÅ¸ÆÄÀÏ ³ëµå¿¡ ´ëÇÑ (X) Àá±İÀ» È¹µæÇÑ´Ù. */
+    /* ì•„ë˜ í•¨ìˆ˜ì—ì„œ ë°ì´íƒ€íŒŒì¼ ë…¸ë“œì— ëŒ€í•œ (X) ì ê¸ˆì„ íšë“í•œë‹¤. */
     /* ------------------------------------------------
-     * disk °ü¸®ÀÚ¸¦ ÅëÇÑ data file »ı¼º
+     * disk ê´€ë¦¬ìë¥¼ í†µí•œ data file ìƒì„±
      * ----------------------------------------------*/
-    /* redo log 1°³¿¡ ´ëÀÀ ÇÏµµ·Ï ÇÑ´Ù. */
+    /* redo log 1ê°œì— ëŒ€ì‘ í•˜ë„ë¡ í•œë‹¤. */
     IDE_TEST( sddDiskMgr::createDataFile4Redo( aTrans,
                                                aCurLSN,
                                                aSpaceID,
@@ -247,11 +247,11 @@ IDE_RC sdptbSpaceDDL::createDBF4Redo( void            * aTrans,
 
 /***********************************************************************
  * Description:
- *  reset·çÆ¾ÀÇ ÇÙ½É·çÆ¾ÀÓ.
- *  reset undoTBS, reset tempTBS¿¡¼­ ³»ºÎÀûÀ¸·Î »ç¿ëµÇ¾îÁø´Ù.
+ *  resetë£¨í‹´ì˜ í•µì‹¬ë£¨í‹´ì„.
+ *  reset undoTBS, reset tempTBSì—ì„œ ë‚´ë¶€ì ìœ¼ë¡œ ì‚¬ìš©ë˜ì–´ì§„ë‹¤.
  *
- *  ÀÌ ÇÔ¼ö¾È¿¡¼­´Â IDE_TEST ´ë½Å  IDE_ASSERT¸¦ »ç¿ëÇÑ´Ù. ¿Ö³ÄÇÏ¸é, 
- *  start up½Ã¸¸ ÄİµÇ¹Ç·Î ¿¡·¯Ã³¸®°¡ ÇÊ¿ä¾ø±â ¶§¹®ÀÌ´Ù.
+ *  ì´ í•¨ìˆ˜ì•ˆì—ì„œëŠ” IDE_TEST ëŒ€ì‹   IDE_ASSERTë¥¼ ì‚¬ìš©í•œë‹¤. ì™œëƒí•˜ë©´, 
+ *  start upì‹œë§Œ ì½œë˜ë¯€ë¡œ ì—ëŸ¬ì²˜ë¦¬ê°€ í•„ìš”ì—†ê¸° ë•Œë¬¸ì´ë‹¤.
  ***********************************************************************/
 IDE_RC sdptbSpaceDDL::resetTBSCore( idvSQL             *aStatistics,
                                     void               *aTransForMtx,
@@ -324,7 +324,7 @@ IDE_RC sdptbSpaceDDL::resetTBSCore( idvSQL             *aStatistics,
     sStartInfo.mTrans   = aTransForMtx;
     sStartInfo.mLogMode = SDR_MTX_LOGGING;
 
-    //reset½Ã¿¡´Â ÀÌ¹Ì Á¸ÀçÇÏ´Â file node8&  getDataFileAttr·Î ÀĞ¾î¿À°ÔµÊ.
+    //resetì‹œì—ëŠ” ì´ë¯¸ ì¡´ì¬í•˜ëŠ” file node8&  getDataFileAttrë¡œ ì½ì–´ì˜¤ê²Œë¨.
     IDE_ASSERT( sdptbGroup::makeMetaHeaders(
                             aStatistics,
                             &sStartInfo,
@@ -342,10 +342,10 @@ IDE_RC sdptbSpaceDDL::resetTBSCore( idvSQL             *aStatistics,
 
 /***********************************************************************
  * Description:
- *  RID¸¦ ¼¼Æ®ÇÏ´Â ÇÙ½ÉÇÔ¼ö 
+ *  RIDë¥¼ ì„¸íŠ¸í•˜ëŠ” í•µì‹¬í•¨ìˆ˜ 
  * 
- *  ¿©±â¼­´Â ´ëºÎºĞÀÇ ÀÎÀÚ¿¡´ëÇÑ assertÃ³¸® ¾ÈÇÔ¿¡ À¯ÀÇ.
- *  ¾Õ¿¡¼­ ´ÙÇßÀ¸¹Ç·Î ÇÊ¿ä¾øÀ½
+ *  ì—¬ê¸°ì„œëŠ” ëŒ€ë¶€ë¶„ì˜ ì¸ìì—ëŒ€í•œ assertì²˜ë¦¬ ì•ˆí•¨ì— ìœ ì˜.
+ *  ì•ì—ì„œ ë‹¤í–ˆìœ¼ë¯€ë¡œ í•„ìš”ì—†ìŒ
  ***********************************************************************/
 IDE_RC sdptbSpaceDDL::setPIDCore( idvSQL        * aStatistics,
                                   sdrMtx        * aMtx,
@@ -364,7 +364,7 @@ IDE_RC sdptbSpaceDDL::setPIDCore( idvSQL        * aStatistics,
                    "(RID TYPE : %"ID_UINT32_FMT")\n", 
                    aRIDType );
 
-    //Ã¹¹øÂ° ÆÄÀÏÀÇ GG header¿¡ TSS°ü·ÃÁ¤º¸°¡ ÀúÀåµÇ¾î ÀÖ´Ù.
+    //ì²«ë²ˆì§¸ íŒŒì¼ì˜ GG headerì— TSSê´€ë ¨ì •ë³´ê°€ ì €ì¥ë˜ì–´ ìˆë‹¤.
     IDE_TEST(sdbBufferMgr::getPageByPID( aStatistics,
                                          aSpaceID,
                                          SDPTB_GET_GGHDR_PID_BY_FID( 0 ),
@@ -404,10 +404,10 @@ IDE_RC sdptbSpaceDDL::setPIDCore( idvSQL        * aStatistics,
 
 /***********************************************************************
  * Description:
- *  RID¸¦ ¾ò¾î³»´Â ÇÙ½ÉÇÔ¼ö 
+ *  RIDë¥¼ ì–»ì–´ë‚´ëŠ” í•µì‹¬í•¨ìˆ˜ 
  * 
- *  ¿©±â¼­´Â ´ëºÎºĞÀÇ ÀÎÀÚ¿¡´ëÇÑ assertÃ³¸® ¾ÈÇÔ¿¡ À¯ÀÇ.
- *  ¾Õ¿¡¼­ ´ÙÇßÀ¸¹Ç·Î ÇÊ¿ä¾øÀ½
+ *  ì—¬ê¸°ì„œëŠ” ëŒ€ë¶€ë¶„ì˜ ì¸ìì—ëŒ€í•œ assertì²˜ë¦¬ ì•ˆí•¨ì— ìœ ì˜.
+ *  ì•ì—ì„œ ë‹¤í–ˆìœ¼ë¯€ë¡œ í•„ìš”ì—†ìŒ
  ***********************************************************************/
 IDE_RC sdptbSpaceDDL::getPIDCore( idvSQL        * aStatistics,
                                   scSpaceID       aSpaceID,
@@ -425,7 +425,7 @@ IDE_RC sdptbSpaceDDL::getPIDCore( idvSQL        * aStatistics,
                    "(RID TYPE : %"ID_UINT32_FMT")\n", 
                    aRIDType );
 
-    //Ã¹¹øÂ° ÆÄÀÏÀÇ GG header¿¡ TSS°ü·ÃÁ¤º¸°¡ ÀúÀåµÇ¾î ÀÖ´Ù.
+    //ì²«ë²ˆì§¸ íŒŒì¼ì˜ GG headerì— TSSê´€ë ¨ì •ë³´ê°€ ì €ì¥ë˜ì–´ ìˆë‹¤.
     IDE_TEST( sdbBufferMgr::fixPageByPID( aStatistics,
                                           aSpaceID,
                                           SDPTB_GET_GGHDR_PID_BY_FID( 0 ),
@@ -471,7 +471,7 @@ IDE_RC sdptbSpaceDDL::getPIDCore( idvSQL        * aStatistics,
 
 /***********************************************************************
  * Description:
- *  [INTERFACE] TSSRID¸¦ ¼¼Æ®ÇÑ´Ù.
+ *  [INTERFACE] TSSRIDë¥¼ ì„¸íŠ¸í•œë‹¤.
  ***********************************************************************/
 IDE_RC sdptbSpaceDDL::setTSSPID( idvSQL        * aStatistics,
                                  sdrMtx        * aMtx,
@@ -495,7 +495,7 @@ IDE_RC sdptbSpaceDDL::setTSSPID( idvSQL        * aStatistics,
 
 /***********************************************************************
  * Description:
- *  [INTERFACE] TSSRID¸¦ ¾ò¾î³½´Ù
+ *  [INTERFACE] TSSRIDë¥¼ ì–»ì–´ë‚¸ë‹¤
  ***********************************************************************/
 IDE_RC sdptbSpaceDDL::getTSSPID( idvSQL        * aStatistics,
                                  scSpaceID       aSpaceID,
@@ -517,7 +517,7 @@ IDE_RC sdptbSpaceDDL::getTSSPID( idvSQL        * aStatistics,
 
 /***********************************************************************
  * Description:
- *  [INTERFACE] USRRID¸¦ ¼¼Æ®ÇÑ´Ù.
+ *  [INTERFACE] USRRIDë¥¼ ì„¸íŠ¸í•œë‹¤.
  ***********************************************************************/
 IDE_RC sdptbSpaceDDL::setUDSPID( idvSQL        * aStatistics,
                                  sdrMtx        * aMtx,
@@ -541,7 +541,7 @@ IDE_RC sdptbSpaceDDL::setUDSPID( idvSQL        * aStatistics,
 
 /***********************************************************************
  * Description:
- *  [INTERFACE] USRRID¸¦ ¾ò¾î³½´Ù
+ *  [INTERFACE] USRRIDë¥¼ ì–»ì–´ë‚¸ë‹¤
  ***********************************************************************/
 IDE_RC sdptbSpaceDDL::getUDSPID( idvSQL        * aStatistics,
                                  scSpaceID       aSpaceID,
@@ -563,12 +563,12 @@ IDE_RC sdptbSpaceDDL::getUDSPID( idvSQL        * aStatistics,
 
 /***********************************************************************
  * Description:
- *  ÇÏ³ªÀÇ µ¥ÀÌÅ¸ È­ÀÏÀ» °ø°£À» ´Ã¸®°Å³ª ÁÙÀÎ´Ù.
+ *  í•˜ë‚˜ì˜ ë°ì´íƒ€ í™”ì¼ì„ ê³µê°„ì„ ëŠ˜ë¦¬ê±°ë‚˜ ì¤„ì¸ë‹¤.
  *
- * aFileName              - [IN] Å©±â¸¦ º¯°æÇÒ ÆÄÀÏÀÇ ÀÌ¸§
- * aSizeWanted            - [IN] QP¿¡¼­ ¿äÃ»ÇÑ º¯°æÇÑ ÆÄÀÏÅ©±â
- * aSizeChanged           - [OUT] ½ÇÁ¦·Î º¯°æµÈ ÆÄÀÏÅ©±â 
- * aValidDataFileName     - [OUT] È£È¯¼ºÀ» À§ÇØ¼­¸¸ »ç¿ëµÊ.
+ * aFileName              - [IN] í¬ê¸°ë¥¼ ë³€ê²½í•  íŒŒì¼ì˜ ì´ë¦„
+ * aSizeWanted            - [IN] QPì—ì„œ ìš”ì²­í•œ ë³€ê²½í•œ íŒŒì¼í¬ê¸°
+ * aSizeChanged           - [OUT] ì‹¤ì œë¡œ ë³€ê²½ëœ íŒŒì¼í¬ê¸° 
+ * aValidDataFileName     - [OUT] í˜¸í™˜ì„±ì„ ìœ„í•´ì„œë§Œ ì‚¬ìš©ë¨.
  ***********************************************************************/
 IDE_RC sdptbSpaceDDL::alterDataFileReSizeFEBT( idvSQL     *aStatistics,
                                                void       *aTrans,
@@ -586,11 +586,11 @@ IDE_RC sdptbSpaceDDL::alterDataFileReSizeFEBT( idvSQL     *aStatistics,
     sddDataFileNode   * sFileNode;
     sddTableSpaceNode * sSpaceNode;
     smLSN               sOpNTA;
-    ULong               sData[2]; //ÀÌÀüÅ©±â¸¦ ÆäÀÌÁö´ÜÀ§·Î ÀúÀåÇÑ´Ù.
+    ULong               sData[2]; //ì´ì „í¬ê¸°ë¥¼ í˜ì´ì§€ë‹¨ìœ„ë¡œ ì €ì¥í•œë‹¤.
     UInt                sPageCntOld;
     sdptbSpaceCache  *  sCache;
-    ULong               sMinSize; //ÃÖ¼ÒÇÑÀÇ Å©±â
-    ULong               sUsedPageCount; //»ç¿ëÁßÀÎ Å©±â
+    ULong               sMinSize; //ìµœì†Œí•œì˜ í¬ê¸°
+    ULong               sUsedPageCount; //ì‚¬ìš©ì¤‘ì¸ í¬ê¸°
 
     IDE_DASSERT( aTrans       != NULL );
     IDE_DASSERT( aFileName    != NULL );
@@ -598,8 +598,8 @@ IDE_RC sdptbSpaceDDL::alterDataFileReSizeFEBT( idvSQL     *aStatistics,
     IDE_DASSERT( aValidDataFileName != NULL );
 
     /*
-     * ¸¸¾à ÇöÀç ¼öÁ¤ÇÒ·Á´Â ÆÄÀÏÅ©±â·Î ÇÏ³ªÀÇ  extent Á¶Â÷ ¸¸µéÁö ¸øÇÑ´Ù¸é
-     * ¿¡·¯¸Ş½ÃÁö¸¦ Ãâ·Â
+     * ë§Œì•½ í˜„ì¬ ìˆ˜ì •í• ë ¤ëŠ” íŒŒì¼í¬ê¸°ë¡œ í•˜ë‚˜ì˜  extent ì¡°ì°¨ ë§Œë“¤ì§€ ëª»í•œë‹¤ë©´
+     * ì—ëŸ¬ë©”ì‹œì§€ë¥¼ ì¶œë ¥
      */
     sCache = (sdptbSpaceCache *)sddDiskMgr::getSpaceCache( aSpaceID );
     IDE_ERROR_MSG( sCache != NULL,
@@ -609,22 +609,22 @@ IDE_RC sdptbSpaceDDL::alterDataFileReSizeFEBT( idvSQL     *aStatistics,
                    aSpaceID );
 
     // PRJ-1548 User Memory Tablespace
-    // Æ®·£Àè¼ÇÀÌ ¿Ï·áµÉ¶§(commit or abort) DataFile Àá±İÀ» ÇØÁ¦ÇÑ´Ù.
+    // íŠ¸ëœì­ì…˜ì´ ì™„ë£Œë ë•Œ(commit or abort) DataFile ì ê¸ˆì„ í•´ì œí•œë‹¤.
     // -------- TBS List (IX) -> TBS Node(IX) -> DBF Node (X) -----------
-    // »ı¼ºÁßÀÎ DBF Node¿¡ ´ëÇØ¼­ Àá±İÀ» ´ë±âÇÏ´Â °æ¿ì
+    // ìƒì„±ì¤‘ì¸ DBF Nodeì— ëŒ€í•´ì„œ ì ê¸ˆì„ ëŒ€ê¸°í•˜ëŠ” ê²½ìš°
     //
-    // A. Æ®·£Àè¼Ç COMMITÀ¸·Î ÀÎÇØ DBF Node°¡ ONLINEÀÌ´Ù .
-    //    -> Àá±İÀ» È¹µæÇÏ°í resize¸¦ ¼öÇàÇÑ´Ù.
-    // B. Æ®·£Àè¼Ç ROLLBACKÀ¸·Î DBF Node°¡ DROPPEDÀÌ´Ù.
-    //    -> Àá±İÀ» È¹µæÇÏÁö¸¸ DBF Node »óÅÂ°¡ DROPPEDÀÓÀ» È®ÀÎÇÏ°í
-    //       exception¹ß»ı
+    // A. íŠ¸ëœì­ì…˜ COMMITìœ¼ë¡œ ì¸í•´ DBF Nodeê°€ ONLINEì´ë‹¤ .
+    //    -> ì ê¸ˆì„ íšë“í•˜ê³  resizeë¥¼ ìˆ˜í–‰í•œë‹¤.
+    // B. íŠ¸ëœì­ì…˜ ROLLBACKìœ¼ë¡œ DBF Nodeê°€ DROPPEDì´ë‹¤.
+    //    -> ì ê¸ˆì„ íšë“í•˜ì§€ë§Œ DBF Node ìƒíƒœê°€ DROPPEDì„ì„ í™•ì¸í•˜ê³ 
+    //       exceptionë°œìƒ
     //
-    // # alter/drop/create dbf ¿¬»ê
-    // 1. ÀÌ¹Ì TBS Node (X) Àá±İÀ» È¹µæÇÑ »óÅÂ
-    // 2. TBS META PAGE (S) Latch È¹µæ
-    // 4. ÆÄÀÏ¿¬»ê
-    // 5. TBS META PAGE (S) Latch ÇØÁ¦
-    // 6. Æ®·£Àè¼Ç ¿Ï·á(commit or abort)ÀÌÈÄ ¸ğµç Àá±İ ÇØÁ¦
+    // # alter/drop/create dbf ì—°ì‚°
+    // 1. ì´ë¯¸ TBS Node (X) ì ê¸ˆì„ íšë“í•œ ìƒíƒœ
+    // 2. TBS META PAGE (S) Latch íšë“
+    // 4. íŒŒì¼ì—°ì‚°
+    // 5. TBS META PAGE (S) Latch í•´ì œ
+    // 6. íŠ¸ëœì­ì…˜ ì™„ë£Œ(commit or abort)ì´í›„ ëª¨ë“  ì ê¸ˆ í•´ì œ
 
     IDE_TEST( sctTableSpaceMgr::lockTBSNodeByID(
                                  aTrans,
@@ -686,19 +686,19 @@ IDE_RC sdptbSpaceDDL::alterDataFileReSizeFEBT( idvSQL     *aStatistics,
     sGGHdr = sdptbGroup::getGGHdr(sPagePtr);
 
     /*
-     *   HWM º¸´Ù ÀÛ°Ô ÆÄÀÏÀ» ÁÙÀÏ¼ö´Â ¾ø´Ù.
+     *   HWM ë³´ë‹¤ ì‘ê²Œ íŒŒì¼ì„ ì¤„ì¼ìˆ˜ëŠ” ì—†ë‹¤.
      */
-    // HWMÀÇ PageID°¡ °ğ »ç¿ëµÈ PageÀÇ ¼öÀÌ´Ù.
+    // HWMì˜ PageIDê°€ ê³§ ì‚¬ìš©ëœ Pageì˜ ìˆ˜ì´ë‹¤.
     sUsedPageCount = SD_MAKE_FPID( sGGHdr->mHWM );
 
-    // ÃÖ¼Ò 1°³ÀÇ Extent Sizeº¸´Ù´Â Ä¿¾ß ÇÑ´Ù.
+    // ìµœì†Œ 1ê°œì˜ Extent Sizeë³´ë‹¤ëŠ” ì»¤ì•¼ í•œë‹¤.
     sMinSize = SDPTB_GG_HDR_PAGE_CNT +
                SDPTB_LG_HDR_PAGE_CNT +
                sCache->mCommon.mPagesPerExt;
 
-    // BUG-29566 µ¥ÀÌÅÍ ÆÄÀÏÀÇ Å©±â¸¦ 32G ¸¦ ÃÊ°úÇÏ¿© ÁöÁ¤ÇØµµ ¿¡·¯¸¦
-    //           Ãâ·ÂÇÏÁö ¾Ê½À´Ï´Ù.
-    // »ç¿ëÀÚ°¡ ´ëÀÀÇÏ±â ÆíÇÏ°Ô ÇÏ±â À§ÇØ Å« °ª°ú ºñ±³ÇØ¼­ ¿À·ù¸¦ ¹İÈ¯ÇÕ´Ï´Ù.
+    // BUG-29566 ë°ì´í„° íŒŒì¼ì˜ í¬ê¸°ë¥¼ 32G ë¥¼ ì´ˆê³¼í•˜ì—¬ ì§€ì •í•´ë„ ì—ëŸ¬ë¥¼
+    //           ì¶œë ¥í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
+    // ì‚¬ìš©ìê°€ ëŒ€ì‘í•˜ê¸° í¸í•˜ê²Œ í•˜ê¸° ìœ„í•´ í° ê°’ê³¼ ë¹„êµí•´ì„œ ì˜¤ë¥˜ë¥¼ ë°˜í™˜í•©ë‹ˆë‹¤.
     if( sUsedPageCount > sMinSize )
     {
         if( sUsedPageCount > aSizeWanted )
@@ -728,11 +728,11 @@ IDE_RC sdptbSpaceDDL::alterDataFileReSizeFEBT( idvSQL     *aStatistics,
 
     sPageCntOld = sGGHdr->mTotalPages;
 
-    // ¾Æ·¡ ÇÔ¼ö¿¡¼­ µ¥ÀÌÅ¸ÆÄÀÏ ³ëµå¿¡ ´ëÇÑ (X) Àá±İÀ» È¹µæÇÑ´Ù.
+    // ì•„ë˜ í•¨ìˆ˜ì—ì„œ ë°ì´íƒ€íŒŒì¼ ë…¸ë“œì— ëŒ€í•œ (X) ì ê¸ˆì„ íšë“í•œë‹¤.
     if( sddDiskMgr::alterResizeFEBT( aStatistics,
                                      aTrans,
                                      aSpaceID,
-                                     aFileName , //validÇÑ ÆÄÀÏ¸íÀÓ
+                                     aFileName , //validí•œ íŒŒì¼ëª…ì„
                                      sGGHdr->mHWM,
                                      aSizeWanted,
                                      sFileNode) != IDE_SUCCESS )
@@ -745,22 +745,22 @@ IDE_RC sdptbSpaceDDL::alterDataFileReSizeFEBT( idvSQL     *aStatistics,
         /* nothing to do ... */
     }
 
-    /* To Fix BUG-23868 [AT-F5 ART] Disk TableSpaceÀÇ Datafile 
-     * Resize¿¡ ´ëÇÑ º¹¿øÀÌ µÇÁö ¾ÊÀ½. 
-     * TablspaceÀÇ Resize¿¬»êÀ» Æ÷ÇÔÇÏµµ·Ï NTA±¸°£À» ¼³Á¤ÇÏ¸é, 
-     * ÀÌÈÄ Rollback ¹ß»ı½Ã GG¸¸ º¹¿øµÇ°í DataFile »óÅÂ¿Í ÆÄÀÏÅ©±â°¡ 
-     * º¹¿øµÇÁö ¾Ê´Â´Ù. */
+    /* To Fix BUG-23868 [AT-F5 ART] Disk TableSpaceì˜ Datafile 
+     * Resizeì— ëŒ€í•œ ë³µì›ì´ ë˜ì§€ ì•ŠìŒ. 
+     * Tablspaceì˜ Resizeì—°ì‚°ì„ í¬í•¨í•˜ë„ë¡ NTAêµ¬ê°„ì„ ì„¤ì •í•˜ë©´, 
+     * ì´í›„ Rollback ë°œìƒì‹œ GGë§Œ ë³µì›ë˜ê³  DataFile ìƒíƒœì™€ íŒŒì¼í¬ê¸°ê°€ 
+     * ë³µì›ë˜ì§€ ì•ŠëŠ”ë‹¤. */
     if( sdrMiniTrans::getTrans(&sMtx) != NULL )
     {
        sOpNTA = smLayerCallback::getLstUndoNxtLSN( sdrMiniTrans::getTrans( &sMtx ) );
     }
     else
     {
-        /* Temporary Table »ı¼º½Ã¿¡´Â Æ®·£Àè¼ÇÀÌ NULLÀÌ
-         * ³»·Á¿Ã ¼ö ÀÖ´Ù. */
+        /* Temporary Table ìƒì„±ì‹œì—ëŠ” íŠ¸ëœì­ì…˜ì´ NULLì´
+         * ë‚´ë ¤ì˜¬ ìˆ˜ ìˆë‹¤. */
     }
 
-    if( sPageCntOld < aSizeWanted ) //È®Àå
+    if( sPageCntOld < aSizeWanted ) //í™•ì¥
     {
         IDE_ERROR_MSG( sFileNode->mCurrSize == aSizeWanted,
                        "The data file cannot be resized "
@@ -779,7 +779,7 @@ IDE_RC sdptbSpaceDDL::alterDataFileReSizeFEBT( idvSQL     *aStatistics,
                                             sFileNode->mCurrSize )
                     != IDE_SUCCESS );
     }
-    else   //Ãà¼Ò
+    else   //ì¶•ì†Œ
     {
 
         IDE_TEST( sdptbGroup::resizeGGCore( aStatistics,
@@ -791,7 +791,7 @@ IDE_RC sdptbSpaceDDL::alterDataFileReSizeFEBT( idvSQL     *aStatistics,
     }
 
     /*
-     * ¸¸¾à È®ÀåÀ» Çß´Ù¸é cacheÀÇ FIDºñÆ®¸¦ ÄÑÁØ´Ù.
+     * ë§Œì•½ í™•ì¥ì„ í–ˆë‹¤ë©´ cacheì˜ FIDë¹„íŠ¸ë¥¼ ì¼œì¤€ë‹¤.
      */
     if( sFileNode->mCurrSize > sPageCntOld  )
     {
@@ -852,7 +852,7 @@ IDE_RC sdptbSpaceDDL::alterDataFileReSizeFEBT( idvSQL     *aStatistics,
 
 /***********************************************************************
  * Description:
- *  File ¸í¿¡ ÇØ´çÇÏ´Â FileNode¸¦ ¹İÈ¯ÇÏ°í ÇØ´ç SpaceNodeµµ ÇÔ²² ¹İÈ¯ÇÑ´Ù. 
+ *  File ëª…ì— í•´ë‹¹í•˜ëŠ” FileNodeë¥¼ ë°˜í™˜í•˜ê³  í•´ë‹¹ SpaceNodeë„ í•¨ê»˜ ë°˜í™˜í•œë‹¤. 
  ***********************************************************************/
 IDE_RC sdptbSpaceDDL::getSpaceNodeAndFileNode(
                          scSpaceID               aSpaceID,
@@ -914,7 +914,7 @@ IDE_RC sdptbSpaceDDL::getSpaceNodeAndFileNode(
 
 /***********************************************************************
  * Description:
- *  ÇÏ³ªÀÇ µ¥ÀÌÅ¸ È­ÀÏÀ» »èÁ¦ÇÑ´Ù.
+ *  í•˜ë‚˜ì˜ ë°ì´íƒ€ í™”ì¼ì„ ì‚­ì œí•œë‹¤.
  ***********************************************************************/
 IDE_RC sdptbSpaceDDL::removeDataFile( idvSQL      * aStatistics,
                                       void        * aTrans,
@@ -943,16 +943,16 @@ IDE_RC sdptbSpaceDDL::removeDataFile( idvSQL      * aStatistics,
                    aSpaceID );
 
     // PRJ-1548 User Memory Tablespace
-    // Æ®·£Àè¼ÇÀÌ ¿Ï·áµÉ¶§(commit or abort) DataFile Àá±İÀ» ÇØÁ¦ÇÑ´Ù.
-    // ¿î¿µÁß¿¡´Â Á¦°ÅÇÑ DBF Node¿¡ ´ëÇØ¼­ PENDING ¿¬»êÀ¸·Îµµ DBF Node¸¦
-    // freeÇÏÁö ¾Ê±â ¶§¹®¿¡ Àá±İÀ» commit ÈÄ¿¡ Àá±İÀ» ÇØÁ¦ÇØµµ ¹®Á¦°¡ µÇÁö ¾Ê´Â´Ù
+    // íŠ¸ëœì­ì…˜ì´ ì™„ë£Œë ë•Œ(commit or abort) DataFile ì ê¸ˆì„ í•´ì œí•œë‹¤.
+    // ìš´ì˜ì¤‘ì—ëŠ” ì œê±°í•œ DBF Nodeì— ëŒ€í•´ì„œ PENDING ì—°ì‚°ìœ¼ë¡œë„ DBF Nodeë¥¼
+    // freeí•˜ì§€ ì•Šê¸° ë•Œë¬¸ì— ì ê¸ˆì„ commit í›„ì— ì ê¸ˆì„ í•´ì œí•´ë„ ë¬¸ì œê°€ ë˜ì§€ ì•ŠëŠ”ë‹¤
 
-    // # alter/drop/create dbf ¿¬»ê
-    // 1. ÀÌ¹Ì TBS Node (X) Àá±İÀ» È¹µæÇÑ »óÅÂ
-    // 2. TBS META PAGE (S) Latch È¹µæ
-    // 4. ÆÄÀÏ¿¬»ê
-    // 5. TBS META PAGE (S) Latch ÇØÁ¦
-    // 6. Æ®·£Àè¼Ç ¿Ï·á(commit or abort)ÀÌÈÄ ¸ğµç Àá±İ ÇØÁ¦
+    // # alter/drop/create dbf ì—°ì‚°
+    // 1. ì´ë¯¸ TBS Node (X) ì ê¸ˆì„ íšë“í•œ ìƒíƒœ
+    // 2. TBS META PAGE (S) Latch íšë“
+    // 4. íŒŒì¼ì—°ì‚°
+    // 5. TBS META PAGE (S) Latch í•´ì œ
+    // 6. íŠ¸ëœì­ì…˜ ì™„ë£Œ(commit or abort)ì´í›„ ëª¨ë“  ì ê¸ˆ í•´ì œ
 
     // --------- TBS NODE (IX) --------------- //
     IDE_TEST( sctTableSpaceMgr::lockTBSNodeByID(
@@ -1002,8 +1002,8 @@ IDE_RC sdptbSpaceDDL::removeDataFile( idvSQL      * aStatistics,
                    aSpaceID, aFileName );
 
     /*
-     *  ÆÄÀÏÀÌ »èÁ¦ µÈ´Ù°íÇØ¼­ »èÁ¦µÇ´Â ÆÄÀÏÀÇ GG°¡ º¯°æµÉ ÇÊ¿ä´Â ¾ø´Ù.
-     *  space cache¸¸ ¼öÁ¤µÇ¸é µÈ´Ù. ±×·¯¹Ç·Î, S·Î ÀâÀ¸¸é µÈ´Ù.
+     *  íŒŒì¼ì´ ì‚­ì œ ëœë‹¤ê³ í•´ì„œ ì‚­ì œë˜ëŠ” íŒŒì¼ì˜ GGê°€ ë³€ê²½ë  í•„ìš”ëŠ” ì—†ë‹¤.
+     *  space cacheë§Œ ìˆ˜ì •ë˜ë©´ ëœë‹¤. ê·¸ëŸ¬ë¯€ë¡œ, Së¡œ ì¡ìœ¼ë©´ ëœë‹¤.
      */
     IDE_TEST( sdbBufferMgr::getPageByPID( 
                                    aStatistics,
@@ -1020,18 +1020,18 @@ IDE_RC sdptbSpaceDDL::removeDataFile( idvSQL      * aStatistics,
     sGGHdr = sdptbGroup::getGGHdr(sPagePtr);
 
 
-    /* Ã¹¹øÂ° ÆÄÀÏÀº »èÁ¦ÇÏÁö ¸øÇÏµµ·Ï ÇØ¾ßÇÑ´Ù.*/
+    /* ì²«ë²ˆì§¸ íŒŒì¼ì€ ì‚­ì œí•˜ì§€ ëª»í•˜ë„ë¡ í•´ì•¼í•œë‹¤.*/
     IDE_TEST_RAISE( sFileNode->mID == SDPTB_FIRST_FID,
                     error_can_not_remove_data_file);
 
     /*
-     * ÆÄÀÏÀÇ »èÁ¦´Â HWM°¡ 0ÀÏ¶§,Áï ÇØ´çÆÄÀÏ¿¡´ëÇØ ¾î¶°ÇÑ ÇÒ´çµµ ÀÌ·ïÁø ÀûÀÌ
-     * ¾øÀ» °æ¿ì¿¡¸¸ °¡´ÉÇÏ´Ù.
+     * íŒŒì¼ì˜ ì‚­ì œëŠ” HWMê°€ 0ì¼ë•Œ,ì¦‰ í•´ë‹¹íŒŒì¼ì—ëŒ€í•´ ì–´ë– í•œ í• ë‹¹ë„ ì´ë¤„ì§„ ì ì´
+     * ì—†ì„ ê²½ìš°ì—ë§Œ ê°€ëŠ¥í•˜ë‹¤.
      */
     IDE_TEST_RAISE( sGGHdr->mHWM != SD_CREATE_PID( sFileNode->mID, 0),
                     error_can_not_remove_data_file );
 
-    // TBS META PAGE (S) Latch ÇØÁ¦
+    // TBS META PAGE (S) Latch í•´ì œ
     sState=0;
     IDE_TEST( sdrMiniTrans::commit(&sMtx) != IDE_SUCCESS );
 
@@ -1043,17 +1043,17 @@ IDE_RC sdptbSpaceDDL::removeDataFile( idvSQL      * aStatistics,
                                               SMI_ALL_NOTOUCH) != IDE_SUCCESS );
 
     /*
-     * To Fix BUG-23874 [AT-F5 ART] alter tablespace add datafile ¿¡
-     * ´ëÇÑ º¹¿øÀÌ ¾ÈµÇ´Â °Í °°À½.
+     * To Fix BUG-23874 [AT-F5 ART] alter tablespace add datafile ì—
+     * ëŒ€í•œ ë³µì›ì´ ì•ˆë˜ëŠ” ê²ƒ ê°™ìŒ.
      *
-     * Á¦°ÅµÈ ÆÄÀÏ¿¡ ´ëÇÑ °¡¿ëµµ¸¦ SpaceNode¿¡ ¹İ¿µÇÒ¶§´Â Æ®·£Àè¼Ç Commit PendingÀ¸·Î
-     * Ã³¸®ÇØ¾ß ÇÑ´Ù.
+     * ì œê±°ëœ íŒŒì¼ì— ëŒ€í•œ ê°€ìš©ë„ë¥¼ SpaceNodeì— ë°˜ì˜í• ë•ŒëŠ” íŠ¸ëœì­ì…˜ Commit Pendingìœ¼ë¡œ
+     * ì²˜ë¦¬í•´ì•¼ í•œë‹¤.
      */
 
     IDE_TEST( sctTableSpaceMgr::addPendingOperation(
                   aTrans,
                   sSpaceNode->mHeader.mID,
-                  ID_TRUE, /* Pending ¿¬»ê ¼öÇà ½ÃÁ¡ : Commit ½Ã */
+                  ID_TRUE, /* Pending ì—°ì‚° ìˆ˜í–‰ ì‹œì  : Commit ì‹œ */
                   SCT_POP_UPDATE_SPACECACHE,
                   & sPendingOp )
               != IDE_SUCCESS );
@@ -1090,7 +1090,7 @@ IDE_RC sdptbSpaceDDL::removeDataFile( idvSQL      * aStatistics,
 
 /***********************************************************************
  * Description:
- *  ÆÄÀÏÀÇ Å©±â¸¦ Ã¼Å©ÇÑ´Ù.
+ *  íŒŒì¼ì˜ í¬ê¸°ë¥¼ ì²´í¬í•œë‹¤.
  ***********************************************************************/
 void sdptbSpaceDDL::checkDataFileSize( smiDataFileAttr   ** aDataFileAttr,
                                        UInt                 aDataFileAttrCount,
@@ -1124,14 +1124,14 @@ void sdptbSpaceDDL::checkDataFileSize( smiDataFileAttr   ** aDataFileAttr,
                      (sDataFileAttrPtr->mIsAutoExtend == ID_FALSE) );
 
         /*
-         * BUG-22351 TableSpace ÀÇ MaxSize °¡ ÀÌ»óÇÕ´Ï´Ù.
+         * BUG-22351 TableSpace ì˜ MaxSize ê°€ ì´ìƒí•©ë‹ˆë‹¤.
          */
         alignSizeWithOSFileLimit( &sDataFileAttrPtr->mInitSize,
                                   sFileHdrPageCnt );
         alignSizeWithOSFileLimit( &sDataFileAttrPtr->mCurrSize,
                                   sFileHdrPageCnt );
 
-        //next»çÀÌÁî¸¦ extent»çÀÌÁî·Î  align
+        //nextì‚¬ì´ì¦ˆë¥¼ extentì‚¬ì´ì¦ˆë¡œ  align
         if( sDataFileAttrPtr->mNextSize != 0)
         {
             if( sDataFileAttrPtr->mNextSize % aPagesPerExt )
@@ -1142,15 +1142,15 @@ void sdptbSpaceDDL::checkDataFileSize( smiDataFileAttr   ** aDataFileAttr,
         }
 
         /*
-         * BUG-22351 TableSpace ÀÇ MaxSize °¡ ÀÌ»óÇÕ´Ï´Ù.
+         * BUG-22351 TableSpace ì˜ MaxSize ê°€ ì´ìƒí•©ë‹ˆë‹¤.
          */
         if( sDataFileAttrPtr->mMaxSize == 0 )
         {
-            // »ç¿ëÀÚ°¡ maxsize¸¦ ¸í½ÃÇÏÁö ¾ÊÀº °æ¿ì
-            // ¶Ç´Â unlimitedÀÎ °æ¿ì OS file limitÀ» °í·ÁÇÏ¿© ¼³Á¤ÇÑ´Ù.
+            // ì‚¬ìš©ìê°€ maxsizeë¥¼ ëª…ì‹œí•˜ì§€ ì•Šì€ ê²½ìš°
+            // ë˜ëŠ” unlimitedì¸ ê²½ìš° OS file limitì„ ê³ ë ¤í•˜ì—¬ ì„¤ì •í•œë‹¤.
 
-            // BUG-17415 autoextend offÀÏ °æ¿ì maxsize´Â
-            // ÀÇ¹Ì°¡ ¾ø±â ¶§¹®¿¡ ¸¶Âù°¡Áö·Î OS file limit·Î ¼¼ÆÃÇÑ´Ù.
+            // BUG-17415 autoextend offì¼ ê²½ìš° maxsizeëŠ”
+            // ì˜ë¯¸ê°€ ì—†ê¸° ë•Œë¬¸ì— ë§ˆì°¬ê°€ì§€ë¡œ OS file limitë¡œ ì„¸íŒ…í•œë‹¤.
             sDataFileAttrPtr->mMaxSize = sddDiskMgr::getMaxDataFileSize()
                                          - sFileHdrPageCnt;
         }
@@ -1167,7 +1167,7 @@ void sdptbSpaceDDL::checkDataFileSize( smiDataFileAttr   ** aDataFileAttr,
 
 /***********************************************************************
  * Description:
- *  space cache¸¦ ¼öÁ¤ÇØÁà¾ßÇÑ´Ù.
+ *  space cacheë¥¼ ìˆ˜ì •í•´ì¤˜ì•¼í•œë‹¤.
  ***********************************************************************/
 IDE_RC sdptbSpaceDDL::createDataFilesFEBT( idvSQL             * aStatistics,
                                            void               * aTrans,
@@ -1197,7 +1197,7 @@ IDE_RC sdptbSpaceDDL::createDataFilesFEBT( idvSQL             * aStatistics,
     IDE_ASSERT( sCache      != NULL );
 
 
-    /* 1025°³ ÀÌ»óÀÇ ÆÄÀÏÀº »ı¼ºÇÒ¼ö ¾ø´Ù. */
+    /* 1025ê°œ ì´ìƒì˜ íŒŒì¼ì€ ìƒì„±í• ìˆ˜ ì—†ë‹¤. */
     IDE_TEST_RAISE( (sSpaceNode->mNewFileID + aDataFileAttrCount) > SD_MAX_FID_COUNT,
                     error_data_file_is_too_many );
 
@@ -1211,20 +1211,20 @@ IDE_RC sdptbSpaceDDL::createDataFilesFEBT( idvSQL             * aStatistics,
                                                 sValidSmallSize )
               != IDE_SUCCESS );
 
-    /* Æ®·£Àè¼ÇÀÌ ¿Ï·áµÉ¶§(commit or abort) TableSpace Àá±İÀ» ÇØÁ¦ÇÑ´Ù. */
+    /* íŠ¸ëœì­ì…˜ì´ ì™„ë£Œë ë•Œ(commit or abort) TableSpace ì ê¸ˆì„ í•´ì œí•œë‹¤. */
     if( aTrans != NULL )
     {
-       /* # alter/create/drop dbf ¿¬»ê
-        * 1. ÀÌ¹Ì TBS Node (X) Àá±İÀ» È¹µæÇÑ »óÅÂ
-        * 2. TBS META PAGE (S) Latch È¹µæ
-        * 4. ÆÄÀÏ¿¬»ê
-        * 5. TBS META PAGE (S) Latch ÇØÁ¦
-        * 6. Æ®·£Àè¼Ç ¿Ï·á(commit or abort)ÀÌÈÄ ¸ğµç Àá±İ ÇØÁ¦ */
+       /* # alter/create/drop dbf ì—°ì‚°
+        * 1. ì´ë¯¸ TBS Node (X) ì ê¸ˆì„ íšë“í•œ ìƒíƒœ
+        * 2. TBS META PAGE (S) Latch íšë“
+        * 4. íŒŒì¼ì—°ì‚°
+        * 5. TBS META PAGE (S) Latch í•´ì œ
+        * 6. íŠ¸ëœì­ì…˜ ì™„ë£Œ(commit or abort)ì´í›„ ëª¨ë“  ì ê¸ˆ í•´ì œ */
        /* PRJ-1548 : --------- TBS NODE (IX) --------------- */
 
         /* BUG-31608 [sm-disk-page] add datafile during DML
-         * Intensive LockÀ¸·Î º¯°æÇÏ¿© AddDataFileµ¿¾È DMLÀÌ °¡´ÉÇÏµµ·Ï
-         * ¼öÁ¤ÇÑ´Ù. */
+         * Intensive Lockìœ¼ë¡œ ë³€ê²½í•˜ì—¬ AddDataFileë™ì•ˆ DMLì´ ê°€ëŠ¥í•˜ë„ë¡
+         * ìˆ˜ì •í•œë‹¤. */
         IDE_TEST( sctTableSpaceMgr::lockTBSNodeByID(
                                      aTrans,
                                      aSpaceID,
@@ -1237,15 +1237,15 @@ IDE_RC sdptbSpaceDDL::createDataFilesFEBT( idvSQL             * aStatistics,
     sdptbGroup::prepareAddDataFile( aStatistics, sCache );
     sState = 1;
 
-    /* ¾Æ·¡ sddDiskMgr::createDataFiles()¿¡¼­ mNewFileID°¡ º¯°æµÉ ¼ö ÀÖ´Ù. */
+    /* ì•„ë˜ sddDiskMgr::createDataFiles()ì—ì„œ mNewFileIDê°€ ë³€ê²½ë  ìˆ˜ ìˆë‹¤. */
     sStartNewFileID = sSpaceNode->mNewFileID;
 
-    /* auto extend mode ¼¼ÆÃ ¹× next »çÀÌÁî µîÀ» Ã¼Å©ÇÑ´Ù. */
+    /* auto extend mode ì„¸íŒ… ë° next ì‚¬ì´ì¦ˆ ë“±ì„ ì²´í¬í•œë‹¤. */
     checkDataFileSize( aDataFileAttr,
                        aDataFileAttrCount,
                        sCache->mCommon.mPagesPerExt );
 
-    /* ¾Æ·¡ ÇÔ¼ö¿¡¼­ µ¥ÀÌÅ¸ÆÄÀÏ ³ëµå¿¡ ´ëÇÑ (X) Àá±İÀ» È¹µæÇÑ´Ù. */
+    /* ì•„ë˜ í•¨ìˆ˜ì—ì„œ ë°ì´íƒ€íŒŒì¼ ë…¸ë“œì— ëŒ€í•œ (X) ì ê¸ˆì„ íšë“í•œë‹¤. */
     IDE_TEST( sddDiskMgr::createDataFiles( aStatistics,
                                            aTrans,
                                            aSpaceID,
@@ -1256,7 +1256,7 @@ IDE_RC sdptbSpaceDDL::createDataFilesFEBT( idvSQL             * aStatistics,
 
 
 
-    /* sdptb¸¦ À§ÇÑ ¸ŞÅ¸ Çì´õµéÀ» ¸¸µé¾îÁØ´Ù. */
+    /* sdptbë¥¼ ìœ„í•œ ë©”íƒ€ í—¤ë”ë“¤ì„ ë§Œë“¤ì–´ì¤€ë‹¤. */
     sStartInfo.mTrans = aTrans;
     sStartInfo.mLogMode = SDR_MTX_LOGGING;
 
@@ -1294,7 +1294,7 @@ IDE_RC sdptbSpaceDDL::createDataFilesFEBT( idvSQL             * aStatistics,
 
 /***********************************************************************
  * Description:
- *  autoextend mode¸¦ setÇÑ´Ù.
+ *  autoextend modeë¥¼ setí•œë‹¤.
  ***********************************************************************/
 IDE_RC sdptbSpaceDDL::alterDataFileAutoExtendFEBT( idvSQL   *aStatistics,
                                                    void     *aTrans,
@@ -1320,24 +1320,24 @@ IDE_RC sdptbSpaceDDL::alterDataFileAutoExtendFEBT( idvSQL   *aStatistics,
     sCache = (sdptbSpaceCache *)sddDiskMgr::getSpaceCache( aSpaceID );
 
     // PRJ-1548 User Memory Tablespace
-    // Æ®·£Àè¼ÇÀÌ ¿Ï·áµÉ¶§(commit or abort) DataFile Àá±İÀ» ÇØÁ¦ÇÑ´Ù.
+    // íŠ¸ëœì­ì…˜ì´ ì™„ë£Œë ë•Œ(commit or abort) DataFile ì ê¸ˆì„ í•´ì œí•œë‹¤.
     //
-    // A. Æ®·£Àè¼Ç COMMITÀ¸·Î ÀÎÇØ DBF Node°¡ ONLINEÀÌ´Ù .
-    //    -> Àá±İÀ» È¹µæÇÏ°í resize¸¦ ¼öÇàÇÑ´Ù.
+    // A. íŠ¸ëœì­ì…˜ COMMITìœ¼ë¡œ ì¸í•´ DBF Nodeê°€ ONLINEì´ë‹¤ .
+    //    -> ì ê¸ˆì„ íšë“í•˜ê³  resizeë¥¼ ìˆ˜í–‰í•œë‹¤.
     //
-    // B. Æ®·£Àè¼Ç ROLLBACKÀ¸·Î DBF Node°¡ DROPPEDÀÌ´Ù.
-    //    -> Àá±İÀ» È¹µæÇÏÁö¸¸ DBF Node »óÅÂ°¡ DROPPEDÀÓÀ» È®ÀÎÇÏ°í
-    //       exception¹ß»ı
+    // B. íŠ¸ëœì­ì…˜ ROLLBACKìœ¼ë¡œ DBF Nodeê°€ DROPPEDì´ë‹¤.
+    //    -> ì ê¸ˆì„ íšë“í•˜ì§€ë§Œ DBF Node ìƒíƒœê°€ DROPPEDì„ì„ í™•ì¸í•˜ê³ 
+    //       exceptionë°œìƒ
     //
-    // DBF ÆÄÀÏÀÇ ÀÚµ¿È®Àå¿¬»ê°úÀÇ µ¿½Ã¼º¹®Á¦·Î ´ÙÀ½°ú °°Àº ¼ø¼­·Î
-    // Àá±İÀ» È¹µæÇÏ°í ¿¬»êÀ» ¼öÇàÇÑ´Ù.
+    // DBF íŒŒì¼ì˜ ìë™í™•ì¥ì—°ì‚°ê³¼ì˜ ë™ì‹œì„±ë¬¸ì œë¡œ ë‹¤ìŒê³¼ ê°™ì€ ìˆœì„œë¡œ
+    // ì ê¸ˆì„ íšë“í•˜ê³  ì—°ì‚°ì„ ìˆ˜í–‰í•œë‹¤.
     //
-    // # alter/create/drop dbf ¿¬»ê
-    // 1. ÀÌ¹Ì TBS Node (X) Àá±İÀ» È¹µæÇÑ »óÅÂ
-    // 2. TBS META PAGE (S) Latch È¹µæ
-    // 4. ÆÄÀÏÈ®Àå
-    // 5. TBS META PAGE (S) Latch ÇØÁ¦
-    // 6. Æ®·£Àè¼Ç ¿Ï·á(commit or abort)ÀÌÈÄ ¸ğµç Àá±İ ÇØÁ¦
+    // # alter/create/drop dbf ì—°ì‚°
+    // 1. ì´ë¯¸ TBS Node (X) ì ê¸ˆì„ íšë“í•œ ìƒíƒœ
+    // 2. TBS META PAGE (S) Latch íšë“
+    // 4. íŒŒì¼í™•ì¥
+    // 5. TBS META PAGE (S) Latch í•´ì œ
+    // 6. íŠ¸ëœì­ì…˜ ì™„ë£Œ(commit or abort)ì´í›„ ëª¨ë“  ì ê¸ˆ í•´ì œ
 
     IDE_TEST( sctTableSpaceMgr::lockTBSNodeByID(
                                               aTrans,
@@ -1387,7 +1387,7 @@ IDE_RC sdptbSpaceDDL::alterDataFileAutoExtendFEBT( idvSQL   *aStatistics,
         aMaxSize = sddDiskMgr::getMaxDataFileSize();
     }
 
-    // ¾Æ·¡ ÇÔ¼ö¿¡¼­ µ¥ÀÌÅ¸ÆÄÀÏ ³ëµå¿¡ ´ëÇÑ (X) Àá±İÀ» È¹µæÇÑ´Ù.
+    // ì•„ë˜ í•¨ìˆ˜ì—ì„œ ë°ì´íƒ€íŒŒì¼ ë…¸ë“œì— ëŒ€í•œ (X) ì ê¸ˆì„ íšë“í•œë‹¤.
     IDE_TEST( sddDiskMgr::alterAutoExtendFEBT( aStatistics,
                                                aTrans,
                                                aSpaceID,
@@ -1397,7 +1397,7 @@ IDE_RC sdptbSpaceDDL::alterDataFileAutoExtendFEBT( idvSQL   *aStatistics,
                                                aNextSize,
                                                aMaxSize ) != IDE_SUCCESS );
 
-    // TBS META PAGE (S) Latch ÇØÁ¦
+    // TBS META PAGE (S) Latch í•´ì œ
     sState=0;
     IDE_TEST( sdrMiniTrans::commit( &sMtx ) != IDE_SUCCESS );
 
@@ -1415,13 +1415,13 @@ IDE_RC sdptbSpaceDDL::alterDataFileAutoExtendFEBT( idvSQL   *aStatistics,
 
 /***********************************************************************
  * Description : 
- *  ¸¸¾à ÆÄÀÏÇì´õ¸¦ °í·ÁÇÑ Å©±â°¡ OS limitº¸´Ù Å©´Ù¸é OS limit¿¡ ¸ÂÃá´Ù.
- *  (aFileHdrPageCnt´Â ÀÏ¹İÀûÀ¸·Î 1ÀÌ´Ù)
+ *  ë§Œì•½ íŒŒì¼í—¤ë”ë¥¼ ê³ ë ¤í•œ í¬ê¸°ê°€ OS limitë³´ë‹¤ í¬ë‹¤ë©´ OS limitì— ë§ì¶˜ë‹¤.
+ *  (aFileHdrPageCntëŠ” ì¼ë°˜ì ìœ¼ë¡œ 1ì´ë‹¤)
  *
- *  aAlignDest          - [IN][OUT] Á¤·ÄÇÒ ´ë»ó
- *  aFileHdrPageCnt     - [IN]      ÆÄÀÏÇì´õÀÇ ÆäÀÌÁö°¹¼ö(ÀÏ¹İÀûÀ¸·Î 1ÀÓ)
+ *  aAlignDest          - [IN][OUT] ì •ë ¬í•  ëŒ€ìƒ
+ *  aFileHdrPageCnt     - [IN]      íŒŒì¼í—¤ë”ì˜ í˜ì´ì§€ê°¯ìˆ˜(ì¼ë°˜ì ìœ¼ë¡œ 1ì„)
  * 
- * BUG-22351 TableSpace ÀÇ MaxSize °¡ ÀÌ»óÇÕ´Ï´Ù.
+ * BUG-22351 TableSpace ì˜ MaxSize ê°€ ì´ìƒí•©ë‹ˆë‹¤.
  **********************************************************************/
 void sdptbSpaceDDL::alignSizeWithOSFileLimit( ULong *aAlignDest,
                                               UInt   aFileHdrPageCnt )
@@ -1437,15 +1437,15 @@ void sdptbSpaceDDL::alignSizeWithOSFileLimit( ULong *aAlignDest,
 
 
 /***********************************************************************
- * Description : TableSpace¸¦ DropÇÑ´Ù.
+ * Description : TableSpaceë¥¼ Dropí•œë‹¤.
  *
  * Implementation :
  *     sddDiskMgr::removeTableSpace( aSpace )
  *
- * aStatistics        - [IN] Åë°èÁ¤º¸
+ * aStatistics        - [IN] í†µê³„ì •ë³´
  * aTrans             - [IN] Transaction Pointer
  * aSpaceID           - [IN] TableSpace ID
- * aTouchMode         - [IN] TableSpace ¿¡ ¼ÓÇÑ ÆÄÀÏÀ» »èÁ¦ÇÒ Áö °áÁ¤ÇÑ´Ù.
+ * aTouchMode         - [IN] TableSpace ì— ì†í•œ íŒŒì¼ì„ ì‚­ì œí•  ì§€ ê²°ì •í•œë‹¤.
  *
  **********************************************************************/
 IDE_RC sdptbSpaceDDL::dropTBS( idvSQL      * aStatistics,
@@ -1456,9 +1456,9 @@ IDE_RC sdptbSpaceDDL::dropTBS( idvSQL      * aStatistics,
     IDE_DASSERT( aTrans != NULL );
 
     // PRJ-1548 User Memory Tablespace
-    // Æ®·£Àè¼ÇÀÌ ¿Ï·áµÉ¶§(commit or abort) TableSpace Àá±İÀ» ÇØÁ¦ÇÑ´Ù.
-    // Àá±İÀÌ È¹µæµÈ ÀÌÈÄ¿¡ ÇØ´ç Å×ÀÌºí ½ºÆäÀÌ½º¸¦ ¿ä±¸ÇÏ´Â ¾î¶°ÇÑ
-    // Æ®·£Àè¼Çµµ ¹öÆÛ¿¡ Á¢±ÙµÇ¾î¼­´Â ¾ÈµÈ´Ù.
+    // íŠ¸ëœì­ì…˜ì´ ì™„ë£Œë ë•Œ(commit or abort) TableSpace ì ê¸ˆì„ í•´ì œí•œë‹¤.
+    // ì ê¸ˆì´ íšë“ëœ ì´í›„ì— í•´ë‹¹ í…Œì´ë¸” ìŠ¤í˜ì´ìŠ¤ë¥¼ ìš”êµ¬í•˜ëŠ” ì–´ë– í•œ
+    // íŠ¸ëœì­ì…˜ë„ ë²„í¼ì— ì ‘ê·¼ë˜ì–´ì„œëŠ” ì•ˆëœë‹¤.
     // -------------- TBS Node (X) ------------------ //
 
     IDE_TEST( sctTableSpaceMgr::lockTBSNodeByID(
@@ -1486,11 +1486,11 @@ IDE_RC sdptbSpaceDDL::dropTBS( idvSQL      * aStatistics,
 
 /***********************************************************************
  * Description:
- *  Disk Tablespace¿¡ ´ëÇØ Alter Tablespace Online/OfflineÀ» ¼öÇà
+ *  Disk Tablespaceì— ëŒ€í•´ Alter Tablespace Online/Offlineì„ ìˆ˜í–‰
  *
- * aTrans        - [IN] »óÅÂ¸¦ º¯°æÇÏ·Á´Â Transaction
- * aTableSpaceID - [IN] »óÅÂ¸¦ º¯°æÇÏ·Á´Â TablespaceÀÇ ID
- * aState        - [IN] »õ·Î ÀüÀÌÇÒ »óÅÂ ( Online or Offline )
+ * aTrans        - [IN] ìƒíƒœë¥¼ ë³€ê²½í•˜ë ¤ëŠ” Transaction
+ * aTableSpaceID - [IN] ìƒíƒœë¥¼ ë³€ê²½í•˜ë ¤ëŠ” Tablespaceì˜ ID
+ * aState        - [IN] ìƒˆë¡œ ì „ì´í•  ìƒíƒœ ( Online or Offline )
  ***********************************************************************/
 IDE_RC sdptbSpaceDDL::alterTBSStatus( idvSQL*             aStatistics,
                                       void              * aTrans,
@@ -1531,20 +1531,20 @@ IDE_RC sdptbSpaceDDL::alterTBSStatus( idvSQL*             aStatistics,
 
 /***********************************************************************
  * Description:
- *   Tablespace¸¦ DISCARDED»óÅÂ·Î ¹Ù²Ù°í, Loganchor¿¡ FlushÇÑ´Ù.
+ *   Tablespaceë¥¼ DISCARDEDìƒíƒœë¡œ ë°”ê¾¸ê³ , Loganchorì— Flushí•œë‹¤.
  *
- *   *DiscardÀÇ Á¤ÀÇ :
- *      - ´õ ÀÌ»ó »ç¿ëÇÒ ¼ö ¾ø´Â Tablespace
- *      - ¿ÀÁ÷ Drop¸¸ÀÌ °¡´É
+ *   *Discardì˜ ì •ì˜ :
+ *      - ë” ì´ìƒ ì‚¬ìš©í•  ìˆ˜ ì—†ëŠ” Tablespace
+ *      - ì˜¤ì§ Dropë§Œì´ ê°€ëŠ¥
  *
- *   *»ç¿ë¿¹ :
- *      - Disk°¡ ¿ÏÀüÈ÷ ¸À°¡¼­ ´õÀÌ»ó »ç¿ëºÒ°¡ÇÒ ¶§
- *        ÇØ´ç Tablespace¸¸ discardÇÏ°í ³ª¸ÓÁö Tablespace¸¸ÀÌ¶óµµ
- *        ¿î¿µÇÏ°í ½ÍÀ»¶§, CONTROL´Ü°è¿¡¼­ Tablespace¸¦ DISCARDÇÑ´Ù.
+ *   *ì‚¬ìš©ì˜ˆ :
+ *      - Diskê°€ ì™„ì „íˆ ë§›ê°€ì„œ ë”ì´ìƒ ì‚¬ìš©ë¶ˆê°€í•  ë•Œ
+ *        í•´ë‹¹ Tablespaceë§Œ discardí•˜ê³  ë‚˜ë¨¸ì§€ Tablespaceë§Œì´ë¼ë„
+ *        ìš´ì˜í•˜ê³  ì‹¶ì„ë•Œ, CONTROLë‹¨ê³„ì—ì„œ Tablespaceë¥¼ DISCARDí•œë‹¤.
  *
- *    *µ¿½Ã¼ºÁ¦¾î :
- *      - CONTROL´Ü°è¿¡¼­¸¸ È£ÃâµÇ±â ¶§¹®¿¡, sctTableSpaceMgr¿¡
- *        Mutex¸¦ ÀâÀ» ÇÊ¿ä°¡ ¾ø´Ù.
+ *    *ë™ì‹œì„±ì œì–´ :
+ *      - CONTROLë‹¨ê³„ì—ì„œë§Œ í˜¸ì¶œë˜ê¸° ë•Œë¬¸ì—, sctTableSpaceMgrì—
+ *        Mutexë¥¼ ì¡ì„ í•„ìš”ê°€ ì—†ë‹¤.
  ***********************************************************************/
 IDE_RC sdptbSpaceDDL::alterTBSdiscard( sddTableSpaceNode  * aTBSNode )
 {
@@ -1571,8 +1571,8 @@ IDE_RC sdptbSpaceDDL::alterTBSdiscard( sddTableSpaceNode  * aTBSNode )
 
 /***********************************************************************
  * Description:
- *  È­ÀÏÀÇ ÀÌ¸§À» ¹Ù²Û´Ù.
- *  sddDiskMgr::alterDataFileName ¿¡ ±¸ÇöµÇ¾îÁ® ÀÖ´Ù.
+ *  í™”ì¼ì˜ ì´ë¦„ì„ ë°”ê¾¼ë‹¤.
+ *  sddDiskMgr::alterDataFileName ì— êµ¬í˜„ë˜ì–´ì ¸ ìˆë‹¤.
  **********************************************************************/
 IDE_RC sdptbSpaceDDL::alterDataFileName( idvSQL      *aStatistics,
                                          scSpaceID    aSpaceID,
@@ -1596,57 +1596,57 @@ IDE_RC sdptbSpaceDDL::alterDataFileName( idvSQL      *aStatistics,
 
 /***********************************************************************
  * Description:
- *   META/SERVICE´Ü°è¿¡¼­ Tablespace¸¦ Online»óÅÂ·Î º¯°æÇÑ´Ù.
+ *   META/SERVICEë‹¨ê³„ì—ì„œ Tablespaceë¥¼ Onlineìƒíƒœë¡œ ë³€ê²½í•œë‹¤.
  *
- *   [ ¾Ë°í¸®Áò ]
- *     (010) TBSNode¿¡ X¶ô È¹µæ
- *     (020) Tablespace¸¦ BackupÁßÀÌ¶ó¸é BackupÁ¾·á½Ã±îÁö ´ë±â
- *     (030) "TBSNode.Status := ONLINE"¿¡ ´ëÇÑ ·Î±ë
- *     (040) TBS Commit Pendingµî·Ï
- *     (050) "DBFNode.Status := ONLINE"¿¡ ´ëÇÑ ·Î±ë
- *     (060) DBF Commit Pendingµî·Ï
- *     (note-1) Log anchor¿¡ TBSNode¸¦ flushÇÏÁö ¾Ê´Â´Ù.
- *              (commit pendingÀ¸·Î Ã³¸®)
- *     (note-2) Log anchor¿¡ DBFNode¸¦ flushÇÏÁö ¾Ê´Â´Ù.
- *              (commit pendingÀ¸·Î Ã³¸®)
+ *   [ ì•Œê³ ë¦¬ì¦˜ ]
+ *     (010) TBSNodeì— Xë½ íšë“
+ *     (020) Tablespaceë¥¼ Backupì¤‘ì´ë¼ë©´ Backupì¢…ë£Œì‹œê¹Œì§€ ëŒ€ê¸°
+ *     (030) "TBSNode.Status := ONLINE"ì— ëŒ€í•œ ë¡œê¹…
+ *     (040) TBS Commit Pendingë“±ë¡
+ *     (050) "DBFNode.Status := ONLINE"ì— ëŒ€í•œ ë¡œê¹…
+ *     (060) DBF Commit Pendingë“±ë¡
+ *     (note-1) Log anchorì— TBSNodeë¥¼ flushí•˜ì§€ ì•ŠëŠ”ë‹¤.
+ *              (commit pendingìœ¼ë¡œ ì²˜ë¦¬)
+ *     (note-2) Log anchorì— DBFNodeë¥¼ flushí•˜ì§€ ì•ŠëŠ”ë‹¤.
+ *              (commit pendingìœ¼ë¡œ ì²˜ë¦¬)
  *
- *   [ Commit½Ã ]
+ *   [ Commitì‹œ ]
  *     * TBS pending
- *     (c-010) TBSNode.Status := ONLINE    (ÁÖ1)
- *     (c-020) TableÀÇ RuntimeÁ¤º¸ ÃÊ±âÈ­
- *     (c-030) ÇØ´ç TBS¿¡ ¼ÓÇÑ ¸ğµç Table¿¡ ´ëÇØ Index Header Rebuilding ½Ç½Ã
+ *     (c-010) TBSNode.Status := ONLINE    (ì£¼1)
+ *     (c-020) Tableì˜ Runtimeì •ë³´ ì´ˆê¸°í™”
+ *     (c-030) í•´ë‹¹ TBSì— ì†í•œ ëª¨ë“  Tableì— ëŒ€í•´ Index Header Rebuilding ì‹¤ì‹œ
  *     (c-040) Flush TBSNode To LogAnchor
  *
  *     * DBF pending
- *     (c-030) DBFNode.Status := ONLINE    (ÁÖ2)
+ *     (c-030) DBFNode.Status := ONLINE    (ì£¼2)
  *     (c-040) Flush DBFNode To LogAnchor
  *
- *   [ Abort½Ã ]
- *     [ UNDO ] ¼öÇà
+ *   [ Abortì‹œ ]
+ *     [ UNDO ] ìˆ˜í–‰
  *
  *   [ TBS REDO ]
- *     (r-010) (030)¿¡ ´ëÇÑ REDO·Î Commit Pending µî·Ï
- *     (note-1) TBSNode¸¦ loganchor¿¡ flushÇÏÁö ¾ÊÀ½
- *              -> Restart Recovery¿Ï·áÈÄ ¸ğµç TBS¸¦ loganchor¿¡ flushÇÏ±â ¶§¹®
- *     (note-2) Restart Recovery¿Ï·áÈÄ (070), (080)ÀÇ ÀÛ¾÷ÀÌ ¼öÇàµÇ¹Ç·Î
- *              RedoÁß¿¡ ÀÌ¸¦ Ã³¸®ÇÏÁö ¾Ê´Â´Ù.
+ *     (r-010) (030)ì— ëŒ€í•œ REDOë¡œ Commit Pending ë“±ë¡
+ *     (note-1) TBSNodeë¥¼ loganchorì— flushí•˜ì§€ ì•ŠìŒ
+ *              -> Restart Recoveryì™„ë£Œí›„ ëª¨ë“  TBSë¥¼ loganchorì— flushí•˜ê¸° ë•Œë¬¸
+ *     (note-2) Restart Recoveryì™„ë£Œí›„ (070), (080)ì˜ ì‘ì—…ì´ ìˆ˜í–‰ë˜ë¯€ë¡œ
+ *              Redoì¤‘ì— ì´ë¥¼ ì²˜ë¦¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
  *
  *   [ TBS UNDO ]
- *     (u-040) (030)¿¡ ´ëÇÑ UNDO·Î TBSNode.Status := Before Image(OFFLINE)
- *             -> TBSNode.Status°¡ Commit Pending¿¡¼­ º¯°æµÇ±â ¶§¹®¿¡
- *                ±»ÀÌ undoÁß¿¡ Before Image·Î µ¤¾îÄ¥ ÇÊ¿ä´Â ¾ø´Ù.
- *                ±×·¯³ª ÀÏ°ü¼ºÀ» À¯ÁöÇÏ±â À§ÇØ TBSNode.Status¸¦
- *                Before Image·Î ¿øº¹ÇÏµµ·Ï ÇÑ´Ù.
+ *     (u-040) (030)ì— ëŒ€í•œ UNDOë¡œ TBSNode.Status := Before Image(OFFLINE)
+ *             -> TBSNode.Statusê°€ Commit Pendingì—ì„œ ë³€ê²½ë˜ê¸° ë•Œë¬¸ì—
+ *                êµ³ì´ undoì¤‘ì— Before Imageë¡œ ë®ì–´ì¹  í•„ìš”ëŠ” ì—†ë‹¤.
+ *                ê·¸ëŸ¬ë‚˜ ì¼ê´€ì„±ì„ ìœ ì§€í•˜ê¸° ìœ„í•´ TBSNode.Statusë¥¼
+ *                Before Imageë¡œ ì›ë³µí•˜ë„ë¡ í•œë‹¤.
  *
- *     (note-1) TBSNode¸¦ loganchor¿¡ flushÇÏÁö ¾ÊÀ½
- *              -> ALTER TBS ONLINEEÀÇ Commit PendingÀ» ÅëÇØ
- *                 COMMITÀÌÈÄ¿¡¾ß º¯°æµÈ TBS»óÅÂ°¡ log anchor¿¡ flushµÇ±â ¶§¹®
+ *     (note-1) TBSNodeë¥¼ loganchorì— flushí•˜ì§€ ì•ŠìŒ
+ *              -> ALTER TBS ONLINEEì˜ Commit Pendingì„ í†µí•´
+ *                 COMMITì´í›„ì—ì•¼ ë³€ê²½ëœ TBSìƒíƒœê°€ log anchorì— flushë˜ê¸° ë•Œë¬¸
  *
- *   [ ÀüÁ¦Á¶°Ç ]
- *      ÀÌ ÇÔ¼ö´Â META, SERVICE´Ü°è¿¡¼­ ONLINEÀ¸·Î ¿Ã¸± °æ¿ì¿¡¸¸ È£ÃâµÈ´Ù.
+ *   [ ì „ì œì¡°ê±´ ]
+ *      ì´ í•¨ìˆ˜ëŠ” META, SERVICEë‹¨ê³„ì—ì„œ ONLINEìœ¼ë¡œ ì˜¬ë¦´ ê²½ìš°ì—ë§Œ í˜¸ì¶œëœë‹¤.
  *
- *   aTrans         - [IN] »óÅÂ¸¦ º¯°æÇÏ·Á´Â Transaction
- *   aSpaceNode     - [IN] »óÅÂ¸¦ º¯°æÇÒ TablespaceÀÇ Node
+ *   aTrans         - [IN] ìƒíƒœë¥¼ ë³€ê²½í•˜ë ¤ëŠ” Transaction
+ *   aSpaceNode     - [IN] ìƒíƒœë¥¼ ë³€ê²½í•  Tablespaceì˜ Node
  ************************************************************************/
 IDE_RC sdptbSpaceDDL::alterTBSonline(idvSQL*              aStatistics,
                                      void               * aTrans,
@@ -1662,9 +1662,9 @@ IDE_RC sdptbSpaceDDL::alterTBSonline(idvSQL*              aStatistics,
     SM_LSN_INIT( sOnlineLSN );
 
     ///////////////////////////////////////////////////////////////////////////
-    //  (010) TBSNode¿¡ X¶ô È¹µæ
+    //  (010) TBSNodeì— Xë½ íšë“
     //
-    // Tablespace°¡ Offline»óÅÂ¿©µµ ¿¡·¯¸¦ ³»Áö ¾Ê´Â´Ù.
+    // Tablespaceê°€ Offlineìƒíƒœì—¬ë„ ì—ëŸ¬ë¥¼ ë‚´ì§€ ì•ŠëŠ”ë‹¤.
     IDE_TEST( sctTableSpaceMgr::lockTBSNode(
                                    aTrans,
                                    & aSpaceNode->mHeader,
@@ -1674,25 +1674,25 @@ IDE_RC sdptbSpaceDDL::alterTBSonline(idvSQL*              aStatistics,
               != IDE_SUCCESS );
 
     ///////////////////////////////////////////////////////////////////////////
-    //  (e-010) Tablespace»óÅÂ¿¡ µû¸¥ ¿¡·¯Ã³¸®
+    //  (e-010) Tablespaceìƒíƒœì— ë”°ë¥¸ ì—ëŸ¬ì²˜ë¦¬
     IDE_TEST( sctTableSpaceMgr::checkError4AlterStatus(
                                       (sctTableSpaceNode*)aSpaceNode,
                                       SMI_TBS_ONLINE /* New State */ )
               != IDE_SUCCESS );
 
     ///////////////////////////////////////////////////////////////////////////
-    //  (020) Tablespace¸¦ BackupÁßÀÌ¶ó¸é BackupÁ¾·á½Ã±îÁö ´ë±â
+    //  (020) Tablespaceë¥¼ Backupì¤‘ì´ë¼ë©´ Backupì¢…ë£Œì‹œê¹Œì§€ ëŒ€ê¸°
     IDE_TEST( sctTableSpaceMgr::wait4BackupAndBlockBackup(
                                        (sctTableSpaceNode*)aSpaceNode,
                                        SMI_TBS_SWITCHING_TO_ONLINE )
               != IDE_SUCCESS );
 
     ///////////////////////////////////////////////////////////////////////////
-    //  (030) "TBSNode.Status := ONLINE"¿¡ ´ëÇÑ ·Î±ë
+    //  (030) "TBSNode.Status := ONLINE"ì— ëŒ€í•œ ë¡œê¹…
 
     sBeforeState = aSpaceNode->mHeader.mState ;
 
-    // ·Î±ëÇÏ±â Àü¿¡ Backup°ü¸®ÀÚ¿ÍÀÇ µ¿½Ã¼º Á¦¾î¸¦ À§ÇÑ ÀÓ½Ã Flag¸¦ Á¦°Å
+    // ë¡œê¹…í•˜ê¸° ì „ì— Backupê´€ë¦¬ìì™€ì˜ ë™ì‹œì„± ì œì–´ë¥¼ ìœ„í•œ ì„ì‹œ Flagë¥¼ ì œê±°
     sBeforeState &= ~SMI_TBS_SWITCHING_TO_OFFLINE;
     sBeforeState &= ~SMI_TBS_SWITCHING_TO_ONLINE;
 
@@ -1710,26 +1710,26 @@ IDE_RC sdptbSpaceDDL::alterTBSonline(idvSQL*              aStatistics,
               != IDE_SUCCESS );
 
     ///////////////////////////////////////////////////////////////////////////
-    //  (040) TBS Commit Pendingµî·Ï
+    //  (040) TBS Commit Pendingë“±ë¡
     IDE_TEST( sctTableSpaceMgr::addPendingOperation(
                   aTrans,
                   aSpaceNode->mHeader.mID,
-                  ID_TRUE, /* Pending ¿¬»ê ¼öÇà ½ÃÁ¡ : Commit ½Ã */
+                  ID_TRUE, /* Pending ì—°ì‚° ìˆ˜í–‰ ì‹œì  : Commit ì‹œ */
                   SCT_POP_ALTER_TBS_ONLINE,
                   & sPendingOp ) != IDE_SUCCESS );
 
     sPendingOp->mPendingOpFunc = sdptbSpaceDDL::alterOnlineCommitPending;
     sPendingOp->mNewTBSState   = sAfterState;
 
-    // fix BUG-17456 Disk Tablespace onlineÀÌÈÄ update ¹ß»ı½Ã index ¹«ÇÑ·çÇÁ
+    // fix BUG-17456 Disk Tablespace onlineì´í›„ update ë°œìƒì‹œ index ë¬´í•œë£¨í”„
     SM_GET_LSN( sPendingOp->mOnlineTBSLSN, sOnlineLSN );
 
     ///////////////////////////////////////////////////////////////////////////
-    //  (050) DBF Online ·Î±ë
-    //  (060) DBF Commit Pendingµî·Ï
+    //  (050) DBF Online ë¡œê¹…
+    //  (060) DBF Commit Pendingë“±ë¡
 
-    // Transaction Commit½Ã¿¡ ¼öÇàÇÒ DBFNodeÀÇ »óÅÂ¸¦
-    // OfflineÀ¸·Î º¯°æÇÏ´Â Pending Operation µî·Ï
+    // Transaction Commitì‹œì— ìˆ˜í–‰í•  DBFNodeì˜ ìƒíƒœë¥¼
+    // Offlineìœ¼ë¡œ ë³€ê²½í•˜ëŠ” Pending Operation ë“±ë¡
     for (i=0; i < aSpaceNode->mNewFileID ; i++ )
     {
         sFileNode = aSpaceNode->mFileNodeArr[i] ;
@@ -1758,16 +1758,16 @@ IDE_RC sdptbSpaceDDL::alterTBSonline(idvSQL*              aStatistics,
         IDE_TEST( sddDataFile::addPendingOperation(
                   aTrans,
                   sFileNode,
-                  ID_TRUE,        /* Pending ¿¬»ê ¼öÇà ½ÃÁ¡ : Commit ½Ã */
+                  ID_TRUE,        /* Pending ì—°ì‚° ìˆ˜í–‰ ì‹œì  : Commit ì‹œ */
                   SCT_POP_ALTER_DBF_ONLINE,
                   &sPendingOp ) != IDE_SUCCESS );
 
         sPendingOp->mNewDBFState   = sAfterState;
-        sPendingOp->mPendingOpFunc = NULL; // pending ½Ã Ã³¸®ÇÒ ÇÔ¼ö°¡ ¾ø´Ù.
+        sPendingOp->mPendingOpFunc = NULL; // pending ì‹œ ì²˜ë¦¬í•  í•¨ìˆ˜ê°€ ì—†ë‹¤.
 
         // PRJ-1548 User Memory Tablespace
-        // TBS Node¿¡ X Àá±İÀ» È¹µæÇÏ±â ¶§¹®¿¡ DBF Node¿¡ X Àá±İÀ»
-        // È¹µæÇÒ ÇÊ¿ä°¡ ¾ø´Ù.
+        // TBS Nodeì— X ì ê¸ˆì„ íšë“í•˜ê¸° ë•Œë¬¸ì— DBF Nodeì— X ì ê¸ˆì„
+        // íšë“í•  í•„ìš”ê°€ ì—†ë‹¤.
     }
 
     return IDE_SUCCESS;
@@ -1779,46 +1779,46 @@ IDE_RC sdptbSpaceDDL::alterTBSonline(idvSQL*              aStatistics,
 
 /***********************************************************************
  * Description:
- *  META, SERVICE´Ü°è¿¡¼­ Tablespace¸¦ Offline»óÅÂ·Î º¯°æÇÑ´Ù.
+ *  META, SERVICEë‹¨ê³„ì—ì„œ Tablespaceë¥¼ Offlineìƒíƒœë¡œ ë³€ê²½í•œë‹¤.
  *
- *  [ ¾Ë°í¸®Áò ]
- *    (010) TBSNode¿¡ X¶ô È¹µæ
- *    (020) Tablespace¸¦ BackupÁßÀÌ¶ó¸é BackupÁ¾·á½Ã±îÁö ´ë±â
- *    (030) "TBSNode.Status := Offline" ¿¡ ´ëÇÑ ·Î±ë
+ *  [ ì•Œê³ ë¦¬ì¦˜ ]
+ *    (010) TBSNodeì— Xë½ íšë“
+ *    (020) Tablespaceë¥¼ Backupì¤‘ì´ë¼ë©´ Backupì¢…ë£Œì‹œê¹Œì§€ ëŒ€ê¸°
+ *    (030) "TBSNode.Status := Offline" ì— ëŒ€í•œ ë¡œê¹…
  *    (040) TBSNode.OfflineSCN := Current System SCN
- *    (050) Instant Disk Aging ½Ç½Ã - Aging ¼öÇàÁß¿¡¸¸ Àá½Ã Ager ·¡Ä¡È¹µæ
- *    (060) Dirty Page Flush ½Ç½Ã
- *    (070) Commit Pendingµî·Ï
+ *    (050) Instant Disk Aging ì‹¤ì‹œ - Aging ìˆ˜í–‰ì¤‘ì—ë§Œ ì ì‹œ Ager ë˜ì¹˜íšë“
+ *    (060) Dirty Page Flush ì‹¤ì‹œ
+ *    (070) Commit Pendingë“±ë¡
  *
- *  [ Commit½Ã : (Pending) ]
+ *  [ Commitì‹œ : (Pending) ]
  *    (c-010) TBSNode.Status := Offline
  *    (c-050) Free All Index Header of TBS
  *    (c-060) Free Runtime Info At Table Header
  *    (c-070) Free Runtime Info At TBSNode ( Expcet Lock )
  *    (c-080) flush TBSNode to loganchor
  *
- *  [ Abort½Ã ]
- *    [ UNDO ] ¼öÇà
+ *  [ Abortì‹œ ]
+ *    [ UNDO ] ìˆ˜í–‰
  *
  *  [ REDO ]
- *    (u-010) (020)¿¡ ´ëÇÑ REDO·Î TBSNode.Status := After Image(OFFLINE)
- *    (note-1) TBSNode¸¦ loganchor¿¡ flushÇÏÁö ¾ÊÀ½
- *             -> Restart Recovery¿Ï·áÈÄ ¸ğµç TBS¸¦ loganchor¿¡ flushÇÏ±â ¶§¹®
- *    (note-2) Commit PendingÀ» ¼öÇàÇÏÁö ¾ÊÀ½
- *             -> Restart Recovery¿Ï·áÈÄ OFFLINE TBS¿¡ ´ëÇÑ ResourceÇØÁ¦¸¦ ÇÑ´Ù
+ *    (u-010) (020)ì— ëŒ€í•œ REDOë¡œ TBSNode.Status := After Image(OFFLINE)
+ *    (note-1) TBSNodeë¥¼ loganchorì— flushí•˜ì§€ ì•ŠìŒ
+ *             -> Restart Recoveryì™„ë£Œí›„ ëª¨ë“  TBSë¥¼ loganchorì— flushí•˜ê¸° ë•Œë¬¸
+ *    (note-2) Commit Pendingì„ ìˆ˜í–‰í•˜ì§€ ì•ŠìŒ
+ *             -> Restart Recoveryì™„ë£Œí›„ OFFLINE TBSì— ëŒ€í•œ Resourceí•´ì œë¥¼ í•œë‹¤
  *
  *  [ UNDO ]
- *    (u-010) (020)¿¡ ´ëÇÑ UNDO·Î TBSNode.Status := Before Image(ONLINE)
- *            TBSNode.Status°¡ Commit Pending¿¡¼­ º¯°æµÇ±â ¶§¹®¿¡
- *            ±»ÀÌ undoÁß¿¡ Before Image·Î µ¤¾îÄ¥ ÇÊ¿ä´Â ¾ø´Ù.
- *            ±×·¯³ª ÀÏ°ü¼ºÀ» À¯ÁöÇÏ±â À§ÇØ TBSNode.Status¸¦
- *            Before Image·Î ¿øº¹ÇÏµµ·Ï ÇÑ´Ù.
- *    (note-1) TBSNode¸¦ loganchor¿¡ flushÇÏÁö ¾ÊÀ½
- *             -> ALTER TBS OFFLINEÀÇ Commit PendingÀ» ÅëÇØ
- *                COMMITÀÌÈÄ¿¡¾ß º¯°æµÈ TBS»óÅÂ°¡ log anchor¿¡ flushµÇ±â ¶§¹®
+ *    (u-010) (020)ì— ëŒ€í•œ UNDOë¡œ TBSNode.Status := Before Image(ONLINE)
+ *            TBSNode.Statusê°€ Commit Pendingì—ì„œ ë³€ê²½ë˜ê¸° ë•Œë¬¸ì—
+ *            êµ³ì´ undoì¤‘ì— Before Imageë¡œ ë®ì–´ì¹  í•„ìš”ëŠ” ì—†ë‹¤.
+ *            ê·¸ëŸ¬ë‚˜ ì¼ê´€ì„±ì„ ìœ ì§€í•˜ê¸° ìœ„í•´ TBSNode.Statusë¥¼
+ *            Before Imageë¡œ ì›ë³µí•˜ë„ë¡ í•œë‹¤.
+ *    (note-1) TBSNodeë¥¼ loganchorì— flushí•˜ì§€ ì•ŠìŒ
+ *             -> ALTER TBS OFFLINEì˜ Commit Pendingì„ í†µí•´
+ *                COMMITì´í›„ì—ì•¼ ë³€ê²½ëœ TBSìƒíƒœê°€ log anchorì— flushë˜ê¸° ë•Œë¬¸
  *
- *  aTrans   - [IN] »óÅÂ¸¦ º¯°æÇÏ·Á´Â Transaction
- *  aTBSNode - [IN] »óÅÂ¸¦ º¯°æÇÒ TablespaceÀÇ Node
+ *  aTrans   - [IN] ìƒíƒœë¥¼ ë³€ê²½í•˜ë ¤ëŠ” Transaction
+ *  aTBSNode - [IN] ìƒíƒœë¥¼ ë³€ê²½í•  Tablespaceì˜ Node
  **********************************************************************/
 IDE_RC sdptbSpaceDDL::alterTBSoffline( idvSQL*              aStatistics,
                                        void               * aTrans,
@@ -1831,9 +1831,9 @@ IDE_RC sdptbSpaceDDL::alterTBSoffline( idvSQL*              aStatistics,
     UInt              i;
 
     ///////////////////////////////////////////////////////////////////////////
-    //  (010) TBSNode¿¡ X¶ô È¹µæ
+    //  (010) TBSNodeì— Xë½ íšë“
     //
-    // Tablespace°¡ Offline»óÅÂ¿©µµ ¿¡·¯¸¦ ³»Áö ¾Ê´Â´Ù.
+    // Tablespaceê°€ Offlineìƒíƒœì—¬ë„ ì—ëŸ¬ë¥¼ ë‚´ì§€ ì•ŠëŠ”ë‹¤.
     IDE_TEST( sctTableSpaceMgr::lockTBSNode(
                                    aTrans,
                                    & aSpaceNode->mHeader,
@@ -1843,14 +1843,14 @@ IDE_RC sdptbSpaceDDL::alterTBSoffline( idvSQL*              aStatistics,
               != IDE_SUCCESS );
 
     ///////////////////////////////////////////////////////////////////////////
-    //  (e-010) Tablespace»óÅÂ¿¡ µû¸¥ ¿¡·¯Ã³¸®
+    //  (e-010) Tablespaceìƒíƒœì— ë”°ë¥¸ ì—ëŸ¬ì²˜ë¦¬
     IDE_TEST( sctTableSpaceMgr::checkError4AlterStatus(
                                      (sctTableSpaceNode*)aSpaceNode,
                                      SMI_TBS_OFFLINE  /* New State */ )
               != IDE_SUCCESS );
 
     ///////////////////////////////////////////////////////////////////////////
-    //  (020) Tablespace¸¦ BackupÁßÀÌ¶ó¸é BackupÁ¾·á½Ã±îÁö ´ë±â
+    //  (020) Tablespaceë¥¼ Backupì¤‘ì´ë¼ë©´ Backupì¢…ë£Œì‹œê¹Œì§€ ëŒ€ê¸°
     IDE_TEST( sctTableSpaceMgr::wait4BackupAndBlockBackup(
                                      (sctTableSpaceNode*)aSpaceNode,
                                      SMI_TBS_SWITCHING_TO_OFFLINE )
@@ -1858,10 +1858,10 @@ IDE_RC sdptbSpaceDDL::alterTBSoffline( idvSQL*              aStatistics,
 
 
     ///////////////////////////////////////////////////////////////////////////
-    //  (030) "TBSNode.Status := Offline" ¿¡ ´ëÇÑ ·Î±ë
+    //  (030) "TBSNode.Status := Offline" ì— ëŒ€í•œ ë¡œê¹…
     sBeforeState = aSpaceNode->mHeader.mState ;
 
-    // ·Î±ëÇÏ±â Àü¿¡ Backup°ü¸®ÀÚ¿ÍÀÇ µ¿½Ã¼º Á¦¾î¸¦ À§ÇÑ ÀÓ½Ã Flag¸¦ Á¦°Å
+    // ë¡œê¹…í•˜ê¸° ì „ì— Backupê´€ë¦¬ìì™€ì˜ ë™ì‹œì„± ì œì–´ë¥¼ ìœ„í•œ ì„ì‹œ Flagë¥¼ ì œê±°
     sBeforeState &= ~SMI_TBS_SWITCHING_TO_OFFLINE;
     sBeforeState &= ~SMI_TBS_SWITCHING_TO_ONLINE;
 
@@ -1885,8 +1885,8 @@ IDE_RC sdptbSpaceDDL::alterTBSoffline( idvSQL*              aStatistics,
 
 
     ///////////////////////////////////////////////////////////////////////////
-    //  (050) Instant Disk Aging ½Ç½Ã
-    //        - Aging ¼öÇàÁß¿¡¸¸ Àá½Ã Ager ·¡Ä¡È¹µæ
+    //  (050) Instant Disk Aging ì‹¤ì‹œ
+    //        - Aging ìˆ˜í–‰ì¤‘ì—ë§Œ ì ì‹œ Ager ë˜ì¹˜íšë“
     /* xxxxxxxxxxxx
     IDE_TEST( smLayerCallback::doInstantAgingWithDiskTBS(
                   aStatistics,
@@ -1898,34 +1898,34 @@ IDE_RC sdptbSpaceDDL::alterTBSoffline( idvSQL*              aStatistics,
     ///////////////////////////////////////////////////////////////////////////
     //  (060) all dirty pages flush in tablespace
 
-    // invalidatePages ¿¬»êÀº µ¿½Ã¼ºÀÌ °í·ÁµÇÁö ¾Ê±â ¶§¹®¿¡
-    // ¼öÇàÇÏ´Â µ¿¾È¿¡´Â ÇØ´ç Å×ÀÌºí½ºÆäÀÌ½º¿¡ ´ëÇÑ DMLµµ
-    // Çã¿ëÇÏÁö ¾Ê¾Æ¾ßÇÏ°í(X-LOCK) DISKGCµµ BlockµÇ¾î ÀÖ¾î¾ß
-    // ÇÑ´Ù. À§Á¶°ÇÀÌ º¸ÀåµÇÁö ¾ÊÀ¸¸é Flush-List°¡ ±úÁö´Â
-    // Çö»óÀÌ ¹ß»ıÇÑ´Ù.
-    // Æ®·£Àè¼ÇÀÌ ¿Ï·áµÉ¶§ (commit or abort) disk GC¸¦ unblock ÇÑ´Ù.
+    // invalidatePages ì—°ì‚°ì€ ë™ì‹œì„±ì´ ê³ ë ¤ë˜ì§€ ì•Šê¸° ë•Œë¬¸ì—
+    // ìˆ˜í–‰í•˜ëŠ” ë™ì•ˆì—ëŠ” í•´ë‹¹ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì— ëŒ€í•œ DMLë„
+    // í—ˆìš©í•˜ì§€ ì•Šì•„ì•¼í•˜ê³ (X-LOCK) DISKGCë„ Blockë˜ì–´ ìˆì–´ì•¼
+    // í•œë‹¤. ìœ„ì¡°ê±´ì´ ë³´ì¥ë˜ì§€ ì•Šìœ¼ë©´ Flush-Listê°€ ê¹¨ì§€ëŠ”
+    // í˜„ìƒì´ ë°œìƒí•œë‹¤.
+    // íŠ¸ëœì­ì…˜ì´ ì™„ë£Œë ë•Œ (commit or abort) disk GCë¥¼ unblock í•œë‹¤.
 
     /* xxxxxxxxxxxxx
     smLayerCallback::blockDiskGC( aStatistics, aTrans );
     */
 
-    //BUG-21392 table spabe offline ÀÌÈÄ¿¡ ÇØ´ç table space¿¡ ¼ÓÇÏ´Â BCBµéÀÌ buffer
-    //¿¡ ³²¾Æ ÀÖ½À´Ï´Ù.
+    //BUG-21392 table spabe offline ì´í›„ì— í•´ë‹¹ table spaceì— ì†í•˜ëŠ” BCBë“¤ì´ buffer
+    //ì— ë‚¨ì•„ ìˆìŠµë‹ˆë‹¤.
 
-    /* 1.replacement flush¸¦ ÅëÇØ secondary buffer¿¡ pageout´ë»ó ÆäÀÌÁö°¡
-       Ãß°¡ ¹ß»ıÇÒ¼ö ÀÖ¾î flushPageÈ£Ãâ 3.¿¡¼­ pageOut ¼öÇà */
+    /* 1.replacement flushë¥¼ í†µí•´ secondary bufferì— pageoutëŒ€ìƒ í˜ì´ì§€ê°€
+       ì¶”ê°€ ë°œìƒí• ìˆ˜ ìˆì–´ flushPageí˜¸ì¶œ 3.ì—ì„œ pageOut ìˆ˜í–‰ */
     IDE_TEST( sdsBufferMgr::flushPagesInRange( aStatistics,
                                                aSpaceNode->mHeader.mID,/*aSpaceID*/
                                                0,                      /*StartPID*/
                                                SD_MAX_PAGE_COUNT - 1 )
               != IDE_SUCCESS );
-    /* 2.buffer poolÀÇ dirtypage°¡ ÃÖ½Å ÀÌ¹Ç·Î 2nd->bufferpoolÀÇ ¼ø¼­·Î ¼öÇà */
+    /* 2.buffer poolì˜ dirtypageê°€ ìµœì‹  ì´ë¯€ë¡œ 2nd->bufferpoolì˜ ìˆœì„œë¡œ ìˆ˜í–‰ */
     IDE_TEST( sdbBufferMgr::pageOutInRange( aStatistics,
                                             aSpaceNode->mHeader.mID,
                                             0,
                                             SD_MAX_PAGE_COUNT - 1 )
               != IDE_SUCCESS );
-    /* 3.replacement flush¸¦ ÅëÇØ secondary buffer¿¡ pageout´ë»ó ÆäÀÌÁö°¡ Á¸ÀçÇÒ¼öµµ ÀÖ½À´Ï´Ù.*/
+    /* 3.replacement flushë¥¼ í†µí•´ secondary bufferì— pageoutëŒ€ìƒ í˜ì´ì§€ê°€ ì¡´ì¬í• ìˆ˜ë„ ìˆìŠµë‹ˆë‹¤.*/
     IDE_TEST( sdsBufferMgr::pageOutInRange( aStatistics,
                                             aSpaceNode->mHeader.mID,/*aSpaceID*/
                                             0,                      /*StartPID*/
@@ -1933,28 +1933,28 @@ IDE_RC sdptbSpaceDDL::alterTBSoffline( idvSQL*              aStatistics,
               != IDE_SUCCESS );
 
     ///////////////////////////////////////////////////////////////////////////
-    //  (070) Commit Pendingµî·Ï
+    //  (070) Commit Pendingë“±ë¡
     //
-    // Transaction Commit½Ã¿¡ ¼öÇàÇÒ Pending Operationµî·Ï
+    // Transaction Commitì‹œì— ìˆ˜í–‰í•  Pending Operationë“±ë¡
     IDE_TEST( sctTableSpaceMgr::addPendingOperation(
                               aTrans,
                               aSpaceNode->mHeader.mID,
-                              ID_TRUE, /* Pending ¿¬»ê ¼öÇà ½ÃÁ¡ : Commit ½Ã */
+                              ID_TRUE, /* Pending ì—°ì‚° ìˆ˜í–‰ ì‹œì  : Commit ì‹œ */
                               SCT_POP_ALTER_TBS_OFFLINE,
                               & sPendingOp )
               != IDE_SUCCESS );
 
-    // Commit½Ã sctTableSpaceMgr::executePendingOperation¿¡¼­
-    // ¼öÇàÇÒ PendingÇÔ¼ö ¼³Á¤
+    // Commitì‹œ sctTableSpaceMgr::executePendingOperationì—ì„œ
+    // ìˆ˜í–‰í•  Pendingí•¨ìˆ˜ ì„¤ì •
     sPendingOp->mPendingOpFunc = sdptbSpaceDDL::alterOfflineCommitPending;
     sPendingOp->mNewTBSState   = sAfterState;
 
     ///////////////////////////////////////////////////////////////////////////
-    //  (080) DBF Online ·Î±ë
-    //  (090) DBF Commit Pendingµî·Ï
+    //  (080) DBF Online ë¡œê¹…
+    //  (090) DBF Commit Pendingë“±ë¡
 
-    // Transaction Commit½Ã¿¡ ¼öÇàÇÒ DBFNodeÀÇ »óÅÂ¸¦
-    // OfflineÀ¸·Î º¯°æÇÏ´Â Pending Operation µî·Ï
+    // Transaction Commitì‹œì— ìˆ˜í–‰í•  DBFNodeì˜ ìƒíƒœë¥¼
+    // Offlineìœ¼ë¡œ ë³€ê²½í•˜ëŠ” Pending Operation ë“±ë¡
     for (i=0; i < aSpaceNode->mNewFileID ; i++ )
     {
         sFileNode = aSpaceNode->mFileNodeArr[i] ;
@@ -1982,16 +1982,16 @@ IDE_RC sdptbSpaceDDL::alterTBSoffline( idvSQL*              aStatistics,
         IDE_TEST( sddDataFile::addPendingOperation(
                           aTrans,
                           sFileNode,
-                          ID_TRUE,        /* Pending ¿¬»ê ¼öÇà ½ÃÁ¡ : Commit ½Ã */
+                          ID_TRUE,        /* Pending ì—°ì‚° ìˆ˜í–‰ ì‹œì  : Commit ì‹œ */
                           SCT_POP_ALTER_DBF_OFFLINE,
                           &sPendingOp ) != IDE_SUCCESS );
 
         sPendingOp->mNewDBFState   = sAfterState;
-        sPendingOp->mPendingOpFunc = NULL; // pending ½Ã Ã³¸®ÇÒ ÇÔ¼ö°¡ ¾ø´Ù.
+        sPendingOp->mPendingOpFunc = NULL; // pending ì‹œ ì²˜ë¦¬í•  í•¨ìˆ˜ê°€ ì—†ë‹¤.
 
         // PRJ-1548 User Memory Tablespace
-        // TBS Node¿¡ X Àá±İÀ» È¹µæÇÏ±â ¶§¹®¿¡ DBF Node¿¡ X Àá±İÀ»
-        // È¹µæÇÒ ÇÊ¿ä°¡ ¾ø´Ù.
+        // TBS Nodeì— X ì ê¸ˆì„ íšë“í•˜ê¸° ë•Œë¬¸ì— DBF Nodeì— X ì ê¸ˆì„
+        // íšë“í•  í•„ìš”ê°€ ì—†ë‹¤.
     }
 
     return IDE_SUCCESS;
@@ -2011,11 +2011,11 @@ IDE_RC sdptbSpaceDDL::alterOnlineCommitPending(
 {
     sdpActOnlineArgs  sActionArgs;
 
-    // ¿©±â µé¾î¿À´Â Tablespace´Â Ç×»ó Disk Tablespace¿©¾ß ÇÑ´Ù.
+    // ì—¬ê¸° ë“¤ì–´ì˜¤ëŠ” TablespaceëŠ” í•­ìƒ Disk Tablespaceì—¬ì•¼ í•œë‹¤.
     IDE_ASSERT( sctTableSpaceMgr::isDiskTableSpace( aSpaceNode->mID )
                 == ID_TRUE );
 
-    // SMI_TBS_SWITCHING_TO_OFFLINE ÀÌ ¼³Á¤µÇ¾î ÀÖÀ¸¸é ¾ÈµÈ´Ù.
+    // SMI_TBS_SWITCHING_TO_OFFLINE ì´ ì„¤ì •ë˜ì–´ ìˆìœ¼ë©´ ì•ˆëœë‹¤.
     IDE_ASSERT( ( aSpaceNode->mState & SMI_TBS_SWITCHING_TO_ONLINE )
                   == SMI_TBS_SWITCHING_TO_ONLINE );
 
@@ -2023,17 +2023,17 @@ IDE_RC sdptbSpaceDDL::alterOnlineCommitPending(
     // (010) aSpaceNode.Status := ONLINE
     aSpaceNode->mState = aPendingOp->mNewTBSState;
 
-    // SMI_TBS_SWITCHING_TO_OFFLINE ÀÌ ¼³Á¤µÇ¾î ÀÖÀ¸¸é ¾ÈµÈ´Ù.
+    // SMI_TBS_SWITCHING_TO_OFFLINE ì´ ì„¤ì •ë˜ì–´ ìˆìœ¼ë©´ ì•ˆëœë‹¤.
     IDE_ASSERT( ( aSpaceNode->mState & SMI_TBS_SWITCHING_TO_ONLINE )
                 != SMI_TBS_SWITCHING_TO_ONLINE );
 
     if ( smrRecoveryMgr::isRestart() == ID_FALSE )
     {
         ///////////////////////////////////////////////////////////////////////////
-        //  (020) TableÀÇ RuntimeÁ¤º¸ ÃÊ±âÈ­
-        //  (030) ÇØ´ç TBS¿¡ ¼ÓÇÑ ¸ğµç Table¿¡ ´ëÇØ Index Header Rebuilding ½Ç½Ã
-        //        TBS »óÅÂ¸¦ ONLINEÀ¸·Î º¯°æÇÑ ÈÄ¿¡ Index Header RebuildingÀ»
-        //        ¼öÇàÇÏ¿©¾ß µ¥ÀÌÅ¸ÆÄÀÏ¿¡ Read¸¦ ¼öÇàÇÒ ¼ö ÀÖ´Ù.
+        //  (020) Tableì˜ Runtimeì •ë³´ ì´ˆê¸°í™”
+        //  (030) í•´ë‹¹ TBSì— ì†í•œ ëª¨ë“  Tableì— ëŒ€í•´ Index Header Rebuilding ì‹¤ì‹œ
+        //        TBS ìƒíƒœë¥¼ ONLINEìœ¼ë¡œ ë³€ê²½í•œ í›„ì— Index Header Rebuildingì„
+        //        ìˆ˜í–‰í•˜ì—¬ì•¼ ë°ì´íƒ€íŒŒì¼ì— Readë¥¼ ìˆ˜í–‰í•  ìˆ˜ ìˆë‹¤.
 
         sActionArgs.mTrans = NULL;
 
@@ -2049,7 +2049,7 @@ IDE_RC sdptbSpaceDDL::alterOnlineCommitPending(
     }
     else
     {
-        // restart recovery½Ã¿¡´Â »óÅÂ¸¸ º¯°æÇÑ´Ù.
+        // restart recoveryì‹œì—ëŠ” ìƒíƒœë§Œ ë³€ê²½í•œë‹¤.
     }
 
     return IDE_SUCCESS;
@@ -2063,15 +2063,15 @@ IDE_RC sdptbSpaceDDL::alterOnlineCommitPending(
  * Description:
  *  PROJ-1548 User Memory Tablespace
  *
- *  Tablespace¸¦ OFFLINE½ÃÅ² Tx°¡ CommitµÇ¾úÀ» ¶§ ºÒ¸®´Â PendingÇÔ¼ö
+ *  Tablespaceë¥¼ OFFLINEì‹œí‚¨ Txê°€ Commitë˜ì—ˆì„ ë•Œ ë¶ˆë¦¬ëŠ” Pendingí•¨ìˆ˜
  *
- *  Tablespace¿Í °ü·ÃµÈ ¸ğµç ¸®¼Ò½º¸¦ ¹İ³³ÇÑ´Ù.
- *  - ¿¹¿Ü : TablespaceÀÇ LockÁ¤º¸´Â ´Ù¸¥ TxµéÀÌ ´ë±âÇÏ¸é¼­
- *            ÂüÁ¶ÇÒ ¼ö ÀÖ±â ¶§¹®¿¡ ÇØÁ¦ÇØ¼­´Â ¾ÈµÈ´Ù.
+ *  Tablespaceì™€ ê´€ë ¨ëœ ëª¨ë“  ë¦¬ì†ŒìŠ¤ë¥¼ ë°˜ë‚©í•œë‹¤.
+ *  - ì˜ˆì™¸ : Tablespaceì˜ Lockì •ë³´ëŠ” ë‹¤ë¥¸ Txë“¤ì´ ëŒ€ê¸°í•˜ë©´ì„œ
+ *            ì°¸ì¡°í•  ìˆ˜ ìˆê¸° ë•Œë¬¸ì— í•´ì œí•´ì„œëŠ” ì•ˆëœë‹¤.
  *
- *   [Âü°í] sctTableSpaceMgr::executePendingOperation ¿¡¼­ È£ÃâµÈ´Ù.
+ *   [ì°¸ê³ ] sctTableSpaceMgr::executePendingOperation ì—ì„œ í˜¸ì¶œëœë‹¤.
  *
- *  [ ¾Ë°í¸®Áò ] ======================================================
+ *  [ ì•Œê³ ë¦¬ì¦˜ ] ======================================================
  *     (c-010) TBSNode.Status := OFFLINE
  *     (c-020) Free All Index Header of TBS
  *     (c-030) Destroy/Free Runtime Info At Table Header
@@ -2084,11 +2084,11 @@ IDE_RC sdptbSpaceDDL::alterOfflineCommitPending(
 {
     IDE_DASSERT( aSpaceNode != NULL );
 
-    // ¿©±â µé¾î¿À´Â Tablespace´Â Ç×»ó Disk Tablespace¿©¾ß ÇÑ´Ù.
+    // ì—¬ê¸° ë“¤ì–´ì˜¤ëŠ” TablespaceëŠ” í•­ìƒ Disk Tablespaceì—¬ì•¼ í•œë‹¤.
     IDE_ASSERT( sctTableSpaceMgr::isDiskTableSpace( aSpaceNode->mID )
                 == ID_TRUE );
 
-    // SMI_TBS_SWITCHING_TO_OFFLINE ÀÌ ¼³Á¤µÇ¾î ÀÖ¾î¾ß ÇÑ´Ù.
+    // SMI_TBS_SWITCHING_TO_OFFLINE ì´ ì„¤ì •ë˜ì–´ ìˆì–´ì•¼ í•œë‹¤.
     IDE_ASSERT( ( aSpaceNode->mState & SMI_TBS_SWITCHING_TO_OFFLINE )
                   == SMI_TBS_SWITCHING_TO_OFFLINE );
 
@@ -2096,7 +2096,7 @@ IDE_RC sdptbSpaceDDL::alterOfflineCommitPending(
     // (c-010) TBSNode.Status := OFFLINE
     aSpaceNode->mState = aPendingOp->mNewTBSState;
 
-    // SMI_TBS_SWITCHING_TO_OFFLINE ÀÌ ¼³Á¤µÇ¾î ÀÖÀ¸¸é ¾ÈµÈ´Ù.
+    // SMI_TBS_SWITCHING_TO_OFFLINE ì´ ì„¤ì •ë˜ì–´ ìˆìœ¼ë©´ ì•ˆëœë‹¤.
     IDE_ASSERT( ( aSpaceNode->mState & SMI_TBS_SWITCHING_TO_OFFLINE )
                 != SMI_TBS_SWITCHING_TO_OFFLINE );
 
@@ -2116,7 +2116,7 @@ IDE_RC sdptbSpaceDDL::alterOfflineCommitPending(
     }
     else
     {
-        // restart recovery ½Ã¿¡´Â »óÅÂ¸¸ º¯°æÇÑ´Ù.
+        // restart recovery ì‹œì—ëŠ” ìƒíƒœë§Œ ë³€ê²½í•œë‹¤.
     }
 
     return IDE_SUCCESS;
@@ -2130,14 +2130,14 @@ IDE_RC sdptbSpaceDDL::alterOfflineCommitPending(
  *
  * Description:
  *
- *    ALTER TABLESPACE ADD DATAFILE¿¡ ´ëÇÑ Bitmap TBSÀÇ Commit Pending¿¬»ê
- *    À» ¼öÇàÇÑ´Ù.
+ *    ALTER TABLESPACE ADD DATAFILEì— ëŒ€í•œ Bitmap TBSì˜ Commit Pendingì—°ì‚°
+ *    ì„ ìˆ˜í–‰í•œë‹¤.
  *
- *    Ãß°¡µÈ µ¥ÀÌÅ¸ÆÄÀÏ¿¡ ´ëÇØ¼­ SpaceCacheÀÇ MaxGGID¿Í Freeness Bit¸¦ ¹İ¿µÇÑ´Ù.
+ *    ì¶”ê°€ëœ ë°ì´íƒ€íŒŒì¼ì— ëŒ€í•´ì„œ SpaceCacheì˜ MaxGGIDì™€ Freeness Bitë¥¼ ë°˜ì˜í•œë‹¤.
  *
- * aStatistics - [IN] Åë°èÁ¤º¸
- * aSpaceNode  - [IN] Å×ÀÌºí½ºÆäÀÌ½º ³ëµå Æ÷ÀÎÅÍ
- * aPendingOp  - [IN] Pending¿¬»ê ÀÚ·á±¸Á¶¿¡ ´ëÇÑ Æ÷ÀÎÅÍ
+ * aStatistics - [IN] í†µê³„ì •ë³´
+ * aSpaceNode  - [IN] í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ë…¸ë“œ í¬ì¸í„°
+ * aPendingOp  - [IN] Pendingì—°ì‚° ìë£Œêµ¬ì¡°ì— ëŒ€í•œ í¬ì¸í„°
  *
  ***********************************************************************/
 IDE_RC sdptbSpaceDDL::alterAddFileCommitPending(
@@ -2151,9 +2151,9 @@ IDE_RC sdptbSpaceDDL::alterAddFileCommitPending(
     IDE_ASSERT( aSpaceNode != NULL );
     IDE_ASSERT( aPendingOp != NULL );
 
-    /* Restart Recovery½Ã¿¡´Â È£ÃâµÇÁö ¾Ê´Â Pending ¿¬»êÀÌ´Ù.
-     * ¿Ö³ÄÇÏ¸é, Recovery ÀÌÈÄ¿¡ ´Ù½Ã SpaceCache´Â refine °úÁ¤À» ÅëÇØ¼­
-     * ´Ù½Ã ±¸ÇÏ±â ¶§¹®ÀÌ´Ù. */
+    /* Restart Recoveryì‹œì—ëŠ” í˜¸ì¶œë˜ì§€ ì•ŠëŠ” Pending ì—°ì‚°ì´ë‹¤.
+     * ì™œëƒí•˜ë©´, Recovery ì´í›„ì— ë‹¤ì‹œ SpaceCacheëŠ” refine ê³¼ì •ì„ í†µí•´ì„œ
+     * ë‹¤ì‹œ êµ¬í•˜ê¸° ë•Œë¬¸ì´ë‹¤. */
     IDE_ASSERT( smrRecoveryMgr::isRestart() == ID_FALSE );
 
     sCache = (sdptbSpaceCache*)aPendingOp->mPendingOpParam;
@@ -2176,14 +2176,14 @@ IDE_RC sdptbSpaceDDL::alterAddFileCommitPending(
  *
  * Description:
  *
- *    ALTER TABLESPACE DROP DATAFILE¿¡ ´ëÇÑ Bitmap TBSÀÇ Commit Pending¿¬»ê
- *    À» ¼öÇàÇÑ´Ù.
+ *    ALTER TABLESPACE DROP DATAFILEì— ëŒ€í•œ Bitmap TBSì˜ Commit Pendingì—°ì‚°
+ *    ì„ ìˆ˜í–‰í•œë‹¤.
  *
- *    Á¦°ÅµÈ µ¥ÀÌÅ¸ÆÄÀÏ¿¡ ´ëÇØ¼­ SpaceCacheÀÇ MaxGGID¿Í Freeness Bit¸¦ ¹İ¿µÇÑ´Ù.
+ *    ì œê±°ëœ ë°ì´íƒ€íŒŒì¼ì— ëŒ€í•´ì„œ SpaceCacheì˜ MaxGGIDì™€ Freeness Bitë¥¼ ë°˜ì˜í•œë‹¤.
  *
- * aStatistics - [IN] Åë°èÁ¤º¸
- * aSpaceNode  - [IN] Å×ÀÌºí½ºÆäÀÌ½º ³ëµå Æ÷ÀÎÅÍ
- * aPendingOp  - [IN] Pending¿¬»ê ÀÚ·á±¸Á¶¿¡ ´ëÇÑ Æ÷ÀÎÅÍ
+ * aStatistics - [IN] í†µê³„ì •ë³´
+ * aSpaceNode  - [IN] í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ë…¸ë“œ í¬ì¸í„°
+ * aPendingOp  - [IN] Pendingì—°ì‚° ìë£Œêµ¬ì¡°ì— ëŒ€í•œ í¬ì¸í„°
  *
  ***********************************************************************/
 IDE_RC sdptbSpaceDDL::alterDropFileCommitPending(
@@ -2197,12 +2197,12 @@ IDE_RC sdptbSpaceDDL::alterDropFileCommitPending(
     IDE_ASSERT( aSpaceNode != NULL );
     IDE_ASSERT( aPendingOp != NULL );
 
-    /* Restart Recovery½Ã¿¡´Â È£ÃâµÇÁö ¾Ê´Â Pending ¿¬»êÀÌ´Ù.
-     * ¿Ö³ÄÇÏ¸é, Recovery ÀÌÈÄ¿¡ ´Ù½Ã SpaceCache´Â refine °úÁ¤À» ÅëÇØ¼­
-     * ´Ù½Ã ±¸ÇÏ±â ¶§¹®ÀÌ´Ù. */
+    /* Restart Recoveryì‹œì—ëŠ” í˜¸ì¶œë˜ì§€ ì•ŠëŠ” Pending ì—°ì‚°ì´ë‹¤.
+     * ì™œëƒí•˜ë©´, Recovery ì´í›„ì— ë‹¤ì‹œ SpaceCacheëŠ” refine ê³¼ì •ì„ í†µí•´ì„œ
+     * ë‹¤ì‹œ êµ¬í•˜ê¸° ë•Œë¬¸ì´ë‹¤. */
     IDE_ASSERT( smrRecoveryMgr::isRestart() == ID_FALSE );
 
-    // ¿©±â µé¾î¿À´Â Tablespace´Â Ç×»ó Memory Tablespace¿©¾ß ÇÑ´Ù.
+    // ì—¬ê¸° ë“¤ì–´ì˜¤ëŠ” TablespaceëŠ” í•­ìƒ Memory Tablespaceì—¬ì•¼ í•œë‹¤.
     IDE_ASSERT( sctTableSpaceMgr::isDiskTableSpace( aSpaceNode->mID )
                 == ID_TRUE );
 
@@ -2212,7 +2212,7 @@ IDE_RC sdptbSpaceDDL::alterDropFileCommitPending(
     sGGID = aPendingOp->mFileID;
     IDE_ASSERT( sGGID < SD_MAX_FID_COUNT );
 
-    //°¡Àå ¸¶Áö¸·¿¡ ÀÖ´Â ÆÄÀÏÀ» »èÁ¦ÇÏ´Â°ÍÀÌ¶ó¸é max ggid¸¦ ¼öÁ¤ÇØÁÙÇÊ¿ä°¡ ÀÖ´Ù.
+    //ê°€ì¥ ë§ˆì§€ë§‰ì— ìˆëŠ” íŒŒì¼ì„ ì‚­ì œí•˜ëŠ”ê²ƒì´ë¼ë©´ max ggidë¥¼ ìˆ˜ì •í•´ì¤„í•„ìš”ê°€ ìˆë‹¤.
     if(  sCache->mMaxGGID == sGGID )
     {
         sCache->mMaxGGID--;
@@ -2220,9 +2220,9 @@ IDE_RC sdptbSpaceDDL::alterDropFileCommitPending(
 
     sdptbBit::clearBit( sCache->mFreenessOfGGs, sGGID );
 
-    //¸¸¾à Áö±İ»èÁ¦ÇÏ´ÂÆÄÀÏÀÌ ÈùÆ®·Î ¼³Á¤µÇÀÖ´Ù¸é ÈùÆ®¸¦ ¹«Á¶°Ç 0À¸·Î
-    //(ÀÌ°ÍÀº ²ÀÇØÁÖ¾î¾ßÇÏ´Â°ÍÀº ¾Æ´Ï´Ù. ¾îÂ÷ÇÇ ºñÆ®¿­°Ë»öÀÇ ½ÃÀÛÁöÁ¡À¸·Î¸¸
-    //»ç¿ëµÇ¾îÁö¹Ç·Î..)
+    //ë§Œì•½ ì§€ê¸ˆì‚­ì œí•˜ëŠ”íŒŒì¼ì´ íŒíŠ¸ë¡œ ì„¤ì •ë˜ìˆë‹¤ë©´ íŒíŠ¸ë¥¼ ë¬´ì¡°ê±´ 0ìœ¼ë¡œ
+    //(ì´ê²ƒì€ ê¼­í•´ì£¼ì–´ì•¼í•˜ëŠ”ê²ƒì€ ì•„ë‹ˆë‹¤. ì–´ì°¨í”¼ ë¹„íŠ¸ì—´ê²€ìƒ‰ì˜ ì‹œì‘ì§€ì ìœ¼ë¡œë§Œ
+    //ì‚¬ìš©ë˜ì–´ì§€ë¯€ë¡œ..)
     if(  sCache->mGGIDHint == sGGID )
     {
         sCache->mGGIDHint = 0;

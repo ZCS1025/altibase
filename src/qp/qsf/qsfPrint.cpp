@@ -31,7 +31,7 @@
 #include <qsxUtil.h>
 
 
-//BUG-24432 PRINTLN, PRINT ¿¡ ´ëÇØ¼­ »ç¿ëÇÒ¼ö ÀÖ´Â ±æÀÌ Á¦ÇÑ¿¡ ´ëÇÑ °³¼±
+//BUG-24432 PRINTLN, PRINT ì— ëŒ€í•´ì„œ ì‚¬ìš©í• ìˆ˜ ìžˆëŠ” ê¸¸ì´ ì œí•œì— ëŒ€í•œ ê°œì„ 
 #define QSF_PRINT_VARCHAR_MAX (MTD_VARCHAR_PRECISION_MAXIMUM)
 
 static mtcName qsfFunctionName[1] = {
@@ -47,7 +47,7 @@ static IDE_RC qsfEstimate( mtcNode*     aNode,
 mtfModule qsfPrintModule = {
     1|MTC_NODE_OPERATOR_MISC|MTC_NODE_VARIABLE_TRUE,
     ~0,
-    1.0,                    // default selectivity (ºñ±³ ¿¬»êÀÚ ¾Æ´Ô)
+    1.0,                    // default selectivity (ë¹„êµ ì—°ì‚°ìž ì•„ë‹˜)
     qsfFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -163,8 +163,8 @@ IDE_RC qsfCalculate_SpPrint(
         else
         {
             // BUG-39276
-            // Trigger ¶Ç´Â DML¿¡¼­ »ç¿ëÇÑ PSM¿¡¼­ È£ÃâÇÑ PRINT_OUTÀº
-            // client·Î Ãâ·ÂÇÏÁö ¾Ê´Â´Ù.
+            // Trigger ë˜ëŠ” DMLì—ì„œ ì‚¬ìš©í•œ PSMì—ì„œ í˜¸ì¶œí•œ PRINT_OUTì€
+            // clientë¡œ ì¶œë ¥í•˜ì§€ ì•ŠëŠ”ë‹¤.
         }
     }
     else

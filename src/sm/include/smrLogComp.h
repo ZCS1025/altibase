@@ -30,17 +30,17 @@
 /*
    Log Compressor/Decompressor
 
-   º» Å¬·¡½º´Â ·Î±×ÀÇ ¾ĞÃà°ú ÇØÁ¦¸¦ ´ã´çÇÑ´Ù.
+   ë³¸ í´ë˜ìŠ¤ëŠ” ë¡œê·¸ì˜ ì••ì¶•ê³¼ í•´ì œë¥¼ ë‹´ë‹¹í•œë‹¤.
 
-   Log File Group´ÜÀ§·Î ·Î±×¸¦ ÀĞ°í ¾²´Â smrLogMgr°ú
-   ½ÇÁ¦ ·Î±×·¹ÄÚµå¸¦ ÆÄÀÏ·ÎºÎÅÍ ÀĞ°í ¾²´Â smrLogFileÀÇ Áß°£¿¡¼­
-   ·Î±×ÀÇ ¾ĞÃà°ú ÇØÁ¦¸¦ ´ã´çÇÑ´Ù.
+   Log File Groupë‹¨ìœ„ë¡œ ë¡œê·¸ë¥¼ ì½ê³  ì“°ëŠ” smrLogMgrê³¼
+   ì‹¤ì œ ë¡œê·¸ë ˆì½”ë“œë¥¼ íŒŒì¼ë¡œë¶€í„° ì½ê³  ì“°ëŠ” smrLogFileì˜ ì¤‘ê°„ì—ì„œ
+   ë¡œê·¸ì˜ ì••ì¶•ê³¼ í•´ì œë¥¼ ë‹´ë‹¹í•œë‹¤.
    
-   * ·Î±×ÀÇ ¾ĞÃà °úÁ¤
-     - smrLogMgrÀº tryLogCompression¿¡¼­ ¾ĞÃàÇÒ ·Î±×ÀÇ ³»¿ëÀ»
-       smrLogComp¿¡ Àü´ŞÇÑ´Ù.
-     - ¾ĞÃàµÈ ·Î±×¸¦ ÀÌ¿ëÇÏ¿© lockAndWriteLog ¿¡¼­ ·Î±×¸¦
-       ·Î±×ÆÄÀÏ¿¡ ±â·ÏÇÑ´Ù.
+   * ë¡œê·¸ì˜ ì••ì¶• ê³¼ì •
+     - smrLogMgrì€ tryLogCompressionì—ì„œ ì••ì¶•í•  ë¡œê·¸ì˜ ë‚´ìš©ì„
+       smrLogCompì— ì „ë‹¬í•œë‹¤.
+     - ì••ì¶•ëœ ë¡œê·¸ë¥¼ ì´ìš©í•˜ì—¬ lockAndWriteLog ì—ì„œ ë¡œê·¸ë¥¼
+       ë¡œê·¸íŒŒì¼ì— ê¸°ë¡í•œë‹¤.
    |  ---------------------------------------------- 
    V          smrLogMgr::writeLog
    |  ----------------------------------------------
@@ -50,11 +50,11 @@
    V          smrLogFile::writeLog
       ----------------------------------------------
    
-   * ·Î±×ÀÇ ¾ĞÃàÇØÁ¦ °úÁ¤
-     - ÃÖÇÏÀ§ LayerÀÎ smrLogFile·ÎºÎÅÍ ÇÏ³ªÀÇ ·Î±×¸¦ ÀĞ´Â´Ù.
-     - smrLogComp¿¡¼­´Â ¾ĞÃàµÈ ·Î±×ÀÇ ¾ĞÃàÀ» ÇØÁ¦ÇÏ¿©
-       ¾ĞÃàÇØÁ¦µÈ ·Î±×ÀÇ Æ÷ÀÎÅÍ¸¦ ¸®ÅÏÇÑ´Ù.
-     - smrLogMgrÀº ÀÌ¸¦ ¹Ş¾Æ¼­ ±×´ë·Î Àü´ŞÇÑ´Ù.
+   * ë¡œê·¸ì˜ ì••ì¶•í•´ì œ ê³¼ì •
+     - ìµœí•˜ìœ„ Layerì¸ smrLogFileë¡œë¶€í„° í•˜ë‚˜ì˜ ë¡œê·¸ë¥¼ ì½ëŠ”ë‹¤.
+     - smrLogCompì—ì„œëŠ” ì••ì¶•ëœ ë¡œê·¸ì˜ ì••ì¶•ì„ í•´ì œí•˜ì—¬
+       ì••ì¶•í•´ì œëœ ë¡œê·¸ì˜ í¬ì¸í„°ë¥¼ ë¦¬í„´í•œë‹¤.
+     - smrLogMgrì€ ì´ë¥¼ ë°›ì•„ì„œ ê·¸ëŒ€ë¡œ ì „ë‹¬í•œë‹¤.
       ---------------------------------------------- 
    ^         smrLogMgr::readLog
       ---------------------------------------------- 
@@ -65,61 +65,61 @@
    ^         smrLogFile::readLog
    |  ----------------------------------------------
 
-    * BUG-35392 Àû¿ëÀ» À§ÇØ Flag´Â 1->4 byte·Î º¯°æ µÇ¾ú´Ù.
-   * ¾ĞÃàµÈ ·Î±×ÀÇ Æ÷¸Ë
+    * BUG-35392 ì ìš©ì„ ìœ„í•´ FlagëŠ” 1->4 byteë¡œ ë³€ê²½ ë˜ì—ˆë‹¤.
+   * ì••ì¶•ëœ ë¡œê·¸ì˜ í¬ë§·
       +---------+----------------+-----------------------------------------+
-      | 4 byte  | ¾ĞÃà·Î±× Flag  | 0x80 ºñÆ®¸¦ 1·Î ¼¼ÆÃÇÑ                  |
-      |         |                | ¿øº»·Î±×ÀÇ Flag                         |
+      | 4 byte  | ì••ì¶•ë¡œê·¸ Flag  | 0x80 ë¹„íŠ¸ë¥¼ 1ë¡œ ì„¸íŒ…í•œ                  |
+      |         |                | ì›ë³¸ë¡œê·¸ì˜ Flag                         |
       +---------+----------------+-----------------------------------------+
-      | 4 bytes | ¾ĞÃà·Î±×Å©±â   | ¿øº»·Î±×ÀÇ ¾ĞÃàµÈ ·Î±×ÀÇ Å©±â           |
+      | 4 bytes | ì••ì¶•ë¡œê·¸í¬ê¸°   | ì›ë³¸ë¡œê·¸ì˜ ì••ì¶•ëœ ë¡œê·¸ì˜ í¬ê¸°           |
       +---------+----------------+-----------------------------------------+
-      | 8 bytes | LSN            | ·Î±×ÀÇ Serial Number(mFileNo + mOffset) |
+      | 8 bytes | LSN            | ë¡œê·¸ì˜ Serial Number(mFileNo + mOffset) |
       +---------+----------------+-----------------------------------------+
-      | 2 bytes | Magic          | ·Î±×ÀÇ Magic Value                      |
+      | 2 bytes | Magic          | ë¡œê·¸ì˜ Magic Value                      |
       +---------+----------------+-----------------------------------------+
-      | 4 bytes | ¿øº»·Î±×Å©±â   | ¿øº» ·Î±×ÀÇ Å©±â                        |
+      | 4 bytes | ì›ë³¸ë¡œê·¸í¬ê¸°   | ì›ë³¸ ë¡œê·¸ì˜ í¬ê¸°                        |
       +---------+----------------+-----------------------------------------+
-      | N bytes | ¾ĞÃà·Î±×       | ¾ĞÃàµÈ ·Î±× µ¥ÀÌÅÍ                      |
+      | N bytes | ì••ì¶•ë¡œê·¸       | ì••ì¶•ëœ ë¡œê·¸ ë°ì´í„°                      |
       +---------+----------------+-----------------------------------------+
-      | 4 bytes | ·Î±× Tail      | ÀÏºÎ¸¸ ±â·ÏµÈ ·Î±× ÆÇº°À» À§ÇÑ Tail     |
-      |         |                | ¿øº» ·Î±×ÀÇ Å©±â°¡ ±â·ÏµÊ               |
+      | 4 bytes | ë¡œê·¸ Tail      | ì¼ë¶€ë§Œ ê¸°ë¡ëœ ë¡œê·¸ íŒë³„ì„ ìœ„í•œ Tail     |
+      |         |                | ì›ë³¸ ë¡œê·¸ì˜ í¬ê¸°ê°€ ê¸°ë¡ë¨               |
       +---------+----------------+-----------------------------------------+
 
-   * ¾ĞÃà·Î±×ÀÇ ±â·Ï ÀıÂ÷
+   * ì••ì¶•ë¡œê·¸ì˜ ê¸°ë¡ ì ˆì°¨
    
-     - ·Î±×ÀÇ SN°ú MagicÀÌ ±â·ÏµÇÁö ¾ÊÀº ¿øº»·Î±×¸¦ ¾ĞÃàÇÑ´Ù
-       - ÃÖÀûÀÇ ¼º´ÉÀ» ³¾ ¼ö ÀÖµµ·Ï, ·Î±× ³¡´ÜÀÇ Mutex¸¦ ÀâÁö
-         ¾ÊÀº Ã¤·Î ±â·ÏÇÒ Log¸¦ ¾ĞÃàÇÑ´Ù.
+     - ë¡œê·¸ì˜ SNê³¼ Magicì´ ê¸°ë¡ë˜ì§€ ì•Šì€ ì›ë³¸ë¡œê·¸ë¥¼ ì••ì¶•í•œë‹¤
+       - ìµœì ì˜ ì„±ëŠ¥ì„ ë‚¼ ìˆ˜ ìˆë„ë¡, ë¡œê·¸ ëë‹¨ì˜ Mutexë¥¼ ì¡ì§€
+         ì•Šì€ ì±„ë¡œ ê¸°ë¡í•  Logë¥¼ ì••ì¶•í•œë‹¤.
      
-     - Log ³¡´ÜÀÇ Mutex¸¦ Àâ´Â´Ù
-       - SN°ú Magic°ªÀ» µû¿Â´Ù.
-       - ¾ĞÃà·Î±×ÀÇ Head¿¡ SN°ú Magic°ªÀ» ±â·ÏÇÑ´Ù.
-       - ¾ĞÃà·Î±×¸¦ ·Î±×ÆÄÀÏ¿¡ ±â·ÏÇÑ´Ù
-     - Log ³¡´ÜÀÇ Mutex¸¦ Ç¬´Ù. 
+     - Log ëë‹¨ì˜ Mutexë¥¼ ì¡ëŠ”ë‹¤
+       - SNê³¼ Magicê°’ì„ ë”°ì˜¨ë‹¤.
+       - ì••ì¶•ë¡œê·¸ì˜ Headì— SNê³¼ Magicê°’ì„ ê¸°ë¡í•œë‹¤.
+       - ì••ì¶•ë¡œê·¸ë¥¼ ë¡œê·¸íŒŒì¼ì— ê¸°ë¡í•œë‹¤
+     - Log ëë‹¨ì˜ Mutexë¥¼ í‘¼ë‹¤. 
 
-   * ¾ĞÃà·Î±×ÀÇ ÆÇµ¶ ÀıÂ÷
-     - ¾ĞÃà·Î±×ÀÇ ¾ĞÃàÀ» ÇØÁ¦ÇÑ´Ù.
-     - ¾ĞÃà·Î±×ÀÇ Head¿¡ ±â·ÏµÈ SN°ú MagicÀ» ¿øº»·Î±×(ºñ¾ĞÃà·Î±×)ÀÇ
-       Head¿¡ ¼³Á¤ÇÑ´Ù.
+   * ì••ì¶•ë¡œê·¸ì˜ íŒë… ì ˆì°¨
+     - ì••ì¶•ë¡œê·¸ì˜ ì••ì¶•ì„ í•´ì œí•œë‹¤.
+     - ì••ì¶•ë¡œê·¸ì˜ Headì— ê¸°ë¡ëœ SNê³¼ Magicì„ ì›ë³¸ë¡œê·¸(ë¹„ì••ì¶•ë¡œê·¸)ì˜
+       Headì— ì„¤ì •í•œë‹¤.
  */
 
 /* BUG-35392 */
-// ¾ĞÃàµÈ ·Î±×ÀÇ Head Å©±â
-// smrLogComp.h¿¡ ±â¼úµÈ ¾ĞÃà·Î±× Æ÷¸ËÂü°í
+// ì••ì¶•ëœ ë¡œê·¸ì˜ Head í¬ê¸°
+// smrLogComp.hì— ê¸°ìˆ ëœ ì••ì¶•ë¡œê·¸ í¬ë§·ì°¸ê³ 
 
-// Flag, Uchar -> UInt·Î Å¸ÀÔÀÌ º¯°æ µÇ¾úÀ½
+// Flag, Uchar -> UIntë¡œ íƒ€ì…ì´ ë³€ê²½ ë˜ì—ˆìŒ
 #define SMR_COMP_LOG_FLAG_SIZE      ( ID_SIZEOF( UInt) )
 
-// ¾ĞÃà µÈ ·Î±× Å©±â
+// ì••ì¶• ëœ ë¡œê·¸ í¬ê¸°
 #define SMR_COMP_LOG_COMP_SIZE      ( ID_SIZEOF( UInt ) )
 // LSN 
 #define SMR_COMP_LOG_LSN_SIZE       ( ID_SIZEOF( smLSN ) )
 // Magic
 #define SMR_COMP_LOG_MAGIC_SIZE     ( ID_SIZEOF( smMagic ) )
-// ¿øº» ·Î±× Å©±â
+// ì›ë³¸ ë¡œê·¸ í¬ê¸°
 #define SMR_COMP_LOG_DECOMP_SIZE    ( ID_SIZEOF( UInt ) )
 
-// ¾ĞÃàµÈ ·Î±×ÀÇ Tail Å©±â
+// ì••ì¶•ëœ ë¡œê·¸ì˜ Tail í¬ê¸°
 #define SMR_COMP_LOG_TAIL_SIZE      ( ID_SIZEOF( UInt ) )
 
 #define SMR_COMP_LOG_HEAD_SIZE      ( SMR_COMP_LOG_FLAG_SIZE +      \
@@ -128,22 +128,22 @@
                                       SMR_COMP_LOG_MAGIC_SIZE +     \
                                       SMR_COMP_LOG_DECOMP_SIZE )
 
-// ¾ĞÃàµÈ ·Î±×ÀÇ ¿À¹öÇìµå
-// N¹ÙÀÌÆ®ÀÇ "¾ĞÃà·Î±×"¸¦ Á¦¿ÜÇÑ ³ª¸ÓÁö ºÎºĞÀÇ Å©±â
+// ì••ì¶•ëœ ë¡œê·¸ì˜ ì˜¤ë²„í—¤ë“œ
+// Në°”ì´íŠ¸ì˜ "ì••ì¶•ë¡œê·¸"ë¥¼ ì œì™¸í•œ ë‚˜ë¨¸ì§€ ë¶€ë¶„ì˜ í¬ê¸°
 #define SMR_COMP_LOG_OVERHEAD \
            ( SMR_COMP_LOG_HEAD_SIZE + SMR_COMP_LOG_TAIL_SIZE )
 
-//¾ĞÃà µÈ ·Î±×ÀÇ Flag offset
-#define SMR_COMP_LOG_FLAG_OFFSET    ( 0 ) // Ç×»ó Á¦ÀÏ ¾Õ¿¡ ÀÖ¾î¾ß ÇÔ
+//ì••ì¶• ëœ ë¡œê·¸ì˜ Flag offset
+#define SMR_COMP_LOG_FLAG_OFFSET    ( 0 ) // í•­ìƒ ì œì¼ ì•ì— ìˆì–´ì•¼ í•¨
 
-//¾ĞÃàµÈ ·Î±×ÀÇ Å©±â°¡ ÀúÀåµÈ offset
+//ì••ì¶•ëœ ë¡œê·¸ì˜ í¬ê¸°ê°€ ì €ì¥ëœ offset
 #define SMR_COMP_LOG_SIZE_OFFSET    ( SMR_COMP_LOG_FLAG_SIZE )
 
-// ¾ĞÃà·Î±× Head»óÀÇ Log SN offset
+// ì••ì¶•ë¡œê·¸ Headìƒì˜ Log SN offset
 #define SMR_COMP_LOG_LSN_OFFSET     ( SMR_COMP_LOG_FLAG_SIZE +      \
                                       SMR_COMP_LOG_COMP_SIZE )
 
-// ¾ĞÃà·Î±× Head»óÀÇ MAGIC Value offset
+// ì••ì¶•ë¡œê·¸ Headìƒì˜ MAGIC Value offset
 #define SMR_COMP_LOG_MAGIC_OFFSET   ( SMR_COMP_LOG_FLAG_SIZE +      \
                                       SMR_COMP_LOG_COMP_SIZE +      \
                                       SMR_COMP_LOG_LSN_SIZE )
@@ -152,7 +152,7 @@
 class smrLogComp
 {
 public :
-    /* ¾ĞÃà¹öÆÛ¿¡ ¾ĞÃà·Î±×¸¦ ±â·ÏÇÑ´Ù. */
+    /* ì••ì¶•ë²„í¼ì— ì••ì¶•ë¡œê·¸ë¥¼ ê¸°ë¡í•œë‹¤. */
     static IDE_RC createCompLog( iduMemoryHandle    * aCompBufferHandle,
                                  void               * aCompWorkMem,
                                  SChar              * aRawLog,
@@ -160,17 +160,17 @@ public :
                                  SChar             ** aCompLog,
                                  UInt               * aCompLogSize );
 
-    // ¾ĞÃà ·Î±×ÀÇ Head¿¡ SNÀ» ¼¼ÆÃÇÑ´Ù.
+    // ì••ì¶• ë¡œê·¸ì˜ Headì— SNì„ ì„¸íŒ…í•œë‹¤.
     static void setLogLSN( SChar * aCompLog,
                            smLSN   aLogLSN );
 
-    // ¾ĞÃà ·Î±×ÀÇ Head¿¡ MAGIC°ªÀ» ¼¼ÆÃÇÑ´Ù.
+    // ì••ì¶• ë¡œê·¸ì˜ Headì— MAGICê°’ì„ ì„¸íŒ…í•œë‹¤.
     static void setLogMagic( SChar * aCompLog,
                              UShort  aMagicValue );
     
     
-    /* ·Î±×ÆÄÀÏÀÇ Æ¯Á¤ Offset¿¡¼­ ·Î±× ·¹ÄÚµå¸¦ ÀĞ¾î¿Â´Ù.
-       ¾ĞÃàµÈ ·Î±×ÀÇ °æ¿ì, ·Î±× ¾ĞÃàÇØÁ¦¸¦ ¼öÇàÇÑ´Ù.
+    /* ë¡œê·¸íŒŒì¼ì˜ íŠ¹ì • Offsetì—ì„œ ë¡œê·¸ ë ˆì½”ë“œë¥¼ ì½ì–´ì˜¨ë‹¤.
+       ì••ì¶•ëœ ë¡œê·¸ì˜ ê²½ìš°, ë¡œê·¸ ì••ì¶•í•´ì œë¥¼ ìˆ˜í–‰í•œë‹¤.
      */
     static IDE_RC readLog( iduMemoryHandle    * aDecompBufferHandle,
                            smrLogFile         * aLogFile,
@@ -179,8 +179,8 @@ public :
                            SChar             ** aRawLogPtr,
                            UInt               * aLogSizeAtDisk );
 
-   /* ¾ĞÃàµÈ, È¤Àº ¾ĞÃàµÇÁö ¾ÊÀº ·Î±× ·¹ÄÚµå·ÎºÎÅÍ
-      ¾ĞÃàµÇÁö ¾ÊÀº ÇüÅÂÀÇ Log Head¿Í Log PtrÀ» °¡Á®¿Â´Ù.
+   /* ì••ì¶•ëœ, í˜¹ì€ ì••ì¶•ë˜ì§€ ì•Šì€ ë¡œê·¸ ë ˆì½”ë“œë¡œë¶€í„°
+      ì••ì¶•ë˜ì§€ ì•Šì€ í˜•íƒœì˜ Log Headì™€ Log Ptrì„ ê°€ì ¸ì˜¨ë‹¤.
    */
     static IDE_RC getRawLog( iduMemoryHandle    * aDecompBufferHandle,
                              UInt                 aRawLogOffset,
@@ -190,13 +190,13 @@ public :
                              SChar             ** aRawLogPtr,
                              UInt               * aLogSizeAtDisk );
 
-    /* ¾ĞÃà ´ë»ó ·Î±×ÀÎÁö ÆÇº°ÇÑ´Ù */
+    /* ì••ì¶• ëŒ€ìƒ ë¡œê·¸ì¸ì§€ íŒë³„í•œë‹¤ */
     static IDE_RC shouldLogBeCompressed( SChar * aRawLog,
                                          UInt aRawLogSize,
                                          idBool * aDoCompLog );
 
     
-    /* ¾ĞÃàµÈ ·Î±×ÀÎÁö ¿©ºÎ¸¦ ÆÇº°ÇÑ´Ù. */
+    /* ì••ì¶•ëœ ë¡œê·¸ì¸ì§€ ì—¬ë¶€ë¥¼ íŒë³„í•œë‹¤. */
     static inline idBool isCompressedLog( SChar * aRawOrCompLog );
 
     static UInt getCompressedLogSize( SChar  * aCompLog );
@@ -205,8 +205,8 @@ public :
                                       UInt     aCompLogSize );
 
     /* PROJ-1923 ALTIBASE HDB Disaster Recovery
-     * Å¸ ¸ğµâ¿¡¼­ »ç¿ëÇÏ±â À§ÇØ private -> public ÀüÈ¯ */
-    /* ¾ĞÃàÇØÁ¦¸¦ À§ÇÑ ¸Ş¸ğ¸® °ø°£ ÁØºñ */
+     * íƒ€ ëª¨ë“ˆì—ì„œ ì‚¬ìš©í•˜ê¸° ìœ„í•´ private -> public ì „í™˜ */
+    /* ì••ì¶•í•´ì œë¥¼ ìœ„í•œ ë©”ëª¨ë¦¬ ê³µê°„ ì¤€ë¹„ */
     static IDE_RC prepareDecompBuffer( iduMemoryHandle   * aDecompBufferHandle,
                                         UInt                aRawLogSize,
                                         SChar            ** aDecompBuffer,
@@ -214,7 +214,7 @@ public :
 
 
 private:
-    /* ¾ĞÃàµÈ ·Î±×ÀÇ ¾ĞÃàÇØÁ¦¸¦ ¼öÇàÇÑ´Ù */
+    /* ì••ì¶•ëœ ë¡œê·¸ì˜ ì••ì¶•í•´ì œë¥¼ ìˆ˜í–‰í•œë‹¤ */
     static IDE_RC decompressLog( iduMemoryHandle    * aDecompBufferHandle,
                                  UInt                 aCompLogOffset,
                                  SChar              * aCompLog,
@@ -224,7 +224,7 @@ private:
                                  smLSN              * aLogLSN,
                                  UInt               * aCompLogSize );
     
-    /* ¿øº»·Î±×¸¦ ¾ĞÃàÇÑ µ¥ÀÌÅÍ¸¦ ¾ĞÃà·Î±× Body·Î ±â·ÏÇÑ´Ù. */
+    /* ì›ë³¸ë¡œê·¸ë¥¼ ì••ì¶•í•œ ë°ì´í„°ë¥¼ ì••ì¶•ë¡œê·¸ Bodyë¡œ ê¸°ë¡í•œë‹¤. */
     static IDE_RC writeCompBody( SChar  * aCompDestPtr,
                                  UInt     aCompDestSize,
                                  void   * aCompWorkMem,
@@ -232,23 +232,23 @@ private:
                                  UInt     aRawLogSize,
                                  UInt   * aCompressedRawLogSize );
         
-    /* ¾ĞÃà·Î±×ÀÇ Head¸¦ ±â·ÏÇÑ´Ù. */
+    /* ì••ì¶•ë¡œê·¸ì˜ Headë¥¼ ê¸°ë¡í•œë‹¤. */
     static IDE_RC writeCompHead( SChar  * aHeadDestPtr,
                                  SChar  * aRawLog,
                                  UInt     aRawLogSize,
                                  UInt     aCompressedRawLogSize );
     
-    /*  ¾ĞÃà·Î±×ÀÇ TailÀ» ±â·ÏÇÑ´Ù. */
+    /*  ì••ì¶•ë¡œê·¸ì˜ Tailì„ ê¸°ë¡í•œë‹¤. */
     static IDE_RC writeCompTail( SChar * aTailDestPtr,
                                  UInt    aRawLogSize );
     
-    /* »õ·Î ±â·ÏÇÒ ¾ĞÃàµÈ ·Î±×¸¦ À§ÇÑ ¸Ş¸ğ¸® °ø°£ ÁØºñ */
+    /* ìƒˆë¡œ ê¸°ë¡í•  ì••ì¶•ëœ ë¡œê·¸ë¥¼ ìœ„í•œ ë©”ëª¨ë¦¬ ê³µê°„ ì¤€ë¹„ */
     static IDE_RC prepareCompBuffer( iduMemoryHandle    * aCompBufferHandle,
                                      UInt                 aRawLogSize,
                                      SChar             ** aCompBuffer,
                                      UInt               * aCompBufferSize);
 
-    /* ¾ĞÃà·Î±×¸¦ ÇØ¼®ÇÑ´Ù. */
+    /* ì••ì¶•ë¡œê·¸ë¥¼ í•´ì„í•œë‹¤. */
     static IDE_RC analizeCompLog( SChar   * aCompLog,
                                   UInt      aCompLogOffset,
                                   smMagic   aValidLogMagic,
@@ -258,11 +258,11 @@ private:
                                   UInt    * aRawLogSize,
                                   UInt    * aCompressedRawLogSize );
     
-    /* VALIDÇÏÁö ¾ÊÀº ·Î±×¸¦ ¾ĞÃàµÇÁö ¾ÊÀº ÇüÅÂ·Î »ı¼ºÇÑ´Ù. */
+    /* VALIDí•˜ì§€ ì•Šì€ ë¡œê·¸ë¥¼ ì••ì¶•ë˜ì§€ ì•Šì€ í˜•íƒœë¡œ ìƒì„±í•œë‹¤. */
     static IDE_RC createInvalidLog( iduMemoryHandle    * aDecompBufferHandle,
                                     SChar             ** aInvalidRawLog );
     
-    // Log Record¿¡ ±â·ÏµÈ Tablespace ID¸¦ ¸®ÅÏÇÑ´Ù.
+    // Log Recordì— ê¸°ë¡ëœ Tablespace IDë¥¼ ë¦¬í„´í•œë‹¤.
     static IDE_RC getSpaceIDOfLog( smrLogHead * aLogHead,
                                    SChar      * aRawLog,
                                    scSpaceID  * aSpaceID );
@@ -271,10 +271,10 @@ private:
 
 /******************************************************************************
  * BUG-35392
- * ¾ĞÃà logÀÇ head¿Í tailÀÇ Å©±â°¡ Æ÷ÇÔµÈ ¾ĞÃà ·Î±×Å©±â¸¦ ¹İÈ¯ÇÑ´Ù.
+ * ì••ì¶• logì˜ headì™€ tailì˜ í¬ê¸°ê°€ í¬í•¨ëœ ì••ì¶• ë¡œê·¸í¬ê¸°ë¥¼ ë°˜í™˜í•œë‹¤.
  *
- * [IN]  aCompLog      - ¾ĞÃàµÈ ·Î±×ÀÇ ½ÃÀÛ ÁÖ¼Ò
- * [OUT] aCompLogSize  - ¾ĞÃàµÈ ·Î±×ÀÇ Å©±â
+ * [IN]  aCompLog      - ì••ì¶•ëœ ë¡œê·¸ì˜ ì‹œì‘ ì£¼ì†Œ
+ * [OUT] aCompLogSize  - ì••ì¶•ëœ ë¡œê·¸ì˜ í¬ê¸°
  *****************************************************************************/
 inline UInt smrLogComp::getCompressedLogSize( SChar  * aCompLog )
 {
@@ -298,10 +298,10 @@ inline UInt smrLogComp::getCompressedLogSize( SChar  * aCompLog )
 
 /******************************************************************************
  * BUG-35392
- * ¾ĞÃà logÀÇ head¿Í tailÀÇ Å©±â°¡ Æ÷ÇÔµÈ ¾ĞÃà ·Î±×Å©±â¸¦ ¼³Á¤ÇÑ´Ù.
+ * ì••ì¶• logì˜ headì™€ tailì˜ í¬ê¸°ê°€ í¬í•¨ëœ ì••ì¶• ë¡œê·¸í¬ê¸°ë¥¼ ì„¤ì •í•œë‹¤.
  *
- * [IN]  aCompLog      - ¾ĞÃàµÈ ·Î±×ÀÇ ½ÃÀÛ ÁÖ¼Ò
- * [OUT] aCompLogSize  - ¾ĞÃàµÈ ·Î±×ÀÇ Å©±â
+ * [IN]  aCompLog      - ì••ì¶•ëœ ë¡œê·¸ì˜ ì‹œì‘ ì£¼ì†Œ
+ * [OUT] aCompLogSize  - ì••ì¶•ëœ ë¡œê·¸ì˜ í¬ê¸°
  *****************************************************************************/
 inline void smrLogComp::setCompressedLogSize( SChar  * aCompLog,
                                               UInt     aCompLogSize )
@@ -325,14 +325,14 @@ inline void smrLogComp::setCompressedLogSize( SChar  * aCompLog,
 
 /******************************************************************************
  * BUG-35392
- * ¾ĞÃà ·Î±×ÀÇ Head¿¡ LSNÀ» ¼¼ÆÃÇÑ´Ù.
+ * ì••ì¶• ë¡œê·¸ì˜ Headì— LSNì„ ì„¸íŒ…í•œë‹¤.
  *
- * - ÃÖÃÊ ¾ĞÃà·Î±× »ı¼º½Ã ¾ĞÃà ·Î±×ÀÇ Head¿¡ LogÀÇ SNÀº 0À¸·Î ±â·ÏµÈ´Ù.
- * - ÃßÈÄ ·Î±×ÆÄÀÏ¿¡ ·Î±× ±â·ÏÇÒ¶§ ·Î±× ³¡´ÜÀÇ Mutex¸¦ ÀâÀº »óÅÂ·Î
- *   ·Î±×°¡ ±â·ÏµÉ SNÀ» µû°í ÀÌ ÇÔ¼ö¸¦ ÀÌ¿ëÇÏ¿© ±â·ÏÇÑ´Ù.
+ * - ìµœì´ˆ ì••ì¶•ë¡œê·¸ ìƒì„±ì‹œ ì••ì¶• ë¡œê·¸ì˜ Headì— Logì˜ SNì€ 0ìœ¼ë¡œ ê¸°ë¡ëœë‹¤.
+ * - ì¶”í›„ ë¡œê·¸íŒŒì¼ì— ë¡œê·¸ ê¸°ë¡í• ë•Œ ë¡œê·¸ ëë‹¨ì˜ Mutexë¥¼ ì¡ì€ ìƒíƒœë¡œ
+ *   ë¡œê·¸ê°€ ê¸°ë¡ë  SNì„ ë”°ê³  ì´ í•¨ìˆ˜ë¥¼ ì´ìš©í•˜ì—¬ ê¸°ë¡í•œë‹¤.
  *
- * [IN] aCompLog - ¾ĞÃà·Î±×
- * [IN] aLogSN   - ·Î±×ÀÇ SN
+ * [IN] aCompLog - ì••ì¶•ë¡œê·¸
+ * [IN] aLogSN   - ë¡œê·¸ì˜ SN
  *****************************************************************************/
 inline void smrLogComp::setLogLSN( SChar * aCompLog,
                                    smLSN   aLogLSN )
@@ -347,15 +347,15 @@ inline void smrLogComp::setLogLSN( SChar * aCompLog,
 
 /******************************************************************************
  * BUG-35392
- * ¾ĞÃà ·Î±×ÀÇ Head¿¡ MAGIC°ªÀ» ¼¼ÆÃÇÑ´Ù.
+ * ì••ì¶• ë¡œê·¸ì˜ Headì— MAGICê°’ì„ ì„¸íŒ…í•œë‹¤.
  *
- * - ÃÖÃÊ ¾ĞÃà·Î±× »ı¼º½Ã ¾ĞÃà ·Î±×ÀÇ Head¿¡ LogÀÇ MagicÀº 0À¸·Î ±â·ÏµÈ´Ù.
+ * - ìµœì´ˆ ì••ì¶•ë¡œê·¸ ìƒì„±ì‹œ ì••ì¶• ë¡œê·¸ì˜ Headì— Logì˜ Magicì€ 0ìœ¼ë¡œ ê¸°ë¡ëœë‹¤.
  *
- * - ÃßÈÄ ·Î±×ÆÄÀÏ¿¡ ·Î±× ±â·ÏÇÒ¶§ ·Î±× ³¡´ÜÀÇ Mutex¸¦ ÀâÀº »óÅÂ·Î
- *   ·Î±×°¡ ±â·ÏµÉ LSNÀ» µû¼­ MagicÀ» °è»êÇÏ°í ÀÌ ÇÔ¼ö¸¦ ÀÌ¿ëÇÏ¿© ±â·ÏÇÑ´Ù.
+ * - ì¶”í›„ ë¡œê·¸íŒŒì¼ì— ë¡œê·¸ ê¸°ë¡í• ë•Œ ë¡œê·¸ ëë‹¨ì˜ Mutexë¥¼ ì¡ì€ ìƒíƒœë¡œ
+ *   ë¡œê·¸ê°€ ê¸°ë¡ë  LSNì„ ë”°ì„œ Magicì„ ê³„ì‚°í•˜ê³  ì´ í•¨ìˆ˜ë¥¼ ì´ìš©í•˜ì—¬ ê¸°ë¡í•œë‹¤.
  *
- * [IN] aCompLog - ¾ĞÃà·Î±×
- * [IN] aLogSN   - ·Î±×ÀÇ SN
+ * [IN] aCompLog - ì••ì¶•ë¡œê·¸
+ * [IN] aLogSN   - ë¡œê·¸ì˜ SN
  *****************************************************************************/
 inline void smrLogComp::setLogMagic( SChar  * aCompLog,
                                      smMagic  aMagicValue )
@@ -368,12 +368,12 @@ inline void smrLogComp::setLogMagic( SChar  * aCompLog,
 }
 
 /******************************************************************************
- * ¾ĞÃàµÈ ·Î±×ÀÎÁö ¿©ºÎ¸¦ ÆÇº°ÇÑ´Ù.
+ * ì••ì¶•ëœ ë¡œê·¸ì¸ì§€ ì—¬ë¶€ë¥¼ íŒë³„í•œë‹¤.
  *
- * ¾ĞÃà·Î±×, ºñ¾ĞÃà ·Î±× ¸ğµÎ Ã¹¹øÂ° ¹ÙÀÌÆ®¿¡ Flag¸¦ µÎ°í,
- * ¾ĞÃàµÇ¾ú´ÂÁö ¿©ºÎ¸¦ SMR_LOG_COMPRESSED_OK ºñÆ®¿¡ Ç¥½ÃÇÑ´Ù.
+ * ì••ì¶•ë¡œê·¸, ë¹„ì••ì¶• ë¡œê·¸ ëª¨ë‘ ì²«ë²ˆì§¸ ë°”ì´íŠ¸ì— Flagë¥¼ ë‘ê³ ,
+ * ì••ì¶•ë˜ì—ˆëŠ”ì§€ ì—¬ë¶€ë¥¼ SMR_LOG_COMPRESSED_OK ë¹„íŠ¸ì— í‘œì‹œí•œë‹¤.
  *
- *  [IN] aRawOrCompLog - ¾ĞÃà·Î±× È¤Àº ¾ĞÃàµÇÁö ¾ÊÀº »óÅÂÀÇ ·Î±×
+ *  [IN] aRawOrCompLog - ì••ì¶•ë¡œê·¸ í˜¹ì€ ì••ì¶•ë˜ì§€ ì•Šì€ ìƒíƒœì˜ ë¡œê·¸
  *****************************************************************************/
 inline idBool smrLogComp::isCompressedLog( SChar * aRawOrCompLog )
 {
@@ -382,8 +382,8 @@ inline idBool smrLogComp::isCompressedLog( SChar * aRawOrCompLog )
     idBool  sIsCompressed;
     UInt    sLogFlag;
 
-    /* BUG-35392 smrLogHeadÀÇ mFlag´Â UInt ÀÌ¹Ç·Î memcpy·Î ÀĞ¾î¾ß 
-     * align ¹®Á¦¸¦ È¸ÇÇÇÒ ¼ö ÀÖ´Ù. */
+    /* BUG-35392 smrLogHeadì˜ mFlagëŠ” UInt ì´ë¯€ë¡œ memcpyë¡œ ì½ì–´ì•¼ 
+     * align ë¬¸ì œë¥¼ íšŒí”¼í•  ìˆ˜ ìˆë‹¤. */
     idlOS::memcpy( &sLogFlag,
                    aRawOrCompLog,
                    SMR_COMP_LOG_FLAG_SIZE );

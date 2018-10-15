@@ -21,18 +21,18 @@
 #ifndef _O_ILO_DATAFILE_H
 #define _O_ILO_DATAFILE_H
 
-/* ÅäÅ«ÀÇ ÃÖ´ë ±æÀÌ = VARBIT ¹®ÀÚ¿­ Ç¥ÇöÀÇ ÃÖ´ë ±æÀÌ */
+/* í† í°ì˜ ìµœëŒ€ ê¸¸ì´ = VARBIT ë¬¸ìì—´ í‘œí˜„ì˜ ìµœëŒ€ ê¸¸ì´ */
 #define MAX_TOKEN_VALUE_LEN 131070
 #define MAX_SEPERATOR_LEN   11
 // BUG-21837
-/* LOB_PIECE_SIZE : ¼­¹ö¿¡¼­ LOB µ¥ÀÌÅ¸¸¦ ÂÉ°³¼­ º¸³»´Â ´ÜÀ§ */
+/* LOB_PIECE_SIZE : ì„œë²„ì—ì„œ LOB ë°ì´íƒ€ë¥¼ ìª¼ê°œì„œ ë³´ë‚´ëŠ” ë‹¨ìœ„ */
 #define ILO_LOB_PIECE_SIZE  (32000)
 
 /**
  * class iloLOB.
  *
- * LOB locator¸¦ »ç¿ëÇÑ µ¥ÀÌÅÍ ÀĞ°í ¾²±â¸¦ Æí¸®ÇÏ°Ô ÇÏ±â À§ÇÑ
- * wrapper classÀÌ´Ù.
+ * LOB locatorë¥¼ ì‚¬ìš©í•œ ë°ì´í„° ì½ê³  ì“°ê¸°ë¥¼ í¸ë¦¬í•˜ê²Œ í•˜ê¸° ìœ„í•œ
+ * wrapper classì´ë‹¤.
  */
 class iloLOB
 {
@@ -48,10 +48,10 @@ public:
     ~iloLOB();
     
     //PROJ-1714 Parallel iLoader
-    // Parallel ±â¹ıÀ» Àû¿ëÇÏ±â À§ÇØ¼­ Data Upload ½Ã¿¡´Â, Upload ConnectionÀÌ ¿©·¯°³°¡ »ı¼ºµÇ°í,
-    // Data Download½Ã¿¡´Â Download FileÀÌ ¿©·¯°³ »ı¼ºµÈ´Ù.
-    // µû¶ó¼­, °¢ ±â´É¿¡¼­ »ç¿ëµÇ´Â Open, Close µîÀÇ ÇÔ¼ö¸¦ ±¸ºĞÇÏ¿´´Ù.
-    // iloDataFileÀÇ Member ÇÔ¼ö ¶ÇÇÑ °°Àº ÀÌÀ¯·Î ÇÔ¼ö¸¦ ±¸ºĞÇÏ¿´´Ù.
+    // Parallel ê¸°ë²•ì„ ì ìš©í•˜ê¸° ìœ„í•´ì„œ Data Upload ì‹œì—ëŠ”, Upload Connectionì´ ì—¬ëŸ¬ê°œê°€ ìƒì„±ë˜ê³ ,
+    // Data Downloadì‹œì—ëŠ” Download Fileì´ ì—¬ëŸ¬ê°œ ìƒì„±ëœë‹¤.
+    // ë”°ë¼ì„œ, ê° ê¸°ëŠ¥ì—ì„œ ì‚¬ìš©ë˜ëŠ” Open, Close ë“±ì˜ í•¨ìˆ˜ë¥¼ êµ¬ë¶„í•˜ì˜€ë‹¤.
+    // iloDataFileì˜ Member í•¨ìˆ˜ ë˜í•œ ê°™ì€ ì´ìœ ë¡œ í•¨ìˆ˜ë¥¼ êµ¬ë¶„í•˜ì˜€ë‹¤.
 
     IDE_RC OpenForUp( ALTIBASE_ILOADER_HANDLE  aHandle,
                       SQLSMALLINT              aLOBLocCType,
@@ -89,12 +89,12 @@ public:
                    iloSQLApi               *aISPApi);
 
     /* BUG-21064 : CLOB type CSV up/download error */
-    // 32000 byte ÀÌ»óÀÇ CLOB dataÀÇ °æ¿ì ÇÊ¿äÇÑ º¯¼öµé.
-    // data Ã³À½ ºí·° ºÎºĞÀÌ³Ä?
+    // 32000 byte ì´ìƒì˜ CLOB dataì˜ ê²½ìš° í•„ìš”í•œ ë³€ìˆ˜ë“¤.
+    // data ì²˜ìŒ ë¸”ëŸ­ ë¶€ë¶„ì´ëƒ?
     iloBool mIsBeginCLOBAppend;
-    // CLOB data°¡ CSV Æ÷¸ËÀÌ³Ä?
+    // CLOB dataê°€ CSV í¬ë§·ì´ëƒ?
     iloBool mIsCSVCLOBAppend;
-    // ´ÙÀ½ ºí·° Ã³À½¿¡ enclosing¹®ÀÚ°¡ ÀúÀåµÇ¾î¾ß ÇÏ´ÂÁö ¿©ºÎ.
+    // ë‹¤ìŒ ë¸”ëŸ­ ì²˜ìŒì— enclosingë¬¸ìê°€ ì €ì¥ë˜ì–´ì•¼ í•˜ëŠ”ì§€ ì—¬ë¶€.
     iloBool mSaveBeginCLOBEnc;
 
 private:
@@ -119,7 +119,7 @@ private:
     /* LOB access mode: LOBAccessMode_RDONLY or LOBAccessMode_WRONLY */
     LOBAccessMode mLOBAccessMode;
 
-    // BUG-21837 LOB ¹öÆÛ »çÀÌÁî¸¦ Á¶ÀıÇÑ´Ù.
+    // BUG-21837 LOB ë²„í¼ ì‚¬ì´ì¦ˆë¥¼ ì¡°ì ˆí•œë‹¤.
     /* User buffer used when user buffer's type is SQL_C_BINARY */
     UChar         mBinBuf[ILO_LOB_PIECE_SIZE];
 
@@ -167,17 +167,17 @@ public:
                         SChar                   *aDataFileName,
                         SInt                     aDataFileNo, 
                         iloBool                   aIsWr,
-                        iloBool                    aLOBColExist );    //Upload Àü¿ë ÇÔ¼ö
+                        iloBool                    aLOBColExist );    //Upload ì „ìš© í•¨ìˆ˜
     
     FILE* OpenFileForDown( ALTIBASE_ILOADER_HANDLE  aHandle,
                            SChar                   *aDataFileName, 
                            SInt                     aDataFileNo,
                            iloBool                   aIsWr,
-                           iloBool                   aLOBColExist );   //DownloadÀü¿ë ÇÔ¼ö 
+                           iloBool                   aLOBColExist );   //Downloadì „ìš© í•¨ìˆ˜ 
 
-    SInt CloseFileForUp( ALTIBASE_ILOADER_HANDLE aHandle );             //Upload Àü¿ë ÇÔ¼ö
+    SInt CloseFileForUp( ALTIBASE_ILOADER_HANDLE aHandle );             //Upload ì „ìš© í•¨ìˆ˜
     
-    SInt CloseFileForDown( ALTIBASE_ILOADER_HANDLE aHandle, FILE *fp);     //Download Àü¿ë ÇÔ¼ö
+    SInt CloseFileForDown( ALTIBASE_ILOADER_HANDLE aHandle, FILE *fp);     //Download ì „ìš© í•¨ìˆ˜
 
     void SetTerminator(SChar *szFiledTerm, SChar *szRowTerm);
 
@@ -191,7 +191,7 @@ public:
                          FILE                    *aWriteFp,
                          SInt                     aArrayNum );  //PROJ-1714
     /* TASK-2657 */
-    // BUG-28069: log, bad¿¡µµ csv Çü½ÄÀ¸·Î ±â·Ï
+    // BUG-28069: log, badì—ë„ csv í˜•ì‹ìœ¼ë¡œ ê¸°ë¡
     static SInt csvWrite( ALTIBASE_ILOADER_HANDLE  aHandle,
                           SChar                   *aValue,
                           UInt                     aValueLen,
@@ -221,7 +221,7 @@ public:
                                         iloTableInfo            *aTableInfo,
                                         SInt                     aArrayCount );
     SInt        ReadDataFromCBuff( ALTIBASE_ILOADER_HANDLE  aHandle,
-                                   SChar                   *aResult );    //BUG-22434 : Double Buffer¿¡¼­ °ªÀ» ÀĞ´Â´Ù.
+                                   SChar                   *aResult );    //BUG-22434 : Double Bufferì—ì„œ ê°’ì„ ì½ëŠ”ë‹¤.
     /* TASK-2657 */
     EDataToken  GetCSVTokenFromCBuff( ALTIBASE_ILOADER_HANDLE  aHandle, 
                                       SChar                   *aColName);
@@ -237,86 +237,86 @@ public:
     void        LOBFileInfoFree();
 
 private:
-    SChar      mDataFilePath[MAX_FILEPATH_LEN]; // BUG-24902: µ¥ÀÌÅ¸ ÆÄÀÏÀÇ °æ·Î ÀúÀå
+    SChar      mDataFilePath[MAX_FILEPATH_LEN]; // BUG-24902: ë°ì´íƒ€ íŒŒì¼ì˜ ê²½ë¡œ ì €ì¥
     FILE      *m_DataFp;
     UInt       mTokenMaxSize;
-    /* ÇöÀç µ¥ÀÌÅÍ ÆÄÀÏ ¹øÈ£ */
+    /* í˜„ì¬ ë°ì´í„° íŒŒì¼ ë²ˆí˜¸ */
     SInt       mDataFileNo;
-    /* µ¥ÀÌÅÍ ÆÄÀÏ ³»¿¡¼­ ÇöÀç À§Ä¡. µ¥ÀÌÅÍ ÆÄÀÏ ÀĞ±â ½Ã »ç¿ë. */
-    ULong      mDataFilePos;        //¿øÇü ¹öÆÛ¿¡ ³Ö±â À§ÇØ ÀĞÀº Byte ¼ö..
-    /* mDataFilePosÀÇ ÀÓ½Ã ¹é¾÷¿ë º¯¼ö */
-    ULong      mDataFileRead;       //PROJ-1714 : µ¥ÀÌÅÍ¸¦ Ã³¸®ÇÏ±â À§ÇØ ¿øÇü¹öÆÛ¿¡¼­ ÀĞÀº Byte¼ö.. (For LOB)
-    SInt       mDoubleBuffPos;      //BUG-22434 : Double Buffer¿¡¼­ ÀĞÀº Æ÷ÀÎÆ®..
-    SInt       mDoubleBuffSize;     //BUG-22434 : Double Buffer¿¡ ½×ÀÎ µ¥ÀÌÅÍ Size
+    /* ë°ì´í„° íŒŒì¼ ë‚´ì—ì„œ í˜„ì¬ ìœ„ì¹˜. ë°ì´í„° íŒŒì¼ ì½ê¸° ì‹œ ì‚¬ìš©. */
+    ULong      mDataFilePos;        //ì›í˜• ë²„í¼ì— ë„£ê¸° ìœ„í•´ ì½ì€ Byte ìˆ˜..
+    /* mDataFilePosì˜ ì„ì‹œ ë°±ì—…ìš© ë³€ìˆ˜ */
+    ULong      mDataFileRead;       //PROJ-1714 : ë°ì´í„°ë¥¼ ì²˜ë¦¬í•˜ê¸° ìœ„í•´ ì›í˜•ë²„í¼ì—ì„œ ì½ì€ Byteìˆ˜.. (For LOB)
+    SInt       mDoubleBuffPos;      //BUG-22434 : Double Bufferì—ì„œ ì½ì€ í¬ì¸íŠ¸..
+    SInt       mDoubleBuffSize;     //BUG-22434 : Double Bufferì— ìŒ“ì¸ ë°ì´í„° Size
     ULong      mDataFilePosBk;
     SInt       m_SetEnclosing;
     SChar      m_FieldTerm[MAX_SEPERATOR_LEN];
     SChar      m_RowTerm[MAX_SEPERATOR_LEN];
     SChar      m_Enclosing[MAX_SEPERATOR_LEN];
     SInt       m_nFTLen;
-    /* ÇÊµå ±¸ºĞÀÚ ¹°¸®Àû ±æÀÌ.
-     * Windows´Â \nÀÌ \r\nÀ¸·Î ÀúÀåµÇ´Âµ¥ \rÀ» Æ÷ÇÔÇÑ °ÍÀÌ ¹°¸®Àû ±æÀÌ. */
+    /* í•„ë“œ êµ¬ë¶„ì ë¬¼ë¦¬ì  ê¸¸ì´.
+     * WindowsëŠ” \nì´ \r\nìœ¼ë¡œ ì €ì¥ë˜ëŠ”ë° \rì„ í¬í•¨í•œ ê²ƒì´ ë¬¼ë¦¬ì  ê¸¸ì´. */
     UInt       mFTPhyLen;
-    /* µ¥ÀÌÅÍ ÆÄÀÏ ÀĞ±â ½Ã ÇÊµå ±¸ºĞÀÚ ¸ÅÄª¿ë »óÅÂÀüÀÌÇ¥ */
+    /* ë°ì´í„° íŒŒì¼ ì½ê¸° ì‹œ í•„ë“œ êµ¬ë¶„ì ë§¤ì¹­ìš© ìƒíƒœì „ì´í‘œ */
     UChar    **mFTLexStateTransTbl;
     SInt       m_nRTLen;
-    /* Çà ±¸ºĞÀÚ ¹°¸®Àû ±æÀÌ */
+    /* í–‰ êµ¬ë¶„ì ë¬¼ë¦¬ì  ê¸¸ì´ */
     UInt       mRTPhyLen;
-    /* µ¥ÀÌÅÍ ÆÄÀÏ ÀĞ±â ½Ã Çà ±¸ºĞÀÚ ¸ÅÄª¿ë »óÅÂÀüÀÌÇ¥ */
+    /* ë°ì´í„° íŒŒì¼ ì½ê¸° ì‹œ í–‰ êµ¬ë¶„ì ë§¤ì¹­ìš© ìƒíƒœì „ì´í‘œ */
     UChar    **mRTLexStateTransTbl;
     SInt       m_nEnLen;
-    /* ÇÊµå encloser ¹°¸®Àû ±æÀÌ */
+    /* í•„ë“œ encloser ë¬¼ë¦¬ì  ê¸¸ì´ */
     UInt       mEnPhyLen;
-    /* µ¥ÀÌÅÍ ÆÄÀÏ ÀĞ±â ½Ã ÇÊµå encloser ¸ÅÄª¿ë »óÅÂÀüÀÌÇ¥ */
+    /* ë°ì´í„° íŒŒì¼ ì½ê¸° ì‹œ í•„ë“œ encloser ë§¤ì¹­ìš© ìƒíƒœì „ì´í‘œ */
     UChar    **mEnLexStateTransTbl;
 
     /* BUG-24358 iloader Geometry Data */    
     SChar *m_TokenValue;
     
     /* TASK-2657 */
-    // BUG-27633: mErrorTokenµµ ÄÃ·³ÀÇ ÃÖ´ë Å©±â·Î ÇÒ´ç
+    // BUG-27633: mErrorTokenë„ ì»¬ëŸ¼ì˜ ìµœëŒ€ í¬ê¸°ë¡œ í• ë‹¹
     SChar     *mErrorToken;
     UInt       mErrorTokenMaxSize;
-    /* m_TokenValue¿¡ ÀúÀåµÈ ¹®ÀÚ¿­ÀÇ ±æÀÌ */
+    /* m_TokenValueì— ì €ì¥ëœ ë¬¸ìì—´ì˜ ê¸¸ì´ */
     UInt       mTokenLen;
     UInt       mErrorTokenLen;
     SInt       m_SetNextToken;
     EDataToken mNextToken;
 
-    /* use_lob_file ¿É¼Ç */
+    /* use_lob_file ì˜µì…˜ */
     iloBool     mUseLOBFileOpt;
-    /* lob_file_size ¿É¼Ç. ¹ÙÀÌÆ® ´ÜÀ§. */
+    /* lob_file_size ì˜µì…˜. ë°”ì´íŠ¸ ë‹¨ìœ„. */
     ULong      mLOBFileSizeOpt;
-    /* use_separate_files ¿É¼Ç */
+    /* use_separate_files ì˜µì…˜ */
     iloBool     mUseSeparateFilesOpt;
-    /* lob_indicator ¿É¼Ç */
+    /* lob_indicator ì˜µì…˜ */
     SChar      mLOBIndicatorOpt[MAX_SEPERATOR_LEN];
-    /* lob_indicator ¹®ÀÚ¿­ ±æÀÌ. ¹°¸®Àû ±æÀÌ ¾Æ´Ô. */
+    /* lob_indicator ë¬¸ìì—´ ê¸¸ì´. ë¬¼ë¦¬ì  ê¸¸ì´ ì•„ë‹˜. */
     UInt       mLOBIndicatorOptLen;
 
-    /* LOB ÄÃ·³ÀÇ Á¸Àç ¿©ºÎ */
+    /* LOB ì»¬ëŸ¼ì˜ ì¡´ì¬ ì—¬ë¶€ */
     iloBool     mLOBColExist;
-    /* LOB wrapper °´Ã¼ */
+    /* LOB wrapper ê°ì²´ */
     iloLOB    *mLOB;
-    /* LOB ÆÄÀÏ Æ÷ÀÎÅÍ */
+    /* LOB íŒŒì¼ í¬ì¸í„° */
     FILE      *mLOBFP;
-    /* LOB ÆÄÀÏ ¹øÈ£.
-     * use_lob_file=yes, use_separate_files=noÀÏ ¶§ »ç¿ë. */
+    /* LOB íŒŒì¼ ë²ˆí˜¸.
+     * use_lob_file=yes, use_separate_files=noì¼ ë•Œ ì‚¬ìš©. */
     UInt       mLOBFileNo;
-    /* LOB ÆÄÀÏ ³»¿¡¼­ ÇöÀç À§Ä¡.
-     * use_lob_file=yes, use_separate_files=noÀÏ ¶§ »ç¿ë. */
+    /* LOB íŒŒì¼ ë‚´ì—ì„œ í˜„ì¬ ìœ„ì¹˜.
+     * use_lob_file=yes, use_separate_files=noì¼ ë•Œ ì‚¬ìš©. */
     ULong      mLOBFilePos;
-    /* LOB ÆÄÀÏµé ³»¿¡¼­ ÇöÀç À§Ä¡.
-     * ÇöÀç LOB ÆÄÀÏ ¹øÈ£º¸´Ù ÀÛÀº ¹øÈ£¸¦ °¡Áø LOB ÆÄÀÏµéÀÇ Å©±â°¡ ´©ÀûµÈ °ª.
-     * use_lob_file=yes, use_separate_files=noÀÏ ¶§ »ç¿ë. */
+    /* LOB íŒŒì¼ë“¤ ë‚´ì—ì„œ í˜„ì¬ ìœ„ì¹˜.
+     * í˜„ì¬ LOB íŒŒì¼ ë²ˆí˜¸ë³´ë‹¤ ì‘ì€ ë²ˆí˜¸ë¥¼ ê°€ì§„ LOB íŒŒì¼ë“¤ì˜ í¬ê¸°ê°€ ëˆ„ì ëœ ê°’.
+     * use_lob_file=yes, use_separate_files=noì¼ ë•Œ ì‚¬ìš©. */
     ULong      mAccumLOBFilePos;
 
-    /* µ¥ÀÌÅÍ ¹× LOB ÆÄÀÏ ÀÌ¸§¿¡¼­ °øÅëµÈ ¸öÃ¼ ºÎºĞ */
+    /* ë°ì´í„° ë° LOB íŒŒì¼ ì´ë¦„ì—ì„œ ê³µí†µëœ ëª¸ì²´ ë¶€ë¶„ */
     SChar      mFileNameBody[MAX_FILEPATH_LEN];
-    /* µ¥ÀÌÅÍ ÆÄÀÏ È®ÀåÀÚ */
+    /* ë°ì´í„° íŒŒì¼ í™•ì¥ì */
     SChar      mDataFileNameExt[MAX_FILEPATH_LEN];
 
-    FILE      *mOutFileFP; // PROJ-2030, CT_CASE-3020 CHAR outfile Áö¿ø
+    FILE      *mOutFileFP; // PROJ-2030, CT_CASE-3020 CHAR outfile ì§€ì›
     
     void AnalDataFileName(const SChar *aDataFileName, iloBool aIsWr);
 
@@ -336,7 +336,7 @@ private:
 
     IDE_RC FinalLOBProc( ALTIBASE_ILOADER_HANDLE aHandle );
 
-    // BUG-24902: µ¥ÀÌÅ¸ ÆÄÀÏÀÇ ÀüÃ¼ °æ·Î¿¡¼­ °æ·Î¸¸ ÀúÀåÇØµĞ´Ù.
+    // BUG-24902: ë°ì´íƒ€ íŒŒì¼ì˜ ì „ì²´ ê²½ë¡œì—ì„œ ê²½ë¡œë§Œ ì €ì¥í•´ë‘”ë‹¤.
     void InitDataFilePath(SChar *aDataFileName);
 
     IDE_RC OpenLOBFile( ALTIBASE_ILOADER_HANDLE  aHandle,
@@ -414,16 +414,16 @@ private:
 
     IDE_RC LOBFileSeek( ALTIBASE_ILOADER_HANDLE aHandle, ULong aAccumDestPos);
 
-    IDE_RC loadFromOutFile( ALTIBASE_ILOADER_HANDLE aHandle ); // PROJ-2030, CT_CASE-3020 CHAR outfile Áö¿ø
+    IDE_RC loadFromOutFile( ALTIBASE_ILOADER_HANDLE aHandle ); // PROJ-2030, CT_CASE-3020 CHAR outfile ì§€ì›
     
 public:
-    CCircularBuf mCirBuf;            //PROJ-1714 Data Upload½Ã »ç¿ëÇÏ´Â ¿øÇü ¹öÆÛ
-    SChar       *mDoubleBuff;        //BUG-22434 Double Buffer °´Ã¼
+    CCircularBuf mCirBuf;            //PROJ-1714 Data Uploadì‹œ ì‚¬ìš©í•˜ëŠ” ì›í˜• ë²„í¼
+    SChar       *mDoubleBuff;        //BUG-22434 Double Buffer ê°ì²´
     
     /* BUG-24583 Lob FilePath & FileName */
     SChar     **mLOBFile;
     SInt        mLOBFileRowCount;
-    SInt        mLOBFileColumnNum;             //LOB ColumnÀÌ ¿©·¯°³ ÀÏ¶§, ÇØ´ç LOB fileÀÌ ¾î´À Column¿¡ ÇØ´çÇÏ´ÂÁö¸¦ ±¸ºĞ
+    SInt        mLOBFileColumnNum;             //LOB Columnì´ ì—¬ëŸ¬ê°œ ì¼ë•Œ, í•´ë‹¹ LOB fileì´ ì–´ëŠ Columnì— í•´ë‹¹í•˜ëŠ”ì§€ë¥¼ êµ¬ë¶„
     
 public:
     void SetEOF( ALTIBASE_ILOADER_HANDLE aHandle, iloBool aVal )

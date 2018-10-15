@@ -59,9 +59,9 @@
 #include "qcpll.h"
 
 // To Fix PR-11793 To Remove Warning
-// Linux¿« ∞ÊøÏ /usr/include/bits/termios.h ø° ECHO∞° ¡§¿«µ«æÓ ¿÷¿Ω.'
-// Flex∞° ECHO∏¶ define«œø© ªÁøÎ«œπ«∑Œ, undef«ÿæﬂ «‘.
-// ¬¸¡∂) Flex∞° ª˝º∫«œ¥¬ qcpll.cpp ø°¥¬ ¥Ÿ¿Ω∞˙ ∞∞¿∫ Code∞° ª˝º∫µ .
+// LinuxÏùò Í≤ΩÏö∞ /usr/include/bits/termios.h Ïóê ECHOÍ∞Ä Ï†ïÏùòÎêòÏñ¥ ÏûàÏùå.'
+// FlexÍ∞Ä ECHOÎ•º defineÌïòÏó¨ ÏÇ¨Ïö©ÌïòÎØÄÎ°ú, undefÌï¥Ïïº Ìï®.
+// Ï∞∏Ï°∞) FlexÍ∞Ä ÏÉùÏÑ±ÌïòÎäî qcpll.cpp ÏóêÎäî Îã§ÏùåÍ≥º Í∞ôÏùÄ CodeÍ∞Ä ÏÉùÏÑ±Îê®.
 //       #ifndef ECHO
 //       #define ECHO LexerOutput( yytext, yyleng )
 //       #endif
@@ -115,9 +115,9 @@ SJIS_ALL         ({SJIS_HWKATA})|({SJIS_JIS97})
 %x hint
 
 /* PROJ-2550
-   qcpll.lø° ∆Øºˆ±‚»£ token¿Ã √ﬂ∞°µ«∏È,
-   ut/altiWrap/src/altiWrapll.lø° token √ﬂ∞°«œ∞Ì,
-   ut/altiWrap/src/altiWraply.y¿« token_listø° √ﬂ∞°«—¥Ÿ. */
+   qcpll.lÏóê ÌäπÏàòÍ∏∞Ìò∏ tokenÏù¥ Ï∂îÍ∞ÄÎêòÎ©¥,
+   ut/altiWrap/src/altiWrapll.lÏóê token Ï∂îÍ∞ÄÌïòÍ≥†,
+   ut/altiWrap/src/altiWraply.yÏùò token_listÏóê Ï∂îÍ∞ÄÌïúÎã§. */
 
 %%
 
@@ -143,7 +143,7 @@ BY                { return TR_BY;                }
 CASCADE           { return TR_CASCADE;           }
 CASE              { return TR_CASE;              }
 CAST              { return TR_CAST;              }
-CHECK[ \t\n\r]*"(" { return TR_CHECK_OPENING_PARENTHESIS; } /* PROJ-1107 Check Constraint ¡ˆø¯ */
+CHECK[ \t\n\r]*"(" { return TR_CHECK_OPENING_PARENTHESIS; } /* PROJ-1107 Check Constraint ÏßÄÏõê */
 CLOSE             { return TR_CLOSE;             }
 COALESCE          { return TR_COALESCE;          } // PROJ-1502 PARTITIONED DISK TABLE
 COLUMN            { return TR_COLUMN;            }
@@ -384,10 +384,10 @@ LOGGING           { return TR_LOGGING;           } // PROJ-1469
 NOLOGGING         { return TR_NOLOGGING;         } // PROJ-1469
 COMPRESSED        { return TR_COMPRESSED;        } // TASK-2398 Log Compress
 UNCOMPRESSED      { return TR_UNCOMPRESSED;      } // TASK-2398 Log Compress
-SUPPLEMENTAL      { return TR_SUPPLEMENTAL;      } // PROJ-1723 [MDW/INTEGRATOR] Altibase Plugin ∞≥πﬂ
+SUPPLEMENTAL      { return TR_SUPPLEMENTAL;      } // PROJ-1723 [MDW/INTEGRATOR] Altibase Plugin Í∞úÎ∞ú
 OVER              { return TR_OVER;              } // PROJ-1762
 MODIFY            { return TR_MODIFY;            } // PROJ-1877
-COMMENT           { return TR_COMMENT;           } // BUG-21387 Comment ±‚¥… ¡ˆø¯
+COMMENT           { return TR_COMMENT;           } // BUG-21387 Comment Í∏∞Îä• ÏßÄÏõê
 SHRINK_MEMPOOL    { return TR_SHRINK_MEMPOOL;    } // PROJ-2065
 ROLLUP            { return TR_ROLLUP;            } // PROJ-1353
 CUBE              { return TR_CUBE;              } // PROJ-1353
@@ -743,7 +743,7 @@ void qcplLexer::setInitState( void )
         switch(mMtlModule->id)
         {
             case MTL_SHIFTJIS_ID:
-            /* PROJ-2590 [±‚¥…º∫] CP932 database character set ¡ˆø¯ */ 
+            /* PROJ-2590 [Í∏∞Îä•ÏÑ±] CP932 database character set ÏßÄÏõê */ 
             case MTL_MS932_ID:
             {
                 gCharType = IDN_CF_SJIS;
@@ -751,7 +751,7 @@ void qcplLexer::setInitState( void )
             }
             case MTL_BIG5_ID:
             case MTL_GB231280_ID:
-            /* PROJ-2414 [±‚¥…º∫] GBK, CP936 character set √ﬂ∞° */
+            /* PROJ-2414 [Í∏∞Îä•ÏÑ±] GBK, CP936 character set Ï∂îÍ∞Ä */
             case MTL_MS936_ID:
             case MTL_MS949_ID:
             {

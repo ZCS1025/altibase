@@ -123,12 +123,12 @@ IDE_RC mtvCalculate_Varchar2Date( mtcNode*,
 
         idlOS::memset((void*)sDate, 0x00, ID_SIZEOF(mtdDateType));
 
-        // ³¯Â¥ ÃÊ±âÈ­
+        // ë‚ ì§œ ì´ˆê¸°í™”
         sDate->year = ID_SSHORT_MAX;
         sDate->mon_day_hour = 0;
         sDate->min_sec_mic = 0;
 
-        // 'ÀÏ'Àº 1·Î ¼³Á¤
+        // 'ì¼'ì€ 1ë¡œ ì„¤ì •
         sDate->mon_day_hour &= ~MTD_DATE_DAY_MASK;
         sDate->mon_day_hour |= 1 << MTD_DATE_DAY_SHIFT;
 
@@ -141,10 +141,10 @@ IDE_RC mtvCalculate_Varchar2Date( mtcNode*,
                   != IDE_SUCCESS );
         
         // PROJ-1436
-        // dateFormatÀ» ÂüÁ¶ÇßÀ½À» Ç¥½ÃÇÑ´Ù.
+        // dateFormatì„ ì°¸ì¡°í–ˆìŒì„ í‘œì‹œí•œë‹¤.
         aTemplate->dateFormatRef = ID_TRUE;
 
-        // ³â ¶Ç´Â ¿ùÀÌ ¼¼ÆÃÀÌ ¾ÈµÈ °æ¿ì¿¡ ÇöÀç ³¯Â¥·Î ´Ù½Ã ¼¼ÆÃÇØÁà¾ß ÇÔ.
+        // ë…„ ë˜ëŠ” ì›”ì´ ì„¸íŒ…ì´ ì•ˆëœ ê²½ìš°ì— í˜„ì¬ ë‚ ì§œë¡œ ë‹¤ì‹œ ì„¸íŒ…í•´ì¤˜ì•¼ í•¨.
         if( (sDate->year == ID_SSHORT_MAX ) ||
             (mtdDateInterface::month(sDate)) == 0 )
         {
@@ -170,8 +170,8 @@ IDE_RC mtvCalculate_Varchar2Date( mtcNode*,
                 sRealMonth = (UShort)mtdDateInterface::month(sDate);
             }
 
-            // year, month, dayÀÇ Á¶ÇÕÀÌ ¿Ã¹Ù¸¥Áö Ã¼Å©ÇÏ°í,
-            // sDate¿¡ ´Ù½Ã ¼¼ÆÃÇØÁØ´Ù.
+            // year, month, dayì˜ ì¡°í•©ì´ ì˜¬ë°”ë¥¸ì§€ ì²´í¬í•˜ê³ ,
+            // sDateì— ë‹¤ì‹œ ì„¸íŒ…í•´ì¤€ë‹¤.
             IDE_TEST( mtdDateInterface::checkYearMonthDayAndSetDateValue(
                           sDate,
                           (SShort)sRealYear,

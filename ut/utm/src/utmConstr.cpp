@@ -115,13 +115,13 @@ SQLRETURN getIndexQuery( SChar * a_user,
     SInt  s_nonunique   = 0;
     SInt  s_idx_type    = 0;
     SInt  s_position    = 0;
-    SInt  s_col_count   = 0;  // BUG-23131 ÀÎµ¦½º°¡ °¡Áø ÄÃ·³ÀÇ °¹¼ö¸¦ °¡Á®¿Â´Ù.
+    SInt  s_col_count   = 0;  // BUG-23131 ì¸ë±ìŠ¤ê°€ ê°€ì§„ ì»¬ëŸ¼ì˜ ê°¯ìˆ˜ë¥¼ ê°€ì ¸ì˜¨ë‹¤.
     SChar s_hidden[2];        /* PROJ-1090 Function-based Index */
     SChar s_asc_desc[2];
     SChar s_is_pers[2];
     SInt  s_idx_no      = 0;
     SInt  s_tbsType     = 0;
-    //fix BUG-17481 aexport°¡ partion disk tableÀ» Áö¿øÇØ¾ß ÇÑ´Ù.
+    //fix BUG-17481 aexportê°€ partion disk tableì„ ì§€ì›í•´ì•¼ í•œë‹¤.
     SInt  sPrevIndexNo          = 0;
     SInt  sPrevIndexType        = 0;
     SInt   sPartIndexType       = 0;
@@ -130,7 +130,7 @@ SQLRETURN getIndexQuery( SChar * a_user,
     SQLLEN  s_inx_ind   = 0;
     SQLLEN  s_type_ind  = 0;
     SQLLEN  s_const_ind = 0;
-    //fix BUG-17481 aexport°¡ partion disk tableÀ» Áö¿øÇØ¾ß ÇÑ´Ù.
+    //fix BUG-17481 aexportê°€ partion disk tableì„ ì§€ì›í•´ì•¼ í•œë‹¤.
     SQLLEN  sIsPartionedInd = 0;
     SQLLEN  s_name_ind      = 0;
     SQLLEN  s_nonuniq_ind   = 0;
@@ -149,7 +149,7 @@ SQLRETURN getIndexQuery( SChar * a_user,
     SChar sQuotedUserName[UTM_NAME_LEN+3] = {'\0', };
     SChar sQuotedTableName[UTM_NAME_LEN+3] = {'\0', };
 
-    //fix BUG-17481 aexport°¡ partion disk tableÀ» Áö¿øÇØ¾ß ÇÑ´Ù.
+    //fix BUG-17481 aexportê°€ partion disk tableì„ ì§€ì›í•´ì•¼ í•œë‹¤.
     SChar  sIsPartioned[2];
     SChar  sPrevIsPartioned[2];
     SChar  sUserName[UTM_NAME_LEN+1];
@@ -175,7 +175,7 @@ SQLRETURN getIndexQuery( SChar * a_user,
     IDE_TEST_RAISE( SQLAllocStmt( m_hdbc, &sPKStmt ) != SQL_SUCCESS,
                     alloc_error );
 
-    /* BUG-36593 ¼Ò¹®ÀÚ,°ø¹éÀÌ Æ÷ÇÔµÈ ÀÌ¸§(quoted identifier) Ã³¸® */
+    /* BUG-36593 ì†Œë¬¸ì,ê³µë°±ì´ í¬í•¨ëœ ì´ë¦„(quoted identifier) ì²˜ë¦¬ */
     utString::makeQuotedName(sQuotedUserName, a_user, idlOS::strlen(a_user));
     utString::makeQuotedName(sQuotedTableName, a_table, idlOS::strlen(a_table));
 
@@ -203,8 +203,8 @@ SQLRETURN getIndexQuery( SChar * a_user,
     IDE_TEST_RAISE(SQLAllocStmt(m_hdbc, &s_inxStmt) != SQL_SUCCESS,
                    alloc_error);
 
-    /* index »ı¼º ¼ø¼­°¡ Áß¿äÇÏ±â ¶§¹®¿¡ SQLStatistics ¸¦ »ç¿ëÇÏÁö ¾Ê°í
-     * Äõ¸®¸¦ Á÷Á¢ ¼öÇàÇÑ´Ù.
+    /* index ìƒì„± ìˆœì„œê°€ ì¤‘ìš”í•˜ê¸° ë•Œë¬¸ì— SQLStatistics ë¥¼ ì‚¬ìš©í•˜ì§€ ì•Šê³ 
+     * ì¿¼ë¦¬ë¥¼ ì§ì ‘ ìˆ˜í–‰í•œë‹¤.
      */
     idlOS::sprintf( sQuery, GET_INDEX_QUERY );
     
@@ -237,13 +237,13 @@ SQLRETURN getIndexQuery( SChar * a_user,
                (SQLPOINTER)&s_idx_type, 0, &s_type_ind)
                != SQL_SUCCESS, inx_error);
 
-    /*fix BUG-17481 aexport°¡ partion disk tableÀ» Áö¿øÇØ¾ß ÇÑ´Ù. */
+    /*fix BUG-17481 aexportê°€ partion disk tableì„ ì§€ì›í•´ì•¼ í•œë‹¤. */
     IDE_TEST_RAISE(    
     SQLBindCol(s_inxStmt, 4, SQL_C_CHAR,
                (SQLPOINTER)sIsPartioned, 2, &sIsPartionedInd)
                != SQL_SUCCESS, inx_error);
     
-    /* BUG-23131 ÀÎµ¦½º°¡ °¡Áø ÄÃ·³ÀÇ °¹¼ö¸¦ °¡Á®¿Â´Ù. */
+    /* BUG-23131 ì¸ë±ìŠ¤ê°€ ê°€ì§„ ì»¬ëŸ¼ì˜ ê°¯ìˆ˜ë¥¼ ê°€ì ¸ì˜¨ë‹¤. */
     IDE_TEST_RAISE(    
     SQLBindCol(s_inxStmt, 5, SQL_C_SLONG, 
                (SQLPOINTER)&s_col_count, 0, &s_count_ind)
@@ -315,14 +315,14 @@ SQLRETURN getIndexQuery( SChar * a_user,
                (SQLLEN)ID_SIZEOF(s_const_name), &s_const_ind)
                != SQL_SUCCESS, const_error);        
 
-    //fix BUG-17481 aexport°¡ partion disk tableÀ» Áö¿øÇØ¾ß ÇÑ´Ù.    
+    //fix BUG-17481 aexportê°€ partion disk tableì„ ì§€ì›í•´ì•¼ í•œë‹¤.    
     sIsPartioned[0] ='F';
     
     while ((sRet = SQLFetch(s_inxStmt)) != SQL_NO_DATA)
     {
         IDE_TEST_RAISE( sRet != SQL_SUCCESS, inx_error );
         
-        // tableÀÇ ÀÎµ¦½ºµé Áß¿¡  ÀÎµ¦½º Ã³À½.
+        // tableì˜ ì¸ë±ìŠ¤ë“¤ ì¤‘ì—  ì¸ë±ìŠ¤ ì²˜ìŒ.
         if ( s_position == 1 )
         {
             sStatProcType = UTM_STAT_NONE; // BUG-44831
@@ -401,7 +401,7 @@ SQLRETURN getIndexQuery( SChar * a_user,
                 else
                 {
                     sIndexFlag = ID_TRUE;
-                    //fix BUG-17481 aexport°¡ partion disk tableÀ» Áö¿øÇØ¾ß ÇÑ´Ù.
+                    //fix BUG-17481 aexportê°€ partion disk tableì„ ì§€ì›í•´ì•¼ í•œë‹¤.
                     if(sIsPartioned[0] == 'F')
                     {
                         s_pos = idlOS::sprintf( sDdl,
@@ -411,7 +411,7 @@ SQLRETURN getIndexQuery( SChar * a_user,
                     }
                     else
                     {
-                        //fix BUG-17481 aexport°¡ partion disk tableÀ» Áö¿øÇØ¾ß ÇÑ´Ù.
+                        //fix BUG-17481 aexportê°€ partion disk tableì„ ì§€ì›í•´ì•¼ í•œë‹¤.
                         IDE_TEST(getPartIndexLocalUnique(s_idx_no,
                                                          &sIsLocalUnique) != IDE_SUCCESS);
                         if(sIsLocalUnique == ID_TRUE)
@@ -457,8 +457,8 @@ SQLRETURN getIndexQuery( SChar * a_user,
                 }
             }
 
-            //fix BUG-17481 aexport°¡ partion disk tableÀ» Áö¿øÇØ¾ß ÇÑ´Ù.
-            // partion typeÀ» ±¸ÇÑ´Ù.
+            //fix BUG-17481 aexportê°€ partion disk tableì„ ì§€ì›í•´ì•¼ í•œë‹¤.
+            // partion typeì„ êµ¬í•œë‹¤.
             if(sIsPartioned[0] == 'T')
             {
                 sPrevIndexNo = s_idx_no;
@@ -483,8 +483,8 @@ SQLRETURN getIndexQuery( SChar * a_user,
         }
 
         /* BUG-44831 Exporting INDEX Stats for PK, Unique with system-given name
-         *   SET_UNIQUE_KEY_STATS ÇÁ·Î½ÃÀú·Î Àü´ŞÇÏ´Â ÄÃ·³ ÀÌ¸§µéÀÇ ¸®½ºÆ®¸¦ ¹öÆÛ¿¡
-         *   ½×´Â ´ë½Å ÄÃ·³ fetch ¶§¸¶´Ù ÆÄÀÏ·Î ¹Ù·Î¹Ù·Î ¾²°Ô ÇÔ.
+         *   SET_UNIQUE_KEY_STATS í”„ë¡œì‹œì €ë¡œ ì „ë‹¬í•˜ëŠ” ì»¬ëŸ¼ ì´ë¦„ë“¤ì˜ ë¦¬ìŠ¤íŠ¸ë¥¼ ë²„í¼ì—
+         *   ìŒ“ëŠ” ëŒ€ì‹  ì»¬ëŸ¼ fetch ë•Œë§ˆë‹¤ íŒŒì¼ë¡œ ë°”ë¡œë°”ë¡œ ì“°ê²Œ í•¨.
          */
         if ( gProgOption.mbCollectDbStats == ID_TRUE &&
              sStatProcType == UTM_STAT_UNIQUE )
@@ -516,17 +516,17 @@ SQLRETURN getIndexQuery( SChar * a_user,
         // ASC_OR_DESC
         s_pos += idlOS::sprintf( sDdl + s_pos, "%s,", sDescStr );
 
-        //fix BUG-17481 aexport°¡ partion disk tableÀ» Áö¿øÇØ¾ß ÇÑ´Ù.
+        //fix BUG-17481 aexportê°€ partion disk tableì„ ì§€ì›í•´ì•¼ í•œë‹¤.
         sPrevIndexType = s_idx_type;
 
         // BUG-23131
-        // ÄÃ·³ÀÇ °¹¼ö¿Í Æ÷Áö¼ÇÀÇ À§Ä¡°¡ °°´Ù¸é ¸ğµç ÄÃ·³À» ÀÌ¹Ì Ãâ·ÂÇß´Ù´Â ÀÇ¹ÌÀÌ´Ù.
-        // µû¶ó¼­ ´ÙÀ½¿¡ TABLESPCAE ±¸¹®ÀÌ ¿Í¾ß ÇÑ´Ù.
+        // ì»¬ëŸ¼ì˜ ê°¯ìˆ˜ì™€ í¬ì§€ì…˜ì˜ ìœ„ì¹˜ê°€ ê°™ë‹¤ë©´ ëª¨ë“  ì»¬ëŸ¼ì„ ì´ë¯¸ ì¶œë ¥í–ˆë‹¤ëŠ” ì˜ë¯¸ì´ë‹¤.
+        // ë”°ë¼ì„œ ë‹¤ìŒì— TABLESPCAE êµ¬ë¬¸ì´ ì™€ì•¼ í•œë‹¤.
         if (s_col_count == s_position)
         {
             s_pos--;
             s_pos += idlOS::sprintf( sDdl + s_pos, ")" );
-            //fix BUG-17481 aexport°¡ partion disk tableÀ» Áö¿øÇØ¾ß ÇÑ´Ù.
+            //fix BUG-17481 aexportê°€ partion disk tableì„ ì§€ì›í•´ì•¼ í•œë‹¤.
             if ( sIndexFlag == ID_TRUE )
             {
                 // normal index
@@ -554,7 +554,7 @@ SQLRETURN getIndexQuery( SChar * a_user,
                 
                 if(sPrevIsPartioned[0]  == 'T' )
                 {
-                    // partition indexÀÌ°í localÀÌ¸é tablespaceÀıÀ» ºÙÀÌÁö ¾Ê´Â´Ù.
+                    // partition indexì´ê³  localì´ë©´ tablespaceì ˆì„ ë¶™ì´ì§€ ì•ŠëŠ”ë‹¤.
                     //nothing to do.
                 }
                 else
@@ -589,7 +589,7 @@ SQLRETURN getIndexQuery( SChar * a_user,
                 s_pos--;
                 s_pos += idlOS::sprintf( sDdl + s_pos, ")" );
                 
-                //fix BUG-17481 aexport°¡ partion disk tableÀ» Áö¿øÇØ¾ß ÇÑ´Ù.
+                //fix BUG-17481 aexportê°€ partion disk tableì„ ì§€ì›í•´ì•¼ í•œë‹¤.
                 if(sPrevIsPartioned[0]  == 'T')
                 {
                     //nothing to do
@@ -747,7 +747,7 @@ SQLRETURN getCheckConstraintQuery( SChar * aUserName,
     {
         IDE_TEST_RAISE( sRet != SQL_SUCCESS, ERR_CHECK_CONSTRAINT );
 
-        /* User NameÀÌ ÀÌÀü°ú ´Ù¸£¸é, Á¢¼Ó ¹®ÀÚ¿­À» ÇÑ ¹ø¸¸ Ãâ·ÂÇÑ´Ù. */
+        /* User Nameì´ ì´ì „ê³¼ ë‹¤ë¥´ë©´, ì ‘ì† ë¬¸ìì—´ì„ í•œ ë²ˆë§Œ ì¶œë ¥í•œë‹¤. */
         if ( ( idlOS::strcmp( aUserName, sPrevUserName ) != 0 ) &&
              ( gProgOption.m_bExist_OBJECT != ID_TRUE ) )
         {
@@ -764,7 +764,7 @@ SQLRETURN getCheckConstraintQuery( SChar * aUserName,
             /* Nothing to do */
         }
 
-        /* Check Constraint Ãß°¡ ±¸¹®À» ±¸¼ºÇÑ´Ù. */
+        /* Check Constraint ì¶”ê°€ êµ¬ë¬¸ì„ êµ¬ì„±í•œë‹¤. */
         if ( idlOS::strncmp( sConstrName, "__SYS_CON_CHECK_ID_", 19 ) == 0 )
         {
             idlOS::sprintf( sDdl,
@@ -781,7 +781,7 @@ SQLRETURN getCheckConstraintQuery( SChar * aUserName,
                             sCheckCondition );
         }
 
-        /* Check Constraint Ãß°¡ ±¸¹®À» Ãâ·ÂÇÑ´Ù. */
+        /* Check Constraint ì¶”ê°€ êµ¬ë¬¸ì„ ì¶œë ¥í•œë‹¤. */
 #ifdef DEBUG
         idlOS::fprintf( stderr, "%s;\n\n", sDdl );
 #endif
@@ -817,7 +817,7 @@ SQLRETURN getCheckConstraintQuery( SChar * aUserName,
     return SQL_ERROR;
 }
 
-/* ÀüÃ¼ DB MODEÀÏ °æ¿ì USER, TABLE NAME ±¸ÇÔ */
+/* ì „ì²´ DB MODEì¼ ê²½ìš° USER, TABLE NAME êµ¬í•¨ */
 SQLRETURN getForeignKeys( SChar *a_user,
                           FILE  *aFkFp )
 {
@@ -848,7 +848,7 @@ SQLRETURN getForeignKeys( SChar *a_user,
     }
     else
     {
-        /* BUG-36593 ¼Ò¹®ÀÚ,°ø¹éÀÌ Æ÷ÇÔµÈ ÀÌ¸§(quoted identifier) Ã³¸® */
+        /* BUG-36593 ì†Œë¬¸ì,ê³µë°±ì´ í¬í•¨ëœ ì´ë¦„(quoted identifier) ì²˜ë¦¬ */
         utString::makeQuotedName(sQuotedUserName, a_user, idlOS::strlen(a_user));
 
         IDE_TEST_RAISE(SQLTables(s_tblStmt,
@@ -967,7 +967,7 @@ SQLRETURN resultForeignKeys( SChar *a_user,
     IDE_TEST_RAISE(SQLAllocStmt(m_hdbc, &s_constStmt) != SQL_SUCCESS,
                                 DBCError);
 
-    /* BUG-36593 ¼Ò¹®ÀÚ,°ø¹éÀÌ Æ÷ÇÔµÈ ÀÌ¸§(quoted identifier) Ã³¸® */
+    /* BUG-36593 ì†Œë¬¸ì,ê³µë°±ì´ í¬í•¨ëœ ì´ë¦„(quoted identifier) ì²˜ë¦¬ */
     utString::makeQuotedName(sQuotedUserName, a_user, idlOS::strlen(a_user));
     utString::makeQuotedName(sQuotedTableName, a_table, idlOS::strlen(a_table));
 
@@ -1000,7 +1000,7 @@ SQLRETURN resultForeignKeys( SChar *a_user,
                    &s_pos_ind)
         != SQL_SUCCESS, StmtError );
     
-    // BUG-25175 aexport ¿¡¼­ delete cascade Áö¿ø
+    // BUG-25175 aexport ì—ì„œ delete cascade ì§€ì›
     IDE_TEST_RAISE(    
         SQLBindCol(s_constStmt, 11, SQL_C_SSHORT, (SQLPOINTER)&s_delete_rule, 0, NULL)
         != SQL_SUCCESS, StmtError );            
@@ -1062,7 +1062,7 @@ SQLRETURN resultForeignKeys( SChar *a_user,
             IDE_TEST_RAISE(SQLFreeStmt(s_validatedStmt, SQL_CLOSE)
                            != SQL_SUCCESS, ValidatedStmtError);
             
-            // BUG-25906 FK°¡ 2°³ ÀÌ»óÀÏ ¶§ aexport¿¡¼­ ¸¸µå´Â ½ºÅ©¸³Æ®¿¡´Â 1°³¸¸ ±âÀçµË´Ï´Ù.
+            // BUG-25906 FKê°€ 2ê°œ ì´ìƒì¼ ë•Œ aexportì—ì„œ ë§Œë“œëŠ” ìŠ¤í¬ë¦½íŠ¸ì—ëŠ” 1ê°œë§Œ ê¸°ì¬ë©ë‹ˆë‹¤.
             if (i > 0)
             {
                 /* In this case, the previous(not first) FK records end.
@@ -1122,7 +1122,7 @@ SQLRETURN resultForeignKeys( SChar *a_user,
                                      s_pkUser, s_pkTable);
             i++;
         }
-        // Ãâ·ÂÀ» ÇÒ¶§ s_delete_rule ÀÇ °ªÀÌ º¯°æµÇ¹Ç·Î ±âÁ¸ÀÇ °ªÀ» »ç¿ëÇØ¾ß ÇÑ´Ù.
+        // ì¶œë ¥ì„ í• ë•Œ s_delete_rule ì˜ ê°’ì´ ë³€ê²½ë˜ë¯€ë¡œ ê¸°ì¡´ì˜ ê°’ì„ ì‚¬ìš©í•´ì•¼ í•œë‹¤.
         s_pre_delete_rule = s_delete_rule;
         sPreValidated = sIsValidated[0];
         s_pos += idlOS::sprintf( sDdl + s_pos, "\"%s\",", s_fkColumn );
@@ -1133,8 +1133,8 @@ SQLRETURN resultForeignKeys( SChar *a_user,
        the last FK statement should be ended.
     */
 
-    // BUG-25175 aexport ¿¡¼­ delete cascade Áö¿ø
-    // ÄÃ·³ÀÇ ¼ø¼­´ë·Î Á¤·ÄÀÌ µÇ±â ¶§¹®¿¡ ¸¶Áö¸·¿¡¸¸ Âï¾îÁÖ¸é µÈ´Ù.
+    // BUG-25175 aexport ì—ì„œ delete cascade ì§€ì›
+    // ì»¬ëŸ¼ì˜ ìˆœì„œëŒ€ë¡œ ì •ë ¬ì´ ë˜ê¸° ë•Œë¬¸ì— ë§ˆì§€ë§‰ì—ë§Œ ì°ì–´ì£¼ë©´ ëœë‹¤.
     if ( i > 0 )
     {
         s_pkPos--;
@@ -1142,7 +1142,7 @@ SQLRETURN resultForeignKeys( SChar *a_user,
         s_pos--;
         s_pos += idlOS::sprintf( sDdl + s_pos, ") references %s", s_pkDDL );
 
-        // BUG-25175 aexport ¿¡¼­ delete cascade Áö¿ø
+        // BUG-25175 aexport ì—ì„œ delete cascade ì§€ì›
         if( s_delete_rule == SQL_CASCADE )
         {
             s_pos += idlOS::sprintf( sDdl + s_pos, " on delete cascade" );

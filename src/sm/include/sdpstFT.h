@@ -19,7 +19,7 @@
  *
  * $Id: sdpstFT.h 27220 2008-07-23 14:56:22Z newdaily $
  *
- * º» ÆÄÀÏÀº Treelist Managed SegmentÀÇ Fixed Table¿¡ ´ëÇÑ Çì´õÆÄÀÏÀÌ´Ù.
+ * ë³¸ íŒŒì¼ì€ Treelist Managed Segmentì˜ Fixed Tableì— ëŒ€í•œ í—¤ë”íŒŒì¼ì´ë‹¤.
  *
  ***********************************************************************/
 
@@ -124,7 +124,7 @@ typedef struct sdpstDumpLfBMPHdrInfo
     SShort              mFstDataPagePBSNo;
 } sdpstDumpLfBMPHdrInfo;
 
-/* ÇÏ³ªÀÇ PBSÀº 3¹ÙÀÌÆ®·Î Ç¥ÇöÇÑ´Ù. */
+/* í•˜ë‚˜ì˜ PBSì€ 3ë°”ì´íŠ¸ë¡œ í‘œí˜„í•œë‹¤. */
 # define SDPST_MAX_BITSET_BUFF_LEN  (SDPST_PAGE_BITSET_TABLE_SIZE * 3)
 /*
  * Dump Segment Leaf Bitmap for RangeSlot
@@ -450,7 +450,7 @@ inline void sdpstFT::toStrMFNL( sdpstMFNL aMFNL, UChar * aMFNLStr )
             idlOS::memcpy( aMFNLStr, "UNF", 3 );
             break;
         default:
-            idlOS::memcpy( aMFNLStr, "XXX", 3 ); /* ÀÌ·± °æ¿ì´Â ¾ø¾î¾ß ÇÑ´Ù. */
+            idlOS::memcpy( aMFNLStr, "XXX", 3 ); /* ì´ëŸ° ê²½ìš°ëŠ” ì—†ì–´ì•¼ í•œë‹¤. */
             break;
     }
 }
@@ -479,7 +479,7 @@ inline void sdpstFT::toStrBMPType( sdpstBMPType     aBMPType,
             idlOS::memcpy( aBMPTypeStr, "LF", 2 );
             break;
         default:
-            idlOS::memcpy( aBMPTypeStr, "XX", 2 ); /* ÀÌ·± °æ¿ì´Â ¾ø¾î¾ß ÇÑ´Ù. */
+            idlOS::memcpy( aBMPTypeStr, "XX", 2 ); /* ì´ëŸ° ê²½ìš°ëŠ” ì—†ì–´ì•¼ í•œë‹¤. */
             break;
     }
 }

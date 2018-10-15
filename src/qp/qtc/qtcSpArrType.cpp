@@ -20,9 +20,9 @@
  *
  *  Description :
  *      PROJ-1075 Associative Array Type
- *      array typeÀº ÆÄ¶ó¹ÌÅÍ·Î »ç¿ë½Ã, ¶Ç´Â º¯¼ö·Î »ç¿ë½Ã
- *      ¸Ç Ã³À½¿¡ ÃÊ±âÈ­¸¦ ÀÏ´Ü ÇÑ¹ø ½ÃÄÑÁÖ¾î¾ß ÇÑ´Ù.
- *      Àı´ë null·Î ÃÊ±âÈ­´Â ºÒ°¡´É. nullÀÚÃ¼°¡ ¾ø´Ù.
+ *      array typeì€ íŒŒë¼ë¯¸í„°ë¡œ ì‚¬ìš©ì‹œ, ë˜ëŠ” ë³€ìˆ˜ë¡œ ì‚¬ìš©ì‹œ
+ *      ë§¨ ì²˜ìŒì— ì´ˆê¸°í™”ë¥¼ ì¼ë‹¨ í•œë²ˆ ì‹œì¼œì£¼ì–´ì•¼ í•œë‹¤.
+ *      ì ˆëŒ€ nullë¡œ ì´ˆê¸°í™”ëŠ” ë¶ˆê°€ëŠ¥. nullìì²´ê°€ ì—†ë‹¤.
  **********************************************************************/
 
 #include <idl.h>
@@ -144,7 +144,7 @@ UInt mtdActualSize( const mtcColumn*,
 }
 
 // PROJ-1904 Extend UDT
-// Array typeÀÇ null ÇÔ¼ö´Â truncate·Î µ¿ÀÛÇÑ´Ù.
+// Array typeì˜ null í•¨ìˆ˜ëŠ” truncateë¡œ ë™ì‘í•œë‹¤.
 void mtdSetNull( const mtcColumn * /*aColumn*/,
                  void            * aRow )
 {

@@ -318,7 +318,7 @@ iSQLCompiler::SetScriptFile( SChar         *a_FileName,
         pos = idlOS::getenv(IDP_HOME_ENV);
         IDE_TEST( pos == NULL );
         idlOS::strcpy(filePath, pos);
-        // BUG-21412: filePath¿Í filenameÀÌ '/' ¾øÀÌ ¿¬°áµÇ´Â°É ¸·À½
+        // BUG-21412: filePathì™€ filenameì´ '/' ì—†ì´ ì—°ê²°ë˜ëŠ”ê±¸ ë§‰ìŒ
         if ( tmp[0] != IDL_FILE_SEPARATOR )
         {
             idlOS::strcat(filePath, IDL_FILE_SEPARATORS);
@@ -630,7 +630,7 @@ iSQLCompiler::PrintCommand()
 
 /***********************************************************
  * BUG-41173
- *  passing parameterµé Áß¿¡¼­ sVarIdx À§Ä¡ÀÇ °ªÀ» ¹İÈ¯ÇÑ´Ù.
+ *  passing parameterë“¤ ì¤‘ì—ì„œ sVarIdx ìœ„ì¹˜ì˜ ê°’ì„ ë°˜í™˜í•œë‹¤.
  ***********************************************************/
 SChar *
 iSQLCompiler::GetPassingValue(UInt sVarIdx)

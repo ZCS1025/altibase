@@ -19,15 +19,15 @@
 #include <ulnTypes.h>
 
 /*
- * ULN_MTYPE °ú MTD_TYPE_ID ±×¸®°í, SQL_TYPE °£¿¡ ¼­·Î º¯È¯ÇÒ ¼ö ÀÖ´Â Å×ÀÌºí.
+ * ULN_MTYPE ê³¼ MTD_TYPE_ID ê·¸ë¦¬ê³ , SQL_TYPE ê°„ì— ì„œë¡œ ë³€í™˜í•  ìˆ˜ ìžˆëŠ” í…Œì´ë¸”.
  *
- * ¶ÇÇÑ °¢ Å¸ÀÔÀÇ column size ¿Í decimal digits ¸ñ·ÏÀ» ³ª¿­ÇØ µÎ¾úÀ¸¸ç,
+ * ë˜í•œ ê° íƒ€ìž…ì˜ column size ì™€ decimal digits ëª©ë¡ì„ ë‚˜ì—´í•´ ë‘ì—ˆìœ¼ë©°,
  *
- * ¾Æ¿ï·¯¼­ »ç¿ëÀÚ°¡ SQL_C_DEFAULT ·Î ¹ÙÀÎµå ÇÏ¿´À» ¶§
- * »ç¿ëÀÚ°¡ ¹ÙÀÎµåÇÑ ¹öÆÛÀÇ Å¸ÀÔÀ» ÃßÁ¤ÇÒ ¼ö ÀÖ´Â ULN_CTYPE ÀÇ ¸ñ·Ïµµ °¡Áö°í ÀÖ´Â Å×ÀÌºí.
+ * ì•„ìš¸ëŸ¬ì„œ ì‚¬ìš©ìžê°€ SQL_C_DEFAULT ë¡œ ë°”ì¸ë“œ í•˜ì˜€ì„ ë•Œ
+ * ì‚¬ìš©ìžê°€ ë°”ì¸ë“œí•œ ë²„í¼ì˜ íƒ€ìž…ì„ ì¶”ì •í•  ìˆ˜ ìžˆëŠ” ULN_CTYPE ì˜ ëª©ë¡ë„ ê°€ì§€ê³  ìžˆëŠ” í…Œì´ë¸”.
  *
- * Note : SQL_TINYINT ´Â columnsize °¡ 3 ÀÎµ¥, Altibase ¿¡¼­´Â Áö¿øÇÏÁö ¾Ê´Â´Ù. ±×·¯¹Ç·Î ¾îÂ÷ÇÇ
- *        ³ª¿ÀÁöµµ ¾Ê´Â´Ù. ¸ðµÎ MTD_SMALLINT_ID ·Î º¯È¯µÈ´Ù.
+ * Note : SQL_TINYINT ëŠ” columnsize ê°€ 3 ì¸ë°, Altibase ì—ì„œëŠ” ì§€ì›í•˜ì§€ ì•ŠëŠ”ë‹¤. ê·¸ëŸ¬ë¯€ë¡œ ì–´ì°¨í”¼
+ *        ë‚˜ì˜¤ì§€ë„ ì•ŠëŠ”ë‹¤. ëª¨ë‘ MTD_SMALLINT_ID ë¡œ ë³€í™˜ëœë‹¤.
  */
 typedef struct
 {
@@ -43,16 +43,16 @@ typedef struct
     const acp_char_t *mTypeName;
 } ulnMtypeFamily;
 
-#define mSCALm (ACP_UINT16_MAX - 1) // column size ¸¦ ±¸ÇÒ ¶§ ÇØ´ç ÄÃ·³ÀÇ scale À» ¸®ÅÏÇØ¾ß ÇÑ´Ù.
-#define mPRECm (ACP_UINT16_MAX - 2) // column size ¸¦ ±¸ÇÒ ¶§ ÇØ´ç ÄÃ·³ÀÇ precision À» Áà¾ß ÇÑ´Ù.
-#define mSIZEm (ACP_UINT16_MAX - 3) // column size ¸¦ ±¸ÇÒ ¶§ ÇØ´ç ÄÃ·³ÀÇ size ¸¦ Áà¾ß ÇÑ´Ù.
-#define mNOTOT (ACP_UINT16_MAX - 4) // column size ¸¦ ¾Ë ¼ö ¾øÀ» ¶§ SQL_NO_TOTAL À» ¸®ÅÏÇØ¾ß ÇÑ´Ù.
+#define mSCALm (ACP_UINT16_MAX - 1) // column size ë¥¼ êµ¬í•  ë•Œ í•´ë‹¹ ì»¬ëŸ¼ì˜ scale ì„ ë¦¬í„´í•´ì•¼ í•œë‹¤.
+#define mPRECm (ACP_UINT16_MAX - 2) // column size ë¥¼ êµ¬í•  ë•Œ í•´ë‹¹ ì»¬ëŸ¼ì˜ precision ì„ ì¤˜ì•¼ í•œë‹¤.
+#define mSIZEm (ACP_UINT16_MAX - 3) // column size ë¥¼ êµ¬í•  ë•Œ í•´ë‹¹ ì»¬ëŸ¼ì˜ size ë¥¼ ì¤˜ì•¼ í•œë‹¤.
+#define mNOTOT (ACP_UINT16_MAX - 4) // column size ë¥¼ ì•Œ ìˆ˜ ì—†ì„ ë•Œ SQL_NO_TOTAL ì„ ë¦¬í„´í•´ì•¼ í•œë‹¤.
 
 /*
- * BUGBUG : mt Å¸ÀÔÀÇ ¼Ó¼º Áß searchable À» ¾Æ·¡ Ç¥¿¡ ´Ù½Ã Àû¾î¾ß ÇÑ´Ù.
- * BUGBUG : ¼­¹ö·Î Å¸ÀÔ ¸ÞÅ¸¸¦ Á¶È¸ÇØ¼­ °¡Á®¿Â °ªÀ¸·Î ¼¼ÆÃÇØ¾ß ÇÑ´Ù. v
- *          Ã¹¹øÂ° descriptor ¿¡ µ¥ÀÌÅÍÅ¸ÀÔ¿¡ ´ëÇÑ Á¶È¸°¡ µé¾î¿À¸é ¼­¹ö¿¡¼­ v$datatype À»
- *          Á¶È¸ÇØ¼­ Å¸ÀÔµé¿¡ ´ëÇÑ Á¤º¸¸¦ °¡Á®¿Í¼­ Ç¥·Î ±¸¼ºÇÑ ÈÄ »ç¿ëÀÚ¿¡°Ô ³Ñ°Ü Áà¾ß ÇÑ´Ù.
+ * BUGBUG : mt íƒ€ìž…ì˜ ì†ì„± ì¤‘ searchable ì„ ì•„ëž˜ í‘œì— ë‹¤ì‹œ ì ì–´ì•¼ í•œë‹¤.
+ * BUGBUG : ì„œë²„ë¡œ íƒ€ìž… ë©”íƒ€ë¥¼ ì¡°íšŒí•´ì„œ ê°€ì ¸ì˜¨ ê°’ìœ¼ë¡œ ì„¸íŒ…í•´ì•¼ í•œë‹¤. v
+ *          ì²«ë²ˆì§¸ descriptor ì— ë°ì´í„°íƒ€ìž…ì— ëŒ€í•œ ì¡°íšŒê°€ ë“¤ì–´ì˜¤ë©´ ì„œë²„ì—ì„œ v$datatype ì„
+ *          ì¡°íšŒí•´ì„œ íƒ€ìž…ë“¤ì— ëŒ€í•œ ì •ë³´ë¥¼ ê°€ì ¸ì™€ì„œ í‘œë¡œ êµ¬ì„±í•œ í›„ ì‚¬ìš©ìžì—ê²Œ ë„˜ê²¨ ì¤˜ì•¼ í•œë‹¤.
  */
 // fix BUG-20526
 ulnMtypeFamily ulnTypeTableMTYPEs[ULN_MTYPE_MAX] =
@@ -65,7 +65,7 @@ ulnMtypeFamily ulnTypeTableMTYPEs[ULN_MTYPE_MAX] =
     { ULN_MTYPE_CHAR,         MTD_CHAR_ID,         SQL_CHAR,           SQL_C_CHAR,         mSIZEm, 0,      SQL_PRED_SEARCHABLE,      "\'", "\'", "CHAR"      },
     { ULN_MTYPE_VARCHAR,      MTD_VARCHAR_ID,      SQL_VARCHAR,        SQL_C_CHAR,         mSIZEm, 0,      SQL_PRED_SEARCHABLE, "\'", "\'", "VARCHAR"   },
 
-    // BUGBUG : MTD_NUMBER_ID ´Â ¾²Áö ¸¶¶ó!
+    // BUGBUG : MTD_NUMBER_ID ëŠ” ì“°ì§€ ë§ˆë¼!
     { ULN_MTYPE_NUMBER,       MTD_NUMBER_ID,       SQL_NUMERIC,        SQL_C_NUMERIC,      mPRECm, 0,      SQL_PRED_BASIC,      "", "",     "NUMBER"    },
     { ULN_MTYPE_NUMERIC,      MTD_NUMERIC_ID,      SQL_NUMERIC,        SQL_C_NUMERIC,      mPRECm, mSCALm, SQL_PRED_BASIC,      "", "",     "NUMERIC"   },
 
@@ -86,13 +86,13 @@ ulnMtypeFamily ulnTypeTableMTYPEs[ULN_MTYPE_MAX] =
     { ULN_MTYPE_BYTE,         MTD_BYTE_ID,         SQL_BYTE,           SQL_C_BINARY,       mSIZEm, 0,      SQL_PRED_SEARCHABLE,      "\'", "\'", "BYTE"      },
     { ULN_MTYPE_VARBYTE,      MTD_VARBYTE_ID,      SQL_VARBYTE,        SQL_C_BINARY,       mSIZEm, 0,      SQL_PRED_SEARCHABLE,      "\'", "\'", "VARBYTE"   },
 
-    // MTD_DATE_ID ´Â SQL_TYPE ¿¡¼­ ¸»ÇÏ´Â Å¸ÀÓ½ºÅÆÇÁ¿Í °¡Àå °¡±î¿î Å¸ÀÔÀÌ´Ù.
+    // MTD_DATE_ID ëŠ” SQL_TYPE ì—ì„œ ë§í•˜ëŠ” íƒ€ìž„ìŠ¤íƒ¬í”„ì™€ ê°€ìž¥ ê°€ê¹Œìš´ íƒ€ìž…ì´ë‹¤.
     // BUGBUG : column size
     { ULN_MTYPE_TIMESTAMP,    MTD_DATE_ID,         SQL_TYPE_TIMESTAMP, SQL_C_TIMESTAMP,    30,     mSCALm, SQL_PRED_BASIC,  "{ts\'", "\'}", "DATE"      },
     { ULN_MTYPE_DATE,         MTD_DATE_ID,         SQL_TYPE_TIMESTAMP, SQL_C_TIMESTAMP,    30,     mSCALm, SQL_PRED_BASIC,  "{ts\'", "\'}", "DATE"      },
     { ULN_MTYPE_TIME,         MTD_DATE_ID,         SQL_TYPE_TIMESTAMP, SQL_C_TIMESTAMP,    30,     mSCALm, SQL_PRED_BASIC,  "{ts\'", "\'}", "DATE"      },
 
-    // MTD_INTERVAL_ID ´Â µµÀúÈ÷ concise type À¸·Î ¸ÂÃâ ¼ö ¾ø¾î¼­ ÀÓ½Ã·Î SQL_INTERVAL_DAY_TO_SECOND ·Î Çß´Ù.
+    // MTD_INTERVAL_ID ëŠ” ë„ì €ížˆ concise type ìœ¼ë¡œ ë§žì¶œ ìˆ˜ ì—†ì–´ì„œ ìž„ì‹œë¡œ SQL_INTERVAL_DAY_TO_SECOND ë¡œ í–ˆë‹¤.
     // BUGBUG : column size
     { ULN_MTYPE_INTERVAL, MTD_INTERVAL_ID, SQL_INTERVAL_DAY_TO_SECOND, SQL_C_DATE,         10,     mSCALm, SQL_PRED_BASIC,      "", "",     "INTERVAL"  },
 
@@ -115,8 +115,8 @@ ulnMTypeID ulnTypeMap_MTD_MTYPE(acp_uint32_t aMTD_TYPE)
     for(i = 0; i < ULN_MTYPE_MAX; i++)
     {
         /*
-         * BUGBUG : ¼­¹ö¿¡¼­ ³Ñ¾î¿À´Â Á¤º¸°¡ col info ¿Í param info °¡ ´Ù¸£´Ù.
-         *          ÅëÀÏÇØ ´Þ¶ó°í ¿äÃ»ÇÏ°í ¾Æ·¡ µÎ°³ÀÇ if ¹®À» ¾ø¾Ö¾ß ÇÑ´Ù.
+         * BUGBUG : ì„œë²„ì—ì„œ ë„˜ì–´ì˜¤ëŠ” ì •ë³´ê°€ col info ì™€ param info ê°€ ë‹¤ë¥´ë‹¤.
+         *          í†µì¼í•´ ë‹¬ë¼ê³  ìš”ì²­í•˜ê³  ì•„ëž˜ ë‘ê°œì˜ if ë¬¸ì„ ì—†ì• ì•¼ í•œë‹¤.
          */
         if(aMTD_TYPE == MTD_BLOB_ID) return ULN_MTYPE_BLOB;
         if(aMTD_TYPE == MTD_CLOB_ID) return ULN_MTYPE_CLOB;
@@ -143,8 +143,8 @@ acp_uint32_t ulnTypeMap_MTYPE_MTD(ulnMTypeID aMTYPE)
 }
 
 /*
- * BUGBUG : odbc ½ºÆåÀÇ concise ¿Í verbose type À» °í·ÁÇØ¾ß ÇÑ´Ù.
- *          ulnTypeTableMTYPEs[].mSQL_TYPE Àº concise type ÀÌ´Ù.
+ * BUGBUG : odbc ìŠ¤íŽ™ì˜ concise ì™€ verbose type ì„ ê³ ë ¤í•´ì•¼ í•œë‹¤.
+ *          ulnTypeTableMTYPEs[].mSQL_TYPE ì€ concise type ì´ë‹¤.
  */
 acp_sint16_t ulnTypeMap_MTYPE_SQL(ulnMTypeID aMTYPE)
 {
@@ -154,7 +154,7 @@ acp_sint16_t ulnTypeMap_MTYPE_SQL(ulnMTypeID aMTYPE)
 }
 
 /*
- * ColumnSize, DecimalDigits ¸¦ ¸®ÅÏÇÑ´Ù. ÀÌ´Â SQLDescribeCol() ÇÔ¼ö¸¦ È£ÃâÇßÀ» ¶§¿¡¸¸ »ç¿ëµÈ´Ù.
+ * ColumnSize, DecimalDigits ë¥¼ ë¦¬í„´í•œë‹¤. ì´ëŠ” SQLDescribeCol() í•¨ìˆ˜ë¥¼ í˜¸ì¶œí–ˆì„ ë•Œì—ë§Œ ì‚¬ìš©ëœë‹¤.
  */
 acp_uint32_t ulnTypeGetColumnSizeOfType(ulnMTypeID aMTYPE, ulnMeta *aMeta)
 {
@@ -165,10 +165,10 @@ acp_uint32_t ulnTypeGetColumnSizeOfType(ulnMTypeID aMTYPE, ulnMeta *aMeta)
         case mSIZEm: return (acp_uint32_t)ulnMetaGetOdbcLength(aMeta);
 
         /*
-         * msdn SQLDescribeCol() ÀÇ ¼³¸í¿¡ ÀÇÇÏ¸é, ±æÀÌ¸¦ ¸ð¸¦ ¶§¿¡´Â 0 À» ¸®ÅÏÇØ¾ß ÇÑ´Ù°í ÇÑ´Ù.
-         * ÀÌ´Â SQLColAttribute() ÀÇ display size ¿Í ¿ÏÀüÈ÷ ´Ù¸¥ °ÍÀÌ´Ù.
+         * msdn SQLDescribeCol() ì˜ ì„¤ëª…ì— ì˜í•˜ë©´, ê¸¸ì´ë¥¼ ëª¨ë¥¼ ë•Œì—ëŠ” 0 ì„ ë¦¬í„´í•´ì•¼ í•œë‹¤ê³  í•œë‹¤.
+         * ì´ëŠ” SQLColAttribute() ì˜ display size ì™€ ì™„ì „ížˆ ë‹¤ë¥¸ ê²ƒì´ë‹¤.
          *
-         * BUGBUG : LOB Å¸ÀÔÀÏ ¶§ ÀÌ·¸°Ô SQL_NO_TOTAL À» ÁÖ¾îµµ ¹®Á¦°¡ ¾ø´ÂÁö °ËÁõ ÇÊ¿äÇÏ´Ù.
+         * BUGBUG : LOB íƒ€ìž…ì¼ ë•Œ ì´ë ‡ê²Œ SQL_NO_TOTAL ì„ ì£¼ì–´ë„ ë¬¸ì œê°€ ì—†ëŠ”ì§€ ê²€ì¦ í•„ìš”í•˜ë‹¤.
          */
 
         // fix BUG-18987
@@ -219,7 +219,7 @@ acp_char_t *ulnTypeGetInfoName(ulnMTypeID aMTYPE)
 }
 
 /*
- * Display size ´Â Å¸ÀÔÀ» È­¸é¿¡ Ãâ·ÂÇÏ±â À§ÇØ ÇÊ¿äÇÑ ¹®ÀÚÀÇ °¹¼ö¸¦ ÀÏÄÂ´Â´Ù.
+ * Display size ëŠ” íƒ€ìž…ì„ í™”ë©´ì— ì¶œë ¥í•˜ê¸° ìœ„í•´ í•„ìš”í•œ ë¬¸ìžì˜ ê°¯ìˆ˜ë¥¼ ì¼ì»«ëŠ”ë‹¤.
  */
 acp_sint32_t ulnTypeGetDisplaySize(ulnMTypeID aMTYPE, ulnMeta *aMeta)
 {
@@ -237,14 +237,14 @@ acp_sint32_t ulnTypeGetDisplaySize(ulnMTypeID aMTYPE, ulnMeta *aMeta)
             return ulnMetaGetOdbcLength(aMeta);
 
         case ULN_MTYPE_FLOAT:
-            // À¯È¿ ¹üÀ§°¡ -1E+120 ~ 1E+120ÀÌ¹Ç·Î
-            // ºÎÈ£¿Í ¼Ò¼öÁ¡, ±×¸®°í ¼Ò¼öÁ¡¾ÕÀÇ 0À» °í·ÁÇÏ¸é 123°³ ¹®ÀÚ·Î Ç¥ÇöµÉ ¼ö ÀÖ´Ù. (1 + 120 + 1 + 1)
+            // ìœ íš¨ ë²”ìœ„ê°€ -1E+120 ~ 1E+120ì´ë¯€ë¡œ
+            // ë¶€í˜¸ì™€ ì†Œìˆ˜ì , ê·¸ë¦¬ê³  ì†Œìˆ˜ì ì•žì˜ 0ì„ ê³ ë ¤í•˜ë©´ 123ê°œ ë¬¸ìžë¡œ í‘œí˜„ë  ìˆ˜ ìžˆë‹¤. (1 + 120 + 1 + 1)
             return 123;
         case ULN_MTYPE_NUMBER:
         case ULN_MTYPE_NUMERIC:
-            // precisionÀÌ 38, scaleÀÌ 128±îÁö °¡´ÉÇÏ¹Ç·Î
-            // ºÎÈ£¿Í ¼Ò¼öÁ¡, ±×¸®°í ¼Ò¼öÁ¡¾ÕÀÇ 0À» °í·ÁÇÏ¸é ÃÖ´ë ±æÀÌ´Â 169´Ù. (38 + 128 + 1 + 1 + 1)
-            // (precisionÀº ¼Ò¼öÁ¡ ÀÌÇÏ¸¦ Æ÷ÇÔÇÏ¹Ç·Î, ½ÇÁ¦·Î´Â ÀÌº¸´Ù ÀÛ°ÚÁö¸¸ ±×³É ³Ë³ËÇÏ°Ô Àâ´Â´Ù.)
+            // precisionì´ 38, scaleì´ 128ê¹Œì§€ ê°€ëŠ¥í•˜ë¯€ë¡œ
+            // ë¶€í˜¸ì™€ ì†Œìˆ˜ì , ê·¸ë¦¬ê³  ì†Œìˆ˜ì ì•žì˜ 0ì„ ê³ ë ¤í•˜ë©´ ìµœëŒ€ ê¸¸ì´ëŠ” 169ë‹¤. (38 + 128 + 1 + 1 + 1)
+            // (precisionì€ ì†Œìˆ˜ì  ì´í•˜ë¥¼ í¬í•¨í•˜ë¯€ë¡œ, ì‹¤ì œë¡œëŠ” ì´ë³´ë‹¤ ìž‘ê² ì§€ë§Œ ê·¸ëƒ¥ ë„‰ë„‰í•˜ê²Œ ìž¡ëŠ”ë‹¤.)
             return 169;
 
         case ULN_MTYPE_BIT:
@@ -271,7 +271,7 @@ acp_sint32_t ulnTypeGetDisplaySize(ulnMTypeID aMTYPE, ulnMeta *aMeta)
             return 30;  // yyyy-mon-dd hh:mm:ss 123000000
 
         case ULN_MTYPE_INTERVAL:
-            return 40;  // BUGBUG : °è»êÇÏ±â Èûµé¾î¼­ ±×³É 40À¸·Î ÇÔ -_-;;
+            return 40;  // BUGBUG : ê³„ì‚°í•˜ê¸° íž˜ë“¤ì–´ì„œ ê·¸ëƒ¥ 40ìœ¼ë¡œ í•¨ -_-;;
 
         case ULN_MTYPE_NCHAR:
         case ULN_MTYPE_NVARCHAR:
@@ -281,8 +281,8 @@ acp_sint32_t ulnTypeGetDisplaySize(ulnMTypeID aMTYPE, ulnMeta *aMeta)
         case ULN_MTYPE_GEOMETRY:
         case ULN_MTYPE_MAX:
             /*
-             * ¾Æ·¡ÀÇ µÎ Å¸ÀÔÀº ¿À·ÎÁö »ç¿ëÀÚ°¡ lob locator ·Î ¹ÙÀÎµå ÇßÀ» °æ¿ìÀÇ
-             * out binding À» À§ÇØ¼­¸¸ Á¸ÀçÇÑ´Ù.
+             * ì•„ëž˜ì˜ ë‘ íƒ€ìž…ì€ ì˜¤ë¡œì§€ ì‚¬ìš©ìžê°€ lob locator ë¡œ ë°”ì¸ë“œ í–ˆì„ ê²½ìš°ì˜
+             * out binding ì„ ìœ„í•´ì„œë§Œ ì¡´ìž¬í•œë‹¤.
              */
         case ULN_MTYPE_CLOB_LOCATOR:
         case ULN_MTYPE_BLOB_LOCATOR:
@@ -293,7 +293,7 @@ acp_sint32_t ulnTypeGetDisplaySize(ulnMTypeID aMTYPE, ulnMeta *aMeta)
 }
 
 /*
- * SQL_C_DEFAULT ·Î ¹ÙÀÎµù½Ã ¾î¶² Å¸ÀÔÀ» °¡Á¤ÇØ¾ß ÇÏ´ÂÁö °áÁ¤ÇÏ´Â ÇÔ¼ö.
+ * SQL_C_DEFAULT ë¡œ ë°”ì¸ë”©ì‹œ ì–´ë–¤ íƒ€ìž…ì„ ê°€ì •í•´ì•¼ í•˜ëŠ”ì§€ ê²°ì •í•˜ëŠ” í•¨ìˆ˜.
  */
 acp_sint16_t ulnTypeGetDefault_SQL_C_TYPE(ulnMTypeID aMTYPE)
 {
@@ -301,7 +301,7 @@ acp_sint16_t ulnTypeGetDefault_SQL_C_TYPE(ulnMTypeID aMTYPE)
 }
 
 /*
- * ÀÌ ÇÔ¼ö´Â ´Ü ÇÑ°÷, out param À» À§ÇÑ ÀÓ½Ã ¹öÆÛ¸¦ ÇÒ´çÇÒ ¶§¿¡¸¸ ¾²ÀÎ´Ù.
+ * ì´ í•¨ìˆ˜ëŠ” ë‹¨ í•œê³³, out param ì„ ìœ„í•œ ìž„ì‹œ ë²„í¼ë¥¼ í• ë‹¹í•  ë•Œì—ë§Œ ì“°ì¸ë‹¤.
  */
 acp_sint32_t ulnTypeGetSizeOfFixedType(ulnMTypeID aMTYPE)
 {
@@ -387,19 +387,19 @@ acp_bool_t ulnTypeIsFixedMType(ulnMTypeID aMTYPE)
 
 /*
  * ====================================================
- * SQL_C_TYPE À¸·ÎºÎÅÍ ULN_CTYPE À» ¾ò´Â ÇÔ¼ö
- * SQL_TYPE À¸·ÎºÎÅÍ ULN_MTYPE À» ¾ò´Â ÇÔ¼ö.
+ * SQL_C_TYPE ìœ¼ë¡œë¶€í„° ULN_CTYPE ì„ ì–»ëŠ” í•¨ìˆ˜
+ * SQL_TYPE ìœ¼ë¡œë¶€í„° ULN_MTYPE ì„ ì–»ëŠ” í•¨ìˆ˜.
  *
- * Áï, ¿ÜºÎÀÇ Å¸ÀÔ¿¡¼­ ³»ºÎÀÇ Å¸ÀÔÀ¸·Î ¸ÅÇÎÇÏ´Â ÇÔ¼ö.
+ * ì¦‰, ì™¸ë¶€ì˜ íƒ€ìž…ì—ì„œ ë‚´ë¶€ì˜ íƒ€ìž…ìœ¼ë¡œ ë§¤í•‘í•˜ëŠ” í•¨ìˆ˜.
  * ====================================================
  */
 
 /*
  * BUGBUG
  *      SQL_WLONGVARCHAR:
- * »ó±â Å¸ÀÔ¿¡ ´ëÇÑ °æ¿ì¸¦ Ã³¸®ÇÏ°í ÀÖÁö ¾Ê´Ù.
+ * ìƒê¸° íƒ€ìž…ì— ëŒ€í•œ ê²½ìš°ë¥¼ ì²˜ë¦¬í•˜ê³  ìžˆì§€ ì•Šë‹¤.
  *
- * BUGBUG: ODBC 3.0 ¿¡´Â ÀÖ´Âµ¥, unix odbc Çì´õÆÄÀÏ¿¡´Â ¾ø´Ù.
+ * BUGBUG: ODBC 3.0 ì—ëŠ” ìžˆëŠ”ë°, unix odbc í—¤ë”íŒŒì¼ì—ëŠ” ì—†ë‹¤.
  *      SQL_TYPE_UTCDATETIME:
  *      SQL_TYPE_UTCTIME:
  */
@@ -462,12 +462,12 @@ ulnMTypeID ulnTypeMap_SQL_MTYPE(acp_sint16_t aSQL_TYPE)
         case SQL_VARBYTE:                   return ULN_MTYPE_VARBYTE;
         case SQL_NIBBLE:                    return ULN_MTYPE_NIBBLE;
 
-        // BUG-21570 SQL_LONGVARBINARY ´Â ÀÇ¹ÌÀûÀ¸·Î BLOBÀÌ´Ù.
+        // BUG-21570 SQL_LONGVARBINARY ëŠ” ì˜ë¯¸ì ìœ¼ë¡œ BLOBì´ë‹¤.
         case SQL_LONGVARBINARY:
         case SQL_BLOB:
         case SQL_BLOB_LOCATOR:              return ULN_MTYPE_BLOB;
 
-        // BUG-21570 SQL_LONGVARCHAR ´Â ÀÇ¹ÌÀûÀ¸·Î CLOBÀÌ´Ù.
+        // BUG-21570 SQL_LONGVARCHAR ëŠ” ì˜ë¯¸ì ìœ¼ë¡œ CLOBì´ë‹¤.
         case SQL_LONGVARCHAR:
         case SQL_CLOB:
         case SQL_CLOB_LOCATOR:              return ULN_MTYPE_CLOB;
@@ -502,7 +502,7 @@ acp_sint16_t ulnTypeMap_CTYPE_SQLC(ulnCTypeID aCTYPE)
 
         case ULN_CTYPE_BINARY:          return SQL_C_BINARY;
 
-                                        /* BUGBUG : SQL_C_SHORT ´Â ¾î¶±ÇÒ²¨³ª */
+                                        /* BUGBUG : SQL_C_SHORT ëŠ” ì–´ë–¡í• êº¼ë‚˜ */
         case ULN_CTYPE_SSHORT:          return SQL_C_SSHORT;
         case ULN_CTYPE_USHORT:          return SQL_C_USHORT;
 
@@ -512,7 +512,7 @@ acp_sint16_t ulnTypeMap_CTYPE_SQLC(ulnCTypeID aCTYPE)
         case ULN_CTYPE_FLOAT:           return SQL_C_FLOAT;
         case ULN_CTYPE_DOUBLE:          return SQL_C_DOUBLE;
 
-                                        // BUGBUG : SQL_C_TINYINT µµ ÀÖ´Âµ¥..
+                                        // BUGBUG : SQL_C_TINYINT ë„ ìžˆëŠ”ë°..
         case ULN_CTYPE_STINYINT:        return SQL_C_STINYINT;
         case ULN_CTYPE_UTINYINT:        return SQL_C_UTINYINT;
 
@@ -595,8 +595,8 @@ ulnCTypeID ulnTypeMap_SQLC_CTYPE(acp_sint16_t aSQL_C_TYPE)
         // in ODBC 2.x, the C date, time, and timestamp data types are
         // following three values.
         //
-        // case SQL_C_VARBOOKMARK:  // SQL_C_BINARY ¿Í °°Àº °ª.
-        // case SQL_C_BOOKMARK:     // SQL_C_UBIGINT ¿Í °°Àº °ª.
+        // case SQL_C_VARBOOKMARK:  // SQL_C_BINARY ì™€ ê°™ì€ ê°’.
+        // case SQL_C_BOOKMARK:     // SQL_C_UBIGINT ì™€ ê°™ì€ ê°’.
         case SQL_C_GUID:
 
         default:                                return ULN_CTYPE_MAX;
@@ -604,7 +604,7 @@ ulnCTypeID ulnTypeMap_SQLC_CTYPE(acp_sint16_t aSQL_C_TYPE)
 }
 
 /*
- * BUGBUG : ÇöÀç´Â »ç¿ëÇÏÁö ¾ÊÁö¸¸, descriptor field ¼¼ÆÃÇÏ´Â ºÎºÐÀ» ¼ÕÁúÇÒ ¶§ ¾²ÀÏ°Í °°´Ù.
+ * BUGBUG : í˜„ìž¬ëŠ” ì‚¬ìš©í•˜ì§€ ì•Šì§€ë§Œ, descriptor field ì„¸íŒ…í•˜ëŠ” ë¶€ë¶„ì„ ì†ì§ˆí•  ë•Œ ì“°ì¼ê²ƒ ê°™ë‹¤.
  */
 
 acp_sint16_t ulnTypeGetOdbcDatetimeIntCode(acp_sint16_t aType)
@@ -629,9 +629,9 @@ acp_sint16_t ulnTypeGetOdbcDatetimeIntCode(acp_sint16_t aType)
         case SQL_INTERVAL_MINUTE_TO_SECOND: return SQL_CODE_MINUTE_TO_SECOND;
 
         /*
-         * Note: ODBC3.0 SQLSetDescField() ÇÔ¼ö ¼³¸í :
-         *       SQL_DESC_CONCISE_TYPE ÀÌ datetime ÀÌ°Å³ª interval ÀÌ ¾Æ´Ï¸é SQL_DESC_TYPE ÇÊµå´Â
-         *       µ¿ÀÏÇÑ °ªÀ¸·Î ¼¼ÆÃÇÏ°í, SQL_DESC_DATETIME_INTERVAL_CODE ´Â 0 À¸·Î ¼¼ÆÃÇÑ´Ù.
+         * Note: ODBC3.0 SQLSetDescField() í•¨ìˆ˜ ì„¤ëª… :
+         *       SQL_DESC_CONCISE_TYPE ì´ datetime ì´ê±°ë‚˜ interval ì´ ì•„ë‹ˆë©´ SQL_DESC_TYPE í•„ë“œëŠ”
+         *       ë™ì¼í•œ ê°’ìœ¼ë¡œ ì„¸íŒ…í•˜ê³ , SQL_DESC_DATETIME_INTERVAL_CODE ëŠ” 0 ìœ¼ë¡œ ì„¸íŒ…í•œë‹¤.
          */
         default:                            return 0;
     }
@@ -642,7 +642,7 @@ acp_sint16_t ulnTypeGetOdbcVerboseType(acp_sint16_t aType)
     switch (aType)
     {
         /*
-         * Concise SQL types and C types : »ó¼ö°ªÀÌ µ¿ÀÏÇÏ´Ù.
+         * Concise SQL types and C types : ìƒìˆ˜ê°’ì´ ë™ì¼í•˜ë‹¤.
          */
         case SQL_TYPE_DATE:                     // SQL_C_TYPE_DATE
         case SQL_TYPE_TIME:                     // SQL_C_TYPE_TIME
@@ -670,14 +670,14 @@ acp_sint16_t ulnTypeGetOdbcVerboseType(acp_sint16_t aType)
 }
 
 /*
- * Å¸ÀÔÀÇ Æ¯¼ºÀ» ¾Ë¾Æº¸´Â ÇÔ¼ö
+ * íƒ€ìž…ì˜ íŠ¹ì„±ì„ ì•Œì•„ë³´ëŠ” í•¨ìˆ˜
  */
 acp_bool_t ulnTypeIsOdbcConciseType(acp_sint16_t aType)
 {
     switch (aType)
     {
         /*
-         * Concise SQL types and C types : »ó¼ö°ªÀÌ µ¿ÀÏÇÏ´Ù.
+         * Concise SQL types and C types : ìƒìˆ˜ê°’ì´ ë™ì¼í•˜ë‹¤.
          */
         case SQL_TYPE_DATE:                     // SQL_C_TYPE_DATE
         case SQL_TYPE_TIME:                     // SQL_C_TYPE_TIME
@@ -705,7 +705,7 @@ acp_bool_t ulnTypeIsOdbcConciseType(acp_sint16_t aType)
 acp_bool_t ulnTypeIsVariableLength(ulnCTypeID aCTYPE)
 {
     /*
-     * ÀÌ ÇÔ¼ö´Â SQLGetData() ½Ã¿¡¸¸ È£ÃâµÇ´Â ÇÔ¼öÀÌ´Ù.
+     * ì´ í•¨ìˆ˜ëŠ” SQLGetData() ì‹œì—ë§Œ í˜¸ì¶œë˜ëŠ” í•¨ìˆ˜ì´ë‹¤.
      */
 
     switch (aCTYPE)
@@ -722,9 +722,9 @@ acp_bool_t ulnTypeIsVariableLength(ulnCTypeID aCTYPE)
 acp_sint16_t ulnTypeMap_LOB_SQLTYPE(acp_sint16_t aSQLTYPE, acp_bool_t aLongDataCompat)
 {
     /*
-     * BUG-16253 ¿¡¼­ ¼³¸íÇÑ ¹Ù¿Í °°ÀÌ
-     * SQL_ATTR_LONGDATA_COMPAT ¼Ó¼º¿¡ µû¶ó¼­ ÀÀ¿ë ÇÁ·Î±×·¥ÀÌ
-     * Ç¥ÁØ Å¸ÀÔÀ¸·Î LOB À» select ÇÒ ¼ö ÀÖµµ·Ï ÇØ ÁØ´Ù.
+     * BUG-16253 ì—ì„œ ì„¤ëª…í•œ ë°”ì™€ ê°™ì´
+     * SQL_ATTR_LONGDATA_COMPAT ì†ì„±ì— ë”°ë¼ì„œ ì‘ìš© í”„ë¡œê·¸ëž¨ì´
+     * í‘œì¤€ íƒ€ìž…ìœ¼ë¡œ LOB ì„ select í•  ìˆ˜ ìžˆë„ë¡ í•´ ì¤€ë‹¤.
      */
 
     if (aLongDataCompat == ACP_TRUE)

@@ -21,7 +21,7 @@
  * Description
  *
  *   BUG-18601
- *   Mem RTree Index ÀÇ DUMP¸¦ À§ÇÑ ÇÔ¼ö
+ *   Mem RTree Index ì˜ DUMPë¥¼ ìœ„í•œ í•¨ìˆ˜
  *
  **********************************************************************/
 
@@ -37,13 +37,13 @@
  * Description
  *
  *   D$MEM_INDEX_RTREE_STRUCTURE
- *   : MEMORY RTREE INDEXÀÇ Page Tree ±¸Á¶ Ãâ·Â
+ *   : MEMORY RTREE INDEXì˜ Page Tree êµ¬ì¡° ì¶œë ¥
  *
  *
  **********************************************************************/
 
 //------------------------------------------------------
-// D$MEM_INDEX_RTREE_STRUCTURE Dump TableÀÇ Column Description
+// D$MEM_INDEX_RTREE_STRUCTURE Dump Tableì˜ Column Description
 //------------------------------------------------------
 
 static iduFixedTableColDesc gDumpMemRTreeStructureColDesc[]=
@@ -99,7 +99,7 @@ static iduFixedTableColDesc gDumpMemRTreeStructureColDesc[]=
 };
 
 //------------------------------------------------------
-// D$MEM_INDEX_RTREE_STRUCTURE Dump TableÀÇ Table Description
+// D$MEM_INDEX_RTREE_STRUCTURE Dump Tableì˜ Table Description
 //------------------------------------------------------
 
 iduFixedTableDesc  gDumpMemRTreeStructureTableDesc =
@@ -115,7 +115,7 @@ iduFixedTableDesc  gDumpMemRTreeStructureTableDesc =
 };
 
 //------------------------------------------------------
-// D$VOL_INDEX_RTREE_STRUCTURE Dump TableÀÇ Column Description
+// D$VOL_INDEX_RTREE_STRUCTURE Dump Tableì˜ Column Description
 //------------------------------------------------------
 
 static iduFixedTableColDesc gDumpVolRTreeStructureColDesc[]=
@@ -171,7 +171,7 @@ static iduFixedTableColDesc gDumpVolRTreeStructureColDesc[]=
 };
 
 //------------------------------------------------------
-// D$VOL_INDEX_RTREE_STRUCTURE Dump TableÀÇ Table Description
+// D$VOL_INDEX_RTREE_STRUCTURE Dump Tableì˜ Table Description
 //------------------------------------------------------
 
 iduFixedTableDesc  gDumpVolRTreeStructureTableDesc =
@@ -187,7 +187,7 @@ iduFixedTableDesc  gDumpVolRTreeStructureTableDesc =
 };
 
 //------------------------------------------------------
-// D$MEM_INDEX_RTREE_STRUCTURE Dump TableÀÇ ·¹ÄÚµå Build
+// D$MEM_INDEX_RTREE_STRUCTURE Dump Tableì˜ ë ˆì½”ë“œ Build
 //------------------------------------------------------
 
 IDE_RC
@@ -221,7 +221,7 @@ stnmrFT::buildRecordTreeStructure( idvSQL              * /* aStatistics */,
     {
         /* BUG-32417 [sm-mem-index] The fixed table 'X$MEM_BTREE_HEADER'
          * doesn't consider that indices is disabled. 
-         * IndexRuntimeHeader°¡ ¾ø´Â °æ¿ì´Â Á¦¿ÜÇÑ´Ù. */
+         * IndexRuntimeHeaderê°€ ì—†ëŠ” ê²½ìš°ëŠ” ì œì™¸í•œë‹¤. */
     }
     else
     {
@@ -366,13 +366,13 @@ stnmrFT::traverseBuildTreePage( void                * aHeader,
  * Description
  *
  *   D$MEM_INDEX_RTREE_KEY
- *   : MEMORY RTREE INDEXÀÇ KEY Ãâ·Â
+ *   : MEMORY RTREE INDEXì˜ KEY ì¶œë ¥
  *
  *
  **********************************************************************/
 
 //------------------------------------------------------
-// D$MEM_INDEX_RTREE_KEY Dump TableÀÇ Column Description
+// D$MEM_INDEX_RTREE_KEY Dump Tableì˜ Column Description
 //------------------------------------------------------
 
 static iduFixedTableColDesc gDumpMemRTreeKeyColDesc[]=
@@ -476,7 +476,7 @@ static iduFixedTableColDesc gDumpMemRTreeKeyColDesc[]=
 };
 
 //------------------------------------------------------
-// D$MEM_INDEX_RTREE_KEY Dump TableÀÇ Table Description
+// D$MEM_INDEX_RTREE_KEY Dump Tableì˜ Table Description
 //------------------------------------------------------
 
 iduFixedTableDesc  gDumpMemRTreeKeyTableDesc =
@@ -492,7 +492,7 @@ iduFixedTableDesc  gDumpMemRTreeKeyTableDesc =
 };
 
 //------------------------------------------------------
-// D$VOL_INDEX_RTREE_KEY Dump TableÀÇ Column Description
+// D$VOL_INDEX_RTREE_KEY Dump Tableì˜ Column Description
 //------------------------------------------------------
 
 static iduFixedTableColDesc gDumpVolRTreeKeyColDesc[]=
@@ -596,7 +596,7 @@ static iduFixedTableColDesc gDumpVolRTreeKeyColDesc[]=
 };
 
 //------------------------------------------------------
-// D$VOL_INDEX_RTREE_KEY Dump TableÀÇ Table Description
+// D$VOL_INDEX_RTREE_KEY Dump Tableì˜ Table Description
 //------------------------------------------------------
 
 iduFixedTableDesc  gDumpVolRTreeKeyTableDesc =
@@ -612,7 +612,7 @@ iduFixedTableDesc  gDumpVolRTreeKeyTableDesc =
 };
 
 //------------------------------------------------------
-// D$MEM_INDEX_RTREE_HEADER Dump TableÀÇ ·¹ÄÚµå Build
+// D$MEM_INDEX_RTREE_HEADER Dump Tableì˜ ë ˆì½”ë“œ Build
 //------------------------------------------------------
 
 IDE_RC stnmrFT::buildRecordKey( idvSQL              * /*aStatistics*/,
@@ -646,7 +646,7 @@ IDE_RC stnmrFT::buildRecordKey( idvSQL              * /*aStatistics*/,
     {
         /* BUG-32417 [sm-mem-index] The fixed table 'X$MEM_BTREE_HEADER'
          * doesn't consider that indices is disabled. 
-         * IndexRuntimeHeader°¡ ¾ø´Â °æ¿ì´Â Á¦¿ÜÇÑ´Ù. */
+         * IndexRuntimeHeaderê°€ ì—†ëŠ” ê²½ìš°ëŠ” ì œì™¸í•œë‹¤. */
     }
     else
     {
@@ -800,7 +800,7 @@ IDE_RC stnmrFT::traverseBuildKey( void                * aHeader,
         }
         
         //------------------------------
-        // MBR ¼³Á¤
+        // MBR ì„¤ì •
         //------------------------------
         sDumpKey.mMinX = sSlot->mMbr.mMinX;
         sDumpKey.mMinY = sSlot->mMbr.mMinY;

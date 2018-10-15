@@ -18,15 +18,15 @@
 /***********************************************************************
  * $Id
  *
- * Sort ¹× Hash¸¦ ÇÏ´Â °ø°£À¸·Î, ÃÖ´ëÇÑ µ¿½Ã¼º Ã³¸® ¾øÀÌ µ¿ÀÛÇÏµµ·Ï ±¸ÇöµÈ´Ù.
- * µû¶ó¼­ SortArea, HashArea¸¦ ¾Æ¿ì¸£´Â ÀÇ¹Ì·Î »ç¿ëµÈ´Ù. Áï
- * SortArea, HashArea´ÂWorkArea¿¡ ¼ÓÇÑ´Ù.
+ * Sort ë° Hashë¥¼ í•˜ëŠ” ê³µê°„ìœ¼ë¡œ, ìµœëŒ€í•œ ë™ì‹œì„± ì²˜ë¦¬ ì—†ì´ ë™ì‘í•˜ë„ë¡ êµ¬í˜„ëœë‹¤.
+ * ë”°ë¼ì„œ SortArea, HashAreaë¥¼ ì•„ìš°ë¥´ëŠ” ì˜ë¯¸ë¡œ ì‚¬ìš©ëœë‹¤. ì¦‰
+ * SortArea, HashAreaëŠ”WorkAreaì— ì†í•œë‹¤.
  *
- * ¿ø·¡ PrivateWorkArea¸¦ »ı°¢ÇßÀ¸³ª, Ã¹¹øÂ° ±ÛÀÚÀÎ P°¡ ¿©·¯±âÁö·Î »ç¿ëµÇ±â
- * ¶§¹®¿¡(¿¹-Page); WorkArea·Î º¯°æÇÏ¿´´Ù.
- * ÀÏ¹İÀûÀ¸·Î ¾àÀÚ ¹× Prefix·Î WA¸¦ »ç¿ëÇÏÁö¸¸, ¸î°¡Áö ¿¹¿Ü°¡ ÀÖ´Ù.
- * WCB - BCB¿Í ¿ªÇÒÀÌ °°±â ¶§¹®¿¡, ÀÇ¹Ì»ó WACBº¸´Ù WCB·Î ¼öÁ¤ÇÏ¿´´Ù.
- * WPID - WAPID´Â Á» ±æ¾î¼­ WPID·Î ÁÙ¿´´Ù.
+ * ì›ë˜ PrivateWorkAreaë¥¼ ìƒê°í–ˆìœ¼ë‚˜, ì²«ë²ˆì§¸ ê¸€ìì¸ Pê°€ ì—¬ëŸ¬ê¸°ì§€ë¡œ ì‚¬ìš©ë˜ê¸°
+ * ë•Œë¬¸ì—(ì˜ˆ-Page); WorkAreaë¡œ ë³€ê²½í•˜ì˜€ë‹¤.
+ * ì¼ë°˜ì ìœ¼ë¡œ ì•½ì ë° Prefixë¡œ WAë¥¼ ì‚¬ìš©í•˜ì§€ë§Œ, ëª‡ê°€ì§€ ì˜ˆì™¸ê°€ ìˆë‹¤.
+ * WCB - BCBì™€ ì—­í• ì´ ê°™ê¸° ë•Œë¬¸ì—, ì˜ë¯¸ìƒ WACBë³´ë‹¤ WCBë¡œ ìˆ˜ì •í•˜ì˜€ë‹¤.
+ * WPID - WAPIDëŠ” ì¢€ ê¸¸ì–´ì„œ WPIDë¡œ ì¤„ì˜€ë‹¤.
  *
  **********************************************************************/
 
@@ -120,17 +120,17 @@ public:
 
 public:
     /***********************************************************
-     * FixedTable¿ë ÇÔ¼öµé ( for X$TEMPINFO )
+     * FixedTableìš© í•¨ìˆ˜ë“¤ ( for X$TEMPINFO )
      ***********************************************************/
     static IDE_RC buildTempInfoRecord( void                * aHeader,
                                        iduFixedTableMemory * aMemory );
 
 private:
-    static UChar               * mArea;        /*WorkArea°¡ ÀÖ´Â °÷ */
-    static UChar               * mAlignedArea; /*8k Align WorkArea°¡ ÀÖ´Â °÷ */
-    static ULong                 mWASize;      /*WorkAreaÀÇ Byte Å©±â */
+    static UChar               * mArea;        /*WorkAreaê°€ ìˆëŠ” ê³³ */
+    static UChar               * mAlignedArea; /*8k Align WorkAreaê°€ ìˆëŠ” ê³³ */
+    static ULong                 mWASize;      /*WorkAreaì˜ Byte í¬ê¸° */
     static iduMutex              mMutex;
-    static iduStackMgr           mFreePool;    /*ºó Extent¸¦ °ü¸®ÇÏ´Â °÷ */
+    static iduStackMgr           mFreePool;    /*ë¹ˆ Extentë¥¼ ê´€ë¦¬í•˜ëŠ” ê³³ */
     static sdtWASegment        * mWASegListHead;
     static iduMemPool            mFlushQueuePool;
 

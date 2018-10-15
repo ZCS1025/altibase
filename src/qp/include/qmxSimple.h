@@ -68,7 +68,7 @@ typedef struct qmxFastScanInfo
     
 } qmxFastScanInfo;
 
-// PROJ-2551 simple query ÃÖÀûÈ­
+// PROJ-2551 simple query ìµœì í™”
 class qmxSimple
 {
 public:

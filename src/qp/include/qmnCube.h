@@ -34,7 +34,7 @@
 #define QMND_CUBE_INIT_DONE_FALSE          ( 0x00000000 )
 #define QMND_CUBE_INIT_DONE_TRUE           ( 0x00000001 )
 
-/* cube groupÀÇ ¼öÇà¿Ï·á¿©ºÎ */
+/* cube groupì˜ ìˆ˜í–‰ì™„ë£Œì—¬ë¶€ */
 #define QMND_CUBE_GROUP_DONE_MASK          ( 0x8000 )
 #define QMND_CUBE_GROUP_DONE_FALSE         ( 0x0000 )
 #define QMND_CUBE_GROUP_DONE_TRUE          ( 0x8000 )

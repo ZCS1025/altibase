@@ -46,13 +46,13 @@ public abstract class CommonCharVarcharColumn extends AbstractColumn
 
     private final byte          mLengthSize;
     private final int           mMaxLength;
-    // ¹®ÀÚ µ¥ÀÌÅÍ¸¦ ´ã°í ÀÖ´Â ÇÊµå
+    // ë¬¸ì ë°ì´í„°ë¥¼ ë‹´ê³  ìˆëŠ” í•„ë“œ
     private String              mStringValue                   = STRING_NULL_VALUE;
     private int                 mPreparedBytesLen;
 
     private CharsetEncoder      mDBEncoder;
     private CharsetEncoder      mNCharEncoder;
-    private boolean             mIsRedundant                   = false;     // BUG-43807 redundant ¸ğµå°¡ È°¼ºÈ­ µÇ¾î ÀÖ´ÂÁö ¿©ºÎ
+    private boolean             mIsRedundant                   = false;     // BUG-43807 redundant ëª¨ë“œê°€ í™œì„±í™” ë˜ì–´ ìˆëŠ”ì§€ ì—¬ë¶€
 
     CommonCharVarcharColumn()
     {
@@ -162,7 +162,7 @@ public abstract class CommonCharVarcharColumn extends AbstractColumn
 
         if (ColumnTypes.isNCharType(getDBColumnType()))
         {
-            // ¸Å¹ø Àç¹ÙÀÎµù µÇÁö ¾Êµµ·Ï Å¬¶§¸¸ º¯°æ
+            // ë§¤ë²ˆ ì¬ë°”ì¸ë”© ë˜ì§€ ì•Šë„ë¡ í´ë•Œë§Œ ë³€ê²½
             if (mStringValue.length() > getColumnInfo().getPrecision())
             {
                 getColumnInfo().modifyPrecision(mStringValue.length());
@@ -170,11 +170,11 @@ public abstract class CommonCharVarcharColumn extends AbstractColumn
         }
         else
         {
-            // char, varchar¸¦ Á¦¿ÜÇÑ ¸ğµç ÄÃ·³Àº ±×³É precisionÀ» ¼¼ÆÃÇÏ¸é µÇÁö¸¸
-            // char, varchar´Â character setÀ» °í·ÁÇØ byte ¼ö¸¦ precisionÀ¸·Î ¼¼ÆÃÇØ¾ß ÇÑ´Ù.
-            // nchar, nvarcharÀÇ precisionÀº ¹®ÀÚ¿­¼öÀÌ±â ¶§¹®¿¡ ÇØ´çµÇÁö ¾Ê´Â´Ù.
-            // ±×¸®°í µ¥ÀÌÅÍ°¡ ¼¼ÆÃµÉ ¶§¸¶´Ù precisionÀÌ Á¶±İÀÌ¶óµµ º¯ÇÏ¸é
-            // Àç¹ÙÀÎµùÇØ¾ß ÇÏ¹Ç·Î, Àû´çÈ÷ size class¸¦ µÎ¾î ¸Å¹ø Àç¹ÙÀÎµùµÇÁö ¾Êµµ·Ï ÇÑ´Ù.
+            // char, varcharë¥¼ ì œì™¸í•œ ëª¨ë“  ì»¬ëŸ¼ì€ ê·¸ëƒ¥ precisionì„ ì„¸íŒ…í•˜ë©´ ë˜ì§€ë§Œ
+            // char, varcharëŠ” character setì„ ê³ ë ¤í•´ byte ìˆ˜ë¥¼ precisionìœ¼ë¡œ ì„¸íŒ…í•´ì•¼ í•œë‹¤.
+            // nchar, nvarcharì˜ precisionì€ ë¬¸ìì—´ìˆ˜ì´ê¸° ë•Œë¬¸ì— í•´ë‹¹ë˜ì§€ ì•ŠëŠ”ë‹¤.
+            // ê·¸ë¦¬ê³  ë°ì´í„°ê°€ ì„¸íŒ…ë  ë•Œë§ˆë‹¤ precisionì´ ì¡°ê¸ˆì´ë¼ë„ ë³€í•˜ë©´
+            // ì¬ë°”ì¸ë”©í•´ì•¼ í•˜ë¯€ë¡œ, ì ë‹¹íˆ size classë¥¼ ë‘ì–´ ë§¤ë²ˆ ì¬ë°”ì¸ë”©ë˜ì§€ ì•Šë„ë¡ í•œë‹¤.
             int sPrecision = mStringValue.length() * getColumnInfo().getCharPrecisionRate();
             if (sPrecision > getColumnInfo().getPrecision())
             {
@@ -193,7 +193,7 @@ public abstract class CommonCharVarcharColumn extends AbstractColumn
     
     protected abstract boolean isNationalCharset();
 
-    // °¡º¯ÀÎÀÚ Áö¿øÀÌ µÇ´Â ¹öÀü¿¡¼­´Â °¡º¯ÀÎÀÚ·Î ¸¸µé¾î¼­ AbstractColumn¿¡ abstract method¸¦ ¸¸µé°í ¹Ø¿¡¼­ ±¸ÇöÇÏ´Â °Ô ÁÁ°Ú´Ù.
+    // ê°€ë³€ì¸ì ì§€ì›ì´ ë˜ëŠ” ë²„ì „ì—ì„œëŠ” ê°€ë³€ì¸ìë¡œ ë§Œë“¤ì–´ì„œ AbstractColumnì— abstract methodë¥¼ ë§Œë“¤ê³  ë°‘ì—ì„œ êµ¬í˜„í•˜ëŠ” ê²Œ ì¢‹ê² ë‹¤.
     private void replaceValue(String aString)
     {
         mStringValue = aString;
@@ -221,7 +221,7 @@ public abstract class CommonCharVarcharColumn extends AbstractColumn
         int sSkipSize = 0;
         int sMaxFieldSize = getMaxBinaryLength();
 
-        // BUG-43807 Áßº¹µ¥ÀÌÅÍÀÎ °æ¿ì¿¡´Â ±âÁ¸¿¡ ¼ÂÆÃµÇ¾î ÀÖ´Â ÄÃ·³°ªÀ» ±×´ë·Î µ¹·ÁÁØ´Ù.
+        // BUG-43807 ì¤‘ë³µë°ì´í„°ì¸ ê²½ìš°ì—ëŠ” ê¸°ì¡´ì— ì…‹íŒ…ë˜ì–´ ìˆëŠ” ì»¬ëŸ¼ê°’ì„ ê·¸ëŒ€ë¡œ ëŒë ¤ì¤€ë‹¤.
         if (mIsRedundant && isDuplicatedData(aChannel))
         {
             return getStringSub();
@@ -248,11 +248,11 @@ public abstract class CommonCharVarcharColumn extends AbstractColumn
                 // sMaxFieldSize -= sSize;
             }
 
-            // BUG-44206 ¸Å¹ø ByteBuffer¸¦ »ı¼ºÇÏÁö ¾Ê°í CmChannel·Î À§ÀÓ½ÃÅ²´Ù.
+            // BUG-44206 ë§¤ë²ˆ ByteBufferë¥¼ ìƒì„±í•˜ì§€ ì•Šê³  CmChannelë¡œ ìœ„ì„ì‹œí‚¨ë‹¤.
             sValue = aChannel.readCharVarcharColumnString(sSize, sSkipSize, isNationalCharset());
         }
 
-        if (mIsRedundant) // BUG-43807 redundant ¸ğµå°¡ È°¼ºÈ­ µÇ¾î ÀÖ´Â °æ¿ì¿¡´Â ÄÃ·³°ª¿¡ ¼ÂÆÃÇØÁØ´Ù.
+        if (mIsRedundant) // BUG-43807 redundant ëª¨ë“œê°€ í™œì„±í™” ë˜ì–´ ìˆëŠ” ê²½ìš°ì—ëŠ” ì»¬ëŸ¼ê°’ì— ì…‹íŒ…í•´ì¤€ë‹¤.
         {
             replaceValue(sValue);
         }
@@ -261,11 +261,11 @@ public abstract class CommonCharVarcharColumn extends AbstractColumn
     }
 
     /**
-     * Áßº¹µ¥ÀÌÅÍÀÎÁö ¿©ºÎ. <br> redundant_transmissionÀÌ È°¼ºÈ­ µÈ °æ¿ì¿¡´Â ¼­¹ö¿¡¼­ Ãß°¡ÀûÀ¸·Î 1byteÅ©±âÀÇ Áßº¹µ¥ÀÌÅÍ
-     * È®ÀÎ¿ë ÇÃ·¡±×°¡ ÇÁ·ÎÅäÄİ¿¡ Ãß°¡µÈ´Ù.
-     * @param aChannel ¼ÒÄÏÀ» ÅëÇØ µ¥ÀÌÅÍ¸¦ Àü´Ş¹ŞÀ» Ã¤³Î°´Ã¼
-     * @return Áßº¹µ¥ÀÌÅÍ¸é 1 ¾Æ´Ï¸é 0
-     * @throws SQLException Á¤»óÀûÀ¸·Î Ã¤³Î·ÎºÎÅÍ µ¥ÀÌÅÍ¸¦ ¹ŞÁö ¸øÇÑ °æ¿ì
+     * ì¤‘ë³µë°ì´í„°ì¸ì§€ ì—¬ë¶€. <br> redundant_transmissionì´ í™œì„±í™” ëœ ê²½ìš°ì—ëŠ” ì„œë²„ì—ì„œ ì¶”ê°€ì ìœ¼ë¡œ 1byteí¬ê¸°ì˜ ì¤‘ë³µë°ì´í„°
+     * í™•ì¸ìš© í”Œë˜ê·¸ê°€ í”„ë¡œí† ì½œì— ì¶”ê°€ëœë‹¤.
+     * @param aChannel ì†Œì¼“ì„ í†µí•´ ë°ì´í„°ë¥¼ ì „ë‹¬ë°›ì„ ì±„ë„ê°ì²´
+     * @return ì¤‘ë³µë°ì´í„°ë©´ 1 ì•„ë‹ˆë©´ 0
+     * @throws SQLException ì •ìƒì ìœ¼ë¡œ ì±„ë„ë¡œë¶€í„° ë°ì´í„°ë¥¼ ë°›ì§€ ëª»í•œ ê²½ìš°
      */
     private boolean isDuplicatedData(CmChannel aChannel) throws SQLException
     {
@@ -289,7 +289,7 @@ public abstract class CommonCharVarcharColumn extends AbstractColumn
     
     protected boolean isNullValueSet()
     {
-        // ¼­¹ö¿¡¼­ ¾òÀº µ¥ÀÌÅ¸(mBytesValue)·ÎºÎÅÍ À¯È¿ÇÑ ¹®ÀÚ¿­(mStringValue)À» ¾òÁö ¸øÇßÀ» °æ¿ì¿¡µµ NULLÀº ¾Æ´Ï´Ù.
+        // ì„œë²„ì—ì„œ ì–»ì€ ë°ì´íƒ€(mBytesValue)ë¡œë¶€í„° ìœ íš¨í•œ ë¬¸ìì—´(mStringValue)ì„ ì–»ì§€ ëª»í–ˆì„ ê²½ìš°ì—ë„ NULLì€ ì•„ë‹ˆë‹¤.
         return (mStringValue.length() == 0);
     }
     
@@ -322,7 +322,7 @@ public abstract class CommonCharVarcharColumn extends AbstractColumn
     }
 
     /**
-     * PROJ-2427 byte[]°ªÀ» ³»ºÎÀûÀ¸·Î °¡Áö°í ÀÖÁö ¾Ê±â¶§¹®¿¡ String.getBytes¸¦ ÀÌ¿ëÇØ °è»êÇØ¼­ µ¹·ÁÁØ´Ù.
+     * PROJ-2427 byte[]ê°’ì„ ë‚´ë¶€ì ìœ¼ë¡œ ê°€ì§€ê³  ìˆì§€ ì•Šê¸°ë•Œë¬¸ì— String.getBytesë¥¼ ì´ìš©í•´ ê³„ì‚°í•´ì„œ ëŒë ¤ì¤€ë‹¤.
      */
     protected byte[] getBytesSub() throws SQLException
     {
@@ -331,7 +331,7 @@ public abstract class CommonCharVarcharColumn extends AbstractColumn
         {
             String sCharsetName = isNationalCharset() ? mNCharEncoder.charset().name() : mDBEncoder.charset().name();
             sByteArry = mStringValue.getBytes(sCharsetName);
-            // BUG-44466 ¼­¹ö¿¡¼­ ¹Ş¾Æ¿Â byte array Å©±â°¡ setMaxFieldSize¿¡¼­ ¼³Á¤ÇÑ Å©±âº¸´Ù Å¬ °æ¿ì¿¡´Â °ªÀ» º¸Á¤ÇÑ´Ù.
+            // BUG-44466 ì„œë²„ì—ì„œ ë°›ì•„ì˜¨ byte array í¬ê¸°ê°€ setMaxFieldSizeì—ì„œ ì„¤ì •í•œ í¬ê¸°ë³´ë‹¤ í´ ê²½ìš°ì—ëŠ” ê°’ì„ ë³´ì •í•œë‹¤.
             if (mMaxBinaryLength > 0 && sByteArry.length > mMaxBinaryLength)
             {
                 byte[] sByteArryTmp = new byte[mMaxBinaryLength];

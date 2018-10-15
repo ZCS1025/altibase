@@ -17,7 +17,7 @@
 #include <mmsSNMPModule.h>
 
 /*
- * PROJ-2473 SNMP Áö¿ø
+ * PROJ-2473 SNMP ì§€ì›
  */
 
 idmModule *mmsSNMPModule::mModules[] =
@@ -39,13 +39,13 @@ idmModule *mmsSNMPModule::mModules[] =
     /* 1.3.6.1.4.1.17180.2.1 */
     &mmsSNMPModule::mAltiPropertyEntry,
     /* 1.3.6.1.4.1.17180.2.1.1 Index */
-    /* 1.3.6.1.4.1.17180.2.1.2 ¸ğµâÆÄÀÏ¿¡ Á¤ÀÇ */
+    /* 1.3.6.1.4.1.17180.2.1.2 ëª¨ë“ˆíŒŒì¼ì— ì •ì˜ */
     &mmsSNMPModule::mAltiPropertyAlarmQueryTimeout,
-    /* 1.3.6.1.4.1.17180.2.1.3 ¸ğµâÆÄÀÏ¿¡ Á¤ÀÇ */
+    /* 1.3.6.1.4.1.17180.2.1.3 ëª¨ë“ˆíŒŒì¼ì— ì •ì˜ */
     &mmsSNMPModule::mAltiPropertyAlarmUtransTimeout,
-    /* 1.3.6.1.4.1.17180.2.1.4 ¸ğµâÆÄÀÏ¿¡ Á¤ÀÇ */
+    /* 1.3.6.1.4.1.17180.2.1.4 ëª¨ë“ˆíŒŒì¼ì— ì •ì˜ */
     &mmsSNMPModule::mAltiPropertyAlarmFetchTimeout,
-    /* 1.3.6.1.4.1.17180.2.1.5 ¸ğµâÆÄÀÏ¿¡ Á¤ÀÇ */
+    /* 1.3.6.1.4.1.17180.2.1.5 ëª¨ë“ˆíŒŒì¼ì— ì •ì˜ */
     &mmsSNMPModule::mAltiPropertyAlarmSessionFailureCount,
 
     /* 1.3.6.1.4.1.17180.3 */
@@ -55,20 +55,20 @@ idmModule *mmsSNMPModule::mModules[] =
     /* 1.3.6.1.4.1.17180.3.1.1 */
     &mmsSNMPModule::mAltiStatusEntry,
     /* 1.3.6.1.4.1.17180.3.1.1.1, Index */
-    /* 1.3.6.1.4.1.17180.3.1.1.2, ¸ğµâÆÄÀÏ¿¡ Á¤ÀÇ */
+    /* 1.3.6.1.4.1.17180.3.1.1.2, ëª¨ë“ˆíŒŒì¼ì— ì •ì˜ */
     &mmsSNMPModule::mAltiStatusDBName,
-    /* 1.3.6.1.4.1.17180.3.1.1.3, ¸ğµâÆÄÀÏ¿¡ Á¤ÀÇ */
+    /* 1.3.6.1.4.1.17180.3.1.1.3, ëª¨ë“ˆíŒŒì¼ì— ì •ì˜ */
     &mmsSNMPModule::mAltiStatusDBVersion,
-    /* 1.3.6.1.4.1.17180.3.1.1.4, ¸ğµâÆÄÀÏ¿¡ Á¤ÀÇ */
+    /* 1.3.6.1.4.1.17180.3.1.1.4, ëª¨ë“ˆíŒŒì¼ì— ì •ì˜ */
     &mmsSNMPModule::mAltiStatusRunningTime,
-    /* 1.3.6.1.4.1.17180.3.1.1.5, ¸ğµâÆÄÀÏ¿¡ Á¤ÀÇ */
+    /* 1.3.6.1.4.1.17180.3.1.1.5, ëª¨ë“ˆíŒŒì¼ì— ì •ì˜ */
     &mmsSNMPModule::mAltiStatusProcessID,
-    /* 1.3.6.1.4.1.17180.3.1.1.6, ¸ğµâÆÄÀÏ¿¡ Á¤ÀÇ */
+    /* 1.3.6.1.4.1.17180.3.1.1.6, ëª¨ë“ˆíŒŒì¼ì— ì •ì˜ */
     &mmsSNMPModule::mAltiStatusSessionCount,
     NULL
 };
 
-/* iduModule ±¸Á¶ Âü°í
+/* iduModule êµ¬ì¡° ì°¸ê³ 
 struct idmModule {
     UChar*           name;
     idmModule*       parent;
@@ -166,7 +166,7 @@ idmModule mmsSNMPModule::mEnterprises =
     idm::unsupportedSet
 };
 
-/* 1.3.6.1.4.1.17180 altibase - ¿Ö 17180ÀÏ±î??? */
+/* 1.3.6.1.4.1.17180 altibase - ì™œ 17180ì¼ê¹Œ??? */
 idmModule mmsSNMPModule::mAltibase =
 {
     (UChar *)"altibase", &mmsSNMPModule::mEnterprises,

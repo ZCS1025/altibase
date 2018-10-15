@@ -96,21 +96,21 @@ IDE_RC qdv::validateCreate(qcStatement * aStatement)
 /***********************************************************************
  *
  * Description :
- *    CREATE VIEW ... ÀÇ validation ¼öÇà
+ *    CREATE VIEW ... ì˜ validation ìˆ˜í–‰
  *
  * Implementation :
- *    1. ºä°¡ Á¸ÀçÇÏ´ÂÁö Ã¼Å© ( replace ÀÌ¸é ¾øÀ» ¶§ ¿¡·¯, create ÀÌ¸é
- *       Á¸ÀçÇÒ ¶§ ¿¡·¯ )
- *    2. create or replace ÀÏ ¶§ execution ÇÔ¼ö¸¦ qdv::executeRecreate ·Î º¯°æ
- *    2. CreateView ±ÇÇÑÀÌ ÀÖ´ÂÁö Ã¼Å©
- *    3. SELECT statement ¿¡ ´ëÇÑ validation ¼öÇà( validation °á°ú¿¡
- *       ¿¡·¯°¡ ÀÖ¾îµµ FORCE ¿É¼ÇÀ¸·Î »ý¼ºÇÑ´Ù¸é °è¼Ó ÁøÇà )
- *    4. select ¹®¿¡ sequence( currval, nextval ) °¡ »ç¿ëµÇ¾úÀ¸¸é ¿¡·¯
- *    5. ºäÀÇ ÄÃ·³ aliases ¿Í select ÀÇ ÄÃ·³ÀÇ validation ...
+ *    1. ë·°ê°€ ì¡´ìž¬í•˜ëŠ”ì§€ ì²´í¬ ( replace ì´ë©´ ì—†ì„ ë•Œ ì—ëŸ¬, create ì´ë©´
+ *       ì¡´ìž¬í•  ë•Œ ì—ëŸ¬ )
+ *    2. create or replace ì¼ ë•Œ execution í•¨ìˆ˜ë¥¼ qdv::executeRecreate ë¡œ ë³€ê²½
+ *    2. CreateView ê¶Œí•œì´ ìžˆëŠ”ì§€ ì²´í¬
+ *    3. SELECT statement ì— ëŒ€í•œ validation ìˆ˜í–‰( validation ê²°ê³¼ì—
+ *       ì—ëŸ¬ê°€ ìžˆì–´ë„ FORCE ì˜µì…˜ìœ¼ë¡œ ìƒì„±í•œë‹¤ë©´ ê³„ì† ì§„í–‰ )
+ *    4. select ë¬¸ì— sequence( currval, nextval ) ê°€ ì‚¬ìš©ë˜ì—ˆìœ¼ë©´ ì—ëŸ¬
+ *    5. ë·°ì˜ ì»¬ëŸ¼ aliases ì™€ select ì˜ ì»¬ëŸ¼ì˜ validation ...
  *    6. in case of INVALID VIEW => qtc::fixAfterValidationForCreateInvalidView
- *       => invalid view ¿¡ ´ëÇÑ ÃÊ±âÈ­ Ã³¸®
- *    7. create or replace ÀÏ ¶§ as select ¿¡¼­ »ç¿ëµÇ´Â Å×ÀÌºí(ºä)ÀÌ »ý¼ºÇÏ´Â
- *       ºäÀÇ ÀÌ¸§°ú µ¿ÀÏÇÏÁö ¾ÊÀºÁö Ã¼Å©
+ *       => invalid view ì— ëŒ€í•œ ì´ˆê¸°í™” ì²˜ë¦¬
+ *    7. create or replace ì¼ ë•Œ as select ì—ì„œ ì‚¬ìš©ë˜ëŠ” í…Œì´ë¸”(ë·°)ì´ ìƒì„±í•˜ëŠ”
+ *       ë·°ì˜ ì´ë¦„ê³¼ ë™ì¼í•˜ì§€ ì•Šì€ì§€ ì²´í¬
  *
  ***********************************************************************/
 
@@ -131,7 +131,7 @@ IDE_RC qdv::validateCreate(qcStatement * aStatement)
     UInt                  sSessionUserID;
     SChar                 sViewName[QC_MAX_OBJECT_NAME_LEN + 1];
 
-    // ÇöÀç session userID ÀúÀå
+    // í˜„ìž¬ session userID ì €ìž¥
     sSessionUserID = QCG_GET_SESSION_USER_ID( aStatement );
 
     sParseTree = (qdTableParseTree *)aStatement->myPlan->parseTree;
@@ -298,7 +298,7 @@ IDE_RC qdv::validateCreate(qcStatement * aStatement)
     //------------------------------------------------------------------
     
     // BUG-24408
-    // viewÀÇ ¼ÒÀ¯ÀÚ·Î validationÇÑ´Ù.
+    // viewì˜ ì†Œìœ ìžë¡œ validationí•œë‹¤.
     QCG_SET_SESSION_USER_ID( aStatement, sParseTree->userID );
     
     ((qmsParseTree*)(sParseTree->select->myPlan->parseTree))->querySet->flag
@@ -311,7 +311,7 @@ IDE_RC qdv::validateCreate(qcStatement * aStatement)
         |= (QMV_VIEW_CREATION_TRUE);
 
     // PROJ-2204 join update, delete
-    // create view¿¡ »ç¿ëµÇ´Â SFWGHÀÓÀ» Ç¥½ÃÇÑ´Ù.
+    // create viewì— ì‚¬ìš©ë˜ëŠ” SFWGHìž„ì„ í‘œì‹œí•œë‹¤.
     if ( ((qmsParseTree*)(sParseTree->select->myPlan->parseTree))->querySet->SFWGH != NULL )
     {
         ((qmsParseTree*)(sParseTree->select->myPlan->parseTree))->querySet->SFWGH->flag
@@ -342,7 +342,7 @@ IDE_RC qdv::validateCreate(qcStatement * aStatement)
         }
     }
 
-    // session userID¸¦ ¿øº¹
+    // session userIDë¥¼ ì›ë³µ
     QCG_SET_SESSION_USER_ID( aStatement, sSessionUserID );
     
     //------------------------------------------------------------------
@@ -464,14 +464,14 @@ IDE_RC qdv::validateCreate(qcStatement * aStatement)
           sRelatedObject = sRelatedObject->next )
     {
         
-        // (1) public synonym¿¡ ´ëÇÑ circular view definition°Ë»ç
+        // (1) public synonymì— ëŒ€í•œ circular view definitionê²€ì‚¬
         if ( sRelatedObject->objectType == QS_SYNONYM )
         {
             if ( sRelatedObject->userID == QC_PUBLIC_USER_ID )
             {
                 // BUG-32964
-                // µ¿ÀÏÇÑ ÀÌ¸§À» °¡Áø Public SynonymÀÌ Á¸ÀçÇÏ¸é
-                // circular view definitionÀÌ ¹ß»ýÇÑ´Ù.
+                // ë™ì¼í•œ ì´ë¦„ì„ ê°€ì§„ Public Synonymì´ ì¡´ìž¬í•˜ë©´
+                // circular view definitionì´ ë°œìƒí•œë‹¤.
                 if (idlOS::strMatch(
                         sParseTree->tableName.stmtText
                         + sParseTree->tableName.offset,
@@ -499,7 +499,7 @@ IDE_RC qdv::validateCreate(qcStatement * aStatement)
             // nothing to do 
         }
         
-        // (2) view ¶Ç´Â table¿¡ ´ëÇÑ circular view definition°Ë»ç
+        // (2) view ë˜ëŠ” tableì— ëŒ€í•œ circular view definitionê²€ì‚¬
         if ( sRelatedObject->objectType == QS_TABLE )  
         {
             IDE_TEST( qcmUser::getUserID( aStatement,
@@ -550,7 +550,7 @@ IDE_RC qdv::validateCreate(qcStatement * aStatement)
         }
     }
 
-    //BUGBUG view°¡ ÀúÀåµÉ tablespace ??
+    //BUGBUG viewê°€ ì €ìž¥ë  tablespace ??
     sParseTree->TBSAttr.mID = SMI_ID_TABLESPACE_SYSTEM_MEMORY_DIC;
 
     return IDE_SUCCESS;
@@ -589,7 +589,7 @@ IDE_RC qdv::validateCreate(qcStatement * aStatement)
     }
     IDE_EXCEPTION_END;
 
-    // session userID¸¦ ¿øº¹
+    // session userIDë¥¼ ì›ë³µ
     QCG_SET_SESSION_USER_ID( aStatement, sSessionUserID );
     
     return IDE_FAILURE;
@@ -602,11 +602,11 @@ IDE_RC qdv::validateAlter(qcStatement * aStatement)
 /***********************************************************************
  *
  * Description :
- *    ALTER VIEW ... COMPILE ÀÇ validation ¼öÇà
+ *    ALTER VIEW ... COMPILE ì˜ validation ìˆ˜í–‰
  *
  * Implementation :
- *    1. ºä°¡ Á¸ÀçÇÏ´ÂÁö Ã¼Å©
- *    2. ±ÇÇÑÀÌ ÀÖ´ÂÁö Ã¼Å©
+ *    1. ë·°ê°€ ì¡´ìž¬í•˜ëŠ”ì§€ ì²´í¬
+ *    2. ê¶Œí•œì´ ìžˆëŠ”ì§€ ì²´í¬
  *
  ***********************************************************************/
 
@@ -696,14 +696,14 @@ IDE_RC qdv::executeCreate(qcStatement * aStatement)
 /***********************************************************************
  *
  * Description :
- *    CREATE VIEW ... ÀÇ execution ¼öÇà
+ *    CREATE VIEW ... ì˜ execution ìˆ˜í–‰
  *
  * Implementation :
- *    1. ºä status °¡ INVALID ÀÌ¸é pseudo integer column À» ¸¸µç´Ù
- *    2. View ID ºÎ¿©
+ *    1. ë·° status ê°€ INVALID ì´ë©´ pseudo integer column ì„ ë§Œë“ ë‹¤
+ *    2. View ID ë¶€ì—¬
  *    3. create smiTable => qdbCommon::createTableOnSM
  *    3. insert into META tables
- *    3. ¸ÞÅ¸ Ä³½¬ ±¸Á¶Ã¼ »ý¼º
+ *    3. ë©”íƒ€ ìºì‰¬ êµ¬ì¡°ì²´ ìƒì„±
  *
  ***********************************************************************/
 
@@ -798,20 +798,20 @@ IDE_RC qdv::executeRecreate(qcStatement * aStatement)
 /***********************************************************************
  *
  * Description :
- *    CREATE or REPLIACE VIEW ... ÀÇ execution ¼öÇà,
- *    VIEW_ID ´Â º¯°æµÇÁö ¾Ê´Â´Ù.
+ *    CREATE or REPLIACE VIEW ... ì˜ execution ìˆ˜í–‰,
+ *    VIEW_ID ëŠ” ë³€ê²½ë˜ì§€ ì•ŠëŠ”ë‹¤.
  *
  * Implementation :
- *    1. ºä status °¡ INVALID ÀÌ¸é pseudo integer column À» ¸¸µç´Ù
+ *    1. ë·° status ê°€ INVALID ì´ë©´ pseudo integer column ì„ ë§Œë“ ë‹¤
  *    2. create new smiTable => qdbCommon::createTableOnSM
- *    3. ÀÌÀü¿¡ Ä³½¬µÈ ¸ÞÅ¸ ±¸Á¶Ã¼ qcmTableInfo ±¸ÇØ µÎ±â
- *    4. META tables ¿¡¼­ ÀÌÀü Á¤º¸ »èÁ¦
- *    5. META tables ¿¡ »õ·Î »ý¼ºµÈ Á¤º¸ ÀÔ·Â
- *    6. related PSM À» invalid »óÅÂ·Î º¯°æ
- *    7. related VIEW À» invalid »óÅÂ·Î º¯°æ
- *    8. ¸ÞÅ¸ Ä³½¬ ±¸Á¶Ã¼ »ý¼º ( qcmTableInfo )
- *    9. ÀÌÀü ºä »èÁ¦ => smiTable::dropTable
- *    10. ÀÌÀü Ä³½¬ ±¸Á¶Ã¼ »èÁ¦
+ *    3. ì´ì „ì— ìºì‰¬ëœ ë©”íƒ€ êµ¬ì¡°ì²´ qcmTableInfo êµ¬í•´ ë‘ê¸°
+ *    4. META tables ì—ì„œ ì´ì „ ì •ë³´ ì‚­ì œ
+ *    5. META tables ì— ìƒˆë¡œ ìƒì„±ëœ ì •ë³´ ìž…ë ¥
+ *    6. related PSM ì„ invalid ìƒíƒœë¡œ ë³€ê²½
+ *    7. related VIEW ì„ invalid ìƒíƒœë¡œ ë³€ê²½
+ *    8. ë©”íƒ€ ìºì‰¬ êµ¬ì¡°ì²´ ìƒì„± ( qcmTableInfo )
+ *    9. ì´ì „ ë·° ì‚­ì œ => smiTable::dropTable
+ *    10. ì´ì „ ìºì‰¬ êµ¬ì¡°ì²´ ì‚­ì œ
  *
  ***********************************************************************/
 
@@ -839,8 +839,8 @@ IDE_RC qdv::executeRecreate(qcStatement * aStatement)
                                          SMI_TABLE_LOCK_X )
               != IDE_SUCCESS);
 
-    // BUG-30741 validate°úÁ¤¿¡¼­ sParseTree¿¡ ±¸ÇØ³õÀº tableInfo´Â
-    // À¯È¿ÇÏÁö ¾ÊÀ»¼ö ÀÖÀ¸¹Ç·Î ´Ù½Ã °¡Á®¿Â´Ù.
+    // BUG-30741 validateê³¼ì •ì—ì„œ sParseTreeì— êµ¬í•´ë†“ì€ tableInfoëŠ”
+    // ìœ íš¨í•˜ì§€ ì•Šì„ìˆ˜ ìžˆìœ¼ë¯€ë¡œ ë‹¤ì‹œ ê°€ì ¸ì˜¨ë‹¤.
     IDE_TEST( smiGetTableTempInfo( sParseTree->tableHandle,
                                    (void**)&sParseTree->tableInfo )
               != IDE_SUCCESS );
@@ -975,19 +975,19 @@ IDE_RC qdv::executeAlter(qcStatement * aStatement)
 /***********************************************************************
  *
  * Description :
- *    ALTER VIEW ... COMPILE ÀÇ execution ¼öÇà
+ *    ALTER VIEW ... COMPILE ì˜ execution ìˆ˜í–‰
  *
  * Implementation :
- *    1. ÀÌÀü¿¡ ºä »ý¼º½ÃÀÇ statement ¹®ÀåÀ» Ã£¾Æ¼­ ÆÄ½ÌÇÑ´Ù.
- *    2. 1 ¿¡¼­ ÆÄ½ÌÇÑ select ¹®ÀÇ validation, optimization À» ¼öÇàÇÑ´Ù
- *    3. ºäÀÇ status °¡ valid ÀÌ¸é execution À» ¼öÇàÇÑ´Ù.
+ *    1. ì´ì „ì— ë·° ìƒì„±ì‹œì˜ statement ë¬¸ìž¥ì„ ì°¾ì•„ì„œ íŒŒì‹±í•œë‹¤.
+ *    2. 1 ì—ì„œ íŒŒì‹±í•œ select ë¬¸ì˜ validation, optimization ì„ ìˆ˜í–‰í•œë‹¤
+ *    3. ë·°ì˜ status ê°€ valid ì´ë©´ execution ì„ ìˆ˜í–‰í•œë‹¤.
  *       4. create new smiTable => qdbCommon::createTableOnSM
- *       5. ÀÌÀü¿¡ Ä³½¬µÈ ¸ÞÅ¸ ±¸Á¶Ã¼ qcmTableInfo ±¸ÇØ µÎ±â
- *       6. META tables ¿¡¼­ ÀÌÀü Á¤º¸ »èÁ¦
- *       7. META tables ¿¡ »õ·Î »ý¼ºµÈ Á¤º¸ ÀÔ·Â
- *       8. ¸ÞÅ¸ Ä³½¬ ±¸Á¶Ã¼ »ý¼º ( qcmTableInfo )
- *       9. ÀÌÀü ºä »èÁ¦ => smiTable::dropTable
- *       10. ÀÌÀü Ä³½¬ ±¸Á¶Ã¼ »èÁ¦
+ *       5. ì´ì „ì— ìºì‰¬ëœ ë©”íƒ€ êµ¬ì¡°ì²´ qcmTableInfo êµ¬í•´ ë‘ê¸°
+ *       6. META tables ì—ì„œ ì´ì „ ì •ë³´ ì‚­ì œ
+ *       7. META tables ì— ìƒˆë¡œ ìƒì„±ëœ ì •ë³´ ìž…ë ¥
+ *       8. ë©”íƒ€ ìºì‰¬ êµ¬ì¡°ì²´ ìƒì„± ( qcmTableInfo )
+ *       9. ì´ì „ ë·° ì‚­ì œ => smiTable::dropTable
+ *       10. ì´ì „ ìºì‰¬ êµ¬ì¡°ì²´ ì‚­ì œ
  *
  ***********************************************************************/
 
@@ -1017,8 +1017,8 @@ IDE_RC qdv::executeAlter(qcStatement * aStatement)
                                         SMI_TABLE_LOCK_X)
               != IDE_SUCCESS );
 
-    // BUG-30741 validate°úÁ¤¿¡¼­ sAlterParseTree¿¡ ±¸ÇØ³õÀº tableInfo´Â
-    // À¯È¿ÇÏÁö ¾ÊÀ»¼ö ÀÖÀ¸¹Ç·Î ´Ù½Ã °¡Á®¿Â´Ù.
+    // BUG-30741 validateê³¼ì •ì—ì„œ sAlterParseTreeì— êµ¬í•´ë†“ì€ tableInfoëŠ”
+    // ìœ íš¨í•˜ì§€ ì•Šì„ìˆ˜ ìžˆìœ¼ë¯€ë¡œ ë‹¤ì‹œ ê°€ì ¸ì˜¨ë‹¤.
     IDE_TEST( smiGetTableTempInfo( sAlterParseTree->tableHandle,
                                    (void**)&sAlterParseTree->tableInfo )
               != IDE_SUCCESS );
@@ -1150,15 +1150,15 @@ IDE_RC qdv::insertViewSpecIntoMeta(
 /***********************************************************************
  *
  * Description :
- *    ºäÀÇ ¸ÞÅ¸ Á¤º¸¸¦ ¸ÞÅ¸ Å×ÀÌºí¿¡ ÀÔ·ÂÇÑ´Ù.
+ *    ë·°ì˜ ë©”íƒ€ ì •ë³´ë¥¼ ë©”íƒ€ í…Œì´ë¸”ì— ìž…ë ¥í•œë‹¤.
  *
  * Implementation :
- *    1. ºäÀÇ status ¸¦ ±¸ÇØµÐ´Ù
- *    2. SYS_TABLES_ ¿¡ ÀÔ·Â
- *    3. SYS_COLUMNS_ ¿¡ ÀÔ·Â
- *    4. SYS_VIEWS_ ¿¡ status ÀÔ·Â
- *    5. SYS_VIEW_PARSE_ ¿¡ statement text ÀÔ·Â
- *    6. SYS_VIEW_RELATED_ ¿¡ °ü·Ã ¿ÀºêÁ§Æ® ÀÔ·Â
+ *    1. ë·°ì˜ status ë¥¼ êµ¬í•´ë‘”ë‹¤
+ *    2. SYS_TABLES_ ì— ìž…ë ¥
+ *    3. SYS_COLUMNS_ ì— ìž…ë ¥
+ *    4. SYS_VIEWS_ ì— status ìž…ë ¥
+ *    5. SYS_VIEW_PARSE_ ì— statement text ìž…ë ¥
+ *    6. SYS_VIEW_RELATED_ ì— ê´€ë ¨ ì˜¤ë¸Œì íŠ¸ ìž…ë ¥
  *
  ***********************************************************************/
 
@@ -1213,7 +1213,7 @@ IDE_RC qdv::insertViewSpecIntoMeta(
         sWithReadOnly = 1;
     }
 
-    // Memory Table Àº »ç¿ëÇÏÁö ¾Ê´Â ¼Ó¼ºÀÌÁö¸¸, ¼³Á¤ÇÏ¿© Àü´ÞÇÑ´Ù.
+    // Memory Table ì€ ì‚¬ìš©í•˜ì§€ ì•ŠëŠ” ì†ì„±ì´ì§€ë§Œ, ì„¤ì •í•˜ì—¬ ì „ë‹¬í•œë‹¤.
     sSegmentAttr.mPctFree =
                   QD_MEMORY_TABLE_DEFAULT_PCTFREE;  // PCTFREE
     sSegmentAttr.mPctUsed =
@@ -1334,7 +1334,7 @@ IDE_RC qdv::insertViewSpecIntoMeta(
             else
             {
                 // Nothing to do.
-                // package¸¸ spec°ú body·Î ºÐ·ùµÈ´Ù.
+                // packageë§Œ specê³¼ bodyë¡œ ë¶„ë¥˜ëœë‹¤.
             }
         }
     }
@@ -1358,10 +1358,10 @@ IDE_RC qdv::insertIntoViewsMeta(
 /***********************************************************************
  *
  * Description :
- *      insertViewSpecIntoMeta ·ÎºÎÅÍ È£Ãâ, SYS_VIEWS_ ¿¡ ÀÔ·Â
+ *      insertViewSpecIntoMeta ë¡œë¶€í„° í˜¸ì¶œ, SYS_VIEWS_ ì— ìž…ë ¥
  *
  * Implementation :
- *      1. SYS_VIEWS_ ¸ÞÅ¸ Å×ÀÌºí¿¡¼­ µ¥ÀÌÅÍ ÀÔ·Â
+ *      1. SYS_VIEWS_ ë©”íƒ€ í…Œì´ë¸”ì—ì„œ ë°ì´í„° ìž…ë ¥
  *
  ***********************************************************************/
 
@@ -1431,11 +1431,11 @@ IDE_RC qdv::insertIntoViewParseMeta(
 /***********************************************************************
  *
  * Description :
- *    SYS_VIEW_PARSE_ ¿¡ statement text ÀÔ·Â
+ *    SYS_VIEW_PARSE_ ì— statement text ìž…ë ¥
  *
  * Implementation :
- *    1. text ¸¦ ÀÏÁ¤ ±æÀÌ(100) ·Î ÀÚ¸¥ ´ÙÀ½
- *    2. ¹øÈ£¸¦ ºÎ¿©ÇÏ¿©¼­ SYS_VIEW_PARSE_ ¿¡ ÀÔ·Â
+ *    1. text ë¥¼ ì¼ì • ê¸¸ì´(100) ë¡œ ìžë¥¸ ë‹¤ìŒ
+ *    2. ë²ˆí˜¸ë¥¼ ë¶€ì—¬í•˜ì—¬ì„œ SYS_VIEW_PARSE_ ì— ìž…ë ¥
  *
  ***********************************************************************/
 
@@ -1461,8 +1461,8 @@ IDE_RC qdv::insertIntoViewParseMeta(
     sNcharList  = aNcharList;
     
     // PROJ-1579 NCHAR
-    // ¸ÞÅ¸Å×ÀÌºí¿¡ ÀúÀåÇÏ±â À§ÇØ ½ºÆ®¸µÀ» ºÐÇÒÇÏ±â Àü¿¡
-    // N Å¸ÀÔÀÌ ÀÖ´Â °æ¿ì U Å¸ÀÔÀ¸·Î º¯È¯ÇÑ´Ù.
+    // ë©”íƒ€í…Œì´ë¸”ì— ì €ìž¥í•˜ê¸° ìœ„í•´ ìŠ¤íŠ¸ë§ì„ ë¶„í• í•˜ê¸° ì „ì—
+    // N íƒ€ìž…ì´ ìžˆëŠ” ê²½ìš° U íƒ€ìž…ìœ¼ë¡œ ë³€í™˜í•œë‹¤.
     if( sNcharList != NULL )
     {
         for( sTempNamePosList = sNcharList;
@@ -1471,14 +1471,14 @@ IDE_RC qdv::insertIntoViewParseMeta(
         {
             sNamePos = sTempNamePosList->namePos;
 
-            // U Å¸ÀÔÀ¸·Î º¯È¯ÇÏ¸é¼­ ´Ã¾î³ª´Â »çÀÌÁî °è»ê
-            // N'¾È' => U'\C548' À¸·Î º¯È¯µÈ´Ù¸é
-            // '¾È'ÀÇ Ä³¸¯ÅÍ ¼ÂÀÌ KSC5601ÀÌ¶ó°í °¡Á¤ÇßÀ» ¶§,
-            // single-quote¾ÈÀÇ ¹®ÀÚ´Â 2 byte -> 5byte·Î º¯°æµÈ´Ù.
-            // Áï, 1.5¹è°¡ ´Ã¾î³ª´Â °ÍÀÌ´Ù.
-            //(ÀüÃ¼ »çÀÌÁî°¡ ¾Æ´Ï¶ó Áõ°¡ÇÏ´Â »çÀÌÁî¸¸ °è»êÇÏ´Â °ÍÀÓ)
-            // ÇÏÁö¸¸, ¾î¶² ¿¹¿ÜÀûÀÎ Ä³¸¯ÅÍ ¼ÂÀÌ µé¾î¿ÃÁö ¸ð¸£¹Ç·Î
-            // * 2·Î ÃæºÐÈ÷ Àâ´Â´Ù.
+            // U íƒ€ìž…ìœ¼ë¡œ ë³€í™˜í•˜ë©´ì„œ ëŠ˜ì–´ë‚˜ëŠ” ì‚¬ì´ì¦ˆ ê³„ì‚°
+            // N'ì•ˆ' => U'\C548' ìœ¼ë¡œ ë³€í™˜ëœë‹¤ë©´
+            // 'ì•ˆ'ì˜ ìºë¦­í„° ì…‹ì´ KSC5601ì´ë¼ê³  ê°€ì •í–ˆì„ ë•Œ,
+            // single-quoteì•ˆì˜ ë¬¸ìžëŠ” 2 byte -> 5byteë¡œ ë³€ê²½ëœë‹¤.
+            // ì¦‰, 1.5ë°°ê°€ ëŠ˜ì–´ë‚˜ëŠ” ê²ƒì´ë‹¤.
+            //(ì „ì²´ ì‚¬ì´ì¦ˆê°€ ì•„ë‹ˆë¼ ì¦ê°€í•˜ëŠ” ì‚¬ì´ì¦ˆë§Œ ê³„ì‚°í•˜ëŠ” ê²ƒìž„)
+            // í•˜ì§€ë§Œ, ì–´ë–¤ ì˜ˆì™¸ì ì¸ ìºë¦­í„° ì…‹ì´ ë“¤ì–´ì˜¬ì§€ ëª¨ë¥´ë¯€ë¡œ
+            // * 2ë¡œ ì¶©ë¶„ížˆ ìž¡ëŠ”ë‹¤.
             sAddSize += (sNamePos.size - 3) * 2;
         }
 
@@ -1522,8 +1522,8 @@ IDE_RC qdv::insertIntoViewParseMeta(
         
         if (( sStmtBuffer + sStmtBufferLen ) <= sIndex )
         {
-            // ³¡±îÁö °£ °æ¿ì.
-            // ±â·ÏÀ» ÇÑ ÈÄ break.
+            // ëê¹Œì§€ ê°„ ê²½ìš°.
+            // ê¸°ë¡ì„ í•œ í›„ break.
             sSeqNo++;
 
             sCurrPos = sStartIndex - sStmtBuffer;
@@ -1545,19 +1545,19 @@ IDE_RC qdv::insertIntoViewParseMeta(
         {
             if ( sIndex - sStartIndex >= QCM_MAX_PROC_LEN )
             {
-                // ¾ÆÁ÷ ³¡°¡Áö ¾È °¬°í, ÀÐ´Ùº¸´Ï 100¹ÙÀÌÆ® ¶Ç´Â ÃÊ°úÇÑ °ªÀÌ
-                // µÇ¾úÀ» ¶§ Àß¶ó¼­ ±â·Ï
+                // ì•„ì§ ëê°€ì§€ ì•ˆ ê°”ê³ , ì½ë‹¤ë³´ë‹ˆ 100ë°”ì´íŠ¸ ë˜ëŠ” ì´ˆê³¼í•œ ê°’ì´
+                // ë˜ì—ˆì„ ë•Œ ìž˜ë¼ì„œ ê¸°ë¡
                 sCurrPos = sStartIndex - sStmtBuffer;
                 
                 if ( sIndex - sStartIndex == QCM_MAX_PROC_LEN )
                 {
-                    // µü ¶³¾îÁö´Â °æ¿ì
+                    // ë”± ë–¨ì–´ì§€ëŠ” ê²½ìš°
                     sCurrLen = QCM_MAX_PROC_LEN;
                     sStartIndex = sIndex;
                 }
                 else
                 {
-                    // »ßÁ®³ª°£ °æ¿ì ±× ÀÌÀü Ä³¸¯ÅÍ À§Ä¡±îÁö ±â·Ï
+                    // ì‚ì ¸ë‚˜ê°„ ê²½ìš° ê·¸ ì´ì „ ìºë¦­í„° ìœ„ì¹˜ê¹Œì§€ ê¸°ë¡
                     sCurrLen = sPrevIndex - sStartIndex;
                     sStartIndex = sPrevIndex;
                 }
@@ -1603,10 +1603,10 @@ IDE_RC qdv::insertIntoViewParseMetaOneRecord(
 /***********************************************************************
  *
  * Description :
- *      SYS_VIEW_PARSE_ ¿¡ ÀÔ·Â
+ *      SYS_VIEW_PARSE_ ì— ìž…ë ¥
  *
  * Implementation :
- *      1. SYS_VIEW_PARSE_ ¸ÞÅ¸ Å×ÀÌºí¿¡ view »ý¼ºÄõ¸®¹® ÀÔ·Â
+ *      1. SYS_VIEW_PARSE_ ë©”íƒ€ í…Œì´ë¸”ì— view ìƒì„±ì¿¼ë¦¬ë¬¸ ìž…ë ¥
  *
  ***********************************************************************/
 
@@ -1678,11 +1678,11 @@ IDE_RC qdv::insertIntoViewRelatedMeta(
 /***********************************************************************
  *
  * Description :
- *      SYS_VIEW_RELATED_ ¿¡ ÀÔ·Â
+ *      SYS_VIEW_RELATED_ ì— ìž…ë ¥
  *
  * Implementation :
- *      1. SYS_VIEW_RELATED_ ¸ÞÅ¸ Å×ÀÌºí¿¡ view »ý¼º°ú °ü·ÃµÈ
- *         ¿ÀºêÁ§Æ® ÀÔ·Â
+ *      1. SYS_VIEW_RELATED_ ë©”íƒ€ í…Œì´ë¸”ì— view ìƒì„±ê³¼ ê´€ë ¨ëœ
+ *         ì˜¤ë¸Œì íŠ¸ ìž…ë ¥
  *
  ***********************************************************************/
 
@@ -1695,7 +1695,7 @@ IDE_RC qdv::insertIntoViewRelatedMeta(
     vSLong              sRowCnt;
 
     // BUG-25587
-    // public synonymÀ» °í·ÁÇÑ´Ù.
+    // public synonymì„ ê³ ë ¤í•œë‹¤.
     if ( ( aRelatedObjList->objectType == QS_SYNONYM ) &&
          ( aRelatedObjList->userName.size == 0 ) )
     {
@@ -1764,15 +1764,15 @@ IDE_RC qdv::makeParseTreeForViewInSelect(
 /***********************************************************************
  *
  * Description :
- *    ºä »ý¼º Äõ¸®¿¡¼­ select ºÎºÐÀÇ ÆÄ½Ì
+ *    ë·° ìƒì„± ì¿¼ë¦¬ì—ì„œ select ë¶€ë¶„ì˜ íŒŒì‹±
  *
  * Implementation :
- *    1. ºä »ý¼º¹®(stmt text)ÀÇ ±æÀÌ ±¸ÇÏ±â
- *    2. stmt text ¸¦ ±¸ÇÑ´Ù
- *    3. qcStatement ¸¦ ÇÒ´ç
- *    4. 2 ¿¡¼­ ±¸ÇÑ text ¿¡¼­ select ºÎºÐ¸¸ ÃßÃâÇÏ¿© 3 ÀÇ qcStatment ÀÇ
- *       stmtText ¿¡ Ä«ÇÇÇÑ´Ù
- *    5. ÆÄ½Ì
+ *    1. ë·° ìƒì„±ë¬¸(stmt text)ì˜ ê¸¸ì´ êµ¬í•˜ê¸°
+ *    2. stmt text ë¥¼ êµ¬í•œë‹¤
+ *    3. qcStatement ë¥¼ í• ë‹¹
+ *    4. 2 ì—ì„œ êµ¬í•œ text ì—ì„œ select ë¶€ë¶„ë§Œ ì¶”ì¶œí•˜ì—¬ 3 ì˜ qcStatment ì˜
+ *       stmtText ì— ì¹´í”¼í•œë‹¤
+ *    5. íŒŒì‹±
  *    6. set parse tree
  *
  ***********************************************************************/
@@ -1813,7 +1813,7 @@ IDE_RC qdv::makeParseTreeForViewInSelect(
     // set meber of qcStatement
     idlOS::memcpy( sStatement, aStatement, ID_SIZEOF(qcStatement) );
 
-    // myPlanÀ» Àç¼³Á¤ÇÑ´Ù.
+    // myPlanì„ ìž¬ì„¤ì •í•œë‹¤.
     sStatement->myPlan = & sStatement->privatePlan;
     sStatement->myPlan->planEnv = NULL;
 
@@ -1840,7 +1840,7 @@ IDE_RC qdv::makeParseTreeForViewInSelect(
     // set parse tree
     aTableRef->view = sCreateViewParseTree->select;
 
-    // planEnv¸¦ Àç¼³Á¤ÇÑ´Ù.
+    // planEnvë¥¼ ìž¬ì„¤ì •í•œë‹¤.
     aTableRef->view->myPlan->planEnv = aStatement->myPlan->planEnv;
     
     return IDE_SUCCESS;
@@ -1865,14 +1865,14 @@ IDE_RC qdv::makeParseTreeForAlter(
 /***********************************************************************
  *
  * Description :
- *    recompile ½Ã ºä »ý¼º¹®À» ±¸ÇØ¼­ ÆÄ½Ì
+ *    recompile ì‹œ ë·° ìƒì„±ë¬¸ì„ êµ¬í•´ì„œ íŒŒì‹±
  *
  * Implementation :
- *    1. ºä »ý¼º¹®(stmt text)ÀÇ ±æÀÌ ±¸ÇÏ±â
- *    2. stmt text ¸¦ ±¸ÇÑ´Ù
- *    3. qcStatement ¸¦ ÇÒ´ç
- *    4. 2 ¿¡¼­ ±¸ÇÑ text ¸¦ 3 ÀÇ qcStatment ÀÇ stmtText ¿¡ ºÎ¿©ÇÑ´Ù
- *    5. ÆÄ½Ì
+ *    1. ë·° ìƒì„±ë¬¸(stmt text)ì˜ ê¸¸ì´ êµ¬í•˜ê¸°
+ *    2. stmt text ë¥¼ êµ¬í•œë‹¤
+ *    3. qcStatement ë¥¼ í• ë‹¹
+ *    4. 2 ì—ì„œ êµ¬í•œ text ë¥¼ 3 ì˜ qcStatment ì˜ stmtText ì— ë¶€ì—¬í•œë‹¤
+ *    5. íŒŒì‹±
  *    6. set CREATE VIEW statement pointer
  *
  ***********************************************************************/
@@ -1915,11 +1915,11 @@ IDE_RC qdv::makeParseTreeForAlter(
     // set meber of qcStatement
     idlOS::memcpy( sStatement, aStatement, ID_SIZEOF(qcStatement) );
 
-    // myPlanÀ» Àç¼³Á¤ÇÑ´Ù.
+    // myPlanì„ ìž¬ì„¤ì •í•œë‹¤.
     sStatement->myPlan = & sStatement->privatePlan;
     sStatement->myPlan->planEnv = NULL;
 
-    // templateÀ» Àç¼³Á¤ÇÑ´Ù.
+    // templateì„ ìž¬ì„¤ì •í•œë‹¤.
     QC_SHARED_TMPLATE(sStatement) = QC_PRIVATE_TMPLATE(sStatement);
     QC_PRIVATE_TMPLATE(sStatement) = NULL;    
     
@@ -1966,8 +1966,8 @@ IDE_RC qdv::makeOneIntegerQcmColumn(
     IDE_TEST(STRUCT_CRALLOC(QC_QMP_MEM(aStatement), mtcColumn, &(sColumn->basicInfo))
              != IDE_SUCCESS);
 
-    // sColumnÀÇ ÃÊ±âÈ­
-    // : dataTypeÀº integer, language´Â  sessionÀÇ language·Î ¼³Á¤
+    // sColumnì˜ ì´ˆê¸°í™”
+    // : dataTypeì€ integer, languageëŠ”  sessionì˜ languageë¡œ ì„¤ì •
     IDE_TEST( mtc::initializeColumn(
                   sColumn->basicInfo,
                   MTD_INTEGER_ID,

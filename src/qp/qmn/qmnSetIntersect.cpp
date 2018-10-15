@@ -21,12 +21,12 @@
  * Description :
  *     SITS(Set IntTerSection) Node
  *
- *     °ü°èÇü ¸ğµ¨¿¡¼­ hash-based set intersection ¿¬»êÀ»
- *     ¼öÇàÇÏ´Â Plan Node ÀÌ´Ù.
+ *     ê´€ê³„í˜• ëª¨ë¸ì—ì„œ hash-based set intersection ì—°ì‚°ì„
+ *     ìˆ˜í–‰í•˜ëŠ” Plan Node ì´ë‹¤.
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  **********************************************************************/
 
@@ -43,12 +43,12 @@ qmnSITS::init( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    SITS ³ëµåÀÇ ÃÊ±âÈ­
+ *    SITS ë…¸ë“œì˜ ì´ˆê¸°í™”
  *
  * Implementation :
- *    Left Dependent°¡ ¹ß»ıÇÑ °æ¿ì ÀúÀåµÈ Á¤º¸¸¦ ¸ğµÎ ¹ö·Á¾ß ÇÔ.
- *    Right Dependent°¡ ¹ß»ıÇÑ °æ¿ì ÀúÀåµÈ Á¤º¸´Â ±×´ë·Î »ç¿ëÇÒ ¼ö
- *    ÀÖÀ¸¸ç, Hit Flag¸¸ clearÇÏ¿© right¸¦ Àç¼öÇàÇÒ ¼ö ÀÖ´Ù.
+ *    Left Dependentê°€ ë°œìƒí•œ ê²½ìš° ì €ì¥ëœ ì •ë³´ë¥¼ ëª¨ë‘ ë²„ë ¤ì•¼ í•¨.
+ *    Right Dependentê°€ ë°œìƒí•œ ê²½ìš° ì €ì¥ëœ ì •ë³´ëŠ” ê·¸ëŒ€ë¡œ ì‚¬ìš©í•  ìˆ˜
+ *    ìˆìœ¼ë©°, Hit Flagë§Œ clearí•˜ì—¬ rightë¥¼ ì¬ìˆ˜í–‰í•  ìˆ˜ ìˆë‹¤.
  *
  ***********************************************************************/
     qmncSITS * sCodePlan = (qmncSITS *) aPlan;
@@ -102,18 +102,18 @@ qmnSITS::init( qcTemplate * aTemplate,
         if ( sIsSkip == ID_FALSE )
         {
             //----------------------------------------
-            // Left Dependent Row°¡ º¯°æµÈ °æ¿ì
-            // ÀúÀå Row¸¦ Àç±¸¼ºÇÑ´Ù.
+            // Left Dependent Rowê°€ ë³€ê²½ëœ ê²½ìš°
+            // ì €ì¥ Rowë¥¼ ì¬êµ¬ì„±í•œë‹¤.
             //----------------------------------------
 
             // 1. Temp Table Clear
             IDE_TEST( qmcHashTemp::clear( sDataPlan->hashMgr )
                       != IDE_SUCCESS );
 
-            // 2. Left ¼öÇàÇÏ¿© ÀúÀå
+            // 2. Left ìˆ˜í–‰í•˜ì—¬ ì €ì¥
             IDE_TEST( storeLeft( aTemplate, sCodePlan, sDataPlan )
                       != IDE_SUCCESS );
-            // 3. Right ¼öÇàÇÏ¿© intersected row °áÁ¤
+            // 3. Right ìˆ˜í–‰í•˜ì—¬ intersected row ê²°ì •
             IDE_TEST( setIntersectedRows( aTemplate, sCodePlan, sDataPlan )
                       != IDE_SUCCESS );
 
@@ -141,12 +141,12 @@ qmnSITS::init( qcTemplate * aTemplate,
         if ( sRightDependency == ID_TRUE )
         {
             //----------------------------------------
-            // Right Dependent Row¸¸ º¯°æµÈ °æ¿ì
-            // Intersected Row¸¸ Àç±¸¼ºÇÑ´Ù.
+            // Right Dependent Rowë§Œ ë³€ê²½ëœ ê²½ìš°
+            // Intersected Rowë§Œ ì¬êµ¬ì„±í•œë‹¤.
             //----------------------------------------
 
-            // 1. Hit Flag Á¦°Å
-            // 2. Right¸¦ ¼öÇàÇÏ¿© intersected row °áÁ¤
+            // 1. Hit Flag ì œê±°
+            // 2. Rightë¥¼ ìˆ˜í–‰í•˜ì—¬ intersected row ê²°ì •
             IDE_TEST( qmcHashTemp::clearHitFlag( sDataPlan->hashMgr )
                       != IDE_SUCCESS );
 
@@ -160,7 +160,7 @@ qmnSITS::init( qcTemplate * aTemplate,
     }
 
     //----------------------------------------
-    // ¼öÇà ÇÔ¼ö °áÁ¤
+    // ìˆ˜í–‰ í•¨ìˆ˜ ê²°ì •
     //----------------------------------------
 
     if ( ( sCodePlan->flag & QMNC_SITS_IN_TOP_MASK )
@@ -196,13 +196,13 @@ qmnSITS::doIt( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    SITS ÀÇ °íÀ¯ ±â´ÉÀ» ¼öÇàÇÑ´Ù.
+ *    SITS ì˜ ê³ ìœ  ê¸°ëŠ¥ì„ ìˆ˜í–‰í•œë‹¤.
  *
  * Implementation :
- *    ÁöÁ¤µÈ ÇÔ¼ö Æ÷ÀÎÅÍ¸¦ ¼öÇàÇÑ´Ù.
- *    SITSÀÇ »óÀ§ ³ëµå´Â Ç×»ó VIEWÀÌ´Ù.
- *    µû¶ó¼­, °á°ú°¡ Á¸ÀçÇÒ °æ¿ì VIEW¿¡¼­ Ã³¸®ÇÒ ¼ö ÀÖµµ·Ï
- *    ±× °á°ú¸¦ Stack¿¡ ¼³Á¤ÇÑ´Ù.
+ *    ì§€ì •ëœ í•¨ìˆ˜ í¬ì¸í„°ë¥¼ ìˆ˜í–‰í•œë‹¤.
+ *    SITSì˜ ìƒìœ„ ë…¸ë“œëŠ” í•­ìƒ VIEWì´ë‹¤.
+ *    ë”°ë¼ì„œ, ê²°ê³¼ê°€ ì¡´ì¬í•  ê²½ìš° VIEWì—ì„œ ì²˜ë¦¬í•  ìˆ˜ ìˆë„ë¡
+ *    ê·¸ ê²°ê³¼ë¥¼ Stackì— ì„¤ì •í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -222,7 +222,7 @@ qmnSITS::doIt( qcTemplate * aTemplate,
     IDE_TEST( sDataPlan->doIt( aTemplate, aPlan, aFlag ) != IDE_SUCCESS );
 
     //-----------------------------------
-    // »óÀ§ VIEW ³ëµå¸¦ À§ÇÑ Stack ¼³Á¤
+    // ìƒìœ„ VIEW ë…¸ë“œë¥¼ ìœ„í•œ Stack ì„¤ì •
     //-----------------------------------
 
     sStack  = aTemplate->tmplate.stack;
@@ -278,9 +278,9 @@ qmnSITS::padNull( qcTemplate * /* aTemplate */,
 /***********************************************************************
  *
  * Description :
- *    È£ÃâµÇ¾î¼­´Â ¾ÈµÊ.
- *    »óÀ§ Node´Â ¹İµå½Ã VIEW³ëµåÀÌ¸ç,
- *    View´Â ÀÚ½ÅÀÇ Null Row¸¸À» ¼³Á¤ÇÏ±â ¶§¹®ÀÌ´Ù.
+ *    í˜¸ì¶œë˜ì–´ì„œëŠ” ì•ˆë¨.
+ *    ìƒìœ„ NodeëŠ” ë°˜ë“œì‹œ VIEWë…¸ë“œì´ë©°,
+ *    ViewëŠ” ìì‹ ì˜ Null Rowë§Œì„ ì„¤ì •í•˜ê¸° ë•Œë¬¸ì´ë‹¤.
  *
  * Implementation :
  *
@@ -306,7 +306,7 @@ qmnSITS::printPlan( qcTemplate   * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    ¼öÇà Á¤º¸¸¦ Ãâ·ÂÇÑ´Ù.
+ *    ìˆ˜í–‰ ì •ë³´ë¥¼ ì¶œë ¥í•œë‹¤.
  *
  * Implementation :
  *
@@ -329,7 +329,7 @@ qmnSITS::printPlan( qcTemplate   * aTemplate,
     ULong i;
 
     //----------------------------
-    // Display À§Ä¡ °áÁ¤
+    // Display ìœ„ì¹˜ ê²°ì •
     //----------------------------
 
     for ( i = 0; i < aDepth; i++ )
@@ -339,20 +339,20 @@ qmnSITS::printPlan( qcTemplate   * aTemplate,
     }
 
     //----------------------------
-    // ¼öÇà Á¤º¸ Ãâ·Â
+    // ìˆ˜í–‰ ì •ë³´ ì¶œë ¥
     //----------------------------
 
     if ( aMode == QMN_DISPLAY_ALL )
     {
         //----------------------------
-        // explain plan = on; ÀÎ °æ¿ì
+        // explain plan = on; ì¸ ê²½ìš°
         //----------------------------
 
         if ( (*sDataPlan->flag & QMND_SITS_INIT_DONE_MASK)
              == QMND_SITS_INIT_DONE_TRUE )
         {
             sIsInit = ID_TRUE;
-            // ¼öÇà Á¤º¸ È¹µæ
+            // ìˆ˜í–‰ ì •ë³´ íšë“
             IDE_TEST( qmcHashTemp::getDisplayInfo( sDataPlan->hashMgr,
                                                    & sPageCnt,
                                                    & sRecordCnt,
@@ -379,7 +379,7 @@ qmnSITS::printPlan( qcTemplate   * aTemplate,
                 else
                 {
                     // BUG-29209
-                    // ITEM_SIZE Á¤º¸ º¸¿©ÁÖÁö ¾ÊÀ½
+                    // ITEM_SIZE ì •ë³´ ë³´ì—¬ì£¼ì§€ ì•ŠìŒ
                     iduVarStringAppendFormat(
                         aString,
                         "SET-INTERSECT ( "
@@ -411,7 +411,7 @@ qmnSITS::printPlan( qcTemplate   * aTemplate,
                 else
                 {
                     // BUG-29209
-                    // ITEM_SIZE, DISK_PAGE_COUNT Á¤º¸ º¸¿©ÁÖÁö ¾ÊÀ½
+                    // ITEM_SIZE, DISK_PAGE_COUNT ì •ë³´ ë³´ì—¬ì£¼ì§€ ì•ŠìŒ
                     iduVarStringAppendFormat(
                         aString,
                         "SET-INTERSECT ( "
@@ -439,7 +439,7 @@ qmnSITS::printPlan( qcTemplate   * aTemplate,
     else
     {
         //----------------------------
-        // explain plan = only; ÀÎ °æ¿ì
+        // explain plan = only; ì¸ ê²½ìš°
         //----------------------------
 
         iduVarStringAppendFormat( aString,
@@ -452,7 +452,7 @@ qmnSITS::printPlan( qcTemplate   * aTemplate,
     }
 
     //----------------------------
-    // Cost Ãâ·Â
+    // Cost ì¶œë ¥
     //----------------------------
     qmn::printCost( aString,
                     sCodePlan->plan.qmgAllCost );
@@ -512,7 +512,7 @@ qmnSITS::printPlan( qcTemplate   * aTemplate,
     }
 
     //----------------------------
-    // Operatorº° °á°ú Á¤º¸ Ãâ·Â
+    // Operatorë³„ ê²°ê³¼ ì •ë³´ ì¶œë ¥
     //----------------------------
     if ( QCU_TRCLOG_RESULT_DESC == 1 )
     {
@@ -528,7 +528,7 @@ qmnSITS::printPlan( qcTemplate   * aTemplate,
     }
    
     //----------------------------
-    // Child Plan Á¤º¸ Ãâ·Â
+    // Child Plan ì •ë³´ ì¶œë ¥
     //----------------------------
 
     IDE_TEST( aPlan->left->printPlan( aTemplate,
@@ -560,7 +560,7 @@ qmnSITS::doItDefault( qcTemplate * /* Template */,
 /***********************************************************************
  *
  * Description :
- *    È£ÃâµÇ¾î¼­´Â ¾ÈµÊ
+ *    í˜¸ì¶œë˜ì–´ì„œëŠ” ì•ˆë¨
  *
  * Implementation :
  *
@@ -584,10 +584,10 @@ qmnSITS::doItFirst( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    Top Query¿¡¼­ »ç¿ëµÇ´Â °æ¿ì, ÃÖÃÊ ¼öÇà ÇÔ¼ö
+ *    Top Queryì—ì„œ ì‚¬ìš©ë˜ëŠ” ê²½ìš°, ìµœì´ˆ ìˆ˜í–‰ í•¨ìˆ˜
  *
  * Implementation :
- *    Right Child¸¦ ÃÊ±âÈ­ÇÑ ÈÄ Intersected Row¸¦ °Ë»öÇÑ´Ù.
+ *    Right Childë¥¼ ì´ˆê¸°í™”í•œ í›„ Intersected Rowë¥¼ ê²€ìƒ‰í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -624,11 +624,11 @@ qmnSITS::doItNext( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    Top Query¿¡¼­ »ç¿ëµÇ´Â °æ¿ì, ´ÙÀ½ ¼öÇà ÇÔ¼ö
+ *    Top Queryì—ì„œ ì‚¬ìš©ë˜ëŠ” ê²½ìš°, ë‹¤ìŒ ìˆ˜í–‰ í•¨ìˆ˜
  *
  * Implementation :
- *    Right¸¦ À§ÇÑ ÀúÀå Row¸¦ ±¸¼ºÇÏ°í,
- *    Hash Temp TableÀ» ÀÌ¿ëÇÏ¿© intersected row¸¦ °Ë»öÇÑ´Ù.
+ *    Rightë¥¼ ìœ„í•œ ì €ì¥ Rowë¥¼ êµ¬ì„±í•˜ê³ ,
+ *    Hash Temp Tableì„ ì´ìš©í•˜ì—¬ intersected rowë¥¼ ê²€ìƒ‰í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -647,7 +647,7 @@ qmnSITS::doItNext( qcTemplate * aTemplate,
     idBool     sIsSetMtrRow;
 
     //------------------------------
-    // Right ¼öÇà
+    // Right ìˆ˜í–‰
     //------------------------------
 
     IDE_TEST( aPlan->right->doIt( aTemplate, aPlan->right, & sFlag )
@@ -659,7 +659,7 @@ qmnSITS::doItNext( qcTemplate * aTemplate,
     while ( ( sFlag & QMC_ROW_DATA_MASK ) == QMC_ROW_DATA_EXIST )
     {
         //------------------------------
-        // Right¸¦ À§ÇÑ ÀúÀå Row ±¸¼º
+        // Rightë¥¼ ìœ„í•œ ì €ì¥ Row êµ¬ì„±
         //------------------------------
 
         // jhseong, PR-10107
@@ -667,7 +667,7 @@ qmnSITS::doItNext( qcTemplate * aTemplate,
 
         // PR-24190
         // select i1(varchar(30)) from t1 minus select i1(varchar(250)) from t2;
-        // ¼öÇà½Ã ¼­¹ö ºñÁ¤»óÁ¾·á        
+        // ìˆ˜í–‰ì‹œ ì„œë²„ ë¹„ì •ìƒì¢…ë£Œ        
         IDE_TEST( setRightChildMtrRow( aTemplate, sDataPlan, &sIsSetMtrRow )
                   != IDE_SUCCESS );
 
@@ -676,7 +676,7 @@ qmnSITS::doItNext( qcTemplate * aTemplate,
         if( sIsSetMtrRow == ID_TRUE )
         {
             //------------------------------
-            // Hash Temp TableÀ» ÀÌ¿ëÇÑ intersected row °Ë»ö
+            // Hash Temp Tableì„ ì´ìš©í•œ intersected row ê²€ìƒ‰
             //------------------------------
 
             IDE_TEST( qmcHashTemp::getSameRowAndNonHit( sDataPlan->hashMgr,
@@ -698,7 +698,7 @@ qmnSITS::doItNext( qcTemplate * aTemplate,
         else
         {
             //------------------------------
-            // Right¸¦ À§ÇÑ ÀúÀå Row ±¸¼º
+            // Rightë¥¼ ìœ„í•œ ì €ì¥ Row êµ¬ì„±
             //------------------------------
 
             IDE_TEST( aPlan->right->doIt( aTemplate, aPlan->right, & sFlag )
@@ -709,7 +709,7 @@ qmnSITS::doItNext( qcTemplate * aTemplate,
     if ( sSearchRow != NULL )
     {
         //------------------------------
-        // ´Ù½Ã ¼±ÅÃµÇÁö ¾Êµµ·Ï Hit Flag Setting
+        // ë‹¤ì‹œ ì„ íƒë˜ì§€ ì•Šë„ë¡ Hit Flag Setting
         //------------------------------
 
         IDE_TEST( qmcHashTemp::setHitFlag( sDataPlan->hashMgr )
@@ -721,9 +721,9 @@ qmnSITS::doItNext( qcTemplate * aTemplate,
         sDataPlan->plan.myTuple->modify++;
 
         // PR-9055 fixed
-        // ±âÁ¸¿¡ ÀĞ¾î¿Â °ªÀÌ hit flag¸¦ ¼¼ÆÃÇØ¾ß ÇÏ´Â °ªÀÌ¶ó¸é
-        // ¼¼ÆÃÈÄ¿¡ ±× ¸Ş¸ğ¸®¿¡ µ¤¾î¾²Áö ¾Ê°í ¿ø·¡ °ø°£¿¡ ÀĞ¾î¿Í¾ß ÇÏ¹Ç·Î
-        // sOrgRow¸¦ ´Ù½Ã ¼¼ÆÃÇØÁØ´Ù.
+        // ê¸°ì¡´ì— ì½ì–´ì˜¨ ê°’ì´ hit flagë¥¼ ì„¸íŒ…í•´ì•¼ í•˜ëŠ” ê°’ì´ë¼ë©´
+        // ì„¸íŒ…í›„ì— ê·¸ ë©”ëª¨ë¦¬ì— ë®ì–´ì“°ì§€ ì•Šê³  ì›ë˜ ê³µê°„ì— ì½ì–´ì™€ì•¼ í•˜ë¯€ë¡œ
+        // sOrgRowë¥¼ ë‹¤ì‹œ ì„¸íŒ…í•´ì¤€ë‹¤.
 
 // 10107, kbjung->jhseong        sDataPlan->plan.myTuple->row = sOrgRow;
 
@@ -732,8 +732,8 @@ qmnSITS::doItNext( qcTemplate * aTemplate,
     {
         *aFlag = QMC_ROW_DATA_NONE;
 
-        // Top Query¿¡¼­ »ç¿ëµÇ´Â °æ¿ìÀÌ¹Ç·Î
-        // ´Ù½Ã È£ÃâµÉ ¼ö´Â ¾ø´Ù.
+        // Top Queryì—ì„œ ì‚¬ìš©ë˜ëŠ” ê²½ìš°ì´ë¯€ë¡œ
+        // ë‹¤ì‹œ í˜¸ì¶œë  ìˆ˜ëŠ” ì—†ë‹¤.
         sDataPlan->doIt = qmnSITS::doItFirst;
     }
 
@@ -755,11 +755,11 @@ qmnSITS::doItFirstIndependent( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    Sub Query¿¡¼­ »ç¿ëµÇ´Â °æ¿ì, ÃÖÃÊ ¼öÇà ÇÔ¼ö
+ *    Sub Queryì—ì„œ ì‚¬ìš©ë˜ëŠ” ê²½ìš°, ìµœì´ˆ ìˆ˜í–‰ í•¨ìˆ˜
  *
  * Implementation :
- *    ÀÌ¹Ì Intersected Row´Â ¸ğµÎ ±¸¼ºµÇ¾î ÀÖÀ¸¸ç,
- *    Hash Temp TableÀ» ÀÌ¿ëÇÏ¿© ÀÌ¸¦ ÃßÃâÇÑ´Ù.
+ *    ì´ë¯¸ Intersected RowëŠ” ëª¨ë‘ êµ¬ì„±ë˜ì–´ ìˆìœ¼ë©°,
+ *    Hash Temp Tableì„ ì´ìš©í•˜ì—¬ ì´ë¥¼ ì¶”ì¶œí•œë‹¤.
  *
  ***********************************************************************/
 
@@ -777,7 +777,7 @@ qmnSITS::doItFirstIndependent( qcTemplate * aTemplate,
               != IDE_SUCCESS );
 
     //--------------------------------
-    // Intersected Row ÃßÃâ
+    // Intersected Row ì¶”ì¶œ
     //--------------------------------
 
     sOrgRow = sSearchRow = sDataPlan->plan.myTuple->row;
@@ -818,11 +818,11 @@ qmnSITS::doItNextIndependent( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    Sub Query¿¡¼­ »ç¿ëµÇ´Â °æ¿ì, ´ÙÀ½ ¼öÇà ÇÔ¼ö
+ *    Sub Queryì—ì„œ ì‚¬ìš©ë˜ëŠ” ê²½ìš°, ë‹¤ìŒ ìˆ˜í–‰ í•¨ìˆ˜
  *
  * Implementation :
- *    ÀÌ¹Ì Intersected Row´Â ¸ğµÎ ±¸¼ºµÇ¾î ÀÖÀ¸¸ç,
- *    Hash Temp TableÀ» ÀÌ¿ëÇÏ¿© ÀÌ¸¦ ÃßÃâÇÑ´Ù.
+ *    ì´ë¯¸ Intersected RowëŠ” ëª¨ë‘ êµ¬ì„±ë˜ì–´ ìˆìœ¼ë©°,
+ *    Hash Temp Tableì„ ì´ìš©í•˜ì—¬ ì´ë¥¼ ì¶”ì¶œí•œë‹¤.
  *
  ***********************************************************************/
 
@@ -836,7 +836,7 @@ qmnSITS::doItNextIndependent( qcTemplate * aTemplate,
     void * sOrgRow;
     void * sSearchRow;
 
-    // Intersected Row ÃßÃâ
+    // Intersected Row ì¶”ì¶œ
 
     sOrgRow = sSearchRow = sDataPlan->plan.myTuple->row;
     IDE_TEST( qmcHashTemp::getNextHit( sDataPlan->hashMgr,
@@ -877,7 +877,7 @@ qmnSITS::firstInit( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *     Data ¿µ¿ª¿¡ ´ëÇÑ ÃÊ±âÈ­
+ *     Data ì˜ì—­ì— ëŒ€í•œ ì´ˆê¸°í™”
  *
  * Implementation :
  *
@@ -885,11 +885,11 @@ qmnSITS::firstInit( qcTemplate * aTemplate,
     qmndSITS * sCacheDataPlan = NULL;
 
     //---------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //---------------------------------
 
     //---------------------------------
-    // SITS °íÀ¯ Á¤º¸ÀÇ ÃÊ±âÈ­
+    // SITS ê³ ìœ  ì •ë³´ì˜ ì´ˆê¸°í™”
     //---------------------------------
     //
     /* PROJ-2462 Result Cache */
@@ -934,14 +934,14 @@ qmnSITS::firstInit( qcTemplate * aTemplate,
     aDataPlan->rightDepValue = QMN_PLAN_DEFAULT_DEPENDENCY_VALUE;
 
     //---------------------------------
-    // Temp TableÀÇ ÃÊ±âÈ­
+    // Temp Tableì˜ ì´ˆê¸°í™”
     //---------------------------------
 
     IDE_TEST( initTempTable( aTemplate, aCodePlan, aDataPlan )
               != IDE_SUCCESS );
 
     //---------------------------------
-    // ÃÊ±âÈ­ ¿Ï·á¸¦ Ç¥±â
+    // ì´ˆê¸°í™” ì™„ë£Œë¥¼ í‘œê¸°
     //---------------------------------
 
     *aDataPlan->flag &= ~QMND_SITS_INIT_DONE_MASK;
@@ -974,20 +974,20 @@ qmnSITS::initMtrNode( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    ÀúÀå ColumnÀÇ °ü¸®¸¦ À§ÇÑ ³ëµå¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+ *    ì €ì¥ Columnì˜ ê´€ë¦¬ë¥¼ ìœ„í•œ ë…¸ë“œë¥¼ ì´ˆê¸°í™”í•œë‹¤.
  *
  * Implementation :
  *
  ***********************************************************************/
     UInt        sHeaderSize = 0;
     //---------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //---------------------------------
 
     IDE_DASSERT( aCodePlan->mtrNodeOffset > 0 );
 
     //---------------------------------
-    // ÀúÀå °ü¸®¸¦ À§ÇÑ Á¤º¸ÀÇ ÃÊ±âÈ­
+    // ì €ì¥ ê´€ë¦¬ë¥¼ ìœ„í•œ ì •ë³´ì˜ ì´ˆê¸°í™”
     //---------------------------------
 
     aDataPlan->mtrNode =
@@ -1016,14 +1016,14 @@ qmnSITS::initMtrNode( qcTemplate * aTemplate,
     }
 
     //---------------------------------
-    // ÀúÀå ColumnÀÇ ÃÊ±âÈ­
+    // ì €ì¥ Columnì˜ ì´ˆê¸°í™”
     //---------------------------------
 
-    // 1.  ÀúÀå ColumnÀÇ ¿¬°á Á¤º¸ »ı¼º
-    // 2.  ÀúÀå ColumnÀÇ ÃÊ±âÈ­
-    // 3.  ÀúÀå ColumnÀÇ offsetÀ» ÀçÁ¶Á¤
-    // 4.  Row SizeÀÇ °è»ê
-    //     - Disk Temp TableÀÇ °æ¿ì Row¸¦ À§ÇÑ Memoryµµ ÇÒ´ç¹ŞÀ½.
+    // 1.  ì €ì¥ Columnì˜ ì—°ê²° ì •ë³´ ìƒì„±
+    // 2.  ì €ì¥ Columnì˜ ì´ˆê¸°í™”
+    // 3.  ì €ì¥ Columnì˜ offsetì„ ì¬ì¡°ì •
+    // 4.  Row Sizeì˜ ê³„ì‚°
+    //     - Disk Temp Tableì˜ ê²½ìš° Rowë¥¼ ìœ„í•œ Memoryë„ í• ë‹¹ë°›ìŒ.
 
     IDE_TEST( qmc::linkMtrNode( aCodePlan->myNode, aDataPlan->mtrNode )
               != IDE_SUCCESS );
@@ -1056,7 +1056,7 @@ qmnSITS::initTempTable( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *     Hash Temp TableÀ» ÃÊ±âÈ­ÇÑ´Ù.
+ *     Hash Temp Tableì„ ì´ˆê¸°í™”í•œë‹¤.
  *
  * Implementation :
  *
@@ -1065,15 +1065,15 @@ qmnSITS::initTempTable( qcTemplate * aTemplate,
     qmndSITS * sCacheDataPlan = NULL;
 
     //-----------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //-----------------------------
 
-    // ¸ğµç ColumnÀÌ Hashing ´ë»óÀÌ´Ù.
+    // ëª¨ë“  Columnì´ Hashing ëŒ€ìƒì´ë‹¤.
     IDE_DASSERT( (aDataPlan->mtrNode->flag & QMC_MTR_HASH_NEED_MASK )
                  == QMC_MTR_HASH_NEED_TRUE );
 
     //-----------------------------
-    // Flag Á¤º¸ ÃÊ±âÈ­
+    // Flag ì •ë³´ ì´ˆê¸°í™”
     //-----------------------------
 
     sFlag = QMCD_HASH_TMP_DISTINCT_TRUE | QMCD_HASH_TMP_PRIMARY_TRUE;
@@ -1097,16 +1097,16 @@ qmnSITS::initTempTable( qcTemplate * aTemplate,
     }
     
     // PROJ-2553
-    // DISTINCT HashingÀº Bucket List Hashing ¹æ¹ıÀ» ½á¾ß ÇÑ´Ù.
+    // DISTINCT Hashingì€ Bucket List Hashing ë°©ë²•ì„ ì¨ì•¼ í•œë‹¤.
     sFlag &= ~QMCD_HASH_TMP_HASHING_TYPE;
     sFlag |= QMCD_HASH_TMP_HASHING_BUCKET;
 
     // BUG-31997: When using temporary tables by RID, RID refers to
     // the invalid row.
-    /* QMNC_SITS_IN_TOP_TRUE ÀÏ¶§´Â temp table ¸¦ ¿ÏÀüÀÌ ±¸¼ºÇÏÁö ¾Ê°í 
-     * 1 row ¸¦ insert ÇÏ°í »óÀ§ ÇÃ·£¿¡¼­ insert ÇÑ rid ¸¦ ±×´ë·Î ÀúÀåÇÏ°Ô µÈ´Ù.
-     * ÇÏÁö¸¸ hash temp table Àº index·Î ¸¸µé¾îÁ®¼­ rid °¡ º¯°æµÉ¼ö ÀÖ´Ù.
-     * µû¶ó¼­ SM ¿¡°Ô rid ¸¦ º¯°æÇÏÁö ¾Êµµ·Ï ¿äÃ»À» ÇØ¾ß ÇÑ´Ù. */
+    /* QMNC_SITS_IN_TOP_TRUE ì¼ë•ŒëŠ” temp table ë¥¼ ì™„ì „ì´ êµ¬ì„±í•˜ì§€ ì•Šê³  
+     * 1 row ë¥¼ insert í•˜ê³  ìƒìœ„ í”Œëœì—ì„œ insert í•œ rid ë¥¼ ê·¸ëŒ€ë¡œ ì €ì¥í•˜ê²Œ ëœë‹¤.
+     * í•˜ì§€ë§Œ hash temp table ì€ indexë¡œ ë§Œë“¤ì–´ì ¸ì„œ rid ê°€ ë³€ê²½ë ìˆ˜ ìˆë‹¤.
+     * ë”°ë¼ì„œ SM ì—ê²Œ rid ë¥¼ ë³€ê²½í•˜ì§€ ì•Šë„ë¡ ìš”ì²­ì„ í•´ì•¼ í•œë‹¤. */
     if ( (aCodePlan->flag & QMNC_SITS_IN_TOP_MASK) == QMNC_SITS_IN_TOP_TRUE )
     {
         if ( (aCodePlan->plan.flag & QMN_PLAN_TEMP_FIXED_RID_MASK)
@@ -1118,7 +1118,7 @@ qmnSITS::initTempTable( qcTemplate * aTemplate,
     }
 
     //-----------------------------
-    // Temp Table ÃÊ±âÈ­
+    // Temp Table ì´ˆê¸°í™”
     //-----------------------------
     if ( ( *aDataPlan->flag & QMN_PLAN_RESULT_CACHE_EXIST_MASK )
          == QMN_PLAN_RESULT_CACHE_EXIST_FALSE )
@@ -1133,7 +1133,7 @@ qmnSITS::initTempTable( qcTemplate * aTemplate,
                                      ID_UINT_MAX,
                                      aDataPlan->mtrNode,
                                      aDataPlan->mtrNode,
-                                     NULL,  // Aggregation Column¾øÀ½
+                                     NULL,  // Aggregation Columnì—†ìŒ
                                      aCodePlan->bucketCnt,
                                      sFlag )
                   != IDE_SUCCESS );
@@ -1158,7 +1158,7 @@ qmnSITS::initTempTable( qcTemplate * aTemplate,
                                          sCacheDataPlan->resultData.memoryIdx,
                                          aDataPlan->mtrNode,
                                          aDataPlan->mtrNode,
-                                         NULL,  // Aggregation Column¾øÀ½
+                                         NULL,  // Aggregation Columnì—†ìŒ
                                          aCodePlan->bucketCnt,
                                          sFlag )
                       != IDE_SUCCESS );
@@ -1185,7 +1185,7 @@ qmnSITS::checkLeftDependency( qmndSITS   * aDataPlan,
 /***********************************************************************
  *
  * Description :
- *    Left Dependent TupleÀÇ º¯°æ ¿©ºÎ °Ë»ç
+ *    Left Dependent Tupleì˜ ë³€ê²½ ì—¬ë¶€ ê²€ì‚¬
  *
  * Implementation :
  *
@@ -1210,7 +1210,7 @@ qmnSITS::checkRightDependency( qmndSITS   * aDataPlan,
 /***********************************************************************
  *
  * Description :
- *     Right Dependent TupleÀÇ º¯°æ ¿©ºÎ °Ë»ç
+ *     Right Dependent Tupleì˜ ë³€ê²½ ì—¬ë¶€ ê²€ì‚¬
  *
  * Implementation :
  *
@@ -1241,7 +1241,7 @@ qmnSITS::storeLeft( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *     Left¸¦ ¼öÇàÇÏ¿© distinct hashingÀ¸·Î ÀúÀå
+ *     Leftë¥¼ ìˆ˜í–‰í•˜ì—¬ distinct hashingìœ¼ë¡œ ì €ì¥
  *
  * Implementation :
  *
@@ -1255,7 +1255,7 @@ qmnSITS::storeLeft( qcTemplate * aTemplate,
     qmndSITS * sCacheDataPlan = NULL;
 
     //---------------------------------------
-    // Left Child ¼öÇà
+    // Left Child ìˆ˜í–‰
     //---------------------------------------
 
     IDE_TEST( aCodePlan->plan.left->init( aTemplate,
@@ -1267,7 +1267,7 @@ qmnSITS::storeLeft( qcTemplate * aTemplate,
                                           & sFlag ) != IDE_SUCCESS );
 
     //---------------------------------------
-    // ¹İº¹ ¼öÇàÇÏ¿© Temp Table ±¸¼º
+    // ë°˜ë³µ ìˆ˜í–‰í•˜ì—¬ Temp Table êµ¬ì„±
     //---------------------------------------
 
     sInserted = ID_TRUE;
@@ -1275,7 +1275,7 @@ qmnSITS::storeLeft( qcTemplate * aTemplate,
     while ( (sFlag & QMC_ROW_DATA_MASK) == QMC_ROW_DATA_EXIST )
     {
         //---------------------------------------
-        // 1.  ÀúÀå Row¸¦ À§ÇÑ °ø°£ ÇÒ´ç
+        // 1.  ì €ì¥ Rowë¥¼ ìœ„í•œ ê³µê°„ í• ë‹¹
         //---------------------------------------
 
         if ( sInserted == ID_TRUE )
@@ -1286,19 +1286,19 @@ qmnSITS::storeLeft( qcTemplate * aTemplate,
         }
         else
         {
-            // »ğÀÔÀÌ ½ÇÆĞÇÑ °æ¿ì·Î ÀÌ¹Ì ÇÒ´ç¹ŞÀº °ø°£À» »ç¿ëÇÑ´Ù.
-            // µû¶ó¼­, º°µµ·Î °ø°£À» ÇÒ´ç ¹ŞÀ» ÇÊ¿ä°¡ ¾ø´Ù.
+            // ì‚½ì…ì´ ì‹¤íŒ¨í•œ ê²½ìš°ë¡œ ì´ë¯¸ í• ë‹¹ë°›ì€ ê³µê°„ì„ ì‚¬ìš©í•œë‹¤.
+            // ë”°ë¼ì„œ, ë³„ë„ë¡œ ê³µê°„ì„ í• ë‹¹ ë°›ì„ í•„ìš”ê°€ ì—†ë‹¤.
         }
 
         //---------------------------------------
-        // 2.  ÀúÀå RowÀÇ ±¸¼º
+        // 2.  ì €ì¥ Rowì˜ êµ¬ì„±
         //---------------------------------------
 
         IDE_TEST( setMtrRow( aTemplate,
                              aDataPlan ) != IDE_SUCCESS );
 
         //---------------------------------------
-        // 3.  ÀúÀå RowÀÇ »ğÀÔ
+        // 3.  ì €ì¥ Rowì˜ ì‚½ì…
         //---------------------------------------
 
         IDE_TEST( qmcHashTemp::addDistRow( aDataPlan->hashMgr,
@@ -1307,7 +1307,7 @@ qmnSITS::storeLeft( qcTemplate * aTemplate,
                   != IDE_SUCCESS );
 
         //---------------------------------------
-        // 4.  Left Child ¼öÇà
+        // 4.  Left Child ìˆ˜í–‰
         //---------------------------------------
 
         IDE_TEST( aCodePlan->plan.left->doIt( aTemplate,
@@ -1317,7 +1317,7 @@ qmnSITS::storeLeft( qcTemplate * aTemplate,
     }
 
     //---------------------------------------
-    // Right Ã³¸®¸¦ À§ÇÑ ¸Ş¸ğ¸® °ø°£ È®º¸
+    // Right ì²˜ë¦¬ë¥¼ ìœ„í•œ ë©”ëª¨ë¦¬ ê³µê°„ í™•ë³´
     //---------------------------------------
 
     if ( sInserted == ID_TRUE )
@@ -1329,7 +1329,7 @@ qmnSITS::storeLeft( qcTemplate * aTemplate,
     }
     else
     {
-        // ÀÌ¹Ì °ø°£ÀÌ ³²¾Æ ÀÖÀ½
+        // ì´ë¯¸ ê³µê°„ì´ ë‚¨ì•„ ìˆìŒ
     }
 
     aDataPlan->leftDepValue = aDataPlan->leftDepTuple->modify;
@@ -1366,19 +1366,19 @@ qmnSITS::setRightChildMtrRow( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    Right ChildÀÇ °á°ú¸¦ ÀúÀå Row¿¡ ±¸¼º
+ *    Right Childì˜ ê²°ê³¼ë¥¼ ì €ì¥ Rowì— êµ¬ì„±
  *
  * Implementation :
- *    ÇÏÀ§ ³ëµå°¡ ¹İµå½Ã PROJ ³ëµåÀÌ±â ¶§¹®¿¡ Stack¿¡ ½×ÀÎ °á°ú¸¦
- *    »ç¿ëÇÏ¿© ÀúÀå Row¸¦ ±¸¼ºÇÑ´Ù.
+ *    í•˜ìœ„ ë…¸ë“œê°€ ë°˜ë“œì‹œ PROJ ë…¸ë“œì´ê¸° ë•Œë¬¸ì— Stackì— ìŒ“ì¸ ê²°ê³¼ë¥¼
+ *    ì‚¬ìš©í•˜ì—¬ ì €ì¥ Rowë¥¼ êµ¬ì„±í•œë‹¤.
  *
  * BUG-24190
  * select i1(varchar(30)) from t1 minus select i1(varchar(250)) from t2;
- * ¼öÇà½Ã ¼­¹ö ºñÁ¤»óÁ¾·á.
+ * ìˆ˜í–‰ì‹œ ì„œë²„ ë¹„ì •ìƒì¢…ë£Œ.
  *
- *  right childÀÇ actualsize°¡ Å« °æ¿ì skip ÇÑ´Ù. 
+ *  right childì˜ actualsizeê°€ í° ê²½ìš° skip í•œë‹¤. 
  *
- *                [ SET-INTERSECT ] ( ÄÃ·³»çÀÌÁî : 30 )
+ *                [ SET-INTERSECT ] ( ì»¬ëŸ¼ì‚¬ì´ì¦ˆ : 30 )
  *                         |
  *           -----------------------------
  *           |                            |
@@ -1456,11 +1456,11 @@ qmnSITS::setMtrRow( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    ChildÀÇ °á°ú¸¦ ÀúÀå Row¿¡ ±¸¼º
+ *    Childì˜ ê²°ê³¼ë¥¼ ì €ì¥ Rowì— êµ¬ì„±
  *
  * Implementation :
- *    ÇÏÀ§ ³ëµå°¡ ¹İµå½Ã PROJ ³ëµåÀÌ±â ¶§¹®¿¡ Stack¿¡ ½×ÀÎ °á°ú¸¦
- *    »ç¿ëÇÏ¿© ÀúÀå Row¸¦ ±¸¼ºÇÑ´Ù.
+ *    í•˜ìœ„ ë…¸ë“œê°€ ë°˜ë“œì‹œ PROJ ë…¸ë“œì´ê¸° ë•Œë¬¸ì— Stackì— ìŒ“ì¸ ê²°ê³¼ë¥¼
+ *    ì‚¬ìš©í•˜ì—¬ ì €ì¥ Rowë¥¼ êµ¬ì„±í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -1521,7 +1521,7 @@ qmnSITS::setIntersectedRows( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *     Subquery¿¡¼­ »ç¿ëµÇ´Â °æ¿ì Intersected RowµéÀ» ¸ğµÎ ¼³Á¤ÇÑ´Ù.
+ *     Subqueryì—ì„œ ì‚¬ìš©ë˜ëŠ” ê²½ìš° Intersected Rowë“¤ì„ ëª¨ë‘ ì„¤ì •í•œë‹¤.
  *
  * Implementation :
  *
@@ -1536,7 +1536,7 @@ qmnSITS::setIntersectedRows( qcTemplate * aTemplate,
          == QMNC_SITS_IN_TOP_FALSE )
     {
         //---------------------------------------
-        // Right¸¦ ¹İº¹ ¼öÇàÇÏ¿© Insersected RowµéÀ» ¼³Á¤
+        // Rightë¥¼ ë°˜ë³µ ìˆ˜í–‰í•˜ì—¬ Insersected Rowë“¤ì„ ì„¤ì •
         //---------------------------------------
 
         IDE_TEST( qmnSITS::doItFirst( aTemplate,
@@ -1552,14 +1552,14 @@ qmnSITS::setIntersectedRows( qcTemplate * aTemplate,
                       != IDE_SUCCESS );
         }
 
-        // Dependenct Value ¼³Á¤
+        // Dependenct Value ì„¤ì •
         aDataPlan->rightDepValue = aDataPlan->rightDepTuple->modify;
     }
     else
     {
-        // Top Query¿¡¼­ »ç¿ëµÇ´Â °æ¿ì ÃÊ±âÈ­ °úÁ¤¿¡¼­
-        // intersected row¸¦ °áÁ¤ÇÏÁö ¾Ê°í
-        // ¼öÇà °úÁ¤¿¡¼­ ¹Ù·Î intersected row¸¦ °áÁ¤ÇÑ´Ù.
+        // Top Queryì—ì„œ ì‚¬ìš©ë˜ëŠ” ê²½ìš° ì´ˆê¸°í™” ê³¼ì •ì—ì„œ
+        // intersected rowë¥¼ ê²°ì •í•˜ì§€ ì•Šê³ 
+        // ìˆ˜í–‰ ê³¼ì •ì—ì„œ ë°”ë¡œ intersected rowë¥¼ ê²°ì •í•œë‹¤.
     }
 
     return IDE_SUCCESS;

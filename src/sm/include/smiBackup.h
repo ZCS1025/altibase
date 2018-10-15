@@ -19,7 +19,7 @@
  * $Id: smiBackup.h 82075 2018-01-17 06:39:52Z jina.kim $
  * Description :
  * 
- * º» ÆÄÀÏÀº backup °ü·Ã Ã³¸®¸¦ ´ã´çÇÏ´Â class Çì´õ ÆÄÀÏÀÔ´Ï´Ù.
+ * ë³¸ íŒŒì¼ì€ backup ê´€ë ¨ ì²˜ë¦¬ë¥¼ ë‹´ë‹¹í•˜ëŠ” class í—¤ë” íŒŒì¼ì…ë‹ˆë‹¤.
  *
  **********************************************************************/
 #ifndef _O_SMI_BACKUP_H_
@@ -39,7 +39,7 @@ public:
     static IDE_RC alterArchiveMode( smiArchiveMode   aArchiveMode,
                                     idBool           aCheckPhase = ID_TRUE );
 
-    // alter system archive log [start|stop] ¼öÇà
+    // alter system archive log [start|stop] ìˆ˜í–‰
     static IDE_RC startArchThread();
     static IDE_RC stopArchThread();
     

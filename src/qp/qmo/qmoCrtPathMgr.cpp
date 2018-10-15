@@ -21,12 +21,12 @@
  * Description :
  *     Critical Path Manager
  *
- *     FROM, WHERE∑Œ ±∏º∫µ«¥¬ Critical Pathø° ¥Î«— √÷¿˚»≠∏¶ ºˆ«‡«œ∞Ì
- *     ¿Ãø° ¥Î«— Graph∏¶ ª˝º∫«—¥Ÿ.
+ *     FROM, WHEREÎ°ú Íµ¨ÏÑ±ÎêòÎäî Critical PathÏóê ÎåÄÌïú ÏµúÏ†ÅÌôîÎ•º ÏàòÌñâÌïòÍ≥†
+ *     Ïù¥Ïóê ÎåÄÌïú GraphÎ•º ÏÉùÏÑ±ÌïúÎã§.
  *
- * øÎæÓ º≥∏Ì :
+ * Ïö©Ïñ¥ ÏÑ§Î™Ö :
  *
- * æ‡æÓ :
+ * ÏïΩÏñ¥ :
  *
  **********************************************************************/
 
@@ -52,15 +52,15 @@ qmoCrtPathMgr::init( qcStatement * aStatement,
 {
 /***********************************************************************
  *
- * Description : qmoCrtPath ª˝º∫ π◊ √ ±‚»≠
+ * Description : qmoCrtPath ÏÉùÏÑ± Î∞è Ï¥àÍ∏∞Ìôî
  *
  * Implementation :
- *    (1) qmoCrtPath ∏∏≈≠ ∏ﬁ∏∏Æ «“¥Á
- *    (2) Normalization Type ∞·¡§
- *    (3) Normalization Typeø° µ˚∂Û qmoCNF, qmoDNF √ ±‚»≠
- *        A. qmoCNF ∂«¥¬ qmoDNF ∏ﬁ∏∏Æ «“¥Á
- *        B. where ¿˝¿ª CNF ∂«¥¬ DNF Normalize
- *        C. qmoCnfMgr∂«¥¬ qmoDnfMgr¿« √ ±‚»≠ «‘ºˆ »£√‚
+ *    (1) qmoCrtPath ÎßåÌÅº Î©îÎ™®Î¶¨ Ìï†Îãπ
+ *    (2) Normalization Type Í≤∞Ï†ï
+ *    (3) Normalization TypeÏóê Îî∞Îùº qmoCNF, qmoDNF Ï¥àÍ∏∞Ìôî
+ *        A. qmoCNF ÎòêÎäî qmoDNF Î©îÎ™®Î¶¨ Ìï†Îãπ
+ *        B. where Ï†àÏùÑ CNF ÎòêÎäî DNF Normalize
+ *        C. qmoCnfMgrÎòêÎäî qmoDnfMgrÏùò Ï¥àÍ∏∞Ìôî Ìï®Ïàò Ìò∏Ï∂ú
  *
  ***********************************************************************/
 
@@ -87,7 +87,7 @@ qmoCrtPathMgr::init( qcStatement * aStatement,
     IDU_FIT_POINT_FATAL( "qmoCrtPathMgr::init::__FT__" );
 
     //------------------------------------------
-    // ¿˚«’º∫ ∞ÀªÁ
+    // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -101,12 +101,12 @@ qmoCrtPathMgr::init( qcStatement * aStatement,
     sNormalForm = NULL;
     sNNFFilter  = NULL;
 
-    // qmoCrtPath ∏ﬁ∏∏Æ «“¥Á
+    // qmoCrtPath Î©îÎ™®Î¶¨ Ìï†Îãπ
     IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF(qmoCrtPath) ,
                                              (void **) & sCrtPath)
               != IDE_SUCCESS);
 
-    // qmoCrtPath √ ±‚»≠
+    // qmoCrtPath Ï¥àÍ∏∞Ìôî
     sCrtPath->crtDNF     = NULL;
     sCrtPath->crtCNF     = NULL;
     sCrtPath->currentCNF = NULL;
@@ -120,11 +120,11 @@ qmoCrtPathMgr::init( qcStatement * aStatement,
 
     sCrtPath->myQuerySet = aQuerySet;
 
-    // SFWGHø° Critical Path ∏¶ µÓ∑œ
+    // SFWGHÏóê Critical Path Î•º Îì±Î°ù
     sQuerySet->SFWGH->crtPath = sCrtPath;
 
     // BUG-36926
-    // updatable view¥¬ CNF∑Œ∏∏ plan¿Ã ª˝º∫µ«æÓæﬂ «—¥Ÿ.
+    // updatable viewÎäî CNFÎ°úÎßå planÏù¥ ÏÉùÏÑ±ÎêòÏñ¥Ïïº ÌïúÎã§.
     if ( ( sQuerySet->SFWGH->flag & QMV_SFWGH_UPDATABLE_VIEW_MASK )
          == QMV_SFWGH_UPDATABLE_VIEW_TRUE )
     {
@@ -133,7 +133,7 @@ qmoCrtPathMgr::init( qcStatement * aStatement,
     else
     {
         // BUG-43894
-        // join¥¬ CNF∑Œ∏∏ plan¿Ã ª˝º∫µ«æÓæﬂ «—¥Ÿ.
+        // joinÎäî CNFÎ°úÎßå planÏù¥ ÏÉùÏÑ±ÎêòÏñ¥Ïïº ÌïúÎã§.
         if ( ( aQuerySet->SFWGH->from->next == NULL ) &&
              ( aQuerySet->SFWGH->from->joinType == QMS_NO_JOIN ) )
         {
@@ -145,9 +145,9 @@ qmoCrtPathMgr::init( qcStatement * aStatement,
         }
     }
 
-    // Normalization Type ∞·¡§
+    // Normalization Type Í≤∞Ï†ï
     // BUG-35155 Partial CNF
-    // Where ¿˝∏∏ partial CNF √≥∏Æ∏¶ ¿ß«ÿ ∫∞µµ¿« «‘ºˆ∏¶ »£√‚«—¥Ÿ.
+    // Where Ï†àÎßå partial CNF Ï≤òÎ¶¨Î•º ÏúÑÌï¥ Î≥ÑÎèÑÏùò Ìï®ÏàòÎ•º Ìò∏Ï∂úÌïúÎã§.
     IDE_TEST( decideNormalType4Where( aStatement,
                                       sFrom,
                                       sWhere,
@@ -159,7 +159,7 @@ qmoCrtPathMgr::init( qcStatement * aStatement,
     sCrtPath->normalType = sNormalType;
 
     //------------------------------------------------
-    // Normalization Typeø° µ˚∂Û qmoCNF, qmoDNF √ ±‚»≠
+    // Normalization TypeÏóê Îî∞Îùº qmoCNF, qmoDNF Ï¥àÍ∏∞Ìôî
     //------------------------------------------------
 
     switch ( sNormalType )
@@ -167,10 +167,10 @@ qmoCrtPathMgr::init( qcStatement * aStatement,
         case QMO_NORMAL_TYPE_NNF:
 
             //-----------------------------------------
-            // NNF ¿Œ ∞ÊøÏ
+            // NNF Ïù∏ Í≤ΩÏö∞
             //-----------------------------------------
 
-            // qmoCNF ∏ﬁ∏∏Æ «“¥Á
+            // qmoCNF Î©îÎ™®Î¶¨ Ìï†Îãπ
             IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF( qmoCNF ),
                                                      (void **) & sCNF )
                       != IDE_SUCCESS);
@@ -185,10 +185,10 @@ qmoCrtPathMgr::init( qcStatement * aStatement,
                 // Nothing To Do
             }
 
-            // critical path¥¬ «ˆ¿Á NNF∑Œ √≥∏Æ«—¥Ÿ.
+            // critical pathÎäî ÌòÑÏû¨ NNFÎ°ú Ï≤òÎ¶¨ÌïúÎã§.
             sCrtPath->currentNormalType = QMO_NORMAL_TYPE_NNF;
 
-            // qmoCNF √ ±‚»≠
+            // qmoCNF Ï¥àÍ∏∞Ìôî
             IDE_TEST( qmoCnfMgr::init( aStatement,
                                        sCNF,
                                        sQuerySet,
@@ -202,29 +202,29 @@ qmoCrtPathMgr::init( qcStatement * aStatement,
         case QMO_NORMAL_TYPE_CNF:
 
             //-----------------------------------------
-            // CNF ¿Œ ∞ÊøÏ
+            // CNF Ïù∏ Í≤ΩÏö∞
             //-----------------------------------------
 
-            // qmoCNF ∏ﬁ∏∏Æ «“¥Á
+            // qmoCNF Î©îÎ™®Î¶¨ Ìï†Îãπ
             IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF( qmoCNF ),
                                                      (void **) & sCNF )
                       != IDE_SUCCESS);
 
-            // where ¿˝¿ª CNF Normalization
+            // where Ï†àÏùÑ CNF Normalization
             if ( sWhere == NULL )
             {
                 sNormalForm = NULL;
             }
             else
             {
-                // where ¿˝¿ª CNF Normalization
+                // where Ï†àÏùÑ CNF Normalization
                 IDE_TEST( qmoNormalForm::normalizeCNF( aStatement,
                                                        sWhere,
                                                        &sNormalForm )
                           != IDE_SUCCESS );
 
                 // BUG-35155 Partial CNF
-                // Partial CNF ø°º≠ ¡¶ø‹µ» qtcNode ∏¶ NNF « ≈Õ∑Œ ∏∏µÁ¥Ÿ.
+                // Partial CNF ÏóêÏÑú Ï†úÏô∏Îêú qtcNode Î•º NNF ÌïÑÌÑ∞Î°ú ÎßåÎì†Îã§.
                 IDE_TEST( qmoNormalForm::extractNNFFilter4CNF( aStatement,
                                                                sWhere,
                                                                &sNNFFilter )
@@ -233,16 +233,16 @@ qmoCrtPathMgr::init( qcStatement * aStatement,
                 //-----------------------------------------
                 // PROJ-1653 Outer Join Operator (+)
                 //
-                // Outer Join Operator ∏¶ ªÁøÎ«œ¥¬ normalizedCNF ¿« ∞ÊøÏ
-                // ANSI Join «¸≈¬¿« ¿⁄∑·±∏¡∂∑Œ ∫Ø∞Ê
+                // Outer Join Operator Î•º ÏÇ¨Ïö©ÌïòÎäî normalizedCNF Ïùò Í≤ΩÏö∞
+                // ANSI Join ÌòïÌÉúÏùò ÏûêÎ£åÍµ¨Ï°∞Î°ú Î≥ÄÍ≤Ω
                 //-----------------------------------------
                 if ( ( sNormalForm->lflag & QTC_NODE_JOIN_OPERATOR_MASK )
                         == QTC_NODE_JOIN_OPERATOR_EXIST )
                 {
                     // BUGBUG PROJ-1718 Subquery unnesting
-                    // LEFT OUTER JOIN¿« ¡∂∞«¿Ã WHERE¿˝∞˙ ON¿˝ø° µøΩ√ø° ≥≤æ∆¿÷æÓ unparsing Ω√
-                    // ¡ﬂ∫πµ«æÓ √‚∑¬µ»¥Ÿ.
-                    // WHERE¿˝ø° ∆˜«‘µ» LEFT OUTER JOIN¿« ¡∂∞«¿∫ ¡¶∞≈µ«æÓæﬂ «—¥Ÿ.
+                    // LEFT OUTER JOINÏùò Ï°∞Í±¥Ïù¥ WHEREÏ†àÍ≥º ONÏ†àÏóê ÎèôÏãúÏóê ÎÇ®ÏïÑÏûàÏñ¥ unparsing Ïãú
+                    // Ï§ëÎ≥µÎêòÏñ¥ Ï∂úÎ†•ÎêúÎã§.
+                    // WHEREÏ†àÏóê Ìè¨Ìï®Îêú LEFT OUTER JOINÏùò Ï°∞Í±¥ÏùÄ Ï†úÍ±∞ÎêòÏñ¥Ïïº ÌïúÎã§.
                     IDE_TEST( qmoOuterJoinOper::transform2ANSIJoin ( aStatement,
                                                                      sQuerySet,
                                                                      &sNormalForm )
@@ -283,11 +283,11 @@ qmoCrtPathMgr::init( qcStatement * aStatement,
                 PLAN_PROPERTY_OPTIMIZER_INNER_JOIN_PUSH_DOWN );
 
             // BUG-34295 Join ordering ANSI style query
-            // ¡¶æ‡ªÁ«◊
-            // 1. Property ∞° ƒ—¡Æ ¿÷æÓæﬂ «‘
-            // 2. from ¿˝ø° ANSI style join 1∞≥∏∏ ¡∏¿Á«ÿæﬂ «‘
-            // 3. table 1∞≥∏∏ æ≤¿Œ∞ÊøÏ¥¬ √≥∏Æ«œ¡ˆ æ ¿Ω
-            // 4. Right or full outer join ¿Ã ¿÷¿∏∏È √≥∏Æ«œ¡ˆ æ ¿Ω
+            // Ï†úÏïΩÏÇ¨Ìï≠
+            // 1. Property Í∞Ä ÏºúÏ†∏ ÏûàÏñ¥Ïïº Ìï®
+            // 2. from Ï†àÏóê ANSI style join 1Í∞úÎßå Ï°¥Ïû¨Ìï¥Ïïº Ìï®
+            // 3. table 1Í∞úÎßå Ïì∞Ïù∏Í≤ΩÏö∞Îäî Ï≤òÎ¶¨ÌïòÏßÄ ÏïäÏùå
+            // 4. Right or full outer join Ïù¥ ÏûàÏúºÎ©¥ Ï≤òÎ¶¨ÌïòÏßÄ ÏïäÏùå
             if( ( QCU_OPTIMIZER_ANSI_JOIN_ORDERING == 1 ) &&
                 ( aQuerySet->SFWGH->from->next == NULL ) &&
                 ( aQuerySet->SFWGH->from->joinType != QMS_NO_JOIN ) &&
@@ -311,8 +311,8 @@ qmoCrtPathMgr::init( qcStatement * aStatement,
                           != IDE_SUCCESS );
 
                 // BUG-40028
-                // qmsFrom ¿« tree ∞° øﬁ¬ ¿∏∑Œ ƒ°øÏƒ£(skewed)«¸≈¬∞° æ∆¥“ ∂ß¥¬
-                // ANSI_JOIN_ORDERING «ÿº≠¥¬ æ»µ»¥Ÿ.
+                // qmsFrom Ïùò tree Í∞Ä ÏôºÏ™ΩÏúºÎ°ú ÏπòÏö∞Ïπú(skewed)ÌòïÌÉúÍ∞Ä ÏïÑÎãê ÎïåÎäî
+                // ANSI_JOIN_ORDERING Ìï¥ÏÑúÎäî ÏïàÎêúÎã§.
                 if ( sMakeFail == ID_TRUE )
                 {
                     sFromArr  = NULL;
@@ -323,9 +323,9 @@ qmoCrtPathMgr::init( qcStatement * aStatement,
                     // Nothing to do.
                 }
 
-                // sFromArr∞° NULL¿Œ ∞ÊøÏ: left outer join∏∏ ¡∏¿Á«œ¥¬ ∞ÊøÏ
-                // sFromTree∞° NULL¿Œ ∞ÊøÏ: inner join∏∏ ¡∏¿Á«œ¥¬ ∞ÊøÏ
-                // sFromArr∞° NULL¿Ã æ∆¥— ∞ÊøÏ: inner join¿Ã √÷º“«— «œ≥™∂Ûµµ ¡∏¿Á«œ¥¬ ∞ÊøÏ
+                // sFromArrÍ∞Ä NULLÏù∏ Í≤ΩÏö∞: left outer joinÎßå Ï°¥Ïû¨ÌïòÎäî Í≤ΩÏö∞
+                // sFromTreeÍ∞Ä NULLÏù∏ Í≤ΩÏö∞: inner joinÎßå Ï°¥Ïû¨ÌïòÎäî Í≤ΩÏö∞
+                // sFromArrÍ∞Ä NULLÏù¥ ÏïÑÎãå Í≤ΩÏö∞: inner joinÏù¥ ÏµúÏÜåÌïú ÌïòÎÇòÎùºÎèÑ Ï°¥Ïû¨ÌïòÎäî Í≤ΩÏö∞
                 if( sFromArr != NULL )
                 {
                     for( sIter = sFromArr; 
@@ -403,10 +403,10 @@ qmoCrtPathMgr::init( qcStatement * aStatement,
                             }
                         }
 
-                        // ANSI style join ¿∫ from tree ∑Œ µ˚∑Œ ¿˙¿Â«—¥Ÿ.
+                        // ANSI style join ÏùÄ from tree Î°ú Îî∞Î°ú Ï†ÄÏû•ÌïúÎã§.
                         aQuerySet->SFWGH->outerJoinTree = sFromTree;
 
-                        // From ¿˝¿ª √ﬂ√‚µ» from array ∑Œ ¥Î√º«—¥Ÿ.
+                        // From Ï†àÏùÑ Ï∂îÏ∂úÎêú from array Î°ú ÎåÄÏ≤¥ÌïúÎã§.
                         aQuerySet->SFWGH->from = sFromArr;
                     }
                 }
@@ -417,14 +417,14 @@ qmoCrtPathMgr::init( qcStatement * aStatement,
             }
             else
             {
-                // ANSI join ordering ¿ª «“ ºˆ æ¯¿Ω
+                // ANSI join ordering ÏùÑ Ìï† Ïàò ÏóÜÏùå
                 // Nothing to do.
             }
 
-            // critical path¥¬ «ˆ¿Á CNF∑Œ √≥∏Æ«—¥Ÿ.
+            // critical pathÎäî ÌòÑÏû¨ CNFÎ°ú Ï≤òÎ¶¨ÌïúÎã§.
             sCrtPath->currentNormalType = QMO_NORMAL_TYPE_CNF;
 
-            // qmoCNF √ ±‚»≠
+            // qmoCNF Ï¥àÍ∏∞Ìôî
             IDE_TEST( qmoCnfMgr::init( aStatement,
                                        sCNF,
                                        sQuerySet,
@@ -438,24 +438,24 @@ qmoCrtPathMgr::init( qcStatement * aStatement,
         case QMO_NORMAL_TYPE_DNF:
 
             //-----------------------------------------
-            // DNF ¿Œ ∞ÊøÏ
+            // DNF Ïù∏ Í≤ΩÏö∞
             //-----------------------------------------
 
-            // qmoDNF ∏ﬁ∏∏Æ «“¥Á
+            // qmoDNF Î©îÎ™®Î¶¨ Ìï†Îãπ
             IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF( qmoDNF ),
                                                      (void **) & sDNF )
                       != IDE_SUCCESS);
 
-            // where ¿˝¿ª DNF Normalization
+            // where Ï†àÏùÑ DNF Normalization
             IDE_TEST( qmoNormalForm::normalizeDNF( aStatement,
                                                    sWhere,
                                                    &sNormalForm )
                       != IDE_SUCCESS );
 
-            // critical path¥¬ «ˆ¿Á DNF∑Œ √≥∏Æ«—¥Ÿ.
+            // critical pathÎäî ÌòÑÏû¨ DNFÎ°ú Ï≤òÎ¶¨ÌïúÎã§.
             sCrtPath->currentNormalType = QMO_NORMAL_TYPE_DNF;
 
-            // qmoDNF √ ±‚»≠
+            // qmoDNF Ï¥àÍ∏∞Ìôî
             IDE_TEST( qmoDnfMgr::init( aStatement,
                                        sDNF,
                                        sQuerySet,
@@ -468,28 +468,28 @@ qmoCrtPathMgr::init( qcStatement * aStatement,
         case QMO_NORMAL_TYPE_NOT_DEFINED:
 
             //-----------------------------------------
-            // Normal Form¿Ã ¡§¿«µ«¡ˆ æ ¿∫ ∞ÊøÏ
+            // Normal FormÏù¥ Ï†ïÏùòÎêòÏßÄ ÏïäÏùÄ Í≤ΩÏö∞
             //-----------------------------------------
 
-            // qmoCNF √ ±‚»≠
+            // qmoCNF Ï¥àÍ∏∞Ìôî
             IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF( qmoCNF ) ,
                                                      (void**) & sCNF )
                       != IDE_SUCCESS);
 
-            // where ¿˝¿ª CNF Normalization
+            // where Ï†àÏùÑ CNF Normalization
             IDE_TEST( qmoNormalForm::normalizeCNF( aStatement,
                                                    sWhere,
                                                    &sNormalForm )
                       != IDE_SUCCESS );
 
             // BUG-35155 Partial CNF
-            // Partial CNF ø°º≠ ¡¶ø‹µ» qtcNode ∏¶ NNF « ≈Õ∑Œ ∏∏µÁ¥Ÿ.
+            // Partial CNF ÏóêÏÑú Ï†úÏô∏Îêú qtcNode Î•º NNF ÌïÑÌÑ∞Î°ú ÎßåÎì†Îã§.
             IDE_TEST( qmoNormalForm::extractNNFFilter4CNF( aStatement,
                                                            sWhere,
                                                            &sNNFFilter )
                       != IDE_SUCCESS );
 
-            // critical path¥¬ «ˆ¿Á CNF∑Œ √≥∏Æ«—¥Ÿ.
+            // critical pathÎäî ÌòÑÏû¨ CNFÎ°ú Ï≤òÎ¶¨ÌïúÎã§.
             sCrtPath->currentNormalType = QMO_NORMAL_TYPE_CNF;
 
             IDE_TEST( qmoCnfMgr::init( aStatement,
@@ -501,7 +501,7 @@ qmoCrtPathMgr::init( qcStatement * aStatement,
 
             sCrtPath->crtCNF = sCNF;
 
-            // qmoDNF √ ±‚»≠
+            // qmoDNF Ï¥àÍ∏∞Ìôî
             IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF( qmoDNF ) ,
                                                      (void**) & sDNF )
                       != IDE_SUCCESS);
@@ -511,7 +511,7 @@ qmoCrtPathMgr::init( qcStatement * aStatement,
                                                    &sNormalForm )
                       != IDE_SUCCESS );
 
-            // critical path¥¬ «ˆ¿Á DNF∑Œ √≥∏Æ«—¥Ÿ.
+            // critical pathÎäî ÌòÑÏû¨ DNFÎ°ú Ï≤òÎ¶¨ÌïúÎã§.
             sCrtPath->currentNormalType = QMO_NORMAL_TYPE_DNF;
 
             IDE_TEST( qmoDnfMgr::init( aStatement,
@@ -528,10 +528,10 @@ qmoCrtPathMgr::init( qcStatement * aStatement,
             break;
     }
 
-    // critical path¥¬ √≥∏Æ∞° ≥°≥µ¥Ÿ.
+    // critical pathÎäî Ï≤òÎ¶¨Í∞Ä ÎÅùÎÇ¨Îã§.
     sCrtPath->currentNormalType = QMO_NORMAL_TYPE_NOT_DEFINED;
 
-    // out º≥¡§
+    // out ÏÑ§Ï†ï
     *aCrtPath = sCrtPath;
 
     return IDE_SUCCESS;
@@ -547,10 +547,10 @@ qmoCrtPathMgr::optimize( qcStatement * aStatement,
 {
 /***********************************************************************
  *
- * Description : Critical Path¿« √÷¿˚»≠( ¡Ô, qmoCrtPathMgr¿« √÷¿˚»≠)
+ * Description : Critical PathÏùò ÏµúÏ†ÅÌôî( Ï¶â, qmoCrtPathMgrÏùò ÏµúÏ†ÅÌôî)
  *
  * Implementation :
- *    Normalization Typeø° µ˚∂Û qmoCnfMgf∂«¥¬ qmoDnfMgr¿« √÷¿˚»≠ «‘ºˆ »£√‚
+ *    Normalization TypeÏóê Îî∞Îùº qmoCnfMgfÎòêÎäî qmoDnfMgrÏùò ÏµúÏ†ÅÌôî Ìï®Ïàò Ìò∏Ï∂ú
  *
  ***********************************************************************/
 
@@ -564,7 +564,7 @@ qmoCrtPathMgr::optimize( qcStatement * aStatement,
     IDU_FIT_POINT_FATAL( "qmoCrtPathMgr::optimize::__FT__" );
 
     //------------------------------------------
-    // ¿˚«’º∫ ∞ÀªÁ
+    // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -575,7 +575,7 @@ qmoCrtPathMgr::optimize( qcStatement * aStatement,
     sQuerySet = sCrtPath->myQuerySet;
 
     //------------------------------------------
-    // Normalization Formø° µ˚∏• √÷¿˚»≠
+    // Normalization FormÏóê Îî∞Î•∏ ÏµúÏ†ÅÌôî
     //------------------------------------------
 
     switch ( sNormalType )
@@ -583,10 +583,10 @@ qmoCrtPathMgr::optimize( qcStatement * aStatement,
         case QMO_NORMAL_TYPE_NNF:
 
             //------------------------------------------
-            // NNF √÷¿˚»≠
+            // NNF ÏµúÏ†ÅÌôî
             //------------------------------------------
 
-            // critical path¥¬ «ˆ¿Á NNF∑Œ √≥∏Æ«—¥Ÿ.
+            // critical pathÎäî ÌòÑÏû¨ NNFÎ°ú Ï≤òÎ¶¨ÌïúÎã§.
             sCrtPath->currentNormalType = QMO_NORMAL_TYPE_NNF;
 
             IDE_TEST( qmoCnfMgr::optimize( aStatement,
@@ -597,10 +597,10 @@ qmoCrtPathMgr::optimize( qcStatement * aStatement,
         case QMO_NORMAL_TYPE_CNF:
 
             //------------------------------------------
-            // CNF √÷¿˚»≠
+            // CNF ÏµúÏ†ÅÌôî
             //------------------------------------------
 
-            // critical path¥¬ «ˆ¿Á CNF∑Œ √≥∏Æ«—¥Ÿ.
+            // critical pathÎäî ÌòÑÏû¨ CNFÎ°ú Ï≤òÎ¶¨ÌïúÎã§.
             sCrtPath->currentNormalType = QMO_NORMAL_TYPE_CNF;
 
             IDE_TEST( qmoCnfMgr::optimize( aStatement,
@@ -611,10 +611,10 @@ qmoCrtPathMgr::optimize( qcStatement * aStatement,
         case QMO_NORMAL_TYPE_DNF:
 
             //------------------------------------------
-            // DNF √÷¿˚»≠
+            // DNF ÏµúÏ†ÅÌôî
             //------------------------------------------
 
-            // critical path¥¬ «ˆ¿Á DNF∑Œ √≥∏Æ«—¥Ÿ.
+            // critical pathÎäî ÌòÑÏû¨ DNFÎ°ú Ï≤òÎ¶¨ÌïúÎã§.
             sCrtPath->currentNormalType = QMO_NORMAL_TYPE_DNF;
 
             IDE_TEST( qmoDnfMgr::optimize( aStatement,
@@ -625,23 +625,23 @@ qmoCrtPathMgr::optimize( qcStatement * aStatement,
 
         case QMO_NORMAL_TYPE_NOT_DEFINED:
             //------------------------------------------
-            // ¡§¿«µ«¡ˆ æ ¿∫ ∞ÊøÏ
+            // Ï†ïÏùòÎêòÏßÄ ÏïäÏùÄ Í≤ΩÏö∞
             //------------------------------------------
 
-            // critical path¥¬ «ˆ¿Á CNF∑Œ √≥∏Æ«—¥Ÿ.
+            // critical pathÎäî ÌòÑÏû¨ CNFÎ°ú Ï≤òÎ¶¨ÌïúÎã§.
             sCrtPath->currentNormalType = QMO_NORMAL_TYPE_CNF;
 
-            // CNF √÷¿˚»≠
+            // CNF ÏµúÏ†ÅÌôî
             IDE_TEST( qmoCnfMgr::optimize( aStatement,
                                            sCrtPath->crtCNF )
                       != IDE_SUCCESS );
 
             sCnfCost = sCrtPath->crtCNF->cost;
 
-            // critical path¥¬ «ˆ¿Á DNF∑Œ √≥∏Æ«—¥Ÿ.
+            // critical pathÎäî ÌòÑÏû¨ DNFÎ°ú Ï≤òÎ¶¨ÌïúÎã§.
             sCrtPath->currentNormalType = QMO_NORMAL_TYPE_DNF;
 
-            // DNF √÷¿˚»≠
+            // DNF ÏµúÏ†ÅÌôî
             IDE_TEST( qmoDnfMgr::optimize( aStatement,
                                            sCrtPath->crtDNF,
                                            sCnfCost )
@@ -649,8 +649,8 @@ qmoCrtPathMgr::optimize( qcStatement * aStatement,
 
             sDnfCost = sCrtPath->crtDNF->cost;
 
-            // CNFøÕ DNF¿« cost ∫Ò±≥
-            // BUG-42400 cost ∫Ò±≥Ω√ ∏≈≈©∑Œ∏¶ ªÁøÎ«ÿæﬂ «’¥œ¥Ÿ.
+            // CNFÏôÄ DNFÏùò cost ÎπÑÍµê
+            // BUG-42400 cost ÎπÑÍµêÏãú Îß§ÌÅ¨Î°úÎ•º ÏÇ¨Ïö©Ìï¥Ïïº Ìï©ÎãàÎã§.
             if ( QMO_COST_IS_GREATER(sCnfCost, sDnfCost) == ID_TRUE )
             {
                 sNormalType = QMO_NORMAL_TYPE_DNF;
@@ -672,11 +672,11 @@ qmoCrtPathMgr::optimize( qcStatement * aStatement,
             break;
     }
 
-    // critical path¥¬ √≥∏Æ∞° ≥°≥µ¥Ÿ.
+    // critical pathÎäî Ï≤òÎ¶¨Í∞Ä ÎÅùÎÇ¨Îã§.
     sCrtPath->currentNormalType = QMO_NORMAL_TYPE_NOT_DEFINED;
 
     //------------------------------------------
-    // ∞·¡§µ» normalType º≥¡§ π◊  ∞·∞˙ Graph ø¨∞·
+    // Í≤∞Ï†ïÎêú normalType ÏÑ§Ï†ï Î∞è  Í≤∞Í≥º Graph Ïó∞Í≤∞
     //------------------------------------------
 
     switch ( sNormalType )
@@ -697,8 +697,8 @@ qmoCrtPathMgr::optimize( qcStatement * aStatement,
             sCrtPath->rownumPredicate = sCrtPath->rownumPredicateForDNF;
 
             // fix BUG-21478
-            // push projection √≥∏ÆΩ√ dnfø° ¥Î«— ∞Ì∑¡∞° ∫¸¡≥¿Ω.
-            // dnfø° ¥Î«— ∞Ì∑¡∞° « ø‰«‘.
+            // push projection Ï≤òÎ¶¨Ïãú dnfÏóê ÎåÄÌïú Í≥†Î†§Í∞Ä Îπ†Ï°åÏùå.
+            // dnfÏóê ÎåÄÌïú Í≥†Î†§Í∞Ä ÌïÑÏöîÌï®.
             sQuerySet->materializeType = QMO_MATERIALIZE_TYPE_RID;
             sQuerySet->SFWGH->hints->materializeType = QMO_MATERIALIZE_TYPE_RID;
             break;
@@ -708,7 +708,7 @@ qmoCrtPathMgr::optimize( qcStatement * aStatement,
     }
 
     //------------------------------------------
-    // Counting¿« √≥∏Æ
+    // CountingÏùò Ï≤òÎ¶¨
     //------------------------------------------
 
     if ( sQuerySet->SFWGH->rownum != NULL )
@@ -725,7 +725,7 @@ qmoCrtPathMgr::optimize( qcStatement * aStatement,
         IDE_TEST( qmgCounting::optimize( aStatement, sMyGraph )
                   != IDE_SUCCESS);
 
-        // ∞·∞˙ Graph ø¨∞·
+        // Í≤∞Í≥º Graph Ïó∞Í≤∞
         sCrtPath->myGraph = sMyGraph;
     }
     else
@@ -750,36 +750,36 @@ qmoCrtPathMgr::decideNormalType( qcStatement   * aStatement ,
 {
 /***********************************************************************
  *
- * Description : Normalization Type ∞·¡§
+ * Description : Normalization Type Í≤∞Ï†ï
  *
  *    To Fix PR-12743
- *    Normal Form¿∏∑Œ ∫Ø∞Ê«“ ºˆ æ¯¥Ÿ∞Ì «œø© ø°∑Ø √≥∏Æ«œ¡ˆ æ ¥¬¥Ÿ.
+ *    Normal FormÏúºÎ°ú Î≥ÄÍ≤ΩÌï† Ïàò ÏóÜÎã§Í≥† ÌïòÏó¨ ÏóêÎü¨ Ï≤òÎ¶¨ÌïòÏßÄ ÏïäÎäîÎã§.
  *
- *    ¥Ÿ¿Ω ≥◊∞°¡ˆ Type¡ﬂø° «œ≥™∞° ∞·¡§µ»¥Ÿ.
- *       : NOT_DEFINED ( √ﬂ»ƒ ∫ÒøÎ ∞ËªÍø° ¿««œø© CNF, DNF∞° ∞·¡§µ  )
+ *    Îã§Ïùå ÎÑ§Í∞ÄÏßÄ TypeÏ§ëÏóê ÌïòÎÇòÍ∞Ä Í≤∞Ï†ïÎêúÎã§.
+ *       : NOT_DEFINED ( Ï∂îÌõÑ ÎπÑÏö© Í≥ÑÏÇ∞Ïóê ÏùòÌïòÏó¨ CNF, DNFÍ∞Ä Í≤∞Ï†ïÎê® )
  *       : CNF
  *       : DNF
  *       : NNF
  *
  * Implementation :
  *
- *    (0) CNF Only ¡∂∞« ∞ÀªÁ
+ *    (0) CNF Only Ï°∞Í±¥ Í≤ÄÏÇ¨
  *        - QCU_OPTIMIZER_DNF_DISABLE == 1,
  *        - No Where, View, DML, Subquery, Outer Join Operator
  *
- *    (1) Normalize ∞°¥… ø©∫Œ ∞ÀªÁ
- *        - CNF ∫“∞°, DNF ∫“∞° : NNF ªÁøÎ
- *        - CNF ∞°¥…, DNF ∫“∞° : CNF ªÁøÎ
- *        - CNF ∫“∞°, DNF ∞°¥…
- *           - CNF Only ¡∂∞«¿Œ ∞ÊøÏ       : NNF ªÁøÎ
- *           - DNF ¡¶æ‡ ¡∂∞«¿Ã æ¯¥¬ ∞ÊøÏ  : DNF ªÁøÎ
- *        - CNF ∞°¥…, DNF ∞°¥…
- *           - CNF Only ¡∂∞«¿Œ ∞ÊøÏ       : CNF ªÁøÎ
- *           - æ¯¥¬ ∞ÊøÏ                  : ¥Ÿ¿Ω ¥‹∞Ë∑Œ
+ *    (1) Normalize Í∞ÄÎä• Ïó¨Î∂Ä Í≤ÄÏÇ¨
+ *        - CNF Î∂àÍ∞Ä, DNF Î∂àÍ∞Ä : NNF ÏÇ¨Ïö©
+ *        - CNF Í∞ÄÎä•, DNF Î∂àÍ∞Ä : CNF ÏÇ¨Ïö©
+ *        - CNF Î∂àÍ∞Ä, DNF Í∞ÄÎä•
+ *           - CNF Only Ï°∞Í±¥Ïù∏ Í≤ΩÏö∞       : NNF ÏÇ¨Ïö©
+ *           - DNF Ï†úÏïΩ Ï°∞Í±¥Ïù¥ ÏóÜÎäî Í≤ΩÏö∞  : DNF ÏÇ¨Ïö©
+ *        - CNF Í∞ÄÎä•, DNF Í∞ÄÎä•
+ *           - CNF Only Ï°∞Í±¥Ïù∏ Í≤ΩÏö∞       : CNF ÏÇ¨Ïö©
+ *           - ÏóÜÎäî Í≤ΩÏö∞                  : Îã§Ïùå Îã®Í≥ÑÎ°ú
  *
- *    (2) »˘∆Æ ∞ÀªÁ
- *        - »˘∆Æ∞° ¡∏¿Á«œ∏È »˘∆Æ ªÁøÎ
- *        - æ¯¥Ÿ∏È, ¥Ÿ¿Ω ¥‹∞Ë∑Œ
+ *    (2) ÌûåÌä∏ Í≤ÄÏÇ¨
+ *        - ÌûåÌä∏Í∞Ä Ï°¥Ïû¨ÌïòÎ©¥ ÌûåÌä∏ ÏÇ¨Ïö©
+ *        - ÏóÜÎã§Î©¥, Îã§Ïùå Îã®Í≥ÑÎ°ú
  *
  *    (3) NOT DEFINED
  *
@@ -803,11 +803,11 @@ qmoCrtPathMgr::decideNormalType( qcStatement   * aStatement ,
     sHint        = aHint;
     sIsExistView = ID_FALSE;
 
-    // NormalType √ ±‚»≠
+    // NormalType Ï¥àÍ∏∞Ìôî
     sNormalType = QMO_NORMAL_TYPE_NOT_DEFINED;
 
     //----------------------------------------------
-    // (0) CNF Only ø©∫Œ∏¶ ∆«¥‹
+    // (0) CNF Only Ïó¨Î∂ÄÎ•º ÌåêÎã®
     //----------------------------------------------
 
     sIsCNFOnly = ID_FALSE;
@@ -834,8 +834,8 @@ qmoCrtPathMgr::decideNormalType( qcStatement   * aStatement ,
         }
 
         //----------------------------------------
-        // CNF Only∑Œ ¿‘∑¬ ¿Œ¿⁄∏¶ πﬁ¿∫ ∞ÊøÏ
-        // ON ¿˝, START WITH¿˝, CONNECT BY¿˝, HAVING¿˝ µÓ
+        // CNF OnlyÎ°ú ÏûÖÎ†• Ïù∏ÏûêÎ•º Î∞õÏùÄ Í≤ΩÏö∞
+        // ON Ï†à, START WITHÏ†à, CONNECT BYÏ†à, HAVINGÏ†à Îì±
         //----------------------------------------
 
         if ( aIsCNFOnly == ID_TRUE )
@@ -849,18 +849,18 @@ qmoCrtPathMgr::decideNormalType( qcStatement   * aStatement ,
         }
 
         //----------------------------------------
-        // DML ¿Œ ∞ÊøÏ
+        // DML Ïù∏ Í≤ΩÏö∞
         //----------------------------------------
 
         // To Fix BUG-10576
-        // To Fix BUG-12320 MOVE DML ¿∫ CNF∑Œ∏∏ √≥∏Æµ«æÓæﬂ «‘
-        // BUG-45357 Select for update¥¬ DNF «√∑£¿ª ª˝º∫«œ¡ˆ æ µµ∑œ «’¥œ¥Ÿ.
+        // To Fix BUG-12320 MOVE DML ÏùÄ CNFÎ°úÎßå Ï≤òÎ¶¨ÎêòÏñ¥Ïïº Ìï®
+        // BUG-45357 Select for updateÎäî DNF ÌîåÎûúÏùÑ ÏÉùÏÑ±ÌïòÏßÄ ÏïäÎèÑÎ°ù Ìï©ÎãàÎã§.
         if ( ( aStatement->myPlan->parseTree->stmtKind == QCI_STMT_UPDATE ) ||
              ( aStatement->myPlan->parseTree->stmtKind == QCI_STMT_DELETE ) ||
              ( aStatement->myPlan->parseTree->stmtKind == QCI_STMT_MOVE )   ||
              ( aStatement->myPlan->parseTree->stmtKind == QCI_STMT_SELECT_FOR_UPDATE ) )
         {
-            // Update, Delete, MOVE πÆ¿∫ CNF∑Œ∏∏ √≥∏Æµ«æÓæﬂ «‘
+            // Update, Delete, MOVE Î¨∏ÏùÄ CNFÎ°úÎßå Ï≤òÎ¶¨ÎêòÏñ¥Ïïº Ìï®
             sIsCNFOnly = ID_TRUE;
             break;
         }
@@ -870,10 +870,10 @@ qmoCrtPathMgr::decideNormalType( qcStatement   * aStatement ,
         }
 
         //----------------------------------------
-        // VIEW ∞° ¡∏¿Á«œ¥¬ ∞ÊøÏ
+        // VIEW Í∞Ä Ï°¥Ïû¨ÌïòÎäî Í≤ΩÏö∞
         //----------------------------------------
 
-        // from¿˝ø° view∞° ¿÷¿∏∏È CNF only
+        // fromÏ†àÏóê viewÍ∞Ä ÏûàÏúºÎ©¥ CNF only
         IDE_TEST( existsViewinFrom( sFrom, &sIsExistView )
                   != IDE_SUCCESS );
 
@@ -888,10 +888,10 @@ qmoCrtPathMgr::decideNormalType( qcStatement   * aStatement ,
         }
 
         //----------------------------------------
-        // WHERE ¿˝¿Ã æ¯∞≈≥™ Outer Join Operator (+) ∞° ¿÷¥¬ ∞ÊøÏ
+        // WHERE Ï†àÏù¥ ÏóÜÍ±∞ÎÇò Outer Join Operator (+) Í∞Ä ÏûàÎäî Í≤ΩÏö∞
         //----------------------------------------
 
-        // CNF Only Predicate ∞ÀªÁ
+        // CNF Only Predicate Í≤ÄÏÇ¨
         if ( sWhere == NULL )
         {
             sIsCNFOnly = ID_TRUE;
@@ -917,7 +917,7 @@ qmoCrtPathMgr::decideNormalType( qcStatement   * aStatement ,
         }
 
         //----------------------------------------
-        // Subquery ¡∂∞«¿Ã ¿÷¥¬ ∞ÊøÏ
+        // Subquery Ï°∞Í±¥Ïù¥ ÏûàÎäî Í≤ΩÏö∞
         //----------------------------------------
 
         IDE_TEST( qmoNormalForm::normalizeCheckCNFOnly( sWhere,
@@ -928,11 +928,11 @@ qmoCrtPathMgr::decideNormalType( qcStatement   * aStatement ,
     }
 
     //----------------------------------------------
-    // (1) Normalization¿Ã ∞°¥…«—¡ˆ∏¶ ∆«¥‹
+    // (1) NormalizationÏù¥ Í∞ÄÎä•ÌïúÏßÄÎ•º ÌåêÎã®
     //----------------------------------------------
 
     // fix BUG-8806
-    // CNF/DNF normalForm ±∏√‡∫ÒøÎøπ√¯
+    // CNF/DNF normalForm Íµ¨Ï∂ïÎπÑÏö©ÏòàÏ∏°
     if ( sWhere != NULL )
     {
         IDE_TEST( qmoNormalForm::estimateCNF( sWhere, &sEstimateCnfCnt )
@@ -948,7 +948,7 @@ qmoCrtPathMgr::decideNormalType( qcStatement   * aStatement ,
 
     sNormalFormMaximum = QCG_GET_SESSION_NORMALFORM_MAXIMUM( aStatement );
 
-    // environment¿« ±‚∑œ
+    // environmentÏùò Í∏∞Î°ù
     qcgPlan::registerPlanProperty( aStatement,
                                    PLAN_PROPERTY_NORMAL_FORM_MAXIMUM );
 
@@ -956,7 +956,7 @@ qmoCrtPathMgr::decideNormalType( qcStatement   * aStatement ,
          ( sEstimateDnfCnt > sNormalFormMaximum ) )
     {
         //------------------------------
-        // CNF ∫“∞° DNF ∫“∞°
+        // CNF Î∂àÍ∞Ä DNF Î∂àÍ∞Ä
         //------------------------------
 
         sNormalType = QMO_NORMAL_TYPE_NNF;
@@ -965,7 +965,7 @@ qmoCrtPathMgr::decideNormalType( qcStatement   * aStatement ,
               ( sEstimateDnfCnt > sNormalFormMaximum ) )
     {
         //------------------------------
-        // CNF ∞°¥… DNF ∫“∞°
+        // CNF Í∞ÄÎä• DNF Î∂àÍ∞Ä
         //------------------------------
 
         sNormalType = QMO_NORMAL_TYPE_CNF;
@@ -974,7 +974,7 @@ qmoCrtPathMgr::decideNormalType( qcStatement   * aStatement ,
               ( sEstimateDnfCnt <= sNormalFormMaximum ) )
     {
         //------------------------------
-        // CNF ∫“∞° DNF ∞°¥…
+        // CNF Î∂àÍ∞Ä DNF Í∞ÄÎä•
         //------------------------------
 
         if ( sIsCNFOnly == ID_TRUE )
@@ -989,7 +989,7 @@ qmoCrtPathMgr::decideNormalType( qcStatement   * aStatement ,
     else
     {
         //------------------------------
-        // CNF ∞°¥… DNF ∞°¥…
+        // CNF Í∞ÄÎä• DNF Í∞ÄÎä•
         //------------------------------
 
         if ( sIsCNFOnly == ID_TRUE )
@@ -998,35 +998,35 @@ qmoCrtPathMgr::decideNormalType( qcStatement   * aStatement ,
         }
         else
         {
-            // ¥Ÿ¿Ω ¥‹∞Ë∑Œ ¡¯«‡
+            // Îã§Ïùå Îã®Í≥ÑÎ°ú ÏßÑÌñâ
         }
     }
 
     //----------------------------------------------
-    // »˘∆Æ∏¶ ¿ÃøÎ«— ∞ÀªÁ
+    // ÌûåÌä∏Î•º Ïù¥Ïö©Ìïú Í≤ÄÏÇ¨
     //----------------------------------------------
 
     if ( sNormalType == QMO_NORMAL_TYPE_NOT_DEFINED )
     {
-        // Normal Form¿Ã ¡§«ÿ¡ˆ¡ˆ æ ¿∫ ∞ÊøÏ
+        // Normal FormÏù¥ Ï†ïÌï¥ÏßÄÏßÄ ÏïäÏùÄ Í≤ΩÏö∞
         if ( sHint->normalType != QMO_NORMAL_TYPE_NOT_DEFINED )
         {
             //---------------------------------------------------------------
-            // Normalization Form Hint ∞ÀªÁ :
-            //    Hint∞° ¡∏¿Á«œ∏È Hint¿« NormalType¿ª µ˚∏•¥Ÿ.
-            //    QMO_NORMAL_TYPE_CNF ∂«¥¬ QMO_NORMAL_TYPE_DNF
+            // Normalization Form Hint Í≤ÄÏÇ¨ :
+            //    HintÍ∞Ä Ï°¥Ïû¨ÌïòÎ©¥ HintÏùò NormalTypeÏùÑ Îî∞Î•∏Îã§.
+            //    QMO_NORMAL_TYPE_CNF ÎòêÎäî QMO_NORMAL_TYPE_DNF
             //---------------------------------------------------------------
 
             sNormalType = sHint->normalType;
         }
         else
         {
-            // »˘∆Æ∞° æ¯¿Ω
+            // ÌûåÌä∏Í∞Ä ÏóÜÏùå
         }
     }
     else
     {
-        // ¿ÃπÃ ¡§«ÿ¡¸
+        // Ïù¥ÎØ∏ Ï†ïÌï¥Ïßê
     }
 
     //----------------------------------------------
@@ -1037,7 +1037,7 @@ qmoCrtPathMgr::decideNormalType( qcStatement   * aStatement ,
                     ERR_OUTER_JOIN_OPERATOR_NOT_ALLOW_NOCNF );
 
 
-    // out º≥¡§
+    // out ÏÑ§Ï†ï
     *aNormalType = sNormalType;
 
     return IDE_SUCCESS;
@@ -1059,13 +1059,13 @@ qmoCrtPathMgr::addRownumPredicate( qmsQuerySet  * aQuerySet,
  *
  * Description :
  *     PROJ-1405
- *     Rownum Predicate¿ª critical path¿« rownumPredicate¿∏∑Œ ø¨∞·«—¥Ÿ.
+ *     Rownum PredicateÏùÑ critical pathÏùò rownumPredicateÏúºÎ°ú Ïó∞Í≤∞ÌïúÎã§.
  *
  * Implementation :
- *     1. where¿˝¿« normalization type¿Ã CNF/NNF¿Œ ∞ÊøÏ
- *        1.1 where,on¿˝¿« Rownum Predicate¿∫ rownumPrecicateForCNFø° ø¨∞·«—¥Ÿ.
- *     2. where¿˝¿« normalization type¿Ã DNF¿Œ ∞ÊøÏ
- *        2.1 where,on¿˝¿« Rownum Predicate¿∫ rownumPrecicateForDNFø° ø¨∞·«—¥Ÿ.
+ *     1. whereÏ†àÏùò normalization typeÏù¥ CNF/NNFÏù∏ Í≤ΩÏö∞
+ *        1.1 where,onÏ†àÏùò Rownum PredicateÏùÄ rownumPrecicateForCNFÏóê Ïó∞Í≤∞ÌïúÎã§.
+ *     2. whereÏ†àÏùò normalization typeÏù¥ DNFÏù∏ Í≤ΩÏö∞
+ *        2.1 where,onÏ†àÏùò Rownum PredicateÏùÄ rownumPrecicateForDNFÏóê Ïó∞Í≤∞ÌïúÎã§.
  *
  ***********************************************************************/
 
@@ -1075,20 +1075,20 @@ qmoCrtPathMgr::addRownumPredicate( qmsQuerySet  * aQuerySet,
     IDU_FIT_POINT_FATAL( "qmoCrtPathMgr::addRownumPredicate::__FT__" );
 
     //------------------------------------------
-    // ¿˚«’º∫ ∞ÀªÁ
+    // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
     //------------------------------------------
 
     IDE_DASSERT( aQuerySet != NULL );
 
     //------------------------------------------
-    // ±‚∫ª º≥¡§
+    // Í∏∞Î≥∏ ÏÑ§Ï†ï
     //------------------------------------------
 
     sCrtPath = aQuerySet->SFWGH->crtPath;
     sCurrentNormalType = sCrtPath->currentNormalType;
 
     //------------------------------------------
-    // Rownum Predicate ø¨∞·
+    // Rownum Predicate Ïó∞Í≤∞
     //------------------------------------------
     if ( aPredicate != NULL )
     {
@@ -1128,18 +1128,18 @@ qmoCrtPathMgr::addRownumPredicateForNode( qcStatement  * aStatement,
  *
  * Description :
  *     PROJ-1405
- *     qtcNode«¸≈¬¿« Rownum Predicate¿ª critical path¿« rownumPredicate¿∏∑Œ
- *     ø¨∞·«—¥Ÿ.
+ *     qtcNodeÌòïÌÉúÏùò Rownum PredicateÏùÑ critical pathÏùò rownumPredicateÏúºÎ°ú
+ *     Ïó∞Í≤∞ÌïúÎã§.
  *
  * Implementation :
- *     1. where¿˝¿« normalization type¿Ã CNF/NNF¿Œ ∞ÊøÏ
- *        1.1 ∫πªÁ∞° « ø‰«— ∞ÊøÏ node∏¶ ∫πªÁ«—¥Ÿ.
- *        1.2 node∏¶ qmoPredicate«¸≈¬∑Œ ∞®Ω—¥Ÿ.
- *        1.3 where,on¿˝¿« Rownum Predicate¿∫ rownumPrecicateForCNFø° ø¨∞·«—¥Ÿ.
- *     2. where¿˝¿« normalization type¿Ã DNF¿Œ ∞ÊøÏ
- *        2.1 ∫πªÁ∞° « ø‰«— ∞ÊøÏ node∏¶ ∫πªÁ«—¥Ÿ.
- *        2.2 node∏¶ qmoPredicate«¸≈¬∑Œ ∞®Ω—¥Ÿ.
- *        2.3 where,on¿˝¿« Rownum Predicate¿∫ rownumPrecicateForDNFø° ø¨∞·«—¥Ÿ.
+ *     1. whereÏ†àÏùò normalization typeÏù¥ CNF/NNFÏù∏ Í≤ΩÏö∞
+ *        1.1 Î≥µÏÇ¨Í∞Ä ÌïÑÏöîÌïú Í≤ΩÏö∞ nodeÎ•º Î≥µÏÇ¨ÌïúÎã§.
+ *        1.2 nodeÎ•º qmoPredicateÌòïÌÉúÎ°ú Í∞êÏãºÎã§.
+ *        1.3 where,onÏ†àÏùò Rownum PredicateÏùÄ rownumPrecicateForCNFÏóê Ïó∞Í≤∞ÌïúÎã§.
+ *     2. whereÏ†àÏùò normalization typeÏù¥ DNFÏù∏ Í≤ΩÏö∞
+ *        2.1 Î≥µÏÇ¨Í∞Ä ÌïÑÏöîÌïú Í≤ΩÏö∞ nodeÎ•º Î≥µÏÇ¨ÌïúÎã§.
+ *        2.2 nodeÎ•º qmoPredicateÌòïÌÉúÎ°ú Í∞êÏãºÎã§.
+ *        2.3 where,onÏ†àÏùò Rownum PredicateÏùÄ rownumPrecicateForDNFÏóê Ïó∞Í≤∞ÌïúÎã§.
  *
  ***********************************************************************/
 
@@ -1151,30 +1151,30 @@ qmoCrtPathMgr::addRownumPredicateForNode( qcStatement  * aStatement,
     IDU_FIT_POINT_FATAL( "qmoCrtPathMgr::addRownumPredicateForNode::__FT__" );
 
     //------------------------------------------
-    // ¿˚«’º∫ ∞ÀªÁ
+    // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aQuerySet != NULL );
 
     //------------------------------------------
-    // ±‚∫ª º≥¡§
+    // Í∏∞Î≥∏ ÏÑ§Ï†ï
     //------------------------------------------
 
     sCrtPath = aQuerySet->SFWGH->crtPath;
     sCurrentNormalType = sCrtPath->currentNormalType;
 
     //------------------------------------------
-    // NNF Predicate ª˝º∫
+    // NNF Predicate ÏÉùÏÑ±
     //------------------------------------------
 
-    // NNF filter¿Œ ∞ÊøÏ rownumPredicateø° ø¨∞·«œ±‚ ¿ß«ÿ
-    // qmoPredicate¿∏∑Œ ∞®Ω—¥Ÿ.
+    // NNF filterÏù∏ Í≤ΩÏö∞ rownumPredicateÏóê Ïó∞Í≤∞ÌïòÍ∏∞ ÏúÑÌï¥
+    // qmoPredicateÏúºÎ°ú Í∞êÏãºÎã§.
     if ( aNode != NULL )
     {
         if ( aNeedCopy == ID_TRUE )
         {
-            // NNF filter ∫πªÁ
+            // NNF filter Î≥µÏÇ¨
             IDE_TEST( qtc::cloneQTCNodeTree( QC_QMP_MEM(aStatement),
                                              aNode,
                                              & sNode,
@@ -1189,7 +1189,7 @@ qmoCrtPathMgr::addRownumPredicateForNode( qcStatement  * aStatement,
             sNode = aNode;
         }
 
-        // qmoPredicate ª˝º∫
+        // qmoPredicate ÏÉùÏÑ±
         IDE_TEST( qmoPred::createPredicate( QC_QMP_MEM(aStatement),
                                             sNode,
                                             & sNewPred )
@@ -1201,7 +1201,7 @@ qmoCrtPathMgr::addRownumPredicateForNode( qcStatement  * aStatement,
     }
 
     //------------------------------------------
-    // Rownum Predicate ø¨∞·
+    // Rownum Predicate Ïó∞Í≤∞
     //------------------------------------------
 
     if ( sNewPred != NULL )
@@ -1241,12 +1241,12 @@ IDE_RC qmoCrtPathMgr::existsViewinFrom( qmsFrom * aFrom,
 {
 /***********************************************************************
  *
- * Description : From¿˝ ≥ªø° view∞° ¡∏¿Á«œ¥¬¡ˆ ∞ÀªÁ
+ * Description : FromÏ†à ÎÇ¥Ïóê viewÍ∞Ä Ï°¥Ïû¨ÌïòÎäîÏßÄ Í≤ÄÏÇ¨
  *
  * Implementation :
- *    (1) from->left, right¡∏¿Á : traverse
- *    (2) from->left, right∞° ¡∏¿Á«œ¡ˆ æ ¿Ω : √÷«œ¿ß from¿∏∑Œ,
- *                        view∞° ¡∏¿Á«“ ∞°¥…º∫¿Ã ¿÷¿Ω.
+ *    (1) from->left, rightÏ°¥Ïû¨ : traverse
+ *    (2) from->left, rightÍ∞Ä Ï°¥Ïû¨ÌïòÏßÄ ÏïäÏùå : ÏµúÌïòÏúÑ fromÏúºÎ°ú,
+ *                        viewÍ∞Ä Ï°¥Ïû¨Ìï† Í∞ÄÎä•ÏÑ±Ïù¥ ÏûàÏùå.
  *
  ***********************************************************************/
 
@@ -1255,7 +1255,7 @@ IDE_RC qmoCrtPathMgr::existsViewinFrom( qmsFrom * aFrom,
     IDU_FIT_POINT_FATAL( "qmoCrtPathMgr::existsViewinFrom::__FT__" );
 
     // To Fix PR-11530, PR-11536
-    // FROM¿˝ ∏µŒ∏¶ ∞ÀªÁ«œø©æﬂ «‘.
+    // FROMÏ†à Î™®ÎëêÎ•º Í≤ÄÏÇ¨ÌïòÏó¨Ïïº Ìï®.
     for ( sFrom = aFrom; sFrom != NULL; sFrom = sFrom->next )
     {
         if( sFrom->left == NULL && sFrom->right == NULL )
@@ -1293,37 +1293,37 @@ qmoCrtPathMgr::decideNormalType4Where( qcStatement   * aStatement,
 {
 /***********************************************************************
  *
- * Description : Normalization Type ∞·¡§
+ * Description : Normalization Type Í≤∞Ï†ï
  *
  *    BUG-35155 Partial CNF
- *    CNF estimate ¡ﬂ NORMALFORM_MAXIMUM ∫∏¥Ÿ ƒø¡ˆ¥¬ ∞ÊøÏ
- *    qtcNode ¿œ∫Œ∫–¿ª CNF ø°º≠ ¡¶ø‹«—¥Ÿ.
+ *    CNF estimate Ï§ë NORMALFORM_MAXIMUM Î≥¥Îã§ Ïª§ÏßÄÎäî Í≤ΩÏö∞
+ *    qtcNode ÏùºÎ∂ÄÎ∂ÑÏùÑ CNF ÏóêÏÑú Ï†úÏô∏ÌïúÎã§.
  *
- *    ¥Ÿ¿Ω ≥◊∞°¡ˆ Type¡ﬂø° «œ≥™∞° ∞·¡§µ»¥Ÿ.
- *       : NOT_DEFINED ( √ﬂ»ƒ ∫ÒøÎ ∞ËªÍø° ¿««œø© CNF, DNF∞° ∞·¡§µ  )
+ *    Îã§Ïùå ÎÑ§Í∞ÄÏßÄ TypeÏ§ëÏóê ÌïòÎÇòÍ∞Ä Í≤∞Ï†ïÎêúÎã§.
+ *       : NOT_DEFINED ( Ï∂îÌõÑ ÎπÑÏö© Í≥ÑÏÇ∞Ïóê ÏùòÌïòÏó¨ CNF, DNFÍ∞Ä Í≤∞Ï†ïÎê® )
  *       : CNF
  *       : DNF
  *       : NNF
  *
  * Implementation :
  *
- *    (0) CNF Only ¡∂∞« ∞ÀªÁ
+ *    (0) CNF Only Ï°∞Í±¥ Í≤ÄÏÇ¨
  *        - QCU_OPTIMIZER_DNF_DISABLE == 1,
  *        - No Where, View, DML, Subquery, Outer Join Operator
  *
- *    (1) Normalize ∞°¥… ø©∫Œ ∞ÀªÁ
- *        - CNF ∫“∞°, DNF ∫“∞° : NNF ªÁøÎ
- *        - CNF ∞°¥…, DNF ∫“∞° : CNF ªÁøÎ
- *        - CNF ∫“∞°, DNF ∞°¥…
- *           - CNF Only ¡∂∞«¿Œ ∞ÊøÏ       : NNF ªÁøÎ
- *           - DNF ¡¶æ‡ ¡∂∞«¿Ã æ¯¥¬ ∞ÊøÏ  : DNF ªÁøÎ
- *        - CNF ∞°¥…, DNF ∞°¥…
- *           - CNF Only ¡∂∞«¿Œ ∞ÊøÏ       : CNF ªÁøÎ
- *           - æ¯¥¬ ∞ÊøÏ                  : ¥Ÿ¿Ω ¥‹∞Ë∑Œ
+ *    (1) Normalize Í∞ÄÎä• Ïó¨Î∂Ä Í≤ÄÏÇ¨
+ *        - CNF Î∂àÍ∞Ä, DNF Î∂àÍ∞Ä : NNF ÏÇ¨Ïö©
+ *        - CNF Í∞ÄÎä•, DNF Î∂àÍ∞Ä : CNF ÏÇ¨Ïö©
+ *        - CNF Î∂àÍ∞Ä, DNF Í∞ÄÎä•
+ *           - CNF Only Ï°∞Í±¥Ïù∏ Í≤ΩÏö∞       : NNF ÏÇ¨Ïö©
+ *           - DNF Ï†úÏïΩ Ï°∞Í±¥Ïù¥ ÏóÜÎäî Í≤ΩÏö∞  : DNF ÏÇ¨Ïö©
+ *        - CNF Í∞ÄÎä•, DNF Í∞ÄÎä•
+ *           - CNF Only Ï°∞Í±¥Ïù∏ Í≤ΩÏö∞       : CNF ÏÇ¨Ïö©
+ *           - ÏóÜÎäî Í≤ΩÏö∞                  : Îã§Ïùå Îã®Í≥ÑÎ°ú
  *
- *    (2) »˘∆Æ ∞ÀªÁ
- *        - »˘∆Æ∞° ¡∏¿Á«œ∏È »˘∆Æ ªÁøÎ
- *        - æ¯¥Ÿ∏È, ¥Ÿ¿Ω ¥‹∞Ë∑Œ
+ *    (2) ÌûåÌä∏ Í≤ÄÏÇ¨
+ *        - ÌûåÌä∏Í∞Ä Ï°¥Ïû¨ÌïòÎ©¥ ÌûåÌä∏ ÏÇ¨Ïö©
+ *        - ÏóÜÎã§Î©¥, Îã§Ïùå Îã®Í≥ÑÎ°ú
  *
  *    (3) NOT DEFINED
  *
@@ -1347,11 +1347,11 @@ qmoCrtPathMgr::decideNormalType4Where( qcStatement   * aStatement,
     sHint        = aHint;
     sIsExistView = ID_FALSE;
 
-    // NormalType √ ±‚»≠
+    // NormalType Ï¥àÍ∏∞Ìôî
     sNormalType = QMO_NORMAL_TYPE_NOT_DEFINED;
 
     //----------------------------------------------
-    // (0) CNF Only ø©∫Œ∏¶ ∆«¥‹
+    // (0) CNF Only Ïó¨Î∂ÄÎ•º ÌåêÎã®
     //----------------------------------------------
 
     sIsCNFOnly = ID_FALSE;
@@ -1378,8 +1378,8 @@ qmoCrtPathMgr::decideNormalType4Where( qcStatement   * aStatement,
         }
 
         //----------------------------------------
-        // CNF Only∑Œ ¿‘∑¬ ¿Œ¿⁄∏¶ πﬁ¿∫ ∞ÊøÏ
-        // ON ¿˝, START WITH¿˝, CONNECT BY¿˝, HAVING¿˝ µÓ
+        // CNF OnlyÎ°ú ÏûÖÎ†• Ïù∏ÏûêÎ•º Î∞õÏùÄ Í≤ΩÏö∞
+        // ON Ï†à, START WITHÏ†à, CONNECT BYÏ†à, HAVINGÏ†à Îì±
         //----------------------------------------
 
         if ( aIsCNFOnly == ID_TRUE )
@@ -1393,18 +1393,18 @@ qmoCrtPathMgr::decideNormalType4Where( qcStatement   * aStatement,
         }
 
         //----------------------------------------
-        // DML ¿Œ ∞ÊøÏ
+        // DML Ïù∏ Í≤ΩÏö∞
         //----------------------------------------
 
         // To Fix BUG-10576
-        // To Fix BUG-12320 MOVE DML ¿∫ CNF∑Œ∏∏ √≥∏Æµ«æÓæﬂ «‘
-        // BUG-45357 Select for update¥¬ DNF «√∑£¿ª ª˝º∫«œ¡ˆ æ µµ∑œ «’¥œ¥Ÿ.
+        // To Fix BUG-12320 MOVE DML ÏùÄ CNFÎ°úÎßå Ï≤òÎ¶¨ÎêòÏñ¥Ïïº Ìï®
+        // BUG-45357 Select for updateÎäî DNF ÌîåÎûúÏùÑ ÏÉùÏÑ±ÌïòÏßÄ ÏïäÎèÑÎ°ù Ìï©ÎãàÎã§.
         if ( ( aStatement->myPlan->parseTree->stmtKind == QCI_STMT_UPDATE ) ||
              ( aStatement->myPlan->parseTree->stmtKind == QCI_STMT_DELETE ) ||
              ( aStatement->myPlan->parseTree->stmtKind == QCI_STMT_MOVE )   ||
              ( aStatement->myPlan->parseTree->stmtKind == QCI_STMT_SELECT_FOR_UPDATE ) )
         {
-            // Update, Delete, MOVE πÆ¿∫ CNF∑Œ∏∏ √≥∏Æµ«æÓæﬂ «‘
+            // Update, Delete, MOVE Î¨∏ÏùÄ CNFÎ°úÎßå Ï≤òÎ¶¨ÎêòÏñ¥Ïïº Ìï®
             sIsCNFOnly = ID_TRUE;
             break;
         }
@@ -1414,10 +1414,10 @@ qmoCrtPathMgr::decideNormalType4Where( qcStatement   * aStatement,
         }
 
         //----------------------------------------
-        // VIEW ∞° ¡∏¿Á«œ¥¬ ∞ÊøÏ
+        // VIEW Í∞Ä Ï°¥Ïû¨ÌïòÎäî Í≤ΩÏö∞
         //----------------------------------------
 
-        // from¿˝ø° view∞° ¿÷¿∏∏È CNF only
+        // fromÏ†àÏóê viewÍ∞Ä ÏûàÏúºÎ©¥ CNF only
         IDE_TEST( existsViewinFrom( sFrom, &sIsExistView ) != IDE_SUCCESS );
 
         if( sIsExistView == ID_TRUE )
@@ -1431,10 +1431,10 @@ qmoCrtPathMgr::decideNormalType4Where( qcStatement   * aStatement,
         }
 
         //----------------------------------------
-        // WHERE ¿˝¿Ã æ¯∞≈≥™ Outer Join Operator (+) ∞° ¿÷¥¬ ∞ÊøÏ
+        // WHERE Ï†àÏù¥ ÏóÜÍ±∞ÎÇò Outer Join Operator (+) Í∞Ä ÏûàÎäî Í≤ΩÏö∞
         //----------------------------------------
 
-        // CNF Only Predicate ∞ÀªÁ
+        // CNF Only Predicate Í≤ÄÏÇ¨
         if ( sWhere == NULL )
         {
             sIsCNFOnly = ID_TRUE;
@@ -1460,7 +1460,7 @@ qmoCrtPathMgr::decideNormalType4Where( qcStatement   * aStatement,
         }
 
         //----------------------------------------
-        // Subquery ¡∂∞«¿Ã ¿÷¥¬ ∞ÊøÏ
+        // Subquery Ï°∞Í±¥Ïù¥ ÏûàÎäî Í≤ΩÏö∞
         //----------------------------------------
 
         IDE_TEST( qmoNormalForm::normalizeCheckCNFOnly( sWhere, &sIsCNFOnly )
@@ -1470,16 +1470,16 @@ qmoCrtPathMgr::decideNormalType4Where( qcStatement   * aStatement,
     }
 
     //----------------------------------------------
-    // (1) Normalization¿Ã ∞°¥…«—¡ˆ∏¶ ∆«¥‹
+    // (1) NormalizationÏù¥ Í∞ÄÎä•ÌïúÏßÄÎ•º ÌåêÎã®
     //----------------------------------------------
 
     sNormalFormMaximum = QCG_GET_SESSION_NORMALFORM_MAXIMUM( aStatement );
 
-    // environment¿« ±‚∑œ
+    // environmentÏùò Í∏∞Î°ù
     qcgPlan::registerPlanProperty( aStatement,
                                    PLAN_PROPERTY_NORMAL_FORM_MAXIMUM );
 
-    // CNF/DNF normalForm ±∏√‡∫ÒøÎøπ√¯
+    // CNF/DNF normalForm Íµ¨Ï∂ïÎπÑÏö©ÏòàÏ∏°
     if ( sWhere != NULL )
     {
         if ( sNormalFormMaximum > 0 )
@@ -1503,8 +1503,8 @@ qmoCrtPathMgr::decideNormalType4Where( qcStatement   * aStatement,
                                                    NULL,
                                                    sNormalFormMaximum );
 
-                // √÷ªÛ¿ß qtcNode ∞° CNF UNUSABLE ¿Ã∏È ¡∂∞«¿˝ ¿¸√º∞° NNF « ≈Õ¿Ãπ«∑Œ
-                // CNF ¥¬ ∫“∞°¥…«œ¥Ÿ.
+                // ÏµúÏÉÅÏúÑ qtcNode Í∞Ä CNF UNUSABLE Ïù¥Î©¥ Ï°∞Í±¥Ï†à Ï†ÑÏ≤¥Í∞Ä NNF ÌïÑÌÑ∞Ïù¥ÎØÄÎ°ú
+                // CNF Îäî Î∂àÍ∞ÄÎä•ÌïòÎã§.
                 if ( ( sWhere->node.lflag &  MTC_NODE_PARTIAL_NORMALIZE_CNF_MASK )
                      == MTC_NODE_PARTIAL_NORMALIZE_CNF_UNUSABLE )
                 {
@@ -1532,7 +1532,7 @@ qmoCrtPathMgr::decideNormalType4Where( qcStatement   * aStatement,
          ( sEstimateDnfCnt > sNormalFormMaximum ) )
     {
         //------------------------------
-        // CNF ∫“∞° DNF ∫“∞°
+        // CNF Î∂àÍ∞Ä DNF Î∂àÍ∞Ä
         //------------------------------
 
         sNormalType = QMO_NORMAL_TYPE_NNF;
@@ -1541,7 +1541,7 @@ qmoCrtPathMgr::decideNormalType4Where( qcStatement   * aStatement,
               ( sEstimateDnfCnt > sNormalFormMaximum ) )
     {
         //------------------------------
-        // CNF ∞°¥… DNF ∫“∞°
+        // CNF Í∞ÄÎä• DNF Î∂àÍ∞Ä
         //------------------------------
 
         sNormalType = QMO_NORMAL_TYPE_CNF;
@@ -1550,7 +1550,7 @@ qmoCrtPathMgr::decideNormalType4Where( qcStatement   * aStatement,
               ( sEstimateDnfCnt <= sNormalFormMaximum ) )
     {
         //------------------------------
-        // CNF ∫“∞° DNF ∞°¥…
+        // CNF Î∂àÍ∞Ä DNF Í∞ÄÎä•
         //------------------------------
 
         if ( sIsCNFOnly == ID_TRUE )
@@ -1565,7 +1565,7 @@ qmoCrtPathMgr::decideNormalType4Where( qcStatement   * aStatement,
     else
     {
         //------------------------------
-        // CNF ∞°¥… DNF ∞°¥…
+        // CNF Í∞ÄÎä• DNF Í∞ÄÎä•
         //------------------------------
 
         if ( sIsCNFOnly == ID_TRUE )
@@ -1574,35 +1574,35 @@ qmoCrtPathMgr::decideNormalType4Where( qcStatement   * aStatement,
         }
         else
         {
-            // ¥Ÿ¿Ω ¥‹∞Ë∑Œ ¡¯«‡
+            // Îã§Ïùå Îã®Í≥ÑÎ°ú ÏßÑÌñâ
         }
     }
 
     //----------------------------------------------
-    // »˘∆Æ∏¶ ¿ÃøÎ«— ∞ÀªÁ
+    // ÌûåÌä∏Î•º Ïù¥Ïö©Ìïú Í≤ÄÏÇ¨
     //----------------------------------------------
 
     if ( sNormalType == QMO_NORMAL_TYPE_NOT_DEFINED )
     {
-        // Normal Form¿Ã ¡§«ÿ¡ˆ¡ˆ æ ¿∫ ∞ÊøÏ
+        // Normal FormÏù¥ Ï†ïÌï¥ÏßÄÏßÄ ÏïäÏùÄ Í≤ΩÏö∞
         if ( sHint->normalType != QMO_NORMAL_TYPE_NOT_DEFINED )
         {
             //---------------------------------------------------------------
-            // Normalization Form Hint ∞ÀªÁ :
-            //    Hint∞° ¡∏¿Á«œ∏È Hint¿« NormalType¿ª µ˚∏•¥Ÿ.
-            //    QMO_NORMAL_TYPE_CNF ∂«¥¬ QMO_NORMAL_TYPE_DNF
+            // Normalization Form Hint Í≤ÄÏÇ¨ :
+            //    HintÍ∞Ä Ï°¥Ïû¨ÌïòÎ©¥ HintÏùò NormalTypeÏùÑ Îî∞Î•∏Îã§.
+            //    QMO_NORMAL_TYPE_CNF ÎòêÎäî QMO_NORMAL_TYPE_DNF
             //---------------------------------------------------------------
 
             sNormalType = sHint->normalType;
         }
         else
         {
-            // »˘∆Æ∞° æ¯¿Ω
+            // ÌûåÌä∏Í∞Ä ÏóÜÏùå
         }
     }
     else
     {
-        // ¿ÃπÃ ¡§«ÿ¡¸
+        // Ïù¥ÎØ∏ Ï†ïÌï¥Ïßê
     }
 
     //----------------------------------------------
@@ -1613,7 +1613,7 @@ qmoCrtPathMgr::decideNormalType4Where( qcStatement   * aStatement,
                     ERR_OUTER_JOIN_OPERATOR_NOT_ALLOW_NOCNF );
 
 
-    // out º≥¡§
+    // out ÏÑ§Ï†ï
     *aNormalType = sNormalType;
 
     return IDE_SUCCESS;

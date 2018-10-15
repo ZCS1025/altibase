@@ -54,7 +54,7 @@ ACI_RC ulnKeysetCreate(ulnKeyset **aKeyset)
 
     ACI_TEST( ulnKeysetMarkChunk( sKeyset ) != ACI_SUCCESS );
 
-    /* ulnKeyset¸¦ ¸¸µé ¶§, »ç¿ëÀÚ°¡ °¡Á®°£ locator¸¦ ±â¾ïÇÏ±â À§ÇÑ Hash »ı¼º */
+    /* ulnKeysetë¥¼ ë§Œë“¤ ë•Œ, ì‚¬ìš©ìê°€ ê°€ì ¸ê°„ locatorë¥¼ ê¸°ì–µí•˜ê¸° ìœ„í•œ Hash ìƒì„± */
     ACI_TEST( aclHashCreate( &sKeyset->mHashKeyset,
                              ULN_KEYSET_HASH_BUCKET_COUNT,
                              ULN_KEYSET_MAX_KEY_SIZE,
@@ -87,7 +87,7 @@ ACI_RC ulnKeysetCreate(ulnKeyset **aKeyset)
 void ulnKeysetFreeAllBlocks(ulnKeyset *aKeyset)
 {
     /*
-     * RowBlock À» ¸ğÁ¶¸® free ÇÏ¹Ç·Î Ä³½¬µÈ row µµ ¸ğÁ¶¸® »ç¶óÁü.
+     * RowBlock ì„ ëª¨ì¡°ë¦¬ free í•˜ë¯€ë¡œ ìºì‰¬ëœ row ë„ ëª¨ì¡°ë¦¬ ì‚¬ë¼ì§.
      */
     aKeyset->mKeyCount              = 0;
     aKeyset->mIsFullFilled          = ACP_FALSE;
@@ -97,7 +97,7 @@ void ulnKeysetFreeAllBlocks(ulnKeyset *aKeyset)
 void ulnKeysetDestroy(ulnKeyset *aKeyset)
 {
     /*
-     * Keyset Chunk ÇØÁ¦
+     * Keyset Chunk í•´ì œ
      */
     if( aKeyset->mChunk != NULL )
     {
@@ -107,23 +107,23 @@ void ulnKeysetDestroy(ulnKeyset *aKeyset)
     }
 
     /*
-     * RowBlock ÇØÁ¦
+     * RowBlock í•´ì œ
      */
     ulnKeysetFreeAllBlocks(aKeyset);
 
     /*
-     * RowBlockArray ÇØÁ¦
+     * RowBlockArray í•´ì œ
      */
     if (aKeyset->mSeqKeyset.mBlock != NULL)
     {
         acpMemFree(aKeyset->mSeqKeyset.mBlock);
     }
 
-    /* BUG-32474: HashKeyset ÇØÁ¦ */
+    /* BUG-32474: HashKeyset í•´ì œ */
     aclHashDestroy(&aKeyset->mHashKeyset);
 
     /*
-     * Keyset ÇØÁ¦
+     * Keyset í•´ì œ
      */
     acpMemFree(aKeyset);
 }
@@ -149,11 +149,11 @@ acp_sint32_t ulnKeysetGetKeyCount(ulnKeyset *aKeyset)
 }
 
 /**
- * KeysetÀ» ¸ğµÎ Ã¤¿ü´ÂÁö ¿©ºÎ¸¦ ¾ò´Â´Ù.
+ * Keysetì„ ëª¨ë‘ ì±„ì› ëŠ”ì§€ ì—¬ë¶€ë¥¼ ì–»ëŠ”ë‹¤.
  *
  * @param[in] aKeyset keyset
  *
- * @return KeysetÀÌ ¸ğµÎ Ã¡À¸¸é ACP_TRUE, ¾Æ´Ï¸é ACP_FALSE
+ * @return Keysetì´ ëª¨ë‘ ì°¼ìœ¼ë©´ ACP_TRUE, ì•„ë‹ˆë©´ ACP_FALSE
  */
 acp_bool_t ulnKeysetIsFullFilled(ulnKeyset *aKeyset)
 {
@@ -161,10 +161,10 @@ acp_bool_t ulnKeysetIsFullFilled(ulnKeyset *aKeyset)
 }
 
 /**
- * KeysetÀ» ¸ğµÎ Ã¤¿ü´ÂÁö ¿©ºÎ¸¦ ¼³Á¤ÇÑ´Ù.
+ * Keysetì„ ëª¨ë‘ ì±„ì› ëŠ”ì§€ ì—¬ë¶€ë¥¼ ì„¤ì •í•œë‹¤.
  *
  * @param[in] aKeyset       keyset
- * @param[in] aIsFullFilled KeysetÀ» ¸ğµÎ Ã¤¿ü´ÂÁö ¿©ºÎ
+ * @param[in] aIsFullFilled Keysetì„ ëª¨ë‘ ì±„ì› ëŠ”ì§€ ì—¬ë¶€
  */
 void ulnKeysetSetFullFilled(ulnKeyset *aKeyset, acp_bool_t aIsFullFilled)
 {
@@ -180,13 +180,13 @@ void ulnKeysetSetFullFilled(ulnKeyset *aKeyset, acp_bool_t aIsFullFilled)
  */
 
 /**
- * »õ Chunk ¸Ş¸ğ¸®¸¦ ÇÒ´çÇÑ´Ù.
+ * ìƒˆ Chunk ë©”ëª¨ë¦¬ë¥¼ í• ë‹¹í•œë‹¤.
  *
  * @param[in]  aKeyset keyset
  * @param[in]  aSize   alloc size
  * @param[out] aData   buffer pointer
  *
- * @return ¼º°øÇÏ¸é ACI_SUCCESS, ¾Æ´Ï¸é ACI_FAILURE
+ * @return ì„±ê³µí•˜ë©´ ACI_SUCCESS, ì•„ë‹ˆë©´ ACI_FAILURE
  */
 ACI_RC ulnKeysetAllocChunk( ulnKeyset     *aKeyset,
                             acp_uint32_t   aSize,
@@ -202,11 +202,11 @@ ACI_RC ulnKeysetAllocChunk( ulnKeyset     *aKeyset,
 }
 
 /**
- * Chunk Á¤¸®¸¦ À§ÇÑ ÃÊ±âÈ­ ¼öÇà
+ * Chunk ì •ë¦¬ë¥¼ ìœ„í•œ ì´ˆê¸°í™” ìˆ˜í–‰
  *
  * @param[in] aKeyset keyset
  *
- * @return ¼º°øÇÏ¸é ACI_SUCCESS, ¾Æ´Ï¸é ACI_FAILURE
+ * @return ì„±ê³µí•˜ë©´ ACI_SUCCESS, ì•„ë‹ˆë©´ ACI_FAILURE
  */
 ACI_RC ulnKeysetMarkChunk( ulnKeyset  *aKeyset )
 {
@@ -216,11 +216,11 @@ ACI_RC ulnKeysetMarkChunk( ulnKeyset  *aKeyset )
 }
 
 /**
- * Chunk¸¦ Àç»ç¿ëÇÏ±âÀ§ÇØ Á¤¸®ÇÑ´Ù.
+ * Chunkë¥¼ ì¬ì‚¬ìš©í•˜ê¸°ìœ„í•´ ì •ë¦¬í•œë‹¤.
  *
  * @param[in] aKeyset keyset
  *
- * @return ¼º°øÇÏ¸é ACI_SUCCESS, ¾Æ´Ï¸é ACI_FAILURE
+ * @return ì„±ê³µí•˜ë©´ ACI_SUCCESS, ì•„ë‹ˆë©´ ACI_FAILURE
  */
 ACI_RC ulnKeysetBackChunkToMark( ulnKeyset  *aKeyset )
 {
@@ -238,14 +238,14 @@ ACI_RC ulnKeysetBackChunkToMark( ulnKeyset  *aKeyset )
  */
 
 /**
- * Key°¡ Keyset¿¡ ÀÖ´ÂÁö È®ÀÎÇÑ´Ù.
+ * Keyê°€ Keysetì— ìˆëŠ”ì§€ í™•ì¸í•œë‹¤.
  *
  * @param[in] aKeyset   keyset
  * @param[in] aPosition position
  *
- * @return Key°¡ ÀÖÀ¸¸é ULN_KEYSET_KEY_EXISTS,
- *         Key°¡ ¾øÀ¸¸é ULN_KEYSET_KEY_NOT_EXISTS,
- *         PositionÀÌ À¯È¿ÇÏÁö ¾ÊÀ¸¸é ULN_KEYSET_INVALID_POSITION
+ * @return Keyê°€ ìˆìœ¼ë©´ ULN_KEYSET_KEY_EXISTS,
+ *         Keyê°€ ì—†ìœ¼ë©´ ULN_KEYSET_KEY_NOT_EXISTS,
+ *         Positionì´ ìœ íš¨í•˜ì§€ ì•Šìœ¼ë©´ ULN_KEYSET_INVALID_POSITION
  */
 acp_sint32_t ulnKeysetIsKeyExists(ulnKeyset    *aKeyset,
                                   acp_sint64_t  aPosition)
@@ -254,14 +254,14 @@ acp_sint32_t ulnKeysetIsKeyExists(ulnKeyset    *aKeyset,
 
     if (aPosition <= 0)
     {
-        /* PositionÀº 1ºÎÅÍ ½ÃÀÛ */
+        /* Positionì€ 1ë¶€í„° ì‹œì‘ */
         sExistsRC = ULN_KEYSET_INVALID_POSITION;
     }
     else if (aPosition > ulnKeysetGetKeyCount(aKeyset))
     {
         if (ulnKeysetIsFullFilled(aKeyset) == ACP_TRUE)
         {
-            /* ResultSetÀÇ ¹üÀ§¸¦ ¹ş¾î³­ Position */
+            /* ResultSetì˜ ë²”ìœ„ë¥¼ ë²—ì–´ë‚œ Position */
             sExistsRC = ULN_KEYSET_INVALID_POSITION;
         }
         else
@@ -278,11 +278,11 @@ acp_sint32_t ulnKeysetIsKeyExists(ulnKeyset    *aKeyset,
 }
 
 /**
- * KSAB¸¦ È®ÀåÇÑ´Ù.
+ * KSABë¥¼ í™•ì¥í•œë‹¤.
  *
  * @param[in] aKeyset keyset
  *
- * @return ¼º°øÇÏ¸é ACI_SUCCESS, ¾Æ´Ï¸é ACI_FAILURE
+ * @return ì„±ê³µí•˜ë©´ ACI_SUCCESS, ì•„ë‹ˆë©´ ACI_FAILURE
  */
 ACI_RC ulnKeysetExtendKSAB(ulnKeyset *aKeyset)
 {
@@ -304,11 +304,11 @@ ACI_RC ulnKeysetExtendKSAB(ulnKeyset *aKeyset)
 }
 
 /**
- * KSAB¸¦ È®ÀåÇØ¾ß ÇÏ´ÂÁö È®ÀÎ
+ * KSABë¥¼ í™•ì¥í•´ì•¼ í•˜ëŠ”ì§€ í™•ì¸
  *
  * @param[in] aKeyset keyset
  *
- * @return ÇÊ¿äÇÏ¸é ACP_TRUE, ¾Æ´Ï¸é ACP_FALSE
+ * @return í•„ìš”í•˜ë©´ ACP_TRUE, ì•„ë‹ˆë©´ ACP_FALSE
  */
 #define NEED_EXTEND_KSAB( aKeyset ) (\
     ( (aKeyset)->mSeqKeyset.mUsedCount + 1 > (aKeyset)->mSeqKeyset.mCount ) \
@@ -316,12 +316,12 @@ ACI_RC ulnKeysetExtendKSAB(ulnKeyset *aKeyset)
 )
 
 /**
- * »õ _PROWID °ªÀ» Keyset ³¡¿¡ Ãß°¡ÇÑ´Ù.
+ * ìƒˆ _PROWID ê°’ì„ Keyset ëì— ì¶”ê°€í•œë‹¤.
  *
  * @param[in] aKeyset   keyset
  * @param[in] aKeyValue _PROWID value
  *
- * @return ¼º°øÇÏ¸é ACI_SUCCESS, ¾Æ´Ï¸é ACI_FAILURE
+ * @return ì„±ê³µí•˜ë©´ ACI_SUCCESS, ì•„ë‹ˆë©´ ACI_FAILURE
  */
 ACI_RC ulnKeysetAddNewKSA(ulnKeyset *aKeyset)
 {
@@ -348,11 +348,11 @@ ACI_RC ulnKeysetAddNewKSA(ulnKeyset *aKeyset)
 }
 
 /**
- * »õ KSA°¡ ÇÊ¿äÇÑÁö È®ÀÎ
+ * ìƒˆ KSAê°€ í•„ìš”í•œì§€ í™•ì¸
  *
  * @param[in] aKeyset keyset
  *
- * @return ÇÊ¿äÇÏ¸é ACP_TRUE, ¾Æ´Ï¸é ACP_FALSE
+ * @return í•„ìš”í•˜ë©´ ACP_TRUE, ì•„ë‹ˆë©´ ACP_FALSE
  */
 #define NEED_MORE_KSA( aKeyset ) (\
     ( (((aKeyset)->mKeyCount) / ULN_KEYSET_MAX_KEY_IN_KSA) >= ((aKeyset)->mSeqKeyset.mUsedCount) ) \
@@ -360,12 +360,12 @@ ACI_RC ulnKeysetAddNewKSA(ulnKeyset *aKeyset)
 )
 
 /**
- * »õ _PROWID °ªÀ» Keyset ³¡¿¡ Ãß°¡ÇÑ´Ù.
+ * ìƒˆ _PROWID ê°’ì„ Keyset ëì— ì¶”ê°€í•œë‹¤.
  *
  * @param[in] aKeyset   keyset
  * @param[in] aKeyValue _PROWID value
  *
- * @return ¼º°øÇÏ¸é ACI_SUCCESS, ¾Æ´Ï¸é ACI_FAILURE
+ * @return ì„±ê³µí•˜ë©´ ACI_SUCCESS, ì•„ë‹ˆë©´ ACI_FAILURE
  */
 ACI_RC ulnKeysetAddNewKey(ulnKeyset *aKeyset, acp_uint8_t *aKeyValue)
 {
@@ -410,12 +410,12 @@ ACI_RC ulnKeysetAddNewKey(ulnKeyset *aKeyset, acp_uint8_t *aKeyValue)
  */
 
 /**
- * ÁöÁ¤ÇÑ ¼ø¹øÀÇ _PROWID °ªÀ» ¾ò´Â´Ù.
+ * ì§€ì •í•œ ìˆœë²ˆì˜ _PROWID ê°’ì„ ì–»ëŠ”ë‹¤.
  *
  * @param[in] aKeyset keyset
- * @param[in] aSeq    seq number. 1ºÎÅÍ ½ÃÀÛ.
+ * @param[in] aSeq    seq number. 1ë¶€í„° ì‹œì‘.
  *
- * @return ÁöÁ¤ÇÑ ¼ø¹øÀÇ _PROWID °ª. ÇØ´ç°ªÀÌ ¾øÀ¸¸é NULL
+ * @return ì§€ì •í•œ ìˆœë²ˆì˜ _PROWID ê°’. í•´ë‹¹ê°’ì´ ì—†ìœ¼ë©´ NULL
  */
 acp_uint8_t * ulnKeysetGetKeyValue(ulnKeyset *aKeyset, acp_sint64_t aSeq)
 {
@@ -436,18 +436,18 @@ acp_uint8_t * ulnKeysetGetKeyValue(ulnKeyset *aKeyset, acp_sint64_t aSeq)
 }
 
 /**
- * _PROWIDÀÇ Seq¸¦ ¾ò´Â´Ù.
+ * _PROWIDì˜ Seqë¥¼ ì–»ëŠ”ë‹¤.
  *
  * @param[in] aKeyset   keyset
  * @param[in] aKeyValue _PROWID value
  *
- * @return ¼ø¹ø(1ºÎÅÍ ½ÃÀÛ). ¾øÀ¸¸é 0.
+ * @return ìˆœë²ˆ(1ë¶€í„° ì‹œì‘). ì—†ìœ¼ë©´ 0.
  */
 acp_sint64_t ulnKeysetGetSeq(ulnKeyset *aKeyset, acp_uint8_t *aKeyValue)
 {
     ulnKey *sKey;
 
-    // ¹æ¾î ÄÚµå
+    // ë°©ì–´ ì½”ë“œ
     ACE_ASSERT(aKeyset != NULL);
     ACE_ASSERT(aKeyValue != NULL);
 

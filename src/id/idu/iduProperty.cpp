@@ -228,7 +228,7 @@ IDE_RC iduProperty::load()
                == IDE_SUCCESS);
 
     /*
-     * BUG-21487     Mutex Leak ListÃâ·ÂÀ» propertyÈ­ ÇØ¾ßÇÕ´Ï´Ù.
+     * BUG-21487     Mutex Leak Listì¶œë ¥ì„ propertyí™” í•´ì•¼í•©ë‹ˆë‹¤.
      */
     IDE_ASSERT(idp::read("SHOW_MUTEX_LEAK_LIST",
                          (void*)&mProperties->mShowMutexLeakList)
@@ -401,7 +401,7 @@ IDE_RC iduProperty::load()
                             &mProperties->mMutexPoolMaxSize )
                 == IDE_SUCCESS );
 
-    /* PROJ-2473 SNMP Áö¿ø */
+    /* PROJ-2473 SNMP ì§€ì› */
     IDE_ASSERT(idp::read("PORT_NO",           &mProperties->mPortNo)          == IDE_SUCCESS);
 
     IDE_ASSERT(idp::read("SNMP_ENABLE",       &mProperties->mSNMPEnable)      == IDE_SUCCESS);
@@ -636,7 +636,7 @@ IDE_RC iduProperty::registCallbacks()
                                             callbackMmTrcFlag)
               != IDE_SUCCESS);
 
-    /* PROJ-2473 SNMP Áö¿ø */
+    /* PROJ-2473 SNMP ì§€ì› */
     IDE_TEST( idp::setupAfterUpdateCallback("SNMP_MSGLOG_FLAG",
                                             callbackSNMPTrcFlag)
               != IDE_SUCCESS);
@@ -906,7 +906,7 @@ IDE_RC iduProperty::callbackMmTrcFlag(idvSQL * /*aStatistics*/,
     return IDE_SUCCESS;
 }
 
-/* PROJ-2473 SNMP Áö¿ø */
+/* PROJ-2473 SNMP ì§€ì› */
 IDE_RC iduProperty::callbackSNMPTrcFlag(idvSQL * /*aStatistics*/,
                                         SChar * /*aName*/,
                                         void  * /*aOldValue*/,
@@ -966,8 +966,8 @@ IDE_RC iduProperty::callbackExecuteMemoryMax(
 
 /* ------------------------------------------------
  *   PROJ-1598
- *   Clinet LibraryÀÇ °æ¿ì¿¡´Â idvProfile °ü·ÃµÈ
- *   ÇÁ·ÎÆÛÆ¼ ¹× °ü·Ã ÄÚµå°¡ ¸µÅ©µÉ ÇÊ¿ä°¡ ¾ø´Ù.
+ *   Clinet Libraryì˜ ê²½ìš°ì—ëŠ” idvProfile ê´€ë ¨ëœ
+ *   í”„ë¡œí¼í‹° ë° ê´€ë ¨ ì½”ë“œê°€ ë§í¬ë  í•„ìš”ê°€ ì—†ë‹¤.
  * ----------------------------------------------*/
 #if !defined(LIB_BUILD)
 
@@ -1198,8 +1198,8 @@ IDE_RC iduProperty::callbackCheckMutexDurationTimeEnable(
 }
 
 /*
- * TASK-2356 [Á¦Ç°¹®Á¦ºÐ¼®] DRDBÀÇ DML¹®Á¦ÆÄ¾Ç
- * altibase wait interface ½Ã°£Åë°èÁ¤º¸ ¼öÁý
+ * TASK-2356 [ì œí’ˆë¬¸ì œë¶„ì„] DRDBì˜ DMLë¬¸ì œíŒŒì•…
+ * altibase wait interface ì‹œê°„í†µê³„ì •ë³´ ìˆ˜ì§‘
  */
 IDE_RC iduProperty::callbackTimedStatistics(
     idvSQL * /*aStatistics*/,
@@ -1348,9 +1348,9 @@ IDE_RC iduProperty::callbackDiskMaxDBSize( idvSQL * /*aStatistics*/,
 
 IDE_RC iduProperty::checkConstraints()
 {
-    // ´ÙÀ½ IF¹®Àº Direct I/OÃÖ´ë Å©±â°¡ 8192¶ó´Â °¡Á¤ÇÏ¿¡ ¾²¿©Á³´Ù.
-    // ÀÌ Direct I/OÃÖ´ë Å©±â°¡ ¹Ù²î¸é
-    // - ÀÌ ifÁ¶°Çµµ ÇÔ²² ¹Ù²î¾î¾ß ÇÑ´Ù.
+    // ë‹¤ìŒ IFë¬¸ì€ Direct I/OìµœëŒ€ í¬ê¸°ê°€ 8192ë¼ëŠ” ê°€ì •í•˜ì— ì“°ì—¬ì¡Œë‹¤.
+    // ì´ Direct I/OìµœëŒ€ í¬ê¸°ê°€ ë°”ë€Œë©´
+    // - ì´ ifì¡°ê±´ë„ í•¨ê»˜ ë°”ë€Œì–´ì•¼ í•œë‹¤.
     // - idERR_ABORT_WrongDirectIOPageSize
     IDE_ASSERT( ID_MAX_DIO_PAGE_SIZE == 8192 );
 
@@ -1360,7 +1360,7 @@ IDE_RC iduProperty::checkConstraints()
          mProperties->mDirectIOPageSize == 4096 ||
          mProperties->mDirectIOPageSize == 8192 )
     {
-        // Á¤»ó»óÈ². Do Nothing.
+        // ì •ìƒìƒí™©. Do Nothing.
     }
     else
     {
@@ -1373,15 +1373,15 @@ IDE_RC iduProperty::checkConstraints()
     {
         IDE_SET(ideSetErrorCode(idERR_FATAL_WrongDirectIOPageSize));
         /* BUG-17621:
-         * DIRECT_IO_PAGE_SIZE ¼Ó¼º °ªÀÌ ºÎÀûÀýÇÑ °ªÀÏ ¶§ server start¸¦ ÇÏ¸é
-         * altibase_boot.log¿¡ ±â·ÏµÇ´Â ¿À·ù ¸Þ½ÃÁö°¡
-         * ¼Ó¼º °ªÀÌ Àß¸øµÇ¾ú´Ù´Â ³»¿ëÀÌ ¾Æ´Ï¶ó
-         * "No Error Message Loaded"¶ó´Â ¾û¶×ÇÑ ¿À·ù ¸Þ½ÃÁö°¡ Ãâ·ÂµÇ´Â ¹ö±×°¡ ÀÖ¾ú´Ù.
-         * ¹ö±×ÀÇ ¿øÀÎÀº ¿À·ù ¸Þ½ÃÁö ·Îµù Àü¿¡ ÇöÀç ¶óÀÎÀÌ ¼öÇàµÇ±â ¶§¹®ÀÌ¾ú´Ù.
-         * ÇÏÁö¸¸ ¼±ÈÄ ÀÇÁ¸°ü°è ¶§¹®¿¡
-         * ¿À·ù ¸Þ½ÃÁö¸¦ ¸ÕÀú ·ÎµùÇÏ°í ÇöÀç ¶óÀÎÀ» ¼öÇàÇÏ´Â °ÍÀº °ï¶õÇÏ´Ù.
-         * µû¶ó¼­, ºÎµæÀÌ ¾Æ·¡¿Í °°ÀÌ ÇÏµå ÄÚµùÀ¸·Î
-         * ¿À·ù ¸Þ½ÃÁö¸¦ ¼³Á¤ÇÏ´Â ÄÚµå¸¦ Ãß°¡ÇÏ¿© ¹ö±×¸¦ ¼öÁ¤ÇÑ´Ù. */
+         * DIRECT_IO_PAGE_SIZE ì†ì„± ê°’ì´ ë¶€ì ì ˆí•œ ê°’ì¼ ë•Œ server startë¥¼ í•˜ë©´
+         * altibase_boot.logì— ê¸°ë¡ë˜ëŠ” ì˜¤ë¥˜ ë©”ì‹œì§€ê°€
+         * ì†ì„± ê°’ì´ ìž˜ëª»ë˜ì—ˆë‹¤ëŠ” ë‚´ìš©ì´ ì•„ë‹ˆë¼
+         * "No Error Message Loaded"ë¼ëŠ” ì—‰ëš±í•œ ì˜¤ë¥˜ ë©”ì‹œì§€ê°€ ì¶œë ¥ë˜ëŠ” ë²„ê·¸ê°€ ìžˆì—ˆë‹¤.
+         * ë²„ê·¸ì˜ ì›ì¸ì€ ì˜¤ë¥˜ ë©”ì‹œì§€ ë¡œë”© ì „ì— í˜„ìž¬ ë¼ì¸ì´ ìˆ˜í–‰ë˜ê¸° ë•Œë¬¸ì´ì—ˆë‹¤.
+         * í•˜ì§€ë§Œ ì„ í›„ ì˜ì¡´ê´€ê³„ ë•Œë¬¸ì—
+         * ì˜¤ë¥˜ ë©”ì‹œì§€ë¥¼ ë¨¼ì € ë¡œë”©í•˜ê³  í˜„ìž¬ ë¼ì¸ì„ ìˆ˜í–‰í•˜ëŠ” ê²ƒì€ ê³¤ëž€í•˜ë‹¤.
+         * ë”°ë¼ì„œ, ë¶€ë“ì´ ì•„ëž˜ì™€ ê°™ì´ í•˜ë“œ ì½”ë”©ìœ¼ë¡œ
+         * ì˜¤ë¥˜ ë©”ì‹œì§€ë¥¼ ì„¤ì •í•˜ëŠ” ì½”ë“œë¥¼ ì¶”ê°€í•˜ì—¬ ë²„ê·¸ë¥¼ ìˆ˜ì •í•œë‹¤. */
         if (idlOS::strcmp(ideGetErrorMgr()->Stack.LastErrorMsg,
                           "No Error Message Loaded")
             == 0)

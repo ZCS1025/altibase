@@ -22,8 +22,8 @@
 #include <svcRecordUndo.h>
 #include <svrRecoveryMgr.h>
 
-/* æ∆∑° svc logµÈ¿∫ svrLog ≈∏¿‘¿ª ªÛº”πﬁæ∆æﬂ «—¥Ÿ.
-   ¡Ô, svrLogType¿ª ∏« √π ∏‚πˆ∑Œ π›µÂΩ√ ∞°¡Ææﬂ «—¥Ÿ. */
+/* ÏïÑÎûò svc logÎì§ÏùÄ svrLog ÌÉÄÏûÖÏùÑ ÏÉÅÏÜçÎ∞õÏïÑÏïº ÌïúÎã§.
+   Ï¶â, svrLogTypeÏùÑ Îß® Ï≤´ Î©§Î≤ÑÎ°ú Î∞òÎìúÏãú Í∞ÄÏ†∏Ïïº ÌïúÎã§. */
 typedef struct svcInsertLog
 {
     svrUndoFunc mUndo;
@@ -54,10 +54,10 @@ typedef struct svcUpdateInpLog
     SChar     * mFixedRowPtr;
 } svcUpdateInpLog;
 
-/* ¿Ã ∑Œ±◊¥¬ svcUpdateInpLog¿« sublog¿Ã¥Ÿ.
-   µ˚∂Ûº≠ svrUndoFunc¿Ã « ø‰æ¯¥Ÿ.
-   «œ¡ˆ∏∏ svrLog ≈∏¿‘¿ª ªÁøÎ«œ±‚ ∂ßπÆø°
-   dummy∏¶ µ–¥Ÿ. */
+/* Ïù¥ Î°úÍ∑∏Îäî svcUpdateInpLogÏùò sublogÏù¥Îã§.
+   Îî∞ÎùºÏÑú svrUndoFuncÏù¥ ÌïÑÏöîÏóÜÎã§.
+   ÌïòÏßÄÎßå svrLog ÌÉÄÏûÖÏùÑ ÏÇ¨Ïö©ÌïòÍ∏∞ ÎïåÎ¨∏Ïóê
+   dummyÎ•º ÎëîÎã§. */
 typedef struct svcUptInpColLog
 {
     svrUndoFunc mDummy;
@@ -67,7 +67,7 @@ typedef struct svcUptInpColLog
     UInt        mValSize;
 
     /* PROJ-2174 Supporting LOB in the volatile tablespace
-     * LOB¿ª ¿ß«ÿ mPieceCount, mFirstLPCH∏¶ √ﬂ∞° */
+     * LOBÏùÑ ÏúÑÌï¥ mPieceCount, mFirstLPCHÎ•º Ï∂îÍ∞Ä */
     UInt        mLPCHCount;
     smcLPCH   * mFirstLPCH;
 
@@ -90,7 +90,7 @@ static IDE_RC undoDelete       (svrLogEnv *aEnv, svrLog *aDeleteLog, svrLSN aSub
 
 /******************************************************************************
  * Description:
- *    volatile TBSø° πﬂª˝«— insert ø¨ªÍø° ¥Î«ÿ ∑Œ±Î«—¥Ÿ.
+ *    volatile TBSÏóê Î∞úÏÉùÌïú insert Ïó∞ÏÇ∞Ïóê ÎåÄÌï¥ Î°úÍπÖÌïúÎã§.
  ******************************************************************************/
 IDE_RC svcRecordUndo::logInsert(svrLogEnv  *aLogEnv,
                                 void       *aTransPtr,
@@ -120,7 +120,7 @@ IDE_RC svcRecordUndo::logInsert(svrLogEnv  *aLogEnv,
 
 /******************************************************************************
  * Description:
- *    insert log∏¶ ∫–ºÆ«ÿ undo∏¶ ºˆ«‡«—¥Ÿ.
+ *    insert logÎ•º Î∂ÑÏÑùÌï¥ undoÎ•º ÏàòÌñâÌïúÎã§.
  ******************************************************************************/
 IDE_RC undoInsert(svrLogEnv * /*aEnv*/,
                   svrLog    * aInsertLog,
@@ -146,7 +146,7 @@ IDE_RC undoInsert(svrLogEnv * /*aEnv*/,
 
 /******************************************************************************
  * Description:
- *    volatile TBSø° πﬂª˝«— update ø¨ªÍø° ¥Î«ÿ ∑Œ±Î«—¥Ÿ.
+ *    volatile TBSÏóê Î∞úÏÉùÌïú update Ïó∞ÏÇ∞Ïóê ÎåÄÌï¥ Î°úÍπÖÌïúÎã§.
  ******************************************************************************/
 IDE_RC svcRecordUndo::logUpdate(svrLogEnv  *aLogEnv,
                                 void       *aTransPtr,
@@ -180,10 +180,10 @@ IDE_RC svcRecordUndo::logUpdate(svrLogEnv  *aLogEnv,
 
 /******************************************************************************
  * Description:
- *    update logø° ¥Î«ÿ undo∏¶ ºˆ«‡«—¥Ÿ.
- *    - new fixed rowø° ¥Î«ÿ undo ºˆ«‡
- *    - old fixed rowø° ¥Î«ÿ undo ºˆ«‡
- *    - variable rowµÈ¿∫ physical log∑Œ √≥∏Æµ»¥Ÿ.
+ *    update logÏóê ÎåÄÌï¥ undoÎ•º ÏàòÌñâÌïúÎã§.
+ *    - new fixed rowÏóê ÎåÄÌï¥ undo ÏàòÌñâ
+ *    - old fixed rowÏóê ÎåÄÌï¥ undo ÏàòÌñâ
+ *    - variable rowÎì§ÏùÄ physical logÎ°ú Ï≤òÎ¶¨ÎêúÎã§.
  ******************************************************************************/
 IDE_RC undoUpdate(svrLogEnv  * /*aEnv*/,
                   svrLog     * aUpdateLog,
@@ -197,7 +197,7 @@ IDE_RC undoUpdate(svrLogEnv  * /*aEnv*/,
                sUpdateLog->mNewRowPtr)
              != IDE_SUCCESS);
 
-    /* old rowø° ¥Î«ÿ undo */
+    /* old rowÏóê ÎåÄÌï¥ undo */
     sSlotHeader = (smpSlotHeader*)sUpdateLog->mOldRowPtr;
 
     SM_SET_SCN_FREE_ROW( &(sSlotHeader->mLimitSCN) );
@@ -213,15 +213,15 @@ IDE_RC undoUpdate(svrLogEnv  * /*aEnv*/,
 
 /******************************************************************************
  * Description:
- *     update inplace log∏¶ ±‚∑œ«—¥Ÿ.
+ *     update inplace logÎ•º Í∏∞Î°ùÌïúÎã§.
  *
  * Implementation:
- *     ≈©∞‘ µŒ∞°¡ˆ ∑Œ±◊∏¶ ±‚∑œ«—¥Ÿ.
- *     svcUpdateInpLogøÕ svcUptInpColLog¿Ã¥Ÿ.
- *     ∏’¿˙ update inplace¿« ±‚∫ª ¡§∫∏µÈ¿ª svcUpdateInpLog∏¶ ≈Î«ÿ ±‚∑œ«œ∞Ì
- *     updateµ«¥¬ ƒ√∑≥¿« ∞≥ºˆ∏∏≈≠ svcUptIntColLog∏¶ ±‚∑œ«—¥Ÿ.
- *     ƒ√∑≥¿Ã fixed≥ƒ variable in-mode≥ƒ variavle out-mode≥ƒø° µ˚∂Û
- *     svcUptInpColLog∏¶ ±∏º∫«œ¥¬ πÊπ˝¿Ã ¥Ÿ∏£¥Ÿ.
+ *     ÌÅ¨Í≤å ÎëêÍ∞ÄÏßÄ Î°úÍ∑∏Î•º Í∏∞Î°ùÌïúÎã§.
+ *     svcUpdateInpLogÏôÄ svcUptInpColLogÏù¥Îã§.
+ *     Î®ºÏ†Ä update inplaceÏùò Í∏∞Î≥∏ Ï†ïÎ≥¥Îì§ÏùÑ svcUpdateInpLogÎ•º ÌÜµÌï¥ Í∏∞Î°ùÌïòÍ≥†
+ *     updateÎêòÎäî Ïª¨ÎüºÏùò Í∞úÏàòÎßåÌÅº svcUptIntColLogÎ•º Í∏∞Î°ùÌïúÎã§.
+ *     Ïª¨ÎüºÏù¥ fixedÎÉê variable in-modeÎÉê variavle out-modeÎÉêÏóê Îî∞Îùº
+ *     svcUptInpColLogÎ•º Íµ¨ÏÑ±ÌïòÎäî Î∞©Î≤ïÏù¥ Îã§Î•¥Îã§.
  ******************************************************************************/
 IDE_RC svcRecordUndo::logUpdateInplace(svrLogEnv           * aEnv,
                                        void                * aTransPtr,
@@ -237,8 +237,8 @@ IDE_RC svcRecordUndo::logUpdateInplace(svrLogEnv           * aEnv,
     smVCDesc              * sVCDesc;
     smcLobDesc            * sLobDesc;
 
-    /* sColLog.mValue¿« ±Ê¿Ã∏¶ ≥™≈∏≥Ω¥Ÿ.
-       mValueSizeøÕ «◊ªÛ ∞∞¡¯ æ ¥Ÿ. */
+    /* sColLog.mValueÏùò Í∏∏Ïù¥Î•º ÎÇòÌÉÄÎÇ∏Îã§.
+       mValueSizeÏôÄ Ìï≠ÏÉÅ Í∞ôÏßÑ ÏïäÎã§. */
     SInt                    sWrittenSize;
 
     sUptLog.mUndo           = undoUpdateInplace;
@@ -248,14 +248,14 @@ IDE_RC svcRecordUndo::logUpdateInplace(svrLogEnv           * aEnv,
     sUptLog.mVarOID         = ((smpSlotHeader*)aFixedRowPtr)->mVarOID;
     sUptLog.mFixedRowPtr    = aFixedRowPtr;
 
-    /* svcUpdateInpLog ∑Œ±◊∏¶ ±‚∑œ«—¥Ÿ. */
+    /* svcUpdateInpLog Î°úÍ∑∏Î•º Í∏∞Î°ùÌïúÎã§. */
     IDE_TEST(svrLogMgr::writeLog(aEnv,
                                  (svrLog*)&sUptLog,
                                  ID_SIZEOF(svcUpdateInpLog))
              != IDE_SUCCESS);
 
-    /* updateµ… ƒ√∑≥µÈ¿« ∏ÆΩ∫∆Æ∏¶ º¯»∏«œ∏Èº≠
-       svcUptInpColLog ∑Œ±◊∏¶ ±‚∑œ«—¥Ÿ. */
+    /* updateÎê† Ïª¨ÎüºÎì§Ïùò Î¶¨Ïä§Ìä∏Î•º ÏàúÌöåÌïòÎ©¥ÏÑú
+       svcUptInpColLog Î°úÍ∑∏Î•º Í∏∞Î°ùÌïúÎã§. */
     for (sCurColumnList = aColumnList;
          sCurColumnList != NULL;
          sCurColumnList = sCurColumnList->next)
@@ -266,7 +266,7 @@ IDE_RC svcRecordUndo::logUpdateInplace(svrLogEnv           * aEnv,
         {
             /* PROJ-2174 Supporting LOB in the volatile tablespace */
             case SMI_COLUMN_TYPE_LOB:
-                sColLog.mDummy = NULL; /* undo «‘ºˆ∞° « ø‰æ¯¥Ÿ. */
+                sColLog.mDummy = NULL; /* undo Ìï®ÏàòÍ∞Ä ÌïÑÏöîÏóÜÎã§. */
                 sColLog.mColType = SVC_COLUMN_TYPE_LOB;
 
                 sVCDesc  = (smVCDesc *)(aFixedRowPtr + sCurColumn->offset);
@@ -292,16 +292,16 @@ IDE_RC svcRecordUndo::logUpdateInplace(svrLogEnv           * aEnv,
                     sWrittenSize = sVCDesc->length;
                 }
                 sColLog.mValSize = sVCDesc->length;
-                /* variable column∞˙¿« ¬˜¿Ã¡° */
+                /* variable columnÍ≥ºÏùò Ï∞®Ïù¥Ï†ê */
                 sColLog.mLPCHCount = sLobDesc->mLPCHCount;
                 sColLog.mFirstLPCH = sLobDesc->mFirstLPCH;
 
                 break;
             case SMI_COLUMN_TYPE_VARIABLE:
-                sColLog.mDummy = NULL; /* undo «‘ºˆ∞° « ø‰æ¯¥Ÿ. */
+                sColLog.mDummy = NULL; /* undo Ìï®ÏàòÍ∞Ä ÌïÑÏöîÏóÜÎã§. */
                 sColLog.mColType = SVC_COLUMN_TYPE_VARIABLE;
 
-                /* variable column¿Œ ∞ÊøÏ, in-mode, out-mode∏¶ ∆«¥‹«ÿæﬂ «—¥Ÿ. */
+                /* variable columnÏù∏ Í≤ΩÏö∞, in-mode, out-modeÎ•º ÌåêÎã®Ìï¥Ïïº ÌïúÎã§. */
                 sVCDesc = (smVCDesc*)(aFixedRowPtr + sCurColumn->offset);
                 if (svcRecord::getVCStoreMode(sCurColumn,
                                               sVCDesc->length)
@@ -326,7 +326,7 @@ IDE_RC svcRecordUndo::logUpdateInplace(svrLogEnv           * aEnv,
 
                 break;
             case SMI_COLUMN_TYPE_FIXED:
-                /* fixed column¿« ∞ÊøÏ */
+                /* fixed columnÏùò Í≤ΩÏö∞ */
                 sColLog.mColType = SVC_COLUMN_TYPE_FIXED;
                 sColLog.mColMode = SVC_COLUMN_MODE_NA;
                 sColLog.mValSize = sCurColumn->size;
@@ -360,7 +360,7 @@ IDE_RC svcRecordUndo::logUpdateInplace(svrLogEnv           * aEnv,
 
 /******************************************************************************
  * Description:
- *    update inplace logø° ¥Î«ÿ undo∏¶ ºˆ«‡«—¥Ÿ.
+ *    update inplace logÏóê ÎåÄÌï¥ undoÎ•º ÏàòÌñâÌïúÎã§.
  ******************************************************************************/
 IDE_RC undoUpdateInplace(svrLogEnv * aEnv,
                          svrLog    * aUptInpLog,
@@ -471,7 +471,7 @@ IDE_RC undoUpdateInplace(svrLogEnv * aEnv,
                 sLobDesc = (smcLobDesc *)(sUptInpLog->mFixedRowPtr + 
                                           sColLog->mColOffset);
 
-                /* variable column∞˙¿« ¬˜¿Ã¡° */
+                /* variable columnÍ≥ºÏùò Ï∞®Ïù¥Ï†ê */
                 sLobDesc->mLPCHCount = sColLog->mLPCHCount;
                 sLobDesc->mFirstLPCH = sColLog->mFirstLPCH;
 
@@ -498,7 +498,7 @@ IDE_RC undoUpdateInplace(svrLogEnv * aEnv,
 
 /******************************************************************************
  * Description:
- *     delete log∏¶ ±‚∑œ«—¥Ÿ.
+ *     delete logÎ•º Í∏∞Î°ùÌïúÎã§.
  ******************************************************************************/
 IDE_RC svcRecordUndo::logDelete(svrLogEnv * aLogEnv,
                                 void      * aTransPtr,
@@ -529,7 +529,7 @@ IDE_RC svcRecordUndo::logDelete(svrLogEnv * aLogEnv,
 
 /******************************************************************************
  * Description:
- *    delete logø° ¥Î«ÿ undo∏¶ ºˆ«‡«—¥Ÿ.
+ *    delete logÏóê ÎåÄÌï¥ undoÎ•º ÏàòÌñâÌïúÎã§.
  ******************************************************************************/
 IDE_RC undoDelete(svrLogEnv * /*aEnv*/,
                   svrLog    * aDeleteLog,

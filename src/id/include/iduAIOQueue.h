@@ -56,7 +56,7 @@ class iduAIOQueue
 {
     UInt             mUnitCount;
     iduAIOQueueUnit *mUnitArray;
-    UInt             mCurrUnit; // ºó ½½·ÔÀ» Ã£±â À§ÇØ ÀÌÀü À§Ä¡ ÀúÀåÇÔ.
+    UInt             mCurrUnit; // ë¹ˆ ìŠ¬ë¡¯ì„ ì°¾ê¸° ìœ„í•´ ì´ì „ ìœ„ì¹˜ ì €ì¥í•¨.
 
     void  refreshUnitArray();
     UInt  findEmptyUnit();

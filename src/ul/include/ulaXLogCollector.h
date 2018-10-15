@@ -78,8 +78,8 @@
 #endif /* ENDIAN_IS_BIG_ENDIAN */
 
 
-/* Handshake AckÀÇ Flag »óÅÂ ºñÆ® */
-// 1¹ø ºñÆ® : Endian bit : 0 - Big Endian, 1 - Little Endian
+/* Handshake Ackì˜ Flag ìƒíƒœ ë¹„íŠ¸ */
+// 1ë²ˆ ë¹„íŠ¸ : Endian bit : 0 - Big Endian, 1 - Little Endian
 #define ULA_ACK_LITTLE_ENDIAN               (0x00000001)
 #define ULA_ACK_BIG_ENDIAN                  (0x00000000)
 #define ULA_ACK_ENDIAN_MASK                 (0x00000001)
@@ -158,11 +158,11 @@ typedef struct ulaXLogCollector
     acp_uint32_t mHandshakeTimeoutSec;
     acp_uint32_t mReceiveXLogTimeoutSec;
 
-    acp_bool_t   mNetworkExitFlag;   // receiveXLog()¿Í sendACK()¿¡¼­ »ç¿ë
-    acp_bool_t   mSessionValid;      // handshake()¿Í finishNetwork()¿¡¼­ »ç¿ë
+    acp_bool_t   mNetworkExitFlag;   // receiveXLog()ì™€ sendACK()ì—ì„œ ì‚¬ìš©
+    acp_bool_t   mSessionValid;      // handshake()ì™€ finishNetwork()ì—ì„œ ì‚¬ìš©
 
     cmiProtocolContext  mProtocolContext;
-    cmiLink            *mPeerLink;          // cmiAcceptLink()¿¡¼­ ÇÒ´ç ¹ŞÀ½
+    cmiLink            *mPeerLink;          // cmiAcceptLink()ì—ì„œ í• ë‹¹ ë°›ìŒ
 
     acp_thr_mutex_t     mSendMutex;
     acp_thr_mutex_t     mReceiveMutex;
@@ -173,21 +173,21 @@ typedef struct ulaXLogCollector
     /* Meta */
     ulaMeta mMeta;
 
-    /* ACK °ü·Ã ¼öÁı Á¤º¸ */
+    /* ACK ê´€ë ¨ ìˆ˜ì§‘ ì •ë³´ */
     acp_thr_mutex_t     mAckMutex;
 
-    // Restart SN °ü·Ã
+    // Restart SN ê´€ë ¨
     ulaSN    mRestartSN;            // getXLog(), sendACK()
-    ulaSN    mLastCommitSN;         // COMMIT/ABORT/KEEP_ALIVE XLogÀÇ SN (Flush)
+    ulaSN    mLastCommitSN;         // COMMIT/ABORT/KEEP_ALIVE XLogì˜ SN (Flush)
 
-    // GAP °ü·Ã
+    // GAP ê´€ë ¨
     ulaSN    mLastArrivedSN;        // receiveXLog(), sendACK()
     ulaSN    mLastProcessedSN;      // sendACK()
 
-    // ACK Á¶°Ç °ü·Ã
+    // ACK ì¡°ê±´ ê´€ë ¨
     acp_uint64_t    mProcessedXLogCount;   // sendACK()
 
-    // ACK Àü¼Û ¿©ºÎ
+    // ACK ì „ì†¡ ì—¬ë¶€
     acp_bool_t   mStopACKArrived;
     acp_bool_t   mKeepAliveArrived;
 

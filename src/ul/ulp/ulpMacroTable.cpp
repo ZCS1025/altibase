@@ -55,22 +55,22 @@ void ulpMacroTable::ulpFinalize()
             sNode   = sNode->mNext;
             idlOS::free(sPNode);
         }
-        /* BUG-28061 : preprocessingÀ»¸¶Ä¡¸é marco tableÀ» ÃÊ±âÈ­ÇÏ°í, *
-         *             ulpComp ¿¡¼­ Àç±¸ÃàÇÑ´Ù.                       */
+        /* BUG-28061 : preprocessingì„ë§ˆì¹˜ë©´ marco tableì„ ì´ˆê¸°í™”í•˜ê³ , *
+         *             ulpComp ì—ì„œ ì¬êµ¬ì¶•í•œë‹¤.                       */
         mMacroTable[sI] = NULL;
     }
 }
 
-/* BUG-28118 : system Çì´õÆÄÀÏµéµµ ÆÄ½ÌµÅ¾ßÇÔ.                    *
- * 11th. problem : C preoprocessor¿¡¼­ ¸ÅÅ©·Î ÇÔ¼ö ÀÎÀÚ Ã³¸® ¸øÇÔ. *
- * 12th. problem : C preprocessor¿¡¼­ µÎ ÅäÅ«À» concatenationÇÒ¶§ »ç¿ëµÇ´Â '##' ÅäÅ« Ã³¸®ÇØ¾ßÇÔ. */
+/* BUG-28118 : system í—¤ë”íŒŒì¼ë“¤ë„ íŒŒì‹±ë¼ì•¼í•¨.                    *
+ * 11th. problem : C preoprocessorì—ì„œ ë§¤í¬ë¡œ í•¨ìˆ˜ ì¸ì ì²˜ë¦¬ ëª»í•¨. *
+ * 12th. problem : C preprocessorì—ì„œ ë‘ í† í°ì„ concatenationí• ë•Œ ì‚¬ìš©ë˜ëŠ” '##' í† í° ì²˜ë¦¬í•´ì•¼í•¨. */
 void ulpMacroTable::ulpMEraseSharp4MFunc( SChar *aText )
 {
 /***********************************************************************
  *
  * Description :
- *    Macro ÇÔ¼ö°¡ ¿Ã°æ¿ì parameterµé°ú ÇÔ¼ö¾ÈÀÇ '##' (concatenation) ÅäÅ«À»
- *    Ã³¸®ÇØ¾ßÇÏ´Âµ¥ ½±Áö°¡ ¾Ê¾Æ, ÀÏ´Ü text¾ÈÀÇ '##'¸¦ Áö¿ö ÆÄ½Ì¿¡·¯¸¸ ÇÇÇÔ.
+ *    Macro í•¨ìˆ˜ê°€ ì˜¬ê²½ìš° parameterë“¤ê³¼ í•¨ìˆ˜ì•ˆì˜ '##' (concatenation) í† í°ì„
+ *    ì²˜ë¦¬í•´ì•¼í•˜ëŠ”ë° ì‰½ì§€ê°€ ì•Šì•„, ì¼ë‹¨ textì•ˆì˜ '##'ë¥¼ ì§€ì›Œ íŒŒì‹±ì—ëŸ¬ë§Œ í”¼í•¨.
  *
  * Implementation :
  *
@@ -134,16 +134,16 @@ void ulpMacroTable::ulpMEraseSharp4MFunc( SChar *aText )
     aText[i-sShift] = '\0';
 }
 
-// defined macro¸¦ hash table¿¡ ÀúÀåÇÑ´Ù.
+// defined macroë¥¼ hash tableì— ì €ì¥í•œë‹¤.
 IDE_RC ulpMacroTable::ulpMDefine ( SChar *aName, SChar *aText, idBool aIsFunc )
 {
     SInt             sIndex;
     ulpMacroNode    *sMNode;
     ulpMacroNode    *sMNode2;
 
-    /* BUG-28118 : system Çì´õÆÄÀÏµéµµ ÆÄ½ÌµÅ¾ßÇÔ.                    *
-     * 11th. problem : C preoprocessor¿¡¼­ ¸ÅÅ©·Î ÇÔ¼ö ÀÎÀÚ Ã³¸® ¸øÇÔ. *
-     * 12th. problem : C preprocessor¿¡¼­ µÎ ÅäÅ«À» concatenationÇÒ¶§ »ç¿ëµÇ´Â '##' ÅäÅ« Ã³¸®ÇØ¾ßÇÔ. */
+    /* BUG-28118 : system í—¤ë”íŒŒì¼ë“¤ë„ íŒŒì‹±ë¼ì•¼í•¨.                    *
+     * 11th. problem : C preoprocessorì—ì„œ ë§¤í¬ë¡œ í•¨ìˆ˜ ì¸ì ì²˜ë¦¬ ëª»í•¨. *
+     * 12th. problem : C preprocessorì—ì„œ ë‘ í† í°ì„ concatenationí• ë•Œ ì‚¬ìš©ë˜ëŠ” '##' í† í° ì²˜ë¦¬í•´ì•¼í•¨. */
     if( (aIsFunc == ID_TRUE) && (aText != NULL) )
     {
         ulpMEraseSharp4MFunc( aText );
@@ -163,14 +163,14 @@ IDE_RC ulpMacroTable::ulpMDefine ( SChar *aName, SChar *aText, idBool aIsFunc )
         idlOS::strncpy( sMNode->mName, aName, MAX_MACRO_DEFINE_NAME_LEN - 1 );
         if ( aText != NULL )
         {
-            // PPIF flex lexer ÀÇ ³»ºÎ Ã³¸® ·ÎÁ÷ ¶§¹®¿¡,
+            // PPIF flex lexer ì˜ ë‚´ë¶€ ì²˜ë¦¬ ë¡œì§ ë•Œë¬¸ì—,
             // The last two bytes of mText must be ASCII NUL.
             idlOS::strncpy( sMNode->mText, aText, MAX_MACRO_DEFINE_CONTENT_LEN - 2 );
         }
         else
         {
-            // memset ÇØ¼­ ÇÒÇÊ¿ä ¾øÁö¸¸~
-            // PPIF flex lexer ÀÇ ³»ºÎ Ã³¸® ·ÎÁ÷ ¶§¹®¿¡,
+            // memset í•´ì„œ í• í•„ìš” ì—†ì§€ë§Œ~
+            // PPIF flex lexer ì˜ ë‚´ë¶€ ì²˜ë¦¬ ë¡œì§ ë•Œë¬¸ì—,
             // The last two bytes of mText must be ASCII NUL.
             sMNode->mText[0] = '\0';
             sMNode->mText[1] = '\0';
@@ -180,14 +180,14 @@ IDE_RC ulpMacroTable::ulpMDefine ( SChar *aName, SChar *aText, idBool aIsFunc )
         // add to hash table
         sIndex = (*mHash)( (UChar *)sMNode->mName ) % ( mSize );
 
-        // bucket listÀÇ Á¦ÀÏ ¾Õ¿¡´Ù Ãß°¡ÇÔ.
+        // bucket listì˜ ì œì¼ ì•ì—ë‹¤ ì¶”ê°€í•¨.
         sMNode2 = mMacroTable[sIndex];
 
         mMacroTable[sIndex] = sMNode;
 
         sMNode->mNext = sMNode2;
 
-        // ÀüÃ¼ macro ¼ö Áõ°¡
+        // ì „ì²´ macro ìˆ˜ ì¦ê°€
         mCnt++;
     }
     else
@@ -225,7 +225,7 @@ IDE_RC ulpMacroTable::ulpMDefine ( SChar *aName, SChar *aText, idBool aIsFunc )
 }
 
 
-// Æ¯Á¤ ÀÌ¸§À» °®´Â defined macro¸¦ hash table¿¡¼­ °Ë»öÇÑ´Ù.
+// íŠ¹ì • ì´ë¦„ì„ ê°–ëŠ” defined macroë¥¼ hash tableì—ì„œ ê²€ìƒ‰í•œë‹¤.
 ulpMacroNode *ulpMacroTable::ulpMLookup( SChar *aName )
 {
     SInt sIndex;
@@ -249,7 +249,7 @@ ulpMacroNode *ulpMacroTable::ulpMLookup( SChar *aName )
 }
 
 
-// Æ¯Á¤ ÀÌ¸§À» °®´Â defined macro¸¦ hash table¿¡¼­ Á¦°ÅÇÑ´Ù.
+// íŠ¹ì • ì´ë¦„ì„ ê°–ëŠ” defined macroë¥¼ hash tableì—ì„œ ì œê±°í•œë‹¤.
 void ulpMacroTable::ulpMUndef( SChar *aName )
 {
     SInt sIndex;
@@ -290,8 +290,8 @@ void ulpMacroTable::ulpMPrint( void )
     SInt   sMLineCnt;
     SInt   sIDcnt;
     SInt   sTEXTcnt;
-    idBool sIsIDEnd;    // id ±æÀÌ°¡ 15ÀÚ¸¦ ³ÑÀ» °æ¿ì ´ÙÀ½ ¶óÀÎ¿¡ Ãâ·ÂÇÏ±â À§ÇØ »ç¿ëµÊ.
-    idBool sIsTEXTEnd;  // text±æÀÌ°¡ 45ÀÚ¸¦ ³ÑÀ» °æ¿ì »ç¿ëµÊ.
+    idBool sIsIDEnd;    // id ê¸¸ì´ê°€ 15ìë¥¼ ë„˜ì„ ê²½ìš° ë‹¤ìŒ ë¼ì¸ì— ì¶œë ¥í•˜ê¸° ìœ„í•´ ì‚¬ìš©ë¨.
+    idBool sIsTEXTEnd;  // textê¸¸ì´ê°€ 45ìë¥¼ ë„˜ì„ ê²½ìš° ì‚¬ìš©ë¨.
     idBool sIsFirst;
     ulpMacroNode *sNode;
 

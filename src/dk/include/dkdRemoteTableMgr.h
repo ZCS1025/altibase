@@ -31,33 +31,33 @@
 class dkdRemoteTableMgr
 {
 private:
-    /* ¿ø°Ý¼­¹ö·ÎºÎÅÍ ¸ðµç ·¹ÄÚµå¸¦ ´Ù °¡Á®¿Ô´ÂÁö ¿©ºÎ */
+    /* ì›ê²©ì„œë²„ë¡œë¶€í„° ëª¨ë“  ë ˆì½”ë“œë¥¼ ë‹¤ ê°€ì ¸ì™”ëŠ”ì§€ ì—¬ë¶€ */
     idBool                  mIsEndOfFetch;
-    /* fetch row buffer ÀÇ ·¹ÄÚµåµéÀ» ´Ù ÀÐ¾î°¬´ÂÁö ¿©ºÎ */
+    /* fetch row buffer ì˜ ë ˆì½”ë“œë“¤ì„ ë‹¤ ì½ì–´ê°”ëŠ”ì§€ ì—¬ë¶€ */
     idBool                  mIsFetchBufReadAll;
-    /* fetch row buffer °¡ ´Ù Ã¡´ÂÁö ¿©ºÎ */
+    /* fetch row buffer ê°€ ë‹¤ ì°¼ëŠ”ì§€ ì—¬ë¶€ */
     idBool                  mIsFetchBufFull;
     /* Converted Row's size */
     UInt                    mRowSize;
     /* Fetch row buffer's size */
     UInt                    mFetchRowBufSize;
-    /* Converted row °¡ ÀúÀåµÇ´Â temp buffer's size */
+    /* Converted row ê°€ ì €ìž¥ë˜ëŠ” temp buffer's size */
     UInt                    mConvertedRowBufSize;
-    /* ÇÑ¹ø¿¡ ¿ø°Ý¼­¹ö¿¡¼­ °¡Á®¿À´Â ·¹ÄÚµåÀÇ °³¼ö */
+    /* í•œë²ˆì— ì›ê²©ì„œë²„ì—ì„œ ê°€ì ¸ì˜¤ëŠ” ë ˆì½”ë“œì˜ ê°œìˆ˜ */
     UInt                    mFetchRowCnt;
-    /* ¿ø°Ý¼­¹ö¿¡¼­ °¡Á®¿Â fetch row buffer ¿¡ Á¸ÀçÇÏ´Â ·¹ÄÚµå °³¼ö */
+    /* ì›ê²©ì„œë²„ì—ì„œ ê°€ì ¸ì˜¨ fetch row buffer ì— ì¡´ìž¬í•˜ëŠ” ë ˆì½”ë“œ ê°œìˆ˜ */
     UInt                    mInsertRowCnt;
-    /* ÀüÃ¼ ·¹ÄÚµå °³¼ö */
+    /* ì „ì²´ ë ˆì½”ë“œ ê°œìˆ˜ */
     ULong                   mRecordCnt;
-    /* QP ¿¡¼­ ·¹ÄÚµå¸¦ °¡Á®°¡±â Àü ÀÏ½ÃÀûÀ¸·Î ·¹ÄÚµå¸¦ º¸°üÇÒ ¹öÆÛ */
+    /* QP ì—ì„œ ë ˆì½”ë“œë¥¼ ê°€ì ¸ê°€ê¸° ì „ ì¼ì‹œì ìœ¼ë¡œ ë ˆì½”ë“œë¥¼ ë³´ê´€í•  ë²„í¼ */
     SChar                 * mFetchRowBuffer;
-    /* Converted µÈ row ÇÏ³ª°¡ ÀúÀåµÇ´Â temp buffer */
+    /* Converted ëœ row í•˜ë‚˜ê°€ ì €ìž¥ë˜ëŠ” temp buffer */
     SChar                 * mConvertedRowBuffer;
-    /* QP ¿¡¼­ fetch ¸¦ ¼öÇàÇÑ ÈÄ °¡¸®Å°´Â ·¹ÄÚµå */
+    /* QP ì—ì„œ fetch ë¥¼ ìˆ˜í–‰í•œ í›„ ê°€ë¦¬í‚¤ëŠ” ë ˆì½”ë“œ */
     SChar                 * mInsertPos;    
     /* Type converter */
     struct dkdTypeConverter    * mTypeConverter;
-    /* fetch ÇÑ row ¸¦ ÀÏ½ÃÀûÀ¸·Î º¸°ü */
+    /* fetch í•œ row ë¥¼ ì¼ì‹œì ìœ¼ë¡œ ë³´ê´€ */
     SChar                 * mCurRow; 
 
 public:

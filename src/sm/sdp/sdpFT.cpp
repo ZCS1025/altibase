@@ -19,7 +19,7 @@
  *
  * Description
  *
- *   Disk DBÀÇ Page¸¦ binary·Î DumpÇÏ°Å³ª PhyPageHdr¸¦ DumpÇÑ´Ù.
+ *   Disk DBì˜ Pageë¥¼ binaryë¡œ Dumpí•˜ê±°ë‚˜ PhyPageHdrë¥¼ Dumpí•œë‹¤.
  *
  **********************************************************************/
 
@@ -75,7 +75,7 @@ static iduFixedTableColDesc gDumpDiskDBPageColDesc[] =
 
 
 // D$DISK_DB_PAGE
-// ReadPage( Fix + latch )ÇÑ ÈÄ ptrToDiskPageDumpÀ» ÀÌ¿ëÇÏ¿© DumpÇÑ´Ù.
+// ReadPage( Fix + latch )í•œ í›„ ptrToDiskPageDumpì„ ì´ìš©í•˜ì—¬ Dumpí•œë‹¤.
 IDE_RC sdpFT::buildRecordDiskDBPageDump(idvSQL              * /*aStatistics*/,
                                         void                *aHeader,
                                         void                *aDumpObj,
@@ -98,7 +98,7 @@ IDE_RC sdpFT::buildRecordDiskDBPageDump(idvSQL              * /*aStatistics*/,
     sSpaceID   = SC_MAKE_SPACE(*sGRID);
     sPageID    = SC_MAKE_PID(*sGRID);
 
-    // FixPage¸¦ ½ÃµµÇÑ´Ù
+    // FixPageë¥¼ ì‹œë„í•œë‹¤
     IDE_TEST( sdbBufferMgr::fixPageByPID( NULL, // idvSQL
                                           sSpaceID,
                                           sPageID,
@@ -362,7 +362,7 @@ static iduFixedTableColDesc gDumpDiskDBPhyPageHdrColDesc[]=
 };
 
 // D$DISK_DB_PHYPAGEHDR
-// PhysiacalPageHdr¸¦ DumpÇÑ´Ù.
+// PhysiacalPageHdrë¥¼ Dumpí•œë‹¤.
 IDE_RC sdpFT::buildRecordDiskDBPhyPageHdrDump(idvSQL              * /*aStatistics*/,
                                               void                *aHeader,
                                               void                *aDumpObj,
@@ -384,7 +384,7 @@ IDE_RC sdpFT::buildRecordDiskDBPhyPageHdrDump(idvSQL              * /*aStatistic
     sSpaceID   = SC_MAKE_SPACE(*sGRID);
     sPageID    = SC_MAKE_PID(*sGRID);
 
-    //DISK_TABLESPACE°¡ ¸Â´ÂÁö °Ë»çÇÑ´Ù.
+    //DISK_TABLESPACEê°€ ë§žëŠ”ì§€ ê²€ì‚¬í•œë‹¤.
     IDE_ASSERT( sctTableSpaceMgr::isDiskTableSpace( sSpaceID ) == ID_TRUE );
 
     IDE_TEST( sdbBufferMgr::getPageByPID( NULL, /* idvSQL */
@@ -532,11 +532,11 @@ static iduFixedTableColDesc gSegmentColDesc[]=
         0, 0, NULL // for internal use
     },
 
-    /* BUG-31372: ¼¼±×¸ÕÆ® ½Ç»ç¿ë¾ç Á¤º¸¸¦ Á¶È¸ÇÒ ¹æ¹ýÀÌ ÇÊ¿äÇÕ´Ï´Ù.
-     * CASE-28174 ¿¡¼­ ¿ä±¸µÈ ±â´ÉÀ¸·Î, TMSC¿¡¼­ »ç¿ëÇÒ ÄÃ·³ÀÌ´Ù.
-     * ¿ø·¡´Â X$°¡ Á¦°øµÇ¸é ¾ÈµÇÁö¸¸, ±ä±ÞÇÑ ¿äÃ»À¸·Î
-     * TOTAL_USED_SIZEÀ» Á¦°øÇÑ´Ù.
-     * ÇØ´ç ÄÃ·³ÀÌ »èÁ¦µÇ°Å³ª º¯°æµÈ´Ù¸é TMSC¿¡ ÇØ´ç »çÇ×À» È®ÀÎÇÏµµ·Ï ÇÑ´Ù. */
+    /* BUG-31372: ì„¸ê·¸ë¨¼íŠ¸ ì‹¤ì‚¬ìš©ì–‘ ì •ë³´ë¥¼ ì¡°íšŒí•  ë°©ë²•ì´ í•„ìš”í•©ë‹ˆë‹¤.
+     * CASE-28174 ì—ì„œ ìš”êµ¬ëœ ê¸°ëŠ¥ìœ¼ë¡œ, TMSCì—ì„œ ì‚¬ìš©í•  ì»¬ëŸ¼ì´ë‹¤.
+     * ì›ëž˜ëŠ” X$ê°€ ì œê³µë˜ë©´ ì•ˆë˜ì§€ë§Œ, ê¸´ê¸‰í•œ ìš”ì²­ìœ¼ë¡œ
+     * TOTAL_USED_SIZEì„ ì œê³µí•œë‹¤.
+     * í•´ë‹¹ ì»¬ëŸ¼ì´ ì‚­ì œë˜ê±°ë‚˜ ë³€ê²½ëœë‹¤ë©´ TMSCì— í•´ë‹¹ ì‚¬í•­ì„ í™•ì¸í•˜ë„ë¡ í•œë‹¤. */
     {
         (SChar*)"TOTAL_USED_SIZE",
         offsetof(sdpSegmentPerfV, mUsedTotalSize),
@@ -558,7 +558,7 @@ static iduFixedTableColDesc gSegmentColDesc[]=
 
 //======================================================================
 //  X$SEGEMNT
-//  index, table segment ÀÇ segment desc info¸¦ º¸¿©ÁÖ´Â peformance view
+//  index, table segment ì˜ segment desc infoë¥¼ ë³´ì—¬ì£¼ëŠ” peformance view
 //======================================================================
 
 IDE_RC sdpFT::buildRecordForSegment(idvSQL              * /*aStatistics*/,
@@ -596,8 +596,8 @@ IDE_RC sdpFT::buildRecordForSegment(idvSQL              * /*aStatistics*/,
     {
         /* BUG-32292 [sm-util] Self deadlock occur since fixed-table building
          * operation uses another transaction. 
-         * NestedTransactionÀ» »ç¿ëÇÏ¸é Self-deadlock ¿ì·Á°¡ ÀÖ´Ù.
-         * µû¶ó¼­ id Memory ¿µ¿ªÀ¸·ÎºÎÅÍ Iterator¸¦ ¾ò¾î TransactionÀ» ¾ò¾î³½´Ù. */
+         * NestedTransactionì„ ì‚¬ìš©í•˜ë©´ Self-deadlock ìš°ë ¤ê°€ ìžˆë‹¤.
+         * ë”°ë¼ì„œ id Memory ì˜ì—­ìœ¼ë¡œë¶€í„° Iteratorë¥¼ ì–»ì–´ Transactionì„ ì–»ì–´ë‚¸ë‹¤. */
         sTrans = ((smiIterator*)aMemory->getContext())->trans;
     }
 
@@ -613,7 +613,7 @@ IDE_RC sdpFT::buildRecordForSegment(idvSQL              * /*aStatistics*/,
         // To fix BUG-14681
         if( SM_SCN_IS_INFINITE(sPtr->mCreateSCN) == ID_TRUE )
         {
-            /* BUG-14974: ¹«ÇÑ Loop¹ß»ý.*/
+            /* BUG-14974: ë¬´í•œ Loopë°œìƒ.*/
             sCurPtr = sNxtPtr;
             continue;
         }
@@ -627,7 +627,7 @@ IDE_RC sdpFT::buildRecordForSegment(idvSQL              * /*aStatistics*/,
 
         if( SMI_TABLE_TYPE_IS_DISK( sTableHeader ) == ID_TRUE )
         {
-            //DDL À» ¹æÁö.
+            //DDL ì„ ë°©ì§€.
             IDE_TEST( smLayerCallback::setImpSavepoint( sTrans, 
                                                         &sISavepoint,
                                                         sDummy )
@@ -635,7 +635,7 @@ IDE_RC sdpFT::buildRecordForSegment(idvSQL              * /*aStatistics*/,
             IDE_TEST( smLayerCallback::lockTableModeIS( sTrans,
                                                         SMC_TABLE_LOCK( sTableHeader ) )
                       != IDE_SUCCESS );
-            //lockÀ» Àâ¾ÒÁö¸¸ tableÀÌ dropµÈ °æ¿ì¿¡´Â skip;
+            //lockì„ ìž¡ì•˜ì§€ë§Œ tableì´ dropëœ ê²½ìš°ì—ëŠ” skip;
             if(smcTable::isDropedTable(sTableHeader) == ID_TRUE)
             {
                 IDE_TEST( smLayerCallback::abortToImpSavepoint( sTrans, 
@@ -651,15 +651,15 @@ IDE_RC sdpFT::buildRecordForSegment(idvSQL              * /*aStatistics*/,
 
             // build table segment record
 
-            // BUG-30867 Discard µÈ Tablespace¿¡ ¼ÓÇÑ TableÀº SkipµÇ¾î¾ß ÇÔ.
-            // ´Ü,´Ù¸¥ Tablespace¿¡ ¼ÓÇÑ Index´Â Ãâ·Â µÇ¾î¾ß ÇÔ
+            // BUG-30867 Discard ëœ Tablespaceì— ì†í•œ Tableì€ Skipë˜ì–´ì•¼ í•¨.
+            // ë‹¨,ë‹¤ë¥¸ Tablespaceì— ì†í•œ IndexëŠ” ì¶œë ¥ ë˜ì–´ì•¼ í•¨
             if( sctTableSpaceMgr::hasState( sTableHeader->mSpaceID,
                                             SCT_SS_INVALID_DISK_TBS ) == ID_FALSE )
             {
                 sSegCache  = sdpSegDescMgr::getSegCCache(
                     &(sTableHeader->mFixed.mDRDB) );
 
-                /* BUG-31372: ¼¼±×¸ÕÆ® ½Ç»ç¿ë¾ç Á¤º¸¸¦ Á¶È¸ÇÒ ¹æ¹ýÀÌ ÇÊ¿äÇÕ´Ï´Ù. */
+                /* BUG-31372: ì„¸ê·¸ë¨¼íŠ¸ ì‹¤ì‚¬ìš©ì–‘ ì •ë³´ë¥¼ ì¡°íšŒí•  ë°©ë²•ì´ í•„ìš”í•©ë‹ˆë‹¤. */
                 IDE_TEST( getSegmentInfo(
                               sTableHeader->mSpaceID,
                               sdpSegDescMgr::getSegPID( &(sTableHeader->mFixed.mDRDB) ),
@@ -669,12 +669,12 @@ IDE_RC sdpFT::buildRecordForSegment(idvSQL              * /*aStatistics*/,
                           != IDE_SUCCESS );
 
                 /* BUG-43006 FixedTable Indexing Filter
-                 * Column Index ¸¦ »ç¿ëÇØ¼­ ÀüÃ¼ Record¸¦ »ý¼ºÇÏÁö¾Ê°í
-                 * ºÎºÐ¸¸ »ý¼ºÇØ Filtering ÇÑ´Ù.
-                 * 1. void * ¹è¿­¿¡ IDU_FT_COLUMN_INDEX ·Î ÁöÁ¤µÈ ÄÃ·³¿¡
-                 * ÇØ´çÇÏ´Â °ªÀ» ¼ø¼­´ë·Î ³Ö¾îÁÖ¾î¾ß ÇÑ´Ù.
-                 * 2. IDU_FT_COLUMN_INDEXÀÇ ÄÃ·³¿¡ ÇØ´çÇÏ´Â °ªÀ» ¸ðµÎ ³Ö
-                 * ¾î ÁÖ¾î¾ßÇÑ´Ù.
+                 * Column Index ë¥¼ ì‚¬ìš©í•´ì„œ ì „ì²´ Recordë¥¼ ìƒì„±í•˜ì§€ì•Šê³ 
+                 * ë¶€ë¶„ë§Œ ìƒì„±í•´ Filtering í•œë‹¤.
+                 * 1. void * ë°°ì—´ì— IDU_FT_COLUMN_INDEX ë¡œ ì§€ì •ëœ ì»¬ëŸ¼ì—
+                 * í•´ë‹¹í•˜ëŠ” ê°’ì„ ìˆœì„œëŒ€ë¡œ ë„£ì–´ì£¼ì–´ì•¼ í•œë‹¤.
+                 * 2. IDU_FT_COLUMN_INDEXì˜ ì»¬ëŸ¼ì— í•´ë‹¹í•˜ëŠ” ê°’ì„ ëª¨ë‘ ë„£
+                 * ì–´ ì£¼ì–´ì•¼í•œë‹¤.
                  */
                 sIndexValues[0] = &sSegmentInfo.mSpaceID;
                 sIndexValues[1] = &sSegmentInfo.mSegmentType;
@@ -714,7 +714,7 @@ IDE_RC sdpFT::buildRecordForSegment(idvSQL              * /*aStatistics*/,
                 {
                     sIndexHeaderCursor = (smnIndexHeader*) smcTable::getTableIndex(sTableHeader,i);
 
-                    // BUG-30867 Discard µÈ Tablespace¿¡ ¼ÓÇÑ Index´Â º¼ ¼ö ¾øÀ½
+                    // BUG-30867 Discard ëœ Tablespaceì— ì†í•œ IndexëŠ” ë³¼ ìˆ˜ ì—†ìŒ
                     if( sctTableSpaceMgr::hasState(SC_MAKE_SPACE(sIndexHeaderCursor->mIndexSegDesc),
                                                     SCT_SS_INVALID_DISK_TBS ) == ID_TRUE )
                     {
@@ -727,13 +727,13 @@ IDE_RC sdpFT::buildRecordForSegment(idvSQL              * /*aStatistics*/,
 
                     //----------------------------
                     // To Fix BUG-14155
-                    // Extent ÃÑ°³¼ö ¸¸À» °ü¸®ÇÏ¿´À¸³ª,
-                    // Full Extent °³¼ö¿Í Used Extent °³¼ö¸¦ ºÐ¸®ÇÏ¿©
-                    // °ü¸®ÇÏµµ·Ï º¯°æ
+                    // Extent ì´ê°œìˆ˜ ë§Œì„ ê´€ë¦¬í•˜ì˜€ìœ¼ë‚˜,
+                    // Full Extent ê°œìˆ˜ì™€ Used Extent ê°œìˆ˜ë¥¼ ë¶„ë¦¬í•˜ì—¬
+                    // ê´€ë¦¬í•˜ë„ë¡ ë³€ê²½
                     //----------------------------
-                    // BUGBUG:À§¿¡°Å ÇØ¾ß ÇÏ³ª?
+                    // BUGBUG:ìœ„ì—ê±° í•´ì•¼ í•˜ë‚˜?
 
-                    /* BUG-31372: ¼¼±×¸ÕÆ® ½Ç»ç¿ë¾ç Á¤º¸¸¦ Á¶È¸ÇÒ ¹æ¹ýÀÌ ÇÊ¿äÇÕ´Ï´Ù. */
+                    /* BUG-31372: ì„¸ê·¸ë¨¼íŠ¸ ì‹¤ì‚¬ìš©ì–‘ ì •ë³´ë¥¼ ì¡°íšŒí•  ë°©ë²•ì´ í•„ìš”í•©ë‹ˆë‹¤. */
                     IDE_TEST( getSegmentInfo(
                                   SC_MAKE_SPACE(sIndexHeaderCursor->mIndexSegDesc),
                                   SC_MAKE_PID(sIndexHeaderCursor->mIndexSegDesc),
@@ -743,9 +743,9 @@ IDE_RC sdpFT::buildRecordForSegment(idvSQL              * /*aStatistics*/,
                               != IDE_SUCCESS );
 
                     /* BUG-43006 FixedTable Indexing Filter
-                     * Column Index ¸¦ »ç¿ëÇØ¼­ ÀüÃ¼ Record¸¦ »ý¼ºÇÏÁö¾Ê°í
-                     * ºÎºÐ¸¸ »ý¼ºÇØ Filtering ÇÑ´Ù.
-                     * Column Desc ¼ø¼­´ë·Î IndexValues¿¡ Ãß°¡ÇØ¾ßÇÑ´Ù.
+                     * Column Index ë¥¼ ì‚¬ìš©í•´ì„œ ì „ì²´ Recordë¥¼ ìƒì„±í•˜ì§€ì•Šê³ 
+                     * ë¶€ë¶„ë§Œ ìƒì„±í•´ Filtering í•œë‹¤.
+                     * Column Desc ìˆœì„œëŒ€ë¡œ IndexValuesì— ì¶”ê°€í•´ì•¼í•œë‹¤.
                      */
                     sIndexValues[0] = &sSegmentInfo.mSpaceID;
                     sIndexValues[1] = &sSegmentInfo.mSegmentType;
@@ -783,7 +783,7 @@ IDE_RC sdpFT::buildRecordForSegment(idvSQL              * /*aStatistics*/,
                         continue;
                     }
 
-                    // BUG-30867 Discard µÈ Tablespace¿¡ ¼ÓÇÑ Index´Â º¼ ¼ö ¾øÀ½
+                    // BUG-30867 Discard ëœ Tablespaceì— ì†í•œ IndexëŠ” ë³¼ ìˆ˜ ì—†ìŒ
                     if( sctTableSpaceMgr::hasState( sColumn->colSpace,
                                                     SCT_SS_INVALID_DISK_TBS ) == ID_TRUE )
                     {
@@ -793,7 +793,7 @@ IDE_RC sdpFT::buildRecordForSegment(idvSQL              * /*aStatistics*/,
                     sSegHandle = sdpSegDescMgr::getSegHandle( sColumn );
                     sSegCache  = (sdpSegCCache*)sSegHandle->mCache;
 
-                    /* BUG-31372: ¼¼±×¸ÕÆ® ½Ç»ç¿ë¾ç Á¤º¸¸¦ Á¶È¸ÇÒ ¹æ¹ýÀÌ ÇÊ¿äÇÕ´Ï´Ù. */
+                    /* BUG-31372: ì„¸ê·¸ë¨¼íŠ¸ ì‹¤ì‚¬ìš©ì–‘ ì •ë³´ë¥¼ ì¡°íšŒí•  ë°©ë²•ì´ í•„ìš”í•©ë‹ˆë‹¤. */
                     IDE_TEST( getSegmentInfo(
                                   sColumn->colSpace,
                                   SC_MAKE_PID(sColumn->colSeg),
@@ -803,9 +803,9 @@ IDE_RC sdpFT::buildRecordForSegment(idvSQL              * /*aStatistics*/,
                               != IDE_SUCCESS );
 
                     /* BUG-43006 FixedTable Indexing Filter
-                     * Column Index ¸¦ »ç¿ëÇØ¼­ ÀüÃ¼ Record¸¦ »ý¼ºÇÏÁö¾Ê°í
-                     * ºÎºÐ¸¸ »ý¼ºÇØ Filtering ÇÑ´Ù.
-                     * Column Desc ¼ø¼­´ë·Î IndexValues¿¡ Ãß°¡ÇØ¾ßÇÑ´Ù.
+                     * Column Index ë¥¼ ì‚¬ìš©í•´ì„œ ì „ì²´ Recordë¥¼ ìƒì„±í•˜ì§€ì•Šê³ 
+                     * ë¶€ë¶„ë§Œ ìƒì„±í•´ Filtering í•œë‹¤.
+                     * Column Desc ìˆœì„œëŒ€ë¡œ IndexValuesì— ì¶”ê°€í•´ì•¼í•œë‹¤.
                      */
                     sIndexValues[0] = &sSegmentInfo.mSpaceID;
                     sIndexValues[1] = &sSegmentInfo.mSegmentType;
@@ -845,7 +845,7 @@ IDE_RC sdpFT::buildRecordForSegment(idvSQL              * /*aStatistics*/,
     return IDE_FAILURE;
 }
 
-/* BUG-31372: ¼¼±×¸ÕÆ® ½Ç»ç¿ë¾ç Á¤º¸¸¦ Á¶È¸ÇÒ ¹æ¹ýÀÌ ÇÊ¿äÇÕ´Ï´Ù. */
+/* BUG-31372: ì„¸ê·¸ë¨¼íŠ¸ ì‹¤ì‚¬ìš©ì–‘ ì •ë³´ë¥¼ ì¡°íšŒí•  ë°©ë²•ì´ í•„ìš”í•©ë‹ˆë‹¤. */
 IDE_RC sdpFT::getSegmentInfo( UInt               aSpaceID,
                               scPageID           aSegPID,
                               ULong              aTableOID,
@@ -875,7 +875,7 @@ IDE_RC sdpFT::getSegmentInfo( UInt               aSpaceID,
     aSegmentInfo->mState          = sSegInfo.mState;
     aSegmentInfo->mExtentTotalCnt = sSegInfo.mExtCnt;
                 
-    // ¼¼±×¸ÕÆ® ½Ç»ç¿ë¾çÀ» ±¸ÇÑ´Ù.
+    // ì„¸ê·¸ë¨¼íŠ¸ ì‹¤ì‚¬ìš©ì–‘ì„ êµ¬í•œë‹¤.
     aSegmentInfo->mUsedTotalSize  = 
                 (sSegInfo.mFmtPageCnt * SD_PAGE_SIZE) -
                 aSegCache->mFreeSegSizeByBytes;

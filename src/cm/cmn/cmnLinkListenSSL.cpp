@@ -106,7 +106,7 @@ IDE_RC cmnLinkListenInitializeSSL(cmnLink *aLink)
     STACK_OF(X509_NAME) *sCAList = NULL;
 
     /*
-     * Handle ÃÊ±âÈ­
+     * Handle ì´ˆê¸°í™”
      */
     sLink->mHandle = PDL_INVALID_SOCKET;
 
@@ -280,7 +280,7 @@ IDE_RC cmnLinkListenInitializeSSL(cmnLink *aLink)
 IDE_RC cmnLinkListenFinalizeSSL(cmnLink *aLink)
 {
     /*
-     * socketÀÌ ¿­·ÁÀÖÀ¸¸é ´ÝÀ½
+     * socketì´ ì—´ë ¤ìžˆìœ¼ë©´ ë‹«ìŒ
      */
     IDE_TEST(aLink->mOp->mClose(aLink) != IDE_SUCCESS);
 
@@ -296,7 +296,7 @@ IDE_RC cmnLinkListenCloseSSL(cmnLink *aLink)
     cmnLinkListenSSL *sLink = (cmnLinkListenSSL *)aLink;
 
     /*
-     * socketÀÌ ¿­·ÁÀÖÀ¸¸é ´ÝÀ½
+     * socketì´ ì—´ë ¤ìžˆìœ¼ë©´ ë‹«ìŒ
      */
     if (sLink->mHandle != PDL_INVALID_SOCKET)
     {
@@ -319,7 +319,7 @@ IDE_RC cmnLinkListenGetHandleSSL(cmnLink *aLink, void *aHandle)
     cmnLinkListenSSL *sLink = (cmnLinkListenSSL *)aLink;
 
     /*
-     * socket À» µ¹·ÁÁÜ
+     * socket ì„ ëŒë ¤ì¤Œ
      */
     *(PDL_SOCKET *)aHandle = sLink->mHandle;
 
@@ -331,7 +331,7 @@ IDE_RC cmnLinkListenGetDispatchInfoSSL(cmnLink *aLink, void *aDispatchInfo)
     cmnLinkListenSSL *sLink = (cmnLinkListenSSL *)aLink;
 
     /*
-     * DispatcherInfo¸¦ µ¹·ÁÁÜ
+     * DispatcherInfoë¥¼ ëŒë ¤ì¤Œ
      */
     *(UInt *)aDispatchInfo = sLink->mDispatchInfo;
 
@@ -343,7 +343,7 @@ IDE_RC cmnLinkListenSetDispatchInfoSSL(cmnLink *aLink, void *aDispatchInfo)
     cmnLinkListenSSL *sLink = (cmnLinkListenSSL *)aLink;
 
     /*
-     * DispatcherInfo¸¦ ¼¼ÆÃ
+     * DispatcherInfoë¥¼ ì„¸íŒ…
      */
     sLink->mDispatchInfo = *(UInt *)aDispatchInfo;
 
@@ -363,7 +363,7 @@ IDE_RC cmnLinkListenListenSSL(cmnLinkListen *aLink, cmnLinkListenArg *aListenArg
     SChar                sErrMsg[256];
 
     /*
-     * socketÀÌ ÀÌ¹Ì ¿­·ÁÀÖ´ÂÁö °Ë»ç
+     * socketì´ ì´ë¯¸ ì—´ë ¤ìžˆëŠ”ì§€ ê²€ì‚¬
      */
     IDE_TEST_RAISE(sLink->mHandle != PDL_INVALID_SOCKET, SocketAlreadyOpened);
 
@@ -529,22 +529,22 @@ IDE_RC cmnLinkListenAcceptSSL(cmnLinkListen *aLink, cmnLinkPeer **aLinkPeer)
 #endif
 
     /*
-     * »õ·Î¿î Link¸¦ ÇÒ´ç
+     * ìƒˆë¡œìš´ Linkë¥¼ í• ë‹¹
      */
     /* BUG-29957
-     * cmnLinkAlloc ½ÇÆÐ½Ã Connect¸¦ ¿äÃ»ÇÑ SocketÀ» ÀÓ½Ã·Î accept ÇØÁà¾ß ÇÑ´Ù.
+     * cmnLinkAlloc ì‹¤íŒ¨ì‹œ Connectë¥¼ ìš”ì²­í•œ Socketì„ ìž„ì‹œë¡œ accept í•´ì¤˜ì•¼ í•œë‹¤.
      */
     IDE_TEST_RAISE(cmnLinkAlloc((cmnLink **)&sLinkPeer, CMN_LINK_TYPE_PEER_SERVER, CMN_LINK_IMPL_SSL) 
                    != IDE_SUCCESS, LinkError);
 
     /*
-     * Desc È¹µæ
+     * Desc íšë“
      */
     IDE_TEST_RAISE(sLinkPeer->mPeerOp->mGetDesc(sLinkPeer, &sDesc) != IDE_SUCCESS, LinkError);
 
     /* TASK-3873 5.3.3 Release Static Analysis Code-sonar */
-    /* Code-Sonar°¡ Function  Pointer¸¦ followÇÏÁö ¸øÇØ¼­..
-       assert¸¦ ³Ö¾ú½À´Ï´Ù */
+    /* Code-Sonarê°€ Function  Pointerë¥¼ followí•˜ì§€ ëª»í•´ì„œ..
+       assertë¥¼ ë„£ì—ˆìŠµë‹ˆë‹¤ */
     IDE_ASSERT( sDesc != NULL);
     
     /*
@@ -559,12 +559,12 @@ IDE_RC cmnLinkListenAcceptSSL(cmnLinkListen *aLink, cmnLinkPeer **aLinkPeer)
     IDE_TEST_RAISE(sDesc->mHandle == PDL_INVALID_SOCKET, AcceptError);
 
     /*
-     * Link¸¦ µ¹·ÁÁÜ
+     * Linkë¥¼ ëŒë ¤ì¤Œ
      */
     *aLinkPeer = sLinkPeer;
 
     /*
-     * socket ÃÊ±âÈ­
+     * socket ì´ˆê¸°í™”
      */
     IDE_TEST((*aLinkPeer)->mPeerOp->mSetOptions(*aLinkPeer, SO_NONE) != IDE_SUCCESS);
 
@@ -612,7 +612,7 @@ IDE_RC cmnLinkListenAcceptSSL(cmnLinkListen *aLink, cmnLinkPeer **aLinkPeer)
     IDE_EXCEPTION(LinkError)
     {
         /* BUG-29957 */
-        // bug-33934: codesonar: 3¹øÂ°ÀÎÀÚ NULL ´ë½Å ±æÀÌ ³Ñ±âµµ·Ï ¼öÁ¤
+        // bug-33934: codesonar: 3ë²ˆì§¸ì¸ìž NULL ëŒ€ì‹  ê¸¸ì´ ë„˜ê¸°ë„ë¡ ìˆ˜ì •
         sTmpDesc.mAddrLen = ID_SIZEOF(sTmpDesc.mAddr);
         sTmpDesc.mHandle = idlOS::accept(sLink->mHandle,
                                          (struct sockaddr *)&(sTmpDesc.mAddr),
@@ -684,13 +684,13 @@ IDE_RC cmnLinkListenMapSSL(cmnLink *aLink)
     cmnLinkListen *sLink = (cmnLinkListen *)aLink;
 
     /*
-     * Link °Ë»ç
+     * Link ê²€ì‚¬
      */
     IDE_ASSERT(aLink->mType == CMN_LINK_TYPE_LISTEN);
     IDE_ASSERT(aLink->mImpl == CMN_LINK_IMPL_SSL);
 
     /*
-     * ÇÔ¼ö Æ÷ÀÎÅÍ ¼¼ÆÃ
+     * í•¨ìˆ˜ í¬ì¸í„° ì„¸íŒ…
      */
     aLink->mOp       = &gCmnLinkListenOpSSL;
     sLink->mListenOp = &gCmnLinkListenListenOpSSL;

@@ -21,7 +21,7 @@
 
 
 /*
-  Tablespace¿Í °ü·ÃµÈ Fixed TableµéÀ» Á¤ÀÇÇÑ´Ù.
+  Tablespaceì™€ ê´€ë ¨ëœ Fixed Tableë“¤ì„ ì •ì˜í•œë‹¤.
  */
 
 #include <idl.h>
@@ -131,7 +131,7 @@ static iduFixedTableColDesc gVolTablespaceDescColDesc[] =
     }
 };
 
-/* Tablespace Node·ÎºÎÅÍ X$VOL_TABLESPACE_DESCÀÇ ±¸Á¶Ã¼ ±¸¼º
+/* Tablespace Nodeë¡œë¶€í„° X$VOL_TABLESPACE_DESCì˜ êµ¬ì¡°ì²´ êµ¬ì„±
  */
    
 IDE_RC constructTBSDesc( svmTBSNode     * aTBSNode,
@@ -142,8 +142,8 @@ IDE_RC constructTBSDesc( svmTBSNode     * aTBSNode,
     
     smiVolTableSpaceAttr * sVolAttr = & aTBSNode->mTBSAttr.mVolAttr;
 
-    // TablespaceÀÇ Performance View±¸ÃàÁß
-    // Offline, DropÀ¸·ÎÀÇ »óÅÂÀüÀÌ¸¦ ¸·±â À§ÇÔ
+    // Tablespaceì˜ Performance Viewêµ¬ì¶•ì¤‘
+    // Offline, Dropìœ¼ë¡œì˜ ìƒíƒœì „ì´ë¥¼ ë§‰ê¸° ìœ„í•¨
     IDE_ASSERT( sctTableSpaceMgr::lock(NULL /* idvSQL * */)
                 == IDE_SUCCESS );
     
@@ -172,11 +172,11 @@ IDE_RC constructTBSDesc( svmTBSNode     * aTBSNode,
 
     return IDE_SUCCESS;
 
-    // ¿¡·¯Ã³¸® ÇØ¾ßÇÒ °æ¿ì lock/unlock¿¡ ´ëÇÑ »óÅÂÃ³¸® ÇÊ¿ä
+    // ì—ëŸ¬ì²˜ë¦¬ í•´ì•¼í•  ê²½ìš° lock/unlockì— ëŒ€í•œ ìƒíƒœì²˜ë¦¬ í•„ìš”
 }
 
 /*
-     X$VOL_TABLESPACE_DESC ÀÇ ·¹ÄÚµå¸¦ ±¸ÃàÇÑ´Ù.
+     X$VOL_TABLESPACE_DESC ì˜ ë ˆì½”ë“œë¥¼ êµ¬ì¶•í•œë‹¤.
  */
 
 IDE_RC buildRecordForVolTablespaceDesc(
@@ -213,7 +213,7 @@ IDE_RC buildRecordForVolTablespaceDesc(
                      (void *) &sTBSDesc )
                  != IDE_SUCCESS);
 
-        // DropµÈ Tablespace´Â SKIPÇÑ´Ù
+        // Dropëœ TablespaceëŠ” SKIPí•œë‹¤
         sctTableSpaceMgr::getNextSpaceNode((void*)sCurTBS, (void**)&sCurTBS);
     }
 

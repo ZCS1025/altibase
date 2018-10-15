@@ -125,7 +125,7 @@ IDE_RC mtvCalculate_Double2Interval( mtcNode*,
         sInterval->microsecond = (SLong)sIntegralPart;
 
         // BUG-40967
-        // ¿ÀÂ÷ º¸Á¤ (¹Ý¿Ã¸²)
+        // ì˜¤ì°¨ ë³´ì • (ë°˜ì˜¬ë¦¼)
         if ( sFractionalPart >= 0.5 )
         {
             sInterval->microsecond++;

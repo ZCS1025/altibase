@@ -44,8 +44,8 @@ static IDE_RC mtfListEstimate( mtcNode*     aNode,
 mtfModule mtfList = {
     1|MTC_NODE_OPERATOR_LIST|
         MTC_NODE_PRINT_FMT_MISC,
-    ~0,   // A4¿¡¼­´Â Index¸¦ »ç¿ëÇÒ ¼ö ÀÖµµ·Ï ÇÔ.
-    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
+    ~0,   // A4ì—ì„œëŠ” Indexë¥¼ ì‚¬ìš©í•  ìˆ˜ ìˆë„ë¡ í•¨.
+    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìê°€ ì•„ë‹˜)
     mtfListFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -106,7 +106,7 @@ IDE_RC mtfListEstimate( mtcNode*     aNode,
                                (void**)&(aStack[0].value))
              != IDE_SUCCESS);
 
-    // list stackÀ» smiColumn.value¿¡ ±â·ÏÇØµĞ´Ù.
+    // list stackì„ smiColumn.valueì— ê¸°ë¡í•´ë‘”ë‹¤.
     aStack[0].column->column.value = aStack[0].value;
 
     idlOS::memcpy( aStack[0].value,
@@ -116,9 +116,9 @@ IDE_RC mtfListEstimate( mtcNode*     aNode,
     aTemplate->rows[aNode->table].execute[aNode->column] = mtfExecute;
 
     //------------------------------------------------
-    // List¿¡ ´ëÇÑ Index »ç¿ë °¡´É ¿©ºÎ °Ë»ç
-    // ¸ğµç Argument°¡ ColumnÀÏ °æ¿ì¿¡¸¸
-    // Node Transform¿¡ ÀÇÇÑ Index »ç¿ëÀÌ °¡´ÉÇÏ´Ù.
+    // Listì— ëŒ€í•œ Index ì‚¬ìš© ê°€ëŠ¥ ì—¬ë¶€ ê²€ì‚¬
+    // ëª¨ë“  Argumentê°€ Columnì¼ ê²½ìš°ì—ë§Œ
+    // Node Transformì— ì˜í•œ Index ì‚¬ìš©ì´ ê°€ëŠ¥í•˜ë‹¤.
     //------------------------------------------------
 
     sLflag = mtfList.lmask;

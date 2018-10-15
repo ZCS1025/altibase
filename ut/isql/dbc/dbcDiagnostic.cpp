@@ -27,7 +27,7 @@
 /**
  * SetErrorMsgWithHandle.
  *
- * ÇÚµé°ú ¿¬°üµÈ ¿À·ù Á¤º¸¸¦ ¾ò¾î¿Í ¸â¹ö º¯¼ö mErrorMgr¿¡ ¼³Á¤ÇÑ´Ù.
+ * í•¸ë“¤ê³¼ ì—°ê´€ëœ ì˜¤ë¥˜ ì •ë³´ë¥¼ ì–»ì–´ì™€ ë©¤ë²„ ë³€ìˆ˜ mErrorMgrì— ì„¤ì •í•œë‹¤.
  */
 IDE_RC utISPApi::SetErrorMsgWithHandle(SQLSMALLINT aHandleType,
                                        SQLHANDLE   aHandle)

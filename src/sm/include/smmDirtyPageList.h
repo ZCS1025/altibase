@@ -51,7 +51,7 @@ public:
     IDE_RC destroy();
     IDE_RC clear();
 
-    // FOR CheckPoint API but, smmDirtyPageMgr´Â ¾Æ·¡ API¸¦ »ç¿ëÇÏÁö ¾ÊÀ½
+    // FOR CheckPoint API but, smmDirtyPageMgrëŠ” ì•„ë˜ APIë¥¼ ì‚¬ìš©í•˜ì§€ ì•ŠìŒ
     IDE_RC open();
     IDE_RC read(smmPCH **a_pch); // auto memory release, in case NULL-end;
     IDE_RC close();

@@ -45,8 +45,8 @@ typedef struct qriParseTree
     SInt                  startOption;        // BUG-18714
     ULong                 startSN;
     SInt                  role;
-    //replication create½Ã ¼³Á¤µÈ ¿É¼Ç ¸®½ºÆ®¸¦ flag·Î Ç¥½Ã 0x00000001(recovery)
-    //alter replication set½Ã ¼³Á¤µÈ ¿É¼ÇÀ» flag·Î Ç¥½Ã
+    //replication createì‹œ ì„¤ì •ëœ ì˜µì…˜ ë¦¬ìŠ¤íŠ¸ë¥¼ flagë¡œ í‘œì‹œ 0x00000001(recovery)
+    //alter replication setì‹œ ì„¤ì •ëœ ì˜µì…˜ì„ flagë¡œ í‘œì‹œ
     /* PROJ-1915 */
     struct qriReplOptions* replOptions;
 
@@ -55,7 +55,7 @@ typedef struct qriParseTree
     rpFlushOption         flushOption;
     
     // BUG-21761
-    // NÅ¸ÀÔÀ» UÅ¸ÀÔÀ¸·Î º¯Çü½ÃÅ³ ¶§ »ç¿ë
+    // Níƒ€ì…ì„ Uíƒ€ì…ìœ¼ë¡œ ë³€í˜•ì‹œí‚¬ ë•Œ ì‚¬ìš©
     qciNamePosList       * ncharList;
     
 } qriParseTree;
@@ -88,7 +88,7 @@ typedef struct qriReplHost
     struct qriReplHost   * next;
 } qriReplHost;
 
-/* PROJ-1915 : replication reption È®Àå  for off-line replication */
+/* PROJ-1915 : replication reption í™•ì¥  for off-line replication */
 typedef struct qriReplDirPath
 {
     qciNamePosition         path;

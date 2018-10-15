@@ -69,20 +69,20 @@ typedef struct aciProperty
     acp_uint32_t   mQueryProfFileSize;
 
     /*
-     * Direct I/O½Ã file offset¹× data size¸¦ AlignÇÒ PageÅ©±â*
+     * Direct I/Oì‹œ file offsetë° data sizeë¥¼ Aligní•  Pageí¬ê¸°*
      */
     acp_uint32_t   mDirectIOPageSize;
     acp_uint32_t   mEnableRecoveryTest;
 
     /*
-     * BUG-21487    Mutex Leak ListÃâ·ÂÀ» propertyÈ­ ÇØ¾ßÇÕ´Ï´Ù.
+     * BUG-21487    Mutex Leak Listì¶œë ¥ì„ propertyí™” í•´ì•¼í•©ë‹ˆë‹¤.
      */
     acp_uint32_t   mShowMutexLeakList;
 
     /* BUG-20789
-     * SM ¼Ò½º¿¡¼­ contentionÀÌ ¹ß»ıÇÒ ¼ö ÀÖ´Â ºÎºĞ¿¡
-     * ´ÙÁßÈ­¸¦ ÇÒ °æ¿ì CPUÇÏ³ª´ç ¸î Å¬¶óÀÌ¾ğÆ®¸¦ ¿¹»óÇÒ Áö¸¦ ³ªÅ¸³»´Â »ó¼ö
-     * SM_SCALABILITY´Â CPU°³¼ö °öÇÏ±â ÀÌ°ªÀÌ´Ù. *
+     * SM ì†ŒìŠ¤ì—ì„œ contentionì´ ë°œìƒí•  ìˆ˜ ìˆëŠ” ë¶€ë¶„ì—
+     * ë‹¤ì¤‘í™”ë¥¼ í•  ê²½ìš° CPUí•˜ë‚˜ë‹¹ ëª‡ í´ë¼ì´ì–¸íŠ¸ë¥¼ ì˜ˆìƒí•  ì§€ë¥¼ ë‚˜íƒ€ë‚´ëŠ” ìƒìˆ˜
+     * SM_SCALABILITYëŠ” CPUê°œìˆ˜ ê³±í•˜ê¸° ì´ê°’ì´ë‹¤. *
      */
     acp_uint32_t mScalabilityPerCPU;
 

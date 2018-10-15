@@ -144,7 +144,7 @@ SJIS_ALL         ({SJIS_HWKATA})|({SJIS_JIS97})
                           idlOS::printf("Get Token [T_SEPARATOR,%s]\n", yytext);
 #endif
                           // bug-25941: double quoat enclosure do not work 
-                          // 3¹øÂ° ÀÎÀÚ Ãß°¡ÇÏ¿© enclosureÀÎ °æ¿ì¸¸ true·Î ¼³Á¤
+                          // 3ë²ˆì§¸ ì¸ì ì¶”ê°€í•˜ì—¬ enclosureì¸ ê²½ìš°ë§Œ trueë¡œ ì„¤ì •
                           SeparatorCopy(gIloSepOrInd, (SChar *)yytext, ILO_FALSE);
                           BEGIN INITIAL;
                           if (param->mProgOption->m_bExist_b) ;
@@ -155,7 +155,7 @@ SJIS_ALL         ({SJIS_HWKATA})|({SJIS_JIS97})
                           idlOS::printf("Get Token [T_ENCLOSING_SEPARATOR,%s]\n", yytext);
 #endif
                           // bug-25941: double quoat enclosure do not work 
-                          // 3¹øÂ° ÀÎÀÚ Ãß°¡ÇÏ¿© enclosureÀÎ °æ¿ì¸¸ true·Î ¼³Á¤
+                          // 3ë²ˆì§¸ ì¸ì ì¶”ê°€í•˜ì—¬ enclosureì¸ ê²½ìš°ë§Œ trueë¡œ ì„¤ì •
                           SeparatorCopy(gIloSepOrInd, (SChar *)yytext, ILO_TRUE);
                           BEGIN INITIAL;
                           if (param->mProgOption->m_bExist_b) ;
@@ -261,20 +261,20 @@ SJIS_ALL         ({SJIS_HWKATA})|({SJIS_JIS97})
                           else return T_SIZE_UNIT_G;
                       }
 <WAIT_LOB_INDICATOR>[^ \t\n"]{1,20} {
-/* »ç¿ëÀÚ´Â '\n'°ú °°Àº ¹®ÀÚ¸¦ "%n"°ú °°ÀÌ 2±ÛÀÚ·Î ÀÔ·ÂÇÏ±â ¶§¹®¿¡,
- * LOB indicatorÀÇ ±æÀÌ Á¦ÇÑ 10ÀÇ µÎ ¹èÀÎ 20±ÛÀÚ±îÁö ¹Ş¾ÆµéÀÌµµ·Ï Çß´Ù. */
+/* ì‚¬ìš©ìëŠ” '\n'ê³¼ ê°™ì€ ë¬¸ìë¥¼ "%n"ê³¼ ê°™ì´ 2ê¸€ìë¡œ ì…ë ¥í•˜ê¸° ë•Œë¬¸ì—,
+ * LOB indicatorì˜ ê¸¸ì´ ì œí•œ 10ì˜ ë‘ ë°°ì¸ 20ê¸€ìê¹Œì§€ ë°›ì•„ë“¤ì´ë„ë¡ í–ˆë‹¤. */
 #ifdef _ILOADER_DEBUG
                           idlOS::printf("Get Token [T_LOB_INDICATOR]\n");
 #endif
                           // bug-25941: double quoat enclosure do not work 
-                          // 3¹øÂ° ÀÎÀÚ Ãß°¡ÇÏ¿© enclosureÀÎ °æ¿ì¸¸ true·Î ¼³Á¤
+                          // 3ë²ˆì§¸ ì¸ì ì¶”ê°€í•˜ì—¬ enclosureì¸ ê²½ìš°ë§Œ trueë¡œ ì„¤ì •
                           SeparatorCopy(gIloSepOrInd, (SChar *)yytext, ILO_FALSE);
                           BEGIN IN_LOB_OPTION_STRING;
                           if (param->mProgOption->m_bExist_b) ;
                           else return T_LOB_INDICATOR;
                       }
 <WAIT_IDENT_SJIS,WAIT_IDENT_POS_TRAIL,WAIT_IDENT_NEG_TRAIL>"\""[^"]*"\""         {
-                          /* BUG-17563 : iloader ¿¡¼­ Å«µû¿ÈÇ¥ ÀÌ¿ëÇÑ Naming Rule Á¦¾à Á¦°Å  */
+                          /* BUG-17563 : iloader ì—ì„œ í°ë”°ì˜´í‘œ ì´ìš©í•œ Naming Rule ì œì•½ ì œê±°  */
 #ifdef _ILOADER_DEBUG
                           idlOS::printf("Get Token [T_QUOTED_IDENTIFIER,%s]\n",yytext);
 #endif
@@ -799,8 +799,8 @@ void SeparatorCopy(char *szTar, char *szSrc, iloBool isEnclosure)
     for (i = 0, j = 0; i < nLen; i++)
     {
         // bug-25941: double quoat(") enclosure do not work 
-        // -e ¿É¼ÇÀ¸·Î double quoat¸¦ »ç¿ëÇÏ´Â °æ¿ì(isEnclosure == true)
-        // °Ç³Ê¶ÙÁö ¾Ê°í ±×´ë·Î ÀúÀåÇÏµµ·Ï º¯°æÇÔ
+        // -e ì˜µì…˜ìœ¼ë¡œ double quoatë¥¼ ì‚¬ìš©í•˜ëŠ” ê²½ìš°(isEnclosure == true)
+        // ê±´ë„ˆë›°ì§€ ì•Šê³  ê·¸ëŒ€ë¡œ ì €ì¥í•˜ë„ë¡ ë³€ê²½í•¨
         if ((szSrc[i] == '\"') && (isEnclosure == ILO_FALSE))
         {
 //          szTar[j++] ='\"';
@@ -808,7 +808,7 @@ void SeparatorCopy(char *szTar, char *szSrc, iloBool isEnclosure)
         }
         else if (szSrc[i] == '%')
         {
-            /* BUG-29779: csvÀÇ rowtermÀ» \r\nÀ¸·Î ÁöÁ¤ÇÏ´Â ±â´É */
+            /* BUG-29779: csvì˜ rowtermì„ \r\nìœ¼ë¡œ ì§€ì •í•˜ëŠ” ê¸°ëŠ¥ */
             switch(szSrc[i+1])
             {
                 case 'n':
@@ -853,7 +853,7 @@ SInt iloCommandParserlex(YYSTYPE * aLValPtr, void * aParam)
 
         if( ( idlOS::strncmp( sNlsUse, (SChar*)"SHIFTJIS", 8 ) == 0 ) ||
             ( idlOS::strncmp( sNlsUse, (SChar*)"JAPANESE", 8 ) == 0 ) ||
-            /* PROJ-2590 [±â´É¼º] CP932 database character set Áö¿ø */
+            /* PROJ-2590 [ê¸°ëŠ¥ì„±] CP932 database character set ì§€ì› */
             ( idlOS::strncmp( sNlsUse, (SChar*)"MS932", 5 ) == 0 ) ||
             ( idlOS::strncmp( sNlsUse, (SChar*)"CP932", 5 ) == 0 ) ||
             ( idlOS::strncmp( sNlsUse, (SChar*)"WINDOWS932", 10 ) == 0 ) )
@@ -863,7 +863,7 @@ SInt iloCommandParserlex(YYSTYPE * aLValPtr, void * aParam)
         else if( ( idlOS::strncmp( sNlsUse, (SChar*)"GB231280", 8 ) == 0 )   ||
                  (idlOS::strncmp( sNlsUse, (SChar*)"ZHS16CGB231280", 14)==0) ||
                  ( idlOS::strncmp( sNlsUse, (SChar*)"CHINESE", 7 )==0 ) ||
-                 /* PROJ-2414 [±â´É¼º] GBK, CP936 character set Ãß°¡ */
+                 /* PROJ-2414 [ê¸°ëŠ¥ì„±] GBK, CP936 character set ì¶”ê°€ */
                  ( idlOS::strncmp( sNlsUse, (SChar*)"MS936", 5 )==0 ) ||
                  ( idlOS::strncmp( sNlsUse, (SChar*)"CP936", 5 )==0 ) ||
                  ( idlOS::strncmp( sNlsUse, (SChar*)"GBK", 3 )==0 ) ||

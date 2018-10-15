@@ -36,8 +36,8 @@
 /*
     smpTBSAlterOnOff.cpp
 
-    smpTBSAlterOnOff Å¬·¡½ºÀÇ ÇÔ¼öÁß 
-    ´ÙÀ½ ±â´ÉÀÇ ±¸ÇöÀÌ µé¾îÀÖ´Â ÆÄÀÏÀÌ´Ù.
+    smpTBSAlterOnOff í´ë˜ìŠ¤ì˜ í•¨ìˆ˜ì¤‘ 
+    ë‹¤ìŒ ê¸°ëŠ¥ì˜ êµ¬í˜„ì´ ë“¤ì–´ìˆëŠ” íŒŒì¼ì´ë‹¤.
 
     Alter TableSpace Offline
     Alter TableSpace Online
@@ -45,7 +45,7 @@
 
 
 /*
-  »ı¼ºÀÚ (¾Æ¹«°Íµµ ¾ÈÇÔ)
+  ìƒì„±ì (ì•„ë¬´ê²ƒë„ ì•ˆí•¨)
 */
 smpTBSAlterOnOff::smpTBSAlterOnOff()
 {
@@ -54,11 +54,11 @@ smpTBSAlterOnOff::smpTBSAlterOnOff()
 
 
 /*
-   Memory Tablespace¿¡ ´ëÇØ Alter Tablespace Online/OfflineÀ» ¼öÇà
+   Memory Tablespaceì— ëŒ€í•´ Alter Tablespace Online/Offlineì„ ìˆ˜í–‰
     
-   [IN] aTrans        - »óÅÂ¸¦ º¯°æÇÏ·Á´Â Transaction
-   [IN] aTableSpaceID - »óÅÂ¸¦ º¯°æÇÏ·Á´Â TablespaceÀÇ ID
-   [IN] aState        - »õ·Î ÀüÀÌÇÒ »óÅÂ ( Online or Offline )
+   [IN] aTrans        - ìƒíƒœë¥¼ ë³€ê²½í•˜ë ¤ëŠ” Transaction
+   [IN] aTableSpaceID - ìƒíƒœë¥¼ ë³€ê²½í•˜ë ¤ëŠ” Tablespaceì˜ ID
+   [IN] aState        - ìƒˆë¡œ ì „ì´í•  ìƒíƒœ ( Online or Offline )
  */
 IDE_RC smpTBSAlterOnOff::alterTBSStatus( void       * aTrans,
                                          smmTBSNode * aTBSNode,
@@ -90,14 +90,14 @@ IDE_RC smpTBSAlterOnOff::alterTBSStatus( void       * aTrans,
     return IDE_FAILURE;
 }
 
-/* Alter Tablespace Online Offline ·Î±×¸¦ ±â·Ï 
+/* Alter Tablespace Online Offline ë¡œê·¸ë¥¼ ê¸°ë¡ 
 
-    [IN] aTrans          - ·Î±ëÇÏ·Á´Â Transaction °´Ã¼
-    [IN] aTBSNode        - ALTERÇÒ TablespaceÀÇ Node
-    [IN] aUpdateType     - Alter Tablespace OnlineÀÎÁö OfflineÀÎÁö ¿©ºÎ 
-    [IN] aStateToRemove  - Á¦°ÅÇÒ »óÅÂ (º¯¼ö &= ~»óÅÂ)
-    [IN] aStateToAdd     - Ãß°¡ÇÒ »óÅÂ (º¯¼ö |=  »óÅÂ)
-    [OUT] aNewTBSState   - »õ·Î ÀüÀÌÇÒ TablespaceÀÇ »óÅÂ
+    [IN] aTrans          - ë¡œê¹…í•˜ë ¤ëŠ” Transaction ê°ì²´
+    [IN] aTBSNode        - ALTERí•  Tablespaceì˜ Node
+    [IN] aUpdateType     - Alter Tablespace Onlineì¸ì§€ Offlineì¸ì§€ ì—¬ë¶€ 
+    [IN] aStateToRemove  - ì œê±°í•  ìƒíƒœ (ë³€ìˆ˜ &= ~ìƒíƒœ)
+    [IN] aStateToAdd     - ì¶”ê°€í•  ìƒíƒœ (ë³€ìˆ˜ |=  ìƒíƒœ)
+    [OUT] aNewTBSState   - ìƒˆë¡œ ì „ì´í•  Tablespaceì˜ ìƒíƒœ
 
  */
 IDE_RC smpTBSAlterOnOff::writeAlterTBSStateLog(
@@ -118,7 +118,7 @@ IDE_RC smpTBSAlterOnOff::writeAlterTBSStateLog(
 
     sBeforeState = aTBSNode->mHeader.mState ;
 
-    // ·Î±ëÇÏ±â Àü¿¡ Backup°ü¸®ÀÚ¿ÍÀÇ µ¿½Ã¼º Á¦¾î¸¦ À§ÇÑ ÀÓ½Ã Flag¸¦ Á¦°Å
+    // ë¡œê¹…í•˜ê¸° ì „ì— Backupê´€ë¦¬ìì™€ì˜ ë™ì‹œì„± ì œì–´ë¥¼ ìœ„í•œ ì„ì‹œ Flagë¥¼ ì œê±°
     sBeforeState &= ~SMI_TBS_SWITCHING_TO_OFFLINE;
     sBeforeState &= ~SMI_TBS_SWITCHING_TO_ONLINE;
 
@@ -152,27 +152,27 @@ IDE_RC smpTBSAlterOnOff::writeAlterTBSStateLog(
 
 
 /*
-    META, SERVICE´Ü°è¿¡¼­ Tablespace¸¦ Offline»óÅÂ·Î º¯°æÇÑ´Ù.
+    META, SERVICEë‹¨ê³„ì—ì„œ Tablespaceë¥¼ Offlineìƒíƒœë¡œ ë³€ê²½í•œë‹¤.
 
-    [IN] aTrans   - »óÅÂ¸¦ º¯°æÇÏ·Á´Â Transaction
-    [IN] aTBSNode - »óÅÂ¸¦ º¯°æÇÒ TablespaceÀÇ Node
+    [IN] aTrans   - ìƒíƒœë¥¼ ë³€ê²½í•˜ë ¤ëŠ” Transaction
+    [IN] aTBSNode - ìƒíƒœë¥¼ ë³€ê²½í•  Tablespaceì˜ Node
 
-    [ ¾Ë°í¸®Áò ]
-      (010) TBSNode¿¡ X¶ô È¹µæ
-      (020) Tablespace¸¦ BackupÁßÀÌ¶ó¸é BackupÁ¾·á½Ã±îÁö ´ë±â 
-      (030) "TBSNode.Status := Offline" ¿¡ ´ëÇÑ ·Î±ë 
+    [ ì•Œê³ ë¦¬ì¦˜ ]
+      (010) TBSNodeì— Xë½ íšë“
+      (020) Tablespaceë¥¼ Backupì¤‘ì´ë¼ë©´ Backupì¢…ë£Œì‹œê¹Œì§€ ëŒ€ê¸° 
+      (030) "TBSNode.Status := Offline" ì— ëŒ€í•œ ë¡œê¹… 
       (040) TBSNode.OfflineSCN := Current System SCN
-      (050) Instant Memory Aging ½Ç½Ã - Aging ¼öÇàÁß¿¡¸¸ Àá½Ã Ager ·¡Ä¡È¹µæ
-      (060) Checkpoint Latch È¹µæ 
-      (070)    Dirty Page Flush ½Ç½Ã
-               ( Unstable DB ºÎÅÍ, 0¹ø 1¹ø DB ¸ğµÎ ½Ç½Ã )
-      (080) Checkpoint Latch ÇØÁ¦
-      (090) TBSNode¿¡ Dirty Page°¡ ¾øÀ½À» ASSERT·Î È®ÀÎ
-      (100) Commit Pendingµî·Ï
+      (050) Instant Memory Aging ì‹¤ì‹œ - Aging ìˆ˜í–‰ì¤‘ì—ë§Œ ì ì‹œ Ager ë˜ì¹˜íšë“
+      (060) Checkpoint Latch íšë“ 
+      (070)    Dirty Page Flush ì‹¤ì‹œ
+               ( Unstable DB ë¶€í„°, 0ë²ˆ 1ë²ˆ DB ëª¨ë‘ ì‹¤ì‹œ )
+      (080) Checkpoint Latch í•´ì œ
+      (090) TBSNodeì— Dirty Pageê°€ ì—†ìŒì„ ASSERTë¡œ í™•ì¸
+      (100) Commit Pendingë“±ë¡
       
-    [ Commit½Ã : (Pending) ]
+    [ Commitì‹œ : (Pending) ]
       (c-010) TBSNode.Status := Offline
-      (c-020) latch TBSNode.SyncMutex        // Checkpoint¿Í °æÇÕ
+      (c-020) latch TBSNode.SyncMutex        // Checkpointì™€ ê²½í•©
       (c-030) unlatch TBSNode.SyncMutex
       (c-040) Free All Page Memory of TBS
       (c-050) Free All Index Memory of TBS
@@ -180,25 +180,25 @@ IDE_RC smpTBSAlterOnOff::writeAlterTBSStateLog(
       (c-070) Free Runtime Info At TBSNode ( Expcet Lock )
       (c-080) flush TBSNode to loganchor
 
-    [ Abort½Ã ]
-      [ UNDO ] ¼öÇà 
+    [ Abortì‹œ ]
+      [ UNDO ] ìˆ˜í–‰ 
 
     [ REDO ]
-      (u-010) (020)¿¡ ´ëÇÑ REDO·Î TBSNode.Status := After Image(OFFLINE)
-      (note-1) TBSNode¸¦ loganchor¿¡ flushÇÏÁö ¾ÊÀ½ 
-               -> Restart Recovery¿Ï·áÈÄ ¸ğµç TBS¸¦ loganchor¿¡ flushÇÏ±â ¶§¹®
-      (note-2) Commit PendingÀ» ¼öÇàÇÏÁö ¾ÊÀ½
-               -> Restart Recovery¿Ï·áÈÄ OFFLINE TBS¿¡ ´ëÇÑ ResourceÇØÁ¦¸¦ ÇÑ´Ù
+      (u-010) (020)ì— ëŒ€í•œ REDOë¡œ TBSNode.Status := After Image(OFFLINE)
+      (note-1) TBSNodeë¥¼ loganchorì— flushí•˜ì§€ ì•ŠìŒ 
+               -> Restart Recoveryì™„ë£Œí›„ ëª¨ë“  TBSë¥¼ loganchorì— flushí•˜ê¸° ë•Œë¬¸
+      (note-2) Commit Pendingì„ ìˆ˜í–‰í•˜ì§€ ì•ŠìŒ
+               -> Restart Recoveryì™„ë£Œí›„ OFFLINE TBSì— ëŒ€í•œ Resourceí•´ì œë¥¼ í•œë‹¤
       
     [ UNDO ]
-      (u-010) (020)¿¡ ´ëÇÑ UNDO·Î TBSNode.Status := Before Image(ONLINE)
-              TBSNode.Status°¡ Commit Pending¿¡¼­ º¯°æµÇ±â ¶§¹®¿¡
-              ±»ÀÌ undoÁß¿¡ Before Image·Î µ¤¾îÄ¥ ÇÊ¿ä´Â ¾ø´Ù.
-              ±×·¯³ª ÀÏ°ü¼ºÀ» À¯ÁöÇÏ±â À§ÇØ TBSNode.Status¸¦
-              Before Image·Î ¿øº¹ÇÏµµ·Ï ÇÑ´Ù.      
-      (note-1) TBSNode¸¦ loganchor¿¡ flushÇÏÁö ¾ÊÀ½
-               -> ALTER TBS OFFLINEÀÇ Commit PendingÀ» ÅëÇØ
-                  COMMITÀÌÈÄ¿¡¾ß º¯°æµÈ TBS»óÅÂ°¡ log anchor¿¡ flushµÇ±â ¶§¹®
+      (u-010) (020)ì— ëŒ€í•œ UNDOë¡œ TBSNode.Status := Before Image(ONLINE)
+              TBSNode.Statusê°€ Commit Pendingì—ì„œ ë³€ê²½ë˜ê¸° ë•Œë¬¸ì—
+              êµ³ì´ undoì¤‘ì— Before Imageë¡œ ë®ì–´ì¹  í•„ìš”ëŠ” ì—†ë‹¤.
+              ê·¸ëŸ¬ë‚˜ ì¼ê´€ì„±ì„ ìœ ì§€í•˜ê¸° ìœ„í•´ TBSNode.Statusë¥¼
+              Before Imageë¡œ ì›ë³µí•˜ë„ë¡ í•œë‹¤.      
+      (note-1) TBSNodeë¥¼ loganchorì— flushí•˜ì§€ ì•ŠìŒ
+               -> ALTER TBS OFFLINEì˜ Commit Pendingì„ í†µí•´
+                  COMMITì´í›„ì—ì•¼ ë³€ê²½ëœ TBSìƒíƒœê°€ log anchorì— flushë˜ê¸° ë•Œë¬¸
 
 */
 IDE_RC smpTBSAlterOnOff::alterTBSoffline(void       * aTrans,
@@ -212,9 +212,9 @@ IDE_RC smpTBSAlterOnOff::alterTBSoffline(void       * aTrans,
     IDE_DASSERT( aTBSNode != NULL );
     
     ///////////////////////////////////////////////////////////////////////////
-    //  (010) TBSNode¿¡ X¶ô È¹µæ
+    //  (010) TBSNodeì— Xë½ íšë“
     //
-    // Tablespace°¡ Offline»óÅÂ¿©µµ ¿¡·¯¸¦ ³»Áö ¾Ê´Â´Ù.
+    // Tablespaceê°€ Offlineìƒíƒœì—¬ë„ ì—ëŸ¬ë¥¼ ë‚´ì§€ ì•ŠëŠ”ë‹¤.
     IDE_TEST( sctTableSpaceMgr::lockTBSNode( 
                                    aTrans,
                                    & aTBSNode->mHeader,
@@ -224,14 +224,14 @@ IDE_RC smpTBSAlterOnOff::alterTBSoffline(void       * aTrans,
               != IDE_SUCCESS );
     
     ///////////////////////////////////////////////////////////////////////////
-    //  (e-010) Tablespace»óÅÂ¿¡ µû¸¥ ¿¡·¯Ã³¸®
+    //  (e-010) Tablespaceìƒíƒœì— ë”°ë¥¸ ì—ëŸ¬ì²˜ë¦¬
     IDE_TEST( sctTableSpaceMgr::checkError4AlterStatus( 
                                      (sctTableSpaceNode*)aTBSNode,
                                      SMI_TBS_OFFLINE  /* New State */ )
               != IDE_SUCCESS );
     
     ///////////////////////////////////////////////////////////////////////////
-    //  (020) Tablespace¸¦ BackupÁßÀÌ¶ó¸é BackupÁ¾·á½Ã±îÁö ´ë±â 
+    //  (020) Tablespaceë¥¼ Backupì¤‘ì´ë¼ë©´ Backupì¢…ë£Œì‹œê¹Œì§€ ëŒ€ê¸° 
     IDE_TEST( sctTableSpaceMgr::wait4BackupAndBlockBackup( 
                                      (sctTableSpaceNode*)aTBSNode,
                                      SMI_TBS_SWITCHING_TO_OFFLINE ) 
@@ -241,7 +241,7 @@ IDE_RC smpTBSAlterOnOff::alterTBSoffline(void       * aTrans,
     
 
     ///////////////////////////////////////////////////////////////////////////
-    //  (030) "TBSNode.Status := Offline" ¿¡ ´ëÇÑ ·Î±ë 
+    //  (030) "TBSNode.Status := Offline" ì— ëŒ€í•œ ë¡œê¹… 
     //
     IDE_TEST( writeAlterTBSStateLog( aTrans,
                                      aTBSNode,
@@ -258,42 +258,42 @@ IDE_RC smpTBSAlterOnOff::alterTBSoffline(void       * aTrans,
 
     
     ///////////////////////////////////////////////////////////////////////////
-    //  (050) Instant Memory Aging ½Ç½Ã
-    //        - Aging ¼öÇàÁß¿¡¸¸ Àá½Ã Ager ·¡Ä¡È¹µæ
+    //  (050) Instant Memory Aging ì‹¤ì‹œ
+    //        - Aging ìˆ˜í–‰ì¤‘ì—ë§Œ ì ì‹œ Ager ë˜ì¹˜íšë“
     //
     IDE_TEST( smLayerCallback::doInstantAgingWithMemTBS(
                   aTBSNode->mHeader.mID ) != IDE_SUCCESS );
     
     ///////////////////////////////////////////////////////////////////////////
-    //  (060) Checkpoint Latch È¹µæ 
+    //  (060) Checkpoint Latch íšë“ 
     //
-    //  (070)    Dirty Page Flush ½Ç½Ã
-    //           ( Unstable DB ºÎÅÍ, 0¹ø 1¹ø DB ¸ğµÎ ½Ç½Ã )
-    //  (080) Checkpoint Latch ÇØÁ¦
+    //  (070)    Dirty Page Flush ì‹¤ì‹œ
+    //           ( Unstable DB ë¶€í„°, 0ë²ˆ 1ë²ˆ DB ëª¨ë‘ ì‹¤ì‹œ )
+    //  (080) Checkpoint Latch í•´ì œ
     //
     IDE_TEST( smrRecoveryMgr::flushDirtyPages4AllTBS()
               != IDE_SUCCESS );
 
 
     //////////////////////////////////////////////////////////////////////
-    //  (090)   TBSNode¿¡ Dirty Page°¡ ¾øÀ½À» ASSERT·Î È®ÀÎ
+    //  (090)   TBSNodeì— Dirty Pageê°€ ì—†ìŒì„ ASSERTë¡œ í™•ì¸
     IDE_TEST( smrRecoveryMgr::assertNoDirtyPagesInTBS( aTBSNode )
               != IDE_SUCCESS );
 
     ///////////////////////////////////////////////////////////////////////////
-    //  (100) Commit Pendingµî·Ï
+    //  (100) Commit Pendingë“±ë¡
     //
-    // Transaction Commit½Ã¿¡ ¼öÇàÇÒ Pending Operationµî·Ï 
+    // Transaction Commitì‹œì— ìˆ˜í–‰í•  Pending Operationë“±ë¡ 
     IDE_TEST( sctTableSpaceMgr::addPendingOperation(
                   aTrans,
                   aTBSNode->mHeader.mID,
-                  ID_TRUE, /* Pending ¿¬»ê ¼öÇà ½ÃÁ¡ : Commit ½Ã */
+                  ID_TRUE, /* Pending ì—°ì‚° ìˆ˜í–‰ ì‹œì  : Commit ì‹œ */
                   SCT_POP_ALTER_TBS_OFFLINE,
                   & sPendingOp )
               != IDE_SUCCESS );
 
-    // Commit½Ã sctTableSpaceMgr::executePendingOperation¿¡¼­
-    // ¼öÇàÇÒ PendingÇÔ¼ö ¼³Á¤
+    // Commitì‹œ sctTableSpaceMgr::executePendingOperationì—ì„œ
+    // ìˆ˜í–‰í•  Pendingí•¨ìˆ˜ ì„¤ì •
     sPendingOp->mPendingOpFunc = smpTBSAlterOnOff::alterOfflineCommitPending;
     sPendingOp->mNewTBSState   = sNewTBSState;
     sState = 0;
@@ -307,7 +307,7 @@ IDE_RC smpTBSAlterOnOff::alterTBSoffline(void       * aTrans,
     switch( sState)
     {
     case 1:
-        // TablespaceÀÇ »óÅÂ¿¡¼­ SMI_TBS_SWITCHING_TO_OFFLINE¸¦ Á¦°Å
+        // Tablespaceì˜ ìƒíƒœì—ì„œ SMI_TBS_SWITCHING_TO_OFFLINEë¥¼ ì œê±°
         aTBSNode->mHeader.mState &= ~SMI_TBS_SWITCHING_TO_OFFLINE;
         break;
 
@@ -322,27 +322,27 @@ IDE_RC smpTBSAlterOnOff::alterTBSoffline(void       * aTrans,
 
 
 /*
-   Tablespace¸¦ OFFLINE½ÃÅ² Tx°¡ CommitµÇ¾úÀ» ¶§ ºÒ¸®´Â PendingÇÔ¼ö
+   Tablespaceë¥¼ OFFLINEì‹œí‚¨ Txê°€ Commitë˜ì—ˆì„ ë•Œ ë¶ˆë¦¬ëŠ” Pendingí•¨ìˆ˜
   
    PROJ-1548 User Memory Tablespace
  
-   Tablespace¿Í °ü·ÃµÈ ¸ğµç ¸Ş¸ğ¸®¿Í ¸®¼Ò½º¸¦ ¹İ³³ÇÑ´Ù.
-   - ¿¹¿Ü : TablespaceÀÇ LockÁ¤º¸´Â ´Ù¸¥ TxµéÀÌ ´ë±âÇÏ¸é¼­
-             ÂüÁ¶ÇÒ ¼ö ÀÖ±â ¶§¹®¿¡ ÇØÁ¦ÇØ¼­´Â ¾ÈµÈ´Ù.
+   Tablespaceì™€ ê´€ë ¨ëœ ëª¨ë“  ë©”ëª¨ë¦¬ì™€ ë¦¬ì†ŒìŠ¤ë¥¼ ë°˜ë‚©í•œë‹¤.
+   - ì˜ˆì™¸ : Tablespaceì˜ Lockì •ë³´ëŠ” ë‹¤ë¥¸ Txë“¤ì´ ëŒ€ê¸°í•˜ë©´ì„œ
+             ì°¸ì¡°í•  ìˆ˜ ìˆê¸° ë•Œë¬¸ì— í•´ì œí•´ì„œëŠ” ì•ˆëœë‹¤.
   
-   [Âü°í] sctTableSpaceMgr::executePendingOperation ¿¡¼­ È£ÃâµÈ´Ù.
+   [ì°¸ê³ ] sctTableSpaceMgr::executePendingOperation ì—ì„œ í˜¸ì¶œëœë‹¤.
 
-   [ ¾Ë°í¸®Áò ] ======================================================
+   [ ì•Œê³ ë¦¬ì¦˜ ] ======================================================
       (c-010) TBSNode.Status := OFFLINE
-      (c-020) latch TBSNode.SyncMutex        // Checkpoint¿Í °æÇÕ
+      (c-020) latch TBSNode.SyncMutex        // Checkpointì™€ ê²½í•©
       (c-030) unlatch TBSNode.SyncMutex
       (c-040) Free All Index Memory of TBS
       (c-050) Destroy/Free Runtime Info At Table Header
-      (c-060) Free All Page Memory of TBS ( °øÀ¯¸Ş¸ğ¸®ÀÎ °æ¿ì ¸ğµÎ Á¦°Å )
+      (c-060) Free All Page Memory of TBS ( ê³µìœ ë©”ëª¨ë¦¬ì¸ ê²½ìš° ëª¨ë‘ ì œê±° )
       (c-070) Free Runtime Info At TBSNode ( Expcet Lock, DB File Objects )
-              - OfflineµÈ Tablespace¶óµµ Checkpoint½Ã
-                redo LSNÀ» DB File Header¿¡ ±â·ÏÇØ¾ß ÇÏ±â ¶§¹®¿¡
-                DB File °´Ã¼µéÀ» ÆÄ±«ÇÏÁö ¾Ê´Â´Ù.
+              - Offlineëœ Tablespaceë¼ë„ Checkpointì‹œ
+                redo LSNì„ DB File Headerì— ê¸°ë¡í•´ì•¼ í•˜ê¸° ë•Œë¬¸ì—
+                DB File ê°ì²´ë“¤ì„ íŒŒê´´í•˜ì§€ ì•ŠëŠ”ë‹¤.
       (c-080) flush TBSNode to loganchor
 
 */
@@ -356,12 +356,12 @@ IDE_RC smpTBSAlterOnOff::alterOfflineCommitPending(
 
     idBool sPageCountLocked = ID_FALSE;
     
-    // ¿©±â µé¾î¿À´Â Tablespace´Â Ç×»ó Memory Tablespace¿©¾ß ÇÑ´Ù.
+    // ì—¬ê¸° ë“¤ì–´ì˜¤ëŠ” TablespaceëŠ” í•­ìƒ Memory Tablespaceì—¬ì•¼ í•œë‹¤.
     IDE_ASSERT( sctTableSpaceMgr::isMemTableSpace( aTBSNode->mID )
                 == ID_TRUE );
 
-    // Commit Pending¼öÇà ÀÌÀü¿¡´Â OFFLINEÀ¸·Î °¡´Â ÁßÀÌ¶ó°í
-    // Flag°¡ ¼¼ÆÃµÇ¾î ÀÖ¾î¾ß ÇÑ´Ù.
+    // Commit Pendingìˆ˜í–‰ ì´ì „ì—ëŠ” OFFLINEìœ¼ë¡œ ê°€ëŠ” ì¤‘ì´ë¼ê³ 
+    // Flagê°€ ì„¸íŒ…ë˜ì–´ ìˆì–´ì•¼ í•œë‹¤.
     IDE_ASSERT( ( aTBSNode->mState & SMI_TBS_SWITCHING_TO_OFFLINE )
                 == SMI_TBS_SWITCHING_TO_OFFLINE );
     
@@ -369,7 +369,7 @@ IDE_RC smpTBSAlterOnOff::alterOfflineCommitPending(
     // (c-010) TBSNode.Status := OFFLINE
     aTBSNode->mState = aPendingOp->mNewTBSState;
 
-    // SMI_TBS_SWITCHING_TO_OFFLINE ÀÌ ¼³Á¤µÇ¾î ÀÖÀ¸¸é ¾ÈµÈ´Ù.
+    // SMI_TBS_SWITCHING_TO_OFFLINE ì´ ì„¤ì •ë˜ì–´ ìˆìœ¼ë©´ ì•ˆëœë‹¤.
     IDE_ASSERT( ( aTBSNode->mState & SMI_TBS_SWITCHING_TO_OFFLINE )
                 != SMI_TBS_SWITCHING_TO_OFFLINE );
     
@@ -377,23 +377,23 @@ IDE_RC smpTBSAlterOnOff::alterOfflineCommitPending(
     // (c-020) latch TBSNode.SyncMutex
     // (c-030) unlatch TBSNode.SyncMutex
     //
-    // ´ÙÀ½ µÎ Thread°£ÀÇ µ¿½Ã¼º Á¦¾î
+    // ë‹¤ìŒ ë‘ Threadê°„ì˜ ë™ì‹œì„± ì œì–´
     // - Alter TBS Offline Thread
-    //    - ÀÌ ÇÔ¼öÀÇ finiPagePhase¿¡¼­ smmDirtyPageMgrÀ» Á¦°Å.
+    //    - ì´ í•¨ìˆ˜ì˜ finiPagePhaseì—ì„œ smmDirtyPageMgrì„ ì œê±°.
     // - Checkpoint Thread
-    //    - ÀÌ TBSÀÇ smmDirtyPageMgrÀ» OpenÇÏ°í Read½Ãµµ
-    //      - ÀÌ Tablespace´Â OFFLINEµÇ¾úÀ¸¹Ç·Î Dirty Page´Â ¾øÁö¸¸
-    //         CheckpointµµÁß¿¡ smmDirtyPageMgr¿¡ ´ëÇØ
-    //         Open/Read/CloseÀÛ¾÷ÀÌ ¼öÇàµÈ´Ù
+    //    - ì´ TBSì˜ smmDirtyPageMgrì„ Opení•˜ê³  Readì‹œë„
+    //      - ì´ TablespaceëŠ” OFFLINEë˜ì—ˆìœ¼ë¯€ë¡œ Dirty PageëŠ” ì—†ì§€ë§Œ
+    //         Checkpointë„ì¤‘ì— smmDirtyPageMgrì— ëŒ€í•´
+    //         Open/Read/Closeì‘ì—…ì´ ìˆ˜í–‰ëœë‹¤
     //
-    // ÇöÀç Checkpoint°¡ smmDirtyPageMgr¿¡ Á¢±ÙÇÏ°í ÇÏ°í ÀÖ´Ù¸é
-    // TBSNode.SyncMutex ¸¦ Àâ°í ÀÖÀ» °ÍÀÌ´Ù. 
-    // ==> Mutex¸¦ Àâ¾Ò´Ù°¡ Ç®¾î¼­ smmDirtyPageMgr·ÎÀÇ Á¢±ÙÀÌ ¾øÀ½À»
-    //     È®ÀÎÇÑ´Ù.
+    // í˜„ì¬ Checkpointê°€ smmDirtyPageMgrì— ì ‘ê·¼í•˜ê³  í•˜ê³  ìˆë‹¤ë©´
+    // TBSNode.SyncMutex ë¥¼ ì¡ê³  ìˆì„ ê²ƒì´ë‹¤. 
+    // ==> Mutexë¥¼ ì¡ì•˜ë‹¤ê°€ í’€ì–´ì„œ smmDirtyPageMgrë¡œì˜ ì ‘ê·¼ì´ ì—†ìŒì„
+    //     í™•ì¸í•œë‹¤.
     //
     if ( smrRecoveryMgr::isRestart() == ID_FALSE )
     {
-        // ¿î¿µÁß¿¡¸¸ 
+        // ìš´ì˜ì¤‘ì—ë§Œ 
         IDE_TEST( sctTableSpaceMgr::latchSyncMutex( aTBSNode )   
                   != IDE_SUCCESS );
         IDE_TEST( sctTableSpaceMgr::unlatchSyncMutex( aTBSNode ) 
@@ -406,25 +406,25 @@ IDE_RC smpTBSAlterOnOff::alterOfflineCommitPending(
                                                            aTBSNode->mID )
                   != IDE_SUCCESS );
 
-        // ChunkÈ®Àå½Ã ¸ğµç TablespaceÀÇ Total Page Count¸¦ ¼¼´Âµ¥
-        // ÀÌ ¿ÍÁß¿¡ Page´Ü°è¸¦ ³»·Á¼­´Â ¾ÈµÈ´Ù.
-        // ÀÌÀ¯ : Total Page Count¸¦ ¼¼´Â
-        //         smmFPLManager::getTotalPageCount4AllTBS°¡
-        //         µé¾îÀÖ´Â Alloc Page Count¸¦ ¾ò±âÀ§ÇØ Membase¸¦ Á¢±ÙÇÑ´Ù.
-        //         ±×·±µ¥, Membase´Â Page´Ü°è¸¦ ³»¸®¸é¼­ NULL·Î º¯ÇÑ´Ù.
+        // Chunkí™•ì¥ì‹œ ëª¨ë“  Tablespaceì˜ Total Page Countë¥¼ ì„¸ëŠ”ë°
+        // ì´ ì™€ì¤‘ì— Pageë‹¨ê³„ë¥¼ ë‚´ë ¤ì„œëŠ” ì•ˆëœë‹¤.
+        // ì´ìœ  : Total Page Countë¥¼ ì„¸ëŠ”
+        //         smmFPLManager::getTotalPageCount4AllTBSê°€
+        //         ë“¤ì–´ìˆëŠ” Alloc Page Countë¥¼ ì–»ê¸°ìœ„í•´ Membaseë¥¼ ì ‘ê·¼í•œë‹¤.
+        //         ê·¸ëŸ°ë°, MembaseëŠ” Pageë‹¨ê³„ë¥¼ ë‚´ë¦¬ë©´ì„œ NULLë¡œ ë³€í•œë‹¤.
         //
-        // ÇöÀç Tablespace´Â DROP_PENDING»óÅÂÀÌÁö¸¸,
-        // DROP_PENDING»óÅÂ ¼³Á¤ ÀÌÀü¿¡ Total Page CountingÀÌ ½ÃÀÛµÇ¾î
-        // º» Tablespace¿¡ ´ëÇÑ Membase¿¡ Á¢±ÙÇÏ°í ÀÖÀ» ¼öµµ ÀÖ´Ù.
+        // í˜„ì¬ TablespaceëŠ” DROP_PENDINGìƒíƒœì´ì§€ë§Œ,
+        // DROP_PENDINGìƒíƒœ ì„¤ì • ì´ì „ì— Total Page Countingì´ ì‹œì‘ë˜ì–´
+        // ë³¸ Tablespaceì— ëŒ€í•œ Membaseì— ì ‘ê·¼í•˜ê³  ìˆì„ ìˆ˜ë„ ìˆë‹¤.
         //
-        // => Page´Ü°è·Î ³»¸®´Â µ¿¾È GlobalPageCountCheck Mutex¸¦ È¹µæ.
+        // => Pageë‹¨ê³„ë¡œ ë‚´ë¦¬ëŠ” ë™ì•ˆ GlobalPageCountCheck Mutexë¥¼ íšë“.
         
         IDE_TEST( smmFPLManager::lockGlobalPageCountCheckMutex() != IDE_SUCCESS );
         sPageCountLocked = ID_TRUE;
 
         
         /////////////////////////////////////////////////////////////////////
-        //  (c-060) Free All Page Memory of TBS( °øÀ¯¸Ş¸ğ¸®ÀÎ °æ¿ì ¸ğµÎ Á¦°Å )
+        //  (c-060) Free All Page Memory of TBS( ê³µìœ ë©”ëª¨ë¦¬ì¸ ê²½ìš° ëª¨ë‘ ì œê±° )
         //  (c-070) Free Runtime Info At TBSNode ( Expcet Lock, DB File Objects )
         IDE_TEST( smmTBSMultiPhase::finiPagePhase( (smmTBSNode*) aTBSNode )
                 != IDE_SUCCESS );
@@ -440,7 +440,7 @@ IDE_RC smpTBSAlterOnOff::alterOfflineCommitPending(
     }
     else
     {
-       // restart recovery½Ã¿¡´Â »óÅÂ¸¸ º¯°æÇÑ´Ù. 
+       // restart recoveryì‹œì—ëŠ” ìƒíƒœë§Œ ë³€ê²½í•œë‹¤. 
     }
 
     return IDE_SUCCESS;
@@ -459,68 +459,68 @@ IDE_RC smpTBSAlterOnOff::alterOfflineCommitPending(
 
 
 /*
-    META/SERVICE´Ü°è¿¡¼­ Tablespace¸¦ Online»óÅÂ·Î º¯°æÇÑ´Ù.
+    META/SERVICEë‹¨ê³„ì—ì„œ Tablespaceë¥¼ Onlineìƒíƒœë¡œ ë³€ê²½í•œë‹¤.
 
-    [IN] aTrans   - »óÅÂ¸¦ º¯°æÇÏ·Á´Â Transaction
-    [IN] aTBSNode - »óÅÂ¸¦ º¯°æÇÒ TablespaceÀÇ Node
+    [IN] aTrans   - ìƒíƒœë¥¼ ë³€ê²½í•˜ë ¤ëŠ” Transaction
+    [IN] aTBSNode - ìƒíƒœë¥¼ ë³€ê²½í•  Tablespaceì˜ Node
 
-    [ ¾Ë°í¸®Áò ]
-      (010) TBSNode¿¡ X¶ô È¹µæ
-      (020) Tablespace¸¦ BackupÁßÀÌ¶ó¸é BackupÁ¾·á½Ã±îÁö ´ë±â 
-      (030) "TBSNode.Status := ONLINE"¿¡ ´ëÇÑ ·Î±ë
-      (040)  LogAnchorÀÇ TBSNode.stableDB¿¡ ÇØ´çÇÏ´Â
-             Checkpoint Image¸¦ ·ÎµåÇÑ´Ù.
-      (050) TableÀÇ RuntimeÁ¤º¸ ÃÊ±âÈ­
-            - Mutex °´Ã¼, Free Page°ü·Ã Á¤º¸ ÃÊ±âÈ­ ½Ç½Ã
-            - ¸ğµç Page¿¡ ´ëÇØ Free SlotÀ» Ã£¾Æ¼­ °¢ Page¿¡ ´Ş¾ÆÁØ´Ù.
-            - Å×ÀÌºí Çì´õÀÇ RuntimeÁ¤º¸¿¡ Free PageµéÀ» ±¸ÃàÇØÁØ´Ù.
-      (060) ÇØ´ç TBS¿¡ ¼ÓÇÑ ¸ğµç Table¿¡ ´ëÇØ Index Rebuilding ½Ç½Ã
-      (070) Commit Pendingµî·Ï
-      (note-1) Log anchor¿¡ TBSNode¸¦ flushÇÏÁö ¾Ê´Â´Ù. (commit pendingÀ¸·Î Ã³¸®)
+    [ ì•Œê³ ë¦¬ì¦˜ ]
+      (010) TBSNodeì— Xë½ íšë“
+      (020) Tablespaceë¥¼ Backupì¤‘ì´ë¼ë©´ Backupì¢…ë£Œì‹œê¹Œì§€ ëŒ€ê¸° 
+      (030) "TBSNode.Status := ONLINE"ì— ëŒ€í•œ ë¡œê¹…
+      (040)  LogAnchorì˜ TBSNode.stableDBì— í•´ë‹¹í•˜ëŠ”
+             Checkpoint Imageë¥¼ ë¡œë“œí•œë‹¤.
+      (050) Tableì˜ Runtimeì •ë³´ ì´ˆê¸°í™”
+            - Mutex ê°ì²´, Free Pageê´€ë ¨ ì •ë³´ ì´ˆê¸°í™” ì‹¤ì‹œ
+            - ëª¨ë“  Pageì— ëŒ€í•´ Free Slotì„ ì°¾ì•„ì„œ ê° Pageì— ë‹¬ì•„ì¤€ë‹¤.
+            - í…Œì´ë¸” í—¤ë”ì˜ Runtimeì •ë³´ì— Free Pageë“¤ì„ êµ¬ì¶•í•´ì¤€ë‹¤.
+      (060) í•´ë‹¹ TBSì— ì†í•œ ëª¨ë“  Tableì— ëŒ€í•´ Index Rebuilding ì‹¤ì‹œ
+      (070) Commit Pendingë“±ë¡
+      (note-1) Log anchorì— TBSNodeë¥¼ flushí•˜ì§€ ì•ŠëŠ”ë‹¤. (commit pendingìœ¼ë¡œ ì²˜ë¦¬)
 
-    [ Commit½Ã ] (pending)
-      (c-010) TBSNode.Status := ONLINE    (ÁÖ1)
+    [ Commitì‹œ ] (pending)
+      (c-010) TBSNode.Status := ONLINE    (ì£¼1)
       (c-020) Flush TBSNode To LogAnchor
 
 
-    [ Abort½Ã ]
-      [ UNDO ] ¼öÇà
+    [ Abortì‹œ ]
+      [ UNDO ] ìˆ˜í–‰
       
     [ REDO ]
-      (r-010) (030)¿¡ ´ëÇÑ REDO·Î TBSNode.Status := After Image(ONLINE)
-      (note-1) TBSNode¸¦ loganchor¿¡ flushÇÏÁö ¾ÊÀ½ 
-               -> Restart Recovery¿Ï·áÈÄ ¸ğµç TBS¸¦ loganchor¿¡ flushÇÏ±â ¶§¹®
-      (note-2) Page Redo½Ã PAGE°¡ NULLÀÌ¸é ÇØ´ç TBS¿¡¼­ Restore¸¦ ½Ç½ÃÇÏ¹Ç·Î
-               (050)ÀÇ ÀÛ¾÷ÀÌ ÇÊ¿äÇÏÁö ¾Ê´Ù.
-      (note-3) Restart Recovery¿Ï·áÈÄ (060), (070)ÀÇ ÀÛ¾÷ÀÌ ¼öÇàµÇ¹Ç·Î
-               RedoÁß¿¡ ÀÌ¸¦ Ã³¸®ÇÏÁö ¾Ê´Â´Ù.
+      (r-010) (030)ì— ëŒ€í•œ REDOë¡œ TBSNode.Status := After Image(ONLINE)
+      (note-1) TBSNodeë¥¼ loganchorì— flushí•˜ì§€ ì•ŠìŒ 
+               -> Restart Recoveryì™„ë£Œí›„ ëª¨ë“  TBSë¥¼ loganchorì— flushí•˜ê¸° ë•Œë¬¸
+      (note-2) Page Redoì‹œ PAGEê°€ NULLì´ë©´ í•´ë‹¹ TBSì—ì„œ Restoreë¥¼ ì‹¤ì‹œí•˜ë¯€ë¡œ
+               (050)ì˜ ì‘ì—…ì´ í•„ìš”í•˜ì§€ ì•Šë‹¤.
+      (note-3) Restart Recoveryì™„ë£Œí›„ (060), (070)ì˜ ì‘ì—…ì´ ìˆ˜í–‰ë˜ë¯€ë¡œ
+               Redoì¤‘ì— ì´ë¥¼ ì²˜ë¦¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
                
     [ UNDO ]
       if RestartRecovery
          // do nothing
       else
-         (u-010) (070)¿¡¼­ Index RebuildingÇÑ ¸Ş¸ğ¸® ÇØÁ¦
-         (u-020) (060)¿¡¼­ ÃÊ±âÈ­ÇÑ TableÀÇ Runtime Á¤º¸ ÇØÁ¦
-         (u-030) (050)¿¡¼­ RestoreÇÑ PageÀÇ ¸Ş¸ğ¸® ÇØÁ¦
-         (u-040) (010)¿¡¼­ ÇÒ´çÇÑ TBSÀÇ RuntimeÁ¤º¸ ÇØÁ¦
+         (u-010) (070)ì—ì„œ Index Rebuildingí•œ ë©”ëª¨ë¦¬ í•´ì œ
+         (u-020) (060)ì—ì„œ ì´ˆê¸°í™”í•œ Tableì˜ Runtime ì •ë³´ í•´ì œ
+         (u-030) (050)ì—ì„œ Restoreí•œ Pageì˜ ë©”ëª¨ë¦¬ í•´ì œ
+         (u-040) (010)ì—ì„œ í• ë‹¹í•œ TBSì˜ Runtimeì •ë³´ í•´ì œ
       fi
-      (u-050) (020)¿¡ ´ëÇÑ UNDO·Î TBSNode.Status := Before Image(OFFLINE)
-              -> TBSNode.Status°¡ Commit Pending¿¡¼­ º¯°æµÇ±â ¶§¹®¿¡
-                 ±»ÀÌ undoÁß¿¡ Before Image·Î µ¤¾îÄ¥ ÇÊ¿ä´Â ¾ø´Ù.
-                 ±×·¯³ª ÀÏ°ü¼ºÀ» À¯ÁöÇÏ±â À§ÇØ TBSNode.Status¸¦
-                 Before Image·Î ¿øº¹ÇÏµµ·Ï ÇÑ´Ù.
+      (u-050) (020)ì— ëŒ€í•œ UNDOë¡œ TBSNode.Status := Before Image(OFFLINE)
+              -> TBSNode.Statusê°€ Commit Pendingì—ì„œ ë³€ê²½ë˜ê¸° ë•Œë¬¸ì—
+                 êµ³ì´ undoì¤‘ì— Before Imageë¡œ ë®ì–´ì¹  í•„ìš”ëŠ” ì—†ë‹¤.
+                 ê·¸ëŸ¬ë‚˜ ì¼ê´€ì„±ì„ ìœ ì§€í•˜ê¸° ìœ„í•´ TBSNode.Statusë¥¼
+                 Before Imageë¡œ ì›ë³µí•˜ë„ë¡ í•œë‹¤.
                  
-      (note-1) TBSNode¸¦ loganchor¿¡ flushÇÏÁö ¾ÊÀ½
-               -> ALTER TBS ONLINEEÀÇ Commit PendingÀ» ÅëÇØ
-                  COMMITÀÌÈÄ¿¡¾ß º¯°æµÈ TBS»óÅÂ°¡ log anchor¿¡ flushµÇ±â ¶§¹®
+      (note-1) TBSNodeë¥¼ loganchorì— flushí•˜ì§€ ì•ŠìŒ
+               -> ALTER TBS ONLINEEì˜ Commit Pendingì„ í†µí•´
+                  COMMITì´í›„ì—ì•¼ ë³€ê²½ëœ TBSìƒíƒœê°€ log anchorì— flushë˜ê¸° ë•Œë¬¸
       
-    [ ÀüÁ¦Á¶°Ç ] 
-       ÀÌ ÇÔ¼ö´Â META, SERVICE´Ü°è¿¡¼­ ONLINEÀ¸·Î ¿Ã¸± °æ¿ì¿¡¸¸ È£ÃâµÈ´Ù.
+    [ ì „ì œì¡°ê±´ ] 
+       ì´ í•¨ìˆ˜ëŠ” META, SERVICEë‹¨ê³„ì—ì„œ ONLINEìœ¼ë¡œ ì˜¬ë¦´ ê²½ìš°ì—ë§Œ í˜¸ì¶œëœë‹¤.
 
 
-    (ÁÖ1) TBSNode.Status°¡ ONLINEÀÌ µÇ¸é Checkpoint°¡ Dirty Page Flush¸¦
-          ÇÒ ¼ö ÀÖ°Ô µÈ´Ù. ±×·¯¹Ç·Î TBSNode.Status´Â tablespaceÀÇ
-          ¸ğµç resource¸¦ ÁØºñÇØ³õ°í commit pendingÀ¸·Î ONLINEÀ¸·Î ¼³Á¤ÇÑ´Ù
+    (ì£¼1) TBSNode.Statusê°€ ONLINEì´ ë˜ë©´ Checkpointê°€ Dirty Page Flushë¥¼
+          í•  ìˆ˜ ìˆê²Œ ëœë‹¤. ê·¸ëŸ¬ë¯€ë¡œ TBSNode.StatusëŠ” tablespaceì˜
+          ëª¨ë“  resourceë¥¼ ì¤€ë¹„í•´ë†“ê³  commit pendingìœ¼ë¡œ ONLINEìœ¼ë¡œ ì„¤ì •í•œë‹¤
        
  */
 IDE_RC smpTBSAlterOnOff::alterTBSonline(void       * aTrans,
@@ -538,9 +538,9 @@ IDE_RC smpTBSAlterOnOff::alterTBSonline(void       * aTrans,
     IDE_DASSERT( aTBSNode != NULL );
     
     ///////////////////////////////////////////////////////////////////////////
-    //  (010) TBSNode¿¡ X¶ô È¹µæ
+    //  (010) TBSNodeì— Xë½ íšë“
     //
-    // Tablespace°¡ Offline»óÅÂ¿©µµ ¿¡·¯¸¦ ³»Áö ¾Ê´Â´Ù.
+    // Tablespaceê°€ Offlineìƒíƒœì—¬ë„ ì—ëŸ¬ë¥¼ ë‚´ì§€ ì•ŠëŠ”ë‹¤.
     IDE_TEST( sctTableSpaceMgr::lockTBSNode( 
                                    aTrans,
                                    & aTBSNode->mHeader,
@@ -549,28 +549,28 @@ IDE_RC smpTBSAlterOnOff::alterTBSonline(void       * aTrans,
                                    SCT_VAL_ALTER_TBS_ONOFF) /* validation */
               != IDE_SUCCESS );
 
-    // To Fix BUG ; ALTER TBS ONLINE½Ã MEM_MAX_DB_SIZE Ã¼Å©¸¦ ¾ÈÇÔ
+    // To Fix BUG ; ALTER TBS ONLINEì‹œ MEM_MAX_DB_SIZE ì²´í¬ë¥¼ ì•ˆí•¨
     //
-    // MEM_MAX_DB_SIZEÃ¼Å©¸¦ À§ÇØ GlobalPageCountCheck Mutex¸¦ Àâ´Â´Ù.
-    // GlobalPageCountCheck¸¦ Àâ´Â ±¸°£Àº ´ÙÀ½°ú °°´Ù.
+    // MEM_MAX_DB_SIZEì²´í¬ë¥¼ ìœ„í•´ GlobalPageCountCheck Mutexë¥¼ ì¡ëŠ”ë‹¤.
+    // GlobalPageCountCheckë¥¼ ì¡ëŠ” êµ¬ê°„ì€ ë‹¤ìŒê³¼ ê°™ë‹¤.
     //
-    //   - Àâ±â : Tablespace»óÅÂ¸¦ SMI_TBS_SWITCHING_TO_ONLINE À¸·Î ¼³Á¤Á÷Àü
-    //   - Ç®±â : Membase¸¦ ÅëÇØ Tablespace¿¡ ÇÒ´çµÈ  Page Count Á¢±ÙÀÌ
-    //            °¡´ÉÇÏ¸ç, Page´Ü°è°¡ ÇØÁ¦µÉ °¡´É¼ºÀÌ ¾ø°í,
-    //            MembaseÀÇ µ¥ÀÌÅÍ°¡ Á¤»óÀûÀÎ °ªÀ¸·Î À¯ÁöµÊÀ»
-    //            º¸ÀåÇÒ¼ö ÀÖ´Â »óÅÂ
+    //   - ì¡ê¸° : Tablespaceìƒíƒœë¥¼ SMI_TBS_SWITCHING_TO_ONLINE ìœ¼ë¡œ ì„¤ì •ì§ì „
+    //   - í’€ê¸° : Membaseë¥¼ í†µí•´ Tablespaceì— í• ë‹¹ëœ  Page Count ì ‘ê·¼ì´
+    //            ê°€ëŠ¥í•˜ë©°, Pageë‹¨ê³„ê°€ í•´ì œë  ê°€ëŠ¥ì„±ì´ ì—†ê³ ,
+    //            Membaseì˜ ë°ì´í„°ê°€ ì •ìƒì ì¸ ê°’ìœ¼ë¡œ ìœ ì§€ë¨ì„
+    //            ë³´ì¥í• ìˆ˜ ìˆëŠ” ìƒíƒœ
     //
-    //   - ÀÌÀ¯ : ChunkÈ®Àå½Ã¸¶´Ù
-    //             smmFPLManager::aggregateTotalPageCountAction ¿¡¼­
-    //            TablespaceÀÇ »óÅÂ°¡ SMI_TBS_SWITCHING_TO_ONLINEÀÎ °æ¿ì 
-    //            TablespaceÀÇ Membase·ÎºÎÅÍ ÀĞ¾î³½ Page¼ö¸¦
-    //            DBÀÇ Total Page¼ö¿¡ Æ÷ÇÔ½ÃÅ°±â ¶§¹®
+    //   - ì´ìœ  : Chunkí™•ì¥ì‹œë§ˆë‹¤
+    //             smmFPLManager::aggregateTotalPageCountAction ì—ì„œ
+    //            Tablespaceì˜ ìƒíƒœê°€ SMI_TBS_SWITCHING_TO_ONLINEì¸ ê²½ìš° 
+    //            Tablespaceì˜ Membaseë¡œë¶€í„° ì½ì–´ë‚¸ Pageìˆ˜ë¥¼
+    //            DBì˜ Total Pageìˆ˜ì— í¬í•¨ì‹œí‚¤ê¸° ë•Œë¬¸
     //            
     IDE_TEST( smmFPLManager::lockGlobalPageCountCheckMutex() != IDE_SUCCESS );
     sPageCountLocked = ID_TRUE;
 
     ///////////////////////////////////////////////////////////////////////////
-    //  (e-010) Tablespace»óÅÂ¿¡ µû¸¥ ¿¡·¯Ã³¸®
+    //  (e-010) Tablespaceìƒíƒœì— ë”°ë¥¸ ì—ëŸ¬ì²˜ë¦¬
     IDE_TEST( sctTableSpaceMgr::checkError4AlterStatus( 
                                       (sctTableSpaceNode*)aTBSNode,
                                       SMI_TBS_ONLINE /* New State */ ) 
@@ -578,9 +578,9 @@ IDE_RC smpTBSAlterOnOff::alterTBSonline(void       * aTrans,
     
 
     ///////////////////////////////////////////////////////////////////////////
-    //  (020) Tablespace¸¦ BackupÁßÀÌ¶ó¸é BackupÁ¾·á½Ã±îÁö ´ë±â
+    //  (020) Tablespaceë¥¼ Backupì¤‘ì´ë¼ë©´ Backupì¢…ë£Œì‹œê¹Œì§€ ëŒ€ê¸°
     //
-    //  »óÅÂ¿¡ SMI_TBS_SWITCHING_TO_ONLINE ¸¦ Ãß°¡ÇÑ´Ù.
+    //  ìƒíƒœì— SMI_TBS_SWITCHING_TO_ONLINE ë¥¼ ì¶”ê°€í•œë‹¤.
     IDE_TEST( sctTableSpaceMgr::wait4BackupAndBlockBackup( 
                                        (sctTableSpaceNode*)aTBSNode,
                                        SMI_TBS_SWITCHING_TO_ONLINE ) != IDE_SUCCESS );
@@ -588,7 +588,7 @@ IDE_RC smpTBSAlterOnOff::alterTBSonline(void       * aTrans,
 
     
     ///////////////////////////////////////////////////////////////////////////
-    //  (030) "TBSNode.Status := ONLINE"¿¡ ´ëÇÑ ·Î±ë
+    //  (030) "TBSNode.Status := ONLINE"ì— ëŒ€í•œ ë¡œê¹…
     //
     IDE_TEST( writeAlterTBSStateLog( aTrans,
                                      aTBSNode,
@@ -599,25 +599,25 @@ IDE_RC smpTBSAlterOnOff::alterTBSonline(void       * aTrans,
               != IDE_SUCCESS );
 
     ///////////////////////////////////////////////////////////////////////////
-    //  (040)  Tablespace ÃÊ±âÈ­
-    //       - Offline»óÅÂÀÇ TBS´Â STATE, MEDIA Phase±îÁö ÃÊ±âÈ­µÈ »óÅÂÀÌ´Ù
+    //  (040)  Tablespace ì´ˆê¸°í™”
+    //       - Offlineìƒíƒœì˜ TBSëŠ” STATE, MEDIA Phaseê¹Œì§€ ì´ˆê¸°í™”ëœ ìƒíƒœì´ë‹¤
     IDE_TEST( smmTBSMultiPhase::initPagePhase( aTBSNode )
               != IDE_SUCCESS );
     sStage = 2;
 
     ///////////////////////////////////////////////////////////////////////////
-    //  (040)  LogAnchorÀÇ TBSNode.stableDB¿¡ ÇØ´çÇÏ´Â
-    //         Checkpoint Image¸¦ ·ÎµåÇÑ´Ù.
+    //  (040)  LogAnchorì˜ TBSNode.stableDBì— í•´ë‹¹í•˜ëŠ”
+    //         Checkpoint Imageë¥¼ ë¡œë“œí•œë‹¤.
     //
     IDE_TEST( smmManager::prepareAndRestore( aTBSNode ) != IDE_SUCCESS );
 
-    // Áö±İ ONLINE½ÃÅ°·Á´Â Tablespace¸¦ Æ÷ÇÔÇÑ ¸ğµç TablespaceµéÀÇ
-    // Å©±â¸¦ ±¸ÇÑ´Ù.
+    // ì§€ê¸ˆ ONLINEì‹œí‚¤ë ¤ëŠ” Tablespaceë¥¼ í¬í•¨í•œ ëª¨ë“  Tablespaceë“¤ì˜
+    // í¬ê¸°ë¥¼ êµ¬í•œë‹¤.
     //
-    // BUGBUG-1548 prepareAndRestore¸¦ ÇÏ±â Àü¿¡ ÀÌ Ã¼Å©¸¦ ¼öÇàÇØ¾ßÇÔ
-    //             ÀÌÀ¯ : prepareAndRestore¿¡¼­ Page Memory¸¦ »ç¿ëÇÔ
-    //             Membase°¡ Á¦°ÅµÇ°í ÇÒ´çµÈ Page¼ö¸¦ Tablespace Node¿¡¼­
-    //             °¡Á®¿Ã ¼ö ÀÖ°Ô µÇ¸é ÀÌ¿Í°°ÀÌ Ã³¸®°¡´É
+    // BUGBUG-1548 prepareAndRestoreë¥¼ í•˜ê¸° ì „ì— ì´ ì²´í¬ë¥¼ ìˆ˜í–‰í•´ì•¼í•¨
+    //             ì´ìœ  : prepareAndRestoreì—ì„œ Page Memoryë¥¼ ì‚¬ìš©í•¨
+    //             Membaseê°€ ì œê±°ë˜ê³  í• ë‹¹ëœ Pageìˆ˜ë¥¼ Tablespace Nodeì—ì„œ
+    //             ê°€ì ¸ì˜¬ ìˆ˜ ìˆê²Œ ë˜ë©´ ì´ì™€ê°™ì´ ì²˜ë¦¬ê°€ëŠ¥
     /*
      * BUG- 35443 Add Property for Excepting SYS_TBS_MEM_DIC size from
      * MEM_MAX_DB_SIZE
@@ -625,10 +625,10 @@ IDE_RC smpTBSAlterOnOff::alterTBSonline(void       * aTrans,
     if( smuProperty::getSeparateDicTBSSizeEnable() == ID_TRUE )
     {
         /* 
-         * SYS_TBS_MEM_DIC´Â TBS online/offlineÀ» ¼öÇàÇÒ¼ö ¾ø±â ¶§¹®¿¡
-         * SYS_TBS_MEM_DIC¸¦ Á¦¿ÜÇÑ TBSÀÇ Å©±â¸¸ ±¸ÇÏ¿© MEM_MAX_DB_SIZE °Ë»ç¸¦
-         * ¼öÇàÇÑ´Ù. 
-         * smiTableSpace::alterStatus()¿¡¼­ SYS_TBS_MEM_DIC ÀÎÁö °Ë»çµÊ
+         * SYS_TBS_MEM_DICëŠ” TBS online/offlineì„ ìˆ˜í–‰í• ìˆ˜ ì—†ê¸° ë•Œë¬¸ì—
+         * SYS_TBS_MEM_DICë¥¼ ì œì™¸í•œ TBSì˜ í¬ê¸°ë§Œ êµ¬í•˜ì—¬ MEM_MAX_DB_SIZE ê²€ì‚¬ë¥¼
+         * ìˆ˜í–‰í•œë‹¤. 
+         * smiTableSpace::alterStatus()ì—ì„œ SYS_TBS_MEM_DIC ì¸ì§€ ê²€ì‚¬ë¨
          */
         IDE_TEST( smmFPLManager::getTotalPageCountExceptDicTBS( 
                                                             &sTotalPageCount )
@@ -641,7 +641,7 @@ IDE_RC smpTBSAlterOnOff::alterTBSonline(void       * aTrans,
                   != IDE_SUCCESS );
     }
 
-    // ÇöÀç Tablespace¿¡ ÇÒ´çµÈ Page MemoryÅ©±â : ¿¡·¯¹ß»ı½Ã »ç¿ëÇÒ °ª
+    // í˜„ì¬ Tablespaceì— í• ë‹¹ëœ Page Memoryí¬ê¸° : ì—ëŸ¬ë°œìƒì‹œ ì‚¬ìš©í•  ê°’
     sTBSCurrentSize = 
         smmDatabase::getAllocPersPageCount( aTBSNode->mMemBase ) *
         SM_PAGE_SIZE;
@@ -652,9 +652,9 @@ IDE_RC smpTBSAlterOnOff::alterTBSonline(void       * aTrans,
     
     
     ///////////////////////////////////////////////////////////////////////////
-    //  (050) TableÀÇ RuntimeÁ¤º¸ ÃÊ±âÈ­
+    //  (050) Tableì˜ Runtimeì •ë³´ ì´ˆê¸°í™”
     ///////////////////////////////////////////////////////////////////////////
-    //  (060) ÇØ´ç TBS¿¡ ¼ÓÇÑ ¸ğµç Table¿¡ ´ëÇØ Index Rebuilding ½Ç½Ã
+    //  (060) í•´ë‹¹ TBSì— ì†í•œ ëª¨ë“  Tableì— ëŒ€í•´ Index Rebuilding ì‹¤ì‹œ
     //
     IDE_TEST( smLayerCallback::alterTBSOnline4Tables( NULL, /* idvSQL* */
                                                       aTrans,
@@ -663,18 +663,18 @@ IDE_RC smpTBSAlterOnOff::alterTBSonline(void       * aTrans,
     sStage = 3;
     
     ///////////////////////////////////////////////////////////////////////////
-    //  (070) Commit Pendingµî·Ï
+    //  (070) Commit Pendingë“±ë¡
     //
-    // Transaction Commit½Ã¿¡ ¼öÇàÇÒ Pending Operationµî·Ï 
+    // Transaction Commitì‹œì— ìˆ˜í–‰í•  Pending Operationë“±ë¡ 
     IDE_TEST( sctTableSpaceMgr::addPendingOperation(
                               aTrans,
                               aTBSNode->mHeader.mID,
-                              ID_TRUE, /* Pending ¿¬»ê ¼öÇà ½ÃÁ¡ : Commit ½Ã */
+                              ID_TRUE, /* Pending ì—°ì‚° ìˆ˜í–‰ ì‹œì  : Commit ì‹œ */
                               SCT_POP_ALTER_TBS_ONLINE,
                               & sPendingOp )
               != IDE_SUCCESS );
-    // Commit½Ã sctTableSpaceMgr::executePendingOperation¿¡¼­
-    // ¼öÇàÇÒ PendingÇÔ¼ö ¼³Á¤
+    // Commitì‹œ sctTableSpaceMgr::executePendingOperationì—ì„œ
+    // ìˆ˜í–‰í•  Pendingí•¨ìˆ˜ ì„¤ì •
     sPendingOp->mPendingOpFunc = smpTBSAlterOnOff::alterOnlineCommitPending;
     sPendingOp->mNewTBSState   = sNewTBSState;
 
@@ -714,21 +714,21 @@ IDE_RC smpTBSAlterOnOff::alterTBSonline(void       * aTrans,
                 
             case 2:
                 //////////////////////////////////////////////////////////
-                // initPagePhase¹× prepareAndRestore¿¡¼­
-                // ÇÒ´ç, ÃÊ±âÈ­ÇÑ ³»¿ë ÇØÁ¦
+                // initPagePhaseë° prepareAndRestoreì—ì„œ
+                // í• ë‹¹, ì´ˆê¸°í™”í•œ ë‚´ìš© í•´ì œ
                 IDE_ASSERT( smmTBSMultiPhase::finiPagePhase( aTBSNode )
                             == IDE_SUCCESS );
 
             case 1:
-                // GlobalPageCountCheck Lock¸¦ Ç®±â Àü¿¡ 
-                // TablespaceÀÇ »óÅÂ¿¡¼­ SMI_TBS_SWITCHING_TO_ONLINE¸¦ Á¦°Å
-                // ÀÌÀ¯1 : ÇöÀç Page´Ü°è°¡ ÇØÁ¦µÈ »óÅÂ·Î Membase´Â NULLÀÌ°í                //         ´õÀÌ»ó Total Page Count¸¦ ¼¼´Âµ¥ ÀÌ Tablespace¸¦
-                //         Æ÷ÇÔ ½ÃÅ°¸é ¾ÈµÇ±â ¶§¹®
+                // GlobalPageCountCheck Lockë¥¼ í’€ê¸° ì „ì— 
+                // Tablespaceì˜ ìƒíƒœì—ì„œ SMI_TBS_SWITCHING_TO_ONLINEë¥¼ ì œê±°
+                // ì´ìœ 1 : í˜„ì¬ Pageë‹¨ê³„ê°€ í•´ì œëœ ìƒíƒœë¡œ MembaseëŠ” NULLì´ê³                 //         ë”ì´ìƒ Total Page Countë¥¼ ì„¸ëŠ”ë° ì´ Tablespaceë¥¼
+                //         í¬í•¨ ì‹œí‚¤ë©´ ì•ˆë˜ê¸° ë•Œë¬¸
                 
-                // ÀÌÀ¯2 : ALTER ONLINEÀÇ UNDO½Ã ÀÌ FLAG°¡ ¾Èµé¾î ÀÖÀ¸¸é
-                //         ¿¡·¯Ã³¸® ·çÆ¾¿¡¼­ Tablespace¸¦ ONLINE½ÃÅ°·Á´Ù
-                //         ÇÒ´çÇÑ ¸®¼Ò½º¸¦ ¸ğµÎ ÇØÁ¦ÇÑ°ÍÀ¸·Î °£ÁÖÇÏ°í
-                //         ¸®¼Ò½º UNDO¸¦ ÇÏÁö ¾ÊÀ½
+                // ì´ìœ 2 : ALTER ONLINEì˜ UNDOì‹œ ì´ FLAGê°€ ì•ˆë“¤ì–´ ìˆìœ¼ë©´
+                //         ì—ëŸ¬ì²˜ë¦¬ ë£¨í‹´ì—ì„œ Tablespaceë¥¼ ONLINEì‹œí‚¤ë ¤ë‹¤
+                //         í• ë‹¹í•œ ë¦¬ì†ŒìŠ¤ë¥¼ ëª¨ë‘ í•´ì œí•œê²ƒìœ¼ë¡œ ê°„ì£¼í•˜ê³ 
+                //         ë¦¬ì†ŒìŠ¤ UNDOë¥¼ í•˜ì§€ ì•ŠìŒ
                 aTBSNode->mHeader.mState &= ~SMI_TBS_SWITCHING_TO_ONLINE;
                 break;
         }
@@ -749,14 +749,14 @@ IDE_RC smpTBSAlterOnOff::alterTBSonline(void       * aTrans,
 
 
 /*
-   Tablespace¸¦ ONLINE½ÃÅ² Tx°¡ CommitµÇ¾úÀ» ¶§ ºÒ¸®´Â PendingÇÔ¼ö
+   Tablespaceë¥¼ ONLINEì‹œí‚¨ Txê°€ Commitë˜ì—ˆì„ ë•Œ ë¶ˆë¦¬ëŠ” Pendingí•¨ìˆ˜
   
    PROJ-1548 User Memory Tablespace
  
   
-   [Âü°í] sctTableSpaceMgr::executePendingOperation ¿¡¼­ È£ÃâµÈ´Ù.
+   [ì°¸ê³ ] sctTableSpaceMgr::executePendingOperation ì—ì„œ í˜¸ì¶œëœë‹¤.
 
-   [ ¾Ë°í¸®Áò ] ======================================================
+   [ ì•Œê³ ë¦¬ì¦˜ ] ======================================================
       (c-010) TBSNode.Status := ONLINE
       (c-020) Flush TBSNode To LogAnchor
 
@@ -769,12 +769,12 @@ IDE_RC smpTBSAlterOnOff::alterOnlineCommitPending(
     IDE_DASSERT( aTBSNode != NULL );
     IDE_DASSERT( aPendingOp != NULL );
 
-    // ¿©±â µé¾î¿À´Â Tablespace´Â Ç×»ó Memory Tablespace¿©¾ß ÇÑ´Ù.
+    // ì—¬ê¸° ë“¤ì–´ì˜¤ëŠ” TablespaceëŠ” í•­ìƒ Memory Tablespaceì—¬ì•¼ í•œë‹¤.
     IDE_ASSERT( sctTableSpaceMgr::isMemTableSpace( aTBSNode->mID )
                 == ID_TRUE );
     
-    // Commit Pending¼öÇà ÀÌÀü¿¡´Â ONLINEÀ¸·Î °¡´Â ÁßÀÌ¶ó°í
-    // Flag°¡ ¼¼ÆÃµÇ¾î ÀÖ¾î¾ß ÇÑ´Ù.
+    // Commit Pendingìˆ˜í–‰ ì´ì „ì—ëŠ” ONLINEìœ¼ë¡œ ê°€ëŠ” ì¤‘ì´ë¼ê³ 
+    // Flagê°€ ì„¸íŒ…ë˜ì–´ ìˆì–´ì•¼ í•œë‹¤.
     IDE_ASSERT( ( aTBSNode->mState & SMI_TBS_SWITCHING_TO_ONLINE )
                 == SMI_TBS_SWITCHING_TO_ONLINE );
     
@@ -782,7 +782,7 @@ IDE_RC smpTBSAlterOnOff::alterOnlineCommitPending(
     // (c-010) TBSNode.Status := ONLINE    
     aTBSNode->mState = aPendingOp->mNewTBSState;
 
-    // SMI_TBS_SWITCHING_TO_OFFLINE ÀÌ ¼³Á¤µÇ¾î ÀÖÀ¸¸é ¾ÈµÈ´Ù.
+    // SMI_TBS_SWITCHING_TO_OFFLINE ì´ ì„¤ì •ë˜ì–´ ìˆìœ¼ë©´ ì•ˆëœë‹¤.
     IDE_ASSERT( ( aTBSNode->mState & SMI_TBS_SWITCHING_TO_ONLINE )
                 != SMI_TBS_SWITCHING_TO_ONLINE );
     
@@ -795,7 +795,7 @@ IDE_RC smpTBSAlterOnOff::alterOnlineCommitPending(
     }
     else
     {
-        // restart recovery½Ã¿¡´Â »óÅÂ¸¸ º¯°æÇÑ´Ù. 
+        // restart recoveryì‹œì—ëŠ” ìƒíƒœë§Œ ë³€ê²½í•œë‹¤. 
     }
 
     return IDE_SUCCESS;
@@ -806,12 +806,12 @@ IDE_RC smpTBSAlterOnOff::alterOnlineCommitPending(
 }
 
 
-/* Restart REDO, UNDO³¡³­ ÈÄ¿¡ Offline »óÅÂÀÎ TablespaceÀÇ ¸Ş¸ğ¸®¸¦ ÇØÁ¦
+/* Restart REDO, UNDOëë‚œ í›„ì— Offline ìƒíƒœì¸ Tablespaceì˜ ë©”ëª¨ë¦¬ë¥¼ í•´ì œ
  *
- * Restart REDO, UNDOÁß¿¡´Â Alter TBS Offline·Î±×¸¦ ¸¸³ªµµ
- * »óÅÂ¸¸ OFFLINEÀ¸·Î ¹Ù²Ù°í TBSÀÇ Memory¸¦ ÇØÁ¦ÇÏÁö ¾Ê´Â´Ù.
- *  => ÀÌÀ¯ : OFFLINE, ONLINE ÀüÀÌ°¡ ºó¹øÇÏ°Ô ¹ß»ıÇÒ °æ¿ì
- *            ¸Å¹ø restoreÇÏ´À¶ó Restart Recovery¼º´ÉÀÌ ÀúÇÏµÉ ¼ö ÀÖÀ½
+ * Restart REDO, UNDOì¤‘ì—ëŠ” Alter TBS Offlineë¡œê·¸ë¥¼ ë§Œë‚˜ë„
+ * ìƒíƒœë§Œ OFFLINEìœ¼ë¡œ ë°”ê¾¸ê³  TBSì˜ Memoryë¥¼ í•´ì œí•˜ì§€ ì•ŠëŠ”ë‹¤.
+ *  => ì´ìœ  : OFFLINE, ONLINE ì „ì´ê°€ ë¹ˆë²ˆí•˜ê²Œ ë°œìƒí•  ê²½ìš°
+ *            ë§¤ë²ˆ restoreí•˜ëŠë¼ Restart Recoveryì„±ëŠ¥ì´ ì €í•˜ë  ìˆ˜ ìˆìŒ
  *      
  */
 IDE_RC smpTBSAlterOnOff::finiOfflineTBS()
@@ -832,7 +832,7 @@ IDE_RC smpTBSAlterOnOff::finiOfflineTBS()
 
 
 /*
- * smpTBSAlterOnOff::destroyAllTBSNode¸¦ À§ÇÑ ActionÇÔ¼ö
+ * smpTBSAlterOnOff::destroyAllTBSNodeë¥¼ ìœ„í•œ Actioní•¨ìˆ˜
  */
 IDE_RC smpTBSAlterOnOff::finiOfflineTBSAction( idvSQL*          /* aStatistics */,
                                                sctTableSpaceNode * aTBSNode,
@@ -842,31 +842,31 @@ IDE_RC smpTBSAlterOnOff::finiOfflineTBSAction( idvSQL*          /* aStatistics *
 
     if(sctTableSpaceMgr::isMemTableSpace(aTBSNode->mID) == ID_TRUE)
     {
-        // TablespaceÀÇ »óÅÂ°¡ OfflineÀÎµ¥
+        // Tablespaceì˜ ìƒíƒœê°€ Offlineì¸ë°
         if ( SMI_TBS_IS_OFFLINE(aTBSNode->mState) )
         {
-            // Tablespace Page°¡ LoadµÇ¾î ÀÖ´Â °æ¿ì 
+            // Tablespace Pageê°€ Loadë˜ì–´ ìˆëŠ” ê²½ìš° 
             if ( ((smmTBSNode*)aTBSNode)->mRestoreType !=
                  SMM_DB_RESTORE_TYPE_NOT_RESTORED_YET )
             {
 
-                // Alter Tablespace OfflineÀÇ °úÁ¤
-                //   - ¸ğµç Dirty Page¸¦ 0¹ø, 1¹ø DB FIle¿¡ Flush
+                // Alter Tablespace Offlineì˜ ê³¼ì •
+                //   - ëª¨ë“  Dirty Pageë¥¼ 0ë²ˆ, 1ë²ˆ DB FIleì— Flush
                 //   - on commit pending
                 //     - flush to loganchor(Tablespace.state := OFFLINE)
                 //
-                // Áï, Alter Tablespace OfflineÀÌ commitµÇ¾úÀ½À» ÀÇ¹ÌÇÏ¸ç
-                // ÀÌ´Â °ğ, Normal Processing½Ã ¸ğµç Dirty Page°¡
-                // ÀÌ¹Ì Disk¿¡ ³»·Á°¡ ÀÖÀ½À» ÀÇ¹ÌÇÑ´Ù.
+                // ì¦‰, Alter Tablespace Offlineì´ commitë˜ì—ˆìŒì„ ì˜ë¯¸í•˜ë©°
+                // ì´ëŠ” ê³§, Normal Processingì‹œ ëª¨ë“  Dirty Pageê°€
+                // ì´ë¯¸ Diskì— ë‚´ë ¤ê°€ ìˆìŒì„ ì˜ë¯¸í•œë‹¤.
                 //
-                // => Redo/UndoÈÄ OFFLINEÀÎ Tablespace¿¡ ´ëÇÑ
-                //    Dirty Page¸¦ ¸ğµÎ Á¦°ÅÇØµµ ¹«°üÇÏ´Ù.
+                // => Redo/Undoí›„ OFFLINEì¸ Tablespaceì— ëŒ€í•œ
+                //    Dirty Pageë¥¼ ëª¨ë‘ ì œê±°í•´ë„ ë¬´ê´€í•˜ë‹¤.
                 IDE_TEST( smmManager::clearDirtyFlag4AllPages(
                                          (smmTBSNode*) aTBSNode )
                           != IDE_SUCCESS );
                 
                 //  Free All Page Memory of TBS
-                //      ( °øÀ¯¸Ş¸ğ¸®ÀÎ °æ¿ì ¸ğµÎ Á¦°Å )
+                //      ( ê³µìœ ë©”ëª¨ë¦¬ì¸ ê²½ìš° ëª¨ë‘ ì œê±° )
                 //  Free Runtime Info At TBSNode
                 //      ( Expcet Lock, DB File Objects )
                 IDE_TEST( smmTBSMultiPhase::finiPagePhase(

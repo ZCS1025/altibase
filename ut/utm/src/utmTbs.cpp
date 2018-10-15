@@ -110,8 +110,8 @@ SQLRETURN getTBSQuery( FILE *aTbsFp )
 
     idlOS::fprintf(stdout, "\n##### TBS #####\n");
 
-    /* fix BUG-23229 È®ÀåµÈ undo,temp,system tablespace ¿¡ ´ëÇÑ ½ºÅ©¸³Æ® ´©¶ô
-     * ´ÙÀ½ÀÇ tablespace Á¤º¸¸¦ °®°í ¿È
+    /* fix BUG-23229 í™•ìž¥ëœ undo,temp,system tablespace ì— ëŒ€í•œ ìŠ¤í¬ë¦½íŠ¸ ëˆ„ë½
+     * ë‹¤ìŒì˜ tablespace ì •ë³´ë¥¼ ê°–ê³  ì˜´
      * s_tbs_type = X$TABLESPACES.TYPE
      *
      * smiDef.h
@@ -127,7 +127,7 @@ SQLRETURN getTBSQuery( FILE *aTbsFp )
      *     SMI_TABLESPACE_TYPE_MAX        9 - for function array
      */
 
-    /* BUG-23979 x$tablespaces_header °¡ »èÁ¦µÈ Å×ÀÌºí½ºÆäÀÌ½º Á¤º¸±îÁö °¡Áö°í ÀÖÀ½ */
+    /* BUG-23979 x$tablespaces_header ê°€ ì‚­ì œëœ í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ ì •ë³´ê¹Œì§€ ê°€ì§€ê³  ìžˆìŒ */
     
     IDE_TEST_RAISE(SQLAllocStmt(m_hdbc, &s_tbs_stmt) 
                    != SQL_SUCCESS,alloc_error );
@@ -181,8 +181,8 @@ SQLRETURN getTBSQuery( FILE *aTbsFp )
             case SMI_DISK_SYSTEM_DATA:
             case SMI_DISK_SYSTEM_TEMP:
             case SMI_DISK_SYSTEM_UNDO:
-                /* fix BUG-23229 È®ÀåµÈ undo,temp,system tablespace ¿¡ ´ëÇÑ ½ºÅ©¸³Æ® ´©¶ô
-                 * ALTER TABLESPACE ±¸¹® »ý¼º
+                /* fix BUG-23229 í™•ìž¥ëœ undo,temp,system tablespace ì— ëŒ€í•œ ìŠ¤í¬ë¦½íŠ¸ ëˆ„ë½
+                 * ALTER TABLESPACE êµ¬ë¬¸ ìƒì„±
                  */
                 getTBSFileQuery2( sDdl, s_tbs_id );
                 break;
@@ -579,10 +579,10 @@ SQLRETURN getTBSFileQuery( SChar *a_file_query,
         s_pos += idlOS::sprintf(a_file_query + s_pos,
                                 "SIZE %"ID_INT64_FMT"K \n", sTmpSLong);
 
-        // BUG-21703 TBS »ý¼º ±¸¹®ÀÌ °³¼±µÇ¾î¾ß ÇÕ´Ï´Ù.
+        // BUG-21703 TBS ìƒì„± êµ¬ë¬¸ì´ ê°œì„ ë˜ì–´ì•¼ í•©ë‹ˆë‹¤.
         if( sTbsAutoExtend == 1 )
         {
-            // NEXTSIZE, MAXSIZE, AUTOEXTEND ¸¦ ¸ðµÎ ¾Ë°í ÀÖ´Ù.
+            // NEXTSIZE, MAXSIZE, AUTOEXTEND ë¥¼ ëª¨ë‘ ì•Œê³  ìžˆë‹¤.
 
             // X$DATAFILES.NEXTSIZEX
             sTmpSLong = (SLong)(((ULong)SQLBIGINT_TO_SLONG(s_tbs_nextSize)) * SD_PAGE_SIZE / ID_ULONG(1024));
@@ -600,9 +600,9 @@ SQLRETURN getTBSFileQuery( SChar *a_file_query,
         {
             if( s_tbs_CurSize > s_tbs_initSize )
             {
-                /* TBS¸¦ ¸ðµÎ ¼Ò¸ðÇÒ °æ¿ì AUTOEXTEND, NEXTSIZE, MAXSIZE °¡ 0À¸·Î º¯°æµÈ´Ù.
-                 * µû¶ó¼­ CURRSIZE > INITSIZE ÀÏ¶§¸¸ AUTOEXTEND À¸·Î ÆÇ´ÜÇÑ´Ù.
-                 * NEXTSIZE ´Â ¾Ë¼ö ¾ø°í MAXSIZE ´Â CURRSIZE ¿Í µ¿ÀÏÇÏ´Ù.
+                /* TBSë¥¼ ëª¨ë‘ ì†Œëª¨í•  ê²½ìš° AUTOEXTEND, NEXTSIZE, MAXSIZE ê°€ 0ìœ¼ë¡œ ë³€ê²½ëœë‹¤.
+                 * ë”°ë¼ì„œ CURRSIZE > INITSIZE ì¼ë•Œë§Œ AUTOEXTEND ìœ¼ë¡œ íŒë‹¨í•œë‹¤.
+                 * NEXTSIZE ëŠ” ì•Œìˆ˜ ì—†ê³  MAXSIZE ëŠ” CURRSIZE ì™€ ë™ì¼í•˜ë‹¤.
                  * */
 
                 s_pos += idlOS::sprintf(a_file_query + s_pos,
@@ -652,7 +652,7 @@ SQLRETURN getTBSFileQuery( SChar *a_file_query,
 #undef IDE_FN
 }
 
-/* BUG-24049 aexport ¿¡¼­ volatile tablespace ¸¦ Ã³¸®ÇÏÁö ¸øÇÕ´Ï´Ù. */
+/* BUG-24049 aexport ì—ì„œ volatile tablespace ë¥¼ ì²˜ë¦¬í•˜ì§€ ëª»í•©ë‹ˆë‹¤. */
 SQLRETURN getTBSQueryVolatile( SChar *a_file_query,
                                SInt   a_tbs_id)
 {
@@ -803,7 +803,7 @@ SQLRETURN getTBSQueryVolatile( SChar *a_file_query,
 #undef IDE_FN
 }
 
-// fix BUG-23229 È®ÀåµÈ undo,temp,system tablespace ¿¡ ´ëÇÑ ½ºÅ©¸³Æ® ´©¶ô
+// fix BUG-23229 í™•ìž¥ëœ undo,temp,system tablespace ì— ëŒ€í•œ ìŠ¤í¬ë¦½íŠ¸ ëˆ„ë½
 SQLRETURN getTBSFileQuery2( SChar *a_file_query,
                             SInt   a_tbs_id)
 {
@@ -943,8 +943,8 @@ SQLRETURN getTBSFileQuery2( SChar *a_file_query,
             s_pos += idlOS::sprintf( a_file_query + s_pos, "ADD " );
         }
 
-        // temporary tablespaceÀÎ °æ¿ì ÆÄÀÏ Å¸ÀÔ ±¸¹®ÀÌ
-        // ADD DATAFILEÀÌ ¾Æ´Ï¶ó ADD TEMPFILE ÀÌ´Ù.
+        // temporary tablespaceì¸ ê²½ìš° íŒŒì¼ íƒ€ìž… êµ¬ë¬¸ì´
+        // ADD DATAFILEì´ ì•„ë‹ˆë¼ ADD TEMPFILE ì´ë‹¤.
         if ((s_tbs_type == SMI_DISK_SYSTEM_TEMP) ||
             (s_tbs_type == SMI_DISK_USER_TEMP))
         {
@@ -996,10 +996,10 @@ SQLRETURN getTBSFileQuery2( SChar *a_file_query,
             s_pos += idlOS::sprintf( a_file_query + s_pos, " \n" );
         }
 
-        // BUG-21703 TBS »ý¼º ±¸¹®ÀÌ °³¼±µÇ¾î¾ß ÇÕ´Ï´Ù.
+        // BUG-21703 TBS ìƒì„± êµ¬ë¬¸ì´ ê°œì„ ë˜ì–´ì•¼ í•©ë‹ˆë‹¤.
         if( sTbsAutoExtend == 1 )
         {
-            // NEXTSIZE, MAXSIZE, AUTOEXTEND ¸¦ ¸ðµÎ ¾Ë°í ÀÖ´Ù.
+            // NEXTSIZE, MAXSIZE, AUTOEXTEND ë¥¼ ëª¨ë‘ ì•Œê³  ìžˆë‹¤.
 
             // X$DATAFILES.NEXTSIZEX
             sTmpSLong = (SLong)(((ULong)SQLBIGINT_TO_SLONG(s_tbs_nextSize)) * SD_PAGE_SIZE / ID_ULONG(1024));
@@ -1017,9 +1017,9 @@ SQLRETURN getTBSFileQuery2( SChar *a_file_query,
         {
             if( s_tbs_CurSize > s_tbs_initSize )
             {
-                /* TBS¸¦ ¸ðµÎ ¼Ò¸ðÇÒ °æ¿ì AUTOEXTEND, NEXTSIZE, MAXSIZE °¡ 0À¸·Î º¯°æµÈ´Ù.
-                 * µû¶ó¼­ CURRSIZE > INITSIZE ÀÏ¶§¸¸ AUTOEXTEND À¸·Î ÆÇ´ÜÇÑ´Ù.
-                 * NEXTSIZE ´Â ¾Ë¼ö ¾ø°í MAXSIZE ´Â CURRSIZE ¿Í µ¿ÀÏÇÏ´Ù.
+                /* TBSë¥¼ ëª¨ë‘ ì†Œëª¨í•  ê²½ìš° AUTOEXTEND, NEXTSIZE, MAXSIZE ê°€ 0ìœ¼ë¡œ ë³€ê²½ëœë‹¤.
+                 * ë”°ë¼ì„œ CURRSIZE > INITSIZE ì¼ë•Œë§Œ AUTOEXTEND ìœ¼ë¡œ íŒë‹¨í•œë‹¤.
+                 * NEXTSIZE ëŠ” ì•Œìˆ˜ ì—†ê³  MAXSIZE ëŠ” CURRSIZE ì™€ ë™ì¼í•˜ë‹¤.
                  * */
 
                 s_pos += idlOS::sprintf(a_file_query + s_pos,
@@ -1064,15 +1064,15 @@ SQLRETURN getTBSFileQuery2( SChar *a_file_query,
 #undef IDE_FN
 }
 
-/* BUG-40469 user mode¿¡¼­ »ç¿ëÀÚ¸¦ À§ÇÑ tablespace »ý¼º¹® ÇÊ¿ä. 
- * getTBSQuery ÇÔ¼ö ³»ÀÇ switch ¹®À» ±×´ë·Î °¡Á®¿È.
+/* BUG-40469 user modeì—ì„œ ì‚¬ìš©ìžë¥¼ ìœ„í•œ tablespace ìƒì„±ë¬¸ í•„ìš”. 
+ * getTBSQuery í•¨ìˆ˜ ë‚´ì˜ switch ë¬¸ì„ ê·¸ëŒ€ë¡œ ê°€ì ¸ì˜´.
  * ***
- * getTBSQuery ÇÔ¼ö ³»ÀÇ switch ¹®À» ¾Æ·¡ÀÇ getTBSInfo4UserMode ÇÔ¼ö È£Ãâ·Î
- * ±³Ã¼ÇÒ ¼öµµ ÀÖ¾úÀ¸³ª, CONNECT user/passwd ±¸¹®ÀÌ ºüÁüÀ¸·Î ÀÎÇØ
- * diff°¡ ´Ù¼ö ¹ß»ýÇÏ¹Ç·Î ÀÌ¹ø ¹ö±×¿¡¼­ ¼öÁ¤ÇÏÁö´Â ¾Ê¾ÒÀ½.
- * (create tablespace ±¸¹®À» Æ÷ÇÔÇÏ´Â sql ÆÄÀÏÀº isqlÀ» ½ÇÇàÇÒ ¶§
- * sys »ç¿ëÀÚ·Î Á¢¼ÓÇÏ±â ¶§¹®¿¡ sql ÆÄÀÏ ³»¿¡¼­ CONNECT ±¸¹®ÀÌ ¹Ýµå½Ã
- * ÇÊ¿äÇÏÁö´Â ¾ÊÀ½)
+ * getTBSQuery í•¨ìˆ˜ ë‚´ì˜ switch ë¬¸ì„ ì•„ëž˜ì˜ getTBSInfo4UserMode í•¨ìˆ˜ í˜¸ì¶œë¡œ
+ * êµì²´í•  ìˆ˜ë„ ìžˆì—ˆìœ¼ë‚˜, CONNECT user/passwd êµ¬ë¬¸ì´ ë¹ ì§ìœ¼ë¡œ ì¸í•´
+ * diffê°€ ë‹¤ìˆ˜ ë°œìƒí•˜ë¯€ë¡œ ì´ë²ˆ ë²„ê·¸ì—ì„œ ìˆ˜ì •í•˜ì§€ëŠ” ì•Šì•˜ìŒ.
+ * (create tablespace êµ¬ë¬¸ì„ í¬í•¨í•˜ëŠ” sql íŒŒì¼ì€ isqlì„ ì‹¤í–‰í•  ë•Œ
+ * sys ì‚¬ìš©ìžë¡œ ì ‘ì†í•˜ê¸° ë•Œë¬¸ì— sql íŒŒì¼ ë‚´ì—ì„œ CONNECT êµ¬ë¬¸ì´ ë°˜ë“œì‹œ
+ * í•„ìš”í•˜ì§€ëŠ” ì•ŠìŒ)
  */
 SQLRETURN getTBSInfo4UserMode( FILE  *aTbsFp,
                                SInt   aTbsId,
@@ -1097,8 +1097,8 @@ SQLRETURN getTBSInfo4UserMode( FILE  *aTbsFp,
     case SMI_DISK_SYSTEM_DATA:
     case SMI_DISK_SYSTEM_TEMP:
     case SMI_DISK_SYSTEM_UNDO:
-        /* fix BUG-23229 È®ÀåµÈ undo,temp,system tablespace ¿¡ ´ëÇÑ ½ºÅ©¸³Æ® ´©¶ô
-         * ALTER TABLESPACE ±¸¹® »ý¼º
+        /* fix BUG-23229 í™•ìž¥ëœ undo,temp,system tablespace ì— ëŒ€í•œ ìŠ¤í¬ë¦½íŠ¸ ëˆ„ë½
+         * ALTER TABLESPACE êµ¬ë¬¸ ìƒì„±
          */
         IDE_TEST(getTBSFileQuery2(s_file_query, aTbsId) != SQL_SUCCESS);
         break;

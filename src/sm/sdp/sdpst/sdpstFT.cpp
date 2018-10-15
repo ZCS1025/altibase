@@ -19,7 +19,7 @@
  *
  * $Id: sdpstFT.cpp 27229 2008-07-23 17:37:19Z newdaily $
  *
- * ∫ª ∆ƒ¿œ¿∫ Treelist Managed Segmentø° ¥Î«— Fixed Table¿« ±∏«ˆ∆ƒ¿œ¿Ã¥Ÿ.
+ * Î≥∏ ÌååÏùºÏùÄ Treelist Managed SegmentÏóê ÎåÄÌïú Fixed TableÏùò Íµ¨ÌòÑÌååÏùºÏù¥Îã§.
  *
  **********************************************************************/
 
@@ -52,8 +52,8 @@ IDE_RC sdpstFT::destroy()
 }
 
 /*************************************************************************
- * DESCRIPTION: Rt-BMP, It-BMP, Lf-BMP ±∏¡∂∏¶ √‚∑¬«œ±‚ ¿ß«— «‘ºˆ
- * aBMPHdr¥¬ π›µÂΩ√ It-BMP¿ÃæÓæﬂ «—¥Ÿ.
+ * DESCRIPTION: Rt-BMP, It-BMP, Lf-BMP Íµ¨Ï°∞Î•º Ï∂úÎ†•ÌïòÍ∏∞ ÏúÑÌïú Ìï®Ïàò
+ * aBMPHdrÎäî Î∞òÎìúÏãú It-BMPÏù¥Ïñ¥Ïïº ÌïúÎã§.
  *************************************************************************/
 void sdpstFT::makeDumpBMPStructureInfo(
                                 sdpstBMPHdr                 * aItBMPHdr,
@@ -78,7 +78,7 @@ void sdpstFT::makeDumpBMPStructureInfo(
 }
 
 /*************************************************************************
- * DESCRIPTION: Rt-BMP, It-BMP, Lf-BMP ∞¯≈Î¿∏∑Œ ªÁøÎµ«¥¬ ¡§∫∏∏¶ ∞°¡Æø¬¥Ÿ.
+ * DESCRIPTION: Rt-BMP, It-BMP, Lf-BMP Í≥µÌÜµÏúºÎ°ú ÏÇ¨Ïö©ÎêòÎäî Ï†ïÎ≥¥Î•º Í∞ÄÏ†∏Ïò®Îã§.
  *************************************************************************/
 void sdpstFT::makeDumpBMPHdrInfo( sdpstBMPHdr            * aBMPHdr,
                                   sdpSegType               aSegType,
@@ -110,7 +110,7 @@ void sdpstFT::makeDumpBMPHdrInfo( sdpstBMPHdr            * aBMPHdr,
 }
 
 /*************************************************************************
- * DESCRIPTION: Rt-BMP, It-BMP, Lf-BMP ∞¯≈Î¿∏∑Œ ªÁøÎµ«¥¬ ¡§∫∏∏¶ ∞°¡Æø¬¥Ÿ.
+ * DESCRIPTION: Rt-BMP, It-BMP, Lf-BMP Í≥µÌÜµÏúºÎ°ú ÏÇ¨Ïö©ÎêòÎäî Ï†ïÎ≥¥Î•º Í∞ÄÏ†∏Ïò®Îã§.
  *************************************************************************/
 void sdpstFT::makeDumpBMPBodyInfo( sdpstBMPHdr            * aBMPHdr,
                                    SShort                   aSlotNo,
@@ -134,7 +134,7 @@ void sdpstFT::makeDumpBMPBodyInfo( sdpstBMPHdr            * aBMPHdr,
 }
 
 /*************************************************************************
- * DESCRIPTION: Lf-BMP ªÁøÎµ«¥¬ ¡§∫∏∏¶ ∞°¡Æø¬¥Ÿ.
+ * DESCRIPTION: Lf-BMP ÏÇ¨Ïö©ÎêòÎäî Ï†ïÎ≥¥Î•º Í∞ÄÏ†∏Ïò®Îã§.
  *************************************************************************/
 void sdpstFT::makeDumpLfBMPHdrInfo( sdpstLfBMPHdr          * aLfBMPHdr,
                                     sdpSegType               aSegType,
@@ -153,7 +153,7 @@ void sdpstFT::makeDumpLfBMPHdrInfo( sdpstLfBMPHdr          * aLfBMPHdr,
 }
 
 /*************************************************************************
- * DESCRIPTION: Lf-BMP ªÁøÎµ«¥¬ ¡§∫∏∏¶ ∞°¡Æø¬¥Ÿ.
+ * DESCRIPTION: Lf-BMP ÏÇ¨Ïö©ÎêòÎäî Ï†ïÎ≥¥Î•º Í∞ÄÏ†∏Ïò®Îã§.
  *************************************************************************/
 void sdpstFT::makeDumpLfBMPRangeSlotInfo(
                          sdpstLfBMPHdr               * aLfBMPHdr,
@@ -186,7 +186,7 @@ void sdpstFT::makeDumpLfBMPRangeSlotInfo(
 }
 
 /*************************************************************************
- * DESCRIPTION: Lf-BMP ªÁøÎµ«¥¬ ¡§∫∏∏¶ ∞°¡Æø¬¥Ÿ.
+ * DESCRIPTION: Lf-BMP ÏÇ¨Ïö©ÎêòÎäî Ï†ïÎ≥¥Î•º Í∞ÄÏ†∏Ïò®Îã§.
  *************************************************************************/
 void sdpstFT::makeDumpLfBMPPBSTblInfo(
                                     sdpstLfBMPHdr            * aLfBMPHdr,
@@ -224,11 +224,11 @@ void sdpstFT::makeDumpLfBMPPBSTblInfo(
 }
 
 /*****************************************************************************
- * Description: D$DISK_TABLE_TMS_SEGHDR¿« Record∏¶ ∏∏µÂ¥¬ «‘ºˆ¿Ã¥Ÿ.
+ * Description: D$DISK_TABLE_TMS_SEGHDRÏùò RecordÎ•º ÎßåÎìúÎäî Ìï®ÏàòÏù¥Îã§.
  *
- * aHeader  - [IN] FixedTable¿« «Ï¥ı
- * aDumpObj - [IN] Dump«“ ¥ÎªÛ ∞¥√º, smcTableHeader.
- * aMemory  - [IN] FixedTable¿« ∑πƒ⁄µÂ∏¶ ¿˙¿Â«“ ∏ﬁ∏∏Æ
+ * aHeader  - [IN] FixedTableÏùò Ìó§Îçî
+ * aDumpObj - [IN] DumpÌï† ÎåÄÏÉÅ Í∞ùÏ≤¥, smcTableHeader.
+ * aMemory  - [IN] FixedTableÏùò Î†àÏΩîÎìúÎ•º Ï†ÄÏû•Ìï† Î©îÎ™®Î¶¨
  *****************************************************************************/
 IDE_RC sdpstFT::buildRecord4SegHdr( idvSQL              * /*aStatistics*/,
                                     void                * aHeader,
@@ -352,7 +352,7 @@ IDE_RC sdpstFT::dumpSegHdr( scSpaceID             aSpaceID,
 
 
 //------------------------------------------------------
-// D$DISK_TABLE_TMS_SEG_HDR Dump Table¿« Column Description
+// D$DISK_TABLE_TMS_SEG_HDR Dump TableÏùò Column Description
 //------------------------------------------------------
 static iduFixedTableColDesc gDumpDiskTmsSegHdrColDesc[]=
 {
@@ -567,7 +567,7 @@ static iduFixedTableColDesc gDumpDiskTmsSegHdrColDesc[]=
 };
 
 //------------------------------------------------------
-// D$DISK_TABLE_TMS_SEG_HDR Dump Table¿« Table Description
+// D$DISK_TABLE_TMS_SEG_HDR Dump TableÏùò Table Description
 //------------------------------------------------------
 iduFixedTableDesc  gDumpDiskTableTmsSegHdrTblDesc =
 {
@@ -583,11 +583,11 @@ iduFixedTableDesc  gDumpDiskTableTmsSegHdrTblDesc =
 
 
 /*****************************************************************************
- * Description: D$DISK_TABLE_TMS_BMPSTRUCTURE¿« Record∏¶ ∏∏µÂ¥¬ «‘ºˆ¿Ã¥Ÿ.
+ * Description: D$DISK_TABLE_TMS_BMPSTRUCTUREÏùò RecordÎ•º ÎßåÎìúÎäî Ìï®ÏàòÏù¥Îã§.
  *
- * aHeader  - [IN] FixedTable¿« «Ï¥ı
- * aDumpObj - [IN] Dump«“ ¥ÎªÛ ∞¥√º, smcTableHeader.
- * aMemory  - [IN] FixedTable¿« ∑πƒ⁄µÂ∏¶ ¿˙¿Â«“ ∏ﬁ∏∏Æ
+ * aHeader  - [IN] FixedTableÏùò Ìó§Îçî
+ * aDumpObj - [IN] DumpÌï† ÎåÄÏÉÅ Í∞ùÏ≤¥, smcTableHeader.
+ * aMemory  - [IN] FixedTableÏùò Î†àÏΩîÎìúÎ•º Ï†ÄÏû•Ìï† Î©îÎ™®Î¶¨
  *****************************************************************************/
 IDE_RC sdpstFT::buildRecord4BMPStructure( idvSQL              * /*aStatistics*/,
                                           void                * aHeader,
@@ -757,7 +757,7 @@ IDE_RC sdpstFT::dumpBMPStructure( scSpaceID             aSpaceID,
 }
 
 //------------------------------------------------------
-// D$DISK_TABLE_TMS_BMPSTRUCTURE Dump Table¿« Column Description
+// D$DISK_TABLE_TMS_BMPSTRUCTURE Dump TableÏùò Column Description
 //------------------------------------------------------
 static iduFixedTableColDesc gDumpDiskTmsBMPStructureColDesc[]=
 {
@@ -812,7 +812,7 @@ static iduFixedTableColDesc gDumpDiskTmsBMPStructureColDesc[]=
 };
 
 //------------------------------------------------------
-// D$DISK_TABLE_TMS_ITBMPBODYSTRUCTURE Dump Table¿« Table Description
+// D$DISK_TABLE_TMS_ITBMPBODYSTRUCTURE Dump TableÏùò Table Description
 //------------------------------------------------------
 iduFixedTableDesc  gDumpDiskTableTmsBMPStructureTblDesc =
 {
@@ -827,7 +827,7 @@ iduFixedTableDesc  gDumpDiskTableTmsBMPStructureTblDesc =
 };
 
 /**************************************************************************
- * Description: ¡÷æÓ¡¯ page type¿Œ ∆‰¿Ã¡ˆ∏¶ Ω∫ƒµ«œø© ¡÷æÓ¡¯ «‘ºˆ∏¶ ºˆ«‡«—¥Ÿ.
+ * Description: Ï£ºÏñ¥ÏßÑ page typeÏù∏ ÌéòÏù¥ÏßÄÎ•º Ïä§Ï∫îÌïòÏó¨ Ï£ºÏñ¥ÏßÑ Ìï®ÏàòÎ•º ÏàòÌñâÌïúÎã§.
  **************************************************************************/
 IDE_RC sdpstFT::doAction4EachPage( void                    * aHeader,
                                    iduFixedTableMemory     * aMemory,
@@ -858,7 +858,7 @@ IDE_RC sdpstFT::doAction4EachPage( void                    * aHeader,
 }
 
 /**************************************************************************
- * Description: ¡÷æÓ¡¯ page type¿Œ ∆‰¿Ã¡ˆ∏¶ Ω∫ƒµ«œø© ¡÷æÓ¡¯ «‘ºˆ∏¶ ºˆ«‡«—¥Ÿ.
+ * Description: Ï£ºÏñ¥ÏßÑ page typeÏù∏ ÌéòÏù¥ÏßÄÎ•º Ïä§Ï∫îÌïòÏó¨ Ï£ºÏñ¥ÏßÑ Ìï®ÏàòÎ•º ÏàòÌñâÌïúÎã§.
  **************************************************************************/
 IDE_RC sdpstFT::doAction4EachPage( void                    * aHeader,
                                    iduFixedTableMemory     * aMemory,
@@ -967,11 +967,11 @@ IDE_RC sdpstFT::doAction4EachPage( void                    * aHeader,
 
 
 /*****************************************************************************
- * Description: D$DISK_TABLE_TMS_RTBMPHDR¿« Record∏¶ ∏∏µÂ¥¬ «‘ºˆ¿Ã¥Ÿ.
+ * Description: D$DISK_TABLE_TMS_RTBMPHDRÏùò RecordÎ•º ÎßåÎìúÎäî Ìï®ÏàòÏù¥Îã§.
  *
- * aHeader  - [IN] FixedTable¿« «Ï¥ı
- * aDumpObj - [IN] Dump«“ ¥ÎªÛ ∞¥√º, smcTableHeader.
- * aMemory  - [IN] FixedTable¿« ∑πƒ⁄µÂ∏¶ ¿˙¿Â«“ ∏ﬁ∏∏Æ
+ * aHeader  - [IN] FixedTableÏùò Ìó§Îçî
+ * aDumpObj - [IN] DumpÌï† ÎåÄÏÉÅ Í∞ùÏ≤¥, smcTableHeader.
+ * aMemory  - [IN] FixedTableÏùò Î†àÏΩîÎìúÎ•º Ï†ÄÏû•Ìï† Î©îÎ™®Î¶¨
  *****************************************************************************/
 IDE_RC sdpstFT::buildRecord4RtBMPHdr( idvSQL              * /*aStatistics*/,
                                       void                * aHeader,
@@ -1061,7 +1061,7 @@ IDE_RC sdpstFT::doDumpRtBMPHdrPage( void                * aHeader,
 }
 
 //------------------------------------------------------
-// D$DISK_TABLE_TMS_RTBMPHDR Dump Table¿« Column Description
+// D$DISK_TABLE_TMS_RTBMPHDR Dump TableÏùò Column Description
 //------------------------------------------------------
 static iduFixedTableColDesc gDumpDiskTmsRtBMPHdrColDesc[]=
 {
@@ -1173,7 +1173,7 @@ static iduFixedTableColDesc gDumpDiskTmsRtBMPHdrColDesc[]=
 };
 
 //------------------------------------------------------
-// D$DISK_TABLE_TMS_RTBMPHDR Dump Table¿« Table Description
+// D$DISK_TABLE_TMS_RTBMPHDR Dump TableÏùò Table Description
 //------------------------------------------------------
 iduFixedTableDesc  gDumpDiskTableTmsRtBMPHdrTblDesc =
 {
@@ -1189,11 +1189,11 @@ iduFixedTableDesc  gDumpDiskTableTmsRtBMPHdrTblDesc =
 
 
 /*****************************************************************************
- * Description: D$DISK_TABLE_TMS_RTBMPBODY¿« Record∏¶ ∏∏µÂ¥¬ «‘ºˆ¿Ã¥Ÿ.
+ * Description: D$DISK_TABLE_TMS_RTBMPBODYÏùò RecordÎ•º ÎßåÎìúÎäî Ìï®ÏàòÏù¥Îã§.
  *
- * aHeader  - [IN] FixedTable¿« «Ï¥ı
- * aDumpObj - [IN] Dump«“ ¥ÎªÛ ∞¥√º, smcTableHeader.
- * aMemory  - [IN] FixedTable¿« ∑πƒ⁄µÂ∏¶ ¿˙¿Â«“ ∏ﬁ∏∏Æ
+ * aHeader  - [IN] FixedTableÏùò Ìó§Îçî
+ * aDumpObj - [IN] DumpÌï† ÎåÄÏÉÅ Í∞ùÏ≤¥, smcTableHeader.
+ * aMemory  - [IN] FixedTableÏùò Î†àÏΩîÎìúÎ•º Ï†ÄÏû•Ìï† Î©îÎ™®Î¶¨
  *****************************************************************************/
 IDE_RC sdpstFT::buildRecord4RtBMPBody( idvSQL              * /*aStatistics*/,
                                        void                * aHeader,
@@ -1304,7 +1304,7 @@ IDE_RC sdpstFT::doDumpRtBMPBodyPage( void                * aHeader,
 }
 
 //------------------------------------------------------
-// D$DISK_TABLE_TMS_RTBMPBODY Dump Table¿« Column Description
+// D$DISK_TABLE_TMS_RTBMPBODY Dump TableÏùò Column Description
 //------------------------------------------------------
 static iduFixedTableColDesc gDumpDiskTmsRtBMPBodyColDesc[]=
 {
@@ -1352,7 +1352,7 @@ static iduFixedTableColDesc gDumpDiskTmsRtBMPBodyColDesc[]=
 
 
 //------------------------------------------------------
-// D$DISK_TABLE_TMS_RTBMPBODY Dump Table¿« Table Description
+// D$DISK_TABLE_TMS_RTBMPBODY Dump TableÏùò Table Description
 //------------------------------------------------------
 iduFixedTableDesc  gDumpDiskTableTmsRtBMPBodyTblDesc =
 {
@@ -1367,11 +1367,11 @@ iduFixedTableDesc  gDumpDiskTableTmsRtBMPBodyTblDesc =
 };
 
 /*****************************************************************************
- * Description: D$DISK_TABLE_TMS_ITBMPHDR¿« Record∏¶ ∏∏µÂ¥¬ «‘ºˆ¿Ã¥Ÿ.
+ * Description: D$DISK_TABLE_TMS_ITBMPHDRÏùò RecordÎ•º ÎßåÎìúÎäî Ìï®ÏàòÏù¥Îã§.
  *
- * aHeader  - [IN] FixedTable¿« «Ï¥ı
- * aDumpObj - [IN] Dump«“ ¥ÎªÛ ∞¥√º, smcTableHeader.
- * aMemory  - [IN] FixedTable¿« ∑πƒ⁄µÂ∏¶ ¿˙¿Â«“ ∏ﬁ∏∏Æ
+ * aHeader  - [IN] FixedTableÏùò Ìó§Îçî
+ * aDumpObj - [IN] DumpÌï† ÎåÄÏÉÅ Í∞ùÏ≤¥, smcTableHeader.
+ * aMemory  - [IN] FixedTableÏùò Î†àÏΩîÎìúÎ•º Ï†ÄÏû•Ìï† Î©îÎ™®Î¶¨
  *****************************************************************************/
 IDE_RC sdpstFT::buildRecord4ItBMPHdr( idvSQL              * /*aStatistics*/,
                                       void                * aHeader,
@@ -1455,7 +1455,7 @@ IDE_RC sdpstFT::doDumpItBMPHdrPage( void                * aHeader,
 }
 
 //------------------------------------------------------
-// D$DISK_TABLE_TMS_ITBMPHDR Dump Table¿« Column Description
+// D$DISK_TABLE_TMS_ITBMPHDR Dump TableÏùò Column Description
 //------------------------------------------------------
 static iduFixedTableColDesc gDumpDiskTmsItBMPHdrColDesc[]=
 {
@@ -1560,7 +1560,7 @@ static iduFixedTableColDesc gDumpDiskTmsItBMPHdrColDesc[]=
 
 
 //------------------------------------------------------
-// D$DISK_TABLE_TMS_ITBMPHDR Dump Table¿« Table Description
+// D$DISK_TABLE_TMS_ITBMPHDR Dump TableÏùò Table Description
 //------------------------------------------------------
 iduFixedTableDesc  gDumpDiskTableTmsItBMPHdrTblDesc =
 {
@@ -1576,11 +1576,11 @@ iduFixedTableDesc  gDumpDiskTableTmsItBMPHdrTblDesc =
 
 
 /*****************************************************************************
- * Description: D$DISK_TABLE_TMS_ITBMPBODY¿« Record∏¶ ∏∏µÂ¥¬ «‘ºˆ¿Ã¥Ÿ.
+ * Description: D$DISK_TABLE_TMS_ITBMPBODYÏùò RecordÎ•º ÎßåÎìúÎäî Ìï®ÏàòÏù¥Îã§.
  *
- * aHeader  - [IN] FixedTable¿« «Ï¥ı
- * aDumpObj - [IN] Dump«“ ¥ÎªÛ ∞¥√º, smcTableHeader.
- * aMemory  - [IN] FixedTable¿« ∑πƒ⁄µÂ∏¶ ¿˙¿Â«“ ∏ﬁ∏∏Æ
+ * aHeader  - [IN] FixedTableÏùò Ìó§Îçî
+ * aDumpObj - [IN] DumpÌï† ÎåÄÏÉÅ Í∞ùÏ≤¥, smcTableHeader.
+ * aMemory  - [IN] FixedTableÏùò Î†àÏΩîÎìúÎ•º Ï†ÄÏû•Ìï† Î©îÎ™®Î¶¨
  *****************************************************************************/
 IDE_RC sdpstFT::buildRecord4ItBMPBody( idvSQL              * /*aStatistics*/,
                                        void                * aHeader,
@@ -1685,7 +1685,7 @@ IDE_RC sdpstFT::doDumpItBMPBodyPage( void                * aHeader,
 }
 
 //------------------------------------------------------
-// D$DISK_TABLE_TMS_ITBMPBODY Dump Table¿« Column Description
+// D$DISK_TABLE_TMS_ITBMPBODY Dump TableÏùò Column Description
 //------------------------------------------------------
 static iduFixedTableColDesc gDumpDiskTmsItBMPBodyColDesc[]=
 {
@@ -1734,7 +1734,7 @@ static iduFixedTableColDesc gDumpDiskTmsItBMPBodyColDesc[]=
 
 
 //------------------------------------------------------
-// D$DISK_TABLE_TMS_ITBMPBODY Dump Table¿« Table Description
+// D$DISK_TABLE_TMS_ITBMPBODY Dump TableÏùò Table Description
 //------------------------------------------------------
 iduFixedTableDesc  gDumpDiskTableTmsItBMPBodyTblDesc =
 {
@@ -1749,11 +1749,11 @@ iduFixedTableDesc  gDumpDiskTableTmsItBMPBodyTblDesc =
 };
 
 /*****************************************************************************
- * Description: D$DISK_TABLE_TMS_LFBMPHDR¿« Record∏¶ ∏∏µÂ¥¬ «‘ºˆ¿Ã¥Ÿ.
+ * Description: D$DISK_TABLE_TMS_LFBMPHDRÏùò RecordÎ•º ÎßåÎìúÎäî Ìï®ÏàòÏù¥Îã§.
  *
- * aHeader  - [IN] FixedTable¿« «Ï¥ı
- * aDumpObj - [IN] Dump«“ ¥ÎªÛ ∞¥√º, smcTableHeader.
- * aMemory  - [IN] FixedTable¿« ∑πƒ⁄µÂ∏¶ ¿˙¿Â«“ ∏ﬁ∏∏Æ
+ * aHeader  - [IN] FixedTableÏùò Ìó§Îçî
+ * aDumpObj - [IN] DumpÌï† ÎåÄÏÉÅ Í∞ùÏ≤¥, smcTableHeader.
+ * aMemory  - [IN] FixedTableÏùò Î†àÏΩîÎìúÎ•º Ï†ÄÏû•Ìï† Î©îÎ™®Î¶¨
  *****************************************************************************/
 IDE_RC sdpstFT::buildRecord4LfBMPHdr( idvSQL              * /*aStatistics*/,
                                       void                * aHeader,
@@ -1838,7 +1838,7 @@ IDE_RC sdpstFT::doDumpLfBMPHdrPage( void                * aHeader,
 
 
 //------------------------------------------------------
-// D$DISK_TABLE_TMS_LFBMPHDR Dump Table¿« Column Description
+// D$DISK_TABLE_TMS_LFBMPHDR Dump TableÏùò Column Description
 //------------------------------------------------------
 static iduFixedTableColDesc gDumpDiskTmsLfBMPHdrColDesc[]=
 {
@@ -1944,7 +1944,7 @@ static iduFixedTableColDesc gDumpDiskTmsLfBMPHdrColDesc[]=
 
 
 //------------------------------------------------------
-// D$DISK_TABLE_TMS_LFBMPHDR Dump Table¿« Table Description
+// D$DISK_TABLE_TMS_LFBMPHDR Dump TableÏùò Table Description
 //------------------------------------------------------
 iduFixedTableDesc  gDumpDiskTableTmsLfBMPHdrTblDesc =
 {
@@ -1960,11 +1960,11 @@ iduFixedTableDesc  gDumpDiskTableTmsLfBMPHdrTblDesc =
 
 
 /*****************************************************************************
- * Description: D$DISK_TABLE_TMS_LFBMPRANGESLOT¿« Record∏¶ ∏∏µÂ¥¬ «‘ºˆ¿Ã¥Ÿ.
+ * Description: D$DISK_TABLE_TMS_LFBMPRANGESLOTÏùò RecordÎ•º ÎßåÎìúÎäî Ìï®ÏàòÏù¥Îã§.
  *
- * aHeader  - [IN] FixedTable¿« «Ï¥ı
- * aDumpObj - [IN] Dump«“ ¥ÎªÛ ∞¥√º, smcTableHeader.
- * aMemory  - [IN] FixedTable¿« ∑πƒ⁄µÂ∏¶ ¿˙¿Â«“ ∏ﬁ∏∏Æ
+ * aHeader  - [IN] FixedTableÏùò Ìó§Îçî
+ * aDumpObj - [IN] DumpÌï† ÎåÄÏÉÅ Í∞ùÏ≤¥, smcTableHeader.
+ * aMemory  - [IN] FixedTableÏùò Î†àÏΩîÎìúÎ•º Ï†ÄÏû•Ìï† Î©îÎ™®Î¶¨
  *****************************************************************************/
 IDE_RC sdpstFT::buildRecord4LfBMPRangeSlot( idvSQL              * /*aStatistics*/,
                                             void                * aHeader,
@@ -2075,7 +2075,7 @@ IDE_RC sdpstFT::doDumpLfBMPPage4RangeSlot(
 }
 
 //------------------------------------------------------
-// D$DISK_TABLE_TMS_LFBMPRANGESLOT Dump Table¿« Column Description
+// D$DISK_TABLE_TMS_LFBMPRANGESLOT Dump TableÏùò Column Description
 //------------------------------------------------------
 static iduFixedTableColDesc gDumpDiskTmsLfBMPRangeSlotColDesc[]=
 {
@@ -2154,7 +2154,7 @@ static iduFixedTableColDesc gDumpDiskTmsLfBMPRangeSlotColDesc[]=
 };
 
 //------------------------------------------------------
-// D$DISK_TABLE_TMS_LFBMPRANGESLOT Dump Table¿« Table Description
+// D$DISK_TABLE_TMS_LFBMPRANGESLOT Dump TableÏùò Table Description
 //------------------------------------------------------
 iduFixedTableDesc  gDumpDiskTableTmsLfBMPRangeSlotTblDesc =
 {
@@ -2169,11 +2169,11 @@ iduFixedTableDesc  gDumpDiskTableTmsLfBMPRangeSlotTblDesc =
 };
 
 /*****************************************************************************
- * Description: D$DISK_TABLE_TMS_LFBMPPBSTBL¿« Record∏¶ ∏∏µÂ¥¬ «‘ºˆ¿Ã¥Ÿ.
+ * Description: D$DISK_TABLE_TMS_LFBMPPBSTBLÏùò RecordÎ•º ÎßåÎìúÎäî Ìï®ÏàòÏù¥Îã§.
  *
- * aHeader  - [IN] FixedTable¿« «Ï¥ı
- * aDumpObj - [IN] Dump«“ ¥ÎªÛ ∞¥√º, smcTableHeader.
- * aMemory  - [IN] FixedTable¿« ∑πƒ⁄µÂ∏¶ ¿˙¿Â«“ ∏ﬁ∏∏Æ
+ * aHeader  - [IN] FixedTableÏùò Ìó§Îçî
+ * aDumpObj - [IN] DumpÌï† ÎåÄÏÉÅ Í∞ùÏ≤¥, smcTableHeader.
+ * aMemory  - [IN] FixedTableÏùò Î†àÏΩîÎìúÎ•º Ï†ÄÏû•Ìï† Î©îÎ™®Î¶¨
  *****************************************************************************/
 IDE_RC sdpstFT::buildRecord4LfBMPPBSTbl( idvSQL              * /*aStatistics*/,
                                          void                * aHeader,
@@ -2257,7 +2257,7 @@ IDE_RC sdpstFT::doDumpLfBMPPage4PBSTbl(
 }
 
 //------------------------------------------------------
-// D$DISK_TABLE_TMS_LFBMPBODY Dump Table¿« Column Description
+// D$DISK_TABLE_TMS_LFBMPBODY Dump TableÏùò Column Description
 //------------------------------------------------------
 static iduFixedTableColDesc gDumpDiskTmsLfBMPPBSTblColDesc[]=
 {
@@ -2296,7 +2296,7 @@ static iduFixedTableColDesc gDumpDiskTmsLfBMPPBSTblColDesc[]=
 };
 
 //------------------------------------------------------
-// D$DISK_TABLE_TMS_LFBMPBODY Dump Table¿« Table Description
+// D$DISK_TABLE_TMS_LFBMPBODY Dump TableÏùò Table Description
 //------------------------------------------------------
 iduFixedTableDesc  gDumpDiskTableTmsLfBMPPBSTblTblDesc =
 {
@@ -2311,11 +2311,11 @@ iduFixedTableDesc  gDumpDiskTableTmsLfBMPPBSTblTblDesc =
 };
 
 /*****************************************************************************
- * Description: D$DISK_TABLE_TMS_SEGCACHE¿« Record∏¶ ∏∏µÂ¥¬ «‘ºˆ¿Ã¥Ÿ.
+ * Description: D$DISK_TABLE_TMS_SEGCACHEÏùò RecordÎ•º ÎßåÎìúÎäî Ìï®ÏàòÏù¥Îã§.
  *
- * aHeader  - [IN] FixedTable¿« «Ï¥ı
- * aDumpObj - [IN] Dump«“ ¥ÎªÛ ∞¥√º, smcTableHeader.
- * aMemory  - [IN] FixedTable¿« ∑πƒ⁄µÂ∏¶ ¿˙¿Â«“ ∏ﬁ∏∏Æ
+ * aHeader  - [IN] FixedTableÏùò Ìó§Îçî
+ * aDumpObj - [IN] DumpÌï† ÎåÄÏÉÅ Í∞ùÏ≤¥, smcTableHeader.
+ * aMemory  - [IN] FixedTableÏùò Î†àÏΩîÎìúÎ•º Ï†ÄÏû•Ìï† Î©îÎ™®Î¶¨
  *****************************************************************************/
 IDE_RC sdpstFT::buildRecord4SegCache( idvSQL              * /*aStatistics*/,
                                       void                * aHeader,
@@ -2332,7 +2332,7 @@ IDE_RC sdpstFT::buildRecord4SegCache( idvSQL              * /*aStatistics*/,
 
     IDE_TEST_RAISE( aDumpObj == NULL, ERR_INVALID_DUMP_OBJECT );
 
-    /* Table«Ï¥ı∏¶ ∞°¡ÆøÕ Segment Cache¿ª æÚæÓø¬¥Ÿ. */
+    /* TableÌó§ÎçîÎ•º Í∞ÄÏ†∏ÏôÄ Segment CacheÏùÑ ÏñªÏñ¥Ïò®Îã§. */
     sTable = (smcTableHeader*)((smpSlotHeader*)aDumpObj + 1);
 
     sSegHandle = sdpSegDescMgr::getSegHandle( &sTable->mFixed.mDRDB );
@@ -2375,7 +2375,7 @@ IDE_RC sdpstFT::buildRecord4SegCache( idvSQL              * /*aStatistics*/,
 
 
 //------------------------------------------------------
-// D$DISK_TABLE_TMS_SEG_HDR Dump Table¿« Column Description
+// D$DISK_TABLE_TMS_SEG_HDR Dump TableÏùò Column Description
 //------------------------------------------------------
 static iduFixedTableColDesc gDumpDiskTmsSegCacheColDesc[]=
 {
@@ -2470,7 +2470,7 @@ static iduFixedTableColDesc gDumpDiskTmsSegCacheColDesc[]=
 };
 
 //------------------------------------------------------
-// D$DISK_TABLE_TMS_SEG_HDR Dump Table¿« Table Description
+// D$DISK_TABLE_TMS_SEG_HDR Dump TableÏùò Table Description
 //------------------------------------------------------
 iduFixedTableDesc  gDumpDiskTableTmsSegCacheTblDesc =
 {

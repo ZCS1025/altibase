@@ -38,7 +38,7 @@ public class TimeoutTest extends AltibaseTestCase
         return false;
     }
 
-    // BUGBUG ÀÚµ¿À¸·Î Å×½ºÆ®ÇÏ±â ¾î·Æ´Ù; ³Ê¹« »¡¸® ºÙ¾î¼­¸®;;
+    // BUGBUG ìë™ìœ¼ë¡œ í…ŒìŠ¤íŠ¸í•˜ê¸° ì–´ë µë‹¤; ë„ˆë¬´ ë¹¨ë¦¬ ë¶™ì–´ì„œë¦¬;;
     public void _NOTYET_testLoginTimeout()
     {
         AltibaseProperties sProp = new AltibaseProperties();
@@ -118,13 +118,13 @@ public class TimeoutTest extends AltibaseTestCase
             assertEquals(true, sRS.next());
             assertEquals(i, sRS.getInt(1));
         }
-        // response timeoutÀº ¿øÀÚ¼º(Atomicity)À» º¸Àå ¸øÇÏ¹Ç·Î execute¿¡ ¼º°ø ÇÒ ¼öµµ ÀÖ´Ù.
-        // ´Ù¸¸, ¿©±â¼­´Â execute Àü lock ´ë±âÇÏ´Ù ³ª´Â°Å±â ¶§¹®¿¡ insertµÇÁö ¾Ê¾Æ¾ß ÇÑ´Ù.
+        // response timeoutì€ ì›ìì„±(Atomicity)ì„ ë³´ì¥ ëª»í•˜ë¯€ë¡œ executeì— ì„±ê³µ í•  ìˆ˜ë„ ìˆë‹¤.
+        // ë‹¤ë§Œ, ì—¬ê¸°ì„œëŠ” execute ì „ lock ëŒ€ê¸°í•˜ë‹¤ ë‚˜ëŠ”ê±°ê¸° ë•Œë¬¸ì— insertë˜ì§€ ì•Šì•„ì•¼ í•œë‹¤.
         assertEquals(false, sRS.next());
         sRS.close();
         if (aShouldClose)
         {
-            // X$·Î Á¶È¸ÇÏ¸é Á¤º¸°¡ ¾ÆÁ÷ ³²¾ÆÀÖ¾î ½ÇÆĞÇÒ ¼ö ÀÖ´Ù.
+            // X$ë¡œ ì¡°íšŒí•˜ë©´ ì •ë³´ê°€ ì•„ì§ ë‚¨ì•„ìˆì–´ ì‹¤íŒ¨í•  ìˆ˜ ìˆë‹¤.
             assertExecuteScalar(sSelStmt, "1", "Count(*)", "V$SESSION");
         }
         else
@@ -135,7 +135,7 @@ public class TimeoutTest extends AltibaseTestCase
         }
         sSelStmt.close();
         sConn4Lock.close();
-        sConn4DML.close(); // ¾ÈÀüÀ» À§ÇØ close
+        sConn4DML.close(); // ì•ˆì „ì„ ìœ„í•´ close
     }
 
     public void testIdleTimeout() throws SQLException, InterruptedException
@@ -185,7 +185,7 @@ public class TimeoutTest extends AltibaseTestCase
         }
         sConn.setAutoCommit(false);
 
-        // TODO TimeoutÀÌ ¶³¾îÁú¸¸ÇÑ Äõ¸®¸¦ ÇÔ ³¯·Áº¸°í, ½ÇÁ¦·Î ¿¡·¯ ¶³¾îÁö´Â°É È®ÀÎÇØº¸¸é ÁÁ°Ú´Ù. À½;
+        // TODO Timeoutì´ ë–¨ì–´ì§ˆë§Œí•œ ì¿¼ë¦¬ë¥¼ í•¨ ë‚ ë ¤ë³´ê³ , ì‹¤ì œë¡œ ì—ëŸ¬ ë–¨ì–´ì§€ëŠ”ê±¸ í™•ì¸í•´ë³´ë©´ ì¢‹ê² ë‹¤. ìŒ;
 
         ResultSet sRS = sSelStmt.executeQuery("SELECT * FROM t1");
         for (int i = 1; i <= 9; i++)

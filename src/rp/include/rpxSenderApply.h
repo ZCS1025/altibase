@@ -47,8 +47,8 @@ public:
 
     rpxSenderApply();
     virtual ~rpxSenderApply() {};
-    /* PROJ-1915 start flag¸¦ Àü´Ş ÇÏ¿© off-line sender·Î µ¿ÀÛ ÇÒ¶§
-     * updateXSNÀ» meta¿¡ ¹İ¿µ ÇÏÁö ¾Ê´Â´Ù.
+    /* PROJ-1915 start flagë¥¼ ì „ë‹¬ í•˜ì—¬ off-line senderë¡œ ë™ì‘ í• ë•Œ
+     * updateXSNì„ metaì— ë°˜ì˜ í•˜ì§€ ì•ŠëŠ”ë‹¤.
      */
     IDE_RC initialize(rpxSender        *aSender,
                       idvSQL           *aOpStatistics,
@@ -80,8 +80,8 @@ public:
 
     idBool isExit() { return mExitFlag; }
 
-    /* PROJ-1442 Replication Online Áß DDL Çã¿ë
-     * Handshake Áß SenderApply ÁßÁö
+    /* PROJ-1442 Replication Online ì¤‘ DDL í—ˆìš©
+     * Handshake ì¤‘ SenderApply ì¤‘ì§€
      */
     inline idBool isSuspended() { return mIsSuspended; }
     inline void   resume()      { mIsSuspended = ID_FALSE; }
@@ -127,7 +127,7 @@ private:
 
     RP_SENDER_STATUS *mStatus;
 
-    /* BUG-31545 ¼öÇà½Ã°£ Åë°èÁ¤º¸ */
+    /* BUG-31545 ìˆ˜í–‰ì‹œê°„ í†µê³„ì •ë³´ */
     idvSQL          * mOpStatistics;
     idvSession      * mStatSession;
 

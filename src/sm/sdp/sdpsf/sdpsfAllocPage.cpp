@@ -32,17 +32,17 @@
 #include <sdpsfAllocPage.h>
 
 /***********************************************************************
- * Description : ¿ÏÀüÈ÷ ºóÆäÀÌÁö¸¦ Ã£´Â´Ù.
+ * Description : ì™„ì „íˆ ë¹ˆí˜ì´ì§€ë¥¼ ì°¾ëŠ”ë‹¤.
  *
- * aStatistics  - [IN] Åë°è Á¤º¸
+ * aStatistics  - [IN] í†µê³„ ì •ë³´
  * aMtx         - [IN] Mini Transaction Pointer
  * aSpaceID     - [IN] TableSpace ID
  * aSegHdr      - [IN] Segment Header
  * aSegHandle   - [IN] Segment Handle
  * aPageType    - [IN] Page Type
  *
- * aPagePtr     - [OUT] ¿ÏÀüÈ÷ ºó Page¿¡ ´ëÇÑ Pointer°¡ ¼³Á¤µÈ´Ù.
- *                      return ½Ã ÇØ´ç ÆäÀÌÁö¿¡ XLatch°¡ °É·ÁÀÖ´Ù.
+ * aPagePtr     - [OUT] ì™„ì „íˆ ë¹ˆ Pageì— ëŒ€í•œ Pointerê°€ ì„¤ì •ëœë‹¤.
+ *                      return ì‹œ í•´ë‹¹ í˜ì´ì§€ì— XLatchê°€ ê±¸ë ¤ìˆë‹¤.
  *
  ***********************************************************************/
 IDE_RC sdpsfAllocPage::allocNewPage( idvSQL        *aStatistics,
@@ -84,7 +84,7 @@ IDE_RC sdpsfAllocPage::allocNewPage( idvSQL        *aStatistics,
               != IDE_SUCCESS );
     sState = 1;
 
-    /* Private PageList¿¡¼­ Ã£´Â´Ù. */
+    /* Private PageListì—ì„œ ì°¾ëŠ”ë‹¤. */
     IDE_TEST( sdpsfPvtFreePIDList::removeAtHead(
                   aStatistics,
                   &sAllocMtx,
@@ -98,7 +98,7 @@ IDE_RC sdpsfAllocPage::allocNewPage( idvSQL        *aStatistics,
 
     if( sPagePtr == NULL )
     {
-        /* UnFormat PageList¿¡¼­ Ã£´Â´Ù. */
+        /* UnFormat PageListì—ì„œ ì°¾ëŠ”ë‹¤. */
         IDE_TEST( sdpsfUFmtPIDList::removeAtHead(
                       aStatistics,
                       &sAllocMtx,
@@ -113,7 +113,7 @@ IDE_RC sdpsfAllocPage::allocNewPage( idvSQL        *aStatistics,
 
     if( sPagePtr == NULL )
     {
-        /* ExtList¿¡¼­ »õ·Î¿î ÆäÀÌÁö¸¦ È®ÀåÇÑ´Ù. */
+        /* ExtListì—ì„œ ìƒˆë¡œìš´ í˜ì´ì§€ë¥¼ í™•ì¥í•œë‹¤. */
         IDE_TEST( sdpsfExtMgr::allocPage( aStatistics,
                                           &sAllocMtx,
                                           aMtx, /* BM Create Page Mtx */
@@ -137,8 +137,8 @@ IDE_RC sdpsfAllocPage::allocNewPage( idvSQL        *aStatistics,
 
     if( aPageType != SDP_PAGE_DATA )
     {
-        /* TABLE ÆäÀÌÁö°¡ ¾Æ´Ñ°æ¿ì´Â UPDATE ONLY·Î º¯°æÇÑ´Ù. FREEµÇÁö¾Ê´Â°æ¿ì¿Ü¿¡´Â
-         * ´Ù½Ã FreeÆäÀÌÁö°¡ µÉ¼ö ¾ø´Ù. */
+        /* TABLE í˜ì´ì§€ê°€ ì•„ë‹Œê²½ìš°ëŠ” UPDATE ONLYë¡œ ë³€ê²½í•œë‹¤. FREEë˜ì§€ì•ŠëŠ”ê²½ìš°ì™¸ì—ëŠ”
+         * ë‹¤ì‹œ Freeí˜ì´ì§€ê°€ ë ìˆ˜ ì—†ë‹¤. */
         IDE_TEST( sdpPhyPage::setState( sPageHdr,
                                         (UShort)SDPSF_PAGE_USED_UPDATE_ONLY,
                                         aMtx )
@@ -197,14 +197,14 @@ IDE_RC sdpsfAllocPage::allocNewPage( idvSQL        *aStatistics,
 
 /***********************************************************************
  *
- * Description : Segment¿¡ aCountWanted¸¸Å­ÀÇ Free ÆäÀÌÁö°¡ Á¸ÀçÇÏ´ÂÁö
- *               CheckÇÑ´Ù. ¸¸¾à ¾ø´Ù¸é »õ·Î¿î Extent¸¦ ÇÒ´çÇÑ´Ù.
+ * Description : Segmentì— aCountWantedë§Œí¼ì˜ Free í˜ì´ì§€ê°€ ì¡´ì¬í•˜ëŠ”ì§€
+ *               Checkí•œë‹¤. ë§Œì•½ ì—†ë‹¤ë©´ ìƒˆë¡œìš´ Extentë¥¼ í• ë‹¹í•œë‹¤.
  *
- * aStatistics   - [IN] Åë°è Á¤º¸
+ * aStatistics   - [IN] í†µê³„ ì •ë³´
  * aMtx          - [IN] Mini Transaction Pointer
  * aSpaceID      - [IN] TableSpace ID
  * aSegHandle    - [IN] Segment Handle
- * aCountWanted  - [IN] È®º¸ÇÏ±æ ¿øÇÏ´Â ÆäÀÌÁö °¹¼ö
+ * aCountWanted  - [IN] í™•ë³´í•˜ê¸¸ ì›í•˜ëŠ” í˜ì´ì§€ ê°¯ìˆ˜
  *
  ***********************************************************************/
 IDE_RC sdpsfAllocPage::prepareNewPages( idvSQL            * aStatistics,
@@ -248,12 +248,12 @@ IDE_RC sdpsfAllocPage::prepareNewPages( idvSQL            * aStatistics,
     {
         sAllocPageCnt = sdpsfSH::getFmtPageCnt( sSegHdr );
 
-        /* HWMÀÌÈÄ¿¡ Á¸ÀçÇÏ´Â ÆäÀÌÁö°¹¼ö °è»ê */
+        /* HWMì´í›„ì— ì¡´ì¬í•˜ëŠ” í˜ì´ì§€ê°¯ìˆ˜ ê³„ì‚° */
         sPageCntNotAlloc = sdpsfSH::getTotalPageCnt( sSegHdr ) - sAllocPageCnt;
 
         sFreePageCnt = sdpsfSH::getFreePageCnt( sSegHdr ) + sPageCntNotAlloc;
 
-        /* FreeÆäÀÌÁö°¡ ºÎÁ·ÇÏ¸é »õ·Î¿î Extent¸¦ TBS·Î ºÎÅÍ ¿ä±¸ÇÑ´Ù. */
+        /* Freeí˜ì´ì§€ê°€ ë¶€ì¡±í•˜ë©´ ìƒˆë¡œìš´ Extentë¥¼ TBSë¡œ ë¶€í„° ìš”êµ¬í•œë‹¤. */
         if( sFreePageCnt < aCountWanted )
         {
             if( sdpsfExtMgr::allocExt( aStatistics,
@@ -295,16 +295,16 @@ IDE_RC sdpsfAllocPage::prepareNewPages( idvSQL            * aStatistics,
 }
 
 /***********************************************************************
- * Description : ¿ÏÀüÈ÷ ºó ÆäÀÌÁö¸¦ ÇÒ´çÇÑ´Ù.
+ * Description : ì™„ì „íˆ ë¹ˆ í˜ì´ì§€ë¥¼ í• ë‹¹í•œë‹¤.
  *
- * aStatistics  - [IN] Åë°è Á¤º¸
+ * aStatistics  - [IN] í†µê³„ ì •ë³´
  * aMtx         - [IN] Mini Transaction Pointer
  * aSpaceID     - [IN] TableSpace ID
  * aSegHandle   - [IN] Segment Handle
  * aPageType    - [IN] Page Type
  *
- * aPagePtr     - [OUT] Free°ø°£À» °¡Áø Page¿¡ ´ëÇÑ Pointer°¡ ¼³Á¤µÈ´Ù.
- *                      return ½Ã ÇØ´ç ÆäÀÌÁö¿¡ XLatch°¡ °É·ÁÀÖ´Ù.
+ * aPagePtr     - [OUT] Freeê³µê°„ì„ ê°€ì§„ Pageì— ëŒ€í•œ Pointerê°€ ì„¤ì •ëœë‹¤.
+ *                      return ì‹œ í•´ë‹¹ í˜ì´ì§€ì— XLatchê°€ ê±¸ë ¤ìˆë‹¤.
  *
  ***********************************************************************/
 IDE_RC sdpsfAllocPage::allocPage( idvSQL        *aStatistics,
@@ -361,15 +361,15 @@ IDE_RC sdpsfAllocPage::allocPage( idvSQL        *aStatistics,
 }
 
 /***********************************************************************
- * Description : aPagePtrÀÌ °¡¸®Å°´Â ÆäÀÌÁö°¡ ¿ÏÀüÈ÷ ºó ÆäÀÌÁö°¡ µÇ¾î¼­
- *               UFmtPageList¿¡ Ãß°¡ÇÑ´Ù. ÀÌ¶§ ÀÌ¹Ì ÆäÀÌÁö°¡ ´Ù¸¥ PageList¿¡
- *               ¼ÓÇØ ÀÖ´Ù¸é ±×³É µĞ´Ù.
+ * Description : aPagePtrì´ ê°€ë¦¬í‚¤ëŠ” í˜ì´ì§€ê°€ ì™„ì „íˆ ë¹ˆ í˜ì´ì§€ê°€ ë˜ì–´ì„œ
+ *               UFmtPageListì— ì¶”ê°€í•œë‹¤. ì´ë•Œ ì´ë¯¸ í˜ì´ì§€ê°€ ë‹¤ë¥¸ PageListì—
+ *               ì†í•´ ìˆë‹¤ë©´ ê·¸ëƒ¥ ë‘”ë‹¤.
  *
- * aStatistics  - [IN] Åë°è Á¤º¸
+ * aStatistics  - [IN] í†µê³„ ì •ë³´
  * aMtx         - [IN] Mini Transaction Pointer
  * aSpaceID     - [IN] TableSpace ID
  * aSegHandle   - [IN] Segment Handle
- * aPagePtr     - [IN] FreeÇÒ Page Pointer
+ * aPagePtr     - [IN] Freeí•  Page Pointer
  *
  ***********************************************************************/
 IDE_RC sdpsfAllocPage::freePage( idvSQL            * aStatistics,
@@ -385,7 +385,7 @@ IDE_RC sdpsfAllocPage::freePage( idvSQL            * aStatistics,
     IDE_ASSERT( aSegHandle  != NULL );
     IDE_ASSERT( aPagePtr    != NULL );
 
-    /* Page°¡ ÀÌ¹Ì Æ¯Á¤ Free PID List¿¡ ¼ÓÇØÀÖ´ÂÁö CheckÇÑ´Ù. */
+    /* Pageê°€ ì´ë¯¸ íŠ¹ì • Free PID Listì— ì†í•´ìˆëŠ”ì§€ Checkí•œë‹¤. */
     if( ((sdpPhyPageHdr*)aPagePtr)->mLinkState == SDP_PAGE_LIST_UNLINK )
     {
         IDE_TEST( sdpsfSH::fixAndGetSegHdr4Update( aStatistics,
@@ -418,7 +418,7 @@ IDE_RC sdpsfAllocPage::freePage( idvSQL            * aStatistics,
 }
 
 /***********************************************************************
- * Description : ÆäÀÌÁö°¡ FreeµÈ ¿©ºÎ¸¦ ¹İÈ¯ÇÑ´Ù.
+ * Description : í˜ì´ì§€ê°€ Freeëœ ì—¬ë¶€ë¥¼ ë°˜í™˜í•œë‹¤.
  *
  * BUG-32942 When executing rebuild Index stat, abnormally shutdown
  *
@@ -438,13 +438,13 @@ idBool sdpsfAllocPage::isFreePage( UChar * aPagePtr )
 }
 
 /***********************************************************************
- * Description : aPagePtr¸¦ Free PID List¿¡ Ãß°¡ÇÑ´Ù.
+ * Description : aPagePtrë¥¼ Free PID Listì— ì¶”ê°€í•œë‹¤.
  *
- * aStatistics  - [IN] Åë°è Á¤º¸
+ * aStatistics  - [IN] í†µê³„ ì •ë³´
  * aMtx         - [IN] Mini Transaction Pointer
  * aSpaceID     - [IN] TableSpace ID
  * aSegRID      - [IN] Segment RID
- * aPagePtr     - [IN] FreeÇÒ Page Pointer
+ * aPagePtr     - [IN] Freeí•  Page Pointer
  *
  ***********************************************************************/
 IDE_RC sdpsfAllocPage::addPageToFreeList( idvSQL          * aStatistics,
@@ -502,28 +502,28 @@ IDE_RC sdpsfAllocPage::addPageToFreeList( idvSQL          * aStatistics,
 }
 
 /***********************************************************************
- * Description : aPrvAllocExtRID°¡ °¡¸®Å°´Â Extent¿¡ aPrvAllocPageIDÀÌÈÄ
- *               Page°¡ Á¸ÀçÇÏ´Â ÇÏ´ÂÁö Ã¼Å©ÇØ¼­ ¾øÀ¸¸é »õ·Î¿î ´ÙÀ½
- *               Extent·Î ÀÌµ¿ÇÏ°í ´ÙÀ½ Extent°¡ ¾øÀ¸¸é TBS·Î ºÎÅÍ »õ·Î¿î
- *               Extent¸¦ ÇÒ´ç¹Ş´Â´Ù. ÀÌÈÄ Extent¿¡¼­ Free Page¸¦ Ã£¾Æ¼­
- *               Page°¡ ÇÒ´çµÈ ExtRID¿Í PageID¸¦ ³Ñ°ÜÁØ´Ù.
+ * Description : aPrvAllocExtRIDê°€ ê°€ë¦¬í‚¤ëŠ” Extentì— aPrvAllocPageIDì´í›„
+ *               Pageê°€ ì¡´ì¬í•˜ëŠ” í•˜ëŠ”ì§€ ì²´í¬í•´ì„œ ì—†ìœ¼ë©´ ìƒˆë¡œìš´ ë‹¤ìŒ
+ *               Extentë¡œ ì´ë™í•˜ê³  ë‹¤ìŒ Extentê°€ ì—†ìœ¼ë©´ TBSë¡œ ë¶€í„° ìƒˆë¡œìš´
+ *               Extentë¥¼ í• ë‹¹ë°›ëŠ”ë‹¤. ì´í›„ Extentì—ì„œ Free Pageë¥¼ ì°¾ì•„ì„œ
+ *               Pageê°€ í• ë‹¹ëœ ExtRIDì™€ PageIDë¥¼ ë„˜ê²¨ì¤€ë‹¤.
  *
  * Caution:
- *  1. ÀÌ ÇÔ¼ö°¡ È£ÃâµÉ¶§ SegHdr°¡ ÀÖ´Â ÆäÀÌÁö¿¡ XLatch°¡ °É·Á ÀÖ¾î¾ß ÇÑ´Ù.
+ *  1. ì´ í•¨ìˆ˜ê°€ í˜¸ì¶œë ë•Œ SegHdrê°€ ìˆëŠ” í˜ì´ì§€ì— XLatchê°€ ê±¸ë ¤ ìˆì–´ì•¼ í•œë‹¤.
  *
- * aStatistics          - [IN] Åë°è Á¤º¸
+ * aStatistics          - [IN] í†µê³„ ì •ë³´
  * aMtx                 - [IN] Mini Transaction Pointer
  * aSpaceID             - [IN] TableSpace ID
  * aSegHandle           - [IN] Segment Handle
- * aPrvAllocExtRID      - [IN] ÀÌÀü¿¡ Page¸¦ ÇÒ´ç¹Ş¾Ò´ø Extent RID
- * aFstPIDOfPrvAllocExt - [IN] ÀÌÀü¿¡ ÇÒ´çµÈ ExtentÀÇ Ã¹¹øÂ° PID
- * aPrvAllocPageID      - [IN] ÀÌÀü¿¡ ÇÒ´ç¹ŞÀº PageID
+ * aPrvAllocExtRID      - [IN] ì´ì „ì— Pageë¥¼ í• ë‹¹ë°›ì•˜ë˜ Extent RID
+ * aFstPIDOfPrvAllocExt - [IN] ì´ì „ì— í• ë‹¹ëœ Extentì˜ ì²«ë²ˆì§¸ PID
+ * aPrvAllocPageID      - [IN] ì´ì „ì— í• ë‹¹ë°›ì€ PageID
  *
- * aAllocExtRID      - [OUT] »õ·Î¿î Page°¡ ÇÒ´çµÈ Extent RID
- * aFstPIDOfAllocExt - [OUT] ÇÒ´ç¹ŞÀº Page°¡ ÀÖ´Â ExtentÀÇ Ã¹¹øÂ° ÆäÀÌÁö ID
- * aAllocPID         - [OUT] »õ·Ó°Ô ÇÒ´ç¹ŞÀº PageID
- * aAllocPagePtr     - [OUT] ÇÒ´çµÈ ÆäÀÌÁö¿¡ ´ëÇÑ Pointer, ¸®ÅÏµÉ¶§ XLatch°¡
- *                           °É·ÁÀÖ´Ù.
+ * aAllocExtRID      - [OUT] ìƒˆë¡œìš´ Pageê°€ í• ë‹¹ëœ Extent RID
+ * aFstPIDOfAllocExt - [OUT] í• ë‹¹ë°›ì€ Pageê°€ ìˆëŠ” Extentì˜ ì²«ë²ˆì§¸ í˜ì´ì§€ ID
+ * aAllocPID         - [OUT] ìƒˆë¡­ê²Œ í• ë‹¹ë°›ì€ PageID
+ * aAllocPagePtr     - [OUT] í• ë‹¹ëœ í˜ì´ì§€ì— ëŒ€í•œ Pointer, ë¦¬í„´ë ë•Œ XLatchê°€
+ *                           ê±¸ë ¤ìˆë‹¤.
  ***********************************************************************/
 IDE_RC sdpsfAllocPage::allocNewPage4Append( idvSQL               *aStatistics,
                                             sdrMtx               *aMtx,

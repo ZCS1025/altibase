@@ -47,7 +47,7 @@ public interface Column
     int getMaxDisplaySize();
 
     /**
-     * SQL/CLI ÀÇ SQL_DESC_OCTET_LENGTH ¿¡ ´ëÀÀµÇ´Â column ÀÇ ÃÖ´ë ±æÀÌ¸¦ ¹İÈ¯ÇÑ´Ù.
+     * SQL/CLI ì˜ SQL_DESC_OCTET_LENGTH ì— ëŒ€ì‘ë˜ëŠ” column ì˜ ìµœëŒ€ ê¸¸ì´ë¥¼ ë°˜í™˜í•œë‹¤.
      */
     int getOctetLength();
 
@@ -59,28 +59,28 @@ public interface Column
 
     // PROJ-2368
     /**
-     * List Protocol À» À§ÇÑ ByteBuffer ¿¡ ÇÁ·ÎÅäÄİ¿¡¼­ Á¤ÀÇÇÑ ¹ÙÀÌ³Ê¸® ÇüÅÂ·Î µ¥ÀÌÅ¸¸¦ ¾´´Ù.
+     * List Protocol ì„ ìœ„í•œ ByteBuffer ì— í”„ë¡œí† ì½œì—ì„œ ì •ì˜í•œ ë°”ì´ë„ˆë¦¬ í˜•íƒœë¡œ ë°ì´íƒ€ë¥¼ ì“´ë‹¤.
      * 
-     * @param aBufferWriter µ¥ÀÌÅ¸¸¦ ¾µ ByteBuffer Writer
-     * @throws SQLException µ¥ÀÌÅ¸ Àü¼Û¿¡ ½ÇÆĞÇßÀ» °æ¿ì
+     * @param aBufferWriter ë°ì´íƒ€ë¥¼ ì“¸ ByteBuffer Writer
+     * @throws SQLException ë°ì´íƒ€ ì „ì†¡ì— ì‹¤íŒ¨í–ˆì„ ê²½ìš°
      */
     void storeTo(ListBufferHandle aBufferWriter) throws SQLException;
 
     /**
-     * {@link #writeTo(CmBufferWriter)}·Î ¿¡ ¾µ ÁØºñ¸¦ ÇÏ°í, ¾µ µ¥ÀÌÅ¸ÀÇ ±æÀÌ¸¦ ¹İÈ¯ÇÑ´Ù.
+     * {@link #writeTo(CmBufferWriter)}ë¡œ ì— ì“¸ ì¤€ë¹„ë¥¼ í•˜ê³ , ì“¸ ë°ì´íƒ€ì˜ ê¸¸ì´ë¥¼ ë°˜í™˜í•œë‹¤.
      * 
-     * @param aBufferWriter µ¥ÀÌÅ¸¸¦ ¾µ ByteBuffer Writer
-     * @return ¾µ µ¥ÀÌÅ¸ÀÇ ¹ÙÀÌÆ® ±æÀÌ
-     * @throws SQLException ¾µ µ¥ÀÌÅ¸¸¦ ÁØºñÇÏ´Âµ¥ ½ÇÆĞÇßÀ» °æ¿ì
+     * @param aBufferWriter ë°ì´íƒ€ë¥¼ ì“¸ ByteBuffer Writer
+     * @return ì“¸ ë°ì´íƒ€ì˜ ë°”ì´íŠ¸ ê¸¸ì´
+     * @throws SQLException ì“¸ ë°ì´íƒ€ë¥¼ ì¤€ë¹„í•˜ëŠ”ë° ì‹¤íŒ¨í–ˆì„ ê²½ìš°
      */
     int prepareToWrite(CmBufferWriter aBufferWriter) throws SQLException;
 
     /**
-     * ByteBuffer¿¡ ÇÁ·ÎÅäÄİ¿¡¼­ Á¤ÀÇÇÑ ¹ÙÀÌ³Ê¸® ÇüÅÂ·Î µ¥ÀÌÅ¸¸¦ ¾´´Ù.
+     * ByteBufferì— í”„ë¡œí† ì½œì—ì„œ ì •ì˜í•œ ë°”ì´ë„ˆë¦¬ í˜•íƒœë¡œ ë°ì´íƒ€ë¥¼ ì“´ë‹¤.
      * 
-     * @param aBufferWriter µ¥ÀÌÅ¸¸¦ ¾µ ByteBuffer Writer
-     * @return ByteBuffer¿¡ ¾´ µ¥ÀÌÅ¸ »çÀÌÁî(byte ´ÜÀ§)
-     * @throws SQLException µ¥ÀÌÅ¸ Àü¼Û¿¡ ½ÇÆĞÇßÀ» °æ¿ì
+     * @param aBufferWriter ë°ì´íƒ€ë¥¼ ì“¸ ByteBuffer Writer
+     * @return ByteBufferì— ì“´ ë°ì´íƒ€ ì‚¬ì´ì¦ˆ(byte ë‹¨ìœ„)
+     * @throws SQLException ë°ì´íƒ€ ì „ì†¡ì— ì‹¤íŒ¨í–ˆì„ ê²½ìš°
      */
     int writeTo(CmBufferWriter aBufferWriter) throws SQLException;
 
@@ -89,10 +89,10 @@ public interface Column
     boolean isNumberType();
 
     /**
-     * Ã¤³Î·ÎºÎÅÍ ÄÃ·³µ¥ÀÌÅÍ¸¦ ÀĞ¾î¿Í ÇØ´çÇÏ´Â ÀÎµ¦½ºÀÇ DynamicArray¿¡ ¹Ù·Î ÀúÀåÇÑ´Ù.
-     * @param aChannel ¼ÒÄÏÅë½ÅÀ» À§ÇÑ Ã¤³Î°´Ã¼
-     * @param aFetchResult DynamicArray¿¡ ´ëÇÑ ÀÎÅÍÆäÀÌ½º¸¦ °¡Áö°í ÀÖ´Â °´Ã¼
-     * @throws SQLException ¼ÒÄÏÅë½Å½Ã ¿¹¿Ü°¡ ¹ß»ıÇÑ °æ¿ì
+     * ì±„ë„ë¡œë¶€í„° ì»¬ëŸ¼ë°ì´í„°ë¥¼ ì½ì–´ì™€ í•´ë‹¹í•˜ëŠ” ì¸ë±ìŠ¤ì˜ DynamicArrayì— ë°”ë¡œ ì €ì¥í•œë‹¤.
+     * @param aChannel ì†Œì¼“í†µì‹ ì„ ìœ„í•œ ì±„ë„ê°ì²´
+     * @param aFetchResult DynamicArrayì— ëŒ€í•œ ì¸í„°í˜ì´ìŠ¤ë¥¼ ê°€ì§€ê³  ìˆëŠ” ê°ì²´
+     * @throws SQLException ì†Œì¼“í†µì‹ ì‹œ ì˜ˆì™¸ê°€ ë°œìƒí•œ ê²½ìš°
      */
     void readFrom(CmChannel aChannel, CmFetchResult aFetchResult) throws SQLException;
 
@@ -155,14 +155,14 @@ public interface Column
     Object getObject() throws SQLException;
 
     /**
-     * ÄÃ·³ ÀÎµ¦½º¸¦ ¼ÂÆÃÇÑ´Ù.
-     * @param aColumnIndex ÄÃ·³ ÀÎµ¦½º
+     * ì»¬ëŸ¼ ì¸ë±ìŠ¤ë¥¼ ì…‹íŒ…í•œë‹¤.
+     * @param aColumnIndex ì»¬ëŸ¼ ì¸ë±ìŠ¤
      */
     void setColumnIndex(int aColumnIndex);
 
     /**
-     * ÄÃ·³ÀÇ ÀÎµ¦½º¸¦ °¡Á®¿Â´Ù.
-     * @return ÄÃ·³ ÀÎµ¦½º
+     * ì»¬ëŸ¼ì˜ ì¸ë±ìŠ¤ë¥¼ ê°€ì ¸ì˜¨ë‹¤.
+     * @return ì»¬ëŸ¼ ì¸ë±ìŠ¤
      */
     int getColumnIndex();
 }

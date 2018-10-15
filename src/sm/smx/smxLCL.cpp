@@ -21,16 +21,16 @@
 /**************************************************************
  * FILE DESCRIPTION : smxLCL.cpp                              *
  * -----------------------------------------------------------*
-  º» ÆÄÀÏÀº °¢ transaction¿¡¼­  ¸Ş¸ğ¸® ¶Ç´Â Disk LobCursor
-  list¸¦ °ü¸®ÇÏ°í, oldestSCN°ªÀ» ¹İÈ¯ÇÏ´Â ¸ğµâÀÌ´Ù.
+  ë³¸ íŒŒì¼ì€ ê° transactionì—ì„œ  ë©”ëª¨ë¦¬ ë˜ëŠ” Disk LobCursor
+  listë¥¼ ê´€ë¦¬í•˜ê³ , oldestSCNê°’ì„ ë°˜í™˜í•˜ëŠ” ëª¨ë“ˆì´ë‹¤.
 
-  LobCursor »ğÀÔ /»èÁ¦´Â ,µ¿½Ã¼º ¾øÀÌ ¼øÂ÷ÀûÀ¸·Î ¼öÇàµÇ¸ç,
-  disk , memory garbage collector¿¡¼­ ÀĞ´Â   oldest SCN°ªÀº
-  LobCursor°¡ »ğÀÔ/»èÁ¦°¡ ¹ß»ıÇÏ´õ¶óµµ  blocking¾øÀÌ ¼öÇàµÇµµ·Ï
-¼³°è ÇÏ¿´´Ù.
+  LobCursor ì‚½ì… /ì‚­ì œëŠ” ,ë™ì‹œì„± ì—†ì´ ìˆœì°¨ì ìœ¼ë¡œ ìˆ˜í–‰ë˜ë©°,
+  disk , memory garbage collectorì—ì„œ ì½ëŠ”   oldest SCNê°’ì€
+  LobCursorê°€ ì‚½ì…/ì‚­ì œê°€ ë°œìƒí•˜ë”ë¼ë„  blockingì—†ì´ ìˆ˜í–‰ë˜ë„ë¡
+ì„¤ê³„ í•˜ì˜€ë‹¤.
 
-  ±×¸²°ú °°ÀÌ Lob Cursor List(LCL)´Â  circular double linked list
-  ·Î °ü¸®µÈ´Ù.
+  ê·¸ë¦¼ê³¼ ê°™ì´ Lob Cursor List(LCL)ëŠ”  circular double linked list
+  ë¡œ ê´€ë¦¬ëœë‹¤.
 
   baseNode in LCL(Lob Cursor List)
                                     next
@@ -46,21 +46,21 @@
      -----------------------------------
 
                  ---------------------->
-                   insertÁøÇà¹æÇâ(SCN°ª ¼ø¼­·Î Á¤·Ä)
+                   insertì§„í–‰ë°©í–¥(SCNê°’ ìˆœì„œë¡œ ì •ë ¬)
 
- smxLSLÀÇ object¾È¿¡  smLobCusroÀÎ base³ëµåÀÇ mSCN°ªÀÌ
- oldestSCN°ªÀÌ µÇµµ·Ï list¸¦ ¾Æ·¡¿Í °°ÀÌ °ü¸®ÇÑ´Ù.
+ smxLSLì˜ objectì•ˆì—  smLobCusroì¸ baseë…¸ë“œì˜ mSCNê°’ì´
+ oldestSCNê°’ì´ ë˜ë„ë¡ listë¥¼ ì•„ë˜ì™€ ê°™ì´ ê´€ë¦¬í•œë‹¤.
 
-  -  circular dobule linked list¿¡
-    node insert½Ã head node°¡ µÇ´Â °æ¿ì¿¡´Â basenodeÀÇ
-     mSCNÀ» °»½Å½ÃÅ²´Ù.
+  -  circular dobule linked listì—
+    node insertì‹œ head nodeê°€ ë˜ëŠ” ê²½ìš°ì—ëŠ” basenodeì˜
+     mSCNì„ ê°±ì‹ ì‹œí‚¨ë‹¤.
 
-  -  circular dobule linked list¿¡ node¸¦ »èÁ¦½Ã,
-    head node¸¦ »èÁ¦ÇÏ´Â °æ¿ì¿¡´Â head nodeÀÇ
-    next  nodeÀÇ mSCNÀ¸·Î base nodeÀÇ mSCNÀ» °»½Å½ÃÅ²´Ù.
+  -  circular dobule linked listì— nodeë¥¼ ì‚­ì œì‹œ,
+    head nodeë¥¼ ì‚­ì œí•˜ëŠ” ê²½ìš°ì—ëŠ” head nodeì˜
+    next  nodeì˜ mSCNìœ¼ë¡œ base nodeì˜ mSCNì„ ê°±ì‹ ì‹œí‚¨ë‹¤.
 
- oldestSCNÀ» blocking¾øÀÌ ÀĞ±â À§ÇÏ¿© perterson's algorithm
- À» µµÀÔÇÏ¿´´Ù.
+ oldestSCNì„ blockingì—†ì´ ì½ê¸° ìœ„í•˜ì—¬ perterson's algorithm
+ ì„ ë„ì…í•˜ì˜€ë‹¤.
 **********************************************************************/
 
 #include <smErrorCode.h>
@@ -71,10 +71,10 @@
   Name:  smxLCL::getOldestSCN
   Argument: smSCN*
   Description:
-  baseNodeÀÇ mSCNÀ» assginÇÏ¿© ÁØ´Ù.
-  Áï baseNodeÀÇ mSCNÀÌ oldestSCNÀ» À¯Áö ÇÏµµ·Ï circular double linked
-  list »ğÀÔ½Ã head node°¡ µÇ°Å³ª , list»èÁ¦½Ã head node¸¦ »èÁ¦ÇÑ
-  °æ¿ì¿¡ base nodeÀÇ mSCNÀ» °»½ÅÇÑ´Ù.
+  baseNodeì˜ mSCNì„ assginí•˜ì—¬ ì¤€ë‹¤.
+  ì¦‰ baseNodeì˜ mSCNì´ oldestSCNì„ ìœ ì§€ í•˜ë„ë¡ circular double linked
+  list ì‚½ì…ì‹œ head nodeê°€ ë˜ê±°ë‚˜ , listì‚­ì œì‹œ head nodeë¥¼ ì‚­ì œí•œ
+  ê²½ìš°ì— base nodeì˜ mSCNì„ ê°±ì‹ í•œë‹¤.
 
   baseNode in SMXLCL
                                     next
@@ -89,9 +89,9 @@
     |       prev                        |
      -----------------------------------
 
-  list  insert/delet´Â serialÇÏ°Ô ÀÌ·ç¾îÁö°í oldestSCNÀ»
- ÀĞ´ÂºÎºĞÀº insert/delete½Ã¿¡ blocking¾øÀÌ ¼öÇàÇÏ±â À§ÇÏ¿©
-  peterson algorithmÀ»  ¾Æ·¡¿Í °°ÀÌ µµÀÔÇÏ¿´´Ù.
+  list  insert/deletëŠ” serialí•˜ê²Œ ì´ë£¨ì–´ì§€ê³  oldestSCNì„
+ ì½ëŠ”ë¶€ë¶„ì€ insert/deleteì‹œì— blockingì—†ì´ ìˆ˜í–‰í•˜ê¸° ìœ„í•˜ì—¬
+  peterson algorithmì„  ì•„ë˜ì™€ ê°™ì´ ë„ì…í•˜ì˜€ë‹¤.
 
   mSyncA                      mSyncB
     -----------------------------> reader(smxLCL::getOldestSCN)
@@ -129,11 +129,11 @@ void smxLCL::getOldestSCN(smSCN* aSCN)
 /*********************************************************************
   Name:  smxLCL::insert
   Description:
-  circular dobule linked list insert½Ã¿¡
-  node¸¦   ¾Æ·¡ ±×¸²°ú °°ÀÌ ¸ÇµÚ¿¡ appendµÇµµ·Ï ÇÑ´Ù.
+  circular dobule linked list insertì‹œì—
+  nodeë¥¼   ì•„ë˜ ê·¸ë¦¼ê³¼ ê°™ì´ ë§¨ë’¤ì— appendë˜ë„ë¡ í•œë‹¤.
 
-  insert½Ã head node°¡ µÇ´Â °æ¿ì¿¡´Â base nodeÀÇ
-  mSCNÀ» °»½Å½ÃÅ²´Ù.
+  insertì‹œ head nodeê°€ ë˜ëŠ” ê²½ìš°ì—ëŠ” base nodeì˜
+  mSCNì„ ê°±ì‹ ì‹œí‚¨ë‹¤.
 
                             next
 
@@ -150,7 +150,7 @@ void smxLCL::getOldestSCN(smSCN* aSCN)
      -----------------------------------
 
                     -------------------->
-                    insert ÁøÇà¹æÇâ(SCN°ª ¼ø¼­·Î Á¤·Ä)
+                    insert ì§„í–‰ë°©í–¥(SCNê°’ ìˆœì„œë¡œ ì •ë ¬)
 
  **********************************************************************/
 void  smxLCL::insert(smLobCursor* aNode)
@@ -165,7 +165,7 @@ void  smxLCL::insert(smLobCursor* aNode)
 
     mCursorCnt++;
 
-    // head nodeÀÏ °æ¿ì¿¡ oldest scn°ªÀ» °»½ÅÇÑ´Ù.
+    // head nodeì¼ ê²½ìš°ì— oldest scnê°’ì„ ê°±ì‹ í•œë‹¤.
     if(aNode->mPrev == &mBaseNode)
     {
         ID_SERIAL_BEGIN(mSyncVb++);
@@ -181,24 +181,24 @@ void  smxLCL::insert(smLobCursor* aNode)
 /*********************************************************************
   Name:  smxLCL::remove
   Description:
-  circular dobule linked list¿¡ node¸¦ »èÁ¦ÇÏ°í,
-  head node¸¦ »èÁ¦ÇÏ´Â °æ¿ì¿¡´Â head nodeÀÇ
-  next nodeÀÇ mSCNÀ¸·Î base nodeÀÇ mSCNÀ» °»½Å½ÃÅ²´Ù.
+  circular dobule linked listì— nodeë¥¼ ì‚­ì œí•˜ê³ ,
+  head nodeë¥¼ ì‚­ì œí•˜ëŠ” ê²½ìš°ì—ëŠ” head nodeì˜
+  next nodeì˜ mSCNìœ¼ë¡œ base nodeì˜ mSCNì„ ê°±ì‹ ì‹œí‚¨ë‹¤.
  **********************************************************************/
 void   smxLCL::remove(smLobCursor* aNode)
 {
 
     IDE_DASSERT( aNode != NULL );
 
-    // head nodeÀÏ °æ¿ì°¡ »èÁ¦µÈ °æ¿ìÀÌ±â¶§¹®¿¡
-    // oldestSCN°ªÀ» °»½ÅÇØ¾ß µÈ´Ù.
+    // head nodeì¼ ê²½ìš°ê°€ ì‚­ì œëœ ê²½ìš°ì´ê¸°ë•Œë¬¸ì—
+    // oldestSCNê°’ì„ ê°±ì‹ í•´ì•¼ ëœë‹¤.
     if(aNode->mPrev == &mBaseNode)
     {
         ID_SERIAL_BEGIN(mSyncVb++);
         if(mBaseNode.mPrev == aNode)
         {
-            //LoCursor°¡  ÇÏ³ªµµ ¾ø°ÔµÇ´Â °æ¿ì
-            //oldestSCNÀ» ¹«ÇÑ´ë·Î ¼³Á¤ÇÑ´Ù.
+            //LoCursorê°€  í•˜ë‚˜ë„ ì—†ê²Œë˜ëŠ” ê²½ìš°
+            //oldestSCNì„ ë¬´í•œëŒ€ë¡œ ì„¤ì •í•œë‹¤.
             // BUG-27735 : Peterson Algorithm
             ID_SERIAL_EXEC(
                 SM_SET_SCN_INFINITE(&(mBaseNode.mLobViewEnv.mSCN)),
@@ -206,7 +206,7 @@ void   smxLCL::remove(smLobCursor* aNode)
         }//if
         else
         {
-            // next nodeÀÇ SCNÀ¸·Î oldest scn°ªÀ» °»½ÅÇÑ´Ù.
+            // next nodeì˜ SCNìœ¼ë¡œ oldest scnê°’ì„ ê°±ì‹ í•œë‹¤.
             // BUG-27735 : Peterson Algorithm
             ID_SERIAL_EXEC( SM_SET_SCN(&(mBaseNode.mLobViewEnv.mSCN),
                                        &(aNode->mNext->mLobViewEnv.mSCN)),

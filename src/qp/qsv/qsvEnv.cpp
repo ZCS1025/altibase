@@ -55,10 +55,10 @@ void qsvEnv::clearEnv(qsvEnvInfo * aEnv)
     aEnv->createProc        = NULL;
     aEnv->objectSynonymList = NULL;
     aEnv->procPlanList      = NULL;
-    aEnv->latched           = ID_TRUE;   // procPlanList¸¦ »ý¼ºÇÏ¸é¼­
-                                         // ID_TRUE°¡ µÇ¾î¾ß ÇÏÁö¸¸
-                                         // procPlanList´Â NULLÀÌ¹Ç·Î
-                                         // »ý¼º½Ã ID_TRUE°¡ µÇ¾îµµ ¹«¹æÇÏ´Ù.
+    aEnv->latched           = ID_TRUE;   // procPlanListë¥¼ ìƒì„±í•˜ë©´ì„œ
+                                         // ID_TRUEê°€ ë˜ì–´ì•¼ í•˜ì§€ë§Œ
+                                         // procPlanListëŠ” NULLì´ë¯€ë¡œ
+                                         // ìƒì„±ì‹œ ID_TRUEê°€ ë˜ì–´ë„ ë¬´ë°©í•˜ë‹¤.
     aEnv->modifiedTableList = NULL;
     aEnv->currDeclItem      = NULL;
   
@@ -78,8 +78,8 @@ void qsvEnv::clearEnv(qsvEnvInfo * aEnv)
     aEnv->mStmtList         = NULL;
 
     /* BUG-39004
-       package intialize section¿¡ ´ëÇØ¼­
-       validation ÁøÇà ¿©ºÎ Ç¥½Ã */
+       package intialize sectionì— ëŒ€í•´ì„œ
+       validation ì§„í–‰ ì—¬ë¶€ í‘œì‹œ */
     aEnv->isPkgInitializeSection = ID_FALSE;
 }
 

@@ -25,23 +25,23 @@
 
 /*
    iduMemoryHandle : 
-     ¿¬¼ÓµÈ ¸Þ¸ð¸® °ø°£À» alloc,reallocÇÏ´Â Ç¥ÁØ interface¸¦ Á¦°øÇÑ´Ù.
+     ì—°ì†ëœ ë©”ëª¨ë¦¬ ê³µê°„ì„ alloc,reallocí•˜ëŠ” í‘œì¤€ interfaceë¥¼ ì œê³µí•œë‹¤.
      
-   ¿ëµµ :
-     ¸Þ¸ð¸®ÀÇ ÇÒ´ç°ú ÇØÁ¦¸¦ ´ã´çÇÏ´Â ¸ðµâ°ú
-     ¸Þ¸ð¸®¸¦ »õ·Î¿î Å©±â·Î ÀçÇÒ´çÀ» ÇÏ´Â ¸ðµâÀÌ ¼­·Î ´Ù¸¥ °æ¿ì
-     Memory HandleÀ» ÀÌ¿ëÇÏ¿© ¸Þ¸ð¸®¸¦ ÇÒ´ç/ÀçÇÒ´ç/ÇØÁ¦ÇÑ´Ù.
+   ìš©ë„ :
+     ë©”ëª¨ë¦¬ì˜ í• ë‹¹ê³¼ í•´ì œë¥¼ ë‹´ë‹¹í•˜ëŠ” ëª¨ë“ˆê³¼
+     ë©”ëª¨ë¦¬ë¥¼ ìƒˆë¡œìš´ í¬ê¸°ë¡œ ìž¬í• ë‹¹ì„ í•˜ëŠ” ëª¨ë“ˆì´ ì„œë¡œ ë‹¤ë¥¸ ê²½ìš°
+     Memory Handleì„ ì´ìš©í•˜ì—¬ ë©”ëª¨ë¦¬ë¥¼ í• ë‹¹/ìž¬í• ë‹¹/í•´ì œí•œë‹¤.
 
-   »ç¿ë¿¹:
-     ·Î±× ¾ÐÃàÇØÁ¦ÀÇ °æ¿ì ¾ÐÃàÇØÁ¦¸¦ ÇÏ´Â Thread°¡ ·Î±×ÀÇ ¾ÐÃà
-     ÇØÁ¦ ¹öÆÛ¸¦ ÇÒ´çÇÏ°í ÇØÁ¦ÇÑ´Ù.
-     (iduMemoryHandleÀ» ±¸ÇöÇÏ´Â Concrete classÀÇ initialize, destroy¸¦ È£Ãâ)
+   ì‚¬ìš©ì˜ˆ:
+     ë¡œê·¸ ì••ì¶•í•´ì œì˜ ê²½ìš° ì••ì¶•í•´ì œë¥¼ í•˜ëŠ” Threadê°€ ë¡œê·¸ì˜ ì••ì¶•
+     í•´ì œ ë²„í¼ë¥¼ í• ë‹¹í•˜ê³  í•´ì œí•œë‹¤.
+     (iduMemoryHandleì„ êµ¬í˜„í•˜ëŠ” Concrete classì˜ initialize, destroyë¥¼ í˜¸ì¶œ)
 
-     ¹Ý¸é, ¾ÐÃàÀ» ½ÇÁ¦·Î Çª´Â ÀÛ¾÷Àº ·Î±ë ¸ðµâ¿¡¼­ ¼öÇàÇÏ±â ¶§¹®¿¡,
-     ·Î±ë ¸ðµâ¿¡¼­´Â ¾ÐÃà ÇØÁ¦ ¹öÆÛÀÇ Å©±â¸¦ ¸¶À½´ë·Î Á¶ÀýÀÌ
-     °¡´ÉÇØ¾ß ÇÑ´Ù.
-     (iduMemoryHandleÀ» ±¸ÇöÇÏ´Â Concrete classÀÇ prepare¸¦ È£ÃâÇÏ¿©
-      ÇÊ¿äÇÑ ¸Þ¸ð¸® Å©±â¸¦ ¾Ë·ÁÁÜ.)
+     ë°˜ë©´, ì••ì¶•ì„ ì‹¤ì œë¡œ í‘¸ëŠ” ìž‘ì—…ì€ ë¡œê¹… ëª¨ë“ˆì—ì„œ ìˆ˜í–‰í•˜ê¸° ë•Œë¬¸ì—,
+     ë¡œê¹… ëª¨ë“ˆì—ì„œëŠ” ì••ì¶• í•´ì œ ë²„í¼ì˜ í¬ê¸°ë¥¼ ë§ˆìŒëŒ€ë¡œ ì¡°ì ˆì´
+     ê°€ëŠ¥í•´ì•¼ í•œë‹¤.
+     (iduMemoryHandleì„ êµ¬í˜„í•˜ëŠ” Concrete classì˜ prepareë¥¼ í˜¸ì¶œí•˜ì—¬
+      í•„ìš”í•œ ë©”ëª¨ë¦¬ í¬ê¸°ë¥¼ ì•Œë ¤ì¤Œ.)
  */
 class iduMemoryHandle
 {
@@ -56,16 +56,16 @@ public :
     
     
     /*
-       Memory Handle·ÎºÎÅÍ aSizeÀÌ»óÀÇ ¸Þ¸ð¸®¸¦ ÇÒ´çÇÑ´Ù.
+       Memory Handleë¡œë¶€í„° aSizeì´ìƒì˜ ë©”ëª¨ë¦¬ë¥¼ í• ë‹¹í•œë‹¤.
 
-       ±×¸®°í ÇÒ´çµÈ ¸Þ¸ð¸® ÁÖ¼Ò¸¦ ¹ÝÈ¯ÇÑ´Ù
+       ê·¸ë¦¬ê³  í• ë‹¹ëœ ë©”ëª¨ë¦¬ ì£¼ì†Œë¥¼ ë°˜í™˜í•œë‹¤
        
      */
     virtual IDE_RC prepareMemory( UInt    aSize,
                                   void ** aPreparedMemory) = 0;
 
     /*
-      ÀÌ Memory HandleÀ» ÅëÇØ ÇÒ´ç¹ÞÀº ¸Þ¸ð¸®ÀÇ Å©±â¸¦ ¸®ÅÏ
+      ì´ Memory Handleì„ í†µí•´ í• ë‹¹ë°›ì€ ë©”ëª¨ë¦¬ì˜ í¬ê¸°ë¥¼ ë¦¬í„´
     */
     virtual ULong getSize( void ) = 0;
 

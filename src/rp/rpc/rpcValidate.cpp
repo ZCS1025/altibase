@@ -154,7 +154,7 @@ IDE_RC rpcValidate::validateCreate(void * aQcStatement )
             /* do nothing */
         }
 
-        /* BUG-45236 Local Replication Áö¿ø */
+        /* BUG-45236 Local Replication ì§€ì› */
         if ( sReplOptions->optionsFlag == RP_OPTION_LOCAL_SET )
         {
             IDE_TEST_RAISE( sIsLocalReplOpt == ID_TRUE,
@@ -177,19 +177,19 @@ IDE_RC rpcValidate::validateCreate(void * aQcStatement )
                    (sIsRecoveryOpt == ID_TRUE),
                    ERR_ROLE_NOT_SUPPORT_REPL_OPTION);
 
-    /* PROJ-1915 : RP_ROLE_ALNALYSIS ¿Í OFFLINE ¿É¼Ç »ç¿ë ºÒ°¡  */
+    /* PROJ-1915 : RP_ROLE_ALNALYSIS ì™€ OFFLINE ì˜µì…˜ ì‚¬ìš© ë¶ˆê°€  */
     IDU_FIT_POINT_RAISE( "rpcValidate::validateCreate::Erratic::rpERR_ABORT_RPC_ROLE_NOT_SUPPORT_REPL_OFFLINE",
                         ERR_ROLE_NOT_SUPPORT_REPL_OPTION_OFFLINE ); 
     IDE_TEST_RAISE((sParseTree->role == RP_ROLE_ANALYSIS) &&
                    (sIsOfflineReplOpt == ID_TRUE),
                    ERR_ROLE_NOT_SUPPORT_REPL_OPTION_OFFLINE);
 
-    /* PROJ-1915 OFFLINE ¿É¼Ç RECOVERY ¿É¼Ç µ¿½Ã »ç¿ë ºÒ°¡ */
+    /* PROJ-1915 OFFLINE ì˜µì…˜ RECOVERY ì˜µì…˜ ë™ì‹œ ì‚¬ìš© ë¶ˆê°€ */
     IDE_TEST_RAISE((sIsRecoveryOpt == ID_TRUE) &&
                    (sIsOfflineReplOpt == ID_TRUE),
                    ERR_OPTION_OFFLINE_AND_RECOVERY);
 
-    /* PROJ-1915 OFFLINE ¿É¼Ç EAGER replication µ¿½Ã »ç¿ë ºÒ°¡ */
+    /* PROJ-1915 OFFLINE ì˜µì…˜ EAGER replication ë™ì‹œ ì‚¬ìš© ë¶ˆê°€ */
     IDE_TEST_RAISE((sParseTree->replMode == RP_EAGER_MODE) &&
                    (sIsOfflineReplOpt == ID_TRUE),
                    ERR_OPTION_OFFLINE_AND_EAGER);
@@ -199,7 +199,7 @@ IDE_RC rpcValidate::validateCreate(void * aQcStatement )
                    (sParseTree->replModeSelected != ID_FALSE),
                    ERR_ROLE_NOT_SUPPORT_DEFAULT_REPL_MODE);
 
-    /* GAPLESS ¿É¼Ç EAGER replication µ¿½Ã »ç¿ë ºÒ°¡ */
+    /* GAPLESS ì˜µì…˜ EAGER replication ë™ì‹œ ì‚¬ìš© ë¶ˆê°€ */
     IDE_TEST_RAISE( ( sParseTree->replMode == RP_EAGER_MODE ) &&
                     ( sIsGaplessReplOpt == ID_TRUE ),
                     ERR_OPTION_GAPLESS_AND_EAGER );
@@ -212,8 +212,8 @@ IDE_RC rpcValidate::validateCreate(void * aQcStatement )
                     ( sIsParallelOpt == ID_TRUE ),
                     ERR_CANNOT_SET_BOTH_EAGER_AND_PARALLEL_APPLY );
 
-    /* BUG-45236 Local Replication Áö¿ø
-     *  Eager Replication¿¡¼­ LOCAL ¿É¼ÇÀ» Áö¿øÇÏÁö ¾Ê´Â´Ù.
+    /* BUG-45236 Local Replication ì§€ì›
+     *  Eager Replicationì—ì„œ LOCAL ì˜µì…˜ì„ ì§€ì›í•˜ì§€ ì•ŠëŠ”ë‹¤.
      */
     IDE_TEST_RAISE( ( sParseTree->replMode == RP_EAGER_MODE ) &&
                     ( sIsLocalReplOpt == ID_TRUE ),
@@ -492,7 +492,7 @@ IDE_RC rpcValidate::validateOneReplItem(void        * aQcStatement,
                             ( aIsRecoveryOpt == ID_TRUE ),
                             ERR_RECOVERY_COUNT );
 
-            // fix BUG-26741 Volatile TableÀº ÀÌÁßÈ­ °´Ã¼°¡ ¾Æ´Ô
+            // fix BUG-26741 Volatile Tableì€ ì´ì¤‘í™” ê°ì²´ê°€ ì•„ë‹˜
             IDE_TEST_RAISE( sTempPartInfoList->partitionInfo->TBSType == SMI_VOLATILE_USER_DATA,
                             ERR_CANNOT_USE_VOLATILE_TABLE );
         }
@@ -502,12 +502,12 @@ IDE_RC rpcValidate::validateOneReplItem(void        * aQcStatement,
                   sTempPartInfoList != NULL;
                   sTempPartInfoList = sTempPartInfoList->next )
             {
-                // fix BUG-26741 Volatile TableÀº ÀÌÁßÈ­ °´Ã¼°¡ ¾Æ´Ô
+                // fix BUG-26741 Volatile Tableì€ ì´ì¤‘í™” ê°ì²´ê°€ ì•„ë‹˜
                 IDE_TEST_RAISE( sTempPartInfoList->partitionInfo->TBSType == SMI_VOLATILE_USER_DATA,
                                 ERR_CANNOT_USE_VOLATILE_TABLE );
             }
 
-            // proj-1608 ÀÌ¹Ì ´Ù¸¥ replication¿¡ ÀÇÇØ¼­ recovery°¡ Áö¿øµÇ´ÂÁö °Ë»ç
+            // proj-1608 ì´ë¯¸ ë‹¤ë¥¸ replicationì— ì˜í•´ì„œ recoveryê°€ ì§€ì›ë˜ëŠ”ì§€ ê²€ì‚¬
             IDE_TEST_RAISE( ( sInfo->replicationRecoveryCount > 0 ) &&
                             ( aIsRecoveryOpt == ID_TRUE ),
                             ERR_RECOVERY_COUNT );
@@ -515,7 +515,7 @@ IDE_RC rpcValidate::validateOneReplItem(void        * aQcStatement,
     }
     else
     {
-        // proj-1608 ÀÌ¹Ì ´Ù¸¥ replication¿¡ ÀÇÇØ¼­ recovery°¡ Áö¿øµÇ´ÂÁö °Ë»ç
+        // proj-1608 ì´ë¯¸ ë‹¤ë¥¸ replicationì— ì˜í•´ì„œ recoveryê°€ ì§€ì›ë˜ëŠ”ì§€ ê²€ì‚¬
         IDE_TEST_RAISE( ( sInfo->replicationRecoveryCount > 0 ) &&
                         ( aIsRecoveryOpt == ID_TRUE ),
                         ERR_RECOVERY_COUNT );
@@ -524,11 +524,11 @@ IDE_RC rpcValidate::validateOneReplItem(void        * aQcStatement,
 
 
     // PROJ-1407 Temporary Table
-    // temporary tableÀº replicationÇÒ ¼ö ¾øÀ½
+    // temporary tableì€ replicationí•  ìˆ˜ ì—†ìŒ
     IDE_TEST_RAISE( qciMisc::isTemporaryTable( sInfo ) == ID_TRUE,
                     ERR_CANNOT_USE_TEMPORARY_TABLE );
 
-    // fix BUG-26741 Volatile TableÀº ÀÌÁßÈ­ °´Ã¼°¡ ¾Æ´Ô
+    // fix BUG-26741 Volatile Tableì€ ì´ì¤‘í™” ê°ì²´ê°€ ì•„ë‹˜
     IDE_TEST_RAISE(sInfo->TBSType == SMI_VOLATILE_USER_DATA,
                    ERR_CANNOT_USE_VOLATILE_TABLE);
 
@@ -562,8 +562,8 @@ IDE_RC rpcValidate::validateOneReplItem(void        * aQcStatement,
         else
         {
             // Nothing to do.
-            // CHECK_FK_IN_CREATE_REPL_DISABLE ÇÁ·ÎÆÛÆ¼ÀÇ °ªÀÌ 1ÀÎ °æ¿ì¿¡´Â
-            // ÀÌÁßÈ­ »ý¼º ½Ã, FKÁ¦¾àÀÌ ÀÖ´ÂÁö Ã¼Å©ÇÏÁö ¾Ê´Â´Ù.
+            // CHECK_FK_IN_CREATE_REPL_DISABLE í”„ë¡œí¼í‹°ì˜ ê°’ì´ 1ì¸ ê²½ìš°ì—ëŠ”
+            // ì´ì¤‘í™” ìƒì„± ì‹œ, FKì œì•½ì´ ìžˆëŠ”ì§€ ì²´í¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
         }
     }
 
@@ -574,7 +574,7 @@ IDE_RC rpcValidate::validateOneReplItem(void        * aQcStatement,
                    ERR_REPLICATED_TABLE_WITHOUT_PRIMARY);
 
     // PROJ-2002 Column Security
-    // primary key¿¡´Â salt ¿É¼ÇÀÇ policy¸¦ »ç¿ëÇÒ ¼ö ¾ø´Ù.
+    // primary keyì—ëŠ” salt ì˜µì…˜ì˜ policyë¥¼ ì‚¬ìš©í•  ìˆ˜ ì—†ë‹¤.
     for ( i = 0; i < sInfo->columnCount; i++ )
     {
         sColumn = sInfo->columns[i].basicInfo;
@@ -689,7 +689,7 @@ IDE_RC rpcValidate::validateAlterAddTbl(void * aQcStatement)
                                  ID_FALSE)
              != IDE_SUCCESS);
 
-    //Recovery OptionsÀÌ set »óÅÂÀÏ ¶§ add tableÀ» ÇÒ ¼ö ¾ø´Ù.
+    //Recovery Optionsì´ set ìƒíƒœì¼ ë•Œ add tableì„ í•  ìˆ˜ ì—†ë‹¤.
     IDE_TEST_RAISE((sReplications.mOptions & RP_OPTION_RECOVERY_MASK) ==
                     RP_OPTION_RECOVERY_SET, ERR_NOT_ALLOW_ADD_TABLE)
 
@@ -750,7 +750,7 @@ IDE_RC rpcValidate::validateAlterDropTbl(void * aQcStatement)
                                  ID_FALSE)
              != IDE_SUCCESS);
 
-    //Recovery OptionsÀÌ set »óÅÂÀÏ ¶§ drop tableÀ» ÇÒ ¼ö ¾ø´Ù.
+    //Recovery Optionsì´ set ìƒíƒœì¼ ë•Œ drop tableì„ í•  ìˆ˜ ì—†ë‹¤.
     if((sReplications.mOptions & RP_OPTION_RECOVERY_MASK) == RP_OPTION_RECOVERY_SET)
     {
         IDE_RAISE(ERR_NOT_ALLOW_DROP_TABLE);
@@ -791,7 +791,7 @@ IDE_RC rpcValidate::validateAlterDropTbl(void * aQcStatement)
         if ( sReplItem->replication_unit == RP_REPLICATION_TABLE_UNIT )
         {
             /*
-             * °¢ repl_itemsµéÀÇ unitÀÌ TÀÎÁö È®ÀÎÇØ¾ß ÇÑ´Ù.
+             * ê° repl_itemsë“¤ì˜ unitì´ Tì¸ì§€ í™•ì¸í•´ì•¼ í•œë‹¤.
              */
             idlOS::strncpy( sLocalReplicationUnit,
                             RP_TABLE_UNIT,
@@ -836,7 +836,7 @@ IDE_RC rpcValidate::validateAlterDropTbl(void * aQcStatement)
         else
         {
             /*
-             * °¢ repl_itemsµéÀÇ unitÀÌ PÀÎÁö È®ÀÎÇØ¾ß ÇÑ´Ù.
+             * ê° repl_itemsë“¤ì˜ unitì´ Pì¸ì§€ í™•ì¸í•´ì•¼ í•œë‹¤.
              */
             idlOS::strncpy( sLocalReplicationUnit,
                             RP_PARTITION_UNIT,
@@ -1195,8 +1195,8 @@ IDE_RC rpcValidate::validateStart(void * aQcStatement)
                         ERR_NOT_SUPPORT_AT_SN_CLAUSE );
     }
 
-    /* BUG-31678 IS_STARTED ÄÃ·³ °ªÀº Failback Á¾·ù¸¦ °áÁ¤ÇÏ´Âµ¥ ¿µÇâÀ» ÁÖ¹Ç·Î,
-     *           Eager Replication¿¡¼­ RETRY ±â´ÉÀ» ¸·´Â´Ù.
+    /* BUG-31678 IS_STARTED ì»¬ëŸ¼ ê°’ì€ Failback ì¢…ë¥˜ë¥¼ ê²°ì •í•˜ëŠ”ë° ì˜í–¥ì„ ì£¼ë¯€ë¡œ,
+     *           Eager Replicationì—ì„œ RETRY ê¸°ëŠ¥ì„ ë§‰ëŠ”ë‹¤.
      */
     IDE_TEST_RAISE( ( sReplications.mReplMode == RP_EAGER_MODE ) &&
                     ( sParseTree->startOption == RP_START_OPTION_RETRY ),
@@ -1222,7 +1222,7 @@ IDE_RC rpcValidate::validateStart(void * aQcStatement)
 }
 
 /* PROJ-1915 
- * SYS_REPL_OFFLINE_DIR_ °¡ ÀÖ´ÂÁö Á¶È¸ ÇÑ´Ù.
+ * SYS_REPL_OFFLINE_DIR_ ê°€ ìžˆëŠ”ì§€ ì¡°íšŒ í•œë‹¤.
  */
 IDE_RC rpcValidate::validateOfflineStart(void * aQcStatement)
 {
@@ -1287,8 +1287,8 @@ IDE_RC rpcValidate::validateQuickStart(void * aQcStatement)
                                    ID_FALSE )
               != IDE_SUCCESS );
 
-    /* BUG-31678 IS_STARTED ÄÃ·³ °ªÀº Failback Á¾·ù¸¦ °áÁ¤ÇÏ´Âµ¥ ¿µÇâÀ» ÁÖ¹Ç·Î,
-     *           Eager Replication¿¡¼­ RETRY ±â´ÉÀ» ¸·´Â´Ù.
+    /* BUG-31678 IS_STARTED ì»¬ëŸ¼ ê°’ì€ Failback ì¢…ë¥˜ë¥¼ ê²°ì •í•˜ëŠ”ë° ì˜í–¥ì„ ì£¼ë¯€ë¡œ,
+     *           Eager Replicationì—ì„œ RETRY ê¸°ëŠ¥ì„ ë§‰ëŠ”ë‹¤.
      */
     IDE_TEST_RAISE( ( sReplications.mReplMode == RP_EAGER_MODE ) &&
                     ( sParseTree->startOption == RP_START_OPTION_RETRY ),
@@ -1401,7 +1401,7 @@ IDE_RC rpcValidate::validateSyncTbl(void * aQcStatement)
             {
 
                 /*
-                 * °¢ repl_itemsµéÀÇ unitÀÌ TÀÎÁö È®ÀÎÇØ¾ß ÇÑ´Ù.
+                 * ê° repl_itemsë“¤ì˜ unitì´ Tì¸ì§€ í™•ì¸í•´ì•¼ í•œë‹¤.
                  */
                 idlOS::strncpy( sLocalReplicationUnit,
                                 RP_TABLE_UNIT,
@@ -1434,7 +1434,7 @@ IDE_RC rpcValidate::validateSyncTbl(void * aQcStatement)
 
                     /*
                      * PROJ-2336
-                     * if T ÀÎÁö È®ÀÎ
+                     * if T ì¸ì§€ í™•ì¸
                      */
                     IDE_TEST( rpdCatalog::checkReplItemUnitByName( aQcStatement,
                                                                     sParseTree->replName,
@@ -1450,7 +1450,7 @@ IDE_RC rpcValidate::validateSyncTbl(void * aQcStatement)
             else
             {
                 /*
-                 * °¢ repl_itemsµéÀÇ unitÀÌ PÀÎÁö È®ÀÎÇØ¾ß ÇÑ´Ù.
+                 * ê° repl_itemsë“¤ì˜ unitì´ Pì¸ì§€ í™•ì¸í•´ì•¼ í•œë‹¤.
                  */
                 idlOS::strncpy( sLocalReplicationUnit,
                                 RP_PARTITION_UNIT,
@@ -1467,7 +1467,7 @@ IDE_RC rpcValidate::validateSyncTbl(void * aQcStatement)
 
                 /*
                  * PROJ-2336
-                 * if P ÀÎÁö È®ÀÎ
+                 * if P ì¸ì§€ í™•ì¸
                  */
                 IDE_TEST( rpdCatalog::checkReplItemUnitByName( aQcStatement,
                                                                 sParseTree->replName,
@@ -1589,28 +1589,28 @@ IDE_RC rpcValidate::validateAlterSetRecovery(void * aQcStatement)
                                  ID_FALSE)
              != IDE_SUCCESS);
 
-    //replication role È®ÀÎ
+    //replication role í™•ì¸
     IDU_FIT_POINT_RAISE( "rpcValidate::validateAlterSetRecovery::Erratic::rpERR_ABORT_RPC_ROLE_NOT_SUPPORT_REPL_OFFLINE",
                         ERR_ROLE ); 
     IDE_TEST_RAISE(sReplications.mRole == RP_ROLE_ANALYSIS, ERR_ROLE);
-    //recovery option È®ÀÎ
+    //recovery option í™•ì¸
     //alter replication replication_name RECOVERY = 1
     if(sParseTree->replOptions->optionsFlag == RP_OPTION_RECOVERY_SET)
     {
-        //Recovery OptionsÀ» SET ½ÃÅ°·Á°í ÇÏÁö¸¸, ÀÌ¹Ì SET »óÅÂÀÓ
+        //Recovery Optionsì„ SET ì‹œí‚¤ë ¤ê³  í•˜ì§€ë§Œ, ì´ë¯¸ SET ìƒíƒœìž„
         IDE_TEST_RAISE((sReplications.mOptions & RP_OPTION_RECOVERY_MASK) ==
                        RP_OPTION_RECOVERY_SET, ERR_ALEADY_SET);
         sRecoveryFlag = RP_OPTION_RECOVERY_SET;
     }
     else //alter replication replication_name RECOVERY = 0
     {
-        //Recovery OptionsÀ» UNSET ½ÃÅ°·Á°í ÇÏÁö¸¸, ÀÌ¹Ì UNSET »óÅÂÀÓ
+        //Recovery Optionsì„ UNSET ì‹œí‚¤ë ¤ê³  í•˜ì§€ë§Œ, ì´ë¯¸ UNSET ìƒíƒœìž„
         IDE_TEST_RAISE((sReplications.mOptions & RP_OPTION_RECOVERY_MASK) ==
                        RP_OPTION_RECOVERY_UNSET, ERR_ALEADY_UNSET);
         sRecoveryFlag = RP_OPTION_RECOVERY_UNSET;
     }
 
-    /* PROJ-1915 RECOVERY option °ú OFFLINE ¿É¼ÇÀ» µ¿½Ã »ç¿ëÇÒ ¼ö ¾øÀ½ */
+    /* PROJ-1915 RECOVERY option ê³¼ OFFLINE ì˜µì…˜ì„ ë™ì‹œ ì‚¬ìš©í•  ìˆ˜ ì—†ìŒ */
     if((sReplications.mOptions & RP_OPTION_OFFLINE_MASK)
        == RP_OPTION_OFFLINE_SET)
     {
@@ -1649,7 +1649,7 @@ IDE_RC rpcValidate::validateAlterSetRecovery(void * aQcStatement)
 
 
 /* PROJ-1915 off-line replicator
- * ALTER REPLICATION replicatoin_name SET OFFLINE ENABLE WITH °æ·Î ... °æ·Î ...
+ * ALTER REPLICATION replicatoin_name SET OFFLINE ENABLE WITH ê²½ë¡œ ... ê²½ë¡œ ...
  */
 IDE_RC rpcValidate::validateAlterSetOffline(void * aQcStatement)
 {
@@ -1693,24 +1693,24 @@ IDE_RC rpcValidate::validateAlterSetOffline(void * aQcStatement)
 
     if(sParseTree->replOptions->optionsFlag == RP_OPTION_OFFLINE_SET)
     {
-        //Offline OptionsÀ» SET ½ÃÅ°·Á°í ÇÏÁö¸¸, ÀÌ¹Ì SET »óÅÂÀÓ
+        //Offline Optionsì„ SET ì‹œí‚¤ë ¤ê³  í•˜ì§€ë§Œ, ì´ë¯¸ SET ìƒíƒœìž„
         IDE_TEST_RAISE((sReplications.mOptions & RP_OPTION_OFFLINE_MASK) ==
                         RP_OPTION_OFFLINE_SET, ERR_ALEADY_SET);
         sIsOfflineReplOpt = ID_TRUE;
     }
     else
     {
-        //Offline OptionsÀ» UNSET ½ÃÅ°·Á°í ÇÏÁö¸¸, ÀÌ¹Ì UNSET »óÅÂÀÓ
+        //Offline Optionsì„ UNSET ì‹œí‚¤ë ¤ê³  í•˜ì§€ë§Œ, ì´ë¯¸ UNSET ìƒíƒœìž„
         IDE_TEST_RAISE((sReplications.mOptions & RP_OPTION_OFFLINE_MASK) ==
                         RP_OPTION_OFFLINE_UNSET, ERR_ALEADY_UNSET);
     }
 
-    /* PROJ-1915 OFFLINE ¿É¼Ç RECOVERY ¿É¼Ç µ¿½Ã »ç¿ë ºÒ°¡ */
+    /* PROJ-1915 OFFLINE ì˜µì…˜ RECOVERY ì˜µì…˜ ë™ì‹œ ì‚¬ìš© ë¶ˆê°€ */
     IDE_TEST_RAISE((sIsRecoveryOpt == ID_TRUE) &&
                    (sIsOfflineReplOpt == ID_TRUE),
                    ERR_OPTION_OFFLINE_AND_RECOVERY);
 
-    /* PROJ-1915 OFFLINE ¿É¼Ç EAGER replication µ¿½Ã »ç¿ë ºÒ°¡ */
+    /* PROJ-1915 OFFLINE ì˜µì…˜ EAGER replication ë™ì‹œ ì‚¬ìš© ë¶ˆê°€ */
     IDE_TEST_RAISE((sReplications.mReplMode == RP_EAGER_MODE) &&
                    (sIsOfflineReplOpt == ID_TRUE),
                    ERR_OPTION_OFFLINE_AND_EAGER);
@@ -1861,7 +1861,7 @@ IDE_RC rpcValidate::validateAlterSetGapless(void * aQcStatement)
         sGaplessFlag = RP_OPTION_GAPLESS_UNSET;
     }
 
-    /* GAPLESS ¿É¼Ç EAGER replication µ¿½Ã »ç¿ë ºÒ°¡ */
+    /* GAPLESS ì˜µì…˜ EAGER replication ë™ì‹œ ì‚¬ìš© ë¶ˆê°€ */
     IDE_TEST_RAISE( ( sReplications.mReplMode == RP_EAGER_MODE ) &&
                     ( sGaplessFlag == RP_OPTION_GAPLESS_SET ),
                     ERR_OPTION_GAPLESS_AND_EAGER );
@@ -1940,7 +1940,7 @@ IDE_RC rpcValidate::validateAlterSetParallel(void * aQcStatement)
                                       sParseTree->replOptions->applierBuffer->size  )
                       != IDE_SUCCESS );
 
-    /* PARALLE ¿É¼Ç EAGER replication µ¿½Ã »ç¿ë ºÒ°¡ */
+    /* PARALLE ì˜µì…˜ EAGER replication ë™ì‹œ ì‚¬ìš© ë¶ˆê°€ */
     IDE_TEST_RAISE( ( sReplications.mReplMode == RP_EAGER_MODE ) &&
                     ( sParallelFlag == RP_OPTION_PARALLEL_RECEIVER_APPLY_SET ),
                     ERR_OPTION_PARALLE_AND_EAGER );
@@ -2008,7 +2008,7 @@ IDE_RC rpcValidate::validateAlterSetGrouping(void * aQcStatement)
         sGroupingFlag = RP_OPTION_GROUPING_UNSET;
     }
 
-    /* GAPLESS ¿É¼Ç EAGER replication µ¿½Ã »ç¿ë ºÒ°¡ */
+    /* GAPLESS ì˜µì…˜ EAGER replication ë™ì‹œ ì‚¬ìš© ë¶ˆê°€ */
     IDE_TEST_RAISE( ( sReplications.mReplMode == RP_EAGER_MODE ) &&
                     ( sGroupingFlag == RP_OPTION_GROUPING_SET ),
                     ERR_OPTION_GROUPING_AND_EAGER );
@@ -2050,8 +2050,8 @@ IDE_RC rpcValidate::validateAlterPartition( void         * aQcStatement,
               != IDE_SUCCESS );
 
     /*
-     * RPU_REPLICATION_MAX_COUNT ÀÇ ÃÖ´ë°ª : 10240
-     * rpdReplications ÀÇ Å©±â´Â : ¾à 1500 Á¤µµ
+     * RPU_REPLICATION_MAX_COUNT ì˜ ìµœëŒ€ê°’ : 10240
+     * rpdReplications ì˜ í¬ê¸°ëŠ” : ì•½ 1500 ì •ë„
      */
     IDE_TEST( ( ( iduMemory * )QCI_QMX_MEM( aQcStatement ) )->alloc(
                                             ID_SIZEOF(rpdReplications) * RPU_REPLICATION_MAX_COUNT,

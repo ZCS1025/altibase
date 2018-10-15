@@ -30,7 +30,7 @@ typedef struct sdmConnectInfo4PV
     UInt     mNodeId;
     SChar    mNodeName[SDI_NODE_NAME_MAX_SIZE + 1];
     SChar    mCommName[IDL_IP_ADDR_MAX_LEN];
-    UInt     mTouchCount;   // commit modeº¯°æÈÄ DML È½¼ö
+    UInt     mTouchCount;   // commit modeë³€ê²½í›„ DML íšŸìˆ˜
     idBool   mLinkFailure;
 } sdmConnectInfo4PV;
 

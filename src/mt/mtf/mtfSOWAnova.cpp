@@ -943,7 +943,7 @@ IDE_RC mtfSOWAnovaEstimate( mtcNode     * aNode,
                                      0 )
               != IDE_SUCCESS );
 
-    // funcData »ç¿ë
+    // funcData ì‚¬ìš©
     aNode->info = aTemplate->funcDataCnt;
     aTemplate->funcDataCnt++;
 
@@ -976,7 +976,7 @@ IDE_RC mtfSOWAnovaInitialize( mtcNode*     aNode,
     sColumn = aTemplate->rows[aNode->table].columns + aNode->column;
     sRow    = (UChar *)aTemplate->rows[aNode->table].row;
 
-    // ÃÖÃÊ µî·Ï
+    // ìµœì´ˆ ë“±ë¡
     if ( aTemplate->funcData[aNode->info] == NULL )
     {
         IDE_TEST( mtf::allocFuncDataMemory( &sMemoryMgr )
@@ -995,7 +995,7 @@ IDE_RC mtfSOWAnovaInitialize( mtcNode*     aNode,
                                                     sMemoryMgr )
                   != IDE_SUCCESS );
 
-        // µî·Ï
+        // ë“±ë¡
         aTemplate->funcData[aNode->info] = sFDBI;
     }
     else

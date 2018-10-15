@@ -19,11 +19,11 @@
  * $Id: qmgDnf.cpp 82075 2018-01-17 06:39:52Z jina.kim $
  *
  * Description :
- *     DNF Graph¸¦ À§ÇÑ ¼öÇà ÇÔ¼ö
+ *     DNF Graphë¥¼ ìœ„í•œ ìˆ˜í–‰ í•¨ìˆ˜
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  **********************************************************************/
 
@@ -41,15 +41,15 @@ qmgDnf::init( qcStatement * aStatement,
 {
 /***********************************************************************
  *
- * Description : qmgDnf GraphÀÇ ÃÊ±âÈ­
+ * Description : qmgDnf Graphì˜ ì´ˆê¸°í™”
  *
  * Implementation :
- *    (1) graph( ¸ğµç Graph¸¦ À§ÇÑ °øÅë ÀÚ·á ±¸Á¶ ) ÃÊ±âÈ­
- *    (2) graph.type ¼³Á¤
- *    (3) graph.leftÀ» aLeftGraph·Î, graph.right¸¦ aRightGraph·Î ¼³Á¤
- *    (4) graph.dependencies ¼³Á¤
- *    (5) aDnfNotFilter¸¦ graph.myPredicate¿¡ ¿¬°á
- *    (6) graph.optimize¿Í graph.makePlan ¼³Á¤
+ *    (1) graph( ëª¨ë“  Graphë¥¼ ìœ„í•œ ê³µí†µ ìë£Œ êµ¬ì¡° ) ì´ˆê¸°í™”
+ *    (2) graph.type ì„¤ì •
+ *    (3) graph.leftì„ aLeftGraphë¡œ, graph.rightë¥¼ aRightGraphë¡œ ì„¤ì •
+ *    (4) graph.dependencies ì„¤ì •
+ *    (5) aDnfNotFilterë¥¼ graph.myPredicateì— ì—°ê²°
+ *    (6) graph.optimizeì™€ graph.makePlan ì„¤ì •
  *
  ***********************************************************************/
     
@@ -60,7 +60,7 @@ qmgDnf::init( qcStatement * aStatement,
     IDU_FIT_POINT_FATAL( "qmgDnf::init::__FT__" );
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
     
     IDE_DASSERT( aStatement != NULL );
@@ -70,7 +70,7 @@ qmgDnf::init( qcStatement * aStatement,
 
     sMyGraph = (qmgDNF*) aGraph; 
 
-    // Graph °øÅë Á¤º¸ÀÇ ÃÊ±âÈ­
+    // Graph ê³µí†µ ì •ë³´ì˜ ì´ˆê¸°í™”
     IDE_TEST( qmg::initGraph( & sMyGraph->graph ) != IDE_SUCCESS );
 
     sMyGraph->graph.type = QMG_DNF;
@@ -106,9 +106,9 @@ qmgDnf::init( qcStatement * aStatement,
     sMyGraph->graph.makePlan = qmgDnf::makePlan;
     sMyGraph->graph.printGraph = qmgDnf::printGraph;
 
-    // DISK/MEMORY Á¤º¸ ¼³Á¤
-    // left ¶Ç´Â right°¡ diskÀÌ¸é disk,
-    // ±×·¸Áö ¾ÊÀ» °æ¿ì memory
+    // DISK/MEMORY ì •ë³´ ì„¤ì •
+    // left ë˜ëŠ” rightê°€ diskì´ë©´ disk,
+    // ê·¸ë ‡ì§€ ì•Šì„ ê²½ìš° memory
     if ( ( ( aLeftGraph->flag & QMG_GRAPH_TYPE_MASK )
            == QMG_GRAPH_TYPE_DISK ) ||
          ( ( aRightGraph->flag & QMG_GRAPH_TYPE_MASK )
@@ -136,9 +136,9 @@ qmgDnf::optimize( qcStatement * aStatement, qmgGraph * aGraph )
 {
 /***********************************************************************
  *
- * Description : qmgDNF GraphÀÇ ÃÖÀûÈ­
+ * Description : qmgDNF Graphì˜ ìµœì í™”
  *
- * Implementation : °øÅë ºñ¿ë Á¤º¸ ¼³Á¤
+ * Implementation : ê³µí†µ ë¹„ìš© ì •ë³´ ì„¤ì •
  *
  ***********************************************************************/
 
@@ -147,7 +147,7 @@ qmgDnf::optimize( qcStatement * aStatement, qmgGraph * aGraph )
     IDU_FIT_POINT_FATAL( "qmgDnf::optimize::__FT__" );
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
     
     IDE_DASSERT( aStatement != NULL );
@@ -156,15 +156,15 @@ qmgDnf::optimize( qcStatement * aStatement, qmgGraph * aGraph )
     sMyGraph = (qmgDNF*) aGraph;
 
     //------------------------------------------
-    // Preserved Order ¼³Á¤
-    //    - DNF°¡ Á¸ÀçÇÒ °æ¿ì, preserved order »ç¿ëÇÒ ¼ö ¾øÀ½
+    // Preserved Order ì„¤ì •
+    //    - DNFê°€ ì¡´ì¬í•  ê²½ìš°, preserved order ì‚¬ìš©í•  ìˆ˜ ì—†ìŒ
     //------------------------------------------
     
     sMyGraph->graph.flag &= ~QMG_PRESERVED_ORDER_MASK;
     sMyGraph->graph.flag |= QMG_PRESERVED_ORDER_NEVER;
     
     //------------------------------------------
-    // °øÅë ºñ¿ë Á¤º¸ÀÇ ¼³Á¤
+    // ê³µí†µ ë¹„ìš© ì •ë³´ì˜ ì„¤ì •
     //------------------------------------------
 
     // recordSize
@@ -212,10 +212,10 @@ qmgDnf::makePlan( qcStatement * aStatement, const qmgGraph * aParent, qmgGraph *
 {
 /***********************************************************************
  *
- * Description : qmgDnf·Î ºÎÅÍ PlanÀ» »ı¼ºÇÑ´Ù.
+ * Description : qmgDnfë¡œ ë¶€í„° Planì„ ìƒì„±í•œë‹¤.
  *
  * Implementation :
- *     - qmgDnf·Î ºÎÅÍ »ı¼º °¡´ÉÇÑ Plan
+ *     - qmgDnfë¡œ ë¶€í„° ìƒì„± ê°€ëŠ¥í•œ Plan
  *
  *         [CONC]
  *              |
@@ -234,7 +234,7 @@ qmgDnf::makePlan( qcStatement * aStatement, const qmgGraph * aParent, qmgGraph *
     IDU_FIT_POINT_FATAL( "qmgDnf::makePlan::__FT__" );
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
     
     IDE_DASSERT( aStatement != NULL );
@@ -247,13 +247,13 @@ qmgDnf::makePlan( qcStatement * aStatement, const qmgGraph * aParent, qmgGraph *
     aGraph->flag |= (aParent->flag & QMG_PARALLEL_IMPOSSIBLE_MASK);
 
     // BUG-38410
-    // SCAN parallel flag ¸¦ ÀÚ½Ä ³ëµå·Î ¹°·ÁÁØ´Ù.
+    // SCAN parallel flag ë¥¼ ìì‹ ë…¸ë“œë¡œ ë¬¼ë ¤ì¤€ë‹¤.
     aGraph->left->flag  |= (aGraph->flag & QMG_PLAN_EXEC_REPEATED_MASK);
     aGraph->right->flag |= (aGraph->flag & QMG_PLAN_EXEC_REPEATED_MASK);
 
     //----------------------
-    // FILTÀÇ »ı¼º
-    // - qmgDNF.graph.myPredicate·Î ºÎÅÍ »ı¼º
+    // FILTì˜ ìƒì„±
+    // - qmgDNF.graph.myPredicateë¡œ ë¶€í„° ìƒì„±
     //----------------------
     if( sMyGraph->graph.myPredicate != NULL )
     {
@@ -281,7 +281,7 @@ qmgDnf::makePlan( qcStatement * aStatement, const qmgGraph * aParent, qmgGraph *
     sMyGraph->graph.myPlan = sCONC;
 
     //----------------------
-    // ÇÏÀ§ PlanÀÇ »ı¼º
+    // í•˜ìœ„ Planì˜ ìƒì„±
     //----------------------
 
     IDE_TEST( sMyGraph->graph.left->makePlan( aStatement ,
@@ -289,10 +289,10 @@ qmgDnf::makePlan( qcStatement * aStatement, const qmgGraph * aParent, qmgGraph *
                                               sMyGraph->graph.left )
               != IDE_SUCCESS );
 
-    //left graphÀÇ plan °¡Á® ¿À±â
+    //left graphì˜ plan ê°€ì ¸ ì˜¤ê¸°
     sLeftChildPlan = sMyGraph->graph.left->myPlan;
 
-    // bug-37324 ¿ÜºÎ ÂüÁ¶ ÄÃ·³¿¡ ´ëÇØ¼­´Â µğÆæ´ø½Ã¸¦ reset ÇÏ¸é ¾ÈµÊ
+    // bug-37324 ì™¸ë¶€ ì°¸ì¡° ì»¬ëŸ¼ì— ëŒ€í•´ì„œëŠ” ë””íœë˜ì‹œë¥¼ reset í•˜ë©´ ì•ˆë¨
     for( i = 0; i < sMyGraph->graph.depInfo.depCount; i++ )
     {
         IDE_TEST( qmg::resetColumnLocate(
@@ -327,11 +327,11 @@ qmgDnf::makePlan( qcStatement * aStatement, const qmgGraph * aParent, qmgGraph *
 
     qmg::setPlanInfo( aStatement, sFILT, &(sMyGraph->graph) );
 
-    //right graphÀÇ plan °¡Á® ¿À±â
+    //right graphì˜ plan ê°€ì ¸ ì˜¤ê¸°
     sRightChildPlan = sMyGraph->graph.myPlan;
 
     //----------------------
-    // CONCÀÇ »ı¼º
+    // CONCì˜ ìƒì„±
     //----------------------
     IDE_TEST( qmoTwoNonPlan::makeCONC( aStatement ,
                                           sMyGraph->graph.myQuerySet ,
@@ -361,7 +361,7 @@ qmgDnf::printGraph( qcStatement  * aStatement,
 /***********************************************************************
  *
  * Description :
- *    Graph¸¦ ±¸¼ºÇÏ´Â °øÅë Á¤º¸¸¦ Ãâ·ÂÇÑ´Ù.
+ *    Graphë¥¼ êµ¬ì„±í•˜ëŠ” ê³µí†µ ì •ë³´ë¥¼ ì¶œë ¥í•œë‹¤.
  *    
  *
  * Implementation :
@@ -371,7 +371,7 @@ qmgDnf::printGraph( qcStatement  * aStatement,
     IDU_FIT_POINT_FATAL( "qmgDnf::makePlan::__FT__" );
 
     //-----------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //-----------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -379,7 +379,7 @@ qmgDnf::printGraph( qcStatement  * aStatement,
     IDE_DASSERT( aString != NULL );
 
     //-----------------------------------
-    // Graph °øÅë Á¤º¸ÀÇ Ãâ·Â
+    // Graph ê³µí†µ ì •ë³´ì˜ ì¶œë ¥
     //-----------------------------------
 
     IDE_TEST( qmg::printGraph( aStatement,
@@ -389,12 +389,12 @@ qmgDnf::printGraph( qcStatement  * aStatement,
               != IDE_SUCCESS );
 
     //-----------------------------------
-    // Graph °íÀ¯ Á¤º¸ÀÇ Ãâ·Â
+    // Graph ê³ ìœ  ì •ë³´ì˜ ì¶œë ¥
     //-----------------------------------
 
 
     //-----------------------------------
-    // Child Graph °íÀ¯ Á¤º¸ÀÇ Ãâ·Â
+    // Child Graph ê³ ìœ  ì •ë³´ì˜ ì¶œë ¥
     //-----------------------------------
 
     IDE_TEST( aGraph->left->printGraph( aStatement,

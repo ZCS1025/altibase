@@ -80,7 +80,7 @@ public final class AltibaseDriver implements Driver
             mLogger.log(Level.INFO, "URL : {0}, Properties : {1}", new Object[] { aURL, aInfo});
         }
         AltibaseProperties sAltiProp = new AltibaseProperties(aInfo);
-        // BUG-43349 url parsingÀ» º°µµÀÇ Å¬·¡½º¿¡¼­ Ã³¸®ÇÑ´Ù.
+        // BUG-43349 url parsingì„ ë³„ë„ì˜ í´ë˜ìŠ¤ì—ì„œ ì²˜ë¦¬í•œë‹¤.
         AltibaseUrlParser.parseURL(aURL, sAltiProp);
 
         return createConnection(sAltiProp);
@@ -119,7 +119,7 @@ public final class AltibaseDriver implements Driver
         return false;
     }
 
-    // BUG-43349 AltibaseDataSource.setURL()ºÎºĞ¿¡¼­ ÂüÁ¶ÇÏ°í ÀÖ±â¶§¹®¿¡ ÇØ´ç ¸Ş¼Òµå¸¦ À¯ÁöÇÑ´Ù.
+    // BUG-43349 AltibaseDataSource.setURL()ë¶€ë¶„ì—ì„œ ì°¸ì¡°í•˜ê³  ìˆê¸°ë•Œë¬¸ì— í•´ë‹¹ ë©”ì†Œë“œë¥¼ ìœ ì§€í•œë‹¤.
     static void parseURL(String aURL, AltibaseProperties aProps) throws SQLException
     {
         AltibaseUrlParser.parseURL(aURL, aProps);

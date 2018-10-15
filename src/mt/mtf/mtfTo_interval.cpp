@@ -87,7 +87,7 @@ IDE_RC mtfToIntervalCalculate( mtcNode     * aNode,
 mtfModule mtfToInterval = {
     1|MTC_NODE_OPERATOR_FUNCTION,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
+    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìê°€ ì•„ë‹˜)
     mtfToIntervalFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -289,20 +289,20 @@ IDE_RC mtfToIntervalCalculate( mtcNode     * aNode,
     }
     else
     {
-        // ½Ã°£ ´ÜÀ§¸¦ ¾ò´Â´Ù.
+        // ì‹œê°„ ë‹¨ìœ„ë¥¼ ì–»ëŠ”ë‹¤.
         mtfToIntervalGetUnit( aStack[2].value, &sUnit );
         IDE_TEST_RAISE( sUnit < 0, ERR_ARGUMENT_NOT_APPLICABLE );
 
         sNumber = *(mtdDoubleType*)aStack[1].value;
 
-        // ÀÔ·Â°ªÀ» ÃÊ ´ÜÀ§·Î È¯»êÇÑ´Ù.
+        // ì…ë ¥ê°’ì„ ì´ˆ ë‹¨ìœ„ë¡œ í™˜ì‚°í•œë‹¤.
         sSecond = sNumber * SEC_PER_UNIT_TOINTV[sUnit];
 
         IDE_TEST_RAISE( mtdDouble.isNull( mtdDouble.column, &sSecond )
                         == ID_TRUE,
                         ERR_VALUE_OVERFLOW );
 
-        // Á¤¼öºÎ¿Í ¼Ò¼öºÎ¸¦ ±¸ÇÑ´Ù.
+        // ì •ìˆ˜ë¶€ì™€ ì†Œìˆ˜ë¶€ë¥¼ êµ¬í•œë‹¤.
         sFractionalPart = modf( sSecond, &sIntegralPart );
         IDE_TEST_RAISE( (sIntegralPart > 9e18) || (sIntegralPart < -9e18),
                         ERR_VALUE_OVERFLOW );
@@ -312,7 +312,7 @@ IDE_RC mtfToIntervalCalculate( mtcNode     * aNode,
         sFractionalPart     = modf( sFractionalPart * 1e6, &sIntegralPart );
         sResult.microsecond = (SLong)sIntegralPart;
 
-        // ¿ÀÂ÷ º¸Á¤ (¹İ¿Ã¸²)
+        // ì˜¤ì°¨ ë³´ì • (ë°˜ì˜¬ë¦¼)
         if ( sFractionalPart >= 0.5 )
         {
             sResult.microsecond++;

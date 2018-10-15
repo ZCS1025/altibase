@@ -30,13 +30,13 @@
 #include <iduShmSet4SXLatch.h>
 
 /***********************************************************************
- * Description : aLockÀÌ °¡¸®Å°´Â ShmSetLatch¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+ * Description : aLockì´ ê°€ë¦¬í‚¤ëŠ” ShmSetLatchë¥¼ ì´ˆê¸°í™”í•œë‹¤.
  *
- * aStatistics    - [IN] ThreadÀÇ ContextÁ¤º¸
+ * aStatistics    - [IN] Threadì˜ Contextì •ë³´
  * aShmTxInfo     - [IN] Shared Memory Tx
  * aIndex         - [IN] Memory Type
- * aSelf          - [IN] aLockÀÌ ÇÒ´çµÈ Shared MemoryÀÇ Address
- * aLatchCnt      - [IN] Set SXLatch°¡ °¡Áö°Ô µÉ LatchÀÇ °¹¼ö
+ * aSelf          - [IN] aLockì´ í• ë‹¹ëœ Shared Memoryì˜ Address
+ * aLatchCnt      - [IN] Set SXLatchê°€ ê°€ì§€ê²Œ ë  Latchì˜ ê°¯ìˆ˜
  * aSpinCount     - [IN] Spin Lock Count
  * aLock          - [IN-OUT] Set SXLatch Pointer
  **********************************************************************/
@@ -83,9 +83,9 @@ IDE_RC iduShmSet4SXLatchInit( idvSQL               * aStatistics,
 }
 
 /***********************************************************************
- * Description : aLockÀÌ °¡¸®Å°´Â ShmSetLatch¿¡ ÇÒ´çµÈ ÀÚ¿øÀ» Á¤¸®ÇÑ´Ù.
+ * Description : aLockì´ ê°€ë¦¬í‚¤ëŠ” ShmSetLatchì— í• ë‹¹ëœ ìì›ì„ ì •ë¦¬í•œë‹¤.
  *
- * aStatistics    - [IN] ThreadÀÇ ContextÁ¤º¸
+ * aStatistics    - [IN] Threadì˜ Contextì •ë³´
  * aShmTxInfo     - [IN] Shared Memory Tx
  * aLock          - [IN-OUT] Set SXLatch Pointer
  **********************************************************************/
@@ -119,17 +119,17 @@ IDE_RC iduShmSet4SXLatchDest( idvSQL               * aStatistics,
 }
 
 /***********************************************************************
- * Description : aLockÀÌ °¡¸®Å°´Â ShmSetLatch¿¡ aMode·Î Latch¸¦ Àâ´Â´Ù.
+ * Description : aLockì´ ê°€ë¦¬í‚¤ëŠ” ShmSetLatchì— aModeë¡œ Latchë¥¼ ì¡ëŠ”ë‹¤.
  *
- * aStatistics       - [IN] ThreadÀÇ ContextÁ¤º¸
+ * aStatistics       - [IN] Threadì˜ Contextì •ë³´
  * aShmTxInfo        - [IN] Shared Memory Tx
  * aSet4SXLatch      - [IN] Set SXLatch Pointer
- * aLatchIdx         - [IN] Set SXLatch¿¡ Á¸ÀçÇÏ´Â Latch Áß¿¡¼­ ¸î ¹øÂ°
- *                          ¿¡ Á¸ÀçÇÏ´Â Latch¸¦ ÀâÀ» Áö °áÁ¤.
+ * aLatchIdx         - [IN] Set SXLatchì— ì¡´ì¬í•˜ëŠ” Latch ì¤‘ì—ì„œ ëª‡ ë²ˆì§¸
+ *                          ì— ì¡´ì¬í•˜ëŠ” Latchë¥¼ ì¡ì„ ì§€ ê²°ì •.
  * aMode             - [IN] IDU_SET_SX_LATCH_MODE_SHARED or
  *                          IDU_SET_SX_LATCH_MODE_EXCLUSIVE
- * aLockWaitMicroSec - [IN] LatchÀâÁö ¸øÇÏ°í ´ë±âÇÒ °æ¿ì ¸î USecµ¿¾È ´ë±âÇØ¾ß
- *                          ÇÏ´ÂÁö¸¦ °áÁ¤.
+ * aLockWaitMicroSec - [IN] Latchì¡ì§€ ëª»í•˜ê³  ëŒ€ê¸°í•  ê²½ìš° ëª‡ USecë™ì•ˆ ëŒ€ê¸°í•´ì•¼
+ *                          í•˜ëŠ”ì§€ë¥¼ ê²°ì •.
  * **********************************************************************/
 IDE_RC iduShmSet4SXLatchAcquire( idvSQL              * aStatistics,
                                  iduShmTxInfo        * aShmTxInfo,
@@ -146,8 +146,8 @@ IDE_RC iduShmSet4SXLatchAcquire( idvSQL              * aStatistics,
     idBool        sLatchAcquired     = ID_FALSE;
     idBool        sLatchPushed       = ID_FALSE;
     UInt          sLstLatchStackIdx;
-    ULong         sWaitedMicroSec    = 0;                 /*Latch ÀâÁö ¸øÇÏ°í ½ÇÁ¦ ´ë±âÇÑ ½Ã°£*/
-    ULong         sLockWaitMicroSec  = aLockWaitMicroSec; /* Latch ÀâÁö ¸øÇÒ¶§ ´ë±â ÇÒ ½Ã°£ */
+    ULong         sWaitedMicroSec    = 0;                 /*Latch ì¡ì§€ ëª»í•˜ê³  ì‹¤ì œ ëŒ€ê¸°í•œ ì‹œê°„*/
+    ULong         sLockWaitMicroSec  = aLockWaitMicroSec; /* Latch ì¡ì§€ ëª»í• ë•Œ ëŒ€ê¸° í•  ì‹œê°„ */
 
     IDE_ASSERT( aLatchIdx < sLatchCnt );
 
@@ -189,9 +189,9 @@ IDE_RC iduShmSet4SXLatchAcquire( idvSQL              * aStatistics,
                                            aSet4SXLatch,
                                            aMode ) == ID_FALSE )
         {
-            /* exclusive set latch¿¡ ´ëÇØ¼­´Â latch stack¿¡ SXSetLatch¸¸ pushÇÏ°í
-             * °³º° ShmLatch´Â push ÇÏÁö ¾Ê´Â´Ù.
-             * ÀÌ´Â latch stackÀÇ overflow¸¦ ¸·°í, ±¸ÇöÀ» È¿À²ÀûÀ¸·Î ÇÏ±â À§ÇÔÀÌ´Ù. */
+            /* exclusive set latchì— ëŒ€í•´ì„œëŠ” latch stackì— SXSetLatchë§Œ pushí•˜ê³ 
+             * ê°œë³„ ShmLatchëŠ” push í•˜ì§€ ì•ŠëŠ”ë‹¤.
+             * ì´ëŠ” latch stackì˜ overflowë¥¼ ë§‰ê³ , êµ¬í˜„ì„ íš¨ìœ¨ì ìœ¼ë¡œ í•˜ê¸° ìœ„í•¨ì´ë‹¤. */
             IDE_TEST( idrLogMgr::pushSetLatchOp( aShmTxInfo,
                                                  aSet4SXLatch,
                                                  aMode,
@@ -282,11 +282,11 @@ IDE_RC iduShmSet4SXLatchAcquire( idvSQL              * aStatistics,
 }
 
 /***********************************************************************
- * Description : aLockÀÌ °¡¸®Å°´Â ShmSetLatch¿¡ aMode·Î ÀâÈù Latch¸¦ ÇØÁ¦ÇÑ´Ù.
+ * Description : aLockì´ ê°€ë¦¬í‚¤ëŠ” ShmSetLatchì— aModeë¡œ ì¡íŒ Latchë¥¼ í•´ì œí•œë‹¤.
  *
- * aStatistics    - [IN] ThreadÀÇ ContextÁ¤º¸
+ * aStatistics    - [IN] Threadì˜ Contextì •ë³´
  * aShmTxInfo     - [IN] Shared Memory Tx
- * aLatchOPInfo   - [IN] Latch stack¿¡ µé¾î°¡ÀÖ´Â SXSetLatch Á¤º¸
+ * aLatchOPInfo   - [IN] Latch stackì— ë“¤ì–´ê°€ìˆëŠ” SXSetLatch ì •ë³´
  **********************************************************************/
 IDE_RC iduShmSet4SXLatchRelease( idvSQL              * /*aStatistics*/,
                                  iduShmTxInfo        * aShmTxInfo,

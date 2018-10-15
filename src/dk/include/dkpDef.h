@@ -68,7 +68,7 @@
  * | 7:N/A | 6:N/A | 5:N/A | 4:N/A | 3:N/A | 2:N/A | 1: RemoteTx Begin  | 0: XA |
  * |_______|_______|_______|_______|_______|_______|____________________|_______|
  *
- *  RemoteTx Begin: Ã³À½À¸·Î ¿ø°İ Æ®·£Àè¼ÇÀ» Begin ÇÏ´ÂÁö ¿©ºÎ..
+ *  RemoteTx Begin: ì²˜ìŒìœ¼ë¡œ ì›ê²© íŠ¸ëœì­ì…˜ì„ Begin í•˜ëŠ”ì§€ ì—¬ë¶€..
  */
 #define DKP_ADLP_PACKET_FLAGS_NOT_USED            (0x00)
 #define DKP_ADLP_PACKET_FLAGS_SET_XA( aFlags )    ( (aFlags) |= 0x01 )
@@ -79,8 +79,8 @@
 #define DKP_ADLP_PACKET_FLAGS_UNSET_TX_BEGIN( aFlags )  ( (aFlags) &= (0xFD) )
 #define DKP_ADLP_PACKET_FLAGS_IS_TX_BEGIN( aFlags )     ( ( ((aFlags) & 0x02) == 0x02 )? ID_TRUE : ID_FALSE )
 
-/* Values of dkpProtocolHeader::mReserved È®Àå½Ã,
- * dkpProtocolMgr¿¡¼­ ÀÎÀÚ°ªµéÀ» aReserved¸¦ °Ë»öÇØ¼­ º¯°æ.
+/* Values of dkpProtocolHeader::mReserved í™•ì¥ì‹œ,
+ * dkpProtocolMgrì—ì„œ ì¸ìê°’ë“¤ì„ aReservedë¥¼ ê²€ìƒ‰í•´ì„œ ë³€ê²½.
  */
 #define DKP_ADLP_PACKET_RESERVED_NOT_USED          (0x00)
 
@@ -215,8 +215,8 @@ typedef enum
 /* ---------------------------------------------------------------------
  * DK AltiLinker properties type enumeration
  *
- *  Linker control session À» ÅëÇØ AltiLinker ÇÁ·Î¼¼½º·Î Àü´ŞÇÒ property
- *  µé¸¸ enumeration ÇÏ¹Ç·Î dkaDef.h ¿¡ enumeration °ú´Â Â÷ÀÌ°¡ Á¸ÀçÇÑ´Ù. 
+ *  Linker control session ì„ í†µí•´ AltiLinker í”„ë¡œì„¸ìŠ¤ë¡œ ì „ë‹¬í•  property
+ *  ë“¤ë§Œ enumeration í•˜ë¯€ë¡œ dkaDef.h ì— enumeration ê³¼ëŠ” ì°¨ì´ê°€ ì¡´ì¬í•œë‹¤. 
  * --------------------------------------------------------------------*/
 typedef enum
 {

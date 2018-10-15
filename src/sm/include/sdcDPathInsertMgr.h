@@ -59,7 +59,7 @@ public:
     static IDE_RC dumpDPathEntry( void *aTrans );
 
 private:
-    // sdpDPathEntryÀÇ SlotÀ» TRANSACTION_TABLE_SIZE ¸¸Å­ ¸¸µé¾î µĞ´Ù.
+    // sdpDPathEntryì˜ Slotì„ TRANSACTION_TABLE_SIZE ë§Œí¼ ë§Œë“¤ì–´ ë‘”ë‹¤.
     static iduMemPool       mDPathEntryPool;
 
     // X$DIRECT_PATH_INSERT

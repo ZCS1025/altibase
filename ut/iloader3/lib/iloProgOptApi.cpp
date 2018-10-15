@@ -310,8 +310,8 @@ SInt iloSetGenOpt_v1( SInt                     aVersion,
         sHandle->mProgOption->mGetTotalRowCount = ILO_TRUE;
         sHandle->mProgOption->mSetRowFrequency = sOptions->setRowFrequency; 
 
-        /* row total count ¸¦ ±¸ÇÏ´Â ¿É¼ÇÀ» ILO_FALSE ¼³Á¤
-         * DATAIN ¼öÇà ÇÏ±â À§ÇØ¼­ ÇÊ¿ä
+        /* row total count ë¥¼ êµ¬í•˜ëŠ” ì˜µì…˜ì„ ILO_FALSE ì„¤ì •
+         * DATAIN ìˆ˜í–‰ í•˜ê¸° ìœ„í•´ì„œ í•„ìš”
          */
         sOptions->getTotalRowCount =  ILO_FALSE;
     }

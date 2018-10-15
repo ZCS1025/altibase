@@ -36,7 +36,7 @@ public class IntervalTest extends AltibaseTestCase
         AltibaseInterval sInterval = (AltibaseInterval)sRS.getObject(1);
         assertEquals(0, sInterval.getSecond());
         assertEquals(1000000, sInterval.getNanos());
-        // ÇÏÀ§ È£È¯¼ºÀ» À§ÇØ Áö¿øÇÏ´Â getXXX
+        // í•˜ìœ„ í˜¸í™˜ì„±ì„ ìœ„í•´ ì§€ì›í•˜ëŠ” getXXX
         assertEquals(1.0 / (60L * 60L * 24L * 1000L), sRS.getDouble(1), 0);
         assertEquals(0, sRS.getLong(1));
         sRS.close();

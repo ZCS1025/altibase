@@ -23,16 +23,16 @@
  *
  * Description :
  *
- * º» ÆÄÀÏÀº º¹±¸ °ü¸®ÀÚ¿¡ ´ëÇÑ Çì´õ ÆÄÀÏÀÌ´Ù.
+ * ë³¸ íŒŒì¼ì€ ë³µêµ¬ ê´€ë¦¬ìì— ëŒ€í•œ í—¤ë” íŒŒì¼ì´ë‹¤.
  *
- * # ±â´É
- *   1. ·Î±×¾ŞÄ¿ °ü¸® (»ı¼º/ÃÊ±âÈ­/¼³Á¤)
- *   2. ·Î±×ÆÄÀÏ °ü¸®ÀÚ ¾²·¹µå ¹× Ã¼Å©Æ÷ÀÎÆ® ¾²·¹µå ÃÊ±âÈ­
- *   3. MRDBÀÇ Dirty-Page °ü¸®
- *   4. Ã¼Å©Æ÷ÀÎÆ® ¼öÇà
- *   5. Restart Recovery ¼öÇà
- *   6. Æ®·£Àè¼Ç rollback ¼öÇà
- *   7. **Prj-1149 : media recovery ¼öÇà
+ * # ê¸°ëŠ¥
+ *   1. ë¡œê·¸ì•µì»¤ ê´€ë¦¬ (ìƒì„±/ì´ˆê¸°í™”/ì„¤ì •)
+ *   2. ë¡œê·¸íŒŒì¼ ê´€ë¦¬ì ì“°ë ˆë“œ ë° ì²´í¬í¬ì¸íŠ¸ ì“°ë ˆë“œ ì´ˆê¸°í™”
+ *   3. MRDBì˜ Dirty-Page ê´€ë¦¬
+ *   4. ì²´í¬í¬ì¸íŠ¸ ìˆ˜í–‰
+ *   5. Restart Recovery ìˆ˜í–‰
+ *   6. íŠ¸ëœì­ì…˜ rollback ìˆ˜í–‰
+ *   7. **Prj-1149 : media recovery ìˆ˜í–‰
  **********************************************************************/
 
 #ifndef _O_SMR_RECOVERY_MGR_H_
@@ -62,50 +62,50 @@ class smrRecoveryMgr
 
 public:
 
-    static IDE_RC create();     // ·Î±×ÆÄÀÏ ¹× loganchor ÆÄÀÏ »ı¼º
-    static IDE_RC initialize(); // ÃÊ±âÈ­
-    static IDE_RC destroy();    // ÇØÁ¦
+    static IDE_RC create();     // ë¡œê·¸íŒŒì¼ ë° loganchor íŒŒì¼ ìƒì„±
+    static IDE_RC initialize(); // ì´ˆê¸°í™”
+    static IDE_RC destroy();    // í•´ì œ
 
     static IDE_RC finalize();
 
-    /* Àç½ÃÀÛ ¼öÇà */
+    /* ì¬ì‹œì‘ ìˆ˜í–‰ */
     static IDE_RC restart( UInt aPolicy );
 
-    /* Æ®·£Àè¼Ç ¼öÇà */
+    /* íŠ¸ëœì­ì…˜ ìˆ˜í–‰ */
     static IDE_RC undoTrans( idvSQL* aStatistics,
                              void*   aTrans,
                              smLSN*  aLSN );
 
-    /* HashingµÈ Disk LogµéÀ» Àû¿ë */
+    /* Hashingëœ Disk Logë“¤ì„ ì ìš© */
     static IDE_RC applyHashedDiskLogRec( idvSQL* aStatistics );
 
     // PRJ-1548 User Memory Tablespace
 
-    // ¸Ş¸ğ¸®/µğ½ºÅ© TBS ¼Ó¼ºÀ» ·Î±×¾ŞÄ¿¿¡ °»½ÅÇÑ´Ù.
+    // ë©”ëª¨ë¦¬/ë””ìŠ¤í¬ TBS ì†ì„±ì„ ë¡œê·¸ì•µì»¤ì— ê°±ì‹ í•œë‹¤.
     static IDE_RC updateTBSNodeToAnchor( sctTableSpaceNode*  aSpaceNode );
-    // µğ½ºÅ© µ¥ÀÌÅ¸ÆÄÀÏ ¼Ó¼ºÀ» ·Î±×¾ŞÄ¿¿¡ °»½ÅÇÑ´Ù.
+    // ë””ìŠ¤í¬ ë°ì´íƒ€íŒŒì¼ ì†ì„±ì„ ë¡œê·¸ì•µì»¤ì— ê°±ì‹ í•œë‹¤.
     static IDE_RC updateDBFNodeToAnchor( sddDataFileNode*    aFileNode );
-    // ¸Ş¸ğ¸® µ¥ÀÌÅ¸ÆÄÀÏ ¼Ó¼ºÀ» ·Î±×¾ŞÄ¿¿¡ °»½ÅÇÑ´Ù.
+    // ë©”ëª¨ë¦¬ ë°ì´íƒ€íŒŒì¼ ì†ì„±ì„ ë¡œê·¸ì•µì»¤ì— ê°±ì‹ í•œë‹¤.
     static IDE_RC updateChkptImageAttrToAnchor(
                                  smmCrtDBFileInfo   * aCrtDBFileInfo,
                                  smmChkptImageAttr  * aChkptImageAttr );
 
     static IDE_RC updateSBufferNodeToAnchor( sdsFileNode  * aFileNode );
-    // Chkpt Path ¼Ó¼ºÀ» Loganchor¿¡ º¯°æÇÑ´Ù.
+    // Chkpt Path ì†ì„±ì„ Loganchorì— ë³€ê²½í•œë‹¤.
     static IDE_RC updateChkptPathToLogAnchor(
                       smmChkptPathNode * aChkptPathNode );
 
-    // ¸Ş¸ğ¸®/µğ½ºÅ© Å×ÀÌºí½ºÆäÀÌ½º ¼Ó¼ºÀ» ·Î±×¾ŞÄ¿¿¡ Ãß°¡ÇÑ´Ù.
+    // ë©”ëª¨ë¦¬/ë””ìŠ¤í¬ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ì†ì„±ì„ ë¡œê·¸ì•µì»¤ì— ì¶”ê°€í•œë‹¤.
     static IDE_RC addTBSNodeToAnchor( sctTableSpaceNode*   aSpaceNode );
 
-    // µğ½ºÅ© µ¥ÀÌÅ¸ÆÄÀÏ ¼Ó¼ºÀ» ·Î±×¾ŞÄ¿¿¡ Ãß°¡ÇÑ´Ù.
+    // ë””ìŠ¤í¬ ë°ì´íƒ€íŒŒì¼ ì†ì„±ì„ ë¡œê·¸ì•µì»¤ì— ì¶”ê°€í•œë‹¤.
     static IDE_RC addDBFNodeToAnchor( sddTableSpaceNode*   aSpaceNode,
                                       sddDataFileNode*     aFileNode );
 
-    // ¸Ş¸ğ¸® Ã¼Å©Æ÷ÀÎÆ® ÆĞ½º ¼Ó¼ºÀ» ·Î±×¾ŞÄ¿¿¡ Ãß°¡ÇÑ´Ù.
+    // ë©”ëª¨ë¦¬ ì²´í¬í¬ì¸íŠ¸ íŒ¨ìŠ¤ ì†ì„±ì„ ë¡œê·¸ì•µì»¤ì— ì¶”ê°€í•œë‹¤.
     static IDE_RC addChkptPathNodeToAnchor( smmChkptPathNode * aChkptPathNode );
 
-    // ¸Ş¸ğ¸® µ¥ÀÌÅ¸ÆÄÀÏ ¼Ó¼ºÀ» ·Î±×¾ŞÄ¿¿¡ Ãß°¡ÇÑ´Ù.
+    // ë©”ëª¨ë¦¬ ë°ì´íƒ€íŒŒì¼ ì†ì„±ì„ ë¡œê·¸ì•µì»¤ì— ì¶”ê°€í•œë‹¤.
     static IDE_RC addChkptImageAttrToAnchor(
                                  smmCrtDBFileInfo   * aCrtDBFileInfo,
                                  smmChkptImageAttr  * aChkptImageAttr );
@@ -113,55 +113,55 @@ public:
 
     static IDE_RC addSBufferNodeToAnchor( sdsFileNode*   aFileNode );
 
-    // loganchor¿¡ tablespace Á¤º¸ flush
+    // loganchorì— tablespace ì •ë³´ flush
     static IDE_RC updateAnchorAllTBS();
 
 
     static IDE_RC updateAnchorAllSB( void );
     
-    // loganchor¿¡ archive ·Î±× ¸ğµå flush
+    // loganchorì— archive ë¡œê·¸ ëª¨ë“œ flush
     static IDE_RC updateArchiveMode(smiArchiveMode aArchiveMode);
 
-    // loganchor¿¡ TXSEG Entry °³¼ö¸¦ ¹İ¿µÇÑ´Ù.
+    // loganchorì— TXSEG Entry ê°œìˆ˜ë¥¼ ë°˜ì˜í•œë‹¤.
     static IDE_RC updateTXSEGEntryCnt( UInt sEntryCnt );
 
     /* checkpoint by buffer flush thread */
     static IDE_RC checkpointDRDB(idvSQL* aStatistics);
     static IDE_RC wakeupChkptThr4DRDB();
 
-    /* checkpoint ¼öÇà */
+    /* checkpoint ìˆ˜í–‰ */
     static IDE_RC checkpoint( idvSQL       * aStatistics,
                               SInt           aCheckpointReason,
                               smrChkptType   aChkptType,
                               idBool         aRemoveLogFile = ID_TRUE,
                               idBool         aFinal         = ID_FALSE );
 
-    /* Tablespace¿¡ Checkpoint°¡ °¡´ÉÇÑÁö °Ë»ç */
+    /* Tablespaceì— Checkpointê°€ ê°€ëŠ¥í•œì§€ ê²€ì‚¬ */
     static idBool isCheckpointable( sctTableSpaceNode * aSpaceNode );
 
 
 
-    /* prepare Æ®·£Àè¼Ç¿¡ ´ëÇÑ table lockÀ» ¿øº¹ */
+    /* prepare íŠ¸ëœì­ì…˜ì— ëŒ€í•œ table lockì„ ì›ë³µ */
     static IDE_RC acquireLockForInDoubt();
 
-    // ·Î±×°ü¸®ÀÚÀÇ »óÅÂ ¹İÈ¯
-    static inline idBool isFinish()  { return mFinish;  } /* ·Î±×°ü¸®ÀÚÀÇ »óÅÂ ¹İÈ¯*/
-    static inline idBool isRestart() { return mRestart; } /* restart ÁøÇàÁß ¿©ºÎ */
-    static inline idBool isRedo() { return mRedo; }       /* redo ÁøÇàÁß ¿©ºÎ */
+    // ë¡œê·¸ê´€ë¦¬ìì˜ ìƒíƒœ ë°˜í™˜
+    static inline idBool isFinish()  { return mFinish;  } /* ë¡œê·¸ê´€ë¦¬ìì˜ ìƒíƒœ ë°˜í™˜*/
+    static inline idBool isRestart() { return mRestart; } /* restart ì§„í–‰ì¤‘ ì—¬ë¶€ */
+    static inline idBool isRedo() { return mRedo; }       /* redo ì§„í–‰ì¤‘ ì—¬ë¶€ */
 
-    // ÇöÀç RecoveryÁßÀÎÁö ¿©ºÎ¸¦ ¸®ÅÏÇÑ´Ù.
-    static inline idBool isRestartRecoveryPhase() { return mRestartRecoveryPhase; } /* Restart Recovery ÁøÇàÁßÀÎÁö ¿©ºÎ */
-    static inline idBool isMediaRecoveryPhase()   { return mMediaRecoveryPhase; }   /* ¹Ìµğ¾î º¹±¸ ¼öÇà Áß ¿©ºÎ */
+    // í˜„ì¬ Recoveryì¤‘ì¸ì§€ ì—¬ë¶€ë¥¼ ë¦¬í„´í•œë‹¤.
+    static inline idBool isRestartRecoveryPhase() { return mRestartRecoveryPhase; } /* Restart Recovery ì§„í–‰ì¤‘ì¸ì§€ ì—¬ë¶€ */
+    static inline idBool isMediaRecoveryPhase()   { return mMediaRecoveryPhase; }   /* ë¯¸ë””ì–´ ë³µêµ¬ ìˆ˜í–‰ ì¤‘ ì—¬ë¶€ */
 
     static inline idBool isVerifyIndexIntegrityLevel2();
 
     // PR-14912
     static inline idBool isRefineDRDBIdx() { return mRefineDRDBIdx; }
 
-    /* ½ÃÀÛ·Î±× ¿©ºÎ ¹İÈ¯ */
+    /* ì‹œì‘ë¡œê·¸ ì—¬ë¶€ ë°˜í™˜ */
     static inline idBool isBeginLog( smrLogHead* aLogHead );
 
-    /* BUG-26482 ´ë±â ÇÔ¼ö¸¦ CommitLog ±â·Ï ÀüÈÄ·Î ºĞ¸®ÇÏ¿© È£ÃâÇÕ´Ï´Ù. */
+    /* BUG-26482 ëŒ€ê¸° í•¨ìˆ˜ë¥¼ CommitLog ê¸°ë¡ ì „í›„ë¡œ ë¶„ë¦¬í•˜ì—¬ í˜¸ì¶œí•©ë‹ˆë‹¤. */
     static void setCallbackFunction(
                     smGetMinSN                   aGetMinSN,
                     smIsReplCompleteBeforeCommit aIsReplCompleteBeforeCommitFunc,
@@ -231,24 +231,24 @@ public:
     static UInt getSmVersionIDFromLogAnchor();
     static void getDiskRedoLSNFromLogAnchor(smLSN* aDiskRedoLSN);
 
-    // prj-1149 checkpoint ¼öÇà
+    // prj-1149 checkpoint ìˆ˜í–‰
     static IDE_RC makeBufferChkpt(idvSQL*       aStatistics,
                                   idBool        aIsFinal,
                                   smLSN*        aEndLSN,
                                   smLSN*        aOldestLSN);
 
     //* Sync Replication extension * //
-    /* BUG-26482 ´ë±â ÇÔ¼ö¸¦ CommitLog ±â·Ï ÀüÈÄ·Î ºĞ¸®ÇÏ¿© È£ÃâÇÕ´Ï´Ù. */
+    /* BUG-26482 ëŒ€ê¸° í•¨ìˆ˜ë¥¼ CommitLog ê¸°ë¡ ì „í›„ë¡œ ë¶„ë¦¬í•˜ì—¬ í˜¸ì¶œí•©ë‹ˆë‹¤. */
     static smIsReplCompleteBeforeCommit mIsReplCompleteBeforeCommitFunc; // Sync LSN wait for (Before Write CommitLog)
     static smIsReplCompleteAfterCommit  mIsReplCompleteAfterCommitFunc;  // Sync LSN wait for (After Write CommitLog)
     /*PROJ-1670 RP LOG Buffer*/
     static smCopyToRPLogBuf   mCopyToRPLogBufFunc;
     /* PROJ-2453 Eager Replication performance enhancement */ 
     static smSendXLog   mSendXLogFunc;
-    /* Log File»èÁ¦½Ã mDeleteLogFileMutex¸¦ Àâ¾Æ¾ß ÇÑ´Ù. ¿Ö³ÄÇÏ¸é ReplicationÀÇ
-       LogFileÀ» Scaning ÇÏ¸é¼­ ÀÚ½ÅÀÇ ½ÇÁ¦·Î º¸³»´Â À§Ä¡¸¦ Ã£À»¶§ logÆÄÀÏÀÌ »èÁ¦µÇ´Â
-       °ÍÀ» ¹æÁöÇÏ±â À§ÇØ »èÁ¦½Ã mDeleteLogFileMutex¿¡ ´ëÇØ¼­ lockÀ» Àâ°í ¶ÇÇÑ
-       ReplicationÀÌ º¸³»¾ß µÉ Ã¹¹øÂ° ÆÄÀÏÀ» Ã£À» ¶§ Àâ¾Æ¾ß ÇÑ´Ù.*/
+    /* Log Fileì‚­ì œì‹œ mDeleteLogFileMutexë¥¼ ì¡ì•„ì•¼ í•œë‹¤. ì™œëƒí•˜ë©´ Replicationì˜
+       LogFileì„ Scaning í•˜ë©´ì„œ ìì‹ ì˜ ì‹¤ì œë¡œ ë³´ë‚´ëŠ” ìœ„ì¹˜ë¥¼ ì°¾ì„ë•Œ logíŒŒì¼ì´ ì‚­ì œë˜ëŠ”
+       ê²ƒì„ ë°©ì§€í•˜ê¸° ìœ„í•´ ì‚­ì œì‹œ mDeleteLogFileMutexì— ëŒ€í•´ì„œ lockì„ ì¡ê³  ë˜í•œ
+       Replicationì´ ë³´ë‚´ì•¼ ë  ì²«ë²ˆì§¸ íŒŒì¼ì„ ì°¾ì„ ë•Œ ì¡ì•„ì•¼ í•œë‹¤.*/
     static inline IDE_RC lockDeleteLogFileMtx()
                                      { return mDeleteLogFileMutex.lock( NULL  ); }
     static inline IDE_RC unlockDeleteLogFileMtx()  
@@ -260,27 +260,27 @@ public:
                                        { return mAnchorMgr.getReplRecoveryLSN(); }
     static inline IDE_RC setReplRecoveryLSN( smLSN aReplRecoveryLSN )
                   { return mAnchorMgr.updateReplRecoveryLSN( aReplRecoveryLSN ); }
-    // Decompress Log Buffer Å©±â°¡
-    // ÇÁ·ÎÆÛÆ¼¿¡ ÁöÁ¤µÈ °ªº¸´Ù Å¬ °æ¿ì HashingµÈ Disk LogµéÀ» Àû¿ë
+    // Decompress Log Buffer í¬ê¸°ê°€
+    // í”„ë¡œí¼í‹°ì— ì§€ì •ëœ ê°’ë³´ë‹¤ í´ ê²½ìš° Hashingëœ Disk Logë“¤ì„ ì ìš©
     static IDE_RC checkRedoDecompLogBufferSize() ;
 
     /////////////////////////////////////////////////////////////////
-    // ALTER TABLESPACE ONLINE/OFFLINE°ü·Ã ÇÔ¼ö
+    // ALTER TABLESPACE ONLINE/OFFLINEê´€ë ¨ í•¨ìˆ˜
 
-    // ALTER TABLESPACE OFFLINEÀ» À§ÇØ
-    // ¸ğµç TablespaceÀÇ ¸ğµç Dirty Page¸¦ Flush
+    // ALTER TABLESPACE OFFLINEì„ ìœ„í•´
+    // ëª¨ë“  Tablespaceì˜ ëª¨ë“  Dirty Pageë¥¼ Flush
     static IDE_RC flushDirtyPages4AllTBS();
 
-    // Æ¯Á¤ Tablespace¿¡ Dirty Page°¡ ¾øÀ½À» È®ÀÎÇÑ´Ù.
+    // íŠ¹ì • Tablespaceì— Dirty Pageê°€ ì—†ìŒì„ í™•ì¸í•œë‹¤.
     static IDE_RC assertNoDirtyPagesInTBS( smmTBSNode * aTBSNode );
 
     /////////////////////////////////////////////////////////////////
-    // ¹Ìµğ¾î º¹±¸ °ü·Ã ÇÔ¼ö
+    // ë¯¸ë””ì–´ ë³µêµ¬ ê´€ë ¨ í•¨ìˆ˜
 
-    /* Áß°£¿¡ ºüÁø ·Î±×ÆÄÀÏÀÌ ÀÖ´ÂÁö °Ë»ç */
+    /* ì¤‘ê°„ì— ë¹ ì§„ ë¡œê·¸íŒŒì¼ì´ ìˆëŠ”ì§€ ê²€ì‚¬ */
     static IDE_RC identifyLogFiles();
 
-    /* ¹Ìµğ¾îº¹±¸°¡ ÇÊ¿äÇÑÁö °Ë»ç */
+    /* ë¯¸ë””ì–´ë³µêµ¬ê°€ í•„ìš”í•œì§€ ê²€ì‚¬ */
     static IDE_RC identifyDatabase( UInt aActionFlag );
 
     // PRJ-1149
@@ -288,23 +288,23 @@ public:
                             smiRecoverType    aRecvType,
                             UInt              aUntilTIME);
 
-    // incomplete media recovery ÀÌÈÄ ·Î±×ÆÄÀÏ reset ¼öÇà
+    // incomplete media recovery ì´í›„ ë¡œê·¸íŒŒì¼ reset ìˆ˜í–‰
     static IDE_RC resetLogFiles();
 
-    // resetlogfile °úÁ¤¿¡¼­ ·Î±×ÆÄÀÏÀ» »èÁ¦ÇÑ´Ù.
+    // resetlogfile ê³¼ì •ì—ì„œ ë¡œê·¸íŒŒì¼ì„ ì‚­ì œí•œë‹¤.
     static IDE_RC deleteLogFiles( SChar   * aDirPath,
                                   UInt      aBeginLogFileNo );
 
     static idBool isCheckpointFlushNeeded(smLSN aLastWrittenLSN);
 
-    // SKIPÇÒ REDO·Î±×ÀÎÁö ¿©ºÎ¸¦ ¸®ÅÏÇÑ´Ù.
+    // SKIPí•  REDOë¡œê·¸ì¸ì§€ ì—¬ë¶€ë¥¼ ë¦¬í„´í•œë‹¤.
     static idBool isSkipRedo( scSpaceID aSpaceID,
                               idBool    aUsingTBSAttr = ID_FALSE);
 
     static void writeDebugInfo();
 
-    /* DRDB Log¸¦ ºĞ¼®ÇÏ¿© DRDB RedoLogÀÇ ½ÃÀÛ À§Ä¡¿Í ±æÀÌ¸¦
-     * ¹İÈ¯ÇÑ´Ù. */
+    /* DRDB Logë¥¼ ë¶„ì„í•˜ì—¬ DRDB RedoLogì˜ ì‹œì‘ ìœ„ì¹˜ì™€ ê¸¸ì´ë¥¼
+     * ë°˜í™˜í•œë‹¤. */
     static void getDRDBRedoBuffer( smrLogType    aLogType,
                                    UInt          aLogTotalSize,
                                    SChar       * aLogPtr,
@@ -314,9 +314,9 @@ public:
     /*****************************************************************
      * PROJ-2162 RestartRiskReduction
      *
-     * ÁÖ¿ä ÇÔ¼öµé
+     * ì£¼ìš” í•¨ìˆ˜ë“¤
      *****************************************************************/
-    /* Log¸¦ ¹Ş¾Æ ºĞ¼®ÇÏ¿© ÀÌ Log°¡ RecoveryÇÒ ´ë»ó °´Ã¼µéÀ» ÃßÃâÇÕ´Ï´Ù. */
+    /* Logë¥¼ ë°›ì•„ ë¶„ì„í•˜ì—¬ ì´ Logê°€ Recoveryí•  ëŒ€ìƒ ê°ì²´ë“¤ì„ ì¶”ì¶œí•©ë‹ˆë‹¤. */
     static void prepareRTOI( void                * aLogPtr,
                              smrLogHead          * aLogHeadPtr,
                              smLSN               * aLSN,
@@ -325,49 +325,49 @@ public:
                              idBool                aIsRedo,
                              smrRTOI             * aObj );
 
-    /* TargetObject¸¦ ¹Ş¾Æ InconsistentÇÑÁö Ã¼Å©. */
+    /* TargetObjectë¥¼ ë°›ì•„ Inconsistentí•œì§€ ì²´í¬. */
     static void checkObjectConsistency( smrRTOI * aObj,
                                         idBool  * aConsistency);
-    /* Recovery°¡ ½ÇÆĞÇÑ »óÈ²ÀÔ´Ï´Ù. */
+    /* Recoveryê°€ ì‹¤íŒ¨í•œ ìƒí™©ì…ë‹ˆë‹¤. */
     static IDE_RC startupFailure( smrRTOI * aObj,
                                   idBool    aIsRedo );
 
-    /* TargetObject¸¦ InconsistentÇÏ´Ù°í ¼³Á¤ÇÔ */
+    /* TargetObjectë¥¼ Inconsistentí•˜ë‹¤ê³  ì„¤ì •í•¨ */
     static void setObjectInconsistency( smrRTOI * aObj,
                                         idBool    aIsRedo );
 
     /*****************************************************************
      * PROJ-2162 RestartRiskReduction
      *
-     * get/set/check ÇÔ¼öµé
+     * get/set/check í•¨ìˆ˜ë“¤
      *****************************************************************/
-    /* RTOI °´Ã¼¸¦ ÃÊ±âÈ­ÇÑ´Ù. */
+    /* RTOI ê°ì²´ë¥¼ ì´ˆê¸°í™”í•œë‹¤. */
     static void initRTOI( smrRTOI * aObj );
 
-    /* DRDB WalÀÌ ±úÁ³´ÂÁö È®ÀÎÇÕ´Ï´Ù. */
+    /* DRDB Walì´ ê¹¨ì¡ŒëŠ”ì§€ í™•ì¸í•©ë‹ˆë‹¤. */
     static IDE_RC checkDiskWAL();
 
-    /* MRDB WalÀÌ ±úÁ³´ÂÁö È®ÀÎÇÕ´Ï´Ù. */
+    /* MRDB Walì´ ê¹¨ì¡ŒëŠ”ì§€ í™•ì¸í•©ë‹ˆë‹¤. */
     static IDE_RC checkMemWAL();
 
-    /* DB Inconsistency ¼³Á¤À» À§ÇÑ ÁØºñ¸¦ ÇÕ´Ï´Ù.
-     * Flusher¸¦ ¸ØÃä´Ï´Ù. */
+    /* DB Inconsistency ì„¤ì •ì„ ìœ„í•œ ì¤€ë¹„ë¥¼ í•©ë‹ˆë‹¤.
+     * Flusherë¥¼ ë©ˆì¶¥ë‹ˆë‹¤. */
     static IDE_RC prepare4DBInconsistencySetting();
 
-    /* DB Inconsistency ¼³Á¤À» ¸¶¹«¸® ÇÕ´Ï´Ù.
-     * Flusher¸¦ Àç±¸µ¿ÇÕ´Ï´Ù. */
+    /* DB Inconsistency ì„¤ì •ì„ ë§ˆë¬´ë¦¬ í•©ë‹ˆë‹¤.
+     * Flusherë¥¼ ì¬êµ¬ë™í•©ë‹ˆë‹¤. */
     static IDE_RC finish4DBInconsistencySetting();
 
-    /* IdempotentÇÑ LogÀÎÁö È®ÀÎÇÕ´Ï´Ù. */
+    /* Idempotentí•œ Logì¸ì§€ í™•ì¸í•©ë‹ˆë‹¤. */
     static idBool isIdempotentLog( smrLogType sLogType );
 
-    /* Property¿¡¼­ ¹«½ÃÇÏ¶ó°í ÇÑ °´Ã¼ÀÎÁö Á¶»çÇÔ */
+    /* Propertyì—ì„œ ë¬´ì‹œí•˜ë¼ê³  í•œ ê°ì²´ì¸ì§€ ì¡°ì‚¬í•¨ */
     static idBool isIgnoreObjectByProperty( smrRTOI * aObj);
 
-    /* RTOI°¡ Inconsistency ÇÑÁö Ã¼Å©ÇÏ´Â ½ÇÁ¦ ÇÔ¼ö */
+    /* RTOIê°€ Inconsistency í•œì§€ ì²´í¬í•˜ëŠ” ì‹¤ì œ í•¨ìˆ˜ */
     static idBool checkObjectConsistencyInternal( smrRTOI * aObj );
 
-    /* Emergency Startup °úÁ¤ ÈÄ Á¶È¸¸¦ À§ÇÑ get ÇÔ¼ö */
+    /* Emergency Startup ê³¼ì • í›„ ì¡°íšŒë¥¼ ìœ„í•œ get í•¨ìˆ˜ */
     static smrRTOI * getIOLHead()            { return &mIOLHead; }
     static idBool    getDBDurability()       { return mDurability; }
     static idBool    getDRDBConsistency()    { return mDRDBConsistency; }
@@ -396,10 +396,10 @@ public:
     /*****************************************************************
      * PROJ-2162 RestartRiskReduction
      *
-     * Undo/Refine µî ½ÇÁ¦ ¿¬»ê ÇÔ¼öµî¿¡¼­ ½ÇÆĞ¸¦ Ã³¸®ÇÏ´Â °æ¿ì
+     * Undo/Refine ë“± ì‹¤ì œ ì—°ì‚° í•¨ìˆ˜ë“±ì—ì„œ ì‹¤íŒ¨ë¥¼ ì²˜ë¦¬í•˜ëŠ” ê²½ìš°
      *****************************************************************/
 
-    /* Undo½ÇÆĞ¿¡ ´ëÇÑ RTOI¸¦ ÁØºñÇÔ */
+    /* Undoì‹¤íŒ¨ì— ëŒ€í•œ RTOIë¥¼ ì¤€ë¹„í•¨ */
     static void prepareRTOIForUndoFailure( void        * aTrans,
                                            smrRTOIType   aType,
                                            smOID         aTableOID,
@@ -407,34 +407,34 @@ public:
                                            scSpaceID     aSpaceID,
                                            scPageID      aPageID );
 
-    /* Refine½ÇÆĞ·Î ÇØ´ç TableÀÌ Inconsistent ÇØÁü */
+    /* Refineì‹¤íŒ¨ë¡œ í•´ë‹¹ Tableì´ Inconsistent í•´ì§ */
     static IDE_RC refineFailureWithTable( smOID   aTableOID );
 
-    /* Refine½ÇÆĞ·Î ÇØ´ç Index°¡ Inconsistent ÇØÁü */
+    /* Refineì‹¤íŒ¨ë¡œ í•´ë‹¹ Indexê°€ Inconsistent í•´ì§ */
     static IDE_RC refineFailureWithIndex( smOID   aTableOID,
                                           UInt    aIndexID );
 
     /*****************************************************************
      * PROJ-2162 RestartRiskReduction
      *
-     * IOL(InconsistentObjectList)À» ´Ù·ç´Â ÇÔ¼öµé
+     * IOL(InconsistentObjectList)ì„ ë‹¤ë£¨ëŠ” í•¨ìˆ˜ë“¤
      *****************************************************************/
-    /* IOL¸¦ ÃÊ±âÈ­ ÇÕ´Ï´Ù. */
+    /* IOLë¥¼ ì´ˆê¸°í™” í•©ë‹ˆë‹¤. */
     static IDE_RC initializeIOL();
 
-    /* IOL¸¦ Ãß°¡ ÇÕ´Ï´Ù. */
+    /* IOLë¥¼ ì¶”ê°€ í•©ë‹ˆë‹¤. */
     static void addIOL( smrRTOI * aObj );
 
-    /* ÀÌ¹Ì µî·ÏµÈ °´Ã¼°¡ ÀÖ´ÂÁö, IOL¿¡¼­ Ã£½À´Ï´Ù. */
+    /* ì´ë¯¸ ë“±ë¡ëœ ê°ì²´ê°€ ìˆëŠ”ì§€, IOLì—ì„œ ì°¾ìŠµë‹ˆë‹¤. */
     static idBool findIOL( smrRTOI * aObj);
 
-    /* RTOI Message¸¦ TRC/isql¿¡ Ãâ·ÂÇÕ´Ï´Ù. */
+    /* RTOI Messageë¥¼ TRC/isqlì— ì¶œë ¥í•©ë‹ˆë‹¤. */
     static void displayRTOI( smrRTOI * aObj );
 
-    /* Redo½ÃÁ¡¿¡ µî·ÏÀº µÇ¾úÁö¸¸ ¹Ì·ïµĞ Inconsistency¸¦ ¼³Á¤ÇÔ */
+    /* Redoì‹œì ì— ë“±ë¡ì€ ë˜ì—ˆì§€ë§Œ ë¯¸ë¤„ë‘” Inconsistencyë¥¼ ì„¤ì •í•¨ */
     static void applyIOLAtRedoFinish();
 
-    /* IOL¸¦ Á¦°Å ÇÕ´Ï´Ù. */
+    /* IOLë¥¼ ì œê±° í•©ë‹ˆë‹¤. */
     static IDE_RC finalizeIOL();
     /*****************************************************************
      * PROJ-2162 RestartRiskReduction End
@@ -491,9 +491,9 @@ public:
     * PROJ-2133 incremental backup end
     ************************************/
 
-    // Memory Dirty PageµéÀ» Checkpoint Image¿¡ FlushÇÑ´Ù.
-    // END CHKPT LOG ÀÌÀü¿¡ ¼öÇàÇÏ´Â ÀÛ¾÷
-    // PROJ-1923 private -> public À¸·Î º¯°æ
+    // Memory Dirty Pageë“¤ì„ Checkpoint Imageì— Flushí•œë‹¤.
+    // END CHKPT LOG ì´ì „ì— ìˆ˜í–‰í•˜ëŠ” ì‘ì—…
+    // PROJ-1923 private -> public ìœ¼ë¡œ ë³€ê²½
     static IDE_RC chkptFlushMemDirtyPages( smLSN          * aSyncLstLSN,
                                            idBool           aIsFinal );
     /* PROJ-2569 */
@@ -510,8 +510,8 @@ public:
                                  smLSN      * aLSN,
                                  idBool     * aRedoSkip );
 
-    /* BUG-42785 OnlineDRDBRedo¿Í LogFileDeleteThreadÀÇ µ¿½Ã¼º Á¦¾î
-     * mOnlineDRDBRedoCnt º¯¼ö¿¡´ëÇÑ Á¦¾î */
+    /* BUG-42785 OnlineDRDBRedoì™€ LogFileDeleteThreadì˜ ë™ì‹œì„± ì œì–´
+     * mOnlineDRDBRedoCnt ë³€ìˆ˜ì—ëŒ€í•œ ì œì–´ */
     static SInt getOnlineDRDBRedoCnt()
     {
         return idCore::acpAtomicGet32( &mOnlineDRDBRedoCnt );
@@ -552,10 +552,10 @@ private:
                                                     smrLogHead  * aLogHeadPtr,
                                                     smLSN       * aCurRedoLSNPtr );
 
-    // ·Î±×¾ŞÄ¿¿¡ resetloglsnÀÌ ¼³Á¤µÇ¾î ÀÖ´ÂÁö È®ÀÎÇÑ´Ù.
+    // ë¡œê·¸ì•µì»¤ì— resetloglsnì´ ì„¤ì •ë˜ì–´ ìˆëŠ”ì§€ í™•ì¸í•œë‹¤.
     static IDE_RC checkResetLogLSN( UInt aActionFlag );
 
-    /* º¹±¸´ë»ó ÆÄÀÏ¸ñ·Ï »ı¼º */
+    /* ë³µêµ¬ëŒ€ìƒ íŒŒì¼ëª©ë¡ ìƒì„± */
     static IDE_RC makeMediaRecoveryDBFList4AllTBS(
                                 smiRecoverType    aRecoveryType,
                                 UInt            * aFailureMediaType,
@@ -564,23 +564,23 @@ private:
                                 smLSN           * aFromMemRedoLSN,
                                 smLSN           * aToMemRedoLSN );
 
-    // PROJ-1867 ¹é¾÷ µÇ¾ú´ø DBFile¿¡¼­ MustRedoToLSN°ªÀ» °¡Á®¿Â´Ù.
+    // PROJ-1867 ë°±ì—… ë˜ì—ˆë˜ DBFileì—ì„œ MustRedoToLSNê°’ì„ ê°€ì ¸ì˜¨ë‹¤.
     static IDE_RC getMaxMustRedoToLSN( idvSQL     * aStatistics,
                                        smLSN      * aMustRedoToLSN,
                                        SChar     ** sDBFileName );
 
-    // ¸Ş¸ğ¸® µ¥ÀÌÅ¸ÆÄÀÏÀÇ Çì´õ¸¦ º¹±¸ÇÑ´Ù
+    // ë©”ëª¨ë¦¬ ë°ì´íƒ€íŒŒì¼ì˜ í—¤ë”ë¥¼ ë³µêµ¬í•œë‹¤
     static IDE_RC repairFailureChkptImageHdr( smLSN  * aResetLogsLSN );
 
-    // ¸Ş¸ğ¸® Å×ÀÌºí½ºÆäÀÌ½ºÀÇ ¹Ìµğ¾îº¹±¸¸¦ À§ÇØ
-    // Å×ÀÌºí½ºÆäÀÌ½º¸¦ ·ÎµùÇÑ´Ù.
+    // ë©”ëª¨ë¦¬ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì˜ ë¯¸ë””ì–´ë³µêµ¬ë¥¼ ìœ„í•´
+    // í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ë¥¼ ë¡œë”©í•œë‹¤.
     static IDE_RC initMediaRecovery4MemTBS();
 
-    // ¸Ş¸ğ¸® Å×ÀÌºí½ºÆäÀÌ½ºÀÇ ¹Ìµğ¾îº¹±¸¸¦ À§ÇØ
-    // Å×ÀÌºí½ºÆäÀÌ½º¸¦ ¸Ş¸ğ¸®ÇØÁ¦ÇÑ´Ù.
+    // ë©”ëª¨ë¦¬ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì˜ ë¯¸ë””ì–´ë³µêµ¬ë¥¼ ìœ„í•´
+    // í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ë¥¼ ë©”ëª¨ë¦¬í•´ì œí•œë‹¤.
     static IDE_RC finalMediaRecovery4MemTBS();
 
-    // ¹Ìµğ¾îº¹±¸ ¿Ï·á½Ã ¸Ş¸ğ¸® Dirty Pages¸¦ ¸ğµÎ Flush ½ÃÅ²´Ù.
+    // ë¯¸ë””ì–´ë³µêµ¬ ì™„ë£Œì‹œ ë©”ëª¨ë¦¬ Dirty Pagesë¥¼ ëª¨ë‘ Flush ì‹œí‚¨ë‹¤.
     static IDE_RC flushAndRemoveDirtyPagesAllMemTBS();
 
     // To Fix PR-13786
@@ -593,26 +593,26 @@ private:
                                         smLSN              * aFromMemRedoLSN,
                                         smLSN              * aToMemRedoLSN );
 
-    // ¹Ìµğ¾îº¹±¸½Ã ÆÇµ¶ÇÒ Log LSNÀÇ scanÇÒ ±¸°£À» ¾ò´Â´Ù
+    // ë¯¸ë””ì–´ë³µêµ¬ì‹œ íŒë…í•  Log LSNì˜ scaní•  êµ¬ê°„ì„ ì–»ëŠ”ë‹¤
     static void getRedoLSN4SCAN( smLSN * aFromDiskRedoLSN,
                                  smLSN * aToDiskRedoLSN,
                                  smLSN * aFromMemRedoLSN,
                                  smLSN * aToMemRedoLSN,
                                  smLSN * aMinFromRedoLSN );
 
-    // ÆÇµ¶µÈ ·Î±×°¡ common ·Î±×Å¸ÀÔÀÎÁö È®ÀÎÇÑ´Ù.
+    // íŒë…ëœ ë¡œê·¸ê°€ common ë¡œê·¸íƒ€ì…ì¸ì§€ í™•ì¸í•œë‹¤.
     static IDE_RC filterCommonRedoLogType( smrLogType   aLogType,
                                            UInt         aFailureMediaType,
                                            idBool     * aIsApplyLog );
 
-    // ÆÇµ¶µÈ ·Î±×°¡ ¿À·ù³­ ¸Ş¸ğ¸® µ¥ÀÌÅ¸ÆÄÀÏÀÇ ¹üÀ§¿¡ Æ÷ÇÔµÇ´ÂÁö
-    // ÆÇ´ÜÇÏ¿© Àû¿ë¿©ºÎ¸¦ ¹İÈ¯ÇÑ´Ù.
+    // íŒë…ëœ ë¡œê·¸ê°€ ì˜¤ë¥˜ë‚œ ë©”ëª¨ë¦¬ ë°ì´íƒ€íŒŒì¼ì˜ ë²”ìœ„ì— í¬í•¨ë˜ëŠ”ì§€
+    // íŒë‹¨í•˜ì—¬ ì ìš©ì—¬ë¶€ë¥¼ ë°˜í™˜í•œë‹¤.
     static IDE_RC filterRedoLog4MemTBS( SChar      * aCurLogPtr,
                                         smrLogType   aLogType,
                                         idBool     * aIsApplyLog );
 
-    // ÆÇµ¶µÈ ·Î±×°¡ µğ½ºÅ© ·Î±×Å¸ÀÔÀÎÁö¸¦ ¿ì¼±È®ÀÎÇÏ°í Àû¿ë¿©ºÎ¸¦
-    // ÆÇ´ÜÇÏ¿© ¹İÈ¯ÇÑ´Ù.
+    // íŒë…ëœ ë¡œê·¸ê°€ ë””ìŠ¤í¬ ë¡œê·¸íƒ€ì…ì¸ì§€ë¥¼ ìš°ì„ í™•ì¸í•˜ê³  ì ìš©ì—¬ë¶€ë¥¼
+    // íŒë‹¨í•˜ì—¬ ë°˜í™˜í•œë‹¤.
     static IDE_RC filterRedoLogType4DiskTBS( SChar      * aCurLogPtr,
                                              smrLogType   aLogType,
                                              UInt         aIsNeedApplyDLT,
@@ -622,12 +622,12 @@ private:
     static IDE_RC finiOfflineTBS( idvSQL * aStatistics );
 
     /* ------------------------------------------------
-     * !!] system restart °ü·Ã ÇÔ¼ö
+     * !!] system restart ê´€ë ¨ í•¨ìˆ˜
      * ----------------------------------------------*/
     static IDE_RC initRestart(idBool* aIsNeedRecovery);
-    static IDE_RC restartNormal();   /* º¹±¸°¡ ÇÊ¿ä¾ø´Â restart */
-    static IDE_RC restartRecovery(); /* º¹±¸°¡ ÇÊ¿äÇÑ restart */
-    static void   finalRestart();    /* restart °úÁ¤ ¸¶¹«¸® */
+    static IDE_RC restartNormal();   /* ë³µêµ¬ê°€ í•„ìš”ì—†ëŠ” restart */
+    static IDE_RC restartRecovery(); /* ë³µêµ¬ê°€ í•„ìš”í•œ restart */
+    static void   finalRestart();    /* restart ê³¼ì • ë§ˆë¬´ë¦¬ */
 
     static IDE_RC redo( void        * aCurTrans,
                         smLSN       * aCurLSN,
@@ -649,13 +649,13 @@ private:
                                  UInt       * aFileCount );
 
 
-    /* restart recovery °úÁ¤ÀÇ Àç¼öÇà °úÁ¤ ¼öÇà */
+    /* restart recovery ê³¼ì •ì˜ ì¬ìˆ˜í–‰ ê³¼ì • ìˆ˜í–‰ */
     static IDE_RC redoAll(idvSQL* aStatistics);
 
-    /* restart recovery °úÁ¤ÀÇ undoall pass ¼öÇà */
+    /* restart recovery ê³¼ì •ì˜ undoall pass ìˆ˜í–‰ */
     static IDE_RC undoAll(idvSQL* aStatistics);
 
-    /* Æ®·£Àè¼Ç Ã¶È¸ */
+    /* íŠ¸ëœì­ì…˜ ì² íšŒ */
     static IDE_RC undo( idvSQL*       aStatistics,
                         void*         aTrans,
                         smrLogFile**  aLogFilePtr);
@@ -664,24 +664,24 @@ private:
 
     /* ------------------------------------------------
      * To Fix PR-13786 Cyclomatic Number
-     * CHECKPOINT °ü·Ã ÇÔ¼ö
+     * CHECKPOINT ê´€ë ¨ í•¨ìˆ˜
      * ----------------------------------------------*/
-    // Checkpoint ±¸Çö ÇÔ¼ö - ½ÇÁ¦ Checkpoint¸¦ ¼öÇàÇÑ´Ù.
+    // Checkpoint êµ¬í˜„ í•¨ìˆ˜ - ì‹¤ì œ Checkpointë¥¼ ìˆ˜í–‰í•œë‹¤.
     static IDE_RC checkpointInternal( idvSQL*      aStatistics,
                                       smrChkptType aChkptType,
                                       idBool       aRemoveLogFile,
                                       idBool       aFinal );
 
-    // Checkpoint¸¦ ¿Ö ÇÏ°Ô µÇ¾ú´ÂÁö¸¦ altibase_sm.log¿¡ ³²±ä´Ù.
+    // Checkpointë¥¼ ì™œ í•˜ê²Œ ë˜ì—ˆëŠ”ì§€ë¥¼ altibase_sm.logì— ë‚¨ê¸´ë‹¤.
     static IDE_RC logCheckpointReason( SInt aCheckpointReason );
 
-    // Checkpoint ¿ä¾à Message¸¦ ·Î±ëÇÑ´Ù.
+    // Checkpoint ìš”ì•½ Messageë¥¼ ë¡œê¹…í•œë‹¤.
     static IDE_RC logCheckpointSummary( smLSN   aBeginChkptLSN,
                                         smLSN   aEndChkptLSN,
                                         smLSN * aRedoLSN,
                                         smLSN   aDiskRedoLSN );
 
-    // Begin Checkpoint Log¸¦ ±â·ÏÇÑ´Ù.
+    // Begin Checkpoint Logë¥¼ ê¸°ë¡í•œë‹¤.
     static IDE_RC writeBeginChkptLog( idvSQL* aStatistics,
                                       smLSN * aRedoLSN,
                                       smLSN   aDiskRedoLSN,
@@ -689,12 +689,12 @@ private:
                                       smLSN * aBeginChkptLSN );
 
 
-    // End Checkpoint Log¸¦ ±â·ÏÇÑ´Ù.
+    // End Checkpoint Logë¥¼ ê¸°ë¡í•œë‹¤.
     static IDE_RC writeEndChkptLog( idvSQL* aStatistics,
                                     smLSN * aEndChkptLSN );
 
-    // Restart Recovery½Ã¿¡ Redo½ÃÀÛ LSNÀ¸·Î »ç¿ëµÉ Recovery LSNÀ» °è»ê
-    // BEGIN CHKPT LOG ÀÌÀü¿¡ ¼öÇàÇÏ´Â ÀÛ¾÷
+    // Restart Recoveryì‹œì— Redoì‹œì‘ LSNìœ¼ë¡œ ì‚¬ìš©ë  Recovery LSNì„ ê³„ì‚°
+    // BEGIN CHKPT LOG ì´ì „ì— ìˆ˜í–‰í•˜ëŠ” ì‘ì—…
     static IDE_RC chkptCalcRedoLSN( idvSQL*            aStatistics,
                                     smrChkptType       aChkptType,
                                     idBool             aIsFinal,
@@ -702,12 +702,12 @@ private:
                                     smLSN            * aDiskRedoLSN,
                                     smLSN            * aEndLSN );
 
-    // ¸ğµç Å×ÀÌºí½ºÆäÀÌ½ºÀÇ µ¥ÀÌÅ¸ÆÄÀÏ ¸ŞÅ¸Çì´õ¿¡ RedoLSN ¼³Á¤
+    // ëª¨ë“  í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì˜ ë°ì´íƒ€íŒŒì¼ ë©”íƒ€í—¤ë”ì— RedoLSN ì„¤ì •
     static IDE_RC chkptSetRedoLSNOnDBFiles( idvSQL* aStatistics,
                                             smLSN * aRedoLSN,
                                             smLSN   aDiskRedoLSN );
 
-    // END CHKPT LOG ÀÌÈÄ¿¡ ¼öÇàÇÏ´Â ÀÛ¾÷
+    // END CHKPT LOG ì´í›„ì— ìˆ˜í–‰í•˜ëŠ” ì‘ì—…
     static IDE_RC chkptAfterEndChkptLog( idBool             aRemoveLogFile,
                                          idBool             aFinal,
                                          smLSN            * aBeginChkptLSN,
@@ -724,44 +724,44 @@ private:
 
 private:
 
-    static smrLogAnchorMgr    mAnchorMgr;  /* loganchor °ü¸®ÀÚ */
+    static smrLogAnchorMgr    mAnchorMgr;  /* loganchor ê´€ë¦¬ì */
     static smrDirtyPageList   mDPPList;    /* dirty page list */
     static sdbFlusher         mFlusher;
-    static idBool             mFinish;     /* ·Î±×°ü¸®ÀÚÀÇ ÇØÁ¦¿©ºÎ */
-    static idBool             mABShutDown; /* ºñÁ¤»ó Á¾·áÀÇ ¿©ºÎ */
+    static idBool             mFinish;     /* ë¡œê·¸ê´€ë¦¬ìì˜ í•´ì œì—¬ë¶€ */
+    static idBool             mABShutDown; /* ë¹„ì •ìƒ ì¢…ë£Œì˜ ì—¬ë¶€ */
 
-    /* restart ÁøÇàÁß ¿©ºÎ */
+    /* restart ì§„í–‰ì¤‘ ì—¬ë¶€ */
     static idBool             mRestart;
 
-    /* redo ÁøÇàÁß ¿©ºÎ */
+    /* redo ì§„í–‰ì¤‘ ì—¬ë¶€ */
     static idBool             mRedo;
 
-    /* ¹Ìµğ¾î º¹±¸ ¼öÇà Áß ¿©ºÎ */
+    /* ë¯¸ë””ì–´ ë³µêµ¬ ìˆ˜í–‰ ì¤‘ ì—¬ë¶€ */
     static idBool             mMediaRecoveryPhase;
 
-    /* Restart Recovery ÁøÇàÁßÀÎÁö ¿©ºÎ */
+    /* Restart Recovery ì§„í–‰ì¤‘ì¸ì§€ ì—¬ë¶€ */
     static idBool             mRestartRecoveryPhase;
 
     // PR-14912
     static idBool             mRefineDRDBIdx;
 
     static UInt               mLogSwitch;
-    /* ReplicationÀ» À§ÇØ¼­ ÇÊ¿äÇÑ ·Î±× ·¹ÄÚµåµéÀÇ °¡Àå
-       ÀÛÀº SN°ªÀ» °¡Á®¿Â´Ù. */
+    /* Replicationì„ ìœ„í•´ì„œ í•„ìš”í•œ ë¡œê·¸ ë ˆì½”ë“œë“¤ì˜ ê°€ì¥
+       ì‘ì€ SNê°’ì„ ê°€ì ¸ì˜¨ë‹¤. */
     static smGetMinSN         mGetMinSNFunc;
 
     /* for index smo */
     static smLSN              mIdxSMOLSN;
 
-    /* Log File Delete½Ã Àâ´Â Mutex */
+    /* Log File Deleteì‹œ ì¡ëŠ” Mutex */
     static iduMutex           mDeleteLogFileMutex;
 
-    /* BUG-42785 OnlineDRDBRedo¿Í LogFileDeleteThreadÀÇ µ¿½Ã¼º Á¦¾î
-     * mOnlineDRDBRedoCnt´Â ÇöÀç OnlineDRDBRedo¸¦ ¼öÇàÇÏ°í ÀÖ´Â 
-     * Æ®·£Àè¼ÇÀÇ ¼ö¸¦ ³ªÅ¸³»¸ç
-     * OnlineDRDBRedo°¡ ¼öÇàµÇ´Â µ¿¾ÈÀº LogFileÀÌ Áö¿öÁö¸é ¾ÈµÈ´Ù.
-     * µû¶ó¼­ mOnlineDRDBRedoCnt°¡ 0ÀÏ¶§¸¸ 
-     * LogFileDeleteThread°¡ µ¿ÀÛÇÏ¿©¾ß ÇÑ´Ù. */
+    /* BUG-42785 OnlineDRDBRedoì™€ LogFileDeleteThreadì˜ ë™ì‹œì„± ì œì–´
+     * mOnlineDRDBRedoCntëŠ” í˜„ì¬ OnlineDRDBRedoë¥¼ ìˆ˜í–‰í•˜ê³  ìˆëŠ” 
+     * íŠ¸ëœì­ì…˜ì˜ ìˆ˜ë¥¼ ë‚˜íƒ€ë‚´ë©°
+     * OnlineDRDBRedoê°€ ìˆ˜í–‰ë˜ëŠ” ë™ì•ˆì€ LogFileì´ ì§€ì›Œì§€ë©´ ì•ˆëœë‹¤.
+     * ë”°ë¼ì„œ mOnlineDRDBRedoCntê°€ 0ì¼ë•Œë§Œ 
+     * LogFileDeleteThreadê°€ ë™ì‘í•˜ì—¬ì•¼ í•œë‹¤. */
     static SInt               mOnlineDRDBRedoCnt;
 
     // PROJ-2118 BUG Reporting - Debug Info for Fatal
@@ -774,28 +774,28 @@ private:
     /*****************************************************************
      * PROJ-2162 RestartRiskReduction Begin
      *
-     * EmergencyStartupÀ» À§ÇÑ Á¤Ã¥ ¹× º¯¼öµéÀÔ´Ï´Ù.
+     * EmergencyStartupì„ ìœ„í•œ ì •ì±… ë° ë³€ìˆ˜ë“¤ì…ë‹ˆë‹¤.
      *****************************************************************/
 
-    /* ±ä±Ş ±¸µ¿ Á¤Ã¥ ( 0 ~ 2 ) */
+    /* ê¸´ê¸‰ êµ¬ë™ ì •ì±… ( 0 ~ 2 ) */
     static smrEmergencyRecoveryPolicy mEmerRecovPolicy;
 
-    static idBool mDurability;             // Durability°¡ ¹Ù¸¥°¡?
-    static idBool mDRDBConsistency;        // DRDB°¡ ConsistentÇÑ°¡?
-    static idBool mMRDBConsistency;        // MRDB°¡ ConsistentÇÑ°¡?
-    static idBool mLogFileContinuity;      // LogFileÀÌ ¿¬¼ÓÀûÀÎ°¡?
-    static SChar  mLostLogFile[SM_MAX_FILE_NAME]; // ¾ø´Â LogFileÀÌ¸§
+    static idBool mDurability;             // Durabilityê°€ ë°”ë¥¸ê°€?
+    static idBool mDRDBConsistency;        // DRDBê°€ Consistentí•œê°€?
+    static idBool mMRDBConsistency;        // MRDBê°€ Consistentí•œê°€?
+    static idBool mLogFileContinuity;      // LogFileì´ ì—°ì†ì ì¸ê°€?
+    static SChar  mLostLogFile[SM_MAX_FILE_NAME]; // ì—†ëŠ” LogFileì´ë¦„
 
-    /* EndCheckpoint LogÀÇ À§Ä¡ */
-    static smLSN  mEndChkptLSN;           // MMDB WAL Check¿¡ »ç¿ëµÊ
+    /* EndCheckpoint Logì˜ ìœ„ì¹˜ */
+    static smLSN  mEndChkptLSN;           // MMDB WAL Checkì— ì‚¬ìš©ë¨
 
-    static smLSN mLstDRDBRedoLSN;         // DRDB WAL Check¿¡ »ç¿ëµÊ
-    static smLSN mLstDRDBPageUpdateLSN;   // DRDB WAL Check¿¡ »ç¿ëµÊ
+    static smLSN mLstDRDBRedoLSN;         // DRDB WAL Checkì— ì‚¬ìš©ë¨
+    static smLSN mLstDRDBPageUpdateLSN;   // DRDB WAL Checkì— ì‚¬ìš©ë¨
 
-    /* InconsistentÇÑ ObjectµéÀ» ¸ğ¾ÆµÎ´Â °÷. MemMge¸¦ ÀÌ¿ëÇØ ÇÒ´çÇÔ */
+    /* Inconsistentí•œ Objectë“¤ì„ ëª¨ì•„ë‘ëŠ” ê³³. MemMgeë¥¼ ì´ìš©í•´ í• ë‹¹í•¨ */
     static smrRTOI  mIOLHead; /* Inconsistent Object List */
-    static iduMutex mIOLMutex;/* IOL Attach¿ë Mutex */
-    static UInt     mIOLCount;/* ÇöÀç±îÁö Ãß°¡µÈ IOL Node °³¼ö */
+    static iduMutex mIOLMutex;/* IOL Attachìš© Mutex */
+    static UInt     mIOLCount;/* í˜„ì¬ê¹Œì§€ ì¶”ê°€ëœ IOL Node ê°œìˆ˜ */
     /*****************************************************************
      * PROJ-2162 RestartRiskReduction End
      *****************************************************************/
@@ -808,7 +808,7 @@ private:
 };
 
 /***********************************************************************
- * Description : Æ®·£Àè¼ÇÀÇ Ã¹¹øÂ° ·Î±× ¿©ºÎ ¹İÈ¯
+ * Description : íŠ¸ëœì­ì…˜ì˜ ì²«ë²ˆì§¸ ë¡œê·¸ ì—¬ë¶€ ë°˜í™˜
  **********************************************************************/
 inline idBool smrRecoveryMgr::isBeginLog(smrLogHead * aLogHead)
 {
@@ -829,8 +829,8 @@ inline idBool smrRecoveryMgr::isBeginLog(smrLogHead * aLogHead)
 
 /***********************************************************************
  *
- * Description : Restart Recovery °úÁ¤¿¡¼­ ActiveÆ®·£Àè¼Ç°ú ¿¬°üµÈ ÀÎµ¦½º
- *               ¹«°á¼º°ËÁõ ¿©ºÎ¸¦ ¹İÈ¯ÇÑ´Ù.
+ * Description : Restart Recovery ê³¼ì •ì—ì„œ ActiveíŠ¸ëœì­ì…˜ê³¼ ì—°ê´€ëœ ì¸ë±ìŠ¤
+ *               ë¬´ê²°ì„±ê²€ì¦ ì—¬ë¶€ë¥¼ ë°˜í™˜í•œë‹¤.
  *
  **********************************************************************/
 idBool smrRecoveryMgr::isVerifyIndexIntegrityLevel2()
@@ -846,7 +846,7 @@ idBool smrRecoveryMgr::isVerifyIndexIntegrityLevel2()
 }
 
 /***********************************************************************
- * Description : IdempotentÇÑ ¼ºÁúÀ» °¡Á®¾ß ÇÏ´Â LogÀÎ°¡?
+ * Description : Idempotentí•œ ì„±ì§ˆì„ ê°€ì ¸ì•¼ í•˜ëŠ” Logì¸ê°€?
  **********************************************************************/
 inline idBool smrRecoveryMgr::isIdempotentLog( smrLogType sLogType )
 {
@@ -896,8 +896,8 @@ inline idBool smrRecoveryMgr::isIdempotentLog( smrLogType sLogType )
 }
 
 /***********************************************************************
- * Description : DRDB Log¸¦ ºĞ¼®ÇÏ¿© DRDB RedoLogÀÇ ½ÃÀÛ À§Ä¡¿Í ±æÀÌ¸¦
- *               ¹İÈ¯ÇÑ´Ù.
+ * Description : DRDB Logë¥¼ ë¶„ì„í•˜ì—¬ DRDB RedoLogì˜ ì‹œì‘ ìœ„ì¹˜ì™€ ê¸¸ì´ë¥¼
+ *               ë°˜í™˜í•œë‹¤.
  **********************************************************************/
 inline void smrRecoveryMgr::getDRDBRedoBuffer( smrLogType    aLogType,
                                                UInt          aLogTotalSize,
@@ -946,7 +946,7 @@ inline void smrRecoveryMgr::getDRDBRedoBuffer( smrLogType    aLogType,
                        ID_SIZEOF( UInt ) );
         break;
     default:
-        /* DRDB°¡ ¾Æ´Ï°Å³ª, ÇÒ°Ô ¾øÀ½ */
+        /* DRDBê°€ ì•„ë‹ˆê±°ë‚˜, í• ê²Œ ì—†ìŒ */
         (*aRedoLogSize) = 0;
         break;
     }

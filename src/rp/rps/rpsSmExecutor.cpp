@@ -66,7 +66,7 @@ compareColumnID(const void* aElem1, const void* aElem2)
     }
     else
     {
-        // ÀÎµ¦½º³»¿¡ µ¿ÀÏÇÑ ÄÃ·³ÀÌ Á¸ÀçÇÒ ¼ö ¾ø´Ù.
+        // ì¸ë±ìŠ¤ë‚´ì— ë™ì¼í•œ ì»¬ëŸ¼ì´ ì¡´ìž¬í•  ìˆ˜ ì—†ë‹¤.
         IDE_ASSERT(0);
     }
 }
@@ -100,9 +100,9 @@ IDE_RC rpsSmExecutor::initialize( idvSQL  * aOpStatistics,
 
     /*
      * PROJ-1705
-     * µð½ºÅ© Å×ÀÌºíÀÎ °æ¿ì, ÇØ´ç Å×ÀÌºíÀÇ ·¹ÄÚµå ÃÖ´ë »çÀÌÁî ¸¸Å­À»
-     * ÇÒ´ç ¹Þ´Â´Ù. ¸Þ¸ð¸®¸¦ ¹Ì¸® ¹Þ¾Æ³õÀ½À¸·Î,
-     * ¹Ýº¹ÀûÀÎ Memory ÇÒ´ç/ÇØÁ¦ ÀÛ¾÷ÀÇ overhead¸¦ ÁÙÀÌ·Á´Â ½Ãµµ
+     * ë””ìŠ¤í¬ í…Œì´ë¸”ì¸ ê²½ìš°, í•´ë‹¹ í…Œì´ë¸”ì˜ ë ˆì½”ë“œ ìµœëŒ€ ì‚¬ì´ì¦ˆ ë§Œí¼ì„
+     * í• ë‹¹ ë°›ëŠ”ë‹¤. ë©”ëª¨ë¦¬ë¥¼ ë¯¸ë¦¬ ë°›ì•„ë†“ìŒìœ¼ë¡œ,
+     * ë°˜ë³µì ì¸ Memory í• ë‹¹/í•´ì œ ìž‘ì—…ì˜ overheadë¥¼ ì¤„ì´ë ¤ëŠ” ì‹œë„
      */
     for(sItemCount = 0; sItemCount < aMeta->mReplication.mItemCount; sItemCount++)
     {
@@ -115,7 +115,7 @@ IDE_RC rpsSmExecutor::initialize( idvSQL  * aOpStatistics,
                                              &sRowSize)
                      != IDE_SUCCESS);
 
-            /* °¡Àå Å« Row Size¸¦ °»½ÅÇÑ´Ù. */
+            /* ê°€ìž¥ í° Row Sizeë¥¼ ê°±ì‹ í•œë‹¤. */
             if(sMaxRowSize < sRowSize)
             {
                 sMaxRowSize = sRowSize;
@@ -124,14 +124,14 @@ IDE_RC rpsSmExecutor::initialize( idvSQL  * aOpStatistics,
 
         /*
          * PROJ-1624 non-partitioned index
-         * global index tableÀÌ ÀÖ´Â °æ¿ì mRealRow¸¦ °øÀ¯ÇÏ¹Ç·Î
-         * global index tableÀÇ record sizeµµ ÇÔ²² °í·ÁÇÑ´Ù.
+         * global index tableì´ ìžˆëŠ” ê²½ìš° mRealRowë¥¼ ê³µìœ í•˜ë¯€ë¡œ
+         * global index tableì˜ record sizeë„ í•¨ê»˜ ê³ ë ¤í•œë‹¤.
          */
         for ( sIndexTable = aMeta->mItems[sItemCount].mIndexTableRef;
               sIndexTable != NULL;
               sIndexTable = sIndexTable->next )
         {
-            // index tableÀº Ç×»ó disk tableÀÌ´Ù.
+            // index tableì€ í•­ìƒ disk tableì´ë‹¤.
             IDE_DASSERT( (SMI_MISC_TABLE_HEADER(sIndexTable->tableHandle)->mFlag
                           & SMI_TABLE_TYPE_MASK)
                          == SMI_TABLE_DISK );
@@ -140,7 +140,7 @@ IDE_RC rpsSmExecutor::initialize( idvSQL  * aOpStatistics,
                                              &sRowSize)
                      != IDE_SUCCESS);
 
-            /* °¡Àå Å« Row Size¸¦ °»½ÅÇÑ´Ù. */
+            /* ê°€ìž¥ í° Row Sizeë¥¼ ê°±ì‹ í•œë‹¤. */
             if(sMaxRowSize < sRowSize)
             {
                 sMaxRowSize = sRowSize;
@@ -226,7 +226,7 @@ IDE_RC rpsSmExecutor::executeInsert( smiTrans         * aTrans,
 
     IDE_CLEAR();
 
-    /* smiTableCursor::insertRow()¿¡¼­ »ç¿ëÇÏÁö ¾ÊÀ» ºÎºÐÀ» ÃÊ±âÈ­ÇÏÁö ¾Ê´Â´Ù.
+    /* smiTableCursor::insertRow()ì—ì„œ ì‚¬ìš©í•˜ì§€ ì•Šì„ ë¶€ë¶„ì„ ì´ˆê¸°í™”í•˜ì§€ ì•ŠëŠ”ë‹¤.
      * idlOS::memset(sConvertCols, 0, ID_SIZEOF(smiValue) * QCI_MAX_COLUMN_COUNT);
      */
 
@@ -237,12 +237,12 @@ IDE_RC rpsSmExecutor::executeInsert( smiTrans         * aTrans,
     /*
      * PROJ-1705
      *
-     * Disk tableÀÇ insert value´Â mtdValue°¡ ¾Æ´Ñ valueÀÇ ÇüÅÂ¸¦ °¡Áø´Ù.
-     * sender¿¡¼­ º¸³»´Â XLogÀÇ after imageÇüÅÂ´Â ÀÏ°ýÀûÀ¸·Î mtdValueÀÇ
-     * ÇüÅÂ¸¦ °¡Áö¹Ç·Î, smÀ¸·ÎÀÇ insert row ÀÛ¾÷½Ã¿¡ standby ¼­¹öÀÇ Å×ÀÌºíÀÌ
-     * DiskÀÎ °æ¿ì, value·ÎÀÇ º¯È¯ÀÛ¾÷ÀÌ ÇÊ¿äÇÏ´Ù.
-     * ÀÌ À§Ä¡ÀÎ ÀÌÀ¯´Â, insert row¿¡¼­ conflict¹ß»ý½Ã, ÈÄ¼Ó ÀÛ¾÷À¸·Î
-     * insert compareÇÏ¸ç mtdValue¸¦ »ç¿ëÇÏ°Ô µÇ¹Ç·Î, XLogÀÇ after image¸¦ º¸Á¸ÇÏ±â À§ÇØ¼­ÀÌ´Ù.
+     * Disk tableì˜ insert valueëŠ” mtdValueê°€ ì•„ë‹Œ valueì˜ í˜•íƒœë¥¼ ê°€ì§„ë‹¤.
+     * senderì—ì„œ ë³´ë‚´ëŠ” XLogì˜ after imageí˜•íƒœëŠ” ì¼ê´„ì ìœ¼ë¡œ mtdValueì˜
+     * í˜•íƒœë¥¼ ê°€ì§€ë¯€ë¡œ, smìœ¼ë¡œì˜ insert row ìž‘ì—…ì‹œì— standby ì„œë²„ì˜ í…Œì´ë¸”ì´
+     * Diskì¸ ê²½ìš°, valueë¡œì˜ ë³€í™˜ìž‘ì—…ì´ í•„ìš”í•˜ë‹¤.
+     * ì´ ìœ„ì¹˜ì¸ ì´ìœ ëŠ”, insert rowì—ì„œ conflictë°œìƒì‹œ, í›„ì† ìž‘ì—…ìœ¼ë¡œ
+     * insert compareí•˜ë©° mtdValueë¥¼ ì‚¬ìš©í•˜ê²Œ ë˜ë¯€ë¡œ, XLogì˜ after imageë¥¼ ë³´ì¡´í•˜ê¸° ìœ„í•´ì„œì´ë‹¤.
      */
     if((SMI_MISC_TABLE_HEADER(sTable)->mFlag & SMI_TABLE_TYPE_MASK) == SMI_TABLE_DISK)
     {
@@ -251,7 +251,7 @@ IDE_RC rpsSmExecutor::executeInsert( smiTrans         * aTrans,
     }
     else
     {
-        /* BUG-30119 variable ÄÃ·³°ú fixed columnÀ» ÀÌÁßÈ­ÇÒ °æ¿ì, insertÁß ¾²·¹±â°ªÀÌ ±â·Ï...*/
+        /* BUG-30119 variable ì»¬ëŸ¼ê³¼ fixed columnì„ ì´ì¤‘í™”í•  ê²½ìš°, insertì¤‘ ì“°ë ˆê¸°ê°’ì´ ê¸°ë¡...*/
         IDE_TEST( convertXlogToSmiValue( aXLog, 
                                          sConvertCols, 
                                          sTable )
@@ -314,8 +314,8 @@ retryInsert:
 
     IDU_FIT_POINT( "1.TASK-2004@rpsSmExecutor::executeInsert" );
 
-    //BUG-22484 : sCursor.insertRow¿¡¼­ Retry¿¡·¯°¡ ¹ß»ý ÇÒ¼ö ÀÖÀ½
-    //±âÁ¸ insertRow : N, close Y --> Disk ¿¡°æ¿ì Y , N  Memory N , Y
+    //BUG-22484 : sCursor.insertRowì—ì„œ Retryì—ëŸ¬ê°€ ë°œìƒ í• ìˆ˜ ìžˆìŒ
+    //ê¸°ì¡´ insertRow : N, close Y --> Disk ì—ê²½ìš° Y , N  Memory N , Y
     if(sCursor.insertRow(sACols,     // PROJ-1705
                          &sDummyRow,
                          &sRowGRID)
@@ -356,7 +356,7 @@ retryInsert:
     }
 
     // PROJ-1624 non-partitioned index
-    // insertRow°¡ ¼º°øÇß´Ù¸é index table¿¡µµ ¹Ýµå½Ã insertµÇ¾î¾ß ÇÑ´Ù.
+    // insertRowê°€ ì„±ê³µí–ˆë‹¤ë©´ index tableì—ë„ ë°˜ë“œì‹œ insertë˜ì–´ì•¼ í•œë‹¤.
     if ( ( aIndexTableRef != NULL ) &&
          ( sInserted == ID_TRUE ) )
     {
@@ -432,17 +432,17 @@ retryInsert:
         }
         else
         {
-            /* °°Àº Primary Key¸¦ °¡Áø Row°¡ ÀÌ¹Ì Á¸Àç
+            /* ê°™ì€ Primary Keyë¥¼ ê°€ì§„ Rowê°€ ì´ë¯¸ ì¡´ìž¬
              * Lock Timeout
              * Unique Violation
-             * Eager ModeÀÏ ¶§, Not Enough Space
+             * Eager Modeì¼ ë•Œ, Not Enough Space
              */
             if ( ( ideGetErrorCode() == smERR_ABORT_smnUniqueViolationInReplTrans ) ||
                  ( ideGetErrorCode() == smERR_ABORT_smcExceedLockTimeWait ) )
             {
-                /* conflict resolution txÀÌ ¸ÕÀú lockÀ» Àâ¾Æ ½ÇÆÐÇß´Ù¸é, À§¿¡¼­ ´ÙÀ½ÀÇ ÀÛ¾÷À» ÇÑ´Ù.
-                   1. conflict resolution txÀÌ ÀÖÀ» °æ¿ì, ÀÌ ÀÛ¾÷À» conflict resolution tx¿¡ ³Ö°í Àç½Ãµµ
-                   2. conflict resolution txÀÌ ¾øÀ¸¸é, ´Ù¸¥ tx°¡ conflict resolutionÃ³¸®ÁßÀÎ °ÍÀÌ¹Ç·Î ½ÇÆÐÃ³¸® */
+                /* conflict resolution txì´ ë¨¼ì € lockì„ ìž¡ì•„ ì‹¤íŒ¨í–ˆë‹¤ë©´, ìœ„ì—ì„œ ë‹¤ìŒì˜ ìž‘ì—…ì„ í•œë‹¤.
+                   1. conflict resolution txì´ ìžˆì„ ê²½ìš°, ì´ ìž‘ì—…ì„ conflict resolution txì— ë„£ê³  ìž¬ì‹œë„
+                   2. conflict resolution txì´ ì—†ìœ¼ë©´, ë‹¤ë¥¸ txê°€ conflict resolutionì²˜ë¦¬ì¤‘ì¸ ê²ƒì´ë¯€ë¡œ ì‹¤íŒ¨ì²˜ë¦¬ */
                 *aFailType = RP_APPLY_FAIL_BY_CONFLICT_RESOLUTION_TX;
             }
             else
@@ -560,9 +560,9 @@ IDE_RC rpsSmExecutor::correctQMsgIDSeq( smiStatement     * aSmiStmt,
     return IDE_FAILURE;
 }
 /*
- * ¸Þ¸ð¸®Å×ÀÌºí ¶Ç´Â ·¹ÄÚµå°¡ ÀÌ¹Ì µé¾îÀÖ´Â Å×ÀÌºí¿¡ ´ëÇØ¼­´Â normal insert¸¦ ÇÑ´Ù.
- * LobÄÃ·³ÀÌ ÀÖ´Â°æ¿ì, LobÀº cursor openÀ» µû·Î ÇÏ¹Ç·Î  direct path insert¿Í Ãæµ¹ÀÌ ³ª±â ¶§¹®¿¡
- * normal insert¸¦ ÇÑ´Ù. (Ãæµ¹ÀÌÀ¯ : dpath insertÁß¿¡´Â select ¹× DMLÀ» ¼öÇàÇÒ ¼ö ¾ø´Ù.)
+ * ë©”ëª¨ë¦¬í…Œì´ë¸” ë˜ëŠ” ë ˆì½”ë“œê°€ ì´ë¯¸ ë“¤ì–´ìžˆëŠ” í…Œì´ë¸”ì— ëŒ€í•´ì„œëŠ” normal insertë¥¼ í•œë‹¤.
+ * Lobì»¬ëŸ¼ì´ ìžˆëŠ”ê²½ìš°, Lobì€ cursor openì„ ë”°ë¡œ í•˜ë¯€ë¡œ  direct path insertì™€ ì¶©ëŒì´ ë‚˜ê¸° ë•Œë¬¸ì—
+ * normal insertë¥¼ í•œë‹¤. (ì¶©ëŒì´ìœ  : dpath insertì¤‘ì—ëŠ” select ë° DMLì„ ìˆ˜í–‰í•  ìˆ˜ ì—†ë‹¤.)
  */
 IDE_RC rpsSmExecutor::setCursorOpenFlag( smiTrans   * aTrans,
                                          const void * aTable,
@@ -595,7 +595,7 @@ IDE_RC rpsSmExecutor::setCursorOpenFlag( smiTrans   * aTrans,
                 SMI_TBSLV_DDL_DML,
                 SMI_TABLE_LOCK_SIX,
                 (ULong)RPU_REPLICATION_SYNC_LOCK_TIMEOUT * 1000000,
-                ID_FALSE ) /* Exp/Imp Lock±¸ºÐ */
+                ID_FALSE ) /* Exp/Imp Lockêµ¬ë¶„ */
             != IDE_SUCCESS, ERR_LOCK_TABLE );
 
         IDE_TEST( smiStatistics::getTableStatNumRow( (void *)aTable,
@@ -625,7 +625,7 @@ IDE_RC rpsSmExecutor::setCursorOpenFlag( smiTrans   * aTrans,
             *aFlag |= SMI_INSERT_METHOD_APPEND;
             mCursorOpenFlag = SMI_INSERT_METHOD_APPEND;
 
-            // APPEND Flag°¡ ÀÖÀ¸¸é, Cursor Open¿¡¼­ SIX LockÀ» Àâ´Â´Ù.
+            // APPEND Flagê°€ ìžˆìœ¼ë©´, Cursor Openì—ì„œ SIX Lockì„ ìž¡ëŠ”ë‹¤.
         }
         else
         {
@@ -800,7 +800,7 @@ IDE_RC rpsSmExecutor::stmtEndAndCursorClose( smiStatement   * aSmiStmt,
 
     IDE_PUSH();
 
-    /* BUGBUG cursor close°¡ ½ÇÆÐÇß´Âµ¥ statement endÇÏ´Â°Ô ¿ÇÀº°¡? */
+    /* BUGBUG cursor closeê°€ ì‹¤íŒ¨í–ˆëŠ”ë° statement endí•˜ëŠ”ê²Œ ì˜³ì€ê°€? */
     if ( *aIsBegunSyncStmt == ID_TRUE )
     {
         if ( aSmiStmt->end( SMI_STATEMENT_RESULT_FAILURE ) != IDE_SUCCESS )
@@ -865,7 +865,7 @@ IDE_RC rpsSmExecutor::executeSyncInsert( rpdXLog          * aXLog,
         /* Nothing to do */
     }
     
-    /* smiTableCursor::insertRow()¿¡¼­ »ç¿ëÇÏÁö ¾ÊÀ» ºÎºÐÀ» ÃÊ±âÈ­ÇÏÁö ¾Ê´Â´Ù.
+    /* smiTableCursor::insertRow()ì—ì„œ ì‚¬ìš©í•˜ì§€ ì•Šì„ ë¶€ë¶„ì„ ì´ˆê¸°í™”í•˜ì§€ ì•ŠëŠ”ë‹¤.
      *  idlOS::memset(sConvertCols, 0, ID_SIZEOF(smiValue) * QCI_MAX_COLUMN_COUNT);
      */
 
@@ -874,12 +874,12 @@ IDE_RC rpsSmExecutor::executeSyncInsert( rpdXLog          * aXLog,
     /*
      * PROJ-1705
      *
-     * Disk tableÀÇ insert value´Â mtdValue°¡ ¾Æ´Ñ valueÀÇ ÇüÅÂ¸¦ °¡Áø´Ù.
-     * sender¿¡¼­ º¸³»´Â XLogÀÇ after imageÇüÅÂ´Â ÀÏ°ýÀûÀ¸·Î mtdValueÀÇ
-     * ÇüÅÂ¸¦ °¡Áö¹Ç·Î, smÀ¸·ÎÀÇ insert row ÀÛ¾÷½Ã¿¡ standby ¼­¹öÀÇ Å×ÀÌºíÀÌ
-     * DiskÀÎ °æ¿ì, value·ÎÀÇ º¯È¯ÀÛ¾÷ÀÌ ÇÊ¿äÇÏ´Ù.
-     * ÀÌ À§Ä¡ÀÎ ÀÌÀ¯´Â, insert row¿¡¼­ conflict¹ß»ý½Ã, ÈÄ¼Ó ÀÛ¾÷À¸·Î
-     * insert compareÇÏ¸ç mtdValue¸¦ »ç¿ëÇÏ°Ô µÇ¹Ç·Î, XLogÀÇ after image¸¦ º¸Á¸ÇÏ±â À§ÇØ¼­ÀÌ´Ù.
+     * Disk tableì˜ insert valueëŠ” mtdValueê°€ ì•„ë‹Œ valueì˜ í˜•íƒœë¥¼ ê°€ì§„ë‹¤.
+     * senderì—ì„œ ë³´ë‚´ëŠ” XLogì˜ after imageí˜•íƒœëŠ” ì¼ê´„ì ìœ¼ë¡œ mtdValueì˜
+     * í˜•íƒœë¥¼ ê°€ì§€ë¯€ë¡œ, smìœ¼ë¡œì˜ insert row ìž‘ì—…ì‹œì— standby ì„œë²„ì˜ í…Œì´ë¸”ì´
+     * Diskì¸ ê²½ìš°, valueë¡œì˜ ë³€í™˜ìž‘ì—…ì´ í•„ìš”í•˜ë‹¤.
+     * ì´ ìœ„ì¹˜ì¸ ì´ìœ ëŠ”, insert rowì—ì„œ conflictë°œìƒì‹œ, í›„ì† ìž‘ì—…ìœ¼ë¡œ
+     * insert compareí•˜ë©° mtdValueë¥¼ ì‚¬ìš©í•˜ê²Œ ë˜ë¯€ë¡œ, XLogì˜ after imageë¥¼ ë³´ì¡´í•˜ê¸° ìœ„í•´ì„œì´ë‹¤.
      */
     if ( ( SMI_MISC_TABLE_HEADER( sTable )->mFlag & SMI_TABLE_TYPE_MASK ) == SMI_TABLE_DISK )
     {
@@ -888,7 +888,7 @@ IDE_RC rpsSmExecutor::executeSyncInsert( rpdXLog          * aXLog,
     }
     else
     {
-        /* BUG-30119 variable ÄÃ·³°ú fixed columnÀ» ÀÌÁßÈ­ÇÒ °æ¿ì, insertÁß ¾²·¹±â°ªÀÌ ±â·Ï...*/
+        /* BUG-30119 variable ì»¬ëŸ¼ê³¼ fixed columnì„ ì´ì¤‘í™”í•  ê²½ìš°, insertì¤‘ ì“°ë ˆê¸°ê°’ì´ ê¸°ë¡...*/
         IDE_TEST( convertXlogToSmiValue( aXLog, 
                                          sConvertCols, 
                                          sTable )
@@ -908,16 +908,16 @@ IDE_RC rpsSmExecutor::executeSyncInsert( rpdXLog          * aXLog,
 
     sACols = sFinalColsValues;
 
-    //BUG-22484 : sCursor.insertRow¿¡¼­ Retry¿¡·¯°¡ ¹ß»ý ÇÒ¼ö ÀÖÀ½
-    //±âÁ¸ insertRow : N, close Y --> Disk ¿¡°æ¿ì Y , N  Memory N , Y
+    //BUG-22484 : sCursor.insertRowì—ì„œ Retryì—ëŸ¬ê°€ ë°œìƒ í• ìˆ˜ ìžˆìŒ
+    //ê¸°ì¡´ insertRow : N, close Y --> Disk ì—ê²½ìš° Y , N  Memory N , Y
     if ( aCursor->insertRow( sACols,     // PROJ-1705
                              &sDummyRow,
                              &sRowGRID )
          != IDE_SUCCESS)
     {
-        /* insertRow ½ÇÆÐÇÏ¸é, sm¿¡¼­ cursor¸¦ initÇØ¹ö·Á ´Ù½Ã »ç¿ëÇÒ ¼ö ¾ø°Ô µÈ´Ù.
-         * syncÀÇ °æ¿ì, ¸ÇÃ³À½ ÇÑ¹ø statement begin°ú cursor open ÇØ sync°¡ ³¡³¯¶§±îÁö »ç¿ëÇÏ¹Ç·Î,
-         * initÀÌ µÇ°í³ª¸é statement begin°ú cursor open¸¦ ´Ù½Ã ÇØ ÁÖ¾î¾ßÇÑ´Ù.
+        /* insertRow ì‹¤íŒ¨í•˜ë©´, smì—ì„œ cursorë¥¼ inití•´ë²„ë ¤ ë‹¤ì‹œ ì‚¬ìš©í•  ìˆ˜ ì—†ê²Œ ëœë‹¤.
+         * syncì˜ ê²½ìš°, ë§¨ì²˜ìŒ í•œë²ˆ statement beginê³¼ cursor open í•´ syncê°€ ëë‚ ë•Œê¹Œì§€ ì‚¬ìš©í•˜ë¯€ë¡œ,
+         * initì´ ë˜ê³ ë‚˜ë©´ statement beginê³¼ cursor openë¥¼ ë‹¤ì‹œ í•´ ì£¼ì–´ì•¼í•œë‹¤.
          */
         IDE_TEST( stmtEndAndCursorClose( aSmiStmt,
                                          aCursor,
@@ -948,7 +948,7 @@ IDE_RC rpsSmExecutor::executeSyncInsert( rpdXLog          * aXLog,
     }
 
     // PROJ-1624 non-partitioned index
-    // insertRow°¡ ¼º°øÇß´Ù¸é index table¿¡µµ ¹Ýµå½Ã insertµÇ¾î¾ß ÇÑ´Ù.
+    // insertRowê°€ ì„±ê³µí–ˆë‹¤ë©´ index tableì—ë„ ë°˜ë“œì‹œ insertë˜ì–´ì•¼ í•œë‹¤.
     if ( ( aMetaItem->mIndexTableRef != NULL ) &&
          ( sInserted == ID_TRUE ) )
     {
@@ -991,17 +991,17 @@ IDE_RC rpsSmExecutor::executeSyncInsert( rpdXLog          * aXLog,
         }
         else
         {
-            /* °°Àº Primary Key¸¦ °¡Áø Row°¡ ÀÌ¹Ì Á¸Àç
+            /* ê°™ì€ Primary Keyë¥¼ ê°€ì§„ Rowê°€ ì´ë¯¸ ì¡´ìž¬
              * Lock Timeout
              * Unique Violation
-             * Eager ModeÀÏ ¶§, Not Enough Space
+             * Eager Modeì¼ ë•Œ, Not Enough Space
              */
             if ( ( ideGetErrorCode() == smERR_ABORT_smnUniqueViolationInReplTrans ) ||
                  ( ideGetErrorCode() == smERR_ABORT_smcExceedLockTimeWait ) )
             {
-                /* conflict resolution txÀÌ ¸ÕÀú lockÀ» Àâ¾Æ ½ÇÆÐÇß´Ù¸é, À§¿¡¼­ ´ÙÀ½ÀÇ ÀÛ¾÷À» ÇÑ´Ù.
-                   1. conflict resolution txÀÌ ÀÖÀ» °æ¿ì, ÀÌ ÀÛ¾÷À» conflict resolution tx¿¡ ³Ö°í Àç½Ãµµ
-                   2. conflict resolution txÀÌ ¾øÀ¸¸é, ´Ù¸¥ tx°¡ conflict resolutionÃ³¸®ÁßÀÎ °ÍÀÌ¹Ç·Î ½ÇÆÐÃ³¸® */
+                /* conflict resolution txì´ ë¨¼ì € lockì„ ìž¡ì•„ ì‹¤íŒ¨í–ˆë‹¤ë©´, ìœ„ì—ì„œ ë‹¤ìŒì˜ ìž‘ì—…ì„ í•œë‹¤.
+                   1. conflict resolution txì´ ìžˆì„ ê²½ìš°, ì´ ìž‘ì—…ì„ conflict resolution txì— ë„£ê³  ìž¬ì‹œë„
+                   2. conflict resolution txì´ ì—†ìœ¼ë©´, ë‹¤ë¥¸ txê°€ conflict resolutionì²˜ë¦¬ì¤‘ì¸ ê²ƒì´ë¯€ë¡œ ì‹¤íŒ¨ì²˜ë¦¬ */
                 *aFailType = RP_APPLY_FAIL_BY_CONFLICT_RESOLUTION_TX;
             }
             else
@@ -1088,7 +1088,7 @@ IDE_RC rpsSmExecutor::executeUpdate(smiTrans         * aTrans,
 
     *aFailType = RP_APPLY_FAIL_NONE;
 
-    /* smiTableCursor::updateRow()¿¡¼­ »ç¿ëÇÏÁö ¾ÊÀ» ºÎºÐÀ» ÃÊ±âÈ­ÇÏÁö ¾Ê´Â´Ù.
+    /* smiTableCursor::updateRow()ì—ì„œ ì‚¬ìš©í•˜ì§€ ì•Šì„ ë¶€ë¶„ì„ ì´ˆê¸°í™”í•˜ì§€ ì•ŠëŠ”ë‹¤.
      *  idlOS::memset(sConvertCols, 0, ID_SIZEOF(smiValue) * QCI_MAX_COLUMN_COUNT);
      */
 
@@ -1101,29 +1101,29 @@ IDE_RC rpsSmExecutor::executeUpdate(smiTrans         * aTrans,
 
     IDE_TEST( makeUpdateColumnList( aXLog, aMetaItem->mItem.mTableOID ) != IDE_SUCCESS );
 
-    /* PROJ-1705 Fetch Column List ±¸¼º */
+    /* PROJ-1705 Fetch Column List êµ¬ì„± */
     if((SMI_MISC_TABLE_HEADER(sTable)->mFlag & SMI_TABLE_TYPE_MASK) == SMI_TABLE_DISK)
     {
-        // PROJ-1705 Fetch Column List ±¸¼º
+        // PROJ-1705 Fetch Column List êµ¬ì„±
         IDE_TEST( makeFetchColumnList( aXLog, aMetaItem->mItem.mTableOID, sIndex )
                   != IDE_SUCCESS );
 
-        // PROJ-1705 smiCursorProperties¿¡ Fetch Column List Á¤º¸ ¼³Á¤
+        // PROJ-1705 smiCursorPropertiesì— Fetch Column List ì •ë³´ ì„¤ì •
         sProperty.mFetchColumnList = mFetchColumnList;
     }
     else
     {
-        // memory tableÀº fetch column list°¡ ÇÊ¿äÇÏÁö ¾Ê´Ù.
+        // memory tableì€ fetch column listê°€ í•„ìš”í•˜ì§€ ì•Šë‹¤.
         sProperty.mFetchColumnList = NULL;
     }
 
     /*
      * PROJ-1705
      *
-     * Disk tableÀÇ insert value´Â mtdValue°¡ ¾Æ´Ñ valueÀÇ ÇüÅÂ¸¦ °¡Áø´Ù.
-     * sender¿¡¼­ º¸³»´Â XLogÀÇ after imageÇüÅÂ´Â ÀÏ°ýÀûÀ¸·Î mtdValueÀÇ
-     * ÇüÅÂ¸¦ °¡Áö¹Ç·Î, smÀ¸·ÎÀÇ update row ÀÛ¾÷½Ã¿¡ standby ¼­¹öÀÇ Å×ÀÌºíÀÌ
-     * DiskÀÎ °æ¿ì, value·ÎÀÇ º¯È¯ÀÛ¾÷ÀÌ ÇÊ¿äÇÏ´Ù.
+     * Disk tableì˜ insert valueëŠ” mtdValueê°€ ì•„ë‹Œ valueì˜ í˜•íƒœë¥¼ ê°€ì§„ë‹¤.
+     * senderì—ì„œ ë³´ë‚´ëŠ” XLogì˜ after imageí˜•íƒœëŠ” ì¼ê´„ì ìœ¼ë¡œ mtdValueì˜
+     * í˜•íƒœë¥¼ ê°€ì§€ë¯€ë¡œ, smìœ¼ë¡œì˜ update row ìž‘ì—…ì‹œì— standby ì„œë²„ì˜ í…Œì´ë¸”ì´
+     * Diskì¸ ê²½ìš°, valueë¡œì˜ ë³€í™˜ìž‘ì—…ì´ í•„ìš”í•˜ë‹¤.
      */
     if((SMI_MISC_TABLE_HEADER(sTable)->mFlag & SMI_TABLE_TYPE_MASK) == SMI_TABLE_DISK)
     {
@@ -1132,7 +1132,7 @@ IDE_RC rpsSmExecutor::executeUpdate(smiTrans         * aTrans,
     }
     else
     {
-        /* BUG-30119 variable ÄÃ·³°ú fixed columnÀ» ÀÌÁßÈ­ÇÒ °æ¿ì, insertÁß ¾²·¹±â°ªÀÌ ±â·Ï...*/
+        /* BUG-30119 variable ì»¬ëŸ¼ê³¼ fixed columnì„ ì´ì¤‘í™”í•  ê²½ìš°, insertì¤‘ ì“°ë ˆê¸°ê°’ì´ ê¸°ë¡...*/
         IDE_TEST( convertXlogToSmiValue( aXLog, 
                                          sConvertCols, 
                                          sTable )
@@ -1212,7 +1212,7 @@ retryUpdate:
 
         if(aTsFlag != NULL)
         {
-            /* Timestamp ÄÃ·³°ªÀÌ ±âÁ¸ÀÇ °Íº¸´Ù ÀÛÀ¸¸é, ConflictÀÌ´Ù. */
+            /* Timestamp ì»¬ëŸ¼ê°’ì´ ê¸°ì¡´ì˜ ê²ƒë³´ë‹¤ ìž‘ìœ¼ë©´, Conflictì´ë‹¤. */
             IDE_TEST( compareImageTS( aXLog,
                                       aMetaItem->mItem.mTableOID,
                                       sRow,
@@ -1220,14 +1220,14 @@ retryUpdate:
                                       aTsFlag )
                       != IDE_SUCCESS );
 
-            /* BUG-31770 Timestamp Conflict ¿¡·¯ ¼³Á¤ */
+            /* BUG-31770 Timestamp Conflict ì—ëŸ¬ ì„¤ì • */
             IDE_TEST_RAISE( sIsConflict == ID_TRUE, ERR_TIMESTAMP_CONFLICT );
         }
         else
         {
             if ( aCompareBeforeImage == ID_TRUE )
             {
-                /* Before Image¿Í ±âÁ¸ÀÇ ÄÃ·³°ªÀÌ ´Ù¸£¸é, ConflictÀÌ´Ù. */
+                /* Before Imageì™€ ê¸°ì¡´ì˜ ì»¬ëŸ¼ê°’ì´ ë‹¤ë¥´ë©´, Conflictì´ë‹¤. */
                 IDE_TEST( compareUpdateImage( aXLog,
                                               aMetaItem->mItem.mTableOID,
                                               sRow,
@@ -1280,7 +1280,7 @@ retryUpdate:
     }
 
     // PROJ-1624 non-partitioned index
-    // updateRow°¡ ¼º°øÇß´Ù¸é index table¿¡µµ ¹Ýµå½Ã updateµÇ¾î¾ß ÇÑ´Ù.
+    // updateRowê°€ ì„±ê³µí–ˆë‹¤ë©´ index tableì—ë„ ë°˜ë“œì‹œ updateë˜ì–´ì•¼ í•œë‹¤.
     if ( ( aIndexTableRef != NULL ) &&
          ( sUpdated == ID_TRUE ) )
     {
@@ -1350,14 +1350,14 @@ retryUpdate:
         {
             /* Lock Timeout
              * Unique Violation
-             * Eager ModeÀÏ ¶§, Not Enough Space
+             * Eager Modeì¼ ë•Œ, Not Enough Space
              */
             if ( ( ideGetErrorCode() == smERR_ABORT_smnUniqueViolationInReplTrans ) ||
                  ( ideGetErrorCode() == smERR_ABORT_smcExceedLockTimeWait ) )
             {
-                /* conflict resolution txÀÌ ¸ÕÀú lockÀ» Àâ¾Æ ½ÇÆÐÇß´Ù¸é, À§¿¡¼­ ´ÙÀ½ÀÇ ÀÛ¾÷À» ÇÑ´Ù.
-                   1. conflict resolution txÀÌ ÀÖÀ» °æ¿ì, ÀÌ ÀÛ¾÷À» conflict resolution tx¿¡ ³Ö°í Àç½Ãµµ
-                   2. conflict resolution txÀÌ ¾øÀ¸¸é, ´Ù¸¥ tx°¡ conflict resolutionÃ³¸®ÁßÀÎ °ÍÀÌ¹Ç·Î ½ÇÆÐÃ³¸® */
+                /* conflict resolution txì´ ë¨¼ì € lockì„ ìž¡ì•„ ì‹¤íŒ¨í–ˆë‹¤ë©´, ìœ„ì—ì„œ ë‹¤ìŒì˜ ìž‘ì—…ì„ í•œë‹¤.
+                   1. conflict resolution txì´ ìžˆì„ ê²½ìš°, ì´ ìž‘ì—…ì„ conflict resolution txì— ë„£ê³  ìž¬ì‹œë„
+                   2. conflict resolution txì´ ì—†ìœ¼ë©´, ë‹¤ë¥¸ txê°€ conflict resolutionì²˜ë¦¬ì¤‘ì¸ ê²ƒì´ë¯€ë¡œ ì‹¤íŒ¨ì²˜ë¦¬ */
                 *aFailType = RP_APPLY_FAIL_BY_CONFLICT_RESOLUTION_TX;
             }
             else
@@ -1445,19 +1445,19 @@ IDE_RC rpsSmExecutor::executeDelete(smiTrans         * aTrans,
 
     SMI_CURSOR_PROP_INIT(&sProperty, NULL, sIndex);
 
-    /* PROJ-1705 Fetch Column List ±¸¼º */
+    /* PROJ-1705 Fetch Column List êµ¬ì„± */
     if((SMI_MISC_TABLE_HEADER(sTable)->mFlag & SMI_TABLE_TYPE_MASK) == SMI_TABLE_DISK)
     {
-        // PROJ-1705 Fetch Column List ±¸¼º
+        // PROJ-1705 Fetch Column List êµ¬ì„±
         IDE_TEST( makeFetchColumnList( aXLog, aMetaItem->mItem.mTableOID, sIndex )
                   != IDE_SUCCESS );
 
-        // PROJ-1705 smiCursorProperties¿¡ Fetch Column List Á¤º¸ ¼³Á¤
+        // PROJ-1705 smiCursorPropertiesì— Fetch Column List ì •ë³´ ì„¤ì •
         sProperty.mFetchColumnList = mFetchColumnList;
     }
     else
     {
-        // memory tableÀº fetch column list°¡ ÇÊ¿äÇÏÁö ¾Ê´Ù.
+        // memory tableì€ fetch column listê°€ í•„ìš”í•˜ì§€ ì•Šë‹¤.
         sProperty.mFetchColumnList = NULL;
     }
 
@@ -1562,7 +1562,7 @@ retryDelete:
     IDE_TEST(cursorClose(&sCursor) != IDE_SUCCESS);
 
     // PROJ-1624 non-partitioned index
-    // deleteRow°¡ ¼º°øÇß´Ù¸é index table¿¡µµ ¹Ýµå½Ã deleteµÇ¾î¾ß ÇÑ´Ù.
+    // deleteRowê°€ ì„±ê³µí–ˆë‹¤ë©´ index tableì—ë„ ë°˜ë“œì‹œ deleteë˜ì–´ì•¼ í•œë‹¤.
     if ( ( aIndexTableRef != NULL ) &&
          ( sDeleted == ID_TRUE ) )
     {
@@ -1621,14 +1621,14 @@ retryDelete:
         else
         {
             /* Lock Timeout
-             * Eager ModeÀÏ ¶§, Not Enough Space
+             * Eager Modeì¼ ë•Œ, Not Enough Space
              */
             if ( ( ideGetErrorCode() == smERR_ABORT_smnUniqueViolationInReplTrans ) ||
                  ( ideGetErrorCode() == smERR_ABORT_smcExceedLockTimeWait ) )
             {
-                /* conflict resolution txÀÌ ¸ÕÀú lockÀ» Àâ¾Æ ½ÇÆÐÇß´Ù¸é, À§¿¡¼­ ´ÙÀ½ÀÇ ÀÛ¾÷À» ÇÑ´Ù.
-                   1. conflict resolution txÀÌ ÀÖÀ» °æ¿ì, ÀÌ ÀÛ¾÷À» conflict resolution tx¿¡ ³Ö°í Àç½Ãµµ
-                   2. conflict resolution txÀÌ ¾øÀ¸¸é, ´Ù¸¥ tx°¡ conflict resolutionÃ³¸®ÁßÀÎ °ÍÀÌ¹Ç·Î ½ÇÆÐÃ³¸® */
+                /* conflict resolution txì´ ë¨¼ì € lockì„ ìž¡ì•„ ì‹¤íŒ¨í–ˆë‹¤ë©´, ìœ„ì—ì„œ ë‹¤ìŒì˜ ìž‘ì—…ì„ í•œë‹¤.
+                   1. conflict resolution txì´ ìžˆì„ ê²½ìš°, ì´ ìž‘ì—…ì„ conflict resolution txì— ë„£ê³  ìž¬ì‹œë„
+                   2. conflict resolution txì´ ì—†ìœ¼ë©´, ë‹¤ë¥¸ txê°€ conflict resolutionì²˜ë¦¬ì¤‘ì¸ ê²ƒì´ë¯€ë¡œ ì‹¤íŒ¨ì²˜ë¦¬ */
                 *aFailType = RP_APPLY_FAIL_BY_CONFLICT_RESOLUTION_TX;
             }
             else
@@ -1678,18 +1678,18 @@ IDE_RC rpsSmExecutor::makeFetchColumnList(rpdXLog            * aXLog,
 {
 /*******************************************************************************
  *
- * Description : smÀ¸·ÎºÎÅÍ ·¹ÄÚµåÆÐÄ¡½Ã º¹»ç°¡ ÇÊ¿äÇÑ ÄÃ·³Á¤º¸»ý¼º
+ * Description : smìœ¼ë¡œë¶€í„° ë ˆì½”ë“œíŒ¨ì¹˜ì‹œ ë³µì‚¬ê°€ í•„ìš”í•œ ì»¬ëŸ¼ì •ë³´ìƒì„±
  *
  * Implementation :  PROJ-1705
  *
- *   PROJ-1705 Àû¿ëÀ¸·Î sm¿¡¼­ ·¹ÄÚµå ÆÐÄ¡¹æ¹ýÀÌ
- *   ÀÌÀü ·¹ÄÚµå´ÜÀ§ÀÇ ÆÐÄ¡¿¡¼­ ÄÃ·³´ÜÀ§ÀÇ ÆÐÄ¡·Î ÆÐÄ¡¹æ¹ýÀÌ º¯°æµÊ.
- *   sm¿¡¼­ ÄÃ·³´ÜÀ§ÀÇ ÆÐÄ¡°¡ ÀÌ·ç¾îÁú ¼ö ÀÖµµ·Ï
- *   Ä¿¼­ ¿ÀÇÂ½Ã,
- *   ÆÐÄ¡ÇÒ ÄÃ·³Á¤º¸¸¦ ±¸¼ºÇØ¼­ ÀÌ Á¤º¸¸¦ smiCursorProperties·Î ³Ñ°ÜÁØ´Ù.
+ *   PROJ-1705 ì ìš©ìœ¼ë¡œ smì—ì„œ ë ˆì½”ë“œ íŒ¨ì¹˜ë°©ë²•ì´
+ *   ì´ì „ ë ˆì½”ë“œë‹¨ìœ„ì˜ íŒ¨ì¹˜ì—ì„œ ì»¬ëŸ¼ë‹¨ìœ„ì˜ íŒ¨ì¹˜ë¡œ íŒ¨ì¹˜ë°©ë²•ì´ ë³€ê²½ë¨.
+ *   smì—ì„œ ì»¬ëŸ¼ë‹¨ìœ„ì˜ íŒ¨ì¹˜ê°€ ì´ë£¨ì–´ì§ˆ ìˆ˜ ìžˆë„ë¡
+ *   ì»¤ì„œ ì˜¤í”ˆì‹œ,
+ *   íŒ¨ì¹˜í•  ì»¬ëŸ¼ì •ë³´ë¥¼ êµ¬ì„±í•´ì„œ ì´ ì •ë³´ë¥¼ smiCursorPropertiesë¡œ ë„˜ê²¨ì¤€ë‹¤.
  *   
- *   INSERT(Timestamp Conflict Resolution), LOB Cursor Open / DELETE / UPDATE ½Ã
- *   PKÀÎµ¦½º ÄÃ·³¿¡ ´ëÇÑ ÆÐÄ¡ÄÃ·³¸®½ºÆ® »ý¼º
+ *   INSERT(Timestamp Conflict Resolution), LOB Cursor Open / DELETE / UPDATE ì‹œ
+ *   PKì¸ë±ìŠ¤ ì»¬ëŸ¼ì— ëŒ€í•œ íŒ¨ì¹˜ì»¬ëŸ¼ë¦¬ìŠ¤íŠ¸ ìƒì„±
  *
  ******************************************************************************/
 
@@ -1710,7 +1710,7 @@ IDE_RC rpsSmExecutor::makeFetchColumnList(rpdXLog            * aXLog,
     sTable           = smiGetTable( aTableOID );
     sFetchColumnList = mFetchColumnList;
 
-    // LOB Cursor Open / DELETE / UPDATE ½Ã¿¡ µé¾î¿Â´Ù.
+    // LOB Cursor Open / DELETE / UPDATE ì‹œì— ë“¤ì–´ì˜¨ë‹¤.
     if(aXLog->mPKColCnt > 0)
     {
         IDE_TEST_RAISE(aIndexHandle == NULL, ERR_NULL_KEY_INDEX);
@@ -1744,7 +1744,7 @@ IDE_RC rpsSmExecutor::makeFetchColumnList(rpdXLog            * aXLog,
             sFetchColumn->copyDiskColumn
                 = (void*)(((mtcColumn*)sSmiColumn)->module->storedValue2MtdValue[sFunctionIdx]);
         }
-        // update½Ã update column¿¡ ´ëÇÑ fetch column list »ý¼º
+        // updateì‹œ update columnì— ëŒ€í•œ fetch column list ìƒì„±
         if ( aXLog->mType == RP_X_UPDATE )
         {
             IDE_DASSERT( aXLog->mColCnt > 0 );
@@ -1768,7 +1768,7 @@ IDE_RC rpsSmExecutor::makeFetchColumnList(rpdXLog            * aXLog,
                 }
 
                 // BUG-29020
-                // update columnÀÌ pk column°ú Áßº¹µÇ´Â °æ¿ì fetch column list¿¡¼­ Á¦¿ÜÇÑ´Ù.
+                // update columnì´ pk columnê³¼ ì¤‘ë³µë˜ëŠ” ê²½ìš° fetch column listì—ì„œ ì œì™¸í•œë‹¤.
                 if(sDupColumn == ID_FALSE)
                 {
                     sFetchColumn = sFetchColumnList + i;
@@ -1802,10 +1802,10 @@ IDE_RC rpsSmExecutor::makeFetchColumnList(rpdXLog            * aXLog,
             /* Nothing to do */
         }
 
-        // i´Â fetch column countÀÌ´Ù.
+        // iëŠ” fetch column countì´ë‹¤.
         sFetchColumnCnt = i;
         
-        // ÀÎµ¦½º ÄÃ·³¼ø¼­·Î fetch column Á¤·Ä
+        // ì¸ë±ìŠ¤ ì»¬ëŸ¼ìˆœì„œë¡œ fetch column ì •ë ¬
         if(sFetchColumnCnt > 1)
         {
             idlOS::qsort(sFetchColumnList,
@@ -1818,15 +1818,15 @@ IDE_RC rpsSmExecutor::makeFetchColumnList(rpdXLog            * aXLog,
             // Nothing To Do
         }
         
-        // Å×ÀÌºí»ý¼ºÄÃ·³¼ø¼­´ë·Î fetch column list Àç±¸¼º
+        // í…Œì´ë¸”ìƒì„±ì»¬ëŸ¼ìˆœì„œëŒ€ë¡œ fetch column list ìž¬êµ¬ì„±
         for(i = 0; i < sFetchColumnCnt - 1; i++)
         {
             sFetchColumnList[i].next = &sFetchColumnList[i+1];
         }
         sFetchColumnList[i].next = NULL;
     }
-    // INSERT ½Ã¿¡ µé¾î¿Â´Ù.
-    // compare Insert image½Ã¿¡ readRow¸¦ À§ÇÑ fetch column list¸¦ ¸¸µé±â À§ÇÏ¿©.
+    // INSERT ì‹œì— ë“¤ì–´ì˜¨ë‹¤.
+    // compare Insert imageì‹œì— readRowë¥¼ ìœ„í•œ fetch column listë¥¼ ë§Œë“¤ê¸° ìœ„í•˜ì—¬.
     else
     {
         for ( i = 0; i < aXLog->mColCnt; i++ )
@@ -2052,7 +2052,7 @@ IDE_RC rpsSmExecutor::compareUpdateImage(rpdXLog    * aXLog,
             else if ( (sSmiColumn->flag & SMI_COLUMN_TYPE_MASK) == SMI_COLUMN_TYPE_VARIABLE_LARGE )
             {
                 // To fix BUG-24356
-                // geometry¿¡ ´ëÇØ¼­¸¸ bufferÇÒ´ç
+                // geometryì— ëŒ€í•´ì„œë§Œ bufferí• ë‹¹
                 if ( ( sMtcColumn->type.dataTypeId == MTD_GEOMETRY_ID ) &&
                      ( ( sSmiColumn->flag & SMI_COLUMN_STORAGE_MASK )
                      == SMI_COLUMN_STORAGE_MEMORY ) )
@@ -2073,7 +2073,7 @@ IDE_RC rpsSmExecutor::compareUpdateImage(rpdXLog    * aXLog,
             }
             else if((sSmiColumn->flag & SMI_COLUMN_TYPE_MASK) == SMI_COLUMN_TYPE_LOB)
             {
-                // LOB ColumnÀÎ °æ¿ì´Â Conflict Ã¼Å©¸¦ ÇÏÁö ¾Ê´Â´Ù.
+                // LOB Columnì¸ ê²½ìš°ëŠ” Conflict ì²´í¬ë¥¼ í•˜ì§€ ì•ŠëŠ”ë‹¤.
                 continue;
             }
             else
@@ -2108,7 +2108,7 @@ IDE_RC rpsSmExecutor::compareUpdateImage(rpdXLog    * aXLog,
         if((sBeforeValue != NULL) && (sFieldValue != NULL))
         {
             /* To Fix BUG-16531
-             * ¹°¸®ÀûÀ¸·Î µ¿ÀÏÇÑ ImageÀÎÁö °Ë»çÇÑ´Ù.
+             * ë¬¼ë¦¬ì ìœ¼ë¡œ ë™ì¼í•œ Imageì¸ì§€ ê²€ì‚¬í•œë‹¤.
              */
             IDE_TEST( mtc::isSamePhysicalImage( sMtcColumn,
                                                 sBeforeValue,
@@ -2417,19 +2417,19 @@ IDE_RC rpsSmExecutor::compareInsertImage( smiTrans    * aTrans,
 
     SMI_CURSOR_PROP_INIT(&sProperty, NULL, sIndex); // PROJ-1705
 
-    /* PROJ-1705 Fetch Column List ±¸¼º */
+    /* PROJ-1705 Fetch Column List êµ¬ì„± */
     if((SMI_MISC_TABLE_HEADER(sTable)->mFlag & SMI_TABLE_TYPE_MASK) == SMI_TABLE_DISK)
     {
-        // PROJ-1705 Fetch Column List ±¸¼º
+        // PROJ-1705 Fetch Column List êµ¬ì„±
         IDE_TEST( makeFetchColumnList( aXLog, aMetaItem->mItem.mTableOID, NULL )
                   != IDE_SUCCESS );
 
-        // PROJ-1705 smiCursorProperties¿¡ Fetch Column List Á¤º¸ ¼³Á¤
+        // PROJ-1705 smiCursorPropertiesì— Fetch Column List ì •ë³´ ì„¤ì •
         sProperty.mFetchColumnList = mFetchColumnList;
     }
     else
     {
-        // memory tableÀº fetch column list°¡ ÇÊ¿äÇÏÁö ¾Ê´Ù.
+        // memory tableì€ fetch column listê°€ í•„ìš”í•˜ì§€ ì•Šë‹¤.
         sProperty.mFetchColumnList = NULL;
     }
 
@@ -2467,14 +2467,14 @@ IDE_RC rpsSmExecutor::compareInsertImage( smiTrans    * aTrans,
 
     IDE_TEST(sCursor.readRow(&sRow, &sRid, SMI_FIND_NEXT) != IDE_SUCCESS);
 
-    /* Row°¡ ¾øÀ¸¸é InsertÇÒ ¼ö ÀÖÀ¸¹Ç·Î, Conflict°¡ ¾Æ´Ï´Ù. */
+    /* Rowê°€ ì—†ìœ¼ë©´ Insertí•  ìˆ˜ ìžˆìœ¼ë¯€ë¡œ, Conflictê°€ ì•„ë‹ˆë‹¤. */
 
     while(sRow != NULL)
     {
         sCount++;
         IDE_TEST_RAISE(sCount > 1, ERR_PK_MODIFIED_MORE_THAN_ONE_ROW);
 
-        /* Timestamp ÄÃ·³°ªÀÌ ±âÁ¸ÀÇ °Íº¸´Ù ÀÛÀ¸¸é, ConflictÀÌ´Ù. */
+        /* Timestamp ì»¬ëŸ¼ê°’ì´ ê¸°ì¡´ì˜ ê²ƒë³´ë‹¤ ìž‘ìœ¼ë©´, Conflictì´ë‹¤. */
         IDE_TEST( compareImageTS( aXLog,
                                   aMetaItem->mItem.mTableOID,
                                   sRow,
@@ -2561,19 +2561,19 @@ IDE_RC rpsSmExecutor::openLOBCursor( smiTrans    * aTrans,
 
     SMI_CURSOR_PROP_INIT(&sProperty, NULL, sIndex); //PROJ-1705
 
-    /* PROJ-1705 Fetch Column List ±¸¼º */
+    /* PROJ-1705 Fetch Column List êµ¬ì„± */
     if((SMI_MISC_TABLE_HEADER(sTable)->mFlag & SMI_TABLE_TYPE_MASK) == SMI_TABLE_DISK)
     {
-        // PROJ-1705 Fetch Column List ±¸¼º
+        // PROJ-1705 Fetch Column List êµ¬ì„±
         IDE_TEST_RAISE( makeFetchColumnList( aXLog, aMetaItem->mItem.mTableOID, sIndex )
                         != IDE_SUCCESS, ERR_MAKE_FETCH_COLUMN_LIST );
 
-        // PROJ-1705 smiCursorProperties¿¡ Fetch Column List Á¤º¸ ¼³Á¤
+        // PROJ-1705 smiCursorPropertiesì— Fetch Column List ì •ë³´ ì„¤ì •
         sProperty.mFetchColumnList = mFetchColumnList;
     }
     else
     {
-        // memory tableÀº fetch column list°¡ ÇÊ¿äÇÏÁö ¾Ê´Ù.
+        // memory tableì€ fetch column listê°€ í•„ìš”í•˜ì§€ ì•Šë‹¤.
         sProperty.mFetchColumnList = NULL;
     }
     sProperty.mLockRowBuffer = (UChar*)mRealRow;
@@ -2654,7 +2654,7 @@ IDE_RC rpsSmExecutor::openLOBCursor( smiTrans    * aTrans,
     sStep = 0;
     IDE_TEST(sSmiStmt.end(SMI_STATEMENT_RESULT_SUCCESS) != IDE_SUCCESS);
 
-    /* Remote LOB Locator¿Í ÇöÀç ¾ò¾î¿Â Local LOB Locator¸¦ Æ®·£Àè¼Ç Table¿¡ ÀúÀå */
+    /* Remote LOB Locatorì™€ í˜„ìž¬ ì–»ì–´ì˜¨ Local LOB Locatorë¥¼ íŠ¸ëžœìž­ì…˜ Tableì— ì €ìž¥ */
     IDE_TEST(aTransTbl->insertLocator(aXLog->mTID,
                                       aXLog->mLobPtr->mLobLocator,
                                       sLocalLobLocator)
@@ -2769,9 +2769,9 @@ IDE_RC rpsSmExecutor::closeLOBCursor(rpdXLog     *aXLog,
                                               &sIsFound )
                     != IDE_SUCCESS, ERR_SEARCH_LOBLOCATOR );
 
-    /* PROJ-1442 Replication Online Áß DDL Çã¿ë
-     * ÇØ´ç LOB ColumnÀÌ Replication ´ë»óÀÌ ¾Æ´Ï¸é,
-     * LOB Cursor°¡ OpenµÇÁö ¾ÊÀ¸¹Ç·Î Locator¸¦ Ã£À» ¼ö ¾ø´Ù.
+    /* PROJ-1442 Replication Online ì¤‘ DDL í—ˆìš©
+     * í•´ë‹¹ LOB Columnì´ Replication ëŒ€ìƒì´ ì•„ë‹ˆë©´,
+     * LOB Cursorê°€ Openë˜ì§€ ì•Šìœ¼ë¯€ë¡œ Locatorë¥¼ ì°¾ì„ ìˆ˜ ì—†ë‹¤.
      */
     if(sIsFound == ID_TRUE)
     {
@@ -2847,9 +2847,9 @@ IDE_RC rpsSmExecutor::prepareLOBWrite(rpdXLog     *aXLog,
                                               &sIsFound )
                     != IDE_SUCCESS, ERR_SEARCH_LOBLOCATOR );
 
-    /* PROJ-1442 Replication Online Áß DDL Çã¿ë
-     * ÇØ´ç LOB ColumnÀÌ Replication ´ë»óÀÌ ¾Æ´Ï¸é,
-     * LOB Cursor°¡ OpenµÇÁö ¾ÊÀ¸¹Ç·Î Locator¸¦ Ã£À» ¼ö ¾ø´Ù.
+    /* PROJ-1442 Replication Online ì¤‘ DDL í—ˆìš©
+     * í•´ë‹¹ LOB Columnì´ Replication ëŒ€ìƒì´ ì•„ë‹ˆë©´,
+     * LOB Cursorê°€ Openë˜ì§€ ì•Šìœ¼ë¯€ë¡œ Locatorë¥¼ ì°¾ì„ ìˆ˜ ì—†ë‹¤.
      */
     if(sIsFound == ID_TRUE)
     {
@@ -2924,9 +2924,9 @@ IDE_RC rpsSmExecutor::finishLOBWrite(rpdXLog     *aXLog,
                                               &sIsFound )
                     != IDE_SUCCESS, ERR_SEARCH_LOBLOCATOR );
 
-    /* PROJ-1442 Replication Online Áß DDL Çã¿ë
-     * ÇØ´ç LOB ColumnÀÌ Replication ´ë»óÀÌ ¾Æ´Ï¸é,
-     * LOB Cursor°¡ OpenµÇÁö ¾ÊÀ¸¹Ç·Î Locator¸¦ Ã£À» ¼ö ¾ø´Ù.
+    /* PROJ-1442 Replication Online ì¤‘ DDL í—ˆìš©
+     * í•´ë‹¹ LOB Columnì´ Replication ëŒ€ìƒì´ ì•„ë‹ˆë©´,
+     * LOB Cursorê°€ Openë˜ì§€ ì•Šìœ¼ë¯€ë¡œ Locatorë¥¼ ì°¾ì„ ìˆ˜ ì—†ë‹¤.
      */
     if(sIsFound == ID_TRUE)
     {
@@ -2999,9 +2999,9 @@ IDE_RC rpsSmExecutor::trimLOB(rpdXLog     *aXLog,
                                               &sIsFound )
                     != IDE_SUCCESS, ERR_SEARCH_LOBLOCATOR );
 
-    /* PROJ-1442 Replication Online Áß DDL Çã¿ë
-     * ÇØ´ç LOB ColumnÀÌ Replication ´ë»óÀÌ ¾Æ´Ï¸é,
-     * LOB Cursor°¡ OpenµÇÁö ¾ÊÀ¸¹Ç·Î Locator¸¦ Ã£À» ¼ö ¾ø´Ù.
+    /* PROJ-1442 Replication Online ì¤‘ DDL í—ˆìš©
+     * í•´ë‹¹ LOB Columnì´ Replication ëŒ€ìƒì´ ì•„ë‹ˆë©´,
+     * LOB Cursorê°€ Openë˜ì§€ ì•Šìœ¼ë¯€ë¡œ Locatorë¥¼ ì°¾ì„ ìˆ˜ ì—†ë‹¤.
      */
     if(sIsFound == ID_TRUE)
     {
@@ -3075,9 +3075,9 @@ IDE_RC rpsSmExecutor::writeLOBPiece(rpdXLog     *aXLog,
                                              &sIsFound )
                     != IDE_SUCCESS, ERR_SEARCH_LOBLOCATOR );
 
-    /* PROJ-1442 Replication Online Áß DDL Çã¿ë
-     * ÇØ´ç LOB ColumnÀÌ Replication ´ë»óÀÌ ¾Æ´Ï¸é,
-     * LOB Cursor°¡ OpenµÇÁö ¾ÊÀ¸¹Ç·Î Locator¸¦ Ã£À» ¼ö ¾ø´Ù.
+    /* PROJ-1442 Replication Online ì¤‘ DDL í—ˆìš©
+     * í•´ë‹¹ LOB Columnì´ Replication ëŒ€ìƒì´ ì•„ë‹ˆë©´,
+     * LOB Cursorê°€ Openë˜ì§€ ì•Šìœ¼ë¯€ë¡œ Locatorë¥¼ ì°¾ì„ ìˆ˜ ì—†ë‹¤.
      */
     if(sIsFound == ID_TRUE)
     {
@@ -3135,8 +3135,8 @@ IDE_RC rpsSmExecutor::writeLOBPiece(rpdXLog     *aXLog,
 /*
  * PROJ-1705
  *
- * mtdValue¿¡¼­ value·Î º¯È¯ÇÑ´Ù.
- * insertÀÇ after image¿Í updateÀÇ after image¸¦ º¯È¯½ÃÅ²´Ù.
+ * mtdValueì—ì„œ valueë¡œ ë³€í™˜í•œë‹¤.
+ * insertì˜ after imageì™€ updateì˜ after imageë¥¼ ë³€í™˜ì‹œí‚¨ë‹¤.
  */
 IDE_RC rpsSmExecutor::convertToNonMtdValue(rpdXLog    * aXLog,
                                            smiValue   * aACols,
@@ -3178,7 +3178,7 @@ IDE_RC rpsSmExecutor::convertToNonMtdValue(rpdXLog    * aXLog,
         else
         {
             if( ((sColumn->module->flag & MTD_DATA_STORE_MTDVALUE_MASK) == MTD_DATA_STORE_MTDVALUE_TRUE) ||
-                (aXLog->mACols[i].value == NULL) ) // peer server°¡ memory tableÀÌ¸é, null·Î ¿Â´Ù.
+                (aXLog->mACols[i].value == NULL) ) // peer serverê°€ memory tableì´ë©´, nullë¡œ ì˜¨ë‹¤.
             {
                 aACols[i].value  = aXLog->mACols[i].value;
                 aACols[i].length = aXLog->mACols[i].length;
@@ -3239,10 +3239,10 @@ IDE_RC rpsSmExecutor::convertToNonMtdValue(rpdXLog    * aXLog,
 
 /*
  * BUG-30119
- * ¸Þ¸ð¸® Å×ÀÌºíÀº fixedÄÃ·³°ú variableÄÃ·³ÀÇ nullÄÃ·³ ·Î±×ÀÇ ÇüÅÂ°¡ ´Ù¸£´Ù.
- * µ¿ÀÏ ÄÃ·³¿¡ ´ë»õ Active¼­¹ö¿¡¼­´Â variable µ¥ÀÌÅÍ Å¸ÀÔÀÌ°í, Standby ¼­¹ö´Â fixedµ¥ÀÌÅÍ Å¸ÀÔÀÎ °æ¿ì
- * ÀÌ ÄÃ·³ÀÇ value°¡ nullÀÌ¸é XLog¿¡´Â length=0, value=nullÀÌ µÈ´Ù.
- * ÇÏÁö¸¸ standbyÂÊÀº fixedÀÌ¹Ç·Î length°¡ 0ÀÌ µÇ¾î¼­´Â ¾ÈµÇ¹Ç·Î, ÀÌ¿¡ ¸Â´Â length¿Í nullValue¸¦ ³Ö¾îÁØ´Ù.
+ * ë©”ëª¨ë¦¬ í…Œì´ë¸”ì€ fixedì»¬ëŸ¼ê³¼ variableì»¬ëŸ¼ì˜ nullì»¬ëŸ¼ ë¡œê·¸ì˜ í˜•íƒœê°€ ë‹¤ë¥´ë‹¤.
+ * ë™ì¼ ì»¬ëŸ¼ì— ëŒ€ìƒˆ Activeì„œë²„ì—ì„œëŠ” variable ë°ì´í„° íƒ€ìž…ì´ê³ , Standby ì„œë²„ëŠ” fixedë°ì´í„° íƒ€ìž…ì¸ ê²½ìš°
+ * ì´ ì»¬ëŸ¼ì˜ valueê°€ nullì´ë©´ XLogì—ëŠ” length=0, value=nullì´ ëœë‹¤.
+ * í•˜ì§€ë§Œ standbyìª½ì€ fixedì´ë¯€ë¡œ lengthê°€ 0ì´ ë˜ì–´ì„œëŠ” ì•ˆë˜ë¯€ë¡œ, ì´ì— ë§žëŠ” lengthì™€ nullValueë¥¼ ë„£ì–´ì¤€ë‹¤.
  */
 IDE_RC rpsSmExecutor::convertXlogToSmiValue( rpdXLog        * aXLog,
                                              smiValue       * aACols,

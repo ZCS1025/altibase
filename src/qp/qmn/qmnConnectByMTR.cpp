@@ -21,11 +21,11 @@
  * Description :
  *     CMTR(Connect By MaTeRialization) Node
  *
- *     °ü°èÇü ¸ðµ¨¿¡¼­ Hierarchy¸¦ À§ÇØ MaterializationÀ» ¼öÇàÇÏ´Â NodeÀÌ´Ù.
+ *     ê´€ê³„í˜• ëª¨ë¸ì—ì„œ Hierarchyë¥¼ ìœ„í•´ Materializationì„ ìˆ˜í–‰í•˜ëŠ” Nodeì´ë‹¤.
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  **********************************************************************/
 
@@ -43,7 +43,7 @@ IDE_RC qmnCMTR::init( qcTemplate * aTemplate, qmnPlan * aPlan )
 
     sDataPlan->flag = & aTemplate->planFlag[sCodePlan->planID];
 
-    /* CMTRÀº Memory Sort Temp ¸¸ °¡´ÉÇÏ´Ù */
+    /* CMTRì€ Memory Sort Temp ë§Œ ê°€ëŠ¥í•˜ë‹¤ */
     IDE_TEST_RAISE( (sCodePlan->plan.flag & QMN_PLAN_STORAGE_MASK)
                     != QMN_PLAN_STORAGE_MEMORY,
                     ERR_STORAGE_TYPE );
@@ -102,8 +102,8 @@ IDE_RC qmnCMTR::printPlan( qcTemplate   * aTemplate,
     if ( ( *sDataPlan->flag & QMND_CMTR_PRINTED_MASK )
          == QMND_CMTR_PRINTED_FALSE )
     {
-        // VMTR ³ëµå´Â ¿©·¯ °³ÀÇ »óÀ§ Plan Node¸¦ °¡Áø´Ù.
-        // µû¶ó¼­, ÇÑ ¹ø¸¸ Ãâ·ÂµÇµµ·Ï ÇÑ´Ù.
+        // VMTR ë…¸ë“œëŠ” ì—¬ëŸ¬ ê°œì˜ ìƒìœ„ Plan Nodeë¥¼ ê°€ì§„ë‹¤.
+        // ë”°ë¼ì„œ, í•œ ë²ˆë§Œ ì¶œë ¥ë˜ë„ë¡ í•œë‹¤.
         for ( i = 0; i < aDepth; i++ )
         {
             iduVarStringAppend( aString,
@@ -137,7 +137,7 @@ IDE_RC qmnCMTR::printPlan( qcTemplate   * aTemplate,
                     else
                     {
                         // BUG-29209
-                        // ITEM_SIZE Á¤º¸ º¸¿©ÁÖÁö ¾ÊÀ½
+                        // ITEM_SIZE ì •ë³´ ë³´ì—¬ì£¼ì§€ ì•ŠìŒ
                         iduVarStringAppendFormat(
                             aString,
                             "MATERIALIZATION ( "
@@ -168,7 +168,7 @@ IDE_RC qmnCMTR::printPlan( qcTemplate   * aTemplate,
         }
 
         //----------------------------
-        // Cost Ãâ·Â
+        // Cost ì¶œë ¥
         //----------------------------
         qmn::printCost( aString,
                         sCodePlan->plan.qmgAllCost );
@@ -229,7 +229,7 @@ IDE_RC qmnCMTR::printPlan( qcTemplate   * aTemplate,
         }
 
         //----------------------------
-        // Operatorº° °á°ú Á¤º¸ Ãâ·Â
+        // Operatorë³„ ê²°ê³¼ ì •ë³´ ì¶œë ¥
         //----------------------------
         if ( QCU_TRCLOG_RESULT_DESC == 1 )
         {
@@ -256,7 +256,7 @@ IDE_RC qmnCMTR::printPlan( qcTemplate   * aTemplate,
     }
     else
     {
-        // ÀÌ¹Ì PlanÁ¤º¸°¡ Ãâ·ÂµÈ »óÅÂÀÓ
+        // ì´ë¯¸ Planì •ë³´ê°€ ì¶œë ¥ëœ ìƒíƒœìž„
         // nothing to do
     }
 
@@ -470,18 +470,18 @@ IDE_RC qmnCMTR::firstInit( qcTemplate * aTemplate,
         /* Nothing to do */
     }
 
-    /* ÀúÀå ColumnÀÇ ÃÊ±âÈ­ */
+    /* ì €ìž¥ Columnì˜ ì´ˆê¸°í™” */
     IDE_TEST( initMtrNode( aTemplate, aCodePlan, aDataPlan )
               != IDE_SUCCESS );
     
-    /* Temp TableÀÇ ÃÊ±âÈ­ */
+    /* Temp Tableì˜ ì´ˆê¸°í™” */
     IDE_TEST( initTempTable( aTemplate, aCodePlan, aDataPlan )
               != IDE_SUCCESS );
 
-    /* View RowÀÇ Å©±â ÃÊ±âÈ­ */
+    /* View Rowì˜ í¬ê¸° ì´ˆê¸°í™” */
     aDataPlan->rowSize = qmc::getMtrRowSize( aDataPlan->mtrNode );
 
-    /* View RowÀÇ ÀúÀå °ø°£ ÃÊ±âÈ­ Memory Temp TableÀ» »ç¿ëÇÒ °æ¿ì ÀÇ¹Ì ¾øÀ½ */
+    /* View Rowì˜ ì €ìž¥ ê³µê°„ ì´ˆê¸°í™” Memory Temp Tableì„ ì‚¬ìš©í•  ê²½ìš° ì˜ë¯¸ ì—†ìŒ */
     aDataPlan->mtrRow = aDataPlan->mtrNode->dstTuple->row;
     aDataPlan->priorCount = 0;
 
@@ -505,7 +505,7 @@ IDE_RC qmnCMTR::firstInit( qcTemplate * aTemplate,
 
     if ( sDep == ID_TRUE )
     {
-        /* ChildÀÇ °á°ú¸¦ ÀúÀåÇÔ */
+        /* Childì˜ ê²°ê³¼ë¥¼ ì €ìž¥í•¨ */
         IDE_TEST( storeChild( aTemplate, aCodePlan, aDataPlan ) != IDE_SUCCESS );
     }
     else
@@ -513,7 +513,7 @@ IDE_RC qmnCMTR::firstInit( qcTemplate * aTemplate,
         /* Nothing to do */
     }
 
-    /* ÃÊ±âÈ­ ¿Ï·á¸¦ Ç¥±â */
+    /* ì´ˆê¸°í™” ì™„ë£Œë¥¼ í‘œê¸° */
     *aDataPlan->flag &= ~QMND_CMTR_INIT_DONE_MASK;
     *aDataPlan->flag |= QMND_CMTR_INIT_DONE_TRUE;
 
@@ -545,9 +545,9 @@ IDE_RC qmnCMTR::initMtrNode( qcTemplate * aTemplate,
 
     IDE_DASSERT( aCodePlan->mtrNodeOffset > 0 );
     
-    /* Store And Search¿Í µ¿ÀÏÇÑ ÀúÀå ¹æ½ÄÀ» ÃëÇÑ´Ù. */
+    /* Store And Searchì™€ ë™ì¼í•œ ì €ìž¥ ë°©ì‹ì„ ì·¨í•œë‹¤. */
     /* PROJ-2469 View Materialization Optimize */
-    /* »óÀ§ Plan¿¡¼­ »ç¿ëÇÏÁö ¾Ê´Â Node Type - QMC_MTR_TYPE_USELESS_COLUMN ÀÏ ¼ö ÀÖ´Ù. */
+    /* ìƒìœ„ Planì—ì„œ ì‚¬ìš©í•˜ì§€ ì•ŠëŠ” Node Type - QMC_MTR_TYPE_USELESS_COLUMN ì¼ ìˆ˜ ìžˆë‹¤. */
     IDE_DASSERT( ( ( aCodePlan->myNode->flag & QMC_MTR_TYPE_MASK )
                    == QMC_MTR_TYPE_COPY_VALUE ) ||
                  ( ( aCodePlan->myNode->flag & QMC_MTR_TYPE_MASK )
@@ -568,12 +568,12 @@ IDE_RC qmnCMTR::initMtrNode( qcTemplate * aTemplate,
     }
 
     /*
-     * ÀúÀå ColumnÀÇ ÃÊ±âÈ­
-     * 1.  ÀúÀå ColumnÀÇ ¿¬°á Á¤º¸ »ý¼º
-     * 2.  ÀúÀå ColumnÀÇ ÃÊ±âÈ­
-     * 3.  ÀúÀå ColumnÀÇ offsetÀ» ÀçÁ¶Á¤
-     * 4.  Row SizeÀÇ °è»ê
-     *     - Disk Temp TableÀÇ °æ¿ì Row¸¦ À§ÇÑ Memoryµµ ÇÒ´ç¹ÞÀ½.
+     * ì €ìž¥ Columnì˜ ì´ˆê¸°í™”
+     * 1.  ì €ìž¥ Columnì˜ ì—°ê²° ì •ë³´ ìƒì„±
+     * 2.  ì €ìž¥ Columnì˜ ì´ˆê¸°í™”
+     * 3.  ì €ìž¥ Columnì˜ offsetì„ ìž¬ì¡°ì •
+     * 4.  Row Sizeì˜ ê³„ì‚°
+     *     - Disk Temp Tableì˜ ê²½ìš° Rowë¥¼ ìœ„í•œ Memoryë„ í• ë‹¹ë°›ìŒ.
      */
 
     IDE_TEST( qmc::linkMtrNode( aCodePlan->myNode,
@@ -582,7 +582,7 @@ IDE_RC qmnCMTR::initMtrNode( qcTemplate * aTemplate,
 
     IDE_TEST( qmc::initMtrNode( aTemplate,
                                 aDataPlan->mtrNode,
-                                0 ) // Base Table Á¸ÀçÇÏÁö ¾ÊÀ½
+                                0 ) // Base Table ì¡´ìž¬í•˜ì§€ ì•ŠìŒ
               != IDE_SUCCESS );
 
     sHeaderSize = QMC_MEMSORT_TEMPHEADER_SIZE;
@@ -622,7 +622,7 @@ IDE_RC qmnCMTR::initTempTable( qcTemplate * aTemplate,
                                                   (void **)&aDataPlan->sortMgr )
                   != IDE_SUCCESS );
 
-        /* Temp TableÀÇ ÃÊ±âÈ­ */
+        /* Temp Tableì˜ ì´ˆê¸°í™” */
         IDE_TEST( qmcSortTemp::init( aDataPlan->sortMgr,
                                      aTemplate,
                                      ID_UINT_MAX,
@@ -676,12 +676,12 @@ IDE_RC qmnCMTR::storeChild( qcTemplate * aTemplate,
 {
     qmcRowFlag sFlag = QMC_ROW_INITIALIZE;
 
-    /* Child PlanÀÇ ÃÊ±âÈ­ */
+    /* Child Planì˜ ì´ˆê¸°í™” */
     IDE_TEST( aCodePlan->plan.left->init( aTemplate,
                                           aCodePlan->plan.left )
               != IDE_SUCCESS);
 
-    /* Child PlanÀÇ °á°ú¸¦ ÀúÀå */
+    /* Child Planì˜ ê²°ê³¼ë¥¼ ì €ìž¥ */
     IDE_TEST( aCodePlan->plan.left->doIt( aTemplate,
                                           aCodePlan->plan.left,
                                           &sFlag )
@@ -689,22 +689,22 @@ IDE_RC qmnCMTR::storeChild( qcTemplate * aTemplate,
 
     while ( ( sFlag & QMC_ROW_DATA_MASK ) == QMC_ROW_DATA_EXIST )
     {
-        /* ÀúÀå °ø°£ÀÇ ÇÒ´ç */
+        /* ì €ìž¥ ê³µê°„ì˜ í• ë‹¹ */
         aDataPlan->mtrRow = aDataPlan->mtrNode->dstTuple->row;
         IDE_TEST( qmcSortTemp::alloc( aDataPlan->sortMgr,
                                       &aDataPlan->mtrRow )
                   != IDE_SUCCESS );
 
-        /* Record ±¸¼º */
+        /* Record êµ¬ì„± */
         IDE_TEST( setMtrRow( aTemplate, aDataPlan )
                   != IDE_SUCCESS );
 
-        /* Temp Table¿¡ »ðÀÔ */
+        /* Temp Tableì— ì‚½ìž… */
         IDE_TEST( qmcSortTemp::addRow( aDataPlan->sortMgr,
                                        aDataPlan->mtrRow )
                   != IDE_SUCCESS );
 
-        /* Left ChildÀÇ ¼öÇà */
+        /* Left Childì˜ ìˆ˜í–‰ */
         IDE_TEST( aCodePlan->plan.left->doIt( aTemplate,
                                               aCodePlan->plan.left,
                                               &sFlag )

@@ -61,7 +61,7 @@ void isqlReal::Reformat()
         sFloat = *(SFloat *)mValue;
 
         // fix PR-12295
-        // 0¿¡ °¡±î¿î ÀÛÀº °ªÀº 0À¸·Î Ãâ·ÂÇÔ.
+        // 0ì— ê°€ê¹Œìš´ ìž‘ì€ ê°’ì€ 0ìœ¼ë¡œ ì¶œë ¥í•¨.
         if( ( sFloat < 1E-7 ) &&
             ( sFloat > -1E-7 ) )
         {

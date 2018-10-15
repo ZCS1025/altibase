@@ -31,12 +31,12 @@
 #include <qmmParseTree.h>
 
 // BUG-41243 Name-based Argument Passing
-// ¼±¾ğµÈ Parameter¿¡ ArgumentÀÇ Àü´Ş ¿©ºÎ / Àü´Ş À¯Çü
+// ì„ ì–¸ëœ Parameterì— Argumentì˜ ì „ë‹¬ ì—¬ë¶€ / ì „ë‹¬ ìœ í˜•
 enum qsvArgPassType
 {
-    QSV_ARG_NOT_PASSED = 0,  // Àü´ŞµÇÁö ¾ÊÀ½
-    QSV_ARG_PASS_POSITIONAL, // Parameter À§Ä¡·Î Àü´Ş   (e.g.) proc1('val')
-    QSV_ARG_PASS_NAMED       // Parameter ÀÌ¸§À¸·Î Àü´Ş (e.g.) proc1(P1 => 'val')
+    QSV_ARG_NOT_PASSED = 0,  // ì „ë‹¬ë˜ì§€ ì•ŠìŒ
+    QSV_ARG_PASS_POSITIONAL, // Parameter ìœ„ì¹˜ë¡œ ì „ë‹¬   (e.g.) proc1('val')
+    QSV_ARG_PASS_NAMED       // Parameter ì´ë¦„ìœ¼ë¡œ ì „ë‹¬ (e.g.) proc1(P1 => 'val')
 };
 
 typedef struct qsvArgPassInfo
@@ -173,7 +173,7 @@ private:
         qcStatement * aStatement );
 
     // BUG-41243 Name-based Argument Passing
-    // Name-based Argument °ËÁõÀ» ÇÏ°í, ¿Ã¹Ù¸¥ À§Ä¡·Î Argument¸¦ Á¶Á¤
+    // Name-based Argument ê²€ì¦ì„ í•˜ê³ , ì˜¬ë°”ë¥¸ ìœ„ì¹˜ë¡œ Argumentë¥¼ ì¡°ì •
     static IDE_RC validateNamedArguments( qcStatement     * aStatement,
                                           qtcNode         * aCallSpec,
                                           qsVariableItems * aParaDecls,

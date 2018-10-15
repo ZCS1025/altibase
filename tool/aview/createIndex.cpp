@@ -90,7 +90,7 @@ void __fastcall TForm7::Button3Click(TObject *Sender)
 		return;
 	}
 
-    // À¯´ÏÅ©index¸¦ ¸¸µéÁö °áÁ¤.
+    // ìœ ë‹ˆí¬indexë¥¼ ë§Œë“¤ì§€ ê²°ì •.
 	if (CheckBox1->Checked == true)
 	{
 		sprintf(unique, "unique");
@@ -98,7 +98,7 @@ void __fastcall TForm7::Button3Click(TObject *Sender)
         memset(unique, 0x00, sizeof(unique));
     }
 
-	// SQL¹® »ý¼º
+	// SQLë¬¸ ìƒì„±
 	sprintf(query, "create %s index %s.%s on %s (",
 						unique,
 						USERS->Text.c_str(),
@@ -118,7 +118,7 @@ void __fastcall TForm7::Button3Click(TObject *Sender)
 		strcat(query, ",");
 		colCount++;
 	}
-    // ÄÃ·³À» ¹ÙÀÎµùÇÒ²² ¾øÀ¸¸é ¿¡·¯ ³»ÁØ´Ù.
+    // ì»¬ëŸ¼ì„ ë°”ì¸ë”©í• ê»˜ ì—†ìœ¼ë©´ ì—ëŸ¬ ë‚´ì¤€ë‹¤.
 	if (colCount == 0)
 	{
 		ShowMessage("Are you kidding me??");
@@ -129,8 +129,8 @@ void __fastcall TForm7::Button3Click(TObject *Sender)
 	query[i-1] = ')';
 	query[i] = 0x00;
 
-	// PK°¡ ¼±ÅÃµÈ »óÅÂ¸é Äõ¸®¸¦ ´Ù½Ã ¸¸µç´Ù.
-	// ±×¸®°í INDEXNAMEºÎºÐÀÌ ÀÔ·ÂµÇ¾ú³Ä¿¡ µû¶ó ±¸¹®ÀÌ ´Ù¸§À¸·Î ¸Â°Ô Ã³¸®ÇÑ´Ù.
+	// PKê°€ ì„ íƒëœ ìƒíƒœë©´ ì¿¼ë¦¬ë¥¼ ë‹¤ì‹œ ë§Œë“ ë‹¤.
+	// ê·¸ë¦¬ê³  INDEXNAMEë¶€ë¶„ì´ ìž…ë ¥ë˜ì—ˆëƒì— ë”°ë¼ êµ¬ë¬¸ì´ ë‹¤ë¦„ìœ¼ë¡œ ë§žê²Œ ì²˜ë¦¬í•œë‹¤.
 	if (CheckBox2->Checked == true)
 	{
 		sprintf(query, "alter table %s add ", TARGET->Text.c_str());
@@ -159,7 +159,7 @@ void __fastcall TForm7::Button3Click(TObject *Sender)
 	    query[i] = 0x00;
 	}
 
-	// °ú°¨È÷ Äõ¸®¸¦ ³¯¸°´Ù.
+	// ê³¼ê°ížˆ ì¿¼ë¦¬ë¥¼ ë‚ ë¦°ë‹¤.
 	if (SQLAllocEnv(&env) != SQL_SUCCESS) {
 		ShowMessage("SQLAllocEnv Fail");
 		return;
@@ -170,7 +170,7 @@ void __fastcall TForm7::Button3Click(TObject *Sender)
 		return;
 	}
     
-    // Á¢¼ÓÁ¤º¸¸¦ °¡Á®¿É´Ï´ç..
+    // ì ‘ì†ì •ë³´ë¥¼ ê°€ì ¸ì˜µë‹ˆë‹¹..
 	if (!Form5->getDsnInfo(SERVERNAME->Text, "User",     USER))
 	{
 		ShowMessage("Can't Get User from DSN");
@@ -182,7 +182,7 @@ void __fastcall TForm7::Button3Click(TObject *Sender)
 		return;
 	}
 
-	// ÁøÂ¥ ¿¬°áÇØº¾´Ï´Ù.
+	// ì§„ì§œ ì—°ê²°í•´ë´…ë‹ˆë‹¤.
 	if (SQLConnect(dbc, SERVERNAME->Text.c_str(), SQL_NTS, USER, SQL_NTS, PASSWD, SQL_NTS) != SQL_SUCCESS)
 	{
 		dbErrMsg5(env, dbc, SQL_NULL_HSTMT);

@@ -34,11 +34,11 @@ IDE_RC qdpDrop::removePriv4DropUser(
 /***********************************************************************
  *
  * Description :
- *      ±ÇÇÑ Á¤º¸ »èÁ¦
+ *      ê¶Œí•œ ì •ë³´ ì‚­ì œ
  *
  * Implementation :
- *      1. SYS_GRANT_SYSTEM_, SYS_GRANT_OBJECT_ ¸ÞÅ¸ Å×ÀÌºí¿¡¼­
- *         ÇØ´ç À¯Àú¿¡ °ü·ÃµÈ ±ÇÇÑ »èÁ¦
+ *      1. SYS_GRANT_SYSTEM_, SYS_GRANT_OBJECT_ ë©”íƒ€ í…Œì´ë¸”ì—ì„œ
+ *         í•´ë‹¹ ìœ ì €ì— ê´€ë ¨ëœ ê¶Œí•œ ì‚­ì œ
  *    
  ***********************************************************************/
 
@@ -65,7 +65,7 @@ IDE_RC qdpDrop::removePriv4DropUser(
                                 & sRowCnt )
         != IDE_SUCCESS);
 
-    // GRANT ANY PRIVILEGE ÀÎ °æ¿ì grantor »èÁ¦ µÇ´Â °æ¿ì »èÁ¦.
+    // GRANT ANY PRIVILEGE ì¸ ê²½ìš° grantor ì‚­ì œ ë˜ëŠ” ê²½ìš° ì‚­ì œ.
     // remove grantor = aUserID from SYS_GRANT_SYSTEM_
     idlOS::snprintf( sSqlStr, QD_MAX_SQL_LENGTH,
                      "DELETE FROM SYS_GRANT_SYSTEM_ "
@@ -115,10 +115,10 @@ IDE_RC qdpDrop::removePriv4DropTable(
 /***********************************************************************
  *
  * Description :
- *      DROP TABLE ½Ã ÇØ´ç ¿ÀºêÅØÆ®¿¡ ´ëÇÑ ±ÇÇÑ Á¤º¸ »èÁ¦
+ *      DROP TABLE ì‹œ í•´ë‹¹ ì˜¤ë¸Œí…íŠ¸ì— ëŒ€í•œ ê¶Œí•œ ì •ë³´ ì‚­ì œ
  *
  * Implementation :
- *      1. SYS_GRANT_OBJECT_ ¸ÞÅ¸ Å×ÀÌºí¿¡¼­ ÇØ´ç Å×ÀÌºí¿¡ °ü·ÃµÈ Á¤º¸ »èÁ¦
+ *      1. SYS_GRANT_OBJECT_ ë©”íƒ€ í…Œì´ë¸”ì—ì„œ í•´ë‹¹ í…Œì´ë¸”ì— ê´€ë ¨ëœ ì •ë³´ ì‚­ì œ
  *    
  ***********************************************************************/
 
@@ -163,10 +163,10 @@ IDE_RC qdpDrop::removePriv4DropProc(
 /***********************************************************************
  *
  * Description :
- *      DROP PROC ½Ã ÇØ´ç ¿ÀºêÅØÆ®¿¡ ´ëÇÑ ±ÇÇÑ Á¤º¸ »èÁ¦
+ *      DROP PROC ì‹œ í•´ë‹¹ ì˜¤ë¸Œí…íŠ¸ì— ëŒ€í•œ ê¶Œí•œ ì •ë³´ ì‚­ì œ
  *
  * Implementation :
- *      1. SYS_GRANT_OBJECT_ ¸ÞÅ¸ Å×ÀÌºí¿¡¼­ ÇØ´ç Å×ÀÌºí¿¡ °ü·ÃµÈ Á¤º¸ »èÁ¦
+ *      1. SYS_GRANT_OBJECT_ ë©”íƒ€ í…Œì´ë¸”ì—ì„œ í•´ë‹¹ í…Œì´ë¸”ì— ê´€ë ¨ëœ ì •ë³´ ì‚­ì œ
  *    
  ***********************************************************************/
 
@@ -210,10 +210,10 @@ IDE_RC qdpDrop::removePriv4DropDirectory(
 /***********************************************************************
  *
  * Description :
- *      DROP DIRECTORY ½Ã ÇØ´ç ¿ÀºêÅØÆ®¿¡ ´ëÇÑ ±ÇÇÑ Á¤º¸ »èÁ¦
+ *      DROP DIRECTORY ì‹œ í•´ë‹¹ ì˜¤ë¸Œí…íŠ¸ì— ëŒ€í•œ ê¶Œí•œ ì •ë³´ ì‚­ì œ
  *
  * Implementation :
- *      1. SYS_GRANT_OBJECT_ ¸ÞÅ¸ Å×ÀÌºí¿¡¼­ ÇØ´ç Å×ÀÌºí¿¡ °ü·ÃµÈ Á¤º¸ »èÁ¦
+ *      1. SYS_GRANT_OBJECT_ ë©”íƒ€ í…Œì´ë¸”ì—ì„œ í•´ë‹¹ í…Œì´ë¸”ì— ê´€ë ¨ëœ ì •ë³´ ì‚­ì œ
  *    
  ***********************************************************************/
 

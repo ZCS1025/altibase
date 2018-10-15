@@ -21,13 +21,13 @@
  * Description :
  *     CNTR(CouNTeR) Node
  *
- *     °ü°èÇü ¸ğµ¨¿¡¼­ selectionÀ» ¼öÇàÇÏ´Â Plan Node ÀÌ´Ù.
- *     SCAN ³ëµå¿Í ´Ş¸® Storage Manager¿¡ Á÷Á¢ Á¢±ÙÇÏÁö ¾Ê°í,
- *     ÀÌ¹Ì selectionµÈ record¿¡ ´ëÇÑ selectionÀ» ¼öÇàÇÑ´Ù.
+ *     ê´€ê³„í˜• ëª¨ë¸ì—ì„œ selectionì„ ìˆ˜í–‰í•˜ëŠ” Plan Node ì´ë‹¤.
+ *     SCAN ë…¸ë“œì™€ ë‹¬ë¦¬ Storage Managerì— ì§ì ‘ ì ‘ê·¼í•˜ì§€ ì•Šê³ ,
+ *     ì´ë¯¸ selectionëœ recordì— ëŒ€í•œ selectionì„ ìˆ˜í–‰í•œë‹¤.
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  **********************************************************************/
 
@@ -45,13 +45,13 @@ qmnCNTR::init( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    CNTR ³ëµåÀÇ ÃÊ±âÈ­
+ *    CNTR ë…¸ë“œì˜ ì´ˆê¸°í™”
  *
  * Implementation :
- *    - ÃÖÃÊ ÃÊ±âÈ­°¡ µÇÁö ¾ÊÀº °æ¿ì ÃÖÃÊ ÃÊ±âÈ­ ¼öÇà
- *    - Child Plan¿¡ ´ëÇÑ ÃÊ±âÈ­
- *    - Stop FilterÀÇ ¼öÇà °á°ú °Ë»ç
- *    - Stop FilterÀÇ °á°ú¿¡ µû¸¥ ¼öÇà ÇÔ¼ö °áÁ¤
+ *    - ìµœì´ˆ ì´ˆê¸°í™”ê°€ ë˜ì§€ ì•Šì€ ê²½ìš° ìµœì´ˆ ì´ˆê¸°í™” ìˆ˜í–‰
+ *    - Child Planì— ëŒ€í•œ ì´ˆê¸°í™”
+ *    - Stop Filterì˜ ìˆ˜í–‰ ê²°ê³¼ ê²€ì‚¬
+ *    - Stop Filterì˜ ê²°ê³¼ì— ë”°ë¥¸ ìˆ˜í–‰ í•¨ìˆ˜ ê²°ì •
  *
  ***********************************************************************/
 
@@ -68,13 +68,13 @@ qmnCNTR::init( qcTemplate * aTemplate,
     sDataPlan->doIt = qmnCNTR::doItDefault;
 
     //------------------------------------------------
-    // ÃÖÃÊ ÃÊ±âÈ­ ¼öÇà ¿©ºÎ ÆÇ´Ü
+    // ìµœì´ˆ ì´ˆê¸°í™” ìˆ˜í–‰ ì—¬ë¶€ íŒë‹¨
     //------------------------------------------------
 
     if ( (*sDataPlan->flag & QMND_CNTR_INIT_DONE_MASK)
          == QMND_CNTR_INIT_DONE_FALSE )
     {
-        // ÃÖÃÊ ÃÊ±âÈ­ ¼öÇà
+        // ìµœì´ˆ ì´ˆê¸°í™” ìˆ˜í–‰
         IDE_TEST( firstInit(aTemplate, sCodePlan, sDataPlan) != IDE_SUCCESS );
     }
     else
@@ -83,14 +83,14 @@ qmnCNTR::init( qcTemplate * aTemplate,
     }
 
     //--------------------------------
-    // Rownum ÃÊ±âÈ­
+    // Rownum ì´ˆê¸°í™”
     //--------------------------------
 
     sDataPlan->rownumValue = 1;
     *(sDataPlan->rownumPtr) = sDataPlan->rownumValue;
 
     //------------------------------------------------
-    // Child PlanÀÇ ÃÊ±âÈ­
+    // Child Planì˜ ì´ˆê¸°í™”
     //------------------------------------------------
 
     IDE_TEST( aPlan->left->init( aTemplate, 
@@ -98,7 +98,7 @@ qmnCNTR::init( qcTemplate * aTemplate,
               != IDE_SUCCESS);
 
     //------------------------------------------------
-    // Stop Filter¸¦ ¼öÇà
+    // Stop Filterë¥¼ ìˆ˜í–‰
     //------------------------------------------------
 
     if ( sCodePlan->stopFilter != NULL )
@@ -114,14 +114,14 @@ qmnCNTR::init( qcTemplate * aTemplate,
     }
 
     //------------------------------------------------
-    // Stop Filter¿¡ µû¸¥ ¼öÇà ÇÔ¼ö °áÁ¤
+    // Stop Filterì— ë”°ë¥¸ ìˆ˜í–‰ í•¨ìˆ˜ ê²°ì •
     //------------------------------------------------
     
     if ( sJudge == ID_TRUE )
     {
         //---------------------------------
-        // Stop Filter¸¦ ¸¸Á·ÇÏ´Â °æ¿ì
-        // ÀÏ¹İ ¼öÇà ÇÔ¼ö¸¦ ¼³Á¤
+        // Stop Filterë¥¼ ë§Œì¡±í•˜ëŠ” ê²½ìš°
+        // ì¼ë°˜ ìˆ˜í–‰ í•¨ìˆ˜ë¥¼ ì„¤ì •
         //---------------------------------
 
         sDataPlan->doIt = qmnCNTR::doItFirst;
@@ -129,9 +129,9 @@ qmnCNTR::init( qcTemplate * aTemplate,
     else
     {
         //-------------------------------------------
-        // Stop Filter¸¦ ¸¸Á·ÇÏÁö ¾Ê´Â °æ¿ì
-        // - Ç×»ó Á¶°ÇÀ» ¸¸Á·ÇÏÁö ¾ÊÀ¸¹Ç·Î
-        //   ¾î¶°ÇÑ °á°úµµ ¸®ÅÏÇÏÁö ¾Ê´Â ÇÔ¼ö¸¦ °áÁ¤ÇÑ´Ù.
+        // Stop Filterë¥¼ ë§Œì¡±í•˜ì§€ ì•ŠëŠ” ê²½ìš°
+        // - í•­ìƒ ì¡°ê±´ì„ ë§Œì¡±í•˜ì§€ ì•Šìœ¼ë¯€ë¡œ
+        //   ì–´ë– í•œ ê²°ê³¼ë„ ë¦¬í„´í•˜ì§€ ì•ŠëŠ” í•¨ìˆ˜ë¥¼ ê²°ì •í•œë‹¤.
         //-------------------------------------------
 
         sDataPlan->doIt = qmnCNTR::doItAllFalse;
@@ -155,10 +155,10 @@ qmnCNTR::doIt( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    CNTRÀÇ °íÀ¯ ±â´ÉÀ» ¼öÇàÇÑ´Ù.
+ *    CNTRì˜ ê³ ìœ  ê¸°ëŠ¥ì„ ìˆ˜í–‰í•œë‹¤.
  *
  * Implementation :
- *    ÁöÁ¤µÈ ÇÔ¼ö Æ÷ÀÎÅÍ¸¦ ¼öÇàÇÑ´Ù.
+ *    ì§€ì •ëœ í•¨ìˆ˜ í¬ì¸í„°ë¥¼ ìˆ˜í–‰í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -186,8 +186,8 @@ qmnCNTR::padNull( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    CNTR ³ëµå´Â º°µµÀÇ null row¸¦ °¡ÁöÁö ¾ÊÀ¸¸ç,
- *    Child¿¡ ´ëÇÏ¿© padNull()À» È£ÃâÇÑ´Ù.
+ *    CNTR ë…¸ë“œëŠ” ë³„ë„ì˜ null rowë¥¼ ê°€ì§€ì§€ ì•Šìœ¼ë©°,
+ *    Childì— ëŒ€í•˜ì—¬ padNull()ì„ í˜¸ì¶œí•œë‹¤.
  *
  * Implementation :
  *
@@ -203,7 +203,7 @@ qmnCNTR::padNull( qcTemplate * aTemplate,
     if ( (aTemplate->planFlag[sCodePlan->planID] & QMND_CNTR_INIT_DONE_MASK)
          == QMND_CNTR_INIT_DONE_FALSE )
     {
-        // ÃÊ±âÈ­µÇÁö ¾ÊÀº °æ¿ì ÃÊ±âÈ­ ¼öÇà
+        // ì´ˆê¸°í™”ë˜ì§€ ì•Šì€ ê²½ìš° ì´ˆê¸°í™” ìˆ˜í–‰
         IDE_TEST( aPlan->init( aTemplate, aPlan ) != IDE_SUCCESS );
     }
     else
@@ -211,7 +211,7 @@ qmnCNTR::padNull( qcTemplate * aTemplate,
         // Nothing To Do
     }
 
-    // Child Plan¿¡ ´ëÇÏ¿© Null Padding¼öÇà
+    // Child Planì— ëŒ€í•˜ì—¬ Null Paddingìˆ˜í–‰
     IDE_TEST( aPlan->left->padNull( aTemplate, aPlan->left )
               != IDE_SUCCESS );
 
@@ -234,7 +234,7 @@ qmnCNTR::printPlan( qcTemplate   * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    CNTR ³ëµåÀÇ ¼öÇà Á¤º¸¸¦ Ãâ·ÂÇÑ´Ù.
+ *    CNTR ë…¸ë“œì˜ ìˆ˜í–‰ ì •ë³´ë¥¼ ì¶œë ¥í•œë‹¤.
  *
  * Implementation :
  *
@@ -251,7 +251,7 @@ qmnCNTR::printPlan( qcTemplate   * aTemplate,
     UInt  i;
 
     //----------------------------
-    // Display À§Ä¡ °áÁ¤
+    // Display ìœ„ì¹˜ ê²°ì •
     //----------------------------
     
     for ( i = 0; i < aDepth; i++ )
@@ -261,7 +261,7 @@ qmnCNTR::printPlan( qcTemplate   * aTemplate,
     }
 
     //----------------------------
-    // CNTR ³ëµå Ç¥½Ã
+    // CNTR ë…¸ë“œ í‘œì‹œ
     //----------------------------
 
     if (sCodePlan->stopFilter != NULL)
@@ -276,7 +276,7 @@ qmnCNTR::printPlan( qcTemplate   * aTemplate,
     }
 
     //----------------------------
-    // Predicate Á¤º¸ÀÇ »ó¼¼ Ãâ·Â
+    // Predicate ì •ë³´ì˜ ìƒì„¸ ì¶œë ¥
     //----------------------------
 
     if (QCG_GET_SESSION_TRCLOG_DETAIL_PREDICATE(aTemplate->stmt) == 1)
@@ -293,12 +293,12 @@ qmnCNTR::printPlan( qcTemplate   * aTemplate,
     }
 
     //----------------------------
-    // Subquery Á¤º¸ÀÇ Ãâ·Â
-    // Subquery´Â ´ÙÀ½°ú °°Àº predicate¿¡¸¸ Á¸ÀçÇÒ ¼ö ÀÖ´Ù.
+    // Subquery ì •ë³´ì˜ ì¶œë ¥
+    // SubqueryëŠ” ë‹¤ìŒê³¼ ê°™ì€ predicateì—ë§Œ ì¡´ì¬í•  ìˆ˜ ìˆë‹¤.
     //     1. Stop Filter
     //----------------------------
 
-    // Normal FilterÀÇ Subquery Á¤º¸ Ãâ·Â
+    // Normal Filterì˜ Subquery ì •ë³´ ì¶œë ¥
     if ( sCodePlan->stopFilter != NULL )
     {
         IDE_TEST( qmn::printSubqueryPlan( aTemplate,
@@ -309,7 +309,7 @@ qmnCNTR::printPlan( qcTemplate   * aTemplate,
     }
 
     //----------------------------
-    // Operatorº° °á°ú Á¤º¸ Ãâ·Â
+    // Operatorë³„ ê²°ê³¼ ì •ë³´ ì¶œë ¥
     //----------------------------
     if ( QCU_TRCLOG_RESULT_DESC == 1 )
     {
@@ -325,7 +325,7 @@ qmnCNTR::printPlan( qcTemplate   * aTemplate,
     }
 
     //----------------------------
-    // Child PlanÀÇ Á¤º¸ Ãâ·Â
+    // Child Planì˜ ì •ë³´ ì¶œë ¥
     //----------------------------
     
     IDE_TEST( aPlan->left->printPlan( aTemplate,
@@ -351,7 +351,7 @@ qmnCNTR::doItDefault( qcTemplate * /* aTemplate */,
 /***********************************************************************
  *
  * Description :
- *    ÀÌ ÇÔ¼ö°¡ ¼öÇàµÇ¸é ¾ÈµÊ.
+ *    ì´ í•¨ìˆ˜ê°€ ìˆ˜í–‰ë˜ë©´ ì•ˆë¨.
  *
  * Implementation :
  *
@@ -376,13 +376,13 @@ qmnCNTR::doItAllFalse( qcTemplate * /* aTemplate */,
 /***********************************************************************
  *
  * Description :
- *    Filter Á¶°ÇÀ» ¸¸Á·ÇÏ´Â Record°¡ ÇÏ³ªµµ ¾ø´Â °æ¿ì »ç¿ë
+ *    Filter ì¡°ê±´ì„ ë§Œì¡±í•˜ëŠ” Recordê°€ í•˜ë‚˜ë„ ì—†ëŠ” ê²½ìš° ì‚¬ìš©
  *
- *    Stop Filter °Ë»çÈÄ¿¡ °áÁ¤µÇ´Â ÇÔ¼ö·Î Àı´ë ¸¸Á·ÇÏ´Â
- *    Record°¡ Á¸ÀçÇÏÁö ¾Ê´Â´Ù.
+ *    Stop Filter ê²€ì‚¬í›„ì— ê²°ì •ë˜ëŠ” í•¨ìˆ˜ë¡œ ì ˆëŒ€ ë§Œì¡±í•˜ëŠ”
+ *    Recordê°€ ì¡´ì¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
  *
  * Implementation :
- *    Ç×»ó record ¾øÀ½À» ¸®ÅÏÇÑ´Ù.
+ *    í•­ìƒ record ì—†ìŒì„ ë¦¬í„´í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -391,10 +391,10 @@ qmnCNTR::doItAllFalse( qcTemplate * /* aTemplate */,
 
     qmncCNTR * sCodePlan = (qmncCNTR*) aPlan;
 
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     IDE_DASSERT( sCodePlan->stopFilter != NULL );
 
-    // µ¥ÀÌÅÍ ¾øÀ½À» Setting
+    // ë°ì´í„° ì—†ìŒì„ Setting
     *aFlag &= ~QMC_ROW_DATA_MASK;
     *aFlag |= QMC_ROW_DATA_NONE;
     
@@ -411,8 +411,8 @@ qmnCNTR::doItFirst( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    CNTRÀÇ ¼öÇà ÇÔ¼ö
- *    Child¸¦ ¼öÇàÇÏ°í Record°¡ ÀÖÀ» ¶§±îÁö ¹İº¹ÇÑ´Ù.
+ *    CNTRì˜ ìˆ˜í–‰ í•¨ìˆ˜
+ *    Childë¥¼ ìˆ˜í–‰í•˜ê³  Recordê°€ ìˆì„ ë•Œê¹Œì§€ ë°˜ë³µí•œë‹¤.
  * 
  * Implementation :
  *
@@ -425,7 +425,7 @@ qmnCNTR::doItFirst( qcTemplate * aTemplate,
     qmndCNTR * sDataPlan = 
         (qmndCNTR*) (aTemplate->tmplate.data + aPlan->offset);
 
-    // Child¸¦ ¼öÇà
+    // Childë¥¼ ìˆ˜í–‰
     IDE_TEST( aPlan->left->doIt( aTemplate, aPlan->left, aFlag ) 
               != IDE_SUCCESS );
         
@@ -455,8 +455,8 @@ qmnCNTR::doItNext( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    CNTRÀÇ ¼öÇà ÇÔ¼ö
- *    Child¸¦ ¼öÇàÇÏ°í Record°¡ ÀÖÀ» ¶§±îÁö ¹İº¹ÇÑ´Ù.
+ *    CNTRì˜ ìˆ˜í–‰ í•¨ìˆ˜
+ *    Childë¥¼ ìˆ˜í–‰í•˜ê³  Recordê°€ ìˆì„ ë•Œê¹Œì§€ ë°˜ë³µí•œë‹¤.
  * 
  * Implementation :
  *
@@ -472,14 +472,14 @@ qmnCNTR::doItNext( qcTemplate * aTemplate,
     idBool sJudge = ID_FALSE;
 
     //--------------------------------
-    // Rownum Áõ°¡
+    // Rownum ì¦ê°€
     //--------------------------------
     
     sDataPlan->rownumValue ++;
     *(sDataPlan->rownumPtr) = sDataPlan->rownumValue;
     
     //------------------------------------------------
-    // Stop Filter¸¦ ¼öÇà
+    // Stop Filterë¥¼ ìˆ˜í–‰
     //------------------------------------------------
 
     if ( sCodePlan->stopFilter != NULL )
@@ -495,18 +495,18 @@ qmnCNTR::doItNext( qcTemplate * aTemplate,
     }
 
     //------------------------------------------------
-    // Stop Filter¿¡ µû¸¥ ¼öÇà ÇÔ¼ö °áÁ¤
+    // Stop Filterì— ë”°ë¥¸ ìˆ˜í–‰ í•¨ìˆ˜ ê²°ì •
     //------------------------------------------------
     
     if ( sJudge == ID_TRUE )
     {
-        // Child¸¦ ¼öÇà
+        // Childë¥¼ ìˆ˜í–‰
         IDE_TEST( aPlan->left->doIt( aTemplate, aPlan->left, aFlag ) 
                   != IDE_SUCCESS );
     }
     else
     {
-        // ¸¸Á·ÇÏ´Â Record ¾øÀ½
+        // ë§Œì¡±í•˜ëŠ” Record ì—†ìŒ
         *aFlag = QMC_ROW_DATA_NONE;
     }
 
@@ -527,7 +527,7 @@ qmnCNTR::firstInit( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    CNTR nodeÀÇ Data ¿µ¿ªÀÇ ¸â¹ö¿¡ ´ëÇÑ ÃÊ±âÈ­¸¦ ¼öÇà
+ *    CNTR nodeì˜ Data ì˜ì—­ì˜ ë©¤ë²„ì— ëŒ€í•œ ì´ˆê¸°í™”ë¥¼ ìˆ˜í–‰
  *
  * Implementation :
  *
@@ -537,18 +537,18 @@ qmnCNTR::firstInit( qcTemplate * aTemplate,
     IDE_MSGLOG_FUNC(IDE_MSGLOG_BODY("qmnCNTR::firstInit"));
 
     //---------------------------------
-    // CNTR °íÀ¯ Á¤º¸ÀÇ ÃÊ±âÈ­
+    // CNTR ê³ ìœ  ì •ë³´ì˜ ì´ˆê¸°í™”
     //---------------------------------
 
     aDataPlan->rownumTuple =
         & aTemplate->tmplate.rows[aCodePlan->rownumRowID];
 
-    // Rownum À§Ä¡ ¼³Á¤
+    // Rownum ìœ„ì¹˜ ì„¤ì •
     aDataPlan->rownumPtr = (SLong*) aDataPlan->rownumTuple->row;
     aDataPlan->rownumValue = *(aDataPlan->rownumPtr);
 
     //---------------------------------
-    // ÃÊ±âÈ­ ¿Ï·á¸¦ Ç¥±â
+    // ì´ˆê¸°í™” ì™„ë£Œë¥¼ í‘œê¸°
     //---------------------------------
 
     *aDataPlan->flag &= ~QMND_CNTR_INIT_DONE_MASK;
@@ -569,7 +569,7 @@ qmnCNTR::printPredicateInfo( qcTemplate   * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    PredicateÀÇ »ó¼¼ Á¤º¸¸¦ Ãâ·ÂÇÑ´Ù.
+ *    Predicateì˜ ìƒì„¸ ì •ë³´ë¥¼ ì¶œë ¥í•œë‹¤.
  *
  * Implementation :
  *
@@ -580,7 +580,7 @@ qmnCNTR::printPredicateInfo( qcTemplate   * aTemplate,
 
     UInt i;
     
-    // Stop Filter Ãâ·Â
+    // Stop Filter ì¶œë ¥
     if (aCodePlan->stopFilter != NULL)
     {
         for ( i = 0; i < aDepth; i++ )

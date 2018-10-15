@@ -82,7 +82,7 @@ SQLRETURN ulsdModuleExecute_META(ulnFnContext *aFnContext,
 
     ulsdGetShardFromDbc(aStmt->mParentDbc, &sShard);
 
-    /* ¼öÇàÇÒ µ¥ÀÌÅÍ³ëµå¸¦ °áÁ¤ÇÔ */
+    /* ìˆ˜í–‰í•  ë°ì´í„°ë…¸ë“œë¥¼ ê²°ì •í•¨ */
     sNodeResult = ulsdNodeDecideStmt(aStmt, ULN_FID_EXECUTE);
     ACI_TEST_RAISE(!SQL_SUCCEEDED(sNodeResult), LABEL_SHARD_NODE_DECIDE_STMT_FAIL);
 
@@ -90,13 +90,13 @@ SQLRETURN ulsdModuleExecute_META(ulnFnContext *aFnContext,
     {
         if ( aStmt->mParentDbc->mShardDbcCxt.mShardTransactionLevel == ULN_SHARD_TX_ONE_NODE )
         {
-            /* one node tx¿¡¼­ 1°³ÀÌ»ó ³ëµå°¡ ¼±ÅÃµÈ °æ¿ì ¿¡·¯ */
+            /* one node txì—ì„œ 1ê°œì´ìƒ ë…¸ë“œê°€ ì„ íƒëœ ê²½ìš° ì—ëŸ¬ */
             ACI_TEST_RAISE(aStmt->mShardStmtCxt.mNodeDbcIndexCount > 1,
                            LABEL_SHARD_MULTI_NODE_SELECTED);
 
             sNodeDbcIndex = aStmt->mShardStmtCxt.mNodeDbcIndexArr[0];
 
-            /* one node tx¿¡¼­ ÀÌÀü ³ëµå¿Í ´Ù¸£¸é ¿¡·¯ */
+            /* one node txì—ì„œ ì´ì „ ë…¸ë“œì™€ ë‹¤ë¥´ë©´ ì—ëŸ¬ */
             ulsdIsValidOnTransactionNodeIndex(aStmt->mParentDbc,
                                               sNodeDbcIndex,
                                               &sIsValidOnTransactionNodeIndex);
@@ -127,7 +127,7 @@ SQLRETURN ulsdModuleExecute_META(ulnFnContext *aFnContext,
 
     if ( sIsOneNodeTransaction == ACP_TRUE )
     {
-        /* one node txÀÌ¸é ±â·Ï */
+        /* one node txì´ë©´ ê¸°ë¡ */
         ulsdSetOnTransactionNodeIndex(aStmt->mParentDbc, sNodeDbcIndex);
     }
     else
@@ -177,7 +177,7 @@ SQLRETURN ulsdModuleFetch_META(ulnFnContext *aFnContext,
 {
     SQLRETURN     sNodeResult;
 
-    /* ¼öÇàÇÑ µ¥ÀÌÅÍ³ëµå¸¦ °¡Á®¿È */
+    /* ìˆ˜í–‰í•œ ë°ì´í„°ë…¸ë“œë¥¼ ê°€ì ¸ì˜´ */
     sNodeResult = ulsdNodeDecideStmt(aStmt, ULN_FID_FETCH);
     ACI_TEST_RAISE(!SQL_SUCCEEDED(sNodeResult), LABEL_SHARD_NODE_DECIDE_STMT_FAIL);
 
@@ -213,7 +213,7 @@ SQLRETURN ulsdModuleRowCount_META(ulnFnContext *aFnContext,
 {
     SQLRETURN     sNodeResult;
 
-    /* ¼öÇàÇÑ µ¥ÀÌÅÍ³ëµå¸¦ °¡Á®¿È */
+    /* ìˆ˜í–‰í•œ ë°ì´í„°ë…¸ë“œë¥¼ ê°€ì ¸ì˜´ */
     sNodeResult = ulsdNodeDecideStmt(aStmt, ULN_FID_ROWCOUNT);
     ACI_TEST_RAISE(!SQL_SUCCEEDED(sNodeResult), LABEL_SHARD_NODE_DECIDE_STMT_FAIL);
 
@@ -239,7 +239,7 @@ SQLRETURN ulsdModuleMoreResults_META(ulnFnContext *aFnContext,
 {
     SQLRETURN     sNodeResult;
 
-    /* ¼öÇàÇÑ µ¥ÀÌÅÍ³ëµå¸¦ °¡Á®¿È */
+    /* ìˆ˜í–‰í•œ ë°ì´í„°ë…¸ë“œë¥¼ ê°€ì ¸ì˜´ */
     sNodeResult = ulsdNodeDecideStmt(aStmt, ULN_FID_MORERESULTS);
     ACI_TEST_RAISE(!SQL_SUCCEEDED(sNodeResult), LABEL_SHARD_NODE_DECIDE_STMT_FAIL);
 
@@ -268,7 +268,7 @@ ulnStmt* ulsdModuleGetPreparedStmt_META(ulnStmt *aStmt)
 
     ulsdGetShardFromDbc(aStmt->mParentDbc, &sShard);
 
-    /* executeÈÄ¿¡ È£ÃâÇÑ °æ¿ì Á÷Àü¿¡ executeÇÑ stmt¸¦ ³Ñ°ÜÁØ´Ù. */
+    /* executeí›„ì— í˜¸ì¶œí•œ ê²½ìš° ì§ì „ì— executeí•œ stmtë¥¼ ë„˜ê²¨ì¤€ë‹¤. */
     if ( aStmt->mShardStmtCxt.mNodeDbcIndexCur == -1 )
     {
         for ( i = 0; i < sShard->mNodeCount; i++ )

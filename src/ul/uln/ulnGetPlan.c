@@ -51,7 +51,7 @@ ACI_RC ulnCallbackPlanGetResult(cmiProtocolContext *aPtContext,
     }
 
     /*
-     * Null Termination character ±îÁö Æ÷ÇÔ
+     * Null Termination character ê¹Œì§€ í¬í•¨
      */
     ACI_TEST_RAISE(ulnStmtAllocPlanTree(sFnContext->mHandle.mStmt, sLen + 1)
                    != ACI_SUCCESS,
@@ -62,7 +62,7 @@ ACI_RC ulnCallbackPlanGetResult(cmiProtocolContext *aPtContext,
     
     if ( cmiGetLinkImpl(aPtContext) == CMI_LINK_IMPL_IPCDA )
     {
-        /* PROJ-2616 ¸Þ¸ð¸®¿¡ ¹Ù·Î Á¢±ÙÇÏ¿© µ¥ÀÌÅÍ¸¦ ÀÐµµ·Ï ÇÑ´Ù. */
+        /* PROJ-2616 ë©”ëª¨ë¦¬ì— ë°”ë¡œ ì ‘ê·¼í•˜ì—¬ ë°ì´í„°ë¥¼ ì½ë„ë¡ í•œë‹¤. */
         ACI_TEST_RAISE( cmiSplitReadIPCDA(aPtContext,
                                           sLen,
                                           &sRow,
@@ -137,13 +137,13 @@ SQLRETURN ulnGetPlan(ulnStmt *aStmt, acp_char_t **aPlan)
 
     ACI_TEST( sDbc == NULL );           //BUG-28623 [CodeSonar]Null Pointer Dereference
 
-    /* PROJ-1381, BUG-32902 Explain Plan OFF ÀÏ ¶§´Â ¿¡·¯¸¦ ³»´Â°Ô ³´´Ù.
-     * Prepare°¡ µÇÁö ¾Ê¾ÒÀ» ¶§µµ ±»ÀÌ ¼­¹ö¿¡ °¬´Ù ¿Ã ÇÊ¿ä ¾ø´Ù. */
+    /* PROJ-1381, BUG-32902 Explain Plan OFF ì¼ ë•ŒëŠ” ì—ëŸ¬ë¥¼ ë‚´ëŠ”ê²Œ ë‚«ë‹¤.
+     * Prepareê°€ ë˜ì§€ ì•Šì•˜ì„ ë•Œë„ êµ³ì´ ì„œë²„ì— ê°”ë‹¤ ì˜¬ í•„ìš” ì—†ë‹¤. */
     ACI_TEST_RAISE(sDbc->mAttrExplainPlan == SQL_FALSE, FuncSeqError);
     ACI_TEST_RAISE(ulnStmtIsPrepared(aStmt) != ACP_TRUE, FuncSeqError);
 
     /*
-     * Protocol Context ÃÊ±âÈ­
+     * Protocol Context ì´ˆê¸°í™”
      */
     //fix BUG-17722
     ACI_TEST(ulnInitializeProtocolContext(&sFnContext,
@@ -179,7 +179,7 @@ SQLRETURN ulnGetPlan(ulnStmt *aStmt, acp_char_t **aPlan)
     *aPlan = sFnContext.mHandle.mStmt->mPlanTree;
 
     /*
-     * Protocol Context Á¤¸®
+     * Protocol Context ì •ë¦¬
      */
     sNeedFinPtContext = ACP_FALSE;
     //fix BUG-17722

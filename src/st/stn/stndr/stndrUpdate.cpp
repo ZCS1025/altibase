@@ -20,7 +20,7 @@
  *
  * Description :
  *
- * º» ÆÄÀÏÀº Disk R-Tree Index °ü·Ã redo/undo ÇÔ¼ö¿¡ ´ëÇÑ ±¸ÇöÆÄÀÏÀÌ´Ù.
+ * ë³¸ íŒŒì¼ì€ Disk R-Tree Index ê´€ë ¨ redo/undo í•¨ìˆ˜ì— ëŒ€í•œ êµ¬í˜„íŒŒì¼ì´ë‹¤.
  *
  **********************************************************************/
 
@@ -217,7 +217,7 @@ IDE_RC stndrUpdate::undo_SDR_STNDR_INSERT_KEY( idvSQL   * aStatistics,
     
     sIndexTypeID = sIndexHeader->mType;
     
-    /* BUG-27690 Disk Btree for Spatial Undo ¹× Redo¿¡¼­ÀÇ ¿À·ù Å½»ö */
+    /* BUG-27690 Disk Btree for Spatial Undo ë° Redoì—ì„œì˜ ì˜¤ë¥˜ íƒìƒ‰ */
     sTableTypeID = SMN_GET_BASE_TABLE_TYPE_ID(sTableHeader->mFlag); 
     
     sIndexModule = gSmnAllIndex[sIndexTypeID]->mModule[sTableTypeID];
@@ -395,7 +395,7 @@ IDE_RC stndrUpdate::undo_SDR_STNDR_DELETE_KEY_WITH_NTA( idvSQL  * aStatistics,
     sLKey = (stndrLKey*)sTempBuf;
     
     sIndexTypeID = sIndexHeader->mType;
-    /* BUG-27690 Disk Btree for Spatial Undo ¹× Redo¿¡¼­ÀÇ ¿À·ù Å½»ö */
+    /* BUG-27690 Disk Btree for Spatial Undo ë° Redoì—ì„œì˜ ì˜¤ë¥˜ íƒìƒ‰ */
     sTableTypeID = SMN_GET_BASE_TABLE_TYPE_ID(sTableHeader->mFlag);
 
     sIndexModule = gSmnAllIndex[sIndexTypeID]->mModule[sTableTypeID];
@@ -464,7 +464,7 @@ IDE_RC stndrUpdate::redo_SDR_STNDR_FREE_KEYS( SChar         * aLogPtr,
 
     if( STNDR_IS_LEAF_NODE(sNodeHdr) == ID_TRUE )
     {
-        // BUG-29538 split½Ã TBK count¸¦ Á¶Á¤ÇÏÁö ¾Ê°í ÀÖ½À´Ï´Ù.
+        // BUG-29538 splitì‹œ TBK countë¥¼ ì¡°ì •í•˜ì§€ ì•Šê³  ìžˆìŠµë‹ˆë‹¤.
         IDE_TEST( stndrRTree::freeKeysLeaf( sPageHdr,
                                             sKeyArray,
                                             0,

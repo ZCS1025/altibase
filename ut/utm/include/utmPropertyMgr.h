@@ -70,9 +70,9 @@ public:
     SChar* getConfFile();
 };
 
-utmPropertyMgr* utmGetPropertyMgr(SChar *EnvString = NULL, /*È¯°æº¯¼ö ½ºÆ®¸µ*/
-                                    SChar *HomeDir   = NULL,  /* È¨µğ·ºÅä¸® */
-                                    SChar *ConfFile  = NULL); /* Conf È­ÀÏ¸í */
+utmPropertyMgr* utmGetPropertyMgr(SChar *EnvString = NULL, /*í™˜ê²½ë³€ìˆ˜ ìŠ¤íŠ¸ë§*/
+                                    SChar *HomeDir   = NULL,  /* í™ˆë””ë ‰í† ë¦¬ */
+                                    SChar *ConfFile  = NULL); /* Conf í™”ì¼ëª… */
 
 utmPropertyMgr* utmReadPropertyMgr(SChar *HomeDir,
                                      SChar *ConfFile);

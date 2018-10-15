@@ -117,10 +117,10 @@
  * change naming to id
  *
  * Revision 1.1  2000/05/31 07:33:57  sjkim
- * id ¶óÀÌºê·¯¸® »ı¼º
+ * id ë¼ì´ë¸ŒëŸ¬ë¦¬ ìƒì„±
  *
  * Revision 1.11  2000/05/22 10:12:26  sjkim
- * ¿¡·¯ Ã³¸® ·çÆ¾ ¼öÁ¤ : ACTION Ãß°¡
+ * ì—ëŸ¬ ì²˜ë¦¬ ë£¨í‹´ ìˆ˜ì • : ACTION ì¶”ê°€
  *
  * Revision 1.10  2000/04/21 03:53:34  assam
  * *** empty log message ***

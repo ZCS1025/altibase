@@ -154,7 +154,7 @@ SQLRETURN ulsdGetParamData(ulnStmt          *aStmt,
 
     if ( sUserDataPtr == NULL )
     {
-        /* staticNull·Î ¼³Á¤ÇÑ´Ù. */
+        /* staticNullë¡œ ì„¤ì •í•œë‹¤. */
         aShardKeyModule->null( NULL,
                                aShardKeyData->mValue,
                                MTD_OFFSET_USELESS );
@@ -212,10 +212,10 @@ SQLRETURN ulsdConvertParamData(ulnStmt          *aMetaStmt,
     sMetaCType = aDescRecApd->mMeta.mCTYPE;
     sMetaMType = aDescRecIpd->mMeta.mMTYPE;
 
-    /* ulnBindInfo ±¸Á¶Ã¼¿¡ ¼¼ÆÃÇÒ »õ °ªµéÀ» ÁØºñÇÑ´Ù. */
+    /* ulnBindInfo êµ¬ì¡°ì²´ì— ì„¸íŒ…í•  ìƒˆ ê°’ë“¤ì„ ì¤€ë¹„í•œë‹¤. */
     sMType = ulnBindInfoGetMTYPEtoSet(sMetaCType, sMetaMType);
 
-    /* ¿øÇÏ´Â M typeÀ¸·Î º¯È¯µÇÁö ¾Ê´Â °æ¿ì ¿¡·¯¸¦ ¹İÈ¯ÇÑ´Ù. */
+    /* ì›í•˜ëŠ” M typeìœ¼ë¡œ ë³€í™˜ë˜ì§€ ì•ŠëŠ” ê²½ìš° ì—ëŸ¬ë¥¼ ë°˜í™˜í•œë‹¤. */
     ACI_TEST_RAISE( sMType != sMetaMType,
                     LABEL_UNSUPPORTED_BIND_C_TYPE );
 
@@ -236,7 +236,7 @@ SQLRETURN ulsdConvertParamData(ulnStmt          *aMetaStmt,
 
     ulnBindCalcUserIndLenPair(aDescRecApd, 0, &sUserIndLenPair);
 
-    /* ¾Æ·¡´Â ulnParamProcess_DATA¿¡¼­ °¡Á®¿Ô´Ù. */
+    /* ì•„ë˜ëŠ” ulnParamProcess_DATAì—ì„œ ê°€ì ¸ì™”ë‹¤. */
     if (sUserIndLenPair.mLengthPtr == NULL)
     {
         if (ulnStmtGetAttrInputNTS(aMetaStmt) == ACP_TRUE)
@@ -259,7 +259,7 @@ SQLRETURN ulsdConvertParamData(ulnStmt          *aMetaStmt,
     ACE_ASSERT( sFnContext.mHandle.mStmt == aMetaStmt );
     ACE_ASSERT( aMetaStmt->mChunk.mCursor == 0 );
 
-    /* apdÀÇ c_typeÀ» ipdÀÇ m_typeÀ¸·Î ¹Ù²Ù¾î¾ß ÇÔ */
+    /* apdì˜ c_typeì„ ipdì˜ m_typeìœ¼ë¡œ ë°”ê¾¸ì–´ì•¼ í•¨ */
     ACI_TEST( sParamDataInBuildFunc( &sFnContext,
                                      aDescRecApd,
                                      aDescRecIpd,
@@ -270,7 +270,7 @@ SQLRETURN ulsdConvertParamData(ulnStmt          *aMetaStmt,
                                      &sCharSet )
               != ACI_SUCCESS );
 
-    /* mChunk¿¡´Â cmÀ» À§ÇØ ±â·ÏµÇ¾î endianÀÌ ¹Ù²î¾î ÀÖ´Ù. */
+    /* mChunkì—ëŠ” cmì„ ìœ„í•´ ê¸°ë¡ë˜ì–´ endianì´ ë°”ë€Œì–´ ìˆë‹¤. */
     switch ( sMetaMType )
     {
         case ULN_MTYPE_SMALLINT:
@@ -292,7 +292,7 @@ SQLRETURN ulsdConvertParamData(ulnStmt          *aMetaStmt,
         case ULN_MTYPE_VARCHAR:
             CM_ENDIAN_ASSIGN2((acp_uint16_t*)&(aShardKeyData->mCharValue.length),
                               (acp_uint16_t*)aMetaStmt->mChunk.mData);
-            /* ÁØºñÇÑ ¹öÆÛº¸´Ù Å©¸é ¿¡·¯ */
+            /* ì¤€ë¹„í•œ ë²„í¼ë³´ë‹¤ í¬ë©´ ì—ëŸ¬ */
             ACI_TEST_RAISE( aShardKeyData->mCharValue.length >
                             ULN_SHARD_KEY_MAX_CHAR_BUF_LEN,
                             LABEL_SHARD_KEY_DATA_OVERFLOW );
@@ -363,29 +363,29 @@ SQLRETURN ulsdGetShardKeyMtdModule(ulnStmt      *aMetaStmt,
 
     ACI_TEST_RAISE(aDescRecIpd == NULL, LABEL_NOT_BOUND);
 
-    /* BUGBUG ipdÀÇ M type, mt typeÀÌ °°¾Æ¾ß ÇÑ´Ù.
-     * (ÀÌ °æ¿ì¿¡¸¸ ulnBindInfoGetParamDataInBuildAnyFuncÀÌ Á¤»ó µ¿ÀÛÇÑ´Ù.) */
+    /* BUGBUG ipdì˜ M type, mt typeì´ ê°™ì•„ì•¼ í•œë‹¤.
+     * (ì´ ê²½ìš°ì—ë§Œ ulnBindInfoGetParamDataInBuildAnyFuncì´ ì •ìƒ ë™ì‘í•œë‹¤.) */
     if ( ulnTypeMap_MTYPE_MTD( aDescRecIpd->mMeta.mMTYPE ) ==
          aKeyDataType )
     {
-        /* ipdÀÇ M type, mt typeÀÌ °°Àº °æ¿ì */
+        /* ipdì˜ M type, mt typeì´ ê°™ì€ ê²½ìš° */
     }
     else
     {
         if ( ( aDescRecIpd->mMeta.mMTYPE == ULN_MTYPE_CHAR ) &&
              ( aKeyDataType == MTD_VARCHAR_ID ) )
         {
-            /* ipdÀÇ M type, mt typeÀÌ ´Ù¸£Áö¸¸ È£È¯°¡´ÉÇÑ °æ¿ì
-             * char typeÀÇ pad ¹®ÀÚ´Â hash³ª compare½Ã ¹«½ÃµÇ¹Ç·Î
-             * varchar¿Í µ¿ÀÏ Ãë±ŞÇÒ ¼ö ÀÖ´Ù.
+            /* ipdì˜ M type, mt typeì´ ë‹¤ë¥´ì§€ë§Œ í˜¸í™˜ê°€ëŠ¥í•œ ê²½ìš°
+             * char typeì˜ pad ë¬¸ìëŠ” hashë‚˜ compareì‹œ ë¬´ì‹œë˜ë¯€ë¡œ
+             * varcharì™€ ë™ì¼ ì·¨ê¸‰í•  ìˆ˜ ìˆë‹¤.
              */
         }
         else if ( ( aDescRecIpd->mMeta.mMTYPE == ULN_MTYPE_VARCHAR ) &&
                   ( aKeyDataType == MTD_CHAR_ID ) )
         {
-            /* ipdÀÇ M type, mt typeÀÌ ´Ù¸£Áö¸¸ È£È¯°¡´ÉÇÑ °æ¿ì
-             * char typeÀÇ pad ¹®ÀÚ´Â hash³ª compare½Ã ¹«½ÃµÇ¹Ç·Î
-             * varchar¿Í µ¿ÀÏ Ãë±ŞÇÒ ¼ö ÀÖ´Ù.
+            /* ipdì˜ M type, mt typeì´ ë‹¤ë¥´ì§€ë§Œ í˜¸í™˜ê°€ëŠ¥í•œ ê²½ìš°
+             * char typeì˜ pad ë¬¸ìëŠ” hashë‚˜ compareì‹œ ë¬´ì‹œë˜ë¯€ë¡œ
+             * varcharì™€ ë™ì¼ ì·¨ê¸‰í•  ìˆ˜ ìˆë‹¤.
              */
         }
         else
@@ -394,7 +394,7 @@ SQLRETURN ulsdGetShardKeyMtdModule(ulnStmt      *aMetaStmt,
         }
     }
 
-    /* mtdModule¿¡¼­ shard key column moduleÀ» Ã£´Â´Ù */
+    /* mtdModuleì—ì„œ shard key column moduleì„ ì°¾ëŠ”ë‹¤ */
     ACI_TEST( ulsdMtdModuleById( aMetaStmt,
                                  aModule,
                                  aKeyDataType,
@@ -554,7 +554,7 @@ SQLRETURN ulsdNodeBindCol(ulsdDbc      *aShard,
     return sRet;
 }
 
-/* touch ³ëµå¸¦ ¿ì¼±À¸·Î Àü µ¥ÀÌÅÍ ³ëµå ¸®½ºÆ®¸¦ ¹İÈ¯ÇÑ´Ù. */
+/* touch ë…¸ë“œë¥¼ ìš°ì„ ìœ¼ë¡œ ì „ ë°ì´í„° ë…¸ë“œ ë¦¬ìŠ¤íŠ¸ë¥¼ ë°˜í™˜í•œë‹¤. */
 void ulsdGetTouchedAllNodeList(ulsdDbc      *aShard,
                                acp_uint32_t *aNodeArr,
                                acp_uint16_t *aNodeCount)

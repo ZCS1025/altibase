@@ -125,7 +125,7 @@ IDE_RC qcuTemporaryObj::initializeStatic( )
 /***********************************************************************
  *
  * Description :
- *   SessionTempObjMgrÀÇ MUTEX ÃÊ±âÈ­,
+ *   SessionTempObjMgrì˜ MUTEX ì´ˆê¸°í™”,
  *
  * Implementation :
  *
@@ -154,7 +154,7 @@ void qcuTemporaryObj::finilizeStatic()
 /***********************************************************************
  *
  * Description :
- *   mutex¹× session temp table info¸¦ Á¤¸®ÇÑ´Ù.
+ *   mutexë° session temp table infoë¥¼ ì •ë¦¬í•œë‹¤.
  *
  * Implementation :
  *
@@ -236,7 +236,7 @@ void qcuTemporaryObj::initTemporaryObj( qcTemporaryObjInfo * aTemporaryObj )
 /***********************************************************************
  *
  * Description :
- *   temporary obj¸¦ ÃÊ±âÈ­
+ *   temporary objë¥¼ ì´ˆê¸°í™”
  *
  * Implementation :
  *
@@ -254,7 +254,7 @@ void qcuTemporaryObj::finalizeTemporaryObj( idvSQL             * aStatistics,
 /***********************************************************************
  *
  * Description :
- *   temporary obj¸¦ »èÁ¦
+ *   temporary objë¥¼ ì‚­ì œ
  *
  * Implementation :
  *
@@ -276,7 +276,7 @@ void qcuTemporaryObj::dropAllTempTables( idvSQL             * aStatistics,
 /***********************************************************************
  *
  * Description :
- *   session temporary obj¸¦ »èÁ¦
+ *   session temporary objë¥¼ ì‚­ì œ
  *
  * Implementation :
  *
@@ -336,7 +336,7 @@ void qcuTemporaryObj::initTempTables( qcTempTables * aTempTables )
 /***********************************************************************
  *
  * Description :
- *   temporary obj¸¦ »èÁ¦
+ *   temporary objë¥¼ ì‚­ì œ
  *
  * Implementation :
  *
@@ -357,7 +357,7 @@ IDE_RC qcuTemporaryObj::truncateTempTable( qcStatement     * aStatement,
 /***********************************************************************
  *
  * Description :
- *   ÁöÁ¤ÇÑ temporary tableÀ» dropÇÑ´Ù.
+ *   ì§€ì •í•œ temporary tableì„ dropí•œë‹¤.
  *
  * Implementation :
  *
@@ -397,8 +397,8 @@ IDE_RC qcuTemporaryObj::truncateTempTable( qcStatement     * aStatement,
 
         if( sCopySize > 0 )
         {
-            // BUG-36381 memcpyÀÇ ¿øº»°ú ´ë»óÀÌ °°Àº ¿µ¿ª ÀÔ´Ï´Ù.
-            // ¾ÈÀüÇÏ°Ô memmove·Î º¯°æÇÕ´Ï´Ù.
+            // BUG-36381 memcpyì˜ ì›ë³¸ê³¼ ëŒ€ìƒì´ ê°™ì€ ì˜ì—­ ì…ë‹ˆë‹¤.
+            // ì•ˆì „í•˜ê²Œ memmoveë¡œ ë³€ê²½í•©ë‹ˆë‹¤.
             idlOS::memmove( (void*)sTempTable,
                             (void*)(sTempTable + 1),
                             sCopySize );
@@ -409,8 +409,8 @@ IDE_RC qcuTemporaryObj::truncateTempTable( qcStatement     * aStatement,
     }
     else
     {
-        /* session temp table ÀÌ »ı¼ºµÇÁö ¾ÊÀºÃ¼·Î
-         * truncate temporary tableÀÌ È£ÃâµÈ °æ¿ì */
+        /* session temp table ì´ ìƒì„±ë˜ì§€ ì•Šì€ì²´ë¡œ
+         * truncate temporary tableì´ í˜¸ì¶œëœ ê²½ìš° */
     }
     
     return IDE_SUCCESS;
@@ -423,7 +423,7 @@ IDE_RC qcuTemporaryObj::dropTempTable( idvSQL      * aStatistics,
 /***********************************************************************
  *
  * Description :
- *   temporary tableÀ» drop
+ *   temporary tableì„ drop
  *
  * Implementation :
  *
@@ -463,26 +463,26 @@ IDE_RC qcuTemporaryObj::dropTempTable( idvSQL      * aStatistics,
 
     if ( aIsDDL == ID_FALSE )
     {
-        /* - drop session temp table µµÁß¿¡ tablespace°¡ »ç¶óÁ®¼­ ¹®Á¦°¡
-         *   µÇ´Â°ÍÀ» ¹æÁöÇÏ±â À§ÇØ Tablespace lockÀ» Àâ´Â´Ù.*/
-        /* - TBS¿¡ X, S lockÀ» ÀâÀ» °æ¿ì ´Ù¸¥ Å×ÀÌºíÀÇ DDL¿¡°Ô±îÁö
-         *   ¿µÇâÀ» ÁÖ¹Ç·Î IS³ª IX °°Àº intention lockÀ» Àâ¾Æ¾ßÇÑ´Ù.
-         *   session tableÀº °øÀ¯µÇÁö ¾ÊÀ¸¹Ç·Î table lockÀÌ ÇÊ¿ä¾øÁö¸¸,
-         *   tablespace¸¸ IS,IX lockÀ» Àâ´Â º°µµÀÇ ÇÔ¼ö°¡ ¾ø¾î¼­
-         *   Table¿¡ lockÀ» ÀâÀ¸¸é¼­ TBS¿¡ intention lockÀ» Àâ´Â º» ÇÔ¼ö¸¦
-         *   »ç¿ëÇÏ¿´´Ù.*/
-        /* - TBS¿¡´Â IS lock °ú IX lockÀÇ Â÷ÀÌ´Â »ç½Ç»ó ¾ø´Ù.
-         *   Session tableµµ È¥ÀÚ¸¸ Á¢±ÙÇÏ¹Ç·Î X,S lock Â÷ÀÌ°¡ ¾ø´Ù.
-         *   ÇÏÁö¸¸ drop session tableÀÌ¶ó´Â »óÈ²À» »ı°¢ÇØ¼­
-         *   table¿¡ X lock, tablespace IX lockÀ» »ç¿ëÇÏ¿´´Ù.
-         *   lock type¿¡ µû¸¥ ¼º´ÉÀÇ Â÷ÀÌ´Â ¾ø´Ù.*/
+        /* - drop session temp table ë„ì¤‘ì— tablespaceê°€ ì‚¬ë¼ì ¸ì„œ ë¬¸ì œê°€
+         *   ë˜ëŠ”ê²ƒì„ ë°©ì§€í•˜ê¸° ìœ„í•´ Tablespace lockì„ ì¡ëŠ”ë‹¤.*/
+        /* - TBSì— X, S lockì„ ì¡ì„ ê²½ìš° ë‹¤ë¥¸ í…Œì´ë¸”ì˜ DDLì—ê²Œê¹Œì§€
+         *   ì˜í–¥ì„ ì£¼ë¯€ë¡œ ISë‚˜ IX ê°™ì€ intention lockì„ ì¡ì•„ì•¼í•œë‹¤.
+         *   session tableì€ ê³µìœ ë˜ì§€ ì•Šìœ¼ë¯€ë¡œ table lockì´ í•„ìš”ì—†ì§€ë§Œ,
+         *   tablespaceë§Œ IS,IX lockì„ ì¡ëŠ” ë³„ë„ì˜ í•¨ìˆ˜ê°€ ì—†ì–´ì„œ
+         *   Tableì— lockì„ ì¡ìœ¼ë©´ì„œ TBSì— intention lockì„ ì¡ëŠ” ë³¸ í•¨ìˆ˜ë¥¼
+         *   ì‚¬ìš©í•˜ì˜€ë‹¤.*/
+        /* - TBSì—ëŠ” IS lock ê³¼ IX lockì˜ ì°¨ì´ëŠ” ì‚¬ì‹¤ìƒ ì—†ë‹¤.
+         *   Session tableë„ í˜¼ìë§Œ ì ‘ê·¼í•˜ë¯€ë¡œ X,S lock ì°¨ì´ê°€ ì—†ë‹¤.
+         *   í•˜ì§€ë§Œ drop session tableì´ë¼ëŠ” ìƒí™©ì„ ìƒê°í•´ì„œ
+         *   tableì— X lock, tablespace IX lockì„ ì‚¬ìš©í•˜ì˜€ë‹¤.
+         *   lock typeì— ë”°ë¥¸ ì„±ëŠ¥ì˜ ì°¨ì´ëŠ” ì—†ë‹¤.*/
         IDE_TEST( smiValidateAndLockObjects( sSmiStmt.getTrans(),
                                              sTableHandle,
                                              smiGetRowSCN( aTempTable->tableHandle ),
                                              SMI_TBSLV_DDL_DML,
                                              SMI_TABLE_LOCK_X,
                                              ID_ULONG_MAX,
-                                             ID_FALSE ) // BUG-28752 ¸í½ÃÀû Lock°ú ³»ÀçÀû LockÀ» ±¸ºĞÇÕ´Ï´Ù.
+                                             ID_FALSE ) // BUG-28752 ëª…ì‹œì  Lockê³¼ ë‚´ì¬ì  Lockì„ êµ¬ë¶„í•©ë‹ˆë‹¤.
                   != IDE_SUCCESS );
     }
     else
@@ -494,13 +494,13 @@ IDE_RC qcuTemporaryObj::dropTempTable( idvSQL      * aStatistics,
                                              SMI_TABLE_LOCK_X,
                                              ( smiGetDDLLockTimeOut() == -1 ) ?
                                              ID_ULONG_MAX : smiGetDDLLockTimeOut() * 1000000,
-                                             ID_FALSE ) // BUG-28752 ¸í½ÃÀû Lock°ú ³»ÀçÀû LockÀ» ±¸ºĞÇÕ´Ï´Ù.
+                                             ID_FALSE ) // BUG-28752 ëª…ì‹œì  Lockê³¼ ë‚´ì¬ì  Lockì„ êµ¬ë¶„í•©ë‹ˆë‹¤.
                   != IDE_SUCCESS );
     }
 
     for( i = aTempTable->indexCount - 1 ; i >= 0 ; i-- )
     {
-        /* Index¸¦ ¿ª¼øÀ¸·Î Á¦°Å */
+        /* Indexë¥¼ ì—­ìˆœìœ¼ë¡œ ì œê±° */
         IDE_TEST( smiTable::dropIndex( &sSmiStmt,
                                        sTableHandle,
                                        smiGetTableIndexes( sTableHandle,
@@ -517,7 +517,7 @@ IDE_RC qcuTemporaryObj::dropTempTable( idvSQL      * aStatistics,
 
     aTempTable->tableHandle = NULL;
 
-    /* index Á¤º¸ free */
+    /* index ì •ë³´ free */
     if( aTempTable->indices != NULL )
     {
         (void) iduMemMgr::free( aTempTable->indices );
@@ -567,11 +567,11 @@ IDE_RC qcuTemporaryObj::createTempTable( qcStatement  * aStatement,
 /***********************************************************************
  *
  * Description :
- *   temporary tableÀ» create
+ *   temporary tableì„ create
  *
  * Implementation :
- *   qmxMemory¸¦ »ç¿ëÇÏ±âÀ§ÇØ statement¸¦ ÂüÁ¶ÇÑ´Ù.
- *   ÈÄ¿¡ sm¿¡¼­ temp tableÀü¿ë createÇÔ¼ö°¡ »ı¼ºµÇ¸é ¼öÁ¤ÇØ¾ßÇÑ´Ù.
+ *   qmxMemoryë¥¼ ì‚¬ìš©í•˜ê¸°ìœ„í•´ statementë¥¼ ì°¸ì¡°í•œë‹¤.
+ *   í›„ì— smì—ì„œ temp tableì „ìš© createí•¨ìˆ˜ê°€ ìƒì„±ë˜ë©´ ìˆ˜ì •í•´ì•¼í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -600,7 +600,7 @@ IDE_RC qcuTemporaryObj::createTempTable( qcStatement  * aStatement,
     sSmiStmtFlag &= ~SMI_STATEMENT_CURSOR_MASK;
     sSmiStmtFlag |= SMI_STATEMENT_MEMORY_CURSOR;
 
-    /* Memory Àç»ç¿ëÀ» À§ÇÑ ÇöÀçÀ§Ä¡ ±â·Ï */
+    /* Memory ì¬ì‚¬ìš©ì„ ìœ„í•œ í˜„ì¬ìœ„ì¹˜ ê¸°ë¡ */
     IDE_TEST( aStatement->qmxMem->getStatus( & sQmxMemStatus )
                 != IDE_SUCCESS);
     sStage = 1;
@@ -613,7 +613,7 @@ IDE_RC qcuTemporaryObj::createTempTable( qcStatement  * aStatement,
               != IDE_SUCCESS);
 
     // PROJ-1705
-    // µğ½ºÅ©Å×ÀÌºí¿¡´Â null row¸¦ ¸¸µéÁö ¾Ê´Â´Ù.
+    // ë””ìŠ¤í¬í…Œì´ë¸”ì—ëŠ” null rowë¥¼ ë§Œë“¤ì§€ ì•ŠëŠ”ë‹¤.
     if ( ( aTableInfo->tableFlag & SMI_TABLE_TYPE_MASK ) == SMI_TABLE_DISK )
     {
         sNullRow = NULL;
@@ -644,8 +644,8 @@ IDE_RC qcuTemporaryObj::createTempTable( qcStatement  * aStatement,
               != IDE_SUCCESS );
     sStage = 4;
 
-    /* ¿øº» Å×ÀÌºíÀÇ Flag, parallel degree
-     * »õ·Î¿î Å×ÀÌºíµµ °°Àº Flag, parallel degree¸¦ °¡Áö°Ô µÈ´Ù. */
+    /* ì›ë³¸ í…Œì´ë¸”ì˜ Flag, parallel degree
+     * ìƒˆë¡œìš´ í…Œì´ë¸”ë„ ê°™ì€ Flag, parallel degreeë¥¼ ê°€ì§€ê²Œ ëœë‹¤. */
     sOrgTableFlag           = aTableInfo->tableFlag;
     sOrgTableParallelDegree = aTableInfo->parallelDegree;
 
@@ -697,15 +697,15 @@ IDE_RC qcuTemporaryObj::createTempTable( qcStatement  * aStatement,
     sStage = 1;
     IDE_TEST( sTrans.destroy( aStatement->mStatistics ) != IDE_SUCCESS );
 
-    // Memory Àç»ç¿ëÀ» À§ÇÑ ¸Ş¸ğ¸® ÀÌµ¿
+    // Memory ì¬ì‚¬ìš©ì„ ìœ„í•œ ë©”ëª¨ë¦¬ ì´ë™
     sStage = 0;
     IDE_TEST( aStatement->qmxMem->setStatus( & sQmxMemStatus )
               != IDE_SUCCESS);
 
-    /* BUG-33982 session temporary tableÀ» ¼ÒÀ¯ÇÑ SessionÀº
-     *           Temporary TableÀ» Ç× »ó º¼ ¼ö ÀÖ¾î¾ß ÇÕ´Ï´Ù.
-     * Table SCNÀ» °»½ÅÇÏÁö ¾ÊÀ¸¸é Table¿¡ insertÇÒ ¼ö ¾ø´Â °æ¿ì°¡
-     * ¹ß»ı ÇÒ ¼ö ÀÖ´Ù.*/
+    /* BUG-33982 session temporary tableì„ ì†Œìœ í•œ Sessionì€
+     *           Temporary Tableì„ í•­ ìƒ ë³¼ ìˆ˜ ìˆì–´ì•¼ í•©ë‹ˆë‹¤.
+     * Table SCNì„ ê°±ì‹ í•˜ì§€ ì•Šìœ¼ë©´ Tableì— insertí•  ìˆ˜ ì—†ëŠ” ê²½ìš°ê°€
+     * ë°œìƒ í•  ìˆ˜ ìˆë‹¤.*/
     IDE_TEST( smiTable::initTableSCN4TempTable( sTableHandle ) != IDE_SUCCESS );
 
     return IDE_SUCCESS;
@@ -727,7 +727,7 @@ IDE_RC qcuTemporaryObj::createTempTable( qcStatement  * aStatement,
             break;
     }
 
-    /* commitÀÌÈÄ¿¡ ¿¹¿Ü°¡ ¹ß»ıÇÏ¸é createÇÑ tableÀ» dropÇÑ´Ù.*/
+    /* commitì´í›„ì— ì˜ˆì™¸ê°€ ë°œìƒí•˜ë©´ createí•œ tableì„ dropí•œë‹¤.*/
     if ( sIsCreated == ID_TRUE )
     {
         if ( ( aStatement->myPlan->parseTree->stmtKind & QCI_STMT_MASK_MASK ) == QCI_STMT_MASK_DDL )
@@ -755,7 +755,7 @@ IDE_RC qcuTemporaryObj::createTempIndices(
 /***********************************************************************
  *
  * Description :
- *    temporary tableÀÇ index¸¦ »ı¼ºÇÑ´Ù.
+ *    temporary tableì˜ indexë¥¼ ìƒì„±í•œë‹¤.
  *
  * Implementation :
  *
@@ -801,8 +801,8 @@ IDE_RC qcuTemporaryObj::createTempIndices(
 
         for( i = 0 ; i < sIndex->keyColCount ; i++ )
         {
-            /* aDelColList°¡ ¾ø´Â °æ¿ì index column ID´Â ¹Ù²îÁö
-             * ¾Ê´Â´Ù. */
+            /* aDelColListê°€ ì—†ëŠ” ê²½ìš° index column IDëŠ” ë°”ë€Œì§€
+             * ì•ŠëŠ”ë‹¤. */
             sIndexColumnID = sIndex->keyColumns[i].column.id;
 
             IDE_TEST( smiGetTableColumns(
@@ -839,7 +839,7 @@ IDE_RC qcuTemporaryObj::createTempIndices(
             }
         }
 
-        // Memory Table Àº »ç¿ëÇÏÁö ¾Ê´Â ¼Ó¼ºÀÌÁö¸¸, ¼³Á¤ÇÏ¿© Àü´ŞÇÑ´Ù.
+        // Memory Table ì€ ì‚¬ìš©í•˜ì§€ ì•ŠëŠ” ì†ì„±ì´ì§€ë§Œ, ì„¤ì •í•˜ì—¬ ì „ë‹¬í•œë‹¤.
         sSegAttr.mPctFree   = QD_MEMORY_TABLE_DEFAULT_PCTFREE;  // PCTFREE
         sSegAttr.mPctUsed   = QD_MEMORY_TABLE_DEFAULT_PCTUSED;  // PCTUSED
         sSegAttr.mInitTrans = QD_MEMORY_INDEX_DEFAULT_INITRANS; // initial ttl size
@@ -865,7 +865,7 @@ IDE_RC qcuTemporaryObj::createTempIndices(
                      SMI_INDEX_BUILD_UNCOMMITTED_ROW_DISABLE,
                      sSegAttr,
                      sSegStoAttr,
-                     0, /* PROJ-2433 : temporary table¿¡¼­ ÀÏ¹İ index »ç¿ë. */
+                     0, /* PROJ-2433 : temporary tableì—ì„œ ì¼ë°˜ index ì‚¬ìš©. */
                      &sIndexHandle)
                  != IDE_SUCCESS);
 
@@ -880,8 +880,8 @@ IDE_RC qcuTemporaryObj::createTempIndices(
 
     for( i = 0 ; i < aTempTable->indexCount ; i++ )
     {
-        /* create/drop index ¸¦ ¹İº¹ÇÏ¸é index handleÀÌ º¯°æµÈ´Ù.
-         * ¸ğµç index¸¦ ¸ğµÎ »ı¼º ÇÑ ÈÄ¿¡ handleÀ» ´Ù½Ã °¡Á®¿Â´Ù.*/
+        /* create/drop index ë¥¼ ë°˜ë³µí•˜ë©´ index handleì´ ë³€ê²½ëœë‹¤.
+         * ëª¨ë“  indexë¥¼ ëª¨ë‘ ìƒì„± í•œ í›„ì— handleì„ ë‹¤ì‹œ ê°€ì ¸ì˜¨ë‹¤.*/
         aTempTable->indices[i].indexHandle = smiGetTableIndexes( sTempTableHandle,
                                                                  i );
 
@@ -914,13 +914,13 @@ IDE_RC qcuTemporaryObj::createAndGetTempTable( qcStatement      * aStatement,
 /***********************************************************************
  *
  * Description :
- *   temporary tableÀ» createÇÏ°í session temporary obj¿¡ Ãß°¡
+ *   temporary tableì„ createí•˜ê³  session temporary objì— ì¶”ê°€
  *
  * Implementation :
- *   temp tableÀº ½ÇÇà½Ã°£¿¡ °Ë»öµÇ¾î tableHandleÀÌ ±³Ã¼µÇ´Â ¹æ½ÄÀ¸·Î
- *   plan¿¡ ¿µÇâÀ» ÁÖÁö¾Ê´Â ÀåÁ¡ÀÌ ÀÖÀ¸³ª ½Ç»ı½Ã °Ë»öºñ¿ëÀÌ ¹ß»ıÇÑ´Ù.
- *   ÀÌ¸¦ º¸¿ÏÇÏ°íÀÚ temp tableÀº sortingµÈ array·Î °ü¸®ÇÑ´Ù.
- *   array´Â ÃÖÃÊ init_size¸¸Å­ ÇÒ´çµÇ°í ºÎÁ·ÇÏ¸é µÎ¹è·Î È®ÀåÇÑ´Ù.
+ *   temp tableì€ ì‹¤í–‰ì‹œê°„ì— ê²€ìƒ‰ë˜ì–´ tableHandleì´ êµì²´ë˜ëŠ” ë°©ì‹ìœ¼ë¡œ
+ *   planì— ì˜í–¥ì„ ì£¼ì§€ì•ŠëŠ” ì¥ì ì´ ìˆìœ¼ë‚˜ ì‹¤ìƒì‹œ ê²€ìƒ‰ë¹„ìš©ì´ ë°œìƒí•œë‹¤.
+ *   ì´ë¥¼ ë³´ì™„í•˜ê³ ì temp tableì€ sortingëœ arrayë¡œ ê´€ë¦¬í•œë‹¤.
+ *   arrayëŠ” ìµœì´ˆ init_sizeë§Œí¼ í• ë‹¹ë˜ê³  ë¶€ì¡±í•˜ë©´ ë‘ë°°ë¡œ í™•ì¥í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -939,7 +939,7 @@ IDE_RC qcuTemporaryObj::createAndGetTempTable( qcStatement      * aStatement,
 
     IDE_ASSERT( sTempTables != NULL );
 
-    /* temp table obj¸¦ È®ÀåÇÑ´Ù. */
+    /* temp table objë¥¼ í™•ì¥í•œë‹¤. */
     IDE_TEST( expandTempTables( sTempTables ) != IDE_SUCCESS );
 
     sTempTable = sTempTables->tables + sTempTables->tableCount;
@@ -990,7 +990,7 @@ IDE_RC qcuTemporaryObj::expandTempTables( qcTempTables *  aTempTables )
 /***********************************************************************
  *
  * Description :
- *   temporary table object°¡ ºÎÁ· ÇÒ °æ¿ì È®ÀåÇÑ´Ù.(·¡ÇÎÇÔ¼ö)
+ *   temporary table objectê°€ ë¶€ì¡± í•  ê²½ìš° í™•ì¥í•œë‹¤.(ë˜í•‘í•¨ìˆ˜)
  *
  * Implementation :
  *
@@ -1019,7 +1019,7 @@ IDE_RC qcuTemporaryObj::expandSessionTempObj()
 /***********************************************************************
  *
  * Description :
- *   session temporary object°¡ ºÎÁ· ÇÒ °æ¿ì È®ÀåÇÑ´Ù.(·¡ÇÎÇÔ¼ö)
+ *   session temporary objectê°€ ë¶€ì¡± í•  ê²½ìš° í™•ì¥í•œë‹¤.(ë˜í•‘í•¨ìˆ˜)
  *
  * Implementation :
  *
@@ -1049,7 +1049,7 @@ IDE_RC qcuTemporaryObj::expandTempTableInfo( void   ** aTempTableInfo,
 /***********************************************************************
  *
  * Description :
- *   temporary table object¸¦ ÀúÀåÇÒ array¸¦ È®Àå
+ *   temporary table objectë¥¼ ì €ì¥í•  arrayë¥¼ í™•ì¥
  *
  * Implementation :
  *
@@ -1124,7 +1124,7 @@ void qcuTemporaryObj::getTempTableHandle( qcStatement    * aStatement,
 /***********************************************************************
  *
  * Description :
- *   table id·Î temporary table handleÀ» °Ë»ö
+ *   table idë¡œ temporary table handleì„ ê²€ìƒ‰
  *
  * Implementation :
  *
@@ -1164,7 +1164,7 @@ const void * qcuTemporaryObj::getTempIndexHandle( qcStatement    * aStatement,
 /***********************************************************************
  *
  * Description :
- *   table id, index id·Î temporary index handleÀ» °Ë»ö
+ *   table id, index idë¡œ temporary index handleì„ ê²€ìƒ‰
  *
  * Implementation :
  *
@@ -1220,7 +1220,7 @@ idBool qcuTemporaryObj::isTemporaryTable( qcmTableInfo * aTableInfo )
 /***********************************************************************
  *
  * Description :
- *   temporary tableÀÎ°¡?
+ *   temporary tableì¸ê°€?
  *
  * Implementation :
  *
@@ -1255,7 +1255,7 @@ qcTempTables * qcuTemporaryObj::getTempTables( qcTemporaryObjInfo  * aTemporaryO
 /***********************************************************************
  *
  * Description :
- *   temporary type¿¡ µû¸¥ temporary table array ¹İÈ¯
+ *   temporary typeì— ë”°ë¥¸ temporary table array ë°˜í™˜
  *
  * Implementation :
  *
@@ -1297,12 +1297,12 @@ qcTempTable * qcuTemporaryObj::getTempTable( qcTemporaryObjInfo  * aTemporaryObj
 /***********************************************************************
  *
  * Description :
- *   table id·Î temporary tableÀ» °Ë»ö
+ *   table idë¡œ temporary tableì„ ê²€ìƒ‰
  *
  * Implementation :
- *   sortingµÇ¾î ÀÖ¾î bsearch¸¦ »ç¿ëÇÑ´Ù.
- *   °Ë»ö¼ø¼­´Â defaultÀÎ transaction temp tableÀ» ¸ÕÀú °Ë»öÇÏ°í
- *   session temp tableÀ» °Ë»öÇÑ´Ù.
+ *   sortingë˜ì–´ ìˆì–´ bsearchë¥¼ ì‚¬ìš©í•œë‹¤.
+ *   ê²€ìƒ‰ìˆœì„œëŠ” defaultì¸ transaction temp tableì„ ë¨¼ì € ê²€ìƒ‰í•˜ê³ 
+ *   session temp tableì„ ê²€ìƒ‰í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -1338,14 +1338,14 @@ idBool qcuTemporaryObj::existSessionTable( qcmTableInfo  * aTableInfo )
 /***********************************************************************
  *
  * Description :
- *   Table id·Î °Ë»öÇÏ¿©, ÇØ´ç temp table·Î »ı¼ºµÈ
- *   session temporary tableÀÌ Á¸ÀçÇÏ´ÂÁö È®ÀÎÇÑ´Ù.
+ *   Table idë¡œ ê²€ìƒ‰í•˜ì—¬, í•´ë‹¹ temp tableë¡œ ìƒì„±ëœ
+ *   session temporary tableì´ ì¡´ì¬í•˜ëŠ”ì§€ í™•ì¸í•œë‹¤.
  *
- *   on commit preserve rows ·Î ¼³Á¤µÈ temp table¸¸ È®ÀÎÇÏ°í
- *   on commit delete rows´Â ½Å°æ¾²Áö ¾Ê´Â´Ù.
- *   Table lockÀ¸·Î commit½ÃÁ¡±îÁö º¸È£µÇ°í, on commit delete rows´Â
- *   commit½Ã session temp tableÀÌ dropµÇ¹Ç·Î on DDL°úÀÇ Ãæµ¹À» °ÆÁ¤ÇÏÁö
- *   ¾Ê¾Æµµ µÈ´Ù.
+ *   on commit preserve rows ë¡œ ì„¤ì •ëœ temp tableë§Œ í™•ì¸í•˜ê³ 
+ *   on commit delete rowsëŠ” ì‹ ê²½ì“°ì§€ ì•ŠëŠ”ë‹¤.
+ *   Table lockìœ¼ë¡œ commitì‹œì ê¹Œì§€ ë³´í˜¸ë˜ê³ , on commit delete rowsëŠ”
+ *   commitì‹œ session temp tableì´ dropë˜ë¯€ë¡œ on DDLê³¼ì˜ ì¶©ëŒì„ ê±±ì •í•˜ì§€
+ *   ì•Šì•„ë„ ëœë‹¤.
  *
  * Implementation :
  *
@@ -1370,8 +1370,8 @@ IDE_RC qcuTemporaryObj::incSessionTableCount( UInt   aBaseTableID )
 /***********************************************************************
  *
  * Description :
- *   table id·Î °Ë»öÇÏ¿©, ÇØ´ç temp table·Î »ı¼ºµÈ
- *   session temporary tableÀÇ ¼ö¸¦ Áõ°¡ÇÑ´Ù.
+ *   table idë¡œ ê²€ìƒ‰í•˜ì—¬, í•´ë‹¹ temp tableë¡œ ìƒì„±ëœ
+ *   session temporary tableì˜ ìˆ˜ë¥¼ ì¦ê°€í•œë‹¤.
  *
  * Implementation :
  *
@@ -1386,7 +1386,7 @@ IDE_RC qcuTemporaryObj::incSessionTableCount( UInt   aBaseTableID )
 
     if( sSessionTempObj == NULL )
     {
-        /* ÇØ´ç TableÀÌ ¾øÀ¸¸é Ãß°¡ÇÑ´Ù. */
+        /* í•´ë‹¹ Tableì´ ì—†ìœ¼ë©´ ì¶”ê°€í•œë‹¤. */
         IDE_TEST( allocSessionTempObj( aBaseTableID,
                                        &sSessionTempObj )
                   != IDE_SUCCESS );
@@ -1423,8 +1423,8 @@ IDE_RC qcuTemporaryObj::allocSessionTempObj( UInt                 aBaseTableID,
 /***********************************************************************
  *
  * Description :
- *   table id·Î °Ë»öÇÏ¿©, ÇØ´ç temp table·Î »ı¼ºµÈ
- *   session temporary tableÀÇ ¼ö¸¦ Áõ°¡ÇÑ´Ù.
+ *   table idë¡œ ê²€ìƒ‰í•˜ì—¬, í•´ë‹¹ temp tableë¡œ ìƒì„±ëœ
+ *   session temporary tableì˜ ìˆ˜ë¥¼ ì¦ê°€í•œë‹¤.
  *
  * Implementation :
  *
@@ -1441,7 +1441,7 @@ IDE_RC qcuTemporaryObj::allocSessionTempObj( UInt                 aBaseTableID,
     sSessionTempObj->baseTableID       = aBaseTableID ;
     sSessionTempObj->sessionTableCount = 0;
 
-    gSessionTempObjMgr.tableCount++; // ¸íÄª, ÁÖ¼®Ãß°¡
+    gSessionTempObjMgr.tableCount++; // ëª…ì¹­, ì£¼ì„ì¶”ê°€
 
     if ( gSessionTempObjMgr.tableCount > 1 )
     {
@@ -1475,8 +1475,8 @@ void qcuTemporaryObj::decSessionTableCount( UInt   aBaseTableID )
 /***********************************************************************
  *
  * Description :
- *   table id·Î °Ë»öÇÏ¿©, ÇØ´ç temp table·Î »ı¼ºµÈ
- *   session temporary tableÀÇ ¼ö¸¦ °¨¼Ò½ÃÅ²´Ù.
+ *   table idë¡œ ê²€ìƒ‰í•˜ì—¬, í•´ë‹¹ temp tableë¡œ ìƒì„±ëœ
+ *   session temporary tableì˜ ìˆ˜ë¥¼ ê°ì†Œì‹œí‚¨ë‹¤.
  *
  * Implementation :
  *
@@ -1500,8 +1500,8 @@ SInt qcuTemporaryObj::getSessionTableCount( UInt   aBaseTableID )
 /***********************************************************************
  *
  * Description :
- *   table id·Î °Ë»öÇÏ¿©, ÇØ´ç temp table·Î »ı¼ºµÈ
- *   session temporary tableÀÇ ¼ö¸¦ ¹İÈ¯ÇÑ´Ù.
+ *   table idë¡œ ê²€ìƒ‰í•˜ì—¬, í•´ë‹¹ temp tableë¡œ ìƒì„±ëœ
+ *   session temporary tableì˜ ìˆ˜ë¥¼ ë°˜í™˜í•œë‹¤.
  *
  * Implementation :
  *
@@ -1534,8 +1534,8 @@ qcuSessionTempObj * qcuTemporaryObj::getSessionTempObj( UInt  aBaseTableID )
 /***********************************************************************
  *
  * Description :
- *   table id ·Î session temporary object¸¦ °Ë»ö
- *   lockÀÌ ÀâÈù »óÅÂ·Î È£ÃâµÈ´Ù.
+ *   table id ë¡œ session temporary objectë¥¼ ê²€ìƒ‰
+ *   lockì´ ì¡íŒ ìƒíƒœë¡œ í˜¸ì¶œëœë‹¤.
  *
  * Implementation :
  *

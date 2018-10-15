@@ -40,13 +40,13 @@ class smlLockInfo
 {
 public:
     smiLockItemType  mLockItemType;
-    scSpaceID        mSpaceID;      // Àá±İÀ» È¹µæÇÑ Å×ÀÌºí½ºÆäÀÌ½º ID
-    ULong            mItemID;       // Å×ÀÌºíÅ¸ÀÔÀÌ¶ó¸é Table OID
-                                    // µğ½ºÅ© µ¥ÀÌÅ¸ÆÄÀÏÀÎ °æ¿ì File ID
+    scSpaceID        mSpaceID;      // ì ê¸ˆì„ íšë“í•œ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ID
+    ULong            mItemID;       // í…Œì´ë¸”íƒ€ì…ì´ë¼ë©´ Table OID
+                                    // ë””ìŠ¤í¬ ë°ì´íƒ€íŒŒì¼ì¸ ê²½ìš° File ID
     smTID            mTransID;
-    SInt             mSlotID;      // lockÀ» ¿äÃ»ÇÑ transactionÀÇ slot id
+    SInt             mSlotID;      // lockì„ ìš”ì²­í•œ transactionì˜ slot id
     UInt             mLockCnt;
-    idBool           mBeGrant;   // grantµÇ¾ú´ÂÁö¸¦ ³ªÅ¸³»´Â flag, BeGranted
+    idBool           mBeGrant;   // grantë˜ì—ˆëŠ”ì§€ë¥¼ ë‚˜íƒ€ë‚´ëŠ” flag, BeGranted
     SInt             mLockMode;
     
     void getInfo(const smlLockNode* aNode)
@@ -87,7 +87,7 @@ IDE_RC smlFT::buildRecordForLockTBL(idvSQL              * /*aStatistics*/,
         sCatTblHdr = (smcTableHeader*)SMC_CAT_TABLE;
         sCurPtr = NULL;
 
-        // [1] Å×ÀÌºí Çì´õ¸¦ ¼øÈ¸ÇÏ¸é¼­ ÇöÀç lock node list¸¦ ±¸ÇÑ´Ù.
+        // [1] í…Œì´ë¸” í—¤ë”ë¥¼ ìˆœíšŒí•˜ë©´ì„œ í˜„ì¬ lock node listë¥¼ êµ¬í•œë‹¤.
         while(1)
         {
             IDE_TEST( smcRecord::nextOIDall( sCatTblHdr,
@@ -105,16 +105,16 @@ IDE_RC smlFT::buildRecordForLockTBL(idvSQL              * /*aStatistics*/,
             // To fix BUG-14681
             if ( SM_SCN_IS_INFINITE(sPtr->mCreateSCN) )
             {
-                /* BUG-14974: ¹«ÇÑ Loop¹ß»ı.*/
+                /* BUG-14974: ë¬´í•œ Loopë°œìƒ.*/
                 sCurPtr = sNxtPtr;
                 continue;
             }
 
             sTableHeader = (smcTableHeader *)( sPtr + 1 );
 
-            // 1. temp tableÀº skip ( PROJ-2201 TempTableÀº ÀÌÁ¦ ¿©±â ¾øÀ½ */
-            // 2. dropµÈ tableÀº skip
-            // 3. meta  tableÀº skip
+            // 1. temp tableì€ skip ( PROJ-2201 TempTableì€ ì´ì œ ì—¬ê¸° ì—†ìŒ */
+            // 2. dropëœ tableì€ skip
+            // 3. meta  tableì€ skip
 
             if( ( SMI_TABLE_TYPE_IS_META( sTableHeader ) == ID_TRUE ) ||
                     ( smcTable::isDropedTable(sTableHeader) == ID_TRUE ) )

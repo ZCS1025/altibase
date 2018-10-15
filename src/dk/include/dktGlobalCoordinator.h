@@ -55,7 +55,7 @@ public:
 
     iduListNode     mNode;
     dktDtxInfo    * mDtxInfo;
-    /* mDtxInfo¿¡ ´ëÇÑ µ¿½ÃÁ¢±ÙÀ» ¸·±â À§ÇÑ mutex */
+    /* mDtxInfoì— ëŒ€í•œ ë™ì‹œì ‘ê·¼ì„ ë§‰ê¸° ìœ„í•œ mutex */
     iduMutex        mCoordinatorDtxInfoMutex;
 
     /* Initialize / Finalize */
@@ -170,7 +170,7 @@ public:
     
     UInt            getAllRemoteStmtCount();
     
-    /* PV: ÇöÀç ¼öÇàÁßÀÎ Æ®·£Àè¼ÇÀÇ Á¤º¸¸¦ ¾ò¾î¿Â´Ù. */
+    /* PV: í˜„ì¬ ìˆ˜í–‰ì¤‘ì¸ íŠ¸ëœì­ì…˜ì˜ ì •ë³´ë¥¼ ì–»ì–´ì˜¨ë‹¤. */
     IDE_RC          getGlobalTransactionInfo( dktGlobalTxInfo   *aInfo );
 
     IDE_RC          getRemoteTransactionInfo( dktRemoteTxInfo   *aInfo,

@@ -55,7 +55,7 @@ IDE_RC mmtServiceThread::initialize(mmcServiceThreadType aServiceThreadType,
     mInfo.mTaskCount         = 0;
     mInfo.mReadyTaskCount    = 0;
     /* TASK-4324  Applying lessons learned from CPBS-CAESE to altibase
-       Load balance history°ü·Ã µÈ ÇÊµåÃß°¡.
+       Load balance historyê´€ë ¨ ëœ í•„ë“œì¶”ê°€.
     */
 
     mInfo.mInTaskCntFromIdle    = 0;
@@ -97,7 +97,7 @@ IDE_RC mmtServiceThread::initialize(mmcServiceThreadType aServiceThreadType,
                                           IDV_WAIT_INDEX_NULL) != IDE_SUCCESS);
 
     /* PROJ-2108 Dedicated thread mode which uses less CPU */
-    /* BUG-37038 DEDICATED TYPEÀÎ °æ¿ì¿¡¸¸ initialize ÇÑ´Ù. */
+    /* BUG-37038 DEDICATED TYPEì¸ ê²½ìš°ì—ë§Œ initialize í•œë‹¤. */
     if (mInfo.mServiceThreadType == MMC_SERVICE_THREAD_TYPE_DEDICATED)
     {
         IDE_TEST(mMutexForServiceThreadSignal.initialize(
@@ -125,7 +125,7 @@ IDE_RC mmtServiceThread::finalize()
     IDE_TEST(mNewTaskListMutex.destroy() != IDE_SUCCESS);
 
     /* PROJ-2108 Dedicated thread mode which uses less CPU */
-    /* BUG-37038 DEDICATED TYPEÀÎ °æ¿ì¿¡¸¸ finalize ÇÑ´Ù. */
+    /* BUG-37038 DEDICATED TYPEì¸ ê²½ìš°ì—ë§Œ finalize í•œë‹¤. */
     if (mInfo.mServiceThreadType == MMC_SERVICE_THREAD_TYPE_DEDICATED)
     {
         IDE_TEST(mMutexForServiceThreadSignal.destroy() != IDE_SUCCESS);
@@ -150,7 +150,7 @@ IDE_RC mmtServiceThread::initializeThread()
     switch(mInfo.mServiceThreadType)
     {
         case MMC_SERVICE_THREAD_TYPE_SOCKET:
-            // BUG-24318 IPC ÀÏ°æ¿ì ¼¼¼Ç Á¤º¸°¡ Àß¸ø ³ª¿É´Ï´Ù.
+            // BUG-24318 IPC ì¼ê²½ìš° ì„¸ì…˜ ì •ë³´ê°€ ì˜ëª» ë‚˜ì˜µë‹ˆë‹¤.
             mInfo.mRunMode           = MMT_SERVICE_THREAD_RUN_SHARED;
             mMultiPlexingFunc = &mmtServiceThread::multiplexingAsShared;
 
@@ -167,7 +167,7 @@ IDE_RC mmtServiceThread::initializeThread()
                                         mmuProperty::getMaxClient()) != IDE_SUCCESS);
             break;
         case MMC_SERVICE_THREAD_TYPE_IPC:
-            // BUG-24318 IPC ÀÏ°æ¿ì ¼¼¼Ç Á¤º¸°¡ Àß¸ø ³ª¿É´Ï´Ù.
+            // BUG-24318 IPC ì¼ê²½ìš° ì„¸ì…˜ ì •ë³´ê°€ ì˜ëª» ë‚˜ì˜µë‹ˆë‹¤.
             mInfo.mRunMode           = MMT_SERVICE_THREAD_RUN_DEDICATED;
             mMultiPlexingFunc = &mmtServiceThread::multiplexingAsDedicated;
 
@@ -176,7 +176,7 @@ IDE_RC mmtServiceThread::initializeThread()
                                         1) != IDE_SUCCESS);
             break;
         case MMC_SERVICE_THREAD_TYPE_IPCDA:
-            // BUG-24318 IPC ÀÏ°æ¿ì ¼¼¼Ç Á¤º¸°¡ Àß¸ø ³ª¿É´Ï´Ù.
+            // BUG-24318 IPC ì¼ê²½ìš° ì„¸ì…˜ ì •ë³´ê°€ ì˜ëª» ë‚˜ì˜µë‹ˆë‹¤.
             mInfo.mRunMode           = MMT_SERVICE_THREAD_RUN_DEDICATED;
             mMultiPlexingFunc = &mmtServiceThread::multiplexingAsDedicated;
 
@@ -260,10 +260,10 @@ void mmtServiceThread::run()
     /*
      * BUG-37038
      *
-     * DEDICATED TYPEÀÎ °æ¿ì¿¡¸¸ LockÀ» È¹µæÇÑ´Ù.
-     * ±×·¸Áö ¾ÊÀ¸¸é finalize()¿¡¼­ mutex destroy½Ã ½ÇÆĞ(EBUSY)ÇÑ´Ù.
-     * IPC Service Thread¿¡¼­´Â DEDICATED TYPE¿¡¼­¸¸ »ç¿ëÇÏ´Â Mutex¸¦
-     * Unlock() ÇÏ´Â ºÎºĞÀÌ ¾ø±â ¶§¹®ÀÌ´Ù.
+     * DEDICATED TYPEì¸ ê²½ìš°ì—ë§Œ Lockì„ íšë“í•œë‹¤.
+     * ê·¸ë ‡ì§€ ì•Šìœ¼ë©´ finalize()ì—ì„œ mutex destroyì‹œ ì‹¤íŒ¨(EBUSY)í•œë‹¤.
+     * IPC Service Threadì—ì„œëŠ” DEDICATED TYPEì—ì„œë§Œ ì‚¬ìš©í•˜ëŠ” Mutexë¥¼
+     * Unlock() í•˜ëŠ” ë¶€ë¶„ì´ ì—†ê¸° ë•Œë¬¸ì´ë‹¤.
      */ 
     if (mInfo.mServiceThreadType == MMC_SERVICE_THREAD_TYPE_DEDICATED)
     {
@@ -303,9 +303,9 @@ void mmtServiceThread::run()
         case MMC_SERVICE_THREAD_TYPE_SOCKET:
             while (mRun == ID_TRUE)
             {
-                //PROJ-1677 ¾Æ·¡¿Í °°ÀÌ run-mode°¡ ÀüÈ¯µÉ¼ö ÀÖ±â ¶§¹®¿¡
+                //PROJ-1677 ì•„ë˜ì™€ ê°™ì´ run-modeê°€ ì „í™˜ë ìˆ˜ ìˆê¸° ë•Œë¬¸ì—
                 //shared thread run mode < ---> dedicated thread run mode 
-                //¾Æ·¡¿Í °°ÀÌ  function pointer callÀ¸·Î ´ëÄ¡ ÇÑ´Ù.
+                //ì•„ë˜ì™€ ê°™ì´  function pointer callìœ¼ë¡œ ëŒ€ì¹˜ í•œë‹¤.
                 (this->*mMultiPlexingFunc)();
             }//while
             break;
@@ -542,8 +542,8 @@ void mmtServiceThread::executeTask4IPCDADedicatedMode()
         terminateTask(sTask);
     }
     /* bug-36875: null-checking for task object is necessary.
-     *        client Àß¸øÀ¸·Î ÇÁ·ÎÅäÄİÀÌ async·Î ³¯¶ó¿À´Â °æ¿ì
-     *               task°¡ nullÀÏ ¼ö ÀÖ´Ù. ¹æ¾îÇÏÀÚ */
+     *        client ì˜ëª»ìœ¼ë¡œ í”„ë¡œí† ì½œì´ asyncë¡œ ë‚ ë¼ì˜¤ëŠ” ê²½ìš°
+     *               taskê°€ nullì¼ ìˆ˜ ìˆë‹¤. ë°©ì–´í•˜ì */
     IDE_EXCEPTION(TaskNull);
     {
         ideLog::log(IDE_SERVER_0,
@@ -576,10 +576,10 @@ void mmtServiceThread::addTask(mmcTask *aTask)
     {
         lockForNewTaskList();
         /* TASK-4324  Applying lessons learned from CPBS-CAESE to altibase
-           assignµÈ task °³¼ö Áõ°¡.
-           ¿Ö³ªÇÏ¸é ÇØ´ç service thread°¡ OS¿¡¼­ schedulingµÇ¾î
-           getNewTask functionÀ» ¼öÇàµÇ¾ß ,
-           task °¹¼ö°¡ Áõ°¡µÇ±â ¶§¹®...
+           assignëœ task ê°œìˆ˜ ì¦ê°€.
+           ì™œë‚˜í•˜ë©´ í•´ë‹¹ service threadê°€ OSì—ì„œ schedulingë˜ì–´
+           getNewTask functionì„ ìˆ˜í–‰ë˜ì•¼ ,
+           task ê°¯ìˆ˜ê°€ ì¦ê°€ë˜ê¸° ë•Œë¬¸...
         */
 
         mInfo.mCurAddedTasks++;
@@ -594,10 +594,10 @@ void mmtServiceThread::addTasks(iduList *aTaskList,UInt aTaskCnt)
 {
     lockForNewTaskList();
     /* TASK-4324  Applying lessons learned from CPBS-CAESE to altibase
-       assignµÈ task °³¼ö Áõ°¡.
-       ¿Ö³ªÇÏ¸é ÇØ´ç service thread°¡ OS¿¡¼­ schedulingµÇ¾î
-       getNewTask functionÀ» ¼öÇàµÇ¾ß ,
-       task °¹¼ö°¡ Áõ°¡µÇ±â ¶§¹®...
+       assignëœ task ê°œìˆ˜ ì¦ê°€.
+       ì™œë‚˜í•˜ë©´ í•´ë‹¹ service threadê°€ OSì—ì„œ schedulingë˜ì–´
+       getNewTask functionì„ ìˆ˜í–‰ë˜ì•¼ ,
+       task ê°¯ìˆ˜ê°€ ì¦ê°€ë˜ê¸° ë•Œë¬¸...
     */
 
     mInfo.mCurAddedTasks += aTaskCnt;
@@ -625,17 +625,17 @@ void mmtServiceThread::removeAllTasks(iduList *aTaskList, mmtServiceThreadLock a
     if (sIsLocked == ID_TRUE)
     {
         /* TASK-4324  Applying lessons learned from CPBS-CAESE to altibase
-           task °³¼ö 1 ÀÌÇÏÀÌ¸é ¾Æ·¡ÀÇ ·çÆ¾À» Å¸´Â °ÍÀº
-           CPU clock ³¶ºñÀÌ´Ù.
+           task ê°œìˆ˜ 1 ì´í•˜ì´ë©´ ì•„ë˜ì˜ ë£¨í‹´ì„ íƒ€ëŠ” ê²ƒì€
+           CPU clock ë‚­ë¹„ì´ë‹¤.
         */
 
         /*
          * BUG-38384 A task in a service thread can be a orphan
          *
-         * mInfo.mRemoveAllTasks¸¦ µÎ¾î ¸ğµç Task¸¦ Á¦°ÅÇØ¾ß °æ¿ì¸¦ ÆÇ´ÜÇÑ´Ù.
-         * ÇöÀç DEDICATED THREAD ¹æ½Ä¿¡¼­ ¸ğµç Task¸¦ Á¦°ÅÇÏ´Â ÄÚµå°¡ ¼öÇàµÇ¸é
-         * ÀÌ»óÇÑ Çö»óÀÌ ¹ß»ıÇÏ´Âµ¥ Á¤È®ÇÏ°Ô ¿øÀÎÀ» ÆÄ¾ÇÇÏÁö´Â ¸øÇß´Ù.
-         * ÇöÀç ÀÇ½ÉÀÌ °¡´Â »óÈ²¿¡¼­¸¸ ¾Æ·¡ ÄÚµå°¡ ¹İµå½Ã ¼öÇàµÇµµ·Ï ¼öÁ¤Çß´Ù.
+         * mInfo.mRemoveAllTasksë¥¼ ë‘ì–´ ëª¨ë“  Taskë¥¼ ì œê±°í•´ì•¼ ê²½ìš°ë¥¼ íŒë‹¨í•œë‹¤.
+         * í˜„ì¬ DEDICATED THREAD ë°©ì‹ì—ì„œ ëª¨ë“  Taskë¥¼ ì œê±°í•˜ëŠ” ì½”ë“œê°€ ìˆ˜í–‰ë˜ë©´
+         * ì´ìƒí•œ í˜„ìƒì´ ë°œìƒí•˜ëŠ”ë° ì •í™•í•˜ê²Œ ì›ì¸ì„ íŒŒì•…í•˜ì§€ëŠ” ëª»í–ˆë‹¤.
+         * í˜„ì¬ ì˜ì‹¬ì´ ê°€ëŠ” ìƒí™©ì—ì„œë§Œ ì•„ë˜ ì½”ë“œê°€ ë°˜ë“œì‹œ ìˆ˜í–‰ë˜ë„ë¡ ìˆ˜ì •í–ˆë‹¤.
          */
         if( getAssignedTasks() > 1 || getRemoveAllTasks() == ID_TRUE )
         {
@@ -680,7 +680,7 @@ void mmtServiceThread::removeAllTasks(iduList *aTaskList, mmtServiceThreadLock a
     else
     {
         /* TASK-4324  Applying lessons learned from CPBS-CAESE to altibase
-           new tasksµéÀÌ¶óµµ  migrationÇÏ·Ã´Â ³ë·ÂÀ» ÇØ¾ß ÇÑ´Ù.
+           new tasksë“¤ì´ë¼ë„  migrationí•˜ë ¨ëŠ” ë…¸ë ¥ì„ í•´ì•¼ í•œë‹¤.
         */
         if(trylockForNewTaskList() == ID_TRUE)
         {
@@ -711,8 +711,8 @@ void mmtServiceThread::removeAllTasks(iduList *aTaskList, mmtServiceThreadLock a
 }
 
 /* TASK-4324  Applying lessons learned from CPBS-CAESE to altibase
-   load balance °úÁ¤¿¡¼­ idle max thread¿¡¼­ idle min threadÀ¸·Î
-   task ºĞ¹è½Ã ºÒ¸®´Â ÇÔ¼öÀÌ´Ù.
+   load balance ê³¼ì •ì—ì„œ idle max threadì—ì„œ idle min threadìœ¼ë¡œ
+   task ë¶„ë°°ì‹œ ë¶ˆë¦¬ëŠ” í•¨ìˆ˜ì´ë‹¤.
  */
 
 idBool mmtServiceThread::need2Move(UInt aTaskCount2Move,UInt aMinTaskCount )
@@ -737,8 +737,8 @@ idBool mmtServiceThread::need2Move(UInt aTaskCount2Move,UInt aMinTaskCount )
         else
         {
             sMoveRate = (( aTaskCount2Move * 100) / aMinTaskCount);
-            /* task ¼ö½ÅÇÏ´Â threadÀÇ task º¯µ¿Æø ÀÌ MIN_MIGRATION_TASK_RATE
-               À» ³Ñ´Â °æ¿ì¿¡¸¸ task¸¦ ¼ö½ÅÇÑ´Ù.*/
+            /* task ìˆ˜ì‹ í•˜ëŠ” threadì˜ task ë³€ë™í­ ì´ MIN_MIGRATION_TASK_RATE
+               ì„ ë„˜ëŠ” ê²½ìš°ì—ë§Œ taskë¥¼ ìˆ˜ì‹ í•œë‹¤.*/
             if(sMoveRate >  mmuProperty::getMinMigrationTaskRate())
             {
                 /* BUG-45274 reference http://nok.altibase.com/pages/viewpage.action?pageId=40570104  */
@@ -776,8 +776,8 @@ idBool mmtServiceThread::needToRemove()
 
 
 /* TASK-4324  Applying lessons learned from CPBS-CAESE to altibase
-   load balance °úÁ¤¿¡¼­ idle max thread¿¡¼­ idle min threadÀ¸·Î
-   task ºĞ¹èÇÏ´Â ÇÔ¼öÀÌ´Ù.
+   load balance ê³¼ì •ì—ì„œ idle max threadì—ì„œ idle min threadìœ¼ë¡œ
+   task ë¶„ë°°í•˜ëŠ” í•¨ìˆ˜ì´ë‹¤.
  */
 void mmtServiceThread::removeFewTasks(iduList *aTaskList, UInt aMinTaskCount,UInt *aRemovedTaskCount)
 {
@@ -795,7 +795,7 @@ void mmtServiceThread::removeFewTasks(iduList *aTaskList, UInt aMinTaskCount,UIn
     {
          sTaskCount = (sMaxTaskCount  - aMinTaskCount - 1) / 2;
     }
-    // task ºĞ¹è¸¦ ÇÒ ÇÊ¿ä°¡ ÀÖ´ÂÁö¸¦ ÆÇ´Ü.
+    // task ë¶„ë°°ë¥¼ í•  í•„ìš”ê°€ ìˆëŠ”ì§€ë¥¼ íŒë‹¨.
     if (need2Move(sTaskCount,aMinTaskCount ) == ID_TRUE )
     {
         lockForNewTaskList();
@@ -926,11 +926,11 @@ void mmtServiceThread::getNewTask()
                 IDE_ASSERT(0);
         }
         /* TASK-4324  Applying lessons learned from CPBS-CAESE to altibase
-           ÇØ´ç service thread¿¡ task°¡ countingµÇ¾ú±â¶§¹®¿¡
-           addµÈ task°¹¼ö¸¦ 1°¨¼Ò ½ÃÅ²´Ù.
+           í•´ë‹¹ service threadì— taskê°€ countingë˜ì—ˆê¸°ë•Œë¬¸ì—
+           addëœ taskê°¯ìˆ˜ë¥¼ 1ê°ì†Œ ì‹œí‚¨ë‹¤.
         */
-        //fix BUG-29526 service threadÀÇ getNewTask Function¿¡¼­
-        //decreaseCurAddedTaskCntÀÇ È£Ãâ À§Ä¡°¡ Àß¸øµÇ¾ú½À´Ï´Ù.
+        //fix BUG-29526 service threadì˜ getNewTask Functionì—ì„œ
+        //decreaseCurAddedTaskCntì˜ í˜¸ì¶œ ìœ„ì¹˜ê°€ ì˜ëª»ë˜ì—ˆìŠµë‹ˆë‹¤.
         decreaseCurAddedTaskCnt();
         addTaskCount(1);
     }
@@ -940,11 +940,11 @@ void mmtServiceThread::getNewTask()
 }
 
 //  PROJ-1677 DEQUEUE
-//  shared-modeÀ¸·Î ¿î¿µµÇ´Â service thread´Â
-//  polling timeoutÀÌ ÀÇ¹Ì°¡ ÀÖ¾î¼­
-//  mPollTimeout  pointer°¡ ÀÎÀÚ·Î ³Ñ¾î¿Â´Ù .
-//  ±×·¯³ª  dedicated modeÀ¸·Î ¿î¿µµÇ´Â  service thread´Â pollingÀ» ÇÏÁö ¾Ê°í
-// ¹«ÇÑ´ë±â¸¦ ÇÏ±â À§ÇÏ¿© NULLÀÌ ÀÎÀÚ·Î ³Ñ¾î¿Â´Ù.
+//  shared-modeìœ¼ë¡œ ìš´ì˜ë˜ëŠ” service threadëŠ”
+//  polling timeoutì´ ì˜ë¯¸ê°€ ìˆì–´ì„œ
+//  mPollTimeout  pointerê°€ ì¸ìë¡œ ë„˜ì–´ì˜¨ë‹¤ .
+//  ê·¸ëŸ¬ë‚˜  dedicated modeìœ¼ë¡œ ìš´ì˜ë˜ëŠ”  service threadëŠ” pollingì„ í•˜ì§€ ì•Šê³ 
+// ë¬´í•œëŒ€ê¸°ë¥¼ í•˜ê¸° ìœ„í•˜ì—¬ NULLì´ ì¸ìë¡œ ë„˜ì–´ì˜¨ë‹¤.
 void mmtServiceThread::findReadyTask(PDL_Time_Value* aPollTimeout)
 {
     iduList      sReadyList;
@@ -953,7 +953,7 @@ void mmtServiceThread::findReadyTask(PDL_Time_Value* aPollTimeout)
     mmcTask     *sTask;
 
     /*
-     * Dispatcher¸¦ ÀÌ¿ëÇÏ¿© Waiting Task -> Ready Task °Ë»ö
+     * Dispatcherë¥¼ ì´ìš©í•˜ì—¬ Waiting Task -> Ready Task ê²€ìƒ‰
      */
 
 
@@ -969,7 +969,7 @@ void mmtServiceThread::findReadyTask(PDL_Time_Value* aPollTimeout)
         sLink = (cmiLink *)sIterator->mObj;
         sTask = (mmcTask *)cmiGetLinkUserPtr(sLink);
         /* TASK-4324  Applying lessons learned from CPBS-CAESE to altibase
-           task schedule°ü·ÃµÈ Á¤º¸ settingÇÑ´Ù.
+           task scheduleê´€ë ¨ëœ ì •ë³´ settingí•œë‹¤.
         */
         transitTask_READY(sTask);
     }
@@ -977,8 +977,8 @@ void mmtServiceThread::findReadyTask(PDL_Time_Value* aPollTimeout)
 }
 
 //PROJ-1677 DEQ
-// lockForThread´Â  wait,ready task list ÀÇ µ¿½Ã¼ºÁ¦¾î¸¦ À§ÇÏ¿©
-// »ç¿ëµÈ´Ù.
+// lockForThreadëŠ”  wait,ready task list ì˜ ë™ì‹œì„±ì œì–´ë¥¼ ìœ„í•˜ì—¬
+// ì‚¬ìš©ëœë‹¤.
 void mmtServiceThread::executeTask()
 {
     mmcTask      *sTask;
@@ -1003,8 +1003,8 @@ void mmtServiceThread::executeTask()
         /* PROJ-2108 Dedicated thread mode which uses less CPU */
         case MMC_SERVICE_THREAD_TYPE_DEDICATED:
 
-            /* bug-35395: task schedule time À» sysstat¿¡ Ãß°¡
-               ÆĞÅ¶¼ö½Å °¨ÁöÁ÷ÈÄºÎÅÍ ÆĞÅ¶ÇØ¼® Á÷Àü±îÁö ½Ã°£(usec)À» °è»ê */
+            /* bug-35395: task schedule time ì„ sysstatì— ì¶”ê°€
+               íŒ¨í‚·ìˆ˜ì‹  ê°ì§€ì§í›„ë¶€í„° íŒ¨í‚·í•´ì„ ì§ì „ê¹Œì§€ ì‹œê°„(usec)ì„ ê³„ì‚° */
             if (iduProperty::getTimedStatistics() == IDV_TIMED_STATISTICS_ON)
             {
                 addTaskScheduleTime(sTask->getSession());
@@ -1047,8 +1047,8 @@ QUEUE_READY:
                     {
                         //service thread run as shared mode.
                         // need to transform  shared-run mode into dedicated-run mode.
-                        // MVCC·Î ÀÎÇÏ¿© Queue¿¡ µ¥ÀÌÅ¸ ÀÖÀ½¿¡µµ ºÒ±¸ÇÏ°í ,
-                        //¸øÀĞ´Â °æ¿ì°¡ ÀÖÀ¸´Ï ÀÌ¸¦ º¯½ÅÇÏ±â Àü¿¡  Ã¼Å©ÇÑ´Ù.
+                        // MVCCë¡œ ì¸í•˜ì—¬ Queueì— ë°ì´íƒ€ ìˆìŒì—ë„ ë¶ˆêµ¬í•˜ê³  ,
+                        //ëª»ì½ëŠ” ê²½ìš°ê°€ ìˆìœ¼ë‹ˆ ì´ë¥¼ ë³€ì‹ í•˜ê¸° ì „ì—  ì²´í¬í•œë‹¤.
                         //fix BUG-19647
                         sQueueInfo = sTask->getSession()->getQueueInfo();
                         IDE_DASSERT(sQueueInfo != NULL);
@@ -1076,7 +1076,7 @@ QUEUE_READY:
                     setSessionID(sTask->getSession()->getSessionID());
                     setStatement(sTask->getSession()->getExecutingStatement());
                     IDE_TEST_RAISE(waitForEnqueueEvent(sTask) != IDE_SUCCESS,ExecuteFail);
-                    //enqueue event°¡ ¾Æ´Ï¶ó shutdown event¸¦ ¹ŞÀ»¼ö ÀÖ´Ù.
+                    //enqueue eventê°€ ì•„ë‹ˆë¼ shutdown eventë¥¼ ë°›ì„ìˆ˜ ìˆë‹¤.
                     if(mRun == ID_TRUE)
                     {
                         sTaskState = sTask->getTaskState();
@@ -1085,7 +1085,7 @@ QUEUE_READY:
                     }
                     else
                     {
-                        // thread Á¾·á½Ã unlockForThread¸¦ È£ÃâÇÏ±â¶§¹®¿¡ ¿©±â¼­ lockÀ» Àâ´Â´Ù.
+                        // thread ì¢…ë£Œì‹œ unlockForThreadë¥¼ í˜¸ì¶œí•˜ê¸°ë•Œë¬¸ì— ì—¬ê¸°ì„œ lockì„ ì¡ëŠ”ë‹¤.
                         lockForThread();
                     }
                     break;
@@ -1160,8 +1160,8 @@ QUEUE_READY:
 
     }
     /* bug-36875: null-checking for task object is necessary.
-       client Àß¸øÀ¸·Î ÇÁ·ÎÅäÄİÀÌ async·Î ³¯¶ó¿À´Â °æ¿ì
-       task°¡ nullÀÏ ¼ö ÀÖ´Ù. ¹æ¾îÇÏÀÚ */
+       client ì˜ëª»ìœ¼ë¡œ í”„ë¡œí† ì½œì´ asyncë¡œ ë‚ ë¼ì˜¤ëŠ” ê²½ìš°
+       taskê°€ nullì¼ ìˆ˜ ìˆë‹¤. ë°©ì–´í•˜ì */
     IDE_EXCEPTION(TaskNull);
     {
         ideLog::log(IDE_SERVER_0,
@@ -1173,7 +1173,7 @@ QUEUE_READY:
 }
 
 /*
- * transitTask_XXXX ÇÔ¼öµéÀº ¸ğµÎ lockForThread°¡ È¹µæµÈ »óÅÂ¿¡¼­¸¸ È£ÃâµÇ¾î¾ß ÇÑ´Ù.
+ * transitTask_XXXX í•¨ìˆ˜ë“¤ì€ ëª¨ë‘ lockForThreadê°€ íšë“ëœ ìƒíƒœì—ì„œë§Œ í˜¸ì¶œë˜ì–´ì•¼ í•œë‹¤.
  */
 
 void mmtServiceThread::transitTask_READY(mmcTask *aTask)
@@ -1181,8 +1181,8 @@ void mmtServiceThread::transitTask_READY(mmcTask *aTask)
     mmcSession  *sSession;
     idvSQL      *sStatSQL;
 
-    /* bug-35395: task schedule time À» sysstat¿¡ Ãß°¡
-       ÆĞÅ¶¼ö½Å °¨ÁöÁ÷ÈÄºÎÅÍ ÆĞÅ¶ÇØ¼® Á÷Àü±îÁö ½Ã°£(usec)À» °è»ê */
+    /* bug-35395: task schedule time ì„ sysstatì— ì¶”ê°€
+       íŒ¨í‚·ìˆ˜ì‹  ê°ì§€ì§í›„ë¶€í„° íŒ¨í‚·í•´ì„ ì§ì „ê¹Œì§€ ì‹œê°„(usec)ì„ ê³„ì‚° */
     sSession = aTask->getSession();
     if (sSession != NULL)
     {
@@ -1218,9 +1218,9 @@ void mmtServiceThread::transitTask_WAITING(mmcTask *aTask)
 }
 
 /*
- * executeTask_XXXX ÇÔ¼öµéÀº lockForThread°¡ È¹µæµÇÁö ¾ÊÀº »óÅÂ¿¡¼­ È£ÃâµÇ¹Ç·Î
- * Dispatcher, Task List, Task Count, Task State µî
- * lockForThread·Î º¸È£µÇ¾î¾ß ÇÏ´Â °ÍµéÀ» »ç¿ëÇÏ°Å³ª º¯°æÇÏ¸é ¾ÈµÈ´Ù.
+ * executeTask_XXXX í•¨ìˆ˜ë“¤ì€ lockForThreadê°€ íšë“ë˜ì§€ ì•Šì€ ìƒíƒœì—ì„œ í˜¸ì¶œë˜ë¯€ë¡œ
+ * Dispatcher, Task List, Task Count, Task State ë“±
+ * lockForThreadë¡œ ë³´í˜¸ë˜ì–´ì•¼ í•˜ëŠ” ê²ƒë“¤ì„ ì‚¬ìš©í•˜ê±°ë‚˜ ë³€ê²½í•˜ë©´ ì•ˆëœë‹¤.
  */
 
 IDE_RC mmtServiceThread::executeTask_READY(mmcTask *aTask, mmcTaskState *aNewState)
@@ -1239,9 +1239,9 @@ IDE_RC mmtServiceThread::executeTask_READY(mmcTask *aTask, mmcTaskState *aNewSta
     }
 
 
-    // fix BUG-29073 task executing »óÅÂ ·Î°»½ÅÇÏ´Â ½ÃÁ¡ÀÌ
-    //Àß¸øµÇ¾ú´Ù.
-    // BUG-24318 IPC ÀÏ°æ¿ì ¼¼¼Ç Á¤º¸°¡ Àß¸ø ³ª¿É´Ï´Ù.
+    // fix BUG-29073 task executing ìƒíƒœ ë¡œê°±ì‹ í•˜ëŠ” ì‹œì ì´
+    //ì˜ëª»ë˜ì—ˆë‹¤.
+    // BUG-24318 IPC ì¼ê²½ìš° ì„¸ì…˜ ì •ë³´ê°€ ì˜ëª» ë‚˜ì˜µë‹ˆë‹¤.
     if(mInfo.mServiceThreadType != MMC_SERVICE_THREAD_TYPE_IPC)
     {
         aTask->setTaskState(MMC_TASK_STATE_EXECUTING);
@@ -1259,14 +1259,14 @@ IDE_RC mmtServiceThread::executeTask_READY(mmcTask *aTask, mmcTaskState *aNewSta
     }
 
     /* TASK-4324  Applying lessons learned from CPBS-CAESE to altibase
-       task schedule  Á¤º¸¸¦  settingÇÑ´Ù.
+       task schedule  ì •ë³´ë¥¼  settingí•œë‹¤.
     */
 
     switch (sRet)
     {
         case IDE_CM_STOP:
             // bug-26975: codesonar: session null ref
-            // ¼¼¼ÇÀÌ nullÀÌ °¡´ÉÇÑÁö´Â ¸ğ¸£Áö¸¸, ¹æ¾î¿ëÀ¸·Î °Ë»çÃß°¡.
+            // ì„¸ì…˜ì´ nullì´ ê°€ëŠ¥í•œì§€ëŠ” ëª¨ë¥´ì§€ë§Œ, ë°©ì–´ìš©ìœ¼ë¡œ ê²€ì‚¬ì¶”ê°€.
             sSession = aTask->getSession();
             IDE_TEST(sSession == NULL);
             IDE_ASSERT(sSession->getQueueInfo() != NULL);
@@ -1447,14 +1447,14 @@ void mmtServiceThread::terminateTask(mmcTask *aTask)
     }
 
     /* TASK-4324  Applying lessons learned from CPBS-CAESE to altibase
-       Load balance¿Í µ¿½Ã¼ºÀÌ °ü·ÃµÇ¾î ÀÖ¾î¼­,
-       instruction pipe line¿¡ ´ëÇÏ¿© ´ëºñÇÑ´Ù.
+       Load balanceì™€ ë™ì‹œì„±ì´ ê´€ë ¨ë˜ì–´ ìˆì–´ì„œ,
+       instruction pipe lineì— ëŒ€í•˜ì—¬ ëŒ€ë¹„í•œë‹¤.
     */
 
     // fix BUG-25158
-    // Thread Manager°¡ removeAllTasks ÁøÇà ½Ã
-    // Service ThreadÀÇ Dispatcher¿¡¼­ »« link¸¦ ´Ù½Ã ³ÖÁö ¾Êµµ·Ï ÇÏ±â À§ÇØ
-    // ÇöÀç rollbackÁßÀÎ task¸¦ NULL·Î ¼³Á¤ÇÑ´Ù.
+    // Thread Managerê°€ removeAllTasks ì§„í–‰ ì‹œ
+    // Service Threadì˜ Dispatcherì—ì„œ ëº€ linkë¥¼ ë‹¤ì‹œ ë„£ì§€ ì•Šë„ë¡ í•˜ê¸° ìœ„í•´
+    // í˜„ì¬ rollbackì¤‘ì¸ taskë¥¼ NULLë¡œ ì„¤ì •í•œë‹¤.
     ID_SERIAL_BEGIN(setTask(NULL));
 
     //PROJ-1677
@@ -1466,12 +1466,12 @@ void mmtServiceThread::terminateTask(mmcTask *aTask)
       to should be decreased.*/
     ID_SERIAL_EXEC(decreaseBusyExperienceCnt4Task(aTask),2);
     // fix BUG-25158
-    // rollback½Ã¿¡´Â Service ThreadÀÇ lockÀ» Ç®°í ¼öÇàÇÑ´Ù.
-    // service thread lock ¸¦ Ç®°í³ª¼­ execute ¸¦ ¹İµå½Ãº¸ÀåÇÏ±âÀ§ÇÏ¿©...
+    // rollbackì‹œì—ëŠ” Service Threadì˜ lockì„ í’€ê³  ìˆ˜í–‰í•œë‹¤.
+    // service thread lock ë¥¼ í’€ê³ ë‚˜ì„œ execute ë¥¼ ë°˜ë“œì‹œë³´ì¥í•˜ê¸°ìœ„í•˜ì—¬...
     ID_SERIAL_EXEC(unlockForThread(),3);
     if (aTask->isShutdownTask() == ID_TRUE)
     {
-        // service thread lock ¸¦ Ç®°í³ª¼­ execute ¸¦ ¹İµå½Ãº¸ÀåÇÏ±âÀ§ÇÏ¿©...
+        // service thread lock ë¥¼ í’€ê³ ë‚˜ì„œ execute ë¥¼ ë°˜ë“œì‹œë³´ì¥í•˜ê¸°ìœ„í•˜ì—¬...
         ID_SERIAL_EXEC(sRC = mmtSessionManager::freeSession(aTask),4);
         if (sRC != IDE_SUCCESS)
         {
@@ -1480,23 +1480,23 @@ void mmtServiceThread::terminateTask(mmcTask *aTask)
     }
     else
     {
-        // service thread lock ¸¦ Ç®°í³ª¼­ execute ¸¦ ¹İµå½Ãº¸ÀåÇÏ±âÀ§ÇÏ¿©...
+        // service thread lock ë¥¼ í’€ê³ ë‚˜ì„œ execute ë¥¼ ë°˜ë“œì‹œë³´ì¥í•˜ê¸°ìœ„í•˜ì—¬...
         ID_SERIAL_EXEC(sRC = mmtSessionManager::freeTask(aTask),4);
         if (sRC  != IDE_SUCCESS)
         {
             mmtThreadManager::logMemoryError(MM_TRC_TASK_FREE_FAILED);
         }
     }
-    // service thread lock ¸¦ Ç®°í³ª¼­ execute ¸¦ ¹İµå½Ãº¸ÀåÇÏ±âÀ§ÇÏ¿©...
+    // service thread lock ë¥¼ í’€ê³ ë‚˜ì„œ execute ë¥¼ ë°˜ë“œì‹œë³´ì¥í•˜ê¸°ìœ„í•˜ì—¬...
     ID_SERIAL_END(lockForThread());
 
     //PROJ-1677 DEQUEUE
     addTaskCount(-1);
 
-    //service thread typeÀÌ IPCÀÌ ¾Æ´Ï socket typeÀÌ°í ,
-    //dedicated modeÀ¸·Î running µÇ¾ú´Ù¸é
-    //´Ù½Ã shread mode  service threadÀ¸·Î transformÇÏ°Å³ª ,
-    //¼Ò¸êÇÏ¿©¾ß ÇÑ´Ù.
+    //service thread typeì´ IPCì´ ì•„ë‹ˆ socket typeì´ê³  ,
+    //dedicated modeìœ¼ë¡œ running ë˜ì—ˆë‹¤ë©´
+    //ë‹¤ì‹œ shread mode  service threadìœ¼ë¡œ transformí•˜ê±°ë‚˜ ,
+    //ì†Œë©¸í•˜ì—¬ì•¼ í•œë‹¤.
     if (mInfo.mServiceThreadType == MMC_SERVICE_THREAD_TYPE_SOCKET)
     {
         /* PROJ-2108 Dedicated thread mode which uses less CPU */
@@ -1745,7 +1745,7 @@ IDE_RC mmtServiceThread::findStatement(mmcStatement     **aStatement,
     }
 
     // BUG-33544
-    // À§ Á¶°Ç¿¡ °ü°è¾øÀÌ current_statement_id°¡ °»½ÅµÇ¾î¾ß ÇÔ.
+    // ìœ„ ì¡°ê±´ì— ê´€ê³„ì—†ì´ current_statement_idê°€ ê°±ì‹ ë˜ì–´ì•¼ í•¨.
     aSession->getInfo()->mCurrStmtID = *aStmtID;
 
     /* BUG-38472 Query timeout applies to one statement. */
@@ -1798,13 +1798,13 @@ void mmtServiceThread::multiplexingAsShared()
         do
         {
             IDV_TIME_GET(&mInfo.mExecuteBegin);
-            //execute¿Ï·áÈÄ¿¡ LoopCounter¸¦ Áõ°¡½ÃÅ²´Ù.
+            //executeì™„ë£Œí›„ì— LoopCounterë¥¼ ì¦ê°€ì‹œí‚¨ë‹¤.
             ID_SERIAL_BEGIN(executeTask());
             ID_SERIAL_END(mLoopCounter++);
             IDV_TIME_GET(&mInfo.mExecuteEnd);
             /* fix BUG-29592 A responsibility for updating a global session time have better to be assigned
                to session manager rather than load balancer
-               time resultionÀÌ 1ÃÊ´ÜÀ§°¡ µÇ¾î execution timeÀ» ´ÙÀ½°ú °°ÀÌ ±¸ÇØ¾ß ÇÔ.
+               time resultionì´ 1ì´ˆë‹¨ìœ„ê°€ ë˜ì–´ execution timeì„ ë‹¤ìŒê³¼ ê°™ì´ êµ¬í•´ì•¼ í•¨.
              */
             if(mInfo.mBusyExperienceCnt > 0)
             {   
@@ -1893,8 +1893,8 @@ void mmtServiceThread::multiplexingAsDedicated()
         }
         
     }
-    // executeTask¿¡¼­  shared¿¡¼­ dedicatedÀ¸·Î transformationµÇ´Â °æ¿ì°¡ ÀÖ´Ù.
-    // µû¶ó¼­  transformationµÇ´Â °æ¿ì¸¦ °í·ÁÇØ¾ß ÇÑ´Ù.
+    // executeTaskì—ì„œ  sharedì—ì„œ dedicatedìœ¼ë¡œ transformationë˜ëŠ” ê²½ìš°ê°€ ìˆë‹¤.
+    // ë”°ë¼ì„œ  transformationë˜ëŠ” ê²½ìš°ë¥¼ ê³ ë ¤í•´ì•¼ í•œë‹¤.
     if(mMultiPlexingFunc != &mmtServiceThread::multiplexingAsShared)
     {
         setState(MMT_SERVICE_THREAD_STATE_POLL);
@@ -1922,19 +1922,19 @@ IDE_RC  mmtServiceThread::waitForEnqueueEvent(mmcTask* aTask)
 
   RETRY_QWAIT:
     sQueueInfo->lock();
-    // condition waitÇÏ±âÀü¿¡ ÀÌ¹Ì enqueue event°¡ ¹ß»ıÇÏ¿´´ÂÁö °Ë»çÇÑ´Ù.
-    // signalÀ» ÀÒ¾î¹ö¸®Áö ¾Ê±â À§ÇØ ....
+    // condition waití•˜ê¸°ì „ì— ì´ë¯¸ enqueue eventê°€ ë°œìƒí•˜ì˜€ëŠ”ì§€ ê²€ì‚¬í•œë‹¤.
+    // signalì„ ìƒì–´ë²„ë¦¬ì§€ ì•Šê¸° ìœ„í•´ ....
     if(aTask->getSession()->isQueueReady() == ID_FALSE)
     {
-        //fix BUG-24362 dequeue ´ë±â ¼¼¼ÇÀÌ closeµÉ¶§ , sessionÀÇ queue ¼³Á¤¿¡¼­
-        // µ¿½Ã¼º¿¡ ¹®Á¦°¡ ÀÖÀ½.
-        // -- ÁøÂ¥ enqueue evnet´ë±âÇÏ´Â °æ¿ì¸¸  task ÀÇ »óÅÂ¸¦ Queue WaitÀ» º¯°æÇÑ´Ù.
+        //fix BUG-24362 dequeue ëŒ€ê¸° ì„¸ì…˜ì´ closeë ë•Œ , sessionì˜ queue ì„¤ì •ì—ì„œ
+        // ë™ì‹œì„±ì— ë¬¸ì œê°€ ìˆìŒ.
+        // -- ì§„ì§œ enqueue evnetëŒ€ê¸°í•˜ëŠ” ê²½ìš°ë§Œ  task ì˜ ìƒíƒœë¥¼ Queue Waitì„ ë³€ê²½í•œë‹¤.
         aTask->setTaskState(MMC_TASK_STATE_QUEUEWAIT);
         sQueueResult = sQueueInfo->timedwaitDequeue(aTask->getSession()->getQueueWaitTime(),&sTimeOut);
         sQueueReady = aTask->getSession()->isQueueReady();
-        //fix BUG-24362 dequeue ´ë±â ¼¼¼ÇÀÌ closeµÉ¶§ , sessionÀÇ queue ¼³Á¤¿¡¼­
-        // µ¿½Ã¼º¿¡ ¹®Á¦°¡ ÀÖÀ½.
-        // -- ´ë±â »óÅÂ°¡ Ç®·Á¼­ »óÅÂ °»½Å.
+        //fix BUG-24362 dequeue ëŒ€ê¸° ì„¸ì…˜ì´ closeë ë•Œ , sessionì˜ queue ì„¤ì •ì—ì„œ
+        // ë™ì‹œì„±ì— ë¬¸ì œê°€ ìˆìŒ.
+        // -- ëŒ€ê¸° ìƒíƒœê°€ í’€ë ¤ì„œ ìƒíƒœ ê°±ì‹ .
         aTask->setTaskState(MMC_TASK_STATE_QUEUEREADY);
         sQueueInfo->unlock();
         
@@ -1969,8 +1969,8 @@ IDE_RC  mmtServiceThread::waitForEnqueueEvent(mmcTask* aTask)
     
     IDE_EXCEPTION(ExecuteFail);
     {
-        //fix BUG-24362 dequeue ´ë±â ¼¼¼ÇÀÌ closeµÉ¶§ , sessionÀÇ queue ¼³Á¤¿¡¼­
-        // µ¿½Ã¼º¿¡ ¹®Á¦°¡ ÀÖÀ½.
+        //fix BUG-24362 dequeue ëŒ€ê¸° ì„¸ì…˜ì´ closeë ë•Œ , sessionì˜ queue ì„¤ì •ì—ì„œ
+        // ë™ì‹œì„±ì— ë¬¸ì œê°€ ìˆìŒ.
         aTask->getSession()->endQueueWait();
     }
     IDE_EXCEPTION_END;
@@ -1979,12 +1979,12 @@ IDE_RC  mmtServiceThread::waitForEnqueueEvent(mmcTask* aTask)
 }
 
 //PROJ-1677,need to transform  shared-run mode into dedicated-run mode
-//1.shared mode¿¡¼­ dedicate modeÀ¸·Î runningÇÏ±â À§ÇÏ¿© service list¿¡¼­ ³ª°£´Ù.
-// - ³ª°¡´Â °úÁ¤¿¡¼­ °¡Áö°í ÀÖ´Â task list »óÀÇ taskµéÀ» Á¤¸®ÇÑ´Ù.
-//2. multiplexing function À»  mtServiceThread::multiplexingAsSharedÀ¸·Î º¯°æÇÑ´Ù.
+//1.shared modeì—ì„œ dedicate modeìœ¼ë¡œ runningí•˜ê¸° ìœ„í•˜ì—¬ service listì—ì„œ ë‚˜ê°„ë‹¤.
+// - ë‚˜ê°€ëŠ” ê³¼ì •ì—ì„œ ê°€ì§€ê³  ìˆëŠ” task list ìƒì˜ taskë“¤ì„ ì •ë¦¬í•œë‹¤.
+//2. multiplexing function ì„  mtServiceThread::multiplexingAsSharedìœ¼ë¡œ ë³€ê²½í•œë‹¤.
 void  mmtServiceThread::transformSharedIntoDedicated()
 {
-    // service thread list ³ª¿À´Â ¹æ¹ıÀ»  È®½ÇÈ÷ ÇÑ´Ù.
+    // service thread list ë‚˜ì˜¤ëŠ” ë°©ë²•ì„  í™•ì‹¤íˆ í•œë‹¤.
     if( mmtThreadManager::removeFromServiceThrList(this) == IDE_SUCCESS)
     {
         mMultiPlexingFunc = &mmtServiceThread::multiplexingAsDedicated;
@@ -1996,19 +1996,19 @@ void  mmtServiceThread::transformSharedIntoDedicated()
     }
     else
     {
-        // task¾çµµÇÏ´Â °úÁ¤¿¡¼­ »õ·Î¿î ¼­ºñ½º ¾²·¹µå¸¦ »ı¼ºÇÏ´Ù°¡ ,
-        // ½ÇÆĞÇÏ¿´´Ù. µû¶ó¼­ shared mode¸¦ À¯Áö ÇÑ´Ù.
+        // taskì–‘ë„í•˜ëŠ” ê³¼ì •ì—ì„œ ìƒˆë¡œìš´ ì„œë¹„ìŠ¤ ì“°ë ˆë“œë¥¼ ìƒì„±í•˜ë‹¤ê°€ ,
+        // ì‹¤íŒ¨í•˜ì˜€ë‹¤. ë”°ë¼ì„œ shared modeë¥¼ ìœ ì§€ í•œë‹¤.
     }
 
 }
 
 //PROJ-1677,need to transform dedicated-run mode into  shared-run mode.
 //1. multiplexing function  as mtServiceThread::multiplexingAsShared
-//2. dedicated service thread¸¦ shared service thread list¿¡
-//¹İ³³½Ãµµ¸¦ ÇÑ´Ù.
-// ¸¸¾à  ÇöÀç service list¿¡ ÀÖ´Â ¼­ºñ½º ¾²·¹µå °¹¼ö°¡
-// MULTIPLEXING_MAX_THREAD_COUNTº¸´Ù Å©°Å³ª °°À¸¸é
-// ¹İ³³À» ÇÏÁö¾Ê°í ½º½º·Î ¼Ò¸êÀ» ÇÑ´Ù.
+//2. dedicated service threadë¥¼ shared service thread listì—
+//ë°˜ë‚©ì‹œë„ë¥¼ í•œë‹¤.
+// ë§Œì•½  í˜„ì¬ service listì— ìˆëŠ” ì„œë¹„ìŠ¤ ì“°ë ˆë“œ ê°¯ìˆ˜ê°€
+// MULTIPLEXING_MAX_THREAD_COUNTë³´ë‹¤ í¬ê±°ë‚˜ ê°™ìœ¼ë©´
+// ë°˜ë‚©ì„ í•˜ì§€ì•Šê³  ìŠ¤ìŠ¤ë¡œ ì†Œë©¸ì„ í•œë‹¤.
 
 void mmtServiceThread::transformDedicatedIntoShared()
 {
@@ -2022,12 +2022,12 @@ void mmtServiceThread::transformDedicatedIntoShared()
     // try to add this service thread in service thread list .
     if(mmtThreadManager::try2AddServiceThread(this) == ID_FALSE)
     {
-        // MULTIPLEXING_MAX_THREAD_COUNTÁ¦¾à Á¶°Ç¿¡ °É·Á ¼Ò¸êÇÏ¿©¾ß ÇÑ´Ù.
+        // MULTIPLEXING_MAX_THREAD_COUNTì œì•½ ì¡°ê±´ì— ê±¸ë ¤ ì†Œë©¸í•˜ì—¬ì•¼ í•œë‹¤.
         mRun  = ID_FALSE;
         /* fix BUG-30322 In case of terminating a transformed dedicated service thread,
            the count of service can be negative . */
-        /* dedicated service thread¿¡¼­ shared service thread·Î transformÀÌ ½ÇÆĞ
-           ÇÏ¿´±â¶§¹®¿¡  multiplexing func, run mode¸¦ ¿øº¹ÇØ¾ß ÇÑ´Ù */
+        /* dedicated service threadì—ì„œ shared service threadë¡œ transformì´ ì‹¤íŒ¨
+           í•˜ì˜€ê¸°ë•Œë¬¸ì—  multiplexing func, run modeë¥¼ ì›ë³µí•´ì•¼ í•œë‹¤ */
         mMultiPlexingFunc = &mmtServiceThread::multiplexingAsDedicated;
         mInfo.mRunMode    =  MMT_SERVICE_THREAD_RUN_DEDICATED;
 
@@ -2036,7 +2036,7 @@ void mmtServiceThread::transformDedicatedIntoShared()
 }
 
 /* TASK-4324  Applying lessons learned from CPBS-CAESE to altibase
-   a service thread°¡ busy ÀÎÁö ¿©ºÎ¸¦ ÆÇ´ÜÇÏ´Â ÇÔ¼ö
+   a service threadê°€ busy ì¸ì§€ ì—¬ë¶€ë¥¼ íŒë‹¨í•˜ëŠ” í•¨ìˆ˜
 */
 
 idBool mmtServiceThread::checkBusy()
@@ -2125,7 +2125,7 @@ void mmtServiceThread::unlockForThread()
 }
 
 /* TASK-4324  Applying lessons learned from CPBS-CAESE to altibase
-   load balance°úÁ¤¿¡¼­ task in/out¸¦ ±â·ÏÇÏ´Â ÇÔ¼ö.
+   load balanceê³¼ì •ì—ì„œ task in/outë¥¼ ê¸°ë¡í•˜ëŠ” í•¨ìˆ˜.
 */
 void mmtServiceThread::increaseInTaskCount(mmtServiceThreadRunStatus  aRunStatus,
                                            UInt                       aCount)
@@ -2223,10 +2223,10 @@ IDE_RC mmtServiceThread::signalToServiceThread(mmtServiceThread *aThread)
     return IDE_FAILURE;
 }
 
-/* bug-35395: task schedule time À» sysstat¿¡ Ãß°¡
-   ¼¼¼ÇÀÇ ½ºÄÉÁÙ ½Ã°£À» ¼¼¼Ç Åë°èÁ¤º¸¿¡ ¹İ¿µ(´©Àû, ÃÖ´ë).
-   sStatSQL : ÇöÀçÀÇ ½Ã°£ÃøÁ¤°ª(begin, end)ÀÌ mOpTime ¿¡ ÀÖÀ½
-   sStatSess: ´©ÀûÄ¡, ÃÖ´ëÄ¡¸¦ ÀúÀåÇÒ ¼¼¼Ç stat Á¤º¸
+/* bug-35395: task schedule time ì„ sysstatì— ì¶”ê°€
+   ì„¸ì…˜ì˜ ìŠ¤ì¼€ì¤„ ì‹œê°„ì„ ì„¸ì…˜ í†µê³„ì •ë³´ì— ë°˜ì˜(ëˆ„ì , ìµœëŒ€).
+   sStatSQL : í˜„ì¬ì˜ ì‹œê°„ì¸¡ì •ê°’(begin, end)ì´ mOpTime ì— ìˆìŒ
+   sStatSess: ëˆ„ì ì¹˜, ìµœëŒ€ì¹˜ë¥¼ ì €ì¥í•  ì„¸ì…˜ stat ì •ë³´
    */
 IDE_RC mmtServiceThread::addTaskScheduleTime(mmcSession* aSession)
 {
@@ -2247,13 +2247,13 @@ IDE_RC mmtServiceThread::addTaskScheduleTime(mmcSession* aSession)
             sElaTime = IDV_TIMEBOX_GET_ELA_TIME(
                     IDV_SQL_OPTIME_DIRECT(sStatSQL, sIndexTaskSched));
 
-            /* °æ°ú½Ã°£ÀÌ ½ºÄÉÁÙ ´ÜÀ§½Ã°£ ÀÌ»óÀÎ °æ¿ì¸¸ Åë°è¿¡ ¹İ¿µ */
+            /* ê²½ê³¼ì‹œê°„ì´ ìŠ¤ì¼€ì¤„ ë‹¨ìœ„ì‹œê°„ ì´ìƒì¸ ê²½ìš°ë§Œ í†µê³„ì— ë°˜ì˜ */
             if (sElaTime >= (ULong) mmuProperty::getMultiplexingCheckInterval())
             {
-                /* ¼¼¼ÇÀÇ ½ºÄÉÁÙ °æ°ú½Ã°£À» ´©Àû½ÃÅ²´Ù */
+                /* ì„¸ì…˜ì˜ ìŠ¤ì¼€ì¤„ ê²½ê³¼ì‹œê°„ì„ ëˆ„ì ì‹œí‚¨ë‹¤ */
                 IDV_SESS_ADD(sStatSess, IDV_STAT_INDEX_OPTM_TASK_SCHEDULE, sElaTime);
 
-                /* ¼¼¼ÇÀÇ ½ºÄÉÁÙ ÃÖ´ë °æ°ú½Ã°£À» °»½ÅÇÑ´Ù */
+                /* ì„¸ì…˜ì˜ ìŠ¤ì¼€ì¤„ ìµœëŒ€ ê²½ê³¼ì‹œê°„ì„ ê°±ì‹ í•œë‹¤ */
                 sSchedMaxTime =
                     &(sStatSess->mStatEvent[IDV_STAT_INDEX_OPTM_TASK_SCHEDULE_MAX].mValue);
                 if (sElaTime > *sSchedMaxTime)
@@ -2262,13 +2262,13 @@ IDE_RC mmtServiceThread::addTaskScheduleTime(mmcSession* aSession)
                 }
             }
 
-            /* idvTimeBox.mATD.mAccumTime (´©Àû½Ã°£)´Â
-               OPTIME_END½Ã¿¡ ´©Àû½Ã°£ °è»êµÇ°í,
-               endStmt½Ã¿¡ addOpTimeToSession¸¦ ÅëÇØ
-               Åë°èÁ¤º¸¿¡ ¹İ¿µµÈ´Ù.
-               ÇÏÁö¸¸ stmt ´ÜÀ§ÀÌ°í, ¹«Á¶°Ç ´©ÀûÀÌ¹Ç·Î
-               ¿©±â¼­´Â »ç¿ëÇÏÁö ¾Ê°í ´ë½Å GET_ELA_TIMEÀ» »ç¿ë.
-               µû¶ó¼­, Åë°èÁ¤º¸¿¡ ¹İ¿µµÇÁö ¾Êµµ·Ï clear ÇØ ÁØ´Ù */
+            /* idvTimeBox.mATD.mAccumTime (ëˆ„ì ì‹œê°„)ëŠ”
+               OPTIME_ENDì‹œì— ëˆ„ì ì‹œê°„ ê³„ì‚°ë˜ê³ ,
+               endStmtì‹œì— addOpTimeToSessionë¥¼ í†µí•´
+               í†µê³„ì •ë³´ì— ë°˜ì˜ëœë‹¤.
+               í•˜ì§€ë§Œ stmt ë‹¨ìœ„ì´ê³ , ë¬´ì¡°ê±´ ëˆ„ì ì´ë¯€ë¡œ
+               ì—¬ê¸°ì„œëŠ” ì‚¬ìš©í•˜ì§€ ì•Šê³  ëŒ€ì‹  GET_ELA_TIMEì„ ì‚¬ìš©.
+               ë”°ë¼ì„œ, í†µê³„ì •ë³´ì— ë°˜ì˜ë˜ì§€ ì•Šë„ë¡ clear í•´ ì¤€ë‹¤ */
             IDV_TIMEBOX_INIT_ACCUM_TIME(
                     IDV_SQL_OPTIME_DIRECT(sStatSQL, sIndexTaskSched ) );
         }
@@ -2279,16 +2279,16 @@ IDE_RC mmtServiceThread::addTaskScheduleTime(mmcSession* aSession)
 }
 
 /* bug-33841: ipc thread's state is wrongly displayed
-   IPC ¼­ºñ½º ¾²·¹µåÀÇ »óÅÂ°ªÀ» Á¤È®ÇÏ°Ô ¼¼ÆÃÇÏ±â À§ÇØ
-   ÆĞÅ¶ ¼ö½Å ¹Ù·Î ÈÄ¿¡ È£ÃâµÇ´Â callback ÇÔ¼öÀÌ´Ù
-   cm¿¡¼­ È£ÃâµÇ´Â mm ÇÔ¼öÀÌ¹Ç·Î Äİ¹éÃ³¸®ÇÏ¿´´Ù */
+   IPC ì„œë¹„ìŠ¤ ì“°ë ˆë“œì˜ ìƒíƒœê°’ì„ ì •í™•í•˜ê²Œ ì„¸íŒ…í•˜ê¸° ìœ„í•´
+   íŒ¨í‚· ìˆ˜ì‹  ë°”ë¡œ í›„ì— í˜¸ì¶œë˜ëŠ” callback í•¨ìˆ˜ì´ë‹¤
+   cmì—ì„œ í˜¸ì¶œë˜ëŠ” mm í•¨ìˆ˜ì´ë¯€ë¡œ ì½œë°±ì²˜ë¦¬í•˜ì˜€ë‹¤ */
 IDE_RC mmtServiceThread::setExecuteCallback(void* aThread, void* aTask)
 {
     mmtServiceThread* sThread = (mmtServiceThread*) aThread;
     mmcTask*          sTask   = (mmcTask*) aTask;
 
-    /* IPC¸¸ ÇØ´çµÈ´Ù. ÀÌ ÄÚµåÀÇ ¿ø·¡ À§Ä¡´Â
-       executeTask_READY¿¡¼­ cmiRead...È£Ãâ ¹Ù·Î ÀüÀÌ¾ú´Ù */
+    /* IPCë§Œ í•´ë‹¹ëœë‹¤. ì´ ì½”ë“œì˜ ì›ë˜ ìœ„ì¹˜ëŠ”
+       executeTask_READYì—ì„œ cmiRead...í˜¸ì¶œ ë°”ë¡œ ì „ì´ì—ˆë‹¤ */
     if ((sThread != NULL) && (sTask != NULL))
     {
         /*PROJ-2616*/

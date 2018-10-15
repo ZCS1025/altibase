@@ -27,47 +27,47 @@
  *
  * Description : To Fix BUG-17430
  *
- *    Object Name ÀÌ °®´Â String¿¡ ´ëÇÑ Á¶ÀÛÀ» ´ã´ç
+ *    Object Name ì´ ê°–ëŠ” Stringì— ëŒ€í•œ ì¡°ì‘ì„ ë‹´ë‹¹
  *
- * ¿ë¾î Á¤ÀÇ :
+ * ìš©ì–´ ì •ì˜ :
  *
  *    ##################################
- *    # Name String¿¡ ´ëÇÑ ¿ë¾î Á¤ÀÇ
+ *    # Name Stringì— ëŒ€í•œ ìš©ì–´ ì •ì˜
  *    ##################################
  *
- *    ## Name String ÀÇ ±¸ºĞ
+ *    ## Name String ì˜ êµ¬ë¶„
  *
- *       - Oridinary  Name : ¹®ÀÚ¿­ ±×´ë·Î Ãë±Ş
- *       - Identifier Name : ´ë¹®ÀÚ·Î º¯°æµÇ¾î Ã³¸®µÇ´Â ÀÌ¸§
+ *       - Oridinary  Name : ë¬¸ìì—´ ê·¸ëŒ€ë¡œ ì·¨ê¸‰
+ *       - Identifier Name : ëŒ€ë¬¸ìë¡œ ë³€ê²½ë˜ì–´ ì²˜ë¦¬ë˜ëŠ” ì´ë¦„
  *
- *    ## Object NameÀÇ ÇØ¼®
+ *    ## Object Nameì˜ í•´ì„
  *
- *       - Quoted Name : Ordinary NameÀ¸·Î ÇØ¼®
- *       - Non-Quoted Name : ¿É¼Ç¿¡ µû¶ó ´Ş¸® ÇØ¼®
- *          ; SQL_ATTR_META_ID ¼³Á¤ : Ordinary NameÀ¸·Î ÇØ¼®
- *          ; SQL_ATTR_META_ID ¹Ì¼³Á¤ : Identifier NameÀ¸·Î ÇØ¼®
- *          ; ÇöÀç ¹ÌÁö¿øÀ¸·Î Identifier NameÀ¸·Î ÇØ¼®ÇÔ (BUG-17771)
+ *       - Quoted Name : Ordinary Nameìœ¼ë¡œ í•´ì„
+ *       - Non-Quoted Name : ì˜µì…˜ì— ë”°ë¼ ë‹¬ë¦¬ í•´ì„
+ *          ; SQL_ATTR_META_ID ì„¤ì • : Ordinary Nameìœ¼ë¡œ í•´ì„
+ *          ; SQL_ATTR_META_ID ë¯¸ì„¤ì • : Identifier Nameìœ¼ë¡œ í•´ì„
+ *          ; í˜„ì¬ ë¯¸ì§€ì›ìœ¼ë¡œ Identifier Nameìœ¼ë¡œ í•´ì„í•¨ (BUG-17771)
  *
  * Implementation :
  *
  **********************************************************************/
 
-// CLI µîÀÇ ÇÔ¼ö ³»¿¡¼­ »ç¿ëÇÒ ÀÌ¸§À¸·Î »ı¼º
+// CLI ë“±ì˜ í•¨ìˆ˜ ë‚´ì—ì„œ ì‚¬ìš©í•  ì´ë¦„ìœ¼ë¡œ ìƒì„±
 void iduNameMakeNameInFunc( SChar * aDstName,
                             SChar * aSrcName,
                             SInt    aSrcLen );
 
-// SQL ¹®Àå ³»¿¡¼­ »ç¿ëÇÒ ÀÌ¸§À¸·Î »ı¼º
+// SQL ë¬¸ì¥ ë‚´ì—ì„œ ì‚¬ìš©í•  ì´ë¦„ìœ¼ë¡œ ìƒì„±
 void iduNameMakeNameInSQL( SChar * aDstName,
                            SChar * aSrcName,
                            SInt    aSrcLen );
 
-// Quoted NameÀ» »ı¼º
+// Quoted Nameì„ ìƒì„±
 void iduNameMakeQuotedName( SChar * aDstName,
                             SChar * aSrcName,
                             SInt    aSrcLen );
 
-// Quoted NameÀÎÁö ÆÇ´Ü
+// Quoted Nameì¸ì§€ íŒë‹¨
 idBool iduNameIsQuotedName( SChar * aSrcName, SInt aSrcLen );
 
 #endif // _O_IDU_NAME_H_

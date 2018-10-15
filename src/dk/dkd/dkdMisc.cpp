@@ -25,9 +25,9 @@
 
 
 /***********************************************************************
- * Description: ¿ø°Ý Å×ÀÌºí¿¡¼­ Fetch ÇØ¾ß ÇÏ´Â ÇàÀÇ Ä«¿îÆ® Á¤º¸¸¦ ¾ò´Â´Ù.
+ * Description: ì›ê²© í…Œì´ë¸”ì—ì„œ Fetch í•´ì•¼ í•˜ëŠ” í–‰ì˜ ì¹´ìš´íŠ¸ ì •ë³´ë¥¼ ì–»ëŠ”ë‹¤.
  *
- *  aFetchRowCnt  - [OUT] ¿ø°Ý Å×ÀÌºí ÀÇ Fetch Row Count
+ *  aFetchRowCnt  - [OUT] ì›ê²© í…Œì´ë¸” ì˜ Fetch Row Count
  *
  **********************************************************************/
 IDE_RC  dkdMisc::getFetchRowCnt( UInt  aFetchRowSize,
@@ -41,13 +41,13 @@ IDE_RC  dkdMisc::getFetchRowCnt( UInt  aFetchRowSize,
 
     if ( aFetchRowSize > 0)
     {
-        /* REMOTE_TABLE_STORE ¹öÆÛ »çÀÌÁî¸¦ ±âÁØÀ¸·Î °è»êµÈ Fetch Row Count */
+        /* REMOTE_TABLE_STORE ë²„í¼ ì‚¬ì´ì¦ˆë¥¼ ê¸°ì¤€ìœ¼ë¡œ ê³„ì‚°ëœ Fetch Row Count */
         sBuffFetchRowCnt = aFetchBuffSize / aFetchRowSize;
 
         if ( ( aStmtType == DKT_STMT_TYPE_REMOTE_TABLE_STORE ) ||
              ( aStmtType == DKT_STMT_TYPE_REMOTE_EXECUTE_QUERY_STATEMENT ) )
         {
-            /* DK ³»ºÎ¿¡¼­ Á¤ÇÑ Fetch Row Count */
+            /* DK ë‚´ë¶€ì—ì„œ ì •í•œ Fetch Row Count */
             if ( aFetchRowSize > DKP_ADLP_PACKET_DATA_MAX_LEN )
             {
                 sFetchRowCnt = DKT_FETCH_ROW_COUNT_FOR_LARGE_RECORD;
@@ -57,7 +57,7 @@ IDE_RC  dkdMisc::getFetchRowCnt( UInt  aFetchRowSize,
                 sFetchRowCnt = DKT_FETCH_ROW_COUNT_FOR_SMALL_RECORD;
             }
 
-            /* µÎ°³ÀÇ Fetch Row Count¸¦ ºñ±³ ÇØ¼­ Å«°ªÀ» Fetch Row Count·Î Á¤ÇÑ´Ù.  */
+            /* ë‘ê°œì˜ Fetch Row Countë¥¼ ë¹„êµ í•´ì„œ í°ê°’ì„ Fetch Row Countë¡œ ì •í•œë‹¤.  */
             if( sFetchRowCnt < sBuffFetchRowCnt )
             {
                 sFetchRowCnt = sBuffFetchRowCnt;

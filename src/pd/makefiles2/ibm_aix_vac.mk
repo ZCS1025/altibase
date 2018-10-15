@@ -3,12 +3,12 @@
 # CVS Info : $Id: ibm_aix_vac.mk 53594 2012-06-05 02:47:52Z djin $
 #
 
-# Àü´ŞµÇ´Â ¿ÜºÎ º¯¼öµé : GCC
+# ì „ë‹¬ë˜ëŠ” ì™¸ë¶€ ë³€ìˆ˜ë“¤ : GCC
 
-# ID_DIR      : SM µğ·ºÅä¸® 
-# ID_ACE_ROOT : ¶óÀÌºê·¯¸® ÆĞ½º
-# compile64   : ÄÄÆÄÀÏ È¯°æ
-# compat5     : CC 5.0 À¸·Î?
+# ID_DIR      : SM ë””ë ‰í† ë¦¬ 
+# ID_ACE_ROOT : ë¼ì´ë¸ŒëŸ¬ë¦¬ íŒ¨ìŠ¤
+# compile64   : ì»´íŒŒì¼ í™˜ê²½
+# compat5     : CC 5.0 ìœ¼ë¡œ?
 
 ifndef	BUILD_MODE
 	@echo "ERROR BUILD_MODE!!!!"
@@ -33,7 +33,7 @@ PURIFYCOV   = $(PURIFY) $(PURECOV)
 # IDL(ACE) Library
 # Library
 
-# readline library ¼³Á¤
+# readline library ì„¤ì •
 
 ifeq "$(USE_READLINE)" "1"
 READLINE_INCLUDES = -I/usr/local/include/readline
@@ -49,7 +49,7 @@ LIBS        = $(READLINE_LIBRARY) -lpthreads
 LIBS_SHIP	=
 endif # "$(OS_MAJORVER)" "5"
 
-# µ¿Àû ÄÄÆÄÀÏ ¿É¼Ç ¼±¾ğ
+# ë™ì  ì»´íŒŒì¼ ì˜µì…˜ ì„ ì–¸
 #
 CXXOPT_DEPENDANCY = -MM
 
@@ -64,12 +64,12 @@ endif
 # CVS Info : $Id: ibm_aix_vac.mk 53594 2012-06-05 02:47:52Z djin $
 #
 
-# BUILD_MODEÀÇ Á¾·ù
-#	debug		: Debug ¸ğµå
+# BUILD_MODEì˜ ì¢…ë¥˜
+#	debug		: Debug ëª¨ë“œ
 #   prerelease      : -DDEBUG(x) -g (o)
-#	release		: release ¹öÁ¯, ½ÇÁ¦ product¿¡ ÇØ´ç
+#	release		: release ë²„ì ¼, ì‹¤ì œ productì— í•´ë‹¹
 
-# LINK MODE Á¾·ù 
+# LINK MODE ì¢…ë¥˜ 
 #	purify		: purify version
 #	quantify	: quantify version
 #	purecov		: purecov version

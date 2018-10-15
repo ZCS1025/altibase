@@ -171,8 +171,8 @@
     "WHERE parse.package_oid = pkg.package_oid "                               \
       "AND pkg.user_id = users.user_id "                                       \
 
-/* Object Mode ¿Œ ∞ÊøÏø°¥¬ Connect ±∏πÆ¿Ã √ﬂ∞° µ«¡ˆ æ ¥¬¥Ÿ.
- * ¥‹, «ÿ¥Á object ¿« ±««—¿∫ connect ±∏πÆ¿Ã √ﬂ∞° µ»¥Ÿ.
+/* Object Mode Ïù∏ Í≤ΩÏö∞ÏóêÎäî Connect Íµ¨Î¨∏Ïù¥ Ï∂îÍ∞Ä ÎêòÏßÄ ÏïäÎäîÎã§.
+ * Îã®, Ìï¥Îãπ object Ïùò Í∂åÌïúÏùÄ connect Íµ¨Î¨∏Ïù¥ Ï∂îÍ∞Ä ÎêúÎã§.
  * objectModeInfoQuery -> getSeqQuery(), getObjModeTableQuery(),
  * getObjModeProcQuery(),getObjModeViewQuery() -> searchObjPrivQuery()
  * */
@@ -376,7 +376,7 @@ SQLRETURN getObjModeTableQuery( FILE   *aTblFp,
     IDE_TEST( getIndexQuery( sUserName, sPuserName, sTableName, aTblFp, aDbStatsFp )
             != SQL_SUCCESS );
 
-    /* PROJ-1107 Check Constraint ¡ˆø¯ */
+    /* PROJ-1107 Check Constraint ÏßÄÏõê */
     IDE_TEST( getCheckConstraintQuery( sUserName,
                                        sPuserName,
                                        sTableName,
@@ -493,7 +493,7 @@ SQLRETURN getObjModeMViewQuery( FILE  * aMViewFp,
 
     sPuserName = sUserName;
 
-    /* View Nameø°º≠ $VIEW ¡¶∞≈ */
+    /* View NameÏóêÏÑú $VIEW Ï†úÍ±∞ */
     idlOS::memset( sMVIewName, 0x00, ID_SIZEOF( sMVIewName ) );
     idlOS::memcpy( sMVIewName, sViewName, idlOS::strlen( sViewName ) -
                                           UTM_MVIEW_VIEW_SUFFIX_SIZE );
@@ -504,7 +504,7 @@ SQLRETURN getObjModeMViewQuery( FILE  * aMViewFp,
     IDE_TEST( getIndexQuery( sUserName, sPuserName, sMVIewName, aMViewFp, aMViewFp )
               != SQL_SUCCESS );
 
-    /* PROJ-1107 Check Constraint ¡ˆø¯ */
+    /* PROJ-1107 Check Constraint ÏßÄÏõê */
     IDE_TEST( getCheckConstraintQuery( sUserName,
                                        sPuserName,
                                        sMVIewName,

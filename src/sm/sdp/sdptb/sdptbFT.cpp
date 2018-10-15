@@ -17,7 +17,7 @@
 /***********************************************************************
  * $Id: sdptbFT.cpp 27228 2008-07-23 17:36:52Z newdaily $
  *
- * TBS°ü·Á Dump Table ÇÔ¼öµéÀÌ ¸ğ¿©ÀÖ´Ù.
+ * TBSê´€ë ¤ Dump Table í•¨ìˆ˜ë“¤ì´ ëª¨ì—¬ìˆë‹¤.
  **********************************************************************/
 #include <sdp.h>
 #include <sdptb.h>
@@ -28,8 +28,8 @@
 
 
 /******************************************************************************
- * Description : Free Ext List¸¦ º¸¿©ÁÖ´Â D$DISK_TBS_FREEEXTLISTÀÇ Record¸¦
- *               BuildÇÑ´Ù.
+ * Description : Free Ext Listë¥¼ ë³´ì—¬ì£¼ëŠ” D$DISK_TBS_FREEEXTLISTì˜ Recordë¥¼
+ *               Buildí•œë‹¤.
  *
  *  aHeader   - [IN]
  *  aDumpObj  - [IN]
@@ -50,11 +50,11 @@ IDE_RC sdptbFT::buildRecord4FreeExtOfTBS(
 
     IDE_TEST_RAISE( aDumpObj == NULL, ERR_EMPTY_OBJECT );
 
-    /* TBS°¡ Á¸ÀçÇÏ´ÂÁö °Ë»çÇÏ°í DumpÁß¿¡ DropµÇÁö ¾Êµµ·Ï LockÀ» Àâ´Â´Ù. */
-    /* BUG-28678  [SM] qmsDumpObjList::mObjInfo¿¡ ¼³Á¤µÉ ¸Ş¸ğ¸® ÁÖ¼Ò´Â 
-     * ¹İµå½Ã °ø°£À» ÇÒ´çÇØ¼­ ¼³Á¤ÇØ¾ßÇÕ´Ï´Ù. 
+    /* TBSê°€ ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬í•˜ê³  Dumpì¤‘ì— Dropë˜ì§€ ì•Šë„ë¡ Lockì„ ì¡ëŠ”ë‹¤. */
+    /* BUG-28678  [SM] qmsDumpObjList::mObjInfoì— ì„¤ì •ë  ë©”ëª¨ë¦¬ ì£¼ì†ŒëŠ” 
+     * ë°˜ë“œì‹œ ê³µê°„ì„ í• ë‹¹í•´ì„œ ì„¤ì •í•´ì•¼í•©ë‹ˆë‹¤. 
      * 
-     * aDumpObj´Â Pointer·Î µ¥ÀÌÅÍ°¡ ¿À±â ¶§¹®¿¡ °ªÀ» °¡Á®¿Í¾ß ÇÕ´Ï´Ù. */
+     * aDumpObjëŠ” Pointerë¡œ ë°ì´í„°ê°€ ì˜¤ê¸° ë•Œë¬¸ì— ê°’ì„ ê°€ì ¸ì™€ì•¼ í•©ë‹ˆë‹¤. */
     sSpaceID = *( (scSpaceID*)aDumpObj );
 
     sSpaceCache = (sdptbSpaceCache*)sddDiskMgr::getSpaceCache( sSpaceID );
@@ -71,7 +71,7 @@ IDE_RC sdptbFT::buildRecord4FreeExtOfTBS(
     for( i = 0, sFileID = 0; i <= sLstGGID; i++ )
     {
         sdptbBit::findBitFromHint( (void *)sSpaceCache->mFreenessOfGGs,
-                                   sLstGGID + 1,   //°Ë»ö´ë»óºñÆ®¼ö
+                                   sLstGGID + 1,   //ê²€ìƒ‰ëŒ€ìƒë¹„íŠ¸ìˆ˜
                                    sFileID,
                                    &sIdx );
 
@@ -80,7 +80,7 @@ IDE_RC sdptbFT::buildRecord4FreeExtOfTBS(
             break;
         }
 
-        /* °¢ FileÀÇ GG¿¡ ´ëÇØ¼­ FreeExt Á¤º¸¸¦ »ı¼ºÇÏµµ·Ï ÇÑ´Ù. */
+        /* ê° Fileì˜ GGì— ëŒ€í•´ì„œ FreeExt ì •ë³´ë¥¼ ìƒì„±í•˜ë„ë¡ í•œë‹¤. */
         sFileID = sIdx;
 
         IDE_TEST( buildRecord4FreeExtOfGG( aHeader,
@@ -90,8 +90,8 @@ IDE_RC sdptbFT::buildRecord4FreeExtOfTBS(
                   != IDE_SUCCESS );
 
         /*
-         * BUG-28059 [SD] drop µÈ ÆÄÀÏÀÌ ÀÖ´Â°æ¿ì D$disk_tbs_free_extlist 
-         *           Á¶È¸½Ã Á×´Â °æ¿ì°¡ ÀÖÀ½. 
+         * BUG-28059 [SD] drop ëœ íŒŒì¼ì´ ìˆëŠ”ê²½ìš° D$disk_tbs_free_extlist 
+         *           ì¡°íšŒì‹œ ì£½ëŠ” ê²½ìš°ê°€ ìˆìŒ. 
          */
         if( sIdx == sLstGGID )
         {
@@ -113,13 +113,13 @@ IDE_RC sdptbFT::buildRecord4FreeExtOfTBS(
 }
 
 /******************************************************************************
- * Description : TBS¿¡¼­ D$DISK_TBS_FREE_EXTLISTÀÇ ·¹ÄÚµåÁß aFID¿¡ ÇØ´çÇÏ´Â ÆÄ
- *               ÀÏÀÇ Record¸¦ BuildÇÑ´Ù.
+ * Description : TBSì—ì„œ D$DISK_TBS_FREE_EXTLISTì˜ ë ˆì½”ë“œì¤‘ aFIDì— í•´ë‹¹í•˜ëŠ” íŒŒ
+ *               ì¼ì˜ Recordë¥¼ Buildí•œë‹¤.
  *
  *  aHeader   - [IN]
  *  aMemory   - [IN]
  *  aCache    - [IN] TableSpace Cache
- *  sdFileID  - [IN] DumpÇÏ·Á´Â FileÀÇ ID
+ *  sdFileID  - [IN] Dumpí•˜ë ¤ëŠ” Fileì˜ ID
  ******************************************************************************/
 IDE_RC sdptbFT::buildRecord4FreeExtOfGG( void                * aHeader,
                                          iduFixedTableMemory * aMemory,
@@ -167,7 +167,7 @@ IDE_RC sdptbFT::buildRecord4FreeExtOfGG( void                * aHeader,
     for( i = 0, sFreeLGID = 0; i < sTotLGCnt; i++ )
     {
         sdptbBit::findBitFromHint( &sLFFreeInfo->mBits,
-                                   sTotLGCnt, //°Ë»ö´ë»óºñÆ®¼ö
+                                   sTotLGCnt, //ê²€ìƒ‰ëŒ€ìƒë¹„íŠ¸ìˆ˜
                                    sFreeLGID,
                                    &sIdx );
         if( sIdx == SDPTB_BIT_NOT_FOUND )
@@ -175,7 +175,7 @@ IDE_RC sdptbFT::buildRecord4FreeExtOfGG( void                * aHeader,
             break;
         }
 
-        /* °¢ FileÀÇ GG¿¡ ´ëÇØ¼­ FreeExt Á¤º¸¸¦ »ı¼ºÇÏµµ·Ï ÇÑ´Ù. */
+        /* ê° Fileì˜ GGì— ëŒ€í•´ì„œ FreeExt ì •ë³´ë¥¼ ìƒì„±í•˜ë„ë¡ í•œë‹¤. */
         sFreeLGID = sIdx;
 
         sLGHdrPID = SDPTB_LG_HDR_PID_FROM_LGID( aFID,
@@ -225,8 +225,8 @@ IDE_RC sdptbFT::buildRecord4FreeExtOfGG( void                * aHeader,
 }
 
 /******************************************************************************
- * Description : TBS¿¡¼­ D$DISK_TBS_FREEEXTLISTÀÇ ·¹ÄÚµåÁß aGGPtrÀÇ aLGHdrPID
- *               °¡ °¡¸®Å°´Â LGÀÇ RecordµéÀ» BuildÇÑ´Ù.
+ * Description : TBSì—ì„œ D$DISK_TBS_FREEEXTLISTì˜ ë ˆì½”ë“œì¤‘ aGGPtrì˜ aLGHdrPID
+ *               ê°€ ê°€ë¦¬í‚¤ëŠ” LGì˜ Recordë“¤ì„ Buildí•œë‹¤.
  *
  *  aHeader   - [IN]
  *  aMemory   - [IN]
@@ -270,7 +270,7 @@ IDE_RC sdptbFT::buildRecord4FreeExtOfLG( void                * aHeader,
 
     for( i = 0, sFreeExtIdx = 0; i < sLGHdrPtr->mFree; i++ )
     {
-        //LG¿¡¼­ ÇöÀç »ç¿ëÁßÀÎ mValidBits°¹¼ö ¸¸Å­À» °Ë»öÇØ¾ßÇÑ´Ù.
+        //LGì—ì„œ í˜„ì¬ ì‚¬ìš©ì¤‘ì¸ mValidBitsê°¯ìˆ˜ ë§Œí¼ì„ ê²€ìƒ‰í•´ì•¼í•œë‹¤.
         sdptbBit::findZeroBitFromHint( sBitmap,
                                        sLGHdrPtr->mValidBits,
                                        sFreeExtIdx,
@@ -280,8 +280,8 @@ IDE_RC sdptbFT::buildRecord4FreeExtOfLG( void                * aHeader,
 
         sFreeExtIdx = sBitIdx;
 
-        //ÇØ´ç LG¿¡ free°¡ ÀÖ´Â°ÍÀ» º¸°í¼­ µé¾î¿ÔÀ¸¹Ç·Î ÀÌ°Ô °ÅÁşÀÌµÈ´Ù
-        //¸é ½É°¢ÇÑ ¿¡·¯»óÈ²ÀÌ´Ù.
+        //í•´ë‹¹ LGì— freeê°€ ìˆëŠ”ê²ƒì„ ë³´ê³ ì„œ ë“¤ì–´ì™”ìœ¼ë¯€ë¡œ ì´ê²Œ ê±°ì§“ì´ëœë‹¤
+        //ë©´ ì‹¬ê°í•œ ì—ëŸ¬ìƒí™©ì´ë‹¤.
         IDE_ASSERT( sBitIdx <  sLGHdrPtr->mValidBits );
 
         sDumpFreeExtInfo.mExtRID       = SD_MAKE_RID( aLGHdrPID, sFreeExtIdx );

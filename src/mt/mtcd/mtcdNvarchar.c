@@ -166,19 +166,19 @@ mtdModule mtcdNvarchar = {
     {
         // Key Comparison
         {
-            // mt valueµé °£ÀÇ compare 
+            // mt valueë“¤ ê°„ì˜ compare 
             mtdNvarcharMtdMtdKeyAscComp, // Ascending Key Comparison
             mtdNvarcharMtdMtdKeyDescComp // Descending Key Comparison
         }
         ,
         {
-            // mt value¿Í stored value°£ÀÇ compare 
+            // mt valueì™€ stored valueê°„ì˜ compare 
             mtdNvarcharStoredMtdKeyAscComp, // Ascending Key Comparison
             mtdNvarcharStoredMtdKeyDescComp // Descending Key Comparison
         }
         ,
         {
-            // stored valueµé °£ÀÇ compare 
+            // stored valueë“¤ ê°„ì˜ compare 
             mtdNvarcharStoredStoredKeyAscComp, // Ascending Key Comparison
             mtdNvarcharStoredStoredKeyDescComp // Descending Key Comparison
         }
@@ -204,7 +204,7 @@ ACI_RC mtdInitializeNvarchar( acp_uint32_t aNo )
     ACI_TEST( mtdInitializeModule( &mtcdNvarchar, aNo )
               != ACI_SUCCESS );
 
-    // mtdColumnÀÇ ÃÊ±âÈ­
+    // mtdColumnì˜ ì´ˆê¸°í™”
     ACI_TEST( mtcInitializeColumn( & mtdColumn,
                                    & mtcdNvarchar,
                                    0,   // arguments
@@ -305,13 +305,13 @@ ACI_RC mtdValue( mtcTemplate*  aTemplate,
 
     sColLanguage = aColumn->language;
 
-    // NCHAR ¸®ÅÍ·²À» »ç¿ëÇß´Ù¸é NVARCHAR Å¸ÀÔÀ¸·Î´Â ÀÎ½ÄµÇÁö ¾Ê´Â´Ù.
-    // ¹«Á¶°Ç DB Ä³¸¯ÅÍ ¼ÂÀÌ´Ù.
+    // NCHAR ë¦¬í„°ëŸ´ì„ ì‚¬ìš©í–ˆë‹¤ë©´ NVARCHAR íƒ€ì…ìœ¼ë¡œëŠ” ì¸ì‹ë˜ì§€ ì•ŠëŠ”ë‹¤.
+    // ë¬´ì¡°ê±´ DB ìºë¦­í„° ì…‹ì´ë‹¤.
     sTokenLanguage = mtlDBCharSet;
 
     // To fix BUG-13444
-    // tokenFence¿Í RowFence´Â º°°³ÀÇ °Ë»ç°úÁ¤ÀÌ¹Ç·Î,
-    // ¸ÕÀú RowFence°Ë»ç ÈÄ TokenFence°Ë»ç¸¦ ÇØ¾ß ÇÑ´Ù.
+    // tokenFenceì™€ RowFenceëŠ” ë³„ê°œì˜ ê²€ì‚¬ê³¼ì •ì´ë¯€ë¡œ,
+    // ë¨¼ì € RowFenceê²€ì‚¬ í›„ TokenFenceê²€ì‚¬ë¥¼ í•´ì•¼ í•œë‹¤.
     sIterator  = sValue->value;
     sSrcRemain = sTokenLanguage->maxPrecision( aTokenLength );
     sFence     = (acp_uint8_t*)aValue + aValueSize;
@@ -410,7 +410,7 @@ ACI_RC mtdValue( mtcTemplate*  aTemplate,
     {
         sValue->length           = sIterator - sValue->value;
 
-        // precision, scale Àç ¼³Á¤ ÈÄ, estimate·Î semantic °Ë»ç
+        // precision, scale ì¬ ì„¤ì • í›„, estimateë¡œ semantic ê²€ì‚¬
         aColumn->flag            = 1;
 
         aColumn->precision   = sValue->length != 0 ?
@@ -480,7 +480,7 @@ static ACI_RC mtdGetPrecision( const mtcColumn* aColumn,
     sLanguage = aColumn->language;
 
     // --------------------------
-    // ValueÀÇ ¹®ÀÚ °³¼ö
+    // Valueì˜ ë¬¸ì ê°œìˆ˜
     // --------------------------
     
     sValueIndex = (acp_uint8_t*) sValue->value;
@@ -578,7 +578,7 @@ mtdNvarcharMtdMtdKeyAscComp( mtdValueInfo* aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd Å¸ÀÔÀÇ Keyµé °£ÀÇ ascending compare
+ * Description : Mtd íƒ€ì…ì˜ Keyë“¤ ê°„ì˜ ascending compare
  *
  * Implementation :
  *
@@ -649,7 +649,7 @@ mtdNvarcharMtdMtdKeyDescComp( mtdValueInfo* aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd Å¸ÀÔÀÇ Keyµé °£ÀÇ descending compare
+ * Description : Mtd íƒ€ì…ì˜ Keyë“¤ ê°„ì˜ descending compare
  *
  * Implementation :
  *
@@ -720,7 +720,7 @@ mtdNvarcharStoredMtdKeyAscComp( mtdValueInfo* aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd Å¸ÀÔÀÇ Key¿Í Stored Key °£ÀÇ ascending compare
+ * Description : Mtd íƒ€ì…ì˜ Keyì™€ Stored Key ê°„ì˜ ascending compare
  *
  * Implementation :
  *
@@ -785,7 +785,7 @@ mtdNvarcharStoredMtdKeyDescComp( mtdValueInfo* aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd Å¸ÀÔÀÇ Key¿Í Stored Key °£ÀÇ ascending compare
+ * Description : Mtd íƒ€ì…ì˜ Keyì™€ Stored Key ê°„ì˜ ascending compare
  *
  * Implementation :
  *
@@ -850,7 +850,7 @@ mtdNvarcharStoredStoredKeyAscComp( mtdValueInfo* aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Stored Keyµé °£ÀÇ ascending compare
+ * Description : Stored Keyë“¤ ê°„ì˜ ascending compare
  *
  * Implementation :
  *
@@ -908,7 +908,7 @@ mtdNvarcharStoredStoredKeyDescComp( mtdValueInfo* aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Stored Keyµé °£ÀÇ descending compare
+ * Description : Stored Keyë“¤ ê°„ì˜ descending compare
  *
  * Implementation :
  *
@@ -984,7 +984,7 @@ static ACI_RC mtdCanonize( const mtcColumn* aCanon,
     sLanguage = aCanon->language;
 
     // --------------------------
-    // ValueÀÇ ¹®ÀÚ °³¼ö
+    // Valueì˜ ë¬¸ì ê°œìˆ˜
     // --------------------------
     sValueIndex = sValue->value;
     sValueFence = sValueIndex + sValue->length;
@@ -1029,7 +1029,7 @@ ACI_RC mtdValidate( mtcColumn*   aColumn,
 {
 /***********************************************************************
  *
- * Description : valueÀÇ semantic °Ë»ç ¹× mtcColum ÃÊ±âÈ­
+ * Description : valueì˜ semantic ê²€ì‚¬ ë° mtcColum ì´ˆê¸°í™”
  *
  * Implementation :
  *
@@ -1043,9 +1043,9 @@ ACI_RC mtdValidate( mtcColumn*   aColumn,
     ACI_TEST_RAISE( sCharVal->length + sizeof(acp_uint16_t) != aValueSize,
                     ERR_INVALID_LENGTH );
 
-    // ÃÊ±âÈ­µÈ aColumnÀº cannonize() ½Ã¿¡ »ç¿ë
-    // ÀÌ¶§, data type moduleÀÇ precision Á¤º¸¸¸À» »ç¿ëÇÏ¹Ç·Î,
-    // language Á¤º¸ ¼³Á¤ÇÒ ÇÊ¿ä¾øÀ½ 
+    // ì´ˆê¸°í™”ëœ aColumnì€ cannonize() ì‹œì— ì‚¬ìš©
+    // ì´ë•Œ, data type moduleì˜ precision ì •ë³´ë§Œì„ ì‚¬ìš©í•˜ë¯€ë¡œ,
+    // language ì •ë³´ ì„¤ì •í•  í•„ìš”ì—†ìŒ 
     ACI_TEST( mtcInitializeColumn( aColumn,
                                    & mtcdNvarchar,
                                    1,                // arguments
@@ -1086,7 +1086,7 @@ ACI_RC mtdValueFromOracle( mtcColumn*    aColumn,
         aOracleLength = 0;
     }
 
-    // aColumnÀÇ ÃÊ±âÈ­
+    // aColumnì˜ ì´ˆê¸°í™”
     ACI_TEST( mtcInitializeColumn( aColumn,
                                    & mtcdNvarchar,
                                    1,
@@ -1128,8 +1128,8 @@ static ACI_RC mtdStoredValue2MtdValue( acp_uint32_t aColumnSize,
 {
 /*******************************************************************
  * PROJ-1705
- * µğ½ºÅ©Å×ÀÌºíÄÃ·³ÀÇ µ¥ÀÌÅ¸¸¦
- * qp ·¹ÄÚµåÃ³¸®¿µ¿ªÀÇ ÇØ´ç ÄÃ·³À§Ä¡¿¡ º¹»ç
+ * ë””ìŠ¤í¬í…Œì´ë¸”ì»¬ëŸ¼ì˜ ë°ì´íƒ€ë¥¼
+ * qp ë ˆì½”ë“œì²˜ë¦¬ì˜ì—­ì˜ í•´ë‹¹ ì»¬ëŸ¼ìœ„ì¹˜ì— ë³µì‚¬
  *******************************************************************/
 
     mtdNcharType* sNvarcharValue;
@@ -1138,7 +1138,7 @@ static ACI_RC mtdStoredValue2MtdValue( acp_uint32_t aColumnSize,
     
     if( ( aDestValueOffset == 0 ) && ( aLength == 0 ) )
     {
-        // NULL µ¥ÀÌÅ¸
+        // NULL ë°ì´íƒ€
         sNvarcharValue->length = 0;
     }
     else
@@ -1166,9 +1166,9 @@ acp_uint32_t mtdNullValueSize()
 {
 /*******************************************************************
  * PROJ-1705
- * °¢ µ¥ÀÌÅ¸Å¸ÀÔÀÇ null ValueÀÇ Å©±â ¹İÈ¯
- * ¿¹ ) mtdNcharType ( acp_uint16_t length; acp_uint8_t value[1] ) ¿¡¼­
- *      lengthÅ¸ÀÔÀÎ acp_uint16_tÀÇ Å©±â¸¦ ¹İÈ¯
+ * ê° ë°ì´íƒ€íƒ€ì…ì˜ null Valueì˜ í¬ê¸° ë°˜í™˜
+ * ì˜ˆ ) mtdNcharType ( acp_uint16_t length; acp_uint8_t value[1] ) ì—ì„œ
+ *      lengthíƒ€ì…ì¸ acp_uint16_tì˜ í¬ê¸°ë¥¼ ë°˜í™˜
  *******************************************************************/
 
     return mtdActualSize( NULL,
@@ -1180,10 +1180,10 @@ static acp_uint32_t mtdHeaderSize()
 {
 /***********************************************************************
  * PROJ-1705
- * length¸¦ °¡Áö´Â µ¥ÀÌÅ¸Å¸ÀÔÀÇ length Á¤º¸¸¦ ÀúÀåÇÏ´Â º¯¼öÀÇ Å©±â ¹İÈ¯
- * ¿¹ ) mtdNcharType ( acp_uint16_t length; acp_uint8_t value[1] ) ¿¡¼­
- *      lengthÅ¸ÀÔÀÎ acp_uint16_tÀÇ Å©±â¸¦ ¹İÈ¯
- *  integer¿Í °°Àº °íÁ¤±æÀÌ µ¥ÀÌÅ¸Å¸ÀÔÀº 0 ¹İÈ¯
+ * lengthë¥¼ ê°€ì§€ëŠ” ë°ì´íƒ€íƒ€ì…ì˜ length ì •ë³´ë¥¼ ì €ì¥í•˜ëŠ” ë³€ìˆ˜ì˜ í¬ê¸° ë°˜í™˜
+ * ì˜ˆ ) mtdNcharType ( acp_uint16_t length; acp_uint8_t value[1] ) ì—ì„œ
+ *      lengthíƒ€ì…ì¸ acp_uint16_tì˜ í¬ê¸°ë¥¼ ë°˜í™˜
+ *  integerì™€ ê°™ì€ ê³ ì •ê¸¸ì´ ë°ì´íƒ€íƒ€ì…ì€ 0 ë°˜í™˜
  **********************************************************************/
 
     return sizeof(acp_uint16_t);

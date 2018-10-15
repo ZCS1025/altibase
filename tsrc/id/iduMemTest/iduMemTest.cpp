@@ -43,7 +43,7 @@ int main( void )
     idlOS::printf("Initialize\n");
 
     /* --------------------
-     *  ������Ƽ �ε�
+     *  프로퍼티 로딩
      * -------------------*/
     IDE_TEST_RAISE(idp::initialize(NULL, NULL) != IDE_SUCCESS,
                    load_property_error);
@@ -51,19 +51,19 @@ int main( void )
     IDE_TEST(iduMemMgr::initializeStatic(IDU_SERVER_TYPE) != IDE_SUCCESS);
     idlOS::printf("Initialize Success\n");
     
-	/* 1. �޸� �Ҵ� ���� �׽�Ʈ */
+	/* 1. 메모리 할당 서비스 테스트 */
     //IDE_TEST(TestMemAlloc() != IDE_SUCCESS);    
 
-	/* 2. �޸� ���� ���� �׽�Ʈ */
+	/* 2. 메모리 해제 서비스 테스트 */
     //IDE_TEST(TestMemFree() != IDE_SUCCESS);
 
-	/* 3. �̹� ������ �޸𸮸� �ٽ� �����ϴ� ��� �׽�Ʈ */
+	/* 3. 이미 해제된 메모리를 다시 해제하는 경우 테스트 */
     //IDE_TEST(TestFreeMemFree() != IDE_SUCCESS);
     
-	/* 4. 2GB�̻� Large Memory �Ҵ�/���� �׽�Ʈ */
+	/* 4. 2GB이상 Large Memory 할당/해제 테스트 */
     IDE_TEST(TestLargeMem() != IDE_SUCCESS);
 
-    /* 5. �Ѱ��Ȳ �׽�Ʈ */
+    /* 5. 한계상황 테스트 */
     IDE_TEST(TestMemFull() != IDE_SUCCESS);
         
     IDE_TEST(iduMemMgr::destroyStatic() != IDE_SUCCESS);

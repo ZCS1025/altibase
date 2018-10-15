@@ -107,7 +107,7 @@ private:
     smxSavepoint           mImpSavepoint;
     smxSavepoint           mExpSavepoint;
 
-    /* (BUG-45368) TPC-C ¼º´ÉÅ×½ºÆ®. savepoint ÇÑ°³ÀÏ¶§´Â alloc ÇÏÁö ¾Ê°í ÀÌº¯¼ö¸¦ ¾´´Ù. */
+    /* (BUG-45368) TPC-C ì„±ëŠ¥í…ŒìŠ¤íŠ¸. savepoint í•œê°œì¼ë•ŒëŠ” alloc í•˜ì§€ ì•Šê³  ì´ë³€ìˆ˜ë¥¼ ì“´ë‹¤. */
     smxSavepoint           mPreparedSP;
     idBool                 mIsUsedPreparedSP;
 

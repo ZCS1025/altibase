@@ -52,7 +52,7 @@ static IDE_RC qsfEstimate( mtcNode*     aNode,
 mtfModule qsfGetSystemStatsModule = {
     1|MTC_NODE_OPERATOR_MISC|MTC_NODE_VARIABLE_TRUE,
     ~0,
-    1.0,                    // default selectivity (ºñ±³ ¿¬»êÀÚ ¾Æ´Ô)
+    1.0,                    // default selectivity (ë¹„êµ ì—°ì‚°ìž ì•„ë‹˜)
     qsfFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -172,7 +172,7 @@ IDE_RC qsfCalculate_GetSystemStats( mtcNode*     aNode,
 
     if ( smiStatistics::isValidSystemStat() == ID_TRUE )
     {
-        // smiStatistics.cpp gDBMSStatColDesc ÀÇ ÀÌ¸§°ú µ¿ÀÏÇØ¾ß ÇÑ´Ù.
+        // smiStatistics.cpp gDBMSStatColDesc ì˜ ì´ë¦„ê³¼ ë™ì¼í•´ì•¼ í•œë‹¤.
         if ( idlOS::strMatch( (const SChar*)sStatName->value,
                                sStatName->length,
                                "SREAD_TIME",

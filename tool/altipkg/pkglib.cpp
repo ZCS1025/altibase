@@ -23,23 +23,23 @@
 #include <altipkg.h>
 
 
-/* ½ºÆ®¸µ ¾ÕµÚ¿¡ Á¸ÀçÇÏ´Â WHITE-SPACE¸¦ Á¦°Å */
+/* ìŠ¤íŠ¸ë§ ì•ë’¤ì— ì¡´ì¬í•˜ëŠ” WHITE-SPACEë¥¼ ì œê±° */
 void eraseWhiteSpace(SChar *buffer)
 {
     SInt i;
     SInt len = idlOS::strlen(buffer);
-    SInt ValueRegion = 0; // ÇöÀç ¼öÇàÇÏ´Â ¹üÀ§´Â ? ÀÌ¸§¿µ¿ª=°ª¿µ¿ª
-    SInt firstAscii  = 0; // °ª¿µ¿ª¿¡¼­ Ã¹¹øÂ° ASCII¸¦ Ã£Àº ÈÄ..
+    SInt ValueRegion = 0; // í˜„ì¬ ìˆ˜í–‰í•˜ëŠ” ë²”ìœ„ëŠ” ? ì´ë¦„ì˜ì—­=ê°’ì˜ì—­
+    SInt firstAscii  = 0; // ê°’ì˜ì—­ì—ì„œ ì²«ë²ˆì§¸ ASCIIë¥¼ ì°¾ì€ í›„..
 
-    // 1. ¾Õ¿¡¼­ ºÎÅÍ °Ë»ç ½ÃÀÛ..
+    // 1. ì•ì—ì„œ ë¶€í„° ê²€ì‚¬ ì‹œì‘..
     for (i = 0; i < len && buffer[i]; i++)
     {
-        if (buffer[i] == '#') // ÁÖ¼® Ã³¸®
+        if (buffer[i] == '#') // ì£¼ì„ ì²˜ë¦¬
         {
             buffer[i]= 0;
             break;
         }
-        if (ValueRegion == 0) // ÀÌ¸§ ¿µ¿ª °Ë»ç
+        if (ValueRegion == 0) // ì´ë¦„ ì˜ì—­ ê²€ì‚¬
         {
             if (buffer[i] == '=')
             {
@@ -47,7 +47,7 @@ void eraseWhiteSpace(SChar *buffer)
                 continue;
             }
 
-            if (idlOS::idlOS_isspace(buffer[i])) // ½ºÆäÀÌ½º ÀÓ
+            if (idlOS::idlOS_isspace(buffer[i])) // ìŠ¤í˜ì´ìŠ¤ ì„
             {
                 SInt j;
 
@@ -58,11 +58,11 @@ void eraseWhiteSpace(SChar *buffer)
                 i--;
             }
         }
-        else // °ª¿µ¿ª °Ë»ç
+        else // ê°’ì˜ì—­ ê²€ì‚¬
         {
             if (firstAscii == 0)
             {
-                if (idlOS::idlOS_isspace(buffer[i])) // ½ºÆäÀÌ½º ÀÓ
+                if (idlOS::idlOS_isspace(buffer[i])) // ìŠ¤í˜ì´ìŠ¤ ì„
                 {
                     SInt j;
 
@@ -81,11 +81,11 @@ void eraseWhiteSpace(SChar *buffer)
         }
     } // for
 
-    // 2. ³¡¿¡¼­ ºÎÅÍ °Ë»ç ½ÃÀÛ.. : ½ºÆäÀÌ½º ¾ø¾Ö±â
+    // 2. ëì—ì„œ ë¶€í„° ê²€ì‚¬ ì‹œì‘.. : ìŠ¤í˜ì´ìŠ¤ ì—†ì• ê¸°
     len = idlOS::strlen(buffer);
     for (i = len - 1; buffer[i] && len > 0; i--)
     {
-        if (idlOS::idlOS_isspace(buffer[i])) // ½ºÆäÀÌ½º ¾ø¾Ö±â
+        if (idlOS::idlOS_isspace(buffer[i])) // ìŠ¤í˜ì´ìŠ¤ ì—†ì• ê¸°
         {
             buffer[i]= 0;
             continue;

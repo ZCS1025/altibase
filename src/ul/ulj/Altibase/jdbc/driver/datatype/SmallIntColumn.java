@@ -49,7 +49,7 @@ public class SmallIntColumn extends AbstractColumn
 
     public int[] getMappedJDBCTypes()
     {
-        // Altibase´Â TINYINT¸¦ Áö¿øÇÏÁö ¾Ê´Â´Ù. SMALLINT Å¸ÀÔÀ¸·Î ¹Ş¾ÆµéÀÎ´Ù.
+        // AltibaseëŠ” TINYINTë¥¼ ì§€ì›í•˜ì§€ ì•ŠëŠ”ë‹¤. SMALLINT íƒ€ì…ìœ¼ë¡œ ë°›ì•„ë“¤ì¸ë‹¤.
         return new int[] { AltibaseTypes.SMALLINT, AltibaseTypes.TINYINT };
     }
 

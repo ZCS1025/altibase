@@ -20,7 +20,7 @@
 
 /*****************************************************************************
  *   NAME
- *     utmProperty.h - ¸ÞÀÎ¸ðµâ Çì´õÈ­ÀÏ
+ *     utmProperty.h - ë©”ì¸ëª¨ë“ˆ í—¤ë”í™”ì¼
  *
  *   DESCRIPTION
  *
@@ -39,7 +39,7 @@
 #include <utmPropertyMgr.h>
 
 #define IDUP_MAX_NAME_LEN  1024
-#define IDUP_PINGPONG_COUNT  2 /* BUGBUG : SMM_PINGPONG_COUNT¿Í µ¿ÀÏ */
+#define IDUP_PINGPONG_COUNT  2 /* BUGBUG : SMM_PINGPONG_COUNTì™€ ë™ì¼ */
 
 class utmProperty
 {

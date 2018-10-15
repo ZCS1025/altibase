@@ -525,18 +525,18 @@ IDE_RC idp::buildRecordCallback(idvSQL              * /* aStatistics */,
     for (sLstIdx = 0; sLstIdx < mCount; sLstIdx++)
     {
         sBaseList = &mArrBaseList[sLstIdx];
-        /*ÇÏ³ªÀÇ ÇÁ·ÎÆÛÆ¼ ¸®½ºÆ®ÀÇ °¢ Ç×¸ñ¿¡ ´ëÇØ¼­*/
+        /*í•˜ë‚˜ì˜ í”„ë¡œí¼í‹° ë¦¬ìŠ¤íŠ¸ì˜ ê° í•­ëª©ì— ëŒ€í•´ì„œ*/
         IDU_LIST_ITERATE(sBaseList, sNode)
         {
             sBase = (idpBase*)sNode->mObj;
 
             /* BUG-43006 FixedTable Indexing Filter
-             * Indexing Filter¸¦ »ç¿ëÇØ¼­ ÀüÃ¼ Record¸¦ »ý¼ºÇÏÁö¾Ê°í
-             * ºÎºÐ¸¸ »ý¼ºÇØ Filtering ÇÑ´Ù.
-             * 1. void * ¹è¿­¿¡ IDU_FT_COLUMN_INDEX ·Î ÁöÁ¤µÈ ÄÃ·³¿¡
-             * ÇØ´çÇÏ´Â °ªÀ» ¼ø¼­´ë·Î ³Ö¾îÁÖ¾î¾ß ÇÑ´Ù.
-             * 2. IDU_FT_COLUMN_INDEXÀÇ ÄÃ·³¿¡ ÇØ´çÇÏ´Â °ªÀ» ¸ðµÎ ³Ö
-             * ¾î ÁÖ¾î¾ßÇÑ´Ù.
+             * Indexing Filterë¥¼ ì‚¬ìš©í•´ì„œ ì „ì²´ Recordë¥¼ ìƒì„±í•˜ì§€ì•Šê³ 
+             * ë¶€ë¶„ë§Œ ìƒì„±í•´ Filtering í•œë‹¤.
+             * 1. void * ë°°ì—´ì— IDU_FT_COLUMN_INDEX ë¡œ ì§€ì •ëœ ì»¬ëŸ¼ì—
+             * í•´ë‹¹í•˜ëŠ” ê°’ì„ ìˆœì„œëŒ€ë¡œ ë„£ì–´ì£¼ì–´ì•¼ í•œë‹¤.
+             * 2. IDU_FT_COLUMN_INDEXì˜ ì»¬ëŸ¼ì— í•´ë‹¹í•˜ëŠ” ê°’ì„ ëª¨ë‘ ë„£
+             * ì–´ ì£¼ì–´ì•¼í•œë‹¤.
              */
             sIndexValues[0] = &sBase->mName;
             if ( iduFixedTable::checkKeyRange( aMemory,

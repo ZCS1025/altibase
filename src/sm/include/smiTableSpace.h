@@ -38,7 +38,7 @@ public:
                                 UInt                aExtPageCnt,
 				                ULong               aExtSize);
 
-    // ∏ﬁ∏∏Æ Tablespace∏¶ ª˝º∫«—¥Ÿ.
+    // Î©îÎ™®Î¶¨ TablespaceÎ•º ÏÉùÏÑ±ÌïúÎã§.
     static IDE_RC createMemoryTBS(smiTrans             * aTrans,
                                   SChar                * aName,
                                   UInt                   aAttrFlag,
@@ -62,7 +62,7 @@ public:
                                      UInt         aState,
                                      scSpaceID  * aTBSID );
 
-    // ∏ﬁ∏∏Æ/µΩ∫≈© Tablespace∏¶ Drop«—¥Ÿ.
+    // Î©îÎ™®Î¶¨/ÎîîÏä§ÌÅ¨ TablespaceÎ•º DropÌïúÎã§.
     static IDE_RC drop( idvSQL*      aStatistics,
                         smiTrans *   aTrans,
                         scSpaceID    aTblSpaceID,
@@ -70,17 +70,17 @@ public:
 
 
 
-    // ∏ﬁ∏∏Æ/µΩ∫≈© TableSpace∏¶ DISCARD«—¥Ÿ
+    // Î©îÎ™®Î¶¨/ÎîîÏä§ÌÅ¨ TableSpaceÎ•º DISCARDÌïúÎã§
     static IDE_RC alterDiscard( scSpaceID aTableSpaceID );
 
 
-    // ALTER TABLESPACE ONLINE/OFFLINE¿ª ºˆ«‡
+    // ALTER TABLESPACE ONLINE/OFFLINEÏùÑ ÏàòÌñâ
     static IDE_RC alterStatus(idvSQL     * aStatistics,
                               smiTrans   * aTrans,
                               scSpaceID    aID,
                               UInt         aStatus);
 
-    // Tablespace¿« Attribute Flag∏¶ ∫Ø∞Ê«—¥Ÿ.
+    // TablespaceÏùò Attribute FlagÎ•º Î≥ÄÍ≤ΩÌïúÎã§.
     static IDE_RC alterTBSAttrFlag(smiTrans  * aTrans,
                                    scSpaceID   aTableSpaceID,
                                    UInt        aAttrFlagMask,
@@ -125,8 +125,8 @@ public:
                                   SChar*    aValidFileName);
 
     // BUG-29812
-    // ±‚¡∏¿« getAbsPath∏¶ Memory TBSø°º≠µµ ªÁøÎ«œµµ∑œ ∫Ø∞Ê
-    // ¿Ã∏¶ ¿ß«ÿ TBS∏¶ MemoryøÕ Disk∑Œ ±∏∫–«œ±‚ ¿ß«ÿº≠ aTBSType¿ª √ﬂ∞°
+    // Í∏∞Ï°¥Ïùò getAbsPathÎ•º Memory TBSÏóêÏÑúÎèÑ ÏÇ¨Ïö©ÌïòÎèÑÎ°ù Î≥ÄÍ≤Ω
+    // Ïù¥Î•º ÏúÑÌï¥ TBSÎ•º MemoryÏôÄ DiskÎ°ú Íµ¨Î∂ÑÌïòÍ∏∞ ÏúÑÌï¥ÏÑú aTBSTypeÏùÑ Ï∂îÍ∞Ä
     static IDE_RC getAbsPath( SChar         * aRelName,
                               SChar         * aAbsName,
                               smiTBSLocation  aTBSLocation );
@@ -150,7 +150,7 @@ public:
                                           UInt*      aExtentPageCount,
                                           ULong*     aTotalPageCount);
 
-    // Ω√Ω∫≈€ ≈◊¿Ã∫ÌΩ∫∆‰¿ÃΩ∫ ø©∫Œ π›»Ø
+    // ÏãúÏä§ÌÖú ÌÖåÏù¥Î∏îÏä§ÌéòÏù¥Ïä§ Ïó¨Î∂Ä Î∞òÌôò
     static idBool isSystemTableSpace( scSpaceID aSpaceID );
 
 
@@ -168,21 +168,21 @@ public:
     ////////////////////////////////////////////////////////////////////
     // PROJ-1548-M3 ALTER TABLESPACE
     ////////////////////////////////////////////////////////////////////
-    //  ALTER TABLESPACE TBSNAME ADD CHECKPOINT PATH ... ∏¶ Ω««‡
+    //  ALTER TABLESPACE TBSNAME ADD CHECKPOINT PATH ... Î•º Ïã§Ìñâ
     static IDE_RC alterMemoryTBSAddChkptPath( scSpaceID      aSpaceID,
                                               SChar        * aChkptPath );
 
-    // ALTER TABLESPACE TBSNAME RENAME CHECKPOINT PATH ... ∏¶ Ω««‡
+    // ALTER TABLESPACE TBSNAME RENAME CHECKPOINT PATH ... Î•º Ïã§Ìñâ
     static IDE_RC alterMemoryTBSRenameChkptPath( scSpaceID    aSpaceID,
                                                  SChar      * aOrgChkptPath,
                                                  SChar      * aNewChkptPath );
 
 
-    //  ALTER TABLESPACE TBSNAME DROP CHECKPOINT PATH ... ∏¶ Ω««‡
+    //  ALTER TABLESPACE TBSNAME DROP CHECKPOINT PATH ... Î•º Ïã§Ìñâ
     static IDE_RC alterMemoryTBSDropChkptPath( scSpaceID    aSpaceID,
                                                SChar      * aChkptPath );
 
-    // ALTER TABLESPACE TBSNAME AUTOEXTEND ... ∏¶ ºˆ«‡«—¥Ÿ
+    // ALTER TABLESPACE TBSNAME AUTOEXTEND ... Î•º ÏàòÌñâÌïúÎã§
     static IDE_RC alterMemoryTBSAutoExtend(smiTrans*   aTrans,
                                            scSpaceID   aSpaceID,
                                            idBool      aAutoExtend,
@@ -197,70 +197,70 @@ public:
                                              ULong       aMaxSize );
 
     ////////////////////////////////////////////////////////////////////////////
-    // BUG-14897 sys_tbs_dataø° ∆ƒ¿œ √ﬂ∞°Ω√ user tablespace¿« º≥¡§¿ª ¬¸∞Ì«’¥œ¥Ÿ.
+    // BUG-14897 sys_tbs_dataÏóê ÌååÏùº Ï∂îÍ∞ÄÏãú user tablespaceÏùò ÏÑ§Ï†ïÏùÑ Ï∞∏Í≥†Ìï©ÎãàÎã§.
     ////////////////////////////////////////////////////////////////////////////
-    // BUG-14897 - º”º∫ SYS_DATA_TBS_EXTENT_SIZE ∞™ ∏Æ≈œ.
+    // BUG-14897 - ÏÜçÏÑ± SYS_DATA_TBS_EXTENT_SIZE Í∞í Î¶¨ÌÑ¥.
     static ULong  getSysDataTBSExtentSize();
 
-    // BUG-14897 - º”º∫ SYS_DATA_FILE_INIT_SIZE ∞™ ∏Æ≈œ.
+    // BUG-14897 - ÏÜçÏÑ± SYS_DATA_FILE_INIT_SIZE Í∞í Î¶¨ÌÑ¥.
     static ULong  getSysDataFileInitSize();
 
-    // BUG-14897 - º”º∫ SYS_DATA_FILE_MAX_SIZE ∞™ ∏Æ≈œ.
+    // BUG-14897 - ÏÜçÏÑ± SYS_DATA_FILE_MAX_SIZE Í∞í Î¶¨ÌÑ¥.
     static ULong  getSysDataFileMaxSize();
 
-    // BUG-14897 - º”º∫ SYS_DATA_FILE_NEXT_SIZE ∞™ ∏Æ≈œ.
+    // BUG-14897 - ÏÜçÏÑ± SYS_DATA_FILE_NEXT_SIZE Í∞í Î¶¨ÌÑ¥.
     static ULong  getSysDataFileNextSize();
 
-    // BUG-14897 - º”º∫ SYS_UNDO_TBS_EXTENT_SIZE ∞™ ∏Æ≈œ.
+    // BUG-14897 - ÏÜçÏÑ± SYS_UNDO_TBS_EXTENT_SIZE Í∞í Î¶¨ÌÑ¥.
     static ULong  getSysUndoTBSExtentSize();
 
-    // BUG-14897 - º”º∫ SYS_UNDO_FILE_INIT_SIZE ∞™ ∏Æ≈œ.
+    // BUG-14897 - ÏÜçÏÑ± SYS_UNDO_FILE_INIT_SIZE Í∞í Î¶¨ÌÑ¥.
     static ULong  getSysUndoFileInitSize();
 
-    // BUG-14897 - º”º∫ SYS_UNDO_FILE_MAX_SIZE ∞™ ∏Æ≈œ.
+    // BUG-14897 - ÏÜçÏÑ± SYS_UNDO_FILE_MAX_SIZE Í∞í Î¶¨ÌÑ¥.
     static ULong  getSysUndoFileMaxSize();
 
-    // BUG-14897 - º”º∫ SYS_UNDO_FILE_NEXT_SIZE ∞™ ∏Æ≈œ.
+    // BUG-14897 - ÏÜçÏÑ± SYS_UNDO_FILE_NEXT_SIZE Í∞í Î¶¨ÌÑ¥.
     static ULong  getSysUndoFileNextSize();
 
-    // BUG-14897 - º”º∫ SYS_TEMP_TBS_EXTENT_SIZE ∞™ ∏Æ≈œ.
+    // BUG-14897 - ÏÜçÏÑ± SYS_TEMP_TBS_EXTENT_SIZE Í∞í Î¶¨ÌÑ¥.
     static ULong  getSysTempTBSExtentSize();
 
-    // BUG-14897 - º”º∫ SYS_TEMP_FILE_INIT_SIZE ∞™ ∏Æ≈œ.
+    // BUG-14897 - ÏÜçÏÑ± SYS_TEMP_FILE_INIT_SIZE Í∞í Î¶¨ÌÑ¥.
     static ULong  getSysTempFileInitSize();
 
-    // BUG-14897 - º”º∫ SYS_TEMP_FILE_MAX_SIZE ∞™ ∏Æ≈œ.
+    // BUG-14897 - ÏÜçÏÑ± SYS_TEMP_FILE_MAX_SIZE Í∞í Î¶¨ÌÑ¥.
     static ULong  getSysTempFileMaxSize();
 
-    // BUG-14897 - º”º∫ SYS_TEMP_FILE_NEXT_SIZE ∞™ ∏Æ≈œ.
+    // BUG-14897 - ÏÜçÏÑ± SYS_TEMP_FILE_NEXT_SIZE Í∞í Î¶¨ÌÑ¥.
     static ULong  getSysTempFileNextSize();
 
-    // BUG-14897 - º”º∫ USER_DATA_TBS_EXTENT_SIZE ∞™ ∏Æ≈œ.
+    // BUG-14897 - ÏÜçÏÑ± USER_DATA_TBS_EXTENT_SIZE Í∞í Î¶¨ÌÑ¥.
     static ULong  getUserDataTBSExtentSize();
 
-    // BUG-14897 - º”º∫ USER_DATA_FILE_INIT_SIZE ∞™ ∏Æ≈œ.
+    // BUG-14897 - ÏÜçÏÑ± USER_DATA_FILE_INIT_SIZE Í∞í Î¶¨ÌÑ¥.
     static ULong  getUserDataFileInitSize();
 
-    // BUG-14897 - º”º∫ USER_DATA_FILE_MAX_SIZE ∞™ ∏Æ≈œ.
+    // BUG-14897 - ÏÜçÏÑ± USER_DATA_FILE_MAX_SIZE Í∞í Î¶¨ÌÑ¥.
     static ULong  getUserDataFileMaxSize();
 
-    // BUG-14897 - º”º∫ USER_DATA_FILE_NEXT_SIZE ∞™ ∏Æ≈œ.
+    // BUG-14897 - ÏÜçÏÑ± USER_DATA_FILE_NEXT_SIZE Í∞í Î¶¨ÌÑ¥.
     static ULong  getUserDataFileNextSize();
 
-    // BUG-14897 - º”º∫ USER_TEMP_TBS_EXTENT_SIZE ∞™ ∏Æ≈œ.
+    // BUG-14897 - ÏÜçÏÑ± USER_TEMP_TBS_EXTENT_SIZE Í∞í Î¶¨ÌÑ¥.
     static ULong  getUserTempTBSExtentSize();
 
-    // BUG-14897 - º”º∫ USER_TEMP_FILE_INIT_SIZE ∞™ ∏Æ≈œ.
+    // BUG-14897 - ÏÜçÏÑ± USER_TEMP_FILE_INIT_SIZE Í∞í Î¶¨ÌÑ¥.
     static ULong  getUserTempFileInitSize();
 
-    // BUG-14897 - º”º∫ USER_TEMP_FILE_MAX_SIZE ∞™ ∏Æ≈œ.
+    // BUG-14897 - ÏÜçÏÑ± USER_TEMP_FILE_MAX_SIZE Í∞í Î¶¨ÌÑ¥.
     static ULong  getUserTempFileMaxSize();
 
-    // BUG-14897 - º”º∫ USER_TEMP_FILE_NEXT_SIZE ∞™ ∏Æ≈œ.
+    // BUG-14897 - ÏÜçÏÑ± USER_TEMP_FILE_NEXT_SIZE Í∞í Î¶¨ÌÑ¥.
     static ULong  getUserTempFileNextSize();
 
 private:
-    //OS limit,file header∏¶ ∞Ì∑¡«— ¿˚¿˝«— ≈©±‚∏¶ æÚæÓ≥ªµµ∑œ «‘.
+    //OS limit,file headerÎ•º Í≥†Î†§Ìïú Ï†ÅÏ†àÌïú ÌÅ¨Í∏∞Î•º ÏñªÏñ¥ÎÇ¥ÎèÑÎ°ù Ìï®.
     static ULong  getValidSize4Disk( ULong aSizeInBytes );
 
 };

@@ -35,7 +35,7 @@
 /*
     smcTableSpace.cpp
 
-    Tablespace°ü·Ã ÄÚµåÁß catalog table¿¡ Á¢±ÙÀÌ ÇÊ¿äÇÑ ÄÚµå
+    Tablespaceê´€ë ¨ ì½”ë“œì¤‘ catalog tableì— ì ‘ê·¼ì´ í•„ìš”í•œ ì½”ë“œ
 */
 
 smcTableSpace::smcTableSpace()
@@ -44,12 +44,12 @@ smcTableSpace::smcTableSpace()
 }
 
 /*
-    Tablespace¾ÈÀÇ °¢°¢ÀÇ Table¿¡ ´ëÇØ Æ¯Á¤ ÀÛ¾÷À» ¼öÇàÇÑ´Ù.
+    Tablespaceì•ˆì˜ ê°ê°ì˜ Tableì— ëŒ€í•´ íŠ¹ì • ì‘ì—…ì„ ìˆ˜í–‰í•œë‹¤.
 
-    [IN] aTBSID      - °Ë»öÇÒ TablespaceÀÇ ID
-                       SC_NULL_SPACEID¸¦ ³Ñ±â¸é ¸ğµç Tablespace¸¦ °Ë»ö
-    [IN] aActionFunc - ¼öÇàÇÒ ActionÇÔ¼ö
-    [IN] aActionArg  - ActionÇÔ¼ö¿¡ Àü´ŞÇÒ ÀÎÀÚ
+    [IN] aTBSID      - ê²€ìƒ‰í•  Tablespaceì˜ ID
+                       SC_NULL_SPACEIDë¥¼ ë„˜ê¸°ë©´ ëª¨ë“  Tablespaceë¥¼ ê²€ìƒ‰
+    [IN] aActionFunc - ìˆ˜í–‰í•  Actioní•¨ìˆ˜
+    [IN] aActionArg  - Actioní•¨ìˆ˜ì— ì „ë‹¬í•  ì¸ì
  */
 IDE_RC smcTableSpace::run4TablesInTBS(
                                    idvSQL*           aStatistics,
@@ -60,14 +60,14 @@ IDE_RC smcTableSpace::run4TablesInTBS(
 
     IDE_DASSERT( aActionFunc     != NULL );
 
-    /* Catalog Table¿¡¼­ TBSID¿¡ ÀúÀåµÈ Table¿¡ ´ëÇØ Action ¼öÇà*/
+    /* Catalog Tableì—ì„œ TBSIDì— ì €ì¥ëœ Tableì— ëŒ€í•´ Action ìˆ˜í–‰*/
     IDE_TEST( run4TablesInTBS( aStatistics,
                                SMC_CAT_TABLE,
                                aTBSID,
                                aActionFunc,
                                aActionArg ) != IDE_SUCCESS );
 
-    /* Temp Catalog Table¿¡¼­ TBSID¿¡ ÀúÀåµÈ Table¿¡ ´ëÇØ Action ¼öÇà*/
+    /* Temp Catalog Tableì—ì„œ TBSIDì— ì €ì¥ëœ Tableì— ëŒ€í•´ Action ìˆ˜í–‰*/
     IDE_TEST( run4TablesInTBS( aStatistics,
                                SMC_CAT_TEMPTABLE,
                                aTBSID,
@@ -82,14 +82,14 @@ IDE_RC smcTableSpace::run4TablesInTBS(
 }
 
 /*
-    Catalog Table¾ÈÀÇ Æ¯Á¤ Tablespace¿¡ ÀúÀåµÈ Table¿¡ ´ëÇØ
-    ActionÇÔ¼ö¸¦ ¼öÇàÇÑ´Ù.
+    Catalog Tableì•ˆì˜ íŠ¹ì • Tablespaceì— ì €ì¥ëœ Tableì— ëŒ€í•´
+    Actioní•¨ìˆ˜ë¥¼ ìˆ˜í–‰í•œë‹¤.
 
-    [IN] aCatTableHeader - TableÀ» °Ë»öÇÒ Catalog Table ÀÇ Header
-    [IN] aTBSID      - °Ë»öÇÒ TablespaceÀÇ ID
-                       SC_NULL_SPACEID¸¦ ³Ñ±â¸é ¸ğµç Tablespace¸¦ °Ë»ö
-    [IN] aActionFunc - ¼öÇàÇÒ ActionÇÔ¼ö
-    [IN] aActionArg  - ActionÇÔ¼ö¿¡ Àü´ŞÇÒ ÀÎÀÚ
+    [IN] aCatTableHeader - Tableì„ ê²€ìƒ‰í•  Catalog Table ì˜ Header
+    [IN] aTBSID      - ê²€ìƒ‰í•  Tablespaceì˜ ID
+                       SC_NULL_SPACEIDë¥¼ ë„˜ê¸°ë©´ ëª¨ë“  Tablespaceë¥¼ ê²€ìƒ‰
+    [IN] aActionFunc - ìˆ˜í–‰í•  Actioní•¨ìˆ˜
+    [IN] aActionArg  - Actioní•¨ìˆ˜ì— ì „ë‹¬í•  ì¸ì
  */
 IDE_RC smcTableSpace::run4TablesInTBS(
                                idvSQL*           aStatistics,
@@ -113,7 +113,7 @@ IDE_RC smcTableSpace::run4TablesInTBS(
 
     while(1)
     {
-        /* ´ÙÀ½ Record¸¦ Fetch: if sCurPtr == NULL, fetch first record,
+        /* ë‹¤ìŒ Recordë¥¼ Fetch: if sCurPtr == NULL, fetch first record,
            else fetch next record.*/
         IDE_TEST( smcRecord::nextOIDall( sCatTblHdr, sCurPtr, &sNxtPtr )
                   != IDE_SUCCESS );
@@ -128,10 +128,10 @@ IDE_RC smcTableSpace::run4TablesInTBS(
 
         sTableHdr = (smcTableHeader *)( sSlotHdr + 1 );
 
-        if ( aTBSID == SC_NULL_SPACEID ||  // ¸ğµç Tablespace °Ë»ö
-             aTBSID == sTableHdr->mSpaceID ) // Æ¯Á¤ Tablespace °Ë»ö
+        if ( aTBSID == SC_NULL_SPACEID ||  // ëª¨ë“  Tablespace ê²€ìƒ‰
+             aTBSID == sTableHdr->mSpaceID ) // íŠ¹ì • Tablespace ê²€ìƒ‰
         {
-            // ActionÇÔ¼ö È£Ãâ
+            // Actioní•¨ìˆ˜ í˜¸ì¶œ
             IDE_TEST( (*aActionFunc)( aStatistics,
                                       SMP_SLOT_GET_FLAGS( sSlotHdr ),
                                       sSlotScn,
@@ -151,11 +151,11 @@ IDE_RC smcTableSpace::run4TablesInTBS(
 }
 
 /*
-    Online->OfflineÀ¸·Î º¯ÇÏ´Â Tablespace¿¡ ¼ÓÇÑ Tableµé¿¡ ´ëÇÑ Ã³¸®
+    Online->Offlineìœ¼ë¡œ ë³€í•˜ëŠ” Tablespaceì— ì†í•œ Tableë“¤ì— ëŒ€í•œ ì²˜ë¦¬
 
-    Refine½Ã¿¡ OfflineµÈ Tablespace¾ÈÀÇ Table¿¡ ´ëÇØ È£ÃâÇÑ´Ù.
+    Refineì‹œì— Offlineëœ Tablespaceì•ˆì˜ Tableì— ëŒ€í•´ í˜¸ì¶œí•œë‹¤.
 
-    [IN] aTBSID - Online->OnlineÀ¸·Î º¯ÇÏ´Â TablespaceÀÇ ID
+    [IN] aTBSID - Online->Onlineìœ¼ë¡œ ë³€í•˜ëŠ” Tablespaceì˜ ID
  */
 IDE_RC smcTableSpace::alterTBSOffline4Tables( idvSQL*     aStatistics,
                                               scSpaceID   aTBSID )
@@ -171,9 +171,9 @@ IDE_RC smcTableSpace::alterTBSOffline4Tables( idvSQL*     aStatistics,
 
     // BUG-24403
     /* BUG-27714 TC/Server/sm4/Project2/PRJ-1548/dynmem/../suites/conc/dt_dml.
-     * sql¿¡¼­ ¼­¹ö ºñÁ¤»ó Á¾·á
-     * MaxSmoNoForOffline º¯¼ö°¡ ÀÖ´Â °÷Àº Disk TableSBS»ÓÀÌ¸ç, DiskTBSÀÏ
-     * °æ¿ì¿¡¸¸ ÀÌ °ªÀ» »ç¿ëÇÕ´Ï´Ù. */
+     * sqlì—ì„œ ì„œë²„ ë¹„ì •ìƒ ì¢…ë£Œ
+     * MaxSmoNoForOffline ë³€ìˆ˜ê°€ ìˆëŠ” ê³³ì€ Disk TableSBSë¿ì´ë©°, DiskTBSì¼
+     * ê²½ìš°ì—ë§Œ ì´ ê°’ì„ ì‚¬ìš©í•©ë‹ˆë‹¤. */
     if( sctTableSpaceMgr::isDiskTableSpace( aTBSID ) == ID_TRUE )
     {
         IDE_TEST ( run4TablesInTBS( aStatistics,
@@ -204,12 +204,12 @@ IDE_RC smcTableSpace::alterTBSOffline4Tables( idvSQL*     aStatistics,
 
 
 /*
-    Offline->OnlineÀ¸·Î º¯ÇÏ´Â Tablespace¿¡ ¼ÓÇÑ Tableµé¿¡ ´ëÇÑ Ã³¸®
+    Offline->Onlineìœ¼ë¡œ ë³€í•˜ëŠ” Tablespaceì— ì†í•œ Tableë“¤ì— ëŒ€í•œ ì²˜ë¦¬
 
-    Refine½Ã¿¡ OfflineµÈ Tablespace¾ÈÀÇ Table¿¡ ´ëÇØ È£ÃâÇÑ´Ù.
+    Refineì‹œì— Offlineëœ Tablespaceì•ˆì˜ Tableì— ëŒ€í•´ í˜¸ì¶œí•œë‹¤.
 
-    [IN] aTrans - RefineÀ» ¼öÇàÇÒ Transaction
-    [IN] aTBSID - Offline->OnlineÀ¸·Î º¯ÇÏ´Â TablespaceÀÇ ID
+    [IN] aTrans - Refineì„ ìˆ˜í–‰í•  Transaction
+    [IN] aTBSID - Offline->Onlineìœ¼ë¡œ ë³€í•˜ëŠ” Tablespaceì˜ ID
  */
 IDE_RC smcTableSpace::alterTBSOnline4Tables(idvSQL*      aStatistics,
                                             void       * aTrans,
@@ -220,9 +220,9 @@ IDE_RC smcTableSpace::alterTBSOnline4Tables(idvSQL*      aStatistics,
 
     sTBSOnlineActionArg.mTrans = aTrans;
     /* BUG-27714 TC/Server/sm4/Project2/PRJ-1548/dynmem/../suites/conc/dt_dml.
-     * sql¿¡¼­ ¼­¹ö ºñÁ¤»ó Á¾·á
-     * MaxSmoNoForOffline º¯¼ö°¡ ÀÖ´Â °÷Àº Disk TableSBS»ÓÀÌ¸ç, DiskTBSÀÏ
-     * °æ¿ì¿¡¸¸ ÀÌ °ªÀ» »ç¿ëÇÕ´Ï´Ù. */
+     * sqlì—ì„œ ì„œë²„ ë¹„ì •ìƒ ì¢…ë£Œ
+     * MaxSmoNoForOffline ë³€ìˆ˜ê°€ ìˆëŠ” ê³³ì€ Disk TableSBSë¿ì´ë©°, DiskTBSì¼
+     * ê²½ìš°ì—ë§Œ ì´ ê°’ì„ ì‚¬ìš©í•©ë‹ˆë‹¤. */
     if( sctTableSpaceMgr::isDiskTableSpace( aTBSID ) == ID_TRUE )
     {
         // BUG-24403
@@ -249,10 +249,10 @@ IDE_RC smcTableSpace::alterTBSOnline4Tables(idvSQL*      aStatistics,
 
 
 /*
-    Online->OfflineÀ¸·Î º¯ÇÏ´Â Tablespace¿¡ ¼ÓÇÑ Table¿¡ ´ëÇÑ ActionÇÔ¼ö
+    Online->Offlineìœ¼ë¡œ ë³€í•˜ëŠ” Tablespaceì— ì†í•œ Tableì— ëŒ€í•œ Actioní•¨ìˆ˜
 
-    [IN] aTableHeader - OfflineÀ¸·Î º¯ÇÏ´Â Tablespace¿¡ ¼ÓÇÑ TableÀÇ Header
-    [IN] aActionArg   - ActionÇÔ¼ö ÀÎÀÚ
+    [IN] aTableHeader - Offlineìœ¼ë¡œ ë³€í•˜ëŠ” Tablespaceì— ì†í•œ Tableì˜ Header
+    [IN] aActionArg   - Actioní•¨ìˆ˜ ì¸ì
  */
 IDE_RC smcTableSpace::alterTBSOfflineAction(
                            idvSQL         * /* aStatistics */,
@@ -283,8 +283,8 @@ IDE_RC smcTableSpace::alterTBSOfflineAction(
                       != IDE_SUCCESS );
         }
 
-        // Temp TableÀÇ °æ¿ì ¾Æ¹« Ã³¸® ¾ÈÇÔ.
-        // ÀÌÀ¯ : Alter Tablespace Online/Offline ºÒ°¡´É
+        // Temp Tableì˜ ê²½ìš° ì•„ë¬´ ì²˜ë¦¬ ì•ˆí•¨.
+        // ì´ìœ  : Alter Tablespace Online/Offline ë¶ˆê°€ëŠ¥
     }
 
     return IDE_SUCCESS;
@@ -297,10 +297,10 @@ IDE_RC smcTableSpace::alterTBSOfflineAction(
 
 
 /*
-    Offline->Online À¸·Î º¯ÇÏ´Â Tablespace¿¡ ¼ÓÇÑ Table¿¡ ´ëÇÑ ActionÇÔ¼ö
+    Offline->Online ìœ¼ë¡œ ë³€í•˜ëŠ” Tablespaceì— ì†í•œ Tableì— ëŒ€í•œ Actioní•¨ìˆ˜
 
-    [IN] aTableHeader - OnlineÀ¸·Î º¯ÇÏ´Â Tablespace¿¡ ¼ÓÇÑ TableÀÇ Header
-    [IN] aActionArg   - ActionÇÔ¼ö ÀÎÀÚ
+    [IN] aTableHeader - Onlineìœ¼ë¡œ ë³€í•˜ëŠ” Tablespaceì— ì†í•œ Tableì˜ Header
+    [IN] aActionArg   - Actioní•¨ìˆ˜ ì¸ì
  */
 IDE_RC smcTableSpace::alterTBSOnlineAction(
                            idvSQL*          aStatistics,
@@ -336,8 +336,8 @@ IDE_RC smcTableSpace::alterTBSOnlineAction(
         }
 
 
-        // Temp TableÀÇ °æ¿ì ¾Æ¹« Ã³¸® ¾ÈÇÔ.
-        // ÀÌÀ¯ : Alter Tablespace Online/Offline ºÒ°¡´É
+        // Temp Tableì˜ ê²½ìš° ì•„ë¬´ ì²˜ë¦¬ ì•ˆí•¨.
+        // ì´ìœ  : Alter Tablespace Online/Offline ë¶ˆê°€ëŠ¥
     }
 
     return IDE_SUCCESS;
@@ -350,17 +350,17 @@ IDE_RC smcTableSpace::alterTBSOnlineAction(
 
 
 /*
-    Offline->Online À¸·Î º¯ÇÏ´Â Disk Tablespace¿¡ ¼ÓÇÑ
-    Table¿¡ ´ëÇÑ ActionÇÔ¼ö
+    Offline->Online ìœ¼ë¡œ ë³€í•˜ëŠ” Disk Tablespaceì— ì†í•œ
+    Tableì— ëŒ€í•œ Actioní•¨ìˆ˜
 
-    [ ¾Ë°í¸®Áò ]
+    [ ì•Œê³ ë¦¬ì¦˜ ]
     Alloc/Init Runtime Info At Table Header
     Rebuild IndexRuntime Header
 
-    º» ÇÔ¼ö´Â Alter Tablespace Online¿¡¼­ È£ÃâµÈ´Ù.
+    ë³¸ í•¨ìˆ˜ëŠ” Alter Tablespace Onlineì—ì„œ í˜¸ì¶œëœë‹¤.
 
-    [IN] aTableHeader - OnlineÀ¸·Î º¯ÇÏ´Â Tablespace¿¡ ¼ÓÇÑ TableÀÇ Header
-    [IN] aActionArg   - ActionÇÔ¼ö ÀÎÀÚ
+    [IN] aTableHeader - Onlineìœ¼ë¡œ ë³€í•˜ëŠ” Tablespaceì— ì†í•œ Tableì˜ Header
+    [IN] aActionArg   - Actioní•¨ìˆ˜ ì¸ì
  */
 IDE_RC smcTableSpace::alterDiskTBSOnlineAction( idvSQL         * aStatistics,
                                                 ULong            aSlotFlag,
@@ -375,9 +375,9 @@ IDE_RC smcTableSpace::alterDiskTBSOnlineAction( idvSQL         * aStatistics,
     IDE_DASSERT( aTableHeader != NULL );
     IDE_DASSERT( aActionArg   != NULL );
 
-    /* To fix CASE-6829 µğ½ºÅ© Å×ÀÌºí½ºÆäÀÌ½º°¡ ¿Â¶óÀÎÀ¸·Î ÀüÀÌÇÒ¶§¿¡´Â
-     * ÀÎµ¦½º Integrity Level1ÀÌ³ª Level2°¡ Â÷ÀÌ°¡ ¾øÀ¸¹Ç·Î
-     * ÇÁ·ÎÆÛÆ¼°¡ ºñÈ°¼ºÈ­¸¸ ¾Æ´Ï¸é Integrity Ã¼Å©¸¦ ¼öÇàÇÑ´Ù. */
+    /* To fix CASE-6829 ë””ìŠ¤í¬ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ê°€ ì˜¨ë¼ì¸ìœ¼ë¡œ ì „ì´í• ë•Œì—ëŠ”
+     * ì¸ë±ìŠ¤ Integrity Level1ì´ë‚˜ Level2ê°€ ì°¨ì´ê°€ ì—†ìœ¼ë¯€ë¡œ
+     * í”„ë¡œí¼í‹°ê°€ ë¹„í™œì„±í™”ë§Œ ì•„ë‹ˆë©´ Integrity ì²´í¬ë¥¼ ìˆ˜í–‰í•œë‹¤. */
     sTBSOnlineActionArg = (smcTBSOnlineActionArgs*)aActionArg;
     sMaxSmoNo = sTBSOnlineActionArg->mMaxSmoNo;
 
@@ -393,38 +393,38 @@ IDE_RC smcTableSpace::alterDiskTBSOnlineAction( idvSQL         * aStatistics,
         IDE_CALLBACK_SEND_SYM( "  [SM] [BEGIN : CHECK DISK INDEX INTEGRITY]\n" );
     }
 
-    // BUGBUG-1548 RefineÂÊ ÄÚµå¸¦ ±×´ë·Î °¡Á®¿ÔÀ½.
-    // Ager°¡ µ¿ÀÛÇØµµ ¹®Á¦¾ø´ÂÁö °ËÁõÇÊ¿ä
+    // BUGBUG-1548 Refineìª½ ì½”ë“œë¥¼ ê·¸ëŒ€ë¡œ ê°€ì ¸ì™”ìŒ.
+    // Agerê°€ ë™ì‘í•´ë„ ë¬¸ì œì—†ëŠ”ì§€ ê²€ì¦í•„ìš”
 
     /*
        1. normal table
        DROP_FALSE
        2. droped table
        DROP_TRUE
-       3. create table by abort ( NTA·Î±×±îÁö Âï¾úÁö¸¸ AbortÇÏ¿© Logical Undo )
+       3. create table by abort ( NTAë¡œê·¸ê¹Œì§€ ì°ì—ˆì§€ë§Œ Abortí•˜ì—¬ Logical Undo )
        DROP_TRUE deletebit
-       4. create table by abort ( allocslot ±îÁö µÇ°í NTA ·Î±× ¸øÂï°í Physical Undo)
+       4. create table by abort ( allocslot ê¹Œì§€ ë˜ê³  NTA ë¡œê·¸ ëª»ì°ê³  Physical Undo)
        DROP_FALSE deletebit
 
        case 1,2,3  -> initLockAndRuntimeItem
-       -  1¹ø  => »ç¿ëÁßÀÎ TableÀÌ¹Ç·Î ÃÊ±âÈ­ÇØ¾ßÇÔ
-       -  2¹ø, => catalog table½Ã¿¡ drop Table pendingÀÌ È£ÃâµÊ
-       3¹ø    ( drop table pending¼öÇàÀ» À§ÇØ¼­ ÃÊ±âÈ­ ÇÊ¿ä)
+       -  1ë²ˆ  => ì‚¬ìš©ì¤‘ì¸ Tableì´ë¯€ë¡œ ì´ˆê¸°í™”í•´ì•¼í•¨
+       -  2ë²ˆ, => catalog tableì‹œì— drop Table pendingì´ í˜¸ì¶œë¨
+       3ë²ˆ    ( drop table pendingìˆ˜í–‰ì„ ìœ„í•´ì„œ ì´ˆê¸°í™” í•„ìš”)
        case 4      -> skip
-       -  4¹ø  => catalog table refine½Ã catalog table row¸¸ Áö¿öÁü
+       -  4ë²ˆ  => catalog table refineì‹œ catalog table rowë§Œ ì§€ì›Œì§
     */
 
     if (!(( ( aSlotFlag & SMP_SLOT_DROP_MASK )
             == SMP_SLOT_DROP_FALSE ) &&
           ( SM_SCN_IS_DELETED( aSlotSCN ) )))
     {
-        // Offline Tablespace¾ÈÀÇ Table¿¡ ´ëÇØ
-        // Table HeaderÀÇ mLockÀº ÃÊ±âÈ­µÈ Ã¤·Î À¯ÁöµÈ´Ù.
+        // Offline Tablespaceì•ˆì˜ Tableì— ëŒ€í•´
+        // Table Headerì˜ mLockì€ ì´ˆê¸°í™”ëœ ì±„ë¡œ ìœ ì§€ëœë‹¤.
         IDE_ASSERT( aTableHeader->mLock != NULL );
 
         ///////////////////////////////////////////////////////////
         // (010) Init Runtime Info At Table Header
-        //        - TableÀÇ RuntimeÁ¤º¸ ÃÊ±âÈ­ ½Ç½Ã
+        //        - Tableì˜ Runtimeì •ë³´ ì´ˆê¸°í™” ì‹¤ì‹œ
         IDE_TEST( smcTable::initRuntimeItem( aTableHeader )
                   != IDE_SUCCESS );
     }
@@ -432,36 +432,36 @@ IDE_RC smcTableSpace::alterDiskTBSOnlineAction( idvSQL         * aStatistics,
     if( ( aSlotFlag & SMP_SLOT_DROP_MASK )
         == SMP_SLOT_DROP_TRUE )
     {
-        // 2¹ø, 3¹øÀÇ °æ¿ì
-        //  : ÀÌ¹Ì DropµÈ TableÀÌ°Å³ª CreateµµÁß AbortµÈ Table
-        //  => ¾Æ¹«·± Ã³¸® ¾ÈÇÔ
+        // 2ë²ˆ, 3ë²ˆì˜ ê²½ìš°
+        //  : ì´ë¯¸ Dropëœ Tableì´ê±°ë‚˜ Createë„ì¤‘ Abortëœ Table
+        //  => ì•„ë¬´ëŸ° ì²˜ë¦¬ ì•ˆí•¨
     }
     else
     {
         if( SM_SCN_IS_DELETED( aSlotSCN ) )
         {
-            // 4¹øÀÇ °æ¿ì ->  CreateµµÁß AbortµÈ Table
-            //  => ¾Æ¹«·± Ã³¸® ¾ÈÇÔ
+            // 4ë²ˆì˜ ê²½ìš° ->  Createë„ì¤‘ Abortëœ Table
+            //  => ì•„ë¬´ëŸ° ì²˜ë¦¬ ì•ˆí•¨
         }
         else
         {
             // fix BUG-17157 [PROJ-1548] Disk Tablespace Online/Offline
-            // ¼öÇà½Ã ¿Ã¹Ù¸£°Ô Index Runtime Header ÇØÁ¦ÇÏÁö ¾ÊÀ½
-            // TBS¿¡ X  Àá±İÀÌ È¹µæµÈ »óÅÂÀÌ¸ç, X Àá±İÈ¹µæ½Ã¿¡
-            // Dropped/Discared »óÅÂÀÇ TBS¿¡ ´ëÇØ¼­ ValidationÀ» ÇÏ±â
-            // ¶§¹®¿¡ onlineÀ» ÁøÇàÇÒ ¼ö ¾ø´Ù.
-            // ¶ÇÇÑ, TBS¿¡ X Àá±İÀ» È¹µæÇÏ°í ÀÖ±â ¶§¹®¿¡ online ÇÏ´Â
-            // Áß¿¡ Å×ÀÌºí½ºÆäÀÌ½º°¡ droppedÀÌ µÇ´Â °æ¿ì°¡ ¾ø´Ù.
+            // ìˆ˜í–‰ì‹œ ì˜¬ë°”ë¥´ê²Œ Index Runtime Header í•´ì œí•˜ì§€ ì•ŠìŒ
+            // TBSì— X  ì ê¸ˆì´ íšë“ëœ ìƒíƒœì´ë©°, X ì ê¸ˆíšë“ì‹œì—
+            // Dropped/Discared ìƒíƒœì˜ TBSì— ëŒ€í•´ì„œ Validationì„ í•˜ê¸°
+            // ë•Œë¬¸ì— onlineì„ ì§„í–‰í•  ìˆ˜ ì—†ë‹¤.
+            // ë˜í•œ, TBSì— X ì ê¸ˆì„ íšë“í•˜ê³  ìˆê¸° ë•Œë¬¸ì— online í•˜ëŠ”
+            // ì¤‘ì— í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ê°€ droppedì´ ë˜ëŠ” ê²½ìš°ê°€ ì—†ë‹¤.
 
             // Rebuild All Index Runtime Header
-            // OnlineÇÒ TableSpace¸¦ ±âÁØÀ¸·Î ¸ğµç Index Runtime Header¸¦
-            // rebuild ÇÑ´Ù.
-            // Offline½Ã¿¡´Â ¹İ´ë·Î ÇÏ¿´´Ù.
+            // Onlineí•  TableSpaceë¥¼ ê¸°ì¤€ìœ¼ë¡œ ëª¨ë“  Index Runtime Headerë¥¼
+            // rebuild í•œë‹¤.
+            // Offlineì‹œì—ëŠ” ë°˜ëŒ€ë¡œ í•˜ì˜€ë‹¤.
 
             /* fix BUG-17456
-             * Disk Tablespace onlineÀÌÈÄ update ¹ß»ı½Ã index ¹«ÇÑ·çÇÁ
-             * Online½Ã rebuildµÈ DRDB Index HeaderÀÇ SmoNo¸¦ Buffer Pool¿¡
-             * Á¸ÀçÇÏ´Â Index PageµéÀÇ SmoNoÁß °¡Àå Å« °ªÀ¸·Î rebuild ÇÑ´Ù. */
+             * Disk Tablespace onlineì´í›„ update ë°œìƒì‹œ index ë¬´í•œë£¨í”„
+             * Onlineì‹œ rebuildëœ DRDB Index Headerì˜ SmoNoë¥¼ Buffer Poolì—
+             * ì¡´ì¬í•˜ëŠ” Index Pageë“¤ì˜ SmoNoì¤‘ ê°€ì¥ í° ê°’ìœ¼ë¡œ rebuild í•œë‹¤. */
             IDE_TEST( smcTable::rebuildRuntimeIndexHeaders(
                                        aStatistics,
                                        aTableHeader,
@@ -475,7 +475,7 @@ IDE_RC smcTableSpace::alterDiskTBSOnlineAction( idvSQL         * aStatistics,
                                     NULL /* aActionArgs */ ) != IDE_SUCCESS );
             }
 
-            /* PROJ-1671 LOB Segment¿¡ ´ëÇÑ Segment HandleÀ» »ı¼ºÇÏ°í, ÃÊ±âÈ­ÇÑ´Ù.*/
+            /* PROJ-1671 LOB Segmentì— ëŒ€í•œ Segment Handleì„ ìƒì„±í•˜ê³ , ì´ˆê¸°í™”í•œë‹¤.*/
             IDE_TEST( smcTable::createLOBSegmentDesc( aTableHeader )
                       != IDE_SUCCESS );
         }
@@ -490,21 +490,21 @@ IDE_RC smcTableSpace::alterDiskTBSOnlineAction( idvSQL         * aStatistics,
 
 
 /*
-    Online->Offline À¸·Î º¯ÇÏ´Â Disk Tablespace¿¡ ¼ÓÇÑ
-    Table¿¡ ´ëÇÑ ActionÇÔ¼ö
+    Online->Offline ìœ¼ë¡œ ë³€í•˜ëŠ” Disk Tablespaceì— ì†í•œ
+    Tableì— ëŒ€í•œ Actioní•¨ìˆ˜
 
-    [IN] aTableHeader - OnlineÀ¸·Î º¯ÇÏ´Â Tablespace¿¡ ¼ÓÇÑ TableÀÇ Header
-    [IN] aActionArg   - ActionÇÔ¼ö ÀÎÀÚ
+    [IN] aTableHeader - Onlineìœ¼ë¡œ ë³€í•˜ëŠ” Tablespaceì— ì†í•œ Tableì˜ Header
+    [IN] aActionArg   - Actioní•¨ìˆ˜ ì¸ì
 
-    [ ¾Ë°í¸®Áò ]
+    [ ì•Œê³ ë¦¬ì¦˜ ]
     Free All IndexRuntime Header Disk of TBS
     Free Runtime Item At Table Header
 
-    [ Âü°í ]
-     1. º» ÇÔ¼ö´Â Alter Tablespace OfflineÀÇ Commit Pending¿¡¼­ È£ÃâµÈ´Ù
-     2. TableÀÇ Lock ItemÀ» ÇØÁ¦ÇÒ ¼ö ¾ø´Â ÀÌÀ¯ :
-        offline µÈ TBS ¸¦ Drop ÇÒ ¼ö ÀÖ±â ¶§¹®¿¡ °ü·Ã TableÀÇ X Àá±İÀ»
-        È¹µæÇÏ¿©¾ß ÇÏ±â ¶§¹®ÀÌ´Ù.
+    [ ì°¸ê³  ]
+     1. ë³¸ í•¨ìˆ˜ëŠ” Alter Tablespace Offlineì˜ Commit Pendingì—ì„œ í˜¸ì¶œëœë‹¤
+     2. Tableì˜ Lock Itemì„ í•´ì œí•  ìˆ˜ ì—†ëŠ” ì´ìœ  :
+        offline ëœ TBS ë¥¼ Drop í•  ìˆ˜ ìˆê¸° ë•Œë¬¸ì— ê´€ë ¨ Tableì˜ X ì ê¸ˆì„
+        íšë“í•˜ì—¬ì•¼ í•˜ê¸° ë•Œë¬¸ì´ë‹¤.
  */
 IDE_RC smcTableSpace::alterDiskTBSOfflineAction(
                           ULong            aSlotFlag,
@@ -519,49 +519,49 @@ IDE_RC smcTableSpace::alterDiskTBSOfflineAction(
        DROP_FALSE
        2. droped table
        DROP_TRUE
-       3. create table by abort ( NTA·Î±×±îÁö Âï¾úÁö¸¸ AbortÇÏ¿© Logical Undo )
+       3. create table by abort ( NTAë¡œê·¸ê¹Œì§€ ì°ì—ˆì§€ë§Œ Abortí•˜ì—¬ Logical Undo )
        DROP_TRUE deletebit
-       4. create table by abort ( allocslot ±îÁö µÇ°í NTA ·Î±× ¸øÂï°í Physical Undo)
+       4. create table by abort ( allocslot ê¹Œì§€ ë˜ê³  NTA ë¡œê·¸ ëª»ì°ê³  Physical Undo)
        DROP_FALSE deletebit
 
        case 1,2,3  -> initLockAndRuntimeItem
-       -  1¹ø  => »ç¿ëÁßÀÎ TableÀÌ¹Ç·Î ÃÊ±âÈ­ÇØ¾ßÇÔ
-       -  2¹ø, => catalog table½Ã¿¡ drop Table pendingÀÌ È£ÃâµÊ
-       3¹ø    ( drop table pending¼öÇàÀ» À§ÇØ¼­ ÃÊ±âÈ­ ÇÊ¿ä)
+       -  1ë²ˆ  => ì‚¬ìš©ì¤‘ì¸ Tableì´ë¯€ë¡œ ì´ˆê¸°í™”í•´ì•¼í•¨
+       -  2ë²ˆ, => catalog tableì‹œì— drop Table pendingì´ í˜¸ì¶œë¨
+       3ë²ˆ    ( drop table pendingìˆ˜í–‰ì„ ìœ„í•´ì„œ ì´ˆê¸°í™” í•„ìš”)
        case 4      -> skip
-       -  4¹ø  => catalog table refine½Ã catalog table row¸¸ Áö¿öÁü
+       -  4ë²ˆ  => catalog table refineì‹œ catalog table rowë§Œ ì§€ì›Œì§
     */
 
     if( ( aSlotFlag & SMP_SLOT_DROP_MASK )
         == SMP_SLOT_DROP_TRUE )
     {
-        // 2¹ø, 3¹øÀÇ °æ¿ì
-        //  : ÀÌ¹Ì DropµÈ TableÀÌ°Å³ª CreateµµÁß AbortµÈ Table
-        //  => ¾Æ¹«·± Ã³¸® ¾ÈÇÔ
+        // 2ë²ˆ, 3ë²ˆì˜ ê²½ìš°
+        //  : ì´ë¯¸ Dropëœ Tableì´ê±°ë‚˜ Createë„ì¤‘ Abortëœ Table
+        //  => ì•„ë¬´ëŸ° ì²˜ë¦¬ ì•ˆí•¨
     }
     else
     {
         if( SM_SCN_IS_DELETED( aSlotSCN ) )
         {
-            // 4¹øÀÇ °æ¿ì ->  CreateµµÁß AbortµÈ Table
-            //  => ¾Æ¹«·± Ã³¸® ¾ÈÇÔ
+            // 4ë²ˆì˜ ê²½ìš° ->  Createë„ì¤‘ Abortëœ Table
+            //  => ì•„ë¬´ëŸ° ì²˜ë¦¬ ì•ˆí•¨
         }
         else
         {
             // fix BUG-17157 [PROJ-1548] Disk Tablespace Online/Offline
-            // ¼öÇà½Ã ¿Ã¹Ù¸£°Ô Index Runtime Header ÇØÁ¦ÇÏÁö ¾ÊÀ½
-            // TBS¿¡ X  Àá±İÀÌ È¹µæµÈ »óÅÂÀÌ¸ç, X Àá±İÈ¹µæ½Ã¿¡
-            // Dropped/Discared »óÅÂÀÇ TBS¿¡ ´ëÇØ¼­ ValidationÀ» ÇÏ±â
-            // ¶§¹®¿¡ offlineÀ» ÁøÇàÇÒ ¼ö ¾ø´Ù.
-            // ¶ÇÇÑ, TBS¿¡ X Àá±İÀ» È¹µæÇÏ°í ÀÖ±â ¶§¹®¿¡ offline ÇÏ´Â
-            // Áß¿¡ Å×ÀÌºí½ºÆäÀÌ½º°¡ droppedÀÌ µÇ´Â °æ¿ì°¡ ¾ø´Ù.
+            // ìˆ˜í–‰ì‹œ ì˜¬ë°”ë¥´ê²Œ Index Runtime Header í•´ì œí•˜ì§€ ì•ŠìŒ
+            // TBSì— X  ì ê¸ˆì´ íšë“ëœ ìƒíƒœì´ë©°, X ì ê¸ˆíšë“ì‹œì—
+            // Dropped/Discared ìƒíƒœì˜ TBSì— ëŒ€í•´ì„œ Validationì„ í•˜ê¸°
+            // ë•Œë¬¸ì— offlineì„ ì§„í–‰í•  ìˆ˜ ì—†ë‹¤.
+            // ë˜í•œ, TBSì— X ì ê¸ˆì„ íšë“í•˜ê³  ìˆê¸° ë•Œë¬¸ì— offline í•˜ëŠ”
+            // ì¤‘ì— í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ê°€ droppedì´ ë˜ëŠ” ê²½ìš°ê°€ ì—†ë‹¤.
 
-            // 1 ¹øÀÇ °æ¿ì
+            // 1 ë²ˆì˜ ê²½ìš°
             // (010) Free All IndexRuntime Header Disk of TBS
-            // Offline TBS¿¡ Æ÷ÇÔµÈ Å×ÀÌºíÀ» ±âÁØÀ¸·Î
-            // ¸ğµç Index Runtime Header¸¦ Free ÇÑ´Ù.
+            // Offline TBSì— í¬í•¨ëœ í…Œì´ë¸”ì„ ê¸°ì¤€ìœ¼ë¡œ
+            // ëª¨ë“  Index Runtime Headerë¥¼ Free í•œë‹¤.
 
-            /* PROJ-1671 LOB Segment¿¡ ´ëÇÑ Segment HandleÀ» ÇØÁ¦ÇÑ´Ù. */
+            /* PROJ-1671 LOB Segmentì— ëŒ€í•œ Segment Handleì„ í•´ì œí•œë‹¤. */
             IDE_TEST( smcTable::destroyLOBSegmentDesc( aTableHeader )
                       != IDE_SUCCESS );
 
@@ -574,7 +574,7 @@ IDE_RC smcTableSpace::alterDiskTBSOfflineAction(
 
             ///////////////////////////////////////////////////////
             // (020) Free Runtime Item  At Table Header
-            /* TableÀÇ Mutex¿Í Runtime¿µ¿ªÀ» ÇØÁ¦ */
+            /* Tableì˜ Mutexì™€ Runtimeì˜ì—­ì„ í•´ì œ */
             IDE_TEST( smcTable::finRuntimeItem( aTableHeader )
                     != IDE_SUCCESS );
         }
@@ -589,29 +589,29 @@ IDE_RC smcTableSpace::alterDiskTBSOfflineAction(
 
 
 /*
-    Offline->Online À¸·Î º¯ÇÏ´Â Memory Tablespace¿¡ ¼ÓÇÑ
-    Table¿¡ ´ëÇÑ ActionÇÔ¼ö
+    Offline->Online ìœ¼ë¡œ ë³€í•˜ëŠ” Memory Tablespaceì— ì†í•œ
+    Tableì— ëŒ€í•œ Actioní•¨ìˆ˜
 
-    [IN] aTableHeader - OnlineÀ¸·Î º¯ÇÏ´Â Tablespace¿¡ ¼ÓÇÑ TableÀÇ Header
-    [IN] aActionArg   - ActionÇÔ¼ö ÀÎÀÚ
+    [IN] aTableHeader - Onlineìœ¼ë¡œ ë³€í•˜ëŠ” Tablespaceì— ì†í•œ Tableì˜ Header
+    [IN] aActionArg   - Actioní•¨ìˆ˜ ì¸ì
 
-    [ ¾Ë°í¸®Áò ]
+    [ ì•Œê³ ë¦¬ì¦˜ ]
      (010) Alloc/Init Runtime Info At Table Header
-            - Mutex °´Ã¼, Free Page°ü·Ã Á¤º¸ ÃÊ±âÈ­ ½Ç½Ã
+            - Mutex ê°ì²´, Free Pageê´€ë ¨ ì •ë³´ ì´ˆê¸°í™” ì‹¤ì‹œ
      (020) Refine Table Pages
-            - ¸ğµç Page¿¡ ´ëÇØ Free SlotÀ» Ã£¾Æ¼­ °¢ Page¿¡ ´Ş¾ÆÁØ´Ù.
-            - Å×ÀÌºí Çì´õÀÇ RuntimeÁ¤º¸¿¡ Free PageµéÀ» ±¸ÃàÇØÁØ´Ù.
+            - ëª¨ë“  Pageì— ëŒ€í•´ Free Slotì„ ì°¾ì•„ì„œ ê° Pageì— ë‹¬ì•„ì¤€ë‹¤.
+            - í…Œì´ë¸” í—¤ë”ì˜ Runtimeì •ë³´ì— Free Pageë“¤ì„ êµ¬ì¶•í•´ì¤€ë‹¤.
      (030) Rebuild Indexes
 
-    [ Âü°í ]
-     º» ÇÔ¼ö´Â Alter Tablespace Offline¿¡¼­ È£ÃâµÈ´Ù.
+    [ ì°¸ê³  ]
+     ë³¸ í•¨ìˆ˜ëŠ” Alter Tablespace Offlineì—ì„œ í˜¸ì¶œëœë‹¤.
 
-    [ Âü°í ]
-     TableÀÇ Lock ItemÀº ÀÌ¹Ì ÃÊ±âÈ­ µÇ¾î ÀÖ´Â »óÅÂÀÌ´Ù.
-        - Alter TBS OfflineÀÌÈÄ Server Àç±âµ¿ µÈ °æ¿ì
-          => Refine°úÁ¤¿¡¼­ Lock ItemÀ» º°µµ ÃÊ±âÈ­ µÇ¾ú´Ù.
-        - Alter TBS OfflineÀÌÈÄ Server Àç±âµ¿ µÇÁö ¾ÊÀº °æ¿ì
-          => Alter TBS Offline½Ã¿¡´Â Lock ItemÀº ÇØÁ¦ÇÏÁö ¾Ê´Â´Ù.
+    [ ì°¸ê³  ]
+     Tableì˜ Lock Itemì€ ì´ë¯¸ ì´ˆê¸°í™” ë˜ì–´ ìˆëŠ” ìƒíƒœì´ë‹¤.
+        - Alter TBS Offlineì´í›„ Server ì¬ê¸°ë™ ëœ ê²½ìš°
+          => Refineê³¼ì •ì—ì„œ Lock Itemì„ ë³„ë„ ì´ˆê¸°í™” ë˜ì—ˆë‹¤.
+        - Alter TBS Offlineì´í›„ Server ì¬ê¸°ë™ ë˜ì§€ ì•Šì€ ê²½ìš°
+          => Alter TBS Offlineì‹œì—ëŠ” Lock Itemì€ í•´ì œí•˜ì§€ ì•ŠëŠ”ë‹¤.
 
  */
 IDE_RC smcTableSpace::alterMemTBSOnlineAction( ULong            aSlotFlag,
@@ -629,38 +629,38 @@ IDE_RC smcTableSpace::alterMemTBSOnlineAction( ULong            aSlotFlag,
     sTBSOnlineActionArg = (smcTBSOnlineActionArgs*)aActionArg;
     sTrans = sTBSOnlineActionArg->mTrans;
 
-    // BUGBUG-1548 RefineÂÊ ÄÚµå¸¦ ±×´ë·Î °¡Á®¿ÔÀ½.
-    // Ager°¡ µ¿ÀÛÇØµµ ¹®Á¦¾ø´ÂÁö °ËÁõÇÊ¿ä
+    // BUGBUG-1548 Refineìª½ ì½”ë“œë¥¼ ê·¸ëŒ€ë¡œ ê°€ì ¸ì™”ìŒ.
+    // Agerê°€ ë™ì‘í•´ë„ ë¬¸ì œì—†ëŠ”ì§€ ê²€ì¦í•„ìš”
 
     /*
        1. normal table
        DROP_FALSE
        2. droped table
        DROP_TRUE
-       3. create table by abort ( NTA·Î±×±îÁö Âï¾úÁö¸¸ AbortÇÏ¿© Logical Undo )
+       3. create table by abort ( NTAë¡œê·¸ê¹Œì§€ ì°ì—ˆì§€ë§Œ Abortí•˜ì—¬ Logical Undo )
        DROP_TRUE deletebit
-       4. create table by abort ( allocslot ±îÁö µÇ°í NTA ·Î±× ¸øÂï°í Physical Undo)
+       4. create table by abort ( allocslot ê¹Œì§€ ë˜ê³  NTA ë¡œê·¸ ëª»ì°ê³  Physical Undo)
        DROP_FALSE deletebit
 
        case 1,2,3  -> initLockAndRuntimeItem
-       -  1¹ø  => »ç¿ëÁßÀÎ TableÀÌ¹Ç·Î ÃÊ±âÈ­ÇØ¾ßÇÔ
-       -  2¹ø, => catalog table½Ã¿¡ drop Table pendingÀÌ È£ÃâµÊ
-       3¹ø    ( drop table pending¼öÇàÀ» À§ÇØ¼­ ÃÊ±âÈ­ ÇÊ¿ä)
+       -  1ë²ˆ  => ì‚¬ìš©ì¤‘ì¸ Tableì´ë¯€ë¡œ ì´ˆê¸°í™”í•´ì•¼í•¨
+       -  2ë²ˆ, => catalog tableì‹œì— drop Table pendingì´ í˜¸ì¶œë¨
+       3ë²ˆ    ( drop table pendingìˆ˜í–‰ì„ ìœ„í•´ì„œ ì´ˆê¸°í™” í•„ìš”)
        case 4      -> skip
-       -  4¹ø  => catalog table refine½Ã catalog table row¸¸ Áö¿öÁü
+       -  4ë²ˆ  => catalog table refineì‹œ catalog table rowë§Œ ì§€ì›Œì§
     */
 
     if (!(( ( aSlotFlag & SMP_SLOT_DROP_MASK )
             == SMP_SLOT_DROP_FALSE ) &&
           ( SM_SCN_IS_DELETED( aSlotSCN ) )))
     {
-        // Offline Tablespace¾ÈÀÇ Table¿¡ ´ëÇØ
-        // Table HeaderÀÇ mLockÀº ÃÊ±âÈ­µÈ Ã¤·Î À¯ÁöµÈ´Ù.
+        // Offline Tablespaceì•ˆì˜ Tableì— ëŒ€í•´
+        // Table Headerì˜ mLockì€ ì´ˆê¸°í™”ëœ ì±„ë¡œ ìœ ì§€ëœë‹¤.
         IDE_ASSERT( aTableHeader->mLock != NULL );
 
         ///////////////////////////////////////////////////////////
         // (010) Init Runtime Info At Table Header
-        //        - TableÀÇ RuntimeÁ¤º¸ ÃÊ±âÈ­ ½Ç½Ã
+        //        - Tableì˜ Runtimeì •ë³´ ì´ˆê¸°í™” ì‹¤ì‹œ
         IDE_TEST( smcTable::initRuntimeItem( aTableHeader )
                   != IDE_SUCCESS );
     }
@@ -668,34 +668,34 @@ IDE_RC smcTableSpace::alterMemTBSOnlineAction( ULong            aSlotFlag,
     if( ( aSlotFlag & SMP_SLOT_DROP_MASK )
         == SMP_SLOT_DROP_TRUE )
     {
-        // 2¹ø, 3¹øÀÇ °æ¿ì
-        //  : ÀÌ¹Ì DropµÈ TableÀÌ°Å³ª CreateµµÁß AbortµÈ Table
-        //  => ¾Æ¹«·± Ã³¸® ¾ÈÇÔ
+        // 2ë²ˆ, 3ë²ˆì˜ ê²½ìš°
+        //  : ì´ë¯¸ Dropëœ Tableì´ê±°ë‚˜ Createë„ì¤‘ Abortëœ Table
+        //  => ì•„ë¬´ëŸ° ì²˜ë¦¬ ì•ˆí•¨
     }
     else
     {
         if( SM_SCN_IS_DELETED( aSlotSCN ) )
         {
-            // 4¹øÀÇ °æ¿ì ->  CreateµµÁß AbortµÈ Table
-            //  => ¾Æ¹«·± Ã³¸® ¾ÈÇÔ
+            // 4ë²ˆì˜ ê²½ìš° ->  Createë„ì¤‘ Abortëœ Table
+            //  => ì•„ë¬´ëŸ° ì²˜ë¦¬ ì•ˆí•¨
         }
         else
         {
-            // BUGBUG-1548 ÀÌ ºÎºĞ ÄÚµå »ó¼¼ °ËÁõ ÇÊ¿ä. ¸¹ÀÌ ºÒ¾ÈÇÔ
+            // BUGBUG-1548 ì´ ë¶€ë¶„ ì½”ë“œ ìƒì„¸ ê²€ì¦ í•„ìš”. ë§ì´ ë¶ˆì•ˆí•¨
 
             /////////////////////////////////////////////////////////////
             // (020) Refine Table Pages
-            //  - ¸ğµç Page¿¡ ´ëÇØ Free SlotÀ» Ã£¾Æ¼­ °¢ Page¿¡ ´Ş¾ÆÁØ´Ù.
-            //  - Å×ÀÌºí Çì´õÀÇ RuntimeÁ¤º¸¿¡ Free PageµéÀ» ±¸ÃàÇØÁØ´Ù.
+            //  - ëª¨ë“  Pageì— ëŒ€í•´ Free Slotì„ ì°¾ì•„ì„œ ê° Pageì— ë‹¬ì•„ì¤€ë‹¤.
+            //  - í…Œì´ë¸” í—¤ë”ì˜ Runtimeì •ë³´ì— Free Pageë“¤ì„ êµ¬ì¶•í•´ì¤€ë‹¤.
 
             IDE_TEST( sOIDList.initialize(IDU_MEM_SM_SMM ) != IDE_SUCCESS );
             sStage = 1;
 
 
-            // refinePageList¿¡¼­ sOIDList¸¦ ÇÊ¿ä·Î ÇÏ±â¶§¹®¿¡ ³Ñ±ä´Ù
-            // ±×·¯³ª, ¿©±â¿¡¼­ sOIDList¸¦ »ç¿ëÇÏÁö´Â ¾Ê´Â´Ù.
-            // aTableType ÀÎÀÚ¸¦ 0À¸·Î ³Ñ±â´Âµ¥, ±× ÀÌÀ¯´Â
-            // aTableTypeÀÌ sOIDList¿¡ OID¸¦ Ãß°¡ÇÒÁöÀÇ ¿©ºÎ »ç¿ëµÇ±â ¶§¹®
+            // refinePageListì—ì„œ sOIDListë¥¼ í•„ìš”ë¡œ í•˜ê¸°ë•Œë¬¸ì— ë„˜ê¸´ë‹¤
+            // ê·¸ëŸ¬ë‚˜, ì—¬ê¸°ì—ì„œ sOIDListë¥¼ ì‚¬ìš©í•˜ì§€ëŠ” ì•ŠëŠ”ë‹¤.
+            // aTableType ì¸ìë¥¼ 0ìœ¼ë¡œ ë„˜ê¸°ëŠ”ë°, ê·¸ ì´ìœ ëŠ”
+            // aTableTypeì´ sOIDListì— OIDë¥¼ ì¶”ê°€í• ì§€ì˜ ì—¬ë¶€ ì‚¬ìš©ë˜ê¸° ë•Œë¬¸
             IDE_TEST(smpFixedPageList::refinePageList(
                                            sTrans,
                                            aTableHeader->mSpaceID,
@@ -747,29 +747,29 @@ IDE_RC smcTableSpace::alterMemTBSOnlineAction( ULong            aSlotFlag,
 
 
 /*
-    Online->Offline À¸·Î º¯ÇÏ´Â Memory Tablespace¿¡ ¼ÓÇÑ
-    Table¿¡ ´ëÇÑ ActionÇÔ¼ö
+    Online->Offline ìœ¼ë¡œ ë³€í•˜ëŠ” Memory Tablespaceì— ì†í•œ
+    Tableì— ëŒ€í•œ Actioní•¨ìˆ˜
 
-    [IN] aTableHeader - OnlineÀ¸·Î º¯ÇÏ´Â Tablespace¿¡ ¼ÓÇÑ TableÀÇ Header
-    [IN] aActionArg   - ActionÇÔ¼ö ÀÎÀÚ
+    [IN] aTableHeader - Onlineìœ¼ë¡œ ë³€í•˜ëŠ” Tablespaceì— ì†í•œ Tableì˜ Header
+    [IN] aActionArg   - Actioní•¨ìˆ˜ ì¸ì
 
-    [ ¾Ë°í¸®Áò ]
-     (010) Free All Index Memory of TBS ( °øÀ¯¸Ş¸ğ¸®ÀÎ °æ¿ì ¸ğµÎ Á¦°Å )
+    [ ì•Œê³ ë¦¬ì¦˜ ]
+     (010) Free All Index Memory of TBS ( ê³µìœ ë©”ëª¨ë¦¬ì¸ ê²½ìš° ëª¨ë‘ ì œê±° )
      (020) Free Runtime Item At Table Header
 
-    [ Âü°í ]
-     1. º» ÇÔ¼ö´Â Alter Tablespace OfflineÀÇ Commit Pending¿¡¼­ È£ÃâµÈ´Ù
-     2. TableÀÇ Lock ItemÀ» ÇØÁ¦ÇÒ ¼ö ÀÖ´Â ÀÌÀ¯ :
-          Tablespace¿¡ X¶ôÀ» ÀâÀºÃ¤·Î ÀÌ ÇÔ¼ö°¡ È£ÃâµÇ±â ¶§¹®¿¡,
-          TableÀÇ Lock Item¿¡ Á¢±ÙÁßÀÎ TransactionÀÌ ÀÖÀ» ¼ö ¾ø±â ¶§¹®
-          ( Tablespace¿¡ ¸ÕÀú IX, IS¶ôÀ» Àâ°í Table¿¡ X, S, IX, IS¸¦ Àâ´Â´Ù )
+    [ ì°¸ê³  ]
+     1. ë³¸ í•¨ìˆ˜ëŠ” Alter Tablespace Offlineì˜ Commit Pendingì—ì„œ í˜¸ì¶œëœë‹¤
+     2. Tableì˜ Lock Itemì„ í•´ì œí•  ìˆ˜ ìˆëŠ” ì´ìœ  :
+          Tablespaceì— Xë½ì„ ì¡ì€ì±„ë¡œ ì´ í•¨ìˆ˜ê°€ í˜¸ì¶œë˜ê¸° ë•Œë¬¸ì—,
+          Tableì˜ Lock Itemì— ì ‘ê·¼ì¤‘ì¸ Transactionì´ ìˆì„ ìˆ˜ ì—†ê¸° ë•Œë¬¸
+          ( Tablespaceì— ë¨¼ì € IX, ISë½ì„ ì¡ê³  Tableì— X, S, IX, ISë¥¼ ì¡ëŠ”ë‹¤ )
 
  */
 IDE_RC smcTableSpace::alterMemTBSOfflineAction( smcTableHeader * aTableHeader )
 {
     IDE_DASSERT( aTableHeader != NULL );
 
-    // BUGBUG-1548 dropµÈ Table, CreateµµÁß ½ÇÆĞÇÑ Table¿¡ ´ëÇÑ °í·Á ÇÊ¿ä
+    // BUGBUG-1548 dropëœ Table, Createë„ì¤‘ ì‹¤íŒ¨í•œ Tableì— ëŒ€í•œ ê³ ë ¤ í•„ìš”
 
     ////////////////////////////////////////////////////////////////////////
     // (010) Free All Index Memory of TBS
@@ -778,7 +778,7 @@ IDE_RC smcTableSpace::alterMemTBSOfflineAction( smcTableHeader * aTableHeader )
 
     ////////////////////////////////////////////////////////////////////////
     // (020)  Free Runtime Item At Table Header
-    /* TableÀÇ Lock Item°ú Runtime¿µ¿ªÀ» ÇØÁ¦ */
+    /* Tableì˜ Lock Itemê³¼ Runtimeì˜ì—­ì„ í•´ì œ */
     IDE_TEST( smcTable::finRuntimeItem( aTableHeader ) != IDE_SUCCESS );
 
     return IDE_SUCCESS;

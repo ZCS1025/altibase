@@ -297,12 +297,12 @@ IDE_RC mmtServiceThread::lobCharLengthProtocolA5(cmiProtocolContext *aProtocolCo
     IDE_TEST(qciMisc::lobGetLength(sArg->mLocatorID, &sRemainLength) != IDE_SUCCESS);
 
     // fix BUG-22225
-    // CLOB µ¥ÀÌÅÍ°¡ ¾øÀ» °æ¿ì¿¡´Â (NULL or EMPTY)
-    // CLOBÀ» ÀÐÁö ¾Ê°í ¹Ù·Î 0À» ¹ÝÈ¯ÇÑ´Ù.
+    // CLOB ë°ì´í„°ê°€ ì—†ì„ ê²½ìš°ì—ëŠ” (NULL or EMPTY)
+    // CLOBì„ ì½ì§€ ì•Šê³  ë°”ë¡œ 0ì„ ë°˜í™˜í•œë‹¤.
     if (sRemainLength > 0)
     {
-        //fix BUG-27378 Code-Sonar UMR, failure µÉ¶§ return °ªÀ» ¹«½ÃÇÏ¸é
-        //sLanaguate°¡ unIntialize memory°¡ µÈ´Ù.
+        //fix BUG-27378 Code-Sonar UMR, failure ë ë•Œ return ê°’ì„ ë¬´ì‹œí•˜ë©´
+        //sLanaguateê°€ unIntialize memoryê°€ ëœë‹¤.
         IDE_TEST( qciMisc::getLanguage(smiGetDBCharSet(), &sLanguage) != IDE_SUCCESS);
 
         do
@@ -361,8 +361,8 @@ IDE_RC mmtServiceThread::lobGetProtocolA5(cmiProtocolContext *aProtocolContext,
 
     /* BUG-32194 [sm-disk-collection] The server does not check LOB offset
      * and LOB amounts 
-     * mOffset, mSizeµîÀÇ °ªÀº ID_UINT_MAX (4GB)¸¦ ³Ñ¾î¼­¸é ¾ÈµÇ¸ç,
-     * µÎ °ªÀÇ ÇÕ ¿ª½Ã ID_UINT_MAX´Â ¹°·Ð LobÀÇ Å©±â¸¦ ³Ñ¾î¼­µµ ¾ÈµÈ´Ù. */
+     * mOffset, mSizeë“±ì˜ ê°’ì€ ID_UINT_MAX (4GB)ë¥¼ ë„˜ì–´ì„œë©´ ì•ˆë˜ë©°,
+     * ë‘ ê°’ì˜ í•© ì—­ì‹œ ID_UINT_MAXëŠ” ë¬¼ë¡  Lobì˜ í¬ê¸°ë¥¼ ë„˜ì–´ì„œë„ ì•ˆëœë‹¤. */
     IDE_TEST_RAISE( ( ( (ULong) sArg->mOffset )
                     + ( (ULong) sArg->mSize   ) )
                     > sLobSize , InvalidRange );
@@ -437,15 +437,15 @@ IDE_RC mmtServiceThread::lobGetBytePosCharLenProtocolA5(
     sOffset          = sArg->mOffset; // byte offset
     sRemainCharCount = sArg->mSize;   // character length
     
-    //fix BUG-27378 Code-Sonar UMR, failure µÉ¶§ return °ªÀ» ¹«½ÃÇÏ¸é
-    //sLanaguate°¡ unIntialize memory°¡ µÈ´Ù.
+    //fix BUG-27378 Code-Sonar UMR, failure ë ë•Œ return ê°’ì„ ë¬´ì‹œí•˜ë©´
+    //sLanaguateê°€ unIntialize memoryê°€ ëœë‹¤.
     IDE_TEST( qciMisc::getLanguage(smiGetDBCharSet(), &sLanguage) != IDE_SUCCESS);
 
     do
     {
         // BUG-21509
-        // sRemainCharCount°¡ °ªÀÌ Å¬ °æ¿ì maxPrecision °ªÀÌ À½¼öÀÏ ¼öµµ ÀÖ´Ù.
-        // À½¼öÀÏ °æ¿ì sPieceSize´Â MMT_LOB_PIECE_SIZEÀÌ¸é µÈ´Ù.
+        // sRemainCharCountê°€ ê°’ì´ í´ ê²½ìš° maxPrecision ê°’ì´ ìŒìˆ˜ì¼ ìˆ˜ë„ ìžˆë‹¤.
+        // ìŒìˆ˜ì¼ ê²½ìš° sPieceSizeëŠ” MMT_LOB_PIECE_SIZEì´ë©´ ëœë‹¤.
         sTempPrecision = sLanguage->maxPrecision(sRemainCharCount);
         if (sTempPrecision < 0)
         {
@@ -518,13 +518,13 @@ IDE_RC mmtServiceThread::lobGetCharPosCharLenProtocolA5(
 
     IDE_TEST(qciMisc::lobGetLength(sArg->mLocatorID, &sLobLength) != IDE_SUCCESS);
 
-    //fix BUG-27378 Code-Sonar UMR, failure µÉ¶§ return °ªÀ» ¹«½ÃÇÏ¸é
-    //sLanaguate°¡ unIntialize memory°¡ µÈ´Ù.
+    //fix BUG-27378 Code-Sonar UMR, failure ë ë•Œ return ê°’ì„ ë¬´ì‹œí•˜ë©´
+    //sLanaguateê°€ unIntialize memoryê°€ ëœë‹¤.
     IDE_TEST( qciMisc::getLanguage(smiGetDBCharSet(), &sLanguage) != IDE_SUCCESS);
 
     if (sArg->mOffset > 0)
     {
-        // ÀÐÀ» À§Ä¡°¡ Ã³À½ÀÌ ¾Æ´Ñ °æ¿ì offset¸¸Å­ ¹®ÀÚ¸¦ skip ÇÑ´Ù.
+        // ì½ì„ ìœ„ì¹˜ê°€ ì²˜ìŒì´ ì•„ë‹Œ ê²½ìš° offsetë§Œí¼ ë¬¸ìžë¥¼ skip í•œë‹¤.
 
         sOffset          = 0;
         sRemainCharCount = sArg->mOffset;
@@ -637,8 +637,8 @@ IDE_RC mmtServiceThread::lobBytePosProtocolA5(cmiProtocolContext *aProtocolConte
     sByteOffset = 0;
     if (sArg->mCharOffset > 0)
     {
-        //fix BUG-27378 Code-Sonar UMR, failure µÉ¶§ return °ªÀ» ¹«½ÃÇÏ¸é
-        //sLanaguate°¡ unIntialize memory°¡ µÈ´Ù.
+        //fix BUG-27378 Code-Sonar UMR, failure ë ë•Œ return ê°’ì„ ë¬´ì‹œí•˜ë©´
+        //sLanaguateê°€ unIntialize memoryê°€ ëœë‹¤.
         IDE_TEST( qciMisc::getLanguage(smiGetDBCharSet(), &sLanguage) != IDE_SUCCESS);
         sRemainCharCount = sArg->mCharOffset;
         do

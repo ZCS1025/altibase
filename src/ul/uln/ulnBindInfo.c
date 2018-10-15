@@ -123,7 +123,7 @@
 
 /*
  * ================================================================================
- * ¹è¿­ÀÇ ±¸Á¶ :
+ * ë°°ì—´ì˜ êµ¬ì¡° :
  *
  *      SQLBindParameter(Stmt, ParamNumber, InOutType,
  *                       CTYPE_n, MTYPE,
@@ -132,23 +132,23 @@
  *                       BuferLength,
  *                       StrLenOrIndPtr)
  *
- *      Ã³·³ »ç¿ëÀÚ°¡ CTYPE_n °ú MTYPE À¸·Î ¹ÙÀÎµå¸¦ ÇßÀ» ¶§,
+ *      ì²˜ëŸ¼ ì‚¬ìš©ìžê°€ CTYPE_n ê³¼ MTYPE ìœ¼ë¡œ ë°”ì¸ë“œë¥¼ í–ˆì„ ë•Œ,
  *
- *      ¼­¹ö·Î BIND PARAM INFO SET À» ÇÒ ¶§ °Ç³×ÁÙ
+ *      ì„œë²„ë¡œ BIND PARAM INFO SET ì„ í•  ë•Œ ê±´ë„¤ì¤„
  *
- *          4n     Çà : Å¸ÀÔ (MTYPE. ÈÄ¿¡ MTD_TYPE À¸·Î ¸ÅÇÎ)
+ *          4n     í–‰ : íƒ€ìž… (MTYPE. í›„ì— MTD_TYPE ìœ¼ë¡œ ë§¤í•‘)
  *
- *          4n + 1 Çà : precision À» ±¸ÇÏ±â À§ÇØ
- *                      precision À» ±¸ÇÏ´Â ÇÔ¼öÀÇ ¹è¿­ÀÎ
- *                      ulnBindInfoPrecisionFuncArray ¿¡¼­ È£ÃâÇØ¾ß ÇÒ ÇÔ¼öÀÇ ÀÎµ¦½º
+ *          4n + 1 í–‰ : precision ì„ êµ¬í•˜ê¸° ìœ„í•´
+ *                      precision ì„ êµ¬í•˜ëŠ” í•¨ìˆ˜ì˜ ë°°ì—´ì¸
+ *                      ulnBindInfoPrecisionFuncArray ì—ì„œ í˜¸ì¶œí•´ì•¼ í•  í•¨ìˆ˜ì˜ ì¸ë±ìŠ¤
  *
- *          4n + 2 Çà : scale À» ±¸ÇÏ±â À§ÇØ
- *                      scale À» ±¸ÇÏ´Â ÇÔ¼öÀÇ ¹è¿­ÀÎ
- *                      ulnBindInfoScaleFuncArray ¿¡¼­ È£ÃâÇØ¾ß ÇÒ ÇÔ¼öÀÇ ÀÎµ¦½º
+ *          4n + 2 í–‰ : scale ì„ êµ¬í•˜ê¸° ìœ„í•´
+ *                      scale ì„ êµ¬í•˜ëŠ” í•¨ìˆ˜ì˜ ë°°ì—´ì¸
+ *                      ulnBindInfoScaleFuncArray ì—ì„œ í˜¸ì¶œí•´ì•¼ í•  í•¨ìˆ˜ì˜ ì¸ë±ìŠ¤
  *
- *          4n + 3 Çà : ParamDataIn À» ÇÒ ¶§
- *                      conversion À» À§ÇØ¼­
- *                      gUlnParamDataInFuncArray ¿¡¼­ È£ÃâÇØ¾ß ÇÒ ÇÔ¼öÀÇ ÀÎµ¦½º
+ *          4n + 3 í–‰ : ParamDataIn ì„ í•  ë•Œ
+ *                      conversion ì„ ìœ„í•´ì„œ
+ *                      gUlnParamDataInFuncArray ì—ì„œ í˜¸ì¶œí•´ì•¼ í•  í•¨ìˆ˜ì˜ ì¸ë±ìŠ¤
  * ================================================================================
  */
 
@@ -417,7 +417,7 @@ static const acp_uint32_t ulnBindInfoMap [ULN_CTYPE_MAX * ULN_BINDINFO_CTYPE_MUL
 
 /*
  * =====================================================
- * ulnBindInfo ¿¡ ¼¼ÆÃÇÒ Àü¼ÛÇÔ¼ö¸¦ ±¸ÇÏ´Â ÇÔ¼ö
+ * ulnBindInfo ì— ì„¸íŒ…í•  ì „ì†¡í•¨ìˆ˜ë¥¼ êµ¬í•˜ëŠ” í•¨ìˆ˜
  * =====================================================
  */
 
@@ -498,7 +498,7 @@ ulnParamDataInBuildAnyFunc *ulnBindInfoGetParamDataInBuildAnyFunc(ulnCTypeID aCT
 
 /*
  * =====================================================
- * ulnBindInfo ¿¡ ¼¼ÆÃÇÒ type À» ±¸ÇÏ´Â ÇÔ¼ö
+ * ulnBindInfo ì— ì„¸íŒ…í•  type ì„ êµ¬í•˜ëŠ” í•¨ìˆ˜
  * =====================================================
  */
 
@@ -523,7 +523,7 @@ ulnMTypeID ulnBindInfoGetMTYPEtoSet(ulnCTypeID aCTYPE, ulnMTypeID aMTYPE)
 
 /*
  * =====================================================
- * ulnBindInfo ¿¡ ¼¼ÆÃÇÒ precision À» °è»êÇÏ´Â ÇÔ¼öµé
+ * ulnBindInfo ì— ì„¸íŒ…í•  precision ì„ ê³„ì‚°í•˜ëŠ” í•¨ìˆ˜ë“¤
  * =====================================================
  */
 
@@ -563,7 +563,7 @@ static acp_sint32_t ulnBindInfoPrecision_ColSize(ulnMeta          *aAppMeta,
     ACP_UNUSED(aUserIndLenPair);
 
     /*
-     * ÀÌ ÇÔ¼ö´Â BindInfo ÀÇ mType ÀÌ
+     * ì´ í•¨ìˆ˜ëŠ” BindInfo ì˜ mType ì´
      *
      *      ULN_MTYPE_VARCHAR
      *      ULN_MTYPE_CHAR
@@ -575,9 +575,9 @@ static acp_sint32_t ulnBindInfoPrecision_ColSize(ulnMeta          *aAppMeta,
      *      ULN_MTYPE_BIT
      *      ULN_MTYPE_GEOMETRY
      *
-     * ÀÏ ¶§¿¡¸¸ ¿Ã¹Ù¸¥ °ªÀ» ¸®ÅÏÇÑ´Ù.
-     * SQLBindParameter() ÇÒ ¶§¿¡ ColumnSize parameter °¡ IPD record Meta ÀÇ
-     * OdbcOctetLength ¿¡ ÀúÀåµÇ±â ¶§¹®ÀÌ´Ù.
+     * ì¼ ë•Œì—ë§Œ ì˜¬ë°”ë¥¸ ê°’ì„ ë¦¬í„´í•œë‹¤.
+     * SQLBindParameter() í•  ë•Œì— ColumnSize parameter ê°€ IPD record Meta ì˜
+     * OdbcOctetLength ì— ì €ìž¥ë˜ê¸° ë•Œë¬¸ì´ë‹¤.
      */
 
     return (acp_sint32_t)ulnMetaGetOctetLength(aImpMeta);
@@ -593,7 +593,7 @@ static acp_sint32_t ulnBindInfoPrecision_ColSize2(ulnMeta          *aAppMeta,
     ACP_UNUSED(aUserIndLenPair);
 
     /*
-     * ÀÌ ÇÔ¼ö´Â BindInfo ÀÇ mType ÀÌ
+     * ì´ í•¨ìˆ˜ëŠ” BindInfo ì˜ mType ì´
      *
      *      ULN_MTYPE_VARCHAR
      *      ULN_MTYPE_CHAR
@@ -605,9 +605,9 @@ static acp_sint32_t ulnBindInfoPrecision_ColSize2(ulnMeta          *aAppMeta,
      *      ULN_MTYPE_BIT
      *      ULN_MTYPE_GEOMETRY
      *
-     * ÀÏ ¶§¿¡¸¸ ¿Ã¹Ù¸¥ °ªÀ» ¸®ÅÏÇÑ´Ù.
-     * SQLBindParameter() ÇÒ ¶§¿¡ ColumnSize parameter °¡ IPD record Meta ÀÇ
-     * OdbcOctetLength ¿¡ ÀúÀåµÇ±â ¶§¹®ÀÌ´Ù.
+     * ì¼ ë•Œì—ë§Œ ì˜¬ë°”ë¥¸ ê°’ì„ ë¦¬í„´í•œë‹¤.
+     * SQLBindParameter() í•  ë•Œì— ColumnSize parameter ê°€ IPD record Meta ì˜
+     * OdbcOctetLength ì— ì €ìž¥ë˜ê¸° ë•Œë¬¸ì´ë‹¤.
      */
 
     return ulnMetaGetOctetLength(aImpMeta) * 2;
@@ -623,12 +623,12 @@ static acp_sint32_t ulnBindInfoPrecision_APD(ulnMeta          *aAppMeta,
     ACP_UNUSED(aUserIndLenPair);
 
     /*
-     * ÀÌ ÇÔ¼ö´Â BindInfo ÀÇ mType ÀÌ
+     * ì´ í•¨ìˆ˜ëŠ” BindInfo ì˜ mType ì´
      *
      *      ULN_MTYPE_NUMBER
      *      ULN_MTYPE_NUMERIC
      *
-     * ÀÏ ¶§¿¡¸¸ ¿Ã¹Ù¸¥ °ªÀ» ¸®ÅÏÇÑ´Ù.
+     * ì¼ ë•Œì—ë§Œ ì˜¬ë°”ë¥¸ ê°’ì„ ë¦¬í„´í•œë‹¤.
      */
 
     return ulnMetaGetPrecision(aAppMeta);
@@ -644,12 +644,12 @@ static acp_sint32_t ulnBindInfoPrecision_IPD(ulnMeta          *aAppMeta,
     ACP_UNUSED(aUserIndLenPair);
 
     /*
-     * ÀÌ ÇÔ¼ö´Â BindInfo ÀÇ mType ÀÌ
+     * ì´ í•¨ìˆ˜ëŠ” BindInfo ì˜ mType ì´
      *
      *      ULN_MTYPE_NUMBER
      *      ULN_MTYPE_NUMERIC
      *
-     * ÀÏ ¶§¿¡¸¸ ¿Ã¹Ù¸¥ °ªÀ» ¸®ÅÏÇÑ´Ù.
+     * ì¼ ë•Œì—ë§Œ ì˜¬ë°”ë¥¸ ê°’ì„ ë¦¬í„´í•œë‹¤.
      */
 
     return ulnMetaGetPrecision(aImpMeta);
@@ -666,25 +666,25 @@ static acp_sint32_t ulnBindInfoPrecision_BufferSize(ulnMeta          *aAppMeta,
     ACP_UNUSED(aImpMeta);
 
     /*
-     * ÀÌ ÇÔ¼ö´Â BindInfo ÀÇ mType ÀÌ
+     * ì´ í•¨ìˆ˜ëŠ” BindInfo ì˜ mType ì´
      *
      *      ULN_MTYPE_CHAR
      *      ULN_MTYPE_VARCHAR
      *
-     * ÀÌ°í, IPD record ÀÇ MTYPE ÀÌ fixed size Å¸ÀÔÀÏ ¶§,
-     * Áï, ColumnSize ¿¡ 0 ÀÌ ¿ÔÀ» ¶§, ´Ù½Ã¸»ÇØ¼­,
+     * ì´ê³ , IPD record ì˜ MTYPE ì´ fixed size íƒ€ìž…ì¼ ë•Œ,
+     * ì¦‰, ColumnSize ì— 0 ì´ ì™”ì„ ë•Œ, ë‹¤ì‹œë§í•´ì„œ,
      *
      *      SQLBindParameter(SQL_C_CHAR, SQL_INTEGER, 0, 0, ...)
      *
-     * °ú °°Àº ÇüÅÂÀÇ ÆÄ¶ó¹ÌÅÍÀÏ °æ¿ì¿¡¸¸ È£ÃâµÇ¸ç, ±×·¡¾ß ÇÑ´Ù.
+     * ê³¼ ê°™ì€ í˜•íƒœì˜ íŒŒë¼ë¯¸í„°ì¼ ê²½ìš°ì—ë§Œ í˜¸ì¶œë˜ë©°, ê·¸ëž˜ì•¼ í•œë‹¤.
      *
-     * ¸¸¾à
+     * ë§Œì•½
      *
-     *  1. BufferSize °¡ 0 ÀÌ ¾Æ´Ï¶ó¸é happy ÇÏ°Ô ¹Ù·Î BufferSize ¸¦ ¸®ÅÏ
-     *  2. BufferSize °¡ 0 ÀÌ°í,
-     *     2-1. StrIndOrLenPtr ÀÌ °¡¸®Å°´Â ¹öÆÛ¿¡ ±æÀÌ°ªÀÌ ÀÖÀ» °æ¿ì ±× ±æÀÌ¸¦ ¸®ÅÏ.
-     *     2-2. StrIndOrLenPtr ÀÌ °¡¸®Å°´Â ¹öÆÛ¿¡ SQL_NTS °¡ ÀÖ°Å³ª,
-     *          StrIndOrLenPtr ÀÌ NULL ÀÏ °æ¿ì, ¹öÆÛ¿¡ ÀÖ´Â ±ÛÀÚÀÇ °¹¼ö¸¦ ¼¼¾î¼­ ¸®ÅÏ.
+     *  1. BufferSize ê°€ 0 ì´ ì•„ë‹ˆë¼ë©´ happy í•˜ê²Œ ë°”ë¡œ BufferSize ë¥¼ ë¦¬í„´
+     *  2. BufferSize ê°€ 0 ì´ê³ ,
+     *     2-1. StrIndOrLenPtr ì´ ê°€ë¦¬í‚¤ëŠ” ë²„í¼ì— ê¸¸ì´ê°’ì´ ìžˆì„ ê²½ìš° ê·¸ ê¸¸ì´ë¥¼ ë¦¬í„´.
+     *     2-2. StrIndOrLenPtr ì´ ê°€ë¦¬í‚¤ëŠ” ë²„í¼ì— SQL_NTS ê°€ ìžˆê±°ë‚˜,
+     *          StrIndOrLenPtr ì´ NULL ì¼ ê²½ìš°, ë²„í¼ì— ìžˆëŠ” ê¸€ìžì˜ ê°¯ìˆ˜ë¥¼ ì„¸ì–´ì„œ ë¦¬í„´.
      */
 
     if (sUserBufferSize != 0)
@@ -693,7 +693,7 @@ static acp_sint32_t ulnBindInfoPrecision_BufferSize(ulnMeta          *aAppMeta,
     }
 
     /*
-     * BufferSize °¡ 0 ÀÌ´Ù. StrLenOrIndPtr ¿¡ ÀÖ´Â ±æÀÌ¸¦ Ã¼Å©ÇÑ´Ù.
+     * BufferSize ê°€ 0 ì´ë‹¤. StrLenOrIndPtr ì— ìžˆëŠ” ê¸¸ì´ë¥¼ ì²´í¬í•œë‹¤.
      */
 
     sUserIndLenValue = ulnBindGetUserIndLenValue(aUserIndLenPair);
@@ -712,8 +712,8 @@ static acp_sint32_t ulnBindInfoPrecision_BufferSize(ulnMeta          *aAppMeta,
             case SQL_DATA_AT_EXEC:
             default:
                 /*
-                 * BUGBUG : ÀÌ °æ¿ì´Â SQL_LEN_DATA_AT_EXEC() ¸ÅÅ©·Î¿¡ ÀÇÇÑ °ªÀÌ´Ù.
-                 *          ¾î¶»°Ô Ã³¸®ÇÒÁö »ý°¢ÇØ ºÁ¾ß ÇÑ´Ù.
+                 * BUGBUG : ì´ ê²½ìš°ëŠ” SQL_LEN_DATA_AT_EXEC() ë§¤í¬ë¡œì— ì˜í•œ ê°’ì´ë‹¤.
+                 *          ì–´ë–»ê²Œ ì²˜ë¦¬í• ì§€ ìƒê°í•´ ë´ì•¼ í•œë‹¤.
                  */
                 return 0;
         }
@@ -751,7 +751,7 @@ ulnPrecisionFunc *ulnBindInfoGetPrecisionFunc(ulnCTypeID aCTYPE, ulnMTypeID aMTY
 
 /*
  * =====================================================
- * ulnBindInfo ¿¡ ¼¼ÆÃÇÒ scale À» °è»êÇÏ´Â ÇÔ¼öµé
+ * ulnBindInfo ì— ì„¸íŒ…í•  scale ì„ ê³„ì‚°í•˜ëŠ” í•¨ìˆ˜ë“¤
  * =====================================================
  */
 
@@ -816,16 +816,16 @@ ulnScaleFunc *ulnBindInfoGetScaleFunc(ulnCTypeID aCTYPE, ulnMTypeID aMTYPE)
 
 /*
  * =========================================================
- * ¿©±â±îÁö »õ·Î ¸¸µé°í ÀÖ´Â ÇÔ¼öµé
+ * ì—¬ê¸°ê¹Œì§€ ìƒˆë¡œ ë§Œë“¤ê³  ìžˆëŠ” í•¨ìˆ˜ë“¤
  * =========================================================
  */
 
 acp_uint8_t ulnBindInfoGetArgumentsForMTYPE(ulnMTypeID aMTYPE)
 {
     /*
-     * 0 : ¾Æ¹«°Íµµ ÀÇ¹ÌÀÖÁö ¾ÊÀ½.
-     * 1 : mPrecision ¸¸ À¯ÀÇ¹ÌÇÔ.
-     * 2 : mPrecision, mScale µÑ ´Ù À¯ÀÇ¹ÌÇÔ.
+     * 0 : ì•„ë¬´ê²ƒë„ ì˜ë¯¸ìžˆì§€ ì•ŠìŒ.
+     * 1 : mPrecision ë§Œ ìœ ì˜ë¯¸í•¨.
+     * 2 : mPrecision, mScale ë‘˜ ë‹¤ ìœ ì˜ë¯¸í•¨.
      */
     switch (aMTYPE)
     {
@@ -1004,7 +1004,7 @@ ACI_RC ulnBindInfoBuild4Param(ulnMeta           *aAppMeta,
     sMetaMTYPE = ulnMetaGetMTYPE(aImpMeta);
 
     /*
-     * ulnBindInfo ±¸Á¶Ã¼¿¡ ¼¼ÆÃÇÒ »õ °ªµéÀ» ÁØºñÇÑ´Ù.
+     * ulnBindInfo êµ¬ì¡°ì²´ì— ì„¸íŒ…í•  ìƒˆ ê°’ë“¤ì„ ì¤€ë¹„í•œë‹¤.
      */
 
     sMTYPE = ulnBindInfoGetMTYPEtoSet(sMetaCTYPE, sMetaMTYPE);
@@ -1029,7 +1029,7 @@ ACI_RC ulnBindInfoBuild4Param(ulnMeta           *aAppMeta,
     }
 
     /*
-     * ulnBindInfo ¿¡ ¿ø·¡ ÀÖ´ø °ªµé°ú ºñ±³ÇØ¼­ ´Ù¸£¸é »õ °ªÀ¸·Î ¼¼ÆÃÇÑ´Ù.
+     * ulnBindInfo ì— ì›ëž˜ ìžˆë˜ ê°’ë“¤ê³¼ ë¹„êµí•´ì„œ ë‹¤ë¥´ë©´ ìƒˆ ê°’ìœ¼ë¡œ ì„¸íŒ…í•œë‹¤.
      */
 
     if (aBindInfo->mMTYPE != sMTYPE)

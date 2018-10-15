@@ -19,20 +19,20 @@
 #include <iduPriorityQueue.h>
 
 /*------------------------------------------------------------------------------
-  iduPriorityQueue¸¦ ÃÊ±âÈ­ ÇÑ´Ù.
+  iduPriorityQueueë¥¼ ì´ˆê¸°í™” í•œë‹¤.
 
   aIndex        - [IN]  Memory Mgr Index
-  aDataMaxCnt   - [IN]  iduHeap°¡ °¡Áú ¼ö ÀÖ´Â DataÀÇ ÃÖ´ë °¹¼ö
-  aDataSize     - [IN]  DataÀÇ Å©±â, byte´ÜÀ§
-  aCompar       - [IN]  DataµéÀ» ºñ±³ÇÏ±â À§ÇØ »ç¿ëÇÏ´Â Function, 2°³ÀÇ data¸¦ ÀÎÀÚ·Î ¹Þ¾Æ
-                        °ªÀ» ºñ±³ÇÑ´Ù. ÀÌ ÇÔ¼ö¸¦ ÀûÀýÇÏ°Ô »ç¿ëÇÏ¸é iduHeap¸¦
-                        ÃÖ´ë¿ì¼±¼øÀ§ Å¥ ¶Ç´Â ÃÖ¼Ò¿ì¼±¼øÀ§ Å¥·Î »ç¿ëÇÒ ¼ö ÀÖ´Ù.
-         ÃÖ´ë ¿ì¼±¼øÀ§Å¥ = Å«°ªÀ» ¸ÕÀú ¸®ÅÏÇÑ´Ù. ÀÌ°ÍÀ» À§ÇØ¼­,
-                        aComparÇÔ¼ö³»¿¡¼­ Ã¹¹øÂ° ÀÎÀÚ°¡ ´õ Å¬¶§ 1À» ¸®ÅÏ, °°À»¶§ 0À» ¸®ÅÏ,
-                        µÎ¹øÂ° ÀÎÀÚ°¡ ´õ Å¬¶§ -1À» ¸®ÅÏÇÏ¸é µÈ´Ù.
-         ÃÖ¼Ò ¿ì¼±¼øÀ§Å¥ = ÀÛÀº°ªÀ» ¸ÕÀú ¸®ÅÏÇÑ´Ù. ÀÌ°ÍÀ» À§ÇØ¼­,
-                        aComparÇÔ¼ö³»¿¡¼­ Ã¹¹øÂ° ÀÎÀÚ°¡ ´õ ÀÛÀ»¶§ 1À» ¸®ÅÏ, °°À»¶§ 0À» ¸®ÅÏ,
-                        µÎ¹øÂ° ÀÎÀÚ°¡ ´õ ÀÛÀ»¶§ -1À» ¸®ÅÏÇÏ¸é µÈ´Ù.
+  aDataMaxCnt   - [IN]  iduHeapê°€ ê°€ì§ˆ ìˆ˜ ìžˆëŠ” Dataì˜ ìµœëŒ€ ê°¯ìˆ˜
+  aDataSize     - [IN]  Dataì˜ í¬ê¸°, byteë‹¨ìœ„
+  aCompar       - [IN]  Dataë“¤ì„ ë¹„êµí•˜ê¸° ìœ„í•´ ì‚¬ìš©í•˜ëŠ” Function, 2ê°œì˜ dataë¥¼ ì¸ìžë¡œ ë°›ì•„
+                        ê°’ì„ ë¹„êµí•œë‹¤. ì´ í•¨ìˆ˜ë¥¼ ì ì ˆí•˜ê²Œ ì‚¬ìš©í•˜ë©´ iduHeapë¥¼
+                        ìµœëŒ€ìš°ì„ ìˆœìœ„ í ë˜ëŠ” ìµœì†Œìš°ì„ ìˆœìœ„ íë¡œ ì‚¬ìš©í•  ìˆ˜ ìžˆë‹¤.
+         ìµœëŒ€ ìš°ì„ ìˆœìœ„í = í°ê°’ì„ ë¨¼ì € ë¦¬í„´í•œë‹¤. ì´ê²ƒì„ ìœ„í•´ì„œ,
+                        aComparí•¨ìˆ˜ë‚´ì—ì„œ ì²«ë²ˆì§¸ ì¸ìžê°€ ë” í´ë•Œ 1ì„ ë¦¬í„´, ê°™ì„ë•Œ 0ì„ ë¦¬í„´,
+                        ë‘ë²ˆì§¸ ì¸ìžê°€ ë” í´ë•Œ -1ì„ ë¦¬í„´í•˜ë©´ ëœë‹¤.
+         ìµœì†Œ ìš°ì„ ìˆœìœ„í = ìž‘ì€ê°’ì„ ë¨¼ì € ë¦¬í„´í•œë‹¤. ì´ê²ƒì„ ìœ„í•´ì„œ,
+                        aComparí•¨ìˆ˜ë‚´ì—ì„œ ì²«ë²ˆì§¸ ì¸ìžê°€ ë” ìž‘ì„ë•Œ 1ì„ ë¦¬í„´, ê°™ì„ë•Œ 0ì„ ë¦¬í„´,
+                        ë‘ë²ˆì§¸ ì¸ìžê°€ ë” ìž‘ì„ë•Œ -1ì„ ë¦¬í„´í•˜ë©´ ëœë‹¤.
   -----------------------------------------------------------------------------*/
 IDE_RC iduPriorityQueue::initialize( iduMemoryClientIndex aIndex,
                                      UInt                 aDataMaxCnt,

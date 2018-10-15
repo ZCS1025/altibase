@@ -26,9 +26,9 @@ struct iduOIDMemAllocPage
 };
 
 // BUG-22877
-// alloc list´Â ÀÌÁß ¿¬°á listÀÌ°í free list´Â ´ÜÀÏ ¿¬°á list ÀÌ¹Ç·Î
-// È¥µ¿À» ÇÇÇÏ±â À§ÇØ, free list¿ë single link list page header¸¦
-// º°µµ·Î ¼±¾ğÇØ¼­ Ä³½ºÆÃÇÏ¿© »ç¿ëÇÑ´Ù.
+// alloc listëŠ” ì´ì¤‘ ì—°ê²° listì´ê³  free listëŠ” ë‹¨ì¼ ì—°ê²° list ì´ë¯€ë¡œ
+// í˜¼ë™ì„ í”¼í•˜ê¸° ìœ„í•´, free listìš© single link list page headerë¥¼
+// ë³„ë„ë¡œ ì„ ì–¸í•´ì„œ ìºìŠ¤íŒ…í•˜ì—¬ ì‚¬ìš©í•œë‹¤.
 struct iduOIDMemFreePage
 {
     iduOIDMemFreePage * next;      // next page
@@ -37,26 +37,26 @@ struct iduOIDMemFreePage
 
 struct iduOIDMemItem
 {
-    iduOIDMemAllocPage * myPage;  // itemÀÌ ¼Ò¼ÓµÈ page
+    iduOIDMemAllocPage * myPage;  // itemì´ ì†Œì†ëœ page
 };
 
 /*----------------------------------------------------------------
   Name : iduOIDMemory Class
   Arguments :
   Description :
-      OID¿ë ¸Ş¸ğ¸® °ü¸®ÀÚÀÎ iduMemMgrÀÇ ´ÜÁ¡À» ±Øº¹ÇÏ±â À§ÇÏ¿© ±¸Çö.
-      - iduMemMgrÀÇ ÀåÁ¡ ¼ö¿ë
-          : free½Ã latch¸¦ È¹µæÇÏÁö ¾ÊÀ½
-      - iduMemMgrÀÇ ´ÜÁ¡ ±Øº¹
-          : kernel·ÎÀÇ ¸Ş¸ğ¸® ¹İ³³À» Çã¿ëÇÔ
-      - allocation page list¿Í free page list¸¦ °ü¸®ÇÏ¸ç,
-        ¸Ş¸ğ¸® ÇÒ´çÀº allocation page listÀÇ top page·ÎºÎÅÍ
-        ¼øÂ÷ÀûÀ¸·Î ÇÒ´çÇÏ¸ç(iduMemMgr¿Í ´Ù¸§),
-        ¸Ş¸ğ¸® ÇØÁ¦½Ã ÇØ´ç Page°¡ ¸ğµÎ ºô °æ¿ì free page list¿¡
-        µî·ÏÇÏ°Å³ª kernel¿¡ ¹İ³³ÇÏ¿© ¸Ş¸ğ¸® ÇØÁ¦¸¦ ÇÒ ¼ö ÀÖµµ·Ï ÇÑ´Ù.
-        iduMemMgr¿¡¼­ free slot listÁß top list´Â allocÇÏÁö ¾Ê´Â ¹æ¹ıÀ»
-        allocation page listÀÇ top°ú free page listÀÇ tail¿¡ Àû¿ëÇÏ¿©
-        memfree()½Ã¿¡ latch¸¦ »ç¿ëÇÏÁö ¾Êµµ·Ï ÇÑ´Ù.
+      OIDìš© ë©”ëª¨ë¦¬ ê´€ë¦¬ìì¸ iduMemMgrì˜ ë‹¨ì ì„ ê·¹ë³µí•˜ê¸° ìœ„í•˜ì—¬ êµ¬í˜„.
+      - iduMemMgrì˜ ì¥ì  ìˆ˜ìš©
+          : freeì‹œ latchë¥¼ íšë“í•˜ì§€ ì•ŠìŒ
+      - iduMemMgrì˜ ë‹¨ì  ê·¹ë³µ
+          : kernelë¡œì˜ ë©”ëª¨ë¦¬ ë°˜ë‚©ì„ í—ˆìš©í•¨
+      - allocation page listì™€ free page listë¥¼ ê´€ë¦¬í•˜ë©°,
+        ë©”ëª¨ë¦¬ í• ë‹¹ì€ allocation page listì˜ top pageë¡œë¶€í„°
+        ìˆœì°¨ì ìœ¼ë¡œ í• ë‹¹í•˜ë©°(iduMemMgrì™€ ë‹¤ë¦„),
+        ë©”ëª¨ë¦¬ í•´ì œì‹œ í•´ë‹¹ Pageê°€ ëª¨ë‘ ë¹Œ ê²½ìš° free page listì—
+        ë“±ë¡í•˜ê±°ë‚˜ kernelì— ë°˜ë‚©í•˜ì—¬ ë©”ëª¨ë¦¬ í•´ì œë¥¼ í•  ìˆ˜ ìˆë„ë¡ í•œë‹¤.
+        iduMemMgrì—ì„œ free slot listì¤‘ top listëŠ” allocí•˜ì§€ ì•ŠëŠ” ë°©ë²•ì„
+        allocation page listì˜ topê³¼ free page listì˜ tailì— ì ìš©í•˜ì—¬
+        memfree()ì‹œì— latchë¥¼ ì‚¬ìš©í•˜ì§€ ì•Šë„ë¡ í•œë‹¤.
   ----------------------------------------------------------------*/
 
 class iduOIDMemory
@@ -94,10 +94,10 @@ private:
     vULong     mPageSize;      // page size
 
     iduOIDMemAllocPage mAllocPageHeader;   // alloc page list
-    ULong              mPageCntInAllocLst; // alloc page ¼ö
+    ULong              mPageCntInAllocLst; // alloc page ìˆ˜
 
     iduOIDMemFreePage  mFreePageHeader;    // free page list
-    ULong              mPageCntInFreeLst;  // free page ¼ö
+    ULong              mPageCntInFreeLst;  // free page ìˆ˜
 };
 
 #endif /* _O_IDU_OID_MEMORY_H_ */

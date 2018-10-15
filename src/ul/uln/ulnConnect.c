@@ -26,8 +26,8 @@ ACI_RC ulnSFID_85(ulnFnContext *aFnContext)
     if(aFnContext->mWhere == ULN_STATE_EXIT_POINT)
     {
         /*
-         * ºüÁ®³ª°¥ ¶§ SQL_SUCCESS ¸¦ ¸®ÅÏÇÒ °æ¿ì, Áï, ¿¬°áÀÌ ¼º°øÇÑ °æ¿ì
-         * Connected »óÅÂ (4¹ø »óÅÂ) ·Î »óÅÂ ÀüÀÌ¸¦ ÇÑ´Ù.
+         * ë¹ ì ¸ë‚˜ê°ˆ ë•Œ SQL_SUCCESS ë¥¼ ë¦¬í„´í•  ê²½ìš°, ì¦‰, ì—°ê²°ì´ ì„±ê³µí•œ ê²½ìš°
+         * Connected ìƒíƒœ (4ë²ˆ ìƒíƒœ) ë¡œ ìƒíƒœ ì „ì´ë¥¼ í•œë‹¤.
          */
         if(SQL_SUCCEEDED(ULN_FNCONTEXT_GET_RC(aFnContext)) != 0)
         {
@@ -232,9 +232,9 @@ SQLRETURN ulnConnect(ulnDbc       *aDbc,
     }
 
     /*
-     * User Profile (odbc.ini, registry µî) À» ÀÌ¿ëÇÑ DBC Attribute ¼¼ÆÃ
+     * User Profile (odbc.ini, registry ë“±) ì„ ì´ìš©í•œ DBC Attribute ì„¸íŒ…
      *
-     * cli ¸¦ Á÷Á¢ ¾µ °æ¿ì ¾Æ¹«°Íµµ ¾ÈÇÏ´Â ´õ¹Ì ÇÔ¼ö È£Ãâ
+     * cli ë¥¼ ì§ì ‘ ì“¸ ê²½ìš° ì•„ë¬´ê²ƒë„ ì•ˆí•˜ëŠ” ë”ë¯¸ í•¨ìˆ˜ í˜¸ì¶œ
      */
 
     ACI_TEST(ulnSetConnAttrByProfileFunc(&sFnContext,
@@ -277,7 +277,7 @@ SQLRETURN ulnConnect(ulnDbc       *aDbc,
 
     /*
      * Note : to sjkim :
-     *        DBC ÀÇ ¸Þ¸ð¸®´Â SQLFreeHandle(DBC) ¸¦ È£ÃâÇÏ¸é¼­ ÇØÁ¦µË´Ï´Ù - shawn
+     *        DBC ì˜ ë©”ëª¨ë¦¬ëŠ” SQLFreeHandle(DBC) ë¥¼ í˜¸ì¶œí•˜ë©´ì„œ í•´ì œë©ë‹ˆë‹¤ - shawn
      */
 
     ULN_IS_FLAG_UP(sNeedExit)

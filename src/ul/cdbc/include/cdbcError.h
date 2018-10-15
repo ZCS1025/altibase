@@ -23,16 +23,16 @@ ACP_EXTERN_C_BEGIN
 
 
 
-#define CDBC_EXPNO_INVALID_ARGS         -1  /**< Àß¸øµÈ ÀÎÀÚ »ç¿ë */
-#define CDBC_EXPNO_BUF_NOT_ENOUGH       -2  /**< ¹öÆÛ°¡ ÃæºÐÇÏÁö ¾ÊÀ½ */
-#define CDBC_EXPNO_INVALID_VERFORM      -3  /**< ¿Ã¹Ù¸£Áö¾ÊÀº ¹öÀü ¹®ÀÚ¿­ */
-#define CDBC_EXPNO_VARSIZE_TYPE         -4  /**< Å©±â°¡ Á¤ÇØÁ®ÀÖÁö ¾ÊÀº Å¸ÀÔ */
-#define CDBC_EXPNO_INVALID_BIND_TYPE    -5  /**< À¯È¿ÇÏÁö ¾ÊÀº ¹ÙÀÎµå Å¸ÀÔ */
-#define CDBC_EXPNO_INVALID_FIELD_TYPE   -6  /**< À¯È¿ÇÏÁö ¾ÊÀº ÇÊµå Å¸ÀÔ */
+#define CDBC_EXPNO_INVALID_ARGS         -1  /**< ìž˜ëª»ëœ ì¸ìž ì‚¬ìš© */
+#define CDBC_EXPNO_BUF_NOT_ENOUGH       -2  /**< ë²„í¼ê°€ ì¶©ë¶„í•˜ì§€ ì•ŠìŒ */
+#define CDBC_EXPNO_INVALID_VERFORM      -3  /**< ì˜¬ë°”ë¥´ì§€ì•Šì€ ë²„ì „ ë¬¸ìžì—´ */
+#define CDBC_EXPNO_VARSIZE_TYPE         -4  /**< í¬ê¸°ê°€ ì •í•´ì ¸ìžˆì§€ ì•Šì€ íƒ€ìž… */
+#define CDBC_EXPNO_INVALID_BIND_TYPE    -5  /**< ìœ íš¨í•˜ì§€ ì•Šì€ ë°”ì¸ë“œ íƒ€ìž… */
+#define CDBC_EXPNO_INVALID_FIELD_TYPE   -6  /**< ìœ íš¨í•˜ì§€ ì•Šì€ í•„ë“œ íƒ€ìž… */
 
 
 
-/* NULL-termÀ» Á¦¿ÜÇÑ ±æÀÌ */
+/* NULL-termì„ ì œì™¸í•œ ê¸¸ì´ */
 #define ALTIBASE_MAX_ERRORMSG_LEN       2048 /* ACI_MAX_ERROR_MSG_LEN */
 #define ALTIBASE_MAX_SQLSTATE_LEN       5
 

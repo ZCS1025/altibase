@@ -32,114 +32,114 @@
 class smrLFThread;
 
 
-/* ¿©·¯°³ÀÇ ·Î±×ÆÄÀÏÀ» ÇÏ³ªÀÇ ¿¬¼ÓµÈ ·Î±×·Î °ü¸®ÇÏ´Â Å¬·¡½º
+/* ì—¬ëŸ¬ê°œì˜ ë¡œê·¸íŒŒì¼ì„ í•˜ë‚˜ì˜ ì—°ì†ëœ ë¡œê·¸ë¡œ ê´€ë¦¬í•˜ëŠ” í´ëž˜ìŠ¤
  *
- * ·Î±×ÆÄÀÏ ÇÏ³ª¸¦ ´Ù »ç¿ëÇØ¼­ ´ÙÀ½ ·Î±× ÆÄÀÏ·Î switchÇÒ °æ¿ìÀÇ ºñ¿ëÀ»
- * ÃÖ¼ÒÈ­ ÇÏ±â À§ÇØ¼­ ¾ÕÀ¸·Î »ç¿ëÇÒ ·Î±×ÆÄÀÏµéÀ» ¹Ì¸® ÁØºñÇØ ³õ´Â
- * log file prepare ¾²·¹µåÀÇ ¿ªÇÒµµ ¼öÇàÇÑ´Ù.
+ * ë¡œê·¸íŒŒì¼ í•˜ë‚˜ë¥¼ ë‹¤ ì‚¬ìš©í•´ì„œ ë‹¤ìŒ ë¡œê·¸ íŒŒì¼ë¡œ switchí•  ê²½ìš°ì˜ ë¹„ìš©ì„
+ * ìµœì†Œí™” í•˜ê¸° ìœ„í•´ì„œ ì•žìœ¼ë¡œ ì‚¬ìš©í•  ë¡œê·¸íŒŒì¼ë“¤ì„ ë¯¸ë¦¬ ì¤€ë¹„í•´ ë†“ëŠ”
+ * log file prepare ì“°ë ˆë“œì˜ ì—­í• ë„ ìˆ˜í–‰í•œë‹¤.
  * 
  */
 class smrLogFileMgr : public idtBaseThread
 {
 //For Operation
 public:
-    /* log file prepare ¾²·¹µåÀÇ runÇÔ¼ö.
+    /* log file prepare ì“°ë ˆë“œì˜ runí•¨ìˆ˜.
      *
-     * ·Î±×ÆÄÀÏ ÇÏ³ª¸¦ ´Ù »ç¿ëÇØ¼­ ´ÙÀ½ ·Î±× ÆÄÀÏ·Î switchÇÒ °æ¿ìÀÇ ºñ¿ëÀ»
-     * ÃÖ¼ÒÈ­ ÇÏ±â À§ÇØ¼­ ¾ÕÀ¸·Î »ç¿ëÇÒ ·Î±×ÆÄÀÏµéÀ» ¹Ì¸® ÁØºñÇØ ³õ´Â´Ù.
+     * ë¡œê·¸íŒŒì¼ í•˜ë‚˜ë¥¼ ë‹¤ ì‚¬ìš©í•´ì„œ ë‹¤ìŒ ë¡œê·¸ íŒŒì¼ë¡œ switchí•  ê²½ìš°ì˜ ë¹„ìš©ì„
+     * ìµœì†Œí™” í•˜ê¸° ìœ„í•´ì„œ ì•žìœ¼ë¡œ ì‚¬ìš©í•  ë¡œê·¸íŒŒì¼ë“¤ì„ ë¯¸ë¦¬ ì¤€ë¹„í•´ ë†“ëŠ”ë‹¤.
      *
-     * ·Î±×ÆÄÀÏÀ» ÁØºñÇÏ´Â ÀÏÀº ´ÙÀ½°ú °°ÀÌ µÎ°¡Áö °æ¿ì¿¡ ½Ç½ÃÇÑ´Ù.
-     *   1. Æ¯Á¤ ½Ã°£µ¿¾È ±â´Ù·Á°¡¸ç ÁÖ±âÀûÀ¸·Î ½Ç½Ã
-     *   2. preCreateLogFile ÇÔ¼ö È£Ãâ¿¡ ÀÇÇØ¼­
+     * ë¡œê·¸íŒŒì¼ì„ ì¤€ë¹„í•˜ëŠ” ì¼ì€ ë‹¤ìŒê³¼ ê°™ì´ ë‘ê°€ì§€ ê²½ìš°ì— ì‹¤ì‹œí•œë‹¤.
+     *   1. íŠ¹ì • ì‹œê°„ë™ì•ˆ ê¸°ë‹¤ë ¤ê°€ë©° ì£¼ê¸°ì ìœ¼ë¡œ ì‹¤ì‹œ
+     *   2. preCreateLogFile í•¨ìˆ˜ í˜¸ì¶œì— ì˜í•´ì„œ
      */
     virtual void run();
 
-    /* ·Î±×ÆÄÀÏÀ» ¿ÀÇÂÇÏ¿© ÇØ´ç ·Î±×ÆÄÀÏÀÌ
-     * ¿ÀÇÂµÈ ·Î±×ÆÄÀÏ ¸®½ºÆ®¿¡ µé¾î°¡µµ·Ï º¸ÀåÇÑ´Ù.
+    /* ë¡œê·¸íŒŒì¼ì„ ì˜¤í”ˆí•˜ì—¬ í•´ë‹¹ ë¡œê·¸íŒŒì¼ì´
+     * ì˜¤í”ˆëœ ë¡œê·¸íŒŒì¼ ë¦¬ìŠ¤íŠ¸ì— ë“¤ì–´ê°€ë„ë¡ ë³´ìž¥í•œë‹¤.
      */
     
     IDE_RC open(UInt                aFileNo,
                 idBool              aWrite,
                 smrLogFile**        aLogFile);
     
-    /* ·Î±×ÆÄÀÏÀ» ÂüÁ¶ÇÏ´Â ¾²·¹µå°¡ ´õ ÀÌ»ó ¾ø´Â °æ¿ì,
-     * ÇØ´ç ·Î±×ÆÄÀÏÀ» closeÇÏ°í ·Î±×ÆÄÀÏ list¿¡¼­ closeÇÑ ·Î±×ÆÄÀÏÀ» Á¦°ÅÇÑ´Ù.
+    /* ë¡œê·¸íŒŒì¼ì„ ì°¸ì¡°í•˜ëŠ” ì“°ë ˆë“œê°€ ë” ì´ìƒ ì—†ëŠ” ê²½ìš°,
+     * í•´ë‹¹ ë¡œê·¸íŒŒì¼ì„ closeí•˜ê³  ë¡œê·¸íŒŒì¼ listì—ì„œ closeí•œ ë¡œê·¸íŒŒì¼ì„ ì œê±°í•œë‹¤.
      */ 
 
     IDE_RC close(smrLogFile*  aLogFile);
 
-    /* ·Î±×ÆÄÀÏÀ» ¿ÀÇÂÇÏ¿© µð½ºÅ©¿¡¼­ ÀÐ¾î ¿Â´Ù */ 
+    /* ë¡œê·¸íŒŒì¼ì„ ì˜¤í”ˆí•˜ì—¬ ë””ìŠ¤í¬ì—ì„œ ì½ì–´ ì˜¨ë‹¤ */ 
     IDE_RC openLstLogFile( UInt          aFileNo,
                            UInt          aOffset,
                            smrLogFile ** aLogFile );
     
     IDE_RC closeAllLogFile();
 
-    /* smuProperty::getLogFilePrepareCount()¸¦ À¯ÁöÇÏµµ·Ï ·Î±×ÆÄÀÏÀ»
-     * ¹Ì¸® »ý¼ºÇÑ´Ù.
+    /* smuProperty::getLogFilePrepareCount()ë¥¼ ìœ ì§€í•˜ë„ë¡ ë¡œê·¸íŒŒì¼ì„
+     * ë¯¸ë¦¬ ìƒì„±í•œë‹¤.
      */
     IDE_RC addEmptyLogFile();
 
-    /* log file prepare ¾²·¹µå¸¦ ±ú¿ö¼­ ·Î±×ÆÄÀÏÀ» ¹Ì¸® »ý¼ºÇØ µÐ´Ù.
+    /* log file prepare ì“°ë ˆë“œë¥¼ ê¹¨ì›Œì„œ ë¡œê·¸íŒŒì¼ì„ ë¯¸ë¦¬ ìƒì„±í•´ ë‘”ë‹¤.
      *
-     * aWait => ID_TRUE ÀÌ¸é ÇØ´ç ·Î±×ÆÄÀÏÀÌ »ý¼ºµÉ ¶§±îÁö ±â´Ù¸°´Ù.
-     *          ID_FALSE ÀÌ¸é ·Î±×ÆÄÀÏÀ» ¸¸µé¶ó´Â ¿äÃ»¸¸ ÇÏ°í ¹Ù·Î ¸®ÅÏÇÑ´Ù.
+     * aWait => ID_TRUE ì´ë©´ í•´ë‹¹ ë¡œê·¸íŒŒì¼ì´ ìƒì„±ë  ë•Œê¹Œì§€ ê¸°ë‹¤ë¦°ë‹¤.
+     *          ID_FALSE ì´ë©´ ë¡œê·¸íŒŒì¼ì„ ë§Œë“¤ë¼ëŠ” ìš”ì²­ë§Œ í•˜ê³  ë°”ë¡œ ë¦¬í„´í•œë‹¤.
      */
     IDE_RC preCreateLogFile( idBool aWait );
     
-    /* ÀÌÀü¿¡ prepare ÇØ µÎ¾ú´ø ·Î±×ÆÄÀÏµéÀ» ¸ðµÎ openÇÑ´Ù.
+    /* ì´ì „ì— prepare í•´ ë‘ì—ˆë˜ ë¡œê·¸íŒŒì¼ë“¤ì„ ëª¨ë‘ opení•œë‹¤.
      */
     IDE_RC preOpenLogFile();
 
-    /* ÇöÀç ±â·ÏÁßÀÎ ·Î±×ÆÄÀÏÀÇ ´ÙÀ½ ·Î±×ÆÄÀÏÀ»
-     * »õ·Î ±â·ÏÇÒ ·Î±×ÆÄÀÏ·Î ¼³Á¤ÇÑ´Ù.
-     * switchÇÒ ·Î±×ÆÄÀÏÀÌ Á¸ÀçÇÏÁö ¾ÊÀ» °æ¿ì, ·Î±×ÆÄÀÏÀ» »õ·Î »ý¼ºÇÑ´Ù.
+    /* í˜„ìž¬ ê¸°ë¡ì¤‘ì¸ ë¡œê·¸íŒŒì¼ì˜ ë‹¤ìŒ ë¡œê·¸íŒŒì¼ì„
+     * ìƒˆë¡œ ê¸°ë¡í•  ë¡œê·¸íŒŒì¼ë¡œ ì„¤ì •í•œë‹¤.
+     * switchí•  ë¡œê·¸íŒŒì¼ì´ ì¡´ìž¬í•˜ì§€ ì•Šì„ ê²½ìš°, ë¡œê·¸íŒŒì¼ì„ ìƒˆë¡œ ìƒì„±í•œë‹¤.
      */
     IDE_RC switchLogFile( smrLogFile**  sCurLogFile );
     
-    /* ·Î±×ÆÄÀÏ prepare ¾²·¹µå¸¦ ÁßÁöÇÑ´Ù.
+    /* ë¡œê·¸íŒŒì¼ prepare ì“°ë ˆë“œë¥¼ ì¤‘ì§€í•œë‹¤.
      */
     IDE_RC shutdown();
 
-    /* ·Î±×ÆÄÀÏ ¸®½ºÆ®¿¡¼­ ·Î±×ÆÄÀÏÀ» Ã£´Â´Ù.
+    /* ë¡œê·¸íŒŒì¼ ë¦¬ìŠ¤íŠ¸ì—ì„œ ë¡œê·¸íŒŒì¼ì„ ì°¾ëŠ”ë‹¤.
      */
     idBool findLogFile( UInt           aLogFileNo, 
                         smrLogFile**   aLogFile);
 
 
-    /* ·Î±×ÆÄÀÏ °´Ã¼¸¦ ·Î±×ÆÄÀÏ ¸®½ºÆ®¿¡ Ãß°¡ÇÑ´Ù.
+    /* ë¡œê·¸íŒŒì¼ ê°ì²´ë¥¼ ë¡œê·¸íŒŒì¼ ë¦¬ìŠ¤íŠ¸ì— ì¶”ê°€í•œë‹¤.
      */
     IDE_RC addLogFile( smrLogFile *aNewLogFile );
 
-    /* ½Ã½ºÅÛ¿¡¼­ ·Î±×°ü¸®ÀÚ ÃÊ±âÈ­½Ã¿¡ È£ÃâµÇ´Â ÇÔ¼ö·Î½á
-     * »ç¿ëÇÏ´ø ·Î±×ÆÄÀÏ ÁØºñÇÏ°í, ·Î±×ÆÄÀÏ °ü¸®ÀÚ thread¸¦
-     * ½ÃÀÛÇÑ´Ù.
+    /* ì‹œìŠ¤í…œì—ì„œ ë¡œê·¸ê´€ë¦¬ìž ì´ˆê¸°í™”ì‹œì— í˜¸ì¶œë˜ëŠ” í•¨ìˆ˜ë¡œì¨
+     * ì‚¬ìš©í•˜ë˜ ë¡œê·¸íŒŒì¼ ì¤€ë¹„í•˜ê³ , ë¡œê·¸íŒŒì¼ ê´€ë¦¬ìž threadë¥¼
+     * ì‹œìž‘í•œë‹¤.
      */
     IDE_RC startAndWait( smLSN       * aEndLSN, 
                          UInt          aLstCreateLog,
                          idBool        aRecovery,
                          smrLogFile ** aLogFile );
 
-    /* ·Î±×ÆÄÀÏÀ» ·Î±×ÆÄÀÏ ¸®½ºÆ®¿¡¼­ Á¦°ÅÇÑ´Ù.
-     * ÁÖÀÇ! thread-safeÇÏÁö ¾ÊÀº ÇÔ¼öÀÓ.
+    /* ë¡œê·¸íŒŒì¼ì„ ë¡œê·¸íŒŒì¼ ë¦¬ìŠ¤íŠ¸ì—ì„œ ì œê±°í•œë‹¤.
+     * ì£¼ì˜! thread-safeí•˜ì§€ ì•Šì€ í•¨ìˆ˜ìž„.
      */
     inline void removeLogFileFromList( smrLogFile *aLogFile);
 
-    /* CREATE DB ¼öÇà½Ã¿¡ È£ÃâµÇ¸ç, 0¹øÂ° ·Î±×ÆÄÀÏÀ» »ý¼ºÇÑ´Ù.
+    /* CREATE DB ìˆ˜í–‰ì‹œì— í˜¸ì¶œë˜ë©°, 0ë²ˆì§¸ ë¡œê·¸íŒŒì¼ì„ ìƒì„±í•œë‹¤.
      *
-     * aLogPath - [IN] ·Î±×ÆÄÀÏµéÀ» »ý¼ºÇÒ °æ·Î
+     * aLogPath - [IN] ë¡œê·¸íŒŒì¼ë“¤ì„ ìƒì„±í•  ê²½ë¡œ
      */
     static IDE_RC create( const SChar * aLogPath );
 
 
-    /*   aPrvLogFileÀÇ ¹Ù·Î µÚ¿¡ aNewLogFileÀ» ³¢¿ö³Ö´Â´Ù.
+    /*   aPrvLogFileì˜ ë°”ë¡œ ë’¤ì— aNewLogFileì„ ë¼ì›Œë„£ëŠ”ë‹¤.
      */
     IDE_RC AddLogFileToList( smrLogFile *aPrvLogFile,
                              smrLogFile *aNewLogFile );
 
-    /* ·Î±×ÆÄÀÏµéÀ» DISK¿¡¼­ Á¦°ÅÇÑ´Ù.
-     * checkpointµµÁß ·Î±×ÆÄÀÏ »èÁ¦°¡ ½ÇÆÐÇÏ¸é ¿¡·¯»óÈ²À¸·Î Ã³¸®ÇÏ°í,
-     * restart recovery½Ã¿¡ ·Î±×ÆÄÀÏ »èÁ¦°¡ ½ÇÆÐÇÏ¸é Á¤»ó»óÈ²À¸·Î Ã³¸®ÇÑ´Ù.
+    /* ë¡œê·¸íŒŒì¼ë“¤ì„ DISKì—ì„œ ì œê±°í•œë‹¤.
+     * checkpointë„ì¤‘ ë¡œê·¸íŒŒì¼ ì‚­ì œê°€ ì‹¤íŒ¨í•˜ë©´ ì—ëŸ¬ìƒí™©ìœ¼ë¡œ ì²˜ë¦¬í•˜ê³ ,
+     * restart recoveryì‹œì— ë¡œê·¸íŒŒì¼ ì‚­ì œê°€ ì‹¤íŒ¨í•˜ë©´ ì •ìƒìƒí™©ìœ¼ë¡œ ì²˜ë¦¬í•œë‹¤.
      */
     void removeLogFile( UInt   aFstFileNo, 
                         UInt   aLstFileNo, 
@@ -164,24 +164,24 @@ public:
         *aCurFileNo = mCurFileNo;
     }
 
-    /* ·Î±×ÆÄÀÏ ¹øÈ£¿¡ ÇØ´çÇÏ´Â ·Î±× µ¥ÀÌÅÍ°¡ ÀÖ´ÂÁö Ã¼Å©ÇÑ´Ù.
+    /* ë¡œê·¸íŒŒì¼ ë²ˆí˜¸ì— í•´ë‹¹í•˜ëŠ” ë¡œê·¸ ë°ì´í„°ê°€ ìžˆëŠ”ì§€ ì²´í¬í•œë‹¤.
      */
     IDE_RC checkLogFile( UInt aFileNo );
 
-    // ·Î±×ÆÄÀÏ °ü¸®ÀÚ¸¦ ÃÊ±âÈ­ ÇÑ´Ù.
+    // ë¡œê·¸íŒŒì¼ ê´€ë¦¬ìžë¥¼ ì´ˆê¸°í™” í•œë‹¤.
     IDE_RC initialize( const SChar     * aLogPath, 
                        const SChar     * aArchivePath,
                        smrLFThread     * aLFThread );
 #if 0 // not used
-    // aFileNo¿¡ ÇØ´çÇÏ´Â LogfileÀÌ Á¸ÀçÇÏ´ÂÁö CheckÇÑ´Ù.
+    // aFileNoì— í•´ë‹¹í•˜ëŠ” Logfileì´ ì¡´ìž¬í•˜ëŠ”ì§€ Checkí•œë‹¤.
     IDE_RC isLogFileExist(UInt aFileNo, idBool & aIsExist);
 #endif
-    // ·Î±×ÆÄÀÏ °ü¸®ÀÚ¸¦ ÇØÁ¦ÇÑ´Ù.
+    // ë¡œê·¸íŒŒì¼ ê´€ë¦¬ìžë¥¼ í•´ì œí•œë‹¤.
     IDE_RC destroy();
 
     /*
-      aFileNo¿¡ ÇØ´çÇÏ´Â LogfileÀÌ OpenµÇ¾ú´ÂÁö checkÇÏ°í
-      OpenµÇ¾îÀÖ´Ù¸é LogFileÀÇ Reference Count¸¦ Áõ°¡½ÃÅ²´Ù.
+      aFileNoì— í•´ë‹¹í•˜ëŠ” Logfileì´ Openë˜ì—ˆëŠ”ì§€ checkí•˜ê³ 
+      Openë˜ì–´ìžˆë‹¤ë©´ LogFileì˜ Reference Countë¥¼ ì¦ê°€ì‹œí‚¨ë‹¤.
     */
     IDE_RC checkLogFileOpenAndIncRefCnt(UInt         aFileNo,
                                         idBool     * aAlreadyOpen,
@@ -218,61 +218,61 @@ private:
 //For Log Mgr
 private:
     
-    // ÀÌ ·Î±×ÆÄÀÏ °ü¸®ÀÚ¿¡ ¼ÓÇÑ ·Î±×ÆÄÀÏµéÀ» FlushÇØÁÙ ·Î±×ÆÄÀÏ Flush ¾²·¹µå
+    // ì´ ë¡œê·¸íŒŒì¼ ê´€ë¦¬ìžì— ì†í•œ ë¡œê·¸íŒŒì¼ë“¤ì„ Flushí•´ì¤„ ë¡œê·¸íŒŒì¼ Flush ì“°ë ˆë“œ
     smrLFThread     * mLFThread;
     
-    // log file prepare thread¸¦ Á¾·áÇØ¾ß ÇÏ´Â »óÈ²ÀÎÁö ¿©ºÎ
-    // mFinish == ID_TRUE ÀÎ Á¶°Ç¿¡¸¸ thread°¡ ½ÇÇàµÇ¾î¾ß ÇÑ´Ù.
+    // log file prepare threadë¥¼ ì¢…ë£Œí•´ì•¼ í•˜ëŠ” ìƒí™©ì¸ì§€ ì—¬ë¶€
+    // mFinish == ID_TRUE ì¸ ì¡°ê±´ì—ë§Œ threadê°€ ì‹¤í–‰ë˜ì–´ì•¼ í•œë‹¤.
     idBool       mFinish;
     
-    // log file prepare thread°¡ log file »ý¼ºÀÛ¾÷ÁßÀÎÁö ¿©ºÎ
-    // mResume == ID_FALSE ÀÌ¸é thread°¡ sleep»óÅÂ¿¡ ÀÖ´Â °ÍÀÌ´Ù.
+    // log file prepare threadê°€ log file ìƒì„±ìž‘ì—…ì¤‘ì¸ì§€ ì—¬ë¶€
+    // mResume == ID_FALSE ì´ë©´ threadê°€ sleepìƒíƒœì— ìžˆëŠ” ê²ƒì´ë‹¤.
     idBool       mResume;
 
-    // log file prepare thread¿Í ´Ù¸¥ thread°£ÀÇ µ¿½Ã¼ºÁ¦¾î¸¦ À§ÇÑ
+    // log file prepare threadì™€ ë‹¤ë¥¸ threadê°„ì˜ ë™ì‹œì„±ì œì–´ë¥¼ ìœ„í•œ
     // Condition value.
-    // mMutex¿Í ÇÔ²² »ç¿ëµÈ´Ù.
+    // mMutexì™€ í•¨ê»˜ ì‚¬ìš©ëœë‹¤.
     iduCond      mCV;
     
-    // ÇöÀç ·Î±×¸¦ ±â·ÏÇÏ°í ÀÖ´Â ·Î±×ÆÄÀÏ¹øÈ£
+    // í˜„ìž¬ ë¡œê·¸ë¥¼ ê¸°ë¡í•˜ê³  ìžˆëŠ” ë¡œê·¸íŒŒì¼ë²ˆí˜¸
     UInt         mCurFileNo;
     
-    // ¸¶Áö¸·À¸·Î prepareµÈ Log file¹øÈ£
+    // ë§ˆì§€ë§‰ìœ¼ë¡œ prepareëœ Log fileë²ˆí˜¸
     UInt         mLstFileNo;
     
-    // Ã¹¹øÂ° preparedµÈ Log file¹øÈ£
-    // Ç×»ó mCurFileNo + 1ÀÇ °ªÀ» Áö´Ñ´Ù.
+    // ì²«ë²ˆì§¸ preparedëœ Log fileë²ˆí˜¸
+    // í•­ìƒ mCurFileNo + 1ì˜ ê°’ì„ ì§€ë‹Œë‹¤.
     UInt         mTargetFileNo;
 
-    // log file prepare thread¿Í ´Ù¸¥ thread°£ÀÇ µ¿½Ã¼ºÁ¦¾î¸¦ À§ÇÑ Mutex
+    // log file prepare threadì™€ ë‹¤ë¥¸ threadê°„ì˜ ë™ì‹œì„±ì œì–´ë¥¼ ìœ„í•œ Mutex
     iduMutex     mMutex;
 
-    // mFstLogFile¹× mOpenLogFileCount ¿¡ ´ëÇÑ µ¿½Ã¼º Á¦¾î¸¦ À§ÇÑ Mutex
+    // mFstLogFileë° mOpenLogFileCount ì— ëŒ€í•œ ë™ì‹œì„± ì œì–´ë¥¼ ìœ„í•œ Mutex
     iduMutex     mMtxList;
 
-    // ÇöÀç ¿­·ÁÀÖ´Â ·Î±×ÆÄÀÏ °¹¼ö
+    // í˜„ìž¬ ì—´ë ¤ìžˆëŠ” ë¡œê·¸íŒŒì¼ ê°¯ìˆ˜
     UInt         mOpenLogFileCount;
     
-    // ÇöÀç ¿­·ÁÀÖ´Â ·Î±×ÆÄÀÏÀÇ linked list
-    // ÀÌ ¸µÅ©µå ¸®½ºÆ®ÀÇ µ¿ÀÛ¹æ½ÄÀº
-    // smrLFThreadÀÇ  mSyncLogFileList ¿¡ ´ëÇÑ ÁÖ¼®¿¡ ÀÚ¼¼È÷ ±â¼úµÇ¾î ÀÖ´Ù.
+    // í˜„ìž¬ ì—´ë ¤ìžˆëŠ” ë¡œê·¸íŒŒì¼ì˜ linked list
+    // ì´ ë§í¬ë“œ ë¦¬ìŠ¤íŠ¸ì˜ ë™ìž‘ë°©ì‹ì€
+    // smrLFThreadì˜  mSyncLogFileList ì— ëŒ€í•œ ì£¼ì„ì— ìžì„¸ížˆ ê¸°ìˆ ë˜ì–´ ìžˆë‹¤.
     smrLogFile   mFstLogFile;
 
-    // smrLogFile °´Ã¼°¡ »ç¿ëÇÒ ¸Þ¸ð¸® ¿µ¿ªÀ» Áö´Ï´Â memory pool
-    // iduMemPoolÀÚÃ¼°¡ thread safeÇÏ¹Ç·Î, º°µµÀÇ µ¿½Ã¼º Á¦¾î¸¦ ÇÒ ÇÊ¿ä°¡ ¾ø´Ù.
+    // smrLogFile ê°ì²´ê°€ ì‚¬ìš©í•  ë©”ëª¨ë¦¬ ì˜ì—­ì„ ì§€ë‹ˆëŠ” memory pool
+    // iduMemPoolìžì²´ê°€ thread safeí•˜ë¯€ë¡œ, ë³„ë„ì˜ ë™ì‹œì„± ì œì–´ë¥¼ í•  í•„ìš”ê°€ ì—†ë‹¤.
     iduMemPool   mMemPool;
 
-    // ·Î±×ÆÄÀÏÀ» ÃÊ±âÈ­ÇÒ µ¥ÀÌÅÍ¸¦ Áö´Ï´Â ¹öÆÛ
-    // OS PAGE Å©±â¸¸Å­ alignµÇ¾î ÀÖ´Ù.
+    // ë¡œê·¸íŒŒì¼ì„ ì´ˆê¸°í™”í•  ë°ì´í„°ë¥¼ ì§€ë‹ˆëŠ” ë²„í¼
+    // OS PAGE í¬ê¸°ë§Œí¼ alignë˜ì–´ ìžˆë‹¤.
     SChar*       mLogFileInitBuffer;
     
-    // mLogFileInitBuffer °¡ ½ÇÁ¦·Î ÇÒ´çµÈ alignµÇÁö ¾ÊÀº ÁÖ¼Ò.
+    // mLogFileInitBuffer ê°€ ì‹¤ì œë¡œ í• ë‹¹ëœ alignë˜ì§€ ì•Šì€ ì£¼ì†Œ.
     SChar*       mLogFileInitBufferPtr;
 
-    // ÇöÀç OpenµÈ LogFileÀÇ °¹¼ö
+    // í˜„ìž¬ Openëœ LogFileì˜ ê°¯ìˆ˜
     UInt         mLFOpenCnt;
 
-    // log switch ¹ß»ý½Ã wait event°¡ ¹ß»ýÇÑ È½¼ö
+    // log switch ë°œìƒì‹œ wait eventê°€ ë°œìƒí•œ íšŸìˆ˜
     UInt         mLFPrepareWaitCnt;
 
     const SChar*  mSrcLogPath;
@@ -286,8 +286,8 @@ public:
 };
 
 
-/* ·Î±×ÆÄÀÏÀ» ·Î±×ÆÄÀÏ ¸®½ºÆ®¿¡¼­ Á¦°ÅÇÑ´Ù.
- * ÁÖÀÇ! thread-safeÇÏÁö ¾ÊÀº ÇÔ¼öÀÓ.
+/* ë¡œê·¸íŒŒì¼ì„ ë¡œê·¸íŒŒì¼ ë¦¬ìŠ¤íŠ¸ì—ì„œ ì œê±°í•œë‹¤.
+ * ì£¼ì˜! thread-safeí•˜ì§€ ì•Šì€ í•¨ìˆ˜ìž„.
  */
 inline void smrLogFileMgr :: removeLogFileFromList( smrLogFile*  aLogFile )
 {
@@ -311,8 +311,8 @@ inline void smrLogFileMgr::removeLogFiles( UInt          aFstFileNo,
 
     sStartFileNum   = aFstFileNo;
 
-    /* BUG-42589: ·Î±× ÆÄÀÏ »èÁ¦ ÇÒ ¶§ Ã¼Å©Æ÷ÀÎÆ® »óÈ²ÀÌ ¾Æ´Ï¾îµµ(restart recovery)
-     * ·Î±× ÆÄÀÏ »èÁ¦ ¹üÀ§¸¦ Æ®·¹ÀÌ½º ·Î±×·Î ³²±ä´Ù. */
+    /* BUG-42589: ë¡œê·¸ íŒŒì¼ ì‚­ì œ í•  ë•Œ ì²´í¬í¬ì¸íŠ¸ ìƒí™©ì´ ì•„ë‹ˆì–´ë„(restart recovery)
+     * ë¡œê·¸ íŒŒì¼ ì‚­ì œ ë²”ìœ„ë¥¼ íŠ¸ë ˆì´ìŠ¤ ë¡œê·¸ë¡œ ë‚¨ê¸´ë‹¤. */
     if ( aIsCheckPoint == ID_FALSE )
     {
         ideLog::log( IDE_SM_0, "Remove Log File : File[<%"ID_UINT32_FMT"> ~ <%"ID_UINT32_FMT">]\n", aFstFileNo, aLstFileNo-1 );

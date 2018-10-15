@@ -6,12 +6,12 @@
 /*****************************************************************************
  * $Id: genErrMsg.cpp 71017 2015-05-28 07:54:48Z sunyoung $
  *
- * DESC : ¿¡·¯ÄÚµå ¿ø½Ã ½ºÅ©¸³Æ® È­ÀÏÀ» ÀÔ·Â ¹Ş¾Æ ¿¡·¯ÄÚµå semi-h Çì´õÈ­ÀÏ
- *        ¹× ¿¡·¯¸Ş½ÃÁö µ¥ÀÌÅ¸È­ÀÏ »ı¼º
+ * DESC : ì—ëŸ¬ì½”ë“œ ì›ì‹œ ìŠ¤í¬ë¦½íŠ¸ í™”ì¼ì„ ì…ë ¥ ë°›ì•„ ì—ëŸ¬ì½”ë“œ semi-h í—¤ë”í™”ì¼
+ *        ë° ì—ëŸ¬ë©”ì‹œì§€ ë°ì´íƒ€í™”ì¼ ìƒì„±
  *
  ****************************************************************************/
 
-// ¿¡·¯ ¸Ş½ÃÁö¸¦ »ı¼ºÇÒ ¶§ ¿¡·¯ÄÚµå È­ÀÏÀ» include ÇÏÁö ¾Ê´Â´Ù.
+// ì—ëŸ¬ ë©”ì‹œì§€ë¥¼ ìƒì„±í•  ë•Œ ì—ëŸ¬ì½”ë“œ í™”ì¼ì„ include í•˜ì§€ ì•ŠëŠ”ë‹¤.
 #define ID_ERROR_CODE_H
 
 #include <idl.h>
@@ -19,7 +19,7 @@
 #include <ideErrorMgr.h>
 #include <iduVersion.h>
 
-// MSB È­ÀÏ¿¡ ¿¡·¯ÄÚµå¸¦ Àû´Â´Ù.
+// MSB í™”ì¼ì— ì—ëŸ¬ì½”ë“œë¥¼ ì ëŠ”ë‹¤.
 //#define MSB_ECODE_ON
 /*
  *                      (ALTIBASE 4.0)
@@ -31,7 +31,7 @@
 
 /* ----------------------------------------------------------------------
  *
- * º¯¼ö Á¤ÀÇ
+ * ë³€ìˆ˜ ì •ì˜
  *
  * ----------------------------------------------------------------------*/
 
@@ -40,7 +40,7 @@ void   doTraceGeneration();
 
 idErrorMsbType msbHeader;
 
-FILE *inMsgFP;  // ÀÔ·Â È­ÀÏ
+FILE *inMsgFP;  // ì…ë ¥ í™”ì¼
 
 FILE *outErrHeaderFP;
 FILE *outTrcHeaderFP;
@@ -56,7 +56,7 @@ SChar  outTrcHeaderFile[256];
 
 
 
-// ServerÀÇ °æ¿ì MSB, ClinetÀÇ °æ¿ì C ¼Ò½ºÄÚµå·Î »ı¼º.
+// Serverì˜ ê²½ìš° MSB, Clinetì˜ ê²½ìš° C ì†ŒìŠ¤ì½”ë“œë¡œ ìƒì„±.
 const SChar *gExtName[] =
 {
     "msb", "c"
@@ -75,10 +75,10 @@ SChar *Usage =
 "                        (o) E_CM_US7ASCII.msg  (x) E_SM_ASCII.msg \n\n"
 ;
 
-SInt Section       = -1;    // ¿µ¿ª ¹øÈ£
+SInt Section       = -1;    // ì˜ì—­ ë²ˆí˜¸
 SInt StartNum      = -1;
 SInt errIdxNum     =  0;
-SInt PrintNumber   =  1; // ¿¡·¯°ªÀ» ±âÀÔÇÑ´Ù.
+SInt PrintNumber   =  1; // ì—ëŸ¬ê°’ì„ ê¸°ì…í•œë‹¤.
 UInt HexErrorCode;
 UInt gClientPart   = 0;
 UInt gDebug        = 0;
@@ -88,7 +88,7 @@ SChar *Header =
 (SChar *)"/*   This File was created automatically by "PRODUCT_PREFIX"genErrMsg Utility */\n\n";
 
 SChar *StringError =
-(SChar *)" ¿¡·¯ ÄÚµå´Â ´ÙÀ½°ú °°ÀÌ ±¸¼ºµÇ¾î¾ß ÇÕ´Ï´Ù.\n"
+(SChar *)" ì—ëŸ¬ ì½”ë“œëŠ” ë‹¤ìŒê³¼ ê°™ì´ êµ¬ì„±ë˜ì–´ì•¼ í•©ë‹ˆë‹¤.\n"
 "\n"
 "      SubCode, [MODULE]ERR_[ACTION]_[NamingSpace]_[Description]\n"
 "          1           2          3            4\n"
@@ -100,27 +100,27 @@ SChar *StringError =
 "   Ex) idERR_FATAL_FATAL_smd_InvalidOidAddress \n\n";
 /* ----------------------------------------------------------------------
  *
- * ½ºÆ®¸µ Ã³¸® ÇÔ¼ö
+ * ìŠ¤íŠ¸ë§ ì²˜ë¦¬ í•¨ìˆ˜
  *
  * ----------------------------------------------------------------------*/
 
-/* ½ºÆ®¸µ ¾ÕµÚ¿¡ Á¸ÀçÇÏ´Â WHITE-SPACE¸¦ Á¦°Å */
+/* ìŠ¤íŠ¸ë§ ì•ë’¤ì— ì¡´ì¬í•˜ëŠ” WHITE-SPACEë¥¼ ì œê±° */
 static void eraseWhiteSpace(SChar *buffer)
 {
     SInt i;
     SInt len = idlOS::strlen(buffer);
-    SInt ValueRegion = 0; // ÇöÀç ¼öÇàÇÏ´Â ¹üÀ§´Â ? ÀÌ¸§¿µ¿ª=°ª¿µ¿ª
-    SInt firstAscii  = 0; // °ª¿µ¿ª¿¡¼­ Ã¹¹øÂ° ASCII¸¦ Ã£Àº ÈÄ..
+    SInt ValueRegion = 0; // í˜„ì¬ ìˆ˜í–‰í•˜ëŠ” ë²”ìœ„ëŠ” ? ì´ë¦„ì˜ì—­=ê°’ì˜ì—­
+    SInt firstAscii  = 0; // ê°’ì˜ì—­ì—ì„œ ì²«ë²ˆì§¸ ASCIIë¥¼ ì°¾ì€ í›„..
 
-    // 1. ¾Õ¿¡¼­ ºÎÅÍ °Ë»ç ½ÃÀÛ..
+    // 1. ì•ì—ì„œ ë¶€í„° ê²€ì‚¬ ì‹œì‘..
     for (i = 0; i < len && buffer[i]; i++)
     {
-        if (buffer[i] == '#') // ÁÖ¼® Ã³¸®
+        if (buffer[i] == '#') // ì£¼ì„ ì²˜ë¦¬
         {
             buffer[i]= 0;
             break;
         }
-        if (ValueRegion == 0) // ÀÌ¸§ ¿µ¿ª °Ë»ç
+        if (ValueRegion == 0) // ì´ë¦„ ì˜ì—­ ê²€ì‚¬
         {
             if (buffer[i] == '=')
             {
@@ -128,7 +128,7 @@ static void eraseWhiteSpace(SChar *buffer)
                 continue;
             }
 
-            if (idlOS::idlOS_isspace(buffer[i])) // ½ºÆäÀÌ½º ÀÓ
+            if (idlOS::idlOS_isspace(buffer[i])) // ìŠ¤í˜ì´ìŠ¤ ì„
             {
                 SInt j;
 
@@ -139,11 +139,11 @@ static void eraseWhiteSpace(SChar *buffer)
                 i--;
             }
         }
-        else // °ª¿µ¿ª °Ë»ç
+        else // ê°’ì˜ì—­ ê²€ì‚¬
         {
             if (firstAscii == 0)
             {
-                if (idlOS::idlOS_isspace(buffer[i])) // ½ºÆäÀÌ½º ÀÓ
+                if (idlOS::idlOS_isspace(buffer[i])) // ìŠ¤í˜ì´ìŠ¤ ì„
                 {
                     SInt j;
 
@@ -162,11 +162,11 @@ static void eraseWhiteSpace(SChar *buffer)
         }
     } // for
 
-    // 2. ³¡¿¡¼­ ºÎÅÍ °Ë»ç ½ÃÀÛ.. : ½ºÆäÀÌ½º ¾ø¾Ö±â
+    // 2. ëì—ì„œ ë¶€í„° ê²€ì‚¬ ì‹œì‘.. : ìŠ¤í˜ì´ìŠ¤ ì—†ì• ê¸°
     len = idlOS::strlen(buffer);
     for (i = len - 1; buffer[i] && len > 0; i--)
     {
-        if (idlOS::idlOS_isspace(buffer[i])) // ½ºÆäÀÌ½º ¾ø¾Ö±â
+        if (idlOS::idlOS_isspace(buffer[i])) // ìŠ¤í˜ì´ìŠ¤ ì—†ì• ê¸°
         {
             buffer[i]= 0;
             continue;
@@ -175,7 +175,7 @@ static void eraseWhiteSpace(SChar *buffer)
     }
 }
 
-// ÀÌ¸§°ú °ªÀ» ¾ò¾î¿È
+// ì´ë¦„ê³¼ ê°’ì„ ì–»ì–´ì˜´
 SInt parseBuffer(SChar *buffer,
                  SInt  *SubCode,
                  SChar **State,
@@ -190,12 +190,12 @@ SInt parseBuffer(SChar *buffer,
     *SubCode = -1;
 
     /* ------------------------
-     * [1] White Space Á¦°Å
+     * [1] White Space ì œê±°
      * ----------------------*/
     eraseWhiteSpace(buffer);
 
     /* ---------------------------------
-     * [2] ³»¿ëÀÌ ¾ø°Å³ª ÁÖ¼®ÀÌ¸é ¹«½Ã
+     * [2] ë‚´ìš©ì´ ì—†ê±°ë‚˜ ì£¼ì„ì´ë©´ ë¬´ì‹œ
      * -------------------------------*/
     SInt len = idlOS::strlen(buffer);
     if (len == 0 || buffer[0] == '#')
@@ -205,7 +205,7 @@ SInt parseBuffer(SChar *buffer,
 
 
     /* -------------------------
-     * [3] SubCode °ª ¾ò±â
+     * [3] SubCode ê°’ ì–»ê¸°
      * ------------------------*/
     if (aParseSubCode == 1)
     {
@@ -215,11 +215,11 @@ SInt parseBuffer(SChar *buffer,
         {
             SChar c;
             c = buf[i] = buffer[i];
-            if (c == ',') // , ÃâÇö
+            if (c == ',') // , ì¶œí˜„
             {
                 *SubCode = (SInt)idlOS::strtol(SubCodeBuffer, NULL, 10);
                 buffer += i;
-                buffer ++; // [,] °Ç³Ê¶Ù±â
+                buffer ++; // [,] ê±´ë„ˆë›°ê¸°
 
                 break;
             }
@@ -232,7 +232,7 @@ SInt parseBuffer(SChar *buffer,
     }
 
     /* -------------------------
-     * [4] ClientÀÇ °æ¿ì State  ¾ò±â
+     * [4] Clientì˜ ê²½ìš° State  ì–»ê¸°
      * ------------------------*/
     if ( (gClientPart == 1) &&
          (gMsgOnly == 0) )
@@ -244,12 +244,12 @@ SInt parseBuffer(SChar *buffer,
         {
             SChar c;
             c = buf[i] = buffer[i];
-            if (c == ',') // , ÃâÇö
+            if (c == ',') // , ì¶œí˜„
             {
                 *State = buf;
                 buffer += i;
-                *buffer = 0; //[,] Á¦°Å
-                buffer ++; // [,] °Ç³Ê¶Ù±â
+                *buffer = 0; //[,] ì œê±°
+                buffer ++; // [,] ê±´ë„ˆë›°ê¸°
                 break;
             }
             else
@@ -263,15 +263,15 @@ SInt parseBuffer(SChar *buffer,
     }
 
     /* --------------------------
-     * [5] Name = Value °ª ¾ò±â
+     * [5] Name = Value ê°’ ì–»ê¸°
      * -------------------------*/
     eraseWhiteSpace(buffer);
-    *Name = buffer; // ÀÌ¸§À» °áÁ¤
+    *Name = buffer; // ì´ë¦„ì„ ê²°ì •
     for (i = 0; i < len; i++)
     {
         if (buffer[i] == '=')
         {
-            // ±¸ºĞÀÚ°¡ Á¸ÀçÇÏ¸é,
+            // êµ¬ë¶„ìê°€ ì¡´ì¬í•˜ë©´,
             buffer[i] = 0;
 
             if (buffer[i + 1])
@@ -280,7 +280,7 @@ SInt parseBuffer(SChar *buffer,
 
                 if (idlOS::strlen(&buffer[i + 1]) > 512)
                 {
-                    // ¾²·¹±â°ªÀÌ ÀÖÀ½..
+                    // ì“°ë ˆê¸°ê°’ì´ ìˆìŒ..
                     return IDE_FAILURE;
                 }
             }
@@ -292,7 +292,7 @@ SInt parseBuffer(SChar *buffer,
 
 void ErrorOut(SChar *msg, SInt line, SChar *buffer)
 {
-    idlOS::printf("\n ÆÄ½Ì¿¡·¯ :: %s(%s:%d)\n\n",
+    idlOS::printf("\n íŒŒì‹±ì—ëŸ¬ :: %s(%s:%d)\n\n",
                   msg, buffer, line);
 
     idlOS::exit(0);
@@ -339,7 +339,7 @@ UInt getAction(SInt line, SChar *Name)
         }
 
     }
-    idlOS::printf("[%d:%s] ¿¡·¯ÄÚµåÀÇ ACTION ¿µ¿ª¿¡¼­ ¿¡·¯°¡ ¹ß»ıÇÏ¿´½À´Ï´Ù.\n%s", line, Name, StringError);
+    idlOS::printf("[%d:%s] ì—ëŸ¬ì½”ë“œì˜ ACTION ì˜ì—­ì—ì„œ ì—ëŸ¬ê°€ ë°œìƒí•˜ì˜€ìŠµë‹ˆë‹¤.\n%s", line, Name, StringError);
     eraseOutputFile();
     idlOS::exit(0);
     return 0;
@@ -362,7 +362,7 @@ void CheckValidation(SInt line, SChar *Name, SChar *Value)
 
     if (under_score < 2)
     {
-        idlOS::printf("[%d:%s] ¿¡·¯ÄÚµå¸¦ ºĞ¼®ÇÏ´Âµ¥ ¿¡·¯°¡ ¹ß»ıÇÏ¿´½À´Ï´Ù.\n%s",
+        idlOS::printf("[%d:%s] ì—ëŸ¬ì½”ë“œë¥¼ ë¶„ì„í•˜ëŠ”ë° ì—ëŸ¬ê°€ ë°œìƒí•˜ì˜€ìŠµë‹ˆë‹¤.\n%s",
                       line,
                       Name,
                       StringError);
@@ -372,11 +372,11 @@ void CheckValidation(SInt line, SChar *Name, SChar *Value)
 
     /* ----------------------------------------------
      * [2] Value Check
-     *     String [<][0-9][%][udldudsc][>] °¡ Á¸Àç
+     *     String [<][0-9][%][udldudsc][>] ê°€ ì¡´ì¬
      * --------------------------------------------*/
     fmt = Value;
     SChar c;
-    SChar ArgumentFlag[MAX_ARGUMENT]; // ÃÖ´ë °¡º¯ÀÎÀÚ °¹¼ö
+    SChar ArgumentFlag[MAX_ARGUMENT]; // ìµœëŒ€ ê°€ë³€ì¸ì ê°¯ìˆ˜
     SInt  argNum;
     SInt  argCount = 0;
 
@@ -384,11 +384,11 @@ void CheckValidation(SInt line, SChar *Name, SChar *Value)
 
     while(( c = *fmt++) )
     {
-        SChar numBuf[8]; // ÀÎÀÚ¹øÈ£ ÀÔ·Â
+        SChar numBuf[8]; // ì¸ìë²ˆí˜¸ ì…ë ¥
 
-        if (c == '<') // [<] ÃâÇö
+        if (c == '<') // [<] ì¶œí˜„
         {
-            if (isdigit(*fmt) == 0) // ¼ıÀÚ°¡ ¾Æ´Ô
+            if (isdigit(*fmt) == 0) // ìˆ«ìê°€ ì•„ë‹˜
             {
                 continue;
             }
@@ -404,7 +404,7 @@ void CheckValidation(SInt line, SChar *Name, SChar *Value)
             argNum = (UInt)idlOS::strtol(numBuf, NULL, 10);
             if (argNum >= MAX_ARGUMENT)
             {
-                idlOS::printf("[%d:%s] ¿¡·¯ÄÚµå¸Ş½ÃÁöÀÇ °¡º¯ÀÎÀÚ ¸®½ºÆ® °ªÀÌ ³Ê¹« Å®´Ï´Ù. ÃÖ´ë %d.\n",
+                idlOS::printf("[%d:%s] ì—ëŸ¬ì½”ë“œë©”ì‹œì§€ì˜ ê°€ë³€ì¸ì ë¦¬ìŠ¤íŠ¸ ê°’ì´ ë„ˆë¬´ í½ë‹ˆë‹¤. ìµœëŒ€ %d.\n",
                               line,
                               Name,
                               MAX_ARGUMENT);
@@ -414,13 +414,13 @@ void CheckValidation(SInt line, SChar *Name, SChar *Value)
             ArgumentFlag[argNum] = 1;
 
             /* ------------------
-             * [2] ÀÎÀÚÅ¸ÀÔ °Ë»ç
+             * [2] ì¸ìíƒ€ì… ê²€ì‚¬
              * -----------------*/
             for (i = 0; ; i++)
             {
                 if (typeInfo[i].type == IDE_ERR_NONE)
                 {
-                    idlOS::printf("[%d:%s] °¡º¯ÀÎÀÚ µ¥ÀÌÅ¸ Å¸ÀÔÀÌ ÀûÀıÄ¡ ¾Ê½À´Ï´Ù. %s.\n",
+                    idlOS::printf("[%d:%s] ê°€ë³€ì¸ì ë°ì´íƒ€ íƒ€ì…ì´ ì ì ˆì¹˜ ì•ŠìŠµë‹ˆë‹¤. %s.\n",
                                   line,
                                   Name,
                                   fmt);
@@ -437,7 +437,7 @@ void CheckValidation(SInt line, SChar *Name, SChar *Value)
             }
             if ( *fmt != '>')
             {
-                idlOS::printf("[%d:%s] > Ç¥½Ã¸¦ Ã£À» ¼ö ¾ø½À´Ï´Ù. [%s].\n",
+                idlOS::printf("[%d:%s] > í‘œì‹œë¥¼ ì°¾ì„ ìˆ˜ ì—†ìŠµë‹ˆë‹¤. [%s].\n",
                               line,
                               Name,
                               fmt);
@@ -451,7 +451,7 @@ void CheckValidation(SInt line, SChar *Name, SChar *Value)
 
     if (argCount >= MAX_ARGUMENT)
     {
-        idlOS::printf("[%d:%s] ¿¡·¯ÄÚµå¸Ş½ÃÁöÀÇ °¡º¯ÀÎÀÚÀÇ °¹¼ö°¡ %d¸¦ ÃÊ°úÇß½À´Ï´Ù.\n",
+        idlOS::printf("[%d:%s] ì—ëŸ¬ì½”ë“œë©”ì‹œì§€ì˜ ê°€ë³€ì¸ìì˜ ê°¯ìˆ˜ê°€ %dë¥¼ ì´ˆê³¼í–ˆìŠµë‹ˆë‹¤.\n",
                       line,
                       Name,
                       MAX_ARGUMENT);
@@ -462,7 +462,7 @@ void CheckValidation(SInt line, SChar *Name, SChar *Value)
     {
         if (ArgumentFlag[i] == 0)
         {
-            idlOS::printf("[%d:%s] °¡º¯ÀÎÀÚ ¸®½ºÆ®ÀÇ ÀÏ·Ã¹øÈ£Áß ºüÁø °ÍÀÌ ÀÖ½À´Ï´Ù. ¼ø¼­´ë·Î ±âÀÔµÇ¾ú´ÂÁö È®ÀÎÇÏ½Ê½Ã¿ä. [%d]ÀÇ ¹øÈ£°¡ ¾øÀ½.\n",
+            idlOS::printf("[%d:%s] ê°€ë³€ì¸ì ë¦¬ìŠ¤íŠ¸ì˜ ì¼ë ¨ë²ˆí˜¸ì¤‘ ë¹ ì§„ ê²ƒì´ ìˆìŠµë‹ˆë‹¤. ìˆœì„œëŒ€ë¡œ ê¸°ì…ë˜ì—ˆëŠ”ì§€ í™•ì¸í•˜ì‹­ì‹œìš”. [%d]ì˜ ë²ˆí˜¸ê°€ ì—†ìŒ.\n",
                           line,
                           Name,
                           i);
@@ -488,7 +488,7 @@ int main(int argc, char *argv[])
 //     fprintf(stderr, "abd\ \qabd\n");
 //     exit(0);
 
-    // ¿É¼ÇÀ» ¹Ş´Â´Ù.
+    // ì˜µì…˜ì„ ë°›ëŠ”ë‹¤.
     while ( (opr = idlOS::getopt(argc, argv, "djafvni:o:ctkm")) != EOF)
     {
         switch(opr)
@@ -514,7 +514,7 @@ int main(int argc, char *argv[])
                 iduGetProductionTimeString());
             idlOS::fflush(stdout);
             idlOS::exit(0); /* just exit after print */
-        /* BUG-34010 4ÀÚ¸® ¼ıÀÚ·Î µÈ ¹öÀü Á¤º¸ ÇÊ¿ä */
+        /* BUG-34010 4ìë¦¬ ìˆ«ìë¡œ ëœ ë²„ì „ ì •ë³´ í•„ìš” */
         case 'a':
             idlOS::fprintf(stdout, "%d.%d.%d.%d", 
                     IDU_ALTIBASE_MAJOR_VERSION,
@@ -554,7 +554,7 @@ int main(int argc, char *argv[])
         }
     }
 
-    // ¸Ş½ÃÁö Ãâ·Â
+    // ë©”ì‹œì§€ ì¶œë ¥
     if (inMsgFile == NULL || outErrHeaderFile == NULL)
     {
         idlOS::fprintf(stdout, Usage);
@@ -566,11 +566,11 @@ int main(int argc, char *argv[])
     idlOS::umask(0);
 
     /* ------------------------------------------------
-     *  »ı¼ºµÉ È­ÀÏ¸íÀ» ÁöÁ¤ÇÑ´Ù.
+     *  ìƒì„±ë  í™”ì¼ëª…ì„ ì§€ì •í•œë‹¤.
      * ----------------------------------------------*/
 
     SInt len = idlOS::strlen(inMsgFile);
-    if ( idlOS::strstr(inMsgFile, ".msg") == NULL) // È®ÀåÀÚ°¡ ¾øÀÌ ÀÔ·Â
+    if ( idlOS::strstr(inMsgFile, ".msg") == NULL) // í™•ì¥ìê°€ ì—†ì´ ì…ë ¥
     {
         idlOS::fprintf(stderr, "you should specify the input msg file \n");
         idlOS::exit(-1);
@@ -578,7 +578,7 @@ int main(int argc, char *argv[])
     else
     {
         /* ------------------------------------------------
-         *  [MSB/CPP] È­ÀÏ¸í »ı¼º
+         *  [MSB/CPP] í™”ì¼ëª… ìƒì„±
          * ----------------------------------------------*/
 
         idlOS::strcpy(outMsbFile, inMsgFile);
@@ -586,7 +586,7 @@ int main(int argc, char *argv[])
         idlOS::strcat(outMsbFile, gExtName[gClientPart]);
 
         /* ------------------------------------------------
-         *  Trace Log¿ë C ¼Ò½ºÄÚµå »ı¼º
+         *  Trace Logìš© C ì†ŒìŠ¤ì½”ë“œ ìƒì„±
          *
          *  inpurt E_ID_XXXXX.msg => TRC_ID_STRING.ic
          *                        => TRC_ID_STRING.ih
@@ -624,7 +624,7 @@ int main(int argc, char *argv[])
     }
 
     /* ------------------------------------------------
-     *  È­ÀÏ Open
+     *  í™”ì¼ Open
      * ----------------------------------------------*/
 
     outErrHeaderFP = idlOS::fopen(outErrHeaderFile, "wb");
@@ -657,7 +657,7 @@ int main(int argc, char *argv[])
 
     if (gClientPart == 0)
     {
-        // ServerÀÇ °æ¿ì : ¸Ş½ÃÁö È­ÀÏ Çì´õ ±¸Á¶Ã¼ ¸¸Å­ ½ºÅµ
+        // Serverì˜ ê²½ìš° : ë©”ì‹œì§€ í™”ì¼ í—¤ë” êµ¬ì¡°ì²´ ë§Œí¼ ìŠ¤í‚µ
         idlOS::fseek(outMsbFP, sizeof(idErrorMsbType), SEEK_SET);
     }
 
@@ -677,20 +677,20 @@ int main(int argc, char *argv[])
         idlOS::memset(buffer, 0, 1024);
         if (idlOS::fgets(buffer, 1024, inMsgFP) == NULL)
         {
-            // È­ÀÏÀÇ ³¡±îÁö ÀĞÀ½
+            // í™”ì¼ì˜ ëê¹Œì§€ ì½ìŒ
             break;
         }
 
-        // buffer¿¡ ÇÑÁÙÀÇ Á¤º¸°¡ ÀÖÀ½
+        // bufferì— í•œì¤„ì˜ ì •ë³´ê°€ ìˆìŒ
         if (parseBuffer(buffer, &SubCode, &State, &Name, &Value) == -1)
         {
             idlOS::fclose(inMsgFP);
-            idlOS::printf("¿¡·¯... ¶óÀÎ [%d]:%s\n", line, buffer);
+            idlOS::printf("ì—ëŸ¬... ë¼ì¸ [%d]:%s\n", line, buffer);
             idlOS::exit(0);
         }
 
 
-        if (Section == -1) // Section ¼³Á¤µÇÁö ¾Ê¾ÒÀ» °æ¿ì
+        if (Section == -1) // Section ì„¤ì •ë˜ì§€ ì•Šì•˜ì„ ê²½ìš°
         {
             if (Name)
             {
@@ -699,14 +699,14 @@ int main(int argc, char *argv[])
                     assert( Value != NULL );
                     Section = (SInt)idlOS::strtol(Value, NULL, 10);
                     if (Section < 0 || Section > 15)
-                        ErrorOut((SChar *)"SectionÀÇ ¹üÀ§°¡ Æ²·È½À´Ï´Ù.",
+                        ErrorOut((SChar *)"Sectionì˜ ë²”ìœ„ê°€ í‹€ë ¸ìŠµë‹ˆë‹¤.",
                                  line, buffer);
-                    // È­ÀÏ¿¡ Çì´õ Ãâ·Â
+                    // í™”ì¼ì— í—¤ë” ì¶œë ¥
                     idlOS::fprintf(outErrHeaderFP, "%s\n", Header);
                 }
             }
         }
-        else // SectionÀÌ ¼³Á¤µÇ¾úÀ½ : ¿©±âºÎÅÍ´Â Á¤È®ÇÑ N=V ¿ä±¸
+        else // Sectionì´ ì„¤ì •ë˜ì—ˆìŒ : ì—¬ê¸°ë¶€í„°ëŠ” ì •í™•í•œ N=V ìš”êµ¬
         {
             if ( (Name && Value == NULL) || (Name == NULL && Value) )
             {
@@ -721,32 +721,32 @@ int main(int argc, char *argv[])
                     }
                 }
 
-                ErrorOut((SChar *)"¿¡·¯ÄÚµå¿Í ¿¡·¯¸Ş½ÃÁö°¡ µ¿½Ã¿¡ Á¸ÀçÇÏÁö ¾Ê½À´Ï´Ù.",
+                ErrorOut((SChar *)"ì—ëŸ¬ì½”ë“œì™€ ì—ëŸ¬ë©”ì‹œì§€ê°€ ë™ì‹œì— ì¡´ì¬í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.",
                          line, buffer);
             }
             else
             {
 
-                if ( (Name != NULL) && ( Value != NULL) ) // °ªÀÌ ¼³Á¤µÊ
+                if ( (Name != NULL) && ( Value != NULL) ) // ê°’ì´ ì„¤ì •ë¨
                 {
                     if (SubCode < 0)
                     {
                         idlOS::fclose(inMsgFP);
-                        idlOS::printf("¿¡·¯:SubCodeÀÇ °ªÀÌ Á¤ÀÇµÇÁö ¾ÊÀº °Í °°½À´Ï´Ù. \n line%d:%s\n", line, buffer);
+                        idlOS::printf("ì—ëŸ¬:SubCodeì˜ ê°’ì´ ì •ì˜ë˜ì§€ ì•Šì€ ê²ƒ ê°™ìŠµë‹ˆë‹¤. \n line%d:%s\n", line, buffer);
                         idlOS::exit(0);
                     }
 
                     if (SubCode >= E_INDEX_MASK)
                     {
                         idlOS::fclose(inMsgFP);
-                        idlOS::printf("¿¡·¯:SubCodeÀÇ °ªÀÌ Çã¿ëµÈ °ª(%d) ÀÌ»óÀÔ´Ï´Ù. \n line%d:%s\n", E_INDEX_MASK, line, buffer);
+                        idlOS::printf("ì—ëŸ¬:SubCodeì˜ ê°’ì´ í—ˆìš©ëœ ê°’(%d) ì´ìƒì…ë‹ˆë‹¤. \n line%d:%s\n", E_INDEX_MASK, line, buffer);
                         idlOS::exit(0);
                     }
 
                     if (dupBuf[SubCode] != 0)
                     {
                         idlOS::fclose(inMsgFP);
-                        idlOS::printf("¿¡·¯:SubCodeÀÇ °ª(%d)ÀÌ Áßº¹µÇ¾ú½À´Ï´Ù. \n line%d:%s\n", SubCode, line, buffer);
+                        idlOS::printf("ì—ëŸ¬:SubCodeì˜ ê°’(%d)ì´ ì¤‘ë³µë˜ì—ˆìŠµë‹ˆë‹¤. \n line%d:%s\n", SubCode, line, buffer);
                         idlOS::exit(0);
                     }
 
@@ -758,13 +758,13 @@ int main(int argc, char *argv[])
 
                     HexErrorCode =
                         ((UInt)Section << 28) | (UInt)Action | ((UInt)SubCode << 12) | (UInt)errIdxNum;
-                    // 1. Çì´õÈ­ÀÏ µ¥ÀÌÅ¸ ÀúÀå (*.ih)
+                    // 1. í—¤ë”í™”ì¼ ë°ì´íƒ€ ì €ì¥ (*.ih)
                     idlOS::fprintf(outErrHeaderFP, "    %s = 0x%08x, /* (0x%x) (%d) */\n",
                                    Name, HexErrorCode, E_ERROR_CODE(HexErrorCode), E_ERROR_CODE(HexErrorCode));
 
                     if (gClientPart == 0)
                     {
-                        // Server Part :  ¸Ş½ÃÁö È­ÀÏ µ¥ÀÌÅ¸ ÀúÀå (*.msb)
+                        // Server Part :  ë©”ì‹œì§€ í™”ì¼ ë°ì´íƒ€ ì €ì¥ (*.msb)
                         len = idlOS::strlen(Value) + 1;
 #ifdef MSB_ECODE_ON
                         idlOS::fprintf(outMsbFP, "0x%08x %s\n", errIdxNum, Value);
@@ -778,7 +778,7 @@ int main(int argc, char *argv[])
 
                         if ( gMsgOnly == 0 )
                         {
-                            // Client Part : ¼Ò½ºÄÚµå »ı¼º
+                            // Client Part : ì†ŒìŠ¤ì½”ë“œ ìƒì„±
                             idlOS::fprintf(outMsbFP, "    { \"%s\", \"%s\"}, \n", State, Value);
                         }
                         else
@@ -821,7 +821,7 @@ int main(int argc, char *argv[])
 extern ideErrTypeInfo typeInfo[];
 
 /* ------------------------------------------------
- *  Formatted StringÀ» º¯È¯ÇÑ´Ù.
+ *  Formatted Stringì„ ë³€í™˜í•œë‹¤.
     { IDE_ERR_SCHAR,  "%c" ,  "%c", 2},
     { IDE_ERR_STRING, "%s" ,  "%s", 2},
     { IDE_ERR_SINT,   "%d" ,  "%d", 2},
@@ -892,17 +892,17 @@ void printErrorPosition(SChar *aString, UInt aPos)
 
 
 /* ------------------------------------------------
- *  Trace Message¸¦ »ı¼ºÇÑ´Ù.
+ *  Trace Messageë¥¼ ìƒì„±í•œë‹¤.
  * ----------------------------------------------*/
 void doTraceGeneration()
 {
-    UInt   sSeqNum = 0; // Trace CodeÀÇ ¹øÈ£
+    UInt   sSeqNum = 0; // Trace Codeì˜ ë²ˆí˜¸
 
     SChar  sLineBuffer[1024];
     SChar *sFormatString;
     SChar *sWorkString;
 
-    // 64k¸¦ ³Ñ´Â ¿¡·¯ ¸Ş½ÃÁö´Â ¾ø°ÚÁö?
+    // 64kë¥¼ ë„˜ëŠ” ì—ëŸ¬ ë©”ì‹œì§€ëŠ” ì—†ê² ì§€?
     sFormatString = (SChar *)idlOS::malloc(64 * 1024);
     sWorkString   = (SChar *)idlOS::malloc(64 * 1024);
 
@@ -918,20 +918,20 @@ void doTraceGeneration()
         idlOS::memset(sLineBuffer, 0, 1024);
         if (idlOS::fgets(sLineBuffer, 1024, inMsgFP) == NULL)
         {
-            // È­ÀÏÀÇ ³¡±îÁö ÀĞÀ½
+            // í™”ì¼ì˜ ëê¹Œì§€ ì½ìŒ
             break;
         }
 
-        // sLineBuffer¿¡ ÇÑÁÙÀÇ Á¤º¸°¡ ÀÖÀ½
+        // sLineBufferì— í•œì¤„ì˜ ì •ë³´ê°€ ìˆìŒ
         if (parseBuffer(sLineBuffer, &SubCode, &State, &Name, &Value, 0) == -1)
         {
             idlOS::fclose(inMsgFP);
-            idlOS::printf("¿¡·¯... ¶óÀÎ [%d]:%s\n", 0, sLineBuffer);
+            idlOS::printf("ì—ëŸ¬... ë¼ì¸ [%d]:%s\n", 0, sLineBuffer);
             idlOS::exit(0);
         }
 
         /* ------------------------------------------------
-         *  ÀÌ ºí·°³»¿¡¼­´Â ½ºÆ®¸µ °ªÀ» ÀĞ°í Ã³¸®ÇÔ.
+         *  ì´ ë¸”ëŸ­ë‚´ì—ì„œëŠ” ìŠ¤íŠ¸ë§ ê°’ì„ ì½ê³  ì²˜ë¦¬í•¨.
          * ----------------------------------------------*/
         if ( (Name != NULL) && (Value != NULL ))
         {
@@ -940,7 +940,7 @@ void doTraceGeneration()
             idlOS::memset(sFormatString, 0, 64 * 1024);
 
             /* ------------------------------------------------
-             *  1.  ;(¼¼¹ÌÄİ·Ğ)ÀÌ ¹ß»ıÇÒ ¶§ ±îÁö ÀĞÀ½.
+             *  1.  ;(ì„¸ë¯¸ì½œë¡ )ì´ ë°œìƒí•  ë•Œ ê¹Œì§€ ì½ìŒ.
              * ----------------------------------------------*/
             i = idlOS::strlen(Value);
 
@@ -977,8 +977,8 @@ void doTraceGeneration()
 
 
             /* ------------------------------------------------
-             *  2. sFormatString¿¡¼­ " "¿ÜºÎ¿¡ ÀÖ´Â °ø¹é
-             *     ¹× " ÀÚÃ¼¸¦ À» Á¦°ÅÇÑ´Ù.
+             *  2. sFormatStringì—ì„œ " "ì™¸ë¶€ì— ìˆëŠ” ê³µë°±
+             *     ë° " ìì²´ë¥¼ ì„ ì œê±°í•œë‹¤.
              * ----------------------------------------------*/
             {
                 UInt sQuoteState = 0;
@@ -1019,7 +1019,7 @@ void doTraceGeneration()
                                 {
                                     *sWorkPtr++ = sFormatString[i];
 
-                                    // "ÀÌ ½ºÆ®¸µ ³»ºÎ¿¡ ÀÖÀ» °æ¿ì " .... \"... "
+                                    // "ì´ ìŠ¤íŠ¸ë§ ë‚´ë¶€ì— ìˆì„ ê²½ìš° " .... \"... "
                                     //*(sWorkPtr - 1) = '"'; remove case
                                 }
                                 else
@@ -1047,9 +1047,9 @@ void doTraceGeneration()
 
 
             /* ------------------------------------------------
-             *  3. sFormatString¿¡¼­ ½ºÆ®¸µ º¯È¯ ¼öÇà.
-             *     => \ escape ¹®ÀÚ ´ëÄ¡
-             *     => °¡º¯ÀÎÀÚ <0%d>¸¦ ´ëÄ¡
+             *  3. sFormatStringì—ì„œ ìŠ¤íŠ¸ë§ ë³€í™˜ ìˆ˜í–‰.
+             *     => \ escape ë¬¸ì ëŒ€ì¹˜
+             *     => ê°€ë³€ì¸ì <0%d>ë¥¼ ëŒ€ì¹˜
              *
              * ----------------------------------------------*/
             {
@@ -1061,7 +1061,7 @@ void doTraceGeneration()
                 {
                     switch(sFormatString[i])
                     {
-#ifdef NOTDEF // text -> text ¿¡¼­´Â ÇÊ¿ä¾øÀ½. text -> binÀº ÇÊ¿äÇÔ.
+#ifdef NOTDEF // text -> text ì—ì„œëŠ” í•„ìš”ì—†ìŒ. text -> binì€ í•„ìš”í•¨.
                         case '\\': /* escape sequence char*/
                             switch(sFormatString[i + 1])
                             {
@@ -1093,7 +1093,7 @@ void doTraceGeneration()
                             UInt  sLen;
 
 
-                            SChar sFmt[128]; // <...>ÀÇ ÃÖ´ëÅ©±â¸¦ 128·Î °¡Á¤ÇÔ.
+                            SChar sFmt[128]; // <...>ì˜ ìµœëŒ€í¬ê¸°ë¥¼ 128ë¡œ ê°€ì •í•¨.
 
                             idlOS::memset(sFmt, 0, ID_SIZEOF(sFmt));
 
@@ -1140,8 +1140,8 @@ void doTraceGeneration()
             idlOS::memcpy(sFormatString, sWorkString, 64 * 1024);
 
             /* ------------------------------------------------
-             *  !! ¿Ï·á
-             *  Name°ú sFormatStringÀ» Ãâ·ÂÇÑ´Ù.
+             *  !! ì™„ë£Œ
+             *  Nameê³¼ sFormatStringì„ ì¶œë ¥í•œë‹¤.
              * ----------------------------------------------*/
             if (gDebug != 0)
             {

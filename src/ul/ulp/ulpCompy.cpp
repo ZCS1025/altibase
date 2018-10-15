@@ -566,39 +566,39 @@ extern idBool         gDontPrint2file;
 extern SInt           gUlpCOMPMacroExpIndex;
 /* BUG-31831 : An additional error message is needed to notify 
 the unacceptability of using varchar type in #include file.
-include file ÆÄ½ÌÁßÀÎÁö¸¦ ¾Ë·ÁÁÜ */
+include file íŒŒì‹±ì¤‘ì¸ì§€ë¥¼ ì•Œë ¤ì¤Œ */
 extern SInt           gUlpCOMPIncludeIndex;
 
 /* extern of PPIF parser */
 extern SChar         *gUlpPPIFbufptr;
 extern SChar         *gUlpPPIFbuflim;
 
-// lexerÀÇ ½ÃÀÛ»óÅÂ¸¦ ÁöÁ¤ÇÔ.
+// lexerì˜ ì‹œì‘ìƒíƒœë¥¼ ì§€ì •í•¨.
 SInt                 gUlpCOMPStartCond = CP_ST_NONE;
-/* ÀÌÀü »óÅÂ·Î º¹±ÍÇÏ±â À§ÇÑ º¯¼ö */
+/* ì´ì „ ìƒíƒœë¡œ ë³µê·€í•˜ê¸° ìœ„í•œ ë³€ìˆ˜ */
 SInt                 gUlpCOMPPrevCond  = CP_ST_NONE;
 
 /* BUG-35518 Shared pointer should be supported in APRE */
 SInt                 gUlpSharedPtrPrevCond  = CP_ST_NONE;
 
-// parsingÁß¿¡ »óÅÂ Á¤º¸ & C º¯¼ö¿¡ ´ëÇÑ Á¤º¸ ÀúÀå.
+// parsingì¤‘ì— ìƒíƒœ ì •ë³´ & C ë³€ìˆ˜ì— ëŒ€í•œ ì •ë³´ ì €ì¥.
 ulpParseInfo         gUlpParseInfo;
 
-// ÇöÁ¦ scope depth
+// í˜„ì œ scope depth
 SInt                 gUlpCurDepth = 0;
 
-// ÇöÀç Ã³¸®ÁßÀÎ stmt type
+// í˜„ì¬ ì²˜ë¦¬ì¤‘ì¸ stmt type
 ulpStmtType          gUlpStmttype    = S_UNKNOWN;
-// sql query string À» ÀúÀåÇØ¾ßÇÏ´ÂÁö ¿©ºÎ. 
+// sql query string ì„ ì €ì¥í•´ì•¼í•˜ëŠ”ì§€ ì—¬ë¶€. 
 idBool               gUlpIsPrintStmt = ID_TRUE;
 
-// ÇöÀç Ã³¸®ÁßÀÎ hostº¯¼öÀÇ indicator Á¤º¸
+// í˜„ì¬ ì²˜ë¦¬ì¤‘ì¸ hostë³€ìˆ˜ì˜ indicator ì •ë³´
 ulpSymTElement      *gUlpIndNode = NULL;
 SChar                gUlpIndName[MAX_HOSTVAR_NAME_SIZE * 2];
-// ÇöÀç Ã³¸®ÁßÀÎ hostº¯¼öÀÇ file option º¯¼ö Á¤º¸
+// í˜„ì¬ ì²˜ë¦¬ì¤‘ì¸ hostë³€ìˆ˜ì˜ file option ë³€ìˆ˜ ì •ë³´
 SChar                gUlpFileOptName[MAX_HOSTVAR_NAME_SIZE * 2];
 
-/* macro if Á¶°Ç¹®Ã³¸®¸¦ À§ÇÑ º¯¼öµé. */
+/* macro if ì¡°ê±´ë¬¸ì²˜ë¦¬ë¥¼ ìœ„í•œ ë³€ìˆ˜ë“¤. */
 ulpPPifstackMgr     *gUlpCOMPifstackMgr[MAX_HEADER_FILE_NUM];
 SInt                 gUlpCOMPifstackInd = -1;
 
@@ -609,7 +609,7 @@ extern SChar        *gUlpCOMPErrCode;
 
 //=========== Function declarations for COMPparse ============//
 
-// Macro if ±¸¹® Ã³¸®¸¦ À§ÇÑ parse ÇÔ¼ö
+// Macro if êµ¬ë¬¸ ì²˜ë¦¬ë¥¼ ìœ„í•œ parse í•¨ìˆ˜
 extern SInt PPIFparse ( void *aBuf, SInt *aRes );
 extern int  COMPlex   ( YYSTYPE *lvalp );
 extern void COMPerror ( const SChar* aMsg );
@@ -7930,19 +7930,19 @@ YYSTYPE yylval;
 {
     idlOS::memset(&yyval, 0, sizeof(yyval));
 
-    /* BUG-28061 : preprocessingÀ»¸¶Ä¡¸é marco tableÀ» ÃÊ±âÈ­ÇÏ°í, *
-     *             ulpComp ¿¡¼­ Àç±¸ÃàÇÑ´Ù.                       */
+    /* BUG-28061 : preprocessingì„ë§ˆì¹˜ë©´ marco tableì„ ì´ˆê¸°í™”í•˜ê³ , *
+     *             ulpComp ì—ì„œ ì¬êµ¬ì¶•í•œë‹¤.                       */
     switch ( gUlpProgOption.mOptParseInfo )
     {
-        // ¿É¼Ç -parse none ¿¡ ÇØ´çÇÏ´Â »óÅÂ.
+        // ì˜µì…˜ -parse none ì— í•´ë‹¹í•˜ëŠ” ìƒíƒœ.
         case PARSE_NONE :
             gUlpCOMPStartCond = CP_ST_NONE;
             break;
-        // ¿É¼Ç -parse partial ¿¡ ÇØ´çÇÏ´Â »óÅÂ.
+        // ì˜µì…˜ -parse partial ì— í•´ë‹¹í•˜ëŠ” ìƒíƒœ.
         case PARSE_PARTIAL :
             gUlpCOMPStartCond = CP_ST_PARTIAL;
             break;
-        // ¿É¼Ç -parse full ¿¡ ÇØ´çÇÏ´Â »óÅÂ.
+        // ì˜µì…˜ -parse full ì— í•´ë‹¹í•˜ëŠ” ìƒíƒœ.
         case PARSE_FULL :
             gUlpCOMPStartCond = CP_ST_C;
             break;
@@ -8144,9 +8144,9 @@ yyreduce:
 /* Line 1455 of yacc.c  */
 #line 724 "ulpCompy.y"
     {
-        /* BUG-28118 : system Çì´õÆÄÀÏµéµµ ÆÄ½ÌµÅ¾ßÇÔ.            *
-         * 2th. problem : ºó±¸Á¶Ã¼ ¼±¾ğÀÌ Çã¿ë¾ÈµÊ. ex) struct A; */
-        // <type> ; ÀÌ ¿Ã¼ö ÀÖ´Ù. ex> int; char; struct A; ...
+        /* BUG-28118 : system í—¤ë”íŒŒì¼ë“¤ë„ íŒŒì‹±ë¼ì•¼í•¨.            *
+         * 2th. problem : ë¹ˆêµ¬ì¡°ì²´ ì„ ì–¸ì´ í—ˆìš©ì•ˆë¨. ex) struct A; */
+        // <type> ; ì´ ì˜¬ìˆ˜ ìˆë‹¤. ex> int; char; struct A; ...
         gUlpParseInfo.ulpInitHostInfo();
     ;}
     break;
@@ -8184,8 +8184,8 @@ yyreduce:
             IDU_LIST_INIT( &(gUlpParseInfo.mSharedPtrVarList) );
         }
 
-        // varchar ¼±¾ğÀÇ °æ¿ì ÇØ´ç code¸¦ ÁÖ¼®Ã³¸® ÇÑÈÄ,
-        // struct { char arr[...]; SQLLEN len; } À¸·ÎÀÇ º¯È¯ÀÌ ÇÊ¿äÇÔ.
+        // varchar ì„ ì–¸ì˜ ê²½ìš° í•´ë‹¹ codeë¥¼ ì£¼ì„ì²˜ë¦¬ í•œí›„,
+        // struct { char arr[...]; SQLLEN len; } ìœ¼ë¡œì˜ ë³€í™˜ì´ í•„ìš”í•¨.
         if ( (gUlpParseInfo.mHostValInfo[gUlpParseInfo.mStructDeclDepth]->mType == H_VARCHAR) ||
              (gUlpParseInfo.mHostValInfo[gUlpParseInfo.mStructDeclDepth]->mType == H_NVARCHAR) )
         {
@@ -8214,7 +8214,7 @@ yyreduce:
 
         gUlpParseInfo.mFuncDecl = ID_FALSE;
         gUlpParseInfo.mHostValInfo4Typedef = NULL;
-        // ÇÏ³ªÀÇ ¼±¾ğ±¸¹®ÀÌ Ã³¸®µÇ¸é µû·Î ÀúÀåÇÏ°í ÀÖ´ø È£½ºÆ®º¯¼öÁ¤º¸¸¦ ÃÊ±âÈ­ÇÔ.
+        // í•˜ë‚˜ì˜ ì„ ì–¸êµ¬ë¬¸ì´ ì²˜ë¦¬ë˜ë©´ ë”°ë¡œ ì €ì¥í•˜ê³  ìˆë˜ í˜¸ìŠ¤íŠ¸ë³€ìˆ˜ì •ë³´ë¥¼ ì´ˆê¸°í™”í•¨.
         gUlpParseInfo.ulpInitHostInfo();
     ;}
     break;
@@ -8235,17 +8235,17 @@ yyreduce:
         {
 
             if( gUlpParseInfo.mHostValInfo[gUlpParseInfo.mStructDeclDepth]->mIsTypedef != ID_TRUE )
-            {   // typedef Á¤ÀÇ°¡ ¾Æ´Ò°æ¿ì
-                /* BUG-28118 : system Çì´õÆÄÀÏµéµµ ÆÄ½ÌµÅ¾ßÇÔ.            *
-                 * 5th. problem : Á¤ÀÇµÇÁö ¾ÊÀº ±¸Á¶Ã¼ Æ÷ÀÎÅÍ º¯¼ö ¼±¾ğ¾ÈµÊ. *
+            {   // typedef ì •ì˜ê°€ ì•„ë‹ê²½ìš°
+                /* BUG-28118 : system í—¤ë”íŒŒì¼ë“¤ë„ íŒŒì‹±ë¼ì•¼í•¨.            *
+                 * 5th. problem : ì •ì˜ë˜ì§€ ì•Šì€ êµ¬ì¡°ì²´ í¬ì¸í„° ë³€ìˆ˜ ì„ ì–¸ì•ˆë¨. *
                  * 8th. problem : can't resolve extern variable type at declaring section. */
                 if ( (gUlpParseInfo.mHostValInfo[gUlpParseInfo.mStructDeclDepth]->mIsstruct  == ID_TRUE) &&
                      (gUlpParseInfo.mHostValInfo[gUlpParseInfo.mStructDeclDepth]->mStructName[0] != '\0') &&
                      (gUlpParseInfo.mHostValInfo[gUlpParseInfo.mStructDeclDepth]->mStructLink == NULL) )
-                {   // struct º¯¼ö ¼±¾ğÀÇ °æ¿ì.
-                    // structure º¯¼ö ¼±¾ğÀÇ°æ¿ì extern or pointer°¡ ¾Æ´Ï¶ó¸é struct table¿¡¼­
-                    // ÇØ´ç struct tag°¡ Á¸ÀçÇÏ´ÂÁö °Ë»çÇÏ¸ç, extern or pointerÀÏ °æ¿ì¿¡´Â °Ë»çÇÏÁö ¾Ê°í
-                    // ³ªÁß¿¡ ÇØ´ç º¯¼ö¸¦ »ç¿ëÇÒ¶§ °Ë»çÇÑ´Ù.
+                {   // struct ë³€ìˆ˜ ì„ ì–¸ì˜ ê²½ìš°.
+                    // structure ë³€ìˆ˜ ì„ ì–¸ì˜ê²½ìš° extern or pointerê°€ ì•„ë‹ˆë¼ë©´ struct tableì—ì„œ
+                    // í•´ë‹¹ struct tagê°€ ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬í•˜ë©°, extern or pointerì¼ ê²½ìš°ì—ëŠ” ê²€ì‚¬í•˜ì§€ ì•Šê³ 
+                    // ë‚˜ì¤‘ì— í•´ë‹¹ ë³€ìˆ˜ë¥¼ ì‚¬ìš©í• ë•Œ ê²€ì‚¬í•œë‹¤.
                     if ( (gUlpParseInfo.mHostValInfo[gUlpParseInfo.mStructDeclDepth]->mPointer  == 0) &&
                          (gUlpParseInfo.mHostValInfo[gUlpParseInfo.mStructDeclDepth]->mIsExtern == ID_FALSE) )
                     {   // it's not a pointer of struct and extern.
@@ -8254,7 +8254,7 @@ yyreduce:
                                             gUlpCurDepth );
                         if ( gUlpParseInfo.mStructPtr == NULL )
                         {
-                            // error Ã³¸®
+                            // error ì²˜ë¦¬
 
                             ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                                              ulpERR_ABORT_COMP_C_Unknown_Structname_Error,
@@ -8278,9 +8278,9 @@ yyreduce:
             {
                 if ( (gUlpParseInfo.mHostValInfo[gUlpParseInfo.mStructDeclDepth]->mIsstruct   == ID_TRUE) &&
                      (gUlpParseInfo.mHostValInfo[gUlpParseInfo.mStructDeclDepth]->mStructLink == NULL) )
-                {   // structure ¸¦ typedef Á¤ÀÇÇÒ °æ¿ì.
+                {   // structure ë¥¼ typedef ì •ì˜í•  ê²½ìš°.
                     if (gUlpParseInfo.mHostValInfo[gUlpParseInfo.mStructDeclDepth]->mStructName[0] == '\0')
-                    {   // no tag structure ¸¦ typedef Á¤ÀÇÇÒ °æ¿ì.
+                    {   // no tag structure ë¥¼ typedef ì •ì˜í•  ê²½ìš°.
                         // ex) typedef struct { ... } A;
                         gUlpParseInfo.mHostValInfo[gUlpParseInfo.mStructDeclDepth]->mStructLink
                                 = gUlpParseInfo.mStructPtr;
@@ -8288,7 +8288,7 @@ yyreduce:
                 }
             }
 
-            // char, varchar º¯¼öÀÇ°æ¿ì -nchar_var Ä¿¸Çµåoption¿¡ Æ÷ÇÔµÈ º¯¼öÀÎÁö È®ÀÎÇÔ.
+            // char, varchar ë³€ìˆ˜ì˜ê²½ìš° -nchar_var ì»¤ë§¨ë“œoptionì— í¬í•¨ëœ ë³€ìˆ˜ì¸ì§€ í™•ì¸í•¨.
             if ( (gUlpParseInfo.mHostValInfo[gUlpParseInfo.mStructDeclDepth]->mType == H_CHAR) ||
                  (gUlpParseInfo.mHostValInfo[gUlpParseInfo.mStructDeclDepth]->mType == H_VARCHAR) )
             {
@@ -8311,12 +8311,12 @@ yyreduce:
                 }
             }
 
-            // scope table¿¡ ÇØ´ç symbol node¸¦ Ãß°¡ÇÑ´Ù.
+            // scope tableì— í•´ë‹¹ symbol nodeë¥¼ ì¶”ê°€í•œë‹¤.
             if( (sSymNode = gUlpScopeT.ulpSAdd ( gUlpParseInfo.mHostValInfo[gUlpParseInfo.mStructDeclDepth],
                                                  gUlpCurDepth ))
                 == NULL )
             {
-                // error Ã³¸®
+                // error ì²˜ë¦¬
 
                 ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                                 ulpERR_ABORT_COMP_C_Add_Symbol_Error,
@@ -8325,7 +8325,7 @@ yyreduce:
                 COMPerror( ulpGetErrorMSG(&gUlpParseInfo.mErrorMgr) );
             }
 
-            //varchar typeÀÇ °æ¿ì, ³ªÁß ÄÚµå º¯È¯À» À§ÇØ list¿¡ µû·Î ÀúÀåÇÑ´Ù.
+            //varchar typeì˜ ê²½ìš°, ë‚˜ì¤‘ ì½”ë“œ ë³€í™˜ì„ ìœ„í•´ listì— ë”°ë¡œ ì €ì¥í•œë‹¤.
             if ( (gUlpParseInfo.mHostValInfo[gUlpParseInfo.mStructDeclDepth]->mType == H_VARCHAR) ||
                  (gUlpParseInfo.mHostValInfo[gUlpParseInfo.mStructDeclDepth]->mType == H_NVARCHAR)
                )
@@ -8383,18 +8383,18 @@ yyreduce:
         {
 
             if( gUlpParseInfo.mHostValInfo[gUlpParseInfo.mStructDeclDepth]->mIsTypedef != ID_TRUE )
-            {   // typedef Á¤ÀÇ°¡ ¾Æ´Ò°æ¿ì
+            {   // typedef ì •ì˜ê°€ ì•„ë‹ê²½ìš°
 
-                /* BUG-28118 : system Çì´õÆÄÀÏµéµµ ÆÄ½ÌµÅ¾ßÇÔ.            *
-                 * 5th. problem : Á¤ÀÇµÇÁö ¾ÊÀº ±¸Á¶Ã¼ Æ÷ÀÎÅÍ º¯¼ö ¼±¾ğ¾ÈµÊ. *
+                /* BUG-28118 : system í—¤ë”íŒŒì¼ë“¤ë„ íŒŒì‹±ë¼ì•¼í•¨.            *
+                 * 5th. problem : ì •ì˜ë˜ì§€ ì•Šì€ êµ¬ì¡°ì²´ í¬ì¸í„° ë³€ìˆ˜ ì„ ì–¸ì•ˆë¨. *
                  * 8th. problem : can't resolve extern variable type at declaring section. */
                 if ( (gUlpParseInfo.mHostValInfo[gUlpParseInfo.mStructDeclDepth]->mIsstruct  == ID_TRUE) &&
                      (gUlpParseInfo.mHostValInfo[gUlpParseInfo.mStructDeclDepth]->mStructName[0] != '\0') &&
                      (gUlpParseInfo.mHostValInfo[gUlpParseInfo.mStructDeclDepth]->mStructLink == NULL) )
-                {   // struct º¯¼ö ¼±¾ğÀÇ °æ¿ì.
-                    // structure º¯¼ö ¼±¾ğÀÇ°æ¿ì pointer°¡ ¾Æ´Ï¶ó¸é struct table¿¡¼­
-                    // ÇØ´ç struct tag°¡ Á¸ÀçÇÏ´ÂÁö °Ë»çÇÏ¸ç, pointerÀÏ °æ¿ì¿¡´Â °Ë»çÇÏÁö ¾Ê°í
-                    // ³ªÁß¿¡ ÇØ´ç º¯¼ö¸¦ »ç¿ëÇÒ¶§ °Ë»çÇÑ´Ù.
+                {   // struct ë³€ìˆ˜ ì„ ì–¸ì˜ ê²½ìš°.
+                    // structure ë³€ìˆ˜ ì„ ì–¸ì˜ê²½ìš° pointerê°€ ì•„ë‹ˆë¼ë©´ struct tableì—ì„œ
+                    // í•´ë‹¹ struct tagê°€ ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬í•˜ë©°, pointerì¼ ê²½ìš°ì—ëŠ” ê²€ì‚¬í•˜ì§€ ì•Šê³ 
+                    // ë‚˜ì¤‘ì— í•´ë‹¹ ë³€ìˆ˜ë¥¼ ì‚¬ìš©í• ë•Œ ê²€ì‚¬í•œë‹¤.
                     if ( (gUlpParseInfo.mHostValInfo[gUlpParseInfo.mStructDeclDepth]->mPointer  == 0) &&
                          (gUlpParseInfo.mHostValInfo[gUlpParseInfo.mStructDeclDepth]->mIsExtern == ID_FALSE) )
                     {   // it's not a pointer of struct and extern.
@@ -8404,7 +8404,7 @@ yyreduce:
                                             gUlpCurDepth );
                         if ( gUlpParseInfo.mStructPtr == NULL )
                         {
-                            // error Ã³¸®
+                            // error ì²˜ë¦¬
 
                             ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                                              ulpERR_ABORT_COMP_C_Unknown_Structname_Error,
@@ -8426,12 +8426,12 @@ yyreduce:
             }
             else
             {
-                // no tag structure ¸¦ typedef ÇÒ°æ¿ì.
+                // no tag structure ë¥¼ typedef í• ê²½ìš°.
                 if ( (gUlpParseInfo.mHostValInfo[gUlpParseInfo.mStructDeclDepth]->mIsstruct   == ID_TRUE) &&
                      (gUlpParseInfo.mHostValInfo[gUlpParseInfo.mStructDeclDepth]->mStructLink == NULL) )
-                {   // structure ¸¦ typedef Á¤ÀÇÇÒ °æ¿ì.
+                {   // structure ë¥¼ typedef ì •ì˜í•  ê²½ìš°.
                     if (gUlpParseInfo.mHostValInfo[gUlpParseInfo.mStructDeclDepth]->mStructName[0] == '\0')
-                    {   // no tag structure ¸¦ typedef Á¤ÀÇÇÒ °æ¿ì.
+                    {   // no tag structure ë¥¼ typedef ì •ì˜í•  ê²½ìš°.
                         // ex) typedef struct { ... } A;
                         gUlpParseInfo.mHostValInfo[gUlpParseInfo.mStructDeclDepth]->mStructLink = gUlpParseInfo.mStructPtr;
                     }
@@ -8463,7 +8463,7 @@ yyreduce:
                                                  gUlpCurDepth ))
                 == NULL )
             {
-                // error Ã³¸®
+                // error ì²˜ë¦¬
 
                 ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                                 ulpERR_ABORT_COMP_C_Add_Symbol_Error,
@@ -8498,7 +8498,7 @@ yyreduce:
 /* Line 1455 of yacc.c  */
 #line 1071 "ulpCompy.y"
     {
-        // , ¸¦ »ç¿ëÇÑ µ¿ÀÏ typeÀ» ¿©·¯°³ ¼±¾ğÇÒ °æ¿ì ÇÊ¿äÇÑ ÃÊ±âÈ­.
+        // , ë¥¼ ì‚¬ìš©í•œ ë™ì¼ typeì„ ì—¬ëŸ¬ê°œ ì„ ì–¸í•  ê²½ìš° í•„ìš”í•œ ì´ˆê¸°í™”.
         gUlpParseInfo.mSaveId = ID_TRUE;
         if ( gUlpParseInfo.mHostValInfo4Typedef != NULL )
         {
@@ -8554,10 +8554,10 @@ yyreduce:
 /* Line 1455 of yacc.c  */
 #line 1125 "ulpCompy.y"
     {
-        /* BUG-28118 : system Çì´õÆÄÀÏµéµµ ÆÄ½ÌµÅ¾ßÇÔ.                                 *
+        /* BUG-28118 : system í—¤ë”íŒŒì¼ë“¤ë„ íŒŒì‹±ë¼ì•¼í•¨.                                 *
          * 8th. problem : can't resolve extern variable type at declaring section. */
-        // extern º¯¼öÀÌ°í standard typeÀÌ ¾Æ´Ï¶ó¸é, º¯¼ö ¼±¾ğ½Ã type resolvingÀ» ÇÏÁö¾Ê°í,
-        // »ç¿ë½Ã resolvingÀ» ÇÏ±âÀ§ÇØ ÇÊ¿äÇÑ field.
+        // extern ë³€ìˆ˜ì´ê³  standard typeì´ ì•„ë‹ˆë¼ë©´, ë³€ìˆ˜ ì„ ì–¸ì‹œ type resolvingì„ í•˜ì§€ì•Šê³ ,
+        // ì‚¬ìš©ì‹œ resolvingì„ í•˜ê¸°ìœ„í•´ í•„ìš”í•œ field.
         gUlpParseInfo.mHostValInfo[gUlpParseInfo.mStructDeclDepth]->mIsExtern = ID_TRUE;
     ;}
     break;
@@ -8581,7 +8581,7 @@ yyreduce:
             the unacceptability of using varchar type in #include file. */
         if( gUlpCOMPIncludeIndex > 0 )
         {
-            // error Ã³¸®
+            // error ì²˜ë¦¬
             ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                              ulpERR_ABORT_COMP_Varchar_In_IncludeFile_Error );
             gUlpCOMPErrCode = ulpGetErrorSTATE( &gUlpParseInfo.mErrorMgr );
@@ -8611,7 +8611,7 @@ yyreduce:
             the unacceptability of using varchar type in #include file. */
         if( gUlpCOMPIncludeIndex > 0 )
         {
-            // error Ã³¸®
+            // error ì²˜ë¦¬
             ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                              ulpERR_ABORT_COMP_Varchar_In_IncludeFile_Error );
             gUlpCOMPErrCode = ulpGetErrorSTATE( &gUlpParseInfo.mErrorMgr );
@@ -8892,7 +8892,7 @@ yyreduce:
         {
             gUlpParseInfo.mHostValInfo[gUlpParseInfo.mStructDeclDepth]->mType = H_LONG;
         }
-        // SQLLEN Àº ¹«Á¶°Ç signed
+        // SQLLEN ì€ ë¬´ì¡°ê±´ signed
         gUlpParseInfo.mHostValInfo[gUlpParseInfo.mStructDeclDepth]->mIssign = ID_TRUE;
     ;}
     break;
@@ -8975,8 +8975,8 @@ yyreduce:
 /* Line 1455 of yacc.c  */
 #line 1396 "ulpCompy.y"
     {
-        /* BUG-28118 : system Çì´õÆÄÀÏµéµµ ÆÄ½ÌµÅ¾ßÇÔ.                       *
-         * 6th. problem : Nested structure Á¤ÀÇÁß scope¸¦ Àß¸ø °è»êÇÏ´Â ¹®Á¦ */
+        /* BUG-28118 : system í—¤ë”íŒŒì¼ë“¤ë„ íŒŒì‹±ë¼ì•¼í•¨.                       *
+         * 6th. problem : Nested structure ì •ì˜ì¤‘ scopeë¥¼ ì˜ëª» ê³„ì‚°í•˜ëŠ” ë¬¸ì œ */
         if ( gUlpParseInfo.mStructDeclDepth > 0 )
         {
             idlOS::free( gUlpParseInfo.mHostValInfo[gUlpParseInfo.mStructDeclDepth] );
@@ -8985,8 +8985,8 @@ yyreduce:
 
         gUlpParseInfo.mStructDeclDepth--;
 
-        // typedef struct ÀÇ °æ¿ì mStructLink°¡ ¼³Á¤µÇÁö ¾Ê´Â´Ù.
-        // ÀÌ °æ¿ì mStructLink°¡°¡ ¼³Á¤µÇ´Â ½ÃÁ¡Àº ÇØ´ç typeÀ» ÀÌ¿ëÇØ º¯¼ö¸¦ ¼±¾ğÇÏ´Â ½ÃÁ¡ÀÌ´Ù.
+        // typedef struct ì˜ ê²½ìš° mStructLinkê°€ ì„¤ì •ë˜ì§€ ì•ŠëŠ”ë‹¤.
+        // ì´ ê²½ìš° mStructLinkê°€ê°€ ì„¤ì •ë˜ëŠ” ì‹œì ì€ í•´ë‹¹ typeì„ ì´ìš©í•´ ë³€ìˆ˜ë¥¼ ì„ ì–¸í•˜ëŠ” ì‹œì ì´ë‹¤.
         if( gUlpParseInfo.mStructPtr != NULL )
         {
             gUlpParseInfo.mHostValInfo[gUlpParseInfo.mStructDeclDepth]->mStructLink
@@ -9019,8 +9019,8 @@ yyreduce:
 /* Line 1455 of yacc.c  */
 #line 1433 "ulpCompy.y"
     {
-        /* BUG-28118 : system Çì´õÆÄÀÏµéµµ ÆÄ½ÌµÅ¾ßÇÔ.                       *
-         * 6th. problem : Nested structure Á¤ÀÇÁß scope¸¦ Àß¸ø °è»êÇÏ´Â ¹®Á¦ */
+        /* BUG-28118 : system í—¤ë”íŒŒì¼ë“¤ë„ íŒŒì‹±ë¼ì•¼í•¨.                       *
+         * 6th. problem : Nested structure ì •ì˜ì¤‘ scopeë¥¼ ì˜ëª» ê³„ì‚°í•˜ëŠ” ë¬¸ì œ */
         if ( gUlpParseInfo.mStructDeclDepth > 0 )
         {
             idlOS::free( gUlpParseInfo.mHostValInfo[gUlpParseInfo.mStructDeclDepth] );
@@ -9040,8 +9040,8 @@ yyreduce:
 /* Line 1455 of yacc.c  */
 #line 1449 "ulpCompy.y"
     {
-        /* BUG-28118 : system Çì´õÆÄÀÏµéµµ ÆÄ½ÌµÅ¾ßÇÔ.                       *
-         * 6th. problem : Nested structure Á¤ÀÇÁß scope¸¦ Àß¸ø °è»êÇÏ´Â ¹®Á¦ */
+        /* BUG-28118 : system í—¤ë”íŒŒì¼ë“¤ë„ íŒŒì‹±ë¼ì•¼í•¨.                       *
+         * 6th. problem : Nested structure ì •ì˜ì¤‘ scopeë¥¼ ì˜ëª» ê³„ì‚°í•˜ëŠ” ë¬¸ì œ */
         if ( gUlpParseInfo.mStructDeclDepth > 0 )
         {
             idlOS::free( gUlpParseInfo.mHostValInfo[gUlpParseInfo.mStructDeclDepth] );
@@ -9050,13 +9050,13 @@ yyreduce:
 
         gUlpParseInfo.mStructDeclDepth--;
 
-        /* BUG-27875 : ±¸Á¶Ã¼¾ÈÀÇ typedef typeÀÎ½Ä¸øÇÔ. */
+        /* BUG-27875 : êµ¬ì¡°ì²´ì•ˆì˜ typedef typeì¸ì‹ëª»í•¨. */
         gUlpParseInfo.mSkipTypedef = ID_FALSE;
 
-        /* BUG-28118 : system Çì´õÆÄÀÏµéµµ ÆÄ½ÌµÅ¾ßÇÔ.            *
-         * 2th. problem : ºó±¸Á¶Ã¼ ¼±¾ğÀÌ Çã¿ë¾ÈµÊ. ex) struct A; *
-         * 5th. problem : Á¤ÀÇµÇÁö ¾ÊÀº ±¸Á¶Ã¼ Æ÷ÀÎÅÍ º¯¼ö ¼±¾ğ¾ÈµÊ. */
-        // structure ÀÌ¸§ Á¤º¸ ÀúÀåÇÔ.
+        /* BUG-28118 : system í—¤ë”íŒŒì¼ë“¤ë„ íŒŒì‹±ë¼ì•¼í•¨.            *
+         * 2th. problem : ë¹ˆêµ¬ì¡°ì²´ ì„ ì–¸ì´ í—ˆìš©ì•ˆë¨. ex) struct A; *
+         * 5th. problem : ì •ì˜ë˜ì§€ ì•Šì€ êµ¬ì¡°ì²´ í¬ì¸í„° ë³€ìˆ˜ ì„ ì–¸ì•ˆë¨. */
+        // structure ì´ë¦„ ì •ë³´ ì €ì¥í•¨.
         idlOS::strcpy( gUlpParseInfo.mHostValInfo[gUlpParseInfo.mStructDeclDepth]->mStructName,
                        (yyvsp[(2) - (2)].strval) );
     ;}
@@ -9067,13 +9067,13 @@ yyreduce:
 /* Line 1455 of yacc.c  */
 #line 1474 "ulpCompy.y"
     {
-        /* BUG-27875 : ±¸Á¶Ã¼¾ÈÀÇ typedef typeÀÎ½Ä¸øÇÔ. */
+        /* BUG-27875 : êµ¬ì¡°ì²´ì•ˆì˜ typedef typeì¸ì‹ëª»í•¨. */
         gUlpParseInfo.mSkipTypedef = ID_FALSE;
-        // id°¡ struct table¿¡ ÀÖ´ÂÁö È®ÀÎÇÑ´Ù.
+        // idê°€ struct tableì— ìˆëŠ”ì§€ í™•ì¸í•œë‹¤.
         if ( gUlpStructT.ulpStructLookup( (yyvsp[(1) - (2)].strval), gUlpCurDepth - 1 )
              != NULL )
         {
-            // error Ã³¸®
+            // error ì²˜ë¦¬
             ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                              ulpERR_ABORT_COMP_C_Duplicate_Structname_Error,
                              (yyvsp[(1) - (2)].strval) );
@@ -9085,16 +9085,16 @@ yyreduce:
 
             idlOS::strcpy( gUlpParseInfo.mHostValInfo[gUlpParseInfo.mStructDeclDepth - 1]->mStructName,
                            (yyvsp[(1) - (2)].strval) );
-            // struct table¿¡ ÀúÀåÇÑ´Ù.
-            /* BUG-28118 : system Çì´õÆÄÀÏµéµµ ÆÄ½ÌµÅ¾ßÇÔ.                       *
-             * 6th. problem : Nested structure Á¤ÀÇÁß scope¸¦ Àß¸ø °è»êÇÏ´Â ¹®Á¦ */
+            // struct tableì— ì €ì¥í•œë‹¤.
+            /* BUG-28118 : system í—¤ë”íŒŒì¼ë“¤ë„ íŒŒì‹±ë¼ì•¼í•¨.                       *
+             * 6th. problem : Nested structure ì •ì˜ì¤‘ scopeë¥¼ ì˜ëª» ê³„ì‚°í•˜ëŠ” ë¬¸ì œ */
             gUlpParseInfo.mHostValInfo[gUlpParseInfo.mStructDeclDepth - 1]->mStructLink
                     = gUlpStructT.ulpStructAdd ( (yyvsp[(1) - (2)].strval), gUlpCurDepth );
 
             if ( gUlpParseInfo.mHostValInfo[gUlpParseInfo.mStructDeclDepth - 1]->mStructLink
                  == NULL )
             {
-                // error Ã³¸®
+                // error ì²˜ë¦¬
                 ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                                  ulpERR_ABORT_COMP_C_Duplicate_Structname_Error,
                                  (yyvsp[(1) - (2)].strval) );
@@ -9110,13 +9110,13 @@ yyreduce:
 /* Line 1455 of yacc.c  */
 #line 1515 "ulpCompy.y"
     {
-        /* BUG-27875 : ±¸Á¶Ã¼¾ÈÀÇ typedef typeÀÎ½Ä¸øÇÔ. */
+        /* BUG-27875 : êµ¬ì¡°ì²´ì•ˆì˜ typedef typeì¸ì‹ëª»í•¨. */
         gUlpParseInfo.mSkipTypedef = ID_FALSE;
         gUlpParseInfo.mHostValInfo[gUlpParseInfo.mStructDeclDepth - 1]->mStructName[0] = '\0';
-        // struct table¿¡ ÀúÀåÇÑ´Ù.
-        // no tag struct node´Â hash table ¸¶Áö¸· bucket¿¡ Ãß°¡µÈ´Ù.
-        /* BUG-28118 : system Çì´õÆÄÀÏµéµµ ÆÄ½ÌµÅ¾ßÇÔ.                       *
-         * 6th. problem : Nested structure Á¤ÀÇÁß scope¸¦ Àß¸ø °è»êÇÏ´Â ¹®Á¦ */
+        // struct tableì— ì €ì¥í•œë‹¤.
+        // no tag struct nodeëŠ” hash table ë§ˆì§€ë§‰ bucketì— ì¶”ê°€ëœë‹¤.
+        /* BUG-28118 : system í—¤ë”íŒŒì¼ë“¤ë„ íŒŒì‹±ë¼ì•¼í•¨.                       *
+         * 6th. problem : Nested structure ì •ì˜ì¤‘ scopeë¥¼ ì˜ëª» ê³„ì‚°í•˜ëŠ” ë¬¸ì œ */
         gUlpParseInfo.mHostValInfo[gUlpParseInfo.mStructDeclDepth - 1]->mStructLink
                 = gUlpStructT.ulpNoTagStructAdd ();
     ;}
@@ -9127,19 +9127,19 @@ yyreduce:
 /* Line 1455 of yacc.c  */
 #line 1530 "ulpCompy.y"
     {
-        /* BUG-27875 : ±¸Á¶Ã¼¾ÈÀÇ typedef typeÀÎ½Ä¸øÇÔ. */
-        // ¾Æ·¡ ±¸¹®À» Ã³¸®ÇÏ±âÀ§ÇØ mSkipTypedef º¯¼ö Ãß°¡µÊ.
+        /* BUG-27875 : êµ¬ì¡°ì²´ì•ˆì˜ typedef typeì¸ì‹ëª»í•¨. */
+        // ì•„ë˜ êµ¬ë¬¸ì„ ì²˜ë¦¬í•˜ê¸°ìœ„í•´ mSkipTypedef ë³€ìˆ˜ ì¶”ê°€ë¨.
         // typedef struct Struct1 Struct1;
         // struct Struct1       <- mSkipTypedef = ID_TRUE  :
-        //                          Struct1Àº ºñ·Ï ÀÌÀü¿¡ typedefµÇ¾î ÀÖÁö¸¸ ·º¼­¿¡¼­ C_TYPE_NAMEÀÌ¾Æ´Ñ
-        // {                        C_IDENTIFIER·Î ÀÎ½ÄµÇ¾î¾ß ÇÑ´Ù.
+        //                          Struct1ì€ ë¹„ë¡ ì´ì „ì— typedefë˜ì–´ ìˆì§€ë§Œ ë ‰ì„œì—ì„œ C_TYPE_NAMEì´ì•„ë‹Œ
+        // {                        C_IDENTIFIERë¡œ ì¸ì‹ë˜ì–´ì•¼ í•œë‹¤.
         //    ...               <- mSkipTypedef = ID_FALSE :
-        //    ...                   ÇÊµå¿¡ typedef ÀÌ¸§ÀÌ ¿À¸é C_TYPE_NAMEÀ¸·Î ÀÎ½ÄµÅ¾ßÇÑ´Ù.
+        //    ...                   í•„ë“œì— typedef ì´ë¦„ì´ ì˜¤ë©´ C_TYPE_NAMEìœ¼ë¡œ ì¸ì‹ë¼ì•¼í•œë‹¤.
         // };
         gUlpParseInfo.mSkipTypedef = ID_TRUE;
         gUlpParseInfo.mStructDeclDepth++;
-        /* BUG-28118 : system Çì´õÆÄÀÏµéµµ ÆÄ½ÌµÅ¾ßÇÔ.                       *
-         * 6th. problem : Nested structure Á¤ÀÇÁß scope¸¦ Àß¸ø °è»êÇÏ´Â ¹®Á¦ */
+        /* BUG-28118 : system í—¤ë”íŒŒì¼ë“¤ë„ íŒŒì‹±ë¼ì•¼í•¨.                       *
+         * 6th. problem : Nested structure ì •ì˜ì¤‘ scopeë¥¼ ì˜ëª» ê³„ì‚°í•˜ëŠ” ë¬¸ì œ */
         if( gUlpParseInfo.mStructDeclDepth >= MAX_NESTED_STRUCT_DEPTH )
         {
             ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
@@ -9174,11 +9174,11 @@ yyreduce:
 /* Line 1455 of yacc.c  */
 #line 1572 "ulpCompy.y"
     {
-        /* BUG-27875 : ±¸Á¶Ã¼¾ÈÀÇ typedef typeÀÎ½Ä¸øÇÔ. */
+        /* BUG-27875 : êµ¬ì¡°ì²´ì•ˆì˜ typedef typeì¸ì‹ëª»í•¨. */
         gUlpParseInfo.mSkipTypedef = ID_TRUE;
         gUlpParseInfo.mStructDeclDepth++;
-        /* BUG-28118 : system Çì´õÆÄÀÏµéµµ ÆÄ½ÌµÅ¾ßÇÔ.                       *
-         * 6th. problem : Nested structure Á¤ÀÇÁß scope¸¦ Àß¸ø °è»êÇÏ´Â ¹®Á¦ */
+        /* BUG-28118 : system í—¤ë”íŒŒì¼ë“¤ë„ íŒŒì‹±ë¼ì•¼í•¨.                       *
+         * 6th. problem : Nested structure ì •ì˜ì¤‘ scopeë¥¼ ì˜ëª» ê³„ì‚°í•˜ëŠ” ë¬¸ì œ */
         if( gUlpParseInfo.mStructDeclDepth >= MAX_NESTED_STRUCT_DEPTH )
         {
             ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
@@ -9256,11 +9256,11 @@ yyreduce:
         iduListNode *sIterator = NULL;
         iduListNode *sVarcharListNode = NULL;
 
-        // field ÀÌ¸§ Áßº¹ °Ë»çÇÔ.
+        // field ì´ë¦„ ì¤‘ë³µ ê²€ì‚¬í•¨.
         if ( gUlpParseInfo.mHostValInfo[gUlpParseInfo.mStructDeclDepth - 1]->mStructLink->mChild->ulpSymLookup
              ( gUlpParseInfo.mHostValInfo[gUlpParseInfo.mStructDeclDepth]->mName ) != NULL )
         {
-            // error Ã³¸®
+            // error ì²˜ë¦¬
             ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                              ulpERR_ABORT_COMP_C_Duplicate_Structname_Error,
                              gUlpParseInfo.mHostValInfo[gUlpParseInfo.mStructDeclDepth]->mName );
@@ -9269,16 +9269,16 @@ yyreduce:
         }
         else
         {
-            /* BUG-28118 : system Çì´õÆÄÀÏµéµµ ÆÄ½ÌµÅ¾ßÇÔ.            *
-             * 5th. problem : Á¤ÀÇµÇÁö ¾ÊÀº ±¸Á¶Ã¼ Æ÷ÀÎÅÍ º¯¼ö ¼±¾ğ¾ÈµÊ. *
+            /* BUG-28118 : system í—¤ë”íŒŒì¼ë“¤ë„ íŒŒì‹±ë¼ì•¼í•¨.            *
+             * 5th. problem : ì •ì˜ë˜ì§€ ì•Šì€ êµ¬ì¡°ì²´ í¬ì¸í„° ë³€ìˆ˜ ì„ ì–¸ì•ˆë¨. *
              * 8th. problem : can't resolve extern variable type at declaring section. */
             if ( (gUlpParseInfo.mHostValInfo[gUlpParseInfo.mStructDeclDepth]->mIsstruct  == ID_TRUE) &&
                  (gUlpParseInfo.mHostValInfo[gUlpParseInfo.mStructDeclDepth]->mStructName[0] != '\0') &&
                  (gUlpParseInfo.mHostValInfo[gUlpParseInfo.mStructDeclDepth]->mStructLink == NULL) )
-            {   // struct º¯¼ö ¼±¾ğÀÇ °æ¿ì.
-                // structure º¯¼ö ¼±¾ğÀÇ°æ¿ì pointer°¡ ¾Æ´Ï¶ó¸é struct table¿¡¼­
-                // ÇØ´ç struct tag°¡ Á¸ÀçÇÏ´ÂÁö °Ë»çÇÏ¸ç, pointerÀÏ °æ¿ì¿¡´Â °Ë»çÇÏÁö ¾Ê°í
-                // ³ªÁß¿¡ ÇØ´ç º¯¼ö¸¦ »ç¿ëÇÒ¶§ °Ë»çÇÑ´Ù.
+            {   // struct ë³€ìˆ˜ ì„ ì–¸ì˜ ê²½ìš°.
+                // structure ë³€ìˆ˜ ì„ ì–¸ì˜ê²½ìš° pointerê°€ ì•„ë‹ˆë¼ë©´ struct tableì—ì„œ
+                // í•´ë‹¹ struct tagê°€ ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬í•˜ë©°, pointerì¼ ê²½ìš°ì—ëŠ” ê²€ì‚¬í•˜ì§€ ì•Šê³ 
+                // ë‚˜ì¤‘ì— í•´ë‹¹ ë³€ìˆ˜ë¥¼ ì‚¬ìš©í• ë•Œ ê²€ì‚¬í•œë‹¤.
                 if ( (gUlpParseInfo.mHostValInfo[gUlpParseInfo.mStructDeclDepth]->mPointer  == 0) &&
                      (gUlpParseInfo.mHostValInfo[gUlpParseInfo.mStructDeclDepth]->mIsExtern == ID_FALSE) )
                 {   // it's not a pointer of struct and extern.
@@ -9288,7 +9288,7 @@ yyreduce:
                                         gUlpCurDepth );
                     if ( gUlpParseInfo.mStructPtr == NULL )
                     {
-                        // error Ã³¸®
+                        // error ì²˜ë¦¬
 
                         ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                                         ulpERR_ABORT_COMP_C_Unknown_Structname_Error,
@@ -9329,9 +9329,9 @@ yyreduce:
                 }
             }
 
-            /* BUG-28118 : system Çì´õÆÄÀÏµéµµ ÆÄ½ÌµÅ¾ßÇÔ.                       *
-             * 6th. problem : Nested structure Á¤ÀÇÁß scope¸¦ Àß¸ø °è»êÇÏ´Â ¹®Á¦ */
-            // struct ÇÊµå¸¦ addÇÏ·Á ÇÑ´Ù¸é, mHostValInfoÀÇ ÀÌÀü index¿¡ ÀúÀåµÈ struct node pointer ¸¦ ÀÌ¿ëÇØ¾ßÇÔ.
+            /* BUG-28118 : system í—¤ë”íŒŒì¼ë“¤ë„ íŒŒì‹±ë¼ì•¼í•¨.                       *
+             * 6th. problem : Nested structure ì •ì˜ì¤‘ scopeë¥¼ ì˜ëª» ê³„ì‚°í•˜ëŠ” ë¬¸ì œ */
+            // struct í•„ë“œë¥¼ addí•˜ë ¤ í•œë‹¤ë©´, mHostValInfoì˜ ì´ì „ indexì— ì €ì¥ëœ struct node pointer ë¥¼ ì´ìš©í•´ì•¼í•¨.
             sSymNode =
                     gUlpParseInfo.mHostValInfo[gUlpParseInfo.mStructDeclDepth - 1]->mStructLink
                     ->mChild->ulpSymAdd(
@@ -9372,11 +9372,11 @@ yyreduce:
         iduListNode *sIterator = NULL;
         iduListNode *sVarcharListNode = NULL;
 
-        // field ÀÌ¸§ Áßº¹ °Ë»çÇÔ.
+        // field ì´ë¦„ ì¤‘ë³µ ê²€ì‚¬í•¨.
         if ( gUlpParseInfo.mHostValInfo[gUlpParseInfo.mStructDeclDepth - 1]->mStructLink->mChild->ulpSymLookup
              ( gUlpParseInfo.mHostValInfo[gUlpParseInfo.mStructDeclDepth]->mName ) != NULL )
         {
-            // error Ã³¸®
+            // error ì²˜ë¦¬
             ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                              ulpERR_ABORT_COMP_C_Duplicate_Structname_Error,
                              gUlpParseInfo.mHostValInfo[gUlpParseInfo.mStructDeclDepth]->mName );
@@ -9385,16 +9385,16 @@ yyreduce:
         }
         else
         {
-            /* BUG-28118 : system Çì´õÆÄÀÏµéµµ ÆÄ½ÌµÅ¾ßÇÔ.            *
-             * 5th. problem : Á¤ÀÇµÇÁö ¾ÊÀº ±¸Á¶Ã¼ Æ÷ÀÎÅÍ º¯¼ö ¼±¾ğ¾ÈµÊ. *
+            /* BUG-28118 : system í—¤ë”íŒŒì¼ë“¤ë„ íŒŒì‹±ë¼ì•¼í•¨.            *
+             * 5th. problem : ì •ì˜ë˜ì§€ ì•Šì€ êµ¬ì¡°ì²´ í¬ì¸í„° ë³€ìˆ˜ ì„ ì–¸ì•ˆë¨. *
              * 8th. problem : can't resolve extern variable type at declaring section. */
             if ( (gUlpParseInfo.mHostValInfo[gUlpParseInfo.mStructDeclDepth]->mIsstruct  == ID_TRUE) &&
                  (gUlpParseInfo.mHostValInfo[gUlpParseInfo.mStructDeclDepth]->mStructName[0] != '\0') &&
                  (gUlpParseInfo.mHostValInfo[gUlpParseInfo.mStructDeclDepth]->mStructLink == NULL) )
-            {   // struct º¯¼ö ¼±¾ğÀÇ °æ¿ì.
-                // structure º¯¼ö ¼±¾ğÀÇ°æ¿ì pointer°¡ ¾Æ´Ï¶ó¸é struct table¿¡¼­
-                // ÇØ´ç struct tag°¡ Á¸ÀçÇÏ´ÂÁö °Ë»çÇÏ¸ç, pointerÀÏ °æ¿ì¿¡´Â °Ë»çÇÏÁö ¾Ê°í
-                // ³ªÁß¿¡ ÇØ´ç º¯¼ö¸¦ »ç¿ëÇÒ¶§ °Ë»çÇÑ´Ù.
+            {   // struct ë³€ìˆ˜ ì„ ì–¸ì˜ ê²½ìš°.
+                // structure ë³€ìˆ˜ ì„ ì–¸ì˜ê²½ìš° pointerê°€ ì•„ë‹ˆë¼ë©´ struct tableì—ì„œ
+                // í•´ë‹¹ struct tagê°€ ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬í•˜ë©°, pointerì¼ ê²½ìš°ì—ëŠ” ê²€ì‚¬í•˜ì§€ ì•Šê³ 
+                // ë‚˜ì¤‘ì— í•´ë‹¹ ë³€ìˆ˜ë¥¼ ì‚¬ìš©í• ë•Œ ê²€ì‚¬í•œë‹¤.
                 if ( (gUlpParseInfo.mHostValInfo[gUlpParseInfo.mStructDeclDepth]->mPointer  == 0) &&
                      (gUlpParseInfo.mHostValInfo[gUlpParseInfo.mStructDeclDepth]->mIsExtern == ID_FALSE) )
                 {   // it's not a pointer of struct and extern.
@@ -9404,7 +9404,7 @@ yyreduce:
                                         gUlpCurDepth );
                     if ( gUlpParseInfo.mStructPtr == NULL )
                     {
-                        // error Ã³¸®
+                        // error ì²˜ë¦¬
 
                         ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                                         ulpERR_ABORT_COMP_C_Unknown_Structname_Error,
@@ -9445,9 +9445,9 @@ yyreduce:
                 }
             }
 
-            /* BUG-28118 : system Çì´õÆÄÀÏµéµµ ÆÄ½ÌµÅ¾ßÇÔ.                       *
-             * 6th. problem : Nested structure Á¤ÀÇÁß scope¸¦ Àß¸ø °è»êÇÏ´Â ¹®Á¦ */
-            // struct ÇÊµå¸¦ addÇÏ·Á ÇÑ´Ù¸é, mHostValInfoÀÇ ÀÌÀü index¿¡ ÀúÀåµÈ struct node pointer ¸¦ ÀÌ¿ëÇØ¾ßÇÔ.
+            /* BUG-28118 : system í—¤ë”íŒŒì¼ë“¤ë„ íŒŒì‹±ë¼ì•¼í•¨.                       *
+             * 6th. problem : Nested structure ì •ì˜ì¤‘ scopeë¥¼ ì˜ëª» ê³„ì‚°í•˜ëŠ” ë¬¸ì œ */
+            // struct í•„ë“œë¥¼ addí•˜ë ¤ í•œë‹¤ë©´, mHostValInfoì˜ ì´ì „ indexì— ì €ì¥ëœ struct node pointer ë¥¼ ì´ìš©í•´ì•¼í•¨.
             sSymNode =
                   gUlpParseInfo.mHostValInfo[gUlpParseInfo.mStructDeclDepth - 1]->mStructLink
                   ->mChild->ulpSymAdd (
@@ -9483,7 +9483,7 @@ yyreduce:
 /* Line 1455 of yacc.c  */
 #line 1886 "ulpCompy.y"
     {
-        // , ¸¦ »ç¿ëÇÑ µ¿ÀÏ typeÀ» ¿©·¯°³ ¼±¾ğÇÒ °æ¿ì ÇÊ¿äÇÑ ÃÊ±âÈ­.
+        // , ë¥¼ ì‚¬ìš©í•œ ë™ì¼ typeì„ ì—¬ëŸ¬ê°œ ì„ ì–¸í•  ê²½ìš° í•„ìš”í•œ ì´ˆê¸°í™”.
         gUlpParseInfo.mSaveId = ID_TRUE;
         if ( gUlpParseInfo.mHostValInfo4Typedef != NULL )
         {
@@ -9566,12 +9566,12 @@ yyreduce:
         }
         else if ( gUlpParseInfo.mArrDepth == 1 )
         {
-            // 2Â÷ ¹è¿­±îÁö¸¸ Ã³¸®ÇÔ.
+            // 2ì°¨ ë°°ì—´ê¹Œì§€ë§Œ ì²˜ë¦¬í•¨.
             gUlpParseInfo.mHostValInfo[gUlpParseInfo.mStructDeclDepth]->mArraySize2[0] = '\0';
         }
         else
         {
-            // 2Â÷ ¹è¿­±îÁö¸¸ Ã³¸®ÇÔ.
+            // 2ì°¨ ë°°ì—´ê¹Œì§€ë§Œ ì²˜ë¦¬í•¨.
             // ignore
         }
 
@@ -9591,7 +9591,7 @@ yyreduce:
         {
             if ( gUlpParseInfo.mHostValInfo[gUlpParseInfo.mStructDeclDepth]->mArraySize[0] == '\0' )
             {
-                // 1Â÷ ¹è¿­ÀÇ expr
+                // 1ì°¨ ë°°ì—´ì˜ expr
                 idlOS::strncpy( gUlpParseInfo.mHostValInfo[gUlpParseInfo.mStructDeclDepth]->mArraySize,
                                 gUlpParseInfo.mConstantExprStr,
                                 MAX_NUMBER_LEN - 1 );
@@ -9611,7 +9611,7 @@ yyreduce:
         {
             if ( gUlpParseInfo.mHostValInfo[gUlpParseInfo.mStructDeclDepth]->mArraySize2[0] == '\0' )
             {
-                // 2Â÷ ¹è¿­ÀÇ expr
+                // 2ì°¨ ë°°ì—´ì˜ expr
                 idlOS::strncpy( gUlpParseInfo.mHostValInfo[gUlpParseInfo.mStructDeclDepth]->mArraySize2,
                                 gUlpParseInfo.mConstantExprStr,
                                 MAX_NUMBER_LEN - 1 );
@@ -9641,8 +9641,8 @@ yyreduce:
 /* Line 1455 of yacc.c  */
 #line 2049 "ulpCompy.y"
     {
-        // array [ expr ] => expr ÀÇ ½ÃÀÛÀÌ¶ó´Â °ÍÀ» ¾Ë¸². exprÀ» ÀúÀåÇÏ±â À§ÇÔ.
-        // ¹°·Ğ expr ¹®¹ı Ã¼Å©µµ ÇÔ.
+        // array [ expr ] => expr ì˜ ì‹œì‘ì´ë¼ëŠ” ê²ƒì„ ì•Œë¦¼. exprì„ ì €ì¥í•˜ê¸° ìœ„í•¨.
+        // ë¬¼ë¡  expr ë¬¸ë²• ì²´í¬ë„ í•¨.
         gUlpParseInfo.mConstantExprStr[0] = '\0';
         gUlpParseInfo.mArrExpr = ID_TRUE;
     ;}
@@ -9706,19 +9706,19 @@ yyreduce:
         SChar *sVarName;
         iduListNode *sIterator = NULL;
 
-        /* BUG-28118 : system Çì´õÆÄÀÏµéµµ ÆÄ½ÌµÅ¾ßÇÔ.            *
-         * 5th. problem : Á¤ÀÇµÇÁö ¾ÊÀº ±¸Á¶Ã¼ Æ÷ÀÎÅÍ º¯¼ö ¼±¾ğ¾ÈµÊ. */
+        /* BUG-28118 : system í—¤ë”íŒŒì¼ë“¤ë„ íŒŒì‹±ë¼ì•¼í•¨.            *
+         * 5th. problem : ì •ì˜ë˜ì§€ ì•Šì€ êµ¬ì¡°ì²´ í¬ì¸í„° ë³€ìˆ˜ ì„ ì–¸ì•ˆë¨. */
         if ( (gUlpParseInfo.mHostValInfo[gUlpParseInfo.mStructDeclDepth]->mIsstruct  == ID_TRUE) &&
              (gUlpParseInfo.mHostValInfo[gUlpParseInfo.mStructDeclDepth]->mStructName[0] != '\0') &&
              (gUlpParseInfo.mHostValInfo[gUlpParseInfo.mStructDeclDepth]->mStructLink == NULL) )
-        {   // struct º¯¼ö ¼±¾ğÀÇ °æ¿ì, type check rigidly.
+        {   // struct ë³€ìˆ˜ ì„ ì–¸ì˜ ê²½ìš°, type check rigidly.
 
             gUlpParseInfo.mStructPtr = gUlpStructT.ulpStructLookupAll(
                                 gUlpParseInfo.mHostValInfo[gUlpParseInfo.mStructDeclDepth]->mStructName,
                                 gUlpCurDepth );
             if ( gUlpParseInfo.mStructPtr == NULL )
             {
-                // error Ã³¸®
+                // error ì²˜ë¦¬
 
                 ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                                  ulpERR_ABORT_COMP_C_Unknown_Structname_Error,
@@ -9759,7 +9759,7 @@ yyreduce:
                                  , gUlpCurDepth )
             == NULL )
         {
-            // error Ã³¸®
+            // error ì²˜ë¦¬
 
             ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                              ulpERR_ABORT_COMP_C_Add_Symbol_Error,
@@ -9777,9 +9777,9 @@ yyreduce:
 /* Line 1455 of yacc.c  */
 #line 2249 "ulpCompy.y"
     {
-        /* BUG-29081 : º¯¼ö ¼±¾ğºÎ°¡ statement Áß°£¿¡ µé¾î¿À¸é ÆÄ½Ì ¿¡·¯¹ß»ı. */
-        // statement ¸¦ ÆÄ½ÌÇÑµÚ º¯¼ö typeÁ¤º¸¸¦ ÀúÀåÇØµÎ°í ÀÖ´Â ÀÚ·á±¸Á¶¸¦ ÃÊ±âÈ­ÇØÁà¾ßÇÑ´Ù.
-        // ÀúÀå ÀÚÃ¼¸¦ ¾ÈÇÏ´Â°Ô ÀÌ»óÀûÀÌ³ª typeÃ³¸® ¹®¹ıÀ» ¼±¾ğºÎ¿Í ÇÔ²² °øÀ¯ÇÏ¹Ç·Î ¾îÂ¿¼ö ¾ø´Ù.
+        /* BUG-29081 : ë³€ìˆ˜ ì„ ì–¸ë¶€ê°€ statement ì¤‘ê°„ì— ë“¤ì–´ì˜¤ë©´ íŒŒì‹± ì—ëŸ¬ë°œìƒ. */
+        // statement ë¥¼ íŒŒì‹±í•œë’¤ ë³€ìˆ˜ typeì •ë³´ë¥¼ ì €ì¥í•´ë‘ê³  ìˆëŠ” ìë£Œêµ¬ì¡°ë¥¼ ì´ˆê¸°í™”í•´ì¤˜ì•¼í•œë‹¤.
+        // ì €ì¥ ìì²´ë¥¼ ì•ˆí•˜ëŠ”ê²Œ ì´ìƒì ì´ë‚˜ typeì²˜ë¦¬ ë¬¸ë²•ì„ ì„ ì–¸ë¶€ì™€ í•¨ê»˜ ê³µìœ í•˜ë¯€ë¡œ ì–´ì©”ìˆ˜ ì—†ë‹¤.
         gUlpParseInfo.ulpInitHostInfo();
     ;}
     break;
@@ -9803,7 +9803,7 @@ yyreduce:
     {
         if( idlOS::strlen((yyvsp[(1) - (1)].strval)) >= MAX_HOSTVAR_NAME_SIZE )
         {
-            //error Ã³¸®
+            //error ì²˜ë¦¬
 
             ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                              ulpERR_ABORT_COMP_C_Exceed_Max_Id_Length_Error,
@@ -9828,8 +9828,8 @@ yyreduce:
 /* Line 1455 of yacc.c  */
 #line 2358 "ulpCompy.y"
     {
-            /* BUG-28061 : preprocessingÀ»¸¶Ä¡¸é marco tableÀ» ÃÊ±âÈ­ÇÏ°í, *
-             *             ulpComp ¿¡¼­ Àç±¸ÃàÇÑ´Ù.                       */
+            /* BUG-28061 : preprocessingì„ë§ˆì¹˜ë©´ marco tableì„ ì´ˆê¸°í™”í•˜ê³ , *
+             *             ulpComp ì—ì„œ ì¬êµ¬ì¶•í•œë‹¤.                       */
             gUlpCOMPStartCond = gUlpCOMPPrevCond;
         ;}
     break;
@@ -9857,8 +9857,8 @@ yyreduce:
 /* Line 1455 of yacc.c  */
 #line 2372 "ulpCompy.y"
     {
-            /* macro Á¶°Ç¹®ÀÇ °æ¿ì ÂüÀÌ¸é C»óÅÂ, °ÅÁşÀÌ¸é MACRO_IFSKIP »óÅÂ·Î
-             * ÀüÀÌ µÈ´Ù. */
+            /* macro ì¡°ê±´ë¬¸ì˜ ê²½ìš° ì°¸ì´ë©´ Cìƒíƒœ, ê±°ì§“ì´ë©´ MACRO_IFSKIP ìƒíƒœë¡œ
+             * ì „ì´ ëœë‹¤. */
         ;}
     break;
 
@@ -9867,8 +9867,8 @@ yyreduce:
 /* Line 1455 of yacc.c  */
 #line 2377 "ulpCompy.y"
     {
-            /* macro Á¶°Ç¹®ÀÇ °æ¿ì ÂüÀÌ¸é C»óÅÂ, °ÅÁşÀÌ¸é MACRO_IFSKIP »óÅÂ·Î
-             * ÀüÀÌ µÈ´Ù. */
+            /* macro ì¡°ê±´ë¬¸ì˜ ê²½ìš° ì°¸ì´ë©´ Cìƒíƒœ, ê±°ì§“ì´ë©´ MACRO_IFSKIP ìƒíƒœë¡œ
+             * ì „ì´ ëœë‹¤. */
         ;}
     break;
 
@@ -9877,8 +9877,8 @@ yyreduce:
 /* Line 1455 of yacc.c  */
 #line 2382 "ulpCompy.y"
     {
-            /* macro Á¶°Ç¹®ÀÇ °æ¿ì ÂüÀÌ¸é C»óÅÂ, °ÅÁşÀÌ¸é MACRO_IFSKIP »óÅÂ·Î
-             * ÀüÀÌ µÈ´Ù. */
+            /* macro ì¡°ê±´ë¬¸ì˜ ê²½ìš° ì°¸ì´ë©´ Cìƒíƒœ, ê±°ì§“ì´ë©´ MACRO_IFSKIP ìƒíƒœë¡œ
+             * ì „ì´ ëœë‹¤. */
         ;}
     break;
 
@@ -9887,8 +9887,8 @@ yyreduce:
 /* Line 1455 of yacc.c  */
 #line 2387 "ulpCompy.y"
     {
-            /* macro Á¶°Ç¹®ÀÇ °æ¿ì ÂüÀÌ¸é C»óÅÂ, °ÅÁşÀÌ¸é MACRO_IFSKIP »óÅÂ·Î
-             * ÀüÀÌ µÈ´Ù. */
+            /* macro ì¡°ê±´ë¬¸ì˜ ê²½ìš° ì°¸ì´ë©´ Cìƒíƒœ, ê±°ì§“ì´ë©´ MACRO_IFSKIP ìƒíƒœë¡œ
+             * ì „ì´ ëœë‹¤. */
         ;}
     break;
 
@@ -9897,8 +9897,8 @@ yyreduce:
 /* Line 1455 of yacc.c  */
 #line 2392 "ulpCompy.y"
     {
-            /* macro Á¶°Ç¹®ÀÇ °æ¿ì ÂüÀÌ¸é C»óÅÂ, °ÅÁşÀÌ¸é MACRO_IFSKIP »óÅÂ·Î
-             * ÀüÀÌ µÈ´Ù. */
+            /* macro ì¡°ê±´ë¬¸ì˜ ê²½ìš° ì°¸ì´ë©´ Cìƒíƒœ, ê±°ì§“ì´ë©´ MACRO_IFSKIP ìƒíƒœë¡œ
+             * ì „ì´ ëœë‹¤. */
         ;}
     break;
 
@@ -9918,17 +9918,17 @@ yyreduce:
             else
             {
 
-                // ÇöÀç #include Ã³¸®´Ù.
+                // í˜„ì¬ #include ì²˜ë¦¬ë‹¤.
                 gDontPrint2file = ID_TRUE;
-                /* BUG-27683 : iostream »ç¿ë Á¦°Å */
-                // 2. flex ¹öÆÛ »óÅÂ ÀúÀå.
+                /* BUG-27683 : iostream ì‚¬ìš© ì œê±° */
+                // 2. flex ë²„í¼ ìƒíƒœ ì €ì¥.
                 ulpCOMPSaveBufferState();
-                // 3. doCOMPparse()¸¦ ÀçÈ£ÃâÇÑ´Ù.
+                // 3. doCOMPparse()ë¥¼ ì¬í˜¸ì¶œí•œë‹¤.
                 doCOMPparse( gUlpProgOption.ulpGetIncList() );
-                // Àü¿¡ #inlcude Ã³¸®ÁßÀÌ¾ú³ª? È®ÀÎÇÔ
+                // ì „ì— #inlcude ì²˜ë¦¬ì¤‘ì´ì—ˆë‚˜? í™•ì¸í•¨
                 gDontPrint2file = gUlpProgOption.ulpIsHeaderCInclude();
 
-                // 4. precompiler¸¦ ½ÇÇàÇÑ directory¸¦ current path·Î Àçsetting
+                // 4. precompilerë¥¼ ì‹¤í–‰í•œ directoryë¥¼ current pathë¡œ ì¬setting
                 idlOS::strcpy( gUlpProgOption.mCurrentPath, gUlpProgOption.mStartPath );
             }
 
@@ -9950,17 +9950,17 @@ yyreduce:
             else
             {
 
-                // ÇöÀç #include Ã³¸®´Ù.
+                // í˜„ì¬ #include ì²˜ë¦¬ë‹¤.
                 gDontPrint2file = ID_TRUE;
-                /* BUG-27683 : iostream »ç¿ë Á¦°Å */
-                // 2. flex ¹öÆÛ »óÅÂ ÀúÀå.
+                /* BUG-27683 : iostream ì‚¬ìš© ì œê±° */
+                // 2. flex ë²„í¼ ìƒíƒœ ì €ì¥.
                 ulpCOMPSaveBufferState();
-                // 3. doCOMPparse()¸¦ ÀçÈ£ÃâÇÑ´Ù.
+                // 3. doCOMPparse()ë¥¼ ì¬í˜¸ì¶œí•œë‹¤.
                 doCOMPparse( gUlpProgOption.ulpGetIncList() );
-                // Àü¿¡ #inlcude Ã³¸®ÁßÀÌ¾ú³ª? È®ÀÎÇÔ
+                // ì „ì— #inlcude ì²˜ë¦¬ì¤‘ì´ì—ˆë‚˜? í™•ì¸í•¨
                 gDontPrint2file = gUlpProgOption.ulpIsHeaderCInclude();
 
-                // 4. precompiler¸¦ ½ÇÇàÇÑ directory¸¦ current path·Î Àçsetting
+                // 4. precompilerë¥¼ ì‹¤í–‰í•œ directoryë¥¼ current pathë¡œ ì¬setting
                 idlOS::strcpy( gUlpProgOption.mCurrentPath, gUlpProgOption.mStartPath );
             }
 
@@ -9979,7 +9979,7 @@ yyreduce:
 
             if ( sTmpDEFtext[0] == '\0' )
             {
-                // macro symbol table¿¡ Ãß°¡ÇÔ.
+                // macro symbol tableì— ì¶”ê°€í•¨.
                 if( gUlpMacroT.ulpMDefine( (yyvsp[(2) - (2)].strval), NULL, ID_FALSE ) == IDE_FAILURE )
                 {
 
@@ -9991,7 +9991,7 @@ yyreduce:
             }
             else
             {
-                // macro symbol table¿¡ Ãß°¡ÇÔ.
+                // macro symbol tableì— ì¶”ê°€í•¨.
                 if( gUlpMacroT.ulpMDefine( (yyvsp[(2) - (2)].strval), sTmpDEFtext, ID_FALSE ) == IDE_FAILURE )
                 {
 
@@ -10010,16 +10010,16 @@ yyreduce:
 /* Line 1455 of yacc.c  */
 #line 2494 "ulpCompy.y"
     {
-            // function macroÀÇ°æ¿ì ÀÎÀÚ Á¤º¸´Â µû·Î ÀúÀåµÇÁö ¾Ê´Â´Ù.
+            // function macroì˜ê²½ìš° ì¸ì ì •ë³´ëŠ” ë”°ë¡œ ì €ì¥ë˜ì§€ ì•ŠëŠ”ë‹¤.
             SChar sTmpDEFtext[ MAX_MACRO_DEFINE_CONTENT_LEN ];
 
             idlOS::memset(sTmpDEFtext,0,MAX_MACRO_DEFINE_CONTENT_LEN);
             ulpCOMPEraseBN4MacroText( sTmpDEFtext , ID_FALSE );
 
-            // #define A() {...} ÀÌ¸é, macro id´Â AÀÌ´Ù.
+            // #define A() {...} ì´ë©´, macro idëŠ” Aì´ë‹¤.
             if ( sTmpDEFtext[0] == '\0' )
             {
-                // macro symbol table¿¡ Ãß°¡ÇÔ.
+                // macro symbol tableì— ì¶”ê°€í•¨.
                 if ( gUlpMacroT.ulpMDefine( (yyvsp[(2) - (2)].strval), NULL, ID_TRUE ) == IDE_FAILURE )
                 {
 
@@ -10031,7 +10031,7 @@ yyreduce:
             }
             else
             {
-                // macro symbol table¿¡ Ãß°¡ÇÔ.
+                // macro symbol tableì— ì¶”ê°€í•¨.
                 if ( gUlpMacroT.ulpMDefine( (yyvsp[(2) - (2)].strval), sTmpDEFtext, ID_TRUE ) == IDE_FAILURE )
                 {
 
@@ -10050,7 +10050,7 @@ yyreduce:
 /* Line 1455 of yacc.c  */
 #line 2532 "ulpCompy.y"
     {
-            // $<strval>2 ¸¦ macro symbol table¿¡¼­ »èÁ¦ ÇÑ´Ù.
+            // $<strval>2 ë¥¼ macro symbol tableì—ì„œ ì‚­ì œ í•œë‹¤.
             gUlpMacroT.ulpMUndef( (yyvsp[(2) - (2)].strval) );
         ;}
     break;
@@ -10067,53 +10067,53 @@ yyreduce:
 
             switch( gUlpCOMPifstackMgr[gUlpCOMPifstackInd]->ulpPrevIfStatus() )
             {
-                // ÀÌÀü »óÅÂ°¡ PP_IF_IGNORE ÀÌ¸é °è¼Ó ¹«½ÃÇÔ.
+                // ì´ì „ ìƒíƒœê°€ PP_IF_IGNORE ì´ë©´ ê³„ì† ë¬´ì‹œí•¨.
                 case PP_IF_IGNORE :
-                    // ´Ü¼øÈ÷ token¸¸ ¼Ò¸ğÇÏ´Â ¿ªÇÒÀÌ´Ù. PPIFparse È£ÃâÇÏÁö ¾Ê´Â´Ù.
+                    // ë‹¨ìˆœíˆ tokenë§Œ ì†Œëª¨í•˜ëŠ” ì—­í• ì´ë‹¤. PPIFparse í˜¸ì¶œí•˜ì§€ ì•ŠëŠ”ë‹¤.
                     ulpCOMPEraseBN4MacroText( sTmpExpBuf , ID_TRUE );
                     gUlpCOMPStartCond = CP_ST_MACRO_IF_SKIP;
-                    // if stack manager ¿¡ °á°ú Á¤º¸ push
+                    // if stack manager ì— ê²°ê³¼ ì •ë³´ push
                     gUlpCOMPifstackMgr[gUlpCOMPifstackInd]->ulpIfpush( PP_IF, PP_IF_IGNORE );
                     break;
-                // ÀÌÀü »óÅÂ°¡ PP_IF_TRUE ÀÌ¸é ÀÌ¹ø #if <expr>ÆÄ½ÌÇÏ¿© °ªÀ» È®ÀÎÇØºÁ¾ßÇÔ.
+                // ì´ì „ ìƒíƒœê°€ PP_IF_TRUE ì´ë©´ ì´ë²ˆ #if <expr>íŒŒì‹±í•˜ì—¬ ê°’ì„ í™•ì¸í•´ë´ì•¼í•¨.
                 case PP_IF_TRUE :
-                    // #if expression À» º¹»çÇØ¿Â´Ù.
+                    // #if expression ì„ ë³µì‚¬í•´ì˜¨ë‹¤.
                     ulpCOMPEraseBN4MacroText( sTmpExpBuf , ID_TRUE );
                     gUlpPPIFbufptr = sTmpExpBuf;
                     gUlpPPIFbuflim = sTmpExpBuf + idlOS::strlen(sTmpExpBuf);
 
                     if ( PPIFparse( sTmpExpBuf, &sVal ) != 0 )
                     {
-                        //error Ã³¸®
+                        //error ì²˜ë¦¬
 
                         ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                                          ulpERR_ABORT_COMP_IF_Macro_Syntax_Error );
                         gUlpCOMPErrCode = ulpGetErrorSTATE( &gUlpParseInfo.mErrorMgr );
                         COMPerror( ulpGetErrorMSG(&gUlpParseInfo.mErrorMgr) );
                     }
-                    /* macro Á¶°Ç¹®ÀÇ °æ¿ì ÂüÀÌ¸é MACRO»óÅÂ, °ÅÁşÀÌ¸é MACRO_IFSKIP »óÅÂ·Î
-                    * ÀüÀÌ µÈ´Ù. */
+                    /* macro ì¡°ê±´ë¬¸ì˜ ê²½ìš° ì°¸ì´ë©´ MACROìƒíƒœ, ê±°ì§“ì´ë©´ MACRO_IFSKIP ìƒíƒœë¡œ
+                    * ì „ì´ ëœë‹¤. */
                     if ( sVal != 0 )
                     {
                         // true
                         gUlpCOMPStartCond = gUlpCOMPPrevCond;
-                        // if stack manager ¿¡ °á°ú Á¤º¸ push
+                        // if stack manager ì— ê²°ê³¼ ì •ë³´ push
                         gUlpCOMPifstackMgr[gUlpCOMPifstackInd]->ulpIfpush( PP_IF, PP_IF_TRUE );
                     }
                     else
                     {
                         // false
                         gUlpCOMPStartCond = CP_ST_MACRO_IF_SKIP;
-                        // if stack manager ¿¡ °á°ú Á¤º¸ push
+                        // if stack manager ì— ê²°ê³¼ ì •ë³´ push
                         gUlpCOMPifstackMgr[gUlpCOMPifstackInd]->ulpIfpush( PP_IF, PP_IF_FALSE );
                     }
                     break;
-                // ÀÌÀü »óÅÂ°¡ PP_IF_FALSE ÀÌ¸é ¹«½ÃÇÔ.
+                // ì´ì „ ìƒíƒœê°€ PP_IF_FALSE ì´ë©´ ë¬´ì‹œí•¨.
                 case PP_IF_FALSE :
-                    // ´Ü¼øÈ÷ token¸¸ ¼Ò¸ğÇÏ´Â ¿ªÇÒÀÌ´Ù. PPIFparse È£ÃâÇÏÁö ¾Ê´Â´Ù.
+                    // ë‹¨ìˆœíˆ tokenë§Œ ì†Œëª¨í•˜ëŠ” ì—­í• ì´ë‹¤. PPIFparse í˜¸ì¶œí•˜ì§€ ì•ŠëŠ”ë‹¤.
                     ulpCOMPEraseBN4MacroText( sTmpExpBuf , ID_TRUE );
                     gUlpCOMPStartCond = CP_ST_MACRO_IF_SKIP;
-                    // if stack manager ¿¡ °á°ú Á¤º¸ push
+                    // if stack manager ì— ê²°ê³¼ ì •ë³´ push
                     gUlpCOMPifstackMgr[gUlpCOMPifstackInd]->ulpIfpush( PP_IF, PP_IF_IGNORE );
                     break;
 
@@ -10133,11 +10133,11 @@ yyreduce:
             /* BUG-32413 APRE memory allocation failure should be fixed */
             idlOS::memset(sTmpExpBuf, 0, MAX_MACRO_IF_EXPR_LEN);
 
-            // #elif ¼ø¼­ ¹®¹ı °Ë»ç.
+            // #elif ìˆœì„œ ë¬¸ë²• ê²€ì‚¬.
             if ( gUlpCOMPifstackMgr[gUlpCOMPifstackInd]->ulpIfCheckGrammar( PP_ELIF )
                  == ID_FALSE )
             {
-                //error Ã³¸®
+                //error ì²˜ë¦¬
 
                 ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                                  ulpERR_ABORT_COMP_ELIF_Macro_Sequence_Error );
@@ -10148,18 +10148,18 @@ yyreduce:
             switch( gUlpCOMPifstackMgr[gUlpCOMPifstackInd]->ulpPrevIfStatus() )
             {
                 case PP_IF_IGNORE :
-                    // ´Ü¼øÈ÷ token¸¸ ¼Ò¸ğÇÏ´Â ¿ªÇÒÀÌ´Ù. PPIFparse È£ÃâÇÏÁö ¾Ê´Â´Ù.
+                    // ë‹¨ìˆœíˆ tokenë§Œ ì†Œëª¨í•˜ëŠ” ì—­í• ì´ë‹¤. PPIFparse í˜¸ì¶œí•˜ì§€ ì•ŠëŠ”ë‹¤.
                     ulpCOMPEraseBN4MacroText( sTmpExpBuf , ID_TRUE );
                     gUlpCOMPStartCond = CP_ST_MACRO_IF_SKIP;
-                    // if stack manager ¿¡ °á°ú Á¤º¸ push
+                    // if stack manager ì— ê²°ê³¼ ì •ë³´ push
                     gUlpCOMPifstackMgr[gUlpCOMPifstackInd]->ulpIfpush( PP_ELIF, PP_IF_IGNORE );
                     break;
 
                 case PP_IF_TRUE :
-                    // ´Ü¼øÈ÷ token¸¸ ¼Ò¸ğÇÏ´Â ¿ªÇÒÀÌ´Ù. PPIFparse È£ÃâÇÏÁö ¾Ê´Â´Ù.
+                    // ë‹¨ìˆœíˆ tokenë§Œ ì†Œëª¨í•˜ëŠ” ì—­í• ì´ë‹¤. PPIFparse í˜¸ì¶œí•˜ì§€ ì•ŠëŠ”ë‹¤.
                     ulpCOMPEraseBN4MacroText( sTmpExpBuf , ID_TRUE );
                     gUlpCOMPStartCond = CP_ST_MACRO_IF_SKIP;
-                    // if stack manager ¿¡ °á°ú Á¤º¸ push
+                    // if stack manager ì— ê²°ê³¼ ì •ë³´ push
                     gUlpCOMPifstackMgr[gUlpCOMPifstackInd]->ulpIfpush( PP_ELIF, PP_IF_IGNORE );
                     break;
 
@@ -10171,7 +10171,7 @@ yyreduce:
 
                     if ( PPIFparse( sTmpExpBuf, &sVal ) != 0 )
                     {
-                        //error Ã³¸®
+                        //error ì²˜ë¦¬
 
                         ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                                          ulpERR_ABORT_COMP_ELIF_Macro_Syntax_Error );
@@ -10179,18 +10179,18 @@ yyreduce:
                         COMPerror( ulpGetErrorMSG(&gUlpParseInfo.mErrorMgr) );
                     }
 
-                    /* macro Á¶°Ç¹®ÀÇ °æ¿ì ÂüÀÌ¸é MACRO»óÅÂ, °ÅÁşÀÌ¸é MACRO_IFSKIP »óÅÂ·Î
-                     * ÀüÀÌ µÈ´Ù. */
+                    /* macro ì¡°ê±´ë¬¸ì˜ ê²½ìš° ì°¸ì´ë©´ MACROìƒíƒœ, ê±°ì§“ì´ë©´ MACRO_IFSKIP ìƒíƒœë¡œ
+                     * ì „ì´ ëœë‹¤. */
                     if ( sVal != 0 )
                     {
                         gUlpCOMPStartCond = gUlpCOMPPrevCond;
-                        // if stack manager ¿¡ °á°ú Á¤º¸ push
+                        // if stack manager ì— ê²°ê³¼ ì •ë³´ push
                         gUlpCOMPifstackMgr[gUlpCOMPifstackInd]->ulpIfpush( PP_ELIF, PP_IF_TRUE );
                     }
                     else
                     {
                         gUlpCOMPStartCond = CP_ST_MACRO_IF_SKIP;
-                        // if stack manager ¿¡ °á°ú Á¤º¸ push
+                        // if stack manager ì— ê²°ê³¼ ì •ë³´ push
                         gUlpCOMPifstackMgr[gUlpCOMPifstackInd]->ulpIfpush( PP_ELIF, PP_IF_FALSE );
                     }
                     break;
@@ -10210,31 +10210,31 @@ yyreduce:
             {
                 case PP_IF_IGNORE :
                     gUlpCOMPStartCond = CP_ST_MACRO_IF_SKIP;
-                    // if stack manager ¿¡ °á°ú Á¤º¸ push
+                    // if stack manager ì— ê²°ê³¼ ì •ë³´ push
                     gUlpCOMPifstackMgr[gUlpCOMPifstackInd]->ulpIfpush( PP_IFDEF, PP_IF_IGNORE );
                     break;
 
                 case PP_IF_TRUE :
-                    // $<strval>2 ¸¦ macro symbol table¿¡ Á¸ÀçÇÏ´ÂÁö È®ÀÎÇÑ´Ù.
+                    // $<strval>2 ë¥¼ macro symbol tableì— ì¡´ì¬í•˜ëŠ”ì§€ í™•ì¸í•œë‹¤.
                     if ( gUlpMacroT.ulpMLookup((yyvsp[(2) - (2)].strval)) != NULL )
                     {
-                        // Á¸ÀçÇÑ´Ù
+                        // ì¡´ì¬í•œë‹¤
                         gUlpCOMPStartCond = gUlpCOMPPrevCond;
-                        // if stack manager ¿¡ °á°ú Á¤º¸ push
+                        // if stack manager ì— ê²°ê³¼ ì •ë³´ push
                         gUlpCOMPifstackMgr[gUlpCOMPifstackInd]->ulpIfpush( PP_IFDEF, PP_IF_TRUE );
                     }
                     else
                     {
-                        // Á¸Àç¾ÈÇÑ´Ù
+                        // ì¡´ì¬ì•ˆí•œë‹¤
                         gUlpCOMPStartCond = CP_ST_MACRO_IF_SKIP;
-                        // if stack manager ¿¡ °á°ú Á¤º¸ push
+                        // if stack manager ì— ê²°ê³¼ ì •ë³´ push
                         gUlpCOMPifstackMgr[gUlpCOMPifstackInd]->ulpIfpush( PP_IFDEF, PP_IF_FALSE );
                     }
                     break;
 
                 case PP_IF_FALSE :
                     gUlpCOMPStartCond = CP_ST_MACRO_IF_SKIP;
-                    // if stack manager ¿¡ °á°ú Á¤º¸ push
+                    // if stack manager ì— ê²°ê³¼ ì •ë³´ push
                     gUlpCOMPifstackMgr[gUlpCOMPifstackInd]->ulpIfpush( PP_IFDEF, PP_IF_IGNORE );
                     break;
 
@@ -10253,31 +10253,31 @@ yyreduce:
             {
                 case PP_IF_IGNORE :
                     gUlpCOMPStartCond = CP_ST_MACRO_IF_SKIP;
-                    // if stack manager ¿¡ °á°ú Á¤º¸ push
+                    // if stack manager ì— ê²°ê³¼ ì •ë³´ push
                     gUlpCOMPifstackMgr[gUlpCOMPifstackInd]->ulpIfpush( PP_IFNDEF, PP_IF_IGNORE );
                     break;
 
                 case PP_IF_TRUE :
-                    // $<strval>2 ¸¦ macro symbol table¿¡ Á¸ÀçÇÏ´ÂÁö È®ÀÎÇÑ´Ù.
+                    // $<strval>2 ë¥¼ macro symbol tableì— ì¡´ì¬í•˜ëŠ”ì§€ í™•ì¸í•œë‹¤.
                     if ( gUlpMacroT.ulpMLookup((yyvsp[(2) - (2)].strval)) != NULL )
                     {
-                        // Á¸ÀçÇÑ´Ù
+                        // ì¡´ì¬í•œë‹¤
                         gUlpCOMPStartCond = CP_ST_MACRO_IF_SKIP;
-                        // if stack manager ¿¡ °á°ú Á¤º¸ push
+                        // if stack manager ì— ê²°ê³¼ ì •ë³´ push
                         gUlpCOMPifstackMgr[gUlpCOMPifstackInd]->ulpIfpush( PP_IFNDEF, PP_IF_FALSE );
                     }
                     else
                     {
-                        // Á¸Àç¾ÈÇÑ´Ù
+                        // ì¡´ì¬ì•ˆí•œë‹¤
                         gUlpCOMPStartCond = gUlpCOMPPrevCond;
-                        // if stack manager ¿¡ °á°ú Á¤º¸ push
+                        // if stack manager ì— ê²°ê³¼ ì •ë³´ push
                         gUlpCOMPifstackMgr[gUlpCOMPifstackInd]->ulpIfpush( PP_IFNDEF, PP_IF_TRUE );
                     }
                     break;
 
                 case PP_IF_FALSE :
                     gUlpCOMPStartCond = CP_ST_MACRO_IF_SKIP;
-                    // if stack manager ¿¡ °á°ú Á¤º¸ push
+                    // if stack manager ì— ê²°ê³¼ ì •ë³´ push
                     gUlpCOMPifstackMgr[gUlpCOMPifstackInd]->ulpIfpush( PP_IFNDEF, PP_IF_IGNORE );
                     break;
 
@@ -10292,11 +10292,11 @@ yyreduce:
 /* Line 1455 of yacc.c  */
 #line 2764 "ulpCompy.y"
     {
-            // #else ¼ø¼­ ¹®¹ı °Ë»ç.
+            // #else ìˆœì„œ ë¬¸ë²• ê²€ì‚¬.
             if ( gUlpCOMPifstackMgr[gUlpCOMPifstackInd]->ulpIfCheckGrammar( PP_ELSE )
                  == ID_FALSE )
             {
-                // error Ã³¸®
+                // error ì²˜ë¦¬
 
                 ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                                  ulpERR_ABORT_COMP_ELSE_Macro_Sequence_Error );
@@ -10309,13 +10309,13 @@ yyreduce:
                 case PP_IF_IGNORE :
                 case PP_IF_TRUE :
                     gUlpCOMPStartCond = CP_ST_MACRO_IF_SKIP;
-                    // if stack manager ¿¡ °á°ú Á¤º¸ push
+                    // if stack manager ì— ê²°ê³¼ ì •ë³´ push
                     gUlpCOMPifstackMgr[gUlpCOMPifstackInd]->ulpIfpush( PP_ELSE, PP_IF_IGNORE );
                     break;
 
                 case PP_IF_FALSE :
                     gUlpCOMPStartCond = gUlpCOMPPrevCond;
-                    // if stack manager ¿¡ °á°ú Á¤º¸ push
+                    // if stack manager ì— ê²°ê³¼ ì •ë³´ push
                     gUlpCOMPifstackMgr[gUlpCOMPifstackInd]->ulpIfpush( PP_ELSE, PP_IF_TRUE );
                     break;
 
@@ -10330,29 +10330,29 @@ yyreduce:
 /* Line 1455 of yacc.c  */
 #line 2800 "ulpCompy.y"
     {
-            // #endif ¼ø¼­ ¹®¹ı °Ë»ç.
+            // #endif ìˆœì„œ ë¬¸ë²• ê²€ì‚¬.
             if ( gUlpCOMPifstackMgr[gUlpCOMPifstackInd]->ulpIfCheckGrammar( PP_ENDIF )
                  == ID_FALSE )
             {
-                // error Ã³¸®
+                // error ì²˜ë¦¬
 
                 ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                                  ulpERR_ABORT_COMP_ENDIF_Macro_Sequence_Error );
                 gUlpCOMPErrCode = ulpGetErrorSTATE( &gUlpParseInfo.mErrorMgr );
                 COMPerror( ulpGetErrorMSG(&gUlpParseInfo.mErrorMgr) );
             }
-            // if stack À» ÀÌÀü Á¶°Ç¹® ±îÁö pop ÇÑ´Ù.
+            // if stack ì„ ì´ì „ ì¡°ê±´ë¬¸ ê¹Œì§€ pop í•œë‹¤.
             gUlpCOMPifstackMgr[gUlpCOMPifstackInd]->ulpIfpop4endif();
 
-            /* BUG-27961 : preprocessorÀÇ ÁßÃ¸ #ifÃ³¸®½Ã #endif ´ÙÀ½¼Ò½º ¹«Á¶°Ç Ãâ·ÂÇÏ´Â ¹ö±×  */
+            /* BUG-27961 : preprocessorì˜ ì¤‘ì²© #ifì²˜ë¦¬ì‹œ #endif ë‹¤ìŒì†ŒìŠ¤ ë¬´ì¡°ê±´ ì¶œë ¥í•˜ëŠ” ë²„ê·¸  */
             if( gUlpCOMPifstackMgr[gUlpCOMPifstackInd]->ulpIfneedSkip4Endif() == ID_TRUE )
             {
-                // Ãâ·Â ÇÏÁö¸¶¶ó.
+                // ì¶œë ¥ í•˜ì§€ë§ˆë¼.
                 gUlpCOMPStartCond = CP_ST_MACRO_IF_SKIP;
             }
             else
             {
-                // Ãâ·Â ÇØ¶ó.
+                // ì¶œë ¥ í•´ë¼.
                 gUlpCOMPStartCond = gUlpCOMPPrevCond;
             }
         ;}
@@ -10363,18 +10363,18 @@ yyreduce:
 /* Line 1455 of yacc.c  */
 #line 2838 "ulpCompy.y"
     {
-        // ³»Àå±¸¹®À» commentÇüÅÂ·Î ¾´´Ù.
+        // ë‚´ì¥êµ¬ë¬¸ì„ commentí˜•íƒœë¡œ ì“´ë‹¤.
         gUlpCodeGen.ulpGenComment( gUlpCodeGen.ulpGetQueryBuf() );
-        // ³»Àå±¸¹® °ü·Ã ÄÚµå»ı¼ºÇÑ´Ù.
+        // ë‚´ì¥êµ¬ë¬¸ ê´€ë ¨ ì½”ë“œìƒì„±í•œë‹¤.
         if( gUlpStmttype > S_IGNORE )
         {
             gUlpCodeGen.ulpGenEmSQLFlush( gUlpStmttype, gUlpIsPrintStmt );
         }
-        // ulpCodeGen class ÀÇ query buffer ¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+        // ulpCodeGen class ì˜ query buffer ë¥¼ ì´ˆê¸°í™”í•œë‹¤.
         gUlpCodeGen.ulpGenInitQBuff();
-        // ulpCodeGen class ÀÇ mEmSQLInfo ¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+        // ulpCodeGen class ì˜ mEmSQLInfo ë¥¼ ì´ˆê¸°í™”í•œë‹¤.
         gUlpCodeGen.ulpClearEmSQLInfo();
-        // lexerÀÇ »óÅÂ¸¦ embedded sql ±¸¹®À» ÆÄ½ÌÇÏ±â ÀÌÀü»óÅÂ·Î µÇµ¹¸°´Ù.
+        // lexerì˜ ìƒíƒœë¥¼ embedded sql êµ¬ë¬¸ì„ íŒŒì‹±í•˜ê¸° ì´ì „ìƒíƒœë¡œ ë˜ëŒë¦°ë‹¤.
         gUlpCOMPStartCond = gUlpCOMPPrevCond;
         // init variables
         gUlpIsPrintStmt = ID_TRUE;
@@ -10477,7 +10477,7 @@ yyreduce:
 /* Line 1455 of yacc.c  */
 #line 2922 "ulpCompy.y"
     {
-        // whenever ±¸¹®À» comment·Î ¾´´Ù.
+        // whenever êµ¬ë¬¸ì„ commentë¡œ ì“´ë‹¤.
         gUlpCodeGen.ulpGenComment( gUlpCodeGen.ulpGetQueryBuf() );
 
         gUlpCodeGen.ulpGenInitQBuff();
@@ -10533,7 +10533,7 @@ yyreduce:
     {
         if ( idlOS::strlen((yyvsp[(2) - (2)].strval)) > MAX_CONN_NAME_LEN )
         {
-            // error Ã³¸®
+            // error ì²˜ë¦¬
 
             ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                              ulpERR_ABORT_COMP_Exceed_Max_Connname_Error,
@@ -11018,7 +11018,7 @@ yyreduce:
         // User name
         if ( ( sSymNode = gUlpScopeT.ulpSLookupAll( (yyvsp[(2) - (5)].strval)+1, gUlpCurDepth ) ) == NULL )
         {
-            //host º¯¼ö ¸øÃ£´Â error
+            //host ë³€ìˆ˜ ëª»ì°¾ëŠ” error
         }
 
         gUlpCodeGen.ulpGenAddHostVarList( (yyvsp[(2) - (5)].strval)+1, sSymNode ,
@@ -11027,7 +11027,7 @@ yyreduce:
         // Password name
         if ( ( sSymNode = gUlpScopeT.ulpSLookupAll( (yyvsp[(5) - (5)].strval)+1, gUlpCurDepth ) ) == NULL )
         {
-            //host º¯¼ö ¸øÃ£´Â error
+            //host ë³€ìˆ˜ ëª»ì°¾ëŠ” error
         }
 
         gUlpCodeGen.ulpGenAddHostVarList( (yyvsp[(5) - (5)].strval)+1, sSymNode ,
@@ -11047,7 +11047,7 @@ yyreduce:
         // User name
         if ( ( sSymNode = gUlpScopeT.ulpSLookupAll( (yyvsp[(2) - (7)].strval)+1, gUlpCurDepth ) ) == NULL )
         {
-            //host º¯¼ö ¸øÃ£´Â error
+            //host ë³€ìˆ˜ ëª»ì°¾ëŠ” error
         }
 
         gUlpCodeGen.ulpGenAddHostVarList( (yyvsp[(2) - (7)].strval)+1, sSymNode ,
@@ -11056,7 +11056,7 @@ yyreduce:
         // Password name
         if ( ( sSymNode = gUlpScopeT.ulpSLookupAll( (yyvsp[(5) - (7)].strval)+1, gUlpCurDepth ) ) == NULL )
         {
-            //host º¯¼ö ¸øÃ£´Â error
+            //host ë³€ìˆ˜ ëª»ì°¾ëŠ” error
         }
 
         gUlpCodeGen.ulpGenAddHostVarList( (yyvsp[(5) - (7)].strval)+1, sSymNode ,
@@ -11065,10 +11065,10 @@ yyreduce:
         /* using open :drivername */
         if ( ( sSymNode = gUlpScopeT.ulpSLookupAll( (yyvsp[(7) - (7)].strval)+1, gUlpCurDepth ) ) == NULL )
         {
-            //host º¯¼ö ¸øÃ£´Â error
+            //host ë³€ìˆ˜ ëª»ì°¾ëŠ” error
         }
 
-        // driver nameÀÌ¶ó°í Ç¥½ÃÇÔ.
+        // driver nameì´ë¼ê³  í‘œì‹œí•¨.
         //sSymNode -> mMoreInfo = 1;
         //gUlpCodeGen.ulpGenAddHostVarList( sSymNode );
 
@@ -11086,7 +11086,7 @@ yyreduce:
         // User name
         if ( ( sSymNode = gUlpScopeT.ulpSLookupAll( (yyvsp[(2) - (7)].strval)+1, gUlpCurDepth ) ) == NULL )
         {
-            //host º¯¼ö ¸øÃ£´Â error
+            //host ë³€ìˆ˜ ëª»ì°¾ëŠ” error
         }
 
         gUlpCodeGen.ulpGenAddHostVarList( (yyvsp[(2) - (7)].strval)+1, sSymNode ,
@@ -11095,7 +11095,7 @@ yyreduce:
         // Password name
         if ( ( sSymNode = gUlpScopeT.ulpSLookupAll( (yyvsp[(5) - (7)].strval)+1, gUlpCurDepth ) ) == NULL )
         {
-            //host º¯¼ö ¸øÃ£´Â error
+            //host ë³€ìˆ˜ ëª»ì°¾ëŠ” error
         }
 
         gUlpCodeGen.ulpGenAddHostVarList( (yyvsp[(5) - (7)].strval)+1, sSymNode ,
@@ -11105,10 +11105,10 @@ yyreduce:
         /* using :conn_opt1 */
         if ( ( sSymNode = gUlpScopeT.ulpSLookupAll( (yyvsp[(7) - (7)].strval)+1, gUlpCurDepth ) ) == NULL )
         {
-            //host º¯¼ö ¸øÃ£´Â error
+            //host ë³€ìˆ˜ ëª»ì°¾ëŠ” error
         }
 
-        // driver nameÀÌ¶ó°í Ç¥½ÃÇÔ.
+        // driver nameì´ë¼ê³  í‘œì‹œí•¨.
         gUlpCodeGen.ulpGenAddHostVarList( (yyvsp[(7) - (7)].strval)+1, sSymNode ,
                                           gUlpIndName, NULL, NULL, HV_IN_TYPE);
 
@@ -11126,7 +11126,7 @@ yyreduce:
         // User name
         if ( ( sSymNode = gUlpScopeT.ulpSLookupAll( (yyvsp[(2) - (9)].strval)+1, gUlpCurDepth ) ) == NULL )
         {
-            //host º¯¼ö ¸øÃ£´Â error
+            //host ë³€ìˆ˜ ëª»ì°¾ëŠ” error
         }
 
         gUlpCodeGen.ulpGenAddHostVarList( (yyvsp[(2) - (9)].strval)+1, sSymNode ,
@@ -11135,7 +11135,7 @@ yyreduce:
         // Password name
         if ( ( sSymNode = gUlpScopeT.ulpSLookupAll( (yyvsp[(5) - (9)].strval)+1, gUlpCurDepth ) ) == NULL )
         {
-            //host º¯¼ö ¸øÃ£´Â error
+            //host ë³€ìˆ˜ ëª»ì°¾ëŠ” error
         }
 
         gUlpCodeGen.ulpGenAddHostVarList( (yyvsp[(5) - (9)].strval)+1, sSymNode ,
@@ -11144,7 +11144,7 @@ yyreduce:
         /* using :conn_opt1, :conn_opt2 */
         if ( ( sSymNode = gUlpScopeT.ulpSLookupAll( (yyvsp[(7) - (9)].strval)+1, gUlpCurDepth ) ) == NULL )
         {
-            //host º¯¼ö ¸øÃ£´Â error
+            //host ë³€ìˆ˜ ëª»ì°¾ëŠ” error
         }
 
         gUlpCodeGen.ulpGenAddHostVarList( (yyvsp[(7) - (9)].strval)+1, sSymNode ,
@@ -11153,7 +11153,7 @@ yyreduce:
 
         if ( ( sSymNode = gUlpScopeT.ulpSLookupAll( (yyvsp[(9) - (9)].strval)+1, gUlpCurDepth ) ) == NULL )
         {
-            //host º¯¼ö ¸øÃ£´Â error
+            //host ë³€ìˆ˜ ëª»ì°¾ëŠ” error
         }
 
         gUlpCodeGen.ulpGenAddHostVarList( (yyvsp[(9) - (9)].strval)+1, sSymNode ,
@@ -11173,7 +11173,7 @@ yyreduce:
         // User name
         if ( ( sSymNode = gUlpScopeT.ulpSLookupAll( (yyvsp[(2) - (11)].strval)+1, gUlpCurDepth ) ) == NULL )
         {
-            //host º¯¼ö ¸øÃ£´Â error
+            //host ë³€ìˆ˜ ëª»ì°¾ëŠ” error
         }
 
         gUlpCodeGen.ulpGenAddHostVarList( (yyvsp[(2) - (11)].strval)+1, sSymNode ,
@@ -11182,7 +11182,7 @@ yyreduce:
         // Password name
         if ( ( sSymNode = gUlpScopeT.ulpSLookupAll( (yyvsp[(5) - (11)].strval)+1, gUlpCurDepth ) ) == NULL )
         {
-            //host º¯¼ö ¸øÃ£´Â error
+            //host ë³€ìˆ˜ ëª»ì°¾ëŠ” error
         }
 
         gUlpCodeGen.ulpGenAddHostVarList( (yyvsp[(5) - (11)].strval)+1, sSymNode ,
@@ -11191,7 +11191,7 @@ yyreduce:
         /* using :conn_opt1, :conn_opt2 open :drivername */
         if ( ( sSymNode = gUlpScopeT.ulpSLookupAll( (yyvsp[(7) - (11)].strval)+1, gUlpCurDepth ) ) == NULL )
         {
-            //host º¯¼ö ¸øÃ£´Â error
+            //host ë³€ìˆ˜ ëª»ì°¾ëŠ” error
         }
 
         gUlpCodeGen.ulpGenAddHostVarList( (yyvsp[(7) - (11)].strval)+1, sSymNode ,
@@ -11199,7 +11199,7 @@ yyreduce:
 
         if ( ( sSymNode = gUlpScopeT.ulpSLookupAll( (yyvsp[(9) - (11)].strval)+1, gUlpCurDepth ) ) == NULL )
         {
-            //host º¯¼ö ¸øÃ£´Â error
+            //host ë³€ìˆ˜ ëª»ì°¾ëŠ” error
         }
 
         gUlpCodeGen.ulpGenAddHostVarList( (yyvsp[(9) - (11)].strval)+1, sSymNode ,
@@ -11207,10 +11207,10 @@ yyreduce:
 
         if ( ( sSymNode = gUlpScopeT.ulpSLookupAll( (yyvsp[(11) - (11)].strval)+1, gUlpCurDepth ) ) == NULL )
         {
-            //host º¯¼ö ¸øÃ£´Â error
+            //host ë³€ìˆ˜ ëª»ì°¾ëŠ” error
         }
 
-        // driver nameÀÌ¶ó°í Ç¥½ÃÇÔ.
+        // driver nameì´ë¼ê³  í‘œì‹œí•¨.
         //sSymNode -> mMoreInfo = 1;
         //gUlpCodeGen.ulpGenAddHostVarList( sSymNode );
 
@@ -11228,7 +11228,7 @@ yyreduce:
         // User name
         if ( ( sSymNode = gUlpScopeT.ulpSLookupAll( (yyvsp[(2) - (9)].strval)+1, gUlpCurDepth ) ) == NULL )
         {
-            //host º¯¼ö ¸øÃ£´Â error
+            //host ë³€ìˆ˜ ëª»ì°¾ëŠ” error
         }
 
         gUlpCodeGen.ulpGenAddHostVarList( (yyvsp[(2) - (9)].strval)+1, sSymNode , gUlpIndName,
@@ -11237,7 +11237,7 @@ yyreduce:
         // Password name
         if ( ( sSymNode = gUlpScopeT.ulpSLookupAll( (yyvsp[(5) - (9)].strval)+1, gUlpCurDepth ) ) == NULL )
         {
-            //host º¯¼ö ¸øÃ£´Â error
+            //host ë³€ìˆ˜ ëª»ì°¾ëŠ” error
         }
 
         gUlpCodeGen.ulpGenAddHostVarList( (yyvsp[(5) - (9)].strval)+1, sSymNode , gUlpIndName, NULL,
@@ -11246,7 +11246,7 @@ yyreduce:
         /* using :conn_opt1 open :drivername */
         if ( ( sSymNode = gUlpScopeT.ulpSLookupAll( (yyvsp[(7) - (9)].strval)+1, gUlpCurDepth ) ) == NULL )
         {
-            //host º¯¼ö ¸øÃ£´Â error
+            //host ë³€ìˆ˜ ëª»ì°¾ëŠ” error
         }
 
         gUlpCodeGen.ulpGenAddHostVarList( (yyvsp[(7) - (9)].strval)+1, sSymNode , gUlpIndName, NULL,
@@ -11254,10 +11254,10 @@ yyreduce:
 
         if ( ( sSymNode = gUlpScopeT.ulpSLookupAll( (yyvsp[(9) - (9)].strval)+1, gUlpCurDepth ) ) == NULL )
         {
-            //host º¯¼ö ¸øÃ£´Â error
+            //host ë³€ìˆ˜ ëª»ì°¾ëŠ” error
         }
 
-        // driver nameÀÌ¶ó°í Ç¥½ÃÇÔ.
+        // driver nameì´ë¼ê³  í‘œì‹œí•¨.
         //sSymNode -> mMoreInfo = 1;
         //gUlpCodeGen.ulpGenAddHostVarList( sSymNode );
 
@@ -11380,7 +11380,7 @@ yyreduce:
     {
       if(idlOS::strncasecmp("MAX", (yyvsp[(2) - (3)].strval), 3) != 0)
       {
-          // error Ã³¸®
+          // error ì²˜ë¦¬
 
           ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                            ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -11400,7 +11400,7 @@ yyreduce:
 
         if ( (sSymNode = gUlpScopeT.ulpSLookupAll( (yyvsp[(2) - (2)].strval)+1, gUlpCurDepth )) == NULL )
         {
-            //host º¯¼ö ¸øÃ£´Â error
+            //host ë³€ìˆ˜ ëª»ì°¾ëŠ” error
         }
 
         if( sSymNode != NULL )
@@ -11465,7 +11465,7 @@ yyreduce:
     {
         if ( idlOS::strlen((yyvsp[(2) - (3)].strval)) >= MAX_STMT_NAME_LEN )
         {
-            // error Ã³¸®
+            // error ì²˜ë¦¬
 
             ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                              ulpERR_ABORT_COMP_Exceed_Max_Stmtname_Error,
@@ -11597,7 +11597,7 @@ yyreduce:
     {
       if(idlOS::strncasecmp("LIST", (yyvsp[(3) - (7)].strval), 4) != 0)
       {
-          // error Ã³¸®
+          // error ì²˜ë¦¬
           ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                            ulpERR_ABORT_COMP_Unterminated_String_Error );
           gUlpCOMPErrCode = ulpGetErrorSTATE( &gUlpParseInfo.mErrorMgr );
@@ -11742,7 +11742,7 @@ yyreduce:
         if(idlOS::strcasecmp("DEFAULT_DATE_FORMAT", (yyvsp[(4) - (6)].strval)) != 0 &&
            idlOS::strcasecmp("DATE_FORMAT", (yyvsp[(4) - (6)].strval)) != 0)
         {
-            // error Ã³¸®
+            // error ì²˜ë¦¬
 
             ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                              ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -11766,7 +11766,7 @@ yyreduce:
         // failover var. name
         if ( ( sSymNode = gUlpScopeT.ulpSLookupAll( (yyvsp[(3) - (3)].strval)+1, gUlpCurDepth ) ) == NULL )
         {
-            // error Ã³¸®.
+            // error ì²˜ë¦¬.
         }
         else
         {
@@ -12223,7 +12223,7 @@ yyreduce:
         if ( sNum < 1 )
         {
             //The count of FOR clause must be greater than zero
-            // error Ã³¸®
+            // error ì²˜ë¦¬
 
             ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                              ulpERR_ABORT_COMP_FOR_iternum_Error );
@@ -12246,7 +12246,7 @@ yyreduce:
 
         if ( ( sSymNode = gUlpScopeT.ulpSLookupAll( (yyvsp[(2) - (2)].strval)+1, gUlpCurDepth ) ) == NULL )
         {
-            //host º¯¼ö ¸øÃ£´Â error
+            //host ë³€ìˆ˜ ëª»ì°¾ëŠ” error
         }
 
         gUlpCodeGen.ulpGenEmSQL( GEN_ITERS, (yyvsp[(2) - (2)].strval)+1 );
@@ -12264,7 +12264,7 @@ yyreduce:
             if ( idlOS::atoi((yyvsp[(3) - (3)].strval)) < 1 )
             {
                 //The count of FOR clause must be greater than zero
-                // error Ã³¸®
+                // error ì²˜ë¦¬
 
                 ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                                  ulpERR_ABORT_COMP_FOR_iternum_Error );
@@ -12279,7 +12279,7 @@ yyreduce:
         }
         else
         {
-            // error Ã³¸®
+            // error ì²˜ë¦¬
 
             ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                              ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -12300,7 +12300,7 @@ yyreduce:
         {
             if ( ( sSymNode = gUlpScopeT.ulpSLookupAll( (yyvsp[(3) - (3)].strval)+1, gUlpCurDepth ) ) == NULL )
             {
-                //host º¯¼ö ¸øÃ£´Â error
+                //host ë³€ìˆ˜ ëª»ì°¾ëŠ” error
             }
 
             gUlpCodeGen.ulpGenEmSQL( GEN_ITERS, (yyvsp[(3) - (3)].strval)+1 );
@@ -12309,7 +12309,7 @@ yyreduce:
         }
         else
         {
-            // error Ã³¸®
+            // error ì²˜ë¦¬
 
             ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                              ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -12333,7 +12333,7 @@ yyreduce:
 /* Line 1455 of yacc.c  */
 #line 4515 "ulpCompy.y"
     {
-        // release ±¸¹®ÀÌ ¿À¸é disconnect ÇØ¾ßÇÑ´Ù.
+        // release êµ¬ë¬¸ì´ ì˜¤ë©´ disconnect í•´ì•¼í•œë‹¤.
         gUlpCodeGen.ulpGenEmSQL( GEN_SQLINFO, (void *) "1" );
     ;}
     break;
@@ -12352,9 +12352,9 @@ yyreduce:
 /* Line 1455 of yacc.c  */
 #line 4527 "ulpCompy.y"
     {
-        // release ±¸¹®ÀÌ ¿À¸é disconnect ÇØ¾ßÇÑ´Ù.
+        // release êµ¬ë¬¸ì´ ì˜¤ë©´ disconnect í•´ì•¼í•œë‹¤.
         gUlpCodeGen.ulpGenEmSQL( GEN_SQLINFO, (void *) "3" );
-        // ³ªÁß¿¡ rollback ±¸¹®À» comment·Î Ãâ·ÂÇÒ¶§ release ÅäÅ«Àº Á¦°ÅµÊÀ» ÁÖÀÇÇÏÀÚ.
+        // ë‚˜ì¤‘ì— rollback êµ¬ë¬¸ì„ commentë¡œ ì¶œë ¥í• ë•Œ release í† í°ì€ ì œê±°ë¨ì„ ì£¼ì˜í•˜ì.
         gUlpCodeGen.ulpGenCutQueryTail( (yyvsp[(2) - (2)].strval) );
     ;}
     break;
@@ -12369,7 +12369,7 @@ yyreduce:
            idlOS::strncasecmp("ACKED", (yyvsp[(6) - (6)].strval), 5) != 0 &&
            idlOS::strncasecmp("NONE", (yyvsp[(6) - (6)].strval), 4) != 0)
         {
-            // error Ã³¸®
+            // error ì²˜ë¦¬
 
             ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                              ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -12387,7 +12387,7 @@ yyreduce:
         if(idlOS::strncasecmp("EXPLAIN", (yyvsp[(4) - (7)].strval), 7) != 0 ||
            idlOS::strncasecmp("PLAN", (yyvsp[(5) - (7)].strval), 4) != 0)
         {
-            // error Ã³¸®
+            // error ì²˜ë¦¬
 
             ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                              ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -12405,7 +12405,7 @@ yyreduce:
         if(idlOS::strncasecmp("EXPLAIN", (yyvsp[(4) - (7)].strval), 7) != 0 ||
            idlOS::strncasecmp("PLAN", (yyvsp[(5) - (7)].strval), 4) != 0)
         {
-            // error Ã³¸®
+            // error ì²˜ë¦¬
 
             ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                              ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -12423,7 +12423,7 @@ yyreduce:
         if(idlOS::strncasecmp("EXPLAIN", (yyvsp[(4) - (7)].strval), 7) != 0 ||
            idlOS::strncasecmp("PLAN", (yyvsp[(5) - (7)].strval), 4) != 0)
         {
-            // error Ã³¸®
+            // error ì²˜ë¦¬
 
             ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                              ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -12441,7 +12441,7 @@ yyreduce:
         if(idlOS::strncasecmp("STACK", (yyvsp[(4) - (7)].strval), 5) != 0 ||
            idlOS::strncasecmp("SIZE", (yyvsp[(5) - (7)].strval), 4) != 0)
         {
-            // error Ã³¸®
+            // error ì²˜ë¦¬
 
             ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                              ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -12462,7 +12462,7 @@ yyreduce:
            idlOS::strncasecmp("VERIFY", (yyvsp[(3) - (3)].strval), 6) != 0 &&
            idlOS::strncasecmp("COMPACT", (yyvsp[(3) - (3)].strval), 7) != 0)
         {
-            // error Ã³¸®
+            // error ì²˜ë¦¬
 
             ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                              ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -12471,7 +12471,7 @@ yyreduce:
         }
         if(idlOS::strncasecmp("COMPACT", (yyvsp[(3) - (3)].strval), 7) == 0)
         {
-            // error Ã³¸®
+            // error ì²˜ë¦¬
 
             ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                              ulpERR_ABORT_COMP_Not_Supported_ALTER_COMPACT_Error );
@@ -12488,7 +12488,7 @@ yyreduce:
     {
         if(idlOS::strncasecmp("SYSTEM", (yyvsp[(2) - (4)].strval), 6) != 0)
         {
-            // error Ã³¸®
+            // error ì²˜ë¦¬
 
             ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                              ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -12509,7 +12509,7 @@ yyreduce:
             }
             else
             {
-                // error Ã³¸®
+                // error ì²˜ë¦¬
 
                 ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                                  ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -12528,7 +12528,7 @@ yyreduce:
         if(idlOS::strncasecmp("SYSTEM", (yyvsp[(2) - (5)].strval), 6) != 0 ||
            idlOS::strncasecmp("LOG", (yyvsp[(4) - (5)].strval), 3) != 0)
         {
-            // error Ã³¸®
+            // error ì²˜ë¦¬
 
             ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                              ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -12545,7 +12545,7 @@ yyreduce:
     {
         if(idlOS::strncasecmp("SYSTEM", (yyvsp[(2) - (6)].strval), 6) != 0)
         {
-            // error Ã³¸®
+            // error ì²˜ë¦¬
 
             ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                              ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -12562,7 +12562,7 @@ yyreduce:
     {
         if(idlOS::strncasecmp("SYSTEM", (yyvsp[(2) - (7)].strval), 6) != 0)
         {
-            // error Ã³¸®
+            // error ì²˜ë¦¬
 
             ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                              ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -12579,7 +12579,7 @@ yyreduce:
     {
         if(idlOS::strncasecmp("SYSTEM", (yyvsp[(2) - (6)].strval), 6) != 0)
         {
-            // error Ã³¸®
+            // error ì²˜ë¦¬
 
             ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                              ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -12596,7 +12596,7 @@ yyreduce:
     {
         if(idlOS::strncasecmp("SYSTEM", (yyvsp[(2) - (6)].strval), 6) != 0)
         {
-            // error Ã³¸®
+            // error ì²˜ë¦¬
 
             ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                              ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -12615,7 +12615,7 @@ yyreduce:
         if(idlOS::strncasecmp("RELOAD", (yyvsp[(3) - (5)].strval), 6) != 0 ||
            idlOS::strncasecmp("LIST", (yyvsp[(5) - (5)].strval), 4) != 0)
         {
-            // error Ã³¸®
+            // error ì²˜ë¦¬
 
             ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                              ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -12632,7 +12632,7 @@ yyreduce:
     {
         if(idlOS::strncasecmp("STOP", (yyvsp[(1) - (1)].strval), 4) != 0)
         {
-            // error Ã³¸®
+            // error ì²˜ë¦¬
 
             ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                              ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -12673,7 +12673,7 @@ yyreduce:
     {
         if(idlOS::strncasecmp("TRANSACTION", (yyvsp[(2) - (3)].strval), 11) != 0)
         {
-            // error Ã³¸®
+            // error ì²˜ë¦¬
 
             ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                              ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -12690,7 +12690,7 @@ yyreduce:
     {
         if(idlOS::strncasecmp("TRANSACTION", (yyvsp[(4) - (5)].strval), 11) != 0)
         {
-            // error Ã³¸®
+            // error ì²˜ë¦¬
 
             ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                              ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -12707,7 +12707,7 @@ yyreduce:
     {
         if ( idlOS::strncasecmp( "FORCE", (yyvsp[(3) - (5)].strval), 5 ) != 0 )
         {
-            // error Ã³¸®
+            // error ì²˜ë¦¬
 
             ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                              ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -12724,7 +12724,7 @@ yyreduce:
     {
         if ( idlOS::strncasecmp( "FORCE", (yyvsp[(3) - (5)].strval), 5 ) != 0 )
         {
-            // error Ã³¸®
+            // error ì²˜ë¦¬
 
             ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                              ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -12742,7 +12742,7 @@ yyreduce:
         if(idlOS::strncasecmp("COMMITTED", (yyvsp[(4) - (4)].strval), 9) != 0 &&
            idlOS::strncasecmp("UNCOMMITTED", (yyvsp[(4) - (4)].strval), 11) != 0)
         {
-            // error Ã³¸®
+            // error ì²˜ë¦¬
 
             ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                              ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -12759,7 +12759,7 @@ yyreduce:
     {
         if(idlOS::strncasecmp("REPEATABLE", (yyvsp[(3) - (4)].strval), 10) != 0)
         {
-            // error Ã³¸®
+            // error ì²˜ë¦¬
 
             ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                              ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -12776,7 +12776,7 @@ yyreduce:
     {
         if(idlOS::strncasecmp("SERIALIZABLE", (yyvsp[(3) - (3)].strval), 12) != 0)
         {
-            // error Ã³¸®
+            // error ì²˜ë¦¬
 
             ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                              ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -12793,7 +12793,7 @@ yyreduce:
     {
         if(idlOS::strncasecmp("SYSTEM", (yyvsp[(2) - (2)].strval), 6) != 0)
         {
-            // error Ã³¸®
+            // error ì²˜ë¦¬
 
             ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                              ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -12810,7 +12810,7 @@ yyreduce:
     {
         if(idlOS::strncasecmp("JOB", (yyvsp[(3) - (3)].strval), 3) != 0)
         {
-            // error Ã³¸®
+            // error ì²˜ë¦¬
 
             ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                              ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -12827,7 +12827,7 @@ yyreduce:
     {
         if(idlOS::strncasecmp("JOB", (yyvsp[(3) - (3)].strval), 3) != 0)
         {
-            // error Ã³¸®
+            // error ì²˜ë¦¬
 
             ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                              ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -12844,7 +12844,7 @@ yyreduce:
     {
         if(idlOS::strncasecmp("JOB", (yyvsp[(3) - (3)].strval), 3) != 0)
         {
-            // error Ã³¸®
+            // error ì²˜ë¦¬
 
             ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                              ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -12861,7 +12861,7 @@ yyreduce:
     {
         if(idlOS::strncasecmp("FORCE", (yyvsp[(1) - (1)].strval), 5) != 0)
         {
-            // error Ã³¸®
+            // error ì²˜ë¦¬
 
             ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                              ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -12878,7 +12878,7 @@ yyreduce:
     {
         if(idlOS::strncasecmp("HOST", (yyvsp[(5) - (6)].strval), 4) != 0)
         {
-            // error Ã³¸®
+            // error ì²˜ë¦¬
 
             ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                              ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -12895,7 +12895,7 @@ yyreduce:
     {
         if(idlOS::strncasecmp("HOST", (yyvsp[(5) - (6)].strval), 4) != 0)
         {
-            // error Ã³¸®
+            // error ì²˜ë¦¬
 
             ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                              ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -12912,7 +12912,7 @@ yyreduce:
     {
         if(idlOS::strncasecmp("HOST", (yyvsp[(5) - (6)].strval), 4) != 0)
         {
-            // error Ã³¸®
+            // error ì²˜ë¦¬
 
             ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                              ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -12931,7 +12931,7 @@ yyreduce:
              ( idlOS::strncasecmp("GAPLESS", (yyvsp[(5) - (6)].strval), 7 ) != 0 ) &&
              ( idlOS::strncasecmp("GROUPING", (yyvsp[(5) - (6)].strval), 8 ) != 0 ) )
         {
-            // error Ã³¸®
+            // error ì²˜ë¦¬
 
             ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                              ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -12951,7 +12951,7 @@ yyreduce:
            idlOS::strncasecmp("STOP", (yyvsp[(4) - (5)].strval), 4) != 0 &&
            idlOS::strncasecmp("RESET", (yyvsp[(4) - (5)].strval), 5) != 0)
         {
-            // error Ã³¸®
+            // error ì²˜ë¦¬
 
             ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                              ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -12969,7 +12969,7 @@ yyreduce:
         if(idlOS::strncasecmp("SYNC", (yyvsp[(4) - (6)].strval), 4) != 0 &&
            idlOS::strncasecmp("QUICKSTART", (yyvsp[(4) - (6)].strval), 10) != 0)
         {
-            // error Ã³¸®
+            // error ì²˜ë¦¬
 
             ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                              ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -12986,7 +12986,7 @@ yyreduce:
     {
         if(idlOS::strncasecmp("OPTIONS", (yyvsp[(1) - (2)].strval), 7) != 0)
         {
-            // error Ã³¸®
+            // error ì²˜ë¦¬
 
             ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                              ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -13005,7 +13005,7 @@ yyreduce:
              ( idlOS::strncasecmp("GAPLESS", (yyvsp[(1) - (1)].strval), 7 ) != 0 ) &&
              ( idlOS::strncasecmp("GROUPING", (yyvsp[(1) - (1)].strval), 8 ) != 0 ) )
         {
-            // error Ã³¸®
+            // error ì²˜ë¦¬
 
             ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                              ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -13023,7 +13023,7 @@ yyreduce:
         if(idlOS::strncasecmp("LAZY", (yyvsp[(1) - (1)].strval), 4) != 0 &&
            idlOS::strncasecmp("EAGER", (yyvsp[(1) - (1)].strval), 5) != 0)
         {
-            // error Ã³¸®
+            // error ì²˜ë¦¬
 
             ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                              ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -13040,7 +13040,7 @@ yyreduce:
     {
         if(idlOS::strncasecmp("UNIX_DOMAIN", (yyvsp[(1) - (1)].strval), 11) != 0)
         {
-            // error Ã³¸®
+            // error ì²˜ë¦¬
 
             ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                              ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -13057,7 +13057,7 @@ yyreduce:
     {
         if(idlOS::strncasecmp("ANALYSIS", (yyvsp[(2) - (2)].strval), 8) != 0)
         {
-            // error Ã³¸®
+            // error ì²˜ë¦¬
 
             ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                              ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -13075,7 +13075,7 @@ yyreduce:
         if(idlOS::strncasecmp("MASTER", (yyvsp[(2) - (2)].strval), 6) != 0 &&
            idlOS::strncasecmp("SLAVE", (yyvsp[(2) - (2)].strval), 5) != 0)
         {
-            // error Ã³¸®
+            // error ì²˜ë¦¬
 
             ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                              ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -13092,7 +13092,7 @@ yyreduce:
     {
         if(idlOS::strncasecmp("RETRY", (yyvsp[(1) - (1)].strval), 5) != 0)
         {
-            // error Ã³¸®
+            // error ì²˜ë¦¬
 
             ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                              ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -13109,7 +13109,7 @@ yyreduce:
     {
         if(idlOS::strncasecmp("RETRY", (yyvsp[(1) - (1)].strval), 5) != 0)
         {
-            // error Ã³¸®
+            // error ì²˜ë¦¬
 
             ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                              ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -13126,7 +13126,7 @@ yyreduce:
     {
         if(idlOS::strncasecmp("SN", (yyvsp[(2) - (5)].strval), 2) != 0)
         {
-            // error Ã³¸®
+            // error ì²˜ë¦¬
 
             ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                              ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -13143,7 +13143,7 @@ yyreduce:
     {
         if(idlOS::strncasecmp("INCREMENT", (yyvsp[(1) - (3)].strval), 9) != 0)
         {
-            // error Ã³¸®
+            // error ì²˜ë¦¬
 
             ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                              ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -13160,7 +13160,7 @@ yyreduce:
     {
         if(idlOS::strncasecmp("INCREMENT", (yyvsp[(1) - (4)].strval), 9) != 0)
         {
-            // error Ã³¸®
+            // error ì²˜ë¦¬
 
             ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                              ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -13179,7 +13179,7 @@ yyreduce:
            idlOS::strncasecmp("MAXVALUE", (yyvsp[(1) - (2)].strval), 8) != 0 &&
            idlOS::strncasecmp("MINVALUE", (yyvsp[(1) - (2)].strval), 8) != 0)
         {
-            // error Ã³¸®
+            // error ì²˜ë¦¬
 
             ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                              ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -13197,7 +13197,7 @@ yyreduce:
         if(idlOS::strncasecmp("MAXVALUE", (yyvsp[(1) - (3)].strval), 8) != 0 &&
            idlOS::strncasecmp("MINVALUE", (yyvsp[(1) - (3)].strval), 8) != 0)
         {
-            // error Ã³¸®
+            // error ì²˜ë¦¬
 
             ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                              ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -13216,7 +13216,7 @@ yyreduce:
            idlOS::strncasecmp("NOMAXVALUE", (yyvsp[(1) - (1)].strval), 10) != 0 &&
            idlOS::strncasecmp("NOMINVALUE", (yyvsp[(1) - (1)].strval), 10) != 0)
         {
-            // error Ã³¸®
+            // error ì²˜ë¦¬
 
             ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                              ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -13235,7 +13235,7 @@ yyreduce:
              ( idlOS::strncasecmp("AGING", (yyvsp[(4) - (5)].strval), 5) != 0 ) &&
              ( idlOS::strncasecmp("TOUCH", (yyvsp[(4) - (5)].strval), 5) != 0 ) )
         {
-            // error Ã³¸®
+            // error ì²˜ë¦¬
 
             ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                              ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -13256,7 +13256,7 @@ yyreduce:
            // Altibase Spatio-Temporal DBMS
            idlOS::strncasecmp("TDRTREE", (yyvsp[(3) - (3)].strval), 7) != 0)
         {
-            // error Ã³¸®
+            // error ì²˜ë¦¬
 
             ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                              ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -13273,7 +13273,7 @@ yyreduce:
     {
         if(idlOS::strncasecmp("PERSISTENT", (yyvsp[(2) - (4)].strval), 10) != 0)
         {
-            // error Ã³¸®
+            // error ì²˜ë¦¬
 
             ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                            ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -13290,7 +13290,7 @@ yyreduce:
     {
         if(idlOS::strncasecmp("PERSISTENT", (yyvsp[(2) - (4)].strval), 10) != 0)
         {
-            // error Ã³¸®
+            // error ì²˜ë¦¬
 
             ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                            ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -13310,7 +13310,7 @@ yyreduce:
       if(idlOS::strncasecmp("HIGH", (yyvsp[(2) - (4)].strval), 4) != 0 &&
           idlOS::strncasecmp("LOW", (yyvsp[(2) - (4)].strval), 3) != 0)
       {
-          // error Ã³¸®
+          // error ì²˜ë¦¬
 
           ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                            ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -13330,7 +13330,7 @@ yyreduce:
            idlOS::strncasecmp("BUFFER", (yyvsp[(1) - (1)].strval), 6) != 0 &&
            idlOS::strncasecmp("NOBUFFER", (yyvsp[(1) - (1)].strval), 8) != 0)
         {
-            // error Ã³¸®
+            // error ì²˜ë¦¬
 
             ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                            ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -13348,7 +13348,7 @@ yyreduce:
       if(idlOS::strncasecmp("NO", (yyvsp[(1) - (2)].strval), 2) != 0 ||
          idlOS::strncasecmp("ACTION", (yyvsp[(2) - (2)].strval), 6) != 0)
       {
-            // error Ã³¸®
+            // error ì²˜ë¦¬
 
             ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                            ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -13366,7 +13366,7 @@ yyreduce:
         if(idlOS::strncasecmp("NO", (yyvsp[(1) - (2)].strval), 2) != 0 ||
            idlOS::strncasecmp("FORCE", (yyvsp[(2) - (2)].strval), 5) != 0)
         {
-            // error Ã³¸®
+            // error ì²˜ë¦¬
 
             ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                            ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -13383,7 +13383,7 @@ yyreduce:
     {
         if(idlOS::strncasecmp("FORCE", (yyvsp[(1) - (1)].strval), 5) != 0)
         {
-            // error Ã³¸®
+            // error ì²˜ë¦¬
 
             ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                            ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -13400,7 +13400,7 @@ yyreduce:
     {
       if ( idlOS::strncasecmp( "PRIVATE", (yyvsp[(1) - (1)].strval), 7 ) != 0 )
       {
-          // error Ã³¸®
+          // error ì²˜ë¦¬
           
           ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                            ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -13417,7 +13417,7 @@ yyreduce:
     {
       if ( idlOS::strncasecmp( "STOP", (yyvsp[(4) - (4)].strval), 4 ) != 0 )
       {
-          // error Ã³¸®
+          // error ì²˜ë¦¬
 
           ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                            ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -13434,7 +13434,7 @@ yyreduce:
     {
       if ( idlOS::strncasecmp( "STOP", (yyvsp[(4) - (5)].strval), 4 ) != 0 )
       {
-          // error Ã³¸®
+          // error ì²˜ë¦¬
 
           ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                            ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -13443,7 +13443,7 @@ yyreduce:
       }
       if ( idlOS::strncasecmp( "FORCE", (yyvsp[(5) - (5)].strval), 5 ) != 0 )
       {
-          // error Ã³¸®
+          // error ì²˜ë¦¬
 
           ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                            ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -13460,7 +13460,7 @@ yyreduce:
     {
         if(idlOS::strncasecmp("IGNORE", (yyvsp[(1) - (2)].strval), 6) != 0)
         {
-            // error Ã³¸®
+            // error ì²˜ë¦¬
 
             ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                            ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -13499,8 +13499,8 @@ yyreduce:
         // in host variable
         if ( ( sSymNode = gUlpScopeT.ulpSLookupAll( (yyvsp[(1) - (1)].strval)+1, gUlpCurDepth ) ) == NULL )
         {
-            //host º¯¼ö ¸øÃ£´Â error
-            // error Ã³¸®
+            //host ë³€ìˆ˜ ëª»ì°¾ëŠ” error
+            // error ì²˜ë¦¬
 
             ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                              ulpERR_ABORT_COMP_Unknown_Hostvar_Error,
@@ -13525,7 +13525,7 @@ yyreduce:
     {
         if(idlOS::strncasecmp("NOWAIT", (yyvsp[(1) - (1)].strval), 6) != 0)
         {
-            // error Ã³¸®
+            // error ì²˜ë¦¬
 
             ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                              ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -13544,7 +13544,7 @@ yyreduce:
         if(idlOS::strncasecmp("SHARE", (yyvsp[(2) - (2)].strval), 5) != 0 &&
            idlOS::strncasecmp("EXCLUSIVE", (yyvsp[(2) - (2)].strval), 9) != 0)
         {
-            // error Ã³¸®
+            // error ì²˜ë¦¬
 
             ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                              ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -13561,7 +13561,7 @@ yyreduce:
     {
         if(idlOS::strncasecmp("SHARE", (yyvsp[(1) - (2)].strval), 5) != 0)
         {
-            // error Ã³¸®
+            // error ì²˜ë¦¬
 
             ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                              ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -13579,7 +13579,7 @@ yyreduce:
         if(idlOS::strncasecmp("SHARE", (yyvsp[(1) - (3)].strval), 5) != 0 ||
            idlOS::strncasecmp("EXCLUSIVE", (yyvsp[(3) - (3)].strval), 9) != 0)
         {
-            // error Ã³¸®
+            // error ì²˜ë¦¬
 
             ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                              ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -13597,7 +13597,7 @@ yyreduce:
         if(idlOS::strncasecmp("SHARE", (yyvsp[(1) - (1)].strval), 5) != 0 &&
            idlOS::strncasecmp("EXCLUSIVE", (yyvsp[(1) - (1)].strval), 9) != 0)
         {
-            // error Ã³¸®
+            // error ì²˜ë¦¬
 
             ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                              ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -13614,7 +13614,7 @@ yyreduce:
     {
         if ( idlOS::strncasecmp( "DDL",  (yyvsp[(3) - (3)].strval), 3 ) != 0 )
         {
-            // error Ã³¸®
+            // error ì²˜ë¦¬
             ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                              ulpERR_ABORT_COMP_Unterminated_String_Error );
             gUlpCOMPErrCode = ulpGetErrorSTATE( &gUlpParseInfo.mErrorMgr );
@@ -13635,7 +13635,7 @@ yyreduce:
         if(idlOS::strncasecmp("ISOPEN", (yyvsp[(3) - (3)].strval), 6) != 0 &&
            idlOS::strncasecmp("NOTFOUND", (yyvsp[(3) - (3)].strval), 8) != 0)
         {
-            // error Ã³¸®
+            // error ì²˜ë¦¬
 
             ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                              ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -13652,7 +13652,7 @@ yyreduce:
     {
         if(idlOS::strncasecmp("RECORD", (yyvsp[(4) - (8)].strval), 6) != 0)
         {
-            // error Ã³¸®
+            // error ì²˜ë¦¬
 
             ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                              ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -13670,7 +13670,7 @@ yyreduce:
         // strMatch : INITSIZE, 1
         if(idlOS::strncasecmp("INITSIZE", (yyvsp[(1) - (3)].strval), 8) != 0)
         {
-            // error Ã³¸®
+            // error ì²˜ë¦¬
 
             ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                              ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -13687,7 +13687,7 @@ yyreduce:
     {
           if(idlOS::strncasecmp("CHARACTER", (yyvsp[(1) - (3)].strval), 9) != 0)
           {
-            // error Ã³¸®
+            // error ì²˜ë¦¬
 
             ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                              ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -13705,7 +13705,7 @@ yyreduce:
           if( (idlOS::strncasecmp("NATIONAL", (yyvsp[(1) - (4)].strval), 8) != 0) &&
               (idlOS::strncasecmp("CHARACTER", (yyvsp[(2) - (4)].strval), 9) != 0) )
           {
-            // error Ã³¸®
+            // error ì²˜ë¦¬
 
             ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                              ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -13723,7 +13723,7 @@ yyreduce:
       // strMatch : DATAFILE, 4
       if(idlOS::strncasecmp("DATAFILE", (yyvsp[(4) - (6)].strval), 8) != 0)
       {
-          // error Ã³¸®
+          // error ì²˜ë¦¬
 
           ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                              ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -13741,7 +13741,7 @@ yyreduce:
       // strMatch : DATAFILE, 4
       if(idlOS::strncasecmp("DATAFILE", (yyvsp[(4) - (7)].strval), 8) != 0)
       {
-          // error Ã³¸®
+          // error ì²˜ë¦¬
 
           ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                            ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -13758,7 +13758,7 @@ yyreduce:
     {
       if(idlOS::strncasecmp("SNAPSHOT", (yyvsp[(4) - (4)].strval), 8) != 0)
       {
-          // error Ã³¸®
+          // error ì²˜ë¦¬
 
           ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                            ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -13775,7 +13775,7 @@ yyreduce:
     {
       if(idlOS::strncasecmp("SNAPSHOT", (yyvsp[(4) - (4)].strval), 8) != 0)
       {
-          // error Ã³¸®
+          // error ì²˜ë¦¬
           ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                            ulpERR_ABORT_COMP_Unterminated_String_Error );
           gUlpCOMPErrCode = ulpGetErrorSTATE( &gUlpParseInfo.mErrorMgr );
@@ -13792,7 +13792,7 @@ yyreduce:
       // strMatch : CANCEL, 2
       if(idlOS::strncasecmp("CANCEL", (yyvsp[(2) - (2)].strval), 6) != 0)
       {
-          // error Ã³¸®
+          // error ì²˜ë¦¬
 
           ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                            ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -13810,7 +13810,7 @@ yyreduce:
       // strMatch : TIME, 2
       if(idlOS::strncasecmp("TIME", (yyvsp[(2) - (3)].strval), 4) != 0)
       {
-          // error Ã³¸®
+          // error ì²˜ë¦¬
 
           ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                            ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -13834,7 +13834,7 @@ yyreduce:
        idlOS::strncasecmp("SERVICE", (yyvsp[(1) - (1)].strval), 7) != 0 &&
        idlOS::strncasecmp("META", (yyvsp[(1) - (1)].strval), 4) != 0)
     {
-          // error Ã³¸®
+          // error ì²˜ë¦¬
 
           ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                            ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -13871,7 +13871,7 @@ yyreduce:
     }
     else
     {
-          // error Ã³¸®
+          // error ì²˜ë¦¬
 
           ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                            ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -13889,7 +13889,7 @@ yyreduce:
     // strMatch : SHUTDOWN, 1
     if(idlOS::strncasecmp("SHUTDOWN", (yyvsp[(1) - (2)].strval), 8) != 0)
     {
-          // error Ã³¸®
+          // error ì²˜ë¦¬
 
           ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                            ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -13907,7 +13907,7 @@ yyreduce:
     // strMatch : SHUTDOWN, 1
     if(idlOS::strncasecmp("SHUTDOWN", (yyvsp[(1) - (2)].strval), 8) != 0)
     {
-          // error Ã³¸®
+          // error ì²˜ë¦¬
 
           ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                            ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -13925,7 +13925,7 @@ yyreduce:
     // strMatch : DTX, 1
     if(idlOS::strncasecmp("DTX", (yyvsp[(1) - (3)].strval), 3) != 0)
     {
-          // error Ã³¸®
+          // error ì²˜ë¦¬
 
           ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                            ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -13943,7 +13943,7 @@ yyreduce:
     // strMatch : DTX, 1
     if(idlOS::strncasecmp("DTX", (yyvsp[(1) - (3)].strval), 3) != 0)
     {
-          // error Ã³¸®
+          // error ì²˜ë¦¬
 
           ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                            ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -13961,7 +13961,7 @@ yyreduce:
     // strMatch : DATAFILE, 4
     if(idlOS::strncasecmp("DATAFILE", (yyvsp[(4) - (6)].strval), 8) != 0)
     {
-          // error Ã³¸®
+          // error ì²˜ë¦¬
 
           ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                            ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -13979,7 +13979,7 @@ yyreduce:
       // strMatch : SIZE 5,
       if (idlOS::strncasecmp("SIZE", (yyvsp[(5) - (7)].strval), 4) != 0)
       {
-          // error Ã³¸®
+          // error ì²˜ë¦¬
 
           ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                            ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -13997,7 +13997,7 @@ yyreduce:
       // strMatch : SIZE 5,
       if (idlOS::strncasecmp("SIZE", (yyvsp[(5) - (8)].strval), 4) != 0)
       {
-          // error Ã³¸®
+          // error ì²˜ë¦¬
 
           ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                            ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -14008,7 +14008,7 @@ yyreduce:
          idlOS::strncasecmp("M", (yyvsp[(7) - (8)].strval), 1) != 0 &&
          idlOS::strncasecmp("G", (yyvsp[(7) - (8)].strval), 1) != 0)
       {
-          // error Ã³¸®
+          // error ì²˜ë¦¬
 
           ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                            ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -14026,7 +14026,7 @@ yyreduce:
     // strMatch : TEMPFILE, 5
     if(idlOS::strncasecmp("TEMPFILE", (yyvsp[(5) - (7)].strval), 8) != 0)
     {
-          // error Ã³¸®
+          // error ì²˜ë¦¬
 
           ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                            ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -14046,7 +14046,7 @@ yyreduce:
     if(idlOS::strncasecmp("DATAFILE", (yyvsp[(5) - (8)].strval), 8) != 0 &&
        idlOS::strncasecmp("TEMPFILE", (yyvsp[(5) - (8)].strval), 8) != 0)
     {
-          // error Ã³¸®
+          // error ì²˜ë¦¬
 
           ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                            ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -14066,7 +14066,7 @@ yyreduce:
     if(idlOS::strncasecmp("DATAFILE", (yyvsp[(5) - (7)].strval), 8) != 0 &&
        idlOS::strncasecmp("TEMPFILE", (yyvsp[(5) - (7)].strval), 8) != 0)
     {
-          // error Ã³¸®
+          // error ì²˜ë¦¬
 
           ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                            ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -14086,7 +14086,7 @@ yyreduce:
     if(idlOS::strncasecmp("DATAFILE", (yyvsp[(5) - (6)].strval), 8) != 0 &&
        idlOS::strncasecmp("TEMPFILE", (yyvsp[(5) - (6)].strval), 8) != 0)
     {
-          // error Ã³¸®
+          // error ì²˜ë¦¬
 
           ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                            ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -14106,7 +14106,7 @@ yyreduce:
     if(idlOS::strncasecmp("DATAFILE", (yyvsp[(5) - (6)].strval), 8) != 0 &&
        idlOS::strncasecmp("TEMPFILE", (yyvsp[(5) - (6)].strval), 8) != 0)
     {
-          // error Ã³¸®
+          // error ì²˜ë¦¬
 
           ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                            ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -14126,7 +14126,7 @@ yyreduce:
     if(idlOS::strncasecmp("DATAFILE", (yyvsp[(5) - (7)].strval), 8) != 0 &&
        idlOS::strncasecmp("TEMPFILE", (yyvsp[(5) - (7)].strval), 8) != 0)
     {
-          // error Ã³¸®
+          // error ì²˜ë¦¬
 
           ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                            ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -14153,7 +14153,7 @@ yyreduce:
     }
     else
     {
-          // error Ã³¸®
+          // error ì²˜ë¦¬
 
           ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                            ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -14171,7 +14171,7 @@ yyreduce:
     // strMatch : SIZE, 2
     if(idlOS::strncasecmp("SIZE", (yyvsp[(2) - (4)].strval), 4) != 0)
     {
-          // error Ã³¸®
+          // error ì²˜ë¦¬
 
           ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                            ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -14199,7 +14199,7 @@ yyreduce:
        idlOS::strncasecmp("M", (yyvsp[(4) - (5)].strval), 1) != 0 &&
        idlOS::strncasecmp("G", (yyvsp[(4) - (5)].strval), 1) != 0)
     {
-          // error Ã³¸®
+          // error ì²˜ë¦¬
 
           ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                            ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -14217,7 +14217,7 @@ yyreduce:
     // strMatch : REUSE, 2
     if(idlOS::strncasecmp("REUSE", (yyvsp[(2) - (3)].strval), 5) != 0)
     {
-          // error Ã³¸®
+          // error ì²˜ë¦¬
 
           ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                            ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -14244,7 +14244,7 @@ yyreduce:
        idlOS::strncasecmp("M", (yyvsp[(4) - (6)].strval), 1) != 0 &&
        idlOS::strncasecmp("G", (yyvsp[(4) - (6)].strval), 1) != 0)
     {
-          // error Ã³¸®
+          // error ì²˜ë¦¬
 
           ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                            ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -14262,7 +14262,7 @@ yyreduce:
     // strMatch : AUTOEXTEND, 1
     if(idlOS::strncasecmp("AUTOEXTEND", (yyvsp[(1) - (2)].strval), 10) != 0)
     {
-          // error Ã³¸®
+          // error ì²˜ë¦¬
 
           ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                            ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -14280,7 +14280,7 @@ yyreduce:
     // strMatch : AUTOEXTEND, 1
     if(idlOS::strncasecmp("AUTOEXTEND", (yyvsp[(1) - (2)].strval), 10) != 0)
     {
-          // error Ã³¸®
+          // error ì²˜ë¦¬
 
           ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                            ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -14298,7 +14298,7 @@ yyreduce:
     // strMatch : AUTOEXTEND, 1
     if(idlOS::strncasecmp("AUTOEXTEND", (yyvsp[(1) - (4)].strval), 10) != 0)
     {
-          // error Ã³¸®
+          // error ì²˜ë¦¬
 
           ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                            ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -14318,7 +14318,7 @@ yyreduce:
     if(idlOS::strncasecmp("AUTOEXTEND", (yyvsp[(1) - (4)].strval), 10) != 0 ||
        idlOS::strncasecmp("MAXSIZE", (yyvsp[(3) - (4)].strval), 7) != 0)
     {
-          // error Ã³¸®
+          // error ì²˜ë¦¬
 
           ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                            ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -14336,7 +14336,7 @@ yyreduce:
     // strMatch : AUTOEXTEND, 1
     if(idlOS::strncasecmp("AUTOEXTEND", (yyvsp[(1) - (5)].strval), 10) != 0)
     {
-          // error Ã³¸®
+          // error ì²˜ë¦¬
 
           ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                            ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -14358,7 +14358,7 @@ yyreduce:
        idlOS::strncasecmp("M", (yyvsp[(5) - (6)].strval), 1) != 0 &&
        idlOS::strncasecmp("G", (yyvsp[(5) - (6)].strval), 1) != 0)
     {
-          // error Ã³¸®
+          // error ì²˜ë¦¬
 
           ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                            ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -14380,7 +14380,7 @@ yyreduce:
        idlOS::strncasecmp("MAXSIZE", (yyvsp[(3) - (4)].strval), 7) != 0 ||
        idlOS::strncasecmp("UNLIMITED", (yyvsp[(4) - (4)].strval), 9) != 0)
     {
-          // error Ã³¸®
+          // error ì²˜ë¦¬
 
           ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                            ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -14399,7 +14399,7 @@ yyreduce:
     if(idlOS::strncasecmp("MAXSIZE", (yyvsp[(1) - (2)].strval), 7) != 0 ||
        idlOS::strncasecmp("UNLIMITED", (yyvsp[(2) - (2)].strval), 9) != 0)
     {
-          // error Ã³¸®
+          // error ì²˜ë¦¬
 
           ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                            ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -14417,7 +14417,7 @@ yyreduce:
     // if( strMatch : MAXSIZE, 1)
     if(idlOS::strncasecmp("MAXSIZE", (yyvsp[(1) - (2)].strval), 7) != 0)
     {
-          // error Ã³¸®
+          // error ì²˜ë¦¬
 
           ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                            ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -14439,7 +14439,7 @@ yyreduce:
        idlOS::strncasecmp("M", (yyvsp[(2) - (2)].strval), 1) != 0 &&
        idlOS::strncasecmp("G", (yyvsp[(2) - (2)].strval), 1) != 0)
     {
-          // error Ã³¸®
+          // error ì²˜ë¦¬
 
           ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                            ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -14461,7 +14461,7 @@ yyreduce:
        idlOS::strncasecmp("M", (yyvsp[(2) - (2)].strval), 1) != 0 &&
        idlOS::strncasecmp("G", (yyvsp[(2) - (2)].strval), 1) != 0)
     {
-          // error Ã³¸®
+          // error ì²˜ë¦¬
 
           ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                            ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -14480,7 +14480,7 @@ yyreduce:
     if(idlOS::strncasecmp("INCLUDING", (yyvsp[(1) - (3)].strval), 9) != 0 ||
        idlOS::strncasecmp("CONTENTS", (yyvsp[(2) - (3)].strval), 8) != 0)
     {
-          // error Ã³¸®
+          // error ì²˜ë¦¬
 
           ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                            ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -14500,7 +14500,7 @@ yyreduce:
        idlOS::strncasecmp("CONTENTS", (yyvsp[(2) - (5)].strval), 8) != 0 ||
        idlOS::strncasecmp("DATAFILES", (yyvsp[(4) - (5)].strval), 9) != 0)
     {
-          // error Ã³¸®
+          // error ì²˜ë¦¬
 
           ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                            ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -14929,7 +14929,7 @@ yyreduce:
     {
       if(idlOS::strncasecmp("JOB", (yyvsp[(2) - (11)].strval), 3) != 0)
       {
-          // error Ã³¸®
+          // error ì²˜ë¦¬
 
           ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                            ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -14946,7 +14946,7 @@ yyreduce:
     {
       if(idlOS::strncasecmp("JOB", (yyvsp[(2) - (6)].strval), 3) != 0)
       {
-          // error Ã³¸®
+          // error ì²˜ë¦¬
 
           ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                            ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -14964,7 +14964,7 @@ yyreduce:
     {
       if(idlOS::strncasecmp("JOB", (yyvsp[(2) - (6)].strval), 3) != 0)
       {
-          // error Ã³¸®
+          // error ì²˜ë¦¬
 
           ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                            ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -14982,7 +14982,7 @@ yyreduce:
     {
       if(idlOS::strncasecmp("JOB", (yyvsp[(2) - (6)].strval), 3) != 0)
       {
-          // error Ã³¸®
+          // error ì²˜ë¦¬
 
           ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                            ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -15000,7 +15000,7 @@ yyreduce:
     {
       if(idlOS::strncasecmp("JOB", (yyvsp[(2) - (5)].strval), 3) != 0)
       {
-          // error Ã³¸®
+          // error ì²˜ë¦¬
 
           ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                            ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -15018,7 +15018,7 @@ yyreduce:
       // BUG-41713 each job enable disable
       if(idlOS::strncasecmp("JOB", (yyvsp[(2) - (5)].strval), 3) != 0)
       {
-          // error Ã³¸®
+          // error ì²˜ë¦¬
 
           ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                            ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -15036,7 +15036,7 @@ yyreduce:
       // BUG-41713 each job enable disable
       if(idlOS::strncasecmp("JOB", (yyvsp[(2) - (5)].strval), 3) != 0)
       {
-          // error Ã³¸®
+          // error ì²˜ë¦¬
 
           ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                            ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -15053,7 +15053,7 @@ yyreduce:
     {
       if(idlOS::strncasecmp("JOB", (yyvsp[(2) - (3)].strval), 3) != 0)
       {
-          // error Ã³¸®
+          // error ì²˜ë¦¬
 
           ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                            ulpERR_ABORT_COMP_Unterminated_String_Error );
@@ -15272,8 +15272,8 @@ yyreduce:
         // in host variable
         if ( ( sSymNode = gUlpScopeT.ulpSLookupAll( (yyvsp[(3) - (3)].strval)+1, gUlpCurDepth ) ) == NULL )
         {
-            //host º¯¼ö ¸øÃ£´Â error
-            // error Ã³¸®
+            //host ë³€ìˆ˜ ëª»ì°¾ëŠ” error
+            // error ì²˜ë¦¬
 
             ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                              ulpERR_ABORT_COMP_Unknown_Hostvar_Error,
@@ -15286,8 +15286,8 @@ yyreduce:
             if( (sSymNode -> mType != H_BLOBLOCATOR) &&
                 (sSymNode -> mType != H_CLOBLOCATOR) )
             {
-                //host º¯¼ö type error
-                // error Ã³¸®
+                //host ë³€ìˆ˜ type error
+                // error ì²˜ë¦¬
 
                 ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                                  ulpERR_ABORT_COMP_Lob_Locator_Error );
@@ -15315,8 +15315,8 @@ yyreduce:
         // in host variable
         if ( ( sSymNode = gUlpScopeT.ulpSLookupAll( (yyvsp[(1) - (1)].strval)+1, gUlpCurDepth ) ) == NULL )
         {
-            //host º¯¼ö ¸øÃ£´Â error
-            // error Ã³¸®
+            //host ë³€ìˆ˜ ëª»ì°¾ëŠ” error
+            // error ì²˜ë¦¬
 
             ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                              ulpERR_ABORT_COMP_Unknown_Hostvar_Error,
@@ -15573,8 +15573,8 @@ yyreduce:
         // out host variable
         if ( ( sSymNode = gUlpScopeT.ulpSLookupAll( (yyvsp[(2) - (2)].strval)+1, gUlpCurDepth ) ) == NULL )
         {
-            //host º¯¼ö ¸øÃ£´Â error
-            // error Ã³¸®
+            //host ë³€ìˆ˜ ëª»ì°¾ëŠ” error
+            // error ì²˜ë¦¬
 
             ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                              ulpERR_ABORT_COMP_Unknown_Hostvar_Error,
@@ -15609,8 +15609,8 @@ yyreduce:
         gUlpCodeGen.ulpGenRemoveQueryToken( (yyvsp[(2) - (2)].strval) );
         if ( ( gUlpIndNode = gUlpScopeT.ulpSLookupAll( (yyvsp[(2) - (2)].strval)+1, gUlpCurDepth ) ) == NULL )
         {
-            //host º¯¼ö ¸øÃ£´Â error
-            // error Ã³¸®
+            //host ë³€ìˆ˜ ëª»ì°¾ëŠ” error
+            // error ì²˜ë¦¬
 
             ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                              ulpERR_ABORT_COMP_Unknown_Hostvar_Error,
@@ -15623,13 +15623,13 @@ yyreduce:
             /* BUG-28566: The indicator must be the type of SQLLEN or int or long(32bit). */
             if( (gUlpIndNode->mIsstruct   == ID_TRUE) &&
                 (gUlpIndNode->mStructLink != NULL) )
-            {   // indicator°¡ struct typeÀÌ¶ó¸é ¸ğµç ÇÊµåµéÀº int/long or SQLLEN typeÀÌ¾î¾ßÇÑ´Ù.
-                // indicator symbol node(gUlpIndNode)¾ÈÀÇ struct node pointer(mStructLink)
-                // ¸¦ µû¶ó°¡ field hash table(mChild)ÀÇ symbol node(mInOrderList)¸¦
-                // ¾ò¾î¿Â´Ù.
+            {   // indicatorê°€ struct typeì´ë¼ë©´ ëª¨ë“  í•„ë“œë“¤ì€ int/long or SQLLEN typeì´ì–´ì•¼í•œë‹¤.
+                // indicator symbol node(gUlpIndNode)ì•ˆì˜ struct node pointer(mStructLink)
+                // ë¥¼ ë”°ë¼ê°€ field hash table(mChild)ì˜ symbol node(mInOrderList)ë¥¼
+                // ì–»ì–´ì˜¨ë‹¤.
                 sFieldSymNode = gUlpIndNode->mStructLink->mChild->mInOrderList;
 
-                // struct ¾ÈÀÇ °¢ ÇÊµåµéÀÇ typeÀ» °Ë»çÇÑ´Ù.
+                // struct ì•ˆì˜ ê° í•„ë“œë“¤ì˜ typeì„ ê²€ì‚¬í•œë‹¤.
                 while ( sFieldSymNode != NULL )
                 {
                     switch ( sFieldSymNode->mElement.mType )
@@ -15639,10 +15639,10 @@ yyreduce:
                         case H_CLOBLOCATOR:
                             break;
                         case H_LONG:
-                            // indicator´Â ¹«Á¶°Ç 4byteÀÌ¾î¾ßÇÔ.
+                            // indicatorëŠ” ë¬´ì¡°ê±´ 4byteì´ì–´ì•¼í•¨.
                             if( ID_SIZEOF(long) != 4 )
                             {
-                                // Àß¸øµÈ indicator type error Ã³¸®
+                                // ì˜ëª»ëœ indicator type error ì²˜ë¦¬
                                 ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                                                  ulpERR_ABORT_COMP_Wrong_IndicatorType_Error,
                                                  sFieldSymNode->mElement.mName );
@@ -15651,7 +15651,7 @@ yyreduce:
                             }
                             break;
                         default:
-                            // Àß¸øµÈ indicator type error Ã³¸®
+                            // ì˜ëª»ëœ indicator type error ì²˜ë¦¬
                             ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                                              ulpERR_ABORT_COMP_Wrong_IndicatorType_Error,
                                              sFieldSymNode->mElement.mName );
@@ -15659,12 +15659,12 @@ yyreduce:
                             COMPerror( ulpGetErrorMSG(&gUlpParseInfo.mErrorMgr) );
                             break;
                     }
-                    // ´ÙÀ½ field symbol node¸¦ °¡¸®Å²´Ù.
+                    // ë‹¤ìŒ field symbol nodeë¥¼ ê°€ë¦¬í‚¨ë‹¤.
                     sFieldSymNode = sFieldSymNode->mInOrderNext;
                 }
             }
             else
-            {   // struct typeÀÌ ¾Æ´Ï´Ù.
+            {   // struct typeì´ ì•„ë‹ˆë‹¤.
                 switch( gUlpIndNode->mType )
                 {   // must be the type of SQLLEN or int or long(32bit).
                     case H_INT:
@@ -15672,10 +15672,10 @@ yyreduce:
                     case H_CLOBLOCATOR:
                         break;
                     case H_LONG:
-                        // indicator´Â ¹«Á¶°Ç 4byteÀÌ¾î¾ßÇÔ.
+                        // indicatorëŠ” ë¬´ì¡°ê±´ 4byteì´ì–´ì•¼í•¨.
                         if( ID_SIZEOF(long) != 4 )
                         {
-                            // Àß¸øµÈ indicator type error Ã³¸®
+                            // ì˜ëª»ëœ indicator type error ì²˜ë¦¬
                             ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                                              ulpERR_ABORT_COMP_Wrong_IndicatorType_Error,
                                              sFieldSymNode->mElement.mName );
@@ -15684,7 +15684,7 @@ yyreduce:
                         }
                         break;
                     default:
-                        // Àß¸øµÈ indicator type error Ã³¸®
+                        // ì˜ëª»ëœ indicator type error ì²˜ë¦¬
                         ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                                          ulpERR_ABORT_COMP_Wrong_IndicatorType_Error,
                                          gUlpIndNode->mName );
@@ -15952,7 +15952,7 @@ int doCOMPparse( SChar *aFilename )
 /***********************************************************************
  *
  * Description :
- *      COMPparse precompilingÀ» ½ÃÀÛµÇ°Ô ÇÏ´Â initial ÇÔ¼ö.
+ *      COMPparse precompilingì„ ì‹œì‘ë˜ê²Œ í•˜ëŠ” initial í•¨ìˆ˜.
  *
  ***********************************************************************/
     int sRes;
@@ -16000,9 +16000,9 @@ idBool ulpCOMPCheckArray( ulpSymTElement *aSymNode )
 /***********************************************************************
  *
  * Description :
- *      array bindingÀ» ÇØ¾ßÇÒÁö(isarrÀ» true·Î setÇÒÁö) ¿©ºÎ¸¦ Ã¼Å©ÇÏ±â À§ÇÑ ÇÔ¼ö.
- *      struct A { int a[10]; } sA; ÀÇ °æ¿ì isarr¸¦ true·Î setÇÏ°í, isstruct¸¦ 
- *      false·Î setÇÏ±â À§ÇØ »ç¿ëµÊ.
+ *      array bindingì„ í•´ì•¼í• ì§€(isarrì„ trueë¡œ setí• ì§€) ì—¬ë¶€ë¥¼ ì²´í¬í•˜ê¸° ìœ„í•œ í•¨ìˆ˜.
+ *      struct A { int a[10]; } sA; ì˜ ê²½ìš° isarrë¥¼ trueë¡œ setí•˜ê³ , isstructë¥¼ 
+ *      falseë¡œ setí•˜ê¸° ìœ„í•´ ì‚¬ìš©ë¨.
  *
  ***********************************************************************/
     ulpSymTNode *sFieldSymNode;
@@ -16058,11 +16058,11 @@ void ulpValidateHostValue( void         *yyvsp,
 /***********************************************************************
  *
  * Description :
- *      host º¯¼ö°¡ À¯È¿ÇÑÁö È®ÀÎÇÏ¸ç, À¯È¿ÇÏ´Ù¸é ulpGenHostVarList ¿¡ Ãß°¡ÇÑ´Ù.
- *      aNumofTokens´Â ÃÑ ÅäÅ«µéÀÇ ¼ö,
- *      aHostValIndex ´Â È£½ºÆ® º¯¼ö°¡ ¸î¹øÂ° ÅäÅ«¿¡ À§Ä¡ÇÏ´ÂÁö¸¦ ³ªÅ¸³»¸ç,
- *      aRemoveTokIndexs´Â SQLÄõ¸®º¯È¯½Ã ¸î¹øÂ° ÅäÅ«¿¡ À§Ä¡ÇÏ´Â ÅäÅ«µéÀ» Á¦°ÅÇÒÁö¸¦ ³ªÅ¸³»ÁØ´Ù.
- *      ex> aRemoveTokIndexsÀÌ 123ÀÌ¸é 1,2,3 ¿¡ À§Ä¡ÇÏ´Â ÅäÅ«µéÀ» Á¦°ÅÇØÁØ´Ù.
+ *      host ë³€ìˆ˜ê°€ ìœ íš¨í•œì§€ í™•ì¸í•˜ë©°, ìœ íš¨í•˜ë‹¤ë©´ ulpGenHostVarList ì— ì¶”ê°€í•œë‹¤.
+ *      aNumofTokensëŠ” ì´ í† í°ë“¤ì˜ ìˆ˜,
+ *      aHostValIndex ëŠ” í˜¸ìŠ¤íŠ¸ ë³€ìˆ˜ê°€ ëª‡ë²ˆì§¸ í† í°ì— ìœ„ì¹˜í•˜ëŠ”ì§€ë¥¼ ë‚˜íƒ€ë‚´ë©°,
+ *      aRemoveTokIndexsëŠ” SQLì¿¼ë¦¬ë³€í™˜ì‹œ ëª‡ë²ˆì§¸ í† í°ì— ìœ„ì¹˜í•˜ëŠ” í† í°ë“¤ì„ ì œê±°í• ì§€ë¥¼ ë‚˜íƒ€ë‚´ì¤€ë‹¤.
+ *      ex> aRemoveTokIndexsì´ 123ì´ë©´ 1,2,3 ì— ìœ„ì¹˜í•˜ëŠ” í† í°ë“¤ì„ ì œê±°í•´ì¤€ë‹¤.
  *
  ***********************************************************************/
     SInt            sIndexs, sMod;
@@ -16093,8 +16093,8 @@ void ulpValidateHostValue( void         *yyvsp,
         if ( ((gUlpCodeGen.ulpGenGetEmSQLInfo()->mHostValueType) == IN_GEN_ARRAYSTRUCT) ||
              ((gUlpCodeGen.ulpGenGetEmSQLInfo()->mHostValueType) == OUT_GEN_ARRAYSTRUCT))
         {
-            // error Ã³¸®
-            // array struct typeÀº ´Ù¸¥ host º¯¼ö¿Í °°ÀÌ ¿Ã¼ö ¾ø´Ù.
+            // error ì²˜ë¦¬
+            // array struct typeì€ ë‹¤ë¥¸ host ë³€ìˆ˜ì™€ ê°™ì´ ì˜¬ìˆ˜ ì—†ë‹¤.
 
             ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                              ulpERR_ABORT_COMP_Repeat_Array_Struct_Error,
@@ -16111,8 +16111,8 @@ void ulpValidateHostValue( void         *yyvsp,
         if ( (gUlpCodeGen.ulpGenGetEmSQLInfo()->mHostValueType)
              == sArrayStructType )
         {
-            // error Ã³¸®
-            // array struct typeÀº ´Ù¸¥ host º¯¼ö¿Í °°ÀÌ ¿Ã¼ö ¾ø´Ù.
+            // error ì²˜ë¦¬
+            // array struct typeì€ ë‹¤ë¥¸ host ë³€ìˆ˜ì™€ ê°™ì´ ì˜¬ìˆ˜ ì—†ë‹¤.
 
             ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                              ulpERR_ABORT_COMP_Repeat_Array_Struct_Error,
@@ -16132,8 +16132,8 @@ void ulpValidateHostValue( void         *yyvsp,
          ) == NULL
        )
     {
-        //host º¯¼ö ¸øÃ£´Â error
-        // error Ã³¸®
+        //host ë³€ìˆ˜ ëª»ì°¾ëŠ” error
+        // error ì²˜ë¦¬
 
         ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                          ulpERR_ABORT_COMP_Unknown_Hostvar_Error,
@@ -16146,15 +16146,15 @@ void ulpValidateHostValue( void         *yyvsp,
     }
     else
     {
-        /* BUG-28788 : FORÀıÀ» ÀÌ¿ëÇÏ¿© struct pointer typeÀÇ array insert°¡ ¾ÈµÊ  */
+        /* BUG-28788 : FORì ˆì„ ì´ìš©í•˜ì—¬ struct pointer typeì˜ array insertê°€ ì•ˆë¨  */
         if ( (gUlpCodeGen.ulpGenGetEmSQLInfo()->mIters[0] != '\0') && 
              (sSymNode->mPointer <= 0) )
         {
-            /* BUG-44577 array or pointer typeÀÌ ¾Æ´Ñµ¥ FORÀıÀÌ ¿Ô´Ù¸é error¸¦ reportÇÔ. 
-             * array or pointer typeÀÌ ¾Æ´ÏÁö¸¸ struct typeÀÏ °æ¿ì struct¾ÈÀÇ º¯¼ö¸¦ Ã¼Å©ÇÑ´Ù. */
+            /* BUG-44577 array or pointer typeì´ ì•„ë‹Œë° FORì ˆì´ ì™”ë‹¤ë©´ errorë¥¼ reportí•¨. 
+             * array or pointer typeì´ ì•„ë‹ˆì§€ë§Œ struct typeì¼ ê²½ìš° structì•ˆì˜ ë³€ìˆ˜ë¥¼ ì²´í¬í•œë‹¤. */
             if ( sSymNode->mIsstruct == ID_TRUE )
             {
-                /* BUG-44577 struct¾È¿¡ ¹è¿­ º¯¼ö°¡ ÀÖ´ÂÁö È®ÀÎ */
+                /* BUG-44577 structì•ˆì— ë°°ì—´ ë³€ìˆ˜ê°€ ìˆëŠ”ì§€ í™•ì¸ */
                 if ( ulpValidateFORStructArray(sSymNode) != IDE_SUCCESS)
                 {
                     ulpSetErrorCode( &gUlpParseInfo.mErrorMgr, ulpERR_ABORT_FORstmt_Invalid_usage_Error );
@@ -16175,7 +16175,7 @@ void ulpValidateHostValue( void         *yyvsp,
             /* pointer type */
         }
 
-        // È£½ºÆ® º¯¼öµé¿¡ ´ëÇØ struct,arraystruct type ¼³Á¤.
+        // í˜¸ìŠ¤íŠ¸ ë³€ìˆ˜ë“¤ì— ëŒ€í•´ struct,arraystruct type ì„¤ì •.
         if ( sSymNode->mIsstruct == ID_TRUE )
         {
             if ( sSymNode->mArraySize[0] != '\0' )
@@ -16185,7 +16185,7 @@ void ulpValidateHostValue( void         *yyvsp,
                 /* BUG-32100 An indicator of arraystructure type should not be used for a hostvariable. */
                 if (gUlpIndNode != NULL)
                 {
-                    // ±¸Á¶Ã¼ ¹è¿­À» È£½ºÆ® º¯¼ö·Î »ç¿ëÇÏ¸é, ÀÎµğÄÉÀÌÅÍ¸¦ °¡Áú ¼ö ¾ø´Ù.
+                    // êµ¬ì¡°ì²´ ë°°ì—´ì„ í˜¸ìŠ¤íŠ¸ ë³€ìˆ˜ë¡œ ì‚¬ìš©í•˜ë©´, ì¸ë””ì¼€ì´í„°ë¥¼ ê°€ì§ˆ ìˆ˜ ì—†ë‹¤.
                     ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                                      ulpERR_ABORT_COMP_Invalid_Indicator_Usage_Error );
                     gUlpCOMPErrCode = ulpGetErrorSTATE( &gUlpParseInfo.mErrorMgr );
@@ -16287,11 +16287,11 @@ void ulpValidateHostValue( void         *yyvsp,
  *  ulpValidateFORStructArray
  *
  *  Description :
- *     ulpValidateHostValue¿¡¼­ È£ÃâµÇ´Â ÇÔ¼öµé·Î, 
-       FORÀı¿¡ »ç¿ëµÇ´Â host º¯¼ö¸¦ Ã¼Å©ÇÑ´Ù.
+ *     ulpValidateHostValueì—ì„œ í˜¸ì¶œë˜ëŠ” í•¨ìˆ˜ë“¤ë¡œ, 
+       FORì ˆì— ì‚¬ìš©ë˜ëŠ” host ë³€ìˆ˜ë¥¼ ì²´í¬í•œë‹¤.
  *
  *  Parameters :  
- *     ulpSymTElement *aElement : Ã¼Å©ÇØ¾ßµÉ host º¯¼ö Á¤º¸
+ *     ulpSymTElement *aElement : ì²´í¬í•´ì•¼ë  host ë³€ìˆ˜ ì •ë³´
  * ========================================================*/
 IDE_RC ulpValidateFORStructArray(ulpSymTElement *aElement)
 {
@@ -16303,7 +16303,7 @@ IDE_RC ulpValidateFORStructArray(ulpSymTElement *aElement)
         
     sStructTNode    = (ulpStructTNode*)aElement->mStructLink;
     
-    /* BUG-44577 struct¾È¿¡ º¯¼ö°¡ ¾øÀ½ */
+    /* BUG-44577 structì•ˆì— ë³€ìˆ˜ê°€ ì—†ìŒ */
     IDE_TEST( sStructTNode->mChild->mCnt <= 0 );
     
     sSymTNode       = sStructTNode->mChild->mInOrderList;
@@ -16311,7 +16311,7 @@ IDE_RC ulpValidateFORStructArray(ulpSymTElement *aElement)
                 
     IDE_TEST( (sFirstFieldNode->mIsstruct == ID_TRUE) || (sFirstFieldNode->mIsarray == ID_FALSE));
         
-    /* BUG-44577 char typeÀÏ °æ¿ì ¹«Á¶°Ç 2Â÷¿ø ¹è¿­ÀÌ ¿Í¾ß ÇÑ´Ù. */
+    /* BUG-44577 char typeì¼ ê²½ìš° ë¬´ì¡°ê±´ 2ì°¨ì› ë°°ì—´ì´ ì™€ì•¼ í•œë‹¤. */
     if ( (sFirstFieldNode->mType == H_CHAR)    ||
          (sFirstFieldNode->mType == H_VARCHAR) ||
          (sFirstFieldNode->mType == H_NCHAR)   ||
@@ -16327,7 +16327,7 @@ IDE_RC ulpValidateFORStructArray(ulpSymTElement *aElement)
         
         IDE_TEST( (sFieldNode->mIsstruct == ID_TRUE) || (sFieldNode->mIsarray == ID_FALSE));
         
-        /* BUG-44577 char typeÀÏ °æ¿ì ¹«Á¶°Ç 2Â÷¿ø ¹è¿­ÀÌ ¿Í¾ß ÇÑ´Ù. */
+        /* BUG-44577 char typeì¼ ê²½ìš° ë¬´ì¡°ê±´ 2ì°¨ì› ë°°ì—´ì´ ì™€ì•¼ í•œë‹¤. */
         if ( (sFirstFieldNode->mType == H_CHAR)    ||
              (sFirstFieldNode->mType == H_VARCHAR) ||
              (sFirstFieldNode->mType == H_NCHAR)   ||
@@ -16363,7 +16363,7 @@ ulpParseInfo::ulpParseInfo()
     mStructPtr           = NULL;
     mHostValInfo4Typedef = NULL;
     mVarcharDecl         = ID_FALSE;
-    /* BUG-27875 : ±¸Á¶Ã¼¾ÈÀÇ typedef typeÀÎ½Ä¸øÇÔ. */
+    /* BUG-27875 : êµ¬ì¡°ì²´ì•ˆì˜ typedef typeì¸ì‹ëª»í•¨. */
     mSkipTypedef         = ID_FALSE;
 
     /* BUG-35518 Shared pointer should be supported in APRE */
@@ -16372,8 +16372,8 @@ ulpParseInfo::ulpParseInfo()
 
     IDU_LIST_INIT( &mVarcharVarList );
 
-    /* BUG-28118 : system Çì´õÆÄÀÏµéµµ ÆÄ½ÌµÅ¾ßÇÔ.                       *
-     * 6th. problem : Nested structure Á¤ÀÇÁß scope¸¦ Àß¸ø °è»êÇÏ´Â ¹®Á¦ */
+    /* BUG-28118 : system í—¤ë”íŒŒì¼ë“¤ë„ íŒŒì‹±ë¼ì•¼í•¨.                       *
+     * 6th. problem : Nested structure ì •ì˜ì¤‘ scopeë¥¼ ì˜ëª» ê³„ì‚°í•˜ëŠ” ë¬¸ì œ */
     mHostValInfo[mStructDeclDepth]
             = (ulpSymTElement *) idlOS::malloc( ID_SIZEOF( ulpSymTElement ) );
 
@@ -16392,14 +16392,14 @@ ulpParseInfo::ulpParseInfo()
 }
 
 
-/* BUG-28118 : system Çì´õÆÄÀÏµéµµ ÆÄ½ÌµÅ¾ßÇÔ.                       *
- * 6th. problem : Nested structure Á¤ÀÇÁß scope¸¦ Àß¸ø °è»êÇÏ´Â ¹®Á¦ */
+/* BUG-28118 : system í—¤ë”íŒŒì¼ë“¤ë„ íŒŒì‹±ë¼ì•¼í•¨.                       *
+ * 6th. problem : Nested structure ì •ì˜ì¤‘ scopeë¥¼ ì˜ëª» ê³„ì‚°í•˜ëŠ” ë¬¸ì œ */
 void ulpParseInfo::ulpFinalize(void)
 {
 /***********************************************************************
  *
  * Description :
- *    malloc µÈ mHostValInfo ¹è¿­ÀÌ freeµÇÁö ¾Ê¾Ò´Ù¸é freeÇØÁØ´Ù.
+ *    malloc ëœ mHostValInfo ë°°ì—´ì´ freeë˜ì§€ ì•Šì•˜ë‹¤ë©´ freeí•´ì¤€ë‹¤.
  *
  * Implementation :
  *
@@ -16413,15 +16413,15 @@ void ulpParseInfo::ulpFinalize(void)
 }
 
 
-/* BUG-28118 : system Çì´õÆÄÀÏµéµµ ÆÄ½ÌµÅ¾ßÇÔ.                       *
- * 6th. problem : Nested structure Á¤ÀÇÁß scope¸¦ Àß¸ø °è»êÇÏ´Â ¹®Á¦ */
+/* BUG-28118 : system í—¤ë”íŒŒì¼ë“¤ë„ íŒŒì‹±ë¼ì•¼í•¨.                       *
+ * 6th. problem : Nested structure ì •ì˜ì¤‘ scopeë¥¼ ì˜ëª» ê³„ì‚°í•˜ëŠ” ë¬¸ì œ */
 void ulpParseInfo::ulpInitHostInfo( void )
 {
 /***********************************************************************
  *
  * Description :
- *    host º¯¼ö Á¤º¸ ÃÊ±âÈ­ ÇÔ¼ö·Î Æ¯Á¤ host º¯¼ö¸¦ ÆÄ½ÌÇÏ¸é¼­ settingµÈ
- *    º¯¼ö¿¡´ëÇÑ Á¤º¸¸¦ ÆÄ½ÌÀ» ¸¶Ä£ÈÄ º»ÇÔ¼ö°¡ È£ÃâµÇ¾î ´Ù½Ã ÃÊ±âÈ­ ÇØÁØ´Ù.
+ *    host ë³€ìˆ˜ ì •ë³´ ì´ˆê¸°í™” í•¨ìˆ˜ë¡œ íŠ¹ì • host ë³€ìˆ˜ë¥¼ íŒŒì‹±í•˜ë©´ì„œ settingëœ
+ *    ë³€ìˆ˜ì—ëŒ€í•œ ì •ë³´ë¥¼ íŒŒì‹±ì„ ë§ˆì¹œí›„ ë³¸í•¨ìˆ˜ê°€ í˜¸ì¶œë˜ì–´ ë‹¤ì‹œ ì´ˆê¸°í™” í•´ì¤€ë‹¤.
  * Implementation :
  *
  ***********************************************************************/
@@ -16448,14 +16448,14 @@ void ulpParseInfo::ulpCopyHostInfo4Typedef( ulpSymTElement *aD,
 /***********************************************************************
  *
  * Description :
- *    typedef ±¸¹® Ã³¸®¸¦ À§ÇÑ ulpSymTElement copy ÇÔ¼ö·Î, typedef µÈ Æ¯Á¤ typeÀ»
- *    ¼±¾ğ½Ã »ç¿ëÇÒ¶§ È£ÃâµÇ¾î ÇØ´ç type¿¡ ´ëÇÑ Á¤º¸¸¦ º¹»çÇØÁÜ.
- *   ¿¹)  typedef struct A { int a; };
-          A sA;           <----   ÀÌ°æ¿ì type A¿¡ ´ëÇÑ Á¤º¸¸¦ º¯¼ö sA Á¤º¸¿¡ º¹»çÇØÁÜ.
+ *    typedef êµ¬ë¬¸ ì²˜ë¦¬ë¥¼ ìœ„í•œ ulpSymTElement copy í•¨ìˆ˜ë¡œ, typedef ëœ íŠ¹ì • typeì„
+ *    ì„ ì–¸ì‹œ ì‚¬ìš©í• ë•Œ í˜¸ì¶œë˜ì–´ í•´ë‹¹ typeì— ëŒ€í•œ ì •ë³´ë¥¼ ë³µì‚¬í•´ì¤Œ.
+ *   ì˜ˆ)  typedef struct A { int a; };
+          A sA;           <----   ì´ê²½ìš° type Aì— ëŒ€í•œ ì •ë³´ë¥¼ ë³€ìˆ˜ sA ì •ë³´ì— ë³µì‚¬í•´ì¤Œ.
  * Implementation :
  *
  ***********************************************************************/
-    // mIsTypedef, mNameÀº º¹»ç ´ë»óÀÌ ¾Æ´Ô.
+    // mIsTypedef, mNameì€ ë³µì‚¬ ëŒ€ìƒì´ ì•„ë‹˜.
     aD->mType     = aS->mType;
     aD->mIsarray  = aS->mIsarray;
     aD->mIsstruct = aS->mIsstruct;

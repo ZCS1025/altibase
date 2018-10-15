@@ -19,21 +19,21 @@
 
 
 /*
- * ÇÁ·ÎÅäÄÝ ¹öÀü¾÷À¸·Î »ó¼ö¸¦ Ãß°¡ÇÒ ¶§´Â ´ÙÀ½Ã³·³ Ãß°¡ÇÑ´Ù.
+ * í”„ë¡œí† ì½œ ë²„ì „ì—…ìœ¼ë¡œ ìƒìˆ˜ë¥¼ ì¶”ê°€í•  ë•ŒëŠ” ë‹¤ìŒì²˜ëŸ¼ ì¶”ê°€í•œë‹¤.
  *
  *    enum {
  *        CM_ID_NONE = 0,
  *        ...
  *        CM_ID_MAX_VER1
- *    };  <-- ÇÁ·ÎÅäÄÝ ¹öÀü1ÀÇ ±âÁ¸ Á¤ÀÇ
+ *    };  <-- í”„ë¡œí† ì½œ ë²„ì „1ì˜ ê¸°ì¡´ ì •ì˜
  *
  *    enum {
  *        CM_ID_NEW = CM_ID_MAX_VER1,
  *        ...
  *        CM_ID_MAX_VER2
- *    };  <-- ÇÁ·ÎÅäÄÝ ¹öÀü2ÀÇ »õ·Î¿î »ó¼ö Á¤ÀÇ
+ *    };  <-- í”„ë¡œí† ì½œ ë²„ì „2ì˜ ìƒˆë¡œìš´ ìƒìˆ˜ ì •ì˜
  *
- *    #define CM_ID_MAX CM_ID_MAX_VER2  <-- ¸¶Áö¸· ÇÁ·ÎÅäÄÝ ¹öÀüÀÇ MAX·Î Á¤ÀÇ
+ *    #define CM_ID_MAX CM_ID_MAX_VER2  <-- ë§ˆì§€ë§‰ í”„ë¡œí† ì½œ ë²„ì „ì˜ MAXë¡œ ì •ì˜
  */
 
 
@@ -212,9 +212,9 @@ enum
      * PROJ-1579 NCHAR
      */
     CMP_DB_PROPERTY_NLS_NCHAR_LITERAL_REPLACE      = 19,
-    CMP_DB_PROPERTY_NLS_CHARACTERSET               = 20, // µ¥ÀÌÅÍº£ÀÌ½º Ä³¸¯ÅÍ ¼Â
-    CMP_DB_PROPERTY_NLS_NCHAR_CHARACTERSET         = 21, // ³»¼Å³Î Ä³¸¯ÅÍ ¼Â
-    CMP_DB_PROPERTY_ENDIAN                         = 22, // ¼­¹öÀÇ endian Á¤º¸
+    CMP_DB_PROPERTY_NLS_CHARACTERSET               = 20, // ë°ì´í„°ë² ì´ìŠ¤ ìºë¦­í„° ì…‹
+    CMP_DB_PROPERTY_NLS_NCHAR_CHARACTERSET         = 21, // ë‚´ì…”ë„ ìºë¦­í„° ì…‹
+    CMP_DB_PROPERTY_ENDIAN                         = 22, // ì„œë²„ì˜ endian ì •ë³´
 
     CMP_DB_PROPERTY_MAX_STATEMENTS_PER_SESSION     = 23, // BUG-31144 
     CMP_DB_PROPERTY_FAILOVER_SOURCE                = 24, // BUG-31390 Failover info for v$session
@@ -290,13 +290,13 @@ ACP_INLINE const acp_char_t* cmpGetDbPropertyName( acp_uint16_t aPropertyId )
 #define CMP_DB_TRANSACTION_ROLLBACK 2
 
 /*
- * Parameter type. SQL_PARAM_INPUT/OUTPUT/INPUT_OUTPUT °ú »ó¼ö ÀÏÄ¡½ÃÅ´.
+ * Parameter type. SQL_PARAM_INPUT/OUTPUT/INPUT_OUTPUT ê³¼ ìƒìˆ˜ ì¼ì¹˜ì‹œí‚´.
  */
 #define CMP_DB_PARAM_INPUT        1
 #define CMP_DB_PARAM_INPUT_OUTPUT 2
 #define CMP_DB_PARAM_OUTPUT       4
 
-/* BindInfo Flags. QCI_BIND_FLAGS_* ¿Í °°¾Æ¾ß ÇÑ´Ù. */
+/* BindInfo Flags. QCI_BIND_FLAGS_* ì™€ ê°™ì•„ì•¼ í•œë‹¤. */
 #define CMP_DB_BIND_FLAGS_NULLABLE          0x01
 #define CMP_DB_BIND_FLAGS_UPDATABLE         0x02
 

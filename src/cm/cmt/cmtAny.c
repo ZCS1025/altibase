@@ -917,11 +917,11 @@ ACI_RC cmtAnyGetNumericForWrite(cmtAny *aAny, cmtNumeric **aValue, acp_uint8_t a
 }
 
 /***************************************************************
- * ÇØ´ç ÇÔ¼ö´Â cmtAny°¡ ¿¬¼ÓµÈ ¸Þ¸ð¸® °ø°£¿¡ ÀúÀåµÇ¾úÀ»¶§ÀÇ
- * Å©±â¸¦ ±¸ÇÏ´Â ÇÔ¼öÀÌ´Ù.
- * °¡º¯±æÀÌ Å¸ÀÔ(CMT_ID_VARIABLE/CMT_ID_BINARY/CMT_ID_BIT/
- * CMT_ID_NIBBLE)Àº CMT_ID_IN_*À¸·Î º¯°æµÇ¾úÀ»¶§ÀÇ
- * Å©±â¸¦ ¸®ÅÏÇÑ´Ù.
+ * í•´ë‹¹ í•¨ìˆ˜ëŠ” cmtAnyê°€ ì—°ì†ëœ ë©”ëª¨ë¦¬ ê³µê°„ì— ì €ìž¥ë˜ì—ˆì„ë•Œì˜
+ * í¬ê¸°ë¥¼ êµ¬í•˜ëŠ” í•¨ìˆ˜ì´ë‹¤.
+ * ê°€ë³€ê¸¸ì´ íƒ€ìž…(CMT_ID_VARIABLE/CMT_ID_BINARY/CMT_ID_BIT/
+ * CMT_ID_NIBBLE)ì€ CMT_ID_IN_*ìœ¼ë¡œ ë³€ê²½ë˜ì—ˆì„ë•Œì˜
+ * í¬ê¸°ë¥¼ ë¦¬í„´í•œë‹¤.
  ***************************************************************/
 acp_uint32_t cmtAnyGetSize( cmtAny *aAny )
 {
@@ -1024,9 +1024,9 @@ acp_uint32_t cmtAnyGetSize( cmtAny *aAny )
 }
 
 /***************************************************************
- * ÇØ´ç ÇÔ¼ö´Â cmtAny¸¦ ¿¬¼ÓµÈ ¸Þ¸ð¸® °ø°£¿¡ ÀúÀåÇÏ´Â ÇÔ¼öÀÌ´Ù.
- * °¡º¯±æÀÌ Å¸ÀÔ(CMT_ID_VARIABLE/CMT_ID_BINARY/CMT_ID_BIT/
- * CMT_ID_NIBBLE)Àº CMT_ID_IN_*À¸·Î º¯È¯½ÃÄÑ ÀúÀåÇÑ´Ù.
+ * í•´ë‹¹ í•¨ìˆ˜ëŠ” cmtAnyë¥¼ ì—°ì†ëœ ë©”ëª¨ë¦¬ ê³µê°„ì— ì €ìž¥í•˜ëŠ” í•¨ìˆ˜ì´ë‹¤.
+ * ê°€ë³€ê¸¸ì´ íƒ€ìž…(CMT_ID_VARIABLE/CMT_ID_BINARY/CMT_ID_BIT/
+ * CMT_ID_NIBBLE)ì€ CMT_ID_IN_*ìœ¼ë¡œ ë³€í™˜ì‹œì¼œ ì €ìž¥í•œë‹¤.
  ***************************************************************/
 ACI_RC cmtAnyWriteAnyToBuffer( cmtAny *aAny,
                                acp_uint8_t  *aBuffer )
@@ -1059,12 +1059,12 @@ ACI_RC cmtAnyWriteAnyToBuffer( cmtAny *aAny,
     }
         
     /*
-     * Type ID ¾¸
+     * Type ID ì”€
      */
     CMT_COLLECTION_WRITE_BYTE1( sData, sCursor, sType)
 
     /*
-     * Type º°·Î Data ¾¸
+     * Type ë³„ë¡œ Data ì”€
      */
     switch (aAny->mType)
     {

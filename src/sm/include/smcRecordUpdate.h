@@ -30,7 +30,7 @@ class smcRecordUpdate
 public:
     /* DML Logging API */
 
-    /* Insert(DML)¿¡ ´ëÇÑ Log¸¦ ±â·ÏÇÑ´Ù. */
+    /* Insert(DML)ì— ëŒ€í•œ Logë¥¼ ê¸°ë¡í•œë‹¤. */
     static IDE_RC writeInsertLog( void*             aTrans,
                                   smcTableHeader*   aHeader,
                                   SChar*            aFixedRow,
@@ -40,7 +40,7 @@ public:
                                   UInt              aLargeVarCnt,
                                   const smiColumn** aLargeVarColumn );
     
-    /* Update Versioning¿¡ ´ëÇÑ Log¸¦ ±â·ÏÇÑ´Ù.*/
+    /* Update Versioningì— ëŒ€í•œ Logë¥¼ ê¸°ë¡í•œë‹¤.*/
     static IDE_RC writeUpdateVersionLog( void                   * aTrans,
                                          smcTableHeader         * aHeader,
                                          const smiColumnList    * aColumnList,
@@ -53,7 +53,7 @@ public:
                                          UInt                     aAImageSize,
                                          UShort                   aUnitedVarColCnt );
     
-    /* Update Inplace¿¡ ´ëÇÑ Log¸¦ ±â·ÏÇÑ´Ù.*/
+    /* Update Inplaceì— ëŒ€í•œ Logë¥¼ ê¸°ë¡í•œë‹¤.*/
     static IDE_RC writeUpdateInplaceLog(void*                 aTrans,
                                         smcTableHeader*       aHeader,
                                         const SChar*          aRowPtr,
@@ -61,7 +61,7 @@ public:
                                         const smiValue      * aValueList,
                                         SChar*                aRowPtrBuffer);
 
-    /* Remove Row¿¡ ´ëÇÑ Log¸¦ ±â·ÏÇÑ´Ù.*/
+    /* Remove Rowì— ëŒ€í•œ Logë¥¼ ê¸°ë¡í•œë‹¤.*/
     static IDE_RC writeRemoveVersionLog( void            * aTrans,
                                          smcTableHeader  * aHeader,
                                          SChar           * aRow,
@@ -75,7 +75,7 @@ public:
     static UInt getPrimaryKeySize( const smcTableHeader*    aHeader,
                                    const SChar*             aFixRow);
 
-    /* DML(insert, update(mvcc, inplace), delete)ÀÇ LogÀÇ Flag¸¦ °áÁ¤*/
+    /* DML(insert, update(mvcc, inplace), delete)ì˜ Logì˜ Flagë¥¼ ê²°ì •*/
     static IDE_RC  makeLogFlag(void                 *aTrans,
                                const smcTableHeader *aHeader,
                                smrUpdateType         aType,
@@ -315,20 +315,20 @@ public:
                                                    SInt     /*aSize*/,
                                                    UInt       aFlag);
     
-    /* Primary Key Log±â·Ï½Ã »ç¿ë. */
+    /* Primary Key Logê¸°ë¡ì‹œ ì‚¬ìš©. */
     static IDE_RC writePrimaryKeyLog( void*                    aTrans,
                                       const smcTableHeader*    aHeader,
                                       const SChar*             aFixRow,
                                       const UInt               aPKSize,
                                       UInt                     aOffset);
     
-    /* SVC ¸ğµâ¿¡¼­ »ç¿ëÇÒ ¼ö ÀÖµµ·Ï publicÀ¸·Î ¹Ù²Û´Ù. */
-    /* aTableÀÇ ¸ğµç Index·Î ºÎÅÍ aRowID¿¡ ÇØ´çÇÏ´Â Row¸¦ »èÁ¦ */
+    /* SVC ëª¨ë“ˆì—ì„œ ì‚¬ìš©í•  ìˆ˜ ìˆë„ë¡ publicìœ¼ë¡œ ë°”ê¾¼ë‹¤. */
+    /* aTableì˜ ëª¨ë“  Indexë¡œ ë¶€í„° aRowIDì— í•´ë‹¹í•˜ëŠ” Rowë¥¼ ì‚­ì œ */
     static IDE_RC deleteRowFromTBIdx( scSpaceID aSpaceID,
                                       smOID     aTableOID,
                                       smOID     aRowID );
 
-    /* aTableÀÇ ¸ğµç Index¿¡ aRowID¿¡ ÇØ´çÇÏ´Â Row Insert */
+    /* aTableì˜ ëª¨ë“  Indexì— aRowIDì— í•´ë‹¹í•˜ëŠ” Row Insert */
     static IDE_RC insertRow2TBIdx(void*     aTrans,
                                   scSpaceID aSpaceID,
                                   smOID     aTableOID,
@@ -352,22 +352,22 @@ public:
 
 private:
 
-    /* MVCCÀÇ Fixed Column¿¡ °üÇÑ Update½Ã Fixe Column¿¡ ´ëÇÑ
-       Log±â·Ï½Ã »ç¿ëÇÑ´Ù. */
+    /* MVCCì˜ Fixed Columnì— ê´€í•œ Updateì‹œ Fixe Columnì— ëŒ€í•œ
+       Logê¸°ë¡ì‹œ ì‚¬ìš©í•œë‹¤. */
     static IDE_RC writeFCLog4MVCC( void              *aTrans,
                                    const smiColumn   *aColumn,
                                    UInt              *aLogOffset,
                                    void              *aValue,
                                    UInt               aLength);
 
-    /* MVCCÀÇ Variable Column¿¡ °üÇÑ Update½Ã Log±â·Ï½Ã »ç¿ëÇÑ´Ù. */
+    /* MVCCì˜ Variable Columnì— ê´€í•œ Updateì‹œ Logê¸°ë¡ì‹œ ì‚¬ìš©í•œë‹¤. */
     static IDE_RC writeVCLog4MVCC( void              *aTrans,
                                    const smiColumn   *aColumn,
                                    smVCDesc          *aVCDesc,
                                    UInt              *aOffset,
                                    smcVCLogWrtOpt     aOption);
 
-    /* Inplace Update½Ã °¢ ColumnÀÇ Update¿¡ ´ëÇÑ Log ±â·Ï */
+    /* Inplace Updateì‹œ ê° Columnì˜ Updateì— ëŒ€í•œ Log ê¸°ë¡ */
     static IDE_RC writeUInplaceColumnLog( void              *aTrans,
                                           smcLogReplOpt      aIsReplSenderRead,
                                           const smiColumn   *aColumn,
@@ -376,13 +376,13 @@ private:
                                           UInt               aLength,
                                           smcUILogWrtOpt     aOpt);
 
-    /* Priamry Key Log±â·Ï½Ã »ç¿ë. */
+    /* Priamry Key Logê¸°ë¡ì‹œ ì‚¬ìš©. */
     static IDE_RC writePrimaryKeyLog( void*                    aTrans,
                                       const smcTableHeader*    aHeader,
                                       const SChar*             aFixRow,
                                       UInt                     aOffset );
     
-    /* Update Inplace¿¡ ´ëÇÑ LogÀÇ Header¸¦ ±â·ÏÇÑ´Ù.*/
+    /* Update Inplaceì— ëŒ€í•œ Logì˜ Headerë¥¼ ê¸°ë¡í•œë‹¤.*/
     static IDE_RC writeUIPLHdr2TxLBf(void                 * aTrans,
                                      const smcTableHeader * aHeader,
                                      smcLogReplOpt          aIsReplSenderSend,
@@ -392,7 +392,7 @@ private:
                                      const smiValue       * aValueList,
                                      UInt                 * aPrimaryKeySize);
 
-    /* Update Inplace¿¡ ´ëÇÑ LogÀÇ Before Image¸¦ ±â·ÏÇÑ´Ù.*/
+    /* Update Inplaceì— ëŒ€í•œ Logì˜ Before Imageë¥¼ ê¸°ë¡í•œë‹¤.*/
     static IDE_RC writeUIPBfrLg2TxLBf(void                 * aTrans,
                                       smcLogReplOpt          aIsReplSenderRead,
                                       const SChar          * aFixedRow,
@@ -401,7 +401,7 @@ private:
                                       UInt                 * aLogOffset,
                                       UInt                   aUtdVarColCnt);
 
-    /* Update Inplace¿¡ ´ëÇÑ LogÀÇ After Image¸¦ ±â·ÏÇÑ´Ù.*/
+    /* Update Inplaceì— ëŒ€í•œ Logì˜ After Imageë¥¼ ê¸°ë¡í•œë‹¤.*/
     static IDE_RC writeUIPAftLg2TxLBf(void                 * aTrans,
                                       smcLogReplOpt          aIsReplSenderRead,
                                       const SChar          * aLogBuffer,
@@ -411,7 +411,7 @@ private:
                                       UInt                 * aLogOffset,
                                       UInt                   aUtdVarColCnt);
 
-    /* LOB ColumnÀÇ Update½Ã Dummy Before Image¸¦ ±â·ÏÇÑ´Ù.*/
+    /* LOB Columnì˜ Updateì‹œ Dummy Before Imageë¥¼ ê¸°ë¡í•œë‹¤.*/
     static IDE_RC writeDummyBVCLog4Lob(void *aTrans,
                                        UInt aColumnID,
                                        UInt *aOffset);
@@ -423,11 +423,11 @@ private:
 };
 
 /***********************************************************************
- * Description : United Variable Piece ÀÇ ±æÀÌ¸¦ ±¸ÇÑ´Ù
+ * Description : United Variable Piece ì˜ ê¸¸ì´ë¥¼ êµ¬í•œë‹¤
  *
- *              offset array ÀÇ end offset À¸·Î ºÎÅÍ Çì´õ ±æÀÌ¸¦ Á¦¿ÜÇÏ¿© ±¸ÇÑ´Ù
+ *              offset array ì˜ end offset ìœ¼ë¡œ ë¶€í„° í—¤ë” ê¸¸ì´ë¥¼ ì œì™¸í•˜ì—¬ êµ¬í•œë‹¤
  *
- * aPiece   - [in] ±æÀÌ¸¦ ±¸ÇÒ piece header 
+ * aPiece   - [in] ê¸¸ì´ë¥¼ êµ¬í•  piece header 
  *
  ***********************************************************************/
 inline UShort smcRecordUpdate::getUnitedVCSize( smVCPieceHeader   * aPiece)

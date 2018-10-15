@@ -19,8 +19,8 @@
  * $Id: stdPrimitive.cpp 18883 2006-11-14 01:48:40Z sabbra $
  *
  * Description:
- * stdGeometry.cpp·Î ºÎÅÍ È£ÃâµÇ´Â stdValue(), stdBinValue() ¹×
- * Endian ¿¬»ê, validation Ã¼Å©, Geometry °´Ã¼ÀÇ ±âº» ¼Ó¼º ÇÔ¼ö ±¸Çö
+ * stdGeometry.cppë¡œ ë¶€í„° í˜¸ì¶œë˜ëŠ” stdValue(), stdBinValue() ë°
+ * Endian ì—°ì‚°, validation ì²´í¬, Geometry ê°ì²´ì˜ ê¸°ë³¸ ì†ì„± í•¨ìˆ˜ êµ¬í˜„
  **********************************************************************/
 
 #include <idl.h>
@@ -45,9 +45,9 @@ extern mtdModule mtdDouble;
 
 /***********************************************************************
  * Description :
- * stdPoint2DType °´Ã¼ÀÇ EndianÀ» ¹Ù²Û´Ù.
+ * stdPoint2DType ê°ì²´ì˜ Endianì„ ë°”ê¾¼ë‹¤.
  *
- * stdPoint2DType * aPoint(InOut): EndianÀ» ¹Ù²Ü °´Ã¼
+ * stdPoint2DType * aPoint(InOut): Endianì„ ë°”ê¿€ ê°ì²´
  **********************************************************************/
 void stdPrimitive::cvtEndianPoint2D( stdPoint2DType * aPoint)
 {
@@ -60,9 +60,9 @@ void stdPrimitive::cvtEndianPoint2D( stdPoint2DType * aPoint)
 
 /***********************************************************************
  * Description :
- * stdLineString2DType °´Ã¼ÀÇ EndianÀ» ¹Ù²Û´Ù.
+ * stdLineString2DType ê°ì²´ì˜ Endianì„ ë°”ê¾¼ë‹¤.
  *
- * stdLineString2DType * aLine(InOut): EndianÀ» ¹Ù²Ü °´Ã¼
+ * stdLineString2DType * aLine(InOut): Endianì„ ë°”ê¿€ ê°ì²´
  **********************************************************************/
 void stdPrimitive::cvtEndianLineString2D( idBool aEqualEndian, stdLineString2DType * aLine)
 {
@@ -88,9 +88,9 @@ void stdPrimitive::cvtEndianLineString2D( idBool aEqualEndian, stdLineString2DTy
 
 /***********************************************************************
  * Description :
- * stdPolygon2DType °´Ã¼ÀÇ EndianÀ» ¹Ù²Û´Ù.
+ * stdPolygon2DType ê°ì²´ì˜ Endianì„ ë°”ê¾¼ë‹¤.
  *
- * stdPolygon2DType * aPoly(InOut): EndianÀ» ¹Ù²Ü °´Ã¼
+ * stdPolygon2DType * aPoly(InOut): Endianì„ ë°”ê¿€ ê°ì²´
  **********************************************************************/
 void stdPrimitive::cvtEndianPolygon2D( idBool aEqualEndian, stdPolygon2DType * aPoly)
 {
@@ -127,9 +127,9 @@ void stdPrimitive::cvtEndianPolygon2D( idBool aEqualEndian, stdPolygon2DType * a
 
 /***********************************************************************
  * Description :
- * stdMultiPoint2DType °´Ã¼ÀÇ EndianÀ» ¹Ù²Û´Ù.
+ * stdMultiPoint2DType ê°ì²´ì˜ Endianì„ ë°”ê¾¼ë‹¤.
  *
- * stdMultiPoint2DType * aMPoint(InOut): EndianÀ» ¹Ù²Ü °´Ã¼
+ * stdMultiPoint2DType * aMPoint(InOut): Endianì„ ë°”ê¿€ ê°ì²´
  **********************************************************************/
 void stdPrimitive::cvtEndianMultiPoint2D( idBool aEqualEndian, stdMultiPoint2DType * aMPoint)
 {
@@ -155,9 +155,9 @@ void stdPrimitive::cvtEndianMultiPoint2D( idBool aEqualEndian, stdMultiPoint2DTy
 
 /***********************************************************************
  * Description :
- * stdMultiLineString2DType °´Ã¼ÀÇ EndianÀ» ¹Ù²Û´Ù.
+ * stdMultiLineString2DType ê°ì²´ì˜ Endianì„ ë°”ê¾¼ë‹¤.
  *
- * stdMultiLineString2DType * aMLine(InOut): EndianÀ» ¹Ù²Ü °´Ã¼
+ * stdMultiLineString2DType * aMLine(InOut): Endianì„ ë°”ê¿€ ê°ì²´
  **********************************************************************/
 void stdPrimitive::cvtEndianMultiLineString2D( idBool aEqualEndian,stdMultiLineString2DType * aMLine)
 {
@@ -195,9 +195,9 @@ void stdPrimitive::cvtEndianMultiLineString2D( idBool aEqualEndian,stdMultiLineS
 
 /***********************************************************************
  * Description :
- * stdMultiPolygon2DType °´Ã¼ÀÇ EndianÀ» ¹Ù²Û´Ù.
+ * stdMultiPolygon2DType ê°ì²´ì˜ Endianì„ ë°”ê¾¼ë‹¤.
  *
- * stdMultiPolygon2DType * aMPoly(InOut): EndianÀ» ¹Ù²Ü °´Ã¼
+ * stdMultiPolygon2DType * aMPoly(InOut): Endianì„ ë°”ê¿€ ê°ì²´
  **********************************************************************/
 void stdPrimitive::cvtEndianMultiPolygon2D( idBool aEqualEndian, stdMultiPolygon2DType * aMPoly)
 {
@@ -247,9 +247,9 @@ void stdPrimitive::cvtEndianMultiPolygon2D( idBool aEqualEndian, stdMultiPolygon
 
 /***********************************************************************
  * Description :
- * stdGeoCollection2DType °´Ã¼ÀÇ EndianÀ» ¹Ù²Û´Ù.
+ * stdGeoCollection2DType ê°ì²´ì˜ Endianì„ ë°”ê¾¼ë‹¤.
  *
- * stdGeoCollection2DType * aCollect(InOut): EndianÀ» ¹Ù²Ü °´Ã¼
+ * stdGeoCollection2DType * aCollect(InOut): Endianì„ ë°”ê¿€ ê°ì²´
  **********************************************************************/
 void stdPrimitive::cvtEndianGeoCollection2D( idBool aEqualEndian, stdGeoCollection2DType * aCollect)
 {
@@ -305,9 +305,9 @@ void stdPrimitive::cvtEndianGeoCollection2D( idBool aEqualEndian, stdGeoCollecti
 /***********************************************************************
  * Description :
  * 
- *    Object Header ±¸Á¶Ã¼ÀÇ EndianÀ» ¹Ù²Û´Ù.
+ *    Object Header êµ¬ì¡°ì²´ì˜ Endianì„ ë°”ê¾¼ë‹¤.
  *
- *    BUG-15972 Type°ú Byte OrderÀÇ Endianµµ º¯°æÇÏ¿©¾ß ÇÔ.
+ *    BUG-15972 Typeê³¼ Byte Orderì˜ Endianë„ ë³€ê²½í•˜ì—¬ì•¼ í•¨.
  *
  **********************************************************************/
 void stdPrimitive::cvtEndianHeader( stdGeometryHeader * aObjHeader )
@@ -331,9 +331,9 @@ void stdPrimitive::cvtEndianHeader( stdGeometryHeader * aObjHeader )
 
 /***********************************************************************
  * Description :
- * Geometry °´Ã¼¸¦ ÀĞ¾î¼­ Type¿¡ ¸Â°Ô EndianÀ» ¹Ù²Û´Ù.
+ * Geometry ê°ì²´ë¥¼ ì½ì–´ì„œ Typeì— ë§ê²Œ Endianì„ ë°”ê¾¼ë‹¤.
  *
- * stdGeometryHeader * aGeom(InOut): EndianÀ» ¹Ù²Ü Geometry °´Ã¼
+ * stdGeometryHeader * aGeom(InOut): Endianì„ ë°”ê¿€ Geometry ê°ì²´
  **********************************************************************/
 IDE_RC stdPrimitive::cvtEndianGeom(stdGeometryHeader * aGeom)
 {
@@ -383,7 +383,7 @@ IDE_RC stdPrimitive::cvtEndianGeom(stdGeometryHeader * aGeom)
 
 /***********************************************************************
  * Description :
- *    Geometry °´Ã¼ÀÇ À¯È¿¼ºÀ» °Ë»çÇÑ´Ù.
+ *    Geometry ê°ì²´ì˜ ìœ íš¨ì„±ì„ ê²€ì‚¬í•œë‹¤.
  *
  **********************************************************************/
 IDE_RC
@@ -463,7 +463,7 @@ stdPrimitive::validate( iduMemory*   aQmxMem,
     }
     IDE_EXCEPTION( ERR_INVALID_VALUE );
     {
-        //validateXX ÇÔ¼ö¿¡¼­ ¿¡·¯ ÄÚµå°¡ ÁöÁ¤µÈ´Ù.
+        //validateXX í•¨ìˆ˜ì—ì„œ ì—ëŸ¬ ì½”ë“œê°€ ì§€ì •ëœë‹¤.
         //IDE_SET(ideSetErrorCode(stERR_ABORT_VALIDATE_INVALID_VALUE));
     }
     IDE_EXCEPTION( ERR_INVALID_TYPE );
@@ -478,10 +478,10 @@ stdPrimitive::validate( iduMemory*   aQmxMem,
 
 /***********************************************************************
  * Description :
- * stdPoint2DType °´Ã¼ÀÇ À¯È¿¼ºÀ» °Ë»çÇÑ´Ù.
+ * stdPoint2DType ê°ì²´ì˜ ìœ íš¨ì„±ì„ ê²€ì‚¬í•œë‹¤.
  *
- * const void* aCol: »ç¿ëÇÏÁö ¾Ê´Â´Ù
- * UInt aSize(In): °´Ã¼ÀÇ Å©±â
+ * const void* aCol: ì‚¬ìš©í•˜ì§€ ì•ŠëŠ”ë‹¤
+ * UInt aSize(In): ê°ì²´ì˜ í¬ê¸°
  **********************************************************************/
 IDE_RC stdPrimitive::validatePoint2D( const void*      /*aCol*/,
                                       UInt             aSize )
@@ -503,11 +503,11 @@ IDE_RC stdPrimitive::validatePoint2D( const void*      /*aCol*/,
 
 /***********************************************************************
  * Description :
- * stdLineString2DType °´Ã¼ÀÇ À¯È¿¼ºÀ» °Ë»çÇÑ´Ù.
- * ¼­·Î ´Ù¸¥ Á¡ 2°³ ÀÌ»óÀ¸·Î ±¸¼ºµÈ ¼±ºĞÀ» ¸¸Á·ÇØ¾ß ÇÑ´Ù.
+ * stdLineString2DType ê°ì²´ì˜ ìœ íš¨ì„±ì„ ê²€ì‚¬í•œë‹¤.
+ * ì„œë¡œ ë‹¤ë¥¸ ì  2ê°œ ì´ìƒìœ¼ë¡œ êµ¬ì„±ëœ ì„ ë¶„ì„ ë§Œì¡±í•´ì•¼ í•œë‹¤.
  *
- * const void* aCol(In): °´Ã¼
- * UInt aSize(In): °´Ã¼ÀÇ Å©±â
+ * const void* aCol(In): ê°ì²´
+ * UInt aSize(In): ê°ì²´ì˜ í¬ê¸°
  **********************************************************************/
 IDE_RC stdPrimitive::validateLineString2D(
                     const void*      aCol,
@@ -642,14 +642,14 @@ IDE_RC stdPrimitive::validateComplexPolygon2D( iduMemory*        aQmxMem,
             
             if ( sCmpSeg->mStart.mX > sCurrSeg->mEnd.mX )
             {
-                //Àß ¸ø »ÌÀº ³ğÀº Àç»ç¿ë¿¡ ³Ö¾î¾ß ÇÑ´Ù.                
+                //ì˜ ëª» ë½‘ì€ ë†ˆì€ ì¬ì‚¬ìš©ì— ë„£ì–´ì•¼ í•œë‹¤.                
                 break;                
             }
             
             do
             {
                 /*
-                  ¿©±â¼­ intersect¿Í ¹æÇâ¿¡ ´ëÇÑ °³³äÀ» ³Ö¾î ÃÄ³¾¼ö ÀÖ´Ù.                  
+                  ì—¬ê¸°ì„œ intersectì™€ ë°©í–¥ì— ëŒ€í•œ ê°œë…ì„ ë„£ì–´ ì³ë‚¼ìˆ˜ ìˆë‹¤.                  
                  */
                 if ( ( sCurrNext != sCmpSeg ) && ( sCurrPrev != sCmpSeg ) )
                 {
@@ -712,19 +712,19 @@ IDE_RC stdPrimitive::validateComplexPolygon2D( iduMemory*        aQmxMem,
                     break;                    
                 }
             
-                // ³¡±îÁö Á¶»çÇÑ´Ù.
+                // ëê¹Œì§€ ì¡°ì‚¬í•œë‹¤.
 
             }while( sCmpSeg->mStart.mX <= sCurrSeg->mEnd.mX );            
         }
 
-        // Àç»ç¿ëÀ» Á¤¸® ÇÑ´Ù.
+        // ì¬ì‚¬ìš©ì„ ì •ë¦¬ í•œë‹¤.
     
         
         for ( i =0; i < sReuseSegCount ; i++)
         {
             sPQueue.enqueue( sTempIndexSeg++, &sOverflow);
             IDE_TEST_RAISE( sOverflow == ID_TRUE, ERR_ABORT_ENQUEUE_ERROR );
-            //Overflow °Ë»ç 
+            //Overflow ê²€ì‚¬ 
         }
 
         if ( sCurrSeg->mNext != NULL )
@@ -876,14 +876,14 @@ IDE_RC stdPrimitive::validateComplexMultiPolygon2D( iduMemory*             aQmxM
             
             if ( sCmpSeg->mStart.mX > sCurrSeg->mEnd.mX )
             {
-                //Àß ¸ø »ÌÀº ³ğÀº Àç»ç¿ë¿¡ ³Ö¾î¾ß ÇÑ´Ù.                                      
+                //ì˜ ëª» ë½‘ì€ ë†ˆì€ ì¬ì‚¬ìš©ì— ë„£ì–´ì•¼ í•œë‹¤.                                      
                 break;                
             }
             
             do
             {
                 /*
-                  ¿©±â¼­ intersect¿Í ¹æÇâ¿¡ ´ëÇÑ °³³äÀ» ³Ö¾î ÃÄ³¾¼ö ÀÖ´Ù.                  
+                  ì—¬ê¸°ì„œ intersectì™€ ë°©í–¥ì— ëŒ€í•œ ê°œë…ì„ ë„£ì–´ ì³ë‚¼ìˆ˜ ìˆë‹¤.                  
                 */
                 if ( (sCurrNext != sCmpSeg) && ( sCurrPrev != sCmpSeg ) )
                 {
@@ -958,12 +958,12 @@ IDE_RC stdPrimitive::validateComplexMultiPolygon2D( iduMemory*             aQmxM
                     break;                    
                 }
             
-                // ³¡±îÁö Á¶»çÇÑ´Ù.
+                // ëê¹Œì§€ ì¡°ì‚¬í•œë‹¤.
 
             }while( sCmpSeg->mStart.mX <= sCurrSeg->mEnd.mX );            
         }
 
-        // Àç»ç¿ëÀ» Á¤¸® ÇÑ´Ù.
+        // ì¬ì‚¬ìš©ì„ ì •ë¦¬ í•œë‹¤.
         
         for ( i =0; i < sReuseSegCount ; i++)
         {
@@ -1007,12 +1007,12 @@ IDE_RC stdPrimitive::validateComplexMultiPolygon2D( iduMemory*             aQmxM
 
 /***********************************************************************
  * Description :
- * stdPolygon2DType °´Ã¼ÀÇ À¯È¿¼ºÀ» °Ë»çÇÑ´Ù.
- * ¸µÀº 3°¢Çü ÀÌ»óÀÌ µÇ¾î¾ß ÇÏ¸ç °¡Àå Å« ¸µÀÌ Ã¹ ¹øÂ° ¸µ(Exterior Ring)ÀÌ µÇµµ·Ï Á¤·ÄÇÑ´Ù.
- * ¸ğµç ¸µÀº ±³Â÷ÇÏÁö ¾Ê¾Æ¾ß ÇÏ¸ç ³»ºÎ¸µ ¾ÈÂÊ¿¡ ¸µÀÌ ¿Ã ¼ö ¾ø´Ù.
+ * stdPolygon2DType ê°ì²´ì˜ ìœ íš¨ì„±ì„ ê²€ì‚¬í•œë‹¤.
+ * ë§ì€ 3ê°í˜• ì´ìƒì´ ë˜ì–´ì•¼ í•˜ë©° ê°€ì¥ í° ë§ì´ ì²« ë²ˆì§¸ ë§(Exterior Ring)ì´ ë˜ë„ë¡ ì •ë ¬í•œë‹¤.
+ * ëª¨ë“  ë§ì€ êµì°¨í•˜ì§€ ì•Šì•„ì•¼ í•˜ë©° ë‚´ë¶€ë§ ì•ˆìª½ì— ë§ì´ ì˜¬ ìˆ˜ ì—†ë‹¤.
  *
- * const void* aCol(In): °´Ã¼
- * UInt aSize(In): °´Ã¼ÀÇ Å©±â
+ * const void* aCol(In): ê°ì²´
+ * UInt aSize(In): ê°ì²´ì˜ í¬ê¸°
  **********************************************************************/
 IDE_RC stdPrimitive::validatePolygon2D(
                     iduMemory*       aQmxMem,
@@ -1038,7 +1038,7 @@ IDE_RC stdPrimitive::validatePolygon2D(
         
             if (sMax < 4)
             {
-                IDE_RAISE( ring_point_count_less_than_4 );   // digon ÀÌ»óÀÌ µÇ¾î¾ßÇÑ´Ù.
+                IDE_RAISE( ring_point_count_less_than_4 );   // digon ì´ìƒì´ ë˜ì–´ì•¼í•œë‹¤.
             }
             else
             {
@@ -1050,7 +1050,7 @@ IDE_RC stdPrimitive::validatePolygon2D(
                 }
             }
 
-            // ÆÄ½Ì¿¡¼­ ±¸ÇØ ³õÀº orientaionÀ» ÀÌ¿ëÇÑ °ËÁõ
+            // íŒŒì‹±ì—ì„œ êµ¬í•´ ë†“ì€ orientaionì„ ì´ìš©í•œ ê²€ì¦
         
             sTotalSize += STD_RN2D_SIZE + STD_PT2D_SIZE * sMax;
         
@@ -1068,7 +1068,7 @@ IDE_RC stdPrimitive::validatePolygon2D(
 
     if ( sMaxR > 0 )
     {
-        // invalidÀÎ °æ¿ì error ¸®ÅÏ
+        // invalidì¸ ê²½ìš° error ë¦¬í„´
         IDE_TEST( validateComplexPolygon2D( aQmxMem,
                                             sPolygon,
                                             sTotalPoint)
@@ -1101,10 +1101,10 @@ IDE_RC stdPrimitive::validatePolygon2D(
 
 /***********************************************************************
  * Description :
- * stdMultiPoint2DType °´Ã¼ÀÇ À¯È¿¼ºÀ» °Ë»çÇÑ´Ù.
+ * stdMultiPoint2DType ê°ì²´ì˜ ìœ íš¨ì„±ì„ ê²€ì‚¬í•œë‹¤.
  *
- * const void* aCol(In): °´Ã¼
- * UInt aSize(In): °´Ã¼ÀÇ Å©±â
+ * const void* aCol(In): ê°ì²´
+ * UInt aSize(In): ê°ì²´ì˜ í¬ê¸°
  **********************************************************************/
 IDE_RC stdPrimitive::validateMultiPoint2D(
                     const void*      aCol,
@@ -1128,11 +1128,11 @@ IDE_RC stdPrimitive::validateMultiPoint2D(
 
 /***********************************************************************
  * Description :
- * stdMultiLineString2DType °´Ã¼ÀÇ À¯È¿¼ºÀ» °Ë»çÇÑ´Ù.
- * °¢°¢ÀÇ stdLineString2DType °´Ã¼ÀÇ À¯È¿¼ºÀ» ¸¸Á·ÇØ¾ßÇÑ´Ù.
+ * stdMultiLineString2DType ê°ì²´ì˜ ìœ íš¨ì„±ì„ ê²€ì‚¬í•œë‹¤.
+ * ê°ê°ì˜ stdLineString2DType ê°ì²´ì˜ ìœ íš¨ì„±ì„ ë§Œì¡±í•´ì•¼í•œë‹¤.
  *
- * const void* aCol(In): °´Ã¼
- * UInt aSize(In): °´Ã¼ÀÇ Å©±â
+ * const void* aCol(In): ê°ì²´
+ * UInt aSize(In): ê°ì²´ì˜ í¬ê¸°
  **********************************************************************/
 IDE_RC stdPrimitive::validateMultiLineString2D(
                     const void*      aCol,
@@ -1190,11 +1190,11 @@ IDE_RC stdPrimitive::validateMultiLineString2D(
 
 /***********************************************************************
  * Description :
- * stdMultiPolygon2DType °´Ã¼ÀÇ À¯È¿¼ºÀ» °Ë»çÇÑ´Ù.
- * °¢°¢ÀÇ stdPolygon2DType °´Ã¼ÀÇ À¯È¿¼ºÀ» ¸¸Á·ÇØ¾ßÇÑ´Ù.
+ * stdMultiPolygon2DType ê°ì²´ì˜ ìœ íš¨ì„±ì„ ê²€ì‚¬í•œë‹¤.
+ * ê°ê°ì˜ stdPolygon2DType ê°ì²´ì˜ ìœ íš¨ì„±ì„ ë§Œì¡±í•´ì•¼í•œë‹¤.
  *
- * const void* aCol(In): °´Ã¼
- * UInt aSize(In): °´Ã¼ÀÇ Å©±â
+ * const void* aCol(In): ê°ì²´
+ * UInt aSize(In): ê°ì²´ì˜ í¬ê¸°
  **********************************************************************/
 IDE_RC stdPrimitive::validateMultiPolygon2D(
                     iduMemory*       aQmxMem,
@@ -1226,7 +1226,7 @@ IDE_RC stdPrimitive::validateMultiPolygon2D(
     
                 if (sMaxP < 4)
                 {
-                    IDE_RAISE( ring_point_count_less_than_4 );   // digon ÀÌ»óÀÌ µÇ¾î¾ßÇÑ´Ù.
+                    IDE_RAISE( ring_point_count_less_than_4 );   // digon ì´ìƒì´ ë˜ì–´ì•¼í•œë‹¤.
                 }
                 else
                 {
@@ -1289,11 +1289,11 @@ IDE_RC stdPrimitive::validateMultiPolygon2D(
 
 /***********************************************************************
  * Description :
- * stdGeoCollection2DType °´Ã¼ÀÇ À¯È¿¼ºÀ» °Ë»çÇÑ´Ù.
- * °¢°¢ÀÇ ³»ºÎ °´Ã¼´Â ÇØ´ç Å¸ÀÔÀÇ À¯È¿¼ºÀ» ¸¸Á·ÇØ¾ßÇÑ´Ù.
+ * stdGeoCollection2DType ê°ì²´ì˜ ìœ íš¨ì„±ì„ ê²€ì‚¬í•œë‹¤.
+ * ê°ê°ì˜ ë‚´ë¶€ ê°ì²´ëŠ” í•´ë‹¹ íƒ€ì…ì˜ ìœ íš¨ì„±ì„ ë§Œì¡±í•´ì•¼í•œë‹¤.
  *
- * const void* aCol(In): °´Ã¼
- * UInt aSize(In): °´Ã¼ÀÇ Å©±â
+ * const void* aCol(In): ê°ì²´
+ * UInt aSize(In): ê°ì²´ì˜ í¬ê¸°
  **********************************************************************/
 IDE_RC stdPrimitive::validateGeoCollection2D(
                     iduMemory*       aQmxMem,
@@ -1378,10 +1378,10 @@ IDE_RC stdPrimitive::validateGeoCollection2D(
 
 /***********************************************************************
  * Description :
- * stdMultiPoint2DType °´Ã¼°¡ SimpleÇÏ¸é ID_TRUE ¾Æ´Ï¸é ID_FALSE ¸®ÅÏ
- * °ãÄ¡´Â Á¡ÀÌ Á¸ÀçÇÏÁö ¾ÊÀ¸¸é Simple Á¸ÀçÇÏ¸é non simpleÀÌ´Ù.
+ * stdMultiPoint2DType ê°ì²´ê°€ Simpleí•˜ë©´ ID_TRUE ì•„ë‹ˆë©´ ID_FALSE ë¦¬í„´
+ * ê²¹ì¹˜ëŠ” ì ì´ ì¡´ì¬í•˜ì§€ ì•Šìœ¼ë©´ Simple ì¡´ì¬í•˜ë©´ non simpleì´ë‹¤.
  *
- * const stdMultiPoint2DType* aMPoint(In): °´Ã¼
+ * const stdMultiPoint2DType* aMPoint(In): ê°ì²´
  **********************************************************************/
 idBool stdPrimitive::isSimpleMPoint2D( const stdMultiPoint2DType* aMPoint )
 {
@@ -1416,10 +1416,10 @@ idBool stdPrimitive::isSimpleMPoint2D( const stdMultiPoint2DType* aMPoint )
 
 /***********************************************************************
  * Description :
- * stdLineString2DType °´Ã¼°¡ SimpleÇÏ¸é ID_TRUE ¾Æ´Ï¸é ID_FALSE ¸®ÅÏ
- * °ãÄ¡´Â Á¡ÀÌ Á¸ÀçÇÏÁö ¾ÊÀ¸¸é Simple Á¸ÀçÇÏ¸é non simpleÀÌ´Ù.
+ * stdLineString2DType ê°ì²´ê°€ Simpleí•˜ë©´ ID_TRUE ì•„ë‹ˆë©´ ID_FALSE ë¦¬í„´
+ * ê²¹ì¹˜ëŠ” ì ì´ ì¡´ì¬í•˜ì§€ ì•Šìœ¼ë©´ Simple ì¡´ì¬í•˜ë©´ non simpleì´ë‹¤.
  *
- * const stdLineString2DType* aLine(In): °´Ã¼
+ * const stdLineString2DType* aLine(In): ê°ì²´
  **********************************************************************/
 idBool stdPrimitive::isSimpleLine2D( const stdLineString2DType* aLine )
 {
@@ -1463,7 +1463,7 @@ idBool stdPrimitive::isSimpleLine2D( const stdLineString2DType* aLine )
         sPt2 = stdUtils::findNextPointInLine2D( sPt1, sPtFenceE );
         IDE_TEST_RAISE(sPt2 == NULL, ERR_INVALID_POINT);
         
-        // ´ÙÀ½ ÀÎÁ¢ ¶óÀÎ
+        // ë‹¤ìŒ ì¸ì ‘ ë¼ì¸
         sPt3  = sPt2;
         sPt4  = stdUtils::findNextPointInLine2D( sPt3, sPtFenceE );
         IDE_TEST_RAISE(sPt4 == NULL, ERR_INVALID_POINT);
@@ -1471,12 +1471,12 @@ idBool stdPrimitive::isSimpleLine2D( const stdLineString2DType* aLine )
         sDistanceSq = stdUtils::getDistanceSqLineToPoint2D( sPt1, sPt2, sPt4, &sCrPt );
         if( sDistanceSq < STD_MATH_TOL_SQ )
         {
-            // µÑ ´Ù ID_TRUEÀÎ °æ¿ì, non-simple
+            // ë‘˜ ë‹¤ ID_TRUEì¸ ê²½ìš°, non-simple
             IDE_TEST( (stdUtils::checkBetween2D( sPt1, sPt2, sPt4 )==ID_TRUE) ||
                       (stdUtils::checkBetween2D( sPt3, sPt4, sPt1 )==ID_TRUE) );
         }
 
-        // ºñÀÎÁ¢ ¶óÀÎ
+        // ë¹„ì¸ì ‘ ë¼ì¸
         sPt3 = sPt4;
         for( j=i+2; j<sNumLines; j++ )
         {
@@ -1489,11 +1489,11 @@ idBool stdPrimitive::isSimpleLine2D( const stdLineString2DType* aLine )
                 sIsEndPt4 = ID_FALSE;
             }
             
-            // ´ÙÀ½ ¶óÀÎ
+            // ë‹¤ìŒ ë¼ì¸
             sPt4 = stdUtils::findNextPointInLine2D( sPt3, sPtFenceE );
             IDE_TEST_RAISE(sPt4 == NULL, ERR_INVALID_POINT);
 
-            // ±³Â÷Á¡ÀÌ Á¸ÀçÇÏ¸é, non-simpleÀÌ¹Ç·Î ID_FALSE¸¦ ¸®ÅÏÇÑ´Ù.
+            // êµì°¨ì ì´ ì¡´ì¬í•˜ë©´, non-simpleì´ë¯€ë¡œ ID_FALSEë¥¼ ë¦¬í„´í•œë‹¤.
             IDE_TEST( stdUtils::isIntersectsLineToLine2D( sPt1, sPt2, sIsEndPt1, ID_FALSE,
                                                           sPt3, sPt4, ID_FALSE,  sIsEndPt4 )
                       == ID_TRUE );
@@ -1516,10 +1516,10 @@ idBool stdPrimitive::isSimpleLine2D( const stdLineString2DType* aLine )
 
 /***********************************************************************
  * Description :
- * stdPolygon2DType °´Ã¼°¡ SimpleÇÏ¸é ID_TRUE ¾Æ´Ï¸é ID_FALSE ¸®ÅÏ
- * °ãÄ¡´Â Á¡ÀÌ Á¸ÀçÇÏÁö ¾ÊÀ¸¸é Simple Á¸ÀçÇÏ¸é non simpleÀÌ´Ù.
+ * stdPolygon2DType ê°ì²´ê°€ Simpleí•˜ë©´ ID_TRUE ì•„ë‹ˆë©´ ID_FALSE ë¦¬í„´
+ * ê²¹ì¹˜ëŠ” ì ì´ ì¡´ì¬í•˜ì§€ ì•Šìœ¼ë©´ Simple ì¡´ì¬í•˜ë©´ non simpleì´ë‹¤.
  *
- * const stdPolygon2DType* aPoly(In): °´Ã¼
+ * const stdPolygon2DType* aPoly(In): ê°ì²´
  **********************************************************************/
 idBool stdPrimitive::isSimplePoly2D( const stdPolygon2DType * aPoly )
 {
@@ -1550,10 +1550,10 @@ idBool stdPrimitive::isSimplePoly2D( const stdPolygon2DType * aPoly )
 
 /***********************************************************************
  * Description :
- * stdMultiLineString2DType °´Ã¼°¡ SimpleÇÏ¸é ID_TRUE ¾Æ´Ï¸é ID_FALSE ¸®ÅÏ
- * °ãÄ¡´Â Á¡ÀÌ Á¸ÀçÇÏÁö ¾ÊÀ¸¸é Simple Á¸ÀçÇÏ¸é non simpleÀÌ´Ù.
+ * stdMultiLineString2DType ê°ì²´ê°€ Simpleí•˜ë©´ ID_TRUE ì•„ë‹ˆë©´ ID_FALSE ë¦¬í„´
+ * ê²¹ì¹˜ëŠ” ì ì´ ì¡´ì¬í•˜ì§€ ì•Šìœ¼ë©´ Simple ì¡´ì¬í•˜ë©´ non simpleì´ë‹¤.
  *
- * const stdMultiLineString2DType* aMLine(In): °´Ã¼
+ * const stdMultiLineString2DType* aMLine(In): ê°ì²´
  **********************************************************************/
 idBool stdPrimitive::isSimpleMLine2D( const stdMultiLineString2DType* aMLine )
 {
@@ -1561,7 +1561,7 @@ idBool stdPrimitive::isSimpleMLine2D( const stdMultiLineString2DType* aMLine )
     stdLineString2DType*    sLineCP;
     UInt                    i, j, sMaxO = STD_N_OBJECTS(aMLine);
 
-    // ÇÏÀ§ °´Ã¼ ÀÚÃ¼ Å×½ºÆ® 
+    // í•˜ìœ„ ê°ì²´ ìì²´ í…ŒìŠ¤íŠ¸ 
     for( i = 0; i < sMaxO; i++ )
     {
         if(isSimpleLine2D(sLine)==ID_FALSE)
@@ -1571,7 +1571,7 @@ idBool stdPrimitive::isSimpleMLine2D( const stdMultiLineString2DType* aMLine )
         sLine = STD_NEXT_LINE2D(sLine);
     }
 
-    // ÇÏÀ§ °´Ã¼°£  Å×½ºÆ® 
+    // í•˜ìœ„ ê°ì²´ê°„  í…ŒìŠ¤íŠ¸ 
     sLine = STD_FIRST_LINE2D(aMLine);
     for( i = 0; i < sMaxO-1; i++ )
     {
@@ -1600,10 +1600,10 @@ idBool stdPrimitive::isSimpleMLine2D( const stdMultiLineString2DType* aMLine )
 
 /***********************************************************************
  * Description :
- * stdMultiPolygon2DType °´Ã¼°¡ SimpleÇÏ¸é ID_TRUE ¾Æ´Ï¸é ID_FALSE ¸®ÅÏ
- * °ãÄ¡´Â Á¡ÀÌ Á¸ÀçÇÏÁö ¾ÊÀ¸¸é Simple Á¸ÀçÇÏ¸é non simpleÀÌ´Ù.
+ * stdMultiPolygon2DType ê°ì²´ê°€ Simpleí•˜ë©´ ID_TRUE ì•„ë‹ˆë©´ ID_FALSE ë¦¬í„´
+ * ê²¹ì¹˜ëŠ” ì ì´ ì¡´ì¬í•˜ì§€ ì•Šìœ¼ë©´ Simple ì¡´ì¬í•˜ë©´ non simpleì´ë‹¤.
  *
- * const stdMultiPolygon2DType* aMPoly(In): °´Ã¼
+ * const stdMultiPolygon2DType* aMPoly(In): ê°ì²´
  **********************************************************************/
 idBool stdPrimitive::isSimpleMPoly2D( const stdMultiPolygon2DType * aMPoly )
 {
@@ -1625,10 +1625,10 @@ idBool stdPrimitive::isSimpleMPoly2D( const stdMultiPolygon2DType * aMPoly )
 
 /***********************************************************************
  * Description :
- * stdGeoCollection2DType °´Ã¼°¡ SimpleÇÏ¸é ID_TRUE ¾Æ´Ï¸é ID_FALSE ¸®ÅÏ
- * °ãÄ¡´Â Á¡ÀÌ Á¸ÀçÇÏÁö ¾ÊÀ¸¸é Simple Á¸ÀçÇÏ¸é non simpleÀÌ´Ù.
+ * stdGeoCollection2DType ê°ì²´ê°€ Simpleí•˜ë©´ ID_TRUE ì•„ë‹ˆë©´ ID_FALSE ë¦¬í„´
+ * ê²¹ì¹˜ëŠ” ì ì´ ì¡´ì¬í•˜ì§€ ì•Šìœ¼ë©´ Simple ì¡´ì¬í•˜ë©´ non simpleì´ë‹¤.
  *
- * const stdGeoCollection2DType* aCollect(In): °´Ã¼
+ * const stdGeoCollection2DType* aCollect(In): ê°ì²´
  **********************************************************************/
 idBool stdPrimitive::isSimpleCollect2D( const stdGeoCollection2DType* aCollect )
 {
@@ -1678,10 +1678,10 @@ idBool stdPrimitive::isSimpleCollect2D( const stdGeoCollection2DType* aCollect )
 
 /***********************************************************************
  * Description :
- * Æú¸®°ï ³»ºÎÀÇ stdLinearRing2D°¡ À¯È¿ÇÏ¸é ID_TRUE ¾Æ´Ï¸é ID_FALSE ¸®ÅÏ
- * °ãÄ¡´Â Á¡ÀÌ Á¸ÀçÇÏ¸é À¯È¿ÇÏÁö ¾Ê´Ù.
+ * í´ë¦¬ê³¤ ë‚´ë¶€ì˜ stdLinearRing2Dê°€ ìœ íš¨í•˜ë©´ ID_TRUE ì•„ë‹ˆë©´ ID_FALSE ë¦¬í„´
+ * ê²¹ì¹˜ëŠ” ì ì´ ì¡´ì¬í•˜ë©´ ìœ íš¨í•˜ì§€ ì•Šë‹¤.
  *
- * const stdLinearRing2D* aRing(In): ¸µ
+ * const stdLinearRing2D* aRing(In): ë§
  **********************************************************************/
 IDE_RC stdPrimitive::isValidRing2D( stdLinearRing2D* aRing )
 {
@@ -1706,7 +1706,7 @@ IDE_RC stdPrimitive::isValidRing2D( stdLinearRing2D* aRing )
             sMaxNumLines++;
         }
     }
-    // Ã³À½°ú ¸¶Áö¸·Á¡ ºñ±³
+    // ì²˜ìŒê³¼ ë§ˆì§€ë§‰ì  ë¹„êµ
     if( stdUtils::isSamePoints2D(
         STD_NEXTN_PT2D(sPtS,0), 
         STD_NEXTN_PT2D(sPtS,sNumPoints-1)) == ID_FALSE )
@@ -1720,7 +1720,7 @@ IDE_RC stdPrimitive::isValidRing2D( stdLinearRing2D* aRing )
 
     if( sMaxNumLines > 3 )
     {
-        // Áß°£ÀÇ Å©·Î½º ¶óÀÎ ±³Â÷ ¿©ºÎ °Ë»ç : Shape X
+        // ì¤‘ê°„ì˜ í¬ë¡œìŠ¤ ë¼ì¸ êµì°¨ ì—¬ë¶€ ê²€ì‚¬ : Shape X
         sPt2  = sPtS;
         sPos2 = 0;
         for( i = 0; i < sMaxNumLines-2; i++ )
@@ -1734,7 +1734,7 @@ IDE_RC stdPrimitive::isValidRing2D( stdLinearRing2D* aRing )
             sPtT  = sPt2;
             sPosT = sPos2;
             
-            // Áß°£¶óÀÎµé °Ë»ç( ÀÎÁ¢¶óÀÎÀº Å×½ºÆ®ÇÏÁö ¾Ê´Â´Ù. )
+            // ì¤‘ê°„ë¼ì¸ë“¤ ê²€ì‚¬( ì¸ì ‘ë¼ì¸ì€ í…ŒìŠ¤íŠ¸í•˜ì§€ ì•ŠëŠ”ë‹¤. )
             for( j = i+2; j < sMaxNumLines; j++ )
             {
                 sPt3 = stdUtils::findNextPointInRing2D( sPtT,
@@ -1761,7 +1761,7 @@ IDE_RC stdPrimitive::isValidRing2D( stdLinearRing2D* aRing )
         }
     }
     
-    // ´Ù½Ã °¬´Ù°¡ ¿À´Â ¶óÀÎ °Ë»ç  : Zero Area¹ß»ı¿©ºÎ °Ë»ç
+    // ë‹¤ì‹œ ê°”ë‹¤ê°€ ì˜¤ëŠ” ë¼ì¸ ê²€ì‚¬  : Zero Areaë°œìƒì—¬ë¶€ ê²€ì‚¬
     sPt2  = sPtS;
     sPos2 = 0;
     for( i = 0; i < sMaxNumLines; i++ )
@@ -1803,10 +1803,10 @@ IDE_RC stdPrimitive::isValidRing2D( stdLinearRing2D* aRing )
 
 /***********************************************************************
  * Description :
- * stdLineString2DTypeÀÇ ½ÃÀÛÁ¡°ú ³¡Á¡ÀÌ °°À¸¸é ID_TRUE ¾Æ´Ï¸é ID_FALSE ¸®ÅÏ
- * ½ÃÀÛÁ¡°ú ³¡Á¡ÀÌ °°À¸¸é ´İÇôÀÖ´Ù.
+ * stdLineString2DTypeì˜ ì‹œì‘ì ê³¼ ëì ì´ ê°™ìœ¼ë©´ ID_TRUE ì•„ë‹ˆë©´ ID_FALSE ë¦¬í„´
+ * ì‹œì‘ì ê³¼ ëì ì´ ê°™ìœ¼ë©´ ë‹«í˜€ìˆë‹¤.
  *
- * const stdLineString2DType* aLine(In): ÆÇº°ÇÒ °´Ã¼
+ * const stdLineString2DType* aLine(In): íŒë³„í•  ê°ì²´
  **********************************************************************/
 idBool stdPrimitive::isClosedLine2D( const stdLineString2DType* aLine )
 {
@@ -1822,10 +1822,10 @@ idBool stdPrimitive::isClosedLine2D( const stdLineString2DType* aLine )
 
 /***********************************************************************
  * Description :
- * stdLineString2DTypeÀÇ BoundaryÀÎ ¾ç ³¡ Á¡À» stdMultiPoint2DType °´Ã¼·Î ¸®ÅÏ
+ * stdLineString2DTypeì˜ Boundaryì¸ ì–‘ ë ì ì„ stdMultiPoint2DType ê°ì²´ë¡œ ë¦¬í„´
  *
- * const stdLineString2DType* aLine(In): Boundary¸¦ Ã£À» °´Ã¼
- * stdGeometryHeader* aGeom(Out): Boundary °´Ã¼
+ * const stdLineString2DType* aLine(In): Boundaryë¥¼ ì°¾ì„ ê°ì²´
+ * stdGeometryHeader* aGeom(Out): Boundary ê°ì²´
  **********************************************************************/
 IDE_RC stdPrimitive::getBoundaryLine2D(
                         const stdLineString2DType*      aLine, 
@@ -1890,11 +1890,11 @@ IDE_RC stdPrimitive::getBoundaryLine2D(
 
 /***********************************************************************
  * Description :
- * stdMultiLineString2DTypeÀÇ ³»ºÎ stdLineString2DTypeµéÀÇ Boundary¸¦
- * stdMultiPoint2DType °´Ã¼·Î ¸®ÅÏ
+ * stdMultiLineString2DTypeì˜ ë‚´ë¶€ stdLineString2DTypeë“¤ì˜ Boundaryë¥¼
+ * stdMultiPoint2DType ê°ì²´ë¡œ ë¦¬í„´
  *
- * const stdMultiLineString2DType* aMLine(In): Boundary¸¦ Ã£À» °´Ã¼
- * stdGeometryHeader* aGeom(Out): Boundary °´Ã¼
+ * const stdMultiLineString2DType* aMLine(In): Boundaryë¥¼ ì°¾ì„ ê°ì²´
+ * stdGeometryHeader* aGeom(Out): Boundary ê°ì²´
  **********************************************************************/
 IDE_RC stdPrimitive::getBoundaryMLine2D(
     const stdMultiLineString2DType*     aMLine, 
@@ -2030,7 +2030,7 @@ IDE_RC stdPrimitive::getBoundaryMLine2D(
         sLine = STD_NEXT_LINE2D(sLine);
     }
     
-    // ¸ğµç LineÀÌ closed
+    // ëª¨ë“  Lineì´ closed
     if(STD_N_OBJECTS(sMPointDst) == 0)
     {
         stdUtils::makeEmpty(aGeom);
@@ -2051,12 +2051,12 @@ IDE_RC stdPrimitive::getBoundaryMLine2D(
 
 /***********************************************************************
  * Description :
- * stdPolygon2DTypeÀÇ BoundaryÀÎ ¸µÀ» ¶óÀÎ°´Ã¼·Î ¸®ÅÏ
- * ¸µÀÌ ÇÏ³ª¸é stdLineString2DType °´Ã¼·Î ¸®ÅÏ
- * ¸µÀÌ 2°³ ÀÌ»óÀÌ¸é stdMultiLineString2DType °´Ã¼·Î ¸®ÅÏ
+ * stdPolygon2DTypeì˜ Boundaryì¸ ë§ì„ ë¼ì¸ê°ì²´ë¡œ ë¦¬í„´
+ * ë§ì´ í•˜ë‚˜ë©´ stdLineString2DType ê°ì²´ë¡œ ë¦¬í„´
+ * ë§ì´ 2ê°œ ì´ìƒì´ë©´ stdMultiLineString2DType ê°ì²´ë¡œ ë¦¬í„´
  *
- * const stdPolygon2DType* aPoly(In): Boundary¸¦ Ã£À» °´Ã¼
- * stdGeometryHeader* aGeom(Out): Boundary °´Ã¼
+ * const stdPolygon2DType* aPoly(In): Boundaryë¥¼ ì°¾ì„ ê°ì²´
+ * stdGeometryHeader* aGeom(Out): Boundary ê°ì²´
  *******************************************t***************************/
 IDE_RC stdPrimitive::getBoundaryPoly2D(
                         const stdPolygon2DType*         aPoly,
@@ -2158,12 +2158,12 @@ IDE_RC stdPrimitive::getBoundaryPoly2D(
 
 /***********************************************************************
  * Description :
- * stdMultiPolygon2DTypeÀÇ BoundaryÀÎ ¸µÀ» ¶óÀÎ°´Ã¼·Î ¸®ÅÏ
- * ¸µÀÌ ÇÏ³ª¸é stdLineString2DType °´Ã¼·Î ¸®ÅÏ
- * ¸µÀÌ 2°³ ÀÌ»óÀÌ¸é stdMultiLineString2DType °´Ã¼·Î ¸®ÅÏ
+ * stdMultiPolygon2DTypeì˜ Boundaryì¸ ë§ì„ ë¼ì¸ê°ì²´ë¡œ ë¦¬í„´
+ * ë§ì´ í•˜ë‚˜ë©´ stdLineString2DType ê°ì²´ë¡œ ë¦¬í„´
+ * ë§ì´ 2ê°œ ì´ìƒì´ë©´ stdMultiLineString2DType ê°ì²´ë¡œ ë¦¬í„´
  *
- * const stdMultiPolygon2DType* aMPoly(In): Boundary¸¦ Ã£À» °´Ã¼
- * stdGeometryHeader* aGeom(Out): Boundary °´Ã¼
+ * const stdMultiPolygon2DType* aMPoly(In): Boundaryë¥¼ ì°¾ì„ ê°ì²´
+ * stdGeometryHeader* aGeom(Out): Boundary ê°ì²´
  **********************************************************************/
 IDE_RC stdPrimitive::getBoundaryMPoly2D(
                         const stdMultiPolygon2DType*    aMPoly,
@@ -2275,10 +2275,10 @@ IDE_RC stdPrimitive::getBoundaryMPoly2D(
 
 /***********************************************************************
  * Description :
- * 2Â÷¿ø Geometry °´Ã¼ÀÇ MBRÀ» stdPolygon2DType °´Ã¼·Î ¸®ÅÏ
+ * 2ì°¨ì› Geometry ê°ì²´ì˜ MBRì„ stdPolygon2DType ê°ì²´ë¡œ ë¦¬í„´
  *
- * const stdGeometryHeader* aHeader(In): MBRÀ» Ã£À» °´Ã¼
- * stdGeometryHeader* aGeom(Out): Polygon °´Ã¼
+ * const stdGeometryHeader* aHeader(In): MBRì„ ì°¾ì„ ê°ì²´
+ * stdGeometryHeader* aGeom(Out): Polygon ê°ì²´
  **********************************************************************/
 idBool stdPrimitive::GetEnvelope2D(
                         const stdGeometryHeader*        aHeader,

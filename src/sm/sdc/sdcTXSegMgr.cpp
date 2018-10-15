@@ -44,15 +44,15 @@ idBool                 sdcTXSegMgr::mIsAttachSegment;
 
 /***********************************************************************
  *
- * Description : Æ®·£Àè¼Ç ¼¼±×¸ÕÆ® ¿£Æ®¸® °³¼ö º¸Á¤
+ * Description : íŠ¸ëžœìž­ì…˜ ì„¸ê·¸ë¨¼íŠ¸ ì—”íŠ¸ë¦¬ ê°œìˆ˜ ë³´ì •
  *
- * Æ®·£Àè¼Ç ¼¼±×¸ÕÆ® °ü¸®ÀÚ¸¦ ÃÊ±âÈ­ÇÏ±â Àü¿¡ È£ÃâÇÏ¿© »ç¿ëÀÚ ÇÁ·ÎÆÛÆ¼¿¡ ÁöÁ¤µÈ
- * °³¼ö¸¦ º¸Á¤ÇÏ°í, FreeList °³¼ö¸¦ °áÁ¤ÇÑ´Ù.
- * ¶ÇÇÑ, ¿î¿µÁß Âü°íÇÏ°ÔµÉ »ç¿ëÀÚ ÇÁ·ÎÆÛÆ¼ Á¤º¸¸¦ º¸Á¤µÈ °ªÀ¸·Î ¹Ù²ãÄ¡±âÇÑ´Ù.
- * ¹°·Ð ÇÁ·ÎÆÛÆ¼ ÆÄÀÏ¿¡¼­ º¯°æµÇ´Â °ÍÀº ¾Æ´Ï´Ù.
+ * íŠ¸ëžœìž­ì…˜ ì„¸ê·¸ë¨¼íŠ¸ ê´€ë¦¬ìžë¥¼ ì´ˆê¸°í™”í•˜ê¸° ì „ì— í˜¸ì¶œí•˜ì—¬ ì‚¬ìš©ìž í”„ë¡œí¼í‹°ì— ì§€ì •ëœ
+ * ê°œìˆ˜ë¥¼ ë³´ì •í•˜ê³ , FreeList ê°œìˆ˜ë¥¼ ê²°ì •í•œë‹¤.
+ * ë˜í•œ, ìš´ì˜ì¤‘ ì°¸ê³ í•˜ê²Œë  ì‚¬ìš©ìž í”„ë¡œí¼í‹° ì •ë³´ë¥¼ ë³´ì •ëœ ê°’ìœ¼ë¡œ ë°”ê¿”ì¹˜ê¸°í•œë‹¤.
+ * ë¬¼ë¡  í”„ë¡œí¼í‹° íŒŒì¼ì—ì„œ ë³€ê²½ë˜ëŠ” ê²ƒì€ ì•„ë‹ˆë‹¤.
  *
- * aEntryCnt        - [IN]  º¸Á¤µÇ±âÀüÀÇ Æ®·£Àè¼Ç ¿£Æ®¸® °³¼ö ( º¸Åë ÇÁ·ÎÆÛÆ¼·ÎºÎÅÍ ÀÐ¾î¿È )
- * aAdjustEntryCnt  - [OUT] º¸Á¤µÈ Æ®·£Àè¼Ç ¼¼±×¸ÕÆ® ¿£Æ®¸® °³¼ö
+ * aEntryCnt        - [IN]  ë³´ì •ë˜ê¸°ì „ì˜ íŠ¸ëžœìž­ì…˜ ì—”íŠ¸ë¦¬ ê°œìˆ˜ ( ë³´í†µ í”„ë¡œí¼í‹°ë¡œë¶€í„° ì½ì–´ì˜´ )
+ * aAdjustEntryCnt  - [OUT] ë³´ì •ëœ íŠ¸ëžœìž­ì…˜ ì„¸ê·¸ë¨¼íŠ¸ ì—”íŠ¸ë¦¬ ê°œìˆ˜
  *
  ***********************************************************************/
 IDE_RC  sdcTXSegMgr::adjustEntryCount( UInt    aEntryCnt,
@@ -100,13 +100,13 @@ IDE_RC  sdcTXSegMgr::adjustEntryCount( UInt    aEntryCnt,
 
 /***********************************************************************
  *
- * Description : Undo TBS¿¡ ÃÊ±â Æ®·£Àè¼Ç ¼¼±×¸ÕÆ®¸¦ »ý¼ºÇÑ´Ù.
+ * Description : Undo TBSì— ì´ˆê¸° íŠ¸ëžœìž­ì…˜ ì„¸ê·¸ë¨¼íŠ¸ë¥¼ ìƒì„±í•œë‹¤.
  *
- * CreateDB °úÁ¤¿¡¼­ Undo TBS¿¡ TSS¼¼±×¸ÕÆ®¿Í Undo ¼¼±×¸ÕÆ®¸¦
- * TRANSACTION_SEGMENT_COUNT¸¸Å­ °¢°¢ »ý¼ºÇÑ´Ù.
+ * CreateDB ê³¼ì •ì—ì„œ Undo TBSì— TSSì„¸ê·¸ë¨¼íŠ¸ì™€ Undo ì„¸ê·¸ë¨¼íŠ¸ë¥¼
+ * TRANSACTION_SEGMENT_COUNTë§Œí¼ ê°ê° ìƒì„±í•œë‹¤.
  *
- * aStatistics - [IN] Åë°èÁ¤º¸
- * aTrans      - [IN] Æ®·£Àè¼Ç Æ÷ÀÎÅÍ
+ * aStatistics - [IN] í†µê³„ì •ë³´
+ * aTrans      - [IN] íŠ¸ëžœìž­ì…˜ í¬ì¸í„°
  *
  ***********************************************************************/
 IDE_RC sdcTXSegMgr::createSegs( idvSQL   * aStatistics,
@@ -134,12 +134,12 @@ IDE_RC sdcTXSegMgr::createSegs( idvSQL   * aStatistics,
 
 /***********************************************************************
  *
- * Description : Æ®·£Àè¼Ç ¼¼±×¸ÕÆ®µéÀ» ¸®¼Â
+ * Description : íŠ¸ëžœìž­ì…˜ ì„¸ê·¸ë¨¼íŠ¸ë“¤ì„ ë¦¬ì…‹
  *
- * Undo TBS¸¦ ¸®¼ÂÇÏ¿©( HWM´Â ¸®¼ÂÇÏÁö ¾Ê´Â´Ù ) TSSEG¿Í UDSEG¸¦
- * ´Ù½Ã »ý¼ºÇÏ°í ÃÊ±âÈ­ÇÏ¸ç, System Reused SCNÀ» ÃÊ±âÈ­ ÇÑ´Ù.
+ * Undo TBSë¥¼ ë¦¬ì…‹í•˜ì—¬( HWMëŠ” ë¦¬ì…‹í•˜ì§€ ì•ŠëŠ”ë‹¤ ) TSSEGì™€ UDSEGë¥¼
+ * ë‹¤ì‹œ ìƒì„±í•˜ê³  ì´ˆê¸°í™”í•˜ë©°, System Reused SCNì„ ì´ˆê¸°í™” í•œë‹¤.
  *
- * aStatistics - [IN] Åë°èÁ¤º¸
+ * aStatistics - [IN] í†µê³„ì •ë³´
  *
  ***********************************************************************/
 IDE_RC sdcTXSegMgr::resetSegs( idvSQL* aStatistics )
@@ -160,8 +160,8 @@ IDE_RC sdcTXSegMgr::resetSegs( idvSQL* aStatistics )
               != IDE_SUCCESS );
 
     /*
-     * resetTBS ¼öÇà½Ã ¹ß»ýÇÑ pendingÀÛ¾÷À» ¿Ï·áÇÏ±â À§ÇØ¼­´Â ¹Ýµå½Ã
-     * createSegsÀÌÀü¿¡ CommitµÇ¾î¾ß ÇÑ´Ù.
+     * resetTBS ìˆ˜í–‰ì‹œ ë°œìƒí•œ pendingìž‘ì—…ì„ ì™„ë£Œí•˜ê¸° ìœ„í•´ì„œëŠ” ë°˜ë“œì‹œ
+     * createSegsì´ì „ì— Commitë˜ì–´ì•¼ í•œë‹¤.
      */
     IDE_ASSERT( smLayerCallback::commitTrans( sTrans ) == IDE_SUCCESS );
 
@@ -186,20 +186,20 @@ IDE_RC sdcTXSegMgr::resetSegs( idvSQL* aStatistics )
 
 /***********************************************************************
  *
- * Description : Æ®·£Àè¼Ç ¼¼±×¸ÕÆ® °ü¸®ÀÚ ÃÊ±âÈ­
+ * Description : íŠ¸ëžœìž­ì…˜ ì„¸ê·¸ë¨¼íŠ¸ ê´€ë¦¬ìž ì´ˆê¸°í™”
  *
- * Mutex, Æ®·£Àè¼Ç ¼¼±×¸ÕÆ® ¿£Æ®¸®, FreeList¸¦ ÃÊ±âÈ­ ÇÑ´Ù.
- * ÃÊ±âÈ­ ½ÃÁ¡Àº Restart °úÁ¤ÀÌ ¿Ï·áµÈ ÀÌÈÄ¿¡ ÃÊ±âÈ­µÈ´Ù.
- * Restart °úÁ¤¿¡¼­´Â Æ®·£Àè¼Ç ¼¼±×¸ÕÆ® ¿£Æ®¸®¸¦ »ç¿ëÇÏÁö ¾ÊÀ¸¸ç,
- * ÀÌÈÄ °úÁ¤¿¡¼­ ¿£Æ®¸® °³¼ö°¡ º¯°æµÉ ¼öµµ ÀÖ±â ¶§¹®¿¡ ÃÊ±âÈ­½ÃÁ¡À»
- * ÀÌÈÄ °úÁ¤À¸·Î ÇÑ´Ù.
+ * Mutex, íŠ¸ëžœìž­ì…˜ ì„¸ê·¸ë¨¼íŠ¸ ì—”íŠ¸ë¦¬, FreeListë¥¼ ì´ˆê¸°í™” í•œë‹¤.
+ * ì´ˆê¸°í™” ì‹œì ì€ Restart ê³¼ì •ì´ ì™„ë£Œëœ ì´í›„ì— ì´ˆê¸°í™”ëœë‹¤.
+ * Restart ê³¼ì •ì—ì„œëŠ” íŠ¸ëžœìž­ì…˜ ì„¸ê·¸ë¨¼íŠ¸ ì—”íŠ¸ë¦¬ë¥¼ ì‚¬ìš©í•˜ì§€ ì•Šìœ¼ë©°,
+ * ì´í›„ ê³¼ì •ì—ì„œ ì—”íŠ¸ë¦¬ ê°œìˆ˜ê°€ ë³€ê²½ë  ìˆ˜ë„ ìžˆê¸° ë•Œë¬¸ì— ì´ˆê¸°í™”ì‹œì ì„
+ * ì´í›„ ê³¼ì •ìœ¼ë¡œ í•œë‹¤.
  *
- * Æ®·£Àè¼Ç ¼¼±×¸ÕÆ®¿¡ ÇØ´çÇÏ´Â UDS/TSS ¼¼±×¸ÕÆ®¸¦ AttachÇÏ¿© ÃÊ±âÈ­ÇÏ±âµµÇÑ´Ù.
- * ¿¹¸¦µé¾î, Create Database °úÁ¤¿¡¼­´Â Segment »ý¼ºÀÌÈÄ¿¡ ÃÊ±âÈ­µÇ¹Ç·Î Attach
- * ÇÏ¸ç, Restart Recovery ÀÌÀü¿¡´Â º¹±¸ÀüÀÌ±â ¶§¹®¿¡ Segment¸¦ AttachÇØ¼­´Â
- * ¾ÈµÈ´Ù.
+ * íŠ¸ëžœìž­ì…˜ ì„¸ê·¸ë¨¼íŠ¸ì— í•´ë‹¹í•˜ëŠ” UDS/TSS ì„¸ê·¸ë¨¼íŠ¸ë¥¼ Attachí•˜ì—¬ ì´ˆê¸°í™”í•˜ê¸°ë„í•œë‹¤.
+ * ì˜ˆë¥¼ë“¤ì–´, Create Database ê³¼ì •ì—ì„œëŠ” Segment ìƒì„±ì´í›„ì— ì´ˆê¸°í™”ë˜ë¯€ë¡œ Attach
+ * í•˜ë©°, Restart Recovery ì´ì „ì—ëŠ” ë³µêµ¬ì „ì´ê¸° ë•Œë¬¸ì— Segmentë¥¼ Attachí•´ì„œëŠ”
+ * ì•ˆëœë‹¤.
  *
- * aIsAttachSegment - [IN] Æ®·£Àè¼Ç ¼¼±×¸ÕÆ® °ü¸®ÀÚ ÃÊ±âÈ­½Ã ¼¼±×¸ÕÆ® Attach ¿©ºÎ
+ * aIsAttachSegment - [IN] íŠ¸ëžœìž­ì…˜ ì„¸ê·¸ë¨¼íŠ¸ ê´€ë¦¬ìž ì´ˆê¸°í™”ì‹œ ì„¸ê·¸ë¨¼íŠ¸ Attach ì—¬ë¶€
  *
  ***********************************************************************/
 IDE_RC sdcTXSegMgr::initialize( idBool   aIsAttachSegment )
@@ -261,20 +261,20 @@ IDE_RC sdcTXSegMgr::initialize( idBool   aIsAttachSegment )
 }
 /***********************************************************************
  *
- * Description : Æ®·£Àè¼Ç ¼¼±×¸ÕÆ® ¿£Æ®¸® ¸®ºôµù
+ * Description : íŠ¸ëžœìž­ì…˜ ì„¸ê·¸ë¨¼íŠ¸ ì—”íŠ¸ë¦¬ ë¦¬ë¹Œë”©
  *
- * Æ®·£Àè¼Ç ¼¼±×¸ÕÆ®´Â Prepare Æ®·£Àè¼ÇÀÌ Á¸ÀçÇÏÁö ¾ÊÀ»¶§´Â
- * ¸®¼ÂÇÏÁö¸¸, Á¸ÀçÇÏ¸é ¸®¼ÂÇÏÁö ¸øÇÏ°í, ÃÊ±âÈ­ÇØ¼­ ÀÌÀüÁ¾·á
- * ½ÃÁ¡±îÁö »ç¿ëÇÏ´ø °¢ ¼¼±×¸ÕÆ®µéÀ» °è¼Ó »ç¿ëÇØ¾ßÇÑ´Ù.
+ * íŠ¸ëžœìž­ì…˜ ì„¸ê·¸ë¨¼íŠ¸ëŠ” Prepare íŠ¸ëžœìž­ì…˜ì´ ì¡´ìž¬í•˜ì§€ ì•Šì„ë•ŒëŠ”
+ * ë¦¬ì…‹í•˜ì§€ë§Œ, ì¡´ìž¬í•˜ë©´ ë¦¬ì…‹í•˜ì§€ ëª»í•˜ê³ , ì´ˆê¸°í™”í•´ì„œ ì´ì „ì¢…ë£Œ
+ * ì‹œì ê¹Œì§€ ì‚¬ìš©í•˜ë˜ ê° ì„¸ê·¸ë¨¼íŠ¸ë“¤ì„ ê³„ì† ì‚¬ìš©í•´ì•¼í•œë‹¤.
  *
- * ¼­¹ö ±¸µ¿½Ã ÀÌÀü Á¾·áÀüÀÇ Æ®·£Àè¼Ç ¼¼±×¸ÕÆ® °³¼ö¿Í ´Ù¸£°Ô
- * ¼³Á¤µÈ °æ¿ì Æ®·£Àè¼Ç ¼¼±×¸ÕÆ®µéÀ» ÁöÁ¤µÈ °³¼ö·Î Àç»ý¼ºÇÏ°í
- * ÃÊ±âÈ­ÇÑ´Ù. ÀÌ¶§µµ prepare Æ®·£Àè¼ÇÀÌ Á¸ÀçÇÏ´Â °æ¿ì¿¡´Â
- * ¸®¼ÂÇÒ ¼ö ¾øÀ¸¹Ç·Î ¿¡·¯¸¦ Ãâ·ÂÇÏ°í ¼­¹ö±¸µ¿À» ½ÇÆÐÇÏµµ·Ï Ã³¸®ÇÑ´Ù.
+ * ì„œë²„ êµ¬ë™ì‹œ ì´ì „ ì¢…ë£Œì „ì˜ íŠ¸ëžœìž­ì…˜ ì„¸ê·¸ë¨¼íŠ¸ ê°œìˆ˜ì™€ ë‹¤ë¥´ê²Œ
+ * ì„¤ì •ëœ ê²½ìš° íŠ¸ëžœìž­ì…˜ ì„¸ê·¸ë¨¼íŠ¸ë“¤ì„ ì§€ì •ëœ ê°œìˆ˜ë¡œ ìž¬ìƒì„±í•˜ê³ 
+ * ì´ˆê¸°í™”í•œë‹¤. ì´ë•Œë„ prepare íŠ¸ëžœìž­ì…˜ì´ ì¡´ìž¬í•˜ëŠ” ê²½ìš°ì—ëŠ”
+ * ë¦¬ì…‹í•  ìˆ˜ ì—†ìœ¼ë¯€ë¡œ ì—ëŸ¬ë¥¼ ì¶œë ¥í•˜ê³  ì„œë²„êµ¬ë™ì„ ì‹¤íŒ¨í•˜ë„ë¡ ì²˜ë¦¬í•œë‹¤.
  *
- * ¼­¹ö±¸µ¿°úÁ¤¿¡¼­ Reset Æ®·£Àè¼Ç ¼¼±×¸ÕÆ® ÀÌÈÄ¿¡ ºñÁ¤»ó Á¾·á¸¦
- * ´ëºñÇÏ¿© EntryCnt°¡ º¯°æµÇ¾î¾ß ÇÏ´Â °æ¿ì Reset ÇÏ±âÀü¿¡ ¹Ýµå½Ã
- * Buffer Pool ¹× LogµéÀ» ¸ðµÎ Flush ÇÑÈÄ checkpoint¸¦ ¼öÇàÇÑ´Ù.
+ * ì„œë²„êµ¬ë™ê³¼ì •ì—ì„œ Reset íŠ¸ëžœìž­ì…˜ ì„¸ê·¸ë¨¼íŠ¸ ì´í›„ì— ë¹„ì •ìƒ ì¢…ë£Œë¥¼
+ * ëŒ€ë¹„í•˜ì—¬ EntryCntê°€ ë³€ê²½ë˜ì–´ì•¼ í•˜ëŠ” ê²½ìš° Reset í•˜ê¸°ì „ì— ë°˜ë“œì‹œ
+ * Buffer Pool ë° Logë“¤ì„ ëª¨ë‘ Flush í•œí›„ checkpointë¥¼ ìˆ˜í–‰í•œë‹¤.
  *
  ***********************************************************************/
 IDE_RC sdcTXSegMgr::rebuild()
@@ -296,7 +296,7 @@ IDE_RC sdcTXSegMgr::rebuild()
                                       &sNewAdjustEntryCnt )
                     == IDE_SUCCESS );
 
-        /* Entry °³¼ö Ã¼Å©¸¸ ÇØ¼­ ´Ù¸¥ °æ¿ì¸¸ flush ¼öÇà */
+        /* Entry ê°œìˆ˜ ì²´í¬ë§Œ í•´ì„œ ë‹¤ë¥¸ ê²½ìš°ë§Œ flush ìˆ˜í–‰ */
         if ( isModifiedEntryCnt( sNewAdjustEntryCnt ) == ID_TRUE )
         {
             IDE_TEST( sdsBufferMgr::flushDirtyPagesInCPList(
@@ -328,9 +328,9 @@ IDE_RC sdcTXSegMgr::rebuild()
     {
         ideLog::log(IDE_SERVER_0,
            "              Attach Undo Tablespace ...");
-        /* prepare Æ®·£Àè¼ÇÀÌ ÀÖ´Â °æ¿ì¿¡´Â ÀÌ¹Ì ON_SEG·Î ÃÊ±âÈ­µÈ
-         * Æ®·£Àè¼Ç ¼¼±×¸ÕÆ® °ü¸®ÀÚ¸¦ ±×´ë·Î »ç¿ëÇÑ´Ù.
-         * FreeList ¹× Entry »óÅÂµµ ¸ðµÎ º¹¿øµÇ¾î ÀÖ´Ù */
+        /* prepare íŠ¸ëžœìž­ì…˜ì´ ìžˆëŠ” ê²½ìš°ì—ëŠ” ì´ë¯¸ ON_SEGë¡œ ì´ˆê¸°í™”ëœ
+         * íŠ¸ëžœìž­ì…˜ ì„¸ê·¸ë¨¼íŠ¸ ê´€ë¦¬ìžë¥¼ ê·¸ëŒ€ë¡œ ì‚¬ìš©í•œë‹¤.
+         * FreeList ë° Entry ìƒíƒœë„ ëª¨ë‘ ë³µì›ë˜ì–´ ìžˆë‹¤ */
         for ( i = 0; i < mTotEntryCnt; i++ )
         {
             IDE_ASSERT( attachSegToEntry( &mArrEntry[i],
@@ -339,8 +339,8 @@ IDE_RC sdcTXSegMgr::rebuild()
         }
         mIsAttachSegment = ID_TRUE;
 
-        // BUG-27024 prepare trans µéÀÇ FstDskViewSCNÁß °¡Àå ÀÛÀº
-        // °ªÀ¸·Î prepare trans µéÀÇ Oldest View SCNÀ» ¼³Á¤ÇÔ
+        // BUG-27024 prepare trans ë“¤ì˜ FstDskViewSCNì¤‘ ê°€ìž¥ ìž‘ì€
+        // ê°’ìœ¼ë¡œ prepare trans ë“¤ì˜ Oldest View SCNì„ ì„¤ì •í•¨
         smxTransMgr::rebuildPrepareTransOldestSCN();
     }
 
@@ -354,9 +354,9 @@ IDE_RC sdcTXSegMgr::rebuild()
 
 /***********************************************************************
  *
- * Description : Æ®·£Àè¼Ç ¼¼±×¸ÕÆ® °ü¸®ÀÚ ÇØÁ¦
+ * Description : íŠ¸ëžœìž­ì…˜ ì„¸ê·¸ë¨¼íŠ¸ ê´€ë¦¬ìž í•´ì œ
  *
- * Mutex, Æ®·£Àè¼Ç ¼¼±×¸ÕÆ® ¿£Æ®¸®, FreeList¸¦ ÇØÁ¦ÇÑ´Ù.
+ * Mutex, íŠ¸ëžœìž­ì…˜ ì„¸ê·¸ë¨¼íŠ¸ ì—”íŠ¸ë¦¬, FreeListë¥¼ í•´ì œí•œë‹¤.
  *
  ***********************************************************************/
 IDE_RC sdcTXSegMgr::destroy()
@@ -381,14 +381,14 @@ IDE_RC sdcTXSegMgr::destroy()
 
 /***********************************************************************
  *
- * Description : Æ®·£Àè¼Ç ¼¼±×¸ÕÆ® ¿£Æ®¸® ÃÊ±âÈ­
+ * Description : íŠ¸ëžœìž­ì…˜ ì„¸ê·¸ë¨¼íŠ¸ ì—”íŠ¸ë¦¬ ì´ˆê¸°í™”
  *
- * Æ®·£Àè¼Ç ¿£Æ®¸® ÃÊ±âÈ­´Â °¢ ¼¼±×¸ÕÆ®°¡ ¸ðµÎ »ý¼ºµÈ »óÅÂ¿¡¼­¸¸ °¡´ÉÇÏ´Ù.
- * »ý¼ºµÈ ¼¼±×¸ÕÆ®·ÎºÎÅÍ SegHdr PID¿Í ÇÒ´çÇÒ ¼ö ÀÖ´Â PID¸¦ ¹Þ¾Æ¼­
- * ¿£Æ®¸®¿¡ ÀúÀåÇÑ´Ù.
+ * íŠ¸ëžœìž­ì…˜ ì—”íŠ¸ë¦¬ ì´ˆê¸°í™”ëŠ” ê° ì„¸ê·¸ë¨¼íŠ¸ê°€ ëª¨ë‘ ìƒì„±ëœ ìƒíƒœì—ì„œë§Œ ê°€ëŠ¥í•˜ë‹¤.
+ * ìƒì„±ëœ ì„¸ê·¸ë¨¼íŠ¸ë¡œë¶€í„° SegHdr PIDì™€ í• ë‹¹í•  ìˆ˜ ìžˆëŠ” PIDë¥¼ ë°›ì•„ì„œ
+ * ì—”íŠ¸ë¦¬ì— ì €ìž¥í•œë‹¤.
  *
- * aEntry         - [IN] Æ®·£Àè¼Ç ¼¼±×¸ÕÆ® ¿£Æ®¸® Pointer
- * aEntryIdx      - [IN] Æ®·£Àè¼Ç ¼¼±×¸ÕÆ® ¿£Æ®¸® ¼ø¹ø
+ * aEntry         - [IN] íŠ¸ëžœìž­ì…˜ ì„¸ê·¸ë¨¼íŠ¸ ì—”íŠ¸ë¦¬ Pointer
+ * aEntryIdx      - [IN] íŠ¸ëžœìž­ì…˜ ì„¸ê·¸ë¨¼íŠ¸ ì—”íŠ¸ë¦¬ ìˆœë²ˆ
  *
  ***********************************************************************/
 void sdcTXSegMgr::initEntry( sdcTXSegEntry  * aEntry,
@@ -405,10 +405,10 @@ void sdcTXSegMgr::initEntry( sdcTXSegEntry  * aEntry,
     aEntry->mListNode.mData = (void*)aEntry;
 
     /*
-     * BUG-23649 Undo TBSÀÇ ±ÕÇüÀûÀÎ °ø°£°ü¸®¸¦ À§ÇÑ Steal Á¤Ã¥ ±¸Çö
+     * BUG-23649 Undo TBSì˜ ê· í˜•ì ì¸ ê³µê°„ê´€ë¦¬ë¥¼ ìœ„í•œ Steal ì •ì±… êµ¬í˜„
      *
-     * Steal ¿¬»ê¿¡¼­ ExpiredµÈ ExtDir Á¸ÀçÇÏ´ÂÁö¸¦
-     * ½ÇÁ¦ Next ExtDir¿¡ °¡º¸Áö ¾Ê¾Æµµ (I/O) ¾øÀÌ È®ÀÎÇÒ ¼ö ÀÖ´Ù.
+     * Steal ì—°ì‚°ì—ì„œ Expiredëœ ExtDir ì¡´ìž¬í•˜ëŠ”ì§€ë¥¼
+     * ì‹¤ì œ Next ExtDirì— ê°€ë³´ì§€ ì•Šì•„ë„ (I/O) ì—†ì´ í™•ì¸í•  ìˆ˜ ìžˆë‹¤.
      */
     SM_MAX_SCN( &aEntry->mMaxCommitSCN );
 }
@@ -416,12 +416,12 @@ void sdcTXSegMgr::initEntry( sdcTXSegEntry  * aEntry,
 
 /***********************************************************************
  *
- * Description : Æ®·£Àè¼Ç ¼¼±×¸ÕÆ® ¿£Æ®¸®¿¡ Segment ÀûÀç
+ * Description : íŠ¸ëžœìž­ì…˜ ì„¸ê·¸ë¨¼íŠ¸ ì—”íŠ¸ë¦¬ì— Segment ì ìž¬
  *
- * Æ®·£Àè¼Ç ¼¼±×¸ÕÆ®¿¡ SegmentÀÇ ÇÒ´çÁ¤º¸¸¦ ÀûÀçÇÑ´Ù.
+ * íŠ¸ëžœìž­ì…˜ ì„¸ê·¸ë¨¼íŠ¸ì— Segmentì˜ í• ë‹¹ì •ë³´ë¥¼ ì ìž¬í•œë‹¤.
  *
- * aEntry         - [IN] Æ®·£Àè¼Ç ¼¼±×¸ÕÆ® ¿£Æ®¸® Pointer
- * aEntryIdx      - [IN] Æ®·£Àè¼Ç ¼¼±×¸ÕÆ® ¿£Æ®¸® ¼ø¹ø
+ * aEntry         - [IN] íŠ¸ëžœìž­ì…˜ ì„¸ê·¸ë¨¼íŠ¸ ì—”íŠ¸ë¦¬ Pointer
+ * aEntryIdx      - [IN] íŠ¸ëžœìž­ì…˜ ì„¸ê·¸ë¨¼íŠ¸ ì—”íŠ¸ë¦¬ ìˆœë²ˆ
  *
  ***********************************************************************/
 IDE_RC sdcTXSegMgr::attachSegToEntry( sdcTXSegEntry  * aEntry,
@@ -460,12 +460,12 @@ IDE_RC sdcTXSegMgr::attachSegToEntry( sdcTXSegEntry  * aEntry,
 
 /***********************************************************************
  *
- * Description : Æ®·£Àè¼Ç ¼¼±×¸ÕÆ® ¿£Æ®¸® ÇØÁ¦
+ * Description : íŠ¸ëžœìž­ì…˜ ì„¸ê·¸ë¨¼íŠ¸ ì—”íŠ¸ë¦¬ í•´ì œ
  *
- * Æ®·£Àè¼Ç ¼¼±×¸ÕÆ®ÀÇ Á¤º¸¸¦ ¸ðµÎ ÃÊ±âÈ­ ÇÑ´Ù.
+ * íŠ¸ëžœìž­ì…˜ ì„¸ê·¸ë¨¼íŠ¸ì˜ ì •ë³´ë¥¼ ëª¨ë‘ ì´ˆê¸°í™” í•œë‹¤.
  *
- * aEntry         - [IN] Æ®·£Àè¼Ç ¼¼±×¸ÕÆ® ¿£Æ®¸® Pointer
- * aEntryIdx      - [IN] Æ®·£Àè¼Ç ¼¼±×¸ÕÆ® ¿£Æ®¸® ¼ø¹ø
+ * aEntry         - [IN] íŠ¸ëžœìž­ì…˜ ì„¸ê·¸ë¨¼íŠ¸ ì—”íŠ¸ë¦¬ Pointer
+ * aEntryIdx      - [IN] íŠ¸ëžœìž­ì…˜ ì„¸ê·¸ë¨¼íŠ¸ ì—”íŠ¸ë¦¬ ìˆœë²ˆ
  *
  ***********************************************************************/
 void sdcTXSegMgr::finiEntry( sdcTXSegEntry * aEntry )
@@ -492,16 +492,16 @@ void sdcTXSegMgr::finiEntry( sdcTXSegEntry * aEntry )
 
 /***********************************************************************
  *
- * Description : Steal ¿¬»ê½Ã ExpiredµÈ Entry ÇÒ´ç
+ * Description : Steal ì—°ì‚°ì‹œ Expiredëœ Entry í• ë‹¹
  *
- * ¿ÀÇÁ¶óÀÎ EntryÁß¿¡¼­ EntryÀÇ Max CommitSCN°ú OldestTransBSCNÀ»
- * ºñ±³ÇØº¸°í ExpiredµÇ¾ú´ÂÁö È®ÀÎÇÑ ÇÑÈÄ, Entry¸¦ ÇÒ´çÇÑ´Ù.
+ * ì˜¤í”„ë¼ì¸ Entryì¤‘ì—ì„œ Entryì˜ Max CommitSCNê³¼ OldestTransBSCNì„
+ * ë¹„êµí•´ë³´ê³  Expiredë˜ì—ˆëŠ”ì§€ í™•ì¸í•œ í•œí›„, Entryë¥¼ í• ë‹¹í•œë‹¤.
  *
- * aStatistics      - [IN]  Åë°èÁ¤º¸
- * aStartEntryIdx   - [IN]  ÇÒ´çÇÒ Entry Idx
+ * aStatistics      - [IN]  í†µê³„ì •ë³´
+ * aStartEntryIdx   - [IN]  í• ë‹¹í•  Entry Idx
  * aSegType         - [IN]  Segment Type
- * aOldestTransBSCN - [IN]  °¡Àå ¿À·¡Àü¿¡ ½ÃÀÛÇÑ Statement SCN
- * aEntry           - [OUT] Æ®·£Àè¼Ç ¼¼±×¸ÕÆ® ¿£Æ®¸® Æ÷ÀÎÅÍ
+ * aOldestTransBSCN - [IN]  ê°€ìž¥ ì˜¤ëž˜ì „ì— ì‹œìž‘í•œ Statement SCN
+ * aEntry           - [OUT] íŠ¸ëžœìž­ì…˜ ì„¸ê·¸ë¨¼íŠ¸ ì—”íŠ¸ë¦¬ í¬ì¸í„°
  *
  ***********************************************************************/
 void sdcTXSegMgr::tryAllocExpiredEntry( UInt             aStartEntryIdx,
@@ -542,7 +542,7 @@ void sdcTXSegMgr::tryAllocExpiredEntry( UInt             aStartEntryIdx,
 
     if ( sEntry != NULL )
     {
-        // Æ®·£Àè¼Ç ¼¼±×¸ÕÆ® ¿£Æ®¸® ÃÊ±âÈ­½Ã¿¡ ¸ðµÎ ¼³Á¤µÇ¾î ÀÖ¾î¾ß ÇÑ´Ù.
+        // íŠ¸ëžœìž­ì…˜ ì„¸ê·¸ë¨¼íŠ¸ ì—”íŠ¸ë¦¬ ì´ˆê¸°í™”ì‹œì— ëª¨ë‘ ì„¤ì •ë˜ì–´ ìžˆì–´ì•¼ í•œë‹¤.
         IDE_ASSERT( sEntry->mEntryIdx != ID_UINT_MAX );
         IDE_ASSERT( sEntry->mStatus   == SDC_TXSEG_ONLINE );
     }
@@ -552,20 +552,20 @@ void sdcTXSegMgr::tryAllocExpiredEntry( UInt             aStartEntryIdx,
 
 /***********************************************************************
  *
- * Description : Entry Idx¿¡ ÇØ´çÇÏ´Â Entry°¡ ¿ÀÇÁ¶óÀÎÀÌ¸é ÇÒ´ç
+ * Description : Entry Idxì— í•´ë‹¹í•˜ëŠ” Entryê°€ ì˜¤í”„ë¼ì¸ì´ë©´ í• ë‹¹
  *
  * (a) Steal
  *
- * (b) Restart Recovery½Ã Active Entry ¹ÙÀÎµù
+ * (b) Restart Recoveryì‹œ Active Entry ë°”ì¸ë”©
  *
- * Restart Recovery °úÁ¤¿¡¼­´Â ºñÁ¤»óÁ¾·á ÀÌÀüÀÇ ÇÒ´çµÇ¾ú´ø Entry ID°¡ ¹Ýµå½Ã
- * ¹ÙÀÎµùµÉ ¼ö ÀÖµµ·Ï TRANSACTION_SEGMENT_COUNT ÇÁ·ÎÆÛÆ¼°¡ ºñÁ¤»óÁ¾·á ÀÌÀüÀ¸·Î
- * º¸ÀåµÇ¾î¾ß ÇÏ¹Ç·Î, loganchor¿¡ ÀúÀåµÈ °³¼ö·Î ÃÊ±âÈ­¸¦ ÇÏ¸ç, Restart Recovery
- * ÀÌÈÄ¿¡ º¯°æµÈ TRANSACTION_SEGMENT_COUNT¸¦ Àû¿ëÇÒ ¼ö ÀÖ´Ù.
+ * Restart Recovery ê³¼ì •ì—ì„œëŠ” ë¹„ì •ìƒì¢…ë£Œ ì´ì „ì˜ í• ë‹¹ë˜ì—ˆë˜ Entry IDê°€ ë°˜ë“œì‹œ
+ * ë°”ì¸ë”©ë  ìˆ˜ ìžˆë„ë¡ TRANSACTION_SEGMENT_COUNT í”„ë¡œí¼í‹°ê°€ ë¹„ì •ìƒì¢…ë£Œ ì´ì „ìœ¼ë¡œ
+ * ë³´ìž¥ë˜ì–´ì•¼ í•˜ë¯€ë¡œ, loganchorì— ì €ìž¥ëœ ê°œìˆ˜ë¡œ ì´ˆê¸°í™”ë¥¼ í•˜ë©°, Restart Recovery
+ * ì´í›„ì— ë³€ê²½ëœ TRANSACTION_SEGMENT_COUNTë¥¼ ì ìš©í•  ìˆ˜ ìžˆë‹¤.
  *
  *
- * aEntryIdx     - [IN]  Å½»ö ½ÃÀÛ Entry Idx
- * aEntry        - [OUT] Æ®·£Àè¼Ç ¼¼±×¸ÕÆ® ¿£Æ®¸® Æ÷ÀÎÅÍ
+ * aEntryIdx     - [IN]  íƒìƒ‰ ì‹œìž‘ Entry Idx
+ * aEntry        - [OUT] íŠ¸ëžœìž­ì…˜ ì„¸ê·¸ë¨¼íŠ¸ ì—”íŠ¸ë¦¬ í¬ì¸í„°
  *
  ***********************************************************************/
 void sdcTXSegMgr::tryAllocEntryByIdx( UInt             aEntryIdx,
@@ -580,7 +580,7 @@ void sdcTXSegMgr::tryAllocEntryByIdx( UInt             aEntryIdx,
 
     if ( sEntry != NULL )
     {
-        // Æ®·£Àè¼Ç ¼¼±×¸ÕÆ® ¿£Æ®¸® ÃÊ±âÈ­½Ã¿¡ ¸ðµÎ ¼³Á¤µÇ¾î ÀÖ¾î¾ß ÇÑ´Ù.
+        // íŠ¸ëžœìž­ì…˜ ì„¸ê·¸ë¨¼íŠ¸ ì—”íŠ¸ë¦¬ ì´ˆê¸°í™”ì‹œì— ëª¨ë‘ ì„¤ì •ë˜ì–´ ìžˆì–´ì•¼ í•œë‹¤.
         IDE_ASSERT( sEntry->mEntryIdx != ID_UINT_MAX );
         IDE_ASSERT( sEntry->mStatus   == SDC_TXSEG_ONLINE );
     }
@@ -590,15 +590,15 @@ void sdcTXSegMgr::tryAllocEntryByIdx( UInt             aEntryIdx,
 
 /***********************************************************************
  *
- * Description : Æ®·£Àè¼Ç ¼¼±×¸ÕÆ® ¿£Æ®¸® ÇÒ´ç
+ * Description : íŠ¸ëžœìž­ì…˜ ì„¸ê·¸ë¨¼íŠ¸ ì—”íŠ¸ë¦¬ í• ë‹¹
  *
- * Æ®·£Àè¼Ç ¼¼±×¸ÕÆ® ¿£Æ®¸®¸¦ ÇÒ´çÇÒ ¶§±îÁö FreeList¸¦ ¼±ÅÃÇÏ¿© ÇÒ´ç ½ÃµµÇÑ´Ù.
- * ¸¸¾à ¸ðµç ¿£Æ®¸®°¡ ONLINE »óÅÂ¶ó¸é TXSEG_ALLOC_WAIT_TIME ¸¸Å­ ´ë±âÇÑ ÈÄ
- * ´Ù½Ã ½ÃµµÇÑ´Ù.
+ * íŠ¸ëžœìž­ì…˜ ì„¸ê·¸ë¨¼íŠ¸ ì—”íŠ¸ë¦¬ë¥¼ í• ë‹¹í•  ë•Œê¹Œì§€ FreeListë¥¼ ì„ íƒí•˜ì—¬ í• ë‹¹ ì‹œë„í•œë‹¤.
+ * ë§Œì•½ ëª¨ë“  ì—”íŠ¸ë¦¬ê°€ ONLINE ìƒíƒœë¼ë©´ TXSEG_ALLOC_WAIT_TIME ë§Œí¼ ëŒ€ê¸°í•œ í›„
+ * ë‹¤ì‹œ ì‹œë„í•œë‹¤.
  *
- * aStatistics - [IN]  Åë°èÁ¤º¸
+ * aStatistics - [IN]  í†µê³„ì •ë³´
  * aStartInfo  - [IN] Mini Transaction Start Info
- * aEntry      - [OUT] Æ®·£Àè¼Ç ¼¼±×¸ÕÆ® ¿£Æ®¸® Æ÷ÀÎÅÍ
+ * aEntry      - [OUT] íŠ¸ëžœìž­ì…˜ ì„¸ê·¸ë¨¼íŠ¸ ì—”íŠ¸ë¦¬ í¬ì¸í„°
  *
  ***********************************************************************/
 IDE_RC sdcTXSegMgr::allocEntry( idvSQL                   * aStatistics,
@@ -610,7 +610,7 @@ IDE_RC sdcTXSegMgr::allocEntry( idvSQL                   * aStatistics,
     UInt             sStartFreeListIdx;
     PDL_Time_Value   sWaitTime;
     idvWeArgs        sWeArgs;
-    /* BUG-40266 TRANSACTION_SEGMENT_COUNT ¿¡ µµ´ÞÇß´ÂÁö trc·Î±×¿¡ ³²±ä´Ù. */
+    /* BUG-40266 TRANSACTION_SEGMENT_COUNT ì— ë„ë‹¬í–ˆëŠ”ì§€ trcë¡œê·¸ì— ë‚¨ê¸´ë‹¤. */
     idBool           sAddTXSegEntryFull = ID_FALSE;
     smTID            sTransID = SM_NULL_TID;
 
@@ -663,7 +663,7 @@ IDE_RC sdcTXSegMgr::allocEntry( idvSQL                   * aStatistics,
                              " Transaction (TID:%"ID_UINT32_FMT") is waiting for TXSegs allocation.",
                              sTransID );
 
-                /* trc ´Â ÇÑ¹ø¸¸ ³²±è */
+                /* trc ëŠ” í•œë²ˆë§Œ ë‚¨ê¹€ */
                 sAddTXSegEntryFull = ID_TRUE;
             }
             else 
@@ -678,11 +678,11 @@ IDE_RC sdcTXSegMgr::allocEntry( idvSQL                   * aStatistics,
         }
     }
 
-    // Æ®·£Àè¼Ç ¼¼±×¸ÕÆ® ¿£Æ®¸® ÃÊ±âÈ­½Ã¿¡ ¸ðµÎ ¼³Á¤µÇ¾î ÀÖ¾î¾ß ÇÑ´Ù.
+    // íŠ¸ëžœìž­ì…˜ ì„¸ê·¸ë¨¼íŠ¸ ì—”íŠ¸ë¦¬ ì´ˆê¸°í™”ì‹œì— ëª¨ë‘ ì„¤ì •ë˜ì–´ ìžˆì–´ì•¼ í•œë‹¤.
     IDE_ASSERT( (*aEntry)->mEntryIdx != ID_UINT_MAX );
     IDE_ASSERT( (*aEntry)->mStatus   == SDC_TXSEG_ONLINE );
      
-    /* ´ë±âÇÏ´ø Trans °¡ Àß ³ª°¬´ÂÁö È®ÀÎ */
+    /* ëŒ€ê¸°í•˜ë˜ Trans ê°€ ìž˜ ë‚˜ê°”ëŠ”ì§€ í™•ì¸ */
     if (sAddTXSegEntryFull == ID_TRUE )
     {
         IDE_DASSERT ( sTransID != SM_NULL_TID );
@@ -699,7 +699,7 @@ IDE_RC sdcTXSegMgr::allocEntry( idvSQL                   * aStatistics,
 
     IDE_EXCEPTION_END;
 
-    /* ´ë±âÇÏ´ø Trans °¡ Àß ³ª°¬´ÂÁö È®ÀÎ */
+    /* ëŒ€ê¸°í•˜ë˜ Trans ê°€ ìž˜ ë‚˜ê°”ëŠ”ì§€ í™•ì¸ */
     if (sAddTXSegEntryFull == ID_TRUE )
     {
         IDE_DASSERT ( sTransID != SM_NULL_TID );
@@ -717,13 +717,13 @@ IDE_RC sdcTXSegMgr::allocEntry( idvSQL                   * aStatistics,
 
 /***********************************************************************
  *
- * Description : Æ®·£Àè¼Ç ¼¼±×¸ÕÆ® ¿£Æ®¸® ÇÒ´ç
+ * Description : íŠ¸ëžœìž­ì…˜ ì„¸ê·¸ë¨¼íŠ¸ ì—”íŠ¸ë¦¬ í• ë‹¹
  *
- * BUG-29839 Àç»ç¿ëµÈ undo page¿¡¼­ ÀÌÀü CTS¸¦ º¸·Á°í ÇÒ ¼ö ÀÖÀ½.
- * transaction¿¡ Æ¯Á¤ segment entry¸¦ bindingÇÏ´Â ±â´É Ãß°¡
+ * BUG-29839 ìž¬ì‚¬ìš©ëœ undo pageì—ì„œ ì´ì „ CTSë¥¼ ë³´ë ¤ê³  í•  ìˆ˜ ìžˆìŒ.
+ * transactionì— íŠ¹ì • segment entryë¥¼ bindingí•˜ëŠ” ê¸°ëŠ¥ ì¶”ê°€
  *
- * aEntryID    - [IN]  ÇÒ´ç¹ÞÀ» Æ®·£Àè¼Ç ¼¼±×¸ÕÆ® Entry ID
- * aEntry      - [OUT] Æ®·£Àè¼Ç ¼¼±×¸ÕÆ® ¿£Æ®¸® Æ÷ÀÎÅÍ
+ * aEntryID    - [IN]  í• ë‹¹ë°›ì„ íŠ¸ëžœìž­ì…˜ ì„¸ê·¸ë¨¼íŠ¸ Entry ID
+ * aEntry      - [OUT] íŠ¸ëžœìž­ì…˜ ì„¸ê·¸ë¨¼íŠ¸ ì—”íŠ¸ë¦¬ í¬ì¸í„°
  *
  ***********************************************************************/
 IDE_RC sdcTXSegMgr::allocEntryBySegEntryID( UInt             aEntryID,
@@ -733,7 +733,7 @@ IDE_RC sdcTXSegMgr::allocEntryBySegEntryID( UInt             aEntryID,
 
     IDE_TEST_RAISE( mTotEntryCnt <= aEntryID, err_WRONG_ENTRY_ID );
 
-    // entry ID¿¡ ÇØ´çÇÏ´Â segment entry°¡ ¿¬°áµÈ free list¸¦ Ã£À½
+    // entry IDì— í•´ë‹¹í•˜ëŠ” segment entryê°€ ì—°ê²°ëœ free listë¥¼ ì°¾ìŒ
     sFreeListIdx = aEntryID / (mTotEntryCnt/mFreeListCnt);
     *aEntry      = NULL;
 
@@ -758,12 +758,12 @@ IDE_RC sdcTXSegMgr::allocEntryBySegEntryID( UInt             aEntryID,
 
 /***********************************************************************
  *
- * Description : TSS( Transaction Slot Segment)¸¦ »ý¼ºÇÑ´Ù. ±âº»ÀûÀ¸·Î
- *               TRANSACTION_SEGMENT_COUNT °¹¼ö¸¸Å­ÀÇ TSS¸¦ »ý¼ºÇÑ´Ù.
- *               °¢°¢ÀÇ TSS´Â ±âº»ÀûÀ¸·Î Free TS List¸¦ °¡Áø´Ù.
- *               ´Ü Ã¹¹øÂ° »ý¼ºµÇ´Â System TSS´Â Commit TS List¸¦ °¡Áø´Ù.
+ * Description : TSS( Transaction Slot Segment)ë¥¼ ìƒì„±í•œë‹¤. ê¸°ë³¸ì ìœ¼ë¡œ
+ *               TRANSACTION_SEGMENT_COUNT ê°¯ìˆ˜ë§Œí¼ì˜ TSSë¥¼ ìƒì„±í•œë‹¤.
+ *               ê°ê°ì˜ TSSëŠ” ê¸°ë³¸ì ìœ¼ë¡œ Free TS Listë¥¼ ê°€ì§„ë‹¤.
+ *               ë‹¨ ì²«ë²ˆì§¸ ìƒì„±ë˜ëŠ” System TSSëŠ” Commit TS Listë¥¼ ê°€ì§„ë‹¤.
  *
- * aStatistics   - [IN] Åë°è Á¤º¸
+ * aStatistics   - [IN] í†µê³„ ì •ë³´
  * aStartInfo    - [IN] Mini Transaction Start Info
  *
  ***********************************************************************/
@@ -811,11 +811,11 @@ IDE_RC sdcTXSegMgr::createTSSegs( idvSQL          * aStatistics,
 
 /***********************************************************************
  *
- * Description : Undo SegmentµéÀ» SDP_MAX_UDS_CNT¸¸Å­ »ý¼ºÇÏ°í »ý¼ºµÈ
- *               UDS¸¦ SegPID¸¦ TBSÀÇ Header¿¡ ¼³Á¤ÇÑ´Ù.
+ * Description : Undo Segmentë“¤ì„ SDP_MAX_UDS_CNTë§Œí¼ ìƒì„±í•˜ê³  ìƒì„±ëœ
+ *               UDSë¥¼ SegPIDë¥¼ TBSì˜ Headerì— ì„¤ì •í•œë‹¤.
  *
- * aStatistics - [IN] Åë°è Á¤º¸
- * aStartInfo  - [IN] Mini Transaction ½ÃÀÛ Á¤º¸
+ * aStatistics - [IN] í†µê³„ ì •ë³´
+ * aStartInfo  - [IN] Mini Transaction ì‹œìž‘ ì •ë³´
  *
  ***********************************************************************/
 IDE_RC sdcTXSegMgr::createUDSegs( idvSQL          * aStatistics,
@@ -863,7 +863,7 @@ IDE_RC sdcTXSegMgr::createUDSegs( idvSQL          * aStatistics,
 
 /***********************************************************************
  *
- * Description : TSS ¼¼±×¸ÕÆ® PID ¿©ºÎ ¹ÝÈ¯
+ * Description : TSS ì„¸ê·¸ë¨¼íŠ¸ PID ì—¬ë¶€ ë°˜í™˜
  *
  ***********************************************************************/
 idBool sdcTXSegMgr::isTSSegPID( scPageID aSegPID )
@@ -883,7 +883,7 @@ idBool sdcTXSegMgr::isTSSegPID( scPageID aSegPID )
 
 /***********************************************************************
  *
- * Description : Undo ¼¼±×¸ÕÆ® PID ¿©ºÎ ¹ÝÈ¯
+ * Description : Undo ì„¸ê·¸ë¨¼íŠ¸ PID ì—¬ë¶€ ë°˜í™˜
  *
  ***********************************************************************/
 idBool sdcTXSegMgr::isUDSegPID( scPageID aSegPID )
@@ -903,18 +903,18 @@ idBool sdcTXSegMgr::isUDSegPID( scPageID aSegPID )
 
 /***********************************************************************
  *
- * Description : Æ®·£Àè¼Ç Commit/AbortÇÑ ÈÄ¿¡ TSS¿Í UDS·ÎºÎÅÍ »ç¿ëÇÑ Extent Dir.
- *               ÆäÀÌÁö¿¡ CSCN/ASCN ¼³Á¤
+ * Description : íŠ¸ëžœìž­ì…˜ Commit/Abortí•œ í›„ì— TSSì™€ UDSë¡œë¶€í„° ì‚¬ìš©í•œ Extent Dir.
+ *               íŽ˜ì´ì§€ì— CSCN/ASCN ì„¤ì •
  *
- * Æ®·£Àè¼Ç Ä¿¹Ô °úÁ¤ Áß¿¡ ÀÏºÎÀÌ¸ç, Æ®·£Àè¼ÇÀÌ »ç¿ëÇÑ Extent Dir.ÆäÀÌÁö¿¡ Last CSCNÀ»
- * No-LoggingÀ¸·Î °»½ÅÇÏ¿© ´Ù¸¥ Æ®·£Àè¼ÇÀÌ Àç»ç¿ë¿©ºÎ¸¦ ÆÇ´ÜÇÒ ¼ö ÀÖ°Ô ÇÑ´Ù.
+ * íŠ¸ëžœìž­ì…˜ ì»¤ë°‹ ê³¼ì • ì¤‘ì— ì¼ë¶€ì´ë©°, íŠ¸ëžœìž­ì…˜ì´ ì‚¬ìš©í•œ Extent Dir.íŽ˜ì´ì§€ì— Last CSCNì„
+ * No-Loggingìœ¼ë¡œ ê°±ì‹ í•˜ì—¬ ë‹¤ë¥¸ íŠ¸ëžœìž­ì…˜ì´ ìž¬ì‚¬ìš©ì—¬ë¶€ë¥¼ íŒë‹¨í•  ìˆ˜ ìžˆê²Œ í•œë‹¤.
  *
- * No-LoggingÀ¸·Î Ã³¸®ÇÑ °ÍÀº ¼­¹ö°¡ ºñÁ¤»ó Á¾·áµÇ¸é GSCNº¸´Ù
- * ÀÛÀº °ªÀ¸·Î ¼³Á¤µÇ¾î ÀÖÀ» °ÍÀÌ°í, ¹«Á¶°Ç Àç»ç¿ë°¡´ÉÇÏ°Ô ÆÇ´ÜÇÒ ¼ö ÀÖÀ» °ÍÀÌ±â ¶§¹®ÀÌ´Ù.
+ * No-Loggingìœ¼ë¡œ ì²˜ë¦¬í•œ ê²ƒì€ ì„œë²„ê°€ ë¹„ì •ìƒ ì¢…ë£Œë˜ë©´ GSCNë³´ë‹¤
+ * ìž‘ì€ ê°’ìœ¼ë¡œ ì„¤ì •ë˜ì–´ ìžˆì„ ê²ƒì´ê³ , ë¬´ì¡°ê±´ ìž¬ì‚¬ìš©ê°€ëŠ¥í•˜ê²Œ íŒë‹¨í•  ìˆ˜ ìžˆì„ ê²ƒì´ê¸° ë•Œë¬¸ì´ë‹¤.
  *
- * aStatistics - [IN] Åë°èÁ¤º¸
- * aEntry      - [IN] Ä¿¹ÔÇÏ´Â Æ®·£Àè¼ÇÀÇ Æ®·£Àè¼Ç ¼¼±×¸ÕÆ® ¿£Æ®¸® Æ÷ÀÎÅÍ
- * aCommitSCN  - [IN] Æ®·£Àè¼ÇÀÇ CommitSCN È¤Àº AbortSCN(GSCN)
+ * aStatistics - [IN] í†µê³„ì •ë³´
+ * aEntry      - [IN] ì»¤ë°‹í•˜ëŠ” íŠ¸ëžœìž­ì…˜ì˜ íŠ¸ëžœìž­ì…˜ ì„¸ê·¸ë¨¼íŠ¸ ì—”íŠ¸ë¦¬ í¬ì¸í„°
+ * aCommitSCN  - [IN] íŠ¸ëžœìž­ì…˜ì˜ CommitSCN í˜¹ì€ AbortSCN(GSCN)
  *
  ***********************************************************************/
 IDE_RC sdcTXSegMgr::markSCN( idvSQL        * aStatistics,
@@ -959,8 +959,8 @@ IDE_RC sdcTXSegMgr::markSCN( idvSQL        * aStatistics,
     }
 
     /*
-     * Æ®·£Àè¼Ç ¼¼±×¸ÕÆ®´Â ÇÑ¹ø¿¡ ÇÑ Æ®·£Àè¼Ç¸¸ »ç¿ëÇÏ¹Ç·Î,
-     * °¡Àå ¸¶Áö¸·¿¡ »ç¿ëÇÑ Æ®·£Àè¼Ç CSCNÀÌ °¡Àå Å©´Ù.
+     * íŠ¸ëžœìž­ì…˜ ì„¸ê·¸ë¨¼íŠ¸ëŠ” í•œë²ˆì— í•œ íŠ¸ëžœìž­ì…˜ë§Œ ì‚¬ìš©í•˜ë¯€ë¡œ,
+     * ê°€ìž¥ ë§ˆì§€ë§‰ì— ì‚¬ìš©í•œ íŠ¸ëžœìž­ì…˜ CSCNì´ ê°€ìž¥ í¬ë‹¤.
      */
     SM_SET_SCN( &aEntry->mMaxCommitSCN, aCSCNorASCN );
 
@@ -973,7 +973,7 @@ IDE_RC sdcTXSegMgr::markSCN( idvSQL        * aStatistics,
 
 /* BUG-31055 Can not reuse undo pages immediately after it is used to 
  * aborted transaction 
- * Áï½Ã ÀçÈ°¿ë ÇÒ ¼ö ÀÖµµ·Ï, EDµéÀ» ShrinkÇÑ´Ù. */
+ * ì¦‰ì‹œ ìž¬í™œìš© í•  ìˆ˜ ìžˆë„ë¡, EDë“¤ì„ Shrinkí•œë‹¤. */
 IDE_RC sdcTXSegMgr::shrinkExts( idvSQL        * aStatistics,
                                 void          * aTrans,
                                 sdcTXSegEntry * aEntry )
@@ -990,8 +990,8 @@ IDE_RC sdcTXSegMgr::shrinkExts( idvSQL        * aStatistics,
 
     if ( aEntry->mFstExtRID4UDS != SD_NULL_RID )
     {
-        /* Undo¸¸ shrinkÇØÁØ´Ù. TxSeg´Â abortÁßÀÎ row°¡ º¼ ¼ö
-         * ÀÖÀ¸¹Ç·Î shrink ÇØ¼­´Â ¾ÈµÈ´Ù. */
+        /* Undoë§Œ shrinkí•´ì¤€ë‹¤. TxSegëŠ” abortì¤‘ì¸ rowê°€ ë³¼ ìˆ˜
+         * ìžˆìœ¼ë¯€ë¡œ shrink í•´ì„œëŠ” ì•ˆëœë‹¤. */
         sUDSegPtr = getUDSegPtr( aEntry );
         sUDSegPID = sUDSegPtr->getSegPID();
 
@@ -1018,7 +1018,7 @@ IDE_RC sdcTXSegMgr::shrinkExts( idvSQL        * aStatistics,
 #if 0
 /******************************************************************************
  *
- * Description : ÇÒ´çµÈ Æ®·£Àè¼Ç ¼¼±×¸ÕÆ® ¿£Æ®¸® °³¼ö ¹ÝÈ¯
+ * Description : í• ë‹¹ëœ íŠ¸ëžœìž­ì…˜ ì„¸ê·¸ë¨¼íŠ¸ ì—”íŠ¸ë¦¬ ê°œìˆ˜ ë°˜í™˜
  *
  ******************************************************************************/
 SInt sdcTXSegMgr::getOnlineEntryCount()
@@ -1039,7 +1039,7 @@ SInt sdcTXSegMgr::getOnlineEntryCount()
 
 /******************************************************************************
  *
- * Description : TRANSACTION_SEGMENT_ENTRY_COUNT ÇÁ·ÎÆÛÆ¼°¡ º¯°æµÇ¾ú´ÂÁö Ã¼Å©ÇÑ´Ù.
+ * Description : TRANSACTION_SEGMENT_ENTRY_COUNT í”„ë¡œí¼í‹°ê°€ ë³€ê²½ë˜ì—ˆëŠ”ì§€ ì²´í¬í•œë‹¤.
  *
  ******************************************************************************/
 idBool sdcTXSegMgr::isModifiedEntryCnt( UInt  aNewAdjustEntryCnt )
@@ -1058,20 +1058,20 @@ idBool sdcTXSegMgr::isModifiedEntryCnt( UInt  aNewAdjustEntryCnt )
 
 /******************************************************************************
  *
- * Description : Æ®·£Àè¼Ç ¼¼±×¸ÕÆ® ¿£Æ®¸®·ÎºÎÅÍ °¡¿ëÇÑ °ø°£À» »¯¾î¿Â´Ù.
+ * Description : íŠ¸ëžœìž­ì…˜ ì„¸ê·¸ë¨¼íŠ¸ ì—”íŠ¸ë¦¬ë¡œë¶€í„° ê°€ìš©í•œ ê³µê°„ì„ ëºì–´ì˜¨ë‹¤.
  *
- * Optimisitics ¹æ½ÄÀ¸·Î ÇÑ¹ø Ã¼Å©ÇØº» ÀÌÈÄÀÌ±â ¶§¹®¿¡ MaxSCNÀº È®ÀÎÇØ º¼ ÇÊ¿ä¾ø´Ù.
- * ´Ù¸¸, Á÷Á¢ NxtExtDir¸¦ °¡º¸´Â °ÍÀÌ ÃÖ»óÀÌ´Ù. ¹«Á¶°Ç True¸¦ ¹ÝÈ¯ÇÑ´Ù.
- * PessmisticsÀÇ Àç¼öÇàÀº ¸ðµç ¿£Æ®¸®¿¡ ´ëÇØ¼­ ¼öÇàÇØº»´Ù.
+ * Optimisitics ë°©ì‹ìœ¼ë¡œ í•œë²ˆ ì²´í¬í•´ë³¸ ì´í›„ì´ê¸° ë•Œë¬¸ì— MaxSCNì€ í™•ì¸í•´ ë³¼ í•„ìš”ì—†ë‹¤.
+ * ë‹¤ë§Œ, ì§ì ‘ NxtExtDirë¥¼ ê°€ë³´ëŠ” ê²ƒì´ ìµœìƒì´ë‹¤. ë¬´ì¡°ê±´ Trueë¥¼ ë°˜í™˜í•œë‹¤.
+ * Pessmisticsì˜ ìž¬ìˆ˜í–‰ì€ ëª¨ë“  ì—”íŠ¸ë¦¬ì— ëŒ€í•´ì„œ ìˆ˜í–‰í•´ë³¸ë‹¤.
  *
- * aStatistics       - [IN] Åë°èÁ¤º¸
- * aStartInfo        - [IN] Mtx ½ÃÀÛÁ¤º¸
- * aFromSegType      - [IN] From ¼¼±×¸ÕÆ® Å¸ÀÔ
- * aToSegType        - [IN] To ¼¼±×¸ÕÆ® Å¸ÀÔ
- * aToEntry          - [IN] To Æ®·£Àè¼Ç ¼¼±×¸ÕÆ® ¿£Æ®¸® Æ÷ÀÎÅÍ
- * aSysMinDskViewSCN - [IN] Active Æ®·£Àè¼ÇÀÌ °¡Áø Statment Áß¿¡¼­
- *                          °¡Àå ¿À·¡Àü¿¡ ½ÃÀÛÇÑ StatementÀÇ SCN
- * aTrySuccess       - [OUT] Steal ¼º°ø¿©ºÎ
+ * aStatistics       - [IN] í†µê³„ì •ë³´
+ * aStartInfo        - [IN] Mtx ì‹œìž‘ì •ë³´
+ * aFromSegType      - [IN] From ì„¸ê·¸ë¨¼íŠ¸ íƒ€ìž…
+ * aToSegType        - [IN] To ì„¸ê·¸ë¨¼íŠ¸ íƒ€ìž…
+ * aToEntry          - [IN] To íŠ¸ëžœìž­ì…˜ ì„¸ê·¸ë¨¼íŠ¸ ì—”íŠ¸ë¦¬ í¬ì¸í„°
+ * aSysMinDskViewSCN - [IN] Active íŠ¸ëžœìž­ì…˜ì´ ê°€ì§„ Statment ì¤‘ì—ì„œ
+ *                          ê°€ìž¥ ì˜¤ëž˜ì „ì— ì‹œìž‘í•œ Statementì˜ SCN
+ * aTrySuccess       - [OUT] Steal ì„±ê³µì—¬ë¶€
  *
  ******************************************************************************/
 IDE_RC sdcTXSegMgr::tryStealFreeExtsFromOtherEntry(
@@ -1104,13 +1104,13 @@ IDE_RC sdcTXSegMgr::tryStealFreeExtsFromOtherEntry(
 
     IDE_TEST_CONT( sPropRetryStealCnt == 0, CONT_FINISH_STEAL );
     
-    /* 1.target segType¿¡¼­ ExpiredEntry°¡ ÀÖ´ÂÁö È®ÀÎ */
+    /* 1.target segTypeì—ì„œ ExpiredEntryê°€ ìžˆëŠ”ì§€ í™•ì¸ */
     tryAllocExpiredEntry( sCurEntryIdx,
                           aFromSegType,
                           aSysMinDskViewSCN,
                           &sFrEntry );
     
-    /* 2. (1)ÀÌ ¼º°øÇßÀ¸¸é sFrEntry¸¦ Steal ½Ãµµ */
+    /* 2. (1)ì´ ì„±ê³µí–ˆìœ¼ë©´ sFrEntryë¥¼ Steal ì‹œë„ */
     if ( sFrEntry != NULL )
     {
         sState = 1;
@@ -1132,7 +1132,7 @@ IDE_RC sdcTXSegMgr::tryStealFreeExtsFromOtherEntry(
 
     sRetryCnt = 0;
 
-    /* 3. target segType¿¡¼­ °¢ entry ¸¦ ¼øÈ¸ÇÏ¸é¼­ Steal ½Ãµµ */
+    /* 3. target segTypeì—ì„œ ê° entry ë¥¼ ìˆœíšŒí•˜ë©´ì„œ Steal ì‹œë„ */
     while( 1 )
     {
         sFrEntry = NULL;
@@ -1194,18 +1194,18 @@ IDE_RC sdcTXSegMgr::tryStealFreeExtsFromOtherEntry(
 
 /******************************************************************************
  *
- * Description : Æ®·£Àè¼Ç ¼¼±×¸ÕÆ® ¿£Æ®¸®·ÎºÎÅÍ °¡¿ëÇÑ °ø°£À» »¯¾î¿Â´Ù.
+ * Description : íŠ¸ëžœìž­ì…˜ ì„¸ê·¸ë¨¼íŠ¸ ì—”íŠ¸ë¦¬ë¡œë¶€í„° ê°€ìš©í•œ ê³µê°„ì„ ëºì–´ì˜¨ë‹¤.
  *
- * Optimisitics ¹æ½ÄÀ¸·Î ÇÑ¹ø Ã¼Å©ÇØº» ÀÌÈÄÀÌ±â ¶§¹®¿¡ MaxSCNÀº È®ÀÎÇØ º¼ ÇÊ¿ä¾ø´Ù.
- * ´Ù¸¸, Á÷Á¢ NxtExtDir¸¦ °¡º¸´Â °ÍÀÌ ÃÖ»óÀÌ´Ù. ¹«Á¶°Ç True¸¦ ¹ÝÈ¯ÇÑ´Ù.
- * PessmisticsÀÇ Àç¼öÇàÀº ¸ðµç ¿£Æ®¸®¿¡ ´ëÇØ¼­ ¼öÇàÇØº»´Ù.
+ * Optimisitics ë°©ì‹ìœ¼ë¡œ í•œë²ˆ ì²´í¬í•´ë³¸ ì´í›„ì´ê¸° ë•Œë¬¸ì— MaxSCNì€ í™•ì¸í•´ ë³¼ í•„ìš”ì—†ë‹¤.
+ * ë‹¤ë§Œ, ì§ì ‘ NxtExtDirë¥¼ ê°€ë³´ëŠ” ê²ƒì´ ìµœìƒì´ë‹¤. ë¬´ì¡°ê±´ Trueë¥¼ ë°˜í™˜í•œë‹¤.
+ * Pessmisticsì˜ ìž¬ìˆ˜í–‰ì€ ëª¨ë“  ì—”íŠ¸ë¦¬ì— ëŒ€í•´ì„œ ìˆ˜í–‰í•´ë³¸ë‹¤.
  *
- * aStatistics      - [IN] Åë°èÁ¤º¸
- * aStartInfo       - [IN] Mtx ½ÃÀÛÁ¤º¸
- * aFromSegType     - [IN] From ¼¼±×¸ÕÆ® Å¸ÀÔ
- * aToSegType       - [IN] To ¼¼±×¸ÕÆ® Å¸ÀÔ
- * aFrEntry         - [IN] From Æ®·£Àè¼Ç ¼¼±×¸ÕÆ® ¿£Æ®¸® Æ÷ÀÎÅÍ
- * aToEntry         - [IN] To Æ®·£Àè¼Ç ¼¼±×¸ÕÆ® ¿£Æ®¸® Æ÷ÀÎÅÍ
+ * aStatistics      - [IN] í†µê³„ì •ë³´
+ * aStartInfo       - [IN] Mtx ì‹œìž‘ì •ë³´
+ * aFromSegType     - [IN] From ì„¸ê·¸ë¨¼íŠ¸ íƒ€ìž…
+ * aToSegType       - [IN] To ì„¸ê·¸ë¨¼íŠ¸ íƒ€ìž…
+ * aFrEntry         - [IN] From íŠ¸ëžœìž­ì…˜ ì„¸ê·¸ë¨¼íŠ¸ ì—”íŠ¸ë¦¬ í¬ì¸í„°
+ * aToEntry         - [IN] To íŠ¸ëžœìž­ì…˜ ì„¸ê·¸ë¨¼íŠ¸ ì—”íŠ¸ë¦¬ í¬ì¸í„°
  *
  ******************************************************************************/
 IDE_RC sdcTXSegMgr::tryStealFreeExts( idvSQL          * aStatistics,

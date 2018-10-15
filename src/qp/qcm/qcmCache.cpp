@@ -100,11 +100,11 @@ qcmUnique * qcmCache::getUniqueByCols( qcmTableInfo * aTableInfo,
 /***********************************************************************
  *
  * Description :
- *    ÇÁ·Î½ÃÁ®¿Í °ü·ÃµÈ ¿ÀºêÁ§Æ®¿¡ ´ëÇÑ Á¤º¸¸¦ »èÁ¦ÇÑ´Ù.
+ *    í”„ë¡œì‹œì ¸ì™€ ê´€ë ¨ëœ ì˜¤ë¸Œì íŠ¸ì— ëŒ€í•œ ì •ë³´ë¥¼ ì‚­ì œí•œë‹¤.
  *
  * Implementation :
- *    aTableInfo ÀÇ uniqueKey Áß¿¡¼­ ¸í½ÃÇÑ aKeyCols, aKeyColsFlag ¿Í
- *    µ¿ÀÏÇÑ °ÍÀ» Ã£¾Æ¼­ ¹İÈ¯, ¾øÀ¸¸é NULL ÀÌ ¹İÈ¯µÊ
+ *    aTableInfo ì˜ uniqueKey ì¤‘ì—ì„œ ëª…ì‹œí•œ aKeyCols, aKeyColsFlag ì™€
+ *    ë™ì¼í•œ ê²ƒì„ ì°¾ì•„ì„œ ë°˜í™˜, ì—†ìœ¼ë©´ NULL ì´ ë°˜í™˜ë¨
  *
  ***********************************************************************/
 
@@ -126,7 +126,7 @@ qcmUnique * qcmCache::getUniqueByCols( qcmTableInfo * aTableInfo,
             for (j = 0; j < aKeyColCount; j++)
             {
                 // To Fix PR-10247
-                // ColumnÀÇ ID¿Í ColumnÀÇ Order¸¦ °Ë»çÇØ¾ß ÇÔ.
+                // Columnì˜ IDì™€ Columnì˜ Orderë¥¼ ê²€ì‚¬í•´ì•¼ í•¨.
                 if ( sIndex->keyColumns[j].column.id != aKeyCols[j] ||
                      (sIndex->keyColsFlag[j] & SMI_COLUMN_ORDER_MASK)
                      != (aKeyColsFlag[j] & SMI_COLUMN_ORDER_MASK) )
@@ -212,7 +212,7 @@ UInt qcmCache::getConstraintIDByName( qcmTableInfo  * aTableInfo,
         }
     }
 
-    /* PROJ-1107 Check Constraint Áö¿ø
+    /* PROJ-1107 Check Constraint ì§€ì›
      *  search CHECK
      */
     if ( sConstrID == 0 ) /* not found we still continue. */

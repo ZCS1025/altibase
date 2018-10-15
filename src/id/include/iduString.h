@@ -37,7 +37,7 @@ typedef struct iduStringObj
 /*
  *  Alloc & Free in Heap
  *
- *  TODO: idlOS::mallocÀÌ ¾Æ´Ï¶ó iduMeMgrÀ» »ç¿ëÇÏµµ·Ï °³¼±µÇ¾î¾ß ÇÔ.
+ *  TODO: idlOS::mallocì´ ì•„ë‹ˆë¼ iduMeMgrì„ ì‚¬ìš©í•˜ë„ë¡ ê°œì„ ë˜ì–´ì•¼ í•¨.
  */
 IDL_EXTERN_C IDE_RC iduStringAlloc(iduString **aObj, SInt aSize);
 IDL_EXTERN_C IDE_RC iduStringFree(iduString *aObj);
@@ -48,8 +48,8 @@ IDL_EXTERN_C IDE_RC iduStringFree(iduString *aObj);
  *  The memory pointer returned by iduStringGetBuffer() should be used as read-only.
  *  If you want to modify the internal buffer, add new interfaces and use them.
  *
- *  iduStringGetBuffer()·Î ¸®ÅÏµÈ ¹öÆÛ´Â ¹İµå½Ã read-only·Î »ç¿ëÇÒ °Í.
- *  ´ë½Å, ÇÊ¿ä½Ã »õ·Î¿î ÀÎÅÍÆäÀÌ½º¸¦ ±¸ÇöÇÏ¿© »ç¿ëÇØ¾ß ÇÔ.
+ *  iduStringGetBuffer()ë¡œ ë¦¬í„´ëœ ë²„í¼ëŠ” ë°˜ë“œì‹œ read-onlyë¡œ ì‚¬ìš©í•  ê²ƒ.
+ *  ëŒ€ì‹ , í•„ìš”ì‹œ ìƒˆë¡œìš´ ì¸í„°í˜ì´ìŠ¤ë¥¼ êµ¬í˜„í•˜ì—¬ ì‚¬ìš©í•´ì•¼ í•¨.
  */
 IDL_EXTERN_C SChar *iduStringGetBuffer(iduString *aObj);
 IDL_EXTERN_C UInt   iduStringGetSize(iduString *aObj);

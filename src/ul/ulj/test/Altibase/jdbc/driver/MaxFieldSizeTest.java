@@ -77,7 +77,7 @@ public class MaxFieldSizeTest extends AltibaseTestCase
                 assertEquals(sExpValue, sRS.getString(1));
             }
             assertEquals(true, sRS.next());
-            assertEquals(null, sRS.getString(1)); // nullÀº Ç×»ó null
+            assertEquals(null, sRS.getString(1)); // nullì€ í•­ìƒ null
             assertEquals(false, sRS.next());
             sRS.close();
         }
@@ -132,7 +132,7 @@ public class MaxFieldSizeTest extends AltibaseTestCase
                 assertArrayEquals(i + "th value of MaxFieldSize " + sMaxFieldSize, sExpValue, sActValue);
             }
             assertEquals(true, sRS.next());
-            assertEquals(null, sRS.getString(1)); // nullÀº Ç×»ó null
+            assertEquals(null, sRS.getString(1)); // nullì€ í•­ìƒ null
             assertEquals(false, sRS.next());
             sRS.close();
         }
@@ -177,7 +177,7 @@ public class MaxFieldSizeTest extends AltibaseTestCase
                 assertEquals(ByteUtils.toHexString(VALUES_BYTE[i], 0, sBytes.length), sRS.getString(1));
             }
             assertEquals(true, sRS.next());
-            assertEquals(null, sRS.getBytes(1)); // nullÀº Ç×»ó null
+            assertEquals(null, sRS.getBytes(1)); // nullì€ í•­ìƒ null
             assertEquals(false, sRS.next());
             sRS.close();
         }
@@ -222,7 +222,7 @@ public class MaxFieldSizeTest extends AltibaseTestCase
                 }
             }
             assertEquals(true, sRS.next());
-            assertEquals(null, sRS.getBytes(1)); // nullÀº Ç×»ó null
+            assertEquals(null, sRS.getBytes(1)); // nullì€ í•­ìƒ null
             assertEquals(false, sRS.next());
             sRS.close();
         }
@@ -271,7 +271,7 @@ public class MaxFieldSizeTest extends AltibaseTestCase
                 assertEquals(sExpValue, sRS.getString(1));
             }
             assertEquals(true, sRS.next());
-            assertEquals(null, sRS.getObject(1)); // nullÀº Ç×»ó null
+            assertEquals(null, sRS.getObject(1)); // nullì€ í•­ìƒ null
             assertEquals(false, sRS.next());
             sRS.close();
         }
@@ -341,7 +341,7 @@ public class MaxFieldSizeTest extends AltibaseTestCase
                 assertEquals(aValues[i - 1].toString(), sRS.getString(1));
             }
             assertEquals(true, sRS.next());
-            assertEquals(null, sRS.getObject(1)); // nullÀº Ç×»ó null
+            assertEquals(null, sRS.getObject(1)); // nullì€ í•­ìƒ null
             assertEquals(false, sRS.next());
             sRS.close();
         }

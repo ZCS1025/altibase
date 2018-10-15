@@ -32,8 +32,8 @@ IDE_RC mmtServiceThread::answerErrorResult(cmiProtocolContext *aProtocolContext,
     IDE_TEST_RAISE(mErrorFlag == ID_TRUE, ErrorAlreadySent);
 
     // proj_2160 cm_type removal
-    // Áß°£¿¡ ¸¶¼£¿¡·¯°¡ ¹ß»ıÇÑ °æ¿ì ¼¼¼ÇÀ» ²÷µµ·Ï ÇÑ´Ù.
-    // ÀÌ ¶§, ErrorResult Àü¹®À» ¾Æ¿¹ º¸³»Áö ¸»¾Æ¾ß ÇÏ´Â °æ¿ìµµ ÀÖ´Ù.
+    // ì¤‘ê°„ì— ë§ˆìƒ¬ì—ëŸ¬ê°€ ë°œìƒí•œ ê²½ìš° ì„¸ì…˜ì„ ëŠë„ë¡ í•œë‹¤.
+    // ì´ ë•Œ, ErrorResult ì „ë¬¸ì„ ì•„ì˜ˆ ë³´ë‚´ì§€ ë§ì•„ì•¼ í•˜ëŠ” ê²½ìš°ë„ ìˆë‹¤.
     IDE_TEST_RAISE(aProtocolContext->mSessionCloseNeeded == ID_TRUE,
                    SessionClosed);
 
@@ -72,8 +72,8 @@ IDE_RC mmtServiceThread::answerErrorResult(cmiProtocolContext *aProtocolContext,
         sErrorMsgLen = 0;
     }
 
-    /* BUG-44705 IPCDAÀÏ °æ¿ì CMI_WRITE_CHECK¿¡¼­ error msg size¸¦ È®º¸ÇÏ±â ¶§¹®¿¡
-     * error msg Àü¼Û½Ã¿¡´Â »ç¿ëÇÏÁö ¾Ê´Â´Ù. */
+    /* BUG-44705 IPCDAì¼ ê²½ìš° CMI_WRITE_CHECKì—ì„œ error msg sizeë¥¼ í™•ë³´í•˜ê¸° ë•Œë¬¸ì—
+     * error msg ì „ì†¡ì‹œì—ëŠ” ì‚¬ìš©í•˜ì§€ ì•ŠëŠ”ë‹¤. */
     if (cmiGetLinkImpl(aProtocolContext) == CMI_LINK_IMPL_IPCDA)
     {
         IDE_TEST( (aProtocolContext->mWriteBlock->mCursor + 12 + sErrorMsgLen) >= (aProtocolContext->mWriteBlock->mBlockSize) );
@@ -91,9 +91,9 @@ IDE_RC mmtServiceThread::answerErrorResult(cmiProtocolContext *aProtocolContext,
     CMI_WCP(aProtocolContext, sErrorMsg, sErrorMsgLen);
 
 #ifdef DEBUG
-    /* BUG-44705 IPCDA¿¡¼­´Â buffer sizeÀÇ ÇÑ°è·Î ÀÎÇØ¼­ ¿¡·¯¸Ş¼¼Áö¸¦ º¸³¾ buffer
-     * size¸¦ ¹Ì¸® È®º¸ÇØ¾ß ÇÑ´Ù, µû¶ó¼­ Stack error Ãâ·ÂÀ» À§ÇÑ buffer ÇÒ´çÇÏ±â´Â Èûµé´Ù.
-     * µû¶ó¼­ IPCDA¿¡¼­´Â º» ±â´ÉÀº Á¦¿ÜÇÑ´Ù. */
+    /* BUG-44705 IPCDAì—ì„œëŠ” buffer sizeì˜ í•œê³„ë¡œ ì¸í•´ì„œ ì—ëŸ¬ë©”ì„¸ì§€ë¥¼ ë³´ë‚¼ buffer
+     * sizeë¥¼ ë¯¸ë¦¬ í™•ë³´í•´ì•¼ í•œë‹¤, ë”°ë¼ì„œ Stack error ì¶œë ¥ì„ ìœ„í•œ buffer í• ë‹¹í•˜ê¸°ëŠ” í˜ë“¤ë‹¤.
+     * ë”°ë¼ì„œ IPCDAì—ì„œëŠ” ë³¸ ê¸°ëŠ¥ì€ ì œì™¸í•œë‹¤. */
     if (((sErrorCode & E_ACTION_MASK) != E_ACTION_IGNORE) &&
         (mmuProperty::getShowErrorStack() == 1) &&
         (cmiGetLinkImpl(aProtocolContext) != CMI_LINK_IMPL_IPCDA))
@@ -159,12 +159,12 @@ IDE_RC mmtServiceThread::answerErrorResult(cmiProtocolContext *aProtocolContext,
     {
         case idERR_ABORT_Session_Closed:
         case idERR_ABORT_Session_Disconnected:
-        // ¼Û¼ö½Å ÇÔ¼ö¿¡¼­ ¿¡·¯°¡ ¹ß»ıÇÏ¿© ¹Ù·Î È®ÀÎµÈ °æ¿ì
+        // ì†¡ìˆ˜ì‹  í•¨ìˆ˜ì—ì„œ ì—ëŸ¬ê°€ ë°œìƒí•˜ì—¬ ë°”ë¡œ í™•ì¸ëœ ê²½ìš°
         case cmERR_ABORT_CONNECTION_CLOSED:
             IDE_RAISE(SessionClosed);
             break;
         case mmERR_ABORT_IPCDA_MESSAGE_TOO_LONG:
-            /* BUG-44705 IPCDA¿¡¼­ buffer limit error°¡ client·Î µÎ¹ø Àü¼ÛµÇÁö ¾Êµµ·Ï ÇÑ´Ù. */
+            /* BUG-44705 IPCDAì—ì„œ buffer limit errorê°€ clientë¡œ ë‘ë²ˆ ì „ì†¡ë˜ì§€ ì•Šë„ë¡ í•œë‹¤. */
             mErrorFlag = ID_TRUE;
             break;
         default:

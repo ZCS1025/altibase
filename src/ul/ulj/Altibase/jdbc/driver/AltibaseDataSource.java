@@ -219,10 +219,10 @@ public class AltibaseDataSource implements DataSource, Serializable, Referenceab
     // #endregion
 
     /**
-     * aDSN¿¡ ÇØ´çÇÏ´Â AltibaseDataSource¸¦ ¾ò´Â´Ù.
+     * aDSNì— í•´ë‹¹í•˜ëŠ” AltibaseDataSourceë¥¼ ì–»ëŠ”ë‹¤.
      * 
      * @param aDSN Data Source Name (case insensitive)
-     * @return aDSN¿¡ ÇØ´çÇÏ´Â AltibaseDataSource °´Ã¼. ¾øÀ¸¸é null.
+     * @return aDSNì— í•´ë‹¹í•˜ëŠ” AltibaseDataSource ê°ì²´. ì—†ìœ¼ë©´ null.
      */
     public static DataSource getDataSource(String aDSN)
     {

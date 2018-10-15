@@ -16,7 +16,7 @@
 
 /***********************************************************************
  *
- * Spatio-Temporal ¿¡·¯ °ü¸®ÀÚ 
+ * Spatio-Temporal ì—ëŸ¬ ê´€ë¦¬ìž 
  *
  ***********************************************************************/
 
@@ -35,19 +35,19 @@ typedef aci_client_error_mgr_t ulsErrorMgr;
  *  Internal Interfaces
  *----------------------------------------------------------------*/
 
-/* Error ÃÊ±âÈ­*/
+/* Error ì´ˆê¸°í™”*/
 void ulsClearError( ulsErrorMgr * aErrMgr );
 
-/* Error Code ¼ÂÆÃ*/
+/* Error Code ì…‹íŒ…*/
 void ulsErrorSetError( ulsErrorMgr *aErrMgr, acp_uint32_t aErrorCode, va_list aArgs );
 
-/* Error Code È¹µæ*/
+/* Error Code íšë“*/
 ACP_INLINE acp_uint32_t ulsGetErrorCode( ulsErrorMgr * aErrMgr )
 {
     return ACI_E_ERROR_CODE( aErrMgr->mErrorCode );
 }
 
-/* Error Message È¹µæ */
+/* Error Message íšë“ */
 ACP_INLINE acp_char_t *ulsGetErrorMsg( ulsErrorMgr * aErrMgr )
 {
     return aErrMgr->mErrorMessage;

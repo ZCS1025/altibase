@@ -51,14 +51,14 @@ typedef struct qmsIndexCursor
 
 typedef struct qmsIndexTableCursors
 {
-    // tableRefÀÇ ¸ğµç index tables
+    // tableRefì˜ ëª¨ë“  index tables
     qmsIndexTableRef    * indexTableRef;
     UInt                  indexTableCount;
 
-    // index table¸¸Å­ ÇÒ´çÇÔ
+    // index tableë§Œí¼ í• ë‹¹í•¨
     qmsIndexCursor      * indexCursors;
 
-    // max·Î ÇÒ´çÇÏ°í °øÀ¯ÇÔ
+    // maxë¡œ í• ë‹¹í•˜ê³  ê³µìœ í•¨
     const void          * row;
 
 } qmsIndexTableCursors;

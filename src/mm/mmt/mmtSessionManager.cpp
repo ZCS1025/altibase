@@ -190,7 +190,7 @@ static UInt getSslPeerCertIssuer(void * /*aBaseObj*/,
 
 void logIdleTimeout(mmcTask *aTask, mmcStatement * /*aStatement*/, UInt aTimeGap, UInt aTimeout)
 {
-    // BUG-25512 Timeout ½Ã altibase_boot.log¿¡ Client PID¸¦ Ãâ·ÂÇØ¾ßÇÕ´Ï´Ù.
+    // BUG-25512 Timeout ì‹œ altibase_boot.logì— Client PIDë¥¼ ì¶œë ¥í•´ì•¼í•©ë‹ˆë‹¤.
     mmcSessionInfo    *sInfo = aTask->getSession()->getInfo();
     UChar              sCommName[IDL_IP_ADDR_MAX_LEN];
 
@@ -207,7 +207,7 @@ void logIdleTimeout(mmcTask *aTask, mmcStatement * /*aStatement*/, UInt aTimeGap
 
 void logQueryTimeout(mmcTask *aTask, mmcStatement *aStatement, UInt aTimeGap, UInt aTimeout)
 {
-    // BUG-25512 Timeout ½Ã altibase_boot.log¿¡ Client PID¸¦ Ãâ·ÂÇØ¾ßÇÕ´Ï´Ù.
+    // BUG-25512 Timeout ì‹œ altibase_boot.logì— Client PIDë¥¼ ì¶œë ¥í•´ì•¼í•©ë‹ˆë‹¤.
     mmcSessionInfo    *sInfo = aTask->getSession()->getInfo();
     UChar              sCommName[IDL_IP_ADDR_MAX_LEN];
     idmSNMPTrap        sTrap;
@@ -228,7 +228,7 @@ void logQueryTimeout(mmcTask *aTask, mmcStatement *aStatement, UInt aTimeGap, UI
 
     aStatement->unlockQuery();
 
-    /* PROJ-2473 SNMP Áö¿ø */
+    /* PROJ-2473 SNMP ì§€ì› */
     if (sIsEnabledAlarm > 0)
     {
         idlOS::snprintf((SChar *)sTrap.mAddress, sizeof(sTrap.mAddress),
@@ -278,7 +278,7 @@ void logDdlTimeout(mmcTask *aTask, mmcStatement *aStatement, UInt aTimeGap, UInt
 void logFetchTimeout(mmcTask *aTask, mmcStatement *aStatement, UInt aTimeGap, UInt aTimeout)
 {
     smiTrans          *sTrans = aTask->getSession()->getTrans(aStatement, ID_FALSE);
-    // BUG-25512 Timeout ½Ã altibase_boot.log¿¡ Client PID¸¦ Ãâ·ÂÇØ¾ßÇÕ´Ï´Ù.
+    // BUG-25512 Timeout ì‹œ altibase_boot.logì— Client PIDë¥¼ ì¶œë ¥í•´ì•¼í•©ë‹ˆë‹¤.
     mmcSessionInfo    *sInfo = aTask->getSession()->getInfo();
     UChar              sCommName[IDL_IP_ADDR_MAX_LEN];
     idmSNMPTrap        sTrap;
@@ -300,7 +300,7 @@ void logFetchTimeout(mmcTask *aTask, mmcStatement *aStatement, UInt aTimeGap, UI
 
     aStatement->unlockQuery();
 
-    /* PROJ-2473 SNMP Áö¿ø */
+    /* PROJ-2473 SNMP ì§€ì› */
     if (sIsEnabledAlarm > 0)
     {
         idlOS::snprintf((SChar *)sTrap.mAddress, sizeof(sTrap.mAddress),
@@ -328,7 +328,7 @@ void logFetchTimeout(mmcTask *aTask, mmcStatement *aStatement, UInt aTimeGap, UI
 void logUTransTimeout(mmcTask *aTask, mmcStatement *aStatement, UInt aTimeGap, UInt aTimeout)
 {
     smiTrans          *sTrans = aTask->getSession()->getTrans(aStatement, ID_FALSE);
-    // BUG-25512 Timeout ½Ã altibase_boot.log¿¡ Client PID¸¦ Ãâ·ÂÇØ¾ßÇÕ´Ï´Ù.
+    // BUG-25512 Timeout ì‹œ altibase_boot.logì— Client PIDë¥¼ ì¶œë ¥í•´ì•¼í•©ë‹ˆë‹¤.
     mmcSessionInfo    *sInfo = aTask->getSession()->getInfo();
     UChar              sCommName[IDL_IP_ADDR_MAX_LEN];
     idmSNMPTrap        sTrap;
@@ -338,7 +338,7 @@ void logUTransTimeout(mmcTask *aTask, mmcStatement *aStatement, UInt aTimeGap, U
 
     if (aStatement != NULL)
     {
-        // fix BUG-26994 UTRANS_TIMEOUT½Ã ¸¶Áö¸· Äõ¸®¸¦ altibase_boot.log¿¡ Ãâ·ÂÇÏµµ·Ï ÇÕ´Ï´Ù.
+        // fix BUG-26994 UTRANS_TIMEOUTì‹œ ë§ˆì§€ë§‰ ì¿¼ë¦¬ë¥¼ altibase_boot.logì— ì¶œë ¥í•˜ë„ë¡ í•©ë‹ˆë‹¤.
         aStatement->lockQuery();
 
         ideLog::log(IDE_SERVER_1,
@@ -366,7 +366,7 @@ void logUTransTimeout(mmcTask *aTask, mmcStatement *aStatement, UInt aTimeGap, U
                     sTrans ? sTrans->getTransID() : 0);
     }
 
-    /* PROJ-2473 SNMP Áö¿ø */
+    /* PROJ-2473 SNMP ì§€ì› */
     if (sIsEnabledAlarm > 0)
     {
         idlOS::snprintf((SChar *)sTrap.mAddress, sizeof(sTrap.mAddress),
@@ -685,7 +685,7 @@ IDE_RC mmtSessionManager::freeInternalTask(mmcTask *aTask)
 {
     UInt     sStage = 1;
 
-    /* BUG-44564 cmiAllocCmBlock()À¸·Î ÇÒ´çÇÑ Memory¸¦ cmiFreeCmBlock()À¸·Î ÇØÁ¦ÇØ¾ß ÇÑ´Ù. */
+    /* BUG-44564 cmiAllocCmBlock()ìœ¼ë¡œ í• ë‹¹í•œ Memoryë¥¼ cmiFreeCmBlock()ìœ¼ë¡œ í•´ì œí•´ì•¼ í•œë‹¤. */
     IDE_TEST( cmiFreeCmBlock( aTask->getProtocolContext() ) != IDE_SUCCESS );
 
     lock();
@@ -826,7 +826,7 @@ IDE_RC mmtSessionManager::allocSession(mmcTask *aTask, idBool aIsSysdba)
     }
     IDE_EXCEPTION_END;
 
-    /* BUG-40610 - double free ¹æÁö */
+    /* BUG-40610 - double free ë°©ì§€ */
     if (sSession != NULL && aTask->getSession() != sSession)
     {
         IDE_ASSERT(mSessionPool.memfree(sSession) == IDE_SUCCESS);
@@ -885,7 +885,7 @@ IDE_RC mmtSessionManager::freeSession(mmcTask *aTask)
 
         IDU_LIST_INIT_OBJ(sListNode, sSid);
 
-        /* shard sessionÀÎ °æ¿ì °øÀ¯ tx¸¦ Ã³¸®ÇÏ±â À§ÇØ finalize¸¦ Á÷·Ä·Î ¼¼¿î´Ù. */
+        /* shard sessionì¸ ê²½ìš° ê³µìœ  txë¥¼ ì²˜ë¦¬í•˜ê¸° ìœ„í•´ finalizeë¥¼ ì§ë ¬ë¡œ ì„¸ìš´ë‹¤. */
         if (sSession->isShardTrans() == ID_TRUE)
         {
             lock();
@@ -948,13 +948,13 @@ IDE_RC mmtSessionManager::shutdown()
     mmcTask     *sTask;
     iduListNode *sIterator;
     UInt         sCount = 0;
-    //fix BUG-24362 dequeue ´ë±â ¼¼¼ÇÀÌ closeµÉ¶§ , sessionÀÇ queue ¼³Á¤¿¡¼­
-    // µ¿½Ã¼º¿¡ ¹®Á¦°¡ ÀÖÀ½.
+    //fix BUG-24362 dequeue ëŒ€ê¸° ì„¸ì…˜ì´ closeë ë•Œ , sessionì˜ queue ì„¤ì •ì—ì„œ
+    // ë™ì‹œì„±ì— ë¬¸ì œê°€ ìˆìŒ.
     mmcSession   *sSession;
     UInt          sShutdownTimeout = mmuProperty::getShutdownImmediateTimeout();
 
     /*
-     * SHUTDOWN IMMEDIATEÀÌ¸é ¸ğµç ¼¼¼Ç¿¡ ¼¼¼Ç ÀÌº¥Æ® Àü¼Û
+     * SHUTDOWN IMMEDIATEì´ë©´ ëª¨ë“  ì„¸ì…˜ì— ì„¸ì…˜ ì´ë²¤íŠ¸ ì „ì†¡
      */
 
     if (mmm::getServerStatus() == ALTIBASE_STATUS_SHUTDOWN_IMMEDIATE)
@@ -970,18 +970,18 @@ IDE_RC mmtSessionManager::shutdown()
             {
                 IDU_SESSION_SET_CLOSED(*sSession->getEventFlag());
 
-                //fix BUG-24362 dequeue ´ë±â ¼¼¼ÇÀÌ closeµÉ¶§ , sessionÀÇ queue ¼³Á¤¿¡¼­
-                // µ¿½Ã¼º¿¡ ¹®Á¦°¡ ÀÖÀ½.
+                //fix BUG-24362 dequeue ëŒ€ê¸° ì„¸ì…˜ì´ closeë ë•Œ , sessionì˜ queue ì„¤ì •ì—ì„œ
+                // ë™ì‹œì„±ì— ë¬¸ì œê°€ ìˆìŒ.
                 wakeupEnqueWaitIfNessary(sTask, sSession);
             }
             cmiShutdownLink(sTask->getLink(), CMI_DIRECTION_RD);
             // bug-28227: ipc: server stop failed when idle cli exists
-            // idleÇÑ ipc clientµéÀÌ Á¾·áÇÒ¶§±îÁö ´ë±âÇÏ´Â ¼­ºñ½º
-            // ¾²·¹µåµéÀÌ ÀÖÀ¸¸é, server stop½Ã ¹«ÇÑ´ë±âÇÏ°Ô µÈ´Ù.
-            // µû¶ó¼­, °­Á¦ Á¾·áÇÏµµ·Ï ¸¸µç´Ù.
-            // cmiShutdownLink ÇÔ¼ö¸¦ º¯°æ¾ÈÇÏ°í, cmiShutdownLinkForce
-            // »õ·Î ¸¸µç ÀÌÀ¯´Â ¿©±âÀú±â¼­(lk, rp) ÇØ´çÇÔ¼ö¸¦ »ç¿ë
-            // ÇÏ±â ¶§¹®ÀÌ´Ù. ¿©±â¼­´Â ½ÇÁ¦ IPC shutdown¸¸ ÁøÇà.
+            // idleí•œ ipc clientë“¤ì´ ì¢…ë£Œí• ë•Œê¹Œì§€ ëŒ€ê¸°í•˜ëŠ” ì„œë¹„ìŠ¤
+            // ì“°ë ˆë“œë“¤ì´ ìˆìœ¼ë©´, server stopì‹œ ë¬´í•œëŒ€ê¸°í•˜ê²Œ ëœë‹¤.
+            // ë”°ë¼ì„œ, ê°•ì œ ì¢…ë£Œí•˜ë„ë¡ ë§Œë“ ë‹¤.
+            // cmiShutdownLink í•¨ìˆ˜ë¥¼ ë³€ê²½ì•ˆí•˜ê³ , cmiShutdownLinkForce
+            // ìƒˆë¡œ ë§Œë“  ì´ìœ ëŠ” ì—¬ê¸°ì €ê¸°ì„œ(lk, rp) í•´ë‹¹í•¨ìˆ˜ë¥¼ ì‚¬ìš©
+            // í•˜ê¸° ë•Œë¬¸ì´ë‹¤. ì—¬ê¸°ì„œëŠ” ì‹¤ì œ IPC shutdownë§Œ ì§„í–‰.
             cmiShutdownLinkForce(sTask->getLink());
         }
 
@@ -989,7 +989,7 @@ IDE_RC mmtSessionManager::shutdown()
     }
 
     /*
-     * 1ÃÊ¿¡ ÇÑ¹ø¾¿ Task °Ë»ç. SHUTDOWN IMMEDIATEÀÏ °æ¿ì SHUTDOWN TIMEOUT±îÁö¸¸ ´ë±â
+     * 1ì´ˆì— í•œë²ˆì”© Task ê²€ì‚¬. SHUTDOWN IMMEDIATEì¼ ê²½ìš° SHUTDOWN TIMEOUTê¹Œì§€ë§Œ ëŒ€ê¸°
      */
 
     while (getSessionCount() > 0)
@@ -1018,7 +1018,7 @@ IDE_RC mmtSessionManager::shutdown()
 
     IDE_EXCEPTION(ShutdownTimedOut);
     {
-        /*BUG-41590  shutdown immediate½Ã task°¡ ³²¾Æ ÀÖ´Ù¸é »ç¿ëÀÚ°¡ ¾Ëµµ·Ï ÇÑ´Ù. */
+        /*BUG-41590  shutdown immediateì‹œ taskê°€ ë‚¨ì•„ ìˆë‹¤ë©´ ì‚¬ìš©ìê°€ ì•Œë„ë¡ í•œë‹¤. */
         IDE_CALLBACK_SEND_MSG((SChar *)MM_SESSION_MANAGER_SHUTDOWN_TASK_REMAIN);
 
         lock();
@@ -1048,19 +1048,19 @@ IDE_RC mmtSessionManager::shutdown()
 }
 
 /**
- * sessionÀ» °­Á¦ Á¾·áÇÑ´Ù.
+ * sessionì„ ê°•ì œ ì¢…ë£Œí•œë‹¤.
  *
- * °­Á¦ Á¾·á¸¦ ¿äÃ»ÇÑ ¼¼¼Ç ÀÚ½ÅÀº Á¦¿ÜÇÑ´Ù.
+ * ê°•ì œ ì¢…ë£Œë¥¼ ìš”ì²­í•œ ì„¸ì…˜ ìì‹ ì€ ì œì™¸í•œë‹¤.
  *
- * @param [in]  aWorkerSession °­Á¦ Á¾·á¸¦ ¿äÃ»ÇÑ ¼¼¼Ç
- * @param [in]  aTargetSessID  Á¾·áÇÒ ¼¼¼ÇÀÇ ID (ref. V$SESSION.ID)
- * @param [in]  aUserName      Á¾·áÇÒ ¼¼¼ÇÀÇ »ç¿ëÀÚ ÀÌ¸§ (ref. SYSTEM_.SYS_USERS_.USER_NAME)
- *                             Æ¯Á¤ »ç¿ëÀÚ·Î Á¢¼ÓÇÑ ¸ğµç ¼¼¼ÇÀ» ´İ°íÀÚ ÇÒ °æ¿ì ¼³Á¤.
- * @param [in]  aCloseAll      ¸ğµç ¼¼¼ÇÀ» ´İÀ»Áö ¿©ºÎ.
- *                             ID_TRUE ÀÏ °æ¿ì aTargetSessID, aUserNameÀº ¹«½Ã.
- * @param [out] aResultCount   °­Á¦ Á¾·áÇÑ ¼¼¼ÇÀÇ °¹¼ö
+ * @param [in]  aWorkerSession ê°•ì œ ì¢…ë£Œë¥¼ ìš”ì²­í•œ ì„¸ì…˜
+ * @param [in]  aTargetSessID  ì¢…ë£Œí•  ì„¸ì…˜ì˜ ID (ref. V$SESSION.ID)
+ * @param [in]  aUserName      ì¢…ë£Œí•  ì„¸ì…˜ì˜ ì‚¬ìš©ì ì´ë¦„ (ref. SYSTEM_.SYS_USERS_.USER_NAME)
+ *                             íŠ¹ì • ì‚¬ìš©ìë¡œ ì ‘ì†í•œ ëª¨ë“  ì„¸ì…˜ì„ ë‹«ê³ ì í•  ê²½ìš° ì„¤ì •.
+ * @param [in]  aCloseAll      ëª¨ë“  ì„¸ì…˜ì„ ë‹«ì„ì§€ ì—¬ë¶€.
+ *                             ID_TRUE ì¼ ê²½ìš° aTargetSessID, aUserNameì€ ë¬´ì‹œ.
+ * @param [out] aResultCount   ê°•ì œ ì¢…ë£Œí•œ ì„¸ì…˜ì˜ ê°¯ìˆ˜
  *
- * @return ¼º°øÇÏ¸é IDE_SUCCESS, ¾Æ´Ï¸é IDE_FAILURE
+ * @return ì„±ê³µí•˜ë©´ IDE_SUCCESS, ì•„ë‹ˆë©´ IDE_FAILURE
  */
 IDE_RC mmtSessionManager::terminate( mmcSession *aWorkerSession,
                                      mmcSessID   aTargetSessID,
@@ -1087,18 +1087,18 @@ IDE_RC mmtSessionManager::terminate( mmcSession *aWorkerSession,
     *aResultCount = 0;
 
     // bug-19279 remote sysdba enable + sys can kill session
-    // º¯°æÀü: target sessionÀÌ sysdba ¼¼¼ÇÀÌ¸é ¼¼¼Ç kill ÇÒ¼ö ¾øÀ½
-    // º¯°æÈÄ: target sessionÀÌ sysdba ¼¼¼ÇÀÌ¶óµµ ¼¼¼Ç kill °¡´É
-    // (if ÁÖ¼® Ã³¸®, ³ªÁß¿¡ º¯°æ¼ÒÁö ÀÖÀ¸¹Ç·Î ³²°ÜµĞ´Ù)
-    // º¯°æÀÌÀ¯: sys °èÁ¤Àº ¼¼¼Ç kill ´É·ÂÀ» °¡Áö°Ô µÈ´Ù. sys °èÁ¤Àº
-    // °æ¿ì¿¡ µû¶ó ´Ù¸¥ sysdba ¼¼¼ÇÀ» kill ÇÒ ÇÊ¿ä°¡ ÀÖ´Ù.
-    // ex) a°¡ ¿ø°İÀ¸·Î sysdba·Î Á¢¼ÓÈÄ »ç¿ëÀ» ¾ÈÇÏ°í ÀÖ´Ù.
-    // b°¡ ±ŞÇÏ°Ô sysdba·Î Á¢¼ÓÇÒ ÇÊ¿ä°¡ ÀÖ´Âµ¥ sysdba´Â µ¿½Ã 1 ¼¼¼Ç¸¸
-    // °¡´ÉÇÏ¹Ç·Î Á¢¼ÓÀ» ¸øÇÏ°Ô µÈ´Ù.
-    // ÀÌ¶§, b°¡ sys·Î Á¢¼ÓÇØ aÀÇ sysdba ¼¼¼ÇÀ» °­Á¦·Î kill ÇÑ´Ù.
-    // ÀÌÁ¦ sysdba ¼¼¼ÇÀÌ ¾øÀ¸¹Ç·Î, b´Â ´Ù½Ã sysdba·Î Á¢¼Ó°¡´ÉÇÏ´Ù
+    // ë³€ê²½ì „: target sessionì´ sysdba ì„¸ì…˜ì´ë©´ ì„¸ì…˜ kill í• ìˆ˜ ì—†ìŒ
+    // ë³€ê²½í›„: target sessionì´ sysdba ì„¸ì…˜ì´ë¼ë„ ì„¸ì…˜ kill ê°€ëŠ¥
+    // (if ì£¼ì„ ì²˜ë¦¬, ë‚˜ì¤‘ì— ë³€ê²½ì†Œì§€ ìˆìœ¼ë¯€ë¡œ ë‚¨ê²¨ë‘”ë‹¤)
+    // ë³€ê²½ì´ìœ : sys ê³„ì •ì€ ì„¸ì…˜ kill ëŠ¥ë ¥ì„ ê°€ì§€ê²Œ ëœë‹¤. sys ê³„ì •ì€
+    // ê²½ìš°ì— ë”°ë¼ ë‹¤ë¥¸ sysdba ì„¸ì…˜ì„ kill í•  í•„ìš”ê°€ ìˆë‹¤.
+    // ex) aê°€ ì›ê²©ìœ¼ë¡œ sysdbaë¡œ ì ‘ì†í›„ ì‚¬ìš©ì„ ì•ˆí•˜ê³  ìˆë‹¤.
+    // bê°€ ê¸‰í•˜ê²Œ sysdbaë¡œ ì ‘ì†í•  í•„ìš”ê°€ ìˆëŠ”ë° sysdbaëŠ” ë™ì‹œ 1 ì„¸ì…˜ë§Œ
+    // ê°€ëŠ¥í•˜ë¯€ë¡œ ì ‘ì†ì„ ëª»í•˜ê²Œ ëœë‹¤.
+    // ì´ë•Œ, bê°€ sysë¡œ ì ‘ì†í•´ aì˜ sysdba ì„¸ì…˜ì„ ê°•ì œë¡œ kill í•œë‹¤.
+    // ì´ì œ sysdba ì„¸ì…˜ì´ ì—†ìœ¼ë¯€ë¡œ, bëŠ” ë‹¤ì‹œ sysdbaë¡œ ì ‘ì†ê°€ëŠ¥í•˜ë‹¤
 
-    /* BUGBUG (2016-07-14) QP¿¡¼­ È®ÀÎÇÏ°í ¿À´Âµ¥, ASSERT°¡ ³ªÀ»±î? */
+    /* BUGBUG (2016-07-14) QPì—ì„œ í™•ì¸í•˜ê³  ì˜¤ëŠ”ë°, ASSERTê°€ ë‚˜ì„ê¹Œ? */
     IDE_TEST_RAISE( aWorkerSession->getUserInfo()->loginUserID != QC_SYS_USER_ID,
                     PERMITION_ERROR );
 
@@ -1127,8 +1127,8 @@ IDE_RC mmtSessionManager::terminate( mmcSession *aWorkerSession,
             }
 
             //PROJ-1677 DEQUEUE
-            //fix BUG-24362 dequeue ´ë±â ¼¼¼ÇÀÌ closeµÉ¶§ , sessionÀÇ queue ¼³Á¤¿¡¼­
-            // µ¿½Ã¼º¿¡ ¹®Á¦°¡ ÀÖÀ½.
+            //fix BUG-24362 dequeue ëŒ€ê¸° ì„¸ì…˜ì´ closeë ë•Œ , sessionì˜ queue ì„¤ì •ì—ì„œ
+            // ë™ì‹œì„±ì— ë¬¸ì œê°€ ìˆìŒ.
             wakeupEnqueWaitIfNessary(sTask, sSession);
 
             mInfo.mTerminatedCount++;
@@ -1139,8 +1139,8 @@ IDE_RC mmtSessionManager::terminate( mmcSession *aWorkerSession,
 
             (*aResultCount)++;
 
-            // BUG-26088 mmcStatement::beginDB() ¿¡¼­ valgrind ¿À·ù°¡ ¹ß»ıÇÕ´Ï´Ù.
-            // ·Î±× ³²±â´Â ºÎºĞÀ» ½ÇÁ¦ session close ÇÏ´Â°÷À¸·Î ¿È±é´Ï´Ù.
+            // BUG-26088 mmcStatement::beginDB() ì—ì„œ valgrind ì˜¤ë¥˜ê°€ ë°œìƒí•©ë‹ˆë‹¤.
+            // ë¡œê·¸ ë‚¨ê¸°ëŠ” ë¶€ë¶„ì„ ì‹¤ì œ session close í•˜ëŠ”ê³³ìœ¼ë¡œ ì˜´ê¹ë‹ˆë‹¤.
             if (sSession->getSessionID() == mmtAdminManager::getSessionID())
             {
                 ideLog::log(IDE_SERVER_0,
@@ -1249,7 +1249,7 @@ void mmtSessionManager::logSessionOverview(ideLogEntry &aLog)
  * BUG-39098 The altibase_error.log doesn't have session info
  *           for debug when server ASSERT.
  *
- * aThreadID typeÀ» UInt -> ULong <idlOS::getThreadID()ÀÇ ¸®ÅÏÅ¸ÀÔ>À¸·Î º¯°æ.
+ * aThreadID typeì„ UInt -> ULong <idlOS::getThreadID()ì˜ ë¦¬í„´íƒ€ì…>ìœ¼ë¡œ ë³€ê²½.
  */
 idBool mmtSessionManager::logTaskOfThread(ideLogEntry &aLog, ULong aThreadID)
 {
@@ -1294,7 +1294,7 @@ void mmtSessionManager::checkAllTask()
     idvSession   *sStatSess;
 
     /* bug-35395: task schedule time added to v$sysstat
-       Á÷Á¢ update ÇÒ °ÍÀÌ¹Ç·Î, pointer¸¦ ±¸ÇØ¿Â´Ù */
+       ì§ì ‘ update í•  ê²ƒì´ë¯€ë¡œ, pointerë¥¼ êµ¬í•´ì˜¨ë‹¤ */
     sSysSchedMaxTime = &(gSystemInfo.mStatEvent[sIndexTaskSchedMax].mValue);
 
     lock();
@@ -1306,18 +1306,18 @@ void mmtSessionManager::checkAllTask()
         if (sTask->getSession() == NULL)
         {
             /*
-             * Login Timeout °Ë»ç
+             * Login Timeout ê²€ì‚¬
              */
 
             if ((mmuProperty::getLoginTimeout() > 0) &&
                 (mmuProperty::getLoginTimeout() <= (getBaseTime() - sTask->getConnectTime())))
             {
-                // fix BUG-27965 ÀÌ¹Ì Ã¼Å©ÇÑ task´Â Á¦¿Ü
+                // fix BUG-27965 ì´ë¯¸ ì²´í¬í•œ taskëŠ” ì œì™¸
                 if (sTask->isLoginTimeoutTask() == ID_FALSE)
                 {
                     cmiShutdownLink(sTask->getLink(), CMI_DIRECTION_RD);
 
-                    // fix BUG-27965 Connection Á¤º¸ Ãâ·Â
+                    // fix BUG-27965 Connection ì •ë³´ ì¶œë ¥
                     if (cmiGetLinkInfo(sTask->getLink(),
                                        sConnection,
                                        ID_SIZEOF(sConnection),
@@ -1334,7 +1334,7 @@ void mmtSessionManager::checkAllTask()
         else
         {
             /*
-             * Admin Task´Â Session Timeout Ã¼Å©¸¦ ÇÏÁö ¾Ê´Â´Ù.
+             * Admin TaskëŠ” Session Timeout ì²´í¬ë¥¼ í•˜ì§€ ì•ŠëŠ”ë‹¤.
              */
             if (mmtAdminManager::getTask() != sTask)
             {
@@ -1345,9 +1345,9 @@ void mmtSessionManager::checkAllTask()
 
                     if(iduCheckSessionEvent(sSession->getStatSQL()) != IDE_SUCCESS)
                     {
-                        // closeµÇ¾úÀ½.
-                        //fix BUG-24362 dequeue ´ë±â ¼¼¼ÇÀÌ closeµÉ¶§ , sessionÀÇ queue ¼³Á¤¿¡¼­
-                        // µ¿½Ã¼º¿¡ ¹®Á¦°¡ ÀÖÀ½.
+                        // closeë˜ì—ˆìŒ.
+                        //fix BUG-24362 dequeue ëŒ€ê¸° ì„¸ì…˜ì´ closeë ë•Œ , sessionì˜ queue ì„¤ì •ì—ì„œ
+                        // ë™ì‹œì„±ì— ë¬¸ì œê°€ ìˆìŒ.
                         wakeupEnqueWaitIfNessary(sTask, sSession);
                     }
                     /* BUG-33067 Utrans timeout should be checked for dequeue */
@@ -1360,14 +1360,14 @@ void mmtSessionManager::checkAllTask()
                 {
                     if (!IDU_SESSION_CHK_CLOSED(*sSession->getEventFlag()))
                     {
-                        // closeµÇÁö ¾ÊÀº session.
+                        // closeë˜ì§€ ì•Šì€ session.
                         checkSessionTimeout(sTask);
                     }
                 }//else
 
                 /* bug-35395: task schedule time added to v$sysstat
-                   systemÀÇ schedule max timeÀº ¼¼¼ÇÁß °¡Àå Å« °ª¸¸ ÀúÀå.
-                   ´©Àû°ªÀÌ ¾Æ´Ï¹Ç·Î applyStatisticsToSystem ¿¡¼­´Â ¹«½Ã */
+                   systemì˜ schedule max timeì€ ì„¸ì…˜ì¤‘ ê°€ì¥ í° ê°’ë§Œ ì €ì¥.
+                   ëˆ„ì ê°’ì´ ì•„ë‹ˆë¯€ë¡œ applyStatisticsToSystem ì—ì„œëŠ” ë¬´ì‹œ */
                 if (iduProperty::getTimedStatistics() == IDV_TIMED_STATISTICS_ON)
                 {
                     sStatSess = sSession->getStatistics();
@@ -1379,7 +1379,7 @@ void mmtSessionManager::checkAllTask()
                 }
             }
             /*
-             * ÁÖ±âÀûÀ¸·Î ¼¼¼ÇÀÇ Åë°èÁ¤º¸¸¦ ¹İ¿µÇÑ´Ù.
+             * ì£¼ê¸°ì ìœ¼ë¡œ ì„¸ì…˜ì˜ í†µê³„ì •ë³´ë¥¼ ë°˜ì˜í•œë‹¤.
              */
             sTask->getSession()->applyStatisticsToSystem();
         }
@@ -1388,7 +1388,7 @@ void mmtSessionManager::checkAllTask()
     unlock();
 
     /*
-     * ÀÚµ¿À¸·Î ¹İ¿µµÇÁö ¾Ê´Â ½Ã½ºÅÛ Åë°èÁ¤º¸¸¦ ¹İ¿µÇÑ´Ù.
+     * ìë™ìœ¼ë¡œ ë°˜ì˜ë˜ì§€ ì•ŠëŠ” ì‹œìŠ¤í…œ í†µê³„ì •ë³´ë¥¼ ë°˜ì˜í•œë‹¤.
      */
 
     IDV_SYS_SET(IDV_STAT_INDEX_LOGON_CURR, (ULong)getTaskCount());
@@ -1407,7 +1407,7 @@ void mmtSessionManager::checkAllTask()
     (void)idvProfile::flushAllBufferToFile();
 
     /*
-     * MsgLogÀÇ ³»¿ëÀ» flush ½ÃÅ²´Ù.
+     * MsgLogì˜ ë‚´ìš©ì„ flush ì‹œí‚¨ë‹¤.
      */
 
     ideLog::flushAllModuleLogs();
@@ -1422,12 +1422,12 @@ void mmtSessionManager::checkSessionTimeout(mmcTask *aTask)
     iduList      *sStmtList = NULL;
 
     /*
-     * Close Event°¡ ¼¼ÆÃµÈ ¼¼¼ÇÀº °Ë»çÇÏÁö ¾Ê´Â´Ù.
+     * Close Eventê°€ ì„¸íŒ…ëœ ì„¸ì…˜ì€ ê²€ì‚¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
      */
 
 
     /*
-     * Idle Timeout °Ë»ç
+     * Idle Timeout ê²€ì‚¬
      */
 
     if (checkTimeoutEvent(aTask,
@@ -1440,18 +1440,18 @@ void mmtSessionManager::checkSessionTimeout(mmcTask *aTask)
     }
 
     /*
-     * Statement Timeout °Ë»ç
+     * Statement Timeout ê²€ì‚¬
      */
 
     sSession->lockForStmtList();
 
     // bug-25988: utrans_timeout never occured if stmt already freed
-    // autocommit off »óÅÂ¿¡¼­ DMLÀ» ¼öÇàÇÏ¿© TX°¡ »ì¾ÆÀÖÀ» ¶§,
-    // ÇØ´ç stmt°¡ ÀÌ¹Ì close µÈ °æ¿ì¿¡µµ utrans_timeoutÀº ¹ß»ıÇØ¾ßÇÔ.
-    // ¼öÁ¤Àü: sessionÀÇ stmtlist°¡ ºñ¾îÀÖÀ¸¸é, timeout °Ë»ç¾ÈÇÔ.
-    // ¼öÁ¤ÈÄ
-    // : sessionÀÇ stmtlist°¡ ºñ¾îÀÖ¾îµµ autocommit offÀÌ°í
-    // TX°¡ ÀÖÀ¸¸é utrans_timeout °Ë»ç
+    // autocommit off ìƒíƒœì—ì„œ DMLì„ ìˆ˜í–‰í•˜ì—¬ TXê°€ ì‚´ì•„ìˆì„ ë•Œ,
+    // í•´ë‹¹ stmtê°€ ì´ë¯¸ close ëœ ê²½ìš°ì—ë„ utrans_timeoutì€ ë°œìƒí•´ì•¼í•¨.
+    // ìˆ˜ì •ì „: sessionì˜ stmtlistê°€ ë¹„ì–´ìˆìœ¼ë©´, timeout ê²€ì‚¬ì•ˆí•¨.
+    // ìˆ˜ì •í›„
+    // : sessionì˜ stmtlistê°€ ë¹„ì–´ìˆì–´ë„ autocommit offì´ê³ 
+    // TXê°€ ìˆìœ¼ë©´ utrans_timeout ê²€ì‚¬
     sStmtList = sSession->getStmtList();
     if (IDU_LIST_IS_EMPTY(sStmtList))
     {
@@ -1460,9 +1460,9 @@ void mmtSessionManager::checkSessionTimeout(mmcTask *aTask)
             sTrans     = sSession->getTrans(ID_FALSE);
             if (sTrans != NULL)
             {
-                // 2¹øÂ° ÀÎÀÚ·Î stmt°¡ ¾øÀ¸¹Ç·Î NULL·Î ³Ñ±ä´Ù
-                // stmt°¡ »ç¿ëµÇ´Â °÷:
-                // logUtransTimeout ¾ÈÀÇ getTrans(stmt..)¿¡¼­ ¹«½ÃµÊ
+                // 2ë²ˆì§¸ ì¸ìë¡œ stmtê°€ ì—†ìœ¼ë¯€ë¡œ NULLë¡œ ë„˜ê¸´ë‹¤
+                // stmtê°€ ì‚¬ìš©ë˜ëŠ” ê³³:
+                // logUtransTimeout ì•ˆì˜ getTrans(stmt..)ì—ì„œ ë¬´ì‹œë¨
                 checkTimeoutEvent(aTask,
                         NULL,
                         sTrans->getFirstUpdateTime(),
@@ -1473,7 +1473,7 @@ void mmtSessionManager::checkSessionTimeout(mmcTask *aTask)
         }
 
     }
-    // stmt list¿¡ stmt°¡ ÀÖ´Â °æ¿ì ¼øÈ¸ÇÏ¸é¼­ timeout °Ë»ç
+    // stmt listì— stmtê°€ ìˆëŠ” ê²½ìš° ìˆœíšŒí•˜ë©´ì„œ timeout ê²€ì‚¬
     else
     {
         IDU_LIST_ITERATE(sStmtList, sIterator)
@@ -1482,7 +1482,7 @@ void mmtSessionManager::checkSessionTimeout(mmcTask *aTask)
             sTrans     = sSession->getTrans(sStatement, ID_FALSE);
 
             /*
-             * Fetch Timeout °Ë»ç
+             * Fetch Timeout ê²€ì‚¬
              */
 
             if (checkTimeoutEvent(aTask,
@@ -1498,7 +1498,7 @@ void mmtSessionManager::checkSessionTimeout(mmcTask *aTask)
             if ( qciMisc::isStmtDDL(sStatement->getStmtType()) == ID_FALSE )
             {
                 /*
-                 * UTrans Timeout °Ë»ç
+                 * UTrans Timeout ê²€ì‚¬
                  */
                 if ((sTrans != NULL) &&
                     (checkTimeoutEvent(aTask,
@@ -1511,7 +1511,7 @@ void mmtSessionManager::checkSessionTimeout(mmcTask *aTask)
                 }
 
                 /*
-                 * Query Timeout °Ë»ç
+                 * Query Timeout ê²€ì‚¬
                  */
                 (void)checkTimeoutEvent( aTask,
                                          sStatement,
@@ -1522,7 +1522,7 @@ void mmtSessionManager::checkSessionTimeout(mmcTask *aTask)
             else
             {
                 /*
-                 * DDL Timeout °Ë»ç
+                 * DDL Timeout ê²€ì‚¬
                  */
                 (void)checkTimeoutEvent( aTask,
                                          sStatement,
@@ -1538,13 +1538,13 @@ void mmtSessionManager::checkSessionTimeout(mmcTask *aTask)
 
 /* PROJ-2177 User Interface - Cancel */
 /**
- * Cancel ÀÌº¥Æ®¸¦ ¼³Á¤ÇÑ´Ù.
+ * Cancel ì´ë²¤íŠ¸ë¥¼ ì„¤ì •í•œë‹¤.
  *
- * Cancel ÀÌº¥Æ®´Â Session EventÀÌ¹Ç·Î
- * Session¿¡¼­ ¼öÇàÁßÀÎ Statement¸¦ ¹Ù²Ù´Â µ¿ÀÛ°ú µ¿½Ã¿¡ ÀÏ¾î³ª¼­´Â ¾ÈµÈ´Ù.
+ * Cancel ì´ë²¤íŠ¸ëŠ” Session Eventì´ë¯€ë¡œ
+ * Sessionì—ì„œ ìˆ˜í–‰ì¤‘ì¸ Statementë¥¼ ë°”ê¾¸ëŠ” ë™ì‘ê³¼ ë™ì‹œì— ì¼ì–´ë‚˜ì„œëŠ” ì•ˆëœë‹¤.
  *
  * @param aStmtID statement id
- * @return ¼º°øÇÏ¸é IDE_SUCCESS, ÇØ´çÇÏ´Â statement³ª sessionÀÌ ¾øÀ¸¸é IDE_FAILURE
+ * @return ì„±ê³µí•˜ë©´ IDE_SUCCESS, í•´ë‹¹í•˜ëŠ” statementë‚˜ sessionì´ ì—†ìœ¼ë©´ IDE_FAILURE
  */
 IDE_RC mmtSessionManager::setCancelEvent(mmcStmtID aStmtID)
 {
@@ -1554,7 +1554,7 @@ IDE_RC mmtSessionManager::setCancelEvent(mmcStmtID aStmtID)
     IDE_TEST(mmcStatementManager::findStatement(&sStmt, NULL, aStmtID) != IDE_SUCCESS);
 
     sSession = sStmt->getSession();
-    /* ÀÌ·±ÀÏÀº ÀÏ¾î³ª¼± ¾ÈµÈ´Ù. ¸¸¾à ¹ß»ıÇß´Ù¸é, Stmt°ü¸®¿¡ ±¸¸ÛÀÌ ÀÖ´Â °Í. */
+    /* ì´ëŸ°ì¼ì€ ì¼ì–´ë‚˜ì„  ì•ˆëœë‹¤. ë§Œì•½ ë°œìƒí–ˆë‹¤ë©´, Stmtê´€ë¦¬ì— êµ¬ë©ì´ ìˆëŠ” ê²ƒ. */
     IDE_ASSERT(sSession != NULL);
 
     if ((sStmt->isExecuting() == ID_TRUE)
@@ -1571,13 +1571,13 @@ IDE_RC mmtSessionManager::setCancelEvent(mmcStmtID aStmtID)
 }
 
 /* BUG-25020 
- * ÇØ´ç Statement¸¦ Query Timeout »óÅÂ·Î °­Á¦·Î º¯°æÇÑ´Ù.
- * P.S. ÀÌ ÇÔ¼ö´Â XA¿¡¼­ ÇØ´ç Xid°¡ Active »óÅÂÀÏ °æ¿ì TMÀ¸·Î ºÎÅÍ Rollback ¸í·ÉÀ» ¹Ş¾ÒÀ» °æ¿ì
- * ÇØ´ç Statement¸¦ Á¤¸®ÇÏ±â À§ÇØ QueryTimeoutÀ» ¹ß»ı½ÃÅ°±â À§ÇØ¼­ Ãß°¡µÊ.
+ * í•´ë‹¹ Statementë¥¼ Query Timeout ìƒíƒœë¡œ ê°•ì œë¡œ ë³€ê²½í•œë‹¤.
+ * P.S. ì´ í•¨ìˆ˜ëŠ” XAì—ì„œ í•´ë‹¹ Xidê°€ Active ìƒíƒœì¼ ê²½ìš° TMìœ¼ë¡œ ë¶€í„° Rollback ëª…ë ¹ì„ ë°›ì•˜ì„ ê²½ìš°
+ * í•´ë‹¹ Statementë¥¼ ì •ë¦¬í•˜ê¸° ìœ„í•´ QueryTimeoutì„ ë°œìƒì‹œí‚¤ê¸° ìœ„í•´ì„œ ì¶”ê°€ë¨.
  *
  * BUG-25323
- * ÇØ´ç SessionÀÌ Á¾·áÇÏ´Â °úÁ¤¿¡¸é.. Task°ªÀÌ NULLÀÌ µÉ ¼ö ÀÖ´Ù.
- * µû¶ó¼­ Task¿¡¼­ SessionÀ» ¾ò´Â°Ô ¾Æ´Ï¶ó Session°ªÀ» ÀÎÀÚ·Î ÇÏ¿© Á÷Á¢ ³Ñ°Ü ¹Şµµ·Ï ÇØ¾ßÇÑ´Ù.
+ * í•´ë‹¹ Sessionì´ ì¢…ë£Œí•˜ëŠ” ê³¼ì •ì—ë©´.. Taskê°’ì´ NULLì´ ë  ìˆ˜ ìˆë‹¤.
+ * ë”°ë¼ì„œ Taskì—ì„œ Sessionì„ ì–»ëŠ”ê²Œ ì•„ë‹ˆë¼ Sessionê°’ì„ ì¸ìë¡œ í•˜ì—¬ ì§ì ‘ ë„˜ê²¨ ë°›ë„ë¡ í•´ì•¼í•œë‹¤.
  *
  * BUG-42866 
  * The query timeout of this function must be separately considered 
@@ -1645,13 +1645,13 @@ idBool mmtSessionManager::checkTimeoutEvent(mmcTask      *aTask,
     idBool          sEventOccured = ID_FALSE;
 
     /*
-     * TimeoutÀÌ ¼³Á¤µÇ¾î ÀÖ°í TimeGapÀÌ Timeoutº¸´Ù Å©¸é Timeout Event ¹ß»ı
+     * Timeoutì´ ì„¤ì •ë˜ì–´ ìˆê³  TimeGapì´ Timeoutë³´ë‹¤ í¬ë©´ Timeout Event ë°œìƒ
      */
 
     //fix [BUG-27123 : mm/NEW] [5.3.3 release Code-Sonar] mm Ignore return values series 2
     if ( (aStartTime > 0) && (aTimeout > 0) )
     {
-        // BUG-25231 BaseTIme º¸´Ù StartTimeÀÌ ´õ Å« °æ¿ì, TimeoutÀÌ ¹ß»ıÇÏÁö ¾Ê¾Æ¾ß ÇÕ´Ï´Ù.
+        // BUG-25231 BaseTIme ë³´ë‹¤ StartTimeì´ ë” í° ê²½ìš°, Timeoutì´ ë°œìƒí•˜ì§€ ì•Šì•„ì•¼ í•©ë‹ˆë‹¤.
         if( getBaseTime() <= aStartTime )
         {
             sTimeGap = 0;
@@ -1688,9 +1688,9 @@ idBool mmtSessionManager::checkTimeoutEvent(mmcTask      *aTask,
             else
             {
                 // bug-26974: codesonar: statement null ref.
-                // º» ÇÔ¼ö´Â checkSessionTimeout ¿¡¼­¸¸ È£ÃâÇÏ°í
-                // ·ÎÁ÷»ó ¿©±â ¼öÇà½Ã statement°¡ nullÀÏ ¼ö ¾øÁö¸¸
-                // ¹æ¾î¿ëÀ¸·Î °Ë»ç ¼öÇà.
+                // ë³¸ í•¨ìˆ˜ëŠ” checkSessionTimeout ì—ì„œë§Œ í˜¸ì¶œí•˜ê³ 
+                // ë¡œì§ìƒ ì—¬ê¸° ìˆ˜í–‰ì‹œ statementê°€ nullì¼ ìˆ˜ ì—†ì§€ë§Œ
+                // ë°©ì–´ìš©ìœ¼ë¡œ ê²€ì‚¬ ìˆ˜í–‰.
                 if (aStatement != NULL)
                 {
                     /* BUG-38472 Query timeout applies to one statement. */
@@ -1719,8 +1719,8 @@ idBool mmtSessionManager::checkTimeoutEvent(mmcTask      *aTask,
                         /* Nothing to do */
                     }
                 }
-                // ¸¸¾à nullÀÌ¸é log¸¦ ³²±â°í, timeoutÀº ¹ß»ı½ÃÅ°Áö ¾ÊÀ½.
-                // log°¡ ¹ß»ıÇÏ¸é ¿Ö statement°¡ nullÀÎÁö È®ÀÎ ÇÊ¿ä.
+                // ë§Œì•½ nullì´ë©´ logë¥¼ ë‚¨ê¸°ê³ , timeoutì€ ë°œìƒì‹œí‚¤ì§€ ì•ŠìŒ.
+                // logê°€ ë°œìƒí•˜ë©´ ì™œ statementê°€ nullì¸ì§€ í™•ì¸ í•„ìš”.
                 else
                 {
                     ideLog::log(IDE_SERVER_0,
@@ -1749,20 +1749,20 @@ idBool mmtSessionManager::checkTimeoutEvent(mmcTask      *aTask,
     return sEventOccured;
 }
 
- //fix BUG-24362 dequeue ´ë±â ¼¼¼ÇÀÌ closeµÉ¶§ , sessionÀÇ queue ¼³Á¤¿¡¼­
- // µ¿½Ã¼º¿¡ ¹®Á¦°¡ ÀÖÀ½.
+ //fix BUG-24362 dequeue ëŒ€ê¸° ì„¸ì…˜ì´ closeë ë•Œ , sessionì˜ queue ì„¤ì •ì—ì„œ
+ // ë™ì‹œì„±ì— ë¬¸ì œê°€ ìˆìŒ.
 void mmtSessionManager::wakeupEnqueWaitIfNessary(mmcTask*  aTask,
                                                  mmcSession * aSession)
 {
 
-    //fix BUG-24362 dequeue ´ë±â ¼¼¼ÇÀÌ closeµÉ¶§ , sessionÀÇ queue ¼³Á¤¿¡¼­
-    // µ¿½Ã¼º¿¡ ¹®Á¦°¡ ÀÖÀ½.
+    //fix BUG-24362 dequeue ëŒ€ê¸° ì„¸ì…˜ì´ closeë ë•Œ , sessionì˜ queue ì„¤ì •ì—ì„œ
+    // ë™ì‹œì„±ì— ë¬¸ì œê°€ ìˆìŒ.
     mmqQueueInfo *sQueueInfo;
     
     if( aTask->getTaskState() ==  MMC_TASK_STATE_QUEUEWAIT)
     {
-        //fix BUG-24362 dequeue ´ë±â ¼¼¼ÇÀÌ closeµÉ¶§ , sessionÀÇ queue ¼³Á¤¿¡¼­
-        // µ¿½Ã¼º¿¡ ¹®Á¦°¡ ÀÖÀ½.
+        //fix BUG-24362 dequeue ëŒ€ê¸° ì„¸ì…˜ì´ closeë ë•Œ , sessionì˜ queue ì„¤ì •ì—ì„œ
+        // ë™ì‹œì„±ì— ë¬¸ì œê°€ ìˆìŒ.
         sQueueInfo = aSession->getQueueInfo();
         
         if( sQueueInfo != NULL)
@@ -1794,7 +1794,7 @@ static iduFixedTableColDesc gSESSIONColDesc[] =
         (SChar *)"ID",
         offsetof(mmcSessionInfo4PerfV, mSessionID),
         IDU_FT_SIZEOF(mmcSessionInfo4PerfV, mSessionID),
-        /*BUG-42791 Å«°ªÀÏ °æ¿ì v$¿¡¼­ session id°ªÀÌ À½¼ö°¡ ³ª¿À´Â °æ¿ì°¡ ÀÖ½À´Ï´Ù.*/
+        /*BUG-42791 í°ê°’ì¼ ê²½ìš° v$ì—ì„œ session idê°’ì´ ìŒìˆ˜ê°€ ë‚˜ì˜¤ëŠ” ê²½ìš°ê°€ ìˆìŠµë‹ˆë‹¤.*/
         IDU_FT_TYPE_UBIGINT | IDU_FT_COLUMN_INDEX,
         NULL,
         0, 0, NULL // for internal use
@@ -1803,7 +1803,7 @@ static iduFixedTableColDesc gSESSIONColDesc[] =
         (SChar *)"TRANS_ID",
         offsetof(mmcSessionInfo4PerfV, mTransID),
         IDU_FT_SIZEOF(mmcSessionInfo4PerfV, mTransID),
-        //fix BUG-24289 V$SESSIONÀÇ Trans_id¸¦ BIGINTÀ¸·Î display.
+        //fix BUG-24289 V$SESSIONì˜ Trans_idë¥¼ BIGINTìœ¼ë¡œ display.
         IDU_FT_TYPE_UBIGINT | IDU_FT_COLUMN_INDEX,
         NULL,
         0, 0, NULL // for internal use
@@ -2303,9 +2303,9 @@ IDE_RC mmtSessionManager::buildRecordForSESSION(idvSQL              * /*aStatist
         {
             sSession = sSess->getInfo();
 
-            //fix BUG-23656 session,xid ,transactionÀ» ¿¬°èÇÑ performance view¸¦ Á¦°øÇÏ°í,
-            //±×µé°£ÀÇ °ü°è¸¦ Á¤È®È÷ À¯ÁöÇØ¾ß ÇÔ.
-            // transactionÀ» »ç¿ëÇÏ´Â sessionÀÇ º¯°æ.
+            //fix BUG-23656 session,xid ,transactionì„ ì—°ê³„í•œ performance viewë¥¼ ì œê³µí•˜ê³ ,
+            //ê·¸ë“¤ê°„ì˜ ê´€ê³„ë¥¼ ì •í™•íˆ ìœ ì§€í•´ì•¼ í•¨.
+            // transactionì„ ì‚¬ìš©í•˜ëŠ” sessionì˜ ë³€ê²½.
             /* BUG-44967 */
             sSessionInfo.mTransID                = sSession->mTransID;
             sSessionInfo.mSessionID              = sSession->mSessionID;
@@ -2316,12 +2316,12 @@ IDE_RC mmtSessionManager::buildRecordForSESSION(idvSQL              * /*aStatist
                            ID_SIZEOF(sSessionInfo.mCommName));
 
             /* BUG-43006 FixedTable Indexing Filter
-             * Column Index ¸¦ »ç¿ëÇØ¼­ ÀüÃ¼ Record¸¦ »ı¼ºÇÏÁö¾Ê°í
-             * ºÎºĞ¸¸ »ı¼ºÇØ Filtering ÇÑ´Ù.
-             * 1. void * ¹è¿­¿¡ IDU_FT_COLUMN_INDEX ·Î ÁöÁ¤µÈ ÄÃ·³¿¡
-             * ÇØ´çÇÏ´Â °ªÀ» ¼ø¼­´ë·Î ³Ö¾îÁÖ¾î¾ß ÇÑ´Ù.
-             * 2. IDU_FT_COLUMN_INDEXÀÇ ÄÃ·³¿¡ ÇØ´çÇÏ´Â °ªÀ» ¸ğµÎ ³Ö
-             * ¾î ÁÖ¾î¾ßÇÑ´Ù.
+             * Column Index ë¥¼ ì‚¬ìš©í•´ì„œ ì „ì²´ Recordë¥¼ ìƒì„±í•˜ì§€ì•Šê³ 
+             * ë¶€ë¶„ë§Œ ìƒì„±í•´ Filtering í•œë‹¤.
+             * 1. void * ë°°ì—´ì— IDU_FT_COLUMN_INDEX ë¡œ ì§€ì •ëœ ì»¬ëŸ¼ì—
+             * í•´ë‹¹í•˜ëŠ” ê°’ì„ ìˆœì„œëŒ€ë¡œ ë„£ì–´ì£¼ì–´ì•¼ í•œë‹¤.
+             * 2. IDU_FT_COLUMN_INDEXì˜ ì»¬ëŸ¼ì— í•´ë‹¹í•˜ëŠ” ê°’ì„ ëª¨ë‘ ë„£
+             * ì–´ ì£¼ì–´ì•¼í•œë‹¤.
              */
             sIndexValues[0] = &sSessionInfo.mSessionID;
             sIndexValues[1] = &sSessionInfo.mTransID;
@@ -2655,12 +2655,12 @@ IDE_RC mmtSessionManager::buildRecordForSESSTAT(idvSQL              * /*aStatist
             sSessStatFT.mSID = sTask->getSession()->getSessionID();
 
             /* BUG-43006 FixedTable Indexing Filter
-             * Indexing Filter¸¦ »ç¿ëÇØ¼­ ÀüÃ¼ Record¸¦ »ı¼ºÇÏÁö¾Ê°í
-             * ºÎºĞ¸¸ »ı¼ºÇØ Filtering ÇÑ´Ù.
-             * 1. void * ¹è¿­¿¡ IDU_FT_COLUMN_INDEX ·Î ÁöÁ¤µÈ ÄÃ·³¿¡
-             * ÇØ´çÇÏ´Â °ªÀ» ¼ø¼­´ë·Î ³Ö¾îÁÖ¾î¾ß ÇÑ´Ù.
-             * 2. IDU_FT_COLUMN_INDEXÀÇ ÄÃ·³¿¡ ÇØ´çÇÏ´Â °ªÀ» ¸ğµÎ ³Ö
-             * ¾î ÁÖ¾î¾ßÇÑ´Ù.
+             * Indexing Filterë¥¼ ì‚¬ìš©í•´ì„œ ì „ì²´ Recordë¥¼ ìƒì„±í•˜ì§€ì•Šê³ 
+             * ë¶€ë¶„ë§Œ ìƒì„±í•´ Filtering í•œë‹¤.
+             * 1. void * ë°°ì—´ì— IDU_FT_COLUMN_INDEX ë¡œ ì§€ì •ëœ ì»¬ëŸ¼ì—
+             * í•´ë‹¹í•˜ëŠ” ê°’ì„ ìˆœì„œëŒ€ë¡œ ë„£ì–´ì£¼ì–´ì•¼ í•œë‹¤.
+             * 2. IDU_FT_COLUMN_INDEXì˜ ì»¬ëŸ¼ì— í•´ë‹¹í•˜ëŠ” ê°’ì„ ëª¨ë‘ ë„£
+             * ì–´ ì£¼ì–´ì•¼í•œë‹¤.
              */
             sIndexValues[0] = &sSessStatFT.mSID;
             if ( iduFixedTable::checkKeyRange( aMemory,
@@ -2955,12 +2955,12 @@ IDE_RC mmtSessionManager::buildRecordForSessionEvent(
             sSessWaitFT.mSID = sTask->getSession()->getSessionID();
 
             /* BUG-43006 FixedTable Indexing Filter
-             * Indexing Filter¸¦ »ç¿ëÇØ¼­ ÀüÃ¼ Record¸¦ »ı¼ºÇÏÁö¾Ê°í
-             * ºÎºĞ¸¸ »ı¼ºÇØ Filtering ÇÑ´Ù.
-             * 1. void * ¹è¿­¿¡ IDU_FT_COLUMN_INDEX ·Î ÁöÁ¤µÈ ÄÃ·³¿¡
-             * ÇØ´çÇÏ´Â °ªÀ» ¼ø¼­´ë·Î ³Ö¾îÁÖ¾î¾ß ÇÑ´Ù.
-             * 2. IDU_FT_COLUMN_INDEXÀÇ ÄÃ·³¿¡ ÇØ´çÇÏ´Â °ªÀ» ¸ğµÎ ³Ö
-             * ¾î ÁÖ¾î¾ßÇÑ´Ù.
+             * Indexing Filterë¥¼ ì‚¬ìš©í•´ì„œ ì „ì²´ Recordë¥¼ ìƒì„±í•˜ì§€ì•Šê³ 
+             * ë¶€ë¶„ë§Œ ìƒì„±í•´ Filtering í•œë‹¤.
+             * 1. void * ë°°ì—´ì— IDU_FT_COLUMN_INDEX ë¡œ ì§€ì •ëœ ì»¬ëŸ¼ì—
+             * í•´ë‹¹í•˜ëŠ” ê°’ì„ ìˆœì„œëŒ€ë¡œ ë„£ì–´ì£¼ì–´ì•¼ í•œë‹¤.
+             * 2. IDU_FT_COLUMN_INDEXì˜ ì»¬ëŸ¼ì— í•´ë‹¹í•˜ëŠ” ê°’ì„ ëª¨ë‘ ë„£
+             * ì–´ ì£¼ì–´ì•¼í•œë‹¤.
              */
             sIndexValues[0] = &sSessWaitFT.mSID;
             if ( iduFixedTable::checkKeyRange( aMemory,
@@ -3215,12 +3215,12 @@ iduFixedTableDesc gSysConflictPageTableDesc =
 /* PROJ-2177 User Interface - Cancel */
 
 /**
- * SessionID¿¡ ÇØ´çÇÏ´Â SessionÀ» Ã£´Â´Ù.
+ * SessionIDì— í•´ë‹¹í•˜ëŠ” Sessionì„ ì°¾ëŠ”ë‹¤.
  *
  * @param[out] aSession     session
  * @param[in]  aSessionID   session id
  *
- * @return SessionÀ» Ã£¾ÒÀ¸¸é IDE_SUCCESS, ¾Æ´Ï¸é IDE_FAILURE
+ * @return Sessionì„ ì°¾ì•˜ìœ¼ë©´ IDE_SUCCESS, ì•„ë‹ˆë©´ IDE_FAILURE
  */
 IDE_RC mmtSessionManager::findSession(mmcSession **aSession, mmcSessID aSessionID)
 {
@@ -3228,7 +3228,7 @@ IDE_RC mmtSessionManager::findSession(mmcSession **aSession, mmcSessID aSessionI
     mmcTask     *sTask;
     mmcSession  *sSession;
 
-    /* ÀÌ·±ÀÏÀº ÀÏ¾î³ª¼± ¾ÈµÈ´Ù. */
+    /* ì´ëŸ°ì¼ì€ ì¼ì–´ë‚˜ì„  ì•ˆëœë‹¤. */
     IDE_ASSERT(aSession != NULL);
 
     *aSession = NULL;
@@ -3388,7 +3388,7 @@ static iduFixedTableColDesc gINTERNALSESSIONColDesc[] =
         (SChar *)"TRANS_ID",
         offsetof(mmcInternalSessionInfo4PerfV, mTransID),
         IDU_FT_SIZEOF(mmcInternalSessionInfo4PerfV, mTransID),
-        //fix BUG-24289 V$SESSIONÀÇ Trans_id¸¦ BIGINTÀ¸·Î display.
+        //fix BUG-24289 V$SESSIONì˜ Trans_idë¥¼ BIGINTìœ¼ë¡œ display.
         IDU_FT_TYPE_UBIGINT | IDU_FT_COLUMN_INDEX,
         NULL,
         0, 0, NULL // for internal use
@@ -3738,9 +3738,9 @@ IDE_RC mmtSessionManager::buildRecordForINTERNALSESSION(idvSQL * /*aStatistics*/
         {
             sSession = sSess->getInfo();
 
-            //fix BUG-23656 session,xid ,transactionÀ» ¿¬°èÇÑ performance view¸¦ Á¦°øÇÏ°í,
-            //±×µé°£ÀÇ °ü°è¸¦ Á¤È®È÷ À¯ÁöÇØ¾ß ÇÔ.
-            // transactionÀ» »ç¿ëÇÏ´Â sessionÀÇ º¯°æ.
+            //fix BUG-23656 session,xid ,transactionì„ ì—°ê³„í•œ performance viewë¥¼ ì œê³µí•˜ê³ ,
+            //ê·¸ë“¤ê°„ì˜ ê´€ê³„ë¥¼ ì •í™•íˆ ìœ ì§€í•´ì•¼ í•¨.
+            // transactionì„ ì‚¬ìš©í•˜ëŠ” sessionì˜ ë³€ê²½.
             /* BUG-44967 */
             sSessionInfo.mTransID                = sSession->mTransID;
             sSessionInfo.mSessionID              = sSession->mSessionID;
@@ -3756,12 +3756,12 @@ IDE_RC mmtSessionManager::buildRecordForINTERNALSESSION(idvSQL * /*aStatistics*/
             sSessionInfo.mOpenStmtCount          = sSession->mOpenStmtCount;
 
             /* BUG-43006 FixedTable Indexing Filter
-             * Indexing Filter¸¦ »ç¿ëÇØ¼­ ÀüÃ¼ Record¸¦ »ı¼ºÇÏÁö¾Ê°í
-             * ºÎºĞ¸¸ »ı¼ºÇØ Filtering ÇÑ´Ù.
-             * 1. void * ¹è¿­¿¡ IDU_FT_COLUMN_INDEX ·Î ÁöÁ¤µÈ ÄÃ·³¿¡
-             * ÇØ´çÇÏ´Â °ªÀ» ¼ø¼­´ë·Î ³Ö¾îÁÖ¾î¾ß ÇÑ´Ù.
-             * 2. IDU_FT_COLUMN_INDEXÀÇ ÄÃ·³¿¡ ÇØ´çÇÏ´Â °ªÀ» ¸ğµÎ ³Ö
-             * ¾î ÁÖ¾î¾ßÇÑ´Ù.
+             * Indexing Filterë¥¼ ì‚¬ìš©í•´ì„œ ì „ì²´ Recordë¥¼ ìƒì„±í•˜ì§€ì•Šê³ 
+             * ë¶€ë¶„ë§Œ ìƒì„±í•´ Filtering í•œë‹¤.
+             * 1. void * ë°°ì—´ì— IDU_FT_COLUMN_INDEX ë¡œ ì§€ì •ëœ ì»¬ëŸ¼ì—
+             * í•´ë‹¹í•˜ëŠ” ê°’ì„ ìˆœì„œëŒ€ë¡œ ë„£ì–´ì£¼ì–´ì•¼ í•œë‹¤.
+             * 2. IDU_FT_COLUMN_INDEXì˜ ì»¬ëŸ¼ì— í•´ë‹¹í•˜ëŠ” ê°’ì„ ëª¨ë‘ ë„£
+             * ì–´ ì£¼ì–´ì•¼í•œë‹¤.
              */
             sIndexValues[0] = &sSessionInfo.mSessionID;
             sIndexValues[1] = &sSessionInfo.mTransID;
@@ -3882,14 +3882,14 @@ IDE_RC mmtSessionManager::allocInternalSession( mmcSession  ** aSession,
     iduListNode * sISListNode = NULL; // sInternalSessionListNode
     idBool        sIsLocked = ID_FALSE;
 
-    /* internal link¸¦ »ı¼ºÇÑ´Ù. */
+    /* internal linkë¥¼ ìƒì„±í•œë‹¤. */
     IDE_TEST( cmiAllocLink( (cmnLink **)&sLink,
                              CMI_LINK_TYPE_PEER_SERVER,
                              CMI_LINK_IMPL_DUMMY )
               != IDE_SUCCESS );
     sState = 1;
 
-    /* internal task¸¦ »ı¼ºÇÑ´Ù. */
+    /* internal taskë¥¼ ìƒì„±í•œë‹¤. */
     IDE_TEST( allocInternalTask( &sTask, sLink ) != IDE_SUCCESS );
     sState = 2;
     
@@ -3954,9 +3954,9 @@ IDE_RC mmtSessionManager::allocInternalSession( mmcSession  ** aSession,
     sSession->setSessionState( MMC_SESSION_STATE_SERVICE );
     ( void )sSession->setCommitMode( MMC_COMMITMODE_NONAUTOCOMMIT );
 
-    /* BUG-42856 Job Scheduler µ¿ÀÛÁß fatal
-     * AUTO_COMMIT = 0 ÀÎ °æ¿ì setCommitMode¿¡¼­ smiTrans¸¦ ÇÒ´çÇÏÁö ¾Ê¾Æ¼­
-     * FATALÀÌ ¹ß»ıÇÑ´Ù
+    /* BUG-42856 Job Scheduler ë™ì‘ì¤‘ fatal
+     * AUTO_COMMIT = 0 ì¸ ê²½ìš° setCommitModeì—ì„œ smiTransë¥¼ í• ë‹¹í•˜ì§€ ì•Šì•„ì„œ
+     * FATALì´ ë°œìƒí•œë‹¤
      */
     if ( sSession->getTrans(ID_FALSE) == NULL )
     {
@@ -4094,7 +4094,7 @@ IDE_RC mmtSessionManager::freeInternalSession( mmcSession * aSession )
 
         IDE_ERROR( sIsFound == ID_TRUE );
 
-        // µ¿ÀÏÇÑ mempoolÀ» »ç¿ëÇÏ¹Ç·Î sListNode¸¦ Àç»ç¿ëÇÑ´Ù.
+        // ë™ì¼í•œ mempoolì„ ì‚¬ìš©í•˜ë¯€ë¡œ sListNodeë¥¼ ì¬ì‚¬ìš©í•œë‹¤.
         // mInternalSessionList => mFreeSessionIDList
         IDU_LIST_INIT_OBJ(sListNode, sSid);
 
@@ -4196,9 +4196,9 @@ IDE_RC mmtSessionManager::applySignal( mmcSession * aSession )
 /**
  * PROJ-2626 Snapshot Export
  *
- * ÇöÀç ÀÔ·Â¹ŞÀº aTypeÀÇ ClientAppInfoTypeÀÌ Á¸ÀçÇÏ´ÂÁö °Ë»çÇÑ´Ù.
- * alter databse begin snapshot ±¸¹® ½ÇÇà½Ã iLoader SessionÀÌ
- * ÀÖ´Ù¸é ½ÇÆĞ½ÃÅ²´Ù.
+ * í˜„ì¬ ì…ë ¥ë°›ì€ aTypeì˜ ClientAppInfoTypeì´ ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬í•œë‹¤.
+ * alter databse begin snapshot êµ¬ë¬¸ ì‹¤í–‰ì‹œ iLoader Sessionì´
+ * ìˆë‹¤ë©´ ì‹¤íŒ¨ì‹œí‚¨ë‹¤.
  */
 idBool mmtSessionManager::existClientAppInfoType( mmcClientAppInfoType aType )
 {
@@ -4241,12 +4241,12 @@ idBool mmtSessionManager::existClientAppInfoType( mmcClientAppInfoType aType )
 /**
  * PROJ-2626 Snapshot Export
  *
- * ÇöÀç Á¢¼ÓµÈ ¼¼¼ÇÁß¿¡  Æ¯Á¤ ClientAppInfo TypeÀÇ ¼¼¼ÇÀ» ²÷´Â´Ù.
+ * í˜„ì¬ ì ‘ì†ëœ ì„¸ì…˜ì¤‘ì—  íŠ¹ì • ClientAppInfo Typeì˜ ì„¸ì…˜ì„ ëŠëŠ”ë‹¤.
  *
- * 1. alter database end snpashot ±¸¹®ÀÌ ½ÇÇà½Ã ÇöÁ¦ Á¢¼ÓµÈ iloader ¼¼¼ÇÀ»
- * ²÷´Â´Ù.
- * 2. snapshot thread¿¡¼­ memory / disk undo threshold °¡ ³Ñ¾î¼­ snapshotÀ»
- * Á¾·áÇØ¾ßÇÒ °æ¿ì ÇöÀç Á¢¼ÓµÈ ¸ğµç iloader SessionÀ» ²÷´Â´Ù.
+ * 1. alter database end snpashot êµ¬ë¬¸ì´ ì‹¤í–‰ì‹œ í˜„ì œ ì ‘ì†ëœ iloader ì„¸ì…˜ì„
+ * ëŠëŠ”ë‹¤.
+ * 2. snapshot threadì—ì„œ memory / disk undo threshold ê°€ ë„˜ì–´ì„œ snapshotì„
+ * ì¢…ë£Œí•´ì•¼í•  ê²½ìš° í˜„ì¬ ì ‘ì†ëœ ëª¨ë“  iloader Sessionì„ ëŠëŠ”ë‹¤.
  */
 void mmtSessionManager::terminateAllClientAppInoType( mmcClientAppInfoType aType )
 {
@@ -4279,8 +4279,8 @@ void mmtSessionManager::terminateAllClientAppInoType( mmcClientAppInfoType aType
                     /* Nothing to do */
                 }
                 //PROJ-1677 DEQUEUE
-                //fix BUG-24362 dequeue ´ë±â ¼¼¼ÇÀÌ closeµÉ¶§ , sessionÀÇ queue ¼³Á¤¿¡¼­
-                // µ¿½Ã¼º¿¡ ¹®Á¦°¡ ÀÖÀ½.
+                //fix BUG-24362 dequeue ëŒ€ê¸° ì„¸ì…˜ì´ closeë ë•Œ , sessionì˜ queue ì„¤ì •ì—ì„œ
+                // ë™ì‹œì„±ì— ë¬¸ì œê°€ ìˆìŒ.
                 wakeupEnqueWaitIfNessary(sTask, sSession);
 
                 mInfo.mTerminatedCount++;

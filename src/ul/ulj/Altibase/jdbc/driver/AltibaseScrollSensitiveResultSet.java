@@ -82,7 +82,7 @@ final class AltibaseScrollSensitiveResultSet extends AltibaseScrollableResultSet
         {
             if (mRowFetchStmt.getFetchSize() == aFetchSize)
             {
-                // ÀÌ¹Ì ¿øÇÏ´Â¹Ù´ë·Î µÇ¾îÀÖÀ¸¹Ç·Î ´Ù½Ã ÇÒ ÇÊ¿ä ¾ø´Ù.
+                // ì´ë¯¸ ì›í•˜ëŠ”ë°”ëŒ€ë¡œ ë˜ì–´ìˆìœ¼ë¯€ë¡œ ë‹¤ì‹œ í•  í•„ìš” ì—†ë‹¤.
                 return;
             }
             else
@@ -112,13 +112,13 @@ final class AltibaseScrollSensitiveResultSet extends AltibaseScrollableResultSet
 
         if (mKeySet.isBeforeFirst() || mKeySet.isAfterLast())
         {
-            // ´ÙÀ½¿¡ ¾îµğ·Î °¥Áö ¾Ë ¼ö ¾øÀ¸¹Ç·Î, ±×³É ³Ñ¾î°¡´Â°Ô ³´´Ù.
+            // ë‹¤ìŒì— ì–´ë””ë¡œ ê°ˆì§€ ì•Œ ìˆ˜ ì—†ìœ¼ë¯€ë¡œ, ê·¸ëƒ¥ ë„˜ì–´ê°€ëŠ”ê²Œ ë‚«ë‹¤.
             return;
         }
 
-        // »õ Ä¿¼­ À§Ä¡°¡ ¾ÕÀÌ³Ä µÚ³Ä¿¡ µû¶ó¼­ ´ÙÀ½ Áß ÇÏ³ª¸¦ ¼±ÅÃ
-        // - ¾Õ: aAbsolutePos - FETCH_SIZE ~ aAbsolutePos
-        // - µÚ: aAbsolutePos ~ aAbsolutePos + FETCH_SIZE
+        // ìƒˆ ì»¤ì„œ ìœ„ì¹˜ê°€ ì•ì´ëƒ ë’¤ëƒì— ë”°ë¼ì„œ ë‹¤ìŒ ì¤‘ í•˜ë‚˜ë¥¼ ì„ íƒ
+        // - ì•: aAbsolutePos - FETCH_SIZE ~ aAbsolutePos
+        // - ë’¤: aAbsolutePos ~ aAbsolutePos + FETCH_SIZE
         int sNewPosition = mKeySet.getRow();
         if (sNewPosition < mLastFetchStartIndex)
         {
@@ -129,7 +129,7 @@ final class AltibaseScrollSensitiveResultSet extends AltibaseScrollableResultSet
             fetchRowSet(sNewPosition);
         }
 
-        // RowSet¿¡ ¾øÀ¸¸é HoleÀÌ´Ù.
+        // RowSetì— ì—†ìœ¼ë©´ Holeì´ë‹¤.
         long sPRowID = mKeySet.getLong(AltiSqlProcessor.KEY_SET_ROWID_COLUMN_INDEX);
         mRowDeleted = !mRowSet.absoluteByProwID(sPRowID);
     }
@@ -149,7 +149,7 @@ final class AltibaseScrollSensitiveResultSet extends AltibaseScrollableResultSet
         int sValidRowCount = 0;
         for (int i = 1; i <= mFetchSize; i++)
         {
-            // TODO BUGBUG rowset statement¸¦ ´Ù½Ã »ı¼ºÇÏ´Â°Ô ÁÁÀ»Áö °í¹ÎÇØº¼ °Í. °Ü·¹´Ô ¾Ë°í¸®Áò Âü°í.
+            // TODO BUGBUG rowset statementë¥¼ ë‹¤ì‹œ ìƒì„±í•˜ëŠ”ê²Œ ì¢‹ì„ì§€ ê³ ë¯¼í•´ë³¼ ê²ƒ. ê²¨ë ˆë‹˜ ì•Œê³ ë¦¬ì¦˜ ì°¸ê³ .
             if (sRow)
             {
                 mRowFetchStmt.setLong(i, mKeySet.getLong(AltiSqlProcessor.KEY_SET_ROWID_COLUMN_INDEX));
@@ -161,7 +161,7 @@ final class AltibaseScrollSensitiveResultSet extends AltibaseScrollableResultSet
             }
             sRow = mKeySet.next();
         }
-        // ¹üÀ§ È®ÀÎÀ» ÇÏ°í ¼öÇàÇÏ¹Ç·Î, Àû¾îµµ 1°³ ÀÌ»óÀº ÀÖ´Ù.
+        // ë²”ìœ„ í™•ì¸ì„ í•˜ê³  ìˆ˜í–‰í•˜ë¯€ë¡œ, ì ì–´ë„ 1ê°œ ì´ìƒì€ ìˆë‹¤.
         if (sValidRowCount == 0) 
         {
             Error.throwInternalError(ErrorDef.INTERNAL_DATA_INTEGRITY_BROKEN);
@@ -262,7 +262,7 @@ final class AltibaseScrollSensitiveResultSet extends AltibaseScrollableResultSet
             Error.throwSQLException(ErrorDef.CURSOR_AT_AFTER_LAST);
         }
 
-        // °­Á¦ ¾÷µ¥ÀÌÆ®¸¦ À§ÇØ °»½Å
+        // ê°•ì œ ì—…ë°ì´íŠ¸ë¥¼ ìœ„í•´ ê°±ì‹ 
         mLastFetchStartIndex = Integer.MAX_VALUE;
 
         checkAndRefreshRowSetData();
@@ -280,9 +280,9 @@ final class AltibaseScrollSensitiveResultSet extends AltibaseScrollableResultSet
 
         if (aRows == 0)
         {
-            // ÀÏ¹İÀûÀ¸·Î fetch count°¡ 0ÀÌ¸é Åë½Å¹öÆÛ°¡ Çã¶ôÇÏ´Â ¸¸Å­ °¡Á®¿ÀÁö¸¸,
-            // scrollable resultsetÀÇ rowsetÀ» °¡Á®¿Ã ¶§´Â ±×·¸°Ô ÇÒ ¼ö°¡ ¾ø±â ¶§¹®¿¡
-            // ÀÓÀÇ·Î ROWSET_FETCH_SIZE¸¦ Á¤ÇØ¼­ ±×¸¸Å­¸¸ °¡Á®¿Â´Ù.
+            // ì¼ë°˜ì ìœ¼ë¡œ fetch countê°€ 0ì´ë©´ í†µì‹ ë²„í¼ê°€ í—ˆë½í•˜ëŠ” ë§Œí¼ ê°€ì ¸ì˜¤ì§€ë§Œ,
+            // scrollable resultsetì˜ rowsetì„ ê°€ì ¸ì˜¬ ë•ŒëŠ” ê·¸ë ‡ê²Œ í•  ìˆ˜ê°€ ì—†ê¸° ë•Œë¬¸ì—
+            // ì„ì˜ë¡œ ROWSET_FETCH_SIZEë¥¼ ì •í•´ì„œ ê·¸ë§Œí¼ë§Œ ê°€ì ¸ì˜¨ë‹¤.
             aRows = DEFAULT_ROWSET_FETCH_SIZE;
         }
 

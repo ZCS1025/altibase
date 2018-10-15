@@ -28,7 +28,7 @@ typedef struct ulnLobBuffer ulnLobBuffer;
  * ulnLobBuffer
  * ======================================
  *
- * gUlnLobBufferOp º¯¼ö¿¡ ulnLobBufferOp ÀÇ ÇÔ¼öµéÀÌ Á¤ÀÇµÇ¾î ÀÖ´Ù.
+ * gUlnLobBufferOp ë³€ìˆ˜ì— ulnLobBufferOp ì˜ í•¨ìˆ˜ë“¤ì´ ì •ì˜ë˜ì–´ ìˆë‹¤.
  */
 
 typedef struct ulnLobBufferFile
@@ -45,7 +45,7 @@ typedef struct ulnLobBufferMemory
 {
     acp_uint8_t  *mBuffer;
     acp_uint32_t  mBufferSize;
-    acp_uint32_t  mCurrentOffset;    /* ´ÙÀ½¹ø¿¡ ÀĞ°Å³ª ¾µ offset. ¹öÆÛÀÇ ½ÃÀÛºÎÅÍ °è»êÇÔ */
+    acp_uint32_t  mCurrentOffset;    /* ë‹¤ìŒë²ˆì— ì½ê±°ë‚˜ ì“¸ offset. ë²„í¼ì˜ ì‹œì‘ë¶€í„° ê³„ì‚°í•¨ */
 } ulnLobBufferMemory;
 
 typedef ACI_RC ulnLobBufferInitializeFunc(ulnLobBuffer *aLob,
@@ -81,7 +81,7 @@ typedef struct ulnLobBufferOp
 
 typedef enum
 {
-    ULN_LOB_BUFFER_TYPE_FILE = 1,   /* ÀÏºÎ·¯ 1 ºÎÅÍ ½ÃÀÛÇÔ */
+    ULN_LOB_BUFFER_TYPE_FILE = 1,   /* ì¼ë¶€ëŸ¬ 1 ë¶€í„° ì‹œì‘í•¨ */
     ULN_LOB_BUFFER_TYPE_CHAR,
     ULN_LOB_BUFFER_TYPE_WCHAR,
     ULN_LOB_BUFFER_TYPE_BINARY,
@@ -109,19 +109,19 @@ struct ulnLobBuffer
  * ulnLob
  * ======================================
  *
- * gUlnLobOp º¯¼ö¿¡ ulnLobOp ÀÇ ÇÔ¼öµéÀÌ Á¤ÀÇµÇ¾î ÀÖ´Ù.
+ * gUlnLobOp ë³€ìˆ˜ì— ulnLobOp ì˜ í•¨ìˆ˜ë“¤ì´ ì •ì˜ë˜ì–´ ìˆë‹¤.
  */
 
 typedef enum
 {
-    ULN_LOB_ST_INITIALIZED = 1,     /* ÀÏºÎ·¯ 1 ºÎÅÍ ½ÃÀÛÇÔ */
+    ULN_LOB_ST_INITIALIZED = 1,     /* ì¼ë¶€ëŸ¬ 1 ë¶€í„° ì‹œì‘í•¨ */
     ULN_LOB_ST_LOCATOR,
     ULN_LOB_ST_OPENED
 } ulnLobState;
 
 typedef enum
 {
-    ULN_LOB_TYPE_BLOB = 1,      /* ÀÏºÎ·¯ 1 ºÎÅÍ ½ÃÀÛ */
+    ULN_LOB_TYPE_BLOB = 1,      /* ì¼ë¶€ëŸ¬ 1 ë¶€í„° ì‹œì‘ */
     ULN_LOB_TYPE_CLOB,
     ULN_LOB_TYPE_MAX
 } ulnLobType;
@@ -192,9 +192,9 @@ typedef struct ulnLobOp
 #ifdef COMPILE_64BIT
 typedef acp_uint64_t ulnLobLocator;
 #else
-/* 32 bit  GCC ÇÃ·§Æû¿¡¼­ structure¾ÈÀÇ
-   acp_uint64_tÀÌ  4byte alignÀ¸·ÎÃ³¸®µÇ´Â case °¡ÀÖ¾î
-   ´ÙÀ½ °°ÀÌ 4byteÅ©±â UInt type 2°³¸¦ constainÇÏ´Â structure¸¦ ¼±¾ğÇÑ´Ù */
+/* 32 bit  GCC í”Œë«í¼ì—ì„œ structureì•ˆì˜
+   acp_uint64_tì´  4byte alignìœ¼ë¡œì²˜ë¦¬ë˜ëŠ” case ê°€ìˆì–´
+   ë‹¤ìŒ ê°™ì´ 4byteí¬ê¸° UInt type 2ê°œë¥¼ constainí•˜ëŠ” structureë¥¼ ì„ ì–¸í•œë‹¤ */
 typedef struct ulnLobLocator
 {
     acp_uint32_t mHigh;
@@ -204,14 +204,14 @@ typedef struct ulnLobLocator
 
 
 #ifdef COMPILE_64BIT
-/* a value´Â  ULongÀÌ´Ù. . */
+/* a valueëŠ”  ULongì´ë‹¤. . */
 #define ULN_SET_LOB_LOCATOR(aDest,aSrcVal) *((ulnLobLocator*)(aDest)) = ((ulnLobLocator)(aSrcVal));
 #define ULN_GET_LOB_LOCATOR_VALUE(aDestVal,aSrc) *(acp_uint64_t*)aDestVal = *((acp_uint64_t*)(aSrc));
 
 
 #else
 /* BUG-21932  The ulnLob structure should consider 4 byte alignment for 32bit-GCC
-   ULong value ¸¦ ulnLob structure ¿¡ copyÇÑ´Ù.
+   ULong value ë¥¼ ulnLob structure ì— copyí•œë‹¤.
  */
 #define ULN_SET_LOB_LOCATOR(aDest,aSrcVal) { \
         ((ulnLobLocator*)(aDest))->mHigh =  (((aSrcVal) &  ACP_UINT64_LITERAL(0xffffffff00000000)) >> 32)  ; \
@@ -219,7 +219,7 @@ typedef struct ulnLobLocator
 }
 
 /* BUG-21932  The ulnLob structure should consider 4 byte alignment for 32bit-GCC
-   ulnLob structure¿¡¼­ ULong value¸¦  ÃßÃâÇÑ´Ù.
+   ulnLob structureì—ì„œ ULong valueë¥¼  ì¶”ì¶œí•œë‹¤.
  */
 #define ULN_GET_LOB_LOCATOR_VALUE(aDestVal,aSrc) \
     *(acp_uint64_t*)aDestVal =   ((((acp_uint64_t)(((ulnLobLocator*)(aSrc))->mHigh)) << 32)  | (acp_uint64_t)(((ulnLobLocator*)(aSrc))->mLow))
@@ -231,28 +231,28 @@ struct ulnLob
     ulnLobType       mType;
     ulnLobState      mState;
     /* BUG-21932  The ulnLob structure should consider 4 byte alignment for 32bit-GCC
-       ULong´ë½Å ulnLobLocator ¶õ Abstract typeÀ» »ç¿ëÇÑ´Ù
+       ULongëŒ€ì‹  ulnLobLocator ë€ Abstract typeì„ ì‚¬ìš©í•œë‹¤
      */
     ulnLobLocator    mLocatorID;        /* LOB Locator ID */
-    acp_uint32_t     mSize;             /* Lob ÀÇ »çÀÌÁî. Open ½Ã °áÁ¤µÇ¾î¼­,
-                                           Append ÇÏ°Å³ª ÇÏ¸é °»½ÅµÊ. */
+    acp_uint32_t     mSize;             /* Lob ì˜ ì‚¬ì´ì¦ˆ. Open ì‹œ ê²°ì •ë˜ì–´ì„œ,
+                                           Append í•˜ê±°ë‚˜ í•˜ë©´ ê°±ì‹ ë¨. */
 
-    acp_uint32_t     mSizeRetrieved;    /* ¼­¹ö·ÎºÎÅÍ ÀĞ¾î¿Â µ¥ÀÌÅÍ ¾ç */
+    acp_uint32_t     mSizeRetrieved;    /* ì„œë²„ë¡œë¶€í„° ì½ì–´ì˜¨ ë°ì´í„° ì–‘ */
 
     ulnLobBuffer    *mBuffer;
 
     ulnLobOp        *mOp;
 
     /* PROJ-2047 Strengthening LOB - LOBCACHE */
-    acp_uint8_t     *mData;             /* Cache¿¡¼­ LOB Data¸¦ Æ÷ÀÎÆ® */
+    acp_uint8_t     *mData;             /* Cacheì—ì„œ LOB Dataë¥¼ í¬ì¸íŠ¸ */
 
     /* PROJ-2047 Strengthening LOB - Partial Converting */
-    acp_uint32_t     mGetSize;          /* ¼­¹ö¿¡ ¿äÃ»ÇÑ µ¥ÀÌÅÍ ¾ç */
+    acp_uint32_t     mGetSize;          /* ì„œë²„ì— ìš”ì²­í•œ ë°ì´í„° ì–‘ */
 };
 
 /*
  * =====================================
- * ÃÊ±âÈ­ ÇÔ¼ö
+ * ì´ˆê¸°í™” í•¨ìˆ˜
  * =====================================
  */
 
@@ -267,7 +267,7 @@ ACI_RC ulnLobBufferInitialize(ulnLobBuffer *aLobBuffer,
 
 /*
  * ======================================
- * LOB callback ÇÔ¼ö
+ * LOB callback í•¨ìˆ˜
  * ======================================
  */
 
@@ -310,7 +310,7 @@ ACI_RC ulnCallbackLobTrimResult(cmiProtocolContext *aProtocolContext,
 
 /*
  * ========================================
- * ¿ÜºÎ·Î export µÇ´Â ÇÔ¼öµé
+ * ì™¸ë¶€ë¡œ export ë˜ëŠ” í•¨ìˆ˜ë“¤
  * ========================================
  */
 

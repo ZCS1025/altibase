@@ -20,8 +20,8 @@
  *
  * PROJ-2415 Grouping Sets Clause
  * 
- * Grouping Sets°¡ »ı¼º ÇÒ Sub GroupÀ» °¢°¢ÀÇ Query SetÀ¸·Î ¸¸µé°í
- * ÀÌ¸¦ UNION ALL ·Î º´ÇÕÇÏ¿© ³í¸®ÀûÀ¸·Î µ¿µîÇÑ ParseTree¸¦ »ı¼ºÇÑ´Ù.
+ * Grouping Setsê°€ ìƒì„± í•  Sub Groupì„ ê°ê°ì˜ Query Setìœ¼ë¡œ ë§Œë“¤ê³ 
+ * ì´ë¥¼ UNION ALL ë¡œ ë³‘í•©í•˜ì—¬ ë…¼ë¦¬ì ìœ¼ë¡œ ë™ë“±í•œ ParseTreeë¥¼ ìƒì„±í•œë‹¤.
  * 
  * SELECT /+Hint+/ TOP 3 i1, i2, i3 x, SUM( i4 )
  *   INTO :a, :b, :c, :d
@@ -32,29 +32,29 @@
  * 
  * ========================= The Above Query Would Be Transformed As Below ==========================
  *        
- * SELECT /+Hint+/ TOP 3 *  -> INTO Clause ¿Í TOP, ORDER BY¸¦ Ã³¸®ÇÏ±â À§ÇØ ¿øº» Query SetÀ» Simple View ÇüÅÂ·Î º¯ÇüÇÑ´Ù.
+ * SELECT /+Hint+/ TOP 3 *  -> INTO Clause ì™€ TOP, ORDER BYë¥¼ ì²˜ë¦¬í•˜ê¸° ìœ„í•´ ì›ë³¸ Query Setì„ Simple View í˜•íƒœë¡œ ë³€í˜•í•œë‹¤.
  *   INTO :a, :b, :c, :d
- *   FROM (                 -> GROUPING SETS¸¦ Æ÷ÇÔÇÑ QuerySetÀ» °¢ GROUP º°·Î º¹Á¦&º¯ÇüµÈ Query Sets¿¡ ´ëÇÑ
- *                             UNION ALL Set Query·Î º¯ÇüÇÏ¿© Simple View ÇüÅÂ·Î º¯ÇüµÈ ¿øº» Query SetÀÇ FROM¿¡ Inline View·Î ¿¬°á
+ *   FROM (                 -> GROUPING SETSë¥¼ í¬í•¨í•œ QuerySetì„ ê° GROUP ë³„ë¡œ ë³µì œ&ë³€í˜•ëœ Query Setsì— ëŒ€í•œ
+ *                             UNION ALL Set Queryë¡œ ë³€í˜•í•˜ì—¬ Simple View í˜•íƒœë¡œ ë³€í˜•ëœ ì›ë³¸ Query Setì˜ FROMì— Inline Viewë¡œ ì—°ê²°
  *                             
  *            SELECT i1, NULL, NULL x, SUM( i4 )         
- *              FROM ( SELECT * FROM t1 WHERE i1 >= 0 ) -> SCAN COUNT¸¦ ÁÙÀÌ±â À§ÇØ SELECT, FROM, WHERE, HIERARCHY¸¦
- *            GROUP BY i1                                  InlineView·Î º¯Çü
+ *              FROM ( SELECT * FROM t1 WHERE i1 >= 0 ) -> SCAN COUNTë¥¼ ì¤„ì´ê¸° ìœ„í•´ SELECT, FROM, WHERE, HIERARCHYë¥¼
+ *            GROUP BY i1                                  InlineViewë¡œ ë³€í˜•
  *            HAVING GROUPING_ID( i1, NULL, NULL ) >= 0;
  *                       UNION ALL
  *            SELECT NULL, i2, NULL x, SUM( i4 )             
- *              FROM ( SELECT * FROM t1 WHERE i1 >= 0 ) -> SameViewRef¸¦ ÅëÇØ »óÀ§ÀÇ View¸¦ ¹Ù¶óº¸µµ·Ï ¼³Á¤
+ *              FROM ( SELECT * FROM t1 WHERE i1 >= 0 ) -> SameViewRefë¥¼ í†µí•´ ìƒìœ„ì˜ Viewë¥¼ ë°”ë¼ë³´ë„ë¡ ì„¤ì •
  *            GROUP BY i2                              
  *            HAVING GROUPING_ID( NULL, i2, NULL ) >= 0;
  *                       UNION ALL
  *            SELECT NULL, NULL, i3 x, SUM( i4 )
- *              FROM ( SELECT * FROM t1 WHERE i1 >= 0 ) -> SameViewRef¸¦ ÅëÇØ »óÀ§ÀÇ View¸¦ ¹Ù¶óº¸µµ·Ï ¼³Á¤
+ *              FROM ( SELECT * FROM t1 WHERE i1 >= 0 ) -> SameViewRefë¥¼ í†µí•´ ìƒìœ„ì˜ Viewë¥¼ ë°”ë¼ë³´ë„ë¡ ì„¤ì •
  *            GROUP BY i3                               
  *            HAVING GROUPING_ID( NULL, NULL, i3 ) >= 0;
  *            
  *        );
  *
- * * GROUPING SETSÀÇ ÀÎÀÚ°¡ ÇÏ³ª ÀÏ °æ¿ì GROUP BY ¿Í µ¿ÀÏÇÏ±â ¶§¹®¿¡ GROUPING SETS ¸¸ Á¦°ÅÇÑ´Ù.
+ * * GROUPING SETSì˜ ì¸ìê°€ í•˜ë‚˜ ì¼ ê²½ìš° GROUP BY ì™€ ë™ì¼í•˜ê¸° ë•Œë¬¸ì— GROUPING SETS ë§Œ ì œê±°í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -78,8 +78,8 @@ IDE_RC qmvGBGSTransform::searchGroupingSets( qmsQuerySet       * aQuerySet,
 /***********************************************************************
  *
  * Description :
- *    GROUP BY Àı¿¡¼­ GROUPING SETS TypeÀÇ Group°ú
- *    ±× GroupÀ» Next·Î °¡Áö´Â Previous GroupÀ» ¸®ÅÏÇÑ´Ù. 
+ *    GROUP BY ì ˆì—ì„œ GROUPING SETS Typeì˜ Groupê³¼
+ *    ê·¸ Groupì„ Nextë¡œ ê°€ì§€ëŠ” Previous Groupì„ ë¦¬í„´í•œë‹¤. 
  *
  * Implementation :
  *
@@ -158,8 +158,8 @@ IDE_RC qmvGBGSTransform::copyPartialQuerySet( qcStatement          * aStatement,
 /***********************************************************************
  *
  * Description :
- *     Grouping SetsÀÇ Arguments ¼ö ¸¸Å­ QuerySetÀ» »ı¼ºÇÏ¿©
- *     List( qmvGBGSQuerySetList )ÇüÅÂ·Î ¿¬°áÇÑ´Ù.
+ *     Grouping Setsì˜ Arguments ìˆ˜ ë§Œí¼ QuerySetì„ ìƒì„±í•˜ì—¬
+ *     List( qmvGBGSQuerySetList )í˜•íƒœë¡œ ì—°ê²°í•œë‹¤.
  *
  * Implementation :
  *
@@ -177,8 +177,8 @@ IDE_RC qmvGBGSTransform::copyPartialQuerySet( qcStatement          * aStatement,
 
     QC_SET_STATEMENT( ( &sStatement ), aStatement, NULL );
 
-    // SrcQuerySetÀÇ Query Statement¿¡ ¼­ SELECT~GROUP~(HAVING)±îÁöÀÇ
-    // Partial StatementÀÇ Offset°ú Size¸¦ ±¸ÇÑ´Ù.    
+    // SrcQuerySetì˜ Query Statementì— ì„œ SELECT~GROUP~(HAVING)ê¹Œì§€ì˜
+    // Partial Statementì˜ Offsetê³¼ Sizeë¥¼ êµ¬í•œë‹¤.    
     IDE_TEST( getPosForPartialQuerySet( aSrcQuerySet,
                                         & sStartOffset,
                                         & sSize )
@@ -211,7 +211,7 @@ IDE_RC qmvGBGSTransform::copyPartialQuerySet( qcStatement          * aStatement,
             }
             else
             {
-                // Compile Warning ¶§¹®¿¡ Ãß°¡
+                // Compile Warning ë•Œë¬¸ì— ì¶”ê°€
                 IDE_RAISE( ERR_INVALID_POINTER );
             }            
         }
@@ -219,7 +219,7 @@ IDE_RC qmvGBGSTransform::copyPartialQuerySet( qcStatement          * aStatement,
         sStatement.myPlan->stmtText = aSrcQuerySet->startPos.stmtText;
         sStatement.myPlan->stmtTextLen = idlOS::strlen( aSrcQuerySet->startPos.stmtText );
         
-        // SrcQuerySetÀÇ Statement Text¸¦ PartialParsingÇØ¼­ parseTree¸¦ º¹Á¦ÇÑ´Ù.    
+        // SrcQuerySetì˜ Statement Textë¥¼ PartialParsingí•´ì„œ parseTreeë¥¼ ë³µì œí•œë‹¤.    
         IDE_TEST( qcpManager::parsePartialForQuerySet( &sStatement,
                                                        aSrcQuerySet->startPos.stmtText,
                                                        sStartOffset,
@@ -233,7 +233,7 @@ IDE_RC qmvGBGSTransform::copyPartialQuerySet( qcStatement          * aStatement,
         sSFWGH->flag &= ~QMV_SFWGH_GBGS_TRANSFORM_MASK;
         sSFWGH->flag |= QMV_SFWGH_GBGS_TRANSFORM_BOTTOM;
 
-        // Bottom View´Â Simple View MergingÇÏÁö ¾Ê´Â´Ù.
+        // Bottom ViewëŠ” Simple View Mergingí•˜ì§€ ì•ŠëŠ”ë‹¤.
         for ( sFrom  = sQuerySetList->querySet->SFWGH->from;
               sFrom != NULL;
               sFrom  = sFrom->next )
@@ -283,9 +283,9 @@ IDE_RC qmvGBGSTransform::getPosForPartialQuerySet( qmsQuerySet * aQuerySet,
 /***********************************************************************
  *
  * Description :
- *     Query Set¿¡¼­ SELECT - FROM - WHERE - HIERARCHY - GROUPBY - (HAVING)ÀÇ
- *     ºÎºĞ Statement¸¦ ParsingÇÏ±â À§ÇØ SELECTÀÇ ½ÃÀÛ Offset°ú
- *     GROUPBY( HAVINGÀÌ ÀÖÀ»°æ¿ì HAVING )ÀÇ LastNode Offset+Size¸¦ ±¸ÇÑ´Ù.
+ *     Query Setì—ì„œ SELECT - FROM - WHERE - HIERARCHY - GROUPBY - (HAVING)ì˜
+ *     ë¶€ë¶„ Statementë¥¼ Parsingí•˜ê¸° ìœ„í•´ SELECTì˜ ì‹œì‘ Offsetê³¼
+ *     GROUPBY( HAVINGì´ ìˆì„ê²½ìš° HAVING )ì˜ LastNode Offset+Sizeë¥¼ êµ¬í•œë‹¤.
  *
  * Implementation :
  * 
@@ -311,13 +311,13 @@ IDE_RC qmvGBGSTransform::getPosForPartialQuerySet( qmsQuerySet * aQuerySet,
               sGroup->next != NULL;
               sGroup = sGroup->next )
         {
-            // GROUP BYÀÇ ¸¶Áö¸· Element¸¦ ±¸ÇÑ´Ù.
+            // GROUP BYì˜ ë§ˆì§€ë§‰ Elementë¥¼ êµ¬í•œë‹¤.
         };
 
         sEndOffset = sGroup->position.offset + sGroup->position.size;
     }
 
-    // µÚÀÇ 1 Byte¸¦ È®ÀÎÇÏ¿© Double QuotationÀÌ ÀÖÀ¸¸é Æ÷ÇÔÇÑ´Ù.
+    // ë’¤ì˜ 1 Byteë¥¼ í™•ì¸í•˜ì—¬ Double Quotationì´ ìˆìœ¼ë©´ í¬í•¨í•œë‹¤.
     if ( *( aQuerySet->startPos.stmtText + sEndOffset ) == '"' )
     {
         sEndOffset++;
@@ -356,8 +356,8 @@ IDE_RC qmvGBGSTransform::getPosForOrderBy( qmsSortColumns * aOrderBy,
 /***********************************************************************
  *
  * Description :
- *     ORDER BY ÀÇ sortColumnÀ» Partial Parsing ÇÏ±â À§ÇØ
- *     First NodeÀÇ Offset°ú Last Node Offset + Size¸¦ ±¸ÇÑ´Ù.
+ *     ORDER BY ì˜ sortColumnì„ Partial Parsing í•˜ê¸° ìœ„í•´
+ *     First Nodeì˜ Offsetê³¼ Last Node Offset + Sizeë¥¼ êµ¬í•œë‹¤.
  *
  * Implementation :
  *
@@ -371,7 +371,7 @@ IDE_RC qmvGBGSTransform::getPosForOrderBy( qmsSortColumns * aOrderBy,
     // Get Start Offset of The First Node Of ORDER BY    
     sStartOffset = sOrderBy->sortColumn->position.offset;
 
-    // ¾ÕÀÇ 1 Byte¸¦ È®ÀÎÇÏ¿© Double QuotationÀÌ ÀÖÀ¸¸é Æ÷ÇÔÇÑ´Ù.
+    // ì•ì˜ 1 Byteë¥¼ í™•ì¸í•˜ì—¬ Double Quotationì´ ìˆìœ¼ë©´ í¬í•¨í•œë‹¤.
     if ( sStartOffset > 0 )
     {
         if ( *( sOrderBy->sortColumn->position.stmtText + sStartOffset - 1 ) == '"' )
@@ -390,14 +390,14 @@ IDE_RC qmvGBGSTransform::getPosForOrderBy( qmsSortColumns * aOrderBy,
 
     for ( ; sOrderBy->next != NULL; sOrderBy  = sOrderBy->next )
     {
-        // OrderByÀÇ ¸¶Áö¸· Node¸¦ ±¸ÇÑ´Ù.
+        // OrderByì˜ ë§ˆì§€ë§‰ Nodeë¥¼ êµ¬í•œë‹¤.
     };
 
     // Get End Offset of The Last Node Of ORDER BY
     sEndOffset = sOrderBy->sortColumn->position.offset +
         sOrderBy->sortColumn->position.size;
     
-    // µÚÀÇ 1 Byte¸¦ È®ÀÎÇÏ¿© Double QuotationÀÌ ÀÖÀ¸¸é Æ÷ÇÔÇÑ´Ù.
+    // ë’¤ì˜ 1 Byteë¥¼ í™•ì¸í•˜ì—¬ Double Quotationì´ ìˆìœ¼ë©´ í¬í•¨í•œë‹¤.
     if ( *( sOrderBy->sortColumn->position.stmtText + sEndOffset ) == '"' )
     {
         sEndOffset++;
@@ -435,9 +435,9 @@ IDE_RC qmvGBGSTransform::modifyGroupBy( qcStatement         * aStatement,
 /***********************************************************************
  *
  * Description :
- *     GROUP BY Àı¿¡¼­ QMS_GROUPBY_GROUPING_SETS TypeÀÇ Group Element ¿Í
- *     ±× Grouping Sets Type Element ¸¦ Next·Î °¡Áö´Â Prev Element¸¦ Ã£°í
- *     Grouping Sets Clause¸¦ Group By Clause·Î º¯ÇüÇÑ´Ù.
+ *     GROUP BY ì ˆì—ì„œ QMS_GROUPBY_GROUPING_SETS Typeì˜ Group Element ì™€
+ *     ê·¸ Grouping Sets Type Element ë¥¼ Nextë¡œ ê°€ì§€ëŠ” Prev Elementë¥¼ ì°¾ê³ 
+ *     Grouping Sets Clauseë¥¼ Group By Clauseë¡œ ë³€í˜•í•œë‹¤.
  *     
  * Implementation :
  *
@@ -453,11 +453,11 @@ IDE_RC qmvGBGSTransform::modifyGroupBy( qcStatement         * aStatement,
           sQuerySetList != NULL;
           sQuerySetList  = sQuerySetList->next, sNullCheck++ )
     {
-        // Grouping Sets TypeÀÇ Group Element¿Í Previous Group ElementÀÇ Æ÷ÀÎÅÍ¸¦ ¾ò´Â´Ù.   
+        // Grouping Sets Typeì˜ Group Elementì™€ Previous Group Elementì˜ í¬ì¸í„°ë¥¼ ì–»ëŠ”ë‹¤.   
         IDE_TEST( searchGroupingSets( sQuerySetList->querySet, &sGroup, &sPrevGroup )
                   != IDE_SUCCESS );
 
-        // GROUP BY ÀıÀ» º¯ÇüÇÑ´Ù.
+        // GROUP BY ì ˆì„ ë³€í˜•í•œë‹¤.
         if ( sGroup != NULL )
         {
             IDE_TEST( modifyGroupingSets( aStatement,
@@ -497,15 +497,15 @@ IDE_RC qmvGBGSTransform::modifyGroupingSets( qcStatement      * aStatement,
 /***********************************************************************
  *
  * Description :
- *     GROUP BYÀı¿¡¼­ Grouping sets¸¦ Á¦°ÅÇÏ°í, Grouping Sets ÀÇ ArgumentµéÀ»
- *     GroupingSets°¡ ÀÖ´ø ÀÚ¸®¿¡ ¿¬°áÇÑ´Ù.
+ *     GROUP BYì ˆì—ì„œ Grouping setsë¥¼ ì œê±°í•˜ê³ , Grouping Sets ì˜ Argumentë“¤ì„
+ *     GroupingSetsê°€ ìˆë˜ ìë¦¬ì— ì—°ê²°í•œë‹¤.
  *     
- *     Grouping setsÀÇ argumentsÁß ÀÚ½ÅÀÇ Query Set¿¡ ÇØ´çÇÏ´Â GroupÀÌ ¾Æ´Ï¸é,
- *     - QMS_GROUPBY_NORMAL TypeÀÏ °æ¿ì QMS_GROUPBY_NULL·Î º¯°æÇÑ´Ù.
- *     - QMS_GROUPBY_ROLLUP ¶Ç´Â QMS_GROUPBY_CUBE ÀÏ °æ¿ì ROLLUP/CUBE GroupÀ» Á¦°ÅÇÏ°í,
- *       ROLLUP/CUBEÀÇ ArgumentµéÀ» ROLLUP/CUBE°¡ ÀÖ¾ú´ø ÀÚ¸®¿¡ ¿¬°áÇÑ´Ù.  
+ *     Grouping setsì˜ argumentsì¤‘ ìì‹ ì˜ Query Setì— í•´ë‹¹í•˜ëŠ” Groupì´ ì•„ë‹ˆë©´,
+ *     - QMS_GROUPBY_NORMAL Typeì¼ ê²½ìš° QMS_GROUPBY_NULLë¡œ ë³€ê²½í•œë‹¤.
+ *     - QMS_GROUPBY_ROLLUP ë˜ëŠ” QMS_GROUPBY_CUBE ì¼ ê²½ìš° ROLLUP/CUBE Groupì„ ì œê±°í•˜ê³ ,
+ *       ROLLUP/CUBEì˜ Argumentë“¤ì„ ROLLUP/CUBEê°€ ìˆì—ˆë˜ ìë¦¬ì— ì—°ê²°í•œë‹¤.  
  *
- *     Grouping SetsÀÇ ÀÎÀÚ·Î ¿Ã ¼ö ÀÖ´Â Group TypeÀº ´ÙÀ½°ú °°´Ù.
+ *     Grouping Setsì˜ ì¸ìë¡œ ì˜¬ ìˆ˜ ìˆëŠ” Group Typeì€ ë‹¤ìŒê³¼ ê°™ë‹¤.
  *
  *     1) QMS_GROUPBY_NORMAL
  *                           1-1) Normal Group ( Normal Expression )
@@ -513,7 +513,7 @@ IDE_RC qmvGBGSTransform::modifyGroupingSets( qcStatement      * aStatement,
  *     2) QMS_GROUPBY_ROLLUP 
  *     3) QMS_GROUPBY_CUBE
  *
- *     ROLLUP°ú CUBEÀÇ ÀÎÀÚ·Î ¿Ã ¼ö ÀÖ´Â Group TypeÀº ´ÙÀ½°ú °°´Ù.
+ *     ROLLUPê³¼ CUBEì˜ ì¸ìë¡œ ì˜¬ ìˆ˜ ìˆëŠ” Group Typeì€ ë‹¤ìŒê³¼ ê°™ë‹¤.
  *
  *     1) QMS_GROUPBY_NORMAL
  *                           1-1) Normal Group ( Normal Expression )
@@ -523,8 +523,8 @@ IDE_RC qmvGBGSTransform::modifyGroupingSets( qcStatement      * aStatement,
  *     
  *     GROUP BY GROUPING SETS( i1, ROLLUP( i2, i3 ), ( i4, i5 ) ), i6
  *     
- *     À§ÀÇ Grouping Sets¸¦ Æ÷ÇÔÇÑ Query SetÀº ¾Æ·¡¿Í °°ÀÌ 3°³ÀÇ Query SetÀ¸·Î
- *     Transform µÈ´Ù.
+ *     ìœ„ì˜ Grouping Setsë¥¼ í¬í•¨í•œ Query Setì€ ì•„ë˜ì™€ ê°™ì´ 3ê°œì˜ Query Setìœ¼ë¡œ
+ *     Transform ëœë‹¤.
  *       
  *     QUERY SET 1 : GROUP BY i1, i2(NULL), i3(NULL), i4(NULL), i5(NULL), i6
  *     UNION ALL
@@ -532,7 +532,7 @@ IDE_RC qmvGBGSTransform::modifyGroupingSets( qcStatement      * aStatement,
  *     UNION ALL
  *     QUERY SET 3 : GROUP BY i1(NULL), i2(NULL), i3(NULL), i4, i5, i6
  *
- *     * (NULL) Àº QMS_GROUPBY_NULL TypeÀÇ Group Element¸¦ ÀÇ¹ÌÇÑ´Ù.
+ *     * (NULL) ì€ QMS_GROUPBY_NULL Typeì˜ Group Elementë¥¼ ì˜ë¯¸í•œë‹¤.
  *
  * Implementation :
  *
@@ -558,17 +558,17 @@ IDE_RC qmvGBGSTransform::modifyGroupingSets( qcStatement      * aStatement,
           sElement != NULL; 
           sElement  = sElement->next, sNullIndex++ )
     {
-        // º¹Á¦µÈ querySetList¿¡¼­ ÀÚ½ÅÀÇ querySet¼ø¹ø( aNullCheck )°ú
-        // Grouping Sets ArgumentÀÇ ¼ø¹ø(sNullIndex)ÀÌ °°Àº Group¸¸ À¯È¿ÇÏ´Ù.
+        // ë³µì œëœ querySetListì—ì„œ ìì‹ ì˜ querySetìˆœë²ˆ( aNullCheck )ê³¼
+        // Grouping Sets Argumentì˜ ìˆœë²ˆ(sNullIndex)ì´ ê°™ì€ Groupë§Œ ìœ íš¨í•˜ë‹¤.
         if ( aNullCheck == sNullIndex )
-        {   // À¯È¿ÇÑ GroupÀÏ °æ¿ì
+        {   // ìœ íš¨í•œ Groupì¼ ê²½ìš°
             
             if ( sElement->type == QMS_GROUPBY_NORMAL )
             {
                 if ( ( sElement->arithmeticOrList->node.lflag & MTC_NODE_OPERATOR_MASK ) ==
                      MTC_NODE_OPERATOR_LIST )
                 {
-                    // LIST ÀÏ °æ¿ì Ã³¸®
+                    // LIST ì¼ ê²½ìš° ì²˜ë¦¬
                     IDE_TEST( modifyList( aStatement,
                                           aSFWGH,
                                           &sPrev,
@@ -588,12 +588,12 @@ IDE_RC qmvGBGSTransform::modifyGroupingSets( qcStatement      * aStatement,
             }
         }
         else
-        {   // À¯È¿ÇÏÁö ¾ÊÀº GroupÀÏ °æ¿ì            
+        {   // ìœ íš¨í•˜ì§€ ì•Šì€ Groupì¼ ê²½ìš°            
             switch ( sElement->type )
             {
                 case QMS_GROUPBY_ROLLUP :
                 case QMS_GROUPBY_CUBE :
-                    // ROLLUP, CUBE ÀÏ °æ¿ì Ã³¸®
+                    // ROLLUP, CUBE ì¼ ê²½ìš° ì²˜ë¦¬
                     IDE_TEST( modifyRollupCube( aStatement,
                                                 aSFWGH,
                                                 &sPrev,
@@ -605,7 +605,7 @@ IDE_RC qmvGBGSTransform::modifyGroupingSets( qcStatement      * aStatement,
                     if ( ( sElement->arithmeticOrList->node.lflag & MTC_NODE_OPERATOR_MASK ) ==
                          MTC_NODE_OPERATOR_LIST )
                     {
-                        // LIST ÀÏ °æ¿ì Ã³¸®
+                        // LIST ì¼ ê²½ìš° ì²˜ë¦¬
                         IDE_TEST( modifyList( aStatement,
                                               aSFWGH,
                                               &sPrev,
@@ -664,9 +664,9 @@ IDE_RC qmvGBGSTransform::modifyList( qcStatement        * aStatement,
 /***********************************************************************
  *
  * Description :
- *     Grouping SetsÀÇ arguments·Î List ÇüÅÂ( Concatenated Group )°¡ ¿À°Å³ª
- *     Grouping SetsÀÇ argumentsÁß Rollup ¶Ç´Â Cube ¾È¿¡ List ÇüÅÂÀÇ Group Element°¡ ÀÖÀ» °æ¿ì
- *     LIST ¸¦ Á¦°ÅÇÏ°í º°µµÀÇ qmsConcatElement¸¦ »ı¼ºÇØ¼­ LIST°¡ ÀÖ´ø ÀÚ¸®¿¡ ¿¬°áÇÑ´Ù.
+ *     Grouping Setsì˜ argumentsë¡œ List í˜•íƒœ( Concatenated Group )ê°€ ì˜¤ê±°ë‚˜
+ *     Grouping Setsì˜ argumentsì¤‘ Rollup ë˜ëŠ” Cube ì•ˆì— List í˜•íƒœì˜ Group Elementê°€ ìˆì„ ê²½ìš°
+ *     LIST ë¥¼ ì œê±°í•˜ê³  ë³„ë„ì˜ qmsConcatElementë¥¼ ìƒì„±í•´ì„œ LISTê°€ ìˆë˜ ìë¦¬ì— ì—°ê²°í•œë‹¤.
  *
  *     GROUP BY GROUPING SETS( i1, ( i2, i3 ), ROLLUP( i4, ( i5, i6 ) ) )
  *
@@ -674,7 +674,7 @@ IDE_RC qmvGBGSTransform::modifyList( qcStatement        * aStatement,
  *     GROUP 2 :  i1(NULL), i2, i3, i4(NULL), i5(NULL), i6(NULL)
  *     GROUP 3 :  i1(NULL), i2(NULL), i3(NULL), ROLLUP( i4, ( i5, i6 ) )
  *
- *     * NULL Àº QMS_GROUPBY_NULL TypeÀÇ Group Element¸¦ ÀÇ¹ÌÇÑ´Ù.
+ *     * NULL ì€ QMS_GROUPBY_NULL Typeì˜ Group Elementë¥¼ ì˜ë¯¸í•œë‹¤.
  *
  * Implementation :
  *
@@ -689,7 +689,7 @@ IDE_RC qmvGBGSTransform::modifyList( qcStatement        * aStatement,
           sNode != NULL;
           sNode  = ( qtcNode* )sNode->node.next )
     {
-        // LIST¸¦ Á¦°ÅÇÏ°í, LISTÀÇ arguments¸¦ Group Element ·Î ¿¬°áÇÑ´Ù.
+        // LISTë¥¼ ì œê±°í•˜ê³ , LISTì˜ argumentsë¥¼ Group Element ë¡œ ì—°ê²°í•œë‹¤.
 
         // FIT TEST CODE
         IDU_FIT_POINT( "qmvGBGSTransform::modifyList::STRUCT_ALLOC::ERR_MEM",
@@ -715,10 +715,10 @@ IDE_RC qmvGBGSTransform::modifyList( qcStatement        * aStatement,
             *aPrev = ( *aPrev )->next;
         }
 
-        /* BUG-45143 partitioned table¿¡ ´ëÇÑ grouping set ÁúÀÇ ¼öÇà½Ã ¿À·ù
+        /* BUG-45143 partitioned tableì— ëŒ€í•œ grouping set ì§ˆì˜ ìˆ˜í–‰ì‹œ ì˜¤ë¥˜
          * group by groupings sets ( ( a, b ) ) --> group by a, b
-         * À§¿Í °°ÀÌ º¯È¯½Ã List¸¦ group by ±¸¹®À¸·Î º¯È¯½Ã  ListÀÇ a NodeÀÇ Next°¡ b
-         * ·Î ÁöÁ¤µÇ¾î ÀÖ´Âµ¥ group by ·Î ³ª´·°æ¿ì Next¸¦ ²÷¾î ÁÖ¾î¾ßÇÑ´Ù.
+         * ìœ„ì™€ ê°™ì´ ë³€í™˜ì‹œ Listë¥¼ group by êµ¬ë¬¸ìœ¼ë¡œ ë³€í™˜ì‹œ  Listì˜ a Nodeì˜ Nextê°€ b
+         * ë¡œ ì§€ì •ë˜ì–´ ìˆëŠ”ë° group by ë¡œ ë‚˜ë‰ ê²½ìš° Nextë¥¼ ëŠì–´ ì£¼ì–´ì•¼í•œë‹¤.
          */
         if ( sPrevNode != NULL )
         {
@@ -763,9 +763,9 @@ IDE_RC qmvGBGSTransform::modifyRollupCube( qcStatement       * aStatement,
 /***********************************************************************
  *
  * Description :
- *     Grouping SetsÀÇ arguments·Î ¿Â Rollup / Cube ¸¦ Á¦°ÅÇÑ ÈÄ
- *     Rollup / Cube°¡ °¡Áø argumentµéÀ» Rollup / Cube °¡ ÀÖ¾ú´ø ÀÚ¸®¿¡ ¿¬°áÇÏ°í,
- *     TypeÀ» QMS_GROUPBY_NULL ·Î º¯°æÇÑ´Ù.
+ *     Grouping Setsì˜ argumentsë¡œ ì˜¨ Rollup / Cube ë¥¼ ì œê±°í•œ í›„
+ *     Rollup / Cubeê°€ ê°€ì§„ argumentë“¤ì„ Rollup / Cube ê°€ ìˆì—ˆë˜ ìë¦¬ì— ì—°ê²°í•˜ê³ ,
+ *     Typeì„ QMS_GROUPBY_NULL ë¡œ ë³€ê²½í•œë‹¤.
  *
  *     GROUP BY GROUPING SETS( i1, ROLLUP( i2, i3 ), i4 )
  *
@@ -773,7 +773,7 @@ IDE_RC qmvGBGSTransform::modifyRollupCube( qcStatement       * aStatement,
  *     GROUP 2 : i1(NULL), ROLLUP( i2, i3 ), i4(NULL)
  *     GROUP 3 : i1(NULL), i2(NULL), i3(NULL), i4
  *
- *     * NULL Àº QMS_GROUPBY_NULL TypeÀÇ Group Element¸¦ ÀÇ¹ÌÇÑ´Ù.
+ *     * NULL ì€ QMS_GROUPBY_NULL Typeì˜ Group Elementë¥¼ ì˜ë¯¸í•œë‹¤.
  *     
  * Implementation :
  *
@@ -795,14 +795,14 @@ IDE_RC qmvGBGSTransform::modifyRollupCube( qcStatement       * aStatement,
           sElement != NULL;
           sElement  = sElement->next )
     {
-        // ROLLUP, CUBEÀÇ Argument·Î GROUPING SETS, ROLLUP, CUBE°¡ ¿Â °æ¿ì
+        // ROLLUP, CUBEì˜ Argumentë¡œ GROUPING SETS, ROLLUP, CUBEê°€ ì˜¨ ê²½ìš°
         IDE_TEST_RAISE( sElement->type != QMS_GROUPBY_NORMAL, 
                         ERR_NOR_SUPPORT_COMPLICATE_GROUP_EXT );
 
         if ( ( sElement->arithmeticOrList->node.lflag & MTC_NODE_OPERATOR_MASK ) ==
              MTC_NODE_OPERATOR_LIST )
         {
-            // LIST ÀÏ °æ¿ì Ã³¸®
+            // LIST ì¼ ê²½ìš° ì²˜ë¦¬
             IDE_TEST( modifyList( aStatement,
                                   aSFWGH,
                                   aPrev,
@@ -852,9 +852,9 @@ IDE_RC qmvGBGSTransform::modifyFrom( qcStatement         * aStatement,
 /***********************************************************************
  *
  * Description :
- *     Grouping Sets Transform½Ã¿¡ Group º°·Î »ı¼º µÈ
- *     Query SetµéÀÇ µ¿ÀÏÇÑ ¼öÇàºÎºĞ( SELECT * - FROM - WHERE - HIERARCHY )À»
- *     SameViewReferencing Ã³¸®ÇØ¼­ Áßº¹ ¼öÇàÀ» ÇÇÇÑ´Ù.
+ *     Grouping Sets Transformì‹œì— Group ë³„ë¡œ ìƒì„± ëœ
+ *     Query Setë“¤ì˜ ë™ì¼í•œ ìˆ˜í–‰ë¶€ë¶„( SELECT * - FROM - WHERE - HIERARCHY )ì„
+ *     SameViewReferencing ì²˜ë¦¬í•´ì„œ ì¤‘ë³µ ìˆ˜í–‰ì„ í”¼í•œë‹¤.
  *
  *     < BEFORE TRANSFORMATION >
  *
@@ -903,11 +903,11 @@ IDE_RC qmvGBGSTransform::modifyFrom( qcStatement         * aStatement,
           sQuerySetList != NULL;
           sQuerySetList  = sQuerySetList->next )
     {
-        // ÇÏÀ§ inLineView·Î ¿Å°ÜÁú ³»¿ë ÃÊ±âÈ­
+        // í•˜ìœ„ inLineViewë¡œ ì˜®ê²¨ì§ˆ ë‚´ìš© ì´ˆê¸°í™”
         sQuerySetList->querySet->SFWGH->where         = NULL;
         sQuerySetList->querySet->SFWGH->hierarchy     = NULL;
         
-        // ±âÅ¸³»¿ë ÃÊ±âÈ­
+        // ê¸°íƒ€ë‚´ìš© ì´ˆê¸°í™”
         sQuerySetList->querySet->SFWGH->intoVariables = NULL;
         sQuerySetList->querySet->SFWGH->top           = NULL;
 
@@ -926,7 +926,7 @@ IDE_RC qmvGBGSTransform::modifyFrom( qcStatement         * aStatement,
         IDU_FIT_POINT( "qmvGBGSTransform::modifyFrom::STRUCT_ALLOC1::ERR_MEM",
                        idERR_ABORT_InsufficientMemory);
         
-        // Asterisk Target Node »ı¼º
+        // Asterisk Target Node ìƒì„±
         IDE_TEST( STRUCT_ALLOC( QC_QMP_MEM( aStatement ),
                                 qmsTarget,
                                 &sTarget ) != IDE_SUCCESS);
@@ -949,7 +949,7 @@ IDE_RC qmvGBGSTransform::modifyFrom( qcStatement         * aStatement,
         sTarget->flag &= ~QMS_TARGET_ASTERISK_MASK;
         sTarget->flag |=  QMS_TARGET_ASTERISK_MASK;
 
-        // º¹Á¦µÈ QuerySetÀÇ ÃÊ±âÈ­
+        // ë³µì œëœ QuerySetì˜ ì´ˆê¸°í™”
         sParseTree = ( qmsParseTree* )sStatement.myPlan->parseTree;
         
         sParseTree->querySet->SFWGH->target = sTarget;        
@@ -962,13 +962,13 @@ IDE_RC qmvGBGSTransform::modifyFrom( qcStatement         * aStatement,
         sParseTree->querySet->SFWGH->flag &= ~QMV_SFWGH_GBGS_TRANSFORM_MASK;
         sParseTree->querySet->SFWGH->flag |= QMV_SFWGH_GBGS_TRANSFORM_BOTTOM_MTR;
 
-        // Partial Statement ParsingÀ¸·Î »ı¼ºµÈ QuerySetÀ» inLineView·Î ¿¬°á 
+        // Partial Statement Parsingìœ¼ë¡œ ìƒì„±ëœ QuerySetì„ inLineViewë¡œ ì—°ê²° 
         IDE_TEST( makeInlineView( aStatement,
                                   sQuerySetList->querySet->SFWGH,
                                   sParseTree->querySet ) 
                   != IDE_SUCCESS );
        
-        // Middle ViewÀÇ Outer SFWGH´Â Simple View MergingÇÏÁö ¾Ê´Â´Ù.
+        // Middle Viewì˜ Outer SFWGHëŠ” Simple View Mergingí•˜ì§€ ì•ŠëŠ”ë‹¤.
         sFrom = sQuerySetList->querySet->SFWGH->from;        
         IDE_TEST( setNoMerge( sFrom ) != IDE_SUCCESS );
         
@@ -976,7 +976,7 @@ IDE_RC qmvGBGSTransform::modifyFrom( qcStatement         * aStatement,
         sQuerySetList->querySet->SFWGH->flag &= ~QMV_SFWGH_GBGS_TRANSFORM_MASK;
         sQuerySetList->querySet->SFWGH->flag |= QMV_SFWGH_GBGS_TRANSFORM_MIDDLE;        
 
-        // Bottom View ´Â Simple View Merging ÇÏÁö ¾Ê´Â´Ù.
+        // Bottom View ëŠ” Simple View Merging í•˜ì§€ ì•ŠëŠ”ë‹¤.
         for ( sFrom  = sParseTree->querySet->SFWGH->from;
               sFrom != NULL;
               sFrom  = sFrom->next )
@@ -1010,8 +1010,8 @@ IDE_RC qmvGBGSTransform::unionQuerySets( qcStatement          * aStatement,
 {
 /*********************************************************************** *
  * Description :
- *     Query Set ListÀÇ Query Set µéÀ»
- *     ¼øÂ÷ÀûÀÎ UNION ALL·Î ¿¬°áÇÑ´Ù.
+ *     Query Set Listì˜ Query Set ë“¤ì„
+ *     ìˆœì°¨ì ì¸ UNION ALLë¡œ ì—°ê²°í•œë‹¤.
  *
  *     GROUP BY GROUPING SETS( i1, i2, i3, i4 )
  *
@@ -1059,7 +1059,7 @@ IDE_RC qmvGBGSTransform::unionQuerySets( qcStatement          * aStatement,
     }
     else
     {
-        // UNION ALL ÀÇ ÃÖÇÏÀ§ querySet
+        // UNION ALL ì˜ ìµœí•˜ìœ„ querySet
         *aRet = sQuerySetList->querySet;
     }
 
@@ -1077,7 +1077,7 @@ IDE_RC qmvGBGSTransform::makeInlineView( qcStatement * aStatement,
 /***********************************************************************
  *
  * Description :
- *     ParentSFWGH¿¡ ChildQuerySetÀ» inLineView·Î ¿¬°áÇÑ´Ù.
+ *     ParentSFWGHì— ChildQuerySetì„ inLineViewë¡œ ì—°ê²°í•œë‹¤.
  *        
  * Implementation :        
  *
@@ -1180,8 +1180,8 @@ IDE_RC qmvGBGSTransform::modifyOrgSFWGH( qcStatement * aStatement,
 /***********************************************************************
  *
  * Description :
- *     Query Set ÀÇ TargetÀ» Asterisk Node·Î º¯°æ ÇÏ°í
- *     HINT, TOP, INTO ¸¦ Á¦¿ÜÇÑ ÇÏÀ§ View·Î ¿Å°ÜÁø SFWGHÀÇ ³»¿ëÀ» ÃÊ±âÈ­ ÇÑ´Ù.
+ *     Query Set ì˜ Targetì„ Asterisk Nodeë¡œ ë³€ê²½ í•˜ê³ 
+ *     HINT, TOP, INTO ë¥¼ ì œì™¸í•œ í•˜ìœ„ Viewë¡œ ì˜®ê²¨ì§„ SFWGHì˜ ë‚´ìš©ì„ ì´ˆê¸°í™” í•œë‹¤.
 
  * Implementation :
  *
@@ -1227,7 +1227,7 @@ IDE_RC qmvGBGSTransform::modifyOrgSFWGH( qcStatement * aStatement,
     aSFWGH->flag &= ~QMV_SFWGH_GBGS_TRANSFORM_MASK;
     aSFWGH->flag |= QMV_SFWGH_GBGS_TRANSFORM_TOP;
 
-    // Org SFWGH´Â Simple View Merging ÇÏÁö ¾Ê´Â´Ù.
+    // Org SFWGHëŠ” Simple View Merging í•˜ì§€ ì•ŠëŠ”ë‹¤.
     IDE_TEST( setNoMerge( aSFWGH->from ) != IDE_SUCCESS );
 
     return IDE_SUCCESS;
@@ -1243,7 +1243,7 @@ IDE_RC qmvGBGSTransform::modifyOrderBy( qcStatement         * aStatement,
 /***********************************************************************
  *
  * Description :
- *     OrderBy ÀıÀÇ Ã³¸®¸¦ À§ÇØ TransformÀ» ¼öÇàÇÑ´Ù.
+ *     OrderBy ì ˆì˜ ì²˜ë¦¬ë¥¼ ìœ„í•´ Transformì„ ìˆ˜í–‰í•œë‹¤.
  *
  *               << Before Transformation >>     
  *                  SELECT a.i1, a.i2 X
@@ -1252,7 +1252,7 @@ IDE_RC qmvGBGSTransform::modifyOrderBy( qcStatement         * aStatement,
  *                ORDER BY a.i1 DESC, X ASC
  *                LIMIT 3;
  *
- *     À§ÀÇ Query´Â GBGSTransform °úÁ¤À» °ÅÃÄ ¾Æ·¡¿Í °°ÀÌ ValidationµÇ¾úÀ» °Í ÀÌ´Ù.
+ *     ìœ„ì˜ QueryëŠ” GBGSTransform ê³¼ì •ì„ ê±°ì³ ì•„ë˜ì™€ ê°™ì´ Validationë˜ì—ˆì„ ê²ƒ ì´ë‹¤.
  *
  *               << After Transformation >>
  *                  SELECT i1, X
@@ -1266,24 +1266,24 @@ IDE_RC qmvGBGSTransform::modifyOrderBy( qcStatement         * aStatement,
  *                         ) 
  *                ORDER BY a.i1 DESC, X ASC
  *                LIMIT 3;
- *                         ^ ¿©±â¼­ GroupingSets TransformÀ¸·Î »ı¼º µÈ inLineView ¶§¹®¿¡
- *                           TableAliasNameÀÎ a¸¦ Ã£À» ¼ö ¾ø´Ù.
+ *                         ^ ì—¬ê¸°ì„œ GroupingSets Transformìœ¼ë¡œ ìƒì„± ëœ inLineView ë•Œë¬¸ì—
+ *                           TableAliasNameì¸ aë¥¼ ì°¾ì„ ìˆ˜ ì—†ë‹¤.
  *
- *     ÀÌ¿¡´ëÇÑ ÇØ°áÃ¥À¸·Î ´ÙÀ½°ú °°ÀÌ Transform ÇÑ´Ù.
+ *     ì´ì—ëŒ€í•œ í•´ê²°ì±…ìœ¼ë¡œ ë‹¤ìŒê³¼ ê°™ì´ Transform í•œë‹¤.
  * 
- *     SELECT i1, X // 3. expandAllTarget½Ã Ãß°¡ µÈ ORDER BYÀÇ Node¸¦ Á¦¿ÜÇÑ ³ª¸ÓÁö TargetList ¸¸ °¡Á®¿Â´Ù.
+ *     SELECT i1, X // 3. expandAllTargetì‹œ ì¶”ê°€ ëœ ORDER BYì˜ Nodeë¥¼ ì œì™¸í•œ ë‚˜ë¨¸ì§€ TargetList ë§Œ ê°€ì ¸ì˜¨ë‹¤.
  *       FROM (
- *                SELECT a.i1, NULL X, a.i1, X // 1. ORDER BYÀıÀÇ NodeµéÀ» Target List¿¡ Ãß°¡ÇÑ´Ù.
+ *                SELECT a.i1, NULL X, a.i1, X // 1. ORDER BYì ˆì˜ Nodeë“¤ì„ Target Listì— ì¶”ê°€í•œë‹¤.
  *                  FROM ( SELECT * FROM t1 a )
  *                GROUP BY a.i1                  
  *                SELECT NULL, a.i2 X, a.i1, X    
  *                  FROM ( SELECT * FROM t1 a )
- *              ORDER BY 3 DESC, 4 ASC, // 2. ORDER BY¿Í LimitÀ» inLineView ¾ÈÀ¸·Î Áı¾î³Ö°í 
- *              LIMIT 3                       ORDER BYÀÇ Node¸¦ Ãß°¡ÇÑ Targe NodeÀÇ PositionÀ¸·Î º¯°æÇÑ´Ù.     
+ *              ORDER BY 3 DESC, 4 ASC, // 2. ORDER BYì™€ Limitì„ inLineView ì•ˆìœ¼ë¡œ ì§‘ì–´ë„£ê³  
+ *              LIMIT 3                       ORDER BYì˜ Nodeë¥¼ ì¶”ê°€í•œ Targe Nodeì˜ Positionìœ¼ë¡œ ë³€ê²½í•œë‹¤.     
  *            ); 
  *
  *            
- *    * Org Query¿¡ Set Operator°¡ Á¸ÀçÇÑ´Ù¸é OrderByÀÇ TransformÀ» ¼öÇàÇÏÁö ¾Ê´Â´Ù.
+ *    * Org Queryì— Set Operatorê°€ ì¡´ì¬í•œë‹¤ë©´ OrderByì˜ Transformì„ ìˆ˜í–‰í•˜ì§€ ì•ŠëŠ”ë‹¤.
  *    
  * Implementation :  
  *
@@ -1305,7 +1305,7 @@ IDE_RC qmvGBGSTransform::modifyOrderBy( qcStatement         * aStatement,
     SInt                  sStartOffset = 0;
     SInt                  sSize = 0;
     
-    /* Target¿¡ Ãß°¡µÇ´Â OrderBy NodeÀÇ °³¼ö´Â ±âÁ¸ Target NodeÀÇ °³¼ö¿Í ÇÕÃÄ 9999999999 °³¸¦ ³ÑÁö ¸øÇÑ´Ù. */
+    /* Targetì— ì¶”ê°€ë˜ëŠ” OrderBy Nodeì˜ ê°œìˆ˜ëŠ” ê¸°ì¡´ Target Nodeì˜ ê°œìˆ˜ì™€ í•©ì³ 9999999999 ê°œë¥¼ ë„˜ì§€ ëª»í•œë‹¤. */
     SChar                 sValue[ QMV_GBGS_TRANSFORM_MAX_TARGET_COUNT + 1 ];
 
     const mtcColumn*      sColumn;
@@ -1331,21 +1331,21 @@ IDE_RC qmvGBGSTransform::modifyOrderBy( qcStatement         * aStatement,
      */                         
     sOrgParseTree = ( qmsParseTree * )aStatement->myPlan->parseTree;
 
-    // Org Statement¿¡ SetOerator°¡ ÀÖÀ» °æ¿ì OrderByÀÇ TransfromÀº ¼öÇàÇÏÁö ¾Ê´Â´Ù. 
+    // Org Statementì— SetOeratorê°€ ìˆì„ ê²½ìš° OrderByì˜ Transfromì€ ìˆ˜í–‰í•˜ì§€ ì•ŠëŠ”ë‹¤. 
     if ( ( sOrgParseTree->orderBy != NULL ) && 
          ( sOrgParseTree->querySet->setOp == QMS_NONE ) )
     {
-        // OrderByÀÇ Node¸¦ Partial Parsing ÇØ¼­ Target¿¡ Ãß°¡ÇÑ´Ù.
+        // OrderByì˜ Nodeë¥¼ Partial Parsing í•´ì„œ Targetì— ì¶”ê°€í•œë‹¤.
         IDE_TEST( getPosForOrderBy( sOrgParseTree->orderBy,
                                     &sStartOffset,
                                     &sSize ) != IDE_SUCCESS );
         
-        // QuerySetListÀÇ QuerySetµé¿¡ Order ByÀÇ Node¸¦ TargetÀ¸·Î Ãß°¡ÇÑ´Ù.
+        // QuerySetListì˜ QuerySetë“¤ì— Order Byì˜ Nodeë¥¼ Targetìœ¼ë¡œ ì¶”ê°€í•œë‹¤.
         for ( sQuerySetList  = aQuerySetList;
               sQuerySetList != NULL;
               sQuerySetList  = sQuerySetList->next )
         {
-            // TargetÀÇ ¸¶Áö¸· Node¿Í Count¸¦ ±¸ÇÑ´Ù.
+            // Targetì˜ ë§ˆì§€ë§‰ Nodeì™€ Countë¥¼ êµ¬í•œë‹¤.
             for ( sLastTarget        = sQuerySetList->querySet->SFWGH->target, sTargetPosition = 1;
                   sLastTarget->next != NULL;
                   sLastTarget        = sLastTarget->next )
@@ -1367,14 +1367,14 @@ IDE_RC qmvGBGSTransform::modifyOrderBy( qcStatement         * aStatement,
             sLastTarget->next = sNewTarget;
             sLastTarget->targetColumn->node.next = &sNewTarget->targetColumn->node;
 
-            // Ãß°¡ÇÑ Target NodeÁß valueModeÀÌ¸é¼­ SmallIntÇüÀÎ Node( ORDER BYÀÇ Position Node )¸¦ Á¦°ÅÇÑ´Ù.
+            // ì¶”ê°€í•œ Target Nodeì¤‘ valueModeì´ë©´ì„œ SmallIntí˜•ì¸ Node( ORDER BYì˜ Position Node )ë¥¼ ì œê±°í•œë‹¤.
             for ( sTarget  = sNewTarget;
                   sTarget != NULL;
                   sTarget  = sTarget->next )
             {
                 sNode = sTarget->targetColumn;
                 
-                // IndicatorÀÎÁö È®ÀÎÇÑ´Ù.
+                // Indicatorì¸ì§€ í™•ì¸í•œë‹¤.
                 if ( qtc::isConstValue( QC_SHARED_TMPLATE(aStatement), sNode ) == ID_TRUE )
                 {
                     sColumn = QTC_STMT_COLUMN( aStatement, sNode );
@@ -1395,7 +1395,7 @@ IDE_RC qmvGBGSTransform::modifyOrderBy( qcStatement         * aStatement,
 
                 if ( sIsIndicator == ID_TRUE )
                 {
-                    // IndicatorÀÏ °æ¿ì Target¿¡¼­ Á¦¿Ü                     
+                    // Indicatorì¼ ê²½ìš° Targetì—ì„œ ì œì™¸                     
                     sLastTarget->next = sTarget->next; 
                 }
                 else
@@ -1407,14 +1407,14 @@ IDE_RC qmvGBGSTransform::modifyOrderBy( qcStatement         * aStatement,
             }
         }
 
-        // ORDER BY ÀÇ Node¸¦ Target¿¡ Ãß°¡ÇÑ Node¸¦ °¡¸®Å°´Â PositionÀ¸·Î º¯°æÇÑ´Ù.
+        // ORDER BY ì˜ Nodeë¥¼ Targetì— ì¶”ê°€í•œ Nodeë¥¼ ê°€ë¦¬í‚¤ëŠ” Positionìœ¼ë¡œ ë³€ê²½í•œë‹¤.
         for ( sSortList  = sOrgParseTree->orderBy;  
               sSortList != NULL;
               sSortList  = sSortList->next )
         {
             sNode = sSortList->sortColumn;
             
-            // IndicatorÀÎÁö È®ÀÎÇÑ´Ù.
+            // Indicatorì¸ì§€ í™•ì¸í•œë‹¤.
             if ( qtc::isConstValue( QC_SHARED_TMPLATE(aStatement), sNode ) == ID_TRUE )
             {
                 sColumn = QTC_STMT_COLUMN( aStatement, sNode );
@@ -1437,7 +1437,7 @@ IDE_RC qmvGBGSTransform::modifyOrderBy( qcStatement         * aStatement,
             {
                 sTargetPosition++;
 
-                // OrderBy Node¸¦ Indicator·Î º¯°æÇÑ´Ù.
+                // OrderBy Nodeë¥¼ Indicatorë¡œ ë³€ê²½í•œë‹¤.
                 idlOS::snprintf( sValue,
                                  QMV_GBGS_TRANSFORM_MAX_TARGET_COUNT + 1,
                                  "%"ID_UINT32_FMT,
@@ -1463,7 +1463,7 @@ IDE_RC qmvGBGSTransform::modifyOrderBy( qcStatement         * aStatement,
                 /* Nothing to do */
             }
             
-            // mtcNodeÀÇ ¿¬°á            
+            // mtcNodeì˜ ì—°ê²°            
             if ( sSortList == sOrgParseTree->orderBy )
             {
                 // First Loop
@@ -1478,7 +1478,7 @@ IDE_RC qmvGBGSTransform::modifyOrderBy( qcStatement         * aStatement,
                 }
                 else
                 {
-                    // Compile Warning ¶§¹®¿¡ Ãß°¡
+                    // Compile Warning ë•Œë¬¸ì— ì¶”ê°€
                     IDE_RAISE( ERR_INVALID_POINTER );
                 }                
             }
@@ -1487,7 +1487,7 @@ IDE_RC qmvGBGSTransform::modifyOrderBy( qcStatement         * aStatement,
         sTransformedParseTree = ( qmsParseTree * )
             sOrgParseTree->querySet->SFWGH->from->tableRef->view->myPlan->parseTree;
     
-        /* Order By ¿Í LimitÀ» View¾ÈÀ¸·Î ¹Ğ¾î ³Ö´Â´Ù. */
+        /* Order By ì™€ Limitì„ Viewì•ˆìœ¼ë¡œ ë°€ì–´ ë„£ëŠ”ë‹¤. */
         sTransformedParseTree->orderBy = sOrgParseTree->orderBy;
         sTransformedParseTree->limit   = sOrgParseTree->limit;
         sOrgParseTree->orderBy   = NULL;
@@ -1516,8 +1516,8 @@ IDE_RC qmvGBGSTransform::removeNullGroupElements( qmsSFWGH * aSFWGH )
 /***********************************************************************
  *
  * Description :
- *     Group ByÀÇ Group Elements Áß QMS_GROUPBY_NULL TypeÀÇ 
- *     Element¸¦ Á¦°ÅÇÑ´Ù.
+ *     Group Byì˜ Group Elements ì¤‘ QMS_GROUPBY_NULL Typeì˜ 
+ *     Elementë¥¼ ì œê±°í•œë‹¤.
  *     
  * Implementation :
  *
@@ -1594,9 +1594,9 @@ IDE_RC qmvGBGSTransform::makeNullNode( qcStatement * aStatement,
 /***********************************************************************
  *
  * Description :
- *     Grouping Sets Transform À¸·Î QMS_GROUPBY_NULL TypeÀ¸·Î º¯ÇüµÈ
- *     Group Expression °ú Equivalent ÇÑ Target ¶Ç´Â HavingÀÇ ExpressionÀ»
- *     ÀÎÀÚ·Î ¹Ş¾Æ ÇØ´ç TypeÀÇ Null Value·Î º¯Çü ½ÃÅ²´Ù.
+ *     Grouping Sets Transform ìœ¼ë¡œ QMS_GROUPBY_NULL Typeìœ¼ë¡œ ë³€í˜•ëœ
+ *     Group Expression ê³¼ Equivalent í•œ Target ë˜ëŠ” Havingì˜ Expressionì„
+ *     ì¸ìë¡œ ë°›ì•„ í•´ë‹¹ Typeì˜ Null Valueë¡œ ë³€í˜• ì‹œí‚¨ë‹¤.
  *     
  * Implementation :
  *
@@ -1610,14 +1610,14 @@ IDE_RC qmvGBGSTransform::makeNullNode( qcStatement * aStatement,
     sColumn = QTC_STMT_COLUMN( aStatement, aExpression );
     SET_EMPTY_POSITION( sPosition );    
 
-    // Null Value Node »ı¼º
+    // Null Value Node ìƒì„±
     IDE_TEST( qtc::makeValue( aStatement,
                               sNullNode,
                               ( const UChar* )sColumn->module->names->string,
                               sColumn->module->names->length,
                               &sPosition,
                               ( const UChar* )"NULL",
-                              0, // ¸ğµç TypeÀÌ Size°¡ 0ÀÏ ¶§ NULL °ªÀ¸·Î »ı¼ºµÈ´Ù.
+                              0, // ëª¨ë“  Typeì´ Sizeê°€ 0ì¼ ë•Œ NULL ê°’ìœ¼ë¡œ ìƒì„±ëœë‹¤.
                               MTC_COLUMN_NORMAL_LITERAL )
               != IDE_SUCCESS );
     
@@ -1651,27 +1651,27 @@ IDE_RC qmvGBGSTransform::makeNullOrPassNode( qcStatement      * aStatement,
 /***********************************************************************
  *
  * Description :
- *    Grouping Sets TransformÀ¸·Î º¯ÇüµÈ QMS_GROUPBY_NULL TypeÀÇ Group Element¿¡ ´ëÀÀµÇ´Â
- *    Target ¹× HavingÀÇ ExpressionÀ» NullNode·Î º¯Çü ½ÃÅ°°Å³ª ´Ù¸¥PassNode ¸¦¹Ù¶óº¸ °ÔÇÑ´Ù.
+ *    Grouping Sets Transformìœ¼ë¡œ ë³€í˜•ëœ QMS_GROUPBY_NULL Typeì˜ Group Elementì— ëŒ€ì‘ë˜ëŠ”
+ *    Target ë° Havingì˜ Expressionì„ NullNodeë¡œ ë³€í˜• ì‹œí‚¤ê±°ë‚˜ ë‹¤ë¥¸PassNode ë¥¼ë°”ë¼ë³´ ê²Œí•œë‹¤.
  *
  *        SELECT i1, i2, i3
  *          FROM t1
  *      GROUP BY GROUPING SETS ( i1, i2, i3 ), i1;
  *
- *      À§ÀÇ Query¿¡¼­ i1 Ã³·³ GROUPING SETSÀÇ ÀÎÀÚ·Î ¿Â Group ExpressionÀÌ
- *      GROUPING SETS ¹Û¿¡¼­ Partial GroupÀ¸·Î »ç¿ë µÉ °æ¿ì »ı¼ºµÇ´Â GROUPINGÀº ´ÙÀ½°ú °°´Ù.
+ *      ìœ„ì˜ Queryì—ì„œ i1 ì²˜ëŸ¼ GROUPING SETSì˜ ì¸ìë¡œ ì˜¨ Group Expressionì´
+ *      GROUPING SETS ë°–ì—ì„œ Partial Groupìœ¼ë¡œ ì‚¬ìš© ë  ê²½ìš° ìƒì„±ë˜ëŠ” GROUPINGì€ ë‹¤ìŒê³¼ ê°™ë‹¤.
  *
  *          GROUP 1 - i1(QMS_GROUPBY_NORMAL), i2(QMS_GROUPBY_NULL), i3(QMS_GROUPBY_NULL), i1(QMS_GROUPBY_NORMAL)
  *          GROUP 2 - i1(QMS_GROUPBY_NULL), i2(QMS_GROUPBY_NORMAL), i3(QMS_GROUPBY_NULL), i1(QMS_GROUPBY_NORMAL)
  *          GROUP 3 - i1(QMS_GROUPBY_NULL), i2(QMS_GROUPBY_NULL), i3(QMS_GROUPBY_NORMAL), i1(QMS_GROUPBY_NORMAL)
  *
- *      À§ÀÇ ¿¹Á¦Ã³·³ Partial GroupÀº GROUPING SETS¿¡ ºĞ¹èµÇ¾î ¸ğµç GROUPING ¿¡ Æ÷ÇÔ µÇ´Âµ¥,
+ *      ìœ„ì˜ ì˜ˆì œì²˜ëŸ¼ Partial Groupì€ GROUPING SETSì— ë¶„ë°°ë˜ì–´ ëª¨ë“  GROUPING ì— í¬í•¨ ë˜ëŠ”ë°,
  *
- *      1. Target ¶Ç´Â Having ÀÇ Group Key°¡ µÇ´Â Expression°ú EquivalentÇÑ
- *         QMS_GROUPBY_NORMAL TypeÀÇ GroupÀÌ ÀÖ´Ù¸é ÇØ´ç GroupÀ» PassNode ·Î ¹Ù¶óº¸°Ô ¼³Á¤ÇÏ°í,
+ *      1. Target ë˜ëŠ” Having ì˜ Group Keyê°€ ë˜ëŠ” Expressionê³¼ Equivalentí•œ
+ *         QMS_GROUPBY_NORMAL Typeì˜ Groupì´ ìˆë‹¤ë©´ í•´ë‹¹ Groupì„ PassNode ë¡œ ë°”ë¼ë³´ê²Œ ì„¤ì •í•˜ê³ ,
  *      
- *      2. EquivalentÇÑ QMS_GROUPBY_NORMAL TypeÀÇ ExpressionÀÌ ¾ø´Ù¸é,
- *         QMS_GROUPBY_NULL TypeÀÇ Group¸¸ Equivalent ÇÏ¸é ÇØ´ç ExpressionÀ» NullNode·Î º¯ÇüÇÑ´Ù.
+ *      2. Equivalentí•œ QMS_GROUPBY_NORMAL Typeì˜ Expressionì´ ì—†ë‹¤ë©´,
+ *         QMS_GROUPBY_NULL Typeì˜ Groupë§Œ Equivalent í•˜ë©´ í•´ë‹¹ Expressionì„ NullNodeë¡œ ë³€í˜•í•œë‹¤.
  *         
  * Implementation :
  *
@@ -1690,7 +1690,7 @@ IDE_RC qmvGBGSTransform::makeNullOrPassNode( qcStatement      * aStatement,
           sGroup != NULL;
           sGroup  = sGroup->next )
     {
-        // ¸ğµç Group Element¸¦ °Ë»ç
+        // ëª¨ë“  Group Elementë¥¼ ê²€ì‚¬
         if ( sGroup->type == QMS_GROUPBY_NORMAL )
         {
             IDE_TEST( qtc::isEquivalentExpression( aStatement,
@@ -1701,8 +1701,8 @@ IDE_RC qmvGBGSTransform::makeNullOrPassNode( qcStatement      * aStatement,
 
             if ( sIsNormalGroupTmp == ID_TRUE )
             {
-                // QMS_GROUPBY_NORMAL TypeÀÇ GroupÀ» Ã£Àº°æ¿ì
-                // PassNode¸¦ ¼¼ÆÃÇÏ°í break
+                // QMS_GROUPBY_NORMAL Typeì˜ Groupì„ ì°¾ì€ê²½ìš°
+                // PassNodeë¥¼ ì„¸íŒ…í•˜ê³  break
                 sIsNormalGroup = ID_TRUE;                
                 sAlterPassNode = sGroup->arithmeticOrList;
                 break;
@@ -1828,14 +1828,14 @@ IDE_RC qmvGBGSTransform::doTransform( qcStatement * aStatement,
 
     IDU_FIT_POINT_FATAL( "qmvGBGSTransform::doTransform::__FT__" );
 
-    // GroupBy Àı¿¡¼­ Grouping Sets¸¦ Ã£´Â´Ù.    
+    // GroupBy ì ˆì—ì„œ Grouping Setsë¥¼ ì°¾ëŠ”ë‹¤.    
     IDE_TEST( searchGroupingSets( aQuerySet, &sGroupingSets, &sPrevGroup ) 
               != IDE_SUCCESS );
 
     if ( sGroupingSets != NULL )
     {
-        // Grouping SetsÀÇ Argument°¡ ÇÏ³ª ¶ó¸é
-        // Normal GroupBy¿Í µ¿ÀÏ ÇÔÀ¸·Î, Grouping Sets¸¸ Á¦°ÅÇÑ´Ù.         
+        // Grouping Setsì˜ Argumentê°€ í•˜ë‚˜ ë¼ë©´
+        // Normal GroupByì™€ ë™ì¼ í•¨ìœ¼ë¡œ, Grouping Setsë§Œ ì œê±°í•œë‹¤.         
         if ( sGroupingSets->arguments->next == NULL )
         {
             // FIT TEST
@@ -1855,23 +1855,23 @@ IDE_RC qmvGBGSTransform::doTransform( qcStatement * aStatement,
         }
         else
         {
-            // 1. Query StatementÀÇ Partial ParsingÀ» ÅëÇØ
-            //    »ı¼º µÉ GroupÀÇ ¼ö ¸¸Å­ QuerySetÀ» º¹Á¦ÇÑ´Ù.
+            // 1. Query Statementì˜ Partial Parsingì„ í†µí•´
+            //    ìƒì„± ë  Groupì˜ ìˆ˜ ë§Œí¼ QuerySetì„ ë³µì œí•œë‹¤.
             IDE_TEST( copyPartialQuerySet( aStatement,
                                            sGroupingSets,
                                            aQuerySet,
                                            &sQuerySetList )
                       != IDE_SUCCESS );
             
-            // 2. º¹Á¦ µÈ °¢ QuerySetÀÇ GroupBy ÀÚ·á±¸Á¶¸¦ º¯ÇüÇÑ´Ù.
+            // 2. ë³µì œ ëœ ê° QuerySetì˜ GroupBy ìë£Œêµ¬ì¡°ë¥¼ ë³€í˜•í•œë‹¤.
             IDE_TEST( modifyGroupBy( aStatement, 
                                      sQuerySetList ) 
                       != IDE_SUCCESS );
             
-            // ( 3. Same View Refrencing Ã³¸®¸¦ À§ÇØ
-            //      º¹Á¦ µÈ °¢ QuerySetº°·Î InLineView¸¦ »ı¼ºÇÑ´Ù. )
+            // ( 3. Same View Refrencing ì²˜ë¦¬ë¥¼ ìœ„í•´
+            //      ë³µì œ ëœ ê° QuerySetë³„ë¡œ InLineViewë¥¼ ìƒì„±í•œë‹¤. )
             //
-            // "GROUPING_SETS_MTR" Hint °¡ ÀÖÀ» °æ¿ì¿¡¸¸ ¼öÇà
+            // "GROUPING_SETS_MTR" Hint ê°€ ìˆì„ ê²½ìš°ì—ë§Œ ìˆ˜í–‰
             if ( aQuerySet->SFWGH->hints != NULL )
             {   
                 if ( aQuerySet->SFWGH->hints->GBGSOptViewMtr == ID_TRUE )
@@ -1891,29 +1891,29 @@ IDE_RC qmvGBGSTransform::doTransform( qcStatement * aStatement,
                 /* Nothing to do */
             }            
             
-            // 4. º¹Á¦ µÈ QuerySetµéÀ» UNION ALL·Î ¿¬°áÇÑ´Ù.
+            // 4. ë³µì œ ëœ QuerySetë“¤ì„ UNION ALLë¡œ ì—°ê²°í•œë‹¤.
             IDE_TEST( unionQuerySets( aStatement,
                                       sQuerySetList,
                                       &sUnionQuerySet )
                       != IDE_SUCCESS );
 
-            // 5. UNION ALL·Î ¿¬°á ÇÑ QuerySetµéÀ» ¿øº» QuerySetÀÇ
-            //    InlineView·Î ¸¸µç´Ù.
+            // 5. UNION ALLë¡œ ì—°ê²° í•œ QuerySetë“¤ì„ ì›ë³¸ QuerySetì˜
+            //    InlineViewë¡œ ë§Œë“ ë‹¤.
             IDE_TEST( makeInlineView( aStatement,
                                       aQuerySet->SFWGH,
                                       sUnionQuerySet )
                       != IDE_SUCCESS );
             
-            // 6. ¿øº» QuerySetÀÇ TargetÀ» Asterisk Node·Î º¯ÇüÇÏ°í,
-            //    HINT, DISTINCT, TOP, INTO, FROM À» Á¦¿ÜÇÑ
-            //    ³ª¸ÓÁö ³»¿ëÀ» ÃÊ±âÈ­ ÇÑ´Ù.
+            // 6. ì›ë³¸ QuerySetì˜ Targetì„ Asterisk Nodeë¡œ ë³€í˜•í•˜ê³ ,
+            //    HINT, DISTINCT, TOP, INTO, FROM ì„ ì œì™¸í•œ
+            //    ë‚˜ë¨¸ì§€ ë‚´ìš©ì„ ì´ˆê¸°í™” í•œë‹¤.
             IDE_TEST( modifyOrgSFWGH( aStatement,
                                       aQuerySet->SFWGH )
                       != IDE_SUCCESS );
 
-            // 7. OrderByÀÇ Node¸¦ TargetÀ¸·Î º¹Á¦ÇÏ°í
-            //    OrderByÀÇ NodeµéÀ» º¹Á¦µÈ Target NodeÀÇ
-            //    Position À¸·Î º¯°æÇÑ´Ù.
+            // 7. OrderByì˜ Nodeë¥¼ Targetìœ¼ë¡œ ë³µì œí•˜ê³ 
+            //    OrderByì˜ Nodeë“¤ì„ ë³µì œëœ Target Nodeì˜
+            //    Position ìœ¼ë¡œ ë³€ê²½í•œë‹¤.
             IDE_TEST( modifyOrderBy( aStatement,
                                      sQuerySetList )
                       != IDE_SUCCESS );

@@ -18,7 +18,7 @@
 
 CCircularBuf::CCircularBuf()
 {
-    //Initialize¿¡¼­ ÃÊ±âÈ­ ÇÔ
+    //Initializeì—ì„œ ì´ˆê¸°í™” í•¨
 }
 
 void CCircularBuf::Initialize( ALTIBASE_ILOADER_HANDLE aHandle )
@@ -31,15 +31,15 @@ void CCircularBuf::Initialize( ALTIBASE_ILOADER_HANDLE aHandle )
     m_pStartBuf     = m_pCurrBuf = m_pCircularBuf;
     m_pEndBuf       = &m_pCircularBuf[MAX_CIRCULAR_BUF];
     m_bEOF          = ILO_FALSE;
-    // BUG-24473 IloaderÀÇ CPU 100% ¿øÀÎ ºĞ¼®
-    // thr_yield ´ë½Å sleep ¸¦ »ç¿ëÇÑ´Ù.
+    // BUG-24473 Iloaderì˜ CPU 100% ì›ì¸ ë¶„ì„
+    // thr_yield ëŒ€ì‹  sleep ë¥¼ ì‚¬ìš©í•œë‹¤.
     mSleepTime.initialize(0, 1000);
     idlOS::thread_mutex_init(&(sHandle->mParallel.mCirBufMutex));
 }
 
 CCircularBuf::~CCircularBuf()
 {
-    //Finalize¿¡¼­ Á¾·áÇÔ
+    //Finalizeì—ì„œ ì¢…ë£Œí•¨
 }
 
 void CCircularBuf::Finalize( ALTIBASE_ILOADER_HANDLE aHandle )
@@ -61,14 +61,14 @@ SInt CCircularBuf::WriteBuf( ALTIBASE_ILOADER_HANDLE aHandle, SChar* pBuf, SInt 
     
     while ( (GetDataSize(sHandle) + aSize) > MAX_CIRCULAR_BUF )
     {
-        //Buffer°ø°£ÀÌ ÀÖÀ» ¶§±îÁö ±â´Ù¸²
-        // BUG-24473 IloaderÀÇ CPU 100% ¿øÀÎ ºĞ¼®
-        // thr_yield ´ë½Å sleep ¸¦ »ç¿ëÇÑ´Ù.
+        //Bufferê³µê°„ì´ ìˆì„ ë•Œê¹Œì§€ ê¸°ë‹¤ë¦¼
+        // BUG-24473 Iloaderì˜ CPU 100% ì›ì¸ ë¶„ì„
+        // thr_yield ëŒ€ì‹  sleep ë¥¼ ì‚¬ìš©í•œë‹¤.
         idlOS::sleep( mSleepTime );
 
         /* BUG-24211
-         * -L ¿É¼ÇÀ¸·Î µ¥ÀÌÅÍ ÀÔ·ÂÀ» ¸í½ÃÀûÀ¸·Î ÁöÁ¤ÇÑ °æ¿ì, FileRead Thread°¡ °è¼Ó´ë±â ÇÏÁö ¾Êµµ·Ï 
-         * LoadÇÏ´Â ThreadÀÇ °³¼ö°¡ 0ÀÌ µÉ °æ¿ì Á¾·áÇÏµµ·Ï ÇÑ´Ù.
+         * -L ì˜µì…˜ìœ¼ë¡œ ë°ì´í„° ì…ë ¥ì„ ëª…ì‹œì ìœ¼ë¡œ ì§€ì •í•œ ê²½ìš°, FileRead Threadê°€ ê³„ì†ëŒ€ê¸° í•˜ì§€ ì•Šë„ë¡ 
+         * Loadí•˜ëŠ” Threadì˜ ê°œìˆ˜ê°€ 0ì´ ë  ê²½ìš° ì¢…ë£Œí•˜ë„ë¡ í•œë‹¤.
          */
         IDE_TEST ( sHandle->mParallel.mLoadThrNum == 0 )
     }
@@ -91,7 +91,7 @@ SInt CCircularBuf::WriteBuf( ALTIBASE_ILOADER_HANDLE aHandle, SChar* pBuf, SInt 
 
     m_nDataSize += aSize;
     //BUG-22389
-    //Buffer write½Ã Return °ªÀº Writed Size
+    //Buffer writeì‹œ Return ê°’ì€ Writed Size
     sRet = aSize;
     iloMutexUnLock(sHandle, &(sHandle->mParallel.mCirBufMutex));
 
@@ -105,12 +105,12 @@ SInt CCircularBuf::WriteBuf( ALTIBASE_ILOADER_HANDLE aHandle, SChar* pBuf, SInt 
 SInt CCircularBuf::ReadBuf( ALTIBASE_ILOADER_HANDLE aHandle, SChar* pBuf, SInt aSize)
 {
     /*
-     * ¾Æ·¡ÀÇ Code´Â µ¿½Ã¼º¿¡ ¹®Á¦¸¦ ÁÙ¼öÀÖÀ¸¸ç, ¼öÁ¤½Ã µğ¹ö±ëÇÏ±â°¡ ¸Å¿ì ±î´Ù·Ó´Ù.. (µğ¹ö±ë Æ÷ÀÎÆ®°¡ ¹«ÀÛÀ§·Î ¹ß»ı)
-     * ¼öÁ¤½Ã¿¡ ¼÷°í ¿ä¸Á.
+     * ì•„ë˜ì˜ CodeëŠ” ë™ì‹œì„±ì— ë¬¸ì œë¥¼ ì¤„ìˆ˜ìˆìœ¼ë©°, ìˆ˜ì •ì‹œ ë””ë²„ê¹…í•˜ê¸°ê°€ ë§¤ìš° ê¹Œë‹¤ë¡­ë‹¤.. (ë””ë²„ê¹… í¬ì¸íŠ¸ê°€ ë¬´ì‘ìœ„ë¡œ ë°œìƒ)
+     * ìˆ˜ì •ì‹œì— ìˆ™ê³  ìš”ë§.
      */
 
     //BUG-22434
-    //Double Buffer¿¡ ³ÖÀ» µ¥ÀÌÅÍ »çÀÌÁî.
+    //Double Bufferì— ë„£ì„ ë°ì´í„° ì‚¬ì´ì¦ˆ.
     SInt sSize = aSize;
 
     iloaderHandle *sHandle = (iloaderHandle *) aHandle;
@@ -118,19 +118,19 @@ SInt CCircularBuf::ReadBuf( ALTIBASE_ILOADER_HANDLE aHandle, SChar* pBuf, SInt a
     while ( GetDataSize(sHandle) < aSize )
     {
         /* PROJ-1714
-         * ÀĞÀ» µ¥ÀÌÅÍ°¡ ÀÖÀ» ¶§ ±îÁö ´ë±â...
-         * pthread_cond_wait, pthread_cond_signal ¶Ç´Â pthread_cond_broadcast¸¦ »ç¿ëÇÒ °æ¿ì,
-         * signal Àü´Ş ¼Óµµ°¡ ´À·Á¼­ ¼º´É ÀúÇÏ°¡ ¹ß»ıÇÏ¿© thr_yield()·Î ´ëÃ¼ÇßÀ½..
+         * ì½ì„ ë°ì´í„°ê°€ ìˆì„ ë•Œ ê¹Œì§€ ëŒ€ê¸°...
+         * pthread_cond_wait, pthread_cond_signal ë˜ëŠ” pthread_cond_broadcastë¥¼ ì‚¬ìš©í•  ê²½ìš°,
+         * signal ì „ë‹¬ ì†ë„ê°€ ëŠë ¤ì„œ ì„±ëŠ¥ ì €í•˜ê°€ ë°œìƒí•˜ì—¬ thr_yield()ë¡œ ëŒ€ì²´í–ˆìŒ..
          */
-        // BUG-24473 IloaderÀÇ CPU 100% ¿øÀÎ ºĞ¼®
-        // thr_yield ´ë½Å sleep ¸¦ »ç¿ëÇÑ´Ù.
+        // BUG-24473 Iloaderì˜ CPU 100% ì›ì¸ ë¶„ì„
+        // thr_yield ëŒ€ì‹  sleep ë¥¼ ì‚¬ìš©í•œë‹¤.
         idlOS::sleep( mSleepTime );
         
         /* PROJ-1714
-         * GetEOF() ´ÙÀ½¿¡ GetDataSize()¸¦ È£ÃâÇØ¾ßÇÑ´Ù.
-         * ¼ø¼­¸¦ ¹Ù²Ü °æ¿ì, ÀÛÀº »çÀÌÁîÀÇ DatafileÀ» ÀĞÀ»¶§ Á¤»óÀûÀ¸·Î µ¥ÀÌÅÍ°¡ ÀÔ·ÂµÇÁö ¾ÊÀ» ¼ö ÀÖ´Ù.
+         * GetEOF() ë‹¤ìŒì— GetDataSize()ë¥¼ í˜¸ì¶œí•´ì•¼í•œë‹¤.
+         * ìˆœì„œë¥¼ ë°”ê¿€ ê²½ìš°, ì‘ì€ ì‚¬ì´ì¦ˆì˜ Datafileì„ ì½ì„ë•Œ ì •ìƒì ìœ¼ë¡œ ë°ì´í„°ê°€ ì…ë ¥ë˜ì§€ ì•Šì„ ìˆ˜ ìˆë‹¤.
          */
-        //´ë±â ÇÏ´Â µ¿¾È¿¡ EOF°¡ µÉ ¼ö ÀÖÀ½. 
+        //ëŒ€ê¸° í•˜ëŠ” ë™ì•ˆì— EOFê°€ ë  ìˆ˜ ìˆìŒ. 
         if ( GetEOF(sHandle) == ILO_TRUE )
         {
             if ( GetDataSize(sHandle) == 0 )
@@ -140,10 +140,10 @@ SInt CCircularBuf::ReadBuf( ALTIBASE_ILOADER_HANDLE aHandle, SChar* pBuf, SInt a
             else
             {
                 //BUG-22434
-                // ³²¾Æ ÀÖ´Â µ¥ÀÌÅÍ°¡ aSize º¸´Ù ÀÛÀº °æ¿ì ³ª¸ÓÁö¸¦ ÀĞ´Â´Ù.
-                // ±×·¸Áö ¾ÊÀ» °æ¿ì¿¡´Â aSize¸¸Å­¸¸ ÀĞ´Â´Ù.
-                // ÀÌ´Â À§ÀÇ While Á¶°ÇÀÇ GetDataSize() < aSizeÀ» ¸¸Á·ÇÏ¿© ¿©±â±îÁö ¿ÔÁö¸¸
-                // ¿©±â¿¡¼­µµ ¹İµå½Ã À§ÀÇ Á¶°ÇÀ» ¸¸Á·ÇÏÁö ¾ÊÀ¸¹Ç·Î ¾Æ·¡¿Í °°Àº Ã³¸®°¡ ÇÊ¿äÇÏ´Ù.
+                // ë‚¨ì•„ ìˆëŠ” ë°ì´í„°ê°€ aSize ë³´ë‹¤ ì‘ì€ ê²½ìš° ë‚˜ë¨¸ì§€ë¥¼ ì½ëŠ”ë‹¤.
+                // ê·¸ë ‡ì§€ ì•Šì„ ê²½ìš°ì—ëŠ” aSizeë§Œí¼ë§Œ ì½ëŠ”ë‹¤.
+                // ì´ëŠ” ìœ„ì˜ While ì¡°ê±´ì˜ GetDataSize() < aSizeì„ ë§Œì¡±í•˜ì—¬ ì—¬ê¸°ê¹Œì§€ ì™”ì§€ë§Œ
+                // ì—¬ê¸°ì—ì„œë„ ë°˜ë“œì‹œ ìœ„ì˜ ì¡°ê±´ì„ ë§Œì¡±í•˜ì§€ ì•Šìœ¼ë¯€ë¡œ ì•„ë˜ì™€ ê°™ì€ ì²˜ë¦¬ê°€ í•„ìš”í•˜ë‹¤.
                 if ( GetDataSize(sHandle) < aSize )
                 {
                     sSize = GetDataSize(sHandle);
@@ -209,7 +209,7 @@ SInt CCircularBuf::ReadBufReal( ALTIBASE_ILOADER_HANDLE aHandle,
     
     m_nDataSize -= aSize;
     //BUG-22389
-    //Buffer Read½Ã Return °ªÀº Readed Size
+    //Buffer Readì‹œ Return ê°’ì€ Readed Size
     sRet = aSize;
     iloMutexUnLock( sHandle, &(sHandle->mParallel.mCirBufMutex) );
 

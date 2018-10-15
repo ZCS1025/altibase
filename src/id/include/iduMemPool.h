@@ -21,8 +21,8 @@
 
 #define IDU_MEM_POOL_MUTEX_POSTFIX       "_MUTEX_"
 
-//10: UINT32_FMTÀÇ 10Áø¼öÇ¥±âÃÖ´ëÀÚ¸®¼ö(iduMemList.cpp¿¡¼­ »ç¿ëÇÔ.)
-//1 : ¹®ÀÚ¿­³¡ null
+//10: UINT32_FMTì˜ 10ì§„ìˆ˜í‘œê¸°ìµœëŒ€ìžë¦¬ìˆ˜(iduMemList.cppì—ì„œ ì‚¬ìš©í•¨.)
+//1 : ë¬¸ìžì—´ë null
 //ex)64 - 7 -10 - 1
 #define IDU_MEM_POOL_NAME_LEN  ( IDU_MUTEX_NAME_LEN - \
                                  ID_SIZEOF(IDU_MEM_POOL_MUTEX_POSTFIX)-10 -1)

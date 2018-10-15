@@ -61,7 +61,7 @@ void isqlDouble::Reformat()
         sDouble = *(SDouble *)mValue;
 
         // fix PR-12295
-        // 0¿¡ °¡±î¿î ÀÛÀº °ªÀº 0À¸·Î Ãâ·ÂÇÔ.
+        // 0ì— ê°€ê¹Œìš´ ì‘ì€ ê°’ì€ 0ìœ¼ë¡œ ì¶œë ¥í•¨.
         if( ( sDouble < 1E-7 ) &&
             ( sDouble > -1E-7 ) )
         {

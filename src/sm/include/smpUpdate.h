@@ -65,7 +65,7 @@ public:
                                                 scOffset     aOffset,
                                                 idBool       aIsSetDeleteBit );
     
-    // ALTER TABLESPACE TBS1 OFFLINE .... ø° ¥Î«— REDO ºˆ«‡
+    // ALTER TABLESPACE TBS1 OFFLINE .... Ïóê ÎåÄÌïú REDO ÏàòÌñâ
     static IDE_RC redo_SCT_UPDATE_MRDB_ALTER_TBS_OFFLINE(
                        idvSQL*              aStatistics, 
                        void*                aTrans,
@@ -76,7 +76,7 @@ public:
                        SChar*               aValuePtr,
                        idBool               aIsRestart );
 
-    // ALTER TABLESPACE TBS1 OFFLINE .... ø° ¥Î«— UNDO ºˆ«‡
+    // ALTER TABLESPACE TBS1 OFFLINE .... Ïóê ÎåÄÌïú UNDO ÏàòÌñâ
     static IDE_RC undo_SCT_UPDATE_MRDB_ALTER_TBS_OFFLINE( 
                        idvSQL*              aStatistics, 
                        void*                aTrans,
@@ -88,7 +88,7 @@ public:
                        idBool               aIsRestart );
     
 
-    // ALTER TABLESPACE TBS1 ONLINE .... ø° ¥Î«— REDO ºˆ«‡
+    // ALTER TABLESPACE TBS1 ONLINE .... Ïóê ÎåÄÌïú REDO ÏàòÌñâ
     static IDE_RC redo_SCT_UPDATE_MRDB_ALTER_TBS_ONLINE(
                        idvSQL*              aStatistics, 
                        void*                aTrans,
@@ -99,7 +99,7 @@ public:
                        SChar*               aValuePtr,
                        idBool               aIsRestart );
     
-    // ALTER TABLESPACE TBS1 ONLINE .... ø° ¥Î«— UNDO ºˆ«‡
+    // ALTER TABLESPACE TBS1 ONLINE .... Ïóê ÎåÄÌïú UNDO ÏàòÌñâ
     static IDE_RC undo_SCT_UPDATE_MRDB_ALTER_TBS_ONLINE(
                       idvSQL*              aStatistics, 
                       void*                aTrans,
@@ -124,7 +124,7 @@ public:
 public:
 
 private:
-    // ALTER TABLESPACE TBS1 ONLINE/OFFLINE .... ø° ¥Î«— Log Image∏¶ ∫–ºÆ«—¥Ÿ.
+    // ALTER TABLESPACE TBS1 ONLINE/OFFLINE .... Ïóê ÎåÄÌïú Log ImageÎ•º Î∂ÑÏÑùÌïúÎã§.
     static IDE_RC getAlterTBSOnOffImage( UInt       aValueSize,
                                          SChar    * aValuePtr,
                                          UInt     * aState );

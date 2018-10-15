@@ -72,7 +72,7 @@ public class CmChannel extends CmBufferWriter
 
     private static final Pattern IP_PATTERN = Pattern.compile("(\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}|\\[[^\\]]+\\])");
 
-    // PROJ-2474 keystoreÆÄÀÏÀ» Á¢±ÙÇÏ´Â ±âº» ÇÁ·ÎÅäÄİÀº file:ÀÌ´Ù.
+    // PROJ-2474 keystoreíŒŒì¼ì„ ì ‘ê·¼í•˜ëŠ” ê¸°ë³¸ í”„ë¡œí† ì½œì€ file:ì´ë‹¤.
     private static final String DEFAULT_URL_FILE_SCHEME = "file:";
     private static final String DEFAULT_KEYSTORE_TYPE = "JKS";
 
@@ -115,9 +115,9 @@ public class CmChannel extends CmBufferWriter
 
     private int mLobCacheThreshold;
 
-    // PROJ-2474 SSLÀÌ È°¼ºÈ­ µÇ¾îÀÖ´ÂÁö ³ªÅ¸³»´Â flag
+    // PROJ-2474 SSLì´ í™œì„±í™” ë˜ì–´ìˆëŠ”ì§€ ë‚˜íƒ€ë‚´ëŠ” flag
     private boolean mUseSsl;
-    // PROJ-2474 SSL °ü·ÃµÈ ¼Ó¼ºµéÀ» °¡Áö°í ÀÖ´Â °´Ã¼
+    // PROJ-2474 SSL ê´€ë ¨ëœ ì†ì„±ë“¤ì„ ê°€ì§€ê³  ìˆëŠ” ê°ì²´
     private SSLProperties mSslProps;
     private transient Logger mCmLogger;
 
@@ -129,7 +129,7 @@ public class CmChannel extends CmBufferWriter
 
     private CmProtocolContext mAsyncContext;
 
-    // BUG-45237 DB Message protocolÀ» Ã³¸®ÇÒ Äİ¹é
+    // BUG-45237 DB Message protocolì„ ì²˜ë¦¬í•  ì½œë°±
     private AltibaseMessageCallback mMessageCallback;
 
     // Channel for Target
@@ -190,7 +190,7 @@ public class CmChannel extends CmBufferWriter
 
             if (mUserReadableLength > 0)
             {
-                // BUG-44553 clob µ¥ÀÌÅÍ¸¦ ¸ğµÎ ÀĞ¾ú´õ¶óµµ mCharBuf¿¡ compactµÈ µ¥ÀÌÅÍ°¡ ³²¾Æ ÀÖÀ¸¸é Á¾·áÇÏÁö ¾Ê´Â´Ù.
+                // BUG-44553 clob ë°ì´í„°ë¥¼ ëª¨ë‘ ì½ì—ˆë”ë¼ë„ mCharBufì— compactëœ ë°ì´í„°ê°€ ë‚¨ì•„ ìˆìœ¼ë©´ ì¢…ë£Œí•˜ì§€ ì•ŠëŠ”ë‹¤.
                 if (mUserReadableLength <= mTotalActualCharReadLength && mCharBuf.position() == 0)
                 {
                     return -1;
@@ -203,9 +203,9 @@ public class CmChannel extends CmBufferWriter
         }
 
         /**
-         * mCharBuf¸¦ encodingÇÑ ÈÄ ¼ÒÄÏ ¹öÆÛ·Î º¹»çÇÑ´Ù.
-         * @param aDst ¼ÒÄÏ ¹öÆÛ
-         * @return ½ÇÁ¦·Î ¼ÒÄÏ ¹öÆÛ·Î ÀÎÄÚµùµÇ¾î º¹»çµÈ »çÀÌÁî.
+         * mCharBufë¥¼ encodingí•œ í›„ ì†Œì¼“ ë²„í¼ë¡œ ë³µì‚¬í•œë‹¤.
+         * @param aDst ì†Œì¼“ ë²„í¼
+         * @return ì‹¤ì œë¡œ ì†Œì¼“ ë²„í¼ë¡œ ì¸ì½”ë”©ë˜ì–´ ë³µì‚¬ëœ ì‚¬ì´ì¦ˆ.
          */
         private int copyToSocketBuffer(ByteBuffer aDst)
         {
@@ -231,14 +231,14 @@ public class CmChannel extends CmBufferWriter
         }
 
         /**
-         * Src·ÎºÎÅÍ clob µ¥ÀÌÅÍ¸¦ ÀĞ¾î¼­ mCharBuf ¹öÆÛ¿¡ º¹»çÇÑ´Ù.
-         * @return ½ÇÁ¦·Î ÀĞ¾îµéÀÎ clob µ¥ÀÌÅÍ »çÀÌÁî
-         * @throws IOException read µµÁß I/O ¿¡·¯°¡ ¹ß»ıÇßÀ» ¶§
+         * Srcë¡œë¶€í„° clob ë°ì´í„°ë¥¼ ì½ì–´ì„œ mCharBuf ë²„í¼ì— ë³µì‚¬í•œë‹¤.
+         * @return ì‹¤ì œë¡œ ì½ì–´ë“¤ì¸ clob ë°ì´í„° ì‚¬ì´ì¦ˆ
+         * @throws IOException read ë„ì¤‘ I/O ì—ëŸ¬ê°€ ë°œìƒí–ˆì„ ë•Œ
          */
         private int readClobData() throws IOException
         {
             int sReadableCharLength = getReadableCharLength();
-            if (sReadableCharLength <= 0) // BUG-44553 ÀĞ¾îµéÀÏ clobµ¥ÀÌÅÍ°¡ ³²¾ÆÀÖÀ»¶§¸¸ read¸¦ ¼öÇà
+            if (sReadableCharLength <= 0) // BUG-44553 ì½ì–´ë“¤ì¼ clobë°ì´í„°ê°€ ë‚¨ì•„ìˆì„ë•Œë§Œ readë¥¼ ìˆ˜í–‰
             {
                 return 0;
             }
@@ -266,8 +266,8 @@ public class CmChannel extends CmBufferWriter
         }
 
         /**
-         * clob µ¥ÀÌÅÍ¸¦ ÀĞ¾îµéÀÏ ¼ö ÀÖ´Â ÃÖ´ë »çÀÌÁî¸¦ ±¸ÇÑ´Ù.
-         * @return ÀĞÀ» ¼ö ÀÖ´Â ÃÖ´ë »çÀÌÁî
+         * clob ë°ì´í„°ë¥¼ ì½ì–´ë“¤ì¼ ìˆ˜ ìˆëŠ” ìµœëŒ€ ì‚¬ì´ì¦ˆë¥¼ êµ¬í•œë‹¤.
+         * @return ì½ì„ ìˆ˜ ìˆëŠ” ìµœëŒ€ ì‚¬ì´ì¦ˆ
          */
         private int getReadableCharLength()
         {
@@ -275,7 +275,7 @@ public class CmChannel extends CmBufferWriter
 
             if (mUserReadableLength > 0)
             {
-                // BUG-44553 ½ÇÁ¦ ³²Àº ¾ç ¸¸Å­¸¸ °¡Á®¿Àµµ·Ï °ªÀ» º¸Á¤
+                // BUG-44553 ì‹¤ì œ ë‚¨ì€ ì–‘ ë§Œí¼ë§Œ ê°€ì ¸ì˜¤ë„ë¡ ê°’ì„ ë³´ì •
                 sReadableCharLength = Math.min(mUserReadableLength - mTotalActualCharReadLength, CLOB_BUF_SIZE);
                 sReadableCharLength = Math.min(mCharBuf.remaining(), sReadableCharLength);
             }
@@ -338,8 +338,8 @@ public class CmChannel extends CmBufferWriter
             try
             {
                 String sJreVersion = RuntimeEnvironmentVariables.getVariable("java.version", JRE_DEFAULT_VERSION);
-                // PROJ-2583 JDK1.4¿¡¼­´Â ¼³Á¤ÆÄÀÏ¿¡¼­ handlers¸¦ ÁöÁ¤ÇØµµ ºÒ·¯¿ÀÁö ¸øÇÏ±â ¶§¹®¿¡
-                // ÇÁ·Î±×·¥ÀûÀ¸·Î handler¸¦ addÇØÁØ´Ù.
+                // PROJ-2583 JDK1.4ì—ì„œëŠ” ì„¤ì •íŒŒì¼ì—ì„œ handlersë¥¼ ì§€ì •í•´ë„ ë¶ˆëŸ¬ì˜¤ì§€ ëª»í•˜ê¸° ë•Œë¬¸ì—
+                // í”„ë¡œê·¸ë¨ì ìœ¼ë¡œ handlerë¥¼ addí•´ì¤€ë‹¤.
                 if (sJreVersion.startsWith(JRE_DEFAULT_VERSION))
                 {
                     String sHandlers = getProperty(MultipleFileHandler.CM_HANDLERS, "");
@@ -392,15 +392,15 @@ public class CmChannel extends CmBufferWriter
     }
 
     /**
-     * Hostname¿¡ ´ëÇÑ IP ¸ñ·ÏÀ» ¾ò´Â´Ù.
+     * Hostnameì— ëŒ€í•œ IP ëª©ë¡ì„ ì–»ëŠ”ë‹¤.
      *
-     * @param aHost       IP ¸ñ·ÏÀ» ¾òÀ» Hostname
-     * @param aPreferIPv6 IP ¸ñ·Ï¿¡ IPv6°¡ ¸ÕÀú ³ª¿ÃÁö ¿©ºÎ.
-     *                    true¸é IPv6 ´ÙÀ½ IPv4 ÁÖ¼Ò°¡, false¸é IPv4 ´ÙÀ½ IPv6 ÁÖ¼Ò ¿Â´Ù.
+     * @param aHost       IP ëª©ë¡ì„ ì–»ì„ Hostname
+     * @param aPreferIPv6 IP ëª©ë¡ì— IPv6ê°€ ë¨¼ì € ë‚˜ì˜¬ì§€ ì—¬ë¶€.
+     *                    trueë©´ IPv6 ë‹¤ìŒ IPv4 ì£¼ì†Œê°€, falseë©´ IPv4 ë‹¤ìŒ IPv6 ì£¼ì†Œ ì˜¨ë‹¤.
      *
-     * @return Hostname¿¡ ´ëÇÑ IP ¸ñ·Ï
+     * @return Hostnameì— ëŒ€í•œ IP ëª©ë¡
      * 
-     * @throws SQLException ¾Ë ¼ö ¾ø´Â HostÀÌ°Å³ª, IP ¸ñ·Ï Á¶È¸°¡ Çã¿ëµÇÁö ¾ÊÀº °æ¿ì
+     * @throws SQLException ì•Œ ìˆ˜ ì—†ëŠ” Hostì´ê±°ë‚˜, IP ëª©ë¡ ì¡°íšŒê°€ í—ˆìš©ë˜ì§€ ì•Šì€ ê²½ìš°
      */
     private static List<InetAddress> getAllIpAddressesByName(String aHost, boolean aPreferIPv6) throws SQLException
     {
@@ -450,15 +450,15 @@ public class CmChannel extends CmBufferWriter
     }
 
     /**
-     * ¹°¸® ¿¬°áÀ» ¸Î°í, CmChannelÀ» »ç¿ëÇÏ±â À§ÇØ ÁØºñ¸¦ ÇÑ´Ù.
+     * ë¬¼ë¦¬ ì—°ê²°ì„ ë§ºê³ , CmChannelì„ ì‚¬ìš©í•˜ê¸° ìœ„í•´ ì¤€ë¹„ë¥¼ í•œë‹¤.
      * 
-     * @param aAddr            Á¢¼ÓÇÒ ¼­¹öÀÇ IP ÁÖ¼Ò ¶Ç´Â Hostname
-     * @param aBindAddr        ¼ÒÄÏ¿¡ ¹ÙÀÎµå ÇÒ IP ÁÖ¼Ò. nullÀÌ¸é ¹ÙÀÎµå ÇÏÁö ¾ÊÀ½.
-     * @param aPort            Á¢¼ÓÇÒ ¼­¹öÀÇ Port
-     * @param aLoginTimeout    Socket.connect()¿¡ »ç¿ëÇÒ Å¸ÀÓ¾Æ¿ô °ª (ÃÊ ´ÜÀ§)
-     * @param aResponseTimeout ¼ÒÄÏ Å¸ÀÓ¾Æ¿ô °ª (ÃÊ ´ÜÀ§)
+     * @param aAddr            ì ‘ì†í•  ì„œë²„ì˜ IP ì£¼ì†Œ ë˜ëŠ” Hostname
+     * @param aBindAddr        ì†Œì¼“ì— ë°”ì¸ë“œ í•  IP ì£¼ì†Œ. nullì´ë©´ ë°”ì¸ë“œ í•˜ì§€ ì•ŠìŒ.
+     * @param aPort            ì ‘ì†í•  ì„œë²„ì˜ Port
+     * @param aLoginTimeout    Socket.connect()ì— ì‚¬ìš©í•  íƒ€ì„ì•„ì›ƒ ê°’ (ì´ˆ ë‹¨ìœ„)
+     * @param aResponseTimeout ì†Œì¼“ íƒ€ì„ì•„ì›ƒ ê°’ (ì´ˆ ë‹¨ìœ„)
      * 
-     * @throws SQLException ÀÌ¹Ì ¿¬°áµÇ¾îÀÖ°Å³ª ¼ÒÄÏ »ı¼º, ÃÊ±âÈ­ ¶Ç´Â ¿¬°á¿¡ ½ÇÆĞÇÑ °æ¿ì
+     * @throws SQLException ì´ë¯¸ ì—°ê²°ë˜ì–´ìˆê±°ë‚˜ ì†Œì¼“ ìƒì„±, ì´ˆê¸°í™” ë˜ëŠ” ì—°ê²°ì— ì‹¤íŒ¨í•œ ê²½ìš°
      */
     public void open(String aAddr, String aBindAddr, int aPort, int aLoginTimeout, int aResponseTimeout)
         throws SQLException
@@ -520,14 +520,14 @@ public class CmChannel extends CmBufferWriter
     }
 
     /**
-     * ¹°¸® ¿¬°áÀ» ¸Î°í, CmChannelÀ» »ç¿ëÇÏ±â À§ÇØ ÁØºñ¸¦ ÇÑ´Ù.
+     * ë¬¼ë¦¬ ì—°ê²°ì„ ë§ºê³ , CmChannelì„ ì‚¬ìš©í•˜ê¸° ìœ„í•´ ì¤€ë¹„ë¥¼ í•œë‹¤.
      * 
-     * @param aSockAddr        Á¢¼ÓÇÒ ¼­¹ö
-     * @param aBindAddr        ¼ÒÄÏ¿¡ ¹ÙÀÎµå ÇÒ IP ÁÖ¼Ò. nullÀÌ¸é ¹ÙÀÎµå ÇÏÁö ¾ÊÀ½.
-     * @param aLoginTimeout    Socket.connect()¿¡ »ç¿ëÇÒ Å¸ÀÓ¾Æ¿ô °ª (ÃÊ ´ÜÀ§)
-     * @param aResponseTimeout ¼ÒÄÏ Å¸ÀÓ¾Æ¿ô °ª (ÃÊ ´ÜÀ§)
+     * @param aSockAddr        ì ‘ì†í•  ì„œë²„
+     * @param aBindAddr        ì†Œì¼“ì— ë°”ì¸ë“œ í•  IP ì£¼ì†Œ. nullì´ë©´ ë°”ì¸ë“œ í•˜ì§€ ì•ŠìŒ.
+     * @param aLoginTimeout    Socket.connect()ì— ì‚¬ìš©í•  íƒ€ì„ì•„ì›ƒ ê°’ (ì´ˆ ë‹¨ìœ„)
+     * @param aResponseTimeout ì†Œì¼“ íƒ€ì„ì•„ì›ƒ ê°’ (ì´ˆ ë‹¨ìœ„)
      * 
-     * @throws SQLException ÀÌ¹Ì ¿¬°áµÇ¾îÀÖ°Å³ª ¼ÒÄÏ »ı¼º, ÃÊ±âÈ­ ¶Ç´Â ¿¬°á¿¡ ½ÇÆĞÇÑ °æ¿ì
+     * @throws SQLException ì´ë¯¸ ì—°ê²°ë˜ì–´ìˆê±°ë‚˜ ì†Œì¼“ ìƒì„±, ì´ˆê¸°í™” ë˜ëŠ” ì—°ê²°ì— ì‹¤íŒ¨í•œ ê²½ìš°
      */
     private void open(SocketAddress aSockAddr, String aBindAddr, int aLoginTimeout, int aResponseTimeout)
         throws SQLException
@@ -577,8 +577,8 @@ public class CmChannel extends CmBufferWriter
             quiteClose();
             throw sEx;
         }
-        // connect ½ÇÆĞ½Ã ³¯ ¼ö ÀÖ´Â ¿¹¿Ü°¡ ÇÑÁ¾·ù°¡ ¾Æ´Ï¹Ç·Î ¸ğµç ¿¹¿Ü¸¦ Àâ¾Æ ¿¬°á ½ÇÆĞ·Î Ã³¸®ÇÑ´Ù.
-        // ¿¹¸¦µé¾î, AIX 6.1¿¡¼­´Â ClosedSelectorException°¡ ³ª´Âµ¥ ÀÌ´Â RuntimeExceptionÀÌ´Ù. (ref. BUG-33341)
+        // connect ì‹¤íŒ¨ì‹œ ë‚  ìˆ˜ ìˆëŠ” ì˜ˆì™¸ê°€ í•œì¢…ë¥˜ê°€ ì•„ë‹ˆë¯€ë¡œ ëª¨ë“  ì˜ˆì™¸ë¥¼ ì¡ì•„ ì—°ê²° ì‹¤íŒ¨ë¡œ ì²˜ë¦¬í•œë‹¤.
+        // ì˜ˆë¥¼ë“¤ì–´, AIX 6.1ì—ì„œëŠ” ClosedSelectorExceptionê°€ ë‚˜ëŠ”ë° ì´ëŠ” RuntimeExceptionì´ë‹¤. (ref. BUG-33341)
         catch (Exception sCauseEx)
         {
             quiteClose();
@@ -587,10 +587,10 @@ public class CmChannel extends CmBufferWriter
     }
 
     /**
-     * ÀÎÁõ¼­ Á¤º¸¸¦ ÀÌ¿ëÇØ SSLSocketFactory °´Ã¼¸¦ »ı¼ºÇÑ´Ù.
-     * @param aCertiProps ssl°ü·Ã ¼³Á¤ Á¤º¸¸¦ °¡Áö°í ÀÖ´Â °´Ã¼
-     * @return SSLSocketFactory °´Ã¼
-     * @throws SQLException keystore¿¡¼­ ¿¡·¯°¡ ¹ß»ıÇÑ °æ¿ì
+     * ì¸ì¦ì„œ ì •ë³´ë¥¼ ì´ìš©í•´ SSLSocketFactory ê°ì²´ë¥¼ ìƒì„±í•œë‹¤.
+     * @param aCertiProps sslê´€ë ¨ ì„¤ì • ì •ë³´ë¥¼ ê°€ì§€ê³  ìˆëŠ” ê°ì²´
+     * @return SSLSocketFactory ê°ì²´
+     * @throws SQLException keystoreì—ì„œ ì—ëŸ¬ê°€ ë°œìƒí•œ ê²½ìš°
      */
     private SSLSocketFactory getSslSocketFactory(SSLProperties aCertiProps) throws SQLException
     {
@@ -616,7 +616,7 @@ public class CmChannel extends CmBufferWriter
 
         loadKeyStore(sKeyStoreUrl, sKeyStorePassword, sKeyStoreType, sKmf);
 
-        // BUG-40165 verify_server_certificate°¡ trueÀÏ¶§¸¸ TrustManagerFactory¸¦ ÃÊ±âÈ­ ÇØÁØ´Ù.
+        // BUG-40165 verify_server_certificateê°€ trueì¼ë•Œë§Œ TrustManagerFactoryë¥¼ ì´ˆê¸°í™” í•´ì¤€ë‹¤.
         if (aCertiProps.verifyServerCertificate())
         {
             loadKeyStore(sTrustStoreUrl, sTrustStorePassword, sTrustStoreType, sTmf);
@@ -659,7 +659,7 @@ public class CmChannel extends CmBufferWriter
     }
 
     /**
-     * PROJ-2474 KeyStore ¹× TrustStore ÆÄÀÏÀ» ÀĞ¾îµéÀÎ´Ù.
+     * PROJ-2474 KeyStore ë° TrustStore íŒŒì¼ì„ ì½ì–´ë“¤ì¸ë‹¤.
      */
     private void loadKeyStore(String aKeyStoreUrl, String aKeyStorePassword, String aKeyStoreType, 
                                     Object aKeystoreFactory) throws SQLException
@@ -755,8 +755,8 @@ public class CmChannel extends CmBufferWriter
     }
 
     /**
-     * Ã¤³ÎÀ» ´İ´Â´Ù.
-     * ÀÌ ¶§, ¿¹¿Ü°¡ ¹ß»ıÇÏ´õ¶óµµ Á¶¿ëÈ÷ ³Ñ¾î°£´Ù.
+     * ì±„ë„ì„ ë‹«ëŠ”ë‹¤.
+     * ì´ ë•Œ, ì˜ˆì™¸ê°€ ë°œìƒí•˜ë”ë¼ë„ ì¡°ìš©íˆ ë„˜ì–´ê°„ë‹¤.
      */
     public void quiteClose()
     {
@@ -772,7 +772,7 @@ public class CmChannel extends CmBufferWriter
 
     public void setCharset(Charset aCharset, Charset aNCharset)
     {
-        super.setCharset(aCharset, aNCharset); // BUG-45156 encoder¿¡ ´ëÇÑ ºÎºĞÀº CmBufferWrite¿¡¼­ Ã³¸®
+        super.setCharset(aCharset, aNCharset); // BUG-45156 encoderì— ëŒ€í•œ ë¶€ë¶„ì€ CmBufferWriteì—ì„œ ì²˜ë¦¬
 
         mDBDecoder = aCharset.newDecoder();
         mNCharDecoder = aNCharset.newDecoder();
@@ -784,7 +784,7 @@ public class CmChannel extends CmBufferWriter
 
         CLOB_BUF_SIZE = LobConst.LOB_BUFFER_SIZE  / getByteLengthPerChar();
 
-        // PROJ-2427 getBytes½Ã »ç¿ëÇÒ Encoder¸¦ ColumnFactory¿¡ ¼ÂÆÃ
+        // PROJ-2427 getBytesì‹œ ì‚¬ìš©í•  Encoderë¥¼ ColumnFactoryì— ì…‹íŒ…
         mColumnFactory.setCharSetEncoder(mDBEncoder);
         mColumnFactory.setNCharSetEncoder(mNCharEncoder);
     }
@@ -875,7 +875,7 @@ public class CmChannel extends CmBufferWriter
                 int sOrgLimit = aValue.limit();
                 aValue.limit(aValue.position() + mBuffer.remaining());
                 mBuffer.put(aValue);
-                sendPacket(false); // ºĞÇÒ µÊ = ¸¶Áö¸·ÀÌ ¾Æ´Ô
+                sendPacket(false); // ë¶„í•  ë¨ = ë§ˆì§€ë§‰ì´ ì•„ë‹˜
 
                 aValue.limit(sOrgLimit);
                 initToWrite();
@@ -906,11 +906,11 @@ public class CmChannel extends CmBufferWriter
     }
 
     /**
-     * LOB I/O¿¡ »ç¿ëÇÒ ÀÓ½Ã ¹öÆÛ¸¦ ¾ò´Â´Ù.
+     * LOB I/Oì— ì‚¬ìš©í•  ì„ì‹œ ë²„í¼ë¥¼ ì–»ëŠ”ë‹¤.
      * <p>
-     * µ¿½Ã¼º ¹®Á¦°¡ ¹ß»ıÇÒ ¼ö ÀÖÀ¸¹Ç·Î ¹İµå½Ã synchronozed ±¸°£¿¡¼­¸¸ »ç¿ëÇØ¾ßÇÑ´Ù.
+     * ë™ì‹œì„± ë¬¸ì œê°€ ë°œìƒí•  ìˆ˜ ìˆìœ¼ë¯€ë¡œ ë°˜ë“œì‹œ synchronozed êµ¬ê°„ì—ì„œë§Œ ì‚¬ìš©í•´ì•¼í•œë‹¤.
      * 
-     * @return LOB I/O¿¡ »ç¿ëÇÒ ÀÓ½Ã ¹öÆÛ
+     * @return LOB I/Oì— ì‚¬ìš©í•  ì„ì‹œ ë²„í¼
      */
     byte[] getLobBuffer()
     {
@@ -1017,12 +1017,12 @@ public class CmChannel extends CmBufferWriter
     }
 
     /**
-     * µ¥ÀÌÅ¸¸¦ aSkipLen ¸¸Å­ °Ç³Ê ¶Ú´Ù.
+     * ë°ì´íƒ€ë¥¼ aSkipLen ë§Œí¼ ê±´ë„ˆ ë›´ë‹¤.
      * <p>
-     * ¸¸¾à, aSkipLenÀÌ 0ÀÌ¸é Á¶¿ëÈ÷ ¹«½ÃÇÑ´Ù.
+     * ë§Œì•½, aSkipLenì´ 0ì´ë©´ ì¡°ìš©íˆ ë¬´ì‹œí•œë‹¤.
      *
-     * @param aSkipLen °Ç³Ê ¶Û byte ¼ö
-     * @throws InternalError aSkipLenÀÌ 0º¸´Ù ÀÛÀ» °æ¿ì
+     * @param aSkipLen ê±´ë„ˆ ë›¸ byte ìˆ˜
+     * @throws InternalError aSkipLenì´ 0ë³´ë‹¤ ì‘ì„ ê²½ìš°
      */
     public void skip(int aSkipLen)
     {
@@ -1071,7 +1071,7 @@ public class CmChannel extends CmBufferWriter
         // PROJ-2583 jdbc packet logging
         if (TraceFlag.TRACE_COMPILE && TraceFlag.TRACE_ENABLED && mCmLogger.isLoggable(Level.FINEST))
         {
-            mBuffer.rewind();  // BUG-43694 limit¸¦ ÇÏÁö ¾Ê°í ¹Ù·Î rewindÇÑ´Ù.
+            mBuffer.rewind();  // BUG-43694 limitë¥¼ í•˜ì§€ ì•Šê³  ë°”ë¡œ rewindí•œë‹¤.
             byte[] sByteArry = new byte[mBuffer.remaining()];
             mBuffer.get(sByteArry);
             String sDumpedBytes = DumpByteUtil.dumpBytes(sByteArry, 0, sByteArry.length);
@@ -1113,7 +1113,7 @@ public class CmChannel extends CmBufferWriter
             }
             catch (SocketTimeoutException sTimeoutException)
             {
-                quiteClose(); // RESPONSE_TIMEOUTÀÌ ³ª¸é ¿¬°áÀ» ²÷´Â´Ù.
+                quiteClose(); // RESPONSE_TIMEOUTì´ ë‚˜ë©´ ì—°ê²°ì„ ëŠëŠ”ë‹¤.
                 Error.throwSQLException(ErrorDef.RESPONSE_TIMEOUT, String.valueOf(mResponseTimeout), sTimeoutException);
             }
             catch (IOException sException)
@@ -1289,12 +1289,12 @@ public class CmChannel extends CmBufferWriter
     }
 
     /**
-     * Char, Varchar ÄÃ·³ µ¥ÀÌÅÍ¸¦ ÀĞÀº ÈÄ Charset¿¡ ¸Â°Ô decodeÇÑ ¹®ÀÚ¿­À» ¸®ÅÏÇÑ´Ù.
-     * @param aColumnSize ÄÃ·³µ¥ÀÌÅÍ »çÀÌÁî
-     * @param aSkipSize  ½ºÅµ»çÀÌÁî
-     * @param aIsNationalCharset ´Ù±¹¾îÄ³¸¯ÅÍ¼ÂÀÎÁö ¿©ºÎ
-     * @return µğÄÚµùµÈ char, varcharÄÃ·³ ½ºÆ®¸µ
-     * @throws SQLException Á¤»óÀûÀ¸·Î ÄÃ·³µ¥ÀÌÅÍ¸¦ ¹Ş¾Æ¿ÀÁö ¸øÇÑ °æ¿ì
+     * Char, Varchar ì»¬ëŸ¼ ë°ì´í„°ë¥¼ ì½ì€ í›„ Charsetì— ë§ê²Œ decodeí•œ ë¬¸ìì—´ì„ ë¦¬í„´í•œë‹¤.
+     * @param aColumnSize ì»¬ëŸ¼ë°ì´í„° ì‚¬ì´ì¦ˆ
+     * @param aSkipSize  ìŠ¤í‚µì‚¬ì´ì¦ˆ
+     * @param aIsNationalCharset ë‹¤êµ­ì–´ìºë¦­í„°ì…‹ì¸ì§€ ì—¬ë¶€
+     * @return ë””ì½”ë”©ëœ char, varcharì»¬ëŸ¼ ìŠ¤íŠ¸ë§
+     * @throws SQLException ì •ìƒì ìœ¼ë¡œ ì»¬ëŸ¼ë°ì´í„°ë¥¼ ë°›ì•„ì˜¤ì§€ ëª»í•œ ê²½ìš°
      */
     public String readCharVarcharColumnString(int aColumnSize, int aSkipSize,
                                               boolean aIsNationalCharset) throws SQLException
@@ -1324,7 +1324,7 @@ public class CmChannel extends CmBufferWriter
                 char data = (char)aByteBuf.get();
                 if (sResult.isUnmappable())
                 {
-                    // fix BUG-27782 º¯È¯ÇÒ ¼ö ¾ø´Â ¹®ÀÚ´Â '?'·Î Ãâ·Â
+                    // fix BUG-27782 ë³€í™˜í•  ìˆ˜ ì—†ëŠ” ë¬¸ìëŠ” '?'ë¡œ ì¶œë ¥
                     mCharBuf.put('?');
                 }
                 else if (sResult.isMalformed())
@@ -1346,15 +1346,15 @@ public class CmChannel extends CmBufferWriter
     }
 
     /**
-     * DB Message ÇÁ·ÎÅäÄİÀÇ °á°ú¸¦ ÀĞ¾î ¸Ş½ÃÁö Ã³¸® Äİ¹é¿¡ À§ÀÓÇÑ´Ù.
-     * @throws SQLException message¸¦ ÀĞ¾î¿À´Â µµÁß ¿¡·¯°¡ ¹ß»ıÇßÀ» ¶§
+     * DB Message í”„ë¡œí† ì½œì˜ ê²°ê³¼ë¥¼ ì½ì–´ ë©”ì‹œì§€ ì²˜ë¦¬ ì½œë°±ì— ìœ„ì„í•œë‹¤.
+     * @throws SQLException messageë¥¼ ì½ì–´ì˜¤ëŠ” ë„ì¤‘ ì—ëŸ¬ê°€ ë°œìƒí–ˆì„ ë•Œ
      */
     void readAndPrintServerMessage() throws SQLException
     {
         long sSize = readUnsignedInt();
         if (mMessageCallback == null)
         {
-            // BUG-45237 Äİ¹éÀÌ ¾øÀ¸¸é ¸Ş½ÃÁö¸¦ ÀĞÁö ¾Ê°í ±×³É skipÇÑ´Ù.
+            // BUG-45237 ì½œë°±ì´ ì—†ìœ¼ë©´ ë©”ì‹œì§€ë¥¼ ì½ì§€ ì•Šê³  ê·¸ëƒ¥ skipí•œë‹¤.
             skip((int)sSize);
         }
         else
@@ -1377,7 +1377,7 @@ public class CmChannel extends CmBufferWriter
                 }
             }
 
-            // BUG-45237 DB Message ÇÁ·ÎÅäÄİÀ» Ã³¸®ÇÒ Äİ¹éÀÌ ÀÖÀ¸¸é Äİ¹éÀ» È£ÃâÇÑ´Ù.
+            // BUG-45237 DB Message í”„ë¡œí† ì½œì„ ì²˜ë¦¬í•  ì½œë°±ì´ ìˆìœ¼ë©´ ì½œë°±ì„ í˜¸ì¶œí•œë‹¤.
             mMessageCallback.print(new String(sBuf));
         }
     }
@@ -1498,8 +1498,8 @@ public class CmChannel extends CmBufferWriter
                 }
             }
 
-            // ¹®ÀÚ°¡ Â©·Á encode¸¦ ¸øÇØ ¹öÆÛ¿¡ ³²°ÜµĞ µ¥ÀÌÅ¸°¡ ÀÖÀ» ¼ö ÀÖÀ¸¹Ç·Î
-            // ³²Àº ±æÀÌ¸¦ ±¸ÇØ ´Ù½Ã Ã³¸®ÇÒ ±æÀÌ¿¡ ´õÇØÁà¾ß ÇÑ´Ù.
+            // ë¬¸ìê°€ ì§¤ë ¤ encodeë¥¼ ëª»í•´ ë²„í¼ì— ë‚¨ê²¨ë‘” ë°ì´íƒ€ê°€ ìˆì„ ìˆ˜ ìˆìœ¼ë¯€ë¡œ
+            // ë‚¨ì€ ê¸¸ì´ë¥¼ êµ¬í•´ ë‹¤ì‹œ ì²˜ë¦¬í•  ê¸¸ì´ì— ë”í•´ì¤˜ì•¼ í•œë‹¤.
             int sRemainBytesSize = mBuffer.remaining();
             sNeededBytesSize -= sReadableBytesSize;
             checkReadable(sNeededBytesSize);
@@ -1518,15 +1518,15 @@ public class CmChannel extends CmBufferWriter
                 sStrBuf.append(mCharBuf.array(), mCharBuf.arrayOffset(), mCharBuf.limit());
                 if (sCoderResult.isError())
                 {
-                    // ÇØ´ç byte µé¿¡ ´ëÇØ mapping ÇÒ ¼ö ÀÖ´Â char °¡ ¾øÀ» °æ¿ì :
-                    // ByteBuffer ¸¦ ¼Òºñ ½ÃÄÑÁÖ¾î¾ß ´ÙÀ½ ±ÛÀÚ¿¡ ´ëÇÑ Ã³¸®°¡ °¡´ÉÇÏ¹Ç·Î,
-                    // ÀÏ´Ü getÀ¸·Î µ¥ÀÌÅÍ¸¦ ¹ŞÀº µÚ, ÀÌ¸¦ °­Á¦·Î string buffer¿¡ ³ÖÀ½.
-                    // ½ÇÁ¦ encoding table °ª°ú ´Ù¸¦ °ÍÀÌ¹Ç·Î ±úÁø ¹®ÀÚ·Î Ç¥ÇöµÊ.
-                    // ('?' ·Î Ç¥ÇöµÇ¸ç, ÄÚµå°ªÀº 63)
+                    // í•´ë‹¹ byte ë“¤ì— ëŒ€í•´ mapping í•  ìˆ˜ ìˆëŠ” char ê°€ ì—†ì„ ê²½ìš° :
+                    // ByteBuffer ë¥¼ ì†Œë¹„ ì‹œì¼œì£¼ì–´ì•¼ ë‹¤ìŒ ê¸€ìì— ëŒ€í•œ ì²˜ë¦¬ê°€ ê°€ëŠ¥í•˜ë¯€ë¡œ,
+                    // ì¼ë‹¨ getìœ¼ë¡œ ë°ì´í„°ë¥¼ ë°›ì€ ë’¤, ì´ë¥¼ ê°•ì œë¡œ string bufferì— ë„£ìŒ.
+                    // ì‹¤ì œ encoding table ê°’ê³¼ ë‹¤ë¥¼ ê²ƒì´ë¯€ë¡œ ê¹¨ì§„ ë¬¸ìë¡œ í‘œí˜„ë¨.
+                    // ('?' ë¡œ í‘œí˜„ë˜ë©°, ì½”ë“œê°’ì€ 63)
                     char data = (char)mBuffer.get();
                     if (sCoderResult.isUnmappable())
                     {
-                        // fix BUG-27782 º¯È¯ÇÒ ¼ö ¾ø´Â ¹®ÀÚ´Â '?'·Î Ãâ·ÂÇÑ´Ù.
+                        // fix BUG-27782 ë³€í™˜í•  ìˆ˜ ì—†ëŠ” ë¬¸ìëŠ” '?'ë¡œ ì¶œë ¥í•œë‹¤.
                         sStrBuf.append("?");
                     }
                     else if (sCoderResult.isMalformed())
@@ -1667,9 +1667,9 @@ public class CmChannel extends CmBufferWriter
     }
 
     /**
-     * PROJ-2474 ssl_enable ÀÌ È°¼ºÈ­ µÇ¾î ÀÖ´Â °æ¿ì mUseSsl flag¸¦ true·Î ¼ÂÆÃÇØÁÖ°í, ÀÎÁõ¼­ °ü·ÃµÈ Á¤º¸¸¦ ÀĞ¾î¿Í
-     * mSslProps °´Ã¼¿¡ ÀúÀåÇÑ´Ù.
-     * @param aProps  AltibaseProperties°´Ã¼
+     * PROJ-2474 ssl_enable ì´ í™œì„±í™” ë˜ì–´ ìˆëŠ” ê²½ìš° mUseSsl flagë¥¼ trueë¡œ ì…‹íŒ…í•´ì£¼ê³ , ì¸ì¦ì„œ ê´€ë ¨ëœ ì •ë³´ë¥¼ ì½ì–´ì™€
+     * mSslProps ê°ì²´ì— ì €ì¥í•œë‹¤.
+     * @param aProps  AltibasePropertiesê°ì²´
      */
     public void setSslProps(AltibaseProperties aProps)
     {
@@ -1678,8 +1678,8 @@ public class CmChannel extends CmBufferWriter
     }
 
     /**
-     * ÇöÀç SSLSocket¿¡¼­ °¡´ÉÇÑ CipherSuites ¸®½ºÆ®¸¦ µ¹·ÁÁØ´Ù.
-     * @return CipherSuite ¸®½ºÆ®
+     * í˜„ì¬ SSLSocketì—ì„œ ê°€ëŠ¥í•œ CipherSuites ë¦¬ìŠ¤íŠ¸ë¥¼ ëŒë ¤ì¤€ë‹¤.
+     * @return CipherSuite ë¦¬ìŠ¤íŠ¸
      */
     public String[] getCipherSuitList()
     {
@@ -1687,7 +1687,7 @@ public class CmChannel extends CmBufferWriter
     }
 
     /**
-     * Socket receive buffer Å©±â¸¦ ¹İÈ¯ÇÑ´Ù.
+     * Socket receive buffer í¬ê¸°ë¥¼ ë°˜í™˜í•œë‹¤.
      */
     public int getSockRcvBufSize()
     {
@@ -1695,7 +1695,7 @@ public class CmChannel extends CmBufferWriter
     }
 
     /**
-     * Socket receive buffer Å©±â¸¦ ¼³Á¤ÇÑ´Ù.
+     * Socket receive buffer í¬ê¸°ë¥¼ ì„¤ì •í•œë‹¤.
      */
     public void setSockRcvBufSize(int aSockRcvBufSize) throws IOException
     {
@@ -1710,7 +1710,7 @@ public class CmChannel extends CmBufferWriter
     }
 
     /**
-     * Socket receive buffer Å©±â¸¦ CM block ´ÜÀ§·Î ¼³Á¤ÇÑ´Ù.
+     * Socket receive buffer í¬ê¸°ë¥¼ CM block ë‹¨ìœ„ë¡œ ì„¤ì •í•œë‹¤.
      */
     public void setSockRcvBufBlockRatio(int aSockRcvBufBlockRatio) throws IOException
     {
@@ -1734,7 +1734,7 @@ public class CmChannel extends CmBufferWriter
     }
 
     /**
-     * ºñµ¿±âÀûÀ¸·Î fetch ÇÁ·ÎÅäÄİÀ» ¼Û½ÅÇÑ protocol context ¸¦ ÀúÀåÇÑ´Ù.
+     * ë¹„ë™ê¸°ì ìœ¼ë¡œ fetch í”„ë¡œí† ì½œì„ ì†¡ì‹ í•œ protocol context ë¥¼ ì €ì¥í•œë‹¤.
      */
     public void setAsyncContext(CmProtocolContext aContext)
     {
@@ -1742,7 +1742,7 @@ public class CmChannel extends CmBufferWriter
     }
 
     /**
-     * ºñµ¿±âÀûÀ¸·Î fetch ÇÁ·ÎÅäÄİÀ» ¼Û½ÅÇÑ protocol context ¸¦ ¾ò´Â´Ù.
+     * ë¹„ë™ê¸°ì ìœ¼ë¡œ fetch í”„ë¡œí† ì½œì„ ì†¡ì‹ í•œ protocol context ë¥¼ ì–»ëŠ”ë‹¤.
      */
     public boolean isAsyncSent()
     {
@@ -1750,7 +1750,7 @@ public class CmChannel extends CmBufferWriter
     }
 
     /**
-     * ºñµ¿±âÀûÀ¸·Î fetch ÇÁ·ÎÅäÄİÀ» ¼Û½ÅÇÑ protocol context ¸¦ ¾ò´Â´Ù.
+     * ë¹„ë™ê¸°ì ìœ¼ë¡œ fetch í”„ë¡œí† ì½œì„ ì†¡ì‹ í•œ protocol context ë¥¼ ì–»ëŠ”ë‹¤.
      */
     public CmProtocolContext getAsyncContext()
     {
@@ -1758,7 +1758,7 @@ public class CmChannel extends CmBufferWriter
     }
 
     /**
-     * Socket ÀÇ file descriptor ¸¦ ¹İÈ¯ÇÑ´Ù.
+     * Socket ì˜ file descriptor ë¥¼ ë°˜í™˜í•œë‹¤.
      */
     public int getSocketFD() throws SQLException
     {
@@ -1780,8 +1780,8 @@ public class CmChannel extends CmBufferWriter
     }
 
     /**
-     * AltibaseConnectionÀ¸·Î ºÎÅÍ Message Callback °´Ã¼¸¦ ÁÖÀÔ¹Ş´Â´Ù.
-     * @param aCallback Äİ¹é°´Ã¼
+     * AltibaseConnectionìœ¼ë¡œ ë¶€í„° Message Callback ê°ì²´ë¥¼ ì£¼ì…ë°›ëŠ”ë‹¤.
+     * @param aCallback ì½œë°±ê°ì²´
      */
     public void setMessageCallback(AltibaseMessageCallback aCallback)
     {

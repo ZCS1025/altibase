@@ -289,9 +289,9 @@ IDE_RC rpnMessenger::connect( cmiConnectArg * aConnectArg )
 
     sTimeOut.initialize( RPU_REPLICATION_CONNECT_TIMEOUT, 0 );
 
-    /* receiver°¡ restartµÇ¾úÀ» ¶§, »õ·Î¿î conncet°¡ ¸Î¾îÁö¹Ç·Î context¸¦ ÃÊ±âÈ­ÇÏ¿© »ç¿ëÇØ¾ßÇÑ´Ù.
-     * ÃÊ±âÈ­ÇÏÁö ¾ÊÀ¸¸é, contextÀÇ mSeqNo°¡ ´Ş¶ó ½ÇÆĞÇÏ°Ô µÈ´Ù.
-     * (void)cmiFreeCmBlock( &mProtocolContext );´Â ÀÌÀü ¿¬°á Á¾·á½Ã ºÒ·ÁÁ³¾î¾ßÇÑ´Ù.
+    /* receiverê°€ restartë˜ì—ˆì„ ë•Œ, ìƒˆë¡œìš´ conncetê°€ ë§ºì–´ì§€ë¯€ë¡œ contextë¥¼ ì´ˆê¸°í™”í•˜ì—¬ ì‚¬ìš©í•´ì•¼í•œë‹¤.
+     * ì´ˆê¸°í™”í•˜ì§€ ì•Šìœ¼ë©´, contextì˜ mSeqNoê°€ ë‹¬ë¼ ì‹¤íŒ¨í•˜ê²Œ ëœë‹¤.
+     * (void)cmiFreeCmBlock( &mProtocolContext );ëŠ” ì´ì „ ì—°ê²° ì¢…ë£Œì‹œ ë¶ˆë ¤ì¡Œì–´ì•¼í•œë‹¤.
      */
 
     IDE_TEST( initializeCmBlock() != IDE_SUCCESS );
@@ -1146,27 +1146,27 @@ IDE_RC rpnMessenger::sendXLogLob( smTID               aTransID,
     sTable     = (void *)smiGetTable( aTableOID );
     sTableInfo = (qcmTableInfo *)rpdCatalog::rpdGetTableTempInfo( (const void *)sTable );
     sColCount  = smiGetTableColumnCount( sTable );
-    sPKIndex   = sTableInfo->primaryKey;    // SYNC´Â ÇöÀç Á¤º¸¸¦ »ç¿ëÇÑ´Ù.
+    sPKIndex   = sTableInfo->primaryKey;    // SYNCëŠ” í˜„ì¬ ì •ë³´ë¥¼ ì‚¬ìš©í•œë‹¤.
     sPKColCnt  = sPKIndex->keyColCount;
 
-    /* LOB Cursor openÀ» À§ÇØ¼­ Primary Key°¡ ÇÊ¿äÇÔ. Primary Key¸¦
-     * ±¸¼ºÇÏ±â À§ÇÑ ¸Ş¸ğ¸® ÇÒ´ç */
+    /* LOB Cursor openì„ ìœ„í•´ì„œ Primary Keyê°€ í•„ìš”í•¨. Primary Keyë¥¼
+     * êµ¬ì„±í•˜ê¸° ìœ„í•œ ë©”ëª¨ë¦¬ í• ë‹¹ */
     IDE_TEST_RAISE( iduMemMgr::malloc( IDU_MEM_RP_RPX_SYNC,
                                        ID_SIZEOF(smiValue) * sPKColCnt,
                                        (void **)&sPK,
                                        IDU_MEM_IMMEDIATE )
                     != IDE_SUCCESS, ERR_MEMORY_ALLOC_PK );
 
-    /* ÇöÀç´Â °¢ PieceÀÇ ±æÀÌ¸¦ 32K·Î ÇÏµåÄÚµùÇÑ »óÅÂÀÓ. ÃßÈÄ¿¡
-     * Property µîÀ¸·Î º¯È¯ÇÏ´Â ¹æ¹ıÀ» °í·ÁÇØ º¼ ¼ö ÀÖÀ½ */
+    /* í˜„ì¬ëŠ” ê° Pieceì˜ ê¸¸ì´ë¥¼ 32Kë¡œ í•˜ë“œì½”ë”©í•œ ìƒíƒœì„. ì¶”í›„ì—
+     * Property ë“±ìœ¼ë¡œ ë³€í™˜í•˜ëŠ” ë°©ë²•ì„ ê³ ë ¤í•´ ë³¼ ìˆ˜ ìˆìŒ */
     IDE_TEST_RAISE( iduMemMgr::malloc( IDU_MEM_RP_RPX_SYNC,
                                        sPieceLen,
                                        (void **)&sPiece,
                                        IDU_MEM_IMMEDIATE )
                     != IDE_SUCCESS, ERR_MEMORY_ALLOC_PIECE );
 
-    /* Primary Key¸¦ ±¸¼ºÇÑ´Ù. ÀÌ¹Ì readRow()¸¦ ÅëÇÏ¿© record¸¦ fetchÇÑ »óÅÂÀÌ¹Ç·Î
-     * ¿©±â¼­´Â Primary Key column¿¡ ´ëÇÏ¿©, smiValue array¸¦ ±¸¼ºÇÏµµ·Ï ÇÑ´Ù.
+    /* Primary Keyë¥¼ êµ¬ì„±í•œë‹¤. ì´ë¯¸ readRow()ë¥¼ í†µí•˜ì—¬ recordë¥¼ fetchí•œ ìƒíƒœì´ë¯€ë¡œ
+     * ì—¬ê¸°ì„œëŠ” Primary Key columnì— ëŒ€í•˜ì—¬, smiValue arrayë¥¼ êµ¬ì„±í•˜ë„ë¡ í•œë‹¤.
      */
     for ( i = 0; i < sPKColCnt; i ++ )
     {
@@ -1253,10 +1253,10 @@ IDE_RC rpnMessenger::sendXLogLob( smTID               aTransID,
                                                        sLOBSize )
                         != IDE_SUCCESS, ERR_SEND_PREPARE4WRITE );
 
-        /* ½ÇÁ¦ LOB value¸¦ readÇÏ¿© Àü¼ÛÇÏµµ·Ï ÇÑ´Ù. ÇÑ¹ø¿¡ ¸ğµç LOB value¸¦ Àü¼ÛÇÏ·Á°í ÇÏ¸é,
-         * BufferÀÇ ÇÒ´ç Å©±â°¡ Ä¿Áö´Â ´ÜÁ¡ÀÌ ÀÖ¾î¼­, ÁÖ¾îÁø Å©±â¸¸Å­ ºĞÇÒÇÏ¿©
-         * read -> send ÇÏµµ·Ï ÇÑ´Ù. ÇöÀç´Â 32KB·Î Á¤ÀÇÇØ ³õ¾ÒÀ¸³ª, ÃßÈÄ¿¡ º¯°æÀÌ
-         * °¡´ÉÇÏµµ·Ï ÇÑ´Ù.
+        /* ì‹¤ì œ LOB valueë¥¼ readí•˜ì—¬ ì „ì†¡í•˜ë„ë¡ í•œë‹¤. í•œë²ˆì— ëª¨ë“  LOB valueë¥¼ ì „ì†¡í•˜ë ¤ê³  í•˜ë©´,
+         * Bufferì˜ í• ë‹¹ í¬ê¸°ê°€ ì»¤ì§€ëŠ” ë‹¨ì ì´ ìˆì–´ì„œ, ì£¼ì–´ì§„ í¬ê¸°ë§Œí¼ ë¶„í• í•˜ì—¬
+         * read -> send í•˜ë„ë¡ í•œë‹¤. í˜„ì¬ëŠ” 32KBë¡œ ì •ì˜í•´ ë†“ì•˜ìœ¼ë‚˜, ì¶”í›„ì— ë³€ê²½ì´
+         * ê°€ëŠ¥í•˜ë„ë¡ í•œë‹¤.
          */
         for ( j = 0; j < (sLOBSize / sPieceLen); j ++ )
         {
@@ -1476,16 +1476,16 @@ IDE_RC rpnMessenger::sendTrCommit( rpdTransTbl      * aTransTbl,
 
     if ( aTransTbl->isSvpListSent( aLogAnlz->mTID ) != ID_TRUE )
     {
-        // BUG-28206 ºÒÇÊ¿äÇÑ Transaction BeginÀ» ¹æÁö
+        // BUG-28206 ë¶ˆí•„ìš”í•œ Transaction Beginì„ ë°©ì§€
     }
     else
     {
         setLastSN( aSenderInfo, aLogAnlz->mTID, aLogAnlz->mSN );
 
-        /* proj-1608 recovery sender´Â ¸Å commit¸¶´Ù
-         * ack¸¦ ¼ö½ÅÇÏ¿© ÇØ´ç Æ®·£Àè¼ÇÀ» sn map¿¡¼­ Áö¿î´Ù.
-         * recovery°úÁ¤¿¡¼­´Â ÀÌ¹Ì ¼öÇàÇÑ Æ®·£Àè¼ÇÀ» ´Ù½Ã
-         * ¼öÇàÇÏÁö ¾Êµµ·Ï ÇÏ±â À§ÇÔÀÌ´Ù.
+        /* proj-1608 recovery senderëŠ” ë§¤ commitë§ˆë‹¤
+         * ackë¥¼ ìˆ˜ì‹ í•˜ì—¬ í•´ë‹¹ íŠ¸ëœì­ì…˜ì„ sn mapì—ì„œ ì§€ìš´ë‹¤.
+         * recoveryê³¼ì •ì—ì„œëŠ” ì´ë¯¸ ìˆ˜í–‰í•œ íŠ¸ëœì­ì…˜ì„ ë‹¤ì‹œ
+         * ìˆ˜í–‰í•˜ì§€ ì•Šë„ë¡ í•˜ê¸° ìœ„í•¨ì´ë‹¤.
          */
         if ( mSNMapMgr != NULL )
         {
@@ -1546,7 +1546,7 @@ IDE_RC rpnMessenger::sendTrAbort( rpdTransTbl       * aTransTbl,
 {
     if ( aTransTbl->isSvpListSent( aLogAnlz->mTID ) != ID_TRUE )
     {
-        // BUG-28206 ºÒÇÊ¿äÇÑ Transaction BeginÀ» ¹æÁö
+        // BUG-28206 ë¶ˆí•„ìš”í•œ Transaction Beginì„ ë°©ì§€
     }
     else
     {
@@ -1577,7 +1577,7 @@ IDE_RC rpnMessenger::sendInsert( rpdTransTbl    * aTransTbl,
 {
     setLastSN( aSenderInfo, aLogAnlz->mTID, aLogAnlz->mSN );
 
-    // BUG-28206 ºÒÇÊ¿äÇÑ Transaction BeginÀ» ¹æÁö
+    // BUG-28206 ë¶ˆí•„ìš”í•œ Transaction Beginì„ ë°©ì§€
     IDE_TEST( checkAndSendSvpList( aTransTbl, aLogAnlz, aFlushSN )
               != IDE_SUCCESS );
 
@@ -1610,7 +1610,7 @@ IDE_RC rpnMessenger::sendUpdate( rpdTransTbl        * aTransTbl,
 {
     setLastSN( aSenderInfo, aLogAnlz->mTID, aLogAnlz->mSN );
 
-    // BUG-28206 ºÒÇÊ¿äÇÑ Transaction BeginÀ» ¹æÁö
+    // BUG-28206 ë¶ˆí•„ìš”í•œ Transaction Beginì„ ë°©ì§€
     IDE_TEST( checkAndSendSvpList( aTransTbl, aLogAnlz, aFlushSN )
               != IDE_SUCCESS );
 
@@ -1651,7 +1651,7 @@ IDE_RC rpnMessenger::sendDelete( rpdTransTbl        * aTransTbl,
 {
     setLastSN( aSenderInfo, aLogAnlz->mTID, aLogAnlz->mSN );
 
-    // BUG-28206 ºÒÇÊ¿äÇÑ Transaction BeginÀ» ¹æÁö
+    // BUG-28206 ë¶ˆí•„ìš”í•œ Transaction Beginì„ ë°©ì§€
     IDE_TEST( checkAndSendSvpList( aTransTbl, aLogAnlz, aFlushSN )
               != IDE_SUCCESS );
 
@@ -1699,7 +1699,7 @@ IDE_RC rpnMessenger::sendSPSet( rpdTransTbl         * aTransTbl,
             sType = RP_SAVEPOINT_PSM;
         }
 
-        // BUG-28206 ºÒÇÊ¿äÇÑ Transaction BeginÀ» ¹æÁö
+        // BUG-28206 ë¶ˆí•„ìš”í•œ Transaction Beginì„ ë°©ì§€
         IDE_TEST( aTransTbl->addLastSvpEntry( aLogAnlz->mTID,
                                               aLogAnlz->mSN,
                                               sType,
@@ -1740,7 +1740,7 @@ IDE_RC rpnMessenger::sendSPAbort( rpdTransTbl       * aTransTbl,
 
     if ( aTransTbl->isSvpListSent( aLogAnlz->mTID ) != ID_TRUE )
     {
-        // BUG-28206 ºÒÇÊ¿äÇÑ Transaction BeginÀ» ¹æÁö
+        // BUG-28206 ë¶ˆí•„ìš”í•œ Transaction Beginì„ ë°©ì§€
         aTransTbl->applySvpAbort( aLogAnlz->mTID, aLogAnlz->mSPName, &sDummySN );
     }
     else
@@ -1774,7 +1774,7 @@ IDE_RC rpnMessenger::sendLobCursorOpen( rpdTransTbl     * aTransTbl,
 {
     setLastSN( aSenderInfo, aLogAnlz->mTID, aLogAnlz->mSN );
 
-    // BUG-28206 ºÒÇÊ¿äÇÑ Transaction BeginÀ» ¹æÁö
+    // BUG-28206 ë¶ˆí•„ìš”í•œ Transaction Beginì„ ë°©ì§€
     IDE_TEST( checkAndSendSvpList( aTransTbl, aLogAnlz, aFlushSN )
               != IDE_SUCCESS );
 
@@ -2463,7 +2463,7 @@ void rpnMessenger::setHBTResource( void * aHBTResource )
 }
 
 /*
- * @brief ºÒÇÊ¿äÇÑ Transaction BeginÀ» ¹æÁö
+ * @brief ë¶ˆí•„ìš”í•œ Transaction Beginì„ ë°©ì§€
  */
 IDE_RC rpnMessenger::checkAndSendSvpList( rpdTransTbl       * aTransTbl,
                                           rpdLogAnalyzer    * aLogAnlz,

@@ -22,11 +22,11 @@ iduStackMgr::~iduStackMgr()
 }
 
 /***********************************************************************
- * Description : Stack Manager¸¦ ÃÖ±âÈ­ ÇÑ´Ù.
+ * Description : Stack Managerë¥¼ ìµœê¸°í™” í•œë‹¤.
  *
- * aIndex     - [IN] Memory Manager Index·Î¼­ ¾î´À ¸Ş¸ğ¸®¸¦ »ç¿ëÇÏ´ÂÁö¸¦
- *                   Ç¥½Ã¶§ »ç¿ë
- * aItemSize  - [IN] ItemÀÇ Å©±â
+ * aIndex     - [IN] Memory Manager Indexë¡œì„œ ì–´ëŠ ë©”ëª¨ë¦¬ë¥¼ ì‚¬ìš©í•˜ëŠ”ì§€ë¥¼
+ *                   í‘œì‹œë•Œ ì‚¬ìš©
+ * aItemSize  - [IN] Itemì˜ í¬ê¸°
  **********************************************************************/
 IDE_RC iduStackMgr::initialize( iduMemoryClientIndex aIndex,
                                 ULong                aItemSize )
@@ -58,8 +58,8 @@ IDE_RC iduStackMgr::initialize( iduMemoryClientIndex aIndex,
 }
 
 /***********************************************************************
- * Description : Stack Manager¸¦ Á¤¸®ÇÑ´Ù. ÇÒ´çµÈ ¸Ş¸ğ¸®¸¦ ¹İÈ¯ÇÏ°í Mutex¸¦ Á¤
- *               ¸®ÇÑ´Ù.
+ * Description : Stack Managerë¥¼ ì •ë¦¬í•œë‹¤. í• ë‹¹ëœ ë©”ëª¨ë¦¬ë¥¼ ë°˜í™˜í•˜ê³  Mutexë¥¼ ì •
+ *               ë¦¬í•œë‹¤.
  *
  **********************************************************************/
 IDE_RC iduStackMgr::destroy()
@@ -93,13 +93,13 @@ IDE_RC iduStackMgr::destroy()
 
 
 /***********************************************************************
- * Description : Stack¿¡¼­ ¸¶Áö¸·À¸·Î pushµÈ ItemÀ» ²¨³½´Ù. ¸¸¾à ºñ¾î ÀÖÀ¸¸é
- *               aIsEmpty°¡ ID_TRUE°¡ ReturnµÈ´Ù.
+ * Description : Stackì—ì„œ ë§ˆì§€ë§‰ìœ¼ë¡œ pushëœ Itemì„ êº¼ë‚¸ë‹¤. ë§Œì•½ ë¹„ì–´ ìˆìœ¼ë©´
+ *               aIsEmptyê°€ ID_TRUEê°€ Returnëœë‹¤.
  *
- * aLock - [IN] LockÀ» Àâ°í PopÇÒÁö °áÁ¤.
+ * aLock - [IN] Lockì„ ì¡ê³  Popí• ì§€ ê²°ì •.
  *
- * aItem    - [OUT] PopµÈ ItemÀÌ ÀúÀåµÉ º¯¼ö
- * aIsEmpty - [OUT] StackÀÌ ºñ¾î ÀÖÀ¸¸é ID_TRUE, ¾Æ´Ï¸é ID_FALSE
+ * aItem    - [OUT] Popëœ Itemì´ ì €ì¥ë  ë³€ìˆ˜
+ * aIsEmpty - [OUT] Stackì´ ë¹„ì–´ ìˆìœ¼ë©´ ID_TRUE, ì•„ë‹ˆë©´ ID_FALSE
  *
  **********************************************************************/
 IDE_RC iduStackMgr::pop( idBool   aLock,
@@ -160,10 +160,10 @@ IDE_RC iduStackMgr::pop( idBool   aLock,
 }
 
 /***********************************************************************
- * Description : »õ·Î¿î ItemÀ» Stack¿¡ PushÇÑ´Ù.
+ * Description : ìƒˆë¡œìš´ Itemì„ Stackì— Pushí•œë‹¤.
  *
- * aLock - [IN] LockÀ» Àâ°í PushÇÒÁö °áÁ¤.
- * aItem - [IN] PushµÉ Item
+ * aLock - [IN] Lockì„ ì¡ê³  Pushí• ì§€ ê²°ì •.
+ * aItem - [IN] Pushë  Item
  *
  **********************************************************************/
 IDE_RC iduStackMgr::push( idBool aLock, void* aItem )

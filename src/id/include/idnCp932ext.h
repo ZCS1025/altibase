@@ -23,16 +23,16 @@
 
 #include <idnConv.h>
 
-/* PROJ-2590 [±â´É¼º] CP932 database character set Áö¿ø */
+/* PROJ-2590 [ê¸°ëŠ¥ì„±] CP932 database character set ì§€ì› */
 #define IDN_CP932EXT_XOR_VALUE ( 23739 )
 
-/* PROJ-2590 [±â´É¼º] CP932 database character set Áö¿ø */
+/* PROJ-2590 [ê¸°ëŠ¥ì„±] CP932 database character set ì§€ì› */
 SInt convertMbToWc4Cp932ext( void * aSrc,
                              SInt   aSrcRemain,
                              void * aDest,
                              SInt   aDestRemain );
 
-/* PROJ-2590 [±â´É¼º] CP932 database character set Áö¿ø */
+/* PROJ-2590 [ê¸°ëŠ¥ì„±] CP932 database character set ì§€ì› */
 SInt convertWcToMb4Cp932ext( void * aSrc,
                              SInt   aSrcRemain,
                              void * aDest,

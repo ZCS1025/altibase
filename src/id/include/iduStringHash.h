@@ -53,7 +53,7 @@ public:
     IDE_RC       remove( SChar * aString );
 
 
-    // ¸ðµç ( Hash Key, Data )¸¦ ¼øÈ¸ÇÑ´Ù
+    // ëª¨ë“  ( Hash Key, Data )ë¥¼ ìˆœíšŒí•œë‹¤
     IDE_RC       traverse( iduStringHashVisitor    aVisitor,
                            void                  * aVisitorArg );
 private:

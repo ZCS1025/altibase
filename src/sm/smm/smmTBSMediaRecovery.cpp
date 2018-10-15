@@ -31,7 +31,7 @@
 #include <sctTableSpaceMgr.h>
 
 /*
-  »ý¼ºÀÚ (¾Æ¹«°Íµµ ¾ÈÇÔ)
+  ìƒì„±ìž (ì•„ë¬´ê²ƒë„ ì•ˆí•¨)
 */
 smmTBSMediaRecovery::smmTBSMediaRecovery()
 {
@@ -42,10 +42,10 @@ smmTBSMediaRecovery::smmTBSMediaRecovery()
 /*
    PRJ-1548 User Memory Tablespace
 
-   ¸Þ¸ð¸® Å×ÀÌºí½ºÆäÀÌ½º¸¦ ¸ðµÎ ¹é¾÷ÇÑ´Ù.
+   ë©”ëª¨ë¦¬ í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ë¥¼ ëª¨ë‘ ë°±ì—…í•œë‹¤.
 
-  [IN] aTrans : Æ®·£Àè¼Ç
-  [IN] aBackupDir : ¹é¾÷ Dest. µð·ºÅä¸®
+  [IN] aTrans : íŠ¸ëžœìž­ì…˜
+  [IN] aBackupDir : ë°±ì—… Dest. ë””ë ‰í† ë¦¬
 */
 IDE_RC smmTBSMediaRecovery::backupAllMemoryTBS( idvSQL * aStatistics,
                                                 void   * aTrans,
@@ -61,7 +61,7 @@ IDE_RC smmTBSMediaRecovery::backupAllMemoryTBS( idvSQL * aStatistics,
     sActBackupArgs.mCommonBackupInfo    = NULL;
     sActBackupArgs.mIsIncrementalBackup = ID_FALSE;
 
-    // BUG-27204 Database ¹é¾÷ ½Ã session event checkµÇÁö ¾ÊÀ½
+    // BUG-27204 Database ë°±ì—… ì‹œ session event checkë˜ì§€ ì•ŠìŒ
     IDE_TEST( sctTableSpaceMgr::doAction4EachTBS(
                         aStatistics,
                         smmTBSMediaRecovery::doActOnlineBackup,
@@ -79,14 +79,14 @@ IDE_RC smmTBSMediaRecovery::backupAllMemoryTBS( idvSQL * aStatistics,
 /*
   PRJ-1548 User Memory Tablespace
 
-  Å×ÀÌºí½ºÆäÀÌ½ºÀÇ »óÅÂ¸¦ ¼³Á¤ÇÏ°í ¹é¾÷À» ¼öÇàÇÑ´Ù.
-  CREATING ÁßÀÌ°Å³ª DROPPING ÁßÀÎ °æ¿ì TBS Mgr Latch¸¦ Ç®°í
-  Àá½Ã ´ë±âÇÏ´Ù°¡ Latch¸¦ ´Ù½Ã ½ÃµµÇÑ ´ÙÀ½ ´Ù½Ã ½ÃµµÇÑ´Ù.
+  í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ì˜ ìƒíƒœë¥¼ ì„¤ì •í•˜ê³  ë°±ì—…ì„ ìˆ˜í–‰í•œë‹¤.
+  CREATING ì¤‘ì´ê±°ë‚˜ DROPPING ì¤‘ì¸ ê²½ìš° TBS Mgr Latchë¥¼ í’€ê³ 
+  ìž ì‹œ ëŒ€ê¸°í•˜ë‹¤ê°€ Latchë¥¼ ë‹¤ì‹œ ì‹œë„í•œ ë‹¤ìŒ ë‹¤ì‹œ ì‹œë„í•œë‹¤.
 
-  º» ÇÔ¼ö¿¡ È£ÃâµÇ±âÀü¿¡ TBS Mgr Latch´Â È¹µæµÈ »óÅÂÀÌ´Ù.
+  ë³¸ í•¨ìˆ˜ì— í˜¸ì¶œë˜ê¸°ì „ì— TBS Mgr LatchëŠ” íšë“ëœ ìƒíƒœì´ë‹¤.
 
-  [IN] aSpaceNode : ¹é¾÷ÇÒ TBS Node
-  [IN] aActionArg : ¹é¾÷¿¡ ÇÊ¿äÇÑ ÀÎÀÚ
+  [IN] aSpaceNode : ë°±ì—…í•  TBS Node
+  [IN] aActionArg : ë°±ì—…ì— í•„ìš”í•œ ì¸ìž
 */
 IDE_RC smmTBSMediaRecovery::doActOnlineBackup(
                               idvSQL            * aStatistics,
@@ -108,12 +108,12 @@ IDE_RC smmTBSMediaRecovery::doActOnlineBackup(
     {
     recheck_status:
 
-        // »ý¼ºÁßÀÌ°Å³ª »èÁ¦ÁßÀÌ¸é ÇØ´ç ¿¬»êÀÌ ¿Ï·áÇÏ±â±îÁö ´ë±âÇÑ´Ù.
+        // ìƒì„±ì¤‘ì´ê±°ë‚˜ ì‚­ì œì¤‘ì´ë©´ í•´ë‹¹ ì—°ì‚°ì´ ì™„ë£Œí•˜ê¸°ê¹Œì§€ ëŒ€ê¸°í•œë‹¤.
         if ( ( aSpaceNode->mState & SMI_TBS_BLOCK_BACKUP )
              == SMI_TBS_BLOCK_BACKUP )
         {
-            // BUGBUG - BACKUP ¼öÇàÁß¿¡ Å×ÀÌºí½ºÆäÀÌ½º °ü·Ã »ý¼º/»èÁ¦
-            // ¿¬»êÀÌ ¼öÇàµÇ¸é BACKUP ¹öÀüÀÌ À¯È¿ÇÏÁö ¾Ê°Ô µÈ´Ù.
+            // BUGBUG - BACKUP ìˆ˜í–‰ì¤‘ì— í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ ê´€ë ¨ ìƒì„±/ì‚­ì œ
+            // ì—°ì‚°ì´ ìˆ˜í–‰ë˜ë©´ BACKUP ë²„ì „ì´ ìœ íš¨í•˜ì§€ ì•Šê²Œ ëœë‹¤.
 
             IDE_TEST( sctTableSpaceMgr::unlock() != IDE_SUCCESS );
             sLockedMgr = ID_FALSE;
@@ -128,7 +128,7 @@ IDE_RC smmTBSMediaRecovery::doActOnlineBackup(
         }
         else
         {
-            // ONLINE ¶Ç´Â DROPPED, DISCARDED »óÅÂÀÎ Å×ÀÌºí½ºÆäÀÌ½º
+            // ONLINE ë˜ëŠ” DROPPED, DISCARDED ìƒíƒœì¸ í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤
         }
 
         if ( ((aSpaceNode->mState & SMI_TBS_DROPPED)   != SMI_TBS_DROPPED) &&
@@ -164,13 +164,13 @@ IDE_RC smmTBSMediaRecovery::doActOnlineBackup(
         }
         else
         {
-            // Å×ÀÌºí½ºÆäÀÌ½º°¡ DROPPED, DISCARDED »óÅÂÀÎ °æ¿ì ¹é¾÷À» ÇÏÁö ¾Ê´Â´Ù.
+            // í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ê°€ DROPPED, DISCARDED ìƒíƒœì¸ ê²½ìš° ë°±ì—…ì„ í•˜ì§€ ì•ŠëŠ”ë‹¤.
             // NOTHING TO DO ...
         }
     }
     else
     {
-        // ¸Þ¸ð¸® Å×ÀÌºí½ºÆäÀÌ½ºÀÇ ¹é¾÷Àº º» ÇÔ¼ö¿¡¼­ Ã³¸®ÇÏÁö ¾Ê´Â´Ù.
+        // ë©”ëª¨ë¦¬ í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ì˜ ë°±ì—…ì€ ë³¸ í•¨ìˆ˜ì—ì„œ ì²˜ë¦¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
         // NOTHING TO DO..
     }
 
@@ -195,10 +195,10 @@ IDE_RC smmTBSMediaRecovery::doActOnlineBackup(
 /*
    PROJ-2133 incremental backup
 
-   ¸Þ¸ð¸® Å×ÀÌºí½ºÆäÀÌ½º¸¦ ¸ðµÎ incremental ¹é¾÷ÇÑ´Ù.
+   ë©”ëª¨ë¦¬ í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ë¥¼ ëª¨ë‘ incremental ë°±ì—…í•œë‹¤.
 
-  [IN] aTrans : Æ®·£Àè¼Ç
-  [IN] aBackupDir : ¹é¾÷ Dest. µð·ºÅä¸®
+  [IN] aTrans : íŠ¸ëžœìž­ì…˜
+  [IN] aBackupDir : ë°±ì—… Dest. ë””ë ‰í† ë¦¬
 */
 IDE_RC smmTBSMediaRecovery::incrementalBackupAllMemoryTBS( 
                                                 idvSQL     * aStatistics,
@@ -216,7 +216,7 @@ IDE_RC smmTBSMediaRecovery::incrementalBackupAllMemoryTBS(
     sActBackupArgs.mCommonBackupInfo    = aCommonBackupInfo;
     sActBackupArgs.mIsIncrementalBackup = ID_TRUE;
 
-    // BUG-27204 Database ¹é¾÷ ½Ã session event checkµÇÁö ¾ÊÀ½
+    // BUG-27204 Database ë°±ì—… ì‹œ session event checkë˜ì§€ ì•ŠìŒ
     IDE_TEST( sctTableSpaceMgr::doAction4EachTBS(
                         aStatistics,
                         smmTBSMediaRecovery::doActOnlineBackup,
@@ -231,11 +231,11 @@ IDE_RC smmTBSMediaRecovery::incrementalBackupAllMemoryTBS(
 }
 
 /*
-    ÇÏ³ªÀÇ Tablespace¿¡ ¼ÓÇÑ ¸ðµç DB fileÀÇ Header¿¡ Redo LSNÀ» ±â·Ï
+    í•˜ë‚˜ì˜ Tablespaceì— ì†í•œ ëª¨ë“  DB fileì˜ Headerì— Redo LSNì„ ê¸°ë¡
 
-    aSpaceNode [IN] Redo LSNÀÌ ±â·ÏµÉ TablespaceÀÇ Node
+    aSpaceNode [IN] Redo LSNì´ ê¸°ë¡ë  Tablespaceì˜ Node
 
-    [ÁÖÀÇ] TablespaceÀÇ Sync Latch°¡ ÀâÈùÃ¤·Î ÀÌ ÇÔ¼ö°¡ È£ÃâµÈ´Ù.
+    [ì£¼ì˜] Tablespaceì˜ Sync Latchê°€ ìž¡ížŒì±„ë¡œ ì´ í•¨ìˆ˜ê°€ í˜¸ì¶œëœë‹¤.
  */
 IDE_RC smmTBSMediaRecovery::flushRedoLSN4AllDBF( smmTBSNode * aSpaceNode )
 {
@@ -246,7 +246,7 @@ IDE_RC smmTBSMediaRecovery::flushRedoLSN4AllDBF( smmTBSNode * aSpaceNode )
     SInt                sWhichDB;
     smmDatabaseFile*    sDatabaseFile;
 
-    // Stable°ú UnStable ¸ðµÎ Memory Redo LSNÀ» ¼³Á¤ÇÑ´Ù.
+    // Stableê³¼ UnStable ëª¨ë‘ Memory Redo LSNì„ ì„¤ì •í•œë‹¤.
     for ( sWhichDB = 0; sWhichDB < SMM_PINGPONG_COUNT; sWhichDB ++ )
     {
         for ( sLoop = 0; sLoop <= aSpaceNode->mLstCreatedDBFile;
@@ -263,7 +263,7 @@ IDE_RC smmTBSMediaRecovery::flushRedoLSN4AllDBF( smmTBSNode * aSpaceNode )
 
             if ( sDatabaseFile->isOpen() == ID_TRUE )
             {
-                // syncÇÒ dbf ³ëµå¿¡ checkpoint Á¤º¸ ¼³Á¤
+                // syncí•  dbf ë…¸ë“œì— checkpoint ì •ë³´ ì„¤ì •
                 sDatabaseFile->setChkptImageHdr(
                     sctTableSpaceMgr::getMemRedoLSN(),
                     NULL,     // aMemCreateLSN
@@ -276,7 +276,7 @@ IDE_RC smmTBSMediaRecovery::flushRedoLSN4AllDBF( smmTBSNode * aSpaceNode )
             }
             else
             {
-                // ¾ÆÁ÷ »ý¼ºµÇÁö ¾ÊÀº µ¥ÀÌÅ¸ÆÄÀÏÀÌ´Ù.
+                // ì•„ì§ ìƒì„±ë˜ì§€ ì•Šì€ ë°ì´íƒ€íŒŒì¼ì´ë‹¤.
             }
         }
     }
@@ -292,10 +292,10 @@ IDE_RC smmTBSMediaRecovery::flushRedoLSN4AllDBF( smmTBSNode * aSpaceNode )
 
 
 /*
-  Å×ÀÌºí½ºÆäÀÌ½ºÀÇ µ¥ÀÌÅ¸ÆÄÀÏ ¸ÞÅ¸Çì´õ¿¡ Ã¼Å©Æ÷ÀÎÆ®Á¤º¸¸¦ °»½ÅÇÑ´Ù.
-  º» ÇÔ¼ö¿¡ È£ÃâµÇ±âÀü¿¡ TBS Mgr Latch´Â È¹µæµÈ »óÅÂÀÌ´Ù.
+  í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ì˜ ë°ì´íƒ€íŒŒì¼ ë©”íƒ€í—¤ë”ì— ì²´í¬í¬ì¸íŠ¸ì •ë³´ë¥¼ ê°±ì‹ í•œë‹¤.
+  ë³¸ í•¨ìˆ˜ì— í˜¸ì¶œë˜ê¸°ì „ì— TBS Mgr LatchëŠ” íšë“ëœ ìƒíƒœì´ë‹¤.
 
-  [IN] aSpaceNode : SyncÇÒ TBS Node
+  [IN] aSpaceNode : Syncí•  TBS Node
   [IN] aActionArg : NULL
 */
 IDE_RC smmTBSMediaRecovery::doActUpdateAllDBFileHdr(
@@ -322,13 +322,13 @@ IDE_RC smmTBSMediaRecovery::doActUpdateAllDBFileHdr(
                                          SCT_SS_SKIP_UPDATE_DBFHDR )
              == ID_TRUE )
         {
-            // ¸Þ¸ð¸®Å×ÀÌºí½ºÆäÀÌ½º°¡ DROPPED/DISCARDED ÀÎ °æ¿ì
-            // °»½ÅÇÏÁö ¾ÊÀ½.
+            // ë©”ëª¨ë¦¬í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ê°€ DROPPED/DISCARDED ì¸ ê²½ìš°
+            // ê°±ì‹ í•˜ì§€ ì•ŠìŒ.
         }
         else
         {
-            // Tablespace¿¡ ¼ÓÇÑ ¸ðµç DB FileÀÇ Header¿¡
-            // Redo LSNÀ» ±â·ÏÇÑ´Ù.
+            // Tablespaceì— ì†í•œ ëª¨ë“  DB Fileì˜ Headerì—
+            // Redo LSNì„ ê¸°ë¡í•œë‹¤.
             IDE_TEST( flushRedoLSN4AllDBF( (smmTBSNode*) aSpaceNode )
                       != IDE_SUCCESS );
 
@@ -340,7 +340,7 @@ IDE_RC smmTBSMediaRecovery::doActUpdateAllDBFileHdr(
     }
     else
     {
-        // ¸Þ¸ð¸®Å×ÀÌºí½ºÆäÀÌ½º°¡ ¾Æ´Ñ°æ¿ì °»½ÅÇÏÁö ¾ÊÀ½.
+        // ë©”ëª¨ë¦¬í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ê°€ ì•„ë‹Œê²½ìš° ê°±ì‹ í•˜ì§€ ì•ŠìŒ.
     }
 
     return IDE_SUCCESS;
@@ -366,9 +366,9 @@ IDE_RC smmTBSMediaRecovery::doActUpdateAllDBFileHdr(
 
 
 /*
-  ¸Þ¸ð¸® Å×ÀÌºí½ºÆäÀÌ½º¿¡ ´ëÇÑ Ã¼Å©Æ÷ÀÎÆ® ¿¬»êÁß¿¡ µð½ºÅ©
-  Stable/Unstable Ã¼Å©Æ÷ÀÎÆ® ÀÌ¹ÌÁöµéÀÇ ¸ÞÅ¸Çì´õ¸¦ °»½ÅÇÑ´Ù.
-  Á¤º¸¸¦ °»½ÅÇÑ´Ù.
+  ë©”ëª¨ë¦¬ í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ì— ëŒ€í•œ ì²´í¬í¬ì¸íŠ¸ ì—°ì‚°ì¤‘ì— ë””ìŠ¤í¬
+  Stable/Unstable ì²´í¬í¬ì¸íŠ¸ ì´ë¯¸ì§€ë“¤ì˜ ë©”íƒ€í—¤ë”ë¥¼ ê°±ì‹ í•œë‹¤.
+  ì •ë³´ë¥¼ ê°±ì‹ í•œë‹¤.
 */
 IDE_RC smmTBSMediaRecovery::updateDBFileHdr4AllTBS()
 {
@@ -386,15 +386,15 @@ IDE_RC smmTBSMediaRecovery::updateDBFileHdr4AllTBS()
 }
 
 /*
-  µ¥ÀÌÅÍº£ÀÌ½º È®Àå¿¡ µû¶ó »õ·Î¿î Expand Chunk°¡ ÇÒ´çµÊ¿¡ µû¶ó
-  »õ·Î »ý°Ü³ª°Ô µÇ´Â DBÆÄÀÏ¸¶´Ù ·±Å¸ÀÓ Çì´õ¿¡ º¸Á¤µÇÁö ¾ÊÀº i
-  CreateLSNÀ» ¼³Á¤ÇÑ´Ù.
+  ë°ì´í„°ë² ì´ìŠ¤ í™•ìž¥ì— ë”°ë¼ ìƒˆë¡œìš´ Expand Chunkê°€ í• ë‹¹ë¨ì— ë”°ë¼
+  ìƒˆë¡œ ìƒê²¨ë‚˜ê²Œ ë˜ëŠ” DBíŒŒì¼ë§ˆë‹¤ ëŸ°íƒ€ìž„ í—¤ë”ì— ë³´ì •ë˜ì§€ ì•Šì€ i
+  CreateLSNì„ ì„¤ì •í•œë‹¤.
 
-  Chunk°¡ È®ÀåµÇ´õ¶óµµ ÇÑ¹ø¿¡ ÇÏ³ªÀÇ DBÆÄÀÏ¸¸ »ý¼ºµÉ ¼ö ÀÖ´Ù.
+  Chunkê°€ í™•ìž¥ë˜ë”ë¼ë„ í•œë²ˆì— í•˜ë‚˜ì˜ DBíŒŒì¼ë§Œ ìƒì„±ë  ìˆ˜ ìžˆë‹¤.
 
-  [IN] aSpaceNode      - ¸Þ¸ð¸® Å×ÀÌºí½ºÆäÀÌ½º ³ëµå
-  [IN] aNewDBFileChunk - È®ÀåµÇ¸é¼­ »õ·Î ´Ã¾î³¯ µ¥ÀÌÅ¸ÆÄÀÏ °³¼ö
-  [IN] aCreateLSN      - µ¥ÀÌÅ¸ÆÄÀÏ(µé)ÀÇ CreateLSN
+  [IN] aSpaceNode      - ë©”ëª¨ë¦¬ í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ ë…¸ë“œ
+  [IN] aNewDBFileChunk - í™•ìž¥ë˜ë©´ì„œ ìƒˆë¡œ ëŠ˜ì–´ë‚  ë°ì´íƒ€íŒŒì¼ ê°œìˆ˜
+  [IN] aCreateLSN      - ë°ì´íƒ€íŒŒì¼(ë“¤)ì˜ CreateLSN
  */
 IDE_RC smmTBSMediaRecovery::setCreateLSN4NewDBFiles(
                                            smmTBSNode * aSpaceNode,
@@ -407,7 +407,7 @@ IDE_RC smmTBSMediaRecovery::setCreateLSN4NewDBFiles(
     IDE_DASSERT( aSpaceNode     != NULL );
     IDE_DASSERT( aCreateLSN  != NULL );
 
-    // µ¥ÀÌÅ¸ÆÄÀÏÀÇ ·±Å¸ÀÓ Çì´õ¿¡ CreateLSN ¼³Á¤
+    // ë°ì´íƒ€íŒŒì¼ì˜ ëŸ°íƒ€ìž„ í—¤ë”ì— CreateLSN ì„¤ì •
     for ( sWhichDB = 0; sWhichDB < SMM_PINGPONG_COUNT; sWhichDB ++ )
     {
         sCurrentDBFileNum =
@@ -420,11 +420,11 @@ IDE_RC smmTBSMediaRecovery::setCreateLSN4NewDBFiles(
                                          &sDatabaseFile )
                   != IDE_SUCCESS );
 
-        // »õ·Î »ý¼ºµÈ µ¥ÀÌÅ¸ÆÄÀÏ Çì´õ¸¦ ¼³Á¤ÇÑ´Ù.
-        // Memory Redo LSNÀ» ¼³Á¤ÇÏÁö ¾Ê´Â °ÍÀº
-        // ½ÇÁ¦ ÆÄÀÏ »ý¼ºÇÒ¶§ ¼³Á¤ÇÏ¸é µÇ±â ¶§¹®ÀÌ´Ù.
+        // ìƒˆë¡œ ìƒì„±ëœ ë°ì´íƒ€íŒŒì¼ í—¤ë”ë¥¼ ì„¤ì •í•œë‹¤.
+        // Memory Redo LSNì„ ì„¤ì •í•˜ì§€ ì•ŠëŠ” ê²ƒì€
+        // ì‹¤ì œ íŒŒì¼ ìƒì„±í• ë•Œ ì„¤ì •í•˜ë©´ ë˜ê¸° ë•Œë¬¸ì´ë‹¤.
         sDatabaseFile->setChkptImageHdr(
-                                NULL,         // Memory Redo LSN ¼³Á¤ÇÏÁö ¾ÊÀ½.
+                                NULL,         // Memory Redo LSN ì„¤ì •í•˜ì§€ ì•ŠìŒ.
                                 aCreateLSN,
                                 &aSpaceNode->mHeader.mID,
                                 (UInt*)&smVersionID,
@@ -439,8 +439,8 @@ IDE_RC smmTBSMediaRecovery::setCreateLSN4NewDBFiles(
 }
 
 
-// ¼­¹ö±¸µ¿½Ã¿¡ ¸ðµç ¸Þ¸ð¸® Å×ÀÌºí½ºÆäÀÌ½ºÀÇ ¸ðµç ¸Þ¸ð¸® DBFileµéÀÇ
-// ¹Ìµð¾î º¹±¸ ÇÊ¿ä ¿©ºÎ¸¦ Ã¼Å©ÇÑ´Ù.
+// ì„œë²„êµ¬ë™ì‹œì— ëª¨ë“  ë©”ëª¨ë¦¬ í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ì˜ ëª¨ë“  ë©”ëª¨ë¦¬ DBFileë“¤ì˜
+// ë¯¸ë””ì–´ ë³µêµ¬ í•„ìš” ì—¬ë¶€ë¥¼ ì²´í¬í•œë‹¤.
 IDE_RC smmTBSMediaRecovery::identifyDBFilesOfAllTBS( idBool aIsOnCheckPoint )
 {
     sctActIdentifyDBArgs sIdentifyDBArgs;
@@ -450,7 +450,7 @@ IDE_RC smmTBSMediaRecovery::identifyDBFilesOfAllTBS( idBool aIsOnCheckPoint )
 
     if ( aIsOnCheckPoint == ID_FALSE )
     {
-        // ¼­¹ö±¸µ¿½Ã
+        // ì„œë²„êµ¬ë™ì‹œ
         IDE_TEST( sctTableSpaceMgr::doAction4EachTBS(
                       NULL, /* idvSQL* */
                       smmTBSMediaRecovery::doActIdentifyAllDBFiles,
@@ -465,9 +465,9 @@ IDE_RC smmTBSMediaRecovery::identifyDBFilesOfAllTBS( idBool aIsOnCheckPoint )
     }
     else
     {
-        // Ã¼Å©Æ÷ÀÎÆ®°úÁ¤¿¡¼­ ·±Å¸ÀÓÇì´õ°¡ ÆÄÀÏ¿¡
-        // Á¦´ë·Î ±â·ÏÀÌ µÇ¾ú´ÂÁö µ¥ÀÌÅ¸ÆÄÀÏÀ» ´Ù½Ã ÀÐ¾î¼­
-        // °ËÁõÇÑ´Ù.
+        // ì²´í¬í¬ì¸íŠ¸ê³¼ì •ì—ì„œ ëŸ°íƒ€ìž„í—¤ë”ê°€ íŒŒì¼ì—
+        // ì œëŒ€ë¡œ ê¸°ë¡ì´ ë˜ì—ˆëŠ”ì§€ ë°ì´íƒ€íŒŒì¼ì„ ë‹¤ì‹œ ì½ì–´ì„œ
+        // ê²€ì¦í•œë‹¤.
         IDE_TEST( sctTableSpaceMgr::doAction4EachTBS(
                       NULL, /* idvSQL* */
                       smmTBSMediaRecovery::doActIdentifyAllDBFiles,
@@ -494,28 +494,28 @@ IDE_RC smmTBSMediaRecovery::identifyDBFilesOfAllTBS( idBool aIsOnCheckPoint )
 }
 
 /*
-  ¸ðµç µ¥ÀÌÅ¸ÆÄÀÏÀÇ ¸ÞÅ¸Çì´õ¸¦ ÆÇµ¶ÇÏ¿© ¹Ìµð¾î ¿À·ù¿©ºÎ¸¦ È®ÀÎÇÑ´Ù.
+  ëª¨ë“  ë°ì´íƒ€íŒŒì¼ì˜ ë©”íƒ€í—¤ë”ë¥¼ íŒë…í•˜ì—¬ ë¯¸ë””ì–´ ì˜¤ë¥˜ì—¬ë¶€ë¥¼ í™•ì¸í•œë‹¤.
 
-  [ Áß¿ä ]
-  Stable µ¥ÀÌÅ¸ÆÄÀÏ¸¸ °Ë»çÇÏ´Â °ÍÀÌ ¾Æ´Ï°í, UnStable µ¥ÀÌÅ¸ÆÄÀÏÀÇ
-  Á¸Àç¿©ºÎ¿Í Stable µ¥ÀÌÅ¸ÆÄÀÏ°ú µ¿ÀÏÇÑ ¹öÀüÀÎÁö´Â È®ÀÎÇÒ ÇÊ¿ä°¡ ÀÖ´Ù.
-  °ËÁõÇÏÁö ¾Ê°í ¼­¹ö±¸µ¿À» ½Ç½ÃÇÑ´Ù¸é ´Ù¸¥ Unstable µ¥ÀÌÅ¸ÆÄÀÏ·Î ÀÎÇØ
-  µ¥ÀÌÅ¸º£ÀÌ½º ÀÏ°ü¼ºÀÌ ±úÁú¼ö ÀÖ´Ù.
+  [ ì¤‘ìš” ]
+  Stable ë°ì´íƒ€íŒŒì¼ë§Œ ê²€ì‚¬í•˜ëŠ” ê²ƒì´ ì•„ë‹ˆê³ , UnStable ë°ì´íƒ€íŒŒì¼ì˜
+  ì¡´ìž¬ì—¬ë¶€ì™€ Stable ë°ì´íƒ€íŒŒì¼ê³¼ ë™ì¼í•œ ë²„ì „ì¸ì§€ëŠ” í™•ì¸í•  í•„ìš”ê°€ ìžˆë‹¤.
+  ê²€ì¦í•˜ì§€ ì•Šê³  ì„œë²„êµ¬ë™ì„ ì‹¤ì‹œí•œë‹¤ë©´ ë‹¤ë¥¸ Unstable ë°ì´íƒ€íŒŒì¼ë¡œ ì¸í•´
+  ë°ì´íƒ€ë² ì´ìŠ¤ ì¼ê´€ì„±ì´ ê¹¨ì§ˆìˆ˜ ìžˆë‹¤.
 
-  [ ¾Ë°í¸®Áò ***** ]
+  [ ì•Œê³ ë¦¬ì¦˜ ***** ]
 
-  loganchor¿¡ ÀúÀåµÇ¾î ÀÖ´Â µ¥ÀÌÅ¸ÆÄÀÏ¿¡ ´ëÇØ¼­ °Ë»çÇÑ´Ù.
-  1. ¸ðµç Tablespace¿¡ ´ëÇØ¼­ loganchor»ó¿¡ ÀúÀåµÈ Stable VersionÀº
-     ¹Ýµå½Ã Á¸ÀçÇØ¾ßÇÑ´Ù.
-  2. ¸ðµç Tablespace¿¡ ´ëÇØ¼­ loganchor»ó¿¡ ÀúÀåµÈ Unstable VersionÀº
-     ¾øÀ»¼ö µµ ÀÖÁö¸¸, ÀÖÀ¸¸é  ¹Ýµå½Ã À¯È¿ÇÑ  Stable Version°úÀÇ
-     À¯È¿ÇÑ ¹öÀüÀÌ¾î¾ß ÇÑ´Ù.
-  3. ¸¸¾à ¾ÆÁ÷ »ý¼ºÇÏÁö ¾ÊÀº Checkpoint Image FileÀÌ ÇØ´ç Æú´õ¿¡ Á¸ÀçÇÏ¸é
-     À¯È¿¼º °Ë»ç¸¦ ÇÏÁö ¾Ê´Â´Ù. (BUG-29607)
-     create cp image¿¡¼­ Áö¿ì°í ´Ù½Ã »ý¼ºÇÑ´Ù.
+  loganchorì— ì €ìž¥ë˜ì–´ ìžˆëŠ” ë°ì´íƒ€íŒŒì¼ì— ëŒ€í•´ì„œ ê²€ì‚¬í•œë‹¤.
+  1. ëª¨ë“  Tablespaceì— ëŒ€í•´ì„œ loganchorìƒì— ì €ìž¥ëœ Stable Versionì€
+     ë°˜ë“œì‹œ ì¡´ìž¬í•´ì•¼í•œë‹¤.
+  2. ëª¨ë“  Tablespaceì— ëŒ€í•´ì„œ loganchorìƒì— ì €ìž¥ëœ Unstable Versionì€
+     ì—†ì„ìˆ˜ ë„ ìžˆì§€ë§Œ, ìžˆìœ¼ë©´  ë°˜ë“œì‹œ ìœ íš¨í•œ  Stable Versionê³¼ì˜
+     ìœ íš¨í•œ ë²„ì „ì´ì–´ì•¼ í•œë‹¤.
+  3. ë§Œì•½ ì•„ì§ ìƒì„±í•˜ì§€ ì•Šì€ Checkpoint Image Fileì´ í•´ë‹¹ í´ë”ì— ì¡´ìž¬í•˜ë©´
+     ìœ íš¨ì„± ê²€ì‚¬ë¥¼ í•˜ì§€ ì•ŠëŠ”ë‹¤. (BUG-29607)
+     create cp imageì—ì„œ ì§€ìš°ê³  ë‹¤ì‹œ ìƒì„±í•œë‹¤.
 
-  [IN]  aTBSNode   - °ËÁõÇÒ TBS Node
-  [OUT] aActionArg - µ¥ÀÌÅ¸ÆÄÀÏÀÇ Á¸Àç¿©ºÎ ¹× À¯È¿¹öÀü ¿©ºÎ
+  [IN]  aTBSNode   - ê²€ì¦í•  TBS Node
+  [OUT] aActionArg - ë°ì´íƒ€íŒŒì¼ì˜ ì¡´ìž¬ì—¬ë¶€ ë° ìœ íš¨ë²„ì „ ì—¬ë¶€
 */
 IDE_RC smmTBSMediaRecovery::doActIdentifyAllDBFiles(
                            idvSQL             * /* aStatistics*/,
@@ -535,12 +535,12 @@ IDE_RC smmTBSMediaRecovery::doActIdentifyAllDBFiles(
     IDE_DASSERT( aTBSNode != NULL );
     IDE_DASSERT( aActionArg != NULL );
 
-    // ¸Þ¸ð¸® Å×ÀÌºí½ºÆäÀÌ½º°¡ ¾Æ´Ñ °æ¿ì Ã¼Å©ÇÏÁö ¾Ê´Â´Ù.
+    // ë©”ëª¨ë¦¬ í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ê°€ ì•„ë‹Œ ê²½ìš° ì²´í¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
     IDE_TEST_CONT( sctTableSpaceMgr::isMemTableSpace( aTBSNode->mID )
                     != ID_TRUE , CONT_SKIP_IDENTIFY );
 
-    // Å×ÀÌºí½ºÆäÀÌ½º°¡ DISCARDµÈ °æ¿ì Ã¼Å©ÇÏÁö ¾Ê´Â´Ù.
-    // Å×ÀÌºí½ºÆäÀÌ½º°¡ »èÁ¦µÈ °æ¿ì Ã¼Å©ÇÏÁö ¾Ê´Â´Ù.
+    // í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ê°€ DISCARDëœ ê²½ìš° ì²´í¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
+    // í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ê°€ ì‚­ì œëœ ê²½ìš° ì²´í¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
     IDE_TEST_CONT( sctTableSpaceMgr::hasState( aTBSNode,
                                                 SCT_SS_SKIP_IDENTIFY_DB )
                     == ID_TRUE , CONT_SKIP_IDENTIFY );
@@ -548,51 +548,51 @@ IDE_RC smmTBSMediaRecovery::doActIdentifyAllDBFiles(
     sIdentifyDBArgs = (sctActIdentifyDBArgs*)aActionArg;
     sTBSNode        = (smmTBSNode*)aTBSNode;
 
-    // LstCreatedDBFileÀº RESTART°¡ ¿Ï·áµÈÀÌÈÄ¿¡ Àç°è»êµÇ¸ç,
-    // ·Î±×¾ÞÄ¿°¡ ÃÊ±âÈ­½Ã¿¡µµ °è»êÀÌ µÈ´Ù.
+    // LstCreatedDBFileì€ RESTARTê°€ ì™„ë£Œëœì´í›„ì— ìž¬ê³„ì‚°ë˜ë©°,
+    // ë¡œê·¸ì•µì»¤ê°€ ì´ˆê¸°í™”ì‹œì—ë„ ê³„ì‚°ì´ ëœë‹¤.
     for ( sFileNum = 0;
           sFileNum <= sTBSNode->mLstCreatedDBFile;
           sFileNum ++ )
     {
-        // Stable°ú Unstable µ¥ÀÌÅ¸ÆÄÀÏ ¸ðµÎ °Ë»çÇÑ´Ù.
+        // Stableê³¼ Unstable ë°ì´íƒ€íŒŒì¼ ëª¨ë‘ ê²€ì‚¬í•œë‹¤.
         for ( sWhichDB = 0; sWhichDB < SMM_PINGPONG_COUNT; sWhichDB ++ )
         {
             // PRJ-1548 User Memory Tablespace
-            // Loganchor¿¡ ÀúÀåµÈ Checkpoint Image´Â ¹Ýµå½Ã Á¸ÀçÇØ¾ßÇÑ´Ù.
+            // Loganchorì— ì €ìž¥ëœ Checkpoint ImageëŠ” ë°˜ë“œì‹œ ì¡´ìž¬í•´ì•¼í•œë‹¤.
 
-            // ÆÄÀÏ »ý¼º¿©ºÎ¸¦ È®ÀÎÇÑ´Ù.
+            // íŒŒì¼ ìƒì„±ì—¬ë¶€ë¥¼ í™•ì¸í•œë‹¤.
             if ( smmManager::getCreateDBFileOnDisk( sTBSNode,
                                                     sWhichDB,
                                                     sFileNum )
                  == ID_FALSE )
             {
-                /* BUG-23700: [SM] Stable DBÀÇ DB FileµéÀÌ Last Create File
-                 * ÀÌÀü¿¡ ¸ðµÎ Á¸ÀçÇÏÁö´Â ¾Ê½À´Ï´Ù.
+                /* BUG-23700: [SM] Stable DBì˜ DB Fileë“¤ì´ Last Create File
+                 * ì´ì „ì— ëª¨ë‘ ì¡´ìž¬í•˜ì§€ëŠ” ì•ŠìŠµë‹ˆë‹¤.
                  *
-                 * TableÀÌ DropµÇ¸é ÇÒ´çµÈ Page°¡ Free°¡ µÇ°í Checkpoint½Ã¿¡´Â
-                 * FreeµÈ ÆäÀÌÁö¸¦ ³»¸®Áö ¾Ê½À´Ï´Ù. ÇØ¼­ TBSÀÇ mLstCreatedDBFile
-                 * ÀÌÀü ÆÄÀÏÁß¿¡¼­ TableµéÀÌ DropµÇ¾î¼­ Áß°£ FileµéÀº ÇÑ¹øµµ
-                 * ÆäÀÌÁö°¡ ³»·Á°¡Áö ¾Ê¾Æ¼­ File»ý¼ºÀÌ µÇÁö ¾Ê°í µÚ ÆÄÀÏµéÀº
-                 * ³»·Á°¡¼­ »ý±â´Â °æ¿ì°¡ Á¸ÀçÇÏ¿© Stable DB¶ÇÇÑ mLstCreatedDBFile
-                 * ÀÌÀü¿¡ ¸ðµç DBFileÀÌ Á¸ÀçÇÏÁö´Â ¾Ê½À´Ï´Ù. */
+                 * Tableì´ Dropë˜ë©´ í• ë‹¹ëœ Pageê°€ Freeê°€ ë˜ê³  Checkpointì‹œì—ëŠ”
+                 * Freeëœ íŽ˜ì´ì§€ë¥¼ ë‚´ë¦¬ì§€ ì•ŠìŠµë‹ˆë‹¤. í•´ì„œ TBSì˜ mLstCreatedDBFile
+                 * ì´ì „ íŒŒì¼ì¤‘ì—ì„œ Tableë“¤ì´ Dropë˜ì–´ì„œ ì¤‘ê°„ Fileë“¤ì€ í•œë²ˆë„
+                 * íŽ˜ì´ì§€ê°€ ë‚´ë ¤ê°€ì§€ ì•Šì•„ì„œ Fileìƒì„±ì´ ë˜ì§€ ì•Šê³  ë’¤ íŒŒì¼ë“¤ì€
+                 * ë‚´ë ¤ê°€ì„œ ìƒê¸°ëŠ” ê²½ìš°ê°€ ì¡´ìž¬í•˜ì—¬ Stable DBë˜í•œ mLstCreatedDBFile
+                 * ì´ì „ì— ëª¨ë“  DBFileì´ ì¡´ìž¬í•˜ì§€ëŠ” ì•ŠìŠµë‹ˆë‹¤. */
 
-                // BUG-29607 Checkpoint¸¦ ¿Ï·á ÇÏ°í À¯È¿¼º °Ë»ç¸¦ ÇÒ ¶§
-                // Ã¼Å©Æ÷ÀÎÆ®¿¡¼­ »ç¿ëÇÏÁö ¾ÊÀº, ÀÚ½ÅÀÌ »ý¼ºÇÏÁöµµ ¾ÊÀº CP Image FileÀÇ
-                // À¯È¿¼ºÀ» °Ë»çÇÏ´Ù, ¿À·ù¸¦ ¹ß»ýÇÏ°í FATALÈÄ Server Start°¡ µÇÁö ¾Ê´Â
-                // ¹®Á¦°¡ ÀÖ¾ú½À´Ï´Ù. ÀÚ½ÅÀÌ »ý¼ºÇÑ CP Image FileÀÇ À¯È¿¼º¸¸ °Ë»çÇÕ´Ï´Ù.
+                // BUG-29607 Checkpointë¥¼ ì™„ë£Œ í•˜ê³  ìœ íš¨ì„± ê²€ì‚¬ë¥¼ í•  ë•Œ
+                // ì²´í¬í¬ì¸íŠ¸ì—ì„œ ì‚¬ìš©í•˜ì§€ ì•Šì€, ìžì‹ ì´ ìƒì„±í•˜ì§€ë„ ì•Šì€ CP Image Fileì˜
+                // ìœ íš¨ì„±ì„ ê²€ì‚¬í•˜ë‹¤, ì˜¤ë¥˜ë¥¼ ë°œìƒí•˜ê³  FATALí›„ Server Startê°€ ë˜ì§€ ì•ŠëŠ”
+                // ë¬¸ì œê°€ ìžˆì—ˆìŠµë‹ˆë‹¤. ìžì‹ ì´ ìƒì„±í•œ CP Image Fileì˜ ìœ íš¨ì„±ë§Œ ê²€ì‚¬í•©ë‹ˆë‹¤.
                 continue;
             }
 
-            // ÆÄÀÏÀ» »ý¼º ÇÏ¿´´Ù¸é OPENÀÌ °¡´ÉÇØ¾ß ÇÑ´Ù.
+            // íŒŒì¼ì„ ìƒì„± í•˜ì˜€ë‹¤ë©´ OPENì´ ê°€ëŠ¥í•´ì•¼ í•œë‹¤.
             if ( smmManager::openAndGetDBFile( sTBSNode,
                                                sWhichDB,
                                                sFileNum,
                                                &sDatabaseFile )
                  != IDE_SUCCESS )
             {
-                // fix BUG-17343 À¸·Î ÀÎÇØ¼­
-                // UnstableÀº ¾ÆÁ÷ »ý¼ºµÇ¾ú´ÂÁö Á¤ÇÐÇÏ°Ô È®ÀÎ
-                // °¡´ÉÇÏ´Ù.
+                // fix BUG-17343 ìœ¼ë¡œ ì¸í•´ì„œ
+                // Unstableì€ ì•„ì§ ìƒì„±ë˜ì—ˆëŠ”ì§€ ì •í•™í•˜ê²Œ í™•ì¸
+                // ê°€ëŠ¥í•˜ë‹¤.
                 sIdentifyDBArgs->mIsFileExist = ID_FALSE;
 
                 idlOS::snprintf(sMsgBuf, SM_MAX_FILE_NAME,
@@ -607,8 +607,8 @@ IDE_RC smmTBSMediaRecovery::doActIdentifyAllDBFiles(
                 continue;
             }
 
-            // version, oldest lsn, create lsn ÀÏÄ¡ÇÏÁö ¾ÊÀ¸¸é
-            // media recovery°¡ ÇÊ¿äÇÏ´Ù.
+            // version, oldest lsn, create lsn ì¼ì¹˜í•˜ì§€ ì•Šìœ¼ë©´
+            // media recoveryê°€ í•„ìš”í•˜ë‹¤.
             IDE_TEST_RAISE( sDatabaseFile->checkValidationDBFHdr(
                                                     &sChkptImageHdr,
                                                     &sIsMediaFailure ) != IDE_SUCCESS,
@@ -616,7 +616,7 @@ IDE_RC smmTBSMediaRecovery::doActIdentifyAllDBFiles(
 
             if ( sIsMediaFailure == ID_TRUE )
             {
-                // ¹Ìµð¾î ¿À·ù°¡ ÀÖ´Â µ¥ÀÌÅ¸ÆÄÀÏ
+                // ë¯¸ë””ì–´ ì˜¤ë¥˜ê°€ ìžˆëŠ” ë°ì´íƒ€íŒŒì¼
                 sDatabaseFile->getChkptImageAttr( sTBSNode,
                                                   &sChkptImageAttr );
 
@@ -634,7 +634,7 @@ IDE_RC smmTBSMediaRecovery::doActIdentifyAllDBFiles(
             }
             else
             {
-                // ¹Ìµð¾î ¿À·ù°¡ ¾ø´Â µ¥ÀÌÅ¸ÆÄÀÏ
+                // ë¯¸ë””ì–´ ì˜¤ë¥˜ê°€ ì—†ëŠ” ë°ì´íƒ€íŒŒì¼
             }
         }
     }
@@ -668,18 +668,18 @@ IDE_RC smmTBSMediaRecovery::doActIdentifyAllDBFiles(
 }
 
 /*
-  ¸Þ¸ð¸® Å×ÀÌºí½ºÆäÀÌ½ºÀÇ ¹Ìµð¾î¿À·ù°¡ ÀÖ´Â µ¥ÀÌÅ¸ÆÄÀÏ ¸ñ·ÏÀ» ¸¸µç´Ù.
+  ë©”ëª¨ë¦¬ í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ì˜ ë¯¸ë””ì–´ì˜¤ë¥˜ê°€ ìžˆëŠ” ë°ì´íƒ€íŒŒì¼ ëª©ë¡ì„ ë§Œë“ ë‹¤.
 
-  [ Áß¿ä ]
-  ¹Ìµð¾î º¹±¸¿¡¼­´Â Stable µ¥ÀÌÅ¸ÆÄÀÏµé¿¡ ´ëÇØ¼­¸¸ ¹Ìµð¾îº¹±¸¸¦
-  ÁøÇàÇÑ´Ù. Unstable µ¥ÀÌÅ¸ÆÄÀÏÀÇ Indentify´Â ¼­¹ö ±¸µ¿°úÁ¤¿¡¼­µµ
-  ÀÌ·ç¾îÁø´Ù.
+  [ ì¤‘ìš” ]
+  ë¯¸ë””ì–´ ë³µêµ¬ì—ì„œëŠ” Stable ë°ì´íƒ€íŒŒì¼ë“¤ì— ëŒ€í•´ì„œë§Œ ë¯¸ë””ì–´ë³µêµ¬ë¥¼
+  ì§„í–‰í•œë‹¤. Unstable ë°ì´íƒ€íŒŒì¼ì˜ IndentifyëŠ” ì„œë²„ êµ¬ë™ê³¼ì •ì—ì„œë„
+  ì´ë£¨ì–´ì§„ë‹¤.
 
-  [IN]  aTBSNode              - Å×ÀÌºí½ºÆäÀÌ½º ³ëµå
-  [IN]  aRecoveryType         - ¹Ìµð¾îº¹±¸ Å¸ÀÔ
-  [OUT] aMediaFailureDBFCount - ¹Ìµð¾î¿À·ù°¡ ¹ß»ýÇÑ µ¥ÀÌÅ¸ÆÄÀÏ³ëµå °³¼ö
-  [OUT] aFromRedoLSN          - º¹±¸½ÃÀÛ Redo LSN
-  [OUT] aToRedoLSN            - º¹±¸¿Ï·á Redo LSN
+  [IN]  aTBSNode              - í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ ë…¸ë“œ
+  [IN]  aRecoveryType         - ë¯¸ë””ì–´ë³µêµ¬ íƒ€ìž…
+  [OUT] aMediaFailureDBFCount - ë¯¸ë””ì–´ì˜¤ë¥˜ê°€ ë°œìƒí•œ ë°ì´íƒ€íŒŒì¼ë…¸ë“œ ê°œìˆ˜
+  [OUT] aFromRedoLSN          - ë³µêµ¬ì‹œìž‘ Redo LSN
+  [OUT] aToRedoLSN            - ë³µêµ¬ì™„ë£Œ Redo LSN
 */
 IDE_RC smmTBSMediaRecovery::makeMediaRecoveryDBFList( sctTableSpaceNode * aTBSNode,
                                                       smiRecoverType      aRecoveryType,
@@ -706,22 +706,22 @@ IDE_RC smmTBSMediaRecovery::makeMediaRecoveryDBFList( sctTableSpaceNode * aTBSNo
 
     sTBSNode = (smmTBSNode*)aTBSNode;
 
-    // StableDB ¹øÈ£¸¦ ¾ò´Â´Ù.
+    // StableDB ë²ˆí˜¸ë¥¼ ì–»ëŠ”ë‹¤.
     sWhichDB = smmManager::getCurrentDB( sTBSNode );
 
-    // ·Î±×¾ÞÄ¿¿¡ ÀúÀåµÈ StableÇÑ µ¥ÀÌÅ¸ÆÄÀÏµéÀ» º¹±¸´ë»óÀ» ¼±Á¤ÇÑ´Ù.
-    // LstCreatedDBFileÀº RESTART°¡ ¿Ï·áµÈÀÌÈÄ¿¡ Àç°è»êµÇ¸ç,
-    // ·Î±×¾ÞÄ¿°¡ ÃÊ±âÈ­½Ã¿¡µµ °è»êÀÌ µÈ´Ù.
+    // ë¡œê·¸ì•µì»¤ì— ì €ìž¥ëœ Stableí•œ ë°ì´íƒ€íŒŒì¼ë“¤ì„ ë³µêµ¬ëŒ€ìƒì„ ì„ ì •í•œë‹¤.
+    // LstCreatedDBFileì€ RESTARTê°€ ì™„ë£Œëœì´í›„ì— ìž¬ê³„ì‚°ë˜ë©°,
+    // ë¡œê·¸ì•µì»¤ê°€ ì´ˆê¸°í™”ì‹œì—ë„ ê³„ì‚°ì´ ëœë‹¤.
 
     for( sFileNum = 0 ;
          sFileNum <= sTBSNode->mLstCreatedDBFile ;
          sFileNum ++ )
     {
         /* ------------------------------------------------
-         * [1] µ¥ÀÌÅ¸ÆÄÀÏÀÌ Á¸ÀçÇÏ´ÂÁö °Ë»ç
+         * [1] ë°ì´íƒ€íŒŒì¼ì´ ì¡´ìž¬í•˜ëŠ”ì§€ ê²€ì‚¬
          * ----------------------------------------------*/
-        // Loganchor¿¡ ÀúÀåµÈ Checkpoint Image´Â ¹Ýµå½Ã Á¸ÀçÇØ¾ßÇÑ´Ù.
-        // ÆÄÀÏÀÌ Á¸ÀçÇÑ´Ù¸é OPENÀÌ °¡´ÉÇÏ´Ù
+        // Loganchorì— ì €ìž¥ëœ Checkpoint ImageëŠ” ë°˜ë“œì‹œ ì¡´ìž¬í•´ì•¼í•œë‹¤.
+        // íŒŒì¼ì´ ì¡´ìž¬í•œë‹¤ë©´ OPENì´ ê°€ëŠ¥í•˜ë‹¤
         if ( smmManager::openAndGetDBFile( sTBSNode,
                                            sWhichDB,
                                            sFileNum,
@@ -739,7 +739,7 @@ IDE_RC smmTBSMediaRecovery::makeMediaRecoveryDBFList( sctTableSpaceNode * aTBSNo
         }
 
         /* ------------------------------------------------
-         * [2] µ¥ÀÌÅ¸ÆÄÀÏ°ú ÆÄÀÏ³ëµå¿Í ¹ÙÀÌ³Ê¸®¹öÀüÀ» °Ë»ç
+         * [2] ë°ì´íƒ€íŒŒì¼ê³¼ íŒŒì¼ë…¸ë“œì™€ ë°”ì´ë„ˆë¦¬ë²„ì „ì„ ê²€ì‚¬
          * ----------------------------------------------*/
         IDE_TEST_RAISE( sDatabaseFile->checkValidationDBFHdr(
                                         &sChkptImageHdr,
@@ -749,10 +749,10 @@ IDE_RC smmTBSMediaRecovery::makeMediaRecoveryDBFList( sctTableSpaceNode * aTBSNo
         if ( sIsMediaFailure == ID_TRUE )
         {
             /*
-               ¹Ìµð¾î ¿À·ù°¡ Á¸ÀçÇÏ´Â °æ¿ì
+               ë¯¸ë””ì–´ ì˜¤ë¥˜ê°€ ì¡´ìž¬í•˜ëŠ” ê²½ìš°
 
-               ÀÏÄ¡ÇÏÁö ¾Ê´Â °æ¿ì´Â ¿ÏÀü(COMPLETE) º¹±¸¸¦
-               ¼öÇàÇØ¾ß ÇÑ´Ù.
+               ì¼ì¹˜í•˜ì§€ ì•ŠëŠ” ê²½ìš°ëŠ” ì™„ì „(COMPLETE) ë³µêµ¬ë¥¼
+               ìˆ˜í–‰í•´ì•¼ í•œë‹¤.
             */
             IDE_TEST_RAISE( ( aRecoveryType == SMI_RECOVER_UNTILTIME ) ||
                             ( aRecoveryType == SMI_RECOVER_UNTILCANCEL ),
@@ -761,38 +761,38 @@ IDE_RC smmTBSMediaRecovery::makeMediaRecoveryDBFList( sctTableSpaceNode * aTBSNo
         else
         {
             /*
-              ¹Ìµð¾î¿À·ù°¡ ¾ø´Â µ¥ÀÌÅ¸ÆÄÀÏ
+              ë¯¸ë””ì–´ì˜¤ë¥˜ê°€ ì—†ëŠ” ë°ì´íƒ€íŒŒì¼
 
-              ºÒ¿ÏÀüº¹±¸(INCOMPLETE) ¹Ìµð¾î º¹±¸½Ã¿¡´Â
-              ¹é¾÷º»À» °¡Áö°í Àç¼öÇàÀ» ½ÃÀÛÇÏ¹Ç·Î REDO LSNÀÌ
-              ·Î±×¾ÞÄ¿¿Í ÀÏÄ¡ÇÏÁö ¾Ê´Â °æ¿ì´Â Á¸ÀçÇÏÁö ¾Ê´Â´Ù.
+              ë¶ˆì™„ì „ë³µêµ¬(INCOMPLETE) ë¯¸ë””ì–´ ë³µêµ¬ì‹œì—ëŠ”
+              ë°±ì—…ë³¸ì„ ê°€ì§€ê³  ìž¬ìˆ˜í–‰ì„ ì‹œìž‘í•˜ë¯€ë¡œ REDO LSNì´
+              ë¡œê·¸ì•µì»¤ì™€ ì¼ì¹˜í•˜ì§€ ì•ŠëŠ” ê²½ìš°ëŠ” ì¡´ìž¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
 
-              ±×·¸´Ù°í ¿ÏÀüº¹±¸½Ã¿¡ ¸ðµç µ¥ÀÌÅ¸ÆÄÀÏÀÌ
-              ¿À·ù°¡ ÀÖ¾î¾ß ÇÑ´Ù´Â ¸»Àº ¾Æ´Ï´Ù.
+              ê·¸ë ‡ë‹¤ê³  ì™„ì „ë³µêµ¬ì‹œì— ëª¨ë“  ë°ì´íƒ€íŒŒì¼ì´
+              ì˜¤ë¥˜ê°€ ìžˆì–´ì•¼ í•œë‹¤ëŠ” ë§ì€ ì•„ë‹ˆë‹¤.
             */
         }
 
         if ( ( aRecoveryType == SMI_RECOVER_COMPLETE ) &&
              ( sIsMediaFailure != ID_TRUE ) )
         {
-            // ¿ÏÀüº¹±¸½Ã ¿À·ù°¡ ¾ø´Â µ¥ÀÌÅ¸ÆÄÀÎ °æ¿ì
-            // ¹Ìµð¾î º¹±¸°¡ ÇÊ¿ä¾ø´Ù.
+            // ì™„ì „ë³µêµ¬ì‹œ ì˜¤ë¥˜ê°€ ì—†ëŠ” ë°ì´íƒ€íŒŒì¸ ê²½ìš°
+            // ë¯¸ë””ì–´ ë³µêµ¬ê°€ í•„ìš”ì—†ë‹¤.
             continue;
         }
         else
         {
-            // ¿À·ù¸¦ º¹±¸ÇÏ°íÀÚÇÏ´Â ¿ÏÀüº¹±¸ ¶Ç´Â
-            // ¿À·ù°¡ ¾ø´Â ºÒ¿ÏÀüº¹±¸µµ
-            // ¸ðµÎ ¹Ìµð¾î º¹±¸¸¦ ÁøÇàÇÑ´Ù.
+            // ì˜¤ë¥˜ë¥¼ ë³µêµ¬í•˜ê³ ìží•˜ëŠ” ì™„ì „ë³µêµ¬ ë˜ëŠ”
+            // ì˜¤ë¥˜ê°€ ì—†ëŠ” ë¶ˆì™„ì „ë³µêµ¬ë„
+            // ëª¨ë‘ ë¯¸ë””ì–´ ë³µêµ¬ë¥¼ ì§„í–‰í•œë‹¤.
 
-            // ºÒ¿ÏÀü º¹±¸ :
-            // µ¥ÀÌÅ¸ÆÄÀÏ Çì´õÀÇ oldest lsnÀ» °Ë»çÇÑ ´ÙÀ½,
-            // ºÒÀÏÄ¡ÇÏ´Â °æ¿ì º¹±¸´ë»óÆÄÀÏ·Î ¼±Á¤ÇÑ´Ù.
+            // ë¶ˆì™„ì „ ë³µêµ¬ :
+            // ë°ì´íƒ€íŒŒì¼ í—¤ë”ì˜ oldest lsnì„ ê²€ì‚¬í•œ ë‹¤ìŒ,
+            // ë¶ˆì¼ì¹˜í•˜ëŠ” ê²½ìš° ë³µêµ¬ëŒ€ìƒíŒŒì¼ë¡œ ì„ ì •í•œë‹¤.
 
-            // ¿ÏÀüº¹±¸ :
-            // ¸ðµç µ¥ÀÌÅ¸ÆÄÀÏÀÌ º¹±¸´ë»óÀÌ µÈ´Ù.
+            // ì™„ì „ë³µêµ¬ :
+            // ëª¨ë“  ë°ì´íƒ€íŒŒì¼ì´ ë³µêµ¬ëŒ€ìƒì´ ëœë‹¤.
 
-            // ¹Ìµð¾î¿À·ù ¼³Á¤°ú Àç¼öÇà ±¸°£À» ¹ÝÈ¯ÇÑ´Ù.
+            // ë¯¸ë””ì–´ì˜¤ë¥˜ ì„¤ì •ê³¼ ìž¬ìˆ˜í–‰ êµ¬ê°„ì„ ë°˜í™˜í•œë‹¤.
             IDE_TEST( sDatabaseFile->prepareMediaRecovery(
                                             aRecoveryType,
                                             &sChkptImageHdr,
@@ -800,8 +800,8 @@ IDE_RC smmTBSMediaRecovery::makeMediaRecoveryDBFList( sctTableSpaceNode * aTBSNo
                                             &sToRedoLSN )
                       != IDE_SUCCESS );
 
-            // ¸ðµç º¹±¸´ë»ó µ¥ÀÌÅ¸ÆÄÀÏµéÀÇ º¹±¸±¸°£À» Æ÷ÇÔÇÒ ¼ö ÀÖ´Â
-            // ÃÖ¼Ò From Redo LSN, ÃÖ´ë To Redo LSNÀ» ±¸ÇÕ´Ï´Ù.
+            // ëª¨ë“  ë³µêµ¬ëŒ€ìƒ ë°ì´íƒ€íŒŒì¼ë“¤ì˜ ë³µêµ¬êµ¬ê°„ì„ í¬í•¨í•  ìˆ˜ ìžˆëŠ”
+            // ìµœì†Œ From Redo LSN, ìµœëŒ€ To Redo LSNì„ êµ¬í•©ë‹ˆë‹¤.
             if ( smLayerCallback::isLSNGT( aFromRedoLSN,
                                            &sFromRedoLSN )
                  == ID_TRUE )
@@ -826,7 +826,7 @@ IDE_RC smmTBSMediaRecovery::makeMediaRecoveryDBFList( sctTableSpaceNode * aTBSNo
                 /* nothing to do ... */
             }
 
-            // ¸Þ¸ð¸® µ¥ÀÌÅ¸ÆÄÀÏÀÇ º¹±¸´ë»ó ÆÄÀÏ °³¼ö¸¦ °è»ê
+            // ë©”ëª¨ë¦¬ ë°ì´íƒ€íŒŒì¼ì˜ ë³µêµ¬ëŒ€ìƒ íŒŒì¼ ê°œìˆ˜ë¥¼ ê³„ì‚°
             *aFailureChkptImgCount = *aFailureChkptImgCount + 1;
         }
     }
@@ -866,12 +866,12 @@ IDE_RC smmTBSMediaRecovery::makeMediaRecoveryDBFList( sctTableSpaceNode * aTBSNo
 }
 
 /*
-   Å×ÀÌºí½ºÆäÀÌ½ºÀÇ N¹øÂ° µ¥ÀÌÅ¸ÆÄÀÏÀÇ PageID ±¸°£ ¹ÝÈ¯
+   í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ì˜ Në²ˆì§¸ ë°ì´íƒ€íŒŒì¼ì˜ PageID êµ¬ê°„ ë°˜í™˜
 
-   [IN] aTBSNode - Å×ÀÌºí½ºÆäÀÌ½º ³ëµå
-   [IN] aFileNum - µ¥ÀÌÅ¸ÆÄÀÏ ¹øÈ£
-   [OUT] aFstPageID - Ã¹¹øÂ° Page ID
-   [OUT] aLstPageID - ¸¶Áö¸· Page ID
+   [IN] aTBSNode - í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ ë…¸ë“œ
+   [IN] aFileNum - ë°ì´íƒ€íŒŒì¼ ë²ˆí˜¸
+   [OUT] aFstPageID - ì²«ë²ˆì§¸ Page ID
+   [OUT] aLstPageID - ë§ˆì§€ë§‰ Page ID
 
 */
 void smmTBSMediaRecovery::getPageRangeOfNthFile( smmTBSNode * aTBSNode,
@@ -896,7 +896,7 @@ void smmTBSMediaRecovery::getPageRangeOfNthFile( smmTBSNode * aTBSNode,
     {
         sFstPageID += sPageCountPerFile;
 
-        // ÀÌ ÆÄÀÏ¿¡ ±â·ÏÇÒ ¼ö ÀÖ´Â PageÀÇ ¼ö
+        // ì´ íŒŒì¼ì— ê¸°ë¡í•  ìˆ˜ ìžˆëŠ” Pageì˜ ìˆ˜
         sPageCountPerFile = smmManager::getPageCountPerFile( aTBSNode,
                                                              sFileNum );
 
@@ -910,11 +910,11 @@ void smmTBSMediaRecovery::getPageRangeOfNthFile( smmTBSNode * aTBSNode,
 }
 
 /*
-  ¹Ìµð¾î¿À·ù·Î ÀÎÇØ ¹Ìµð¾îº¹±¸¸¦ ÁøÇàÇÑ ¸Þ¸ð¸® µ¥ÀÌÅ¸ÆÄÀÏµéÀ»
-  Ã£¾Æ¼­ ÆÄÀÏÇì´õ¸¦ º¹±¸ÇÑ´Ù.
+  ë¯¸ë””ì–´ì˜¤ë¥˜ë¡œ ì¸í•´ ë¯¸ë””ì–´ë³µêµ¬ë¥¼ ì§„í–‰í•œ ë©”ëª¨ë¦¬ ë°ì´íƒ€íŒŒì¼ë“¤ì„
+  ì°¾ì•„ì„œ íŒŒì¼í—¤ë”ë¥¼ ë³µêµ¬í•œë‹¤.
 
-  [IN]  aTBSNode   - °Ë»öÇÒ TBS Node
-  [OUT] aActionArg - Repair Á¤º¸
+  [IN]  aTBSNode   - ê²€ìƒ‰í•  TBS Node
+  [OUT] aActionArg - Repair ì •ë³´
 */
 IDE_RC smmTBSMediaRecovery::doActRepairDBFHdr(
                               idvSQL             * /* aStatistics*/,
@@ -945,7 +945,7 @@ IDE_RC smmTBSMediaRecovery::doActRepairDBFHdr(
         if ( sctTableSpaceMgr::isMemTableSpace( sTBSNode->mHeader.mID )
              != ID_TRUE )
         {
-            // ¸Þ¸ð¸® Å×ÀÌºí½ºÆäÀÌ½º°¡ ¾Æ´Ñ °æ¿ì Ã¼Å©ÇÏÁö ¾Ê´Â´Ù.
+            // ë©”ëª¨ë¦¬ í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ê°€ ì•„ë‹Œ ê²½ìš° ì²´í¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
             break;
         }
 
@@ -953,24 +953,24 @@ IDE_RC smmTBSMediaRecovery::doActRepairDBFHdr(
                                          SCT_SS_UNABLE_MEDIA_RECOVERY ) 
              == ID_TRUE )
         {
-            // Å×ÀÌºí½ºÆäÀÌ½º°¡ DROPPED ÀÌ°Å³ª DISCARD »óÅÂÀÎ °æ¿ì
-            // ¹Ìµð¾îº¹±¸¸¦ ÇÏÁö ¾Ê°í Á¦¿ÜÇÑ´Ù.
+            // í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ê°€ DROPPED ì´ê±°ë‚˜ DISCARD ìƒíƒœì¸ ê²½ìš°
+            // ë¯¸ë””ì–´ë³µêµ¬ë¥¼ í•˜ì§€ ì•Šê³  ì œì™¸í•œë‹¤.
             break;
         }
 
-        // StableDB ¹øÈ£¸¦ ¾ò´Â´Ù.
+        // StableDB ë²ˆí˜¸ë¥¼ ì–»ëŠ”ë‹¤.
         sWhichDB = smmManager::getCurrentDB( sTBSNode );
 
-        // LstCreatedDBFileÀº RESTART°¡ ¿Ï·áµÈÀÌÈÄ¿¡ Àç°è»êµÇ¸ç,
-        // ·Î±×¾ÞÄ¿°¡ ÃÊ±âÈ­½Ã¿¡µµ °è»êÀÌ µÈ´Ù.
+        // LstCreatedDBFileì€ RESTARTê°€ ì™„ë£Œëœì´í›„ì— ìž¬ê³„ì‚°ë˜ë©°,
+        // ë¡œê·¸ì•µì»¤ê°€ ì´ˆê¸°í™”ì‹œì—ë„ ê³„ì‚°ì´ ëœë‹¤.
         for ( sFileNum = 0;
               sFileNum <= sTBSNode->mLstCreatedDBFile;
               sFileNum ++ )
         {
             // PRJ-1548 User Memory Tablespace
-            // Loganchor¿¡ ÀúÀåµÈ Checkpoint Image´Â ¹Ýµå½Ã Á¸ÀçÇØ¾ßÇÑ´Ù.
+            // Loganchorì— ì €ìž¥ëœ Checkpoint ImageëŠ” ë°˜ë“œì‹œ ì¡´ìž¬í•´ì•¼í•œë‹¤.
 
-            // ÆÄÀÏÀÌ Á¸ÀçÇÑ´Ù¸é OPENÀÌ °¡´ÉÇÏ´Ù
+            // íŒŒì¼ì´ ì¡´ìž¬í•œë‹¤ë©´ OPENì´ ê°€ëŠ¥í•˜ë‹¤
             IDE_TEST( smmManager::getDBFile( sTBSNode,
                                              sWhichDB,
                                              sFileNum,
@@ -987,8 +987,8 @@ IDE_RC smmTBSMediaRecovery::doActRepairDBFHdr(
                                 ( sRepairArgs->mResetLogsLSN->mOffset
                                   != ID_UINT_MAX ) );
 
-                    // ºÒ¿ÏÀü º¹±¸½Ã¿¡´Â ÀÎÀÚ·Î ¹ÞÀº ResetLogsLSN
-                    // ¼³Á¤ÇÑ´Ù.
+                    // ë¶ˆì™„ì „ ë³µêµ¬ì‹œì—ëŠ” ì¸ìžë¡œ ë°›ì€ ResetLogsLSN
+                    // ì„¤ì •í•œë‹¤.
                     sDatabaseFile->setChkptImageHdr(
                                     sRepairArgs->mResetLogsLSN,
                                     NULL,   // aMemCreateLSN
@@ -998,30 +998,30 @@ IDE_RC smmTBSMediaRecovery::doActRepairDBFHdr(
                 }
                 else
                 {
-                    // ¿ÏÀüº¹±¸½Ã¿¡´Â Loganchor¿¡ ÀÖ´Â Á¤º¸¸¦
-                    // ±×´ë·Î ¼³Á¤ÇÔ.
+                    // ì™„ì „ë³µêµ¬ì‹œì—ëŠ” Loganchorì— ìžˆëŠ” ì •ë³´ë¥¼
+                    // ê·¸ëŒ€ë¡œ ì„¤ì •í•¨.
                 }
 
-                // ÆÄÀÏÇì´õ º¹±¸
+                // íŒŒì¼í—¤ë” ë³µêµ¬
                 IDE_TEST( sDatabaseFile->flushDBFileHdr()
                           != IDE_SUCCESS );
 
             }
             else
             {
-                // ¹Ìµð¾î¿À·ù°¡ ¾ø´Â ÆÄÀÏ
+                // ë¯¸ë””ì–´ì˜¤ë¥˜ê°€ ì—†ëŠ” íŒŒì¼
                 // Nothing to do ...
             }
 
             //PROJ-2133 incremental backup
-            //Media º¹±¸°¡ ³¡³­ Ã¼Å©Æ÷ÀÎÆ® ÀÌ¹ÌÁöÀÇ pingpong Ã¼Å©Æ÷ÀÎÆ®
-            //ÀÌ¹ÌÁö¸¦ ¸¸µç´Ù.
+            //Media ë³µêµ¬ê°€ ëë‚œ ì²´í¬í¬ì¸íŠ¸ ì´ë¯¸ì§€ì˜ pingpong ì²´í¬í¬ì¸íŠ¸
+            //ì´ë¯¸ì§€ë¥¼ ë§Œë“ ë‹¤.
             sNxtStableDB = smmManager::getNxtStableDB( sTBSNode );
             sIsCreated   = smmManager::getCreateDBFileOnDisk( sTBSNode,
                                                               sNxtStableDB,
                                                               sFileNum );
 
-            /* CHKPT ÀÌ¹ÌÁö°¡ ÀÌ¹Ì »ý¼ºµÇ¾îÀÖ´Â »óÅÂÀÏ¶§¸¸ »ý¼ºÇÑ´Ù. */
+            /* CHKPT ì´ë¯¸ì§€ê°€ ì´ë¯¸ ìƒì„±ë˜ì–´ìžˆëŠ” ìƒíƒœì¼ë•Œë§Œ ìƒì„±í•œë‹¤. */
             if ( sIsCreated == ID_TRUE )
             {
                 IDE_TEST( smmManager::getDBFile( sTBSNode,
@@ -1054,7 +1054,7 @@ IDE_RC smmTBSMediaRecovery::doActRepairDBFHdr(
                 if ( sNxtStableDatabaseFile->isOpen() == ID_TRUE ) 
                 {
                     isOpened = ID_TRUE;
-                    // copy target ÆÄÀÏÀÌ openµÈ »óÅÂ¿¡¼­ copyÇÏ¸é ¾ÈµÊ
+                    // copy target íŒŒì¼ì´ openëœ ìƒíƒœì—ì„œ copyí•˜ë©´ ì•ˆë¨
                     IDE_TEST( sNxtStableDatabaseFile->close() 
                               != IDE_SUCCESS );
                 }
@@ -1112,11 +1112,11 @@ IDE_RC smmTBSMediaRecovery::doActRepairDBFHdr(
 
     if ( isOpened == ID_TRUE )
     {
-        /* isOpenedÀÌ TRUE ¸é  FDCnt´Â 0 ÀÌ¾î¾ß ÇÑ´Ù.  
-           ¾Æ´Ï´õ¶óµµ Å©°Ô ¹®Á¦°¡ ¾øÀ¸´Ï µð¹ö±×¿¡¼­¸¸ È®ÀÎ ÇÏµµ·Ï ÇÑ´Ù. */
+        /* isOpenedì´ TRUE ë©´  FDCntëŠ” 0 ì´ì–´ì•¼ í•œë‹¤.  
+           ì•„ë‹ˆë”ë¼ë„ í¬ê²Œ ë¬¸ì œê°€ ì—†ìœ¼ë‹ˆ ë””ë²„ê·¸ì—ì„œë§Œ í™•ì¸ í•˜ë„ë¡ í•œë‹¤. */
         IDE_DASSERT( sNxtStableDatabaseFile->isOpen() != ID_TRUE )
         
-        /* target ÆÄÀÏÀ» º¹»ç¸¦ À§ÇØ ´Ý¾ÒÀ¸´Ï ´Ù½Ã ¿­¾îÁØ´Ù.*/
+        /* target íŒŒì¼ì„ ë³µì‚¬ë¥¼ ìœ„í•´ ë‹«ì•˜ìœ¼ë‹ˆ ë‹¤ì‹œ ì—´ì–´ì¤€ë‹¤.*/
         (void)sNxtStableDatabaseFile->open();
         isOpened = ID_FALSE;
 
@@ -1130,13 +1130,13 @@ IDE_RC smmTBSMediaRecovery::doActRepairDBFHdr(
 }
 
 /*
-   ¸ðµç Å×ÀÌºí½ºÆäÀÌ½ºÀÇ µ¥ÀÌÅ¸ÆÄÀÏ¿¡¼­ ÀÔ·ÂµÈ ÆäÀÌÁö ID¸¦ °¡Áö´Â
-   Failure µ¥ÀÌÅ¸ÆÄÀÏÀÇ Á¸Àç¿©ºÎ¸¦ ¹ÝÈ¯ÇÑ´Ù.
+   ëª¨ë“  í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ì˜ ë°ì´íƒ€íŒŒì¼ì—ì„œ ìž…ë ¥ëœ íŽ˜ì´ì§€ IDë¥¼ ê°€ì§€ëŠ”
+   Failure ë°ì´íƒ€íŒŒì¼ì˜ ì¡´ìž¬ì—¬ë¶€ë¥¼ ë°˜í™˜í•œë‹¤.
 
-   [IN]  aTBSID        - Å×ÀÌºí½ºÆäÀÌ½º ID
-   [IN]  aPageID       - ÆäÀÌÁö ID
-   [OUT] aExistTBS     - TBSID¿¡ ÇØ´çÇÏ´Â TableSpace Á¸Àç¿©ºÎ
-   [OUT] aIsFailureDBF - ÆäÀÌÁö ID¸¦ Æ÷ÇÔÇÏ´Â Failure DBF Á¸Àç¿©ºÎ
+   [IN]  aTBSID        - í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ ID
+   [IN]  aPageID       - íŽ˜ì´ì§€ ID
+   [OUT] aExistTBS     - TBSIDì— í•´ë‹¹í•˜ëŠ” TableSpace ì¡´ìž¬ì—¬ë¶€
+   [OUT] aIsFailureDBF - íŽ˜ì´ì§€ IDë¥¼ í¬í•¨í•˜ëŠ” Failure DBF ì¡´ìž¬ì—¬ë¶€
 
 */
 IDE_RC smmTBSMediaRecovery::findMatchFailureDBF( scSpaceID   aTBSID,
@@ -1156,19 +1156,19 @@ IDE_RC smmTBSMediaRecovery::findMatchFailureDBF( scSpaceID   aTBSID,
     IDE_DASSERT( aIsExistTBS   != NULL );
     IDE_DASSERT( aIsFailureDBF != NULL );
 
-    // Å×ÀÌºí½ºÆäÀÌ½º ³ëµå °Ë»ö
+    // í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ ë…¸ë“œ ê²€ìƒ‰
     sctTableSpaceMgr::findSpaceNodeWithoutException( aTBSID,
                                                      (void**)&sTBSNode);
 
     if ( sTBSNode != NULL )
     {
-        // ÆäÀÌÁö¸¦ Æ÷ÇÔÇÏ´Â µ¥ÀÌÅ¸ÆÄÀÏ ¹øÈ£¸¦ ¹ÝÈ¯ÇÑ´Ù.
+        // íŽ˜ì´ì§€ë¥¼ í¬í•¨í•˜ëŠ” ë°ì´íƒ€íŒŒì¼ ë²ˆí˜¸ë¥¼ ë°˜í™˜í•œë‹¤.
         sFileNum = smmManager::getDbFileNo( sTBSNode, aPageID );
 
-        // StableDB ¹øÈ£¸¦ ¾ò´Â´Ù.
+        // StableDB ë²ˆí˜¸ë¥¼ ì–»ëŠ”ë‹¤.
         sWhichDB = smmManager::getCurrentDB( sTBSNode );
 
-        // Failure DBF¶ó´Â °ÍÀº CreateµÈ µ¥ÀÌÅ¸ÆÄÀÏ Áß¿¡ Á¸ÀçÇÑ´Ù.
+        // Failure DBFë¼ëŠ” ê²ƒì€ Createëœ ë°ì´íƒ€íŒŒì¼ ì¤‘ì— ì¡´ìž¬í•œë‹¤.
         if ( sFileNum <= sTBSNode->mLstCreatedDBFile )
         {
             IDE_TEST( smmManager::getDBFile( sTBSNode,
@@ -1180,15 +1180,15 @@ IDE_RC smmTBSMediaRecovery::findMatchFailureDBF( scSpaceID   aTBSID,
 
             if ( sDatabaseFile->getIsMediaFailure() == ID_TRUE )
             {
-                // µ¥ÀÌÅ¸ÆÄÀÏÀÇ ÆäÀÌÁö¹üÀ§¸¦ ±¸ÇÑ´Ù.
+                // ë°ì´íƒ€íŒŒì¼ì˜ íŽ˜ì´ì§€ë²”ìœ„ë¥¼ êµ¬í•œë‹¤.
                 sDatabaseFile->getPageRangeInFile( &sFstPageID,
                                                    &sLstPageID );
 
-                // ÆäÀÌÁö°¡ ÆÄÀÏ¿¡ Æ÷ÇÔµÇ´ÂÁö È®ÀÎ
+                // íŽ˜ì´ì§€ê°€ íŒŒì¼ì— í¬í•¨ë˜ëŠ”ì§€ í™•ì¸
                 IDE_ASSERT( (sFstPageID <= aPageID) &&
                             (sLstPageID >= aPageID) );
 
-                // ÆäÀÌÁö¸¦ Æ÷ÇÔÇÑ Failure µ¥ÀÌÅ¸ÆÄÀÏÀ» Ã£Àº °æ¿ì
+                // íŽ˜ì´ì§€ë¥¼ í¬í•¨í•œ Failure ë°ì´íƒ€íŒŒì¼ì„ ì°¾ì€ ê²½ìš°
                 sIsFDBF = ID_TRUE;
             }
             else
@@ -1198,7 +1198,7 @@ IDE_RC smmTBSMediaRecovery::findMatchFailureDBF( scSpaceID   aTBSID,
         }
         else
         {
-             // ÆäÀÌÁö¸¦ Æ÷ÇÔÇÑ Failure µ¥ÀÌÅ¸ÆÄÀÏÀ» ¸ø Ã£Àº °æ¿ì
+             // íŽ˜ì´ì§€ë¥¼ í¬í•¨í•œ Failure ë°ì´íƒ€íŒŒì¼ì„ ëª» ì°¾ì€ ê²½ìš°
              sIsFDBF = ID_FALSE;
         }
 
@@ -1206,7 +1206,7 @@ IDE_RC smmTBSMediaRecovery::findMatchFailureDBF( scSpaceID   aTBSID,
     }
     else
     {
-         // ÆäÀÌÁö¸¦ Æ÷ÇÔÇÑ Failure µ¥ÀÌÅ¸ÆÄÀÏÀ» ¸ø Ã£Àº °æ¿ì
+         // íŽ˜ì´ì§€ë¥¼ í¬í•¨í•œ Failure ë°ì´íƒ€íŒŒì¼ì„ ëª» ì°¾ì€ ê²½ìš°
          sIsETBS = ID_FALSE;
          sIsFDBF = ID_FALSE;
     }
@@ -1222,8 +1222,8 @@ IDE_RC smmTBSMediaRecovery::findMatchFailureDBF( scSpaceID   aTBSID,
 }
 
 /*
-  ¹Ìµð¾îº¹±¸½Ã ÇÒ´çµÇ¾ú´ø °´Ã¼µéÀ» ÆÄ±«ÇÏ°í
-  ¸Þ¸ð¸® ÇØÁ¦ÇÑ´Ù.
+  ë¯¸ë””ì–´ë³µêµ¬ì‹œ í• ë‹¹ë˜ì—ˆë˜ ê°ì²´ë“¤ì„ íŒŒê´´í•˜ê³ 
+  ë©”ëª¨ë¦¬ í•´ì œí•œë‹¤.
 
 */
 IDE_RC smmTBSMediaRecovery::resetTBSNode( smmTBSNode * aTBSNode )
@@ -1234,11 +1234,11 @@ IDE_RC smmTBSMediaRecovery::resetTBSNode( smmTBSNode * aTBSNode )
                                      SCT_SS_NEED_PAGE_PHASE )
          == ID_TRUE )
     {
-        // LoadµÈ ¸ðµç Page Memory¹Ý³³, Page SystemÇØÁ¦
+        // Loadëœ ëª¨ë“  Page Memoryë°˜ë‚©, Page Systemí•´ì œ
         IDE_TEST( smmTBSMultiPhase::finiPagePhase( aTBSNode )
                   != IDE_SUCCESS );
 
-        // Page SystemÃÊ±âÈ­ ( Prepare/Restore¾ÈµÈ »óÅÂ )
+        // Page Systemì´ˆê¸°í™” ( Prepare/Restoreì•ˆëœ ìƒíƒœ )
         IDE_TEST( smmTBSMultiPhase::initPagePhase( aTBSNode )
                   != IDE_SUCCESS );
     }
@@ -1251,8 +1251,8 @@ IDE_RC smmTBSMediaRecovery::resetTBSNode( smmTBSNode * aTBSNode )
 }
 
 /*
-   ¹Ìµð¾îº¹±¸½Ã ÇÒ´çÇß´ø Å×ÀÌºí½ºÆäÀÌ½ºÀÇ ÀÚ¿øÀ»
-   ¸®¼ÂÇÑ´Ù.
+   ë¯¸ë””ì–´ë³µêµ¬ì‹œ í• ë‹¹í–ˆë˜ í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ì˜ ìžì›ì„
+   ë¦¬ì…‹í•œë‹¤.
 */
 IDE_RC smmTBSMediaRecovery::doActResetMediaFailureTBSNode(
                                         idvSQL            * /* aStatistics*/,
@@ -1266,12 +1266,12 @@ IDE_RC smmTBSMediaRecovery::doActResetMediaFailureTBSNode(
 
     if ( sctTableSpaceMgr::isMemTableSpace(aTBSNode->mID) == ID_TRUE )
     {
-        // ¹Ìµð¾îº¹±¸°¡ ÁøÇàµÈ TBSÀÇ °æ¿ì´Â Restore°¡ µÇ¾î ÀÖ¾î¾ß ÇÑ´Ù.
+        // ë¯¸ë””ì–´ë³µêµ¬ê°€ ì§„í–‰ëœ TBSì˜ ê²½ìš°ëŠ” Restoreê°€ ë˜ì–´ ìžˆì–´ì•¼ í•œë‹¤.
         if ( ( ( smmTBSNode*)aTBSNode)->mRestoreType
                != SMM_DB_RESTORE_TYPE_NOT_RESTORED_YET )
         {
-            // ¹Ìµð¾îº¹±¸°¡ ÁøÇàµÈ TBS¸¸ ResetTBS¸¦ ¼öÇàÇÑ´Ù.
-            // ±×·¡¼­ ´ÙÀ½ Assert¸¦ ¸¸Á·ÇØ¾ß¸¸ ÇÑ´Ù.
+            // ë¯¸ë””ì–´ë³µêµ¬ê°€ ì§„í–‰ëœ TBSë§Œ ResetTBSë¥¼ ìˆ˜í–‰í•œë‹¤.
+            // ê·¸ëž˜ì„œ ë‹¤ìŒ Assertë¥¼ ë§Œì¡±í•´ì•¼ë§Œ í•œë‹¤.
             IDE_ASSERT( sctTableSpaceMgr::hasState( aTBSNode->mID,
                                                     SCT_SS_UNABLE_MEDIA_RECOVERY )
                         == ID_FALSE );
@@ -1289,8 +1289,8 @@ IDE_RC smmTBSMediaRecovery::doActResetMediaFailureTBSNode(
 }
 
 /*
-   ¹Ìµð¾îº¹±¸½Ã ÇÒ´çÇß´ø Å×ÀÌºí½ºÆäÀÌ½ºµéÀÇ ÀÚ¿øÀ»
-   ¸®¼ÂÇÑ´Ù.
+   ë¯¸ë””ì–´ë³µêµ¬ì‹œ í• ë‹¹í–ˆë˜ í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ë“¤ì˜ ìžì›ì„
+   ë¦¬ì…‹í•œë‹¤.
 */
 IDE_RC smmTBSMediaRecovery::resetMediaFailureMemTBSNodes()
 {

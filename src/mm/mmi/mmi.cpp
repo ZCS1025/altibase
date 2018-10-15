@@ -106,9 +106,9 @@ mmi::serverStart( SInt aPhase, SInt aOption )
     }
     IDE_EXCEPTION( error_invalid_option );
     {
-        // ¿¹¿Ü : msg °¡ ·ÎµùµÇÁö ¾ÊÀº »óÅÂ¿¡ÀÇ ¿¡·¯ÀÌ¹Ç·Î
-        // ErrorMessage °¡ ¿Ã¹Ù¸£°Ô Ãâ·ÂµÇÁö ¾Ê´Â´Ù.
-        // ±×·¡¼­, mmi ³»¿¡¼­ Á÷Á¢ Ã³¸®ÇØÁØ´Ù.
+        // ì˜ˆì™¸ : msg ê°€ ë¡œë”©ë˜ì§€ ì•Šì€ ìƒíƒœì—ì˜ ì—ëŸ¬ì´ë¯€ë¡œ
+        // ErrorMessage ê°€ ì˜¬ë°”ë¥´ê²Œ ì¶œë ¥ë˜ì§€ ì•ŠëŠ”ë‹¤.
+        // ê·¸ë˜ì„œ, mmi ë‚´ì—ì„œ ì§ì ‘ ì²˜ë¦¬í•´ì¤€ë‹¤.
         mmi::setError( 0, MM_TRC_INVALID_OPTION );
     }
     IDE_EXCEPTION( error_thread_initialize );
@@ -117,9 +117,9 @@ mmi::serverStart( SInt aPhase, SInt aOption )
     }
     IDE_EXCEPTION( error_invalid_phase );
     {
-        // ¿¹¿Ü : msg °¡ ·ÎµùµÇÁö ¾ÊÀº »óÅÂ¿¡ÀÇ ¿¡·¯ÀÌ¹Ç·Î
-        // ErrorMessage °¡ ¿Ã¹Ù¸£°Ô Ãâ·ÂµÇÁö ¾Ê´Â´Ù.
-        // ±×·¡¼­, mmi ³»¿¡¼­ Á÷Á¢ Ã³¸®ÇØÁØ´Ù.
+        // ì˜ˆì™¸ : msg ê°€ ë¡œë”©ë˜ì§€ ì•Šì€ ìƒíƒœì—ì˜ ì—ëŸ¬ì´ë¯€ë¡œ
+        // ErrorMessage ê°€ ì˜¬ë°”ë¥´ê²Œ ì¶œë ¥ë˜ì§€ ì•ŠëŠ”ë‹¤.
+        // ê·¸ë˜ì„œ, mmi ë‚´ì—ì„œ ì§ì ‘ ì²˜ë¦¬í•´ì¤€ë‹¤.
         mmi::setError( 0, MM_TRC_INVALID_PHASE );
     }
     IDE_EXCEPTION( error_server_start );

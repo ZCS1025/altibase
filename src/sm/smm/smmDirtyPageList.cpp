@@ -80,7 +80,7 @@ IDE_RC smmDirtyPageList::destroy()
     return IDE_FAILURE;
 }
 
-// mutex ÀâÀº ÀÌÈÄ¿¡ È£ÃâµÇ¾î¾ß ÇÔ.
+// mutex ì¡ì€ ì´í›„ì— í˜¸ì¶œë˜ì–´ì•¼ í•¨.
 // called by DirtyPageMgr directly
 IDE_RC smmDirtyPageList::addDirtyPage(scPageID a_page_no)
 {

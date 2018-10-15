@@ -56,7 +56,7 @@ IDE_RC cmpModuleInitializeStatic()
     UInt       i;
     UInt       j;
 
-    /* BUG-43080 MarshalÀ» À§ÇÑ ¼³Á¤Àº mOpMaxA5¸¦ »ç¿ëÇØ¾ß ÇÑ´Ù. */
+    /* BUG-43080 Marshalì„ ìœ„í•œ ì„¤ì •ì€ mOpMaxA5ë¥¼ ì‚¬ìš©í•´ì•¼ í•œë‹¤. */
 #ifdef DEBUG
     for (i = CMP_MODULE_BASE; i < CMP_MODULE_MAX; i++)
     {

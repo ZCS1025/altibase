@@ -19,11 +19,11 @@ package Altibase.jdbc.driver;
 interface AltibaseFailoverServerCheckCallback
 {
     /**
-     * ¼­¹ö Á¤º¸¸¦ È®ÀÎÇÏ°í, °á°ú¸¦ ¹İÈ¯ÇÑ´Ù.
+     * ì„œë²„ ì •ë³´ë¥¼ í™•ì¸í•˜ê³ , ê²°ê³¼ë¥¼ ë°˜í™˜í•œë‹¤.
      *
-     * @param aServerInfo È®ÀÎÇÒ ¼­¹ö Á¤º¸
-     * @param aJustCheck ´Ü¼øÈ÷ È®ÀÎ¸¸ ÇØº¼°ÍÀÎÁö ¿©ºÎ
-     * @return ¼­¹ö°¡ »ç¿ë °¡´ÉÇÏ¸é true, ¾Æ´Ï¸é false
+     * @param aServerInfo í™•ì¸í•  ì„œë²„ ì •ë³´
+     * @param aJustCheck ë‹¨ìˆœíˆ í™•ì¸ë§Œ í•´ë³¼ê²ƒì¸ì§€ ì—¬ë¶€
+     * @return ì„œë²„ê°€ ì‚¬ìš© ê°€ëŠ¥í•˜ë©´ true, ì•„ë‹ˆë©´ false
      */
     boolean checkUsable(AltibaseFailoverServerInfo aServerInfo, boolean aJustCheck);
 }

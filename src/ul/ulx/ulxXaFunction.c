@@ -63,7 +63,7 @@ void ulxNullCallbackForSesConn(int     aRmid,
     // Nothing to do.
 }
 
-//BUG-26374 XA_CLOSE½Ã Client ÀÚ¿ø Á¤¸®°¡ µÇÁö ¾Ê½À´Ï´Ù.
+//BUG-26374 XA_CLOSEì‹œ Client ìžì› ì •ë¦¬ê°€ ë˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
 void ulxNullCallbackForSesDisConn( )
 {
     // Nothing to do.
@@ -111,7 +111,7 @@ int ulxXaOpen(char *aXa_info, int aRmid, long aFlags)
                                   (void**)&(sConn->mDbc))
                    != ACI_SUCCESS, err_alloc_dbc);
     sState = 3;
-    //PROJ-1645 UL-FailOver¿¡¼­ STF½Ã¿¡ ÇÊ¿äÇÏ´Ù.
+    //PROJ-1645 UL-FailOverì—ì„œ STFì‹œì— í•„ìš”í•˜ë‹¤.
     sConn->mDbc->mXaConnection = sConn;
 
     ACI_TEST(acpSnprintf(sAppInfo, 30, "RMID: %"ACI_INT32_FMT"", aRmid)
@@ -229,7 +229,7 @@ int ulxXaClose(char *aXa_info, int aRmid, long aFlags)
                                          &sResult)
              != ACI_SUCCESS, err_protocol);
 
-    //BUG-26374 XA_CLOSE½Ã Client ÀÚ¿ø Á¤¸®°¡ µÇÁö ¾Ê½À´Ï´Ù.
+    //BUG-26374 XA_CLOSEì‹œ Client ìžì› ì •ë¦¬ê°€ ë˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
     gCallbackForSesDisConn();
 
     ulxConnSetDisconn(sConn);
@@ -291,7 +291,7 @@ int ulxXaClose(char *aXa_info, int aRmid, long aFlags)
     ACI_EXCEPTION(err_freecon);
     {
 /*
-        ÀÌ¹Ì sConn ÀÌ »èÁ¦µÇ¾úÀ» ¼öµµ ÀÖÀ½
+        ì´ë¯¸ sConn ì´ ì‚­ì œë˜ì—ˆì„ ìˆ˜ë„ ìžˆìŒ
         ulxLogTrace(&(sConn->mLogObj), aRmid, "ulxXaClose", "XAER_RMERR",
                     "memory free error");
 */
@@ -319,7 +319,7 @@ int ulxXaFree(char *aXa_info, int aRmid, long aFlags)
     ACI_TEST_RAISE(ulxFindConnection(aRmid, &sConn)
                    != ACI_SUCCESS, err_find_conn);
 
-    //BUG-26374 XA_CLOSE½Ã Client ÀÚ¿ø Á¤¸®°¡ µÇÁö ¾Ê½À´Ï´Ù.
+    //BUG-26374 XA_CLOSEì‹œ Client ìžì› ì •ë¦¬ê°€ ë˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
     gCallbackForSesDisConn();
 
     ulxConnSetDisconn(sConn);
@@ -620,13 +620,13 @@ int ulxXaRecover(XID *aXid, long aCount, int aRmid, long aFlags)
     ACI_TEST_RAISE(ulxConnGetStatus(sConn) == ULX_XA_DISCONN,
                    err_state);
 
-    // START ¸¦ ÇÏ±â Àü¿¡´Â TMNOFLAGS ¸¦ »ç¿ëÇÒ ¼ö ¾ø´Ù.
+    // START ë¥¼ í•˜ê¸° ì „ì—ëŠ” TMNOFLAGS ë¥¼ ì‚¬ìš©í•  ìˆ˜ ì—†ë‹¤.
     ACI_TEST_RAISE( (aFlags == TMNOFLAGS) && (sConn->mRecoverPos < 0),
                     err_invalid_start );
 
-    /* TMSTARTRSCAN ÀÏ ¶§, ¼­¹ö·ÎºÎÅÍ ¸ðµÎ ¹Þ¾Æ¿Í¼­ sConn->mRecoverXid ¿¡
-       ÀúÀåÇÑ´Ù. ÀÌ ÈÄ TMNOFLAGS ·Î xa_recover °¡ È£ÃâµÇ¸é ÇöÀç À§Ä¡(mRecoverPos)
-       ·ÎºÎÅÍ aCount ¸¸Å­ ¹ÝÈ¯ÇÑ´Ù.  */
+    /* TMSTARTRSCAN ì¼ ë•Œ, ì„œë²„ë¡œë¶€í„° ëª¨ë‘ ë°›ì•„ì™€ì„œ sConn->mRecoverXid ì—
+       ì €ìž¥í•œë‹¤. ì´ í›„ TMNOFLAGS ë¡œ xa_recover ê°€ í˜¸ì¶œë˜ë©´ í˜„ìž¬ ìœ„ì¹˜(mRecoverPos)
+       ë¡œë¶€í„° aCount ë§Œí¼ ë°˜í™˜í•œë‹¤.  */
     if ( (aFlags & TMSTARTRSCAN) != 0 )
     {
         ulxConnInitRecover(sConn);

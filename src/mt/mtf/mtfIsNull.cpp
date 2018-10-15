@@ -89,7 +89,7 @@ static const mtcExecute mtfExecute = {
     mtfIsNullExtractRange
 };
 
-/* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø */
+/* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ìž… ì§€ì› */
 static const mtcExecute mtfExecuteXlobValue = {
     mtf::calculateNA,
     mtf::calculateNA,
@@ -184,7 +184,7 @@ IDE_RC mtfIsNullEstimate( mtcNode*     aNode,
         }
         else
         {
-            /* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø */
+            /* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ìž… ì§€ì› */
             aTemplate->rows[aNode->table].execute[aNode->column] = mtfExecuteXlobValue;
         }
     }
@@ -230,7 +230,7 @@ IDE_RC mtfIsNullExtractRange( mtcNode*,
     aRange->next                 = NULL;
 
     //---------------------------
-    // RangeCallBack ¼³Á¤ 
+    // RangeCallBack ì„¤ì • 
     //---------------------------
 
     if ( aInfo->compValueType == MTD_COMPARE_FIXED_MTDVAL_FIXED_MTDVAL ||
@@ -259,7 +259,7 @@ IDE_RC mtfIsNullExtractRange( mtcNode*,
     aRange->maximum.data         = sMaximumCallBack;
 
     //---------------------------
-    // MinimumCallBack Á¤º¸ ¼³Á¤
+    // MinimumCallBack ì •ë³´ ì„¤ì •
     //---------------------------
             
     sMinimumCallBack->next       = NULL;
@@ -275,7 +275,7 @@ IDE_RC mtfIsNullExtractRange( mtcNode*,
     sMaximumCallBack->value      = NULL;
 
     //---------------------------
-    // MaximumCallBack Á¤º¸ ¼³Á¤
+    // MaximumCallBack ì •ë³´ ì„¤ì •
     //---------------------------
 
     if ( ( aInfo->compValueType == MTD_COMPARE_FIXED_MTDVAL_FIXED_MTDVAL ) ||
@@ -347,7 +347,7 @@ IDE_RC mtfIsNullCalculateXlobColumn( mtcNode*     aNode,
               != IDE_SUCCESS );
     
     // PROJ-1362
-    // Lob Locator¸¦ ¾ò´Âµ¥ ÇÊ¿äÇÑ Ä¿¼­Á¤º¸¸¦ °¡Á®¿Â´Ù.
+    // Lob Locatorë¥¼ ì–»ëŠ”ë° í•„ìš”í•œ ì»¤ì„œì •ë³´ë¥¼ ê°€ì ¸ì˜¨ë‹¤.
     IDE_TEST( aTemplate->getOpenedCursor( aTemplate,
                                           aNode->arguments->table,
                                           & sCursor,

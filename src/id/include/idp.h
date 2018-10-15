@@ -19,19 +19,19 @@ class iduFixedTableMemory;
 struct idvSQL;
 
 /*
- * ¼Ó¼º Type Descriptor µî·Ï Phase :  each Instance : regist()
+ * ì†ì„± Type Descriptor ë“±ë¡ Phase :  each Instance : regist()
  *
- * ÇÁ·ÎÆÛÆ¼ conf Á¤º¸ µî·Ï :  build()->insert() : string typeÀÇ µ¥ÀÌÅ¸ÀÓ
+ * í”„ë¡œí¼í‹° conf ì •ë³´ ë“±ë¡ :  build()->insert() : string typeì˜ ë°ì´íƒ€ì„
  *
- * ÇÁ·ÎÆÛÆ¼ ÀĞ±â/º¯°æ : read(), update()
+ * í”„ë¡œí¼í‹° ì½ê¸°/ë³€ê²½ : read(), update()
  */
 
 #define IDP_MAX_PROP_COUNT      (1024)
 #define IDP_MAX_PROP_LINE_SIZE  (1024)
 #define IDP_MAX_PROP_STRING_LEN (1024)
-#define IDP_MAX_PROP_DBNAME_LEN (128 - 1) // (SM_MAX_DB_NAME - 1)°ú °°¾Æ¾ß ÇÔ
+#define IDP_MAX_PROP_DBNAME_LEN (128 - 1) // (SM_MAX_DB_NAME - 1)ê³¼ ê°™ì•„ì•¼ í•¨
 
-// ÃÖ´ë Æ®·£Àè¼Ç °¹¼ö
+// ìµœëŒ€ íŠ¸ëœì­ì…˜ ê°¯ìˆ˜
 #define IDP_MAX_TRANSACTION_COUNT (16384) // 2^14
 
 #define IDP_PROPERTY_PREFIX      ALTIBASE_ENV_PREFIX /* from environment */
@@ -55,8 +55,8 @@ class idp
     static SChar               *mConfName;
     static SChar               *mSID;
     static PDL_thread_mutex_t   mMutex;
-    static UInt                 mCount; // µî·Ï ¸ğµâÀÇ ÃÖ´ë °¹¼ö
-    static iduList              mArrBaseList[IDP_MAX_PROP_COUNT]; // Property ¸®½ºÆ®ÀÇ ¹è¿­ : (id/mt/qp/mm)
+    static UInt                 mCount; // ë“±ë¡ ëª¨ë“ˆì˜ ìµœëŒ€ ê°¯ìˆ˜
+    static iduList              mArrBaseList[IDP_MAX_PROP_COUNT]; // Property ë¦¬ìŠ¤íŠ¸ì˜ ë°°ì—´ : (id/mt/qp/mm)
 
     static IDE_RC insertBySrc(const SChar     *aName,
                               SChar           *aValue,

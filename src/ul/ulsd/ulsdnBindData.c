@@ -28,7 +28,7 @@
 
 /*
  * PROJ-2638 shard native linker
- * SQL_C_DEFAULT ·Î ¹ÙÀÎµù½Ã ¾î¶² Å¸ÀÔÀ» °¡Á¤ÇØ¾ß ÇÏ´ÂÁö °áÁ¤ÇÏ´Â ÇÔ¼ö.
+ * SQL_C_DEFAULT ë¡œ ë°”ì¸ë”©ì‹œ ì–´ë–¤ íƒ€ì…ì„ ê°€ì •í•´ì•¼ í•˜ëŠ”ì§€ ê²°ì •í•˜ëŠ” í•¨ìˆ˜.
  */
 ulnCTypeID ulsdTypeGetDefault_UserType( ulnMTypeID aMTYPE )
 {
@@ -87,7 +87,7 @@ ulnCTypeID ulsdTypeMap_MTYPE_CTYPE( acp_sint16_t aMTYPE )
  * ulnParamMTDDataCopyToStmt
  *
  * Desc:
- *    mt Å¸ÀÔÀÇ »ç¿ëÀÚ ¹öÆÛÀÇ µ¥ÀÌÅÍ¸¦ STMT¾ÈÀÇ DataPtr·Î º¹»çÇÏ´Â ÇÔ¼ö.
+ *    mt íƒ€ì…ì˜ ì‚¬ìš©ì ë²„í¼ì˜ ë°ì´í„°ë¥¼ STMTì•ˆì˜ DataPtrë¡œ ë³µì‚¬í•˜ëŠ” í•¨ìˆ˜.
  *
  * Argument:
  *   aStmt  [IN] - ulnStmt
@@ -279,7 +279,7 @@ ACI_RC ulsdParamMTDDataCopyToStmt( ulnStmt     * aStmt,
  * ulsdParamProcess_DATAs_ShardCore
  *
  * Desc:
- *    mt Å¸ÀÔÀÇ »ç¿ëÀÚ ¹öÆÛÀÇ µ¥ÀÌÅÍ¸¦ STMT¾ÈÀÇ DataPtr·Î º¹»çÇÏ´Â ÇÔ¼ö.
+ *    mt íƒ€ì…ì˜ ì‚¬ìš©ì ë²„í¼ì˜ ë°ì´í„°ë¥¼ STMTì•ˆì˜ DataPtrë¡œ ë³µì‚¬í•˜ëŠ” í•¨ìˆ˜.
  *
  * Argument:
  *   aFnContext  [IN]  - ulnFnContext
@@ -324,16 +324,16 @@ ACI_RC ulsdParamProcess_DATAs_ShardCore( ulnFnContext * aFnContext,
 /**************************************************************
  * ulsdDataCopyFromMT
  *  - PROJ-2638
- *  - CM ¹öÆÛÀÇ µ¥ÀÌÅÍ¸¦ MT ÇüÅÂ·Î »ç¿ëÀÚ ¿µ¿ªÀ¸·Î º¹»çÇÑ´Ù.
- *  - ¼­¹ö¿¡¼­ ¹İÈ¯µÈ µ¥ÀÌÅÍ¸¦ MT Å¸ÀÔ ±×´ë·Î SDL¿¡ ³Ñ±â±â À§ÇØ¼­ »ç¿ë µÈ´Ù.
- *  - ulsdCacheRowCopyToUserBufferShardCore¿¡¼­ »ç¿ëµÈ´Ù.
+ *  - CM ë²„í¼ì˜ ë°ì´í„°ë¥¼ MT í˜•íƒœë¡œ ì‚¬ìš©ì ì˜ì—­ìœ¼ë¡œ ë³µì‚¬í•œë‹¤.
+ *  - ì„œë²„ì—ì„œ ë°˜í™˜ëœ ë°ì´í„°ë¥¼ MT íƒ€ì… ê·¸ëŒ€ë¡œ SDLì— ë„˜ê¸°ê¸° ìœ„í•´ì„œ ì‚¬ìš© ëœë‹¤.
+ *  - ulsdCacheRowCopyToUserBufferShardCoreì—ì„œ ì‚¬ìš©ëœë‹¤.
  *
  * aFnContext [IN] - ulnFnContext
- * aSrc       [IN] - CM ¹öÆÛ
- * aDes       [OUT]- ulnCache ¾ÈÀÇ ¹öÆÛ
- * aDesLen    [IN] - ¹öÆÛÀÇ Å©±â
- * aColumn    [OUT]- ÄÃ·³ Á¤º¸
- * aMaxLen    [IN] - µ¥ÀÌÅÍ ÄÃ·³ÀÇ ÃÖ´ë ±æÀÌ
+ * aSrc       [IN] - CM ë²„í¼
+ * aDes       [OUT]- ulnCache ì•ˆì˜ ë²„í¼
+ * aDesLen    [IN] - ë²„í¼ì˜ í¬ê¸°
+ * aColumn    [OUT]- ì»¬ëŸ¼ ì •ë³´
+ * aMaxLen    [IN] - ë°ì´í„° ì»¬ëŸ¼ì˜ ìµœëŒ€ ê¸¸ì´
  **************************************************************/
 ACI_RC ulsdDataCopyFromMT( ulnFnContext * aFnContext,
                            acp_uint8_t  * aSrc,
@@ -629,13 +629,13 @@ ACI_RC ulsdDataCopyFromMT( ulnFnContext * aFnContext,
 /**************************************************************
  * ulsdCacheRowCopyToUserBufferShardCore
  *  - PROJ-2638
- *  - ulsdCacheRowCopyToUserBuffer¿¡¼­ È£ÃâµÈ´Ù.
+ *  - ulsdCacheRowCopyToUserBufferì—ì„œ í˜¸ì¶œëœë‹¤.
  *
  * aFnContext [IN] - ulnFnContext
  * aStmt      [IN] - ulnStmt
- * aSrc       [IN] - CM ¹öÆÛ
+ * aSrc       [IN] - CM ë²„í¼
  * aColumn    [IN] - ulnColumn
- * aColNum    [IN] - ÄÃ·³ÀÇ ¹øÈ£
+ * aColNum    [IN] - ì»¬ëŸ¼ì˜ ë²ˆí˜¸
  **************************************************************/
 ACI_RC ulsdCacheRowCopyToUserBufferShardCore( ulnFnContext * aFnContext,
                                               ulnStmt      * aStmt,

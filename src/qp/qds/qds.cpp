@@ -48,18 +48,18 @@ IDE_RC qds::validateCreate(qcStatement * aStatement)
 /***********************************************************************
  *
  * Description :
- *    CREATE SEQUENCE ... ÀÇ validation  ¼öÇà
+ *    CREATE SEQUENCE ... ì˜ validation  ìˆ˜í–‰
  *
  * Implementation :
- *    1. ParseTree ÀÇ cacheValue < 0 ÀÌ¸é ¿¡·¯ ( create ¹®Àå¿¡¼­ ¸í½ÃÇÏÁö
- *       ¾Ê¾ÒÀ¸¸é ÆÄ½ÌÇÒ ¶§ µğÆúÆ® °ªÀ¸·Î 20 À» ºÎ¿©ÇÏ°Ô µÊ )
- *    2. IncrementValue °¡ 0 ÀÌ¸é ¿¡·¯
- *    3. MinValue >= MaxValue ÀÌ¸é ¿¡·¯
- *    4. IncrementValue °¡ MinValue, MaxValue ÀÇ Â÷ÀÌº¸´Ù Å©¸é ¿¡·¯
- *    5. startValue < MinValue ÀÌ¸é ¿¡·¯
- *    6. startValue > MaxValue ÀÌ¸é ¿¡·¯
- *    7. °°Àº ÀÌ¸§ÀÇ ½ÃÄö½º°¡ Á¸ÀçÇÏ´ÂÁö Ã¼Å©
- *    8. CreateSequence ±ÇÇÑÀÌ ÀÖ´ÂÁö Ã¼Å©
+ *    1. ParseTree ì˜ cacheValue < 0 ì´ë©´ ì—ëŸ¬ ( create ë¬¸ì¥ì—ì„œ ëª…ì‹œí•˜ì§€
+ *       ì•Šì•˜ìœ¼ë©´ íŒŒì‹±í•  ë•Œ ë””í´íŠ¸ ê°’ìœ¼ë¡œ 20 ì„ ë¶€ì—¬í•˜ê²Œ ë¨ )
+ *    2. IncrementValue ê°€ 0 ì´ë©´ ì—ëŸ¬
+ *    3. MinValue >= MaxValue ì´ë©´ ì—ëŸ¬
+ *    4. IncrementValue ê°€ MinValue, MaxValue ì˜ ì°¨ì´ë³´ë‹¤ í¬ë©´ ì—ëŸ¬
+ *    5. startValue < MinValue ì´ë©´ ì—ëŸ¬
+ *    6. startValue > MaxValue ì´ë©´ ì—ëŸ¬
+ *    7. ê°™ì€ ì´ë¦„ì˜ ì‹œí€€ìŠ¤ê°€ ì¡´ì¬í•˜ëŠ”ì§€ ì²´í¬
+ *    8. CreateSequence ê¶Œí•œì´ ìˆëŠ”ì§€ ì²´í¬
  *
  ***********************************************************************/
 
@@ -94,8 +94,8 @@ IDE_RC qds::validateCreate(qcStatement * aStatement)
     }
 
     // check table exist.
-    // To fix BUG-11086 duplicate sequence name Ã¼Å©½Ã
-    // tableMeta¿¡¼­ Ã£À½
+    // To fix BUG-11086 duplicate sequence name ì²´í¬ì‹œ
+    // tableMetaì—ì„œ ì°¾ìŒ
     if (gQcmSynonyms == NULL)
     {
         // in createdb phase -> there are no synonym meta table.
@@ -289,20 +289,20 @@ IDE_RC qds::validateAlterOptions(qcStatement * aStatement)
 /***********************************************************************
  *
  * Description :
- *    ALTER SEQUENCE ... ÀÇ validation  ¼öÇà
+ *    ALTER SEQUENCE ... ì˜ validation  ìˆ˜í–‰
  *
  * Implementation :
- *    1. ½ÃÄö½º°¡ Á¸ÀçÇÏ´ÂÁö Ã¼Å©
- *    2. º¯°æÇÏ·Á´Â ½ÃÄö½º°¡ ¸ŞÅ¸ ½ÃÄö½ºÀÌ¸é ¿¡·¯
- *    3. AlterSequence ±ÇÇÑÀÌ ÀÖ´ÂÁö Ã¼Å©
- *    4. »ı¼ºµÇ¾î ÀÖ´Â ½ÃÄö½ºÀÇ ¿É¼Ç ±¸ÇÏ±â => smiTable::getSequence
- *    5. ½ÃÄö½ºÀÇ ÇöÀç°ª ±¸ÇÏ±â => smiTable::readSequence
- *    6. IncrementValue °¡ ¸í½ÃµÇ°í 0 ÀÌ¸é ¿¡·¯
- *    7. cacheValue °¡ ¸í½ÃµÇ°í 0 º¸´Ù ÀÛÀ¸¸é ¿¡·¯
- *    8. cycleOption ºÎ¿©
- *    3. MinValue °¡ ¸í½ÃµÇ°í ½ÃÄö½ºÀÇ ÇöÀç °ªº¸´Ù Å©¸é ¿¡·¯
- *    3. MaxValue °¡ ¸í½ÃµÇ°í ½ÃÄö½ºÀÇ ÇöÀç °ªº¸´Ù ÀÛÀ¸¸é ¿¡·¯
- *    4. IncrementValue °¡ MinValue, MaxValue ÀÇ Â÷ÀÌº¸´Ù Å©¸é ¿¡·¯
+ *    1. ì‹œí€€ìŠ¤ê°€ ì¡´ì¬í•˜ëŠ”ì§€ ì²´í¬
+ *    2. ë³€ê²½í•˜ë ¤ëŠ” ì‹œí€€ìŠ¤ê°€ ë©”íƒ€ ì‹œí€€ìŠ¤ì´ë©´ ì—ëŸ¬
+ *    3. AlterSequence ê¶Œí•œì´ ìˆëŠ”ì§€ ì²´í¬
+ *    4. ìƒì„±ë˜ì–´ ìˆëŠ” ì‹œí€€ìŠ¤ì˜ ì˜µì…˜ êµ¬í•˜ê¸° => smiTable::getSequence
+ *    5. ì‹œí€€ìŠ¤ì˜ í˜„ì¬ê°’ êµ¬í•˜ê¸° => smiTable::readSequence
+ *    6. IncrementValue ê°€ ëª…ì‹œë˜ê³  0 ì´ë©´ ì—ëŸ¬
+ *    7. cacheValue ê°€ ëª…ì‹œë˜ê³  0 ë³´ë‹¤ ì‘ìœ¼ë©´ ì—ëŸ¬
+ *    8. cycleOption ë¶€ì—¬
+ *    3. MinValue ê°€ ëª…ì‹œë˜ê³  ì‹œí€€ìŠ¤ì˜ í˜„ì¬ ê°’ë³´ë‹¤ í¬ë©´ ì—ëŸ¬
+ *    3. MaxValue ê°€ ëª…ì‹œë˜ê³  ì‹œí€€ìŠ¤ì˜ í˜„ì¬ ê°’ë³´ë‹¤ ì‘ìœ¼ë©´ ì—ëŸ¬
+ *    4. IncrementValue ê°€ MinValue, MaxValue ì˜ ì°¨ì´ë³´ë‹¤ í¬ë©´ ì—ëŸ¬
  *
  ***********************************************************************/
 
@@ -394,8 +394,8 @@ IDE_RC qds::validateAlterOptions(qcStatement * aStatement)
     }
 
     // PROJ-2365 sequence table
-    // sequence tableÀÌ ¸¸µé¾îÁø °æ¿ì option º¯°æÀº column name º¯°æÀÌ ÇÊ¿äÇÏ´Ù.
-    // replicationÀÌ °É¸° °æ¿ì column nameÀ» º¯°æÇÒ ¼ö ¾ø´Ù.
+    // sequence tableì´ ë§Œë“¤ì–´ì§„ ê²½ìš° option ë³€ê²½ì€ column name ë³€ê²½ì´ í•„ìš”í•˜ë‹¤.
+    // replicationì´ ê±¸ë¦° ê²½ìš° column nameì„ ë³€ê²½í•  ìˆ˜ ì—†ë‹¤.
     IDE_TEST_RAISE( ( sOption & SMI_SEQUENCE_TABLE_MASK ) == SMI_SEQUENCE_TABLE_TRUE,
                     ERR_CANNOT_ALTER_SEQ_TABLE );
     
@@ -612,12 +612,12 @@ IDE_RC qds::validateAlterSeqTable(qcStatement * aStatement)
 /***********************************************************************
  *
  * Description :
- *    ALTER SEQUENCE ... ÀÇ validation  ¼öÇà
+ *    ALTER SEQUENCE ... ì˜ validation  ìˆ˜í–‰
  *
  * Implementation :
- *    1. ½ÃÄö½º°¡ Á¸ÀçÇÏ´ÂÁö Ã¼Å©
- *    2. º¯°æÇÏ·Á´Â ½ÃÄö½º°¡ ¸ŞÅ¸ ½ÃÄö½ºÀÌ¸é ¿¡·¯
- *    3. AlterSequence ±ÇÇÑÀÌ ÀÖ´ÂÁö Ã¼Å©
+ *    1. ì‹œí€€ìŠ¤ê°€ ì¡´ì¬í•˜ëŠ”ì§€ ì²´í¬
+ *    2. ë³€ê²½í•˜ë ¤ëŠ” ì‹œí€€ìŠ¤ê°€ ë©”íƒ€ ì‹œí€€ìŠ¤ì´ë©´ ì—ëŸ¬
+ *    3. AlterSequence ê¶Œí•œì´ ìˆëŠ”ì§€ ì²´í¬
  *
  ***********************************************************************/
 
@@ -743,12 +743,12 @@ IDE_RC qds::validateAlterFlushCache(qcStatement * aStatement)
 /***********************************************************************
  *
  * Description :
- *    ALTER SEQUENCE ... ÀÇ validation  ¼öÇà
+ *    ALTER SEQUENCE ... ì˜ validation  ìˆ˜í–‰
  *
  * Implementation :
- *    1. ½ÃÄö½º°¡ Á¸ÀçÇÏ´ÂÁö Ã¼Å©
- *    2. º¯°æÇÏ·Á´Â ½ÃÄö½º°¡ ¸ŞÅ¸ ½ÃÄö½ºÀÌ¸é ¿¡·¯
- *    3. AlterSequence ±ÇÇÑÀÌ ÀÖ´ÂÁö Ã¼Å©
+ *    1. ì‹œí€€ìŠ¤ê°€ ì¡´ì¬í•˜ëŠ”ì§€ ì²´í¬
+ *    2. ë³€ê²½í•˜ë ¤ëŠ” ì‹œí€€ìŠ¤ê°€ ë©”íƒ€ ì‹œí€€ìŠ¤ì´ë©´ ì—ëŸ¬
+ *    3. AlterSequence ê¶Œí•œì´ ìˆëŠ”ì§€ ì²´í¬
  *
  ***********************************************************************/
 
@@ -860,14 +860,14 @@ IDE_RC qds::executeCreate(qcStatement * aStatement)
 /***********************************************************************
  *
  * Description :
- *    CREATE SEQUENCE ... ÀÇ execution  ¼öÇà
+ *    CREATE SEQUENCE ... ì˜ execution  ìˆ˜í–‰
  *
  * Implementation :
- *    1. ½ÃÄö½º ID ºÎ¿©
- *    2. ½ÃÄö½º ÀÌ¸§ ºÎ¿©
+ *    1. ì‹œí€€ìŠ¤ ID ë¶€ì—¬
+ *    2. ì‹œí€€ìŠ¤ ì´ë¦„ ë¶€ì—¬
  *    3. smiTable::createSequence
- *    4. SYS_TABLES_ ¿¡ ½ÃÄö½º ÀÔ·Â
- *    5. ¸ŞÅ¸ Ä³½¬ »ı¼º
+ *    4. SYS_TABLES_ ì— ì‹œí€€ìŠ¤ ì…ë ¥
+ *    5. ë©”íƒ€ ìºì‰¬ ìƒì„±
  *
  ***********************************************************************/
 
@@ -945,8 +945,8 @@ IDE_RC qds::executeCreate(qcStatement * aStatement)
         // Nothing to do.
     }
     
-    /* PROJ-1723 [MDW/INTEGRATOR] Altibase Plugin °³¹ß
-       DDL Statement TextÀÇ ·Î±ë
+    /* PROJ-1723 [MDW/INTEGRATOR] Altibase Plugin ê°œë°œ
+       DDL Statement Textì˜ ë¡œê¹…
     */
     if (QCU_DDL_SUPPLEMENTAL_LOG == 1)
     {
@@ -957,9 +957,9 @@ IDE_RC qds::executeCreate(qcStatement * aStatement)
     }
 
     // PROJ-1502 PARTITIONED DISK TABLE
-    // sequence´Â partitionµÉ ¼ö ¾øÀ½.
+    // sequenceëŠ” partitionë  ìˆ˜ ì—†ìŒ.
     // PROJ-1407 Temporary Table
-    // sequence´Â temporary·Î »ı¼ºµÉ ¼ö ¾øÀ½
+    // sequenceëŠ” temporaryë¡œ ìƒì„±ë  ìˆ˜ ì—†ìŒ
     IDE_TEST( qcmTablespace::getTBSAttrByID( SMI_ID_TABLESPACE_SYSTEM_MEMORY_DIC,
                                              & sTBSAttr )
               != IDE_SUCCESS );
@@ -1047,10 +1047,10 @@ IDE_RC qds::executeAlterOptions(qcStatement * aStatement)
 /***********************************************************************
  *
  * Description :
- *    ALTER SEQUENCE ... ÀÇ execution  ¼öÇà
+ *    ALTER SEQUENCE ... ì˜ execution  ìˆ˜í–‰
  *
  * Implementation :
- *    1. ¸ŞÅ¸¿¡¼­ ½ÃÄö½º ÇÚµé ±¸ÇÏ±â
+ *    1. ë©”íƒ€ì—ì„œ ì‹œí€€ìŠ¤ í•¸ë“¤ êµ¬í•˜ê¸°
  *    2. smiTable::alterSequence
  *
  ***********************************************************************/
@@ -1065,7 +1065,7 @@ IDE_RC qds::executeAlterOptions(qcStatement * aStatement)
     SChar                     sSeqTableNameStr[ QC_MAX_OBJECT_NAME_LEN + 1 ];
     qcNamePosition            sSeqTableName;
 
-    // PROJ-2365 sequence table Á¤º¸
+    // PROJ-2365 sequence table ì •ë³´
     qcmTableInfo            * sSeqTableInfo;
     void                    * sSeqTableHandle = NULL;
     smSCN                     sSeqTableSCN;
@@ -1107,8 +1107,8 @@ IDE_RC qds::executeAlterOptions(qcStatement * aStatement)
                                        (void**)&sSeqTableInfo )
                   != IDE_SUCCESS );
         
-        // sequence table¿¡ DDL lock
-        // update¸¸ ÇÏÁö¸¸ ³í¸®ÀûÀ¸·Î sequence¸¦ º¯°æÇÏ´Â °ÍÀ¸¹Ç·Î DDL lockÀ» È¹µæÇÑ´Ù.
+        // sequence tableì— DDL lock
+        // updateë§Œ í•˜ì§€ë§Œ ë…¼ë¦¬ì ìœ¼ë¡œ sequenceë¥¼ ë³€ê²½í•˜ëŠ” ê²ƒìœ¼ë¯€ë¡œ DDL lockì„ íšë“í•œë‹¤.
         IDE_TEST( qcm::validateAndLockTable( aStatement,
                                              sSeqTableHandle,
                                              sSeqTableSCN,
@@ -1119,7 +1119,7 @@ IDE_RC qds::executeAlterOptions(qcStatement * aStatement)
         IDE_TEST_RAISE( sSeqTableInfo->replicationCount > 0,
                         ERR_DDL_WITH_REPLICATED_TABLE );
 
-        //proj-1608:replicationCount°¡ 0ÀÏ ¶§ recovery count´Â Ç×»ó 0ÀÌ¾î¾ß ÇÔ
+        //proj-1608:replicationCountê°€ 0ì¼ ë•Œ recovery countëŠ” í•­ìƒ 0ì´ì–´ì•¼ í•¨
         IDE_DASSERT( sSeqTableInfo->replicationRecoveryCount == 0 );
     }
     else
@@ -1139,7 +1139,7 @@ IDE_RC qds::executeAlterOptions(qcStatement * aStatement)
              != IDE_SUCCESS);
     
     // PROJ-2365 sequence table
-    // last sync seq·Î updateÇÑ´Ù.
+    // last sync seqë¡œ updateí•œë‹¤.
     if ( ( *sParseTree->sequenceOptions->cycleOption & SMI_SEQUENCE_TABLE_MASK )
          == SMI_SEQUENCE_TABLE_TRUE )
     {
@@ -1173,8 +1173,8 @@ IDE_RC qds::executeAlterOptions(qcStatement * aStatement)
         // Nothing to do.
     }
 
-    /* PROJ-1723 [MDW/INTEGRATOR] Altibase Plugin °³¹ß
-       DDL Statement TextÀÇ ·Î±ë
+    /* PROJ-1723 [MDW/INTEGRATOR] Altibase Plugin ê°œë°œ
+       DDL Statement Textì˜ ë¡œê¹…
     */
     if (QCU_DDL_SUPPLEMENTAL_LOG == 1)
     {
@@ -1234,10 +1234,10 @@ IDE_RC qds::executeAlterSeqTable(qcStatement * aStatement)
 /***********************************************************************
  *
  * Description :
- *    ALTER SEQUENCE ... ÀÇ execution  ¼öÇà
+ *    ALTER SEQUENCE ... ì˜ execution  ìˆ˜í–‰
  *
  * Implementation :
- *    1. ¸ŞÅ¸¿¡¼­ ½ÃÄö½º ÇÚµé ±¸ÇÏ±â
+ *    1. ë©”íƒ€ì—ì„œ ì‹œí€€ìŠ¤ í•¸ë“¤ êµ¬í•˜ê¸°
  *    2. smiTable::alterSequence
  *
  ***********************************************************************/
@@ -1260,7 +1260,7 @@ IDE_RC qds::executeAlterSeqTable(qcStatement * aStatement)
     idBool                    sExist = ID_FALSE;
     UInt                      sUserID;
     
-    // PROJ-2365 sequence table Á¤º¸
+    // PROJ-2365 sequence table ì •ë³´
     qcmTableInfo            * sOldSeqTableInfo = NULL;
     qcmTableInfo            * sNewSeqTableInfo = NULL;
     void                    * sSeqTableHandle  = NULL;
@@ -1293,10 +1293,10 @@ IDE_RC qds::executeAlterSeqTable(qcStatement * aStatement)
     sSeqTableName.size     = sParseTree->sequenceName.size + QDS_SEQ_TABLE_SUFFIX_LEN;
         
     // PROJ-2365 sequence table
-    // ÀÌ¹Ì »ı¼ºµÈ sequence table¿¡ ´ëÇÑ ¿¡·¯¿Í alter¿¡ ´ëÇÑ ¿¡·¯
+    // ì´ë¯¸ ìƒì„±ëœ sequence tableì— ëŒ€í•œ ì—ëŸ¬ì™€ alterì— ëŒ€í•œ ì—ëŸ¬
     if ( ( sOption & SMI_SEQUENCE_TABLE_MASK ) == SMI_SEQUENCE_TABLE_TRUE )
     {
-        // sequence tableÀÌ Á¸ÀçÇØ¾ßÇÑ´Ù.
+        // sequence tableì´ ì¡´ì¬í•´ì•¼í•œë‹¤.
         IDE_TEST_RAISE( qcm::getTableHandleByName(
                             QC_SMI_STMT(aStatement),
                             sParseTree->userID,
@@ -1310,10 +1310,10 @@ IDE_RC qds::executeAlterSeqTable(qcStatement * aStatement)
                                        (void**)&sOldSeqTableInfo )
                   != IDE_SUCCESS );
         
-        // ÀÌ¹Ì enableµÇ¾î ÀÖ´Ù.
+        // ì´ë¯¸ enableë˜ì–´ ìˆë‹¤.
         IDE_TEST_RAISE( sParseTree->enableSeqTable == ID_TRUE, ERR_EXIST_TABLE );
         
-        // sequence table¿¡ DDL lock
+        // sequence tableì— DDL lock
         IDE_TEST( qcm::validateAndLockTable( aStatement,
                                              sSeqTableHandle,
                                              sSeqTableSCN,
@@ -1324,7 +1324,7 @@ IDE_RC qds::executeAlterSeqTable(qcStatement * aStatement)
         IDE_TEST_RAISE( sOldSeqTableInfo->replicationCount > 0,
                         ERR_DDL_WITH_REPLICATED_TABLE );
 
-        //proj-1608:replicationCount°¡ 0ÀÏ ¶§ recovery count´Â Ç×»ó 0ÀÌ¾î¾ß ÇÔ
+        //proj-1608:replicationCountê°€ 0ì¼ ë•Œ recovery countëŠ” í•­ìƒ 0ì´ì–´ì•¼ í•¨
         IDE_DASSERT( sOldSeqTableInfo->replicationRecoveryCount == 0 );
 
         // drop sequence table
@@ -1347,10 +1347,10 @@ IDE_RC qds::executeAlterSeqTable(qcStatement * aStatement)
                                     &sExist )
                   != IDE_SUCCESS );
 
-        // sequence table nameÀÌ »ç¿ëÁßÀÌ¸é ¿¡·¯.
+        // sequence table nameì´ ì‚¬ìš©ì¤‘ì´ë©´ ì—ëŸ¬.
         IDE_TEST_RAISE( sExist == ID_TRUE, ERR_EXIST_TABLE );
         
-        // ÀÌ¹Ì disableµÇ¾î ÀÖ´Ù.
+        // ì´ë¯¸ disableë˜ì–´ ìˆë‹¤.
         IDE_TEST_RAISE( sParseTree->enableSeqTable == ID_FALSE, ERR_NOT_EXIST_TABLE );
         
         sOption &= ~SMI_SEQUENCE_TABLE_MASK;
@@ -1373,7 +1373,7 @@ IDE_RC qds::executeAlterSeqTable(qcStatement * aStatement)
     if ( ( sOption & SMI_SEQUENCE_TABLE_MASK ) == SMI_SEQUENCE_TABLE_TRUE )
     {
         // create sequence table
-        // last sync seq·Î start value¸¦ ¼³Á¤ÇÑ´Ù.
+        // last sync seqë¡œ start valueë¥¼ ì„¤ì •í•œë‹¤.
         IDE_TEST( createSequenceTable( aStatement,
                                        sSeqTableName,
                                        sStartValue,
@@ -1391,8 +1391,8 @@ IDE_RC qds::executeAlterSeqTable(qcStatement * aStatement)
         // Nothing to do.
     }
     
-    /* PROJ-1723 [MDW/INTEGRATOR] Altibase Plugin °³¹ß
-       DDL Statement TextÀÇ ·Î±ë
+    /* PROJ-1723 [MDW/INTEGRATOR] Altibase Plugin ê°œë°œ
+       DDL Statement Textì˜ ë¡œê¹…
     */
     if (QCU_DDL_SUPPLEMENTAL_LOG == 1)
     {
@@ -1474,10 +1474,10 @@ IDE_RC qds::executeAlterFlushCache(qcStatement * aStatement)
 /***********************************************************************
  *
  * Description :
- *    ALTER SEQUENCE ... ÀÇ execution  ¼öÇà
+ *    ALTER SEQUENCE ... ì˜ execution  ìˆ˜í–‰
  *
  * Implementation :
- *    1. ¸ŞÅ¸¿¡¼­ ½ÃÄö½º ÇÚµé ±¸ÇÏ±â
+ *    1. ë©”íƒ€ì—ì„œ ì‹œí€€ìŠ¤ í•¸ë“¤ êµ¬í•˜ê¸°
  *    2. smiTable::refineSequence
  *
  ***********************************************************************/
@@ -1497,8 +1497,8 @@ IDE_RC qds::executeAlterFlushCache(qcStatement * aStatement)
                  sParseTree->sequenceHandle)
              != IDE_SUCCESS);
     
-    /* PROJ-1723 [MDW/INTEGRATOR] Altibase Plugin °³¹ß
-       DDL Statement TextÀÇ ·Î±ë
+    /* PROJ-1723 [MDW/INTEGRATOR] Altibase Plugin ê°œë°œ
+       DDL Statement Textì˜ ë¡œê¹…
     */
     if (QCU_DDL_SUPPLEMENTAL_LOG == 1)
     {
@@ -1548,10 +1548,10 @@ IDE_RC qds::checkSequence(
  *
  * Description :
  *    BUG-17455
- *    1. ½ÃÄö½º Á¸Àç ¿©ºÎ È®ÀÎ
+ *    1. ì‹œí€€ìŠ¤ ì¡´ì¬ ì—¬ë¶€ í™•ì¸
  *    PROJ-2365
- *    2. sequence tableÀÌ º¯°æµÇ¾ú´ÂÁö È®ÀÎ
- *    3. sequence table¿¡ lock
+ *    2. sequence tableì´ ë³€ê²½ë˜ì—ˆëŠ”ì§€ í™•ì¸
+ *    3. sequence tableì— lock
  *
  * Implementation :
  *
@@ -1567,7 +1567,7 @@ IDE_RC qds::checkSequence(
     SLong       sMinValue;
     UInt        sOption;
 
-    // sequence°¡ dropµÇ¾ú´Ù¸é rebuild
+    // sequenceê°€ dropë˜ì—ˆë‹¤ë©´ rebuild
     IDE_TEST_RAISE( smiTable::getSequence( aSequence->sequenceHandle,
                                            & sStartValue,
                                            & sIncrementValue,
@@ -1577,7 +1577,7 @@ IDE_RC qds::checkSequence(
                                            & sOption ) != IDE_SUCCESS,
                     ERR_REBUILD_QCI_EXEC );
 
-    // sequence tableÀÌ º¯°æµÇ¾ú´Ù¸é rebuild
+    // sequence tableì´ ë³€ê²½ë˜ì—ˆë‹¤ë©´ rebuild
     if ( ( sOption & SMI_SEQUENCE_TABLE_MASK ) == SMI_SEQUENCE_TABLE_TRUE )
     {
         IDE_TEST_RAISE( aSequence->sequenceTable == ID_FALSE,
@@ -1589,7 +1589,7 @@ IDE_RC qds::checkSequence(
                         ERR_REBUILD_QCI_EXEC );
     }
 
-    // sequence table¿¡ update lock (currvalÀÎ °æ¿ì´Â ÇÊ¿ä¾øÀ½)
+    // sequence tableì— update lock (currvalì¸ ê²½ìš°ëŠ” í•„ìš”ì—†ìŒ)
     if ( ( ( aReadFlag & SMI_SEQUENCE_MASK ) == SMI_SEQUENCE_NEXT ) &&
          ( aSequence->sequenceTable == ID_TRUE ) )
     {
@@ -1628,12 +1628,12 @@ IDE_RC qds::checkSequenceExist(
 /***********************************************************************
  *
  * Description :
- *    À¯Àú¸í°ú ½ÃÄö½º ÀÌ¸§À¸·Î user ID, ½ÃÄö½º ÇÚµé ±¸ÇÏ±â
+ *    ìœ ì €ëª…ê³¼ ì‹œí€€ìŠ¤ ì´ë¦„ìœ¼ë¡œ user ID, ì‹œí€€ìŠ¤ í•¸ë“¤ êµ¬í•˜ê¸°
  *
  * Implementation :
- *    1. À¯Àú¸íÀÌ ¸í½ÃµÇÁö ¾Ê¾ÒÀ¸¸é ¼¼¼ÇÀÇ À¯Àú ID ¹İÈ¯,
- *       ±×·¸Áö ¾ÊÀ¸¸é ¸í½ÃµÈ À¯ÀúÀÇ user ID ±¸ÇÏ±â
- *    2. user ID ¿Í ½ÃÄö½º ÀÌ¸§À¸·Î ÇÚµé ±¸ÇÏ±â
+ *    1. ìœ ì €ëª…ì´ ëª…ì‹œë˜ì§€ ì•Šì•˜ìœ¼ë©´ ì„¸ì…˜ì˜ ìœ ì € ID ë°˜í™˜,
+ *       ê·¸ë ‡ì§€ ì•Šìœ¼ë©´ ëª…ì‹œëœ ìœ ì €ì˜ user ID êµ¬í•˜ê¸°
+ *    2. user ID ì™€ ì‹œí€€ìŠ¤ ì´ë¦„ìœ¼ë¡œ í•¸ë“¤ êµ¬í•˜ê¸°
  *
  ***********************************************************************/
 
@@ -1692,10 +1692,10 @@ IDE_RC qds::createSequenceTable( qcStatement     * aStatement,
 /***********************************************************************
  *
  * Description :
- *    PROJ-2362 sequence tableÀ» »ı¼ºÇÑ´Ù.
+ *    PROJ-2362 sequence tableì„ ìƒì„±í•œë‹¤.
  *
  * Implementation :
- *    sequence optionÀ» handshakeÇÏ±â À§ÇÏ¿© column name¿¡ optionÀ» ³Ö´Â´Ù.(!)
+ *    sequence optionì„ handshakeí•˜ê¸° ìœ„í•˜ì—¬ column nameì— optionì„ ë„£ëŠ”ë‹¤.(!)
  *
  *    create table seq1$seq( id             smallint primary key,
  *                           last_sync_seq  bigint   not null,
@@ -1752,7 +1752,7 @@ IDE_RC qds::createSequenceTable( qcStatement     * aStatement,
     sParseTree = (qdSequenceParseTree *)aStatement->myPlan->parseTree;
 
     //------------------------------------
-    // ÃÊ±âÈ­
+    // ì´ˆê¸°í™”
     //------------------------------------
 
     QD_SEGMENT_OPTION_INIT( &sSegAttr, &sSegStorageAttr );
@@ -1829,7 +1829,7 @@ IDE_RC qds::createSequenceTable( qcStatement     * aStatement,
                   0 )
               != IDE_SUCCESS );
 
-    // handshake¿ë not null
+    // handshakeìš© not null
     sMtcColumns[i].flag &= ~MTC_COLUMN_NOTNULL_MASK;
     sMtcColumns[i].flag |= MTC_COLUMN_NOTNULL_TRUE;
     
@@ -1844,7 +1844,7 @@ IDE_RC qds::createSequenceTable( qcStatement     * aStatement,
                   0 )
               != IDE_SUCCESS );
 
-    // handshake¿ë not null
+    // handshakeìš© not null
     sMtcColumns[i].flag &= ~MTC_COLUMN_NOTNULL_MASK;
     sMtcColumns[i].flag |= MTC_COLUMN_NOTNULL_TRUE;
     
@@ -1859,7 +1859,7 @@ IDE_RC qds::createSequenceTable( qcStatement     * aStatement,
                   0 )
               != IDE_SUCCESS );
 
-    // handshake¿ë not null
+    // handshakeìš© not null
     sMtcColumns[i].flag &= ~MTC_COLUMN_NOTNULL_MASK;
     sMtcColumns[i].flag |= MTC_COLUMN_NOTNULL_TRUE;
     
@@ -1874,7 +1874,7 @@ IDE_RC qds::createSequenceTable( qcStatement     * aStatement,
                   0 )
               != IDE_SUCCESS );
 
-    // handshake¿ë not null
+    // handshakeìš© not null
     sMtcColumns[i].flag &= ~MTC_COLUMN_NOTNULL_MASK;
     sMtcColumns[i].flag |= MTC_COLUMN_NOTNULL_TRUE;
     
@@ -1889,7 +1889,7 @@ IDE_RC qds::createSequenceTable( qcStatement     * aStatement,
                   0 )
               != IDE_SUCCESS );
 
-    // handshake¿ë not null
+    // handshakeìš© not null
     sMtcColumns[i].flag &= ~MTC_COLUMN_NOTNULL_MASK;
     sMtcColumns[i].flag |= MTC_COLUMN_NOTNULL_TRUE;
     
@@ -1904,7 +1904,7 @@ IDE_RC qds::createSequenceTable( qcStatement     * aStatement,
                   0 )
               != IDE_SUCCESS );
 
-    // handshake¿ë not null
+    // handshakeìš© not null
     sMtcColumns[i].flag &= ~MTC_COLUMN_NOTNULL_MASK;
     sMtcColumns[i].flag |= MTC_COLUMN_NOTNULL_TRUE;
     
@@ -1926,7 +1926,7 @@ IDE_RC qds::createSequenceTable( qcStatement     * aStatement,
                   0 )
               != IDE_SUCCESS );
 
-    // conflict resolution¿ë ÄÃ·³
+    // conflict resolutionìš© ì»¬ëŸ¼
     sMtcColumns[i].flag &= ~MTC_COLUMN_TIMESTAMP_MASK;
     sMtcColumns[i].flag |= MTC_COLUMN_TIMESTAMP_TRUE;
     
@@ -2044,7 +2044,7 @@ IDE_RC qds::createSequenceTable( qcStatement     * aStatement,
                                      sBuildFlag,
                                      sSegAttr,
                                      sSegStorageAttr,
-                                     0, /* PROJ-2433 : sequence tableÀº direct key index¸¦ ÀÌ¿ë¾ÈÇÔ */
+                                     0, /* PROJ-2433 : sequence tableì€ direct key indexë¥¼ ì´ìš©ì•ˆí•¨ */
                                      &sIndexHandle )
               != IDE_SUCCESS );
 
@@ -2110,8 +2110,8 @@ IDE_RC qds::createSequenceTable( qcStatement     * aStatement,
                   0,
                   0,
                   0,
-                  (SChar*)"", /* PROJ-1107 Check Constraint Áö¿ø */
-                  ID_TRUE ) // ConstraintStateÀÇ Validate
+                  (SChar*)"", /* PROJ-1107 Check Constraint ì§€ì› */
+                  ID_TRUE ) // ConstraintStateì˜ Validate
               != IDE_SUCCESS );
     
     IDE_TEST( qdn::insertConstraintColumnIntoMeta(
@@ -2148,8 +2148,8 @@ IDE_RC qds::createSequenceTable( qcStatement     * aStatement,
                       0,
                       0,
                       0,
-                      (SChar*)"", /* PROJ-1107 Check Constraint Áö¿ø */
-                      ID_TRUE ) // ConstraintStateÀÇ Validate
+                      (SChar*)"", /* PROJ-1107 Check Constraint ì§€ì› */
+                      ID_TRUE ) // ConstraintStateì˜ Validate
                   != IDE_SUCCESS );
 
         IDE_TEST( qdn::insertConstraintColumnIntoMeta(
@@ -2185,8 +2185,8 @@ IDE_RC qds::createSequenceTable( qcStatement     * aStatement,
                   0,
                   0,
                   0,
-                  (SChar*)"", /* PROJ-1107 Check Constraint Áö¿ø */
-                  ID_TRUE ) // ConstraintStateÀÇ Validate
+                  (SChar*)"", /* PROJ-1107 Check Constraint ì§€ì› */
+                  ID_TRUE ) // ConstraintStateì˜ Validate
               != IDE_SUCCESS );
 
     IDE_TEST( qdn::insertConstraintColumnIntoMeta(
@@ -2284,7 +2284,7 @@ IDE_RC qds::createSequenceTable( qcStatement     * aStatement,
     IDE_TEST( sCursor.close() != IDE_SUCCESS );
     
     //------------------------------------
-    // ¿Ï·á
+    // ì™„ë£Œ
     //------------------------------------
     
     *aSeqTableInfo = sTableInfo;
@@ -2320,7 +2320,7 @@ IDE_RC qds::dropSequenceTable( qcStatement   * aStatement,
 /***********************************************************************
  *
  * Description :
- *    PROJ-2362 sequence tableÀ» dropÇÑ´Ù.
+ *    PROJ-2362 sequence tableì„ dropí•œë‹¤.
  *
  * Implementation :
  *
@@ -2368,7 +2368,7 @@ IDE_RC qds::dropSequenceTable( qcStatement   * aStatement,
                   sTableInfo->name )
               != IDE_SUCCESS );
 
-    // sequence tableÀº Ç×»ó sys_mem_tbs¿¡ »ı¼ºµÈ´Ù.
+    // sequence tableì€ í•­ìƒ sys_mem_tbsì— ìƒì„±ëœë‹¤.
     IDE_TEST( smiTable::dropTable( QC_SMI_STMT( aStatement ),
                                    sTableInfo->tableHandle,
                                    SMI_TBSLV_DDL_DML )
@@ -2388,8 +2388,8 @@ IDE_RC qds::selectCurrValTx( SLong  * aCurrVal,
  *
  * Description :
  *    PROJ-2362 sequence table
- *    readSequence¿¡¼­ sequence tableÀÇ last_sync_seq¸¦ selectÇÑ´Ù.
- *    Ç×»ó selectCurrValTx¿Í updateLastValTx°¡ ¼ø¼­´ë·Î È£ÃâµÇ¾î¾ß ÇÑ´Ù.
+ *    readSequenceì—ì„œ sequence tableì˜ last_sync_seqë¥¼ selectí•œë‹¤.
+ *    í•­ìƒ selectCurrValTxì™€ updateLastValTxê°€ ìˆœì„œëŒ€ë¡œ í˜¸ì¶œë˜ì–´ì•¼ í•œë‹¤.
  *
  * Implementation :
  *
@@ -2410,7 +2410,7 @@ IDE_RC qds::selectCurrValTx( SLong  * aCurrVal,
     sState = 1;
 
     /* PROJ-2446 ONE SOURCE
-     * sequenceTable= trueÀÎ °æ¿ì callback ÀÇ mstatistics¼³Á¤ µÇ¾î ÀÖ´Ù. */
+     * sequenceTable= trueì¸ ê²½ìš° callback ì˜ mstatisticsì„¤ì • ë˜ì–´ ìˆë‹¤. */
     // transaction begin
     IDE_TEST( sCallBack->mSmiTrans.begin( & sDummySmiStmt, sCallBack->mStatistics )
               != IDE_SUCCESS );
@@ -2502,8 +2502,8 @@ IDE_RC qds::updateLastValTx( SLong    aLastVal,
  *
  * Description :
  *    PROJ-2362 sequence table
- *    readSequence¿¡¼­ sequence tableÀÇ last_sync_seq¸¦ updateÇÑ´Ù.
- *    Ç×»ó selectCurrValTx¿Í updateLastValTx°¡ ¼ø¼­´ë·Î È£ÃâµÇ¾î¾ß ÇÑ´Ù.
+ *    readSequenceì—ì„œ sequence tableì˜ last_sync_seqë¥¼ updateí•œë‹¤.
+ *    í•­ìƒ selectCurrValTxì™€ updateLastValTxê°€ ìˆœì„œëŒ€ë¡œ í˜¸ì¶œë˜ì–´ì•¼ í•œë‹¤.
  *
  * Implementation :
  *

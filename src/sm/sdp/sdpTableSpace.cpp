@@ -29,11 +29,11 @@
 #include <sdptbExtent.h>
 
 /*
- * ¸ğµç µğ½ºÅ© Å×ÀÌºí½ºÆäÀÌ½º¿¡ Space Cache ÇÒ´ç ¹× ÃÊ±âÈ­ÇÑ´Ù.
+ * ëª¨ë“  ë””ìŠ¤í¬ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì— Space Cache í• ë‹¹ ë° ì´ˆê¸°í™”í•œë‹¤.
  */
 IDE_RC sdpTableSpace::initialize()
 {
-    // Space Cache¸¦ ÇÒ´çÇÏ°í ÃÊ±âÈ­ÇÑ´Ù.
+    // Space Cacheë¥¼ í• ë‹¹í•˜ê³  ì´ˆê¸°í™”í•œë‹¤.
     IDE_TEST( sctTableSpaceMgr::doAction4EachTBS(
                   NULL, /* aStatistics */
                   doActAllocSpaceCache,
@@ -42,7 +42,7 @@ IDE_RC sdpTableSpace::initialize()
               != IDE_SUCCESS );
 
     // BUG-24434
-    // sdpPageType ÀÌ º¯°æÀÌ µÇ¸é IDV_SM_PAGE_TYPE_MAX °ªµµ È®ÀÎÇØ Áà¾ß ÇÕ´Ï´Ù.  
+    // sdpPageType ì´ ë³€ê²½ì´ ë˜ë©´ IDV_SM_PAGE_TYPE_MAX ê°’ë„ í™•ì¸í•´ ì¤˜ì•¼ í•©ë‹ˆë‹¤.  
     IDE_ASSERT( IDV_SM_PAGE_TYPE_MAX == SDP_PAGE_TYPE_MAX );
 
     return IDE_SUCCESS ;
@@ -53,8 +53,8 @@ IDE_RC sdpTableSpace::initialize()
 }
 
 /*
- * ¸ğµç µğ½ºÅ© Å×ÀÌºí½ºÆäÀÌ½ºÀÇ Space Cache¸¦
- * ¸Ş¸ğ¸® ÇØÁ¦ÇÑ´Ù.
+ * ëª¨ë“  ë””ìŠ¤í¬ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì˜ Space Cacheë¥¼
+ * ë©”ëª¨ë¦¬ í•´ì œí•œë‹¤.
  */
 IDE_RC sdpTableSpace::destroy()
 {
@@ -73,7 +73,7 @@ IDE_RC sdpTableSpace::destroy()
 }
 
 /***********************************************************************
- * Description : Disk Tablespace¸¦ CreateÇÑ´Ù.
+ * Description : Disk Tablespaceë¥¼ Createí•œë‹¤.
  **********************************************************************/
 IDE_RC sdpTableSpace::createTBS( idvSQL            * aStatistics,
                                  smiTableSpaceAttr * aTableSpaceAttr,
@@ -111,7 +111,7 @@ IDE_RC sdpTableSpace::createTBS( idvSQL            * aStatistics,
 }
 
 /*
- * Tablespace »èÁ¦
+ * Tablespace ì‚­ì œ
  */
 IDE_RC sdpTableSpace::dropTBS( idvSQL       *aStatistics,
                                void*         aTrans,
@@ -139,7 +139,7 @@ IDE_RC sdpTableSpace::dropTBS( idvSQL       *aStatistics,
 }
 
 /*
- * Tablespace ¸®¼Â
+ * Tablespace ë¦¬ì…‹
  */
 IDE_RC sdpTableSpace::resetTBS( idvSQL           *aStatistics,
                                 scSpaceID         aSpaceID,
@@ -178,9 +178,9 @@ IDE_RC sdpTableSpace::resetTBS( idvSQL           *aStatistics,
 
 
 /***********************************************************************
- * Description : TableSpaceÀÇ extent °ø°£ °ü¸® ¹æ¹ıÀ» ¸®ÅÏÇÑ´Ù.
+ * Description : TableSpaceì˜ extent ê³µê°„ ê´€ë¦¬ ë°©ë²•ì„ ë¦¬í„´í•œë‹¤.
  *
- *  aSpaceID - [IN] È®ÀÎÇÏ°íÀÚ ÇÏ´Â spageÀÇ id
+ *  aSpaceID - [IN] í™•ì¸í•˜ê³ ì í•˜ëŠ” spageì˜ id
  **********************************************************************/
 smiExtMgmtType sdpTableSpace::getExtMgmtType( scSpaceID   aSpaceID )
 {
@@ -207,10 +207,10 @@ smiExtMgmtType sdpTableSpace::getExtMgmtType( scSpaceID   aSpaceID )
 
 
 /*
- * Segment °ø°£°ü¸® ¹æ½ÄÀº Tablespace °ø°£°ü¸® ¹æ½ÄÀ» µû¸¥´Ù.
- * ¹°·Ğ ¼­·Î ´Ù¸¥ ¹æ½ÄÀ» Ãß±¸ÇÒ ¼öµµ ÀÖÁö¸¸, ÇöÀç·Î½á´Â
- * ¸¹Àº ±¸Á¶Àû ÇÑ°èÁ¡À¸·Î ÀÎÇØ¼­ Tablespace °ø°£°ü¸®¹æ½ÄÀÌ
- * Á¤ÇØÁö¸é Segment °ø°£°ü¸® ¹æ½Äµµ Á¤ÇØÁöµµ·Ï Ã³¸®ÇÑ´Ù.
+ * Segment ê³µê°„ê´€ë¦¬ ë°©ì‹ì€ Tablespace ê³µê°„ê´€ë¦¬ ë°©ì‹ì„ ë”°ë¥¸ë‹¤.
+ * ë¬¼ë¡  ì„œë¡œ ë‹¤ë¥¸ ë°©ì‹ì„ ì¶”êµ¬í•  ìˆ˜ë„ ìˆì§€ë§Œ, í˜„ì¬ë¡œì¨ëŠ”
+ * ë§ì€ êµ¬ì¡°ì  í•œê³„ì ìœ¼ë¡œ ì¸í•´ì„œ Tablespace ê³µê°„ê´€ë¦¬ë°©ì‹ì´
+ * ì •í•´ì§€ë©´ Segment ê³µê°„ê´€ë¦¬ ë°©ì‹ë„ ì •í•´ì§€ë„ë¡ ì²˜ë¦¬í•œë‹¤.
  */
 smiSegMgmtType sdpTableSpace::getSegMgmtType( scSpaceID   aSpaceID )
 {
@@ -242,9 +242,9 @@ smiSegMgmtType sdpTableSpace::getSegMgmtType( scSpaceID   aSpaceID )
 }
 
 /***********************************************************************
- * Description : TableSpaceÀÇ extent ´ç page¼ö¸¦ ¹İÈ¯ÇÑ´Ù.
+ * Description : TableSpaceì˜ extent ë‹¹ pageìˆ˜ë¥¼ ë°˜í™˜í•œë‹¤.
  *
- *  aSpaceID - [IN] È®ÀÎÇÏ°íÀÚ ÇÏ´Â spageÀÇ id
+ *  aSpaceID - [IN] í™•ì¸í•˜ê³ ì í•˜ëŠ” spageì˜ id
  **********************************************************************/
 UInt sdpTableSpace::getPagesPerExt( scSpaceID     aSpaceID )
 {
@@ -270,7 +270,7 @@ UInt sdpTableSpace::getPagesPerExt( scSpaceID     aSpaceID )
 
 
 /*
- * µğ½ºÅ© Å×ÀÌºí½ºÆäÀÌ½º¿¡ Space Cache¸¦ ÇÒ´çÇÏ°í ÃÊ±âÈ­ÇÑ´Ù.
+ * ë””ìŠ¤í¬ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì— Space Cacheë¥¼ í• ë‹¹í•˜ê³  ì´ˆê¸°í™”í•œë‹¤.
  */
 IDE_RC sdpTableSpace::doActAllocSpaceCache( idvSQL            * /*aStatistics*/,
                                             sctTableSpaceNode * aSpaceNode,
@@ -310,7 +310,7 @@ IDE_RC sdpTableSpace::doActAllocSpaceCache( idvSQL            * /*aStatistics*/,
 }
 
 /*
- * µğ½ºÅ© Å×ÀÌºí½ºÆäÀÌ½º¿¡ Space Cache¸¦ ÇØÁ¦ÇÑ´Ù.
+ * ë””ìŠ¤í¬ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì— Space Cacheë¥¼ í•´ì œí•œë‹¤.
  */
 IDE_RC sdpTableSpace::doActFreeSpaceCache( idvSQL            * /*aStatistics*/,
                                            sctTableSpaceNode * aSpaceNode,
@@ -331,7 +331,7 @@ IDE_RC sdpTableSpace::doActFreeSpaceCache( idvSQL            * /*aStatistics*/,
             aSpaceNode->mID );
         IDE_ASSERT( sCache != NULL );
 
-        // Space Cache ÇØÁ¦
+        // Space Cache í•´ì œ
         IDE_TEST( sTBSMgrOp->mDestroy( aSpaceNode->mID ) != IDE_SUCCESS );
     }
 
@@ -343,11 +343,11 @@ IDE_RC sdpTableSpace::doActFreeSpaceCache( idvSQL            * /*aStatistics*/,
 }
 
 /*
- * µğ½ºÅ© Å×ÀÌºí½ºÆäÀÌ½º¿¡ Space Cache¸¦ ÇØÁ¦ÇÑ´Ù.
+ * ë””ìŠ¤í¬ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì— Space Cacheë¥¼ í•´ì œí•œë‹¤.
  *
- * BUG-29941 - SDP ¸ğµâ¿¡ ¸Ş¸ğ¸® ´©¼ö°¡ Á¸ÀçÇÕ´Ï´Ù.
- * commit pending ¿¬»ê ¼öÇà½Ã º» ÇÔ¼ö¸¦ È£ÃâÇÏ¿© tablespace¿¡ ÇÒ´çµÈ
- * Space Cache¸¦ ÇØÁ¦ÇÏµµ·Ï ÇÑ´Ù.
+ * BUG-29941 - SDP ëª¨ë“ˆì— ë©”ëª¨ë¦¬ ëˆ„ìˆ˜ê°€ ì¡´ì¬í•©ë‹ˆë‹¤.
+ * commit pending ì—°ì‚° ìˆ˜í–‰ì‹œ ë³¸ í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•˜ì—¬ tablespaceì— í• ë‹¹ëœ
+ * Space Cacheë¥¼ í•´ì œí•˜ë„ë¡ í•œë‹¤.
  */
 IDE_RC sdpTableSpace::freeSpaceCacheCommitPending(
                                            idvSQL            * /*aStatistics*/,
@@ -366,11 +366,11 @@ IDE_RC sdpTableSpace::freeSpaceCacheCommitPending(
 }
 
 /* 
- * space cache ¿¡ ´ÙÀ½°ú °°Àº °ªµéÀ» ¼¼Æ®ÇÑ´Ù.
- * (ºñÆ®¸ÊÀ» »ç¿ëÇÑ TBS¿¡¸¸ ½ÇÇàµÈ´Ù.)
- *  - GGÀÇ extent ÇÒ´ç°¡´É¿©ºÎºñÆ®
- *  - TBSÀÇ °¡ÀåÅ« GG id(ºñÆ®°Ë»ö½Ã»ç¿ëÇÔ)
- *  - extentÇÒ´ç°í·ÁÇÒ GG ID¹øÈ£.(Ã³À½ start½Ã¿¡´Â 0À¸·Î ÃÊ±âÈ­ÇÑ´Ù.)
+ * space cache ì— ë‹¤ìŒê³¼ ê°™ì€ ê°’ë“¤ì„ ì„¸íŠ¸í•œë‹¤.
+ * (ë¹„íŠ¸ë§µì„ ì‚¬ìš©í•œ TBSì—ë§Œ ì‹¤í–‰ëœë‹¤.)
+ *  - GGì˜ extent í• ë‹¹ê°€ëŠ¥ì—¬ë¶€ë¹„íŠ¸
+ *  - TBSì˜ ê°€ì¥í° GG id(ë¹„íŠ¸ê²€ìƒ‰ì‹œì‚¬ìš©í•¨)
+ *  - extentí• ë‹¹ê³ ë ¤í•  GG IDë²ˆí˜¸.(ì²˜ìŒ startì‹œì—ëŠ” 0ìœ¼ë¡œ ì´ˆê¸°í™”í•œë‹¤.)
  */
 IDE_RC sdpTableSpace::refineDRDBSpaceCache()
 {
@@ -389,7 +389,7 @@ IDE_RC sdpTableSpace::refineDRDBSpaceCache()
     return IDE_FAILURE;
 }
 
-/* TBS¿¡ ´ëÇØ¼­ Cache Á¤º¸¸¦ Refine ÇÑ´Ù. */
+/* TBSì— ëŒ€í•´ì„œ Cache ì •ë³´ë¥¼ Refine í•œë‹¤. */
 IDE_RC sdpTableSpace::doRefineSpaceCache( idvSQL            * /* aStatistics*/ ,
                                           sctTableSpaceNode * aSpaceNode,
                                           void              * /*aActionArg*/ )
@@ -404,7 +404,7 @@ IDE_RC sdpTableSpace::doRefineSpaceCache( idvSQL            * /* aStatistics*/ ,
     {
         sSpaceNode = (sddTableSpaceNode*)aSpaceNode;
 
-        //temp tablespace¿¡ ´ëÇÑ refineÀº reset½Ã¿¡ ½Ç½ÃÇÑ´Ù.
+        //temp tablespaceì— ëŒ€í•œ refineì€ resetì‹œì— ì‹¤ì‹œí•œë‹¤.
         if( sctTableSpaceMgr::isTempTableSpace( aSpaceNode->mID ) == ID_FALSE )
         {
             sTBSMgrOp  = getTBSMgmtOP( sSpaceNode );
@@ -430,7 +430,7 @@ IDE_RC sdpTableSpace::doRefineSpaceCache( idvSQL            * /* aStatistics*/ ,
 }
 
 /*
- * Tablespace ¹«È¿È­
+ * Tablespace ë¬´íš¨í™”
  */
 IDE_RC sdpTableSpace::alterTBSdiscard( sddTableSpaceNode  * aTBSNode )
 {
@@ -448,7 +448,7 @@ IDE_RC sdpTableSpace::alterTBSdiscard( sddTableSpaceNode  * aTBSNode )
 }
 
 /*
- * TableSpace Online/Offline »óÅÂ º¯°æ
+ * TableSpace Online/Offline ìƒíƒœ ë³€ê²½
  */
 IDE_RC sdpTableSpace::alterTBSStatus( idvSQL*             aStatistics,
                                       void              * aTrans,
@@ -476,7 +476,7 @@ IDE_RC sdpTableSpace::alterTBSStatus( idvSQL*             aStatistics,
 
 
 /*
- * µ¥ÀÌÅ¸ÆÄÀÏ ÀÚµ¿È®Àå ¸ğµå º¯°æ
+ * ë°ì´íƒ€íŒŒì¼ ìë™í™•ì¥ ëª¨ë“œ ë³€ê²½
  */
 IDE_RC sdpTableSpace::alterDataFileAutoExtend( idvSQL      *aStatistics,
                                                void        *aTrans,
@@ -511,7 +511,7 @@ IDE_RC sdpTableSpace::alterDataFileAutoExtend( idvSQL      *aStatistics,
 }
 
 /*
- * µ¥ÀÌÅ¸ÆÄÀÏ °æ·Î º¯°æ
+ * ë°ì´íƒ€íŒŒì¼ ê²½ë¡œ ë³€ê²½
  */
 IDE_RC sdpTableSpace::alterDataFileName( idvSQL      *aStatistics,
                                          scSpaceID    aSpaceID,
@@ -535,7 +535,7 @@ IDE_RC sdpTableSpace::alterDataFileName( idvSQL      *aStatistics,
 }
 
 /*
- * ÇÏ³ªÀÇ µ¥ÀÌÅ¸ È­ÀÏÀ» °ø°£À» ´Ã¸°´Ù.
+ * í•˜ë‚˜ì˜ ë°ì´íƒ€ í™”ì¼ì„ ê³µê°„ì„ ëŠ˜ë¦°ë‹¤.
  */
 IDE_RC sdpTableSpace::alterDataFileReSize( idvSQL       *aStatistics,
                                            void         *aTrans,
@@ -567,7 +567,7 @@ IDE_RC sdpTableSpace::alterDataFileReSize( idvSQL       *aStatistics,
 }
 
 /*
- * 1°³ ÀÌ»óÀÇ µ¥ÀÌÅ¸ÆÄÀÏ Ãß°¡ÇÑ´Ù.
+ * 1ê°œ ì´ìƒì˜ ë°ì´íƒ€íŒŒì¼ ì¶”ê°€í•œë‹¤.
  */
 IDE_RC sdpTableSpace::createDataFiles( idvSQL             * aStatistics,
                                        void               * aTrans,
@@ -595,7 +595,7 @@ IDE_RC sdpTableSpace::createDataFiles( idvSQL             * aStatistics,
 }
 
 /*
- * ÇÏ³ªÀÇ µ¥ÀÌÅ¸ È­ÀÏÀ» »èÁ¦ÇÑ´Ù.
+ * í•˜ë‚˜ì˜ ë°ì´íƒ€ í™”ì¼ì„ ì‚­ì œí•œë‹¤.
  */
 IDE_RC sdpTableSpace::removeDataFile( idvSQL         *aStatistics,
                                       void*           aTrans,
@@ -622,7 +622,7 @@ IDE_RC sdpTableSpace::removeDataFile( idvSQL         *aStatistics,
 }
 
 /*
- * TablespaceÀÇ ÀÚ·á±¸Á¶¸¦ ¹«°á¼º °ËÁõÇÑ´Ù.
+ * Tablespaceì˜ ìë£Œêµ¬ì¡°ë¥¼ ë¬´ê²°ì„± ê²€ì¦í•œë‹¤.
  */
 IDE_RC sdpTableSpace::verify( idvSQL*   aStatistics,
                               scSpaceID aSpaceID,
@@ -644,7 +644,7 @@ IDE_RC sdpTableSpace::verify( idvSQL*   aStatistics,
 }
 
 /*
- * TablespaceÀÇ ÀÚ·á±¸Á¶¸¦ Ãâ·ÂÇÑ´Ù.
+ * Tablespaceì˜ ìë£Œêµ¬ì¡°ë¥¼ ì¶œë ¥í•œë‹¤.
  */
 IDE_RC sdpTableSpace::dump( scSpaceID aSpaceID,
                             UInt      aDumpFlag )
@@ -739,7 +739,7 @@ IDE_RC sdpTableSpace::freeExt( idvSQL       * aStatistics,
                                    aNrDone );
 }
 
-/* Å×ÀÌºí½ºÆäÀÌ½ºÀÇ ÃÑ ¹°¸®ÀûÀÎ ÆäÀÌÁö °³¼ö ¹İÈ¯ */
+/* í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì˜ ì´ ë¬¼ë¦¬ì ì¸ í˜ì´ì§€ ê°œìˆ˜ ë°˜í™˜ */
 IDE_RC sdpTableSpace::getTotalPageCount( idvSQL      * aStatistics,
                                          scSpaceID     aSpaceID,
                                          ULong       * aTotalPageCount )
@@ -782,7 +782,7 @@ IDE_RC  sdpTableSpace::getAllocPageCount( idvSQL   *aStatistics,
 }
 
 /***********************************************************************
- * Description: aSpaceID¿¡ ÇØ´çÇÏ´Â TBSÀÇ Free Extent PoolÀÇ Item°¹¼ö¸¦ ¾ò´Â´Ù.
+ * Description: aSpaceIDì— í•´ë‹¹í•˜ëŠ” TBSì˜ Free Extent Poolì˜ Itemê°¯ìˆ˜ë¥¼ ì–»ëŠ”ë‹¤.
  *
  * aSpaceID - [IN] Tablespace ID
  ***********************************************************************/
@@ -798,17 +798,17 @@ ULong sdpTableSpace::getCachedFreeExtCount( scSpaceID aSpaceID )
 
 
 /**********************************************************************
- * Description: tbs¿¡ ÆÄÀÏÀ» »ı¼ºÇÏ°Å³ª Ãß°¡ÇÏ±âÀü¿¡ ±× Å©±â°¡ validÇÑÁö °Ë»çÇÔ.
+ * Description: tbsì— íŒŒì¼ì„ ìƒì„±í•˜ê±°ë‚˜ ì¶”ê°€í•˜ê¸°ì „ì— ê·¸ í¬ê¸°ê°€ validí•œì§€ ê²€ì‚¬í•¨.
  *
- *     [ °Ë»ç¼ø¼­ ] (BUG-29566 Å×ÀÌÅÍ ÆÄÀÏÀÇ Å©±â¸¦ 32G ¸¦ ÃÊ°úÇÏ¿© ÁöÁ¤ÇØµµ
- *                            ¿¡·¯¸¦ Ãâ·ÂÇÏÁö ¾Ê½À´Ï´Ù.)
- *        1. autoextend on ÀÏ °æ¿ì init size < max sizeÀÎÁö
- *        2. max size, Init size °¡ 32G È¤Àº OS LimitÀ» ³ÑÁö ¾Ê´ÂÁö
- *           È¤Àº ³Ê¹« ÀÛÁö´Â ¾ÊÀºÁö..
+ *     [ ê²€ì‚¬ìˆœì„œ ] (BUG-29566 í…Œì´í„° íŒŒì¼ì˜ í¬ê¸°ë¥¼ 32G ë¥¼ ì´ˆê³¼í•˜ì—¬ ì§€ì •í•´ë„
+ *                            ì—ëŸ¬ë¥¼ ì¶œë ¥í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.)
+ *        1. autoextend on ì¼ ê²½ìš° init size < max sizeì¸ì§€
+ *        2. max size, Init size ê°€ 32G í˜¹ì€ OS Limitì„ ë„˜ì§€ ì•ŠëŠ”ì§€
+ *           í˜¹ì€ ë„ˆë¬´ ì‘ì§€ëŠ” ì•Šì€ì§€..
  *
- * aDataFileAttr        - [IN] ¸¸µé¾î¾ßÇÏ´Â ÆÄÀÏµé¿¡ ´ëÇÑ Á¤º¸
- * aDataFileAttrCount   - [IN] ÆÄÀÏ°¹¼ö
- * aValidSmallSize      - [IN] ÆÄÀÏÀÇ ÃÖ¼Ò Å©±â°Ë»ç¿¡ »ç¿ëµÉ °ª
+ * aDataFileAttr        - [IN] ë§Œë“¤ì–´ì•¼í•˜ëŠ” íŒŒì¼ë“¤ì— ëŒ€í•œ ì •ë³´
+ * aDataFileAttrCount   - [IN] íŒŒì¼ê°¯ìˆ˜
+ * aValidSmallSize      - [IN] íŒŒì¼ì˜ ìµœì†Œ í¬ê¸°ê²€ì‚¬ì— ì‚¬ìš©ë  ê°’
  **********************************************************************/
 IDE_RC sdpTableSpace::checkPureFileSize( smiDataFileAttr ** aDataFileAttr,
                                          UInt               aDataFileAttrCount,
@@ -824,17 +824,17 @@ IDE_RC sdpTableSpace::checkPureFileSize( smiDataFileAttr ** aDataFileAttr,
         sMaxPageCnt  = aDataFileAttr[i]->mMaxSize;
 
         /*
-         * BUG-26294 [SD] tbs»ı¼º½Ã maxsize°¡ initsizeº¸´Ù ÀÛÀºµ¥µµ 
-         *                ½Ã½ºÅÛ¿¡ µû¶ó ¼º°øÇÏ´Â °æ¿ì°¡ ÀÖÀ½. 
+         * BUG-26294 [SD] tbsìƒì„±ì‹œ maxsizeê°€ initsizeë³´ë‹¤ ì‘ì€ë°ë„ 
+         *                ì‹œìŠ¤í…œì— ë”°ë¼ ì„±ê³µí•˜ëŠ” ê²½ìš°ê°€ ìˆìŒ. 
          */
-        // BUG-26632 [SD] Tablespace»ı¼º½Ã maxsize¸¦ unlimited ·Î
-        //           ÁöÁ¤ÇÏ¸é »ı¼ºµÇÁö ¾Ê½À´Ï´Ù.
-        // UnlimitedÀÌ¸é MaxSize°¡ 0À¸·Î ÁöÁ¤µË´Ï´Ù.
-        // MaxSize°¡ 0ÀÏ °æ¿ì Init Size¿Í ºñ±³ÇÏÁö ¾Ê½À´Ï´Ù.
-        // BUG-29566 µ¥ÀÌÅÍ ÆÄÀÏÀÇ Å©±â¸¦ 32G ¸¦ ÃÊ°úÇÏ¿© ÁöÁ¤ÇØµµ
-        //           ¿¡·¯¸¦ Ãâ·ÂÇÏÁö ¾Ê½À´Ï´Ù.
+        // BUG-26632 [SD] Tablespaceìƒì„±ì‹œ maxsizeë¥¼ unlimited ë¡œ
+        //           ì§€ì •í•˜ë©´ ìƒì„±ë˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
+        // Unlimitedì´ë©´ MaxSizeê°€ 0ìœ¼ë¡œ ì§€ì •ë©ë‹ˆë‹¤.
+        // MaxSizeê°€ 0ì¼ ê²½ìš° Init Sizeì™€ ë¹„êµí•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
+        // BUG-29566 ë°ì´í„° íŒŒì¼ì˜ í¬ê¸°ë¥¼ 32G ë¥¼ ì´ˆê³¼í•˜ì—¬ ì§€ì •í•´ë„
+        //           ì—ëŸ¬ë¥¼ ì¶œë ¥í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
         // 1. Init Size < Max Size
-        // 2. Max Size, Init Size°¡ Çã¿ë¹üÀ§ ³»ÀÎÁö..
+        // 2. Max Size, Init Sizeê°€ í—ˆìš©ë²”ìœ„ ë‚´ì¸ì§€..
         if(( aDataFileAttr[i]->mIsAutoExtend == ID_TRUE ) &&
            ( sMaxPageCnt != 0 ))
         {
@@ -868,7 +868,7 @@ IDE_RC sdpTableSpace::checkPureFileSize( smiDataFileAttr ** aDataFileAttr,
 
         /*
          * BUG-20972
-         * FELT¿¡¼­´Â ÇÏ³ªÀÇ extentÅ©±âº¸´Ù ÆÄÀÏÅ©±â°¡ ÀÛÀ»¶§ ¿¡·¯·Î Ã³¸®ÇÔ
+         * FELTì—ì„œëŠ” í•˜ë‚˜ì˜ extentí¬ê¸°ë³´ë‹¤ íŒŒì¼í¬ê¸°ê°€ ì‘ì„ë•Œ ì—ëŸ¬ë¡œ ì²˜ë¦¬í•¨
          */
         IDE_TEST_RAISE( sInitPageCnt < aValidSmallSize ,
                         error_data_file_is_too_small );

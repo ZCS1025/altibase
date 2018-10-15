@@ -28,16 +28,16 @@ class dktNotifier : public idtBaseThread
 {
 private:
     dksSession * mSession;
-    /* ¹Ì¹İ¿µ ±Û·Î¹ú Æ®·£Àè¼Ç °³¼ö*/
+    /* ë¯¸ë°˜ì˜ ê¸€ë¡œë²Œ íŠ¸ëœì­ì…˜ ê°œìˆ˜*/
     UInt    mDtxInfoCnt;
     idBool  mExit;
     idBool  mPause;
 
 public:
-    /* Notify ´ë»ó ±Û·Î¹ú Æ®·£Àè¼Ç ¸®½ºÆ® */
+    /* Notify ëŒ€ìƒ ê¸€ë¡œë²Œ íŠ¸ëœì­ì…˜ ë¦¬ìŠ¤íŠ¸ */
     iduList  mDtxInfo;                 /* PROJ-2569 2PC */
     UInt     mSessionId;
-    /* mDtxInfoList ¿¡ ´ëÇÑ µ¿½ÃÁ¢±ÙÀ» ¸·±â À§ÇÑ mutex */
+    /* mDtxInfoList ì— ëŒ€í•œ ë™ì‹œì ‘ê·¼ì„ ë§‰ê¸° ìœ„í•œ mutex */
     iduMutex  mNotifierDtxInfoMutex;
 
 public:

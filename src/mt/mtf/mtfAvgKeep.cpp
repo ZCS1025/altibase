@@ -56,7 +56,7 @@ static IDE_RC mtfAvgKeepEstimate( mtcNode     * aNode,
 mtfModule mtfAvgKeep = {
     5 | MTC_NODE_OPERATOR_AGGREGATION,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
+    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìžê°€ ì•„ë‹˜)
     mtfAvgKeepFunctionName,
     NULL,
     mtfAvgKeepInitialize,
@@ -93,7 +93,7 @@ static mtfSubModule mtfAvgKeepEstimates[3] = {
 };
 
 // BUG-41994
-// high performance¿ë group table
+// high performanceìš© group table
 static mtfSubModule mtfAvgKeepEstimatesHighPerformance[2] = {
     { mtfAvgKeepEstimatesHighPerformance+1, mtfAvgKeepEstimateDouble },
     { NULL, mtfAvgKeepEstimateBigint }
@@ -287,7 +287,7 @@ IDE_RC mtfAvgKeepEstimateFloat( mtcNode     * aNode,
                     ( aStack[1].column->module == &mtdBoolean ),
                     ERR_CONVERSION_NOT_APPLICABLE );
 
-    // funcData »ç¿ë
+    // funcData ì‚¬ìš©
     aNode->info = aTemplate->funcDataCnt;
     aTemplate->funcDataCnt++;
 
@@ -346,7 +346,7 @@ IDE_RC mtfAvgKeepInitializeFloat( mtcNode     * aNode,
         IDE_TEST( mtf::initializeFuncDataBasicInfo( sFuncData,
                                                     sMemoryMgr )
                   != IDE_SUCCESS );
-        // µî·Ï
+        // ë“±ë¡
         aTemplate->funcData[aNode->info] = sFuncData;
     }
     else
@@ -613,8 +613,8 @@ static const mtcExecute mtfAvgKeepExecuteDouble = {
 };
 
 
-// ÃÖÀûÀÇ sumÀ» ¼öÇàÇÏ´Â
-// aggregate ÇÔ¼ö¸¦ Æ÷ÇÔÇÏ°í ÀÖ´Â execute
+// ìµœì ì˜ sumì„ ìˆ˜í–‰í•˜ëŠ”
+// aggregate í•¨ìˆ˜ë¥¼ í¬í•¨í•˜ê³  ìžˆëŠ” execute
 static const mtcExecute mtfAvgKeepExecuteDoubleFast = {
     mtfAvgKeepInitializeDouble,
     mtfAvgKeepAggregateDoubleFast,
@@ -652,12 +652,12 @@ IDE_RC mtfAvgKeepEstimateDouble( mtcNode     * aNode,
     aStack[0].column = aTemplate->rows[aNode->table].columns + aNode->column;
     aTemplate->rows[aNode->table].execute[aNode->column] = mtfAvgKeepExecuteDouble;
 
-    // ÃÖÀûÈ­µÈ aggregate ÇÔ¼ö
+    // ìµœì í™”ëœ aggregate í•¨ìˆ˜
     sArgModule = aNode->arguments->module;
     if ( sArgModule != NULL )
     {
         // BUG-19856
-        // view ÄÃ·³ÀÎ °æ¿ì ÃÖÀûÈ­µÈ executionÀ» ´ÞÁö¾Ê´Â´Ù.
+        // view ì»¬ëŸ¼ì¸ ê²½ìš° ìµœì í™”ëœ executionì„ ë‹¬ì§€ì•ŠëŠ”ë‹¤.
         if ( ( ( aTemplate->rows[aNode->arguments->table].lflag & MTC_TUPLE_VIEW_MASK )
                == MTC_TUPLE_VIEW_FALSE ) &&
              ( idlOS::strncmp((SChar*)sArgModule->names->string,
@@ -666,13 +666,13 @@ IDE_RC mtfAvgKeepEstimateDouble( mtcNode     * aNode,
              ( aNode->arguments->conversion == NULL ) )
         {
             // avg(i1) keep ( dense_rank first order by i1,i2,i3 )
-            // order by column µµ ¼ø¼ö Ã¶·³ÀÎÁö È®ÀÎÇØ¾ßÇÑ´Ù.
+            // order by column ë„ ìˆœìˆ˜ ì² ëŸ¼ì¸ì§€ í™•ì¸í•´ì•¼í•œë‹¤.
             for ( sNode = aNode->arguments->next->next;
                   sNode != NULL;
                   sNode = sNode->next )
             {
                 // BUG-19856
-                // view ÄÃ·³ÀÎ °æ¿ì ÃÖÀûÈ­µÈ executionÀ» ´ÞÁö¾Ê´Â´Ù.
+                // view ì»¬ëŸ¼ì¸ ê²½ìš° ìµœì í™”ëœ executionì„ ë‹¬ì§€ì•ŠëŠ”ë‹¤.
                 if ( ( ( aTemplate->rows[sNode->table].lflag & MTC_TUPLE_VIEW_MASK )
                        == MTC_TUPLE_VIEW_TRUE ) ||
                      ( idlOS::strncmp((SChar*)sNode->module->names->string,
@@ -748,7 +748,7 @@ IDE_RC mtfAvgKeepEstimateDouble( mtcNode     * aNode,
                     ( aStack[1].column->module == &mtdBoolean ),
                     ERR_CONVERSION_NOT_APPLICABLE );
 
-    // funcData »ç¿ë
+    // funcData ì‚¬ìš©
     aNode->info = aTemplate->funcDataCnt;
     aTemplate->funcDataCnt++;
 
@@ -786,7 +786,7 @@ IDE_RC mtfAvgKeepInitializeDouble( mtcNode     * aNode,
     sBinary = (mtdBinaryType*)((UChar*)aTemplate->rows[aNode->table].row +
                                sColumn[4].column.offset);
 
-    // ÃÖÃÊ µî·Ï
+    // ìµœì´ˆ ë“±ë¡
     if ( aTemplate->funcData[aNode->info] == NULL )
     {
         IDE_TEST( mtf::allocFuncDataMemory( &sMemoryMgr )
@@ -801,7 +801,7 @@ IDE_RC mtfAvgKeepInitializeDouble( mtcNode     * aNode,
         IDE_TEST( mtf::initializeFuncDataBasicInfo( sFuncData,
                                                     sMemoryMgr )
                   != IDE_SUCCESS );
-        // µî·Ï
+        // ë“±ë¡
         aTemplate->funcData[aNode->info] = sFuncData;
     }
     else
@@ -917,10 +917,10 @@ IDE_RC mtfAvgKeepAggregateDouble( mtcNode     * aNode,
         }
         else if ( sAction == MTF_KEEP_ACTION_AGGR )
         {
-            // mtdDouble.isNull() ¸¦ È£ÃâÇÏ´Â ´ë½Å
-            // Á÷Á¢ null °Ë»ç¸¦ ÇÑ´Ù.
-            // aStack->valueÀÇ µ¥ÀÌÅÍ Å¸ÀÔÀ» ¹Ì¸® ¾Ë±â ¶§¹®¿¡
-            // Á÷Á¢ null °Ë»ç¸¦ ÇÏ´Âµ¥ ¼öÇà ¼Óµµ¸¦ À§ÇØ¼­ÀÌ´Ù.
+            // mtdDouble.isNull() ë¥¼ í˜¸ì¶œí•˜ëŠ” ëŒ€ì‹ 
+            // ì§ì ‘ null ê²€ì‚¬ë¥¼ í•œë‹¤.
+            // aStack->valueì˜ ë°ì´í„° íƒ€ìž…ì„ ë¯¸ë¦¬ ì•Œê¸° ë•Œë¬¸ì—
+            // ì§ì ‘ null ê²€ì‚¬ë¥¼ í•˜ëŠ”ë° ìˆ˜í–‰ ì†ë„ë¥¼ ìœ„í•´ì„œì´ë‹¤.
             if ( ( *(ULong*)(aStack[1].value) & MTD_DOUBLE_EXPONENT_MASK )
                  != MTD_DOUBLE_EXPONENT_MASK )
             {
@@ -1034,10 +1034,10 @@ IDE_RC mtfAvgKeepAggregateDoubleFast( mtcNode     * aNode,
         }
         else if ( sAction == MTF_KEEP_ACTION_AGGR )
         {
-            // mtdDouble.isNull() ¸¦ È£ÃâÇÏ´Â ´ë½Å
-            // Á÷Á¢ null °Ë»ç¸¦ ÇÑ´Ù.
-            // aStack->valueÀÇ µ¥ÀÌÅÍ Å¸ÀÔÀ» ¹Ì¸® ¾Ë±â ¶§¹®¿¡
-            // Á÷Á¢ null °Ë»ç¸¦ ÇÏ´Âµ¥ ¼öÇà ¼Óµµ¸¦ À§ÇØ¼­ÀÌ´Ù.
+            // mtdDouble.isNull() ë¥¼ í˜¸ì¶œí•˜ëŠ” ëŒ€ì‹ 
+            // ì§ì ‘ null ê²€ì‚¬ë¥¼ í•œë‹¤.
+            // aStack->valueì˜ ë°ì´í„° íƒ€ìž…ì„ ë¯¸ë¦¬ ì•Œê¸° ë•Œë¬¸ì—
+            // ì§ì ‘ null ê²€ì‚¬ë¥¼ í•˜ëŠ”ë° ìˆ˜í–‰ ì†ë„ë¥¼ ìœ„í•´ì„œì´ë‹¤.
             if ( ( *(ULong*)(aStack[1].value) & MTD_DOUBLE_EXPONENT_MASK )
                  != MTD_DOUBLE_EXPONENT_MASK )
             {
@@ -1159,8 +1159,8 @@ static const mtcExecute mtfAvgKeepExecuteBigint = {
     mtk::extractRangeNA
 };
 
-// ÃÖÀûÀÇ sumÀ» ¼öÇàÇÏ´Â
-// aggregate ÇÔ¼ö¸¦ Æ÷ÇÔÇÏ°í ÀÖ´Â execute
+// ìµœì ì˜ sumì„ ìˆ˜í–‰í•˜ëŠ”
+// aggregate í•¨ìˆ˜ë¥¼ í¬í•¨í•˜ê³  ìžˆëŠ” execute
 static const mtcExecute mtfAvgKeepExecuteBigintFast = {
     mtfAvgKeepInitializeBigint,
     mtfAvgKeepAggregateBigintFast,
@@ -1198,12 +1198,12 @@ IDE_RC mtfAvgKeepEstimateBigint( mtcNode     * aNode,
     aStack[0].column = aTemplate->rows[aNode->table].columns + aNode->column;
     aTemplate->rows[aNode->table].execute[aNode->column] = mtfAvgKeepExecuteBigint;
 
-    // ÃÖÀûÈ­µÈ aggregate ÇÔ¼ö
+    // ìµœì í™”ëœ aggregate í•¨ìˆ˜
     sArgModule = aNode->arguments->module;
     if ( sArgModule != NULL )
     {
         // BUG-19856
-        // view ÄÃ·³ÀÎ °æ¿ì ÃÖÀûÈ­µÈ executionÀ» ´ÞÁö¾Ê´Â´Ù.
+        // view ì»¬ëŸ¼ì¸ ê²½ìš° ìµœì í™”ëœ executionì„ ë‹¬ì§€ì•ŠëŠ”ë‹¤.
         if ( ( ( aTemplate->rows[aNode->arguments->table].lflag & MTC_TUPLE_VIEW_MASK )
                == MTC_TUPLE_VIEW_FALSE ) &&
              ( idlOS::strncmp((SChar*)sArgModule->names->string,
@@ -1212,13 +1212,13 @@ IDE_RC mtfAvgKeepEstimateBigint( mtcNode     * aNode,
             ( aNode->arguments->conversion == NULL ) )
         {
             // avg(i1) keep ( dense_rank first order by i1,i2,i3 )
-            // order by column µµ ¼ø¼ö Ã¶·³ÀÎÁö È®ÀÎÇØ¾ßÇÑ´Ù.
+            // order by column ë„ ìˆœìˆ˜ ì² ëŸ¼ì¸ì§€ í™•ì¸í•´ì•¼í•œë‹¤.
             for ( sNode = aNode->arguments->next->next;
                   sNode != NULL;
                   sNode = sNode->next )
             {
                 // BUG-19856
-                // view ÄÃ·³ÀÎ °æ¿ì ÃÖÀûÈ­µÈ executionÀ» ´ÞÁö¾Ê´Â´Ù.
+                // view ì»¬ëŸ¼ì¸ ê²½ìš° ìµœì í™”ëœ executionì„ ë‹¬ì§€ì•ŠëŠ”ë‹¤.
                 if ( ( ( aTemplate->rows[sNode->table].lflag & MTC_TUPLE_VIEW_MASK )
                        == MTC_TUPLE_VIEW_TRUE ) ||
                      ( idlOS::strncmp((SChar*)sNode->module->names->string,
@@ -1293,7 +1293,7 @@ IDE_RC mtfAvgKeepEstimateBigint( mtcNode     * aNode,
                     ( aStack[1].column->module == &mtdBoolean ),
                     ERR_CONVERSION_NOT_APPLICABLE );
 
-    // funcData »ç¿ë
+    // funcData ì‚¬ìš©
     aNode->info = aTemplate->funcDataCnt;
     aTemplate->funcDataCnt++;
 
@@ -1330,7 +1330,7 @@ IDE_RC mtfAvgKeepInitializeBigint( mtcNode     * aNode,
     sBinary = (mtdBinaryType*)((UChar*)aTemplate->rows[aNode->table].row +
                         sColumn[4].column.offset);
 
-    // ÃÖÃÊ µî·Ï
+    // ìµœì´ˆ ë“±ë¡
     if ( aTemplate->funcData[aNode->info] == NULL )
     {
         IDE_TEST( mtf::allocFuncDataMemory( &sMemoryMgr )
@@ -1345,7 +1345,7 @@ IDE_RC mtfAvgKeepInitializeBigint( mtcNode     * aNode,
         IDE_TEST( mtf::initializeFuncDataBasicInfo( sFuncData,
                                                     sMemoryMgr )
                   != IDE_SUCCESS );
-        // µî·Ï
+        // ë“±ë¡
         aTemplate->funcData[aNode->info] = sFuncData;
     }
     else
@@ -1458,10 +1458,10 @@ IDE_RC mtfAvgKeepAggregateBigint( mtcNode     * aNode,
         }
         else if ( sAction == MTF_KEEP_ACTION_AGGR )
         {
-            // mtdBigint.isNull() ¸¦ È£ÃâÇÏ´Â ´ë½Å
-            // Á÷Á¢ null °Ë»ç¸¦ ÇÑ´Ù.
-            // aStack->valueÀÇ µ¥ÀÌÅÍ Å¸ÀÔÀ» ¹Ì¸® ¾Ë±â ¶§¹®¿¡
-            // Á÷Á¢ null °Ë»ç¸¦ ÇÏ´Âµ¥ ¼öÇà ¼Óµµ¸¦ À§ÇØ¼­ÀÌ´Ù.
+            // mtdBigint.isNull() ë¥¼ í˜¸ì¶œí•˜ëŠ” ëŒ€ì‹ 
+            // ì§ì ‘ null ê²€ì‚¬ë¥¼ í•œë‹¤.
+            // aStack->valueì˜ ë°ì´í„° íƒ€ìž…ì„ ë¯¸ë¦¬ ì•Œê¸° ë•Œë¬¸ì—
+            // ì§ì ‘ null ê²€ì‚¬ë¥¼ í•˜ëŠ”ë° ìˆ˜í–‰ ì†ë„ë¥¼ ìœ„í•´ì„œì´ë‹¤.
             if ( *(mtdBigintType *)aStack[1].value != MTD_BIGINT_NULL )
             {
                 *(mtdBigintType *)((UChar *)aTemplate->rows[aNode->table].row +
@@ -1570,10 +1570,10 @@ IDE_RC mtfAvgKeepAggregateBigintFast( mtcNode     * aNode,
         }
         else if ( sAction == MTF_KEEP_ACTION_AGGR )
         {
-            // mtdBigint.isNull() ¸¦ È£ÃâÇÏ´Â ´ë½Å
-            // Á÷Á¢ null °Ë»ç¸¦ ÇÑ´Ù.
-            // aStack->valueÀÇ µ¥ÀÌÅÍ Å¸ÀÔÀ» ¹Ì¸® ¾Ë±â ¶§¹®¿¡
-            // Á÷Á¢ null °Ë»ç¸¦ ÇÏ´Âµ¥ ¼öÇà ¼Óµµ¸¦ À§ÇØ¼­ÀÌ´Ù.
+            // mtdBigint.isNull() ë¥¼ í˜¸ì¶œí•˜ëŠ” ëŒ€ì‹ 
+            // ì§ì ‘ null ê²€ì‚¬ë¥¼ í•œë‹¤.
+            // aStack->valueì˜ ë°ì´í„° íƒ€ìž…ì„ ë¯¸ë¦¬ ì•Œê¸° ë•Œë¬¸ì—
+            // ì§ì ‘ null ê²€ì‚¬ë¥¼ í•˜ëŠ”ë° ìˆ˜í–‰ ì†ë„ë¥¼ ìœ„í•´ì„œì´ë‹¤.
             if ( *(mtdBigintType *)aStack[1].value != MTD_BIGINT_NULL )
             {
                 *(mtdBigintType*)((UChar*) aTemplate->rows[aNode->table].row +

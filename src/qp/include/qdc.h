@@ -125,7 +125,7 @@ public:
     // BUG-43533 OPTIMIZER_FEATURE_ENABLE
     static IDE_RC changeFeatureProperty4Startup( SChar * aNewValue );
 
-    /* PROJ-2624 [±â´É¼º] MM - À¯¿¬ÇÑ access_list °ü¸®¹æ¹ý Á¦°ø */
+    /* PROJ-2624 [ê¸°ëŠ¥ì„±] MM - ìœ ì—°í•œ access_list ê´€ë¦¬ë°©ë²• ì œê³µ */
     static IDE_RC reloadAccessList( qcStatement * aStatement );
 
 private:

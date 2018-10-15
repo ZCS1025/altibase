@@ -136,7 +136,7 @@ idBool smrCompareLSN::isLT( const smLSN   * aLSN1,
  *
  * Description :
  *
- * LSN °ªÀÌ 0ÀÎÁö °Ë»çÇÑ´Ù.
+ * LSN ê°’ì´ 0ì¸ì§€ ê²€ì‚¬í•œë‹¤.
  * 
  * Implementation : 
  *

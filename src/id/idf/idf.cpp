@@ -19,7 +19,7 @@
 #include <idfMemory.h>
 
 //========================
-// ÇÔ¼ö Æ÷ÀÎÅÍ (I/O APIs)
+// í•¨ìˆ˜ í¬ì¸í„° (I/O APIs)
 //========================
 idfopen      idf::open      = idf::idlopen;
 idfclose     idf::close     = idlOS::close;
@@ -49,7 +49,7 @@ idffilesize  idf::filesize  = idlOS::filesize;
 idfgetDiskFreeSpace idf::getDiskFreeSpace = idlVA::getDiskFreeSpace;
 
 //===============================================
-// ¸â¹ö º¯¼ö
+// ë©¤ë²„ ë³€ìˆ˜
 //     1. File Handle
 //     2. File Name
 //     3. System
@@ -73,8 +73,8 @@ SChar *idf::mLogFileName = NULL;
 
 // 3. System
 //===============================================
-// Block MapÀº 1byte°¡ 1°³ÀÇ BlockÀ» °¡¸®Å²´Ù.
-// ÆäÀÌÁö¸¦ ÇÒ´çÇÒ ¶§ BlockÀÇ Å©±â¸¸Å­ ÇÒ´çÇÑ´Ù.
+// Block Mapì€ 1byteê°€ 1ê°œì˜ Blockì„ ê°€ë¦¬í‚¨ë‹¤.
+// í˜ì´ì§€ë¥¼ í• ë‹¹í•  ë•Œ Blockì˜ í¬ê¸°ë§Œí¼ í• ë‹¹í•œë‹¤.
 //===============================================
 UChar        *idf::mBlockMap = NULL;
 SInt         *idf::mBlockList = NULL;
@@ -192,8 +192,8 @@ void idf::initWithIdfCore()
     idf::getDiskFreeSpace = idfCore::getDiskFreeSpace;
 
     //===================================================================
-    // ÆÄÀÏ ¼³Á¤°ªÀ» default·Î ¼³Á¤ÇÑ´Ù.
-    // ÆÄÀÏÀÌ Á¸ÀçÇÏ°í, Master Page°¡ À¯È¿ÇÏ¸é MasterÀÇ °ªÀ¸·Î º¯°æÇÑ´Ù.
+    // íŒŒì¼ ì„¤ì •ê°’ì„ defaultë¡œ ì„¤ì •í•œë‹¤.
+    // íŒŒì¼ì´ ì¡´ì¬í•˜ê³ , Master Pageê°€ ìœ íš¨í•˜ë©´ Masterì˜ ê°’ìœ¼ë¡œ ë³€ê²½í•œë‹¤.
     //===================================================================
     idf::mPageNum          = IDF_PAGE_NUM;
     idf::mPageSize         = IDF_PAGE_SIZE;
@@ -224,7 +224,7 @@ void idf::initMasterPage(idfMaster *aMaster)
 {
     if(idf::mFd != PDL_INVALID_HANDLE)
     {
-        // aMaster°¡ NULLÀÌ¸é ±âº» °ªÀ¸·Î idf::mMaster¸¦ ¼³Á¤ÇÑ´Ù.
+        // aMasterê°€ NULLì´ë©´ ê¸°ë³¸ ê°’ìœ¼ë¡œ idf::mMasterë¥¼ ì„¤ì •í•œë‹¤.
         if(aMaster == NULL)
         {
             idf::mMaster.mMajorVersion = IDF_MAJOR_VERSION;
@@ -241,11 +241,11 @@ void idf::initMasterPage(idfMaster *aMaster)
             idf::mMaster.mMaxFileOpenCount = IDF_MAX_FILE_OPEN_COUNT;
             idf::mMaster.mSignature = idlOS::hton(IDF_SYSTEM_SIGN);
         }
-        // aMaster°¡ NULLÀÌ ¾Æ´Ï¸é aMaster°ªÀ¸·Î idf::mMaster¿Í
-        // idfÀÇ º¯¼ö¸¦ ÃÊ±âÈ­ ÇÑ´Ù.
+        // aMasterê°€ NULLì´ ì•„ë‹ˆë©´ aMasterê°’ìœ¼ë¡œ idf::mMasterì™€
+        // idfì˜ ë³€ìˆ˜ë¥¼ ì´ˆê¸°í™” í•œë‹¤.
         else
         {
-            // »ç¿ëÀÚ·Î ºÎÅÍ ¹ŞÀº Master¸¦ ÃÊ±âÈ­ ÇÑ´Ù.
+            // ì‚¬ìš©ìë¡œ ë¶€í„° ë°›ì€ Masterë¥¼ ì´ˆê¸°í™” í•œë‹¤.
             if(&(idf::mMaster) != aMaster)
             {
                 idf::mMaster.mMajorVersion = IDF_MAJOR_VERSION;
@@ -274,7 +274,7 @@ void idf::initMasterPage(idfMaster *aMaster)
                 idf::mMaster.mNumOfFiles = 0;
 
                 idf::mMaster.mTimestamp = 0;
-                // idf::mMaster.mPagesPerBlockÀº 4ÀÇ ¹è¼ö¿©¾ß ÇÑ´Ù.
+                // idf::mMaster.mPagesPerBlockì€ 4ì˜ ë°°ìˆ˜ì—¬ì•¼ í•œë‹¤.
                 if((idf::mMaster.mPagesPerBlock == 0) ||
                    (idf::mMaster.mPagesPerBlock % 4 != 0))
                 {
@@ -308,7 +308,7 @@ void idf::initMasterPage(idfMaster *aMaster)
             idf::mMaster.mMaxFileCount     = idlOS::ntoh(idf::mMaster.mMaxFileCount);
         }
         
-        // ´ÜÀÏ µ¥ÀÌÅ¸ ÆÄÀÏ »ı¼º½Ã Master ½Ã½ºÅÛ Á¤º¸ ÃÊ±âÈ­.
+        // ë‹¨ì¼ ë°ì´íƒ€ íŒŒì¼ ìƒì„±ì‹œ Master ì‹œìŠ¤í…œ ì •ë³´ ì´ˆê¸°í™”.
         idf::mPageNum          = idf::mMaster.mNumOfPages;
         idf::mPageNum          = idf::mMaster.mNumOfPages;
         idf::mPageSize         = idf::mMaster.mSizeOfPage;
@@ -348,9 +348,9 @@ void idf::initMasterPage(idfMaster *aMaster)
 }
 
 //===================================================================
-// File Descriptor ¸®½ºÆ®¸¦ ÃÊ±âÈ­ ÇÑ´Ù.
-// ÆÄÀÏ ½Ã½ºÅÛÀÌ ÃÊ±âÈ­ µÇ¸é FD´Â ¸ğµÎ »ç¿ëÇÏÁö ¾ÊÀº »óÅÂÀÌ±â ¶§¹®¿¡
-// ¸ğµÎ 0À¸·Î ÃÊ±âÈ­ ÇÑ´Ù.
+// File Descriptor ë¦¬ìŠ¤íŠ¸ë¥¼ ì´ˆê¸°í™” í•œë‹¤.
+// íŒŒì¼ ì‹œìŠ¤í…œì´ ì´ˆê¸°í™” ë˜ë©´ FDëŠ” ëª¨ë‘ ì‚¬ìš©í•˜ì§€ ì•Šì€ ìƒíƒœì´ê¸° ë•Œë¬¸ì—
+// ëª¨ë‘ 0ìœ¼ë¡œ ì´ˆê¸°í™” í•œë‹¤.
 //===================================================================
 void idf::initFdList()
 {
@@ -368,7 +368,7 @@ void idf::initFdList()
 }
 
 //============================
-// Meta¸¦ ÀĞ¾î¼­ ÃÊ±âÈ­ ÇÑ´Ù.
+// Metaë¥¼ ì½ì–´ì„œ ì´ˆê¸°í™” í•œë‹¤.
 //============================
 IDE_RC idf::initMetaList()
 {
@@ -431,7 +431,7 @@ IDE_RC idf::initMetaList()
         sMap = &(sMeta->mDirectPages[0]);
 
         //======================
-        // Direct Page Map °Ë»ç
+        // Direct Page Map ê²€ì‚¬
         //======================
         for(sMapIndex = 0;
             sMapIndex < idf::mDirectPageNum;
@@ -452,7 +452,7 @@ IDE_RC idf::initMetaList()
         }
 
         //========================
-        // Indirect Page Map °Ë»ç
+        // Indirect Page Map ê²€ì‚¬
         //========================
 
         sMap = &(sMeta->mIndPages[0]);
@@ -464,7 +464,7 @@ IDE_RC idf::initMetaList()
                 continue;
             }
 
-            // Indirect MapÀÌ ÇÒ´çµÇ¾î ÀÖ´Ù.
+            // Indirect Mapì´ í• ë‹¹ë˜ì–´ ìˆë‹¤.
             sPageIndex = sMap[sMapIndex] & IDF_FILE_HOLE_INVERTER;
 
             sBlockOffset = sPageIndex % idf::mPagesPerBlock;
@@ -480,13 +480,13 @@ IDE_RC idf::initMetaList()
                 idf::mBlockList[sBlockIndex] = sIndex;
             }
 
-            // Indirect MapÀ» »ç¿ëÇÏÁö ¾ÊÀº °æ¿ì ´ÙÀ½ MapÀ» Á¶»çÇÑ´Ù.
+            // Indirect Mapì„ ì‚¬ìš©í•˜ì§€ ì•Šì€ ê²½ìš° ë‹¤ìŒ Mapì„ ì¡°ì‚¬í•œë‹¤.
             if((sMap[sMapIndex] & IDF_FILE_HOLE_MASK) != 0)
             {
                 continue;
             }
 
-            // Indirect MapÀ» ÀĞ¾î¼­ Block MapÀ» ÃÊ±âÈ­ ÇÑ´Ù.
+            // Indirect Mapì„ ì½ì–´ì„œ Block Mapì„ ì´ˆê¸°í™” í•œë‹¤.
             IDE_TEST(idf::lseekFs(idf::mFd,
                                   sPageIndex * idf::mPageSize,
                                   SEEK_SET) == -1);
@@ -531,7 +531,7 @@ IDE_RC idf::initMetaList()
         sCount++;
     }
 
-    // ÀĞÀº MetaÀÇ °³¼ö¿Í Master¿¡ ±â·ÏµÈ MetaÀÇ °³¼ö°¡ ´Ù¸£¸é ¿¡·¯
+    // ì½ì€ Metaì˜ ê°œìˆ˜ì™€ Masterì— ê¸°ë¡ëœ Metaì˜ ê°œìˆ˜ê°€ ë‹¤ë¥´ë©´ ì—ëŸ¬
     IDE_TEST(sCount != idf::mMaster.mNumOfFiles);
 
     (void)idf::free(sIndMap);
@@ -556,10 +556,10 @@ IDE_RC idf::initMetaList()
 }
 
 //===========================================================
-// Meta¸¦ ÃÊ±âÈ­ ÇÑ´Ù.
-// initMetaList´Â Meta¸¦ ÀĞ¾î¼­ ÃÊ±âÈ­ ÇÏÁö¸¸,
-// initMetaList2´Â ¸Ç Ã³À½ ÆÄÀÏ½Ã½ºÅÛÀ» »ı¼ºÇÒ ¶§ È£ÃâÇÏ¹Ç·Î
-// ¸ğµÎ 0À¸·Î ÃÊ±âÈ­ ÇÑ´Ù.
+// Metaë¥¼ ì´ˆê¸°í™” í•œë‹¤.
+// initMetaListëŠ” Metaë¥¼ ì½ì–´ì„œ ì´ˆê¸°í™” í•˜ì§€ë§Œ,
+// initMetaList2ëŠ” ë§¨ ì²˜ìŒ íŒŒì¼ì‹œìŠ¤í…œì„ ìƒì„±í•  ë•Œ í˜¸ì¶œí•˜ë¯€ë¡œ
+// ëª¨ë‘ 0ìœ¼ë¡œ ì´ˆê¸°í™” í•œë‹¤.
 //===========================================================
 IDE_RC idf::initMetaList2()
 {
@@ -598,10 +598,10 @@ IDE_RC idf::initMetaList2()
 }
 
 //=======================================================================
-// initFileName()Àº °¡»ó ÆÄÀÏ½Ã½ºÅÛÀÇ ÀÌ¸§°ú ·Î±×ÆÄÀÏÀÇ ÀÌ¸§À» ÀúÀåÇÑ´Ù.
-// ÀÌ ÇÔ¼ö´Â initializeStatic() ÇÔ¼ö¿¡¼­¸¸ È£ÃâµÈ´Ù.
-// µû¶ó¼­ ¸Ş¸ğ¸® ÇÒ´ç Áß¿¡ Á×´Â °æ¿ì ¸Ş¸ğ¸® ÇØÁ¦¸¦ initializeStatic()
-// ÇÔ¼ö¿¡¼­ Ã³¸®ÇÑ´Ù.
+// initFileName()ì€ ê°€ìƒ íŒŒì¼ì‹œìŠ¤í…œì˜ ì´ë¦„ê³¼ ë¡œê·¸íŒŒì¼ì˜ ì´ë¦„ì„ ì €ì¥í•œë‹¤.
+// ì´ í•¨ìˆ˜ëŠ” initializeStatic() í•¨ìˆ˜ì—ì„œë§Œ í˜¸ì¶œëœë‹¤.
+// ë”°ë¼ì„œ ë©”ëª¨ë¦¬ í• ë‹¹ ì¤‘ì— ì£½ëŠ” ê²½ìš° ë©”ëª¨ë¦¬ í•´ì œë¥¼ initializeStatic()
+// í•¨ìˆ˜ì—ì„œ ì²˜ë¦¬í•œë‹¤.
 //=======================================================================
 void idf::initFileName(const SChar * aFileName)
 {
@@ -613,7 +613,7 @@ void idf::initFileName(const SChar * aFileName)
                    aFileName, 
                    sFileNameLen);
 
-    // aFileName¿¡ '.log'¸¦ ºÙ¿© log file ÀÌ¸§À» ¸¸µç´Ù.
+    // aFileNameì— '.log'ë¥¼ ë¶™ì—¬ log file ì´ë¦„ì„ ë§Œë“ ë‹¤.
     sFileNameLen += 4;
 
     idf::alloc((void **)&idf::mLogFileName, sFileNameLen);
@@ -668,11 +668,11 @@ void idf::initPageMapPool()
 }
 
 //======================================================================
-// initBlockMapÀº ºí·Ï °³¼ö¸¸Å­ ¸®½ºÆ®¸¦ ¸¸µé°í 0À¸·Î ÃÊ±âÈ­ ÇÑ´Ù.
-// Block MapÀº ÀÌ ÇÔ¼ö¿¡¼­´Â »ı¼º¸¸ ÇÏ°í, initMeta¿¡¼­ Meta¸¦ ÀĞÀ¸¸é¼­
-// »ç¿ëÇÑ ºí·Ï¿¡ ´ëÇØ¼­ Ã¼Å©¸¦ ÇÑ´Ù.
-// ½Ã½ºÅÛÀÌ »ç¿ëÇÑ ¿µ¿ª(Master + Meta)¸¸ initBlockMap¿¡¼­ »ç¿ëÇÑ °ÍÀ¸·Î
-// Ç¥½ÃÇÑ´Ù.
+// initBlockMapì€ ë¸”ë¡ ê°œìˆ˜ë§Œí¼ ë¦¬ìŠ¤íŠ¸ë¥¼ ë§Œë“¤ê³  0ìœ¼ë¡œ ì´ˆê¸°í™” í•œë‹¤.
+// Block Mapì€ ì´ í•¨ìˆ˜ì—ì„œëŠ” ìƒì„±ë§Œ í•˜ê³ , initMetaì—ì„œ Metaë¥¼ ì½ìœ¼ë©´ì„œ
+// ì‚¬ìš©í•œ ë¸”ë¡ì— ëŒ€í•´ì„œ ì²´í¬ë¥¼ í•œë‹¤.
+// ì‹œìŠ¤í…œì´ ì‚¬ìš©í•œ ì˜ì—­(Master + Meta)ë§Œ initBlockMapì—ì„œ ì‚¬ìš©í•œ ê²ƒìœ¼ë¡œ
+// í‘œì‹œí•œë‹¤.
 //======================================================================
 void idf::initBlockMap()
 {
@@ -691,8 +691,8 @@ void idf::initBlockMap()
                   sMapSize * ID_SIZEOF(SInt));
 
     //================================================================
-    // System Page Å©±â ¸¸Å­Àº »ç¿ëÇÑ °ÍÀ¸·Î ¼³Á¤ÇÏ¿© µ¥ÀÌÅÍ ÆäÀÌÁö¿¡
-    // ÇÒ´çÇÏÁö ¸øÇÏµµ·Ï ÇÑ´Ù.
+    // System Page í¬ê¸° ë§Œí¼ì€ ì‚¬ìš©í•œ ê²ƒìœ¼ë¡œ ì„¤ì •í•˜ì—¬ ë°ì´í„° í˜ì´ì§€ì—
+    // í• ë‹¹í•˜ì§€ ëª»í•˜ë„ë¡ í•œë‹¤.
     //================================================================
     idlOS::memset(idf::mBlockMap, 
                   0xFF, 
@@ -723,7 +723,7 @@ void idf::initLogList()
 }
 
 //========================================================================
-// open()¿¡¼­ ÆÄÀÏÀ» ¿­ ¶§ FD ¸®½ºÆ®¸¦ ¼øÈ¸ÇÏ¿© ºó FD¸¦ Ã£¾Æ ¹İÈ¯ÇØ ÁØ´Ù.
+// open()ì—ì„œ íŒŒì¼ì„ ì—´ ë•Œ FD ë¦¬ìŠ¤íŠ¸ë¥¼ ìˆœíšŒí•˜ì—¬ ë¹ˆ FDë¥¼ ì°¾ì•„ ë°˜í™˜í•´ ì¤€ë‹¤.
 //========================================================================
 SInt idf::getUnusedFd()
 {
@@ -750,8 +750,8 @@ SInt idf::getUnusedFd()
 }
 
 //=====================================
-// ÆÄÀÏÀÇ ÀÌ¸§À¸·Î ÆÄÀÏÀÇ ID¸¦ ¾ò´Â´Ù.
-// ÆÄÀÏ ID¿Í Meta´Â 1:1·Î ¸ÅÄªµÈ´Ù.
+// íŒŒì¼ì˜ ì´ë¦„ìœ¼ë¡œ íŒŒì¼ì˜ IDë¥¼ ì–»ëŠ”ë‹¤.
+// íŒŒì¼ IDì™€ MetaëŠ” 1:1ë¡œ ë§¤ì¹­ëœë‹¤.
 //=====================================
 SInt idf::getFileIDByName(const SChar *aPathName)
 {
@@ -836,12 +836,12 @@ IDE_RC idf::getFreePage(UInt *aMap, UInt aFileID)
 
     IDE_TEST(aMap == NULL);
 
-    // free ÆäÀÌÁö¸¦ ¾ò¾î¿Ã ¶§ ½Ã½ºÅÛ ÆäÀÌÁö´Â °Ë»çÇÏÁö ¾Ê´Â´Ù.
+    // free í˜ì´ì§€ë¥¼ ì–»ì–´ì˜¬ ë•Œ ì‹œìŠ¤í…œ í˜ì´ì§€ëŠ” ê²€ì‚¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
     for(sIndex = idf::mSystemSize; sIndex < sTotalBlocks; sIndex++)
     {
         if(idf::mBlockMap[sIndex] == 0x00)
         {
-            // ºó ÆäÀÌÁö°¡ ÀÖÀ¸¸é ÇÒ´çÇÑ´Ù.
+            // ë¹ˆ í˜ì´ì§€ê°€ ìˆìœ¼ë©´ í• ë‹¹í•œë‹¤.
             idf::mBlockMap[sIndex] = 0xFF;
 
             idf::mBlockList[sIndex] = aFileID;
@@ -863,7 +863,7 @@ IDE_RC idf::getFreePage(UInt *aMap, UInt aFileID)
         }
     }
 
-    // ºó ÆäÀÌÁö°¡ ¾ø´Â °æ¿ì No space error¸¦ ¹ß»ıÇÑ´Ù.
+    // ë¹ˆ í˜ì´ì§€ê°€ ì—†ëŠ” ê²½ìš° No space errorë¥¼ ë°œìƒí•œë‹¤.
     IDE_TEST_RAISE(sIndex == sTotalBlocks, nospace_error);
 
     sIndex = sIndex * idf::mPagesPerBlock * idf::mPageSize;
@@ -885,7 +885,7 @@ IDE_RC idf::getFreePage(UInt *aMap, UInt aFileID)
 
     IDE_EXCEPTION(nospace_error)
     {
-        // ºó ÆäÀÌÁö°¡ ¾ø´Â °æ¿ì No space error¸¦ ¹ß»ıÇÑ´Ù.
+        // ë¹ˆ í˜ì´ì§€ê°€ ì—†ëŠ” ê²½ìš° No space errorë¥¼ ë°œìƒí•œë‹¤.
         errno = ENOSPC; // No space left on device
     }
 
@@ -920,25 +920,25 @@ SChar *idf::getpath(const SChar *aPathName)
     }
 
     //=======================================================================
-    // sNewNameÀº getpath()ÇÔ¼ö¿¡¼­ ¸Ş¸ğ¸®¸¦ ÇØÁ¦ÇÏÁö ¾Ê´Â´Ù.
-    // ¸Ş¸ğ¸® ÇØÁ¦´Â ÀÌ ÇÔ¼ö¸¦ È£ÃâÇÑ ÇÔ¼ö¿¡¼­ ´Ù »ç¿ëÇÑ ÈÄ¿¡ ÇØÁ¦ÇØ¾ß ÇÑ´Ù.
+    // sNewNameì€ getpath()í•¨ìˆ˜ì—ì„œ ë©”ëª¨ë¦¬ë¥¼ í•´ì œí•˜ì§€ ì•ŠëŠ”ë‹¤.
+    // ë©”ëª¨ë¦¬ í•´ì œëŠ” ì´ í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•œ í•¨ìˆ˜ì—ì„œ ë‹¤ ì‚¬ìš©í•œ í›„ì— í•´ì œí•´ì•¼ í•œë‹¤.
     //=======================================================================
     (void)idf::alloc((void **)&sNewName, IDF_MAX_FILE_NAME_LEN);
 
-    // Á¦ÀÏ ¾Õ¿¡ ¿À´Â '.', '/', '\\'¸¦ Á¦°ÅÇÒ¶§ »ç¿ëÇÑ´Ù.
+    // ì œì¼ ì•ì— ì˜¤ëŠ” '.', '/', '\\'ë¥¼ ì œê±°í• ë•Œ ì‚¬ìš©í•œë‹¤.
 #if defined(VC_WIN32)
     sDiv = (SChar*)"./\\";
 #else
     sDiv = (SChar*)"./";
 #endif // VC_WIN32
 
-    // Á¦ÀÏ ¾Õ¿¡ ¿À´Â '.', '/', '\\'¸¦ Á¦°ÅÇÑ´Ù.
+    // ì œì¼ ì•ì— ì˜¤ëŠ” '.', '/', '\\'ë¥¼ ì œê±°í•œë‹¤.
     while(idlOS::strchr(sDiv, *sPathName) != NULL)
     {
         sPathName++;
     }
 
-    // pathÀÇ Áß°£¿¡ ¹İº¹ÇÏ¿© ³ªÅ¸³ª´Â '/', '\\'¸¦ Á¦°ÅÇÒ¶§ »ç¿ëÇÑ´Ù.
+    // pathì˜ ì¤‘ê°„ì— ë°˜ë³µí•˜ì—¬ ë‚˜íƒ€ë‚˜ëŠ” '/', '\\'ë¥¼ ì œê±°í• ë•Œ ì‚¬ìš©í•œë‹¤.
 #if defined(VC_WIN32)
     sDiv = (SChar*)"/\\";
 #else
@@ -947,7 +947,7 @@ SChar *idf::getpath(const SChar *aPathName)
 
     do
     {
-        // pathÀÇ Áß°£¿¡ ¹İº¹ÇÏ¿© ³ªÅ¸³ª´Â '/', '\\'¸¦ Á¦°ÅÇÑ´Ù.
+        // pathì˜ ì¤‘ê°„ì— ë°˜ë³µí•˜ì—¬ ë‚˜íƒ€ë‚˜ëŠ” '/', '\\'ë¥¼ ì œê±°í•œë‹¤.
         if(idlOS::strchr(sDiv, *sPathName) != NULL)
         {
             while((*(sPathName + 1) != '\0') &&
@@ -958,7 +958,7 @@ SChar *idf::getpath(const SChar *aPathName)
         }
 
 #if defined(VC_WIN32)
-        // Windows°è¿­ÀÇ OS¿¡¼­ '/'¹®ÀÚ¸¦ '\\'·Î ÅëÀÏÇÑ´Ù.
+        // Windowsê³„ì—´ì˜ OSì—ì„œ '/'ë¬¸ìë¥¼ '\\'ë¡œ í†µì¼í•œë‹¤.
         if(*sPathName == '/')
         {
             sNewName[sIndex] = '\\';
@@ -980,7 +980,7 @@ SChar *idf::getpath(const SChar *aPathName)
         }
     } while(*sPathName != '\0');
 
-    // pathÀÇ Á¦ÀÏ ¸¶Áö¸·¿¡ À§Ä¡ÇÑ '/', '\\'¹®ÀÚ¸¦ »èÁ¦ÇÑ´Ù.
+    // pathì˜ ì œì¼ ë§ˆì§€ë§‰ì— ìœ„ì¹˜í•œ '/', '\\'ë¬¸ìë¥¼ ì‚­ì œí•œë‹¤.
     if(idlOS::strchr(sDiv, sNewName[sIndex - 1]) != NULL)
     {
         sNewName[sIndex -1] = '\0';
@@ -994,18 +994,18 @@ SChar *idf::getpath(const SChar *aPathName)
 }
 
 //=======================================================================
-// ÆÄÀÏÀÇ Indirect Page MapÀ» °¡Á®¿Â´Ù.
-// ¿ì¼± Indirect Page Map PoolÀ» °Ë»öÇÏ¿© Indirect page¸¦ Ã£°í,
-// Indirect Page MapÀÌ Pool¿¡ ¾øÀ¸¸é µğ½ºÅ©¿¡¼­ ÀĞ´Â´Ù.
+// íŒŒì¼ì˜ Indirect Page Mapì„ ê°€ì ¸ì˜¨ë‹¤.
+// ìš°ì„  Indirect Page Map Poolì„ ê²€ìƒ‰í•˜ì—¬ Indirect pageë¥¼ ì°¾ê³ ,
+// Indirect Page Mapì´ Poolì— ì—†ìœ¼ë©´ ë””ìŠ¤í¬ì—ì„œ ì½ëŠ”ë‹¤.
 //
 //     aFileID       : File ID
-//     aIndex        : ¸î ¹øÂ° Indrect Page MapÀÎÁö¸¦ ³ªÅ¸³½´Ù.
-//     aMapIndex     : Indirect Page MapÀÇ ¸î ¹øÂ° ÆäÀÌÁöÀÎÁö ³ªÅ¸³½´Ù.
-//     aLogicalPage  : Indirect Page MapÀ» ÀúÀåÇÏ°í ÀÖ´Â ÆäÀÌÁö ¹øÈ£.
+//     aIndex        : ëª‡ ë²ˆì§¸ Indrect Page Mapì¸ì§€ë¥¼ ë‚˜íƒ€ë‚¸ë‹¤.
+//     aMapIndex     : Indirect Page Mapì˜ ëª‡ ë²ˆì§¸ í˜ì´ì§€ì¸ì§€ ë‚˜íƒ€ë‚¸ë‹¤.
+//     aLogicalPage  : Indirect Page Mapì„ ì €ì¥í•˜ê³  ìˆëŠ” í˜ì´ì§€ ë²ˆí˜¸.
 //
 //
-// * Indirect Page Map PoolÀÇ ±¸¼º
-//     °¢ Page MapÀº Double Linked List·Î ¿¬°áµÈ´Ù.
+// * Indirect Page Map Poolì˜ êµ¬ì„±
+//     ê° Page Mapì€ Double Linked Listë¡œ ì—°ê²°ëœë‹¤.
 //
 //  ------------------- 
 // | idf::mPageMapPool |
@@ -1022,8 +1022,8 @@ SChar *idf::getpath(const SChar *aPathName)
 UInt *idf::getPageMap(SInt aFileID,   UInt aIndex,
                       UInt aMapIndex, UInt aLogicalPage)
 {
-    // 1. idf::mPageMapPool¿¡¼­ °Ë»öÇÏ¿© ÆäÀÌÁö°¡ Á¸ÀçÇÏ´ÂÁö È®ÀÎÇÑ´Ù. 
-    // 2. idf::mPageMapPool¿¡ ¾øÀ¸¸é LRU ¾Ë°í¸®ÁòÀ¸·Î Page MapÀ» °¡Á®¿Â´Ù.
+    // 1. idf::mPageMapPoolì—ì„œ ê²€ìƒ‰í•˜ì—¬ í˜ì´ì§€ê°€ ì¡´ì¬í•˜ëŠ”ì§€ í™•ì¸í•œë‹¤. 
+    // 2. idf::mPageMapPoolì— ì—†ìœ¼ë©´ LRU ì•Œê³ ë¦¬ì¦˜ìœ¼ë¡œ Page Mapì„ ê°€ì ¸ì˜¨ë‹¤.
 
     UInt        sIndex;
     UInt       *sMap;
@@ -1039,7 +1039,7 @@ UInt *idf::getPageMap(SInt aFileID,   UInt aIndex,
            (sPageMap->mPageIndex == aIndex) &&
            (sPageMap->mMapIndex == aMapIndex))
         {
-            // PageMapÀ» Ã£Àº °æ¿ì Ã£Àº ³ëµå¸¦ Á¦ÀÏ ¾ÕÀ¸·Î ÀÌµ¿ÇÑ´Ù. (LRU)
+            // PageMapì„ ì°¾ì€ ê²½ìš° ì°¾ì€ ë…¸ë“œë¥¼ ì œì¼ ì•ìœ¼ë¡œ ì´ë™í•œë‹¤. (LRU)
             if(sIndex != 0)
             {
                 if(sPageMap != idf::mPageMapPool)
@@ -1047,7 +1047,7 @@ UInt *idf::getPageMap(SInt aFileID,   UInt aIndex,
                     sPageMap->mPrev->mNext = sPageMap->mNext;
                     sPageMap->mNext->mPrev = sPageMap->mPrev;
 
-                    // ¾Æ·¡ÀÇ ¼ø¼­°¡ º¯°æµÇ¸é ¾ÈµÈ´Ù.
+                    // ì•„ë˜ì˜ ìˆœì„œê°€ ë³€ê²½ë˜ë©´ ì•ˆëœë‹¤.
                     idf::mPageMapPool->mPrev->mNext = sPageMap;
 
                     sPageMap->mPrev = idf::mPageMapPool->mPrev;
@@ -1072,10 +1072,10 @@ UInt *idf::getPageMap(SInt aFileID,   UInt aIndex,
 
     if(sFind == 0)
     {
-        // PageMapÀ» Ã£Áö ¸øÇÑ °æ¿ì
-        // PageMapPoolÀÌ ´Ù Â÷Áö ¾ÊÀº °æ¿ì PageMapPoolCount¸¦ Áõ°¡ÇÑ´Ù.
-        // PageMapÀ» shiftÇÏ¿© °¡Àå ¿À·¡µ¿¾È »ç¿ëÇÏÁö ¾ÊÀº PageMapÀ»
-        // ÃÊ±âÈ­ÇÏ°í »ç¿ëÇÏµµ·Ï ÇÑ´Ù.
+        // PageMapì„ ì°¾ì§€ ëª»í•œ ê²½ìš°
+        // PageMapPoolì´ ë‹¤ ì°¨ì§€ ì•Šì€ ê²½ìš° PageMapPoolCountë¥¼ ì¦ê°€í•œë‹¤.
+        // PageMapì„ shiftí•˜ì—¬ ê°€ì¥ ì˜¤ë˜ë™ì•ˆ ì‚¬ìš©í•˜ì§€ ì•Šì€ PageMapì„
+        // ì´ˆê¸°í™”í•˜ê³  ì‚¬ìš©í•˜ë„ë¡ í•œë‹¤.
         if(idf::mPageMapPoolCount != idf::mMapPoolSize)
         {
             idf::mPageMapPoolCount++;
@@ -1083,7 +1083,7 @@ UInt *idf::getPageMap(SInt aFileID,   UInt aIndex,
 
         idf::mPageMapPool = idf::mPageMapPool->mPrev;
 
-        // PageMapÀÌ Á¸ÀçÇÏÁö ¾ÊÀ¸¸é PageMapÀ» »õ·Î ÇÒ´çÇÑ´Ù.
+        // PageMapì´ ì¡´ì¬í•˜ì§€ ì•Šìœ¼ë©´ PageMapì„ ìƒˆë¡œ í• ë‹¹í•œë‹¤.
         if(mPageMapPool->mMap == NULL)
         {
             (void)idf::alloc((void **)&sMap, idf::mIndEntrySize);
@@ -1103,11 +1103,11 @@ UInt *idf::getPageMap(SInt aFileID,   UInt aIndex,
         idf::mPageMapPool->mMap = sMap;
     }
 
-    // Logical Page°¡ 0ÀÌ¸é ÇÒ´çÇÑ ÆäÀÌÁö°¡ ¾øÀ¸¹Ç·Î 0À» ¹İÈ¯ÇÑ´Ù.
-    // Logical Page°¡ 0ÀÌ ¾Æ´Ï°í Map Pool¿¡ ¾øÀ¸¸é ¿ì¼± Page Map Log Pool¿¡¼­
-    // °Ë»öÇÏ¿© ÇØ´ç Page MapÀÌ ÀÖ´ÂÁö °Ë»çÇÑ´Ù.
-    // Page Map Log Pool¿¡µµ ÇØ´ç Page MapÀÌ ¾øÀ¸¸é µğ½ºÅ©¿¡¼­ Page MapÀ»
-    // ÀĞ¾î¼­ ¹İÈ¯ÇÑ´Ù.
+    // Logical Pageê°€ 0ì´ë©´ í• ë‹¹í•œ í˜ì´ì§€ê°€ ì—†ìœ¼ë¯€ë¡œ 0ì„ ë°˜í™˜í•œë‹¤.
+    // Logical Pageê°€ 0ì´ ì•„ë‹ˆê³  Map Poolì— ì—†ìœ¼ë©´ ìš°ì„  Page Map Log Poolì—ì„œ
+    // ê²€ìƒ‰í•˜ì—¬ í•´ë‹¹ Page Mapì´ ìˆëŠ”ì§€ ê²€ì‚¬í•œë‹¤.
+    // Page Map Log Poolì—ë„ í•´ë‹¹ Page Mapì´ ì—†ìœ¼ë©´ ë””ìŠ¤í¬ì—ì„œ Page Mapì„
+    // ì½ì–´ì„œ ë°˜í™˜í•œë‹¤.
     if((!sFind) && (aLogicalPage != 0))
     {
         idfMapHeader *sMapHeader = NULL;
@@ -1167,11 +1167,11 @@ UInt idf::getPageAddrW(idfMeta *aMeta, UInt aFileID, SInt aPageIndex)
 
     if(aPageIndex < IDF_DIRECT_MAP_SIZE)
     {
-        // cursor°¡ Direct Page Map ³»¿¡ ÀÖ´Â °æ¿ì
-        // Direct Page MapÀÇ aPageIndex¿¡ À§Ä¡ÇÑ Logical Page°¡ Page AddrÀÌ´Ù.
+        // cursorê°€ Direct Page Map ë‚´ì— ìˆëŠ” ê²½ìš°
+        // Direct Page Mapì˜ aPageIndexì— ìœ„ì¹˜í•œ Logical Pageê°€ Page Addrì´ë‹¤.
         sPage = &(aMeta->mDirectPages[aPageIndex]);
 
-        // sMapÀº ÆäÀÌÁö¸¦ ÇÒ´çÇÏ±â À§ÇØ getFreePage¸¦ È£ÃâÇÒ ¶§ »ç¿ëÇÑ´Ù.
+        // sMapì€ í˜ì´ì§€ë¥¼ í• ë‹¹í•˜ê¸° ìœ„í•´ getFreePageë¥¼ í˜¸ì¶œí•  ë•Œ ì‚¬ìš©í•œë‹¤.
         sMap = &(aMeta->mDirectPages[aPageIndex - sPageOffset]);
 
         sMapIndex = 0;
@@ -1179,14 +1179,14 @@ UInt idf::getPageAddrW(idfMeta *aMeta, UInt aFileID, SInt aPageIndex)
     else
     {
         //==========================================================
-        // cursor°¡ Indirect Page Map À§Ä¡¿¡ ÀÖ´Â °æ¿ì
+        // cursorê°€ Indirect Page Map ìœ„ì¹˜ì— ìˆëŠ” ê²½ìš°
         //
-        // sIndIndex  : Indirect MapÀÇ Index
-        // sIndOffset : Indirect MapÀÇ Offset
-        //              (Indirect MapÀ» ÇÒ´çÇÒ ¶§ »ç¿ë)
-        // sMapIndex  : Inidirect Map ³»ÀÇ Index
-        // sMapOffset : Indirect Map ³»ÀÇ Offset
-        //              (Indirect Map ³»¿¡ ÆäÀÌÁö¸¦ ÇÒ´çÇÒ ¶§ »ç¿ë)
+        // sIndIndex  : Indirect Mapì˜ Index
+        // sIndOffset : Indirect Mapì˜ Offset
+        //              (Indirect Mapì„ í• ë‹¹í•  ë•Œ ì‚¬ìš©)
+        // sMapIndex  : Inidirect Map ë‚´ì˜ Index
+        // sMapOffset : Indirect Map ë‚´ì˜ Offset
+        //              (Indirect Map ë‚´ì— í˜ì´ì§€ë¥¼ í• ë‹¹í•  ë•Œ ì‚¬ìš©)
         //
         // ex>
         // Indirect Map 0 [ ... ] <- sIndOffset
@@ -1208,12 +1208,12 @@ UInt idf::getPageAddrW(idfMeta *aMeta, UInt aFileID, SInt aPageIndex)
         sMapIndex  = (aPageIndex - IDF_DIRECT_MAP_SIZE) % idf::mIndMapSize;
         sMapOffset = sMapIndex - (sMapIndex % idf::mPagesPerBlock);
 
-        // Indirect Page MapÀÇ ¹üÀ§¸¦ ¹ş¾î³ª¸é ¿¡·¯¸¦ ¹ß»ıÇÑ´Ù.
+        // Indirect Page Mapì˜ ë²”ìœ„ë¥¼ ë²—ì–´ë‚˜ë©´ ì—ëŸ¬ë¥¼ ë°œìƒí•œë‹¤.
         IDE_TEST_RAISE(sIndIndex >= idf::mIndPageNum, toolarge_error);
 
-        // MetaÀÇ IndirectPage¸¦ Á¶»çÇÏ¿© Á¸ÀçÇÏ´ÂÁö È®ÀÎÇÑ´Ù.
-        // IndirectPage°¡ Á¸ÀçÇÏ¸é Indirect Page MapÀ» ÀĞÀ» ¼ö ÀÖµµ·Ï
-        // getPageMapÀÇ ÀÎÀÚ·Î ³Ñ°ÜÁØ´Ù.
+        // Metaì˜ IndirectPageë¥¼ ì¡°ì‚¬í•˜ì—¬ ì¡´ì¬í•˜ëŠ”ì§€ í™•ì¸í•œë‹¤.
+        // IndirectPageê°€ ì¡´ì¬í•˜ë©´ Indirect Page Mapì„ ì½ì„ ìˆ˜ ìˆë„ë¡
+        // getPageMapì˜ ì¸ìë¡œ ë„˜ê²¨ì¤€ë‹¤.
         if(aMeta->mIndPages[sIndIndex] & IDF_FILE_HOLE_MASK)
         {
             sIndPage = 0;
@@ -1227,16 +1227,16 @@ UInt idf::getPageAddrW(idfMeta *aMeta, UInt aFileID, SInt aPageIndex)
             sIndPage = aMeta->mIndPages[sIndIndex];
         }
 
-        // ÆäÀÌÁö ¸Ê Pool¿¡¼­ ÆäÀÌÁö ¸ÊÀ» ¾ò¾î¿Â´Ù.
-        // aMeta->mIndPages[sIndIndex]°¡ 0ÀÌ¸é
-        // 0À¸·Î Ã¤¿î ¹è¿­À» ¹İÈ¯ÇÑ´Ù.
+        // í˜ì´ì§€ ë§µ Poolì—ì„œ í˜ì´ì§€ ë§µì„ ì–»ì–´ì˜¨ë‹¤.
+        // aMeta->mIndPages[sIndIndex]ê°€ 0ì´ë©´
+        // 0ìœ¼ë¡œ ì±„ìš´ ë°°ì—´ì„ ë°˜í™˜í•œë‹¤.
         sMap = getPageMap(aFileID, sIndIndex, sMapOffset, sIndPage); 
 
         IDE_TEST(sMap == NULL);
 
-        // aMeta->mIndPages[sIndIndex]ÀÌ 0ÀÌ¸é
-        // Indirect Page MapÀÌ Á¸ÀçÇÏÁö ¾Ê´Â °ÍÀÌ¹Ç·Î,
-        // Indirect Page MapÀ» ÀúÀåÇÒ ÆäÀÌÁö¸¦ ¾ò¾î¿Â´Ù.
+        // aMeta->mIndPages[sIndIndex]ì´ 0ì´ë©´
+        // Indirect Page Mapì´ ì¡´ì¬í•˜ì§€ ì•ŠëŠ” ê²ƒì´ë¯€ë¡œ,
+        // Indirect Page Mapì„ ì €ì¥í•  í˜ì´ì§€ë¥¼ ì–»ì–´ì˜¨ë‹¤.
         if(aMeta->mIndPages[sIndIndex] == 0)
         {
             IDE_TEST(idf::getFreePage(&(aMeta->mIndPages[sIndOffset]), aFileID)
@@ -1252,8 +1252,8 @@ UInt idf::getPageAddrW(idfMeta *aMeta, UInt aFileID, SInt aPageIndex)
 
     if(*sPage == 0)
     {
-        // Data¸¦ ÀúÀåÇÒ Logical Address¸¦ ÇÒ´çÇÏÁö ¾Ê¾ÒÀ¸¹Ç·Î
-        // Page¸¦ ÇÒ´çÇØ ÁØ´Ù.
+        // Dataë¥¼ ì €ì¥í•  Logical Addressë¥¼ í• ë‹¹í•˜ì§€ ì•Šì•˜ìœ¼ë¯€ë¡œ
+        // Pageë¥¼ í• ë‹¹í•´ ì¤€ë‹¤.
         IDE_TEST(idf::getFreePage(sMap, aFileID) != IDE_SUCCESS);
 
         aMeta->mNumOfPagesA += idf::mPagesPerBlock;
@@ -1267,7 +1267,7 @@ UInt idf::getPageAddrW(idfMeta *aMeta, UInt aFileID, SInt aPageIndex)
 
         if(aPageIndex >= IDF_DIRECT_MAP_SIZE)
         {
-            // aPageIndex°¡ Indirect Page Map¿¡ ¼ÓÇØ ÀÖ´Â °æ¿ì
+            // aPageIndexê°€ Indirect Page Mapì— ì†í•´ ìˆëŠ” ê²½ìš°
             IDE_TEST(idf::appandPageMapLog(aFileID, sIndIndex, sMapOffset)
                      != IDE_SUCCESS);
         }
@@ -1283,7 +1283,7 @@ UInt idf::getPageAddrW(idfMeta *aMeta, UInt aFileID, SInt aPageIndex)
 
     IDE_EXCEPTION(toolarge_error)
     {
-        // ÆÄÀÏÀÇ Å©±â°¡ ³Ê¹« Å« °æ¿ì File Too Large error¸¦ ¹ß»ıÇÑ´Ù.
+        // íŒŒì¼ì˜ í¬ê¸°ê°€ ë„ˆë¬´ í° ê²½ìš° File Too Large errorë¥¼ ë°œìƒí•œë‹¤.
         errno = EFBIG; // File too large
     }
 
@@ -1303,11 +1303,11 @@ UInt idf::getPageAddrR(idfMeta *aMeta, UInt aFileID, SInt aPageIndex)
 
     if(aPageIndex < IDF_DIRECT_MAP_SIZE)
     {
-        // cursor°¡ Direct Page Map ³»¿¡ ÀÖ´Â °æ¿ì
+        // cursorê°€ Direct Page Map ë‚´ì— ìˆëŠ” ê²½ìš°
         sLogicalPage = aMeta->mDirectPages[aPageIndex];
 
-        // sLogicalPage°¡ 0ÀÌ°Å³ª IDF_FILE_HOLE_MASK¿Í & ¿¬»êÀ» ÇßÀ»¶§
-        // 0ÀÌ ¾Æ´Ï¸é File HoleÀÌ´Ù.
+        // sLogicalPageê°€ 0ì´ê±°ë‚˜ IDF_FILE_HOLE_MASKì™€ & ì—°ì‚°ì„ í–ˆì„ë•Œ
+        // 0ì´ ì•„ë‹ˆë©´ File Holeì´ë‹¤.
         if(sLogicalPage & IDF_FILE_HOLE_MASK)
         {
             // File Hole
@@ -1316,24 +1316,24 @@ UInt idf::getPageAddrR(idfMeta *aMeta, UInt aFileID, SInt aPageIndex)
     }
     else
     {
-        // cursor°¡ Indirect Page Map À§Ä¡¿¡ ÀÖ´Â °æ¿ì
+        // cursorê°€ Indirect Page Map ìœ„ì¹˜ì— ìˆëŠ” ê²½ìš°
         sIndIndex  = (aPageIndex - IDF_DIRECT_MAP_SIZE) / idf::mIndMapSize;
         sMapIndex  = (aPageIndex - IDF_DIRECT_MAP_SIZE) % idf::mIndMapSize;
         sMapOffset = sMapIndex - (sMapIndex % idf::mPagesPerBlock);
 
         IDE_TEST(idf::mIndPageNum < sIndIndex);
 
-        // MetaÀÇ IndirectPage¸¦ Á¶»çÇÏ¿© Á¸ÀçÇÏ´ÂÁö È®ÀÎÇÑ´Ù.
+        // Metaì˜ IndirectPageë¥¼ ì¡°ì‚¬í•˜ì—¬ ì¡´ì¬í•˜ëŠ”ì§€ í™•ì¸í•œë‹¤.
         sIndPage = aMeta->mIndPages[sIndIndex];
 
-        // Á¸ÀçÇÏÁö ¾Ê°Å³ª File HoleÀÎ °æ¿ì 0À» ¹İÈ¯ÇÑ´Ù.
+        // ì¡´ì¬í•˜ì§€ ì•Šê±°ë‚˜ File Holeì¸ ê²½ìš° 0ì„ ë°˜í™˜í•œë‹¤.
         if((sIndPage == 0) || (sIndPage & IDF_FILE_HOLE_MASK))
         {
             sLogicalPage = 0;
         }
         else
         {
-            // Indirect Page°¡ 0ÀÌ ¾Æ´Ñ °æ¿ì page mapÀ» ¾ò¾î¿Â´Ù.
+            // Indirect Pageê°€ 0ì´ ì•„ë‹Œ ê²½ìš° page mapì„ ì–»ì–´ì˜¨ë‹¤.
             sMap = getPageMap(aFileID,
                               sIndIndex,
                               sMapOffset,
@@ -1668,7 +1668,7 @@ IDE_RC idf::validateMaster()
 IDE_RC idf::initializeCore(const SChar * aFileName)
 {
     //=============================================================
-    // aFileNameÀÌ NULLÀÌ ¾Æ´Ï¸é idfCoreÀÇ ÇÔ¼ö¸¦ »ç¿ëÇÏµµ·Ï ÇÑ´Ù.
+    // aFileNameì´ NULLì´ ì•„ë‹ˆë©´ idfCoreì˜ í•¨ìˆ˜ë¥¼ ì‚¬ìš©í•˜ë„ë¡ í•œë‹¤.
     //=============================================================
     (void)idf::initWithIdfCore();
 
@@ -1687,7 +1687,7 @@ IDE_RC idf::initializeCore(const SChar * aFileName)
     (void)idf::alloc((void **)&idf::mLogHeader, ID_SIZEOF(idfLogHeader));
 
     //======================
-    // Mutex¸¦ ÃÊ±âÈ­ ÇÑ´Ù.
+    // Mutexë¥¼ ì´ˆê¸°í™” í•œë‹¤.
     //======================
     (void)idf::initMutex();
 
@@ -1701,9 +1701,9 @@ IDE_RC idf::initializeCore(const SChar * aFileName)
 }
 
 //====================================================================
-// idf Å¬·¡½º¸¦ ÃÊ±âÈ­ ÇÑ´Ù. initializeStatic()°ú ´Ù¸¥ Á¡Àº ÀÌ ÇÔ¼ö´Â
-// Utility¿¡¼­ ÃÖÃÊ·Î ÆÄÀÏÀ» »ı¼ºÇÏ°íÀÚ ÇÒ ¶§ »ç¿ëÇÑ´Ù.
-// ±× ÀÌ¿Ü¿¡´Â ÀÌ ÇÔ¼ö¸¦ »ç¿ëÇÏÁö ¾Ê´Â´Ù.
+// idf í´ë˜ìŠ¤ë¥¼ ì´ˆê¸°í™” í•œë‹¤. initializeStatic()ê³¼ ë‹¤ë¥¸ ì ì€ ì´ í•¨ìˆ˜ëŠ”
+// Utilityì—ì„œ ìµœì´ˆë¡œ íŒŒì¼ì„ ìƒì„±í•˜ê³ ì í•  ë•Œ ì‚¬ìš©í•œë‹¤.
+// ê·¸ ì´ì™¸ì—ëŠ” ì´ í•¨ìˆ˜ë¥¼ ì‚¬ìš©í•˜ì§€ ì•ŠëŠ”ë‹¤.
 //====================================================================
 IDE_RC idf::initializeStatic2(const SChar * aFileName, idfMaster *aMaster)
 {
@@ -1720,7 +1720,7 @@ IDE_RC idf::initializeStatic2(const SChar * aFileName, idfMaster *aMaster)
     if(aFileName == NULL)
     {
         //======================================================
-        // aFileNameÀÌ NULLÀÌ¸é idlOSÀÇ ÇÔ¼ö¸¦ »ç¿ëÇÏµµ·Ï ÇÑ´Ù.
+        // aFileNameì´ NULLì´ë©´ idlOSì˜ í•¨ìˆ˜ë¥¼ ì‚¬ìš©í•˜ë„ë¡ í•œë‹¤.
         //======================================================
         (void)idf::initWithIdlOS();
     }
@@ -1728,9 +1728,9 @@ IDE_RC idf::initializeStatic2(const SChar * aFileName, idfMaster *aMaster)
     {
         IDE_TEST(idf::initializeCore(aFileName) != IDE_SUCCESS);
 
-        // aFileNameÀÌ NULLÀÌ ¾Æ´Ï¸é idf::initializeCore()¸¦ È£ÃâÇÑ ÈÄ
-        // mFileNameÀÌ NULLÀÏ ¼ö ¾ø´Ù.
-        // Klocwork error¸¦ ¹æÁöÇÏ±â À§ÇØ ³ÖÀ½
+        // aFileNameì´ NULLì´ ì•„ë‹ˆë©´ idf::initializeCore()ë¥¼ í˜¸ì¶œí•œ í›„
+        // mFileNameì´ NULLì¼ ìˆ˜ ì—†ë‹¤.
+        // Klocwork errorë¥¼ ë°©ì§€í•˜ê¸° ìœ„í•´ ë„£ìŒ
         IDE_TEST(idf::mFileName == NULL);
 
         IDE_TEST((idf::mFd = idlOS::open(idf::mFileName,
@@ -1738,8 +1738,8 @@ IDE_RC idf::initializeStatic2(const SChar * aFileName, idfMaster *aMaster)
                         S_IRUSR | S_IWUSR))
                  == PDL_INVALID_HANDLE);
 
-        // ÆÄÀÏÀ» ÃÊ±âÈ­ÇÏÁö ¾ÊÀ¸¸é ´Ù¸¥ ÀÛ¾÷ÀÌ ºÒ°¡´É ÇÏ´Ù.
-        // »ç¿ëÀÚ°¡ ÀÔ·ÂÇÑ Master¸¦ °¡Áö°í Master ÆäÀÌÁö¸¦ ÃÊ±âÈ­ ÇÑ´Ù.
+        // íŒŒì¼ì„ ì´ˆê¸°í™”í•˜ì§€ ì•Šìœ¼ë©´ ë‹¤ë¥¸ ì‘ì—…ì´ ë¶ˆê°€ëŠ¥ í•˜ë‹¤.
+        // ì‚¬ìš©ìê°€ ì…ë ¥í•œ Masterë¥¼ ê°€ì§€ê³  Master í˜ì´ì§€ë¥¼ ì´ˆê¸°í™” í•œë‹¤.
         if(aMaster != NULL)
         {
             idlOS::memcpy(&idf::mMaster, 
@@ -1747,13 +1747,13 @@ IDE_RC idf::initializeStatic2(const SChar * aFileName, idfMaster *aMaster)
                           idf::mMasterSize);
         }
 
-        // Master ÃÊ±âÈ­
+        // Master ì´ˆê¸°í™”
         (void)idf::initMasterPage(aMaster);
 
         //==================================================================
-        // File SystemÀÇ Mode°¡ 1ÀÌ¸é ÆÄÀÏÀ» diskÀÇ Å©±â¸¸Å­ ¹Ì¸® ÇÒ´çÇÑ´Ù.
-        // File SystemÀÇ È¯°æ ¼³Á¤Àº initMasterPage()¿¡¼­ ÇÏ¹Ç·Î ÀÌ ÇÔ¼ö
-        // ´ÙÀ½¿¡ disk °ø°£À» ¸ğµÎ ÇÒ´çÇÑ´Ù.
+        // File Systemì˜ Modeê°€ 1ì´ë©´ íŒŒì¼ì„ diskì˜ í¬ê¸°ë§Œí¼ ë¯¸ë¦¬ í• ë‹¹í•œë‹¤.
+        // File Systemì˜ í™˜ê²½ ì„¤ì •ì€ initMasterPage()ì—ì„œ í•˜ë¯€ë¡œ ì´ í•¨ìˆ˜
+        // ë‹¤ìŒì— disk ê³µê°„ì„ ëª¨ë‘ í• ë‹¹í•œë‹¤.
         //==================================================================
         if(idf::mMaster.mFSMode == 1)
         {
@@ -1777,15 +1777,15 @@ IDE_RC idf::initializeStatic2(const SChar * aFileName, idfMaster *aMaster)
 
         (void)idf::initBlockMap();
 
-        // Meta ÃÊ±âÈ­
+        // Meta ì´ˆê¸°í™”
         IDE_TEST(idf::initMetaList2() != IDE_SUCCESS);
 
-        // Fd List ÃÊ±âÈ­
+        // Fd List ì´ˆê¸°í™”
         (void)idf::initFdList();
 
         if(idf::mMaster.mLogMode == IDF_LOG_MODE)
         {
-            // ·Î±×ÆÄÀÏÀ» »ı¼ºÇÑ´Ù.
+            // ë¡œê·¸íŒŒì¼ì„ ìƒì„±í•œë‹¤.
             idf::mLogFd = idlOS::open(idf::mLogFileName,
                                       O_RDWR | O_CREAT | O_TRUNC | O_BINARY,
                                       S_IRUSR | S_IWUSR);
@@ -1865,7 +1865,7 @@ IDE_RC idf::initializeStatic(const SChar * aFileName)
     if(aFileName == NULL)
     {
         //======================================================
-        // aFileNameÀÌ NULLÀÌ¸é idlOSÀÇ ÇÔ¼ö¸¦ »ç¿ëÇÏµµ·Ï ÇÑ´Ù.
+        // aFileNameì´ NULLì´ë©´ idlOSì˜ í•¨ìˆ˜ë¥¼ ì‚¬ìš©í•˜ë„ë¡ í•œë‹¤.
         //======================================================
         (void)idf::initWithIdlOS();
     }
@@ -1873,13 +1873,13 @@ IDE_RC idf::initializeStatic(const SChar * aFileName)
     {
         IDE_TEST(idf::initializeCore(aFileName) != IDE_SUCCESS);
 
-        // aFileNameÀÌ NULLÀÌ ¾Æ´Ï¸é idf::initializeCore()¸¦ È£ÃâÇÑ ÈÄ
-        // mFileNameÀÌ NULLÀÏ ¼ö ¾ø´Ù.
-        // Klocwork error¸¦ ¹æÁöÇÏ±â À§ÇØ ³ÖÀ½
+        // aFileNameì´ NULLì´ ì•„ë‹ˆë©´ idf::initializeCore()ë¥¼ í˜¸ì¶œí•œ í›„
+        // mFileNameì´ NULLì¼ ìˆ˜ ì—†ë‹¤.
+        // Klocwork errorë¥¼ ë°©ì§€í•˜ê¸° ìœ„í•´ ë„£ìŒ
         IDE_TEST(idf::mFileName == NULL);
 
-        // serverStart() ÇÔ¼ö¿¡¼­ initializeStatic() ÇÔ¼ö¸¦ È£ÃâÇÑ °æ¿ì
-        // ÆÄÀÏÀÌ ¾øÀ¸¸é ±âº» ¼³Á¤°ªÀ» °¡Áö°í ÆÄÀÏÀ» »ı¼ºÇÑ´Ù.
+        // serverStart() í•¨ìˆ˜ì—ì„œ initializeStatic() í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•œ ê²½ìš°
+        // íŒŒì¼ì´ ì—†ìœ¼ë©´ ê¸°ë³¸ ì„¤ì •ê°’ì„ ê°€ì§€ê³  íŒŒì¼ì„ ìƒì„±í•œë‹¤.
         if((idf::mFd = idlOS::open(idf::mFileName, O_RDWR | O_BINARY))
            == PDL_INVALID_HANDLE)
         {
@@ -1899,24 +1899,24 @@ IDE_RC idf::initializeStatic(const SChar * aFileName)
                                   4) != 4);
 
             //===================================================
-            // ÆÄÀÏÀ» ÃÊ±âÈ­ÇÏÁö ¾ÊÀ¸¸é ´Ù¸¥ ÀÛ¾÷ÀÌ ºÒ°¡´É ÇÏ´Ù.
+            // íŒŒì¼ì„ ì´ˆê¸°í™”í•˜ì§€ ì•Šìœ¼ë©´ ë‹¤ë¥¸ ì‘ì—…ì´ ë¶ˆê°€ëŠ¥ í•˜ë‹¤.
             //===================================================
 
-            // Master ÃÊ±âÈ­
+            // Master ì´ˆê¸°í™”
             (void)idf::initMasterPage(NULL);
 
-            // Block Map ÃÊ±âÈ­
+            // Block Map ì´ˆê¸°í™”
             (void)idf::initBlockMap();
 
-            // Meta ÃÊ±âÈ­
+            // Meta ì´ˆê¸°í™”
             IDE_TEST(idf::initMetaList2() != IDE_SUCCESS);
 
-            // Fd List ÃÊ±âÈ­
+            // Fd List ì´ˆê¸°í™”
             (void)idf::initFdList();
 
             if(idf::mMaster.mLogMode == IDF_LOG_MODE)
             {
-                // ·Î±×ÆÄÀÏÀ» »ı¼ºÇÑ´Ù.
+                // ë¡œê·¸íŒŒì¼ì„ ìƒì„±í•œë‹¤.
                 idf::mLogFd = idlOS::open(idf::mLogFileName,
                                           O_RDWR | O_CREAT | O_TRUNC | O_BINARY,
                                           S_IRUSR | S_IWUSR);
@@ -1927,10 +1927,10 @@ IDE_RC idf::initializeStatic(const SChar * aFileName)
         else
         {
             //================================================================
-            // ÆÄÀÏÀÇ Master, Meta ÆäÀÌÁö¸¦ ÀĞ¾î¼­ ÆÄÀÏ ½Ã½ºÅÛÀ» ÃÊ±âÈ­ ÇÑ´Ù.
+            // íŒŒì¼ì˜ Master, Meta í˜ì´ì§€ë¥¼ ì½ì–´ì„œ íŒŒì¼ ì‹œìŠ¤í…œì„ ì´ˆê¸°í™” í•œë‹¤.
             //================================================================
 
-            // Master ÆäÀÌÁö¸¦ ÀĞ´Â´Ù.
+            // Master í˜ì´ì§€ë¥¼ ì½ëŠ”ë‹¤.
             IDE_TEST(idf::lseekFs(idf::mFd, 
                                   0, 
                                   SEEK_SET) == -1);
@@ -1965,14 +1965,14 @@ IDE_RC idf::initializeStatic(const SChar * aFileName)
 
             if(idf::mLogMode == IDF_LOG_MODE)
             {
-                // mFilename.log°¡ Á¸ÀçÇÏ´ÂÁö È®ÀÎÇÑ´Ù. 
+                // mFilename.logê°€ ì¡´ì¬í•˜ëŠ”ì§€ í™•ì¸í•œë‹¤. 
                 if(idlOS::access(idf::mLogFileName, O_RDWR) == 0)
                 {
                     idf::mLogFd = idlOS::open(idf::mLogFileName, O_RDWR);
 
                     IDE_TEST(idf::mLogFd == PDL_INVALID_HANDLE);
 
-                    // ·Î±× ÆÄÀÏÀÌ Á¸ÀçÇÏ¸é recovery¸¦ ¼öÇàÇÑ´Ù.
+                    // ë¡œê·¸ íŒŒì¼ì´ ì¡´ì¬í•˜ë©´ recoveryë¥¼ ìˆ˜í–‰í•œë‹¤.
                     IDE_TEST(idf::doRecovery() != IDE_SUCCESS);
 
                     IDE_TEST(idf::lseekFs(idf::mLogFd, 
@@ -1981,7 +1981,7 @@ IDE_RC idf::initializeStatic(const SChar * aFileName)
                 }
                 else
                 {
-                    // ·Î±× ÆÄÀÏÀÌ Á¸ÀçÇÏÁö ¾ÊÀ¸¸é »õ·Î »ı¼ºÇÑ´Ù.
+                    // ë¡œê·¸ íŒŒì¼ì´ ì¡´ì¬í•˜ì§€ ì•Šìœ¼ë©´ ìƒˆë¡œ ìƒì„±í•œë‹¤.
                     idf::mLogFd = idlOS::open(idf::mLogFileName,
                             O_RDWR | O_CREAT | O_TRUNC | O_BINARY,
                             S_IRUSR | S_IWUSR);
@@ -2007,11 +2007,11 @@ IDE_RC idf::initializeStatic(const SChar * aFileName)
             IDE_TEST(idf::initMetaList() != IDE_SUCCESS);
 
             //===========================================================
-            // MasterÀÇ Signature°¡ ¿Ã¹Ù¸¥Áö È®ÀÎÇÑ´Ù.
-            // Recovery °úÁ¤¿¡¼­ Master¸¦ ¼öÁ¤ÇÒ ¼ö ÀÖ±â ¶§¹®¿¡
-            // Recovery¸¦ ¼öÇàÇÑ ÈÄ È£ÃâÇÑ´Ù.
-            // Recovery ÈÄ¿¡µµ MasterÀÇ Signature°¡ ¿Ã¹Ù¸£Áö ¾ÊÀ¸¸é
-            // ÆÄÀÏ ½Ã½ºÅÛÀÌ ±úÁø °æ¿ìÀÌ¹Ç·Î ´õÀÌ»óÀÇ µ¿ÀÛÀº ¹«ÀÇ¹ÌÇÏ´Ù.
+            // Masterì˜ Signatureê°€ ì˜¬ë°”ë¥¸ì§€ í™•ì¸í•œë‹¤.
+            // Recovery ê³¼ì •ì—ì„œ Masterë¥¼ ìˆ˜ì •í•  ìˆ˜ ìˆê¸° ë•Œë¬¸ì—
+            // Recoveryë¥¼ ìˆ˜í–‰í•œ í›„ í˜¸ì¶œí•œë‹¤.
+            // Recovery í›„ì—ë„ Masterì˜ Signatureê°€ ì˜¬ë°”ë¥´ì§€ ì•Šìœ¼ë©´
+            // íŒŒì¼ ì‹œìŠ¤í…œì´ ê¹¨ì§„ ê²½ìš°ì´ë¯€ë¡œ ë”ì´ìƒì˜ ë™ì‘ì€ ë¬´ì˜ë¯¸í•˜ë‹¤.
             //===========================================================
             if(idf::mMaster.mSignature != idlOS::hton(IDF_SYSTEM_SIGN))
             {
@@ -2098,13 +2098,13 @@ IDE_RC idf::finalizeStatic()
     }
 
     //===================================================================
-    // finalize µµÁß ´Ù¸¥ ¾²·¹µå°¡ ÀÛ¾÷À» ¼öÇàÇÏ·Á ÇÒ ¼ö ÀÖÀ¸¹Ç·Î Meta¿¡
-    // ¶ôÀ» Àâ´Â´Ù.
-    // ¹°·Ğ, finalize µµÁß¿¡ ´Ù¸¥ ¾²·¹µå°¡ µ¿ÀÛÇØ¼­´Â ¾ÈµÈ´Ù.
+    // finalize ë„ì¤‘ ë‹¤ë¥¸ ì“°ë ˆë“œê°€ ì‘ì—…ì„ ìˆ˜í–‰í•˜ë ¤ í•  ìˆ˜ ìˆìœ¼ë¯€ë¡œ Metaì—
+    // ë½ì„ ì¡ëŠ”ë‹¤.
+    // ë¬¼ë¡ , finalize ë„ì¤‘ì— ë‹¤ë¥¸ ì“°ë ˆë“œê°€ ë™ì‘í•´ì„œëŠ” ì•ˆëœë‹¤.
     //===================================================================
     (void)idf::lock();
 
-    // ·Î±×¸¦ ³»¸° ÈÄ ·Î±×ÀÇ ³»¿ëÀ» ¸ğµÎ µğ½ºÅ©¿¡ ¹İ¿µÇÑ´Ù.
+    // ë¡œê·¸ë¥¼ ë‚´ë¦° í›„ ë¡œê·¸ì˜ ë‚´ìš©ì„ ëª¨ë‘ ë””ìŠ¤í¬ì— ë°˜ì˜í•œë‹¤.
     if(idf::mTransCount != 0)
     {
         idf::masterLog(1);
@@ -2115,7 +2115,7 @@ IDE_RC idf::finalizeStatic()
     (void)idf::finalFiles();
 
     //==============================
-    // ÇÒ´çÇÑ ÀÚ¿øÀ» ¸ğµÎ ÇØÁ¦ÇÑ´Ù.
+    // í• ë‹¹í•œ ìì›ì„ ëª¨ë‘ í•´ì œí•œë‹¤.
     //==============================
 
     if(idf::mEmptyBuf != NULL)
@@ -2132,7 +2132,7 @@ IDE_RC idf::finalizeStatic()
         idf::mLogHeader = NULL;
     }
 
-    // Block Map ÇØÁ¦
+    // Block Map í•´ì œ
     if(idf::mBlockMap != NULL)
     {
         (void)idf::free(idf::mBlockMap);
@@ -2154,7 +2154,7 @@ IDE_RC idf::finalizeStatic()
         idf::mCRCTable = NULL;
     }
 
-    // Page Map ÇØÁ¦
+    // Page Map í•´ì œ
     sMap = idf::mPageMapPool;
     sTemp = sMap->mNext;
 
@@ -2179,7 +2179,7 @@ IDE_RC idf::finalizeStatic()
         sTemp = sMap->mNext;
     }
 
-    // Fd List ÇØÁ¦
+    // Fd List í•´ì œ
     if(idf::mFdList != NULL)
     {
         (void)idf::free(idf::mFdList);
@@ -2187,7 +2187,7 @@ IDE_RC idf::finalizeStatic()
         idf::mFdList = NULL;
     }
 
-    // Meta List ÇØÁ¦
+    // Meta List í•´ì œ
     if(idf::mMetaList != NULL)
     {
         for(sIndex = 0; sIndex < idf::mMaxFileCount; sIndex++)
@@ -2246,7 +2246,7 @@ void idf::finalMutex()
 }
 
 //======================================================================
-// idlOS::open(conat SChar*, SInt, SInt, SInt) ÇÔ¼ö¸¦ È£ÃâÇÏ±â À§ÇÑ API
+// idlOS::open(conat SChar*, SInt, SInt, SInt) í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•˜ê¸° ìœ„í•œ API
 //======================================================================
 PDL_HANDLE idf::idlopen(const SChar * pathname, SInt flag, ...)
 {
@@ -2274,8 +2274,8 @@ void idf::unlock()
 }
 
 //===========================================
-// »ç¿ëÀ» ¿Ï·áÇÑ File Descriptor¸¦ ¹İÈ¯ÇÑ´Ù.
-// ¹İÈ¯ÇÑ File Descriptor´Â Àç»ç¿ëÇÑ´Ù.
+// ì‚¬ìš©ì„ ì™„ë£Œí•œ File Descriptorë¥¼ ë°˜í™˜í•œë‹¤.
+// ë°˜í™˜í•œ File DescriptorëŠ” ì¬ì‚¬ìš©í•œë‹¤.
 //===========================================
 IDE_RC idf::freeFd(SInt aFd)
 {
@@ -2291,8 +2291,8 @@ IDE_RC idf::freeFd(SInt aFd)
 }
 
 //============================================================================
-// »ç¿ëÀ» ¿Ï·áÇÑ Meta¸¦ ¹İÈ¯ÇÑ´Ù.
-// ¹İÈ¯ÇÑ MetaÀÇ FileID¸¦ Àç»ç¿ë ÇÏ¹Ç·Î FileID¿Í °ü·ÃµÈ ÀÚ¿øÀ» ¸ğµÎ ÇØÁ¦ÇÑ´Ù.
+// ì‚¬ìš©ì„ ì™„ë£Œí•œ Metaë¥¼ ë°˜í™˜í•œë‹¤.
+// ë°˜í™˜í•œ Metaì˜ FileIDë¥¼ ì¬ì‚¬ìš© í•˜ë¯€ë¡œ FileIDì™€ ê´€ë ¨ëœ ìì›ì„ ëª¨ë‘ í•´ì œí•œë‹¤.
 //============================================================================
 IDE_RC idf::freeMeta(SInt aFileID)
 {
@@ -2307,12 +2307,12 @@ IDE_RC idf::freeMeta(SInt aFileID)
     IDE_ASSERT(sMeta != NULL);
 
     //============================================================
-    // ¾ÆÁ÷ ÇØ´ç ÆÄÀÏÀ» ¿­°í ÀÖ´Â File Descriptor°¡ ÀÖ´Ù¸é
-    // »ç¿ë ºÒ°¡´É ÇÏµµ·Ï mIsUsed¸¦ IDF_FD_INVALID(2)·Î ¼³Á¤ÇÑ´Ù.
-    // * mIsUsed °ªÀÇ ÀÇ¹Ì
-    //   IDF_FD_UNUSED  (0) : »ç¿ëÇÏ°í ÀÖÁö ¾ÊÀ½,
-    //   IDF_FD_USED    (1) : »ç¿ëÇÏ°í ÀÖÀ½,
-    //   IDF_FD_INVALID (2) : »ç¿ëÇÏ°í ÀÖÁö¸¸ À¯È¿ÇÏÁö ¾ÊÀ½
+    // ì•„ì§ í•´ë‹¹ íŒŒì¼ì„ ì—´ê³  ìˆëŠ” File Descriptorê°€ ìˆë‹¤ë©´
+    // ì‚¬ìš© ë¶ˆê°€ëŠ¥ í•˜ë„ë¡ mIsUsedë¥¼ IDF_FD_INVALID(2)ë¡œ ì„¤ì •í•œë‹¤.
+    // * mIsUsed ê°’ì˜ ì˜ë¯¸
+    //   IDF_FD_UNUSED  (0) : ì‚¬ìš©í•˜ê³  ìˆì§€ ì•ŠìŒ,
+    //   IDF_FD_USED    (1) : ì‚¬ìš©í•˜ê³  ìˆìŒ,
+    //   IDF_FD_INVALID (2) : ì‚¬ìš©í•˜ê³  ìˆì§€ë§Œ ìœ íš¨í•˜ì§€ ì•ŠìŒ
     //============================================================
     if(sMetaEntry->mFileOpenCount != 0)
     {
@@ -2337,11 +2337,11 @@ IDE_RC idf::freeMeta(SInt aFileID)
     idf::mMaster.mNumOfFiles--;
 
     //==========================================================================
-    // Page Map Pool¿¡¼­ aFileID¿¡ ÇØ´çÇÏ´Â Page MapÀ» »èÁ¦ÇÑ´Ù.
-    // Page Map Pool¿¡¼­ Page MapÀ» »èÁ¦ÇÑ µÚ ¸®½ºÆ®ÀÇ °¡Àå ¸¶Áö¸·À¸·Î ÀÌµ¿ÇÑ´Ù.
-    // Page Map¿¡ ´Ş·ÁÀÖ´Â mMapÀÇ ¸Ş¸ğ¸®´Â ÀÌ°÷¿¡¼­ ÇØÁ¦ÇÏÁö ¾Ê´Â´Ù.
-    // Page Map¿¡ ´Ş·ÁÀÖ´Â mMapÀº finalizeStaticÀ» È£ÃâÇÏ¸é ±×°÷¿¡¼­
-    // Page Map PoolÀÇ ¸Ş¸ğ¸®¸¦ ÇØÁ¦ÇÏ¸é¼­ mMapÀÇ ¸Ş¸ğ¸®µµ ÇÔ²² ÇØÁ¦ÇÑ´Ù.
+    // Page Map Poolì—ì„œ aFileIDì— í•´ë‹¹í•˜ëŠ” Page Mapì„ ì‚­ì œí•œë‹¤.
+    // Page Map Poolì—ì„œ Page Mapì„ ì‚­ì œí•œ ë’¤ ë¦¬ìŠ¤íŠ¸ì˜ ê°€ì¥ ë§ˆì§€ë§‰ìœ¼ë¡œ ì´ë™í•œë‹¤.
+    // Page Mapì— ë‹¬ë ¤ìˆëŠ” mMapì˜ ë©”ëª¨ë¦¬ëŠ” ì´ê³³ì—ì„œ í•´ì œí•˜ì§€ ì•ŠëŠ”ë‹¤.
+    // Page Mapì— ë‹¬ë ¤ìˆëŠ” mMapì€ finalizeStaticì„ í˜¸ì¶œí•˜ë©´ ê·¸ê³³ì—ì„œ
+    // Page Map Poolì˜ ë©”ëª¨ë¦¬ë¥¼ í•´ì œí•˜ë©´ì„œ mMapì˜ ë©”ëª¨ë¦¬ë„ í•¨ê»˜ í•´ì œí•œë‹¤.
     //==========================================================================
     if(idf::mPageMapPoolCount > 0)
     {
@@ -2355,15 +2355,15 @@ IDE_RC idf::freeMeta(SInt aFileID)
             {
                 if(sPageMap == idf::mPageMapPool)
                 {
-                    // Page Map PoolÀÌ ¸ğµÎ »ç¿ëÁßÀÌ°í °¡Àå ¾ÕÀÇ Page Map¿¡
-                    // ÇØ´çÇÏ´Â Meta¸¦ »èÁ¦ÇÑ °æ¿ì ´Ü¼øÈ÷ ¸®½ºÆ®¸¦ shiftÇÑ´Ù.
+                    // Page Map Poolì´ ëª¨ë‘ ì‚¬ìš©ì¤‘ì´ê³  ê°€ì¥ ì•ì˜ Page Mapì—
+                    // í•´ë‹¹í•˜ëŠ” Metaë¥¼ ì‚­ì œí•œ ê²½ìš° ë‹¨ìˆœíˆ ë¦¬ìŠ¤íŠ¸ë¥¼ shiftí•œë‹¤.
                     sPageMap->mFileID = IDF_INVALID_FILE_ID;
 
                     idf::mPageMapPool = idf::mPageMapPool->mNext;
                 }
                 else
                 {
-                    // »èÁ¦ÇÑ MetaÀÇ PageMapÀ» Á¦ÀÏ ¸¶Áö¸· À§Ä¡·Î ÀÌµ¿ÇÑ´Ù.
+                    // ì‚­ì œí•œ Metaì˜ PageMapì„ ì œì¼ ë§ˆì§€ë§‰ ìœ„ì¹˜ë¡œ ì´ë™í•œë‹¤.
                     sPageMap->mNext->mPrev = sPageMap->mPrev;
                     sPageMap->mPrev->mNext = sPageMap->mNext;
 
@@ -2379,7 +2379,7 @@ IDE_RC idf::freeMeta(SInt aFileID)
 
                 idf::mPageMapPoolCount--;
 
-                // »ç¿ëÁßÀÎ PageMapÀ» ¸ğµÎ °Ë»çÇßÀ¸¸é Á¾·áÇÑ´Ù.
+                // ì‚¬ìš©ì¤‘ì¸ PageMapì„ ëª¨ë‘ ê²€ì‚¬í–ˆìœ¼ë©´ ì¢…ë£Œí•œë‹¤.
                 if(idf::mPageMapPoolCount == 0)
                 {
                     break;
@@ -2420,16 +2420,16 @@ IDE_RC idf::isDir(const SChar *aName)
 
     sNumOfFiles = idf::mMaster.mNumOfFiles;
 
-    // ÀÌ ÇÔ¼ö¸¦ È£ÃâÇÏ±â Àü¿¡ aNameÀÌ NULLÀÎÁö È®ÀÎÇÏ¹Ç·Î ÀÌ ÇÔ¼ö¿¡¼­ ´Ù½Ã
-    // aNameÀÌ NULLÀÎÁö È®ÀÎÇÏÁö ¾Ê´Â´Ù.
+    // ì´ í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•˜ê¸° ì „ì— aNameì´ NULLì¸ì§€ í™•ì¸í•˜ë¯€ë¡œ ì´ í•¨ìˆ˜ì—ì„œ ë‹¤ì‹œ
+    // aNameì´ NULLì¸ì§€ í™•ì¸í•˜ì§€ ì•ŠëŠ”ë‹¤.
     assert(aName != NULL);
 
     sNameLen = idlOS::strlen(aName);
 
-    // ÀüÃ¼ Meta°³¼ö ¸¸Å­ loop¸¦ ¼öÇàÇÑ´Ù.
+    // ì „ì²´ Metaê°œìˆ˜ ë§Œí¼ loopë¥¼ ìˆ˜í–‰í•œë‹¤.
     for(sIndex = 0; sIndex < idf::mMaxFileCount; sIndex++)
     {
-        // Meta°¡ NULLÀÌ ¾Æ´Ï¸é ÀÌ¸§À» °Ë»çÇÑ´Ù.
+        // Metaê°€ NULLì´ ì•„ë‹ˆë©´ ì´ë¦„ì„ ê²€ì‚¬í•œë‹¤.
         if(idf::mMetaList[sIndex].mMeta == NULL)
         {
             continue;
@@ -2437,18 +2437,18 @@ IDE_RC idf::isDir(const SChar *aName)
 
         sMeta = idf::mMetaList[sIndex].mMeta;
 
-        // ÆÄÀÏ ½Ã½ºÅÛ³»¿¡ µğ·ºÅä¸®°¡ º°µµ·Î Á¸ÀçÇÏÁö ¾ÊÀ¸¹Ç·Î
-        // aNameÀÌ Meta¿¡ ÀúÀåÇÑ ÆÄÀÏ ÀÌ¸§ÀÇ substringÀÌ¸é 
-        // aNameÀ» µğ·ºÅä¸®·Î °£ÁÖÇÑ´Ù.
+        // íŒŒì¼ ì‹œìŠ¤í…œë‚´ì— ë””ë ‰í† ë¦¬ê°€ ë³„ë„ë¡œ ì¡´ì¬í•˜ì§€ ì•Šìœ¼ë¯€ë¡œ
+        // aNameì´ Metaì— ì €ì¥í•œ íŒŒì¼ ì´ë¦„ì˜ substringì´ë©´ 
+        // aNameì„ ë””ë ‰í† ë¦¬ë¡œ ê°„ì£¼í•œë‹¤.
         if((idlOS::strncmp(sMeta->mFileName, aName, sNameLen) == 0) &&
            (idlOS::strlen(sMeta->mFileName) > sNameLen))
         {
-            // aNameÀÌ µğ·ºÅä¸®ÀÎ °ÍÀ» È®ÀÎÇÏ¿´´Ù¸é ¹Ù·Î loop¸¦ Á¾·áÇÑ´Ù.
+            // aNameì´ ë””ë ‰í† ë¦¬ì¸ ê²ƒì„ í™•ì¸í•˜ì˜€ë‹¤ë©´ ë°”ë¡œ loopë¥¼ ì¢…ë£Œí•œë‹¤.
             sRc = IDE_SUCCESS;
             break;
         }
 
-        // Meta¿¡ Á¸ÀçÇÏ´Â ÆÄÀÏÀ» ¸ğµÎ ÀĞ¾úÀ¸¸é Á¾·áÇÑ´Ù.
+        // Metaì— ì¡´ì¬í•˜ëŠ” íŒŒì¼ì„ ëª¨ë‘ ì½ì—ˆìœ¼ë©´ ì¢…ë£Œí•œë‹¤.
         ++sCount;
 
         if(sCount >= sNumOfFiles)
@@ -2484,10 +2484,10 @@ idfDir* idf::getDir(const SChar *aName)
 
     sDirSize = ID_SIZEOF(dirent);
 
-    // ÀüÃ¼ Meta°³¼ö ¸¸Å­ loop¸¦ ¼öÇàÇÑ´Ù.
+    // ì „ì²´ Metaê°œìˆ˜ ë§Œí¼ loopë¥¼ ìˆ˜í–‰í•œë‹¤.
     for(sIndex = 0; sIndex < idf::mMaxFileCount; sIndex++)
     {
-        // Meta°¡ NULLÀÌ ¾Æ´Ï¸é ÀÌ¸§À» °Ë»çÇÑ´Ù.
+        // Metaê°€ NULLì´ ì•„ë‹ˆë©´ ì´ë¦„ì„ ê²€ì‚¬í•œë‹¤.
         if(idf::mMetaList[sIndex].mMeta == NULL)
         {
             continue;
@@ -2495,9 +2495,9 @@ idfDir* idf::getDir(const SChar *aName)
 
         sMeta = idf::mMetaList[sIndex].mMeta;
 
-        // ÆÄÀÏ ½Ã½ºÅÛ³»¿¡ µğ·ºÅä¸®°¡ º°µµ·Î Á¸ÀçÇÏÁö ¾ÊÀ¸¹Ç·Î
-        // aNameÀÌ Meta¿¡ ÀúÀåÇÑ ÆÄÀÏ ÀÌ¸§ÀÇ substringÀÌ¸é 
-        // aNameÀ» µğ·ºÅä¸®·Î °£ÁÖÇÑ´Ù.
+        // íŒŒì¼ ì‹œìŠ¤í…œë‚´ì— ë””ë ‰í† ë¦¬ê°€ ë³„ë„ë¡œ ì¡´ì¬í•˜ì§€ ì•Šìœ¼ë¯€ë¡œ
+        // aNameì´ Metaì— ì €ì¥í•œ íŒŒì¼ ì´ë¦„ì˜ substringì´ë©´ 
+        // aNameì„ ë””ë ‰í† ë¦¬ë¡œ ê°„ì£¼í•œë‹¤.
         if((idlOS::strncmp(sMeta->mFileName, aName, sNameLen) == 0) &&
            (idlOS::strlen(sMeta->mFileName) > sNameLen) &&
            ((*(sMeta->mFileName + sNameLen) == '\\') || (*(sMeta->mFileName + sNameLen) == '/')))
@@ -2508,15 +2508,15 @@ idfDir* idf::getDir(const SChar *aName)
             sDir->mFirst = sDirentP;
 
             //==================================================================
-            // struct dirent´Â platform¸¶´Ù ÇüÅÂ°¡ ¾à°£¾¿ ´Ù¸£´Ù.
-            // ÇÏÁö¸¸ d_nameÀº °øÅëÀ¸·Î °®°í ÀÖ´Ù.
-            // hpux, linux, aix, dec, windows´Â d_nameÀÌ char ¹è¿­·Î µÇ¾îÀÖ´Ù.
-            // ±× ¹ÛÀÇ platformÀº d_nameÀÌ char[1], char*ÀÌ´Ù.
-            // (´ëÇ¥ÀûÀ¸·Î Solaris´Â char[1]ÀÌ°í windows´Â struct dirent°¡ ¾ø´Ù.
-            //  PD¿¡ windows¸¦ À§ÇÑ dirent°¡ ÀÖ´Ù.)
-            // µû¶ó¼­ d_nameÀÌ char ¹è¿­·Î µÇ¾îÀÖÁö ¾ÊÀº platform¿¡¼­´Â
-            // struct direntÀÇ Å©±â + ÆÄÀÏ ÀÌ¸§ ±æÀÌ + 1 ¸¸Å­À»
-            // struct direntÀÇ Å©±â·Î ÇÏ¿© mallocÇÑ´Ù.
+            // struct direntëŠ” platformë§ˆë‹¤ í˜•íƒœê°€ ì•½ê°„ì”© ë‹¤ë¥´ë‹¤.
+            // í•˜ì§€ë§Œ d_nameì€ ê³µí†µìœ¼ë¡œ ê°–ê³  ìˆë‹¤.
+            // hpux, linux, aix, dec, windowsëŠ” d_nameì´ char ë°°ì—´ë¡œ ë˜ì–´ìˆë‹¤.
+            // ê·¸ ë°–ì˜ platformì€ d_nameì´ char[1], char*ì´ë‹¤.
+            // (ëŒ€í‘œì ìœ¼ë¡œ SolarisëŠ” char[1]ì´ê³  windowsëŠ” struct direntê°€ ì—†ë‹¤.
+            //  PDì— windowsë¥¼ ìœ„í•œ direntê°€ ìˆë‹¤.)
+            // ë”°ë¼ì„œ d_nameì´ char ë°°ì—´ë¡œ ë˜ì–´ìˆì§€ ì•Šì€ platformì—ì„œëŠ”
+            // struct direntì˜ í¬ê¸° + íŒŒì¼ ì´ë¦„ ê¸¸ì´ + 1 ë§Œí¼ì„
+            // struct direntì˜ í¬ê¸°ë¡œ í•˜ì—¬ mallocí•œë‹¤.
             //==================================================================
 #if (!defined(HPUX) && !defined(LINUX) && !defined(AIX) && !defined(DEC)) && !defined(VC_WIN32)
             (void)idf::alloc((void **)&sDirent, 
@@ -2538,7 +2538,7 @@ idfDir* idf::getDir(const SChar *aName)
             sDir->mDirCount++;
         }
 
-        // Meta¿¡ Á¸ÀçÇÏ´Â ÆÄÀÏÀ» ¸ğµÎ ÀĞ¾úÀ¸¸é Á¾·áÇÑ´Ù.
+        // Metaì— ì¡´ì¬í•˜ëŠ” íŒŒì¼ì„ ëª¨ë‘ ì½ì—ˆìœ¼ë©´ ì¢…ë£Œí•œë‹¤.
         if(--sNumOfFiles == 0)
         {
             break;
@@ -2564,10 +2564,10 @@ IDE_RC idf::writeMaster()
 {
     idfMaster sBufMaster;
 
-    // MasterÀÇ CRC °ªÀ» ±¸ÇÑ´Ù.
+    // Masterì˜ CRC ê°’ì„ êµ¬í•œë‹¤.
     idf::getMasterCRC();
 
-    // Master ÆäÀÌÁö¸¦ µğ½ºÅ©¿¡ ÀúÀåÇÑ´Ù.
+    // Master í˜ì´ì§€ë¥¼ ë””ìŠ¤í¬ì— ì €ì¥í•œë‹¤.
     IDE_TEST(idf::lseekFs(idf::mFd, 
                           4, 
                           SEEK_SET) == -1);
@@ -2759,18 +2759,18 @@ IDE_RC idf::masterLog(UInt aMode)
     idf::mTransCount++;
 
     //=============================================================
-    // Æ®·£Á§¼ÇÀÌ ¼³Á¤ÇÑ °ªÀ» ³ÑÀ¸¸é ½Ã½ºÅÛ ¸ŞÅ¸µ¥ÀÌÅÍ¸¦ ÀúÀåÇÑ´Ù.
-    // ¸ŞÅ¸ µ¥ÀÌÅÍ´Â ¿ì¼± ·Î±×¿¡ ÀúÀåÀ» ÇÏ°í, ÀúÀåÇÑ ·Î±×ÀÇ Å©±â°¡
-    // ÀÏÁ¤ Å©±â¸¦ ³ÑÀ¸¸é µğ½ºÅ©¿¡ ¹İ¿µÇÑ´Ù.
-    // ·Î±×¿¡ ÀúÀåÇÒ ¶§´Â idf::mLogBuffer¸¦ »ç¿ëÇÏ¿© writeÈ½¼ö¸¦
-    // Á¶ÀıÇÑ´Ù.
+    // íŠ¸ëœì ì…˜ì´ ì„¤ì •í•œ ê°’ì„ ë„˜ìœ¼ë©´ ì‹œìŠ¤í…œ ë©”íƒ€ë°ì´í„°ë¥¼ ì €ì¥í•œë‹¤.
+    // ë©”íƒ€ ë°ì´í„°ëŠ” ìš°ì„  ë¡œê·¸ì— ì €ì¥ì„ í•˜ê³ , ì €ì¥í•œ ë¡œê·¸ì˜ í¬ê¸°ê°€
+    // ì¼ì • í¬ê¸°ë¥¼ ë„˜ìœ¼ë©´ ë””ìŠ¤í¬ì— ë°˜ì˜í•œë‹¤.
+    // ë¡œê·¸ì— ì €ì¥í•  ë•ŒëŠ” idf::mLogBufferë¥¼ ì‚¬ìš©í•˜ì—¬ writeíšŸìˆ˜ë¥¼
+    // ì¡°ì ˆí•œë‹¤.
     //=============================================================
 
     if((idf::mTransCount > IDF_LOG_TRANS_SIZE) || (aMode != 0))
     {
         //=================================================
-        // ·Î±×¿¡ º¯°æÇÑ ¸ŞÅ¸µ¥ÀÌÅÍ¸¦ ÀúÀåÇÑ´Ù.
-        // ·Î±× ¸ğµå¸¦ »ç¿ëÇÏÁö ¾ÊÀ¸¸é ÀÌ ºÎºĞÀº »ı·«ÇÑ´Ù.
+        // ë¡œê·¸ì— ë³€ê²½í•œ ë©”íƒ€ë°ì´í„°ë¥¼ ì €ì¥í•œë‹¤.
+        // ë¡œê·¸ ëª¨ë“œë¥¼ ì‚¬ìš©í•˜ì§€ ì•Šìœ¼ë©´ ì´ ë¶€ë¶„ì€ ìƒëµí•œë‹¤.
         //=================================================
         if(idf::mLogMode == IDF_LOG_MODE)
         {
@@ -2779,7 +2779,7 @@ IDE_RC idf::masterLog(UInt aMode)
             sCount = idf::mLogListCount;
 
             //=====================
-            // 1. Meta¸¦ ÀúÀåÇÑ´Ù.
+            // 1. Metaë¥¼ ì €ì¥í•œë‹¤.
             //=====================
             if(sCount > 0)
             {
@@ -2869,7 +2869,7 @@ IDE_RC idf::masterLog(UInt aMode)
             }
 
             //========================
-            // 2. PageMapÀ» ÀúÀåÇÑ´Ù.
+            // 2. PageMapì„ ì €ì¥í•œë‹¤.
             //========================
             if(idf::mMapLogCount > 0)
             {
@@ -2950,7 +2950,7 @@ IDE_RC idf::masterLog(UInt aMode)
             }
 
             //=======================
-            // 3. Master¸¦ ÀúÀåÇÑ´Ù.
+            // 3. Masterë¥¼ ì €ì¥í•œë‹¤.
             //=======================
             if(idf::mLogBufferCursor + idf::mMasterSize > IDF_LOG_BUFFER_SIZE)
             {
@@ -3009,11 +3009,11 @@ IDE_RC idf::masterLog(UInt aMode)
         }
 
         //========================================
-        // µğ½ºÅ©¿¡ º¯°æÇÑ ¸ŞÅ¸µ¥ÀÌÅÍ¸¦ ±â·ÏÇÑ´Ù.
+        // ë””ìŠ¤í¬ì— ë³€ê²½í•œ ë©”íƒ€ë°ì´í„°ë¥¼ ê¸°ë¡í•œë‹¤.
         //========================================
 
         //=====================
-        // 1. Meta¸¦ ÀúÀåÇÑ´Ù.
+        // 1. Metaë¥¼ ì €ì¥í•œë‹¤.
         //=====================
         if(idf::mLogListCount > 0)
         {
@@ -3044,7 +3044,7 @@ IDE_RC idf::masterLog(UInt aMode)
                 idf::mLogHeader->mFileID = idlOS::hton(sIndex);
                 idf::mLogHeader->mType   = idlOS::hton(IDF_META_LOG);
 
-                // aFileID¿¡ ÇØ´çÇÏ´Â Meta¸¦ µğ½ºÅ©¿¡ ÀúÀåÇÑ´Ù.
+                // aFileIDì— í•´ë‹¹í•˜ëŠ” Metaë¥¼ ë””ìŠ¤í¬ì— ì €ì¥í•œë‹¤.
                 IDE_TEST(idf::lseekFs(idf::mFd,
                                       IDF_FIRST_META_POSITION + sIndex * IDF_META_SIZE,
                                       SEEK_SET) == -1); 
@@ -3090,7 +3090,7 @@ IDE_RC idf::masterLog(UInt aMode)
         }
 
         //========================
-        // 2. PageMapÀ» ÀúÀåÇÑ´Ù.
+        // 2. PageMapì„ ì €ì¥í•œë‹¤.
         //========================
         if(idf::mMapLogCount > 0)
         {
@@ -3126,12 +3126,12 @@ IDE_RC idf::masterLog(UInt aMode)
                 IDE_TEST(sRc != idf::mIndEntrySize);
             }
 
-            // ÆäÀÌÁö ¸Ê ·Î±×ÀÇ °³¼ö¸¦ 0À¸·Î ÃÊ±âÈ­ ÇÑ´Ù.
+            // í˜ì´ì§€ ë§µ ë¡œê·¸ì˜ ê°œìˆ˜ë¥¼ 0ìœ¼ë¡œ ì´ˆê¸°í™” í•œë‹¤.
             idf::mMapLogCount = 0;
         }
 
         //=======================
-        // 3. Master¸¦ ÀúÀåÇÑ´Ù.
+        // 3. Masterë¥¼ ì €ì¥í•œë‹¤.
         //=======================
         IDE_TEST(idf::writeMaster() != IDE_SUCCESS);
 
@@ -3257,7 +3257,7 @@ IDE_RC idf::doRecovery()
     SInt          sState = 0;
     UInt          sIndex;
 
-    // ·Î±×¸¦ »ç¿ëÇÏÁö ¾ÊÀ¸¸é Recovery¸¦ ¼öÇàÇÏÁö ¾Ê´Â´Ù.
+    // ë¡œê·¸ë¥¼ ì‚¬ìš©í•˜ì§€ ì•Šìœ¼ë©´ Recoveryë¥¼ ìˆ˜í–‰í•˜ì§€ ì•ŠëŠ”ë‹¤.
     if(idf::mLogMode == IDF_NO_LOG_MODE)
     {
         IDE_RAISE(pass);
@@ -3310,7 +3310,7 @@ IDE_RC idf::doRecovery()
     sMaster.mPagesPerBlock    = idlOS::ntoh(sMaster.mPagesPerBlock);
     sMaster.mMaxFileOpenCount = idlOS::ntoh(sMaster.mMaxFileOpenCount);
 
-    // ÀÓ½Ã·Î ÃÊ±âÈ­ ÇÑ´Ù.
+    // ì„ì‹œë¡œ ì´ˆê¸°í™” í•œë‹¤.
     idf::mIndEntrySize = ID_SIZEOF(UInt) * sMaster.mPagesPerBlock;
     idf::mMaxFileOpenCount = sMaster.mMaxFileOpenCount;
 
@@ -3445,7 +3445,7 @@ IDE_RC idf::doRecovery()
 
             break;
         default:
-            //·Î±×ÆÄÀÏÀÌ ±úÁú¼ö ÀÖ´Ù.
+            //ë¡œê·¸íŒŒì¼ì´ ê¹¨ì§ˆìˆ˜ ìˆë‹¤.
             sState = 1;
             break;
         }
@@ -3484,7 +3484,7 @@ IDE_RC idf::doRecovery()
 
             IDE_ASSERT(sRc == idf::mMasterSize);
 
-            // ¸¶Áö¸·ÀÇ Master¸¸ ±â·ÏÇÏµµ·Ï ÇÑ´Ù.
+            // ë§ˆì§€ë§‰ì˜ Masterë§Œ ê¸°ë¡í•˜ë„ë¡ í•œë‹¤.
             if(sTxCount == 1)
             {
                 IDE_ASSERT(sMaster.mSignature == idlOS::hton(IDF_SYSTEM_SIGN));
@@ -3528,7 +3528,7 @@ IDE_RC idf::doRecovery()
 
             IDE_ASSERT(sRc == idf::mMetaSize);
 
-            // ¸¶Áö¸· Meta¸¸ ±â·ÏÇÏµµ·Ï ÇÑ´Ù.
+            // ë§ˆì§€ë§‰ Metaë§Œ ê¸°ë¡í•˜ë„ë¡ í•œë‹¤.
             if(sCheckList[sHeader.mFileID] == 0 || sTxCount == 1)
             {
                 sCRC = getCRC((UChar*)&sMeta1,
@@ -3547,7 +3547,7 @@ IDE_RC idf::doRecovery()
 
             break;
         case IDF_PAGEMAP_LOG:
-            // Page Map Log´Â CRC°ªÀÌ ¿Ã¹Ù¸£¸é ±â·ÏÇÏµµ·Ï ÇÑ´Ù.
+            // Page Map LogëŠ” CRCê°’ì´ ì˜¬ë°”ë¥´ë©´ ê¸°ë¡í•˜ë„ë¡ í•œë‹¤.
             sRc = idf::readFs(idf::mLogFd, 
                               &sMapHeader, 
                               sMapHeaderSize);
@@ -3596,12 +3596,12 @@ IDE_RC idf::doRecovery()
 
     for(sIndex = 0; sIndex < idf::mMaxFileCount; sIndex++)
     {
-        if(sCheckList[sIndex] == -1) // ±â·ÏÇÑ´Ù.
+        if(sCheckList[sIndex] == -1) // ê¸°ë¡í•œë‹¤.
         {
-            // MetaÀÇ CRC °ªÀ» ±¸ÇÑ´Ù.
+            // Metaì˜ CRC ê°’ì„ êµ¬í•œë‹¤.
             (void)idf::getMetaCRC(&(sMeta[sIndex]));
 
-            // aFileID¿¡ ÇØ´çÇÏ´Â Meta¸¦ µğ½ºÅ©¿¡ ÀúÀåÇÑ´Ù.
+            // aFileIDì— í•´ë‹¹í•˜ëŠ” Metaë¥¼ ë””ìŠ¤í¬ì— ì €ì¥í•œë‹¤.
             IDE_TEST(idf::lseekFs(idf::mFd,
                                   IDF_FIRST_META_POSITION + sIndex * IDF_META_SIZE,
                                   SEEK_SET) == -1); 
@@ -3618,7 +3618,7 @@ IDE_RC idf::doRecovery()
 
     mRecCheck = IDF_END_RECOVERY;
 
-    // Recovery°¡ ¿Ï·áµÇ¾úÀ¸¸é µğ½ºÅ©¸¦ µ¿±âÈ­ ÇÏ°í ·Î±×¸¦ ÃÊ±âÈ­ ÇÑ´Ù.
+    // Recoveryê°€ ì™„ë£Œë˜ì—ˆìœ¼ë©´ ë””ìŠ¤í¬ë¥¼ ë™ê¸°í™” í•˜ê³  ë¡œê·¸ë¥¼ ì´ˆê¸°í™” í•œë‹¤.
     IDE_TEST(idf::fsyncFs(idf::mFd) == -1);
 
     IDE_EXCEPTION_CONT(pass2);
@@ -3751,7 +3751,7 @@ ssize_t idf::writeFs(PDL_HANDLE aFd, const void* aBuf, size_t aCount)
                                   sCursor - sRemnant,
                                   SEEK_SET) == -1);
 
-            //ÀĞÀº Å©±â°¡ IDF_ALIGNED_BUFFER_SIZE º¸´Ù ÀûÀº °æ¿ìµµ ÀÖ´Ù. 
+            //ì½ì€ í¬ê¸°ê°€ IDF_ALIGNED_BUFFER_SIZE ë³´ë‹¤ ì ì€ ê²½ìš°ë„ ìˆë‹¤. 
             IDE_TEST(idlOS::read(aFd,
                                  sBufR,
                                  IDF_ALIGNED_BUFFER_SIZE) == -1);
@@ -3854,7 +3854,7 @@ ssize_t idf::readFs(PDL_HANDLE aFd, void *aBuf, size_t aCount)
                                   sCursor - sRemnant,
                                   SEEK_SET) == -1);
  
-            //ÀĞÀº Å©±â°¡ IDF_ALIGNED_BUFFER_SIZE º¸´Ù ÀûÀº °æ¿ìµµ ÀÖ´Ù. 
+            //ì½ì€ í¬ê¸°ê°€ IDF_ALIGNED_BUFFER_SIZE ë³´ë‹¤ ì ì€ ê²½ìš°ë„ ìˆë‹¤. 
             IDE_TEST(idlOS::read(aFd,
                                  sBufR,
                                  IDF_ALIGNED_BUFFER_SIZE) == -1);

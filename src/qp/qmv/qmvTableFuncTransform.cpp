@@ -19,8 +19,8 @@
  * $Id$
  *
  * BUG-41311 table function
- * O»çÀÇ pipelined table function¿¡ ´ëÇÑ work-around·Î
- * array type table function ±â´ÉÀ» Á¦°øÇÑ´Ù.
+ * Oì‚¬ì˜ pipelined table functionì— ëŒ€í•œ work-aroundë¡œ
+ * array type table function ê¸°ëŠ¥ì„ ì œê³µí•œë‹¤.
  *
  * create typeset type1
  * as
@@ -41,8 +41,8 @@
  *
  * select * from table( func1(10) );
  *
- * À§¿Í °°ÀÌ arr1 typeÀ» ¹İÈ¯ÇÏ´Â ÇÔ¼ö func1À» table functionÀ» »ç¿ëÇÏ¸é
- * ´ÙÀ½°ú °°ÀÌ º¯È¯µÈ´Ù.
+ * ìœ„ì™€ ê°™ì´ arr1 typeì„ ë°˜í™˜í•˜ëŠ” í•¨ìˆ˜ func1ì„ table functionì„ ì‚¬ìš©í•˜ë©´
+ * ë‹¤ìŒê³¼ ê°™ì´ ë³€í™˜ëœë‹¤.
  *
  * select * from (
  *     select table_function_element(loop_value, loop_level, 1) c1,
@@ -51,11 +51,11 @@
  *     loop func1(10)
  * );
  *
- * table function transformÀº ´ÙÀ½ µÎ ´Ü°è¸¦ °ÅÃÄ ¿Ï¼ºÇÑ´Ù.
+ * table function transformì€ ë‹¤ìŒ ë‘ ë‹¨ê³„ë¥¼ ê±°ì³ ì™„ì„±í•œë‹¤.
  *
- * 1. loop clause¿Í table_function_element·Î ±¸¼ºµÈ view¸¦ »ı¼ºÇÏ¸ç
- * 2. targetÀıÀÇ column°ú alias´Â loopÀıÀÇ table_function_element ÇÔ¼ö
- *    estimate°¡ ³¡³­ ÈÄ validateQmsTargetÀü¿¡ »ı¼ºÇÑ´Ù.
+ * 1. loop clauseì™€ table_function_elementë¡œ êµ¬ì„±ëœ viewë¥¼ ìƒì„±í•˜ë©°
+ * 2. targetì ˆì˜ columnê³¼ aliasëŠ” loopì ˆì˜ table_function_element í•¨ìˆ˜
+ *    estimateê°€ ëë‚œ í›„ validateQmsTargetì „ì— ìƒì„±í•œë‹¤.
  *
  **********************************************************************/
 
@@ -203,7 +203,7 @@ IDE_RC qmvTableFuncTransform::expandTarget( qcStatement * aStatement,
     IDE_TEST_RAISE( sLoopNode == NULL, ERR_NOT_FOUND_LOOP_NODE );
 
     //--------------------------------------
-    // »ı¼ºÇÒ target columnÀÇ °¹¼ö¿Í Å¸ÀÔÀ» °áÁ¤
+    // ìƒì„±í•  target columnì˜ ê°¯ìˆ˜ì™€ íƒ€ì…ì„ ê²°ì •
     //--------------------------------------
     
     sColumn = aSFWGH->thisQuerySet->loopStack.column;
@@ -219,7 +219,7 @@ IDE_RC qmvTableFuncTransform::expandTarget( qcStatement * aStatement,
         if ( ( sColumn->module->id >= MTD_UDT_ID_MIN ) &&
              ( sColumn->module->id <= MTD_UDT_ID_MAX ) )
         {
-            // UDTÁß record type¸¸ °¡´É
+            // UDTì¤‘ record typeë§Œ ê°€ëŠ¥
             IDE_TEST_RAISE( ( sColumn->module->id != MTD_ROWTYPE_ID ) &&
                             ( sColumn->module->id != MTD_RECORDTYPE_ID ),
                             ERR_NOT_APPLICABLE_TABLE_FUNCTION );
@@ -256,10 +256,10 @@ IDE_RC qmvTableFuncTransform::expandTarget( qcStatement * aStatement,
     }
 
     //--------------------------------------
-    // target columnÀÇ »ı¼º
+    // target columnì˜ ìƒì„±
     //--------------------------------------
 
-    // n°³ÀÇ target »ı¼º
+    // nê°œì˜ target ìƒì„±
     IDE_TEST( STRUCT_ALLOC_WITH_COUNT( QC_QMP_MEM( aStatement ),
                                        qmsTarget,
                                        sTargetCount,
@@ -282,7 +282,7 @@ IDE_RC qmvTableFuncTransform::expandTarget( qcStatement * aStatement,
             sTarget[i].aliasColumnName.size = idlOS::strlen( sListColName );
         }
         
-        // targetColumn »ı¼º
+        // targetColumn ìƒì„±
         IDE_TEST( STRUCT_ALLOC( QC_QMP_MEM( aStatement ),
                                 qtcNode,
                                 & (sTarget[i].targetColumn) )
@@ -290,7 +290,7 @@ IDE_RC qmvTableFuncTransform::expandTarget( qcStatement * aStatement,
 
         QTC_NODE_INIT( sTarget[i].targetColumn );
 
-        // table_function_element ÇÔ¼ö »ı¼º
+        // table_function_element í•¨ìˆ˜ ìƒì„±
         sTarget[i].targetColumn->node.lflag   = 2;
         sTarget[i].targetColumn->node.lflag  |=
             qsfTableFuncElementModule.lflag & ~MTC_NODE_COLUMN_COUNT_MASK;
@@ -306,7 +306,7 @@ IDE_RC qmvTableFuncTransform::expandTarget( qcStatement * aStatement,
                                    MTC_NODE_COLUMN_COUNT_MASK )
                   != IDE_SUCCESS );
         
-        // loop_value pseudo column »ı¼º & ¿¬°á
+        // loop_value pseudo column ìƒì„± & ì—°ê²°
         sNamePos.stmtText = sLoopValueName;
         sNamePos.offset = 0;
         sNamePos.size = idlOS::strlen( sLoopValueName );
@@ -321,7 +321,7 @@ IDE_RC qmvTableFuncTransform::expandTarget( qcStatement * aStatement,
 
         sTarget[i].targetColumn->node.arguments = (mtcNode*) sNode[0];
 
-        // loop_level pseudo column »ı¼º & ¿¬°á
+        // loop_level pseudo column ìƒì„± & ì—°ê²°
         sNamePos.stmtText = sLoopLevelName;
         sNamePos.offset = 0;
         sNamePos.size = idlOS::strlen( sLoopLevelName );
@@ -351,7 +351,7 @@ IDE_RC qmvTableFuncTransform::expandTarget( qcStatement * aStatement,
     sTarget[sTargetCount - 1].next = NULL;
 
     //--------------------------------------
-    // target columnÀÇ ¿¬°á
+    // target columnì˜ ì—°ê²°
     //--------------------------------------
 
     aSFWGH->target = sTarget;

@@ -21,9 +21,9 @@
  * Description :
  *     SORT(SORT) Node
  *
- *     °ü°èÇü ¸ğµ¨¿¡¼­ sorting ¿¬»êÀ» ¼öÇàÇÏ´Â Plan Node ÀÌ´Ù.
+ *     ê´€ê³„í˜• ëª¨ë¸ì—ì„œ sorting ì—°ì‚°ì„ ìˆ˜í–‰í•˜ëŠ” Plan Node ì´ë‹¤.
  *
- *     ´ÙÀ½°ú °°Àº ±â´ÉÀ» À§ÇØ »ç¿ëµÈ´Ù.
+ *     ë‹¤ìŒê³¼ ê°™ì€ ê¸°ëŠ¥ì„ ìœ„í•´ ì‚¬ìš©ëœë‹¤.
  *         - ORDER BY
  *         - Sort-based Grouping
  *         - Sort-based Distinction
@@ -33,9 +33,9 @@
  *         - Sort-based Full Outer Join
  *         - Store And Search
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  **********************************************************************/
 
@@ -53,10 +53,10 @@
 
 //-----------------------------------------------------
 // qmncSORT.flag
-// ÀúÀå ¹æ½ÄÀÇ ¼±ÅÃ
-// - ONLY     : ÀúÀå¸¸ ¼öÇà
-// - PRESERVE : º°µµÀÇ Sorting ¾øÀÌ ¼ø¼­°¡ º¸ÀåµÊ
-// - SORTING  : SortingÀ» ¼öÇà
+// ì €ì¥ ë°©ì‹ì˜ ì„ íƒ
+// - ONLY     : ì €ì¥ë§Œ ìˆ˜í–‰
+// - PRESERVE : ë³„ë„ì˜ Sorting ì—†ì´ ìˆœì„œê°€ ë³´ì¥ë¨
+// - SORTING  : Sortingì„ ìˆ˜í–‰
 //-----------------------------------------------------
 
 #define QMNC_SORT_STORE_MASK               (0x00000003)
@@ -67,9 +67,9 @@
 
 //-----------------------------------------------------
 // qmncSORT.flag
-// °Ë»ö ¹æ½ÄÀÇ ¼±ÅÃ
-// - SEQUENTIAL : ¼øÂ÷ °Ë»ö
-// - RANGE      : ¹üÀ§ °Ë»ö
+// ê²€ìƒ‰ ë°©ì‹ì˜ ì„ íƒ
+// - SEQUENTIAL : ìˆœì°¨ ê²€ìƒ‰
+// - RANGE      : ë²”ìœ„ ê²€ìƒ‰
 //-----------------------------------------------------
 
 #define QMNC_SORT_SEARCH_MASK              (0x00000004)
@@ -110,7 +110,7 @@ typedef IDE_RC (* qmnSortSearchFunc ) (  qcTemplate * aTemplate,
 typedef struct qmncSORT
 {
     //---------------------------------
-    // Code ¿µ¿ª °øÅë Á¤º¸
+    // Code ì˜ì—­ ê³µí†µ ì •ë³´
     //---------------------------------
 
     qmnPlan        plan;
@@ -118,19 +118,19 @@ typedef struct qmncSORT
     UInt           planID;
 
     //---------------------------------
-    // SORT °íÀ¯ Á¤º¸
+    // SORT ê³ ìœ  ì •ë³´
     //---------------------------------
 
-    UShort         baseTableCount;   // Base TableÀÇ °³¼ö
+    UShort         baseTableCount;   // Base Tableì˜ ê°œìˆ˜
     UShort         depTupleRowID;    // Dependent Tuple ID
-    SDouble        storeRowCount;    // Sort Node¿¡ ÀúÀåµÉ ·¹ÄÚµå °¹¼ö ( ¿¹Ãø°ªÀÓ )
-    qmcMtrNode   * myNode;           // ÀúÀå Column Á¤º¸
-    qtcNode      * range;            // Range °Ë»öÀ» À§ÇÑ Key Range
+    SDouble        storeRowCount;    // Sort Nodeì— ì €ì¥ë  ë ˆì½”ë“œ ê°¯ìˆ˜ ( ì˜ˆì¸¡ê°’ì„ )
+    qmcMtrNode   * myNode;           // ì €ì¥ Column ì •ë³´
+    qtcNode      * range;            // Range ê²€ìƒ‰ì„ ìœ„í•œ Key Range
 
     qcComponentInfo * componentInfo; // PROJ-2462 Result Cache
 
     //---------------------------------
-    // Data ¿µ¿ª Á¤º¸
+    // Data ì˜ì—­ ì •ë³´
     //---------------------------------
 
     UInt           mtrNodeOffset;    // size : ID_SIZEOF(qmdMtrNode) * count
@@ -140,7 +140,7 @@ typedef struct qmncSORT
 typedef struct qmndSORT
 {
     //---------------------------------
-    // Data ¿µ¿ª °øÅë Á¤º¸
+    // Data ì˜ì—­ ê³µí†µ ì •ë³´
     //---------------------------------
 
     qmndPlan            plan;
@@ -148,27 +148,27 @@ typedef struct qmndSORT
     UInt              * flag;
 
     //---------------------------------
-    // SORT °íÀ¯ Á¤º¸
+    // SORT ê³ ìœ  ì •ë³´
     //---------------------------------
 
-    UInt                mtrRowSize;   // ÀúÀå RowÀÇ Å©±â
+    UInt                mtrRowSize;   // ì €ì¥ Rowì˜ í¬ê¸°
 
-    qmdMtrNode        * mtrNode;      // ÀúÀå Column Á¤º¸
-    qmdMtrNode        * sortNode;     // Á¤·Ä ColumnÀÇ À§Ä¡
+    qmdMtrNode        * mtrNode;      // ì €ì¥ Column ì •ë³´
+    qmdMtrNode        * sortNode;     // ì •ë ¬ Columnì˜ ìœ„ì¹˜
 
-    mtcTuple          * depTuple;     // Dependent Tuple À§Ä¡
+    mtcTuple          * depTuple;     // Dependent Tuple ìœ„ì¹˜
     UInt                depValue;     // Dependent Value
 
     qmcdSortTemp      * sortMgr;      // Sort Temp Table
 
-    qmnSortSearchFunc   searchFirst;  // °Ë»ö ÇÔ¼ö
-    qmnSortSearchFunc   searchNext;   // °Ë»ö ÇÔ¼ö
+    qmnSortSearchFunc   searchFirst;  // ê²€ìƒ‰ í•¨ìˆ˜
+    qmnSortSearchFunc   searchNext;   // ê²€ìƒ‰ í•¨ìˆ˜
 
     //---------------------------------
-    // Merge Join °ü·Ã Á¤º¸
+    // Merge Join ê´€ë ¨ ì •ë³´
     //---------------------------------
 
-    smiCursorPosInfo    cursorInfo;   // Ä¿¼­ ÀúÀå °ø°£
+    smiCursorPosInfo    cursorInfo;   // ì»¤ì„œ ì €ì¥ ê³µê°„
 
     /* PROJ-2462 Result Cache */
     qmndResultCache     resultData;
@@ -182,11 +182,11 @@ public:
     // Base Function Pointer
     //------------------------
 
-    // ÃÊ±âÈ­
+    // ì´ˆê¸°í™”
     static IDE_RC init( qcTemplate * aTemplate,
                         qmnPlan    * aPlan );
 
-    // ¼öÇà ÇÔ¼ö
+    // ìˆ˜í–‰ í•¨ìˆ˜
     static IDE_RC doIt( qcTemplate * aTemplate,
                         qmnPlan    * aPlan,
                         qmcRowFlag * aFlag );
@@ -195,7 +195,7 @@ public:
     static IDE_RC padNull( qcTemplate * aTemplate,
                            qmnPlan    * aPlan );
 
-    // Plan Á¤º¸ Ãâ·Â
+    // Plan ì •ë³´ ì¶œë ¥
     static IDE_RC printPlan( qcTemplate   * aTemplate,
                              qmnPlan      * aPlan,
                              ULong          aDepth,
@@ -206,17 +206,17 @@ public:
     // mapping by doIt() function pointer
     //------------------------
 
-    // È£ÃâµÇ¾î¼­´Â ¾ÈµÊ.
+    // í˜¸ì¶œë˜ì–´ì„œëŠ” ì•ˆë¨.
     static IDE_RC doItDefault( qcTemplate * aTemplate,
                                qmnPlan    * aPlan,
                                qmcRowFlag * aFlag );
 
-    // ÃÖÃÊ ¼öÇà ÇÔ¼ö
+    // ìµœì´ˆ ìˆ˜í–‰ í•¨ìˆ˜
     static IDE_RC doItFirst( qcTemplate * aTemplate,
                              qmnPlan    * aPlan,
                              qmcRowFlag * aFlag );
 
-    // ´ÙÀ½ ¼öÇà ÇÔ¼ö
+    // ë‹¤ìŒ ìˆ˜í–‰ í•¨ìˆ˜
     static IDE_RC doItNext( qcTemplate * aTemplate,
                             qmnPlan    * aPlan,
                             qmcRowFlag * aFlag );
@@ -230,150 +230,150 @@ public:
     // Direct External Call
     //------------------------
 
-    // Hit °Ë»ö ¸ğµå·Î º¯°æ
+    // Hit ê²€ìƒ‰ ëª¨ë“œë¡œ ë³€ê²½
     static void setHitSearch( qcTemplate * aTemplate,
                               qmnPlan    * aPlan );
 
-    // Non-Hit °Ë»ö ¸ğµå·Î º¯°æ
+    // Non-Hit ê²€ìƒ‰ ëª¨ë“œë¡œ ë³€ê²½
     static void setNonHitSearch( qcTemplate * aTemplate,
                                  qmnPlan    * aPlan );
 
-    // Record¿¡ Hit Ç¥±â
+    // Recordì— Hit í‘œê¸°
     static IDE_RC setHitFlag( qcTemplate * aTemplate,
                               qmnPlan    * aPlan );
 
-    // Record¿¡ Hit Ç¥±âµÇ¾ú´ÂÁö °ËÁõ
+    // Recordì— Hit í‘œê¸°ë˜ì—ˆëŠ”ì§€ ê²€ì¦
     static idBool isHitFlagged( qcTemplate * aTemplate,
                                 qmnPlan    * aPlan );
 
-    // Merge Join¿¡¼­ÀÇ Cursor ÀúÀå
+    // Merge Joinì—ì„œì˜ Cursor ì €ì¥
     static IDE_RC storeCursor( qcTemplate * aTemplate,
                                qmnPlan    * aPlan );
 
-    // Merge Join¿¡¼­ÀÇ Cursor º¹¿ø
+    // Merge Joinì—ì„œì˜ Cursor ë³µì›
     static IDE_RC restoreCursor( qcTemplate * aTemplate,
                                  qmnPlan    * aPlan );
 
 private:
 
     //-----------------------------
-    // ÃÊ±âÈ­ °ü·Ã ÇÔ¼ö
+    // ì´ˆê¸°í™” ê´€ë ¨ í•¨ìˆ˜
     //-----------------------------
 
-    // ÃÖÃÊ ÃÊ±âÈ­ ÇÔ¼ö
+    // ìµœì´ˆ ì´ˆê¸°í™” í•¨ìˆ˜
     static IDE_RC firstInit( qcTemplate * aTemplate,
                              qmncSORT   * aCodePlan,
                              qmndSORT   * aDataPlan );
 
-    // ÀúÀå ColumnÀÇ ÃÊ±âÈ­
+    // ì €ì¥ Columnì˜ ì´ˆê¸°í™”
     static IDE_RC initMtrNode( qcTemplate * aTemplate,
                                qmncSORT   * aCodePlan,
                                qmndSORT   * aDataPlan );
 
-    // Á¤·Ä ColumnÀÇ À§Ä¡ °Ë»ö
+    // ì •ë ¬ Columnì˜ ìœ„ì¹˜ ê²€ìƒ‰
     static IDE_RC initSortNode( qmncSORT   * aCodePlan,
                                 qmndSORT   * aDataPlan );
 
-    // Temp Table ÃÊ±âÈ­
+    // Temp Table ì´ˆê¸°í™”
     static IDE_RC initTempTable( qcTemplate * aTemplate,
                                  qmncSORT   * aCodePlan,
                                  qmndSORT   * aDataPlan );
 
-    // Dependent TupleÀÇ º¯°æ ¿©ºÎ °Ë»ç
+    // Dependent Tupleì˜ ë³€ê²½ ì—¬ë¶€ ê²€ì‚¬
     static IDE_RC checkDependency( qcTemplate * aTemplate,
                                    qmncSORT   * aCodePlan,
                                    qmndSORT   * aDataPlan,
                                    idBool     * aDependent );
 
     //-----------------------------
-    // ÀúÀå °ü·Ã ÇÔ¼ö
+    // ì €ì¥ ê´€ë ¨ í•¨ìˆ˜
     //-----------------------------
 
-    // ÀúÀå ¹× Á¤·Ä ¼öÇà
+    // ì €ì¥ ë° ì •ë ¬ ìˆ˜í–‰
     static IDE_RC storeAndSort( qcTemplate * aTemplate,
                                 qmncSORT   * aCodePlan,
                                 qmndSORT   * aDataPlan );
 
-    // ÇÏ³ªÀÇ Row¸¦ »ğÀÔ
+    // í•˜ë‚˜ì˜ Rowë¥¼ ì‚½ì…
     static IDE_RC addOneRow( qcTemplate * aTemplate,
                              qmndSORT   * aDataPlan );
 
-    // ÀúÀå RowÀÇ ±¸¼º
+    // ì €ì¥ Rowì˜ êµ¬ì„±
     static IDE_RC setMtrRow( qcTemplate * aTemplate,
                              qmndSORT   * aDataPlan );
 
     //-----------------------------
-    // ¼öÇà °ü·Ã ÇÔ¼ö
+    // ìˆ˜í–‰ ê´€ë ¨ í•¨ìˆ˜
     //-----------------------------
 
-    // °Ë»öµÈ ÀúÀå Row¸¦ ±âÁØÀ¸·Î Tuple SetÀ» º¹¿øÇÑ´Ù.
+    // ê²€ìƒ‰ëœ ì €ì¥ Rowë¥¼ ê¸°ì¤€ìœ¼ë¡œ Tuple Setì„ ë³µì›í•œë‹¤.
     static IDE_RC setTupleSet( qcTemplate * aTemplate,
                                qmndSORT   * aDataPlan );
 
     //-----------------------------
-    // °Ë»ö °ü·Ã ÇÔ¼ö
+    // ê²€ìƒ‰ ê´€ë ¨ í•¨ìˆ˜
     //-----------------------------
 
-    // °Ë»ö ÇÔ¼öÀÇ °áÁ¤
+    // ê²€ìƒ‰ í•¨ìˆ˜ì˜ ê²°ì •
     static IDE_RC setSearchFunction( qmncSORT   * aCodePlan,
                                      qmndSORT   * aDataPlan );
 
-    // È£ÃâµÇ¾î¼­´Â ¾ÈµÊ
+    // í˜¸ì¶œë˜ì–´ì„œëŠ” ì•ˆë¨
     static IDE_RC searchDefault( qcTemplate * aTemplate,
                                  qmncSORT   * aCodePlan,
                                  qmndSORT   * aDataPlan,
                                  qmcRowFlag * aFlag );
 
-    // Ã¹¹øÂ° ¼øÂ÷ °Ë»ö
+    // ì²«ë²ˆì§¸ ìˆœì°¨ ê²€ìƒ‰
     static IDE_RC searchFirstSequence( qcTemplate * aTemplate,
                                        qmncSORT   * aCodePlan,
                                        qmndSORT   * aDataPlan,
                                        qmcRowFlag * aFlag );
 
-    // ´ÙÀ½ ¼øÂ÷ °Ë»ö
+    // ë‹¤ìŒ ìˆœì°¨ ê²€ìƒ‰
     static IDE_RC searchNextSequence( qcTemplate * aTemplate,
                                       qmncSORT   * aCodePlan,
                                       qmndSORT   * aDataPlan,
                                       qmcRowFlag * aFlag );
 
-    // Ã¹¹øÂ° Range °Ë»ö
+    // ì²«ë²ˆì§¸ Range ê²€ìƒ‰
     static IDE_RC searchFirstRangeSearch( qcTemplate * aTemplate,
                                           qmncSORT   * aCodePlan,
                                           qmndSORT   * aDataPlan,
                                           qmcRowFlag * aFlag );
 
-    // ´ÙÀ½ Range °Ë»ö
+    // ë‹¤ìŒ Range ê²€ìƒ‰
     static IDE_RC searchNextRangeSearch( qcTemplate * aTemplate,
                                          qmncSORT   * aCodePlan,
                                          qmndSORT   * aDataPlan,
                                          qmcRowFlag * aFlag );
 
-    // Ã¹¹øÂ° Hit °Ë»ö
+    // ì²«ë²ˆì§¸ Hit ê²€ìƒ‰
     static IDE_RC searchFirstHit( qcTemplate * aTemplate,
                                   qmncSORT   * aCodePlan,
                                   qmndSORT   * aDataPlan,
                                   qmcRowFlag * aFlag );
 
-    // ´ÙÀ½ Hit °Ë»ö
+    // ë‹¤ìŒ Hit ê²€ìƒ‰
     static IDE_RC searchNextHit( qcTemplate * aTemplate,
                                  qmncSORT   * aCodePlan,
                                  qmndSORT   * aDataPlan,
                                  qmcRowFlag * aFlag );
 
-    // Ã¹¹øÂ° Non-Hit °Ë»ö
+    // ì²«ë²ˆì§¸ Non-Hit ê²€ìƒ‰
     static IDE_RC searchFirstNonHit( qcTemplate * aTemplate,
                                      qmncSORT   * aCodePlan,
                                      qmndSORT   * aDataPlan,
                                      qmcRowFlag * aFlag );
 
-    // ´ÙÀ½ Non-Hit °Ë»ö
+    // ë‹¤ìŒ Non-Hit ê²€ìƒ‰
     static IDE_RC searchNextNonHit( qcTemplate * aTemplate,
                                     qmncSORT   * aCodePlan,
                                     qmndSORT   * aDataPlan,
                                     qmcRowFlag * aFlag );
 
     //-----------------------------
-    // A4 - Grouping Set °ü·Ã ÇÔ¼ö
+    // A4 - Grouping Set ê´€ë ¨ í•¨ìˆ˜
     //-----------------------------
 
     /*

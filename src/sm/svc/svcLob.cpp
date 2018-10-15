@@ -67,13 +67,13 @@ void svcLob::initializeFixedTableArea()
 }
 
 /**********************************************************************
- * lobCursor°¡ °¡¸£Å°°í ÀÖ´Â ¸Þ¸ð¸® LOB µ¥ÀÌÅ¸¸¦ ÀÐ¾î¿Â´Ù.
+ * lobCursorê°€ ê°€ë¥´í‚¤ê³  ìžˆëŠ” ë©”ëª¨ë¦¬ LOB ë°ì´íƒ€ë¥¼ ì½ì–´ì˜¨ë‹¤.
  *
- * aTrans      [IN]  ÀÛ¾÷ÇÏ´Â Æ®·£Àè¼Ç °´Ã¼
- * aLobViewEnv [IN]  ÀÛ¾÷ÇÏ·Á´Â LobViewEnv °´Ã¼
- * aOffset     [IN]  ÀÐ¾î¿À·Á´Â Lob µ¥ÀÌÅ¸ÀÇ À§Ä¡
- * aMount      [IN]  ÀÐ¾î¿À·Á´Â pieceÀÇ Å©±â
- * aPiece      [OUT] ¹ÝÈ¯ÇÏ·Á´Â Lob µ¥ÀÌÅ¸ piece Æ÷ÀÎÅÍ
+ * aTrans      [IN]  ìž‘ì—…í•˜ëŠ” íŠ¸ëžœìž­ì…˜ ê°ì²´
+ * aLobViewEnv [IN]  ìž‘ì—…í•˜ë ¤ëŠ” LobViewEnv ê°ì²´
+ * aOffset     [IN]  ì½ì–´ì˜¤ë ¤ëŠ” Lob ë°ì´íƒ€ì˜ ìœ„ì¹˜
+ * aMount      [IN]  ì½ì–´ì˜¤ë ¤ëŠ” pieceì˜ í¬ê¸°
+ * aPiece      [OUT] ë°˜í™˜í•˜ë ¤ëŠ” Lob ë°ì´íƒ€ piece í¬ì¸í„°
  **********************************************************************/
 IDE_RC svcLob::read(idvSQL*        /*aStatistics */,
                     void*          aTrans,
@@ -96,11 +96,11 @@ IDE_RC svcLob::read(idvSQL*        /*aStatistics */,
 
     if(aMount > 0)
     {
-        // fixed rowÀÇ ÀÐÀ» ¹öÀüÀ» ¼±ÅÃÇÑ´Ù.
+        // fixed rowì˜ ì½ì„ ë²„ì „ì„ ì„ íƒí•œë‹¤.
         IDE_TEST(getViewRowPtr(aTrans, aLobViewEnv, &sCurFixedRowPtr)
                  != IDE_SUCCESS);
 
-        // ´ë»ó lob data¸¦ ÀÐ´Â´Ù.
+        // ëŒ€ìƒ lob dataë¥¼ ì½ëŠ”ë‹¤.
         sLobDesc = (smcLobDesc*)(sCurFixedRowPtr + aLobViewEnv->mLobCol.offset);
 
         IDE_TEST_RAISE( aOffset >= sLobDesc->length, range_error );
@@ -152,11 +152,11 @@ IDE_RC svcLob::read(idvSQL*        /*aStatistics */,
 
     IDE_EXCEPTION(range_error);
     {
-        // BUG-29212 µð½ºÅ© LobÀÇ read½Ã range check¸¦ ÇÏÁö ¾Ê½À´Ï´Ù.
-        // Read½Ã¿¡´Â Start Offset¸¸ È®ÀÎÇÕ´Ï´Ù.
-        // End OffsetÀÌ LobLength¸¦ ³Ñ¾î°¡´õ¶óµµ
-        // ÀÐÀ» ¼ö ÀÖ´Â ºÎºÐ¸¸ ÀÐ°í ÀÐÀº Read Size¸¦ ¹ÝÈ¯ÇÕ´Ï´Ù.
-        // ¿À·ù¸Þ½ÃÁö¸¦ Range¿À·ù¿¡¼­ Offset¿À·ù·Î º¯°æÇÕ´Ï´Ù.
+        // BUG-29212 ë””ìŠ¤í¬ Lobì˜ readì‹œ range checkë¥¼ í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
+        // Readì‹œì—ëŠ” Start Offsetë§Œ í™•ì¸í•©ë‹ˆë‹¤.
+        // End Offsetì´ LobLengthë¥¼ ë„˜ì–´ê°€ë”ë¼ë„
+        // ì½ì„ ìˆ˜ ìžˆëŠ” ë¶€ë¶„ë§Œ ì½ê³  ì½ì€ Read Sizeë¥¼ ë°˜í™˜í•©ë‹ˆë‹¤.
+        // ì˜¤ë¥˜ë©”ì‹œì§€ë¥¼ Rangeì˜¤ë¥˜ì—ì„œ Offsetì˜¤ë¥˜ë¡œ ë³€ê²½í•©ë‹ˆë‹¤.
         IDE_SET(ideSetErrorCode( smERR_ABORT_InvalidLobStartOffset,
                                  aOffset,
                                  sLobDesc->length));
@@ -168,14 +168,14 @@ IDE_RC svcLob::read(idvSQL*        /*aStatistics */,
 }
 
 /**********************************************************************
- * »õ·Î ÇÒ´çµÈ °ø°£¿¡ lob µ¥ÀÌÅ¸¸¦ ±â·ÏÇÑ´Ù.
+ * ìƒˆë¡œ í• ë‹¹ëœ ê³µê°„ì— lob ë°ì´íƒ€ë¥¼ ê¸°ë¡í•œë‹¤.
  *
- * aTrans      [IN] ÀÛ¾÷ÇÏ´Â Æ®·£Àè¼Ç °´Ã¼
- * aLobViewEnv [IN] ÀÛ¾÷ÇÏ·Á´Â LobViewEnv °´Ã¼
- * aLobLocator [IN] ÀÛ¾÷ÇÏ·Á´Â Lob Locator
- * aOffset     [IN] ÀÛ¾÷ÇÏ·Á´Â Lob µ¥ÀÌÅ¸ÀÇ À§Ä¡
- * aPieceLen   [IN] »õ·Î ÀÔ·ÂµÇ´Â pieceÀÇ Å©±â
- * aPiece      [IN] »õ·Î ÀÔ·ÂµÇ´Â lob µ¥ÀÌÅ¸ piece
+ * aTrans      [IN] ìž‘ì—…í•˜ëŠ” íŠ¸ëžœìž­ì…˜ ê°ì²´
+ * aLobViewEnv [IN] ìž‘ì—…í•˜ë ¤ëŠ” LobViewEnv ê°ì²´
+ * aLobLocator [IN] ìž‘ì—…í•˜ë ¤ëŠ” Lob Locator
+ * aOffset     [IN] ìž‘ì—…í•˜ë ¤ëŠ” Lob ë°ì´íƒ€ì˜ ìœ„ì¹˜
+ * aPieceLen   [IN] ìƒˆë¡œ ìž…ë ¥ë˜ëŠ” pieceì˜ í¬ê¸°
+ * aPiece      [IN] ìƒˆë¡œ ìž…ë ¥ë˜ëŠ” lob ë°ì´íƒ€ piece
  **********************************************************************/
 IDE_RC svcLob::write( idvSQL        * /* aStatistics */,
                       void          * aTrans,
@@ -195,7 +195,7 @@ IDE_RC svcLob::write( idvSQL        * /* aStatistics */,
     IDE_DASSERT( aLobViewEnv != NULL );
     IDE_DASSERT( aPiece != NULL );
 
-    /* °»½ÅÇÒ Row¸¦ ¼±ÅÃÇÑ´Ù. °»½ÅÇÒ Row´Â °¡Àå ¸¶Áö¸· RowÀÌ´Ù. */
+    /* ê°±ì‹ í•  Rowë¥¼ ì„ íƒí•œë‹¤. ê°±ì‹ í•  RowëŠ” ê°€ìž¥ ë§ˆì§€ë§‰ Rowì´ë‹¤. */
     sCurFixedSlotHeader = (smpSlotHeader*)aLobViewEnv->mRow;
 
     while( SMP_SLOT_HAS_VALID_NEXT_OID( sCurFixedSlotHeader ) )
@@ -207,24 +207,24 @@ IDE_RC svcLob::write( idvSQL        * /* aStatistics */,
                     == IDE_SUCCESS );
     }
 
-    // aTrans Æ®·£Àè¼ÇÀÌ  LobCursorÀÇ memory row ÀÎ  mRow¿¡ ´ëÇÏ¿©
-    // record lockÀ» Áå Æ®·£Àè¼ÇÀÎÁö È®ÀÎÇÑ´Ù.
+    // aTrans íŠ¸ëžœìž­ì…˜ì´  LobCursorì˜ memory row ì¸  mRowì— ëŒ€í•˜ì—¬
+    // record lockì„ ì¥” íŠ¸ëžœìž­ì…˜ì¸ì§€ í™•ì¸í•œë‹¤.
     SMX_GET_SCN_AND_TID( sCurFixedSlotHeader->mCreateSCN, sSCN, sTID );
 
     if ( smLayerCallback::getLogTypeFlagOfTrans( aTrans )
          == SMR_LOG_TYPE_NORMAL )
     {
         /* BUG-16003:
-         * Sender°¡ ÇÏ³ªÀÇ Row¿¡ ´ëÇØ¼­ °°Àº Table Cursor·Î
-         * LOB Cursor¸¦ µÎ°³ ¿­¸é µÎ°³ÀÇ LOB Cursor´Â °°Àº
-         * Infinite SCNÀ» °¡Áø´Ù. ÇÏÁö¸¸ Receiver´Ü¿¡¼­´Â
-         * °¢±â ´Ù¸¥ Table Cursor·Î LOB Cursor°¡ µÎ°³¿­¸®°Ô
-         * µÇ¾î¼­ ´Ù¸¥ Infinite SCNÀ» °¡Áö°Ô µÇ¾î Sender¿¡¼­
-         * ¼º°øÇÑ Prepare°¡ Receiver´Ü¿¡¼­´Â Too Old¿¡·¯°¡
-         * ¹ß»ýÇÑ´Ù. À§ Çö»óÀ» ¹æÁöÇÏ±â À§ÇØ Normal Transaction
-         * ÀÏ °æ¿ì¿¡¸¸ ¾Æ·¡ Ã¼Å©¸¦ ¼öÇàÇÑ´Ù. ReplicationÀº ¼º°øÇÑ
-         * ¿¬»êÀÏ °æ¿ì¿¡¸¸ Log°¡ ±â·ÏµÇ±â ¶§¹®¿¡ ¾Æ·¡ Validate´Â
-         * ¹«½ÃÇØµµ µÈ´Ù.*/
+         * Senderê°€ í•˜ë‚˜ì˜ Rowì— ëŒ€í•´ì„œ ê°™ì€ Table Cursorë¡œ
+         * LOB Cursorë¥¼ ë‘ê°œ ì—´ë©´ ë‘ê°œì˜ LOB CursorëŠ” ê°™ì€
+         * Infinite SCNì„ ê°€ì§„ë‹¤. í•˜ì§€ë§Œ Receiverë‹¨ì—ì„œëŠ”
+         * ê°ê¸° ë‹¤ë¥¸ Table Cursorë¡œ LOB Cursorê°€ ë‘ê°œì—´ë¦¬ê²Œ
+         * ë˜ì–´ì„œ ë‹¤ë¥¸ Infinite SCNì„ ê°€ì§€ê²Œ ë˜ì–´ Senderì—ì„œ
+         * ì„±ê³µí•œ Prepareê°€ Receiverë‹¨ì—ì„œëŠ” Too Oldì—ëŸ¬ê°€
+         * ë°œìƒí•œë‹¤. ìœ„ í˜„ìƒì„ ë°©ì§€í•˜ê¸° ìœ„í•´ Normal Transaction
+         * ì¼ ê²½ìš°ì—ë§Œ ì•„ëž˜ ì²´í¬ë¥¼ ìˆ˜í–‰í•œë‹¤. Replicationì€ ì„±ê³µí•œ
+         * ì—°ì‚°ì¼ ê²½ìš°ì—ë§Œ Logê°€ ê¸°ë¡ë˜ê¸° ë•Œë¬¸ì— ì•„ëž˜ ValidateëŠ”
+         * ë¬´ì‹œí•´ë„ ëœë‹¤.*/
 
         IDE_ASSERT( SM_SCN_IS_EQ(&sSCN, &(aLobViewEnv->mInfinite)));
     }
@@ -302,7 +302,7 @@ IDE_RC svcLob::erase( idvSQL       * aStatistics,
 
     if( (sCurLobDesc->flag & SM_VCDESC_MODE_MASK) == SM_VCDESC_MODE_OUT )
     {
-        // LobVersion Àº Out Mode ¿¡¼­¸¸ À¯È¿. 
+        // LobVersion ì€ Out Mode ì—ì„œë§Œ ìœ íš¨. 
         aLobViewEnv->mLobVersion = sCurLobDesc->mLobVersion + 1;
         IDE_TEST_RAISE( aLobViewEnv->mLobVersion == ID_ULONG_MAX,
                         error_version_overflow );    
@@ -364,8 +364,8 @@ IDE_RC svcLob::erase( idvSQL       * aStatistics,
 
     IDE_EXCEPTION(range_error);
     {
-        // BUG-29212 µð½ºÅ© LobÀÇ read½Ã range check¸¦ ÇÏÁö ¾Ê½À´Ï´Ù.
-        // range´Â OffsetºÎÅÍ Amount - 1 ±îÁö ÀÔ´Ï´Ù.
+        // BUG-29212 ë””ìŠ¤í¬ Lobì˜ readì‹œ range checkë¥¼ í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
+        // rangeëŠ” Offsetë¶€í„° Amount - 1 ê¹Œì§€ ìž…ë‹ˆë‹¤.
         IDE_SET( ideSetErrorCode(smERR_ABORT_RangeError,
                                  aOffset,
                                  (aOffset + aPieceLen - 1),
@@ -383,18 +383,18 @@ IDE_RC svcLob::erase( idvSQL       * aStatistics,
 }
 
 /**********************************************************************
- * »õ·Î ÇÒ´çµÈ °ø°£¿¡ lob µ¥ÀÌÅ¸¸¦ ±â·ÏÇÑ´Ù.
+ * ìƒˆë¡œ í• ë‹¹ëœ ê³µê°„ì— lob ë°ì´íƒ€ë¥¼ ê¸°ë¡í•œë‹¤.
  *
- * aTrans            [IN] ÀÛ¾÷ÇÏ´Â Æ®·£Àè¼Ç °´Ã¼
- * aTable            [IN] ÀÛ¾÷ÇÏ´Â Å×ÀÌºí Çì´õ
- * aFixedRowPtr      [IN] lob µ¥ÀÌÅ¸¸¦ ÀúÀåÇÒ fixed row
- * aLobColumn        [IN] lob µ¥ÀÌÅ¸¸¦ ÀúÀåÇÒ column °´Ã¼
- * aOffset           [IN] lob µ¥ÀÌÅ¸ÀÇ ÀúÀå À§Ä¡
- * aPieceLen         [IN] »õ·Î ÀÔ·ÂµÇ´Â pieceÀÇ Å©±â
- * aPiece            [IN] »õ·Î ÀÔ·ÂµÇ´Â lob µ¥ÀÌÅ¸ piece
- * aIsWriteLog       [IN] ·Î±ë ¿©ºÎ
- * aIsReplSenderSend [IN] replication ÀÛµ¿ ¿©ºÎ
- * aLobLocator       [IN] lob locator °´Ã¼
+ * aTrans            [IN] ìž‘ì—…í•˜ëŠ” íŠ¸ëžœìž­ì…˜ ê°ì²´
+ * aTable            [IN] ìž‘ì—…í•˜ëŠ” í…Œì´ë¸” í—¤ë”
+ * aFixedRowPtr      [IN] lob ë°ì´íƒ€ë¥¼ ì €ìž¥í•  fixed row
+ * aLobColumn        [IN] lob ë°ì´íƒ€ë¥¼ ì €ìž¥í•  column ê°ì²´
+ * aOffset           [IN] lob ë°ì´íƒ€ì˜ ì €ìž¥ ìœ„ì¹˜
+ * aPieceLen         [IN] ìƒˆë¡œ ìž…ë ¥ë˜ëŠ” pieceì˜ í¬ê¸°
+ * aPiece            [IN] ìƒˆë¡œ ìž…ë ¥ë˜ëŠ” lob ë°ì´íƒ€ piece
+ * aIsWriteLog       [IN] ë¡œê¹… ì—¬ë¶€
+ * aIsReplSenderSend [IN] replication ìž‘ë™ ì—¬ë¶€
+ * aLobLocator       [IN] lob locator ê°ì²´
  **********************************************************************/
 IDE_RC svcLob::writeInternal( UChar             * aFixedRowPtr,
                               const smiColumn   * aLobColumn,
@@ -436,8 +436,8 @@ IDE_RC svcLob::writeInternal( UChar             * aFixedRowPtr,
 
     IDE_EXCEPTION(range_error);
     {
-        // BUG-29212 µð½ºÅ© LobÀÇ read½Ã range check¸¦ ÇÏÁö ¾Ê½À´Ï´Ù.
-        // range´Â OffsetºÎÅÍ Amount - 1 ±îÁö ÀÔ´Ï´Ù.
+        // BUG-29212 ë””ìŠ¤í¬ Lobì˜ readì‹œ range checkë¥¼ í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
+        // rangeëŠ” Offsetë¶€í„° Amount - 1 ê¹Œì§€ ìž…ë‹ˆë‹¤.
         IDE_SET(ideSetErrorCode(smERR_ABORT_RangeError,
                                 aOffset,
                                 (aOffset + aPieceLen - 1),
@@ -451,18 +451,18 @@ IDE_RC svcLob::writeInternal( UChar             * aFixedRowPtr,
 }
 
 /**********************************************************************
- * OutMode·Î aLobDescÀÇ Lob Piece¿¡ lob µ¥ÀÌÅ¸¸¦ ±â·ÏÇÑ´Ù.
+ * OutModeë¡œ aLobDescì˜ Lob Pieceì— lob ë°ì´íƒ€ë¥¼ ê¸°ë¡í•œë‹¤.
  *
- * aTrans            [IN] ÀÛ¾÷ÇÏ´Â Æ®·£Àè¼Ç °´Ã¼
- * aTable            [IN] ÀÛ¾÷ÇÏ´Â Å×ÀÌºí Çì´õ
- * aLobDesc          [IN] lob µ¥ÀÌÅ¸¸¦ ÀúÀåÇÒ LobDesc °´Ã¼
- * aLobSpaceID       [IN] log µ¥ÀÌÅ¸¸¦ ÀúÀåÇÒ SpaceID
- * aOffset           [IN] lob µ¥ÀÌÅ¸ÀÇ ÀúÀå À§Ä¡
- * aPieceLen         [IN] »õ·Î ÀÔ·ÂµÇ´Â pieceÀÇ Å©±â
- * aPiece            [IN] »õ·Î ÀÔ·ÂµÇ´Â lob µ¥ÀÌÅ¸ piece
- * aIsWriteLog       [IN] ·Î±ë ¿©ºÎ
- * aIsReplSenderSend [IN] replication ÀÛµ¿ ¿©ºÎ
- * aLobLocator       [IN] lob locator °´Ã¼
+ * aTrans            [IN] ìž‘ì—…í•˜ëŠ” íŠ¸ëžœìž­ì…˜ ê°ì²´
+ * aTable            [IN] ìž‘ì—…í•˜ëŠ” í…Œì´ë¸” í—¤ë”
+ * aLobDesc          [IN] lob ë°ì´íƒ€ë¥¼ ì €ìž¥í•  LobDesc ê°ì²´
+ * aLobSpaceID       [IN] log ë°ì´íƒ€ë¥¼ ì €ìž¥í•  SpaceID
+ * aOffset           [IN] lob ë°ì´íƒ€ì˜ ì €ìž¥ ìœ„ì¹˜
+ * aPieceLen         [IN] ìƒˆë¡œ ìž…ë ¥ë˜ëŠ” pieceì˜ í¬ê¸°
+ * aPiece            [IN] ìƒˆë¡œ ìž…ë ¥ë˜ëŠ” lob ë°ì´íƒ€ piece
+ * aIsWriteLog       [IN] ë¡œê¹… ì—¬ë¶€
+ * aIsReplSenderSend [IN] replication ìž‘ë™ ì—¬ë¶€
+ * aLobLocator       [IN] lob locator ê°ì²´
  **********************************************************************/
 IDE_RC svcLob::write4OutMode( smcLobDesc    * aLobDesc,
                               UInt            aOffset,
@@ -493,8 +493,8 @@ IDE_RC svcLob::write4OutMode( smcLobDesc    * aLobDesc,
             sWritableSize = aPieceLen - sWrittenSize;
         }
 
-        // sOffsetÀÌ ¸¸¾à Piece µ¥ÀÌÅ¸ÀÇ Å©±â¿¡ ¸¶Áö¸· À§Ä¡¸¦
-        // OffsetÀ¸·Î ÁöÁ¤µÇ¾úÀ» °æ¿ì sWritableSizeÀ¸·Î µÈ´Ù.
+        // sOffsetì´ ë§Œì•½ Piece ë°ì´íƒ€ì˜ í¬ê¸°ì— ë§ˆì§€ë§‰ ìœ„ì¹˜ë¥¼
+        // Offsetìœ¼ë¡œ ì§€ì •ë˜ì—ˆì„ ê²½ìš° sWritableSizeìœ¼ë¡œ ëœë‹¤.
         if( sWritableSize != 0)
         {
             IDE_TEST( writePiece( sTargetLPCH,
@@ -519,13 +519,13 @@ IDE_RC svcLob::write4OutMode( smcLobDesc    * aLobDesc,
 }
 
 /**********************************************************************
- * lob writeÇÏ±â Àü¿¡ new version¿¡ ´ëÇÑ ½ÃÀÛ OffsetÀ» ¼³Á¤ÇÑ´Ù.
+ * lob writeí•˜ê¸° ì „ì— new versionì— ëŒ€í•œ ì‹œìž‘ Offsetì„ ì„¤ì •í•œë‹¤.
  *
- * aTrans      [IN] ÀÛ¾÷ÇÏ´Â Æ®·£Àè¼Ç °´Ã¼
- * aLobViewEnv [IN] ÀÛ¾÷ÇÏ·Á´Â LobViewEnv °´Ã¼
- * aLobLocator [IN] ÀÛ¾÷ÇÏ·Á´Â Lob Locator
- * aOffset     [IN] ÀÛ¾÷ÇÏ·Á´Â Lob µ¥ÀÌÅ¸ÀÇ À§Ä¡
- * aNewSize    [IN] »õ·Î ÀÔ·ÂµÇ´Â µ¥ÀÌÅ¸ÀÇ Å©±â
+ * aTrans      [IN] ìž‘ì—…í•˜ëŠ” íŠ¸ëžœìž­ì…˜ ê°ì²´
+ * aLobViewEnv [IN] ìž‘ì—…í•˜ë ¤ëŠ” LobViewEnv ê°ì²´
+ * aLobLocator [IN] ìž‘ì—…í•˜ë ¤ëŠ” Lob Locator
+ * aOffset     [IN] ìž‘ì—…í•˜ë ¤ëŠ” Lob ë°ì´íƒ€ì˜ ìœ„ì¹˜
+ * aNewSize    [IN] ìƒˆë¡œ ìž…ë ¥ë˜ëŠ” ë°ì´íƒ€ì˜ í¬ê¸°
  **********************************************************************/
 IDE_RC svcLob::prepare4Write(idvSQL*       aStatistics,
                              void*         aTrans,
@@ -571,8 +571,8 @@ IDE_RC svcLob::prepare4Write(idvSQL*       aStatistics,
 
     IDE_EXCEPTION(range_error);
     {
-        // BUG-29212 µð½ºÅ© LobÀÇ read½Ã range check¸¦ ÇÏÁö ¾Ê½À´Ï´Ù.
-        // range´Â OffsetºÎÅÍ Amount - 1 ±îÁö ÀÔ´Ï´Ù.
+        // BUG-29212 ë””ìŠ¤í¬ Lobì˜ readì‹œ range checkë¥¼ í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
+        // rangeëŠ” Offsetë¶€í„° Amount - 1 ê¹Œì§€ ìž…ë‹ˆë‹¤.
         IDE_SET(ideSetErrorCode(smERR_ABORT_RangeError,
                                 aOffset,
                                 (aOffset + aNewSize - 1),
@@ -585,11 +585,11 @@ IDE_RC svcLob::prepare4Write(idvSQL*       aStatistics,
 }
 
 /***********************************************************************
- * Description : Write°¡ Á¾·áµÇ¾ú´Ù. Replication Log¸¦ ³²±ä´Ù.
+ * Description : Writeê°€ ì¢…ë£Œë˜ì—ˆë‹¤. Replication Logë¥¼ ë‚¨ê¸´ë‹¤.
  *
- *    aStatistics - [IN] Åë°è Á¤º¸
+ *    aStatistics - [IN] í†µê³„ ì •ë³´
  *    aTrans      - [IN] Transaction
- *    aLobViewEnv - [IN] ÀÚ½ÅÀÌ ºÁ¾ß ÇÒ LOB¿¡´ëÇÑ Á¤º¸
+ *    aLobViewEnv - [IN] ìžì‹ ì´ ë´ì•¼ í•  LOBì—ëŒ€í•œ ì •ë³´
  *    aLobLocator - [IN] Lob Locator
  **********************************************************************/
 IDE_RC svcLob::finishWrite( idvSQL       * /*aStatistics*/,
@@ -605,19 +605,19 @@ IDE_RC svcLob::finishWrite( idvSQL       * /*aStatistics*/,
 }
 
 /**********************************************************************
- * ³»ºÎÀûÀ¸·Î prepare4WriteInternal¸¦ È£ÃâÇÏ°í °»½ÅµÈ LobDesc¿¡ ´ëÇØ
- * ·Î±×¸¦ ±â·ÏÇÑ´Ù. ÀÌ´Â prepare4Write¿¡¼­´Â prepare4WriteInternalÈ£ÃâÈÄ¿¡
- * °»½ÅµÈ ¿µ¿ª¿¡ ´ëÇØ¼­ ·Î±×¸¦ ±â·ÏÇÏÁö¸¸ smiTableBackup::restore¿¡¼­´Â
- * prepare4WriteInternal¸¦ ¹Ù·Î È£ÃâÇÏ±â¶§¹®¿¡ ·Î±ëÀ» º°µµ·ÎÇÏ´Â ÀÎÅÍÆäÀÌ½º°¡
- * ÇÊ¿äÇÏ´Ù.
+ * ë‚´ë¶€ì ìœ¼ë¡œ prepare4WriteInternalë¥¼ í˜¸ì¶œí•˜ê³  ê°±ì‹ ëœ LobDescì— ëŒ€í•´
+ * ë¡œê·¸ë¥¼ ê¸°ë¡í•œë‹¤. ì´ëŠ” prepare4Writeì—ì„œëŠ” prepare4WriteInternalí˜¸ì¶œí›„ì—
+ * ê°±ì‹ ëœ ì˜ì—­ì— ëŒ€í•´ì„œ ë¡œê·¸ë¥¼ ê¸°ë¡í•˜ì§€ë§Œ smiTableBackup::restoreì—ì„œëŠ”
+ * prepare4WriteInternalë¥¼ ë°”ë¡œ í˜¸ì¶œí•˜ê¸°ë•Œë¬¸ì— ë¡œê¹…ì„ ë³„ë„ë¡œí•˜ëŠ” ì¸í„°íŽ˜ì´ìŠ¤ê°€
+ * í•„ìš”í•˜ë‹¤.
  *
- * aTrans      [IN] ÀÛ¾÷ÇÏ´Â Æ®·£Àè¼Ç °´Ã¼
- * aTable      [IN] ÀÛ¾÷ÇÏ·Á´Â Å×ÀÌºí Çì´õ
- * aLobColumn  [IN] Lob Column DescÁ¤º¸
- * aLobDesc    [IN] ÀÛ¾÷ÇÏ·Á´Â Lob Description
- * aOffset     [IN] ÀÛ¾÷ÇÏ·Á´Â Lob µ¥ÀÌÅ¸ÀÇ À§Ä¡
- * aNewSize    [IN] »õ·Î ÀÔ·ÂµÇ´Â µ¥ÀÌÅ¸ÀÇ Å©±â
- * aAddOIDFlag [IN] OID LIST¿¡ Ãß°¡ÇÒÁö ¿©ºÎ
+ * aTrans      [IN] ìž‘ì—…í•˜ëŠ” íŠ¸ëžœìž­ì…˜ ê°ì²´
+ * aTable      [IN] ìž‘ì—…í•˜ë ¤ëŠ” í…Œì´ë¸” í—¤ë”
+ * aLobColumn  [IN] Lob Column Descì •ë³´
+ * aLobDesc    [IN] ìž‘ì—…í•˜ë ¤ëŠ” Lob Description
+ * aOffset     [IN] ìž‘ì—…í•˜ë ¤ëŠ” Lob ë°ì´íƒ€ì˜ ìœ„ì¹˜
+ * aNewSize    [IN] ìƒˆë¡œ ìž…ë ¥ë˜ëŠ” ë°ì´íƒ€ì˜ í¬ê¸°
+ * aAddOIDFlag [IN] OID LISTì— ì¶”ê°€í• ì§€ ì—¬ë¶€
  **********************************************************************/
 IDE_RC svcLob::reserveSpaceInternalAndLogging(
                                             void*               aTrans,
@@ -629,8 +629,8 @@ IDE_RC svcLob::reserveSpaceInternalAndLogging(
                                             UInt                aAddOIDFlag )
 {
     ULong       sLobColBuf[ SMC_LOB_MAX_IN_ROW_STORE_SIZE/ID_SIZEOF(ULong) ];
-    /* BUG-30414  LobColumn º¹»ç½Ã StackÀÇ Buffer°¡
-       align µÅÁö ¾Ê¾Æ sigbus°¡ ÀÏ¾î³³´Ï´Ù. */
+    /* BUG-30414  LobColumn ë³µì‚¬ì‹œ Stackì˜ Bufferê°€
+       align ë¼ì§€ ì•Šì•„ sigbusê°€ ì¼ì–´ë‚©ë‹ˆë‹¤. */
     SChar     * sLobInRowPtr;
     smcLobDesc* sNewLobDesc;
     smcLobDesc* sCurLobDesc;
@@ -638,25 +638,25 @@ IDE_RC svcLob::reserveSpaceInternalAndLogging(
     sLobInRowPtr = aRow + aLobColumn->offset;
     sCurLobDesc  = (smcLobDesc*)sLobInRowPtr;
 
-    // old image¸¦ º¹»ç
+    // old imageë¥¼ ë³µì‚¬
     if ( SM_VCDESC_IS_MODE_IN(sCurLobDesc) )
     {
-        // BUG-30101 µ¥ÀÌÅ¸°¡ In-Mode·Î ÀúÀåµÇ¾úÀ» °æ¿ì µ¥ÀÌÅ¸´Â
-        // Fixed¿µ¿ª¿¡ ÀúÀåµÇ¾îÀÖ´Ù. Lob Column Desc ¿Í ÇÔ²² °°ÀÌ º¹»çÇØµÐ´Ù
+        // BUG-30101 ë°ì´íƒ€ê°€ In-Modeë¡œ ì €ìž¥ë˜ì—ˆì„ ê²½ìš° ë°ì´íƒ€ëŠ”
+        // Fixedì˜ì—­ì— ì €ìž¥ë˜ì–´ìžˆë‹¤. Lob Column Desc ì™€ í•¨ê»˜ ê°™ì´ ë³µì‚¬í•´ë‘”ë‹¤
         idlOS::memcpy( sLobColBuf,
                        sLobInRowPtr,
                        sCurLobDesc->length + ID_SIZEOF(smVCDescInMode));
     }
     else
     {
-        // Out Mode·Î ÀúÀå µÇ¾î ÀÖÀ»°æ¿ì LOB Desc¸¸ º¹»ç
+        // Out Modeë¡œ ì €ìž¥ ë˜ì–´ ìžˆì„ê²½ìš° LOB Descë§Œ ë³µì‚¬
         idlOS::memcpy( sLobColBuf, sLobInRowPtr, ID_SIZEOF(smcLobDesc) );
     }
 
-    // BUG-30036 Memory LOBÀ» ODBC·Î Insert ÇÏ´Ù ½ÇÆÐÇÏ¿´À» ¶§,
-    // º¯°æÇÏ´ø LOB Desc¸¦ ¼öÁ¤µÈ Ã¤·Î RollbackÇÏÁö ¾Ê°í ÀÖ½À´Ï´Ù. ·Î ÀÎÇÏ¿©
-    // º°µµÀÇ Dummy Lob Desc·Î Prepare ÇÏ°í Log¸¦ ¸ÕÀú ±â·Ï ÇÑ ÈÄ¿¡
-    // º¯°æµÈ LOB Desc¸¦ Data Page¿¡ ¹Ý¿µÇÕ´Ï´Ù.
+    // BUG-30036 Memory LOBì„ ODBCë¡œ Insert í•˜ë‹¤ ì‹¤íŒ¨í•˜ì˜€ì„ ë•Œ,
+    // ë³€ê²½í•˜ë˜ LOB Descë¥¼ ìˆ˜ì •ëœ ì±„ë¡œ Rollbackí•˜ì§€ ì•Šê³  ìžˆìŠµë‹ˆë‹¤. ë¡œ ì¸í•˜ì—¬
+    // ë³„ë„ì˜ Dummy Lob Descë¡œ Prepare í•˜ê³  Logë¥¼ ë¨¼ì € ê¸°ë¡ í•œ í›„ì—
+    // ë³€ê²½ëœ LOB Descë¥¼ Data Pageì— ë°˜ì˜í•©ë‹ˆë‹¤.
     IDE_TEST( reserveSpaceInternal(aTrans,
                                    aTable,
                                    aLobColumn,
@@ -670,17 +670,17 @@ IDE_RC svcLob::reserveSpaceInternalAndLogging(
 
     sNewLobDesc = (smcLobDesc*)sLobColBuf;
 
-    // BUG-30036 º¯°æµÈ Lob Desc¸¦ Data Page¿¡ ¹Ý¿µ
+    // BUG-30036 ë³€ê²½ëœ Lob Descë¥¼ Data Pageì— ë°˜ì˜
     if ( SM_VCDESC_IS_MODE_IN(sNewLobDesc) )
     {
-        /* Lob Desc¸¸ º¹»çÇÑ´Ù. */
+        /* Lob Descë§Œ ë³µì‚¬í•œë‹¤. */
         idlOS::memcpy( sLobInRowPtr,
                        sLobColBuf,
                        ID_SIZEOF(smVCDescInMode) );
     }
     else
     {
-        // Out Mode·Î ÀúÀå µÈ °æ¿ì Lob Desc¸¸ º¹»çÇÑ´Ù.
+        // Out Modeë¡œ ì €ìž¥ ëœ ê²½ìš° Lob Descë§Œ ë³µì‚¬í•œë‹¤.
         idlOS::memcpy( sLobInRowPtr,
                        sLobColBuf,
                        ID_SIZEOF(smcLobDesc) );
@@ -694,7 +694,7 @@ IDE_RC svcLob::reserveSpaceInternalAndLogging(
 }
 
 /**********************************************************************
- * lob writeÇÏ±â Àü¿¡ new version¿¡ ´ëÇÑ °ø°£ ÇÒ´çÇÏ´Â ½ÇÁ¦ ÀÛ¾÷À» ÇÑ´Ù.
+ * lob writeí•˜ê¸° ì „ì— new versionì— ëŒ€í•œ ê³µê°„ í• ë‹¹í•˜ëŠ” ì‹¤ì œ ìž‘ì—…ì„ í•œë‹¤.
  *
  * old [LobDesc]--[LPCH#1][LPCH#2][LPCH#3][LPCH#4][LPCH#5]
  *                  | |      |       |        |       | |
@@ -705,21 +705,21 @@ IDE_RC svcLob::reserveSpaceInternalAndLogging(
  *                  | V      |       |          |     V |
  * new [LobDesc]--[LPCH#1'][LPCH#2'][LPCH#3'][LPCH#4'][LPCH#5']
  *
- * aOffsetÀÌ piece#2¿¡¼­ ½ÃÀÛÇØ¼­ aOldSize°¡ piece#4±îÁö ÀÌ°í,
- * aNewSize°¡ piece#4'±îÁö ÀÏ¶§, º¯°æµÇÁö ¾Ê´Â piece#1,5´Â LPCH¸¦
- * º¹»ç(LPCH#1->#1', #5->#5')ÇÏ¿© piece#1,5¸¦ °øÀ¯ÇÏ°Ô µÇ°í,
- * º¯°æµÇ´Â piece#2',#3',#4'¸¦ »õ·Î ÇÒ´ç¹Þ¾Æ LPCH¿¡ ¿¬°áÇÑ´Ù.
- * ÀÌ¶§, º¯°æ ½ÃÀÛ°ú ³¡ piece#2,#4¿¡ º¯°æ ¿µ¿ªÀÌ ¾Æ´Ñ °ªÀº »õ·Î
- * ÇÒ´ç ¹ÞÀº piece#2',#4'¿¡ º¹»çÇØ ÁØ´Ù.
+ * aOffsetì´ piece#2ì—ì„œ ì‹œìž‘í•´ì„œ aOldSizeê°€ piece#4ê¹Œì§€ ì´ê³ ,
+ * aNewSizeê°€ piece#4'ê¹Œì§€ ì¼ë•Œ, ë³€ê²½ë˜ì§€ ì•ŠëŠ” piece#1,5ëŠ” LPCHë¥¼
+ * ë³µì‚¬(LPCH#1->#1', #5->#5')í•˜ì—¬ piece#1,5ë¥¼ ê³µìœ í•˜ê²Œ ë˜ê³ ,
+ * ë³€ê²½ë˜ëŠ” piece#2',#3',#4'ë¥¼ ìƒˆë¡œ í• ë‹¹ë°›ì•„ LPCHì— ì—°ê²°í•œë‹¤.
+ * ì´ë•Œ, ë³€ê²½ ì‹œìž‘ê³¼ ë piece#2,#4ì— ë³€ê²½ ì˜ì—­ì´ ì•„ë‹Œ ê°’ì€ ìƒˆë¡œ
+ * í• ë‹¹ ë°›ì€ piece#2',#4'ì— ë³µì‚¬í•´ ì¤€ë‹¤.
  *
- * aTrans      [IN] ÀÛ¾÷ÇÏ´Â Æ®·£Àè¼Ç °´Ã¼
- * aTable      [IN] ÀÛ¾÷ÇÏ·Á´Â Å×ÀÌºí Çì´õ
+ * aTrans      [IN] ìž‘ì—…í•˜ëŠ” íŠ¸ëžœìž­ì…˜ ê°ì²´
+ * aTable      [IN] ìž‘ì—…í•˜ë ¤ëŠ” í…Œì´ë¸” í—¤ë”
  * aLobColumn  [IN]
  * aLobVersion
- * aLobDesc    [IN] ÀÛ¾÷ÇÏ·Á´Â Lob Description
- * aOffset     [IN] ÀÛ¾÷ÇÏ·Á´Â Lob µ¥ÀÌÅ¸ÀÇ À§Ä¡
- * aNewSize    [IN] »õ·Î ÀÔ·ÂµÇ´Â µ¥ÀÌÅ¸ÀÇ Å©±â
- * aAddOIDFlag [IN] OID LIST¿¡ Ãß°¡ÇÒÁö ¿©ºÎ
+ * aLobDesc    [IN] ìž‘ì—…í•˜ë ¤ëŠ” Lob Description
+ * aOffset     [IN] ìž‘ì—…í•˜ë ¤ëŠ” Lob ë°ì´íƒ€ì˜ ìœ„ì¹˜
+ * aNewSize    [IN] ìƒˆë¡œ ìž…ë ¥ë˜ëŠ” ë°ì´íƒ€ì˜ í¬ê¸°
+ * aAddOIDFlag [IN] OID LISTì— ì¶”ê°€í• ì§€ ì—¬ë¶€
  * aIsFullWrite
  **********************************************************************/
 IDE_RC svcLob::reserveSpaceInternal(void*               aTrans,
@@ -753,8 +753,8 @@ IDE_RC svcLob::reserveSpaceInternal(void*               aTrans,
 
     if ( SM_VCDESC_IS_MODE_IN( aLobDesc ) )
     {
-        /* µ¥ÀÌÅ¸°¡ In-Mode·Î ÀúÀåµÇ¾úÀ» °æ¿ì µ¥ÀÌÅ¸´Â
-         * Fixed¿µ¿ª¿¡ ÀúÀåµÇ¾îÀÖ´Ù. Lob Column Desc ¿Í ÇÔ²² °°ÀÌ º¹»çÇØµÐ´Ù */
+        /* ë°ì´íƒ€ê°€ In-Modeë¡œ ì €ìž¥ë˜ì—ˆì„ ê²½ìš° ë°ì´íƒ€ëŠ”
+         * Fixedì˜ì—­ì— ì €ìž¥ë˜ì–´ìžˆë‹¤. Lob Column Desc ì™€ í•¨ê»˜ ê°™ì´ ë³µì‚¬í•´ë‘”ë‹¤ */
         idlOS::memcpy( (SChar*)sOldLobDesc,
                        (SChar*)aLobDesc,
                        ID_SIZEOF(smVCDescInMode) + aLobDesc->length );
@@ -916,8 +916,8 @@ IDE_RC svcLob::reserveSpaceInternal(void*               aTrans,
 
     IDE_EXCEPTION(range_error);
     {
-        // BUG-29212 µð½ºÅ© LobÀÇ read½Ã range check¸¦ ÇÏÁö ¾Ê½À´Ï´Ù.
-        // range´Â OffsetºÎÅÍ Amount - 1 ±îÁö ÀÔ´Ï´Ù.
+        // BUG-29212 ë””ìŠ¤í¬ Lobì˜ readì‹œ range checkë¥¼ í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
+        // rangeëŠ” Offsetë¶€í„° Amount - 1 ê¹Œì§€ ìž…ë‹ˆë‹¤.
         IDE_SET(ideSetErrorCode(smERR_ABORT_RangeError,
                                 aOffset,
                                 (aOffset + aNewSize - 1),
@@ -930,16 +930,16 @@ IDE_RC svcLob::reserveSpaceInternal(void*               aTrans,
 }
 
 /**********************************************************************
- * »õ·Î¿î lob piece¸¦ ÇÒ´çÇÑ´Ù.
+ * ìƒˆë¡œìš´ lob pieceë¥¼ í• ë‹¹í•œë‹¤.
  *
- * aTrans         [IN] ÀÛ¾÷ÇÏ´Â Æ®·£Àè¼Ç °´Ã¼
- * aTable         [IN] ÀÛ¾÷ÇÏ·Á´Â Å×ÀÌºí Çì´õ
- * aLobSpaceID [IN] Lob Columnµ¥ÀÌÅÍ°¡ ±â·ÏµÇ´Â TablespaceÀÇ ID
- * aFirstLPCH     [IN] ÀüÃ¼ lob µ¥ÀÌÅÍÀÇ ½ÃÀÛ LPCH
- * aStartLPCH     [IN] º¯°æ ½ÃÀÛÇÏ´Â LPCH
- * aNxtPieceOID   [IN] »õ·Î ÇÒ´ç ¹ÞÀ» lob pieceÀÇ °¡Àå ¸¶Áö¸·ÀÇ next oid
- * aNewSlotSize   [IN] »õ·Î ÇÒ´ç ¹ÞÀ» slotµé Áß ¸¶Áö¸· slotÀÇ Å©±â
- * aAddOIDFlag    [IN] OID LIST¿¡ Ãß°¡ÇÒÁö ¿©ºÎ
+ * aTrans         [IN] ìž‘ì—…í•˜ëŠ” íŠ¸ëžœìž­ì…˜ ê°ì²´
+ * aTable         [IN] ìž‘ì—…í•˜ë ¤ëŠ” í…Œì´ë¸” í—¤ë”
+ * aLobSpaceID [IN] Lob Columnë°ì´í„°ê°€ ê¸°ë¡ë˜ëŠ” Tablespaceì˜ ID
+ * aFirstLPCH     [IN] ì „ì²´ lob ë°ì´í„°ì˜ ì‹œìž‘ LPCH
+ * aStartLPCH     [IN] ë³€ê²½ ì‹œìž‘í•˜ëŠ” LPCH
+ * aNxtPieceOID   [IN] ìƒˆë¡œ í• ë‹¹ ë°›ì„ lob pieceì˜ ê°€ìž¥ ë§ˆì§€ë§‰ì˜ next oid
+ * aNewSlotSize   [IN] ìƒˆë¡œ í• ë‹¹ ë°›ì„ slotë“¤ ì¤‘ ë§ˆì§€ë§‰ slotì˜ í¬ê¸°
+ * aAddOIDFlag    [IN] OID LISTì— ì¶”ê°€í• ì§€ ì—¬ë¶€
  **********************************************************************/
 IDE_RC svcLob::allocPiece(void*           aTrans,
                           smcTableHeader* aTable,
@@ -1047,7 +1047,7 @@ IDE_RC svcLob::allocPiece(void*           aTrans,
                 aLobDesc->mFirstLPCH[i].mOID        = sNewPieceOID;
                 aLobDesc->mFirstLPCH[i].mPtr        = sNewPiecePtr;
 
-                /* »õ·Î ÇÒ´çÇÑ lob piece¿¡ ´ëÇÏ¿© version list Ãß°¡ */
+                /* ìƒˆë¡œ í• ë‹¹í•œ lob pieceì— ëŒ€í•˜ì—¬ version list ì¶”ê°€ */
                 if ( SM_INSERT_ADD_OID_IS_OK(aAddOIDFlag) )
                 {
                     IDE_TEST( smLayerCallback::addOID( aTrans,
@@ -1115,7 +1115,7 @@ IDE_RC svcLob::allocPiece(void*           aTrans,
             aLobDesc->mFirstLPCH[i].mOID        = sNewPieceOID;
             aLobDesc->mFirstLPCH[i].mPtr        = sNewPiecePtr;
 
-            /* »õ·Î ÇÒ´çÇÑ lob piece¿¡ ´ëÇÏ¿© version list Ãß°¡ */
+            /* ìƒˆë¡œ í• ë‹¹í•œ lob pieceì— ëŒ€í•˜ì—¬ version list ì¶”ê°€ */
             if ( SM_INSERT_ADD_OID_IS_OK(aAddOIDFlag) )
             {
                 IDE_TEST( smLayerCallback::addOID( aTrans,
@@ -1172,16 +1172,16 @@ IDE_RC svcLob::allocPiece(void*           aTrans,
 }
 
 /**********************************************************************
- * »õ·Î ÇÒ´ç¹ÞÀº lob piece¿µ¿ª¿¡¼­ º¯°æµÇÁö ¾Ê´Â ¿µ¿ªÀ» º¹»çÇØ ¿Â´Ù.
+ * ìƒˆë¡œ í• ë‹¹ë°›ì€ lob pieceì˜ì—­ì—ì„œ ë³€ê²½ë˜ì§€ ì•ŠëŠ” ì˜ì—­ì„ ë³µì‚¬í•´ ì˜¨ë‹¤.
  *
- * aTrans                [IN] ÀÛ¾÷ÇÏ´Â Æ®·£Àè¼Ç °´Ã¼
- * aTable                [IN] ÀÛ¾÷ÇÏ·Á´Â Å×ÀÌºí Çì´õ
- * aSourceLobDesc        [IN] ÀÛ¾÷ÇÏ·Á´Â Lob µ¥ÀÌÅ¸ÀÇ À§Ä¡
- * aLobSpaceID           [IN] Lob Piece¸¦ ÀúÀåÇÏ´Â SpaceID
- * aSourceOffset         [IN] º¯°æ ÀÛ¾÷À» ÇÏ°íÀÚ ÇÏ´Â ºÎºÐÀÇ Å©±â
- * aDstLobDesc           [IN] »õ·Î ÀÔ·ÂµÇ´Â µ¥ÀÌÅ¸ÀÇ Å©±â
- * aDstOffset            [IN] º¯°æ ½ÃÀÛÇÏ´Â LPCH
- * aLength               [IN] aStartLPCH¿¡¼­ º¯°æµÇÁö ¾Ê´Â Å©±â
+ * aTrans                [IN] ìž‘ì—…í•˜ëŠ” íŠ¸ëžœìž­ì…˜ ê°ì²´
+ * aTable                [IN] ìž‘ì—…í•˜ë ¤ëŠ” í…Œì´ë¸” í—¤ë”
+ * aSourceLobDesc        [IN] ìž‘ì—…í•˜ë ¤ëŠ” Lob ë°ì´íƒ€ì˜ ìœ„ì¹˜
+ * aLobSpaceID           [IN] Lob Pieceë¥¼ ì €ìž¥í•˜ëŠ” SpaceID
+ * aSourceOffset         [IN] ë³€ê²½ ìž‘ì—…ì„ í•˜ê³ ìž í•˜ëŠ” ë¶€ë¶„ì˜ í¬ê¸°
+ * aDstLobDesc           [IN] ìƒˆë¡œ ìž…ë ¥ë˜ëŠ” ë°ì´íƒ€ì˜ í¬ê¸°
+ * aDstOffset            [IN] ë³€ê²½ ì‹œìž‘í•˜ëŠ” LPCH
+ * aLength               [IN] aStartLPCHì—ì„œ ë³€ê²½ë˜ì§€ ì•ŠëŠ” í¬ê¸°
  **********************************************************************/
 IDE_RC svcLob::copyPiece( smcLobDesc    * aSrcLobDesc,
                           UInt            aSrcOffset,
@@ -1195,7 +1195,7 @@ IDE_RC svcLob::copyPiece( smcLobDesc    * aSrcLobDesc,
     IDE_DASSERT( aSrcLobDesc != NULL );
     IDE_DASSERT( aDstLobDesc != NULL );
 
-    // source point È¹µæ
+    // source point íšë“
     if ( SM_VCDESC_IS_MODE_IN(aSrcLobDesc) )
     {
         sSrcPiecePtr = (UChar*)aSrcLobDesc + ID_SIZEOF(smVCDescInMode) + aSrcOffset;
@@ -1208,7 +1208,7 @@ IDE_RC svcLob::copyPiece( smcLobDesc    * aSrcLobDesc,
                         + (aSrcOffset % SMP_VC_PIECE_MAX_SIZE);
     }
 
-    // destination¿¡ write
+    // destinationì— write
     if ( SM_VCDESC_IS_MODE_IN(aDstLobDesc) ) 
     {
         idlOS::memcpy( ((SChar*)aDstLobDesc + ID_SIZEOF(smVCDescInMode) + aDstOffset),
@@ -1232,13 +1232,13 @@ IDE_RC svcLob::copyPiece( smcLobDesc    * aSrcLobDesc,
 }
 
 /**********************************************************************
- * »õ·Î¿î LPCH¸¦ ÇÒ´çÇÑ´Ù.
+ * ìƒˆë¡œìš´ LPCHë¥¼ í• ë‹¹í•œë‹¤.
  *
- * aTrans         [IN]  ÀÛ¾÷ÇÏ´Â Æ®·£Àè¼Ç °´Ã¼
- * aTable         [IN]  ÀÛ¾÷ÇÏ·Á´Â Å×ÀÌºí Çì´õ
- * aLobDesc       [IN]  ÀÛ¾÷ÇÏ·Á´Â Lob Description
- * aLobSpaceID    [IN] Lob Columnµ¥ÀÌÅÍ°¡ ±â·ÏµÇ´Â TablespaceÀÇ ID
- * aAddOIDFlag    [IN] OID LIST¿¡ Ãß°¡ÇÒÁö ¿©ºÎ
+ * aTrans         [IN]  ìž‘ì—…í•˜ëŠ” íŠ¸ëžœìž­ì…˜ ê°ì²´
+ * aTable         [IN]  ìž‘ì—…í•˜ë ¤ëŠ” í…Œì´ë¸” í—¤ë”
+ * aLobDesc       [IN]  ìž‘ì—…í•˜ë ¤ëŠ” Lob Description
+ * aLobSpaceID    [IN] Lob Columnë°ì´í„°ê°€ ê¸°ë¡ë˜ëŠ” Tablespaceì˜ ID
+ * aAddOIDFlag    [IN] OID LISTì— ì¶”ê°€í• ì§€ ì—¬ë¶€
  **********************************************************************/
 IDE_RC svcLob::allocLPCH(void*              aTrans,
                          smcTableHeader*    aTable,
@@ -1308,9 +1308,9 @@ IDE_RC svcLob::allocLPCH(void*              aTrans,
         }
         else
         {
-            /* BUG-42411 add columnÀÌ ½ÇÆÐ·Î ±âÁ¸ Å×ÀÌºíÀ» restoreÇÒ¶§ ÇÒ´çÇÑ LPCH¸¦
-               ager°¡ Áö¿ö¹ö¸®Áö ¾Êµµ·Ï OID¸¦ add ÇÏÁö ¾Ê½À´Ï´Ù.
-               (undo½Ã È£ÃâµÇ´Â restore ¿¡¼­¸¸ SM_INSERT_ADD_LPCH_OID_NO ¼³Á¤) */
+            /* BUG-42411 add columnì´ ì‹¤íŒ¨ë¡œ ê¸°ì¡´ í…Œì´ë¸”ì„ restoreí• ë•Œ í• ë‹¹í•œ LPCHë¥¼
+               agerê°€ ì§€ì›Œë²„ë¦¬ì§€ ì•Šë„ë¡ OIDë¥¼ add í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
+               (undoì‹œ í˜¸ì¶œë˜ëŠ” restore ì—ì„œë§Œ SM_INSERT_ADD_LPCH_OID_NO ì„¤ì •) */
         }
     }
 
@@ -1334,12 +1334,12 @@ IDE_RC svcLob::allocLPCH(void*              aTrans,
 }
 
 /**********************************************************************
- * refine½Ã¿¡ LPCH¸¦ rebuildÇÑ´Ù.
+ * refineì‹œì— LPCHë¥¼ rebuildí•œë‹¤.
  *
- * aTableOID     - [IN] TableÀÇ OID
+ * aTableOID     - [IN] Tableì˜ OID
  * aArrLobColumn - [IN] Lob Column Array
  * aLobColumnCnt - [IN] Lob Column Count
- * aFixedRow     - [IN] ÀÛ¾÷ÇÏ·Á´Â Fixed Row
+ * aFixedRow     - [IN] ìž‘ì—…í•˜ë ¤ëŠ” Fixed Row
  **********************************************************************/
 IDE_RC svcLob::rebuildLPCH( smiColumn ** aArrLobColumn,
                             UInt         aLobColumnCnt,
@@ -1369,7 +1369,7 @@ IDE_RC svcLob::rebuildLPCH( smiColumn ** aArrLobColumn,
 
         if( (sLobDesc->flag & SM_VCDESC_MODE_MASK) == SM_VCDESC_MODE_OUT )
         {
-            /* trimÀ¸·Î ÀÎÇØ mLPCHCount°¡ 0ÀÏ ¼ö ÀÖ´Ù. */
+            /* trimìœ¼ë¡œ ì¸í•´ mLPCHCountê°€ 0ì¼ ìˆ˜ ìžˆë‹¤. */
             if( sLobDesc->mLPCHCount > 0 )
             {
                 IDE_TEST( iduMemMgr::malloc( IDU_MEM_SM_SMC,
@@ -1415,12 +1415,12 @@ IDE_RC svcLob::rebuildLPCH( smiColumn ** aArrLobColumn,
 }
 
 /**********************************************************************
- * lobCursor°¡ °¡¸£Å°°í ÀÖ´Â ¸Þ¸ð¸® LOBÀÇ ±æÀÌ¸¦ returnÇÑ´Ù.
+ * lobCursorê°€ ê°€ë¥´í‚¤ê³  ìžˆëŠ” ë©”ëª¨ë¦¬ LOBì˜ ê¸¸ì´ë¥¼ returní•œë‹¤.
  *
- * aTrans      [IN] ÀÛ¾÷ÇÏ´Â Æ®·£Àè¼Ç °´Ã¼
- * aLobViewEnv [IN] ÀÛ¾÷ÇÏ·Á´Â LobViewEnv °´Ã¼
- * aLobLen     [OUT] LOB µ¥ÀÌÅ¸ ±æÀÌ
- * aLobMode    [OUT] LOB ÀúÀå ¸ðµå ( In/Out )
+ * aTrans      [IN] ìž‘ì—…í•˜ëŠ” íŠ¸ëžœìž­ì…˜ ê°ì²´
+ * aLobViewEnv [IN] ìž‘ì—…í•˜ë ¤ëŠ” LobViewEnv ê°ì²´
+ * aLobLen     [OUT] LOB ë°ì´íƒ€ ê¸¸ì´
+ * aLobMode    [OUT] LOB ì €ìž¥ ëª¨ë“œ ( In/Out )
  **********************************************************************/
 IDE_RC svcLob::getLobInfo( idvSQL*        /*aStatistics*/,
                            void*          aTrans,
@@ -1469,11 +1469,11 @@ IDE_RC svcLob::getLobInfo( idvSQL*        /*aStatistics*/,
 }
 
 /**********************************************************************
- * Lob Cursor°¡ ºÁ¾ßÇÒ Row Pointer¸¦ Ã£´Â´Ù.
+ * Lob Cursorê°€ ë´ì•¼í•  Row Pointerë¥¼ ì°¾ëŠ”ë‹¤.
  *
- * aTrans      [IN] ÀÛ¾÷ÇÏ´Â Æ®·£Àè¼Ç °´Ã¼
- * aLobViewEnv [IN] ÀÛ¾÷ÇÏ·Á´Â LobViewEnv °´Ã¼
- * aRowPtr     [OUT] ÀÐ°Å³ª UpdateÇØ¾ßÇÒ Row Pointer
+ * aTrans      [IN] ìž‘ì—…í•˜ëŠ” íŠ¸ëžœìž­ì…˜ ê°ì²´
+ * aLobViewEnv [IN] ìž‘ì—…í•˜ë ¤ëŠ” LobViewEnv ê°ì²´
+ * aRowPtr     [OUT] ì½ê±°ë‚˜ Updateí•´ì•¼í•  Row Pointer
  **********************************************************************/
 IDE_RC svcLob::getViewRowPtr(void*         aTrans,
                              smLobViewEnv* aLobViewEnv,
@@ -1490,7 +1490,7 @@ IDE_RC svcLob::getViewRowPtr(void*         aTrans,
 
     if(aLobViewEnv->mOpenMode == SMI_LOB_READ_WRITE_MODE)
     {
-        // fixed rowÀÇ ÀÐÀ» ¹öÀüÀ» ¼±ÅÃÇÑ´Ù.
+        // fixed rowì˜ ì½ì„ ë²„ì „ì„ ì„ íƒí•œë‹¤.
         while( SMP_SLOT_HAS_VALID_NEXT_OID( sCurFixedSlotHeader ) )
         {
             IDE_ASSERT( svmManager::getOIDPtr( 
@@ -1506,7 +1506,7 @@ IDE_RC svcLob::getViewRowPtr(void*         aTrans,
             {
                 if( SM_SCN_IS_EQ(&sSCN, &(aLobViewEnv->mInfinite)) )
                 {
-                    // °°Àº Lob Cursor·Î updateÇÑ Next VersionÀÌ¶ó¸é º¸¿©ÁØ´Ù.
+                    // ê°™ì€ Lob Cursorë¡œ updateí•œ Next Versionì´ë¼ë©´ ë³´ì—¬ì¤€ë‹¤.
                     sReadFixedRowPtr = (SChar*)sNxtFixedSlotHeader;
                 }
             }
@@ -1534,11 +1534,11 @@ IDE_RC svcLob::getViewRowPtr(void*         aTrans,
 }
 
 /**********************************************************************
- * aRowPtrÀ» aLobViewEnv°¡ °¡¸®Å°´Â Table¿¡ »ðÀÔÇÑ´Ù.
+ * aRowPtrì„ aLobViewEnvê°€ ê°€ë¦¬í‚¤ëŠ” Tableì— ì‚½ìž…í•œë‹¤.
  *
- * aTrans      [IN] ÀÛ¾÷ÇÏ´Â Æ®·£Àè¼Ç °´Ã¼
- * aLobViewEnv [IN] ÀÛ¾÷ÇÏ·Á´Â LobViewEnv °´Ã¼
- * aRowPtr     [IN] InsertÇØ¾ßÇÒ Row Pointer
+ * aTrans      [IN] ìž‘ì—…í•˜ëŠ” íŠ¸ëžœìž­ì…˜ ê°ì²´
+ * aLobViewEnv [IN] ìž‘ì—…í•˜ë ¤ëŠ” LobViewEnv ê°ì²´
+ * aRowPtr     [IN] Insertí•´ì•¼í•  Row Pointer
  **********************************************************************/
 IDE_RC svcLob::insertIntoIdx(idvSQL*       aStatistics,
                              void*         aTrans,
@@ -1597,7 +1597,7 @@ IDE_RC svcLob::insertIntoIdx(idvSQL*       aStatistics,
 }
 
 /**********************************************************************
- * Lob Piece¸¦ ±â·ÏÇÑ´Ù.
+ * Lob Pieceë¥¼ ê¸°ë¡í•œë‹¤.
  **********************************************************************/
 IDE_RC svcLob::writePiece( smcLPCH    * aTargetLPCH,
                            UShort       aOffset,
@@ -1613,7 +1613,7 @@ IDE_RC svcLob::writePiece( smcLPCH    * aTargetLPCH,
 }
 
 /**********************************************************************
- * ÁöÁ¤µÈ ±æÀÌ¸¦ ÀúÀåÇÏ±â À§ÇÑ LPCHÀÇ Count¸¦ ±¸ÇÑÇÑ´Ù.
+ * ì§€ì •ëœ ê¸¸ì´ë¥¼ ì €ìž¥í•˜ê¸° ìœ„í•œ LPCHì˜ Countë¥¼ êµ¬í•œí•œë‹¤.
  **********************************************************************/
 UInt svcLob::getLPCHCntFromLength( UInt aLength )
 {
@@ -1633,7 +1633,7 @@ UInt svcLob::getLPCHCntFromLength( UInt aLength )
 }
 
 /**********************************************************************
- * LOB ÄÃ·³À» update ÇÑ´Ù.
+ * LOB ì»¬ëŸ¼ì„ update í•œë‹¤.
  **********************************************************************/
 IDE_RC svcLob::getLastVersion(idvSQL*          aStatistics,
                               void*            aTrans,
@@ -1665,14 +1665,14 @@ IDE_RC svcLob::getLastVersion(idvSQL*          aStatistics,
         if( SM_SCN_IS_FREE_ROW( sCurFixedSlotHeader->mLimitSCN ) )
         {
 
-            if ( /*ÇöÀç UpdateÇÒ Row¸¦ Æ®·£Àè¼ÇÀÇ ´Ù¸¥ Lob Cursor°¡ º¸°íÀÖ´Ù.*/
+            if ( /*í˜„ìž¬ Updateí•  Rowë¥¼ íŠ¸ëžœìž­ì…˜ì˜ ë‹¤ë¥¸ Lob Cursorê°€ ë³´ê³ ìžˆë‹¤.*/
                  ( smLayerCallback::getMemLobCursorCnt( aTrans,
                                                         aLobViewEnv->mLobCol.id,
                                                         aLobViewEnv->mRow ) <= 1 ) &&
-                 /*ÇöÀç Row¸¦ ´Ù¸¥ TransactionÀÌ UpdateÇÑ RowÀÌ´Ù.*/
+                 /*í˜„ìž¬ Rowë¥¼ ë‹¤ë¥¸ Transactionì´ Updateí•œ Rowì´ë‹¤.*/
                  SM_SCN_IS_EQ( &(sCurFixedSlotHeader->mCreateSCN), &(aLobViewEnv->mInfinite) ) )
             {
-                // lob copyÇÒ¶§´Â »õ·Î insertµÈ row¸¦ ¹Ù·Î »ç¿ëÇÑ´Ù.
+                // lob copyí• ë•ŒëŠ” ìƒˆë¡œ insertëœ rowë¥¼ ë°”ë¡œ ì‚¬ìš©í•œë‹¤.
                 sNxtFixedRowPtr = (SChar*)aLobViewEnv->mRow;
                 break;
             }
@@ -1687,7 +1687,7 @@ IDE_RC svcLob::getLastVersion(idvSQL*          aStatistics,
 
             while( SMP_SLOT_HAS_VALID_NEXT_OID( sNxtFixedSlotHeader ) )
             {
-                /* update´Â °¡Àå ÃÖ½Å ¹öÀü¿¡ ´ëÇØ¼­ ¼öÇàÀÌ µÈ´Ù.*/
+                /* updateëŠ” ê°€ìž¥ ìµœì‹  ë²„ì „ì— ëŒ€í•´ì„œ ìˆ˜í–‰ì´ ëœë‹¤.*/
                 IDE_ASSERT( svmManager::getOIDPtr(
                                 aLobViewEnv->mLobCol.colSpace,
                                 SMP_SLOT_GET_NEXT_OID(sNxtFixedSlotHeader),
@@ -1702,25 +1702,25 @@ IDE_RC svcLob::getLastVersion(idvSQL*          aStatistics,
                 /* check whether the record is already modified. */
                 IDE_ASSERT( SM_SCN_IS_INFINITE( sSCN ) );
 
-                // µ¿ÀÏ Æ®·£Àè¼Ç¿¡ ÀÇÇÑ ´Ù¸¥ ÀÛ¾÷ÀÌ ÀÖ¾ú´Ù¸é...
+                // ë™ì¼ íŠ¸ëžœìž­ì…˜ì— ì˜í•œ ë‹¤ë¥¸ ìž‘ì—…ì´ ìžˆì—ˆë‹¤ë©´...
                 IDE_ASSERT( sTID == smLayerCallback::getTransID( aTrans ) );
 
-                // ÀÌ LOB Cursor¿¡ ÀÇÇØ UpdateµÇ±âÀü¿¡ ´Ù¸¥ LOB
-                // Cursor¿¡ ÀÇÇØ Update°¡ ¹ß»ýÇÏ¿´´Ù.
+                // ì´ LOB Cursorì— ì˜í•´ Updateë˜ê¸°ì „ì— ë‹¤ë¥¸ LOB
+                // Cursorì— ì˜í•´ Updateê°€ ë°œìƒí•˜ì˜€ë‹¤.
                 if ( smLayerCallback::getLogTypeFlagOfTrans( aTrans )
                      == SMR_LOG_TYPE_NORMAL )
                 {
                     /* BUG-16003:
-                     * Sender°¡ ÇÏ³ªÀÇ Row¿¡ ´ëÇØ¼­ °°Àº Table Cursor·Î
-                     * LOB Cursor¸¦ µÎ°³ ¿­¸é µÎ°³ÀÇ LOB Cursor´Â °°Àº
-                     * Infinite SCNÀ» °¡Áø´Ù. ÇÏÁö¸¸ Receiver´Ü¿¡¼­´Â
-                     * °¢±â ´Ù¸¥ Table Cursor·Î LOB Cursor°¡ µÎ°³¿­¸®°Ô
-                     * µÇ¾î¼­ ´Ù¸¥ Infinite SCNÀ» °¡Áö°Ô µÇ¾î Sender¿¡¼­
-                     * ¼º°øÇÑ Prepare°¡ Receiver´Ü¿¡¼­´Â Too Old¿¡·¯°¡
-                     * ¹ß»ýÇÑ´Ù. À§ Çö»óÀ» ¹æÁöÇÏ±â À§ÇØ Normal Transaction
-                     * ÀÏ °æ¿ì¿¡¸¸ ¾Æ·¡ Ã¼Å©¸¦ ¼öÇàÇÑ´Ù. ReplicationÀº ¼º°øÇÑ
-                     * ¿¬»êÀÏ °æ¿ì¿¡¸¸ Log°¡ ±â·ÏµÇ±â ¶§¹®¿¡ ¾Æ·¡ Validate´Â
-                     * ¹«½ÃÇØµµ µÈ´Ù.*/
+                     * Senderê°€ í•˜ë‚˜ì˜ Rowì— ëŒ€í•´ì„œ ê°™ì€ Table Cursorë¡œ
+                     * LOB Cursorë¥¼ ë‘ê°œ ì—´ë©´ ë‘ê°œì˜ LOB CursorëŠ” ê°™ì€
+                     * Infinite SCNì„ ê°€ì§„ë‹¤. í•˜ì§€ë§Œ Receiverë‹¨ì—ì„œëŠ”
+                     * ê°ê¸° ë‹¤ë¥¸ Table Cursorë¡œ LOB Cursorê°€ ë‘ê°œì—´ë¦¬ê²Œ
+                     * ë˜ì–´ì„œ ë‹¤ë¥¸ Infinite SCNì„ ê°€ì§€ê²Œ ë˜ì–´ Senderì—ì„œ
+                     * ì„±ê³µí•œ Prepareê°€ Receiverë‹¨ì—ì„œëŠ” Too Oldì—ëŸ¬ê°€
+                     * ë°œìƒí•œë‹¤. ìœ„ í˜„ìƒì„ ë°©ì§€í•˜ê¸° ìœ„í•´ Normal Transaction
+                     * ì¼ ê²½ìš°ì—ë§Œ ì•„ëž˜ ì²´í¬ë¥¼ ìˆ˜í–‰í•œë‹¤. Replicationì€ ì„±ê³µí•œ
+                     * ì—°ì‚°ì¼ ê²½ìš°ì—ë§Œ Logê°€ ê¸°ë¡ë˜ê¸° ë•Œë¬¸ì— ì•„ëž˜ ValidateëŠ”
+                     * ë¬´ì‹œí•´ë„ ëœë‹¤.*/
                     IDE_TEST_RAISE( !SM_SCN_IS_EQ(
                                         &sSCN,
                                         &(aLobViewEnv->mInfinite)),
@@ -1736,8 +1736,8 @@ IDE_RC svcLob::getLastVersion(idvSQL*          aStatistics,
                 }
                 else
                 {
-                    // °°Àº Lob Cursor·Î updateÇÑ Next VersionÀº °øÀ¯ÇÑ´Ù.
-                    // BUGBUG - ÀÌ¶§ partial rollback º¹ÀâÇØÁü..
+                    // ê°™ì€ Lob Cursorë¡œ updateí•œ Next Versionì€ ê³µìœ í•œë‹¤.
+                    // BUGBUG - ì´ë•Œ partial rollback ë³µìž¡í•´ì§..
                     sNxtFixedRowPtr = (SChar*)sNxtFixedSlotHeader;
                     break;
                 }
@@ -1753,9 +1753,9 @@ IDE_RC svcLob::getLastVersion(idvSQL*          aStatistics,
                 else
                 {
                     /*
-                     * delete row¿¬»êÀÌ ¼öÇàµÇ¾ú´Ù.
-                     * ÀÌ °æ¿ì¿¡´Â ÀÌ¹Ì deleteµÈ rowÀÇ mNext¿¡ »õ·Î¿î ¹öÀüÀÌ ´Þ¸®°Ô µÈ´Ù.
-                     * ÀÌ·¯ÇÑ ÀÏÀÌ ¹ß»ýÇØ¼­´Â ¾ÈµÈ´Ù.
+                     * delete rowì—°ì‚°ì´ ìˆ˜í–‰ë˜ì—ˆë‹¤.
+                     * ì´ ê²½ìš°ì—ëŠ” ì´ë¯¸ deleteëœ rowì˜ mNextì— ìƒˆë¡œìš´ ë²„ì „ì´ ë‹¬ë¦¬ê²Œ ëœë‹¤.
+                     * ì´ëŸ¬í•œ ì¼ì´ ë°œìƒí•´ì„œëŠ” ì•ˆëœë‹¤.
                      */
                     IDE_ASSERT(0);
                 }
@@ -1764,11 +1764,11 @@ IDE_RC svcLob::getLastVersion(idvSQL*          aStatistics,
 
         IDE_ASSERT(sUpdateFixedRowPtr != NULL);
 
-        // Globalº¯¼ö·Î ¼±¾ðµÈ SC_NULL_GRID°¡ NULL GRID°¡ ¸Â´ÂÁö ÀçÈ®ÀÎ
-        // ¸Þ¸ð¸® ±ÜÀ» °æ¿ì ¿©±â¼­ ASSERT°É¸²
+        // Globalë³€ìˆ˜ë¡œ ì„ ì–¸ëœ SC_NULL_GRIDê°€ NULL GRIDê°€ ë§žëŠ”ì§€ ìž¬í™•ì¸
+        // ë©”ëª¨ë¦¬ ê¸ì„ ê²½ìš° ì—¬ê¸°ì„œ ASSERTê±¸ë¦¼
         IDE_ASSERT( SC_GRID_IS_NULL( SC_NULL_GRID ) == ID_TRUE );
 
-        // fixed row¿¡ ´ëÇÑ update version ¼öÇà
+        // fixed rowì— ëŒ€í•œ update version ìˆ˜í–‰
         IDE_TEST( svcRecord::updateVersion(
                       aStatistics,    // aStatistics
                       aTrans,
@@ -1809,7 +1809,7 @@ IDE_RC svcLob::getLastVersion(idvSQL*          aStatistics,
 }
 
 /**********************************************************************
- * writeÇÒ °ø°£À» È®º¸ÇÑ´Ù.
+ * writeí•  ê³µê°„ì„ í™•ë³´í•œë‹¤.
  **********************************************************************/
 IDE_RC svcLob::reserveSpace(void*         aTrans,
                             smLobViewEnv* aLobViewEnv,
@@ -1827,26 +1827,26 @@ IDE_RC svcLob::reserveSpace(void*         aTrans,
 
     IDE_TEST_RAISE( aOffset > sCurLobDesc->length, range_error );
 
-    // old image¸¦ º¹»ç
+    // old imageë¥¼ ë³µì‚¬
     if ( SM_VCDESC_IS_MODE_IN(sCurLobDesc) )
     {
-        // BUG-30101 µ¥ÀÌÅ¸°¡ In-Mode·Î ÀúÀåµÇ¾úÀ» °æ¿ì µ¥ÀÌÅ¸´Â
-        // Fixed¿µ¿ª¿¡ ÀúÀåµÇ¾îÀÖ´Ù. Lob Column Desc ¿Í ÇÔ²² °°ÀÌ º¹»çÇØµÐ´Ù
+        // BUG-30101 ë°ì´íƒ€ê°€ In-Modeë¡œ ì €ìž¥ë˜ì—ˆì„ ê²½ìš° ë°ì´íƒ€ëŠ”
+        // Fixedì˜ì—­ì— ì €ìž¥ë˜ì–´ìžˆë‹¤. Lob Column Desc ì™€ í•¨ê»˜ ê°™ì´ ë³µì‚¬í•´ë‘”ë‹¤
         idlOS::memcpy( sLobColBuf,
                        sLobInRowPtr,
                        sCurLobDesc->length + ID_SIZEOF(smVCDescInMode));
     }
     else
     {
-        // Out Mode·Î ÀúÀå µÇ¾î ÀÖÀ»°æ¿ì
+        // Out Modeë¡œ ì €ìž¥ ë˜ì–´ ìžˆì„ê²½ìš°
         idlOS::memcpy( sLobColBuf, sLobInRowPtr, ID_SIZEOF(smcLobDesc) );
     }
 
-    // new version ÇÒ´ç
-    // BUG-30036 Memory LOBÀ» ODBC·Î Insert ÇÏ´Ù ½ÇÆÐÇÏ¿´À» ¶§,
-    // º¯°æÇÏ´ø LOB Desc¸¦ ¼öÁ¤µÈ Ã¤·Î RollbackÇÏÁö ¾Ê°í ÀÖ½À´Ï´Ù. ·Î ÀÎÇÏ¿©
-    // º°µµÀÇ Dummy Lob Desc·Î Prepare ÇÏ°í Log¸¦ ¸ÕÀú ±â·Ï ÇÑ ÈÄ¿¡
-    // º¯°æµÈ LOB Desc¸¦ Data Page¿¡ ¹Ý¿µÇÕ´Ï´Ù.
+    // new version í• ë‹¹
+    // BUG-30036 Memory LOBì„ ODBCë¡œ Insert í•˜ë‹¤ ì‹¤íŒ¨í•˜ì˜€ì„ ë•Œ,
+    // ë³€ê²½í•˜ë˜ LOB Descë¥¼ ìˆ˜ì •ëœ ì±„ë¡œ Rollbackí•˜ì§€ ì•Šê³  ìžˆìŠµë‹ˆë‹¤. ë¡œ ì¸í•˜ì—¬
+    // ë³„ë„ì˜ Dummy Lob Descë¡œ Prepare í•˜ê³  Logë¥¼ ë¨¼ì € ê¸°ë¡ í•œ í›„ì—
+    // ë³€ê²½ëœ LOB Descë¥¼ Data Pageì— ë°˜ì˜í•©ë‹ˆë‹¤.
     IDE_TEST( reserveSpaceInternal( aTrans,
                                     (smcTableHeader*)(aLobViewEnv->mTable),
                                     &aLobViewEnv->mLobCol,
@@ -1860,17 +1860,17 @@ IDE_RC svcLob::reserveSpace(void*         aTrans,
 
     sNewLobDesc = (smcLobDesc*)sLobColBuf;
 
-    // BUG-30036 º¯°æµÈ Lob Desc¸¦ Data Page¿¡ ¹Ý¿µ
+    // BUG-30036 ë³€ê²½ëœ Lob Descë¥¼ Data Pageì— ë°˜ì˜
     if ( SM_VCDESC_IS_MODE_IN(sNewLobDesc) )
     {
-        /* Lob Desc¸¸ º¹»çÇÑ´Ù. */
+        /* Lob Descë§Œ ë³µì‚¬í•œë‹¤. */
         idlOS::memcpy( sLobInRowPtr,
                        sLobColBuf,
                        ID_SIZEOF(smVCDescInMode) );
     }
     else
     {
-        // BUG-30101 Out Mode·Î ÀúÀå µÈ °æ¿ì Lob Desc¸¸ º¹»çÇÑ´Ù.
+        // BUG-30101 Out Modeë¡œ ì €ìž¥ ëœ ê²½ìš° Lob Descë§Œ ë³µì‚¬í•œë‹¤.
         idlOS::memcpy( sLobInRowPtr,
                        sLobColBuf,
                        ID_SIZEOF(smcLobDesc) );
@@ -1880,8 +1880,8 @@ IDE_RC svcLob::reserveSpace(void*         aTrans,
 
     IDE_EXCEPTION(range_error);
     {
-        // BUG-29212 µð½ºÅ© LobÀÇ read½Ã range check¸¦ ÇÏÁö ¾Ê½À´Ï´Ù.
-        // range´Â OffsetºÎÅÍ Amount - 1 ±îÁö ÀÔ´Ï´Ù.
+        // BUG-29212 ë””ìŠ¤í¬ Lobì˜ readì‹œ range checkë¥¼ í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
+        // rangeëŠ” Offsetë¶€í„° Amount - 1 ê¹Œì§€ ìž…ë‹ˆë‹¤.
         IDE_SET(ideSetErrorCode(smERR_ABORT_RangeError,
                                 aOffset,
                                 (aOffset + aNewSize - 1),
@@ -1894,7 +1894,7 @@ IDE_RC svcLob::reserveSpace(void*         aTrans,
 }
 
 /**********************************************************************
- * °ø°£ trim ÇÑ´Ù.
+ * ê³µê°„ trim í•œë‹¤.
  **********************************************************************/
 IDE_RC svcLob::trimSpaceInternal(void*               aTrans,
                                  smcTableHeader*     aTable,
@@ -1925,8 +1925,8 @@ IDE_RC svcLob::trimSpaceInternal(void*               aTrans,
 
     if ( SM_VCDESC_IS_MODE_IN( aLobDesc ) )
     {
-        /* µ¥ÀÌÅ¸°¡ In-Mode·Î ÀúÀåµÇ¾úÀ» °æ¿ì µ¥ÀÌÅ¸´Â
-         * Fixed¿µ¿ª¿¡ ÀúÀåµÇ¾îÀÖ´Ù. Lob Column Desc ¿Í ÇÔ²² °°ÀÌ º¹»çÇØµÐ´Ù */
+        /* ë°ì´íƒ€ê°€ In-Modeë¡œ ì €ìž¥ë˜ì—ˆì„ ê²½ìš° ë°ì´íƒ€ëŠ”
+         * Fixedì˜ì—­ì— ì €ìž¥ë˜ì–´ìžˆë‹¤. Lob Column Desc ì™€ í•¨ê»˜ ê°™ì´ ë³µì‚¬í•´ë‘”ë‹¤ */
         idlOS::memcpy( (SChar*)sOldLobDesc,
                        (SChar*)aLobDesc,
                        ID_SIZEOF(smVCDescInMode) + aLobDesc->length );
@@ -2018,7 +2018,7 @@ IDE_RC svcLob::trimSpaceInternal(void*               aTrans,
 }
 
 /**********************************************************************
- * Old VersionÀÇ LPCH°¡ °¡¸®Å°´Â Piece ¹× LPCH¸¦ »èÁ¦ÇÑ´Ù.
+ * Old Versionì˜ LPCHê°€ ê°€ë¦¬í‚¤ëŠ” Piece ë° LPCHë¥¼ ì‚­ì œí•œë‹¤.
  **********************************************************************/
 IDE_RC svcLob::removeOldLPCH(void*               aTrans,
                              smcTableHeader*     aTable,
@@ -2169,7 +2169,7 @@ IDE_RC svcLob::trimPiece(void*           aTrans,
             aLobDesc->mFirstLPCH[sIdx].mOID        = sNewPieceOID;
             aLobDesc->mFirstLPCH[sIdx].mPtr        = sNewPiecePtr;
 
-            /* »õ·Î ÇÒ´çÇÑ lob piece¿¡ ´ëÇÏ¿© version list Ãß°¡ */
+            /* ìƒˆë¡œ í• ë‹¹í•œ lob pieceì— ëŒ€í•˜ì—¬ version list ì¶”ê°€ */
             if ( SM_INSERT_ADD_OID_IS_OK(aAddOIDFlag) )
             {
                 IDE_TEST( smLayerCallback::addOID( aTrans,
@@ -2278,20 +2278,20 @@ IDE_RC svcLob::trim( idvSQL       * aStatistics,
     if ( SM_VCDESC_IS_MODE_IN(sCurLobDesc) )
     {
         aLobViewEnv->mLobVersion = 1;
-        // BUG-30101 µ¥ÀÌÅ¸°¡ In-Mode·Î ÀúÀåµÇ¾úÀ» °æ¿ì µ¥ÀÌÅ¸´Â
-        // Fixed¿µ¿ª¿¡ ÀúÀåµÇ¾îÀÖ´Ù. Lob Column Desc ¿Í ÇÔ²² °°ÀÌ º¹»çÇØµÐ´Ù
+        // BUG-30101 ë°ì´íƒ€ê°€ In-Modeë¡œ ì €ìž¥ë˜ì—ˆì„ ê²½ìš° ë°ì´íƒ€ëŠ”
+        // Fixedì˜ì—­ì— ì €ìž¥ë˜ì–´ìžˆë‹¤. Lob Column Desc ì™€ í•¨ê»˜ ê°™ì´ ë³µì‚¬í•´ë‘”ë‹¤
         idlOS::memcpy( sLobColBuf,
                        sLobInRowPtr,
                        sCurLobDesc->length + ID_SIZEOF(smVCDescInMode));
     }
     else
     {
-        // LobVersion Àº Out Mode ¿¡¼­¸¸ À¯È¿ÇÏ´Ù. 
+        // LobVersion ì€ Out Mode ì—ì„œë§Œ ìœ íš¨í•˜ë‹¤. 
         aLobViewEnv->mLobVersion = sCurLobDesc->mLobVersion + 1;
         IDE_TEST_RAISE( aLobViewEnv->mLobVersion == ID_ULONG_MAX,
                         error_version_overflow );    
 
-        // Out Mode·Î ÀúÀå µÇ¾î ÀÖÀ»°æ¿ì
+        // Out Modeë¡œ ì €ìž¥ ë˜ì–´ ìžˆì„ê²½ìš°
         idlOS::memcpy( sLobColBuf, sLobInRowPtr, ID_SIZEOF(smcLobDesc) );
     }
     
@@ -2313,14 +2313,14 @@ IDE_RC svcLob::trim( idvSQL       * aStatistics,
 
     if ( SM_VCDESC_IS_MODE_IN(sNewLobDesc) )
     {
-        /* Lob Desc¸¸ º¹»çÇÑ´Ù. */
+        /* Lob Descë§Œ ë³µì‚¬í•œë‹¤. */
         idlOS::memcpy( sLobInRowPtr,
                        sLobColBuf,
                        ID_SIZEOF(smVCDescInMode) );
     }
     else
     {
-        // BUG-30101 Out Mode·Î ÀúÀå µÈ °æ¿ì Lob Desc¸¸ º¹»çÇÑ´Ù.
+        // BUG-30101 Out Modeë¡œ ì €ìž¥ ëœ ê²½ìš° Lob Descë§Œ ë³µì‚¬í•œë‹¤.
         idlOS::memcpy( sLobInRowPtr,
                        sLobColBuf,
                        ID_SIZEOF(smcLobDesc) );
@@ -2332,8 +2332,8 @@ IDE_RC svcLob::trim( idvSQL       * aStatistics,
 
     IDE_EXCEPTION(range_error);
     {
-        // BUG-29212 µð½ºÅ© LobÀÇ read½Ã range check¸¦ ÇÏÁö ¾Ê½À´Ï´Ù.
-        // range´Â OffsetºÎÅÍ Amount - 1 ±îÁö ÀÔ´Ï´Ù.
+        // BUG-29212 ë””ìŠ¤í¬ Lobì˜ readì‹œ range checkë¥¼ í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
+        // rangeëŠ” Offsetë¶€í„° Amount - 1 ê¹Œì§€ ìž…ë‹ˆë‹¤.
         IDE_SET(ideSetErrorCode(smERR_ABORT_RangeError,
                                 aOffset,
                                 (sCurLobDesc->length - 1),

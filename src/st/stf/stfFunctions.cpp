@@ -19,7 +19,7 @@
  * $Id: stfFunctions.cpp 18883 2006-11-14 01:48:40Z sabbra $
  *
  * Description:
- * Geometry °´Ã¼°¡ Å¸ÀÔ º°·Î °¡Áö´Â ¼Ó¼º ÇÔ¼ö ±¸Çö
+ * Geometry ê°ì²´ê°€ íƒ€ì… ë³„ë¡œ ê°€ì§€ëŠ” ì†ì„± í•¨ìˆ˜ êµ¬í˜„
  **********************************************************************/
 
 #include <idl.h>
@@ -46,7 +46,7 @@ extern mtdModule mtdDouble;
 
 /***********************************************************************
  * Description:
- * stdPoint2DType, stdPoint3DTypeÀÇ xÁÂÇ¥¸¦ ¸®ÅÏ
+ * stdPoint2DType, stdPoint3DTypeì˜ xì¢Œí‘œë¥¼ ë¦¬í„´
  *
  * mtcStack*    aStack(InOut):
  **********************************************************************/
@@ -61,7 +61,7 @@ IDE_RC stfFunctions::coordX(
     stdPoint2DType*         sPoint2D;
     void*                   sRet = aStack[0].value;
 
-    // Fix BUG-15412 mtdModule.isNull »ç¿ë
+    // Fix BUG-15412 mtdModule.isNull ì‚¬ìš©
     if( stdGeometry.isNull( NULL, sValue )==ID_TRUE )
     {
         aStack[0].column->module->null( aStack[0].column,
@@ -97,7 +97,7 @@ IDE_RC stfFunctions::coordX(
 
 /***********************************************************************
  * Description:
- * stdPoint2DType, stdPoint3DTypeÀÇ yÁÂÇ¥¸¦ ¸®ÅÏ
+ * stdPoint2DType, stdPoint3DTypeì˜ yì¢Œí‘œë¥¼ ë¦¬í„´
  *
  * mtcStack*    aStack(InOut):
  **********************************************************************/
@@ -112,7 +112,7 @@ IDE_RC stfFunctions::coordY(
     stdPoint2DType*         sPoint2D;
     void*                   sRet = aStack[0].value;
 
-    // Fix BUG-15412 mtdModule.isNull »ç¿ë
+    // Fix BUG-15412 mtdModule.isNull ì‚¬ìš©
     if( stdGeometry.isNull( NULL, sValue )==ID_TRUE )
     {
         aStack[0].column->module->null( aStack[0].column,
@@ -152,7 +152,7 @@ IDE_RC stfFunctions::coordY(
 
 /***********************************************************************
  * Description:
- * stdLineString2DType, stdLineString3DTypeÀÇ ½ÃÀÛÁ¡À» ¸®ÅÏ
+ * stdLineString2DType, stdLineString3DTypeì˜ ì‹œì‘ì ì„ ë¦¬í„´
  *
  * mtcStack*    aStack(InOut):
  **********************************************************************/
@@ -166,7 +166,7 @@ IDE_RC stfFunctions::startPoint(
     stdGeometryHeader*      sValue = (stdGeometryHeader *)aStack[1].value;
     stdGeometryHeader*      sRet = (stdGeometryHeader*)aStack[0].value;
     
-    // Fix BUG-15412 mtdModule.isNull »ç¿ë
+    // Fix BUG-15412 mtdModule.isNull ì‚¬ìš©
     if( stdGeometry.isNull( NULL, sValue )==ID_TRUE )
     {
         aStack[0].column->module->null( aStack[0].column,
@@ -191,7 +191,7 @@ IDE_RC stfFunctions::startPoint(
 
 /***********************************************************************
  * Description:
- * stdLineString2DType, stdLineString3DTypeÀÇ ³¡Á¡À» ¸®ÅÏ
+ * stdLineString2DType, stdLineString3DTypeì˜ ëì ì„ ë¦¬í„´
  *
  * mtcStack*    aStack(InOut):
  **********************************************************************/
@@ -205,7 +205,7 @@ IDE_RC stfFunctions::endPoint(
     stdGeometryHeader*      sValue = (stdGeometryHeader *)aStack[1].value;
     stdGeometryHeader*      sRet = (stdGeometryHeader*)aStack[0].value;
     
-    // Fix BUG-15412 mtdModule.isNull »ç¿ë
+    // Fix BUG-15412 mtdModule.isNull ì‚¬ìš©
     if( stdGeometry.isNull( NULL, sValue )==ID_TRUE )
     {
         aStack[0].column->module->null( aStack[0].column,
@@ -231,7 +231,7 @@ IDE_RC stfFunctions::endPoint(
 /***********************************************************************
  * Description:
  * stdLineString2DType, stdLineString3DType, stdMultiLineString2DType
- * stdMultiLineString3DTypeÀÌ ´İÇô ÀÖ´ÂÁö ÆÇº°
+ * stdMultiLineString3DTypeì´ ë‹«í˜€ ìˆëŠ”ì§€ íŒë³„
  *
  * mtcStack*    aStack(InOut):
  **********************************************************************/
@@ -245,7 +245,7 @@ IDE_RC stfFunctions::isClosed(
     stdGeometryHeader*      sValue = (stdGeometryHeader *)aStack[1].value;
     mtdIntegerType*         sRet = (mtdIntegerType*)aStack[0].value;
     
-    // Fix BUG-15412 mtdModule.isNull »ç¿ë
+    // Fix BUG-15412 mtdModule.isNull ì‚¬ìš©
     if( stdGeometry.isNull( NULL, sValue )==ID_TRUE )
     {
         aStack[0].column->module->null( aStack[0].column,
@@ -268,7 +268,7 @@ IDE_RC stfFunctions::isClosed(
 /***********************************************************************
  * Description:
  * stdLineString2DType, stdLineString3DType, stdMultiLineString2DType
- * stdMultiLineString3DTypeÀÌ ¸µÀÎÁö ÆÇº°
+ * stdMultiLineString3DTypeì´ ë§ì¸ì§€ íŒë³„
  *
  * mtcStack*    aStack(InOut):
  **********************************************************************/
@@ -282,7 +282,7 @@ IDE_RC stfFunctions::isRing(
     stdGeometryHeader*      sValue = (stdGeometryHeader *)aStack[1].value;
     mtdIntegerType*         sRet = (mtdIntegerType*)aStack[0].value;
     
-    // Fix BUG-15412 mtdModule.isNull »ç¿ë
+    // Fix BUG-15412 mtdModule.isNull ì‚¬ìš©
     if( stdGeometry.isNull( NULL, sValue )==ID_TRUE )
     {
         aStack[0].column->module->null( aStack[0].column,
@@ -305,7 +305,7 @@ IDE_RC stfFunctions::isRing(
 /***********************************************************************
  * Description:
  * stdLineString2DType, stdLineString3DType, stdMultiLineString2DType
- * stdMultiLineString3DTypeÀÇ ÃÑ±æÀÌ ¸®ÅÏ
+ * stdMultiLineString3DTypeì˜ ì´ê¸¸ì´ ë¦¬í„´
  *
  * mtcStack*    aStack(InOut):
  **********************************************************************/
@@ -319,7 +319,7 @@ IDE_RC stfFunctions::length(
     stdGeometryHeader*      sValue = (stdGeometryHeader *)aStack[1].value;
     void*                   sRet = aStack[0].value;
     
-    // Fix BUG-15412 mtdModule.isNull »ç¿ë
+    // Fix BUG-15412 mtdModule.isNull ì‚¬ìš©
     if( stdGeometry.isNull( NULL, sValue )==ID_TRUE )
     {
         aStack[0].column->module->null( aStack[0].column,
@@ -341,7 +341,7 @@ IDE_RC stfFunctions::length(
 
 /***********************************************************************
  * Description:
- * Geometry °´Ã¼ÀÇ Point°³¼ö  ¸®ÅÏ
+ * Geometry ê°ì²´ì˜ Pointê°œìˆ˜  ë¦¬í„´
  *
  * mtcStack*    aStack(InOut):
  **********************************************************************/
@@ -355,7 +355,7 @@ IDE_RC stfFunctions::numPoints(
     stdGeometryHeader*      sValue = (stdGeometryHeader *)aStack[1].value;
     mtdIntegerType*         sRet = (mtdIntegerType*)aStack[0].value;
     
-    // Fix BUG-15412 mtdModule.isNull »ç¿ë
+    // Fix BUG-15412 mtdModule.isNull ì‚¬ìš©
     if( stdGeometry.isNull( NULL, sValue )==ID_TRUE )
     {
         aStack[0].column->module->null( aStack[0].column,
@@ -377,7 +377,7 @@ IDE_RC stfFunctions::numPoints(
 
 /***********************************************************************
  * Description:
- * ¶óÀÎ °´Ã¼ÀÇ N ¹øÂ° Point ¸®ÅÏ
+ * ë¼ì¸ ê°ì²´ì˜ N ë²ˆì§¸ Point ë¦¬í„´
  *
  * mtcStack*    aStack(InOut):
  **********************************************************************/
@@ -392,7 +392,7 @@ IDE_RC stfFunctions::pointN(
     stdGeometryHeader*      sRet   = (stdGeometryHeader*)aStack[0].value;
     UInt*                   sNum   = (UInt*)aStack[2].value;
     
-    // Fix BUG-15412 mtdModule.isNull »ç¿ë
+    // Fix BUG-15412 mtdModule.isNull ì‚¬ìš©
     if( (stdGeometry.isNull( NULL, sValue )==ID_TRUE) ||
         (mtdInteger.isNull( NULL, sNum )==ID_TRUE) )
     {
@@ -423,7 +423,7 @@ IDE_RC stfFunctions::pointN(
 /***********************************************************************
  * Description:
  * stdPolygon2DType, stdPolygon3DType, stdMultiPolygon2DType, 
- * stdMultiPolygon3DType°´Ã¼ÀÇ ¹«°Ô Áß½É ¸®ÅÏ
+ * stdMultiPolygon3DTypeê°ì²´ì˜ ë¬´ê²Œ ì¤‘ì‹¬ ë¦¬í„´
  *
  * mtcStack*    aStack(InOut):
  **********************************************************************/
@@ -437,7 +437,7 @@ IDE_RC stfFunctions::centroid(
     stdGeometryHeader*      sValue = (stdGeometryHeader *)aStack[1].value;
     stdGeometryHeader*      sRet = (stdGeometryHeader*)aStack[0].value;
     
-    // Fix BUG-15412 mtdModule.isNull »ç¿ë
+    // Fix BUG-15412 mtdModule.isNull ì‚¬ìš©
     if( stdGeometry.isNull( NULL, sValue )==ID_TRUE )
     {
         aStack[0].column->module->null( aStack[0].column,
@@ -463,7 +463,7 @@ IDE_RC stfFunctions::centroid(
 /***********************************************************************
  * Description:
  * stdPolygon2DType, stdPolygon3DType, stdMultiPolygon2DType, 
- * stdMultiPolygon3DType°´Ã¼ÀÇ ³»ºÎÀÇ ÇÑ Á¡ ¸®ÅÏ
+ * stdMultiPolygon3DTypeê°ì²´ì˜ ë‚´ë¶€ì˜ í•œ ì  ë¦¬í„´
  *
  * mtcStack*    aStack(InOut):
  **********************************************************************/
@@ -485,7 +485,7 @@ IDE_RC stfFunctions::pointOnSurface(
     sQcTmplate = (qcTemplate*) aTemplate;
     sQmxMem    = QC_QMX_MEM( sQcTmplate->stmt );
     
-    // Fix BUG-15412 mtdModule.isNull »ç¿ë
+    // Fix BUG-15412 mtdModule.isNull ì‚¬ìš©
     if( stdGeometry.isNull( NULL, sValue )==ID_TRUE )
     {
         aStack[0].column->module->null( aStack[0].column,
@@ -498,13 +498,13 @@ IDE_RC stfFunctions::pointOnSurface(
 
         stdGeometry.null(NULL, sRet);  // Fix BUG-15504
 
-        // Memory Àç»ç¿ëÀ» À§ÇÏ¿© ÇöÀç À§Ä¡ ±â·Ï
+        // Memory ì¬ì‚¬ìš©ì„ ìœ„í•˜ì—¬ í˜„ì¬ ìœ„ì¹˜ ê¸°ë¡
         IDE_TEST( sQmxMem->getStatus(&sQmxMemStatus) != IDE_SUCCESS);
         sStage = 1;
         
         IDE_TEST( getPointOnSurface( sQmxMem, sValue, sRet ) != IDE_SUCCESS );
         
-        // Memory Àç»ç¿ëÀ» À§ÇÑ Memory ÀÌµ¿
+        // Memory ì¬ì‚¬ìš©ì„ ìœ„í•œ Memory ì´ë™
         sStage = 0;
         IDE_TEST( sQmxMem->setStatus(&sQmxMemStatus) != IDE_SUCCESS);
     }
@@ -524,7 +524,7 @@ IDE_RC stfFunctions::pointOnSurface(
 /***********************************************************************
  * Description:
  * stdPolygon2DType, stdPolygon3DType, stdMultiPolygon2DType, 
- * stdMultiPolygon3DType°´Ã¼ÀÇ ³ĞÀÌ ¸®ÅÏ
+ * stdMultiPolygon3DTypeê°ì²´ì˜ ë„“ì´ ë¦¬í„´
  *
  * mtcStack*    aStack(InOut):
  **********************************************************************/
@@ -538,7 +538,7 @@ IDE_RC stfFunctions::area(
     stdGeometryHeader*      sValue = (stdGeometryHeader *)aStack[1].value;
     void*                   sRet = aStack[0].value;
     
-    // Fix BUG-15412 mtdModule.isNull »ç¿ë
+    // Fix BUG-15412 mtdModule.isNull ì‚¬ìš©
     if( stdGeometry.isNull( NULL, sValue )==ID_TRUE )
     {
         aStack[0].column->module->null( aStack[0].column,
@@ -561,7 +561,7 @@ IDE_RC stfFunctions::area(
 /***********************************************************************
  * Description:
  * stdPolygon2DType, stdPolygon3DType, stdMultiPolygon2DType, 
- * stdMultiPolygon3DType°´Ã¼ÀÇ ¿ÜºÎ¸µ ¸®ÅÏ
+ * stdMultiPolygon3DTypeê°ì²´ì˜ ì™¸ë¶€ë§ ë¦¬í„´
  *
  * mtcStack*    aStack(InOut):
  **********************************************************************/
@@ -575,7 +575,7 @@ IDE_RC stfFunctions::exteriorRing(
     stdGeometryHeader*      sValue = (stdGeometryHeader *)aStack[1].value;
     stdGeometryHeader*      sRet = (stdGeometryHeader*)aStack[0].value;
     
-    // Fix BUG-15412 mtdModule.isNull »ç¿ë
+    // Fix BUG-15412 mtdModule.isNull ì‚¬ìš©
     if( stdGeometry.isNull( NULL, sValue )==ID_TRUE )
     {
         aStack[0].column->module->null( aStack[0].column,
@@ -601,7 +601,7 @@ IDE_RC stfFunctions::exteriorRing(
 /***********************************************************************
  * Description:
  * stdPolygon2DType, stdPolygon3DType, stdMultiPolygon2DType, 
- * stdMultiPolygon3DType°´Ã¼ÀÇ ³»ºÎ¸µÀÇ °³¼ö ¸®ÅÏ
+ * stdMultiPolygon3DTypeê°ì²´ì˜ ë‚´ë¶€ë§ì˜ ê°œìˆ˜ ë¦¬í„´
  *
  * mtcStack*    aStack(InOut):
  **********************************************************************/
@@ -615,7 +615,7 @@ IDE_RC stfFunctions::numInteriorRing(
     stdGeometryHeader*      sValue = (stdGeometryHeader *)aStack[1].value;
     mtdIntegerType*         sRet = (mtdIntegerType*)aStack[0].value;
     
-    // Fix BUG-15412 mtdModule.isNull »ç¿ë
+    // Fix BUG-15412 mtdModule.isNull ì‚¬ìš©
     if( stdGeometry.isNull( NULL, sValue )==ID_TRUE )
     {
         aStack[0].column->module->null( aStack[0].column,
@@ -638,7 +638,7 @@ IDE_RC stfFunctions::numInteriorRing(
 /***********************************************************************
  * Description:
  * stdPolygon2DType, stdPolygon3DType, stdMultiPolygon2DType, 
- * stdMultiPolygon3DType°´Ã¼ÀÇ N¹ø Â° ³»ºÎ¸µ ¸®ÅÏ
+ * stdMultiPolygon3DTypeê°ì²´ì˜ Në²ˆ ì§¸ ë‚´ë¶€ë§ ë¦¬í„´
  *
  * mtcStack*    aStack(InOut):
  **********************************************************************/
@@ -654,7 +654,7 @@ IDE_RC stfFunctions::interiorRingN(
     UInt*                   sNum = (UInt*)aStack[2].value;
     
                             
-    // Fix BUG-15412 mtdModule.isNull »ç¿ë
+    // Fix BUG-15412 mtdModule.isNull ì‚¬ìš©
     if( (stdGeometry.isNull( NULL, sValue )==ID_TRUE) ||
         (mtdInteger.isNull( NULL, sNum )==ID_TRUE) )
     {
@@ -680,7 +680,7 @@ IDE_RC stfFunctions::interiorRingN(
 
 /***********************************************************************
  * Description:
- * Geometry °´Ã¼ÀÇ °³¼ö ¸®ÅÏ
+ * Geometry ê°ì²´ì˜ ê°œìˆ˜ ë¦¬í„´
  *
  * mtcStack*    aStack(InOut):
  **********************************************************************/
@@ -694,7 +694,7 @@ IDE_RC stfFunctions::numGeometries(
     stdGeometryHeader*      sValue = (stdGeometryHeader *)aStack[1].value;
     mtdIntegerType*         sRet = (mtdIntegerType*)aStack[0].value;
     
-    // Fix BUG-15412 mtdModule.isNull »ç¿ë
+    // Fix BUG-15412 mtdModule.isNull ì‚¬ìš©
     if( stdGeometry.isNull( NULL, sValue )==ID_TRUE )
     {
         aStack[0].column->module->null( aStack[0].column,
@@ -717,7 +717,7 @@ IDE_RC stfFunctions::numGeometries(
 
 /***********************************************************************
  * Description:
- * Geometry °´Ã¼ÀÇ N¹øÂ° °´Ã¼ ¸®ÅÏ
+ * Geometry ê°ì²´ì˜ Në²ˆì§¸ ê°ì²´ ë¦¬í„´
  *
  * mtcStack*    aStack(InOut):
  **********************************************************************/
@@ -732,7 +732,7 @@ IDE_RC stfFunctions::geometryN(
     stdGeometryHeader*      sRet = (stdGeometryHeader*)aStack[0].value;
     UInt*                   sNum = (UInt*)aStack[2].value;
     
-    // Fix BUG-15412 mtdModule.isNull »ç¿ë
+    // Fix BUG-15412 mtdModule.isNull ì‚¬ìš©
     if( (stdGeometry.isNull( NULL, sValue )==ID_TRUE) ||
         (mtdInteger.isNull( NULL, sNum )==ID_TRUE) )
     {
@@ -758,10 +758,10 @@ IDE_RC stfFunctions::geometryN(
 
 /***********************************************************************
  * Description:
- * ¶óÀÎ °´Ã¼ÀÇ ½ÃÀÛÁ¡ ¸®ÅÏ
+ * ë¼ì¸ ê°ì²´ì˜ ì‹œì‘ì  ë¦¬í„´
  *
- * stdGeometryHeader*  aObj(In): ¶óÀÎ °´Ã¼
- * stdGeometryHeader*  aRet(Out): Æ÷ÀÎÆ® °´Ã¼
+ * stdGeometryHeader*  aObj(In): ë¼ì¸ ê°ì²´
+ * stdGeometryHeader*  aRet(Out): í¬ì¸íŠ¸ ê°ì²´
  **********************************************************************/
 IDE_RC stfFunctions::getStartPoint(
                     stdGeometryHeader*  aObj,
@@ -800,10 +800,10 @@ IDE_RC stfFunctions::getStartPoint(
 
 /***********************************************************************
  * Description:
- * ¶óÀÎ °´Ã¼ÀÇ ³¡Á¡ ¸®ÅÏ
+ * ë¼ì¸ ê°ì²´ì˜ ëì  ë¦¬í„´
  *
- * stdGeometryHeader*  aObj(In): ¶óÀÎ °´Ã¼
- * stdGeometryHeader*  aRet(Out): Æ÷ÀÎÆ® °´Ã¼
+ * stdGeometryHeader*  aObj(In): ë¼ì¸ ê°ì²´
+ * stdGeometryHeader*  aRet(Out): í¬ì¸íŠ¸ ê°ì²´
  **********************************************************************/
 IDE_RC stfFunctions::getEndPoint(
                     stdGeometryHeader*  aObj,
@@ -844,10 +844,10 @@ IDE_RC stfFunctions::getEndPoint(
 
 /***********************************************************************
  * Description:
- * ¶óÀÎ °´Ã¼°¡ ´İÇôÀÖÀ¸¸é 1 ¾Æ´Ï¸é 0¸®ÅÏ
+ * ë¼ì¸ ê°ì²´ê°€ ë‹«í˜€ìˆìœ¼ë©´ 1 ì•„ë‹ˆë©´ 0ë¦¬í„´
  *
- * stdGeometryHeader*  aObj(In): ¶óÀÎ °´Ã¼
- * mtdIntegerType*     aRet(Out): °á°ú
+ * stdGeometryHeader*  aObj(In): ë¼ì¸ ê°ì²´
+ * mtdIntegerType*     aRet(Out): ê²°ê³¼
  **********************************************************************/
 IDE_RC stfFunctions::testClose(
                     stdGeometryHeader*  aObj,
@@ -884,10 +884,10 @@ IDE_RC stfFunctions::testClose(
 
 /***********************************************************************
  * Description:
- * ¶óÀÎ °´Ã¼°¡ ¸µÀÌ¸é 1 ¾Æ´Ï¸é 0¸®ÅÏ
+ * ë¼ì¸ ê°ì²´ê°€ ë§ì´ë©´ 1 ì•„ë‹ˆë©´ 0ë¦¬í„´
  *
- * stdGeometryHeader*  aObj(In): ¶óÀÎ °´Ã¼
- * mtdIntegerType*     aRet(Out): °á°ú
+ * stdGeometryHeader*  aObj(In): ë¼ì¸ ê°ì²´
+ * mtdIntegerType*     aRet(Out): ê²°ê³¼
  **********************************************************************/
 IDE_RC stfFunctions::testRing(
                     stdGeometryHeader*  aObj,
@@ -917,10 +917,10 @@ IDE_RC stfFunctions::testRing(
 
 /***********************************************************************
  * Description:
- * ¶óÀÎ °´Ã¼ÀÇ ±æÀÌ ¸®ÅÏ
+ * ë¼ì¸ ê°ì²´ì˜ ê¸¸ì´ ë¦¬í„´
  *
- * stdGeometryHeader*  aObj(In): ¶óÀÎ °´Ã¼
- * SDouble*            aRet(Out): °á°ú
+ * stdGeometryHeader*  aObj(In): ë¼ì¸ ê°ì²´
+ * SDouble*            aRet(Out): ê²°ê³¼
  **********************************************************************/
 IDE_RC stfFunctions::getLength(
                     stdGeometryHeader*  aObj,
@@ -986,10 +986,10 @@ IDE_RC stfFunctions::getLength(
 
 /***********************************************************************
  * Description:
- * °´Ã¼ÀÇ Æ÷ÀÎÆ® °³¼ö ¸®ÅÏ
+ * ê°ì²´ì˜ í¬ì¸íŠ¸ ê°œìˆ˜ ë¦¬í„´
  *
- * stdGeometryHeader*  aObj(In): Geometry °´Ã¼
- * mtdIntegerType*     aRet(Out): Æ÷ÀÎÆ® °³¼ö
+ * stdGeometryHeader*  aObj(In): Geometry ê°ì²´
+ * mtdIntegerType*     aRet(Out): í¬ì¸íŠ¸ ê°œìˆ˜
  **********************************************************************/
 IDE_RC stfFunctions::getNumPoints(
                     stdGeometryHeader*  aObj,
@@ -1080,11 +1080,11 @@ IDE_RC stfFunctions::getNumPoints(
 
 /***********************************************************************
  * Description:
- * ¶óÀÎ °´Ã¼ÀÇ N¹øÂ° Æ÷ÀÎÆ® ¸®ÅÏ
+ * ë¼ì¸ ê°ì²´ì˜ Në²ˆì§¸ í¬ì¸íŠ¸ ë¦¬í„´
  *
- * stdGeometryHeader*  aObj(In): ¶óÀÎ °´Ã¼
- * UInt                aNum(In): Æ÷ÀÎÆ® À§Ä¡
- * stdGeometryHeader*  aRet(Out): Æ÷ÀÎÆ® °´Ã¼
+ * stdGeometryHeader*  aObj(In): ë¼ì¸ ê°ì²´
+ * UInt                aNum(In): í¬ì¸íŠ¸ ìœ„ì¹˜
+ * stdGeometryHeader*  aRet(Out): í¬ì¸íŠ¸ ê°ì²´
  **********************************************************************/
 IDE_RC stfFunctions::getPointN(
                     stdGeometryHeader*  aObj,
@@ -1135,10 +1135,10 @@ IDE_RC stfFunctions::getPointN(
 
 /***********************************************************************
  * Description:
- * Æú¸®°ï °´Ã¼ÀÇ ¹«°Ô Áß½É ¸®ÅÏ
+ * í´ë¦¬ê³¤ ê°ì²´ì˜ ë¬´ê²Œ ì¤‘ì‹¬ ë¦¬í„´
  *
- * stdGeometryHeader*  aObj(In): Æú¸®°ï °´Ã¼
- * stdGeometryHeader*  aRet(Out): Æ÷ÀÎÆ® °´Ã¼
+ * stdGeometryHeader*  aObj(In): í´ë¦¬ê³¤ ê°ì²´
+ * stdGeometryHeader*  aRet(Out): í¬ì¸íŠ¸ ê°ì²´
  **********************************************************************/
 IDE_RC stfFunctions::getCentroid(
                     stdGeometryHeader*  aObj,
@@ -1191,10 +1191,10 @@ IDE_RC stfFunctions::getCentroid(
 
 /***********************************************************************
  * Description:
- * Æú¸®°ï °´Ã¼ÀÇ ³»ºÎÀÇ ÇÑ Á¡ ¸®ÅÏ
+ * í´ë¦¬ê³¤ ê°ì²´ì˜ ë‚´ë¶€ì˜ í•œ ì  ë¦¬í„´
  *
- * stdGeometryHeader*  aObj(In): Æú¸®°ï °´Ã¼
- * stdGeometryHeader*  aRet(Out): Æ÷ÀÎÆ® °´Ã¼
+ * stdGeometryHeader*  aObj(In): í´ë¦¬ê³¤ ê°ì²´
+ * stdGeometryHeader*  aRet(Out): í¬ì¸íŠ¸ ê°ì²´
  **********************************************************************/
 IDE_RC stfFunctions::getPointOnSurface( iduMemory*          aQmxMem,
                                         stdGeometryHeader*  aObj,
@@ -1241,10 +1241,10 @@ IDE_RC stfFunctions::getPointOnSurface( iduMemory*          aQmxMem,
 
 /***********************************************************************
  * Description:
- * Æú¸®°ï °´Ã¼ÀÇ ³ĞÀÌ ¸®ÅÏ
+ * í´ë¦¬ê³¤ ê°ì²´ì˜ ë„“ì´ ë¦¬í„´
  *
- * stdGeometryHeader*  aObj(In): Æú¸®°ï °´Ã¼
- * SDouble*            aRet(Out): ³ĞÀÌ
+ * stdGeometryHeader*  aObj(In): í´ë¦¬ê³¤ ê°ì²´
+ * SDouble*            aRet(Out): ë„“ì´
  **********************************************************************/
 IDE_RC stfFunctions::getArea(
                     stdGeometryHeader*  aObj,
@@ -1306,10 +1306,10 @@ IDE_RC stfFunctions::getArea(
 
 /***********************************************************************
  * Description:
- * Æú¸®°ï °´Ã¼ÀÇ ¿ÜºÎ¸µ ¸®ÅÏ
+ * í´ë¦¬ê³¤ ê°ì²´ì˜ ì™¸ë¶€ë§ ë¦¬í„´
  *
- * stdGeometryHeader*  aObj(In): Æú¸®°ï °´Ã¼
- * stdGeometryHeader*  aRet(Out): ¶óÀÎ½ºÆ®¸µ °´Ã¼
+ * stdGeometryHeader*  aObj(In): í´ë¦¬ê³¤ ê°ì²´
+ * stdGeometryHeader*  aRet(Out): ë¼ì¸ìŠ¤íŠ¸ë§ ê°ì²´
  **********************************************************************/
 IDE_RC stfFunctions::getExteriorRing(
                     stdGeometryHeader*  aObj,
@@ -1350,10 +1350,10 @@ IDE_RC stfFunctions::getExteriorRing(
 
 /***********************************************************************
  * Description:
- * Æú¸®°ï °´Ã¼ÀÇ ³»ºÎ¸µÀÇ °³¼ö ¸®ÅÏ
+ * í´ë¦¬ê³¤ ê°ì²´ì˜ ë‚´ë¶€ë§ì˜ ê°œìˆ˜ ë¦¬í„´
  *
- * stdGeometryHeader*  aObj(In): Æú¸®°ï °´Ã¼
- * mtdIntegerType*     aRet(Out): ³»ºÎ¸µÀÇ °³¼ö
+ * stdGeometryHeader*  aObj(In): í´ë¦¬ê³¤ ê°ì²´
+ * mtdIntegerType*     aRet(Out): ë‚´ë¶€ë§ì˜ ê°œìˆ˜
  **********************************************************************/
 IDE_RC stfFunctions::getNumInteriorRing(
                     stdGeometryHeader*  aObj,
@@ -1399,11 +1399,11 @@ IDE_RC stfFunctions::getNumInteriorRing(
 
 /***********************************************************************
  * Description:
- * Æú¸®°ï °´Ã¼ÀÇ N¹øÂ° ³»ºÎ¸µ ¸®ÅÏ
+ * í´ë¦¬ê³¤ ê°ì²´ì˜ Në²ˆì§¸ ë‚´ë¶€ë§ ë¦¬í„´
  *
- * stdGeometryHeader*  aObj(In): Æú¸®°ï °´Ã¼
- * UInt                aNum(In): ¸µ À§Ä¡
- * stdGeometryHeader*  aRet(Out): ¶óÀÎ½ºÆ®¸µ °´Ã¼
+ * stdGeometryHeader*  aObj(In): í´ë¦¬ê³¤ ê°ì²´
+ * UInt                aNum(In): ë§ ìœ„ì¹˜
+ * stdGeometryHeader*  aRet(Out): ë¼ì¸ìŠ¤íŠ¸ë§ ê°ì²´
  **********************************************************************/
 IDE_RC stfFunctions::getInteriorRingN(
                     stdGeometryHeader*  aObj,
@@ -1469,10 +1469,10 @@ IDE_RC stfFunctions::getInteriorRingN(
 
 /***********************************************************************
  * Description:
- * Geometry °´Ã¼ÀÇ ³»ºÎ °´Ã¼ÀÇ °³¼ö ¸®ÅÏ
+ * Geometry ê°ì²´ì˜ ë‚´ë¶€ ê°ì²´ì˜ ê°œìˆ˜ ë¦¬í„´
  *
- * stdGeometryHeader*  aObj(In): Geometry °´Ã¼
- * mtdIntegerType*     aRet(Out): ³»ºÎ °´Ã¼ÀÇ °³¼ö
+ * stdGeometryHeader*  aObj(In): Geometry ê°ì²´
+ * mtdIntegerType*     aRet(Out): ë‚´ë¶€ ê°ì²´ì˜ ê°œìˆ˜
  **********************************************************************/
 IDE_RC stfFunctions::getNumGeometries(
                     stdGeometryHeader*  aObj,
@@ -1512,11 +1512,11 @@ IDE_RC stfFunctions::getNumGeometries(
 
 /***********************************************************************
  * Description:
- * Geometry °´Ã¼ÀÇ N¹øÂ° ³»ºÎ °´Ã¼ ¸®ÅÏ
+ * Geometry ê°ì²´ì˜ Në²ˆì§¸ ë‚´ë¶€ ê°ì²´ ë¦¬í„´
  *
- * stdGeometryHeader*  aObj(In): Geometry °´Ã¼
- * UInt                aNum(In): ³»ºÎ °´Ã¼ À§Ä¡
- * stdGeometryHeader*  aRet(Out): ³»ºÎ °´Ã¼
+ * stdGeometryHeader*  aObj(In): Geometry ê°ì²´
+ * UInt                aNum(In): ë‚´ë¶€ ê°ì²´ ìœ„ì¹˜
+ * stdGeometryHeader*  aRet(Out): ë‚´ë¶€ ê°ì²´
  **********************************************************************/
 IDE_RC stfFunctions::getGeometryN(
                     stdGeometryHeader*  aObj,
@@ -1587,7 +1587,7 @@ IDE_RC stfFunctions::minMaxXY(
     stdGeometryHeader*      sValue = (stdGeometryHeader *)aStack[1].value;
     void*                   sRet = aStack[0].value;
 
-    // Fix BUG-15412 mtdModule.isNull »ç¿ë
+    // Fix BUG-15412 mtdModule.isNull ì‚¬ìš©
     if( stdGeometry.isNull( NULL, sValue )==ID_TRUE )
     {
         aStack[0].column->module->null( aStack[0].column,
@@ -1624,7 +1624,7 @@ IDE_RC stfFunctions::reverseGeometry( mtcNode     */* aNode */,
     stdGeometryHeader * sValue = (stdGeometryHeader *)aStack[1].value;
     stdGeometryHeader * sRet   = (stdGeometryHeader *)aStack[0].value;
 
-    /* Fix BUG-15412 mtdModule.isNull »ç¿ë */
+    /* Fix BUG-15412 mtdModule.isNull ì‚¬ìš© */
     if ( stdGeometry.isNull( NULL, sValue ) == ID_TRUE )
     {
         aStack[0].column->module->null( aStack[0].column,
@@ -1635,7 +1635,7 @@ IDE_RC stfFunctions::reverseGeometry( mtcNode     */* aNode */,
         /* BUG-33576 */
         IDE_TEST( stdUtils::checkValid( sValue ) != IDE_SUCCESS );
 
-        /* Geometry º¹»ç */
+        /* Geometry ë³µì‚¬ */
         stdUtils::copyGeometry( sRet, sValue );
 
         IDE_TEST( reverseAll( sValue, sRet ) != IDE_SUCCESS );
@@ -1800,7 +1800,7 @@ IDE_RC stfFunctions::makeEnvelope( mtcNode     */* aNode */,
     mtdDoubleType     * sX2   = (mtdDoubleType *)aStack[3].value;
     mtdDoubleType     * sY2   = (mtdDoubleType *)aStack[4].value;
 
-    /* Fix BUG-15412 mtdModule.isNull »ç¿ë */
+    /* Fix BUG-15412 mtdModule.isNull ì‚¬ìš© */
     if( ( mtdDouble.isNull( NULL, sX1 ) == ID_TRUE ) ||
         ( mtdDouble.isNull( NULL, sY1 ) == ID_TRUE ) ||
         ( mtdDouble.isNull( NULL, sX2 ) == ID_TRUE ) ||

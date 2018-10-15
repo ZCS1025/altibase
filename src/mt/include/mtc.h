@@ -37,11 +37,11 @@
 #define MTC_MSG_VARBYTE_TYPE        (MTD_VARBYTE_ID)
 #define MTC_MSG_MAX_BUFFER_SIZE     (8192) // 8k
 
-// Âü°í.
-// permission 0644(rw-r-r), 0600(rw-----)À¸·Î user1¿¡¼­ »ı¼ºÇÑ
-// msq queue¸¦ user2¿¡¼­ snd,rcv ÇÒ¼ö ¾ø´Ù. 
-// Â÷ÀÌÁ¡Àº 0600À¸·Î »ı¼ºÇÑ msg queue´Â  user2 ¿¡¼­ ipcs -a Á¶È¸½Ã
-// msg queue Á¤º¸ Á¶È¸°¡ ¾ÊµÊ
+// ì°¸ê³ .
+// permission 0644(rw-r-r), 0600(rw-----)ìœ¼ë¡œ user1ì—ì„œ ìƒì„±í•œ
+// msq queueë¥¼ user2ì—ì„œ snd,rcv í• ìˆ˜ ì—†ë‹¤. 
+// ì°¨ì´ì ì€ 0600ìœ¼ë¡œ ìƒì„±í•œ msg queueëŠ”  user2 ì—ì„œ ipcs -a ì¡°íšŒì‹œ
+// msg queue ì •ë³´ ì¡°íšŒê°€ ì•Šë¨
 #define MTC_MSG_PUBLIC_PERMISSION   (0666)
 #define MTC_MSG_PRIVATE_PERMISSION  (0644)
 
@@ -73,7 +73,7 @@ typedef IDE_RC (*dciCharConverFn)(
 
 #define DCI_CONV_DATA_IN       (0x01)
 #define DCI_CONV_DATA_OUT      (0x02)
-#define DCI_CONV_CALC_TOTSIZE  (0x10) /* ¹®ÀÚ¿­ ÀüÃ¼ ±æÀÌ °è»ê */
+#define DCI_CONV_CALC_TOTSIZE  (0x10) /* ë¬¸ìì—´ ì „ì²´ ê¸¸ì´ ê³„ì‚° */
 
 class mtc
 {
@@ -130,20 +130,20 @@ public:
 
         if ( aYear < 1582 )
         {
-            /* BUG-36296 ±â¿øÀü¿¡´Â 4³â¸¶´Ù À±³âÀÌ¶ó°í °¡Á¤ÇÑ´Ù.
-             *  - °í´ë ·Î¸¶ÀÇ Á¤Ä¡°¡ À²¸®¿ì½º Ä«ÀÌ»ç¸£°¡ ±â¿øÀü 45³âºÎÅÍ À²¸®¿ì½º·ÂÀ» ½ÃÇàÇÏ¿´´Ù.
-             *  - ÃÊ±âÀÇ À²¸®¿ì½º·Â(±â¿øÀü 45³â ~ ±â¿øÀü 8³â)¿¡¼­´Â À±³âÀ» 3³â¿¡ ÇÑ ¹ø ½Ç½ÃÇÏ¿´´Ù. (Oracle 11g ¹ÌÀû¿ë)
-             *  - BC 4713³âºÎÅÍ À²¸®¿ì½ºÀÏÀ» °è»êÇÑ´Ù. Ãµ¹®ÇĞÀÚµéÀÌ À²¸®¿ì½ºÀÏÀ» »ç¿ëÇÑ´Ù. 4³â¸¶´Ù À±³âÀÌ´Ù.
+            /* BUG-36296 ê¸°ì›ì „ì—ëŠ” 4ë…„ë§ˆë‹¤ ìœ¤ë…„ì´ë¼ê³  ê°€ì •í•œë‹¤.
+             *  - ê³ ëŒ€ ë¡œë§ˆì˜ ì •ì¹˜ê°€ ìœ¨ë¦¬ìš°ìŠ¤ ì¹´ì´ì‚¬ë¥´ê°€ ê¸°ì›ì „ 45ë…„ë¶€í„° ìœ¨ë¦¬ìš°ìŠ¤ë ¥ì„ ì‹œí–‰í•˜ì˜€ë‹¤.
+             *  - ì´ˆê¸°ì˜ ìœ¨ë¦¬ìš°ìŠ¤ë ¥(ê¸°ì›ì „ 45ë…„ ~ ê¸°ì›ì „ 8ë…„)ì—ì„œëŠ” ìœ¤ë…„ì„ 3ë…„ì— í•œ ë²ˆ ì‹¤ì‹œí•˜ì˜€ë‹¤. (Oracle 11g ë¯¸ì ìš©)
+             *  - BC 4713ë…„ë¶€í„° ìœ¨ë¦¬ìš°ìŠ¤ì¼ì„ ê³„ì‚°í•œë‹¤. ì²œë¬¸í•™ìë“¤ì´ ìœ¨ë¦¬ìš°ìŠ¤ì¼ì„ ì‚¬ìš©í•œë‹¤. 4ë…„ë§ˆë‹¤ ìœ¤ë…„ì´ë‹¤.
              *
-             *  AD 0³âÀº Á¸ÀçÇÏÁö ¾Ê´Â´Ù. aYear°¡ 0ÀÌ¸é, BC 1³âÀÌ´Ù. Áï, BC 1³âÀÇ ´ÙÀ½Àº AD 1³âÀÌ´Ù.
+             *  AD 0ë…„ì€ ì¡´ì¬í•˜ì§€ ì•ŠëŠ”ë‹¤. aYearê°€ 0ì´ë©´, BC 1ë…„ì´ë‹¤. ì¦‰, BC 1ë…„ì˜ ë‹¤ìŒì€ AD 1ë…„ì´ë‹¤.
              */
             if ( aYear <= 0 )
             {
                 sDays = ( aYear * 365 ) + ( aYear / 4 )
                       + dayOfYear( aYear, aMonth, aDay )
-                      - 366; /* BC 1³â(aYear == 0)ÀÌ À±³âÀÌ´Ù. */
+                      - 366; /* BC 1ë…„(aYear == 0)ì´ ìœ¤ë…„ì´ë‹¤. */
             }
-            /* BUG-36296 ±×·¹°í¸®·ÂÀÇ À±³â ±ÔÄ¢Àº 1583³âºÎÅÍ Àû¿ëÇÑ´Ù. 1582³â ÀÌÀü¿¡´Â 4³â¸¶´Ù À±³âÀÌ´Ù. */
+            /* BUG-36296 ê·¸ë ˆê³ ë¦¬ë ¥ì˜ ìœ¤ë…„ ê·œì¹™ì€ 1583ë…„ë¶€í„° ì ìš©í•œë‹¤. 1582ë…„ ì´ì „ì—ëŠ” 4ë…„ë§ˆë‹¤ ìœ¤ë…„ì´ë‹¤. */
             else
             {
                 sDays = ( ( aYear - 1 ) * 365 ) + ( ( aYear - 1 ) / 4 )
@@ -152,7 +152,7 @@ public:
         }
         else if ( aYear == 1582 )
         {
-            /* BUG-36296 ±×·¹°í¸®·ÂÀº 1582³â 10¿ù 15ÀÏºÎÅÍ ½ÃÀÛÇÑ´Ù. */
+            /* BUG-36296 ê·¸ë ˆê³ ë¦¬ë ¥ì€ 1582ë…„ 10ì›” 15ì¼ë¶€í„° ì‹œì‘í•œë‹¤. */
             if ( ( aMonth < 10 ) ||
                  ( ( aMonth == 10 ) && ( aDay < 15 ) ) )
             {
@@ -163,45 +163,45 @@ public:
             {
                 sDays = ( ( aYear - 1 ) * 365 ) + ( ( aYear - 1 ) / 4 )
                       + dayOfYear( aYear, aMonth, aDay )
-                      - 10; /* 1582³â 10¿ù 4ÀÏ(¸ñ)¿¡¼­ 10¿ù 15ÀÏ(±İ)À¸·Î ¹Ù·Î °Ç³Ê¶Ú´Ù. */
+                      - 10; /* 1582ë…„ 10ì›” 4ì¼(ëª©)ì—ì„œ 10ì›” 15ì¼(ê¸ˆ)ìœ¼ë¡œ ë°”ë¡œ ê±´ë„ˆë›´ë‹¤. */
             }
         }
         else
         {
-            /* BUG-36296 1600³â ÀÌÀüÀº À²¸®¿ì½º·Â°ú ±×·¹°í¸®·ÂÀÇ À±³âÀÌ °°´Ù. */
+            /* BUG-36296 1600ë…„ ì´ì „ì€ ìœ¨ë¦¬ìš°ìŠ¤ë ¥ê³¼ ê·¸ë ˆê³ ë¦¬ë ¥ì˜ ìœ¤ë…„ì´ ê°™ë‹¤. */
             if ( aYear <= 1600 )
             {
                 sDays = ( ( aYear - 1 ) * 365 ) + ( ( aYear - 1 ) / 4 )
                       + dayOfYear( aYear, aMonth, aDay )
-                      - 10; /* 1582³â 10¿ù 4ÀÏ(¸ñ)¿¡¼­ 10¿ù 15ÀÏ(±İ)À¸·Î ¹Ù·Î °Ç³Ê¶Ú´Ù. */
+                      - 10; /* 1582ë…„ 10ì›” 4ì¼(ëª©)ì—ì„œ 10ì›” 15ì¼(ê¸ˆ)ìœ¼ë¡œ ë°”ë¡œ ê±´ë„ˆë›´ë‹¤. */
             }
             else
             {
                 sDays = ( ( aYear - 1 ) * 365 ) + ( ( aYear - 1 ) / 4 )
                       - ( ( aYear - 1 - 1600 ) / 100 ) + ( ( aYear - 1 - 1600 ) / 400 )
                       + dayOfYear( aYear, aMonth, aDay )
-                      - 10; /* 1582³â 10¿ù 4ÀÏ(¸ñ)¿¡¼­ 10¿ù 15ÀÏ(±İ)À¸·Î ¹Ù·Î °Ç³Ê¶Ú´Ù. */
+                      - 10; /* 1582ë…„ 10ì›” 4ì¼(ëª©)ì—ì„œ 10ì›” 15ì¼(ê¸ˆ)ìœ¼ë¡œ ë°”ë¡œ ê±´ë„ˆë›´ë‹¤. */
             }
         }
 
-        /* AD 0001³â 1¿ù 1ÀÏÀº Day 0 ÀÌ´Ù. ±×¸®°í, BC 0001³â 12¿ù 31ÀÏÀº Day -1 ÀÌ´Ù. */
+        /* AD 0001ë…„ 1ì›” 1ì¼ì€ Day 0 ì´ë‹¤. ê·¸ë¦¬ê³ , BC 0001ë…„ 12ì›” 31ì¼ì€ Day -1 ì´ë‹¤. */
         sDays--;
 
         return sDays;
     }
 
-    /* ÀÏ¿äÀÏ : 0, Åä¿äÀÏ : 6 */
+    /* ì¼ìš”ì¼ : 0, í† ìš”ì¼ : 6 */
     static inline SInt dayOfWeek( SInt aYear,
                                   SInt aMonth,
                                   SInt aDay )
     {
-        /* ±â¿øÀüÀÎ °æ¿ì¿¡´Â À½¼ö°¡ ³ª¿À¹Ç·Î, %7À» ¸ÕÀúÇÏ°í º¸Á¤°ªÀ» ´õÇÑ´Ù.
-         * AD 0001³â 01¿ù 01ÀÏÀº Åä¿äÀÏ(sDays = 0)ÀÌ´Ù. +6¸¦ ÇÏ¿© º¸Á¤ÇÑ´Ù.
+        /* ê¸°ì›ì „ì¸ ê²½ìš°ì—ëŠ” ìŒìˆ˜ê°€ ë‚˜ì˜¤ë¯€ë¡œ, %7ì„ ë¨¼ì €í•˜ê³  ë³´ì •ê°’ì„ ë”í•œë‹¤.
+         * AD 0001ë…„ 01ì›” 01ì¼ì€ í† ìš”ì¼(sDays = 0)ì´ë‹¤. +6ë¥¼ í•˜ì—¬ ë³´ì •í•œë‹¤.
          */
         return ( ( dayOfCommonEra( aYear, aMonth, aDay ) % 7 ) + 6 ) % 7;
     }
 
-    /* ´Ş·Â°ú ÀÏÄ¡ÇÏ´Â ÁÖÂ÷ : ÁÖ°¡ ÀÏ¿äÀÏºÎÅÍ ½ÃÀÛÇÑ´Ù. */
+    /* ë‹¬ë ¥ê³¼ ì¼ì¹˜í•˜ëŠ” ì£¼ì°¨ : ì£¼ê°€ ì¼ìš”ì¼ë¶€í„° ì‹œì‘í•œë‹¤. */
     static inline SInt weekOfYear( SInt aYear,
                                    SInt aMonth,
                                    SInt aDay )
@@ -213,7 +213,7 @@ public:
         return sWeek;
     }
 
-    /* BUG-42941 TO_CHAR()¿¡ WW2(Oracle Version WW) Ãß°¡ */
+    /* BUG-42941 TO_CHAR()ì— WW2(Oracle Version WW) ì¶”ê°€ */
     static inline SInt weekOfYearForOracle( SInt aYear,
                                             SInt aMonth,
                                             SInt aDay )
@@ -225,14 +225,14 @@ public:
         return sWeek;
     }
 
-    /* BUG-42926 TO_CHAR()¿¡ IW Ãß°¡ */
+    /* BUG-42926 TO_CHAR()ì— IW ì¶”ê°€ */
     static SInt weekOfYearForStandard( SInt aYear,
                                        SInt aMonth,
                                        SInt aDay );
 
     static const UInt  hashInitialValue;
 
-    // mtd::valueForModule¿¡¼­ »ç¿ëÇÑ´Ù.
+    // mtd::valueForModuleì—ì„œ ì‚¬ìš©í•œë‹¤.
     static mtcGetColumnFunc            getColumn;
     static mtcOpenLobCursorWithRow     openLobCursorWithRow;
     static mtcOpenLobCursorWithGRID    openLobCursorWithGRID;
@@ -425,13 +425,13 @@ public:
     static IDE_RC getAlignValue( const smiColumn * aColumn,
                                  UInt *            aAlignValue );
 
-    // Column¿¡ ¸Â´Â Hash Key ÃßÃâ ÇÔ¼ö °Ë»ö
+    // Columnì— ë§ëŠ” Hash Key ì¶”ì¶œ í•¨ìˆ˜ ê²€ìƒ‰
     static IDE_RC findHashKeyFunc( const smiColumn * aColumn,
                                    smiHashKeyFunc  * aHashKeyFunc );
 
     // PROJ-1705
-    // QP¿µ¿ªÃ³¸®°¡´ÉÇÑ·¹ÄÚµå¿¡¼­ ÀÎµ¦½º·¹ÄÚµå±¸¼º½Ã
-    // ·¹ÄÚµå·ÎºÎÅÍ ÄÃ·³µ¥ÀÌÅ¸ÀÇ size¿Í value ptr¸¦ ¾ò´Â´Ù.
+    // QPì˜ì—­ì²˜ë¦¬ê°€ëŠ¥í•œë ˆì½”ë“œì—ì„œ ì¸ë±ìŠ¤ë ˆì½”ë“œêµ¬ì„±ì‹œ
+    // ë ˆì½”ë“œë¡œë¶€í„° ì»¬ëŸ¼ë°ì´íƒ€ì˜ sizeì™€ value ptrë¥¼ ì–»ëŠ”ë‹¤.
     static IDE_RC getValueLengthFromFetchBuffer( idvSQL          * aStatistic,
                                                  const smiColumn * aColumn,
                                                  const void      * aRow,
@@ -439,13 +439,13 @@ public:
                                                  idBool          * aIsNullValue );
 
     // PROJ-1705
-    // µğ½ºÅ©Å×ÀÌºíÄÃ·³ÀÇ µ¥ÀÌÅ¸¸¦ º¹»çÇÏ´Â ÇÔ¼ö °Ë»ö
+    // ë””ìŠ¤í¬í…Œì´ë¸”ì»¬ëŸ¼ì˜ ë°ì´íƒ€ë¥¼ ë³µì‚¬í•˜ëŠ” í•¨ìˆ˜ ê²€ìƒ‰
     static IDE_RC findStoredValue2MtdValue(
         const smiColumn            * aColumn,
         smiCopyDiskColumnValueFunc * aStoredValue2MtdValueFunc );
 
     // PROJ-2429 Dictionary based data compress for on-disk DB 
-    // µğ½ºÅ©Å×ÀÌºíÄÃ·³ÀÇ µ¥ÀÌÅ¸ Å¸ÀÔ¿¡ ¸Â´Â µ¥ÀÌÅÍ º¹»çÇÔ¼ö °Ë»ö
+    // ë””ìŠ¤í¬í…Œì´ë¸”ì»¬ëŸ¼ì˜ ë°ì´íƒ€ íƒ€ì…ì— ë§ëŠ” ë°ì´í„° ë³µì‚¬í•¨ìˆ˜ ê²€ìƒ‰
     static IDE_RC findStoredValue2MtdValue4DataType(
         const smiColumn            * aColumn,
         smiCopyDiskColumnValueFunc * aStoredValue2MtdValueFunc );
@@ -454,8 +454,8 @@ public:
                                   smiActualSizeFunc * aActualSizeFunc );
 
     // PROJ-1705
-    // µğ½ºÅ©Å×ÀÌºíÄÃ·³ÀÇ µ¥ÀÌÅ¸¸¦
-    // qp ·¹ÄÚµåÃ³¸®¿µ¿ªÀÇ ÇØ´ç ÄÃ·³À§Ä¡¿¡ º¹»ç
+    // ë””ìŠ¤í¬í…Œì´ë¸”ì»¬ëŸ¼ì˜ ë°ì´íƒ€ë¥¼
+    // qp ë ˆì½”ë“œì²˜ë¦¬ì˜ì—­ì˜ í•´ë‹¹ ì»¬ëŸ¼ìœ„ì¹˜ì— ë³µì‚¬
     static void storedValue2MtdValue( const smiColumn * aColumn,
                                       void            * aDestValue,
                                       UInt              aDestValueOffset,
@@ -530,12 +530,12 @@ public:
                               mtdNumericType *aArgument1,
                               mtdNumericType *aArgument2 );
 
-    // To fix BUG-12944 Á¤È®ÇÑ precision ¾ò¾î¿À±â.
+    // To fix BUG-12944 ì •í™•í•œ precision ì–»ì–´ì˜¤ê¸°.
     static IDE_RC getPrecisionScaleFloat( const mtdNumericType * aValue,
                                           SInt                 * aPrecision,
                                           SInt                 * aScale );
 
-    // BUG-16531 ÀÌÁßÈ­ Conflict °Ë»ç¸¦ À§ÇÑ Image ºñ±³ ÇÔ¼ö
+    // BUG-16531 ì´ì¤‘í™” Conflict ê²€ì‚¬ë¥¼ ìœ„í•œ Image ë¹„êµ í•¨ìˆ˜
     static IDE_RC isSamePhysicalImage( const mtcColumn * aColumn,
                                        const void      * aRow1,
                                        UInt              aFlag1,
@@ -544,17 +544,17 @@ public:
                                        idBool          * aOutIsSame );
 
     //----------------------
-    // mtcColumnÀÇ ÃÊ±âÈ­
+    // mtcColumnì˜ ì´ˆê¸°í™”
     //----------------------
 
-    // data module ¹× language moduleÀ» ÁöÁ¤ÇÑ °æ¿ì
+    // data module ë° language moduleì„ ì§€ì •í•œ ê²½ìš°
     static IDE_RC initializeColumn( mtcColumn       * aColumn,
                                     const mtdModule * aModule,
                                     UInt              aArguments,
                                     SInt              aPrecision,
                                     SInt              aScale );
 
-    // ÇØ´ç data module ¹× language moduleÀ» Ã£¾Æ¼­ ¼³Á¤ÇØ¾ß ÇÏ´Â °æ¿ì
+    // í•´ë‹¹ data module ë° language moduleì„ ì°¾ì•„ì„œ ì„¤ì •í•´ì•¼ í•˜ëŠ” ê²½ìš°
     static IDE_RC initializeColumn( mtcColumn       * aColumn,
                                     UInt              aDataTypeId,
                                     UInt              aArguments,
@@ -562,12 +562,12 @@ public:
                                     SInt              aScale );
 
     // BUG-23012
-    // src columnÀ¸·Î dest columnÀ» ÃÊ±âÈ­ÇÏ´Â °æ¿ì
+    // src columnìœ¼ë¡œ dest columnì„ ì´ˆê¸°í™”í•˜ëŠ” ê²½ìš°
     static void initializeColumn( mtcColumn  * aDestColumn,
                                   mtcColumn  * aSrcColumn );
     
     // PROJ-2002 Column Security
-    // data module ¹× language moduleÀ» ÁöÁ¤ÇÑ °æ¿ì
+    // data module ë° language moduleì„ ì§€ì •í•œ ê²½ìš°
     static IDE_RC initializeEncryptColumn( mtcColumn    * aColumn,
                                            const SChar  * aPolicy,
                                            UInt           aEncryptedSize,
@@ -583,7 +583,7 @@ public:
 
 
     // PROJ-2002 Column Security
-    // echar/evarchar typeÀÇ like key size¸¦ °è»ê
+    // echar/evarchar typeì˜ like key sizeë¥¼ ê³„ì‚°
     static IDE_RC getLikeEcharKeySize( mtcTemplate * aTemplate,
                                        UInt        * aECCSize,
                                        UInt        * aKeySize );

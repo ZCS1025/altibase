@@ -337,10 +337,10 @@ idmModule* idm::search( idmModule*  aChildren,
 
 /*
  * Name:
- *     idm::initialize : SNMPÁö¿ø ¸ğµâÀ» ÃÊ±âÈ­ ÇÕ´Ï´Ù.
+ *     idm::initialize : SNMPì§€ì› ëª¨ë“ˆì„ ì´ˆê¸°í™” í•©ë‹ˆë‹¤.
  *
  * Arguments:
- *     aModules : ÃÊ±âÈ­½Ã »ç¿ëµÇ´Â ¸ğµâµé
+ *     aModules : ì´ˆê¸°í™”ì‹œ ì‚¬ìš©ë˜ëŠ” ëª¨ë“ˆë“¤
  *
  */
 
@@ -433,7 +433,7 @@ IDE_RC idm::initialize( idmModule** aModules,
 
 /*
  * Name:
- *     idm::finalize : SNMPÁö¿ø ¸ğµâÀ» Á¾·áÇÕ´Ï´Ù.
+ *     idm::finalize : SNMPì§€ì› ëª¨ë“ˆì„ ì¢…ë£Œí•©ë‹ˆë‹¤.
  */
 IDE_RC idm::finalize( UInt aFlag )
 {
@@ -503,12 +503,12 @@ IDE_RC idm::makeId( const idmModule* aModule,
 
 /*
  * Name:
- *     idm::translate : ¹®ÀÚ·Î µÈ ÀÌ¸§À» ID·Î º¯°æÇÕ´Ï´Ù.
+ *     idm::translate : ë¬¸ìë¡œ ëœ ì´ë¦„ì„ IDë¡œ ë³€ê²½í•©ë‹ˆë‹¤.
  *
  * Arguments:
- *     aAttribute: ¹®ÀÚ·Î ÀÌ·ç¾îÁø ÀÌ¸§
- *     aId:        Ãâ·Â¹Ş°íÀÚ ÇÏ´Â ID
- *     aIdMaximum: IDÀÇ ÃÖ´ë Å©±â
+ *     aAttribute: ë¬¸ìë¡œ ì´ë£¨ì–´ì§„ ì´ë¦„
+ *     aId:        ì¶œë ¥ë°›ê³ ì í•˜ëŠ” ID
+ *     aIdMaximum: IDì˜ ìµœëŒ€ í¬ê¸°
  *
  */
 IDE_RC idm::translate( const SChar* aAttribute,
@@ -577,11 +577,11 @@ IDE_RC idm::translate( const SChar* aAttribute,
 
 /*
  * Name:
- *     idm::name : ID¸¦ ÀÌ¸§À¸·Î º¯°æÇÕ´Ï´Ù.
+ *     idm::name : IDë¥¼ ì´ë¦„ìœ¼ë¡œ ë³€ê²½í•©ë‹ˆë‹¤.
  *
  * Arguments:
- *     aAttribute:        ÀÌ¸§À» Ãâ·Â¹Ş°íÀÚ ÇÏ´Â ¹öÆÛ
- *     aAttributeMaximum: ¹öÆÛ ÃÖ´ë Å©±â
+ *     aAttribute:        ì´ë¦„ì„ ì¶œë ¥ë°›ê³ ì í•˜ëŠ” ë²„í¼
+ *     aAttributeMaximum: ë²„í¼ ìµœëŒ€ í¬ê¸°
  *     aId:               ID
  *
  */
@@ -624,14 +624,14 @@ IDE_RC idm::name( SChar*       aAttribute,
 
 /*
  * Name:
- *     idm::get : Æ¯Á¤ IDÀÇ °ªÀ» °¡Á®¿É´Ï´Ù.
+ *     idm::get : íŠ¹ì • IDì˜ ê°’ì„ ê°€ì ¸ì˜µë‹ˆë‹¤.
  *
  * Arguments:
  *     aId:               ID
- *     aType:             °ªÀÇ µ¥ÀÌÅÍ Çü
- *     aValue:            °ªÀ» °¡Á®¿À°íÀÚ ÇÏ´Â ¹öÆÛ
- *     aLength:           °ªÀÇ ±æÀÌ
- *     aMaximum:          ¹öÆÛÀÇ ÃÖ´ë Å©±â
+ *     aType:             ê°’ì˜ ë°ì´í„° í˜•
+ *     aValue:            ê°’ì„ ê°€ì ¸ì˜¤ê³ ì í•˜ëŠ” ë²„í¼
+ *     aLength:           ê°’ì˜ ê¸¸ì´
+ *     aMaximum:          ë²„í¼ì˜ ìµœëŒ€ í¬ê¸°
  */
 IDE_RC idm::get( const idmId* aId,
                  UInt*        aType,
@@ -671,16 +671,16 @@ IDE_RC idm::get( const idmId* aId,
 
 /*
  * Name:
- *     idm::getNext : Æ¯Á¤ IDÀÇ ´ÙÀ½ IDÀÇ °ªÀ» °¡Á®¿É´Ï´Ù.
+ *     idm::getNext : íŠ¹ì • IDì˜ ë‹¤ìŒ IDì˜ ê°’ì„ ê°€ì ¸ì˜µë‹ˆë‹¤.
  *
  * Arguments:
- *     aPreviousId:       °ªÀ» °¡Á®¿À°íÀÚ ÇÏ´Â IDÀÇ ÀÌÀü ID
- *     aId:               °¡Á®¿Â °ªÀÇ ID
- *     aIdMaximum:        IDÀÇ ÃÖ´ë ±æÀÌ
- *     aType:             °ªÀÇ µ¥ÀÌÅÍ Çü
- *     aValue:            °ªÀ» °¡Á®¿À°íÀÚ ÇÏ´Â ¹öÆÛ
- *     aLength:           °ªÀÇ ±æÀÌ
- *     aMaximum:          ¹öÆÛÀÇ ÃÖ´ë Å©±â
+ *     aPreviousId:       ê°’ì„ ê°€ì ¸ì˜¤ê³ ì í•˜ëŠ” IDì˜ ì´ì „ ID
+ *     aId:               ê°€ì ¸ì˜¨ ê°’ì˜ ID
+ *     aIdMaximum:        IDì˜ ìµœëŒ€ ê¸¸ì´
+ *     aType:             ê°’ì˜ ë°ì´í„° í˜•
+ *     aValue:            ê°’ì„ ê°€ì ¸ì˜¤ê³ ì í•˜ëŠ” ë²„í¼
+ *     aLength:           ê°’ì˜ ê¸¸ì´
+ *     aMaximum:          ë²„í¼ì˜ ìµœëŒ€ í¬ê¸°
  */
 IDE_RC idm::getNext( const idmId* aPreviousId,
                      idmId*       aId,
@@ -717,13 +717,13 @@ IDE_RC idm::getNext( const idmId* aPreviousId,
 
 /*
  * Name:
- *     idm::set : Æ¯Á¤ IDÀÇ °ªÀ» º¯°æÇÕ´Ï´Ù.
+ *     idm::set : íŠ¹ì • IDì˜ ê°’ì„ ë³€ê²½í•©ë‹ˆë‹¤.
  *
  * Arguments:
- *     aId:               º¯°æ ´ë»ó ID
- *     aType:             °ªÀÇ µ¥ÀÌÅÍ Çü
- *     aValue:            ÀúÀåÇÏ°íÀÚ ÇÏ´Â °ª
- *     aLength:           °ªÀÇ ±æÀÌ
+ *     aId:               ë³€ê²½ ëŒ€ìƒ ID
+ *     aType:             ê°’ì˜ ë°ì´í„° í˜•
+ *     aValue:            ì €ì¥í•˜ê³ ì í•˜ëŠ” ê°’
+ *     aLength:           ê°’ì˜ ê¸¸ì´
  */
 IDE_RC idm::set( const idmId* aId,
                  UInt         aType,

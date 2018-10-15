@@ -22,7 +22,7 @@
 #define IDS_SHA1_TEXT_LEN             (40)
 
     /*
-     * 3byte -> 4byte·Î º¯È¯µÇ¹Ç·Î ¾Æ·¡¿Í °°ÀÌ base64 °á°ú´Â ¾Æ·¡¿Í °°ÀÌ °è»ê °¡´ÉÇÏ´Ù.
+     * 3byte -> 4byteë¡œ ë³€í™˜ë˜ë¯€ë¡œ ì•„ë˜ì™€ ê°™ì´ base64 ê²°ê³¼ëŠ” ì•„ë˜ì™€ ê°™ì´ ê³„ì‚° ê°€ëŠ¥í•˜ë‹¤.
      * aSrcLen = 3
      *    ( 3 + 2 - ( ( 3 + 2 ) % 3 ) ) / 3 * 4 = 4
      * aSrcLen = 4
@@ -34,12 +34,12 @@
 
 typedef struct idsAltiWrapInfo
 {
-    /* Encryption ½ÃÁ¡ : input 
-       Decryption ½ÃÁ¡ : ÃÖÁ¾ °á°ú( decompression ÈÄ °á°ú ) */
+    /* Encryption ì‹œì  : input 
+       Decryption ì‹œì  : ìµœì¢… ê²°ê³¼( decompression í›„ ê²°ê³¼ ) */
     SChar         * mPlainText;
     SInt            mPlainTextLen;
-    /* Encryption ½ÃÁ¡ : ÃÖÁ¾ °á°ú( base64 encoding ÈÄ °á°ú )
-       Decryption ½ÃÁ¡ : input */
+    /* Encryption ì‹œì  : ìµœì¢… ê²°ê³¼( base64 encoding í›„ ê²°ê³¼ )
+       Decryption ì‹œì  : input */
     SChar         * mEncryptedText;
     SInt            mEncryptedTextLen;
     /* compression */
@@ -69,7 +69,7 @@ public:
     static IDE_RC freeResultMem( SChar * aResultMem );
 
 private:
-    /* Reresource¸¦ À§ÇÑ ¸Ş¸ğ¸® ÇÒ´ç */
+    /* Reresourceë¥¼ ìœ„í•œ ë©”ëª¨ë¦¬ í• ë‹¹ */
     static IDE_RC allocAltiWrapInfo( idsAltiWrapInfo ** aAltiWrapInfo );
 
     /* Encryption */

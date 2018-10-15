@@ -26,7 +26,7 @@ extern FILE *Formin;
 class iloFormCompiler
 {
 private:
-    // BUG-25393 Æû ÆÄ½Ì¿¡·¯½Ã Á×½À´Ï´Ù.
+    // BUG-25393 í¼ íŒŒì‹±ì—ëŸ¬ì‹œ ì£½ìŠµë‹ˆë‹¤.
     FILE *mFormFile;
 public:
     iloFormCompiler()  { mFormFile = NULL; };

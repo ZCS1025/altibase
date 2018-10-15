@@ -45,7 +45,7 @@ static IDE_RC mtfDatediffEstimate( mtcNode*     aNode,
 mtfModule mtfDatediff = {
     1|MTC_NODE_OPERATOR_FUNCTION,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
+    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìê°€ ì•„ë‹˜)
     mtfDatediffFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -138,7 +138,7 @@ IDE_RC mtfDatediffCalculate( mtcNode*     aNode,
  * Implementation : 
  *    DATEDIFF( startdate, enddate, fmt )
  *
- *    aStack[0] : enddate - startdate¸¦ ÁöÁ¤ÇÑ fmt·Î º¸¿©ÁØ´Ù.
+ *    aStack[0] : enddate - startdateë¥¼ ì§€ì •í•œ fmtë¡œ ë³´ì—¬ì¤€ë‹¤.
  *    aStack[1] : startdate
  *    aStack[2] : enddate
  *    aStack[3] : fmt 

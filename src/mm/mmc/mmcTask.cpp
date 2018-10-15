@@ -155,10 +155,10 @@ IDE_RC mmcTask::authenticate(qciUserInfo *aUserInfo)
     if (aUserInfo->mIsSysdba == ID_TRUE)
     {
         // bug-19279 remote sysdba enable + sys can kill session
-        // REMOTE_SYSDBA_ENABLE º”º∫¿Ã off(0) ¿Ã∏È
-        // ø¯∞› sysdba ¡¢º”¿ª ∏∑¥¬¥Ÿ.
-        // link πÊΩƒ¿Ã tcp¿Ã∞Ì IP¡÷º“∞° 127.0.0.1¿Ã æ∆¥— ∞ÊøÏ
-        // ø¯∞› sysdba∑Œ ∆«¥‹«œ∞Ì ∏∑¥¬¥Ÿ
+        // REMOTE_SYSDBA_ENABLE ÏÜçÏÑ±Ïù¥ off(0) Ïù¥Î©¥
+        // ÏõêÍ≤© sysdba Ï†ëÏÜçÏùÑ ÎßâÎäîÎã§.
+        // link Î∞©ÏãùÏù¥ tcpÏù¥Í≥† IPÏ£ºÏÜåÍ∞Ä 127.0.0.1Ïù¥ ÏïÑÎãå Í≤ΩÏö∞
+        // ÏõêÍ≤© sysdbaÎ°ú ÌåêÎã®ÌïòÍ≥† ÎßâÎäîÎã§
         if (mmuProperty::getRemoteSysdbaEnable() == REMOTE_SYSDBA_ENABLE_OFF)
         {
             (void) cmiCheckRemoteAccess(getLink(), &sIsRemoteIP);
@@ -194,10 +194,10 @@ IDE_RC mmcTask::authenticate(qciUserInfo *aUserInfo)
         }
 
         /* set failed login count
-         * FAILED_LOGIN_ATTEMPTS ∞™¿Ã º≥¡§ ø©∫ŒøÕ ªÛ∞¸ æ¯¿Ã
-         * login Ω«∆–«— count∏¶ º≥¡§ count º≥¡§ ¿Øπ´∑Œ
-         * passwPolicyAuthenticate()ø°º≠ password invaild ±∏∫– «œø©
-         * error √≥∏Æ «—¥Ÿ. */
+         * FAILED_LOGIN_ATTEMPTS Í∞íÏù¥ ÏÑ§Ï†ï Ïó¨Î∂ÄÏôÄ ÏÉÅÍ¥Ä ÏóÜÏù¥
+         * login Ïã§Ìå®Ìïú countÎ•º ÏÑ§Ï†ï count ÏÑ§Ï†ï Ïú†Î¨¥Î°ú
+         * passwPolicyAuthenticate()ÏóêÏÑú password invaild Íµ¨Î∂Ñ ÌïòÏó¨
+         * error Ï≤òÎ¶¨ ÌïúÎã§. */
         if ( idlOS::strcmp(aUserInfo->loginPassword,
                            aUserInfo->userPassword) != 0 )
         {
@@ -344,7 +344,7 @@ IDE_RC mmcTask::logGeneralInfo(SChar *aBuffer, UInt aBufferLen)
                             ID_SIZEOF(sConnection),
                             CMI_LINK_INFO_ALL) != IDE_SUCCESS);
 
-    /* BUG-39098 Thread ID √‚∑¬∆˜∏À¿ª ULong¿∏∑Œ ∫Ø∞Ê  */
+    /* BUG-39098 Thread ID Ï∂úÎ†•Ìè¨Îß∑ÏùÑ ULongÏúºÎ°ú Î≥ÄÍ≤Ω  */
     idlVA::appendFormat(aBuffer,
                         aBufferLen,
                         "Session [%" ID_UINT32_FMT "]\n"

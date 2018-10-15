@@ -196,7 +196,7 @@ IDE_RC mtfEqualEstimate( mtcNode*     aNode,
                             ERR_INVALID_FUNCTION_ARGUMENT );
 
             // BUG-38133, BUG-38305
-            // ¾Æ·¡¿Í °°Àº ÇüÅÂÀÇ PASS ³ëµå »óÀ§ÀÇ (=) ¿¡ ´ëÇÑ estimation
+            // ì•„ëž˜ì™€ ê°™ì€ í˜•íƒœì˜ PASS ë…¸ë“œ ìƒìœ„ì˜ (=) ì— ëŒ€í•œ estimation
             // ex) CASE2
             //      |
             //     (=)-----(1)-----(=)-----(2)-----(3)
@@ -218,7 +218,7 @@ IDE_RC mtfEqualEstimate( mtcNode*     aNode,
                 sLeftList = aNode->arguments->arguments;
                 sSubTarget = sLeftList->arguments;
 
-                // aStack À» Àç»ç¿ëÇÒ °æ¿ì ¾Õ¼­ ¼öÇàµÈ Constant °ªÀÌ ÈÑ¼Õ
+                // aStack ì„ ìž¬ì‚¬ìš©í•  ê²½ìš° ì•žì„œ ìˆ˜í–‰ëœ Constant ê°’ì´ í›¼ì†
                 IDE_TEST( aCallBack->alloc( aCallBack->info,
                                             ID_SIZEOF( mtcStack ) * aStack[1].column->precision,
                                             (void**) & sStack1 )
@@ -248,7 +248,7 @@ IDE_RC mtfEqualEstimate( mtcNode*     aNode,
                 sRightList= aNode->arguments->next->arguments;
                 sSubTarget = sRightList->arguments;
 
-                // aStack À» Àç»ç¿ëÇÒ °æ¿ì ¾Õ¼­ ¼öÇàµÈ Constant °ªÀÌ ÈÑ¼Õ
+                // aStack ì„ ìž¬ì‚¬ìš©í•  ê²½ìš° ì•žì„œ ìˆ˜í–‰ëœ Constant ê°’ì´ í›¼ì†
                 IDE_TEST( aCallBack->alloc( aCallBack->info,
                                             ID_SIZEOF( mtcStack ) * aStack[2].column->precision,
                                             (void**) & sStack2 )
@@ -373,8 +373,8 @@ IDE_RC mtfEqualExtractRange( mtcNode*       aNode,
 
     //-------------------------------------------------------------------
     // [Subquery List]
-    // Node Transform¿¡ ÀÇÇÏ¿© Key Range¸¦ »ý¼º ½Ã,
-    // ´ÙÀ½°ú °°Àº ÁúÀÇ¿¡¼­ [Subquery List] °¡ Value Node·Î ¼±ÅÃµÉ ¼ö ÀÖ´Ù.
+    // Node Transformì— ì˜í•˜ì—¬ Key Rangeë¥¼ ìƒì„± ì‹œ,
+    // ë‹¤ìŒê³¼ ê°™ì€ ì§ˆì˜ì—ì„œ [Subquery List] ê°€ Value Nodeë¡œ ì„ íƒë  ìˆ˜ ìžˆë‹¤.
     //    - WHERE (I1, I2) = ( SELECT SUM(A1), SUM(A2) FROM ... )
     //
     //       [=]----------------------------------->[=]
@@ -383,24 +383,24 @@ IDE_RC mtfEqualExtractRange( mtcNode*       aNode,
     //      [ind]----------->[ind]
     //        |                |
     //        V                V
-    //       [i1]            [subquery]    : ListÇü Subquery´Â
-    //                         |           : IndirectionÀÌ ¾ÈµÊ
+    //       [i1]            [subquery]    : Listí˜• SubqueryëŠ”
+    //                         |           : Indirectionì´ ì•ˆë¨
     //                         V
     //                       [SUM]------>[SUM]
     // 
-    // µû¶ó¼­, ÀÌ¿Í °°Àº °æ¿ì ListÇü Subquery ³ëµåÀÇ Æ¯¼ºÀ» °í·ÁÇÏ¿©
-    // ÇÏÀ§ NodeÀÇ Á¤º¸¸¦ ÀÌ¿ëÇÑ´Ù.
-    // ÇÏÀ§ NodeÀÇ Á¤º¸´Â ListÇü Column Á¤º¸·ÎºÎÅÍ È¹µæÇÒ ¼ö ÀÖ´Ù.
+    // ë”°ë¼ì„œ, ì´ì™€ ê°™ì€ ê²½ìš° Listí˜• Subquery ë…¸ë“œì˜ íŠ¹ì„±ì„ ê³ ë ¤í•˜ì—¬
+    // í•˜ìœ„ Nodeì˜ ì •ë³´ë¥¼ ì´ìš©í•œë‹¤.
+    // í•˜ìœ„ Nodeì˜ ì •ë³´ëŠ” Listí˜• Column ì •ë³´ë¡œë¶€í„° íšë“í•  ìˆ˜ ìžˆë‹¤.
     //
-    // [ÂüÁ¶]  ListÇü ColumnÀÇ Data ±¸¼º
+    // [ì°¸ì¡°]  Listí˜• Columnì˜ Data êµ¬ì„±
     //        [ [column,value], [column,value], ... ]
     //-------------------------------------------------------------------
 
     if ( sValueColumn->module == & mtdList )
     {
         // To Fix PR-8259
-        // ListÇü Subquery¸¦ ÀÇ¹ÌÇÏ´Â ³ëµåÀÌ´Ù.
-        // SubqueryÀÇ Argument¸¦ ÀÌ¿ëÇÏ¿© ValueÁ¤º¸¸¦ ¾ò´Â´Ù.
+        // Listí˜• Subqueryë¥¼ ì˜ë¯¸í•˜ëŠ” ë…¸ë“œì´ë‹¤.
+        // Subqueryì˜ Argumentë¥¼ ì´ìš©í•˜ì—¬ Valueì •ë³´ë¥¼ ì–»ëŠ”ë‹¤.
         sValueNode   = sValueNode->arguments;
         sValueNode   = mtf::convertedNode( sValueNode, aTemplate );
         
@@ -425,7 +425,7 @@ IDE_RC mtfEqualExtractRange( mtcNode*       aNode,
         if ( aInfo->compValueType == MTD_COMPARE_FIXED_MTDVAL_FIXED_MTDVAL ||
              aInfo->compValueType == MTD_COMPARE_MTDVAL_MTDVAL )
         {
-            // mtd typeÀÇ column value¿¡ ´ëÇÑ range callback
+            // mtd typeì˜ column valueì— ëŒ€í•œ range callback
             aRange->minimum.callback     = mtk::rangeCallBackGT4Mtd;
             aRange->maximum.callback     = mtk::rangeCallBackLT4Mtd;
         }
@@ -435,7 +435,7 @@ IDE_RC mtfEqualExtractRange( mtcNode*       aNode,
                  ( aInfo->compValueType == MTD_COMPARE_STOREDVAL_STOREDVAL ) )
             {
                 /* MTD_COMPARE_STOREDVAL_MTDVAL
-                   stored typeÀÇ column value¿¡ ´ëÇÑ range callback */
+                   stored typeì˜ column valueì— ëŒ€í•œ range callback */
                 aRange->minimum.callback     = mtk::rangeCallBackGT4Stored;
                 aRange->maximum.callback     = mtk::rangeCallBackLT4Stored;
             }
@@ -462,13 +462,13 @@ IDE_RC mtfEqualExtractRange( mtcNode*       aNode,
     else
     {
         //---------------------------
-        // RangeCallBack ¼³Á¤
+        // RangeCallBack ì„¤ì •
         //---------------------------
         
         if ( aInfo->compValueType == MTD_COMPARE_FIXED_MTDVAL_FIXED_MTDVAL ||
              aInfo->compValueType == MTD_COMPARE_MTDVAL_MTDVAL )
         {
-            // mtd typeÀÇ column value¿¡ ´ëÇÑ range callback
+            // mtd typeì˜ column valueì— ëŒ€í•œ range callback
             aRange->minimum.callback     = mtk::rangeCallBackGE4Mtd;
             aRange->maximum.callback     = mtk::rangeCallBackLE4Mtd;
         }
@@ -478,7 +478,7 @@ IDE_RC mtfEqualExtractRange( mtcNode*       aNode,
                  ( aInfo->compValueType == MTD_COMPARE_STOREDVAL_STOREDVAL ) )
             {
                 /* MTD_COMPARE_STOREDVAL_MTDVAL
-                   stored typeÀÇ column value¿¡ ´ëÇÑ range callback */
+                   stored typeì˜ column valueì— ëŒ€í•œ range callback */
                 aRange->minimum.callback     = mtk::rangeCallBackGE4Stored;
                 aRange->maximum.callback     = mtk::rangeCallBackLE4Stored;
             }
@@ -491,7 +491,7 @@ IDE_RC mtfEqualExtractRange( mtcNode*       aNode,
         }
 
         //----------------------------------------------
-        // MinimumCallBack & MaximumCallBack Á¤º¸ ¼³Á¤
+        // MinimumCallBack & MaximumCallBack ì •ë³´ ì„¤ì •
         //----------------------------------------------
         
         sMinimumCallBack->columnIdx  = aInfo->columnIdx;
@@ -604,8 +604,8 @@ IDE_RC mtfEqualCalculate( mtcNode*     aNode,
 
     //--------------------------------------------------------------------
     // [Subquery List]
-    // Node Transform¿¡ ÀÇÇÏ¿© Key Range¸¦ »ý¼º ½Ã,
-    // ´ÙÀ½°ú °°Àº ÁúÀÇ¿¡¼­ [Subquery List] °¡ Value Node·Î ¼±ÅÃµÉ ¼ö ÀÖ´Ù.
+    // Node Transformì— ì˜í•˜ì—¬ Key Rangeë¥¼ ìƒì„± ì‹œ,
+    // ë‹¤ìŒê³¼ ê°™ì€ ì§ˆì˜ì—ì„œ [Subquery List] ê°€ Value Nodeë¡œ ì„ íƒë  ìˆ˜ ìžˆë‹¤.
     //    - WHERE (I1, I2) = ( SELECT SUM(A1), SUM(A2) FROM ... )
     //
     //       [=]----------------------------------->[=]
@@ -614,22 +614,22 @@ IDE_RC mtfEqualCalculate( mtcNode*     aNode,
     //      [ind]----------->[ind]
     //        |                |
     //        V                V
-    //       [i1]            [subquery]    : ListÇü Subquery´Â
-    //                         |           : IndirectionÀÌ ¾ÈµÊ
+    //       [i1]            [subquery]    : Listí˜• SubqueryëŠ”
+    //                         |           : Indirectionì´ ì•ˆë¨
     //                         V
     //                       [SUM]------>[SUM]
     //
-    // ¸¸¾à, ÀÌ¿¡ ´ëÇÑ Key Range »ý¼ºÀÌ ½ÇÆÐÇÒ °æ¿ì,
-    // Filter·Î Ã³¸®µÇ´Â µ¥ ÀÌ¿¡ ´ëÇÑ °í·Á°¡ ÇÊ¿äÇÏ´Ù.
+    // ë§Œì•½, ì´ì— ëŒ€í•œ Key Range ìƒì„±ì´ ì‹¤íŒ¨í•  ê²½ìš°,
+    // Filterë¡œ ì²˜ë¦¬ë˜ëŠ” ë° ì´ì— ëŒ€í•œ ê³ ë ¤ê°€ í•„ìš”í•˜ë‹¤.
     //
-    // [ÂüÁ¶]  ListÇü ColumnÀÇ Data ±¸¼º
+    // [ì°¸ì¡°]  Listí˜• Columnì˜ Data êµ¬ì„±
     //        [ [column,value], [column,value], ... ]
     //--------------------------------------------------------------------
     
     if ( aStack[1].column->module == & mtdList )
     {
-        /* BUG-31981 Equal ¿¬»ê½Ã list Å¸ÀÔÃ³¸®°¡ Àß¸øµÊ
-         * ÀÎÀÚÀÇ °ªÀ» Á¢±ÙÇÒ¶§ ÇØ´ç ÀÎÀÚÀÇ node¸¦ »ç¿ëÇØ¾ß ÇÕ´Ï´Ù.
+        /* BUG-31981 Equal ì—°ì‚°ì‹œ list íƒ€ìž…ì²˜ë¦¬ê°€ ìž˜ëª»ë¨
+         * ì¸ìžì˜ ê°’ì„ ì ‘ê·¼í• ë•Œ í•´ë‹¹ ì¸ìžì˜ nodeë¥¼ ì‚¬ìš©í•´ì•¼ í•©ë‹ˆë‹¤.
          */
         sStack = (mtcStack*) ( (SChar*) aTemplate->rows[aNode->arguments->table].row +
                                aStack[1].column->column.offset );
@@ -642,8 +642,8 @@ IDE_RC mtfEqualCalculate( mtcNode*     aNode,
     
     if ( aStack[2].column->module == & mtdList )
     {
-        /* BUG-31981 Equal ¿¬»ê½Ã list Å¸ÀÔÃ³¸®°¡ Àß¸øµÊ
-         * ÀÎÀÚÀÇ °ªÀ» Á¢±ÙÇÒ¶§ ÇØ´ç ÀÎÀÚÀÇ node¸¦ »ç¿ëÇØ¾ß ÇÕ´Ï´Ù.
+        /* BUG-31981 Equal ì—°ì‚°ì‹œ list íƒ€ìž…ì²˜ë¦¬ê°€ ìž˜ëª»ë¨
+         * ì¸ìžì˜ ê°’ì„ ì ‘ê·¼í• ë•Œ í•´ë‹¹ ì¸ìžì˜ nodeë¥¼ ì‚¬ìš©í•´ì•¼ í•©ë‹ˆë‹¤.
          */
         sStack = (mtcStack*) ( (SChar*) aTemplate->rows[aNode->arguments->next->table].row +
                                aStack[2].column->column.offset );

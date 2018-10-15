@@ -25,9 +25,9 @@
 #include    <qc.h>
 
 // BUG-16980
-// °³³ä»ó Table Type°ú Sequence TypeÀº ºĞ¸®µÇ¾î¾ß ÇÏÁö¸¸
-// SYS_TABLES_ÀÇ TABLE_TYPE ÄÃ·³À¸·Î Ãë±ŞÇÏ¿©,
-// Áßº¹¾øÀÌ ¼­·Î ´Ù¸¥ °ªÀ» °¡Áöµµ·Ï ÇÑ´Ù.
+// ê°œë…ìƒ Table Typeê³¼ Sequence Typeì€ ë¶„ë¦¬ë˜ì–´ì•¼ í•˜ì§€ë§Œ
+// SYS_TABLES_ì˜ TABLE_TYPE ì»¬ëŸ¼ìœ¼ë¡œ ì·¨ê¸‰í•˜ì—¬,
+// ì¤‘ë³µì—†ì´ ì„œë¡œ ë‹¤ë¥¸ ê°’ì„ ê°€ì§€ë„ë¡ í•œë‹¤.
 enum qcmTableType
 {
     QCM_USER_TABLE,        // 'T' (SYS_TABLES_.TABLE_TYPE)
@@ -159,8 +159,8 @@ typedef struct qcmTableInfo
     struct qcmIndex         * indices;
 
     // PRIMARY KEY information
-    // replication»Ó¸¸ ¾Æ´Ï¶ó referential constraint¸¦ °í·ÁÇÑ
-    // predicate selectivity°ªÀ» ±¸ÇÏ±â À§ÇØ¼­ optimizer¿¡¼­µµ ÇÊ¿äÇÔ.
+    // replicationë¿ë§Œ ì•„ë‹ˆë¼ referential constraintë¥¼ ê³ ë ¤í•œ
+    // predicate selectivityê°’ì„ êµ¬í•˜ê¸° ìœ„í•´ì„œ optimizerì—ì„œë„ í•„ìš”í•¨.
     struct qcmIndex         * primaryKey; // for replication or optimizer
 
     // UNIQUE KEY information
@@ -175,7 +175,7 @@ typedef struct qcmTableInfo
     UInt                      notNullCount;
     struct qcmNotNull       * notNulls;
 
-    /* PROJ-1107 Check Constraint Áö¿ø */
+    /* PROJ-1107 Check Constraint ì§€ì› */
     UInt                      checkCount;
     struct qcmCheck         * checks;
 
@@ -216,7 +216,7 @@ typedef struct qcmTableInfo
     /* PROJ-1071 Parallel query */
     UInt                      parallelDegree;
 
-    /* ±âÅ¸ ÀÚÁÖ »ç¿ëÇÏ´Â Á¤º¸ */
+    /* ê¸°íƒ€ ìì£¼ ì‚¬ìš©í•˜ëŠ” ì •ë³´ */
     smOID                     tableOID;
     UInt                      tableFlag;
     idBool                    isDictionary;
@@ -224,8 +224,8 @@ typedef struct qcmTableInfo
     
 } qcmTableInfo;
 
-/* qcmColumn.flagÀÇ °ªÀ¸·Î »ç¿ëµÊ                    */
-/* qcply.y¿¡¼­ qcmColumnÀÇ typeÀÌ Á¤ÇØÁü             */
+/* qcmColumn.flagì˜ ê°’ìœ¼ë¡œ ì‚¬ìš©ë¨                    */
+/* qcply.yì—ì„œ qcmColumnì˜ typeì´ ì •í•´ì§             */
 # define QCM_COLUMN_TYPE_MASK                    (0x00000007)
 # define QCM_COLUMN_TYPE_FIXED                   (0x00000000)
 # define QCM_COLUMN_TYPE_VARIABLE                (0x00000001)
@@ -233,84 +233,84 @@ typedef struct qcmTableInfo
 # define QCM_COLUMN_TYPE_DEFAULT                 (0x00000003)
 
 // PROJ-1877
-// alter table modify column½Ã columnÀÇ length º¯È¯¿©ºÎ
+// alter table modify columnì‹œ columnì˜ length ë³€í™˜ì—¬ë¶€
 # define QCM_COLUMN_MODIFY_LENGTH_MASK           (0x00000008)
 # define QCM_COLUMN_MODIFY_LENGTH_FALSE          (0x00000000)
 # define QCM_COLUMN_MODIFY_LENGTH_TRUE           (0x00000008)
 
 // PROJ-1877
-// alter table modify column½Ã columnÀÇ (not) null ¼³Á¤¿©ºÎ
+// alter table modify columnì‹œ columnì˜ (not) null ì„¤ì •ì—¬ë¶€
 # define QCM_COLUMN_MODIFY_NULLABLE_MASK         (0x00000030)
 # define QCM_COLUMN_MODIFY_NULLABLE_NONE         (0x00000000)
 # define QCM_COLUMN_MODIFY_NULLABLE_NULL         (0x00000010)
 # define QCM_COLUMN_MODIFY_NULLABLE_NOTNULL      (0x00000020)
 
 // PROJ-1877
-// alter table modify column½Ã columnÀÇ default value ¼³Á¤¿©ºÎ
+// alter table modify columnì‹œ columnì˜ default value ì„¤ì •ì—¬ë¶€
 # define QCM_COLUMN_MODIFY_DEFAULT_MASK          (0x00000040)
 # define QCM_COLUMN_MODIFY_DEFAULT_FALSE         (0x00000000)
 # define QCM_COLUMN_MODIFY_DEFAULT_TRUE          (0x00000040)
 
 // PROJ-1877
-// alter table modify column½Ã columnÀÇ type º¯È¯¿¡¼­ data loss ¼³Á¤ ¿©ºÎ
+// alter table modify columnì‹œ columnì˜ type ë³€í™˜ì—ì„œ data loss ì„¤ì • ì—¬ë¶€
 # define QCM_COLUMN_MODIFY_DATA_LOSS_MASK        (0x00000080)
 # define QCM_COLUMN_MODIFY_DATA_LOSS_FALSE       (0x00000000)
 # define QCM_COLUMN_MODIFY_DATA_LOSS_TRUE        (0x00000080)
 
 // PROJ-1502 PARTITIONED DISK TABLE
-// lob columnÀÇ tablespace¸¦ »ç¿ëÀÚ°¡ ÁöÁ¤Çß´ÂÁö ¿©ºÎ
-/* qcmColumn.flagÀÇ °ªÀ¸·Î »ç¿ëµÊ*/
+// lob columnì˜ tablespaceë¥¼ ì‚¬ìš©ìê°€ ì§€ì •í–ˆëŠ”ì§€ ì—¬ë¶€
+/* qcmColumn.flagì˜ ê°’ìœ¼ë¡œ ì‚¬ìš©ë¨*/
 # define QCM_COLUMN_LOB_DEFAULT_TBS_MASK         (0x00000100)
 # define QCM_COLUMN_LOB_DEFAULT_TBS_FALSE        (0x00000000)
 # define QCM_COLUMN_LOB_DEFAULT_TBS_TRUE         (0x00000100)
 
 // PROJ-1877
-// alter table modify column½Ã columnÀÇ column option ¼³Á¤¿©ºÎ
+// alter table modify columnì‹œ columnì˜ column option ì„¤ì •ì—¬ë¶€
 # define QCM_COLUMN_MODIFY_DATA_TYPE_MASK        (0x00000200)
 # define QCM_COLUMN_MODIFY_DATA_TYPE_FALSE       (0x00000000)
 # define QCM_COLUMN_MODIFY_DATA_TYPE_TRUE        (0x00000200)
 
 // PROJ-1877
-// alter table modify column½Ã columnÀÇ column option ¼³Á¤¿©ºÎ
+// alter table modify columnì‹œ columnì˜ column option ì„¤ì •ì—¬ë¶€
 # define QCM_COLUMN_MODIFY_COLUMN_OPTION_MASK    (0x00000400)
 # define QCM_COLUMN_MODIFY_COLUMN_OPTION_FALSE   (0x00000000)
 # define QCM_COLUMN_MODIFY_COLUMN_OPTION_TRUE    (0x00000400)
 
 // PROJ-2002 Column Security
-// alter table modify column½Ã encryption ¼³Á¤¿©ºÎ
+// alter table modify columnì‹œ encryption ì„¤ì •ì—¬ë¶€
 # define QCM_COLUMN_MODIFY_ENCRYPT_COLUMN_MASK   (0x00000800)
 # define QCM_COLUMN_MODIFY_ENCRYPT_COLUMN_FALSE  (0x00000000)
 # define QCM_COLUMN_MODIFY_ENCRYPT_COLUMN_TRUE   (0x00000800)
 
 // PROJ-2002 Column Security
-// alter table modify column½Ã decryption ¼³Á¤¿©ºÎ
+// alter table modify columnì‹œ decryption ì„¤ì •ì—¬ë¶€
 # define QCM_COLUMN_MODIFY_DECRYPT_COLUMN_MASK   (0x00001000)
 # define QCM_COLUMN_MODIFY_DECRYPT_COLUMN_FALSE  (0x00000000)
 # define QCM_COLUMN_MODIFY_DECRYPT_COLUMN_TRUE   (0x00001000)
 
 /* PROJ-1090 Function-based Index
- *  Hidden ColumnÀÎÁö ¿©ºÎ
+ *  Hidden Columnì¸ì§€ ì—¬ë¶€
  */
 #define QCM_COLUMN_HIDDEN_COLUMN_MASK            (0x00002000)
 #define QCM_COLUMN_HIDDEN_COLUMN_FALSE           (0x00000000)
 #define QCM_COLUMN_HIDDEN_COLUMN_TRUE            (0x00002000)
 
 // PROJ-2415 Grouping Sets Clause
-// Grouping Sets Transform¿¡ ÀÇÇØ Target¿¡ Ãß°¡µÈ OrderBy Node¿¡ ´ëÇÑ flag¸¦
-// tableInfo->columns¿¡ ÀúÀåÇÏ±â À§ÇÑ flag
+// Grouping Sets Transformì— ì˜í•´ Targetì— ì¶”ê°€ëœ OrderBy Nodeì— ëŒ€í•œ flagë¥¼
+// tableInfo->columnsì— ì €ì¥í•˜ê¸° ìœ„í•œ flag
 #define QCM_COLUMN_GBGS_ORDER_BY_NODE_MASK       (0x00004000)
 #define QCM_COLUMN_GBGS_ORDER_BY_NODE_FALSE      (0x00000000)
 #define QCM_COLUMN_GBGS_ORDER_BY_NODE_TRUE       (0x00004000)
 
 // PROJ-1877
-// alter table modify column½Ã columnÀÇ type º¯È¯¿©ºÎ
+// alter table modify columnì‹œ columnì˜ type ë³€í™˜ì—¬ë¶€
 # define QCM_COLUMN_MODIFY_TYPE_MASK             (0x00008000)
 # define QCM_COLUMN_MODIFY_TYPE_FALSE            (0x00000000)
 # define QCM_COLUMN_MODIFY_TYPE_TRUE             (0x00008000)
 
 
 /* BUG-13725 */
-/* qcmTableInfo.operatableFlag °ªÀ¸·Î »ç¿ëµÊ */
+/* qcmTableInfo.operatableFlag ê°’ìœ¼ë¡œ ì‚¬ìš©ë¨ */
 /****************** Operatable QP Functions ********************************/
 # define QCM_OPERATABLE_QP_REPL_MASK             (0x00000001)
 # define QCM_OPERATABLE_QP_REPL_DISABLE          (0x00000000)
@@ -459,7 +459,7 @@ typedef struct qcmColumn
     // string representation of default expression (need parse).
 
     // PROJ-1488 Altibase Spatio-Temporal DBMS
-    // stmColumnInfo·Î Casting ÇØ¼­ »ç¿ëÇØ¾ßÇÔ.
+    // stmColumnInfoë¡œ Casting í•´ì„œ ì‚¬ìš©í•´ì•¼í•¨.
     void              * stColumn;
 
     // PROJ-1579 NCHAR
@@ -514,15 +514,15 @@ typedef struct qcmPrivilege
 //-----------------------------------------------------------------
 // [qcmIndex]
 //
-// Index¸¦ À§ÇÑ Meta Cache Á¤º¸
-// A4¿¡¼­´Â key column¿¡ ´ëÇÑ Á¤º¸¸¦ mtcColumnÇüÅÂ·Î
-// °ü¸®ÇÏ°í ÀÖ´Ù.
-// ÀÌ ¶§, mtcColumn Á¤º¸ÀÇ setting½Ã ´ÙÀ½°ú °°Àº
-// »çÇ×¿¡ ´ëÇÏ¿© À¯ÀÇÇÏ¿©¾ß ÇÑ´Ù.
+// Indexë¥¼ ìœ„í•œ Meta Cache ì •ë³´
+// A4ì—ì„œëŠ” key columnì— ëŒ€í•œ ì •ë³´ë¥¼ mtcColumní˜•íƒœë¡œ
+// ê´€ë¦¬í•˜ê³  ìˆë‹¤.
+// ì´ ë•Œ, mtcColumn ì •ë³´ì˜ settingì‹œ ë‹¤ìŒê³¼ ê°™ì€
+// ì‚¬í•­ì— ëŒ€í•˜ì—¬ ìœ ì˜í•˜ì—¬ì•¼ í•œë‹¤.
 //     - mtcColumn.column.value = NULL;
-//        : SM¿¡¼­ Variable Column¿¡ ´ëÇÑ Á¢±Ù ½Ã º°µµÀÇ º¹»ç¸¦ ÇÏÁö ¾Ê±â À§ÇÔ
+//        : SMì—ì„œ Variable Columnì— ëŒ€í•œ ì ‘ê·¼ ì‹œ ë³„ë„ì˜ ë³µì‚¬ë¥¼ í•˜ì§€ ì•Šê¸° ìœ„í•¨
 //     - mtcColumn.module
-//        : ÇØ´ç moduleÀ» Ã£¾Æ Á¤È®È÷ ¼³Á¤ÇÏ¿©¾ß ÇÑ´Ù.
+//        : í•´ë‹¹ moduleì„ ì°¾ì•„ ì •í™•íˆ ì„¤ì •í•˜ì—¬ì•¼ í•œë‹¤.
 //----------------------------------------------------------------
 
 typedef struct qcmIndex
@@ -533,7 +533,7 @@ typedef struct qcmIndex
     UInt                  indexTypeId;
     SChar                 name[ QC_MAX_OBJECT_NAME_LEN + 1 ];
     UInt                  keyColCount;
-    mtcColumn           * keyColumns;    // Index³»¿¡¼­ÀÇ Column Á¤º¸
+    mtcColumn           * keyColumns;    // Indexë‚´ì—ì„œì˜ Column ì •ë³´
     UInt                * keyColsFlag;   // ASC, DESC
     idBool                isUnique;      // ID_TRUE : unique, ID_FALSE : non-unique
     idBool                isLocalUnique; // PROJ-1502 ID_TRUE : unique, ID_FALSE : non-unique
@@ -547,8 +547,8 @@ typedef struct qcmIndex
     UInt                  indexPartitionID;
     
     // PROJ-1624 non-partitioned index
-    // partitioned tableÀÇ non-partitioned index´Â global indexÀÌ´Ù.
-    // º°µµÀÇ index tableÀ» ÀÌ¿ëÇØ index·Î ÀÌ¿ëÇÑ´Ù.
+    // partitioned tableì˜ non-partitioned indexëŠ” global indexì´ë‹¤.
+    // ë³„ë„ì˜ index tableì„ ì´ìš©í•´ indexë¡œ ì´ìš©í•œë‹¤.
     UInt                  indexTableID;
 
 } qcmIndex;
@@ -584,7 +584,7 @@ typedef struct qcmNotNull
     UInt                        constraintColumnCount;
 } qcmNotNull;
 
-/* PROJ-1107 Check Constraint Áö¿ø */
+/* PROJ-1107 Check Constraint ì§€ì› */
 typedef struct qcmCheck
 {
     SChar                       name[QC_MAX_OBJECT_NAME_LEN + 1];
@@ -615,12 +615,12 @@ typedef struct qcmParentInfo
 //----------------------------------------
 // BUG-28049
 //
-// validation °úÁ¤¿¡¼­ »ı¼ºµÇ´Â ±âÁ¸ÀÇ foreign key ¸®½ºÆ®´Â
-// ±¸¼º ÇüÅÂ¿¡ µû¶ó ÁúÀÇ °á°ú°¡ »óÀÌÇÏ°Ô ¹ö±×°¡ ÀÖ¾ú½À´Ï´Ù.
-// °èÃşÀûÀÎ ±¸Á¶·Î ±¸¼ºµÇ¾ú´ø ±âÁ¸ÀÇ foreign key ¸®½ºÆ®¸¦
-// ÇÏ³ªÀÇ linked list¸¸ »ç¿ëÇÏ´Â ¼öÆòÀûÀÎ ±¸Á¶·Î º¯°æÇÕ´Ï´Ù.
+// validation ê³¼ì •ì—ì„œ ìƒì„±ë˜ëŠ” ê¸°ì¡´ì˜ foreign key ë¦¬ìŠ¤íŠ¸ëŠ”
+// êµ¬ì„± í˜•íƒœì— ë”°ë¼ ì§ˆì˜ ê²°ê³¼ê°€ ìƒì´í•˜ê²Œ ë²„ê·¸ê°€ ìˆì—ˆìŠµë‹ˆë‹¤.
+// ê³„ì¸µì ì¸ êµ¬ì¡°ë¡œ êµ¬ì„±ë˜ì—ˆë˜ ê¸°ì¡´ì˜ foreign key ë¦¬ìŠ¤íŠ¸ë¥¼
+// í•˜ë‚˜ì˜ linked listë§Œ ì‚¬ìš©í•˜ëŠ” ìˆ˜í‰ì ì¸ êµ¬ì¡°ë¡œ ë³€ê²½í•©ë‹ˆë‹¤.
 //
-// qcmForeignKeyNode¿Í qcmChildInfo¸¦ qcmRefChildInfoÀ¸·Î ÅëÇÕ
+// qcmForeignKeyNodeì™€ qcmChildInfoë¥¼ qcmRefChildInfoìœ¼ë¡œ í†µí•©
 // 
 //----------------------------------------
 
@@ -647,10 +647,10 @@ typedef struct qcmChildInfo
 // update type
 typedef enum qcmRefChildUpdateType
 {
-    QCM_CHILD_UPDATE_NORMAL = 0,        // ÀÏ¹İ Å×ÀÌºíÀÇ update
-    QCM_CHILD_UPDATE_ROWMOVEMENT,       // row movement°¡ ¹ß»ıÇÏ¸é delete-insert·Î Ã³¸®ÇÏ´Â update
-    QCM_CHILD_UPDATE_CHECK_ROWMOVEMENT, // row movement°¡ ¹ß»ıÇÏ¸é ¿¡·¯³»´Â update
-    QCM_CHILD_UPDATE_NO_ROWMOVEMENT     // row movement°¡ ÀÏ¾î³ªÁö ¾Ê´Â update
+    QCM_CHILD_UPDATE_NORMAL = 0,        // ì¼ë°˜ í…Œì´ë¸”ì˜ update
+    QCM_CHILD_UPDATE_ROWMOVEMENT,       // row movementê°€ ë°œìƒí•˜ë©´ delete-insertë¡œ ì²˜ë¦¬í•˜ëŠ” update
+    QCM_CHILD_UPDATE_CHECK_ROWMOVEMENT, // row movementê°€ ë°œìƒí•˜ë©´ ì—ëŸ¬ë‚´ëŠ” update
+    QCM_CHILD_UPDATE_NO_ROWMOVEMENT     // row movementê°€ ì¼ì–´ë‚˜ì§€ ì•ŠëŠ” update
 } qcmRefChildUpdateType;
 
 typedef struct qcmRefChildInfo
@@ -660,10 +660,10 @@ typedef struct qcmRefChildInfo
     UInt                      parentTableID; // BUG-23370
     qcmIndex                * parentIndex;
     qcmForeignKey           * foreignKey;
-    UInt                      referenceRule; // foreignKey->referenceRuleÀ» lock¾øÀÌ Á¢±ÙÇÑ´Ù.
+    UInt                      referenceRule; // foreignKey->referenceRuleì„ lockì—†ì´ ì ‘ê·¼í•œë‹¤.
     struct qmsTableRef      * childTableRef; // PROJ-1502
 
-    /* PROJ-1107 Check Constraint Áö¿ø */
+    /* PROJ-1107 Check Constraint ì§€ì› */
     struct qdConstraintSpec * childCheckConstrList;
 
     /* PROJ-1090 Function-based Index */
@@ -682,29 +682,29 @@ typedef struct qcmRefChildInfo
 } qcmRefChildInfo;
 
 //=========================================================
-// [PROJ-1359] Trigger¸¦ À§ÇÑ Meta Cache Á¤º¸
+// [PROJ-1359] Triggerë¥¼ ìœ„í•œ Meta Cache ì •ë³´
 //=========================================================
 
 //---------------------------------------------------------
-// Action BodyÀÇ À¯È¿¼º ¿©ºÎ¿¡ °ü°è ¾øÀÌ
-// ÂüÁ¶ÇØ¾ß ÇÏ´Â Á¤º¸´Â ´ÙÀ½ Meta Table·ÎºÎÅÍ ¸ğµÎ ±¸ÃàÇÏ¸ç,
+// Action Bodyì˜ ìœ íš¨ì„± ì—¬ë¶€ì— ê´€ê³„ ì—†ì´
+// ì°¸ì¡°í•´ì•¼ í•˜ëŠ” ì •ë³´ëŠ” ë‹¤ìŒ Meta Tableë¡œë¶€í„° ëª¨ë‘ êµ¬ì¶•í•˜ë©°,
 //     : SYS_TRIGGERS_
 //     : SYS_TRIGGER_STRINGS_
 //     : SYS_TRIGGER_UPDATE_COLUMNS_
 //     : SYS_TRIGGER_DML_TABLES_
-// ¸ğµç ±¸µ¿ ¿©ºÎÀÇ ÆÇ´ÜÀº Meta Cache·ÎºÎÅÍ °¡´ÉÇÏ¸ç,
-// When Condition°ú Action BodyÀÇ ¼öÇà¸¸ µ¿½Ã¼º Á¦¾î¸¦ ÅëÇØ
-// ¼öÇàµÈ´Ù.  Áï, Cycle Detection µîÀÇ ÀÛ¾÷ ¿ª½Ã Trigger
-// ÀÚÃ¼¸¦ Á¢±ÙÇÏÁö ¾Ê°í Meta CacheÁ¤º¸¸¸À¸·Î ¼öÇàµÈ´Ù.
+// ëª¨ë“  êµ¬ë™ ì—¬ë¶€ì˜ íŒë‹¨ì€ Meta Cacheë¡œë¶€í„° ê°€ëŠ¥í•˜ë©°,
+// When Conditionê³¼ Action Bodyì˜ ìˆ˜í–‰ë§Œ ë™ì‹œì„± ì œì–´ë¥¼ í†µí•´
+// ìˆ˜í–‰ëœë‹¤.  ì¦‰, Cycle Detection ë“±ì˜ ì‘ì—… ì—­ì‹œ Trigger
+// ìì²´ë¥¼ ì ‘ê·¼í•˜ì§€ ì•Šê³  Meta Cacheì •ë³´ë§Œìœ¼ë¡œ ìˆ˜í–‰ëœë‹¤.
 //---------------------------------------------------------
 
-// ALTER TRIGGER ±¸¹®À» ÅëÇÏ¿© ENABLE/DISABLEÀÌ ¼³Á¤µÈ´Ù.
+// ALTER TRIGGER êµ¬ë¬¸ì„ í†µí•˜ì—¬ ENABLE/DISABLEì´ ì„¤ì •ëœë‹¤.
 typedef enum {
     QCM_TRIGGER_DISABLE = 0,
     QCM_TRIGGER_ENABLE
 } qcmTriggerAble;
 
-// [Trigger ¼öÇà ½ÃÁ¡]
+// [Trigger ìˆ˜í–‰ ì‹œì ]
 /* AFTER, BEFORE, INSTEAD OF */
 typedef enum {
     QCM_TRIGGER_NONE = 0,
@@ -713,9 +713,9 @@ typedef enum {
     QCM_TRIGGER_INSTEAD_OF
 } qcmTriggerEventTime;
 
-// [Trigger EventÀÇ Á¾·ù]
-// INSERT, DELETE, UPDATE Event°¡ Á¸ÀçÇÏ¸ç,
-// UPDATE EVENTÀÇ °æ¿ì COLUMN Á¤º¸¸¦ ÁöÁ¤ÇÒ ¼ö ÀÖ´Ù.
+// [Trigger Eventì˜ ì¢…ë¥˜]
+// INSERT, DELETE, UPDATE Eventê°€ ì¡´ì¬í•˜ë©°,
+// UPDATE EVENTì˜ ê²½ìš° COLUMN ì •ë³´ë¥¼ ì§€ì •í•  ìˆ˜ ìˆë‹¤.
 
 #define    QCM_TRIGGER_EVENT_NONE     (0x00000000)
 #define    QCM_TRIGGER_EVENT_INSERT   (0x00000001)
@@ -723,7 +723,7 @@ typedef enum {
 #define    QCM_TRIGGER_EVENT_UPDATE   (0x00000004)
 
 
-// [REFERENCING ÀÇ Á¾·ù]
+// [REFERENCING ì˜ ì¢…ë¥˜]
 typedef enum {
     QCM_TRIGGER_REF_NONE = 0,
     QCM_TRIGGER_REF_OLD_ROW,
@@ -733,7 +733,7 @@ typedef enum {
 } qcmTriggerRefType;
 
 // [Trigger Action Granularity]
-// EACH_ROW, EACH_STATEMENT µÎ Á¾·ù°¡ Á¸ÀçÇÑ´Ù.
+// EACH_ROW, EACH_STATEMENT ë‘ ì¢…ë¥˜ê°€ ì¡´ì¬í•œë‹¤.
 typedef enum {
     QCM_TRIGGER_ACTION_NONE = 0,
     QCM_TRIGGER_ACTION_EACH_ROW,
@@ -743,10 +743,10 @@ typedef enum {
 typedef struct qcmTriggerInfo
 {
     //----------------------------------------
-    // Trigger Á¤º¸
+    // Trigger ì •ë³´
     //----------------------------------------
 
-    // SYS_TRIGGERS_ ·ÎºÎÅÍ È¹µæ
+    // SYS_TRIGGERS_ ë¡œë¶€í„° íšë“
     UInt            userID;                       // User ID
     SChar           userName[ QC_MAX_OBJECT_NAME_LEN + 1 ];    // User Name
     smOID           triggerOID;                   // Trigger OID
@@ -754,7 +754,7 @@ typedef struct qcmTriggerInfo
     UInt            tableID;                      // Subject Table ID
 
     //----------------------------------------
-    // Trigger Event Á¤º¸
+    // Trigger Event ì •ë³´
     //----------------------------------------
 
     qcmTriggerAble              enable;     // DISABLE/ENABLE
@@ -764,23 +764,23 @@ typedef struct qcmTriggerInfo
     SInt                        uptCount;   // Update Column Count on UPDATE EVENT
 
     //----------------------------------------
-    // Action Á¤º¸
+    // Action ì •ë³´
     //----------------------------------------
 
     qcmTriggerGranularity  granularity; // ROW/STATEMENT
-    SInt                   refRowCnt;   // REFERENCING ROW ÀÇ °³¼ö
+    SInt                   refRowCnt;   // REFERENCING ROW ì˜ ê°œìˆ˜
 
     //----------------------------------------
-    // Trigger ÀüÃ¼ Á¤º¸
-    // Latch¸¦ ÀÌ¿ëÇÏ¿© µ¿½Ã¼º Á¦¾î¸¦ ÇÑ´Ù.
+    // Trigger ì „ì²´ ì •ë³´
+    // Latchë¥¼ ì´ìš©í•˜ì—¬ ë™ì‹œì„± ì œì–´ë¥¼ í•œë‹¤.
     //----------------------------------------
 
-    void          * triggerHandle; // TriggerÀÇ ÀüÃ¼ Á¤º¸¸¦ Æ÷ÇÔÇÑ Handle
+    void          * triggerHandle; // Triggerì˜ ì „ì²´ ì •ë³´ë¥¼ í¬í•¨í•œ Handle
 
 } qcmTriggerInfo;
 
 //=========================================================
-// [BUG-16980] Sequence¸¦ À§ÇÑ Meta Á¤º¸ (Meta Cache´Â ¾Æ´Ô)
+// [BUG-16980] Sequenceë¥¼ ìœ„í•œ Meta ì •ë³´ (Meta CacheëŠ” ì•„ë‹˜)
 //=========================================================
 
 typedef struct qcmSequenceInfo

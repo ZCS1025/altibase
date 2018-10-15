@@ -59,7 +59,7 @@ IDE_RC iduShmDump::getMsgSysSeg( SChar * aMsgBuf, UInt aBufSize )
 
     sSSegment = iduShmMgr::mSSegment;
 
-    /// ÀÌ ÄÚµå ¾Æ·¡·Î´Â iduShmMgrÀ¸·ÎºÎÅÍ Á¤º¸¸¦ °¡Á®¿ÀÁö ¾Ê´Â´Ù.
+    /// ì´ ì½”ë“œ ì•„ë˜ë¡œëŠ” iduShmMgrìœ¼ë¡œë¶€í„° ì •ë³´ë¥¼ ê°€ì ¸ì˜¤ì§€ ì•ŠëŠ”ë‹¤.
     /////////////////////////////////////////////////////////////////////////////
 
     sWrittenBytes += idlOS::snprintf( aMsgBuf + sWrittenBytes,
@@ -125,7 +125,7 @@ IDE_RC iduShmDump::getMsgDataSeg( SChar * aMsgBuf, UInt aBufSize )
 
     sSSegment = iduShmMgr::mSSegment;
 
-    /// ÀÌ ÄÚµå ¾Æ·¡·Î´Â iduShmMgrÀ¸·ÎºÎÅÍ Á¤º¸¸¦ °¡Á®¿ÀÁö ¾Ê´Â´Ù.
+    /// ì´ ì½”ë“œ ì•„ë˜ë¡œëŠ” iduShmMgrìœ¼ë¡œë¶€í„° ì •ë³´ë¥¼ ê°€ì ¸ì˜¤ì§€ ì•ŠëŠ”ë‹¤.
     /////////////////////////////////////////////////////////////////////////////
 
     sWrittenBytes += idlOS::snprintf( aMsgBuf + sWrittenBytes,
@@ -178,7 +178,7 @@ IDE_RC iduShmDump::getMsgMatrix( SChar * aMsgBuf, UInt aBufSize )
 
     sSSegment = iduShmMgr::mSSegment;
 
-    /// ÀÌ ÄÚµå ¾Æ·¡·Î´Â iduShmMgrÀ¸·ÎºÎÅÍ Á¤º¸¸¦ °¡Á®¿ÀÁö ¾Ê´Â´Ù.
+    /// ì´ ì½”ë“œ ì•„ë˜ë¡œëŠ” iduShmMgrìœ¼ë¡œë¶€í„° ì •ë³´ë¥¼ ê°€ì ¸ì˜¤ì§€ ì•ŠëŠ”ë‹¤.
     /////////////////////////////////////////////////////////////////////////////
 
 
@@ -242,7 +242,7 @@ IDE_RC iduShmDump::getMsgFreeBlocks( SChar * aMsgBuf, UInt aBufSize )
 
     sSSegment = iduShmMgr::mSSegment;
 
-    /// ÀÌ ÄÚµå ¾Æ·¡·Î´Â iduShmMgrÀ¸·ÎºÎÅÍ Á¤º¸¸¦ °¡Á®¿ÀÁö ¾Ê´Â´Ù.
+    /// ì´ ì½”ë“œ ì•„ë˜ë¡œëŠ” iduShmMgrìœ¼ë¡œë¶€í„° ì •ë³´ë¥¼ ê°€ì ¸ì˜¤ì§€ ì•ŠëŠ”ë‹¤.
     /////////////////////////////////////////////////////////////////////////////
 
 
@@ -292,7 +292,7 @@ IDE_RC iduShmDump::getMsgProcessMgrInfo( SChar * aMsgBuf, UInt aBufSize )
 
     sShmProcMgrInfo = &iduShmMgr::mSSegment->mProcMgrInfo;
 
-    /// ÀÌ ÄÚµå ¾Æ·¡·Î´Â iduShmMgrÀ¸·ÎºÎÅÍ Á¤º¸¸¦ °¡Á®¿ÀÁö ¾Ê´Â´Ù.
+    /// ì´ ì½”ë“œ ì•„ë˜ë¡œëŠ” iduShmMgrìœ¼ë¡œë¶€í„° ì •ë³´ë¥¼ ê°€ì ¸ì˜¤ì§€ ì•ŠëŠ”ë‹¤.
     /////////////////////////////////////////////////////////////////////////////
 
 
@@ -359,7 +359,7 @@ IDE_RC iduShmDump::getMsgProcess( SChar * aMsgBuf,
     sShmProcInfo    = sShmProcMgrInfo->mPRTable;
     sProcIndex      = aLPID;
 
-    /// ÀÌ ÄÚµå ¾Æ·¡·Î´Â iduShmMgrÀ¸·ÎºÎÅÍ Á¤º¸¸¦ °¡Á®¿ÀÁö ¾Ê´Â´Ù.
+    /// ì´ ì½”ë“œ ì•„ë˜ë¡œëŠ” iduShmMgrìœ¼ë¡œë¶€í„° ì •ë³´ë¥¼ ê°€ì ¸ì˜¤ì§€ ì•ŠëŠ”ë‹¤.
     /////////////////////////////////////////////////////////////////////////////
 
     sWrittenBytes += idlOS::snprintf( aMsgBuf + sWrittenBytes,
@@ -409,7 +409,7 @@ IDE_RC iduShmDump::getMsgBinDump( SChar   * aMsgBuf,
 
     sPtrStart = IDU_SHM_GET_ADDR_PTR( aShmAddr );
 
-    /// ÀÌ ÄÚµå ¾Æ·¡·Î´Â iduShmMgrÀ¸·ÎºÎÅÍ Á¤º¸¸¦ °¡Á®¿ÀÁö ¾Ê´Â´Ù.
+    /// ì´ ì½”ë“œ ì•„ë˜ë¡œëŠ” iduShmMgrìœ¼ë¡œë¶€í„° ì •ë³´ë¥¼ ê°€ì ¸ì˜¤ì§€ ì•ŠëŠ”ë‹¤.
     /////////////////////////////////////////////////////////////////////////////
 
     sWrittenBytes += idlOS::snprintf( aMsgBuf + sWrittenBytes,
@@ -485,7 +485,7 @@ UInt iduShmDump::getMsgShmHeader( SChar * aMsgBuf, UInt aBufSize )
 
     sShmHeader = &iduShmMgr::mSSegment->mHeader;
 
-    /// ÀÌ ÄÚµå ¾Æ·¡·Î´Â iduShmMgrÀ¸·ÎºÎÅÍ Á¤º¸¸¦ °¡Á®¿ÀÁö ¾Ê´Â´Ù.
+    /// ì´ ì½”ë“œ ì•„ë˜ë¡œëŠ” iduShmMgrìœ¼ë¡œë¶€í„° ì •ë³´ë¥¼ ê°€ì ¸ì˜¤ì§€ ì•ŠëŠ”ë‹¤.
     /////////////////////////////////////////////////////////////////////////////
 
     sWrittenBytes += idlOS::snprintf( aMsgBuf + sWrittenBytes,
@@ -552,7 +552,7 @@ UInt iduShmDump::getMsgShmStatictics( SChar * aMsgBuf, UInt aBufSize )
 
     sShmStatistics = &iduShmMgr::mSSegment->mStatistics;
 
-    /// ÀÌ ÄÚµå ¾Æ·¡·Î´Â iduShmMgrÀ¸·ÎºÎÅÍ Á¤º¸¸¦ °¡Á®¿ÀÁö ¾Ê´Â´Ù.
+    /// ì´ ì½”ë“œ ì•„ë˜ë¡œëŠ” iduShmMgrìœ¼ë¡œë¶€í„° ì •ë³´ë¥¼ ê°€ì ¸ì˜¤ì§€ ì•ŠëŠ”ë‹¤.
     /////////////////////////////////////////////////////////////////////////////
 
     sWrittenBytes += idlOS::snprintf( aMsgBuf + sWrittenBytes,
@@ -607,7 +607,7 @@ UInt iduShmDump::getMsgStShmSegInfo( SChar * aMsgBuf, UInt aBufSize, UInt aIndex
 
     sStShmSegInfo = &iduShmMgr::mSSegment->mArrSegInfo[aIndex];
 
-    /// ÀÌ ÄÚµå ¾Æ·¡·Î´Â iduShmMgrÀ¸·ÎºÎÅÍ Á¤º¸¸¦ °¡Á®¿ÀÁö ¾Ê´Â´Ù.
+    /// ì´ ì½”ë“œ ì•„ë˜ë¡œëŠ” iduShmMgrìœ¼ë¡œë¶€í„° ì •ë³´ë¥¼ ê°€ì ¸ì˜¤ì§€ ì•ŠëŠ”ë‹¤.
     /////////////////////////////////////////////////////////////////////////////
 
     sWrittenBytes += idlOS::snprintf( aMsgBuf + sWrittenBytes,
@@ -638,7 +638,7 @@ UInt iduShmDump::getMsgShmBlock( SChar * aMsgBuf, UInt aBufSize,
 
     sShmBlkHdr = aShmBlkHeader;
 
-    /// ÀÌ ÄÚµå ¾Æ·¡·Î´Â iduShmMgrÀ¸·ÎºÎÅÍ Á¤º¸¸¦ °¡Á®¿ÀÁö ¾Ê´Â´Ù.
+    /// ì´ ì½”ë“œ ì•„ë˜ë¡œëŠ” iduShmMgrìœ¼ë¡œë¶€í„° ì •ë³´ë¥¼ ê°€ì ¸ì˜¤ì§€ ì•ŠëŠ”ë‹¤.
     /////////////////////////////////////////////////////////////////////////////
 
 
@@ -679,10 +679,10 @@ UInt iduShmDump::getMsgProcWithThr( SChar * aMsgBuf,
 
     sShmProcInfo = &iduShmMgr::mSSegment->mProcMgrInfo.mPRTable[aIndex];
 
-    /// ÀÌ ÄÚµå ¾Æ·¡·Î´Â iduShmMgrÀ¸·ÎºÎÅÍ Á¤º¸¸¦ °¡Á®¿ÀÁö ¾Ê´Â´Ù.
+    /// ì´ ì½”ë“œ ì•„ë˜ë¡œëŠ” iduShmMgrìœ¼ë¡œë¶€í„° ì •ë³´ë¥¼ ê°€ì ¸ì˜¤ì§€ ì•ŠëŠ”ë‹¤.
     /////////////////////////////////////////////////////////////////////////////
 
-    /// NULL/INIT state´Â printout ÇÏÁö ¾ÊÀ½.
+    /// NULL/INIT stateëŠ” printout í•˜ì§€ ì•ŠìŒ.
     if( !(sShmProcInfo->mState == IDU_SHM_PROC_STATE_NULL ||
           sShmProcInfo->mState == IDU_SHM_PROC_STATE_INIT) )
     {
@@ -744,7 +744,7 @@ UInt iduShmDump::getMsgThreads( SChar         * aMsgBuf,
     iduShmListNode * sShmListNode = &aThrInfo->mNode;
     iduShmListNode * sShmListHead = &aThrInfo->mNode;
 
-    // mNode´Â Circular double linked listÀÌ´Ù.
+    // mNodeëŠ” Circular double linked listì´ë‹¤.
     while( sShmListHead->mAddrSelf != sShmListNode->mAddrNext )
     {
         sWrittenBytes += idlOS::snprintf( aMsgBuf + sWrittenBytes,
@@ -784,9 +784,9 @@ UInt iduShmDump::getMsgThreads( SChar         * aMsgBuf,
     return sWrittenBytes;
 }
 
-// enum type¿¡ ´ëÇÑ stringize¸¦ ¾Æ·¡¿Í °°ÀÌ Ã³¸®ÇÏ¸é,
-// enum typeÀÇ definitionÀÌ ¹Ù²î¾úÀ» °æ¿ì STRINGIZE_ERRORÀ» Ãâ·ÂÇÏ°Å³ª
-// syntax errorÀÌ ¹ß»ıÇÏ¿© ÀÌÈÄ update¿¡ ´ëÀÀÇÒ ¼ö ÀÖ´Ù.
+// enum typeì— ëŒ€í•œ stringizeë¥¼ ì•„ë˜ì™€ ê°™ì´ ì²˜ë¦¬í•˜ë©´,
+// enum typeì˜ definitionì´ ë°”ë€Œì—ˆì„ ê²½ìš° STRINGIZE_ERRORì„ ì¶œë ¥í•˜ê±°ë‚˜
+// syntax errorì´ ë°œìƒí•˜ì—¬ ì´í›„ updateì— ëŒ€ì‘í•  ìˆ˜ ìˆë‹¤.
 const SChar * iduShmDump::stringizeShmState( iduShmState aState )
 {
     if( IDU_SHM_STATE_INVALID == aState )
@@ -881,7 +881,7 @@ SChar * iduShmDump::stringizeBinStyle( UInt    aBitmap,
     UInt  sMask = 1;
 
     if( aMaxBit > sizeof(sMask)*8 )
-    { // aMask Å©±âº¸´Ù Å« bitmapÀº °í·ÁµÇÁö ¾Ê¾Ò´Ù.
+    { // aMask í¬ê¸°ë³´ë‹¤ í° bitmapì€ ê³ ë ¤ë˜ì§€ ì•Šì•˜ë‹¤.
         sWrittenBytes +=
             idlOS::snprintf( aBuf + sWrittenBytes,
                              aBufLength - sWrittenBytes,
@@ -957,7 +957,7 @@ SChar * iduShmDump::stringizeDumpAdr( SChar * aPtr,
 
     if( aEnableAlign == ID_TRUE )
     {
-        // ÁÖ¼Ò¸¦ ÆíÀÇ¸¦ À§ÇØ 10´ÜÀ§(16Áø¼ö)·Î Ç¥±âÇÏ±â À§ÇÔ.
+        // ì£¼ì†Œë¥¼ í¸ì˜ë¥¼ ìœ„í•´ 10ë‹¨ìœ„(16ì§„ìˆ˜)ë¡œ í‘œê¸°í•˜ê¸° ìœ„í•¨.
         sPtr = sPtr - ((ULong)sPtr % 16);
     }
 
@@ -980,7 +980,7 @@ SChar * iduShmDump::stringizeDumpBin( SChar * aPtr,
     UInt i;
 
     if( aEnableAlign == ID_TRUE )
-    { // line´ç 16byte ±âÁØÀ¸·Î ¾ÕºÎºĞ °ø¹éÀ» »ı¼ºÇÑ´Ù.
+    { // lineë‹¹ 16byte ê¸°ì¤€ìœ¼ë¡œ ì•ë¶€ë¶„ ê³µë°±ì„ ìƒì„±í•œë‹¤.
         sSpaceCnt = (ULong)aPtr % 16;
 
         for( UInt i = 0 ; i < sSpaceCnt ; i++ )
@@ -1020,8 +1020,8 @@ SChar * iduShmDump::stringizeDumpHex( SChar * aPtr,
     SChar sHexWord[3];
 
     if( aEnableAlign == ID_TRUE )
-    {   // line´ç 16byte ±âÁØÀ¸·Î ¾ÕºÎºĞ °ø¹éÀ» »ı¼ºÇÑ´Ù.
-        // hex´Â byte´ç 2Ä­ÀÌ¹Ç·Î µÎÄ­ + °ø¹é(3Ä­) Âï´Â´Ù.
+    {   // lineë‹¹ 16byte ê¸°ì¤€ìœ¼ë¡œ ì•ë¶€ë¶„ ê³µë°±ì„ ìƒì„±í•œë‹¤.
+        // hexëŠ” byteë‹¹ 2ì¹¸ì´ë¯€ë¡œ ë‘ì¹¸ + ê³µë°±(3ì¹¸) ì°ëŠ”ë‹¤.
         sSpaceCnt = (ULong)aPtr % 16;
 
         for( UInt i = 0 ; i < sSpaceCnt ; i++ )
@@ -1043,7 +1043,7 @@ SChar * iduShmDump::stringizeDumpHex( SChar * aPtr,
     }
 
     if( aEnableAlign == ID_TRUE )
-    { // 16byte ±âÁØÀ¸·Î ³²Àº °ø°£¿¡ °ø¹éÀ» Âï¾îÁØ´Ù.
+    { // 16byte ê¸°ì¤€ìœ¼ë¡œ ë‚¨ì€ ê³µê°„ì— ê³µë°±ì„ ì°ì–´ì¤€ë‹¤.
         for( UInt i = 0 ; i < 16-(sSpaceCnt+aByte) ; i++ )
         {
             sWrittenBytes += idlOS::snprintf( aBuf + sWrittenBytes,

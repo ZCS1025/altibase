@@ -3,11 +3,11 @@
 # CVS Info : $Id: hp_hpux_cc.mk 71900 2015-07-24 02:29:00Z gyeongsuk.eom $
 #
 
-# Àü´ŞµÇ´Â ¿ÜºÎ º¯¼öµé
+# ì „ë‹¬ë˜ëŠ” ì™¸ë¶€ ë³€ìˆ˜ë“¤
 
-# ID_DIR      : ID µğ·ºÅä¸® 
-# compile64   : ÄÄÆÄÀÏ È¯°æ
-# compat5     : CC 5.0 À¸·Î?
+# ID_DIR      : ID ë””ë ‰í† ë¦¬ 
+# compile64   : ì»´íŒŒì¼ í™˜ê²½
+# compat5     : CC 5.0 ìœ¼ë¡œ?
 # compat4     : 
 
 ifndef	BUILD_MODE
@@ -43,9 +43,9 @@ PURIFY = purify -chain-length=100
 #PURIFY = purify32 -chain-length=100
 #endif
 
-# Library : static library Ã³¸® 
+# Library : static library ì²˜ë¦¬ 
 
-# readline library ¼³Á¤
+# readline library ì„¤ì •
 
 ifeq "$(USE_READLINE)" "1"
 READLINE_INCLUDES = -I/usr/local/include/readline
@@ -70,21 +70,21 @@ AOPT        = -xar
 
 CXXOPT_DEPENDANCY = -xM1
 
-# µ¿Àû ÄÄÆÄÀÏ ¿É¼Ç ¼±¾ğ
+# ë™ì  ì»´íŒŒì¼ ì˜µì…˜ ì„ ì–¸
 # // for solving include problem... by gamestar
 
 #
-# compile mode ÀÇ Á¾·ù
+# compile mode ì˜ ì¢…ë¥˜
 #	compat4		:
 #       compat5		:
 #	compile64	:
 #
-# ¸ÅÅ©·Î ¼±¾ğ
+# ë§¤í¬ë¡œ ì„ ì–¸
 CLASSIC_LIB = 
 LIB64_DIRS  = 
 LIB32_DIRS  = 
 LFLAGS	= -L.
-#64bit ÄÄÆÄÀÏ ¸ğµå 
+#64bit ì»´íŒŒì¼ ëª¨ë“œ 
 ifeq ($(compile64),1)
 ifeq ($(OS_MINORVER),22)
 LFLAGS += -AP +DD64 -Wl,+vnocompatwarnings $(CLASSIC_LIB) $(LIB64_DIRS)
@@ -100,7 +100,7 @@ endif
 endif
 endif
 else 
-#32ºñÆ®  ¸ğµå
+#32ë¹„íŠ¸  ëª¨ë“œ
 ifeq ($(OS_TARGET),IA64_HP_HPUX)
 LFLAGS += -AP +DA1.1 +DS1.1  -N -Wl,+s
 else

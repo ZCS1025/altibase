@@ -28,14 +28,14 @@
 /**
  * PROJ-2462 ResultCache
  *
- * Execute Á÷Àü¿¡ È£ÃâµÇ´Â ÇÔ¼ö·Î ´ÙÀ½°ú °°Àº ¿ªÈ°À» ÇÑ´Ù.
+ * Execute ì§ì „ì— í˜¸ì¶œë˜ëŠ” í•¨ìˆ˜ë¡œ ë‹¤ìŒê³¼ ê°™ì€ ì—­í™œì„ í•œë‹¤.
  *
- * 1. Bind ÀÚ·á ±¸Á¶°¡ Á¸ÀçÇÑ´Ù¸é ÀÌ Data¿ª½Ã CacheÇÏ°í
- * ¸¸¾à Bind°ªÀÌ ´Ş¶óÁ³´Ù¸é ¸ğµç CacheµÈ ÀÚ·á¸¦ freeÇÏ°í ´Ù½Ã
- * ±¸¼ºÇÏµµ·Ï ÇÑ´Ù.
+ * 1. Bind ìë£Œ êµ¬ì¡°ê°€ ì¡´ì¬í•œë‹¤ë©´ ì´ Dataì—­ì‹œ Cacheí•˜ê³ 
+ * ë§Œì•½ Bindê°’ì´ ë‹¬ë¼ì¡Œë‹¤ë©´ ëª¨ë“  Cacheëœ ìë£Œë¥¼ freeí•˜ê³  ë‹¤ì‹œ
+ * êµ¬ì„±í•˜ë„ë¡ í•œë‹¤.
  *
- * 2. ResultCacheÀÇ list¿¡ ÀÖ´ÂComponentInfo·Î ºÎÅÍ °ü·ÃÀÖ´Â TableÀÇ
- * Modify Count¸¦ ±¸ÇØ ³õ´Â´Ù.
+ * 2. ResultCacheì˜ listì— ìˆëŠ”ComponentInfoë¡œ ë¶€í„° ê´€ë ¨ìˆëŠ” Tableì˜
+ * Modify Countë¥¼ êµ¬í•´ ë†“ëŠ”ë‹¤.
  */
 void qmxResultCache::setUpResultCache( qcStatement * aStatement )
 {
@@ -71,13 +71,13 @@ void qmxResultCache::setUpResultCache( qcStatement * aStatement )
 
     checkResultCacheCommitMode( aStatement );
     /**
-     * Bind °¡ ÀÖÀ» °æ¿ì Result Cache¿¡ ¿ª½Ã Bind¿ë ¸Ş¸ğ¸®¸¦ ÇÒ´çÇÏ°í
-     * ÀÌ ¸Ş¸ğ¸®¸¦ ÅëÇØ Bind °ªÀ» ÀúÀåÇØ ³õ´Â´Ù.
-     * ÀÌ °æ¿ì¿¡ Bind´Â Ç×»ó memArrayÁß 0¹øÂ°¿¡ ÇÒ´çÇÑ´Ù
+     * Bind ê°€ ìˆì„ ê²½ìš° Result Cacheì— ì—­ì‹œ Bindìš© ë©”ëª¨ë¦¬ë¥¼ í• ë‹¹í•˜ê³ 
+     * ì´ ë©”ëª¨ë¦¬ë¥¼ í†µí•´ Bind ê°’ì„ ì €ì¥í•´ ë†“ëŠ”ë‹¤.
+     * ì´ ê²½ìš°ì— BindëŠ” í•­ìƒ memArrayì¤‘ 0ë²ˆì§¸ì— í• ë‹¹í•œë‹¤
      *
-     * Ä³½¬µÈ bind value °¡ ¾ø´Ù¸é ÀüÃ¼ bindÅ©±â ¸¸Å­ ¸Ş¸ğ¸®¸¦ ÇÒ´çÈÄ
-     * bind value¸¦ copy ÇØ ³õ´Â´Ù. ±× ÀÌÈÄ¿¡ bind value¸¦ ºñ±³ÇØ bind °ªÀÌ
-     * º¯°æµÇ¾ú´ÂÁö Ã¼Å©ÇÑ´Ù.
+     * ìºì‰¬ëœ bind value ê°€ ì—†ë‹¤ë©´ ì „ì²´ bindí¬ê¸° ë§Œí¼ ë©”ëª¨ë¦¬ë¥¼ í• ë‹¹í›„
+     * bind valueë¥¼ copy í•´ ë†“ëŠ”ë‹¤. ê·¸ ì´í›„ì— bind valueë¥¼ ë¹„êµí•´ bind ê°’ì´
+     * ë³€ê²½ë˜ì—ˆëŠ”ì§€ ì²´í¬í•œë‹¤.
      */
     if ( sBindCount > 0 )
     {
@@ -130,10 +130,10 @@ void qmxResultCache::setUpResultCache( qcStatement * aStatement )
     }
 
     /**
-     * ResultCache list¿¡´Â Temp TableÀÌ ¾î¶² Table·Î ±¸¼ºµÇ¾îÀÖ´ÂÁö¿¡ ´ëÇÑ
-     * Component Á¤º¸°¡ ÀÖ°í ÀÌ Á¤º¸·Î ºÎÅÍ °¢ TableÀÇ Modify Count¸¦ ÀúÀåÇØ
-     * ³õ´Â´Ù. ÀÌÈÄ¿¡ Result Cache°¡ »ç¿ëµÇ´Â PlanÀº ÀÌ Á¤º¸¿Í Cache°¡
-     * ½×¿©Áú ¶§ÀÇ °ªÀ» ºñ±³ÇØ Cache¸¦ ¹ö¸±Áö ´Ù½Ã È°¿ëÇÒÁö °áÁ¤ÇÑ´Ù.
+     * ResultCache listì—ëŠ” Temp Tableì´ ì–´ë–¤ Tableë¡œ êµ¬ì„±ë˜ì–´ìˆëŠ”ì§€ì— ëŒ€í•œ
+     * Component ì •ë³´ê°€ ìˆê³  ì´ ì •ë³´ë¡œ ë¶€í„° ê° Tableì˜ Modify Countë¥¼ ì €ì¥í•´
+     * ë†“ëŠ”ë‹¤. ì´í›„ì— Result Cacheê°€ ì‚¬ìš©ë˜ëŠ” Planì€ ì´ ì •ë³´ì™€ Cacheê°€
+     * ìŒ“ì—¬ì§ˆ ë•Œì˜ ê°’ì„ ë¹„êµí•´ Cacheë¥¼ ë²„ë¦´ì§€ ë‹¤ì‹œ í™œìš©í• ì§€ ê²°ì •í•œë‹¤.
      */
     for ( i = 0, sInfo = sTemplate->resultCache.list;
           i < sTemplate->resultCache.count;
@@ -235,8 +235,8 @@ IDE_RC qmxResultCache::initResultCache( qcTemplate      * aTemplate,
     iduMemory * sMemory      = NULL;
 
     /**
-     *  ResultCache¿ë ¸Ş¸ğ¸®¸¦ »õ·Î ÇÒ´çÇÏ°í ÀÌ¸¦ ÅëÇØ¼­ Temp TableÀ»
-     *  AllocÇÏµµ·Ï ÇÑ´Ù
+     *  ResultCacheìš© ë©”ëª¨ë¦¬ë¥¼ ìƒˆë¡œ í• ë‹¹í•˜ê³  ì´ë¥¼ í†µí•´ì„œ Temp Tableì„
+     *  Allocí•˜ë„ë¡ í•œë‹¤
      */
     if ( ( *aResultData->flag & QMX_RESULT_CACHE_INIT_DONE_MASK )
          == QMX_RESULT_CACHE_INIT_DONE_FALSE )
@@ -579,7 +579,7 @@ void qmxResultCache::destroyResultCache( qcTemplate * aTemplate )
          ( ( aTemplate->resultCache.flag & QC_RESULT_CACHE_DATA_ALLOC_MASK )
            == QC_RESULT_CACHE_DATA_ALLOC_TRUE ) )
     {
-        // Bind°¡ »ç¿ëµÇ¾ú´Ù¸é Cache Count°¡ 1 ´Ã¾î³­´Ù.
+        // Bindê°€ ì‚¬ìš©ë˜ì—ˆë‹¤ë©´ Cache Countê°€ 1 ëŠ˜ì–´ë‚œë‹¤.
         for ( i = 0; i < aTemplate->resultCache.count + 1; i++ )
         {
             sMemory = aTemplate->resultCache.memArray[i];
@@ -615,7 +615,7 @@ void qmxResultCache::destroyResultCache( qcTemplate * aTemplate )
 /**
  * PROJ-2462 Result Cache
  *
- * Sort³ª Hash TempÀÇ alloc ½Ã È£ÃâµÇ¸ç execution Memory Max¸¦ ³Ñ´ÂÁö Ã¼Å©ÇÑ´Ù.
+ * Sortë‚˜ Hash Tempì˜ alloc ì‹œ í˜¸ì¶œë˜ë©° execution Memory Maxë¥¼ ë„˜ëŠ”ì§€ ì²´í¬í•œë‹¤.
  */
 IDE_RC qmxResultCache::checkExecuteMemoryMax( qcTemplate * aTemplate,
                                               UInt         aMemoryIdx )

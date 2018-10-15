@@ -445,7 +445,7 @@ class smmReqFunc
             return smrChkptThread::blockCheckpoint();
         };
 
-        /* Checkpoint°¡ ´Ù½Ã ¼öÇàµÇµµ·Ï Checkpoint¸¦ UnblockÇÑ´Ù. */
+        /* Checkpointê°€ ë‹¤ì‹œ ìˆ˜í–‰ë˜ë„ë¡ Checkpointë¥¼ Unblockí•œë‹¤. */
         static IDE_RC unblockCheckpoint()
         {
             return smrChkptThread::unblockCheckpoint();

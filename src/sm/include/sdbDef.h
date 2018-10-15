@@ -20,7 +20,7 @@
  *
  * Description :
  *
- * - Dirty Page Buffer ÀÚ·á±¸Á¶
+ * - Dirty Page Buffer ìë£Œêµ¬ì¡°
  *
  **********************************************************************/
 
@@ -33,30 +33,30 @@
 #include <smuUtility.h>
 #include <iduMutex.h>
 
-/* BCBÀÇ ÃÊ±â Page Type Value */
+/* BCBì˜ ì´ˆê¸° Page Type Value */
 #define SDB_NULL_PAGE_TYPE    (0)
 
 #define SDB_SMALL_BUFFER_SIZE (1024)
 
 /* --------------------------------------------------------------------
- * PROJ-1665 : Corrupted Page Processing Policy Á¤ÀÇ
- *     - FATAL : Page »óÅÂ°¡ corrupted ÀÌ¸é fatal error ¹ß»ı
- *     - ABORT : Page »óÅÂ°¡ corrupted ÀÌ¸é abort error ¹ß»ı
+ * PROJ-1665 : Corrupted Page Processing Policy ì •ì˜
+ *     - FATAL : Page ìƒíƒœê°€ corrupted ì´ë©´ fatal error ë°œìƒ
+ *     - ABORT : Page ìƒíƒœê°€ corrupted ì´ë©´ abort error ë°œìƒ
  *
- * Redo ½Ã¿¡ corrupted pageµéÀ» ¸¸³ª¸é ÀÌ¸¦ corrupted page list·Î °ü¸®ÇÑ´Ù.
- * Undo°¡ ³¡³ª°í corrupted page listÀÇ °¢ page ¼ÓÇÑ extentÀÇ »óÅÂ¸¦
- * °Ë»çÇÏ¿© ÇØ´ç extent°¡ free »óÅÂÀÌ¸é corrupted page list¿¡¼­ »èÁ¦ÇÑ´Ù.
- * page°¡ ¼ÓÇÑ extent°¡ free ÀÌ¸é pageµéµµ ¸ğµÎ free ÀÌ¹Ç·Î
- * corrupted page ¿´´Ù ÇÏ´õ¶óµµ »ó°ü¾ø±â ¶§¹®ÀÌ´Ù.
+ * Redo ì‹œì— corrupted pageë“¤ì„ ë§Œë‚˜ë©´ ì´ë¥¼ corrupted page listë¡œ ê´€ë¦¬í•œë‹¤.
+ * Undoê°€ ëë‚˜ê³  corrupted page listì˜ ê° page ì†í•œ extentì˜ ìƒíƒœë¥¼
+ * ê²€ì‚¬í•˜ì—¬ í•´ë‹¹ extentê°€ free ìƒíƒœì´ë©´ corrupted page listì—ì„œ ì‚­ì œí•œë‹¤.
+ * pageê°€ ì†í•œ extentê°€ free ì´ë©´ pageë“¤ë„ ëª¨ë‘ free ì´ë¯€ë¡œ
+ * corrupted page ì˜€ë‹¤ í•˜ë”ë¼ë„ ìƒê´€ì—†ê¸° ë•Œë¬¸ì´ë‹¤.
  *
- * PROJ_1665 Àü¿¡´Â Redo ½Ã¿¡ corrupted page¸¦ ¸¸³ª¸é ¹«Á¶°Ç fatal·Î
- * Ã³¸®µÇ¾ú´Ù. ±×·¯³ª Direct-Path INSERT´Â commit Àü¿¡ ¸ğµç pageµéÀ»
- * flush ÇÏ´Âµ¥ ¸¸¾à Partial WriteµÇ¾ú´Ù¸é ÀÌ´Â commit ÇÏÁö ¸øÇßÀ» °ÍÀÌ´Ù.
- * commit ÇÏÁö ¸øÇÑ transactionÀº Undo ÇÒ °ÍÀÌ°í ÀÌ¶§ Direct-Path INSERT¸¦
- * À§ÇØ ÇÒ´ç¹ŞÀº extentµéÀº ¸ğµÎ tablespace·Î ¹İÈ¯µÇ¾î¹ö¸°´Ù.
- * tablespace ¹İÈ¯µÈ extentµéÀº ¸ğµÎ free »óÅÂÀÌ°í ÀÌ¿¡ ¼ÓÇÑ pageµéµµ
- * ¸ğµÎ free »óÅÂ°¡ µÇ¹Ç·Î corrupted page¶ó°í ÇØ¼­ ¹«Á¶°Ç fatal ·Î
- * Ã³¸®ÇØ¼± ¾ÈµÈ´Ù.
+ * PROJ_1665 ì „ì—ëŠ” Redo ì‹œì— corrupted pageë¥¼ ë§Œë‚˜ë©´ ë¬´ì¡°ê±´ fatalë¡œ
+ * ì²˜ë¦¬ë˜ì—ˆë‹¤. ê·¸ëŸ¬ë‚˜ Direct-Path INSERTëŠ” commit ì „ì— ëª¨ë“  pageë“¤ì„
+ * flush í•˜ëŠ”ë° ë§Œì•½ Partial Writeë˜ì—ˆë‹¤ë©´ ì´ëŠ” commit í•˜ì§€ ëª»í–ˆì„ ê²ƒì´ë‹¤.
+ * commit í•˜ì§€ ëª»í•œ transactionì€ Undo í•  ê²ƒì´ê³  ì´ë•Œ Direct-Path INSERTë¥¼
+ * ìœ„í•´ í• ë‹¹ë°›ì€ extentë“¤ì€ ëª¨ë‘ tablespaceë¡œ ë°˜í™˜ë˜ì–´ë²„ë¦°ë‹¤.
+ * tablespace ë°˜í™˜ëœ extentë“¤ì€ ëª¨ë‘ free ìƒíƒœì´ê³  ì´ì— ì†í•œ pageë“¤ë„
+ * ëª¨ë‘ free ìƒíƒœê°€ ë˜ë¯€ë¡œ corrupted pageë¼ê³  í•´ì„œ ë¬´ì¡°ê±´ fatal ë¡œ
+ * ì²˜ë¦¬í•´ì„  ì•ˆëœë‹¤.
  * ----------------------------------------------------------------- */
 
 typedef enum
@@ -74,7 +74,7 @@ typedef struct sdbReadPageInfo
 }sdbReadPageInfo;
 
 /* --------------------------------------------------------------------
- * Buffering policy Á¤ÀÇ (BUG-17727)
+ * Buffering policy ì •ì˜ (BUG-17727)
  * ----------------------------------------------------------------- */
 
 typedef enum
@@ -87,26 +87,26 @@ typedef enum
 
 
 /* --------------------------------------------------------------------
- * Buffer FrameÀÇ I/O ÀÛ¾÷ÀÇ »óÅÂ Á¤ÀÇ
+ * Buffer Frameì˜ I/O ì‘ì—…ì˜ ìƒíƒœ ì •ì˜
  * ----------------------------------------------------------------- */
 
 typedef enum
 {
-    // ¼öÇàÁß ¾Æ´Ô
+    // ìˆ˜í–‰ì¤‘ ì•„ë‹˜
     SDB_IO_NOTHING = 0,
 
-    // µğ½ºÅ©·ÎºÎÅÍ ÆäÀÌÁö¸¦ ÀĞ´Â Áß
-    // latch func vector¿¡¼­ »ç¿ëµÇ¹Ç·Î 1ÀÌ µÇ¾î¾ß ÇÑ´Ù.
+    // ë””ìŠ¤í¬ë¡œë¶€í„° í˜ì´ì§€ë¥¼ ì½ëŠ” ì¤‘
+    // latch func vectorì—ì„œ ì‚¬ìš©ë˜ë¯€ë¡œ 1ì´ ë˜ì–´ì•¼ í•œë‹¤.
     SDB_IO_READ = 1,
 
-    // µğ½ºÅ©¿¡ ÆäÀÌÁö¸¦ ¾²´Â Áß
+    // ë””ìŠ¤í¬ì— í˜ì´ì§€ë¥¼ ì“°ëŠ” ì¤‘
     SDB_IO_WRITE
 
 } sdbIOState;
 
 #if 0 //not used.
 /* --------------------------------------------------------------------
- * ÇöÀç Æ®·£Àè¼ÇÀÌ ¿äÃ» Event
+ * í˜„ì¬ íŠ¸ëœì­ì…˜ì´ ìš”ì²­ Event
  * ----------------------------------------------------------------- */
 
 typedef enum
@@ -122,16 +122,16 @@ typedef enum
 
 #if 0 //not used.
 /* --------------------------------------------------------------------
- * Flush ´ë»óÀÇ Type
+ * Flush ëŒ€ìƒì˜ Type
  * ----------------------------------------------------------------- */
 
 typedef enum
 {
 
-    // LRU ¸®½ºÆ® flush
+    // LRU ë¦¬ìŠ¤íŠ¸ flush
     SDB_FLUSH_LRU = 0,
 
-    // Flush ¸®½ºÆ® flush
+    // Flush ë¦¬ìŠ¤íŠ¸ flush
     SDB_FLUSH_FLUSH,
 
     SDB_FLUSH_NOTHING
@@ -141,7 +141,7 @@ typedef enum
 
 #if 0 //not used.
 /* ------------------------------------------------------------------------
- * Ã»Å©ÀÇ Type : ( UNDO : For Undo Tablespace , NORMAL : Other Tablespaces )
+ * ì²­í¬ì˜ Type : ( UNDO : For Undo Tablespace , NORMAL : Other Tablespaces )
  * ---------------------------------------------------------------------- */
 
 typedef enum
@@ -154,36 +154,36 @@ typedef enum
 #endif
 
 #if 0 //not used.
-// flush ´ë»óÀÇ type °³¼ö
-// flush ´ë»ó typeÀÌ Ãß°¡µÉ ¶§, ÀÌ°Íµµ Áõ°¡µÈ´Ù.
+// flush ëŒ€ìƒì˜ type ê°œìˆ˜
+// flush ëŒ€ìƒ typeì´ ì¶”ê°€ë  ë•Œ, ì´ê²ƒë„ ì¦ê°€ëœë‹¤.
 #define SDB_FLUSH_TYPE_COUNT    (SDB_FLUSH_FLUSH+1)
 #endif
 /* --------------------------------------------------------------------
- * BCB°¡ ¼öÁ¤µÈ »óÅÂ¸¦ ³ªÅ¸³½´Ù.
- * ÆäÀÌÁö°¡ ¼öÁ¤µÇ¾úÀ»¶§, BCB´Â ¼öÁ¤µÈ ½ÃÁ¡ÀÇ LSNÀ» °®°ÔµÈ´Ù.
+ * BCBê°€ ìˆ˜ì •ëœ ìƒíƒœë¥¼ ë‚˜íƒ€ë‚¸ë‹¤.
+ * í˜ì´ì§€ê°€ ìˆ˜ì •ë˜ì—ˆì„ë•Œ, BCBëŠ” ìˆ˜ì •ëœ ì‹œì ì˜ LSNì„ ê°–ê²Œëœë‹¤.
  * ----------------------------------------------------------------- */
 #if 0 //not used.
-// BCB°¡ ¼öÁ¤µÈ ÀûÀÌ ¾ø´Ù.
+// BCBê°€ ìˆ˜ì •ëœ ì ì´ ì—†ë‹¤.
 #define SDB_NOT_MODIFIED   (0)
 #endif
 /* --------------------------------------------------------------------
- * ÆäÀÌÁö¸¦ ¾ò±âÀ§ÇÑ ´ë±â ¸ğµå
+ * í˜ì´ì§€ë¥¼ ì–»ê¸°ìœ„í•œ ëŒ€ê¸° ëª¨ë“œ
  * ----------------------------------------------------------------- */
 
 typedef enum
 {
-    // ´ë±â ¾øÀÌ ÆäÀÌÁö¸¦ ¾ò´Â´Ù. ÆäÀÌÁö¸¦ ¾òÁö ¸øÇÏ¸é ¿¡·¯¸¦ return
+    // ëŒ€ê¸° ì—†ì´ í˜ì´ì§€ë¥¼ ì–»ëŠ”ë‹¤. í˜ì´ì§€ë¥¼ ì–»ì§€ ëª»í•˜ë©´ ì—ëŸ¬ë¥¼ return
     SDB_WAIT_NO = 0,
 
-    // ´©±º°¡ latch¸¦ Àâ°í ÀÖÀ» ¶§, °øÀ¯ °¡´ÉÇÏ¸é ¾ò°í,
-    // ±×·¸Áö ¾ÊÀ¸¸é ´ë±âÇÑ´Ù.
+    // ëˆ„êµ°ê°€ latchë¥¼ ì¡ê³  ìˆì„ ë•Œ, ê³µìœ  ê°€ëŠ¥í•˜ë©´ ì–»ê³ ,
+    // ê·¸ë ‡ì§€ ì•Šìœ¼ë©´ ëŒ€ê¸°í•œë‹¤.
     SDB_WAIT_NORMAL
 
 } sdbWaitMode;
 
 
 /* --------------------------------------------------------------------
- * latch ¸ğµå
+ * latch ëª¨ë“œ
  * ----------------------------------------------------------------- */
 typedef enum
 {
@@ -196,16 +196,16 @@ typedef enum
 
 #if 0 //not used. 
 /* --------------------------------------------------------------------
- * release ¸ğµå
- * mtx¿¡¼­ savepoint±îÁö releaseÇÏ´Â °æ¿ì¿¡´Â
- * ¾î¶°ÇÑ ÆäÀÌÁöµµ ¼öÁ¤µÇÁö ¾Ê¾ÒÀ½À» º¸ÀåÇÑ´Ù.
- * ÀÌ¶§´Â flush list¿¡ µî·ÏÇÏÁö ¾Ê´Â´Ù.
+ * release ëª¨ë“œ
+ * mtxì—ì„œ savepointê¹Œì§€ releaseí•˜ëŠ” ê²½ìš°ì—ëŠ”
+ * ì–´ë– í•œ í˜ì´ì§€ë„ ìˆ˜ì •ë˜ì§€ ì•Šì•˜ìŒì„ ë³´ì¥í•œë‹¤.
+ * ì´ë•ŒëŠ” flush listì— ë“±ë¡í•˜ì§€ ì•ŠëŠ”ë‹¤.
  * ----------------------------------------------------------------- */
 typedef enum
 {
-    // ·¡Ä¡ release¸¸ ÇÑ´Ù.
+    // ë˜ì¹˜ releaseë§Œ í•œë‹¤.
     SDB_JUST_RELEASE = 0,
-    // ¼öÁ¤µÇ¾úÀ» °æ¿ì ÀÌ¸¦ release½Ã¿¡ ¹İ¿µÇÑ´Ù.
+    // ìˆ˜ì •ë˜ì—ˆì„ ê²½ìš° ì´ë¥¼ releaseì‹œì— ë°˜ì˜í•œë‹¤.
     SDB_REFLECT_MODIFICATION
 } sdbReleaseMode;
 #endif
@@ -217,24 +217,24 @@ typedef enum
 
 typedef struct sdbFrameHdr
 {
-    // Ã¼Å©¼¶
+    // ì²´í¬ì„¬
     UInt     mCheckSum;
 
-    // ¸¶Áö¸· ¼öÁ¤µÈ LSN
-    // flush½Ã writeµÈ´Ù.
+    // ë§ˆì§€ë§‰ ìˆ˜ì •ëœ LSN
+    // flushì‹œ writeëœë‹¤.
     smLSN    mPageLSN;
 
-    // Å×ÀÌºí½ºÆäÀÌ½º ¾ÆÀÌµğ
+    // í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ì•„ì´ë””
     UShort   mSpaceID;
 
-    // ´õ¹Ì´õ¹Ì
+    // ë”ë¯¸ë”ë¯¸
     SChar    mAlign[2];
 
-    // ÀÎµ¦½ºÀÇ smo ÁøÇà¿©ºÎ¸¦ È®ÀÎÇÒ ¼ö ÀÖ´Â
-    // SMO ¹øÈ£ . Ã³À½¿¡ 0ÀÌ´Ù.
+    // ì¸ë±ìŠ¤ì˜ smo ì§„í–‰ì—¬ë¶€ë¥¼ í™•ì¸í•  ìˆ˜ ìˆëŠ”
+    // SMO ë²ˆí˜¸ . ì²˜ìŒì— 0ì´ë‹¤.
     ULong    mIndexSMONo;
 
-    //BCB Æ÷ÀÎÅÍ. ÇöÀç FrameÀÌ ¼ÓÇØÀÖ´Â BCB Pointer
+    //BCB í¬ì¸í„°. í˜„ì¬ Frameì´ ì†í•´ìˆëŠ” BCB Pointer
     void*    mBCBPtr;
 
 #ifndef COMPILE_64BIT
@@ -245,9 +245,9 @@ typedef struct sdbFrameHdr
 
 #if 0 //not used.
 /* ------------------------------------------------
- * double write header Á¤º¸¸¦ ÀúÀåÇÏ´Â ÆäÀÌÁö.
- * space 1¹øÀÇ 0¹ø ÆäÀÌÁö¿¡ space Á¤º¸¿Í ÇÔ²²
- * ÀúÀåµÈ´Ù.
+ * double write header ì •ë³´ë¥¼ ì €ì¥í•˜ëŠ” í˜ì´ì§€.
+ * space 1ë²ˆì˜ 0ë²ˆ í˜ì´ì§€ì— space ì •ë³´ì™€ í•¨ê»˜
+ * ì €ì¥ëœë‹¤.
  * ----------------------------------------------*/
 #define SDB_DOUBLEWRITE_HDR_SPACE    SMI_ID_TABLESPACE_SYSTEM_DATA
 
@@ -256,30 +256,30 @@ typedef struct sdbFrameHdr
 
 // To implement PRJ-1539 : Buffer Manager Renewal
 #if 0 //not used.
-// ÇÏ³ªÀÇ Ã»Å©°¡ °¡Áú¼ö ÀÖ´Â ÃÖ¼Ò ÇÁ·¹ÀÓ °³¼ö
-// ÇØ´ç °ªº¸´Ù Ç×»ó Ä¿¾ß ÇÑ´Ù.
+// í•˜ë‚˜ì˜ ì²­í¬ê°€ ê°€ì§ˆìˆ˜ ìˆëŠ” ìµœì†Œ í”„ë ˆì„ ê°œìˆ˜
+// í•´ë‹¹ ê°’ë³´ë‹¤ í•­ìƒ ì»¤ì•¼ í•œë‹¤.
 #define MIN_FRAME_COUNT_PER_CHUNK    (128)
 #endif
 
 #if 0 //not used.
-// »ı¼ºµÉ¼ö ÀÖ´Â ¾ğµÎ ¹öÆÛÀÇ ÃÖ´ë Å©±â¸¦ ÁöÁ¤ÇÑ´Ù.
-// ÀüÃ¼ Undo ¹öÆÛ °ø°£¿¡¼­ CREATE_UNDO_BUFFER_LIMIT ÀÌ»óÀÇ
-// CreatePage¸¦ ¹æÁöÇÏ±â À§ÇØ¼­ »ç¿ëµÈ´Ù.
+// ìƒì„±ë ìˆ˜ ìˆëŠ” ì–¸ë‘ ë²„í¼ì˜ ìµœëŒ€ í¬ê¸°ë¥¼ ì§€ì •í•œë‹¤.
+// ì „ì²´ Undo ë²„í¼ ê³µê°„ì—ì„œ CREATE_UNDO_BUFFER_LIMIT ì´ìƒì˜
+// CreatePageë¥¼ ë°©ì§€í•˜ê¸° ìœ„í•´ì„œ ì‚¬ìš©ëœë‹¤.
 #define CREATE_UNDO_BUFFER_LIMIT     (0.95)
 
-// FreeµÈ Undo ¹öÆÛÀÇ ÃÖ¼Ò Å©±â¸¦ ÁöÁ¤ÇÑ´Ù.
-// ÀüÃ¼ Undo ¹öÆÛ °ø°£¿¡¼­ FREE_UNDO_BUFFER_LIMIT ¸¸Å­ÀÇ
-// Free °ø°£À» º¸ÀåÇÏ±â À§ÇØ¼­ »ç¿ëµÈ´Ù.
+// Freeëœ Undo ë²„í¼ì˜ ìµœì†Œ í¬ê¸°ë¥¼ ì§€ì •í•œë‹¤.
+// ì „ì²´ Undo ë²„í¼ ê³µê°„ì—ì„œ FREE_UNDO_BUFFER_LIMIT ë§Œí¼ì˜
+// Free ê³µê°„ì„ ë³´ì¥í•˜ê¸° ìœ„í•´ì„œ ì‚¬ìš©ëœë‹¤.
 #define FREE_UNDO_BUFFER_LIMIT       (0.05)
 #endif
 typedef enum sdbDPathBCBState
 {
-    /* ÃÊ±â¿¡ ÆäÀÌÁö°¡ »ı¼ºµÇ¾ú°í, µğ½ºÅ©¿¡ ³»·Á°¡¸é ¾ÈµÈ´Ù.*/
+    /* ì´ˆê¸°ì— í˜ì´ì§€ê°€ ìƒì„±ë˜ì—ˆê³ , ë””ìŠ¤í¬ì— ë‚´ë ¤ê°€ë©´ ì•ˆëœë‹¤.*/
     SDB_DPB_APPEND = 0,
-    /* ÀÌ ÆäÀÌÁö¿¡ ´ëÇÑ ¸ğµç Modify¿¬»êÀÌ ³¡³µ´Ù. µğ½ºÅ©¿¡
-     * ³»¸®¸éµÈ´Ù.*/
+    /* ì´ í˜ì´ì§€ì— ëŒ€í•œ ëª¨ë“  Modifyì—°ì‚°ì´ ëë‚¬ë‹¤. ë””ìŠ¤í¬ì—
+     * ë‚´ë¦¬ë©´ëœë‹¤.*/
     SDB_DPB_DIRTY,
-    /* ÇöÀç ÀÌ ÆäÀÌÁö´Â Disk¿¡ ³»¸± ´ë»óÀ¸·Î ¼±ÅÃµÇ¾ú´Ù. */
+    /* í˜„ì¬ ì´ í˜ì´ì§€ëŠ” Diskì— ë‚´ë¦´ ëŒ€ìƒìœ¼ë¡œ ì„ íƒë˜ì—ˆë‹¤. */
     SDB_DPB_FLUSH
 } sdbDPathBCBState;
 
@@ -289,30 +289,30 @@ class  sdbDPathBFThread;
 
 typedef struct sdbDPathBCB
 {
-    /* BCBµé³¢¸®ÀÇ ¸µÅ©µå ¸®½ºÆ®¸¦ À§ÇØ
-     * Á¸Àç */
+    /* BCBë“¤ë¼ë¦¬ì˜ ë§í¬ë“œ ë¦¬ìŠ¤íŠ¸ë¥¼ ìœ„í•´
+     * ì¡´ì¬ */
     smuList           mNode;
 
-    /* mPageÀÇ SpaceID, PageID */
+    /* mPageì˜ SpaceID, PageID */
     scSpaceID         mSpaceID;
     scPageID          mPageID;
  
-    /* BCBÀÇ »óÅÂ¸¦ Ç¥½Ã */
+    /* BCBì˜ ìƒíƒœë¥¼ í‘œì‹œ */
     sdbDPathBCBState  mState;
     UChar*            mPage;
     sdbDPathBuffInfo* mDPathBuffInfo;
 
-    /* ÀÌ BCB¿¡ ´ëÇØ¼­ ·Î±ëÇÒÁö °áÁ¤. ¸¸¾à ID_TRUE¸é
-     * mPage¸¦ µğ½ºÅ©¿¡ ³»¸®±âÀü¿¡ ¸ÕÀú Page Image·Î±×¸¦
-     * ¸ÕÀú ±â·ÏÇÑ´Ù.
-     * Logging ¿©ºÎ´Â table ¼Ó¼ºÀÌ¹Ç·Î DPath Buffer ¼Ó¼ºÀÌ ¾Æ´Ï¹Ç·Î
-     * Buffer Á¤º¸¸¦ °ü¸®ÇÏ´Â sdbDPathBuffInfo¿¡¼­ ÇÏÁö ¾Ê´Â°ÍÀÌ ¸Â´Ù. */
+    /* ì´ BCBì— ëŒ€í•´ì„œ ë¡œê¹…í• ì§€ ê²°ì •. ë§Œì•½ ID_TRUEë©´
+     * mPageë¥¼ ë””ìŠ¤í¬ì— ë‚´ë¦¬ê¸°ì „ì— ë¨¼ì € Page Imageë¡œê·¸ë¥¼
+     * ë¨¼ì € ê¸°ë¡í•œë‹¤.
+     * Logging ì—¬ë¶€ëŠ” table ì†ì„±ì´ë¯€ë¡œ DPath Buffer ì†ì„±ì´ ì•„ë‹ˆë¯€ë¡œ
+     * Buffer ì •ë³´ë¥¼ ê´€ë¦¬í•˜ëŠ” sdbDPathBuffInfoì—ì„œ í•˜ì§€ ì•ŠëŠ”ê²ƒì´ ë§ë‹¤. */
     idBool            mIsLogging;
 } sdbDPathBCB;
 
 typedef struct sdbDPathBuffInfo
 {
-    /* Direct Path Insert½Ã ¸¸µé¾îÁø PageÀÇ °¹¼ö */
+    /* Direct Path Insertì‹œ ë§Œë“¤ì–´ì§„ Pageì˜ ê°¯ìˆ˜ */
     ULong             mTotalPgCnt;
 
     /* Flush Thread */
@@ -329,7 +329,7 @@ typedef struct sdbDPathBuffInfo
 
     scSpaceID         mLstSpaceID;
 
-    // Åë°è Ã³¸®¸¦ À§ÇÑ °ª ÀúÀå
+    // í†µê³„ ì²˜ë¦¬ë¥¼ ìœ„í•œ ê°’ ì €ì¥
     ULong             mAllocBuffPageTryCnt;
     ULong             mAllocBuffPageFailCnt;
     ULong             mBulkIOCnt;
@@ -337,34 +337,34 @@ typedef struct sdbDPathBuffInfo
 
 typedef struct sdbDPathBulkIOInfo
 {
-    /* ½ÇÁ¦ BufferÀÇ ½ÃÀÛÁÖ¼Ò */
+    /* ì‹¤ì œ Bufferì˜ ì‹œì‘ì£¼ì†Œ */
     UChar            *mRDIOBuffPtr;
-    /* Direct IO¸¦ À§ÇØ¼­ iduProperty::getDirectIOPageSize·Î
-       AlignµÈ BufferÀÌ ½ÃÀÛÁÖ¼Ò */
+    /* Direct IOë¥¼ ìœ„í•´ì„œ iduProperty::getDirectIOPageSizeë¡œ
+       Alignëœ Bufferì´ ì‹œì‘ì£¼ì†Œ */
     UChar            *mADIOBuffPtr;
 
-    /* BufferÀÇ Å©±â */
+    /* Bufferì˜ í¬ê¸° */
     UInt              mDBufferSize;
 
-    /* IO¸¦ ¼öÇàÇØ¾ß µÉ Direct Path BufferÀÇ
-     * BCBµéÀÇ ¸µÅ©µå ¸®½ºÆ®ÀÌ´Ù.*/
+    /* IOë¥¼ ìˆ˜í–‰í•´ì•¼ ë  Direct Path Bufferì˜
+     * BCBë“¤ì˜ ë§í¬ë“œ ë¦¬ìŠ¤íŠ¸ì´ë‹¤.*/
     smuList           mBaseNode;
 
-    /* ÇöÀç mBaseNode¿¡ ¿¬°áµÇ¾î ÀÖ´Â BCBÀÇ °¹¼ö
-     * Ãß°¡µÉ¶§¸¶´Ù 1¾¿ Áõ°¡ÇÏ°í Bulk IO¼öÇà½Ã IO°¡
-     * ¿Ï·áµÇ¸é 0À¸·Î µÈ´Ù.
+    /* í˜„ì¬ mBaseNodeì— ì—°ê²°ë˜ì–´ ìˆëŠ” BCBì˜ ê°¯ìˆ˜
+     * ì¶”ê°€ë ë•Œë§ˆë‹¤ 1ì”© ì¦ê°€í•˜ê³  Bulk IOìˆ˜í–‰ì‹œ IOê°€
+     * ì™„ë£Œë˜ë©´ 0ìœ¼ë¡œ ëœë‹¤.
      * */
     UInt              mIORequestCnt;
 
-    /* ¸¶Áö¸·À¸·Î mBaseNode¿¡ Ãß°¡µÈ PageÀÇ
-     * SpaceID¿Í PageID */
+    /* ë§ˆì§€ë§‰ìœ¼ë¡œ mBaseNodeì— ì¶”ê°€ëœ Pageì˜
+     * SpaceIDì™€ PageID */
     scSpaceID         mLstSpaceID;
     scPageID          mLstPageID;
 } sdbDPathBulkIOInfo;
 
 /* TASK-4990 changing the method of collecting index statistics
- * MPRÀÇ ParallelScan±â´ÉÀ» SamplingÀ¸·Î ÀÌ¿ëÇÏ±â À§ÇØ, ÀĞÀ» ExtentÀÎÁö 
- * ¾Æ´ÑÁö¸¦ ÆÇ´ÜÇÏ´Â CallbackFilter¸¦ µĞ´Ù. */
+ * MPRì˜ ParallelScanê¸°ëŠ¥ì„ Samplingìœ¼ë¡œ ì´ìš©í•˜ê¸° ìœ„í•´, ì½ì„ Extentì¸ì§€ 
+ * ì•„ë‹Œì§€ë¥¼ íŒë‹¨í•˜ëŠ” CallbackFilterë¥¼ ë‘”ë‹¤. */
 typedef idBool (*sdbMPRFilterFunc)( ULong   aExtSeq,
                                     void  * aFilterData );
 
@@ -390,34 +390,34 @@ typedef struct sdbMPRFilter4SamplingAndPScan
  ****************************************************************************/
 typedef enum
 {
-    SD_LAYER_BUFFER_POOL,      /* Primary  Buffer¿¡¼­ È£ÃâµÊ */
-    SD_LAYER_SECONDARY_BUFFER  /* Secondary Buffer ¿¡¼­ È£ÃâµÊ */
+    SD_LAYER_BUFFER_POOL,      /* Primary  Bufferì—ì„œ í˜¸ì¶œë¨ */
+    SD_LAYER_SECONDARY_BUFFER  /* Secondary Buffer ì—ì„œ í˜¸ì¶œë¨ */
 }sdLayerState;
 
 /*******************************************************************************
- * BCB °øÅëÀ¸·Î »ç¿ëµÇ´Â ºÎºĞÀ» Á¤ÀÇÇÔ
+ * BCB ê³µí†µìœ¼ë¡œ ì‚¬ìš©ë˜ëŠ” ë¶€ë¶„ì„ ì •ì˜í•¨
  ******************************************************************************/
 #define  SD_BCB_PARAMETERS                                                    \
-    /* Page°¡ ÀúÀåµÈ Space */                                                  \
+    /* Pageê°€ ì €ì¥ëœ Space */                                                  \
     scSpaceID       mSpaceID;                                                  \
                                                                                \
-    /* Space¾È¿¡¼­ ÆäÀÌÁö Number */                                            \
+    /* Spaceì•ˆì—ì„œ í˜ì´ì§€ Number */                                            \
     scPageID        mPageID;                                                   \
                                                                                \
-    /* sdbBCBHash¸¦ À§ÇÑ ÀÚ·á±¸Á¶ */                                           \
+    /* sdbBCBHashë¥¼ ìœ„í•œ ìë£Œêµ¬ì¡° */                                           \
     smuList         mHashItem;                                                 \
                                                                                \
-    /* ¾î´À ÇØ½Ã¿¡ ¼ÓÇØ ÀÖ´ÂÁö ½Äº°ÀÚ */                                       \
+    /* ì–´ëŠ í•´ì‹œì— ì†í•´ ìˆëŠ”ì§€ ì‹ë³„ì */                                       \
     UInt            mHashBucketNo;                                             \
                                                                                \
-    /* À§ÀÇ ¸®½ºÆ®¿Í´Â º°°³·Î SDB_BCB_DIRTY¶Ç´Â SDB_BCB_REDIRTYÀÎ °æ¿ì¿¡´Â     \
-     * check point list¿¡µµ ¼ÓÇÏ°Ô µÈ´Ù. checkpoint list¸¦ À§ÇÑ ÀÚ·á±¸Á¶  */   \
+    /* ìœ„ì˜ ë¦¬ìŠ¤íŠ¸ì™€ëŠ” ë³„ê°œë¡œ SDB_BCB_DIRTYë˜ëŠ” SDB_BCB_REDIRTYì¸ ê²½ìš°ì—ëŠ”     \
+     * check point listì—ë„ ì†í•˜ê²Œ ëœë‹¤. checkpoint listë¥¼ ìœ„í•œ ìë£Œêµ¬ì¡°  */   \
     smuList         mCPListItem;                                               \
                                                                                \
-    /* ´ÙÁßÈ­µÈ check point ¸®½ºÆ® Áß¿¡¼­ ÀÚ½ÅÀÌ ¼ÓÇÑ ¸®½ºÆ®ÀÇ ½Äº°ÀÚ */       \
+    /* ë‹¤ì¤‘í™”ëœ check point ë¦¬ìŠ¤íŠ¸ ì¤‘ì—ì„œ ìì‹ ì´ ì†í•œ ë¦¬ìŠ¤íŠ¸ì˜ ì‹ë³„ì */       \
     UInt            mCPListNo;                                                 \
                                                                                \
-    /* Page°¡ ÃÖÃÊ¿¡ Dirty·Î µî·ÏµÉ¶§, SystemÀÇ Last LSN */                    \
+    /* Pageê°€ ìµœì´ˆì— Dirtyë¡œ ë“±ë¡ë ë•Œ, Systemì˜ Last LSN */                    \
     smLSN           mRecoveryLSN;                                              \
 
 typedef struct sdBCB

@@ -123,7 +123,7 @@ void utTaskThread::run()
         /* set meta for operation */
         IDE_TEST(mScanner->setTable(sTab)!= IDE_SUCCESS);
 
-        /* TASK-4212: auditÅøÀÇ ´ë¿ë·® Ã³¸®½Ã °³¼± */
+        /* TASK-4212: auditíˆ´ì˜ ëŒ€ìš©ëŸ‰ ì²˜ë¦¬ì‹œ ê°œì„  */
         IDE_TEST(mScanner->prepare(mProp) != IDE_SUCCESS );
 
         /* Execution cycle ( read from CSV file, then compare rows each other )  */

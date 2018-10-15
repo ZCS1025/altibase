@@ -18,19 +18,19 @@
 /***********************************************************************
  * $$Id: smrLogMgr.cpp 82075 2018-01-17 06:39:52Z jina.kim $
  *
- * ·Î±×°ü¸®ÀÚ ±¸ÇöÆÄÀÏÀÔ´Ï´Ù.
+ * ë¡œê·¸ê´€ë¦¬ìž êµ¬í˜„íŒŒì¼ìž…ë‹ˆë‹¤.
  *
- * ·Î±×´Â ÇÑ ¹æÇâÀ¸·Î °è¼Ó ÀÚ¶ó³ª´Â, DurableÇÑ ÀúÀå°ø°£ÀÌ´Ù.
- * ÇÏÁö¸¸ DurableÇÑ ¸ÅÃ¼·Î º¸ÆíÀûÀ¸·Î »ç¿ëÇÏ´Â DiskÀÇ °æ¿ì,
- * ±× ¿ë·®ÀÌ ÇÑÁ¤µÇ¾î ÀÖ¾î¼­, ·Î±×¸¦ ¹«ÇÑÁ¤ ÀÚ¶ó³ª°Ô Çã¿ëÇÒ ¼ö´Â ¾ø´Ù.
+ * ë¡œê·¸ëŠ” í•œ ë°©í–¥ìœ¼ë¡œ ê³„ì† ìžë¼ë‚˜ëŠ”, Durableí•œ ì €ìž¥ê³µê°„ì´ë‹¤.
+ * í•˜ì§€ë§Œ Durableí•œ ë§¤ì²´ë¡œ ë³´íŽ¸ì ìœ¼ë¡œ ì‚¬ìš©í•˜ëŠ” Diskì˜ ê²½ìš°,
+ * ê·¸ ìš©ëŸ‰ì´ í•œì •ë˜ì–´ ìžˆì–´ì„œ, ë¡œê·¸ë¥¼ ë¬´í•œì • ìžë¼ë‚˜ê²Œ í—ˆìš©í•  ìˆ˜ëŠ” ì—†ë‹¤.
  *
- * ±×·¡¼­ ¿©·¯°³ÀÇ ¹°¸®ÀûÀÎ ·Î±×ÆÄÀÏµéÀ» ³í¸®ÀûÀ¸·Î ÇÏ³ªÀÇ ·Î±×·Î
- * »ç¿ëÇÒ ¼ö ÀÖµµ·Ï ±¸ÇöÀ» ÇÏ´Âµ¥,
- * ÀÌ ¶§ ÇÊ¿äÇÑ ¹°¸®ÀûÀÎ ·Î±×ÆÄÀÏÀ» smrLogFile ·Î Ç¥ÇöÇÑ´Ù.
- * ¿©·¯°³ÀÇ ·Î±×ÆÄÀÏµéÀÇ ¸®½ºÆ®¸¦ °ü¸®ÇÏ´Â ¿ªÇÒÀ» smrLogFileMgrÀÌ ´ã´çÇÏ°í,
- * ·Î±×ÆÄÀÏÀÇ DurableÇÑ ¼Ó¼ºÀ» ÃæÁ·½ÃÅ°´Â ¿ªÇÒÀ» smrLFThread°¡ ´ã´çÇÑ´Ù.
- * ¿©·¯°³ÀÇ ¹°¸®ÀûÀÎ ·Î±×ÆÄÀÏµéÀ»
- * ÇÏ³ªÀÇ ³í¸®ÀûÀÎ ·Î±×·Î Ãß»óÈ­ ÇÏ´Â ¿ªÇÒÀ» smrLogMgr°¡ ´ã´çÇÑ´Ù.
+ * ê·¸ëž˜ì„œ ì—¬ëŸ¬ê°œì˜ ë¬¼ë¦¬ì ì¸ ë¡œê·¸íŒŒì¼ë“¤ì„ ë…¼ë¦¬ì ìœ¼ë¡œ í•˜ë‚˜ì˜ ë¡œê·¸ë¡œ
+ * ì‚¬ìš©í•  ìˆ˜ ìžˆë„ë¡ êµ¬í˜„ì„ í•˜ëŠ”ë°,
+ * ì´ ë•Œ í•„ìš”í•œ ë¬¼ë¦¬ì ì¸ ë¡œê·¸íŒŒì¼ì„ smrLogFile ë¡œ í‘œí˜„í•œë‹¤.
+ * ì—¬ëŸ¬ê°œì˜ ë¡œê·¸íŒŒì¼ë“¤ì˜ ë¦¬ìŠ¤íŠ¸ë¥¼ ê´€ë¦¬í•˜ëŠ” ì—­í• ì„ smrLogFileMgrì´ ë‹´ë‹¹í•˜ê³ ,
+ * ë¡œê·¸íŒŒì¼ì˜ Durableí•œ ì†ì„±ì„ ì¶©ì¡±ì‹œí‚¤ëŠ” ì—­í• ì„ smrLFThreadê°€ ë‹´ë‹¹í•œë‹¤.
+ * ì—¬ëŸ¬ê°œì˜ ë¬¼ë¦¬ì ì¸ ë¡œê·¸íŒŒì¼ë“¤ì„
+ * í•˜ë‚˜ì˜ ë…¼ë¦¬ì ì¸ ë¡œê·¸ë¡œ ì¶”ìƒí™” í•˜ëŠ” ì—­í• ì„ smrLogMgrê°€ ë‹´ë‹¹í•œë‹¤.
  **********************************************************************/
 
 #include <idl.h>
@@ -74,7 +74,7 @@ smrUCSNChkThread           smrLogMgr::mUCSNChkThread;
 smrCompResPool             smrLogMgr::mCompResPool;
 
 /***********************************************************************
- * Description : ·Î±ë¸ðµâ ÃÊ±âÈ­
+ * Description : ë¡œê¹…ëª¨ë“ˆ ì´ˆê¸°í™”
  **********************************************************************/
 IDE_RC smrLogMgr::initialize()
 {
@@ -92,27 +92,27 @@ IDE_RC smrLogMgr::initialize()
                                               IDV_WAIT_INDEX_NULL)
               != IDE_SUCCESS );
 
-    // static¸â¹öµé ÃÊ±âÈ­
+    // staticë©¤ë²„ë“¤ ì´ˆê¸°í™”
     IDE_TEST( initializeStatic() != IDE_SUCCESS );
 
-    // ÇöÀç ·Î±×ÆÄÀÏ ÃÊ±âÈ­
+    // í˜„ìž¬ ë¡œê·¸íŒŒì¼ ì´ˆê¸°í™”
     mCurLogFile = NULL;
 
     mUpdateTxCount = 0;
     
-    // ¸¶Áö¸· LSNÃÊ±âÈ­
+    // ë§ˆì§€ë§‰ LSNì´ˆê¸°í™”
     SM_LSN_INIT( mLstWriteLSN );
-    // ¸¶Áö¸· LSNÃÊ±âÈ­
+    // ë§ˆì§€ë§‰ LSNì´ˆê¸°í™”
     SM_LSN_INIT( mLstLSN.mLSN );
 
-    // ÇöÀç ·Î±×ÆÄÀÏÀÇ µ¿½Ã¼º Á¦¾î¸¦ À§ÇÑ MutexÃÊ±âÈ­
+    // í˜„ìž¬ ë¡œê·¸íŒŒì¼ì˜ ë™ì‹œì„± ì œì–´ë¥¼ ìœ„í•œ Mutexì´ˆê¸°í™”
     IDE_TEST( mMutex.initialize((SChar*)"LOG_ALLOCATION_MUTEX",
                                 (iduMutexKind)smuProperty::getLogAllocMutexType(),
                                 IDV_WAIT_INDEX_NULL )
               != IDE_SUCCESS );
     sState = 1;
 
-    // ÇöÀç Update Transaction ¼ö Counting¿¡ »ç¿ëµÉ Mutex ÃÊ±âÈ­
+    // í˜„ìž¬ Update Transaction ìˆ˜ Countingì— ì‚¬ìš©ë  Mutex ì´ˆê¸°í™”
     IDE_TEST( mUpdateTxCountMutex.initialize(
                   (SChar *)"LOG_FILE_GROUP_UPDATE_TX_COUNT_MUTEX",
                   IDU_MUTEX_KIND_POSIX,
@@ -126,7 +126,7 @@ IDE_RC smrLogMgr::initialize()
                                          IDV_WAIT_INDEX_NULL ) != IDE_SUCCESS );
     sState = 3;
 
-    /* Null Transaction¿ë 1 Ãß°¡ */
+    /* Null Transactionìš© 1 ì¶”ê°€ */
     mFstChkLSNArrSize = smLayerCallback::getCurTransCnt() + 1; 
 
     /* smrLogMgr_initialize_malloc_mFstChkLSNArr.tc */
@@ -142,37 +142,37 @@ IDE_RC smrLogMgr::initialize()
         SM_LSN_MAX( mFstChkLSNArr[i].mLstWriteLSN );
     }
 
-    // ·Î±×ÆÄÀÏÀÇ ¸Ç Ã³À½¿¡ ±â·ÏÇÒ FileBeginLog¸¦ ÃÊ±âÈ­
+    // ë¡œê·¸íŒŒì¼ì˜ ë§¨ ì²˜ìŒì— ê¸°ë¡í•  FileBeginLogë¥¼ ì´ˆê¸°í™”
     initializeFileBeginLog ( &mFileBeginLog );
-    // ·Î±×ÆÄÀÏÀÇ ¸Ç ³¡¿¡ ±â·ÏÇÒ FileEndLog¸¦ ÃÊ±âÈ­
+    // ë¡œê·¸íŒŒì¼ì˜ ë§¨ ëì— ê¸°ë¡í•  FileEndLogë¥¼ ì´ˆê¸°í™”
     initializeFileEndLog   ( &mFileEndLog );
 
-    /******* ·Î±× ÆÄÀÏ ¸Å´ÏÀú°¡ Áö´Ñ ¾²·¹µåµéÀ» ½ÃÀÛ  ********/
+    /******* ë¡œê·¸ íŒŒì¼ ë§¤ë‹ˆì €ê°€ ì§€ë‹Œ ì“°ë ˆë“œë“¤ì„ ì‹œìž‘  ********/
 
-    // ·Î±×ÆÄÀÏ °ü¸®ÀÚ ÃÊ±âÈ­ ¹× Prepare ¾²·¹µå ½ÃÀÛ
-    // ÁÖÀÇ! initializeÇÔ¼ö°¡ ºÒ¸®¾îµµ ¾²·¹µå¸¦ ½ÃÀÛ½ÃÅ°Áö ¾Ê´Â´Ù.
+    // ë¡œê·¸íŒŒì¼ ê´€ë¦¬ìž ì´ˆê¸°í™” ë° Prepare ì“°ë ˆë“œ ì‹œìž‘
+    // ì£¼ì˜! initializeí•¨ìˆ˜ê°€ ë¶ˆë¦¬ì–´ë„ ì“°ë ˆë“œë¥¼ ì‹œìž‘ì‹œí‚¤ì§€ ì•ŠëŠ”ë‹¤.
     IDE_TEST( mLogFileMgr.initialize( mLogPath,
                                       mArchivePath, 
                                       &mLFThread )
               != IDE_SUCCESS );
     sState = 5;
 
-    // ¾ÆÄ«ÀÌºê ¾²·¹µå °´Ã¼¸¦ Ç×»ó ÃÊ±âÈ­ÇÑ´Ù.
-    // ( mLFThread°¡ ¾ÆÄ«ÀÌºê ¾²·¹µå¸¦ ÂüÁ¶ÇÏ±â ¶§¹® )
-    // ·Î±×ÆÄÀÏ ¾ÆÄ«ÀÌºê ¾²·¹µå °´Ã¼ ÃÊ±âÈ­
-    // ÁÖÀÇ! ¾ÆÄ«ÀÌºê ¾²·¹µå´Â initializeÇÔ¼ö°¡ ºÒ¸®¾îµµ
-    // ¾²·¹µå¸¦ ½ÃÀÛ½ÃÅ°Áö ¾Ê´Â´Ù.
+    // ì•„ì¹´ì´ë¸Œ ì“°ë ˆë“œ ê°ì²´ë¥¼ í•­ìƒ ì´ˆê¸°í™”í•œë‹¤.
+    // ( mLFThreadê°€ ì•„ì¹´ì´ë¸Œ ì“°ë ˆë“œë¥¼ ì°¸ì¡°í•˜ê¸° ë•Œë¬¸ )
+    // ë¡œê·¸íŒŒì¼ ì•„ì¹´ì´ë¸Œ ì“°ë ˆë“œ ê°ì²´ ì´ˆê¸°í™”
+    // ì£¼ì˜! ì•„ì¹´ì´ë¸Œ ì“°ë ˆë“œëŠ” initializeí•¨ìˆ˜ê°€ ë¶ˆë¦¬ì–´ë„
+    // ì“°ë ˆë“œë¥¼ ì‹œìž‘ì‹œí‚¤ì§€ ì•ŠëŠ”ë‹¤.
     //
-    // smiMain.cpp¿¡¼­ ¾²·¹µå ÀÚµ¿½ÃÀÛ ÇÁ·ÎÆÛÆ¼ÀÎ
-    // smuProperty::getArchiveThreadAutoStart() ÀÌ ¼³Á¤µÈ °æ¿ì¿¡¸¸
-    // º°µµ·Î ¾ÆÄ«ÀÌºê ¾²·¹µå¸¦ startup½ÃÅ²´Ù.
+    // smiMain.cppì—ì„œ ì“°ë ˆë“œ ìžë™ì‹œìž‘ í”„ë¡œí¼í‹°ì¸
+    // smuProperty::getArchiveThreadAutoStart() ì´ ì„¤ì •ëœ ê²½ìš°ì—ë§Œ
+    // ë³„ë„ë¡œ ì•„ì¹´ì´ë¸Œ ì“°ë ˆë“œë¥¼ startupì‹œí‚¨ë‹¤.
     IDE_TEST( mArchiveThread.initialize( mArchivePath,
                                          &mLogFileMgr,
                                          smrRecoveryMgr::getLstDeleteLogFileNo() )
               != IDE_SUCCESS );
     sState = 6;
 
-    // ·Î±×ÆÄÀÏ Flush ¾²·¹µå ÃÊ±âÈ­ÈÄ ½ÃÀÛ
+    // ë¡œê·¸íŒŒì¼ Flush ì“°ë ˆë“œ ì´ˆê¸°í™”í›„ ì‹œìž‘
 
     ideLog::log(IDE_SERVER_0," [SM-PREPARE] Log Flush Thread Startup");
     {
@@ -184,7 +184,7 @@ IDE_RC smrLogMgr::initialize()
     /* BUG-35392 */
     if ( smuProperty::isFastUnlockLogAllocMutex() == ID_TRUE )
     {
-        /* Uncompleted LSN¸¦ °»½ÅÇÏ´Â Thread¸¦ Init & Start ÇÑ´Ù. */
+        /* Uncompleted LSNë¥¼ ê°±ì‹ í•˜ëŠ” Threadë¥¼ Init & Start í•œë‹¤. */
         IDE_TEST( mUCSNChkThread.initialize() != IDE_SUCCESS );
     }
     else
@@ -225,7 +225,7 @@ IDE_RC smrLogMgr::initialize()
 }
 
 /***********************************************************************
- * Description : ·Î±ë¸ðµâ ÇØÁ¦
+ * Description : ë¡œê¹…ëª¨ë“ˆ í•´ì œ
  **********************************************************************/
 IDE_RC smrLogMgr::destroy()
 {
@@ -234,7 +234,7 @@ IDE_RC smrLogMgr::destroy()
     /* BUG-35392 */
     if ( smuProperty::isFastUnlockLogAllocMutex() == ID_TRUE )
     {
-        /* UncompletedLSNÀ» ±¸ÇÏ´Â Thread Stop & Destroy */
+        /* UncompletedLSNì„ êµ¬í•˜ëŠ” Thread Stop & Destroy */
         IDE_TEST( mUCSNChkThread.destroy() != IDE_SUCCESS );
     }
     else
@@ -243,21 +243,21 @@ IDE_RC smrLogMgr::destroy()
     }
 
     // To Fix BUG-14185
-    // initialize¿¡¼­ ¾ÆÄ«ÀÌºê ¸ðµå¿Í »ó°ü¾øÀÌ
-    // ¾ÆÄ«ÀÌºê ¾²·¹µå°¡ Ç×»ó ÃÊ±âÈ­ µÇ¾îÀÖ±â ¶§¹®¿¡
-    // Ç×»ó destroy ÇØÁÖ¾î¾ß ÇÔ
+    // initializeì—ì„œ ì•„ì¹´ì´ë¸Œ ëª¨ë“œì™€ ìƒê´€ì—†ì´
+    // ì•„ì¹´ì´ë¸Œ ì“°ë ˆë“œê°€ í•­ìƒ ì´ˆê¸°í™” ë˜ì–´ìžˆê¸° ë•Œë¬¸ì—
+    // í•­ìƒ destroy í•´ì£¼ì–´ì•¼ í•¨
     IDE_TEST( mArchiveThread.destroy() != IDE_SUCCESS );
 
-    // ·Î±×ÆÄÀÏ Flush ¾²·¹µå ÇØÁ¦
+    // ë¡œê·¸íŒŒì¼ Flush ì“°ë ˆë“œ í•´ì œ
     IDE_TEST( mLFThread.destroy() != IDE_SUCCESS );
 
-    // ·Î±×ÆÄÀÏ °ü¸®ÀÚ °â Prepare ¾²·¹µå ÇØÁ¦
+    // ë¡œê·¸íŒŒì¼ ê´€ë¦¬ìž ê²¸ Prepare ì“°ë ˆë“œ í•´ì œ
     IDE_TEST( mLogFileMgr.destroy() != IDE_SUCCESS );
 
-    // ÇöÀç ·Î±×ÆÄÀÏÀÇ µ¿½Ã¼º Á¦¾î¸¦ À§ÇÑ Mutex ÇØÁ¦
+    // í˜„ìž¬ ë¡œê·¸íŒŒì¼ì˜ ë™ì‹œì„± ì œì–´ë¥¼ ìœ„í•œ Mutex í•´ì œ
     IDE_TEST( mMutex.destroy() != IDE_SUCCESS );
 
-    // ÇöÀç Update Transaction ¼ö Counting¿¡ »ç¿ëµÉ Mutex ÇØÁ¦
+    // í˜„ìž¬ Update Transaction ìˆ˜ Countingì— ì‚¬ìš©ë  Mutex í•´ì œ
     IDE_TEST( mUpdateTxCountMutex.destroy() != IDE_SUCCESS );
 
     /* BUG-35392 */
@@ -281,15 +281,15 @@ IDE_RC smrLogMgr::destroy()
 IDE_RC smrLogMgr::initializeStatic()
 {
     const  SChar* sLogDirPtr;
-    // ·Î±× µð·ºÅä¸®°¡ ÀÖ´ÂÁö È®ÀÎ  
+    // ë¡œê·¸ ë””ë ‰í† ë¦¬ê°€ ìžˆëŠ”ì§€ í™•ì¸  
     sLogDirPtr = smuProperty::getLogDirPath();
         
     IDE_TEST_RAISE( idf::access(sLogDirPtr, F_OK) != 0,
                     err_logdir_not_exist )
     
     /* ------------------------------------------------
-     * ·Î±×°ü¸®ÀÚÀÇ mutex ÃÊ±âÈ­
-     * - ·Î±ë ¸ðµå mutex ÃÊ±âÈ­
+     * ë¡œê·¸ê´€ë¦¬ìžì˜ mutex ì´ˆê¸°í™”
+     * - ë¡œê¹… ëª¨ë“œ mutex ì´ˆê¸°í™”
      * ----------------------------------------------*/
     IDE_TEST( mMtxLoggingMode.initialize((SChar*)"LOG_MODE_MUTEX",
                                          IDU_MUTEX_KIND_NATIVE,
@@ -297,16 +297,16 @@ IDE_RC smrLogMgr::initializeStatic()
     IDE_TEST( smuDynArray::initializeStatic(SMU_DA_BASE_SIZE)
              != IDE_SUCCESS );
 
-    // BUG-29329 ¿¡¼­ Codding Convention¹®Á¦·Î
-    // static Áö¿ª º¯¼ö¿¡¼­ static ¸â¹öº¯¼ö·Î ¼öÁ¤
+    // BUG-29329 ì—ì„œ Codding Conventionë¬¸ì œë¡œ
+    // static ì§€ì—­ ë³€ìˆ˜ì—ì„œ static ë©¤ë²„ë³€ìˆ˜ë¡œ ìˆ˜ì •
     mMaxLogOffset = smuProperty::getLogFileSize() - ID_SIZEOF(smrLogHead)
                     - ID_SIZEOF(smrLogTail);
 
 
     /* BUG-31114 mismatch between real log type and display log type
      *           in dumplf.
-     * LogType°ËÁõÀ» À§ÇØ, ÇÑ¹ø ÃÊ±âÈ­ ÇØº»´Ù. ¾îÂ÷ÇÇ È®º¸µÈ ¸Þ¸ð¸® ÀÌ±â
-     * ¶§¹®¿¡, ÃÊ±âÈ­ ÇØÁØ´Ù°í ÇØ¼­ Ãß°¡ÀûÀÎ ¸Þ¸ð¸®¸¦ ¸ÔÁø ¾Ê´Â´Ù. */
+     * LogTypeê²€ì¦ì„ ìœ„í•´, í•œë²ˆ ì´ˆê¸°í™” í•´ë³¸ë‹¤. ì–´ì°¨í”¼ í™•ë³´ëœ ë©”ëª¨ë¦¬ ì´ê¸°
+     * ë•Œë¬¸ì—, ì´ˆê¸°í™” í•´ì¤€ë‹¤ê³  í•´ì„œ ì¶”ê°€ì ì¸ ë©”ëª¨ë¦¬ë¥¼ ë¨¹ì§„ ì•ŠëŠ”ë‹¤. */
 
     IDE_TEST( smrLogFileDump::initializeStatic() != IDE_SUCCESS );
 
@@ -356,7 +356,7 @@ IDE_RC smrLogMgr::destroyStatic()
 
 
 /***********************************************************************
- * Description :  ÀÌ ÇÔ¼ö´Â createdb½Ã¿¡ ºÎ¸£°Ô µÈ´Ù.
+ * Description :  ì´ í•¨ìˆ˜ëŠ” createdbì‹œì— ë¶€ë¥´ê²Œ ëœë‹¤.
  **********************************************************************/
 IDE_RC smrLogMgr::create()
 {
@@ -372,15 +372,15 @@ IDE_RC smrLogMgr::create()
 }
 
 /***********************************************************************
- * Description : ·Î±× ÆÄÀÏ ¸Å´ÏÀú°¡ Áö´Ñ ¾²·¹µåµéÀ» ÁßÁö
+ * Description : ë¡œê·¸ íŒŒì¼ ë§¤ë‹ˆì €ê°€ ì§€ë‹Œ ì“°ë ˆë“œë“¤ì„ ì¤‘ì§€
  *
- * smrLogMgr::initialize¿¡¼­ ÇØÁØ °Í°ú ¹Ý´ëÀÇ ¼ø¼­·Î ÁßÁöÇÑ´Ù.
+ * smrLogMgr::initializeì—ì„œ í•´ì¤€ ê²ƒê³¼ ë°˜ëŒ€ì˜ ìˆœì„œë¡œ ì¤‘ì§€í•œë‹¤.
  **********************************************************************/
 IDE_RC smrLogMgr::shutdown()
 {
     if ( mLFThread.isStarted() == ID_TRUE )
     {
-        // ·Î±×ÆÄÀÏ Flush ¾²·¹µå ÁßÁö
+        // ë¡œê·¸íŒŒì¼ Flush ì“°ë ˆë“œ ì¤‘ì§€
 
         ideLog::log(IDE_SERVER_0,"      [SM-PREPARE] Log Flush Thread Shutdown...");
         {
@@ -393,7 +393,7 @@ IDE_RC smrLogMgr::shutdown()
         /* nothing to do */
     }
 
-    // ·Î±×ÆÄÀÏ °ü¸®ÀÚ °â Prepare ¾²·¹µå ÁßÁö
+    // ë¡œê·¸íŒŒì¼ ê´€ë¦¬ìž ê²¸ Prepare ì“°ë ˆë“œ ì¤‘ì§€
 
     if ( mLogFileMgr.isStarted() == ID_TRUE )
     {
@@ -408,7 +408,7 @@ IDE_RC smrLogMgr::shutdown()
         /* nothing to do */
     }
 
-    // ¾ÆÄ«ÀÌºê ¾²·¹µå ÁßÁö
+    // ì•„ì¹´ì´ë¸Œ ì“°ë ˆë“œ ì¤‘ì§€
     if ( smrRecoveryMgr::getArchiveMode() == SMI_LOG_ARCHIVE )
     {
         if ( mArchiveThread.isStarted() == ID_TRUE )
@@ -420,8 +420,8 @@ IDE_RC smrLogMgr::shutdown()
             }
             ideLog::log(IDE_SERVER_0,"[SUCCESS]\n");
 
-            // ¾ÆÄ«ÀÌºê¸¦ ¸¶Áö¸·À¸·Î ÇÑ¹ø ´õ ½Ç½ÃÇÏ¿©
-            // ¸ðµç ¾ÆÄ«ÀÌºê°¡ ³¡³ªµµ·Ï ÇÑ´Ù.
+            // ì•„ì¹´ì´ë¸Œë¥¼ ë§ˆì§€ë§‰ìœ¼ë¡œ í•œë²ˆ ë” ì‹¤ì‹œí•˜ì—¬
+            // ëª¨ë“  ì•„ì¹´ì´ë¸Œê°€ ëë‚˜ë„ë¡ í•œë‹¤.
             IDE_TEST( mArchiveThread.archLogFile() != IDE_SUCCESS );
         }
     }
@@ -462,21 +462,21 @@ IDE_RC smrLogMgr::checkLogDirExist()
 }
 
 /********************************************************************
- * aLSNÀÌ °¡¸®Å°´Â Log¸¦ ÀÐ¾î¼­ Log°¡ À§Ä¡ÇÑ Log BufferÀÇ
- * Æ÷ÀÎÅÍ¸¦ aLogPtr¿¡ SettingÇÑ´Ù. ±×¸®°í Log¸¦ °¡Áö°í ÀÖ´Â
- * LogÆÄÀÏÆ÷ÀÎÅÍ¸¦ aLogFile¿¡ SettingÇÑ´Ù.
+ * aLSNì´ ê°€ë¦¬í‚¤ëŠ” Logë¥¼ ì½ì–´ì„œ Logê°€ ìœ„ì¹˜í•œ Log Bufferì˜
+ * í¬ì¸í„°ë¥¼ aLogPtrì— Settingí•œë‹¤. ê·¸ë¦¬ê³  Logë¥¼ ê°€ì§€ê³  ìžˆëŠ”
+ * LogíŒŒì¼í¬ì¸í„°ë¥¼ aLogFileì— Settingí•œë‹¤.
  *
- * [IN]  aDecompBufferHandle - ·Î±× ¾ÐÃàÇØÁ¦¿¡ »ç¿ëÇÒ ¹öÆÛÀÇ ÇÚµé
- * [IN]  aLSN        - ÀÐ¾îµéÀÏ Log RecordÀ§Ä¡
- * [IN]  aIsRecovery - Recovery½Ã¿¡ È£ÃâµÇ¾úÀ¸¸é
- *                     ID_TRUE, ¾Æ´Ï¸é ID_FALSE
- * [INOUT] aLogFile  - ÇöÀç Log·¹ÄÚµå¸¦ °¡Áö°í ÀÖ´Â LogFile
- * [OUT] aLogHeadPtr - LogÀÇ Header¸¦ º¹»ç
- * [OUT] aLogPtr     - Log Record°¡ À§Ä¡ÇÑ Log¹öÆÛÀÇ Pointer
- * [OUT] aIsValid    - Log°¡ ValidÇÏ¸é ID_TRUE, ¾Æ´Ï¸é ID_FALSE
- * [OUT] aLogSizeAtDisk     - ÆÄÀÏ»ó¿¡¼­ ÀÐ¾î³½ ·Î±×ÀÇ Å©±â
- *                      ( ¾ÐÃàµÈ ·Î±×ÀÇ °æ¿ì ·Î±×ÀÇ Å©±â¿Í
- *                        ÆÄÀÏ»óÀÇ Å©±â°¡ ´Ù¸¦ ¼ö ÀÖ´Ù )
+ * [IN]  aDecompBufferHandle - ë¡œê·¸ ì••ì¶•í•´ì œì— ì‚¬ìš©í•  ë²„í¼ì˜ í•¸ë“¤
+ * [IN]  aLSN        - ì½ì–´ë“¤ì¼ Log Recordìœ„ì¹˜
+ * [IN]  aIsRecovery - Recoveryì‹œì— í˜¸ì¶œë˜ì—ˆìœ¼ë©´
+ *                     ID_TRUE, ì•„ë‹ˆë©´ ID_FALSE
+ * [INOUT] aLogFile  - í˜„ìž¬ Logë ˆì½”ë“œë¥¼ ê°€ì§€ê³  ìžˆëŠ” LogFile
+ * [OUT] aLogHeadPtr - Logì˜ Headerë¥¼ ë³µì‚¬
+ * [OUT] aLogPtr     - Log Recordê°€ ìœ„ì¹˜í•œ Logë²„í¼ì˜ Pointer
+ * [OUT] aIsValid    - Logê°€ Validí•˜ë©´ ID_TRUE, ì•„ë‹ˆë©´ ID_FALSE
+ * [OUT] aLogSizeAtDisk     - íŒŒì¼ìƒì—ì„œ ì½ì–´ë‚¸ ë¡œê·¸ì˜ í¬ê¸°
+ *                      ( ì••ì¶•ëœ ë¡œê·¸ì˜ ê²½ìš° ë¡œê·¸ì˜ í¬ê¸°ì™€
+ *                        íŒŒì¼ìƒì˜ í¬ê¸°ê°€ ë‹¤ë¥¼ ìˆ˜ ìžˆë‹¤ )
  *******************************************************************/
 IDE_RC smrLogMgr::readLog( iduMemoryHandle  * aDecompBufferHandle,
                            smLSN            * aLSN,
@@ -489,7 +489,7 @@ IDE_RC smrLogMgr::readLog( iduMemoryHandle  * aDecompBufferHandle,
 {
     UInt      sOffset   = 0;
 
-    // ºñ¾ÐÃà ·Î±×¸¦ ÀÐ´Â °æ¿ì aDecompBufferHandleÀÌ NULL·Î µé¾î¿Â´Ù
+    // ë¹„ì••ì¶• ë¡œê·¸ë¥¼ ì½ëŠ” ê²½ìš° aDecompBufferHandleì´ NULLë¡œ ë“¤ì–´ì˜¨ë‹¤
 
     IDE_ASSERT( aLSN        != NULL );
     IDE_ASSERT( (aIsCloseLogFile == ID_TRUE) ||
@@ -499,10 +499,10 @@ IDE_RC smrLogMgr::readLog( iduMemoryHandle  * aDecompBufferHandle,
     IDE_ASSERT( aLogHeadPtr != NULL );
     IDE_ASSERT( aLogSizeAtDisk != NULL );
      
-    // BUG-29329 ·Î ÀÎÇÑ µð¹ö±ë ÄÚµå Ãß°¡
-    // aLSN->mOffsetÀÌ sMaxLogOffsetº¸´Ù Å©´Ù°í ÆÇ´ÜÇÏ¿© Fatal¹ß»ý.
-    // ÇÏÁö¸¸, FATAL err Msg¿¡ ±â·ÏµÈ OffsetÀº Á¤»óÀÌ¾úÀ½.
-    // Ã³¸® µµÁß¿¡ °ªÀÌ º¯°æµÇ´ÂÁö¸¦ È®ÀÎÇÕ´Ï´Ù.
+    // BUG-29329 ë¡œ ì¸í•œ ë””ë²„ê¹… ì½”ë“œ ì¶”ê°€
+    // aLSN->mOffsetì´ sMaxLogOffsetë³´ë‹¤ í¬ë‹¤ê³  íŒë‹¨í•˜ì—¬ Fatalë°œìƒ.
+    // í•˜ì§€ë§Œ, FATAL err Msgì— ê¸°ë¡ëœ Offsetì€ ì •ìƒì´ì—ˆìŒ.
+    // ì²˜ë¦¬ ë„ì¤‘ì— ê°’ì´ ë³€ê²½ë˜ëŠ”ì§€ë¥¼ í™•ì¸í•©ë‹ˆë‹¤.
     sOffset = aLSN->mOffset;
 
     // BUG-20062
@@ -530,16 +530,16 @@ IDE_RC smrLogMgr::readLog( iduMemoryHandle  * aDecompBufferHandle,
         else
         {
             /* BUG-37018 There is some mistake on logfile Offset calculation 
-             * Dummy log°¡ validÇÑÁö °Ë»çÇÏ´Â ¹æ¹ýÀº MagicNumber°Ë»ç¹Û¿¡ ¾ø´Ù.*/
+             * Dummy logê°€ validí•œì§€ ê²€ì‚¬í•˜ëŠ” ë°©ë²•ì€ MagicNumberê²€ì‚¬ë°–ì— ì—†ë‹¤.*/
             *aIsValid = smrLogFile::isValidMagicNumber( aLSN, aLogHeadPtr );
         }
     }
     else
     {
-        /* aIsValid°¡ NULLÀÌ¸é Valid¸¦ CheckÇÏÁö ¾Ê´Â´Ù */
+        /* aIsValidê°€ NULLì´ë©´ Validë¥¼ Checkí•˜ì§€ ì•ŠëŠ”ë‹¤ */
     }
 
-    // BUG-29329 ·Î ÀÎÇÑ µð¹ö±ë ÄÚµå Ãß°¡
+    // BUG-29329 ë¡œ ì¸í•œ ë””ë²„ê¹… ì½”ë“œ ì¶”ê°€
     IDE_TEST_RAISE( ( smuProperty::getLogFileSize() 
                       - ID_SIZEOF(smrLogHead)
                       - ID_SIZEOF(smrLogTail) ) 
@@ -552,7 +552,7 @@ IDE_RC smrLogMgr::readLog( iduMemoryHandle  * aDecompBufferHandle,
 
     IDE_EXCEPTION(error_invalid_lsn_offset);
     {
-        // BUG-29329 ·Î ÀÎÇÑ µð¹ö±ë ÄÚµå Ãß°¡
+        // BUG-29329 ë¡œ ì¸í•œ ë””ë²„ê¹… ì½”ë“œ ì¶”ê°€
         ideLog::log(IDE_SERVER_0,
                     SM_TRC_DRECOVER_INVALID_LOG_OFFSET,
                     sOffset,
@@ -571,19 +571,19 @@ IDE_RC smrLogMgr::readLog( iduMemoryHandle  * aDecompBufferHandle,
 
 
 /***********************************************************************
- * Description : disk ·Î±×¸¦ ·Î±×¹öÆÛ¿¡ ±â·ÏÇÑ´Ù.
+ * Description : disk ë¡œê·¸ë¥¼ ë¡œê·¸ë²„í¼ì— ê¸°ë¡í•œë‹¤.
  *
- * mtxÀÇ commit°úÁ¤¿¡¼­ NTA°¡ ¼³Á¤µÇÁö ¾ÊÀº °æ¿ì¿¡ È£ÃâµÇ´Â
- * ÇÔ¼ö·Î½á, SMR_DLT_REDOONLYÀÌ³ª SMR_DLT_UNDOABLE Å¸ÀÔÀÇ
- * ·Î±×¸¦ ±â·ÏÇÑ´Ù.
+ * mtxì˜ commitê³¼ì •ì—ì„œ NTAê°€ ì„¤ì •ë˜ì§€ ì•Šì€ ê²½ìš°ì— í˜¸ì¶œë˜ëŠ”
+ * í•¨ìˆ˜ë¡œì¨, SMR_DLT_REDOONLYì´ë‚˜ SMR_DLT_UNDOABLE íƒ€ìž…ì˜
+ * ë¡œê·¸ë¥¼ ê¸°ë¡í•œë‹¤.
  *
- * ·Î±× header¿¡ ¼³Á¤ÇÏ±â À§ÇÑ ¸â¹ö aIsDML, aReplicate, aUndable
- * µéÀÇ »óÅÂ¿¡ µû¸¥ ·Î±× Çì´õ¿¡ ¼³Á¤µÉ °ªÀÌ ´Ù¸£´Ù.
- * ¶Ç, Æ®·£Àè¼ÇÀÇ logFlag¿¡ µû¶ó¼­µµ ´Ù¸£´Ù.
- * replicationÀÌ µ¿ÀÛÇÒ ¶§, isDMLÀÌ trueÀÎ °æ¿ì¿¡ N¿¡ ´ëÇØ¼­´Â
- * replicator°¡ ÆÇµ¶ÇØ¾ß ÇÒ ·Î±×¸¦ ³ªÅ¸³½´Ù.
+ * ë¡œê·¸ headerì— ì„¤ì •í•˜ê¸° ìœ„í•œ ë©¤ë²„ aIsDML, aReplicate, aUndable
+ * ë“¤ì˜ ìƒíƒœì— ë”°ë¥¸ ë¡œê·¸ í—¤ë”ì— ì„¤ì •ë  ê°’ì´ ë‹¤ë¥´ë‹¤.
+ * ë˜, íŠ¸ëžœìž­ì…˜ì˜ logFlagì— ë”°ë¼ì„œë„ ë‹¤ë¥´ë‹¤.
+ * replicationì´ ë™ìž‘í•  ë•Œ, isDMLì´ trueì¸ ê²½ìš°ì— Nì— ëŒ€í•´ì„œëŠ”
+ * replicatorê°€ íŒë…í•´ì•¼ í•  ë¡œê·¸ë¥¼ ë‚˜íƒ€ë‚¸ë‹¤.
  *
- * - ·Î±×Çì´õ¿¡ ¼³Á¤µÉ °ª (N:NORMAL, R:REPL_NONE, C:REPL_RECOVERY)
+ * - ë¡œê·¸í—¤ë”ì— ì„¤ì •ë  ê°’ (N:NORMAL, R:REPL_NONE, C:REPL_RECOVERY)
  *   ___________________________________________________
  *             | insert   | delete   | update  | etc.
  *   __________|__________|__________|_________|_______
@@ -593,18 +593,18 @@ IDE_RC smrLogMgr::readLog( iduMemoryHandle  * aDecompBufferHandle,
  *             |          |          |         |
  *   mUndoable | T F T F  | T F T F  | T F T F |  (F)
  *  ___________|__________|__________|_________|_______
- *  N-Trans°æ¿ì  R N R R    R N R R    N N R R     R
- *  C-Trans°æ¿ì  R C R R    R C R R    C C R R     R
- *  R-Trans°æ¿ì  R R R R    R R R R    R R R R     R
+ *  N-Transê²½ìš°  R N R R    R N R R    N N R R     R
+ *  C-Transê²½ìš°  R C R R    R C R R    C C R R     R
+ *  R-Transê²½ìš°  R R R R    R R R R    R R R R     R
  *
  * - 2nd. code design
- *   + Æ®·£Àè¼Ç ·Î±× ¹öÆÛ ÃÊ±âÈ­
- *   + ·Î±× header ¼³Á¤
- *   + ¼³Á¤µÈ ·Î±× header¸¦ Æ®·£Àè¼Ç ·Î±×¹öÆÛ¿¡ ±â·Ï
- *   + mtx ·Î±× ¹öÆÛ¿¡ ÀúÀåµÈ ·Î±×¸¦ Æ®·£Àè¼Ç ·Î±×¹öÆÛ¿¡ ±â·Ï
- *   + ·Î±×ÀÇ tailÀ» ¼³Á¤ÇÑ´Ù.
- *   + ¸¶Áö¸·À¸·Î Æ®·£Àè¼Ç ·Î±× ¹öÆÛ¿¡ ÀÛ¼ºµÈ ·Î±×¸¦ ¸ðµÎ
- *     ·Î±×ÆÄÀÏ¿¡ ±â·ÏÇÑ´Ù.
+ *   + íŠ¸ëžœìž­ì…˜ ë¡œê·¸ ë²„í¼ ì´ˆê¸°í™”
+ *   + ë¡œê·¸ header ì„¤ì •
+ *   + ì„¤ì •ëœ ë¡œê·¸ headerë¥¼ íŠ¸ëžœìž­ì…˜ ë¡œê·¸ë²„í¼ì— ê¸°ë¡
+ *   + mtx ë¡œê·¸ ë²„í¼ì— ì €ìž¥ëœ ë¡œê·¸ë¥¼ íŠ¸ëžœìž­ì…˜ ë¡œê·¸ë²„í¼ì— ê¸°ë¡
+ *   + ë¡œê·¸ì˜ tailì„ ì„¤ì •í•œë‹¤.
+ *   + ë§ˆì§€ë§‰ìœ¼ë¡œ íŠ¸ëžœìž­ì…˜ ë¡œê·¸ ë²„í¼ì— ìž‘ì„±ëœ ë¡œê·¸ë¥¼ ëª¨ë‘
+ *     ë¡œê·¸íŒŒì¼ì— ê¸°ë¡í•œë‹¤.
  **********************************************************************/
 IDE_RC smrLogMgr::writeDiskLogRec( idvSQL           * aStatistics,
                                    void             * aTrans,
@@ -656,15 +656,15 @@ IDE_RC smrLogMgr::writeDiskLogRec( idvSQL           * aStatistics,
     if ((aLogAttr & SM_DLOG_ATTR_DML_MASK) == SM_DLOG_ATTR_DML)
     {
         //PROJ-1608 recovery From Replication
-        //REPL_RECOVERY´Â Recovery Sender°¡ ºÁ¾ßÇÑ´Ù.
+        //REPL_RECOVERYëŠ” Recovery Senderê°€ ë´ì•¼í•œë‹¤.
         if ( ( (aLogAttr & SM_DLOG_ATTR_TRANS_MASK) == SM_DLOG_ATTR_REPLICATE) &&
             ( (sLogTypeFlag == SMR_LOG_TYPE_NORMAL) ||
               (sLogTypeFlag == SMR_LOG_TYPE_REPL_RECOVERY) ) )
         {
             smrLogHeadI::setFlag( &sDiskLog.mHead, sLogTypeFlag );
 
-            /* BUG-17073: ÃÖ»óÀ§ Statement°¡ ¾Æ´Ñ Statment¿¡ ´ëÇØ¼­µµ
-             * Partial RollbackÀ» Áö¿øÇØ¾ß ÇÕ´Ï´Ù. */
+            /* BUG-17073: ìµœìƒìœ„ Statementê°€ ì•„ë‹Œ Statmentì— ëŒ€í•´ì„œë„
+             * Partial Rollbackì„ ì§€ì›í•´ì•¼ í•©ë‹ˆë‹¤. */
             if ( smLayerCallback::checkAndSetImplSVPStmtDepth4Repl( aTrans )
                  == ID_FALSE )
             {
@@ -693,19 +693,19 @@ IDE_RC smrLogMgr::writeDiskLogRec( idvSQL           * aStatistics,
     else
     {
         /* ------------------------------------------------
-         * DML°ú °ü·Ã¾ø´Â ·Î±×ÀÏ°æ¿ì¿¡, SMR_LOG_TYPE_NORMALÀ» ¼³Á¤ÇÒ °æ¿ì¿¡
-         * replacator°¡ ÆÇµ¶ÇÒ ¿ì·Á°¡ ÀÖ´Ù. ¿Ö³ÄÇÏ¸é, ·Î±× Çì´õ¸¸ ºÁ¼­´Â ¾î¶²
-         * disk ·Î±× Å¸ÀÔÀÎÁö¸¦ ÆÇ´ÜÇÏÁö ¸øÇÏ±â ¶§¹®ÀÌ´Ù.
-         * ±×·¸±â ¶§¹®¿¡ N ¿¡ ´ëÇÏ¿© R·Î Ç¥±âÇÏ¿© etcÀÇ
-         * disk ·Î±×ÀÇ °æ¿ì´Â ¸ðµÎ ÆÇµ¶ÇÏÁö ¸øÇÏµµ·Ï ¸¸µç´Ù.
-         * °áÁ¤: (N->R??) ¾Æ´Ï¸é ·Î±× ÇÃ·¡±× Å¸ÀÔÀ» È®ÀåÇÏ´Â ¹æ¹ýÀ» °í·ÁÇØº¼
-         * ÇÊ¿ä°¡ ÀÖ´Ù.
+         * DMLê³¼ ê´€ë ¨ì—†ëŠ” ë¡œê·¸ì¼ê²½ìš°ì—, SMR_LOG_TYPE_NORMALì„ ì„¤ì •í•  ê²½ìš°ì—
+         * replacatorê°€ íŒë…í•  ìš°ë ¤ê°€ ìžˆë‹¤. ì™œëƒí•˜ë©´, ë¡œê·¸ í—¤ë”ë§Œ ë´ì„œëŠ” ì–´ë–¤
+         * disk ë¡œê·¸ íƒ€ìž…ì¸ì§€ë¥¼ íŒë‹¨í•˜ì§€ ëª»í•˜ê¸° ë•Œë¬¸ì´ë‹¤.
+         * ê·¸ë ‡ê¸° ë•Œë¬¸ì— N ì— ëŒ€í•˜ì—¬ Rë¡œ í‘œê¸°í•˜ì—¬ etcì˜
+         * disk ë¡œê·¸ì˜ ê²½ìš°ëŠ” ëª¨ë‘ íŒë…í•˜ì§€ ëª»í•˜ë„ë¡ ë§Œë“ ë‹¤.
+         * ê²°ì •: (N->R??) ì•„ë‹ˆë©´ ë¡œê·¸ í”Œëž˜ê·¸ íƒ€ìž…ì„ í™•ìž¥í•˜ëŠ” ë°©ë²•ì„ ê³ ë ¤í•´ë³¼
+         * í•„ìš”ê°€ ìžˆë‹¤.
          * ----------------------------------------------*/
         smrLogHeadI::setFlag(&sDiskLog.mHead, sLogTypeFlag);
     }
 
     /* TASK-5030 
-     * ·Î±× Çìµå¿¡ FXLog ÇÃ·¡±×¸¦ ¼³Á¤ ÇÑ´Ù */
+     * ë¡œê·¸ í—¤ë“œì— FXLog í”Œëž˜ê·¸ë¥¼ ì„¤ì • í•œë‹¤ */
     IDE_TEST( smLayerCallback::getTableHeaderFromOID( aTableOID, (void**)(&sTableHeader) )
               != IDE_SUCCESS );
 
@@ -753,22 +753,22 @@ IDE_RC smrLogMgr::writeDiskLogRec( idvSQL           * aStatistics,
 }
 
 /***********************************************************************
- * Description : disk NTA ·Î±×(SMR_DLT_NTA)¸¦ ·Î±×¹öÆÛ¿¡ ±â·ÏÇÑ´Ù.
+ * Description : disk NTA ë¡œê·¸(SMR_DLT_NTA)ë¥¼ ë¡œê·¸ë²„í¼ì— ê¸°ë¡í•œë‹¤.
  *
- * disk NTA ·Î±×´Â MRDB¿Í DRDB¿¡ °ÉÄ£ ¿¬»ê¿¡ ´ëÇÑ actomic ¿¬»êÀ»
- * º¸ÀåÇÏ±â À§ÇØ ±â·ÏÇÏ´Â ·Î±×ÀÌ´Ù. table segment »ý¼ºÀÌ³ª, index
- * segment »ý¼ºµî¿¡ »ç¿ëµÈ´Ù.
- * mtxÀÇ commit°úÁ¤¿¡¼­ NTA°¡ ¼³Á¤µÇ¾î ÀÖ´Â °æ¿ì¿¡ È£ÃâµÇ´Â
- * ÇÔ¼ö·Î½á, SMR_DLT_NTAÅ¸ÀÔÀÇ ·Î±×¸¦ ±â·ÏÇÑ´Ù.
+ * disk NTA ë¡œê·¸ëŠ” MRDBì™€ DRDBì— ê±¸ì¹œ ì—°ì‚°ì— ëŒ€í•œ actomic ì—°ì‚°ì„
+ * ë³´ìž¥í•˜ê¸° ìœ„í•´ ê¸°ë¡í•˜ëŠ” ë¡œê·¸ì´ë‹¤. table segment ìƒì„±ì´ë‚˜, index
+ * segment ìƒì„±ë“±ì— ì‚¬ìš©ëœë‹¤.
+ * mtxì˜ commitê³¼ì •ì—ì„œ NTAê°€ ì„¤ì •ë˜ì–´ ìžˆëŠ” ê²½ìš°ì— í˜¸ì¶œë˜ëŠ”
+ * í•¨ìˆ˜ë¡œì¨, SMR_DLT_NTAíƒ€ìž…ì˜ ë¡œê·¸ë¥¼ ê¸°ë¡í•œë‹¤.
  *
  * - 2nd. code design
- *   + Æ®·£Àè¼Ç ·Î±× ¹öÆÛ ÃÊ±âÈ­
- *   + ·Î±× header ¼³Á¤
- *   + ¼³Á¤µÈ ·Î±× header¸¦ Æ®·£Àè¼Ç ·Î±×¹öÆÛ¿¡ ±â·Ï
- *   + mtx ·Î±× ¹öÆÛ¿¡ ÀúÀåµÈ ·Î±×¸¦ Æ®·£Àè¼Ç ·Î±×¹öÆÛ¿¡ ±â·Ï
- *   + ·Î±×ÀÇ tailÀ» ¼³Á¤ÇÑ´Ù.
- *   + ¸¶Áö¸·À¸·Î Æ®·£Àè¼Ç ·Î±× ¹öÆÛ¿¡ ÀÛ¼ºµÈ ·Î±×¸¦ ¸ðµÎ
- *     ·Î±×ÆÄÀÏ¿¡ ±â·ÏÇÑ´Ù.
+ *   + íŠ¸ëžœìž­ì…˜ ë¡œê·¸ ë²„í¼ ì´ˆê¸°í™”
+ *   + ë¡œê·¸ header ì„¤ì •
+ *   + ì„¤ì •ëœ ë¡œê·¸ headerë¥¼ íŠ¸ëžœìž­ì…˜ ë¡œê·¸ë²„í¼ì— ê¸°ë¡
+ *   + mtx ë¡œê·¸ ë²„í¼ì— ì €ìž¥ëœ ë¡œê·¸ë¥¼ íŠ¸ëžœìž­ì…˜ ë¡œê·¸ë²„í¼ì— ê¸°ë¡
+ *   + ë¡œê·¸ì˜ tailì„ ì„¤ì •í•œë‹¤.
+ *   + ë§ˆì§€ë§‰ìœ¼ë¡œ íŠ¸ëžœìž­ì…˜ ë¡œê·¸ ë²„í¼ì— ìž‘ì„±ëœ ë¡œê·¸ë¥¼ ëª¨ë‘
+ *     ë¡œê·¸íŒŒì¼ì— ê¸°ë¡í•œë‹¤.
  **********************************************************************/
 IDE_RC smrLogMgr::writeDiskNTALogRec( idvSQL          * aStatistics,
                                       void            * aTrans,
@@ -815,10 +815,10 @@ IDE_RC smrLogMgr::writeDiskNTALogRec( idvSQL          * aStatistics,
     smrLogHeadI::setTransID(&sNTALog.mHead, sTransID);
 
     /* ------------------------------------------------
-     * DML°ú °ü·Ã¾ø´Â ·Î±×ÀÌÁö¸¸, SMR_LOG_TYPE_NORMALÀ» ¼³Á¤ÇÒ °æ¿ì¿¡
-     * replacator°¡ ÆÇµ¶ÇÒ ¿ì·Á°¡ ÀÖ´Ù.
-     * °áÁ¤: (N->R??) ¾Æ´Ï¸é ·Î±× ÇÃ·¡±× Å¸ÀÔÀ» È®ÀåÇÏ´Â ¹æ¹ýÀ» °í·ÁÇØº¼
-     * ÇÊ¿ä°¡ ÀÖ´Ù.
+     * DMLê³¼ ê´€ë ¨ì—†ëŠ” ë¡œê·¸ì´ì§€ë§Œ, SMR_LOG_TYPE_NORMALì„ ì„¤ì •í•  ê²½ìš°ì—
+     * replacatorê°€ íŒë…í•  ìš°ë ¤ê°€ ìžˆë‹¤.
+     * ê²°ì •: (N->R??) ì•„ë‹ˆë©´ ë¡œê·¸ í”Œëž˜ê·¸ íƒ€ìž…ì„ í™•ìž¥í•˜ëŠ” ë°©ë²•ì„ ê³ ë ¤í•´ë³¼
+     * í•„ìš”ê°€ ìžˆë‹¤.
      * ----------------------------------------------*/
     smrLogHeadI::setFlag(&sNTALog.mHead, sLogTypeFlag);
 
@@ -838,7 +838,7 @@ IDE_RC smrLogMgr::writeDiskNTALogRec( idvSQL          * aStatistics,
     IDE_TEST( decideLogComp( aWriteOption, &sNTALog.mHead )
               != IDE_SUCCESS );
 
-    sNTALog.mOPType     = aOPType;  // ¿¬»ê Å¸ÀÔÀ» ¼³Á¤ÇÑ´Ù.
+    sNTALog.mOPType     = aOPType;  // ì—°ì‚° íƒ€ìž…ì„ ì„¤ì •í•œë‹¤.
     sNTALog.mSpaceID    = aSpaceID;
     sNTALog.mDataCount  = aDataCount;
 
@@ -883,8 +883,8 @@ IDE_RC smrLogMgr::writeDiskNTALogRec( idvSQL          * aStatistics,
 }
 
 /***********************************************************************
- * Description : Referenced NTA ·Î±×(SMR_DLT_REF_NTA)¸¦ ·Î±×¹öÆÛ¿¡
- * ±â·ÏÇÑ´Ù.
+ * Description : Referenced NTA ë¡œê·¸(SMR_DLT_REF_NTA)ë¥¼ ë¡œê·¸ë²„í¼ì—
+ * ê¸°ë¡í•œë‹¤.
  *
  **********************************************************************/
 IDE_RC smrLogMgr::writeDiskRefNTALogRec( idvSQL          * aStatistics,
@@ -929,10 +929,10 @@ IDE_RC smrLogMgr::writeDiskRefNTALogRec( idvSQL          * aStatistics,
     smrLogHeadI::setTransID(&sNTALog.mHead, sTransID);
 
     /* ------------------------------------------------
-     * DML°ú °ü·Ã¾ø´Â ·Î±×ÀÌÁö¸¸, SMR_LOG_TYPE_NORMALÀ» ¼³Á¤ÇÒ °æ¿ì¿¡
-     * replacator°¡ ÆÇµ¶ÇÒ ¿ì·Á°¡ ÀÖ´Ù.
-     * °áÁ¤: (N->R??) ¾Æ´Ï¸é ·Î±× ÇÃ·¡±× Å¸ÀÔÀ» È®ÀåÇÏ´Â ¹æ¹ýÀ» °í·ÁÇØº¼
-     * ÇÊ¿ä°¡ ÀÖ´Ù.
+     * DMLê³¼ ê´€ë ¨ì—†ëŠ” ë¡œê·¸ì´ì§€ë§Œ, SMR_LOG_TYPE_NORMALì„ ì„¤ì •í•  ê²½ìš°ì—
+     * replacatorê°€ íŒë…í•  ìš°ë ¤ê°€ ìžˆë‹¤.
+     * ê²°ì •: (N->R??) ì•„ë‹ˆë©´ ë¡œê·¸ í”Œëž˜ê·¸ íƒ€ìž…ì„ í™•ìž¥í•˜ëŠ” ë°©ë²•ì„ ê³ ë ¤í•´ë³¼
+     * í•„ìš”ê°€ ìžˆë‹¤.
      * ----------------------------------------------*/
     smrLogHeadI::setFlag(&sNTALog.mHead, sLogTypeFlag);
 
@@ -952,7 +952,7 @@ IDE_RC smrLogMgr::writeDiskRefNTALogRec( idvSQL          * aStatistics,
     IDE_TEST( decideLogComp( aWriteOption, &sNTALog.mHead )
               != IDE_SUCCESS );
 
-    sNTALog.mOPType      = aOPType;  // ¿¬»ê Å¸ÀÔÀ» ¼³Á¤ÇÑ´Ù.
+    sNTALog.mOPType      = aOPType;  // ì—°ì‚° íƒ€ìž…ì„ ì„¤ì •í•œë‹¤.
     sNTALog.mSpaceID     = aSpaceID;
     sNTALog.mRefOffset   = aRefOffset;
     sNTALog.mRedoLogSize = sLength;
@@ -992,7 +992,7 @@ IDE_RC smrLogMgr::writeDiskRefNTALogRec( idvSQL          * aStatistics,
 
 /*
   PRJ-1548 User Memory Tablespace
-  Å×ÀÌºí½ºÆäÀÌ½º UPDATE ¿¬»ê ´ëÇÑ CLR ·Î±×¸¦ ·Î±×¹öÆÛ¿¡ ±â·Ï
+  í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ UPDATE ì—°ì‚° ëŒ€í•œ CLR ë¡œê·¸ë¥¼ ë¡œê·¸ë²„í¼ì— ê¸°ë¡
 */
 IDE_RC smrLogMgr::writeCMPSLogRec4TBSUpt( idvSQL*        aStatistics,
                                           void*          aTrans,
@@ -1084,13 +1084,13 @@ IDE_RC smrLogMgr::writeCMPSLogRec4TBSUpt( idvSQL*        aStatistics,
 }
 
 /***********************************************************************
- * Description : disk CLR ·Î±×(SMR_DLT_COMPENSATION)¸¦ ·Î±×¹öÆÛ¿¡ ±â·ÏÇÑ´Ù.
- * 1. Æ®·£Àè¼Ç ·Î±× ¹öÆÛ ÃÊ±âÈ­
- * 2. ·Î±×ÀÇ header ¼³Á¤
- * 3. disk logsµéÀÇ ÃÑ ±æÀÌ¸¦ ±â·ÏÇÑ´Ù.
- * 4. ¼³Á¤µÈ ·Î±× header¸¦ Æ®·£Àè¼Ç ·Î±×¹öÆÛ¿¡ ±â·Ï
- * 5. mtx ·Î±×¹öÆÛ¿¡ ÀúÀåµÈ disk log µéÀ» ±â·ÏÇÑ´Ù.
- * 6. ·Î±×ÀÇ tailÀ» ¼³Á¤ÇÑ´Ù.
+ * Description : disk CLR ë¡œê·¸(SMR_DLT_COMPENSATION)ë¥¼ ë¡œê·¸ë²„í¼ì— ê¸°ë¡í•œë‹¤.
+ * 1. íŠ¸ëžœìž­ì…˜ ë¡œê·¸ ë²„í¼ ì´ˆê¸°í™”
+ * 2. ë¡œê·¸ì˜ header ì„¤ì •
+ * 3. disk logsë“¤ì˜ ì´ ê¸¸ì´ë¥¼ ê¸°ë¡í•œë‹¤.
+ * 4. ì„¤ì •ëœ ë¡œê·¸ headerë¥¼ íŠ¸ëžœìž­ì…˜ ë¡œê·¸ë²„í¼ì— ê¸°ë¡
+ * 5. mtx ë¡œê·¸ë²„í¼ì— ì €ìž¥ëœ disk log ë“¤ì„ ê¸°ë¡í•œë‹¤.
+ * 6. ë¡œê·¸ì˜ tailì„ ì„¤ì •í•œë‹¤.
  **********************************************************************/
 IDE_RC smrLogMgr::writeDiskCMPSLogRec( idvSQL          * aStatistics,
                                        void            * aTrans,
@@ -1131,10 +1131,10 @@ IDE_RC smrLogMgr::writeDiskCMPSLogRec( idvSQL          * aStatistics,
     smrLogHeadI::setTransID(&sCSLog.mHead, sTransID);
 
     /* ------------------------------------------------
-     * DML°ú °ü·Ã¾ø´Â ·Î±×ÀÌÁö¸¸, SMR_LOG_TYPE_NORMALÀ» ¼³Á¤ÇÒ °æ¿ì¿¡
-     * replacator°¡ ÆÇµ¶ÇÒ ¿ì·Á°¡ ÀÖ´Ù.
-     * °áÁ¤: (N->R??) ¾Æ´Ï¸é ·Î±× ÇÃ·¡±× Å¸ÀÔÀ» È®ÀåÇÏ´Â ¹æ¹ýÀ» °í·ÁÇØº¼
-     * ÇÊ¿ä°¡ ÀÖ´Ù.
+     * DMLê³¼ ê´€ë ¨ì—†ëŠ” ë¡œê·¸ì´ì§€ë§Œ, SMR_LOG_TYPE_NORMALì„ ì„¤ì •í•  ê²½ìš°ì—
+     * replacatorê°€ íŒë…í•  ìš°ë ¤ê°€ ìžˆë‹¤.
+     * ê²°ì •: (N->R??) ì•„ë‹ˆë©´ ë¡œê·¸ í”Œëž˜ê·¸ íƒ€ìž…ì„ í™•ìž¥í•˜ëŠ” ë°©ë²•ì„ ê³ ë ¤í•´ë³¼
+     * í•„ìš”ê°€ ìžˆë‹¤.
      * ----------------------------------------------*/
     smrLogHeadI::setFlag(&sCSLog.mHead, sLogTypeFlag);
 
@@ -1195,8 +1195,8 @@ IDE_RC smrLogMgr::writeDiskCMPSLogRec( idvSQL          * aStatistics,
 }
 
 /***********************************************************************
- * Description : tx¿Í °ü°è¾ø´Â disk ·Î±×¸¦ ·Î±ë
- * tx commit °úÁ¤¿¡¼­ ¹ß»ýÇÏ´Â commit SCN ·Î±ë½Ã È£ÃâµÊ.
+ * Description : txì™€ ê´€ê³„ì—†ëŠ” disk ë¡œê·¸ë¥¼ ë¡œê¹…
+ * tx commit ê³¼ì •ì—ì„œ ë°œìƒí•˜ëŠ” commit SCN ë¡œê¹…ì‹œ í˜¸ì¶œë¨.
  **********************************************************************/
 IDE_RC smrLogMgr::writeDiskDummyLogRec( idvSQL           * aStatistics,
                                         smuDynArrayBase  * aLogBuffer,
@@ -1244,15 +1244,15 @@ IDE_RC smrLogMgr::writeDiskDummyLogRec( idvSQL           * aStatistics,
               != IDE_SUCCESS );
 
     /* ------------------------------------------------
-     * !!] Æ®·£Àè¼ÇÀÌ ÇÒ´ç¹ÞÀº tssÀÇ RID¸¦ ¼³Á¤ÇÑ´Ù.
-     * Æ®·£Àè¼ÇÀÌ TSS¸¦ ÇÒ´ç¹ÞÁö ¾ÊÀº °æ¿ì´Â SD_NULL_SID°¡
-     * ¹ÝÈ¯µÈ´Ù.
+     * !!] íŠ¸ëžœìž­ì…˜ì´ í• ë‹¹ë°›ì€ tssì˜ RIDë¥¼ ì„¤ì •í•œë‹¤.
+     * íŠ¸ëžœìž­ì…˜ì´ TSSë¥¼ í• ë‹¹ë°›ì§€ ì•Šì€ ê²½ìš°ëŠ” SD_NULL_SIDê°€
+     * ë°˜í™˜ëœë‹¤.
      * ----------------------------------------------*/
     sDiskLog.mTableOID    = aTableOID;
     sDiskLog.mContType    = aContType;
     sDiskLog.mRedoType    = aRedoType;
 
-    /* 3. disk logsµéÀÇ ÃÑ ±æÀÌ¸¦ ±â·ÏÇÑ´Ù. */
+    /* 3. disk logsë“¤ì˜ ì´ ê¸¸ì´ë¥¼ ê¸°ë¡í•œë‹¤. */
     sDiskLog.mRedoLogSize = sLength;
 
     sWritePtr = (SChar*)sBuffer;
@@ -1287,8 +1287,8 @@ IDE_RC smrLogMgr::writeDiskDummyLogRec( idvSQL           * aStatistics,
 
 }
 /***********************************************************************
- * Description : tablespace BACKUP °úÁ¤Áß¿¡
- * tx·ÎºÎÅÍ flsuhµÇ´Â Page¿¡ ´ëÇÑ image ·Î±ë
+ * Description : tablespace BACKUP ê³¼ì •ì¤‘ì—
+ * txë¡œë¶€í„° flsuhë˜ëŠ” Pageì— ëŒ€í•œ image ë¡œê¹…
  **********************************************************************/
 IDE_RC smrLogMgr::writeDiskPILogRec( idvSQL*           aStatistics,
                                      UChar*            aBuffer,
@@ -1310,7 +1310,7 @@ IDE_RC smrLogMgr::writeDiskPILogRec( idvSQL*           aStatistics,
 }
 
 /***********************************************************************
- * Description : µð½ºÅ© °ø°£ ÇÒ´ç, ÇØÁ¦ ¹× º¯°æ¿¡ ´ëÇÑ ·Î±× Å¸ÀÔ
+ * Description : ë””ìŠ¤í¬ ê³µê°„ í• ë‹¹, í•´ì œ ë° ë³€ê²½ì— ëŒ€í•œ ë¡œê·¸ íƒ€ìž…
  **********************************************************************/
 IDE_RC smrLogMgr::writeTBSUptLogRec( idvSQL           * aStatistics,
                                      void             * aTrans,
@@ -1410,7 +1410,7 @@ IDE_RC smrLogMgr::writeTBSUptLogRec( idvSQL           * aStatistics,
 }
 
 /***********************************************************************
- * Description : MRDB NTA ·Î±×(SMR_LT_NTA)¸¦ ·Î±×¹öÆÛ¿¡ ±â·Ï
+ * Description : MRDB NTA ë¡œê·¸(SMR_LT_NTA)ë¥¼ ë¡œê·¸ë²„í¼ì— ê¸°ë¡
  **********************************************************************/
 IDE_RC smrLogMgr::writeNTALogRec(idvSQL   * aStatistics,
                                  void     * aTrans,
@@ -1460,7 +1460,7 @@ IDE_RC smrLogMgr::writeNTALogRec(idvSQL   * aStatistics,
 }
 
 /***********************************************************************
- * Description : savepoint ¼³Á¤ ·Î±×¸¦ ·Î±×¹öÆÛ¿¡ ±â·Ï
+ * Description : savepoint ì„¤ì • ë¡œê·¸ë¥¼ ë¡œê·¸ë²„í¼ì— ê¸°ë¡
  **********************************************************************/
 IDE_RC smrLogMgr::writeSetSvpLog(idvSQL*      aStatistics,
                                  void*        aTrans,
@@ -1534,7 +1534,7 @@ IDE_RC smrLogMgr::writeSetSvpLog(idvSQL*      aStatistics,
 }
 
 /***********************************************************************
- * Description : savepoint ÇØÁ¦ ·Î±×¸¦ ·Î±×¹öÆÛ¿¡ ±â·Ï
+ * Description : savepoint í•´ì œ ë¡œê·¸ë¥¼ ë¡œê·¸ë²„í¼ì— ê¸°ë¡
  **********************************************************************/
 IDE_RC smrLogMgr::writeAbortSvpLog( idvSQL*      aStatistics,
                                     void*        aTrans,
@@ -1609,7 +1609,7 @@ IDE_RC smrLogMgr::writeAbortSvpLog( idvSQL*      aStatistics,
 }
 
 /***********************************************************************
- * Description : CLR ·Î±×¸¦ ·Î±×¹öÆÛ¿¡ ±â·Ï
+ * Description : CLR ë¡œê·¸ë¥¼ ë¡œê·¸ë²„í¼ì— ê¸°ë¡
  **********************************************************************/
 IDE_RC smrLogMgr::writeCMPSLogRec( idvSQL*       aStatistics,
                                    void*         aTrans,
@@ -1660,20 +1660,20 @@ IDE_RC smrLogMgr::writeCMPSLogRec( idvSQL*       aStatistics,
         sCSLog.mData       = aUpdateLog->mData;
 
         // PRJ-1548 User Memory Tablespace
-        // Å×ÀÌºí½ºÆäÀÌ½º UPDATE ¿¬»ê¿¡ ´ëÇÑ CLRÀÌ ¾Æ´Ï¹Ç·Î ´ÙÀ½°ú °°ÀÌ
-        // ÃÊ±âÈ­ÇØÁØ´Ù.
+        // í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ UPDATE ì—°ì‚°ì— ëŒ€í•œ CLRì´ ì•„ë‹ˆë¯€ë¡œ ë‹¤ìŒê³¼ ê°™ì´
+        // ì´ˆê¸°í™”í•´ì¤€ë‹¤.
         sCSLog.mTBSUptType = SCT_UPDATE_MAXMAX_TYPE;
     }
     else
     {
-        // dummy CLRÀÇ °æ¿ì
+        // dummy CLRì˜ ê²½ìš°
 
         smrLogHeadI::setSize( &sCSLog.mHead,
                               SMR_LOGREC_SIZE(smrCMPSLog) +
                               ID_SIZEOF(smrLogTail) );
         // PRJ-1548 User Memory Tablespace
-        // Å×ÀÌºí½ºÆäÀÌ½º UPDATE ¿¬»ê¿¡ ´ëÇÑ CLRÀÌ ¾Æ´Ï¹Ç·Î ´ÙÀ½°ú °°ÀÌ
-        // ÃÊ±âÈ­ÇØÁØ´Ù.
+        // í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ UPDATE ì—°ì‚°ì— ëŒ€í•œ CLRì´ ì•„ë‹ˆë¯€ë¡œ ë‹¤ìŒê³¼ ê°™ì´
+        // ì´ˆê¸°í™”í•´ì¤€ë‹¤.
         sCSLog.mTBSUptType = SCT_UPDATE_MAXMAX_TYPE;
     }
 
@@ -1906,7 +1906,7 @@ IDE_RC smrLogMgr::writeLobCursorCloseLogRec( idvSQL*         aStatistics,
 }
 
 
-// TODO: aOldSize Á¦°ÅÇÏ±â
+// TODO: aOldSize ì œê±°í•˜ê¸°
 // PROJ-1362 LOB PREPARE4WRITE  LOG for replication.
 // smrLogHead| lob locator | mOp | offset(4) | old size(4) | newSize
 IDE_RC smrLogMgr::writeLobPrepare4WriteLogRec(idvSQL*          aStatistics,
@@ -2285,18 +2285,18 @@ IDE_RC smrLogMgr::writeLobTrimLogRec(idvSQL         * aStatistics,
 
 /***********************************************************************
  * PROJ-1665
- * Description : Direct-Path Insert°¡ ¼öÇàµÈ Page ÀüÃ¼¸¦ Logging
+ * Description : Direct-Path Insertê°€ ìˆ˜í–‰ëœ Page ì „ì²´ë¥¼ Logging
  * Implementation :
- *    Direct-Path Buffer Manager°¡ flush ÇÒ¶§,
- *    Page ÀüÃ¼¿¡ ´ëÇÏ¿© Log¸¦ ³²±æ¶§ »ç¿ë
+ *    Direct-Path Buffer Managerê°€ flush í• ë•Œ,
+ *    Page ì „ì²´ì— ëŒ€í•˜ì—¬ Logë¥¼ ë‚¨ê¸¸ë•Œ ì‚¬ìš©
  *
  *   +--------------------------------------------------+
- *   | smrDiskLog | sdrLogHdr | Page ³»¿ë | smrLogTail |
+ *   | smrDiskLog | sdrLogHdr | Page ë‚´ìš© | smrLogTail |
  *   +--------------------------------------------------+
  *
  *    - In
  *      aStatistics : statistics
- *      aTrans      : Page Log¸¦ ¾²·Á°í ÇÏ´Â transaction
+ *      aTrans      : Page Logë¥¼ ì“°ë ¤ê³  í•˜ëŠ” transaction
  *      aBuffer     : buffer
  *      aPageGRID   : Page GRID
  *      aLSN        : LSN
@@ -2318,7 +2318,7 @@ IDE_RC smrLogMgr::writeDPathPageLogRec( idvSQL * aStatistics,
 
 /***********************************************************************
  * PROJ-1867
- * Page Img Log¸¦ ±â·ÏÇÑ´Ù.
+ * Page Img Logë¥¼ ê¸°ë¡í•œë‹¤.
  **********************************************************************/
 IDE_RC smrLogMgr::writePageImgLogRec( idvSQL     * aStatistics,
                                       UChar      * aBuffer,
@@ -2331,7 +2331,7 @@ IDE_RC smrLogMgr::writePageImgLogRec( idvSQL     * aStatistics,
     IDE_DASSERT( aBuffer != NULL );
 
     //------------------------
-    // smrDiskLog ¼³Á¤
+    // smrDiskLog ì„¤ì •
     //------------------------
 
     idlOS::memset( &sPILog, 0x00, SMR_LOGREC_SIZE(smrDiskPILog) );
@@ -2348,13 +2348,13 @@ IDE_RC smrLogMgr::writePageImgLogRec( idvSQL     * aStatistics,
                                    SMI_STATEMENT_DEPTH_NULL );
 
     sPILog.mTableOID    = SM_NULL_OID;     // not use
-    sPILog.mContType    = SMR_CT_END;      // ´ÜÀÏ ·Î±×ÀÓ
+    sPILog.mContType    = SMR_CT_END;      // ë‹¨ì¼ ë¡œê·¸ìž„
     sPILog.mRedoLogSize = ID_SIZEOF(sdrLogHdr) + SD_PAGE_SIZE;
-    sPILog.mRefOffset   = 0;               // replication °ü·Ã
-    sPILog.mRedoType    = SMR_RT_DISKONLY; // runtime memory¿¡ ´ëÇÏ¿© ÇÔ²² Àç¼öÇà ¿©ºÎ
+    sPILog.mRefOffset   = 0;               // replication ê´€ë ¨
+    sPILog.mRedoType    = SMR_RT_DISKONLY; // runtime memoryì— ëŒ€í•˜ì—¬ í•¨ê»˜ ìž¬ìˆ˜í–‰ ì—¬ë¶€
 
     //------------------------
-    // sdrLogHdr ¼³Á¤
+    // sdrLogHdr ì„¤ì •
     //------------------------
     sPILog.mDiskLogHdr.mGRID   = aPageGRID;
     sPILog.mDiskLogHdr.mLength = SD_PAGE_SIZE;
@@ -2393,7 +2393,7 @@ IDE_RC smrLogMgr::writePageImgLogRec( idvSQL     * aStatistics,
 
 /***********************************************************************
  * PROJ-1864
- * Page Consistent Log¸¦ ±â·ÏÇÑ´Ù.
+ * Page Consistent Logë¥¼ ê¸°ë¡í•œë‹¤.
  **********************************************************************/
 IDE_RC smrLogMgr::writePageConsistentLogRec( idvSQL     * aStatistics,
                                              scSpaceID    aSpaceID,
@@ -2406,7 +2406,7 @@ IDE_RC smrLogMgr::writePageConsistentLogRec( idvSQL     * aStatistics,
     SC_MAKE_GRID( sPageGRID, aSpaceID, aPageID, 0 ) ;
 
     //------------------------
-    // smrDiskLog ¼³Á¤
+    // smrDiskLog ì„¤ì •
     //------------------------
 
     idlOS::memset( &sPCLog, 0x00, SMR_LOGREC_SIZE(smrPageCinsistentLog) );
@@ -2423,12 +2423,12 @@ IDE_RC smrLogMgr::writePageConsistentLogRec( idvSQL     * aStatistics,
                                    SMI_STATEMENT_DEPTH_NULL );
 
     sPCLog.mTableOID    = SM_NULL_OID;     // not use
-    sPCLog.mContType    = SMR_CT_END;      // ´ÜÀÏ ·Î±×ÀÓ
+    sPCLog.mContType    = SMR_CT_END;      // ë‹¨ì¼ ë¡œê·¸ìž„
     sPCLog.mRedoLogSize = ID_SIZEOF(sdrLogHdr) + ID_SIZEOF(aIsPageConsistent);
-    sPCLog.mRefOffset   = 0;               // replication °ü·Ã
-    sPCLog.mRedoType    = SMR_RT_DISKONLY; // runtime memory¿¡ ´ëÇÏ¿© ÇÔ²² Àç¼öÇà ¿©ºÎ
+    sPCLog.mRefOffset   = 0;               // replication ê´€ë ¨
+    sPCLog.mRedoType    = SMR_RT_DISKONLY; // runtime memoryì— ëŒ€í•˜ì—¬ í•¨ê»˜ ìž¬ìˆ˜í–‰ ì—¬ë¶€
     //------------------------
-    // sdrLogHdr ¼³Á¤
+    // sdrLogHdr ì„¤ì •
     //------------------------
     sPCLog.mDiskLogHdr.mGRID   = sPageGRID;
     sPCLog.mDiskLogHdr.mLength = ID_SIZEOF(aIsPageConsistent);
@@ -2464,7 +2464,7 @@ IDE_RC smrLogMgr::writePageConsistentLogRec( idvSQL     * aStatistics,
 }
 
 /***********************************************************************
- * Description : SMR_OP_NULL Å¸ÀÔÀÇ NTA ·Î±× ±â·Ï
+ * Description : SMR_OP_NULL íƒ€ìž…ì˜ NTA ë¡œê·¸ ê¸°ë¡
  **********************************************************************/
 IDE_RC smrLogMgr::writeNullNTALogRec( idvSQL* aStatistics,
                                       void  * aTrans,
@@ -2480,7 +2480,7 @@ IDE_RC smrLogMgr::writeNullNTALogRec( idvSQL* aStatistics,
 }
 
 /***********************************************************************
- * Description : SMR_OP_SMM_PERS_LIST_ALLOC Å¸ÀÔÀÇ NTA ·Î±× ±â·Ï
+ * Description : SMR_OP_SMM_PERS_LIST_ALLOC íƒ€ìž…ì˜ NTA ë¡œê·¸ ê¸°ë¡
  **********************************************************************/
 IDE_RC smrLogMgr::writeAllocPersListNTALogRec( idvSQL*    aStatistics,
                                                void     * aTrans,
@@ -2517,10 +2517,10 @@ IDE_RC smrLogMgr::writeCreateTbsNTALogRec( idvSQL*    aStatistics,
 }
 
 
-/* Disk·Î±×ÀÇ Log ¾ÐÃà ¿©ºÎ¸¦ °áÁ¤ÇÑ´Ù
+/* Diskë¡œê·¸ì˜ Log ì••ì¶• ì—¬ë¶€ë¥¼ ê²°ì •í•œë‹¤
 
-   [IN] aDiskLogWriteOption - ·Î±×ÀÇ ¾ÐÃà ¿©ºÎ°¡ µé¾îÀÖ´Â Optionº¯¼ö
-   [IN] aLogHead - ·Î±×¾ÐÃà ¿©ºÎ°¡ ¼³Á¤µÉ LogÀÇ Head
+   [IN] aDiskLogWriteOption - ë¡œê·¸ì˜ ì••ì¶• ì—¬ë¶€ê°€ ë“¤ì–´ìžˆëŠ” Optionë³€ìˆ˜
+   [IN] aLogHead - ë¡œê·¸ì••ì¶• ì—¬ë¶€ê°€ ì„¤ì •ë  Logì˜ Head
  */
 IDE_RC smrLogMgr::decideLogComp( UInt         aDiskLogWriteOption,
                                  smrLogHead * aLogHead )
@@ -2530,12 +2530,12 @@ IDE_RC smrLogMgr::decideLogComp( UInt         aDiskLogWriteOption,
     if ( ( aDiskLogWriteOption & SMR_DISK_LOG_WRITE_OP_COMPRESS_MASK )
          == SMR_DISK_LOG_WRITE_OP_COMPRESS_TRUE )
     {
-        // Log Head¿¡ ¾Æ¹«·± ÇÃ·¡±×µµ ¼³Á¤ÇÏÁö ¾ÊÀ¸¸é
-        // ±âº»ÀûÀ¸·Î ·Î±×¸¦ ¾ÐÃàÇÑ´Ù.
+        // Log Headì— ì•„ë¬´ëŸ° í”Œëž˜ê·¸ë„ ì„¤ì •í•˜ì§€ ì•Šìœ¼ë©´
+        // ê¸°ë³¸ì ìœ¼ë¡œ ë¡œê·¸ë¥¼ ì••ì¶•í•œë‹¤.
     }
     else
     {
-        // ·Î±×¸¦ ¾ÐÃàÇÏÁö ¾Êµµ·Ï Log Head¿¡ Flag¸¦ ¼³Á¤ÇÑ´Ù.
+        // ë¡œê·¸ë¥¼ ì••ì¶•í•˜ì§€ ì•Šë„ë¡ Log Headì— Flagë¥¼ ì„¤ì •í•œë‹¤.
         sFlag = smrLogHeadI::getFlag( aLogHead );
         smrLogHeadI::setFlag( aLogHead, sFlag|SMR_LOG_FORBID_COMPRESS_OK );
     }
@@ -2544,12 +2544,12 @@ IDE_RC smrLogMgr::decideLogComp( UInt         aDiskLogWriteOption,
 
 }
 
-/* PROJ-1723 [MDW/INTEGRATOR] Altibase Plugin °³¹ß
+/* PROJ-1723 [MDW/INTEGRATOR] Altibase Plugin ê°œë°œ
 
-   Table/Index/SequenceÀÇ
-   Create/Alter/Drop DDL¿¡ ´ëÇØ Query StringÀ» ·Î±ëÇÑ´Ù.
+   Table/Index/Sequenceì˜
+   Create/Alter/Drop DDLì— ëŒ€í•´ Query Stringì„ ë¡œê¹…í•œë‹¤.
 
-   ·Î±ë³»¿ë ================================================
+   ë¡œê¹…ë‚´ìš© ================================================
    4/8 byte - smOID
    4 byte - UserName Length
    n byte - UserName
@@ -2610,29 +2610,29 @@ IDE_RC smrLogMgr::writeDDLStmtTextLog( idvSQL         * aStatistics,
                                        SMI_STATEMENT_DEPTH_NULL );
     }
 
-    // Log Head ±â·Ï
+    // Log Head ê¸°ë¡
     IDE_TEST( ((smxTrans*)aTrans)->writeLogToBuffer( &sLogHead,
                                                      ID_SIZEOF(sLogHead) )
               != IDE_SUCCESS );
 
-    // Log Body ±â·Ï : DDLStmtMeta
+    // Log Body ê¸°ë¡ : DDLStmtMeta
     IDE_TEST( ((smxTrans*)aTrans)->writeLogToBuffer( aDDLStmtMeta,
                                                      ID_SIZEOF(smrDDLStmtMeta) )
               != IDE_SUCCESS );
 
-    // Log Body ±â·Ï : 4 byte - Statement Text Length
+    // Log Body ê¸°ë¡ : 4 byte - Statement Text Length
     IDE_TEST( ((smxTrans*)aTrans)->writeLogToBuffer( &aStmtTextLen,
                                                      ID_SIZEOF(aStmtTextLen) )
               != IDE_SUCCESS );
 
-    // Log Body ±â·Ï : aStmtTextLen bytes - Statement Text
+    // Log Body ê¸°ë¡ : aStmtTextLen bytes - Statement Text
     IDE_TEST( ((smxTrans*)aTrans)->writeLogToBuffer( aStmtText,
                                                      aStmtTextLen )
               != IDE_SUCCESS );
     IDE_TEST( ((smxTrans*)aTrans)->writeLogToBuffer("", 1)
               != IDE_SUCCESS );
 
-    // Log Tail ±â·Ï
+    // Log Tail ê¸°ë¡
     IDE_TEST( ((smxTrans*)aTrans)->writeLogToBuffer( &sLogType,
                                                      ID_SIZEOF(smrLogType) )
               != IDE_SUCCESS );
@@ -2654,17 +2654,17 @@ IDE_RC smrLogMgr::writeDDLStmtTextLog( idvSQL         * aStatistics,
 }
 
 /***********************************************************************
- * Description : ·Î±× Header(smrLogHead)ÀÇ previous undo LSNÀ» ¼³Á¤
+ * Description : ë¡œê·¸ Header(smrLogHead)ì˜ previous undo LSNì„ ì„¤ì •
  *
- * ·Î±×ÀÇ header¸¦ previous undo LSNÀ» ¼³Á¤ÇÏ°í, ·Î±×ÀÇ body
- * »çÀÌÁî¸¦ ¹ÝÈ¯ÇÑ´Ù.
+ * ë¡œê·¸ì˜ headerë¥¼ previous undo LSNì„ ì„¤ì •í•˜ê³ , ë¡œê·¸ì˜ body
+ * ì‚¬ì´ì¦ˆë¥¼ ë°˜í™˜í•œë‹¤.
  *
  * + 2nd. code design
- *   - ÁÖ¾îÁø aPPrvLSNÀÌ NULL¾Æ´Ï¸é, ·Î±× headerÀÇ prvUndoLSNÀ» ÁÖ¾îÁø
- *     aPPrvLSNÀ¸·Î ¼³Á¤ÇÑ´Ù.
- *   - ¸¸¾à NULL ÀÌ¸é, Æ®·£Àè¼ÇÀÌ ¸¶Áö¸· ·Î±ëÇÑ LSNÀ» ¾ò¾î ·Î±× headerÀÇ
- *     prvUndoLSNÀ» ¼³Á¤ÇÏ¸ç, Æ®·£Àè¼ÇÀÌ ¾ø´Â °æ¿ì¿¡´Â ID_UINT_MAX·Î
- *     ¼³Á¤ÇÑ´Ù.
+ *   - ì£¼ì–´ì§„ aPPrvLSNì´ NULLì•„ë‹ˆë©´, ë¡œê·¸ headerì˜ prvUndoLSNì„ ì£¼ì–´ì§„
+ *     aPPrvLSNìœ¼ë¡œ ì„¤ì •í•œë‹¤.
+ *   - ë§Œì•½ NULL ì´ë©´, íŠ¸ëžœìž­ì…˜ì´ ë§ˆì§€ë§‰ ë¡œê¹…í•œ LSNì„ ì–»ì–´ ë¡œê·¸ headerì˜
+ *     prvUndoLSNì„ ì„¤ì •í•˜ë©°, íŠ¸ëžœìž­ì…˜ì´ ì—†ëŠ” ê²½ìš°ì—ëŠ” ID_UINT_MAXë¡œ
+ *     ì„¤ì •í•œë‹¤.
  **********************************************************************/
 void smrLogMgr::setLogHdrPrevLSN( void       * aTrans,
                                   smrLogHead * aLogHead,
@@ -2676,19 +2676,19 @@ void smrLogMgr::setLogHdrPrevLSN( void       * aTrans,
 
     if ( aTrans != NULL )
     {
-        // ÀÌÀü¿¡ ·Î±ëµÈ ÀûÀÌ ÇÑ¹øµµ ¾ø°í,
+        // ì´ì „ì— ë¡œê¹…ëœ ì ì´ í•œë²ˆë„ ì—†ê³ ,
         if ( smLayerCallback::getIsFirstLog( aTrans ) == ID_TRUE )
         {
-            // Transaction ID°¡ ºÎ¿©µÇ¾î ÀÖ´Ù¸é
+            // Transaction IDê°€ ë¶€ì—¬ë˜ì–´ ìžˆë‹¤ë©´
             if ( smLayerCallback::getTransID( aTrans ) != SM_NULL_TID )
             {
-                // ·Î±× Çì´õ¿¡ BEGIN ÇÃ·¡±×¸¦ ´Þ¾ÆÁØ´Ù.
+                // ë¡œê·¸ í—¤ë”ì— BEGIN í”Œëž˜ê·¸ë¥¼ ë‹¬ì•„ì¤€ë‹¤.
                 smrLogHeadI::setFlag(aLogHead,
                                      smrLogHeadI::getFlag(aLogHead) | SMR_LOG_BEGINTRANS_OK);
 
                 // BUG-15109
-                // normal tx beginµÈ ÈÄ Ã¹¹øÂ° logÀÎ °æ¿ì
-                // ¹«Á¶°Ç replication flag¸¦ 0À¸·Î ¼¼ÆÃÇÑ´Ù.
+                // normal tx beginëœ í›„ ì²«ë²ˆì§¸ logì¸ ê²½ìš°
+                // ë¬´ì¡°ê±´ replication flagë¥¼ 0ìœ¼ë¡œ ì„¸íŒ…í•œë‹¤.
                 //PROJ-1608 Recovery From Replication
                 sLogTypeFlag = smLayerCallback::getLogTypeFlagOfTrans(aTrans);
                 if ( (sLogTypeFlag == SMR_LOG_TYPE_NORMAL) ||
@@ -2705,22 +2705,22 @@ void smrLogMgr::setLogHdrPrevLSN( void       * aTrans,
     }
 
     /* ------------------------------------------------
-     * 1. prev LSN ¼³Á¤
+     * 1. prev LSN ì„¤ì •
      * ----------------------------------------------*/
     if ( aPPrvLSN != NULL )
     {
         /* ------------------------------------------------
-         *  prev LSNÀ» Á÷Á¢ ÁöÁ¤ÇÏ±â À§ÇØ ÀÎÀÚ·Î ¹Þ´Â °æ¿ì´Â
-         *  NTA ·Î±×ÀÇ preUndoLSNÀ» ¼³Á¤ÇÏ±â À§ÇØ¼­ÀÌ´Ù.
+         *  prev LSNì„ ì§ì ‘ ì§€ì •í•˜ê¸° ìœ„í•´ ì¸ìžë¡œ ë°›ëŠ” ê²½ìš°ëŠ”
+         *  NTA ë¡œê·¸ì˜ preUndoLSNì„ ì„¤ì •í•˜ê¸° ìœ„í•´ì„œì´ë‹¤.
          * ----------------------------------------------*/
         smrLogHeadI::setPrevLSN( aLogHead, *aPPrvLSN );
     }
     else
     {
         /* ------------------------------------------------
-         * ÀÏ¹ÝÀûÀ¸·Î preUndoLSNÀº ÇØ´ç Æ®·£Àè¼ÇÀÌ ¸¶Áö¸·À¸·Î
-         * ÀÛ¼ºÇß´ø ·Î±×ÀÇ LSNÀ» ¾ò¾î¼­ ¼³Á¤ÇÑ´Ù.
-         * ÇÏÁö¸¸, Æ®·£Àè¼ÇÀÌ ¾Æ´Ñ°æ¿ì´Â ID_UINT_MAX·Î ¼³Á¤ÇÑ´Ù.
+         * ì¼ë°˜ì ìœ¼ë¡œ preUndoLSNì€ í•´ë‹¹ íŠ¸ëžœìž­ì…˜ì´ ë§ˆì§€ë§‰ìœ¼ë¡œ
+         * ìž‘ì„±í–ˆë˜ ë¡œê·¸ì˜ LSNì„ ì–»ì–´ì„œ ì„¤ì •í•œë‹¤.
+         * í•˜ì§€ë§Œ, íŠ¸ëžœìž­ì…˜ì´ ì•„ë‹Œê²½ìš°ëŠ” ID_UINT_MAXë¡œ ì„¤ì •í•œë‹¤.
          * ----------------------------------------------*/
         if ( aTrans != NULL )
         {
@@ -2738,12 +2738,12 @@ void smrLogMgr::setLogHdrPrevLSN( void       * aTrans,
     return;
 }
 
-/* SMR_LT_FILE_BEGIN ·Î±× ±â·Ï
+/* SMR_LT_FILE_BEGIN ë¡œê·¸ ê¸°ë¡
  *
- * ÀÌ ÇÔ¼ö´Â ´ÙÀ½°ú °°Àº °æ·Î·Î È£ÃâµÇ¸ç, µÎ°¡Áö ¸ðµÎ lock() È£ÃâÈÄ µé¾î¿Â´Ù.
+ * ì´ í•¨ìˆ˜ëŠ” ë‹¤ìŒê³¼ ê°™ì€ ê²½ë¡œë¡œ í˜¸ì¶œë˜ë©°, ë‘ê°€ì§€ ëª¨ë‘ lock() í˜¸ì¶œí›„ ë“¤ì–´ì˜¨ë‹¤.
  *
- * 1. writeLog ¿¡¼­ lock() Àâ°í -> reserveLogSpace -> writeFileBeginLog
- * 2. switchLogFileByForce ¿¡¼­ lock() Àâ°í  -> writeFileBeginLog */
+ * 1. writeLog ì—ì„œ lock() ìž¡ê³  -> reserveLogSpace -> writeFileBeginLog
+ * 2. switchLogFileByForce ì—ì„œ lock() ìž¡ê³   -> writeFileBeginLog */
 void smrLogMgr::writeFileBeginLog()
 {
     smLSN       sLSN;
@@ -2753,9 +2753,9 @@ void smrLogMgr::writeFileBeginLog()
     mFileBeginLog.mFileNo = mCurLogFile->mFileNo ;
 
     IDE_DASSERT( mLstLSN.mLSN.mOffset == 0 );
-    // ³ªÁß¿¡ ·Î±×¸¦ ÀÐÀ»¶§ LogÀÇ Validity check¸¦ À§ÇØ
-    // ·Î±×°¡ ±â·ÏµÇ´Â ÆÄÀÏ¹øÈ£¿Í ·Î±×·¹ÄÚµåÀÇ ÆÄÀÏ³» OffsetÀ» ÀÌ¿ëÇÏ¿©
-    // Magic Number¸¦ »ý¼ºÇØµÐ´Ù.
+    // ë‚˜ì¤‘ì— ë¡œê·¸ë¥¼ ì½ì„ë•Œ Logì˜ Validity checkë¥¼ ìœ„í•´
+    // ë¡œê·¸ê°€ ê¸°ë¡ë˜ëŠ” íŒŒì¼ë²ˆí˜¸ì™€ ë¡œê·¸ë ˆì½”ë“œì˜ íŒŒì¼ë‚´ Offsetì„ ì´ìš©í•˜ì—¬
+    // Magic Numberë¥¼ ìƒì„±í•´ë‘”ë‹¤.
     smrLogHeadI::setMagic(&mFileBeginLog.mHead,
                           smrLogFile::makeMagicNumber(mLstLSN.mLSN.mFileNo,
                                                       mLstLSN.mLSN.mOffset));
@@ -2766,54 +2766,54 @@ void smrLogMgr::writeFileBeginLog()
     
     smrLogHeadI::setLSN( &mFileBeginLog.mHead, sLSN );
 
-    // File Begin Log´Â Ç×»ó ·Î±×ÆÄÀÏÀÇ ¸Ç Ã³À½¿¡ ±â·ÏµÈ´Ù.
+    // File Begin LogëŠ” í•­ìƒ ë¡œê·¸íŒŒì¼ì˜ ë§¨ ì²˜ìŒì— ê¸°ë¡ëœë‹¤.
     IDE_ASSERT( mCurLogFile->mOffset == 0 );
 
-    // File Begin Log´Â ¾ÐÃàÇÏÁö ¾Ê°í ¹Ù·Î ±â·ÏÇÑ´Ù.
-    // ÀÌÀ¯ :
-    //     FileÀÇ Ã¹¹øÂ° LogÀÇ LSNÀ» ÀÐ´Â ÀÛ¾÷À»
-    //     ºü¸£°Ô ¼öÇàÇÏ±â À§ÇÔ
+    // File Begin LogëŠ” ì••ì¶•í•˜ì§€ ì•Šê³  ë°”ë¡œ ê¸°ë¡í•œë‹¤.
+    // ì´ìœ  :
+    //     Fileì˜ ì²«ë²ˆì§¸ Logì˜ LSNì„ ì½ëŠ” ìž‘ì—…ì„
+    //     ë¹ ë¥´ê²Œ ìˆ˜í–‰í•˜ê¸° ìœ„í•¨
     mCurLogFile->append( (SChar *)&mFileBeginLog,
                          smrLogHeadI::getSize(&mFileBeginLog.mHead) );
 
-    // ÇöÀç ¾î´À LSN±îÁö ·Î±×¸¦ ±â·ÏÇß´ÂÁö¸¦ SettingÇÑ´Ù.
+    // í˜„ìž¬ ì–´ëŠ LSNê¹Œì§€ ë¡œê·¸ë¥¼ ê¸°ë¡í–ˆëŠ”ì§€ë¥¼ Settingí•œë‹¤.
     setLstWriteLSN( sLSN );
 
-    // ÇöÀç ¾î´À LSN±îÁö ·Î±×¸¦ ±â·ÏÇß´ÂÁö¸¦ SettingÇÑ´Ù.
+    // í˜„ìž¬ ì–´ëŠ LSNê¹Œì§€ ë¡œê·¸ë¥¼ ê¸°ë¡í–ˆëŠ”ì§€ë¥¼ Settingí•œë‹¤.
     setLstLSN( mCurLogFile->mFileNo,
                mCurLogFile->mOffset );
 }
 
-/* SMR_LT_FILE_END ·Î±× ±â·Ï
+/* SMR_LT_FILE_END ë¡œê·¸ ê¸°ë¡
  *
- * ÀÌ ÇÔ¼ö´Â ´ÙÀ½°ú °°Àº °æ·Î·Î È£ÃâµÇ¸ç, µÎ°¡Áö ¸ðµÎ lock() È£ÃâÈÄ µé¾î¿Â´Ù.
+ * ì´ í•¨ìˆ˜ëŠ” ë‹¤ìŒê³¼ ê°™ì€ ê²½ë¡œë¡œ í˜¸ì¶œë˜ë©°, ë‘ê°€ì§€ ëª¨ë‘ lock() í˜¸ì¶œí›„ ë“¤ì–´ì˜¨ë‹¤.
  *
- * 1. writeLog ¿¡¼­ lock() Àâ°í -> reserveLogSpace -> writeFileEndLog
- * 2. switchLogFileByForce ¿¡¼­ lock() Àâ°í  -> writeFileEndLog */
+ * 1. writeLog ì—ì„œ lock() ìž¡ê³  -> reserveLogSpace -> writeFileEndLog
+ * 2. switchLogFileByForce ì—ì„œ lock() ìž¡ê³   -> writeFileEndLog */
 void smrLogMgr::writeFileEndLog()
 {
     smLSN       sLSN;
 
-    // ³ªÁß¿¡ ·Î±×¸¦ ÀÐÀ»¶§ LogÀÇ Validity check¸¦ À§ÇØ
-    // ·Î±×°¡ ±â·ÏµÇ´Â ÆÄÀÏ¹øÈ£¿Í ·Î±×·¹ÄÚµåÀÇ ÆÄÀÏ³» OffsetÀ» ÀÌ¿ëÇÏ¿©
-    // Magic Number¸¦ »ý¼ºÇØµÐ´Ù.
+    // ë‚˜ì¤‘ì— ë¡œê·¸ë¥¼ ì½ì„ë•Œ Logì˜ Validity checkë¥¼ ìœ„í•´
+    // ë¡œê·¸ê°€ ê¸°ë¡ë˜ëŠ” íŒŒì¼ë²ˆí˜¸ì™€ ë¡œê·¸ë ˆì½”ë“œì˜ íŒŒì¼ë‚´ Offsetì„ ì´ìš©í•˜ì—¬
+    // Magic Numberë¥¼ ìƒì„±í•´ë‘”ë‹¤.
     smrLogHeadI::setMagic (&mFileEndLog.mHead,
                            smrLogFile::makeMagicNumber( mLstLSN.mLSN.mFileNo,
                                                         mLstLSN.mLSN.mOffset ) );
 
-    // ÇöÀç ·Î±×°¡ ±â·ÏµÉ LSN
+    // í˜„ìž¬ ë¡œê·¸ê°€ ê¸°ë¡ë  LSN
     SM_SET_LSN( sLSN,
                 mLstLSN.mLSN.mFileNo,
                 mLstLSN.mLSN.mOffset );
 
     smrLogHeadI::setLSN( &mFileEndLog.mHead, sLSN );
 
-    // ·Î±×ÆÄÀÏÀÇ FILE END LOG´Â ¾ÐÃàÇÏÁö ¾ÊÀºÃ¤·Î ±â·ÏÇÑ´Ù.
-    // ÀÌÀ¯ : ·Î±×ÆÄÀÏÀÇ Offset¹üÀ§ Ã¼Å©¸¦ ½±°Ô ÇÒ ¼ö ÀÖµµ·Ï ÇÏ±â À§ÇÔ
+    // ë¡œê·¸íŒŒì¼ì˜ FILE END LOGëŠ” ì••ì¶•í•˜ì§€ ì•Šì€ì±„ë¡œ ê¸°ë¡í•œë‹¤.
+    // ì´ìœ  : ë¡œê·¸íŒŒì¼ì˜ Offsetë²”ìœ„ ì²´í¬ë¥¼ ì‰½ê²Œ í•  ìˆ˜ ìžˆë„ë¡ í•˜ê¸° ìœ„í•¨
     mCurLogFile->append( (SChar *)&mFileEndLog,
                          smrLogHeadI::getSize(&mFileEndLog.mHead) );
 
-    // ÇöÀç ¾î´À LSN±îÁö ·Î±×¸¦ ±â·ÏÇß´ÂÁö¸¦ SettingÇÑ´Ù.
+    // í˜„ìž¬ ì–´ëŠ LSNê¹Œì§€ ë¡œê·¸ë¥¼ ê¸°ë¡í–ˆëŠ”ì§€ë¥¼ Settingí•œë‹¤.
     setLstWriteLSN( sLSN );
 
     /* BUG-35392 */
@@ -2821,11 +2821,11 @@ void smrLogMgr::writeFileEndLog()
     {
         /* BUG-32137     [sm-disk-recovery] The setDirty operation in DRDB causes
          * contention of LOG_ALLOCATION_MUTEX.
-         * writeEndFileLog¿¡¼­´Â setLsnLSNÀ» ÇÏÁö ¾Ê´Â´Ù.
-         * FileEndLog Âï°í switchLogFile ¼öÇàÇÑ ÈÄ¿¡ setLstLSNÇØ¾ß ¿Ã¹Ù¸¥ LSNÀÌ
-         * ¼³Á¤µÈ´Ù. */
+         * writeEndFileLogì—ì„œëŠ” setLsnLSNì„ í•˜ì§€ ì•ŠëŠ”ë‹¤.
+         * FileEndLog ì°ê³  switchLogFile ìˆ˜í–‰í•œ í›„ì— setLstLSNí•´ì•¼ ì˜¬ë°”ë¥¸ LSNì´
+         * ì„¤ì •ëœë‹¤. */
 
-        // ¾ÐÃàÇÏÁö ¾ÊÀº ¿øº»·Î±×¸¦ Replication Log Buffer·Î º¹»ç
+        // ì••ì¶•í•˜ì§€ ì•Šì€ ì›ë³¸ë¡œê·¸ë¥¼ Replication Log Bufferë¡œ ë³µì‚¬
         copyLogToReplBuffer( NULL,
                              (SChar *)&mFileEndLog,
                              smrLogHeadI::getSize(&mFileEndLog.mHead),
@@ -2838,20 +2838,20 @@ void smrLogMgr::writeFileEndLog()
 }
 
 /***********************************************************************
- * Description : ·Î±×¸¦ ±â·ÏÇÒ °ø°£ È®º¸
+ * Description : ë¡œê·¸ë¥¼ ê¸°ë¡í•  ê³µê°„ í™•ë³´
  *
- * ·Î±×¸¦ ±â·ÏÇÒ °ø°£À» ÇöÀç ·Î±×ÆÄÀÏÀ» °Ë»çÇÏ¿©  ¾øÀ» °æ¿ì ·Î±×ÆÄÀÏÀ»
- * switchÇÑ´Ù. ÀÌ ¶§, mLstLSNÀ» »õ·Î¿î ·Î±×ÆÄÀÏÀÇ LSNÀ¸·Î Àç¼³Á¤ÇÑ´Ù.
- * ¶ÇÇÑ, switch È½¼ö°¡ checkpoint interval¿¡ ¸¸Á·ÇÏ¸é, checkpoint¸¦
- * ¼öÇàÇÑ´Ù.
- * !!) ·Î±× °ü¸®ÀÚÀÇ mutex¸¦ È¹µæÇÑ ÀÌÈÄ¿¡ È£ÃâµÇ¾î¾ß ÇÑ´Ù.
+ * ë¡œê·¸ë¥¼ ê¸°ë¡í•  ê³µê°„ì„ í˜„ìž¬ ë¡œê·¸íŒŒì¼ì„ ê²€ì‚¬í•˜ì—¬  ì—†ì„ ê²½ìš° ë¡œê·¸íŒŒì¼ì„
+ * switchí•œë‹¤. ì´ ë•Œ, mLstLSNì„ ìƒˆë¡œìš´ ë¡œê·¸íŒŒì¼ì˜ LSNìœ¼ë¡œ ìž¬ì„¤ì •í•œë‹¤.
+ * ë˜í•œ, switch íšŸìˆ˜ê°€ checkpoint intervalì— ë§Œì¡±í•˜ë©´, checkpointë¥¼
+ * ìˆ˜í–‰í•œë‹¤.
+ * !!) ë¡œê·¸ ê´€ë¦¬ìžì˜ mutexë¥¼ íšë“í•œ ì´í›„ì— í˜¸ì¶œë˜ì–´ì•¼ í•œë‹¤.
  *
  * + 2nd. code design
- *   - ·Î±×ÆÄÀÏÀÇ free °ø°£ÀÌ ÃæºÐÇÏÁö ¾Ê´Ù¸é ·Î±×ÆÄÀÏÀ» switch½ÃÅ²´Ù.
+ *   - ë¡œê·¸íŒŒì¼ì˜ free ê³µê°„ì´ ì¶©ë¶„í•˜ì§€ ì•Šë‹¤ë©´ ë¡œê·¸íŒŒì¼ì„ switchì‹œí‚¨ë‹¤.
  *
- * aLogSize           - [IN]  »õ·Î ±â·ÏÇÏ·Á´Â ·Î±× ·¹ÄÚµåÀÇ Å©±â
- * aIsLogFileSwitched - [OUT] aLogSize¸¸Å­ ±â·ÏÇÒ¸¸ÇÑ °ø°£À» È®º¸ÇÏ´ø Áß¿¡
- *                            ·Î±×ÆÄÀÏ Switch°¡ ¹ß»ýÇß´ÂÁöÀÇ ¿©ºÎ
+ * aLogSize           - [IN]  ìƒˆë¡œ ê¸°ë¡í•˜ë ¤ëŠ” ë¡œê·¸ ë ˆì½”ë“œì˜ í¬ê¸°
+ * aIsLogFileSwitched - [OUT] aLogSizeë§Œí¼ ê¸°ë¡í• ë§Œí•œ ê³µê°„ì„ í™•ë³´í•˜ë˜ ì¤‘ì—
+ *                            ë¡œê·¸íŒŒì¼ Switchê°€ ë°œìƒí–ˆëŠ”ì§€ì˜ ì—¬ë¶€
  **********************************************************************/
 IDE_RC smrLogMgr::reserveLogSpace( UInt     aLogSize,
                                    idBool * aIsLogFileSwitched )
@@ -2862,13 +2862,13 @@ IDE_RC smrLogMgr::reserveLogSpace( UInt     aLogSize,
 
     *aIsLogFileSwitched = ID_FALSE;
 
-    /* ·Î±×ÆÄÀÏ¿¡ ´ëÇÑ ¸¶¹«¸® ·Î±×ÀÇ ±æÀÌ */
+    /* ë¡œê·¸íŒŒì¼ì— ëŒ€í•œ ë§ˆë¬´ë¦¬ ë¡œê·¸ì˜ ê¸¸ì´ */
     sLogFileEndSize = SMR_LOGREC_SIZE(smrFileEndLog);
 
     /* ------------------------------------------------
-     * ·Î±×ÆÄÀÏÀÇ free °ø°£ÀÌ ÇöÀç ±â·ÏÇÒ ·Î±×±æÀÌ¿Í
-     * ¸¶¹«¸® ·Î±×±æÀÌ¸¦ ¸ðµÎ ±â·ÏÇÒ ¼ö ÀÖ´ÂÁö¸¦ ÆÇ´ÜÇÏ¿©
-     * ºÎÁ·ÇÏ¸é switch ½ÃÅ²´Ù.
+     * ë¡œê·¸íŒŒì¼ì˜ free ê³µê°„ì´ í˜„ìž¬ ê¸°ë¡í•  ë¡œê·¸ê¸¸ì´ì™€
+     * ë§ˆë¬´ë¦¬ ë¡œê·¸ê¸¸ì´ë¥¼ ëª¨ë‘ ê¸°ë¡í•  ìˆ˜ ìžˆëŠ”ì§€ë¥¼ íŒë‹¨í•˜ì—¬
+     * ë¶€ì¡±í•˜ë©´ switch ì‹œí‚¨ë‹¤.
      * ----------------------------------------------*/
     if ( mCurLogFile->mFreeSize < ((UInt)aLogSize + sLogFileEndSize) )
     {
@@ -2877,14 +2877,14 @@ IDE_RC smrLogMgr::reserveLogSpace( UInt     aLogSize,
         //switch log file
         IDE_TEST( mLogFileMgr.switchLogFile(&mCurLogFile) != IDE_SUCCESS );
 
-        // »õ ·Î±×ÆÄÀÏ·Î switch°¡ ¹ß»ýÇß±â ¶§¹®¿¡
-        // ·Î±×·¹ÄÚµå°¡ ±â·ÏµÉ À§Ä¡ÀÎ ·Î±×ÆÄÀÏÀÇ offsetÀº 0ÀÌ¾î¾ß ÇÔ.
+        // ìƒˆ ë¡œê·¸íŒŒì¼ë¡œ switchê°€ ë°œìƒí–ˆê¸° ë•Œë¬¸ì—
+        // ë¡œê·¸ë ˆì½”ë“œê°€ ê¸°ë¡ë  ìœ„ì¹˜ì¸ ë¡œê·¸íŒŒì¼ì˜ offsetì€ 0ì´ì–´ì•¼ í•¨.
         IDE_ASSERT( mCurLogFile->mOffset == 0 );
 
         /* BUG-32137 [sm-disk-recovery] The setDirty operation in DRDB causes
          * contention of LOG_ALLOCATION_MUTEX. */
 
-        // ·Î±×ÆÄÀÏ Swtich°¡ ¹ß»ýÇÏ¿´À¸¹Ç·Î, »õ·Î ·Î±×°¡ ±â·ÏµÉ LSNµµ º¯°æ
+        // ë¡œê·¸íŒŒì¼ Swtichê°€ ë°œìƒí•˜ì˜€ìœ¼ë¯€ë¡œ, ìƒˆë¡œ ë¡œê·¸ê°€ ê¸°ë¡ë  LSNë„ ë³€ê²½
         setLstLSN( mCurLogFile->mFileNo,
                    mCurLogFile->mOffset );
 
@@ -2895,18 +2895,18 @@ IDE_RC smrLogMgr::reserveLogSpace( UInt     aLogSize,
         /* nothing to do */
     }
 
-    // ¾ÆÁ÷ ·Î±×°¡ ÇÏ³ªµµ ±â·ÏµÇÁö ¾ÊÀº »óÅÂ.
-    // ÆÄÀÏÀÇ Ã¹¹øÂ° ·Î±×·¹ÄÚµå·Î File Begin Log¸¦ ±â·ÏÇÑ´Ù.
+    // ì•„ì§ ë¡œê·¸ê°€ í•˜ë‚˜ë„ ê¸°ë¡ë˜ì§€ ì•Šì€ ìƒíƒœ.
+    // íŒŒì¼ì˜ ì²«ë²ˆì§¸ ë¡œê·¸ë ˆì½”ë“œë¡œ File Begin Logë¥¼ ê¸°ë¡í•œë‹¤.
 
-    // ·Î±×ÆÄÀÏÀÌ »ý¼ºµÉ ¶§ File Begin Log¸¦ ±â·ÏÇÏÁö ¾ÊÀ¸¸ç,
-    // ÀÌ´Â 0¹øÂ° ·Î±×ÆÄÀÏÀÇ °æ¿ì¿¡µµ ¸¶Âù°¡ÁöÀÌ´Ù.
-    // ÀÏ¹Ý ·Î±× ±â·ÏÁß¿¡ 0¹øÂ° ·Î±×ÆÄÀÏ¿¡ ´ëÇØ¼­µµ ±â·ÏÇÏ±â À§ÇØ,
-    // À§ÀÇ log file switch·çÆ¾°ú º°°³·Î ¼öÇàÇÑ´Ù.
+    // ë¡œê·¸íŒŒì¼ì´ ìƒì„±ë  ë•Œ File Begin Logë¥¼ ê¸°ë¡í•˜ì§€ ì•Šìœ¼ë©°,
+    // ì´ëŠ” 0ë²ˆì§¸ ë¡œê·¸íŒŒì¼ì˜ ê²½ìš°ì—ë„ ë§ˆì°¬ê°€ì§€ì´ë‹¤.
+    // ì¼ë°˜ ë¡œê·¸ ê¸°ë¡ì¤‘ì— 0ë²ˆì§¸ ë¡œê·¸íŒŒì¼ì— ëŒ€í•´ì„œë„ ê¸°ë¡í•˜ê¸° ìœ„í•´,
+    // ìœ„ì˜ log file switchë£¨í‹´ê³¼ ë³„ê°œë¡œ ìˆ˜í–‰í•œë‹¤.
     if ( mCurLogFile->mOffset == 0 )
     {
         writeFileBeginLog();
                                              
-        // BUG-24701 ¼³Á¤µÈ ·Î±× ÆÄÀÏ »çÀÌÁî º¸´Ù aLogSize°¡ Å¬°æ¿ì Error Ã³¸®ÇÑ´Ù.
+        // BUG-24701 ì„¤ì •ëœ ë¡œê·¸ íŒŒì¼ ì‚¬ì´ì¦ˆ ë³´ë‹¤ aLogSizeê°€ í´ê²½ìš° Error ì²˜ë¦¬í•œë‹¤.
         IDE_TEST_RAISE( ((UInt)aLogSize + sLogFileEndSize) >
                         mCurLogFile->mFreeSize, ERROR_INVALID_LOGSIZE );
     }
@@ -2929,32 +2929,32 @@ IDE_RC smrLogMgr::reserveLogSpace( UInt     aLogSize,
 }
 
 /***********************************************************************
- * Description : ÀÛ¼ºµÈ MRDB/DRDB ·Î±×¸¦ ·Î±×ÆÄÀÏ¿¡ ±â·Ï
+ * Description : ìž‘ì„±ëœ MRDB/DRDB ë¡œê·¸ë¥¼ ë¡œê·¸íŒŒì¼ì— ê¸°ë¡
  *
- * ·Î±×ÆÄÀÏ¿¡ ·Î±×¸¦ ±â·ÏÇÏ°í, DRDB ·Î±ë¿¡ ´ëÇØ¼­´Â
- * Begin LSN°ú End LSNÀ» ¹ÝÈ¯ÇÏ°í, MRDB ·Î±ë¿¡ ´ëÇØ¼­´Â Begin LSNÀ»
- * ¹ÝÈ¯ÇÑ´Ù.
+ * ë¡œê·¸íŒŒì¼ì— ë¡œê·¸ë¥¼ ê¸°ë¡í•˜ê³ , DRDB ë¡œê¹…ì— ëŒ€í•´ì„œëŠ”
+ * Begin LSNê³¼ End LSNì„ ë°˜í™˜í•˜ê³ , MRDB ë¡œê¹…ì— ëŒ€í•´ì„œëŠ” Begin LSNì„
+ * ë°˜í™˜í•œë‹¤.
  *
  * - 2nd. code design
- *   + smrLogHeadÀÇ prev undo LSNÀ» ¼³Á¤ÇÑ´Ù.
- *   + ·Î±ëÀ» ÇÏ±â À§ÇØ ·Î±× °ü¸®ÀÚÀÇ lockÀ» È¹µæÇÏ°í,
- *     ·Î±×¸¦ ±â·ÏÇÒ °ø°£À» È®ÀÎÇÑ´Ù.
- *   + ·Î±×ÀÇ begin LSNÀ» out ÀÎÀÚ¿¡ ¼³Á¤ÇÑ´Ù.
- *   + current ·Î±×ÆÄÀÏ¿¡ ·Î±×¸¦ ±â·ÏÇÑ´Ù.
- *   + ±â·ÏÇÑ ·Î±×ÀÇ vaildationÀ» °Ë»çÇÑ´Ù.
- *   + »õ·Î¿î LSNÀ» last LSN ¼³Á¤¿¡ ÇÏ°í,
- *     DRDB ·Î±×ÀÏ °æ¿ì¿¡´Â aEndLSNÀ» ¼³Á¤ÇÑ ´ÙÀ½
- *     ·Î±× °ü¸®ÀÚÀÇ lockÀ» Ç¬´Ù
- *   + Æ®·£Àç¼ÇÀÇ °æ¿ì ±â·ÏÇÑ ·Î±×ÀÇ begin LSNÀ»
- *     Æ®·£Àè¼Ç¿¡ ¼³Á¤ÇÑ´Ù.
- *   + durability Type¿¡ µû¶ó commit ·Î±×´Â sync¸¦
- *     º¸ÀåÇÏ±âµµ ÇÑ´Ù.
+ *   + smrLogHeadì˜ prev undo LSNì„ ì„¤ì •í•œë‹¤.
+ *   + ë¡œê¹…ì„ í•˜ê¸° ìœ„í•´ ë¡œê·¸ ê´€ë¦¬ìžì˜ lockì„ íšë“í•˜ê³ ,
+ *     ë¡œê·¸ë¥¼ ê¸°ë¡í•  ê³µê°„ì„ í™•ì¸í•œë‹¤.
+ *   + ë¡œê·¸ì˜ begin LSNì„ out ì¸ìžì— ì„¤ì •í•œë‹¤.
+ *   + current ë¡œê·¸íŒŒì¼ì— ë¡œê·¸ë¥¼ ê¸°ë¡í•œë‹¤.
+ *   + ê¸°ë¡í•œ ë¡œê·¸ì˜ vaildationì„ ê²€ì‚¬í•œë‹¤.
+ *   + ìƒˆë¡œìš´ LSNì„ last LSN ì„¤ì •ì— í•˜ê³ ,
+ *     DRDB ë¡œê·¸ì¼ ê²½ìš°ì—ëŠ” aEndLSNì„ ì„¤ì •í•œ ë‹¤ìŒ
+ *     ë¡œê·¸ ê´€ë¦¬ìžì˜ lockì„ í‘¼ë‹¤
+ *   + íŠ¸ëžœìž¬ì…˜ì˜ ê²½ìš° ê¸°ë¡í•œ ë¡œê·¸ì˜ begin LSNì„
+ *     íŠ¸ëžœìž­ì…˜ì— ì„¤ì •í•œë‹¤.
+ *   + durability Typeì— ë”°ë¼ commit ë¡œê·¸ëŠ” syncë¥¼
+ *     ë³´ìž¥í•˜ê¸°ë„ í•œë‹¤.
  *
  **********************************************************************
- *   PROJ-1464 ÆÐ·¯·¤ ·Î±ë °ü·Ã ÀÎÀÚ
+ *   PROJ-1464 íŒ¨ëŸ¬ëž  ë¡œê¹… ê´€ë ¨ ì¸ìž
  *
- *   aIsLogFileSwitched - [OUT] ·Î±×¸¦ ±â·ÏÇÏ´Â µµÁß¿¡
- *                              ·Î±×ÆÄÀÏ Switch°¡ ¹ß»ýÇß´ÂÁöÀÇ ¿©ºÎ
+ *   aIsLogFileSwitched - [OUT] ë¡œê·¸ë¥¼ ê¸°ë¡í•˜ëŠ” ë„ì¤‘ì—
+ *                              ë¡œê·¸íŒŒì¼ Switchê°€ ë°œìƒí–ˆëŠ”ì§€ì˜ ì—¬ë¶€
  *
  **********************************************************************/
 IDE_RC smrLogMgr::writeLog( idvSQL   * aStatistics,
@@ -2964,13 +2964,13 @@ IDE_RC smrLogMgr::writeLog( idvSQL   * aStatistics,
                             smLSN    * aBeginLSN,
                             smLSN    * aEndLSN )
 {
-    /* aTrans´Â NULLÀÏ ¼ö ÀÖ´Ù. */
+    /* aTransëŠ” NULLì¼ ìˆ˜ ìžˆë‹¤. */
     IDE_DASSERT( aRawLog != NULL );
-    /* aBeginLSN, aEndLSNÀº NULL·Î µé¾î¿Ã ¼ö ÀÖ´Ù. */
+    /* aBeginLSN, aEndLSNì€ NULLë¡œ ë“¤ì–´ì˜¬ ìˆ˜ ìžˆë‹¤. */
 
     smrLogHead    * sLogHead;
     UInt            sRawLogSize;
-    SChar         * sLogToWrite     = NULL;     /* ·Î±×ÆÄÀÏ¿¡ ±â·ÏÇÒ ·Î±× */
+    SChar         * sLogToWrite     = NULL;     /* ë¡œê·¸íŒŒì¼ì— ê¸°ë¡í•  ë¡œê·¸ */
     UInt            sLogSizeToWrite = 0;
     smLSN           sWrittenLSN;
     smrCompRes    * sCompRes    = NULL;
@@ -2981,13 +2981,13 @@ IDE_RC smrLogMgr::writeLog( idvSQL   * aStatistics,
     sIsLogFileSwitched = ID_FALSE;
 
     /* ------------------------------------------------
-     * ÁÖ¾îÁø ¹öÆÛ¸¦ smrLogHead·Î castingÇÑ´Ù.
+     * ì£¼ì–´ì§„ ë²„í¼ë¥¼ smrLogHeadë¡œ castingí•œë‹¤.
      * ----------------------------------------------*/
     sLogHead = (smrLogHead *)aRawLog;
 
     sRawLogSize = smrLogHeadI::getSize(sLogHead);
 
-    /* ·Î±× ±â·ÏÀü¿¡ ¼öÇàÇÒ ÀÛ¾÷µé Ã³¸® */
+    /* ë¡œê·¸ ê¸°ë¡ì „ì— ìˆ˜í–‰í•  ìž‘ì—…ë“¤ ì²˜ë¦¬ */
     IDE_TEST( onBeforeWriteLog( aTrans,
                                 aRawLog,
                                 aPPrvLSN ) != IDE_SUCCESS );
@@ -2996,7 +2996,7 @@ IDE_RC smrLogMgr::writeLog( idvSQL   * aStatistics,
 
     if ( (sRawLogSize >= sMinLogRecordSize) && (sMinLogRecordSize != 0) )
     {
-        /* ¾ÐÃà ¸®¼Ò½º¸¦ °¡Á®¿Â´Ù */
+        /* ì••ì¶• ë¦¬ì†ŒìŠ¤ë¥¼ ê°€ì ¸ì˜¨ë‹¤ */
         IDE_TEST( allocCompRes( aTrans, & sCompRes ) != IDE_SUCCESS );
         sStage = 1;
 
@@ -3039,8 +3039,8 @@ IDE_RC smrLogMgr::writeLog( idvSQL   * aStatistics,
                   != IDE_SUCCESS );
     }
 
-    /* ÀÌÀü¿¡ ·Î±ëµÈ ÀûÀÌ ÇÑ¹øµµ ¾ø°í,
-     * ·Î±× ±â·ÏÈÄ¿¡ ¼öÇàÇÒ ÀÛ¾÷µé Ã³¸® */
+    /* ì´ì „ì— ë¡œê¹…ëœ ì ì´ í•œë²ˆë„ ì—†ê³ ,
+     * ë¡œê·¸ ê¸°ë¡í›„ì— ìˆ˜í–‰í•  ìž‘ì—…ë“¤ ì²˜ë¦¬ */
     IDE_TEST( onAfterWriteLog( aStatistics,
                                aTrans,
                                sLogHead,
@@ -3049,9 +3049,9 @@ IDE_RC smrLogMgr::writeLog( idvSQL   * aStatistics,
 
     if ( sStage == 1 )
     {
-        /* ¾ÐÃà ¸®¼Ò½º¸¦ ¹Ý³³ÇÑ´Ù.
-         * - ·Î±× ±â·ÏÁß¿¡ ´Ù¸¥ Thread°¡ »ç¿ëÇÏÁö ¸øÇÏµµ·Ï
-         *   ·Î±× ±â·ÏÀÌ ¿Ï·áµÈ ÈÄ¿¡ ¹Ý³³ÇØ¾ß ÇÑ´Ù. */
+        /* ì••ì¶• ë¦¬ì†ŒìŠ¤ë¥¼ ë°˜ë‚©í•œë‹¤.
+         * - ë¡œê·¸ ê¸°ë¡ì¤‘ì— ë‹¤ë¥¸ Threadê°€ ì‚¬ìš©í•˜ì§€ ëª»í•˜ë„ë¡
+         *   ë¡œê·¸ ê¸°ë¡ì´ ì™„ë£Œëœ í›„ì— ë°˜ë‚©í•´ì•¼ í•œë‹¤. */
         sStage = 0;
         IDE_TEST( freeCompRes( aTrans, sCompRes ) != IDE_SUCCESS );
     }
@@ -3069,8 +3069,8 @@ IDE_RC smrLogMgr::writeLog( idvSQL   * aStatistics,
         /* nothing to do */
     }
 
-    // ¸¸¾à ·Î±×ÆÄÀÏ Switch°¡ ¹ß»ýÇß´Ù¸é ·Î±×ÆÄÀÏ SwitchÈ½¼ö¸¦ Áõ°¡ÇÏ°í
-    // Ã¼Å©Æ÷ÀÎÆ®¸¦ ¼öÇàÇØ¾ß ÇÒ ÁöÀÇ ¿©ºÎ¸¦ °áÁ¤ÇÑ´Ù.
+    // ë§Œì•½ ë¡œê·¸íŒŒì¼ Switchê°€ ë°œìƒí–ˆë‹¤ë©´ ë¡œê·¸íŒŒì¼ SwitchíšŸìˆ˜ë¥¼ ì¦ê°€í•˜ê³ 
+    // ì²´í¬í¬ì¸íŠ¸ë¥¼ ìˆ˜í–‰í•´ì•¼ í•  ì§€ì˜ ì—¬ë¶€ë¥¼ ê²°ì •í•œë‹¤.
     if ( sIsLogFileSwitched == ID_TRUE )
     {
         IDE_TEST( onLogFileSwitched() != IDE_SUCCESS );
@@ -3103,14 +3103,14 @@ IDE_RC smrLogMgr::writeLog( idvSQL   * aStatistics,
 }
 
 /*
-    ¾ÐÃà ¸®¼Ò½º¸¦ °¡Á®¿Â´Ù
-    - TransactionÀÌ Á¸ÀçÇÒ °æ¿ì Transaction¿¡ ¸Å´Þ·ÁÀÖ´Â
-      ¾ÐÃà ¸®¼Ò½º¸¦ »ç¿ë
-    - TransactionÀÌ Á¸ÀçÇÏÁö ¾ÊÀ» °æ¿ì
-      °øÀ¯ÇÏ´Â ¾ÐÃà ¸®¼Ò½º Ç®ÀÎ mCompResPoolÀ» »ç¿ë
+    ì••ì¶• ë¦¬ì†ŒìŠ¤ë¥¼ ê°€ì ¸ì˜¨ë‹¤
+    - Transactionì´ ì¡´ìž¬í•  ê²½ìš° Transactionì— ë§¤ë‹¬ë ¤ìžˆëŠ”
+      ì••ì¶• ë¦¬ì†ŒìŠ¤ë¥¼ ì‚¬ìš©
+    - Transactionì´ ì¡´ìž¬í•˜ì§€ ì•Šì„ ê²½ìš°
+      ê³µìœ í•˜ëŠ” ì••ì¶• ë¦¬ì†ŒìŠ¤ í’€ì¸ mCompResPoolì„ ì‚¬ìš©
 
-   [IN] aTrans - Æ®·£Àè¼Ç
-   [OUT] aCompRes - ÇÒ´çµÈ ¾ÐÃà ¸®¼Ò½º
+   [IN] aTrans - íŠ¸ëžœìž­ì…˜
+   [OUT] aCompRes - í• ë‹¹ëœ ì••ì¶• ë¦¬ì†ŒìŠ¤
  */
 IDE_RC smrLogMgr::allocCompRes( void        * aTrans,
                                 smrCompRes ** aCompRes )
@@ -3121,7 +3121,7 @@ IDE_RC smrLogMgr::allocCompRes( void        * aTrans,
 
     if ( aTrans != NULL )
     {
-        // TransactionÀÇ ¾ÐÃà Resource¸¦ °¡Á®¿Â´Ù.
+        // Transactionì˜ ì••ì¶• Resourceë¥¼ ê°€ì ¸ì˜¨ë‹¤.
         IDE_TEST( smLayerCallback::getTransCompRes( aTrans,
                                                     & sCompRes )
                   != IDE_SUCCESS );
@@ -3145,14 +3145,14 @@ IDE_RC smrLogMgr::allocCompRes( void        * aTrans,
 
 
 /*
-    ¾ÐÃà ¸®¼Ò½º¸¦ ¹Ý³³ÇÑ´Ù.
-    - TransactionÀÌ Á¸ÀçÇÒ °æ¿ì ¹Ý³³ÇÏÁö ¾Ê¾Æµµ µÈ´Ù.
-      ( ÃßÈÄ Transaction commit/rollback½Ã ¹Ý³³µÊ )
-    - TransactionÀÌ Á¸ÀçÇÏÁö ¾ÊÀ» °æ¿ì
-      °øÀ¯ÇÏ´Â ¾ÐÃà ¸®¼Ò½º Ç®ÀÎ mCompResPool·Î ¹Ý³³
+    ì••ì¶• ë¦¬ì†ŒìŠ¤ë¥¼ ë°˜ë‚©í•œë‹¤.
+    - Transactionì´ ì¡´ìž¬í•  ê²½ìš° ë°˜ë‚©í•˜ì§€ ì•Šì•„ë„ ëœë‹¤.
+      ( ì¶”í›„ Transaction commit/rollbackì‹œ ë°˜ë‚©ë¨ )
+    - Transactionì´ ì¡´ìž¬í•˜ì§€ ì•Šì„ ê²½ìš°
+      ê³µìœ í•˜ëŠ” ì••ì¶• ë¦¬ì†ŒìŠ¤ í’€ì¸ mCompResPoolë¡œ ë°˜ë‚©
 
-   [IN] aTrans - Æ®·£Àè¼Ç
-   [OUT] aCompRes - ¹Ý³³ÇÒ ¾ÐÃà ¸®¼Ò½º
+   [IN] aTrans - íŠ¸ëžœìž­ì…˜
+   [OUT] aCompRes - ë°˜ë‚©í•  ì••ì¶• ë¦¬ì†ŒìŠ¤
  */
 IDE_RC smrLogMgr::freeCompRes( void       * aTrans,
                                smrCompRes * aCompRes )
@@ -3161,8 +3161,8 @@ IDE_RC smrLogMgr::freeCompRes( void       * aTrans,
 
     if ( aTrans != NULL )
     {
-        // Transaction Rollback/Commit½Ã ÀÚµ¿ ¹Ý³³µÊ
-        // ¾Æ¹«°Íµµ ÇÏÁö ¾Ê´Â´Ù.
+        // Transaction Rollback/Commitì‹œ ìžë™ ë°˜ë‚©ë¨
+        // ì•„ë¬´ê²ƒë„ í•˜ì§€ ì•ŠëŠ”ë‹¤.
     }
     else
     {
@@ -3178,13 +3178,13 @@ IDE_RC smrLogMgr::freeCompRes( void       * aTrans,
 
 
 /*
-   ·Î±×ÀÇ ¾ÐÃàÀÌ °¡´ÉÇÒ °æ¿ì ¾ÐÃà ½Ç½Ã
+   ë¡œê·¸ì˜ ì••ì¶•ì´ ê°€ëŠ¥í•  ê²½ìš° ì••ì¶• ì‹¤ì‹œ
 
-   [IN] aCompRes           - ¾ÐÃà ¸®¼Ò½º
-   [IN] aRawLog            - ¾ÐÃàµÇ±â ÀüÀÇ ¿øº» ·Î±×
-   [IN] aRawLogSize        - ¾ÐÃàµÇ±â ÀüÀÇ ¿øº» ·Î±×ÀÇ Å©±â
-   [OUT] aLogToWrite       - ·Î±×ÆÄÀÏ¿¡ ±â·ÏÇÒ ·Î±×
-   [OUT] aLogSizeToWrite   - ·Î±×ÆÄÀÏ¿¡ ±â·ÏÇÒ ·Î±×ÀÇ Å©±â
+   [IN] aCompRes           - ì••ì¶• ë¦¬ì†ŒìŠ¤
+   [IN] aRawLog            - ì••ì¶•ë˜ê¸° ì „ì˜ ì›ë³¸ ë¡œê·¸
+   [IN] aRawLogSize        - ì••ì¶•ë˜ê¸° ì „ì˜ ì›ë³¸ ë¡œê·¸ì˜ í¬ê¸°
+   [OUT] aLogToWrite       - ë¡œê·¸íŒŒì¼ì— ê¸°ë¡í•  ë¡œê·¸
+   [OUT] aLogSizeToWrite   - ë¡œê·¸íŒŒì¼ì— ê¸°ë¡í•  ë¡œê·¸ì˜ í¬ê¸°
  */
 IDE_RC smrLogMgr::tryLogCompression( smrCompRes    * aCompRes,
                                      SChar         * aRawLog,
@@ -3194,35 +3194,35 @@ IDE_RC smrLogMgr::tryLogCompression( smrCompRes    * aCompRes,
 {
     idBool       sDoCompLog;
 
-    SChar      * sCompLog;        /* ¾ÐÃàµÈ ·Î±× */
+    SChar      * sCompLog;        /* ì••ì¶•ëœ ë¡œê·¸ */
     UInt         sCompLogSize;
 
     SChar      * sLogToWrite;
     UInt         sLogSizeToWrite;
 
-    // aTrans´Â NULLÀÏ ¼ö ÀÖ´Ù.
+    // aTransëŠ” NULLì¼ ìˆ˜ ìžˆë‹¤.
     IDE_DASSERT( aRawLog != NULL );
     IDE_DASSERT( aRawLogSize > 0 );
     IDE_DASSERT( aLogToWrite != NULL );
     IDE_DASSERT( aLogSizeToWrite != NULL );
 
-    // ±âº»ÀûÀ¸·Î ºñ¾ÐÃà ·Î±×¸¦ »ç¿ë
+    // ê¸°ë³¸ì ìœ¼ë¡œ ë¹„ì••ì¶• ë¡œê·¸ë¥¼ ì‚¬ìš©
     sLogToWrite = aRawLog;
     sLogSizeToWrite = aRawLogSize;
 
-    // ·Î±× ¾ÐÃàÇØ¾ßÇÏ´ÂÁö ¿©ºÎ °áÁ¤
+    // ë¡œê·¸ ì••ì¶•í•´ì•¼í•˜ëŠ”ì§€ ì—¬ë¶€ ê²°ì •
     IDE_TEST( smrLogComp::shouldLogBeCompressed( aRawLog,
                                                  aRawLogSize,
                                                  &sDoCompLog )
               != IDE_SUCCESS );
 
-    // ·Î±× ¾ÐÃà ½Ãµµ
+    // ë¡œê·¸ ì••ì¶• ì‹œë„
     if ( sDoCompLog == ID_TRUE )
     {
         /* BUG-31009 - [SM] Compression buffer allocation need
          *                  exception handling.
-         * ·Î±× ¾ÐÃà¿¡ ½ÇÆÐÇÑ °æ¿ì ¿¹¿Ü°¡ ¾Æ´Ï¶ó ±×³É ºñ¾ÐÃà ·Î±×¸¦ »ç¿ëÇÏµµ·Ï
-         * ÇÑ´Ù. */
+         * ë¡œê·¸ ì••ì¶•ì— ì‹¤íŒ¨í•œ ê²½ìš° ì˜ˆì™¸ê°€ ì•„ë‹ˆë¼ ê·¸ëƒ¥ ë¹„ì••ì¶• ë¡œê·¸ë¥¼ ì‚¬ìš©í•˜ë„ë¡
+         * í•œë‹¤. */
         if ( smrLogComp::createCompLog( & aCompRes->mCompBufferHandle,
                                         aCompRes->mCompWorkMem,
                                         aRawLog,
@@ -3230,7 +3230,7 @@ IDE_RC smrLogMgr::tryLogCompression( smrCompRes    * aCompRes,
                                         & sCompLog,
                                         & sCompLogSize ) == IDE_SUCCESS )
         {
-            // ¾ÐÃàÈÄ ·Î±×°¡ ´õ ÀÛ¾ÆÁø °æ¿ì¿¡¸¸ ¾ÐÃà·Î±×·Î ±â·Ï
+            // ì••ì¶•í›„ ë¡œê·¸ê°€ ë” ìž‘ì•„ì§„ ê²½ìš°ì—ë§Œ ì••ì¶•ë¡œê·¸ë¡œ ê¸°ë¡
             if ( sCompLogSize < aRawLogSize  )
             {
                 sLogToWrite = sCompLog;
@@ -3243,7 +3243,7 @@ IDE_RC smrLogMgr::tryLogCompression( smrCompRes    * aCompRes,
         }
         else
         {
-            /* ½ÇÆÐÇßÀ¸¸é ºñ¾ÐÃà ·Î±× »ç¿ë */
+            /* ì‹¤íŒ¨í–ˆìœ¼ë©´ ë¹„ì••ì¶• ë¡œê·¸ ì‚¬ìš© */
         }
     }
     else
@@ -3261,7 +3261,7 @@ IDE_RC smrLogMgr::tryLogCompression( smrCompRes    * aCompRes,
     return IDE_FAILURE;
 }
 
-/* LogÀÇ ³¡´Ü Mutex¸¦ ÀâÀº »óÅÂ·Î ·Î±× ±â·Ï */
+/* Logì˜ ëë‹¨ Mutexë¥¼ ìž¡ì€ ìƒíƒœë¡œ ë¡œê·¸ ê¸°ë¡ */
 IDE_RC smrLogMgr::lockAndWriteLog( idvSQL   * aStatistics,
                                    void     * aTrans,
                                    SChar    * aRawOrCompLog,
@@ -3276,80 +3276,80 @@ IDE_RC smrLogMgr::lockAndWriteLog( idvSQL   * aStatistics,
     idBool       sIsLocked          = ID_FALSE;
     idBool       sIsLock4NullTrans  = ID_FALSE;
 
-    /* aTrans ´Â NULL·Î µé¾î¿Ã ¼ö ÀÖ´Ù. */
+    /* aTrans ëŠ” NULLë¡œ ë“¤ì–´ì˜¬ ìˆ˜ ìžˆë‹¤. */
     IDE_DASSERT( aRawOrCompLog      != NULL );
     IDE_DASSERT( aRawOrCompLogSize   > 0 );
     IDE_DASSERT( aRawLog4Repl       != NULL );
     IDE_DASSERT( aRawLogSize4Repl    > 0 );
     IDE_DASSERT( aBeginLSN          != NULL );
-    /* aEndLSNÀº NULL·Î µé¾î¿Ã ¼ö ÀÖ´Ù. */
+    /* aEndLSNì€ NULLë¡œ ë“¤ì–´ì˜¬ ìˆ˜ ìžˆë‹¤. */
     IDE_DASSERT( aIsLogFileSwitched != NULL );
 
     IDE_DASSERT( smuProperty::isFastUnlockLogAllocMutex() == ID_FALSE );
 
-    /* 1. ·Î±ëÀ» ÇÏ±â À§ÇØ ·Î±× °ü¸®ÀÚÀÇ lockÀ» È¹µæÇÏ°í,
-     *    ·Î±×¸¦ ±â·ÏÇÒ °ø°£À» È®ÀÎÇÑ´Ù.
-     *  - ¸¸¾à ·Î±×ÆÄÀÏ °ø°£ÀÌ ºÎÁ·ÇÏ´Ù¸é, END ·Î±×ÆÄÀÏ ·Î±×¸¦
-     *      ³²±â°í ´ÙÀ½ ·Î±×ÆÄÀÏ·Î switch ÇÑ´Ù.
-     *  - last LSNÀ» »õ·Î¿î ·Î±×ÆÄÀÏÀÇ LSNÀ¸·Î Àç¼³Á¤ÇÑ´Ù.
-     *  - ·Î±×ÆÄÀÏ switch È½¼ö°¡ checkpoint interval¿¡ ¸¸Á·ÇÏ¸é
-     *      checkpoint¸¦ ¼öÇàÇÑ´Ù. */
+    /* 1. ë¡œê¹…ì„ í•˜ê¸° ìœ„í•´ ë¡œê·¸ ê´€ë¦¬ìžì˜ lockì„ íšë“í•˜ê³ ,
+     *    ë¡œê·¸ë¥¼ ê¸°ë¡í•  ê³µê°„ì„ í™•ì¸í•œë‹¤.
+     *  - ë§Œì•½ ë¡œê·¸íŒŒì¼ ê³µê°„ì´ ë¶€ì¡±í•˜ë‹¤ë©´, END ë¡œê·¸íŒŒì¼ ë¡œê·¸ë¥¼
+     *      ë‚¨ê¸°ê³  ë‹¤ìŒ ë¡œê·¸íŒŒì¼ë¡œ switch í•œë‹¤.
+     *  - last LSNì„ ìƒˆë¡œìš´ ë¡œê·¸íŒŒì¼ì˜ LSNìœ¼ë¡œ ìž¬ì„¤ì •í•œë‹¤.
+     *  - ë¡œê·¸íŒŒì¼ switch íšŸìˆ˜ê°€ checkpoint intervalì— ë§Œì¡±í•˜ë©´
+     *      checkpointë¥¼ ìˆ˜í–‰í•œë‹¤. */
 
     IDE_TEST( lock() != IDE_SUCCESS );
     sIsLocked = ID_TRUE;
 
     /* check log size */
-    /* ÀÌ ¼Ó¿¡¼­ File End Log¸¦ ÂïÀ¸¸é¼­ Log File Switch°¡ ¹ß»ýÇÒ ¼ö ÀÖ´Ù.
-     * LSN°ªÀ» ÀÌº¸´Ù ¸ÕÀú µû°Ô µÇ¸é, LSN°ªÀÌ °Å²Ù·Î ±â·ÏµÇ´Â Çö»óÀÌ ¹ß»ýÇÑ´Ù. */
+    /* ì´ ì†ì—ì„œ File End Logë¥¼ ì°ìœ¼ë©´ì„œ Log File Switchê°€ ë°œìƒí•  ìˆ˜ ìžˆë‹¤.
+     * LSNê°’ì„ ì´ë³´ë‹¤ ë¨¼ì € ë”°ê²Œ ë˜ë©´, LSNê°’ì´ ê±°ê¾¸ë¡œ ê¸°ë¡ë˜ëŠ” í˜„ìƒì´ ë°œìƒí•œë‹¤. */
     IDE_TEST( reserveLogSpace( aRawOrCompLogSize,
                                aIsLogFileSwitched ) != IDE_SUCCESS );
 
-    /* 2. ·Î±×ÀÇ Ãâ·Â Begin LSN¿¡ ¼³Á¤ÇÑ´Ù. */
+    /* 2. ë¡œê·¸ì˜ ì¶œë ¥ Begin LSNì— ì„¤ì •í•œë‹¤. */
     SM_SET_LSN( *aBeginLSN,
                 mCurLogFile->mFileNo,
                 mCurLogFile->mOffset );
 
-    /* 3.ÇöÀç ·Î±×°¡ ±â·ÏµÉ LSN */
+    /* 3.í˜„ìž¬ ë¡œê·¸ê°€ ê¸°ë¡ë  LSN */
     SM_SET_LSN( sLSN,
                 mLstLSN.mLSN.mFileNo,
                 mLstLSN.mLSN.mOffset );
 
-    /* Log FileÀ» ÅëÇØ ¾òÀº LSN°ú mLstLSNÀ» ÅëÇØ ¾òÀº LSNÀÌ °°¾Æ¾ß ÇÑ´Ù */
+    /* Log Fileì„ í†µí•´ ì–»ì€ LSNê³¼ mLstLSNì„ í†µí•´ ì–»ì€ LSNì´ ê°™ì•„ì•¼ í•œë‹¤ */
     IDE_DASSERT( smrCompareLSN::isEQ( aBeginLSN, &sLSN )
                  == ID_TRUE );
 
-    /* ·Î±×ÆÄÀÏÀÇ ¸Ç Ã³À½¿¡´Â FIle Begin ·Î±×°¡ ÂïÈ÷¹Ç·Î,
-     * ÀÏ¹Ý·Î±×°¡ ·Î±×ÆÄÀÏÀÇ Offset : 0 ¿¡ ±â·ÏµÇ¾î¼­´Â ¾ÈµÈ´Ù. */
+    /* ë¡œê·¸íŒŒì¼ì˜ ë§¨ ì²˜ìŒì—ëŠ” FIle Begin ë¡œê·¸ê°€ ì°ížˆë¯€ë¡œ,
+     * ì¼ë°˜ë¡œê·¸ê°€ ë¡œê·¸íŒŒì¼ì˜ Offset : 0 ì— ê¸°ë¡ë˜ì–´ì„œëŠ” ì•ˆëœë‹¤. */
     IDE_ASSERT( sLSN.mOffset != 0 );
     IDE_ASSERT( sLSN.mFileNo != ID_UINT_MAX );
 
-    /* Log¿¡ LSNÀ» ±â·ÏÇÑ´Ù. */
+    /* Logì— LSNì„ ê¸°ë¡í•œë‹¤. */
     setLogLSN( aRawOrCompLog,
                sLSN );
 
-    /* Log¿¡ Magic Number¸¦ ±â·ÏÇÑ´Ù. */
+    /* Logì— Magic Numberë¥¼ ê¸°ë¡í•œë‹¤. */
     setLogMagic( aRawOrCompLog,
                  &sLSN );
 
     /* ------------------------------------------------
-     * 4. ·Î±×ÆÄÀÏ¿¡ ·Î±×¸¦ ±â·ÏÇÑ´Ù.
+     * 4. ë¡œê·¸íŒŒì¼ì— ë¡œê·¸ë¥¼ ê¸°ë¡í•œë‹¤.
      * ----------------------------------------------*/
     mCurLogFile->append( aRawOrCompLog, aRawOrCompLogSize );
 
     /* ------------------------------------------------
-     * 5. »õ·Î¿î LSNÀ» last LSN ¼³Á¤¿¡ ÇÏ°í, 
-     *  lstLSNÀ» ¼³Á¤ÇÑ ´ÙÀ½ ·Î±× °ü¸®ÀÚÀÇ lockÀ» Ç¬´Ù.
+     * 5. ìƒˆë¡œìš´ LSNì„ last LSN ì„¤ì •ì— í•˜ê³ , 
+     *  lstLSNì„ ì„¤ì •í•œ ë‹¤ìŒ ë¡œê·¸ ê´€ë¦¬ìžì˜ lockì„ í‘¼ë‹¤.
      * ----------------------------------------------*/
     setLstLSN( mCurLogFile->mFileNo,
                mCurLogFile->mOffset );
 
-    /* ÇöÀç ¾î´À LSN±îÁö ·Î±×¸¦ ±â·ÏÇß´ÂÁö¸¦ SettingÇÑ´Ù. */
+    /* í˜„ìž¬ ì–´ëŠ LSNê¹Œì§€ ë¡œê·¸ë¥¼ ê¸°ë¡í–ˆëŠ”ì§€ë¥¼ Settingí•œë‹¤. */
     setLstWriteLSN( sLSN );
    
     /* BUG-35392 */
     if ( smrRecoveryMgr::mCopyToRPLogBufFunc != NULL )
     {
-        /* ¾ÐÃàÇÏÁö ¾ÊÀº ¿øº»·Î±×¸¦ Replication Log Buffer·Î º¹»ç */
+        /* ì••ì¶•í•˜ì§€ ì•Šì€ ì›ë³¸ë¡œê·¸ë¥¼ Replication Log Bufferë¡œ ë³µì‚¬ */
         copyLogToReplBuffer( aStatistics,
                              aRawLog4Repl,
                              aRawLogSize4Repl,
@@ -3363,7 +3363,7 @@ IDE_RC smrLogMgr::lockAndWriteLog( idvSQL   * aStatistics,
     sIsLocked = ID_FALSE;
     IDE_TEST( unlock() != IDE_SUCCESS );
 
-    // ¿©±â ±îÁö sync ÇØ¾ß ÇÑ´Ù. 
+    // ì—¬ê¸° ê¹Œì§€ sync í•´ì•¼ í•œë‹¤. 
     if ( aEndLSN != NULL )
     {
         SM_SET_LSN( *aEndLSN,
@@ -3377,9 +3377,9 @@ IDE_RC smrLogMgr::lockAndWriteLog( idvSQL   * aStatistics,
 
     if ( smuProperty::getLogBufferType() == SMU_LOG_BUFFER_TYPE_MEMORY )
     {
-        /* Log Buffer TypeÀÌ memoryÀÎ °æ¿ì,
-         * Update Transaction ¼ö¸¦
-         * Áõ°¡½ÃÄÑ¾ß ÇÏ´ÂÁö Ã¼Å©ÈÄ Áõ°¡½ÃÅ´ */
+        /* Log Buffer Typeì´ memoryì¸ ê²½ìš°,
+         * Update Transaction ìˆ˜ë¥¼
+         * ì¦ê°€ì‹œì¼œì•¼ í•˜ëŠ”ì§€ ì²´í¬í›„ ì¦ê°€ì‹œí‚´ */
         IDE_TEST( checkIncreaseUpdateTxCount(aTrans) != IDE_SUCCESS );
     }
     else
@@ -3419,7 +3419,7 @@ IDE_RC smrLogMgr::lockAndWriteLog( idvSQL   * aStatistics,
     return IDE_FAILURE;
 }
 
-/* LogÀÇ ³¡´Ü Mutex¸¦ ÀâÀº »óÅÂ·Î ·Î±× ±â·Ï */
+/* Logì˜ ëë‹¨ Mutexë¥¼ ìž¡ì€ ìƒíƒœë¡œ ë¡œê·¸ ê¸°ë¡ */
 IDE_RC smrLogMgr::lockAndWriteLog4FastUnlock( idvSQL   * aStatistics,
                                               void     * aTrans,
                                               SChar    * aRawOrCompLog,
@@ -3438,39 +3438,39 @@ IDE_RC smrLogMgr::lockAndWriteLog4FastUnlock( idvSQL   * aStatistics,
     idBool       sIsLock4NullTrans  = ID_FALSE;
     smrLogFile * sCurLogFile        = NULL;
 
-    /* aTrans ´Â NULL·Î µé¾î¿Ã ¼ö ÀÖ´Ù. */
+    /* aTrans ëŠ” NULLë¡œ ë“¤ì–´ì˜¬ ìˆ˜ ìžˆë‹¤. */
     IDE_DASSERT( aRawOrCompLog      != NULL );
     IDE_DASSERT( aRawOrCompLogSize   > 0 );
     IDE_DASSERT( aRawLog4Repl       != NULL );
     IDE_DASSERT( aRawLogSize4Repl    > 0 );
     IDE_DASSERT( aBeginLSN          != NULL );
-    /* aEndLSNÀº NULL·Î µé¾î¿Ã ¼ö ÀÖ´Ù. */
+    /* aEndLSNì€ NULLë¡œ ë“¤ì–´ì˜¬ ìˆ˜ ìžˆë‹¤. */
     IDE_DASSERT( aIsLogFileSwitched != NULL );
 
     IDE_DASSERT( smuProperty::isFastUnlockLogAllocMutex() == ID_TRUE );
-    /* 1. ·Î±ëÀ» ÇÏ±â À§ÇØ ·Î±× °ü¸®ÀÚÀÇ lockÀ» È¹µæÇÏ°í,
-     *    ·Î±×¸¦ ±â·ÏÇÒ °ø°£À» È®ÀÎÇÑ´Ù.
-     *  - ¸¸¾à ·Î±×ÆÄÀÏ °ø°£ÀÌ ºÎÁ·ÇÏ´Ù¸é, END ·Î±×ÆÄÀÏ ·Î±×¸¦
-     *      ³²±â°í ´ÙÀ½ ·Î±×ÆÄÀÏ·Î switch ÇÑ´Ù.
-     *  - last LSNÀ» »õ·Î¿î ·Î±×ÆÄÀÏÀÇ LSNÀ¸·Î Àç¼³Á¤ÇÑ´Ù.
-     *  - ·Î±×ÆÄÀÏ switch È½¼ö°¡ checkpoint interval¿¡ ¸¸Á·ÇÏ¸é
-     *      checkpoint¸¦ ¼öÇàÇÑ´Ù. */
+    /* 1. ë¡œê¹…ì„ í•˜ê¸° ìœ„í•´ ë¡œê·¸ ê´€ë¦¬ìžì˜ lockì„ íšë“í•˜ê³ ,
+     *    ë¡œê·¸ë¥¼ ê¸°ë¡í•  ê³µê°„ì„ í™•ì¸í•œë‹¤.
+     *  - ë§Œì•½ ë¡œê·¸íŒŒì¼ ê³µê°„ì´ ë¶€ì¡±í•˜ë‹¤ë©´, END ë¡œê·¸íŒŒì¼ ë¡œê·¸ë¥¼
+     *      ë‚¨ê¸°ê³  ë‹¤ìŒ ë¡œê·¸íŒŒì¼ë¡œ switch í•œë‹¤.
+     *  - last LSNì„ ìƒˆë¡œìš´ ë¡œê·¸íŒŒì¼ì˜ LSNìœ¼ë¡œ ìž¬ì„¤ì •í•œë‹¤.
+     *  - ë¡œê·¸íŒŒì¼ switch íšŸìˆ˜ê°€ checkpoint intervalì— ë§Œì¡±í•˜ë©´
+     *      checkpointë¥¼ ìˆ˜í–‰í•œë‹¤. */
 
     /* BUG-35392 */
-    /* aTrans´Â NULL·Î µé¾î¿Ã ¼ö ÀÖ´Ù. */
+    /* aTransëŠ” NULLë¡œ ë“¤ì–´ì˜¬ ìˆ˜ ìžˆë‹¤. */
     if ( aTrans != NULL )
     {
         sSlotID = (UInt)smLayerCallback::getTransSlot( aTrans );
     }
     else
-    {   /* ½Ã½ºÅÛ Æ®·£Àè¼ÇÀº ÇÑ¹ø¿¡ ÇÏ³ª¸¸ ½ÇÇà °¡´É */
+    {   /* ì‹œìŠ¤í…œ íŠ¸ëžœìž­ì…˜ì€ í•œë²ˆì— í•˜ë‚˜ë§Œ ì‹¤í–‰ ê°€ëŠ¥ */
         sSlotID = mFstChkLSNArrSize - 1 ;
 
         IDE_TEST( mMutex4NullTrans.lock( NULL ) != IDE_SUCCESS );
         sIsLock4NullTrans = ID_TRUE;
     }
 
-    /* ¾ÈÀüÇÏ°Ô ¾²¿©Áø ÃÖ´ë LSNÀ» ±¸ÇÏ±â À§ÇØ Ã¼Å© */
+    /* ì•ˆì „í•˜ê²Œ ì“°ì—¬ì§„ ìµœëŒ€ LSNì„ êµ¬í•˜ê¸° ìœ„í•´ ì²´í¬ */
     setFstCheckLSN( sSlotID );
     sIsSetFstChkLSN = ID_TRUE;
 
@@ -3478,46 +3478,46 @@ IDE_RC smrLogMgr::lockAndWriteLog4FastUnlock( idvSQL   * aStatistics,
     sIsLocked = ID_TRUE;
 
     /* check log size */
-    /* ÀÌ ¼Ó¿¡¼­ File End Log¸¦ ÂïÀ¸¸é¼­ Log File Switch°¡ ¹ß»ýÇÒ ¼ö ÀÖ´Ù.
-     * LSN°ªÀ» ÀÌº¸´Ù ¸ÕÀú µû°Ô µÇ¸é, LSN°ªÀÌ °Å²Ù·Î ±â·ÏµÇ´Â Çö»óÀÌ ¹ß»ýÇÑ´Ù. */
+    /* ì´ ì†ì—ì„œ File End Logë¥¼ ì°ìœ¼ë©´ì„œ Log File Switchê°€ ë°œìƒí•  ìˆ˜ ìžˆë‹¤.
+     * LSNê°’ì„ ì´ë³´ë‹¤ ë¨¼ì € ë”°ê²Œ ë˜ë©´, LSNê°’ì´ ê±°ê¾¸ë¡œ ê¸°ë¡ë˜ëŠ” í˜„ìƒì´ ë°œìƒí•œë‹¤. */
     IDE_TEST( reserveLogSpace( aRawOrCompLogSize,
                                aIsLogFileSwitched ) != IDE_SUCCESS );
 
-    /* 2. ·Î±×ÀÇ Ãâ·Â Begin LSN¿¡ ¼³Á¤ÇÑ´Ù. */
+    /* 2. ë¡œê·¸ì˜ ì¶œë ¥ Begin LSNì— ì„¤ì •í•œë‹¤. */
     SM_SET_LSN( *aBeginLSN,
                 mCurLogFile->mFileNo,
                 mCurLogFile->mOffset );
 
-    /* 3.ÇöÀç ·Î±×°¡ ±â·ÏµÉ LSN */
+    /* 3.í˜„ìž¬ ë¡œê·¸ê°€ ê¸°ë¡ë  LSN */
     SM_SET_LSN( sLSN,
                 mLstLSN.mLSN.mFileNo,
                 mLstLSN.mLSN.mOffset );
 
-    /* Log FileÀ» ÅëÇØ ¾òÀº LSN°ú mLstLSNÀ» ÅëÇØ ¾òÀº LSNÀÌ °°¾Æ¾ß ÇÑ´Ù */
+    /* Log Fileì„ í†µí•´ ì–»ì€ LSNê³¼ mLstLSNì„ í†µí•´ ì–»ì€ LSNì´ ê°™ì•„ì•¼ í•œë‹¤ */
     IDE_DASSERT( smrCompareLSN::isEQ( aBeginLSN, &sLSN )
                  == ID_TRUE );
 
-    /* ·Î±×ÆÄÀÏÀÇ ¸Ç Ã³À½¿¡´Â FIle Begin ·Î±×°¡ ÂïÈ÷¹Ç·Î,
-     * ÀÏ¹Ý·Î±×°¡ ·Î±×ÆÄÀÏÀÇ Offset : 0 ¿¡ ±â·ÏµÇ¾î¼­´Â ¾ÈµÈ´Ù. */
+    /* ë¡œê·¸íŒŒì¼ì˜ ë§¨ ì²˜ìŒì—ëŠ” FIle Begin ë¡œê·¸ê°€ ì°ížˆë¯€ë¡œ,
+     * ì¼ë°˜ë¡œê·¸ê°€ ë¡œê·¸íŒŒì¼ì˜ Offset : 0 ì— ê¸°ë¡ë˜ì–´ì„œëŠ” ì•ˆëœë‹¤. */
     IDE_ASSERT( sLSN.mOffset != 0 );
 
     /* BUG-35392 */
     /* BUG-37018 There is some mistake on logfile Offset calculation
-     * appendDummyHeadÇÔ¼ö ³»ÀÇ memcopyÈ½ ¼ö¸¦ ÁÙÀÌ±â À§ÇØ
-     * aRawOrCompLogÀÚÃ¼¿¡ dummy flag¸¦ ¼³Á¤ÇÑ´Ù. */
+     * appendDummyHeadí•¨ìˆ˜ ë‚´ì˜ memcopyíšŸ ìˆ˜ë¥¼ ì¤„ì´ê¸° ìœ„í•´
+     * aRawOrCompLogìžì²´ì— dummy flagë¥¼ ì„¤ì •í•œë‹¤. */
     smrLogHeadI::setFlag( (smrLogHead*)aRawOrCompLog,
                           smrLogHeadI::getFlag((smrLogHead*)aRawOrCompLog) | SMR_LOG_DUMMY_LOG_OK);
 
-    /* Log¿¡ LSNÀ» ±â·ÏÇÑ´Ù. */
+    /* Logì— LSNì„ ê¸°ë¡í•œë‹¤. */
     setLogLSN( aRawOrCompLog,
                sLSN );
 
-    /* Log¿¡ Magic Number¸¦ ±â·Ï ÇÑ´Ù. */
+    /* Logì— Magic Numberë¥¼ ê¸°ë¡ í•œë‹¤. */
     setLogMagic( aRawOrCompLog,
                  &sLSN );
 
     /* ------------------------------------------------
-     * 4. ·Î±×ÆÄÀÏ¿¡ ·Î±×¸¦ ±â·ÏÇÒ °ø°£À» È®º¸ÇÑ´Ù.
+     * 4. ë¡œê·¸íŒŒì¼ì— ë¡œê·¸ë¥¼ ê¸°ë¡í•  ê³µê°„ì„ í™•ë³´í•œë‹¤.
      * ----------------------------------------------*/
     mCurLogFile->appendDummyHead( aRawOrCompLog, 
                                   aRawOrCompLogSize, 
@@ -3525,28 +3525,28 @@ IDE_RC smrLogMgr::lockAndWriteLog4FastUnlock( idvSQL   * aStatistics,
 
 
     /* BUG-37018 There is some mistake on logfile Offset calculation
-     * dummy log¸¦ log buffer¿¡ ±â·ÏÇÑ ÈÄ,
-     * cm buffer or replicationÀ» À§ÇØ dummy flag¸¦ ÇØÁ¦ ÇÑ´Ù. */
+     * dummy logë¥¼ log bufferì— ê¸°ë¡í•œ í›„,
+     * cm buffer or replicationì„ ìœ„í•´ dummy flagë¥¼ í•´ì œ í•œë‹¤. */
     smrLogHeadI::setFlag( (smrLogHead*)aRawOrCompLog,
                           smrLogHeadI::getFlag((smrLogHead*)aRawOrCompLog) & ~SMR_LOG_DUMMY_LOG_OK);
 
 
-    /* AllocMutex¸¦ unlockÇÏ¸é mCurLogFile °ªÀÌ º¯°æ µÉ ¼ö ÀÖ´Ù.
-     * ÀÌÈÄ Ã³¸®¸¦ À§ÇØ º¹»çÇØµÐ´Ù. */
+    /* AllocMutexë¥¼ unlockí•˜ë©´ mCurLogFile ê°’ì´ ë³€ê²½ ë  ìˆ˜ ìžˆë‹¤.
+     * ì´í›„ ì²˜ë¦¬ë¥¼ ìœ„í•´ ë³µì‚¬í•´ë‘”ë‹¤. */
     sCurLogFile = mCurLogFile;
 
     /* ------------------------------------------------
-     * 5. »õ·Î¿î LSNÀ» last LSN ¼³Á¤¿¡ ÇÏ°í, 
-     *  lstLSNÀ» ¼³Á¤ÇÑ ´ÙÀ½ ·Î±× °ü¸®ÀÚÀÇ lockÀ» Ç¬´Ù.
+     * 5. ìƒˆë¡œìš´ LSNì„ last LSN ì„¤ì •ì— í•˜ê³ , 
+     *  lstLSNì„ ì„¤ì •í•œ ë‹¤ìŒ ë¡œê·¸ ê´€ë¦¬ìžì˜ lockì„ í‘¼ë‹¤.
      * ----------------------------------------------*/
     setLstLSN( mCurLogFile->mFileNo,
                mCurLogFile->mOffset );
 
-    /* ÇöÀç ¾î´À LSN±îÁö ·Î±×¸¦ ±â·ÏÇß´ÂÁö¸¦ SettingÇÑ´Ù. */
+    /* í˜„ìž¬ ì–´ëŠ LSNê¹Œì§€ ë¡œê·¸ë¥¼ ê¸°ë¡í–ˆëŠ”ì§€ë¥¼ Settingí•œë‹¤. */
     setLstWriteLSN( sLSN );
 
     /* BUG-35392 */
-    /* ¾ÐÃàÇÏÁö ¾ÊÀº ¿øº»·Î±×¸¦ Replication Log Buffer·Î º¹»ç */
+    /* ì••ì¶•í•˜ì§€ ì•Šì€ ì›ë³¸ë¡œê·¸ë¥¼ Replication Log Bufferë¡œ ë³µì‚¬ */
     if ( smrRecoveryMgr::mCopyToRPLogBufFunc != NULL )
     {
         copyLogToReplBuffer( aStatistics,
@@ -3559,7 +3559,7 @@ IDE_RC smrLogMgr::lockAndWriteLog4FastUnlock( idvSQL   * aStatistics,
         /* nothing to do */
     }
 
-    // ¿©±â ±îÁö sync ÇØ¾ß ÇÑ´Ù. 
+    // ì—¬ê¸° ê¹Œì§€ sync í•´ì•¼ í•œë‹¤. 
     if ( aEndLSN != NULL )
     {
         SM_SET_LSN( *aEndLSN,
@@ -3575,14 +3575,14 @@ IDE_RC smrLogMgr::lockAndWriteLog4FastUnlock( idvSQL   * aStatistics,
     IDE_TEST( unlock() != IDE_SUCCESS );
 
     /* ------------------------------------------------
-     * 6. ·Î±×ÆÄÀÏ¿¡ ·Î±×¸¦ ±â·ÏÇÑ´Ù.
+     * 6. ë¡œê·¸íŒŒì¼ì— ë¡œê·¸ë¥¼ ê¸°ë¡í•œë‹¤.
      * ----------------------------------------------*/
     
     /* BUG-37018 There is some mistake on logfile Offset calculation
-     * dummy log¸¦ ¿øº» ·Î±×·Î µ¤¾î¾µ¶§ ·Î±×°¡ ¿ÏÀüÈ÷ ±â·ÏµÇ±â Àü±îÁö
-     * dummy·Î±×¿©¾ß ÇÑ´Ù.
-     * µû¶ó¼­ dummy log flag¸¦ ¼¼ÆÃÇÏ°í write logÇÔ¼ö¿¡¼­ ·Î±×±â·ÏÀÌ ¿Ï·áµÈ
-     * ÈÄ¿¡ ÇØÁ¦ ÇÑ´Ù.*/
+     * dummy logë¥¼ ì›ë³¸ ë¡œê·¸ë¡œ ë®ì–´ì“¸ë•Œ ë¡œê·¸ê°€ ì™„ì „ížˆ ê¸°ë¡ë˜ê¸° ì „ê¹Œì§€
+     * dummyë¡œê·¸ì—¬ì•¼ í•œë‹¤.
+     * ë”°ë¼ì„œ dummy log flagë¥¼ ì„¸íŒ…í•˜ê³  write logí•¨ìˆ˜ì—ì„œ ë¡œê·¸ê¸°ë¡ì´ ì™„ë£Œëœ
+     * í›„ì— í•´ì œ í•œë‹¤.*/
     smrLogHeadI::setFlag( (smrLogHead*)aRawOrCompLog,
                           smrLogHeadI::getFlag((smrLogHead*)aRawOrCompLog) | SMR_LOG_DUMMY_LOG_OK);
 
@@ -3610,9 +3610,9 @@ IDE_RC smrLogMgr::lockAndWriteLog4FastUnlock( idvSQL   * aStatistics,
 
     if ( smuProperty::getLogBufferType() == SMU_LOG_BUFFER_TYPE_MEMORY )
     {
-        /* Log Buffer TypeÀÌ memoryÀÎ °æ¿ì,
-         * Update Transaction ¼ö¸¦
-         * Áõ°¡½ÃÄÑ¾ß ÇÏ´ÂÁö Ã¼Å©ÈÄ Áõ°¡½ÃÅ´ */
+        /* Log Buffer Typeì´ memoryì¸ ê²½ìš°,
+         * Update Transaction ìˆ˜ë¥¼
+         * ì¦ê°€ì‹œì¼œì•¼ í•˜ëŠ”ì§€ ì²´í¬í›„ ì¦ê°€ì‹œí‚´ */
         IDE_TEST( checkIncreaseUpdateTxCount(aTrans) != IDE_SUCCESS );
     }
     else
@@ -3659,16 +3659,16 @@ IDE_RC smrLogMgr::lockAndWriteLog4FastUnlock( idvSQL   * aStatistics,
 }
 
 /*********************************************************************
- *  ¾ÐÃàÇÏÁö ¾ÊÀº ¿øº»·Î±×¸¦ Replication Log Buffer·Î º¹»ç
+ *  ì••ì¶•í•˜ì§€ ì•Šì€ ì›ë³¸ë¡œê·¸ë¥¼ Replication Log Bufferë¡œ ë³µì‚¬
  *
- *  - Replication Log Buffer´Â SenderÀÇ ¼º´É ÃÖÀûÈ­¸¦ À§ÇØ
- *    ·Î±×¸¦ Memory·ÎºÎÅÍ Áï½Ã ÀÐ±â À§ÇÑ ¹öÆÛÀÌ´Ù.
+ *  - Replication Log BufferëŠ” Senderì˜ ì„±ëŠ¥ ìµœì í™”ë¥¼ ìœ„í•´
+ *    ë¡œê·¸ë¥¼ Memoryë¡œë¶€í„° ì¦‰ì‹œ ì½ê¸° ìœ„í•œ ë²„í¼ì´ë‹¤.
  *
- *  - ¾ÐÃàµÇÁö ¾ÊÀº ¿øº» ·Î±×¸¦ ±â·Ï ÇÏ¿© ºü¸¥ Ã³¸®¸¦ º¸ÀåÇÑ´Ù.
+ *  - ì••ì¶•ë˜ì§€ ì•Šì€ ì›ë³¸ ë¡œê·¸ë¥¼ ê¸°ë¡ í•˜ì—¬ ë¹ ë¥¸ ì²˜ë¦¬ë¥¼ ë³´ìž¥í•œë‹¤.
  *
- * [IN] aRawLog     - ¾ÐÃàµÇÁö ¾ÊÀº ¿øº»·Î±×
- * [IN] aRawLogSize - ¾ÐÃàµÇÁö ¾ÊÀº ¿øº»·Î±×ÀÇ Å©±â
- * [IN] aLSN        - ·Î±×ÀÇ LSN
+ * [IN] aRawLog     - ì••ì¶•ë˜ì§€ ì•Šì€ ì›ë³¸ë¡œê·¸
+ * [IN] aRawLogSize - ì••ì¶•ë˜ì§€ ì•Šì€ ì›ë³¸ë¡œê·¸ì˜ í¬ê¸°
+ * [IN] aLSN        - ë¡œê·¸ì˜ LSN
  *********************************************************************/
 void smrLogMgr::copyLogToReplBuffer( idvSQL * aStatistics,
                                      SChar  * aRawLog,
@@ -3679,14 +3679,14 @@ void smrLogMgr::copyLogToReplBuffer( idvSQL * aStatistics,
     IDE_DASSERT( aRawLogSize > 0 );
     IDE_DASSERT( smrLogComp::isCompressedLog( aRawLog ) == ID_FALSE );
 
-    /* ¿øº» Log¿¡ LSNÀ» ±â·ÏÇÑ´Ù. */
+    /* ì›ë³¸ Logì— LSNì„ ê¸°ë¡í•œë‹¤. */
     setLogLSN( aRawLog,
                aLSN );
-    /* ¿øº» Log¿¡ Magic Number¸¦ ±â·ÏÇÑ´Ù. */
+    /* ì›ë³¸ Logì— Magic Numberë¥¼ ê¸°ë¡í•œë‹¤. */
     setLogMagic( aRawLog,
                  &aLSN );
 
-    /* Replication log Buffer manager¿¡°Ô Ã³¸®¸¦ ¿äÃ»ÇÑ´Ù. */
+    /* Replication log Buffer managerì—ê²Œ ì²˜ë¦¬ë¥¼ ìš”ì²­í•œë‹¤. */
     smrRecoveryMgr::mCopyToRPLogBufFunc( aStatistics,
                                          aRawLogSize,
                                          aRawLog,
@@ -3695,33 +3695,33 @@ void smrLogMgr::copyLogToReplBuffer( idvSQL * aStatistics,
 
 
 /*
-    ·Î±× ±â·ÏÀü¿¡ ¼öÇàÇÒ ÀÛ¾÷ Ã³¸®
-      - Prev LSN±â·Ï
-      - Commit Log¿¡ ½Ã°¢ ±â·Ï
+    ë¡œê·¸ ê¸°ë¡ì „ì— ìˆ˜í–‰í•  ìž‘ì—… ì²˜ë¦¬
+      - Prev LSNê¸°ë¡
+      - Commit Logì— ì‹œê° ê¸°ë¡
  */
 IDE_RC smrLogMgr::onBeforeWriteLog( void     * aTrans,
                                     SChar    * aRawLog,
                                     smLSN    * aPPrvLSN )
 {
-    // aTrans ´Â NULL·Î µé¾î¿Ã ¼ö ÀÖ´Ù.
+    // aTrans ëŠ” NULLë¡œ ë“¤ì–´ì˜¬ ìˆ˜ ìžˆë‹¤.
     IDE_DASSERT( aRawLog != NULL );
-    // aPPrvLSN Àº NULL·Î µé¾î¿Ã ¼ö ÀÖ´Ù.
+    // aPPrvLSN ì€ NULLë¡œ ë“¤ì–´ì˜¬ ìˆ˜ ìžˆë‹¤.
 
     smrLogHead*        sLogHead;
     smrTransCommitLog* sCommitLog;
 
     sLogHead = (smrLogHead*)aRawLog;
 
-    // ¿øº»·Î±×´Â ¾ÐÃàµÇÁö ¾ÊÀº ·Î±×¿©¾ß ÇÑ´Ù.
+    // ì›ë³¸ë¡œê·¸ëŠ” ì••ì¶•ë˜ì§€ ì•Šì€ ë¡œê·¸ì—¬ì•¼ í•œë‹¤.
     IDE_DASSERT( (smrLogHeadI::getFlag(sLogHead) & SMR_LOG_COMPRESSED_MASK)
                  ==  SMR_LOG_COMPRESSED_NO );
 
     /* ------------------------------------------------
-     * 1. smrLogHeadÀÇ prev undo LSNÀ» ¼³Á¤ÇÑ´Ù.
+     * 1. smrLogHeadì˜ prev undo LSNì„ ì„¤ì •í•œë‹¤.
      * ----------------------------------------------*/
     setLogHdrPrevLSN(aTrans, sLogHead, aPPrvLSN);
 
-    /* ¸¸¾à tx commit ·Î±×¶ó¸é time value¸¦ ÀúÀåÇÑ´Ù. */
+    /* ë§Œì•½ tx commit ë¡œê·¸ë¼ë©´ time valueë¥¼ ì €ìž¥í•œë‹¤. */
     if ( (smrLogHeadI::getType(sLogHead) == SMR_LT_MEMTRANS_COMMIT) ||
          (smrLogHeadI::getType(sLogHead) == SMR_LT_DSKTRANS_COMMIT) )
     {
@@ -3735,7 +3735,7 @@ IDE_RC smrLogMgr::onBeforeWriteLog( void     * aTrans,
 
 #ifdef DEBUG
    /* ------------------------------------------------
-    * 2. ¹öÆÛ¿¡ ±â·ÏµÈ ·Î±×ÀÇ Head¿Í TailÀÌ ÀÏÄ¡ÇÏ´ÂÁö ºñ±³
+    * 2. ë²„í¼ì— ê¸°ë¡ëœ ë¡œê·¸ì˜ Headì™€ Tailì´ ì¼ì¹˜í•˜ëŠ”ì§€ ë¹„êµ
     * ----------------------------------------------*/
     IDE_TEST( validateLogRec( aRawLog ) != IDE_SUCCESS );
 #endif
@@ -3750,12 +3750,12 @@ IDE_RC smrLogMgr::onBeforeWriteLog( void     * aTrans,
 }
 
 /*
-    ·Î±× ±â·ÏÈÄ¿¡ ¼öÇàÇÒ ÀÛ¾÷µé Ã³¸®
+    ë¡œê·¸ ê¸°ë¡í›„ì— ìˆ˜í–‰í•  ìž‘ì—…ë“¤ ì²˜ë¦¬
 
     [IN] aTrans   - Transaction
-    [IN] aLogHead - ±â·ÏÇÑ ·Î±×ÀÇ Head
-    [IN] aLSN     - ±â·ÏÇÑ ·Î±×ÀÇ LSN
-    [IN] aWrittenLogSize - ±â·ÏÇÑ ·Î±×ÀÇ Å©±â
+    [IN] aLogHead - ê¸°ë¡í•œ ë¡œê·¸ì˜ Head
+    [IN] aLSN     - ê¸°ë¡í•œ ë¡œê·¸ì˜ LSN
+    [IN] aWrittenLogSize - ê¸°ë¡í•œ ë¡œê·¸ì˜ í¬ê¸°
  */
 IDE_RC smrLogMgr::onAfterWriteLog( idvSQL     * aStatistics,
                                    void       * aTrans,
@@ -3764,8 +3764,8 @@ IDE_RC smrLogMgr::onAfterWriteLog( idvSQL     * aStatistics,
                                    UInt         aWrittenLogSize )
 {
 
-    /* 1. Æ®·£Àç¼ÇÀÇ °æ¿ì ±â·ÏÇÑ ·Î±×ÀÇ begin LSN°ú Last LogLSNÀ»
-     *    Æ®·£Àè¼Ç¿¡ ¼³Á¤ÇÑ´Ù. */
+    /* 1. íŠ¸ëžœìž¬ì…˜ì˜ ê²½ìš° ê¸°ë¡í•œ ë¡œê·¸ì˜ begin LSNê³¼ Last LogLSNì„
+     *    íŠ¸ëžœìž­ì…˜ì— ì„¤ì •í•œë‹¤. */
     IDE_TEST( updateTransLSNInfo( aStatistics,
                                   aTrans,
                                   &aLSN,
@@ -3775,10 +3775,10 @@ IDE_RC smrLogMgr::onAfterWriteLog( idvSQL     * aStatistics,
     if ( smuProperty::getLogBufferType() == SMU_LOG_BUFFER_TYPE_MEMORY )
     {
         // BUG-15396
-        // Log Buffer TypeÀÌ memoryÀÏ °æ¿ì, Update Transaction ¼ö¸¦
-        // °¨¼Ò½ÃÄÑ¾ß ÇÏ´ÂÁö Ã¼Å©ÈÄ °¨¼Ò½ÃÅ´
-        // Group Commit ½Ã ÇÊ¿äÇÑ Á¤º¸·Î, mmapÀÎ °æ¿ì¿¡´Â ¼Óµµ°¡
-        // ºü¸£±â ¶§¹®¿¡ group commit ÇÒ ÇÊ¿ä°¡ ¾ø¾î¼­ ¼³Á¤ÇÏÁö ¾ÊÀ½
+        // Log Buffer Typeì´ memoryì¼ ê²½ìš°, Update Transaction ìˆ˜ë¥¼
+        // ê°ì†Œì‹œì¼œì•¼ í•˜ëŠ”ì§€ ì²´í¬í›„ ê°ì†Œì‹œí‚´
+        // Group Commit ì‹œ í•„ìš”í•œ ì •ë³´ë¡œ, mmapì¸ ê²½ìš°ì—ëŠ” ì†ë„ê°€
+        // ë¹ ë¥´ê¸° ë•Œë¬¸ì— group commit í•  í•„ìš”ê°€ ì—†ì–´ì„œ ì„¤ì •í•˜ì§€ ì•ŠìŒ
         IDE_TEST( checkDecreaseUpdateTxCount(aTrans, aLogHead)
                   != IDE_SUCCESS );
     }
@@ -3797,36 +3797,36 @@ IDE_RC smrLogMgr::onAfterWriteLog( idvSQL     * aStatistics,
 
 
 /*
-  TransactionÀÌ ·Î±×¸¦ ±â·ÏÇÒ ¶§
-  Update TransactionÀÇ ¼ö¸¦ Áõ°¡½ÃÄÑ¾ß ÇÏ´ÂÁö Ã¼Å©ÇÑ´Ù.
+  Transactionì´ ë¡œê·¸ë¥¼ ê¸°ë¡í•  ë•Œ
+  Update Transactionì˜ ìˆ˜ë¥¼ ì¦ê°€ì‹œì¼œì•¼ í•˜ëŠ”ì§€ ì²´í¬í•œë‹¤.
 
-  - ÇÏ³ªÀÇ Æ®·£Àè¼Ç¿¡ ´ëÇØ ·Î±×°¡ ÃÖÃÊ ±â·ÏµÉ ¶§ 1 Áõ°¡
-  - Restart RecoveryÁß¿¡´Â CountÇÏÁö ¾ÊÀ½
-  - ¿©±â¼­ °è»êÇÑ Update TransactionÀÇ ¼ö·Î Group CommitÀ» ½Ç½ÃÇÒÁöÀÇ ¿©ºÎ°áÁ¤
+  - í•˜ë‚˜ì˜ íŠ¸ëžœìž­ì…˜ì— ëŒ€í•´ ë¡œê·¸ê°€ ìµœì´ˆ ê¸°ë¡ë  ë•Œ 1 ì¦ê°€
+  - Restart Recoveryì¤‘ì—ëŠ” Countí•˜ì§€ ì•ŠìŒ
+  - ì—¬ê¸°ì„œ ê³„ì‚°í•œ Update Transactionì˜ ìˆ˜ë¡œ Group Commitì„ ì‹¤ì‹œí• ì§€ì˜ ì—¬ë¶€ê²°ì •
 
-  aTrans   [IN] ·Î±×¸¦ ±â·ÏÇÏ·Á´Â Æ®·£Àè¼Ç °´Ã¼
-  aLogHead [IN] ±â·ÏÇÏ·Á´Â ·Î±×ÀÇ Head
+  aTrans   [IN] ë¡œê·¸ë¥¼ ê¸°ë¡í•˜ë ¤ëŠ” íŠ¸ëžœìž­ì…˜ ê°ì²´
+  aLogHead [IN] ê¸°ë¡í•˜ë ¤ëŠ” ë¡œê·¸ì˜ Head
 */
 inline IDE_RC smrLogMgr::checkIncreaseUpdateTxCount( void       * aTrans )
 {
-    // Restart RecoveryÁß¿¡´Â Active TransactionµéÀÇ Rollback½Ã
-    // ·Î±×¸¦ ÇÑ¹øµµ ±â·ÏÇÏÁö ¾Ê°í Abort Log¸¦ ±â·ÏÇÒ ¼ö ÀÖ´Ù.
+    // Restart Recoveryì¤‘ì—ëŠ” Active Transactionë“¤ì˜ Rollbackì‹œ
+    // ë¡œê·¸ë¥¼ í•œë²ˆë„ ê¸°ë¡í•˜ì§€ ì•Šê³  Abort Logë¥¼ ê¸°ë¡í•  ìˆ˜ ìžˆë‹¤.
     //
-    // Normal ProcessingÀÏ¶§¸¸ Update TransactionÀ» CountÇÑ´Ù.
+    // Normal Processingì¼ë•Œë§Œ Update Transactionì„ Countí•œë‹¤.
     if ( smrRecoveryMgr::isRestartRecoveryPhase() == ID_FALSE )
     {
         if ( aTrans != NULL )
         {
-            // Log¸¦ ±â·ÏÇÏ´Â ½ÃÁ¡±îÁö ReadOnly¶ó¸é,
-            // ÀÌ Æ®·£Àè¼ÇÀº ÃÖÃÊ·Î ·Î±×¸¦ ±â·ÏÇÏ´Â °ÍÀÌ´Ù.
+            // Logë¥¼ ê¸°ë¡í•˜ëŠ” ì‹œì ê¹Œì§€ ReadOnlyë¼ë©´,
+            // ì´ íŠ¸ëžœìž­ì…˜ì€ ìµœì´ˆë¡œ ë¡œê·¸ë¥¼ ê¸°ë¡í•˜ëŠ” ê²ƒì´ë‹¤.
             if ( smLayerCallback::isReadOnly( aTrans ) == ID_TRUE )
             {
-                // Update Transaction ¼ö¸¦ ÇÏ³ª Áõ°¡½ÃÅ²´Ù.
+                // Update Transaction ìˆ˜ë¥¼ í•˜ë‚˜ ì¦ê°€ì‹œí‚¨ë‹¤.
                 IDE_TEST( incUpdateTxCount() != IDE_SUCCESS );
 
-                // smrLogMgr::writeLog¿¡¼­
+                // smrLogMgr::writeLogì—ì„œ
                 // smLayerCallback::setLstUndoNxtLSN(aTrans, &sLSN)
-                // À» È£ÃâÇÒ ¶§ Æ®·£Àè¼ÇÀÌ Update TransactionÀ¸·Î ¼³Á¤µÈ´Ù.
+                // ì„ í˜¸ì¶œí•  ë•Œ íŠ¸ëžœìž­ì…˜ì´ Update Transactionìœ¼ë¡œ ì„¤ì •ëœë‹¤.
             }
             else
             {
@@ -3851,38 +3851,38 @@ inline IDE_RC smrLogMgr::checkIncreaseUpdateTxCount( void       * aTrans )
 }
 
 /*
-  TransactionÀÌ ·Î±×¸¦ ±â·ÏÇÒ ¶§
-  Update TransactionÀÇ ¼ö¸¦ °¨¼Ò½ÃÄÑ¾ß ÇÏ´ÂÁö Ã¼Å©ÇÑ´Ù.
+  Transactionì´ ë¡œê·¸ë¥¼ ê¸°ë¡í•  ë•Œ
+  Update Transactionì˜ ìˆ˜ë¥¼ ê°ì†Œì‹œì¼œì•¼ í•˜ëŠ”ì§€ ì²´í¬í•œë‹¤.
 
-  - CommitÀÌ³ª Abort·Î±×°¡ ±â·ÏµÉ ¶§ 1°¨¼Ò
-  - Restart RecoveryÁß¿¡´Â CountÇÏÁö ¾ÊÀ½
-  - ¿©±â¼­ °è»êÇÑ Update TransactionÀÇ ¼ö·Î Group CommitÀ» ½Ç½ÃÇÒÁöÀÇ ¿©ºÎ°áÁ¤
+  - Commitì´ë‚˜ Abortë¡œê·¸ê°€ ê¸°ë¡ë  ë•Œ 1ê°ì†Œ
+  - Restart Recoveryì¤‘ì—ëŠ” Countí•˜ì§€ ì•ŠìŒ
+  - ì—¬ê¸°ì„œ ê³„ì‚°í•œ Update Transactionì˜ ìˆ˜ë¡œ Group Commitì„ ì‹¤ì‹œí• ì§€ì˜ ì—¬ë¶€ê²°ì •
 
-  aTrans   [IN] ·Î±×¸¦ ±â·ÏÇÏ·Á´Â Æ®·£Àè¼Ç °´Ã¼
-  aLogHead [IN] ±â·ÏÇÏ·Á´Â ·Î±×ÀÇ Head
+  aTrans   [IN] ë¡œê·¸ë¥¼ ê¸°ë¡í•˜ë ¤ëŠ” íŠ¸ëžœìž­ì…˜ ê°ì²´
+  aLogHead [IN] ê¸°ë¡í•˜ë ¤ëŠ” ë¡œê·¸ì˜ Head
 */
 inline IDE_RC smrLogMgr::checkDecreaseUpdateTxCount( void       * aTrans,
                                                      smrLogHead * aLogHead )
 {
-    // Restart RecoveryÁß¿¡´Â Active TransactionµéÀÇ Rollback½Ã
-    // ·Î±×¸¦ ÇÑ¹øµµ ±â·ÏÇÏÁö ¾Ê°í Abort Log¸¦ ±â·ÏÇÒ ¼ö ÀÖ´Ù.
+    // Restart Recoveryì¤‘ì—ëŠ” Active Transactionë“¤ì˜ Rollbackì‹œ
+    // ë¡œê·¸ë¥¼ í•œë²ˆë„ ê¸°ë¡í•˜ì§€ ì•Šê³  Abort Logë¥¼ ê¸°ë¡í•  ìˆ˜ ìžˆë‹¤.
     //
-    // Normal ProcessingÀÏ¶§¸¸ Update TransactionÀ» CountÇÑ´Ù.
+    // Normal Processingì¼ë•Œë§Œ Update Transactionì„ Countí•œë‹¤.
     if ( smrRecoveryMgr::isRestartRecoveryPhase() == ID_FALSE )
     {
         if ( aTrans != NULL )
         {
-            // Log¸¦ ±â·ÏÇÏ´Â ½ÃÁ¡±îÁö ReadOnly¶ó¸é,
-            // ÀÌ Æ®·£Àè¼ÇÀº ÃÖÃÊ·Î ·Î±×¸¦ ±â·ÏÇÏ´Â °ÍÀÌ´Ù.
+            // Logë¥¼ ê¸°ë¡í•˜ëŠ” ì‹œì ê¹Œì§€ ReadOnlyë¼ë©´,
+            // ì´ íŠ¸ëžœìž­ì…˜ì€ ìµœì´ˆë¡œ ë¡œê·¸ë¥¼ ê¸°ë¡í•˜ëŠ” ê²ƒì´ë‹¤.
             if ( smLayerCallback::isReadOnly( aTrans ) == ID_FALSE )
             {
-                // Update TransactionÀÌ ¸¶Áö¸·À¸·Î Âï´Â ·Î±×¶ó¸é?
+                // Update Transactionì´ ë§ˆì§€ë§‰ìœ¼ë¡œ ì°ëŠ” ë¡œê·¸ë¼ë©´?
                 if ( (smrLogHeadI::getType( aLogHead ) == SMR_LT_MEMTRANS_COMMIT) ||
                      (smrLogHeadI::getType( aLogHead ) == SMR_LT_DSKTRANS_COMMIT) ||
                      (smrLogHeadI::getType( aLogHead ) == SMR_LT_MEMTRANS_ABORT)  ||
                      (smrLogHeadI::getType( aLogHead ) == SMR_LT_DSKTRANS_ABORT) )
                 {
-                    // Update TransactionÀÇ ¼ö¸¦ ÇÏ³ª °¨¼ÒÇÑ´Ù.
+                    // Update Transactionì˜ ìˆ˜ë¥¼ í•˜ë‚˜ ê°ì†Œí•œë‹¤.
                     IDE_TEST( decUpdateTxCount() != IDE_SUCCESS );
                 }
                 else
@@ -3901,15 +3901,15 @@ inline IDE_RC smrLogMgr::checkDecreaseUpdateTxCount( void       * aTrans,
         }
 // assertion code
 #if defined(DEBUG)
-        // Update TransactionÀÌ ¸¶Áö¸·À¸·Î Âï´Â ·Î±×¶ó¸é?
+        // Update Transactionì´ ë§ˆì§€ë§‰ìœ¼ë¡œ ì°ëŠ” ë¡œê·¸ë¼ë©´?
         if ( (smrLogHeadI::getType( aLogHead ) == SMR_LT_MEMTRANS_COMMIT) ||
              (smrLogHeadI::getType( aLogHead ) == SMR_LT_DSKTRANS_COMMIT) ||
              (smrLogHeadI::getType( aLogHead ) == SMR_LT_MEMTRANS_ABORT)  ||
              (smrLogHeadI::getType( aLogHead ) == SMR_LT_DSKTRANS_ABORT) )
         {
-            // Transaction ¾øÀÌ Commit/Abort ºÒ°¡
+            // Transaction ì—†ì´ Commit/Abort ë¶ˆê°€
             IDE_DASSERT( aTrans != NULL );
-            // Readonly TransactionÀº Commit/Abort·Î±×¸¦ ÂïÀ» ¼ö ¾øÀ½
+            // Readonly Transactionì€ Commit/Abortë¡œê·¸ë¥¼ ì°ì„ ìˆ˜ ì—†ìŒ
             IDE_DASSERT( smLayerCallback::isReadOnly( aTrans ) == ID_FALSE );
         }
         else
@@ -3932,10 +3932,10 @@ inline IDE_RC smrLogMgr::checkDecreaseUpdateTxCount( void       * aTrans,
 }
 
 /***********************************************************************
- * Description : Æ¯Á¤ ·Î±×ÆÄÀÏÀÇ Ã¹¹øÂ° ·Î±×ÀÇ Head¸¦ ÀÐ´Â´Ù.
+ * Description : íŠ¹ì • ë¡œê·¸íŒŒì¼ì˜ ì²«ë²ˆì§¸ ë¡œê·¸ì˜ Headë¥¼ ì½ëŠ”ë‹¤.
  *
- * aFileNo  - [IN] ÀÐ¾îµéÀÏ ·Î±×ÆÄÀÏÀÇ ¹øÈ£
- * aLogHead - [OUT] ÀÐ¾îµéÀÎ ·Î±×ÀÇ Header¸¦ ³ÖÀ» Output Parameter
+ * aFileNo  - [IN] ì½ì–´ë“¤ì¼ ë¡œê·¸íŒŒì¼ì˜ ë²ˆí˜¸
+ * aLogHead - [OUT] ì½ì–´ë“¤ì¸ ë¡œê·¸ì˜ Headerë¥¼ ë„£ì„ Output Parameter
  ***********************************************************************/
 IDE_RC smrLogMgr::readFirstLogHeadFromDisk( UInt         aFileNo,
                                             smrLogHead * aLogHead )
@@ -3965,17 +3965,17 @@ IDE_RC smrLogMgr::readFirstLogHeadFromDisk( UInt         aFileNo,
     IDE_TEST( sFile.open( ID_FALSE ) != IDE_SUCCESS );
     sState = 2;
 
-    // ·Î±×ÆÄÀÏ ÀüÃ¼°¡ ¾Æ´Ï°í Ã¹¹øÂ° ·Î±×ÀÇ Head¸¸ ÀÐ¾î µéÀÎ´Ù.
+    // ë¡œê·¸íŒŒì¼ ì „ì²´ê°€ ì•„ë‹ˆê³  ì²«ë²ˆì§¸ ë¡œê·¸ì˜ Headë§Œ ì½ì–´ ë“¤ì¸ë‹¤.
     IDE_TEST( sFile.read( NULL,
                           0,
                           (void*)aLogHead,
                           ID_SIZEOF(smrLogHead) )
               != IDE_SUCCESS );
 
-    // ·Î±× ÆÄÀÏÀÇ Ã¹¹øÂ° ·Î±×´Â ¾ÐÃàÇÏÁö ¾Ê´Â´Ù.
-    // ÀÌÀ¯ :
-    //     FileÀÇ Ã¹¹øÂ° LogÀÇ LSNÀ» ÀÐ´Â ÀÛ¾÷À»
-    //     ºü¸£°Ô ¼öÇàÇÏ±â À§ÇÔ
+    // ë¡œê·¸ íŒŒì¼ì˜ ì²«ë²ˆì§¸ ë¡œê·¸ëŠ” ì••ì¶•í•˜ì§€ ì•ŠëŠ”ë‹¤.
+    // ì´ìœ  :
+    //     Fileì˜ ì²«ë²ˆì§¸ Logì˜ LSNì„ ì½ëŠ” ìž‘ì—…ì„
+    //     ë¹ ë¥´ê²Œ ìˆ˜í–‰í•˜ê¸° ìœ„í•¨
     IDE_ASSERT( smrLogComp::isCompressedLog( (SChar*)aLogHead ) == ID_FALSE );
 
     sState = 1;
@@ -4013,8 +4013,8 @@ IDE_RC smrLogMgr::readFirstLogHeadFromDisk( UInt         aFileNo,
 
 /***********************************************************************
  * Description :
- * °­Á¦·Î ÇöÀç ·Î±×ÆÄÀÏÀ» switch½ÃÅ²´Ù.
- * SwitchµÈ ·Î±×ÆÄÀÏÀ» ³¡±îÁö syncÇÑ ÈÄ, archive ½ÃÅ²´Ù.
+ * ê°•ì œë¡œ í˜„ìž¬ ë¡œê·¸íŒŒì¼ì„ switchì‹œí‚¨ë‹¤.
+ * Switchëœ ë¡œê·¸íŒŒì¼ì„ ëê¹Œì§€ syncí•œ í›„, archive ì‹œí‚¨ë‹¤.
  **********************************************************************/
 IDE_RC smrLogMgr::switchLogFileByForce()
 {
@@ -4031,7 +4031,7 @@ IDE_RC smrLogMgr::switchLogFileByForce()
 
     IDE_ASSERT( mCurLogFile->mFreeSize >= sLogFileEndSize );
 
-    // ·Î±×ÆÄÀÏÀÇ ³¡ÀÌ¹Ç·Î File End Log¸¦ ±â·ÏÇÑ´Ù.
+    // ë¡œê·¸íŒŒì¼ì˜ ëì´ë¯€ë¡œ File End Logë¥¼ ê¸°ë¡í•œë‹¤.
     writeFileEndLog();
 
     sSwitchedLogFileNo = mCurLogFile->mFileNo;
@@ -4039,25 +4039,25 @@ IDE_RC smrLogMgr::switchLogFileByForce()
 
     IDE_TEST( mLogFileMgr.switchLogFile( &mCurLogFile ) != IDE_SUCCESS );
 
-    // »õ ·Î±×ÆÄÀÏ·Î switch°¡ ¹ß»ýÇß±â ¶§¹®¿¡
-    // ·Î±×·¹ÄÚµå°¡ ±â·ÏµÉ À§Ä¡ÀÎ ·Î±×ÆÄÀÏÀÇ offsetÀº 0ÀÌ¾î¾ß ÇÔ.
+    // ìƒˆ ë¡œê·¸íŒŒì¼ë¡œ switchê°€ ë°œìƒí–ˆê¸° ë•Œë¬¸ì—
+    // ë¡œê·¸ë ˆì½”ë“œê°€ ê¸°ë¡ë  ìœ„ì¹˜ì¸ ë¡œê·¸íŒŒì¼ì˜ offsetì€ 0ì´ì–´ì•¼ í•¨.
     IDE_ASSERT( mCurLogFile->mOffset == 0 );
     IDE_DASSERT( sSwitchedLogFileNo + 1 == mCurLogFile->mFileNo );
 
     /* BUG-32137 [sm-disk-recovery] The setDirty operation in DRDB causes
      * contention of LOG_ALLOCATION_MUTEX. */
-    // ·Î±×ÆÄÀÏ Swtich°¡ ¹ß»ýÇÏ¿´À¸¹Ç·Î, »õ·Î ·Î±×°¡ ±â·ÏµÉ LSNµµ º¯°æ
+    // ë¡œê·¸íŒŒì¼ Swtichê°€ ë°œìƒí•˜ì˜€ìœ¼ë¯€ë¡œ, ìƒˆë¡œ ë¡œê·¸ê°€ ê¸°ë¡ë  LSNë„ ë³€ê²½
     setLstLSN( mCurLogFile->mFileNo,
                mCurLogFile->mOffset );
 
-    // ¾ÆÁ÷ ·Î±×°¡ ÇÏ³ªµµ ±â·ÏµÇÁö ¾ÊÀº »óÅÂ.
-    // ÆÄÀÏÀÇ Ã¹¹øÂ° ·Î±×·¹ÄÚµå·Î File Begin Log¸¦ ±â·ÏÇÑ´Ù.
+    // ì•„ì§ ë¡œê·¸ê°€ í•˜ë‚˜ë„ ê¸°ë¡ë˜ì§€ ì•Šì€ ìƒíƒœ.
+    // íŒŒì¼ì˜ ì²«ë²ˆì§¸ ë¡œê·¸ë ˆì½”ë“œë¡œ File Begin Logë¥¼ ê¸°ë¡í•œë‹¤.
     writeFileBeginLog();
 
     sState = 0;
     IDE_TEST( unlock() != IDE_SUCCESS );
 
-    // ÇØ´ç ·Î±×ÆÄÀÏ±îÁö sync½ÃÅ°°í archive list¿¡ Ãß°¡ÇÑ´Ù.
+    // í•´ë‹¹ ë¡œê·¸íŒŒì¼ê¹Œì§€ syncì‹œí‚¤ê³  archive listì— ì¶”ê°€í•œë‹¤.
     IDE_TEST( mLFThread.syncOrWait4SyncLogToLSN(
                                       SMR_LOG_SYNC_BY_SYS,
                                       sSwitchedLogFileNo,
@@ -4065,15 +4065,15 @@ IDE_RC smrLogMgr::switchLogFileByForce()
                                       NULL )   // aSyncedLFCnt
               != IDE_SUCCESS );
 
-    // ÇØ´ç ·Î±×ÆÄÀÏÀÌ archive µÉ¶§±îÁö ±â´Ù¸°´Ù.
+    // í•´ë‹¹ ë¡œê·¸íŒŒì¼ì´ archive ë ë•Œê¹Œì§€ ê¸°ë‹¤ë¦°ë‹¤.
     IDE_TEST( mArchiveThread.wait4EndArchLF( sSwitchedLogFileNo )
               != IDE_SUCCESS );
 
-    // lock/unlock»çÀÌ¿¡¼­ ¿¡·¯°¡ RaiseµÉ ¼ö ¾øÀ¸¹Ç·Î, stage Ã³¸® ¾ÈÇÑ´Ù.
+    // lock/unlockì‚¬ì´ì—ì„œ ì—ëŸ¬ê°€ Raiseë  ìˆ˜ ì—†ìœ¼ë¯€ë¡œ, stage ì²˜ë¦¬ ì•ˆí•œë‹¤.
     IDE_TEST( lockLogSwitchCount() != IDE_SUCCESS );
 
-    // ·Î±×ÆÄÀÏ switch¸¦ ¼öÇàÇÏ¿´À¸¹Ç·Î,
-    // ·Î±×ÆÄÀÏ switch counter¸¦ Áõ°¡ÇØÁØ´Ù.
+    // ë¡œê·¸íŒŒì¼ switchë¥¼ ìˆ˜í–‰í•˜ì˜€ìœ¼ë¯€ë¡œ,
+    // ë¡œê·¸íŒŒì¼ switch counterë¥¼ ì¦ê°€í•´ì¤€ë‹¤.
     mLogSwitchCount++;
 
     IDE_TEST( unlockLogSwitchCount() != IDE_SUCCESS );
@@ -4095,13 +4095,13 @@ IDE_RC smrLogMgr::switchLogFileByForce()
 }
 
 /***********************************************************************
- * Description : ¸ðµç LogFileÀ» Á¶»çÇØ¼­ aMinLSNº¸´Ù ÀÛ°Å³ª °°Àº LSNÀ» °¡Áö´Â ·Î±×¸¦
- *               Ã¹¹øÂ°·Î °¡Áö´Â LogFile No¸¦ ±¸ÇØ¼­ aNeedFirstFileNo¿¡ ³Ö¾îÁØ´Ù.
+ * Description : ëª¨ë“  LogFileì„ ì¡°ì‚¬í•´ì„œ aMinLSNë³´ë‹¤ ìž‘ê±°ë‚˜ ê°™ì€ LSNì„ ê°€ì§€ëŠ” ë¡œê·¸ë¥¼
+ *               ì²«ë²ˆì§¸ë¡œ ê°€ì§€ëŠ” LogFile Noë¥¼ êµ¬í•´ì„œ aNeedFirstFileNoì— ë„£ì–´ì¤€ë‹¤.
  *
  * aMinLSN          - [IN]  Minimum Log Sequence Number
- * aFirstFileNo     - [IN]  checkÇÒ Logfile Áß Ã¹¹øÂ° File Noµé
- * aEndFileNo       - [IN]  checkÇÒ Logfile Áß ¸¶Áö¸· File Noµé
- * aNeedFirstFileNo - [OUT] aMinLSN°ªº¸´Ù Å« °ªÀ» °¡Áø Ã¹¹øÂ° ·Î±× File No
+ * aFirstFileNo     - [IN]  checkí•  Logfile ì¤‘ ì²«ë²ˆì§¸ File Noë“¤
+ * aEndFileNo       - [IN]  checkí•  Logfile ì¤‘ ë§ˆì§€ë§‰ File Noë“¤
+ * aNeedFirstFileNo - [OUT] aMinLSNê°’ë³´ë‹¤ í° ê°’ì„ ê°€ì§„ ì²«ë²ˆì§¸ ë¡œê·¸ File No
  ***********************************************************************/
 IDE_RC smrLogMgr::getFirstNeedLFN( smLSN          aMinLSN,
                                    const UInt     aFirstFileNo,
@@ -4118,16 +4118,16 @@ IDE_RC smrLogMgr::getFirstNeedLFN( smLSN          aMinLSN,
         }
         else
         {
-            /* BUG-43974 EndLSNº¸´Ù Å« LSNÀ» ¿äÃ»ÇÏ¿´À» °æ¿ì
-             * EndLSNÀ» ³Ñ°ÜÁÖ¾î¾ß ÇÑ´Ù. */
+            /* BUG-43974 EndLSNë³´ë‹¤ í° LSNì„ ìš”ì²­í•˜ì˜€ì„ ê²½ìš°
+             * EndLSNì„ ë„˜ê²¨ì£¼ì–´ì•¼ í•œë‹¤. */
             *aNeedFirstFileNo = aEndFileNo;
         }
     }
     else
     {
-        /* BUG-15803: ReplicationÀÌ º¸³»¾ßÇÒ ·Î±×ÀÇ À§Ä¡¸¦ Ã£À»¶§
-         *  ÀÚ½ÅÀÇ mLSNº¸´Ù ÀÛÀº °ªÀ» °¡Áø logfileÀÌ ¾øÀ»¶§ 
-         *  Ã¹¹øÂ° ÆÄÀÏÀ» ¼±ÅÃÇÑ´Ù.*/
+        /* BUG-15803: Replicationì´ ë³´ë‚´ì•¼í•  ë¡œê·¸ì˜ ìœ„ì¹˜ë¥¼ ì°¾ì„ë•Œ
+         *  ìžì‹ ì˜ mLSNë³´ë‹¤ ìž‘ì€ ê°’ì„ ê°€ì§„ logfileì´ ì—†ì„ë•Œ 
+         *  ì²«ë²ˆì§¸ íŒŒì¼ì„ ì„ íƒí•œë‹¤.*/
         *aNeedFirstFileNo = aFirstFileNo;
     }
 
@@ -4135,7 +4135,7 @@ IDE_RC smrLogMgr::getFirstNeedLFN( smLSN          aMinLSN,
 }
 
 /*
- * ¸¶Áö¸· LSN±îÁö SyncÇÑ´Ù.
+ * ë§ˆì§€ë§‰ LSNê¹Œì§€ Syncí•œë‹¤.
  */
 IDE_RC smrLogMgr::syncToLstLSN( smrSyncByWho   aWhoSyncLog )
 {
@@ -4157,9 +4157,9 @@ IDE_RC smrLogMgr::syncToLstLSN( smrSyncByWho   aWhoSyncLog )
 
 
 /*
- * File Begin Log¸¦ ±¸¼ºÇÑ´Ù.
+ * File Begin Logë¥¼ êµ¬ì„±í•œë‹¤.
  *
- * aFileBeginLog [IN] - ÃÊ±âÈ­ÇÒ File Begin LogÀÇ ÁÖ¼Ò
+ * aFileBeginLog [IN] - ì´ˆê¸°í™”í•  File Begin Logì˜ ì£¼ì†Œ
  */
 void smrLogMgr::initializeFileBeginLog( smrFileBeginLog * aFileBeginLog )
 {
@@ -4179,9 +4179,9 @@ void smrLogMgr::initializeFileBeginLog( smrFileBeginLog * aFileBeginLog )
 }
 
 /*
- * File End Log¸¦ ±¸¼ºÇÑ´Ù.
+ * File End Logë¥¼ êµ¬ì„±í•œë‹¤.
  *
- * aFileEndLog [IN] - ÃÊ±âÈ­ÇÒ File End LogÀÇ ÁÖ¼Ò
+ * aFileEndLog [IN] - ì´ˆê¸°í™”í•  File End Logì˜ ì£¼ì†Œ
  */
 void smrLogMgr::initializeFileEndLog( smrFileEndLog * aFileEndLog )
 {
@@ -4199,12 +4199,12 @@ void smrLogMgr::initializeFileEndLog( smrFileEndLog * aFileEndLog )
                                    SMI_STATEMENT_DEPTH_NULL );
 }
 
-/* TransactionÀÌ ·Î±×¸¦ ±â·ÏÈÄ¿¡ ´ÙÀ½°ú °°Àº Á¤º¸¸¦ °»½ÅÇÑ´Ù.
- * 1. TransactionÀÇ Ã¹¹øÂ° ·Î±×¶ó¸é TransactionÀÇ Begin LSNÁ¤º¸¸¦ °»½Å
- * 2. TransactionÀÇ ¸¶Áö¸·À¸·Î ±â·ÏÇÑ ·Î±× LSN
+/* Transactionì´ ë¡œê·¸ë¥¼ ê¸°ë¡í›„ì— ë‹¤ìŒê³¼ ê°™ì€ ì •ë³´ë¥¼ ê°±ì‹ í•œë‹¤.
+ * 1. Transactionì˜ ì²«ë²ˆì§¸ ë¡œê·¸ë¼ë©´ Transactionì˜ Begin LSNì •ë³´ë¥¼ ê°±ì‹ 
+ * 2. Transactionì˜ ë§ˆì§€ë§‰ìœ¼ë¡œ ê¸°ë¡í•œ ë¡œê·¸ LSN
  *
- * aTrans  - [IN] Transaction Æ÷ÀÎÅÍ
- * aLstLSN - [IN] LogÀÇ LSN
+ * aTrans  - [IN] Transaction í¬ì¸í„°
+ * aLstLSN - [IN] Logì˜ LSN
  */
 IDE_RC smrLogMgr::updateTransLSNInfo( idvSQL  * aStatistics,
                                       void    * aTrans,
@@ -4244,8 +4244,8 @@ IDE_RC smrLogMgr::updateTransLSNInfo( idvSQL  * aStatistics,
     return IDE_FAILURE;
 }
 
-/* ÇöÀç ·Î±×°¡ ValidÇÑÁö Á¶»çÇÑ´Ù. ·Î±× Header¿¡ ÀÖ´Â Type°ú
- * Tail°ªÀÌ µ¿ÀÏÇÑÁö Á¶»ç °°Áö ¾ÊÀ¸¸é ¼­¹ö¸¦ µ¹¾Æ°¡½Ã°Ô ÇÑ´Ù. */
+/* í˜„ìž¬ ë¡œê·¸ê°€ Validí•œì§€ ì¡°ì‚¬í•œë‹¤. ë¡œê·¸ Headerì— ìžˆëŠ” Typeê³¼
+ * Tailê°’ì´ ë™ì¼í•œì§€ ì¡°ì‚¬ ê°™ì§€ ì•Šìœ¼ë©´ ì„œë²„ë¥¼ ëŒì•„ê°€ì‹œê²Œ í•œë‹¤. */
 IDE_RC smrLogMgr::validateLogRec( SChar * aRawLog )
 {
     smrLogHead    * sTmpLogHead;
@@ -4261,7 +4261,7 @@ IDE_RC smrLogMgr::validateLogRec( SChar * aRawLog )
 
     sLogTypeInHead = smrLogHeadI::getType(sTmpLogHead);
 
-    /* invalid log ÀÏ °æ¿ì */
+    /* invalid log ì¼ ê²½ìš° */
     if ( sLogTypeInHead != sLogTypeInTail )
     {
         ideLog::log( SM_TRC_LOG_LEVEL_DEBUG,
@@ -4282,7 +4282,7 @@ IDE_RC smrLogMgr::validateLogRec( SChar * aRawLog )
 }
 
 /***********************************************************************
- * Description : interval¿¡ ÀÇÇÑ checkpoint ¼öÇàÈÄ switch count ÃÊ±âÈ­
+ * Description : intervalì— ì˜í•œ checkpoint ìˆ˜í–‰í›„ switch count ì´ˆê¸°í™”
  *
  ***********************************************************************/
 IDE_RC smrLogMgr::clearLogSwitchCount()
@@ -4302,9 +4302,9 @@ IDE_RC smrLogMgr::clearLogSwitchCount()
 }
 
 /***********************************************************************
- * Description :  ·Î±×ÆÄÀÏÀÌ SwitchµÉ ¶§¸¶´Ù ºÒ¸®¿î´Ù.·Î±×ÆÄÀÏ
- *                switch Count¸¦ 1 Áõ°¡½ÃÅ°°í Ã¼Å©Æ÷ÀÎÆ®¸¦ ¼öÇàÇØ¾ß
- *                ÇÒ ÁöÀÇ ¿©ºÎ¸¦ °áÁ¤ÇÑ´Ù.
+ * Description :  ë¡œê·¸íŒŒì¼ì´ Switchë  ë•Œë§ˆë‹¤ ë¶ˆë¦¬ìš´ë‹¤.ë¡œê·¸íŒŒì¼
+ *                switch Countë¥¼ 1 ì¦ê°€ì‹œí‚¤ê³  ì²´í¬í¬ì¸íŠ¸ë¥¼ ìˆ˜í–‰í•´ì•¼
+ *                í•  ì§€ì˜ ì—¬ë¶€ë¥¼ ê²°ì •í•œë‹¤.
  *
  **********************************************************************/
 IDE_RC smrLogMgr::onLogFileSwitched()
@@ -4314,19 +4314,19 @@ IDE_RC smrLogMgr::onLogFileSwitched()
     IDE_TEST( lockLogSwitchCount() != IDE_SUCCESS );
     sStage = 1;
 
-    // ·Î±× ÆÄÀÏ Switch°¡ ¹ß»ýÇßÀ¸¹Ç·Î, Count¸¦ 1Áõ°¡
+    // ë¡œê·¸ íŒŒì¼ Switchê°€ ë°œìƒí–ˆìœ¼ë¯€ë¡œ, Countë¥¼ 1ì¦ê°€
     mLogSwitchCount++;
 
     /* ------------------------------------------------
-     * ·Î±×ÆÄÀÏ switch È½¼ö°¡ checkpoint interval¿¡ ¸¸Á·ÇÏ¸é
-     * checkpoint¸¦ ¼öÇàÇÑ´Ù.
+     * ë¡œê·¸íŒŒì¼ switch íšŸìˆ˜ê°€ checkpoint intervalì— ë§Œì¡±í•˜ë©´
+     * checkpointë¥¼ ìˆ˜í–‰í•œë‹¤.
      * ----------------------------------------------*/
     if ( smuProperty::getChkptEnabled() != 0 )
     {
-        /* BUG-18740 server shutdown½Ã checkpoint½ÇÆÐÇÏ¿© ºñÁ¤»óÁ¾·á
-         * ÇÒ ¼ö ÀÖ½À´Ï´Ù. smrRecoveryMgr::destroy½Ã¿¡´Â ÀÌ¹Ì checkpoint
-         * thread´Â Á¾·á µÇ¾ú´Ù. ¶§¹®¿¡ checkpoint thread¿¡ ´ëÇÑ resumeAndnoWait
-         * ¸¦ È£ÃâÇÏ¸é ¾ÈµÈ´Ù. */
+        /* BUG-18740 server shutdownì‹œ checkpointì‹¤íŒ¨í•˜ì—¬ ë¹„ì •ìƒì¢…ë£Œ
+         * í•  ìˆ˜ ìžˆìŠµë‹ˆë‹¤. smrRecoveryMgr::destroyì‹œì—ëŠ” ì´ë¯¸ checkpoint
+         * threadëŠ” ì¢…ë£Œ ë˜ì—ˆë‹¤. ë•Œë¬¸ì— checkpoint threadì— ëŒ€í•œ resumeAndnoWait
+         * ë¥¼ í˜¸ì¶œí•˜ë©´ ì•ˆëœë‹¤. */
         if ( ( smrRecoveryMgr::isRestart() == ID_FALSE ) &&
              ( smrRecoveryMgr::isFinish() == ID_FALSE ) )
         {
@@ -4374,31 +4374,31 @@ IDE_RC smrLogMgr::onLogFileSwitched()
 }
 
 /*
- * Log FlushThread°¡ aLSNToSync¿¡ ÁöÁ¤µÈ LSN±îÁö Sync¼öÇà.
+ * Log FlushThreadê°€ aLSNToSyncì— ì§€ì •ëœ LSNê¹Œì§€ Syncìˆ˜í–‰.
  *
- * ÇöÀç ÀÌ ÇÔ¼ö´Â ÀÔ·ÂÀ¸·Î µé¾î¿Â LSNº¸´Ù ´õ ¸¹ÀÌ syncµÇµµ·Ï
- * ±¸ÇöµÇ¾î ÀÖÀ¸¸ç, ÀÌ´Â DBMSÀÇ consistency¸¦ ÇØÄ¡Áö ¾Ê´Â´Ù.
+ * í˜„ìž¬ ì´ í•¨ìˆ˜ëŠ” ìž…ë ¥ìœ¼ë¡œ ë“¤ì–´ì˜¨ LSNë³´ë‹¤ ë” ë§Žì´ syncë˜ë„ë¡
+ * êµ¬í˜„ë˜ì–´ ìžˆìœ¼ë©°, ì´ëŠ” DBMSì˜ consistencyë¥¼ í•´ì¹˜ì§€ ì•ŠëŠ”ë‹¤.
  *
- * aLSNToSync    - [IN] sync½ÃÅ³ LSN
+ * aLSNToSync    - [IN] syncì‹œí‚¬ LSN
  */
 IDE_RC smrLogMgr::syncLFThread( smrSyncByWho   aWhoSync,
                                 smLSN        * aLSNToSync )
 {
-    // ÇöÀç smrLFThread´Â Æ¯Á¤ LSN±îÁö Log¸¦ FlushÇÏ´Â interface¸¦
-    // Áö¿øÇÏÁö ¾ÊÀ¸¸ç, Æ¯Á¤ Log FileÀÇ ³¡±îÁö Log¸¦ FlushÇÏ´Â
-    // ÀÎÅÍÆäÀÌ½º¸¸ Áö¿øÇÑ´Ù.
+    // í˜„ìž¬ smrLFThreadëŠ” íŠ¹ì • LSNê¹Œì§€ Logë¥¼ Flushí•˜ëŠ” interfaceë¥¼
+    // ì§€ì›í•˜ì§€ ì•Šìœ¼ë©°, íŠ¹ì • Log Fileì˜ ëê¹Œì§€ Logë¥¼ Flushí•˜ëŠ”
+    // ì¸í„°íŽ˜ì´ìŠ¤ë§Œ ì§€ì›í•œë‹¤.
     //
-    // ÇöÀç ÀÌ ÇÔ¼ö´Â ÀÔ·ÂÀ¸·Î µé¾î¿Â LSNº¸´Ù ´õ ¸¹ÀÌ syncµÇµµ·Ï
-    // ±¸ÇöµÇ¾î ÀÖÀ¸¸ç, ÀÌ´Â DBMSÀÇ consistency¸¦ ÇØÄ¡Áö ¾Ê´Â´Ù.
+    // í˜„ìž¬ ì´ í•¨ìˆ˜ëŠ” ìž…ë ¥ìœ¼ë¡œ ë“¤ì–´ì˜¨ LSNë³´ë‹¤ ë” ë§Žì´ syncë˜ë„ë¡
+    // êµ¬í˜„ë˜ì–´ ìžˆìœ¼ë©°, ì´ëŠ” DBMSì˜ consistencyë¥¼ í•´ì¹˜ì§€ ì•ŠëŠ”ë‹¤.
     //
-    // ¼º´ÉÀ» À§ÇØ¼­´Â ÇØ´ç ·Î±×ÆÄÀÏÀÇ ÇØ´ç offset±îÁö, Áï, Æ¯Á¤ LSN±îÁö
-    // sync¸¦ ÇÏµµ·Ï ±¸ÇöÇÒ ÇÊ¿ä°¡ ÀÖ´Ù.
+    // ì„±ëŠ¥ì„ ìœ„í•´ì„œëŠ” í•´ë‹¹ ë¡œê·¸íŒŒì¼ì˜ í•´ë‹¹ offsetê¹Œì§€, ì¦‰, íŠ¹ì • LSNê¹Œì§€
+    // syncë¥¼ í•˜ë„ë¡ êµ¬í˜„í•  í•„ìš”ê°€ ìžˆë‹¤.
 
-    /* BUG-17702:[MCM] Sync Thread°¡ ÀÇÇÑ ¸ðµç log¸¦ FlushÇÒ¶§±îÁö
-     * Checkpint Thread°¡ ±â´Ù¸®´Â °æ¿ì°¡ ¹ß»ýÇÔ.
+    /* BUG-17702:[MCM] Sync Threadê°€ ì˜í•œ ëª¨ë“  logë¥¼ Flushí• ë•Œê¹Œì§€
+     * Checkpint Threadê°€ ê¸°ë‹¤ë¦¬ëŠ” ê²½ìš°ê°€ ë°œìƒí•¨.
      *
-     * ÇöÀç Sync°¡ ÇÊ¿äÇÑ LSN±îÁö¸¸ SyncµÇ¸é ³ª¸ÓÁö checkpointÀÛ¾÷À»
-     * ¼öÇàÇÏ¿©¾ß ÇÕ´Ï´Ù.
+     * í˜„ìž¬ Syncê°€ í•„ìš”í•œ LSNê¹Œì§€ë§Œ Syncë˜ë©´ ë‚˜ë¨¸ì§€ checkpointìž‘ì—…ì„
+     * ìˆ˜í–‰í•˜ì—¬ì•¼ í•©ë‹ˆë‹¤.
      */
     IDE_TEST( mLFThread.syncOrWait4SyncLogToLSN(
                                           aWhoSync,
@@ -4415,8 +4415,8 @@ IDE_RC smrLogMgr::syncLFThread( smrSyncByWho   aWhoSync,
 }
 
 /***********************************************************************
- * Description : syncµÈ ÆÄÀÏÀÇ Ã³À½ LSN (file beginÀÇ LSN) À» ¹ÝÈ¯ÇÑ´Ù. 
- * aLSN - [OUT] syncµÈ file beginÀÇ LSN
+ * Description : syncëœ íŒŒì¼ì˜ ì²˜ìŒ LSN (file beginì˜ LSN) ì„ ë°˜í™˜í•œë‹¤. 
+ * aLSN - [OUT] syncëœ file beginì˜ LSN
  **********************************************************************/
 IDE_RC smrLogMgr::getSyncedMinFirstLogLSN( smLSN *aLSN )
 {
@@ -4461,9 +4461,9 @@ IDE_RC smrLogMgr::getSyncedMinFirstLogLSN( smLSN *aLSN )
     sLogFilePtr = NULL;
 
 
-    /* getSyncedLSN¸¦ ÅëÇØ ¹ÝÈ¯µÇ´Â °ª Áß, ¾ÆÁ÷ ¾Æ¹«°Íµµ syncµÇÁö ¾ÊÀº
-     * ÆÄÀÏÀÌ offset 0À¸·Î ¹ÝÈ¯µÉ ¼ö ÀÖ´Ù.
-     * ±×·¯¹Ç·Î °¢ ÆÄÀÏÀÇ Ã¹ ¹øÂ° ·Î±×¸¦ ÀÐ¾úÀ» ¶§ invalidÇÑ »óÅÂ°¡ µÉ ¼ö ÀÖ´Ù.
+    /* getSyncedLSNë¥¼ í†µí•´ ë°˜í™˜ë˜ëŠ” ê°’ ì¤‘, ì•„ì§ ì•„ë¬´ê²ƒë„ syncë˜ì§€ ì•Šì€
+     * íŒŒì¼ì´ offset 0ìœ¼ë¡œ ë°˜í™˜ë  ìˆ˜ ìžˆë‹¤.
+     * ê·¸ëŸ¬ë¯€ë¡œ ê° íŒŒì¼ì˜ ì²« ë²ˆì§¸ ë¡œê·¸ë¥¼ ì½ì—ˆì„ ë•Œ invalidí•œ ìƒíƒœê°€ ë  ìˆ˜ ìžˆë‹¤.
      */
     if ( sIsValid == ID_TRUE )
     {
@@ -4474,8 +4474,8 @@ IDE_RC smrLogMgr::getSyncedMinFirstLogLSN( smLSN *aLSN )
         }
         else
         {
-            /* ÀÌ·²¼ö ÀÖ³ª ? 
-             * ¾îÂ¼Æ° µð¹ö±×¿¡¼­¸¸ È®ÀÎÇÏÀÚ */
+            /* ì´ëŸ´ìˆ˜ ìžˆë‚˜ ? 
+             * ì–´ì©ŒíŠ¼ ë””ë²„ê·¸ì—ì„œë§Œ í™•ì¸í•˜ìž */
             IDE_DASSERT_MSG( SM_IS_LSN_MAX( sMinLSN ),
                              "Invalid Log LSN \n"
                              "LogLSN : %"ID_UINT32_FMT", %"ID_UINT32_FMT"\n"
@@ -4500,10 +4500,10 @@ IDE_RC smrLogMgr::getSyncedMinFirstLogLSN( smLSN *aLSN )
     }
     else
     {
-        /* ¾ÆÁ÷ file begin ·Î±×°¡ ±â·ÏµÇÁö ¾Ê¾Ò´Ù.
-         * SyncµÈ fileÀÇ begin·Î±×ÀÇ LSNÀ» ¾Ë ¼ö ¾ø´Ù¸é
-         * µð½ºÅ©¿¡ syncµÇ¾ú´Ù´Â °ÍÀ» º¸ÀåÇÒ ¼ö ÀÖ´Â ÃÖ¼Ò LSNÀ» ¾Ë ¼ö ¾øÀ¸¹Ç·Î
-         * SM_SN_NULL·Î ¹ÝÈ¯ÇØ ÁØ´Ù.*/
+        /* ì•„ì§ file begin ë¡œê·¸ê°€ ê¸°ë¡ë˜ì§€ ì•Šì•˜ë‹¤.
+         * Syncëœ fileì˜ beginë¡œê·¸ì˜ LSNì„ ì•Œ ìˆ˜ ì—†ë‹¤ë©´
+         * ë””ìŠ¤í¬ì— syncë˜ì—ˆë‹¤ëŠ” ê²ƒì„ ë³´ìž¥í•  ìˆ˜ ìžˆëŠ” ìµœì†Œ LSNì„ ì•Œ ìˆ˜ ì—†ìœ¼ë¯€ë¡œ
+         * SM_SN_NULLë¡œ ë°˜í™˜í•´ ì¤€ë‹¤.*/
         SM_LSN_MAX( sMinLSN );
     }
 
@@ -4525,30 +4525,30 @@ IDE_RC smrLogMgr::getSyncedMinFirstLogLSN( smLSN *aLSN )
 }
 
 /***********************************************************************
- * Description : Æ¯Á¤ LSNÀÇ log record¿Í ÇØ´ç log record°¡ ¼ÓÇÑ ·Î±×
- *               ÆÄÀÏÀ» ¸®ÅÏÇÑ´Ù.
+ * Description : íŠ¹ì • LSNì˜ log recordì™€ í•´ë‹¹ log recordê°€ ì†í•œ ë¡œê·¸
+ *               íŒŒì¼ì„ ë¦¬í„´í•œë‹¤.
  *
- * aDecompBufferHandle  - [IN] ¾ÐÃà ÇØÁ¦ ¹öÆÛÀÇ ÇÚµé
- * aLSN            - [IN] log record¸¦ ÀÐ¾î¿Ã LSN.
- *                   LSN¿¡´Â Log File GroupÀÇ IDµµ ÀÖÀ¸¹Ç·Î, ÀÌ¸¦ ÅëÇØ
- *                   ¿©·¯°³ÀÇ Log File GroupÁß ÇÏ³ª¸¦ ¼±ÅÃÇÏ°í,
- *                   ±× ¼Ó¿¡ ±â·ÏµÈ log record¸¦ ÀÐ¾î¿Â´Ù.
- * aIsCloseLogFile - [IN] aLSNÀÌ *aLogFileÀÌ °¡¸®Å°´Â LogFile¿¡ ¾ø´Ù¸é
- *                   aIsCloseLogFileÀÌ TRUEÀÏ °æ¿ì *aLogFileÀ» CloseÇÏ°í,
- *                   »õ·Î¿î LogFileÀ» ¿­¾î¾ß ÇÑ´Ù.
- * aLogFile - [IN-OUT] ·Î±× ·¹ÄÚµå°¡ ¼ÓÇÑ ·Î±×ÆÄÀÏ Æ÷ÀÎÅÍ
- * aLogHead - [OUT] ·Î±× ·¹ÄÚµåÀÇ Head
- * aLogPtr  - [OUT] ·Î±× ·¹ÄÚµå°¡ ±â·ÏµÈ ·Î±× ¹öÆÛ Æ÷ÀÎÅÍ
- * aReadSize - [OUT] ÆÄÀÏ»ó¿¡¼­ ÀÐ¾î³½ ·Î±×ÀÇ Å©±â
- *                   ( ¾ÐÃàµÈ ·Î±×ÀÇ °æ¿ì ·Î±×ÀÇ Å©±â¿Í
- *                     ÆÄÀÏ»óÀÇ Å©±â°¡ ´Ù¸¦ ¼ö ÀÖ´Ù )
+ * aDecompBufferHandle  - [IN] ì••ì¶• í•´ì œ ë²„í¼ì˜ í•¸ë“¤
+ * aLSN            - [IN] log recordë¥¼ ì½ì–´ì˜¬ LSN.
+ *                   LSNì—ëŠ” Log File Groupì˜ IDë„ ìžˆìœ¼ë¯€ë¡œ, ì´ë¥¼ í†µí•´
+ *                   ì—¬ëŸ¬ê°œì˜ Log File Groupì¤‘ í•˜ë‚˜ë¥¼ ì„ íƒí•˜ê³ ,
+ *                   ê·¸ ì†ì— ê¸°ë¡ëœ log recordë¥¼ ì½ì–´ì˜¨ë‹¤.
+ * aIsCloseLogFile - [IN] aLSNì´ *aLogFileì´ ê°€ë¦¬í‚¤ëŠ” LogFileì— ì—†ë‹¤ë©´
+ *                   aIsCloseLogFileì´ TRUEì¼ ê²½ìš° *aLogFileì„ Closeí•˜ê³ ,
+ *                   ìƒˆë¡œìš´ LogFileì„ ì—´ì–´ì•¼ í•œë‹¤.
+ * aLogFile - [IN-OUT] ë¡œê·¸ ë ˆì½”ë“œê°€ ì†í•œ ë¡œê·¸íŒŒì¼ í¬ì¸í„°
+ * aLogHead - [OUT] ë¡œê·¸ ë ˆì½”ë“œì˜ Head
+ * aLogPtr  - [OUT] ë¡œê·¸ ë ˆì½”ë“œê°€ ê¸°ë¡ëœ ë¡œê·¸ ë²„í¼ í¬ì¸í„°
+ * aReadSize - [OUT] íŒŒì¼ìƒì—ì„œ ì½ì–´ë‚¸ ë¡œê·¸ì˜ í¬ê¸°
+ *                   ( ì••ì¶•ëœ ë¡œê·¸ì˜ ê²½ìš° ë¡œê·¸ì˜ í¬ê¸°ì™€
+ *                     íŒŒì¼ìƒì˜ í¬ê¸°ê°€ ë‹¤ë¥¼ ìˆ˜ ìžˆë‹¤ )
  *
- * ÁÖÀÇ: ¸¶Áö¸·À¸·Î ReadÇÏ°í ³­ ÈÄ aLogFile°¡ °¡¸®Å°´Â LogFileÀ»
- *       smrLogMgr::readLogÀ» È£ÃâÇÑ ÂÊ¿¡¼­ ¹Ýµå½Ã CloseÇØ¾ßÇÕ´Ï´Ù.
- *       ±×¸®°í aIsCloseLogFile°¡ ID_FALSEÀÏ °æ¿ì ¿©·¯°³ÀÇ logfileÀÌ open
- *       µÇ¾î ÀÖÀ» ¼ö ÀÖ±â ¶§¹®¿¡ ¹Ýµå½Ã ÀÚ½ÅÀÌ ¿­¾ú´ø ÆÄÀÏÀ» closeÇØ
- *       Áà¾ß ÇÕ´Ï´Ù. ¿¹¸¦ µé¸é redo½Ã¿¡ ID_FALSE¸¦ ³Ñ±â´Âµ¥ ¿©±â¼­´Â
- *       closeAllLogFile¸¦ ÀÌ¿ëÇØ¼­ fileÀ» closeÇÕ´Ï´Ù.
+ * ì£¼ì˜: ë§ˆì§€ë§‰ìœ¼ë¡œ Readí•˜ê³  ë‚œ í›„ aLogFileê°€ ê°€ë¦¬í‚¤ëŠ” LogFileì„
+ *       smrLogMgr::readLogì„ í˜¸ì¶œí•œ ìª½ì—ì„œ ë°˜ë“œì‹œ Closeí•´ì•¼í•©ë‹ˆë‹¤.
+ *       ê·¸ë¦¬ê³  aIsCloseLogFileê°€ ID_FALSEì¼ ê²½ìš° ì—¬ëŸ¬ê°œì˜ logfileì´ open
+ *       ë˜ì–´ ìžˆì„ ìˆ˜ ìžˆê¸° ë•Œë¬¸ì— ë°˜ë“œì‹œ ìžì‹ ì´ ì—´ì—ˆë˜ íŒŒì¼ì„ closeí•´
+ *       ì¤˜ì•¼ í•©ë‹ˆë‹¤. ì˜ˆë¥¼ ë“¤ë©´ redoì‹œì— ID_FALSEë¥¼ ë„˜ê¸°ëŠ”ë° ì—¬ê¸°ì„œëŠ”
+ *       closeAllLogFileë¥¼ ì´ìš©í•´ì„œ fileì„ closeí•©ë‹ˆë‹¤.
  *
  ***********************************************************************/
 IDE_RC smrLogMgr::readLogInternal( iduMemoryHandle  * aDecompBufferHandle,
@@ -4559,7 +4559,7 @@ IDE_RC smrLogMgr::readLogInternal( iduMemoryHandle  * aDecompBufferHandle,
                                    SChar           ** aLogPtr,
                                    UInt             * aLogSizeAtDisk )
 {
-    // ºñ¾ÐÃà ·Î±×¸¦ ÀÐ´Â °æ¿ì aDecompBufferHandleÀÌ NULL·Î µé¾î¿Â´Ù
+    // ë¹„ì••ì¶• ë¡œê·¸ë¥¼ ì½ëŠ” ê²½ìš° aDecompBufferHandleì´ NULLë¡œ ë“¤ì–´ì˜¨ë‹¤
     IDE_DASSERT( aLSN     != NULL );
     IDE_DASSERT( aLogFile != NULL );
     IDE_DASSERT( aLogHead != NULL );
@@ -4595,7 +4595,7 @@ IDE_RC smrLogMgr::readLogInternal( iduMemoryHandle  * aDecompBufferHandle,
         }
         else
         {
-            /* aLSNÀÌ °¡¸®Å°´Â ·Î±×´Â *aLogFile¿¡ ÀÖ´Ù.*/
+            /* aLSNì´ ê°€ë¦¬í‚¤ëŠ” ë¡œê·¸ëŠ” *aLogFileì— ìžˆë‹¤.*/
         }
     }
     else
@@ -4623,11 +4623,11 @@ IDE_RC smrLogMgr::readLogInternal( iduMemoryHandle  * aDecompBufferHandle,
 }
 
 /***********************************************************************
- * Description : aLSNÀÌ °¡¸®Å°´Â ·Î±×ÆÄÀÏÀÇ Ã¹¹øÂ° Log ÀÇ Head¸¦ ÀÐ´Â´Ù
+ * Description : aLSNì´ ê°€ë¦¬í‚¤ëŠ” ë¡œê·¸íŒŒì¼ì˜ ì²«ë²ˆì§¸ Log ì˜ Headë¥¼ ì½ëŠ”ë‹¤
  *
- * aDecompBufferHandle  - [IN] ¾ÐÃà ÇØÁ¦ ¹öÆÛÀÇ ÇÚµé
- * aLSN      - [IN] Æ¯Á¤ ·Î±×ÆÄÀÏ»óÀÇ Ã¹¹øÂ° ·Î±×ÀÇ LSN
- * aLogHead  - [OUT] ÀÐ¾îµéÀÎ LogÀÇ Head¸¦ ³Ñ°ÜÁÙ Parameter
+ * aDecompBufferHandle  - [IN] ì••ì¶• í•´ì œ ë²„í¼ì˜ í•¸ë“¤
+ * aLSN      - [IN] íŠ¹ì • ë¡œê·¸íŒŒì¼ìƒì˜ ì²«ë²ˆì§¸ ë¡œê·¸ì˜ LSN
+ * aLogHead  - [OUT] ì½ì–´ë“¤ì¸ Logì˜ Headë¥¼ ë„˜ê²¨ì¤„ Parameter
  **********************************************************************/
 IDE_RC smrLogMgr::readFirstLogHead( smLSN      *aLSN,
                                     smrLogHead *aLogHead )
@@ -4640,11 +4640,11 @@ IDE_RC smrLogMgr::readFirstLogHead( smLSN      *aLSN,
     SChar      *sLogPtr     = NULL;
     SInt        sState      = 0;
 
-    // ·Î±×ÆÄÀÏ»óÀÇ Ã¹¹øÂ° ·Î±×ÀÌ¹Ç·Î OffsetÀº 0ÀÌ¾î¾ß ÇÑ´Ù.
+    // ë¡œê·¸íŒŒì¼ìƒì˜ ì²«ë²ˆì§¸ ë¡œê·¸ì´ë¯€ë¡œ Offsetì€ 0ì´ì–´ì•¼ í•œë‹¤.
     IDE_ASSERT( aLSN->mOffset == 0 );
     
-    /* aLSN¿¡ ÇØ´çÇÏ´Â Log¸¦ °¡Áø LogFileÀÌ openµÇ¾î ÀÖÀ¸¸é Reference
-       Count°ª¸¸À» Áõ°¡½ÃÅ°°í ¾øÀ¸¸é ±×³É ¸®ÅÏÇÑ´Ù. */
+    /* aLSNì— í•´ë‹¹í•˜ëŠ” Logë¥¼ ê°€ì§„ LogFileì´ openë˜ì–´ ìžˆìœ¼ë©´ Reference
+       Countê°’ë§Œì„ ì¦ê°€ì‹œí‚¤ê³  ì—†ìœ¼ë©´ ê·¸ëƒ¥ ë¦¬í„´í•œë‹¤. */
     IDE_TEST( mLogFileMgr.checkLogFileOpenAndIncRefCnt( aLSN->mFileNo,
                                                         &sIsOpen,
                                                         &sLogFilePtr )
@@ -4652,7 +4652,7 @@ IDE_RC smrLogMgr::readFirstLogHead( smLSN      *aLSN,
 
     if ( sIsOpen == ID_FALSE )
     {
-        /* openµÇ¾îÀÖÁö ¾Ê±â¶§¹®¿¡ */
+        /* openë˜ì–´ìžˆì§€ ì•Šê¸°ë•Œë¬¸ì— */
         IDE_TEST( readFirstLogHeadFromDisk( aLSN->mFileNo,
                                             aLogHead )
                  != IDE_SUCCESS );
@@ -4665,12 +4665,12 @@ IDE_RC smrLogMgr::readFirstLogHead( smLSN      *aLSN,
         
         sLogFilePtr->read( 0, &sLogPtr );
         
-        /* ·Î±×ÆÄÀÏÀÇ Ã¹¹øÂ° ·Î±×´Â ¾ÐÃàÇÏÁö ¾Ê´Â´Ù.
-           ¾ÐÃà °í·ÁÇÏÁö ¾Ê°í ¹Ù·Î ÀÐ´Â´Ù.
+        /* ë¡œê·¸íŒŒì¼ì˜ ì²«ë²ˆì§¸ ë¡œê·¸ëŠ” ì••ì¶•í•˜ì§€ ì•ŠëŠ”ë‹¤.
+           ì••ì¶• ê³ ë ¤í•˜ì§€ ì•Šê³  ë°”ë¡œ ì½ëŠ”ë‹¤.
            
-           ÀÌÀ¯ :
-              FileÀÇ Ã¹¹øÂ° LogÀÇ LSNÀ» ÀÐ´Â ÀÛ¾÷À»,
-              ºü¸£°Ô ¼öÇàÇÏ±â À§ÇÔ
+           ì´ìœ  :
+              Fileì˜ ì²«ë²ˆì§¸ Logì˜ LSNì„ ì½ëŠ” ìž‘ì—…ì„,
+              ë¹ ë¥´ê²Œ ìˆ˜í–‰í•˜ê¸° ìœ„í•¨
          */
         IDE_ASSERT( smrLogComp::isCompressedLog( sLogPtr ) == ID_FALSE );
 
@@ -4700,7 +4700,7 @@ IDE_RC smrLogMgr::readFirstLogHead( smLSN      *aLSN,
 }
 
 /***********************************************************************
- * Description : Dummy Log¸¦ ±â·ÏÇÑ´Ù.
+ * Description : Dummy Logë¥¼ ê¸°ë¡í•œë‹¤.
  *
  ***********************************************************************/
 IDE_RC smrLogMgr::writeDummyLog()
@@ -4718,7 +4718,7 @@ IDE_RC smrLogMgr::writeDummyLog()
     smrLogHeadI::setReplStmtDepth( &sDummyLog.mHead,
                                    SMI_STATEMENT_DEPTH_NULL );
 
-    // ÇØ´ç TransactionÀÇ Log File Group¿¡ ·Î±×¸¦ ±â·ÏÇÑ´Ù.
+    // í•´ë‹¹ Transactionì˜ Log File Groupì— ë¡œê·¸ë¥¼ ê¸°ë¡í•œë‹¤.
     IDE_TEST( writeLog( NULL,  // idvSQL* 
                         NULL,  // Transaction Ptr
                         (SChar*)&sDummyLog, 
@@ -4736,11 +4736,11 @@ IDE_RC smrLogMgr::writeDummyLog()
 
 /**********************************************************************
  * Description : PROJ-2118 BUG Reporting
- *               Server Fatal ½ÃÁ¡¿¡ Signal Handler °¡ È£ÃâÇÒ
- *               Debugging Á¤º¸ ±â·ÏÇÔ¼ö
+ *               Server Fatal ì‹œì ì— Signal Handler ê°€ í˜¸ì¶œí• 
+ *               Debugging ì •ë³´ ê¸°ë¡í•¨ìˆ˜
  *
- *               ÀÌ¹Ì altibase_dump.log ¿¡ lockÀ» Àâ°í µé¾î¿À¹Ç·Î
- *               lockÀ» ÀâÁö¾Ê´Â trace ±â·Ï ÇÔ¼ö¸¦ »ç¿ëÇØ¾ß ÇÑ´Ù.
+ *               ì´ë¯¸ altibase_dump.log ì— lockì„ ìž¡ê³  ë“¤ì–´ì˜¤ë¯€ë¡œ
+ *               lockì„ ìž¡ì§€ì•ŠëŠ” trace ê¸°ë¡ í•¨ìˆ˜ë¥¼ ì‚¬ìš©í•´ì•¼ í•œë‹¤.
  *
  **********************************************************************/
 void smrLogMgr::writeDebugInfo()
@@ -4768,7 +4768,7 @@ void smrLogMgr::writeDebugInfo()
 }
 
 /* BUG-35392
- * ÁöÁ¤µÈ LstLSN(Offset) ±îÁö sync°¡ ¿Ï·áµÇ±â¸¦ ´ë±âÇÑ´Ù. */
+ * ì§€ì •ëœ LstLSN(Offset) ê¹Œì§€ syncê°€ ì™„ë£Œë˜ê¸°ë¥¼ ëŒ€ê¸°í•œë‹¤. */
 void smrLogMgr::waitLogSyncToLSN( smLSN  * aLSNToSync,
                                   UInt     aSyncWaitMin,
                                   UInt     aSyncWaitMax )
@@ -4779,7 +4779,7 @@ void smrLogMgr::waitLogSyncToLSN( smLSN  * aLSNToSync,
 
     if ( smuProperty::isFastUnlockLogAllocMutex() == ID_TRUE )
     {
-        /* Sync °¡´ÉÇÑ(Dummy Log¸¦ Æ÷ÇÔÇÏÁö ¾Ê´Â) ÃÖ´ëÀÇ LSNÀ»(Offset) Ã£´Â´Ù. */
+        /* Sync ê°€ëŠ¥í•œ(Dummy Logë¥¼ í¬í•¨í•˜ì§€ ì•ŠëŠ”) ìµœëŒ€ì˜ LSNì„(Offset) ì°¾ëŠ”ë‹¤. */
         getUncompletedLstLSN( &sMinUncompletedLstLSN );
 
         while ( smrCompareLSN::isGT( aLSNToSync, &sMinUncompletedLstLSN ) == ID_TRUE )
@@ -4816,7 +4816,7 @@ void smrLogMgr::rebuildMinUCSN()
 
     IDE_ASSERT( smuProperty::isFastUnlockLogAllocMutex() == ID_TRUE );
 
-    // ·Î±× ·¹ÄÚµå°¡ ±â·ÏµÈ ÈÄÀÇ ¸¶Áö¸· offset À» °¡Á®¿Â´Ù. 
+    // ë¡œê·¸ ë ˆì½”ë“œê°€ ê¸°ë¡ëœ í›„ì˜ ë§ˆì§€ë§‰ offset ì„ ê°€ì ¸ì˜¨ë‹¤. 
     SM_ATOMIC_GET_SYNC_LSN( &(sMinUncompletedLstLSN.mLstLSN.mLSN),
                             &(mLstLSN) );
 
@@ -4831,14 +4831,14 @@ void smrLogMgr::rebuildMinUCSN()
 
     SM_GET_LSN( sMinUncompletedLstLSN.mLstWriteLSN, mLstWriteLSN );
 
-    /* 1. Last LSNÀ» ¸ÕÀú ±¸ÇÏÁö ¾ÊÀ¸¸é
-     *    loop¸¦ Å½»öÇÏ´Â µµÁß¿¡ ³õÄ¥ ¼ö ÀÖ´Ù.
-     * 2. Last LSNµµ log copy ÁßÀÎ LSNÀÏ¼öµµ ÀÖ´Ù.
-     *   µû·Î ±¸ÇÏ¿© ºñ±³ÇÑ´Ù. */
+    /* 1. Last LSNì„ ë¨¼ì € êµ¬í•˜ì§€ ì•Šìœ¼ë©´
+     *    loopë¥¼ íƒìƒ‰í•˜ëŠ” ë„ì¤‘ì— ë†“ì¹  ìˆ˜ ìžˆë‹¤.
+     * 2. Last LSNë„ log copy ì¤‘ì¸ LSNì¼ìˆ˜ë„ ìžˆë‹¤.
+     *   ë”°ë¡œ êµ¬í•˜ì—¬ ë¹„êµí•œë‹¤. */
 
     for ( i = 0 ; i < mFstChkLSNArrSize ; i++ )
     {
-        //mLstLSN ±¸ÇÏ±â 
+        //mLstLSN êµ¬í•˜ê¸° 
         SM_ATOMIC_GET_SYNC_LSN( &(sFstChkLSN.mLstLSN),
                                 &(mFstChkLSNArr[i].mLstLSN) );
 
@@ -4859,7 +4859,7 @@ void smrLogMgr::rebuildMinUCSN()
             }
         }
 
-        // mLstWriteLSN ±¸ÇÏ±â 
+        // mLstWriteLSN êµ¬í•˜ê¸° 
         SM_GET_LSN( sFstChkLSN.mLstWriteLSN, mFstChkLSNArr[i].mLstWriteLSN );
 
         if ( smrCompareLSN::isLT( &sFstChkLSN.mLstWriteLSN, 

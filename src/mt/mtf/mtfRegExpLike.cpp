@@ -118,7 +118,7 @@ IDE_RC mtfRegExpLikeEstimate( mtcNode     * aNode,
                                         sModules )
               != IDE_SUCCESS );
 
-    /* regexp_likeÀÇ °á°ú¸¦ ÀúÀåÇÔ */
+    /* regexp_likeì˜ ê²°ê³¼ë¥¼ ì €ì¥í•¨ */
     IDE_TEST( mtc::initializeColumn( aStack[0].column,
                                      & mtdBoolean,
                                      0,
@@ -126,7 +126,7 @@ IDE_RC mtfRegExpLikeEstimate( mtcNode     * aNode,
                                      0 )
               != IDE_SUCCESS );
 
-    /* regexp_likeÀÇ compiled patternÀ» ÀúÀåÇÔ */
+    /* regexp_likeì˜ compiled patternì„ ì €ì¥í•¨ */
     sPrecision = MTF_REG_EXPRESSION_SIZE( aStack[2].column->precision );
     
     IDE_TEST( mtc::initializeColumn( aStack[0].column + 1,
@@ -162,7 +162,7 @@ IDE_RC mtfRegExpLikeEstimate( mtcNode     * aNode,
             aTemplate->rows[aNode->table].execute[aNode->column].calculateInfo =
                 sCompiledExpression;
 
-            // ´õÀÌ»ó »ç¿ëÇÏÁö ¾ÊÀ½
+            // ë”ì´ìƒ ì‚¬ìš©í•˜ì§€ ì•ŠìŒ
             IDE_TEST( mtc::initializeColumn( aStack[0].column + 1,
                                              & mtdBinary,
                                              1,
@@ -188,7 +188,7 @@ IDE_RC mtfRegExpLikeEstimate( mtcNode     * aNode,
         aNode->lflag &= ~MTC_NODE_REESTIMATE_MASK;
         aNode->lflag |= MTC_NODE_REESTIMATE_TRUE;
             
-        // BUG-38070 undef typeÀ¸·Î re-estimateÇÏÁö ¾Ê´Â´Ù.
+        // BUG-38070 undef typeìœ¼ë¡œ re-estimateí•˜ì§€ ì•ŠëŠ”ë‹¤.
         if ( ( aTemplate->variableRow != ID_USHORT_MAX ) &&
              ( ( aNode->lflag & MTC_NODE_BIND_MASK ) == MTC_NODE_BIND_EXIST ) )
         {
@@ -214,7 +214,7 @@ IDE_RC mtfRegExpLikeEstimate( mtcNode     * aNode,
         aNode->lflag |= MTC_NODE_REESTIMATE_FALSE;
     }
 
-    /* BUG-44740 mtfRegExpression Àç»ç¿ëÀ» À§ÇØ Tuple Row¸¦ ÃÊ±âÈ­ÇÑ´Ù. */
+    /* BUG-44740 mtfRegExpression ì¬ì‚¬ìš©ì„ ìœ„í•´ Tuple Rowë¥¼ ì´ˆê¸°í™”í•œë‹¤. */
     aTemplate->rows[aNode->table].lflag &= ~MTC_TUPLE_ROW_MEMSET_MASK;
     aTemplate->rows[aNode->table].lflag |= MTC_TUPLE_ROW_MEMSET_TRUE;
 
@@ -297,17 +297,17 @@ IDE_RC mtfRegExpLikeCalculate( mtcNode*     aNode,
 {
  /***********************************************************************
  *
- * Description : RegExpLikeÀÇ Calculate ¼öÇà
- *               ´ÜÀÏ ¹ÙÀÌÆ® ¹®ÀÚ(ASCII) Ã³¸® ºÎºĞ
+ * Description : RegExpLikeì˜ Calculate ìˆ˜í–‰
+ *               ë‹¨ì¼ ë°”ì´íŠ¸ ë¬¸ì(ASCII) ì²˜ë¦¬ ë¶€ë¶„
  *
  * Implementation :
  *    ex ) WHERE REGEXP_LIKE (dname, '^de[:ALPHA:]*_dep$')
  *
- *    aStack[0] : °á°ú
- *    aStack[1] : ÀĞ¾î¿Â ½ºÆ®¸µ
- *               ( eg. 'develop_dep'¿Í °°Àº dname Ä®·³°ª)
- *    aStack[2] : ÆĞÅÏ ½ºÆ®¸µ
- *               ( eg. '^de[:ALPHA:]*_dep$'¿Í °°Àº ÆĞÅÏ ÀÏÄ¡ °Ë»ç Á¶°Ç°ª )
+ *    aStack[0] : ê²°ê³¼
+ *    aStack[1] : ì½ì–´ì˜¨ ìŠ¤íŠ¸ë§
+ *               ( eg. 'develop_dep'ì™€ ê°™ì€ dname ì¹¼ëŸ¼ê°’)
+ *    aStack[2] : íŒ¨í„´ ìŠ¤íŠ¸ë§
+ *               ( eg. '^de[:ALPHA:]*_dep$'ì™€ ê°™ì€ íŒ¨í„´ ì¼ì¹˜ ê²€ì‚¬ ì¡°ê±´ê°’ )
  *    
  ***********************************************************************/ 
 
@@ -426,17 +426,17 @@ IDE_RC mtfRegExpLikeCalculateFast( mtcNode*     aNode,
 {
 /***********************************************************************
  *
- * Description : RegExpLikeÀÇ Calculate ¼öÇà
- *               ´ÜÀÏ ¹ÙÀÌÆ® ¹®ÀÚ(ASCII) Ã³¸® ºÎºĞ
+ * Description : RegExpLikeì˜ Calculate ìˆ˜í–‰
+ *               ë‹¨ì¼ ë°”ì´íŠ¸ ë¬¸ì(ASCII) ì²˜ë¦¬ ë¶€ë¶„
  *
  * Implementation :
  *    ex ) WHERE REGEXP_LIKE (dname, '^de[:ALPHA:]*_dep$')
  *
- *    aStack[0] : °á°ú
- *    aStack[1] : ÀĞ¾î¿Â ½ºÆ®¸µ
- *               ( eg. 'develop_dep'¿Í °°Àº dname Ä®·³°ª)
- *    aStack[2] : ÆĞÅÏ ½ºÆ®¸µ
- *               ( eg. '^de[:ALPHA:]*_dep$'¿Í °°Àº ÆĞÅÏ ÀÏÄ¡ °Ë»ç Á¶°Ç°ª )
+ *    aStack[0] : ê²°ê³¼
+ *    aStack[1] : ì½ì–´ì˜¨ ìŠ¤íŠ¸ë§
+ *               ( eg. 'develop_dep'ì™€ ê°™ì€ dname ì¹¼ëŸ¼ê°’)
+ *    aStack[2] : íŒ¨í„´ ìŠ¤íŠ¸ë§
+ *               ( eg. '^de[:ALPHA:]*_dep$'ì™€ ê°™ì€ íŒ¨í„´ ì¼ì¹˜ ê²€ì‚¬ ì¡°ê±´ê°’ )
  *
  ***********************************************************************/
     

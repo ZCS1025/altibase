@@ -101,16 +101,16 @@ SInt isqlBit::AppendAllToBuffer( SChar *aBuf )
 /**
  * ConvBitToChar.
  *
- * SELECT Äõ¸®ÀÇ °á°ú·Î ¾ò¾îÁø raw BIT µ¥ÀÌÅÍ¸¦
- * ¹®ÀÚ '0' ¶Ç´Â '1'ÀÇ ¹®ÀÚ¿­ ÇüÅÂ·Î ÀçÆ÷¸ËÆÃÇÑ´Ù.
- * SQL_NULL_DATAÀÎ °æ¿ì º» ÇÔ¼ö¸¦ È£ÃâÇØ¼­´Â ¾ÈµÈ´Ù.
+ * SELECT ì¿¼ë¦¬ì˜ ê²°ê³¼ë¡œ ì–»ì–´ì§„ raw BIT ë°ì´í„°ë¥¼
+ * ë¬¸ìž '0' ë˜ëŠ” '1'ì˜ ë¬¸ìžì—´ í˜•íƒœë¡œ ìž¬í¬ë§·íŒ…í•œë‹¤.
+ * SQL_NULL_DATAì¸ ê²½ìš° ë³¸ í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•´ì„œëŠ” ì•ˆëœë‹¤.
  *
  * @param[in] aRaw
- *  SELECT Äõ¸®ÀÇ °á°ú·Î ¾ò¾îÁø raw BIT µ¥ÀÌÅÍ.
+ *  SELECT ì¿¼ë¦¬ì˜ ê²°ê³¼ë¡œ ì–»ì–´ì§„ raw BIT ë°ì´í„°.
  * @param[out] aCVal
- *  ¹®ÀÚ '0' ¶Ç´Â '1'ÀÇ ¹®ÀÚ¿­ ÇüÅÂ·Î ÀçÆ÷¸ËÆÃµÈ BIT µ¥ÀÌÅÍ.
+ *  ë¬¸ìž '0' ë˜ëŠ” '1'ì˜ ë¬¸ìžì—´ í˜•íƒœë¡œ ìž¬í¬ë§·íŒ…ëœ BIT ë°ì´í„°.
  * @param[out] aCValLen
- *  aCValÀÇ ±æÀÌ.
+ *  aCValì˜ ê¸¸ì´.
  */
 void isqlBit::ToChar( UChar  *aRaw,
                       SChar  *aCVal,
@@ -120,8 +120,8 @@ void isqlBit::ToChar( UChar  *aRaw,
     UInt   sI;
     UInt   sLen;
 
-    /* Raw BIT µ¥ÀÌÅÍ´Â ¼±µÎ 4¹ÙÀÌÆ®¿¡ UInt Å¸ÀÔÀÇ ±æÀÌ°¡ À§Ä¡ÇÏ°í,
-     * ±× µÚ¿¡ ½ÇÁ¦ BIT µ¥ÀÌÅÍ°¡ ¹ÙÀÌ³Ê¸® ÇüÅÂ·Î ÀúÀåµÈ´Ù. */
+    /* Raw BIT ë°ì´í„°ëŠ” ì„ ë‘ 4ë°”ì´íŠ¸ì— UInt íƒ€ìž…ì˜ ê¸¸ì´ê°€ ìœ„ì¹˜í•˜ê³ ,
+     * ê·¸ ë’¤ì— ì‹¤ì œ BIT ë°ì´í„°ê°€ ë°”ì´ë„ˆë¦¬ í˜•íƒœë¡œ ì €ìž¥ëœë‹¤. */
     idlOS::memcpy(&sLen, aRaw, ID_SIZEOF(UInt));
     sBit = aRaw + ID_SIZEOF(UInt);
 

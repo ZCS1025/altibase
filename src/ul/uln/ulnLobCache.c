@@ -38,7 +38,7 @@ struct ulnLobCache
 /**
  *  ulnLobCacheNode
  *
- *  LOB DATA´Â ulnCache¿¡ ÀúÀåµÇ¾î ÀÖ´Ù.
+ *  LOB DATAëŠ” ulnCacheì— ì €ìž¥ë˜ì–´ ìžˆë‹¤.
  */
 typedef struct ulnLobCacheNode {
     acp_uint64_t  mLocatorID;
@@ -64,7 +64,7 @@ ACI_RC ulnLobCacheCreate(ulnLobCache **aLobCache)
     ACI_TEST(ACP_RC_NOT_SUCCESS(sRC));
     ULN_FLAG_UP(sNeedFreeLobCache);
 
-    /* Hash »ý¼º */
+    /* Hash ìƒì„± */
     sRC = aclHashCreate(&sLobCache->mHash, HASH_PRIME_NUM,
                         ACI_SIZEOF(acp_uint64_t),
                         aclHashHashInt64, aclHashCompInt64, ACP_FALSE);
@@ -72,8 +72,8 @@ ACI_RC ulnLobCacheCreate(ulnLobCache **aLobCache)
     ULN_FLAG_UP(sNeedDestroyHash);
 
     /*
-     * aclMemAreaCreate()¿¡¼­´Â ½ÇÁ¦ ChunkÀÇ »çÀÌÁî¸¸ ¼³Á¤ÇÏ°í
-     * ½ÇÁ¦ ÇÒ´çÀº aclMemAreaAlloc()¿¡¼­ ÇÑ´Ù.
+     * aclMemAreaCreate()ì—ì„œëŠ” ì‹¤ì œ Chunkì˜ ì‚¬ì´ì¦ˆë§Œ ì„¤ì •í•˜ê³ 
+     * ì‹¤ì œ í• ë‹¹ì€ aclMemAreaAlloc()ì—ì„œ í•œë‹¤.
      */
     aclMemAreaCreate(&sLobCache->mMemArea,
                      ACI_SIZEOF(ulnLobCacheNode) * MEM_AREA_MULTIPLE);
@@ -117,7 +117,7 @@ ACI_RC ulnLobCacheReInitialize(ulnLobCache *aLobCache)
 
     ACI_TEST_RAISE(aLobCache == NULL, NO_NEED_WORK);
 
-    /* Hash¸¦ Àç»ý¼º ÇÏÀÚ */
+    /* Hashë¥¼ ìž¬ìƒì„± í•˜ìž */
     aclHashDestroy(&aLobCache->mHash);
 
     sRC = aclHashCreate(&aLobCache->mHash, HASH_PRIME_NUM,
@@ -125,7 +125,7 @@ ACI_RC ulnLobCacheReInitialize(ulnLobCache *aLobCache)
                         aclHashHashInt64, aclHashCompInt64, ACP_FALSE);
     ACI_TEST(ACP_RC_NOT_SUCCESS(sRC));
 
-    /* MemArea¸¦ Ã³À½ À§Ä¡·Î µ¹¸®ÀÚ */
+    /* MemAreaë¥¼ ì²˜ìŒ ìœ„ì¹˜ë¡œ ëŒë¦¬ìž */
     aclMemAreaFreeToSnapshot(&aLobCache->mMemArea,
                              &aLobCache->mMemAreaSnapShot);
 
@@ -196,7 +196,7 @@ ACI_RC ulnLobCacheAdd(ulnLobCache  *aLobCache,
 
     ACI_TEST_RAISE(aLobCache == NULL, NO_NEED_WORK);
 
-    /* BUG-36966 aValue°¡ NULLÀÌ¸é ±æÀÌ¸¸ ÀúÀåµÈ´Ù. */
+    /* BUG-36966 aValueê°€ NULLì´ë©´ ê¸¸ì´ë§Œ ì €ìž¥ëœë‹¤. */
     sRC = aclMemAreaAlloc(&aLobCache->mMemArea,
                           (void **)&sNewNode,
                           ACI_SIZEOF(ulnLobCacheNode));
@@ -209,9 +209,9 @@ ACI_RC ulnLobCacheAdd(ulnLobCache  *aLobCache,
     sRC = aclHashAdd(&aLobCache->mHash, &aLocatorID, sNewNode);
 
     /*
-     * Ãæµ¹ÀÌ ÀÏ¾î³ª¸é ¿À¹ö¶óÀÌÆ® ÇØ ¹ö¸®ÀÚ.
-     * LOB LOCATOR°¡ Ãæµ¹ÀÌ ÀÏ¾î³­´Ù´Â °Ç 2^32¸¸Å­ ¼øÈ¯ Çß´Ù´Â°Çµ¥
-     * ÀÌ·±ÀÏÀÌ °¡´ÉÇÒ±î~~~
+     * ì¶©ëŒì´ ì¼ì–´ë‚˜ë©´ ì˜¤ë²„ë¼ì´íŠ¸ í•´ ë²„ë¦¬ìž.
+     * LOB LOCATORê°€ ì¶©ëŒì´ ì¼ì–´ë‚œë‹¤ëŠ” ê±´ 2^32ë§Œí¼ ìˆœí™˜ í–ˆë‹¤ëŠ”ê±´ë°
+     * ì´ëŸ°ì¼ì´ ê°€ëŠ¥í• ê¹Œ~~~
      */
     if (ACP_RC_IS_EEXIST(sRC))
     {
@@ -247,7 +247,7 @@ ACI_RC ulnLobCacheRemove(ulnLobCache  *aLobCache,
     ACI_TEST_RAISE(aLobCache == NULL, NO_NEED_WORK);
 
     sRC = aclHashRemove(&aLobCache->mHash, &aLocatorID, (void **)&sGetNode);
-    /* ENOENT°¡ ¹ß»ýÇØµµ SUCCESS¸¦ ¸®ÅÏÇÏÀÚ */
+    /* ENOENTê°€ ë°œìƒí•´ë„ SUCCESSë¥¼ ë¦¬í„´í•˜ìž */
     ACI_TEST(ACP_RC_NOT_SUCCESS(sRC) && ACP_RC_NOT_ENOENT(sRC));
 
     ACI_EXCEPTION_CONT(NO_NEED_WORK);
@@ -285,10 +285,10 @@ ACI_RC ulnLobCacheGetLob(ulnLobCache  *aLobCache,
     sRC = aclHashFind(&aLobCache->mHash, &aLocatorID, (void **)&sGetNode);
     ACI_TEST(ACP_RC_NOT_SUCCESS(sRC));
 
-    /* Data°¡ ¾ø´Ù¸é ACI_FAILURE */
+    /* Dataê°€ ì—†ë‹¤ë©´ ACI_FAILURE */
     ACI_TEST(sGetNode->mData == NULL);
 
-    /* LOB Range¸¦ ³Ñ¾î°¡¸é ACI_FAILURE */
+    /* LOB Rangeë¥¼ ë„˜ì–´ê°€ë©´ ACI_FAILURE */
     ACI_TEST_RAISE((acp_uint64_t)aFromPos + (acp_uint64_t)aForLength >
                    (acp_uint64_t)sGetNode->mLength,
                    LABEL_INVALID_LOB_RANGE);
@@ -299,8 +299,8 @@ ACI_RC ulnLobCacheGetLob(ulnLobCache  *aLobCache,
      * ulnLobBufferDataInCHAR()
      * ulnLobBufferDataInWCHAR()
      *
-     * LobBufferÀÇ Å¸ÀÔ¿¡ µû¶ó À§ÀÇ ÇÔ¼ö°¡ È£ÃâµÇ¸ç
-     * ¸ðµÎ 1, 2¹øÂ° ÆÄ¶ó¸ÞÅÍ°¡ ACP_UNUSED()ÀÌ´Ù.
+     * LobBufferì˜ íƒ€ìž…ì— ë”°ë¼ ìœ„ì˜ í•¨ìˆ˜ê°€ í˜¸ì¶œë˜ë©°
+     * ëª¨ë‘ 1, 2ë²ˆì§¸ íŒŒë¼ë©”í„°ê°€ ACP_UNUSED()ì´ë‹¤.
      */
     sRCACI = sLobBuffer->mOp->mDataIn(NULL,
                                       0,

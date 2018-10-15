@@ -75,7 +75,7 @@ IDE_RC qdpRevoke::validateRevokeSystem(qcStatement * aStatement)
          sPrivilege = sPrivilege->next)
     {
         /* PROJ-1812 ROLE
-         * ROLE Á¸Àç ¿©ºÎ °Ë»ç */
+         * ROLE ì¡´ì¬ ì—¬ë¶€ ê²€ì‚¬ */
         if ( sPrivilege->privType == QDP_ROLE_PRIV )
         {
             /* GET ROLE ID */
@@ -85,7 +85,7 @@ IDE_RC qdpRevoke::validateRevokeSystem(qcStatement * aStatement)
                                                  &sUserType )
                       != IDE_SUCCESS );
 
-            /* privilege list¿¡ role type °Ë»ç */
+            /* privilege listì— role type ê²€ì‚¬ */
             IDE_TEST_RAISE ( sUserType != QDP_ROLE_TYPE, ERR_NOT_EXIST_ROLE );
         }
         else
@@ -109,7 +109,7 @@ IDE_RC qdpRevoke::validateRevokeSystem(qcStatement * aStatement)
              sGrantee = sGrantee->next)
         {
             /* PROJ-1812 ROLE
-             * SYS_USER_ROLES_¿¹ revoke ÇÒ ±ÇÇÑ Á¸Àç ¿©ºÎ °Ë»ç */
+             * SYS_USER_ROLES_ì˜ˆ revoke í•  ê¶Œí•œ ì¡´ì¬ ì—¬ë¶€ ê²€ì‚¬ */
             if ( sPrivilege->privType == QDP_ROLE_PRIV )
             {
                 IDE_TEST( qcmPriv::checkRoleWithGrantor(
@@ -404,10 +404,10 @@ IDE_RC qdpRevoke::executeRevokeSystem(qcStatement * aStatement)
 /***********************************************************************
  *
  * Description :
- *      REVOKE privilege FROM grantees ¼öÇà
+ *      REVOKE privilege FROM grantees ìˆ˜í–‰
  *
  * Implementation :
- *      1. SYS_GRANT_SYSTEM_ ¸ŞÅ¸ Å×ÀÌºí¿¡¼­ privilege »èÁ¦
+ *      1. SYS_GRANT_SYSTEM_ ë©”íƒ€ í…Œì´ë¸”ì—ì„œ privilege ì‚­ì œ
  *
  ***********************************************************************/
 
@@ -461,7 +461,7 @@ IDE_RC qdpRevoke::executeRevokeSystem(qcStatement * aStatement)
                 if ( sPrivilege->privOrRoleID
                      == QCM_PRIV_ID_SYSTEM_ALL_PRIVILEGES_NO )
                 {
-                    // grantor°¡ sysÀÎ °æ¿ì ±âº» ±ÇÇÑÀº »èÁ¦ÇÏÁö ¾Ê´Â´Ù.
+                    // grantorê°€ sysì¸ ê²½ìš° ê¸°ë³¸ ê¶Œí•œì€ ì‚­ì œí•˜ì§€ ì•ŠëŠ”ë‹¤.
                     if ( sParseTree->grantorID == QC_SYS_USER_ID )
                     {
                         idlOS::snprintf( sSqlStr, QD_MAX_SQL_LENGTH,
@@ -649,7 +649,7 @@ IDE_RC qdpRevoke::executeRevokeObject(qcStatement * aStatement)
 
     if ( sPrivilege->privOrRoleID == QCM_PRIV_ID_SYSTEM_ALL_PRIVILEGES_NO)
     {
-        // REVOKE ALL [PRIVILEGES] ÀÎ °æ¿ì
+        // REVOKE ALL [PRIVILEGES] ì¸ ê²½ìš°
         for (sGrantee = sParseTree->grantees;
              sGrantee != NULL;
              sGrantee = sGrantee->next)
@@ -683,7 +683,7 @@ IDE_RC qdpRevoke::executeRevokeObject(qcStatement * aStatement)
                 // check CASCADE CONSTRAINTS
                 if (sPrivID == QCM_PRIV_ID_OBJECT_REFERENCES_NO)
                 {
-                    // REFERENCES ±ÇÇÑÀ» °¡Áø´Ù¸é, Ç×»ó Å×ÀÌºíÀÌ¾î¾ß ÇÑ´Ù.
+                    // REFERENCES ê¶Œí•œì„ ê°€ì§„ë‹¤ë©´, í•­ìƒ í…Œì´ë¸”ì´ì–´ì•¼ í•œë‹¤.
                     IDE_TEST_RAISE( sTableInfo == NULL,
                                     ERR_INAPPROPRIATE_REF_PRIV );
 
@@ -695,7 +695,7 @@ IDE_RC qdpRevoke::executeRevokeObject(qcStatement * aStatement)
                                                                     &sUserList )
                                   != IDE_SUCCESS );
 
-                        /* ROLEÀ» ºÎ¿© ¹ŞÀº user¿¡ ´ëÇØ cascade option Á¸Àç ¿©ºÎ Ã¼Å© */
+                        /* ROLEì„ ë¶€ì—¬ ë°›ì€ userì— ëŒ€í•´ cascade option ì¡´ì¬ ì—¬ë¶€ ì²´í¬ */
                         for ( sCheckUserList = sUserList;
                               sCheckUserList != NULL;
                               sCheckUserList = sCheckUserList->next )
@@ -713,7 +713,7 @@ IDE_RC qdpRevoke::executeRevokeObject(qcStatement * aStatement)
                             }
                             else
                             {
-                                // °ü·ÃµÈ foreign key constraint¸¦ ¸ğµÎ »èÁ¦ÇÔ
+                                // ê´€ë ¨ëœ foreign key constraintë¥¼ ëª¨ë‘ ì‚­ì œí•¨
                                 IDE_TEST( qcm::getChildKeysForDelete(
                                               aStatement,
                                               sCheckUserList->userID,
@@ -747,7 +747,7 @@ IDE_RC qdpRevoke::executeRevokeObject(qcStatement * aStatement)
                         }
                         else
                         {
-                            // °ü·ÃµÈ foreign key constraint¸¦ ¸ğµÎ »èÁ¦ÇÔ
+                            // ê´€ë ¨ëœ foreign key constraintë¥¼ ëª¨ë‘ ì‚­ì œí•¨
                             IDE_TEST( qcm::getChildKeysForDelete( aStatement,
                                                                   sGrantee->userOrRoleID,
                                                                   NULL,
@@ -783,7 +783,7 @@ IDE_RC qdpRevoke::executeRevokeObject(qcStatement * aStatement)
     }
     else
     {
-        // REVOKE ALL [PRIVILEGES]¸¦ Á¦¿ÜÇÑ PRIVELEGEÀÎ °æ¿ì
+        // REVOKE ALL [PRIVILEGES]ë¥¼ ì œì™¸í•œ PRIVELEGEì¸ ê²½ìš°
         // delete from SYS_GRANT_OBJECT_
         for (sPrivilege = sParseTree->privileges;
              sPrivilege != NULL;
@@ -816,7 +816,7 @@ IDE_RC qdpRevoke::executeRevokeObject(qcStatement * aStatement)
                 // check CASCADE CONSTRAINTS
                 if (sPrivilege->privOrRoleID == QCM_PRIV_ID_OBJECT_REFERENCES_NO)
                 {
-                    // REFERENCES ±ÇÇÑÀ» °¡Áø´Ù¸é, Ç×»ó Å×ÀÌºíÀÌ¾î¾ß ÇÑ´Ù.
+                    // REFERENCES ê¶Œí•œì„ ê°€ì§„ë‹¤ë©´, í•­ìƒ í…Œì´ë¸”ì´ì–´ì•¼ í•œë‹¤.
                     IDE_TEST_RAISE( sTableInfo == NULL,
                                     ERR_INAPPROPRIATE_REF_PRIV );
 
@@ -828,7 +828,7 @@ IDE_RC qdpRevoke::executeRevokeObject(qcStatement * aStatement)
                                                                     &sUserList )
                                   != IDE_SUCCESS );
 
-                        /* ROLEÀ» ºÎ¿© ¹ŞÀº user¿¡ ´ëÇØ cascade option Á¸Àç ¿©ºÎ Ã¼Å© */
+                        /* ROLEì„ ë¶€ì—¬ ë°›ì€ userì— ëŒ€í•´ cascade option ì¡´ì¬ ì—¬ë¶€ ì²´í¬ */
                         for ( sCheckUserList = sUserList;
                               sCheckUserList != NULL;
                               sCheckUserList = sCheckUserList->next )
@@ -846,7 +846,7 @@ IDE_RC qdpRevoke::executeRevokeObject(qcStatement * aStatement)
                             }
                             else
                             {
-                                // °ü·ÃµÈ foreign key constraint¸¦ ¸ğµÎ »èÁ¦ÇÔ
+                                // ê´€ë ¨ëœ foreign key constraintë¥¼ ëª¨ë‘ ì‚­ì œí•¨
                                 IDE_TEST( qcm::getChildKeysForDelete(
                                               aStatement,
                                               sCheckUserList->userID,
@@ -880,7 +880,7 @@ IDE_RC qdpRevoke::executeRevokeObject(qcStatement * aStatement)
                         }
                         else
                         {
-                            // °ü·ÃµÈ foreign key constraint¸¦ ¸ğµÎ »èÁ¦ÇÔ
+                            // ê´€ë ¨ëœ foreign key constraintë¥¼ ëª¨ë‘ ì‚­ì œí•¨
                             IDE_TEST( qcm::getChildKeysForDelete( aStatement,
                                                                   sGrantee->userOrRoleID,                                                              
                                                                   NULL,
@@ -927,7 +927,7 @@ IDE_RC qdpRevoke::executeRevokeObject(qcStatement * aStatement)
             != IDE_SUCCESS);
 
         // BUG-14509
-        // °ü·Ã psmµéÀÌ rebuildµÉ ¼ö ÀÖµµ·Ï invalid»óÅÂ·Î º¯°æ.
+        // ê´€ë ¨ psmë“¤ì´ rebuildë  ìˆ˜ ìˆë„ë¡ invalidìƒíƒœë¡œ ë³€ê²½.
         IDE_TEST( qcmProc::relSetInvalidProcOfRelated(
                       aStatement,
                       sParseTree->userID,
@@ -955,7 +955,7 @@ IDE_RC qdpRevoke::executeRevokeObject(qcStatement * aStatement)
         // sequence
         QC_STR_COPY( sObjectName, sParseTree->objectName );
 
-        // °ü·Ã psmµéÀÌ rebuildµÉ ¼ö ÀÖµµ·Ï invalid»óÅÂ·Î º¯°æ.
+        // ê´€ë ¨ psmë“¤ì´ rebuildë  ìˆ˜ ìˆë„ë¡ invalidìƒíƒœë¡œ ë³€ê²½.
         IDE_TEST( qcmProc::relSetInvalidProcOfRelated(
                       aStatement,
                       sParseTree->userID,
@@ -984,8 +984,8 @@ IDE_RC qdpRevoke::executeRevokeObject(qcStatement * aStatement)
         QC_STR_COPY( sObjectName, sParseTree->objectName );
 
         // To fix BUG-14508
-        // user±ÇÇÑ Ã¼Å©´Â compile½Ã¿¡¸¸ Ã¼Å©ÇÏ¹Ç·Î,
-        // °ü·Ã psmµéÀÌ rebuildµÉ ¼ö ÀÖµµ·Ï invalid»óÅÂ·Î º¯°æ.
+        // userê¶Œí•œ ì²´í¬ëŠ” compileì‹œì—ë§Œ ì²´í¬í•˜ë¯€ë¡œ,
+        // ê´€ë ¨ psmë“¤ì´ rebuildë  ìˆ˜ ìˆë„ë¡ invalidìƒíƒœë¡œ ë³€ê²½.
         IDE_TEST( qcmProc::relSetInvalidProcOfRelated(
                       aStatement,
                       sParseTree->userID,
@@ -1047,7 +1047,7 @@ IDE_RC qdpRevoke::executeRevokeObject(qcStatement * aStatement)
         QC_STR_COPY( sObjectName, sParseTree->objectName );
 
         // PROJ-1073 Package
-        // °ü·Ã packageµéÀÌ rebuildµÉ ¼ö ÀÖµµ·Ï invalid»óÅÂ·Î º¯°æ.
+        // ê´€ë ¨ packageë“¤ì´ rebuildë  ìˆ˜ ìˆë„ë¡ invalidìƒíƒœë¡œ ë³€ê²½.
         IDE_TEST( qcmProc::relSetInvalidProcOfRelated (
                       aStatement,
                       sParseTree->userID,
@@ -1110,7 +1110,7 @@ IDE_RC qdpRevoke::executeRevokeObject(qcStatement * aStatement)
     }    
     IDE_EXCEPTION_END;
 
-    // sqlSourceInfo°¡ ¾ø´Â error¶ó¸é...
+    // sqlSourceInfoê°€ ì—†ëŠ” errorë¼ë©´...
     if ( ideHasErrorPosition() == ID_FALSE )
     {
         sqlInfo.setSourceInfo( aStatement,
@@ -1144,7 +1144,7 @@ IDE_RC qdpRevoke::executeRevokeObject(qcStatement * aStatement)
  *
  * Argument :
  *    aStatement - which have parse tree, iduMemory, session information.
- *    aTableInfo - ¸¸¾à °´Ã¼ÀÇ Á¾·ù°¡ tableÀÌ¶ó¸é ¼³Á¤µÇ¾î ³Ñ¾î¿È
+ *    aTableInfo - ë§Œì•½ ê°ì²´ì˜ ì¢…ë¥˜ê°€ tableì´ë¼ë©´ ì„¤ì •ë˜ì–´ ë„˜ì–´ì˜´
  *    aPrivID    - privilege ID in parse tree ( IN )
  *    aNextGrantorID  - who was Grant to others with WITH GRANT OPTION ( IN )
  *    aFirstGrantorID - Grantor ID in parse tree ( IN )
@@ -1173,8 +1173,8 @@ IDE_RC qdpRevoke::deleteChainObjectByGrantOption(
     sParseTree    = (qdRevokeParseTree*) aStatement->myPlan->parseTree;
     sGrantorID    = aNextGrantorID;
 
-    // ÀÌ¹Ì ÀÌ ÇÔ¼ö¸¦ È£ÃâÇÏ´Â ½ÃÁ¡¿¡¼­
-    // ¸¸¾à sParseTree->objectID°¡ tableÀÌ¶ó¸é ÀûÀıÇÑ lockÀÌ ÀÌ¹Ì È¹µæµÈ »óÅÂÀÓ
+    // ì´ë¯¸ ì´ í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•˜ëŠ” ì‹œì ì—ì„œ
+    // ë§Œì•½ sParseTree->objectIDê°€ tableì´ë¼ë©´ ì ì ˆí•œ lockì´ ì´ë¯¸ íšë“ëœ ìƒíƒœì„
     
     IDE_TEST(qcmPriv::getGrantObjectWithoutGrantee(
                 aStatement,
@@ -1208,7 +1208,7 @@ IDE_RC qdpRevoke::deleteChainObjectByGrantOption(
             // check CASCADE CONSTRAINTS
             if( aPrivID == QCM_PRIV_ID_OBJECT_REFERENCES_NO )
             {
-                // REFERENCES ±ÇÇÑÀ» °¡Áø´Ù¸é, Ç×»ó Å×ÀÌºíÀÌ¾î¾ß ÇÑ´Ù.
+                // REFERENCES ê¶Œí•œì„ ê°€ì§„ë‹¤ë©´, í•­ìƒ í…Œì´ë¸”ì´ì–´ì•¼ í•œë‹¤.
                 IDE_TEST_RAISE( aTableInfo == NULL,
                                 ERR_INAPPROPRIATE_REF_PRIV );
 
@@ -1225,7 +1225,7 @@ IDE_RC qdpRevoke::deleteChainObjectByGrantOption(
                 }
                 else
                 {
-                    // °ü·ÃµÈ foreign key constraint¸¦ ¸ğµÎ »èÁ¦ÇÔ
+                    // ê´€ë ¨ëœ foreign key constraintë¥¼ ëª¨ë‘ ì‚­ì œí•¨
                     IDE_TEST( qcm::getChildKeysForDelete( aStatement,
                                                           sNextGrantorID,
                                                           NULL,
@@ -1304,10 +1304,10 @@ IDE_RC qdpRevoke::deleteSystemAllPrivileges(
 /***********************************************************************
  *
  * Description :
- *      ¸ğµç ±ÇÇÑ »èÁ¦
+ *      ëª¨ë“  ê¶Œí•œ ì‚­ì œ
  *
  * Implementation :
- *      1. SYS_GRANT_SYSTEM_ ¸ŞÅ¸ Å×ÀÌºí¿¡¼­ ¸ğµç ±ÇÇÑ »èÁ¦
+ *      1. SYS_GRANT_SYSTEM_ ë©”íƒ€ í…Œì´ë¸”ì—ì„œ ëª¨ë“  ê¶Œí•œ ì‚­ì œ
  *
  ***********************************************************************/
 
@@ -1337,8 +1337,8 @@ IDE_RC qdpRevoke::deleteSystemAllPrivileges(
 
     IDE_TEST_RAISE(sRowCnt < 0, ERR_META_CRASH);
 
-    /* BUG-45561 Æ¯Á¤ »óÈ²¿¡ ALL ±ÇÇÑ ºÎ¿©½Ã Áßº¹ ºÎ¿©, ¹İº¹ È¸¼ö, »ç¿ëºÒ°¡´ÉÇÑ ±ÇÇÑ ºÎ¿© ¹®Á¦°¡ ¹ß»ıÇÕ´Ï´Ù.
-     *  - ALL±ÇÇÑ°ú SYS °íÀ¯ ±ÇÇÑÀ» Á¦¿ÜÇÑ »ç¿ë°¡´ÉÇÑ ¸ğµç ±ÇÇÑÀ» ºÎ¿©ÇÑ´Ù. »ç¿ëºÒ°¡´ÉÇÑ ±ÇÇÑ ºÎ¿© ¹æÁöÇÑ´Ù.
+    /* BUG-45561 íŠ¹ì • ìƒí™©ì— ALL ê¶Œí•œ ë¶€ì—¬ì‹œ ì¤‘ë³µ ë¶€ì—¬, ë°˜ë³µ íšŒìˆ˜, ì‚¬ìš©ë¶ˆê°€ëŠ¥í•œ ê¶Œí•œ ë¶€ì—¬ ë¬¸ì œê°€ ë°œìƒí•©ë‹ˆë‹¤.
+     *  - ALLê¶Œí•œê³¼ SYS ê³ ìœ  ê¶Œí•œì„ ì œì™¸í•œ ì‚¬ìš©ê°€ëŠ¥í•œ ëª¨ë“  ê¶Œí•œì„ ë¶€ì—¬í•œë‹¤. ì‚¬ìš©ë¶ˆê°€ëŠ¥í•œ ê¶Œí•œ ë¶€ì—¬ ë°©ì§€í•œë‹¤.
      */
     idlOS::snprintf( sSqlStr, QD_MAX_SQL_LENGTH,
                      "INSERT INTO SYS_GRANT_SYSTEM_"
@@ -1410,11 +1410,11 @@ IDE_RC qdpRevoke::deleteObjectPrivFromMeta(
 /***********************************************************************
  *
  * Description :
- *      OBJECT ±ÇÇÑ »èÁ¦
+ *      OBJECT ê¶Œí•œ ì‚­ì œ
  *
  * Implementation :
- *      1. SYS_GRANT_OBJECT_ ¸ŞÅ¸ Å×ÀÌºí¿¡¼­ ¸í½ÃµÈ object ¿¡ °üÇÑ
- *         ¸í½ÃµÈ ±ÇÇÑ »èÁ¦
+ *      1. SYS_GRANT_OBJECT_ ë©”íƒ€ í…Œì´ë¸”ì—ì„œ ëª…ì‹œëœ object ì— ê´€í•œ
+ *         ëª…ì‹œëœ ê¶Œí•œ ì‚­ì œ
  *
  ***********************************************************************/
 

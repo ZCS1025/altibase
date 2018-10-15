@@ -31,9 +31,9 @@ qsxRefCursor::initialize( qsxRefCursorInfo * aRefCurInfo,
 {
 /***********************************************************************
  *
- *  Description : Reference Cursor ÃÊ±âÈ­
+ *  Description : Reference Cursor ì´ˆê¸°í™”
  *
- *  Implementation : qsxRefCursorInfo±¸Á¶Ã¼ÀÇ ¸â¹ö¸¦ ¸ðµÎ ÃÊ±âÈ­ÇÔ
+ *  Implementation : qsxRefCursorInfoêµ¬ì¡°ì²´ì˜ ë©¤ë²„ë¥¼ ëª¨ë‘ ì´ˆê¸°í™”í•¨
  *
  ***********************************************************************/
 
@@ -57,7 +57,7 @@ qsxRefCursor::finalize( qsxRefCursorInfo * aRefCurInfo )
  *
  *  Description : Reference Cursor finalize
  *
- *  Implementation : initialize¿Í °ÅÀÇµ¿ÀÏÇÏ³ª, id¸¦ 0À¸·Î ÃÊ±âÈ­
+ *  Implementation : initializeì™€ ê±°ì˜ë™ì¼í•˜ë‚˜, idë¥¼ 0ìœ¼ë¡œ ì´ˆê¸°í™”
  *
  ***********************************************************************/
 
@@ -101,16 +101,16 @@ qsxRefCursor::openFor( qsxRefCursorInfo * aRefCurInfo,
 {
 /***********************************************************************
  *
- *  Description : ÁÖ¾îÁø query string°ú parameter·Î prepare-execute
+ *  Description : ì£¼ì–´ì§„ query stringê³¼ parameterë¡œ prepare-execute
  *
  *  Implementation :
- *             (1) statement ÇÒ´ç
- *             (2) prepareÈÄ, selectÀÎÁö °Ë»ç
+ *             (1) statement í• ë‹¹
+ *             (2) prepareí›„, selectì¸ì§€ ê²€ì‚¬
  *             (3) parameter info bind
  *             (4) parameter data bind
  *             (5) execute
- *             (6) execute½Ã ÇÑ°Ç fetch¸¦ ³»ºÎÀûÀ¸·Î ½ÃµµÇØº¸±â ¶§¹®¿¡
- *                 recordÁ¸ÀçÇÏ´ÂÁö ÀúÀå
+ *             (6) executeì‹œ í•œê±´ fetchë¥¼ ë‚´ë¶€ì ìœ¼ë¡œ ì‹œë„í•´ë³´ê¸° ë•Œë¬¸ì—
+ *                 recordì¡´ìž¬í•˜ëŠ”ì§€ ì €ìž¥
  *
  ***********************************************************************/
 
@@ -286,8 +286,8 @@ qsxRefCursor::close( qsxRefCursorInfo * aRefCurInfo )
  *
  *  Description : close ref cursor
  *
- *  Implementation : cursor¿¡ ´Þ·Á ÀÖ´Â statement¸¦ freeÇÏ°í,
- *                   º¯¼ö ÃÊ±âÈ­
+ *  Implementation : cursorì— ë‹¬ë ¤ ìžˆëŠ” statementë¥¼ freeí•˜ê³ ,
+ *                   ë³€ìˆ˜ ì´ˆê¸°í™”
  *
  ***********************************************************************/
 
@@ -321,13 +321,13 @@ qsxRefCursor::fetchInto( qsxRefCursorInfo  * aRefCurInfo,
 {
 /*****************************************************************************
  *
- *  Description : ·¹ÄÚµå ÇÑ°ÇÀ» fetchÇÏ¿© into(bulk collection)Àý º¯¼ö¿¡ ´ëÀÔ
+ *  Description : ë ˆì½”ë“œ í•œê±´ì„ fetchí•˜ì—¬ into(bulk collection)ì ˆ ë³€ìˆ˜ì— ëŒ€ìž…
  *
  *  Implementation :
- *              (1) intoÀý º¯¼öÀÇ µ¥ÀÌÅÍ Å¸ÀÔÀ¸·Î bindColumnInfo
- *              (2) intoÀý º¯¼öÀÇ °ªÀ» bindColumnData
- *              (3) ÇÑ°Ç fetch, rowcountÁõ°¡
- *              (4) ´õÀÌ»ó ·¹ÄÚµå°¡ ¾ø´ÂÁö ¿©ºÎ ÀúÀå
+ *              (1) intoì ˆ ë³€ìˆ˜ì˜ ë°ì´í„° íƒ€ìž…ìœ¼ë¡œ bindColumnInfo
+ *              (2) intoì ˆ ë³€ìˆ˜ì˜ ê°’ì„ bindColumnData
+ *              (3) í•œê±´ fetch, rowcountì¦ê°€
+ *              (4) ë”ì´ìƒ ë ˆì½”ë“œê°€ ì—†ëŠ”ì§€ ì—¬ë¶€ ì €ìž¥
  *
  *****************************************************************************/
 
@@ -374,7 +374,7 @@ qsxRefCursor::fetchInto( qsxRefCursorInfo  * aRefCurInfo,
               != IDE_SUCCESS );
 
     /* BUG-41707 */
-    // limitÀýÀÇ count °ªÀ» °¡Á®¿É´Ï´Ù.
+    // limitì ˆì˜ count ê°’ì„ ê°€ì ¸ì˜µë‹ˆë‹¤.
     if ( sIntoVarNodes->bulkCollect == ID_TRUE )
     {
         if ( sLimit != NULL )
@@ -388,7 +388,7 @@ qsxRefCursor::fetchInto( qsxRefCursorInfo  * aRefCurInfo,
         else
         {
             // Nothing to do.
-            // ÀÌ °æ¿ì¿¡´Â sLimit = MTD_INTEGER_MAXIMUM
+            // ì´ ê²½ìš°ì—ëŠ” sLimit = MTD_INTEGER_MAXIMUM
         }
     }
     else
@@ -410,11 +410,11 @@ qsxRefCursor::fetchInto( qsxRefCursorInfo  * aRefCurInfo,
                 sIndexValue  = QTC_TMPL_FIXEDDATA( QC_PRIVATE_TMPLATE(aQcStmt),
                                                    sIndexNode );
 
-                // bulk collect into¿¡¼­ »ç¿ëµÇ´Â arrayÀÇ index´Â integer typeÀÌ¿©¾ß ÇÑ´Ù.
+                // bulk collect intoì—ì„œ ì‚¬ìš©ë˜ëŠ” arrayì˜ indexëŠ” integer typeì´ì—¬ì•¼ í•œë‹¤.
                 IDE_DASSERT( QTC_TMPL_COLUMN( QC_PRIVATE_TMPLATE(aQcStmt),
                                               sIndexNode )->module->id  == MTD_INTEGER_ID );
 
-                // arrayÀÇ index¸¦ ÀÌÀü index °ª¿¡ +1
+                // arrayì˜ indexë¥¼ ì´ì „ index ê°’ì— +1
                 *(mtdIntegerType*)sIndexValue =
                     (mtdIntegerType)(sRowCount + 1);
             }
@@ -427,7 +427,7 @@ qsxRefCursor::fetchInto( qsxRefCursorInfo  * aRefCurInfo,
         sBindColumnId = 0;
         sBindColumnDataList = NULL;
 
-        // bindColumnDataList»ý¼º
+        // bindColumnDataListìƒì„±
         if( aFetch->isIntoVarRecordType == ID_TRUE )
         {
             IDE_DASSERT( sIntoVarNodes->intoNodes != NULL );
@@ -499,9 +499,9 @@ qsxRefCursor::fetchInto( qsxRefCursorInfo  * aRefCurInfo,
         sRowCount++;
         sLimitCount--;
 
-        // bulk collect intoÀý°ú ÇÔ²²¿Â limit ÀýÀÇ count ¼ö¿Í fetchÇÑ ·¹ÄÚµå ¼ö°¡ °°Àº °æ¿ì
-        // ´õÀÌ»ó µ¥ÀÌÅÍ°¡ Á¸ÀçÇÏÁö ¾Ê´Â °æ¿ì
-        // fetch¸¦ ¼öÇàÇÒ ÇÊ¿ä°¡ ¾ø´Ù.
+        // bulk collect intoì ˆê³¼ í•¨ê»˜ì˜¨ limit ì ˆì˜ count ìˆ˜ì™€ fetchí•œ ë ˆì½”ë“œ ìˆ˜ê°€ ê°™ì€ ê²½ìš°
+        // ë”ì´ìƒ ë°ì´í„°ê°€ ì¡´ìž¬í•˜ì§€ ì•ŠëŠ” ê²½ìš°
+        // fetchë¥¼ ìˆ˜í–‰í•  í•„ìš”ê°€ ì—†ë‹¤.
         if ( ( sLimitCount == 0 ) || ( aRefCurInfo->nextRecordExist == ID_FALSE ) )
         {
             break;

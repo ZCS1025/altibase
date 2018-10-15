@@ -21,7 +21,7 @@
  * Description
  *
  *   PROJ-1407
- *   Volatile Table Records∏¶ DUMP«œ±‚ ¿ß«— «‘ºˆ
+ *   Volatile Table RecordsÎ•º DUMPÌïòÍ∏∞ ÏúÑÌïú Ìï®Ïàò
  *
  **********************************************************************/
 
@@ -35,7 +35,7 @@
  * Description
  *
  *   D$VOL_TABLE_RECORD
- *   : VOLATILE TABLE¿« Record ≥ªøÎ¿ª √‚∑¬
+ *   : VOLATILE TABLEÏùò Record ÎÇ¥Ïö©ÏùÑ Ï∂úÎ†•
  *
  *
  **********************************************************************/
@@ -43,7 +43,7 @@
 extern smiGlobalCallBackList gSmiGlobalCallBackList;
 
 //------------------------------------------------------
-// D$VOL_TABLE_RECORD Dump Table¿« Column Description
+// D$VOL_TABLE_RECORD Dump TableÏùò Column Description
 //------------------------------------------------------
 
 static iduFixedTableColDesc gDumpVolTableRecordColDesc[]=
@@ -171,7 +171,7 @@ static iduFixedTableColDesc gDumpVolTableRecordColDesc[]=
 };
 
 //------------------------------------------------------
-// D$VOL_TABLE_RECORD Dump Table¿« Table Description
+// D$VOL_TABLE_RECORD Dump TableÏùò Table Description
 //------------------------------------------------------
 
 iduFixedTableDesc  gDumpVolTableRecordTableDesc =
@@ -187,7 +187,7 @@ iduFixedTableDesc  gDumpVolTableRecordTableDesc =
 };
 
 //------------------------------------------------------
-// D$VOL_TABLE_RECORD Dump Table¿« ∑πƒ⁄µÂ Build
+// D$VOL_TABLE_RECORD Dump TableÏùò Î†àÏΩîÎìú Build
 //------------------------------------------------------
 
 IDE_RC svcFT::buildRecordVolTableRecord( idvSQL              * /*aStatistics*/,
@@ -280,7 +280,7 @@ IDE_RC svcFT::buildRecordVolTableRecord( idvSQL              * /*aStatistics*/,
                              "%"ID_XINT64_FMT, SMP_SLOT_GET_NEXT_OID(sSlotHeader) );
             sDumpRecord.mNext = sNext;
 
-            /* BUG-31062∑Œ Slot Header Flag √≥∏Æ πÊΩƒ ∫Ø∞Ê*/
+            /* BUG-31062Î°ú Slot Header Flag Ï≤òÎ¶¨ Î∞©Ïãù Î≥ÄÍ≤Ω*/
             sDumpRecord.mFlag = SMP_SLOT_GET_FLAGS( sSlotHeader );
 
             sDumpRecord.mUsedFlag       = SMP_SLOT_IS_USED( sSlotHeader ) ? 'U':'F';

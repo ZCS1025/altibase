@@ -35,7 +35,7 @@ SInt accsMgr::doIt(SChar *filename)
 
     outFp_ = idlOS::fopen(filename, "r");
 
-    outOneLine(); // Ã¹¹øÂ° ¶óÀÎÀ» Ãâ·Â
+    outOneLine(); // ì²«ë²ˆì§¸ ë¼ì¸ì„ ì¶œë ¥
     IDE_TEST_RAISE(doParse() != IDE_SUCCESS, get_parse_error);
 
     return IDE_SUCCESS;

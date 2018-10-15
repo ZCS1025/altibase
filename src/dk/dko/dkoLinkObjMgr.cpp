@@ -26,7 +26,7 @@
 #include <dkdResultSetMetaCache.h>
 
 /************************************************************************
- * Description : DK object manager ¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+ * Description : DK object manager ë¥¼ ì´ˆê¸°í™”í•œë‹¤.
  *
  ************************************************************************/
 IDE_RC  dkoLinkObjMgr::initializeStatic()
@@ -48,7 +48,7 @@ IDE_RC  dkoLinkObjMgr::initializeStatic()
 }
 
 /************************************************************************
- * Description : DK object manager ¸¦ Á¤¸®ÇÑ´Ù.
+ * Description : DK object manager ë¥¼ ì •ë¦¬í•œë‹¤.
  *
  ************************************************************************/
 IDE_RC  dkoLinkObjMgr::finalizeStatic()
@@ -69,8 +69,8 @@ IDE_RC  dkoLinkObjMgr::finalizeStatic()
 }
 
 /************************************************************************
- * Description : SYS_DATABASE_LINKS_ ¸ŞÅ¸Å×ÀÌºíÀ» ÀĞ¾î ±âÁ¸¿¡ Á¸ÀçÇÏ´Â 
- *               DB-Link ¿¡ ´ëÇÑ DK link object ¸¦ ¸®½ºÆ®·Î »ı¼ºÇÑ´Ù.
+ * Description : SYS_DATABASE_LINKS_ ë©”íƒ€í…Œì´ë¸”ì„ ì½ì–´ ê¸°ì¡´ì— ì¡´ì¬í•˜ëŠ” 
+ *               DB-Link ì— ëŒ€í•œ DK link object ë¥¼ ë¦¬ìŠ¤íŠ¸ë¡œ ìƒì„±í•œë‹¤.
  *
  ************************************************************************/
 IDE_RC  dkoLinkObjMgr::createLinkObjectsFromMeta( idvSQL * aStatistics )
@@ -122,25 +122,25 @@ IDE_RC  dkoLinkObjMgr::createLinkObjectsFromMeta( idvSQL * aStatistics )
 }
 
 /************************************************************************
- * Description : »õ·Î¿î µ¥ÀÌÅÍº£ÀÌ½º ¸µÅ© °´Ã¼¸¦ ÇÏ³ª »ı¼ºÇÏ¿© list ¿¡ 
- *               Ãß°¡ÇØÁØ´Ù.
+ * Description : ìƒˆë¡œìš´ ë°ì´í„°ë² ì´ìŠ¤ ë§í¬ ê°ì²´ë¥¼ í•˜ë‚˜ ìƒì„±í•˜ì—¬ list ì— 
+ *               ì¶”ê°€í•´ì¤€ë‹¤.
  *  
- *  aQcStatement    - [IN] SM ÇÔ¼ö È£Ãâ½Ã ÇÊ¿äÇÑ QcStatement Á¤º¸
- *  aUserId         - [IN] µ¥ÀÌÅÍº£ÀÌ½º ¸µÅ©¸¦ »ı¼ºÇÑ user ÀÇ id
- *  aNewDblinkId    - [IN] µ¥ÀÌÅÍº£ÀÌ½º ¸µÅ©ÀÇ id
- *  aLinkType       - [IN] »ı¼ºÇÏ·Á´Â µ¥ÀÌÅÍº£ÀÌ½º ¸µÅ©ÀÇ À¯Çü
+ *  aQcStatement    - [IN] SM í•¨ìˆ˜ í˜¸ì¶œì‹œ í•„ìš”í•œ QcStatement ì •ë³´
+ *  aUserId         - [IN] ë°ì´í„°ë² ì´ìŠ¤ ë§í¬ë¥¼ ìƒì„±í•œ user ì˜ id
+ *  aNewDblinkId    - [IN] ë°ì´í„°ë² ì´ìŠ¤ ë§í¬ì˜ id
+ *  aLinkType       - [IN] ìƒì„±í•˜ë ¤ëŠ” ë°ì´í„°ë² ì´ìŠ¤ ë§í¬ì˜ ìœ í˜•
  *
  *      @ Database Link Type
  *          0: Heterogeneous database link
  *          1: Homogeneous database link
  *          
- *  aUserMode       - [IN] »ı¼ºÇÏ·Á´Â µ¥ÀÌÅÍº£ÀÌ½º ¸µÅ©°¡ public ÀÎÁö 
- *                         private ÀÎÁö ¿©ºÎ
- *  aLinkName       - [IN] µ¥ÀÌÅÍº£ÀÌ½º ¸µÅ©ÀÇ ÀÌ¸§
- *  aTargetName     - [IN] Target remote server ÀÇ ÀÌ¸§
- *  aRemoteUserId   - [IN] Target remote server ÀÇ Á¢¼Ó id
- *  aRemoteUserPasswd - [IN] Target remote server ÀÇ Á¢¼Ó password
- *  aLinkObj        - [OUT] »ı¼ºÇÑ µ¥ÀÌÅÍº£ÀÌ½º ¸µÅ© °´Ã¼¿¡ ´ëÇÑ Æ÷ÀÎÅÍ
+ *  aUserMode       - [IN] ìƒì„±í•˜ë ¤ëŠ” ë°ì´í„°ë² ì´ìŠ¤ ë§í¬ê°€ public ì¸ì§€ 
+ *                         private ì¸ì§€ ì—¬ë¶€
+ *  aLinkName       - [IN] ë°ì´í„°ë² ì´ìŠ¤ ë§í¬ì˜ ì´ë¦„
+ *  aTargetName     - [IN] Target remote server ì˜ ì´ë¦„
+ *  aRemoteUserId   - [IN] Target remote server ì˜ ì ‘ì† id
+ *  aRemoteUserPasswd - [IN] Target remote server ì˜ ì ‘ì† password
+ *  aLinkObj        - [OUT] ìƒì„±í•œ ë°ì´í„°ë² ì´ìŠ¤ ë§í¬ ê°ì²´ì— ëŒ€í•œ í¬ì¸í„°
  *
  ************************************************************************/
 IDE_RC  dkoLinkObjMgr::createLinkObject( void       *aQcStatement, 
@@ -271,8 +271,8 @@ IDE_RC  dkoLinkObjMgr::createLinkObject( void       *aQcStatement,
 }
 
 /************************************************************************
- * Description : aSrcLinkObj ·Î ÀÔ·Â¹ŞÀº µ¥ÀÌÅÍº£ÀÌ½º ¸µÅ© °´Ã¼¸¦ 
- *               aDestLinkObj °¡ °¡¸®Å°´Â ÁÖ¼Ò¿¡ copy ÇÑ´Ù.
+ * Description : aSrcLinkObj ë¡œ ì…ë ¥ë°›ì€ ë°ì´í„°ë² ì´ìŠ¤ ë§í¬ ê°ì²´ë¥¼ 
+ *               aDestLinkObj ê°€ ê°€ë¦¬í‚¤ëŠ” ì£¼ì†Œì— copy í•œë‹¤.
  *               
  *  aSrcLinkObj     - [IN] Source database link object
  *  aDestLinkObj    - [IN] Destination database link object
@@ -324,12 +324,12 @@ void    dkoLinkObjMgr::copyLinkObject( dkoLink     *aSrcLinkObj,
 }
 
 /************************************************************************
- * Description : ÀÔ·Â¹ŞÀº µ¥ÀÌÅÍº£ÀÌ½º ¸µÅ© °´Ã¼¸¦ ÃÊ±âÈ­ÇÑ´Ù.
- *               ÀÌ ÇÔ¼ö´Â dkoLinkObjMgr ¿¡ ÀÇÇØ list ·Î °ü¸®µÇ´Â ¸µÅ© 
- *               °´Ã¼ ÀÌ¿ÜÀÇ ¸µÅ©°´Ã¼¿¡ ´ëÇØ »ç¿ëµÉ ¼ö ÀÖÀ¸¸ç, list ¹× 
- *               mutex °ü·Ã ÃÊ±âÈ­´Â ¼öÇàÇÏÁö ¾Ê´Â´Ù.
+ * Description : ì…ë ¥ë°›ì€ ë°ì´í„°ë² ì´ìŠ¤ ë§í¬ ê°ì²´ë¥¼ ì´ˆê¸°í™”í•œë‹¤.
+ *               ì´ í•¨ìˆ˜ëŠ” dkoLinkObjMgr ì— ì˜í•´ list ë¡œ ê´€ë¦¬ë˜ëŠ” ë§í¬ 
+ *               ê°ì²´ ì´ì™¸ì˜ ë§í¬ê°ì²´ì— ëŒ€í•´ ì‚¬ìš©ë  ìˆ˜ ìˆìœ¼ë©°, list ë° 
+ *               mutex ê´€ë ¨ ì´ˆê¸°í™”ëŠ” ìˆ˜í–‰í•˜ì§€ ì•ŠëŠ”ë‹¤.
  *  
- *  aLinkObj     - [IN] ÃÊ±âÈ­ÇÒ µ¥ÀÌÅÍº£ÀÌ½º ¸µÅ© °´Ã¼¸¦ °¡¸®Å°´Â Æ÷ÀÎÅÍ
+ *  aLinkObj     - [IN] ì´ˆê¸°í™”í•  ë°ì´í„°ë² ì´ìŠ¤ ë§í¬ ê°ì²´ë¥¼ ê°€ë¦¬í‚¤ëŠ” í¬ì¸í„°
  *
  ************************************************************************/
 void    dkoLinkObjMgr::initCopiedLinkObject( dkoLink   *aLinkObj )
@@ -344,11 +344,11 @@ void    dkoLinkObjMgr::initCopiedLinkObject( dkoLink   *aLinkObj )
 }
 
 /************************************************************************
- * Description : µ¥ÀÌÅÍº£ÀÌ½º ¸µÅ© °´Ã¼¸¦ list ·ÎºÎÅÍ Á¦°ÅÇÏ°í ÇÒ´ç¹ŞÀº 
- *               ÀÚ¿øÀ» ¹İÈ¯ÇÑ´Ù.
+ * Description : ë°ì´í„°ë² ì´ìŠ¤ ë§í¬ ê°ì²´ë¥¼ list ë¡œë¶€í„° ì œê±°í•˜ê³  í• ë‹¹ë°›ì€ 
+ *               ìì›ì„ ë°˜í™˜í•œë‹¤.
  *
- *  aQcStatement - [IN] ¸ŞÅ¸¿¡¼­ Á¦°ÅÇÏ±â À§ÇÏ¿© ÇÊ¿äÇÑ qp Á¤º¸
- *  aLinkObj     - [IN] Á¦°ÅÇÒ µ¥ÀÌÅÍº£ÀÌ½º ¸µÅ© °´Ã¼ 
+ *  aQcStatement - [IN] ë©”íƒ€ì—ì„œ ì œê±°í•˜ê¸° ìœ„í•˜ì—¬ í•„ìš”í•œ qp ì •ë³´
+ *  aLinkObj     - [IN] ì œê±°í•  ë°ì´í„°ë² ì´ìŠ¤ ë§í¬ ê°ì²´ 
  *
  ************************************************************************/
 IDE_RC  dkoLinkObjMgr::destroyLinkObject( void      *aQcStatement,
@@ -513,12 +513,12 @@ void dkoLinkObjMgr::validateLinkObjectInternal( void        *aQcStatement,
 }
 
 /************************************************************************
- * Description : ÀÔ·Â¹ŞÀº dblink °´Ã¼°¡ »ç¿ëÇÒ ¼ö ÀÖ´Â »óÅÂÀÎÁö °Ë»çÇÑ´Ù. 
+ * Description : ì…ë ¥ë°›ì€ dblink ê°ì²´ê°€ ì‚¬ìš©í•  ìˆ˜ ìˆëŠ” ìƒíƒœì¸ì§€ ê²€ì‚¬í•œë‹¤. 
  *              
- *  aQcStatement - [IN] ¼¼¼ÇÀ¸·Î ºÎÅÍ user id ¸¦ ¾ò¾î¿À±â À§ÇØ ÇÊ¿äÇÑ 
- *                      qp Á¤º¸
+ *  aQcStatement - [IN] ì„¸ì…˜ìœ¼ë¡œ ë¶€í„° user id ë¥¼ ì–»ì–´ì˜¤ê¸° ìœ„í•´ í•„ìš”í•œ 
+ *                      qp ì •ë³´
  *  aSession     - [IN] Linker data session
- *  aLinkObj     - [IN] °Ë»çÇÒ µ¥ÀÌÅÍº£ÀÌ½º ¸µÅ© °´Ã¼ 
+ *  aLinkObj     - [IN] ê²€ì‚¬í•  ë°ì´í„°ë² ì´ìŠ¤ ë§í¬ ê°ì²´ 
  *
  ************************************************************************/
 IDE_RC  dkoLinkObjMgr::validateLinkObject( void             *aQcStatement,
@@ -602,13 +602,13 @@ IDE_RC  dkoLinkObjMgr::validateLinkObject( void             *aQcStatement,
 }
 
 /************************************************************************
- * Description : ÀÔ·Â¹ŞÀº dblink °´Ã¼°¡ »ç¿ëÇÒ ¼ö ÀÖ´Â »óÅÂÀÎÁö °Ë»çÇÑ´Ù. 
+ * Description : ì…ë ¥ë°›ì€ dblink ê°ì²´ê°€ ì‚¬ìš©í•  ìˆ˜ ìˆëŠ” ìƒíƒœì¸ì§€ ê²€ì‚¬í•œë‹¤. 
  *              
- *  aQcStatement - [IN] ¼¼¼ÇÀ¸·Î ºÎÅÍ user id ¸¦ ¾ò¾î¿À±â À§ÇØ ÇÊ¿äÇÑ 
- *                      qp Á¤º¸
- *  aLinkObj     - [IN] °Ë»çÇÒ µ¥ÀÌÅÍº£ÀÌ½º ¸µÅ© °´Ã¼ 
- *  aIsValid     - [OUT] ÀÌ link object ¿¡ ´ëÇÑ Á¢±Ù±ÇÇÑÀÌ ÀÖ´ÂÁö¸¦
- *                       ³ªÅ¸³»¸ç Á¢±Ù±ÇÇÑÀÌ ÀÖ´Â °æ¿ì ID_TRUE, ¾Æ´Ï¸é
+ *  aQcStatement - [IN] ì„¸ì…˜ìœ¼ë¡œ ë¶€í„° user id ë¥¼ ì–»ì–´ì˜¤ê¸° ìœ„í•´ í•„ìš”í•œ 
+ *                      qp ì •ë³´
+ *  aLinkObj     - [IN] ê²€ì‚¬í•  ë°ì´í„°ë² ì´ìŠ¤ ë§í¬ ê°ì²´ 
+ *  aIsValid     - [OUT] ì´ link object ì— ëŒ€í•œ ì ‘ê·¼ê¶Œí•œì´ ìˆëŠ”ì§€ë¥¼
+ *                       ë‚˜íƒ€ë‚´ë©° ì ‘ê·¼ê¶Œí•œì´ ìˆëŠ” ê²½ìš° ID_TRUE, ì•„ë‹ˆë©´
  *                       ID_FALSE 
  *
  ************************************************************************/
@@ -657,10 +657,10 @@ IDE_RC   dkoLinkObjMgr::validateLinkObjectUser( void     *aQcStatement,
 }
 
 /************************************************************************
- * Description : aLinkName ¿¡ ÇØ´çÇÏ´Â dblink °´Ã¼¸¦ Ã£¾Æ ¹İÈ¯ÇÑ´Ù.
+ * Description : aLinkName ì— í•´ë‹¹í•˜ëŠ” dblink ê°ì²´ë¥¼ ì°¾ì•„ ë°˜í™˜í•œë‹¤.
  *              
- *  aLinkName    - [IN] Ã£À» µ¥ÀÌÅÍº£ÀÌ½º ¸µÅ© °´Ã¼ÀÇ ÀÌ¸§
- *  aLinkObj     - [OUT] Ã£Àº µ¥ÀÌÅÍº£ÀÌ½º ¸µÅ© °´Ã¼¸¦ °¡¸®Å°´Â Æ÷ÀÎÅÍ
+ *  aLinkName    - [IN] ì°¾ì„ ë°ì´í„°ë² ì´ìŠ¤ ë§í¬ ê°ì²´ì˜ ì´ë¦„
+ *  aLinkObj     - [OUT] ì°¾ì€ ë°ì´í„°ë² ì´ìŠ¤ ë§í¬ ê°ì²´ë¥¼ ê°€ë¦¬í‚¤ëŠ” í¬ì¸í„°
  *
  ************************************************************************/
 IDE_RC  dkoLinkObjMgr::findLinkObject( idvSQL *aStatistics, SChar *aLinkName, dkoLink *aLinkObj )
@@ -739,12 +739,12 @@ IDE_RC  dkoLinkObjMgr::findLinkObject( idvSQL *aStatistics, SChar *aLinkName, dk
 }
 
 /************************************************************************
- * Description : ÀÔ·Â¹ŞÀº DK link object °¡ Á¸ÀçÇÏ´ÂÁö °Ë»çÇÑ´Ù.
+ * Description : ì…ë ¥ë°›ì€ DK link object ê°€ ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬í•œë‹¤.
  *
- * Return      : ÇØ´ç µ¥ÀÌÅÍº£ÀÌ½º ¸µÅ© °´Ã¼°¡ Á¸ÀçÇÏ´ÂÁö ¿©ºÎ¸¦ ¹İÈ¯.
- *               Á¸ÀçÇÏ´Â °æ¿ì ID_TRUE, ±×·¸Áö ¾ÊÀ¸¸é ID_FALSE.
+ * Return      : í•´ë‹¹ ë°ì´í„°ë² ì´ìŠ¤ ë§í¬ ê°ì²´ê°€ ì¡´ì¬í•˜ëŠ”ì§€ ì—¬ë¶€ë¥¼ ë°˜í™˜.
+ *               ì¡´ì¬í•˜ëŠ” ê²½ìš° ID_TRUE, ê·¸ë ‡ì§€ ì•Šìœ¼ë©´ ID_FALSE.
  *              
- *  aLinkName    - [IN] Ã£À» µ¥ÀÌÅÍº£ÀÌ½º ¸µÅ© °´Ã¼ÀÇ ÀÌ¸§
+ *  aLinkName    - [IN] ì°¾ì„ ë°ì´í„°ë² ì´ìŠ¤ ë§í¬ ê°ì²´ì˜ ì´ë¦„
  *
  ************************************************************************/
 IDE_RC dkoLinkObjMgr::isExistLinkObject( idvSQL *aStatistics, SChar *aLinkName, idBool *aIsExist )

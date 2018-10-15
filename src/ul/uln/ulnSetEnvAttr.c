@@ -65,11 +65,11 @@ ACI_RC ulnSFID_96(ulnFnContext *aContext)
 /**
  * ulnSetEnvAttr.
  *
- * SQLSetEnvAttr ¿¡ Á¤È®ÇÏ°Ô 1:1 ·Î ¸ÅÄ¡µÇ´Â ÇÔ¼ö.
+ * SQLSetEnvAttr ì— ì •í™•í•˜ê²Œ 1:1 ë¡œ ë§¤ì¹˜ë˜ëŠ” í•¨ìˆ˜.
  *
- * ÁÖÀÇ: aValuePtr Àº »óÈ²¿¡ µû¶ó¼­ 32ºñÆ® Á¤¼öÇü /°ª/À¸·Îµµ ÇØ¼®ÇÒ ¼ö ÀÖ°í,
- *       /Æ÷ÀÎÅÍ/·Îµµ ÇØ¼®ÇÒ ¼ö ÀÖ´Ù.
- *       µû¶ó¼­ ÀÌ °ªÀÌ NULL ÀÎÁö¸¦ Ã¼Å©ÇÏ´Â °ÍÀº ÀÇ¹Ì°¡ ¾ø´Ù. -_-;;;
+ * ì£¼ì˜: aValuePtr ì€ ìƒí™©ì— ë”°ë¼ì„œ 32ë¹„íŠ¸ ì •ìˆ˜í˜• /ê°’/ìœ¼ë¡œë„ í•´ì„í•  ìˆ˜ ìˆê³ ,
+ *       /í¬ì¸í„°/ë¡œë„ í•´ì„í•  ìˆ˜ ìˆë‹¤.
+ *       ë”°ë¼ì„œ ì´ ê°’ì´ NULL ì¸ì§€ë¥¼ ì²´í¬í•˜ëŠ” ê²ƒì€ ì˜ë¯¸ê°€ ì—†ë‹¤. -_-;;;
  */
 SQLRETURN ulnSetEnvAttr(ulnEnv *aEnv, acp_sint32_t aAttribute, void *aValuePtr, acp_sint32_t aStrLen)
 {
@@ -102,7 +102,7 @@ SQLRETURN ulnSetEnvAttr(ulnEnv *aEnv, acp_sint32_t aAttribute, void *aValuePtr, 
 
         case SQL_ATTR_OUTPUT_NTS:
             // NOT implemented
-            // MSDN ODBC ½ºÆå :
+            // MSDN ODBC ìŠ¤í™ :
             // A call to SQLSetEnvAttr to set it to SQL_FALSE returns SQL_ERROR
             // and SQLSTATE HYC00 (Optional feature not implemented).
             ACI_TEST_RAISE(sValue == SQL_FALSE, LABEL_HYC00);
@@ -142,7 +142,7 @@ SQLRETURN ulnSetEnvAttr(ulnEnv *aEnv, acp_sint32_t aAttribute, void *aValuePtr, 
     {
         /*
          * Invalid Attribute Value.
-         * SQL_ATTR_OUTPUT_NTS ¿¡´Â SQL_TRUE / SQL_FALSE ¸¸ ¿Ã ¼ö ÀÖµû.
+         * SQL_ATTR_OUTPUT_NTS ì—ëŠ” SQL_TRUE / SQL_FALSE ë§Œ ì˜¬ ìˆ˜ ìˆë”°.
          */
         ulnError(&sFnContext, ulERR_ABORT_INVALID_ATTRIBUTE_VALUE);
     }

@@ -53,7 +53,7 @@ public:
 
     inline UInt getPartialLength();
 
-    // sdbBCBListStatÀ» À§ÇÑ ÇÔ¼öµé
+    // sdbBCBListStatì„ ìœ„í•œ í•¨ìˆ˜ë“¤
     inline sdbBCB*          getFirst();
     inline sdbBCB*          getLast();
     inline UInt             getID();
@@ -62,38 +62,38 @@ public:
     inline idBool           isUnderMaxLength();
 
 private:
-    /* FlushList ½Äº°ÀÚ. Flush¸®½ºÆ®¸¦ ¿©·¯°³ À¯ÁöÇÒ ¼ö ÀÖÀ¸¹Ç·Î, °¢ ¸®½ºÆ® ¸¶´Ù
-     * ½Äº°ÀÚ¸¦ µĞ´Ù.  ÀÌ ½Äº°ÀÚ¸¦ ÅëÇØ BCB³»¿¡ À¯ÁöÇÔÀ¸·Î ÇØ¼­ °¢ BCB°¡
-     * ¾î¶² ¸®½ºÆ®¿¡ ¼ÓÇØÀÖ´ÂÁö Á¤È®È÷ ¾Ë¾Æ³¾ ¼ö ÀÖ´Ù.*/
+    /* FlushList ì‹ë³„ì. Flushë¦¬ìŠ¤íŠ¸ë¥¼ ì—¬ëŸ¬ê°œ ìœ ì§€í•  ìˆ˜ ìˆìœ¼ë¯€ë¡œ, ê° ë¦¬ìŠ¤íŠ¸ ë§ˆë‹¤
+     * ì‹ë³„ìë¥¼ ë‘”ë‹¤.  ì´ ì‹ë³„ìë¥¼ í†µí•´ BCBë‚´ì— ìœ ì§€í•¨ìœ¼ë¡œ í•´ì„œ ê° BCBê°€
+     * ì–´ë–¤ ë¦¬ìŠ¤íŠ¸ì— ì†í•´ìˆëŠ”ì§€ ì •í™•íˆ ì•Œì•„ë‚¼ ìˆ˜ ìˆë‹¤.*/
     UInt      mID;
 
     /* PROJ-2669
-     * Normal/Delayed Flush List ±¸ºĞÀ» À§ÇØ ÇÊ¿ä
+     * Normal/Delayed Flush List êµ¬ë¶„ì„ ìœ„í•´ í•„ìš”
      * SDB_BCB_FLUSH_LIST or SDB_BCB_FLUSH_HOT_LIST */
     sdbBCBListType mListType;
     
-    /* smuList¿¡¼­ ÇÊ¿ä·Î ÇÏ´Â base list ½ÇÁ¦·Î mData´Â ¾Æ¹«°Íµµ °¡¸®Å°°í
-     * ÀÖÁö ¾Ê´Â´Ù.*/
+    /* smuListì—ì„œ í•„ìš”ë¡œ í•˜ëŠ” base list ì‹¤ì œë¡œ mDataëŠ” ì•„ë¬´ê²ƒë„ ê°€ë¦¬í‚¤ê³ 
+     * ìˆì§€ ì•ŠëŠ”ë‹¤.*/
     smuList   mBaseObj;
     smuList  *mBase;
-    /* getNext¸¦ È£ÃâÇÒ¶§, ¸®ÅÏÇØ¾ß ÇÏ´Â BCB¸¦ °¡Áö°í ÀÖ´Â º¯¼ö */
+    /* getNextë¥¼ í˜¸ì¶œí• ë•Œ, ë¦¬í„´í•´ì•¼ í•˜ëŠ” BCBë¥¼ ê°€ì§€ê³  ìˆëŠ” ë³€ìˆ˜ */
     smuList  *mCurrent;
-    /* ÇöÀç flush list¿¡ Á¢±ÙÇÏ°í ÀÖ´Â flusherÀÇ °¹¼ö, beginExploring
-     * ½Ã¿¡ °ªÀÌ Áõ°¡ µÇ°í, endExploring½Ã¿¡ °ªÀÌ °¨¼ÒÇÑ´Ù.*/
+    /* í˜„ì¬ flush listì— ì ‘ê·¼í•˜ê³  ìˆëŠ” flusherì˜ ê°¯ìˆ˜, beginExploring
+     * ì‹œì— ê°’ì´ ì¦ê°€ ë˜ê³ , endExploringì‹œì— ê°’ì´ ê°ì†Œí•œë‹¤.*/
     SInt      mExplorerCount;
 
     iduMutex  mMutex;
 
     UInt      mListLength;
 
-    /* PROJ-2669 Flush List ÃÖ´ë ±æÀÌ */
+    /* PROJ-2669 Flush List ìµœëŒ€ ê¸¸ì´ */
     UInt      mMaxListLength;
 };  
 
 /* BUGBUG:
- * flusherµéÀÌ ¾î¶² FLUSH List¸¦ flushÇØ¾ß ÇÒÁö ¼±ÅÃÇÏ´Âµ¥, length¸¦ ÅëÇØ
- * ¼±ÅÃÇÏ´Â °æ¿ì¿¡, ¹®Á¦°¡ »ı±æ ¼ö ÀÖ´Ù.
- * ¿Ö³Ä¸é, flusher°¡ µé¾î¿Í¼­ 
+ * flusherë“¤ì´ ì–´ë–¤ FLUSH Listë¥¼ flushí•´ì•¼ í• ì§€ ì„ íƒí•˜ëŠ”ë°, lengthë¥¼ í†µí•´
+ * ì„ íƒí•˜ëŠ” ê²½ìš°ì—, ë¬¸ì œê°€ ìƒê¸¸ ìˆ˜ ìˆë‹¤.
+ * ì™œëƒë©´, flusherê°€ ë“¤ì–´ì™€ì„œ 
  * */
 UInt sdbFlushList::getPartialLength()
 {

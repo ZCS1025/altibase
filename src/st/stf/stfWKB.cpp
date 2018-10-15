@@ -19,8 +19,8 @@
  * $Id: stfWKB.cpp 18883 2006-11-14 01:48:40Z sabbra $
  *
  * Description:
- * WKB(Well Known Binary)·ÎºÎÅÍ Geometry °´Ã¼ »ý¼ºÇÏ´Â ÇÔ¼ö
- * »ó¼¼ ±¸ÇöÀº stdParsing.cpp ¿¡ ÀÖ´Ù.
+ * WKB(Well Known Binary)ë¡œë¶€í„° Geometry ê°ì²´ ìƒì„±í•˜ëŠ” í•¨ìˆ˜
+ * ìƒì„¸ êµ¬í˜„ì€ stdParsing.cpp ì— ìžˆë‹¤.
  **********************************************************************/
 
 #include <idl.h>
@@ -36,10 +36,10 @@ extern mtdModule mtdInteger;
 
 /***********************************************************************
  * Description:
- * WKB·ÎºÎÅÍ Geometry TypeÀ» ÀÐ¾î µéÀÎ´Ù.
+ * WKBë¡œë¶€í„° Geometry Typeì„ ì½ì–´ ë“¤ì¸ë‹¤.
  *
- * void*    aWKB(In): ÀÐ¾î µéÀÏ ¹öÆÛ
- * UInt*    aType(Out): ¾ò¾î¿Ã WKB Type
+ * void*    aWKB(In): ì½ì–´ ë“¤ì¼ ë²„í¼
+ * UInt*    aType(Out): ì–»ì–´ì˜¬ WKB Type
  * IDE_RC*  aResult(Out): Error code
  **********************************************************************/
 
@@ -80,11 +80,11 @@ IDE_RC stfWKB::typeFromWKB( UChar *aWKB, UInt *aType )
 /***********************************************************************
  * Description:
  * BUG-32531 Consider for GIS EMPTY
- * WKB·ÎºÎÅÍ EMPTY¸¦ CHECK ÇÏ±â À§ÇØ MultipointÀÇ POINT °¹¼ö¸¦
- * ±¸ÇÑ´Ù.
+ * WKBë¡œë¶€í„° EMPTYë¥¼ CHECK í•˜ê¸° ìœ„í•´ Multipointì˜ POINT ê°¯ìˆ˜ë¥¼
+ * êµ¬í•œë‹¤.
  *
- * void* aWKB(In): ÀÐ¾î µéÀÏ ¹öÆÛ
- * UInt* aType(Out): ¾ò¾î¿Ã WKB Count Number
+ * void* aWKB(In): ì½ì–´ ë“¤ì¼ ë²„í¼
+ * UInt* aType(Out): ì–»ì–´ì˜¬ WKB Count Number
  * IDE_RC* aResult(Out): Error code
  **********************************************************************/
  	
@@ -99,11 +99,11 @@ IDE_RC stfWKB::cntNumFromWKB( UChar *aWKB, UInt *aVal )
 
 /***********************************************************************
  * Description:
- * WKB·ÎºÎÅÍ Geometry °´Ã¼¸¦ ÀÐ¾î µéÀÎ´Ù.
+ * WKBë¡œë¶€í„° Geometry ê°ì²´ë¥¼ ì½ì–´ ë“¤ì¸ë‹¤.
  *
- * void*    aWKB(In): ÀÐ¾î µéÀÏ ¹öÆÛ
- * void*    aBuf(Out): Ãâ·ÂÇÒ ¹öÆÛ
- * void*    aFence(In): Ãâ·ÂÇÒ ¹öÆÛ Ææ½º
+ * void*    aWKB(In): ì½ì–´ ë“¤ì¼ ë²„í¼
+ * void*    aBuf(Out): ì¶œë ¥í•  ë²„í¼
+ * void*    aFence(In): ì¶œë ¥í•  ë²„í¼ íŽœìŠ¤
  * IDE_RC*  aResult(Out): Error code
  **********************************************************************/
 IDE_RC stfWKB::geomFromWKB( iduMemory*   aQmxMem,
@@ -128,11 +128,11 @@ IDE_RC stfWKB::geomFromWKB( iduMemory*   aQmxMem,
 
 /***********************************************************************
  * Description:
- * WKB·ÎºÎÅÍ Æ÷ÀÎÆ® °´Ã¼¸¦ ÀÐ¾î µéÀÎ´Ù.
+ * WKBë¡œë¶€í„° í¬ì¸íŠ¸ ê°ì²´ë¥¼ ì½ì–´ ë“¤ì¸ë‹¤.
  *
- * void*    aWKB(In): ÀÐ¾î µéÀÏ ¹öÆÛ
- * void*    aBuf(Out): Ãâ·ÂÇÒ ¹öÆÛ
- * void*    aFence(In): Ãâ·ÂÇÒ ¹öÆÛ Ææ½º
+ * void*    aWKB(In): ì½ì–´ ë“¤ì¼ ë²„í¼
+ * void*    aBuf(Out): ì¶œë ¥í•  ë²„í¼
+ * void*    aFence(In): ì¶œë ¥í•  ë²„í¼ íŽœìŠ¤
  * IDE_RC*  aResult(Out): Error code
  **********************************************************************/
 IDE_RC stfWKB::pointFromWKB( iduMemory*   aQmxMem,
@@ -190,11 +190,11 @@ IDE_RC stfWKB::pointFromWKB( iduMemory*   aQmxMem,
 
 /***********************************************************************
  * Description:
- * WKB·ÎºÎÅÍ ¶óÀÎ °´Ã¼¸¦ ÀÐ¾î µéÀÎ´Ù.
+ * WKBë¡œë¶€í„° ë¼ì¸ ê°ì²´ë¥¼ ì½ì–´ ë“¤ì¸ë‹¤.
  *
- * void*    aWKB(In): ÀÐ¾î µéÀÏ ¹öÆÛ
- * void*    aBuf(Out): Ãâ·ÂÇÒ ¹öÆÛ
- * void*    aFence(In): Ãâ·ÂÇÒ ¹öÆÛ Ææ½º
+ * void*    aWKB(In): ì½ì–´ ë“¤ì¼ ë²„í¼
+ * void*    aBuf(Out): ì¶œë ¥í•  ë²„í¼
+ * void*    aFence(In): ì¶œë ¥í•  ë²„í¼ íŽœìŠ¤
  * IDE_RC*  aResult(Out): Error code
  **********************************************************************/
 IDE_RC stfWKB::lineFromWKB( iduMemory*   aQmxMem,
@@ -252,11 +252,11 @@ IDE_RC stfWKB::lineFromWKB( iduMemory*   aQmxMem,
 
 /***********************************************************************
  * Description:
- * WKB·ÎºÎÅÍ Æú¸®°ï °´Ã¼¸¦ ÀÐ¾î µéÀÎ´Ù.
+ * WKBë¡œë¶€í„° í´ë¦¬ê³¤ ê°ì²´ë¥¼ ì½ì–´ ë“¤ì¸ë‹¤.
  *
- * void*    aWKB(In): ÀÐ¾î µéÀÏ ¹öÆÛ
- * void*    aBuf(Out): Ãâ·ÂÇÒ ¹öÆÛ
- * void*    aFence(In): Ãâ·ÂÇÒ ¹öÆÛ Ææ½º
+ * void*    aWKB(In): ì½ì–´ ë“¤ì¼ ë²„í¼
+ * void*    aBuf(Out): ì¶œë ¥í•  ë²„í¼
+ * void*    aFence(In): ì¶œë ¥í•  ë²„í¼ íŽœìŠ¤
  * IDE_RC*  aResult(Out): Error code
  **********************************************************************/
 IDE_RC stfWKB::polyFromWKB( iduMemory*   aQmxMem,
@@ -314,11 +314,11 @@ IDE_RC stfWKB::polyFromWKB( iduMemory*   aQmxMem,
 
 /***********************************************************************
  * Description:
- *  WKB·ÎºÎÅÍ RECTANGLE °´Ã¼¸¦ ÀÐ¾î µéÀÎ´Ù.
+ *  WKBë¡œë¶€í„° RECTANGLE ê°ì²´ë¥¼ ì½ì–´ ë“¤ì¸ë‹¤.
  *
- *  void   * aWKB(In)     : ÀÐ¾î µéÀÏ ¹öÆÛ
- *  void   * aBuf(Out)    : Ãâ·ÂÇÒ ¹öÆÛ
- *  void   * aFence(In)   : Ãâ·ÂÇÒ ¹öÆÛ Ææ½º
+ *  void   * aWKB(In)     : ì½ì–´ ë“¤ì¼ ë²„í¼
+ *  void   * aBuf(Out)    : ì¶œë ¥í•  ë²„í¼
+ *  void   * aFence(In)   : ì¶œë ¥í•  ë²„í¼ íŽœìŠ¤
  *  IDE_RC * aResult(Out) : Error code
  **********************************************************************/
 IDE_RC stfWKB::rectFromWKB( iduMemory * aQmxMem,
@@ -357,11 +357,11 @@ IDE_RC stfWKB::rectFromWKB( iduMemory * aQmxMem,
 
 /***********************************************************************
  * Description:
- * WKB·ÎºÎÅÍ ¸ÖÆ¼Æ÷ÀÎÆ® °´Ã¼¸¦ ÀÐ¾î µéÀÎ´Ù.
+ * WKBë¡œë¶€í„° ë©€í‹°í¬ì¸íŠ¸ ê°ì²´ë¥¼ ì½ì–´ ë“¤ì¸ë‹¤.
  *
- * void*    aWKB(In): ÀÐ¾î µéÀÏ ¹öÆÛ
- * void*    aBuf(Out): Ãâ·ÂÇÒ ¹öÆÛ
- * void*    aFence(In): Ãâ·ÂÇÒ ¹öÆÛ Ææ½º
+ * void*    aWKB(In): ì½ì–´ ë“¤ì¼ ë²„í¼
+ * void*    aBuf(Out): ì¶œë ¥í•  ë²„í¼
+ * void*    aFence(In): ì¶œë ¥í•  ë²„í¼ íŽœìŠ¤
  * IDE_RC*  aResult(Out): Error code
  **********************************************************************/
 IDE_RC stfWKB::mpointFromWKB( iduMemory*   aQmxMem,
@@ -400,11 +400,11 @@ IDE_RC stfWKB::mpointFromWKB( iduMemory*   aQmxMem,
 
 /***********************************************************************
  * Description:
- * WKB·ÎºÎÅÍ ¸ÖÆ¼¶óÀÎ °´Ã¼¸¦ ÀÐ¾î µéÀÎ´Ù.
+ * WKBë¡œë¶€í„° ë©€í‹°ë¼ì¸ ê°ì²´ë¥¼ ì½ì–´ ë“¤ì¸ë‹¤.
  *
- * void*    aWKB(In): ÀÐ¾î µéÀÏ ¹öÆÛ
- * void*    aBuf(Out): Ãâ·ÂÇÒ ¹öÆÛ
- * void*    aFence(In): Ãâ·ÂÇÒ ¹öÆÛ Ææ½º
+ * void*    aWKB(In): ì½ì–´ ë“¤ì¼ ë²„í¼
+ * void*    aBuf(Out): ì¶œë ¥í•  ë²„í¼
+ * void*    aFence(In): ì¶œë ¥í•  ë²„í¼ íŽœìŠ¤
  * IDE_RC*  aResult(Out): Error code
  **********************************************************************/
 IDE_RC stfWKB::mlineFromWKB( iduMemory*   aQmxMem,
@@ -462,11 +462,11 @@ IDE_RC stfWKB::mlineFromWKB( iduMemory*   aQmxMem,
 
 /***********************************************************************
  * Description:
- * WKB·ÎºÎÅÍ ¸ÖÆ¼Æú¸®°ï °´Ã¼¸¦ ÀÐ¾î µéÀÎ´Ù.
+ * WKBë¡œë¶€í„° ë©€í‹°í´ë¦¬ê³¤ ê°ì²´ë¥¼ ì½ì–´ ë“¤ì¸ë‹¤.
  *
- * void*    aWKB(In): ÀÐ¾î µéÀÏ ¹öÆÛ
- * void*    aBuf(Out): Ãâ·ÂÇÒ ¹öÆÛ
- * void*    aFence(In): Ãâ·ÂÇÒ ¹öÆÛ Ææ½º
+ * void*    aWKB(In): ì½ì–´ ë“¤ì¼ ë²„í¼
+ * void*    aBuf(Out): ì¶œë ¥í•  ë²„í¼
+ * void*    aFence(In): ì¶œë ¥í•  ë²„í¼ íŽœìŠ¤
  * IDE_RC*  aResult(Out): Error code
  **********************************************************************/
 IDE_RC stfWKB::mpolyFromWKB( iduMemory*   aQmxMem,
@@ -524,11 +524,11 @@ IDE_RC stfWKB::mpolyFromWKB( iduMemory*   aQmxMem,
 
 /***********************************************************************
  * Description:
- * WKB·ÎºÎÅÍ ÄÝ·º¼Ç °´Ã¼¸¦ ÀÐ¾î µéÀÎ´Ù.
+ * WKBë¡œë¶€í„° ì½œë ‰ì…˜ ê°ì²´ë¥¼ ì½ì–´ ë“¤ì¸ë‹¤.
  *
- * void*    aWKB(In): ÀÐ¾î µéÀÏ ¹öÆÛ
- * void*    aBuf(Out): Ãâ·ÂÇÒ ¹öÆÛ
- * void*    aFence(In): Ãâ·ÂÇÒ ¹öÆÛ Ææ½º
+ * void*    aWKB(In): ì½ì–´ ë“¤ì¼ ë²„í¼
+ * void*    aBuf(Out): ì¶œë ¥í•  ë²„í¼
+ * void*    aFence(In): ì¶œë ¥í•  ë²„í¼ íŽœìŠ¤
  * IDE_RC*  aResult(Out): Error code
  **********************************************************************/
 IDE_RC stfWKB::geoCollFromWKB( iduMemory*   aQmxMem,

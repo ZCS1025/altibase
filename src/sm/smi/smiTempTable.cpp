@@ -72,7 +72,7 @@ SChar smiTempTable::mTTStateName[][ SMI_TT_STR_SIZE ] = {
 
 /*********************************************************
  * Description :
- *   ¼­¹ö ±¸µ¿½Ã TempTableÀ» À§ÇØ ÁÖ¿ä ¸Ş¸ğ¸®¸¦ ÃÊ±âÈ­ÇÔ
+ *   ì„œë²„ êµ¬ë™ì‹œ TempTableì„ ìœ„í•´ ì£¼ìš” ë©”ëª¨ë¦¬ë¥¼ ì´ˆê¸°í™”í•¨
  ***********************************************************/
 IDE_RC smiTempTable::initializeStatic()
 {
@@ -137,7 +137,7 @@ IDE_RC smiTempTable::initializeStatic()
 
 /*********************************************************
  * Description :
- *   ¼­¹ö Á¾·á½Ã TempTableÀ» À§ÇØ ÁÖ¿ä ¸Ş´ÏÀú¸¦ ´İÀ½.
+ *   ì„œë²„ ì¢…ë£Œì‹œ TempTableì„ ìœ„í•´ ì£¼ìš” ë©”ë‹ˆì €ë¥¼ ë‹«ìŒ.
  ***********************************************************/
 IDE_RC smiTempTable::destroyStatic()
 {
@@ -152,27 +152,27 @@ IDE_RC smiTempTable::destroyStatic()
 
 /***************************************************************************
  * Description :
- * TempTableÀ» »ı¼ºÇÕ´Ï´Ù.
+ * TempTableì„ ìƒì„±í•©ë‹ˆë‹¤.
  *
- * Sort/LimitSort/MinMaxSort/UniqueHash/ClusterdHash µîÀ» ¼±ÅÃÇÏ¿©
- * »ı¼ºÇÕ´Ï´Ù. segAttr, SegStoAttrÀº TempTableÀÇ Æ¯¼º»ó ÇÊ¿ä¾ø±â¿¡
- * Á¦°ÅÇÕ´Ï´Ù.
+ * Sort/LimitSort/MinMaxSort/UniqueHash/ClusterdHash ë“±ì„ ì„ íƒí•˜ì—¬
+ * ìƒì„±í•©ë‹ˆë‹¤. segAttr, SegStoAttrì€ TempTableì˜ íŠ¹ì„±ìƒ í•„ìš”ì—†ê¸°ì—
+ * ì œê±°í•©ë‹ˆë‹¤.
  *
  * <IN>
- * aStatistics     - Åë°èÁ¤º¸
+ * aStatistics     - í†µê³„ì •ë³´
  * aSpaceID        - TablespaceID
- * aWorkAreaSize   - »ı¼ºÇÒ TempTableÀÇ WA Å©±â. (0ÀÌ¸é ÀÚµ¿ ¼³Á¤)
+ * aWorkAreaSize   - ìƒì„±í•  TempTableì˜ WA í¬ê¸°. (0ì´ë©´ ìë™ ì„¤ì •)
  * aStatement      - Statement
- * aFlag           - TempTableÀÇ Å¸ÀÔÀ» ¼³Á¤ÇÔ
- * aColumnList     - Column ¸ñ·Ï
- * aKeyColumns     - KeyColumn(Á¤·ÄÇÒ) Column ¸ñ·Ï
+ * aFlag           - TempTableì˜ íƒ€ì…ì„ ì„¤ì •í•¨
+ * aColumnList     - Column ëª©ë¡
+ * aKeyColumns     - KeyColumn(ì •ë ¬í• ) Column ëª©ë¡
  * aAggrColumns    - Aggregation Column
- * aWorkGroupRatio - ¿¬»ê GroupÀÇ Å©±â.
- *                   HashÀÏ °æ¿ì BucketÀÇ Å©±â,
- *                   SortÀÏ °æ¿ì Sort¿µ¿ªÀÇ Å©±â.
- *                   0ÀÌ¸é ¾Ë¾Æ¼­ ÇÔ
+ * aWorkGroupRatio - ì—°ì‚° Groupì˜ í¬ê¸°.
+ *                   Hashì¼ ê²½ìš° Bucketì˜ í¬ê¸°,
+ *                   Sortì¼ ê²½ìš° Sortì˜ì—­ì˜ í¬ê¸°.
+ *                   0ì´ë©´ ì•Œì•„ì„œ í•¨
  * <OUT>           
- * aTable          - »ı¼ºµÈ TempTable
+ * aTable          - ìƒì„±ëœ TempTable
  *
  ***************************************************************************/
 IDE_RC smiTempTable::create( idvSQL              * aStatistics,
@@ -201,12 +201,12 @@ IDE_RC smiTempTable::create( idvSQL              * aStatistics,
     IDE_TEST_RAISE( sctTableSpaceMgr::isTempTableSpace( aSpaceID ) != ID_TRUE,
                     tablespaceID_error );
 
-    /* TempTablespace¿¡  LockÀ» Àâ´Â´Ù. */
+    /* TempTablespaceì—  Lockì„ ì¡ëŠ”ë‹¤. */
     IDE_TEST( sctTableSpaceMgr::lockAndValidateTBS(
                                         aStatement->getTrans()->getTrans(),
                                         aSpaceID,
                                         SCT_VAL_DDL_DML,
-                                        ID_TRUE,   /* intent lock  ¿©ºÎ */
+                                        ID_TRUE,   /* intent lock  ì—¬ë¶€ */
                                         ID_TRUE,  /* exclusive lock */
                                         sctTableSpaceMgr::getDDLLockTimeOut() )
               != IDE_SUCCESS );
@@ -257,7 +257,7 @@ IDE_RC smiTempTable::create( idvSQL              * aStatistics,
     sState = 3;
 
     /***************************************************************
-     * ColumnÁ¤º¸ ¼³Á¤
+     * Columnì •ë³´ ì„¤ì •
      ****************************************************************/
     sColumns   = (smiColumnList *)aColumnList;
     sColumnIdx = 0;
@@ -269,13 +269,13 @@ IDE_RC smiTempTable::create( idvSQL              * aStatistics,
         sTempColumn = &sHeader->mColumns[ sColumnIdx ];
 
         /*********************** KEY COLUMN ***************************/
-        /* Å° Ä®·³ÀÎÁö Ã£Àº ÈÄ, Å° Ä®·³ÀÌ¸é ±×¿¡ ÇØ´çÇÏ´Â Flag¸¦ ¼³Á¤ */
+        /* í‚¤ ì¹¼ëŸ¼ì¸ì§€ ì°¾ì€ í›„, í‚¤ ì¹¼ëŸ¼ì´ë©´ ê·¸ì— í•´ë‹¹í•˜ëŠ” Flagë¥¼ ì„¤ì • */
         sKeyColumns = (smiColumnList*)aKeyColumns;
         while( sKeyColumns != NULL )
         {
             if( sKeyColumns->column->id == sColumn->id )
             {
-                /* KeyColumnÀÇ Flag¸¦ ¼³Á¤ÇØÁÜ */
+                /* KeyColumnì˜ Flagë¥¼ ì„¤ì •í•´ì¤Œ */
                 sColumn->flag = sKeyColumns->column->flag;
                 sColumn->flag &= ~SMI_COLUMN_USAGE_MASK;
                 sColumn->flag |= SMI_COLUMN_USAGE_INDEX;
@@ -325,7 +325,7 @@ IDE_RC smiTempTable::create( idvSQL              * aStatistics,
         sColumns = sColumns->next;
     }
 
-    /* KeyColumnList¸¦ ±¸¼ºÇÔ */
+    /* KeyColumnListë¥¼ êµ¬ì„±í•¨ */
     sHeader->mKeyColumnList  = NULL;
     sPrevKeyColumn           = NULL;
     sKeyColumns = (smiColumnList*)aKeyColumns;
@@ -369,7 +369,7 @@ IDE_RC smiTempTable::create( idvSQL              * aStatistics,
     sHeader->mStatsPtr   = &sHeader->mStatsBuffer;
     sHeader->mCheckCnt   = 0;
 
-    /************ TempTable Åë°èÁ¤º¸ ÃÊ±âÈ­ *************/
+    /************ TempTable í†µê³„ì •ë³´ ì´ˆê¸°í™” *************/
     initStatsPtr( sHeader, aStatement );
     IDE_TEST( checkSessionAndStats( sHeader, 
                                     SMI_TTOPR_CREATE ) 
@@ -405,7 +405,7 @@ IDE_RC smiTempTable::create( idvSQL              * aStatistics,
         != IDE_SUCCESS );
     sState = 7;
 
-    /* NullColumn »ı¼º */
+    /* NullColumn ìƒì„± */
     for( sColumnIdx = 0 ; sColumnIdx < sHeader->mColumnCount ; sColumnIdx++ )
     {
         sTempColumn = &sHeader->mColumns[ sColumnIdx ];
@@ -461,8 +461,8 @@ IDE_RC smiTempTable::create( idvSQL              * aStatistics,
             {
                 if( smuProperty::getTempUseClusterHash() == 1 )
                 {
-                    /* ClusterHash »ç¿ë °¡´ÉÇÑ °æ¿ì´Â »ç¿ëÇÏµµ·Ï ÇÑ´Ù.
-                     * Test¸¦ À§ÇÑ Property */
+                    /* ClusterHash ì‚¬ìš© ê°€ëŠ¥í•œ ê²½ìš°ëŠ” ì‚¬ìš©í•˜ë„ë¡ í•œë‹¤.
+                     * Testë¥¼ ìœ„í•œ Property */
                     SM_SET_FLAG_OFF( sHeader->mTTFlag, SMI_TTFLAG_TYPE_MASK );
                     SM_SET_FLAG_ON( sHeader->mTTFlag, SMI_TTFLAG_TYPE_CLUSTER_HASH );
                     aWorkGroupRatio = smuProperty::getTempClusterHashGroupRatio();
@@ -570,11 +570,11 @@ IDE_RC smiTempTable::create( idvSQL              * aStatistics,
 /**************************************************************************
  * Description :
  *
- * Å° Ä®·³À» Àç¼³Á¤ÇÑ´Ù. WindowSortµîÀ» À§ÇØ¼­ÀÌ´Ù.
+ * í‚¤ ì¹¼ëŸ¼ì„ ì¬ì„¤ì •í•œë‹¤. WindowSortë“±ì„ ìœ„í•´ì„œì´ë‹¤.
  *
  * <IN>
- * aTable       - ´ë»ó Table
- * aKeyColumns  - ¼³Á¤µÉ KeyColumnµé
+ * aTable       - ëŒ€ìƒ Table
+ * aKeyColumns  - ì„¤ì •ë  KeyColumnë“¤
  ***************************************************************************/
 IDE_RC smiTempTable::resetKeyColumn( void                * aTable,
                                      const smiColumnList * aKeyColumns )
@@ -591,7 +591,7 @@ IDE_RC smiTempTable::resetKeyColumn( void                * aTable,
 
     IDE_ERROR( SM_IS_FLAG_ON( sHeader->mTTFlag, SMI_TTFLAG_RANGESCAN ) );
 
-    /* ±âÁ¸ Column¿¡°Ô¼­, Index Flag¸¦ ¸ğµÎ ¶§¾îÁÜ */
+    /* ê¸°ì¡´ Columnì—ê²Œì„œ, Index Flagë¥¼ ëª¨ë‘ ë•Œì–´ì¤Œ */
     for( sColumnIdx = 0 ; sColumnIdx < sHeader->mColumnCount ; sColumnIdx ++ )
     {
         sTempColumn = &sHeader->mColumns[ sColumnIdx ];
@@ -625,8 +625,8 @@ IDE_RC smiTempTable::resetKeyColumn( void                * aTable,
         sTempColumn->mColumn.flag &= ~SMI_COLUMN_USAGE_MASK;
         sTempColumn->mColumn.flag |= SMI_COLUMN_USAGE_INDEX;
 
-        /* Å½»ö ¹æÇâ(ASC,DESC)ÀÌ º¯°æµÉ ¼ö ÀÖ±â¿¡, CompareÇÔ¼ö¸¦
-         * ´Ù½Ã Å½»öÇØ¾ß ÇÔ */
+        /* íƒìƒ‰ ë°©í–¥(ASC,DESC)ì´ ë³€ê²½ë  ìˆ˜ ìˆê¸°ì—, Compareí•¨ìˆ˜ë¥¼
+         * ë‹¤ì‹œ íƒìƒ‰í•´ì•¼ í•¨ */
         IDE_TEST( gSmiGlobalCallBackList.findCompare(
                       sKeyColumns->column,
                       (sTempColumn->mColumn.flag & SMI_COLUMN_ORDER_MASK) | SMI_COLUMN_COMPARE_NORMAL,
@@ -658,10 +658,10 @@ IDE_RC smiTempTable::resetKeyColumn( void                * aTable,
 /**************************************************************************
  * Description :
  *
- * TempTableÀ» »èÁ¦ÇÕ´Ï´Ù.
+ * TempTableì„ ì‚­ì œí•©ë‹ˆë‹¤.
  *
  * <IN>
- * aTable       - ´ë»ó Table
+ * aTable       - ëŒ€ìƒ Table
  ***************************************************************************/
 IDE_RC smiTempTable::drop(void    * aTable)
 {
@@ -681,7 +681,7 @@ IDE_RC smiTempTable::drop(void    * aTable)
                                           ID_FALSE ) /* wait4Flush */
               != IDE_SUCCESS );
 
-    /* Åë°èÁ¤º¸ ´©Àû½ÃÅ´ */
+    /* í†µê³„ì •ë³´ ëˆ„ì ì‹œí‚´ */
     accumulateStats( sHeader );
 
     sState = 7;
@@ -759,10 +759,10 @@ IDE_RC smiTempTable::drop(void    * aTable)
 
 /**************************************************************************
  * Description :
- * truncateTableÇÏ°í Ä¿¼­¸¦ ´İ½À´Ï´Ù.
+ * truncateTableí•˜ê³  ì»¤ì„œë¥¼ ë‹«ìŠµë‹ˆë‹¤.
  *
  * <IN>
- * aTable       - ´ë»ó Table
+ * aTable       - ëŒ€ìƒ Table
  ***************************************************************************/
 IDE_RC smiTempTable::clear(void   * aTable)
 {
@@ -818,12 +818,12 @@ IDE_RC smiTempTable::clear(void   * aTable)
 
 /**************************************************************************
  * Description :
- * HitFlag¸¦ ÃÊ±âÈ­ÇÕ´Ï´Ù.
- * ½ÇÁ¦·Î´Â Sequence°ª¸¸ ÃÊ±âÈ­ ÇÏ¿©, RowÀÇ HitSequence¿Í °ªÀ» ´Ù¸£°Ô ÇÏ°í,
- * ÀÌ °ªÀÌ ´Ù¸£¸é HitµÅÁö ¾Ê¾Ò´Ù°í ÆÇ´ÜÇÕ´Ï´Ù.
+ * HitFlagë¥¼ ì´ˆê¸°í™”í•©ë‹ˆë‹¤.
+ * ì‹¤ì œë¡œëŠ” Sequenceê°’ë§Œ ì´ˆê¸°í™” í•˜ì—¬, Rowì˜ HitSequenceì™€ ê°’ì„ ë‹¤ë¥´ê²Œ í•˜ê³ ,
+ * ì´ ê°’ì´ ë‹¤ë¥´ë©´ Hitë¼ì§€ ì•Šì•˜ë‹¤ê³  íŒë‹¨í•©ë‹ˆë‹¤.
  *
  * <IN>
- * aTable       - ´ë»ó Table
+ * aTable       - ëŒ€ìƒ Table
  ***************************************************************************/
 IDE_RC smiTempTable::clearHitFlag(void   * aTable)
 {
@@ -849,15 +849,15 @@ IDE_RC smiTempTable::clearHitFlag(void   * aTable)
 
 /**************************************************************************
  * Description :
- * Sort/Hash¿¡ µ¥ÀÌÅÍ¸¦ »ğÀÔÇÕ´Ï´Ù.
+ * Sort/Hashì— ë°ì´í„°ë¥¼ ì‚½ì…í•©ë‹ˆë‹¤.
  *
  * <IN>
- * aTable           - ´ë»ó Table
- * aValue           - »ğÀÔÇÒ Value
- * aHashValue       - »ğÀÔÇÒ HashValue (HashTemp¸¸ À¯È¿ )
+ * aTable           - ëŒ€ìƒ Table
+ * aValue           - ì‚½ì…í•  Value
+ * aHashValue       - ì‚½ì…í•  HashValue (HashTempë§Œ ìœ íš¨ )
  * <OUT>            
- * aGRID            - »ğÀÔÇÑ À§Ä¡
- * aResult          - »ğÀÔÀÌ ¼º°øÇÏ¿´´Â°¡?(UniqueViolation Check¿ë )
+ * aGRID            - ì‚½ì…í•œ ìœ„ì¹˜
+ * aResult          - ì‚½ì…ì´ ì„±ê³µí•˜ì˜€ëŠ”ê°€?(UniqueViolation Checkìš© )
  ***************************************************************************/
 IDE_RC smiTempTable::insert(void     * aTable, 
                             smiValue * aValue, 
@@ -897,13 +897,13 @@ IDE_RC smiTempTable::insert(void     * aTable,
 
 /**************************************************************************
  * Description :
- * Sort/Hash¿¡ Æ¯Á¤ row¸¦ °»½ÅÇÕ´Ï´Ù.
- * Hash´Â AggregationColumn°ú °ü·ÃÇÏ¿© °»½ÅÀ»  ¸¹ÀÌ ÇÏ´Âµ¥,
- * Sort´Â WindowSortÇÒ¶§¿¡¸¸ °»½ÅÇÕ´Ï´Ù.
+ * Sort/Hashì— íŠ¹ì • rowë¥¼ ê°±ì‹ í•©ë‹ˆë‹¤.
+ * HashëŠ” AggregationColumnê³¼ ê´€ë ¨í•˜ì—¬ ê°±ì‹ ì„  ë§ì´ í•˜ëŠ”ë°,
+ * SortëŠ” WindowSortí• ë•Œì—ë§Œ ê°±ì‹ í•©ë‹ˆë‹¤.
  *
  * <IN>
- * aCursor      - °»½ÅÇÒ Row¸¦ °¡¸®Å°´Â Ä¿¼­
- * aValue       - °»½ÅÇÒ Value
+ * aCursor      - ê°±ì‹ í•  Rowë¥¼ ê°€ë¦¬í‚¤ëŠ” ì»¤ì„œ
+ * aValue       - ê°±ì‹ í•  Value
  ***************************************************************************/
 IDE_RC smiTempTable::update(smiTempCursor * aCursor, 
                             smiValue      * aValue )
@@ -925,10 +925,10 @@ IDE_RC smiTempTable::update(smiTempCursor * aCursor,
 
 /**************************************************************************
  * Description :
- * HitFlag¸¦ ¼³Á¤ÇÕ´Ï´Ù.
+ * HitFlagë¥¼ ì„¤ì •í•©ë‹ˆë‹¤.
  *
  * <IN>
- * aCursor      - °»½ÅÇÒ Row¸¦ °¡¸®Å°´Â Ä¿¼­
+ * aCursor      - ê°±ì‹ í•  Rowë¥¼ ê°€ë¦¬í‚¤ëŠ” ì»¤ì„œ
  ***************************************************************************/
 IDE_RC smiTempTable::setHitFlag(smiTempCursor * aCursor)
 {
@@ -951,36 +951,36 @@ IDE_RC smiTempTable::setHitFlag(smiTempCursor * aCursor)
 
 /**************************************************************************
  * Description :
- * HitFlag ¿©ºÎ¸¦ °áÁ¤ÇÕ´Ï´Ù.
+ * HitFlag ì—¬ë¶€ë¥¼ ê²°ì •í•©ë‹ˆë‹¤.
  *
  * <IN>
- * aCursor      - ÇöÀç Row¸¦ °¡¸®Å°´Â Ä¿¼­
+ * aCursor      - í˜„ì¬ Rowë¥¼ ê°€ë¦¬í‚¤ëŠ” ì»¤ì„œ
  ***************************************************************************/
 idBool smiTempTable::isHitFlagged( smiTempCursor * aCursor )
 {
     /* PROJ-2339
-     * Hit¿©ºÎ´Â ¾Æ·¡¿Í °°ÀÌ È®ÀÎÇÑ´Ù.
-     * ( (Temp TableÀÇ HitSequence) == (ÇöÀç RowÀÇ HitSequence) ) ? T : F;
+     * Hitì—¬ë¶€ëŠ” ì•„ë˜ì™€ ê°™ì´ í™•ì¸í•œë‹¤.
+     * ( (Temp Tableì˜ HitSequence) == (í˜„ì¬ Rowì˜ HitSequence) ) ? T : F;
      * 
      * setHitFlag() :
-     * ÇöÀç RowÀÇ HitSequence¸¦ 1 Áõ°¡½ÃÅ²´Ù.
+     * í˜„ì¬ Rowì˜ HitSequenceë¥¼ 1 ì¦ê°€ì‹œí‚¨ë‹¤.
      *
      * clearHitFlag() :
-     * Temp TableÀÇ HitSequence¸¦ 1 Áõ°¡½ÃÅ²´Ù.
-     * ÀÌ·¯¸é ¸ğµç Row°¡ Non-HitµÇ¹Ç·Î HitFlag¸¦ ¸ğµÎ Áö¿ì´Â °Í°ú °°Àº È¿°ú¸¦
-     * I/O ºñ¿ë ¾øÀÌ Ã³¸®ÇÒ ¼ö ÀÖ´Ù.
+     * Temp Tableì˜ HitSequenceë¥¼ 1 ì¦ê°€ì‹œí‚¨ë‹¤.
+     * ì´ëŸ¬ë©´ ëª¨ë“  Rowê°€ Non-Hitë˜ë¯€ë¡œ HitFlagë¥¼ ëª¨ë‘ ì§€ìš°ëŠ” ê²ƒê³¼ ê°™ì€ íš¨ê³¼ë¥¼
+     * I/O ë¹„ìš© ì—†ì´ ì²˜ë¦¬í•  ìˆ˜ ìˆë‹¤.
      *
-     * (HitFlag °³³äÀº PROJ-2201¿¡¼­ ±¸ÇöµÇ¾ú´Ù.)
+     * (HitFlag ê°œë…ì€ PROJ-2201ì—ì„œ êµ¬í˜„ë˜ì—ˆë‹¤.)
      */
 
-    // TTHeaderÀÇ HitSequence¸¦ ÀÔ·ÂÀ¸·Î, HitFlag°¡ ÀÖ´ÂÁö ¹İÈ¯ÇÑ´Ù.
+    // TTHeaderì˜ HitSequenceë¥¼ ì…ë ¥ìœ¼ë¡œ, HitFlagê°€ ìˆëŠ”ì§€ ë°˜í™˜í•œë‹¤.
     return sdtTempRow::isHitFlagged( aCursor,
                                      aCursor->mTTHeader->mHitSequence );
 }
 
 /**************************************************************************
  * Description :
- * Á¤·ÄÇÕ´Ï´Ù.
+ * ì •ë ¬í•©ë‹ˆë‹¤.
  *
  * <IN>
  ***************************************************************************/
@@ -1009,15 +1009,15 @@ IDE_RC smiTempTable::sort(void          * aTable)
 
 /**************************************************************************
  * Description :
- * GRID·Î Row¸¦ °¡Á®¿É´Ï´Ù.
- * InMemoryScanÀÇ °æ¿ì, Disk»óÀÇ Page¿Í ¿¬µ¿ÀÌ µÅÁö ¾Ê±â ¶§¹®¿¡, Æ¯º°È÷
- * WAMapÀ» ¹ÙÅÁÀ¸·Î °¡Á®¿É´Ï´Ù.
+ * GRIDë¡œ Rowë¥¼ ê°€ì ¸ì˜µë‹ˆë‹¤.
+ * InMemoryScanì˜ ê²½ìš°, Diskìƒì˜ Pageì™€ ì—°ë™ì´ ë¼ì§€ ì•Šê¸° ë•Œë¬¸ì—, íŠ¹ë³„íˆ
+ * WAMapì„ ë°”íƒ•ìœ¼ë¡œ ê°€ì ¸ì˜µë‹ˆë‹¤.
  *
  * <IN>
- * aTable       - ´ë»ó Table
- * aGRID        - ´ë»ó Row
+ * aTable       - ëŒ€ìƒ Table
+ * aGRID        - ëŒ€ìƒ Row
  * <OUT>
- * aDestRowBuf  - ¸®ÅÏÇÒ Row¸¦ ÀúÀåÇÒ ¹öÆÛ
+ * aDestRowBuf  - ë¦¬í„´í•  Rowë¥¼ ì €ì¥í•  ë²„í¼
  ***************************************************************************/
 IDE_RC smiTempTable::fetchFromGRID(void     * aTable,
                                    scGRID     aGRID,
@@ -1033,7 +1033,7 @@ IDE_RC smiTempTable::fetchFromGRID(void     * aTable,
               != IDE_SUCCESS );
     if( sHeader->mTTState == SMI_TTSTATE_SORT_INMEMORYSCAN )
     {
-        /*InMemoryScanÀÇ °æ¿ì, GRID´ë½Å WAMapÀ» ÀÌ¿ëÇØ Á÷Á¢ Pointing*/
+        /*InMemoryScanì˜ ê²½ìš°, GRIDëŒ€ì‹  WAMapì„ ì´ìš©í•´ ì§ì ‘ Pointing*/
         IDE_ERROR( sHeader->mFetchGroupID == SDT_WAGROUPID_NONE );
         IDE_ERROR( SC_MAKE_SPACE( aGRID ) == SDT_SPACEID_WAMAP );
 
@@ -1081,19 +1081,19 @@ IDE_RC smiTempTable::fetchFromGRID(void     * aTable,
 
 /***************************************************************************
  * Description :
- * Ä¿¼­¸¦ ¿±´Ï´Ù.
- * Range,Filter,µî¿¡ µû¶ó BeforeFirst ¿ªÇÒµµ ÇÕ´Ï´Ù.
+ * ì»¤ì„œë¥¼ ì—½ë‹ˆë‹¤.
+ * Range,Filter,ë“±ì— ë”°ë¼ BeforeFirst ì—­í• ë„ í•©ë‹ˆë‹¤.
  *
  * <IN>
- * aTable         - ´ë»ó Table
- * aFlag          - TempCursorÀÇ Å¸ÀÔÀ» ¼³Á¤ÇÔ
- * aColumns       - °¡Á®¿Ã Column Á¤º¸
- * aKeyRange      - SortTemp½Ã »ç¿ëÇÒ, Range
+ * aTable         - ëŒ€ìƒ Table
+ * aFlag          - TempCursorì˜ íƒ€ì…ì„ ì„¤ì •í•¨
+ * aColumns       - ê°€ì ¸ì˜¬ Column ì •ë³´
+ * aKeyRange      - SortTempì‹œ ì‚¬ìš©í• , Range
  * aKeyFilter     - KeyFilter
  * aRowFilter     - RowFilter
- * aHashValue     - Å½»öÇÒ ´ë»ó Hash ( HashTemp¸¸ »ç¿ë )
+ * aHashValue     - íƒìƒ‰í•  ëŒ€ìƒ Hash ( HashTempë§Œ ì‚¬ìš© )
  * <OUT>
- * aCursor        - ¹İÈ¯°ª
+ * aCursor        - ë°˜í™˜ê°’
  ***************************************************************************/
 IDE_RC smiTempTable::openCursor( void                * aTable, 
                                  UInt                  aFlag,
@@ -1110,8 +1110,8 @@ IDE_RC smiTempTable::openCursor( void                * aTable,
 
     if( sHeader->mModule.mOpenCursor == NULL )
     {
-        /* QMG_PROJ_SUBQUERY_STORENSEARCH_STOREONLY ·Î µé¾î¿Ã °æ¿ì
-         * QP¿¡¼­ Sort¾øÀÌ Ã³¸®ÇÏ´Â °æ¿ì°¡ ¹ß»ıÇÔ */
+        /* QMG_PROJ_SUBQUERY_STORENSEARCH_STOREONLY ë¡œ ë“¤ì–´ì˜¬ ê²½ìš°
+         * QPì—ì„œ Sortì—†ì´ ì²˜ë¦¬í•˜ëŠ” ê²½ìš°ê°€ ë°œìƒí•¨ */
         IDE_TEST( sort( aTable ) != IDE_SUCCESS );
     }
     IDE_TEST( checkSessionAndStats( sHeader, 
@@ -1122,7 +1122,7 @@ IDE_RC smiTempTable::openCursor( void                * aTable,
     IDE_TEST( mTempCursorPool.alloc( (void**)&sCursor ) != IDE_SUCCESS );
     sState = 1;
 
-    /* ¹«Á¶°Ç Success¸¦ È£ÃâÇÏ´Â Filter´Â ¾Æ¿¹ ¹«½ÃÇÏµµ·Ï Flag¸¦ ¼³Á¤ÇÔ*/
+    /* ë¬´ì¡°ê±´ Successë¥¼ í˜¸ì¶œí•˜ëŠ” FilterëŠ” ì•„ì˜ˆ ë¬´ì‹œí•˜ë„ë¡ Flagë¥¼ ì„¤ì •í•¨*/
     SM_SET_FLAG_OFF( aFlag, SMI_TCFLAG_FILTER_MASK );
     if( aKeyRange  != smiGetDefaultKeyRange() )
     {
@@ -1156,13 +1156,13 @@ IDE_RC smiTempTable::openCursor( void                * aTable,
 
     *aCursor = sCursor;
 
-    /* ¿¹¿ÜÃ³¸®°¡ ÀÏ¾î³ªÁö ¾Ê´Â °æ¿ì°¡ µÇ¾î¼­¾ß Link¿¡ ¿¬°áÇÔ */
+    /* ì˜ˆì™¸ì²˜ë¦¬ê°€ ì¼ì–´ë‚˜ì§€ ì•ŠëŠ” ê²½ìš°ê°€ ë˜ì–´ì„œì•¼ Linkì— ì—°ê²°í•¨ */
     sCursor->mNext = (smiTempCursor*)sHeader->mTempCursorList;
     sHeader->mTempCursorList = (void*)sCursor;
 
     checkEndTime( sHeader );
 
-    /* Fetch ÇÔ¼ö´Â ¼³Á¤µÇ¾ú¾î¾ß ÇÔ */
+    /* Fetch í•¨ìˆ˜ëŠ” ì„¤ì •ë˜ì—ˆì–´ì•¼ í•¨ */
     IDE_ERROR( sCursor->mFetch != NULL );
 
     return IDE_SUCCESS;
@@ -1197,17 +1197,17 @@ IDE_RC smiTempTable::openCursor( void                * aTable,
 
 /***************************************************************************
  * Description :
- * Ä¿¼­¸¦ ´Ù½Ã ¿±´Ï´Ù. Ä¿¼­ ÀçÈ°¿ë½Ã »ç¿ëµË´Ï´Ù.
- * Ä¿¼­¿¡ »õ·Î¿î Range/Filter¸¦ ÁØ´Ù°í ÇØµµ ¸Â½À´Ï´Ù.
+ * ì»¤ì„œë¥¼ ë‹¤ì‹œ ì—½ë‹ˆë‹¤. ì»¤ì„œ ì¬í™œìš©ì‹œ ì‚¬ìš©ë©ë‹ˆë‹¤.
+ * ì»¤ì„œì— ìƒˆë¡œìš´ Range/Filterë¥¼ ì¤€ë‹¤ê³  í•´ë„ ë§ìŠµë‹ˆë‹¤.
  *
  * <IN/OUT>
- * aCursor        - ´ë»ó Cursor
+ * aCursor        - ëŒ€ìƒ Cursor
  * <IN>
- * aFlag          - TempCursorÀÇ Å¸ÀÔÀ» ¼³Á¤ÇÔ
- * aKeyRange      - SortTemp½Ã »ç¿ëÇÒ, Range
+ * aFlag          - TempCursorì˜ íƒ€ì…ì„ ì„¤ì •í•¨
+ * aKeyRange      - SortTempì‹œ ì‚¬ìš©í• , Range
  * aKeyFilter     - KeyFilter
  * aRowFilter     - RowFilter
- * aHashValue     - Å½»öÇÒ ´ë»ó Hash ( HashTemp¸¸ »ç¿ë )
+ * aHashValue     - íƒìƒ‰í•  ëŒ€ìƒ Hash ( HashTempë§Œ ì‚¬ìš© )
  ***************************************************************************/
 IDE_RC smiTempTable::restartCursor( smiTempCursor       * aCursor,
                                     UInt                  aFlag,
@@ -1260,13 +1260,13 @@ IDE_RC smiTempTable::restartCursor( smiTempCursor       * aCursor,
 
 /**************************************************************************
  * Description :
- * Ä¿¼­·ÎºÎÅÍ ´ÙÀ½ Row¸¦ °¡Á®¿É´Ï´Ù(FetchNext)
+ * ì»¤ì„œë¡œë¶€í„° ë‹¤ìŒ Rowë¥¼ ê°€ì ¸ì˜µë‹ˆë‹¤(FetchNext)
  *
  * <IN>
- * aCursor        - ´ë»ó Cursor
+ * aCursor        - ëŒ€ìƒ Cursor
  * <OUT>
- * aRow           - ´ë»ó Row
- * aGRID          - °¡Á®¿Â RowÀÇ GRID
+ * aRow           - ëŒ€ìƒ Row
+ * aGRID          - ê°€ì ¸ì˜¨ Rowì˜ GRID
  ***************************************************************************/
 IDE_RC smiTempTable::fetch( smiTempCursor  * aCursor,
                             UChar         ** aRow,
@@ -1289,7 +1289,7 @@ IDE_RC smiTempTable::fetch( smiTempCursor  * aCursor,
     }
     else
     {
-        /* Ã£¾Æ¼­ µÑ´Ù NULLÀÌ ¾Æ´Ï°Å³ª, ¸øÃ£¾Æ¼­ µÑ´Ù NULLÀÌ°Å³ª */
+        /* ì°¾ì•„ì„œ ë‘˜ë‹¤ NULLì´ ì•„ë‹ˆê±°ë‚˜, ëª»ì°¾ì•„ì„œ ë‘˜ë‹¤ NULLì´ê±°ë‚˜ */
         IDE_DASSERT( *aRow != NULL );
     }
     checkEndTime( sHeader );
@@ -1305,12 +1305,12 @@ IDE_RC smiTempTable::fetch( smiTempCursor  * aCursor,
 
 /**************************************************************************
  * Description :
- * Ä¿¼­ÀÇ À§Ä¡¸¦ ÀúÀåÇÕ´Ï´Ù.
+ * ì»¤ì„œì˜ ìœ„ì¹˜ë¥¼ ì €ì¥í•©ë‹ˆë‹¤.
  *
  * <IN>
- * aCursor        - ´ë»ó Cursor
+ * aCursor        - ëŒ€ìƒ Cursor
  * <OUT>
- * aPosition      - ÀúÀåÇÑ À§Ä¡
+ * aPosition      - ì €ì¥í•œ ìœ„ì¹˜
  ***************************************************************************/
 IDE_RC smiTempTable::storeCursor( smiTempCursor    * aCursor,
                                   smiTempPosition ** aPosition )
@@ -1364,11 +1364,11 @@ IDE_RC smiTempTable::storeCursor( smiTempCursor    * aCursor,
 
 /**************************************************************************
  * Description :
- * Ä¿¼­¸¦ ÀúÀåÇÑ À§Ä¡·Î µÇµ¹¸³´Ï´Ù.
+ * ì»¤ì„œë¥¼ ì €ì¥í•œ ìœ„ì¹˜ë¡œ ë˜ëŒë¦½ë‹ˆë‹¤.
  *
  * <IN>
- * aCursor        - ´ë»ó Cursor
- * aPosition      - ÀúÀåÇÑ À§Ä¡
+ * aCursor        - ëŒ€ìƒ Cursor
+ * aPosition      - ì €ì¥í•œ ìœ„ì¹˜
  ***************************************************************************/
 IDE_RC smiTempTable::restoreCursor( smiTempCursor    * aCursor,
                                     smiTempPosition  * aPosition,
@@ -1389,8 +1389,8 @@ IDE_RC smiTempTable::restoreCursor( smiTempCursor    * aCursor,
 
     checkEndTime( sHeader );
 
-    /* restoreCursor¸¦ ÅëÇØ, QP°¡ °¡Áø Row/GRIDµµ ÀÌÀü »óÅÂ·Î
-     * º¹±¸ÇØ¾ß ÇÑ´Ù. */
+    /* restoreCursorë¥¼ í†µí•´, QPê°€ ê°€ì§„ Row/GRIDë„ ì´ì „ ìƒíƒœë¡œ
+     * ë³µêµ¬í•´ì•¼ í•œë‹¤. */
     IDE_TEST( fetchFromGRID( (void*)sHeader,
                              aCursor->mGRID,
                              *aRow )
@@ -1408,11 +1408,11 @@ IDE_RC smiTempTable::restoreCursor( smiTempCursor    * aCursor,
 
 /**************************************************************************
  * Description :
- * ¸ğµç Ä¿¼­¸¦ ´İ½À´Ï´Ù.
+ * ëª¨ë“  ì»¤ì„œë¥¼ ë‹«ìŠµë‹ˆë‹¤.
  *
  * <IN>
- * aCursor        - ´ë»ó Cursor
- * aPosition      - ÀúÀåÇÑ À§Ä¡
+ * aCursor        - ëŒ€ìƒ Cursor
+ * aPosition      - ì €ì¥í•œ ìœ„ì¹˜
  ***************************************************************************/
 IDE_RC smiTempTable::closeAllCursor(void * aTable )
 {
@@ -1441,10 +1441,10 @@ IDE_RC smiTempTable::closeAllCursor(void * aTable )
 
 /**************************************************************************
  * Description :
- * Ä¿¼­¸¦ Á¤¸®ÇÕ´Ï´Ù.
+ * ì»¤ì„œë¥¼ ì •ë¦¬í•©ë‹ˆë‹¤.
  *
  * <IN>
- * aCursor        - ´ë»ó Cursor
+ * aCursor        - ëŒ€ìƒ Cursor
  ***************************************************************************/
 IDE_RC smiTempTable::resetCursor(smiTempCursor * aCursor)
 {
@@ -1498,10 +1498,10 @@ IDE_RC smiTempTable::resetCursor(smiTempCursor * aCursor)
 
 /**************************************************************************
  * Description :
- * Ä¿¼­¸¦ ´İ½À´Ï´Ù.
+ * ì»¤ì„œë¥¼ ë‹«ìŠµë‹ˆë‹¤.
  *
  * <IN>
- * aCursor        - ´ë»ó Cursor
+ * aCursor        - ëŒ€ìƒ Cursor
  ***************************************************************************/
 IDE_RC smiTempTable::closeCursor(smiTempCursor * aCursor)
 {
@@ -1523,11 +1523,11 @@ IDE_RC smiTempTable::closeCursor(smiTempCursor * aCursor)
 
 /**************************************************************************
  * Description :
- * NullRow¸¦ ¹İÈ¯ÇÑ´Ù.
+ * NullRowë¥¼ ë°˜í™˜í•œë‹¤.
  *
  * <IN>
- * aTable         - ´ë»ó Table
- * aNullRowPtr    - NullRow¸¦ ÀúÀåÇÒ ¹öÆÛ
+ * aTable         - ëŒ€ìƒ Table
+ * aNullRowPtr    - NullRowë¥¼ ì €ì¥í•  ë²„í¼
  ***************************************************************************/
 IDE_RC smiTempTable::getNullRow(void   * aTable,
                                 UChar ** aNullRowPtr)
@@ -1543,13 +1543,13 @@ IDE_RC smiTempTable::getNullRow(void   * aTable,
 
 /**************************************************************************
  * Description :
- * Page°³¼ö, Record°³¼ö¸¦ ¹İÈ¯ÇÔ. PlanGraph Âï±â À§ÇÔ
+ * Pageê°œìˆ˜, Recordê°œìˆ˜ë¥¼ ë°˜í™˜í•¨. PlanGraph ì°ê¸° ìœ„í•¨
  *
  * <IN>
- * aTable         - ´ë»ó Table
+ * aTable         - ëŒ€ìƒ Table
  * <OUT>
- * aPageCount     - ÃÑ Page °³¼ö
- * aRecordCount   - ÃÑ Row °³¼ö
+ * aPageCount     - ì´ Page ê°œìˆ˜
+ * aRecordCount   - ì´ Row ê°œìˆ˜
  ***************************************************************************/
 IDE_RC smiTempTable::getDisplayInfo(void  * aTable,
                                     ULong * aPageCount,
@@ -1561,10 +1561,10 @@ IDE_RC smiTempTable::getDisplayInfo(void  * aTable,
     *aRecordCount = sHeader->mRowCount;
 
     // BUG-39728
-    // parallel aggregation À» »ç¿ëÇÒ¶§ temp table °¡ ºÎÁ·ÇØ¼­ ¿¡·¯°¡ ¹ß»ıÇÑ °æ¿ì
-    // getDisplayInfo ¸¦ È£ÃâÇÏ¸é FATAL ÀÌ ¹ß»ıÇÑ´Ù.
-    // ÀÌ¶§ sHeader ´Â Á¤»óÀÌÁö¸¸ sWASegment°¡ NULL ÀÌ´Ù.
-    // ÀÌ »óÈ²¿¡¼­ getDisplayInfo ÀÇ return °ªÀº Áß¿äÄ¡ ¾ÊÀ¸¹Ç·Î FATAL ÀÌ ¹ß»ıÇÏÁö ¾Êµµ·Ï ÇÑ´Ù.
+    // parallel aggregation ì„ ì‚¬ìš©í• ë•Œ temp table ê°€ ë¶€ì¡±í•´ì„œ ì—ëŸ¬ê°€ ë°œìƒí•œ ê²½ìš°
+    // getDisplayInfo ë¥¼ í˜¸ì¶œí•˜ë©´ FATAL ì´ ë°œìƒí•œë‹¤.
+    // ì´ë•Œ sHeader ëŠ” ì •ìƒì´ì§€ë§Œ sWASegmentê°€ NULL ì´ë‹¤.
+    // ì´ ìƒí™©ì—ì„œ getDisplayInfo ì˜ return ê°’ì€ ì¤‘ìš”ì¹˜ ì•Šìœ¼ë¯€ë¡œ FATAL ì´ ë°œìƒí•˜ì§€ ì•Šë„ë¡ í•œë‹¤.
     if ( sWASegment != NULL )
     {
         *aPageCount   = sdtWASegment::getNExtentCount( sWASegment )
@@ -1580,18 +1580,18 @@ IDE_RC smiTempTable::getDisplayInfo(void  * aTable,
 
 /**************************************************************************
  * Description :
- * Åë°èÁ¤º¸ ÃÊ±âÈ­
+ * í†µê³„ì •ë³´ ì´ˆê¸°í™”
  *
  * <IN>
- * aHeader        - ´ë»ó Table
+ * aHeader        - ëŒ€ìƒ Table
  ***************************************************************************/
 void  smiTempTable::initStatsPtr( smiTempTableHeader * aHeader,
                                   smiStatement       * aStatement )
 {
     smiTempTableStats * sStats = aHeader->mStatsPtr;
 
-    /* ÀÚ½ÅÀÇ StatBuffer¸¦ ÀÌ¿ëÇÏ´Ù°¡, TempTabeWatchTimeÀ» ³Ñ¾î°¡¸é
-     * Array¿¡ µî·ÏÇÔ */
+    /* ìì‹ ì˜ StatBufferë¥¼ ì´ìš©í•˜ë‹¤ê°€, TempTabeWatchTimeì„ ë„˜ì–´ê°€ë©´
+     * Arrayì— ë“±ë¡í•¨ */
     idlOS::memset( sStats, 0, ID_SIZEOF( smiTempTableStats ) );
     sStats->mSpaceID    = aHeader->mSpaceID;
     sStats->mTransID    = aStatement->getTrans()->getTransID();
@@ -1608,10 +1608,10 @@ void  smiTempTable::initStatsPtr( smiTempTableHeader * aHeader,
 
 /**************************************************************************
  * Description :
- * WatchArray¿¡ Åë°èÁ¤º¸¸¦ µî·ÏÇÔ
+ * WatchArrayì— í†µê³„ì •ë³´ë¥¼ ë“±ë¡í•¨
  *
  * <IN>
- * aHeader        - ´ë»ó Table
+ * aHeader        - ëŒ€ìƒ Table
  ***************************************************************************/
 void  smiTempTable::registWatchArray( smiTempTableHeader * aHeader )
 {
@@ -1630,10 +1630,10 @@ void  smiTempTable::registWatchArray( smiTempTableHeader * aHeader )
 
 /**************************************************************************
  * Description :
- * º¯°æµÇ´Â Åë°èÁ¤º¸¸¦ ´Ù½Ã »ı¼ºÇÔ
+ * ë³€ê²½ë˜ëŠ” í†µê³„ì •ë³´ë¥¼ ë‹¤ì‹œ ìƒì„±í•¨
  *
  * <IN>
- * aHeader        - ´ë»ó Table
+ * aHeader        - ëŒ€ìƒ Table
  ***************************************************************************/
 void smiTempTable::generateStats(smiTempTableHeader * aHeader )
 {
@@ -1644,8 +1644,8 @@ void smiTempTable::generateStats(smiTempTableHeader * aHeader )
           smuProperty::getTempStatsWatchTime() ) &&
         ( sStats == &aHeader->mStatsBuffer ) )
     {
-        /* À¯È¿½Ã°£ ÀÌ»ó µ¿ÀÛÇßÀ¸¸é¼­, ¾ÆÁ÷ WatchArray¿¡ µî·Ï ¾ÈµÅ¾îÀÖÀ¸¸é
-         * µî·ÏÇÑ´Ù. */
+        /* ìœ íš¨ì‹œê°„ ì´ìƒ ë™ì‘í–ˆìœ¼ë©´ì„œ, ì•„ì§ WatchArrayì— ë“±ë¡ ì•ˆë¼ì–´ìˆìœ¼ë©´
+         * ë“±ë¡í•œë‹¤. */
         registWatchArray( aHeader );
     }
 
@@ -1667,10 +1667,10 @@ void smiTempTable::generateStats(smiTempTableHeader * aHeader )
 
 /**************************************************************************
  * Description :
- * ÇÑ TempTableÀÇ Åë°èÄ¡¸¦ Global Åë°è¿¡ ´©ÀûÇÔ.
+ * í•œ TempTableì˜ í†µê³„ì¹˜ë¥¼ Global í†µê³„ì— ëˆ„ì í•¨.
  *
  * <IN>
- * aHeader        - ´ë»ó Table
+ * aHeader        - ëŒ€ìƒ Table
  ***************************************************************************/
 void smiTempTable::accumulateStats(smiTempTableHeader * aHeader )
 {
@@ -1703,11 +1703,11 @@ void smiTempTable::accumulateStats(smiTempTableHeader * aHeader )
 
 /**************************************************************************
  * Description :
- * ¿¹¿ÜÃ³¸® Àü¿ë ÇÔ¼ö.
- * ¿¹»óÄ¡ ¸øÇÑ ¿À·ùÀÏ °æ¿ì, Header¸¦ File·Î DumpÇÑ´Ù.
+ * ì˜ˆì™¸ì²˜ë¦¬ ì „ìš© í•¨ìˆ˜.
+ * ì˜ˆìƒì¹˜ ëª»í•œ ì˜¤ë¥˜ì¼ ê²½ìš°, Headerë¥¼ Fileë¡œ Dumpí•œë‹¤.
  *
  * <IN>
- * aHeader        - ´ë»ó Table
+ * aHeader        - ëŒ€ìƒ Table
  ***************************************************************************/
 void   smiTempTable::checkAndDump( smiTempTableHeader * aHeader )
 {
@@ -1716,21 +1716,21 @@ void   smiTempTable::checkAndDump( smiTempTableHeader * aHeader )
     IDE_PUSH();
     switch( ideGetErrorCode() )
     {
-    case smERR_ABORT_NOT_ENOUGH_NEXTENTSIZE:/* °ø°£ºÎÁ·µµ Á¤»óÀÓ */
+    case smERR_ABORT_NOT_ENOUGH_NEXTENTSIZE:/* ê³µê°„ë¶€ì¡±ë„ ì •ìƒì„ */
     case smERR_ABORT_NOT_ENOUGH_WORKAREA:
     case smERR_ABORT_NOT_ENOUGH_SPACE:
     case smERR_ABORT_NotEnoughFreeSpace:
     case smERR_ABORT_INVALID_SORTAREASIZE:
-    case idERR_ABORT_Session_Disconnected:  /* SessionTimeOutÀÌ´Ï Á¤»óÀûÀÓ */
-    case idERR_ABORT_Session_Closed:        /* ¼¼¼Ç ´İÈû */
-    case idERR_ABORT_Query_Timeout:         /* ½Ã°£ ÃÊ°ú */
+    case idERR_ABORT_Session_Disconnected:  /* SessionTimeOutì´ë‹ˆ ì •ìƒì ì„ */
+    case idERR_ABORT_Session_Closed:        /* ì„¸ì…˜ ë‹«í˜ */
+    case idERR_ABORT_Query_Timeout:         /* ì‹œê°„ ì´ˆê³¼ */
     case idERR_ABORT_Query_Canceled:
-    case idERR_ABORT_IDU_MEMORY_ALLOCATION: /* BUG-38636 : ¸Ş¸ğ¸®ÇÑ°èµµ Á¤»ó */
-    case idERR_ABORT_InsufficientMemory:    /* ¸Ş¸ğ¸® ÇÑ°è»óÈ²Àº Á¤»ó */
+    case idERR_ABORT_IDU_MEMORY_ALLOCATION: /* BUG-38636 : ë©”ëª¨ë¦¬í•œê³„ë„ ì •ìƒ */
+    case idERR_ABORT_InsufficientMemory:    /* ë©”ëª¨ë¦¬ í•œê³„ìƒí™©ì€ ì •ìƒ */
         IDE_CONT( skip );
         break;
     default:
-        /* ±× ¿ÜÀÇ °æ¿ì´Â __TEMPDUMP_ENABLE¿¡ µû¶ó DumpÇÔ */
+        /* ê·¸ ì™¸ì˜ ê²½ìš°ëŠ” __TEMPDUMP_ENABLEì— ë”°ë¼ Dumpí•¨ */
         if( smuProperty::getTempDumpEnable() == 1 )
         {
             dumpToFile( aHeader );
@@ -1739,7 +1739,7 @@ void   smiTempTable::checkAndDump( smiTempTableHeader * aHeader )
         {
             /* nothing to do */
         }
-        /*__ERROR_VALIDATION_LEVEL¿¡ µû¶ó ºñÁ¤»óÁ¾·áÇÔ*/
+        /*__ERROR_VALIDATION_LEVELì— ë”°ë¼ ë¹„ì •ìƒì¢…ë£Œí•¨*/
         IDE_ERROR( 0 );
         break;
     }
@@ -2009,12 +2009,12 @@ iduFixedTableDesc  gTempTableStatsDesc=
 
 /**************************************************************************
  * Description :
- * X$TEMPTABLE_STATS ¸¸µë.
+ * X$TEMPTABLE_STATS ë§Œë“¬.
  *
  * <IN>
- * aHeader        - PerfViewÀÇ Header
- * aDumpObj       - ´ë»ó °´Ã¼ ( »ó°ü¾øÀ½ )
- * aMemory        - Åë°èÁ¤º¸ ¸¸µé ¸Ş¸ğ¸®
+ * aHeader        - PerfViewì˜ Header
+ * aDumpObj       - ëŒ€ìƒ ê°ì²´ ( ìƒê´€ì—†ìŒ )
+ * aMemory        - í†µê³„ì •ë³´ ë§Œë“¤ ë©”ëª¨ë¦¬
  ***************************************************************************/
 IDE_RC smiTempTable::buildTempTableStatsRecord( 
                                     idvSQL              * /*aStatistics*/,
@@ -2041,12 +2041,12 @@ IDE_RC smiTempTable::buildTempTableStatsRecord(
         if ( sStats->mCreateTV != 0 )
         {
             /* BUG-43006 FixedTable Indexing Filter
-             * Column Index ¸¦ »ç¿ëÇØ¼­ ÀüÃ¼ Record¸¦ »ı¼ºÇÏÁö¾Ê°í
-             * ºÎºĞ¸¸ »ı¼ºÇØ Filtering ÇÑ´Ù.
-             * 1. void * ¹è¿­¿¡ IDU_FT_COLUMN_INDEX ·Î ÁöÁ¤µÈ ÄÃ·³¿¡
-             * ÇØ´çÇÏ´Â °ªÀ» ¼ø¼­´ë·Î ³Ö¾îÁÖ¾î¾ß ÇÑ´Ù.
-             * 2. IDU_FT_COLUMN_INDEXÀÇ ÄÃ·³¿¡ ÇØ´çÇÏ´Â °ªÀ» ¸ğµÎ ³Ö
-             * ¾î ÁÖ¾î¾ßÇÑ´Ù.
+             * Column Index ë¥¼ ì‚¬ìš©í•´ì„œ ì „ì²´ Recordë¥¼ ìƒì„±í•˜ì§€ì•Šê³ 
+             * ë¶€ë¶„ë§Œ ìƒì„±í•´ Filtering í•œë‹¤.
+             * 1. void * ë°°ì—´ì— IDU_FT_COLUMN_INDEX ë¡œ ì§€ì •ëœ ì»¬ëŸ¼ì—
+             * í•´ë‹¹í•˜ëŠ” ê°’ì„ ìˆœì„œëŒ€ë¡œ ë„£ì–´ì£¼ì–´ì•¼ í•œë‹¤.
+             * 2. IDU_FT_COLUMN_INDEXì˜ ì»¬ëŸ¼ì— í•´ë‹¹í•˜ëŠ” ê°’ì„ ëª¨ë‘ ë„£
+             * ì–´ ì£¼ì–´ì•¼í•œë‹¤.
              */
             smuUtility::getTimeString( sStats->mDropTV,
                                        SMI_TT_STR_SIZE,
@@ -2083,12 +2083,12 @@ IDE_RC smiTempTable::buildTempTableStatsRecord(
 
 /**************************************************************************
  * Description :
- * X$TEMPINFO ¸¸µë.
+ * X$TEMPINFO ë§Œë“¬.
  *
  * <IN>
- * aHeader        - PerfViewÀÇ Header
- * aDumpObj       - ´ë»ó °´Ã¼ ( »ó°ü¾øÀ½ )
- * aMemory        - Åë°èÁ¤º¸ ¸¸µé ¸Ş¸ğ¸®
+ * aHeader        - PerfViewì˜ Header
+ * aDumpObj       - ëŒ€ìƒ ê°ì²´ ( ìƒê´€ì—†ìŒ )
+ * aMemory        - í†µê³„ì •ë³´ ë§Œë“¤ ë©”ëª¨ë¦¬
  ***************************************************************************/
 IDE_RC smiTempTable::buildTempInfoRecord( idvSQL              * /*aStatistics*/,
                                           void                * aHeader,
@@ -2097,12 +2097,12 @@ IDE_RC smiTempTable::buildTempInfoRecord( idvSQL              * /*aStatistics*/,
 {
     smiTempInfo4Perf         sInfo;
 
-    /* sdtWASegmentÀÇ Á¤º¸¸¦ µî·Ï */
+    /* sdtWASegmentì˜ ì •ë³´ë¥¼ ë“±ë¡ */
     IDE_TEST( sdtWorkArea::buildTempInfoRecord( aHeader,
                                                 aMemory )
               != IDE_SUCCESS );
 
-    /* PropertyµéÀ» µî·Ï */
+    /* Propertyë“¤ì„ ë“±ë¡ */
     SMI_TT_SET_TEMPINFO_ULONG( "HASH_AREA_SIZE", 
                                smuProperty::getHashAreaSize(), "BYTES" );
     SMI_TT_SET_TEMPINFO_ULONG( "SORT_AREA_SIZE", 
@@ -2146,7 +2146,7 @@ IDE_RC smiTempTable::buildTempInfoRecord( idvSQL              * /*aStatistics*/,
                               smuProperty::getTempStatsWatchTime(), 
                               "SEC" );
 
-    /* ³»ºÎ Á¤º¸ µî·Ï */
+    /* ë‚´ë¶€ ì •ë³´ ë“±ë¡ */
     SMI_TT_SET_TEMPINFO_ULONG( "TOTAL STATS COUNT", 
                                mGlobalStats.mCount, 
                                "INTEGER" );
@@ -2243,12 +2243,12 @@ iduFixedTableDesc  gTempInfoDesc=
 
 /**************************************************************************
  * Description :
- * X$TEMPTABLE_OPR ¸¸µë.
+ * X$TEMPTABLE_OPR ë§Œë“¬.
  *
  * <IN>
- * aHeader        - PerfViewÀÇ Header
- * aDumpObj       - ´ë»ó °´Ã¼ ( »ó°ü¾øÀ½ )
- * aMemory        - Åë°èÁ¤º¸ ¸¸µé ¸Ş¸ğ¸®
+ * aHeader        - PerfViewì˜ Header
+ * aDumpObj       - ëŒ€ìƒ ê°ì²´ ( ìƒê´€ì—†ìŒ )
+ * aMemory        - í†µê³„ì •ë³´ ë§Œë“¤ ë©”ëª¨ë¦¬
  ***************************************************************************/
 IDE_RC smiTempTable::buildTempTableOprRecord( idvSQL              * /*aStatistics*/,
                                               void                * aHeader,

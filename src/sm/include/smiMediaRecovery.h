@@ -19,7 +19,7 @@
  * $Id: smiMediaRecovery.h 82075 2018-01-17 06:39:52Z jina.kim $
  * Description :
  *
- * º» ÆÄÀÏÀº media recovery Ã³¸® class¿¡´ëÇÑ Çì´õ ÆÄÀÏÀÔ´Ï´Ù.
+ * ë³¸ íŒŒì¼ì€ media recovery ì²˜ë¦¬ classì—ëŒ€í•œ í—¤ë” íŒŒì¼ì…ë‹ˆë‹¤.
  ***********************************************************************/
 
 #ifndef _O_SMI_MEDIA_RECOVERY_H_
@@ -34,38 +34,38 @@ public:
 
 
     /////////////////////////////////////////////////////
-    // ¸Ş¸ğ¸®/µğ½ºÅ© °øÅë º¹±¸
+    // ë©”ëª¨ë¦¬/ë””ìŠ¤í¬ ê³µí†µ ë³µêµ¬
 
-    // ¹Ìµğ¾î ¿À·ù°¡ °¨ÁöµÈ ¸Ş¸ğ¸®/µğ½ºÅ© µ¥ÀÌÅ¸ÆÄÀÏ
+    // ë¯¸ë””ì–´ ì˜¤ë¥˜ê°€ ê°ì§€ëœ ë©”ëª¨ë¦¬/ë””ìŠ¤í¬ ë°ì´íƒ€íŒŒì¼
     static IDE_RC recoverDB( idvSQL*        aStatistics,
                              smiRecoverType aRecoverType,
                              UInt           aUntilTIME,
-                             SChar*         aUntilTag = NULL );// TODO ÀÓ½Ã¿ë defaultÀÎÀÚ »èÁ¦ ÇÊ¿ä
+                             SChar*         aUntilTag = NULL );// TODO ì„ì‹œìš© defaultì¸ì ì‚­ì œ í•„ìš”
 
-    // Startup Control ´Ü°è¿¡¼­ ·Î±×¾ŞÄ¿¸¦ Âü°íÇÏ¿© 
-    // EMPTY µğ½ºÅ© µ¥ÀÌÅ¸ÆÄÀÏÀ» »ı¼ºÇÑ´Ù 
+    // Startup Control ë‹¨ê³„ì—ì„œ ë¡œê·¸ì•µì»¤ë¥¼ ì°¸ê³ í•˜ì—¬ 
+    // EMPTY ë””ìŠ¤í¬ ë°ì´íƒ€íŒŒì¼ì„ ìƒì„±í•œë‹¤ 
     static IDE_RC createDatafile( SChar* aOldFileSpec,
                                   SChar* aNewFileSpec );
 
-    // Startup Control ´Ü°è¿¡¼­ ·Î±×¾ŞÄ¿¸¦ Âü°íÇÏ¿© 
-    // EMPTY ¸Ş¸ğ¸® µ¥ÀÌÅ¸ÆÄÀÏÀ» »ı¼ºÇÑ´Ù 
+    // Startup Control ë‹¨ê³„ì—ì„œ ë¡œê·¸ì•µì»¤ë¥¼ ì°¸ê³ í•˜ì—¬ 
+    // EMPTY ë©”ëª¨ë¦¬ ë°ì´íƒ€íŒŒì¼ì„ ìƒì„±í•œë‹¤ 
     static IDE_RC createChkptImage( SChar * aOldFileSpec );
                                   
 
-    // Startup Control ´Ü°è¿¡¼­ ·Î±×¾ŞÄ¿ÀÇ 
-    // µğ½ºÅ© µ¥ÀÌÅ¸ÆÄÀÏ °æ·Î¸¦ º¯°æÇÑ´Ù.
+    // Startup Control ë‹¨ê³„ì—ì„œ ë¡œê·¸ì•µì»¤ì˜ 
+    // ë””ìŠ¤í¬ ë°ì´íƒ€íŒŒì¼ ê²½ë¡œë¥¼ ë³€ê²½í•œë‹¤.
     static IDE_RC renameDataFile( SChar* aOldFileName,
                                   SChar* aNewFileName );
     // PROJ-2133 incremental backup
-    // incremental bakcupÆÄÀÏÀ» ÀÌ¿ëÇØ µ¥ÀÌÅÍº£ÀÌ½º¸¦
-    // º¹¿øÇÑ´Ù.
+    // incremental bakcupíŒŒì¼ì„ ì´ìš©í•´ ë°ì´í„°ë² ì´ìŠ¤ë¥¼
+    // ë³µì›í•œë‹¤.
     static IDE_RC restoreDB( smiRestoreType aRestoreType,   
                              UInt           aUntilTime,     
                              SChar*         aUntilTag );
 
     // PROJ-2133 incremental backup
-    // incremental bakcupÆÄÀÏÀ» ÀÌ¿ëÇØ Å×ÀÌºí½ºÆäÀÌ½º¸¦
-    // º¹¿øÇÑ´Ù.
+    // incremental bakcupíŒŒì¼ì„ ì´ìš©í•´ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ë¥¼
+    // ë³µì›í•œë‹¤.
     static IDE_RC restoreTBS( scSpaceID aSpaceID );
 };
 

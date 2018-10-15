@@ -34,8 +34,8 @@ import Altibase.jdbc.driver.ex.ErrorDef;
 
 class LobUpdator
 {
-    // LobUpdatorÀÇ add method´Â Update ÀÛ¾÷À» À§ÇÑ ±âº»°ª ¼³Á¤À» ´ã´çÇÑ´Ù.
-    // LobUpdatorÀÇ update method¿¡¼­ ±× data¸¦ ±â¹İÀ¸·Î protocolÀ» ¼öÇàÇÏ¿© ¼­¹ö¿¡ Àü¼ÛÇÑ´Ù.
+    // LobUpdatorì˜ add methodëŠ” Update ì‘ì—…ì„ ìœ„í•œ ê¸°ë³¸ê°’ ì„¤ì •ì„ ë‹´ë‹¹í•œë‹¤.
+    // LobUpdatorì˜ update methodì—ì„œ ê·¸ dataë¥¼ ê¸°ë°˜ìœ¼ë¡œ protocolì„ ìˆ˜í–‰í•˜ì—¬ ì„œë²„ì— ì „ì†¡í•œë‹¤.
     private class LobParams
     {
         Object mTargetLob;
@@ -75,8 +75,8 @@ class LobUpdator
         }
         else if(aSourceValue instanceof Clob || aSourceValue == null)
         {
-            // Clob °´Ã¼´Â ±æÀÌ¸¦ °´Ã¼¿¡¼­ È¹µæÇÒ ¼ö ÀÖÀ¸¹Ç·Î 0À¸·Î ¼³Á¤ÇÑ´Ù.
-            // BUG-38681 value°¡ nullÀÏ¶§µµ mUpdatees¿¡ ³Ö¾îÁØ´Ù.
+            // Clob ê°ì²´ëŠ” ê¸¸ì´ë¥¼ ê°ì²´ì—ì„œ íšë“í•  ìˆ˜ ìˆìœ¼ë¯€ë¡œ 0ìœ¼ë¡œ ì„¤ì •í•œë‹¤.
+            // BUG-38681 valueê°€ nullì¼ë•Œë„ mUpdateesì— ë„£ì–´ì¤€ë‹¤.
             mUpdatees.add(new LobParams(aTargetLobLocator, aSourceValue, 0));
         }
         else
@@ -93,8 +93,8 @@ class LobUpdator
         }
         else if(aSourceValue instanceof Blob || aSourceValue == null)
         {
-            // Blob °´Ã¼´Â ±æÀÌ¸¦ °´Ã¼¿¡¼­ È¹µæÇÒ ¼ö ÀÖÀ¸¹Ç·Î 0À¸·Î ¼³Á¤ÇÑ´Ù.
-            // BUG-38681 value°¡ nullÀÏ¶§µµ mUpdatees¿¡ ³Ö¾îÁØ´Ù.
+            // Blob ê°ì²´ëŠ” ê¸¸ì´ë¥¼ ê°ì²´ì—ì„œ íšë“í•  ìˆ˜ ìˆìœ¼ë¯€ë¡œ 0ìœ¼ë¡œ ì„¤ì •í•œë‹¤.
+            // BUG-38681 valueê°€ nullì¼ë•Œë„ mUpdateesì— ë„£ì–´ì¤€ë‹¤.
             mUpdatees.add(new LobParams(aTargetLobLocator, aSourceValue, 0));
         }
         else
@@ -123,11 +123,11 @@ class LobUpdator
         {
             LobParams sParams = (LobParams)mUpdatees.removeFirst();
          
-            // addBatch¸¦ ÅëÇØ BatchRowHandleÀÇ dynamic array¿¡ µ¥ÀÌÅÍ´Â ÀÌ¹Ì ÀúÀåµÇ¾î ÀÖ´Ù. 
-            // ÃÖÁ¾ÀûÀ¸·Î executeBatch()¸¦ ¼öÇàÇÑ °æ¿ì ÀÌ ·çÆ¾¿¡ µµ´ŞÇÑ´Ù.
+            // addBatchë¥¼ í†µí•´ BatchRowHandleì˜ dynamic arrayì— ë°ì´í„°ëŠ” ì´ë¯¸ ì €ì¥ë˜ì–´ ìˆë‹¤. 
+            // ìµœì¢…ì ìœ¼ë¡œ executeBatch()ë¥¼ ìˆ˜í–‰í•œ ê²½ìš° ì´ ë£¨í‹´ì— ë„ë‹¬í•œë‹¤.
             if(mPreparedStatement.mBatchAdded)
             {
-                // ÇÑ row´ç LOB Column °¹¼ö¸¸Å­ update¸¦ ¼öÇàÇÑ ÈÄ ´ÙÀ½ row·Î ³Ñ¾î°¡±â À§ÇØ rowhandleÀ» ´ÙÀ½ row·Î ³Ñ±ä´Ù.
+                // í•œ rowë‹¹ LOB Column ê°¯ìˆ˜ë§Œí¼ updateë¥¼ ìˆ˜í–‰í•œ í›„ ë‹¤ìŒ rowë¡œ ë„˜ì–´ê°€ê¸° ìœ„í•´ rowhandleì„ ë‹¤ìŒ rowë¡œ ë„˜ê¸´ë‹¤.
                 if(sExecutionCount % sLobColumnCount == 0)
                 {
                 	((RowHandle)mPreparedStatement.mBatchRowHandle).next();
@@ -142,9 +142,9 @@ class LobUpdator
                 continue;
             }
             
-            // TargetÀº data¸¦ »ğÀÔÇÏ·Á´Â ´ë»ó Table
-            // Source´Â »ğÀÔÇÏ·Á´Â data¸¦ ÀÇ¹ÌÇÑ´Ù.
-            // Column Type¿¡ µû¶ó µ¿ÀÛÀ» ´Ş¸®ÇÑ´Ù.
+            // Targetì€ dataë¥¼ ì‚½ì…í•˜ë ¤ëŠ” ëŒ€ìƒ Table
+            // SourceëŠ” ì‚½ì…í•˜ë ¤ëŠ” dataë¥¼ ì˜ë¯¸í•œë‹¤.
+            // Column Typeì— ë”°ë¼ ë™ì‘ì„ ë‹¬ë¦¬í•œë‹¤.
             if (sParams.mTargetLob instanceof BlobLocatorColumn)
             {
                 AltibaseBlob sBlob = (AltibaseBlob)((BlobLocatorColumn)sParams.mTargetLob).getBlob();
@@ -153,7 +153,7 @@ class LobUpdator
                 
                 if (sParams.mSource instanceof Blob)
                 {
-                    // Blob °´Ã¼´Â BinaryStreamÀ¸·Î º¯È¯ÇÏ¿© Ã³¸®ÇÑ´Ù.
+                    // Blob ê°ì²´ëŠ” BinaryStreamìœ¼ë¡œ ë³€í™˜í•˜ì—¬ ì²˜ë¦¬í•œë‹¤.
                     sSource = ((Blob)sParams.mSource).getBinaryStream();
                     sLobLength = ((Blob)sParams.mSource).length();
                     updateBlob(sBlob, sSource, sLobLength);
@@ -172,16 +172,16 @@ class LobUpdator
                 }
                 else if (sParams.mSource == null)
                 {
-                    // BUG-38681 CmProtocol.preparedExecuteBatch¸¦ ¸ÕÀú È£ÃâÇÏ¸é¼­ ÇØ´ç °ªÀÌ null·Î ¾÷µ¥ÀÌÆ® µÇ±â ¶§¹®¿¡
-                    // ¿©±â¼­´Â nullÃ¼Å©¸¸ ÇÏ°í ³Ñ¾î°£´Ù.
+                    // BUG-38681 CmProtocol.preparedExecuteBatchë¥¼ ë¨¼ì € í˜¸ì¶œí•˜ë©´ì„œ í•´ë‹¹ ê°’ì´ nullë¡œ ì—…ë°ì´íŠ¸ ë˜ê¸° ë•Œë¬¸ì—
+                    // ì—¬ê¸°ì„œëŠ” nullì²´í¬ë§Œ í•˜ê³  ë„˜ì–´ê°„ë‹¤.
                 }
                 else
                 {
                     Error.throwSQLException(ErrorDef.INVALID_DATA_CONVERSION, String.valueOf(sParams.mSource), "BLOB");
                 }
                 
-                // ÇØ´ç Column¿¡ µ¥ÀÌÅÍ ÇÏ³ª¸¦ »ğÀÔÇÏ¸é ÇØ´ç locator¸¦ ÇØÁ¦ÇÑ´Ù.
-                // INSERTÀÇ °æ¿ì ¼­¹ö¿¡ ´ëÇÑ LOCATOR¸¦ È¹µæÇÒ ¹æ¹ıÀÌ ¾øÀ¸¹Ç·Î ÇØÁ¦ÇØµµ ¹®Á¦°¡ ¾ø´Ù.
+                // í•´ë‹¹ Columnì— ë°ì´í„° í•˜ë‚˜ë¥¼ ì‚½ì…í•˜ë©´ í•´ë‹¹ locatorë¥¼ í•´ì œí•œë‹¤.
+                // INSERTì˜ ê²½ìš° ì„œë²„ì— ëŒ€í•œ LOCATORë¥¼ íšë“í•  ë°©ë²•ì´ ì—†ìœ¼ë¯€ë¡œ í•´ì œí•´ë„ ë¬¸ì œê°€ ì—†ë‹¤.
                 sBlob.free();
             }
             else if (sParams.mTargetLob instanceof ClobLocatorColumn)
@@ -212,8 +212,8 @@ class LobUpdator
                 }
                 else if (sParams.mSource == null)
                 {
-                    // BUG-38681 CmProtocol.preparedExecuteBatch¸¦ ¸ÕÀú È£ÃâÇÏ¸é¼­ ÇØ´ç °ªÀÌ null·Î ¾÷µ¥ÀÌÆ® µÇ±â ¶§¹®¿¡
-                    // ¿©±â¼­´Â nullÃ¼Å©¸¸ ÇÏ°í ³Ñ¾î°£´Ù.
+                    // BUG-38681 CmProtocol.preparedExecuteBatchë¥¼ ë¨¼ì € í˜¸ì¶œí•˜ë©´ì„œ í•´ë‹¹ ê°’ì´ nullë¡œ ì—…ë°ì´íŠ¸ ë˜ê¸° ë•Œë¬¸ì—
+                    // ì—¬ê¸°ì„œëŠ” nullì²´í¬ë§Œ í•˜ê³  ë„˜ì–´ê°„ë‹¤.
                 }
                 else
                 {
@@ -250,13 +250,13 @@ class LobUpdator
     {
         try
         {
-            // ¸¸¾à ÇÑ Connection¿¡¼­ Source¿Í TargetÀÌ ÁÖ¾îÁø´Ù¸é
-            // °°Àº channelÀ» »ç¿ëÇÏ±â ¶§¹®¿¡ channelÀÇ byte buffer¸¦ ¿¬»êÀ» ¼öÇàÇÒ¶§¸¶´Ù ¹İµå½Ã ´Ù ºñ¿ö¾ß ÇÑ´Ù.
-            // º»·¡´Â º°µµÀÇ buffer¸¦ µÎ¾î µ¥ÀÌÅÍ¸¦ Ç×»ó buffer·Î º¹»çÇØ µÎ¾úÀ¸³ª ÀÌ´Â º¹»çºñ¿ëÀ» ºÒ·¯ÀÏÀ¸ÄÑ ¼º´ÉÀ» ÀúÇÏ½ÃÅ²´Ù.
-            // Source¿Í TargetÀÌ ´Ù¸¥ connectionÀ» »ç¿ëÇÏ°í ÀÖ´Ù¸é buffer copy ºñ¿ëÀº ºÎÇÏÀÌ¹Ç·Î
-            // °°Àº connectionÀ» »ç¿ëÇÏ´Â °æ¿ì¿¡¸¸ º°µµÀÇ buffer¿¡ ÀÏ°ı º¹»çÇÏµµ·Ï Ã³¸®ÇÑ´Ù.
-            // ´Ü, ´Ù¸¥ ConnectionÀÏ ¶§µµ °¡Á®¿À·Á´Â µ¥ÀÌÅÍ Å©±â°¡ (½ÇÁ¦·Î´Â ÀüÃ¼ µ¥ÀÌÅÍ°¡ ´õ Å¬Áö¶óµµ ¿äÃ»ÇÏ´Â ¾çÀÌ ÀûÀ» ¼ö ÀÖ´Ù.)
-            // ¸Å¿ì ÀÛÀ» °æ¿ì º°µµÀÇ buffer¸¦ ÀÌ¿ëÇÏ´Â °ÍÀÌ Åë½Å·®À» ÁÙÀÏ ¼ö ÀÖ¾î È¿À²ÀûÀÌ¹Ç·Î ÀÌ¶§´Â º°µµÀÇ buffer¸¦ È°¿ëÇÑ´Ù.
+            // ë§Œì•½ í•œ Connectionì—ì„œ Sourceì™€ Targetì´ ì£¼ì–´ì§„ë‹¤ë©´
+            // ê°™ì€ channelì„ ì‚¬ìš©í•˜ê¸° ë•Œë¬¸ì— channelì˜ byte bufferë¥¼ ì—°ì‚°ì„ ìˆ˜í–‰í• ë•Œë§ˆë‹¤ ë°˜ë“œì‹œ ë‹¤ ë¹„ì›Œì•¼ í•œë‹¤.
+            // ë³¸ë˜ëŠ” ë³„ë„ì˜ bufferë¥¼ ë‘ì–´ ë°ì´í„°ë¥¼ í•­ìƒ bufferë¡œ ë³µì‚¬í•´ ë‘ì—ˆìœ¼ë‚˜ ì´ëŠ” ë³µì‚¬ë¹„ìš©ì„ ë¶ˆëŸ¬ì¼ìœ¼ì¼œ ì„±ëŠ¥ì„ ì €í•˜ì‹œí‚¨ë‹¤.
+            // Sourceì™€ Targetì´ ë‹¤ë¥¸ connectionì„ ì‚¬ìš©í•˜ê³  ìˆë‹¤ë©´ buffer copy ë¹„ìš©ì€ ë¶€í•˜ì´ë¯€ë¡œ
+            // ê°™ì€ connectionì„ ì‚¬ìš©í•˜ëŠ” ê²½ìš°ì—ë§Œ ë³„ë„ì˜ bufferì— ì¼ê´„ ë³µì‚¬í•˜ë„ë¡ ì²˜ë¦¬í•œë‹¤.
+            // ë‹¨, ë‹¤ë¥¸ Connectionì¼ ë•Œë„ ê°€ì ¸ì˜¤ë ¤ëŠ” ë°ì´í„° í¬ê¸°ê°€ (ì‹¤ì œë¡œëŠ” ì „ì²´ ë°ì´í„°ê°€ ë” í´ì§€ë¼ë„ ìš”ì²­í•˜ëŠ” ì–‘ì´ ì ì„ ìˆ˜ ìˆë‹¤.)
+            // ë§¤ìš° ì‘ì„ ê²½ìš° ë³„ë„ì˜ bufferë¥¼ ì´ìš©í•˜ëŠ” ê²ƒì´ í†µì‹ ëŸ‰ì„ ì¤„ì¼ ìˆ˜ ìˆì–´ íš¨ìœ¨ì ì´ë¯€ë¡œ ì´ë•ŒëŠ” ë³„ë„ì˜ bufferë¥¼ í™œìš©í•œë‹¤.
             
             if(aSource instanceof ConnectionSharable)
             {
@@ -279,9 +279,9 @@ class LobUpdator
     
     private void updateBlob(AltibaseBlob aTarget, InputStream aSource, long aLength) throws SQLException
     {
-        // »ğÀÔÇÏ·Á´Â Column °´Ã¼ (aTarget)¿¡ channel ·¹ÆÛ·±½º¸¦ Àü´ŞÇÑ´Ù.
+        // ì‚½ì…í•˜ë ¤ëŠ” Column ê°ì²´ (aTarget)ì— channel ë ˆí¼ëŸ°ìŠ¤ë¥¼ ì „ë‹¬í•œë‹¤.
         aTarget.open(mPreparedStatement.mConnection.channel());
-        // OutputStreamÀ» È¹µæÇÏ¿© updateÀÛ¾÷À» ¼öÇàÇÔ
+        // OutputStreamì„ íšë“í•˜ì—¬ updateì‘ì—…ì„ ìˆ˜í–‰í•¨
         BlobOutputStream sOut = (BlobOutputStream)aTarget.setBinaryStream(1);
         updateLob(sOut, aSource, aLength);
     }

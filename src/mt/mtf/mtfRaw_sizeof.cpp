@@ -45,7 +45,7 @@ static IDE_RC mtfRaw_sizeofEstimate( mtcNode*     aNode,
 mtfModule mtfRaw_sizeof = {
     1|MTC_NODE_OPERATOR_FUNCTION|MTC_NODE_EAT_NULL_TRUE,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
+    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìê°€ ì•„ë‹˜)
     mtfRaw_sizeofFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -120,7 +120,7 @@ IDE_RC mtfRaw_sizeofCalculate( mtcNode*     aNode,
  * Implementation :
  *    RAW_SIZEOF( param )
  *
- *    aStack[0] : ÀÔ·ÂµÈ paramÀÇ actual size
+ *    aStack[0] : ì…ë ¥ëœ paramì˜ actual size
  *
  ***********************************************************************/
 

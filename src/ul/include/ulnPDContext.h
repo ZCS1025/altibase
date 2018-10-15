@@ -29,10 +29,10 @@ typedef enum
 
 typedef enum
 {
-    ULN_PD_ST_CREATED,              // 0. ÃÖÃÊÀÇ »óÅÂ
-    ULN_PD_ST_NEED_DATA,            // 1. PutData() ¸¦ ÇÒ Â÷·Ê
-    ULN_PD_ST_INITIAL,              // 2. ÃÊ±âÈ­µÈ »óÅÂ
-    ULN_PD_ST_ACCUMULATING_DATA     // 3. ÇÑ¹ø ÀÌ»ó PutData() °¡ ÀÌ·ç¾îÁü.
+    ULN_PD_ST_CREATED,              // 0. ìµœì´ˆì˜ ìƒíƒœ
+    ULN_PD_ST_NEED_DATA,            // 1. PutData() ë¥¼ í•  ì°¨ë¡€
+    ULN_PD_ST_INITIAL,              // 2. ì´ˆê¸°í™”ëœ ìƒíƒœ
+    ULN_PD_ST_ACCUMULATING_DATA     // 3. í•œë²ˆ ì´ìƒ PutData() ê°€ ì´ë£¨ì–´ì§.
 } ulnPDState;
 
 typedef struct ulnPDOpSet ulnPDOpSet;
@@ -40,7 +40,7 @@ typedef struct ulnPDOpSet ulnPDOpSet;
 typedef struct ulnPDContext
 {
     /*
-     * SQLPutData() ¸¦ À§ÇÑ ÀÓ½Ã º¯¼öµé
+     * SQLPutData() ë¥¼ ìœ„í•œ ì„ì‹œ ë³€ìˆ˜ë“¤
      */
     acp_list_node_t  mList;
 
@@ -48,13 +48,13 @@ typedef struct ulnPDContext
 
     ulnPDBufferType mBufferType;
 
-    acp_uint8_t    *mBuffer;     /* PutData ¹öÆÛ.
-                                    variable type À» SQLPutData() ·Î piece by piece ·Î
-                                    ³ÖÀ¸·Á ÇÒ ¶§ »ç¿ëµÈ´Ù. */
+    acp_uint8_t    *mBuffer;     /* PutData ë²„í¼.
+                                    variable type ì„ SQLPutData() ë¡œ piece by piece ë¡œ
+                                    ë„£ìœ¼ë ¤ í•  ë•Œ ì‚¬ìš©ëœë‹¤. */
 
     acp_uint32_t    mBufferSize;
     acp_uint32_t    mDataLength;
-    acp_sint32_t    mIndicator;  /* SQL_NULL_DATA °¡ ¼ö½ÅµÇ¾î ¿ÔÀ» ¶§ ¼¼ÆÃ. ±× ¿Ü¿¡´Â 0 */
+    acp_sint32_t    mIndicator;  /* SQL_NULL_DATA ê°€ ìˆ˜ì‹ ë˜ì–´ ì™”ì„ ë•Œ ì„¸íŒ…. ê·¸ ì™¸ì—ëŠ” 0 */
 
     ulnPDState       mState;
 
@@ -62,7 +62,7 @@ typedef struct ulnPDContext
 
 /*
  * ========================
- * Operation Set ¼±¾ğ
+ * Operation Set ì„ ì–¸
  * ========================
  */
 
@@ -81,7 +81,7 @@ struct ulnPDOpSet
 
 /*
  * =========================
- * ±âÅ¸ ÇÔ¼öµé
+ * ê¸°íƒ€ í•¨ìˆ˜ë“¤
  * =========================
  */
 

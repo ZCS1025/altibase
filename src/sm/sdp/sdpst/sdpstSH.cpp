@@ -19,8 +19,8 @@
  *
  * $Id: sdpstSH.cpp 27229 2008-07-23 17:37:19Z newdaily $
  *
- * º» ÆÄÀÏÀº Treelist Managed SegmentÀÇ Segment Header °ü·Ã
- * STATIC ÀÎÅÍÆäÀÌ½º¸¦ °ü¸®ÇÑ´Ù.
+ * ë³¸ íŒŒì¼ì€ Treelist Managed Segmentì˜ Segment Header ê´€ë ¨
+ * STATIC ì¸í„°í˜ì´ìŠ¤ë¥¼ ê´€ë¦¬í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -44,12 +44,12 @@
 # include <ideErrorMgr.h>
 
 /***********************************************************************
- * Description : Water Mark ¼³Á¤
+ * Description : Water Mark ì„¤ì •
  *
- * aWM                - [IN] Water Mark¸¦ ¼³Á¤ÇÒ º¯¼ö
+ * aWM                - [IN] Water Markë¥¼ ì„¤ì •í•  ë³€ìˆ˜
  * aWMPID             - [IN] Water Mark PID
- * aExtDirPID         - [IN] Water Mark Page°¡ Æ÷ÇÔµÈ ExtDir PID
- * aExtSlotNoInExtDir - [IN] Water Mark Page¸¦ Æ÷ÇÔÇÑ ExtDescÀÇ SlotNo
+ * aExtDirPID         - [IN] Water Mark Pageê°€ í¬í•¨ëœ ExtDir PID
+ * aExtSlotNoInExtDir - [IN] Water Mark Pageë¥¼ í¬í•¨í•œ ExtDescì˜ SlotNo
  * aPosStack          - [IN] Water Mark Stack
  ***********************************************************************/
 void sdpstSH::updateWM( sdpstWM        * aWM,
@@ -73,14 +73,14 @@ void sdpstSH::updateWM( sdpstWM        * aWM,
 }
 
 /***********************************************************************
- * Description : Segment Header¸¦ ÃÊ±âÈ­ ÇÑ´Ù.
+ * Description : Segment Headerë¥¼ ì´ˆê¸°í™” í•œë‹¤.
  *
  * aSegHdr              - [IN] Segment Header
  * aSegHdrPID           - [IN] Segment Header PID
  * aSegType             - [IN] Segment Type
- * aPageCntInExt        - [IN] Extent ´ç ÆäÀÌÁö °³¼ö
- * aMaxSlotCntInExtDir  - [IN] Segment Header¿¡ Æ÷ÇÔµÈ ExtDirÀÇ ÃÖ´ë Slot °³¼ö
- * aMaxSlotCntInRtBMP   - [IN] Segment Header¿¡ Æ÷ÇÔµÈ RtBMPÀÇ ÃÖ´ë Slot °³¼ö
+ * aPageCntInExt        - [IN] Extent ë‹¹ í˜ì´ì§€ ê°œìˆ˜
+ * aMaxSlotCntInExtDir  - [IN] Segment Headerì— í¬í•¨ëœ ExtDirì˜ ìµœëŒ€ Slot ê°œìˆ˜
+ * aMaxSlotCntInRtBMP   - [IN] Segment Headerì— í¬í•¨ëœ RtBMPì˜ ìµœëŒ€ Slot ê°œìˆ˜
  ***********************************************************************/
 void sdpstSH::initSegHdr( sdpstSegHdr       * aSegHdr,
                           scPageID            aSegHdrPID,
@@ -94,7 +94,7 @@ void sdpstSH::initSegHdr( sdpstSegHdr       * aSegHdr,
 
     IDE_ASSERT( aSegHdr != NULL );
 
-    /* Segment Control Header ÃÊ±âÈ­ */
+    /* Segment Control Header ì´ˆê¸°í™” */
     aSegHdr->mSegType           = aSegType;
     aSegHdr->mSegState          = SDP_SEG_USE;
     aSegHdr->mLstLfBMP          = SD_NULL_PID;
@@ -109,23 +109,23 @@ void sdpstSH::initSegHdr( sdpstSegHdr       * aSegHdr,
 
     initWM( &aSegHdr->mHWM );
 
-    // rt-bmp control header¸¦ ÃÊ±âÈ­ÇÏ¿´À¸¹Ç·Î sdpPhyPageHdrÀÇ
-    // freeOffset°ú total free size¸¦ º¯°æÇÑ´Ù.
+    // rt-bmp control headerë¥¼ ì´ˆê¸°í™”í•˜ì˜€ìœ¼ë¯€ë¡œ sdpPhyPageHdrì˜
+    // freeOffsetê³¼ total free sizeë¥¼ ë³€ê²½í•œë‹¤.
     sdpPhyPage::initLogicalHdr( sdpPhyPage::getHdr((UChar*)aSegHdr),
                                 ID_SIZEOF(sdpstSegHdr) );
 
     sBodyOffset = sdpPhyPage::getDataStartOffset( ID_SIZEOF(sdpstSegHdr) );
 
-    /* ExtDir Control Header ÃÊ±âÈ­ */
+    /* ExtDir Control Header ì´ˆê¸°í™” */
     sdpstExtDir::initExtDirHdr( &aSegHdr->mExtDirHdr,
                                 aMaxSlotCntInExtDir,
                                 sBodyOffset );
 
-    /* Segment Header¿¡ ÃÖ´ëÇÑ ±â·ÏÇÒ ¼ö ÀÖ´Â ExtentDir SlotÀÇ
-     * °³¼ö¸¦ °í·ÁÇÏ¿© rt-bmp ÆäÀÌÁö mapÀ» °í·ÁÇÑ´Ù. */
+    /* Segment Headerì— ìµœëŒ€í•œ ê¸°ë¡í•  ìˆ˜ ìˆëŠ” ExtentDir Slotì˜
+     * ê°œìˆ˜ë¥¼ ê³ ë ¤í•˜ì—¬ rt-bmp í˜ì´ì§€ mapì„ ê³ ë ¤í•œë‹¤. */
     sBodyOffset += aMaxSlotCntInExtDir * ID_SIZEOF(sdpstExtDesc);
 
-    /* Root Bitmap Control Header ÃÊ±âÈ­ */
+    /* Root Bitmap Control Header ì´ˆê¸°í™” */
     sdpstBMP::initBMPHdr( &aSegHdr->mRtBMPHdr,
                           SDPST_RTBMP,
                           sBodyOffset,
@@ -139,9 +139,9 @@ void sdpstSH::initSegHdr( sdpstSegHdr       * aSegHdr,
 }
 
 /***********************************************************************
- * Description : HWM¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+ * Description : HWMë¥¼ ì´ˆê¸°í™”í•œë‹¤.
  *
- * aWM      - [IN] ÃÊ±âÈ­ÇÒ WM
+ * aWM      - [IN] ì´ˆê¸°í™”í•  WM
  ***********************************************************************/
 void sdpstSH::initWM( sdpstWM  * aWM )
 {
@@ -153,19 +153,19 @@ void sdpstSH::initWM( sdpstWM  * aWM )
 }
 
 /***********************************************************************
- * Description : Segment Header ÆäÀÌÁö »ı¼º ¹× ÃÊ±âÈ­
+ * Description : Segment Header í˜ì´ì§€ ìƒì„± ë° ì´ˆê¸°í™”
  *
- * Ã¹¹øÂ° ExtentÀÇ bmp ÆäÀÌÁö¸¦ ¸ğµÎ »ı¼ºÇÑ ÈÄ Segment Header
- * ÆäÀÌÁö¸¦ »ı¼ºÇÑ´Ù.
+ * ì²«ë²ˆì§¸ Extentì˜ bmp í˜ì´ì§€ë¥¼ ëª¨ë‘ ìƒì„±í•œ í›„ Segment Header
+ * í˜ì´ì§€ë¥¼ ìƒì„±í•œë‹¤.
  *
- * aStatistics   - [IN] Åë°èÁ¤º¸
- * aStartInfo    - [IN] MtxÀÇ StartInfo
- * aSpaceID      - [IN] TablespaceÀÇ ID
+ * aStatistics   - [IN] í†µê³„ì •ë³´
+ * aStartInfo    - [IN] Mtxì˜ StartInfo
+ * aSpaceID      - [IN] Tablespaceì˜ ID
  * aExtDesc      - [IN] Extent Desc Pointer
- * aBfrInfo      - [IN] Extent ÀÌÀü ÇÒ´ç Á¤º¸
- * aAftInfo      - [IN] Extent ÀÌÈÄ ÇÒ´ç Á¤º¸
+ * aBfrInfo      - [IN] Extent ì´ì „ í• ë‹¹ ì •ë³´
+ * aAftInfo      - [IN] Extent ì´í›„ í• ë‹¹ ì •ë³´
  * aSegCache     - [IN] Segment Cache
- * aSegPID       - [OUT] Segment Çì´õ ÆäÀÌÁöÀÇ PID
+ * aSegPID       - [OUT] Segment í—¤ë” í˜ì´ì§€ì˜ PID
  ***********************************************************************/
 IDE_RC sdpstSH::createAndInitPage( idvSQL               * aStatistics,
                                    sdrMtxStartInfo      * aStartInfo,
@@ -192,14 +192,14 @@ IDE_RC sdpstSH::createAndInitPage( idvSQL               * aStatistics,
     IDE_ASSERT( aAftInfo   != NULL );
     IDE_ASSERT( aSegPID    != NULL );
 
-    /* Ã¹¹øÂ° ExtentÀÇ ÇÊ¿äÇÑ bmp ÆäÀÌÁöµéÀ» ¸ğµÎ »ı¼ºÇÏ¿´À¸¹Ç·Î,
-     * Segment Header ÆäÀÌÁöÀÇ PID¸¦ °è»êÇÑ´Ù. */
+    /* ì²«ë²ˆì§¸ Extentì˜ í•„ìš”í•œ bmp í˜ì´ì§€ë“¤ì„ ëª¨ë‘ ìƒì„±í•˜ì˜€ìœ¼ë¯€ë¡œ,
+     * Segment Header í˜ì´ì§€ì˜ PIDë¥¼ ê³„ì‚°í•œë‹¤. */
     sMetaPageCnt = (aAftInfo->mPageCnt[SDPST_RTBMP] +
                     aAftInfo->mPageCnt[SDPST_ITBMP] +
                     aAftInfo->mPageCnt[SDPST_LFBMP] +
                     aAftInfo->mPageCnt[SDPST_EXTDIR]);
 
-    /* SegHdr ÆäÀÌÁö¿¡ ¼³Á¤ÇÒ SeqNo ¿Í SegPID¸¦ °è»êÇÑ´Ù. */
+    /* SegHdr í˜ì´ì§€ì— ì„¤ì •í•  SeqNo ì™€ SegPIDë¥¼ ê³„ì‚°í•œë‹¤. */
     sSeqNo     = aBfrInfo->mNxtSeqNo + sMetaPageCnt;
     sSegHdrPID = aExtDesc->mExtFstPID + (UInt)sMetaPageCnt;
 
@@ -212,12 +212,12 @@ IDE_RC sdpstSH::createAndInitPage( idvSQL               * aStatistics,
     sState = 1;
 
     /*
-     * Ã¹¹øÂ° Extent¿¡´Â Segment Header¸¦ ÇÒ´çÇÑ´Ù.
-     * »ı¼ºµÈ Segment Header ÆäÀÌÁöÀÇ PID¸¦ ¹İÈ¯ÇÑ´Ù.
+     * ì²«ë²ˆì§¸ Extentì—ëŠ” Segment Headerë¥¼ í• ë‹¹í•œë‹¤.
+     * ìƒì„±ëœ Segment Header í˜ì´ì§€ì˜ PIDë¥¼ ë°˜í™˜í•œë‹¤.
      */
     sPBS = ( SDPST_BITSET_PAGETP_META | SDPST_BITSET_PAGEFN_FUL );
 
-    /* logical header´Â ¾Æ·¡¿¡¼­ º°µµ·Î ÃÊ±âÈ­ÇÑ´Ù. */
+    /* logical headerëŠ” ì•„ë˜ì—ì„œ ë³„ë„ë¡œ ì´ˆê¸°í™”í•œë‹¤. */
     IDE_TEST( sdpstAllocPage::createPage(
                                     aStatistics,
                                     &sMtx,
@@ -233,7 +233,7 @@ IDE_RC sdpstSH::createAndInitPage( idvSQL               * aStatistics,
 
     sSegHdrPtr = getHdrPtr(sPagePtr);
 
-    /* Segment Header ÆäÀÌÁö ÃÊ±âÈ­ */
+    /* Segment Header í˜ì´ì§€ ì´ˆê¸°í™” */
     initSegHdr( sSegHdrPtr,
                 sSegHdrPID,
                 aSegCache->mSegType,
@@ -241,7 +241,7 @@ IDE_RC sdpstSH::createAndInitPage( idvSQL               * aStatistics,
                 aBfrInfo->mMaxSlotCnt[SDPST_EXTDIR],
                 aBfrInfo->mMaxSlotCnt[SDPST_RTBMP] );
 
-    /* INIT_SEGMENT_META_HEADER ·Î±ë */
+    /* INIT_SEGMENT_META_HEADER ë¡œê¹… */
     sLogData.mSegType               = aSegCache->mSegType;
     sLogData.mSegPID                = sSegHdrPID;
     sLogData.mPageCntInExt          = aExtDesc->mLength;
@@ -276,13 +276,13 @@ IDE_RC sdpstSH::createAndInitPage( idvSQL               * aStatistics,
 }
 
 /***********************************************************************
- * Description : Segment Header¿¡ WM¸¦ °»½ÅÇÑ´Ù.
+ * Description : Segment Headerì— WMë¥¼ ê°±ì‹ í•œë‹¤.
  *
  * aMtx             - [IN] Mini Transaction Pointer
- * aWM              - [IN] °»½ÅÇÒ WM º¯¼ö
+ * aWM              - [IN] ê°±ì‹ í•  WM ë³€ìˆ˜
  * aWMPID           - [IN] Water Mark PID
- * aExtDirPID       - [IN] Water Mark Page°¡ Æ÷ÇÔµÈ ExtDir PID
- * aSlotNoInExtDir  - [IN] Water Mark Page¸¦ Æ÷ÇÔÇÑ ExtDescÀÇ SlotNo
+ * aExtDirPID       - [IN] Water Mark Pageê°€ í¬í•¨ëœ ExtDir PID
+ * aSlotNoInExtDir  - [IN] Water Mark Pageë¥¼ í¬í•¨í•œ ExtDescì˜ SlotNo
  * aStack           - [IN] Water Mark Stack
  ***********************************************************************/
 IDE_RC sdpstSH::logAndUpdateWM( sdrMtx         * aMtx,
@@ -301,7 +301,7 @@ IDE_RC sdpstSH::logAndUpdateWM( sdrMtx         * aMtx,
     IDE_DASSERT( aStack          != NULL );
     IDE_DASSERT( aMtx            != NULL );
 
-    // HWM ¼³Á¤ÇÏ±â
+    // HWM ì„¤ì •í•˜ê¸°
     updateWM( aWM, aWMPID, aExtDirPID, aSlotNoInExtDir, aStack );
 
     // UPDATE WM logging
@@ -323,7 +323,7 @@ IDE_RC sdpstSH::logAndUpdateWM( sdrMtx         * aMtx,
 }
 
 /***********************************************************************
- * Description : Segment Header ÆäÀÌÁö¿¡ »õ·Î¿î ExtDir Page¸¦ ¿¬°á
+ * Description : Segment Header í˜ì´ì§€ì— ìƒˆë¡œìš´ ExtDir Pageë¥¼ ì—°ê²°
  *
  * aMtx              - [IN] Mini Transaction Pointer
  * aSegHdrPagePtr    - [IN] Segment Header Page Pointer
@@ -357,20 +357,20 @@ IDE_RC  sdpstSH::addNewExtDirPage( sdrMtx    * aMtx,
 
 
 /***********************************************************************
- * Description : Extent ÇÒ´çÈÄ »õ·Î¿î »ı¼ºÇÑ Bitmap ÆäÀÌÁö Á¤º¸¸¦
- *               Segment Header¿¡ ¹İ¿µÇÑ´Ù.
+ * Description : Extent í• ë‹¹í›„ ìƒˆë¡œìš´ ìƒì„±í•œ Bitmap í˜ì´ì§€ ì •ë³´ë¥¼
+ *               Segment Headerì— ë°˜ì˜í•œë‹¤.
  *
- * A. Last Bitmap ÆäÀÌÁöµé Á¤º¸ ¼³Á¤ÇÑ´Ù.
- * B. Segment Size¸¦ ¼³Á¤ÇÑ´Ù.
+ * A. Last Bitmap í˜ì´ì§€ë“¤ ì •ë³´ ì„¤ì •í•œë‹¤.
+ * B. Segment Sizeë¥¼ ì„¤ì •í•œë‹¤.
  *
- * aStartInfo     - [IN] MtxÀÇ StartInfo
+ * aStartInfo     - [IN] Mtxì˜ StartInfo
  * aSegHdrPagePtr - [IN] Segment Header Page Pointer
- * aAllocPageCnt  - [IN] ÇÒ´çµÈ ÆäÀÌÁö °³¼ö
- * aNewRtBMPCnt   - [IN] »ı¼ºµÈ RtBMP°³¼ö
- * aLstLfBMP      - [IN] º¯°æÇÒ ¸¶Áö¸· LfBMP
- * aLstItBMP      - [IN] º¯°æÇÒ ¸¶Áö¸· ItBMP
- * aLstRtBMP      - [IN] º¯°æÇÒ ¸¶Áö¸· RtBMP
- * aBfrLstRtBMP   - [OUT] º¯°æÀü ¸¶Áö¸· RtBMP
+ * aAllocPageCnt  - [IN] í• ë‹¹ëœ í˜ì´ì§€ ê°œìˆ˜
+ * aNewRtBMPCnt   - [IN] ìƒì„±ëœ RtBMPê°œìˆ˜
+ * aLstLfBMP      - [IN] ë³€ê²½í•  ë§ˆì§€ë§‰ LfBMP
+ * aLstItBMP      - [IN] ë³€ê²½í•  ë§ˆì§€ë§‰ ItBMP
+ * aLstRtBMP      - [IN] ë³€ê²½í•  ë§ˆì§€ë§‰ RtBMP
+ * aBfrLstRtBMP   - [OUT] ë³€ê²½ì „ ë§ˆì§€ë§‰ RtBMP
  ***********************************************************************/
 IDE_RC sdpstSH::logAndLinkBMPs( sdrMtx       * aMtx,
                                 sdpstSegHdr  * aSegHdr,
@@ -391,7 +391,7 @@ IDE_RC sdpstSH::logAndLinkBMPs( sdrMtx       * aMtx,
     IDE_ASSERT( aLstLfBMP    != SD_NULL_PID );
     IDE_ASSERT( aBfrLstRtBMP != NULL );
 
-    /* linkBMPsToSegHdr()¿¡¼­ º¯°æµÇ±â ¶§¹®¿¡ ÀÓ½Ã ÀúÀå */
+    /* linkBMPsToSegHdr()ì—ì„œ ë³€ê²½ë˜ê¸° ë•Œë¬¸ì— ì„ì‹œ ì €ì¥ */
     *aBfrLstRtBMP = aSegHdr->mLstRtBMP;
 
     linkBMPsToSegHdr( aSegHdr,
@@ -409,7 +409,7 @@ IDE_RC sdpstSH::logAndLinkBMPs( sdrMtx       * aMtx,
     sLogData.mNewLstRtBMP = aLstRtBMP;
     sLogData.mNewRtBMPCnt = aNewRtBMPCnt;
 
-    // SDR_SDPST_ADD_EXT_TO_SEGHDR ¹× Total Page Count logging
+    // SDR_SDPST_ADD_EXT_TO_SEGHDR ë° Total Page Count logging
     IDE_TEST( sdrMiniTrans::writeLogRec(
                             aMtx,
                             (UChar*)aSegHdr,
@@ -423,15 +423,15 @@ IDE_RC sdpstSH::logAndLinkBMPs( sdrMtx       * aMtx,
 }
 
 /***********************************************************************
- * Description : ÇÒ´çµÈ »õ·Î¿î ExtentÀÇ Bitmap ÆäÀÌÁöµéÀ» Segment
- *               Header¿¡ ¿¬°áÇÏ°í, Segment Å©±â¸¦ Áõ°¡½ÃÅ²´Ù.
+ * Description : í• ë‹¹ëœ ìƒˆë¡œìš´ Extentì˜ Bitmap í˜ì´ì§€ë“¤ì„ Segment
+ *               Headerì— ì—°ê²°í•˜ê³ , Segment í¬ê¸°ë¥¼ ì¦ê°€ì‹œí‚¨ë‹¤.
  *
  * aSegHdr          - [IN] Segment Header
- * aAllocPageCnt    - [IN] ÇÒ´çÇÑ Page Count
- * aNewLstLfBMP     - [IN] º¯°æÇÒ ¸¶Áö¸· LfBMP
- * aNewLstItBMP     - [IN] º¯°æÇÒ ¸¶Áö¸· ItBMP
- * aNewLstRtBMP     - [IN] º¯°æÇÒ ¸¶Áö¸· RtBMP
- * aNewRtBMPCnt     - [IN] »ı¼ºÇÑ RtBMP Count
+ * aAllocPageCnt    - [IN] í• ë‹¹í•œ Page Count
+ * aNewLstLfBMP     - [IN] ë³€ê²½í•  ë§ˆì§€ë§‰ LfBMP
+ * aNewLstItBMP     - [IN] ë³€ê²½í•  ë§ˆì§€ë§‰ ItBMP
+ * aNewLstRtBMP     - [IN] ë³€ê²½í•  ë§ˆì§€ë§‰ RtBMP
+ * aNewRtBMPCnt     - [IN] ìƒì„±í•œ RtBMP Count
  **********************************************************************/
 void sdpstSH::linkBMPsToSegHdr( sdpstSegHdr  * aSegHdr,
                                 ULong          aAllocPageCnt,
@@ -447,14 +447,14 @@ void sdpstSH::linkBMPsToSegHdr( sdpstSegHdr  * aSegHdr,
     IDE_DASSERT( aNewLstItBMP != SD_NULL_PID );
     IDE_DASSERT( aNewLstRtBMP != SD_NULL_PID );
 
-    /* ÇÒ´çµÈ Extent ¸¸Å­ÀÇ ¿ë·®À» Segment¿¡ ¹İ¿µÇÑ´Ù. */
+    /* í• ë‹¹ëœ Extent ë§Œí¼ì˜ ìš©ëŸ‰ì„ Segmentì— ë°˜ì˜í•œë‹¤. */
     aSegHdr->mTotPageCnt  += aAllocPageCnt;
     aSegHdr->mTotExtCnt   += 1;
     aSegHdr->mTotRtBMPCnt += aNewRtBMPCnt;
     aSegHdr->mFreeIndexPageCnt += aAllocPageCnt - aMetaPageCnt;
     aSegHdr->mLstSeqNo     = aSegHdr->mTotPageCnt - 1;
 
-    /* »õ·Î¿î ¸¶Áö¸· Bitmap ÆäÀÌÁö Á¤º¸¸¦ ¼³Á¤ÇÑ´Ù. */
+    /* ìƒˆë¡œìš´ ë§ˆì§€ë§‰ Bitmap í˜ì´ì§€ ì •ë³´ë¥¼ ì„¤ì •í•œë‹¤. */
     aSegHdr->mLstLfBMP = aNewLstLfBMP;
     aSegHdr->mLstItBMP = aNewLstItBMP;
     aSegHdr->mLstRtBMP = aNewLstRtBMP;
@@ -463,12 +463,12 @@ void sdpstSH::linkBMPsToSegHdr( sdpstSegHdr  * aSegHdr,
 
 /***********************************************************************
  *
- * Description : Sequential Scan¸¦ À§ÇÑ SegmentÀÇ Á¤º¸¸¦ ¹İÈ¯ÇÑ´Ù.
+ * Description : Sequential Scanë¥¼ ìœ„í•œ Segmentì˜ ì •ë³´ë¥¼ ë°˜í™˜í•œë‹¤.
  *
- * aStatistics  - [IN] Åë°èÁ¤º¸
- * aSpaceID     - [IN] Å×ÀÌºí½ºÆäÀÌ½º ID
- * aSegPID      - [IN] ¼¼±×¸ÕÆ® Çì´õ ÆäÀÌÁöÀÇ PID
- * aSegInfo     - [OUT] ¼öÁıµÈ ¼¼±×¸ÕÆ® Á¤º¸ ÀÚ·á±¸Á¶
+ * aStatistics  - [IN] í†µê³„ì •ë³´
+ * aSpaceID     - [IN] í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ID
+ * aSegPID      - [IN] ì„¸ê·¸ë¨¼íŠ¸ í—¤ë” í˜ì´ì§€ì˜ PID
+ * aSegInfo     - [OUT] ìˆ˜ì§‘ëœ ì„¸ê·¸ë¨¼íŠ¸ ì •ë³´ ìë£Œêµ¬ì¡°
  *
  ***********************************************************************/
 IDE_RC sdpstSH::getSegInfo( idvSQL        * aStatistics,
@@ -499,8 +499,8 @@ IDE_RC sdpstSH::getSegInfo( idvSQL        * aStatistics,
 
     sSegHdr = sdpstSH::getHdrPtr( sPagePtr );
 
-    /* BUG-43084 X$table_infoÁ¶È¸ Áß ºñÁ¤»óÁ¾·á ÇÏ°Å³ª
-     * X_LOCKÀÌ °É¸° disk tableÀÌ Á¶È¸µÇÁö ¾ÊÀ» ¼ö ÀÖ½À´Ï´Ù. */
+    /* BUG-43084 X$table_infoì¡°íšŒ ì¤‘ ë¹„ì •ìƒì¢…ë£Œ í•˜ê±°ë‚˜
+     * X_LOCKì´ ê±¸ë¦° disk tableì´ ì¡°íšŒë˜ì§€ ì•Šì„ ìˆ˜ ìˆìŠµë‹ˆë‹¤. */
     if ( ( aTableHeader != NULL ) && 
          ( smLayerCallback::isNullSegPID4DiskTable( aTableHeader ) == ID_TRUE ) )
     {
@@ -519,7 +519,7 @@ IDE_RC sdpstSH::getSegInfo( idvSQL        * aStatistics,
     aSegInfo->mPageCntInExt = sSegHdr->mPageCntInExt;
     aSegInfo->mFmtPageCnt   = sSegHdr->mTotPageCnt;
     aSegInfo->mExtCnt       = sSegHdr->mTotExtCnt;
-    aSegInfo->mExtDirCnt    = sSegHdr->mExtDirBase.mNodeCnt + 1; /* 1Àº Seghdr */
+    aSegInfo->mExtDirCnt    = sSegHdr->mExtDirBase.mNodeCnt + 1; /* 1ì€ Seghdr */
 
     if ( aSegInfo->mExtCnt <= 0 )
     {
@@ -531,11 +531,11 @@ IDE_RC sdpstSH::getSegInfo( idvSQL        * aStatistics,
         sdpstExtDir::getFstExtRID( &sSegHdr->mExtDirHdr );
 
     /*
-     * BUG-22474     [valgrind]sdbMPRMgr::getMPRCnt¿¡ UMRÀÖ½À´Ï´Ù.
+     * BUG-22474     [valgrind]sdbMPRMgr::getMPRCntì— UMRìˆìŠµë‹ˆë‹¤.
      */
     aSegInfo->mLstExtRID    = sSegHdr->mLstExtRID;
 
-    /* HWMÀÇ ExtDescÀÇ RID¸¦ ±¸ÇÑ´Ù. */
+    /* HWMì˜ ExtDescì˜ RIDë¥¼ êµ¬í•œë‹¤. */
     sHWM = &(sSegHdr->mHWM);
     aSegInfo->mHWMPID      = sHWM->mWMPID;
 
@@ -577,12 +577,12 @@ IDE_RC sdpstSH::getSegInfo( idvSQL        * aStatistics,
 }
 
 /***********************************************************************
- * Description : [ INTERFACE ] segment »óÅÂ¸¦ ¹İÈ¯ÇÑ´Ù.
+ * Description : [ INTERFACE ] segment ìƒíƒœë¥¼ ë°˜í™˜í•œë‹¤.
  *
- * aStatistics   - [IN] Åë°èÁ¤º¸
- * aSpaceID      - [IN] TablespaceÀÇ ID
- * aSegPID       - [IN] Segment Çì´õ ÆäÀÌÁöÀÇ PID
- * aSegState     - [IN] Segment »óÅÂ
+ * aStatistics   - [IN] í†µê³„ì •ë³´
+ * aSpaceID      - [IN] Tablespaceì˜ ID
+ * aSegPID       - [IN] Segment í—¤ë” í˜ì´ì§€ì˜ PID
+ * aSegState     - [IN] Segment ìƒíƒœ
  ***********************************************************************/
 IDE_RC sdpstSH::getSegState( idvSQL        *aStatistics,
                              scSpaceID      aSpaceID,
@@ -625,14 +625,14 @@ IDE_RC sdpstSH::getSegState( idvSQL        *aStatistics,
 }
 
 /***********************************************************************
- * Description : Segment Header¿¡ Meta ÆäÀÌÁöÀÇ PID¸¦ ¼³Á¤ÇÑ´Ù.
+ * Description : Segment Headerì— Meta í˜ì´ì§€ì˜ PIDë¥¼ ì„¤ì •í•œë‹¤.
  *
- * aStatistics   - [IN] Åë°èÁ¤º¸
+ * aStatistics   - [IN] í†µê³„ì •ë³´
  * aMtx          - [IN] Mini Transaction Pointer
- * aSpaceID      - [IN] TablespaceÀÇ ID
- * aSegPID       - [IN] Segment Çì´õ ÆäÀÌÁöÀÇ PID
- * aIndex        - [IN] Meta PID Array ÀÇ Index
- * aMetaPID      - [IN] ¼³Á¤ÇÒ MetaPID
+ * aSpaceID      - [IN] Tablespaceì˜ ID
+ * aSegPID       - [IN] Segment í—¤ë” í˜ì´ì§€ì˜ PID
+ * aIndex        - [IN] Meta PID Array ì˜ Index
+ * aMetaPID      - [IN] ì„¤ì •í•  MetaPID
  ************************************************************************/
 IDE_RC sdpstSH::setMetaPID( idvSQL        *aStatistics,
                             sdrMtx        *aMtx,
@@ -673,12 +673,12 @@ IDE_RC sdpstSH::setMetaPID( idvSQL        *aStatistics,
 
 
 /***********************************************************************
- * Description : Segment HeaderÀÇ Meta ÆäÀÌÁöÀÇ PID¸¦ ¹İÈ¯ÇÑ´Ù.
+ * Description : Segment Headerì˜ Meta í˜ì´ì§€ì˜ PIDë¥¼ ë°˜í™˜í•œë‹¤.
  *
- * aStatistics   - [IN] Åë°èÁ¤º¸
- * aSpaceID      - [IN] TablespaceÀÇ ID
- * aSegPID       - [IN] Segment Çì´õ ÆäÀÌÁöÀÇ PID
- * aIndex        - [IN] Meta PID Array ÀÇ Index
+ * aStatistics   - [IN] í†µê³„ì •ë³´
+ * aSpaceID      - [IN] Tablespaceì˜ ID
+ * aSegPID       - [IN] Segment í—¤ë” í˜ì´ì§€ì˜ PID
+ * aIndex        - [IN] Meta PID Array ì˜ Index
  * aMetaPID      - [OUT] MetaPID
  ************************************************************************/
 IDE_RC sdpstSH::getMetaPID( idvSQL        *aStatistics,
@@ -722,7 +722,7 @@ IDE_RC sdpstSH::getMetaPID( idvSQL        *aStatistics,
 }
 
 /***********************************************************************
- * Description : Segment Header¸¦ dumpÇÑ´Ù.
+ * Description : Segment Headerë¥¼ dumpí•œë‹¤.
  ***********************************************************************/
 IDE_RC sdpstSH::dumpHdr( UChar    * aPagePtr,
                          SChar    * aOutBuf,
@@ -800,7 +800,7 @@ IDE_RC sdpstSH::dumpHdr( UChar    * aPagePtr,
                      sSegHdr->mExtDirBase.mBase.mNext,
                      sSegHdr->mExtDirBase.mBase.mPrev );
 
-    /* Meta Page ID StringÀ» ¸¸µç´Ù. */
+    /* Meta Page ID Stringì„ ë§Œë“ ë‹¤. */
     for ( sLoop = 0; sLoop < SDP_MAX_SEG_PID_CNT; sLoop++ )
     {
         idlVA::appendFormat( aOutBuf,
@@ -823,7 +823,7 @@ IDE_RC sdpstSH::dumpHdr( UChar    * aPagePtr,
 }
 
 /***********************************************************************
- * Description : Segment Header¸¦ dumpÇÑ´Ù.
+ * Description : Segment Headerë¥¼ dumpí•œë‹¤.
  ***********************************************************************/
 IDE_RC sdpstSH::dumpBody( UChar    * aPagePtr,
                           SChar    * aOutBuf,
@@ -882,7 +882,7 @@ IDE_RC sdpstSH::dumpBody( UChar    * aPagePtr,
 
 
 /***********************************************************************
- * Description : Segment Header¸¦ dumpÇÑ´Ù.
+ * Description : Segment Headerë¥¼ dumpí•œë‹¤.
  ***********************************************************************/
 IDE_RC sdpstSH::dump( UChar    * aPagePtr )
 {

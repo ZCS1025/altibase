@@ -27,7 +27,7 @@
  * GB2312.1980-0
  */
 
-/* XOR À» ÇÏ±â À§ÇÑ ÀÓÀÇÀÇ °ª. Æ¯º°ÇÑ ÀÇ¹Ì¸¦ ³ªÅ¸³»Áö ¾Ê´Â´Ù. */
+/* XOR ì„ í•˜ê¸° ìœ„í•œ ì„ì˜ì˜ ê°’. íŠ¹ë³„í•œ ì˜ë¯¸ë¥¼ ë‚˜íƒ€ë‚´ì§€ ì•ŠëŠ”ë‹¤. */
 #define GB2312_XOR_VALUE (1037)
 
 SInt convertMbToWc4Gb2312( void    * aSrc,
@@ -40,7 +40,7 @@ SInt convertWcToMb4Gb2312( void    * aSrc,
                            void    * aDest,
                            SInt      aDestRemain );
 
-/* PROJ-2414 [±â´É¼º] GBK, CP936 character set Ãß°¡ */
+/* PROJ-2414 [ê¸°ëŠ¥ì„±] GBK, CP936 character set ì¶”ê°€ */
 SInt copyGb2312( void    * aSrc,
                  SInt      aSrcRemain,
                  void    * aDest,

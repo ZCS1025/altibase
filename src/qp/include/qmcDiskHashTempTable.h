@@ -19,11 +19,11 @@
  * $Id: qmcDiskHashTempTable.h 82075 2018-01-17 06:39:52Z jina.kim $
  *
  * Description :
- *     Disk Hash Temp TableÀ» À§ÇÑ Á¤ÀÇ
+ *     Disk Hash Temp Tableì„ ìœ„í•œ ì •ì˜
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  **********************************************************************/
 
@@ -39,17 +39,17 @@
 #define QMCD_DISK_HASH_TEMP_INITIALIZE            (0x00000000)
 
 /* qmcdDiskHashTemp.flag                                    */
-// Distinct Insertion ¿©ºÎ
+// Distinct Insertion ì—¬ë¶€
 #define QMCD_DISK_HASH_INSERT_DISTINCT_MASK       (0x00000001)
 #define QMCD_DISK_HASH_INSERT_DISTINCT_FALSE      (0x00000000)
 #define QMCD_DISK_HASH_INSERT_DISTINCT_TRUE       (0x00000001)
 
 //---------------------------------------------------
-// [Disk Hash Temp Table °´Ã¼]
-//    ÃÊ±âÈ­ ½ÃÁ¡¿¡ ´ëÇÑ ¼³¸í
-//    (I) : ÃÖÃÊ ÇÑ¹ø¸¸ ÃÊ±âÈ­µÊ
-//    (R) : ÃÖÃÊ »ğÀÔ ¹× °Ë»ö½Ã¿¡ ÃÊ±âÈ­µÊ
-//    (X) : °¡º¯ÀûÀÓ
+// [Disk Hash Temp Table ê°ì²´]
+//    ì´ˆê¸°í™” ì‹œì ì— ëŒ€í•œ ì„¤ëª…
+//    (I) : ìµœì´ˆ í•œë²ˆë§Œ ì´ˆê¸°í™”ë¨
+//    (R) : ìµœì´ˆ ì‚½ì… ë° ê²€ìƒ‰ì‹œì— ì´ˆê¸°í™”ë¨
+//    (X) : ê°€ë³€ì ì„
 //---------------------------------------------------
 
 typedef struct qmcdDiskHashTemp
@@ -59,93 +59,93 @@ typedef struct qmcdDiskHashTemp
     void           * tableHandle;     // (I)
     ULong            mTempTableSize;
 
-    // Record ±¸¼ºÀ» À§ÇÑ ÀÚ·á ±¸Á¶
-    qmdMtrNode     * recordNode;      // (I) Record ±¸¼º Á¤º¸
-    UInt             recordColumnCnt; // (I) Column °³¼ö + 1(Hit Flag)
-    smiColumnList  * insertColumn;    // (I) Insert Column Á¤º¸
-    smiValue       * insertValue;     // (I) Insert Value Á¤º¸
+    // Record êµ¬ì„±ì„ ìœ„í•œ ìë£Œ êµ¬ì¡°
+    qmdMtrNode     * recordNode;      // (I) Record êµ¬ì„± ì •ë³´
+    UInt             recordColumnCnt; // (I) Column ê°œìˆ˜ + 1(Hit Flag)
+    smiColumnList  * insertColumn;    // (I) Insert Column ì •ë³´
+    smiValue       * insertValue;     // (I) Insert Value ì •ë³´
 
-    // Hashing À» À§ÇÑ ÀÚ·á ±¸Á¶
-    qmdMtrNode     * hashNode;          // (I) HashÇÒ ÄÃ·³ Á¤º¸
-    UInt             hashColumnCnt;     // (I) ÀÎµ¦½º ÄÃ·³ÀÇ °³¼ö
-    smiColumnList  * hashKeyColumnList; // (I) Key³»ÀÇ ÀÎµ¦½º ÄÃ·³ Á¤º¸
-    mtcColumn      * hashKeyColumn;     // (I) ÀÎµ¦½º ÄÃ·³ Á¤º¸
+    // Hashing ì„ ìœ„í•œ ìë£Œ êµ¬ì¡°
+    qmdMtrNode     * hashNode;          // (I) Hashí•  ì»¬ëŸ¼ ì •ë³´
+    UInt             hashColumnCnt;     // (I) ì¸ë±ìŠ¤ ì»¬ëŸ¼ì˜ ê°œìˆ˜
+    smiColumnList  * hashKeyColumnList; // (I) Keyë‚´ì˜ ì¸ë±ìŠ¤ ì»¬ëŸ¼ ì •ë³´
+    mtcColumn      * hashKeyColumn;     // (I) ì¸ë±ìŠ¤ ì»¬ëŸ¼ ì •ë³´
 
-    // °Ë»öÀ» À§ÇÑ ÀÚ·á ±¸Á¶
-    smiTempCursor  * searchCursor;     // (R) °Ë»ö ¹× Update¸¦ À§ÇÑ Cursor
-    smiTempCursor  * groupCursor;      // (R) Group°Ë»ö ¹× Aggregation Update
-    smiTempCursor  * groupFiniCursor;  // (R) GroupÀÇ Aggregation Finalization
-    smiTempCursor  * hitFlagCursor;    // (R) Hit Flag °Ë»ç¸¦ À§ÇÑ Cursor
+    // ê²€ìƒ‰ì„ ìœ„í•œ ìë£Œ êµ¬ì¡°
+    smiTempCursor  * searchCursor;     // (R) ê²€ìƒ‰ ë° Updateë¥¼ ìœ„í•œ Cursor
+    smiTempCursor  * groupCursor;      // (R) Groupê²€ìƒ‰ ë° Aggregation Update
+    smiTempCursor  * groupFiniCursor;  // (R) Groupì˜ Aggregation Finalization
+    smiTempCursor  * hitFlagCursor;    // (R) Hit Flag ê²€ì‚¬ë¥¼ ìœ„í•œ Cursor
     qtcNode        * hashFilter;       // (X) Hash Filter
 
-    // Filter »ı¼ºÀ» À§ÇÑ ÀÚ·á ±¸Á¶
+    // Filter ìƒì„±ì„ ìœ„í•œ ìë£Œ êµ¬ì¡°
     smiCallBack         filterCallBack;     // (R) CallBack
     qtcSmiCallBackData  filterCallBackData; // (R) CallBack Data
 
-    // Aggregation Update¸¦ À§ÇÑ ÀÚ·á ±¸Á¶
-    qmdMtrNode     * aggrNode;        // (I) Aggregation Column Á¤º¸
-    UInt             aggrColumnCnt;   // (I) Aggregation ColumnÀÇ °³¼ö
-    smiColumnList  * aggrColumnList;  // (I) Aggregation Column Á¤º¸
-    smiValue       * aggrValue;       // (R) Aggregation Value Á¤º¸
+    // Aggregation Updateë¥¼ ìœ„í•œ ìë£Œ êµ¬ì¡°
+    qmdMtrNode     * aggrNode;        // (I) Aggregation Column ì •ë³´
+    UInt             aggrColumnCnt;   // (I) Aggregation Columnì˜ ê°œìˆ˜
+    smiColumnList  * aggrColumnList;  // (I) Aggregation Column ì •ë³´
+    smiValue       * aggrValue;       // (R) Aggregation Value ì •ë³´
 } qmcdDiskHashTemp;
 
 class qmcDiskHash
 {
 public:
     //------------------------------------------------
-    // Disk Hash Temp TableÀÇ °ü¸®
+    // Disk Hash Temp Tableì˜ ê´€ë¦¬
     //------------------------------------------------
 
-    // Temp TableÀ» ÃÊ±âÈ­
+    // Temp Tableì„ ì´ˆê¸°í™”
     static IDE_RC    init( qmcdDiskHashTemp * aTempTable,
                            qcTemplate       * aTemplate,   // Template
-                           qmdMtrNode       * aRecordNode, // Record ±¸¼º
+                           qmdMtrNode       * aRecordNode, // Record êµ¬ì„±
                            qmdMtrNode       * aHashNode,   // Hashing Column
                            qmdMtrNode       * aAggrNode,   // Aggregation
                            UInt               aBucketCnt,  // Bucket Count
                            UInt               aMtrRowSize, // Mtr Record Size
-                           idBool             aDistinct ); // Distinction¿©ºÎ
+                           idBool             aDistinct ); // Distinctionì—¬ë¶€
 
-    // Temp Table³»ÀÇ ¸ğµç RecordÀÇ Á¦°Å
+    // Temp Tableë‚´ì˜ ëª¨ë“  Recordì˜ ì œê±°
     static IDE_RC    clear( qmcdDiskHashTemp * aTempTable );
 
-    // Temp Table³»ÀÇ ¸ğµç RecordÀÇ FlagÀ» Clear
+    // Temp Tableë‚´ì˜ ëª¨ë“  Recordì˜ Flagì„ Clear
     static IDE_RC    clearHitFlag( qmcdDiskHashTemp * aTempTable );
 
     //------------------------------------------------
-    // Disk Hash Temp TableÀÇ ±¸¼º
+    // Disk Hash Temp Tableì˜ êµ¬ì„±
     //------------------------------------------------
 
-    // RecordÀÇ »ğÀÔ
+    // Recordì˜ ì‚½ì…
     static IDE_RC    insert( qmcdDiskHashTemp * aTempTable,
                              UInt               aHashKey,
                              idBool           * aResult );
 
-    // Aggregation ColumnÀÇ Update
+    // Aggregation Columnì˜ Update
     static IDE_RC    updateAggr( qmcdDiskHashTemp * aTempTable );
 
-    // Aggregation ColumnÀÇ Final Update
+    // Aggregation Columnì˜ Final Update
     static IDE_RC    updateFiniAggr( qmcdDiskHashTemp * aTempTable );
 
-    // ÇöÀç Cursor À§Ä¡ÀÇ RecordÀÇ Hit FlagÀ» Setting
+    // í˜„ì¬ Cursor ìœ„ì¹˜ì˜ Recordì˜ Hit Flagì„ Setting
     static IDE_RC    setHitFlag( qmcdDiskHashTemp * aTempTable );
 
-    // ÇöÀç Cursor À§Ä¡ÀÇ Record¿¡ Hit Flag°¡ ÀÖ´ÂÁö ÆÇ´Ü
+    // í˜„ì¬ Cursor ìœ„ì¹˜ì˜ Recordì— Hit Flagê°€ ìˆëŠ”ì§€ íŒë‹¨
     static idBool    isHitFlagged( qmcdDiskHashTemp * aTempTable );
 
-    // Update Cursor¸¦ ÀÌ¿ëÇÑ ¼øÂ÷ °Ë»ö
+    // Update Cursorë¥¼ ì´ìš©í•œ ìˆœì°¨ ê²€ìƒ‰
     static IDE_RC    getFirstGroup( qmcdDiskHashTemp * aTempTable,
                                     void            ** aRow );
-    // Update Cursor¸¦ ÀÌ¿ëÇÑ ¼øÂ÷ °Ë»ö
+    // Update Cursorë¥¼ ì´ìš©í•œ ìˆœì°¨ ê²€ìƒ‰
     static IDE_RC    getNextGroup( qmcdDiskHashTemp * aTempTable,
                                    void            ** aRow );
 
     //------------------------------------------------
-    // Disk Hash Temp TableÀÇ °Ë»ö
+    // Disk Hash Temp Tableì˜ ê²€ìƒ‰
     //------------------------------------------------
 
     //----------------------------
-    // ¼øÂ÷ °Ë»ö
+    // ìˆœì°¨ ê²€ìƒ‰
     //----------------------------
 
     static IDE_RC    getFirstSequence( qmcdDiskHashTemp * aTempTable,
@@ -154,7 +154,7 @@ public:
                                       void            ** aRow );
 
     //----------------------------
-    // Range °Ë»ö
+    // Range ê²€ìƒ‰
     //----------------------------
 
     static IDE_RC    getFirstRange( qmcdDiskHashTemp * aTempTable,
@@ -165,7 +165,7 @@ public:
                                    void            ** aRow );
 
     //----------------------------
-    // Hit °Ë»ö
+    // Hit ê²€ìƒ‰
     //----------------------------
 
     static IDE_RC    getFirstHit( qmcdDiskHashTemp * aTempTable,
@@ -174,7 +174,7 @@ public:
                                  void            ** aRow );
 
     //----------------------------
-    // NonHit °Ë»ö
+    // NonHit ê²€ìƒ‰
     //----------------------------
 
     static IDE_RC    getFirstNonHit( qmcdDiskHashTemp * aTempTable,
@@ -183,7 +183,7 @@ public:
                                     void            ** aRow );
 
     //----------------------------
-    // Same Row & NonHit °Ë»ö
+    // Same Row & NonHit ê²€ìƒ‰
     //----------------------------
 
     static IDE_RC    getSameRowAndNonHit( qmcdDiskHashTemp * aTempTable,
@@ -196,7 +196,7 @@ public:
 
     //-------------------------
     // To Fix PR-8213
-    // Same Group °Ë»ö (Group Aggregation)¿¡¼­¸¸ »ç¿ë
+    // Same Group ê²€ìƒ‰ (Group Aggregation)ì—ì„œë§Œ ì‚¬ìš©
     //-------------------------
 
     static IDE_RC    getSameGroup( qmcdDiskHashTemp * aTempTable,
@@ -205,10 +205,10 @@ public:
                                    void            ** aResultRow );
 
     //------------------------------------------------
-    // ±âÅ¸ ÇÔ¼ö
+    // ê¸°íƒ€ í•¨ìˆ˜
     //------------------------------------------------
 
-    // ¼öÇà ºñ¿ë Á¤º¸ È¹µæ
+    // ìˆ˜í–‰ ë¹„ìš© ì •ë³´ íšë“
     static IDE_RC  getDisplayInfo( qmcdDiskHashTemp * aTempTable,
                                    ULong            * aPageCount,
                                    SLong            * aRecordCount );
@@ -216,27 +216,27 @@ public:
 private:
 
     //------------------------------------------------
-    // ÃÊ±âÈ­¸¦ À§ÇÑ ÇÔ¼ö
+    // ì´ˆê¸°í™”ë¥¼ ìœ„í•œ í•¨ìˆ˜
     //------------------------------------------------
-    // Temp Table SizeÀÇ ¿¹Ãø
+    // Temp Table Sizeì˜ ì˜ˆì¸¡
     static void    tempSizeEstimate( qmcdDiskHashTemp * aTempTable,
                                      UInt               aBucketCnt,
                                      UInt               aMtrRowSize );
 
-    // Temp TableÀÇ »ı¼º
+    // Temp Tableì˜ ìƒì„±
     static IDE_RC  createTempTable( qmcdDiskHashTemp * aTempTable );
 
-    // Insert Column List¸¦ À§ÇÑ Á¤º¸ ±¸¼º
+    // Insert Column Listë¥¼ ìœ„í•œ ì •ë³´ êµ¬ì„±
     static IDE_RC  setInsertColumnList( qmcdDiskHashTemp * aTempTable );
 
-    // Aggregation Column List¸¦ À§ÇÑ Á¤º¸ ±¸¼º
+    // Aggregation Column Listë¥¼ ìœ„í•œ ì •ë³´ êµ¬ì„±
     static IDE_RC  setAggrColumnList( qmcdDiskHashTemp * aTempTable );
 
-    // Index Key³»¿¡¼­ÀÇ Index Column Á¤º¸ÀÇ ±¸Ãà
+    // Index Keyë‚´ì—ì„œì˜ Index Column ì •ë³´ì˜ êµ¬ì¶•
     static IDE_RC  makeIndexColumnInfoInKEY( qmcdDiskHashTemp * aTempTable);
 
     //------------------------------------------------
-    // »ğÀÔ ¹× °Ë»öÀ» À§ÇÑ ÇÔ¼ö
+    // ì‚½ì… ë° ê²€ìƒ‰ì„ ìœ„í•œ í•¨ìˆ˜
     //------------------------------------------------
     // Cursor Open
     static IDE_RC  openCursor( qmcdDiskHashTemp  * aTempTable,
@@ -245,20 +245,20 @@ private:
                                UInt                aHashValue,
                                smiTempCursor    ** aTargetCursor );
 
-    // Insert¸¦ À§ÇÑ Value Á¤º¸ ±¸¼º
+    // Insertë¥¼ ìœ„í•œ Value ì •ë³´ êµ¬ì„±
     static IDE_RC  makeInsertSmiValue ( qmcdDiskHashTemp * aTempTable );
 
-    // AggregationÀÇ Update¸¦ À§ÇÑ Value Á¤º¸ ±¸¼º
+    // Aggregationì˜ Updateë¥¼ ìœ„í•œ Value ì •ë³´ êµ¬ì„±
     static IDE_RC  makeAggrSmiValue ( qmcdDiskHashTemp * aTempTable );
 
-    // ÁÖ¾îÁø Filter¸¦ ¸¸Á·ÇÏ´ÂÁö¸¦ °Ë»çÇÏ´Â Filter ±¸¼º
+    // ì£¼ì–´ì§„ Filterë¥¼ ë§Œì¡±í•˜ëŠ”ì§€ë¥¼ ê²€ì‚¬í•˜ëŠ” Filter êµ¬ì„±
     static IDE_RC  makeHashFilterCallBack( qmcdDiskHashTemp * aTempTable );
 
-    // µÎ Row°¡ µ¿ÀÏ Hash ValueÀÎÁö¸¦ ÇÏ´Â Filter CallBackÀÇ »ı¼º
+    // ë‘ Rowê°€ ë™ì¼ Hash Valueì¸ì§€ë¥¼ í•˜ëŠ” Filter CallBackì˜ ìƒì„±
     static IDE_RC  makeTwoRowHashFilterCallBack( qmcdDiskHashTemp * aTempTable,
                                                  void             * aRow );
 
-    // µÎ Row°£ÀÇ Hashing ColumnÀÌ ´Ù¸¥Áö¸¦ °Ë»ç
+    // ë‘ Rowê°„ì˜ Hashing Columnì´ ë‹¤ë¥¸ì§€ë¥¼ ê²€ì‚¬
     static IDE_RC  hashTwoRowRangeFilter( idBool     * aResult,
                                           const void * aRow,
                                           void       *, /* aDirectKey */
@@ -266,7 +266,7 @@ private:
                                           const scGRID aRid,
                                           void       * aData );
 
-    // µÎ Row°¡ µ¿ÀÏÇÑ Hashing ColumnÀÌ°í Hit FlagÀÌ ¾ø´Â Áö¸¦ °Ë»ç.
+    // ë‘ Rowê°€ ë™ì¼í•œ Hashing Columnì´ê³  Hit Flagì´ ì—†ëŠ” ì§€ë¥¼ ê²€ì‚¬.
     static IDE_RC  hashTwoRowAndNonHitFilter( idBool     * aResult,
                                               const void * aRow,
                                               const scGRID  aRid,

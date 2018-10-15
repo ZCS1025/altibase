@@ -33,18 +33,18 @@
 
 #define SDNB_SPLIT_POINT_NEW_KEY        ID_USHORT_MAX
 
-/* Proj-1872 Disk Index ÀúÀå±¸Á¶ ÃÖÀûÈ­
- * Å° ±¸Á¶ º¯°æÀ» À§ÇØ »ç¿ëÇÏ´Â ÀÓ½Ã ¹öÆÛµéÀÇ Å©±â*/
+/* Proj-1872 Disk Index ì €ìž¥êµ¬ì¡° ìµœì í™”
+ * í‚¤ êµ¬ì¡° ë³€ê²½ì„ ìœ„í•´ ì‚¬ìš©í•˜ëŠ” ìž„ì‹œ ë²„í¼ë“¤ì˜ í¬ê¸°*/
 #define SDNB_MAX_LENGTH_KNOWN_COLUMN_SIZE     (SMI_MAX_MINMAX_VALUE_SIZE)
 #define SDNB_MAX_KEY_BUFFER_SIZE              (SD_PAGE_SIZE/2)
 
-/* Proj-1872 Disk Index ÀúÀå±¸Á¶ ÃÖÀûÈ­
- * ColumnÀ» Ç¥ÇöÇÏ±â À§ÇÑ ¸ÅÅ©·Îµé 
+/* Proj-1872 Disk Index ì €ìž¥êµ¬ì¡° ìµœì í™”
+ * Columnì„ í‘œí˜„í•˜ê¸° ìœ„í•œ ë§¤í¬ë¡œë“¤ 
  *
- * Length-Known Ä®·³ÀÇ °æ¿ì, Column Header¾øÀÌ Value¸¸ ÀúÀåÇÏ¸ç
- * Length-Unknown Ä®·³ÀÇ °æ¿ì, 250ByteÀÌÇÏÀÇ Ä®·³¿¡ ´ëÇØ¼­´Â 1Byte,
- * ÃÊ°ú¿¡ ´ëÇØ¼­´Â 3Byte·Î ColumnHeader¸¦ ±â·ÏÇÏ¸ç, ÀÌ ColumnHeader
- * ¿¡ ColumnValueÀÇ ±æÀÌ°¡ ±â·ÏµÈ´Ù*/
+ * Length-Known ì¹¼ëŸ¼ì˜ ê²½ìš°, Column Headerì—†ì´ Valueë§Œ ì €ìž¥í•˜ë©°
+ * Length-Unknown ì¹¼ëŸ¼ì˜ ê²½ìš°, 250Byteì´í•˜ì˜ ì¹¼ëŸ¼ì— ëŒ€í•´ì„œëŠ” 1Byte,
+ * ì´ˆê³¼ì— ëŒ€í•´ì„œëŠ” 3Byteë¡œ ColumnHeaderë¥¼ ê¸°ë¡í•˜ë©°, ì´ ColumnHeader
+ * ì— ColumnValueì˜ ê¸¸ì´ê°€ ê¸°ë¡ëœë‹¤*/
 
 #define SDNB_SMALL_COLUMN_VALUE_LENGTH_THRESHOLD (0xFA)
 
@@ -73,7 +73,7 @@
 #define SDNB_SMO_MODE_SPLIT_1_2   (0x00000001)
 #define SDNB_SMO_MODE_KEY_REDIST  (0x00000002)
 
-/* Key array ±¸¼º¿¡¼­ Page ±¸ºÐ : PROJ-1628 */
+/* Key array êµ¬ì„±ì—ì„œ Page êµ¬ë¶„ : PROJ-1628 */
 #define SDNB_CURRENT_PAGE                (0)
 #define SDNB_NEXT_PAGE                   (1)
 #define SDNB_PARENT_PAGE                 (2)
@@ -83,16 +83,16 @@
     ((sdnbNodeHdr*)(node))->mLeftmostChild == SD_NULL_PID ? \
     ID_TRUE : ID_FALSE )                                         
 
-/* Proj-1872 Disk index ÀúÀå ±¸Á¶ ÃÖÀûÈ­
- * ·Î±ëÀ» À§ÇØ Ä®·³ LengthÃøÁ¤À» µµ¿ÍÁÖ´Â ColLen InfoÀÇ Å©±â */
+/* Proj-1872 Disk index ì €ìž¥ êµ¬ì¡° ìµœì í™”
+ * ë¡œê¹…ì„ ìœ„í•´ ì¹¼ëŸ¼ Lengthì¸¡ì •ì„ ë„ì™€ì£¼ëŠ” ColLen Infoì˜ í¬ê¸° */
 typedef struct sdnbColLenInfoList
 {
     UChar          mColumnCount;
     UChar          mColLenInfo[ SMI_MAX_IDX_COLUMNS ];
 } sdnbColLenInfoList;
 
-/* Proj-1872 Disk Index ÀúÀå±¸Á¶ ÃÖÀûÈ­
- * ColLenInfoList¸¦ DumpÇÏ±â À§ÇÑ StringÀÇ Å©±â
+/* Proj-1872 Disk Index ì €ìž¥êµ¬ì¡° ìµœì í™”
+ * ColLenInfoListë¥¼ Dumpí•˜ê¸° ìœ„í•œ Stringì˜ í¬ê¸°
  * ex) CREATE TABLE T1 (I INTEGER,C CHAR(40), D DATE)
  * 4,?,8 */
 #define SDNB_MAX_COLLENINFOLIST_STR_SIZE               ( SMI_MAX_IDX_COLUMNS * 2 )
@@ -102,25 +102,25 @@ typedef struct sdnbColLenInfoList
 
 
 
-/* Proj-1872 Disk index ÀúÀå ±¸Á¶ ÃÖÀûÈ­
- * ÇÔ¼öµé°£¿¡ Key³ª RowÀÇ Á¤º¸¸¦ Àü´ÞÇÏ±âÀ§ÇÑ ÀÓ½Ã ±¸Á¶Ã¼
+/* Proj-1872 Disk index ì €ìž¥ êµ¬ì¡° ìµœì í™”
+ * í•¨ìˆ˜ë“¤ê°„ì— Keyë‚˜ Rowì˜ ì •ë³´ë¥¼ ì „ë‹¬í•˜ê¸°ìœ„í•œ ìž„ì‹œ êµ¬ì¡°ì²´
  *
- * KeyInfo, ConvertedKeyInfo ¼ÂÀ¸·Î ºÐ¸®
- * Proj-1872 Disk index ÀúÀå±¸Á¶ ÃÖÀûÈ­¸¦ ÅëÇØ, µð½ºÅ© ÀÎµ¦½º¿¡¼­ »ç¿ëÇÏ´Â
- * Å°ÀÇ Ç¥Çö ±¸Á¶´Â À§ ¼¼°¡ÁöÀÌ´Ù.
+ * KeyInfo, ConvertedKeyInfo ì…‹ìœ¼ë¡œ ë¶„ë¦¬
+ * Proj-1872 Disk index ì €ìž¥êµ¬ì¡° ìµœì í™”ë¥¼ í†µí•´, ë””ìŠ¤í¬ ì¸ë±ìŠ¤ì—ì„œ ì‚¬ìš©í•˜ëŠ”
+ * í‚¤ì˜ í‘œí˜„ êµ¬ì¡°ëŠ” ìœ„ ì„¸ê°€ì§€ì´ë‹¤.
  * 
- *   ConvertedKeyInfo´Â KeyInfoÀÇ µ¥ÀÌÅÍ¸¦ smiValueListÇüÅÂ·Î º¯È¯ÇÑ ÇüÅÂÀÌ´Ù.
- * ¶ÇÇÑ KeyInfoÀÇ Á¤º¸µéÀ» ¸ðµÎ Æ÷ÇÔÇÑ´Ù. ÀÏ´ë´Ù Compare°¡ ÇÊ¿äÇÒ °æ¿ì, º¯È¯
- * ºñ¿ëÀ» ÁÙÀÌ±âÀ§ÇØ »ç¿ëµÈ´Ù.
- *   KeyInfo¿¡ ÀúÀåµÇ´Â Key´Â Length-UnknonwnÅ¸ÀÔÀÌ³Ä, Length-KnownÅ¸ÀÔÀÌ³Ä¿¡ 
- * µû¶ó Å° Å©±â¸¦ ÃÖ¼ÒÈ­½ÃÅ² µð½ºÅ© ÀÎµ¦½º Å° ±¸Á¶ÀÌ´Ù. 
+ *   ConvertedKeyInfoëŠ” KeyInfoì˜ ë°ì´í„°ë¥¼ smiValueListí˜•íƒœë¡œ ë³€í™˜í•œ í˜•íƒœì´ë‹¤.
+ * ë˜í•œ KeyInfoì˜ ì •ë³´ë“¤ì„ ëª¨ë‘ í¬í•¨í•œë‹¤. ì¼ëŒ€ë‹¤ Compareê°€ í•„ìš”í•  ê²½ìš°, ë³€í™˜
+ * ë¹„ìš©ì„ ì¤„ì´ê¸°ìœ„í•´ ì‚¬ìš©ëœë‹¤.
+ *   KeyInfoì— ì €ìž¥ë˜ëŠ” KeyëŠ” Length-Unknonwníƒ€ìž…ì´ëƒ, Length-Knowníƒ€ìž…ì´ëƒì— 
+ * ë”°ë¼ í‚¤ í¬ê¸°ë¥¼ ìµœì†Œí™”ì‹œí‚¨ ë””ìŠ¤í¬ ì¸ë±ìŠ¤ í‚¤ êµ¬ì¡°ì´ë‹¤. 
  */
 typedef struct sdnbKeyInfo
 {
     UChar         *mKeyValue;   // KeyValue Pointer
     scPageID       mRowPID;     // Row PID
     scSlotNum      mRowSlotNum;
-    UShort         mKeyState;   // Key¿¡ ¼³Á¤µÇ¾î¾ßÇÒ »óÅÂ
+    UShort         mKeyState;   // Keyì— ì„¤ì •ë˜ì–´ì•¼í•  ìƒíƒœ
 } sdnbKeyInfo;
 
 typedef struct sdnbConvertedKeyInfo
@@ -159,8 +159,8 @@ typedef struct sdnbConvertedKeyInfo
                                     &(aSmiValueInfo)->length,                                  \
                                     &(aSmiValueInfo)->value);
 
-// index segment Ã¹¹øÂ° ÆäÀÌÁö¿¡ ÀÖ´Â persistent information
-// runtime header »ý¼º½Ã¿¡ ÀÌ°ÍÀ» ÂüÁ¶ÇØ¼­ min, max°ª ¼¼ÆÃ
+// index segment ì²«ë²ˆì§¸ íŽ˜ì´ì§€ì— ìžˆëŠ” persistent information
+// runtime header ìƒì„±ì‹œì— ì´ê²ƒì„ ì°¸ì¡°í•´ì„œ min, maxê°’ ì„¸íŒ…
 typedef struct sdnbMeta
 {
     scPageID        mRootNode;
@@ -171,9 +171,9 @@ typedef struct sdnbMeta
     scPageID        mMaxNode;
 
     // FOR PROJ-1469
-    // mIsCreatedWithLogging : index build½Ã logging mode, FALSE : Nologging
-    // mNologgingCompletionLSN : index build½ÃÁ¡¿¡¼­ÀÇ LSN
-    // mIsConsistent : nologging index build¿¡¼­ consistent Ç¥½Ã¸¦ À§ÇØ
+    // mIsCreatedWithLogging : index buildì‹œ logging mode, FALSE : Nologging
+    // mNologgingCompletionLSN : index buildì‹œì ì—ì„œì˜ LSN
+    // mIsConsistent : nologging index buildì—ì„œ consistent í‘œì‹œë¥¼ ìœ„í•´
     // mIsCreatedWithForce : nologging force mode, TRUE : Force
     idBool          mIsCreatedWithLogging;
     smLSN           mNologgingCompletionLSN;
@@ -187,8 +187,8 @@ typedef struct sdnbMeta
 typedef struct sdnbIKey
 {
     scPageID       mRightChild;
-    scPageID       mRowPID;     // right childÀÇ Ã¹¹øÂ° Å°ÀÇ mRowPID
-    scSlotNum      mRowSlotNum; // right childÀÇ Ã¹¹øÂ° Å°ÀÇ mRowSlotNum
+    scPageID       mRowPID;     // right childì˜ ì²«ë²ˆì§¸ í‚¤ì˜ mRowPID
+    scSlotNum      mRowSlotNum; // right childì˜ ì²«ë²ˆì§¸ í‚¤ì˜ mRowSlotNum
 } sdnbIKey;
 
 #define SDNB_IKEY_HEADER_LEN ( ID_SIZEOF(scPageID) + ID_SIZEOF(scPageID) + ID_SIZEOF(scSlotNum) ) 
@@ -217,16 +217,16 @@ typedef struct sdnbIKey
 
 typedef struct sdnbLKey
 {
-    // °°Àº °ªÀ» °¡Áö´Â keyµéÀº mRowPID, mRowSlotNum¼øÀÌ µÊ
+    // ê°™ì€ ê°’ì„ ê°€ì§€ëŠ” keyë“¤ì€ mRowPID, mRowSlotNumìˆœì´ ë¨
     scPageID    mRowPID;
     scSlotNum   mRowSlotNum;
-    UChar       mTxInfo[2]; /* = { chainedCCTS (1bit),  // Create CTS°¡ chained CTS ÀÎÁö ¿©ºÎ.
+    UChar       mTxInfo[2]; /* = { chainedCCTS (1bit),  // Create CTSê°€ chained CTS ì¸ì§€ ì—¬ë¶€.
                              *     createCTS   (5bit),  // Create CTS No.
-                             *     duplicated  (1bit),  // Duplicated Key ÀÎÁö ¿©ºÎ.
-                             *     chainedLCTS (1bit),  // Limit CTS°¡ chained CTS ÀÎÁö ¿©ºÎ.
+                             *     duplicated  (1bit),  // Duplicated Key ì¸ì§€ ì—¬ë¶€.
+                             *     chainedLCTS (1bit),  // Limit CTSê°€ chained CTS ì¸ì§€ ì—¬ë¶€.
                              *     limitCTS    (5bit),  // Limit CTS No.
-                             *     state       (2bit),  // Key »óÅÂ
-                             *     txBoundType (1bit) } // Key Å¸ÀÔ( SDNB_KEY_TB_CTS, SDNB_KEY_TB_KEY )
+                             *     state       (2bit),  // Key ìƒíƒœ
+                             *     txBoundType (1bit) } // Key íƒ€ìž…( SDNB_KEY_TB_CTS, SDNB_KEY_TB_KEY )
                              */
 } sdnbLKey;
 
@@ -252,8 +252,8 @@ typedef struct sdnbLTxInfo
 #define SDNB_KEY_TB_CTS       (0)  // 'T'
 #define SDNB_KEY_TB_KEY       (1)  // 'K'
 
-// PROJ-1872 DiskIndex ÀúÀå±¸Á¶ ÃÖÀûÈ­
-// Bottom-up Build½Ã LKey ÇüÅÂ·Î Å°¸¦ ÀúÀåÇÑ´Ù.
+// PROJ-1872 DiskIndex ì €ìž¥êµ¬ì¡° ìµœì í™”
+// Bottom-up Buildì‹œ LKey í˜•íƒœë¡œ í‚¤ë¥¼ ì €ìž¥í•œë‹¤.
 #define SDNB_WRITE_LKEY( aRowPID, aRowSlotNum, aKey, aKeyLength, aLKey )      \
         ID_4_BYTE_ASSIGN( &((aLKey)->mRowPID),              &(aRowPID) );     \
         ID_2_BYTE_ASSIGN( &((aLKey)->mRowSlotNum),          &(aRowSlotNum) ); \
@@ -284,8 +284,8 @@ typedef struct sdnbLTxInfo
          idlOS::memcmp( &((aLKey)->mRowPID),      &((aKeyInfo)->mRowPID),     ID_SIZEOF(scPageID)  )==0) 
 
 /*
- * BUG-25226: [5.3.1 SN/SD] 30°³ ÀÌ»óÀÇ Æ®·£Àè¼Ç¿¡¼­ °¢°¢ ¹Ì¹Ý¿µ
- *            ·¹ÄÚµå°¡ 1°³ ÀÌ»óÀÎ °æ¿ì, allocCTS¸¦ ½ÇÆÐÇÕ´Ï´Ù.
+ * BUG-25226: [5.3.1 SN/SD] 30ê°œ ì´ìƒì˜ íŠ¸ëžœìž­ì…˜ì—ì„œ ê°ê° ë¯¸ë°˜ì˜
+ *            ë ˆì½”ë“œê°€ 1ê°œ ì´ìƒì¸ ê²½ìš°, allocCTSë¥¼ ì‹¤íŒ¨í•©ë‹ˆë‹¤.
  */
 typedef struct sdnbLKeyEx
 {
@@ -439,24 +439,24 @@ typedef struct sdnbMergeRunInfo
     sdnbKeyInfo        mRunKey;
 } sdnbMergeRunInfo;
 
-#define SDNB_IN_INIT            (0)   // 'I' /* ÆäÀÌÁö init »óÅÂ */
-#define SDNB_IN_USED            (1)   // 'U' /* Å°°¡ »ðÀÔµÇ¾î ÀÖ´Â »óÅÂ */
-#define SDNB_IN_EMPTY_LIST      (2)   // 'E' /* »èÁ¦µÈ Å°¸¸ Á¸ÀçÇÏ´Â »óÅÂ */
-#define SDNB_IN_FREE_LIST       (3)   // 'F' /* DEAD Å°¸¸ Á¸ÀçÇÏ´Â »óÅÂ */
+#define SDNB_IN_INIT            (0)   // 'I' /* íŽ˜ì´ì§€ init ìƒíƒœ */
+#define SDNB_IN_USED            (1)   // 'U' /* í‚¤ê°€ ì‚½ìž…ë˜ì–´ ìžˆëŠ” ìƒíƒœ */
+#define SDNB_IN_EMPTY_LIST      (2)   // 'E' /* ì‚­ì œëœ í‚¤ë§Œ ì¡´ìž¬í•˜ëŠ” ìƒíƒœ */
+#define SDNB_IN_FREE_LIST       (3)   // 'F' /* DEAD í‚¤ë§Œ ì¡´ìž¬í•˜ëŠ” ìƒíƒœ */
 
 #define SDNB_TBK_MAX_CACHE      (2)
 #define SDNB_TBK_CACHE_NULL     (0xFFFF)
 
 typedef struct sdnbNodeHdr
 {
-    scPageID    mLeftmostChild;     /* Ã¹¹øÂ° ÀÚ½ÄNodeÀÇ PID. Leaf Node´Â Ç×»ó 0. (ÀÌ°ªÀ¸·Î Internal/Leaf ±¸ºÐÇÔ) */
-    scPageID    mNextEmptyNode;     /* Node°¡ empty node list¿¡ ´Þ·ÈÀ»¶§ »ç¿ë */
-    UShort      mHeight;            /* Leaf NodeÀÌ¸é 0, À­ node·Î °¥¼ö·Ï 1,2,3,... Áõ°¡ */
-    UShort      mUnlimitedKeyCount; /* key »óÅÂ°¡ SDNB_KEY_UNSTABLE ¶Ç´Â SDNB_KEY_STABLE ÀÎ keyÀÇ °¹¼ö */
-    UShort      mTotalDeadKeySize;  /* key »óÅÂ°¡ SDNB_KEY_DEAD ÀÎ keyÀÇ »çÀÌÁî ÇÕ°è */
-    UShort      mTBKCount;          /* Node¿¡ Æ÷ÇÔµÈ TBK °¹¼ö */
-    UShort      mDummy[SDNB_TBK_MAX_CACHE]; /* BUG-44973 »ç¿ëÇÏÁö ¾ÊÀ½ */
-    UChar       mState;             /* NodeÀÇ »óÅÂ ( SDNB_IN_USED, SDNB_IN_EMPTY_LIST, SDNB_IN_FREE_LIST ) */
+    scPageID    mLeftmostChild;     /* ì²«ë²ˆì§¸ ìžì‹Nodeì˜ PID. Leaf NodeëŠ” í•­ìƒ 0. (ì´ê°’ìœ¼ë¡œ Internal/Leaf êµ¬ë¶„í•¨) */
+    scPageID    mNextEmptyNode;     /* Nodeê°€ empty node listì— ë‹¬ë ¸ì„ë•Œ ì‚¬ìš© */
+    UShort      mHeight;            /* Leaf Nodeì´ë©´ 0, ìœ— nodeë¡œ ê°ˆìˆ˜ë¡ 1,2,3,... ì¦ê°€ */
+    UShort      mUnlimitedKeyCount; /* key ìƒíƒœê°€ SDNB_KEY_UNSTABLE ë˜ëŠ” SDNB_KEY_STABLE ì¸ keyì˜ ê°¯ìˆ˜ */
+    UShort      mTotalDeadKeySize;  /* key ìƒíƒœê°€ SDNB_KEY_DEAD ì¸ keyì˜ ì‚¬ì´ì¦ˆ í•©ê³„ */
+    UShort      mTBKCount;          /* Nodeì— í¬í•¨ëœ TBK ê°¯ìˆ˜ */
+    UShort      mDummy[SDNB_TBK_MAX_CACHE]; /* BUG-44973 ì‚¬ìš©í•˜ì§€ ì•ŠìŒ */
+    UChar       mState;             /* Nodeì˜ ìƒíƒœ ( SDNB_IN_USED, SDNB_IN_EMPTY_LIST, SDNB_IN_FREE_LIST ) */
     UChar       mPadding[3];
 } sdnbNodeHdr;
 
@@ -468,17 +468,17 @@ typedef struct sdnbColumn
 
     smiCopyDiskColumnValueFunc    mCopyDiskColumnFunc;
     smiIsNullFunc                 mIsNull;
-    /* PROJ-1872 Disk Index ÀúÀå±¸Á¶ ÃÖÀûÈ­
-     * MakeKeyFromValueRow½Ã, Row´Â Length-KnownÅ¸ÀÔÀÇ NullÀ» 1Byte·Î ¾ÐÃà
-     * ÇÏ¿© Ç¥ÇöÇÏ±â ¶§¹®¿¡ NullValue¸¦ ¾ËÁö ¸øÇÑ´Ù. µû¶ó¼­ ÀÌ NullÀ» °¡Á®
-     * ¿À±â À§ÇØ mNull ÇÔ¼ö¸¦ ¼³Á¤ÇÑ´Ù. */
+    /* PROJ-1872 Disk Index ì €ìž¥êµ¬ì¡° ìµœì í™”
+     * MakeKeyFromValueRowì‹œ, RowëŠ” Length-Knowníƒ€ìž…ì˜ Nullì„ 1Byteë¡œ ì••ì¶•
+     * í•˜ì—¬ í‘œí˜„í•˜ê¸° ë•Œë¬¸ì— NullValueë¥¼ ì•Œì§€ ëª»í•œë‹¤. ë”°ë¼ì„œ ì´ Nullì„ ê°€ì ¸
+     * ì˜¤ê¸° ìœ„í•´ mNull í•¨ìˆ˜ë¥¼ ì„¤ì •í•œë‹¤. */
     smiNullFunc                   mNull;
 
-    /*BUG-24449 Å°¸¶´Ù Header±æÀÌ°¡ ´Ù¸¦ ¼ö ÀÖÀ½ */
+    /*BUG-24449 í‚¤ë§ˆë‹¤ Headerê¸¸ì´ê°€ ë‹¤ë¥¼ ìˆ˜ ìžˆìŒ */
     UInt                          mMtdHeaderLength;
 
-    smiColumn                     mKeyColumn;       // Key¿¡¼­ÀÇ column info
-    smiColumn                     mVRowColumn;      // fetchµÈ RowÀÇ column info
+    smiColumn                     mKeyColumn;       // Keyì—ì„œì˜ column info
+    smiColumn                     mVRowColumn;      // fetchëœ Rowì˜ column info
 }sdnbColumn;
 
 #define SDNB_MIN_KEY_VALUE_LENGTH    (1)
@@ -514,7 +514,7 @@ typedef struct sdnbStatistic
     (dest)->mReadPageCount += (src)->mReadPageCount;   \
 }
 
-// BUG-18201 : Memory/Disk Index Åë°èÄ¡
+// BUG-18201 : Memory/Disk Index í†µê³„ì¹˜
 #define SDNB_ADD_STATISTIC( dest, src ) \
 {                                                                           \
     (dest)->mKeyCompareCount    += (src)->mKeyCompareCount;                 \
@@ -532,8 +532,8 @@ typedef struct sdnbStatistic
 
 /* BUG-31845 [sm-disk-index] Debugging information is needed for 
  * PBT when fail to check visibility using DRDB Index.
- * ÀÌ ÀÚ·á±¸Á¶°¡ º¯°æµÉ°æ¿ì, sdnbBTree::dumpRuntimeHeader
- * ¿ª½Ã ¼öÁ¤µÇ¾î¾ß ÇÕ´Ï´Ù. */
+ * ì´ ìžë£Œêµ¬ì¡°ê°€ ë³€ê²½ë ê²½ìš°, sdnbBTree::dumpRuntimeHeader
+ * ì—­ì‹œ ìˆ˜ì •ë˜ì–´ì•¼ í•©ë‹ˆë‹¤. */
 typedef struct sdnbHeader
 {
     SDN_RUNTIME_PARAMETERS
@@ -547,7 +547,7 @@ typedef struct sdnbHeader
     ULong                mFreeNodeCnt;
     scPageID             mFreeNodeHead;
 
-    /* À§ °ªµé¿¡ ´ëÇØ Mtx RollbackÀÌ ÀÏ¾î³µÀ»¶§ º¹±¸ÇÏ±â À§ÇÑ ¹é¾÷º» */
+    /* ìœ„ ê°’ë“¤ì— ëŒ€í•´ Mtx Rollbackì´ ì¼ì–´ë‚¬ì„ë•Œ ë³µêµ¬í•˜ê¸° ìœ„í•œ ë°±ì—…ë³¸ */
     scPageID             mRootNode4MtxRollback;
     scPageID             mEmptyNodeHead4MtxRollback;
     scPageID             mEmptyNodeTail4MtxRollback;
@@ -557,35 +557,35 @@ typedef struct sdnbHeader
     scPageID             mFreeNodeHead4MtxRollback;
 
 
-    // PROJ-1617 STMT¹× AGER·Î ÀÎÇÑ Åë°èÁ¤º¸ ±¸Ãà
+    // PROJ-1617 STMTë° AGERë¡œ ì¸í•œ í†µê³„ì •ë³´ êµ¬ì¶•
     sdnbStatistic        mDMLStat;
     sdnbStatistic        mQueryStat;
 
     /* Proj-1827
-     * ÇöÀç ÀÎµ¦½º ÀúÀå ±¸Á¶´Â ÃÖ´ëÇÑ ÀúÀåÈ¿À²À» ³ôÀÌ±â À§ÇØ 
-     * ÀÎµ¦½º ·±Å¸ÀÓ Çì´õÀÇ Á¤º¸¸¦ ÀÌ¿ëÇÏµµ·Ï ¼³°èµÇ¾î ÀÖ´Ù.
-     * ÀÎµ¦½º ·Î±ë °úÁ¤¿¡¼­´Â ·±Å¸ÀÓ Çì´õ Á¤º¸¸¦ ¾Ë¼ö ¾ø±â 
-     * ¶§¹®¿¡ Å° ±æÀÌ¸¦ °è»êÇÒ ¼ö ¾ø´Ù.µû¶ó¼­ ÀÎµ¦½º Å° ±æÀÌ
-     * ¸¦ °è»êÇÏ±â À§ÇÑ ColLenInfo¸¦ Á¦°øÇØ¾ß ÇÑ´Ù. */
+     * í˜„ìž¬ ì¸ë±ìŠ¤ ì €ìž¥ êµ¬ì¡°ëŠ” ìµœëŒ€í•œ ì €ìž¥íš¨ìœ¨ì„ ë†’ì´ê¸° ìœ„í•´ 
+     * ì¸ë±ìŠ¤ ëŸ°íƒ€ìž„ í—¤ë”ì˜ ì •ë³´ë¥¼ ì´ìš©í•˜ë„ë¡ ì„¤ê³„ë˜ì–´ ìžˆë‹¤.
+     * ì¸ë±ìŠ¤ ë¡œê¹… ê³¼ì •ì—ì„œëŠ” ëŸ°íƒ€ìž„ í—¤ë” ì •ë³´ë¥¼ ì•Œìˆ˜ ì—†ê¸° 
+     * ë•Œë¬¸ì— í‚¤ ê¸¸ì´ë¥¼ ê³„ì‚°í•  ìˆ˜ ì—†ë‹¤.ë”°ë¼ì„œ ì¸ë±ìŠ¤ í‚¤ ê¸¸ì´
+     * ë¥¼ ê³„ì‚°í•˜ê¸° ìœ„í•œ ColLenInfoë¥¼ ì œê³µí•´ì•¼ í•œë‹¤. */
     sdnbColLenInfoList   mColLenInfoList;
     
     sdnbColumn         * mColumnFence;
     sdnbColumn         * mColumns; //fix BUG-22840
 
     /* BUG-22946 
-     * index key¸¦ insertÇÏ·Á¸é row·ÎºÎÅÍ index key column value¸¦
-     * fetchÇØ¿Í¾ß ÇÑ´Ù.
-     *   row·ÎºÎÅÍ column Á¤º¸¸¦ fetchÇÏ·Á¸é fetch column list¸¦ ³»·Á
-     * ÁÖ¾î¾ß ÇÏ´Âµ¥, insert key insert ÇÒ¶§¸¶´Ù fetch column list¸¦
-     * ±¸¼ºÇÏ¸é ¼º´ÉÀúÇÏ°¡ ¹ß»ýÇÑ´Ù.
-     *   ±×·¡¼­ create index½Ã¿¡ fetch column list¸¦ ±¸¼ºÇÏ°í sdnb-
-     * Header¿¡ ¸Å´Þ¾ÆµÎµµ·Ï ¼öÁ¤ÇÑ´Ù. */
+     * index keyë¥¼ insertí•˜ë ¤ë©´ rowë¡œë¶€í„° index key column valueë¥¼
+     * fetchí•´ì™€ì•¼ í•œë‹¤.
+     *   rowë¡œë¶€í„° column ì •ë³´ë¥¼ fetchí•˜ë ¤ë©´ fetch column listë¥¼ ë‚´ë ¤
+     * ì£¼ì–´ì•¼ í•˜ëŠ”ë°, insert key insert í• ë•Œë§ˆë‹¤ fetch column listë¥¼
+     * êµ¬ì„±í•˜ë©´ ì„±ëŠ¥ì €í•˜ê°€ ë°œìƒí•œë‹¤.
+     *   ê·¸ëž˜ì„œ create indexì‹œì— fetch column listë¥¼ êµ¬ì„±í•˜ê³  sdnb-
+     * Headerì— ë§¤ë‹¬ì•„ë‘ë„ë¡ ìˆ˜ì •í•œë‹¤. */
     smiFetchColumnList * mFetchColumnListToMakeKey;
 
-    /* CommonPersistentHeader´Â Alter¹®¿¡ µû¶ó °è¼Ó ¹Ù²î±â ¶§¹®¿¡,
-     * Pointer·Î ¸µÅ©¸¦ °É¾îµÑ ¼ö ¾ø´Ù. */
+    /* CommonPersistentHeaderëŠ” Alterë¬¸ì— ë”°ë¼ ê³„ì† ë°”ë€Œê¸° ë•Œë¬¸ì—,
+     * Pointerë¡œ ë§í¬ë¥¼ ê±¸ì–´ë‘˜ ìˆ˜ ì—†ë‹¤. */
 
-    // TODO: ÃßÈÄ SdnHeader¿¡ ³Ö±â
+    // TODO: ì¶”í›„ SdnHeaderì— ë„£ê¸°
     UInt                 mSmoNoAtomicA;
     UInt                 mSmoNoAtomicB;
 } sdnbHeader;
@@ -605,8 +605,8 @@ typedef struct sdnbKeyArray
     UShort           mSeq;
 } sdnbKeyArray;
 
-/* PROJ-1628¿¡¼­ mNextNode¿Í mSlotSize°¡ Ãß°¡µÊ. ¼³Á¤Àº Ç×»ó ÇÏÁö¸¸
-   Optimistic¿¡¼­´Â »ç¿ëµÇÁö ¾ÊÀ¸¸ç, Pessimistic¿¡¼­¸¸ »ç¿ëµÊ.
+/* PROJ-1628ì—ì„œ mNextNodeì™€ mSlotSizeê°€ ì¶”ê°€ë¨. ì„¤ì •ì€ í•­ìƒ í•˜ì§€ë§Œ
+   Optimisticì—ì„œëŠ” ì‚¬ìš©ë˜ì§€ ì•Šìœ¼ë©°, Pessimisticì—ì„œë§Œ ì‚¬ìš©ë¨.
 */
 typedef struct sdnbStackSlot
 {
@@ -629,27 +629,27 @@ typedef struct sdnbRowCache
 {
     scPageID   mRowPID;
     scSlotNum  mRowSlotNum;
-    scOffset   mOffset;  // leaf node³»¿¡¼­ÀÇ slot offset
+    scOffset   mOffset;  // leaf nodeë‚´ì—ì„œì˜ slot offset
 } sdnbRowCache;
 
 /* BUG-31845 [sm-disk-index] Debugging information is needed for 
  * PBT when fail to check visibility using DRDB Index.
- * ÀÌ ÀÚ·á±¸Á¶°¡ º¯°æµÉ°æ¿ì, sdnbBTree::dumpIterator
- * ¿ª½Ã ¼öÁ¤µÇ¾î¾ß ÇÕ´Ï´Ù. */
+ * ì´ ìžë£Œêµ¬ì¡°ê°€ ë³€ê²½ë ê²½ìš°, sdnbBTree::dumpIterator
+ * ì—­ì‹œ ìˆ˜ì •ë˜ì–´ì•¼ í•©ë‹ˆë‹¤. */
 typedef struct sdnbIterator
 {
     smSCN       mSCN;
     smSCN       mInfinite;
     void*       mTrans;
     void*       mTable;
-    SChar*      mCurRecPtr;  // MRDB scan module¿¡¼­¸¸ Á¤ÀÇÇØ¼­ ¾²µµ·Ï ¼öÁ¤?
+    SChar*      mCurRecPtr;  // MRDB scan moduleì—ì„œë§Œ ì •ì˜í•´ì„œ ì“°ë„ë¡ ìˆ˜ì •?
     SChar*      mLstFetchRecPtr;
     scGRID      mRowGRID;
     smTID       mTID;
     UInt        mFlag;
 
     smiCursorProperties  * mProperties;
-    /* smiIterator °øÅë º¯¼ö ³¡ */
+    /* smiIterator ê³µí†µ ë³€ìˆ˜ ë */
 
     void*               mIndex;
     const smiRange *    mKeyRange;
@@ -676,7 +676,7 @@ typedef struct sdnbIterator
 } sdnbIterator;
 
 /*  TASK-4990 changing the method of collecting index statistics
- * ¼öµ¿ Åë°èÁ¤º¸ ¼öÁý ±â´É */
+ * ìˆ˜ë™ í†µê³„ì •ë³´ ìˆ˜ì§‘ ê¸°ëŠ¥ */
 typedef struct sdnbStatArgument
 {
     idvSQL                        * mStatistics;
@@ -687,23 +687,23 @@ typedef struct sdnbStatArgument
     IDE_RC  mResult;
     SLong   mClusteringFactor;  /* ClusteringFactor */
     SLong   mNumDist;           /* NumberOfDistinctValue(Cardinality) */
-    SLong   mKeyCount;          /* ºÐ¼®ÇÑ Å° °³¼ö */
-    UInt    mAnalyzedPageCount; /* ½ÇÁ¦·Î ºÐ¼®ÇÑ ÆäÀÌÁö °³¼ö */
-    UInt    mSampledPageCount;  /* Sample·Î ¼±Á¤µÈ ÆäÀÌÁö °³¼ö */
+    SLong   mKeyCount;          /* ë¶„ì„í•œ í‚¤ ê°œìˆ˜ */
+    UInt    mAnalyzedPageCount; /* ì‹¤ì œë¡œ ë¶„ì„í•œ íŽ˜ì´ì§€ ê°œìˆ˜ */
+    UInt    mSampledPageCount;  /* Sampleë¡œ ì„ ì •ëœ íŽ˜ì´ì§€ ê°œìˆ˜ */
 
-    SLong   mMetaSpace;     /* PageHeader, ExtDirµî Meta °ø°£ */
-    SLong   mUsedSpace;     /* ÇöÀç »ç¿ëÁßÀÎ °ø°£ */
-    SLong   mAgableSpace;   /* ³ªÁß¿¡ Aging°¡´ÉÇÑ °ø°£ */
-    SLong   mFreeSpace;     /* Data»ðÀÔÀÌ °¡´ÉÇÑ ºó °ø°£ */
+    SLong   mMetaSpace;     /* PageHeader, ExtDirë“± Meta ê³µê°„ */
+    SLong   mUsedSpace;     /* í˜„ìž¬ ì‚¬ìš©ì¤‘ì¸ ê³µê°„ */
+    SLong   mAgableSpace;   /* ë‚˜ì¤‘ì— Agingê°€ëŠ¥í•œ ê³µê°„ */
+    SLong   mFreeSpace;     /* Dataì‚½ìž…ì´ ê°€ëŠ¥í•œ ë¹ˆ ê³µê°„ */
 } sdnbStatArgument;
 
 
-/* BUG-44973 TBK STAMPING LOGGING¿ë */
+/* BUG-44973 TBK STAMPING LOGGINGìš© */
 typedef struct sdnbTBKStamping
 {
-    scOffset mSlotOffset; /* TBK StampingµÈ keyÀÇ slot offset */
-    UChar    mCSCN;       /* CreateCSCN¿¡ ÀÇÇØ TBK Stamping µÊ(1) */
-    UChar    mLSCN;       /* LimitCSCN¿¡ ÀÇÇØ TBK Stamping µÊ(1) */
+    scOffset mSlotOffset; /* TBK Stampingëœ keyì˜ slot offset */
+    UChar    mCSCN;       /* CreateCSCNì— ì˜í•´ TBK Stamping ë¨(1) */
+    UChar    mLSCN;       /* LimitCSCNì— ì˜í•´ TBK Stamping ë¨(1) */
 } sdnbTBKStamping;
 
 #define SDNB_IS_TBK_STAMPING_WITH_CSCN( aTBKStamping )  ( ( (UChar)((aTBKStamping)->mCSCN) == ((UChar)1) ) ? ID_TRUE : ID_FALSE )

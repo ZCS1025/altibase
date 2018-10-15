@@ -19,7 +19,7 @@
  *
  * $Id: sdpscED.h 82075 2018-01-17 06:39:52Z jina.kim $
  *
- * º» ÆÄÀÏÀº Circular-List Managed SegmentÀÇ ExtDir Page Çì´õÆÄÀÏÀÌ´Ù.
+ * ë³¸ íŒŒì¼ì€ Circular-List Managed Segmentì˜ ExtDir Page í—¤ë”íŒŒì¼ì´ë‹¤.
  *
  ***********************************************************************/
 
@@ -39,7 +39,7 @@ public:
                                     scPageID            aCurExtDir,
                                     sdpscExtDirInfo   * aCurExtDirInfo );
 
-    /* ExtDir Page »ı¼º ¹× ÃÊ±âÈ­ */
+    /* ExtDir Page ìƒì„± ë° ì´ˆê¸°í™” */
     static IDE_RC createAndInitPage( idvSQL    * aStatistics,
                                      sdrMtx    * aMtx,
                                      scSpaceID   aSpaceID,
@@ -48,24 +48,24 @@ public:
                                      UShort      aMaxExtCntInExtDir,
                                      UChar    ** aPagePtr );
 
-    /* ExtDir Page Control Header ÃÊ±âÈ­ ¹× write logging */
+    /* ExtDir Page Control Header ì´ˆê¸°í™” ë° write logging */
     static IDE_RC logAndInitCntlHdr( sdrMtx               * aMtx,
                                      sdpscExtDirCntlHdr   * aCntlHdr,
                                      scPageID               aNxtExtDirPID,
                                      UShort                 aMaxExtCnt );
 
-    /* ExtDir Page Control Header ÃÊ±âÈ­ */
+    /* ExtDir Page Control Header ì´ˆê¸°í™” */
     static void  initCntlHdr( sdpscExtDirCntlHdr * aCntlHdr,
                               scPageID             aNxtExtDir,
                               scOffset             aMapOffset,
                               UShort               aMaxExtCnt );
 
-    /* Segment Header·ÎºÎÅÍ ¸¶Áö¸· ExtDir¿¡ ±â·Ï */
+    /* Segment Headerë¡œë¶€í„° ë§ˆì§€ë§‰ ExtDirì— ê¸°ë¡ */
     static IDE_RC logAndAddExtDesc( sdrMtx             * aMtx,
                                     sdpscExtDirCntlHdr * aCntlHdr,
                                     sdpscExtDesc       * aExtDesc );
 
-    /* Á÷Á¢ Extent·ÎºÎÅÍ »õ·Î¿î ÆäÀÌÁö¸¦ ÇÒ´çÇÑ´Ù. */
+    /* ì§ì ‘ Extentë¡œë¶€í„° ìƒˆë¡œìš´ í˜ì´ì§€ë¥¼ í• ë‹¹í•œë‹¤. */
     static IDE_RC allocNewPageInExt( idvSQL         * aStatistics,
                                      sdrMtx         * aMtx,
                                      scSpaceID        aSpaceID,
@@ -105,12 +105,12 @@ public:
                                   scSpaceID    aSpaceID,
                                   scPageID     aExtDir );
     
-    /* extent map¿¡ extslotÀ» ±â·ÏÇÑ´Ù. */
+    /* extent mapì— extslotì„ ê¸°ë¡í•œë‹¤. */
     static void addExtDesc( sdpscExtDirCntlHdr * aCntlHdr,
                             SShort               aLstDescIdx,
                             sdpscExtDesc       * aExtDesc );
 
-    // Write ¸ñÀûÀ¸·Î ExtDir ÆäÀÌÁöÀÇ Control Header¸¦ fixÇÑ´Ù.
+    // Write ëª©ì ìœ¼ë¡œ ExtDir í˜ì´ì§€ì˜ Control Headerë¥¼ fixí•œë‹¤.
     static IDE_RC fixAndGetCntlHdr4Write(
                       idvSQL              * aStatistics,
                       sdrMtx              * aMtx,
@@ -118,7 +118,7 @@ public:
                       scPageID              aExtDirPID,
                       sdpscExtDirCntlHdr ** aCntlHdr );
 
-    // Read ¸ñÀûÀ¸·Î ExtDir ÆäÀÌÁöÀÇ Control Header¸¦ fixÇÑ´Ù.
+    // Read ëª©ì ìœ¼ë¡œ ExtDir í˜ì´ì§€ì˜ Control Headerë¥¼ fixí•œë‹¤.
     static IDE_RC fixAndGetCntlHdr4Read(
                       idvSQL              * aStatistics,
                       sdrMtx              * aMtx,
@@ -126,25 +126,25 @@ public:
                       scPageID              aExtDirPID,
                       sdpscExtDirCntlHdr ** aCntlHdr );
 
-    // Control Header°¡ ¼ÓÇØÀÖ´Â ÆäÀÌÁö¸¦ releaseÇÑ´Ù.
+    // Control Headerê°€ ì†í•´ìˆëŠ” í˜ì´ì§€ë¥¼ releaseí•œë‹¤.
     static IDE_RC releaseCntlHdr( idvSQL              * aStatistics,
                                   sdpscExtDirCntlHdr  * aCntlHdr );
 
 
-    /* [ INTERFACE ] ´ÙÀ½ ExtDescÀÇ RID¸¦ ¹İÈ¯ÇÑ´Ù. */
+    /* [ INTERFACE ] ë‹¤ìŒ ExtDescì˜ RIDë¥¼ ë°˜í™˜í•œë‹¤. */
     static IDE_RC getNxtExtRID( idvSQL       *aStatistics,
                                 scSpaceID     aSpaceID,
                                 scPageID      aSegHdrPID,
                                 sdRID         aCurrExtRID,
                                 sdRID        *aNxtExtRID );
 
-    /* [ INTERFACE ] Extent Á¤º¸¸¦ ¹İÈ¯ÇÑ´Ù. */
+    /* [ INTERFACE ] Extent ì •ë³´ë¥¼ ë°˜í™˜í•œë‹¤. */
     static IDE_RC getExtInfo( idvSQL       *aStatistics,
                               scSpaceID     aSpaceID,
                               sdRID         aExtRID,
                               sdpExtInfo   *aExtInfo );
 
-    /* [ INTERFACE ] Sequential Scan½Ã ´ÙÀ½ ÆäÀÌÁö ¹İÈ¯ */
+    /* [ INTERFACE ] Sequential Scanì‹œ ë‹¤ìŒ í˜ì´ì§€ ë°˜í™˜ */
     static IDE_RC getNxtAllocPage( idvSQL           * aStatistics,
                                    scSpaceID          aSpaceID,
                                    sdpSegInfo       * aSegInfo,
@@ -164,8 +164,8 @@ public:
 
     /* BUG-31055 Can not reuse undo pages immediately after it is used to 
      *           aborted transaction */
-    /* [ INTERFACE ] ExtentµéÀ» Tablespace·Î ¹İÈ¯ÇÔ.
-     * AbortµÈ TransactionÀÌ »ç¿ëÇÑ ExtentµéÀ» Áï½Ã ÀçÈ°¿ëÇÏ±â À§ÇÔ. */
+    /* [ INTERFACE ] Extentë“¤ì„ Tablespaceë¡œ ë°˜í™˜í•¨.
+     * Abortëœ Transactionì´ ì‚¬ìš©í•œ Extentë“¤ì„ ì¦‰ì‹œ ì¬í™œìš©í•˜ê¸° ìœ„í•¨. */
     static IDE_RC shrinkExts( idvSQL            * aStatistics,
                               scSpaceID           aSpaceID,
                               scPageID            aSegPID,
@@ -174,9 +174,9 @@ public:
                               sdpFreeExtDirType   aFreeListIdx,
                               sdRID               aFstExtRID,
                               sdRID               aLstExtRID );
-    /* BUG-42975 undo tablespace¸¦ undo segment°¡ ÀüºÎ »ç¿ëÇÏ¸é tss segment°¡ 
-                 È®ÀåÀ» ÇÒ¼ö°¡ ¾ø´Ù. ÀÌ °æ¿ì undo segment¿¡¼­ stealÀ» ÇØ¾ß ÇÏ¸ç
-                 stealÇÑ extCnt °¡ ExtDir¿¡¼­ °ü¸®ÇÏ´Â ExtCntº¸´Ù Å©¸é Å«°æ¿ì ExtDirÀ» shrink ÇÑ´Ù.*/ 
+    /* BUG-42975 undo tablespaceë¥¼ undo segmentê°€ ì „ë¶€ ì‚¬ìš©í•˜ë©´ tss segmentê°€ 
+                 í™•ì¥ì„ í• ìˆ˜ê°€ ì—†ë‹¤. ì´ ê²½ìš° undo segmentì—ì„œ stealì„ í•´ì•¼ í•˜ë©°
+                 stealí•œ extCnt ê°€ ExtDirì—ì„œ ê´€ë¦¬í•˜ëŠ” ExtCntë³´ë‹¤ í¬ë©´ í°ê²½ìš° ExtDirì„ shrink í•œë‹¤.*/ 
     static IDE_RC shrinkExtDir( idvSQL                * aStatistics,
                                 sdrMtx                * aMtx,
                                 scSpaceID               aSpaceID,
@@ -188,7 +188,7 @@ public:
                                  sdRID           aExtRID,
                                  smSCN         * aTransBSCN );
 
-    /* ExtDir ÆäÀÌÁöÀÇ map ptrÀ» ¹İÈ¯ÇÑ´Ù. */
+    /* ExtDir í˜ì´ì§€ì˜ map ptrì„ ë°˜í™˜í•œë‹¤. */
     static inline sdpscExtDirMap * getMapPtr( sdpscExtDirCntlHdr * aCntlHdr );
 
     static inline SShort calcOffset2DescIdx(
@@ -199,10 +199,10 @@ public:
                                        sdpscExtDirCntlHdr * aCntlHdr,
                                        SShort               aExtDescIdx );
 
-    /* ExtDir Control HeaderÀÇ Ptr ¹İÈ¯ */
+    /* ExtDir Control Headerì˜ Ptr ë°˜í™˜ */
     static inline sdpscExtDirCntlHdr * getHdrPtr( UChar   * aPagePtr );
 
-    /* ExtDir ÆäÀÌÁö¿¡¼­ÀÇ °¡¿ëÇÑ ExtDesc °³¼ö ¹İÈ¯ */
+    /* ExtDir í˜ì´ì§€ì—ì„œì˜ ê°€ìš©í•œ ExtDesc ê°œìˆ˜ ë°˜í™˜ */
     static inline UShort  getFreeDescCnt( sdpscExtDirCntlHdr * aCntlHdr );
 
     static void setLatestCSCN( sdpscExtDirCntlHdr * aCntlHdr,
@@ -223,17 +223,17 @@ public:
 
 private:
 
-    /* ExtDir¿¡ ExtDescÀ» ±â·ÏÇÑ´Ù. */
+    /* ExtDirì— ExtDescì„ ê¸°ë¡í•œë‹¤. */
     static void addExtDescToMap( sdpscExtDirMap  * aMapPtr,
                                  SShort            aLstIdx,
                                  sdpscExtDesc    * aExtDesc );
 
-    /* Extent¿¡¼­ ÆäÀÌÁö¸¦ ÇÒ´çÇÒ ¼ö ÀÖ´ÂÁö ¿©ºÎ¸¦ ¹İÈ¯ÇÑ´Ù. */
+    /* Extentì—ì„œ í˜ì´ì§€ë¥¼ í• ë‹¹í•  ìˆ˜ ìˆëŠ”ì§€ ì—¬ë¶€ë¥¼ ë°˜í™˜í•œë‹¤. */
     static inline idBool isFreePIDInExt( UInt         aPageCntInExt,
                                          scPageID     aFstPIDOfAllocExt,
                                          scPageID     aLstAllocPageID );
 
-    /* ´ÙÀ½ ExtDescÀÇ À§Ä¡¸¦ ¹İÈ¯ÇÑ´Ù. */
+    /* ë‹¤ìŒ ExtDescì˜ ìœ„ì¹˜ë¥¼ ë°˜í™˜í•œë‹¤. */
     static inline void getNxtExt( sdpscExtDirCntlHdr  * aExtDirCntlHdr,
                                   sdRID                 aCurExtRID,
                                   sdRID               * aNxtExtRID,
@@ -287,7 +287,7 @@ inline idBool sdpscExtDir::isExeedShrinkThreshold( sdpscSegCache * aSegCache )
             sSizeThreshold = smuProperty::getUDSegSizeShrinkThreshold();
             break;
             // BUG-27329 CodeSonar::Uninitialized Variable (2)
-            // SDP_SEG_TYPE_TSS, SDP_SEG_TYPE_UNDO ÀÌ¿ÜÀÇ °æ¿ì´Â ¿Ã ¼ö ¾ø´Ù.
+            // SDP_SEG_TYPE_TSS, SDP_SEG_TYPE_UNDO ì´ì™¸ì˜ ê²½ìš°ëŠ” ì˜¬ ìˆ˜ ì—†ë‹¤.
             IDE_ASSERT(0);
         default:
             break;
@@ -301,7 +301,7 @@ inline idBool sdpscExtDir::isExeedShrinkThreshold( sdpscSegCache * aSegCache )
     return ID_FALSE;
 }
 
-/* µ¿ÀÏÇÑ ExtDir¿¡¼­ ´ÙÀ½ ExtDescÀÇ À§Ä¡¸¦ ¹İÈ¯ÇÑ´Ù. */
+/* ë™ì¼í•œ ExtDirì—ì„œ ë‹¤ìŒ ExtDescì˜ ìœ„ì¹˜ë¥¼ ë°˜í™˜í•œë‹¤. */
 inline void sdpscExtDir::getNxtExt( sdpscExtDirCntlHdr  * aExtDirCntlHdr,
                                     sdRID                 aCurExtRID,
                                     sdRID               * aNxtExtRID,
@@ -320,8 +320,8 @@ inline void sdpscExtDir::getNxtExt( sdpscExtDirCntlHdr  * aExtDirCntlHdr,
 
     if ( sIdx == (aExtDirCntlHdr->mExtCnt - 1))
     {
-        // ¸¶Áö¸· DescÀÌ¹Ç·Î ÇöÀç ExtDir ÆäÀÌÁö¿¡¼­´Â
-        // ´ÙÀ½ ExtDescÀÌ Á¸ÀçÇÏÁö ¾Ê´Â´Ù.
+        // ë§ˆì§€ë§‰ Descì´ë¯€ë¡œ í˜„ì¬ ExtDir í˜ì´ì§€ì—ì„œëŠ”
+        // ë‹¤ìŒ ExtDescì´ ì¡´ì¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
         sNxtExtRID   = SD_NULL_RID;
     }
     else
@@ -329,7 +329,7 @@ inline void sdpscExtDir::getNxtExt( sdpscExtDirCntlHdr  * aExtDirCntlHdr,
         sNxtExtDescPtr = getExtDescByIdx( aExtDirCntlHdr, sIdx+1 );
         sNxtExtRID     = sdpPhyPage::getRIDFromPtr( sNxtExtDescPtr );
 
-        *aNxtExtDesc   = *sNxtExtDescPtr; // copy ÇØÁØ´Ù.
+        *aNxtExtDesc   = *sNxtExtDescPtr; // copy í•´ì¤€ë‹¤.
     }
 
     *aNxtExtRID  = sNxtExtRID;
@@ -338,7 +338,7 @@ inline void sdpscExtDir::getNxtExt( sdpscExtDirCntlHdr  * aExtDirCntlHdr,
 }
 
 
-/* ExtDir ÆäÀÌÁö¿¡¼­ ExtDescÀÇ index¸¦ °è»êÇÑ´Ù. */
+/* ExtDir í˜ì´ì§€ì—ì„œ ExtDescì˜ indexë¥¼ ê³„ì‚°í•œë‹¤. */
 inline SShort sdpscExtDir::calcOffset2DescIdx( sdpscExtDirCntlHdr * aCntlHdr,
                                                scOffset             aOffset )
 {
@@ -355,7 +355,7 @@ inline SShort sdpscExtDir::calcOffset2DescIdx( sdpscExtDirCntlHdr * aCntlHdr,
     return (SShort)((aOffset - sMapOffset) / ID_SIZEOF(sdpscExtDesc));
 }
 
-/* ExtDir ÆäÀÌÁö¿¡¼­ ExtDescÀÇ OffsetÀ» °è»êÇÑ´Ù. */
+/* ExtDir í˜ì´ì§€ì—ì„œ ExtDescì˜ Offsetì„ ê³„ì‚°í•œë‹¤. */
 inline scOffset sdpscExtDir::calcDescIdx2Offset( sdpscExtDirCntlHdr * aCntlHdr,
                                                  SShort               aExtDescIdx )
 {
@@ -373,7 +373,7 @@ inline scOffset sdpscExtDir::calcDescIdx2Offset( sdpscExtDirCntlHdr * aCntlHdr,
     return (scOffset)(sMapOffset + ( aExtDescIdx * ID_SIZEOF(sdpscExtDesc)));
 }
 
-/* ExtDir ÆäÀÌÁöÀÇ map ptrÀ» ¹İÈ¯ÇÑ´Ù. */
+/* ExtDir í˜ì´ì§€ì˜ map ptrì„ ë°˜í™˜í•œë‹¤. */
 inline sdpscExtDirMap * sdpscExtDir::getMapPtr( sdpscExtDirCntlHdr * aCntlHdr )
 {
     IDE_ASSERT( aCntlHdr->mMapOffset != 0 );
@@ -383,20 +383,20 @@ inline sdpscExtDirMap * sdpscExtDir::getMapPtr( sdpscExtDirCntlHdr * aCntlHdr )
           aCntlHdr->mMapOffset);
 }
 
-/* ExtDir Control HeaderÀÇ Ptr ¹İÈ¯ */
+/* ExtDir Control Headerì˜ Ptr ë°˜í™˜ */
 inline sdpscExtDirCntlHdr * sdpscExtDir::getHdrPtr( UChar   * aPagePtr )
 {
     return (sdpscExtDirCntlHdr*)sdpPhyPage::getLogicalHdrStartPtr( aPagePtr );
 }
 
-/* ExtDir ÆäÀÌÁö¿¡¼­ÀÇ °¡¿ëÇÑ ExtDesc °³¼ö ¹İÈ¯ */
+/* ExtDir í˜ì´ì§€ì—ì„œì˜ ê°€ìš©í•œ ExtDesc ê°œìˆ˜ ë°˜í™˜ */
 inline UShort  sdpscExtDir::getFreeDescCnt( sdpscExtDirCntlHdr * aCntlHdr )
 {
     IDE_ASSERT( aCntlHdr->mMaxExtCnt >= aCntlHdr->mExtCnt );
     return (UShort)( aCntlHdr->mMaxExtCnt - aCntlHdr->mExtCnt );
 }
 
-/* aPageID°¡ ¼ÓÇÑ Extent¿¡ aPageIDÀÌÈÄ·Î Free Page°¡ ÀÖ´ÂÁö Á¶»çÇÑ´Ù. */
+/* aPageIDê°€ ì†í•œ Extentì— aPageIDì´í›„ë¡œ Free Pageê°€ ìˆëŠ”ì§€ ì¡°ì‚¬í•œë‹¤. */
 inline idBool sdpscExtDir::isFreePIDInExt( 
                                  UInt         aPageCntInExt,
                                  scPageID     aFstPIDOfAllocExt,
@@ -416,7 +416,7 @@ inline idBool sdpscExtDir::isFreePIDInExt(
     }
 }
 
-/* Extent Dir. Map¿¡¼­ aExtDescIdx¹øÂ° ExtDesc¸¦ ¹İÈ¯ÇÑ´Ù. */
+/* Extent Dir. Mapì—ì„œ aExtDescIdxë²ˆì§¸ ExtDescë¥¼ ë°˜í™˜í•œë‹¤. */
 inline sdpscExtDesc * sdpscExtDir::getExtDescByIdx(
                                    sdpscExtDirCntlHdr * aExtDirCntlHdr,
                                    UShort               aExtDescIdx )
@@ -429,9 +429,9 @@ inline sdpscExtDesc * sdpscExtDir::getExtDescByIdx(
 
 /***********************************************************************
  *
- * Description : Extent Desc ÃÊ±âÈ­
+ * Description : Extent Desc ì´ˆê¸°í™”
  *
- * aExtDesc  - [OUT] Extent Desc.Æ÷ÀÎÅÍ
+ * aExtDesc  - [OUT] Extent Desc.í¬ì¸í„°
  *
  ***********************************************************************/
 inline void sdpscExtDir::initExtDesc( sdpscExtDesc  * aExtDesc )
@@ -443,9 +443,9 @@ inline void sdpscExtDir::initExtDesc( sdpscExtDesc  * aExtDesc )
 
 /***********************************************************************
  *
- * Description : ExtDir Á¤º¸ ÀÚ·á±¸Á¶
+ * Description : ExtDir ì •ë³´ ìë£Œêµ¬ì¡°
  *
- * aExtDirInfo - [OUT] ExtDirInfo ÀÚ·á±¸Á¶ Æ÷ÀÎÅÍ
+ * aExtDirInfo - [OUT] ExtDirInfo ìë£Œêµ¬ì¡° í¬ì¸í„°
  *
  ***********************************************************************/
 inline void sdpscExtDir::initExtDirInfo( sdpscExtDirInfo  * aExtDirInfo )
@@ -461,9 +461,9 @@ inline void sdpscExtDir::initExtDirInfo( sdpscExtDirInfo  * aExtDirInfo )
 
 /***********************************************************************
  *
- * Description : ¼¼±×¸ÕÆ® »ı¼º È¤Àº È®Àå ¿¬»ê½Ã ÇÊ¿äÇÑ Á¤º¸¸¦ ÀúÀåÇÏ´Â ÀÚ·á±¸Á¶ ÃÊ±âÈ­
+ * Description : ì„¸ê·¸ë¨¼íŠ¸ ìƒì„± í˜¹ì€ í™•ì¥ ì—°ì‚°ì‹œ í•„ìš”í•œ ì •ë³´ë¥¼ ì €ì¥í•˜ëŠ” ìë£Œêµ¬ì¡° ì´ˆê¸°í™”
  *
- * aAllocExtInfo - [IN] Extent È®ÀåÁ¤º¸ Æ÷ÀÎÅÍ
+ * aAllocExtInfo - [IN] Extent í™•ì¥ì •ë³´ í¬ì¸í„°
  *
  ***********************************************************************/
 inline void sdpscExtDir::initAllocExtDirInfo( sdpscAllocExtDirInfo  * aAllocExtDirInfo )

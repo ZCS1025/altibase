@@ -19,11 +19,11 @@
  * $Id: qmoDef.h 82075 2018-01-17 06:39:52Z jina.kim $
  *
  * Description :
- *     ¸ğµç Optimizer °ü·Ã »ó¼ö ¹× ÀÚ·á ±¸Á¶¸¦ Á¤ÀÇ
+ *     ëª¨ë“  Optimizer ê´€ë ¨ ìƒìˆ˜ ë° ìë£Œ êµ¬ì¡°ë¥¼ ì •ì˜
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  **********************************************************************/
 
@@ -31,7 +31,7 @@
 #define _O_QMO_DEF_H_ 1
 
 /***********************************************************************
- * plan node »ı¼º½Ã ÃÊ±âÈ­¿¡ ÇÊ¿äÇÑ macro
+ * plan node ìƒì„±ì‹œ ì´ˆê¸°í™”ì— í•„ìš”í•œ macro
  ***********************************************************************/
 
 #define QMO_INIT_PLAN_NODE( _node_ ,                                                \
@@ -63,7 +63,7 @@
 }
 
 /***********************************************************************
- * Distinct AggregationÀÇ bucketCnt¸¦ À§ÇÑ ÀÚ·á ±¸Á¶
+ * Distinct Aggregationì˜ bucketCntë¥¼ ìœ„í•œ ìë£Œ êµ¬ì¡°
  ***********************************************************************/
 
 typedef struct qmoDistAggArg
@@ -97,14 +97,14 @@ typedef struct qmoScanDecisionFactor
 // update type
 typedef enum qmoUpdateType
 {
-    QMO_UPDATE_NORMAL = 0,        // ÀÏ¹İ Å×ÀÌºíÀÇ update
-    QMO_UPDATE_ROWMOVEMENT,       // row movement°¡ ¹ß»ıÇÏ¸é delete-insert·Î Ã³¸®ÇÏ´Â update
-    QMO_UPDATE_CHECK_ROWMOVEMENT, // row movement°¡ ¹ß»ıÇÏ¸é ¿¡·¯³»´Â update
-    QMO_UPDATE_NO_ROWMOVEMENT     // row movement°¡ ÀÏ¾î³ªÁö ¾Ê´Â update
+    QMO_UPDATE_NORMAL = 0,        // ì¼ë°˜ í…Œì´ë¸”ì˜ update
+    QMO_UPDATE_ROWMOVEMENT,       // row movementê°€ ë°œìƒí•˜ë©´ delete-insertë¡œ ì²˜ë¦¬í•˜ëŠ” update
+    QMO_UPDATE_CHECK_ROWMOVEMENT, // row movementê°€ ë°œìƒí•˜ë©´ ì—ëŸ¬ë‚´ëŠ” update
+    QMO_UPDATE_NO_ROWMOVEMENT     // row movementê°€ ì¼ì–´ë‚˜ì§€ ì•ŠëŠ” update
 } qmnUpdateType;
 
 // PROJ-2205 rownum in DML
-// merge DMLÀÇ children index
+// merge DMLì˜ children index
 typedef enum qmoMergeChildrenIndex
 {
     QMO_MERGE_SELECT_SOURCE_IDX = 0,

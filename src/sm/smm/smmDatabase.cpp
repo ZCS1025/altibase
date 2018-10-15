@@ -72,12 +72,12 @@ IDE_RC smmDatabase::destroy()
 }
 
 
-/* µ¥ÀÌÅÍº£ÀÌ½º »ı¼º½Ã membase¸¦ ÃÊ±âÈ­ÇÑ´Ù.
- * aDBName           [IN] µ¥ÀÌÅÍº£ÀÌ½º ÀÌ¸§
- * aDbFilePageCount  [IN] ÇÏ³ªÀÇ µ¥ÀÌÅÍº£ÀÌ½º ÆÄÀÏÀÌ °¡Áö´Â Page¼ö
- * aChunkPageCount   [IN] ÇÏ³ªÀÇ Expand Chunk´ç Page¼ö
- * aDBCharSet        [IN] µ¥ÀÌÅÍº£ÀÌ½º Ä³¸¯ÅÍ ¼Â(PROJ-1579 NCHAR)
- * aNationalCharSet  [IN] ³»¼Å³Î Ä³¸¯ÅÍ ¼Â(PROJ-1579 NCHAR)
+/* ë°ì´í„°ë² ì´ìŠ¤ ìƒì„±ì‹œ membaseë¥¼ ì´ˆê¸°í™”í•œë‹¤.
+ * aDBName           [IN] ë°ì´í„°ë² ì´ìŠ¤ ì´ë¦„
+ * aDbFilePageCount  [IN] í•˜ë‚˜ì˜ ë°ì´í„°ë² ì´ìŠ¤ íŒŒì¼ì´ ê°€ì§€ëŠ” Pageìˆ˜
+ * aChunkPageCount   [IN] í•˜ë‚˜ì˜ Expand Chunkë‹¹ Pageìˆ˜
+ * aDBCharSet        [IN] ë°ì´í„°ë² ì´ìŠ¤ ìºë¦­í„° ì…‹(PROJ-1579 NCHAR)
+ * aNationalCharSet  [IN] ë‚´ì…”ë„ ìºë¦­í„° ì…‹(PROJ-1579 NCHAR)
  */
 IDE_RC smmDatabase::initializeMembase( smmTBSNode * aTBSNode,
                                        SChar      * aDBName,
@@ -140,7 +140,7 @@ IDE_RC smmDatabase::initializeMembase( smmTBSNode * aTBSNode,
     aTBSNode->mMemBase->mNationalCharSet[ IDN_MAX_CHAR_SET_LEN - 1 ] = '\0';
 
 
-    // BUG-15197 sun 5.10 x86 ¿¡¼­ createdb½Ã SEGV »ç¸Á
+    // BUG-15197 sun 5.10 x86 ì—ì„œ createdbì‹œ SEGV ì‚¬ë§
     sTimeValue = idlOS::gettimeofday();
     aTBSNode->mMemBase->mTimestamp = (struct timeval)sTimeValue;
 
@@ -152,11 +152,11 @@ IDE_RC smmDatabase::initializeMembase( smmTBSNode * aTBSNode,
     aTBSNode->mMemBase->mAllocPersPageCount = 0;
 
 
-    // Expand Chunk°ü·Ã Á¤º¸ ¼³Á¤
+    // Expand Chunkê´€ë ¨ ì •ë³´ ì„¤ì •
     aTBSNode->mMemBase->mExpandChunkPageCnt = aChunkPageCount ;
     aTBSNode->mMemBase->mCurrentExpandChunkCnt = 0;
 
-    // Free Page List¸¦ ÃÊ±âÈ­ ÇÑ´Ù.
+    // Free Page Listë¥¼ ì´ˆê¸°í™” í•œë‹¤.
     for ( i = 0; i< SMM_MAX_FPL_COUNT; i++ )
     {
         aTBSNode->mMemBase->mFreePageLists[ i ].mFirstFreePageID = SM_NULL_PID ;
@@ -171,12 +171,12 @@ IDE_RC smmDatabase::initializeMembase( smmTBSNode * aTBSNode,
 
 
 /*
- * Statement Begin½Ã View¸¦ °áÁ¤ÇÏ±â À§ÇØ È£ÃâµÇ´Â ÇÔ¼ö
- * ÁÖÀÇ : 32ºñÆ®¿¡ ´ëÇØ¼­µµ 64ºñÆ® SCNÀ» AtomicÇÏ°Ô ÀĞ±â À§ÇØ ¾çÂÊ LSB,MSB¸¦ parity bit·Î
- *        ÀÌ¿ëÇÏ±â À§ÇÑ ÄÚµåÀÌ´Ù.
+ * Statement Beginì‹œ Viewë¥¼ ê²°ì •í•˜ê¸° ìœ„í•´ í˜¸ì¶œë˜ëŠ” í•¨ìˆ˜
+ * ì£¼ì˜ : 32ë¹„íŠ¸ì— ëŒ€í•´ì„œë„ 64ë¹„íŠ¸ SCNì„ Atomicí•˜ê²Œ ì½ê¸° ìœ„í•´ ì–‘ìª½ LSB,MSBë¥¼ parity bitë¡œ
+ *        ì´ìš©í•˜ê¸° ìœ„í•œ ì½”ë“œì´ë‹¤.
  *
- *       64ºñÆ®·Î ÄÄÆÄÀÏ µÇ¾úÀ» °æ¿ì¿¡´Â ¾Æ·¡ÀÇ ÄÚµå°¡ »ç½Ç»ó ÀÇ¹Ì°¡ ¾øÀ¸³ª,
- *       32ºñÆ®ÀÏ °æ¿ì¿¡´Â ´ë´ÜÈ÷ Å« ÀÇ¹Ì¸¦ °¡Áø´Ù.
+ *       64ë¹„íŠ¸ë¡œ ì»´íŒŒì¼ ë˜ì—ˆì„ ê²½ìš°ì—ëŠ” ì•„ë˜ì˜ ì½”ë“œê°€ ì‚¬ì‹¤ìƒ ì˜ë¯¸ê°€ ì—†ìœ¼ë‚˜,
+ *       32ë¹„íŠ¸ì¼ ê²½ìš°ì—ëŠ” ëŒ€ë‹¨íˆ í° ì˜ë¯¸ë¥¼ ê°€ì§„ë‹¤.
  *
  *       if(SM_GET_SCN_HIGHVBIT(a_pSCN) == SM_GET_SCN_LOWVBIT(a_pSCN))
  *       {
@@ -203,35 +203,35 @@ void smmDatabase::getViewSCN(smSCN *a_pSCN)
 
 
 /*
- *  TxÀÇ commit°ú °ü·ÃÇÑ SCN°úÀÇ ÁÖÀÇ »çÇ×
+ *  Txì˜ commitê³¼ ê´€ë ¨í•œ SCNê³¼ì˜ ì£¼ì˜ ì‚¬í•­
  *
- *  - Non-Atomic tuple-set readingÀ» ¹æÁöÇÏ±â À§ÇØ ´ÙÀ½°ú °°Àº ¼ø¼­·Î
- *    Tx commitÀÛ¾÷À» ¼öÇàÇÑ´Ù.
+ *  - Non-Atomic tuple-set readingì„ ë°©ì§€í•˜ê¸° ìœ„í•´ ë‹¤ìŒê³¼ ê°™ì€ ìˆœì„œë¡œ
+ *    Tx commitì‘ì—…ì„ ìˆ˜í–‰í•œë‹¤.
  *
- *    1. Commit SCNÀ» ÇÒ´ç ¹Ş´Â´Ù.
+ *    1. Commit SCNì„ í• ë‹¹ ë°›ëŠ”ë‹¤.
  *
- *    2. Temporary SCNÀÌ Persistent SCN¿¡ µµ´ŞÇÏ¸é, Persistent SCN + GapÀ»
- *       ¼öÇàÇÏ°í, ·Î±ëÇÑ´Ù.
+ *    2. Temporary SCNì´ Persistent SCNì— ë„ë‹¬í•˜ë©´, Persistent SCN + Gapì„
+ *       ìˆ˜í–‰í•˜ê³ , ë¡œê¹…í•œë‹¤.
  *
- *    3. Áõ°¡µÈ SCN(Commit-SCN)À» Temporary SCNÀ¸·Î assignÇÑ´Ù.
+ *    3. ì¦ê°€ëœ SCN(Commit-SCN)ì„ Temporary SCNìœ¼ë¡œ assigní•œë‹¤.
  *
- *    4. callbackÀ» ÀÌ¿ëÇØ¼­ SCN°ú ÀÎÀÚ·Î ³Ñ¾î¿Â Status »óÀ§¿¡¼­ ÇÒ´çÇÏµÇ,
- *       ¹İµå½Ã SCN, Status ¼ø¼­´ë·Î assign ÇÑ´Ù. (smxTrans.cpp::setTransCommitSCN())
- *       ¿Ö³ÄÇÏ¸é, Æ¯Á¤ TupleÀÇ Validation °úÁ¤¿¡¼­ ÇØ´ç TupleÀ» ÀĞÀ» °ÍÀÎÁö
- *       ¸» °ÍÀÎÁö¸¦ °áÁ¤ÇÒ ¶§, non-blocking ¾Ë°í¸®ÁòÀ» ÀÌ¿ëÇÏ¿©
- *       Transaction °´Ã¼ÀÇ status¿Í SCNÀ» ÀĞ¾î¼­ ÀÌ¿ëÇÏ´Âµ¥
- *       ÀÌ ¶§´Â Status -> SCNÀÇ ¼ø¼­´ë·Î ÀĞ±â ¶§¹®ÀÌ´Ù.
- *       [ Âü°í => smxTrans::getTransCommitSCN() ]
+ *    4. callbackì„ ì´ìš©í•´ì„œ SCNê³¼ ì¸ìë¡œ ë„˜ì–´ì˜¨ Status ìƒìœ„ì—ì„œ í• ë‹¹í•˜ë˜,
+ *       ë°˜ë“œì‹œ SCN, Status ìˆœì„œëŒ€ë¡œ assign í•œë‹¤. (smxTrans.cpp::setTransCommitSCN())
+ *       ì™œëƒí•˜ë©´, íŠ¹ì • Tupleì˜ Validation ê³¼ì •ì—ì„œ í•´ë‹¹ Tupleì„ ì½ì„ ê²ƒì¸ì§€
+ *       ë§ ê²ƒì¸ì§€ë¥¼ ê²°ì •í•  ë•Œ, non-blocking ì•Œê³ ë¦¬ì¦˜ì„ ì´ìš©í•˜ì—¬
+ *       Transaction ê°ì²´ì˜ statusì™€ SCNì„ ì½ì–´ì„œ ì´ìš©í•˜ëŠ”ë°
+ *       ì´ ë•ŒëŠ” Status -> SCNì˜ ìˆœì„œëŒ€ë¡œ ì½ê¸° ë•Œë¬¸ì´ë‹¤.
+ *       [ ì°¸ê³  => smxTrans::getTransCommitSCN() ]
  *
  *         TX            SCN   Status
- *       Write ½Ã :   ------------------> (commit ½Ã)
- *       Read  ½Ã :  <------------------  (tuple Validation ½Ã)
+ *       Write ì‹œ :   ------------------> (commit ì‹œ)
+ *       Read  ì‹œ :  <------------------  (tuple Validation ì‹œ)
  *
- *       % TxÀÇ  status°¡ commitÀÌ¶óµµ txÀÇ commitSCNÀÌ infiniteÀÏ¼ö ÀÖ´Ù.
- *        TxÀÇ commitÈÄ end¸¦ ÇÏ°ÔµÇ´Âµ¥ ÀÌ¶§  commitSCNÀÌ inifinite·Î
- *        ÀçÃÊ±âÈ­ µÇ±â¶§¹®ÀÌ´Ù.
+ *       % Txì˜  statusê°€ commitì´ë¼ë„ txì˜ commitSCNì´ infiniteì¼ìˆ˜ ìˆë‹¤.
+ *        Txì˜ commití›„ endë¥¼ í•˜ê²Œë˜ëŠ”ë° ì´ë•Œ  commitSCNì´ inifiniteë¡œ
+ *        ì¬ì´ˆê¸°í™” ë˜ê¸°ë•Œë¬¸ì´ë‹¤.
  *
- *    5. Áõ°¡µÈ Commit-SCNÀ» Temporary SCN, System SCN¿¡ ¹İ¿µÇÑ´Ù.
+ *    5. ì¦ê°€ëœ Commit-SCNì„ Temporary SCN, System SCNì— ë°˜ì˜í•œë‹¤.
  *
  */
 
@@ -301,22 +301,22 @@ IDE_RC smmDatabase::getCommitSCN( void    * aTrans,
     }
     IDL_MEM_BARRIER;
 
-    /* CASE-6985 ¼­¹ö Á¾·áÈÄ startupÇÏ¸é user¿Í Å×ÀÌºí,
-     * µ¥ÀÌÅÍ°¡ ¸ğµÎ »ç¶óÁü*/
+    /* CASE-6985 ì„œë²„ ì¢…ë£Œí›„ startupí•˜ë©´ userì™€ í…Œì´ë¸”,
+     * ë°ì´í„°ê°€ ëª¨ë‘ ì‚¬ë¼ì§*/
     validateCommitSCN(ID_FALSE /* No Lock SCN Mutex */);
 
     /* 
      * 4. Callback for strict ordered setting of Tx SCN & Status
      *
-     * aTrans == NULLÀÎ °æ¿ì´Â System SCNÀ» Áõ°¡¸¸ ½ÃÅ³°æ¿ìÀÌ´Ù.
-     * Delete Thread¿¡¼­ ³²¾Æ ÀÖ´Â Aging´ë»ó OIDµéÀ» Ã³¸®ÇÏ±âÀ§ÇØ
-     * Commit SCNÀ» Áõ°¡½ÃÅ²´Ù.
+     * aTrans == NULLì¸ ê²½ìš°ëŠ” System SCNì„ ì¦ê°€ë§Œ ì‹œí‚¬ê²½ìš°ì´ë‹¤.
+     * Delete Threadì—ì„œ ë‚¨ì•„ ìˆëŠ” AgingëŒ€ìƒ OIDë“¤ì„ ì²˜ë¦¬í•˜ê¸°ìœ„í•´
+     * Commit SCNì„ ì¦ê°€ì‹œí‚¨ë‹¤.
      *
      * BUG-30911 - 2 rows can be selected during executing index scan
      *             on unique index. 
      *
-     * LstSystemSCNÀ» ¸ÕÀú Áõ°¡½ÃÅ°°í Æ®·£Àè¼Ç¿¡ CommitSCNÀ» ¼³Á¤ÇØ¾ß ÇÑ´Ù.
-     * ·Î ¼öÁ¤Çß¾ú´Âµ¥, BUG-31248 ·Î ÀÎÇØ ´Ù½Ã ¿øº¹ ÇÕ´Ï´Ù.
+     * LstSystemSCNì„ ë¨¼ì € ì¦ê°€ì‹œí‚¤ê³  íŠ¸ëœì­ì…˜ì— CommitSCNì„ ì„¤ì •í•´ì•¼ í•œë‹¤.
+     * ë¡œ ìˆ˜ì •í–ˆì—ˆëŠ”ë°, BUG-31248 ë¡œ ì¸í•´ ë‹¤ì‹œ ì›ë³µ í•©ë‹ˆë‹¤.
      */
     if( aTrans != NULL )
     {
@@ -368,10 +368,10 @@ IDE_RC smmDatabase::getCommitSCN( void    * aTrans,
 }
 
 /*
- * ÇöÀç System Commit Number°¡ ValidÇÑÁö °ËÁõÇÑ´Ù.
+ * í˜„ì¬ System Commit Numberê°€ Validí•œì§€ ê²€ì¦í•œë‹¤.
  * 
- * aIsLock : ID_TRUE, °ËÁõÀü¿¡ mMtxSCN¸¦ Àâ´Â´Ù. ID_FALSE¶ó¸é
- *           mtxSCN¸¦ ÀâÁö ¾Ê´Â´Ù.
+ * aIsLock : ID_TRUE, ê²€ì¦ì „ì— mMtxSCNë¥¼ ì¡ëŠ”ë‹¤. ID_FALSEë¼ë©´
+ *           mtxSCNë¥¼ ì¡ì§€ ì•ŠëŠ”ë‹¤.
  * 
  */
 void smmDatabase::validateCommitSCN(idBool aIsLock)
@@ -381,10 +381,10 @@ void smmDatabase::validateCommitSCN(idBool aIsLock)
         IDE_ASSERT( lockSCNMtx() == IDE_SUCCESS);
     }
 
-    /* CASE-6985 ¼­¹ö Á¾·áÈÄ startupÇÏ¸é user¿Í Å×ÀÌºí,
-     * µ¥ÀÌÅÍ°¡ ¸ğµÎ »ç¶óÁü: ÇöÀç Membase¿¡ ÀÖ´Â SystemSCNÀº
-     * Ç×»ó Transaction¿¡°Ô ÇÒ´çµÇ´Â m_lstSystemSCNº¸´Ù Ç×»ó
-     * Ä¿¾ß ÇÑ´Ù. */
+    /* CASE-6985 ì„œë²„ ì¢…ë£Œí›„ startupí•˜ë©´ userì™€ í…Œì´ë¸”,
+     * ë°ì´í„°ê°€ ëª¨ë‘ ì‚¬ë¼ì§: í˜„ì¬ Membaseì— ìˆëŠ” SystemSCNì€
+     * í•­ìƒ Transactionì—ê²Œ í• ë‹¹ë˜ëŠ” m_lstSystemSCNë³´ë‹¤ í•­ìƒ
+     * ì»¤ì•¼ í•œë‹¤. */
     if( SM_SCN_IS_GT(getLstSystemSCN(), getSystemSCN()) )
     {
         ideLog::log(SM_TRC_LOG_LEVEL_WARNNING,
@@ -555,49 +555,49 @@ IDE_RC smmDatabase::checkMembaseIsValid()
 
 
 /*
- * Expand Chunk°ü·ÃµÈ ÇÁ·ÎÆÛÆ¼ °ªµéÀÌ Á¦´ë·Î µÈ °ªÀÎÁö Ã¼Å©ÇÑ´Ù.
+ * Expand Chunkê´€ë ¨ëœ í”„ë¡œí¼í‹° ê°’ë“¤ì´ ì œëŒ€ë¡œ ëœ ê°’ì¸ì§€ ì²´í¬í•œë‹¤.
  *
- * 1. ÇÏ³ªÀÇ Chunk¾ÈÀÇ µ¥ÀÌÅÍ ÆäÀÌÁö¸¦ ¿©·¯ Free Page List¿¡ ºĞ¹èÇÒ ¶§,
- *    ÃÖ¼ÒÇÑ ÇÑ¹øÀº ºĞ¹è°¡ µÇ´ÂÁö Ã¼Å©
+ * 1. í•˜ë‚˜ì˜ Chunkì•ˆì˜ ë°ì´í„° í˜ì´ì§€ë¥¼ ì—¬ëŸ¬ Free Page Listì— ë¶„ë°°í•  ë•Œ,
+ *    ìµœì†Œí•œ í•œë²ˆì€ ë¶„ë°°ê°€ ë˜ëŠ”ì§€ ì²´í¬
  *
- *    ¸¸Á·Á¶°Ç : Chunk´ç µ¥ÀÌÅÍÆäÀÌÁö¼ö >= 2 * List´ç ºĞ¹èÇÒ Page¼ö * List ¼ö
+ *    ë§Œì¡±ì¡°ê±´ : Chunkë‹¹ ë°ì´í„°í˜ì´ì§€ìˆ˜ >= 2 * Listë‹¹ ë¶„ë°°í•  Pageìˆ˜ * List ìˆ˜
  *
- * aChunkDataPageCount [IN] Expand Chunk¾ÈÀÇ µ¥ÀÌÅÍÆäÀÌÁö ¼ö
- *                          ( FLI Page¸¦ Á¦¿ÜÇÑ PageÀÇ ¼ö )
+ * aChunkDataPageCount [IN] Expand Chunkì•ˆì˜ ë°ì´í„°í˜ì´ì§€ ìˆ˜
+ *                          ( FLI Pageë¥¼ ì œì™¸í•œ Pageì˜ ìˆ˜ )
  */
 IDE_RC smmDatabase::checkExpandChunkProps(smmMemBase * aMemBase)
 {
     IDE_DASSERT( aMemBase != NULL );
 
-    // ´ÙÁßÈ­µÈ Free Page List¼ö°¡  createdb½ÃÁ¡°ú ´Ù¸¥ °æ¿ì
+    // ë‹¤ì¤‘í™”ëœ Free Page Listìˆ˜ê°€  createdbì‹œì ê³¼ ë‹¤ë¥¸ ê²½ìš°
     IDE_TEST_RAISE(aMemBase->mFreePageListCount !=
                    SMM_FREE_PAGE_LIST_COUNT,
                    different_page_list_count );
 
-    // Expand Chunk¾ÈÀÇ Page¼ö°¡ createdb½ÃÁ¡°ú ´Ù¸¥ °æ¿ì
+    // Expand Chunkì•ˆì˜ Pageìˆ˜ê°€ createdbì‹œì ê³¼ ë‹¤ë¥¸ ê²½ìš°
     IDE_TEST_RAISE(aMemBase->mExpandChunkPageCnt !=
                    smuProperty::getExpandChunkPageCount() ,
                    different_expand_chunk_page_count );
 
-    //  Expand Chunk°¡ Ãß°¡µÉ ¶§
-    //  ( µ¥ÀÌÅÍº£ÀÌ½º Chunk°¡ »õ·Î ÇÒ´çµÉ ¶§  )
-    //  ±× ¾ÈÀÇ Free PageµéÀº ¿©·¯°³ÀÇ ´ÙÁßÈ­µÈ Free Page List·Î ºĞ¹èµÈ´Ù.
+    //  Expand Chunkê°€ ì¶”ê°€ë  ë•Œ
+    //  ( ë°ì´í„°ë² ì´ìŠ¤ Chunkê°€ ìƒˆë¡œ í• ë‹¹ë  ë•Œ  )
+    //  ê·¸ ì•ˆì˜ Free Pageë“¤ì€ ì—¬ëŸ¬ê°œì˜ ë‹¤ì¤‘í™”ëœ Free Page Listë¡œ ë¶„ë°°ëœë‹¤.
     //
-    //  ÀÌ ¶§, °¢°¢ÀÇ Free Page List¿¡ ÃÖ¼ÒÇÑ ÇÏ³ªÀÇ Free Page°¡
-    //  ºĞ¹èµÇ¾î¾ß ÇÏµµ·Ï ½Ã½ºÅÛÀÇ ¾ÆÅ°ÅØÃÄ°¡ ¼³°èµÇ¾î ÀÖ´Ù.
+    //  ì´ ë•Œ, ê°ê°ì˜ Free Page Listì— ìµœì†Œí•œ í•˜ë‚˜ì˜ Free Pageê°€
+    //  ë¶„ë°°ë˜ì–´ì•¼ í•˜ë„ë¡ ì‹œìŠ¤í…œì˜ ì•„í‚¤í…ì³ê°€ ì„¤ê³„ë˜ì–´ ìˆë‹¤.
     //
-    //  ¸¸¾à Expand Chunk¾ÈÀÇ Free Page¼ö°¡ ÃæºĞÇÏÁö ¾Ê¾Æ¼­,
-    //  PER_LIST_DIST_PAGE_COUNT °³¾¿ ¸ğµç Free Page List¿¡ ºĞ¹èÇÒ ¼ö°¡
-    //  ¾ø´Ù¸é ¿¡·¯¸¦ ¹ß»ı½ÃÅ²´Ù.
+    //  ë§Œì•½ Expand Chunkì•ˆì˜ Free Pageìˆ˜ê°€ ì¶©ë¶„í•˜ì§€ ì•Šì•„ì„œ,
+    //  PER_LIST_DIST_PAGE_COUNT ê°œì”© ëª¨ë“  Free Page Listì— ë¶„ë°°í•  ìˆ˜ê°€
+    //  ì—†ë‹¤ë©´ ì—ëŸ¬ë¥¼ ë°œìƒì‹œí‚¨ë‹¤.
     //
-    //  Expand Chunk¾ÈÀÇ Free List Info Page¸¦ Á¦¿ÜÇÑ
-    //  µ¥ÀÌÅÍÆäÀÌÁö¸¸ÀÌ Free Page List¿¡ ºĞ¹èµÇ¹Ç·Î, ÀÌ °¹¼ö¸¦ Ã¼Å©ÇØ¾ß ÇÑ´Ù.
-    //  ±×·¯³ª, ÀÌ·¯ÇÑ ¸ğµç ³»¿ëÀ» ÀÏ¹İ »ç¿ëÀÚ°¡ ÀÌÇØÇÏ±â¿¡´Â ³Ê¹« ³­ÇØÇÏ´Ù.
+    //  Expand Chunkì•ˆì˜ Free List Info Pageë¥¼ ì œì™¸í•œ
+    //  ë°ì´í„°í˜ì´ì§€ë§Œì´ Free Page Listì— ë¶„ë°°ë˜ë¯€ë¡œ, ì´ ê°¯ìˆ˜ë¥¼ ì²´í¬í•´ì•¼ í•œë‹¤.
+    //  ê·¸ëŸ¬ë‚˜, ì´ëŸ¬í•œ ëª¨ë“  ë‚´ìš©ì„ ì¼ë°˜ ì‚¬ìš©ìê°€ ì´í•´í•˜ê¸°ì—ëŠ” ë„ˆë¬´ ë‚œí•´í•˜ë‹¤.
     //
-    //  Expand ChunkÀÇ ÆäÀÌÁö ¼ö´Â Free Page List¿¡ µÎ¹ø¾¿ ºĞ¹èÇÒ ¼ö ÀÖÀ»¸¸Å­
-    //  ÃæºĞÇÑ Å©±â¸¦ °¡Áöµµ·Ï °­Á¦ÇÑ´Ù.
+    //  Expand Chunkì˜ í˜ì´ì§€ ìˆ˜ëŠ” Free Page Listì— ë‘ë²ˆì”© ë¶„ë°°í•  ìˆ˜ ìˆì„ë§Œí¼
+    //  ì¶©ë¶„í•œ í¬ê¸°ë¥¼ ê°€ì§€ë„ë¡ ê°•ì œí•œë‹¤.
     //
-    //  Á¶°Ç½Ä : EXPAND_CHUNK_PAGE_COUNT <=
+    //  ì¡°ê±´ì‹ : EXPAND_CHUNK_PAGE_COUNT <=
     //           2 * PER_LIST_DIST_PAGE_COUNT * PAGE_LIST_GROUP_COUNT
    IDE_TEST_RAISE(
         aMemBase->mExpandChunkPageCnt
@@ -701,12 +701,12 @@ void smmDatabase::dumpMembase()
 #ifdef DEBUG
 /***********************************************************************
  * Description : BUG-31862 resize transaction table without db migration
- *      MemBase¿Í ÇÁ·ÎÆÛÆ¼ÀÇ Æ®·£Àè¼Ç Å×ÀÌºí »çÀÌÁî¸¦ ºñ±³ÇÑ´Ù.
- *      ÇÁ·ÎÆÛÆ¼ÀÇ °ªÀÌ MemBaseÀÇ °ªº¸´Ù Ä¿¾ß ÇÏ¸ç, 2^N °ªÀÌ¾î¾ß ÇÑ´Ù.
+ *      MemBaseì™€ í”„ë¡œí¼í‹°ì˜ íŠ¸ëœì­ì…˜ í…Œì´ë¸” ì‚¬ì´ì¦ˆë¥¼ ë¹„êµí•œë‹¤.
+ *      í”„ë¡œí¼í‹°ì˜ ê°’ì´ MemBaseì˜ ê°’ë³´ë‹¤ ì»¤ì•¼ í•˜ë©°, 2^N ê°’ì´ì–´ì•¼ í•œë‹¤.
  *
  * Implementation :
  *
- * [IN] aMembase - Å×ÀÌºí½ºÆäÀÌ½ºÀÇ ¸âº£ÀÌ½º
+ * [IN] aMembase - í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì˜ ë©¤ë² ì´ìŠ¤
  *
  **********************************************************************/
 IDE_RC smmDatabase::checkTransTblSize(smmMemBase * aMemBase)
@@ -722,9 +722,9 @@ IDE_RC smmDatabase::checkTransTblSize(smmMemBase * aMemBase)
 
 /***********************************************************************
  * Description : BUG-31862 resize transaction table without db migration
- *      ÇÁ·ÎÆÛÆ¼ÀÇ TRANSACTION_TABLE_SIZE °ªÀ¸·Î
- *      mDicMemBaseÀÇ mTxTBLSize¸¦ È®ÀåÇÑ´Ù. 
- *      °ªÀº 2^N¸¸ °¡´ÉÇÏ´Ù.
+ *      í”„ë¡œí¼í‹°ì˜ TRANSACTION_TABLE_SIZE ê°’ìœ¼ë¡œ
+ *      mDicMemBaseì˜ mTxTBLSizeë¥¼ í™•ì¥í•œë‹¤. 
+ *      ê°’ì€ 2^Në§Œ ê°€ëŠ¥í•˜ë‹¤.
  *
  * Implementation :
  *

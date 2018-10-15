@@ -179,13 +179,13 @@ IDE_RC qsxCursor::open ( qsxCursorInfo   * aCurInfo,
     if ( aIsDefiner == ID_TRUE )
     { 
         /* BUG-38164
-           BUG-38164 ÀÌÀü aExecInfo->mUserID¸¦ sessionÀÇ userID¿¡ ¼³Á¤ÇØÁÖ¾ú´Ù.
-           package Áö¿ø ÀÌÀü¿¡´Â ´Ù¸¥ PSM°´Ã¼¿¡ ¼±¾ðµÈ cursor¸¦ »ç¿ëÇÒ ¼ö ¾ø¾úÀ¸³ª,
-           package Áö¿ø ÈÄ¿¡´Â ´Ù¸¥ PSM°´Ã¼(package)¿¡ ¼±¾ðµÈ cursor¸¦ »ç¿ë °¡´ÉÇÏ´Ù.
-           µû¶ó¼­, °´Ã¼¸¦ »ý¼ºÇÑ userID¸¦ ¼¼¼Ç¿¡ ¼³Á¤ÇØÁÖ¸é,
-           ´Ù¸¥ packageÀÇ ¼±¾ðµÈ cursor¸¦ ÂüÁ¶ ÇÒ °æ¿ì, cursor ¼±¾ð ½Ã ÂüÁ¶ÇÑ tableÀ» Ã£Áö ¸ø ÇÏ°Å³ª,
-           °´Ã¼¸¦ »ý¼ºÇÑ À¯Àú°¡ ¼ÒÀ¯ÇÑ µ¿ÀÏÇÑ ÀÌ¸§À» °¡Áø table¿¡ Á¢±ÙÇÏ¿© Àß¸øµÈ °á°ú°¡ ³ª¿À°Ô µÈ´Ù.
-           ±×·¸°Ô ¶§¹®¿¡, cursorÀÇ °æ¿ì, cursor¸¦ Æ÷ÇÔÇÏ°í ÀÖ´Â packageÀÇ userID¸¦ ³Ñ°ÜÁà¾ß ÇÑ´Ù. */
+           BUG-38164 ì´ì „ aExecInfo->mUserIDë¥¼ sessionì˜ userIDì— ì„¤ì •í•´ì£¼ì—ˆë‹¤.
+           package ì§€ì› ì´ì „ì—ëŠ” ë‹¤ë¥¸ PSMê°ì²´ì— ì„ ì–¸ëœ cursorë¥¼ ì‚¬ìš©í•  ìˆ˜ ì—†ì—ˆìœ¼ë‚˜,
+           package ì§€ì› í›„ì—ëŠ” ë‹¤ë¥¸ PSMê°ì²´(package)ì— ì„ ì–¸ëœ cursorë¥¼ ì‚¬ìš© ê°€ëŠ¥í•˜ë‹¤.
+           ë”°ë¼ì„œ, ê°ì²´ë¥¼ ìƒì„±í•œ userIDë¥¼ ì„¸ì…˜ì— ì„¤ì •í•´ì£¼ë©´,
+           ë‹¤ë¥¸ packageì˜ ì„ ì–¸ëœ cursorë¥¼ ì°¸ì¡° í•  ê²½ìš°, cursor ì„ ì–¸ ì‹œ ì°¸ì¡°í•œ tableì„ ì°¾ì§€ ëª» í•˜ê±°ë‚˜,
+           ê°ì²´ë¥¼ ìƒì„±í•œ ìœ ì €ê°€ ì†Œìœ í•œ ë™ì¼í•œ ì´ë¦„ì„ ê°€ì§„ tableì— ì ‘ê·¼í•˜ì—¬ ìž˜ëª»ëœ ê²°ê³¼ê°€ ë‚˜ì˜¤ê²Œ ëœë‹¤.
+           ê·¸ë ‡ê²Œ ë•Œë¬¸ì—, cursorì˜ ê²½ìš°, cursorë¥¼ í¬í•¨í•˜ê³  ìžˆëŠ” packageì˜ userIDë¥¼ ë„˜ê²¨ì¤˜ì•¼ í•œë‹¤. */
         QCG_SET_SESSION_USER_ID( aQcStmt,
                                  sCursor->userID );
     }
@@ -251,7 +251,7 @@ IDE_RC qsxCursor::open ( qsxCursorInfo   * aCurInfo,
         {
             sParaVar = (qsVariables*)sOpenParam;
 
-            /* cursorÀÇ parameter´Â IN Type¸¸ ¿Ã ¼ö ÀÖ´Ù. */
+            /* cursorì˜ parameterëŠ” IN Typeë§Œ ì˜¬ ìˆ˜ ìžˆë‹¤. */
             IDE_TEST( qsxUtil::calculateAndAssign ( QC_QMX_MEM( aQcStmt ),
                                                     sOpenArg,
                                                     QC_PRIVATE_TMPLATE(aQcStmt),
@@ -264,10 +264,10 @@ IDE_RC qsxCursor::open ( qsxCursorInfo   * aCurInfo,
 
     // BUG-38767
     /* PROJ-2197 PSM Renewal
-     * 1. mmStmt¿¡¼­ qcStmt¸¦ ¾ò¾î¿Í¼­
-     * 2. callDepth¸¦ ¼³Á¤ÇÑ´Ù.
-     * qcd¸¦ ÅëÇØ ½ÇÇàÇÏ¸é qcStmtÀÇ »ó¼Ó°ü°è°¡ ¾ø±â ¶§¹®¿¡
-     * stack overflow·Î server°¡ ºñÁ¤»ó Á¾·áÇÒ ¼ö ÀÖ´Ù. */
+     * 1. mmStmtì—ì„œ qcStmtë¥¼ ì–»ì–´ì™€ì„œ
+     * 2. callDepthë¥¼ ì„¤ì •í•œë‹¤.
+     * qcdë¥¼ í†µí•´ ì‹¤í–‰í•˜ë©´ qcStmtì˜ ìƒì†ê´€ê³„ê°€ ì—†ê¸° ë•Œë¬¸ì—
+     * stack overflowë¡œ serverê°€ ë¹„ì •ìƒ ì¢…ë£Œí•  ìˆ˜ ìžˆë‹¤. */
     IDE_TEST( qcd::getQcStmt( aCurInfo->hStmt,
                               &sExecQcStmt )
               != IDE_SUCCESS );
@@ -358,8 +358,8 @@ IDE_RC qsxCursor::open ( qsxCursorInfo   * aCurInfo,
     }
 
     /* PROJ-2197 PSM Renewal
-     * prepare ÀÌÈÄ¿¡ stmt¸¦ ÃÊ±âÈ­ÇÏ¹Ç·Î
-     * executeÀü¿¡ call depth¸¦ ´Ù½Ã º¯°æÇÑ´Ù. */
+     * prepare ì´í›„ì— stmtë¥¼ ì´ˆê¸°í™”í•˜ë¯€ë¡œ
+     * executeì „ì— call depthë¥¼ ë‹¤ì‹œ ë³€ê²½í•œë‹¤. */
     sExecQcStmt->spxEnv->mCallDepth = aQcStmt->spxEnv->mCallDepth;
     sExecQcStmt->spxEnv->mFlag      = aQcStmt->spxEnv->mFlag;
 
@@ -385,7 +385,7 @@ IDE_RC qsxCursor::open ( qsxCursorInfo   * aCurInfo,
     QSX_CURSOR_SET_OPEN_TRUE( aCurInfo );
 
     // BUG-34331
-    // Cursor¸¦ openÇÏ¸é mCursorsInUse¿¡ Ãß°¡ÇÑ´Ù.
+    // Cursorë¥¼ opení•˜ë©´ mCursorsInUseì— ì¶”ê°€í•œë‹¤.
     QSX_ENV_ADD_CURSORS_IN_USE( QC_QSX_ENV(aQcStmt), aCurInfo );
 
     /* PROJ-2586 PSM Parameters and return without precision */
@@ -496,7 +496,7 @@ IDE_RC qsxCursor::close( qsxCursorInfo * aCurInfo,
     sCurrCurInfo = QSX_ENV_CURSORS_IN_USE( sQsxEnv );
 
     // BUG-34331
-    // Cursor¸¦ closeÇÏ¸é mCursorsInUse¿¡¼­ Á¦°ÅÇÑ´Ù.
+    // Cursorë¥¼ closeí•˜ë©´ mCursorsInUseì—ì„œ ì œê±°í•œë‹¤.
     while( sCurrCurInfo != NULL )
     {
         if( sCurrCurInfo == aCurInfo )
@@ -510,8 +510,8 @@ IDE_RC qsxCursor::close( qsxCursorInfo * aCurInfo,
                 QSX_ENV_CURSORS_IN_USE( sQsxEnv ) = aCurInfo->mNext;
             }
 
-            // mCursorsInUseFenceÀ§Ä¡ÀÇ cursor¸¦ ´ÝÀ¸¸é
-            // mCursorsInUseFence¸¦ ´ÙÀ½ cursor·Î º¯°æÇÔ.
+            // mCursorsInUseFenceìœ„ì¹˜ì˜ cursorë¥¼ ë‹«ìœ¼ë©´
+            // mCursorsInUseFenceë¥¼ ë‹¤ìŒ cursorë¡œ ë³€ê²½í•¨.
             if( sQsxEnv->mCursorsInUseFence == aCurInfo )
             {
                 sQsxEnv->mCursorsInUseFence = aCurInfo->mNext;
@@ -654,7 +654,7 @@ IDE_RC qsxCursor::fetchInto (qsxCursorInfo   * aCurInfo,
         sBindColumnId = 0;
         sBindColumnDataList = NULL;
 
-        // bindColumnDataList»ý¼º
+        // bindColumnDataListìƒì„±
         IDE_DASSERT( aIntoVarNodes->intoNodes != NULL );
 
         sMtcColumn = QTC_TMPL_COLUMN( QC_PRIVATE_TMPLATE(aQcStmt),
@@ -716,8 +716,8 @@ IDE_RC qsxCursor::fetchInto (qsxCursorInfo   * aCurInfo,
 
         if ( sRowCount == 0 )
         {
-            // rowtypeÀÇ ³»ºÎÀûÀÎ column°³¼ö¿Í into¿¡ ¸í½ÃµÈ column °³¼ö°¡
-            // µ¿ÀÏÇÑÁö È®ÀÎ
+            // rowtypeì˜ ë‚´ë¶€ì ì¸ columnê°œìˆ˜ì™€ intoì— ëª…ì‹œëœ column ê°œìˆ˜ê°€
+            // ë™ì¼í•œì§€ í™•ì¸
             IDE_TEST( qcd::checkBindColumnCount( aCurInfo->hStmt,
                                                  sBindColumnId )
                       != IDE_SUCCESS );

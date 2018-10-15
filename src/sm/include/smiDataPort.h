@@ -18,32 +18,32 @@
 /***********************************************************************
  * $Id: smiDataPort.h 
  * 
- * Proj-2059 DB Upgrade ±â´É
- * Server Áß½ÉÀûÀ¸·Î µ¥ÀÌÅÍ¸¦ °¡Á®¿À°í ³Ö´Â ±â´É
+ * Proj-2059 DB Upgrade ê¸°ëŠ¥
+ * Server ì¤‘ì‹¬ì ìœ¼ë¡œ ë°ì´í„°ë¥¼ ê°€ì ¸ì˜¤ê³  ë„£ëŠ” ê¸°ëŠ¥
 
  **********************************************************************/
 
 #ifndef __O_SMI_DATAPORT_H__
 #define __O_SMI_DATAPORT_H__ 1_
 
-/* - Version UpÀ» À§ÇÑ Guide.
+/* - Version Upì„ ìœ„í•œ Guide.
  *
- *  ¿©±â¼­ ¸»ÇÏ´Â Version UPÀº ÆÄÀÏÀÇ ±¸Á¶°¡ º¯°æµÇ´Â °æ¿ì ÀÔ´Ï´Ù.
- * ¸¸¾à ÆÄÀÏÀÇ ±¸Á¶°¡ º¯°æµÉ ÇÊ¿ä°¡ ¾ø´Â °æ¿ì, ¸ğµâÀÇ µ¥ÀÌÅÍ Ã³¸®
- * ¹æ¹ı¸¸ ´Ş¶óÁö´Â °æ¿ì´Â »ó°ü ¾ø½À´Ï´Ù.
+ *  ì—¬ê¸°ì„œ ë§í•˜ëŠ” Version UPì€ íŒŒì¼ì˜ êµ¬ì¡°ê°€ ë³€ê²½ë˜ëŠ” ê²½ìš° ì…ë‹ˆë‹¤.
+ * ë§Œì•½ íŒŒì¼ì˜ êµ¬ì¡°ê°€ ë³€ê²½ë  í•„ìš”ê°€ ì—†ëŠ” ê²½ìš°, ëª¨ë“ˆì˜ ë°ì´í„° ì²˜ë¦¬
+ * ë°©ë²•ë§Œ ë‹¬ë¼ì§€ëŠ” ê²½ìš°ëŠ” ìƒê´€ ì—†ìŠµë‹ˆë‹¤.
  *
- *  ¶ÇÇÑ ÆÄÀÏÀÇ Ãß°¡´Â »õ·Î¿î AttributeÀÇ Ãß°¡¸¸À» Çã¿ëÇÕ´Ï´Ù. ±âÁ¸
- * Ç×¸ñÀÇ »èÁ¦´Â Çã¿ëÄ¡ ¾Ê½À´Ï´Ù. ÇÏÀ§È£È¯¼ºÀ» À§ÇÔÀÔ´Ï´Ù.
+ *  ë˜í•œ íŒŒì¼ì˜ ì¶”ê°€ëŠ” ìƒˆë¡œìš´ Attributeì˜ ì¶”ê°€ë§Œì„ í—ˆìš©í•©ë‹ˆë‹¤. ê¸°ì¡´
+ * í•­ëª©ì˜ ì‚­ì œëŠ” í—ˆìš©ì¹˜ ì•ŠìŠµë‹ˆë‹¤. í•˜ìœ„í˜¸í™˜ì„±ì„ ìœ„í•¨ì…ë‹ˆë‹¤.
  *
- *  ÇöÀç ±â´ÉÀº ³ôÀº ¹öÀüÀÇ DBMS°¡ ³·Àº ¹öÀüÀÇ ÆÄÀÏÀ» ÀĞÀ» ¼ö ÀÖµµ·Ï
- * ¼³°èµÇ¾î ÀÖ½À´Ï´Ù. ¹İ´ë´Â µÇÁö ¾Ê½À´Ï´Ù.
+ *  í˜„ì¬ ê¸°ëŠ¥ì€ ë†’ì€ ë²„ì „ì˜ DBMSê°€ ë‚®ì€ ë²„ì „ì˜ íŒŒì¼ì„ ì½ì„ ìˆ˜ ìˆë„ë¡
+ * ì„¤ê³„ë˜ì–´ ìˆìŠµë‹ˆë‹¤. ë°˜ëŒ€ëŠ” ë˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
  *
  *
  *
- *  Version¾÷À» À§ÇÑ ÀıÂ÷´Â ´ÙÀ½°ú °°½À´Ï´Ù.
+ *  Versionì—…ì„ ìœ„í•œ ì ˆì°¨ëŠ” ë‹¤ìŒê³¼ ê°™ìŠµë‹ˆë‹¤.
  *
- *  1. ÃÖ½Å Version Number ¿Ã¸²
- *    smiDef.h¿¡ Á¤ÀÇµÈ SMI_DATAPORT_VERSION_LATEST¸¦ »ó½Â½ÃÅµ´Ï´Ù.
+ *  1. ìµœì‹  Version Number ì˜¬ë¦¼
+ *    smiDef.hì— ì •ì˜ëœ SMI_DATAPORT_VERSION_LATESTë¥¼ ìƒìŠ¹ì‹œí‚µë‹ˆë‹¤.
  * 
  * ex)   
  * #define SMI_DATAPORT_VERSION_2        (2)
@@ -55,22 +55,22 @@
  * 
  * 
  * 
- *  2. ¼¼ºÎ Çì´õÀÇ ¹öÀü¾÷
- *     ¼¼ºÎ Çì´õµéÀº ´ÙÀ½°ú °°½À´Ï´Ù.
+ *  2. ì„¸ë¶€ í—¤ë”ì˜ ë²„ì „ì—…
+ *     ì„¸ë¶€ í—¤ë”ë“¤ì€ ë‹¤ìŒê³¼ ê°™ìŠµë‹ˆë‹¤.
  *
- *     °øÅëÇì´õ - gSmiDataPortHeaderDesc : smiDataPort.cpp 
- *     ÆÄÀÏÇì´õ - gSCPfFileHeaderDesc : scpfModule.cpp        
- *     Å×ÀÌºíÇì´õ - gQsfTableHeaderDesc : qsfDataPort.cpp 
- *     Ä®·³Çì´õ - gQsfColumnHeaderDesc : qsfDataPort.cpp 
- *     ÆÄÆ¼¼ÇÇì´õ - gQsfPartitionHeaderDesc : qsfDataPort.cpp 
+ *     ê³µí†µí—¤ë” - gSmiDataPortHeaderDesc : smiDataPort.cpp 
+ *     íŒŒì¼í—¤ë” - gSCPfFileHeaderDesc : scpfModule.cpp        
+ *     í…Œì´ë¸”í—¤ë” - gQsfTableHeaderDesc : qsfDataPort.cpp 
+ *     ì¹¼ëŸ¼í—¤ë” - gQsfColumnHeaderDesc : qsfDataPort.cpp 
+ *     íŒŒí‹°ì…˜í—¤ë” - gQsfPartitionHeaderDesc : qsfDataPort.cpp 
  *
- *     ºí·°Çì´õ - gSCPfBlockHeaderDesc : scpfModule.cpp
+ *     ë¸”ëŸ­í—¤ë” - gSCPfBlockHeaderDesc : scpfModule.cpp
  *
  *
  *
- *  1) ÇØ´ç Çì´õ¿¡ »õ Ç×¸ñÀÌ Ãß°¡
- *       HeaderDesc¿¡ »õ ¹öÀüÀ» Ãß°¡ÇÏ°í, ColumnDescµµ Ãß°¡ÇÏ¿© ¿¬°á
- *     ÇÕ´Ï´Ù.
+ *  1) í•´ë‹¹ í—¤ë”ì— ìƒˆ í•­ëª©ì´ ì¶”ê°€
+ *       HeaderDescì— ìƒˆ ë²„ì „ì„ ì¶”ê°€í•˜ê³ , ColumnDescë„ ì¶”ê°€í•˜ì—¬ ì—°ê²°
+ *     í•©ë‹ˆë‹¤.
  *         
  *     ex)   
  *     smiDataPortHeaderColDesc  gSmiDataPortHeaderColDescV2[]=                  
@@ -102,17 +102,17 @@
  *    };
  *
  *
- *  2) Default°ª ¹× Module ¼öÁ¤
- *    Ãß°¡µÈ Ç×¸ñÀº ÀÌÀü ¹öÀü¿¡´Â Á¸ÀçÄ¡ ¾Ê´Â °ªÀÔ´Ï´Ù. µû¶ó¼­ ÀÌÀü ¹öÀüÀ» À§ÇØ
- *  Default°ªÀ» ¼³Á¤ÇÕ´Ï´Ù. 
+ *  2) Defaultê°’ ë° Module ìˆ˜ì •
+ *    ì¶”ê°€ëœ í•­ëª©ì€ ì´ì „ ë²„ì „ì—ëŠ” ì¡´ì¬ì¹˜ ì•ŠëŠ” ê°’ì…ë‹ˆë‹¤. ë”°ë¼ì„œ ì´ì „ ë²„ì „ì„ ìœ„í•´
+ *  Defaultê°’ì„ ì„¤ì •í•©ë‹ˆë‹¤. 
  *
- *    ¸¸¾à Default°ª¸¸À¸·Îµµ ÇÏÀ§ ¹öÀüÀ» ÀĞ±â ÃæºĞÇÏ´Ù¸é »ó°ü¾øÁö¸¸, ´Ù¸¥ Ã³¸®°¡
- * ÇÊ¿äÇÒ °æ¿ì Default¸¦ Æ¯Á¤ÇÑ °ªÀ¸·Î Á¤ÀÇ ÈÄ Module¿¡¼­ Ã³¸®ÇØÁà¾ß ÇÕ´Ï´Ù.
+ *    ë§Œì•½ Defaultê°’ë§Œìœ¼ë¡œë„ í•˜ìœ„ ë²„ì „ì„ ì½ê¸° ì¶©ë¶„í•˜ë‹¤ë©´ ìƒê´€ì—†ì§€ë§Œ, ë‹¤ë¥¸ ì²˜ë¦¬ê°€
+ * í•„ìš”í•  ê²½ìš° Defaultë¥¼ íŠ¹ì •í•œ ê°’ìœ¼ë¡œ ì •ì˜ í›„ Moduleì—ì„œ ì²˜ë¦¬í•´ì¤˜ì•¼ í•©ë‹ˆë‹¤.
  *
  *
  *
- *  3) »õ Ç×¸ñ Ãß°¡°¡ ¾ø´Â Çì´õÀÏ °æ¿ì
- *     Header Desc¿¡ Null·Î ¼³Á¤ÇÏ¸é ÃæºĞÇÕ´Ï´Ù.
+ *  3) ìƒˆ í•­ëª© ì¶”ê°€ê°€ ì—†ëŠ” í—¤ë”ì¼ ê²½ìš°
+ *     Header Descì— Nullë¡œ ì„¤ì •í•˜ë©´ ì¶©ë¶„í•©ë‹ˆë‹¤.
  *    
  *  {
  *      (SChar*)"BLOCK_HEADER_V2",
@@ -139,7 +139,7 @@ public:
     /************************************************************
      * Export
      ************************************************************/
-    //export¸¦ ½ÃÀÛÇÑ´Ù.
+    //exportë¥¼ ì‹œì‘í•œë‹¤.
     static IDE_RC beginExport( idvSQL               * aStatistics, 
                                void                ** aHandle,
                                smiDataPortHeader    * aHeader,
@@ -149,27 +149,27 @@ public:
                                UInt                   aType,
                                SLong                  aSplit );
 
-    //Row¸¦ ÇÏ³ª WriteÇÑ´Ù.
+    //Rowë¥¼ í•˜ë‚˜ Writeí•œë‹¤.
     static IDE_RC write( idvSQL          * aStatistics, 
                          void           ** aHandle,
                          smiValue        * aValueList );
 
-    // LobÀ» ¾µ ÁØºñ¸¦ ÇÑ´Ù.
+    // Lobì„ ì“¸ ì¤€ë¹„ë¥¼ í•œë‹¤.
     static IDE_RC prepareLob( idvSQL          * aStatistics, 
                               void           ** aHandle,
                               UInt              aLobLength );
 
-    // LobÀ» ±â·ÏÇÑ´Ù.
+    // Lobì„ ê¸°ë¡í•œë‹¤.
     static IDE_RC writeLob( idvSQL          * aStatistics,
                             void           ** aHandle,
                             UInt              aLobPieceLength,
                             UChar           * aLobPieceValue );
 
-    // LobÀÇ ±â·ÏÀÌ ¿Ï·áµÇ¾ú´Ù.
+    // Lobì˜ ê¸°ë¡ì´ ì™„ë£Œë˜ì—ˆë‹¤.
     static IDE_RC finishLobWriting( idvSQL          * aStatistics,
                                     void           ** aHandle );
 
-    // Export¸¦ Á¾·áÇÑ´Ù.
+    // Exportë¥¼ ì¢…ë£Œí•œë‹¤.
     static IDE_RC endExport( idvSQL          * aStatistics,
                              void           ** aHandle );
 
@@ -178,7 +178,7 @@ public:
     /************************************************************
      * Import
      ************************************************************/
-    //import¸¦ ½ÃÀÛÇÑ´Ù. Çì´õ¸¦ ÀĞ´Â´Ù.
+    //importë¥¼ ì‹œì‘í•œë‹¤. í—¤ë”ë¥¼ ì½ëŠ”ë‹¤.
     static IDE_RC beginImport( idvSQL               * aStatistics, 
                                void                ** aHandle,
                                smiDataPortHeader    * aHeader,
@@ -189,28 +189,28 @@ public:
                                SLong                  aFirstRowSeq,
                                SLong                  aLastRowSeq );
 
-    //rowµéÀ» ÀĞ´Â´Ù.
+    //rowë“¤ì„ ì½ëŠ”ë‹¤.
     static IDE_RC read( idvSQL          * aStatistics, 
                         void           ** aHandle,
                         smiRow4DP      ** aRows,
                         UInt            * aRowCount );
 
-    //LobÀÇ ÃÑ ±æÀÌ¸¦ ¹İÈ¯ÇÑ´Ù.
+    //Lobì˜ ì´ ê¸¸ì´ë¥¼ ë°˜í™˜í•œë‹¤.
     static IDE_RC readLobLength( idvSQL          * aStatistics, 
                                  void           ** aHandle,
                                  UInt            * aLength );
 
-    //LobÀ» ÀĞ´Â´Ù.
+    //Lobì„ ì½ëŠ”ë‹¤.
     static IDE_RC readLob( idvSQL          * aStatistics, 
                            void           ** aHandle,
                            UInt            * aLobPieceLength,
                            UChar          ** aLobPieceValue );
 
-    // Lob ÀĞ±â°¡  ¿Ï·áµÇ¾ú´Ù.
+    // Lob ì½ê¸°ê°€  ì™„ë£Œë˜ì—ˆë‹¤.
     static IDE_RC finishLobReading( idvSQL          * aStatistics,
                                     void           ** aHandle );
 
-    //import¸¦ Á¾·áÇÑ´Ù.
+    //importë¥¼ ì¢…ë£Œí•œë‹¤.
     static IDE_RC endImport( idvSQL          * aStatistics,
                              void           ** aHandle );
 
@@ -218,24 +218,24 @@ public:
     /****************************************************************
      * HeaderDescriptor
      *
-     * Structure¿¡ ÀÖ´Â Member VariableÀ» Endian »ó°ü ¾øÀÌ
-     * ÀĞ°í ¾µ ¼ö ÀÖµµ·Ï, FormatÀ» Á¤ÀÇÇÑ Header ±â·Ï¿ë ÇÔ¼ö
+     * Structureì— ìˆëŠ” Member Variableì„ Endian ìƒê´€ ì—†ì´
+     * ì½ê³  ì“¸ ìˆ˜ ìˆë„ë¡, Formatì„ ì •ì˜í•œ Header ê¸°ë¡ìš© í•¨ìˆ˜
      ****************************************************************/
-    /* ¿øº» HeaderÀÇ Å©±â¸¦ ¹İÈ¯ÇÑ´Ù. */
+    /* ì›ë³¸ Headerì˜ í¬ê¸°ë¥¼ ë°˜í™˜í•œë‹¤. */
     static UInt getHeaderSize( smiDataPortHeaderDesc   * aDesc,
                                UInt                      aVersion);
 
-    /* EncodingµÈ HeaderÀÇ Å©±â¸¦ ±¸ÇÑ´Ù. */
+    /* Encodingëœ Headerì˜ í¬ê¸°ë¥¼ êµ¬í•œë‹¤. */
     static UInt getEncodedHeaderSize( smiDataPortHeaderDesc   * aDesc,
                                       UInt                      aVersion);
 
 
-    /* DescÀÇ Min/Max¼³Á¤À» ¹ÙÅÁÀ¸·Î ValidationÀ» ¼öÇàÇÑ´Ù. */
+    /* Descì˜ Min/Maxì„¤ì •ì„ ë°”íƒ•ìœ¼ë¡œ Validationì„ ìˆ˜í–‰í•œë‹¤. */
     static IDE_RC validateHeader( smiDataPortHeaderDesc   * aDesc,
                                   UInt                      aVersion,
                                   void                    * aData );
 
-    /* Desc¿¡ µû¶ó writeÇÑ´Ù. */
+    /* Descì— ë”°ë¼ writeí•œë‹¤. */
     static IDE_RC writeHeader( smiDataPortHeaderDesc   * aDesc,
                                UInt                      aVersion,
                                void                    * aData,
@@ -243,7 +243,7 @@ public:
                                UInt                    * aOffset,
                                UInt                      aDestBufferSize );
 
-    /* Desc¿¡ µû¶ó ReadÇÑ´Ù. */
+    /* Descì— ë”°ë¼ Readí•œë‹¤. */
     static IDE_RC readHeader( smiDataPortHeaderDesc   * aDesc,
                               UInt                      aVersion,
                               UChar                   * aSourceBuffer,
@@ -251,7 +251,7 @@ public:
                               UInt                      aSourceBufferSize,
                               void                    * aDestData );
 
-    /* Header¸¦ DumpÇÑ´Ù. */
+    /* Headerë¥¼ Dumpí•œë‹¤. */
     static IDE_RC dumpHeader( smiDataPortHeaderDesc   * aDesc,
                               UInt                      aVersion,
                               void                    * aSourceData,
@@ -260,7 +260,7 @@ public:
                               UInt                      aOutSize );
 
     /**************************************************************
-     * DataPort FileÀÇ Çì´õ/ºí·°/Row¸¦ Ãâ·ÂÇÑ´Ù.
+     * DataPort Fileì˜ í—¤ë”/ë¸”ëŸ­/Rowë¥¼ ì¶œë ¥í•œë‹¤.
      **************************************************************/
     static IDE_RC dumpFileHeader( SChar * aFileName,
                                   SChar * aDirectory,

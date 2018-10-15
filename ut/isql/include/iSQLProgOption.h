@@ -32,11 +32,11 @@ public:
 
     IDE_RC ParsingCommandLine(SInt aArgc, SChar **aArgv);
     IDE_RC ReadProgOptionInteractive();
-    // BUG-26287: ¿É¼Ç Ã³¸®¹æ¹ı ÅëÀÏ
+    // BUG-26287: ì˜µì…˜ ì²˜ë¦¬ë°©ë²• í†µì¼
     IDE_RC ReadEnvironment();
     void   ReadServerProperties();
 
-    /* BUG-31387: ConnTypeÀ» º¸Á¤ÇÏ°í °æ¿ì¿¡ µû¶ó °æ°í Ãâ·Â */
+    /* BUG-31387: ConnTypeì„ ë³´ì •í•˜ê³  ê²½ìš°ì— ë”°ë¼ ê²½ê³  ì¶œë ¥ */
     void   AdjustConnType();
 
     SChar * GetServerName() { return m_ServerName; }

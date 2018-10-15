@@ -34,10 +34,10 @@ IDE_RC qcs::initialize( idvSQL * aStatistics )
  * Description : PROJ-2002 Column Security
  *
  * Implementation :
- *    1. meta »Æ¿Œ (module name, module version, ecc policy name)
- *    2. openModule (∏µ‚ ø≠±‚)
- *    3. verifyModule (∏µ‚ø° µ˚∏• ¿Œ¡ı)
- *    4. initializeModule (∏µ‚ø° µ˚∏• √ ±‚»≠)
+ *    1. meta ÌôïÏù∏ (module name, module version, ecc policy name)
+ *    2. openModule (Î™®Îìà Ïó¥Í∏∞)
+ *    3. verifyModule (Î™®ÎìàÏóê Îî∞Î•∏ Ïù∏Ï¶ù)
+ *    4. initializeModule (Î™®ÎìàÏóê Îî∞Î•∏ Ï¥àÍ∏∞Ìôî)
  *
  ***********************************************************************/
 
@@ -61,7 +61,7 @@ IDE_RC qcs::initialize( idvSQL * aStatistics )
     idBool          sStmtBegined = ID_FALSE;
     
     //----------------------------------------------
-    // property »Æ¿Œ
+    // property ÌôïÏù∏
     //----------------------------------------------
     
     IDE_TEST_RAISE( ( idlOS::strlen( QCU_SECURITY_MODULE_NAME ) == 0 ) ||
@@ -69,7 +69,7 @@ IDE_RC qcs::initialize( idvSQL * aStatistics )
                     ERR_FAIL_TO_OPEN_SECURITY_MODULE );
     
     //----------------------------------------------
-    // meta »Æ¿Œ
+    // meta ÌôïÏù∏
     //----------------------------------------------
     
     IDE_TEST( sTrans.initialize() != IDE_SUCCESS );
@@ -97,25 +97,25 @@ IDE_RC qcs::initialize( idvSQL * aStatistics )
     IDE_TEST_CONT( sIsExist == ID_FALSE, NORMAL_EXIT );
 
     //----------------------------------------------
-    // initialize Ω√¿€
+    // initialize ÏãúÏûë
     //----------------------------------------------
     
     ideLog::log( IDE_QP_0,"\n ==> Initialize Security Module" );
     
     //----------------------------------------------
-    // meta ∞ÀªÁ
+    // meta Í≤ÄÏÇ¨
     //----------------------------------------------
 
     ideLog::log( IDE_QP_0,"\n ==> Check Security Properties" );
 
-    // module name »Æ¿Œ
+    // module name ÌôïÏù∏
     IDE_TEST_RAISE( idlOS::strMatch( sMetaModuleName,
                                      idlOS::strlen( sMetaModuleName ),
                                      QCU_SECURITY_MODULE_NAME,
                                      idlOS::strlen( QCU_SECURITY_MODULE_NAME ) ) != 0,
                     ERR_MISMATCH_SECURITY_MODULE_NAME );
 
-    // ecc policy »Æ¿Œ
+    // ecc policy ÌôïÏù∏
     IDE_TEST_RAISE( idlOS::strMatch( sMetaECCPolicyName,
                                      idlOS::strlen( sMetaECCPolicyName ),
                                      QCU_SECURITY_ECC_POLICY_NAME,
@@ -128,7 +128,7 @@ IDE_RC qcs::initialize( idvSQL * aStatistics )
                  QCU_SECURITY_ECC_POLICY_NAME );
     
     //----------------------------------------------
-    // ∏µ‚ ø≠±‚
+    // Î™®Îìà Ïó¥Í∏∞
     //----------------------------------------------
 
     ideLog::log( IDE_QP_0,"\n ==> Open External Security Module" );
@@ -140,7 +140,7 @@ IDE_RC qcs::initialize( idvSQL * aStatistics )
     sIsOpened = ID_TRUE;
 
     //----------------------------------------------
-    // ∏µ‚ ¿Œ¡ı
+    // Î™®Îìà Ïù∏Ï¶ù
     //----------------------------------------------
 
     ideLog::log( IDE_QP_0,"\n ==> Verify External Security Module" );
@@ -148,7 +148,7 @@ IDE_RC qcs::initialize( idvSQL * aStatistics )
     IDE_TEST( qcsModule::verifyModule() != IDE_SUCCESS );
 
     //----------------------------------------------
-    // ∏µ‚ √ ±‚»≠
+    // Î™®Îìà Ï¥àÍ∏∞Ìôî
     //----------------------------------------------
 
     ideLog::log( IDE_QP_0,"\n ==> Initialize External Security Module" );
@@ -162,7 +162,7 @@ IDE_RC qcs::initialize( idvSQL * aStatistics )
                  QCU_SECURITY_ECC_POLICY_NAME );
 
     //----------------------------------------------
-    // ∏µ‚ version ∞ÀªÁ
+    // Î™®Îìà version Í≤ÄÏÇ¨
     //----------------------------------------------
 
     ideLog::log( IDE_QP_0,"\n ==> Verify Module Version" );
@@ -182,7 +182,7 @@ IDE_RC qcs::initialize( idvSQL * aStatistics )
                  sModuleVersion );
     
     //----------------------------------------------
-    // ECC policy ∞ÀªÁ
+    // ECC policy Í≤ÄÏÇ¨
     //----------------------------------------------
 
     ideLog::log( IDE_QP_0,"\n ==> Verify ECC Policy" );
@@ -196,7 +196,7 @@ IDE_RC qcs::initialize( idvSQL * aStatistics )
                     ERR_INVALID_ECC_POLICY );
     
     //----------------------------------------------
-    // policy ∞ÀªÁ
+    // policy Í≤ÄÏÇ¨
     //----------------------------------------------
 
     ideLog::log( IDE_QP_0,"\n ==> Verify Encrypted Column Policy" );
@@ -207,7 +207,7 @@ IDE_RC qcs::initialize( idvSQL * aStatistics )
     ideLog::log( IDE_QP_0," ... [SUCCESS]" );
     
     //----------------------------------------------
-    // ¡æ∑·
+    // Ï¢ÖÎ£å
     //----------------------------------------------
     
     IDE_EXCEPTION_CONT( NORMAL_EXIT );
@@ -306,15 +306,15 @@ IDE_RC qcs::finalize( void )
  * Description : PROJ-2002 Column Security
  *
  * Implementation :
- *    1. finalizeModule (∏µ‚ ¡æ∑·)
- *    2. closeModule (∏µ‚ ¥›±‚)
+ *    1. finalizeModule (Î™®Îìà Ï¢ÖÎ£å)
+ *    2. closeModule (Î™®Îìà Îã´Í∏∞)
  *
  ***********************************************************************/
     
     if ( qcsModule::isInitialized() == ID_TRUE )
     {
         //----------------------------------------------
-        // ∏µ‚ ¡æ∑·
+        // Î™®Îìà Ï¢ÖÎ£å
         //----------------------------------------------
 
         ideLog::log( IDE_QP_0,"\n ==> Finalize Security Module" );
@@ -322,7 +322,7 @@ IDE_RC qcs::finalize( void )
         IDE_TEST( qcsModule::finalizeModule() != IDE_SUCCESS );
 
         //----------------------------------------------
-        // ∏µ‚ ¥›±‚
+        // Î™®Îìà Îã´Í∏∞
         //----------------------------------------------
         
         (void) qcsModule::closeModule();
@@ -348,20 +348,20 @@ IDE_RC qcs::startSecurity( qcStatement  * aStatement )
  * Description : PROJ-2002 Column Security
  *
  * Implementation :
- *    √÷√  ∫∏æ»∏µ‚¿ª º≥¡§«œ∞Ì start«œ¥¬ ∞ÊøÏ
- *      0. meta∞° æ¯¿Ω
- *      1. openModule (∏µ‚ ø≠±‚)
- *      2. verifyModule (∏µ‚ø° µ˚∏• ¿Œ¡ı)
- *      3. initializeModule (∏µ‚ø° µ˚∏• √ ±‚»≠)
- *      4. columnø° ªÁøÎµ» policy ∞ÀªÁ
+ *    ÏµúÏ¥à Î≥¥ÏïàÎ™®ÎìàÏùÑ ÏÑ§Ï†ïÌïòÍ≥† startÌïòÎäî Í≤ΩÏö∞
+ *      0. metaÍ∞Ä ÏóÜÏùå
+ *      1. openModule (Î™®Îìà Ïó¥Í∏∞)
+ *      2. verifyModule (Î™®ÎìàÏóê Îî∞Î•∏ Ïù∏Ï¶ù)
+ *      3. initializeModule (Î™®ÎìàÏóê Îî∞Î•∏ Ï¥àÍ∏∞Ìôî)
+ *      4. columnÏóê ÏÇ¨Ïö©Îêú policy Í≤ÄÏÇ¨
  *      5. insert meta
  *
- *    server startΩ√ ∫∏æ»∏µ‚¿« √ ±‚»≠∞° Ω«∆–«œø© start«œ¥¬ ∞ÊøÏ
- *      0. ∫∏æ»∏µ‚¿« √ ±‚»≠∞° æ»µ«æÓ ¿÷¿Ω
- *      1. openModule (∏µ‚ ø≠±‚)
- *      2. verifyModule (∏µ‚ø° µ˚∏• ¿Œ¡ı)
- *      3. initializeModule (∏µ‚ø° µ˚∏• √ ±‚»≠)
- *      4. columnø° ªÁøÎµ» policy ∞ÀªÁ
+ *    server startÏãú Î≥¥ÏïàÎ™®ÎìàÏùò Ï¥àÍ∏∞ÌôîÍ∞Ä Ïã§Ìå®ÌïòÏó¨ startÌïòÎäî Í≤ΩÏö∞
+ *      0. Î≥¥ÏïàÎ™®ÎìàÏùò Ï¥àÍ∏∞ÌôîÍ∞Ä ÏïàÎêòÏñ¥ ÏûàÏùå
+ *      1. openModule (Î™®Îìà Ïó¥Í∏∞)
+ *      2. verifyModule (Î™®ÎìàÏóê Îî∞Î•∏ Ïù∏Ï¶ù)
+ *      3. initializeModule (Î™®ÎìàÏóê Îî∞Î•∏ Ï¥àÍ∏∞Ìôî)
+ *      4. columnÏóê ÏÇ¨Ïö©Îêú policy Í≤ÄÏÇ¨
  *      5. update meta
  *
  ***********************************************************************/
@@ -379,13 +379,13 @@ IDE_RC qcs::startSecurity( qcStatement  * aStatement )
     idBool   sIsValid;
     
     //----------------------------------------------
-    // start Ω√¿€
+    // start ÏãúÏûë
     //----------------------------------------------
     
     ideLog::log( IDE_QP_0,"\n ==> Start Security Module" );
 
     //----------------------------------------------
-    // property »Æ¿Œ
+    // property ÌôïÏù∏
     //----------------------------------------------
 
     IDE_TEST_RAISE( ( idlOS::strlen( QCU_SECURITY_MODULE_NAME ) == 0 ) ||
@@ -393,7 +393,7 @@ IDE_RC qcs::startSecurity( qcStatement  * aStatement )
                     ERR_FAIL_TO_OPEN_SECURITY_MODULE );
     
     //----------------------------------------------
-    // meta »Æ¿Œ
+    // meta ÌôïÏù∏
     //----------------------------------------------
 
     IDE_TEST( getMetaSecurity( QC_SMI_STMT( aStatement ),
@@ -407,24 +407,24 @@ IDE_RC qcs::startSecurity( qcStatement  * aStatement )
 
     if ( sIsExist == ID_TRUE )
     {
-        // server startΩ√ ∫∏æ»∏µ‚¿« √ ±‚»≠∞° Ω«∆–«œø© start«œ¥¬ ∞ÊøÏ
+        // server startÏãú Î≥¥ÏïàÎ™®ÎìàÏùò Ï¥àÍ∏∞ÌôîÍ∞Ä Ïã§Ìå®ÌïòÏó¨ startÌïòÎäî Í≤ΩÏö∞
         IDE_TEST_RAISE( qcsModule::isInitialized() == ID_TRUE,
                         ERR_SECURITY_MODULE_ALREADY_STARTED );
 
         //----------------------------------------------
-        // meta ∞ÀªÁ
+        // meta Í≤ÄÏÇ¨
         //----------------------------------------------
         
         ideLog::log( IDE_QP_0,"\n ==> Check Security Properties" );
 
-        // module name »Æ¿Œ
+        // module name ÌôïÏù∏
         IDE_TEST_RAISE( idlOS::strMatch( sMetaModuleName,
                                          idlOS::strlen( sMetaModuleName ),
                                          QCU_SECURITY_MODULE_NAME,
                                          idlOS::strlen( QCU_SECURITY_MODULE_NAME ) ) != 0,
                         ERR_MISMATCH_SECURITY_MODULE_NAME );
 
-        // ecc policy »Æ¿Œ
+        // ecc policy ÌôïÏù∏
         IDE_TEST_RAISE( idlOS::strMatch( sMetaECCPolicyName,
                                          idlOS::strlen( sMetaECCPolicyName ),
                                          QCU_SECURITY_ECC_POLICY_NAME,
@@ -438,13 +438,13 @@ IDE_RC qcs::startSecurity( qcStatement  * aStatement )
     }
     else
     {
-        // √÷√  ∫∏æ»∏µ‚¿ª º≥¡§«œ∞Ì start«œ¥¬ ∞ÊøÏ
+        // ÏµúÏ¥à Î≥¥ÏïàÎ™®ÎìàÏùÑ ÏÑ§Ï†ïÌïòÍ≥† startÌïòÎäî Í≤ΩÏö∞
         
         // Nothing to do.
     }
 
     //----------------------------------------------
-    // ∏µ‚ ø≠±‚
+    // Î™®Îìà Ïó¥Í∏∞
     //----------------------------------------------
 
     ideLog::log( IDE_QP_0,"\n ==> Open External Security Module" );
@@ -458,11 +458,11 @@ IDE_RC qcs::startSecurity( qcStatement  * aStatement )
     if ( sIsExist == ID_TRUE )
     {
         //----------------------------------------------------
-        // server startΩ√ ∫∏æ»∏µ‚¿« √ ±‚»≠∞° Ω«∆–«œø© start«œ¥¬ ∞ÊøÏ
+        // server startÏãú Î≥¥ÏïàÎ™®ÎìàÏùò Ï¥àÍ∏∞ÌôîÍ∞Ä Ïã§Ìå®ÌïòÏó¨ startÌïòÎäî Í≤ΩÏö∞
         //----------------------------------------------------
 
         //----------------------------------------------
-        // ∏µ‚ ¿Œ¡ı
+        // Î™®Îìà Ïù∏Ï¶ù
         //----------------------------------------------
 
         ideLog::log( IDE_QP_0,"\n ==> Verify External Security Module" );
@@ -470,7 +470,7 @@ IDE_RC qcs::startSecurity( qcStatement  * aStatement )
         IDE_TEST( qcsModule::verifyModule() != IDE_SUCCESS );
 
         //----------------------------------------------
-        // ∏µ‚ √ ±‚»≠
+        // Î™®Îìà Ï¥àÍ∏∞Ìôî
         //----------------------------------------------
 
         ideLog::log( IDE_QP_0,"\n ==> Initialize External Security Module" );
@@ -483,7 +483,7 @@ IDE_RC qcs::startSecurity( qcStatement  * aStatement )
                      QCU_SECURITY_ECC_POLICY_NAME );
 
         //----------------------------------------------
-        // ∏µ‚ version ∞ÀªÁ
+        // Î™®Îìà version Í≤ÄÏÇ¨
         //----------------------------------------------
         
         ideLog::log( IDE_QP_0,"\n ==> Verify Module Version" );
@@ -503,7 +503,7 @@ IDE_RC qcs::startSecurity( qcStatement  * aStatement )
                      sModuleVersion );
     
         //----------------------------------------------
-        // ECC policy ∞ÀªÁ
+        // ECC policy Í≤ÄÏÇ¨
         //----------------------------------------------
 
         ideLog::log( IDE_QP_0,"\n ==> Verify ECC Policy" );
@@ -517,7 +517,7 @@ IDE_RC qcs::startSecurity( qcStatement  * aStatement )
                         ERR_INVALID_ECC_POLICY );
     
         //----------------------------------------------
-        // policy ∞ÀªÁ
+        // policy Í≤ÄÏÇ¨
         //----------------------------------------------
 
         ideLog::log( IDE_QP_0,"\n ==> Verify Encrypted Column Policy" );
@@ -528,7 +528,7 @@ IDE_RC qcs::startSecurity( qcStatement  * aStatement )
     else
     {
         //----------------------------------------------------
-        // √÷√  ∫∏æ»∏µ‚¿ª º≥¡§«œ∞Ì start«œ¥¬ ∞ÊøÏ
+        // ÏµúÏ¥à Î≥¥ÏïàÎ™®ÎìàÏùÑ ÏÑ§Ï†ïÌïòÍ≥† startÌïòÎäî Í≤ΩÏö∞
         //----------------------------------------------------
 
         IDE_TEST( qcsModule::getModuleName( sModuleName )
@@ -540,7 +540,7 @@ IDE_RC qcs::startSecurity( qcStatement  * aStatement )
                      QCU_SECURITY_ECC_POLICY_NAME );
         
         //----------------------------------------------
-        // ∏µ‚ ¿Œ¡ı
+        // Î™®Îìà Ïù∏Ï¶ù
         //----------------------------------------------
 
         ideLog::log( IDE_QP_0,"\n ==> Verify External Security Module" );
@@ -548,7 +548,7 @@ IDE_RC qcs::startSecurity( qcStatement  * aStatement )
         IDE_TEST( qcsModule::verifyModule() != IDE_SUCCESS );
 
         //----------------------------------------------
-        // ∏µ‚ √ ±‚»≠
+        // Î™®Îìà Ï¥àÍ∏∞Ìôî
         //----------------------------------------------
 
         ideLog::log( IDE_QP_0,"\n ==> Initialize External Security Module" );
@@ -655,11 +655,11 @@ IDE_RC qcs::stopSecurity( qcStatement  * aStatement )
  * Description : PROJ-2002 Column Security
  *
  * Implementation :
- *    1. meta »Æ¿Œ
- *    2. encrypt column¿Ã ¥ı¿ÃªÛ ªÁøÎµ«¡ˆ æ ¥¬¡ˆ ∞ÀªÁ
- *    3. finalizeModule (∏µ‚ ¡æ∑·)
- *    4. closeModule (∏µ‚ ¥›±‚)
- *    5. meta ªË¡¶
+ *    1. meta ÌôïÏù∏
+ *    2. encrypt columnÏù¥ ÎçîÏù¥ÏÉÅ ÏÇ¨Ïö©ÎêòÏßÄ ÏïäÎäîÏßÄ Í≤ÄÏÇ¨
+ *    3. finalizeModule (Î™®Îìà Ï¢ÖÎ£å)
+ *    4. closeModule (Î™®Îìà Îã´Í∏∞)
+ *    5. meta ÏÇ≠Ï†ú
  *
  ***********************************************************************/
 
@@ -672,7 +672,7 @@ IDE_RC qcs::stopSecurity( qcStatement  * aStatement )
     UInt     sCount;
     
     //----------------------------------------------
-    // meta »Æ¿Œ
+    // meta ÌôïÏù∏
     //----------------------------------------------
     
     IDE_TEST( getMetaSecurity( QC_SMI_STMT( aStatement ),
@@ -687,7 +687,7 @@ IDE_RC qcs::stopSecurity( qcStatement  * aStatement )
     IDE_TEST_CONT( sIsExist == ID_FALSE, NORMAL_EXIT );
     
     //----------------------------------------------
-    // encrypted column »Æ¿Œ
+    // encrypted column ÌôïÏù∏
     //----------------------------------------------
 
     IDE_TEST( getEncryptedColumnCount(
@@ -699,7 +699,7 @@ IDE_RC qcs::stopSecurity( qcStatement  * aStatement )
                     ERR_EXIST_ENCRYPTED_COLUMN );
     
     //----------------------------------------------
-    // ∏µ‚ ¡æ∑·
+    // Î™®Îìà Ï¢ÖÎ£å
     //----------------------------------------------
     
     ideLog::log( IDE_QP_0,"\n ==> Stop Security Module" );
@@ -709,7 +709,7 @@ IDE_RC qcs::stopSecurity( qcStatement  * aStatement )
         IDE_TEST( qcsModule::finalizeModule() != IDE_SUCCESS );
 
         //----------------------------------------------
-        // ∏µ‚ ¥›±‚
+        // Î™®Îìà Îã´Í∏∞
         //----------------------------------------------
         
         (void) qcsModule::closeModule();
@@ -720,7 +720,7 @@ IDE_RC qcs::stopSecurity( qcStatement  * aStatement )
     }
 
     //----------------------------------------------
-    // meta ªË¡¶
+    // meta ÏÇ≠Ï†ú
     //----------------------------------------------
     
     IDE_TEST( deleteSecurityModuleFromMeta(
@@ -766,7 +766,7 @@ IDE_RC qcs::getMetaSecurity( smiStatement  * aSmiStmt,
     mtcColumn       * sECCPolicyCodeColInfo;
     mtdCharType     * sCharStr;
     smiTableCursor    sCursor;
-    scGRID            sRid; // Disk Table¿ª ¿ß«— Record IDentifier
+    scGRID            sRid; // Disk TableÏùÑ ÏúÑÌïú Record IDentifier
 
     sCursor.initialize();
 
@@ -873,8 +873,8 @@ IDE_RC qcs::verifyEncryptedColumnPolicy( smiStatement  * aSmiStmt )
  * Description : PROJ-2002 Column Security
  *
  * Implementation :
- *    1. SYS_ENCRYPTED_COLUMNS_ø°º≠ record∏¶ fetch
- *    2. policy_code, ecc_policy_code∏¶ ∞ÀªÁ
+ *    1. SYS_ENCRYPTED_COLUMNS_ÏóêÏÑú recordÎ•º fetch
+ *    2. policy_code, ecc_policy_codeÎ•º Í≤ÄÏÇ¨
  *
  ***********************************************************************/
     
@@ -888,7 +888,7 @@ IDE_RC qcs::verifyEncryptedColumnPolicy( smiStatement  * aSmiStmt )
     UShort            sPolicyCodeSize;
     idBool            sIsValid;
     smiTableCursor    sCursor;
-    scGRID            sRid; // Disk Table¿ª ¿ß«— Record IDentifier
+    scGRID            sRid; // Disk TableÏùÑ ÏúÑÌïú Record IDentifier
 
     sCursor.initialize();
 
@@ -984,15 +984,15 @@ IDE_RC qcs::getEncryptedColumnCount( smiStatement  * aSmiStmt,
  * Description : PROJ-2002 Column Security
  *
  * Implementation :
- *    1. SYS_ENCRYPTED_COLUMNS_ø°º≠ record∏¶ fetch
- *    2. policy_code, ecc_policy_code∏¶ ∞ÀªÁ
+ *    1. SYS_ENCRYPTED_COLUMNS_ÏóêÏÑú recordÎ•º fetch
+ *    2. policy_code, ecc_policy_codeÎ•º Í≤ÄÏÇ¨
  *
  ***********************************************************************/
     
     UInt              sStage  = 0;
     const void      * sRow;
     smiTableCursor    sCursor;
-    scGRID            sRid; // Disk Table¿ª ¿ß«— Record IDentifier
+    scGRID            sRid; // Disk TableÏùÑ ÏúÑÌïú Record IDentifier
     UInt              sCount = 0;
 
     sCursor.initialize();

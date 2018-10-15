@@ -19,11 +19,11 @@
  * $Id: qmgLeftOuter.h 82075 2018-01-17 06:39:52Z jina.kim $
  *
  * Description :
- *     LeftOuter Graph¸¦ À§ÇÑ Á¤ÀÇ
+ *     LeftOuter Graphë¥¼ ìœ„í•œ ì •ì˜
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  **********************************************************************/
 
@@ -36,30 +36,30 @@
 #include <qmoPredicate.h>
 
 //---------------------------------------------------
-// Left Outer Join Graph ¸¦ °ü¸®ÇÏ±â À§ÇÑ ÀÚ·á ±¸Á¶
+// Left Outer Join Graph ë¥¼ ê´€ë¦¬í•˜ê¸° ìœ„í•œ ìë£Œ êµ¬ì¡°
 //---------------------------------------------------
 
 typedef struct qmgLOJN
 {
-    qmgGraph graph;  // °øÅë Graph Á¤º¸
+    qmgGraph graph;  // ê³µí†µ Graph ì •ë³´
 
-    // LeftOuter Join Graph¸¦ À§ÇÑ Á¤º¸
+    // LeftOuter Join Graphë¥¼ ìœ„í•œ ì •ë³´
 
     qmoCNF            * onConditionCNF;
 
     //-----------------------------------------------
-    // Join Method Á¤º¸
+    // Join Method ì •ë³´
     //-----------------------------------------------
 
     qmoJoinMethod     * nestedLoopJoinMethod;
     qmoJoinMethod     * sortBasedJoinMethod;
     qmoJoinMethod     * hashBasedJoinMethod;
 
-    qmoJoinMethodCost * selectedJoinMethod; // °¡Àå cost°¡ ³·Àº Join Method
+    qmoJoinMethodCost * selectedJoinMethod; // ê°€ì¥ costê°€ ë‚®ì€ Join Method
 
     //----------------------------------------------
-    // Join Predicate Á¤º¸:
-    //    ¼±ÅÃµÈ Join Method Type¿¡ µû¶ó ´ÙÀ½°ú °°ÀÌ Join PredicateÀÌ ºĞ·ùµÈ´Ù.
+    // Join Predicate ì •ë³´:
+    //    ì„ íƒëœ Join Method Typeì— ë”°ë¼ ë‹¤ìŒê³¼ ê°™ì´ Join Predicateì´ ë¶„ë¥˜ëœë‹¤.
     //
     //    - joinablePredicate
     //      Index Nested Loop or Anti Outer      : indexablePredicate
@@ -76,15 +76,15 @@ typedef struct qmgLOJN
     qmoPredicate      * nonJoinablePredicate;
 
     // PROJ-2179/BUG-35484
-    // Full/index nested loop join½Ã push downµÈ predicateÀ» ´ã¾ÆµĞ´Ù.
+    // Full/index nested loop joinì‹œ push downëœ predicateì„ ë‹´ì•„ë‘”ë‹¤.
     qmoPredicate      * pushedDownPredicate;
 
     //---------------------------------------------
-    // Join Method TypeÀÌ Hash Based JoinÀÎ °æ¿ì, »ç¿ë
+    // Join Method Typeì´ Hash Based Joinì¸ ê²½ìš°, ì‚¬ìš©
     //---------------------------------------------
 
     UInt            hashBucketCnt;        // hash bucket count
-    UInt            hashTmpTblCnt;        // hash temp table °³¼ö
+    UInt            hashTmpTblCnt;        // hash temp table ê°œìˆ˜
 
     // PROJ-2242
     SDouble         firstRowsFactor;      // FIRST_ROWS_N
@@ -93,25 +93,25 @@ typedef struct qmgLOJN
 } qmgLOJN;
 
 //---------------------------------------------------
-// Left Outer Join Graph ¸¦ °ü¸®ÇÏ±â À§ÇÑ ÇÔ¼ö
+// Left Outer Join Graph ë¥¼ ê´€ë¦¬í•˜ê¸° ìœ„í•œ í•¨ìˆ˜
 //---------------------------------------------------
 
 class qmgLeftOuter
 {
 public:
-    // Graph ÀÇ ÃÊ±âÈ­
+    // Graph ì˜ ì´ˆê¸°í™”
     static IDE_RC  init( qcStatement * aStatement,
                          qmsQuerySet * aQuerySet,
                          qmsFrom     * aFrom,
                          qmgGraph   ** aGraph );
 
-    // GraphÀÇ ÃÖÀûÈ­ ¼öÇà
+    // Graphì˜ ìµœì í™” ìˆ˜í–‰
     static IDE_RC  optimize( qcStatement * aStatement, qmgGraph * aGraph );
 
-    // GraphÀÇ Plan Tree »ı¼º
+    // Graphì˜ Plan Tree ìƒì„±
     static IDE_RC  makePlan( qcStatement * aStatement, const qmgGraph * aParent, qmgGraph * aGraph );
 
-    // GraphÀÇ °øÅë Á¤º¸¸¦ Ãâ·ÂÇÔ.
+    // Graphì˜ ê³µí†µ ì •ë³´ë¥¼ ì¶œë ¥í•¨.
     static IDE_RC  printGraph( qcStatement  * aStatement,
                                qmgGraph     * aGraph,
                                ULong          aDepth,

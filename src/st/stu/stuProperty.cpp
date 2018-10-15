@@ -102,10 +102,10 @@ IDE_RC stuProperty::changeST_CLIP_TOLERANCE( idvSQL * /* aStatistics */,
 /***********************************************************************
  *
  * Description :
- *    ST_CLIP_TOLERANCE¸¦ À§ÇÑ CallBack ÇÔ¼ö
+ *    ST_CLIP_TOLERANCEë¥¼ ìœ„í•œ CallBack í•¨ìˆ˜
  *
  * Implementation :
- *    Atomic OperationÀÌ¹Ç·Î µ¿½Ã¼º Á¦¾î¿¡ ¹®Á¦°¡ ¾ø´Ù.
+ *    Atomic Operationì´ë¯€ë¡œ ë™ì‹œì„± ì œì–´ì— ë¬¸ì œê°€ ì—†ë‹¤.
  *
  ***********************************************************************/
 
@@ -138,10 +138,10 @@ IDE_RC stuProperty::changeST_ALLOW_INVALID_OBJECT( idvSQL * /* aStatistics */,
 /***********************************************************************
  *
  * Description :
- *    ST_ALLOW_INVALID_OBJECT¸¦ À§ÇÑ CallBack ÇÔ¼ö
+ *    ST_ALLOW_INVALID_OBJECTë¥¼ ìœ„í•œ CallBack í•¨ìˆ˜
  *
  * Implementation :
- *    Atomic OperationÀÌ¹Ç·Î µ¿½Ã¼º Á¦¾î¿¡ ¹®Á¦°¡ ¾ø´Ù.
+ *    Atomic Operationì´ë¯€ë¡œ ë™ì‹œì„± ì œì–´ì— ë¬¸ì œê°€ ì—†ë‹¤.
  *
  ***********************************************************************/
 
@@ -172,10 +172,10 @@ IDE_RC stuProperty::changeST_GEOMETRY_VALIDATION_ENABLE( idvSQL * /* aStatistics
 /***********************************************************************
  *
  * Description :
- *    changeST_GEOMETRY_VALIDATION_ENABLE¸¦ À§ÇÑ CallBack ÇÔ¼ö
+ *    changeST_GEOMETRY_VALIDATION_ENABLEë¥¼ ìœ„í•œ CallBack í•¨ìˆ˜
  *
  * Implementation :
- *    Atomic OperationÀÌ¹Ç·Î µ¿½Ã¼º Á¦¾î¿¡ ¹®Á¦°¡ ¾ø´Ù.
+ *    Atomic Operationì´ë¯€ë¡œ ë™ì‹œì„± ì œì–´ì— ë¬¸ì œê°€ ì—†ë‹¤.
  *
  ***********************************************************************/
 

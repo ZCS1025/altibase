@@ -37,17 +37,17 @@
 
 /*----------------------------------------------------------------------
   Name:
-      iduCheckSessionEvent() -- Session¿¡ ´ëÇÑ Event °Ë»ç ÄÚµå
+      iduCheckSessionEvent() -- Sessionì— ëŒ€í•œ Event ê²€ì‚¬ ì½”ë“œ
 
   Argument:
       aFlag - Event Pointer
 
   Return:
-      IDE_RC ¼º°ø(No Event), ½ÇÆĞ(Event Occurred)
+      IDE_RC ì„±ê³µ(No Event), ì‹¤íŒ¨(Event Occurred)
 
   Description:
-      ÀÌ ÇÔ¼ö´Â »óÀ§¿¡¼­ È£ÃâÇÏ¿©, ¼¼¼ÇÀÇ Event¸¦ °¨ÁöÇÏ´Â
-      °ÍÀ¸·Î¼­ Close, Timeout Event¸¦ °ËÃâÇÑ´Ù.
+      ì´ í•¨ìˆ˜ëŠ” ìƒìœ„ì—ì„œ í˜¸ì¶œí•˜ì—¬, ì„¸ì…˜ì˜ Eventë¥¼ ê°ì§€í•˜ëŠ”
+      ê²ƒìœ¼ë¡œì„œ Close, Timeout Eventë¥¼ ê²€ì¶œí•œë‹¤.
  *--------------------------------------------------------------------*/
 
 IDE_RC iduSessionErrorFilter( ULong aFlag, UInt aCurrStmtID );

@@ -21,13 +21,13 @@
  * Description :
  *     Critical Path Manager
  *
- *     FROM, WHERE·Î ±¸¼ºµÇ´Â Critical Path¿¡ ´ëÇÑ ÃÖÀûÈ­¸¦ ¼öÇàÇÏ°í
- *     ÀÌ¿¡ ´ëÇÑ Graph¸¦ »ı¼ºÇÑ´Ù.
+ *     FROM, WHEREë¡œ êµ¬ì„±ë˜ëŠ” Critical Pathì— ëŒ€í•œ ìµœì í™”ë¥¼ ìˆ˜í–‰í•˜ê³ 
+ *     ì´ì— ëŒ€í•œ Graphë¥¼ ìƒì„±í•œë‹¤.
  *
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  **********************************************************************/
 
@@ -40,32 +40,32 @@
 #include <qmoDnfMgr.h>
 
 //---------------------------------------------------
-// Critical Path¸¦ °ü¸®ÇÏ±â À§ÇÑ ÀÚ·á ±¸Á¶
+// Critical Pathë¥¼ ê´€ë¦¬í•˜ê¸° ìœ„í•œ ìë£Œ êµ¬ì¡°
 //---------------------------------------------------
 
 typedef struct qmoCrtPath
 {
-    qmoNormalType   normalType;    // CNF ¶Ç´Â DNF
+    qmoNormalType   normalType;    // CNF ë˜ëŠ” DNF
 
     qmoDNF        * crtDNF;
     qmoCNF        * crtCNF;
 
-    qmoCNF        * currentCNF;    // ÇöÀç CNF( Plan Tree »ı¼º ½Ã »ç¿ë )
+    qmoCNF        * currentCNF;    // í˜„ì¬ CNF( Plan Tree ìƒì„± ì‹œ ì‚¬ìš© )
 
-    qmgGraph      * myGraph;       // critical path°¡ °áÁ¤µÈ °á°ú graph
+    qmgGraph      * myGraph;       // critical pathê°€ ê²°ì •ëœ ê²°ê³¼ graph
 
     //-------------------------------------------------------------------
-    // PROJ-1405 ROWNUM °ü·Ã ÀÚ·á ±¸Á¶
+    // PROJ-1405 ROWNUM ê´€ë ¨ ìë£Œ êµ¬ì¡°
     //
-    // currentNormalType   : ÇöÀç critical path°¡ predicateÀ» Ã³¸®ÇÏ´Â
-    //                       Normalization Type Á¤º¸
-    // rownumPredicate4CNF : critical path°¡ CNF,NNF·Î predicateÀ» Ã³¸®ÇÒ¶§ÀÇ
-    //                       rownumPredicate Á¤º¸
-    // rownumPredicate4CNF : critical path°¡ DNF·Î predicateÀ» Ã³¸®ÇÒ¶§ÀÇ
-    //                       rownumPredicate Á¤º¸
-    // rownumPredicate     : critical path°¡ °áÁ¤ÇÑ Á¤±ÔÈ­ÇüÅÂ·Î
-    //                       rownumPredicate ¿¬°á
-    // myQuerySet          : ROWNUM ³ëµå Á¤º¸
+    // currentNormalType   : í˜„ì¬ critical pathê°€ predicateì„ ì²˜ë¦¬í•˜ëŠ”
+    //                       Normalization Type ì •ë³´
+    // rownumPredicate4CNF : critical pathê°€ CNF,NNFë¡œ predicateì„ ì²˜ë¦¬í• ë•Œì˜
+    //                       rownumPredicate ì •ë³´
+    // rownumPredicate4CNF : critical pathê°€ DNFë¡œ predicateì„ ì²˜ë¦¬í• ë•Œì˜
+    //                       rownumPredicate ì •ë³´
+    // rownumPredicate     : critical pathê°€ ê²°ì •í•œ ì •ê·œí™”í˜•íƒœë¡œ
+    //                       rownumPredicate ì—°ê²°
+    // myQuerySet          : ROWNUM ë…¸ë“œ ì •ë³´
     //-------------------------------------------------------------------
 
     qmoNormalType   currentNormalType;
@@ -79,23 +79,23 @@ typedef struct qmoCrtPath
 } qmoCrtPath;
 
 //---------------------------------------------------
-// Critical Path¸¦ °ü¸® ÇÔ¼ö
+// Critical Pathë¥¼ ê´€ë¦¬ í•¨ìˆ˜
 //---------------------------------------------------
 
 class qmoCrtPathMgr
 {
 public:
 
-    // Critical Path »ı¼º ¹× ÃÊ±âÈ­
+    // Critical Path ìƒì„± ë° ì´ˆê¸°í™”
     static IDE_RC    init( qcStatement * aStatement,
                            qmsQuerySet * aQuerySet,
                            qmoCrtPath ** aCrtPath );
 
-    // Critical Path¿¡ ´ëÇÑ ÃÖÀûÈ­ ¹× Graph »ı¼º
+    // Critical Pathì— ëŒ€í•œ ìµœì í™” ë° Graph ìƒì„±
     static IDE_RC    optimize( qcStatement * aStatement,
                                qmoCrtPath  * aCrtPath );
 
-    // Normalization Type °áÁ¤
+    // Normalization Type ê²°ì •
     static IDE_RC    decideNormalType( qcStatement   * aStatement,
                                        qmsFrom       * aFrom,
                                        qtcNode       * aWhere,
@@ -104,12 +104,12 @@ public:
                                        qmoNormalType * aNormalType);
 
     // PROJ-1405
-    // Rownum PredicateÀ» rownumPredicate¿¡ ¿¬°á
+    // Rownum Predicateì„ rownumPredicateì— ì—°ê²°
     static IDE_RC    addRownumPredicate( qmsQuerySet  * aQuerySet,
                                          qmoPredicate * aPredicate );
     
     // PROJ-1405
-    // Rownum PredicateÀ» rownumPredicate¿¡ ¿¬°á
+    // Rownum Predicateì„ rownumPredicateì— ì—°ê²°
     static IDE_RC    addRownumPredicateForNode( qcStatement  * aStatement,
                                                 qmsQuerySet  * aQuerySet,
                                                 qtcNode      * aNode,
@@ -125,7 +125,7 @@ public:
 
 private:
 
-    // fromÀı¿¡ view°¡ ÀÖ´ÂÁö °Ë»ç
+    // fromì ˆì— viewê°€ ìˆëŠ”ì§€ ê²€ì‚¬
     static IDE_RC    existsViewinFrom( qmsFrom * aFrom,
                                        idBool  * aIsExistView );
 };

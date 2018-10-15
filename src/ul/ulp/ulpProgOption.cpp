@@ -73,8 +73,8 @@ void ulpProgOption::ulpInit()
     mOptLineMacro = ID_FALSE;
 }
 
-/* standard header file path ¸¦ ÀúÀåÇÏ´Â ÇÔ¼öÀÌ³ª,     *
- * macro parser¿¡¼­ error¹ß»ı ¿©Áö°¡ ÀÖ¾î ÁÖ¼®À¸·Î ¸·À½. */
+/* standard header file path ë¥¼ ì €ì¥í•˜ëŠ” í•¨ìˆ˜ì´ë‚˜,     *
+ * macro parserì—ì„œ errorë°œìƒ ì—¬ì§€ê°€ ìˆì–´ ì£¼ì„ìœ¼ë¡œ ë§‰ìŒ. */
 void ulpProgOption::ulpSetSysIncludePath()
 {
 /*    idlOS::snprintf(mSysIncludePathList[0],
@@ -87,7 +87,7 @@ void ulpProgOption::ulpSetSysIncludePath()
     mSysIncludePathCnt += 2;*/
 }
 
-/* command-line optionµé¿¡ ´ëÇÑ ÆÄ½Ì ÇÔ¼ö */
+/* command-line optionë“¤ì— ëŒ€í•œ íŒŒì‹± í•¨ìˆ˜ */
 IDE_RC ulpProgOption::ulpParsingProgOption( SInt aArgc, SChar **aArgv )
 {
     SChar* sStrPos;
@@ -173,7 +173,7 @@ IDE_RC ulpProgOption::ulpParsingProgOption( SInt aArgc, SChar **aArgv )
                 else
                 {
                     sLen = idlOS::strlen( aArgv[sI+1] );
-                    /* include ¹®ÀÚ¿­ÀÌ MAX_INCLUDE_PATH_LEN º¸´Ù Å©¸é ERROR */
+                    /* include ë¬¸ìì—´ì´ MAX_INCLUDE_PATH_LEN ë³´ë‹¤ í¬ë©´ ERROR */
                     IDE_TEST_RAISE( sLen >= MAX_INCLUDE_PATH_LEN , ERR_STRLEN_OVERFLOW );
                     idlOS::strncpy( sTmpPathBuf, aArgv[sI+1], MAX_INCLUDE_PATH_LEN );
 
@@ -196,13 +196,13 @@ IDE_RC ulpProgOption::ulpParsingProgOption( SInt aArgc, SChar **aArgv )
                 IDE_RAISE( EXC_PRINT_HELP );
             }
         }
-        /* BUG-27099 : code review ÁöÀû»çÇ×µé */
+        /* BUG-27099 : code review ì§€ì ì‚¬í•­ë“¤ */
         else if ( (aArgv[sI][0] == '-') && (aArgv[sI][1] == 'I') )
         {
             if (sI + 1 < aArgc)
             {
                 sLen = idlOS::strlen( aArgv[sI] );
-                /* include ¹®ÀÚ¿­ÀÌ MAX_INCLUDE_PATH_LEN º¸´Ù Å©¸é ERROR */
+                /* include ë¬¸ìì—´ì´ MAX_INCLUDE_PATH_LEN ë³´ë‹¤ í¬ë©´ ERROR */
                 IDE_TEST_RAISE( sLen - 2 >= MAX_INCLUDE_PATH_LEN , ERR_STRLEN_OVERFLOW );
 
                 if( sLen > 2 )
@@ -377,13 +377,13 @@ IDE_RC ulpProgOption::ulpParsingProgOption( SInt aArgc, SChar **aArgv )
                 IDE_RAISE( EXC_PRINT_HELP );
             }
         }
-        /* BUG-27099 : code review ÁöÀû»çÇ×µé */
+        /* BUG-27099 : code review ì§€ì ì‚¬í•­ë“¤ */
         else if ( (aArgv[sI][0] == '-') && (aArgv[sI][1] == 'D') )
         {
             if (sI + 1 < aArgc)
             {
                 sLen = idlOS::strlen( aArgv[sI] );
-                /* include ¹®ÀÚ¿­ÀÌ MAX_INCLUDE_PATH_LEN º¸´Ù Å©¸é ERROR */
+                /* include ë¬¸ìì—´ì´ MAX_INCLUDE_PATH_LEN ë³´ë‹¤ í¬ë©´ ERROR */
                 IDE_TEST_RAISE( sLen - 2 >= MAX_DEFINE_NAME_LEN , ERR_STRLEN_OVERFLOW );
 
                 if( sLen > 2 )
@@ -455,9 +455,9 @@ IDE_RC ulpProgOption::ulpParsingProgOption( SInt aArgc, SChar **aArgv )
                 IDE_RAISE( EXC_PRINT_HELP );
             }
         }
-        // nchar¿ë host º¯¼ö¸íµéÀ» optionÀ¸·Î ÁÙ¼ö ÀÖ´Ù
+        // ncharìš© host ë³€ìˆ˜ëª…ë“¤ì„ optionìœ¼ë¡œ ì¤„ìˆ˜ ìˆë‹¤
         // ex) sesc -nchar_var name1,name2,name3
-        // ´Ü º¯¼öÀÌ¸§µé »çÀÌ¿¡ °ø¹éÀº Çã¿ëÇÏÁö ¾Ê´Â´Ù
+        // ë‹¨ ë³€ìˆ˜ì´ë¦„ë“¤ ì‚¬ì´ì— ê³µë°±ì€ í—ˆìš©í•˜ì§€ ì•ŠëŠ”ë‹¤
         else if (idlOS::strcmp(aArgv[sI], "-nchar_var") == 0 ||
                  idlOS::strcmp(aArgv[sI], "-NCHAR_VAR") == 0)
         {
@@ -482,8 +482,8 @@ IDE_RC ulpProgOption::ulpParsingProgOption( SInt aArgc, SChar **aArgv )
                 sToken = idlOS::strtok_r(NULL, ",", &sSavePos);
             }
         }
-        // utf8º¯È¯Àº Áö¿ø ¾ÈÇÔ
-        // nchar default: nls_use ÀÌ°í nchar_utf16 ¿É¼Ç ÁÖ¸é utf16
+        // utf8ë³€í™˜ì€ ì§€ì› ì•ˆí•¨
+        // nchar default: nls_use ì´ê³  nchar_utf16 ì˜µì…˜ ì£¼ë©´ utf16
         else if (idlOS::strcmp(aArgv[sI], "-nchar_utf16") == 0 ||
                  idlOS::strcmp(aArgv[sI], "-NCHAR_UTF16") == 0)
         {
@@ -497,7 +497,7 @@ IDE_RC ulpProgOption::ulpParsingProgOption( SInt aArgc, SChar **aArgv )
         }
         else
         {
-            /* °¢°¢ ³ª¸ÓÁö ³ª¿­µÈ ³»ÀåSQL±¸¹® ÇÁ·Î±×·¥ fileµéÀ» º¹»çÇÑ´Ù. */
+            /* ê°ê° ë‚˜ë¨¸ì§€ ë‚˜ì—´ëœ ë‚´ì¥SQLêµ¬ë¬¸ í”„ë¡œê·¸ë¨ fileë“¤ì„ ë³µì‚¬í•œë‹¤. */
             sLen = idlOS::strlen( aArgv[sI] );
             IDE_TEST_RAISE( sLen >= ( MAX_FILE_PATH_LEN + MAX_FILE_NAME_LEN ) ,
                             ERR_STRLEN_OVERFLOW );
@@ -558,16 +558,16 @@ IDE_RC ulpProgOption::ulpParsingProgOption( SInt aArgc, SChar **aArgv )
     return IDE_FAILURE;
 }
 
-/* Preprocessing ÈÄÀÇ ÀÓ½Ã file¿¡ ´ëÇÑ ÀÌ¸§À» ¼³Á¤ÇÔ */
+/* Preprocessing í›„ì˜ ì„ì‹œ fileì— ëŒ€í•œ ì´ë¦„ì„ ì„¤ì •í•¨ */
 void ulpProgOption::ulpSetTmpFile()
 {
     SChar* sStrPos;
     SChar  sTmpStr[ MAX_FILE_PATH_LEN + MAX_FILE_NAME_LEN ];
 
     idlOS::strcpy(sTmpStr, mInFile);
-    // BUGBUG: È®ÀåÀÚ°¡ ¾ø°í, °æ·Î¸í¿¡ '.'ÀÌ Æ÷ÇÔµÈ °æ¿ì ¿Àµ¿ÀÛ ÇÒ ¼ö ÀÖ´Ù.
+    // BUGBUG: í™•ì¥ìê°€ ì—†ê³ , ê²½ë¡œëª…ì— '.'ì´ í¬í•¨ëœ ê²½ìš° ì˜¤ë™ì‘ í•  ìˆ˜ ìˆë‹¤.
     sStrPos = idlOS::strrchr(sTmpStr, '.');
-    // È®ÀåÀÚ°¡ ¾øÀ» °æ¿ì '.' Ãß°¡
+    // í™•ì¥ìê°€ ì—†ì„ ê²½ìš° '.' ì¶”ê°€
     if (sStrPos == NULL)
     {
         sStrPos = sTmpStr + idlOS::strlen(sTmpStr);
@@ -588,7 +588,7 @@ void ulpProgOption::ulpSetTmpFile()
 }
 
 
-/* ¸¶Áö¸· »ı¼º file¿¡ ´ëÇÑ ÀÌ¸§À» ¼³Á¤ÇÔ */
+/* ë§ˆì§€ë§‰ ìƒì„± fileì— ëŒ€í•œ ì´ë¦„ì„ ì„¤ì •í•¨ */
 void ulpProgOption::ulpSetOutFile()
 {
     SChar  *sStrPos;
@@ -600,7 +600,7 @@ void ulpProgOption::ulpSetOutFile()
 
     idlOS::strncpy(sDotRemovedFilePath, mInFile,
                    MAX_FILE_PATH_LEN + MAX_FILE_NAME_LEN - 1);
-    // BUGBUG: È®ÀåÀÚ°¡ ¾ø°í, °æ·Î¸í¿¡ '.'ÀÌ Æ÷ÇÔµÈ °æ¿ì ¿Àµ¿ÀÛ ÇÒ ¼ö ÀÖ´Ù.
+    // BUGBUG: í™•ì¥ìê°€ ì—†ê³ , ê²½ë¡œëª…ì— '.'ì´ í¬í•¨ëœ ê²½ìš° ì˜¤ë™ì‘ í•  ìˆ˜ ìˆë‹¤.
     sStrPos = idlOS::strrchr(sDotRemovedFilePath, '.');
 
     if ( sStrPos != NULL )
@@ -610,8 +610,8 @@ void ulpProgOption::ulpSetOutFile()
 
     if(mOptOutPath == ID_TRUE)
     {
-        /* BUG-29502 : -o option »ç¿ëÇÏ¸é target .sc path°¡ Àß¸ø¼³Á¤µÊ. */
-        // source file ÀÇ path¸¦ Á¦¿ÜÇÑ file ÀÌ¸§¸¸ »Ì¾Æ³»¾ßÇÑ´Ù.
+        /* BUG-29502 : -o option ì‚¬ìš©í•˜ë©´ target .sc pathê°€ ì˜ëª»ì„¤ì •ë¨. */
+        // source file ì˜ pathë¥¼ ì œì™¸í•œ file ì´ë¦„ë§Œ ë½‘ì•„ë‚´ì•¼í•œë‹¤.
         // ex) apre -o ./out ./src/tmp.sc
         // output file path is "./out/tmp.c"
         sSlashPos = idlOS::strrchr(sDotRemovedFilePath, IDL_FILE_SEPARATOR);
@@ -632,7 +632,7 @@ void ulpProgOption::ulpSetOutFile()
 }
 
 
-/* input/tmp/output file¿¡ ´ëÇÑ ÀÌ¸§À» ¼³Á¤ÇÔ */
+/* input/tmp/output fileì— ëŒ€í•œ ì´ë¦„ì„ ì„¤ì •í•¨ */
 void ulpProgOption::ulpSetInOutFiles(SChar* aInFile)
 {
     idlOS::strncpy( mInFile, aInFile, MAX_FILE_PATH_LEN + MAX_FILE_NAME_LEN );
@@ -642,10 +642,10 @@ void ulpProgOption::ulpSetInOutFiles(SChar* aInFile)
 }
 
 /*
- *    <Header file Ã£´Â ¼ø¼­>
+ *    <Header file ì°¾ëŠ” ìˆœì„œ>
  *
- * 1. ÇöÀç directory.
- * 2. INCLUDE option ¿¡¼­ ¸í½ÃµÈ directory.
+ * 1. í˜„ì¬ directory.
+ * 2. INCLUDE option ì—ì„œ ëª…ì‹œëœ directory.
  * 3. directory for standard header files.
  *
  */
@@ -657,7 +657,7 @@ IDE_RC ulpProgOption::ulpLookupHeader( SChar *aFileName, idBool aIsCInc )
     FILE   *sFp;
     SChar  *sPos;
 
-    /* .h¸¦ »ı·«ÇÑ °æ¿ì .h¸¦ append ÇØ¼­ ÆÄÀÏÀ» Ã£´Â´Ù. */
+    /* .hë¥¼ ìƒëµí•œ ê²½ìš° .hë¥¼ append í•´ì„œ íŒŒì¼ì„ ì°¾ëŠ”ë‹¤. */
     sPos = idlOS::strrchr(aFileName, '.');
     if ( sPos == NULL )
     {
@@ -670,7 +670,7 @@ IDE_RC ulpProgOption::ulpLookupHeader( SChar *aFileName, idBool aIsCInc )
         idlOS::snprintf(sTmpFileName, MAX_FILE_NAME_LEN, aFileName);
     }
 
-    /* 1. current path¿¡¼­ Ã£À½ */
+    /* 1. current pathì—ì„œ ì°¾ìŒ */
     /* BUG-35273 ALTI-PCM-003 Coding Convention Violation in ulpProgOption.cpp */
     idlOS::snprintf( sTmpBuf,
                      MAX_FILE_PATH_LEN + MAX_FILE_NAME_LEN,
@@ -687,7 +687,7 @@ IDE_RC ulpProgOption::ulpLookupHeader( SChar *aFileName, idBool aIsCInc )
         return IDE_SUCCESS;
     }
 
-    /* 2. »ç¿ëÀÚ°¡ ÁöÁ¤ÇÑ include path¿¡¼­ Â÷·Ê´ë·Î Ã£À½ */
+    /* 2. ì‚¬ìš©ìê°€ ì§€ì •í•œ include pathì—ì„œ ì°¨ë¡€ëŒ€ë¡œ ì°¾ìŒ */
     for ( sCnt = 0 ; sCnt < mIncludePathCnt ; sCnt++ )
     {
         idlOS::snprintf( sTmpBuf, MAX_FILE_PATH_LEN + MAX_FILE_NAME_LEN,
@@ -701,12 +701,12 @@ IDE_RC ulpProgOption::ulpLookupHeader( SChar *aFileName, idBool aIsCInc )
             // set g_current_path
             if ( mIncludePathList[sCnt][0] == '/' )
             {
-                // Àı´ë°æ·ÎÀÎ °æ¿ì
+                // ì ˆëŒ€ê²½ë¡œì¸ ê²½ìš°
                 idlOS::strcpy(mCurrentPath, mIncludePathList[sCnt]);
             }
             else
             {
-                // »ó´ë°æ·ÎÀÎ °æ¿ì
+                // ìƒëŒ€ê²½ë¡œì¸ ê²½ìš°
                 /* BUG-35273 ALTI-PCM-003 Coding Convention Violation in ulpProgOption.cpp */
                 idlOS::sprintf( mCurrentPath,
                                 "%s%c%s",
@@ -719,7 +719,7 @@ IDE_RC ulpProgOption::ulpLookupHeader( SChar *aFileName, idBool aIsCInc )
         }
     }
 
-    /* 3. Standard header files path¿¡¼­ Â÷·Ê´ë·Î Ã£À½ */
+    /* 3. Standard header files pathì—ì„œ ì°¨ë¡€ëŒ€ë¡œ ì°¾ìŒ */
     for ( sCnt = 0 ; sCnt < mSysIncludePathCnt ; sCnt++ )
     {
         idlOS::snprintf( sTmpBuf,
@@ -776,7 +776,7 @@ IDE_RC ulpProgOption::ulpLookupHeader( SChar *aFileName, idBool aIsCInc )
     return IDE_FAILURE;
 }
 
-/* mIncludeFileList ¹è¿­¿¡ »õ·Î Ã³¸®ÁßÀÎ include file Á¤º¸ ÀúÀåÇÔ. */
+/* mIncludeFileList ë°°ì—´ì— ìƒˆë¡œ ì²˜ë¦¬ì¤‘ì¸ include file ì •ë³´ ì €ì¥í•¨. */
 IDE_RC ulpProgOption::ulpPushIncList( SChar *aFileName, idBool aIsCInc )
 {
     IDE_TEST_RAISE ( mIncludeFileIndex >= MAX_HEADER_FILE_NUM-1,
@@ -1038,17 +1038,17 @@ void ulpProgOption::ulpAddPreDefinedMacro()
     SInt sJ;
 
     /* some predefined defines */
-    // ÇÏÀ§È£È¯¼º
+    // í•˜ìœ„í˜¸í™˜ì„±
     gUlpMacroT.ulpMDefine( (SChar*)"SESC_INCLUDE", NULL, ID_FALSE );
     gUlpMacroT.ulpMDefine( (SChar*)"SESC_DECLARE", NULL, ID_FALSE );
     // new
     gUlpMacroT.ulpMDefine( (SChar*)"ALTIBASE_APRE", NULL, ID_FALSE );
-    // ¿À¶óÅ¬ÀÇ °æ¿ì ORA_PROCÀ» predefineÇØ¼­ »ç¿ëÇÑ´Ù.
+    // ì˜¤ë¼í´ì˜ ê²½ìš° ORA_PROCì„ predefineí•´ì„œ ì‚¬ìš©í•œë‹¤.
     //gUlpMacroT.ulpMDefine( (SChar*)"ORA_PROC", NULL, ID_FALSE );
 
     for( sJ = 0 ; sJ < mDefineCnt ; sJ++ )
     {
-        // macro symbol table¿¡ Ãß°¡ÇÔ.
+        // macro symbol tableì— ì¶”ê°€í•¨.
         gUlpMacroT.ulpMDefine( mDefineList[sJ], NULL, ID_FALSE );
     }
 }

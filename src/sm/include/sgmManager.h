@@ -59,7 +59,7 @@ class sgmManager
 
 /***********************************************************************
  * Description :
- *    smmManager::getOIDPtr, svmManager::getOidPtrÀ» ÅëÇÕÇÏ´Â ¿ªÇÒÀ» ÇÑ´Ù.
+ *    smmManager::getOIDPtr, svmManager::getOidPtrì„ í†µí•©í•˜ëŠ” ì—­í• ì„ í•œë‹¤.
  ***********************************************************************/
 inline IDE_RC sgmManager::getOIDPtr( scSpaceID     aSpaceID,
                                      smOID         aOID,
@@ -81,7 +81,7 @@ inline IDE_RC sgmManager::getOIDPtr( scSpaceID     aSpaceID,
     }
     else
     {
-        /* DISK TBSÀÇ °æ¿ì ÀÌ ÇÔ¼ö¸¦ »ç¿ëÇÏ¸é ¾ÈµÈ´Ù. */
+        /* DISK TBSì˜ ê²½ìš° ì´ í•¨ìˆ˜ë¥¼ ì‚¬ìš©í•˜ë©´ ì•ˆëœë‹¤. */
         IDE_ASSERT(0);
     }
 

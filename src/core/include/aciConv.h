@@ -19,7 +19,7 @@
  **********************************************************************/
 /*
  * Description :
- *     Ä³¸¯ÅÍ ¼Â º¯È¯ ¸ğµâ
+ *     ìºë¦­í„° ì…‹ ë³€í™˜ ëª¨ë“ˆ
  *
  **********************************************************************/
 
@@ -48,7 +48,7 @@ ACP_EXTERN_C_BEGIN
 /* CJK character sets [CCS = coded character set] [CJKV.INF chapter 3] */
 
 
-/* Ä³¸¯ÅÍ ¼Â º¯È¯À» À§ÇÑ ÇÔ¼ö Æ÷ÀÎÅÍ */
+/* ìºë¦­í„° ì…‹ ë³€í™˜ì„ ìœ„í•œ í•¨ìˆ˜ í¬ì¸í„° */
 typedef acp_sint32_t (*aciCharSetConvFunc)( void* aSrc, 
                                  acp_sint32_t aSrcRemain,
                                  acp_sint32_t* aSrcAdvance, 
@@ -57,7 +57,7 @@ typedef acp_sint32_t (*aciCharSetConvFunc)( void* aSrc,
 
 typedef struct aciConvCharSetConvModule
 {
-    acp_uint32_t             convPass; /* ÇÊ¿äÇÑ º¯È¯ È½¼ö */
+    acp_uint32_t             convPass; /* í•„ìš”í•œ ë³€í™˜ íšŸìˆ˜ */
     aciCharSetConvFunc  conv1;
     aciCharSetConvFunc  conv2;
 } aciConvCharSetConvModule;
@@ -84,9 +84,9 @@ aciConvConvertCharSet( aciConvCharSetList   aSrcCharSet,
                                    aDest, aDestRemain, aNlsNcharConvExcp );
 }
 
-/* To fix BUG-22699 UTF16Àº BIG ENDIANÀ¸·Î ÅëÀÏ. */
-/* ´ÙÀ½ ¸ÅÅ©·Î´Â ÄÁ¹öÀü ¿¬»êÀÌ³ª ºñ±³°Ë»ç ½Ã¿¡ */
-/* Wide-Char(ÄÄÇ»ÅÍ°¡ ¾Ë¾Æº¼ ¼ö ÀÖ´Â unicode)°¡ ÇÊ¿äÇÏ¹Ç·Î ±×¶§ »ç¿ë. */
+/* To fix BUG-22699 UTF16ì€ BIG ENDIANìœ¼ë¡œ í†µì¼. */
+/* ë‹¤ìŒ ë§¤í¬ë¡œëŠ” ì»¨ë²„ì „ ì—°ì‚°ì´ë‚˜ ë¹„êµê²€ì‚¬ ì‹œì— */
+/* Wide-Char(ì»´í“¨í„°ê°€ ì•Œì•„ë³¼ ìˆ˜ ìˆëŠ” unicode)ê°€ í•„ìš”í•˜ë¯€ë¡œ ê·¸ë•Œ ì‚¬ìš©. */
 
 #if defined(ACP_CFG_BIG_ENDIAN)
 

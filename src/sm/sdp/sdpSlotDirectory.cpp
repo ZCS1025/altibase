@@ -22,10 +22,10 @@
 /***********************************************************************
  *
  * Description :
- *  slot directory ¿µ¿ªÀ» ÃÊ±âÈ­ÇÑ´Ù.(with logging)
+ *  slot directory ì˜ì—­ì„ ì´ˆê¸°í™”í•œë‹¤.(with logging)
  *
  *  aPhyPageHdr - [IN] physical page header
- *  aMtx        - [IN] mini Æ®·£Àè¼Ç
+ *  aMtx        - [IN] mini íŠ¸ëœì­ì…˜
  *
  **********************************************************************/
 IDE_RC sdpSlotDirectory::logAndInit( sdpPhyPageHdr  *aPageHdr,
@@ -54,7 +54,7 @@ IDE_RC sdpSlotDirectory::logAndInit( sdpPhyPageHdr  *aPageHdr,
 /***********************************************************************
  *
  * Description :
- *  slot directory ¿µ¿ªÀ» ÃÊ±âÈ­ÇÑ´Ù.(no logging)
+ *  slot directory ì˜ì—­ì„ ì´ˆê¸°í™”í•œë‹¤.(no logging)
  *
  *  aPhyPageHdr - [IN] physical page header
  *
@@ -82,11 +82,11 @@ void sdpSlotDirectory::init(sdpPhyPageHdr    *aPhyPageHdr)
 /***********************************************************************
  *
  * Description :
- *  Slot Directory¿¡¼­ SlotEntry ÇÏ³ª¸¦ ÇÒ´çÇÏ´Â ÇÔ¼öÀÌ´Ù.
+ *  Slot Directoryì—ì„œ SlotEntry í•˜ë‚˜ë¥¼ í• ë‹¹í•˜ëŠ” í•¨ìˆ˜ì´ë‹¤.
  *
  *  aPhyPageHdr   - [IN]  physical page header
- *  aSlotOffset   - [IN]  ÆäÀÌÁö³»¿¡¼­ÀÇ slot offset
- *  aAllocSlotNum - [OUT] ÇÒ´çÇÑ slot entry number
+ *  aSlotOffset   - [IN]  í˜ì´ì§€ë‚´ì—ì„œì˜ slot offset
+ *  aAllocSlotNum - [OUT] í• ë‹¹í•œ slot entry number
  *
  **********************************************************************/
 IDE_RC sdpSlotDirectory::alloc(sdpPhyPageHdr    *aPhyPageHdr,
@@ -106,8 +106,8 @@ IDE_RC sdpSlotDirectory::alloc(sdpPhyPageHdr    *aPhyPageHdr,
 
     if( sSlotDirHdr->mHead == SDP_INVALID_SLOT_ENTRY_NUM )
     {
-        /* unused slot entry°¡ ¾ø¾î¼­,
-         * new slot entry¸¦ ÇÒ´çÇÏ´Â °æ¿ì */
+        /* unused slot entryê°€ ì—†ì–´ì„œ,
+         * new slot entryë¥¼ í• ë‹¹í•˜ëŠ” ê²½ìš° */
         sAllocSlotNum = sSlotDirHdr->mSlotEntryCount;
 
         sSlotDirHdr->mSlotEntryCount++;
@@ -119,7 +119,7 @@ IDE_RC sdpSlotDirectory::alloc(sdpPhyPageHdr    *aPhyPageHdr,
     }
     else
     {
-        /* unused slot entry¸¦ Àç»ç¿ëÇÏ´Â °æ¿ì */
+        /* unused slot entryë¥¼ ì¬ì‚¬ìš©í•˜ëŠ” ê²½ìš° */
         IDE_ERROR( removeFromUnusedSlotEntryList( sSlotDirPtr,
                                                   &sAllocSlotNum )
                    == IDE_SUCCESS );
@@ -128,14 +128,14 @@ IDE_RC sdpSlotDirectory::alloc(sdpPhyPageHdr    *aPhyPageHdr,
         IDE_TEST( validateSlot( (UChar*)aPhyPageHdr, 
                                  sAllocSlotNum, 
                                  sSlotEntry,
-                                 ID_FALSE ) /* isUnused, Unused¿©¾ßÇÔ */
+                                 ID_FALSE ) /* isUnused, Unusedì—¬ì•¼í•¨ */
                   != IDE_SUCCESS);
     }
 
-    /* unused flag¸¦ ÇØÁ¦ÇÏ¿© used »óÅÂ·Î º¯°æÇÑ´Ù. */
+    /* unused flagë¥¼ í•´ì œí•˜ì—¬ used ìƒíƒœë¡œ ë³€ê²½í•œë‹¤. */
     SDP_CLR_UNUSED_FLAG(sSlotEntry);
 
-    /* offset°ªÀ» slot entry¿¡ ¼³Á¤ÇÑ´Ù. */
+    /* offsetê°’ì„ slot entryì— ì„¤ì •í•œë‹¤. */
     SDP_SET_OFFSET(sSlotEntry, aSlotOffset);
 
     *aAllocSlotNum = sAllocSlotNum;
@@ -151,12 +151,12 @@ IDE_RC sdpSlotDirectory::alloc(sdpPhyPageHdr    *aPhyPageHdr,
 /***********************************************************************
  *
  * Description :
- *  Slot Directory¿¡¼­ SlotEntry ÇÏ³ª¸¦ ÇÒ´çÇÏ´Â ÇÔ¼öÀÌ´Ù.
- *  ÇÊ¿äÇÒ °æ¿ì, shift ¿¬»êÀ» ¼öÇàÇÑ´Ù.
+ *  Slot Directoryì—ì„œ SlotEntry í•˜ë‚˜ë¥¼ í• ë‹¹í•˜ëŠ” í•¨ìˆ˜ì´ë‹¤.
+ *  í•„ìš”í•  ê²½ìš°, shift ì—°ì‚°ì„ ìˆ˜í–‰í•œë‹¤.
  *
  *  aPhyPageHdr - [IN] physical page header
- *  aSlotNum    - [IN] ÇÒ´çÇÏ·Á°í ÇÏ´Â slot number
- *  aSlotOffset - [IN] ÆäÀÌÁö³»¿¡¼­ÀÇ slot offset
+ *  aSlotNum    - [IN] í• ë‹¹í•˜ë ¤ê³  í•˜ëŠ” slot number
+ *  aSlotOffset - [IN] í˜ì´ì§€ë‚´ì—ì„œì˜ slot offset
  *
  **********************************************************************/
 void sdpSlotDirectory::allocWithShift(sdpPhyPageHdr    *aPhyPageHdr,
@@ -186,10 +186,10 @@ void sdpSlotDirectory::allocWithShift(sdpPhyPageHdr    *aPhyPageHdr,
 
     sSlotEntry = SDP_GET_SLOT_ENTRY(sSlotDirPtr, aSlotNum);
 
-    /* unused flag¸¦ ÇØÁ¦ÇÏ¿© used »óÅÂ·Î º¯°æÇÑ´Ù. */
+    /* unused flagë¥¼ í•´ì œí•˜ì—¬ used ìƒíƒœë¡œ ë³€ê²½í•œë‹¤. */
     SDP_CLR_UNUSED_FLAG(sSlotEntry);
 
-    /* offset°ªÀ» slot entry¿¡ ¼³Á¤ÇÑ´Ù. */
+    /* offsetê°’ì„ slot entryì— ì„¤ì •í•œë‹¤. */
     SDP_SET_OFFSET(sSlotEntry, aSlotOffset);
 }
 
@@ -197,10 +197,10 @@ void sdpSlotDirectory::allocWithShift(sdpPhyPageHdr    *aPhyPageHdr,
 /***********************************************************************
  *
  * Description :
- *  Slot Directory¿¡¼­ SlotEntry ÇÏ³ª¸¦ ÇØÁ¦ÇÏ´Â ÇÔ¼öÀÌ´Ù.
+ *  Slot Directoryì—ì„œ SlotEntry í•˜ë‚˜ë¥¼ í•´ì œí•˜ëŠ” í•¨ìˆ˜ì´ë‹¤.
  *
  *  aPhyPageHdr - [IN] physical page header
- *  aSlotNum    - [IN] ÇØÁ¦ÇÏ·Á°í ÇÏ´Â slot number
+ *  aSlotNum    - [IN] í•´ì œí•˜ë ¤ê³  í•˜ëŠ” slot number
  *
  **********************************************************************/
 IDE_RC sdpSlotDirectory::free(sdpPhyPageHdr    *aPhyPageHdr,
@@ -223,13 +223,13 @@ IDE_RC sdpSlotDirectory::free(sdpPhyPageHdr    *aPhyPageHdr,
     IDE_DASSERT( aSlotNum < sSlotDirHdr->mSlotEntryCount );
 
     sSlotEntry = SDP_GET_SLOT_ENTRY(sSlotDirPtr, aSlotNum);
-    /* ÇØÁ¦ÇÏ·Á´Â slot entry´Â ¹İµå½Ã used »óÅÂ¿©¾ß ÇÑ´Ù.
-     * unusedÀÎ slot entry¸¦ ÇØÁ¦ÇÏ·Á°í ÇÏ´Â °ÍÀº
-     * ·ÎÁ÷»óÀÇ ½É°¢ÇÑ ¿À·ùÀÌ´Ù. */
+    /* í•´ì œí•˜ë ¤ëŠ” slot entryëŠ” ë°˜ë“œì‹œ used ìƒíƒœì—¬ì•¼ í•œë‹¤.
+     * unusedì¸ slot entryë¥¼ í•´ì œí•˜ë ¤ê³  í•˜ëŠ” ê²ƒì€
+     * ë¡œì§ìƒì˜ ì‹¬ê°í•œ ì˜¤ë¥˜ì´ë‹¤. */
     IDE_TEST( validateSlot( (UChar*)aPhyPageHdr,
                              aSlotNum,
                              sSlotEntry,
-                             ID_TRUE ) /* isUnused, Unused¸é ¾ÈµÊ */
+                             ID_TRUE ) /* isUnused, Unusedë©´ ì•ˆë¨ */
                != IDE_SUCCESS);
 
     SDP_SET_OFFSET(sSlotEntry, SDP_INVALID_SLOT_ENTRY_NUM);
@@ -250,11 +250,11 @@ IDE_RC sdpSlotDirectory::free(sdpPhyPageHdr    *aPhyPageHdr,
 /***********************************************************************
  *
  * Description :
- *  Slot Directory¿¡¼­ SlotEntry ÇÏ³ª¸¦ ÇØÁ¦ÇÏ´Â ÇÔ¼öÀÌ´Ù.
- *  ÇÊ¿äÇÒ °æ¿ì, shift ¿¬»êÀ» ¼öÇàÇÑ´Ù.
+ *  Slot Directoryì—ì„œ SlotEntry í•˜ë‚˜ë¥¼ í•´ì œí•˜ëŠ” í•¨ìˆ˜ì´ë‹¤.
+ *  í•„ìš”í•  ê²½ìš°, shift ì—°ì‚°ì„ ìˆ˜í–‰í•œë‹¤.
  *
  *  aPhyPageHdr - [IN] physical page header
- *  aSlotNum    - [IN] ÇØÁ¦ÇÏ·Á°í ÇÏ´Â slot number
+ *  aSlotNum    - [IN] í•´ì œí•˜ë ¤ê³  í•˜ëŠ” slot number
  *
  **********************************************************************/
 IDE_RC sdpSlotDirectory::freeWithShift(sdpPhyPageHdr    *aPhyPageHdr,
@@ -273,17 +273,17 @@ IDE_RC sdpSlotDirectory::freeWithShift(sdpPhyPageHdr    *aPhyPageHdr,
     IDE_DASSERT( aSlotNum < sSlotDirHdr->mSlotEntryCount );
 
     sSlotEntry = SDP_GET_SLOT_ENTRY(sSlotDirPtr, aSlotNum);
-    /* ÇØÁ¦ÇÏ·Á´Â slot entry´Â ¹İµå½Ã used »óÅÂ¿©¾ß ÇÑ´Ù.
-     * unusedÀÎ slot entry¸¦ ÇØÁ¦ÇÏ·Á°í ÇÏ´Â °ÍÀº
-     * ·ÎÁ÷»óÀÇ ½É°¢ÇÑ ¿À·ùÀÌ´Ù. */
+    /* í•´ì œí•˜ë ¤ëŠ” slot entryëŠ” ë°˜ë“œì‹œ used ìƒíƒœì—¬ì•¼ í•œë‹¤.
+     * unusedì¸ slot entryë¥¼ í•´ì œí•˜ë ¤ê³  í•˜ëŠ” ê²ƒì€
+     * ë¡œì§ìƒì˜ ì‹¬ê°í•œ ì˜¤ë¥˜ì´ë‹¤. */
     IDE_TEST( validateSlot( (UChar*)aPhyPageHdr, 
                              aSlotNum,
                              sSlotEntry, 
-                             ID_TRUE ) /* isUnused, Unused¸é ¾ÈµÊ */
+                             ID_TRUE ) /* isUnused, Unusedë©´ ì•ˆë¨ */
               != IDE_SUCCESS);
 
-    /* Á¦ÀÏ ¸¶Áö¸· slot entry¸¦ ÇØÁ¦ÇÏ´Â °æ¿ì,
-     * slot entryµéÀ» shiftÇÒ ÇÊ¿ä°¡ ¾ø´Ù. */
+    /* ì œì¼ ë§ˆì§€ë§‰ slot entryë¥¼ í•´ì œí•˜ëŠ” ê²½ìš°,
+     * slot entryë“¤ì„ shiftí•  í•„ìš”ê°€ ì—†ë‹¤. */
     if( aSlotNum != (sSlotDirHdr->mSlotEntryCount - 1) )
     {
         shiftToTop(aPhyPageHdr, sSlotDirPtr, aSlotNum);
@@ -305,11 +305,11 @@ IDE_RC sdpSlotDirectory::freeWithShift(sdpPhyPageHdr    *aPhyPageHdr,
 /***********************************************************************
  *
  * Description :
- *  offset À§Ä¡ÀÇ slotÀ» °¡¸®Å°´Â slot entry¸¦ Ã£´Â´Ù.
+ *  offset ìœ„ì¹˜ì˜ slotì„ ê°€ë¦¬í‚¤ëŠ” slot entryë¥¼ ì°¾ëŠ”ë‹¤.
  *
- *  aSlotDirPtr - [IN] slot directory ½ÃÀÛ Æ÷ÀÎÅÍ
- *  aSlotOffset - [IN] ÆäÀÌÁö³»¿¡¼­ÀÇ slot offset
- *  aSlotNum    - [OUT]  offset À§Ä¡ÀÇ slot ¹øÈ£
+ *  aSlotDirPtr - [IN] slot directory ì‹œì‘ í¬ì¸í„°
+ *  aSlotOffset - [IN] í˜ì´ì§€ë‚´ì—ì„œì˜ slot offset
+ *  aSlotNum    - [OUT]  offset ìœ„ì¹˜ì˜ slot ë²ˆí˜¸
  **********************************************************************/
 IDE_RC sdpSlotDirectory::find(UChar            *aSlotDirPtr,
                               scOffset          aSlotOffset,
@@ -329,7 +329,7 @@ IDE_RC sdpSlotDirectory::find(UChar            *aSlotDirPtr,
             IDE_TEST( validateSlot( aSlotDirPtr, 
                                     sSlotNum,
                                     sSlotEntry, 
-                                    ID_TRUE ) /* isUnused, Unused¸é ¾ÈµÊ */
+                                    ID_TRUE ) /* isUnused, Unusedë©´ ì•ˆë¨ */
                       != IDE_SUCCESS);
             break;
         }
@@ -347,9 +347,9 @@ IDE_RC sdpSlotDirectory::find(UChar            *aSlotDirPtr,
 /***********************************************************************
  *
  * Description :
- *  unused slot entry°¡ ÇÏ³ª¶óµµ Á¸ÀçÇÏ´ÂÁö ¿©ºÎ¸¦ ¸®ÅÏÇÑ´Ù.
+ *  unused slot entryê°€ í•˜ë‚˜ë¼ë„ ì¡´ì¬í•˜ëŠ”ì§€ ì—¬ë¶€ë¥¼ ë¦¬í„´í•œë‹¤.
  *
- *  aSlotDirPtr - [IN] slot directory ½ÃÀÛ Æ÷ÀÎÅÍ
+ *  aSlotDirPtr - [IN] slot directory ì‹œì‘ í¬ì¸í„°
  *
  **********************************************************************/
 idBool sdpSlotDirectory::isExistUnusedSlotEntry(UChar       *aSlotDirPtr)
@@ -372,7 +372,7 @@ idBool sdpSlotDirectory::isExistUnusedSlotEntry(UChar       *aSlotDirPtr)
 /***********************************************************************
  *
  * Description :
- *  slot directoryÀÇ Å©±â¸¦ ¹İÈ¯ÇÑ´Ù.
+ *  slot directoryì˜ í¬ê¸°ë¥¼ ë°˜í™˜í•œë‹¤.
  *
  *  aPhyPageHdr - [IN] physical page header
  *
@@ -395,9 +395,9 @@ UShort sdpSlotDirectory::getSize(sdpPhyPageHdr    *aPhyPageHdr)
  *           unused slot.
  *
  * Description :
- *           UnusedSlotList¿¡ ¼ÓÇÑ Slot¿¡¼­, ´ÙÀ½ UnusedSlotÀ» °¡Á®¿Â´Ù.
+ *           UnusedSlotListì— ì†í•œ Slotì—ì„œ, ë‹¤ìŒ UnusedSlotì„ ê°€ì ¸ì˜¨ë‹¤.
  *
- *  aSlotDirPtr - [IN] slot directory ½ÃÀÛ Æ÷ÀÎÅÍ
+ *  aSlotDirPtr - [IN] slot directory ì‹œì‘ í¬ì¸í„°
  *  aSlotNum    - [IN] slot entry number
  *  aSlotOffset - [OUT] slot offset
  **********************************************************************/
@@ -415,7 +415,7 @@ IDE_RC sdpSlotDirectory::getNextUnusedSlot(UChar       * aSlotDirPtr,
     IDE_TEST( validateSlot( aSlotDirPtr,
                             aSlotNum,
                             sSlotEntry,
-                            ID_FALSE ) /* isUnused, Unused¿©¾ßÇÔ */
+                            ID_FALSE ) /* isUnused, Unusedì—¬ì•¼í•¨ */
               != IDE_SUCCESS);
     *aSlotOffset = SDP_GET_OFFSET(sSlotEntry);
 
@@ -430,9 +430,9 @@ IDE_RC sdpSlotDirectory::getNextUnusedSlot(UChar       * aSlotDirPtr,
 /***********************************************************************
  *
  * Description :
- *  slot offset°ªÀ» slot entry¿¡ ¼³Á¤ÇÑ´Ù.
+ *  slot offsetê°’ì„ slot entryì— ì„¤ì •í•œë‹¤.
  *
- *  aSlotDirPtr - [IN] slot directory ½ÃÀÛ Æ÷ÀÎÅÍ
+ *  aSlotDirPtr - [IN] slot directory ì‹œì‘ í¬ì¸í„°
  *  aSlotNum    - [IN] slot entry number
  *  aSlotOffset - [IN] slot offset
  *
@@ -451,7 +451,7 @@ IDE_RC sdpSlotDirectory::setValue(UChar       *aSlotDirPtr,
     IDE_TEST( validateSlot( aSlotDirPtr, 
                             aSlotNum,
                             sSlotEntry, 
-                            ID_TRUE ) /* isUnused, Unused¸é ¾ÈµÊ */
+                            ID_TRUE ) /* isUnused, Unusedë©´ ì•ˆë¨ */
               != IDE_SUCCESS);
     SDP_SET_OFFSET(sSlotEntry, aSlotOffset);
     
@@ -467,7 +467,7 @@ IDE_RC sdpSlotDirectory::setValue(UChar       *aSlotDirPtr,
  * Description :
  *
  *  aPhyPageHdr - [IN] physical page header
- *  aSlotDirPtr - [IN] slot directory ½ÃÀÛ Æ÷ÀÎÅÍ
+ *  aSlotDirPtr - [IN] slot directory ì‹œì‘ í¬ì¸í„°
  *  aSlotNum    - [IN] slot entry number
  *
  **********************************************************************/
@@ -491,7 +491,7 @@ void sdpSlotDirectory::shiftToBottom(sdpPhyPageHdr    *aPhyPageHdr,
  * Description :
  *
  *  aPhyPageHdr - [IN] physical page header
- *  aSlotDirPtr - [IN] slot directory ½ÃÀÛ Æ÷ÀÎÅÍ
+ *  aSlotDirPtr - [IN] slot directory ì‹œì‘ í¬ì¸í„°
  *  aSlotNum    - [IN] slot entry number
  *
  **********************************************************************/
@@ -513,10 +513,10 @@ void sdpSlotDirectory::shiftToTop(sdpPhyPageHdr    *aPhyPageHdr,
 /***********************************************************************
  *
  * Description :
- *  unused slot entry list¿¡ ÇÏ³ªÀÇ slot entry¸¦ Ãß°¡ÇÑ´Ù.
+ *  unused slot entry listì— í•˜ë‚˜ì˜ slot entryë¥¼ ì¶”ê°€í•œë‹¤.
  *
  *  aSlotDirPtr - [IN] slot directory start ptr
- *  aSlotNum    - [IN] Ãß°¡ÇÒ slot entry number
+ *  aSlotNum    - [IN] ì¶”ê°€í•  slot entry number
  *
  **********************************************************************/
 IDE_RC sdpSlotDirectory::addToUnusedSlotEntryList(UChar            *aSlotDirPtr,
@@ -529,7 +529,7 @@ IDE_RC sdpSlotDirectory::addToUnusedSlotEntryList(UChar            *aSlotDirPtr,
     IDE_TEST( validateSlot( aSlotDirPtr,
                             aSlotNum,
                             sSlotEntry,
-                            ID_FALSE ) /* isUnused, Unused¿©¾ßÇÔ */
+                            ID_FALSE ) /* isUnused, Unusedì—¬ì•¼í•¨ */
               != IDE_SUCCESS);
     SDP_SET_OFFSET(sSlotEntry, sSlotDirHdr->mHead);
 
@@ -546,10 +546,10 @@ IDE_RC sdpSlotDirectory::addToUnusedSlotEntryList(UChar            *aSlotDirPtr,
 /***********************************************************************
  *
  * Description :
- *  unused slot entry list¿¡¼­ ÇÏ³ªÀÇ slot entry¸¦ Á¦°ÅÇÑ´Ù.
+ *  unused slot entry listì—ì„œ í•˜ë‚˜ì˜ slot entryë¥¼ ì œê±°í•œë‹¤.
  *
  *  aSlotDirPtr - [IN]  slot directory start ptr
- *  aSlotNum    - [OUT] list¿¡¼­ Á¦°ÅÇÑ slot entry number
+ *  aSlotNum    - [OUT] listì—ì„œ ì œê±°í•œ slot entry number
  *
  **********************************************************************/
 IDE_RC sdpSlotDirectory::removeFromUnusedSlotEntryList(UChar     *aSlotDirPtr,
@@ -567,7 +567,7 @@ IDE_RC sdpSlotDirectory::removeFromUnusedSlotEntryList(UChar     *aSlotDirPtr,
     IDE_TEST( validateSlot( aSlotDirPtr, 
                             sFstUnusedSlotEntryNum,
                             sSlotEntry, 
-                           ID_FALSE ) /* isUnused, Unused¿©¾ßÇÔ */
+                           ID_FALSE ) /* isUnused, Unusedì—¬ì•¼í•¨ */
               != IDE_SUCCESS);
 
     sSlotDirHdr->mHead = SDP_GET_OFFSET(sSlotEntry);
@@ -584,7 +584,7 @@ IDE_RC sdpSlotDirectory::removeFromUnusedSlotEntryList(UChar     *aSlotDirPtr,
 /***********************************************************************
  *
  * Description :
- *  slot directoryÀÇ validity¸¦ °Ë»çÇÑ´Ù.
+ *  slot directoryì˜ validityë¥¼ ê²€ì‚¬í•œë‹¤.
  *
  *  aSlotDirPtr - [IN] slot directory start ptr
  *
@@ -627,16 +627,16 @@ idBool sdpSlotDirectory::validate(UChar    *aSlotDirPtr)
 #endif
 
 /***********************************************************************
- * TASK-4007 [SM] PBT¸¦ À§ÇÑ ±â´É Ãß°¡
+ * TASK-4007 [SM] PBTë¥¼ ìœ„í•œ ê¸°ëŠ¥ ì¶”ê°€
  *
  * Description :
- *  slot directory¸¦ dumpÇÏ¿© º¸¿©ÁØ´Ù.
+ *  slot directoryë¥¼ dumpí•˜ì—¬ ë³´ì—¬ì¤€ë‹¤.
  *
  *  aSlotDirPtr - [IN] page start ptr
  *
- * BUG-28379 [SD] sdnbBTree::dumpNodeHdr( UChar *aPage ) ³»¿¡¼­
- * local ArrayÀÇ ptr¸¦ ¹İÈ¯ÇÏ°í ÀÖ½À´Ï´Ù. 
- * Local Array´ë½Å OutBuf¸¦ ¹Ş¾Æ ¸®ÅÏÇÏµµ·Ï ¼öÁ¤ÇÕ´Ï´Ù. *
+ * BUG-28379 [SD] sdnbBTree::dumpNodeHdr( UChar *aPage ) ë‚´ì—ì„œ
+ * local Arrayì˜ ptrë¥¼ ë°˜í™˜í•˜ê³  ìˆìŠµë‹ˆë‹¤. 
+ * Local ArrayëŒ€ì‹  OutBufë¥¼ ë°›ì•„ ë¦¬í„´í•˜ë„ë¡ ìˆ˜ì •í•©ë‹ˆë‹¤. *
  *
  **********************************************************************/
 IDE_RC sdpSlotDirectory::dump(UChar    *aPagePtr,
@@ -662,7 +662,7 @@ IDE_RC sdpSlotDirectory::dump(UChar    *aPagePtr,
     sSlotDirPtr = sdpPhyPage::getSlotDirStartPtr((UChar*)sPagePtr);
     sSlotDirHdr = (sdpSlotDirHdr*)sSlotDirPtr;
 
-    // Slot DirectoryÀÇ Å©±â´Â È¹µæ
+    // Slot Directoryì˜ í¬ê¸°ëŠ” íšë“
     sSize = getSize( (sdpPhyPageHdr*) sPagePtr );
 
     idlOS::snprintf( aOutBuf,
@@ -678,7 +678,7 @@ IDE_RC sdpSlotDirectory::dump(UChar    *aPagePtr,
 
         /* BUG-31534 [sm-util] dump utility and fixed table do not consider 
          *           unused slot.
-         * SlotDirHdrÀÇ mHead°ªÀº UnusedSlotÀÇ HeadSlotÀ» °¡¸®Å´ */
+         * SlotDirHdrì˜ mHeadê°’ì€ UnusedSlotì˜ HeadSlotì„ ê°€ë¦¬í‚´ */
         idlVA::appendFormat( aOutBuf,
                              aOutSize,
                              "SlotCount         : %"ID_UINT32_FMT"\n"
@@ -686,7 +686,7 @@ IDE_RC sdpSlotDirectory::dump(UChar    *aPagePtr,
                              sSlotDirHdr->mSlotEntryCount,
                              sSlotDirHdr->mHead );
 
-        // SlotDirectoryÀÇ Å©±â´Â 4b(sdpSlotDirHdr) + SlotCount*2b(sdpSlotEntry)
+        // SlotDirectoryì˜ í¬ê¸°ëŠ” 4b(sdpSlotDirHdr) + SlotCount*2b(sdpSlotEntry)
         if( (sSize - ID_SIZEOF(sdpSlotDirHdr)) / ID_SIZEOF(sdpSlotEntry) !=
             sCount )
         {
@@ -733,8 +733,8 @@ IDE_RC sdpSlotDirectory::dump(UChar    *aPagePtr,
 }
 
 /***********************************************************************
- * TASK-6105 ÇÔ¼ö inlineÈ­¸¦ À§ÇØ sdpPhyPage::getHdr ÇÔ¼ö¸¦
- * wrappingÇÑ ÇÔ¼ö¸¦ ¸¸µç´Ù.
+ * TASK-6105 í•¨ìˆ˜ inlineí™”ë¥¼ ìœ„í•´ sdpPhyPage::getHdr í•¨ìˆ˜ë¥¼
+ * wrappingí•œ í•¨ìˆ˜ë¥¼ ë§Œë“ ë‹¤.
  **********************************************************************/
 sdpPhyPageHdr * sdpSlotDirectory::getPageHdr( UChar * aPagePtr )
 {
@@ -742,8 +742,8 @@ sdpPhyPageHdr * sdpSlotDirectory::getPageHdr( UChar * aPagePtr )
 }
 
 /***********************************************************************
- * TASK-6105 ÇÔ¼ö inlineÈ­¸¦ À§ÇØ sdpPhyPage::tracePage ÇÔ¼ö¸¦
- * wrappingÇÑ ÇÔ¼ö¸¦ ¸¸µç´Ù.
+ * TASK-6105 í•¨ìˆ˜ inlineí™”ë¥¼ ìœ„í•´ sdpPhyPage::tracePage í•¨ìˆ˜ë¥¼
+ * wrappingí•œ í•¨ìˆ˜ë¥¼ ë§Œë“ ë‹¤.
  **********************************************************************/
 void sdpSlotDirectory::tracePage( UChar * aSlotDirPtr )
 {

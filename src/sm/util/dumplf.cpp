@@ -39,20 +39,20 @@ typedef struct gTableInfo
     ULong         mDeleteLogCnt;
 } gTableInfo;
 
-#define  TABLEOID_HASHTABLE_SIZE   (233)  // ¼Ò¼öÁß ±×³É °í¸¥ ¼ö
+#define  TABLEOID_HASHTABLE_SIZE   (233)  // ì†Œìˆ˜ì¤‘ ê·¸ëƒ¥ ê³ ë¥¸ ìˆ˜
 
 SChar      * gLogFileName     = NULL;
 SChar      * gStrLSN          = NULL;     // BUG-44361
-smTID        gTID             = 0;        // Æ¯Á¤ TID¸¸ Ãâ·ÂÇÒ°ÍÀÎ°¡?
-idBool       gDisplayValue    = ID_TRUE;  // LogÀÇ ValueºÎºĞÀ» Ãâ·ÂÇÒ°ÍÀÎ°¡?
-idBool       gDisplayLogTypes = ID_FALSE; // LogTypeµéÀ» Ãâ·ÂÇÑ´Ù.
+smTID        gTID             = 0;        // íŠ¹ì • TIDë§Œ ì¶œë ¥í• ê²ƒì¸ê°€?
+idBool       gDisplayValue    = ID_TRUE;  // Logì˜ Valueë¶€ë¶„ì„ ì¶œë ¥í• ê²ƒì¸ê°€?
+idBool       gDisplayLogTypes = ID_FALSE; // LogTypeë“¤ì„ ì¶œë ¥í•œë‹¤.
 idBool       gDisplayHeader   = ID_TRUE;
 idBool       gInvalidArgs     = ID_FALSE;
-/*BUG-42787  logfile¸¦ ºĞ¼®ÇÏ¿© DML ¿¡ ´ëÇÑ ¼öÄ¡°¡ Á¦°øµÇ´Â Tool Á¦°ø  */
-idBool       gGroupByTableOID = ID_FALSE; // TableOID·Î GROUP ÇØ¼­ Ãâ·ÂÇÒ°ÍÀÎ°¡.
-idBool       gPathSet         = ID_FALSE; // Æ¯Á¤ °æ·Î°¡ ¼³Á¤µÇ¾î ÀÖ´Â°¡.
+/*BUG-42787  logfileë¥¼ ë¶„ì„í•˜ì—¬ DML ì— ëŒ€í•œ ìˆ˜ì¹˜ê°€ ì œê³µë˜ëŠ” Tool ì œê³µ  */
+idBool       gGroupByTableOID = ID_FALSE; // TableOIDë¡œ GROUP í•´ì„œ ì¶œë ¥í• ê²ƒì¸ê°€.
+idBool       gPathSet         = ID_FALSE; // íŠ¹ì • ê²½ë¡œê°€ ì„¤ì •ë˜ì–´ ìˆëŠ”ê°€.
 iduHash      gTableInfoHash;
-smLSN        gLSN;                        // BUG-44361 Æ¯Á¤ LSNºÎÅÍ DML Åë°è È®ÀÎ
+smLSN        gLSN;                        // BUG-44361 íŠ¹ì • LSNë¶€í„° DML í†µê³„ í™•ì¸
 SChar        gPath[SM_MAX_FILE_NAME+1] = {"", };
 ULong        gFileIdx      = 0;      
 ULong        gInserLogCnt  = 0;
@@ -71,31 +71,31 @@ ULong        gHashItemCnt4Debug  = 0;
 
 smrLogFileDump   gLogFileDump;
 
-void   usage();                   // »ç¿ë¹ı Ãâ·Â
-IDE_RC initProperty();            // DumpÇÏ´Âµ¥ ÇÊ¿äÇÑ Property ÃÊ±âÈ­
-void   parseArgs( int    &aArgc,  // ÀÔ·ÂµÈ ÀÎÀÚ¸¦ ParsingÇÑ´Ù.
+void   usage();                   // ì‚¬ìš©ë²• ì¶œë ¥
+IDE_RC initProperty();            // Dumpí•˜ëŠ”ë° í•„ìš”í•œ Property ì´ˆê¸°í™”
+void   parseArgs( int    &aArgc,  // ì…ë ¥ëœ ì¸ìë¥¼ Parsingí•œë‹¤.
                   char **&aArgv );
-void   showCopyRight(void);       // Copy right Ãâ·ÂÇÑ´Ù.
+void   showCopyRight(void);       // Copy right ì¶œë ¥í•œë‹¤.
 IDE_RC parseLSN( smLSN * aLSN, const char * aStrLSN );  // BUG-44361 LSN Parse
 
-// Á¶°Ç¿¡ µû¶ó ·Î±×¸¦ DumpÇÑ´Ù.
+// ì¡°ê±´ì— ë”°ë¼ ë¡œê·¸ë¥¼ Dumpí•œë‹¤.
 IDE_RC dumpLogFile();
 
-// Log Header¸¦ DumpÇÑ´Ù.
+// Log Headerë¥¼ Dumpí•œë‹¤.
 IDE_RC dumpLogHead( UInt         aOffsetInFile,
                     smrLogHead * aLogHead,
                     idBool       aIsCompressed );
 
-// Log Body¸¦ DumpÇÑ´Ù.
+// Log Bodyë¥¼ Dumpí•œë‹¤.
 IDE_RC dumpLogBody( UInt aLogType, 
                     SChar *aLogPtr );
 
-// Disk Log¸¦ DumpÇÑ´Ù.
+// Disk Logë¥¼ Dumpí•œë‹¤.
 void dumpDiskLog( SChar         * aLogBuffer,
                   UInt            aAImgSize,
                   UInt          * aOPType );
 
-// dumplf¿¡¼­ ´Ù·ç¾î¾ß ÇÏ´Â LogTypeµéÀ» ¸ğµÎ Ãâ·ÂÇÑ´Ù.
+// dumplfì—ì„œ ë‹¤ë£¨ì–´ì•¼ í•˜ëŠ” LogTypeë“¤ì„ ëª¨ë‘ ì¶œë ¥í•œë‹¤.
 void displayLogTypes();
 
 void usage()
@@ -119,9 +119,9 @@ void usage()
 
 IDE_RC initProperty()
 {
-    /* TASK-4007 [SM] PBT¸¦ À§ÇÑ ±â´É Ãß°¡
-     * altibase.properties¿Í »ó°ü ¾øÀÌ logfileÀ» ÀĞÀ» ¼ö ÀÖ¾î¾ß ÇÑ´Ù.
-     * µû¶ó¼­ ¹İµå½Ã ¼³Á¤ÇØ¾ßÇÏ´Â mLogFileSize¸¸ Ãß±âÈ­ ÇÑ´Ù. */
+    /* TASK-4007 [SM] PBTë¥¼ ìœ„í•œ ê¸°ëŠ¥ ì¶”ê°€
+     * altibase.propertiesì™€ ìƒê´€ ì—†ì´ logfileì„ ì½ì„ ìˆ˜ ìˆì–´ì•¼ í•œë‹¤.
+     * ë”°ë¼ì„œ ë°˜ë“œì‹œ ì„¤ì •í•´ì•¼í•˜ëŠ” mLogFileSizeë§Œ ì¶”ê¸°í™” í•œë‹¤. */
     smuProperty::mLogFileSize = ID_ULONG_MAX;
 
     return IDE_SUCCESS;
@@ -180,11 +180,11 @@ void parseArgs( int &aArgc, char **&aArgv )
 
 
 /***********************************************************************
-     LogÀÇ Head¸¦ Ãâ·ÂÇÑ´Ù.
+     Logì˜ Headë¥¼ ì¶œë ¥í•œë‹¤.
 
-     [IN] aOffset  - Ãâ·ÂÇÒ LogÀÇ ·Î±×ÆÄÀÏ»óÀÇ Offset
-     [IN] aLogHead - Ãâ·ÂÇÒ LogÀÇ Head
-     [IN] aIsCompressed - ¾ĞÃàµÇ¾ú´ÂÁö ¿©ºÎ
+     [IN] aOffset  - ì¶œë ¥í•  Logì˜ ë¡œê·¸íŒŒì¼ìƒì˜ Offset
+     [IN] aLogHead - ì¶œë ¥í•  Logì˜ Head
+     [IN] aIsCompressed - ì••ì¶•ë˜ì—ˆëŠ”ì§€ ì—¬ë¶€
  **********************************************************************/
 IDE_RC dumpLogHead( UInt         aOffsetInFile,
                     smrLogHead * aLogHead,
@@ -232,8 +232,8 @@ IDE_RC dumpLogHead( UInt         aOffsetInFile,
     sLSN = smrLogHeadI::getLSN( aLogHead );
     IDE_DASSERT( sLSN.mOffset == aOffsetInFile );
     /* BUG-31053 The display format of LSN lacks consistency in Utility.
-     * Logfile ÇÏ³ª¸¸À¸·Î´Â ÀÌ LogRecordÀÇ LFGID, LogFileNumber¸¦ ¾Ë ¼ö
-     * ¾ø±â ¶§¹®¿¡ Offset¸¸ Format¿¡ ¸ÂÃç Ãâ·ÂÇÕ´Ï´Ù. */
+     * Logfile í•˜ë‚˜ë§Œìœ¼ë¡œëŠ” ì´ LogRecordì˜ LFGID, LogFileNumberë¥¼ ì•Œ ìˆ˜
+     * ì—†ê¸° ë•Œë¬¸ì— Offsetë§Œ Formatì— ë§ì¶° ì¶œë ¥í•©ë‹ˆë‹¤. */
     idlOS::printf("LSN=<%"ID_UINT32_FMT", %"ID_UINT32_FMT">, "
                   "COMP: %s, DUMMY: %s, MAGIC: %"ID_UINT32_FMT", TID: %"ID_UINT32_FMT","
                   "BE: %s, REP: %s, FXLOG: %s, ISVP: %s, ISVP_DEPTH: %"ID_UINT32_FMT,
@@ -247,7 +247,7 @@ IDE_RC dumpLogHead( UInt         aOffsetInFile,
                   (sIsReplLog == ID_TRUE)?"Y":"N",
                   (sIsFullXLog == ID_TRUE)?"Y":"N",
                   (sIsSvpLog == ID_TRUE)?"Y":"N",
-                  // BUG-28266 DUMPLFÀ¸·Î SAVEPOINT NAMEÀ» º¼ ¼ö ÀÖÀ¸¸é ÁÁ°Ú½À´Ï´Ù
+                  // BUG-28266 DUMPLFìœ¼ë¡œ SAVEPOINT NAMEì„ ë³¼ ìˆ˜ ìˆìœ¼ë©´ ì¢‹ê² ìŠµë‹ˆë‹¤
                   smrLogHeadI::getReplStmtDepth(aLogHead));
 
     idlOS::printf(" PLSN=<%"ID_UINT32_FMT", "
@@ -263,10 +263,10 @@ IDE_RC dumpLogHead( UInt         aOffsetInFile,
 
 
 /***********************************************************************
-    LogÀÇ Body¸¦ Ãâ·ÂÇÑ´Ù
+    Logì˜ Bodyë¥¼ ì¶œë ¥í•œë‹¤
 
-    [IN] aLogType - Ãâ·ÂÇÒ ·Î±×ÀÇ Type
-    [IN] aLogBody - Ãâ·ÂÇÒ ·Î±×ÀÇ Body
+    [IN] aLogType - ì¶œë ¥í•  ë¡œê·¸ì˜ Type
+    [IN] aLogBody - ì¶œë ¥í•  ë¡œê·¸ì˜ Body
  **********************************************************************/
 IDE_RC dumpLogBody( UInt aLogType, SChar *aLogPtr )
 {
@@ -302,10 +302,10 @@ IDE_RC dumpLogBody( UInt aLogType, SChar *aLogPtr )
 
     /* BUG-30882 dumplf does not display the value of MRDB log.
      *
-     * ÇØ´ç ¸Ş¸ğ¸® ¿µ¿ªÀ» DumpÇÑ °á°ú°ªÀ» ÀúÀåÇÒ ¹öÆÛ¸¦ È®º¸ÇÕ´Ï´Ù.
-     * Stack¿¡ ¼±¾ğÇÒ °æ¿ì, ÀÌ ÇÔ¼ö¸¦ ÅëÇØ ¼­¹ö°¡ Á¾·áµÉ ¼ö ÀÖÀ¸¹Ç·Î
-     * Heap¿¡ ÇÒ´çÀ» ½ÃµµÇÑ ÈÄ, ¼º°øÇÏ¸é ±â·Ï, ¼º°øÇÏÁö ¾ÊÀ¸¸é ±×³É
-     * returnÇÕ´Ï´Ù. */
+     * í•´ë‹¹ ë©”ëª¨ë¦¬ ì˜ì—­ì„ Dumpí•œ ê²°ê³¼ê°’ì„ ì €ì¥í•  ë²„í¼ë¥¼ í™•ë³´í•©ë‹ˆë‹¤.
+     * Stackì— ì„ ì–¸í•  ê²½ìš°, ì´ í•¨ìˆ˜ë¥¼ í†µí•´ ì„œë²„ê°€ ì¢…ë£Œë  ìˆ˜ ìˆìœ¼ë¯€ë¡œ
+     * Heapì— í• ë‹¹ì„ ì‹œë„í•œ í›„, ì„±ê³µí•˜ë©´ ê¸°ë¡, ì„±ê³µí•˜ì§€ ì•Šìœ¼ë©´ ê·¸ëƒ¥
+     * returní•©ë‹ˆë‹¤. */
     IDE_TEST( iduMemMgr::calloc( IDU_MEM_ID, 1,
                                  ID_SIZEOF( SChar ) * IDE_DUMP_DEST_LIMIT,
                                  (void**)&sTempBuf )
@@ -381,9 +381,9 @@ IDE_RC dumpLogBody( UInt aLogType, SChar *aLogPtr )
         case SMR_LT_TBS_UPDATE:
 
             // BUGBUG
-            // Å×ÀÌºí½ºÆäÀÌ½º Update ·Î±×Å¸ÀÔÀ» Ãâ·ÂÇÑ´Ù.
-            // ÇöÀç´Â Extend DBF¿¡ ´ëÇØ¼­¸¸ ÀÚ¼¼È÷ Ãâ·ÂÇÏ°í, ³ª¸ÓÁö ·Î±×Å¸ÀÔ¿¡ ´ëÇØ>¼­´Â
-            // ·Î±×Å¸ÀÔ¸¸ Ãâ·ÂÇÑ´Ù. ¸ğµç ·Î±×Å¸ÀÔ¿¡ ´ëÇØ¼­ ÀÚ¼¼È÷ Ãâ·ÂÇÒ ÇÊ¿ä°¡ ÀÖ´Ù.
+            // í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ Update ë¡œê·¸íƒ€ì…ì„ ì¶œë ¥í•œë‹¤.
+            // í˜„ì¬ëŠ” Extend DBFì— ëŒ€í•´ì„œë§Œ ìì„¸íˆ ì¶œë ¥í•˜ê³ , ë‚˜ë¨¸ì§€ ë¡œê·¸íƒ€ì…ì— ëŒ€í•´>ì„œëŠ”
+            // ë¡œê·¸íƒ€ì…ë§Œ ì¶œë ¥í•œë‹¤. ëª¨ë“  ë¡œê·¸íƒ€ì…ì— ëŒ€í•´ì„œ ìì„¸íˆ ì¶œë ¥í•  í•„ìš”ê°€ ìˆë‹¤.
             idlOS::memcpy( &sTBSUptLog, aLogPtr, ID_SIZEOF( smrTBSUptLog ) );
 
             idlOS::printf("SPACEID: %"ID_UINT32_FMT"\n", sTBSUptLog.mSpaceID);
@@ -402,7 +402,7 @@ IDE_RC dumpLogBody( UInt aLogType, SChar *aLogPtr )
                                   sTBSUptLog.mBImgSize, 
                                   sTBSUptLog.mAImgSize );
 
-                    // sChkptPathCount¸¦ ÀĞ¾î¿Â´Ù.
+                    // sChkptPathCountë¥¼ ì½ì–´ì˜¨ë‹¤.
                     sTempUInt = 0;
                     idlOS::memcpy( (void *)&sTempUInt,
                                    (UChar *)aLogPtr + SMR_LOGREC_SIZE(smrTBSUptLog) +
@@ -410,7 +410,7 @@ IDE_RC dumpLogBody( UInt aLogType, SChar *aLogPtr )
                                    ID_SIZEOF(UInt) );
                     idlOS::printf("  Check Point Path Count : %"ID_UINT32_FMT"\n", sTempUInt);
 
-                    // Check Point Path Ãâ·Â
+                    // Check Point Path ì¶œë ¥
                     for( i = 0 ; i < sTempUInt ; i++ )
                     {
                         sSPNameLen = 0;
@@ -429,7 +429,7 @@ IDE_RC dumpLogBody( UInt aLogType, SChar *aLogPtr )
                                       sTempBuf);
                     } // end of for
 
-                    // After Value ÀüÃ¼ Ãâ·Â
+                    // After Value ì „ì²´ ì¶œë ¥
                     ideLog::ideMemToHexStr( (UChar *)aLogPtr + SMR_LOGREC_SIZE(smrTBSUptLog) + sTBSUptLog.mBImgSize,
                                             sTBSUptLog.mAImgSize,
                                             IDE_DUMP_FORMAT_BINARY,
@@ -566,7 +566,7 @@ IDE_RC dumpLogBody( UInt aLogType, SChar *aLogPtr )
             }
             break;
 
-        // BUG-28266 DUMPLFÀ¸·Î SAVEPOINT NAMEÀ» º¼ ¼ö ÀÖÀ¸¸é ÁÁ°Ú½À´Ï´Ù
+        // BUG-28266 DUMPLFìœ¼ë¡œ SAVEPOINT NAMEì„ ë³¼ ìˆ˜ ìˆìœ¼ë©´ ì¢‹ê² ìŠµë‹ˆë‹¤
         case SMR_LT_SAVEPOINT_ABORT:
         case SMR_LT_SAVEPOINT_SET:
             sLogBuffer = ( (SChar*)aLogPtr ) + ID_SIZEOF(smrLogHead);
@@ -834,7 +834,7 @@ IDE_RC dumpLogBody( UInt aLogType, SChar *aLogPtr )
         case SMR_SMM_MEMBASE_SET_SYSTEM_SCN:
             break;
 
-        case SMR_LT_DDL :           // DDL TransactionÀÓÀ» Ç¥½ÃÇÏ´Â Log Record
+        case SMR_LT_DDL :           // DDL Transactionì„ì„ í‘œì‹œí•˜ëŠ” Log Record
             break;
 
         case SMR_LT_TABLE_META :    // Table Meta Log Record
@@ -890,8 +890,8 @@ IDE_RC dumpLogBody( UInt aLogType, SChar *aLogPtr )
 /***********************************************************************
  * Description : dump disk log buffer
  *
- * TASK-4007 [SM] PBT¸¦ À§ÇÑ ±â´É Ãß°¡
- * 8¹ÙÀÌÆ® ÀÌ»ó ·Î±×µé¿¡ ´ëÇØ¼­µµ Value¸¦ Ãâ·ÂÇØÁØ´Ù.
+ * TASK-4007 [SM] PBTë¥¼ ìœ„í•œ ê¸°ëŠ¥ ì¶”ê°€
+ * 8ë°”ì´íŠ¸ ì´ìƒ ë¡œê·¸ë“¤ì— ëŒ€í•´ì„œë„ Valueë¥¼ ì¶œë ¥í•´ì¤€ë‹¤.
  **********************************************************************/
 void dumpDiskLog( SChar         * aLogBuffer,
                   UInt            aAImgSize,
@@ -913,10 +913,10 @@ void dumpDiskLog( SChar         * aLogBuffer,
 
     IDE_DASSERT( aLogBuffer != NULL );
 
-    /* ÇØ´ç ¸Ş¸ğ¸® ¿µ¿ªÀ» DumpÇÑ °á°ú°ªÀ» ÀúÀåÇÒ ¹öÆÛ¸¦ È®º¸ÇÕ´Ï´Ù.
-     * Stack¿¡ ¼±¾ğÇÒ °æ¿ì, ÀÌ ÇÔ¼ö¸¦ ÅëÇØ ¼­¹ö°¡ Á¾·áµÉ ¼ö ÀÖÀ¸¹Ç·Î
-     * Heap¿¡ ÇÒ´çÀ» ½ÃµµÇÑ ÈÄ, ¼º°øÇÏ¸é ±â·Ï, ¼º°øÇÏÁö ¾ÊÀ¸¸é ±×³É
-     * returnÇÕ´Ï´Ù. */
+    /* í•´ë‹¹ ë©”ëª¨ë¦¬ ì˜ì—­ì„ Dumpí•œ ê²°ê³¼ê°’ì„ ì €ì¥í•  ë²„í¼ë¥¼ í™•ë³´í•©ë‹ˆë‹¤.
+     * Stackì— ì„ ì–¸í•  ê²½ìš°, ì´ í•¨ìˆ˜ë¥¼ í†µí•´ ì„œë²„ê°€ ì¢…ë£Œë  ìˆ˜ ìˆìœ¼ë¯€ë¡œ
+     * Heapì— í• ë‹¹ì„ ì‹œë„í•œ í›„, ì„±ê³µí•˜ë©´ ê¸°ë¡, ì„±ê³µí•˜ì§€ ì•Šìœ¼ë©´ ê·¸ëƒ¥
+     * returní•©ë‹ˆë‹¤. */
     IDE_TEST( iduMemMgr::calloc( IDU_MEM_ID, 1,
                                  ID_SIZEOF( SChar ) * IDE_DUMP_DEST_LIMIT,
                                  (void**)&sTempBuf )
@@ -951,9 +951,9 @@ void dumpDiskLog( SChar         * aLogBuffer,
             sSlotNum = SC_NULL_SLOTNUM;
         }
 
-        /* TASK-4007 [SM] PBT¸¦ À§ÇÑ ±â´É Ãß°¡
-         * ¸ğµç LogÀÇ Header¸¦ Ãâ·ÂÇØÁØ ÈÄ Value¸¦ Hexa·Î DumpÇÏ¿© Ãâ·ÂÇØÁØ´Ù.
-         * value°ª Ãâ·Â ¿©ºÎ¸¦ °áÁ¤ÇÑ´Ù.*/
+        /* TASK-4007 [SM] PBTë¥¼ ìœ„í•œ ê¸°ëŠ¥ ì¶”ê°€
+         * ëª¨ë“  Logì˜ Headerë¥¼ ì¶œë ¥í•´ì¤€ í›„ Valueë¥¼ Hexaë¡œ Dumpí•˜ì—¬ ì¶œë ¥í•´ì¤€ë‹¤.
+         * valueê°’ ì¶œë ¥ ì—¬ë¶€ë¥¼ ê²°ì •í•œë‹¤.*/
         switch (sLogHdr.mType)
         {
         case SDR_SDP_1BYTE:
@@ -1022,8 +1022,8 @@ void dumpDiskLog( SChar         * aLogBuffer,
                           sOffset,
                           sLogHdr.mLength);
 
-            /* TASK-4007 [SM]PBT¸¦ À§ÇÑ ±â´É Ãß°¡
-             * 8¹ÙÀÌÆ® ÃÊ°ú LogÀÇ valueµµ DumpÇÏ¿© º¸¿©ÁØ´Ù*/
+            /* TASK-4007 [SM]PBTë¥¼ ìœ„í•œ ê¸°ëŠ¥ ì¶”ê°€
+             * 8ë°”ì´íŠ¸ ì´ˆê³¼ Logì˜ valueë„ Dumpí•˜ì—¬ ë³´ì—¬ì¤€ë‹¤*/
             if( ( gDisplayValue == ID_TRUE ) &&
                 ( sLogHdr.mLength > 0 ) )
             {
@@ -1071,10 +1071,10 @@ void dumpDiskLog( SChar         * aLogBuffer,
 
 
 
-/* TASK-4007 [SM] PBT¸¦ À§ÇÑ ±â´É Ãß°¡
- * Log¸¦ DumpÇÒ¶§, ¾î¶² ·Î±×¸¦ ¾î¶»°Ô Ãâ·ÂÇÒÁö¸¦ ¼­¹ö°¡ ¾Æ´Ñ DumpÇÏ°íÀÚ ÇÏ´Â
- * Util¿¡¼­ °áÁ¤ÇÏµµ·Ï, ÀĞ¾îµå¸° ·Î±×¿¡ ´ëÇÑ Ã³¸®¿ë CallbackÇÔ¼ö¸¦ µĞ´Ù.*/
-/* Callback ±¸Á¶´Â È®Àå¼ºÀÌ ¶³¾îÁö±â ¶§¹®¿¡, Class±¸Á¶·Î º¯°æÇÑ´Ù. */
+/* TASK-4007 [SM] PBTë¥¼ ìœ„í•œ ê¸°ëŠ¥ ì¶”ê°€
+ * Logë¥¼ Dumpí• ë•Œ, ì–´ë–¤ ë¡œê·¸ë¥¼ ì–´ë–»ê²Œ ì¶œë ¥í• ì§€ë¥¼ ì„œë²„ê°€ ì•„ë‹Œ Dumpí•˜ê³ ì í•˜ëŠ”
+ * Utilì—ì„œ ê²°ì •í•˜ë„ë¡, ì½ì–´ë“œë¦° ë¡œê·¸ì— ëŒ€í•œ ì²˜ë¦¬ìš© Callbackí•¨ìˆ˜ë¥¼ ë‘”ë‹¤.*/
+/* Callback êµ¬ì¡°ëŠ” í™•ì¥ì„±ì´ ë–¨ì–´ì§€ê¸° ë•Œë¬¸ì—, Classêµ¬ì¡°ë¡œ ë³€ê²½í•œë‹¤. */
 IDE_RC dumpLogFile()
 {
     smrLogType       sLogType;
@@ -1116,7 +1116,7 @@ IDE_RC dumpLogFile()
         sOffset  = gLogFileDump.getOffset();
         sIsComp  = gLogFileDump.getIsCompressed();
 
-        /* TID Á¶°Ç¿¡ µû¶ó Ãâ·Â ¿©ºÎ °áÁ¤ */
+        /* TID ì¡°ê±´ì— ë”°ë¼ ì¶œë ¥ ì—¬ë¶€ ê²°ì • */
         if( ( gTID == 0 ) || 
             ( smrLogHeadI::getTransID( sLogHead ) == gTID ) ) 
         {
@@ -1176,11 +1176,11 @@ void displayLogTypes()
 {
     UInt    i;
     
-    // Log Type Ãâ·Â
+    // Log Type ì¶œë ¥
     idlOS::printf( "LogType:\n" );
 
-    // BUG-28581 dumplf¿¡¼­ Log °³¼ö °è»êÀ» À§ÇÑ sizeof ´ÜÀ§°¡ Àß¸øµÇ¾î ÀÖ½À´Ï´Ù.
-    // LogType¹è¿­¿¡ ÀÖ´Â ¸ğµç ³»¿ëÀ» ÅäÇØ³À´Ï´Ù.
+    // BUG-28581 dumplfì—ì„œ Log ê°œìˆ˜ ê³„ì‚°ì„ ìœ„í•œ sizeof ë‹¨ìœ„ê°€ ì˜ëª»ë˜ì–´ ìˆìŠµë‹ˆë‹¤.
+    // LogTypeë°°ì—´ì— ìˆëŠ” ëª¨ë“  ë‚´ìš©ì„ í† í•´ëƒ…ë‹ˆë‹¤.
     for( i=0; i<ID_UCHAR_MAX ; i++ )
     {
         idlOS::printf( "%3"ID_UINT32_FMT" %s\n", 
@@ -1189,7 +1189,7 @@ void displayLogTypes()
     }
     idlOS::printf( "\n" );
 
-    // Log Operation Type Ãâ·Â
+    // Log Operation Type ì¶œë ¥
     idlOS::printf( "LogOPType:\n" );
     for( i=0; i<SMR_OP_MAX+1; i++ )
     {
@@ -1199,7 +1199,7 @@ void displayLogTypes()
     }
     idlOS::printf( "\n" );
 
-    // Lob Op Type Ãâ·Â
+    // Lob Op Type ì¶œë ¥
     idlOS::printf( "LobOPType:\n" );
     for( i=0; i<SMR_LOB_OP_MAX+1; i++ )
     {
@@ -1209,7 +1209,7 @@ void displayLogTypes()
     }
     idlOS::printf( "\n" );
 
-    // Disk OP Type Ãâ·Â
+    // Disk OP Type ì¶œë ¥
     idlOS::printf( "DiskOPType:\n" );
     for( i=0; i<SDR_OP_MAX+1; i++)
     {
@@ -1219,7 +1219,7 @@ void displayLogTypes()
     }
     idlOS::printf( "\n" );
 
-    // Disk Log Type Ãâ·Â
+    // Disk Log Type ì¶œë ¥
     idlOS::printf( "Disk LogType:\n" );
     for( i=0; i<SDR_LOG_TYPE_MAX+1; i++)
     {
@@ -1229,7 +1229,7 @@ void displayLogTypes()
     }
     idlOS::printf( "\n" );
 
-    // Update Type Ãâ·Â
+    // Update Type ì¶œë ¥
     idlOS::printf( "UpdateType:\n" );
     for( i=0; i<SM_MAX_RECFUNCMAP_SIZE; i++)
     {
@@ -1239,7 +1239,7 @@ void displayLogTypes()
     }
     idlOS::printf( "\n" );
 
-    // TBS Upt Type Ãâ·Â
+    // TBS Upt Type ì¶œë ¥
     idlOS::printf( "TBSUptType:\n" );
     for( i=0; i<SCT_UPDATE_MAXMAX_TYPE+1; i++)
     {
@@ -1252,8 +1252,8 @@ void displayLogTypes()
 
 
 /***********************************************************************
- * Hashtable¿¡ µî·ÏµÈ ¸ğµç TableOIDInfo ¸¦ Ãâ·ÂÇÑ´Ù.
- * °¢°¢ÀÇ Hash Element¿¡ ´ëÇØ È£ÃâµÉ VisitorÇÔ¼ö
+ * Hashtableì— ë“±ë¡ëœ ëª¨ë“  TableOIDInfo ë¥¼ ì¶œë ¥í•œë‹¤.
+ * ê°ê°ì˜ Hash Elementì— ëŒ€í•´ í˜¸ì¶œë  Visitorí•¨ìˆ˜
  **********************************************************************/
 IDE_RC displayingVisitor( vULong   aKey,
                           void   * aData,
@@ -1297,8 +1297,8 @@ IDE_RC displayingVisitor( vULong   aKey,
 
 
 /***********************************************************************
- * Hashtable¿¡ µî·ÏµÈ ¸ğµç TableOIDInfo ¸¦ destroyÇÑ´Ù.
- * °¢°¢ÀÇ Hash Element¿¡ ´ëÇØ È£ÃâµÉ VisitorÇÔ¼ö
+ * Hashtableì— ë“±ë¡ëœ ëª¨ë“  TableOIDInfo ë¥¼ destroyí•œë‹¤.
+ * ê°ê°ì˜ Hash Elementì— ëŒ€í•´ í˜¸ì¶œë  Visitorí•¨ìˆ˜
  **********************************************************************/
 IDE_RC destoyingVisitor( vULong   aKey,
                          void   * aData,
@@ -1327,10 +1327,10 @@ IDE_RC destoyingVisitor( vULong   aKey,
 }
 
 /***********************************************************************
- *  LogÀÇ BodyÀÇ Å¸ÀÔº° count Áõ°¡
+ *  Logì˜ Bodyì˜ íƒ€ì…ë³„ count ì¦ê°€
  * 
- *  aLogType [IN] Ãâ·ÂÇÒ ·Î±×ÀÇ Type
- *  aLogBody [IN] Ãâ·ÂÇÒ ·Î±×ÀÇ Body
+ *  aLogType [IN] ì¶œë ¥í•  ë¡œê·¸ì˜ Type
+ *  aLogBody [IN] ì¶œë ¥í•  ë¡œê·¸ì˜ Body
  **********************************************************************/
 IDE_RC dumpLogBodyStatisticsGroupbyTableOID( UInt aLogType, SChar *aLogPtr )
 {
@@ -1355,9 +1355,9 @@ IDE_RC dumpLogBodyStatisticsGroupbyTableOID( UInt aLogType, SChar *aLogPtr )
            
             IDE_TEST_CONT( SM_IS_VALID_OID(sTableOID) != ID_TRUE, SKIP );
    
-            // sTableOID°¡ hash table¿¡ ÀÖ´ÂÁö È®ÀÎ
+            // sTableOIDê°€ hash tableì— ìˆëŠ”ì§€ í™•ì¸
             sTableInfo = (gTableInfo *)gTableInfoHash.search( sTableOID );
-            //  sTableOID°¡ Ã³À½ ³ª¿Â°ÍÀÌ¶ó¸é hash table¿¡ »ğÀÔ
+            //  sTableOIDê°€ ì²˜ìŒ ë‚˜ì˜¨ê²ƒì´ë¼ë©´ hash tableì— ì‚½ì…
             if( sTableInfo == NULL )
             {
                 IDE_TEST_RAISE( iduMemMgr::calloc(IDU_MEM_SM_SMU,
@@ -1371,8 +1371,8 @@ IDE_RC dumpLogBodyStatisticsGroupbyTableOID( UInt aLogType, SChar *aLogPtr )
                 IDE_TEST( gTableInfoHash.insert( sTableOID, sTableInfo ) != IDE_SUCCESS );
                 gHashItemCnt++;
 
-                // sTableOID°¡ hash table¿¡ ÀÖ´ÂÁö È®ÀÎ
-                // ¹æ±İ »ğÀÔÇßÀ¸´Ï ¾øÀ¸¸é ¹®Á¦°¡ ÀÖÀ½
+                // sTableOIDê°€ hash tableì— ìˆëŠ”ì§€ í™•ì¸
+                // ë°©ê¸ˆ ì‚½ì…í–ˆìœ¼ë‹ˆ ì—†ìœ¼ë©´ ë¬¸ì œê°€ ìˆìŒ
                 sTableInfo = (gTableInfo *)gTableInfoHash.search( sTableOID );
                 IDE_ERROR( sTableInfo != NULL );
             }
@@ -1427,10 +1427,10 @@ IDE_RC dumpLogBodyStatisticsGroupbyTableOID( UInt aLogType, SChar *aLogPtr )
 }
 
 /***********************************************************************
- *  LogÀÇ BodyÀÇ Å¸ÀÔº° count Áõ°¡
+ *  Logì˜ Bodyì˜ íƒ€ì…ë³„ count ì¦ê°€
  * 
- *  aLogType [IN] Ãâ·ÂÇÒ ·Î±×ÀÇ Type
- *  aLogBody [IN] Ãâ·ÂÇÒ ·Î±×ÀÇ Body
+ *  aLogType [IN] ì¶œë ¥í•  ë¡œê·¸ì˜ Type
+ *  aLogBody [IN] ì¶œë ¥í•  ë¡œê·¸ì˜ Body
  **********************************************************************/
 IDE_RC dumpLogBodyStatistics( UInt aLogType, SChar *aLogPtr )
 {
@@ -1472,7 +1472,7 @@ IDE_RC dumpLogBodyStatistics( UInt aLogType, SChar *aLogPtr )
 }
 
 /******************************************************************
- * aLogFile    [IN]  ºĞ¼®ÇÒ ÆÄÀÏÀÇ Àı´ë°æ·Î
+ * aLogFile    [IN]  ë¶„ì„í•  íŒŒì¼ì˜ ì ˆëŒ€ê²½ë¡œ
  *****************************************************************/
 IDE_RC dumpLogFileStatistics( SChar *aLogFile )
 {
@@ -1482,11 +1482,11 @@ IDE_RC dumpLogFileStatistics( SChar *aLogFile )
     idBool           sEOF      = ID_FALSE;
     idBool           sIsOpened = ID_FALSE;
     smLSN            sLSN;
-    // ÆÄÀÏ ¿­¾î¼­
+    // íŒŒì¼ ì—´ì–´ì„œ
     IDE_TEST( gLogFileDump.openFile( aLogFile ) != IDE_SUCCESS );
     sIsOpened = ID_TRUE;
 
-    // ºó ÆÄÀÏÀÌ¸é skip
+    // ë¹ˆ íŒŒì¼ì´ë©´ skip
     sEOF = ID_FALSE;
     IDE_TEST( gLogFileDump.dumpLog( &sEOF ) != IDE_SUCCESS ); 
 
@@ -1499,8 +1499,8 @@ IDE_RC dumpLogFileStatistics( SChar *aLogFile )
 
     if( smrLogHeadI::getType(sLogHead) != SMR_LT_FILE_BEGIN ) 
     {
-        /* ÆÄÀÏÀÇ Ã³À½ÀÌ¹Ç·Î SMR_LT_FILE_BEGIN ÀÌ¾î¾ß ÇÔ.
-           ¾Æ´Ï¸é altibase logfileÀÌ ¾Æ´Ñ°ÍÀ¸·Î ÆÇ´ÜÇÔ */
+        /* íŒŒì¼ì˜ ì²˜ìŒì´ë¯€ë¡œ SMR_LT_FILE_BEGIN ì´ì–´ì•¼ í•¨.
+           ì•„ë‹ˆë©´ altibase logfileì´ ì•„ë‹Œê²ƒìœ¼ë¡œ íŒë‹¨í•¨ */
         gInvalidFile++;
         idlOS::printf( "Warning : %s Invalid Log File. skip this file.\n", 
                        aLogFile );
@@ -1509,7 +1509,7 @@ IDE_RC dumpLogFileStatistics( SChar *aLogFile )
 
     for(;;)
     {
-        // ·Î±×ÇÏ³ª ÀĞ¾î¼­
+        // ë¡œê·¸í•˜ë‚˜ ì½ì–´ì„œ
         sEOF = ID_FALSE;
         IDE_TEST( gLogFileDump.dumpLog( &sEOF ) != IDE_SUCCESS ); 
 
@@ -1517,12 +1517,12 @@ IDE_RC dumpLogFileStatistics( SChar *aLogFile )
         {
             break;
         }
-        // ÀĞ¾î¾ß ÇÏ´Â ·Î±× Á¤º¸¸¦ °¡Á®¿Â´Ù.
+        // ì½ì–´ì•¼ í•˜ëŠ” ë¡œê·¸ ì •ë³´ë¥¼ ê°€ì ¸ì˜¨ë‹¤.
         sLogHead = gLogFileDump.getLogHead();
         sLogPtr  = gLogFileDump.getLogPtr();
 
         sLSN = smrLogHeadI::getLSN( sLogHead );
-        /* SN Á¶°Ç¿¡ µû¶ó ¼öÁı ¿©ºÎ °áÁ¤ */
+        /* SN ì¡°ê±´ì— ë”°ë¼ ìˆ˜ì§‘ ì—¬ë¶€ ê²°ì • */
         /* BUG-44361               sLSN >= gLSN */
         if ( smrCompareLSN::isGTE( &sLSN, &gLSN ) )
         {
@@ -1569,7 +1569,7 @@ IDE_RC dumpLogFileStatistics( SChar *aLogFile )
 }
 
 /******************************************************************
-// atoiÀÇ longÇü ¹öÀü
+// atoiì˜ longí˜• ë²„ì „
  *****************************************************************/
 ULong atol(SChar *aSrc)
 {
@@ -1595,7 +1595,7 @@ ULong atol(SChar *aSrc)
 }
 
 /******************************************************************
- * ·Î±× ÆÄÀÏ¿¡¼­ ¼ıÀÚ¸¸ ºñ±³ÇØ¼­ Å« ¼øÀ¸·Î ³ª¿­ÇÏ´Â ¿ëµµ
+ * ë¡œê·¸ íŒŒì¼ì—ì„œ ìˆ«ìë§Œ ë¹„êµí•´ì„œ í° ìˆœìœ¼ë¡œ ë‚˜ì—´í•˜ëŠ” ìš©ë„
  *****************************************************************/
 extern "C" SInt
 compareFD( const void* aElem1, const void* aElem2 )
@@ -1633,7 +1633,7 @@ compareFD( const void* aElem1, const void* aElem2 )
 }
 
 /******************************************************************
- * ÁöÁ¤µÈ SNÀ» Æ÷ÇÔÇÏ´Â ÆÄÀÏÀ» Ã£´Â´Ù.
+ * ì§€ì •ëœ SNì„ í¬í•¨í•˜ëŠ” íŒŒì¼ì„ ì°¾ëŠ”ë‹¤.
  *****************************************************************/
 IDE_RC findFirstFile( fdEntry  *aEntries, UInt *aFileNum )
 {
@@ -1644,7 +1644,7 @@ IDE_RC findFirstFile( fdEntry  *aEntries, UInt *aFileNum )
     UInt             i = 0;
     smLSN            sLSN;
 
-    *aFileNum = gFileIdx-1;  // ¸øÃ£À¸¸é Ã³À½ºÎÅÍ ÇØ¾ß ÇÏ´Ï±î.
+    *aFileNum = gFileIdx-1;  // ëª»ì°¾ìœ¼ë©´ ì²˜ìŒë¶€í„° í•´ì•¼ í•˜ë‹ˆê¹Œ.
 
     for ( i = 0 ; i < gFileIdx ; i++ )
     {
@@ -1661,14 +1661,14 @@ IDE_RC findFirstFile( fdEntry  *aEntries, UInt *aFileNum )
         idlOS::snprintf( sFullFileName, SM_MAX_FILE_NAME, "%s%c%s",
                          gPath, IDL_FILE_SEPARATOR, aEntries[i].sName );
 
-        // ÆÄÀÏ ¿­¾î¼­
+        // íŒŒì¼ ì—´ì–´ì„œ
         IDE_TEST( gLogFileDump.openFile( sFullFileName ) != IDE_SUCCESS );
         sIsOpened = ID_TRUE;
 
         sEOF = ID_FALSE;
         IDE_TEST( gLogFileDump.dumpLog( &sEOF ) != IDE_SUCCESS ); 
 
-        // ºó ÆÄÀÏÀÌ¸é skip
+        // ë¹ˆ íŒŒì¼ì´ë©´ skip
         if( sEOF == ID_TRUE ) 
         {
             sIsOpened=ID_FALSE;
@@ -1689,7 +1689,7 @@ IDE_RC findFirstFile( fdEntry  *aEntries, UInt *aFileNum )
             continue;
         }
 
-        // SNÀÌ ÀÛÀº ÆÄÀÏÀÌ Ã£¾Æ Áö¸é ÀÌÆÄÀÏ ºÎÅÍ ºĞ¼®À» ½ÃÀÛÇÏ¸é µÈ´Ù. */
+        // SNì´ ì‘ì€ íŒŒì¼ì´ ì°¾ì•„ ì§€ë©´ ì´íŒŒì¼ ë¶€í„° ë¶„ì„ì„ ì‹œì‘í•˜ë©´ ëœë‹¤. */
         sLSN = smrLogHeadI::getLSN( sLogHead );
         /* BUG-44361               gLSN >= sLSN */
         if ( smrCompareLSN::isGTE( &gLSN, &sLSN ) )
@@ -1716,7 +1716,7 @@ IDE_RC findFirstFile( fdEntry  *aEntries, UInt *aFileNum )
 
 
 /******************************************************************
- * scan ÇÒ ÆÄÀÏ ¸ñ·ÏÀ» ÀÛ¼ºÇÑ´Ù.
+ * scan í•  íŒŒì¼ ëª©ë¡ì„ ì‘ì„±í•œë‹¤.
  *****************************************************************/
 IDE_RC makeTargetFileList( fdEntry  ** aEntries )
 {
@@ -1769,13 +1769,13 @@ IDE_RC makeTargetFileList( fdEntry  ** aEntries )
             /* nothing to do */
         }
 
-        //logfilexx ·Î ½ÃÀÛÇÏ´Â ÆÄÀÏÀ» Ã£¾Æ¼­
+        //logfilexx ë¡œ ì‹œì‘í•˜ëŠ” íŒŒì¼ì„ ì°¾ì•„ì„œ
         if(idlOS::strncmp(sFileName, SMR_LOG_FILE_NAME, idlOS::strlen(SMR_LOG_FILE_NAME) ) == 0)
         {
             idlOS::snprintf( sFullFileName, SM_MAX_FILE_NAME, "%s%c%s",
                              gPath, IDL_FILE_SEPARATOR, sFileName );
              
-            //ÆÄÀÏÀ» ¿­¾îº¸°í
+            //íŒŒì¼ì„ ì—´ì–´ë³´ê³ 
             sFP = idlOS::fopen( sFullFileName, "r");
             if(sFP == NULL)
             {
@@ -1785,7 +1785,7 @@ IDE_RC makeTargetFileList( fdEntry  ** aEntries )
             }   
             else
             {
-                // ¸ñ·ÏÀ» ¸¸µé¾î¼­
+                // ëª©ë¡ì„ ë§Œë“¤ì–´ì„œ
                 idlOS::strcpy((*aEntries)[gFileIdx].sName, (const char*)sResDirEnt->d_name);
 
                 if( idlOS::strncmp( (*aEntries)[gFileIdx].sName, sFileName, idlOS::strlen(sFileName) ) != 0 )
@@ -1808,7 +1808,7 @@ IDE_RC makeTargetFileList( fdEntry  ** aEntries )
 
                 if ( gFileIdx >= sAllocSize )
                 {
-                    // fdEntry °¡ ºÎÁ·ÇÏ¸é sAllocSize¾¿ Ãß°¡
+                    // fdEntry ê°€ ë¶€ì¡±í•˜ë©´ sAllocSizeì”© ì¶”ê°€
                     sAllocSize = (gFileIdx + sAllocSize);
                     IDE_TEST_RAISE( iduMemMgr::realloc( IDU_MEM_SM_SMU,
                                                         ID_SIZEOF(fdEntry) * sAllocSize,
@@ -1874,18 +1874,18 @@ IDE_RC makeTargetFileList( fdEntry  ** aEntries )
 
 }
 /******************************************************************
- * ÁöÁ¤µÈ °æ·Î/ÆÄÀÏ ÀÇ Åë°èÁ¤º¸ (DMLÀÇ ´ë·«ÀûÀÎ ¼ö) ¸¦ È®ÀÎÇÑ´Ù.
+ * ì§€ì •ëœ ê²½ë¡œ/íŒŒì¼ ì˜ í†µê³„ì •ë³´ (DMLì˜ ëŒ€ëµì ì¸ ìˆ˜) ë¥¼ í™•ì¸í•œë‹¤.
  *****************************************************************/
 IDE_RC dumpStatistics()
 {
     SChar       sFullFileName[SM_MAX_FILE_NAME+1] = {"", };
     fdEntry   * sEntries = NULL;
-    UInt        sFileIdx = 0; // ÁöÁ¤µÈ SNÀ» Æ÷ÇÔÇÏ´Â ÆÄÀÏÀÎµ¦½º
+    UInt        sFileIdx = 0; // ì§€ì •ëœ SNì„ í¬í•¨í•˜ëŠ” íŒŒì¼ì¸ë±ìŠ¤
     SLong       i;
 
     IDE_ERROR ( SM_IS_LSN_MAX( gLSN ) != ID_TRUE );
 
-    // -g : TableOID·Î Grouping ÇÏ±â À§ÇØ hash table »ı¼º
+    // -g : TableOIDë¡œ Grouping í•˜ê¸° ìœ„í•´ hash table ìƒì„±
     if( gGroupByTableOID == ID_TRUE )
     {
         IDE_TEST( gTableInfoHash.initialize(IDU_MEM_SM_SMU,
@@ -1901,37 +1901,37 @@ IDE_RC dumpStatistics()
     // -f : specify log file name  
     if( gLogFileName != NULL )
     {
-        // Æ¯Á¤ ÆÄÀÏ ÇÏ³ª¸¸ ºĞ¼®À» ÇÔ.
+        // íŠ¹ì • íŒŒì¼ í•˜ë‚˜ë§Œ ë¶„ì„ì„ í•¨.
         gFileIdx = 1;
         IDE_TEST( dumpLogFileStatistics( gLogFileName )
                   != IDE_SUCCESS );
     }
     else // -F : specify the path of logs
     {
-        // scan ÇÒ ÆÄÀÏ ¸ñ·Ï ÀÛ¼º
+        // scan í•  íŒŒì¼ ëª©ë¡ ì‘ì„±
         IDE_TEST( makeTargetFileList(&sEntries) != IDE_SUCCESS );
 
-        // ¹øÈ£°¡ Å«¼øÀ¸·Î ÆÄÀÏµé Á¤·ÄÇØ¼­
+        // ë²ˆí˜¸ê°€ í°ìˆœìœ¼ë¡œ íŒŒì¼ë“¤ ì •ë ¬í•´ì„œ
         idlOS::qsort( (void*)sEntries, gFileIdx, ID_SIZEOF(fdEntry), compareFD );
       
-        // Æ¯Á¤ SN ÀÌ ÁöÁ¤ÀÌ µÇ¾ú´Ù¸é ÇØ´ç SNÀ» Æ÷ÇÔÇÏ´Â ÆÄÀÏÀ» ±¸ÇÑ´Ù.
+        // íŠ¹ì • SN ì´ ì§€ì •ì´ ë˜ì—ˆë‹¤ë©´ í•´ë‹¹ SNì„ í¬í•¨í•˜ëŠ” íŒŒì¼ì„ êµ¬í•œë‹¤.
         if ( SM_IS_LSN_INIT( gLSN ) != ID_TRUE )
         { 
             IDE_TEST( findFirstFile( sEntries, &sFileIdx ) != IDE_SUCCESS );
         }
         else
         {
-            //Æ¯Á¤ SN ÀÌ ÁöÁ¤ÀÌ µÇÁö ¾ÊÀ¸¸é Ã³À½ ÆÄÀÏºÎÅÍ ³¡±îÁö scan
+            //íŠ¹ì • SN ì´ ì§€ì •ì´ ë˜ì§€ ì•Šìœ¼ë©´ ì²˜ìŒ íŒŒì¼ë¶€í„° ëê¹Œì§€ scan
             if( gFileIdx != 0 )
             {
                 sFileIdx = gFileIdx-1;
             }
         }
 
-        // gFileIdxÀÌ 0ÀÌ¸é scan ÇÒ ·Î±× ÆÄÀÏÀÌ ¾ø½À´Ï´Ù.
+        // gFileIdxì´ 0ì´ë©´ scan í•  ë¡œê·¸ íŒŒì¼ì´ ì—†ìŠµë‹ˆë‹¤.
         if( gFileIdx != 0 )
         { 
-            // SNÀ» Æ÷ÇÔÇÏ´Â ÆÄÀÏºÎÅÍ scan ½ÃÀÛ
+            // SNì„ í¬í•¨í•˜ëŠ” íŒŒì¼ë¶€í„° scan ì‹œì‘
             for ( i = sFileIdx ; i >= 0 ; i-- )
             {
                 if( idlOS::strlen(sEntries[i].sName) < idlOS::strlen(SMR_LOG_FILE_NAME) )
@@ -1953,14 +1953,14 @@ IDE_RC dumpStatistics()
         }
     }//else
 
-    // -g : TableOID·Î Grouping ÇØ¼­ Ãâ·Â
+    // -g : TableOIDë¡œ Grouping í•´ì„œ ì¶œë ¥
     if( gGroupByTableOID == ID_TRUE )
     {
-        // hash TableÀ» ¼øÈ¸ ÇÏ¸é¼­ ³»¿ëÀ» Ãâ·ÂÇÑ´Ù.
+        // hash Tableì„ ìˆœíšŒ í•˜ë©´ì„œ ë‚´ìš©ì„ ì¶œë ¥í•œë‹¤.
         IDE_TEST( gTableInfoHash.traverse( displayingVisitor,
                                            NULL /* Visitor Arg */ )
                   != IDE_SUCCESS );
-        // ÃÑÇÕÀÌ ¸Â´ÂÁö ÇÑ¹ø È®ÀÎ.
+        // ì´í•©ì´ ë§ëŠ”ì§€ í•œë²ˆ í™•ì¸.
         IDE_TEST_RAISE( gInserLogCnt4Debug != gInserLogCnt, err_invalid_cnt );
         IDE_TEST_RAISE( gUpdateLogCnt4Debug != gUpdateLogCnt, err_invalid_cnt);
         IDE_TEST_RAISE( gDeleteLogCnt4Debug != gDeleteLogCnt, err_invalid_cnt);
@@ -2009,7 +2009,7 @@ IDE_RC dumpStatistics()
 
     if( gGroupByTableOID == ID_TRUE )
     {
-        // hash ¹× TableInfo °´Ã¼ Á¤¸®ÇÑ´Ù.
+        // hash ë° TableInfo ê°ì²´ ì •ë¦¬í•œë‹¤.
         IDE_TEST( gTableInfoHash.traverse( destoyingVisitor,
                                            NULL /* Visitor Arg */ )
               != IDE_SUCCESS );
@@ -2088,7 +2088,7 @@ int main( int aArgc, char *aArgv[] )
     {
         if( SM_IS_LSN_MAX( gLSN ) != ID_TRUE )
         {   
-            // Æ¯Á¤ °æ·Î°¡ ÁöÁ¤µÇÁö ¾Ê¾Ò´Ù¸é ÇÁ·ÎÆÛÆ¼ ÆÄÀÏÀ» ÀĞ¾î¼­ °æ·Î¸¦ ¼³Á¤.
+            // íŠ¹ì • ê²½ë¡œê°€ ì§€ì •ë˜ì§€ ì•Šì•˜ë‹¤ë©´ í”„ë¡œí¼í‹° íŒŒì¼ì„ ì½ì–´ì„œ ê²½ë¡œë¥¼ ì„¤ì •.
             if(gPathSet == ID_FALSE)
             {
                 IDE_TEST_RAISE( idp::initialize(NULL, NULL) != IDE_SUCCESS, 
@@ -2103,13 +2103,13 @@ int main( int aArgc, char *aArgv[] )
             {
                 /* nothing do do */
             }
-            // ¼³Á¤µÈ °æ·Î°¡ Á¤»óÀÎÁö È®ÀÎ
+            // ì„¤ì •ëœ ê²½ë¡œê°€ ì •ìƒì¸ì§€ í™•ì¸
             IDE_TEST_RAISE( idf::opendir(gPath) == NULL,
                             err_not_exist_path )
         }
         else
         {
-            // -f / -S / -l Áß ÇÏ³ª´Â ÁöÁ¤ÀÌ µÇ¾î¾ß ÇÑ´Ù.
+            // -f / -S / -l ì¤‘ í•˜ë‚˜ëŠ” ì§€ì •ì´ ë˜ì–´ì•¼ í•œë‹¤.
             IDE_TEST_RAISE( gDisplayLogTypes == ID_FALSE,
                             err_not_specified_file );
         }

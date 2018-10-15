@@ -40,7 +40,7 @@ void outputStack(frameDesc *baseFrame)
         {
             vULong seed = (vULong)(*(curFrame->m_frameAddr + i));
 
-            if (j == 0) // address Ãâ·Â 
+            if (j == 0) // address ì¶œë ¥ 
             {
                 printf("%08"ID_XvULONG_FMT" : ",
                        (vULong)(curFrame->m_frameAddr + i));

@@ -20,14 +20,14 @@
  * Description :
  *     Normal Form Manager
  *
- *     ºñÁ¤±ÔÈ­µÈ PredicateµéÀ» Á¤±ÔÈ­µÈ ÇüÅÂ·Î º¯°æ½ÃÅ°´Â ¿ªÈ°À» ÇÑ´Ù.
- *     ´ÙÀ½°ú °°Àº Á¤±ÔÈ­¸¦ ¼öÇàÇÑ´Ù.
+ *     ë¹„ì •ê·œí™”ëœ Predicateë“¤ì„ ì •ê·œí™”ëœ í˜•íƒœë¡œ ë³€ê²½ì‹œí‚¤ëŠ” ì—­í™œì„ í•œë‹¤.
+ *     ë‹¤ìŒê³¼ ê°™ì€ ì •ê·œí™”ë¥¼ ìˆ˜í–‰í•œë‹¤.
  *         - CNF (Conjunctive Normal Form)
  *         - DNF (Disjunctive Normal Form)
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  **********************************************************************/
 
@@ -48,28 +48,28 @@ qmoNormalForm::normalizeCheckCNFOnly( qtcNode  * aNode,
 {
 /***********************************************************************
  *
- * Description : CNF ·Î¸¸ º¯°æµÇ´Â °æ¿ì¸¦ ÆÇ´ÜÇÑ´Ù.
+ * Description : CNF ë¡œë§Œ ë³€ê²½ë˜ëŠ” ê²½ìš°ë¥¼ íŒë‹¨í•œë‹¤.
  *
  * Implementation :
  *
- *    CNF·Î¸¸ º¯°æµÇ´Â °æ¿ì´Â ´ÙÀ½°ú °°´Ù.
+ *    CNFë¡œë§Œ ë³€ê²½ë˜ëŠ” ê²½ìš°ëŠ” ë‹¤ìŒê³¼ ê°™ë‹¤.
  *
- *    1. SFWGH¿¡ subquery°¡ ÀÖ´Â °æ¿ì
- *       normalization ´Ü°è¿¡¼­ nodeÀÇ º¹»ç½Ã
- *       subquery´Â º¹»çÇÏÁö ¾Ê´Â´Ù.
- *       µû¶ó¼­, DNF·Î Ã³¸®½Ã µ¿ÀÏÇÑ subqueryÀÇ dependency ¼³Á¤ÀÌ
- *       Àß¸øµÇ¾î °á°ú ¿À·ù°¡ ¹ß»ýÇÑ´Ù.(ÂüÁ¶ BUG-6365)
- *       ¿¹) where (t1.i1 >= t2.i1 or t1.i2 >= t2.i2 )
+ *    1. SFWGHì— subqueryê°€ ìžˆëŠ” ê²½ìš°
+ *       normalization ë‹¨ê³„ì—ì„œ nodeì˜ ë³µì‚¬ì‹œ
+ *       subqueryëŠ” ë³µì‚¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
+ *       ë”°ë¼ì„œ, DNFë¡œ ì²˜ë¦¬ì‹œ ë™ì¼í•œ subqueryì˜ dependency ì„¤ì •ì´
+ *       ìž˜ëª»ë˜ì–´ ê²°ê³¼ ì˜¤ë¥˜ê°€ ë°œìƒí•œë‹¤.(ì°¸ì¡° BUG-6365)
+ *       ì˜ˆ) where (t1.i1 >= t2.i1 or t1.i2 >= t2.i2 )
  *           and 1 = ( select count(*) from t3 where t1.i1 != t2.i2 );
  *
- *    2. SFWGH¿¡ AND¿¬»ê¸¸ ÀÖ´Â °æ¿ì
- *       ¿¹) i1=1 and i2=1 and i3=1
- *       ¿¹¿Ü: i1=1 and ( i2=1 and i3=1 ) and i4=1
- *       [ AND ¿¬»ê¸¸ ÀÖ´Â °æ¿ì¶ó ÇÏ´õ¶óµµ °ýÈ£·Î ¹­¿© ÀÖ´Â °æ¿ì´Â
- *         CNF only ·Î ÆÇ´ÜÇÏÁö ¾Ê´Â´Ù. ]
+ *    2. SFWGHì— ANDì—°ì‚°ë§Œ ìžˆëŠ” ê²½ìš°
+ *       ì˜ˆ) i1=1 and i2=1 and i3=1
+ *       ì˜ˆì™¸: i1=1 and ( i2=1 and i3=1 ) and i4=1
+ *       [ AND ì—°ì‚°ë§Œ ìžˆëŠ” ê²½ìš°ë¼ í•˜ë”ë¼ë„ ê´„í˜¸ë¡œ ë¬¶ì—¬ ìžˆëŠ” ê²½ìš°ëŠ”
+ *         CNF only ë¡œ íŒë‹¨í•˜ì§€ ì•ŠëŠ”ë‹¤. ]
  *
- *    3. SFWGH¿¡ ÇÏ³ªÀÇ predicate¸¸ ÀÖ´Â °æ¿ì
- *       ¿¹) i1=1
+ *    3. SFWGHì— í•˜ë‚˜ì˜ predicateë§Œ ìžˆëŠ” ê²½ìš°
+ *       ì˜ˆ) i1=1
  *
  ***********************************************************************/
 
@@ -79,7 +79,7 @@ qmoNormalForm::normalizeCheckCNFOnly( qtcNode  * aNode,
     IDU_FIT_POINT_FATAL( "qmoNormalForm::normalizeCheckCNFOnly::__FT__" );
 
     //--------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //--------------------------------------
 
     IDE_DASSERT( aNode    != NULL );
@@ -88,15 +88,15 @@ qmoNormalForm::normalizeCheckCNFOnly( qtcNode  * aNode,
     sNode = aNode;
 
     //--------------------------------------
-    // CNF only¿¡ ´ëÇÑ Á¶°Ç °Ë»ç
-    // ÀÎÀÚ·Î ³Ñ¾î¿Â qtcNodeÀÇ ÃÖ»óÀ§ ³ëµå¿¡ ´ëÇØ¼­ Á¶°Ç°Ë»ç¸¦ ¼öÇàÇÑ´Ù.
+    // CNF onlyì— ëŒ€í•œ ì¡°ê±´ ê²€ì‚¬
+    // ì¸ìžë¡œ ë„˜ì–´ì˜¨ qtcNodeì˜ ìµœìƒìœ„ ë…¸ë“œì— ëŒ€í•´ì„œ ì¡°ê±´ê²€ì‚¬ë¥¼ ìˆ˜í–‰í•œë‹¤.
     //--------------------------------------
 
     if( ( sNode->lflag & QTC_NODE_SUBQUERY_MASK )
         == QTC_NODE_SUBQUERY_EXIST )
     {
-        // 1. SFWGH¿¡ subquery°¡ ÀÖ´Â °æ¿ì
-        //    ( ÃÖ»óÀ§ ³ëµå¿¡¼­ subquery Á¸Àç À¯¹« °Ë»ç )
+        // 1. SFWGHì— subqueryê°€ ìžˆëŠ” ê²½ìš°
+        //    ( ìµœìƒìœ„ ë…¸ë“œì—ì„œ subquery ì¡´ìž¬ ìœ ë¬´ ê²€ì‚¬ )
         *aCNFonly = ID_TRUE;
     }
     else if ((sNode->lflag & QTC_NODE_COLUMN_RID_MASK) ==
@@ -108,9 +108,9 @@ qmoNormalForm::normalizeCheckCNFOnly( qtcNode  * aNode,
              ( MTC_NODE_LOGICAL_CONDITION_MASK | MTC_NODE_OPERATOR_MASK ) )
              == ( MTC_NODE_LOGICAL_CONDITION_TRUE | MTC_NODE_OPERATOR_AND ) )
     {
-        // 2. SFWGH¿¡ AND ¿¬»ê¸¸ ÀÖ´Â °æ¿ì.
-        //    ÃÖ»óÀ§ ³ëµå°¡ ANDÀÌ°í, AND ÇÏÀ§ ³ëµå¿¡´Â ºñ±³¿¬»êÀÚ¸¸ Á¸Àç
-        //    ÇÏ´ÂÁö¸¦ °Ë»ç. ( Áï, ³í¸®¿¬»êÀÚ°¡ Á¸ÀçÇÏ¸é, CNFonly°¡ ¾Æ´Ô. )
+        // 2. SFWGHì— AND ì—°ì‚°ë§Œ ìžˆëŠ” ê²½ìš°.
+        //    ìµœìƒìœ„ ë…¸ë“œê°€ ANDì´ê³ , AND í•˜ìœ„ ë…¸ë“œì—ëŠ” ë¹„êµì—°ì‚°ìžë§Œ ì¡´ìž¬
+        //    í•˜ëŠ”ì§€ë¥¼ ê²€ì‚¬. ( ì¦‰, ë…¼ë¦¬ì—°ì‚°ìžê°€ ì¡´ìž¬í•˜ë©´, CNFonlyê°€ ì•„ë‹˜. )
         *aCNFonly = ID_TRUE;
 
         for( sNodeTraverse = (qtcNode *)(sNode->node.arguments);
@@ -120,7 +120,7 @@ qmoNormalForm::normalizeCheckCNFOnly( qtcNode  * aNode,
             if( ( sNodeTraverse->node.lflag & MTC_NODE_LOGICAL_CONDITION_MASK )
                 == MTC_NODE_LOGICAL_CONDITION_TRUE )
             {
-                // AND ÇÏÀ§ ³ëµå¿¡ ³í¸®¿¬»êÀÚ°¡ Á¸ÀçÇÏ¸é, CNFonly°¡ ¾Æ´Ô.
+                // AND í•˜ìœ„ ë…¸ë“œì— ë…¼ë¦¬ì—°ì‚°ìžê°€ ì¡´ìž¬í•˜ë©´, CNFonlyê°€ ì•„ë‹˜.
                 *aCNFonly = ID_FALSE;
                 break;
             }
@@ -133,8 +133,8 @@ qmoNormalForm::normalizeCheckCNFOnly( qtcNode  * aNode,
     else if( ( sNode->node.lflag & MTC_NODE_COMPARISON_MASK )
                == MTC_NODE_COMPARISON_TRUE )
     {
-        // 3. SFWGH¿¡ ÇÏ³ªÀÇ predicate¸¸ ÀÖ´Â °æ¿ì
-        //    ( ÃÖ»óÀ§ ³ëµå°¡ ºñ±³¿¬»êÀÚÀÎÁö¸¦ °Ë»ç )
+        // 3. SFWGHì— í•˜ë‚˜ì˜ predicateë§Œ ìžˆëŠ” ê²½ìš°
+        //    ( ìµœìƒìœ„ ë…¸ë“œê°€ ë¹„êµì—°ì‚°ìžì¸ì§€ë¥¼ ê²€ì‚¬ )
         *aCNFonly = ID_TRUE;
     }
     else
@@ -153,21 +153,21 @@ qmoNormalForm::normalizeDNF( qcStatement   * aStatement,
 {
 /***********************************************************************
  *
- * Description : DNF ·Î Á¤±ÔÈ­
- *     DNF´Â ÀÛ¼ºµÈ predicateÀ» ³í¸®¿¬»êÀÚ¸¦ ±âÁØÀ¸·Î (OR of AND's)ÀÇ
- *     ÇüÅÂ·Î Ç¥ÇöÇÏ´Â ¹æ¹ýÀÌ´Ù.
+ * Description : DNF ë¡œ ì •ê·œí™”
+ *     DNFëŠ” ìž‘ì„±ëœ predicateì„ ë…¼ë¦¬ì—°ì‚°ìžë¥¼ ê¸°ì¤€ìœ¼ë¡œ (OR of AND's)ì˜
+ *     í˜•íƒœë¡œ í‘œí˜„í•˜ëŠ” ë°©ë²•ì´ë‹¤.
  *
  * Implementation :
- *     DNF normalizationÀº whereÀý¸¸ Ã³¸®ÇÑ´Ù.
- *     1. DNF Á¤±ÔÈ­ÇüÅÂ·Î º¯È¯
- *     2. DNF form ³í¸®¿¬»êÀÚÀÇ flag¿Í dependency Àç¼³Á¤
+ *     DNF normalizationì€ whereì ˆë§Œ ì²˜ë¦¬í•œë‹¤.
+ *     1. DNF ì •ê·œí™”í˜•íƒœë¡œ ë³€í™˜
+ *     2. DNF form ë…¼ë¦¬ì—°ì‚°ìžì˜ flagì™€ dependency ìž¬ì„¤ì •
  *
  ***********************************************************************/
 
     IDU_FIT_POINT_FATAL( "qmoNormalForm::normalizeDNF::__FT__" );
 
     //--------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //--------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -175,7 +175,7 @@ qmoNormalForm::normalizeDNF( qcStatement   * aStatement,
     IDE_DASSERT( aDNF       != NULL );
 
     //--------------------------------------
-    // DNF normal formÀ¸·Î º¯È¯
+    // DNF normal formìœ¼ë¡œ ë³€í™˜
     //--------------------------------------
 
     IDE_TEST( makeDNF( aStatement, aNode, aDNF ) != IDE_SUCCESS );
@@ -188,7 +188,7 @@ qmoNormalForm::normalizeDNF( qcStatement   * aStatement,
               != IDE_SUCCESS );
 
     //--------------------------------------
-    // DNF form ³í¸®¿¬»êÀÚÀÇ flag¿Í dependencies Àç¼³Á¤
+    // DNF form ë…¼ë¦¬ì—°ì‚°ìžì˜ flagì™€ dependencies ìž¬ì„¤ì •
     //--------------------------------------
 
     IDE_TEST( setFlagAndDependencies( *aDNF ) != IDE_SUCCESS );
@@ -208,21 +208,21 @@ qmoNormalForm::normalizeCNF( qcStatement   * aStatement,
 {
 /***********************************************************************
  *
- * Description : CNF ·Î Á¤±ÔÈ­
- *     CNF´Â ÀÛ¼ºµÈ predicateÀ» ³í¸® ¿¬»êÀÚ¸¦ ±âÁØÀ¸·Î (AND of OR's)ÀÇ
- *     ÇüÅÂ·Î Ç¥ÇöÇÏ´Â ¹æ¹ýÀÌ´Ù.
+ * Description : CNF ë¡œ ì •ê·œí™”
+ *     CNFëŠ” ìž‘ì„±ëœ predicateì„ ë…¼ë¦¬ ì—°ì‚°ìžë¥¼ ê¸°ì¤€ìœ¼ë¡œ (AND of OR's)ì˜
+ *     í˜•íƒœë¡œ í‘œí˜„í•˜ëŠ” ë°©ë²•ì´ë‹¤.
  *
  * Implementation :
- *     DNF¿Í ´Þ¸® ´Ù¾çÇÑ ±¸¹®ÀÇ Á¶°ÇÀýÀ» Ã³¸®ÇÑ´Ù.
- *     1. CNF Á¤±ÔÈ­ ÇüÅÂ·Î º¯È¯
- *     2. CNF form ³í¸®¿¬»êÀÚÀÇ flag¿Í dependency¸¦ Àç¼³Á¤
+ *     DNFì™€ ë‹¬ë¦¬ ë‹¤ì–‘í•œ êµ¬ë¬¸ì˜ ì¡°ê±´ì ˆì„ ì²˜ë¦¬í•œë‹¤.
+ *     1. CNF ì •ê·œí™” í˜•íƒœë¡œ ë³€í™˜
+ *     2. CNF form ë…¼ë¦¬ì—°ì‚°ìžì˜ flagì™€ dependencyë¥¼ ìž¬ì„¤ì •
  *
  ***********************************************************************/
 
     IDU_FIT_POINT_FATAL( "qmoNormalForm::normalizeCNF::__FT__" );
 
     //--------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //--------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -230,7 +230,7 @@ qmoNormalForm::normalizeCNF( qcStatement   * aStatement,
     IDE_DASSERT( aCNF       != NULL );
 
     //--------------------------------------
-    // CNF normal formÀ¸·Î º¯È¯
+    // CNF normal formìœ¼ë¡œ ë³€í™˜
     //--------------------------------------
 
     IDE_TEST( makeCNF( aStatement, aNode, aCNF ) != IDE_SUCCESS );
@@ -243,7 +243,7 @@ qmoNormalForm::normalizeCNF( qcStatement   * aStatement,
               != IDE_SUCCESS );
 
     //--------------------------------------
-    // CNF form ³í¸®¿¬»êÀÚÀÇ flag¿Í dependencies Àç¼³Á¤
+    // CNF form ë…¼ë¦¬ì—°ì‚°ìžì˜ flagì™€ dependencies ìž¬ì„¤ì •
     //--------------------------------------
 
     IDE_TEST( setFlagAndDependencies( *aCNF ) != IDE_SUCCESS );
@@ -261,10 +261,10 @@ qmoNormalForm::estimateDNF( qtcNode  * aNode,
 {
 /***********************************************************************
  *
- * Description : DNF·Î Á¤±ÔÈ­µÇ¾úÀ»¶§ ¸¸µé¾îÁö´Â
- *               ºñ±³¿¬»êÀÚ ³ëµåÀÇ °³¼ö ¿¹Ãø.
- *     ¿¹) where i1=1 and (i2=1 or i3=1 or (i4=1 and i5=1))
- *         DNF ³ëµå °³¼ö = 2 * ( 2 + ( (1*1) + (1*1) ) ) = 8
+ * Description : DNFë¡œ ì •ê·œí™”ë˜ì—ˆì„ë•Œ ë§Œë“¤ì–´ì§€ëŠ”
+ *               ë¹„êµì—°ì‚°ìž ë…¸ë“œì˜ ê°œìˆ˜ ì˜ˆì¸¡.
+ *     ì˜ˆ) where i1=1 and (i2=1 or i3=1 or (i4=1 and i5=1))
+ *         DNF ë…¸ë“œ ê°œìˆ˜ = 2 * ( 2 + ( (1*1) + (1*1) ) ) = 8
  *
  * Implementation :
  *
@@ -278,14 +278,14 @@ qmoNormalForm::estimateDNF( qtcNode  * aNode,
     IDU_FIT_POINT_FATAL( "qmoNormalForm::estimateDNF::__FT__" );
 
     //--------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //--------------------------------------
 
     IDE_DASSERT( aNode  != NULL );
     IDE_DASSERT( aCount != NULL );
 
     //--------------------------------------
-    // DNF·Î Ä¡È¯ÇÑ °æ¿ìÀÇ Node°³¼ö ¿¹Ãø
+    // DNFë¡œ ì¹˜í™˜í•œ ê²½ìš°ì˜ Nodeê°œìˆ˜ ì˜ˆì¸¡
     //--------------------------------------
 
     if ( ( aNode->node.lflag &
@@ -337,7 +337,7 @@ qmoNormalForm::estimateDNF( qtcNode  * aNode,
     }
 
     // To fix BUG-14846
-    // UInt overflow¹æÁö
+    // UInt overflowë°©ì§€
     if( sCount >= UINT_MAX )
     {
         *aCount = UINT_MAX;
@@ -357,10 +357,10 @@ qmoNormalForm::estimateCNF( qtcNode  * aNode,
 {
 /***********************************************************************
  *
- * Description : CNF·Î Á¤±ÔÈ­µÇ¾úÀ»¶§ ¸¸µé¾îÁö´Â
- *               ºñ±³¿¬»êÀÚ ³ëµåÀÇ °³¼ö ¿¹Ãø
- *     ¿¹) where i1=1 and (i2=1 or i3=1 or (i4=1 and i5=1))
- *         CNF ³ëµå °³¼ö = 1 + ( 3 * ( 1 + 1 ) ) = 7
+ * Description : CNFë¡œ ì •ê·œí™”ë˜ì—ˆì„ë•Œ ë§Œë“¤ì–´ì§€ëŠ”
+ *               ë¹„êµì—°ì‚°ìž ë…¸ë“œì˜ ê°œìˆ˜ ì˜ˆì¸¡
+ *     ì˜ˆ) where i1=1 and (i2=1 or i3=1 or (i4=1 and i5=1))
+ *         CNF ë…¸ë“œ ê°œìˆ˜ = 1 + ( 3 * ( 1 + 1 ) ) = 7
  *
  * Implementation :
  *
@@ -374,14 +374,14 @@ qmoNormalForm::estimateCNF( qtcNode  * aNode,
     IDU_FIT_POINT_FATAL( "qmoNormalForm::estimateCNF::__FT__" );
 
     //--------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //--------------------------------------
 
     IDE_DASSERT( aNode  != NULL );
     IDE_DASSERT( aCount != NULL );
 
     //--------------------------------------
-    // CNF·Î Ä¡È¯ÇÑ °æ¿ìÀÇ Node°³¼ö ¿¹Ãø
+    // CNFë¡œ ì¹˜í™˜í•œ ê²½ìš°ì˜ Nodeê°œìˆ˜ ì˜ˆì¸¡
     //--------------------------------------
 
     if ( ( aNode->node.lflag &
@@ -433,7 +433,7 @@ qmoNormalForm::estimateCNF( qtcNode  * aNode,
     }
 
     // To fix BUG-14846
-    // UInt overflow¹æÁö
+    // UInt overflowë°©ì§€
     if( sCount >= UINT_MAX )
     {
         *aCount = UINT_MAX;
@@ -454,16 +454,16 @@ qmoNormalForm::makeDNF( qcStatement  * aStatement,
 {
 /***********************************************************************
  *
- * Description : DNF ÇüÅÂ·Î predicate º¯È¯
+ * Description : DNF í˜•íƒœë¡œ predicate ë³€í™˜
  *
  * Implementation :
- *     1. OR  ÇÏÀ§ ³ëµå´Â addToMerge
- *     1. AND ÇÏÀ§ ³ëµå´Â productToMerge
- *     2. ºñ±³¿¬»êÀÚ ³ëµå
- *        (1) OR ³ëµå »ý¼º
- *        (2) AND ³ëµå »ý¼º
- *        (3) »õ·Î¿î ³ëµå¿¡ predicate º¹»ç
- *        (4) OR->AND->predicate ¼ø¼­·Î ¿¬°á
+ *     1. OR  í•˜ìœ„ ë…¸ë“œëŠ” addToMerge
+ *     1. AND í•˜ìœ„ ë…¸ë“œëŠ” productToMerge
+ *     2. ë¹„êµì—°ì‚°ìž ë…¸ë“œ
+ *        (1) OR ë…¸ë“œ ìƒì„±
+ *        (2) AND ë…¸ë“œ ìƒì„±
+ *        (3) ìƒˆë¡œìš´ ë…¸ë“œì— predicate ë³µì‚¬
+ *        (4) OR->AND->predicate ìˆœì„œë¡œ ì—°ê²°
  *
  ***********************************************************************/
 
@@ -587,20 +587,20 @@ qmoNormalForm::makeCNF( qcStatement  * aStatement,
 {
 /***********************************************************************
  *
- * Description : CNF ÇüÅÂ·Î predicate º¯È¯
+ * Description : CNF í˜•íƒœë¡œ predicate ë³€í™˜
  *
  *     BUG-35155 Partial CNF
- *     mtcNode ¿¡ MTC_NODE_PARTIAL_NORMALIZE_CNF_UNUSABLE flag °¡
- *     ¼³Á¤µÇ¾î ÀÖÀ¸¸é normalize ÇÏÁö ¾Ê´Â´Ù.
+ *     mtcNode ì— MTC_NODE_PARTIAL_NORMALIZE_CNF_UNUSABLE flag ê°€
+ *     ì„¤ì •ë˜ì–´ ìžˆìœ¼ë©´ normalize í•˜ì§€ ì•ŠëŠ”ë‹¤.
  *
  * Implementation :
- *     1. AND  ÇÏÀ§ ³ëµå´Â addToMerge
- *     1. OR   ÇÏÀ§ ³ëµå´Â productToMerge
- *     2. ºñ±³¿¬»êÀÚ ³ëµå
- *        (1) AND ³ëµå »ý¼º
- *        (2) OR ³ëµå »ý¼º
- *        (3) »õ·Î¿î ³ëµå¿¡ predicate º¹»ç
- *        (4) AND->OR->predicate ¼ø¼­·Î ¿¬°á
+ *     1. AND  í•˜ìœ„ ë…¸ë“œëŠ” addToMerge
+ *     1. OR   í•˜ìœ„ ë…¸ë“œëŠ” productToMerge
+ *     2. ë¹„êµì—°ì‚°ìž ë…¸ë“œ
+ *        (1) AND ë…¸ë“œ ìƒì„±
+ *        (2) OR ë…¸ë“œ ìƒì„±
+ *        (3) ìƒˆë¡œìš´ ë…¸ë“œì— predicate ë³µì‚¬
+ *        (4) AND->OR->predicate ìˆœì„œë¡œ ì—°ê²°
  *
  ***********************************************************************/
 
@@ -715,7 +715,7 @@ qmoNormalForm::makeCNF( qcStatement  * aStatement,
     }
     else
     {
-        // CNF UNUSABLE ÀÌ¸é CNF ·Î Á¤±ÔÈ­ÇÏÁö ¾Ê´Â´Ù.
+        // CNF UNUSABLE ì´ë©´ CNF ë¡œ ì •ê·œí™”í•˜ì§€ ì•ŠëŠ”ë‹¤.
         sCNFNode = NULL;
     }
     *aCNF = sCNFNode;
@@ -734,13 +734,13 @@ qmoNormalForm::addToMerge( qtcNode     * aPrevNF,
 {
 /***********************************************************************
  *
- * Description : Á¤±ÔÈ­ ÇüÅÂ·Î º¯È¯ÇÏ´Â °úÁ¤¿¡¼­ predicateÀ» ¿¬°á.
+ * Description : ì •ê·œí™” í˜•íƒœë¡œ ë³€í™˜í•˜ëŠ” ê³¼ì •ì—ì„œ predicateì„ ì—°ê²°.
  *
  * Implementation :
  *     1. DNF
- *         ORÀÇ ÇÏÀ§ ³ëµå Ã³¸® ÈÄ, °¢ AND ³ëµå¸¦ ¿¬°áÇÑ´Ù.
+ *         ORì˜ í•˜ìœ„ ë…¸ë“œ ì²˜ë¦¬ í›„, ê° AND ë…¸ë“œë¥¼ ì—°ê²°í•œë‹¤.
  *     2. CNF
- *         ANDÀÇ ÇÏÀ§ ³ëµå Ã³¸® ÈÄ, °¢ OR ³ëµå¸¦ ¿¬°áÇÑ´Ù.
+ *         ANDì˜ í•˜ìœ„ ë…¸ë“œ ì²˜ë¦¬ í›„, ê° OR ë…¸ë“œë¥¼ ì—°ê²°í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -749,7 +749,7 @@ qmoNormalForm::addToMerge( qtcNode     * aPrevNF,
     IDU_FIT_POINT_FATAL( "qmoNormalForm::addToMerge::__FT__" );
 
     //--------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //--------------------------------------
 
     IDE_DASSERT( aPrevNF != NULL );
@@ -780,14 +780,14 @@ qmoNormalForm::productToMerge( qcStatement * aStatement,
 {
 /***********************************************************************
  *
- * Description : Á¤±ÔÈ­ ÇüÅÂ·Î º¯È¯ÇÏ´Â °úÁ¤¿¡¼­
- *               predicate¿¡ ´ëÇÑ ¹èºÐ¹ýÄ¢¼öÇà
+ * Description : ì •ê·œí™” í˜•íƒœë¡œ ë³€í™˜í•˜ëŠ” ê³¼ì •ì—ì„œ
+ *               predicateì— ëŒ€í•œ ë°°ë¶„ë²•ì¹™ìˆ˜í–‰
  *
  * Implementation :
  *     1. DNF
- *         AND ÇÏÀ§ ³ëµå Ã³¸®ÈÄ, ¹èºÐ¹ýÄ¢ ¼öÇà
+ *         AND í•˜ìœ„ ë…¸ë“œ ì²˜ë¦¬í›„, ë°°ë¶„ë²•ì¹™ ìˆ˜í–‰
  *     2. CNF
- *         OR  ÇÏÀ§ ³ëµå Ã³¸®ÈÄ, ¹èºÐ¹ýÄ¢ ¼öÇà
+ *         OR  í•˜ìœ„ ë…¸ë“œ ì²˜ë¦¬í›„, ë°°ë¶„ë²•ì¹™ ìˆ˜í–‰
  *
  ***********************************************************************/
 
@@ -806,7 +806,7 @@ qmoNormalForm::productToMerge( qcStatement * aStatement,
     IDU_FIT_POINT_FATAL( "qmoNormalForm::productToMerge::__FT__" );
 
     //--------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //--------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -937,17 +937,17 @@ qmoNormalForm::setFlagAndDependencies(qtcNode * aNode)
 {
 /***********************************************************************
  *
- * Description : Á¤±ÔÈ­ ÇüÅÂ·Î º¯È¯ÇÏ¸é¼­ »ý±ä »õ·Î¿î ³í¸®¿¬»êÀÚ ³ëµå¿¡
- *               ´ëÇÑ flag¿Í dependency ¼³Á¤
+ * Description : ì •ê·œí™” í˜•íƒœë¡œ ë³€í™˜í•˜ë©´ì„œ ìƒê¸´ ìƒˆë¡œìš´ ë…¼ë¦¬ì—°ì‚°ìž ë…¸ë“œì—
+ *               ëŒ€í•œ flagì™€ dependency ì„¤ì •
  *
  * Implementation :
- *     Á¤±ÔÈ­ ÇüÅÂ·Î º¯È¯ÇÏ´Â °úÁ¤¿¡¼­ ³í¸® ¿¬»êÀÚµéÀ» ¸ðµÎ »õ·Î
- *     ¸¸µé¾î¼­ ¿¬°áÇÏ°Ô µÈ´Ù. µû¶ó¼­, ³í¸® ¿¬»êÀÚ ³ëµå¿¡ ´ëÇØ¼­´Â
- *     parsing & validation°úÁ¤¿¡¼­ ¼³Á¤µÈ flag¿Í dependencyÁ¤º¸°¡
- *     ¸ðµÎ »ç¶óÁö°Ô µÇ¹Ç·Î, ÀÌ¿¡ ´ëÇÑ ¼³Á¤À» ÇØ ÁÖ¾î¾ß µÈ´Ù.
+ *     ì •ê·œí™” í˜•íƒœë¡œ ë³€í™˜í•˜ëŠ” ê³¼ì •ì—ì„œ ë…¼ë¦¬ ì—°ì‚°ìžë“¤ì„ ëª¨ë‘ ìƒˆë¡œ
+ *     ë§Œë“¤ì–´ì„œ ì—°ê²°í•˜ê²Œ ëœë‹¤. ë”°ë¼ì„œ, ë…¼ë¦¬ ì—°ì‚°ìž ë…¸ë“œì— ëŒ€í•´ì„œëŠ”
+ *     parsing & validationê³¼ì •ì—ì„œ ì„¤ì •ëœ flagì™€ dependencyì •ë³´ê°€
+ *     ëª¨ë‘ ì‚¬ë¼ì§€ê²Œ ë˜ë¯€ë¡œ, ì´ì— ëŒ€í•œ ì„¤ì •ì„ í•´ ì£¼ì–´ì•¼ ëœë‹¤.
  *
- *     ÇÏÀ§ ³ëµåÀÇ flag¿Í dependency Á¤º¸¸¦ merge ÇÑ´Ù.
- *     [ÇÏÀ§ ³ëµåÀÇ flag¸¦ mergeÇØ¼­ ¾ò´Â Á¤º¸´Â QTC_NODE_MASK ÂüÁ¶]
+ *     í•˜ìœ„ ë…¸ë“œì˜ flagì™€ dependency ì •ë³´ë¥¼ merge í•œë‹¤.
+ *     [í•˜ìœ„ ë…¸ë“œì˜ flagë¥¼ mergeí•´ì„œ ì–»ëŠ” ì •ë³´ëŠ” QTC_NODE_MASK ì°¸ì¡°]
  *
  ***********************************************************************/
 
@@ -956,13 +956,13 @@ qmoNormalForm::setFlagAndDependencies(qtcNode * aNode)
     IDU_FIT_POINT_FATAL( "qmoNormalForm::setFlagAndDependencies::__FT__" );
 
     //--------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //--------------------------------------
 
     IDE_DASSERT( aNode != NULL );
 
     //--------------------------------------
-    // Flag°ú Dependency °áÁ¤
+    // Flagê³¼ Dependency ê²°ì •
     //--------------------------------------
 
     if ( ( aNode->node.lflag & MTC_NODE_LOGICAL_CONDITION_MASK )
@@ -1005,11 +1005,11 @@ qmoNormalForm::optimizeForm( qtcNode  * aInputNode,
 {
 /***********************************************************************
  *
- * Description : Á¤±ÔÈ­ ÇüÅÂ·Î º¯È¯µÈ predicateÀ» ÃÖÀûÈ­ ÇÑ´Ù.
+ * Description : ì •ê·œí™” í˜•íƒœë¡œ ë³€í™˜ëœ predicateì„ ìµœì í™” í•œë‹¤.
  *
  * Implementation :
- *     CNF·Î º¯È¯µÈ predicateÀÌ Filter·Î Ã³¸®µÇ±â Á÷Àü¿¡
- *     ºÒÇÊ¿äÇÑ  AND, OR¸¦ Á¦°ÅÇÑ´Ù.
+ *     CNFë¡œ ë³€í™˜ëœ predicateì´ Filterë¡œ ì²˜ë¦¬ë˜ê¸° ì§ì „ì—
+ *     ë¶ˆí•„ìš”í•œ  AND, ORë¥¼ ì œê±°í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -1019,7 +1019,7 @@ qmoNormalForm::optimizeForm( qtcNode  * aInputNode,
     IDU_FIT_POINT_FATAL( "qmoNormalForm::optimizeForm::__FT__" );
 
     //-------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //-------------------------------------
 
     IDE_DASSERT( aInputNode != NULL );
@@ -1031,8 +1031,8 @@ qmoNormalForm::optimizeForm( qtcNode  * aInputNode,
         {
             case MTC_NODE_OPERATOR_AND:
             case MTC_NODE_OPERATOR_OR:
-                // AND³ª OR ³ëµåÀÇ argument°¡ ÇÏ³ªÀÏ °æ¿ì
-                // ±× AND ¶Ç´Â OR ³ëµå´Â Á¦°ÅµÉ ¼ö ÀÖÀ½.
+                // ANDë‚˜ OR ë…¸ë“œì˜ argumentê°€ í•˜ë‚˜ì¼ ê²½ìš°
+                // ê·¸ AND ë˜ëŠ” OR ë…¸ë“œëŠ” ì œê±°ë  ìˆ˜ ìžˆìŒ.
                 IDE_FT_ASSERT( aInputNode->node.arguments != NULL );
 
                 if( aInputNode->node.arguments->next == NULL )
@@ -1070,8 +1070,8 @@ qmoNormalForm::optimizeForm( qtcNode  * aInputNode,
                 }
                 break;
             case MTC_NODE_OPERATOR_NOT:
-                // NOT ³ëµå´Â Á¦°ÅµÇ¾î¼­´Â ¾ÈµÇ¸ç ÇÏÀ§ ³ëµå¿¡ ´ëÇØ
-                // optimizeFormÀÌ °¡´ÉÇÏ´Ù.
+                // NOT ë…¸ë“œëŠ” ì œê±°ë˜ì–´ì„œëŠ” ì•ˆë˜ë©° í•˜ìœ„ ë…¸ë“œì— ëŒ€í•´
+                // optimizeFormì´ ê°€ëŠ¥í•˜ë‹¤.
                 IDE_TEST( optimizeForm( (qtcNode*)aInputNode->node.arguments,
                                         & sNewNode )
                           != IDE_SUCCESS );
@@ -1106,13 +1106,13 @@ qmoNormalForm::estimatePartialCNF( qtcNode  * aNode,
  *
  * Description :
  *         BUG-35155 Partial CNF
- *         CNF·Î Á¤±ÔÈ­µÇ¾úÀ»¶§ ¸¸µé¾îÁö´Â ºñ±³¿¬»êÀÚ ³ëµåÀÇ °³¼ö ¿¹Ãø
- *         ¸¸¾à aNFMaximum À» ³ÑÀ» °æ¿ì ÇØ´ç ³ëµåÀÇ ÃÖ»óÀ§ OR ³ëµå(aRoot)¸¦
- *         partial normalize ¿¡¼­ Á¦¿ÜÇÏ±â À§ÇØ CNF_UNUSABLE flag ¸¦ ¼¼ÆÃÇÑ´Ù.
- *    ¿¹1) where i1=1 and (i2=1 or i3=1 or (i4=1 and i5=1))
- *         CNF ³ëµå °³¼ö = 1 + ( 3 * ( 1 + 1 ) ) = 7
- *    ¿¹2) where i1=1 and (i2=1 or i3=1 or ((i4=1 and (i5=1 or (i6=1 and ...))
- *         CNF ³ëµå °³¼ö = 1 + ( 3 * (1) ) = 6  (ÀÏºÎ ³ëµå°¡ CNF ¿¡¼­ Á¦¿ÜµÊ)
+ *         CNFë¡œ ì •ê·œí™”ë˜ì—ˆì„ë•Œ ë§Œë“¤ì–´ì§€ëŠ” ë¹„êµì—°ì‚°ìž ë…¸ë“œì˜ ê°œìˆ˜ ì˜ˆì¸¡
+ *         ë§Œì•½ aNFMaximum ì„ ë„˜ì„ ê²½ìš° í•´ë‹¹ ë…¸ë“œì˜ ìµœìƒìœ„ OR ë…¸ë“œ(aRoot)ë¥¼
+ *         partial normalize ì—ì„œ ì œì™¸í•˜ê¸° ìœ„í•´ CNF_UNUSABLE flag ë¥¼ ì„¸íŒ…í•œë‹¤.
+ *    ì˜ˆ1) where i1=1 and (i2=1 or i3=1 or (i4=1 and i5=1))
+ *         CNF ë…¸ë“œ ê°œìˆ˜ = 1 + ( 3 * ( 1 + 1 ) ) = 7
+ *    ì˜ˆ2) where i1=1 and (i2=1 or i3=1 or ((i4=1 and (i5=1 or (i6=1 and ...))
+ *         CNF ë…¸ë“œ ê°œìˆ˜ = 1 + ( 3 * (1) ) = 6  (ì¼ë¶€ ë…¸ë“œê°€ CNF ì—ì„œ ì œì™¸ë¨)
  *
  * Implementation :
  *
@@ -1124,14 +1124,14 @@ qmoNormalForm::estimatePartialCNF( qtcNode  * aNode,
     UInt                sChildCount;
 
     //--------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //--------------------------------------
 
     IDE_DASSERT( aNode  != NULL );
     IDE_DASSERT( aCount != NULL );
 
     //--------------------------------------
-    // CNF·Î Ä¡È¯ÇÑ °æ¿ìÀÇ Node°³¼ö ¿¹Ãø
+    // CNFë¡œ ì¹˜í™˜í•œ ê²½ìš°ì˜ Nodeê°œìˆ˜ ì˜ˆì¸¡
     //--------------------------------------
     if ( ( aNode->node.lflag &
            ( MTC_NODE_LOGICAL_CONDITION_MASK | MTC_NODE_OPERATOR_MASK ) )
@@ -1162,8 +1162,8 @@ qmoNormalForm::estimatePartialCNF( qtcNode  * aNode,
 
             if( sCount*sNNFCount > aNFMaximum )
             {
-                // ÀÌ ³ëµå¿Í ÇÏÀ§³ëµåÀÇ count ¸¦ °è»êÇÑ °ªÀÌ NORMALFORM_MAXIMUM À» ³Ñ¾î¼¹´Ù.
-                // ÇöÀç ³ëµå ±âÁØÀ¸·Î ÃÖ»óÀ§ OR ³ëµå(aRoot)¿¡ UNUSABLE flag ¸¦ ¼¼ÆÃÇÑ´Ù.
+                // ì´ ë…¸ë“œì™€ í•˜ìœ„ë…¸ë“œì˜ count ë¥¼ ê³„ì‚°í•œ ê°’ì´ NORMALFORM_MAXIMUM ì„ ë„˜ì–´ì„°ë‹¤.
+                // í˜„ìž¬ ë…¸ë“œ ê¸°ì¤€ìœ¼ë¡œ ìµœìƒìœ„ OR ë…¸ë“œ(aRoot)ì— UNUSABLE flag ë¥¼ ì„¸íŒ…í•œë‹¤.
                 aRoot->node.lflag &= ~MTC_NODE_PARTIAL_NORMALIZE_CNF_MASK;
                 aRoot->node.lflag |=  MTC_NODE_PARTIAL_NORMALIZE_CNF_UNUSABLE;
                 break;
@@ -1185,12 +1185,12 @@ qmoNormalForm::estimatePartialCNF( qtcNode  * aNode,
 
             if( sCount > aNFMaximum )
             {
-                // ÀÌ ³ëµå¿Í ÇÏÀ§³ëµåÀÇ count ¸¦ °è»êÇÑ °ªÀÌ NORMALFORM_MAXIMUM À» ³Ñ¾î¼¹´Ù.
-                // ÇöÀç ³ëµå ±âÁØÀ¸·Î ÃÖ»óÀ§ OR ³ëµå(aRoot)¿¡ UNUSABLE flag ¸¦ ¼¼ÆÃÇÑ´Ù.
+                // ì´ ë…¸ë“œì™€ í•˜ìœ„ë…¸ë“œì˜ count ë¥¼ ê³„ì‚°í•œ ê°’ì´ NORMALFORM_MAXIMUM ì„ ë„˜ì–´ì„°ë‹¤.
+                // í˜„ìž¬ ë…¸ë“œ ê¸°ì¤€ìœ¼ë¡œ ìµœìƒìœ„ OR ë…¸ë“œ(aRoot)ì— UNUSABLE flag ë¥¼ ì„¸íŒ…í•œë‹¤.
                 if( aRoot == NULL )
                 {
-                    // aRoot °¡ NULL ÀÌ¸é »óÀ§¿¡ OR ³ëµå°¡ ¾ø´Â °ÍÀÌ´Ù.
-                    // ÀÌ ¶§¿¡´Â ÀÚ±â ÀÚ½ÅÀ» CNF ´ë»ó¿¡¼­ Á¦¿ÜÇÑ´Ù.
+                    // aRoot ê°€ NULL ì´ë©´ ìƒìœ„ì— OR ë…¸ë“œê°€ ì—†ëŠ” ê²ƒì´ë‹¤.
+                    // ì´ ë•Œì—ëŠ” ìžê¸° ìžì‹ ì„ CNF ëŒ€ìƒì—ì„œ ì œì™¸í•œë‹¤.
                     aRoot = aNode;
                 }
                 aRoot->node.lflag &= ~MTC_NODE_PARTIAL_NORMALIZE_CNF_MASK;
@@ -1205,15 +1205,15 @@ qmoNormalForm::estimatePartialCNF( qtcNode  * aNode,
         sCount = 1;
     }
 
-    // ÇöÀç ³ëµå°¡ UNUSABLE ÀÌ¸é CNF ´ë»ó¿¡¼­ Á¦¿Ü µÇ¹Ç·Î count ¸¦ 0 À¸·Î ¹Ù²ãÁØ´Ù.
+    // í˜„ìž¬ ë…¸ë“œê°€ UNUSABLE ì´ë©´ CNF ëŒ€ìƒì—ì„œ ì œì™¸ ë˜ë¯€ë¡œ count ë¥¼ 0 ìœ¼ë¡œ ë°”ê¿”ì¤€ë‹¤.
     if ( ( aNode->node.lflag & MTC_NODE_PARTIAL_NORMALIZE_CNF_MASK )
            == MTC_NODE_PARTIAL_NORMALIZE_CNF_UNUSABLE )
     {
-        // count ¸¦ ´õÇÏ¹Ç·Î 0À» ¹ÝÈ¯ÇÑ´Ù.
+        // count ë¥¼ ë”í•˜ë¯€ë¡œ 0ì„ ë°˜í™˜í•œë‹¤.
         sCount = 0;
     }
 
-    // UInt overflow¹æÁö
+    // UInt overflowë°©ì§€
     if( sCount >= UINT_MAX )
     {
         *aCount = UINT_MAX;
@@ -1235,12 +1235,12 @@ qmoNormalForm::extractNNFFilter4CNF( qcStatement  * aStatement,
  *
  * Description :
  *         BUG-35155 Partial CNF
- *         CNF ·Î º¯È¯ ÈÄ Á¦¿ÜµÈ predicate µéÀ» NNF filter ·Î ¸¸µç´Ù.
+ *         CNF ë¡œ ë³€í™˜ í›„ ì œì™¸ëœ predicate ë“¤ì„ NNF filter ë¡œ ë§Œë“ ë‹¤.
  *
  * Implementation :
- *         ÃÖ»óÀ§ qtcNode °¡ CNF UNUSABLE ÀÎ °æ¿ì´Â ³ëµå ÀüÃ¼¸¦ NNF ÇÊÅÍ·Î ¹ÝÈ¯ÇÑ´Ù.
- *         ±× ¿Ü¿¡´Â qtcNode ¸¦ º¹»çÇØ¼­ NNF ÇÊÅÍ¸¦ ¸¸µç ÈÄ
- *         flag ¿Í dependency Á¤º¸¸¦ ¼³Á¤ÇÏ¿© ¹ÝÈ¯ÇÑ´Ù.
+ *         ìµœìƒìœ„ qtcNode ê°€ CNF UNUSABLE ì¸ ê²½ìš°ëŠ” ë…¸ë“œ ì „ì²´ë¥¼ NNF í•„í„°ë¡œ ë°˜í™˜í•œë‹¤.
+ *         ê·¸ ì™¸ì—ëŠ” qtcNode ë¥¼ ë³µì‚¬í•´ì„œ NNF í•„í„°ë¥¼ ë§Œë“  í›„
+ *         flag ì™€ dependency ì •ë³´ë¥¼ ì„¤ì •í•˜ì—¬ ë°˜í™˜í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -1249,13 +1249,13 @@ qmoNormalForm::extractNNFFilter4CNF( qcStatement  * aStatement,
     if ( ( aNode->node.lflag & MTC_NODE_PARTIAL_NORMALIZE_CNF_MASK )
            == MTC_NODE_PARTIAL_NORMALIZE_CNF_UNUSABLE )
     {
-        // ÃÖ»óÀ§ node °¡ UNUSABLE ÀÌ¸é where Á¶°Ç ÀüÃ¼°¡ nnf filter °¡ µÈ´Ù.
+        // ìµœìƒìœ„ node ê°€ UNUSABLE ì´ë©´ where ì¡°ê±´ ì „ì²´ê°€ nnf filter ê°€ ëœë‹¤.
         *aNNF = aNode;
     }
     else
     {
         //--------------------------------------
-        // NNF filter ¸¦ ÃßÃâÇÑ´Ù.
+        // NNF filter ë¥¼ ì¶”ì¶œí•œë‹¤.
         //--------------------------------------
         IDE_TEST( makeNNF4CNFByCopyNodeTree( aStatement,
                                              aNode,
@@ -1265,7 +1265,7 @@ qmoNormalForm::extractNNFFilter4CNF( qcStatement  * aStatement,
         if ( *aNNF != NULL )
         {
             //--------------------------------------
-            // NNF form ³í¸®¿¬»êÀÚÀÇ flag¿Í dependencies Àç¼³Á¤
+            // NNF form ë…¼ë¦¬ì—°ì‚°ìžì˜ flagì™€ dependencies ìž¬ì„¤ì •
             //--------------------------------------
             IDE_TEST( setFlagAndDependencies( *aNNF ) != IDE_SUCCESS );
         }
@@ -1287,11 +1287,11 @@ qmoNormalForm::makeNNF4CNFByCopyNodeTree( qcStatement  * aStatement,
  *
  * Description :
  *         BUG-35155 Partial CNF
- *         CNF ·Î º¯È¯ ÈÄ Á¦¿ÜµÈ predicate µéÀ» NNF filter ·Î ¸¸µç´Ù.
+ *         CNF ë¡œ ë³€í™˜ í›„ ì œì™¸ëœ predicate ë“¤ì„ NNF filter ë¡œ ë§Œë“ ë‹¤.
  *
  * Implementation :
- *         MTC_NODE_PARTIAL_NORMALIZE_CNF_UNUSABLE ÀÎ ³ëµå´Â
- *         ÇÏÀ§ ³ëµå¸¦ Æ÷ÇÔÇØ¼­ º¹»çÇÏ¿© NNF ÇÊÅÍ·Î ¸¸µç´Ù.
+ *         MTC_NODE_PARTIAL_NORMALIZE_CNF_UNUSABLE ì¸ ë…¸ë“œëŠ”
+ *         í•˜ìœ„ ë…¸ë“œë¥¼ í¬í•¨í•´ì„œ ë³µì‚¬í•˜ì—¬ NNF í•„í„°ë¡œ ë§Œë“ ë‹¤.
  *
  ***********************************************************************/
 
@@ -1384,11 +1384,11 @@ qmoNormalForm::copyNodeTree( qcStatement  * aStatement,
  *
  * Description :
  *         BUG-35155 Partial CNF
- *         NNF ÇÊÅÍ »ý¼ºÀ» À§ÇØ qtcNode ¸¦ ÇÏÀ§ ³ëµå¸¦ Æ÷ÇÔÇÏ¿© º¹»çÇÑ´Ù.
+ *         NNF í•„í„° ìƒì„±ì„ ìœ„í•´ qtcNode ë¥¼ í•˜ìœ„ ë…¸ë“œë¥¼ í¬í•¨í•˜ì—¬ ë³µì‚¬í•œë‹¤.
  *
  * Implementation :
- *         ³í¸® ¿¬»êÀÚÀÏ °æ¿ì´Â ÀÚ±â ÀÚ½ÅÀ» º¹»çÇÏ°í argument ³ëµå¸¦ Àç±ÍÈ£ÃâÇÏ¿© º¹»çÇÑ´Ù.
- *         ºñ±³ ¿¬»êÀÚÀÏ °æ¿ì´Â ÀÚ±â ÀÚ½ÅÀ» º¹»çÇÑ´Ù.
+ *         ë…¼ë¦¬ ì—°ì‚°ìžì¼ ê²½ìš°ëŠ” ìžê¸° ìžì‹ ì„ ë³µì‚¬í•˜ê³  argument ë…¸ë“œë¥¼ ìž¬ê·€í˜¸ì¶œí•˜ì—¬ ë³µì‚¬í•œë‹¤.
+ *         ë¹„êµ ì—°ì‚°ìžì¼ ê²½ìš°ëŠ” ìžê¸° ìžì‹ ì„ ë³µì‚¬í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -1472,18 +1472,18 @@ qmoNormalForm::addToMerge2( qtcNode     * aPrevNF,
 {
 /***********************************************************************
  *
- * Description : Á¤±ÔÈ­ ÇüÅÂ·Î º¯È¯ÇÏ´Â °úÁ¤¿¡¼­ predicateÀ» ¿¬°á.
+ * Description : ì •ê·œí™” í˜•íƒœë¡œ ë³€í™˜í•˜ëŠ” ê³¼ì •ì—ì„œ predicateì„ ì—°ê²°.
  *
  *       BUG-35155 Partial CNF
- *       NNF filter ´ë»ó ³ëµå¸¦ Á¦¿ÜÇÏ°í Á¤±ÔÈ­ ÇüÅÂ·Î º¯È¯ÇÏ´Â ±â´ÉÀÌ Ãß°¡µÇ¾ú´Ù.
- *       NNF filter ´ë»ó ³ëµå(CNF_USUSABLE flag)´Â º¯È¯ ´ë»ó¿¡¼­ Á¦¿ÜÇÏ±â ¶§¹®¿¡
- *       normal form(aPrefNF ³ª aCurrNF)ÀÌ NULL ÀÏ ¼ö ÀÖ´Ù.
+ *       NNF filter ëŒ€ìƒ ë…¸ë“œë¥¼ ì œì™¸í•˜ê³  ì •ê·œí™” í˜•íƒœë¡œ ë³€í™˜í•˜ëŠ” ê¸°ëŠ¥ì´ ì¶”ê°€ë˜ì—ˆë‹¤.
+ *       NNF filter ëŒ€ìƒ ë…¸ë“œ(CNF_USUSABLE flag)ëŠ” ë³€í™˜ ëŒ€ìƒì—ì„œ ì œì™¸í•˜ê¸° ë•Œë¬¸ì—
+ *       normal form(aPrefNF ë‚˜ aCurrNF)ì´ NULL ì¼ ìˆ˜ ìžˆë‹¤.
  *
  * Implementation :
  *     1. DNF
- *         ORÀÇ ÇÏÀ§ ³ëµå Ã³¸® ÈÄ, °¢ AND ³ëµå¸¦ ¿¬°áÇÑ´Ù.
+ *         ORì˜ í•˜ìœ„ ë…¸ë“œ ì²˜ë¦¬ í›„, ê° AND ë…¸ë“œë¥¼ ì—°ê²°í•œë‹¤.
  *     2. CNF
- *         ANDÀÇ ÇÏÀ§ ³ëµå Ã³¸® ÈÄ, °¢ OR ³ëµå¸¦ ¿¬°áÇÑ´Ù.
+ *         ANDì˜ í•˜ìœ„ ë…¸ë“œ ì²˜ë¦¬ í›„, ê° OR ë…¸ë“œë¥¼ ì—°ê²°í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -1492,7 +1492,7 @@ qmoNormalForm::addToMerge2( qtcNode     * aPrevNF,
     IDU_FIT_POINT_FATAL( "qmoNormalForm::addToMerge2::__FT__" );
 
     //--------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //--------------------------------------
 
     IDE_DASSERT( aNFNode  != NULL );

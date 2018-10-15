@@ -19,7 +19,7 @@
  * $Id$
  *
  * Description :
- *     ¸í½ÃÇÑ key ¿¡ ÇØ´ç ÇÏ´Â ¸Ş½ÃÁö Å¥¿¡ ¸Ş½ÃÁö¸¦ ¼ö½Å(Dequeue) ÇÑ´Ù.
+ *     ëª…ì‹œí•œ key ì— í•´ë‹¹ í•˜ëŠ” ë©”ì‹œì§€ íì— ë©”ì‹œì§€ë¥¼ ìˆ˜ì‹ (Dequeue) í•œë‹¤.
  * Syntax :
  *     MSG_RCV_QUEUE( key value );
  *     return VARBYTE;
@@ -53,7 +53,7 @@ static IDE_RC mtfMsgRcvQueueEstimate( mtcNode*     aNode,
 mtfModule mtfMsgRcvQueue = {
     1 | MTC_NODE_OPERATOR_MISC | MTC_NODE_VARIABLE_TRUE | MTC_NODE_EAT_NULL_TRUE,
     ~0,
-    1.0,                    // default selectivity (ºñ±³ ¿¬»êÀÚ ¾Æ´Ô)
+    1.0,                    // default selectivity (ë¹„êµ ì—°ì‚°ì ì•„ë‹˜)
     mtfFunctionName,
     NULL,
     mtf::initializeDefault,

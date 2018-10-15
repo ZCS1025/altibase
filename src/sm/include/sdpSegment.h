@@ -36,11 +36,11 @@ public:
                                    smOID          aTableOID,
                                    UInt           aIndexID );
 
-    /* PROJ-1671 LOB Segment¿¡ ´ëÇÑ Segment DescÀ» »ı¼ºÇÏ°í, ÃÊ±âÈ­ÇÑ´Ù.*/
+    /* PROJ-1671 LOB Segmentì— ëŒ€í•œ Segment Descì„ ìƒì„±í•˜ê³ , ì´ˆê¸°í™”í•œë‹¤.*/
     static IDE_RC allocLOBSegDesc( smiColumn * aColumn,
                                    smOID       aTableOID );
     
-    /* LOB Segment¿¡ ´ëÇÑ Segment DescÀ» ÇØÁ¦ÇÑ´Ù. */
+    /* LOB Segmentì— ëŒ€í•œ Segment Descì„ í•´ì œí•œë‹¤. */
     static IDE_RC freeLOBSegDesc( smiColumn * aColumn );
 
     static IDE_RC createSegment( idvSQL        * aStatistics,
@@ -55,14 +55,14 @@ public:
                                scSpaceID       aSpaceID,
                                sdpSegHandle  * aSegHandle );
 
-     /* Table È¤Àº Index Segment¿¡ Extent È®Àå  */
+     /* Table í˜¹ì€ Index Segmentì— Extent í™•ì¥  */
     static IDE_RC allocExts(  idvSQL           * aStatistics,
                               scSpaceID          aSpaceID,
                               void             * aTrans,
                               sdpSegmentDesc   * aSegDesc,
                               ULong              aExtendSize );
 
-    /* Page List Entry¿¡ Table Segment ÇÒ´ç */
+    /* Page List Entryì— Table Segment í• ë‹¹ */
     static IDE_RC allocTableSeg4Entry( idvSQL            * aStatistics,
                                        void              * aTrans,
                                        scSpaceID           aTableSpaceID,
@@ -70,7 +70,7 @@ public:
                                        sdpPageListEntry  * aPageEntry,
                                        sdrMtxLogMode       aLoggingMode );
 
-    /* Static Index Header¿¡ Index Segment ÇÒ´ç */
+    /* Static Index Headerì— Index Segment í• ë‹¹ */
      static IDE_RC allocIndexSeg4Entry( idvSQL            * aStatistics,
                                         void              * aTrans,
                                         scSpaceID           aTableSpaceID,
@@ -83,7 +83,7 @@ public:
                                         smiSegAttr        * aSegAttr,
                                         smiSegStorageAttr * aSegStoAttr );
 
-    /* Page List EntryÀÇ Lob Segment ÇÒ´ç */
+    /* Page List Entryì˜ Lob Segment í• ë‹¹ */
     static IDE_RC allocLobSeg4Entry( idvSQL         * aStatistics,
                                      void*            aTrans,
                                      smiColumn      * aLobColumn,
@@ -93,7 +93,7 @@ public:
 
     static IDE_RC initLobSegDesc( smiColumn * aLobColumn );
 
-    /* Page List EntryÀÇ Table Segment ÇØÁ¦ */
+    /* Page List Entryì˜ Table Segment í•´ì œ */
     static IDE_RC freeTableSeg4Entry(  idvSQL           *aStatistics,
                                        scSpaceID         aSpaceID,
                                        void*             aTrans,
@@ -101,26 +101,26 @@ public:
                                        sdpPageListEntry *aPageEntry,
                                        sdrMtxLogMode     aLoggingMode );
 
-    /* Page List EntryÀÇ Table Segment ÇØÁ¦ */
+    /* Page List Entryì˜ Table Segment í•´ì œ */
     static IDE_RC freeTableSeg4Entry( idvSQL           *aStatistics,
                                       scSpaceID         aSpaceID,
                                       smOID             aTableOID,
                                       sdpPageListEntry *aPageEntry,
                                       sdrMtx*           aMtx );
 
-    /* Table Segment ¸®¼Â ( for Temporary ) */
+    /* Table Segment ë¦¬ì…‹ ( for Temporary ) */
     static IDE_RC resetTableSeg4Entry( idvSQL           *aStatistics,
                                        scSpaceID         aSpaceID,
                                        sdpPageListEntry *aPageEntry );
 
-    /* Static Index Header¿¡¼­ index segment ÇØÁ¦ */
+    /* Static Index Headerì—ì„œ index segment í•´ì œ */
     static IDE_RC freeIndexSeg4Entry(  idvSQL           *aStatistics,
                                        scSpaceID         aSpaceID,
                                        void*             aTrans,
                                        smOID             aIndexOID,
                                        sdrMtxLogMode     aLoggingMode );
 
-    /* Static Index Header¿¡¼­ index segment ÇØÁ¦ */
+    /* Static Index Headerì—ì„œ index segment í•´ì œ */
     static IDE_RC freeIndexSeg4Entry( idvSQL           *aStatistics,
                                       scSpaceID         aSpaceID,
                                       smOID             aIndexOID,
@@ -133,7 +133,7 @@ public:
                              smiColumn*        aLobCol,
                              sdrMtxLogMode     aLoggingMode );
 
-    /* LOB Segment ÇØÁ¦ */
+    /* LOB Segment í•´ì œ */
     static IDE_RC freeLobSeg(idvSQL           *aStatistics,
                              smOID             aLobColOID,
                              smiColumn*        aLobCol,

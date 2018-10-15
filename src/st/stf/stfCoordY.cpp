@@ -33,7 +33,7 @@ extern mtfModule stfCoordY;
 static mtcName stfCoordYFunctionName[3] = {
     { stfCoordYFunctionName+1, 4, (void*)"ST_Y" }, // Fix BUG-15519
     { stfCoordYFunctionName+2, 6, (void*)"COORDY" },
-    { NULL,                    1, (void*)"Y" } // BUG-15248 Y() ø¨ªÍ¿⁄ µÓ∑œ
+    { NULL,                    1, (void*)"Y" } // BUG-15248 Y() Ïó∞ÏÇ∞Ïûê Îì±Î°ù
 };
 
 static IDE_RC stfCoordYEstimate(
@@ -46,7 +46,7 @@ static IDE_RC stfCoordYEstimate(
 mtfModule stfCoordY = {
     1|MTC_NODE_OPERATOR_FUNCTION,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (∫Ò±≥ ø¨ªÍ¿⁄∞° æ∆¥‘)
+    1.0,  // default selectivity (ÎπÑÍµê Ïó∞ÏÇ∞ÏûêÍ∞Ä ÏïÑÎãò)
     stfCoordYFunctionName,
     NULL,
     mtf::initializeDefault,

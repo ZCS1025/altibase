@@ -186,7 +186,7 @@ SInt convertWcToMb4Cp949( void    * aSrc,
                     sRet = 2;
                 }
 
-                // fix BUG-25959 UTF8¿¡ MS949·Î º¯È¯ÀÌ Á¦´ë·Î µÇÁö ¾Ê½À´Ï´Ù.
+                // fix BUG-25959 UTF8ì— MS949ë¡œ ë³€í™˜ì´ ì œëŒ€ë¡œ ë˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
                 IDE_CONT(RET_CONV);
             }
             else
@@ -206,7 +206,7 @@ SInt convertWcToMb4Cp949( void    * aSrc,
                 sRet = convertWcToMb4Uhc2(aSrc, aSrcRemain, aDest, aDestRemain);
             }
 
-            // fix BUG-25959 UTF8¿¡ MS949·Î º¯È¯ÀÌ Á¦´ë·Î µÇÁö ¾Ê½À´Ï´Ù.
+            // fix BUG-25959 UTF8ì— MS949ë¡œ ë³€í™˜ì´ ì œëŒ€ë¡œ ë˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
             IDE_CONT(RET_CONV);
         }
         /* User-defined characters */
@@ -238,7 +238,7 @@ SInt convertWcToMb4Cp949( void    * aSrc,
         }
     }
 
-    // fix BUG-25959 UTF8¿¡ MS949·Î º¯È¯ÀÌ Á¦´ë·Î µÇÁö ¾Ê½À´Ï´Ù.
+    // fix BUG-25959 UTF8ì— MS949ë¡œ ë³€í™˜ì´ ì œëŒ€ë¡œ ë˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
     IDE_EXCEPTION_CONT( RET_CONV );
 
     return sRet;

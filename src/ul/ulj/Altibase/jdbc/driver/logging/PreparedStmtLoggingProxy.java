@@ -23,8 +23,8 @@ import java.util.logging.Level;
 import Altibase.jdbc.driver.AltibasePreparedStatement;
 
 /**
- * java.sql.PreparedStatement ÀÎÅÍÆäÀÌ½º¸¦ hookingÇÏ´Â ProxyÅ¬·¡½º</br>
- * logSql¸Ş¼Òµå¿Í getUniqueId¸Ş¼Òµå¸¸ ¿À¹ö¶óÀÌµùÇÏ°í ³ª¸ÓÁö´Â ºÎ¸ğÅ¬·¡½º¿¡¼­ »ó¼Ó¹Ş¾Æ »ç¿ëÇÑ´Ù.
+ * java.sql.PreparedStatement ì¸í„°í˜ì´ìŠ¤ë¥¼ hookingí•˜ëŠ” Proxyí´ë˜ìŠ¤</br>
+ * logSqlë©”ì†Œë“œì™€ getUniqueIdë©”ì†Œë“œë§Œ ì˜¤ë²„ë¼ì´ë”©í•˜ê³  ë‚˜ë¨¸ì§€ëŠ” ë¶€ëª¨í´ë˜ìŠ¤ì—ì„œ ìƒì†ë°›ì•„ ì‚¬ìš©í•œë‹¤.
  * 
  * @author yjpark
  * 
@@ -49,14 +49,14 @@ public class PreparedStmtLoggingProxy extends StatementLoggingProxy
         {
             mLogger.log(Level.CONFIG, "{0} executing prepared sql : {1}", new Object[] { getUniqueId(), aArgs[0] });
         }
-        else if (aMethod.getName().startsWith(METHOD_PREFIX_SET)) // ¸Ş¼Òµå¸íÀÌ setXXXÀÏ¶§´Â ÇØ´ç ¾Æ±Ô¸ÕÆ®Á¤º¸¸¦ CONFIG·¹º§·Î Ãâ·ÂÇÑ´Ù.
+        else if (aMethod.getName().startsWith(METHOD_PREFIX_SET)) // ë©”ì†Œë“œëª…ì´ setXXXì¼ë•ŒëŠ” í•´ë‹¹ ì•„ê·œë¨¼íŠ¸ì •ë³´ë¥¼ CONFIGë ˆë²¨ë¡œ ì¶œë ¥í•œë‹¤.
         {
             mLogger.log(Level.CONFIG, "{0} {1}{2}", new Object[] { getUniqueId(), aMethod.getName(), makeArgStr(aArgs) });
         }
     }
     
     /**
-     * PreparedStatement °°Àº °æ¿ì ¼­¹ö¿¡¼­ ¹Ş¾Æ¿Â Statement id¸¦ unique id·Î »ç¿ëÇÑ´Ù.
+     * PreparedStatement ê°™ì€ ê²½ìš° ì„œë²„ì—ì„œ ë°›ì•„ì˜¨ Statement idë¥¼ unique idë¡œ ì‚¬ìš©í•œë‹¤.
      */
     public String getUniqueId()
     {

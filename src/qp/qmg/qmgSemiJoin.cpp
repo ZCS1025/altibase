@@ -19,11 +19,11 @@
  * $Id$
  *
  * Description :
- *     Semi join graph¸¦ À§ÇÑ ¼öÇà ÇÔ¼ö
+ *     Semi join graphë¥¼ ìœ„í•œ ìˆ˜í–‰ í•¨ìˆ˜
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  **********************************************************************/
 
@@ -43,19 +43,19 @@ qmgSemiJoin::init( qcStatement * aStatement,
 {
 /***********************************************************************
  *
- * Description : qmgSemiJoin GraphÀÇ ÃÊ±âÈ­
+ * Description : qmgSemiJoin Graphì˜ ì´ˆê¸°í™”
  *
  * Implementation :
- *    (1)  qmgSemiJoin¸¦ À§ÇÑ °ø°£ ÇÒ´ç
- *    (2)  graph( ¸ğµç Graph¸¦ À§ÇÑ °øÅë ÀÚ·á ±¸Á¶ ) ÃÊ±âÈ­
- *    (3)  graph.type ¼³Á¤
- *    (4)  graph.myQuerySetÀ» aQuerySetÀ¸·Î ¼³Á¤
- *    (5)  graph.myFromÀ» aFromÀ¸·Î ¼³Á¤
- *    (6)  graph.dependencies ¼³Á¤
- *    (7)  qmgJoinÀÇ onConditonCNF Ã³¸®
- *    (8)  ÇÏÀ§graphÀÇ »ı¼º ¹× ÃÊ±âÈ­
- *    (9)  graph.optimize¿Í graph.makePlan ¼³Á¤
- *    (10) out ¼³Á¤
+ *    (1)  qmgSemiJoinë¥¼ ìœ„í•œ ê³µê°„ í• ë‹¹
+ *    (2)  graph( ëª¨ë“  Graphë¥¼ ìœ„í•œ ê³µí†µ ìë£Œ êµ¬ì¡° ) ì´ˆê¸°í™”
+ *    (3)  graph.type ì„¤ì •
+ *    (4)  graph.myQuerySetì„ aQuerySetìœ¼ë¡œ ì„¤ì •
+ *    (5)  graph.myFromì„ aFromìœ¼ë¡œ ì„¤ì •
+ *    (6)  graph.dependencies ì„¤ì •
+ *    (7)  qmgJoinì˜ onConditonCNF ì²˜ë¦¬
+ *    (8)  í•˜ìœ„graphì˜ ìƒì„± ë° ì´ˆê¸°í™”
+ *    (9)  graph.optimizeì™€ graph.makePlan ì„¤ì •
+ *    (10) out ì„¤ì •
  *
  ***********************************************************************/
 
@@ -65,7 +65,7 @@ qmgSemiJoin::init( qcStatement * aStatement,
     IDU_FIT_POINT_FATAL( "qmgSemiJoin::init::__FT__" );
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -74,15 +74,15 @@ qmgSemiJoin::init( qcStatement * aStatement,
     IDE_DASSERT( aGraph != NULL );
 
     //---------------------------------------------------
-    // Semi Join Graph¸¦ À§ÇÑ ±âº» ÃÊ±âÈ­
+    // Semi Join Graphë¥¼ ìœ„í•œ ê¸°ë³¸ ì´ˆê¸°í™”
     //---------------------------------------------------
 
     sMyGraph = (qmgJOIN *)aGraph;
 
-    // Graph °øÅë Á¤º¸ÀÇ ÃÊ±âÈ­
+    // Graph ê³µí†µ ì •ë³´ì˜ ì´ˆê¸°í™”
     IDE_TEST( qmg::initGraph( & sMyGraph->graph ) != IDE_SUCCESS );
 
-    // GraphÀÇ Á¾·ù Ç¥±â
+    // Graphì˜ ì¢…ë¥˜ í‘œê¸°
     sMyGraph->graph.type = QMG_SEMI_JOIN;
     sMyGraph->graph.left  = aLeftGraph;
     sMyGraph->graph.right = aRightGraph;
@@ -98,17 +98,17 @@ qmgSemiJoin::init( qcStatement * aStatement,
     qtc::dependencySetWithDep( & sMyGraph->graph.depInfo,
                                & sOrDependencies );
 
-    // GraphÀÇ ÇÔ¼ö Æ÷ÀÎÅÍ¸¦ ¼³Á¤
+    // Graphì˜ í•¨ìˆ˜ í¬ì¸í„°ë¥¼ ì„¤ì •
     sMyGraph->graph.optimize = qmgSemiJoin::optimize;
     sMyGraph->graph.makePlan = qmgJoin::makePlan;
     sMyGraph->graph.printGraph = qmgJoin::printGraph;
 
-    // Disk/Memory Á¤º¸ ¼³Á¤
+    // Disk/Memory ì •ë³´ ì„¤ì •
     switch(  sMyGraph->graph.myQuerySet->SFWGH->hints->interResultType )
     {
         case QMO_INTER_RESULT_TYPE_NOT_DEFINED :
-            // Áß°£ °á°ú Type Hint°¡ ¾ø´Â °æ¿ì,
-            // left°¡ diskÀÌ¸é disk
+            // ì¤‘ê°„ ê²°ê³¼ Type Hintê°€ ì—†ëŠ” ê²½ìš°,
+            // leftê°€ diskì´ë©´ disk
             if ( ( sMyGraph->graph.left->flag & QMG_GRAPH_TYPE_MASK )
                    == QMG_GRAPH_TYPE_DISK )
             {
@@ -135,10 +135,10 @@ qmgSemiJoin::init( qcStatement * aStatement,
     }
 
     //---------------------------------------------------
-    // Semi Join Graph ¸¸À» À§ÇÑ ÀÚ·á ±¸Á¶ ÃÊ±âÈ­
+    // Semi Join Graph ë§Œì„ ìœ„í•œ ìë£Œ êµ¬ì¡° ì´ˆê¸°í™”
     //---------------------------------------------------
 
-    // Semi joinÀº »ç¿ëÀÚ°¡ ¸í½ÃÇÒ ¼ö ¾øÀ¸¹Ç·Î ONÀıÀº »ç¿ëÇÏÁö ¾Ê´Â´Ù.
+    // Semi joinì€ ì‚¬ìš©ìê°€ ëª…ì‹œí•  ìˆ˜ ì—†ìœ¼ë¯€ë¡œ ONì ˆì€ ì‚¬ìš©í•˜ì§€ ì•ŠëŠ”ë‹¤.
     sMyGraph->onConditionCNF = NULL;
 
     sMyGraph->joinMethods = NULL;
@@ -159,17 +159,17 @@ qmgSemiJoin::optimize( qcStatement * aStatement, qmgGraph * aGraph )
 {
 /***********************************************************************
  *
- * Description : qmgSemiJoin GraphÀÇ ÃÖÀûÈ­
+ * Description : qmgSemiJoin Graphì˜ ìµœì í™”
  *
  * Implementation :
- *    (0) left graphÀÇ ÃÖÀûÈ­ ¼öÇà
- *    (1) right graphÀÇ ÃÖÀûÈ­ ¼öÇà
- *    (2) subqueryÀÇ Ã³¸®
- *    (3) Join MethodÀÇ ÃÊ±âÈ­
- *    (4) Join MethodÀÇ ¼±ÅÃ
- *    (5) Join Method °áÁ¤ ÈÄ Ã³¸®
- *    (6) °øÅë ºñ¿ë Á¤º¸ÀÇ ¼³Á¤
- *    (7) Preserved Order, DISK/MEMORY ¼³Á¤
+ *    (0) left graphì˜ ìµœì í™” ìˆ˜í–‰
+ *    (1) right graphì˜ ìµœì í™” ìˆ˜í–‰
+ *    (2) subqueryì˜ ì²˜ë¦¬
+ *    (3) Join Methodì˜ ì´ˆê¸°í™”
+ *    (4) Join Methodì˜ ì„ íƒ
+ *    (5) Join Method ê²°ì • í›„ ì²˜ë¦¬
+ *    (6) ê³µí†µ ë¹„ìš© ì •ë³´ì˜ ì„¤ì •
+ *    (7) Preserved Order, DISK/MEMORY ì„¤ì •
  *
  ***********************************************************************/
 
@@ -179,26 +179,26 @@ qmgSemiJoin::optimize( qcStatement * aStatement, qmgGraph * aGraph )
     IDU_FIT_POINT_FATAL( "qmgSemiJoin::optimize::__FT__" );
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aGraph != NULL );
 
     //------------------------------------------
-    // ±âº» ÃÊ±âÈ­
+    // ê¸°ë³¸ ì´ˆê¸°í™”
     //------------------------------------------
 
     sMyGraph = (qmgJOIN*) aGraph;
 
-    // On conditionÀÌ Á¸ÀçÇÏÁö ¾ÊÀ¸¹Ç·Î left¿Í rightÀÇ optimizationÀº ÇÊ¿ä¾ø´Ù.
+    // On conditionì´ ì¡´ì¬í•˜ì§€ ì•Šìœ¼ë¯€ë¡œ leftì™€ rightì˜ optimizationì€ í•„ìš”ì—†ë‹¤.
 
     // BUG-32703
-    // ÃÖÀûÈ­ ½Ã¿¡ viewÀÇ graph°¡ »ı¼ºµÈ´Ù
-    // left outer joinÀÇ ÇÏÀ§ graph¿¡ view°¡ ÀÖ´Ù¸é
-    // ÃÖÀûÈ­ ÀÌÈÄ¿¡ ( Áï, view graph°¡ ÃÖÀûÈ­ µÈ ÀÌÈÄ¿¡ )
-    // left outer join¿¡ ´ëÇÑ type ( disk or memory )¸¦ »õ·Î ¼³Á¤ÇØ¾ß ÇÑ´Ù.
-    // BUG-40191 __OPTIMIZER_DEFAULT_TEMP_TBS_TYPE ÈùÆ®¸¦ °í·ÁÇØ¾ß ÇÑ´Ù.
+    // ìµœì í™” ì‹œì— viewì˜ graphê°€ ìƒì„±ëœë‹¤
+    // left outer joinì˜ í•˜ìœ„ graphì— viewê°€ ìˆë‹¤ë©´
+    // ìµœì í™” ì´í›„ì— ( ì¦‰, view graphê°€ ìµœì í™” ëœ ì´í›„ì— )
+    // left outer joinì— ëŒ€í•œ type ( disk or memory )ë¥¼ ìƒˆë¡œ ì„¤ì •í•´ì•¼ í•œë‹¤.
+    // BUG-40191 __OPTIMIZER_DEFAULT_TEMP_TBS_TYPE íŒíŠ¸ë¥¼ ê³ ë ¤í•´ì•¼ í•œë‹¤.
     if ( aGraph->myQuerySet->SFWGH->hints->interResultType == QMO_INTER_RESULT_TYPE_NOT_DEFINED )
     {
         if ( ( sMyGraph->graph.left->flag & QMG_GRAPH_TYPE_MASK )
@@ -219,13 +219,13 @@ qmgSemiJoin::optimize( qcStatement * aStatement, qmgGraph * aGraph )
     }
 
     //------------------------------------------
-    // SubqueryÀÇ Graph »ı¼º
+    // Subqueryì˜ Graph ìƒì„±
     // - To Fix BUG-10577
-    //   Left, Right ÃÖÀûÈ­ ÈÄ¿¡ subquery graph¸¦ »ı¼ºÇØ¾ß ÇÏÀ§°¡ viewÀÏ¶§
-    //   view Åë°è Á¤º¸ ¹Ì±¸ÃàÀ¸·Î ¼­¹ö°¡ »ç¸ÁÇÏ´Â ¹®Á¦°¡ ¹ß»ıÇÏÁö ¾Ê´Â´Ù.
+    //   Left, Right ìµœì í™” í›„ì— subquery graphë¥¼ ìƒì„±í•´ì•¼ í•˜ìœ„ê°€ viewì¼ë•Œ
+    //   view í†µê³„ ì •ë³´ ë¯¸êµ¬ì¶•ìœ¼ë¡œ ì„œë²„ê°€ ì‚¬ë§í•˜ëŠ” ë¬¸ì œê°€ ë°œìƒí•˜ì§€ ì•ŠëŠ”ë‹¤.
     //   ( = BUG-9736 )
-    //   Predicate ºĞ·ù´Â dependencies·Î ¼öÇàÇÏ±â ¶§¹®¿¡ predicateÀÇ
-    //   Subquery graph »ı¼º Àü¿¡ ¼öÇàÇØµµ µÈ´Ù.
+    //   Predicate ë¶„ë¥˜ëŠ” dependenciesë¡œ ìˆ˜í–‰í•˜ê¸° ë•Œë¬¸ì— predicateì˜
+    //   Subquery graph ìƒì„± ì „ì— ìˆ˜í–‰í•´ë„ ëœë‹¤.
     //------------------------------------------
 
     if ( sMyGraph->graph.myPredicate != NULL )
@@ -244,9 +244,9 @@ qmgSemiJoin::optimize( qcStatement * aStatement, qmgGraph * aGraph )
             != IDE_SUCCESS );
 
         // To fix BUG-26885
-        // DNFÀÇ joinÀÌ µÇ´Â °æ¿ì materialize·Î ÀÎÇØ predicate
-        // ÀÇ ÂüÁ¶Æ©ÇÃ À§Ä¡°¡ ¹Ù²ğ ¼ö ÀÖÀ¸¹Ç·Î
-        // join predicate¸¦ º¹»çÇÑ´Ù.
+        // DNFì˜ joinì´ ë˜ëŠ” ê²½ìš° materializeë¡œ ì¸í•´ predicate
+        // ì˜ ì°¸ì¡°íŠœí”Œ ìœ„ì¹˜ê°€ ë°”ë€” ìˆ˜ ìˆìœ¼ë¯€ë¡œ
+        // join predicateë¥¼ ë³µì‚¬í•œë‹¤.
         if( aGraph->myQuerySet->SFWGH->crtPath->currentNormalType
             == QMO_NORMAL_TYPE_DNF )
         {   
@@ -263,21 +263,21 @@ qmgSemiJoin::optimize( qcStatement * aStatement, qmgGraph * aGraph )
         }
         else
         {
-            // CNFÀÌ°Å³ª NNFÀÎ °æ¿ì º¹»çÇÒ ÇÊ¿ä°¡ ¾ø´Ù.
+            // CNFì´ê±°ë‚˜ NNFì¸ ê²½ìš° ë³µì‚¬í•  í•„ìš”ê°€ ì—†ë‹¤.
             // Nothing To Do
         }
     }
     else
     {
-        // Join Graph¿¡ ÇØ´çÇÏ´Â PredicateÀÌ ¾ø´Â °æ¿ìÀÓ
+        // Join Graphì— í•´ë‹¹í•˜ëŠ” Predicateì´ ì—†ëŠ” ê²½ìš°ì„
         // Nothing To Do
     }
 
     //------------------------------------------
-    // Selectivity ¼³Á¤
+    // Selectivity ì„¤ì •
     //------------------------------------------
 
-    // WHERE clause, ON clause ¸ğµÎ °í·ÁµÈ »óÅÂ
+    // WHERE clause, ON clause ëª¨ë‘ ê³ ë ¤ëœ ìƒíƒœ
     IDE_TEST( qmoSelectivity::setJoinSelectivity(
                   aStatement,
                   & sMyGraph->graph,
@@ -286,15 +286,15 @@ qmgSemiJoin::optimize( qcStatement * aStatement, qmgGraph * aGraph )
               != IDE_SUCCESS );
 
     //------------------------------------------
-    // Join MethodÀÇ ÃÊ±âÈ­
+    // Join Methodì˜ ì´ˆê¸°í™”
     //------------------------------------------
 
-    // Join Method °ø°£ ÇÒ´ç
+    // Join Method ê³µê°„ í• ë‹¹
     IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF( qmoJoinMethod ) * QMG_SEMI_JOIN_METHOD_COUNT,
                                              (void **) &sMyGraph->joinMethods )
               != IDE_SUCCESS );
 
-    // nested loop join methodÀÇ ÃÊ±âÈ­
+    // nested loop join methodì˜ ì´ˆê¸°í™”
     IDE_TEST( qmoJoinMethodMgr::init( aStatement,
                                       & sMyGraph->graph,
                                       sMyGraph->firstRowsFactor,
@@ -303,7 +303,7 @@ qmgSemiJoin::optimize( qcStatement * aStatement, qmgGraph * aGraph )
                                       &sMyGraph->joinMethods[QMG_SEMI_JOIN_METHOD_NESTED] )
               != IDE_SUCCESS );
 
-    // hash based join methodÀÇ ÃÊ±âÈ­
+    // hash based join methodì˜ ì´ˆê¸°í™”
     IDE_TEST( qmoJoinMethodMgr::init( aStatement,
                                       & sMyGraph->graph,
                                       sMyGraph->firstRowsFactor,
@@ -312,7 +312,7 @@ qmgSemiJoin::optimize( qcStatement * aStatement, qmgGraph * aGraph )
                                       &sMyGraph->joinMethods[QMG_SEMI_JOIN_METHOD_HASH] )
               != IDE_SUCCESS );
 
-    // sort based join methodÀÇ ÃÊ±âÈ­
+    // sort based join methodì˜ ì´ˆê¸°í™”
     IDE_TEST( qmoJoinMethodMgr::init( aStatement,
                                       & sMyGraph->graph,
                                       sMyGraph->firstRowsFactor,
@@ -321,7 +321,7 @@ qmgSemiJoin::optimize( qcStatement * aStatement, qmgGraph * aGraph )
                                       &sMyGraph->joinMethods[QMG_SEMI_JOIN_METHOD_SORT] )
               != IDE_SUCCESS );
 
-    // merge join methodÀÇ ÃÊ±âÈ­
+    // merge join methodì˜ ì´ˆê¸°í™”
     IDE_TEST( qmoJoinMethodMgr::init( aStatement,
                                       & sMyGraph->graph,
                                       sMyGraph->firstRowsFactor,
@@ -330,11 +330,11 @@ qmgSemiJoin::optimize( qcStatement * aStatement, qmgGraph * aGraph )
                                       &sMyGraph->joinMethods[QMG_SEMI_JOIN_METHOD_MERGE] )
               != IDE_SUCCESS );
 
-    // Semi joinÀ» À§ÇÑ join method selectivity Á¶Á¤
+    // Semi joinì„ ìœ„í•œ join method selectivity ì¡°ì •
     setJoinMethodsSelectivity( &sMyGraph->graph );
 
     //------------------------------------------
-    // °¢ Join Method Áß °¡Àå ÁÁÀº costÀÇ Join Method¸¦ ¼±ÅÃ
+    // ê° Join Method ì¤‘ ê°€ì¥ ì¢‹ì€ costì˜ Join Methodë¥¼ ì„ íƒ
     //------------------------------------------
 
     IDE_TEST(
@@ -346,16 +346,16 @@ qmgSemiJoin::optimize( qcStatement * aStatement, qmgGraph * aGraph )
         != IDE_SUCCESS );
 
     //------------------------------------------
-    // °øÅë ºñ¿ë Á¤º¸ÀÇ ¼³Á¤
+    // ê³µí†µ ë¹„ìš© ì •ë³´ì˜ ì„¤ì •
     //------------------------------------------
 
-    // record size °áÁ¤
-    // Semi joinÀº leftÀÇ record¸¸À» °á°ú·Î Ãâ·ÂÇÑ´Ù.
+    // record size ê²°ì •
+    // Semi joinì€ leftì˜ recordë§Œì„ ê²°ê³¼ë¡œ ì¶œë ¥í•œë‹¤.
     sMyGraph->graph.costInfo.recordSize =
         sMyGraph->graph.left->costInfo.recordSize;
 
-    // BUG-37134 semi join, anti join µµ setJoinOrderFactor ¸¦ È£ÃâÇØ¾ßÇÕ´Ï´Ù.
-    // °¢ qmgJoin ÀÇ joinOrderFactor, joinSize °è»ê
+    // BUG-37134 semi join, anti join ë„ setJoinOrderFactor ë¥¼ í˜¸ì¶œí•´ì•¼í•©ë‹ˆë‹¤.
+    // ê° qmgJoin ì˜ joinOrderFactor, joinSize ê³„ì‚°
     IDE_TEST( qmoSelectivity::setJoinOrderFactor(
                   aStatement,
                   & sMyGraph->graph,
@@ -364,12 +364,12 @@ qmgSemiJoin::optimize( qcStatement * aStatement, qmgGraph * aGraph )
                   &sMyGraph->joinSize )
               != IDE_SUCCESS );
 
-    // input record count ¼³Á¤
+    // input record count ì„¤ì •
     sMyGraph->graph.costInfo.inputRecordCnt =
         sMyGraph->graph.left->costInfo.outputRecordCnt;
 
     // BUG-37407 semi, anti join cost
-    // output record count ¼³Á¤
+    // output record count ì„¤ì •
     sMyGraph->graph.costInfo.outputRecordCnt =
         sMyGraph->graph.left->costInfo.outputRecordCnt *
         sMyGraph->graph.costInfo.selectivity;
@@ -377,7 +377,7 @@ qmgSemiJoin::optimize( qcStatement * aStatement, qmgGraph * aGraph )
     sMyGraph->graph.costInfo.outputRecordCnt =
         IDL_MAX( sMyGraph->graph.costInfo.outputRecordCnt, 1.0 );
 
-    // My Cost °è»ê
+    // My Cost ê³„ì‚°
     sMyGraph->graph.costInfo.myAccessCost =
         sMyGraph->selectedJoinMethod->accessCost;
     sMyGraph->graph.costInfo.myDiskCost =
@@ -385,8 +385,8 @@ qmgSemiJoin::optimize( qcStatement * aStatement, qmgGraph * aGraph )
     sMyGraph->graph.costInfo.myAllCost =
         sMyGraph->selectedJoinMethod->totalCost;
 
-    // Total Cost °è»ê
-    // Join Graph ÀÚÃ¼ÀÇ Cost´Â ÀÌ¹Ì ChildÀÇ Cost¸¦ ¸ğµÎ Æ÷ÇÔÇÏ°í ÀÖ´Ù.
+    // Total Cost ê³„ì‚°
+    // Join Graph ìì²´ì˜ CostëŠ” ì´ë¯¸ Childì˜ Costë¥¼ ëª¨ë‘ í¬í•¨í•˜ê³  ìˆë‹¤.
     sMyGraph->graph.costInfo.totalAccessCost =
         sMyGraph->graph.costInfo.myAccessCost;
     sMyGraph->graph.costInfo.totalDiskCost =
@@ -395,7 +395,7 @@ qmgSemiJoin::optimize( qcStatement * aStatement, qmgGraph * aGraph )
         sMyGraph->graph.costInfo.myAllCost;
 
     //------------------------------------------
-    // Join MethodÀÇ °áÁ¤ ÈÄ Ã³¸®
+    // Join Methodì˜ ê²°ì • í›„ ì²˜ë¦¬
     //------------------------------------------
 
     // PROJ-2179
@@ -439,14 +439,14 @@ qmgSemiJoin::setJoinMethodsSelectivity( qmgGraph * aGraph )
 /***********************************************************************
  *
  * Description :
- *     Semi/anti joinÀÇ join methodµéÀÇ selectivity¸¦ Á¶ÀıÇÑ´Ù.
+ *     Semi/anti joinì˜ join methodë“¤ì˜ selectivityë¥¼ ì¡°ì ˆí•œë‹¤.
  *
  * Implementation :
- *     Nested loop join°ú stored nested loop joinÀ» Á¦¿ÜÇÑ ³ª¸ÓÁö
- *     ¸ğµç join methodµéÀÇ selectivity¸¦ 0À¸·Î ¼³Á¤ÇÑ´Ù.
- *     À§ÀÇ µÎ join methodµéÀº selectivity¿¡ µû¶ó ºñ¿ëÀÌ ´Ù¸¥ ¹İ¸é
- *     ³ª¸ÓÁö methodµéÀº selectivity¿¡ °ü°è ¾øÀÌ semi/anti joinÀÇ
- *     ºñ¿ëÀÌ ¸ğµÎ µ¿ÀÏÇÏ±â ¶§¹®ÀÌ´Ù.
+ *     Nested loop joinê³¼ stored nested loop joinì„ ì œì™¸í•œ ë‚˜ë¨¸ì§€
+ *     ëª¨ë“  join methodë“¤ì˜ selectivityë¥¼ 0ìœ¼ë¡œ ì„¤ì •í•œë‹¤.
+ *     ìœ„ì˜ ë‘ join methodë“¤ì€ selectivityì— ë”°ë¼ ë¹„ìš©ì´ ë‹¤ë¥¸ ë°˜ë©´
+ *     ë‚˜ë¨¸ì§€ methodë“¤ì€ selectivityì— ê´€ê³„ ì—†ì´ semi/anti joinì˜
+ *     ë¹„ìš©ì´ ëª¨ë‘ ë™ì¼í•˜ê¸° ë•Œë¬¸ì´ë‹¤.
  *
  ***********************************************************************/
 
@@ -455,13 +455,13 @@ qmgSemiJoin::setJoinMethodsSelectivity( qmgGraph * aGraph )
     UInt                i, j;
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_DASSERT( aGraph != NULL );
 
     //------------------------------------------
-    // ±âº» ÃÊ±âÈ­
+    // ê¸°ë³¸ ì´ˆê¸°í™”
     //------------------------------------------
 
     sMyGraph = (qmgJOIN*) aGraph;

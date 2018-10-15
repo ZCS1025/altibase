@@ -24,7 +24,7 @@
 extern "C" int _fseeki64(FILE *, __int64, int);
 #endif
 
-// BUG-24902: FilePath°¡ Àý´ë °æ·ÎÀÎÁö È®ÀÎ
+// BUG-24902: FilePathê°€ ì ˆëŒ€ ê²½ë¡œì¸ì§€ í™•ì¸
 #if defined(VC_WIN32)
 #define IS_ABSOLUTE_PATH(P) ((P[0] == IDL_FILE_SEPARATOR) || ((strlen(P) > 3) && (P[1] == ':') && (P[2] == IDL_FILE_SEPARATOR)))
 #else
@@ -58,21 +58,21 @@ iloLOB::~iloLOB()
 /**
  * Open.
  *
- * Á¶ÀÛÇÒ LOB¿¡ °üÇÑ Á¤º¸¸¦ ¼³Á¤ÇÑ´Ù.
- * LOB ÀÐ±âÀÇ °æ¿ì ¼­¹ö·ÎºÎÅÍ LOB ±æÀÌ¸¦ ¾ò´Â ÀÏµµ ¼öÇàÇÑ´Ù.
+ * ì¡°ìž‘í•  LOBì— ê´€í•œ ì •ë³´ë¥¼ ì„¤ì •í•œë‹¤.
+ * LOB ì½ê¸°ì˜ ê²½ìš° ì„œë²„ë¡œë¶€í„° LOB ê¸¸ì´ë¥¼ ì–»ëŠ” ì¼ë„ ìˆ˜í–‰í•œë‹¤.
  *
  * @param[in] aLOBLocCType
- *  LOB locatorÀÇ C µ¥ÀÌÅÍÇü. ´ÙÀ½ °ª Áß ÇÏ³ªÀÌ´Ù.
+ *  LOB locatorì˜ C ë°ì´í„°í˜•. ë‹¤ìŒ ê°’ ì¤‘ í•˜ë‚˜ì´ë‹¤.
  *  SQL_C_CLOB_LOCATOR, SQL_C_BLOB_LOCATOR.
  * @param[in] aLOBLoc
  *  LOB locator
  * @param[in] aValCType
- *  °ªÀÇ C µ¥ÀÌÅÍÇü. ´ÙÀ½ °ª Áß ÇÏ³ªÀÌ´Ù.
+ *  ê°’ì˜ C ë°ì´í„°í˜•. ë‹¤ìŒ ê°’ ì¤‘ í•˜ë‚˜ì´ë‹¤.
  *  SQL_C_CHAR, SQL_C_BINARY.
- *  ´Ü, SQL_C_BINARY´Â aLOBLocCTypeÀÌ
- *  SQL_C_BLOB_LOCATORÀÎ °æ¿ì¸¸ °¡´ÉÇÏ´Ù.
+ *  ë‹¨, SQL_C_BINARYëŠ” aLOBLocCTypeì´
+ *  SQL_C_BLOB_LOCATORì¸ ê²½ìš°ë§Œ ê°€ëŠ¥í•˜ë‹¤.
  * @param[in] aLOBAccessMode
- *  LOB ÀÐ±â ¶Ç´Â ¾²±â¸¦ ÁöÁ¤ÇÑ´Ù. ´ÙÀ½ °ª Áß ÇÏ³ªÀÌ´Ù.
+ *  LOB ì½ê¸° ë˜ëŠ” ì“°ê¸°ë¥¼ ì§€ì •í•œë‹¤. ë‹¤ìŒ ê°’ ì¤‘ í•˜ë‚˜ì´ë‹¤.
  *  iloLOB::LOBAccessMode_RDONLY,
  *  iloLOB::LOBAccessMode_WRONLY.
  */
@@ -202,7 +202,7 @@ IDE_RC iloLOB::OpenForDown( ALTIBASE_ILOADER_HANDLE aHandle,
 /**
  * Close.
  *
- * Á¶ÀÛÇÏ´ø LOB °ü·Ã ÀÚ¿øÀ» ÇØÁ¦ÇÑ´Ù.
+ * ì¡°ìž‘í•˜ë˜ LOB ê´€ë ¨ ìžì›ì„ í•´ì œí•œë‹¤.
  */
 IDE_RC iloLOB::CloseForUp( ALTIBASE_ILOADER_HANDLE /* aHandle */, iloSQLApi *aISPApi )
 {
@@ -280,16 +280,16 @@ IDE_RC iloLOB::CloseForDown( ALTIBASE_ILOADER_HANDLE aHandle )
 /**
  * Fetch.
  *
- * LOB ÀÐ±â ½Ã È£ÃâµÇ¸ç,
- * ¼­¹ö·ÎºÎÅÍ ÀÏÁ¤ ±æÀÌÀÇ LOB µ¥ÀÌÅÍ¸¦ ÀÐ¾î¿Í ¸®ÅÏÇÑ´Ù.
- * ³»ºÎÀûÀ¸·Î ÇöÀç±îÁö ÀÐÀº À§Ä¡¸¦ ±â¾ïÇÏ°í ÀÖ´Ù°¡
- * ´ÙÀ½ Fetch() È£Ãâ ½Ã ÀÌ¾îÁö´Â ºÎºÐÀ» ÀÐ¾î¼­ ¸®ÅÏÇÑ´Ù.
+ * LOB ì½ê¸° ì‹œ í˜¸ì¶œë˜ë©°,
+ * ì„œë²„ë¡œë¶€í„° ì¼ì • ê¸¸ì´ì˜ LOB ë°ì´í„°ë¥¼ ì½ì–´ì™€ ë¦¬í„´í•œë‹¤.
+ * ë‚´ë¶€ì ìœ¼ë¡œ í˜„ìž¬ê¹Œì§€ ì½ì€ ìœ„ì¹˜ë¥¼ ê¸°ì–µí•˜ê³  ìžˆë‹¤ê°€
+ * ë‹¤ìŒ Fetch() í˜¸ì¶œ ì‹œ ì´ì–´ì§€ëŠ” ë¶€ë¶„ì„ ì½ì–´ì„œ ë¦¬í„´í•œë‹¤.
  *
  * @param[out] aVal
- *  ¼­¹ö·ÎºÎÅÍ ÀÐ¾î¿Â LOB µ¥ÀÌÅÍ°¡ ÀúÀåµÇ¾îÀÖ´Â ¹öÆÛ.
- *  µ¥ÀÌÅÍ´Â NULL·Î Á¾°áµÇÁö ¾Ê´Â´Ù.
+ *  ì„œë²„ë¡œë¶€í„° ì½ì–´ì˜¨ LOB ë°ì´í„°ê°€ ì €ìž¥ë˜ì–´ìžˆëŠ” ë²„í¼.
+ *  ë°ì´í„°ëŠ” NULLë¡œ ì¢…ê²°ë˜ì§€ ì•ŠëŠ”ë‹¤.
  * @param[out] aStrLen
- *  ¹öÆÛ¿¡ ÀúÀåµÇ¾îÀÖ´Â LOB µ¥ÀÌÅÍÀÇ ±æÀÌ.
+ *  ë²„í¼ì— ì €ìž¥ë˜ì–´ìžˆëŠ” LOB ë°ì´í„°ì˜ ê¸¸ì´.
  */
 IDE_RC iloLOB::Fetch( ALTIBASE_ILOADER_HANDLE   aHandle,
                       void                    **aVal,
@@ -306,7 +306,7 @@ IDE_RC iloLOB::Fetch( ALTIBASE_ILOADER_HANDLE   aHandle,
     IDE_TEST_RAISE(mLOBLen <= mPos, AllFetched);
 
     /* 2.Call SQLGetLob(). */
-    // BUG-21837 LOB ¹öÆÛ »çÀÌÁî¸¦ Á¶ÀýÇÑ´Ù.
+    // BUG-21837 LOB ë²„í¼ ì‚¬ì´ì¦ˆë¥¼ ì¡°ì ˆí•œë‹¤.
     if ((mLOBLen - mPos) > ILO_LOB_PIECE_SIZE)
     {
         sForLength = ILO_LOB_PIECE_SIZE;
@@ -361,7 +361,7 @@ IDE_RC iloLOB::Fetch( ALTIBASE_ILOADER_HANDLE   aHandle,
     {
         if ( CLOB4CSV && ( sHandle->mProgOption->mUseLOBFile != ILO_TRUE ) )
         {
-            // ¿øº» CLOB data¸¦ CSVÇüÅÂ·Î º¯È¯ÇÑ´Ù.
+            // ì›ë³¸ CLOB dataë¥¼ CSVí˜•íƒœë¡œ ë³€í™˜í•œë‹¤.
              iloConvertCharToCSV( sHandle, &sValueLength);
         }
     }
@@ -415,13 +415,13 @@ IDE_RC iloLOB::Fetch( ALTIBASE_ILOADER_HANDLE   aHandle,
 /**
  * GetBuffer.
  *
- * LOB ¾²±â ½Ã È£ÃâµÇ¸ç,
- * ¼­¹ö·Î Àü¼ÛÇÒ LOB µ¥ÀÌÅÍ¸¦ ÀúÀåÇÒ ¹öÆÛ¸¦ ¾ò´Â´Ù.
+ * LOB ì“°ê¸° ì‹œ í˜¸ì¶œë˜ë©°,
+ * ì„œë²„ë¡œ ì „ì†¡í•  LOB ë°ì´í„°ë¥¼ ì €ìž¥í•  ë²„í¼ë¥¼ ì–»ëŠ”ë‹¤.
  *
  * @param[out] aVal
- *  ¼­¹ö·Î Àü¼ÛÇÒ LOB µ¥ÀÌÅÍ¸¦ ÀúÀåÇÒ ¹öÆÛ.
+ *  ì„œë²„ë¡œ ì „ì†¡í•  LOB ë°ì´í„°ë¥¼ ì €ìž¥í•  ë²„í¼.
  * @param[out] aBufLen
- *  ¹öÆÛ ±æÀÌ.
+ *  ë²„í¼ ê¸¸ì´.
  */
 IDE_RC iloLOB::GetBuffer(void **aVal, UInt *aBufLen)
 {
@@ -430,7 +430,7 @@ IDE_RC iloLOB::GetBuffer(void **aVal, UInt *aBufLen)
         if (mValCType == SQL_C_BINARY)
         {
             *(UChar **)aVal = mBinBuf;
-            // BUG-21837 LOB ¹öÆÛ »çÀÌÁî¸¦ Á¶ÀýÇÑ´Ù.
+            // BUG-21837 LOB ë²„í¼ ì‚¬ì´ì¦ˆë¥¼ ì¡°ì ˆí•œë‹¤.
             *aBufLen = ILO_LOB_PIECE_SIZE;
         }
         else /* (mValCType == SQL_C_CHAR) */
@@ -451,14 +451,14 @@ IDE_RC iloLOB::GetBuffer(void **aVal, UInt *aBufLen)
 /**
  * Append.
  *
- * LOB ¾²±â ½Ã È£ÃâµÇ¸ç,
- * GetBuffer()·Î ¾òÀº ¹öÆÛ¿¡ ÀúÀåµÈ µ¥ÀÌÅÍ¸¦ ¼­¹ö·Î Àü¼ÛÇÏ¿©
- * ÇØ´ç LOBÀÇ µÞºÎºÐ¿¡ µ¡ºÙ¿© ¾´´Ù.
+ * LOB ì“°ê¸° ì‹œ í˜¸ì¶œë˜ë©°,
+ * GetBuffer()ë¡œ ì–»ì€ ë²„í¼ì— ì €ìž¥ëœ ë°ì´í„°ë¥¼ ì„œë²„ë¡œ ì „ì†¡í•˜ì—¬
+ * í•´ë‹¹ LOBì˜ ë’·ë¶€ë¶„ì— ë§ë¶™ì—¬ ì“´ë‹¤.
  *
  * @param[in] aStrLen
- *  ¹öÆÛ¿¡ ÀúÀåµÇ¾îÀÖ´Â µ¥ÀÌÅÍÀÇ ±æÀÌ.
- *  ¹öÆÛÀÇ µ¥ÀÌÅÍ´Â NULL·Î Á¾°áµÉ ÇÊ¿ä°¡ ¾øÀ¸¸ç,
- *  º» °ª ¶ÇÇÑ NULL Á¾°á ¹®ÀÚ¸¦ Á¦¿ÜÇÑ ±æÀÌÀÌ´Ù.
+ *  ë²„í¼ì— ì €ìž¥ë˜ì–´ìžˆëŠ” ë°ì´í„°ì˜ ê¸¸ì´.
+ *  ë²„í¼ì˜ ë°ì´í„°ëŠ” NULLë¡œ ì¢…ê²°ë  í•„ìš”ê°€ ì—†ìœ¼ë©°,
+ *  ë³¸ ê°’ ë˜í•œ NULL ì¢…ê²° ë¬¸ìžë¥¼ ì œì™¸í•œ ê¸¸ì´ì´ë‹¤.
  */
 IDE_RC iloLOB::Append( ALTIBASE_ILOADER_HANDLE  aHandle,
                        UInt                     aStrLen,
@@ -481,7 +481,7 @@ IDE_RC iloLOB::Append( ALTIBASE_ILOADER_HANDLE  aHandle,
     {
         if ( CLOB4CSV && ( sHandle->mProgOption->mUseLOBFile != ILO_TRUE ) )
         {
-            // Ã¹ CLOB data blockÀÌ CSV Æ÷¸äÀÎÁö ¾Æ´ÑÁö ÆÇº°.
+            // ì²« CLOB data blockì´ CSV í¬ë©§ì¸ì§€ ì•„ë‹Œì§€ íŒë³„.
             if( (mIsBeginCLOBAppend == ILO_TRUE) &&
                 (mChBuf[0] == sHandle->mProgOption->mCSVEnclosing) )
             {
@@ -494,7 +494,7 @@ IDE_RC iloLOB::Append( ALTIBASE_ILOADER_HANDLE  aHandle,
             }
             else
             {
-                // CSV Æ÷¸äÀÌ ¾Æ´Ñ °æ¿ì ÀÌÀü Ã³¸®¹æ¹ýÀ» µû¸§.
+                // CSV í¬ë©§ì´ ì•„ë‹Œ ê²½ìš° ì´ì „ ì²˜ë¦¬ë°©ë²•ì„ ë”°ë¦„.
             }
         }
     }
@@ -543,12 +543,12 @@ IDE_RC iloLOB::Append( ALTIBASE_ILOADER_HANDLE  aHandle,
 /**
  * ConvertBinaryToChar.
  *
- * LOB ÀÐ±â ½Ã Fetch()¿¡¼­ È£ÃâµÇ¸ç,
- * BLOBÀ» SQL_C_CHARÇü ¹öÆÛ¿¡ ÀúÀåÇÒ °æ¿ì
- * ¼­¹ö·ÎºÎÅÍ ¾òÀº raw ÀÌÁø µ¥ÀÌÅÍ¸¦ 16Áø¼ö ½ºÆ®¸µÀ¸·Î º¯È¯ÇÑ´Ù.
+ * LOB ì½ê¸° ì‹œ Fetch()ì—ì„œ í˜¸ì¶œë˜ë©°,
+ * BLOBì„ SQL_C_CHARí˜• ë²„í¼ì— ì €ìž¥í•  ê²½ìš°
+ * ì„œë²„ë¡œë¶€í„° ì–»ì€ raw ì´ì§„ ë°ì´í„°ë¥¼ 16ì§„ìˆ˜ ìŠ¤íŠ¸ë§ìœ¼ë¡œ ë³€í™˜í•œë‹¤.
  *
  * @param[in] aBinLen
- *  ÀÌÁø µ¥ÀÌÅÍ ¹öÆÛ¿¡ ÀúÀåµÇ¾îÀÖ´Â raw ÀÌÁø µ¥ÀÌÅÍÀÇ ±æÀÌ.
+ *  ì´ì§„ ë°ì´í„° ë²„í¼ì— ì €ìž¥ë˜ì–´ìžˆëŠ” raw ì´ì§„ ë°ì´í„°ì˜ ê¸¸ì´.
  */
 void iloLOB::ConvertBinaryToChar(UInt aBinLen)
 {
@@ -583,12 +583,12 @@ void iloLOB::ConvertBinaryToChar(UInt aBinLen)
 /**
  * ConvertCharToBinary.
  *
- * LOB ¾²±â ½Ã Append()¿¡¼­ È£ÃâµÇ¸ç,
- * SQL_C_CHARÇü ¹öÆÛÀÇ µ¥ÀÌÅÍ¸¦ BLOB¿¡ ÀúÀåÇÒ °æ¿ì
- * 16Áø¼ö ½ºÆ®¸µ ÇüÅÂÀÇ µ¥ÀÌÅÍ¸¦ raw ÀÌÁø µ¥ÀÌÅÍ·Î º¯È¯ÇÑ´Ù.
+ * LOB ì“°ê¸° ì‹œ Append()ì—ì„œ í˜¸ì¶œë˜ë©°,
+ * SQL_C_CHARí˜• ë²„í¼ì˜ ë°ì´í„°ë¥¼ BLOBì— ì €ìž¥í•  ê²½ìš°
+ * 16ì§„ìˆ˜ ìŠ¤íŠ¸ë§ í˜•íƒœì˜ ë°ì´í„°ë¥¼ raw ì´ì§„ ë°ì´í„°ë¡œ ë³€í™˜í•œë‹¤.
  *
  * @param[in] aChLen
- *  Char ¹öÆÛ¿¡ ÀúÀåµÇ¾îÀÖ´Â 16Áø¼ö ½ºÆ®¸µÀÇ ±æÀÌ.
+ *  Char ë²„í¼ì— ì €ìž¥ë˜ì–´ìžˆëŠ” 16ì§„ìˆ˜ ìŠ¤íŠ¸ë§ì˜ ê¸¸ì´.
  */
 IDE_RC iloLOB::ConvertCharToBinary( ALTIBASE_ILOADER_HANDLE aHandle, UInt aChLen)
 {
@@ -665,12 +665,12 @@ IDE_RC iloLOB::ConvertCharToBinary( ALTIBASE_ILOADER_HANDLE aHandle, UInt aChLen
 /**
  * iloConvertCharToCSV.
  *
- * CLOB ÀÐ±â ½Ã Fetch()¿¡¼­ È£ÃâµÇ¸ç,
- * CLOBÀ» ¹öÆÛ¿¡ ÀúÀåÇÒ °æ¿ì
- * ¼­¹ö·ÎºÎÅÍ char µ¥ÀÌÅÍ¸¦ CSV ÇüÅÂ·Î º¯È¯ÇÑ´Ù.
+ * CLOB ì½ê¸° ì‹œ Fetch()ì—ì„œ í˜¸ì¶œë˜ë©°,
+ * CLOBì„ ë²„í¼ì— ì €ìž¥í•  ê²½ìš°
+ * ì„œë²„ë¡œë¶€í„° char ë°ì´í„°ë¥¼ CSV í˜•íƒœë¡œ ë³€í™˜í•œë‹¤.
  *
  * @param[in] aValueLength
- *  ¿øº» CLOB µ¥ÀÌÅÍÀÇ ±æÀÌ.
+ *  ì›ë³¸ CLOB ë°ì´í„°ì˜ ê¸¸ì´.
  */
 void iloLOB::iloConvertCharToCSV( ALTIBASE_ILOADER_HANDLE  aHandle,
                                   UInt                    *aValueLen )
@@ -695,7 +695,7 @@ void iloLOB::iloConvertCharToCSV( ALTIBASE_ILOADER_HANDLE  aHandle,
             if( i == 0 )
             {
                 mChBuf[sIndex++] = sEnclosing;
-                // escape ¹®ÀÚ°¡ Ãß°¡µÇ¾î º¯È¯µÈ ¹®ÀÚ¿­±æÀÌ°¡ 1Áõ°¡.
+                // escape ë¬¸ìžê°€ ì¶”ê°€ë˜ì–´ ë³€í™˜ëœ ë¬¸ìžì—´ê¸¸ì´ê°€ 1ì¦ê°€.
                 (*aValueLen) ++;
             }
             else
@@ -703,7 +703,7 @@ void iloLOB::iloConvertCharToCSV( ALTIBASE_ILOADER_HANDLE  aHandle,
                 idlOS::strncpy( mChBuf + sIndex, (const SChar *)mBinBuf + j, i - j );
                 sIndex += i - j;
                 mChBuf[sIndex++] = sEnclosing;
-                // escape ¹®ÀÚ°¡ Ãß°¡µÇ¾î º¯È¯µÈ ¹®ÀÚ¿­±æÀÌ°¡ 1Áõ°¡.
+                // escape ë¬¸ìžê°€ ì¶”ê°€ë˜ì–´ ë³€í™˜ëœ ë¬¸ìžì—´ê¸¸ì´ê°€ 1ì¦ê°€.
                 (*aValueLen) ++;
             }
             j = i;
@@ -720,12 +720,12 @@ void iloLOB::iloConvertCharToCSV( ALTIBASE_ILOADER_HANDLE  aHandle,
 /**
  * iloConvertCSVToChar.
  *
- * CLOB upload ½Ã Append()¿¡¼­ È£ÃâµÇ¸ç,
- * datafile ¿¡ ÀúÀåµÈ CSVÇüÅÂÀÇ CLOB data¸¦
- * ¿øº» dataÇüÅÂ·Î º¯È¯ÇÑ´Ù.
+ * CLOB upload ì‹œ Append()ì—ì„œ í˜¸ì¶œë˜ë©°,
+ * datafile ì— ì €ìž¥ëœ CSVí˜•íƒœì˜ CLOB dataë¥¼
+ * ì›ë³¸ dataí˜•íƒœë¡œ ë³€í™˜í•œë‹¤.
  *
  * @param[in] aStrLen
- *  CSV CLOB µ¥ÀÌÅÍÀÇ ±æÀÌ.
+ *  CSV CLOB ë°ì´í„°ì˜ ê¸¸ì´.
  */
 IDE_RC iloLOB::iloConvertCSVToChar( ALTIBASE_ILOADER_HANDLE  aHandle,
                                     UInt                    *aStrLen )
@@ -741,13 +741,13 @@ IDE_RC iloLOB::iloConvertCSVToChar( ALTIBASE_ILOADER_HANDLE  aHandle,
 
     iloaderHandle *sHandle = (iloaderHandle *) aHandle;
     
-    // CLOB ÄÃ·³Àº Ç×»ó "·Î enclosingµÇ¾î ÀÖ¾î, Ã¹¹®ÀÚ "Àº ¹«½ÃÇØ¾ßÇÑ´Ù.
+    // CLOB ì»¬ëŸ¼ì€ í•­ìƒ "ë¡œ enclosingë˜ì–´ ìžˆì–´, ì²«ë¬¸ìž "ì€ ë¬´ì‹œí•´ì•¼í•œë‹¤.
     if( mIsBeginCLOBAppend  == ILO_TRUE )
     {
         sChIdx++;
         mIsBeginCLOBAppend = ILO_FALSE;
     }
-    // Ã¹¹øÂ° ºí·°ÀÇ ¸¶Áö¸· ¹®ÀÚ°¡ "ÀÏ°æ¿ì ´ÙÀ½ ºí·° Ã³À½¿¡ "°¡ ¿À¸é ¹ö¸®Áö ¾Ê°í ÀúÀåÇØ¾ßÇÑ´Ù.
+    // ì²«ë²ˆì§¸ ë¸”ëŸ­ì˜ ë§ˆì§€ë§‰ ë¬¸ìžê°€ "ì¼ê²½ìš° ë‹¤ìŒ ë¸”ëŸ­ ì²˜ìŒì— "ê°€ ì˜¤ë©´ ë²„ë¦¬ì§€ ì•Šê³  ì €ìž¥í•´ì•¼í•œë‹¤.
     else if( mSaveBeginCLOBEnc == ILO_TRUE )
     {
         IDE_TEST( mChBuf[ sChIdx++ ] != sHandle->mProgOption->mCSVEnclosing );
@@ -821,7 +821,7 @@ iloDataFile::iloDataFile( ALTIBASE_ILOADER_HANDLE aHandle )
     idlOS::strcpy(m_Enclosing, "");
     mEnLexStateTransTbl = NULL;
     /* TASK-2657 */
-    // BUG-27633: mErrorTokenµµ ÄÃ·³ÀÇ ÃÖ´ë Å©±â·Î ÇÒ´ç
+    // BUG-27633: mErrorTokenë„ ì»¬ëŸ¼ì˜ ìµœëŒ€ í¬ê¸°ë¡œ í• ë‹¹
     mErrorToken = (SChar*) idlOS::malloc(MAX_TOKEN_VALUE_LEN + MAX_SEPERATOR_LEN);
     IDE_TEST_RAISE(mErrorToken == NULL, MAllocError);
     mErrorToken[0] = '\0';
@@ -835,8 +835,8 @@ iloDataFile::iloDataFile( ALTIBASE_ILOADER_HANDLE aHandle )
     mAccumLOBFilePos = ID_ULONG(0);
     mFileNameBody[0] = '\0';
     mDataFileNameExt[0] = '\0';
-    // BUG-18803 readsize ¿É¼Ç Ãß°¡
-    // mDoubleBuff¸¦ readsize °ª¿¡ ¸ÂÃß¾î¼­ µ¿Àû ÇÒ´çÀ» ÇÑ´Ù.
+    // BUG-18803 readsize ì˜µì…˜ ì¶”ê°€
+    // mDoubleBuffë¥¼ readsize ê°’ì— ë§žì¶”ì–´ì„œ ë™ì  í• ë‹¹ì„ í•œë‹¤.
     mDoubleBuffPos = -1;              //BUG-22434
     mDoubleBuffSize = 0;  //BUG-22434
     mDoubleBuff     = NULL;
@@ -848,7 +848,7 @@ iloDataFile::iloDataFile( ALTIBASE_ILOADER_HANDLE aHandle )
     mLOBFile = NULL;            //BUG-24583
     mLOBFileRowCount = 0;
     mLOBFileColumnNum = 0;      //BUG-24583
-    mOutFileFP = NULL;          //PROJ-2030, CT_CASE-3020 CHAR outfile Áö¿ø
+    mOutFileFP = NULL;          //PROJ-2030, CT_CASE-3020 CHAR outfile ì§€ì›
 
     return;
 
@@ -870,7 +870,7 @@ iloDataFile::iloDataFile( ALTIBASE_ILOADER_HANDLE aHandle )
 
     if ( sHandle->mUseApi != SQL_TRUE )
     {
-        // °´Ã¼¸¦ ÃÊ±âÈ­ÇÒ ¶§ ¸Þ¸ð¸® ÇÒ´ç¿¡ ½ÇÆÐÇØ¼­´Â ¾ÈµÈ´Ù.
+        // ê°ì²´ë¥¼ ì´ˆê¸°í™”í•  ë•Œ ë©”ëª¨ë¦¬ í• ë‹¹ì— ì‹¤íŒ¨í•´ì„œëŠ” ì•ˆëœë‹¤.
         exit(1);
     }
 }
@@ -888,7 +888,7 @@ iloDataFile::~iloDataFile()
         idlOS::free(m_TokenValue);
         mTokenMaxSize = 0;
     }
-    // BUG-27633: mErrorTokenµµ ÄÃ·³ÀÇ ÃÖ´ë Å©±â·Î ÇÒ´ç
+    // BUG-27633: mErrorTokenë„ ì»¬ëŸ¼ì˜ ìµœëŒ€ í¬ê¸°ë¡œ í• ë‹¹
     if (mErrorToken != NULL)
     {
         idlOS::free(mErrorToken);
@@ -902,7 +902,7 @@ iloDataFile::~iloDataFile()
         LOBFileInfoFree();
     }
 
-    // BUG-18803 readsize ¿É¼Ç Ãß°¡
+    // BUG-18803 readsize ì˜µì…˜ ì¶”ê°€
     if(mDoubleBuff != NULL)
     {
         idlOS::free(mDoubleBuff);
@@ -910,10 +910,10 @@ iloDataFile::~iloDataFile()
 }
 
 /**
- * µ¥ÀÌÅ¸ ÆÄÀÏÀÇ ÀüÃ¼ °æ·Î·ÎºÎÅÍ °æ·Î¸¸ ÃßÃâÇØ¼­ ÀúÀåÇØµÐ´Ù.
+ * ë°ì´íƒ€ íŒŒì¼ì˜ ì „ì²´ ê²½ë¡œë¡œë¶€í„° ê²½ë¡œë§Œ ì¶”ì¶œí•´ì„œ ì €ìž¥í•´ë‘”ë‹¤.
  *
  * @param [IN] aDataFileName
- *             µ¥ÀÌÅ¸ ÆÄÀÏÀÇ ÀüÃ¼ °æ·Î
+ *             ë°ì´íƒ€ íŒŒì¼ì˜ ì „ì²´ ê²½ë¡œ
  */
 void iloDataFile::InitDataFilePath(SChar *aDataFileName)
 {
@@ -940,10 +940,10 @@ SInt iloDataFile::OpenFileForUp( ALTIBASE_ILOADER_HANDLE  aHandle,
 
     iloaderHandle *sHandle = (iloaderHandle *) aHandle;
     
-    /* µ¥ÀÌÅÍ ÆÄÀÏ¸íÀ¸·ÎºÎÅÍ ÆÄÀÏ¸í º»Ã¼, µ¥ÀÌÅÍ ÆÄÀÏ È®ÀåÀÚ,
-     * µ¥ÀÌÅÍ ÆÄÀÏ ¹øÈ£¸¦ ¾ò´Â´Ù. */
+    /* ë°ì´í„° íŒŒì¼ëª…ìœ¼ë¡œë¶€í„° íŒŒì¼ëª… ë³¸ì²´, ë°ì´í„° íŒŒì¼ í™•ìž¥ìž,
+     * ë°ì´í„° íŒŒì¼ ë²ˆí˜¸ë¥¼ ì–»ëŠ”ë‹¤. */
     AnalDataFileName(aDataFileName, aIsWr);
-    /* µ¥ÀÌÅÍ ÆÄÀÏ¿¡ ¾²±âÀÎ °æ¿ì »ç¿ëÀÚ°¡ ÀÎÀÚ·Î ÁØ µ¥ÀÌÅÍ ÆÄÀÏ ¹øÈ£¸¦ »ç¿ë */
+    /* ë°ì´í„° íŒŒì¼ì— ì“°ê¸°ì¸ ê²½ìš° ì‚¬ìš©ìžê°€ ì¸ìžë¡œ ì¤€ ë°ì´í„° íŒŒì¼ ë²ˆí˜¸ë¥¼ ì‚¬ìš© */
     if (aIsWr == ILO_TRUE)
     {
         mDataFileNo = aDataFileNo;
@@ -964,19 +964,19 @@ SInt iloDataFile::OpenFileForUp( ALTIBASE_ILOADER_HANDLE  aHandle,
 
     if (aIsWr == ILO_TRUE)
     {
-        //BUG-24511 ¸ðµç FopenÀº binary typeÀ¸·Î ¼³Á¤ÇØ¾ßÇÔ
+        //BUG-24511 ëª¨ë“  Fopenì€ binary typeìœ¼ë¡œ ì„¤ì •í•´ì•¼í•¨
         (void)idlOS::snprintf(sMode, ID_SIZEOF(sMode), "wb");
     }
     else
     {
-        /* To Fix BUG-14940 ÇÑ±ÛÀÌ ±úÁø µ¥ÀÌÅÍ¿¡ ´ëÇØ
-         *                  iloader¿¡¼­ import°¡ Áß°£¿¡ Á¾·áµÊ. */
+        /* To Fix BUG-14940 í•œê¸€ì´ ê¹¨ì§„ ë°ì´í„°ì— ëŒ€í•´
+         *                  iloaderì—ì„œ importê°€ ì¤‘ê°„ì— ì¢…ë£Œë¨. */
         (void)idlOS::snprintf(sMode, ID_SIZEOF(sMode), "rb");
     }
     m_DataFp = iloFileOpen( sHandle, sFileName, O_CREAT | O_RDWR, sMode, LOCK_WR);
     IDE_TEST_RAISE(m_DataFp == NULL, OpenError);
     mDataFilePos = ID_ULONG(0);
-    // BUG-24873 clob µ¥ÀÌÅÍ ·ÎµùÇÒ¶§ [ERR-91044 : Error occurred during data file IO.] ¹ß»ý
+    // BUG-24873 clob ë°ì´í„° ë¡œë”©í• ë•Œ [ERR-91044 : Error occurred during data file IO.] ë°œìƒ
     mDataFileRead = ID_ULONG(0);
 
     if (aIsWr == ILO_FALSE)
@@ -991,8 +991,8 @@ SInt iloDataFile::OpenFileForUp( ALTIBASE_ILOADER_HANDLE  aHandle,
         IDE_TEST_RAISE( InitLOBProc(sHandle, aIsWr) != IDE_SUCCESS, LOBProcInitError);
     }
 
-    // BUG-18803 readsize ¿É¼Ç Ãß°¡
-    // mDoubleBuff¸¦ readsize °ª¿¡ ¸ÂÃß¾î¼­ µ¿Àû ÇÒ´çÀ» ÇÑ´Ù.
+    // BUG-18803 readsize ì˜µì…˜ ì¶”ê°€
+    // mDoubleBuffë¥¼ readsize ê°’ì— ë§žì¶”ì–´ì„œ ë™ì  í• ë‹¹ì„ í•œë‹¤.
     if(mDoubleBuff != NULL)
     {
         idlOS::free(mDoubleBuff);
@@ -1073,10 +1073,10 @@ FILE* iloDataFile::OpenFileForDown( ALTIBASE_ILOADER_HANDLE  aHandle,
     
     iloaderHandle *sHandle = (iloaderHandle *) aHandle;
     
-    /* µ¥ÀÌÅÍ ÆÄÀÏ¸íÀ¸·ÎºÎÅÍ ÆÄÀÏ¸í º»Ã¼, µ¥ÀÌÅÍ ÆÄÀÏ È®ÀåÀÚ,
-     * µ¥ÀÌÅÍ ÆÄÀÏ ¹øÈ£¸¦ ¾ò´Â´Ù. */
+    /* ë°ì´í„° íŒŒì¼ëª…ìœ¼ë¡œë¶€í„° íŒŒì¼ëª… ë³¸ì²´, ë°ì´í„° íŒŒì¼ í™•ìž¥ìž,
+     * ë°ì´í„° íŒŒì¼ ë²ˆí˜¸ë¥¼ ì–»ëŠ”ë‹¤. */
     AnalDataFileName(aDataFileName, aIsWr);
-    /* µ¥ÀÌÅÍ ÆÄÀÏ¿¡ ¾²±âÀÎ °æ¿ì »ç¿ëÀÚ°¡ ÀÎÀÚ·Î ÁØ µ¥ÀÌÅÍ ÆÄÀÏ ¹øÈ£¸¦ »ç¿ë */
+    /* ë°ì´í„° íŒŒì¼ì— ì“°ê¸°ì¸ ê²½ìš° ì‚¬ìš©ìžê°€ ì¸ìžë¡œ ì¤€ ë°ì´í„° íŒŒì¼ ë²ˆí˜¸ë¥¼ ì‚¬ìš© */
     if (aIsWr == ILO_TRUE)
     {
         mDataFileNo = aDataFileNo;
@@ -1097,20 +1097,20 @@ FILE* iloDataFile::OpenFileForDown( ALTIBASE_ILOADER_HANDLE  aHandle,
 
     if (aIsWr == ILO_TRUE)
     {
-        //BUG-24511 ¸ðµç FopenÀº binary typeÀ¸·Î ¼³Á¤ÇØ¾ßÇÔ
+        //BUG-24511 ëª¨ë“  Fopenì€ binary typeìœ¼ë¡œ ì„¤ì •í•´ì•¼í•¨
         (void)idlOS::snprintf(sMode, ID_SIZEOF(sMode), "wb");
     }
     else
     {
-        /* To Fix BUG-14940 ÇÑ±ÛÀÌ ±úÁø µ¥ÀÌÅÍ¿¡ ´ëÇØ
-         *                  iloader¿¡¼­ import°¡ Áß°£¿¡ Á¾·áµÊ. */
+        /* To Fix BUG-14940 í•œê¸€ì´ ê¹¨ì§„ ë°ì´í„°ì— ëŒ€í•´
+         *                  iloaderì—ì„œ importê°€ ì¤‘ê°„ì— ì¢…ë£Œë¨. */
         (void)idlOS::snprintf(sMode, ID_SIZEOF(sMode), "rb");
     }
     spFile = iloFileOpen( sHandle, sFileName, O_CREAT | O_RDWR, sMode, LOCK_WR);
     IDE_TEST_RAISE(spFile == NULL, OpenError);
     
     //PROJ-1714
-    //LOB ColumnÀÌ ÀÖÀ» °æ¿ì¿¡´Â, LOB FileÀ» Ã³¸®ÇÏ´Â °÷¿¡¼­ »ç¿ëÇÒ ¼ö ÀÖµµ·Ï ÇÑ´Ù.
+    //LOB Columnì´ ìžˆì„ ê²½ìš°ì—ëŠ”, LOB Fileì„ ì²˜ë¦¬í•˜ëŠ” ê³³ì—ì„œ ì‚¬ìš©í•  ìˆ˜ ìžˆë„ë¡ í•œë‹¤.
     if(aLOBColExist == ILO_TRUE)
     {
         m_DataFp = spFile;
@@ -1296,20 +1296,20 @@ SInt iloDataFile::PrintOneRecord( ALTIBASE_ILOADER_HANDLE  aHandle,
                             != (UInt)1, WriteError );
         }
 
-        // switch¹® ½ÇÇàÀü °øÅëÀ¸·Î »ç¿ëµÇ´Â buffer pointer ÃÊ±âÈ­
+        // switchë¬¸ ì‹¤í–‰ì „ ê³µí†µìœ¼ë¡œ ì‚¬ìš©ë˜ëŠ” buffer pointer ì´ˆê¸°í™”
         sValuePtr = (SChar*)(pCols->m_Value[i])
                   + (aArrayNum * (SInt)pCols->mBufLen[i]);
-        // ¿©±â¼­ ¼¼ÆÃÇÑ ±æÀÌ°ªÀº ´Ù½Ã º¯ÇÒ ¼ö ÀÖÀ¸¹Ç·Î ¹Ø¿¡¼­ ÀûÀýÈ÷ ´Ù½Ã ¼¼ÆÃÇØ¾ß ÇÑ´Ù
+        // ì—¬ê¸°ì„œ ì„¸íŒ…í•œ ê¸¸ì´ê°’ì€ ë‹¤ì‹œ ë³€í•  ìˆ˜ ìžˆìœ¼ë¯€ë¡œ ë°‘ì—ì„œ ì ì ˆížˆ ë‹¤ì‹œ ì„¸íŒ…í•´ì•¼ í•œë‹¤
         sValueLen = (UInt)*(pCols->m_Len[i] + aArrayNum);
         
         switch (pCols->GetType(i))
         {
-            case SQL_NUMERIC : /* SQLBindCol¿¡¼­ SQL_C_CHAR·Î ÁöÁ¤ÇÔ */
+            case SQL_NUMERIC : /* SQLBindColì—ì„œ SQL_C_CHARë¡œ ì§€ì •í•¨ */
             case SQL_DECIMAL :
             case SQL_FLOAT   :
                 if (*(pCols->m_Len[i] + aArrayNum)  != SQL_NULL_DATA)
                 {
-                    // BUG-25827 iloader¿¡ Default ·Î noexp ¿É¼ÇÀÌ ºÙ¾úÀ¸¸é ÁÁ°Ú½À´Ï´Ù.
+                    // BUG-25827 iloaderì— Default ë¡œ noexp ì˜µì…˜ì´ ë¶™ì—ˆìœ¼ë©´ ì¢‹ê² ìŠµë‹ˆë‹¤.
                     /*
                     if (gProgOption.mNoExp != SQL_TRUE &&
                         pTableInfo->mNoExpFlag[i] != ID_TRUE)
@@ -1317,7 +1317,7 @@ SInt iloDataFile::PrintOneRecord( ALTIBASE_ILOADER_HANDLE  aHandle,
                         ConvNumericNormToExp(pCols, i, aArrayNum);
                     }
                     */
-                    // ÀÙÀü¿¡¼­ ±æÀÌ°ªÀÌ º¯ÇÒ¼ö ÀÖÀ¸¹Ç·Î ¿©±â¼­ ±æÀÌ°ª º¯¼ö¸¦ ¼¼ÆÃ
+                    // ìžŽì „ì—ì„œ ê¸¸ì´ê°’ì´ ë³€í• ìˆ˜ ìžˆìœ¼ë¯€ë¡œ ì—¬ê¸°ì„œ ê¸¸ì´ê°’ ë³€ìˆ˜ë¥¼ ì„¸íŒ…
                     sValueLen = (UInt)*(pCols->m_Len[i] + aArrayNum);
                     IDE_TEST_RAISE( idlOS::fwrite(sValuePtr, sValueLen, 1, aWriteFp)
                                     != (UInt)1, WriteError );
@@ -1344,8 +1344,8 @@ SInt iloDataFile::PrintOneRecord( ALTIBASE_ILOADER_HANDLE  aHandle,
                     break;
                 }
 
-                // TruncTrailingSpaces()  ¾È¿¡¼­ length°ªÀÌ º¯ÇÒ ¼ö ÀÖÀ¸¹Ç·Î
-                // ¿©±â¼­ ½ÇÁ¦ ±æÀÌ°ªÀ» ¼¼ÆÃ
+                // TruncTrailingSpaces()  ì•ˆì—ì„œ lengthê°’ì´ ë³€í•  ìˆ˜ ìžˆìœ¼ë¯€ë¡œ
+                // ì—¬ê¸°ì„œ ì‹¤ì œ ê¸¸ì´ê°’ì„ ì„¸íŒ…
                 sValueLen = (UInt)*(pCols->m_Len[i] + aArrayNum);
                 /* fix CASE-4061 */
                 if ( (sAttrType == ISP_ATTR_DATE) &&
@@ -1389,8 +1389,8 @@ SInt iloDataFile::PrintOneRecord( ALTIBASE_ILOADER_HANDLE  aHandle,
 
                 {
                     
-                    // cpu°¡ little-endianÀÌ°í nchar/nvarchar ÄÃ·³ÀÌ°í, nchar_utf16=yesÀÌ¸é
-                    // big-endianÀ¸·Î º¯È¯½ÃÅ²´Ù (datafile¿¡´Â big-endianÀ¸·Î¸¸ ÀúÀå)
+                    // cpuê°€ little-endianì´ê³  nchar/nvarchar ì»¬ëŸ¼ì´ê³ , nchar_utf16=yesì´ë©´
+                    // big-endianìœ¼ë¡œ ë³€í™˜ì‹œí‚¨ë‹¤ (datafileì—ëŠ” big-endianìœ¼ë¡œë§Œ ì €ìž¥)
 #ifndef ENDIAN_IS_BIG_ENDIAN
                     if (((sAttrType == ISP_ATTR_NCHAR) ||
                          (sAttrType == ISP_ATTR_NVARCHAR)) &&
@@ -1500,7 +1500,7 @@ SInt iloDataFile::PrintOneRecord( ALTIBASE_ILOADER_HANDLE  aHandle,
                                     != (UInt)1, WriteError );
                 }
             }
-            /* BUG-29779: csvÀÇ rowtermÀ» \r\nÀ¸·Î ÁöÁ¤ÇÏ´Â ±â´É */
+            /* BUG-29779: csvì˜ rowtermì„ \r\nìœ¼ë¡œ ì§€ì •í•˜ëŠ” ê¸°ëŠ¥ */
             IDE_TEST_RAISE( idlOS::fwrite(m_RowTerm, m_nRTLen, 1, aWriteFp)
                             != (UInt)1, WriteError );
         }
@@ -1615,7 +1615,7 @@ SInt iloDataFile::csvWrite ( ALTIBASE_ILOADER_HANDLE  aHandle,
 
     IDE_EXCEPTION(WriteError);
     {
-        // ÀÌ ÇÔ¼ö¸¦ È£ÃâÇÏ´Â °÷¿¡¼­ ¿¡·¯¸¦ Ã³¸®ÇÏ¹Ç·Î ¿©±â¼­´Â »ý·«
+        // ì´ í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•˜ëŠ” ê³³ì—ì„œ ì—ëŸ¬ë¥¼ ì²˜ë¦¬í•˜ë¯€ë¡œ ì—¬ê¸°ì„œëŠ” ìƒëžµ
     }
     IDE_EXCEPTION_END;
     return SQL_FALSE;
@@ -1624,13 +1624,13 @@ SInt iloDataFile::csvWrite ( ALTIBASE_ILOADER_HANDLE  aHandle,
 /**
  * ConvNumericNormToExp.
  *
- * ¹®ÀÚ¿­ ÇüÅÂ·Î ¾ò¾îÁø NUMERIC ÄÃ·³ °ªÀ»
- * ºñÁö¼öÇü([-]ddd.ddd)¿¡¼­ Áö¼öÇü([-]d.dddE+dd)À¸·Î º¯È¯ÇÑ´Ù.
+ * ë¬¸ìžì—´ í˜•íƒœë¡œ ì–»ì–´ì§„ NUMERIC ì»¬ëŸ¼ ê°’ì„
+ * ë¹„ì§€ìˆ˜í˜•([-]ddd.ddd)ì—ì„œ ì§€ìˆ˜í˜•([-]d.dddE+dd)ìœ¼ë¡œ ë³€í™˜í•œë‹¤.
  *
  * @param[in,out] aCols
- *  ÄÃ·³ °ª ¹× ÄÃ·³ °ªÀÇ ±æÀÌ°¡ ÀúÀåµÇ¾îÀÖ´Â ±¸Á¶Ã¼.
+ *  ì»¬ëŸ¼ ê°’ ë° ì»¬ëŸ¼ ê°’ì˜ ê¸¸ì´ê°€ ì €ìž¥ë˜ì–´ìžˆëŠ” êµ¬ì¡°ì²´.
  * @param[in] aColIdx
- *  aCols ±¸Á¶Ã¼ ³»¿¡¼­ ¸î ¹øÂ° ÄÃ·³ÀÎÁö¸¦ ÁöÁ¤ÇÏ´Â ÄÃ·³ ÀÎµ¦½º.
+ *  aCols êµ¬ì¡°ì²´ ë‚´ì—ì„œ ëª‡ ë²ˆì§¸ ì»¬ëŸ¼ì¸ì§€ë¥¼ ì§€ì •í•˜ëŠ” ì»¬ëŸ¼ ì¸ë±ìŠ¤.
  */
 void iloDataFile::ConvNumericNormToExp(iloColumns *aCols, SInt aColIdx, SInt aArrayNum)
 {
@@ -1641,14 +1641,14 @@ void iloDataFile::ConvNumericNormToExp(iloColumns *aCols, SInt aColIdx, SInt aAr
     UInt   sRDigitIdx;
     UInt   sStrLen;
 
-    /* ÀÌ¹Ì Áö¼öÇüÀÌ¸é º¯È¯ ÇÊ¿ä ¾øÀ½. */
+    /* ì´ë¯¸ ì§€ìˆ˜í˜•ì´ë©´ ë³€í™˜ í•„ìš” ì—†ìŒ. */
     
     if (idlOS::strchr((SChar*)(aCols->m_Value[aColIdx]) + (aArrayNum * (SInt)aCols->mBufLen[aColIdx]), 'E') != NULL)
     {
         return;
     }
 
-    /* aCols->m_Value[aColIdx]¿¡¼­ ºÎÈ£¸¦ Á¦¿ÜÇÑ ¹®ÀÚ¿­À» sStr¿¡ ¼³Á¤. */
+    /* aCols->m_Value[aColIdx]ì—ì„œ ë¶€í˜¸ë¥¼ ì œì™¸í•œ ë¬¸ìžì—´ì„ sStrì— ì„¤ì •. */
     if (((SChar*)(aCols->m_Value[aColIdx]) + (aArrayNum * (SInt)aCols->mBufLen[aColIdx]))[0] != '-')
     {
         sStr = (SChar*)(aCols->m_Value[aColIdx]) + (aArrayNum * (SInt)aCols->mBufLen[aColIdx]);
@@ -1660,16 +1660,16 @@ void iloDataFile::ConvNumericNormToExp(iloColumns *aCols, SInt aColIdx, SInt aAr
         sStrLen = (UInt)*(aCols->m_Len[aColIdx] + aArrayNum) - 1;
     }
 
-    /* Á¤¼öºÎ°¡ 1ÀÚ¸®ÀÌ°í ¼Ò¼öºÎ°¡ ¾ø´Â °æ¿ì, º¯È¯ ÇÊ¿ä ¾øÀ½. */
+    /* ì •ìˆ˜ë¶€ê°€ 1ìžë¦¬ì´ê³  ì†Œìˆ˜ë¶€ê°€ ì—†ëŠ” ê²½ìš°, ë³€í™˜ í•„ìš” ì—†ìŒ. */
     if (sStr[1] == '\0')
     {
         return;
     }
 
-    /* 0.À¸·Î ½ÃÀÛÇÏÁö ¾Ê´Â ¼ýÀÚÀÎ °æ¿ì */
+    /* 0.ìœ¼ë¡œ ì‹œìž‘í•˜ì§€ ì•ŠëŠ” ìˆ«ìžì¸ ê²½ìš° */
     if (sStr[0] != '0')
     {
-        /* Á¤¼öºÎ°¡ 1ÀÚ¸®ÀÌ°í ¼Ò¼öºÎ°¡ ÀÖ´Â °æ¿ì, º¯È¯ ÇÊ¿ä ¾øÀ½. */
+        /* ì •ìˆ˜ë¶€ê°€ 1ìžë¦¬ì´ê³  ì†Œìˆ˜ë¶€ê°€ ìžˆëŠ” ê²½ìš°, ë³€í™˜ í•„ìš” ì—†ìŒ. */
         if (sStr[1] == '.')
         {
             return;
@@ -1677,7 +1677,7 @@ void iloDataFile::ConvNumericNormToExp(iloColumns *aCols, SInt aColIdx, SInt aAr
 
         sPeriodPtr = idlOS::strchr(sStr, '.');
 
-        /* ¼Ò¼öÁ¡ÀÌ ¾ø´Â ¼ýÀÚÀÎ °æ¿ì */
+        /* ì†Œìˆ˜ì ì´ ì—†ëŠ” ìˆ«ìžì¸ ê²½ìš° */
         if (sPeriodPtr == NULL)
         {
             sExp = (UInt)(sStrLen - 1);
@@ -1685,40 +1685,40 @@ void iloDataFile::ConvNumericNormToExp(iloColumns *aCols, SInt aColIdx, SInt aAr
             for (sRDigitIdx = sStrLen - 1; sStr[sRDigitIdx] == '0';
                  sRDigitIdx--);
 
-            /* Á¤¼öºÎÀÇ °¡Àå Å« ÀÚ¸´¼ö¸¦ Á¦¿ÜÇÑ ¸ðµç ÀÚ¸´¼ö°¡ 0ÀÎ °æ¿ì */
+            /* ì •ìˆ˜ë¶€ì˜ ê°€ìž¥ í° ìžë¦¿ìˆ˜ë¥¼ ì œì™¸í•œ ëª¨ë“  ìžë¦¿ìˆ˜ê°€ 0ì¸ ê²½ìš° */
             if (sRDigitIdx == 0)
             {
                 sStrLen = 1;
             }
-            /* Á¤¼öºÎ¿¡ 0ÀÌ ¾Æ´Ñ ÀÚ¸´¼ö°¡ µÎ °³ ÀÌ»óÀÎ °æ¿ì */
+            /* ì •ìˆ˜ë¶€ì— 0ì´ ì•„ë‹Œ ìžë¦¿ìˆ˜ê°€ ë‘ ê°œ ì´ìƒì¸ ê²½ìš° */
             else
             {
-                /* ¼Ò¼öºÎ Ãâ·Â. */
+                /* ì†Œìˆ˜ë¶€ ì¶œë ¥. */
                 (void)idlOS::memmove(sStr + 2, sStr + 1, sRDigitIdx);
 
-                /* ¼Ò¼öÁ¡ Ãâ·Â. */
+                /* ì†Œìˆ˜ì  ì¶œë ¥. */
                 sStr[1] = '.';
 
                 sStrLen = 2 + sRDigitIdx;
             }
         }
-        /* ¼Ò¼öÁ¡ÀÌ ÀÖ´Â ¼ýÀÚÀÎ °æ¿ì */
+        /* ì†Œìˆ˜ì ì´ ìžˆëŠ” ìˆ«ìžì¸ ê²½ìš° */
         else /* (sPeriodPtr != NULL) */
         {
             sExp = (UInt)((UInt)(sPeriodPtr - sStr) - 1);
 
-            /* ¼Ò¼öºÎ Ãâ·Â. */
+            /* ì†Œìˆ˜ë¶€ ì¶œë ¥. */
             (void)idlOS::memmove(sStr + 2, sStr + 1, sExp);
 
-            /* ¼Ò¼öÁ¡ Ãâ·Â. */
+            /* ì†Œìˆ˜ì  ì¶œë ¥. */
             sStr[1] = '.';
         }
 
-        /* Áö¼öºÎ Ãâ·Â. */
+        /* ì§€ìˆ˜ë¶€ ì¶œë ¥. */
         sStrLen += (UInt)idlOS::sprintf(sStr + sStrLen, "E+%"ID_UINT32_FMT,
                                         sExp);
     }
-    /* 0.À¸·Î ½ÃÀÛÇÏ´Â ¼ýÀÚÀÎ °æ¿ì */
+    /* 0.ìœ¼ë¡œ ì‹œìž‘í•˜ëŠ” ìˆ«ìžì¸ ê²½ìš° */
     else /* (sStr[0] == '0') */
     {
         sStr[1] = '0';
@@ -1732,32 +1732,32 @@ void iloDataFile::ConvNumericNormToExp(iloColumns *aCols, SInt aColIdx, SInt aAr
 
         sExp = (UInt)(sDigitIdx - 1);
 
-        /* Á¤¼öºÎ Ãâ·Â. */
+        /* ì •ìˆ˜ë¶€ ì¶œë ¥. */
         sStr[0] = sStr[sDigitIdx];
 
-        /* 0ÀÌ ¾Æ´Ñ ¼ýÀÚ°¡ 1ÀÚ¸®»ÓÀÎ °æ¿ì */
+        /* 0ì´ ì•„ë‹Œ ìˆ«ìžê°€ 1ìžë¦¬ë¿ì¸ ê²½ìš° */
         if (sStr[sDigitIdx + 1] == '\0')
         {
             sStrLen = 1;
         }
         else
         {
-            /* ¼Ò¼öÁ¡ Ãâ·Â. */
+            /* ì†Œìˆ˜ì  ì¶œë ¥. */
             sStr[1] = '.';
 
-            /* ¼Ò¼öºÎ Ãâ·Â. */
+            /* ì†Œìˆ˜ë¶€ ì¶œë ¥. */
             (void)idlOS::memmove(sStr + 2, sStr + sDigitIdx + 1,
                                  sStrLen - sDigitIdx - 1);
 
             sStrLen = (UInt)(sStrLen - sDigitIdx + 1);
         }
 
-        /* Áö¼öºÎ Ãâ·Â. */
+        /* ì§€ìˆ˜ë¶€ ì¶œë ¥. */
         sStrLen += (UInt)idlOS::sprintf(sStr + sStrLen, "E-%"ID_UINT32_FMT,
                                         sExp);
     }
 
-    /* aCols->m_Len[aColIdx]¸¦ º¯È¯µÈ ¹®ÀÚ¿­ÀÇ ±æÀÌ·Î Àç¼³Á¤. */
+    /* aCols->m_Len[aColIdx]ë¥¼ ë³€í™˜ëœ ë¬¸ìžì—´ì˜ ê¸¸ì´ë¡œ ìž¬ì„¤ì •. */
     if (((SChar *)aCols->m_Value[aColIdx])[0] != '-')
     {
         *(aCols->m_Len[aColIdx] + aArrayNum) = (SQLLEN)sStrLen;
@@ -1772,11 +1772,11 @@ void iloDataFile::ConvNumericNormToExp(iloColumns *aCols, SInt aColIdx, SInt aAr
 /**
  * GetToken.
  *
- * µ¥ÀÌÅÍ ÆÄÀÏ·ÎºÎÅÍ ÇÑ °³ÀÇ ÅäÅ«À» ÀÐ±â À§ÇÑ ÇÔ¼öÀÌ´Ù.
- * ÅäÅ«ÀÇ Á¾·ù¿¡´Â TEOF, TFIELD_TERM, TROW_TERM, TVALUE°¡ ÀÖÀ¸¸ç,
- * º» ÇÔ¼öÀÇ ¸®ÅÏ°ªÀº ÀÌ °ªµé Áß ÇÏ³ª°¡ µÈ´Ù.
- * ¸®ÅÏ°ªÀÌ TVALUEÀÏ °æ¿ì m_TokenValue, mTokenLen¿¡ °¢°¢
- * ÅäÅ« ¹®ÀÚ¿­°ú ¹®ÀÚ¿­ÀÇ ±æÀÌ°¡ ¼³Á¤µÈ´Ù.
+ * ë°ì´í„° íŒŒì¼ë¡œë¶€í„° í•œ ê°œì˜ í† í°ì„ ì½ê¸° ìœ„í•œ í•¨ìˆ˜ì´ë‹¤.
+ * í† í°ì˜ ì¢…ë¥˜ì—ëŠ” TEOF, TFIELD_TERM, TROW_TERM, TVALUEê°€ ìžˆìœ¼ë©°,
+ * ë³¸ í•¨ìˆ˜ì˜ ë¦¬í„´ê°’ì€ ì´ ê°’ë“¤ ì¤‘ í•˜ë‚˜ê°€ ëœë‹¤.
+ * ë¦¬í„´ê°’ì´ TVALUEì¼ ê²½ìš° m_TokenValue, mTokenLenì— ê°ê°
+ * í† í° ë¬¸ìžì—´ê³¼ ë¬¸ìžì—´ì˜ ê¸¸ì´ê°€ ì„¤ì •ëœë‹¤.
  */
 EDataToken iloDataFile::GetTokenFromCBuff( ALTIBASE_ILOADER_HANDLE aHandle )
 {
@@ -1794,9 +1794,9 @@ EDataToken iloDataFile::GetTokenFromCBuff( ALTIBASE_ILOADER_HANDLE aHandle )
 
     IDE_TEST_RAISE(m_SetNextToken == SQL_TRUE, NextTokenExist);
 
-    /* m_TokenValue ¹öÆÛ¿¡´Â °ª°ú ±¸ºÐÀÚ°¡ µ¿½Ã¿¡ ÀúÀåµÉ ¼ö ÀÖÀ¸¹Ç·Î,
-     * m_TokenValue ¹öÆÛ Å©±â´Â °ªÀÇ ÃÖ´ë Å©±â + ±¸ºÐÀÚ ÃÖ´ë Å©±â ¹×
-     * NULL Á¾°á¹®ÀÚ¸¦ À§ÇÑ °ø°£À¸·Î ±¸¼ºµÈ´Ù. */
+    /* m_TokenValue ë²„í¼ì—ëŠ” ê°’ê³¼ êµ¬ë¶„ìžê°€ ë™ì‹œì— ì €ìž¥ë  ìˆ˜ ìžˆìœ¼ë¯€ë¡œ,
+     * m_TokenValue ë²„í¼ í¬ê¸°ëŠ” ê°’ì˜ ìµœëŒ€ í¬ê¸° + êµ¬ë¶„ìž ìµœëŒ€ í¬ê¸° ë°
+     * NULL ì¢…ê²°ë¬¸ìžë¥¼ ìœ„í•œ ê³µê°„ìœ¼ë¡œ êµ¬ì„±ëœë‹¤. */
     while (mTokenLen < (mTokenMaxSize - 1) )
     {
         sRet = ReadDataFromCBuff( sHandle, &sChr );    //BUG-22434
@@ -1804,7 +1804,7 @@ EDataToken iloDataFile::GetTokenFromCBuff( ALTIBASE_ILOADER_HANDLE aHandle )
         //BUG-22513
         sTmp = (UChar)sChr;
         
-        mDataFileRead++;         //LOB ÆÄÀÏÀÏ °æ¿ì »ç¿ëµÇ¸ç, single ThreadÃ³¸®ÀÌ¹Ç·Î Mutex lockÀÌ ÇÊ¿ä¾øÀ½.. 
+        mDataFileRead++;         //LOB íŒŒì¼ì¼ ê²½ìš° ì‚¬ìš©ë˜ë©°, single Threadì²˜ë¦¬ì´ë¯€ë¡œ Mutex lockì´ í•„ìš”ì—†ìŒ.. 
 
         m_TokenValue[mTokenLen++] = (SChar)sChr;
 
@@ -1913,10 +1913,10 @@ EDataToken iloDataFile::GetCSVTokenFromCBuff( ALTIBASE_ILOADER_HANDLE  aHandle,
     SChar  sEnclosing;
     SChar  sFieldTerm;
     SChar  sChr;
-    /* BUG-29779: csvÀÇ rowtermÀ» \r\nÀ¸·Î ÁöÁ¤ÇÏ´Â ±â´É */
+    /* BUG-29779: csvì˜ rowtermì„ \r\nìœ¼ë¡œ ì§€ì •í•˜ëŠ” ê¸°ëŠ¥ */
     SChar *sRowTerm;
     SChar  sRowTermBK[MAX_SEPERATOR_LEN];   //temparary space for ensuring rowterm.
-    SInt   sRowTermInd;                     //sRowTermBKÀÇ index
+    SInt   sRowTermInd;                     //sRowTermBKì˜ index
     SInt   sReadresult = 0;
     UInt   sMaxTokenSize;
     UInt   sMaxErrorTokenSize;
@@ -1926,7 +1926,7 @@ EDataToken iloDataFile::GetCSVTokenFromCBuff( ALTIBASE_ILOADER_HANDLE  aHandle,
     iloaderHandle *sHandle = (iloaderHandle *) aHandle;
     idBool sSkipReadData = ID_FALSE;
     eReadState sState;
-    eReadState sPreState;                   // ÀÌÀü»óÅÂÀúÀå
+    eReadState sPreState;                   // ì´ì „ìƒíƒœì €ìž¥
 
     sState    = stStart;
     sPreState = stError;
@@ -1953,7 +1953,7 @@ EDataToken iloDataFile::GetCSVTokenFromCBuff( ALTIBASE_ILOADER_HANDLE  aHandle,
 
     while ( sMaxTokenSize && sMaxErrorTokenSize )
     {
-        /* BUG-29779: csvÀÇ rowtermÀ» \r\nÀ¸·Î ÁöÁ¤ÇÏ´Â ±â´É */
+        /* BUG-29779: csvì˜ rowtermì„ \r\nìœ¼ë¡œ ì§€ì •í•˜ëŠ” ê¸°ëŠ¥ */
         if( sSkipReadData == ID_TRUE )
         {
             sSkipReadData = ID_FALSE;
@@ -1966,7 +1966,7 @@ EDataToken iloDataFile::GetCSVTokenFromCBuff( ALTIBASE_ILOADER_HANDLE  aHandle,
             }
 
             //PROJ-1714
-            //Buffer¿¡¼­ ÀÐÀº Byte¼ö.. LOB ColumnÀ» UploadÇÒ °æ¿ì¿¡ »ç¿ëµÊ.
+            //Bufferì—ì„œ ì½ì€ Byteìˆ˜.. LOB Columnì„ Uploadí•  ê²½ìš°ì— ì‚¬ìš©ë¨.
             mDataFileRead++;
             /* if bad or log option is set, save an entire token value */
             if ( sBadorLog )
@@ -1993,8 +1993,8 @@ EDataToken iloDataFile::GetCSVTokenFromCBuff( ALTIBASE_ILOADER_HANDLE  aHandle,
                 sState = stCollect;
                 sSkipReadData = ID_TRUE;
                 break;
-            /* BUG-29779: csvÀÇ rowtermÀ» \r\nÀ¸·Î ÁöÁ¤ÇÏ´Â ±â´É */
-            // RowtermÀÌ stringÀ¸·Î ¹Ù²î¾î rowtermÀÌ ¸Â´ÂÁö¸¦ Ã³¸®ÇÏ±â À§ÇÑ »óÅÂ¸¦ Ãß°¡ÇÔ.
+            /* BUG-29779: csvì˜ rowtermì„ \r\nìœ¼ë¡œ ì§€ì •í•˜ëŠ” ê¸°ëŠ¥ */
+            // Rowtermì´ stringìœ¼ë¡œ ë°”ë€Œì–´ rowtermì´ ë§žëŠ”ì§€ë¥¼ ì²˜ë¦¬í•˜ê¸° ìœ„í•œ ìƒíƒœë¥¼ ì¶”ê°€í•¨.
             case stRowTerm:
                 if ( sRowTermInd < sRowTermLen && sChr == sRowTerm[sRowTermInd] )
                 {
@@ -2040,7 +2040,7 @@ EDataToken iloDataFile::GetCSVTokenFromCBuff( ALTIBASE_ILOADER_HANDLE  aHandle,
                             default:
                                 break;
                         }
-                        // »ç½Ç ¾Æ·¡ µÎ¶óÀÎÀº Å»¼ö ¾øÀ½.
+                        // ì‚¬ì‹¤ ì•„ëž˜ ë‘ë¼ì¸ì€ íƒˆìˆ˜ ì—†ìŒ.
                         sState      = sPreState;
                         sRowTermInd = 0;
                     }
@@ -2203,7 +2203,7 @@ EDataToken iloDataFile::GetCSVTokenFromCBuff( ALTIBASE_ILOADER_HANDLE  aHandle,
 
     IDE_EXCEPTION( wrong_CSVformat_error );
     {
-        // BUG-24898 iloader ÆÄ½Ì¿¡·¯ »ó¼¼È­
+        // BUG-24898 iloader íŒŒì‹±ì—ëŸ¬ ìƒì„¸í™”
         uteSetErrorCode( sHandle->mErrorMgr, utERR_ABORT_Invalid_CSV_File_Format_Error,
                         aColName,
                         m_TokenValue);
@@ -2231,22 +2231,22 @@ EDataToken iloDataFile::GetCSVTokenFromCBuff( ALTIBASE_ILOADER_HANDLE  aHandle,
 /**
  * GetLOBToken.
  *
- * µ¥ÀÌÅÍ ÆÄÀÏ·ÎºÎÅÍ LOB µ¥ÀÌÅÍ¸¦ ÀÐ±â À§ÇÑ ÇÔ¼öÀÌ´Ù.
- * LOBÀº Å©±â°¡ Å©¹Ç·Î
- * µ¥ÀÌÅÍ ÆÄÀÏÀÇ LOB µ¥ÀÌÅÍ¸¦ ¸Þ¸ð¸® ¹öÆÛ·Î ÀÐ¾îµéÀÌ´Â °ÍÀÌ ¾Æ´Ï¶ó
- * LOB µ¥ÀÌÅÍÀÇ ½ÃÀÛ À§Ä¡, ±æÀÌ¸¸ ±¸ÇÏ¿© ¸®ÅÏÇÑ´Ù.
- * ¾Ë°í¸®Áò ÀÚÃ¼´Â GetToken()°ú À¯»çÇÏ´Ù.
- * ¸®ÅÏ°ªÀÌ TVALUEÀÏ ¶§¸¸ Ãâ·Â ÀÎÀÚµéÀÌ ¼³Á¤µÈ´Ù.
+ * ë°ì´í„° íŒŒì¼ë¡œë¶€í„° LOB ë°ì´í„°ë¥¼ ì½ê¸° ìœ„í•œ í•¨ìˆ˜ì´ë‹¤.
+ * LOBì€ í¬ê¸°ê°€ í¬ë¯€ë¡œ
+ * ë°ì´í„° íŒŒì¼ì˜ LOB ë°ì´í„°ë¥¼ ë©”ëª¨ë¦¬ ë²„í¼ë¡œ ì½ì–´ë“¤ì´ëŠ” ê²ƒì´ ì•„ë‹ˆë¼
+ * LOB ë°ì´í„°ì˜ ì‹œìž‘ ìœ„ì¹˜, ê¸¸ì´ë§Œ êµ¬í•˜ì—¬ ë¦¬í„´í•œë‹¤.
+ * ì•Œê³ ë¦¬ì¦˜ ìžì²´ëŠ” GetToken()ê³¼ ìœ ì‚¬í•˜ë‹¤.
+ * ë¦¬í„´ê°’ì´ TVALUEì¼ ë•Œë§Œ ì¶œë ¥ ì¸ìžë“¤ì´ ì„¤ì •ëœë‹¤.
  *
  * @param[out] aLOBPhyOffs
- *  µ¥ÀÌÅÍ ÆÄÀÏ³»¿¡¼­ LOB µ¥ÀÌÅÍÀÇ ½ÃÀÛ À§Ä¡.
+ *  ë°ì´í„° íŒŒì¼ë‚´ì—ì„œ LOB ë°ì´í„°ì˜ ì‹œìž‘ ìœ„ì¹˜.
  * @param[out] aLOBPhyLen
- *  µ¥ÀÌÅÍ ÆÄÀÏ³»¿¡¼­ LOB µ¥ÀÌÅÍÀÇ ±æÀÌ.
- *  "¹°¸®Àû"ÀÇ ÀÇ¹Ì´Â Windows ÇÃ·§ÆûÀÇ °æ¿ì
- *  "\n"ÀÌ ÆÄÀÏ¿¡´Â "\r\n"À¸·Î ÀúÀåµÇ¾î 2¹ÙÀÌÆ®·Î Ä«¿îÆ®µÊÀ» ÀÇ¹ÌÇÑ´Ù.
+ *  ë°ì´í„° íŒŒì¼ë‚´ì—ì„œ LOB ë°ì´í„°ì˜ ê¸¸ì´.
+ *  "ë¬¼ë¦¬ì "ì˜ ì˜ë¯¸ëŠ” Windows í”Œëž«í¼ì˜ ê²½ìš°
+ *  "\n"ì´ íŒŒì¼ì—ëŠ” "\r\n"ìœ¼ë¡œ ì €ìž¥ë˜ì–´ 2ë°”ì´íŠ¸ë¡œ ì¹´ìš´íŠ¸ë¨ì„ ì˜ë¯¸í•œë‹¤.
  * @param[out] aLOBLen
- *  LOB µ¥ÀÌÅÍÀÇ ±æÀÌ(¹°¸®Àû ±æÀÌ ¾Æ´Ô).
- *  "\n"Àº 1¹ÙÀÌÆ®·Î Ä«¿îÆ®µÈ´Ù.
+ *  LOB ë°ì´í„°ì˜ ê¸¸ì´(ë¬¼ë¦¬ì  ê¸¸ì´ ì•„ë‹˜).
+ *  "\n"ì€ 1ë°”ì´íŠ¸ë¡œ ì¹´ìš´íŠ¸ëœë‹¤.
  */
 EDataToken iloDataFile::GetLOBToken( ALTIBASE_ILOADER_HANDLE   aHandle,
                                      ULong                    *aLOBPhyOffs,
@@ -2262,11 +2262,11 @@ EDataToken iloDataFile::GetLOBToken( ALTIBASE_ILOADER_HANDLE   aHandle,
     UInt  sRTMatchLen = 0;
     SInt  sTmp;
     /* BUG-21064 : CLOB type CSV up/download error */
-    /* BUG-30409 : CLOB type data¸¦ upload½Ã csv Æ÷¸äº¯È¯ÀÌ ¿Ç¹Ù·Î µÇÁö ¾ÊÀ½. */
+    /* BUG-30409 : CLOB type dataë¥¼ uploadì‹œ csv í¬ë©§ë³€í™˜ì´ ì˜³ë°”ë¡œ ë˜ì§€ ì•ŠìŒ. */
     iloBool        sCSVnoLOBFile;
-    // ¹Ù·ÎÀÌÀü "¹®ÀÚ°¡ ¿Ô¾ú´ÂÁö¸¦ ¾Ë·ÁÁÖ´Â º¯¼ö.
+    // ë°”ë¡œì´ì „ "ë¬¸ìžê°€ ì™”ì—ˆëŠ”ì§€ë¥¼ ì•Œë ¤ì£¼ëŠ” ë³€ìˆ˜.
     iloBool        sPreSCVEnclose;
-    // ÇöÀç enclosing("...")¾ÈÀÎÁö ¹ÛÀÎÁö¸¦ ¾Ë·ÁÁÖ´Â º¯¼ö.
+    // í˜„ìž¬ enclosing("...")ì•ˆì¸ì§€ ë°–ì¸ì§€ë¥¼ ì•Œë ¤ì£¼ëŠ” ë³€ìˆ˜.
     iloBool        sCSVEnclose;
     iloaderHandle *sHandle;
     sHandle        = (iloaderHandle *) aHandle;
@@ -2289,36 +2289,36 @@ EDataToken iloDataFile::GetLOBToken( ALTIBASE_ILOADER_HANDLE   aHandle,
         (*aLOBPhyLen)++;
         (*aLOBLen)++;
 
-        /* BUG-30409 : CLOB type data¸¦ upload½Ã csv Æ÷¸äº¯È¯ÀÌ ¿Ç¹Ù·Î µÇÁö ¾ÊÀ½. */
-        // CSV ÄÃ·³ÀÇ ½ÃÀÛ°ú ³¡À» ¾Ë¾Æ³»¾ßÇÑ´Ù.
-        // 1. Ã³À½¿¡ " °¡ ¿À¸é ½ÃÀÛÀÌ´Ù.
-        // 2. "¾ÈÀÇ \nÀº ÄÃ·³dataÀÏ »Ó, row termÀº ¾Æ´Ï´Ù.
-        // 3. "¾È¿¡ "°¡ ¿À¸é ´ÙÀ½¿¡ ¾î¶² ¹®ÀÚ°¡ ¿À´À³Ä¿¡ µû¶ó ÄÃ·³ÀÇ ³¡ÀÎÁö°¡ °áÁ¤µÈ´Ù.
-        //    - "¾È¿¡ "°¡ ¿ÂµÚ ´Ù½Ã "°¡¿À¸é ÄÃ·³ dataÀÏ »ÓÀÌ´Ù.
-        //    - "¾È¿¡ "°¡ ¿ÂµÚ "¸¦ Á¦¿ÜÇÑ ´Ù¸¥¹®ÀÚ°¡¿À¸é ÄÃ·³ÀÇ ³¡ÀÌ´Ù.
+        /* BUG-30409 : CLOB type dataë¥¼ uploadì‹œ csv í¬ë©§ë³€í™˜ì´ ì˜³ë°”ë¡œ ë˜ì§€ ì•ŠìŒ. */
+        // CSV ì»¬ëŸ¼ì˜ ì‹œìž‘ê³¼ ëì„ ì•Œì•„ë‚´ì•¼í•œë‹¤.
+        // 1. ì²˜ìŒì— " ê°€ ì˜¤ë©´ ì‹œìž‘ì´ë‹¤.
+        // 2. "ì•ˆì˜ \nì€ ì»¬ëŸ¼dataì¼ ë¿, row termì€ ì•„ë‹ˆë‹¤.
+        // 3. "ì•ˆì— "ê°€ ì˜¤ë©´ ë‹¤ìŒì— ì–´ë–¤ ë¬¸ìžê°€ ì˜¤ëŠëƒì— ë”°ë¼ ì»¬ëŸ¼ì˜ ëì¸ì§€ê°€ ê²°ì •ëœë‹¤.
+        //    - "ì•ˆì— "ê°€ ì˜¨ë’¤ ë‹¤ì‹œ "ê°€ì˜¤ë©´ ì»¬ëŸ¼ dataì¼ ë¿ì´ë‹¤.
+        //    - "ì•ˆì— "ê°€ ì˜¨ë’¤ "ë¥¼ ì œì™¸í•œ ë‹¤ë¥¸ë¬¸ìžê°€ì˜¤ë©´ ì»¬ëŸ¼ì˜ ëì´ë‹¤.
         if( sCSVnoLOBFile == ILO_TRUE )
         {
             if( sChr == sHandle->mProgOption->mCSVEnclosing )
             {
                 if( i == 0 )
-                {   // Ã³À½¿¡ " °¡ ¿À¸é ÄÃ·³ÀÇ ½ÃÀÛÀÌ´Ù.
+                {   // ì²˜ìŒì— " ê°€ ì˜¤ë©´ ì»¬ëŸ¼ì˜ ì‹œìž‘ì´ë‹¤.
                     sCSVEnclose = ILO_TRUE;
                     continue;
                 }
                 else
                 {
-                    // enclosingµÇ¾îÀÖÁö ¾ÊÀºµ¥ "°¡ ¿Ô´Ù.
+                    // enclosingë˜ì–´ìžˆì§€ ì•Šì€ë° "ê°€ ì™”ë‹¤.
                     IDE_TEST_RAISE( sCSVEnclose != ILO_TRUE, WrongCSVFormat);
 
                     if( sPreSCVEnclose == ILO_TRUE )
                     {
-                        // "¾È¿¡ "°¡ ¿ÂµÚ ´Ù½Ã "°¡¿À¸é ÄÃ·³ dataÀÏ »ÓÀÌ´Ù.
+                        // "ì•ˆì— "ê°€ ì˜¨ë’¤ ë‹¤ì‹œ "ê°€ì˜¤ë©´ ì»¬ëŸ¼ dataì¼ ë¿ì´ë‹¤.
                         sPreSCVEnclose = ILO_FALSE;
                         continue;
                     }
                     else
                     {
-                        // "¾È¿¡ "°¡ ¿Ô´Ù
+                        // "ì•ˆì— "ê°€ ì™”ë‹¤
                         sPreSCVEnclose = ILO_TRUE;
                         continue;
                     }
@@ -2328,7 +2328,7 @@ EDataToken iloDataFile::GetLOBToken( ALTIBASE_ILOADER_HANDLE   aHandle,
             {
                 if( sPreSCVEnclose == ILO_TRUE )
                 {
-                    // "¾È¿¡ "°¡ ¿ÂµÚ "¸¦ Á¦¿ÜÇÑ ´Ù¸¥¹®ÀÚ°¡¿À¸é ÄÃ·³ÀÇ ³¡ÀÌ´Ù.
+                    // "ì•ˆì— "ê°€ ì˜¨ë’¤ "ë¥¼ ì œì™¸í•œ ë‹¤ë¥¸ë¬¸ìžê°€ì˜¤ë©´ ì»¬ëŸ¼ì˜ ëì´ë‹¤.
                     sCSVEnclose = ILO_FALSE;
                 }
                 else
@@ -2385,7 +2385,7 @@ EDataToken iloDataFile::GetLOBToken( ALTIBASE_ILOADER_HANDLE   aHandle,
             }
         }
 
-        // csv Æ÷¸äÀÏ°æ¿ì ¾Æ·¡ ºÎºÐÀº ¹«½ÃµÈ´Ù.
+        // csv í¬ë©§ì¼ê²½ìš° ì•„ëž˜ ë¶€ë¶„ì€ ë¬´ì‹œëœë‹¤.
         if (m_SetEnclosing &&
             (sEnCnt == 1 || (*aLOBLen) == (ULong)sEnMatchLen + 1))
         {
@@ -2434,8 +2434,8 @@ EDataToken iloDataFile::GetLOBToken( ALTIBASE_ILOADER_HANDLE   aHandle,
     }
     IDE_EXCEPTION(WrongCSVFormat);
     {
-        // csv formatÀÌ ¾Æ´Ï´Ù.
-        // ¿Ç¹Ù·Î data°¡ ÀÔ·ÂµÇÁö ¾ÊÀ» ¼ö ÀÖ´Ù.
+        // csv formatì´ ì•„ë‹ˆë‹¤.
+        // ì˜³ë°”ë¡œ dataê°€ ìž…ë ¥ë˜ì§€ ì•Šì„ ìˆ˜ ìžˆë‹¤.
         return TERROR;
     }
     IDE_EXCEPTION_END;
@@ -2479,7 +2479,7 @@ SInt iloDataFile::ReadOneRecordFromCBuff( ALTIBASE_ILOADER_HANDLE  aHandle,
     SInt j = 0;
     SInt sMsSql;
     SInt sRC = READ_SUCCESS;
-    IDE_RC sRC_loadFromOutFile;   //PROJ-2030, CT_CASE-3020 CHAR outfile Áö¿ø
+    IDE_RC sRC_loadFromOutFile;   //PROJ-2030, CT_CASE-3020 CHAR outfile ì§€ì›
     IDE_RC sRC_SetAttrValue;
     SChar sColName[MAX_OBJNAME_LEN];
     
@@ -2507,7 +2507,7 @@ SInt iloDataFile::ReadOneRecordFromCBuff( ALTIBASE_ILOADER_HANDLE  aHandle,
     
     if (i < aTableInfo->GetAttrCount())
     {
-        /* ÄÃ·³ °ª ÀÐÀ½. */
+        /* ì»¬ëŸ¼ ê°’ ì½ìŒ. */
         if ( ((aTableInfo->GetAttrType(i) != ISP_ATTR_CLOB) &&
               (aTableInfo->GetAttrType(i) != ISP_ATTR_BLOB))
             ||
@@ -2531,10 +2531,10 @@ SInt iloDataFile::ReadOneRecordFromCBuff( ALTIBASE_ILOADER_HANDLE  aHandle,
                                   &aTableInfo->mLOBLen[i][aArrayCount] );
         }
     }
-    /* ÄÃ·³ skip¸¸À¸·Î ´õ ÀÌ»ó ÀÐ¾îµéÀÏ ÄÃ·³ÀÌ ¾ø´Â °æ¿ì */
+    /* ì»¬ëŸ¼ skipë§Œìœ¼ë¡œ ë” ì´ìƒ ì½ì–´ë“¤ì¼ ì»¬ëŸ¼ì´ ì—†ëŠ” ê²½ìš° */
     else /* (i == pTableInfo->GetAttrCount()) */
     {
-        /* µ¥ÀÌÅÍ ÆÄÀÏÀÇ ÀÌ¹ø Çà¿¡¼­ ³²Àº µ¥ÀÌÅÍ¸¦ Çà ±¸ºÐÀÚ°¡ ³ª¿Ã ¶§±îÁö ¹«½Ã */
+        /* ë°ì´í„° íŒŒì¼ì˜ ì´ë²ˆ í–‰ì—ì„œ ë‚¨ì€ ë°ì´í„°ë¥¼ í–‰ êµ¬ë¶„ìžê°€ ë‚˜ì˜¬ ë•Œê¹Œì§€ ë¬´ì‹œ */
         do
         {
             /* TASK-2657 */
@@ -2583,10 +2583,10 @@ SInt iloDataFile::ReadOneRecordFromCBuff( ALTIBASE_ILOADER_HANDLE  aHandle,
                  (aTableInfo->GetAttrType(i) != ISP_ATTR_BLOB) )
             {
                 
-                //PROJ-2030, CT_CASE-3020 CHAR outfile Áö¿ø
-                //loadFromOutFile() ÀÌ ¼º°øÇÏ´Â °æ¿ì¿¡¸¸ SetAttrValue() ¸¦ ½ÇÇàÇÑ´Ù.
-                //loadFromOutFile() ¶Ç´Â SetAttrValue°¡ ½ÇÆÐÇÏ´Â °æ¿ì´Â ¿¡·¯Ä«¿îÆ®ÇÏ°í, 
-                //errÈ­ÀÏ¿¡ ±â·ÏÇÑ´Ù.
+                //PROJ-2030, CT_CASE-3020 CHAR outfile ì§€ì›
+                //loadFromOutFile() ì´ ì„±ê³µí•˜ëŠ” ê²½ìš°ì—ë§Œ SetAttrValue() ë¥¼ ì‹¤í–‰í•œë‹¤.
+                //loadFromOutFile() ë˜ëŠ” SetAttrValueê°€ ì‹¤íŒ¨í•˜ëŠ” ê²½ìš°ëŠ” ì—ëŸ¬ì¹´ìš´íŠ¸í•˜ê³ , 
+                //errí™”ì¼ì— ê¸°ë¡í•œë‹¤.
                 sRC_loadFromOutFile = IDE_SUCCESS;
                 sRC_SetAttrValue = IDE_SUCCESS;
 
@@ -2597,7 +2597,7 @@ SInt iloDataFile::ReadOneRecordFromCBuff( ALTIBASE_ILOADER_HANDLE  aHandle,
                 
                 if (sRC_loadFromOutFile == IDE_SUCCESS)
                 {
-                    /* °ª ÀúÀåÇØµÒ. */
+                    /* ê°’ ì €ìž¥í•´ë‘ . */
                     sRC_SetAttrValue = aTableInfo->SetAttrValue( sHandle,
                                                                  i,
                                                                  aArrayCount,
@@ -2610,7 +2610,7 @@ SInt iloDataFile::ReadOneRecordFromCBuff( ALTIBASE_ILOADER_HANDLE  aHandle,
                 if ( (sRC_loadFromOutFile != IDE_SUCCESS) || (sRC_SetAttrValue != IDE_SUCCESS) )
                 {
                     /* BUG - 18804 */
-                    /* bad or log optionÀÌ ¸í½Ã µÅÀÖÀ»°æ¿ì failµÈ ÇÊµå°ªÀ» mAttrFail[ i ]¿¡ ÀúÀåÇÔ */
+                    /* bad or log optionì´ ëª…ì‹œ ë¼ìžˆì„ê²½ìš° failëœ í•„ë“œê°’ì„ mAttrFail[ i ]ì— ì €ìž¥í•¨ */
                     if( sHandle->mProgOption->m_bExist_bad || 
                             sHandle->mProgOption->m_bExist_log || (sHandle->mLogCallback != NULL))
                     {
@@ -2624,9 +2624,9 @@ SInt iloDataFile::ReadOneRecordFromCBuff( ALTIBASE_ILOADER_HANDLE  aHandle,
                                                               != IDE_SUCCESS);
                         }
                         // proj1778 nchar
-                        // utf16 nchar dataÃ³¸®¸¦ À§ÇØ¼­
-                        // no csv¿¡¼­µµ, sprintf¸¦ »ç¿ë¾ÈÇÏ°í memcpyÇÏµµ·Ï ¼öÁ¤
-                        // ref) no csvÀÎ °æ¿ì mErrorToken À» »ç¿ëÇÏÁö ¾ÊÀ½
+                        // utf16 nchar dataì²˜ë¦¬ë¥¼ ìœ„í•´ì„œ
+                        // no csvì—ì„œë„, sprintfë¥¼ ì‚¬ìš©ì•ˆí•˜ê³  memcpyí•˜ë„ë¡ ìˆ˜ì •
+                        // ref) no csvì¸ ê²½ìš° mErrorToken ì„ ì‚¬ìš©í•˜ì§€ ì•ŠìŒ
                         else
                         {
                             IDE_TEST(aTableInfo->SetAttrFail( sHandle,
@@ -2642,7 +2642,7 @@ SInt iloDataFile::ReadOneRecordFromCBuff( ALTIBASE_ILOADER_HANDLE  aHandle,
 
             else if (mUseLOBFileOpt == ILO_TRUE)
             {
-                /* LOB indicator¸¦ ºÐ¼®ÇÏ¿© ¿ÀÇÁ¼Â°ú ±æÀÌ¸¦ ¾òÀ½. */
+                /* LOB indicatorë¥¼ ë¶„ì„í•˜ì—¬ ì˜¤í”„ì…‹ê³¼ ê¸¸ì´ë¥¼ ì–»ìŒ. */
                 if (AnalLOBIndicator(&aTableInfo->mLOBPhyOffs[i][aArrayCount],
                                      &aTableInfo->mLOBPhyLen[i][aArrayCount])
                     != IDE_SUCCESS)
@@ -2652,15 +2652,15 @@ SInt iloDataFile::ReadOneRecordFromCBuff( ALTIBASE_ILOADER_HANDLE  aHandle,
             }
             else
             {
-                /* ÄÃ·³ ÃÖ´ë ±æÀÌ ³Ñ¾î¼­´ÂÁö °Ë»ç. */
+                /* ì»¬ëŸ¼ ìµœëŒ€ ê¸¸ì´ ë„˜ì–´ì„œëŠ”ì§€ ê²€ì‚¬. */
                 if (aTableInfo->GetAttrType(i) == ISP_ATTR_CLOB)
                 {
                     if (aTableInfo->mLOBLen[i][aArrayCount]
                         > ID_ULONG(0xFFFFFFFF))
                     {
-                        // BUG-24823 iloader ¿¡¼­ ÆÄÀÏ¶óÀÎÀ» ¿¡·¯¸Þ½ÃÁö·Î Ãâ·ÂÇÏ°í ÀÖ¾î¼­ diff °¡ ¹ß»ýÇÕ´Ï´Ù.
-                        // ÆÄÀÏ¸í°ú ¶óÀÎ¼ö¸¦ Ãâ·ÂÇÏ´Â ºÎºÐÀ» Á¦°ÅÇÕ´Ï´Ù.
-                        // BUG-24898 iloader ÆÄ½Ì¿¡·¯ »ó¼¼È­
+                        // BUG-24823 iloader ì—ì„œ íŒŒì¼ë¼ì¸ì„ ì—ëŸ¬ë©”ì‹œì§€ë¡œ ì¶œë ¥í•˜ê³  ìžˆì–´ì„œ diff ê°€ ë°œìƒí•©ë‹ˆë‹¤.
+                        // íŒŒì¼ëª…ê³¼ ë¼ì¸ìˆ˜ë¥¼ ì¶œë ¥í•˜ëŠ” ë¶€ë¶„ì„ ì œê±°í•©ë‹ˆë‹¤.
+                        // BUG-24898 iloader íŒŒì‹±ì—ëŸ¬ ìƒì„¸í™”
                         uteSetErrorCode( sHandle->mErrorMgr,
                                         utERR_ABORT_Token_Value_Range_Error,
                                         0,
@@ -2675,9 +2675,9 @@ SInt iloDataFile::ReadOneRecordFromCBuff( ALTIBASE_ILOADER_HANDLE  aHandle,
                     if (aTableInfo->mLOBLen[i][aArrayCount]
                         > ID_ULONG(0x1FFFFFFFE))
                     {
-                        // BUG-24823 iloader ¿¡¼­ ÆÄÀÏ¶óÀÎÀ» ¿¡·¯¸Þ½ÃÁö·Î Ãâ·ÂÇÏ°í ÀÖ¾î¼­ diff °¡ ¹ß»ýÇÕ´Ï´Ù.
-                        // ÆÄÀÏ¸í°ú ¶óÀÎ¼ö¸¦ Ãâ·ÂÇÏ´Â ºÎºÐÀ» Á¦°ÅÇÕ´Ï´Ù.
-                        // BUG-24898 iloader ÆÄ½Ì¿¡·¯ »ó¼¼È­
+                        // BUG-24823 iloader ì—ì„œ íŒŒì¼ë¼ì¸ì„ ì—ëŸ¬ë©”ì‹œì§€ë¡œ ì¶œë ¥í•˜ê³  ìžˆì–´ì„œ diff ê°€ ë°œìƒí•©ë‹ˆë‹¤.
+                        // íŒŒì¼ëª…ê³¼ ë¼ì¸ìˆ˜ë¥¼ ì¶œë ¥í•˜ëŠ” ë¶€ë¶„ì„ ì œê±°í•©ë‹ˆë‹¤.
+                        // BUG-24898 iloader íŒŒì‹±ì—ëŸ¬ ìƒì„¸í™”
                         uteSetErrorCode( sHandle->mErrorMgr,
                                         utERR_ABORT_Token_Value_Range_Error,
                                         0,
@@ -2689,7 +2689,7 @@ SInt iloDataFile::ReadOneRecordFromCBuff( ALTIBASE_ILOADER_HANDLE  aHandle,
                 }
             }
 
-            /* ÄÃ·³ skip */
+            /* ì»¬ëŸ¼ skip */
             if ( i+1 < aTableInfo->GetAttrCount() &&
                  aTableInfo->GetAttrType(i+1) == ISP_ATTR_TIMESTAMP &&
                  sHandle->mParser.mAddFlag == ILO_TRUE )
@@ -2703,7 +2703,7 @@ SInt iloDataFile::ReadOneRecordFromCBuff( ALTIBASE_ILOADER_HANDLE  aHandle,
             }
             else
             {
-                /* °ª¿¡ ÀÌ¾îÁö´Â ÇÊµå ±¸ºÐÀÚ, Çà ±¸ºÐÀÚ¸¦ ÀÐÀ½. */
+                /* ê°’ì— ì´ì–´ì§€ëŠ” í•„ë“œ êµ¬ë¶„ìž, í–‰ êµ¬ë¶„ìžë¥¼ ì½ìŒ. */
                 eToken = GetTokenFromCBuff(sHandle);
             }
 
@@ -2817,7 +2817,7 @@ SInt iloDataFile::ReadOneRecordFromCBuff( ALTIBASE_ILOADER_HANDLE  aHandle,
 
         if (i < aTableInfo->GetAttrCount()-1)
         {
-            /* ÄÃ·³ °ª ÀÐÀ½. */
+            /* ì»¬ëŸ¼ ê°’ ì½ìŒ. */
             if ((aTableInfo->GetAttrType(i + 1) != ISP_ATTR_CLOB &&
                  aTableInfo->GetAttrType(i + 1) != ISP_ATTR_BLOB)
                 ||
@@ -2844,11 +2844,11 @@ SInt iloDataFile::ReadOneRecordFromCBuff( ALTIBASE_ILOADER_HANDLE  aHandle,
     }
 
     aTableInfo->SetReadCount(i, aArrayCount);
-    mLOBFileColumnNum = 0;          //BUG-24583 : ´ÙÀ½¿¡¼­ ½ÇÁ¦ LOB FileÀ» Open ÇÏ±âÀ§ÇØ ÃÊ±âÈ­ ÇÑ´Ù.
+    mLOBFileColumnNum = 0;          //BUG-24583 : ë‹¤ìŒì—ì„œ ì‹¤ì œ LOB Fileì„ Open í•˜ê¸°ìœ„í•´ ì´ˆê¸°í™” í•œë‹¤.
 
-    // BUG-24898 iloader ÆÄ½Ì¿¡·¯ »ó¼¼È­
-    // ¸ðµç return Àº ¿©±â·Î ¸ðÀº´Ù.
-    // ¿¡·¯ÄÚµå°¡ ¼³Á¤µÇ¾î ÀÖÁö ¾ÊÀ¸¸é µ¥ÀÌÅ¸ ÆÄ½Ì¿¡·¯¸¦ Ãâ·ÂÇÑ´Ù.
+    // BUG-24898 iloader íŒŒì‹±ì—ëŸ¬ ìƒì„¸í™”
+    // ëª¨ë“  return ì€ ì—¬ê¸°ë¡œ ëª¨ì€ë‹¤.
+    // ì—ëŸ¬ì½”ë“œê°€ ì„¤ì •ë˜ì–´ ìžˆì§€ ì•Šìœ¼ë©´ ë°ì´íƒ€ íŒŒì‹±ì—ëŸ¬ë¥¼ ì¶œë ¥í•œë‹¤.
     IDE_EXCEPTION_CONT(RETURN_CODE);
 
     if(uteGetErrorCODE(sHandle->mErrorMgr) == 0)
@@ -2930,15 +2930,15 @@ SInt iloDataFile::strtonumCheck(SChar *p)
 /**
  * AnalDataFileName.
  *
- * µ¥ÀÌÅÍ ÆÄÀÏ¸íÀ» ºÐ¼®ÇÏ¿©, ÆÄÀÏ¸í º»Ã¼, µ¥ÀÌÅÍ ÆÄÀÏ È®ÀåÀÚ,
- * µ¥ÀÌÅÍ ÆÄÀÏ ¹øÈ£¸¦ ¾ò´Â´Ù.
- * ºÐ¼® °á°ú´Â ¸â¹öº¯¼ö mFileNameBody, mDataFileNameExt,
- * mDataFileNo¿¡ ÀúÀåµÈ´Ù.
+ * ë°ì´í„° íŒŒì¼ëª…ì„ ë¶„ì„í•˜ì—¬, íŒŒì¼ëª… ë³¸ì²´, ë°ì´í„° íŒŒì¼ í™•ìž¥ìž,
+ * ë°ì´í„° íŒŒì¼ ë²ˆí˜¸ë¥¼ ì–»ëŠ”ë‹¤.
+ * ë¶„ì„ ê²°ê³¼ëŠ” ë©¤ë²„ë³€ìˆ˜ mFileNameBody, mDataFileNameExt,
+ * mDataFileNoì— ì €ìž¥ëœë‹¤.
  *
  * @param[in] aDataFileName
- *  µ¥ÀÌÅÍ ÆÄÀÏ¸í.
+ *  ë°ì´í„° íŒŒì¼ëª….
  * @param[in] aIsWr
- *  µ¥ÀÌÅÍ ÆÄÀÏ ¾²±â(ILO_TRUE)ÀÎÁö ÀÐ±â(ILO_FALSE)ÀÎÁö ¿©ºÎ.
+ *  ë°ì´í„° íŒŒì¼ ì“°ê¸°(ILO_TRUE)ì¸ì§€ ì½ê¸°(ILO_FALSE)ì¸ì§€ ì—¬ë¶€.
  */
 void iloDataFile::AnalDataFileName(const SChar *aDataFileName, iloBool aIsWr)
 {
@@ -2949,10 +2949,10 @@ void iloDataFile::AnalDataFileName(const SChar *aDataFileName, iloBool aIsWr)
 
     (void)idlOS::snprintf(mFileNameBody, ID_SIZEOF(mFileNameBody), "%s",
                           aDataFileName);
-    /* ÆÄÀÏ ¹øÈ£¸¦ -1·Î ÃÊ±âÈ­ÇÑ´Ù. */
+    /* íŒŒì¼ ë²ˆí˜¸ë¥¼ -1ë¡œ ì´ˆê¸°í™”í•œë‹¤. */
     mDataFileNo = -1;
 
-    /* ÆÄÀÏ¸í µÞºÎºÐÀÇ ºÒÇÊ¿äÇÑ °ø¹éÀ» Á¦°ÅÇÑ´Ù. */
+    /* íŒŒì¼ëª… ë’·ë¶€ë¶„ì˜ ë¶ˆí•„ìš”í•œ ê³µë°±ì„ ì œê±°í•œë‹¤. */
     for (sI = idlOS::strlen(mFileNameBody) - 1; sI >= 0; sI--)
     {
         if (mFileNameBody[sI] != ' ' && mFileNameBody[sI] != '\f' &&
@@ -2964,11 +2964,11 @@ void iloDataFile::AnalDataFileName(const SChar *aDataFileName, iloBool aIsWr)
     }
     mFileNameBody[sI + 1] = '\0';
 
-    /* µ¥ÀÌÅÍ ÆÄÀÏ ÀÐ±âÀÎ °æ¿ì,
-     * »ç¿ëÀÚ°¡ ÀÔ·ÂÇÑ µ¥ÀÌÅÍ ÆÄÀÏ¸í¿¡ ÆÄÀÏ ¹øÈ£°¡ Á¸ÀçÇÒ ¼ö ÀÖ´Ù. */
+    /* ë°ì´í„° íŒŒì¼ ì½ê¸°ì¸ ê²½ìš°,
+     * ì‚¬ìš©ìžê°€ ìž…ë ¥í•œ ë°ì´í„° íŒŒì¼ëª…ì— íŒŒì¼ ë²ˆí˜¸ê°€ ì¡´ìž¬í•  ìˆ˜ ìžˆë‹¤. */
     if (aIsWr != ILO_TRUE)
     {
-        /* ÆÄÀÏ ¹øÈ£ÀÇ ½ÃÀÛ À§Ä¡¸¦ ±¸ÇÑ´Ù. */
+        /* íŒŒì¼ ë²ˆí˜¸ì˜ ì‹œìž‘ ìœ„ì¹˜ë¥¼ êµ¬í•œë‹¤. */
         for (; sI >= 0; sI--)
         {
             if (mFileNameBody[sI] < '0' || mFileNameBody[sI] > '9')
@@ -2985,50 +2985,50 @@ void iloDataFile::AnalDataFileName(const SChar *aDataFileName, iloBool aIsWr)
             sFileNoPos = NULL;
         }
     }
-    /* µ¥ÀÌÅÍ ÆÄÀÏ ¾²±âÀÎ °æ¿ì,
-     * »ç¿ëÀÚ°¡ ÀÔ·ÂÇÑ µ¥ÀÌÅÍ ÆÄÀÏ¸í¿¡´Â ÆÄÀÏ ¹øÈ£°¡ ¾ø´Â °ÍÀ¸·Î º»´Ù. */
+    /* ë°ì´í„° íŒŒì¼ ì“°ê¸°ì¸ ê²½ìš°,
+     * ì‚¬ìš©ìžê°€ ìž…ë ¥í•œ ë°ì´í„° íŒŒì¼ëª…ì—ëŠ” íŒŒì¼ ë²ˆí˜¸ê°€ ì—†ëŠ” ê²ƒìœ¼ë¡œ ë³¸ë‹¤. */
     else /* (aIsWr == ILO_TRUE) */
     {
         sFileNoPos = NULL;
     }
 
-    /* È®ÀåÀÚÀÇ ½ÃÀÛ À§Ä¡¸¦ ±¸ÇÑ´Ù. */
+    /* í™•ìž¥ìžì˜ ì‹œìž‘ ìœ„ì¹˜ë¥¼ êµ¬í•œë‹¤. */
     sPeriodPos = idlOS::strrchr(mFileNameBody, '.');
     if (sPeriodPos == mFileNameBody)
     {
         sPeriodPos = NULL;
     }
 
-    /* È®ÀåÀÚ°¡ Á¸ÀçÇÏ´Â °æ¿ì */
+    /* í™•ìž¥ìžê°€ ì¡´ìž¬í•˜ëŠ” ê²½ìš° */
     if (sPeriodPos != NULL)
     {
-        /* ÆÄÀÏ ¹øÈ£¸¦ Á¦¿ÜÇÑ ¼ø¼öÇÑ È®ÀåÀÚ¸¦ °Ë»çÇÏ±â À§ÇØ,
-         * ÀÓ½Ã·Î ÆÄÀÏ ¹øÈ£ ºÎºÐÀ» NULL·Î µ¤¾î¾´´Ù. */
+        /* íŒŒì¼ ë²ˆí˜¸ë¥¼ ì œì™¸í•œ ìˆœìˆ˜í•œ í™•ìž¥ìžë¥¼ ê²€ì‚¬í•˜ê¸° ìœ„í•´,
+         * ìž„ì‹œë¡œ íŒŒì¼ ë²ˆí˜¸ ë¶€ë¶„ì„ NULLë¡œ ë®ì–´ì“´ë‹¤. */
         if (sFileNoPos != NULL)
         {
             sBk = *sFileNoPos;
             *sFileNoPos = '\0';
         }
-        /* È®ÀåÀÚ°¡ ".dat"ÀÎ °æ¿ì */
+        /* í™•ìž¥ìžê°€ ".dat"ì¸ ê²½ìš° */
         if (idlOS::strcasecmp(sPeriodPos, ".dat") == 0)
         {
-            /* È®ÀåÀÚ´Â ÆÄÀÏ ¹øÈ£¸¦ Á¦¿ÜÇÑ ºÎºÐ(".dat")À¸·Î ÇÑ´Ù. */
+            /* í™•ìž¥ìžëŠ” íŒŒì¼ ë²ˆí˜¸ë¥¼ ì œì™¸í•œ ë¶€ë¶„(".dat")ìœ¼ë¡œ í•œë‹¤. */
             (void)idlOS::snprintf(mDataFileNameExt,
                                   ID_SIZEOF(mDataFileNameExt), "%s",
                                   sPeriodPos);
-            /* ÆÄÀÏ ¹øÈ£°¡ Á¸ÀçÇÏ´Â °æ¿ì */
+            /* íŒŒì¼ ë²ˆí˜¸ê°€ ì¡´ìž¬í•˜ëŠ” ê²½ìš° */
             if (sFileNoPos != NULL)
             {
-                /* ÆÄÀÏ ¹øÈ£¸¦ ¾ò´Â´Ù. */
+                /* íŒŒì¼ ë²ˆí˜¸ë¥¼ ì–»ëŠ”ë‹¤. */
                 *sFileNoPos = sBk;
                 mDataFileNo = (SInt)idlOS::strtol(sFileNoPos, (SChar **)NULL,
                                                   10);
             }
         }
-        /* È®ÀåÀÚ°¡ ".dat"°¡ ¾Æ´Ñ °æ¿ì */
+        /* í™•ìž¥ìžê°€ ".dat"ê°€ ì•„ë‹Œ ê²½ìš° */
         else
         {
-            /* È®ÀåÀÚ´Â ÆÄÀÏ¸í µÞºÎºÐÀÇ ¼ýÀÚ ºÎºÐ±îÁö Æ÷ÇÔÇÏµµ·Ï ÇÑ´Ù. */
+            /* í™•ìž¥ìžëŠ” íŒŒì¼ëª… ë’·ë¶€ë¶„ì˜ ìˆ«ìž ë¶€ë¶„ê¹Œì§€ í¬í•¨í•˜ë„ë¡ í•œë‹¤. */
             if (sFileNoPos != NULL)
             {
                 *sFileNoPos = sBk;
@@ -3037,26 +3037,26 @@ void iloDataFile::AnalDataFileName(const SChar *aDataFileName, iloBool aIsWr)
                                   ID_SIZEOF(mDataFileNameExt), "%s",
                                   sPeriodPos);
         }
-        /* ÆÄÀÏ¸í º»Ã¼´Â È®ÀåÀÚ ¹× ÆÄÀÏ ¹øÈ£¸¦ Á¦¿ÜÇÑ ºÎºÐÀ¸·Î ÇÑ´Ù. */
+        /* íŒŒì¼ëª… ë³¸ì²´ëŠ” í™•ìž¥ìž ë° íŒŒì¼ ë²ˆí˜¸ë¥¼ ì œì™¸í•œ ë¶€ë¶„ìœ¼ë¡œ í•œë‹¤. */
         *sPeriodPos = '\0';
     }
-    /* È®ÀåÀÚ°¡ Á¸ÀçÇÏÁö ¾Ê´Â °æ¿ì */
+    /* í™•ìž¥ìžê°€ ì¡´ìž¬í•˜ì§€ ì•ŠëŠ” ê²½ìš° */
     else /* (sPeriodPos == NULL) */
     {
         mDataFileNameExt[0] = '\0';
 
-        /* ÆÄÀÏ¸í º»Ã¼´Â ÆÄÀÏ¸í µÞºÎºÐÀÇ ¼ýÀÚ ºÎºÐ±îÁö Æ÷ÇÔÇÏ°Ô µÈ´Ù. */
+        /* íŒŒì¼ëª… ë³¸ì²´ëŠ” íŒŒì¼ëª… ë’·ë¶€ë¶„ì˜ ìˆ«ìž ë¶€ë¶„ê¹Œì§€ í¬í•¨í•˜ê²Œ ëœë‹¤. */
     }
 }
 
 /**
  * GetStrPhyLen.
  *
- * ÀÎÀÚ·Î ¹ÞÀº ¹®ÀÚ¿­ÀÌ ÅØ½ºÆ® ÆÄÀÏ¿¡ ÀúÀåµÉ °æ¿ì °¡Áö°Ô µÉ ±æÀÌ¸¦ ±¸ÇÑ´Ù.
+ * ì¸ìžë¡œ ë°›ì€ ë¬¸ìžì—´ì´ í…ìŠ¤íŠ¸ íŒŒì¼ì— ì €ìž¥ë  ê²½ìš° ê°€ì§€ê²Œ ë  ê¸¸ì´ë¥¼ êµ¬í•œë‹¤.
  *
  * @param[in] aStr
- *  ±æÀÌ¸¦ ±¸ÇÒ ¹®ÀÚ¿­.
- *  NULL·Î Á¾°áµÇ¾î¾ß ÇÑ´Ù.
+ *  ê¸¸ì´ë¥¼ êµ¬í•  ë¬¸ìžì—´.
+ *  NULLë¡œ ì¢…ê²°ë˜ì–´ì•¼ í•œë‹¤.
  */
 UInt iloDataFile::GetStrPhyLen(const SChar *aStr)
 {
@@ -3081,8 +3081,8 @@ UInt iloDataFile::GetStrPhyLen(const SChar *aStr)
 /**
  * MakeAllLexStateTransTbl.
  *
- * ÇÊµå ±¸ºÐÀÚ, Çà ±¸ºÐÀÚ, ÇÊµå encloser ¸ÅÄªÀ» À§ÇÑ
- * »óÅÂÀüÀÌÇ¥¸¦ ÀÛ¼ºÇÑ´Ù.
+ * í•„ë“œ êµ¬ë¶„ìž, í–‰ êµ¬ë¶„ìž, í•„ë“œ encloser ë§¤ì¹­ì„ ìœ„í•œ
+ * ìƒíƒœì „ì´í‘œë¥¼ ìž‘ì„±í•œë‹¤.
  */
 IDE_RC iloDataFile::MakeAllLexStateTransTbl( ALTIBASE_ILOADER_HANDLE aHandle )
 {
@@ -3107,8 +3107,8 @@ IDE_RC iloDataFile::MakeAllLexStateTransTbl( ALTIBASE_ILOADER_HANDLE aHandle )
 /**
  * FreeAllLexStateTransTbl.
  *
- * ÇÊµå ±¸ºÐÀÚ, Çà ±¸ºÐÀÚ, ÇÊµå encloser ¸ÅÄªÀ» À§ÇÑ
- * »óÅÂÀüÀÌÇ¥¸¦ ¸Þ¸ð¸® ÇØÁ¦ÇÑ´Ù.
+ * í•„ë“œ êµ¬ë¶„ìž, í–‰ êµ¬ë¶„ìž, í•„ë“œ encloser ë§¤ì¹­ì„ ìœ„í•œ
+ * ìƒíƒœì „ì´í‘œë¥¼ ë©”ëª¨ë¦¬ í•´ì œí•œë‹¤.
  */
 void iloDataFile::FreeAllLexStateTransTbl()
 {
@@ -3132,27 +3132,27 @@ void iloDataFile::FreeAllLexStateTransTbl()
 /**
  * MakeLexStateTransTbl.
  *
- * ±¸ºÐÀÚ ¸ÅÄª¿ë »óÅÂÀüÀÌÇ¥¸¦ ÀÛ¼ºÇÑ´Ù.
- * »óÅÂÀüÀÌÇ¥´Â 8ºñÆ® integerÀÇ 2Â÷¿ø ¹è¿­ÀÌ´Ù.
- * ¹è¿­ÀÇ Å©±â´Â (aStr ¹®ÀÚ¿­ ±æÀÌ)x(256)ÀÌ´Ù.
- * (Á¤È®È÷´Â »óÅÂÀüÀÌÇ¥ ¸Þ¸ð¸® ÇØÁ¦ ½ÃÀÇ ÆíÀÇ¸¦ À§ÇØ
- * aStr ¹®ÀÚ¿­ ±æÀÌº¸´Ù 1 Å©°Ô ÇÒ´çÇÑ´Ù.)
- * ¹è¿­ÀÇ 1¹ø ÀÎµ¦½º´Â aStr ¹®ÀÚ¿­ÀÇ ¼±µÎ·ÎºÎÅÍ
- * ¸î °³ÀÇ ¹®ÀÚ°¡ ¸ÅÄªµÈ »óÅÂÀÎ°¡¸¦ ³ªÅ¸³½´Ù.
- * ¹è¿­ÀÇ 2¹ø ÀÎµ¦½º´Â »õ·ÎÀÌ ÀÔ·Â¹ÞÀº ¹®ÀÚ¸¦ ³ªÅ¸³½´Ù.
- * ¹è¿­ÀÇ ¿ø¼Ò °ªÀº À§ 1, 2¹ø ÀÎµ¦½ºÀÇ Á¶°ÇÀÏ ¶§
- * aStr ¹®ÀÚ¿­ÀÇ ¼±µÎ·ÎºÎÅÍ ¸î °³ÀÇ ¹®ÀÚ°¡ ¸ÅÄªµÈ »óÅÂ·Î µÇ´Â°¡ÀÌ´Ù.
- * ¿¹¸¦ µé¾î, (*aTbl)[1]['^']ÀÇ °ªÀº
- * aStr ¹®ÀÚ¿­ÀÇ ¼±µÎ 1¹®ÀÚ°¡ ÀÌ¹Ì ¸ÅÄªµÇ¾îÀÖ´Â »óÈ²¿¡¼­
- * ÀÌ¹ø¿¡ »õ·ÎÀÌ '^' ¹®ÀÚ¸¦ ÀÔ·Â¹ÞÀº °æ¿ì
- * aStr ¹®ÀÚ¿­ÀÇ ¼±µÎ·ÎºÎÅÍ ¸î °³ÀÇ ¹®ÀÚ°¡ ¸ÅÄªµÈ »óÅÂ·Î µÇ´Â°¡¸¦ ³ªÅ¸³½´Ù.
- * ¸¸¾à, aStrÀÌ "^^"¶ó¸é, (*aTbl)[1]['^']=2°¡ µÈ´Ù.
+ * êµ¬ë¶„ìž ë§¤ì¹­ìš© ìƒíƒœì „ì´í‘œë¥¼ ìž‘ì„±í•œë‹¤.
+ * ìƒíƒœì „ì´í‘œëŠ” 8ë¹„íŠ¸ integerì˜ 2ì°¨ì› ë°°ì—´ì´ë‹¤.
+ * ë°°ì—´ì˜ í¬ê¸°ëŠ” (aStr ë¬¸ìžì—´ ê¸¸ì´)x(256)ì´ë‹¤.
+ * (ì •í™•ížˆëŠ” ìƒíƒœì „ì´í‘œ ë©”ëª¨ë¦¬ í•´ì œ ì‹œì˜ íŽ¸ì˜ë¥¼ ìœ„í•´
+ * aStr ë¬¸ìžì—´ ê¸¸ì´ë³´ë‹¤ 1 í¬ê²Œ í• ë‹¹í•œë‹¤.)
+ * ë°°ì—´ì˜ 1ë²ˆ ì¸ë±ìŠ¤ëŠ” aStr ë¬¸ìžì—´ì˜ ì„ ë‘ë¡œë¶€í„°
+ * ëª‡ ê°œì˜ ë¬¸ìžê°€ ë§¤ì¹­ëœ ìƒíƒœì¸ê°€ë¥¼ ë‚˜íƒ€ë‚¸ë‹¤.
+ * ë°°ì—´ì˜ 2ë²ˆ ì¸ë±ìŠ¤ëŠ” ìƒˆë¡œì´ ìž…ë ¥ë°›ì€ ë¬¸ìžë¥¼ ë‚˜íƒ€ë‚¸ë‹¤.
+ * ë°°ì—´ì˜ ì›ì†Œ ê°’ì€ ìœ„ 1, 2ë²ˆ ì¸ë±ìŠ¤ì˜ ì¡°ê±´ì¼ ë•Œ
+ * aStr ë¬¸ìžì—´ì˜ ì„ ë‘ë¡œë¶€í„° ëª‡ ê°œì˜ ë¬¸ìžê°€ ë§¤ì¹­ëœ ìƒíƒœë¡œ ë˜ëŠ”ê°€ì´ë‹¤.
+ * ì˜ˆë¥¼ ë“¤ì–´, (*aTbl)[1]['^']ì˜ ê°’ì€
+ * aStr ë¬¸ìžì—´ì˜ ì„ ë‘ 1ë¬¸ìžê°€ ì´ë¯¸ ë§¤ì¹­ë˜ì–´ìžˆëŠ” ìƒí™©ì—ì„œ
+ * ì´ë²ˆì— ìƒˆë¡œì´ '^' ë¬¸ìžë¥¼ ìž…ë ¥ë°›ì€ ê²½ìš°
+ * aStr ë¬¸ìžì—´ì˜ ì„ ë‘ë¡œë¶€í„° ëª‡ ê°œì˜ ë¬¸ìžê°€ ë§¤ì¹­ëœ ìƒíƒœë¡œ ë˜ëŠ”ê°€ë¥¼ ë‚˜íƒ€ë‚¸ë‹¤.
+ * ë§Œì•½, aStrì´ "^^"ë¼ë©´, (*aTbl)[1]['^']=2ê°€ ëœë‹¤.
  *
  * @param[in] aStr
- *  ±¸ºÐÀÚ ¸ÅÄª¿ë »óÅÂÀüÀÌÇ¥¸¦ ÀÛ¼ºÇÒ ±¸ºÐÀÚ.
- *  NULL·Î Á¾°áµÇ¾î¾ß ÇÑ´Ù.
+ *  êµ¬ë¶„ìž ë§¤ì¹­ìš© ìƒíƒœì „ì´í‘œë¥¼ ìž‘ì„±í•  êµ¬ë¶„ìž.
+ *  NULLë¡œ ì¢…ê²°ë˜ì–´ì•¼ í•œë‹¤.
  * @param[out] aTbl
- *  ±¸ºÐÀÚ ¸ÅÄª¿ë »óÅÂÀüÀÌÇ¥.
+ *  êµ¬ë¶„ìž ë§¤ì¹­ìš© ìƒíƒœì „ì´í‘œ.
  */
 IDE_RC iloDataFile::MakeLexStateTransTbl( ALTIBASE_ILOADER_HANDLE  aHandle,
                                           SChar                  *aStr, 
@@ -3171,7 +3171,7 @@ IDE_RC iloDataFile::MakeLexStateTransTbl( ALTIBASE_ILOADER_HANDLE  aHandle,
 
     sStrLen = (UInt)idlOS::strlen(aStr);
 
-    /* ÇÔ¼ö ³»ºÎÀûÀ¸·Î »ç¿ëÇÏ´Â º¯¼ö ¸Þ¸ð¸® ÇÒ´ç. */
+    /* í•¨ìˆ˜ ë‚´ë¶€ì ìœ¼ë¡œ ì‚¬ìš©í•˜ëŠ” ë³€ìˆ˜ ë©”ëª¨ë¦¬ í• ë‹¹. */
     if (sStrLen > 1)
     {
         sBfSubstLeftSubstMatch = (iloBool *)idlOS::malloc(
@@ -3180,7 +3180,7 @@ IDE_RC iloDataFile::MakeLexStateTransTbl( ALTIBASE_ILOADER_HANDLE  aHandle,
         sState4Match = 1;
     }
 
-    /* »óÅÂÀüÀÌÇ¥ ¸Þ¸ð¸® ÇÒ´ç. */
+    /* ìƒíƒœì „ì´í‘œ ë©”ëª¨ë¦¬ í• ë‹¹. */
     sTbl = (UChar **)idlOS::malloc((sStrLen + 1) * ID_SIZEOF(UChar *));
     IDE_TEST(sTbl == NULL);
     sState4Tbl = 1;
@@ -3194,7 +3194,7 @@ IDE_RC iloDataFile::MakeLexStateTransTbl( ALTIBASE_ILOADER_HANDLE  aHandle,
         sState4Tbl = 2;
     }
 
-    /* »óÅÂÀüÀÌÇ¥ ÀÛ¼º. */
+    /* ìƒíƒœì „ì´í‘œ ìž‘ì„±. */
     for (sI = 0; sI < sStrLen; sI++)
     {
         for (sK = sI; sK > 0; sK--)
@@ -3236,7 +3236,7 @@ IDE_RC iloDataFile::MakeLexStateTransTbl( ALTIBASE_ILOADER_HANDLE  aHandle,
         idlOS::free(sBfSubstLeftSubstMatch);
     }
 
-    /* ¸®ÅÏ. */
+    /* ë¦¬í„´. */
     if( sState4Tbl == 2 )
     {
         FreeLexStateTransTbl(*aTbl);
@@ -3288,10 +3288,10 @@ IDE_RC iloDataFile::MakeLexStateTransTbl( ALTIBASE_ILOADER_HANDLE  aHandle,
 /**
  * FreeLexStateTransTbl.
  *
- * ±¸ºÐÀÚ ¸ÅÄª¿ë »óÅÂÀüÀÌÇ¥¸¦ ¸Þ¸ð¸® ÇØÁ¦ÇÑ´Ù.
+ * êµ¬ë¶„ìž ë§¤ì¹­ìš© ìƒíƒœì „ì´í‘œë¥¼ ë©”ëª¨ë¦¬ í•´ì œí•œë‹¤.
  *
  * @param[in] aTbl
- *  ±¸ºÐÀÚ ¸ÅÄª¿ë »óÅÂÀüÀÌÇ¥.
+ *  êµ¬ë¶„ìž ë§¤ì¹­ìš© ìƒíƒœì „ì´í‘œ.
  */
 void iloDataFile::FreeLexStateTransTbl(UChar **aTbl)
 {
@@ -3310,17 +3310,17 @@ void iloDataFile::FreeLexStateTransTbl(UChar **aTbl)
 /**
  * SetLOBOptions.
  *
- * »ç¿ëÀÚ·ÎºÎÅÍ ÀÔ·Â¹ÞÀº LOB °ü·Ã ¿É¼ÇÀ» iloDataFile °´Ã¼¿¡ ¼³Á¤ÇÑ´Ù.
+ * ì‚¬ìš©ìžë¡œë¶€í„° ìž…ë ¥ë°›ì€ LOB ê´€ë ¨ ì˜µì…˜ì„ iloDataFile ê°ì²´ì— ì„¤ì •í•œë‹¤.
  *
  * @param[in] aUseLOBFile
- *  use_lob_file ¿É¼Ç.
+ *  use_lob_file ì˜µì…˜.
  * @param[in] aLOBFileSize
- *  lob_file_size ¿É¼Ç. ¹ÙÀÌÆ® ´ÜÀ§.
+ *  lob_file_size ì˜µì…˜. ë°”ì´íŠ¸ ë‹¨ìœ„.
  * @param[in] aUseSeparateFiles
- *  use_separate_files ¿É¼Ç.
+ *  use_separate_files ì˜µì…˜.
  * @param[in] aLOBIndicator
- *  lob_indicator ¿É¼Ç.
- *  %·Î ½ÃÀÛµÇ´Â ÀÌ½ºÄÉÀÌÇÁ ¹®ÀÚ(¿¹:%n)´Â '\n'°ú °°ÀÌ º¯È¯µÈ »óÅÂÀÓ.
+ *  lob_indicator ì˜µì…˜.
+ *  %ë¡œ ì‹œìž‘ë˜ëŠ” ì´ìŠ¤ì¼€ì´í”„ ë¬¸ìž(ì˜ˆ:%n)ëŠ” '\n'ê³¼ ê°™ì´ ë³€í™˜ëœ ìƒíƒœìž„.
  */
 void iloDataFile::SetLOBOptions(iloBool aUseLOBFile, ULong aLOBFileSize,
                                 iloBool aUseSeparateFiles,
@@ -3337,18 +3337,18 @@ void iloDataFile::SetLOBOptions(iloBool aUseLOBFile, ULong aLOBFileSize,
 /**
  * InitLOBProc.
  *
- * LOB Ã³¸®¸¦ ÃÊ±âÈ­ÇÑ´Ù.
- * use_lob_file=yes, use_separate_files=noÀÎ °æ¿ì
- * 1¹ø LOB ÆÄÀÏÀ» ¿©´Â ÀÛ¾÷µµ ¼öÇàÇÑ´Ù.
+ * LOB ì²˜ë¦¬ë¥¼ ì´ˆê¸°í™”í•œë‹¤.
+ * use_lob_file=yes, use_separate_files=noì¸ ê²½ìš°
+ * 1ë²ˆ LOB íŒŒì¼ì„ ì—¬ëŠ” ìž‘ì—…ë„ ìˆ˜í–‰í•œë‹¤.
  *
  * @param[in] aIsWr
- *  LOB ÆÄÀÏ¿¡ ¾²±â(ILO_TRUE)ÀÎÁö ÀÐ±â(ILO_FALSE)ÀÎÁö ¿©ºÎ.
+ *  LOB íŒŒì¼ì— ì“°ê¸°(ILO_TRUE)ì¸ì§€ ì½ê¸°(ILO_FALSE)ì¸ì§€ ì—¬ë¶€.
  */
 IDE_RC iloDataFile::InitLOBProc( ALTIBASE_ILOADER_HANDLE aHandle, iloBool aIsWr)
 {
     iloaderHandle *sHandle = (iloaderHandle *) aHandle;
     
-    /* LOB wrapper °´Ã¼ ¸Þ¸ð¸® ÇÒ´ç */
+    /* LOB wrapper ê°ì²´ ë©”ëª¨ë¦¬ í• ë‹¹ */
     if (mLOB != NULL)
     {
         delete mLOB;
@@ -3364,7 +3364,7 @@ IDE_RC iloDataFile::InitLOBProc( ALTIBASE_ILOADER_HANDLE aHandle, iloBool aIsWr)
     {
         if (mUseLOBFileOpt == ILO_TRUE && mUseSeparateFilesOpt == ILO_FALSE)
         {
-            /* 1¹ø LOB ÆÄÀÏ ¿­±â */
+            /* 1ë²ˆ LOB íŒŒì¼ ì—´ê¸° */
             IDE_TEST_RAISE(OpenLOBFile(sHandle, ILO_TRUE, 1, 0, ILO_TRUE)
                            != IDE_SUCCESS, OpenLOBFileError);
         }
@@ -3373,16 +3373,16 @@ IDE_RC iloDataFile::InitLOBProc( ALTIBASE_ILOADER_HANDLE aHandle, iloBool aIsWr)
     {
         mLOBFileSizeOpt = ID_ULONG(0);
 
-        //BUG-24583 'use_separate_files=yes' ¿É¼ÇÀ» »ç¿ëÇÒ °æ¿ì¿¡´Â LOBFileSize¸¦ ¾òÁö ¾Ê´Â´Ù.
+        //BUG-24583 'use_separate_files=yes' ì˜µì…˜ì„ ì‚¬ìš©í•  ê²½ìš°ì—ëŠ” LOBFileSizeë¥¼ ì–»ì§€ ì•ŠëŠ”ë‹¤.
         if (mUseLOBFileOpt == ILO_TRUE && mUseSeparateFilesOpt == ILO_FALSE)  
         {
-            /* 1¹ø LOB ÆÄÀÏ ¿­±â.
-             * ÀÐ±âÀÎ °æ¿ì use_separate_files ¿©ºÎ´Â
-             * ½ÇÁ¦ µ¥ÀÌÅÍ ÆÄÀÏÀ» ÀÐ´Ù°¡ %%separate_files°¡ ³ª¿Í¾ß ¾Ë ¼ö ÀÖÀ¸¹Ç·Î
-             * ÆÄÀÏ ¿­±â¿¡ ½ÇÆÐÇÏ´õ¶óµµ ¿¡·¯·Î Ã³¸®ÇÏÁö´Â ¾Ê´Â´Ù. */
+            /* 1ë²ˆ LOB íŒŒì¼ ì—´ê¸°.
+             * ì½ê¸°ì¸ ê²½ìš° use_separate_files ì—¬ë¶€ëŠ”
+             * ì‹¤ì œ ë°ì´í„° íŒŒì¼ì„ ì½ë‹¤ê°€ %%separate_filesê°€ ë‚˜ì™€ì•¼ ì•Œ ìˆ˜ ìžˆìœ¼ë¯€ë¡œ
+             * íŒŒì¼ ì—´ê¸°ì— ì‹¤íŒ¨í•˜ë”ë¼ë„ ì—ëŸ¬ë¡œ ì²˜ë¦¬í•˜ì§€ëŠ” ì•ŠëŠ”ë‹¤. */
             if (OpenLOBFile(sHandle,ILO_FALSE, 1, 0, ILO_FALSE) == IDE_SUCCESS)
             {
-                /* lob_file_size ¾ò±â */
+                /* lob_file_size ì–»ê¸° */
                 IDE_TEST_RAISE(GetLOBFileSize( sHandle, &mLOBFileSizeOpt)
                                      != IDE_SUCCESS, OpenLOBFileError);
             }
@@ -3414,8 +3414,8 @@ IDE_RC iloDataFile::InitLOBProc( ALTIBASE_ILOADER_HANDLE aHandle, iloBool aIsWr)
 /**
  * FinalLOBProc.
  *
- * LOB Ã³¸®¸¦ ¸¶¹«¸®ÇÑ´Ù.
- * ¿­·ÁÀÖ´Â LOB ÆÄÀÏÀ» ´Ý°í, LOB wrapper °´Ã¼¸¦ ¸Þ¸ð¸® ÇØÁ¦ÇÑ´Ù.
+ * LOB ì²˜ë¦¬ë¥¼ ë§ˆë¬´ë¦¬í•œë‹¤.
+ * ì—´ë ¤ìžˆëŠ” LOB íŒŒì¼ì„ ë‹«ê³ , LOB wrapper ê°ì²´ë¥¼ ë©”ëª¨ë¦¬ í•´ì œí•œë‹¤.
  */
 IDE_RC iloDataFile::FinalLOBProc( ALTIBASE_ILOADER_HANDLE aHandle )
 {
@@ -3442,22 +3442,22 @@ IDE_RC iloDataFile::FinalLOBProc( ALTIBASE_ILOADER_HANDLE aHandle )
 /**
  * OpenLOBFile.
  *
- * LOB ÆÄÀÏÀ» ¿¬´Ù.
- * µ¥ÀÌÅÍ ÆÄÀÏ¸íÀ¸·ÎºÎÅÍ ¾òÀº ÆÄÀÏ¸í ¸öÃ¼¿Í
- * ÀÎÀÚ·Î ÀÔ·Â¹ÞÀº °ªµé¿¡ ÀÇÇØ LOB ÆÄÀÏ¸íÀ» ¸¸µé¾î
- * ¿­±â¸¦ ½ÃµµÇÑ´Ù.
+ * LOB íŒŒì¼ì„ ì—°ë‹¤.
+ * ë°ì´í„° íŒŒì¼ëª…ìœ¼ë¡œë¶€í„° ì–»ì€ íŒŒì¼ëª… ëª¸ì²´ì™€
+ * ì¸ìžë¡œ ìž…ë ¥ë°›ì€ ê°’ë“¤ì— ì˜í•´ LOB íŒŒì¼ëª…ì„ ë§Œë“¤ì–´
+ * ì—´ê¸°ë¥¼ ì‹œë„í•œë‹¤.
  *
  * @param[in] aIsWr
- *  LOB ÆÄÀÏ¿¡ ¾²±â(ILO_TRUE)ÀÎÁö ÀÐ±â(ILO_FALSE)ÀÎÁö ¿©ºÎ.
+ *  LOB íŒŒì¼ì— ì“°ê¸°(ILO_TRUE)ì¸ì§€ ì½ê¸°(ILO_FALSE)ì¸ì§€ ì—¬ë¶€.
  * @param[in] aLOBFileNo_or_RowNo
- *  LOB ÆÄÀÏ ¹øÈ£(use_lob_file=yes, use_separate_files=no °æ¿ì)
- *  ¶Ç´Â Çà ¹øÈ£(use_lob_file=yes, use_separate_files=yes °æ¿ì).
- *  º» ÀÎÀÚ¸¦ »ç¿ëÇÏÁö ¾Ê´Â °æ¿ì 0À» ÁÖµµ·Ï ÇÑ´Ù.
+ *  LOB íŒŒì¼ ë²ˆí˜¸(use_lob_file=yes, use_separate_files=no ê²½ìš°)
+ *  ë˜ëŠ” í–‰ ë²ˆí˜¸(use_lob_file=yes, use_separate_files=yes ê²½ìš°).
+ *  ë³¸ ì¸ìžë¥¼ ì‚¬ìš©í•˜ì§€ ì•ŠëŠ” ê²½ìš° 0ì„ ì£¼ë„ë¡ í•œë‹¤.
  * @param[in] aColNo
- *  ¿­ ¹øÈ£(use_lob_file=yes, use_separate_files=yes °æ¿ì).
- *  º» ÀÎÀÚ¸¦ »ç¿ëÇÏÁö ¾Ê´Â °æ¿ì 0À» ÁÖµµ·Ï ÇÑ´Ù.
+ *  ì—´ ë²ˆí˜¸(use_lob_file=yes, use_separate_files=yes ê²½ìš°).
+ *  ë³¸ ì¸ìžë¥¼ ì‚¬ìš©í•˜ì§€ ì•ŠëŠ” ê²½ìš° 0ì„ ì£¼ë„ë¡ í•œë‹¤.
  * @param[in] aErrMsgPrint
- *  ¿¡·¯ ¹ß»ý ½Ã ¿¡·¯ ¸Þ½ÃÁö¸¦ Ãâ·ÂÇÒÁö ¿©ºÎ(ILO_TRUEÀÌ¸é Ãâ·Â).
+ *  ì—ëŸ¬ ë°œìƒ ì‹œ ì—ëŸ¬ ë©”ì‹œì§€ë¥¼ ì¶œë ¥í• ì§€ ì—¬ë¶€(ILO_TRUEì´ë©´ ì¶œë ¥).
  */
 IDE_RC iloDataFile::OpenLOBFile( ALTIBASE_ILOADER_HANDLE  aHandle,
                                  iloBool                   aIsWr,
@@ -3482,7 +3482,7 @@ IDE_RC iloDataFile::OpenLOBFile( ALTIBASE_ILOADER_HANDLE  aHandle,
         if (mUseSeparateFilesOpt == ILO_TRUE)
         {
             /* BUG-24583 
-             * use_separate_files=yes°¡ ¼³Á¤µÇ¾îÀÖÀ» °æ¿ì,
+             * use_separate_files=yesê°€ ì„¤ì •ë˜ì–´ìžˆì„ ê²½ìš°,
              */
             if (aIsWr == ILO_TRUE)   /* Download */
             {
@@ -3490,30 +3490,30 @@ IDE_RC iloDataFile::OpenLOBFile( ALTIBASE_ILOADER_HANDLE  aHandle,
                                       "%s/%09"ID_UINT32_FMT".lob",
                                       aFilePath, aLOBFileNo_or_RowNo);
             }
-            /* Upload ÀÏ °æ¿ì¿¡´Â, DataFile¿¡¼­ LOB File°æ·Î ¹× ÀÌ¸§À» ÀÐ¾î¼­ fileOpenÀ» ¼öÇàÇÑ´Ù. */
+            /* Upload ì¼ ê²½ìš°ì—ëŠ”, DataFileì—ì„œ LOB Fileê²½ë¡œ ë° ì´ë¦„ì„ ì½ì–´ì„œ fileOpenì„ ìˆ˜í–‰í•œë‹¤. */
             else
             {
                 IDE_TEST_RAISE(idlOS::strlen(mLOBFile[mLOBFileColumnNum]) == 0, OpenError);
 
-                //BUG-24902: use_separate_files=yesÀÏ °æ¿ì DataFileÀÇ °æ·Î °í·Á
+                //BUG-24902: use_separate_files=yesì¼ ê²½ìš° DataFileì˜ ê²½ë¡œ ê³ ë ¤
                 /*
-                | DataFile \ -d ¿É¼Ç |   »ó´ë°æ·Î    |   Àý´ë°æ·Î    |
+                | DataFile \ -d ì˜µì…˜ |   ìƒëŒ€ê²½ë¡œ    |   ì ˆëŒ€ê²½ë¡œ    |
                 |:------------------:|:-------------:|:-------------:|
-                |      Àý´ë°æ·Î      |    DataFile   |    DataFile   |
-                |      »ó´ë°æ·Î      | -d + DataFile | -d + DataFile |
+                |      ì ˆëŒ€ê²½ë¡œ      |    DataFile   |    DataFile   |
+                |      ìƒëŒ€ê²½ë¡œ      | -d + DataFile | -d + DataFile |
 
-                * Datafile      : Datafile¿¡ ÀÖ´Â FilePath¸¦ »ç¿ë
-                * -d + Datafile : -d ¿É¼Ç¿¡ ÀÖ´Â FilePathÀÖ´Â FilePath¸¦ ºÙ¿©¼­ »ç¿ë
+                * Datafile      : Datafileì— ìžˆëŠ” FilePathë¥¼ ì‚¬ìš©
+                * -d + Datafile : -d ì˜µì…˜ì— ìžˆëŠ” FilePathìžˆëŠ” FilePathë¥¼ ë¶™ì—¬ì„œ ì‚¬ìš©
                 */
 
-                // DataFile¿¡ ÀÖ´Â °æ·Î°¡ Àý´ë°æ·Î°¡ ¾Æ´Ò°æ¿ì, -d ¿É¼ÇÀÌ ÀÖÀ¸¸é -d ¿É¼ÇÀÇ °æ·Î º¹»ç
+                // DataFileì— ìžˆëŠ” ê²½ë¡œê°€ ì ˆëŒ€ê²½ë¡œê°€ ì•„ë‹ê²½ìš°, -d ì˜µì…˜ì´ ìžˆìœ¼ë©´ -d ì˜µì…˜ì˜ ê²½ë¡œ ë³µì‚¬
                 if ((! IS_ABSOLUTE_PATH(mLOBFile[mLOBFileColumnNum]))
                  && ( sHandle->mProgOption->m_bExist_d == SQL_TRUE))
                 {
                     (void)idlOS::strcpy(sFileName, mDataFilePath);
                 }
 
-                // DataFile¿¡ ÀÖ´Â FilePath ¾ÕÀÇ "./"´Â ÀÇ¹Ì ¾øÀ¸¹Ç·Î Á¦°Å
+                // DataFileì— ìžˆëŠ” FilePath ì•žì˜ "./"ëŠ” ì˜ë¯¸ ì—†ìœ¼ë¯€ë¡œ ì œê±°
                 if ((idlOS::strlen(mLOBFile[mLOBFileColumnNum]) > 2)
                  && (mLOBFile[mLOBFileColumnNum][0] == '.')
                  && (mLOBFile[mLOBFileColumnNum][1] == IDL_FILE_SEPARATOR))
@@ -3526,7 +3526,7 @@ IDE_RC iloDataFile::OpenLOBFile( ALTIBASE_ILOADER_HANDLE  aHandle,
                 }
                 (void)idlOS::strcat( sFileName, mLOBFile[mLOBFileColumnNum] + sPos );
 
-                mLOBFileColumnNum++; // BUG-24583 ´ÙÀ½ FilenameÀ» ÀÐ±âÇÏ±â À§ÇØ¼­...
+                mLOBFileColumnNum++; // BUG-24583 ë‹¤ìŒ Filenameì„ ì½ê¸°í•˜ê¸° ìœ„í•´ì„œ...
             }
         }
         else /* (mUseSeparateFilesOpt == ILO_FALSE) */
@@ -3545,7 +3545,7 @@ IDE_RC iloDataFile::OpenLOBFile( ALTIBASE_ILOADER_HANDLE  aHandle,
             }
         }
 
-        /* LOB ÆÄÀÏÀº ÀÌÁø ¸ðµå·Î ¿¬´Ù. */
+        /* LOB íŒŒì¼ì€ ì´ì§„ ëª¨ë“œë¡œ ì—°ë‹¤. */
         if (aIsWr == ILO_TRUE)
         {
             (void)idlOS::snprintf(sMode, ID_SIZEOF(sMode), "wb");
@@ -3588,7 +3588,7 @@ IDE_RC iloDataFile::OpenLOBFile( ALTIBASE_ILOADER_HANDLE  aHandle,
 /**
  * CloseLOBFile.
  *
- * LOB ÆÄÀÏÀ» ´Ý´Â´Ù.
+ * LOB íŒŒì¼ì„ ë‹«ëŠ”ë‹¤.
  */
 IDE_RC iloDataFile::CloseLOBFile( ALTIBASE_ILOADER_HANDLE aHandle )
 {
@@ -3620,14 +3620,14 @@ IDE_RC iloDataFile::CloseLOBFile( ALTIBASE_ILOADER_HANDLE aHandle )
 /**
  * PrintOneLOBCol.
  *
- * ÇÑ °³ÀÇ LOB ÄÃ·³ °ªÀ» µ¥ÀÌÅÍ ÆÄÀÏ ¶Ç´Â LOB ÆÄÀÏ¿¡ Ãâ·ÂÇÑ´Ù.
+ * í•œ ê°œì˜ LOB ì»¬ëŸ¼ ê°’ì„ ë°ì´í„° íŒŒì¼ ë˜ëŠ” LOB íŒŒì¼ì— ì¶œë ¥í•œë‹¤.
  *
  * @param[in] aRowNo
- *  Ãâ·ÂÇÒ LOB ÄÃ·³ÀÌ ¼Ò¼ÓµÈ ÇàÀÇ ¹øÈ£.
+ *  ì¶œë ¥í•  LOB ì»¬ëŸ¼ì´ ì†Œì†ëœ í–‰ì˜ ë²ˆí˜¸.
  * @param[in] aCols
- *  ÄÃ·³ Á¤º¸(LOB locator Æ÷ÇÔ)µéÀÌ µé¾îÀÖ´Â ÀÚ·á±¸Á¶.
+ *  ì»¬ëŸ¼ ì •ë³´(LOB locator í¬í•¨)ë“¤ì´ ë“¤ì–´ìžˆëŠ” ìžë£Œêµ¬ì¡°.
  * @param[in] aColIdx
- *  aCols¿¡¼­ ¸î ¹øÂ° ÄÃ·³ÀÌ Ãâ·ÂÇÒ ÄÃ·³ÀÎÁö¸¦ ÁöÁ¤.
+ *  aColsì—ì„œ ëª‡ ë²ˆì§¸ ì»¬ëŸ¼ì´ ì¶œë ¥í•  ì»¬ëŸ¼ì¸ì§€ë¥¼ ì§€ì •.
  */
 IDE_RC iloDataFile::PrintOneLOBCol( ALTIBASE_ILOADER_HANDLE  aHandle,
                                     SInt                     aRowNo, 
@@ -3659,7 +3659,7 @@ IDE_RC iloDataFile::PrintOneLOBCol( ALTIBASE_ILOADER_HANDLE  aHandle,
     else
     {
         /* BUG-21064 : CLOB type CSV up/download error */
-        // download ½Ã ÄÃ·³ÀÌ typeÀÌ CLOBÀÌ¶ó¸é ¹«Á¶°Ç enclosing("")ÇÑ´Ù. 
+        // download ì‹œ ì»¬ëŸ¼ì´ typeì´ CLOBì´ë¼ë©´ ë¬´ì¡°ê±´ enclosing("")í•œë‹¤. 
         if( ( sHandle->mProgOption->mRule == csv ) &&
             ( aCols->GetType(aColIdx) == SQL_CLOB ) )
         {
@@ -3691,16 +3691,16 @@ IDE_RC iloDataFile::PrintOneLOBCol( ALTIBASE_ILOADER_HANDLE  aHandle,
 /**
  * PrintOneLOBToDataFile.
  *
- * use_lob_file=noÀÎ °æ¿ì È£ÃâµÇ¸ç,
- * ÇÑ °³ÀÇ LOB ÄÃ·³ °ªÀ» µ¥ÀÌÅÍ ÆÄÀÏ¿¡ Ãâ·ÂÇÑ´Ù.
- * ÀÎÀÚ aCols¿¡ ÀúÀåµÇ¾îÀÖ´Â LOB locator¿Í
- * LOB wrapper °´Ã¼(mLOB)¸¦ »ç¿ëÇÏ¿©
- * ¼­¹ö·ÎºÎÅÍ LOB µ¥ÀÌÅÍ¸¦ ¾ò¾î¿Í µ¥ÀÌÅÍ ÆÄÀÏ¿¡ ¾´´Ù.
+ * use_lob_file=noì¸ ê²½ìš° í˜¸ì¶œë˜ë©°,
+ * í•œ ê°œì˜ LOB ì»¬ëŸ¼ ê°’ì„ ë°ì´í„° íŒŒì¼ì— ì¶œë ¥í•œë‹¤.
+ * ì¸ìž aColsì— ì €ìž¥ë˜ì–´ìžˆëŠ” LOB locatorì™€
+ * LOB wrapper ê°ì²´(mLOB)ë¥¼ ì‚¬ìš©í•˜ì—¬
+ * ì„œë²„ë¡œë¶€í„° LOB ë°ì´í„°ë¥¼ ì–»ì–´ì™€ ë°ì´í„° íŒŒì¼ì— ì“´ë‹¤.
  *
  * @param[in] aCols
- *  ÄÃ·³ Á¤º¸(LOB locator Æ÷ÇÔ)µéÀÌ µé¾îÀÖ´Â ÀÚ·á±¸Á¶.
+ *  ì»¬ëŸ¼ ì •ë³´(LOB locator í¬í•¨)ë“¤ì´ ë“¤ì–´ìžˆëŠ” ìžë£Œêµ¬ì¡°.
  * @param[in] aColIdx
- *  aCols¿¡¼­ ¸î ¹øÂ° ÄÃ·³ÀÌ Ãâ·ÂÇÒ ÄÃ·³ÀÎÁö¸¦ ÁöÁ¤.
+ *  aColsì—ì„œ ëª‡ ë²ˆì§¸ ì»¬ëŸ¼ì´ ì¶œë ¥í•  ì»¬ëŸ¼ì¸ì§€ë¥¼ ì§€ì •.
  */
 IDE_RC iloDataFile::PrintOneLOBColToDataFile( ALTIBASE_ILOADER_HANDLE  aHandle,
                                               iloColumns              *aCols, 
@@ -3736,14 +3736,14 @@ IDE_RC iloDataFile::PrintOneLOBColToDataFile( ALTIBASE_ILOADER_HANDLE  aHandle,
                                 iloLOB::LOBAccessMode_RDONLY)
              != IDE_SUCCESS);
 
-    /* ¼­¹ö·ÎºÎÅÍ LOB µ¥ÀÌÅÍ¸¦ ÀÐÀ½. */
+    /* ì„œë²„ë¡œë¶€í„° LOB ë°ì´í„°ë¥¼ ì½ìŒ. */
     while (mLOB->Fetch( sHandle, &sBuf, &sStrLen) == IDE_SUCCESS)
     {
-        /* LOB µ¥ÀÌÅÍ¸¦ µ¥ÀÌÅÍ ÆÄÀÏ¿¡ ¾¸. */
+        /* LOB ë°ì´í„°ë¥¼ ë°ì´í„° íŒŒì¼ì— ì”€. */
         sWrittenLen = (UInt)idlOS::fwrite(sBuf, 1, sStrLen, aWriteFp);
         IDE_TEST_RAISE(sWrittenLen < sStrLen, WriteError);
     }
-    /* ¼­¹ö·ÎºÎÅÍ LOB µ¥ÀÌÅÍ¸¦ ¾ò´Â °úÁ¤¿¡¼­ ¿À·ù ¹ß»ýÇß´ÂÁö °Ë»ç. */
+    /* ì„œë²„ë¡œë¶€í„° LOB ë°ì´í„°ë¥¼ ì–»ëŠ” ê³¼ì •ì—ì„œ ì˜¤ë¥˜ ë°œìƒí–ˆëŠ”ì§€ ê²€ì‚¬. */
     IDE_TEST_RAISE(mLOB->IsFetchError() == ILO_TRUE, FetchError);
 
     return IDE_SUCCESS;
@@ -3772,19 +3772,19 @@ IDE_RC iloDataFile::PrintOneLOBColToDataFile( ALTIBASE_ILOADER_HANDLE  aHandle,
 /**
  * PrintOneLOBToNonSepLOBFile.
  *
- * use_lob_file=yes, use_separate_files=noÀÎ °æ¿ì È£ÃâµÇ¸ç,
- * ÇÑ °³ÀÇ LOB ÄÃ·³ °ªÀ» LOB ÆÄÀÏ¿¡ Ãâ·ÂÇÑ´Ù.
- * ¶Ç, µ¥ÀÌÅÍ ÆÄÀÏ¿¡´Â LOB indicator¸¦ Ãâ·ÂÇÑ´Ù.
- * ÀÎÀÚ aCols¿¡ ÀúÀåµÇ¾îÀÖ´Â LOB locator¿Í
- * LOB wrapper °´Ã¼(mLOB)¸¦ »ç¿ëÇÏ¿©
- * ¼­¹ö·ÎºÎÅÍ LOB µ¥ÀÌÅÍ¸¦ ¾ò¾î¿Í LOB ÆÄÀÏ¿¡ ¾´´Ù.
- * LOB ÆÄÀÏ Å©±â°¡ ¿É¼Ç lob_file_size¸¦ ³Ñ°Ô µÇ´ÂÁö °Ë»çÇÏ¿©
- * ÀÚµ¿ÀûÀ¸·Î ´ÙÀ½ ¹øÈ£ÀÇ LOB ÆÄÀÏÀ» ¿­¾î ÀÌ¾î¼­ ¾´´Ù.
+ * use_lob_file=yes, use_separate_files=noì¸ ê²½ìš° í˜¸ì¶œë˜ë©°,
+ * í•œ ê°œì˜ LOB ì»¬ëŸ¼ ê°’ì„ LOB íŒŒì¼ì— ì¶œë ¥í•œë‹¤.
+ * ë˜, ë°ì´í„° íŒŒì¼ì—ëŠ” LOB indicatorë¥¼ ì¶œë ¥í•œë‹¤.
+ * ì¸ìž aColsì— ì €ìž¥ë˜ì–´ìžˆëŠ” LOB locatorì™€
+ * LOB wrapper ê°ì²´(mLOB)ë¥¼ ì‚¬ìš©í•˜ì—¬
+ * ì„œë²„ë¡œë¶€í„° LOB ë°ì´í„°ë¥¼ ì–»ì–´ì™€ LOB íŒŒì¼ì— ì“´ë‹¤.
+ * LOB íŒŒì¼ í¬ê¸°ê°€ ì˜µì…˜ lob_file_sizeë¥¼ ë„˜ê²Œ ë˜ëŠ”ì§€ ê²€ì‚¬í•˜ì—¬
+ * ìžë™ì ìœ¼ë¡œ ë‹¤ìŒ ë²ˆí˜¸ì˜ LOB íŒŒì¼ì„ ì—´ì–´ ì´ì–´ì„œ ì“´ë‹¤.
  *
  * @param[in] aCols
- *  ÄÃ·³ Á¤º¸(LOB locator Æ÷ÇÔ)µéÀÌ µé¾îÀÖ´Â ÀÚ·á±¸Á¶.
+ *  ì»¬ëŸ¼ ì •ë³´(LOB locator í¬í•¨)ë“¤ì´ ë“¤ì–´ìžˆëŠ” ìžë£Œêµ¬ì¡°.
  * @param[in] aColIdx
- *  aCols¿¡¼­ ¸î ¹øÂ° ÄÃ·³ÀÌ Ãâ·ÂÇÒ ÄÃ·³ÀÎÁö¸¦ ÁöÁ¤.
+ *  aColsì—ì„œ ëª‡ ë²ˆì§¸ ì»¬ëŸ¼ì´ ì¶œë ¥í•  ì»¬ëŸ¼ì¸ì§€ë¥¼ ì§€ì •.
  */
 IDE_RC iloDataFile::PrintOneLOBColToNonSepLOBFile( ALTIBASE_ILOADER_HANDLE  aHandle,
                                                    iloColumns              *aCols,
@@ -3805,7 +3805,7 @@ IDE_RC iloDataFile::PrintOneLOBColToNonSepLOBFile( ALTIBASE_ILOADER_HANDLE  aHan
     
     if (*aCols->m_Len[aColIdx] == SQL_NULL_DATA)
     {
-        /* µ¥ÀÌÅÍ ÆÄÀÏ¿¡ LOB indicator Ãâ·Â. */
+        /* ë°ì´í„° íŒŒì¼ì— LOB indicator ì¶œë ¥. */
         sWrittenLen = (UInt)idlOS::fprintf(aWriteFp, "%snull",
                                            mLOBIndicatorOpt);
         IDE_TEST_RAISE(sWrittenLen < mLOBIndicatorOptLen + 4,
@@ -3832,39 +3832,39 @@ IDE_RC iloDataFile::PrintOneLOBColToNonSepLOBFile( ALTIBASE_ILOADER_HANDLE  aHan
              != IDE_SUCCESS);
 
     sLOBLength = mLOB->GetLOBLength();
-    /* LOBÀÌ NULLÀÌ ¾Æ´Ñ °æ¿ì */
+    /* LOBì´ NULLì´ ì•„ë‹Œ ê²½ìš° */
     if (sLOBLength > 0)
     {
-        /* LOB ÆÄÀÏ Å©±â Á¦ÇÑÀÌ ¾ø´Â °æ¿ì */
+        /* LOB íŒŒì¼ í¬ê¸° ì œí•œì´ ì—†ëŠ” ê²½ìš° */
         if (mLOBFileSizeOpt == ID_ULONG(0))
         {
-            /* ¼­¹ö·ÎºÎÅÍ LOB µ¥ÀÌÅÍ¸¦ ÀÐÀ½. */
+            /* ì„œë²„ë¡œë¶€í„° LOB ë°ì´í„°ë¥¼ ì½ìŒ. */
             while (mLOB->Fetch( sHandle, &sBuf, &sStrLen) == IDE_SUCCESS)
             {
-                /* LOB µ¥ÀÌÅÍ¸¦ LOB ÆÄÀÏ¿¡ ¾¸. */
+                /* LOB ë°ì´í„°ë¥¼ LOB íŒŒì¼ì— ì”€. */
                 IDE_TEST_RAISE(idlOS::fwrite(sBuf, 1, sStrLen, mLOBFP) < sStrLen,
                                LOBFileWriteError);
                 mLOBFilePos += (ULong)sStrLen;
                 mAccumLOBFilePos += (ULong)sStrLen;
             }
-            /* ¼­¹ö·ÎºÎÅÍ LOB µ¥ÀÌÅÍ¸¦ ¾ò´Â °úÁ¤¿¡¼­ ¿À·ù ¹ß»ýÇß´ÂÁö °Ë»ç. */
+            /* ì„œë²„ë¡œë¶€í„° LOB ë°ì´í„°ë¥¼ ì–»ëŠ” ê³¼ì •ì—ì„œ ì˜¤ë¥˜ ë°œìƒí–ˆëŠ”ì§€ ê²€ì‚¬. */
             IDE_TEST_RAISE(mLOB->IsFetchError() == ILO_TRUE, FetchError);
         }
-        /* LOB ÆÄÀÏ Å©±â Á¦ÇÑÀÌ ÀÖ´Â °æ¿ì */
+        /* LOB íŒŒì¼ í¬ê¸° ì œí•œì´ ìžˆëŠ” ê²½ìš° */
         else /* (mLOBFileSizeOpt > ID_ULONG(0)) */
         {
-            /* ¼­¹ö·ÎºÎÅÍ LOB µ¥ÀÌÅÍ¸¦ ÀÐÀ½. */
+            /* ì„œë²„ë¡œë¶€í„° LOB ë°ì´í„°ë¥¼ ì½ìŒ. */
             while (mLOB->Fetch( sHandle, &sBuf, &sStrLen) == IDE_SUCCESS)
             {
-                /* LOB ÆÄÀÏ Å©±â Á¦ÇÑÀ¸·Î LOB µ¥ÀÌÅÍ¸¦
-                 * ÇöÀç ¿­·ÁÀÖ´Â LOB ÆÄÀÏ¿¡ ¸ðµÎ Ãâ·ÂÇÒ ¼ö ¾ø´Â µ¿¾È
-                 * °è¼Ó ·çÇÁ */
+                /* LOB íŒŒì¼ í¬ê¸° ì œí•œìœ¼ë¡œ LOB ë°ì´í„°ë¥¼
+                 * í˜„ìž¬ ì—´ë ¤ìžˆëŠ” LOB íŒŒì¼ì— ëª¨ë‘ ì¶œë ¥í•  ìˆ˜ ì—†ëŠ” ë™ì•ˆ
+                 * ê³„ì† ë£¨í”„ */
                 while (mLOBFileSizeOpt - mLOBFilePos < (ULong)sStrLen)
                 {
                     sToWriteLen = (UInt)(mLOBFileSizeOpt - mLOBFilePos);
                     if (sToWriteLen > 0)
                     {
-                        /* LOB µ¥ÀÌÅÍ¸¦ LOB ÆÄÀÏ¿¡ ¾¸. */
+                        /* LOB ë°ì´í„°ë¥¼ LOB íŒŒì¼ì— ì”€. */
                         sWrittenLen = (UInt)idlOS::fwrite(sBuf, 1, sToWriteLen,
                                                           mLOBFP);
                         mLOBFilePos += (ULong)sWrittenLen;
@@ -3874,24 +3874,24 @@ IDE_RC iloDataFile::PrintOneLOBColToNonSepLOBFile( ALTIBASE_ILOADER_HANDLE  aHan
                     }
                     IDE_TEST_RAISE(CloseLOBFile(sHandle) != IDE_SUCCESS,
                                    OpenOrCloseLOBFileError);
-                    /* ´ÙÀ½ ¹øÈ£ÀÇ LOB ÆÄÀÏÀ» ¿¬´Ù. */
+                    /* ë‹¤ìŒ ë²ˆí˜¸ì˜ LOB íŒŒì¼ì„ ì—°ë‹¤. */
                     IDE_TEST_RAISE(OpenLOBFile(sHandle, ILO_TRUE, mLOBFileNo + 1, 0,
                                                ILO_TRUE)
                                    != IDE_SUCCESS, OpenOrCloseLOBFileError);
                     sBuf = (void *)((SChar *)sBuf + sToWriteLen);
                     sStrLen -= sToWriteLen;
                 }
-                /* LOB µ¥ÀÌÅÍ¸¦ LOB ÆÄÀÏ¿¡ ¾¸. */
+                /* LOB ë°ì´í„°ë¥¼ LOB íŒŒì¼ì— ì”€. */
                 sWrittenLen = (UInt)idlOS::fwrite(sBuf, 1, sStrLen, mLOBFP);
                 mLOBFilePos += (ULong)sWrittenLen;
                 mAccumLOBFilePos += (ULong)sWrittenLen;
                 IDE_TEST_RAISE(sWrittenLen < sStrLen, LOBFileWriteError);
             }
-            /* ¼­¹ö·ÎºÎÅÍ LOB µ¥ÀÌÅÍ¸¦ ¾ò´Â °úÁ¤¿¡¼­ ¿À·ù ¹ß»ýÇß´ÂÁö °Ë»ç. */
+            /* ì„œë²„ë¡œë¶€í„° LOB ë°ì´í„°ë¥¼ ì–»ëŠ” ê³¼ì •ì—ì„œ ì˜¤ë¥˜ ë°œìƒí–ˆëŠ”ì§€ ê²€ì‚¬. */
             IDE_TEST_RAISE(mLOB->IsFetchError() == ILO_TRUE, FetchError);
         }
 
-        /* µ¥ÀÌÅÍ ÆÄÀÏ¿¡ LOB indicator Ãâ·Â. */
+        /* ë°ì´í„° íŒŒì¼ì— LOB indicator ì¶œë ¥. */
         sToWriteLen = (UInt)idlOS::snprintf(sLOBIndicator,
                                          ID_SIZEOF(sLOBIndicator),
                                          "%s%"ID_UINT64_FMT":%"ID_UINT32_FMT,
@@ -3901,14 +3901,14 @@ IDE_RC iloDataFile::PrintOneLOBColToNonSepLOBFile( ALTIBASE_ILOADER_HANDLE  aHan
         IDE_TEST_RAISE( idlOS::fwrite(sLOBIndicator, sToWriteLen, 1, aWriteFp)
                         != (UInt)1, DataFileWriteError );
     }
-    /* LOBÀÌ NULLÀÎ °æ¿ì */
+    /* LOBì´ NULLì¸ ê²½ìš° */
     else /* (sLOBLength == 0) */
     {
         // BUG-31004
         IDE_TEST_RAISE( sHandle->mSQLApi->FreeLOB(mLOB->GetLOBLoc()) != IDE_SUCCESS,
                         FreeLOBError);
 
-        /* µ¥ÀÌÅÍ ÆÄÀÏ¿¡ LOB indicator Ãâ·Â. */
+        /* ë°ì´í„° íŒŒì¼ì— LOB indicator ì¶œë ¥. */
         sWrittenLen = (UInt)idlOS::fprintf(aWriteFp, "%snull",
                                            mLOBIndicatorOpt);
         IDE_TEST_RAISE(sWrittenLen < mLOBIndicatorOptLen + 4,
@@ -3963,19 +3963,19 @@ IDE_RC iloDataFile::PrintOneLOBColToNonSepLOBFile( ALTIBASE_ILOADER_HANDLE  aHan
 /**
  * PrintOneLOBToSepLOBFile.
  *
- * use_lob_file=yes, use_separate_files=yesÀÎ °æ¿ì È£ÃâµÇ¸ç,
- * ÇÑ °³ÀÇ LOB ÄÃ·³ °ªÀ» µ¶¸³µÈ LOB ÆÄÀÏ¿¡ Ãâ·ÂÇÑ´Ù.
- * ¶Ç, µ¥ÀÌÅÍ ÆÄÀÏ¿¡´Â LOB indicator¸¦ Ãâ·ÂÇÑ´Ù.
- * ÀÎÀÚ aCols¿¡ ÀúÀåµÇ¾îÀÖ´Â LOB locator¿Í
- * LOB wrapper °´Ã¼(mLOB)¸¦ »ç¿ëÇÏ¿©
- * ¼­¹ö·ÎºÎÅÍ LOB µ¥ÀÌÅÍ¸¦ ¾ò¾î¿Í LOB ÆÄÀÏ¿¡ ¾´´Ù.
+ * use_lob_file=yes, use_separate_files=yesì¸ ê²½ìš° í˜¸ì¶œë˜ë©°,
+ * í•œ ê°œì˜ LOB ì»¬ëŸ¼ ê°’ì„ ë…ë¦½ëœ LOB íŒŒì¼ì— ì¶œë ¥í•œë‹¤.
+ * ë˜, ë°ì´í„° íŒŒì¼ì—ëŠ” LOB indicatorë¥¼ ì¶œë ¥í•œë‹¤.
+ * ì¸ìž aColsì— ì €ìž¥ë˜ì–´ìžˆëŠ” LOB locatorì™€
+ * LOB wrapper ê°ì²´(mLOB)ë¥¼ ì‚¬ìš©í•˜ì—¬
+ * ì„œë²„ë¡œë¶€í„° LOB ë°ì´í„°ë¥¼ ì–»ì–´ì™€ LOB íŒŒì¼ì— ì“´ë‹¤.
  *
  * @param[in] aRowNo
- *  Ãâ·ÂÇÒ LOB ÄÃ·³ÀÌ ¼Ò¼ÓµÈ ÇàÀÇ ¹øÈ£.
+ *  ì¶œë ¥í•  LOB ì»¬ëŸ¼ì´ ì†Œì†ëœ í–‰ì˜ ë²ˆí˜¸.
  * @param[in] aCols
- *  ÄÃ·³ Á¤º¸(LOB locator Æ÷ÇÔ)µéÀÌ µé¾îÀÖ´Â ÀÚ·á±¸Á¶.
+ *  ì»¬ëŸ¼ ì •ë³´(LOB locator í¬í•¨)ë“¤ì´ ë“¤ì–´ìžˆëŠ” ìžë£Œêµ¬ì¡°.
  * @param[in] aColIdx
- *  aCols¿¡¼­ ¸î ¹øÂ° ÄÃ·³ÀÌ Ãâ·ÂÇÒ ÄÃ·³ÀÎÁö¸¦ ÁöÁ¤.
+ *  aColsì—ì„œ ëª‡ ë²ˆì§¸ ì»¬ëŸ¼ì´ ì¶œë ¥í•  ì»¬ëŸ¼ì¸ì§€ë¥¼ ì§€ì •.
  */
 IDE_RC iloDataFile::PrintOneLOBColToSepLOBFile( ALTIBASE_ILOADER_HANDLE  aHandle, 
                                                 SInt                     aRowNo, 
@@ -3998,7 +3998,7 @@ IDE_RC iloDataFile::PrintOneLOBColToSepLOBFile( ALTIBASE_ILOADER_HANDLE  aHandle
     if (*aCols->m_Len[aColIdx] == SQL_NULL_DATA)
     {
        /* BUG-24584
-        * NULL ÀÏ °æ¿ì´Â ¾Æ¹« Ã³¸®µµ ÇÏÁö ¾ÊÀ½..
+        * NULL ì¼ ê²½ìš°ëŠ” ì•„ë¬´ ì²˜ë¦¬ë„ í•˜ì§€ ì•ŠìŒ..
         */
         return IDE_SUCCESS;
     }
@@ -4024,8 +4024,8 @@ IDE_RC iloDataFile::PrintOneLOBColToSepLOBFile( ALTIBASE_ILOADER_HANDLE  aHandle
     if (mLOB->GetLOBLength() > 0)
     {
         /* BUG-24583
-         * -lob 'use_separate_files=yes'¿É¼ÇÀ» »ç¿ëÇÒ °æ¿ì¿¡´Â 
-         * ÇØ´ç Æú´õ³»ÀÇ ÆÄÀÏ¿¡ µ¥ÀÌÅÍ¸¦ ÀúÀåÇÑ´Ù. 
+         * -lob 'use_separate_files=yes'ì˜µì…˜ì„ ì‚¬ìš©í•  ê²½ìš°ì—ëŠ” 
+         * í•´ë‹¹ í´ë”ë‚´ì˜ íŒŒì¼ì— ë°ì´í„°ë¥¼ ì €ìž¥í•œë‹¤. 
          */
         (void)sprintf(sTmpFilePath, "%s/%s",
                       pTableInfo->GetTransTableName(sTableName,(UInt)MAX_OBJNAME_LEN),
@@ -4038,20 +4038,20 @@ IDE_RC iloDataFile::PrintOneLOBColToSepLOBFile( ALTIBASE_ILOADER_HANDLE  aHandle
                                     sTmpFilePath)
                        != IDE_SUCCESS, OpenOrCloseLOBFileError);
 
-        /* ¼­¹ö·ÎºÎÅÍ LOB µ¥ÀÌÅÍ¸¦ ÀÐÀ½. */
+        /* ì„œë²„ë¡œë¶€í„° LOB ë°ì´í„°ë¥¼ ì½ìŒ. */
         while (mLOB->Fetch( sHandle, &sBuf, &sStrLen) == IDE_SUCCESS)
         {
-            /* LOB µ¥ÀÌÅÍ¸¦ LOB ÆÄÀÏ¿¡ ¾¸. */
+            /* LOB ë°ì´í„°ë¥¼ LOB íŒŒì¼ì— ì”€. */
             IDE_TEST_RAISE(idlOS::fwrite(sBuf, 1, sStrLen, mLOBFP) < sStrLen,
                         LOBFileWriteError);
         }
-        /* ¼­¹ö·ÎºÎÅÍ LOB µ¥ÀÌÅÍ¸¦ ¾ò´Â °úÁ¤¿¡¼­ ¿À·ù ¹ß»ýÇß´ÂÁö °Ë»ç. */
+        /* ì„œë²„ë¡œë¶€í„° LOB ë°ì´í„°ë¥¼ ì–»ëŠ” ê³¼ì •ì—ì„œ ì˜¤ë¥˜ ë°œìƒí–ˆëŠ”ì§€ ê²€ì‚¬. */
         IDE_TEST_RAISE(mLOB->IsFetchError() == ILO_TRUE, FetchError);
 
-        /* LOB ÆÄÀÏÀ» ´Ý´Â´Ù. */
+        /* LOB íŒŒì¼ì„ ë‹«ëŠ”ë‹¤. */
         IDE_TEST_RAISE(CloseLOBFile(sHandle) != IDE_SUCCESS, OpenOrCloseLOBFileError);
 
-        /* µ¥ÀÌÅÍ ÆÄÀÏ¿¡ LOB indicator Ãâ·Â. */
+        /* ë°ì´í„° íŒŒì¼ì— LOB indicator ì¶œë ¥. */
         (UInt)idlOS::fprintf(aWriteFp, "%s/%09"ID_UINT32_FMT".lob",       //BUG-24583
                              sTmpFilePath, aRowNo);
     }
@@ -4062,8 +4062,8 @@ IDE_RC iloDataFile::PrintOneLOBColToSepLOBFile( ALTIBASE_ILOADER_HANDLE  aHandle
                         FreeLOBError);
 
         /* BUG-24583 
-         * LOB Data°¡ ¾øÀ» °æ¿ì, %%NULLÀ» ÆÄÀÏ¿¡ Ç¥½ÃÇÏÁö ¾Ê´Â´Ù.
-         * ¾Æ¹« Ã³¸®µµ ÇÏÁö ¾Ê´Â´Ù. 
+         * LOB Dataê°€ ì—†ì„ ê²½ìš°, %%NULLì„ íŒŒì¼ì— í‘œì‹œí•˜ì§€ ì•ŠëŠ”ë‹¤.
+         * ì•„ë¬´ ì²˜ë¦¬ë„ í•˜ì§€ ì•ŠëŠ”ë‹¤. 
          */
     }
 
@@ -4107,52 +4107,52 @@ IDE_RC iloDataFile::PrintOneLOBColToSepLOBFile( ALTIBASE_ILOADER_HANDLE  aHandle
 /**
  * AnalLOBIndicator.
  *
- * µ¥ÀÌÅÍ ÆÄÀÏ·ÎºÎÅÍ ÀÐÀº LOB indicator¸¦ ºÐ¼®ÇÏ¿©,
- * LOB indicator ±¸ºÐÀÚ·Î ½ÃÀÛÇÏ´ÂÁö ¿©ºÎ¸¦ °Ë»çÇÏ°í,
- * LOB ÆÄÀÏ³»¿¡¼­ LOB µ¥ÀÌÅÍÀÇ ½ÃÀÛ À§Ä¡¿Í ±æÀÌ¸¦ ¾ò´Â´Ù.
- * ºÐ¼®ÇÒ LOB indicator´Â m_TokenValue¿¡ µé¾îÀÖ´Ù.
+ * ë°ì´í„° íŒŒì¼ë¡œë¶€í„° ì½ì€ LOB indicatorë¥¼ ë¶„ì„í•˜ì—¬,
+ * LOB indicator êµ¬ë¶„ìžë¡œ ì‹œìž‘í•˜ëŠ”ì§€ ì—¬ë¶€ë¥¼ ê²€ì‚¬í•˜ê³ ,
+ * LOB íŒŒì¼ë‚´ì—ì„œ LOB ë°ì´í„°ì˜ ì‹œìž‘ ìœ„ì¹˜ì™€ ê¸¸ì´ë¥¼ ì–»ëŠ”ë‹¤.
+ * ë¶„ì„í•  LOB indicatorëŠ” m_TokenValueì— ë“¤ì–´ìžˆë‹¤.
  *
  * @param[out] aLOBPhyOffs
- *  LOB ÆÄÀÏ³»¿¡¼­ LOB µ¥ÀÌÅÍÀÇ ½ÃÀÛ À§Ä¡.
+ *  LOB íŒŒì¼ë‚´ì—ì„œ LOB ë°ì´í„°ì˜ ì‹œìž‘ ìœ„ì¹˜.
  * @param[out] aLOBPhyLen
- *  LOB ÆÄÀÏ³»¿¡¼­ LOB µ¥ÀÌÅÍÀÇ ±æÀÌ(¹°¸®Àû ±æÀÌ).
+ *  LOB íŒŒì¼ë‚´ì—ì„œ LOB ë°ì´í„°ì˜ ê¸¸ì´(ë¬¼ë¦¬ì  ê¸¸ì´).
  */
 IDE_RC iloDataFile::AnalLOBIndicator(ULong *aLOBPhyOffs, ULong *aLOBPhyLen)
 {
 
     /* BUG-24583
-     * use_separate_files=yes·Î ¼³Á¤ÇÑ °æ¿ì¿¡´Â LobIndicator¸¦ »ç¿ëÇÏÁö ¾Ê°í, 
-     * FilePath+FileName ·Î ±¸¼ºµÈ´Ù.
+     * use_separate_files=yesë¡œ ì„¤ì •í•œ ê²½ìš°ì—ëŠ” LobIndicatorë¥¼ ì‚¬ìš©í•˜ì§€ ì•Šê³ , 
+     * FilePath+FileName ë¡œ êµ¬ì„±ëœë‹¤.
      */
     if (mUseSeparateFilesOpt == ILO_TRUE)
     {
         if ( idlOS::strcmp(m_TokenValue, "") != 0 )
         {
-            // FilePath + FileName ÃßÃâ.. 
+            // FilePath + FileName ì¶”ì¶œ.. 
             (void)idlOS::strcpy( mLOBFile[mLOBFileColumnNum], m_TokenValue);
             (*aLOBPhyLen) = ID_ULONG(1);        
-            mLOBFileColumnNum++;        //´ÙÀ½ FilenameÀ»  ÀúÀåÇÏ±â À§ÇØ¼­...
+            mLOBFileColumnNum++;        //ë‹¤ìŒ Filenameì„  ì €ìž¥í•˜ê¸° ìœ„í•´ì„œ...
         }
         else
         {
-            //LOB Data°¡ ¾øÀ» °æ¿ì (Datafile¿¡ LOB File °æ·Î°¡ ¾øÀ» °æ¿ì)
+            //LOB Dataê°€ ì—†ì„ ê²½ìš° (Datafileì— LOB File ê²½ë¡œê°€ ì—†ì„ ê²½ìš°)
             (*aLOBPhyLen) = ID_ULONG(0);
         }
     }
     else /* (mUseSeparateFilesOpt == ILO_FALSE) */
     {
-        /* LOB indicator ±¸ºÐÀÚ·Î ½ÃÀÛÇÏ´ÂÁö °Ë»ç */
+        /* LOB indicator êµ¬ë¶„ìžë¡œ ì‹œìž‘í•˜ëŠ”ì§€ ê²€ì‚¬ */
         IDE_TEST(idlOS::strncmp(m_TokenValue, mLOBIndicatorOpt,
                  mLOBIndicatorOptLen) != 0);    
     
-        /* "%%null"ÀÎ °æ¿ì */
+        /* "%%null"ì¸ ê²½ìš° */
         if (idlOS::strcmp(&m_TokenValue[mLOBIndicatorOptLen], "null") == 0)
         {
             (*aLOBPhyLen) = ID_ULONG(0);
         }
         else if (mUseSeparateFilesOpt == ILO_FALSE)
         {
-            /* "%%¼ýÀÚ:¼ýÀÚ"·ÎºÎÅÍ ½ÃÀÛ À§Ä¡¿Í ±æÀÌ¸¦ ¾ò±â ½Ãµµ */
+            /* "%%ìˆ«ìž:ìˆ«ìž"ë¡œë¶€í„° ì‹œìž‘ ìœ„ì¹˜ì™€ ê¸¸ì´ë¥¼ ì–»ê¸° ì‹œë„ */
             IDE_TEST (sscanf(&m_TokenValue[mLOBIndicatorOptLen],
                       "%19"ID_UINT64_FMT":%19"ID_UINT64_FMT,
                       aLOBPhyOffs, aLOBPhyLen) < 2)
@@ -4172,17 +4172,17 @@ IDE_RC iloDataFile::AnalLOBIndicator(ULong *aLOBPhyOffs, ULong *aLOBPhyLen)
 /**
  * LoadOneRecordLOBCols.
  *
- * ÇÑ ·¹ÄÚµåÀÇ LOB ÄÃ·³µé¿¡ ´ëÇØ µ¥ÀÌÅÍ¸¦ ÆÄÀÏ·ÎºÎÅÍ ÀÐ¾î ¼­¹ö·Î Àü¼ÛÇÑ´Ù.
+ * í•œ ë ˆì½”ë“œì˜ LOB ì»¬ëŸ¼ë“¤ì— ëŒ€í•´ ë°ì´í„°ë¥¼ íŒŒì¼ë¡œë¶€í„° ì½ì–´ ì„œë²„ë¡œ ì „ì†¡í•œë‹¤.
  *
  * @param[in] aRowNo
- *  ·¹ÄÚµåÀÇ Çà ¹øÈ£.
+ *  ë ˆì½”ë“œì˜ í–‰ ë²ˆí˜¸.
  * @param[in] aTableInfo
- *  ÄÃ·³µéÀÇ Á¤º¸°¡ µé¾îÀÖ´Â ÀÚ·á±¸Á¶.
- *  ÄÃ·³ Á¤º¸¿¡´Â ÆÄÀÏ³»¿¡¼­ LOB µ¥ÀÌÅÍÀÇ ½ÃÀÛ À§Ä¡¿Í ±æÀÌ,
- *  LOB locator°¡ Æ÷ÇÔµÈ´Ù.
+ *  ì»¬ëŸ¼ë“¤ì˜ ì •ë³´ê°€ ë“¤ì–´ìžˆëŠ” ìžë£Œêµ¬ì¡°.
+ *  ì»¬ëŸ¼ ì •ë³´ì—ëŠ” íŒŒì¼ë‚´ì—ì„œ LOB ë°ì´í„°ì˜ ì‹œìž‘ ìœ„ì¹˜ì™€ ê¸¸ì´,
+ *  LOB locatorê°€ í¬í•¨ëœë‹¤.
  * @param[in] aArrIdx
- *  ¼­¹ö·ÎÀÇ µ¥ÀÌÅÍ Àü¼Û¿¡ array bindingÀ» »ç¿ëÇÒ °æ¿ì
- *  aTableInfoÀÇ ÄÃ·³ °ª ¹è¿­¿¡¼­ ¸î ¹øÂ° °ªÀÌ »ç¿ëÇÒ °ªÀÎÁöÀÇ Á¤º¸.
+ *  ì„œë²„ë¡œì˜ ë°ì´í„° ì „ì†¡ì— array bindingì„ ì‚¬ìš©í•  ê²½ìš°
+ *  aTableInfoì˜ ì»¬ëŸ¼ ê°’ ë°°ì—´ì—ì„œ ëª‡ ë²ˆì§¸ ê°’ì´ ì‚¬ìš©í•  ê°’ì¸ì§€ì˜ ì •ë³´.
  */
 IDE_RC iloDataFile::LoadOneRecordLOBCols( ALTIBASE_ILOADER_HANDLE  aHandle,
                                           SInt                     aRowNo, 
@@ -4198,13 +4198,13 @@ IDE_RC iloDataFile::LoadOneRecordLOBCols( ALTIBASE_ILOADER_HANDLE  aHandle,
     
     for (sColIdx = 0; sColIdx < aTableInfo->GetAttrCount(); sColIdx++)
     {
-        /* ¹ÙÀÎµåµÇÁö ¾ÊÀº ÄÃ·³ skip */
+        /* ë°”ì¸ë“œë˜ì§€ ì•Šì€ ì»¬ëŸ¼ skip */
         if (aTableInfo->seqEqualChk(sHandle, sColIdx) >= 0 ||
             aTableInfo->mSkipFlag[sColIdx] == ILO_TRUE)
         {
             continue;
         }
-        /* ¹ÙÀÎµåµÇÁö ¾ÊÀº ÄÃ·³ skip */
+        /* ë°”ì¸ë“œë˜ì§€ ì•Šì€ ì»¬ëŸ¼ skip */
         if (aTableInfo->GetAttrType(sColIdx) == ISP_ATTR_TIMESTAMP &&
             sHandle->mParser.mAddFlag == ILO_TRUE)
         {
@@ -4218,13 +4218,13 @@ IDE_RC iloDataFile::LoadOneRecordLOBCols( ALTIBASE_ILOADER_HANDLE  aHandle,
             if (sRC != IDE_SUCCESS)
             {
                 sErrExist = ILO_TRUE;
-                /* ¾Æ·¡¿Í °°Àº ¿¡·¯ÀÇ °æ¿ì
-                 * ´õ ÀÌ»ó LOB ÄÃ·³À» ÀÐ¾îµéÀÌÁö ¾Ê°í Áï½Ã ÇÔ¼ö Á¾·á. */
+                /* ì•„ëž˜ì™€ ê°™ì€ ì—ëŸ¬ì˜ ê²½ìš°
+                 * ë” ì´ìƒ LOB ì»¬ëŸ¼ì„ ì½ì–´ë“¤ì´ì§€ ì•Šê³  ì¦‰ì‹œ í•¨ìˆ˜ ì¢…ë£Œ. */
                 IDE_TEST(uteGetErrorCODE( sHandle->mErrorMgr) == 0x3b032 ||
                          uteGetErrorCODE( sHandle->mErrorMgr) == 0x5003b ||
                              /* buffer full */
                          uteGetErrorCODE( sHandle->mErrorMgr) == 0x51043 ||
-                             /* Åë½Å Àå¾Ö */
+                             /* í†µì‹  ìž¥ì•  */
                          uteGetErrorCODE( sHandle->mErrorMgr) == 0x91044 ||
                              /* Data file IO error */
                          uteGetErrorCODE( sHandle->mErrorMgr) == 0x91045);
@@ -4245,19 +4245,19 @@ IDE_RC iloDataFile::LoadOneRecordLOBCols( ALTIBASE_ILOADER_HANDLE  aHandle,
 /**
  * LoadOneLOBCol.
  *
- * ÇÑ LOB ÄÃ·³¿¡ ´ëÇØ µ¥ÀÌÅÍ¸¦ ÆÄÀÏ·ÎºÎÅÍ ÀÐ¾î ¼­¹ö·Î Àü¼ÛÇÑ´Ù.
+ * í•œ LOB ì»¬ëŸ¼ì— ëŒ€í•´ ë°ì´í„°ë¥¼ íŒŒì¼ë¡œë¶€í„° ì½ì–´ ì„œë²„ë¡œ ì „ì†¡í•œë‹¤.
  *
  * @param[in] aRowNo
- *  ·¹ÄÚµåÀÇ Çà ¹øÈ£.
+ *  ë ˆì½”ë“œì˜ í–‰ ë²ˆí˜¸.
  * @param[in] aTableInfo
- *  ÄÃ·³µéÀÇ Á¤º¸°¡ µé¾îÀÖ´Â ÀÚ·á±¸Á¶.
- *  ÄÃ·³ Á¤º¸¿¡´Â ÆÄÀÏ³»¿¡¼­ LOB µ¥ÀÌÅÍÀÇ ½ÃÀÛ À§Ä¡¿Í ±æÀÌ,
- *  LOB locator°¡ Æ÷ÇÔµÈ´Ù.
+ *  ì»¬ëŸ¼ë“¤ì˜ ì •ë³´ê°€ ë“¤ì–´ìžˆëŠ” ìžë£Œêµ¬ì¡°.
+ *  ì»¬ëŸ¼ ì •ë³´ì—ëŠ” íŒŒì¼ë‚´ì—ì„œ LOB ë°ì´í„°ì˜ ì‹œìž‘ ìœ„ì¹˜ì™€ ê¸¸ì´,
+ *  LOB locatorê°€ í¬í•¨ëœë‹¤.
  * @param[in] aColIdx
- *  aTableInfo³»¿¡¼­ ¸î ¹øÂ° ÄÃ·³ÀÎÁöÀÇ Á¤º¸.
+ *  aTableInfoë‚´ì—ì„œ ëª‡ ë²ˆì§¸ ì»¬ëŸ¼ì¸ì§€ì˜ ì •ë³´.
  * @param[in] aArrIdx
- *  ¼­¹ö·ÎÀÇ µ¥ÀÌÅÍ Àü¼Û¿¡ array bindingÀ» »ç¿ëÇÒ °æ¿ì
- *  aTableInfoÀÇ ÄÃ·³ °ª ¹è¿­¿¡¼­ ¸î ¹øÂ° °ªÀÌ »ç¿ëÇÒ °ªÀÎÁöÀÇ Á¤º¸.
+ *  ì„œë²„ë¡œì˜ ë°ì´í„° ì „ì†¡ì— array bindingì„ ì‚¬ìš©í•  ê²½ìš°
+ *  aTableInfoì˜ ì»¬ëŸ¼ ê°’ ë°°ì—´ì—ì„œ ëª‡ ë²ˆì§¸ ê°’ì´ ì‚¬ìš©í•  ê°’ì¸ì§€ì˜ ì •ë³´.
  */
 IDE_RC iloDataFile::LoadOneLOBCol( ALTIBASE_ILOADER_HANDLE  aHandle,
                                    SInt                     aRowNo,
@@ -4307,18 +4307,18 @@ IDE_RC iloDataFile::LoadOneLOBCol( ALTIBASE_ILOADER_HANDLE  aHandle,
 /**
  * LoadOneLOBColFromDataFile.
  *
- * use_lob_file=noÀÎ °æ¿ì È£ÃâµÇ¸ç,
- * ÇÑ LOB ÄÃ·³¿¡ ´ëÇØ µ¥ÀÌÅÍ¸¦ µ¥ÀÌÅÍ ÆÄÀÏ·ÎºÎÅÍ ÀÐ¾î ¼­¹ö·Î Àü¼ÛÇÑ´Ù.
+ * use_lob_file=noì¸ ê²½ìš° í˜¸ì¶œë˜ë©°,
+ * í•œ LOB ì»¬ëŸ¼ì— ëŒ€í•´ ë°ì´í„°ë¥¼ ë°ì´í„° íŒŒì¼ë¡œë¶€í„° ì½ì–´ ì„œë²„ë¡œ ì „ì†¡í•œë‹¤.
  *
  * @param[in] aTableInfo
- *  ÄÃ·³µéÀÇ Á¤º¸°¡ µé¾îÀÖ´Â ÀÚ·á±¸Á¶.
- *  ÄÃ·³ Á¤º¸¿¡´Â µ¥ÀÌÅÍ ÆÄÀÏ³»¿¡¼­ LOB µ¥ÀÌÅÍÀÇ ½ÃÀÛ À§Ä¡¿Í ±æÀÌ,
- *  LOB locator°¡ Æ÷ÇÔµÈ´Ù.
+ *  ì»¬ëŸ¼ë“¤ì˜ ì •ë³´ê°€ ë“¤ì–´ìžˆëŠ” ìžë£Œêµ¬ì¡°.
+ *  ì»¬ëŸ¼ ì •ë³´ì—ëŠ” ë°ì´í„° íŒŒì¼ë‚´ì—ì„œ LOB ë°ì´í„°ì˜ ì‹œìž‘ ìœ„ì¹˜ì™€ ê¸¸ì´,
+ *  LOB locatorê°€ í¬í•¨ëœë‹¤.
  * @param[in] aColIdx
- *  aTableInfo³»¿¡¼­ ¸î ¹øÂ° ÄÃ·³ÀÎÁöÀÇ Á¤º¸.
+ *  aTableInfoë‚´ì—ì„œ ëª‡ ë²ˆì§¸ ì»¬ëŸ¼ì¸ì§€ì˜ ì •ë³´.
  * @param[in] aArrIdx
- *  ¼­¹ö·ÎÀÇ µ¥ÀÌÅÍ Àü¼Û¿¡ array bindingÀ» »ç¿ëÇÒ °æ¿ì
- *  aTableInfoÀÇ ÄÃ·³ °ª ¹è¿­¿¡¼­ ¸î ¹øÂ° °ªÀÌ »ç¿ëÇÒ °ªÀÎÁöÀÇ Á¤º¸.
+ *  ì„œë²„ë¡œì˜ ë°ì´í„° ì „ì†¡ì— array bindingì„ ì‚¬ìš©í•  ê²½ìš°
+ *  aTableInfoì˜ ì»¬ëŸ¼ ê°’ ë°°ì—´ì—ì„œ ëª‡ ë²ˆì§¸ ê°’ì´ ì‚¬ìš©í•  ê°’ì¸ì§€ì˜ ì •ë³´.
  */
 IDE_RC iloDataFile::LoadOneLOBColFromDataFile( ALTIBASE_ILOADER_HANDLE  aHandle,
                                                iloTableInfo             *aTableInfo,
@@ -4361,11 +4361,11 @@ IDE_RC iloDataFile::LoadOneLOBColFromDataFile( ALTIBASE_ILOADER_HANDLE  aHandle,
                               iloLOB::LOBAccessMode_WRONLY, aISPApi)
                               != IDE_SUCCESS);
 
-    /* LOB µ¥ÀÌÅÍÀÇ ±æÀÌ°¡ 0º¸´Ù Å« °æ¿ì */
+    /* LOB ë°ì´í„°ì˜ ê¸¸ì´ê°€ 0ë³´ë‹¤ í° ê²½ìš° */
     if (aTableInfo->mLOBPhyLen[aColIdx][aArrIdx] != ID_ULONG(0))
     {
         BackupDataFilePos();
-        /* µ¥ÀÌÅÍ ÆÄÀÏ³»¿¡¼­ LOB µ¥ÀÌÅÍÀÇ ½ÃÀÛ À§Ä¡·Î ÀÌµ¿. */
+        /* ë°ì´í„° íŒŒì¼ë‚´ì—ì„œ LOB ë°ì´í„°ì˜ ì‹œìž‘ ìœ„ì¹˜ë¡œ ì´ë™. */
         IDE_TEST_RAISE(DataFileSeek( sHandle,
                                      aTableInfo->mLOBPhyOffs[aColIdx][aArrIdx])
                                      != IDE_SUCCESS, SeekError);
@@ -4386,19 +4386,19 @@ IDE_RC iloDataFile::LoadOneLOBColFromDataFile( ALTIBASE_ILOADER_HANDLE  aHandle,
                 sStrLen = (UInt)(aTableInfo->mLOBLen[aColIdx][aArrIdx]
                                  - sAccumStrLen);
             }
-            /* µ¥ÀÌÅÍ ÆÄÀÏ·ÎºÎÅÍ µ¥ÀÌÅÍ ÀÐÀ½. */
-            // BUG-24873 clob µ¥ÀÌÅÍ ·ÎµùÇÒ¶§ [ERR-91044 : Error occurred during data file IO.] ¹ß»ý
-            // ¹ÙÀÌ³Ê¸® ¸ðµå·Î ÀÐÀ¸¹Ç·Î À©µµ¿ìÁî¸¦ µû·Î ±¸º°ÇÒ ÇÊ¿ä°¡ ¾ø´Ù.
+            /* ë°ì´í„° íŒŒì¼ë¡œë¶€í„° ë°ì´í„° ì½ìŒ. */
+            // BUG-24873 clob ë°ì´í„° ë¡œë”©í• ë•Œ [ERR-91044 : Error occurred during data file IO.] ë°œìƒ
+            // ë°”ì´ë„ˆë¦¬ ëª¨ë“œë¡œ ì½ìœ¼ë¯€ë¡œ ìœˆë„ìš°ì¦ˆë¥¼ ë”°ë¡œ êµ¬ë³„í•  í•„ìš”ê°€ ì—†ë‹¤.
             sReadLen = (UInt)idlOS::fread(sBuf, 1, sStrLen, m_DataFp);
             mDataFilePos += sReadLen;
 
             IDE_TEST_RAISE(sReadLen < sStrLen, ReadError);
-            /* ¼­¹ö·Î µ¥ÀÌÅÍ Àü¼Û. */
+            /* ì„œë²„ë¡œ ë°ì´í„° ì „ì†¡. */
             IDE_TEST_RAISE(mLOB->Append( sHandle, sStrLen, aISPApi)
                                          != IDE_SUCCESS, AppendError);
         }
 
-        /* µ¥ÀÌÅÍ ÆÄÀÏ³»¿¡¼­ÀÇ À§Ä¡¸¦ LOB µ¥ÀÌÅÍ ÀÐ±â ¼öÇà Àü À§Ä¡·Î º¹±Í. */
+        /* ë°ì´í„° íŒŒì¼ë‚´ì—ì„œì˜ ìœ„ì¹˜ë¥¼ LOB ë°ì´í„° ì½ê¸° ìˆ˜í–‰ ì „ ìœ„ì¹˜ë¡œ ë³µê·€. */
         IDE_TEST_RAISE(RestoreDataFilePos(sHandle) != IDE_SUCCESS, SeekError);
     }
 
@@ -4440,20 +4440,20 @@ IDE_RC iloDataFile::LoadOneLOBColFromDataFile( ALTIBASE_ILOADER_HANDLE  aHandle,
 /**
  * LoadOneLOBColFromNonSepLOBFile.
  *
- * use_lob_file=yes, use_separate_files=noÀÎ °æ¿ì È£ÃâµÇ¸ç,
- * ÇÑ LOB ÄÃ·³¿¡ ´ëÇØ µ¥ÀÌÅÍ¸¦ LOB ÆÄÀÏ·ÎºÎÅÍ ÀÐ¾î ¼­¹ö·Î Àü¼ÛÇÑ´Ù.
- * LOB µ¥ÀÌÅÍ°¡ ¿©·¯ LOB ÆÄÀÏ¿¡ °ÉÃÄÀÖÀ» °æ¿ì
- * ÀÚµ¿ÀûÀ¸·Î ÇØ´ç LOB ÆÄÀÏµéÀ» ¿­¾î µ¥ÀÌÅÍ¸¦ ÀÐ¾îµéÀÎ´Ù.
+ * use_lob_file=yes, use_separate_files=noì¸ ê²½ìš° í˜¸ì¶œë˜ë©°,
+ * í•œ LOB ì»¬ëŸ¼ì— ëŒ€í•´ ë°ì´í„°ë¥¼ LOB íŒŒì¼ë¡œë¶€í„° ì½ì–´ ì„œë²„ë¡œ ì „ì†¡í•œë‹¤.
+ * LOB ë°ì´í„°ê°€ ì—¬ëŸ¬ LOB íŒŒì¼ì— ê±¸ì³ìžˆì„ ê²½ìš°
+ * ìžë™ì ìœ¼ë¡œ í•´ë‹¹ LOB íŒŒì¼ë“¤ì„ ì—´ì–´ ë°ì´í„°ë¥¼ ì½ì–´ë“¤ì¸ë‹¤.
  *
  * @param[in] aTableInfo
- *  ÄÃ·³µéÀÇ Á¤º¸°¡ µé¾îÀÖ´Â ÀÚ·á±¸Á¶.
- *  ÄÃ·³ Á¤º¸¿¡´Â LOB ÆÄÀÏ³»¿¡¼­ LOB µ¥ÀÌÅÍÀÇ ½ÃÀÛ À§Ä¡¿Í ±æÀÌ,
- *  LOB locator°¡ Æ÷ÇÔµÈ´Ù.
+ *  ì»¬ëŸ¼ë“¤ì˜ ì •ë³´ê°€ ë“¤ì–´ìžˆëŠ” ìžë£Œêµ¬ì¡°.
+ *  ì»¬ëŸ¼ ì •ë³´ì—ëŠ” LOB íŒŒì¼ë‚´ì—ì„œ LOB ë°ì´í„°ì˜ ì‹œìž‘ ìœ„ì¹˜ì™€ ê¸¸ì´,
+ *  LOB locatorê°€ í¬í•¨ëœë‹¤.
  * @param[in] aColIdx
- *  aTableInfo³»¿¡¼­ ¸î ¹øÂ° ÄÃ·³ÀÎÁöÀÇ Á¤º¸.
+ *  aTableInfoë‚´ì—ì„œ ëª‡ ë²ˆì§¸ ì»¬ëŸ¼ì¸ì§€ì˜ ì •ë³´.
  * @param[in] aArrIdx
- *  ¼­¹ö·ÎÀÇ µ¥ÀÌÅÍ Àü¼Û¿¡ array bindingÀ» »ç¿ëÇÒ °æ¿ì
- *  aTableInfoÀÇ ÄÃ·³ °ª ¹è¿­¿¡¼­ ¸î ¹øÂ° °ªÀÌ »ç¿ëÇÒ °ªÀÎÁöÀÇ Á¤º¸.
+ *  ì„œë²„ë¡œì˜ ë°ì´í„° ì „ì†¡ì— array bindingì„ ì‚¬ìš©í•  ê²½ìš°
+ *  aTableInfoì˜ ì»¬ëŸ¼ ê°’ ë°°ì—´ì—ì„œ ëª‡ ë²ˆì§¸ ê°’ì´ ì‚¬ìš©í•  ê°’ì¸ì§€ì˜ ì •ë³´.
  */
 IDE_RC iloDataFile::LoadOneLOBColFromNonSepLOBFile( ALTIBASE_ILOADER_HANDLE  aHandle,
                                                     iloTableInfo            *aTableInfo,
@@ -4499,17 +4499,17 @@ IDE_RC iloDataFile::LoadOneLOBColFromNonSepLOBFile( ALTIBASE_ILOADER_HANDLE  aHa
                               aISPApi)
                               != IDE_SUCCESS);
 
-    /* LOB µ¥ÀÌÅÍÀÇ ±æÀÌ°¡ 0º¸´Ù Å« °æ¿ì */
+    /* LOB ë°ì´í„°ì˜ ê¸¸ì´ê°€ 0ë³´ë‹¤ í° ê²½ìš° */
     if (aTableInfo->mLOBPhyLen[aColIdx][aArrIdx] != ID_ULONG(0))
     {
-        /* LOB ÆÄÀÏ³»¿¡¼­ LOB µ¥ÀÌÅÍÀÇ ½ÃÀÛ À§Ä¡·Î ÀÌµ¿. */
+        /* LOB íŒŒì¼ë‚´ì—ì„œ LOB ë°ì´í„°ì˜ ì‹œìž‘ ìœ„ì¹˜ë¡œ ì´ë™. */
         IDE_TEST_RAISE(LOBFileSeek( sHandle, aTableInfo->mLOBPhyOffs[aColIdx][aArrIdx])
                        != IDE_SUCCESS, SeekError);
         (void)mLOB->GetBuffer(&sBuf, &sBufLen);
 
         sAccumStrLen = ID_ULONG(0);
-        /* ÇöÀç ¿­·ÁÀÖ´Â LOB ÆÄÀÏ¿¡¼­
-         * ÇÊ¿äÇÑ ¸ðµç LOB µ¥ÀÌÅÍ¸¦ ÀÐÀ» ¼ö ¾ø´Â µ¿¾È °è¼Ó ·çÇÁ */
+        /* í˜„ìž¬ ì—´ë ¤ìžˆëŠ” LOB íŒŒì¼ì—ì„œ
+         * í•„ìš”í•œ ëª¨ë“  LOB ë°ì´í„°ë¥¼ ì½ì„ ìˆ˜ ì—†ëŠ” ë™ì•ˆ ê³„ì† ë£¨í”„ */
         while (mLOBFilePos + aTableInfo->mLOBPhyLen[aColIdx][aArrIdx]
                - sAccumStrLen > mLOBFileSizeOpt)
         {
@@ -4525,18 +4525,18 @@ IDE_RC iloDataFile::LoadOneLOBColFromNonSepLOBFile( ALTIBASE_ILOADER_HANDLE  aHa
                 {
                     sStrLen = (UInt)(sAccumStrLenTo - sAccumStrLen);
                 }
-                /* LOB ÆÄÀÏ·ÎºÎÅÍ µ¥ÀÌÅÍ ÀÐÀ½. */
+                /* LOB íŒŒì¼ë¡œë¶€í„° ë°ì´í„° ì½ìŒ. */
                 sReadLen = (UInt)idlOS::fread(sBuf, 1, sStrLen, mLOBFP);
                 mLOBFilePos += (ULong)sReadLen;
                 mAccumLOBFilePos += (ULong)sReadLen;
                 IDE_TEST_RAISE(sReadLen < sStrLen, ReadError);
-                /* ¼­¹ö·Î µ¥ÀÌÅÍ Àü¼Û. */
+                /* ì„œë²„ë¡œ ë°ì´í„° ì „ì†¡. */
                 IDE_TEST_RAISE(mLOB->Append( sHandle, sStrLen, aISPApi ) 
                                              != IDE_SUCCESS, AppendError);
             }
 
             IDE_TEST_RAISE(CloseLOBFile(sHandle) != IDE_SUCCESS, SeekError);
-            /* ´ÙÀ½ ¹øÈ£ÀÇ LOB ÆÄÀÏÀ» ¿¬´Ù. */
+            /* ë‹¤ìŒ ë²ˆí˜¸ì˜ LOB íŒŒì¼ì„ ì—°ë‹¤. */
             IDE_TEST_RAISE(OpenLOBFile( sHandle, ILO_FALSE, mLOBFileNo + 1, 0, ILO_TRUE)
                            != IDE_SUCCESS, SeekError);
         }
@@ -4552,12 +4552,12 @@ IDE_RC iloDataFile::LoadOneLOBColFromNonSepLOBFile( ALTIBASE_ILOADER_HANDLE  aHa
             {
                 sStrLen = (UInt)(sAccumStrLenTo - sAccumStrLen);
             }
-            /* LOB ÆÄÀÏ·ÎºÎÅÍ µ¥ÀÌÅÍ ÀÐÀ½. */
+            /* LOB íŒŒì¼ë¡œë¶€í„° ë°ì´í„° ì½ìŒ. */
             sReadLen = (UInt)idlOS::fread(sBuf, 1, sStrLen, mLOBFP);
             mLOBFilePos += (ULong)sReadLen;
             mAccumLOBFilePos += (ULong)sReadLen;
             IDE_TEST_RAISE(sReadLen < sStrLen, ReadError);
-            /* ¼­¹ö·Î µ¥ÀÌÅÍ Àü¼Û. */
+            /* ì„œë²„ë¡œ ë°ì´í„° ì „ì†¡. */
             IDE_TEST_RAISE(mLOB->Append( sHandle, sStrLen, aISPApi )
                                         != IDE_SUCCESS, AppendError);
         }
@@ -4593,20 +4593,20 @@ IDE_RC iloDataFile::LoadOneLOBColFromNonSepLOBFile( ALTIBASE_ILOADER_HANDLE  aHa
 /**
  * LoadOneLOBColFromSepLOBFile.
  *
- * use_lob_file=yes, use_separate_files=yesÀÎ °æ¿ì È£ÃâµÇ¸ç,
- * ÇÑ LOB ÄÃ·³¿¡ ´ëÇØ
- * µ¥ÀÌÅÍ¸¦ µ¶¸³µÈ LOB ÆÄÀÏ·ÎºÎÅÍ ÀÐ¾î ¼­¹ö·Î Àü¼ÛÇÑ´Ù.
+ * use_lob_file=yes, use_separate_files=yesì¸ ê²½ìš° í˜¸ì¶œë˜ë©°,
+ * í•œ LOB ì»¬ëŸ¼ì— ëŒ€í•´
+ * ë°ì´í„°ë¥¼ ë…ë¦½ëœ LOB íŒŒì¼ë¡œë¶€í„° ì½ì–´ ì„œë²„ë¡œ ì „ì†¡í•œë‹¤.
  *
  * @param[in] aRowNo
- *  ·¹ÄÚµåÀÇ Çà ¹øÈ£.
+ *  ë ˆì½”ë“œì˜ í–‰ ë²ˆí˜¸.
  * @param[in] aTableInfo
- *  ÄÃ·³µéÀÇ Á¤º¸°¡ µé¾îÀÖ´Â ÀÚ·á±¸Á¶.
- *  ÄÃ·³ Á¤º¸¿¡´Â nullÀÎ LOBÀÎÁö ¿©ºÎ, LOB locator°¡ Æ÷ÇÔµÈ´Ù.
+ *  ì»¬ëŸ¼ë“¤ì˜ ì •ë³´ê°€ ë“¤ì–´ìžˆëŠ” ìžë£Œêµ¬ì¡°.
+ *  ì»¬ëŸ¼ ì •ë³´ì—ëŠ” nullì¸ LOBì¸ì§€ ì—¬ë¶€, LOB locatorê°€ í¬í•¨ëœë‹¤.
  * @param[in] aColIdx
- *  aTableInfo³»¿¡¼­ ¸î ¹øÂ° ÄÃ·³ÀÎÁöÀÇ Á¤º¸.
+ *  aTableInfoë‚´ì—ì„œ ëª‡ ë²ˆì§¸ ì»¬ëŸ¼ì¸ì§€ì˜ ì •ë³´.
  * @param[in] aArrIdx
- *  ¼­¹ö·ÎÀÇ µ¥ÀÌÅÍ Àü¼Û¿¡ array bindingÀ» »ç¿ëÇÒ °æ¿ì
- *  aTableInfoÀÇ ÄÃ·³ °ª ¹è¿­¿¡¼­ ¸î ¹øÂ° °ªÀÌ »ç¿ëÇÒ °ªÀÎÁöÀÇ Á¤º¸.
+ *  ì„œë²„ë¡œì˜ ë°ì´í„° ì „ì†¡ì— array bindingì„ ì‚¬ìš©í•  ê²½ìš°
+ *  aTableInfoì˜ ì»¬ëŸ¼ ê°’ ë°°ì—´ì—ì„œ ëª‡ ë²ˆì§¸ ê°’ì´ ì‚¬ìš©í•  ê°’ì¸ì§€ì˜ ì •ë³´.
  */
 IDE_RC iloDataFile::LoadOneLOBColFromSepLOBFile( ALTIBASE_ILOADER_HANDLE  aHandle,
                                                  SInt                     aRowNo,
@@ -4652,31 +4652,31 @@ IDE_RC iloDataFile::LoadOneLOBColFromSepLOBFile( ALTIBASE_ILOADER_HANDLE  aHandl
     
     if (aTableInfo->mLOBPhyLen[aColIdx][aArrIdx] != ID_ULONG(0))
     {
-        /* Çà ¹øÈ£¿Í ¿­ ¹øÈ£¸¦ °¡Áö°í µ¶¸³µÈ LOB ÆÄÀÏÀ» ¿¬´Ù. */
+        /* í–‰ ë²ˆí˜¸ì™€ ì—´ ë²ˆí˜¸ë¥¼ ê°€ì§€ê³  ë…ë¦½ëœ LOB íŒŒì¼ì„ ì—°ë‹¤. */
         IDE_TEST_RAISE(OpenLOBFile(sHandle, ILO_FALSE, aRowNo, aColIdx + 1, ILO_TRUE)
                        != IDE_SUCCESS, OpenOrCloseLOBFileError);
         (void)mLOB->GetBuffer(&sBuf, &sBufLen);
 
-        /* LOB ÆÄÀÏ·ÎºÎÅÍ µ¥ÀÌÅÍ ÀÐÀ½. */
+        /* LOB íŒŒì¼ë¡œë¶€í„° ë°ì´í„° ì½ìŒ. */
         sStrLen = (UInt)idlOS::fread(sBuf, 1, sBufLen, mLOBFP);
         while (sStrLen == sBufLen)
         {
-            /* ¼­¹ö·Î µ¥ÀÌÅÍ Àü¼Û. */
+            /* ì„œë²„ë¡œ ë°ì´í„° ì „ì†¡. */
             IDE_TEST_RAISE(mLOB->Append( sHandle, sStrLen, aISPApi)
                                        != IDE_SUCCESS, AppendError);
-            /* LOB ÆÄÀÏ·ÎºÎÅÍ µ¥ÀÌÅÍ ÀÐÀ½. */
+            /* LOB íŒŒì¼ë¡œë¶€í„° ë°ì´í„° ì½ìŒ. */
             sStrLen = (UInt)idlOS::fread(sBuf, 1, sBufLen, mLOBFP);
         }
         if (sStrLen > 0)
         {
-            /* ¼­¹ö·Î µ¥ÀÌÅÍ Àü¼Û. */
+            /* ì„œë²„ë¡œ ë°ì´í„° ì „ì†¡. */
             IDE_TEST_RAISE(mLOB->Append( sHandle, sStrLen, aISPApi )
                                        != IDE_SUCCESS, AppendError);
         }
-        /* LOB ÆÄÀÏ ÀÐ±â °úÁ¤¿¡¼­ I/O ¿¡·¯ ¹ß»ý ¿©ºÎ °Ë»ç. */
+        /* LOB íŒŒì¼ ì½ê¸° ê³¼ì •ì—ì„œ I/O ì—ëŸ¬ ë°œìƒ ì—¬ë¶€ ê²€ì‚¬. */
         IDE_TEST_RAISE(ferror(mLOBFP), ReadError);
 
-        /* LOB ÆÄÀÏÀ» ´Ý´Â´Ù. */
+        /* LOB íŒŒì¼ì„ ë‹«ëŠ”ë‹¤. */
         IDE_TEST_RAISE(CloseLOBFile(sHandle) != IDE_SUCCESS, OpenOrCloseLOBFileError);
     }
 
@@ -4712,10 +4712,10 @@ IDE_RC iloDataFile::LoadOneLOBColFromSepLOBFile( ALTIBASE_ILOADER_HANDLE  aHandl
 /**
  * DataFileSeek.
  *
- * µ¥ÀÌÅÍ ÆÄÀÏ³»¿¡¼­ÀÇ ÇöÀç À§Ä¡¸¦ ÀÎÀÚ aDestPos À§Ä¡·Î ¿Å±ä´Ù.
+ * ë°ì´í„° íŒŒì¼ë‚´ì—ì„œì˜ í˜„ìž¬ ìœ„ì¹˜ë¥¼ ì¸ìž aDestPos ìœ„ì¹˜ë¡œ ì˜®ê¸´ë‹¤.
  *
  * @param[in] aDestPos
- *  µ¥ÀÌÅÍ ÆÄÀÏ³»¿¡¼­ ÀÌµ¿ÇÏ°íÀÚ ÇÏ´Â »õ·Î¿î À§Ä¡.
+ *  ë°ì´í„° íŒŒì¼ë‚´ì—ì„œ ì´ë™í•˜ê³ ìž í•˜ëŠ” ìƒˆë¡œìš´ ìœ„ì¹˜.
  */
 IDE_RC iloDataFile::DataFileSeek( ALTIBASE_ILOADER_HANDLE aHandle,
                                   ULong                   aDestPos )
@@ -4749,13 +4749,13 @@ IDE_RC iloDataFile::DataFileSeek( ALTIBASE_ILOADER_HANDLE aHandle,
         sOffs = (aDestPos > mDataFilePos)? (long)sDiff : -(long)sDiff;
         IDE_TEST(idlOS::fseek(m_DataFp, sOffs, SEEK_CUR) < 0);
     }
-    /* longÀÌ 4¹ÙÀÌÆ®ÀÌ°í ÀÌµ¿·®ÀÌ longÀÇ ¹üÀ§¸¦ ¹þ¾î³¯ °æ¿ì,
-     * ¿©·¯ ¹øÀÇ fseek()°¡ ÇÊ¿äÇÏ´Ù.
+    /* longì´ 4ë°”ì´íŠ¸ì´ê³  ì´ë™ëŸ‰ì´ longì˜ ë²”ìœ„ë¥¼ ë²—ì–´ë‚  ê²½ìš°,
+     * ì—¬ëŸ¬ ë²ˆì˜ fseek()ê°€ í•„ìš”í•˜ë‹¤.
      *
      * BUGBUG :
-     * ´ëºÎºÐÀÇ °æ¿ì fseek()¿¡¼­
-     * ÆÄÀÏÀÇ À§Ä¡°¡ LONG_MAX¸¦ ³Ñ¾î¼­°Ô µÉ °Í °°À¸¸é,
-     * fseek()´Â ÀÌ·¯ÇÑ ÀÌµ¿À» Çã¿ëÇÏÁö ¾ÊÀº Ã¤ ¿¡·¯¸¦ ¸®ÅÏÇÒ °ÍÀÌ´Ù. */
+     * ëŒ€ë¶€ë¶„ì˜ ê²½ìš° fseek()ì—ì„œ
+     * íŒŒì¼ì˜ ìœ„ì¹˜ê°€ LONG_MAXë¥¼ ë„˜ì–´ì„œê²Œ ë  ê²ƒ ê°™ìœ¼ë©´,
+     * fseek()ëŠ” ì´ëŸ¬í•œ ì´ë™ì„ í—ˆìš©í•˜ì§€ ì•Šì€ ì±„ ì—ëŸ¬ë¥¼ ë¦¬í„´í•  ê²ƒì´ë‹¤. */
     else
     {
         sTo = sDiff / ID_ULONG(0x7FFFFFFF);
@@ -4799,10 +4799,10 @@ IDE_RC iloDataFile::DataFileSeek( ALTIBASE_ILOADER_HANDLE aHandle,
 /**
  * GetLOBFileSize.
  *
- * ÇöÀç ¿­·ÁÀÖ´Â LOB ÆÄÀÏÀÇ Å©±â¸¦ ±¸ÇÑ´Ù.
+ * í˜„ìž¬ ì—´ë ¤ìžˆëŠ” LOB íŒŒì¼ì˜ í¬ê¸°ë¥¼ êµ¬í•œë‹¤.
  *
  * @param[out] aLOBFileSize
- *  LOB ÆÄÀÏ Å©±â.
+ *  LOB íŒŒì¼ í¬ê¸°.
  */
 IDE_RC iloDataFile::GetLOBFileSize( ALTIBASE_ILOADER_HANDLE  aHandle, 
                                     ULong                   *aLOBFileSize)
@@ -4819,26 +4819,26 @@ IDE_RC iloDataFile::GetLOBFileSize( ALTIBASE_ILOADER_HANDLE  aHandle,
 
     iloaderHandle *sHandle = (iloaderHandle *) aHandle;
 
-/* 1.WindowsÀÎ °æ¿ì */
+/* 1.Windowsì¸ ê²½ìš° */
 #if defined(VC_WIN32) || defined(VC_WIN64)
-    /* 1.1 ÆÄÀÏ Å©±â¸¦ ¾ò´Â´Ù. */
+    /* 1.1 íŒŒì¼ í¬ê¸°ë¥¼ ì–»ëŠ”ë‹¤. */
     IDE_TEST(::_fseeki64(mLOBFP, 0, SEEK_END) < 0);
     sOffs = ::_ftelli64(mLOBFP);
     IDE_TEST(sOffs < 0);
-    /* 1.2 ÆÄÀÏ Ä¿¼­¸¦ ¿øÀ§Ä¡·Î º¹±ÍÇÑ´Ù. */
+    /* 1.2 íŒŒì¼ ì»¤ì„œë¥¼ ì›ìœ„ì¹˜ë¡œ ë³µê·€í•œë‹¤. */
     IDE_TEST(::_fseeki64(mLOBFP, (__int64)mLOBFilePos, SEEK_SET) < 0);
 
     (*aLOBFileSize) = (ULong)sOffs;
     return IDE_SUCCESS;
 #else /* defined(VC_WIN32) || defined(VC_WIN64) */
-    /* 2.longÀÌ 8¹ÙÀÌÆ® ÀÌ»óÀÎ °æ¿ì */
+    /* 2.longì´ 8ë°”ì´íŠ¸ ì´ìƒì¸ ê²½ìš° */
     if (ID_SIZEOF(long) >= 8)
     {
-        /* 2.1 ÆÄÀÏ Å©±â¸¦ ¾ò´Â´Ù. */
+        /* 2.1 íŒŒì¼ í¬ê¸°ë¥¼ ì–»ëŠ”ë‹¤. */
         IDE_TEST(idlOS::fseek(mLOBFP, 0, SEEK_END) < 0);
         sOffs = idlOS::ftell(mLOBFP);
         IDE_TEST(sOffs < 0);
-        /* 2.2 ÆÄÀÏ Ä¿¼­¸¦ ¿øÀ§Ä¡·Î º¹±ÍÇÑ´Ù. */
+        /* 2.2 íŒŒì¼ ì»¤ì„œë¥¼ ì›ìœ„ì¹˜ë¡œ ë³µê·€í•œë‹¤. */
         IDE_TEST(idlOS::fseek(mLOBFP, (long)mLOBFilePos, SEEK_SET) < 0);
 
         (*aLOBFileSize) = (ULong)sOffs;
@@ -4846,14 +4846,14 @@ IDE_RC iloDataFile::GetLOBFileSize( ALTIBASE_ILOADER_HANDLE  aHandle,
     }
     else /* (ID_SIZEOF(long) == 4) */
     {
-        /* 3.longÀÌ 4¹ÙÀÌÆ®ÀÌ°í ÆÄÀÏ Å©±â°¡ LONG_MAX ÀÌÇÏÀÎ °æ¿ì */
-        /* 3.1 ÆÄÀÏ Å©±â¸¦ ¾ò´Â´Ù. */
+        /* 3.longì´ 4ë°”ì´íŠ¸ì´ê³  íŒŒì¼ í¬ê¸°ê°€ LONG_MAX ì´í•˜ì¸ ê²½ìš° */
+        /* 3.1 íŒŒì¼ í¬ê¸°ë¥¼ ì–»ëŠ”ë‹¤. */
         if (idlOS::fseek(mLOBFP, 0, SEEK_END) == 0)
         {
             sOffs = idlOS::ftell(mLOBFP);
             if (sOffs >= 0)
             {
-                /* 3.2 ÆÄÀÏ Ä¿¼­¸¦ ¿øÀ§Ä¡·Î º¹±ÍÇÑ´Ù. */
+                /* 3.2 íŒŒì¼ ì»¤ì„œë¥¼ ì›ìœ„ì¹˜ë¡œ ë³µê·€í•œë‹¤. */
                 IDE_TEST(idlOS::fseek(mLOBFP, (long)mLOBFilePos, SEEK_SET)
                          < 0);
 
@@ -4862,14 +4862,14 @@ IDE_RC iloDataFile::GetLOBFileSize( ALTIBASE_ILOADER_HANDLE  aHandle,
             }
         }
 
-        /* 4.longÀÌ 4¹ÙÀÌÆ®ÀÌ°í ÆÄÀÏ Å©±â°¡ LONG_MAXº¸´Ù Å« °æ¿ì
+        /* 4.longì´ 4ë°”ì´íŠ¸ì´ê³  íŒŒì¼ í¬ê¸°ê°€ LONG_MAXë³´ë‹¤ í° ê²½ìš°
          *
          * BUGBUG :
-         * ´ëºÎºÐÀÇ °æ¿ì fread()¿¡¼­
-         * ÆÄÀÏÀÇ À§Ä¡°¡ LONG_MAX¸¦ ³Ñ¾î¼­°Ô µÉ °Í °°À¸¸é,
-         * fread()´Â ´õ ÀÌ»óÀÇ ÆÄÀÏ À§Ä¡ ÀüÁøÀ» Çã¿ëÇÏÁö ¾ÊÀº Ã¤
-         * ¿¡·¯¸¦ ¸®ÅÏÇÒ °ÍÀÌ´Ù. */
-        /* 4.1 ÆÄÀÏ Å©±â¸¦ ¾ò´Â´Ù. */
+         * ëŒ€ë¶€ë¶„ì˜ ê²½ìš° fread()ì—ì„œ
+         * íŒŒì¼ì˜ ìœ„ì¹˜ê°€ LONG_MAXë¥¼ ë„˜ì–´ì„œê²Œ ë  ê²ƒ ê°™ìœ¼ë©´,
+         * fread()ëŠ” ë” ì´ìƒì˜ íŒŒì¼ ìœ„ì¹˜ ì „ì§„ì„ í—ˆìš©í•˜ì§€ ì•Šì€ ì±„
+         * ì—ëŸ¬ë¥¼ ë¦¬í„´í•  ê²ƒì´ë‹¤. */
+        /* 4.1 íŒŒì¼ í¬ê¸°ë¥¼ ì–»ëŠ”ë‹¤. */
         IDE_TEST(idlOS::fseek(mLOBFP, 0x7FFFFE00, SEEK_SET) < 0);
         (*aLOBFileSize) = ID_ULONG(0x7FFFFE00);
         sBuf = (SChar *)idlOS::malloc(32768);
@@ -4886,7 +4886,7 @@ IDE_RC iloDataFile::GetLOBFileSize( ALTIBASE_ILOADER_HANDLE  aHandle,
         sBuf = NULL;
         IDE_TEST(ferror(mLOBFP));
 
-        /* 4.2 ÆÄÀÏ Ä¿¼­¸¦ ¿øÀ§Ä¡·Î º¹±ÍÇÑ´Ù. */
+        /* 4.2 íŒŒì¼ ì»¤ì„œë¥¼ ì›ìœ„ì¹˜ë¡œ ë³µê·€í•œë‹¤. */
         if (mLOBFilePos <= ID_ULONG(0x7FFFFFFF))
         {
             IDE_TEST(idlOS::fseek(mLOBFP, (long)mLOBFilePos, SEEK_SET) < 0);
@@ -4926,13 +4926,13 @@ IDE_RC iloDataFile::GetLOBFileSize( ALTIBASE_ILOADER_HANDLE  aHandle,
 /**
  * LOBFileSeek.
  *
- * LOB ÆÄÀÏµé¿¡¼­ÀÇ ÇöÀç À§Ä¡¸¦ ÀÎÀÚ aAccumDestPos À§Ä¡·Î ¿Å±ä´Ù.
- * ÀÎÀÚ aAccumDestPos´Â LOB ÆÄÀÏµé¿¡¼­ÀÇ ´©Àû À§Ä¡ÀÌ´Ù.
- * ´©Àû À§Ä¡¶õ ¾î¶² LOB ÆÄÀÏº¸´Ù ÀÛÀº ÆÄÀÏ ¹øÈ£¸¦ °¡Áø
- * LOB ÆÄÀÏµéÀÇ Å©±â°¡ ´©ÀûµÈ °ÍÀ» ¸»ÇÑ´Ù.
+ * LOB íŒŒì¼ë“¤ì—ì„œì˜ í˜„ìž¬ ìœ„ì¹˜ë¥¼ ì¸ìž aAccumDestPos ìœ„ì¹˜ë¡œ ì˜®ê¸´ë‹¤.
+ * ì¸ìž aAccumDestPosëŠ” LOB íŒŒì¼ë“¤ì—ì„œì˜ ëˆ„ì  ìœ„ì¹˜ì´ë‹¤.
+ * ëˆ„ì  ìœ„ì¹˜ëž€ ì–´ë–¤ LOB íŒŒì¼ë³´ë‹¤ ìž‘ì€ íŒŒì¼ ë²ˆí˜¸ë¥¼ ê°€ì§„
+ * LOB íŒŒì¼ë“¤ì˜ í¬ê¸°ê°€ ëˆ„ì ëœ ê²ƒì„ ë§í•œë‹¤.
  *
  * @param[in] aAccumDestPos
- *  LOB ÆÄÀÏµé¿¡¼­ ÀÌµ¿ÇÏ°íÀÚ ÇÏ´Â »õ·Î¿î À§Ä¡.
+ *  LOB íŒŒì¼ë“¤ì—ì„œ ì´ë™í•˜ê³ ìž í•˜ëŠ” ìƒˆë¡œìš´ ìœ„ì¹˜.
  */
 IDE_RC iloDataFile::LOBFileSeek( ALTIBASE_ILOADER_HANDLE aHandle, ULong aAccumDestPos)
 {
@@ -4949,22 +4949,22 @@ IDE_RC iloDataFile::LOBFileSeek( ALTIBASE_ILOADER_HANDLE aHandle, ULong aAccumDe
 
     iloaderHandle *sHandle = (iloaderHandle *) aHandle;
 
-    /* LOB ÆÄÀÏÀÌ Á¸ÀçÇÏÁö ¾Ê´Â °æ¿ì:
-     * InitLOBProc()ÀÇ lob_file_size ¾ò´Â ºÎºÐ¿¡¼­´Â
-     * LOB ÆÄÀÏ ¿­±â¿¡ ½ÇÆÐÇÏ´õ¶óµµ
-     * mLOBFileSizeOpt¸¦ 0À¸·Î µÐ Ã¤ Á¤»ó ÁøÇàÇÏµµ·Ï µÇ¾î ÀÖ´Ù.
-     * ÀÌ·¸°Ô ÇÑ ÀÌÀ¯´Â InitLOBProc()¿¡¼­´Â
-     * use_separate_files ¿©ºÎ¸¦ ¾Ë ¼ö ¾ø±â ¶§¹®ÀÌ´Ù.
-     * ±×·¯³ª, º» ¶óÀÎ±îÁö ÇÁ·Î±×·¥ÀÌ ÁøÇàµÈ ½ÃÁ¡¿¡¼­´Â
-     * use_separate_files=noÀÓÀ» ¾Ë°í ÀÖ´Â »óÅÂÀÌ´Ù.
-     * µû¶ó¼­, º» ¶óÀÎ¿¡¼­ mLOBFileSizeOpt°¡ 0ÀÎ °æ¿ì
-     * ÆÄÀÏ ¿­±â ½ÇÆÐ ¿À·ù¸¦ Ãâ·ÂÇØ¾ß ÇÑ´Ù. */
+    /* LOB íŒŒì¼ì´ ì¡´ìž¬í•˜ì§€ ì•ŠëŠ” ê²½ìš°:
+     * InitLOBProc()ì˜ lob_file_size ì–»ëŠ” ë¶€ë¶„ì—ì„œëŠ”
+     * LOB íŒŒì¼ ì—´ê¸°ì— ì‹¤íŒ¨í•˜ë”ë¼ë„
+     * mLOBFileSizeOptë¥¼ 0ìœ¼ë¡œ ë‘” ì±„ ì •ìƒ ì§„í–‰í•˜ë„ë¡ ë˜ì–´ ìžˆë‹¤.
+     * ì´ë ‡ê²Œ í•œ ì´ìœ ëŠ” InitLOBProc()ì—ì„œëŠ”
+     * use_separate_files ì—¬ë¶€ë¥¼ ì•Œ ìˆ˜ ì—†ê¸° ë•Œë¬¸ì´ë‹¤.
+     * ê·¸ëŸ¬ë‚˜, ë³¸ ë¼ì¸ê¹Œì§€ í”„ë¡œê·¸ëž¨ì´ ì§„í–‰ëœ ì‹œì ì—ì„œëŠ”
+     * use_separate_files=noìž„ì„ ì•Œê³  ìžˆëŠ” ìƒíƒœì´ë‹¤.
+     * ë”°ë¼ì„œ, ë³¸ ë¼ì¸ì—ì„œ mLOBFileSizeOptê°€ 0ì¸ ê²½ìš°
+     * íŒŒì¼ ì—´ê¸° ì‹¤íŒ¨ ì˜¤ë¥˜ë¥¼ ì¶œë ¥í•´ì•¼ í•œë‹¤. */
     if (mLOBFileSizeOpt == ID_ULONG(0))
     {
-        /* 1¹ø LOB ÆÄÀÏ ¿­±â ½Ãµµ.
-         * ÆÄÀÏ ¿­±â´Â ¹«Á¶°Ç ½ÇÆÐÇÏ°Ô µÇ¾î ÀÖ´Ù.
-         * ÆÄÀÏ ¿­±â°¡ ½ÇÆÐÇÒ ÁÙ ¾Ë°íµµ ÆÄÀÏ ¿­±â¸¦ ½ÃµµÇÏ´Â ÀÌÀ¯´Â
-         * ÆÄÀÏ ¿­±â¸¦ ½ÇÆÐÇß´Ù´Â ¿À·ù ¸Þ½ÃÁö Ãâ·ÂÀ» À§ÇØ¼­´Ù. */
+        /* 1ë²ˆ LOB íŒŒì¼ ì—´ê¸° ì‹œë„.
+         * íŒŒì¼ ì—´ê¸°ëŠ” ë¬´ì¡°ê±´ ì‹¤íŒ¨í•˜ê²Œ ë˜ì–´ ìžˆë‹¤.
+         * íŒŒì¼ ì—´ê¸°ê°€ ì‹¤íŒ¨í•  ì¤„ ì•Œê³ ë„ íŒŒì¼ ì—´ê¸°ë¥¼ ì‹œë„í•˜ëŠ” ì´ìœ ëŠ”
+         * íŒŒì¼ ì—´ê¸°ë¥¼ ì‹¤íŒ¨í–ˆë‹¤ëŠ” ì˜¤ë¥˜ ë©”ì‹œì§€ ì¶œë ¥ì„ ìœ„í•´ì„œë‹¤. */
         (void)OpenLOBFile( sHandle, ILO_FALSE, 1, 0, ILO_TRUE);
         IDE_TEST(1);
     }
@@ -4983,12 +4983,12 @@ IDE_RC iloDataFile::LOBFileSeek( ALTIBASE_ILOADER_HANDLE aHandle, ULong aAccumDe
     {
         IDE_TEST_RAISE(mLOBFP == NULL, LOBFileIOError);
     }
-    /* »õ·Î¿î À§Ä¡°¡ ÇöÀç ¿­·ÁÀÖ´Â LOB ÆÄÀÏÀÌ ¾Æ´Ñ
-     * ´Ù¸¥ LOB ÆÄÀÏ¿¡ À§Ä¡ÇÏ´Â °æ¿ì */
+    /* ìƒˆë¡œìš´ ìœ„ì¹˜ê°€ í˜„ìž¬ ì—´ë ¤ìžˆëŠ” LOB íŒŒì¼ì´ ì•„ë‹Œ
+     * ë‹¤ë¥¸ LOB íŒŒì¼ì— ìœ„ì¹˜í•˜ëŠ” ê²½ìš° */
     else
     {
         IDE_TEST(CloseLOBFile(sHandle) != IDE_SUCCESS);
-        /* ÀÌµ¿ÇÒ ¸ñÇ¥ÁöÁ¡ÀÌ À§Ä¡ÇÏ´Â LOB ÆÄÀÏÀ» ¿¬´Ù. */
+        /* ì´ë™í•  ëª©í‘œì§€ì ì´ ìœ„ì¹˜í•˜ëŠ” LOB íŒŒì¼ì„ ì—°ë‹¤. */
         IDE_TEST(OpenLOBFile(sHandle, ILO_FALSE, sDestFileNo, 0, ILO_TRUE)
                  != IDE_SUCCESS);
     }
@@ -5012,13 +5012,13 @@ IDE_RC iloDataFile::LOBFileSeek( ALTIBASE_ILOADER_HANDLE aHandle, ULong aAccumDe
         IDE_TEST_RAISE(idlOS::fseek(mLOBFP, sOffs, SEEK_CUR) < 0,
                        LOBFileIOError);
     }
-    /* longÀÌ 4¹ÙÀÌÆ®ÀÌ°í ÀÌµ¿·®ÀÌ longÀÇ ¹üÀ§¸¦ ¹þ¾î³¯ °æ¿ì,
-     * ¿©·¯ ¹øÀÇ fseek()°¡ ÇÊ¿äÇÏ´Ù.
+    /* longì´ 4ë°”ì´íŠ¸ì´ê³  ì´ë™ëŸ‰ì´ longì˜ ë²”ìœ„ë¥¼ ë²—ì–´ë‚  ê²½ìš°,
+     * ì—¬ëŸ¬ ë²ˆì˜ fseek()ê°€ í•„ìš”í•˜ë‹¤.
      *
      * BUGBUG :
-     * ´ëºÎºÐÀÇ °æ¿ì fseek()¿¡¼­
-     * ÆÄÀÏÀÇ À§Ä¡°¡ LONG_MAX¸¦ ³Ñ¾î¼­°Ô µÉ °Í °°À¸¸é,
-     * fseek()´Â ÀÌ·¯ÇÑ ÀÌµ¿À» Çã¿ëÇÏÁö ¾ÊÀº Ã¤ ¿¡·¯¸¦ ¸®ÅÏÇÒ °ÍÀÌ´Ù. */
+     * ëŒ€ë¶€ë¶„ì˜ ê²½ìš° fseek()ì—ì„œ
+     * íŒŒì¼ì˜ ìœ„ì¹˜ê°€ LONG_MAXë¥¼ ë„˜ì–´ì„œê²Œ ë  ê²ƒ ê°™ìœ¼ë©´,
+     * fseek()ëŠ” ì´ëŸ¬í•œ ì´ë™ì„ í—ˆìš©í•˜ì§€ ì•Šì€ ì±„ ì—ëŸ¬ë¥¼ ë¦¬í„´í•  ê²ƒì´ë‹¤. */
     else
     {
         sTo = sDiff / ID_ULONG(0x7FFFFFFF);
@@ -5062,10 +5062,10 @@ IDE_RC iloDataFile::LOBFileSeek( ALTIBASE_ILOADER_HANDLE aHandle, ULong aAccumDe
 
 
 /* PROJ-1714
- * Æ¯Á¤ Size¸¸Å­ File¿¡¼­ ÀÐÀ½
+ * íŠ¹ì • Sizeë§Œí¼ Fileì—ì„œ ì½ìŒ
  */
-// BUG-18803 readsize ¿É¼Ç Ãß°¡
-// getc -> fread ÇÔ¼ö·Î º¯°æ
+// BUG-18803 readsize ì˜µì…˜ ì¶”ê°€
+// getc -> fread í•¨ìˆ˜ë¡œ ë³€ê²½
 SInt iloDataFile::ReadFromFile(SInt aSize, SChar* aResult)
 {
     UInt    sResultSize = 0;
@@ -5078,7 +5078,7 @@ SInt iloDataFile::ReadFromFile(SInt aSize, SChar* aResult)
 }
 
 /* PROJ-1714
- * ÀÔ·Â ¹ÞÀº µ¥ÀÌÅÍ¸¦ Size ¸¸Å­ ¿øÇü ¹öÆÛ¿¡ »ðÀÔÇÑ´Ù.
+ * ìž…ë ¥ ë°›ì€ ë°ì´í„°ë¥¼ Size ë§Œí¼ ì›í˜• ë²„í¼ì— ì‚½ìž…í•œë‹¤.
  */
 
 SInt iloDataFile::WriteDataToCBuff( ALTIBASE_ILOADER_HANDLE aHandle,
@@ -5095,9 +5095,9 @@ SInt iloDataFile::WriteDataToCBuff( ALTIBASE_ILOADER_HANDLE aHandle,
 }
 
 /* BUG-22434
- * ¿øÇü¹öÆÛ¿¡ µ¥ÀÌÅÍ¸¦ ÀÐÀº ÈÄ Double Buffer¿¡ °ªÀ» ³Ö´Â´Ù.
- * ½ÇÁ¦ µ¥ÀÌÅÍÀÇ Parsing°úÁ¤Àº Double Buffer¸¦ ÀÌ¿ëÇÏ°í,
- * ¿øÇü ¹öÆÛ´Â File I/O¸¦ Ã³¸®ÇÏ°Ô µÈ´Ù. 
+ * ì›í˜•ë²„í¼ì— ë°ì´í„°ë¥¼ ì½ì€ í›„ Double Bufferì— ê°’ì„ ë„£ëŠ”ë‹¤.
+ * ì‹¤ì œ ë°ì´í„°ì˜ Parsingê³¼ì •ì€ Double Bufferë¥¼ ì´ìš©í•˜ê³ ,
+ * ì›í˜• ë²„í¼ëŠ” File I/Oë¥¼ ì²˜ë¦¬í•˜ê²Œ ëœë‹¤. 
  */
 SInt iloDataFile::ReadDataFromCBuff( ALTIBASE_ILOADER_HANDLE aHandle, SChar* aResult )
 {
@@ -5106,21 +5106,21 @@ SInt iloDataFile::ReadDataFromCBuff( ALTIBASE_ILOADER_HANDLE aHandle, SChar* aRe
         
     iloaderHandle *sHandle = (iloaderHandle *) aHandle;
     
-    //Double Buffer°¡ ºñ¾ú°Å³ª, ´Ù ÀÐ¾úÀ» °æ¿ì.
+    //Double Bufferê°€ ë¹„ì—ˆê±°ë‚˜, ë‹¤ ì½ì—ˆì„ ê²½ìš°.
     if( (mDoubleBuffPos == -1) || (mDoubleBuffPos == mDoubleBuffSize) )
     {
-        // BUG-18803 readsize ¿É¼Ç Ãß°¡
+        // BUG-18803 readsize ì˜µì…˜ ì¶”ê°€
         sRet = mCirBuf.ReadBuf( sHandle, 
                                 mDoubleBuff,
                                 sHandle->mProgOption->mReadSzie);
         
-        if ( sRet == -1 ) //EOF ÀÏ °æ¿ì
+        if ( sRet == -1 ) //EOF ì¼ ê²½ìš°
         {
             return -1;
         }
         
         mDoubleBuffSize  = sRet;    //Buffer Data Size      
-        mDoubleBuffPos   = 0;       //Buffer Position ÃÊ±âÈ­
+        mDoubleBuffPos   = 0;       //Buffer Position ì´ˆê¸°í™”
     }
     
     idlOS::memcpy(aResult, &mDoubleBuff[mDoubleBuffPos] , sReadSize);
@@ -5145,7 +5145,7 @@ IDE_RC iloDataFile::ResizeTokenLen( ALTIBASE_ILOADER_HANDLE aHandle, UInt aLen )
         m_TokenValue[0] = '\0';
         mTokenMaxSize = aLen;
 
-        // BUG-27633: mErrorTokenµµ ÄÃ·³ÀÇ ÃÖ´ë Å©±â·Î ÇÒ´ç
+        // BUG-27633: mErrorTokenë„ ì»¬ëŸ¼ì˜ ìµœëŒ€ í¬ê¸°ë¡œ í• ë‹¹
         if (mErrorToken != NULL)
         {
             idlOS::free(mErrorToken);
@@ -5171,7 +5171,7 @@ IDE_RC iloDataFile::ResizeTokenLen( ALTIBASE_ILOADER_HANDLE aHandle, UInt aLen )
     return IDE_FAILURE;
 }
 
-/* BUG-24583 LOB FilePath+FileName ¹öÆÛ ÇÒ´ç */
+/* BUG-24583 LOB FilePath+FileName ë²„í¼ í• ë‹¹ */
 IDE_RC iloDataFile::LOBFileInfoAlloc( ALTIBASE_ILOADER_HANDLE aHandle, 
                                       UInt                    aRowCount )
 {
@@ -5238,10 +5238,10 @@ void iloDataFile::LOBFileInfoFree()
 }
 
 /**
- * loadFromOutFile.  //PROJ-2030, CT_CASE-3020 CHAR outfile Áö¿ø
+ * loadFromOutFile.  //PROJ-2030, CT_CASE-3020 CHAR outfile ì§€ì›
  *
- * FmtÈ­ÀÏÀÇ CHAR, VARCHAR, NCHAR, NVARCHAR ÄÃ·³¿¡ outfile ¿É¼ÇÀÌ ¼³Á¤µÈ °æ¿ì È£ÃâµÈ´Ù.
- * m_TokenValue¿¡ È­ÀÏÀÌ¸§ÀÌ ÀÖ´Â »óÅÂ¿¡¼­, m_TokenValue¿¡ È­ÀÏÀÇ ³»¿ëÀ» Ã¤¿î´Ù.
+ * Fmtí™”ì¼ì˜ CHAR, VARCHAR, NCHAR, NVARCHAR ì»¬ëŸ¼ì— outfile ì˜µì…˜ì´ ì„¤ì •ëœ ê²½ìš° í˜¸ì¶œëœë‹¤.
+ * m_TokenValueì— í™”ì¼ì´ë¦„ì´ ìžˆëŠ” ìƒíƒœì—ì„œ, m_TokenValueì— í™”ì¼ì˜ ë‚´ìš©ì„ ì±„ìš´ë‹¤.
  */
 IDE_RC iloDataFile::loadFromOutFile( ALTIBASE_ILOADER_HANDLE aHandle )
 {

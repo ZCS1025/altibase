@@ -20,7 +20,7 @@
  *
  * Description :
  *     PROJ-1371 PSM File Handling
- *     FILEÀ» rename(mv)ÇÏ´Â ÇÔ¼ö
+ *     FILEì„ rename(mv)í•˜ëŠ” í•¨ìˆ˜
  *
  * Syntax :
  *     FILE_RENAME( srcpath VARCHAR, srcfilename VARCHAR,
@@ -53,7 +53,7 @@ static IDE_RC qsfEstimate( mtcNode*     aNode,
 mtfModule qsfFRenameModule = {
     1|MTC_NODE_OPERATOR_MISC|MTC_NODE_VARIABLE_TRUE,
     ~0,
-    1.0,                    // default selectivity (ºñ±³ ¿¬»êÀÚ ¾Æ´Ô)
+    1.0,                    // default selectivity (ë¹„êµ ì—°ì‚°ì ì•„ë‹˜)
     qsfFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -152,12 +152,12 @@ IDE_RC qsfCalculate_FRename( mtcNode*     aNode,
  *     file_rename calculate
  *
  * Implementation :
- *     1. argument°¡ nullÀÎ °æ¿ì  error
- *     2. directory path¸¦ ¾ò¾î¿È
- *     3. src, dest path¿¡ ´ëÇØ write±ÇÇÑ Ã¼Å©
- *     5. path, filename, directory indicator¸¦ Á¶ÇÕÇÏ¿© path»ı¼º
- *     6. rename ÇÔ¼ö È£Ãâ
- *     7. return value¿¡ TRUE¼¼ÆÃ
+ *     1. argumentê°€ nullì¸ ê²½ìš°  error
+ *     2. directory pathë¥¼ ì–»ì–´ì˜´
+ *     3. src, dest pathì— ëŒ€í•´ writeê¶Œí•œ ì²´í¬
+ *     5. path, filename, directory indicatorë¥¼ ì¡°í•©í•˜ì—¬ pathìƒì„±
+ *     6. rename í•¨ìˆ˜ í˜¸ì¶œ
+ *     7. return valueì— TRUEì„¸íŒ…
  *
  ***********************************************************************/
     
@@ -219,7 +219,7 @@ IDE_RC qsfCalculate_FRename( mtcNode*     aNode,
     sSrcPathValue = (mtdCharType*)aStack[1].value;
     sDestPathValue = (mtdCharType*)aStack[3].value;
         
-    // ¸ŞÅ¸¿¡¼­ ½ÇÁ¦ path¸¦ ¾ò¾î¿È
+    // ë©”íƒ€ì—ì„œ ì‹¤ì œ pathë¥¼ ì–»ì–´ì˜´
     sDummyStmt = QC_SMI_STMT(sStatement);
 
     sSmiStmtFlag &= ~SMI_STATEMENT_MASK;

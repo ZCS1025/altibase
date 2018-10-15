@@ -21,11 +21,11 @@
  * Description :
  *     VIEW(VIEW) Node
  *
- *     °ü°èÇü ¸ğµ¨¿¡¼­ °¡»ó TableÀ» Ç¥ÇöÇÏ±â À§ÇÑ NodeÀÌ´Ù..
+ *     ê´€ê³„í˜• ëª¨ë¸ì—ì„œ ê°€ìƒ Tableì„ í‘œí˜„í•˜ê¸° ìœ„í•œ Nodeì´ë‹¤..
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  **********************************************************************/
 
@@ -73,7 +73,7 @@
 typedef struct qmncVIEW  
 {
     //---------------------------------
-    // Code ¿µ¿ª °øÅë Á¤º¸
+    // Code ì˜ì—­ ê³µí†µ ì •ë³´
     //---------------------------------
 
     qmnPlan        plan;
@@ -81,13 +81,13 @@ typedef struct qmncVIEW
     UInt           planID;
 
     //---------------------------------
-    // VIEW °ü·Ã Á¤º¸
+    // VIEW ê´€ë ¨ ì •ë³´
     //---------------------------------
 
-    qtcNode      * myNode;    // ViewÀÇ Column Á¤º¸
+    qtcNode      * myNode;    // Viewì˜ Column ì •ë³´
 
     //---------------------------------
-    // Display °ü·Ã Á¤º¸
+    // Display ê´€ë ¨ ì •ë³´
     //---------------------------------
     
     qmsNamePosition viewOwnerName;
@@ -99,7 +99,7 @@ typedef struct qmncVIEW
 typedef struct qmndVIEW
 {
     //---------------------------------
-    // Data ¿µ¿ª °øÅë Á¤º¸
+    // Data ì˜ì—­ ê³µí†µ ì •ë³´
     //---------------------------------
 
     qmndPlan       plan;
@@ -107,7 +107,7 @@ typedef struct qmndVIEW
     UInt         * flag;        
 
     //---------------------------------
-    // VIEW °íÀ¯ Á¤º¸
+    // VIEW ê³ ìœ  ì •ë³´
     //---------------------------------
 
 } qmndVIEW;
@@ -120,11 +120,11 @@ public:
     // Base Function Pointer
     //------------------------
 
-    // ÃÊ±âÈ­
+    // ì´ˆê¸°í™”
     static IDE_RC init( qcTemplate * aTemplate,
                         qmnPlan    * aPlan );
 
-    // ¼öÇà ÇÔ¼ö
+    // ìˆ˜í–‰ í•¨ìˆ˜
     static IDE_RC doIt( qcTemplate * aTemplate,
                         qmnPlan    * aPlan,
                         qmcRowFlag * aFlag );
@@ -133,7 +133,7 @@ public:
     static IDE_RC padNull( qcTemplate * aTemplate,
                            qmnPlan    * aPlan );
 
-    // Plan Á¤º¸ Ãâ·Â
+    // Plan ì •ë³´ ì¶œë ¥
     static IDE_RC printPlan( qcTemplate   * aTemplate,
                              qmnPlan      * aPlan,
                              ULong          aDepth,
@@ -144,24 +144,24 @@ public:
     // mapping by doIt() function pointer
     //------------------------
     
-    // È£ÃâµÇ¾î¼­´Â ¾ÈµÊ.
+    // í˜¸ì¶œë˜ì–´ì„œëŠ” ì•ˆë¨.
     static IDE_RC doItDefault( qcTemplate * aTemplate,
                                qmnPlan    * aPlan,
                                qmcRowFlag * aFlag );
 
-    // ÇÏÀ§ PROJ ÀÇ °á°ú¸¦ Record·Î ±¸¼ºÇÔ.
+    // í•˜ìœ„ PROJ ì˜ ê²°ê³¼ë¥¼ Recordë¡œ êµ¬ì„±í•¨.
     static IDE_RC doItProject(  qcTemplate * aTemplate,
                                 qmnPlan    * aPlan,
                                 qmcRowFlag * aFlag );
 
 private:
 
-    // ÃÖÃÊ ÃÊ±âÈ­
+    // ìµœì´ˆ ì´ˆê¸°í™”
     static IDE_RC firstInit( qcTemplate * aTemplate,
                              qmncVIEW   * aCodePlan,
                              qmndVIEW   * aDataPlan );
 
-    // Stack¿¡ ½×ÀÎ Á¤º¸¸¦ ÀÌ¿ëÇÏ¿© View Record¸¦ ±¸¼ºÇÔ.
+    // Stackì— ìŒ“ì¸ ì •ë³´ë¥¼ ì´ìš©í•˜ì—¬ View Recordë¥¼ êµ¬ì„±í•¨.
     static IDE_RC setTupleRow( qcTemplate * aTemplate,
                                qmncVIEW   * aCodePlan,
                                qmndVIEW   * aDataPlan );

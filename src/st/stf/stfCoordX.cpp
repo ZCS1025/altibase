@@ -33,7 +33,7 @@ extern mtfModule stfCoordX;
 static mtcName stfCoordXFunctionName[3] = {
     { stfCoordXFunctionName+1, 4, (void*)"ST_X" }, // Fix BUG-15519
     { stfCoordXFunctionName+2, 6, (void*)"COORDX" },
-    { NULL,                    1, (void*)"X" } // BUG-15248 X() ø¨ªÍ¿⁄ µÓ∑œ
+    { NULL,                    1, (void*)"X" } // BUG-15248 X() Ïó∞ÏÇ∞Ïûê Îì±Î°ù
 };
 
 static IDE_RC stfCoordXEstimate(
@@ -46,7 +46,7 @@ static IDE_RC stfCoordXEstimate(
 mtfModule stfCoordX = {
     1|MTC_NODE_OPERATOR_FUNCTION,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (∫Ò±≥ ø¨ªÍ¿⁄∞° æ∆¥‘)
+    1.0,  // default selectivity (ÎπÑÍµê Ïó∞ÏÇ∞ÏûêÍ∞Ä ÏïÑÎãò)
     stfCoordXFunctionName,
     NULL,
     mtf::initializeDefault,

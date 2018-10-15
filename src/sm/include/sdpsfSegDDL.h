@@ -19,8 +19,8 @@
  *
  * $Id: sdpsfSegDDL.h 27220 2008-07-23 14:56:22Z newdaily $
  *
- * º» ÆÄÀÏÀº SegmentÀÇ Create/Drop/Alter/Reset ¿¬»êÀÇ STATIC
- * ÀÎÅÍÆäÀÌ½ºµéÀ» °ü¸®ÇÑ´Ù.
+ * ë³¸ íŒŒì¼ì€ Segmentì˜ Create/Drop/Alter/Reset ì—°ì‚°ì˜ STATIC
+ * ì¸í„°í˜ì´ìŠ¤ë“¤ì„ ê´€ë¦¬í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -34,20 +34,20 @@ class sdpsfSegDDL
 {
 
 public:
-    /* [ INTERFACE ] Segment ÇÒ´ç */
+    /* [ INTERFACE ] Segment í• ë‹¹ */
     static IDE_RC createSegment( idvSQL                * aStatistics,
                                  sdrMtx                * aMtx,
                                  scSpaceID               aSpaceID,
                                  sdpSegType              aSegType,
                                  sdpSegHandle          * aSegmentHandle );
 
-    /* [ INTERFACE ] Segment ÇØÁ¦ */
+    /* [ INTERFACE ] Segment í•´ì œ */
     static IDE_RC dropSegment( idvSQL              * aStatistics,
                                sdrMtx              * aMtx,
                                scSpaceID             aSpaceID,
                                scPageID              aSegPID );
 
-    /*  [ INTERFACE ] Segment ¸®¼Â  */
+    /*  [ INTERFACE ] Segment ë¦¬ì…‹  */
     static IDE_RC resetSegment( idvSQL           * aStatistics,
                                 sdrMtx           * aMtx,
                                 scSpaceID          aSpaceID,

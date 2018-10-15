@@ -18,15 +18,15 @@
 #include <ulnPrivate.h>
 
 /*
- * 07006 Á¦ÇÑµÈ µ¥ÀÌÅÍ Å¸ÀÔ ¼Ó¼º À§¹Ý | sqlType ÀÎÀÚ¿¡ ¸í½ÃµÈ °ªÀÌ À¯È¿ÇÑ °ªÀÌ ¾Æ´Ô
- * 07009 À¯È¿ÇÏÁö ¾ÊÀº ¹øÈ£           | ¸í½ÃµÈ parÀÇ °ªÀÌ 1º¸´Ù ÀÛÀ½
- * 08S01 Åë½Å È¸¼± Àå¾Ö               | ODBC¿Í µ¥ÀÌÅÍº£ÀÌ½º °£¿¡ ÇÔ¼ö Ã³¸®°¡ ¿Ï·áµÇ±â
- *                                    | Àü¿¡ Åë½Å È¸¼± ½ÇÆÐ
- * HY000 ÀÏ¹Ý ¿À·ù                    |
- * HY001 ¸Þ¸ð¸® ÇÒ´ç ¿À·ù             | ÀÌ ÇÔ¼ö¸¦ ¼öÇàÇÏ±â À§ÇØ ÇÊ¿äÇÑ ¸Þ¸ð¸® ÇÒ´ç ½ÇÆÐ
- * HY009 À¯È¿ÇÏÁö ¾ÊÀº ÀÎÀÚ »ç¿ë      | fileName, fileOptions, ind ÀÎÀÚ°¡ null pointer
+ * 07006 ì œí•œëœ ë°ì´í„° íƒ€ìž… ì†ì„± ìœ„ë°˜ | sqlType ì¸ìžì— ëª…ì‹œëœ ê°’ì´ ìœ íš¨í•œ ê°’ì´ ì•„ë‹˜
+ * 07009 ìœ íš¨í•˜ì§€ ì•Šì€ ë²ˆí˜¸           | ëª…ì‹œëœ parì˜ ê°’ì´ 1ë³´ë‹¤ ìž‘ìŒ
+ * 08S01 í†µì‹  íšŒì„  ìž¥ì•                | ODBCì™€ ë°ì´í„°ë² ì´ìŠ¤ ê°„ì— í•¨ìˆ˜ ì²˜ë¦¬ê°€ ì™„ë£Œë˜ê¸°
+ *                                    | ì „ì— í†µì‹  íšŒì„  ì‹¤íŒ¨
+ * HY000 ì¼ë°˜ ì˜¤ë¥˜                    |
+ * HY001 ë©”ëª¨ë¦¬ í• ë‹¹ ì˜¤ë¥˜             | ì´ í•¨ìˆ˜ë¥¼ ìˆ˜í–‰í•˜ê¸° ìœ„í•´ í•„ìš”í•œ ë©”ëª¨ë¦¬ í• ë‹¹ ì‹¤íŒ¨
+ * HY009 ìœ íš¨í•˜ì§€ ì•Šì€ ì¸ìž ì‚¬ìš©      | fileName, fileOptions, ind ì¸ìžê°€ null pointer
  *       (null pointer)
- * HY090 À¯È¿ÇÏÁö ¾ÊÀº ¹®ÀÚ¿­ ±æÀÌ    | maxFileNameLength ÀÎÀÚ°¡ 0º¸´Ù ÀÛÀ½
+ * HY090 ìœ íš¨í•˜ì§€ ì•Šì€ ë¬¸ìžì—´ ê¸¸ì´    | maxFileNameLength ì¸ìžê°€ 0ë³´ë‹¤ ìž‘ìŒ
  */
 
 static ACI_RC ulnBindFileToParamCheckArgs(ulnFnContext  *aContext,
@@ -86,11 +86,11 @@ static ACI_RC ulnBindFileToParamCheckArgs(ulnFnContext  *aContext,
 }
 
 /*
- * filename °ú type, µî¿¡ °üÇÑ °ÍµéÀº ¸ðµÎ´Ù APD record ¿¡ ÀúÀåÇÑ´Ù.
+ * filename ê³¼ type, ë“±ì— ê´€í•œ ê²ƒë“¤ì€ ëª¨ë‘ë‹¤ APD record ì— ì €ìž¥í•œë‹¤.
  *
- * Â÷ÈÄ execute ½Ã¿¡ ÇØ´ç ÆÄÀÏµéÀ» open ÇØ¼­ read ÇÏ¿© µ¥ÀÌÅÍ¸¦ Àü¼ÛÇÑ´Ù.
+ * ì°¨í›„ execute ì‹œì— í•´ë‹¹ íŒŒì¼ë“¤ì„ open í•´ì„œ read í•˜ì—¬ ë°ì´í„°ë¥¼ ì „ì†¡í•œë‹¤.
  *
- * BUGBUG : aIndicator ÀÇ ÀÇ¹Ì¸¦ ´Ù½ÃÇÑ¹ø »ý°¢ÇØ º¸µµ·Ï ÇÏÀÚ.
+ * BUGBUG : aIndicator ì˜ ì˜ë¯¸ë¥¼ ë‹¤ì‹œí•œë²ˆ ìƒê°í•´ ë³´ë„ë¡ í•˜ìž.
  */
 SQLRETURN ulnBindFileToParam(ulnStmt       *aStmt,
                              acp_uint16_t   aParamNumber,
@@ -116,7 +116,7 @@ SQLRETURN ulnBindFileToParam(ulnStmt       *aStmt,
     sNeedExit = ACP_TRUE;
 
     sPtContext = &(aStmt->mParentDbc->mPtContext);
-    /* BUG-44125 [mm-cli] IPCDA ¸ðµå Å×½ºÆ® Áß hang - iloader CLOB */
+    /* BUG-44125 [mm-cli] IPCDA ëª¨ë“œ í…ŒìŠ¤íŠ¸ ì¤‘ hang - iloader CLOB */
     ACI_TEST_RAISE(cmiGetLinkImpl(&sPtContext->mCmiPtContext) == CMI_LINK_IMPL_IPCDA,
                    IPCDANotSupport);
     /*
@@ -131,11 +131,11 @@ SQLRETURN ulnBindFileToParam(ulnStmt       *aStmt,
                                          aIndicator) != ACI_SUCCESS);
 
     /*
-     * ulnBindParameter() ¸¦ È£ÃâÇÏ¿© ±âº»ÀûÀÎ APD, IPD ¼¼ÆÃÀ» ÇÑ´Ù.
+     * ulnBindParameter() ë¥¼ í˜¸ì¶œí•˜ì—¬ ê¸°ë³¸ì ì¸ APD, IPD ì„¸íŒ…ì„ í•œë‹¤.
      *
-     * Note : aStrLenOrIndPtr ¿¡ aIndicator °¡ ¾Æ´Ï¶ó
-     *        aFileNameLengthArray ¸¦ ÀúÀåÇÔÀ¸·Î½á
-     *        ulnDescRec ÀÇ mOctetLengthPtr ¿¡ aFileNameLengthArray °¡ µé¾î°¡µµ·Ï ÇÑ´Ù.
+     * Note : aStrLenOrIndPtr ì— aIndicator ê°€ ì•„ë‹ˆë¼
+     *        aFileNameLengthArray ë¥¼ ì €ìž¥í•¨ìœ¼ë¡œì¨
+     *        ulnDescRec ì˜ mOctetLengthPtr ì— aFileNameLengthArray ê°€ ë“¤ì–´ê°€ë„ë¡ í•œë‹¤.
      */
     ACI_TEST(ulnBindParamBody(&sFnContext,
                               aParamNumber,
@@ -154,9 +154,9 @@ SQLRETURN ulnBindFileToParam(ulnStmt       *aStmt,
     ACI_TEST_RAISE(sDescRecApd == NULL, LABEL_MEM_MAN_ERR);
 
     /*
-     * file option ¹è¿­°ú indicator ¹è¿­À» ÇÒ´çÇÑ´Ù.
+     * file option ë°°ì—´ê³¼ indicator ë°°ì—´ì„ í• ë‹¹í•œë‹¤.
      *
-     * BUGBUG : Á» ´õ ¿ì¾ÆÇÏ°Ô ÅëÇÕÇÏ´Â ¹æ¹ýÀ» »ý°¢ÇØ¾ß ÇÑ´Ù. °í¹ÎÁ» ÇÏÀÚ.
+     * BUGBUG : ì¢€ ë” ìš°ì•„í•˜ê²Œ í†µí•©í•˜ëŠ” ë°©ë²•ì„ ìƒê°í•´ì•¼ í•œë‹¤. ê³ ë¯¼ì¢€ í•˜ìž.
      */
     sDescRecApd->mFileOptionsPtr = aFileOptionPtr;
     ulnDescRecSetIndicatorPtr(sDescRecApd, aIndicator);

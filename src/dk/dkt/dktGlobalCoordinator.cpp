@@ -30,9 +30,9 @@
 #include <dkuProperty.h>
 
 /************************************************************************
- * Description : Global coordinator ¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+ * Description : Global coordinator ë¥¼ ì´ˆê¸°í™”í•œë‹¤.
  *
- *  aSession    - [IN] ÀÌ global coordinator ¸¦ °®´Â linker data session
+ *  aSession    - [IN] ì´ global coordinator ë¥¼ ê°–ëŠ” linker data session
  *
  ************************************************************************/
 IDE_RC  dktGlobalCoordinator::initialize( dksDataSession * aSession )
@@ -42,10 +42,10 @@ IDE_RC  dktGlobalCoordinator::initialize( dksDataSession * aSession )
     IDE_ASSERT( aSession != NULL );
 
     /* BUG-44672
-     * Performance View Á¶È¸ÇÒ¶§ RemoteTransactioin ÀÇ Ãß°¡ »èÁ¦½Ã PV ¸¦ Á¶È¸ÇÏ¸é µ¿½Ã¼º ¹®Á¦°¡ »ı±ä´Ù.
-     * ÀÌ¸¦ ¹æÁöÇÏ±â À§ÇÑ Lock À¸·Î ÀÏ¹İ DK µµÁß findRemoteTransaction ¿Í °°Àº ÇÔ¼ö´Â
-     * °°Àº DK ¼¼¼Ç¿¡¼­¸¸ µé¾î¿À¹Ç·Î µ¿½Ã¼º¿¡ ¹®Á¦°¡ ¾øÀ¸¹Ç·Î
-     * RemoteTransaction Add ¿Í Remove ¸¦ Á¦¿ÜÇÏ°í´Â Lock À» ÀâÁö ¾Ê´Â´Ù. */
+     * Performance View ì¡°íšŒí• ë•Œ RemoteTransactioin ì˜ ì¶”ê°€ ì‚­ì œì‹œ PV ë¥¼ ì¡°íšŒí•˜ë©´ ë™ì‹œì„± ë¬¸ì œê°€ ìƒê¸´ë‹¤.
+     * ì´ë¥¼ ë°©ì§€í•˜ê¸° ìœ„í•œ Lock ìœ¼ë¡œ ì¼ë°˜ DK ë„ì¤‘ findRemoteTransaction ì™€ ê°™ì€ í•¨ìˆ˜ëŠ”
+     * ê°™ì€ DK ì„¸ì…˜ì—ì„œë§Œ ë“¤ì–´ì˜¤ë¯€ë¡œ ë™ì‹œì„±ì— ë¬¸ì œê°€ ì—†ìœ¼ë¯€ë¡œ
+     * RemoteTransaction Add ì™€ Remove ë¥¼ ì œì™¸í•˜ê³ ëŠ” Lock ì„ ì¡ì§€ ì•ŠëŠ”ë‹¤. */
     IDE_TEST_RAISE( mDktRTxMutex.initialize( (SChar *)"DKT_REMOTE_TRANSACTION_MUTEX",
                                           IDU_MUTEX_KIND_POSIX,
                                           IDV_WAIT_INDEX_NULL )
@@ -67,10 +67,10 @@ IDE_RC  dktGlobalCoordinator::initialize( dksDataSession * aSession )
                                                          IDU_MUTEX_KIND_POSIX,
                                                          IDV_WAIT_INDEX_NULL )
                     != IDE_SUCCESS, ERR_MUTEX_INIT );
-    /* Remote transaction ÀÇ °ü¸®¸¦ À§ÇÑ list ÃÊ±âÈ­ */
+    /* Remote transaction ì˜ ê´€ë¦¬ë¥¼ ìœ„í•œ list ì´ˆê¸°í™” */
     IDU_LIST_INIT( &mRTxList );
 
-    /* Savepoint ÀÇ °ü¸®¸¦ À§ÇÑ list ÃÊ±âÈ­ */
+    /* Savepoint ì˜ ê´€ë¦¬ë¥¼ ìœ„í•œ list ì´ˆê¸°í™” */
     IDU_LIST_INIT( &mSavepointList );
 
     return IDE_SUCCESS;
@@ -95,9 +95,9 @@ IDE_RC  dktGlobalCoordinator::initialize( dksDataSession * aSession )
 }
 
 /************************************************************************
- * Description : Global coordinator °¡ °®°í ÀÖ´Â ÀÚ¿øÀ» Á¤¸®ÇÑ´Ù.
+ * Description : Global coordinator ê°€ ê°–ê³  ìˆëŠ” ìì›ì„ ì •ë¦¬í•œë‹¤.
  *
- *  BUG-37487 : return °ªÀ» IDE_RC --> void ·Î º¯°æ.
+ *  BUG-37487 : return ê°’ì„ IDE_RC --> void ë¡œ ë³€ê²½.
  *
  ************************************************************************/
 void dktGlobalCoordinator::finalize()
@@ -133,8 +133,8 @@ void dktGlobalCoordinator::finalize()
         /* there is no savepoint */
     }
 
-    /* PROJ-2569 notifier¿¡°Ô ÀÌ°üÀº dktGlobalTxMgrÀÌ globalCoordinatorÀÇ finalize È£Ãâ Àü¿¡ ÇÑ´Ù.
-     * dtxInfo ¸Ş¸ğ¸® ÇØÁ¦´Â commit/rollbackÀÌ ½ÇÇà ÈÄ ¼º°ø ¿©ºÎ¸¦ º¸°í ±×°÷¿¡¼­ ÇÑ´Ù.
+    /* PROJ-2569 notifierì—ê²Œ ì´ê´€ì€ dktGlobalTxMgrì´ globalCoordinatorì˜ finalize í˜¸ì¶œ ì „ì— í•œë‹¤.
+     * dtxInfo ë©”ëª¨ë¦¬ í•´ì œëŠ” commit/rollbackì´ ì‹¤í–‰ í›„ ì„±ê³µ ì—¬ë¶€ë¥¼ ë³´ê³  ê·¸ê³³ì—ì„œ í•œë‹¤.
      * mDtxInfo         = NULL; */
 
     mGlobalTxId      = DK_INIT_GTX_ID;
@@ -150,11 +150,11 @@ void dktGlobalCoordinator::finalize()
 }
 
 /************************************************************************
- * Description : Remote transaction À» »ı¼ºÇÏ¿© list ¿¡ Ãß°¡ÇÑ´Ù.
+ * Description : Remote transaction ì„ ìƒì„±í•˜ì—¬ list ì— ì¶”ê°€í•œë‹¤.
  *
  *  aSession    - [IN] Linker data session 
- *  aLinkObjId  - [IN] Database link ÀÇ id
- *  aRemoteTx   - [OUT] »ı¼ºÇÑ remote transaction
+ *  aLinkObjId  - [IN] Database link ì˜ id
+ *  aRemoteTx   - [OUT] ìƒì„±í•œ remote transaction
  *  
  ************************************************************************/
 IDE_RC  dktGlobalCoordinator::createRemoteTx( idvSQL          *aStatistics,
@@ -168,7 +168,7 @@ IDE_RC  dktGlobalCoordinator::createRemoteTx( idvSQL          *aStatistics,
     idBool           sIsInited = ID_FALSE;
     idBool           sIsAdded = ID_FALSE;
 
-    /* ÀÌ¹Ì shard·Î »ç¿ëÇÏ°í ÀÖ´Â °æ¿ì ¿¡·¯ */
+    /* ì´ë¯¸ shardë¡œ ì‚¬ìš©í•˜ê³  ìˆëŠ” ê²½ìš° ì—ëŸ¬ */
     IDE_TEST_RAISE( mLinkerType == DKT_LINKER_TYPE_SHARD,
                     ERR_SHARD_TX_ALREADY_EXIST );
 
@@ -281,7 +281,7 @@ IDE_RC  dktGlobalCoordinator::createRemoteTxForShard( idvSQL          *aStatisti
     idBool           sIsInited = ID_FALSE;
     idBool           sIsAdded = ID_FALSE;
 
-    /* ÀÌ¹Ì dblink·Î »ç¿ëÇÏ°í ÀÖ´Â °æ¿ì ¿¡·¯ */
+    /* ì´ë¯¸ dblinkë¡œ ì‚¬ìš©í•˜ê³  ìˆëŠ” ê²½ìš° ì—ëŸ¬ */
     IDE_TEST_RAISE( mLinkerType == DKT_LINKER_TYPE_DBLINK,
                     ERR_DBLINK_TX_ALREADY_EXIST );
 
@@ -328,7 +328,7 @@ IDE_RC  dktGlobalCoordinator::createRemoteTxForShard( idvSQL          *aStatisti
                                             aDataNode->mConnectType )
                   != IDE_SUCCESS );
 
-        /* shard data¿¡ XID¸¦ ¼³Á¤ÇÑ´Ù. */
+        /* shard dataì— XIDë¥¼ ì„¤ì •í•œë‹¤. */
         dktXid::copyXID( &(aDataNode->mXID), &(sRemoteTx->mXID) );
     }
     else
@@ -393,12 +393,12 @@ IDE_RC  dktGlobalCoordinator::createRemoteTxForShard( idvSQL          *aStatisti
 }
 
 /************************************************************************
- * Description : Remote transaction À» remote transaction list ·ÎºÎÅÍ 
- *               Á¦°ÅÇÏ°í °®°í ÀÖ´Â ¸ğµç ÀÚ¿øÀ» ¹İ³³ÇÑ´Ù. 
+ * Description : Remote transaction ì„ remote transaction list ë¡œë¶€í„° 
+ *               ì œê±°í•˜ê³  ê°–ê³  ìˆëŠ” ëª¨ë“  ìì›ì„ ë°˜ë‚©í•œë‹¤. 
  *
- *  aRemoteTx   - [IN] Á¦°ÅÇÒ remote transaction À» °¡¸®Å°´Â Æ÷ÀÎÅÍ 
+ *  aRemoteTx   - [IN] ì œê±°í•  remote transaction ì„ ê°€ë¦¬í‚¤ëŠ” í¬ì¸í„° 
  *
- *  BUG-37487 : return °ªÀ» IDE_RC --> void ·Î º¯°æ.
+ *  BUG-37487 : return ê°’ì„ IDE_RC --> void ë¡œ ë³€ê²½.
  *
  ************************************************************************/
 void dktGlobalCoordinator::destroyRemoteTx( dktRemoteTx  *aRemoteTx )
@@ -471,9 +471,9 @@ void dktGlobalCoordinator::destroyAllRemoteTx()
 
 
 /************************************************************************
- * Description : Remote transaction ÀÇ id ¸¦ »ı¼ºÇÑ´Ù.
+ * Description : Remote transaction ì˜ id ë¥¼ ìƒì„±í•œë‹¤.
  *
- *  aLinkObjId  - [IN] Database link ÀÇ id
+ *  aLinkObjId  - [IN] Database link ì˜ id
  *
  ************************************************************************/
 UInt    dktGlobalCoordinator::generateRemoteTxId( UInt aLinkObjId )
@@ -487,10 +487,10 @@ UInt    dktGlobalCoordinator::generateRemoteTxId( UInt aLinkObjId )
 }
 
 /************************************************************************
- * Description : Id ¸¦ ÀÔ·Â¹Ş¾Æ remote transaction À» Ã£´Â´Ù. 
+ * Description : Id ë¥¼ ì…ë ¥ë°›ì•„ remote transaction ì„ ì°¾ëŠ”ë‹¤. 
  *
  *  aId         - [IN] Remote transaction id
- *  aRemoteTx   - [OUT] Ã£Àº remote transaction
+ *  aRemoteTx   - [OUT] ì°¾ì€ remote transaction
  *
  ************************************************************************/
 IDE_RC  dktGlobalCoordinator::findRemoteTx( UInt            aId, 
@@ -531,11 +531,11 @@ IDE_RC  dktGlobalCoordinator::findRemoteTx( UInt            aId,
 }
 
 /************************************************************************
- * Description : Remote target name À» ÀÔ·Â¹Ş¾Æ ÇØ´çÇÏ´Â remote transaction 
- *               À» Ã£´Â´Ù.
+ * Description : Remote target name ì„ ì…ë ¥ë°›ì•„ í•´ë‹¹í•˜ëŠ” remote transaction 
+ *               ì„ ì°¾ëŠ”ë‹¤.
  *
  *  aTargetName - [IN] Remote target server name
- *  aRemoteTx   - [OUT] Ã£Àº remote transaction
+ *  aRemoteTx   - [OUT] ì°¾ì€ remote transaction
  *
  ************************************************************************/
 IDE_RC  dktGlobalCoordinator::findRemoteTxWithTarget( SChar         *aTargetName,
@@ -636,12 +636,12 @@ IDE_RC  dktGlobalCoordinator::findRemoteTxWithShardNode( UInt          aNodeId,
 }
 
 /************************************************************************
- * Description : ÀÔ·Â¹ŞÀº savepoint ¸¦ savepoint list ·ÎºÎÅÍ 
- *               Á¦°ÅÇÏ°í ÀÚ¿øÀ» ¹İ³³ÇÑ´Ù. 
+ * Description : ì…ë ¥ë°›ì€ savepoint ë¥¼ savepoint list ë¡œë¶€í„° 
+ *               ì œê±°í•˜ê³  ìì›ì„ ë°˜ë‚©í•œë‹¤. 
  *
- *  aSavepoint   - [IN] Á¦°ÅÇÒ savepoint ¸¦ °¡¸®Å°´Â Æ÷ÀÎÅÍ 
+ *  aSavepoint   - [IN] ì œê±°í•  savepoint ë¥¼ ê°€ë¦¬í‚¤ëŠ” í¬ì¸í„° 
  *
- *  BUG-37487 : return °ªÀ» IDE_RC --> void ·Î º¯°æ.
+ *  BUG-37487 : return ê°’ì„ IDE_RC --> void ë¡œ ë³€ê²½.
  *
  ************************************************************************/
 void dktGlobalCoordinator::destroySavepoint( dktSavepoint  *aSavepoint )
@@ -653,9 +653,9 @@ void dktGlobalCoordinator::destroySavepoint( dktSavepoint  *aSavepoint )
 }
 
 /************************************************************************
- * Description : ±Û·Î¹ú Æ®·£Àè¼Ç commit À» À§ÇÑ prepare phase ¸¦ ¼öÇàÇÑ´Ù.
- *               Remote statement execution level ¿¡¼­´Â prepare ´Ü°è°¡ 
- *               Á¸ÀçÇÏÁö ¾ÊÀ¸¹Ç·Î ÀÌ ÇÔ¼ö°¡ ¼öÇàµÉ ÀÏÀº ¾ø´Ù. 
+ * Description : ê¸€ë¡œë²Œ íŠ¸ëœì­ì…˜ commit ì„ ìœ„í•œ prepare phase ë¥¼ ìˆ˜í–‰í•œë‹¤.
+ *               Remote statement execution level ì—ì„œëŠ” prepare ë‹¨ê³„ê°€ 
+ *               ì¡´ì¬í•˜ì§€ ì•Šìœ¼ë¯€ë¡œ ì´ í•¨ìˆ˜ê°€ ìˆ˜í–‰ë  ì¼ì€ ì—†ë‹¤. 
  *
  ************************************************************************/
 IDE_RC  dktGlobalCoordinator::executePrepare()
@@ -717,11 +717,11 @@ IDE_RC  dktGlobalCoordinator::executePrepare()
 }
 
 /************************************************************************
- * Description : ADLP ÀÇ simple transaction commit level ¿¡¼­ÀÇ 
- *               ±Û·Î¹ú Æ®·£Àè¼Ç commit À» À§ÇÑ prepare phase ¸¦ ¼öÇàÇÑ´Ù.
- *               ³»ºÎÀûÀ¸·Î´Â ¸ğµç remote node session µéÀÇ ³×Æ®¿öÅ© ¿¬°á
- *               ÀÌ »ì¾ÆÀÖ´ÂÁö È®ÀÎÇÏ¿© ¸ğµç ¿¬°áÀÌ »ì¾ÆÀÖ´Â °æ¿ì¸¸ 
- *               prepared ·Î »óÅÂ¸¦ º¯°æÇÏ°í SUCCESS ¸¦ return ÇÑ´Ù. 
+ * Description : ADLP ì˜ simple transaction commit level ì—ì„œì˜ 
+ *               ê¸€ë¡œë²Œ íŠ¸ëœì­ì…˜ commit ì„ ìœ„í•œ prepare phase ë¥¼ ìˆ˜í–‰í•œë‹¤.
+ *               ë‚´ë¶€ì ìœ¼ë¡œëŠ” ëª¨ë“  remote node session ë“¤ì˜ ë„¤íŠ¸ì›Œí¬ ì—°ê²°
+ *               ì´ ì‚´ì•„ìˆëŠ”ì§€ í™•ì¸í•˜ì—¬ ëª¨ë“  ì—°ê²°ì´ ì‚´ì•„ìˆëŠ” ê²½ìš°ë§Œ 
+ *               prepared ë¡œ ìƒíƒœë¥¼ ë³€ê²½í•˜ê³  SUCCESS ë¥¼ return í•œë‹¤. 
  *
  ************************************************************************/
 IDE_RC  dktGlobalCoordinator::executeSimpleTransactionCommitPrepare()
@@ -836,8 +836,8 @@ IDE_RC  dktGlobalCoordinator::executeSimpleTransactionCommitPrepare()
 }
 
 /************************************************************************
- * Description : ADLP ÀÇ two phase commit level ¿¡¼­ÀÇ ±Û·Î¹ú Æ®·£Àè¼Ç
- *               commit À» À§ÇÑ prepare phase ¸¦ ¼öÇàÇÑ´Ù.
+ * Description : ADLP ì˜ two phase commit level ì—ì„œì˜ ê¸€ë¡œë²Œ íŠ¸ëœì­ì…˜
+ *               commit ì„ ìœ„í•œ prepare phase ë¥¼ ìˆ˜í–‰í•œë‹¤.
  *
  ************************************************************************/
 IDE_RC  dktGlobalCoordinator::executeTwoPhaseCommitPrepare()
@@ -961,9 +961,9 @@ IDE_RC  dktGlobalCoordinator::executeTwoPhaseCommitPrepare()
 }
 
 /************************************************************************
- * Description : ADLP ¿¡ ÀÇÇØ ÀÌ ±Û·Î¹ú Æ®·£Àè¼Ç¿¡ ¼ÓÇÏ´Â ¸ğµç remote 
- *               transaction µéÀÌ ¸ğµÎ prepare ¸¦ ±â´Ù¸®´Â »óÅÂÀÎÁö¸¦ 
- *               °Ë»çÇÑ´Ù. 
+ * Description : ADLP ì— ì˜í•´ ì´ ê¸€ë¡œë²Œ íŠ¸ëœì­ì…˜ì— ì†í•˜ëŠ” ëª¨ë“  remote 
+ *               transaction ë“¤ì´ ëª¨ë‘ prepare ë¥¼ ê¸°ë‹¤ë¦¬ëŠ” ìƒíƒœì¸ì§€ë¥¼ 
+ *               ê²€ì‚¬í•œë‹¤. 
  *
  ************************************************************************/
 idBool  dktGlobalCoordinator::isAllRemoteTxPrepareReady()
@@ -991,8 +991,8 @@ idBool  dktGlobalCoordinator::isAllRemoteTxPrepareReady()
 }
 
 /************************************************************************
- * Description : ±Û·Î¹ú Æ®·£Àè¼Ç commit À» À§ÇÑ ADLP ÇÁ·ÎÅäÄİÀÇ 
- *               commit phase ¸¦ ¼öÇàÇÑ´Ù.
+ * Description : ê¸€ë¡œë²Œ íŠ¸ëœì­ì…˜ commit ì„ ìœ„í•œ ADLP í”„ë¡œí† ì½œì˜ 
+ *               commit phase ë¥¼ ìˆ˜í–‰í•œë‹¤.
  *
  ************************************************************************/
 IDE_RC  dktGlobalCoordinator::executeCommit()
@@ -1077,16 +1077,16 @@ IDE_RC  dktGlobalCoordinator::executeCommit()
 }
 
 /************************************************************************
- * Description : Æ®·£Àè¼ÇÀÇ atomic transaction level ÀÌ ADLP ¿¡¼­ Á¦°øÇÏ´Â
- *               remote statement execution level ·Î ¼³Á¤µÈ °æ¿ì Æ®·£Àè¼Ç 
- *               commit À» ¼öÇàÇÑ´Ù. 
- *               Remote statement execution level Àº DB-Link ·Î ¿¬°áµÈ 
- *               remote server ¿¡ ÀÚµ¿À¸·Î auto-commit mode ¸¦ ON À¸·Î 
- *               ¼³Á¤ÇÏ¹Ç·Î »ç½Ç»ó ¼öÇàÀÌ ¼º°øÇÑ ¸ğµç remote transaction
- *               Àº »ç½Ç»ó remote server ¿¡ commit µÇ¾î ÀÖ´Ù°í º¼ ¼ö ÀÖ´Ù. 
- *               ±×·¯³ª remote server °¡ auto-commit mode ¸¦ Áö¿øÇÏÁö ¾Ê´Â
- *               °æ¿ì »ç¿ëÀÚ°¡ ¸í½ÃÀûÀ¸·Î commit À» ¼öÇàÇÒ ¼ö ÀÖ¾î¾ß ÇÏ¸ç 
- *               ±×·¸Áö ¾ÊÀº °æ¿ì¿¡µµ »ç¿ëÀÚ´Â commit À» ¼öÇàÇÒ ¼ö ÀÖ´Ù. 
+ * Description : íŠ¸ëœì­ì…˜ì˜ atomic transaction level ì´ ADLP ì—ì„œ ì œê³µí•˜ëŠ”
+ *               remote statement execution level ë¡œ ì„¤ì •ëœ ê²½ìš° íŠ¸ëœì­ì…˜ 
+ *               commit ì„ ìˆ˜í–‰í•œë‹¤. 
+ *               Remote statement execution level ì€ DB-Link ë¡œ ì—°ê²°ëœ 
+ *               remote server ì— ìë™ìœ¼ë¡œ auto-commit mode ë¥¼ ON ìœ¼ë¡œ 
+ *               ì„¤ì •í•˜ë¯€ë¡œ ì‚¬ì‹¤ìƒ ìˆ˜í–‰ì´ ì„±ê³µí•œ ëª¨ë“  remote transaction
+ *               ì€ ì‚¬ì‹¤ìƒ remote server ì— commit ë˜ì–´ ìˆë‹¤ê³  ë³¼ ìˆ˜ ìˆë‹¤. 
+ *               ê·¸ëŸ¬ë‚˜ remote server ê°€ auto-commit mode ë¥¼ ì§€ì›í•˜ì§€ ì•ŠëŠ”
+ *               ê²½ìš° ì‚¬ìš©ìê°€ ëª…ì‹œì ìœ¼ë¡œ commit ì„ ìˆ˜í–‰í•  ìˆ˜ ìˆì–´ì•¼ í•˜ë©° 
+ *               ê·¸ë ‡ì§€ ì•Šì€ ê²½ìš°ì—ë„ ì‚¬ìš©ìëŠ” commit ì„ ìˆ˜í–‰í•  ìˆ˜ ìˆë‹¤. 
  *
  ************************************************************************/
 IDE_RC  dktGlobalCoordinator::executeRemoteStatementExecutionCommit()
@@ -1155,8 +1155,8 @@ IDE_RC  dktGlobalCoordinator::executeRemoteStatementExecutionCommit()
 }
 
 /************************************************************************
- * Description : ADLP ÀÇ simple transaction commit level ¿¡¼­ÀÇ 
- *               ±Û·Î¹ú Æ®·£Àè¼Ç commit À» À§ÇÑ commit phase ¸¦ ¼öÇàÇÑ´Ù.
+ * Description : ADLP ì˜ simple transaction commit level ì—ì„œì˜ 
+ *               ê¸€ë¡œë²Œ íŠ¸ëœì­ì…˜ commit ì„ ìœ„í•œ commit phase ë¥¼ ìˆ˜í–‰í•œë‹¤.
  *
  ************************************************************************/
 IDE_RC  dktGlobalCoordinator::executeSimpleTransactionCommitCommit()
@@ -1215,8 +1215,8 @@ IDE_RC  dktGlobalCoordinator::executeSimpleTransactionCommitCommit()
 }
 
 /************************************************************************
- * Description : ADLP ÀÇ two phase commit level ¿¡¼­ÀÇ ±Û·Î¹ú Æ®·£Àè¼Ç
- *               commit À» À§ÇÑ commit phase ¸¦ ¼öÇàÇÑ´Ù.
+ * Description : ADLP ì˜ two phase commit level ì—ì„œì˜ ê¸€ë¡œë²Œ íŠ¸ëœì­ì…˜
+ *               commit ì„ ìœ„í•œ commit phase ë¥¼ ìˆ˜í–‰í•œë‹¤.
  *
  ************************************************************************/
 IDE_RC  dktGlobalCoordinator::executeTwoPhaseCommitCommit()
@@ -1349,7 +1349,7 @@ IDE_RC  dktGlobalCoordinator::executeTwoPhaseCommitCommit()
 }
 
 /************************************************************************
- * Description : ±Û·Î¹ú Æ®·£Àè¼Ç rollback À» ¼öÇàÇÑ´Ù.
+ * Description : ê¸€ë¡œë²Œ íŠ¸ëœì­ì…˜ rollback ì„ ìˆ˜í–‰í•œë‹¤.
  *
  ************************************************************************/
 IDE_RC  dktGlobalCoordinator::executeRollback( SChar  *aSavepointName )
@@ -1433,7 +1433,7 @@ IDE_RC  dktGlobalCoordinator::executeRollback( SChar  *aSavepointName )
 }
 
 /************************************************************************
- * Description : ±Û·Î¹ú Æ®·£Àè¼Ç rollback FORCE DATABASE_LINK ¸¦ ¼öÇàÇÑ´Ù.
+ * Description : ê¸€ë¡œë²Œ íŠ¸ëœì­ì…˜ rollback FORCE DATABASE_LINK ë¥¼ ìˆ˜í–‰í•œë‹¤.
  *
  ************************************************************************/
 IDE_RC  dktGlobalCoordinator::executeRollbackForce()
@@ -1539,22 +1539,22 @@ IDE_RC  dktGlobalCoordinator::executeRollbackForceForDBLink()
 }
 
 /************************************************************************
- * Description : ADLP ÀÇ remote statement execution level ¿¡¼­ÀÇ 
- *               ±Û·Î¹ú Æ®·£Àè¼Ç rollback À» ¼öÇàÇÑ´Ù. 
+ * Description : ADLP ì˜ remote statement execution level ì—ì„œì˜ 
+ *               ê¸€ë¡œë²Œ íŠ¸ëœì­ì…˜ rollback ì„ ìˆ˜í–‰í•œë‹¤. 
  *   ____________________________________________________________________
  *  |                                                                    | 
- *  |  ¿ø·¡´Â ÀÌ ÇÔ¼ö´Â Ç×»ó ±Û·Î¹ú Æ®·£Àè¼Ç ·Ñ¹éÃ³¸®¸¦ ÇÏ¸é µÈ´Ù.       |
- *  |  savepoint °¡ ³Ñ¾î¿Íµµ µ¿ÀÏÇÏ´Ù.                                   |
- *  |  ±×·¯³ª ÃÖÃÊ ¼³°èÀÇµµ¿Í´Â ´Ş¸® REMOTE_STATEMENT_EXECUTION level    |
- *  |  ¿¡¼­µµ ¿ø°İ¼­¹ö¿¡ autocommit off ¸¦ ÇÒ ¼ö ÀÖµµ·Ï ÇÏ´Â ¿ä±¸»çÇ×ÀÌ  |
- *  |  ¹İ¿µµÇ¸é¼­ executeSimpleTransactionCommitRollback °ú À¯»çÇÏ°Ô     |
- *  |  Ã³¸®µÇµµ·Ï ÀÛ¼ºµÇ¾ú´Ù.                                            | 
- *  |  µû¶ó¼­, executeSimpleTransactionCommitRollback ¿¡ º¯°æ»çÇ×ÀÌ      |
- *  |  »ı±â¸é ÀÌ ÇÔ¼ö¿¡µµ ¹İ¿µµÇ¾î¾ß ÇÑ´Ù.                               |
+ *  |  ì›ë˜ëŠ” ì´ í•¨ìˆ˜ëŠ” í•­ìƒ ê¸€ë¡œë²Œ íŠ¸ëœì­ì…˜ ë¡¤ë°±ì²˜ë¦¬ë¥¼ í•˜ë©´ ëœë‹¤.       |
+ *  |  savepoint ê°€ ë„˜ì–´ì™€ë„ ë™ì¼í•˜ë‹¤.                                   |
+ *  |  ê·¸ëŸ¬ë‚˜ ìµœì´ˆ ì„¤ê³„ì˜ë„ì™€ëŠ” ë‹¬ë¦¬ REMOTE_STATEMENT_EXECUTION level    |
+ *  |  ì—ì„œë„ ì›ê²©ì„œë²„ì— autocommit off ë¥¼ í•  ìˆ˜ ìˆë„ë¡ í•˜ëŠ” ìš”êµ¬ì‚¬í•­ì´  |
+ *  |  ë°˜ì˜ë˜ë©´ì„œ executeSimpleTransactionCommitRollback ê³¼ ìœ ì‚¬í•˜ê²Œ     |
+ *  |  ì²˜ë¦¬ë˜ë„ë¡ ì‘ì„±ë˜ì—ˆë‹¤.                                            | 
+ *  |  ë”°ë¼ì„œ, executeSimpleTransactionCommitRollback ì— ë³€ê²½ì‚¬í•­ì´      |
+ *  |  ìƒê¸°ë©´ ì´ í•¨ìˆ˜ì—ë„ ë°˜ì˜ë˜ì–´ì•¼ í•œë‹¤.                               |
  *  |____________________________________________________________________|
  *
- *  aSavepointName  - [IN] Rollback to savepoint ¸¦ ¼öÇàÇÒ savepoint name
- *                         ÀÌ °ªÀÌ NULL ÀÌ¸é ÀüÃ¼ Æ®·£Àè¼ÇÀ» rollback.
+ *  aSavepointName  - [IN] Rollback to savepoint ë¥¼ ìˆ˜í–‰í•  savepoint name
+ *                         ì´ ê°’ì´ NULL ì´ë©´ ì „ì²´ íŠ¸ëœì­ì…˜ì„ rollback.
  *
  ************************************************************************/
 IDE_RC  dktGlobalCoordinator::executeRemoteStatementExecutionRollback( SChar *aSavepointName )
@@ -1633,7 +1633,7 @@ IDE_RC  dktGlobalCoordinator::executeRemoteStatementExecutionRollback( SChar *aS
         /* >> BUG-37512 */
         if ( findSavepoint( aSavepointName ) == NULL )
         {
-            /* global transaction ÀÇ ¼öÇà ÀÌÀü¿¡ ÂïÈù savepoint.
+            /* global transaction ì˜ ìˆ˜í–‰ ì´ì „ì— ì°íŒ savepoint.
                set rollback all */
             sRollbackNodeCnt = 0;
         }
@@ -1777,16 +1777,16 @@ IDE_RC  dktGlobalCoordinator::executeRemoteStatementExecutionRollback( SChar *aS
 }
 
 /************************************************************************
- * Description : ADLP ÀÇ simple transaction commit level ¿¡¼­ÀÇ 
- *               ±Û·Î¹ú Æ®·£Àè¼Ç rollback À» ¼öÇàÇÑ´Ù.
+ * Description : ADLP ì˜ simple transaction commit level ì—ì„œì˜ 
+ *               ê¸€ë¡œë²Œ íŠ¸ëœì­ì…˜ rollback ì„ ìˆ˜í–‰í•œë‹¤.
  *   ___________________________________________________________________
  *  |                                                                   | 
- *  |  ÀÌ ÇÔ¼öÀÇ º¯°æ»çÇ×Àº executeRemoteStatementExecutionRollback     |
- *  |  ÇÔ¼ö¿¡µµ ¹İ¿µµÇ¾î¾ß ÇÑ´Ù.                                        |
+ *  |  ì´ í•¨ìˆ˜ì˜ ë³€ê²½ì‚¬í•­ì€ executeRemoteStatementExecutionRollback     |
+ *  |  í•¨ìˆ˜ì—ë„ ë°˜ì˜ë˜ì–´ì•¼ í•œë‹¤.                                        |
  *  |___________________________________________________________________|
  *
- *  aSavepointName  - [IN] Rollback to savepoint ¸¦ ¼öÇàÇÒ savepoint name
- *                         ÀÌ °ªÀÌ NULL ÀÌ¸é ÀüÃ¼ Æ®·£Àè¼ÇÀ» rollback.
+ *  aSavepointName  - [IN] Rollback to savepoint ë¥¼ ìˆ˜í–‰í•  savepoint name
+ *                         ì´ ê°’ì´ NULL ì´ë©´ ì „ì²´ íŠ¸ëœì­ì…˜ì„ rollback.
  *
  ************************************************************************/
 IDE_RC  dktGlobalCoordinator::executeSimpleTransactionCommitRollback( SChar *aSavepointName )
@@ -1866,7 +1866,7 @@ IDE_RC  dktGlobalCoordinator::executeSimpleTransactionCommitRollback( SChar *aSa
         /* >> BUG-37512 */
         if ( findSavepoint( aSavepointName ) == NULL )
         {
-            /* global transaction ÀÇ ¼öÇà ÀÌÀü¿¡ ÂïÈù savepoint.
+            /* global transaction ì˜ ìˆ˜í–‰ ì´ì „ì— ì°íŒ savepoint.
                set rollback all */
             sRollbackNodeCnt = 0;
         }
@@ -2017,8 +2017,8 @@ IDE_RC  dktGlobalCoordinator::executeSimpleTransactionCommitRollback( SChar *aSa
 }
 
 /************************************************************************
- * Description : ADLP ÀÇ two phase commit level ¿¡¼­ÀÇ ±Û·Î¹ú Æ®·£Àè¼Ç 
- *               rollback À» ¼öÇàÇÑ´Ù. 
+ * Description : ADLP ì˜ two phase commit level ì—ì„œì˜ ê¸€ë¡œë²Œ íŠ¸ëœì­ì…˜ 
+ *               rollback ì„ ìˆ˜í–‰í•œë‹¤. 
  *
  ************************************************************************/
 IDE_RC  dktGlobalCoordinator::executeTwoPhaseCommitRollback()
@@ -2178,9 +2178,9 @@ IDE_RC  dktGlobalCoordinator::executeTwoPhaseCommitRollback()
 }
 
 /************************************************************************
- * Description : Savepoint ¸¦ ¼³Á¤ÇÑ´Ù.
+ * Description : Savepoint ë¥¼ ì„¤ì •í•œë‹¤.
  *              
- *  aSavepointName  - [IN] ¼³Á¤ÇÒ savepoint name
+ *  aSavepointName  - [IN] ì„¤ì •í•  savepoint name
  *
  ************************************************************************/
 IDE_RC  dktGlobalCoordinator::setSavepoint( const SChar   *aSavepointName )
@@ -2273,11 +2273,11 @@ IDE_RC  dktGlobalCoordinator::setSavepoint( const SChar   *aSavepointName )
 }
 
 /************************************************************************
- * Description : µ¿ÀÏÇÑ ÀÌ¸§ÀÇ savepoint ¸¦ list ¿¡¼­ Ã£´Â´Ù.
+ * Description : ë™ì¼í•œ ì´ë¦„ì˜ savepoint ë¥¼ list ì—ì„œ ì°¾ëŠ”ë‹¤.
  *  
- * Return : Ã£Àº savepoint, list ¿¡ ¾ø´Â °æ¿ì´Â NULL
+ * Return : ì°¾ì€ savepoint, list ì— ì—†ëŠ” ê²½ìš°ëŠ” NULL
  *
- *  aSavepointName  - [IN] Ã£À» savepoint name
+ *  aSavepointName  - [IN] ì°¾ì„ savepoint name
  *
  ************************************************************************/
 dktSavepoint *  dktGlobalCoordinator::findSavepoint( const SChar *aSavepointName )
@@ -2313,12 +2313,12 @@ dktSavepoint *  dktGlobalCoordinator::findSavepoint( const SChar *aSavepointName
 }
 
 /************************************************************************
- * Description : ÀÔ·Â¹ŞÀº savepoint ¸¦ savepoint list ·ÎºÎÅÍ Á¦°ÅÇÑ´Ù.
+ * Description : ì…ë ¥ë°›ì€ savepoint ë¥¼ savepoint list ë¡œë¶€í„° ì œê±°í•œë‹¤.
  *
- *  aSavepointName  - [IN] Á¦°ÅÇÒ savepoint name 
+ *  aSavepointName  - [IN] ì œê±°í•  savepoint name 
  *
- *  BUG-37512 : ¿ø·¡ ±â´ÉÀº removeAllNextSavepoint ÇÔ¼ö°¡ ¼öÇàÇÏ°í 
- *              ÀÌ ÇÔ¼ö´Â ÀÔ·Â¹ŞÀº savepoint ¸¸ Á¦°ÅÇÏ´Â ÇÔ¼ö·Î º¯°æ.
+ *  BUG-37512 : ì›ë˜ ê¸°ëŠ¥ì€ removeAllNextSavepoint í•¨ìˆ˜ê°€ ìˆ˜í–‰í•˜ê³  
+ *              ì´ í•¨ìˆ˜ëŠ” ì…ë ¥ë°›ì€ savepoint ë§Œ ì œê±°í•˜ëŠ” í•¨ìˆ˜ë¡œ ë³€ê²½.
  *
  ************************************************************************/
 void    dktGlobalCoordinator::removeSavepoint( const SChar  *aSavepointName )
@@ -2358,9 +2358,9 @@ void    dktGlobalCoordinator::removeSavepoint( const SChar  *aSavepointName )
 }
 
 /************************************************************************
- * Description : ¸ğµç savepoint ¸¦ list ·ÎºÎÅÍ Á¦°ÅÇÑ´Ù.
+ * Description : ëª¨ë“  savepoint ë¥¼ list ë¡œë¶€í„° ì œê±°í•œë‹¤.
  *
- *  BUG-37512 : ½Å¼³.
+ *  BUG-37512 : ì‹ ì„¤.
  *
  ************************************************************************/
 void    dktGlobalCoordinator::removeAllSavepoint()
@@ -2390,12 +2390,12 @@ void    dktGlobalCoordinator::removeAllSavepoint()
 }
 
 /************************************************************************
- * Description : ÀÔ·Â¹ŞÀº savepoint ÀÌÈÄ¿¡ ÂïÈù ¸ğµç savepoint ¸¦ list 
- *               ¿¡¼­ Á¦°ÅÇÑ´Ù.
+ * Description : ì…ë ¥ë°›ì€ savepoint ì´í›„ì— ì°íŒ ëª¨ë“  savepoint ë¥¼ list 
+ *               ì—ì„œ ì œê±°í•œë‹¤.
  *
  *  aSavepointName  - [IN] savepoint name 
  *
- *  BUG-37512 : ½Å¼³.
+ *  BUG-37512 : ì‹ ì„¤.
  *
  ************************************************************************/
 void    dktGlobalCoordinator::removeAllNextSavepoint( const SChar  *aSavepointName )
@@ -2444,14 +2444,14 @@ void    dktGlobalCoordinator::removeAllNextSavepoint( const SChar  *aSavepointNa
 }
 
 /************************************************************************
- * Description : ÀÌ ±Û·Î¹ú Æ®·£Àè¼Ç¿¡ ¼ÓÇÑ ¸ğµç remote transaction µéÀ»
- *               Á¶»çÇÏ¿© µ¿ÀÏÇÑ savepoint °¡ ¼³Á¤µÈ remote transaction
- *               ÀÌ °®°í ÀÖ´Â remote node session id ¸¦ ÀÔ·Â¹ŞÀº ¹è¿­¿¡ 
- *               Ã¤¿öÁØ´Ù.
+ * Description : ì´ ê¸€ë¡œë²Œ íŠ¸ëœì­ì…˜ì— ì†í•œ ëª¨ë“  remote transaction ë“¤ì„
+ *               ì¡°ì‚¬í•˜ì—¬ ë™ì¼í•œ savepoint ê°€ ì„¤ì •ëœ remote transaction
+ *               ì´ ê°–ê³  ìˆëŠ” remote node session id ë¥¼ ì…ë ¥ë°›ì€ ë°°ì—´ì— 
+ *               ì±„ì›Œì¤€ë‹¤.
  *
  * Return      : the number of remote transactions with input savepoint
  *
- *  aSavepointName      - [IN] °Ë»çÇÒ savepoint name
+ *  aSavepointName      - [IN] ê²€ì‚¬í•  savepoint name
  *  aRemoteNodeIdArr    - [OUT] Remote node session id's array 
  *
  ************************************************************************/
@@ -2482,12 +2482,12 @@ UInt    dktGlobalCoordinator::getRemoteNodeIdArrWithSavepoint(
 }
 
 /************************************************************************
- * Description : List ¿¡¼­ ÀÔ·Â¹ŞÀº savepoint °¡ ÂïÈù remote transaction 
- *               µéÀ» Ã£¾Æ Á¦°ÅÇÑ´Ù.
+ * Description : List ì—ì„œ ì…ë ¥ë°›ì€ savepoint ê°€ ì°íŒ remote transaction 
+ *               ë“¤ì„ ì°¾ì•„ ì œê±°í•œë‹¤.
  *              
  *  aSavepointName  - [IN] Savepoint name 
  *
- *  BUG-37487 : return °ªÀ» IDE_RC --> void ·Î º¯°æ.
+ *  BUG-37487 : return ê°’ì„ IDE_RC --> void ë¡œ ë³€ê²½.
  *
  ************************************************************************/
 void dktGlobalCoordinator::destroyRemoteTransactionWithoutSavepoint( const SChar *aSavepointName )
@@ -2512,10 +2512,10 @@ void dktGlobalCoordinator::destroyRemoteTransactionWithoutSavepoint( const SChar
 }
 
 /************************************************************************
- * Description : Id ¸¦ ÅëÇØ ÇØ´çÇÏ´Â remote statement ¸¦ Ã£¾Æ ¹İÈ¯ÇÑ´Ù.
+ * Description : Id ë¥¼ í†µí•´ í•´ë‹¹í•˜ëŠ” remote statement ë¥¼ ì°¾ì•„ ë°˜í™˜í•œë‹¤.
  *              
- *  aRemoteStmtId   - [IN] Ã£À» remote statement ÀÇ id
- *  aRemoteStmt     - [OUT] ¹İÈ¯µÉ remote statement °´Ã¼¸¦ °¡¸®Å°´Â Æ÷ÀÎÅÍ
+ *  aRemoteStmtId   - [IN] ì°¾ì„ remote statement ì˜ id
+ *  aRemoteStmt     - [OUT] ë°˜í™˜ë  remote statement ê°ì²´ë¥¼ ê°€ë¦¬í‚¤ëŠ” í¬ì¸í„°
  *
  ************************************************************************/
 IDE_RC  dktGlobalCoordinator::findRemoteStmt( SLong            aRemoteStmtId,
@@ -2546,10 +2546,10 @@ IDE_RC  dktGlobalCoordinator::findRemoteStmt( SLong            aRemoteStmtId,
 }
 
 /************************************************************************
- * Description : ÀÌ global coordinator ¿¡¼­ ¼öÇàÁßÀÎ ¸ğµç remote 
- *               statement µéÀÇ °³¼ö¸¦ ±¸ÇÑ´Ù.
+ * Description : ì´ global coordinator ì—ì„œ ìˆ˜í–‰ì¤‘ì¸ ëª¨ë“  remote 
+ *               statement ë“¤ì˜ ê°œìˆ˜ë¥¼ êµ¬í•œë‹¤.
  *              
- * Return      : remote statement °³¼ö
+ * Return      : remote statement ê°œìˆ˜
  *
  ************************************************************************/
 UInt    dktGlobalCoordinator::getAllRemoteStmtCount()
@@ -2580,9 +2580,9 @@ UInt    dktGlobalCoordinator::getAllRemoteStmtCount()
 }
 
 /************************************************************************
- * Description : ÇöÀç ¼öÇàÁßÀÎ ±Û·Î¹ú Æ®·£Àè¼ÇÀÇ Á¤º¸¸¦ ¾ò¾î¿Â´Ù.
+ * Description : í˜„ì¬ ìˆ˜í–‰ì¤‘ì¸ ê¸€ë¡œë²Œ íŠ¸ëœì­ì…˜ì˜ ì •ë³´ë¥¼ ì–»ì–´ì˜¨ë‹¤.
  *              
- *  aInfo       - [IN] ±Û·Î¹ú Æ®·£Àè¼ÇÀÇ Á¤º¸¸¦ ´ãÀ» ¹è¿­Æ÷ÀÎÅÍ
+ *  aInfo       - [IN] ê¸€ë¡œë²Œ íŠ¸ëœì­ì…˜ì˜ ì •ë³´ë¥¼ ë‹´ì„ ë°°ì—´í¬ì¸í„°
  *
  ************************************************************************/
 IDE_RC  dktGlobalCoordinator::getGlobalTransactionInfo( dktGlobalTxInfo  *aInfo )
@@ -2598,13 +2598,13 @@ IDE_RC  dktGlobalCoordinator::getGlobalTransactionInfo( dktGlobalTxInfo  *aInfo 
 }
 
 /************************************************************************
- * Description : ÀÌ global coordinator ¿¡¼­ ¼öÇàÁßÀÎ ¸ğµç remote 
- *               transaction ÀÇ Á¤º¸¸¦ ±¸ÇÑ´Ù.
+ * Description : ì´ global coordinator ì—ì„œ ìˆ˜í–‰ì¤‘ì¸ ëª¨ë“  remote 
+ *               transaction ì˜ ì •ë³´ë¥¼ êµ¬í•œë‹¤.
  *              
- *  aInfo           - [OUT] ¹İÈ¯µÉ remote transaction µéÀÇ Á¤º¸
- *  aRemainedCnt    - [IN/OUT] ´õ ¾ò¾î¾ß ÇÒ remote transaction Á¤º¸ÀÇ °³¼ö
- *  aInfoCnt        - [OUT] ÀÌ ÇÔ¼ö¿¡¼­ Ã¤¿öÁø remote transaction info (aInfo)
- *                          ÀÇ °³¼ö
+ *  aInfo           - [OUT] ë°˜í™˜ë  remote transaction ë“¤ì˜ ì •ë³´
+ *  aRemainedCnt    - [IN/OUT] ë” ì–»ì–´ì•¼ í•  remote transaction ì •ë³´ì˜ ê°œìˆ˜
+ *  aInfoCnt        - [OUT] ì´ í•¨ìˆ˜ì—ì„œ ì±„ì›Œì§„ remote transaction info (aInfo)
+ *                          ì˜ ê°œìˆ˜
  *
  ************************************************************************/
 IDE_RC  dktGlobalCoordinator::getRemoteTransactionInfo( dktRemoteTxInfo  *aInfo,
@@ -2662,13 +2662,13 @@ IDE_RC  dktGlobalCoordinator::getRemoteTransactionInfo( dktRemoteTxInfo  *aInfo,
 }
 
 /************************************************************************
- * Description : ÀÌ global coordinator ¿¡¼­ ¼öÇàÁßÀÎ ¸ğµç remote 
- *               statement ÀÇ Á¤º¸¸¦ ±¸ÇÑ´Ù.
+ * Description : ì´ global coordinator ì—ì„œ ìˆ˜í–‰ì¤‘ì¸ ëª¨ë“  remote 
+ *               statement ì˜ ì •ë³´ë¥¼ êµ¬í•œë‹¤.
  *              
- *  aInfo           - [OUT] ¹İÈ¯µÉ remote statement µéÀÇ Á¤º¸
- *  aRemaniedCnt    - [IN/OUT] ³²¾ÆÀÖ´Â remote statement Á¤º¸ÀÇ °³¼ö
- *  aInfoCnt        - [OUT] ÀÌ ÇÔ¼ö¿¡¼­ Ã¤¿öÁø remote transaction info (aInfo)
- *                          ÀÇ °³¼ö
+ *  aInfo           - [OUT] ë°˜í™˜ë  remote statement ë“¤ì˜ ì •ë³´
+ *  aRemaniedCnt    - [IN/OUT] ë‚¨ì•„ìˆëŠ” remote statement ì •ë³´ì˜ ê°œìˆ˜
+ *  aInfoCnt        - [OUT] ì´ í•¨ìˆ˜ì—ì„œ ì±„ì›Œì§„ remote transaction info (aInfo)
+ *                          ì˜ ê°œìˆ˜
  *
  ************************************************************************/
 IDE_RC  dktGlobalCoordinator::getRemoteStmtInfo( dktRemoteStmtInfo  *aInfo,
@@ -2975,7 +2975,7 @@ IDE_RC dktGlobalCoordinator::freeAndDestroyAllRemoteStmt( dksSession *aSession, 
 }
 
 /************************************************************************
- * Description : ±Û·Î¹ú Æ®·£Àè¼Ç commit À» À§ÇÑ XA log¸¦ ±â·ÏÇÑ´Ù.
+ * Description : ê¸€ë¡œë²Œ íŠ¸ëœì­ì…˜ commit ì„ ìœ„í•œ XA logë¥¼ ê¸°ë¡í•œë‹¤.
  *
  ************************************************************************/
 IDE_RC dktGlobalCoordinator::writeXaPrepareLog()
@@ -3097,7 +3097,7 @@ IDE_RC  dktGlobalCoordinator::executeTwoPhaseCommitPrepareForShard()
 
     sdi::doCallback( sCallback );
 
-    /* add shard tx ¼ø¼­ÀÇ ¹İ´ë·Î del shard tx¸¦ ¼öÇàÇØ¾ßÇÑ´Ù. */
+    /* add shard tx ìˆœì„œì˜ ë°˜ëŒ€ë¡œ del shard txë¥¼ ìˆ˜í–‰í•´ì•¼í•œë‹¤. */
     IDU_LIST_ITERATE_SAFE( &mRTxList, sIterator, sNext )
     {
         sRemoteTx = (dktRemoteTx *)sIterator->mObj;
@@ -3123,7 +3123,7 @@ IDE_RC  dktGlobalCoordinator::executeTwoPhaseCommitPrepareForShard()
         }
         else
         {
-            /* ¼öÇàÀÌ ½ÇÆĞÇÑ °æ¿ì */
+            /* ìˆ˜í–‰ì´ ì‹¤íŒ¨í•œ ê²½ìš° */
             if ( sSuccess == ID_TRUE )
             {
                 sSuccess = ID_FALSE;
@@ -3234,7 +3234,7 @@ IDE_RC  dktGlobalCoordinator::executeTwoPhaseCommitCommitForShard()
 
     sdi::doCallback( sCallback );
 
-    /* add shard tx ¼ø¼­ÀÇ ¹İ´ë·Î del shard tx¸¦ ¼öÇàÇØ¾ßÇÑ´Ù. */
+    /* add shard tx ìˆœì„œì˜ ë°˜ëŒ€ë¡œ del shard txë¥¼ ìˆ˜í–‰í•´ì•¼í•œë‹¤. */
     IDU_LIST_ITERATE_SAFE( &mRTxList, sIterator, sNext )
     {
         sRemoteTx = (dktRemoteTx *)sIterator->mObj;
@@ -3246,7 +3246,7 @@ IDE_RC  dktGlobalCoordinator::executeTwoPhaseCommitCommitForShard()
                                   ID_FALSE )
              != IDE_SUCCESS )
         {
-            /* ¼öÇàÀÌ ½ÇÆĞÇÑ °æ¿ì */
+            /* ìˆ˜í–‰ì´ ì‹¤íŒ¨í•œ ê²½ìš° */
             sdi::freeConnectImmediately( sNode );
             sError = ID_TRUE;
 
@@ -3455,7 +3455,7 @@ IDE_RC  dktGlobalCoordinator::executeTwoPhaseCommitRollbackForShard()
 
     sdi::doCallback( sCallback );
 
-    /* add shard tx ¼ø¼­ÀÇ ¹İ´ë·Î del shard tx¸¦ ¼öÇàÇØ¾ßÇÑ´Ù. */
+    /* add shard tx ìˆœì„œì˜ ë°˜ëŒ€ë¡œ del shard txë¥¼ ìˆ˜í–‰í•´ì•¼í•œë‹¤. */
     IDU_LIST_ITERATE_SAFE( &mRTxList, sIterator, sNext )
     {
         sRemoteTx = (dktRemoteTx *)sIterator->mObj;
@@ -3467,7 +3467,7 @@ IDE_RC  dktGlobalCoordinator::executeTwoPhaseCommitRollbackForShard()
                                   ID_TRUE )
              != IDE_SUCCESS )
         {
-            /* ¼öÇàÀÌ ½ÇÆĞÇÑ °æ¿ì */
+            /* ìˆ˜í–‰ì´ ì‹¤íŒ¨í•œ ê²½ìš° */
             sdi::freeConnectImmediately( sNode );
             sError = ID_TRUE;
 
@@ -3532,7 +3532,7 @@ IDE_RC  dktGlobalCoordinator::executeTwoPhaseCommitRollbackForShard()
 }
 
 /************************************************************************
- * Description : Savepoint¸¦ ¼öÇàÇÑ´Ù.
+ * Description : Savepointë¥¼ ìˆ˜í–‰í•œë‹¤.
  *
  *  aSavepointName  - [IN] Savepoint name
  *

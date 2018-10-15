@@ -14,8 +14,8 @@
  *
  *  Primitive Mutex Implementations
  *
- *  => ¸ðµç ÇÃ·§ÆûÀº ¾Æ·¡ÀÇ 3°³ÀÇ Define°ú 3°³ÀÇ ÇÔ¼ö¸¦ ±¸ÇöÇÏ¸é,
- *     ÀÚµ¿À¸·Î LatchÀÇ µ¿ÀÛÀÌ ±¸ÇöµÇµµ·Ï µÇ¾î ÀÖ´Ù.
+ *  => ëª¨ë“  í”Œëž«í¼ì€ ì•„ëž˜ì˜ 3ê°œì˜ Defineê³¼ 3ê°œì˜ í•¨ìˆ˜ë¥¼ êµ¬í˜„í•˜ë©´,
+ *     ìžë™ìœ¼ë¡œ Latchì˜ ë™ìž‘ì´ êµ¬í˜„ë˜ë„ë¡ ë˜ì–´ ìžˆë‹¤.
  *  Wrappers Implementations
  *
  *  - Used Symbol
@@ -67,7 +67,7 @@ static void initializeNativeLatch(iduLatchObj *aLatch, SChar *aName)
 
 /*
  *  destroy();
- *  Latch °´Ã¼¸¦ ¼Ò¸ê½ÃÅ²´Ù..
+ *  Latch ê°ì²´ë¥¼ ì†Œë©¸ì‹œí‚¨ë‹¤..
  */
 static void destroyNativeLatch(iduLatchObj *aLatch)
 {
@@ -77,9 +77,9 @@ static void destroyNativeLatch(iduLatchObj *aLatch)
 
 /*
  *  sleepForValueChange();
- *  Latch°¡ Ç®¸±¶§ ±îÁö ´ë±â
- *  ´ë±â ½Ã°£Àº 200 usec¿¡¼­ ºÎÅÍ *2 ·Î Áõ°¡ÇÏ¿©,
- *  ÃÖ´ë 99999 usec±îÁö Áõ°¡ÇÑ´Ù.
+ *  Latchê°€ í’€ë¦´ë•Œ ê¹Œì§€ ëŒ€ê¸°
+ *  ëŒ€ê¸° ì‹œê°„ì€ 200 usecì—ì„œ ë¶€í„° *2 ë¡œ ì¦ê°€í•˜ì—¬,
+ *  ìµœëŒ€ 99999 usecê¹Œì§€ ì¦ê°€í•œë‹¤.
  */
 
 static void sleepForLatchValueChange(iduLatchObj *aObj,
@@ -128,9 +128,9 @@ static void sleepForLatchValueChange(iduLatchObj *aObj,
 
 /*
  *  lockReadInternal();
- *  read latch¸¦ ¼öÇàÇÏ´Â ³»ºÎ ÇÔ¼öÀÌ¸ç, ¿ÜºÎ¿¡¼­ Á¢±Ù ºÒ°¡´ÉÇÏ´Ù.
- *  ÀÔ·ÂµÈ ÀÎ¼ö¿¡ µû¶ó ¹«ÇÑ´ë±â È¤Àº ´ë±â¾øÀ½°Ë»ç¸¦ ¼öÇàÇÏ¸ç,
- *  ÈÄÀÚÀÇ °æ¿ì ¼º°ø/½ÇÆÐÀÇ ÇÃ·¡±×¸¦ ¸®ÅÏÇÑ´Ù.
+ *  read latchë¥¼ ìˆ˜í–‰í•˜ëŠ” ë‚´ë¶€ í•¨ìˆ˜ì´ë©°, ì™¸ë¶€ì—ì„œ ì ‘ê·¼ ë¶ˆê°€ëŠ¥í•˜ë‹¤.
+ *  ìž…ë ¥ëœ ì¸ìˆ˜ì— ë”°ë¼ ë¬´í•œëŒ€ê¸° í˜¹ì€ ëŒ€ê¸°ì—†ìŒê²€ì‚¬ë¥¼ ìˆ˜í–‰í•˜ë©°,
+ *  í›„ìžì˜ ê²½ìš° ì„±ê³µ/ì‹¤íŒ¨ì˜ í”Œëž˜ê·¸ë¥¼ ë¦¬í„´í•œë‹¤.
  */
 
 static IDE_RC lockReadInternalNativeLatch (iduLatchObj *aLatch,
@@ -152,9 +152,9 @@ static IDE_RC lockReadInternalNativeLatch (iduLatchObj *aLatch,
     else
     {
         /*
-         * BUG-30204 ¸¸¾à ÇöÀç ÀÚ½ÅÀÌ ÀÌ¹Ì X Latch¸¦ Àâ°í ÀÖ´Â °æ¿ì
-         *           Àâ°íÀÖ´ø X LatchÀÇ Count¸¸ Ãß°¡ÇÑ´Ù.
-         * X Latch´Â À½¼ö·Î Ã³¸®
+         * BUG-30204 ë§Œì•½ í˜„ìž¬ ìžì‹ ì´ ì´ë¯¸ X Latchë¥¼ ìž¡ê³  ìžˆëŠ” ê²½ìš°
+         *           ìž¡ê³ ìžˆë˜ X Latchì˜ Countë§Œ ì¶”ê°€í•œë‹¤.
+         * X LatchëŠ” ìŒìˆ˜ë¡œ ì²˜ë¦¬
          */
         aLatch->mMode--;
         aLatch->mGetWriteCount++;
@@ -175,7 +175,7 @@ static IDE_RC lockReadInternalNativeLatch (iduLatchObj *aLatch,
             releaseNativeMutex(aObj);
             if ( sOnce++ == 1 )
             {
-                /* SpinLockÀº Wait Event TimeÀ» ÃøÁ¤ÇÏÁö ¾Ê´Â´Ù. */
+                /* SpinLockì€ Wait Event Timeì„ ì¸¡ì •í•˜ì§€ ì•ŠëŠ”ë‹¤. */
                 idv_BEGIN_WAIT_EVENT( aStatSQL, aWeArgs );
             }
             sleepForLatchValueChange(aLatch, 0);
@@ -191,7 +191,7 @@ static IDE_RC lockReadInternalNativeLatch (iduLatchObj *aLatch,
 
     if ( sOnce > 1 )
     {
-        /* Wait Event Time ÃøÁ¤¿Ï·áÇÑ´Ù. */
+        /* Wait Event Time ì¸¡ì •ì™„ë£Œí•œë‹¤. */
         idv_END_WAIT_EVENT( aStatSQL, aWeArgs );
     }
     
@@ -209,9 +209,9 @@ static IDE_RC lockReadInternalNativeLatch (iduLatchObj *aLatch,
 
 /*
  *  lockWriteInternal();
- *  write latch¸¦ ¼öÇàÇÏ´Â ³»ºÎ ÇÔ¼öÀÌ¸ç, ¿ÜºÎ¿¡¼­ Á¢±Ù ºÒ°¡´ÉÇÏ´Ù.
- *  ÀÔ·ÂµÈ ÀÎ¼ö¿¡ µû¶ó ¹«ÇÑ´ë±â È¤Àº ´ë±â¾øÀ½°Ë»ç¸¦ ¼öÇàÇÏ¸ç,
- *  ÈÄÀÚÀÇ °æ¿ì ¼º°ø/½ÇÆÐÀÇ ÇÃ·¡±×¸¦ ¸®ÅÏÇÑ´Ù.
+ *  write latchë¥¼ ìˆ˜í–‰í•˜ëŠ” ë‚´ë¶€ í•¨ìˆ˜ì´ë©°, ì™¸ë¶€ì—ì„œ ì ‘ê·¼ ë¶ˆê°€ëŠ¥í•˜ë‹¤.
+ *  ìž…ë ¥ëœ ì¸ìˆ˜ì— ë”°ë¼ ë¬´í•œëŒ€ê¸° í˜¹ì€ ëŒ€ê¸°ì—†ìŒê²€ì‚¬ë¥¼ ìˆ˜í–‰í•˜ë©°,
+ *  í›„ìžì˜ ê²½ìš° ì„±ê³µ/ì‹¤íŒ¨ì˜ í”Œëž˜ê·¸ë¥¼ ë¦¬í„´í•œë‹¤.
  */
 static IDE_RC lockWriteInternalNativeLatch (iduLatchObj *aLatch,
                                            idBool       aWaitForever,
@@ -249,7 +249,7 @@ static IDE_RC lockWriteInternalNativeLatch (iduLatchObj *aLatch,
             releaseNativeMutex(aObj);
             if ( sOnce++ == 1 )
             {
-                /* SpinLockÀº Wait Event TimeÀ» ÃøÁ¤ÇÏÁö ¾Ê´Â´Ù. */
+                /* SpinLockì€ Wait Event Timeì„ ì¸¡ì •í•˜ì§€ ì•ŠëŠ”ë‹¤. */
                 idv_BEGIN_WAIT_EVENT( aStatSQL, aWeArgs );
             }
             sleepForLatchValueChange(aLatch, 1);
@@ -264,7 +264,7 @@ static IDE_RC lockWriteInternalNativeLatch (iduLatchObj *aLatch,
 
     if ( sOnce > 1 )
     {
-        /* Wait Event Time ÃøÁ¤¿Ï·áÇÑ´Ù. */
+        /* Wait Event Time ì¸¡ì •ì™„ë£Œí•œë‹¤. */
         idv_END_WAIT_EVENT( aStatSQL, aWeArgs );
     }
     *aSuccess = ID_TRUE;
@@ -283,12 +283,12 @@ static IDE_RC lockWriteInternalNativeLatch (iduLatchObj *aLatch,
 /*
  *  unlock();
  *
- *  ÀâÀº latch¸¦ ÇØÁ¦ÇÑ´Ù.
+ *  ìž¡ì€ latchë¥¼ í•´ì œí•œë‹¤.
  *
- *  Á¤È®ÇÑ µ¿ÀÛÀ» ±¸ÇöÇÏ±â À§ÇØ¼­´Â lockÀ»  ¼º°øÇß´ø ¾²·¹µå ¾ÆÀÌµð¸¦
- *  ¸ðµÎ À¯ÁöÇÏ°í, Unlock½Ã¿¡ ½ÇÁ¦·Î LockÀ» ¼º°øÇß´ø ¾²·¹µåÀÎÁö
- *  °Ë»ç¸¦ ÇØ¾ß ÇÏ³ª, ºñ¿ëÀÌ ³Ê¹« ¸¹ÀÌ µé±â ¶§¹®¿¡,
- *  Write LatchÀÇ °æ¿ì¿¡¸¸ ÀÚ½ÅÀÌ ÀâÀº Latch¿¡ ´ëÇÑ UnLockÀÎÁö °Ë»çÇÏ¿´´Ù.
+ *  ì •í™•í•œ ë™ìž‘ì„ êµ¬í˜„í•˜ê¸° ìœ„í•´ì„œëŠ” lockì„  ì„±ê³µí–ˆë˜ ì“°ë ˆë“œ ì•„ì´ë””ë¥¼
+ *  ëª¨ë‘ ìœ ì§€í•˜ê³ , Unlockì‹œì— ì‹¤ì œë¡œ Lockì„ ì„±ê³µí–ˆë˜ ì“°ë ˆë“œì¸ì§€
+ *  ê²€ì‚¬ë¥¼ í•´ì•¼ í•˜ë‚˜, ë¹„ìš©ì´ ë„ˆë¬´ ë§Žì´ ë“¤ê¸° ë•Œë¬¸ì—,
+ *  Write Latchì˜ ê²½ìš°ì—ë§Œ ìžì‹ ì´ ìž¡ì€ Latchì— ëŒ€í•œ UnLockì¸ì§€ ê²€ì‚¬í•˜ì˜€ë‹¤.
  *
  */
 

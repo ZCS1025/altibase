@@ -12,7 +12,7 @@ class   FailOverCallbackSample
         //---------------------------------------------------
         // Initialization
         //---------------------------------------------------
-        // AlternateServers°¡ °¡¿ë³ëµå propertyÀÌ´Ù.
+        // AlternateServersê°€ ê°€ìš©ë…¸ë“œ propertyì´ë‹¤.
         String sURL = "jdbc:Altibase://127.0.0.1:" + args[0]+"/mydb?AlternateServers=(128.1.3.53:20300,128.1.3.52:20301)&ConnectionRetryCount=100&ConnectionRetryDelay=100&SessionFailOver=on";
         
         try
@@ -43,11 +43,11 @@ class   FailOverCallbackSample
         MyFailOverCallback sMyFailOverCallback = new MyFailOverCallback();
         sCon = DriverManager.getConnection(sURL, sProp);
 
-        //FailOverCallbackÀ» µî·ÏÇÑ´Ù.
+        //FailOverCallbackì„ ë“±ë¡í•œë‹¤.
         ((AltibaseConnection)sCon).registerFailoverCallback(sMyFailOverCallback,
                                                        null);
 
-        // Session Fail-Over¸¦ À§ÇÏ¿© ´ÙÀ½°°Àº Çü½ÄÀ¸·Î ÇÁ·Î±×·¥¹ÖÇØ¾ß ÇÕ´Ï´Ù.
+        // Session Fail-Overë¥¼ ìœ„í•˜ì—¬ ë‹¤ìŒê°™ì€ í˜•ì‹ìœ¼ë¡œ í”„ë¡œê·¸ë¨ë°í•´ì•¼ í•©ë‹ˆë‹¤.
         /*
           while (true)
           {
@@ -57,7 +57,7 @@ class   FailOverCallbackSample
             }
             catch(  SQLException e)
             {
-               //Fail-Over°¡ ¹ß»ı.
+               //Fail-Overê°€ ë°œìƒ.
                 if (e.getErrorCode() == ErrorDef.FAILOVER_SUCCESS)
                 {
                     continue;
@@ -84,7 +84,7 @@ class   FailOverCallbackSample
             
             catch ( SQLException e )
             {
-                //FailOver°¡ ¹ß»ıÇÏ¿´´Ù.
+                //FailOverê°€ ë°œìƒí•˜ì˜€ë‹¤.
                 if (e.getErrorCode() == ErrorDef.FAILOVER_SUCCESS)
                 {
                     continue;

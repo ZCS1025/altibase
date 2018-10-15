@@ -34,8 +34,8 @@ acp_sint32_t mtlCollateCompareMS949Collate( const acp_uint8_t  * aValue1,
 
 
 //-----------------------------------------
-// US7ASCII, KSC5601, MS949 ¾ğ¾î¿¡ ´ëÇÑ
-// ÄÚµå¿Í ±æÀÌ¸¦ ±¸ÇÏ´Â ÇÔ¼ö
+// US7ASCII, KSC5601, MS949 ì–¸ì–´ì— ëŒ€í•œ
+// ì½”ë“œì™€ ê¸¸ì´ë¥¼ êµ¬í•˜ëŠ” í•¨ìˆ˜
 //-----------------------------------------
 
 void mtlCollateSetCodeAndLenInfo( const acp_uint8_t  * aSource,
@@ -44,7 +44,7 @@ void mtlCollateSetCodeAndLenInfo( const acp_uint8_t  * aSource,
                                   acp_uint16_t       * aLength );
 
 //-----------------------------------------
-// MS949¿Í KSC5601 ¾ğ¾îÀÇ ÃÊ¼º Æ÷ÇÔ Á¤·Ä
+// MS949ì™€ KSC5601 ì–¸ì–´ì˜ ì´ˆì„± í¬í•¨ ì •ë ¬
 //-----------------------------------------
 
 // CHAR 

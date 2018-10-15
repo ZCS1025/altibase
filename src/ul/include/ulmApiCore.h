@@ -52,7 +52,7 @@ typedef enum
     ULM_V_SESSION_BY_SID,
     ULM_V_SYSSTAT,
     ULM_V_SESSTAT,
-    ULM_V_SESSTAT_EXECUTING_ONLY, // BUG-34728, »õ·Î Ãß°¡
+    ULM_V_SESSTAT_EXECUTING_ONLY, // BUG-34728, ìƒˆë¡œ ì¶”ê°€
     ULM_V_SESSTAT_BY_SID,
     ULM_STAT_NAME,
     ULM_V_SYSTEM_EVENT,
@@ -62,7 +62,7 @@ typedef enum
     ULM_V_SESSION_WAIT,
     ULM_V_SESSION_WAIT_BY_SID,
     ULM_SQL_TEXT,
-    ULM_SQL_TEXT_BY_STMT_ID,      // BUG-34728, »õ·Î Ãß°¡
+    ULM_SQL_TEXT_BY_STMT_ID,      // BUG-34728, ìƒˆë¡œ ì¶”ê°€
     ULM_LOCK_PAIR_BETWEEN_SESSIONS,
     ULM_DB_INFO,
     ULM_READ_COUNT,
@@ -219,11 +219,11 @@ typedef struct
 
 typedef struct
 {
-    acp_sint32_t  mSessID;           // BUG-34728, »õ·Î Ãß°¡
-    acp_sint32_t  mStmtID;           // BUG-34728, »õ·Î Ãß°¡
+    acp_sint32_t  mSessID;           // BUG-34728, ìƒˆë¡œ ì¶”ê°€
+    acp_sint32_t  mStmtID;           // BUG-34728, ìƒˆë¡œ ì¶”ê°€
     // BUG-34728: cpu is too high
-    // v$sqltext Á¶È¸¿¡¼­  x$statement query ÄÃ·³ Á¶È¸·Î º¯°æ
-    // ÀÌÀ¯: ±¸ÇöÀÌ ½¬¿öÁü
+    // v$sqltext ì¡°íšŒì—ì„œ  x$statement query ì»¬ëŸ¼ ì¡°íšŒë¡œ ë³€ê²½
+    // ì´ìœ : êµ¬í˜„ì´ ì‰¬ì›Œì§
     acp_char_t    mSqlText[16384+1];
     SQLLEN        mSqlTextLength;    /* BUG-41825 */
     acp_sint32_t  mQueryStartTime;

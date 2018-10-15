@@ -75,7 +75,7 @@ IDE_RC qcmPriv::getQcmPrivileges(
     UInt                    sNextPrivInfo = 0;
     UInt                    i;
 
-    scGRID                  sRid; // Disk TableÀ» À§ÇÑ Record IDentifier
+    scGRID                  sRid; // Disk Tableì„ ìœ„í•œ Record IDentifier
     smiCursorProperties     sCursorProperty;
 
     // initialize
@@ -112,12 +112,12 @@ IDE_RC qcmPriv::getQcmPrivileges(
                   != IDE_SUCCESS );
 
 
-        // mtdModule ¼³Á¤
+        // mtdModule ì„¤ì •
         IDE_TEST(mtd::moduleById( &sObjIDCol->module,
                                   sObjIDCol->type.dataTypeId)
                  != IDE_SUCCESS);
 
-        // mtlModule ¼³Á¤
+        // mtlModule ì„¤ì •
         IDE_TEST(mtl::moduleById( &sObjIDCol->language,
                                   sObjIDCol->type.languageId)
                  != IDE_SUCCESS);
@@ -127,12 +127,12 @@ IDE_RC qcmPriv::getQcmPrivileges(
                                       (const smiColumn**)&sObjTypeCol )
                   != IDE_SUCCESS );
 
-        // mtdModule ¼³Á¤
+        // mtdModule ì„¤ì •
         IDE_TEST(mtd::moduleById( &sObjTypeCol->module,
                                   sObjTypeCol->type.dataTypeId)
                  != IDE_SUCCESS);
 
-        // mtlModule ¼³Á¤
+        // mtlModule ì„¤ì •
         IDE_TEST(mtl::moduleById( &sObjTypeCol->language,
                                   sObjTypeCol->type.languageId)
                  != IDE_SUCCESS);
@@ -294,7 +294,7 @@ IDE_RC qcmPriv::getGranteeOfPSM(
     qcmGrantObject          sGrantObject;
     UInt                    sNextPrivInfo = 0;
 
-    scGRID                  sRid; // Disk TableÀ» À§ÇÑ Record IDentifier
+    scGRID                  sRid; // Disk Tableì„ ìœ„í•œ Record IDentifier
     smiCursorProperties     sCursorProperty;
 
     if (gQcmGrantObject == NULL)
@@ -327,12 +327,12 @@ IDE_RC qcmPriv::getGranteeOfPSM(
                                       (const smiColumn**)&sObjIDCol )
                   != IDE_SUCCESS );
 
-        // mtdModule ¼³Á¤
+        // mtdModule ì„¤ì •
         IDE_TEST(mtd::moduleById( &sObjIDCol->module,
                                   sObjIDCol->type.dataTypeId)
                  != IDE_SUCCESS);
 
-        // mtlModule ¼³Á¤
+        // mtlModule ì„¤ì •
         IDE_TEST(mtl::moduleById( &sObjIDCol->language,
                                   sObjIDCol->type.languageId)
                  != IDE_SUCCESS);
@@ -342,12 +342,12 @@ IDE_RC qcmPriv::getGranteeOfPSM(
                                       (const smiColumn**)&sObjTypeCol )
                   != IDE_SUCCESS );
 
-        // mtdModule ¼³Á¤
+        // mtdModule ì„¤ì •
         IDE_TEST(mtd::moduleById( &sObjTypeCol->module,
                                   sObjTypeCol->type.dataTypeId )
                  != IDE_SUCCESS);
 
-        // mtlModule ¼³Á¤
+        // mtlModule ì„¤ì •
         IDE_TEST(mtl::moduleById( &sObjTypeCol->language,
                                   sObjTypeCol->type.languageId )
                  != IDE_SUCCESS);
@@ -449,8 +449,8 @@ IDE_RC qcmPriv::getGranteeOfPSM(
     }
 
     // to fix BUG-24905
-    // granteeid¸¦ allocÇÑ ÀÌÈÄ ½ÇÆĞÇÑ °æ¿ì
-    // free¸¦ ÇØ ÁÖ¾î¾ß ÇÔ
+    // granteeidë¥¼ allocí•œ ì´í›„ ì‹¤íŒ¨í•œ ê²½ìš°
+    // freeë¥¼ í•´ ì£¼ì–´ì•¼ í•¨
     if( sGranteeIDs != NULL )
     {
         (void)iduMemMgr::free(sGranteeIDs);
@@ -746,7 +746,7 @@ IDE_RC qcmPriv::checkSystemPrivWithGrantor(
     SInt                   sStage = 0;
     const void           * sRow = NULL;
     smiCursorProperties    sCursorProperty;
-    scGRID                 sRid; // Disk TableÀ» À§ÇÑ Record IDentifier
+    scGRID                 sRid; // Disk Tableì„ ìœ„í•œ Record IDentifier
     mtcColumn            * sFirstMtcColumn;
     mtcColumn            * sSceondMtcColumn;
     mtcColumn            * sThirdMtcColumn;
@@ -868,7 +868,7 @@ IDE_RC qcmPriv::checkSystemPrivWithoutGrantor(
     SInt                   sStage = 0;
     const void           * sRow = NULL;
     smiCursorProperties    sCursorProperty;
-    scGRID                 sRid; // Disk TableÀ» À§ÇÑ Record IDentifier
+    scGRID                 sRid; // Disk Tableì„ ìœ„í•œ Record IDentifier
     mtcColumn            * sFirstMtcColumn;
     mtcColumn            * sSceondMtcColumn;
 
@@ -997,7 +997,7 @@ IDE_RC qcmPriv::checkObjectPrivWithGrantOption(
     SInt                   sStage = 0;
     const void           * sRow = NULL;
     smiCursorProperties    sCursorProperty;
-    scGRID                 sRid; // Disk TableÀ» À§ÇÑ Record IDentifier
+    scGRID                 sRid; // Disk Tableì„ ìœ„í•œ Record IDentifier
     mtcColumn            * sFirstMtcColumn;
     mtcColumn            * sSceondMtcColumn;
     mtcColumn            * sThirdMtcColumn;
@@ -1134,7 +1134,7 @@ IDE_RC qcmPriv::checkObjectPriv(
     SInt                   sStage = 0;
     const void           * sRow = NULL;
     smiCursorProperties    sCursorProperty;
-    scGRID                 sRid; // Disk TableÀ» À§ÇÑ Record IDentifier
+    scGRID                 sRid; // Disk Tableì„ ìœ„í•œ Record IDentifier
     mtcColumn            * sFirstMtcColumn;
     mtcColumn            * sSceondMtcColumn;
     mtcColumn            * sThirdMtcColumn;
@@ -1290,7 +1290,7 @@ IDE_RC qcmPriv::getGrantObjectWithGrantee(
     const void           * sRow = NULL;
     qcmGrantObject       * sGrantObject;
     smiCursorProperties    sCursorProperty;
-    scGRID                 sRid; // Disk TableÀ» À§ÇÑ Record IDentifier
+    scGRID                 sRid; // Disk Tableì„ ìœ„í•œ Record IDentifier
     mtcColumn            * sFirstMtcColumn;
     mtcColumn            * sSceondMtcColumn;
     mtcColumn            * sThirdMtcColumn;
@@ -1484,7 +1484,7 @@ IDE_RC qcmPriv::getGrantObjectWithoutGrantee(
     const void           * sRow = NULL;
     qcmGrantObject       * sGrantObject;
     smiCursorProperties    sCursorProperty;
-    scGRID                 sRid; // Disk TableÀ» À§ÇÑ Record IDentifier
+    scGRID                 sRid; // Disk Tableì„ ìœ„í•œ Record IDentifier
     mtcColumn            * sFirstMtcColumn;
     mtcColumn            * sSceondMtcColumn;
     mtcColumn            * sThirdMtcColumn;
@@ -1661,7 +1661,7 @@ IDE_RC qcmPriv::getGrantObjectWithoutPrivilege(
     const void           * sRow = NULL;
     qcmGrantObject       * sGrantObject;
     smiCursorProperties    sCursorProperty;
-    scGRID                 sRid; // Disk TableÀ» À§ÇÑ Record IDentifier
+    scGRID                 sRid; // Disk Tableì„ ìœ„í•œ Record IDentifier
     mtcColumn            * sFirstMtcColumn;
     mtcColumn            * sSceondMtcColumn;
     mtcColumn            * sThirdMtcColumn;
@@ -1938,8 +1938,8 @@ IDE_RC qcmPriv::setQcmGrantObject(
          aRow,
          sObjectIDMtcColumn,
          & sObjectID );
-     // BUGBUG 32bit machine¿¡¼­ µ¿ÀÛ ½Ã SLong(64bit)º¯¼ö¸¦ uVLong(32bit)º¯¼ö·Î
-     // º¯È¯ÇÏ¹Ç·Î µ¥ÀÌÅÍ ¼Õ½Ç °¡´É¼º ÀÖÀ½
+     // BUGBUG 32bit machineì—ì„œ ë™ì‘ ì‹œ SLong(64bit)ë³€ìˆ˜ë¥¼ uVLong(32bit)ë³€ìˆ˜ë¡œ
+     // ë³€í™˜í•˜ë¯€ë¡œ ë°ì´í„° ì†ì‹¤ ê°€ëŠ¥ì„± ìˆìŒ
      sGrantObject->objID = (qdpObjID)sObjectID;
 
      // set sGrantObject->objType
@@ -2008,8 +2008,8 @@ IDE_RC qcmPriv::updateLastDDLTime( qcStatement * aStatement,
         if( ( aObjectType[0] == 'T' ) ||
             ( aObjectType[0] == 'S' ) )
         {
-            // table, sequenceÀÏ ¶§´Â aObjID°¡ tableID, sequenceID·Î
-            // UInt Å¸ÀÔÀÌ´Ù.
+            // table, sequenceì¼ ë•ŒëŠ” aObjIDê°€ tableID, sequenceIDë¡œ
+            // UInt íƒ€ì…ì´ë‹¤.
             idlOS::snprintf( sSqlStr, QD_MAX_SQL_LENGTH,
                              "UPDATE SYS_TABLES_ "
                              "SET LAST_DDL_TIME = SYSDATE "
@@ -2093,7 +2093,7 @@ IDE_RC qcmPriv::getGranteeOfPkg(
     qcmGrantObject          sGrantObject;
     UInt                    sNextPrivInfo = 0;
 
-    scGRID                  sRid; // Disk TableÀ» À§ÇÑ Record IDentifier
+    scGRID                  sRid; // Disk Tableì„ ìœ„í•œ Record IDentifier
     smiCursorProperties     sCursorProperty;
 
     if (gQcmGrantObject == NULL)
@@ -2126,12 +2126,12 @@ IDE_RC qcmPriv::getGranteeOfPkg(
                                       (const smiColumn**)&sObjIDCol )
                   != IDE_SUCCESS );
 
-        // mtdModule ¼³Á¤
+        // mtdModule ì„¤ì •
         IDE_TEST(mtd::moduleById( &sObjIDCol->module,
                                   sObjIDCol->type.dataTypeId)
                  != IDE_SUCCESS);
 
-        // mtlModule ¼³Á¤
+        // mtlModule ì„¤ì •
         IDE_TEST(mtl::moduleById( &sObjIDCol->language,
                                   sObjIDCol->type.languageId)
                  != IDE_SUCCESS);
@@ -2141,12 +2141,12 @@ IDE_RC qcmPriv::getGranteeOfPkg(
                                       (const smiColumn**)&sObjTypeCol )
                   != IDE_SUCCESS );
 
-        // mtdModule ¼³Á¤
+        // mtdModule ì„¤ì •
         IDE_TEST(mtd::moduleById( &sObjTypeCol->module,
                                   sObjTypeCol->type.dataTypeId )
                  != IDE_SUCCESS);
 
-        // mtlModule ¼³Á¤
+        // mtlModule ì„¤ì •
         IDE_TEST(mtl::moduleById( &sObjTypeCol->language,
                                   sObjTypeCol->type.languageId )
                  != IDE_SUCCESS);
@@ -2245,8 +2245,8 @@ IDE_RC qcmPriv::getGranteeOfPkg(
     }
 
     // to fix BUG-24905
-    // granteeid¸¦ allocÇÑ ÀÌÈÄ ½ÇÆĞÇÑ °æ¿ì
-    // free¸¦ ÇØ ÁÖ¾î¾ß ÇÔ
+    // granteeidë¥¼ allocí•œ ì´í›„ ì‹¤íŒ¨í•œ ê²½ìš°
+    // freeë¥¼ í•´ ì£¼ì–´ì•¼ í•¨
     if( sGranteeIDs != NULL )
     {
         (void)iduMemMgr::free(sGranteeIDs);
@@ -2295,7 +2295,7 @@ IDE_RC qcmPriv::checkRoleWithGrantor( qcStatement     * aStatement,
     SInt                   sStage = 0;
     const void           * sRow = NULL;
     smiCursorProperties    sCursorProperty;
-    scGRID                 sRid; // Disk TableÀ» À§ÇÑ Record IDentifier
+    scGRID                 sRid; // Disk Tableì„ ìœ„í•œ Record IDentifier
     mtcColumn            * sFirstMtcColumn;
     mtcColumn            * sSceondMtcColumn;
     mtcColumn            * sThirdMtcColumn;

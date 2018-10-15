@@ -45,7 +45,7 @@ static IDE_RC mtfEstimate( mtcNode*     aNode,
 mtfModule qsfRemoveAllModule = {
     1|MTC_NODE_OPERATOR_MISC,
     ~0,
-    1.0,                    // default selectivity (∫Ò±≥ ø¨ªÍ¿⁄ æ∆¥‘)
+    1.0,                    // default selectivity (ÎπÑÍµê Ïó∞ÏÇ∞Ïûê ÏïÑÎãò)
     mtfFunctionName,
     NULL,
     mtf::initializeDefault,

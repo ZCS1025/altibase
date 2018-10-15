@@ -147,17 +147,17 @@ struct ulnBindInfo
 };
 
 /*
- * ulnBindInfoMap ¿¡¼­ ¼­¹ö·Î Àü¼ÛÇÒ MTYPE À» Ã£¾Æ³»´Â ÇÔ¼ö
+ * ulnBindInfoMap ì—ì„œ ì„œë²„ë¡œ ì „ì†¡í•  MTYPE ì„ ì°¾ì•„ë‚´ëŠ” í•¨ìˆ˜
  */
 ulnMTypeID ulnBindInfoGetMTYPEtoSet(ulnCTypeID aCTYPE, ulnMTypeID aMTYPE);
 
 /*
- * ulnBindInfo ±¸Á¶Ã¼ ÃÊ±âÈ­ ÇÔ¼ö.
+ * ulnBindInfo êµ¬ì¡°ì²´ ì´ˆê¸°í™” í•¨ìˆ˜.
  */
 void ulnBindInfoInitialize(ulnBindInfo *aBindInfo);
 
 /*
- * ulnBindInfo ÀÇ ¸â¹öµéÀ» set/get ÇÏ´Â ÇÔ¼öµé
+ * ulnBindInfo ì˜ ë©¤ë²„ë“¤ì„ set/get í•˜ëŠ” í•¨ìˆ˜ë“¤
  */
 
 void       ulnBindInfoSetType(ulnBindInfo *aBindInfo, ulnMTypeID aMTYPE);
@@ -213,15 +213,15 @@ ACI_RC ulnBindInfoBuild4Param(ulnMeta           *aAppMeta,
 
 ACI_RC ulnParamProcess_INFOs(ulnFnContext      *aFnContext,
                              ulnPtContext      *aPtContext,
-                             acp_uint32_t       aRowNumber ); /* 0 º£ÀÌ½º */
+                             acp_uint32_t       aRowNumber ); /* 0 ë² ì´ìŠ¤ */
 
 ACI_RC ulnParamProcess_DATAs(ulnFnContext      *aFnContext,
                              ulnPtContext      *aPtContext,
-                             acp_uint32_t       aRowNumber ); /* 0 º£ÀÌ½º */
+                             acp_uint32_t       aRowNumber ); /* 0 ë² ì´ìŠ¤ */
 
 ACI_RC ulnParamProcess_IPCDA_DATAs(ulnFnContext *aFnContext,
                                    ulnPtContext *aPtContext,
                                    acp_uint32_t  aRowNumber,
-                                   acp_uint64_t *aDataSize ); /* 0 º£ÀÌ½º */
+                                   acp_uint64_t *aDataSize ); /* 0 ë² ì´ìŠ¤ */
 
 #endif /* _O_ULN_BINDINFO_H_ */

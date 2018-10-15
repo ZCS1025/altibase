@@ -37,22 +37,22 @@
  *                        |  Chunk List  |       |  Block n  |
  *                        +--------------+       +-----------+
  *
- * PoolÀº ÇÏ³ª ¶Ç´Â ´Ù¼öÀÇ Store Array¸¦ °¡Áø´Ù.
- * Store°¹¼ö´Â aclMemPoolCreate½Ã aParallelFactor¿¡ ÀÇÇØ °áÁ¤µÈ´Ù.
+ * Poolì€ í•˜ë‚˜ ë˜ëŠ” ë‹¤ìˆ˜ì˜ Store Arrayë¥¼ ê°€ì§„ë‹¤.
+ * Storeê°¯ìˆ˜ëŠ” aclMemPoolCreateì‹œ aParallelFactorì— ì˜í•´ ê²°ì •ëœë‹¤.
  *
- * Store´Â Chunk List¸¦ °¡Áö¸ç Alloc Chunk List¿Í Free Chunk List¸¦ À¯ÁöÇÑ´Ù.
- * Free Chunk List¿¡´Â ÇÏ³ªÀÌ»óÀÇ Free BlockÀ» °¡Áö´Â ChunkµéÀÌ ¸Å´Ş¸°´Ù.
+ * StoreëŠ” Chunk Listë¥¼ ê°€ì§€ë©° Alloc Chunk Listì™€ Free Chunk Listë¥¼ ìœ ì§€í•œë‹¤.
+ * Free Chunk Listì—ëŠ” í•˜ë‚˜ì´ìƒì˜ Free Blockì„ ê°€ì§€ëŠ” Chunkë“¤ì´ ë§¤ë‹¬ë¦°ë‹¤.
  *
- * Chunk´Â ´Ù¼öÀÇ Block Array¸¦ °¡Áø´Ù.
- * Block°¹¼ö´Â aclMemPoolCreate½Ã aElementCount¿¡ ÀÇÇØ °áÁ¤µÈ´Ù.
+ * ChunkëŠ” ë‹¤ìˆ˜ì˜ Block Arrayë¥¼ ê°€ì§„ë‹¤.
+ * Blockê°¯ìˆ˜ëŠ” aclMemPoolCreateì‹œ aElementCountì— ì˜í•´ ê²°ì •ëœë‹¤.
  *
- * Chunk´Â Free Block List¸¦ À¯ÁöÇÑ´Ù.
+ * ChunkëŠ” Free Block Listë¥¼ ìœ ì§€í•œë‹¤.
  */
 
 
 /*
- * Chunk ¸Ş¸ğ¸® Å©±â =
- * Chunk ±¸Á¶Ã¼ Å©±â + (Block ±¸Á¶Ã¼ Å©±â + aElementSize) * aElementCount
+ * Chunk ë©”ëª¨ë¦¬ í¬ê¸° =
+ * Chunk êµ¬ì¡°ì²´ í¬ê¸° + (Block êµ¬ì¡°ì²´ í¬ê¸° + aElementSize) * aElementCount
  */
 #define ACL_MEM_POOL_SIZEOF_CHUNK(aPool)                                       \
     (ACP_ALIGN8(sizeof(aclMemPoolChunk)) +                                     \
@@ -61,8 +61,8 @@
      (aPool)->mElementCount)
 
 /*
- * Block ÁÖ¼Ò =
- * Chunk ÁÖ¼Ò + Chunk ±¸Á¶Ã¼ Å©±â + (Block ±¸Á¶Ã¼ Å©±â + aElementSize) * Index
+ * Block ì£¼ì†Œ =
+ * Chunk ì£¼ì†Œ + Chunk êµ¬ì¡°ì²´ í¬ê¸° + (Block êµ¬ì¡°ì²´ í¬ê¸° + aElementSize) * Index
  */
 #define ACL_MEM_POOL_BLOCK_AT(aPool, aChunk, aIndex)                           \
     (aclMemPoolBlock *)((acp_char_t *)(aChunk) +                            \
@@ -112,7 +112,7 @@ struct aclMemPoolBlock
 
 
 /*
- * Chunk¸¦ µ¿ÀûÇÒ´ç ÈÄ Store¿¡ Ãß°¡
+ * Chunkë¥¼ ë™ì í• ë‹¹ í›„ Storeì— ì¶”ê°€
  */
 ACP_INLINE acp_rc_t aclMemPoolAllocChunk(acl_mem_pool_t   *aPool,
                                          aclMemPoolStore  *aStore,
@@ -122,7 +122,7 @@ ACP_INLINE acp_rc_t aclMemPoolAllocChunk(acl_mem_pool_t   *aPool,
     acp_rc_t         sRC;
 
     /*
-     * Chunk ¸Ş¸ğ¸® ÇÒ´ç
+     * Chunk ë©”ëª¨ë¦¬ í• ë‹¹
      */
     sRC = acpMemAlloc((void **)&sChunk, ACL_MEM_POOL_SIZEOF_CHUNK(aPool));
 
@@ -136,7 +136,7 @@ ACP_INLINE acp_rc_t aclMemPoolAllocChunk(acl_mem_pool_t   *aPool,
     }
 
     /*
-     * Chunk ±¸Á¶Ã¼ ÃÊ±âÈ­
+     * Chunk êµ¬ì¡°ì²´ ì´ˆê¸°í™”
      */
     sChunk->mStore          = aStore;
     sChunk->mInitBlockCount = 0;
@@ -146,7 +146,7 @@ ACP_INLINE acp_rc_t aclMemPoolAllocChunk(acl_mem_pool_t   *aPool,
     acpListInitObj(&sChunk->mChunkListNode, sChunk);
 
     /*
-     * StoreÀÇ Chunk List¿¡ Ãß°¡
+     * Storeì˜ Chunk Listì— ì¶”ê°€
      */
     acpListPrependNode(&aStore->mFreeChunkList, &sChunk->mChunkListNode);
 
@@ -154,7 +154,7 @@ ACP_INLINE acp_rc_t aclMemPoolAllocChunk(acl_mem_pool_t   *aPool,
 }
 
 /*
- * Chunk ÇÒ´ç ÇØÁ¦ ÈÄ Store¿¡¼­ Á¦°Å
+ * Chunk í• ë‹¹ í•´ì œ í›„ Storeì—ì„œ ì œê±°
  */
 ACP_INLINE void aclMemPoolFreeChunk(aclMemPoolChunk *aChunk)
 {
@@ -164,7 +164,7 @@ ACP_INLINE void aclMemPoolFreeChunk(aclMemPoolChunk *aChunk)
 }
 
 /*
- * Store¿¡¼­ Block ÇÒ´ç
+ * Storeì—ì„œ Block í• ë‹¹
  */
 ACP_INLINE acp_rc_t aclMemPoolAllocBlock(acl_mem_pool_t   *aPool,
                                          aclMemPoolStore  *aStore,
@@ -175,12 +175,12 @@ ACP_INLINE acp_rc_t aclMemPoolAllocBlock(acl_mem_pool_t   *aPool,
     acp_rc_t         sRC;
 
     /*
-     * Free Chunk È¹µæ
+     * Free Chunk íšë“
      */
     if (acpListIsEmpty(&aStore->mFreeChunkList) == ACP_TRUE)
     {
         /*
-         * Free Chunk°¡ ¾øÀ¸¸é Chunk ÇÒ´ç
+         * Free Chunkê°€ ì—†ìœ¼ë©´ Chunk í• ë‹¹
          */
         sRC = aclMemPoolAllocChunk(aPool, aStore, &sChunk);
 
@@ -199,7 +199,7 @@ ACP_INLINE acp_rc_t aclMemPoolAllocBlock(acl_mem_pool_t   *aPool,
     }
 
     /*
-     * Chunk¿¡¼­ Free Block È¹µæ
+     * Chunkì—ì„œ Free Block íšë“
      */
     if (sChunk->mLastFreeBlock == NULL)
     {
@@ -222,7 +222,7 @@ ACP_INLINE acp_rc_t aclMemPoolAllocBlock(acl_mem_pool_t   *aPool,
     sChunk->mFreeBlockCount--;
 
     /*
-     * Chunk¿¡ ´õÀÌ»ó Free BlockÀÌ ¾øÀ¸¸é StoreÀÇ Free Chunk List¿¡¼­ Á¦°Å
+     * Chunkì— ë”ì´ìƒ Free Blockì´ ì—†ìœ¼ë©´ Storeì˜ Free Chunk Listì—ì„œ ì œê±°
      */
     if (sChunk->mFreeBlockCount == 0)
     {
@@ -235,7 +235,7 @@ ACP_INLINE acp_rc_t aclMemPoolAllocBlock(acl_mem_pool_t   *aPool,
     }
 
     /*
-     * Block¿¡¼­ User Memory Address ³Ñ°ÜÁÜ
+     * Blockì—ì„œ User Memory Address ë„˜ê²¨ì¤Œ
      */
     *aAddr = ACL_MEM_POOL_USER_ADDR_FROM_BLOCK(sBlock);
 
@@ -250,7 +250,7 @@ ACP_INLINE void aclMemPoolFreeBlock(acl_mem_pool_t  *aPool,
     aclMemPoolChunk *sChunkToFree = NULL;
 
     /*
-     * Store°¡ Pool ¼Ò¼ÓÀÌ ¸Â´ÂÁö °Ë»ç
+     * Storeê°€ Pool ì†Œì†ì´ ë§ëŠ”ì§€ ê²€ì‚¬
      */
     if (aStore->mPool == aPool)
     {
@@ -263,7 +263,7 @@ ACP_INLINE void aclMemPoolFreeBlock(acl_mem_pool_t  *aPool,
     }
 
     /*
-     * double-free °Ë»ç
+     * double-free ê²€ì‚¬
      */
     if (aBlock->mNextFreeBlock == NULL)
     {
@@ -276,13 +276,13 @@ ACP_INLINE void aclMemPoolFreeBlock(acl_mem_pool_t  *aPool,
     }
 
     /*
-     * ChunkÀÇ Free Block List¿¡ Ãß°¡
+     * Chunkì˜ Free Block Listì— ì¶”ê°€
      */
     aBlock->mNextFreeBlock = sChunk->mLastFreeBlock;
     sChunk->mLastFreeBlock = aBlock;
 
     /*
-     * Chunk°¡ Free BlockÀÌ ÇÏ³ªµµ ¾ø¾ú´Ù¸é StoreÀÇ Free Chunk List¿¡ Ãß°¡
+     * Chunkê°€ Free Blockì´ í•˜ë‚˜ë„ ì—†ì—ˆë‹¤ë©´ Storeì˜ Free Chunk Listì— ì¶”ê°€
      */
     if (sChunk->mFreeBlockCount == 0)
     {
@@ -295,24 +295,24 @@ ACP_INLINE void aclMemPoolFreeBlock(acl_mem_pool_t  *aPool,
     }
 
     /*
-     * ChunkÀÇ Free Block Count Áõ°¡
+     * Chunkì˜ Free Block Count ì¦ê°€
      */
     sChunk->mFreeBlockCount++;
 
     /*
-     * ChunkÀÇ ¸ğµç BlockÀÌ Free BlockÀÌ¸é
+     * Chunkì˜ ëª¨ë“  Blockì´ Free Blockì´ë©´
      */
     if (sChunk->mFreeBlockCount == aPool->mElementCount)
     {
         /*
-         * StoreÀÇ Free Chunk ListÀÇ ¸¶Áö¸· Chunk È¹µæ
+         * Storeì˜ Free Chunk Listì˜ ë§ˆì§€ë§‰ Chunk íšë“
          */
         sChunkToFree = aStore->mFreeChunkList.mPrev->mObj;
 
         if (sChunkToFree != sChunk)
         {
             /*
-             * È¹µæÇÑ Chunk°¡ ÇöÀç Chunk°¡ ¾Æ´Ï°í ¿ÏÀüÈ÷ ºó Chunk¶ó¸é Chunk Free
+             * íšë“í•œ Chunkê°€ í˜„ì¬ Chunkê°€ ì•„ë‹ˆê³  ì™„ì „íˆ ë¹ˆ Chunkë¼ë©´ Chunk Free
              */
             if ((sChunkToFree != NULL) &&
                 (sChunkToFree->mFreeBlockCount == aPool->mElementCount))
@@ -325,7 +325,7 @@ ACP_INLINE void aclMemPoolFreeBlock(acl_mem_pool_t  *aPool,
             }
 
             /*
-             * ÇöÀç Chunk¸¦ StoreÀÇ Free Chunk ListÀÇ ¸¶Áö¸·À¸·Î ÀÌµ¿
+             * í˜„ì¬ Chunkë¥¼ Storeì˜ Free Chunk Listì˜ ë§ˆì§€ë§‰ìœ¼ë¡œ ì´ë™
              */
             acpListDeleteNode(&sChunk->mChunkListNode);
             acpListAppendNode(&aStore->mFreeChunkList, &sChunk->mChunkListNode);
@@ -333,7 +333,7 @@ ACP_INLINE void aclMemPoolFreeBlock(acl_mem_pool_t  *aPool,
         else
         {
             /*
-             * È¹µæÇÑ Chunk°¡ ÇöÀç Chunk¶ó¸é ÇÒ ÀÏ ¾øÀ½
+             * íšë“í•œ Chunkê°€ í˜„ì¬ Chunkë¼ë©´ í•  ì¼ ì—†ìŒ
              */
         }
     }
@@ -518,7 +518,7 @@ ACP_EXPORT void aclMemPoolFree(acl_mem_pool_t *aPool, void *aAddr)
     aclMemPoolBlock *sBlock = NULL;
 
     /*
-     * User Memory Address¿¡¼­ Block È¹µæ
+     * User Memory Addressì—ì„œ Block íšë“
      */
     if (aAddr == NULL)
     {

@@ -19,11 +19,11 @@
  * $Id: qmg.cpp 82214 2018-02-07 23:35:41Z donovan.seo $
  *
  * Description :
- *     ¸ğµç Graph¿¡¼­ °øÅëÀûÀ¸·Î »ç¿ëÇÏ´Â ±â´É
+ *     ëª¨ë“  Graphì—ì„œ ê³µí†µì ìœ¼ë¡œ ì‚¬ìš©í•˜ëŠ” ê¸°ëŠ¥
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  **********************************************************************/
 
@@ -59,7 +59,7 @@ qmg::initGraph( qmgGraph * aGraph )
 /***********************************************************************
  *
  * Description :
- *    Graph¸¦ ±¸¼ºÇÏ´Â °øÅë Á¤º¸¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+ *    Graphë¥¼ êµ¬ì„±í•˜ëŠ” ê³µí†µ ì •ë³´ë¥¼ ì´ˆê¸°í™”í•œë‹¤.
  *
  *
  * Implementation :
@@ -69,20 +69,20 @@ qmg::initGraph( qmgGraph * aGraph )
     IDU_FIT_POINT_FATAL( "qmg::initGraph::__FT__" );
 
     //---------------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //---------------------------------------------------
 
     IDE_DASSERT( aGraph != NULL );
 
     //---------------------------------------------------
-    // GraphÀÇ ±âº» Á¤º¸ ÃÊ±âÈ­
+    // Graphì˜ ê¸°ë³¸ ì •ë³´ ì´ˆê¸°í™”
     //---------------------------------------------------
 
     aGraph->flag = QMG_FLAG_CLEAR;
     qtc::dependencyClear( & aGraph->depInfo );
 
     //---------------------------------------------------
-    // GraphÀÇ Child Graph ÃÊ±âÈ­
+    // Graphì˜ Child Graph ì´ˆê¸°í™”
     //---------------------------------------------------
 
     aGraph->left     = NULL;
@@ -90,7 +90,7 @@ qmg::initGraph( qmgGraph * aGraph )
     aGraph->children = NULL;
 
     //---------------------------------------------------
-    // GraphÀÇ ºÎ°¡ Á¤º¸ ÃÊ±âÈ­
+    // Graphì˜ ë¶€ê°€ ì •ë³´ ì´ˆê¸°í™”
     //---------------------------------------------------
 
     aGraph->myPlan            = NULL;
@@ -116,7 +116,7 @@ qmg::printGraph( qcStatement  * aStatement,
 /***********************************************************************
  *
  * Description :
- *    Graph¸¦ ±¸¼ºÇÏ´Â °øÅë Á¤º¸¸¦ Ãâ·ÂÇÑ´Ù.
+ *    Graphë¥¼ êµ¬ì„±í•˜ëŠ” ê³µí†µ ì •ë³´ë¥¼ ì¶œë ¥í•œë‹¤.
  *
  *
  * Implementation :
@@ -128,7 +128,7 @@ qmg::printGraph( qcStatement  * aStatement,
     IDU_FIT_POINT_FATAL( "qmg::printGraph::__FT__" );
 
     //-----------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //-----------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -136,7 +136,7 @@ qmg::printGraph( qcStatement  * aStatement,
     IDE_DASSERT( aString != NULL );
 
     //-----------------------------------
-    // Graph Á¾·ùÀÇ Ãâ·Â
+    // Graph ì¢…ë¥˜ì˜ ì¶œë ¥
     //-----------------------------------
 
     QMG_PRINT_LINE_FEED( i, aDepth, aString );
@@ -260,7 +260,7 @@ qmg::printGraph( qcStatement  * aStatement,
                         "-------------------------------------------------" );
 
     //-----------------------------------
-    // Graph °øÅë ºñ¿ë Á¤º¸ÀÇ Ãâ·Â
+    // Graph ê³µí†µ ë¹„ìš© ì •ë³´ì˜ ì¶œë ¥
     //-----------------------------------
 
     QMG_PRINT_LINE_FEED( i, aDepth, aString );
@@ -330,7 +330,7 @@ qmg::printSubquery( qcStatement  * aStatement,
 /***********************************************************************
  *
  * Description :
- *    Subquery ³»ÀÇ Graph Á¤º¸¸¦ Ãâ·ÂÇÑ´Ù.
+ *    Subquery ë‚´ì˜ Graph ì •ë³´ë¥¼ ì¶œë ¥í•œë‹¤.
  *
  *
  * Implementation :
@@ -347,7 +347,7 @@ qmg::printSubquery( qcStatement  * aStatement,
     IDU_FIT_POINT_FATAL( "qmg::printSubquery::__FT__" );
 
     //-----------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //-----------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -355,7 +355,7 @@ qmg::printSubquery( qcStatement  * aStatement,
     IDE_DASSERT( aString != NULL );
 
     //-----------------------------------
-    // Graph Á¾·ùÀÇ Ãâ·Â
+    // Graph ì¢…ë¥˜ì˜ ì¶œë ¥
     //-----------------------------------
 
     if ( ( aSubQuery->node.lflag & MTC_NODE_OPERATOR_MASK )
@@ -439,45 +439,45 @@ qmg::checkUsableOrder( qcStatement       * aStatement,
  *
  * Description :
  *
- *    Graph°¡ ¿øÇÏ´Â Order¸¦ »ç¿ëÇÒ ¼ö ÀÖ´Â Áö¸¦ °Ë»çÇÑ´Ù.
- *    [ÁÖÀÇ]
- *       - ÀÔ·ÂµÈ aWantOrder´Â Ã³¸® °úÁ¤¿¡¼­ ÀÓÀÇ·Î
- *         ¿¬°á °ü°è°¡ »ç¶óÁú ¼ö ÀÖÀ¸¹Ç·Î Àç»ç¿ëÇÒ ¼ö ¾ø´Ù.
+ *    Graphê°€ ì›í•˜ëŠ” Orderë¥¼ ì‚¬ìš©í•  ìˆ˜ ìˆëŠ” ì§€ë¥¼ ê²€ì‚¬í•œë‹¤.
+ *    [ì£¼ì˜]
+ *       - ì…ë ¥ëœ aWantOrderëŠ” ì²˜ë¦¬ ê³¼ì •ì—ì„œ ì„ì˜ë¡œ
+ *         ì—°ê²° ê´€ê³„ê°€ ì‚¬ë¼ì§ˆ ìˆ˜ ìˆìœ¼ë¯€ë¡œ ì¬ì‚¬ìš©í•  ìˆ˜ ì—†ë‹¤.
  *
- *    [¸®ÅÏ°ª]
- *        »ç¿ë °¡´É ¿©ºÎ                     : aUsable
- *        »ç¿ë °¡´É½Ã ¼±ÅÃµÇ´Â Access Method : aSelectMethod
- *        ±âÁ¸¿¡ »ç¿ëµÇ´ø Access Method      : aOriginalMethod
+ *    [ë¦¬í„´ê°’]
+ *        ì‚¬ìš© ê°€ëŠ¥ ì—¬ë¶€                     : aUsable
+ *        ì‚¬ìš© ê°€ëŠ¥ì‹œ ì„ íƒë˜ëŠ” Access Method : aSelectMethod
+ *        ê¸°ì¡´ì— ì‚¬ìš©ë˜ë˜ Access Method      : aOriginalMethod
  *
  * Implementation :
  *
- *    [aWantOrderÀÇ ±¸¼º]
+ *    [aWantOrderì˜ êµ¬ì„±]
  *
- *       - Graph°¡ ¿øÇÏ´Â Order
+ *       - Graphê°€ ì›í•˜ëŠ” Order
  *
- *       - Order°¡ Áß¿äÇÑ °æ¿ì¿¡´Â ¿øÇÏ´Â Order¿¡
- *         ASC, DESCµîÀ» ±â·ÏÇÑ´Ù.
- *           - Ex) Sorting¿¡¼­ÀÇ Order
+ *       - Orderê°€ ì¤‘ìš”í•œ ê²½ìš°ì—ëŠ” ì›í•˜ëŠ” Orderì—
+ *         ASC, DESCë“±ì„ ê¸°ë¡í•œë‹¤.
+ *           - Ex) Sortingì—ì„œì˜ Order
  *                 SELECT * FROM T1 ORDER BY I1 ASC, I2 DESC;
  *                 (1,1,ASC) --> (1,2,DESC)
  *
- *           - Ex) Merge Join¿¡¼­ÀÇ Order (¸ğµÎ Ascending)
+ *           - Ex) Merge Joinì—ì„œì˜ Order (ëª¨ë‘ Ascending)
  *                 SELECT * FROM T1, T2 WHERE T1.i1 = T2.i1;
  *                 (1,1,ASC) --> (2,1, DESC)
  *
- *       - Order°¡ Áß¿äÇÏÁö ¾ÊÀº °æ¿ì¿¡´Â ¿øÇÏ´Â Order¿¡
- *         ¹æÇâ Á¤º¸¸¦ ±â·ÏÇÏÁö ¾Ê´Â´Ù.
- *           - Ex) Distinction¿¡¼­ÀÇ Order
+ *       - Orderê°€ ì¤‘ìš”í•˜ì§€ ì•Šì€ ê²½ìš°ì—ëŠ” ì›í•˜ëŠ” Orderì—
+ *         ë°©í–¥ ì •ë³´ë¥¼ ê¸°ë¡í•˜ì§€ ì•ŠëŠ”ë‹¤.
+ *           - Ex) Distinctionì—ì„œì˜ Order
  *                 SELECT DISTINCT t1.i1, t2.i2, t1.i2 from t1, t2;
  *                 (1,1,NOT) --> (2,2,NOT) --> (1,2,NOT)
  *
- *    [ Ã³¸® ÀıÂ÷ ]
+ *    [ ì²˜ë¦¬ ì ˆì°¨ ]
  *
- *    1. Child Graph¿¡ ¼Ò¼ÓµÈ Want Order·Î ±¸ºĞ
- *        - ¿øÇÏ´Â Order°¡ ÁÂ¿ì Child ¿¡ ¼ÓÇÏ´Â Áö¸¦ °Ë»çÇÏ°í,
- *          ÀÌ¸¦ ÁÂ¿ì·Î ±¸ºĞÇÑ´Ù.
+ *    1. Child Graphì— ì†Œì†ëœ Want Orderë¡œ êµ¬ë¶„
+ *        - ì›í•˜ëŠ” Orderê°€ ì¢Œìš° Child ì— ì†í•˜ëŠ” ì§€ë¥¼ ê²€ì‚¬í•˜ê³ ,
+ *          ì´ë¥¼ ì¢Œìš°ë¡œ êµ¬ë¶„í•œë‹¤.
  *
- *    2. Child Graph¿¡¼­ ÇØ´ç Order¸¦ Ã³¸®ÇÒ ¼ö ÀÖ´Â Áö¸¦ °Ë»ç.
+ *    2. Child Graphì—ì„œ í•´ë‹¹ Orderë¥¼ ì²˜ë¦¬í•  ìˆ˜ ìˆëŠ” ì§€ë¥¼ ê²€ì‚¬.
  *
  ***********************************************************************/
 
@@ -486,7 +486,7 @@ qmg::checkUsableOrder( qcStatement       * aStatement,
     IDU_FIT_POINT_FATAL( "qmg::checkUsableOrder::__FT__" );
 
     //---------------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //---------------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -524,43 +524,43 @@ qmg::setOrder4Child( qcStatement       * aStatement,
  *
  * Description :
  *
- *    ¿øÇÏ´Â Order¸¦ Child Graph¿¡ Àû¿ë½ÃÅ²´Ù.
+ *    ì›í•˜ëŠ” Orderë¥¼ Child Graphì— ì ìš©ì‹œí‚¨ë‹¤.
  *
- *    [ÁÖÀÇ 1]
- *       - ÀÔ·ÂµÈ aWantOrder´Â Ã³¸® °úÁ¤¿¡¼­ ÀÓÀÇ·Î
- *         ¿¬°á °ü°è°¡ »ç¶óÁú ¼ö ÀÖÀ¸¹Ç·Î Àç»ç¿ëÇÒ ¼ö ¾ø´Ù.
+ *    [ì£¼ì˜ 1]
+ *       - ì…ë ¥ëœ aWantOrderëŠ” ì²˜ë¦¬ ê³¼ì •ì—ì„œ ì„ì˜ë¡œ
+ *         ì—°ê²° ê´€ê³„ê°€ ì‚¬ë¼ì§ˆ ìˆ˜ ìˆìœ¼ë¯€ë¡œ ì¬ì‚¬ìš©í•  ìˆ˜ ì—†ë‹¤.
  *
- *    [ÁÖÀÇ 2]
- *       - ¹İµå½Ã Preserved Order¸¦ »ç¿ëÇÒ ¼ö ÀÖ´Â °æ¿ì¿¡ ÇÑÇÏ¿© ¼öÇà
- *       - Áï, qmg::checkUsableOrder() ¸¦ ÅëÇØ »ç¿ëÇÒ ¼ö ÀÖ´Â OrderÀÏ
- *         °æ¿ì¿¡ ÇÑÇÔ.
+ *    [ì£¼ì˜ 2]
+ *       - ë°˜ë“œì‹œ Preserved Orderë¥¼ ì‚¬ìš©í•  ìˆ˜ ìˆëŠ” ê²½ìš°ì— í•œí•˜ì—¬ ìˆ˜í–‰
+ *       - ì¦‰, qmg::checkUsableOrder() ë¥¼ í†µí•´ ì‚¬ìš©í•  ìˆ˜ ìˆëŠ” Orderì¼
+ *         ê²½ìš°ì— í•œí•¨.
  *
- *    [ÁÖÀÇ 3]
- *       - ÇØ´ç GraphÀÇ Preserved Order´Â ¿ÜºÎ¿¡¼­ Á÷Á¢ »ı¼ºÇØ¾ß ÇÔ.
+ *    [ì£¼ì˜ 3]
+ *       - í•´ë‹¹ Graphì˜ Preserved OrderëŠ” ì™¸ë¶€ì—ì„œ ì§ì ‘ ìƒì„±í•´ì•¼ í•¨.
  *
  * Implementation :
  *
- *    1. Want Order¸¦ °¢ Child GraphÀÇ Order·Î ºĞ¸®
+ *    1. Want Orderë¥¼ ê° Child Graphì˜ Orderë¡œ ë¶„ë¦¬
  *
- *    2. ÇØ´ç GraphÀÇ Á¾·ù¿¡ µû¶ó Ã³¸®
- *        - Selection GraphÀÎ °æ¿ì
- *            - Base Table ÀÎ °æ¿ì :
- *                ÇØ´ç Index¸¦ Ã£Àº ÈÄ Preserved Order Build
- *            - ViewÀÎ °æ¿ì
- *                ÇÏÀ§ TargetÀÇ ID·Î º¯°æÇÏ¿© Child Graph¿¡ ´ëÇÑ Ã³¸®
- *                ÀÔ·ÂµÈ Want Order·Î Preserved Order Build
- *        - Set, Dnf, HierarchyÀÎ °æ¿ì
- *            - ÇØ´ç »çÇ× ¾øÀ½.
- *        - ÀÌ ¿ÜÀÇ GraphÀÎ °æ¿ì
- *            - ÀÔ·ÂµÈ Want Order·Î Preserved Order Build
- *            - RecursiveÇÑ ¼öÇà
+ *    2. í•´ë‹¹ Graphì˜ ì¢…ë¥˜ì— ë”°ë¼ ì²˜ë¦¬
+ *        - Selection Graphì¸ ê²½ìš°
+ *            - Base Table ì¸ ê²½ìš° :
+ *                í•´ë‹¹ Indexë¥¼ ì°¾ì€ í›„ Preserved Order Build
+ *            - Viewì¸ ê²½ìš°
+ *                í•˜ìœ„ Targetì˜ IDë¡œ ë³€ê²½í•˜ì—¬ Child Graphì— ëŒ€í•œ ì²˜ë¦¬
+ *                ì…ë ¥ëœ Want Orderë¡œ Preserved Order Build
+ *        - Set, Dnf, Hierarchyì¸ ê²½ìš°
+ *            - í•´ë‹¹ ì‚¬í•­ ì—†ìŒ.
+ *        - ì´ ì™¸ì˜ Graphì¸ ê²½ìš°
+ *            - ì…ë ¥ëœ Want Orderë¡œ Preserved Order Build
+ *            - Recursiveí•œ ìˆ˜í–‰
  *
  ***********************************************************************/
 
     IDU_FIT_POINT_FATAL( "qmg::setOrder4Child::__FT__" );
 
     //---------------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //---------------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -568,7 +568,7 @@ qmg::setOrder4Child( qcStatement       * aStatement,
     IDE_DASSERT( aLeftGraph != NULL );
 
     //---------------------------------------------------
-    // Left Graph¿¡ ´ëÇÑ Preserved Order ±¸Ãà
+    // Left Graphì— ëŒ€í•œ Preserved Order êµ¬ì¶•
     //---------------------------------------------------
 
     IDE_TEST( makeOrder4Graph( aStatement,
@@ -592,7 +592,7 @@ qmg::tryPreservedOrder( qcStatement       * aStatement,
 {
 /***********************************************************************
  *
- * Description : Preserved Order »ç¿ë °¡´ÉÇÑ °æ¿ì, Àû¿ë
+ * Description : Preserved Order ì‚¬ìš© ê°€ëŠ¥í•œ ê²½ìš°, ì ìš©
  *
  * Implementation :
  *
@@ -615,7 +615,7 @@ qmg::tryPreservedOrder( qcStatement       * aStatement,
     IDU_FIT_POINT_FATAL( "qmg::tryPreservedOrder::__FT__" );
 
     //---------------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //---------------------------------------------------
 
     IDE_FT_ASSERT( aStatement != NULL );
@@ -623,7 +623,7 @@ qmg::tryPreservedOrder( qcStatement       * aStatement,
     IDE_FT_ASSERT( aWantOrder != NULL );
 
     //---------------------------------------------------
-    // ±âº» ÃÊ±âÈ­
+    // ê¸°ë³¸ ì´ˆê¸°í™”
     //---------------------------------------------------
 
     sUsable        = ID_FALSE;
@@ -635,7 +635,7 @@ qmg::tryPreservedOrder( qcStatement       * aStatement,
 
     for ( sCur = aWantOrder; sCur != NULL; sCur = sCur->next )
     {
-        // °Ë»çÇÒ Order, PushÇÒ Order¸¦ À§ÇÑ °ø°£ ÇÒ´ç
+        // ê²€ì‚¬í•  Order, Pushí•  Orderë¥¼ ìœ„í•œ ê³µê°„ í• ë‹¹
         IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF(qmgPreservedOrder) * 2,
                                                  (void**)&sNewOrder )
                   != IDE_SUCCESS );
@@ -674,7 +674,7 @@ qmg::tryPreservedOrder( qcStatement       * aStatement,
         }
     }
 
-    // preserved order Àû¿ë °¡´É °Ë»ç
+    // preserved order ì ìš© ê°€ëŠ¥ ê²€ì‚¬
     IDE_TEST( qmg::checkUsableOrder( aStatement,
                                      sCheckOrder,
                                      aGraph->left,
@@ -686,22 +686,22 @@ qmg::tryPreservedOrder( qcStatement       * aStatement,
     if ( sUsable == ID_TRUE )
     {
         //---------------------------------------------------
-        // preserved order Àû¿ë °¡´ÉÇÑ °æ¿ì
+        // preserved order ì ìš© ê°€ëŠ¥í•œ ê²½ìš°
         //---------------------------------------------------
 
         // To Fix PR-11945
-        // Child GraphÀÇ preserved order°¡ Á¸ÀçÇÏ°í,
-        // preserved orderÀÇ ¹æÇâµµ Á¸ÀçÇÏ´Â °æ¿ì¶ó¸é
-        // ÇÏÀ§ preserved order¸¦ Àç±¸ÃàÇØ¼­´Â ¾ÈµÈ´Ù.
-        // ÇÏÀ§¿¡¼­ Merger JoinÀ» À§ÇØ ASC order¸¦ ±¸ÃàÇÑ °æ¿ì,
-        // »óÀ§ÀÇ Group ByµîÀÌ »ç¿ëµÉ ¶§ ÇÏÀ§ÀÇ ¹æÇâÀ» º¯°æ½ÃÄÑ¼­´Â ¾ÈµÈ´Ù.
+        // Child Graphì˜ preserved orderê°€ ì¡´ì¬í•˜ê³ ,
+        // preserved orderì˜ ë°©í–¥ë„ ì¡´ì¬í•˜ëŠ” ê²½ìš°ë¼ë©´
+        // í•˜ìœ„ preserved orderë¥¼ ì¬êµ¬ì¶•í•´ì„œëŠ” ì•ˆëœë‹¤.
+        // í•˜ìœ„ì—ì„œ Merger Joinì„ ìœ„í•´ ASC orderë¥¼ êµ¬ì¶•í•œ ê²½ìš°,
+        // ìƒìœ„ì˜ Group Byë“±ì´ ì‚¬ìš©ë  ë•Œ í•˜ìœ„ì˜ ë°©í–¥ì„ ë³€ê²½ì‹œì¼œì„œëŠ” ì•ˆëœë‹¤.
         
         if ( aGraph->left->preservedOrder != NULL )
         {
             if ( ( aGraph->left->flag & QMG_PRESERVED_ORDER_MASK )
                  == QMG_PRESERVED_ORDER_DEFINED_NOT_FIXED )
             {
-                // ÇÏÀ§¿¡ Window Graph°¡ Á¸ÀçÇÏ´Â °æ¿ì
+                // í•˜ìœ„ì— Window Graphê°€ ì¡´ì¬í•˜ëŠ” ê²½ìš°
                 IDE_TEST( qmg::setOrder4Child( aStatement,
                                                sPushOrder,
                                                aGraph->left )
@@ -712,14 +712,14 @@ qmg::tryPreservedOrder( qcStatement       * aStatement,
                 if ( aGraph->left->preservedOrder->direction !=
                      QMG_DIRECTION_NOT_DEFINED )
                 {
-                    // ÇÏÀ§¿¡ Preserved Order°¡ Á¸ÀçÇÏ°í
-                    // ¹æÇâµµ ÀÌ¹Ì °áÁ¤µÈ °æ¿ì
+                    // í•˜ìœ„ì— Preserved Orderê°€ ì¡´ì¬í•˜ê³ 
+                    // ë°©í–¥ë„ ì´ë¯¸ ê²°ì •ëœ ê²½ìš°
                     // Nothing To Do
                 }
                 else
                 {
-                    // ÇÏÀ§¿¡ Preserved Order´Â ÀÖÀ¸³ª,
-                    // ¹æÇâÀÌ °áÁ¤µÇÁö ¾ÊÀº °æ¿ì
+                    // í•˜ìœ„ì— Preserved OrderëŠ” ìˆìœ¼ë‚˜,
+                    // ë°©í–¥ì´ ê²°ì •ë˜ì§€ ì•Šì€ ê²½ìš°
                     IDE_TEST( qmg::setOrder4Child( aStatement,
                                                    sPushOrder,
                                                    aGraph->left )
@@ -729,29 +729,29 @@ qmg::tryPreservedOrder( qcStatement       * aStatement,
         }
         else
         {
-            // ÇÏÀ§¿¡ Preserved Order°¡ ¾ø´Â °æ¿ì
-            // ÇÏÀ§ÀÇ preserved order ¼³Á¤
+            // í•˜ìœ„ì— Preserved Orderê°€ ì—†ëŠ” ê²½ìš°
+            // í•˜ìœ„ì˜ preserved order ì„¤ì •
             IDE_TEST( qmg::setOrder4Child( aStatement,
                                            sPushOrder,
                                            aGraph->left )
                       != IDE_SUCCESS );
         }
 
-        // ÀÚ½ÅÀÇ preserved order ¼³Á¤
+        // ìì‹ ì˜ preserved order ì„¤ì •
         if ( sIsDefined == ID_FALSE )
         {
             // To Fix BUG-8710
             // ex ) want order ( not defined, not defined )
             //      set  order ( not defined, same ( diff ) with prev, ... )
-            // want order°¡ not defined¶ó ÇÏ´õ¶óµµ directionÀ» º¯°æ½ÃÄÑ¾ßÇÔ
+            // want orderê°€ not definedë¼ í•˜ë”ë¼ë„ directionì„ ë³€ê²½ì‹œì¼œì•¼í•¨
             // To Fix BUG-11373
-            // childÀÇ order´Â indexable group by ÀÇ °æ¿ì
-            // indexÀÇ ¼ø¼­´ë·Î ¹Ù²î´Â °æ¿ì°¡ ÀÖ±â ¶§¹®¿¡
-            // childÀÇ order¸¦ ±×´ë·Î º¹»çÇØ¾ßÇÔ.
+            // childì˜ orderëŠ” indexable group by ì˜ ê²½ìš°
+            // indexì˜ ìˆœì„œëŒ€ë¡œ ë°”ë€ŒëŠ” ê²½ìš°ê°€ ìˆê¸° ë•Œë¬¸ì—
+            // childì˜ orderë¥¼ ê·¸ëŒ€ë¡œ ë³µì‚¬í•´ì•¼í•¨.
             // ex ) index            : i1->i2->i3
             //      group by         : i2->i1->i3
-            //      selection graph  : i2->i1->i3À» ³»·ÁÁÖ¸é index¼ø¼­´ë·Î
-            //                         i1->i2->i3À¸·Î º¯°æÇÏ¿© ÀúÀåµÊ
+            //      selection graph  : i2->i1->i3ì„ ë‚´ë ¤ì£¼ë©´ indexìˆœì„œëŒ€ë¡œ
+            //                         i1->i2->i3ìœ¼ë¡œ ë³€ê²½í•˜ì—¬ ì €ì¥ë¨
             for ( sCur=aWantOrder,sChildCur = aGraph->left->preservedOrder;
                   (sCur != NULL) && (sChildCur != NULL);
                   sCur = sCur->next, sChildCur = sChildCur->next )
@@ -789,13 +789,13 @@ qmg::tryPreservedOrder( qcStatement       * aStatement,
  * ex)
  * create index .. on t1 (i1, i2, i3)
  * select .. from .. where t1.i1 = 1 and t1.i2 = 2 order by i3;
- * (i1, i2) ´Â °íÁ¤µÈ °ªÀÌ¹Ç·Î preserved order ¸¦ »ç¿ëÇÒ ¼ö ÀÖµµ·Ï ÇÑ´Ù.
+ * (i1, i2) ëŠ” ê³ ì •ëœ ê°’ì´ë¯€ë¡œ preserved order ë¥¼ ì‚¬ìš©í•  ìˆ˜ ìˆë„ë¡ í•œë‹¤.
  *
- * ´ÙÀ½°ú °°Àº »óÈ²¿¡¼­¸¸ Ã³¸®ÇÑ´Ù.
- * - SORT ¸¦ À§ÇÑ preserved order (grouping, distinct Á¦¿Ü)
- * - qmgSort ¹Ø¿¡ qmgSelection ÀÎ °æ¿ì
- * - index °¡ ¼±ÅÃµÈ °æ¿ì (preserved order ¸¦ À§ÇØ index °­Á¦ º¯°æ X)
- * - index hint ¿¡ ASC, DESC °¡ ¾ø´Â°æ¿ì
+ * ë‹¤ìŒê³¼ ê°™ì€ ìƒí™©ì—ì„œë§Œ ì²˜ë¦¬í•œë‹¤.
+ * - SORT ë¥¼ ìœ„í•œ preserved order (grouping, distinct ì œì™¸)
+ * - qmgSort ë°‘ì— qmgSelection ì¸ ê²½ìš°
+ * - index ê°€ ì„ íƒëœ ê²½ìš° (preserved order ë¥¼ ìœ„í•´ index ê°•ì œ ë³€ê²½ X)
+ * - index hint ì— ASC, DESC ê°€ ì—†ëŠ”ê²½ìš°
  * ----------------------------------------------------------------------------
  */
 IDE_RC qmg::retryPreservedOrder(qcStatement       * aStatement,
@@ -927,7 +927,7 @@ IDE_RC qmg::retryPreservedOrder(qcStatement       * aStatement,
              != IDE_SUCCESS);
 
     /*
-     * forward °¡ °¡´ÉÇÑÁö ºñ±³
+     * forward ê°€ ê°€ëŠ¥í•œì§€ ë¹„êµ
      */
     sNewOrder[0].table     = sChildGraph->preservedOrder->table;
     sNewOrder[0].column    = sChildGraph->preservedOrder->column;
@@ -984,7 +984,7 @@ IDE_RC qmg::retryPreservedOrder(qcStatement       * aStatement,
     }
 
     /*
-     * forward °¡ ½ÇÆĞÇÑ °æ¿ì backward °¡ °¡´ÉÇÑÁö ºñ±³
+     * forward ê°€ ì‹¤íŒ¨í•œ ê²½ìš° backward ê°€ ê°€ëŠ¥í•œì§€ ë¹„êµ
      */
     for (i = 0; i < sOrderCount; i++)
     {
@@ -1020,7 +1020,7 @@ IDE_RC qmg::retryPreservedOrder(qcStatement       * aStatement,
     if (sUsable == ID_TRUE)
     {
         /*
-         * match µÈ °æ¿ì child ÀÇ preserved order ¸¦ fix
+         * match ëœ ê²½ìš° child ì˜ preserved order ë¥¼ fix
          */
         for (sIter = sChildGraph->preservedOrder, i = 0;
              i < sOrderCount;
@@ -1049,15 +1049,15 @@ IDE_RC qmg::getBucketCntWithTarget(qcStatement* aStatement,
 {
 /***********************************************************************
  *
- * Description : targetÀÇ Ä®·³µéÀÇ cardinality¸¦ ÀÌ¿ëÇÏ¿© bucket count ±¸ÇÏ´Â
- *               ÇÔ¼ö
+ * Description : targetì˜ ì¹¼ëŸ¼ë“¤ì˜ cardinalityë¥¼ ì´ìš©í•˜ì—¬ bucket count êµ¬í•˜ëŠ”
+ *               í•¨ìˆ˜
  *
  * Implementation :
- *    - hash bucket count hint°¡ Á¸ÀçÇÏÁö ¾ÊÀ» °æ¿ì
- *      hash bucket count = MIN( ÇÏÀ§ graphÀÇ outputRecordCnt / 2,
- *                               Target ColumnµéÀÇ cardinality °ö )
- *    - hash bucket count hint°¡ Á¸ÀçÇÒ °æ¿ì
- *      hash bucket count = hash bucket count hint °ª
+ *    - hash bucket count hintê°€ ì¡´ì¬í•˜ì§€ ì•Šì„ ê²½ìš°
+ *      hash bucket count = MIN( í•˜ìœ„ graphì˜ outputRecordCnt / 2,
+ *                               Target Columnë“¤ì˜ cardinality ê³± )
+ *    - hash bucket count hintê°€ ì¡´ì¬í•  ê²½ìš°
+ *      hash bucket count = hash bucket count hint ê°’
  *
  ***********************************************************************/
 
@@ -1072,7 +1072,7 @@ IDE_RC qmg::getBucketCntWithTarget(qcStatement* aStatement,
     IDU_FIT_POINT_FATAL( "qmg::getBucketCntWithTarget::__FT__" );
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -1080,7 +1080,7 @@ IDE_RC qmg::getBucketCntWithTarget(qcStatement* aStatement,
     IDE_DASSERT( aTarget != NULL );
 
     //------------------------------------------
-    // ±âº» ÃÊ±âÈ­
+    // ê¸°ë³¸ ì´ˆê¸°í™”
     //------------------------------------------
 
     sAllColumn = ID_TRUE;
@@ -1091,12 +1091,12 @@ IDE_RC qmg::getBucketCntWithTarget(qcStatement* aStatement,
     {
 
         //------------------------------------------
-        // hash bucket count hint°¡ Á¸ÀçÇÏÁö ¾Ê´Â °æ¿ì
+        // hash bucket count hintê°€ ì¡´ì¬í•˜ì§€ ì•ŠëŠ” ê²½ìš°
         //------------------------------------------
 
         //------------------------------------------
-        // ±âº» bucket count ¼³Á¤
-        // bucket count = ÇÏÀ§ graphÀÇ ouput record count / 2
+        // ê¸°ë³¸ bucket count ì„¤ì •
+        // bucket count = í•˜ìœ„ graphì˜ ouput record count / 2
         //------------------------------------------
 
         if ( ( aGraph->type == QMG_SET ) &&
@@ -1112,15 +1112,15 @@ IDE_RC qmg::getBucketCntWithTarget(qcStatement* aStatement,
         sBucketCnt = (sBucketCnt < 1) ? 1 : sBucketCnt;
 
         //------------------------------------------
-        // target columnµéÀÇ cardinality °öÀ» ±¸ÇÔ
-        // ( ´Ü, target columnµéÀÌ ¸ğµÎ ¼ø¼öÇÑ Ä®·³ÀÌ¾î¾ß ÇÔ )
+        // target columnë“¤ì˜ cardinality ê³±ì„ êµ¬í•¨
+        // ( ë‹¨, target columnë“¤ì´ ëª¨ë‘ ìˆœìˆ˜í•œ ì¹¼ëŸ¼ì´ì–´ì•¼ í•¨ )
         //------------------------------------------
 
         for ( sTarget = aTarget; sTarget != NULL; sTarget = sTarget->next )
         {
             sNode = sTarget->targetColumn;
 
-            // BUG-38193 targetÀÇ pass node ¸¦ °í·ÁÇØ¾ß ÇÕ´Ï´Ù.
+            // BUG-38193 targetì˜ pass node ë¥¼ ê³ ë ¤í•´ì•¼ í•©ë‹ˆë‹¤.
             if ( sNode->node.module == &qtc::passModule )
             {
                 sNode = (qtcNode*)(sNode->node.arguments);
@@ -1142,23 +1142,23 @@ IDE_RC qmg::getBucketCntWithTarget(qcStatement* aStatement,
 
             if ( QTC_IS_COLUMN( aStatement, sNode ) == ID_TRUE )
             {
-                // QMG_SET ÀÇ °æ¿ì
-                // validation °úÁ¤¿¡¼­ tuple À» ÇÒ´ç¹Ş¾Æ target À» »õ·Î »ı¼º
-                // tablemap[table].from ÀÌ NULL ÀÌ µÇ¾î
-                // one column list ¹× statInfo È¹µæ ºÒ°¡
+                // QMG_SET ì˜ ê²½ìš°
+                // validation ê³¼ì •ì—ì„œ tuple ì„ í• ë‹¹ë°›ì•„ target ì„ ìƒˆë¡œ ìƒì„±
+                // tablemap[table].from ì´ NULL ì´ ë˜ì–´
+                // one column list ë° statInfo íšë“ ë¶ˆê°€
                 IDE_DASSERT( aGraph->type != QMG_SET );
 
                 if( sNode->node.column == MTC_RID_COLUMN_ID )
                 {
                     /*
-                     * prowid pseudo column ¿¡ ´ëÇÑ Åë°èÁ¤º¸°¡ °í·Á ¾ÈµÇ¾îÀÖ´Ù
-                     * ±×³É default °ªÀ¸·Î Ã³¸®
+                     * prowid pseudo column ì— ëŒ€í•œ í†µê³„ì •ë³´ê°€ ê³ ë ¤ ì•ˆë˜ì–´ìˆë‹¤
+                     * ê·¸ëƒ¥ default ê°’ìœ¼ë¡œ ì²˜ë¦¬
                      */
                     sCardinality *= QMO_STAT_COLUMN_NDV;
                 }
                 else
                 {
-                    /* target ´ë»óÀÌ ¼ø¼öÇÑ Ä®·³ÀÎ °æ¿ì */
+                    /* target ëŒ€ìƒì´ ìˆœìˆ˜í•œ ì¹¼ëŸ¼ì¸ ê²½ìš° */
                     sColCardInfo = QC_SHARED_TMPLATE(aStatement)->
                         tableMap[sNode->node.table].
                         from->tableRef->statInfo->colCardInfo;
@@ -1168,7 +1168,7 @@ IDE_RC qmg::getBucketCntWithTarget(qcStatement* aStatement,
             }
             else
             {
-                // target ´ë»óÀÌ ÇÏ³ª¶óµµ Ä®·³ÀÌ ¾Æ´Ñ °æ¿ì, Áß´Ü
+                // target ëŒ€ìƒì´ í•˜ë‚˜ë¼ë„ ì¹¼ëŸ¼ì´ ì•„ë‹Œ ê²½ìš°, ì¤‘ë‹¨
                 sAllColumn = ID_FALSE;
                 break;
             }
@@ -1178,8 +1178,8 @@ IDE_RC qmg::getBucketCntWithTarget(qcStatement* aStatement,
         if ( sAllColumn == ID_TRUE )
         {
             //------------------------------------------
-            // MIN( ÇÏÀ§ graphÀÇ outputRecordCnt / 2,
-            //      Target ColumnµéÀÇ cardinality °ö )
+            // MIN( í•˜ìœ„ graphì˜ outputRecordCnt / 2,
+            //      Target Columnë“¤ì˜ cardinality ê³± )
             //------------------------------------------
 
             if ( sBucketCnt > sCardinality )
@@ -1196,7 +1196,7 @@ IDE_RC qmg::getBucketCntWithTarget(qcStatement* aStatement,
             // nothing to do
         }
 
-        // hash bucket count º¸Á¤
+        // hash bucket count ë³´ì •
         if ( sBucketCnt < QCU_OPTIMIZER_BUCKET_COUNT_MIN )
         {
             sBucketCnt = QCU_OPTIMIZER_BUCKET_COUNT_MIN;
@@ -1216,13 +1216,13 @@ IDE_RC qmg::getBucketCntWithTarget(qcStatement* aStatement,
     else
     {
         //------------------------------------------
-        // hash bucket count hint°¡ Á¸ÀçÇÏ´Â °æ¿ì
+        // hash bucket count hintê°€ ì¡´ì¬í•˜ëŠ” ê²½ìš°
         //------------------------------------------
 
         sBucketCnt = aHintBucketCnt;
     }
 
-    // BUG-36403 ÇÃ·§Æû¸¶´Ù BucketCnt °¡ ´Ş¶óÁö´Â °æ¿ì°¡ ÀÖ½À´Ï´Ù.
+    // BUG-36403 í”Œë«í¼ë§ˆë‹¤ BucketCnt ê°€ ë‹¬ë¼ì§€ëŠ” ê²½ìš°ê°€ ìˆìŠµë‹ˆë‹¤.
     sBucketCntOutput = DOUBLE_TO_UINT64( sBucketCnt );
     *aBucketCnt      = (UInt)sBucketCntOutput;
     
@@ -1240,20 +1240,20 @@ qmg::getBucketCnt4DistAggr( qcStatement * aStatement,
 {
 /***********************************************************************
  *
- * Description : hash bucket countÀÇ ¼³Á¤
+ * Description : hash bucket countì˜ ì„¤ì •
  *
  * Implementation :
- *    - hash bucket count hint°¡ Á¸ÀçÇÏÁö ¾ÊÀ» °æ¿ì
- *      - distinct ´ë»óÀÌ ÄÃ·³ÀÎ °æ¿ì
- *         sDistBucketCnt = Distinct Aggregation ColumnÀÇ cardinality
- *      - ÄÃ·³ÀÌ ¾Æ´Ñ°æ¿ì
- *        sDistBucketCnt = ÇÏÀ§ graphÀÇ outputRecordCnt / 2
+ *    - hash bucket count hintê°€ ì¡´ì¬í•˜ì§€ ì•Šì„ ê²½ìš°
+ *      - distinct ëŒ€ìƒì´ ì»¬ëŸ¼ì¸ ê²½ìš°
+ *         sDistBucketCnt = Distinct Aggregation Columnì˜ cardinality
+ *      - ì»¬ëŸ¼ì´ ì•„ë‹Œê²½ìš°
+ *        sDistBucketCnt = í•˜ìœ„ graphì˜ outputRecordCnt / 2
  *
  *      sBucketCnt = MAX( ChildOutputRecordCnt / GroupBucketCnt, 1.0 )
  *      sBucketCnt = MIN( sBucketCnt, sDistBucketCnt )
  *
- *    - hash bucket count hint°¡ Á¸ÀçÇÒ °æ¿ì
- *      hash bucket count = hash bucket count hint °ª
+ *    - hash bucket count hintê°€ ì¡´ì¬í•  ê²½ìš°
+ *      hash bucket count = hash bucket count hint ê°’
  *
  ***********************************************************************/
 
@@ -1265,7 +1265,7 @@ qmg::getBucketCnt4DistAggr( qcStatement * aStatement,
     IDU_FIT_POINT_FATAL( "qmg::getBucketCnt4DistAggr::__FT__" );
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -1274,7 +1274,7 @@ qmg::getBucketCnt4DistAggr( qcStatement * aStatement,
 
     if ( aHintBucketCnt == QMS_NOT_DEFINED_BUCKET_CNT )
     {
-        // hash bucket count hint°¡ Á¸ÀçÇÏÁö ¾Ê´Â °æ¿ì
+        // hash bucket count hintê°€ ì¡´ì¬í•˜ì§€ ì•ŠëŠ” ê²½ìš°
 
         if ( QTC_IS_COLUMN( aStatement, aNode ) == ID_TRUE )
         {
@@ -1301,13 +1301,13 @@ qmg::getBucketCnt4DistAggr( qcStatement * aStatement,
             // nothing to do
         }
 
-        // BUG-36403 ÇÃ·§Æû¸¶´Ù BucketCnt °¡ ´Ş¶óÁö´Â °æ¿ì°¡ ÀÖ½À´Ï´Ù.
+        // BUG-36403 í”Œë«í¼ë§ˆë‹¤ BucketCnt ê°€ ë‹¬ë¼ì§€ëŠ” ê²½ìš°ê°€ ìˆìŠµë‹ˆë‹¤.
         sBucketCntOutput = DOUBLE_TO_UINT64( sBucketCnt );
         *aBucketCnt      = (UInt)sBucketCntOutput;
     }
     else
     {
-        // bucket count hint°¡ Á¸ÀçÇÏ´Â °æ¿ì
+        // bucket count hintê°€ ì¡´ì¬í•˜ëŠ” ê²½ìš°
         *aBucketCnt      = aHintBucketCnt;
     }
     
@@ -1322,14 +1322,14 @@ qmg::isDiskTempTable( qmgGraph    * aGraph,
 /***********************************************************************
  *
  * Description :
- *     Graph °¡ »ç¿ëÇÒ ÀúÀå ¸ÅÃ¼¸¦ ÆÇ´ÜÇÑ´Ù.
- *     Join GraphÀÇ °æ¿ì ÀúÀåÇÒ Child Graph¸¦ ÀÎÀÚ·Î ¹Ş¾Æ¾ß ÇÑ´Ù.
+ *     Graph ê°€ ì‚¬ìš©í•  ì €ì¥ ë§¤ì²´ë¥¼ íŒë‹¨í•œë‹¤.
+ *     Join Graphì˜ ê²½ìš° ì €ì¥í•  Child Graphë¥¼ ì¸ìë¡œ ë°›ì•„ì•¼ í•œë‹¤.
  *
  * Implementation :
  *
- *     ÆÇ´Ü¹æ¹ı
- *         - Hint °¡ Á¸ÀçÇÒ °æ¿ì ÇØ´ç Hint¸¦ µû¸¥´Ù.
- *         - Hint°¡ ¾øÀ» °æ¿ì ÇØ´ç GraphÀÇ ÀúÀå ¸ÅÃ¼¸¦ µû¸¥´Ù.
+ *     íŒë‹¨ë°©ë²•
+ *         - Hint ê°€ ì¡´ì¬í•  ê²½ìš° í•´ë‹¹ Hintë¥¼ ë”°ë¥¸ë‹¤.
+ *         - Hintê°€ ì—†ì„ ê²½ìš° í•´ë‹¹ Graphì˜ ì €ì¥ ë§¤ì²´ë¥¼ ë”°ë¥¸ë‹¤.
  *
  ***********************************************************************/
 
@@ -1339,14 +1339,14 @@ qmg::isDiskTempTable( qmgGraph    * aGraph,
     IDU_FIT_POINT_FATAL( "qmg::isDiskTempTable::__FT__" );
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_DASSERT( aGraph != NULL );
     IDE_DASSERT( aIsDisk != NULL );
 
-    // SET °ú °°ÀÌ ÈùÆ®°¡ º°µµ·Î Á¸ÀçÇÏÁö ¾Ê´Â Graph¸¦ À§ÇØ
-    // ÈùÆ®¸¦ È¹µæÇÒ ¼ö ÀÖ´Â Graph·Î ÀÌµ¿
+    // SET ê³¼ ê°™ì´ íŒíŠ¸ê°€ ë³„ë„ë¡œ ì¡´ì¬í•˜ì§€ ì•ŠëŠ” Graphë¥¼ ìœ„í•´
+    // íŒíŠ¸ë¥¼ íšë“í•  ìˆ˜ ìˆëŠ” Graphë¡œ ì´ë™
     for ( sHintGraph = aGraph;
           ;
           sHintGraph = sHintGraph->left )
@@ -1361,14 +1361,14 @@ qmg::isDiskTempTable( qmgGraph    * aGraph,
     }
 
     //------------------------------------------
-    // ÀúÀå ¸ÅÃ¼ ÆÇ´Ü
+    // ì €ì¥ ë§¤ì²´ íŒë‹¨
     //------------------------------------------
 
     switch ( sHintGraph->myQuerySet->SFWGH->hints->interResultType )
     {
         case QMO_INTER_RESULT_TYPE_NOT_DEFINED:
-            // Hint °¡ ¾ø´Â °æ¿ì
-            // ÇöÀç GraphÀÇ ÀúÀå ¸ÅÃ¼¸¦ ±×´ë·Î »ç¿ëÇÑ´Ù.
+            // Hint ê°€ ì—†ëŠ” ê²½ìš°
+            // í˜„ì¬ Graphì˜ ì €ì¥ ë§¤ì²´ë¥¼ ê·¸ëŒ€ë¡œ ì‚¬ìš©í•œë‹¤.
             if ( ( aGraph->flag & QMG_GRAPH_TYPE_MASK )
                  == QMG_GRAPH_TYPE_MEMORY )
             {
@@ -1382,13 +1382,13 @@ qmg::isDiskTempTable( qmgGraph    * aGraph,
             break;
 
         case QMO_INTER_RESULT_TYPE_MEMORY :
-            // Memory Temp Table »ç¿ë Hint
+            // Memory Temp Table ì‚¬ìš© Hint
 
             sIsDisk = ID_FALSE;
             break;
 
         case QMO_INTER_RESULT_TYPE_DISK :
-            // Disk Temp Table »ç¿ë Hint
+            // Disk Temp Table ì‚¬ìš© Hint
 
             sIsDisk = ID_TRUE;
             break;
@@ -1404,7 +1404,7 @@ qmg::isDiskTempTable( qmgGraph    * aGraph,
 
 }
 
-// Plan Tree »ı¼º½Ã °øÅë ÇÔ¼ö
+// Plan Tree ìƒì„±ì‹œ ê³µí†µ í•¨ìˆ˜
 IDE_RC
 qmg::makeColumnMtrNode( qcStatement * aStatement ,
                         qmsQuerySet * aQuerySet ,
@@ -1417,13 +1417,13 @@ qmg::makeColumnMtrNode( qcStatement * aStatement ,
 {
 /***********************************************************************
  *
- * Description : ±â´É¿¡ ¸Â°Ô MaterializeÇÒ ÄÃ·³µéÀ» ±¸¼ºÇÑ´Ù
+ * Description : ê¸°ëŠ¥ì— ë§ê²Œ Materializeí•  ì»¬ëŸ¼ë“¤ì„ êµ¬ì„±í•œë‹¤
  *
  * Implementation :
- *     - srNodeÀÇ ±¸¼º
- *     - ÄÄ·³ÀÇ Á¾·ù¿¡ ¸Â´Â identifier¸¦ ±¸ºĞÇÏ¿© flag¸¦ ¼¼ÆÃÇÑ´Ù.
- *     - aStartColumnID·Î ºÎÅÍ ½ÃÀÛÇÏ¿©, Ãß°¡·Î »ı¼ºµÈ ÄÃ·³ÀÇ °³¼ö¸¦
- *       ´õÇÏ¿© aColumnCount¸¦ °è»êÇÑ´Ù.
+ *     - srNodeì˜ êµ¬ì„±
+ *     - ì»´ëŸ¼ì˜ ì¢…ë¥˜ì— ë§ëŠ” identifierë¥¼ êµ¬ë¶„í•˜ì—¬ flagë¥¼ ì„¸íŒ…í•œë‹¤.
+ *     - aStartColumnIDë¡œ ë¶€í„° ì‹œì‘í•˜ì—¬, ì¶”ê°€ë¡œ ìƒì„±ëœ ì»¬ëŸ¼ì˜ ê°œìˆ˜ë¥¼
+ *       ë”í•˜ì—¬ aColumnCountë¥¼ ê³„ì‚°í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -1439,14 +1439,14 @@ qmg::makeColumnMtrNode( qcStatement * aStatement ,
     IDU_FIT_POINT_FATAL( "qmg::makeColumnMtrNode::__FT__" );
 
     //----------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //----------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aSrcNode   != NULL );
 
     //----------------------------------
-    // Source ³ëµå ±¸¼º
+    // Source ë…¸ë“œ êµ¬ì„±
     //----------------------------------
 
     sMtcTemplate = & QC_SHARED_TMPLATE(aStatement)->tmplate;
@@ -1454,7 +1454,7 @@ qmg::makeColumnMtrNode( qcStatement * aStatement ,
     IDE_TEST( STRUCT_ALLOC(QC_QMP_MEM(aStatement), qmcMtrNode, &sNewMtrNode)
               != IDE_SUCCESS);
 
-    // Node¸¦ º¹»çÇÏ¿© º¹»çµÈ node¸¦ srcNode·Î ¼³Á¤ÇÑ´Ù.
+    // Nodeë¥¼ ë³µì‚¬í•˜ì—¬ ë³µì‚¬ëœ nodeë¥¼ srcNodeë¡œ ì„¤ì •í•œë‹¤.
     IDE_TEST( STRUCT_ALLOC(QC_QMP_MEM(aStatement), qtcNode, &sSrcNode)
               != IDE_SUCCESS);
 
@@ -1475,9 +1475,9 @@ qmg::makeColumnMtrNode( qcStatement * aStatement ,
         ( ( sFlag & MTC_TUPLE_PLAN_MASK ) == MTC_TUPLE_PLAN_TRUE ) )
     {
         // PROJ-2179
-        // Aggregate functionÀº tuple-set ³»¿¡¼­ ¿©·¯°³ÀÇ °ø°£À» Â÷ÁöÇÏ´Âµ¥,
-        // ÃÖÃÊ ¼öÇà ÀÌÈÄ¿¡´Â ÃÖÁ¾ °á°ú°¡ ´ã°ÜÀÖ´Â 1°³ °ø°£¸¸À» ÂüÁ¶ÇØµµ µÈ´Ù.
-        // µû¶ó¼­ value/column module·Î º¯°æÇÏ¿© °ø°£À» ÁÙÀÎ´Ù.
+        // Aggregate functionì€ tuple-set ë‚´ì—ì„œ ì—¬ëŸ¬ê°œì˜ ê³µê°„ì„ ì°¨ì§€í•˜ëŠ”ë°,
+        // ìµœì´ˆ ìˆ˜í–‰ ì´í›„ì—ëŠ” ìµœì¢… ê²°ê³¼ê°€ ë‹´ê²¨ìˆëŠ” 1ê°œ ê³µê°„ë§Œì„ ì°¸ì¡°í•´ë„ ëœë‹¤.
+        // ë”°ë¼ì„œ value/column moduleë¡œ ë³€ê²½í•˜ì—¬ ê³µê°„ì„ ì¤„ì¸ë‹¤.
         aSrcNode->node.module = &qtc::valueModule;
         sSrcNode->node.module = &qtc::valueModule;
     }
@@ -1486,11 +1486,11 @@ qmg::makeColumnMtrNode( qcStatement * aStatement ,
         // Nothing to do.
     }
 
-    // source node ¿¬°á
+    // source node ì—°ê²°
     sNewMtrNode->srcNode = sSrcNode;
 
     // To Fix PR-10182
-    // GROUP BY, SUM() µî¿¡µµ PRIOR ColumnÀÌ Á¸ÀçÇÒ ¼ö ÀÖ´Ù.
+    // GROUP BY, SUM() ë“±ì—ë„ PRIOR Columnì´ ì¡´ì¬í•  ìˆ˜ ìˆë‹¤.
     IDE_TEST( qmoPred::setPriorNodeID( aStatement ,
                                        aQuerySet ,
                                        sNewMtrNode->srcNode )
@@ -1498,12 +1498,12 @@ qmg::makeColumnMtrNode( qcStatement * aStatement ,
 
     //----------------------------------
     // To Fix PR-12093
-    //     - Destine NodeÀÇ ¸ğµâ Á¤º¸ Àç±¸¼ºÀ» À§ÇØ¼­´Â
-    //     - Mtr NodeÀÇ flag Á¤º¸ ±¸¼º ½ÃÁ¡ Àü¿¡ ÀÌ·ç¾îÁ®¾ß ÇÑ´Ù.
-    // Destine ³ëµå ±¸¼º
+    //     - Destine Nodeì˜ ëª¨ë“ˆ ì •ë³´ ì¬êµ¬ì„±ì„ ìœ„í•´ì„œëŠ”
+    //     - Mtr Nodeì˜ flag ì •ë³´ êµ¬ì„± ì‹œì  ì „ì— ì´ë£¨ì–´ì ¸ì•¼ í•œë‹¤.
+    // Destine ë…¸ë“œ êµ¬ì„±
     //----------------------------------
 
-    //dstNodeÀÇ ±¸¼º
+    //dstNodeì˜ êµ¬ì„±
     IDE_TEST( qtc::makeInternalColumn( aStatement,
                                        aNewTupleID,
                                        *aColumnCount,
@@ -1511,8 +1511,8 @@ qmg::makeColumnMtrNode( qcStatement * aStatement ,
               != IDE_SUCCESS);
 
     // To Fix PR-9208
-    // Destine Node´Â ´ëºÎºĞÀÇ Source Node Á¤º¸¸¦ À¯ÁöÇÏ¿©¾ß ÇÑ´Ù.
-    // ¾Æ·¡¿Í °°ÀÌ ¸î °³ÀÇ Á¤º¸¸¸À» ÃëÇÒ °æ¿ì, flag Á¤º¸µîÀº »ç¶óÁö°Ô µÈ´Ù.
+    // Destine NodeëŠ” ëŒ€ë¶€ë¶„ì˜ Source Node ì •ë³´ë¥¼ ìœ ì§€í•˜ì—¬ì•¼ í•œë‹¤.
+    // ì•„ë˜ì™€ ê°™ì´ ëª‡ ê°œì˜ ì •ë³´ë§Œì„ ì·¨í•  ê²½ìš°, flag ì •ë³´ë“±ì€ ì‚¬ë¼ì§€ê²Œ ëœë‹¤.
 
     // sNewMtrNode->dstNode->node.arguments
     //     = sNewMtrNode->srcNode->node.arguments;
@@ -1524,36 +1524,36 @@ qmg::makeColumnMtrNode( qcStatement * aStatement ,
                    ID_SIZEOF(qtcNode) );
 
     // To Fix PR-9208
-    // Destine NodeÀÇ ÇÊ¿äÇÑ Á¤º¸¸¸À» Àç¼³Á¤ÇÑ´Ù.
+    // Destine Nodeì˜ í•„ìš”í•œ ì •ë³´ë§Œì„ ì¬ì„¤ì •í•œë‹¤.
     sNewMtrNode->dstNode->node.table = aNewTupleID;
     sNewMtrNode->dstNode->node.column = *aColumnCount;
 
     // To Fix PR-9208
-    // Destine Node¿¡¼­ ºÒÇÊ¿äÇÑ Á¤º¸´Â ÃÊ±âÈ­ÇÑ´Ù.
+    // Destine Nodeì—ì„œ ë¶ˆí•„ìš”í•œ ì •ë³´ëŠ” ì´ˆê¸°í™”í•œë‹¤.
 
     sNewMtrNode->dstNode->node.conversion = NULL;
     sNewMtrNode->dstNode->node.leftConversion = NULL;
     sNewMtrNode->dstNode->node.next = NULL;
 
     // To Fix PR-9208
-    // Desinte Node´Â Ç×»ó ½ÇÁ¦ °ªÀ» °¡Áø´Ù.
-    // µû¶ó¼­, IndirectionÀÏ ¼ö ¾ø´Ù.
+    // Desinte NodeëŠ” í•­ìƒ ì‹¤ì œ ê°’ì„ ê°€ì§„ë‹¤.
+    // ë”°ë¼ì„œ, Indirectionì¼ ìˆ˜ ì—†ë‹¤.
     sNewMtrNode->dstNode->node.lflag &= ~MTC_NODE_INDIRECT_MASK;
     sNewMtrNode->dstNode->node.lflag |= MTC_NODE_INDIRECT_FALSE;
 
     //----------------------------------
-    // flag ¼¼ÆÃ
+    // flag ì„¸íŒ…
     //----------------------------------
 
     sNewMtrNode->flag = 0;
 
-    // Column locate º¯°æÀÌ ±âº»°ªÀÌ´Ù.
+    // Column locate ë³€ê²½ì´ ê¸°ë³¸ê°’ì´ë‹¤.
     sNewMtrNode->flag &= ~QMC_MTR_CHANGE_COLUMN_LOCATE_MASK;
     sNewMtrNode->flag |= QMC_MTR_CHANGE_COLUMN_LOCATE_TRUE;
 
-    // EvaluationÀÌ ÇÊ¿äÇÑ expressionÀÎÁö È®ÀÎ
-    // (expressionÀÌ¶ó ÇÒÁö¶óµµ view³ª ´Ù¸¥ operatorÀÇ tuple¿¡ °á°ú°¡ Á¸ÀçÇÑ´Ù¸é
-    //  ÀÌÀü¿¡ ÀÌ¹Ì evaluationÀÌ µÈ °ÍÀÌ¹Ç·Î ´Ù½Ã evaluationÇÏÁö ¾Ê´Â´Ù.)
+    // Evaluationì´ í•„ìš”í•œ expressionì¸ì§€ í™•ì¸
+    // (expressionì´ë¼ í• ì§€ë¼ë„ viewë‚˜ ë‹¤ë¥¸ operatorì˜ tupleì— ê²°ê³¼ê°€ ì¡´ì¬í•œë‹¤ë©´
+    //  ì´ì „ì— ì´ë¯¸ evaluationì´ ëœ ê²ƒì´ë¯€ë¡œ ë‹¤ì‹œ evaluationí•˜ì§€ ì•ŠëŠ”ë‹¤.)
     if( ( ( sFlag & MTC_TUPLE_TYPE_MASK ) == MTC_TUPLE_TYPE_INTERMEDIATE ) &&
         ( ( sFlag & MTC_TUPLE_PLAN_MASK ) == MTC_TUPLE_PLAN_FALSE ) &&
         ( ( sFlag & MTC_TUPLE_VIEW_MASK ) == MTC_TUPLE_VIEW_FALSE ) &&
@@ -1566,7 +1566,7 @@ qmg::makeColumnMtrNode( qcStatement * aStatement ,
         sNeedEvaluation = ID_FALSE;
     }
 
-    // ConversionÀÌ ÇÊ¿äÇÑÁö È®ÀÎ
+    // Conversionì´ í•„ìš”í•œì§€ í™•ì¸
     if( ( aConverted == ID_TRUE ) &&
         ( aSrcNode->node.conversion != NULL ) )
     {
@@ -1578,15 +1578,15 @@ qmg::makeColumnMtrNode( qcStatement * aStatement ,
         sSrcNode->node.conversion = NULL;
     }
 
-    // ´ÙÀ½ Á¶°ÇÁß ÇÑ°¡Áö¶óµµ ÇØ´çÇÏ¸é ¹İµå½Ã calculateÇÔ¼ö¸¦ ¼öÇàÇÑ´Ù.
-    // 1. EvaluationÀÌ ÇÊ¿äÇÑ expressionÀÎ °æ¿ì
-    // 2. ConversionÀÌ ÇÊ¿äÇÑ °æ¿ì
+    // ë‹¤ìŒ ì¡°ê±´ì¤‘ í•œê°€ì§€ë¼ë„ í•´ë‹¹í•˜ë©´ ë°˜ë“œì‹œ calculateí•¨ìˆ˜ë¥¼ ìˆ˜í–‰í•œë‹¤.
+    // 1. Evaluationì´ í•„ìš”í•œ expressionì¸ ê²½ìš°
+    // 2. Conversionì´ í•„ìš”í•œ ê²½ìš°
     if( ( sNeedEvaluation == ID_TRUE ) ||
         ( sNeedConversion == ID_TRUE ) )
     {
         if( ( aSrcNode->node.lflag & MTC_NODE_INDIRECT_MASK ) == MTC_NODE_INDIRECT_FALSE )
         {
-            // ExpressionÀÎ °æ¿ì calculateÇÑ´Ù.
+            // Expressionì¸ ê²½ìš° calculateí•œë‹¤.
             sNewMtrNode->flag &= ~QMC_MTR_TYPE_MASK;
             sNewMtrNode->flag |= QMC_MTR_TYPE_CALCULATE;
 
@@ -1595,14 +1595,14 @@ qmg::makeColumnMtrNode( qcStatement * aStatement ,
         }
         else
         {
-            // Calculate ÈÄ copy¸¦ ÇØ¾ßÇÏ´Â °æ¿ì
-            // (Pass node, subquery µîÀº °á°ú¸¦ stackÀ¸·ÎºÎÅÍ ¾òÀ½)
+            // Calculate í›„ copyë¥¼ í•´ì•¼í•˜ëŠ” ê²½ìš°
+            // (Pass node, subquery ë“±ì€ ê²°ê³¼ë¥¼ stackìœ¼ë¡œë¶€í„° ì–»ìŒ)
             sNewMtrNode->flag &= ~QMC_MTR_TYPE_MASK;
             sNewMtrNode->flag |= QMC_MTR_TYPE_CALCULATE_AND_COPY_VALUE;
 
             if( aSrcNode->node.module == &qtc::subqueryModule )
             {
-                // SubqueryÀÇ °á°ú°¡ materializeµÈ ÀÌÈÄºÎÅÍ´Â ÀÏ¹İ column°ú µ¿ÀÏÇÏ°Ô Á¢±ÙÇÑ´Ù.
+                // Subqueryì˜ ê²°ê³¼ê°€ materializeëœ ì´í›„ë¶€í„°ëŠ” ì¼ë°˜ columnê³¼ ë™ì¼í•˜ê²Œ ì ‘ê·¼í•œë‹¤.
                 aSrcNode->node.module = &qtc::valueModule;
                 aSrcNode->node.lflag &= ~MTC_NODE_INDIRECT_MASK;
                 aSrcNode->node.lflag |= MTC_NODE_INDIRECT_FALSE;
@@ -1622,14 +1622,14 @@ qmg::makeColumnMtrNode( qcStatement * aStatement ,
             case MTC_TUPLE_TYPE_INTERMEDIATE:
                 if( ( sFlag & MTC_TUPLE_PLAN_MTR_MASK ) == MTC_TUPLE_PLAN_MTR_FALSE )
                 {
-                    // Temp tableÀÌ ¾Æ´Ñ °æ¿ì ¹«Á¶°Ç º¹»çÇÑ´Ù.
+                    // Temp tableì´ ì•„ë‹Œ ê²½ìš° ë¬´ì¡°ê±´ ë³µì‚¬í•œë‹¤.
                     sNewMtrNode->flag &= ~QMC_MTR_TYPE_MASK;
                     sNewMtrNode->flag |= QMC_MTR_TYPE_COPY_VALUE;
 
-                    // BUG-28212 ÂüÁ¶
+                    // BUG-28212 ì°¸ì¡°
                     if( isDatePseudoColumn( aStatement, sSrcNode ) == ID_TRUE )
                     {
-                        // SYSDATEµîÀÇ pseudo columnÀº materializeµÇ´õ¶óµµ À§Ä¡¸¦ º¯°æÇÏÁö ¾Ê´Â´Ù.
+                        // SYSDATEë“±ì˜ pseudo columnì€ materializeë˜ë”ë¼ë„ ìœ„ì¹˜ë¥¼ ë³€ê²½í•˜ì§€ ì•ŠëŠ”ë‹¤.
                         sNewMtrNode->flag &= ~QMC_MTR_CHANGE_COLUMN_LOCATE_MASK;
                         sNewMtrNode->flag |= QMC_MTR_CHANGE_COLUMN_LOCATE_FALSE;
                     }
@@ -1643,11 +1643,11 @@ qmg::makeColumnMtrNode( qcStatement * aStatement ,
                 else
                 {
                     // Nothing to do.
-                    // Temp tableÀÎ °æ¿ì tableÀÇ Á¾·ù¿¡ µû¶ó materialize ¹æ¹ıÀ» ¼³Á¤ÇÑ´Ù.
+                    // Temp tableì¸ ê²½ìš° tableì˜ ì¢…ë¥˜ì— ë”°ë¼ materialize ë°©ë²•ì„ ì„¤ì •í•œë‹¤.
                 }
                 /* fall through */
             case MTC_TUPLE_TYPE_TABLE:
-                /* PROJ-2464 hybrid partitioned table Áö¿ø */
+                /* PROJ-2464 hybrid partitioned table ì§€ì› */
                 if ( ( sFlag & MTC_TUPLE_HYBRID_PARTITIONED_TABLE_MASK ) == MTC_TUPLE_HYBRID_PARTITIONED_TABLE_TRUE )
                 {
                     sNewMtrNode->flag &= ~QMC_MTR_TYPE_MASK;
@@ -1657,16 +1657,16 @@ qmg::makeColumnMtrNode( qcStatement * aStatement ,
                 {
                     if ( ( sFlag & MTC_TUPLE_STORAGE_MASK ) == MTC_TUPLE_STORAGE_MEMORY )
                     {
-                        // Src°¡ memory tableÀÏ ¶§
+                        // Srcê°€ memory tableì¼ ë•Œ
                         if ( ( ( sFlag & MTC_TUPLE_PARTITIONED_TABLE_MASK )
                                == MTC_TUPLE_PARTITIONED_TABLE_TRUE ) ||
                              ( ( sFlag & MTC_TUPLE_PARTITION_MASK )
                                == MTC_TUPLE_PARTITION_TRUE ) )
                         {
                             // BUG-39896
-                            // key columnÀÌ partitioned tableÀÇ ÄÃ·³ÀÎ °æ¿ì
-                            // row pointer»Ó¸¸¾Æ´Ï¶ó columnÁ¤º¸±îÁö ÇÊ¿äÇÏ±â ¶§¹®¿¡
-                            // º°µµÀÇ mtrNode¸¦ Á¤ÀÇÇÏ¿© Ã³¸®ÇÑ´Ù.
+                            // key columnì´ partitioned tableì˜ ì»¬ëŸ¼ì¸ ê²½ìš°
+                            // row pointerë¿ë§Œì•„ë‹ˆë¼ columnì •ë³´ê¹Œì§€ í•„ìš”í•˜ê¸° ë•Œë¬¸ì—
+                            // ë³„ë„ì˜ mtrNodeë¥¼ ì •ì˜í•˜ì—¬ ì²˜ë¦¬í•œë‹¤.
                             sNewMtrNode->flag &= ~QMC_MTR_TYPE_MASK;
                             sNewMtrNode->flag |= QMC_MTR_TYPE_MEMORY_PARTITION_KEY_COLUMN;
                         }
@@ -1679,19 +1679,19 @@ qmg::makeColumnMtrNode( qcStatement * aStatement ,
                         if ( ( sMtcTemplate->rows[sNewMtrNode->dstNode->node.table].lflag & MTC_TUPLE_STORAGE_MASK )
                              == MTC_TUPLE_STORAGE_MEMORY )
                         {
-                            // Dst°¡ memory tableÀÎ °æ¿ì, pointer¸¸ º¹»çÇÑ´Ù.
+                            // Dstê°€ memory tableì¸ ê²½ìš°, pointerë§Œ ë³µì‚¬í•œë‹¤.
                             sNewMtrNode->flag &= ~QMC_MTR_CHANGE_COLUMN_LOCATE_MASK;
                             sNewMtrNode->flag |= QMC_MTR_CHANGE_COLUMN_LOCATE_FALSE;
                         }
                         else
                         {
-                            // Dst°¡ disk tableÀÎ °æ¿ì, ³»¿ëÀ» º¹»çÇÑ´Ù.
+                            // Dstê°€ disk tableì¸ ê²½ìš°, ë‚´ìš©ì„ ë³µì‚¬í•œë‹¤.
                             // Nothing to do.
                         }
                     }
                     else
                     {
-                        // Src°¡ disk tableÀÎ °æ¿ì, ³»¿ëÀ» º¹»çÇÑ´Ù.
+                        // Srcê°€ disk tableì¸ ê²½ìš°, ë‚´ìš©ì„ ë³µì‚¬í•œë‹¤.
                         sNewMtrNode->flag &= ~QMC_MTR_TYPE_MASK;
                         sNewMtrNode->flag |= QMC_MTR_TYPE_COPY_VALUE;
 
@@ -1716,22 +1716,22 @@ qmg::makeColumnMtrNode( qcStatement * aStatement ,
     sNewMtrNode->bucketCnt = 0;
 
     // To Fix PR-12093
-    // Destine Node¸¦ »ç¿ëÇÏ¿© mtcColumgnÀÇ Count¸¦ ±¸ÇÏ´Â °ÍÀÌ ¿øÄ¢¿¡ ¸ÂÀ½
-    // »ç¿ëÇÏÁöµµ ¾ÊÀ» mtcColumn Á¤º¸¸¦ À¯ÁöÇÏ´Â °ÍÀº ºÒÇÕ¸®ÇÔ.
-    //     - Memory °ø°£ ³¶ºñ
-    //     - offset Á¶Á¤ ¿À·ù (PR-12093)
+    // Destine Nodeë¥¼ ì‚¬ìš©í•˜ì—¬ mtcColumgnì˜ Countë¥¼ êµ¬í•˜ëŠ” ê²ƒì´ ì›ì¹™ì— ë§ìŒ
+    // ì‚¬ìš©í•˜ì§€ë„ ì•Šì„ mtcColumn ì •ë³´ë¥¼ ìœ ì§€í•˜ëŠ” ê²ƒì€ ë¶ˆí•©ë¦¬í•¨.
+    //     - Memory ê³µê°„ ë‚­ë¹„
+    //     - offset ì¡°ì • ì˜¤ë¥˜ (PR-12093)
     sModule = sNewMtrNode->dstNode->node.module;
     (*aColumnCount) += ( sModule->lflag & MTC_NODE_COLUMN_COUNT_MASK );
 
-    // ArgumentµéÀÇ À§Ä¡°¡ ´õ ÀÌ»ó º¯°æµÇÁö ¾Êµµ·Ï ¼³Á¤ÇÑ´Ù.
+    // Argumentë“¤ì˜ ìœ„ì¹˜ê°€ ë” ì´ìƒ ë³€ê²½ë˜ì§€ ì•Šë„ë¡ ì„¤ì •í•œë‹¤.
     for( sArgs = aSrcNode->node.arguments;
          sArgs != NULL;
          sArgs = sArgs->next )
     {
         // BUG-37355
-        // argument node tree¿¡ Á¸ÀçÇÏ´Â passNode°¡ qtcNode¸¦ °øÀ¯ÇÏ´Â °æ¿ì
-        // flag¸¦ ¼³Á¤ÇÏ´õ¶óµµ column locate°¡ º¯°æµÇ¹Ç·Î
-        // ÀÌ¸¦ º¹»ç»ı¼ºÇÏ¿© µ¶¸³½ÃÅ²´Ù.
+        // argument node treeì— ì¡´ì¬í•˜ëŠ” passNodeê°€ qtcNodeë¥¼ ê³µìœ í•˜ëŠ” ê²½ìš°
+        // flagë¥¼ ì„¤ì •í•˜ë”ë¼ë„ column locateê°€ ë³€ê²½ë˜ë¯€ë¡œ
+        // ì´ë¥¼ ë³µì‚¬ìƒì„±í•˜ì—¬ ë…ë¦½ì‹œí‚¨ë‹¤.
         IDE_TEST( isolatePassNode( aStatement, (qtcNode*) sArgs )
                   != IDE_SUCCESS );
         
@@ -1742,19 +1742,19 @@ qmg::makeColumnMtrNode( qcStatement * aStatement ,
     if( ( sNewMtrNode->flag & QMC_MTR_CHANGE_COLUMN_LOCATE_MASK )
         == QMC_MTR_CHANGE_COLUMN_LOCATE_TRUE )
     {
-        // »óÀ§¿¡¼­ temp tableÀÇ °ªÀ» ÂüÁ¶ÇÏµµ·Ï º¯°æµÈ À§Ä¡¸¦ ¼³Á¤ÇÑ´Ù.
+        // ìƒìœ„ì—ì„œ temp tableì˜ ê°’ì„ ì°¸ì¡°í•˜ë„ë¡ ë³€ê²½ëœ ìœ„ì¹˜ë¥¼ ì„¤ì •í•œë‹¤.
         aSrcNode->node.table  = sNewMtrNode->dstNode->node.table;
         aSrcNode->node.column = sNewMtrNode->dstNode->node.column;
 
         if( ( aSrcNode->node.conversion != NULL ) || ( sSrcNode->node.conversion != NULL ) )
         {
-            // ConversionÀÇ °á°ú¸¦ materializeÇÏ´Â °æ¿ì À§Ä¡ º¯°æÀ» Ãë¼ÒÇÑ´Ù.
-            // ÃßÈÄ qmg::chagneColumnLocate È£Ãâ ½Ã conversionÇÏÁö ¾ÊÀº column ÂüÁ¶½Ã¿¡µµ
-            // conversionµÈ °á°ú¸¦ ÂüÁ¶ÇÒ ¼ö ÀÖ±â ¶§¹®ÀÌ´Ù.
+            // Conversionì˜ ê²°ê³¼ë¥¼ materializeí•˜ëŠ” ê²½ìš° ìœ„ì¹˜ ë³€ê²½ì„ ì·¨ì†Œí•œë‹¤.
+            // ì¶”í›„ qmg::chagneColumnLocate í˜¸ì¶œ ì‹œ conversioní•˜ì§€ ì•Šì€ column ì°¸ì¡°ì‹œì—ë„
+            // conversionëœ ê²°ê³¼ë¥¼ ì°¸ì¡°í•  ìˆ˜ ìˆê¸° ë•Œë¬¸ì´ë‹¤.
             // Ex) SELECT /*+USE_SORT(t1, t2)*/ * FROM t1, t2 WHERE t1.c1 = t2.c2;
-            //     * ÀÌ ¶§ t1.c1°ú t2.c1ÀÇ typeÀÌ ´Ş¶ó conversionÀÌ ¹ß»ıÇÏ´Â °æ¿ì
-            //       PROJECTION¿¡¼­´Â SORTÀÇ t1.c1ÀÌ³ª t2.c2°¡ ¾Æ´Ñ SCANÀÇ °á°ú¸¦
-            //       ÂüÁ¶ÇØ¾ß ÇÑ´Ù.
+            //     * ì´ ë•Œ t1.c1ê³¼ t2.c1ì˜ typeì´ ë‹¬ë¼ conversionì´ ë°œìƒí•˜ëŠ” ê²½ìš°
+            //       PROJECTIONì—ì„œëŠ” SORTì˜ t1.c1ì´ë‚˜ t2.c2ê°€ ì•„ë‹Œ SCANì˜ ê²°ê³¼ë¥¼
+            //       ì°¸ì¡°í•´ì•¼ í•œë‹¤.
             sNewMtrNode->flag &= ~QMC_MTR_CHANGE_COLUMN_LOCATE_MASK;
             sNewMtrNode->flag |= QMC_MTR_CHANGE_COLUMN_LOCATE_FALSE;
         }
@@ -1768,8 +1768,8 @@ qmg::makeColumnMtrNode( qcStatement * aStatement ,
         // Nothing to do.
     }
 
-    // PROJ-2362 memory temp ÀúÀå È¿À²¼º °³¼±
-    // aggregationÀÌ ¾Æ´Ï°í, variable typeÀÌ¸ç, memory temp¸¦ »ç¿ëÇÏ´Â °æ¿ì
+    // PROJ-2362 memory temp ì €ì¥ íš¨ìœ¨ì„± ê°œì„ 
+    // aggregationì´ ì•„ë‹ˆê³ , variable typeì´ë©°, memory tempë¥¼ ì‚¬ìš©í•˜ëŠ” ê²½ìš°
     if( ( QTC_IS_AGGREGATE( sNewMtrNode->srcNode ) != ID_TRUE )
         &&
         ( ( ( sFlag & MTC_TUPLE_TYPE_MASK ) == MTC_TUPLE_TYPE_TABLE ) ||
@@ -1892,8 +1892,8 @@ qmg::makeBaseTableMtrNode( qcStatement * aStatement ,
     sNewMtrNode->flag &= ~QMC_MTR_TYPE_MASK;
     sNewMtrNode->flag |= (getBaseTableType( sFlag ) & QMC_MTR_TYPE_MASK);
 
-    // PROJ-2362 memory temp ÀúÀå È¿À²¼º °³¼±
-    // baseTableÀ» À§ÇÑ mtrNodeÀÓÀ» ±â·ÏÇÑ´Ù.
+    // PROJ-2362 memory temp ì €ì¥ íš¨ìœ¨ì„± ê°œì„ 
+    // baseTableì„ ìœ„í•œ mtrNodeì„ì„ ê¸°ë¡í•œë‹¤.
     sNewMtrNode->flag &= ~QMC_MTR_BASETABLE_MASK;
     sNewMtrNode->flag |= QMC_MTR_BASETABLE_TRUE;
     
@@ -1934,12 +1934,12 @@ qmg::makeBaseTableMtrNode( qcStatement * aStatement ,
          * PROJ-1789 PROWID
          *
          * SELECT _PROWID FROM T1 ORDER BY c1;
-         * Pointer or RID ¹æ½ÄÀÌ°í select target ¿¡ RID °¡ ÀÖ´Â °æ¿ì
-         * ³ªÁß¿¡ setTupleXX °úÁ¤¿¡¼­ rid ±îÁö º¹±¸ÇÏµµ·Ï
+         * Pointer or RID ë°©ì‹ì´ê³  select target ì— RID ê°€ ìˆëŠ” ê²½ìš°
+         * ë‚˜ì¤‘ì— setTupleXX ê³¼ì •ì—ì„œ rid ê¹Œì§€ ë³µêµ¬í•˜ë„ë¡
          *
-         * »ç½Ç»ó recover °¡ ÇÊ¿äÇÑ °æ¿ì´Â memory table ¿¡¼­
-         * base table ptr ¸¦ ±¸¼ºÇÒ¶§ÀÌ´Ù.
-         * ÀÌ¶§ Ç×»ó alCoccount = 1 ÀÌ¹Ç·Î sFirstMtrNode ¿¡¸¸ Ã³¸®ÇÏ¿´´Ù.
+         * ì‚¬ì‹¤ìƒ recover ê°€ í•„ìš”í•œ ê²½ìš°ëŠ” memory table ì—ì„œ
+         * base table ptr ë¥¼ êµ¬ì„±í• ë•Œì´ë‹¤.
+         * ì´ë•Œ í•­ìƒ alCoccount = 1 ì´ë¯€ë¡œ sFirstMtrNode ì—ë§Œ ì²˜ë¦¬í•˜ì˜€ë‹¤.
          */
         sNewMtrNode->flag &= ~QMC_MTR_RECOVER_RID_MASK;
         sNewMtrNode->flag |= QMC_MTR_RECOVER_RID_TRUE;
@@ -1978,7 +1978,7 @@ qmg::setDisplayInfo( qmsFrom          * aFrom ,
 {
 /***********************************************************************
  *
- * Description : display Á¤º¸¸¦ ¼¼ÆÃÇÑ´Ù.
+ * Description : display ì •ë³´ë¥¼ ì„¸íŒ…í•œë‹¤.
  *
  * Implementation :
  *
@@ -1991,7 +1991,7 @@ qmg::setDisplayInfo( qmsFrom          * aFrom ,
     IDU_FIT_POINT_FATAL( "qmg::setDisplayInfo::__FT__" );
 
     //----------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //----------------------------------
 
     IDE_DASSERT( aFrom != NULL );
@@ -2000,12 +2000,12 @@ qmg::setDisplayInfo( qmsFrom          * aFrom ,
     sTableNamePos = aFrom->tableRef->tableName;
     sAliasNamePos = aFrom->tableRef->aliasName;
 
-    //table owner name ¼¼ÆÃ
+    //table owner name ì„¸íŒ…
     if ( ( aFrom->tableRef->tableInfo->tableType == QCM_FIXED_TABLE ) ||
          ( aFrom->tableRef->tableInfo->tableType == QCM_DUMP_TABLE ) ||
          ( aFrom->tableRef->tableInfo->tableType == QCM_PERFORMANCE_VIEW ) )
     {
-        // performance view´Â tableInfo°¡ ¾ø´Ù.
+        // performance viewëŠ” tableInfoê°€ ì—†ë‹¤.
         aTableOwnerName->name = NULL;
         aTableOwnerName->size = QC_POS_EMPTY_SIZE;
     }
@@ -2017,7 +2017,7 @@ qmg::setDisplayInfo( qmsFrom          * aFrom ,
 
     if ( ( sTableNamePos.stmtText != NULL ) && ( sTableNamePos.size > 0 ) )
     {
-        //table name ¼¼ÆÃ
+        //table name ì„¸íŒ…
         aTableName->name = sTableNamePos.stmtText + sTableNamePos.offset;
         aTableName->size = sTableNamePos.size;
     }
@@ -2028,7 +2028,7 @@ qmg::setDisplayInfo( qmsFrom          * aFrom ,
     }
 
 
-    //table name °ú alias nameÀÌ °°Àº °æ¿ì
+    //table name ê³¼ alias nameì´ ê°™ì€ ê²½ìš°
     if( sTableNamePos.offset == sAliasNamePos.offset )
     {
         aAliasName->name = NULL;
@@ -2050,7 +2050,7 @@ qmg::copyMtcColumnExecute( qcStatement      * aStatement ,
 {
 /***********************************************************************
  *
- * Description : mtcColumnÁ¤º¸¿Í ExecuteÁ¤º¸¸¦ º¹»çÇÑ´Ù.
+ * Description : mtcColumnì •ë³´ì™€ Executeì •ë³´ë¥¼ ë³µì‚¬í•œë‹¤.
  *
  *
  * Implementation :
@@ -2073,10 +2073,10 @@ qmg::copyMtcColumnExecute( qcStatement      * aStatement ,
     for( sMtrNode = aMtrNode ; sMtrNode != NULL ; sMtrNode = sMtrNode->next )
     {
         // To Fix PR-12093
-        // Destine Node¸¦ »ç¿ëÇÏ¿© mtcColumnÀÇ Count¸¦ ±¸ÇÏ´Â °ÍÀÌ ¿øÄ¢¿¡ ¸ÂÀ½
-        // »ç¿ëÇÏÁöµµ ¾ÊÀ» mtcColumn Á¤º¸¸¦ À¯ÁöÇÏ´Â °ÍÀº ºÒÇÕ¸®ÇÔ.
-        //     - Memory °ø°£ ³¶ºñ
-        //     - offset Á¶Á¤ ¿À·ù (PR-12093)
+        // Destine Nodeë¥¼ ì‚¬ìš©í•˜ì—¬ mtcColumnì˜ Countë¥¼ êµ¬í•˜ëŠ” ê²ƒì´ ì›ì¹™ì— ë§ìŒ
+        // ì‚¬ìš©í•˜ì§€ë„ ì•Šì„ mtcColumn ì •ë³´ë¥¼ ìœ ì§€í•˜ëŠ” ê²ƒì€ ë¶ˆí•©ë¦¬í•¨.
+        //     - Memory ê³µê°„ ë‚­ë¹„
+        //     - offset ì¡°ì • ì˜¤ë¥˜ (PR-12093)
 
         sColumnCount = sMtrNode->dstNode->node.module->lflag &
             MTC_NODE_COLUMN_COUNT_MASK;
@@ -2100,7 +2100,7 @@ qmg::copyMtcColumnExecute( qcStatement      * aStatement ,
             sColumn1 = sMtrNode->dstNode->node.column + i;
 
             //BUG-8785
-            //AggregationÀÇ Ã³À½ result¿¡´Â conversionÀÌ ´Ş¸±¼öÀÖ´Ù.
+            //Aggregationì˜ ì²˜ìŒ resultì—ëŠ” conversionì´ ë‹¬ë¦´ìˆ˜ìˆë‹¤.
             if( i == 0 )
             {
                 sTable2 = sConvertedNode->table;
@@ -2127,13 +2127,13 @@ qmg::copyMtcColumnExecute( qcStatement      * aStatement ,
                               ID_SIZEOF(mtcExecute));
 
                 /* BUG-44047
-                 * CLOBÀ» Æ÷ÇÔÇÑ Å×ÀÌºí°ú HASH Á¶ÀÎ ÈùÆ®¸¦ »ç¿ëÇÏ¸é, ¿¡·¯°¡ ¹ß»ı
-                 * Intermediate Tuple¿¡¼­ Pointer ¸¸ ½×À» °æ¿ìµµ Ã¹ ¹øÂ° TableÀÇ
-                 * Column Size ¸¸Å­ ÇÒ´çÇÏµµ·Ï µÇ¾îÀÖ´Ù.
-                 * ÀÌ ¹ö±×´Â ÀÏ´Ü CLob ÀÎ °æ¿ì¸¸ column size¸¦ Á¶Á¤ÇÑ´Ù.
-                 * º»·¡ partition pointer size°¡ 26 Á¤µµ mtdBigintType * 5 = 40
-                 * Á¤µµ¸é ÃæºĞÇÏ¸®¶ó º»´Ù. execute¿¡ ´Ù½Ã Á¶Á¤ÀÌ ÀÏ¾î³ª¹Ç·Î µü
-                 * ¸¶Ãâ ÇÊ¿ä´Â ¾ø´Ù.
+                 * CLOBì„ í¬í•¨í•œ í…Œì´ë¸”ê³¼ HASH ì¡°ì¸ íŒíŠ¸ë¥¼ ì‚¬ìš©í•˜ë©´, ì—ëŸ¬ê°€ ë°œìƒ
+                 * Intermediate Tupleì—ì„œ Pointer ë§Œ ìŒ“ì„ ê²½ìš°ë„ ì²« ë²ˆì§¸ Tableì˜
+                 * Column Size ë§Œí¼ í• ë‹¹í•˜ë„ë¡ ë˜ì–´ìˆë‹¤.
+                 * ì´ ë²„ê·¸ëŠ” ì¼ë‹¨ CLob ì¸ ê²½ìš°ë§Œ column sizeë¥¼ ì¡°ì •í•œë‹¤.
+                 * ë³¸ë˜ partition pointer sizeê°€ 26 ì •ë„ mtdBigintType * 5 = 40
+                 * ì •ë„ë©´ ì¶©ë¶„í•˜ë¦¬ë¼ ë³¸ë‹¤. executeì— ë‹¤ì‹œ ì¡°ì •ì´ ì¼ì–´ë‚˜ë¯€ë¡œ ë”±
+                 * ë§ˆì¶œ í•„ìš”ëŠ” ì—†ë‹¤.
                  */
                 if ( ( QC_SHARED_TMPLATE(aStatement)->tmplate.rows[sTable1].columns[sColumn1].module == &mtdClob ) &&
                      ( ( ( sMtrNode->flag & QMC_MTR_TYPE_MASK ) == QMC_MTR_TYPE_MEMORY_TABLE ) ||
@@ -2172,17 +2172,17 @@ qmg::copyMtcColumnExecute( qcStatement      * aStatement ,
             //            A.S3
             //      FROM T1 A
             //      ORDER BY A.S1;
-            // À§¿Í °°ÀÌ SubQuery¾È¿¡ Variable ColumnÀÌ ÀÖÀ» °æ¿ì, Fixed·Î º¯°æÇØ Áà¾ßÇÑ´Ù.
-            // SubQuery°¡ ¾Æ´Ñ ´Ù¸¥ ColumnµéÀº ÇÏÀ§¿¡¼­ Ã³¸®µÇÁö¸¸ Subquery¿¡ ´ëÇÑ Ã³¸®°¡ ¾ø´Ù.
-            // SubQuery¾ÈÀÇ ColumnÀÏ Variable ÀÏ °æ¿ì, Fixed·Î º¯°æÇÏ´Â Ã³¸®°¡ ¾ø´Ù.
-            // ¸¸¾à ÀÌ Ã³¸®°¡ ¾ø´Ù¸é, SORT½Ã Fixed·Î º¯°æµÈ ColumnÀÌ Variable ColumnÀ¸·Î
-            // ÀÎ½ÄµÇ°í ¼­¹ö ºñÁ¤»ó Á¾·á¸¦ ¾ß±âÇÑ´Ù.
-            // ÀÌ ÄÚµå°¡ ¹®Á¦°¡ ÀÖÀ»½Ã Test´Â ¹İµå½Ã 4°¡Áö Á¶°ÇÀ» ¸ğµÎ ¸¸Á·ÇÏµµ·Ï ÇÏ¿©¾ß ÇÑ´Ù.
-            // Ã¹Â°, Memory Variable ColumnÀÌ Memory Temptable·Î ÀúÀåµÉ ¶§,
-            // µÑÂ°, Memory Variable ColumnÀÌ Disk Temptable¿¡ ÀúÀåµÉ ¶§,
-            // ¼ÂÂ°, Disk Variable ColumnÀÌ Memory Temptable·Î ÀúÀåµÉ ¶§,
-            // ³İÂ°, Disk Variable columnÀÌ Disk Temptable·Î ÀúÀåµÉ¶§.
-            // Subquery¿¡ ´ëÇÑ FIXED º¯°æ ÄÚµå°¡ ¾øÀ» °æ¿ì, µÑÂ°¿Í ³İÂ° Á¶°Ç¿¡¼­ ºñÁ¤»ó Á¾·áÇÑ´Ù.
+            // ìœ„ì™€ ê°™ì´ SubQueryì•ˆì— Variable Columnì´ ìˆì„ ê²½ìš°, Fixedë¡œ ë³€ê²½í•´ ì¤˜ì•¼í•œë‹¤.
+            // SubQueryê°€ ì•„ë‹Œ ë‹¤ë¥¸ Columnë“¤ì€ í•˜ìœ„ì—ì„œ ì²˜ë¦¬ë˜ì§€ë§Œ Subqueryì— ëŒ€í•œ ì²˜ë¦¬ê°€ ì—†ë‹¤.
+            // SubQueryì•ˆì˜ Columnì¼ Variable ì¼ ê²½ìš°, Fixedë¡œ ë³€ê²½í•˜ëŠ” ì²˜ë¦¬ê°€ ì—†ë‹¤.
+            // ë§Œì•½ ì´ ì²˜ë¦¬ê°€ ì—†ë‹¤ë©´, SORTì‹œ Fixedë¡œ ë³€ê²½ëœ Columnì´ Variable Columnìœ¼ë¡œ
+            // ì¸ì‹ë˜ê³  ì„œë²„ ë¹„ì •ìƒ ì¢…ë£Œë¥¼ ì•¼ê¸°í•œë‹¤.
+            // ì´ ì½”ë“œê°€ ë¬¸ì œê°€ ìˆì„ì‹œ TestëŠ” ë°˜ë“œì‹œ 4ê°€ì§€ ì¡°ê±´ì„ ëª¨ë‘ ë§Œì¡±í•˜ë„ë¡ í•˜ì—¬ì•¼ í•œë‹¤.
+            // ì²«ì§¸, Memory Variable Columnì´ Memory Temptableë¡œ ì €ì¥ë  ë•Œ,
+            // ë‘˜ì§¸, Memory Variable Columnì´ Disk Temptableì— ì €ì¥ë  ë•Œ,
+            // ì…‹ì§¸, Disk Variable Columnì´ Memory Temptableë¡œ ì €ì¥ë  ë•Œ,
+            // ë„·ì§¸, Disk Variable columnì´ Disk Temptableë¡œ ì €ì¥ë ë•Œ.
+            // Subqueryì— ëŒ€í•œ FIXED ë³€ê²½ ì½”ë“œê°€ ì—†ì„ ê²½ìš°, ë‘˜ì§¸ì™€ ë„·ì§¸ ì¡°ê±´ì—ì„œ ë¹„ì •ìƒ ì¢…ë£Œí•œë‹¤.
             //--------------------------------------------------------
             if ( QTC_IS_SUBQUERY( sMtrNode->srcNode ) == ID_TRUE )
             {
@@ -2195,8 +2195,8 @@ qmg::copyMtcColumnExecute( qcStatement      * aStatement ,
                     SMI_COLUMN_TYPE_FIXED;        
 
                 // BUG-38494
-                // Compressed Column ¿ª½Ã °ª ÀÚÃ¼°¡ ÀúÀåµÇ¹Ç·Î
-                // Compressed ¼Ó¼ºÀ» »èÁ¦ÇÑ´Ù
+                // Compressed Column ì—­ì‹œ ê°’ ìì²´ê°€ ì €ì¥ë˜ë¯€ë¡œ
+                // Compressed ì†ì„±ì„ ì‚­ì œí•œë‹¤
                 QC_SHARED_TMPLATE(aStatement)->tmplate.
                     rows[sTable1].columns[sColumn1].column.flag &=
                     ~SMI_COLUMN_COMPRESSION_MASK;
@@ -2207,21 +2207,21 @@ qmg::copyMtcColumnExecute( qcStatement      * aStatement ,
             }
 
             // fix BUG-9494
-            // memory variable columnÀÌ disk temp table¿¡ ÀúÀåµÉ¶§´Â
-            // pointer°¡ ¾Æ´Ñ °ªÀÌ ÀúÀåµÈ´Ù.
-            // µû¶ó¼­, ÀÌ °æ¿ìÀÇ smiColumn.flag¸¦ variable¿¡¼­ fixed·Î
-            // º¯°æ½ÃÄÑÁÖ¾î¾ß ÇÑ´Ù.
+            // memory variable columnì´ disk temp tableì— ì €ì¥ë ë•ŒëŠ”
+            // pointerê°€ ì•„ë‹Œ ê°’ì´ ì €ì¥ëœë‹¤.
+            // ë”°ë¼ì„œ, ì´ ê²½ìš°ì˜ smiColumn.flagë¥¼ variableì—ì„œ fixedë¡œ
+            // ë³€ê²½ì‹œì¼œì£¼ì–´ì•¼ í•œë‹¤.
             // ex) SELECT /*+ TEMP_TBS_DISK */ DISTINCT *
             //     FROM M1 ORDER BY M1.I2(variable column);
-            // ¾Æ·¡¿Í °°ÀÌ HSDSºÎÅÍ´Â disk temp table¿¡ ÀúÀåµÇ¸ç
-            // variable columnÀº pointer°¡ ¾Æ´Ñ °ªÀÌ ÀúÀåµÈ´Ù.
-            // ÀÌ¶§, HSDS¿¡¼­ ÀÌ variable columnÀ» fixed·Î º¯°æÇÏÁö ¾ÊÀ¸¸é,
-            // SORT¿¡¼­´Â disk variable columnÀ¸·Î ÀÎ½ÄÇØ¼­
-            // disk variable column header·Î ºÎÅÍ °ªÀ» Ã£À¸·Á°í ½ÃµµÇÏ°Ô µÇ¹Ç·Î
-            // ¼­¹ö°¡ ºñÁ¤»óÁ¾·áÇÏ°Ô µÊ.
-            // HSDS¿¡¼­ variable columnÀ» fixed·Î º¯°æÇÔÀ¸·Î½á,
-            // SORT¿¡¼­´Â disk fixed columnÀ¸·Î ÀÎ½ÄÇØ¼­,
-            // ÀúÀåµÈ °ªÀ» ÂüÁ¶ÇÏ°Ô µÇ¾î, ¿Ã¹Ù¸¥ ÁúÀÇ°á°ú¸¦ ¼öÇàÇÏ°Ô µÊ.
+            // ì•„ë˜ì™€ ê°™ì´ HSDSë¶€í„°ëŠ” disk temp tableì— ì €ì¥ë˜ë©°
+            // variable columnì€ pointerê°€ ì•„ë‹Œ ê°’ì´ ì €ì¥ëœë‹¤.
+            // ì´ë•Œ, HSDSì—ì„œ ì´ variable columnì„ fixedë¡œ ë³€ê²½í•˜ì§€ ì•Šìœ¼ë©´,
+            // SORTì—ì„œëŠ” disk variable columnìœ¼ë¡œ ì¸ì‹í•´ì„œ
+            // disk variable column headerë¡œ ë¶€í„° ê°’ì„ ì°¾ìœ¼ë ¤ê³  ì‹œë„í•˜ê²Œ ë˜ë¯€ë¡œ
+            // ì„œë²„ê°€ ë¹„ì •ìƒì¢…ë£Œí•˜ê²Œ ë¨.
+            // HSDSì—ì„œ variable columnì„ fixedë¡œ ë³€ê²½í•¨ìœ¼ë¡œì¨,
+            // SORTì—ì„œëŠ” disk fixed columnìœ¼ë¡œ ì¸ì‹í•´ì„œ,
+            // ì €ì¥ëœ ê°’ì„ ì°¸ì¡°í•˜ê²Œ ë˜ì–´, ì˜¬ë°”ë¥¸ ì§ˆì˜ê²°ê³¼ë¥¼ ìˆ˜í–‰í•˜ê²Œ ë¨.
             //     [PROJ]
             //       |
             //     [SORT] -- disk temp table
@@ -2236,7 +2236,7 @@ qmg::copyMtcColumnExecute( qcStatement      * aStatement ,
                   ( ( sMtrNode->flag & QMC_MTR_TYPE_MASK )
                     == QMC_MTR_TYPE_MEMORY_PARTITION_KEY_COLUMN ) ||
                   ( ( sMtrNode->flag & QMC_MTR_TYPE_MASK )
-                    == QMC_MTR_TYPE_HYBRID_PARTITION_KEY_COLUMN ) ) /* PROJ-2464 hybrid partitioned table Áö¿ø */
+                    == QMC_MTR_TYPE_HYBRID_PARTITION_KEY_COLUMN ) ) /* PROJ-2464 hybrid partitioned table ì§€ì› */
                 &&
                 ( ( QC_SHARED_TMPLATE(aStatement)->tmplate.rows[sTable1].lflag
                     & MTC_TUPLE_STORAGE_MASK ) == MTC_TUPLE_STORAGE_DISK ) )
@@ -2250,8 +2250,8 @@ qmg::copyMtcColumnExecute( qcStatement      * aStatement ,
                     SMI_COLUMN_TYPE_FIXED;
 
                 // BUG-38494
-                // Compressed Column ¿ª½Ã °ª ÀÚÃ¼°¡ ÀúÀåµÇ¹Ç·Î
-                // Compressed ¼Ó¼ºÀ» »èÁ¦ÇÑ´Ù
+                // Compressed Column ì—­ì‹œ ê°’ ìì²´ê°€ ì €ì¥ë˜ë¯€ë¡œ
+                // Compressed ì†ì„±ì„ ì‚­ì œí•œë‹¤
                 QC_SHARED_TMPLATE(aStatement)->tmplate.
                     rows[sTable1].columns[sColumn1].column.flag &=
                     ~SMI_COLUMN_COMPRESSION_MASK;
@@ -2278,8 +2278,8 @@ qmg::setCalcLocate( qcStatement * aStatement,
 /***********************************************************************
  *
  * Description :
- *    Calculation¸¸À¸·Î materializationÀÌ ¿Ï·áµÇ´Â nodeµé¿¡ ´ëÇØ
- *    src nodeÀÇ ¼öÇà À§Ä¡¸¦ dest node·Î º¯°æÇØÁØ´Ù.
+ *    Calculationë§Œìœ¼ë¡œ materializationì´ ì™„ë£Œë˜ëŠ” nodeë“¤ì— ëŒ€í•´
+ *    src nodeì˜ ìˆ˜í–‰ ìœ„ì¹˜ë¥¼ dest nodeë¡œ ë³€ê²½í•´ì¤€ë‹¤.
  *
  * Implementation :
  *
@@ -2323,26 +2323,26 @@ qmg::checkOrderInGraph( qcStatement        * aStatement,
  *
  * Description :
  *
- *    ÀÔ·ÂµÈ Order°¡ ÇØ´ç Graph³»¿¡¼­ »ç¿ë °¡´ÉÇÑ Áö¸¦ °Ë»ç
+ *    ì…ë ¥ëœ Orderê°€ í•´ë‹¹ Graphë‚´ì—ì„œ ì‚¬ìš© ê°€ëŠ¥í•œ ì§€ë¥¼ ê²€ì‚¬
  *
  * Implementation :
  *
- *    Graph°¡ Preserved Order°¡ Á¤ÀÇµÇÁö ¾ÊÀº °æ¿ì
- *        - ÇØ´ç GraphÀÇ Á¾·ù¿¡ µû¶ó Ã³¸®
- *            - ÀÏ¹İ TableÀÇ Selection GraphÀÎ °æ¿ì
- *                - Index »ç¿ë °¡´É ¿©ºÎ °Ë»ç
- *            - ViewÀÇ Selection GraphÀÎ °æ¿ì
- *                - Child Graph¿¡ ´ëÇÑ Order ÇüÅÂ·Î º¯°æ ÈÄ
- *                - Child Graph¸¦ ÀÌ¿ëÇÑ Ã³¸®
- *            - Set, Hierarchy, Dnf GraphÀÎ °æ¿ì
- *                - Ã³¸®ÇÒ ¼ö ¾øÀ¸¸ç,
- *                - Preserved Order°¡ °áÄÚ Á¸ÀçÇÒ ¼ö¾ø´Ù.
- *            - ÀÌ ¿ÜÀÇ GraphÀÎ °æ¿ì
- *                - Child Graph¸¦ ÀÌ¿ëÇÑ Ã³¸®
- *    Graph°¡ Preserved Order¸¦ °¡Áö°í ÀÖ´Â °æ¿ì
- *        - ¿øÇÏ´Â Preserved Order¿Í Graph Preserved Order¸¦ °Ë»ç.
- *    Graph°¡ NEVER DefinedÀÎ °æ¿ì
- *        - ¿øÇÏ´Â Order¸¦ Ã³¸®ÇÒ ¼ö ¾øÀ½.
+ *    Graphê°€ Preserved Orderê°€ ì •ì˜ë˜ì§€ ì•Šì€ ê²½ìš°
+ *        - í•´ë‹¹ Graphì˜ ì¢…ë¥˜ì— ë”°ë¼ ì²˜ë¦¬
+ *            - ì¼ë°˜ Tableì˜ Selection Graphì¸ ê²½ìš°
+ *                - Index ì‚¬ìš© ê°€ëŠ¥ ì—¬ë¶€ ê²€ì‚¬
+ *            - Viewì˜ Selection Graphì¸ ê²½ìš°
+ *                - Child Graphì— ëŒ€í•œ Order í˜•íƒœë¡œ ë³€ê²½ í›„
+ *                - Child Graphë¥¼ ì´ìš©í•œ ì²˜ë¦¬
+ *            - Set, Hierarchy, Dnf Graphì¸ ê²½ìš°
+ *                - ì²˜ë¦¬í•  ìˆ˜ ì—†ìœ¼ë©°,
+ *                - Preserved Orderê°€ ê²°ì½” ì¡´ì¬í•  ìˆ˜ì—†ë‹¤.
+ *            - ì´ ì™¸ì˜ Graphì¸ ê²½ìš°
+ *                - Child Graphë¥¼ ì´ìš©í•œ ì²˜ë¦¬
+ *    Graphê°€ Preserved Orderë¥¼ ê°€ì§€ê³  ìˆëŠ” ê²½ìš°
+ *        - ì›í•˜ëŠ” Preserved Orderì™€ Graph Preserved Orderë¥¼ ê²€ì‚¬.
+ *    Graphê°€ NEVER Definedì¸ ê²½ìš°
+ *        - ì›í•˜ëŠ” Orderë¥¼ ì²˜ë¦¬í•  ìˆ˜ ì—†ìŒ.
  *
  ***********************************************************************/
 
@@ -2365,7 +2365,7 @@ qmg::checkOrderInGraph( qcStatement        * aStatement,
     IDU_FIT_POINT_FATAL( "qmg::checkOrderInGraph::__FT__" );
 
     //---------------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //---------------------------------------------------
 
     IDE_FT_ASSERT( aStatement != NULL );
@@ -2378,9 +2378,9 @@ qmg::checkOrderInGraph( qcStatement        * aStatement,
     sOrgMethod = NULL;
     sSelMethod = NULL;
 
-    // Order°¡ Áß¿äÇÑÁö¸¦ ÆÇ´Ü.
+    // Orderê°€ ì¤‘ìš”í•œì§€ë¥¼ íŒë‹¨.
     // BUG-40361 supporting to indexable analytic function
-    // aWantOrderÀÇ ¸ğµç Node°¡ NOT DEFINED ÀÎÁö È®ÀÎÇÑ´Ù
+    // aWantOrderì˜ ëª¨ë“  Nodeê°€ NOT DEFINED ì¸ì§€ í™•ì¸í•œë‹¤
     sOrderImportant = ID_FALSE;
     for ( sWantOrder = aWantOrder; sWantOrder != NULL; sWantOrder = sWantOrder->next )
     {
@@ -2396,16 +2396,16 @@ qmg::checkOrderInGraph( qcStatement        * aStatement,
     }
 
     //---------------------------------------------------
-    // GraphÀÇ Á¤º¸¿¡ µû¸¥ °Ë»ç
+    // Graphì˜ ì •ë³´ì— ë”°ë¥¸ ê²€ì‚¬
     //---------------------------------------------------
 
-    // Graph°¡ °¡Áø Preserved Order¿¡ µû¸¥ °Ë»ç
+    // Graphê°€ ê°€ì§„ Preserved Orderì— ë”°ë¥¸ ê²€ì‚¬
     switch ( aGraph->flag & QMG_PRESERVED_ORDER_MASK )
     {
         case QMG_PRESERVED_ORDER_DEFINED_NOT_FIXED :
             //---------------------------------------------------
-            // Graph°¡ Preserved Order°¡ Á¸ÀçÇÏ³ª °íÁ¤µÇÁö ¾ÊÀº °æ¿ì
-            // ¿øÇÏ´Â order·Î º¯°æ °¡´ÉÇÑ °æ¿ì
+            // Graphê°€ Preserved Orderê°€ ì¡´ì¬í•˜ë‚˜ ê³ ì •ë˜ì§€ ì•Šì€ ê²½ìš°
+            // ì›í•˜ëŠ” orderë¡œ ë³€ê²½ ê°€ëŠ¥í•œ ê²½ìš°
             //---------------------------------------------------
 
             if ( aGraph->type == QMG_WINDOWING )
@@ -2418,7 +2418,7 @@ qmg::checkOrderInGraph( qcStatement        * aStatement,
             }
             else
             {
-                // Child Graph·ÎºÎÅÍ Order¸¦ »ç¿ë °¡´ÉÇÑÁö °Ë»ç.
+                // Child Graphë¡œë¶€í„° Orderë¥¼ ì‚¬ìš© ê°€ëŠ¥í•œì§€ ê²€ì‚¬.
                 IDE_TEST(
                     checkUsableOrder( aStatement,
                                       aWantOrder,
@@ -2433,18 +2433,18 @@ qmg::checkOrderInGraph( qcStatement        * aStatement,
         case QMG_PRESERVED_ORDER_NOT_DEFINED :
 
             //---------------------------------------------------
-            // GraphÀÇ Preserved Order°¡ Á¤ÀÇµÇÁö ¾Ê´Â °æ¿ì
+            // Graphì˜ Preserved Orderê°€ ì •ì˜ë˜ì§€ ì•ŠëŠ” ê²½ìš°
             //---------------------------------------------------
 
-            // Graph Á¾·ù¿¡ µû¸¥ ÆÇ´Ü
+            // Graph ì¢…ë¥˜ì— ë”°ë¥¸ íŒë‹¨
             switch ( aGraph->type )
             {
                 case QMG_SELECTION :
                     if ( aGraph->myFrom->tableRef->view == NULL )
                     {
-                        // ÀÏ¹İ Table¿¡ ´ëÇÑ SelectionÀÎ °æ¿ì
+                        // ì¼ë°˜ Tableì— ëŒ€í•œ Selectionì¸ ê²½ìš°
 
-                        // ¿øÇÏ´Â Order¿¡ ´ëÀÀÇÏ´Â Index°¡ Á¸ÀçÇÏ´Â Áö °Ë»ç
+                        // ì›í•˜ëŠ” Orderì— ëŒ€ì‘í•˜ëŠ” Indexê°€ ì¡´ì¬í•˜ëŠ” ì§€ ê²€ì‚¬
                         IDE_TEST( checkUsableIndex4Selection( aGraph,
                                                               aWantOrder,
                                                               sOrderImportant,
@@ -2455,21 +2455,21 @@ qmg::checkOrderInGraph( qcStatement        * aStatement,
                     }
                     else
                     {
-                        // View ¿¡ ´ëÇÑ SelectionÀÎ °æ¿ì
+                        // View ì— ëŒ€í•œ Selectionì¸ ê²½ìš°
                         // Ex) SELECT * FROM ( SELECT i1, i2 FROM T1 ) V1
                         //     ORDER BY V1.i1;
 
                         sParseTree = (qmsParseTree *)
                             aGraph->myFrom->tableRef->view->myPlan->parseTree;
 
-                        // ¿øÇÏ´Â OrderÀÇ ID¸¦
-                        // ViewÀÇ Target¿¡ ºÎÇÕÇÏ´Â ID·Î º¯°æ
+                        // ì›í•˜ëŠ” Orderì˜ IDë¥¼
+                        // Viewì˜ Targetì— ë¶€í•©í•˜ëŠ” IDë¡œ ë³€ê²½
                         IDE_TEST(
                             refineID4Target( aWantOrder,
                                              sParseTree->querySet->target )
                             != IDE_SUCCESS );
 
-                        // Child Graph·ÎºÎÅÍ Order¸¦ »ç¿ë °¡´ÉÇÑÁö °Ë»ç.
+                        // Child Graphë¡œë¶€í„° Orderë¥¼ ì‚¬ìš© ê°€ëŠ¥í•œì§€ ê²€ì‚¬.
                         IDE_TEST(
                             checkUsableOrder( aGraph->myFrom->tableRef->view,
                                               aWantOrder,
@@ -2482,7 +2482,7 @@ qmg::checkOrderInGraph( qcStatement        * aStatement,
 
                     break;
                 case QMG_PARTITION :
-                    // ¿øÇÏ´Â Order¿¡ ´ëÀÀÇÏ´Â Index°¡ Á¸ÀçÇÏ´Â Áö °Ë»ç
+                    // ì›í•˜ëŠ” Orderì— ëŒ€ì‘í•˜ëŠ” Indexê°€ ì¡´ì¬í•˜ëŠ” ì§€ ê²€ì‚¬
                     IDE_TEST( checkUsableIndex4Partition( aGraph,
                                                           aWantOrder,
                                                           sOrderImportant,
@@ -2494,12 +2494,12 @@ qmg::checkOrderInGraph( qcStatement        * aStatement,
 
                 case QMG_WINDOWING :
                     // BUG-35001
-                    // disk temp table À» »ç¿ëÇÏ´Â °æ¿ì¿¡´Â
-                    // insert ¼ø¼­¿Í fetch ÇÏ´Â ¼ø¼­°¡ ¼­·Î ´Ù¸¦¼ö ÀÖ´Ù.
+                    // disk temp table ì„ ì‚¬ìš©í•˜ëŠ” ê²½ìš°ì—ëŠ”
+                    // insert ìˆœì„œì™€ fetch í•˜ëŠ” ìˆœì„œê°€ ì„œë¡œ ë‹¤ë¥¼ìˆ˜ ìˆë‹¤.
                     if( ( aGraph->flag & QMG_GRAPH_TYPE_MASK )
                         == QMG_GRAPH_TYPE_MEMORY )
                     {
-                        // Child Graph·ÎºÎÅÍ Order¸¦ »ç¿ë °¡´ÉÇÑÁö °Ë»ç.
+                        // Child Graphë¡œë¶€í„° Orderë¥¼ ì‚¬ìš© ê°€ëŠ¥í•œì§€ ê²€ì‚¬.
                         IDE_TEST(
                             checkUsableOrder( aStatement,
                                               aWantOrder,
@@ -2520,8 +2520,8 @@ qmg::checkOrderInGraph( qcStatement        * aStatement,
                 case QMG_DNF :
                 case QMG_SHARD_SELECT:    // PROJ-2638
 
-                    // SetÀÎ °æ¿ì¿¡´Â Index¸¦ »ç¿ëÇÑ´Ù ÇÏ´õ¶óµµ
-                    // ¿Ã¹Ù¸¥ °á°ú¸¦ º¸ÀåÇÒ ¼ö ¾ø´Ù.
+                    // Setì¸ ê²½ìš°ì—ëŠ” Indexë¥¼ ì‚¬ìš©í•œë‹¤ í•˜ë”ë¼ë„
+                    // ì˜¬ë°”ë¥¸ ê²°ê³¼ë¥¼ ë³´ì¥í•  ìˆ˜ ì—†ë‹¤.
                     // Ex) SELECT * FROM ( SELECT i1, i2 FROM T1
                     //                     UNOIN ALL
                     //                     SELECT i1, i2 FROM T2 ) V1
@@ -2531,7 +2531,7 @@ qmg::checkOrderInGraph( qcStatement        * aStatement,
                     //              UNOIN ALL
                     //              SELECT i1, i2 FROM T2 ) V1;
 
-                    // NOT_DEFINEDÀÏ ¼ö ¾øÀ½.
+                    // NOT_DEFINEDì¼ ìˆ˜ ì—†ìŒ.
                     IDE_DASSERT(0);
 
                     sUsable = ID_FALSE;
@@ -2540,7 +2540,7 @@ qmg::checkOrderInGraph( qcStatement        * aStatement,
 
                 default :
 
-                    // Child Graph·ÎºÎÅÍ Order¸¦ »ç¿ë °¡´ÉÇÑÁö °Ë»ç.
+                    // Child Graphë¡œë¶€í„° Orderë¥¼ ì‚¬ìš© ê°€ëŠ¥í•œì§€ ê²€ì‚¬.
                     IDE_TEST(
                         checkUsableOrder( aStatement,
                                           aWantOrder,
@@ -2557,7 +2557,7 @@ qmg::checkOrderInGraph( qcStatement        * aStatement,
         case QMG_PRESERVED_ORDER_DEFINED_FIXED :
 
             //---------------------------------------------------
-            // Graph°¡ Preserved Order¸¦ °¡Áö´Â °æ¿ì
+            // Graphê°€ Preserved Orderë¥¼ ê°€ì§€ëŠ” ê²½ìš°
             //---------------------------------------------------
 
             IDE_DASSERT( aGraph->preservedOrder != NULL );
@@ -2565,10 +2565,10 @@ qmg::checkOrderInGraph( qcStatement        * aStatement,
             if ( sOrderImportant == ID_TRUE )
             {
                 //------------------------------------
-                // Order°¡ Áß¿äÇÑ °æ¿ì
+                // Orderê°€ ì¤‘ìš”í•œ ê²½ìš°
                 //------------------------------------
 
-                // Preserved Order¿Í OrderÀÇ ¼ø¼­ ¹× ¹æÇâÀÌ ÀÏÄ¡ÇØ¾ß ÇÔ
+                // Preserved Orderì™€ Orderì˜ ìˆœì„œ ë° ë°©í–¥ì´ ì¼ì¹˜í•´ì•¼ í•¨
                 // Ex) Preserved Order i1(asc) -> i2(asc) -> i3(asc)
                 //     ORDER BY i1, i2 :  O
                 //     ORDER BY i1, i2, i3 desc : X
@@ -2588,10 +2588,10 @@ qmg::checkOrderInGraph( qcStatement        * aStatement,
                     if ( sWantOrder->table == sPreservedOrder->table &&
                          sWantOrder->column == sPreservedOrder->column )
                     {
-                        // µ¿ÀÏÇÑ Column¿¡ ´ëÇÑ Preserved OrderÀÓ
+                        // ë™ì¼í•œ Columnì— ëŒ€í•œ Preserved Orderì„
                         /* BUG-42145
-                         * TableÀÌ³ª Partition¿¡ Index°¡ ÀÖ´Â °æ¿ì¶ó¸é
-                         * Nulls Option ÀÌ °í·ÁµÈ Direction Check¸¦ ÇÑ´Ù.
+                         * Tableì´ë‚˜ Partitionì— Indexê°€ ìˆëŠ” ê²½ìš°ë¼ë©´
+                         * Nulls Option ì´ ê³ ë ¤ëœ Direction Checkë¥¼ í•œë‹¤.
                          */
                         if ( ( ( aGraph->type == QMG_SELECTION ) ||
                                ( aGraph->type == QMG_PARTITION ) ) &&
@@ -2606,7 +2606,7 @@ qmg::checkOrderInGraph( qcStatement        * aStatement,
                         }
                         else
                         {
-                            // ¹æÇâ¼º °Ë»ç
+                            // ë°©í–¥ì„± ê²€ì‚¬
                             IDE_TEST( checkSameDirection( sWantOrder,
                                                           sPreservedOrder,
                                                           sPrevDirection,
@@ -2617,8 +2617,8 @@ qmg::checkOrderInGraph( qcStatement        * aStatement,
 
                         if ( sUsable == ID_FALSE )
                         {
-                            // ¹æÇâ¼ºÀÌ ´Ş¶ó Preserved Order¸¦
-                            // »ç¿ëÇÒ ¼ö ¾øÀ½.
+                            // ë°©í–¥ì„±ì´ ë‹¬ë¼ Preserved Orderë¥¼
+                            // ì‚¬ìš©í•  ìˆ˜ ì—†ìŒ.
                             break;
                         }
                         else
@@ -2628,37 +2628,37 @@ qmg::checkOrderInGraph( qcStatement        * aStatement,
                     }
                     else
                     {
-                        // ¼­·Î ´Ù¸¥ Column¿¡ ´ëÇÑ Order¸¦ °¡Áö°í ÀÖÀ½.
+                        // ì„œë¡œ ë‹¤ë¥¸ Columnì— ëŒ€í•œ Orderë¥¼ ê°€ì§€ê³  ìˆìŒ.
                         break;
                     }
                 }
 
                 if ( sWantOrder != NULL )
                 {
-                    // ¿øÇÏ´Â Order¸¦ ¸ğµÎ ¸¸Á·½ÃÅ°Áö ¾ÊÀ½
+                    // ì›í•˜ëŠ” Orderë¥¼ ëª¨ë‘ ë§Œì¡±ì‹œí‚¤ì§€ ì•ŠìŒ
                     sUsable = ID_FALSE;
                 }
                 else
                 {
-                    // ¿øÇÏ´Â Order¸¦ ¸ğµÎ ¸¸Á·½ÃÅ´
+                    // ì›í•˜ëŠ” Orderë¥¼ ëª¨ë‘ ë§Œì¡±ì‹œí‚´
                     sUsable = ID_TRUE;
                 }
             }
             else
             {
                 //------------------------------------
-                // Order°¡ Áß¿äÇÏÁö ¾ÊÀº °æ¿ì
+                // Orderê°€ ì¤‘ìš”í•˜ì§€ ì•Šì€ ê²½ìš°
                 //------------------------------------
 
-                // Preserved OrderÀÇ ¼ø¼­¿¡ ÇØ´çÇÏ´Â Order°¡ Á¸ÀçÇØ¾ß ÇÔ.
-                // Ex) Preserved Order : i1 -> i2 -> i3 ÀÏ¶§,
+                // Preserved Orderì˜ ìˆœì„œì— í•´ë‹¹í•˜ëŠ” Orderê°€ ì¡´ì¬í•´ì•¼ í•¨.
+                // Ex) Preserved Order : i1 -> i2 -> i3 ì¼ë•Œ,
                 //     DISTINCT i1, i2 :  O
                 //     DISTINCT i3, i2, i1 :  O
                 //     DISTINCT i1, i3 : X
                 //     DISTINCT i2, i3 : X
                 //     DISTINCT i1, i2, i3, i4 : X
 
-                // OrderÀÇ °³¼ö °è»ê
+                // Orderì˜ ê°œìˆ˜ ê³„ì‚°
                 for ( sWantOrder = aWantOrder, sOrderCnt = 0;
                       sWantOrder != NULL;
                       sWantOrder = sWantOrder->next, sOrderCnt++ ) ;
@@ -2674,7 +2674,7 @@ qmg::checkOrderInGraph( qcStatement        * aStatement,
                         if ( sWantOrder->table == sPreservedOrder->table &&
                              sWantOrder->column == sPreservedOrder->column )
                         {
-                            // Order°¡ Á¸ÀçÇÔ.
+                            // Orderê°€ ì¡´ì¬í•¨.
                             break;
                         }
                         else
@@ -2685,23 +2685,23 @@ qmg::checkOrderInGraph( qcStatement        * aStatement,
 
                     if ( sWantOrder != NULL )
                     {
-                        // ¿øÇÏ´Â Order¸¦ Preserved Order¿¡¼­ Ã£Àº °æ¿ì
+                        // ì›í•˜ëŠ” Orderë¥¼ Preserved Orderì—ì„œ ì°¾ì€ ê²½ìš°
                         // Nothing To Do
                     }
                     else
                     {
-                        // ¿øÇÏ´Â Order°¡ Preserved Order¿¡ Á¸ÀçÇÏÁö ¾ÊÀ½
+                        // ì›í•˜ëŠ” Orderê°€ Preserved Orderì— ì¡´ì¬í•˜ì§€ ì•ŠìŒ
                         break;
                     }
                 }
 
                 if ( i == sOrderCnt )
                 {
-                    /* BUG-44261 roup By, View Join ¸¦ »ç¿ë½Ã Order °Ë»ç ¹ö±×·Î ºñÁ¤»ó Á¾·á ÇÕ´Ï´Ù.
-                     *  - ¸ğµç Want Order°¡ Preserved Order¿¡ ½ÇÁ¦·Î Æ÷ÇÔµÇ´Â Áö °Ë»çÇÕ´Ï´Ù.
-                     *     - Want Order°¡ Preserved Order¿¡ Á¸ÀçÇÏ´Â Áö °Ë»çÇÕ´Ï´Ù.
-                     *     - Want Order°¡ Preserved Order¿¡ ¾ø½À´Ï´Ù.
-                     *     - ¸ğµç Want Order°¡ Preserved Order¿¡ Æ÷ÇÔµË´Ï´Ù.
+                    /* BUG-44261 roup By, View Join ë¥¼ ì‚¬ìš©ì‹œ Order ê²€ì‚¬ ë²„ê·¸ë¡œ ë¹„ì •ìƒ ì¢…ë£Œ í•©ë‹ˆë‹¤.
+                     *  - ëª¨ë“  Want Orderê°€ Preserved Orderì— ì‹¤ì œë¡œ í¬í•¨ë˜ëŠ” ì§€ ê²€ì‚¬í•©ë‹ˆë‹¤.
+                     *     - Want Orderê°€ Preserved Orderì— ì¡´ì¬í•˜ëŠ” ì§€ ê²€ì‚¬í•©ë‹ˆë‹¤.
+                     *     - Want Orderê°€ Preserved Orderì— ì—†ìŠµë‹ˆë‹¤.
+                     *     - ëª¨ë“  Want Orderê°€ Preserved Orderì— í¬í•¨ë©ë‹ˆë‹¤.
                      */
                     for ( sWantOrder  = aWantOrder;
                           sWantOrder != NULL;
@@ -2711,7 +2711,7 @@ qmg::checkOrderInGraph( qcStatement        * aStatement,
                               sPreservedOrder != NULL;
                               sPreservedOrder  = sPreservedOrder->next )
                         {
-                            /* Want Order°¡ Preserved Order¿¡ Á¸ÀçÇÏ´Â Áö °Ë»çÇÕ´Ï´Ù. */
+                            /* Want Orderê°€ Preserved Orderì— ì¡´ì¬í•˜ëŠ” ì§€ ê²€ì‚¬í•©ë‹ˆë‹¤. */
                             if ( sWantOrder->table  == sPreservedOrder->table &&
                                  sWantOrder->column == sPreservedOrder->column )
                             {
@@ -2725,7 +2725,7 @@ qmg::checkOrderInGraph( qcStatement        * aStatement,
 
                         if ( sPreservedOrder == NULL )
                         {
-                            /* Want Order°¡ Preserved Order¿¡ ¾ø½À´Ï´Ù. */
+                            /* Want Orderê°€ Preserved Orderì— ì—†ìŠµë‹ˆë‹¤. */
                             break;
                         }
                         else
@@ -2736,7 +2736,7 @@ qmg::checkOrderInGraph( qcStatement        * aStatement,
 
                     if ( sPreservedOrder != NULL )
                     {
-                        /* ¸ğµç Want Order°¡ Preserved Order¿¡ Æ÷ÇÔµË´Ï´Ù. */
+                        /* ëª¨ë“  Want Orderê°€ Preserved Orderì— í¬í•¨ë©ë‹ˆë‹¤. */
                         sUsable = ID_TRUE;
                     }
                     else
@@ -2746,9 +2746,9 @@ qmg::checkOrderInGraph( qcStatement        * aStatement,
                 }
                 else
                 {
-                    // ¿øÇÏ´Â Order°¡ Preserved Order¿¡ ¾ø°Å³ª
-                    // Á¸ÀçÇÏ´õ¶óµµ Preserved OrderÀÇ ¼ø¼­´ë·Î
-                    // Æ÷ÇÔµÇÁö ¾ÊÀ½
+                    // ì›í•˜ëŠ” Orderê°€ Preserved Orderì— ì—†ê±°ë‚˜
+                    // ì¡´ì¬í•˜ë”ë¼ë„ Preserved Orderì˜ ìˆœì„œëŒ€ë¡œ
+                    // í¬í•¨ë˜ì§€ ì•ŠìŒ
 
                     sUsable = ID_FALSE;
                 }
@@ -2799,7 +2799,7 @@ qmg::checkOrderInGraph( qcStatement        * aStatement,
                     // Nothing To Do
                 }
 
-                // BUG-43068 Indexable order by °³¼±
+                // BUG-43068 Indexable order by ê°œì„ 
                 switch ( aGraph->type )
                 {
                     case QMG_SELECTION :
@@ -2831,7 +2831,7 @@ qmg::checkOrderInGraph( qcStatement        * aStatement,
                             sJoinMethod = (((qmgLOJN*)aGraph)->selectedJoinMethod->flag & QMO_JOIN_METHOD_MASK);
                         }
 
-                        // ÀÏºÎ Á¶ÀÎ ¸Ş¼Òµå¸¸ Çã¿ëÇÑ´Ù.
+                        // ì¼ë¶€ ì¡°ì¸ ë©”ì†Œë“œë§Œ í—ˆìš©í•œë‹¤.
                         switch ( sJoinMethod )
                         {
                             case QMO_JOIN_METHOD_FULL_NL :
@@ -2862,7 +2862,7 @@ qmg::checkOrderInGraph( qcStatement        * aStatement,
         case QMG_PRESERVED_ORDER_NEVER :
 
             //---------------------------------------------------
-            // Graph°¡ Preserved Order¸¦ »ç¿ëÇÒ ¼ö ¾ø´Â °æ¿ì
+            // Graphê°€ Preserved Orderë¥¼ ì‚¬ìš©í•  ìˆ˜ ì—†ëŠ” ê²½ìš°
             //---------------------------------------------------
 
             sUsable = ID_FALSE;
@@ -2897,15 +2897,15 @@ qmg::checkUsableIndex4Selection( qmgGraph          * aGraph,
 /***********************************************************************
  *
  * Description :
- *     ¿øÇÏ´Â Order¿¡ »ç¿ëÇÒ ¼ö ÀÖ´Â Index°¡ Á¸ÀçÇÏ´Â Áö °Ë»ç.
+ *     ì›í•˜ëŠ” Orderì— ì‚¬ìš©í•  ìˆ˜ ìˆëŠ” Indexê°€ ì¡´ì¬í•˜ëŠ” ì§€ ê²€ì‚¬.
  *
  * Implementation :
- *     IndexÀÇ Key Column°ú ¿øÇÏ´Â Order°¡ ÀÏÄ¡ÇÏ´ÂÁö °Ë»ç
- *         - Order°¡ Áß¿äÇÑ °æ¿ì : Á¤È®È÷ ÀÏÄ¡ÇØ¾ß ÇÔ.
- *         - Order°¡ Áß¿äÇÏÁö ¾ÊÀº °æ¿ì : ÇØ´ç ColumnÀÇ Á¸Àç ¿©ºÎ
- *     ÇØ´ç Index°¡ Á¸ÀçÇÑ´Ù ÇÏ´õ¶óµµ Index¸¦ ¼±ÅÃÇßÀ» ¶§ÀÇ
- *     ºñ¿ëÀÌ Selection Ã³¸® ÈÄ ÀúÀå Ã³¸®ÇÏ´Â ºñ¿ëº¸´Ù Å¬ °æ¿ì´Â
- *     Index¸¦ ¼±ÅÃÇÏÁö ¾Ê´Â´Ù.
+ *     Indexì˜ Key Columnê³¼ ì›í•˜ëŠ” Orderê°€ ì¼ì¹˜í•˜ëŠ”ì§€ ê²€ì‚¬
+ *         - Orderê°€ ì¤‘ìš”í•œ ê²½ìš° : ì •í™•íˆ ì¼ì¹˜í•´ì•¼ í•¨.
+ *         - Orderê°€ ì¤‘ìš”í•˜ì§€ ì•Šì€ ê²½ìš° : í•´ë‹¹ Columnì˜ ì¡´ì¬ ì—¬ë¶€
+ *     í•´ë‹¹ Indexê°€ ì¡´ì¬í•œë‹¤ í•˜ë”ë¼ë„ Indexë¥¼ ì„ íƒí–ˆì„ ë•Œì˜
+ *     ë¹„ìš©ì´ Selection ì²˜ë¦¬ í›„ ì €ì¥ ì²˜ë¦¬í•˜ëŠ” ë¹„ìš©ë³´ë‹¤ í´ ê²½ìš°ëŠ”
+ *     Indexë¥¼ ì„ íƒí•˜ì§€ ì•ŠëŠ”ë‹¤.
  *
  ***********************************************************************/
 
@@ -2921,7 +2921,7 @@ qmg::checkUsableIndex4Selection( qmgGraph          * aGraph,
     IDU_FIT_POINT_FATAL( "qmg::checkUsableIndex4Selection::__FT__" );
 
     //---------------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //---------------------------------------------------
 
     IDE_DASSERT( aGraph != NULL );
@@ -2931,35 +2931,35 @@ qmg::checkUsableIndex4Selection( qmgGraph          * aGraph,
     IDE_DASSERT( aUsable != NULL );
 
     //---------------------------------------------------
-    // ÀûÀıÇÑ index °Ë»ç
+    // ì ì ˆí•œ index ê²€ì‚¬
     //---------------------------------------------------
 
-    // ±âº» Á¤º¸ ÃßÃâ
+    // ê¸°ë³¸ ì •ë³´ ì¶”ì¶œ
     sSELTgraph = (qmgSELT *) aGraph;
     sTableID = aGraph->myFrom->tableRef->table;
 
     sMethod = sSELTgraph->accessMethod;
 
-    // ¿øÇÏ´Â Order¿Í µ¿ÀÏÇÑ Index°¡ Á¸ÀçÇÏ´Â Áö °Ë»ç.
+    // ì›í•˜ëŠ” Orderì™€ ë™ì¼í•œ Indexê°€ ì¡´ì¬í•˜ëŠ” ì§€ ê²€ì‚¬.
     for ( i = 0; i < sSELTgraph->accessMethodCnt; i++ )
     {
         // fix BUG-12307
-        // IN subquery keyRange·Î range scanÀ» ÇÏ´Â °æ¿ì,
-        // order¸¦ º¸ÀåÇÒ ¼ö ¾øÀ¸¹Ç·Î
-        // access method°¡ in subquery¸¦ Æ÷ÇÔÇÏ´Â °æ¿ì´Â Á¦¿Ü
+        // IN subquery keyRangeë¡œ range scanì„ í•˜ëŠ” ê²½ìš°,
+        // orderë¥¼ ë³´ì¥í•  ìˆ˜ ì—†ìœ¼ë¯€ë¡œ
+        // access methodê°€ in subqueryë¥¼ í¬í•¨í•˜ëŠ” ê²½ìš°ëŠ” ì œì™¸
         if ( sMethod[i].method != NULL )
         {
             if ( ( sMethod[i].method->flag & QMO_STAT_CARD_IDX_IN_SUBQUERY_MASK )
                  == QMO_STAT_CARD_IDX_IN_SUBQUERY_FALSE )
             {
-                // Index ScanÀÎ °æ¿ì
+                // Index Scanì¸ ê²½ìš°
 
-                // »ç¿ë °¡´ÉÇÑ IndexÀÎÁö °Ë»ç
+                // ì‚¬ìš© ê°€ëŠ¥í•œ Indexì¸ì§€ ê²€ì‚¬
 
                 if ( aOrderNeed == ID_TRUE )
                 {
-                    // Order°¡ Áß¿äÇÑ °æ¿ì·Î
-                    // Order¿Í IndexÀÇ ¹æÇâ¼ºÀÌ ÀÏÄ¡ÇÏ´Â Áö¸¦ °Ë»ç
+                    // Orderê°€ ì¤‘ìš”í•œ ê²½ìš°ë¡œ
+                    // Orderì™€ Indexì˜ ë°©í–¥ì„±ì´ ì¼ì¹˜í•˜ëŠ” ì§€ë¥¼ ê²€ì‚¬
 
                     IDE_TEST( checkIndexOrder( & sMethod[i],
                                                sTableID,
@@ -2969,8 +2969,8 @@ qmg::checkUsableIndex4Selection( qmgGraph          * aGraph,
                 }
                 else
                 {
-                    // Order°¡ Áß¿äÇÏÁö ¾ÊÀº °æ¿ì·Î
-                    // Order¿¡ ÇØ´çÇÏ´Â ¸ğµç ColumnÀÌ Index³»¿¡ Á¸ÀçÇÏ´ÂÁö °Ë»ç
+                    // Orderê°€ ì¤‘ìš”í•˜ì§€ ì•Šì€ ê²½ìš°ë¡œ
+                    // Orderì— í•´ë‹¹í•˜ëŠ” ëª¨ë“  Columnì´ Indexë‚´ì— ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬
 
                     IDE_TEST( checkIndexColumn( sMethod[i].method->index,
                                                 sTableID,
@@ -2982,8 +2982,8 @@ qmg::checkUsableIndex4Selection( qmgGraph          * aGraph,
                 if ( sUsable == ID_TRUE )
                 {
                     // To Fix BUG-8336
-                    // »ç¿ë °¡´ÉÇÑ IndexÀÏ °æ¿ì
-                    // ÇØ´ç Index¸¦ »ç¿ëÇÏ´Â °ÍÀÌ ÀûÇÕÇÑÁö °Ë»ç
+                    // ì‚¬ìš© ê°€ëŠ¥í•œ Indexì¼ ê²½ìš°
+                    // í•´ë‹¹ Indexë¥¼ ì‚¬ìš©í•˜ëŠ” ê²ƒì´ ì í•©í•œì§€ ê²€ì‚¬
                     if ( sSelectedMethod == NULL )
                     {
                         sSelectedMethod = & sMethod[i];
@@ -2998,7 +2998,7 @@ qmg::checkUsableIndex4Selection( qmgGraph          * aGraph,
                         else if (QMO_COST_IS_EQUAL(sMethod[i].totalCost,
                                                    sSelectedMethod->totalCost) == ID_TRUE)
                         {
-                            // ºñ¿ëÀÌ µ¿ÀÏÇÏ´Ù¸é Primary Index¸¦ »ç¿ëÇÏµµ·Ï ÇÑ´Ù.
+                            // ë¹„ìš©ì´ ë™ì¼í•˜ë‹¤ë©´ Primary Indexë¥¼ ì‚¬ìš©í•˜ë„ë¡ í•œë‹¤.
                             if ( ( sMethod[i].method->flag
                                    & QMO_STAT_CARD_IDX_PRIMARY_MASK )
                                  == QMO_STAT_CARD_IDX_PRIMARY_TRUE )
@@ -3028,13 +3028,13 @@ qmg::checkUsableIndex4Selection( qmgGraph          * aGraph,
         }
         else
         {
-            // Full ScanÀÎ °æ¿ì·Î ºñ±³ ´ë»óÀÌ ¾Æ´Ô
+            // Full Scanì¸ ê²½ìš°ë¡œ ë¹„êµ ëŒ€ìƒì´ ì•„ë‹˜
             // Nothing To Do
         }
     }
 
-    // ¼±ÅÃµÈ Index°¡ Á¸ÀçÇÒ °æ¿ì
-    // ¿øÇÏ´Â Order¸¦ Index·Î Ã³¸®ÇÒ ¼ö ÀÖÀ½.
+    // ì„ íƒëœ Indexê°€ ì¡´ì¬í•  ê²½ìš°
+    // ì›í•˜ëŠ” Orderë¥¼ Indexë¡œ ì²˜ë¦¬í•  ìˆ˜ ìˆìŒ.
     if ( sSelectedMethod != NULL )
     {
         *aSelectMethod = sSelectedMethod;
@@ -3046,7 +3046,7 @@ qmg::checkUsableIndex4Selection( qmgGraph          * aGraph,
         *aUsable = ID_FALSE;
     }
 
-    // ±âÁ¸¿¡ »ç¿ëµÇ´ø Method
+    // ê¸°ì¡´ì— ì‚¬ìš©ë˜ë˜ Method
     *aOriginalMethod = sSELTgraph->selectedMethod;
     
     return IDE_SUCCESS;
@@ -3068,15 +3068,15 @@ qmg::checkUsableIndex4Partition( qmgGraph          * aGraph,
 /***********************************************************************
  *
  * Description :
- *     ¿øÇÏ´Â Order¿¡ »ç¿ëÇÒ ¼ö ÀÖ´Â Index°¡ Á¸ÀçÇÏ´Â Áö °Ë»ç.
+ *     ì›í•˜ëŠ” Orderì— ì‚¬ìš©í•  ìˆ˜ ìˆëŠ” Indexê°€ ì¡´ì¬í•˜ëŠ” ì§€ ê²€ì‚¬.
  *
  * Implementation :
- *     IndexÀÇ Key Column°ú ¿øÇÏ´Â Order°¡ ÀÏÄ¡ÇÏ´ÂÁö °Ë»ç
- *         - Order°¡ Áß¿äÇÑ °æ¿ì : Á¤È®È÷ ÀÏÄ¡ÇØ¾ß ÇÔ.
- *         - Order°¡ Áß¿äÇÏÁö ¾ÊÀº °æ¿ì : ÇØ´ç ColumnÀÇ Á¸Àç ¿©ºÎ
- *     ÇØ´ç Index°¡ Á¸ÀçÇÑ´Ù ÇÏ´õ¶óµµ Index¸¦ ¼±ÅÃÇßÀ» ¶§ÀÇ
- *     ºñ¿ëÀÌ Selection Ã³¸® ÈÄ ÀúÀå Ã³¸®ÇÏ´Â ºñ¿ëº¸´Ù Å¬ °æ¿ì´Â
- *     Index¸¦ ¼±ÅÃÇÏÁö ¾Ê´Â´Ù.
+ *     Indexì˜ Key Columnê³¼ ì›í•˜ëŠ” Orderê°€ ì¼ì¹˜í•˜ëŠ”ì§€ ê²€ì‚¬
+ *         - Orderê°€ ì¤‘ìš”í•œ ê²½ìš° : ì •í™•íˆ ì¼ì¹˜í•´ì•¼ í•¨.
+ *         - Orderê°€ ì¤‘ìš”í•˜ì§€ ì•Šì€ ê²½ìš° : í•´ë‹¹ Columnì˜ ì¡´ì¬ ì—¬ë¶€
+ *     í•´ë‹¹ Indexê°€ ì¡´ì¬í•œë‹¤ í•˜ë”ë¼ë„ Indexë¥¼ ì„ íƒí–ˆì„ ë•Œì˜
+ *     ë¹„ìš©ì´ Selection ì²˜ë¦¬ í›„ ì €ì¥ ì²˜ë¦¬í•˜ëŠ” ë¹„ìš©ë³´ë‹¤ í´ ê²½ìš°ëŠ”
+ *     Indexë¥¼ ì„ íƒí•˜ì§€ ì•ŠëŠ”ë‹¤.
  *
  ***********************************************************************/
 
@@ -3092,7 +3092,7 @@ qmg::checkUsableIndex4Partition( qmgGraph          * aGraph,
     IDU_FIT_POINT_FATAL( "qmg::checkUsableIndex4Partition::__FT__" );
 
     //---------------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //---------------------------------------------------
 
     IDE_DASSERT( aGraph != NULL );
@@ -3101,37 +3101,37 @@ qmg::checkUsableIndex4Partition( qmgGraph          * aGraph,
     IDE_DASSERT( aUsable != NULL );
 
     //---------------------------------------------------
-    // ÀûÀıÇÑ index °Ë»ç
+    // ì ì ˆí•œ index ê²€ì‚¬
     //---------------------------------------------------
 
-    // ±âº» Á¤º¸ ÃßÃâ
+    // ê¸°ë³¸ ì •ë³´ ì¶”ì¶œ
     sPARTgraph = (qmgPARTITION *) aGraph;
     sTableID = aGraph->myFrom->tableRef->table;
 
     sMethod = sPARTgraph->accessMethod;
 
-    // ¿øÇÏ´Â Order¿Í µ¿ÀÏÇÑ Index°¡ Á¸ÀçÇÏ´Â Áö °Ë»ç.
+    // ì›í•˜ëŠ” Orderì™€ ë™ì¼í•œ Indexê°€ ì¡´ì¬í•˜ëŠ” ì§€ ê²€ì‚¬.
     for ( i = 0; i < sPARTgraph->accessMethodCnt; i++ )
     {
         // fix BUG-12307
-        // IN subquery keyRange·Î range scanÀ» ÇÏ´Â °æ¿ì,
-        // order¸¦ º¸ÀåÇÒ ¼ö ¾øÀ¸¹Ç·Î
-        // access method°¡ in subquery¸¦ Æ÷ÇÔÇÏ´Â °æ¿ì´Â Á¦¿Ü
+        // IN subquery keyRangeë¡œ range scanì„ í•˜ëŠ” ê²½ìš°,
+        // orderë¥¼ ë³´ì¥í•  ìˆ˜ ì—†ìœ¼ë¯€ë¡œ
+        // access methodê°€ in subqueryë¥¼ í¬í•¨í•˜ëŠ” ê²½ìš°ëŠ” ì œì™¸
         if ( sMethod[i].method != NULL )
         {
-            // index table scanÀÎ °æ¿ì
+            // index table scanì¸ ê²½ìš°
             if ( ( sMethod[i].method->index->indexPartitionType ==
                    QCM_NONE_PARTITIONED_INDEX )
                  &&
                  ( ( sMethod[i].method->flag & QMO_STAT_CARD_IDX_IN_SUBQUERY_MASK )
                    == QMO_STAT_CARD_IDX_IN_SUBQUERY_FALSE ) )
             {
-                // »ç¿ë °¡´ÉÇÑ IndexÀÎÁö °Ë»ç
+                // ì‚¬ìš© ê°€ëŠ¥í•œ Indexì¸ì§€ ê²€ì‚¬
 
                 if ( aOrderNeed == ID_TRUE )
                 {
-                    // Order°¡ Áß¿äÇÑ °æ¿ì·Î
-                    // Order¿Í IndexÀÇ ¹æÇâ¼ºÀÌ ÀÏÄ¡ÇÏ´Â Áö¸¦ °Ë»ç
+                    // Orderê°€ ì¤‘ìš”í•œ ê²½ìš°ë¡œ
+                    // Orderì™€ Indexì˜ ë°©í–¥ì„±ì´ ì¼ì¹˜í•˜ëŠ” ì§€ë¥¼ ê²€ì‚¬
 
                     IDE_TEST( checkIndexOrder( & sMethod[i],
                                                sTableID,
@@ -3141,8 +3141,8 @@ qmg::checkUsableIndex4Partition( qmgGraph          * aGraph,
                 }
                 else
                 {
-                    // Order°¡ Áß¿äÇÏÁö ¾ÊÀº °æ¿ì·Î
-                    // Order¿¡ ÇØ´çÇÏ´Â ¸ğµç ColumnÀÌ Index³»¿¡ Á¸ÀçÇÏ´ÂÁö °Ë»ç
+                    // Orderê°€ ì¤‘ìš”í•˜ì§€ ì•Šì€ ê²½ìš°ë¡œ
+                    // Orderì— í•´ë‹¹í•˜ëŠ” ëª¨ë“  Columnì´ Indexë‚´ì— ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬
 
                     IDE_TEST( checkIndexColumn( sMethod[i].method->index,
                                                 sTableID,
@@ -3154,8 +3154,8 @@ qmg::checkUsableIndex4Partition( qmgGraph          * aGraph,
                 if ( sUsable == ID_TRUE )
                 {
                     // To Fix BUG-8336
-                    // »ç¿ë °¡´ÉÇÑ IndexÀÏ °æ¿ì
-                    // ÇØ´ç Index¸¦ »ç¿ëÇÏ´Â °ÍÀÌ ÀûÇÕÇÑÁö °Ë»ç
+                    // ì‚¬ìš© ê°€ëŠ¥í•œ Indexì¼ ê²½ìš°
+                    // í•´ë‹¹ Indexë¥¼ ì‚¬ìš©í•˜ëŠ” ê²ƒì´ ì í•©í•œì§€ ê²€ì‚¬
                     if ( sSelectedMethod == NULL )
                     {
                         sSelectedMethod = & sMethod[i];
@@ -3170,7 +3170,7 @@ qmg::checkUsableIndex4Partition( qmgGraph          * aGraph,
                         else if (QMO_COST_IS_EQUAL(sMethod[i].totalCost,
                                                    sSelectedMethod->totalCost) == ID_TRUE)
                         {
-                            // ºñ¿ëÀÌ µ¿ÀÏÇÏ´Ù¸é Primary Index¸¦ »ç¿ëÇÏµµ·Ï ÇÑ´Ù.
+                            // ë¹„ìš©ì´ ë™ì¼í•˜ë‹¤ë©´ Primary Indexë¥¼ ì‚¬ìš©í•˜ë„ë¡ í•œë‹¤.
                             if ( ( sMethod[i].method->flag
                                    & QMO_STAT_CARD_IDX_PRIMARY_MASK )
                                  == QMO_STAT_CARD_IDX_PRIMARY_TRUE )
@@ -3200,13 +3200,13 @@ qmg::checkUsableIndex4Partition( qmgGraph          * aGraph,
         }
         else
         {
-            // Full ScanÀÎ °æ¿ì·Î ºñ±³ ´ë»óÀÌ ¾Æ´Ô
+            // Full Scanì¸ ê²½ìš°ë¡œ ë¹„êµ ëŒ€ìƒì´ ì•„ë‹˜
             // Nothing To Do
         }
     }
 
-    // ¼±ÅÃµÈ Index°¡ Á¸ÀçÇÒ °æ¿ì
-    // ¿øÇÏ´Â Order¸¦ Index·Î Ã³¸®ÇÒ ¼ö ÀÖÀ½.
+    // ì„ íƒëœ Indexê°€ ì¡´ì¬í•  ê²½ìš°
+    // ì›í•˜ëŠ” Orderë¥¼ Indexë¡œ ì²˜ë¦¬í•  ìˆ˜ ìˆìŒ.
     if ( sSelectedMethod != NULL )
     {
         *aSelectMethod = sSelectedMethod;
@@ -3218,7 +3218,7 @@ qmg::checkUsableIndex4Partition( qmgGraph          * aGraph,
         *aUsable = ID_FALSE;
     }
 
-    // ±âÁ¸¿¡ »ç¿ëµÇ´ø Method
+    // ê¸°ì¡´ì— ì‚¬ìš©ë˜ë˜ Method
     *aOriginalMethod = sPARTgraph->selectedMethod;
     
     return IDE_SUCCESS;
@@ -3238,18 +3238,18 @@ qmg::checkIndexOrder( qmoAccessMethod   * aMethod,
 /***********************************************************************
  *
  * Description :
- *     ¿øÇÏ´Â Order¿Í ÇØ´ç IndexÀÇ Order°¡ µ¿ÀÏÇÑ Áö °Ë»ç
+ *     ì›í•˜ëŠ” Orderì™€ í•´ë‹¹ Indexì˜ Orderê°€ ë™ì¼í•œ ì§€ ê²€ì‚¬
  *
- *     ¿øÇÏ´Â OrderÀÇ ¹æÇâ¼º ¹× Order°¡ Áß¿äÇÑ °æ¿ì¿¡¸¸
- *     È£ÃâÇÏ¿© °Ë»çÇÑ´Ù.
+ *     ì›í•˜ëŠ” Orderì˜ ë°©í–¥ì„± ë° Orderê°€ ì¤‘ìš”í•œ ê²½ìš°ì—ë§Œ
+ *     í˜¸ì¶œí•˜ì—¬ ê²€ì‚¬í•œë‹¤.
  *
  * Implementation :
- *     ¿øÇÏ´Â Order¿Í µ¿ÀÏÇÑ Order·Î ÇØ´ç Index¸¦ »ç¿ë°¡´ÉÇÑ Áö¸¦
- *     °Ë»çÇÑ´Ù.
+ *     ì›í•˜ëŠ” Orderì™€ ë™ì¼í•œ Orderë¡œ í•´ë‹¹ Indexë¥¼ ì‚¬ìš©ê°€ëŠ¥í•œ ì§€ë¥¼
+ *     ê²€ì‚¬í•œë‹¤.
  *
- *                          <¹æÇâ¼º °Ë»çÇ¥>
+ *                          <ë°©í–¥ì„± ê²€ì‚¬í‘œ>
  *     -------------------------------------------------------------
- *      Index ¹æÇâ  |  Column Order | ¿øÇÏ´Â Order | Àû¿ë °¡´É
+ *      Index ë°©í–¥  |  Column Order | ì›í•˜ëŠ” Order | ì ìš© ê°€ëŠ¥
  *     -------------------------------------------------------------
  *      Foward       |     ASC       |    ASC        |     O
  *                   |               |------------------------------
@@ -3282,7 +3282,7 @@ qmg::checkIndexOrder( qmoAccessMethod   * aMethod,
     IDU_FIT_POINT_FATAL( "qmg::checkIndexOrder::__FT__" );
     
     //---------------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //---------------------------------------------------
 
     IDE_DASSERT( aMethod != NULL );
@@ -3291,11 +3291,11 @@ qmg::checkIndexOrder( qmoAccessMethod   * aMethod,
     IDE_DASSERT( aUsable != NULL );
 
     //---------------------------------------------------
-    // ÇØ´ç index°¡ ¿øÇÏ´Â order°¡ µ¿ÀÏÇÑÁö¸¦ °Ë»ç
+    // í•´ë‹¹ indexê°€ ì›í•˜ëŠ” orderê°€ ë™ì¼í•œì§€ë¥¼ ê²€ì‚¬
     //---------------------------------------------------
 
     //----------------------------------
-    // Ã¹¹øÂ° ColumnÀÌ µ¿ÀÏÇÑ Áö °Ë»ç.
+    // ì²«ë²ˆì§¸ Columnì´ ë™ì¼í•œ ì§€ ê²€ì‚¬.
     //----------------------------------
 
     sIndex = aMethod->method->index;
@@ -3307,14 +3307,14 @@ qmg::checkIndexOrder( qmoAccessMethod   * aMethod,
     if ( ( aTableID == sOrder->table ) &&
          ( sColumnPosition == sOrder->column ) )
     {
-        // Ã¹¹øÂ° Column Á¤º¸°¡ µ¿ÀÏÇÑ °æ¿ì
-        // ¿øÇÏ´Â OrderÀÇ ¹æÇâ°ú IndexÀÇ ¹æÇâÀ» ÀÏÄ¡½ÃÅ²´Ù.
+        // ì²«ë²ˆì§¸ Column ì •ë³´ê°€ ë™ì¼í•œ ê²½ìš°
+        // ì›í•˜ëŠ” Orderì˜ ë°©í–¥ê³¼ Indexì˜ ë°©í–¥ì„ ì¼ì¹˜ì‹œí‚¨ë‹¤.
 
         switch ( aMethod->method->flag & QMO_STAT_CARD_IDX_HINT_MASK )
         {
             case QMO_STAT_CARD_IDX_INDEX_ASC :
 
-                // Index¿¡ ´ëÇÏ¿© Ascending Hint°¡ ÀÖ´Â °æ¿ì
+                // Indexì— ëŒ€í•˜ì—¬ Ascending Hintê°€ ìˆëŠ” ê²½ìš°
 
                 if ( sOrder->direction == QMG_DIRECTION_ASC )
                 {
@@ -3338,7 +3338,7 @@ qmg::checkIndexOrder( qmoAccessMethod   * aMethod,
 
             case QMO_STAT_CARD_IDX_INDEX_DESC :
 
-                // Index¿¡ ´ëÇÏ¿© Descending Hint°¡ ÀÖ´Â °æ¿ì
+                // Indexì— ëŒ€í•˜ì—¬ Descending Hintê°€ ìˆëŠ” ê²½ìš°
 
                 if ( sOrder->direction == QMG_DIRECTION_DESC )
                 {
@@ -3361,13 +3361,13 @@ qmg::checkIndexOrder( qmoAccessMethod   * aMethod,
 
             default :
 
-                // º°µµÀÇ Hint °¡ ¾ø´Â °æ¿ì
+                // ë³„ë„ì˜ Hint ê°€ ì—†ëŠ” ê²½ìš°
 
                 switch ( sOrder->direction )
                 {
                     case QMG_DIRECTION_ASC:
 
-                        // ¿øÇÏ´Â Order°¡ AscendingÀÎ °æ¿ì
+                        // ì›í•˜ëŠ” Orderê°€ Ascendingì¸ ê²½ìš°
 
                         if ( ( sIndex->keyColsFlag[0] & SMI_COLUMN_ORDER_MASK )
                              == SMI_COLUMN_ORDER_ASCENDING )
@@ -3385,7 +3385,7 @@ qmg::checkIndexOrder( qmoAccessMethod   * aMethod,
 
                     case QMG_DIRECTION_DESC:
 
-                        // ¿øÇÏ´Â Order°¡ DescendingÀÎ °æ¿ì
+                        // ì›í•˜ëŠ” Orderê°€ Descendingì¸ ê²½ìš°
 
                         if ( ( sIndex->keyColsFlag[0] & SMI_COLUMN_ORDER_MASK )
                              == SMI_COLUMN_ORDER_ASCENDING )
@@ -3468,19 +3468,19 @@ qmg::checkIndexOrder( qmoAccessMethod   * aMethod,
     }
     else
     {
-        // Ã¹¹øÂ° Column Á¤º¸°¡ ´Ù¸§
+        // ì²«ë²ˆì§¸ Column ì •ë³´ê°€ ë‹¤ë¦„
         sUsable = ID_FALSE;
     }
 
     //----------------------------------
-    // µÎ¹øÂ° ÀÌÈÄÀÇ ColumnÀÌ µ¿ÀÏÇÑ Áö °Ë»ç.
+    // ë‘ë²ˆì§¸ ì´í›„ì˜ Columnì´ ë™ì¼í•œ ì§€ ê²€ì‚¬.
     //----------------------------------
 
     if ( sUsable == ID_TRUE )
     {
-        // ¿øÇÏ´Â µÎ ¹øÂ° OrderºÎÅÍ ½ÃÀÛÇÏ¿©
-        // Index³»¿¡ µ¿ÀÏÇÑ ColumnÀÌ Á¸ÀçÇÏ°í
-        // ¹æÇâ¼ºÀ» Àû¿ëÇÒ ¼ö ÀÖ´Â Áö °Ë»çÇÑ´Ù.
+        // ì›í•˜ëŠ” ë‘ ë²ˆì§¸ Orderë¶€í„° ì‹œì‘í•˜ì—¬
+        // Indexë‚´ì— ë™ì¼í•œ Columnì´ ì¡´ì¬í•˜ê³ 
+        // ë°©í–¥ì„±ì„ ì ìš©í•  ìˆ˜ ìˆëŠ” ì§€ ê²€ì‚¬í•œë‹¤.
 
         for ( i = 1, sOrder = sOrder->next;
               i < sIndex->keyColCount && sOrder != NULL;
@@ -3491,12 +3491,12 @@ qmg::checkIndexOrder( qmoAccessMethod   * aMethod,
             if ( (sOrder->table == aTableID) &&
                  (sOrder->column == sColumnPosition) )
             {
-                // ÀÎµ¦½º ColumnÀÇ ¹æÇâ¼º°ú ¿øÇÏ´Â OrderÀÇ ¹æÇâ¼º °Ë»ç
-                // ÂüÁ¶ : <¹æÇâ¼º °Ë»çÇ¥>
+                // ì¸ë±ìŠ¤ Columnì˜ ë°©í–¥ì„±ê³¼ ì›í•˜ëŠ” Orderì˜ ë°©í–¥ì„± ê²€ì‚¬
+                // ì°¸ì¡° : <ë°©í–¥ì„± ê²€ì‚¬í‘œ>
 
                 if ( sIsForward == ID_TRUE )
                 {
-                    // Forward IndexÀÎ °æ¿ì
+                    // Forward Indexì¸ ê²½ìš°
 
                     switch ( sIndex->keyColsFlag[i] & SMI_COLUMN_ORDER_MASK )
                     {
@@ -3552,7 +3552,7 @@ qmg::checkIndexOrder( qmoAccessMethod   * aMethod,
                 }
                 else
                 {
-                    // Backward IndexÀÇ °æ¿ì
+                    // Backward Indexì˜ ê²½ìš°
 
                     switch ( sIndex->keyColsFlag[i] & SMI_COLUMN_ORDER_MASK )
                     {
@@ -3609,7 +3609,7 @@ qmg::checkIndexOrder( qmoAccessMethod   * aMethod,
 
                 if ( sUsable == ID_FALSE )
                 {
-                    // ¹æÇâ¼ºÀÌ ´Ş¶ó Index¸¦ »ç¿ëÇÒ ¼ö ¾ø´Â °æ¿ì
+                    // ë°©í–¥ì„±ì´ ë‹¬ë¼ Indexë¥¼ ì‚¬ìš©í•  ìˆ˜ ì—†ëŠ” ê²½ìš°
                     break;
                 }
                 else
@@ -3619,25 +3619,25 @@ qmg::checkIndexOrder( qmoAccessMethod   * aMethod,
             }
             else
             {
-                // ÄÃ·³ Á¤º¸°¡ ´Ş¶ó Index¸¦ »ç¿ëÇÒ ¼ö ¾ø´Â °æ¿ì
+                // ì»¬ëŸ¼ ì •ë³´ê°€ ë‹¬ë¼ Indexë¥¼ ì‚¬ìš©í•  ìˆ˜ ì—†ëŠ” ê²½ìš°
                 break;
             }
         } // end of for()
 
         if ( sOrder != NULL )
         {
-            // ¿øÇÏ´Â Order¸¦ Index°¡ ¸ğµÎ ¸¸Á·ÇÏÁö ¾ÊÀ½.
+            // ì›í•˜ëŠ” Orderë¥¼ Indexê°€ ëª¨ë‘ ë§Œì¡±í•˜ì§€ ì•ŠìŒ.
             sUsable = ID_FALSE;
         }
         else
         {
-            // ¿øÇÏ´Â Order¸¦ ¸ğµÎ ¸¸Á·ÇÔ.
+            // ì›í•˜ëŠ” Orderë¥¼ ëª¨ë‘ ë§Œì¡±í•¨.
             sUsable = ID_TRUE;
         }
     }
     else
     {
-        // Ã¹¹øÂ° Key ColumnÀÌ ¸¸Á·ÇÏÁö ¾ÊÀ½
+        // ì²«ë²ˆì§¸ Key Columnì´ ë§Œì¡±í•˜ì§€ ì•ŠìŒ
         sUsable = ID_FALSE;
     }
 
@@ -3657,17 +3657,17 @@ qmg::checkIndexColumn( qcmIndex          * aIndex,
 /***********************************************************************
  *
  * Description :
- *     ¿øÇÏ´Â Order°¡ ÇØ´ç IndexÀÇ Column¿¡ ¸ğµÎ Æ÷ÇÔµÇ´Â Áö °Ë»ç
+ *     ì›í•˜ëŠ” Orderê°€ í•´ë‹¹ Indexì˜ Columnì— ëª¨ë‘ í¬í•¨ë˜ëŠ” ì§€ ê²€ì‚¬
  *
- *     ¿øÇÏ´Â OrderÀÇ ¹æÇâ¼º ¹× Order°¡ Áß¿äÇÏÁö ¾ÊÀº °æ¿ì¿¡¸¸
- *     È£ÃâÇÏ¿© °Ë»çÇÑ´Ù.
+ *     ì›í•˜ëŠ” Orderì˜ ë°©í–¥ì„± ë° Orderê°€ ì¤‘ìš”í•˜ì§€ ì•Šì€ ê²½ìš°ì—ë§Œ
+ *     í˜¸ì¶œí•˜ì—¬ ê²€ì‚¬í•œë‹¤.
  *
  * Implementation :
  *
- *     ¿øÇÏ´Â OrderÀÇ ColumnÀÌ ÀÎµ¦½º Column¿¡ ¸ğµÎ Æ÷ÇÔµÇ´Â Áö¸¦
- *     °Ë»çÇÑ´Ù.
+ *     ì›í•˜ëŠ” Orderì˜ Columnì´ ì¸ë±ìŠ¤ Columnì— ëª¨ë‘ í¬í•¨ë˜ëŠ” ì§€ë¥¼
+ *     ê²€ì‚¬í•œë‹¤.
  *
- *     ¸ğµç Order°¡ ¸ğµç Index Key ColumnÀÇ ¼ø¼­¿¡ ºÎÇÕµÇ¾î¾ß ÇÑ´Ù.
+ *     ëª¨ë“  Orderê°€ ëª¨ë“  Index Key Columnì˜ ìˆœì„œì— ë¶€í•©ë˜ì–´ì•¼ í•œë‹¤.
  *         T1(i1,i2,i3) Index
  *         SELECT DISTINCT i1, i2 FROM T1;         ---- O
  *         SELECT DISTINCT i2, i1, i3 FROM T1;     ---- O
@@ -3687,7 +3687,7 @@ qmg::checkIndexColumn( qcmIndex          * aIndex,
     IDU_FIT_POINT_FATAL( "qmg::checkIndexColumn::__FT__" );
 
     //---------------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //---------------------------------------------------
 
     IDE_DASSERT( aIndex != NULL );
@@ -3695,19 +3695,19 @@ qmg::checkIndexColumn( qcmIndex          * aIndex,
     IDE_DASSERT( aUsable != NULL );
 
     //---------------------------------------------------
-    // ÇØ´ç index¿¡ ¿øÇÏ´Â orderÀÇ ¸ğµç columnÀ» °¡Áö´ÂÁö¸¦ °Ë»ç
-    // ¸ğµç Index Key Column¿¡ ÇØ´çÇÏ´Â Order°¡ Á¸ÀçÇÏ´Â Áö °Ë»ç
+    // í•´ë‹¹ indexì— ì›í•˜ëŠ” orderì˜ ëª¨ë“  columnì„ ê°€ì§€ëŠ”ì§€ë¥¼ ê²€ì‚¬
+    // ëª¨ë“  Index Key Columnì— í•´ë‹¹í•˜ëŠ” Orderê°€ ì¡´ì¬í•˜ëŠ” ì§€ ê²€ì‚¬
     //---------------------------------------------------
 
-    // OrderÀÇ °³¼ö °è»ê
+    // Orderì˜ ê°œìˆ˜ ê³„ì‚°
     for ( sOrder = aWantOrder, sOrderCnt = 0;
           sOrder != NULL;
           sOrder = sOrder->next, sOrderCnt++ ) ;
 
     if ( sOrderCnt <= aIndex->keyColCount )
     {
-        // Index Key ColumnÀÇ ¼ø¼­´ë·Î
-        // Order¸¦ Æ÷ÇÔÇÏ°í ÀÖ´Â Áö °Ë»ç.
+        // Index Key Columnì˜ ìˆœì„œëŒ€ë¡œ
+        // Orderë¥¼ í¬í•¨í•˜ê³  ìˆëŠ” ì§€ ê²€ì‚¬.
 
         for ( i = 0; i < sOrderCnt; i++ )
         {
@@ -3722,7 +3722,7 @@ qmg::checkIndexColumn( qcmIndex          * aIndex,
                 if ( ( sOrder->table == aTableID ) &&
                      ( sOrder->column == sColumnPosition ) )
                 {
-                    // µ¿ÀÏÇÑ Key ColumnÀÌ Á¸Àç
+                    // ë™ì¼í•œ Key Columnì´ ì¡´ì¬
                     sUsable = ID_TRUE;
                     break;
                 }
@@ -3734,7 +3734,7 @@ qmg::checkIndexColumn( qcmIndex          * aIndex,
 
             if ( sUsable == ID_FALSE )
             {
-                // Key Column¿¡ ÇØ´çÇÏ´Â Order°¡ ¾øÀ½
+                // Key Columnì— í•´ë‹¹í•˜ëŠ” Orderê°€ ì—†ìŒ
                 break;
             }
             else
@@ -3745,7 +3745,7 @@ qmg::checkIndexColumn( qcmIndex          * aIndex,
     }
     else
     {
-        // Order °³¼ö°¡ Index Key ColumnÀÇ °³¼öº¸´Ù ¸¹À½
+        // Order ê°œìˆ˜ê°€ Index Key Columnì˜ ê°œìˆ˜ë³´ë‹¤ ë§ìŒ
         sUsable = ID_FALSE;
     }
 
@@ -3763,11 +3763,11 @@ qmg::refineID4Target( qmgPreservedOrder * aWantOrder,
 /***********************************************************************
  *
  * Description :
- *     ¿øÇÏ´Â Order¸¦ TargetÀÇ ID·Î ´ëÃ¼ÇÑ´Ù.
+ *     ì›í•˜ëŠ” Orderë¥¼ Targetì˜ IDë¡œ ëŒ€ì²´í•œë‹¤.
  *
  * Implementation :
- *     ¿øÇÏ´Â OrderÀÇ Column PositionÀ¸·ÎºÎÅÍ TargetÀÇ À§Ä¡¸¦
- *     ±¸ÇÏ°í TargetÀÇ ID·Î OrderÀÇ ID¸¦ ´ëÃ¼ÇÑ´Ù.
+ *     ì›í•˜ëŠ” Orderì˜ Column Positionìœ¼ë¡œë¶€í„° Targetì˜ ìœ„ì¹˜ë¥¼
+ *     êµ¬í•˜ê³  Targetì˜ IDë¡œ Orderì˜ IDë¥¼ ëŒ€ì²´í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -3780,29 +3780,29 @@ qmg::refineID4Target( qmgPreservedOrder * aWantOrder,
     IDU_FIT_POINT_FATAL( "qmg::refineID4Target::__FT__" );
     
     //---------------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //---------------------------------------------------
 
     IDE_DASSERT( aWantOrder != NULL );
     IDE_DASSERT( aTarget != NULL );
 
     //---------------------------------------------------
-    // OrderÀÇ ID¸¦ º¯°æ
+    // Orderì˜ IDë¥¼ ë³€ê²½
     //---------------------------------------------------
 
     for ( sOrder = aWantOrder;
           sOrder != NULL;
           sOrder = sOrder->next )
     {
-        // Column Position¿¡ ÇØ´çÇÏ´Â TargetÀ» ÃßÃâ
+        // Column Positionì— í•´ë‹¹í•˜ëŠ” Targetì„ ì¶”ì¶œ
         for ( i = 0, sTarget = aTarget;
               i < sOrder->column && sTarget != NULL;
               i++, sTarget = sTarget->next ) ;
 
-        // ¹İµå½Ã TargetÀÌ Á¸ÀçÇØ¾ß ÇÔ.
+        // ë°˜ë“œì‹œ Targetì´ ì¡´ì¬í•´ì•¼ í•¨.
         IDE_FT_ASSERT( sTarget != NULL );
 
-        // BUG-38193 targetÀÇ pass node ¸¦ °í·ÁÇØ¾ß ÇÕ´Ï´Ù.
+        // BUG-38193 targetì˜ pass node ë¥¼ ê³ ë ¤í•´ì•¼ í•©ë‹ˆë‹¤.
         if ( sTarget->targetColumn->node.module == &qtc::passModule )
         {
             sTargetNode = (qtcNode*)(sTarget->targetColumn->node.arguments);
@@ -3812,7 +3812,7 @@ qmg::refineID4Target( qmgPreservedOrder * aWantOrder,
             sTargetNode = sTarget->targetColumn;
         }
 
-        // OrderÀÇ ID º¯°æ
+        // Orderì˜ ID ë³€ê²½
         sOrder->table  = sTargetNode->node.table;
         sOrder->column = sTargetNode->node.column;
     }
@@ -3824,12 +3824,12 @@ qmg::refineID4Target( qmgPreservedOrder * aWantOrder,
 /**
  * Bug-42145
  *
- * Index°¡ Á¸ÀçÇÏ´Â »óÈ²¿¡¼­ Nulls OptionÀÌ Ç¥ÇÔµÈ ¹æÇâ Ã¼Å©¸¦ÇÑ´Ù.
+ * Indexê°€ ì¡´ì¬í•˜ëŠ” ìƒí™©ì—ì„œ Nulls Optionì´ í‘œí•¨ëœ ë°©í–¥ ì²´í¬ë¥¼í•œë‹¤.
  *
- * Index¿¡¼­ ÀÌÀü DirectionÀÌ Not DefinedÀÎ °æ¿ì ASC NULLS FIRST¿Í DESC NULLS
- * LAST ´Â °°°Ô Ã³¸®µÉ ¼ö ¾ø´Ù.
- * Index¿¡¼­ ASC = ASC NULLS LAST,
- *           DESC = DESC NULLS FIRST ¿Í °°´Ù.
+ * Indexì—ì„œ ì´ì „ Directionì´ Not Definedì¸ ê²½ìš° ASC NULLS FIRSTì™€ DESC NULLS
+ * LAST ëŠ” ê°™ê²Œ ì²˜ë¦¬ë  ìˆ˜ ì—†ë‹¤.
+ * Indexì—ì„œ ASC = ASC NULLS LAST,
+ *           DESC = DESC NULLS FIRST ì™€ ê°™ë‹¤.
  */
 IDE_RC qmg::checkSameDirection4Index( qmgPreservedOrder * aWantOrder,
                                       qmgPreservedOrder * aPresOrder,
@@ -3843,7 +3843,7 @@ IDE_RC qmg::checkSameDirection4Index( qmgPreservedOrder * aWantOrder,
     IDU_FIT_POINT_FATAL( "qmg::checkSameDirection4Index::__FT__" );
 
     //---------------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //---------------------------------------------------
 
     IDE_DASSERT( aWantOrder != NULL );
@@ -3852,7 +3852,7 @@ IDE_RC qmg::checkSameDirection4Index( qmgPreservedOrder * aWantOrder,
     IDE_DASSERT( aUsable    != NULL );
 
     //---------------------------------------------------
-    // ¹æÇâ¼º °Ë»ç
+    // ë°©í–¥ì„± ê²€ì‚¬
     //---------------------------------------------------
 
     switch ( aPresOrder->direction )
@@ -3868,7 +3868,7 @@ IDE_RC qmg::checkSameDirection4Index( qmgPreservedOrder * aWantOrder,
             }
             else
             {
-                // Preserved Order¿¡ ¾î¶°ÇÑ ¹æÇâ¼ºµµ ¾ø´Â °æ¿ì
+                // Preserved Orderì— ì–´ë– í•œ ë°©í–¥ì„±ë„ ì—†ëŠ” ê²½ìš°
                 sDirection = aWantOrder->direction;
                 sUsable = ID_TRUE;
             }
@@ -3876,7 +3876,7 @@ IDE_RC qmg::checkSameDirection4Index( qmgPreservedOrder * aWantOrder,
 
         case QMG_DIRECTION_SAME_WITH_PREV :
 
-            // Preserved Order°¡ ÀÌÀü ¹æÇâ°ú µ¿ÀÏÇÑ °æ¿ì
+            // Preserved Orderê°€ ì´ì „ ë°©í–¥ê³¼ ë™ì¼í•œ ê²½ìš°
 
             if ( aPrevDirection == aWantOrder->direction )
             {
@@ -3891,7 +3891,7 @@ IDE_RC qmg::checkSameDirection4Index( qmgPreservedOrder * aWantOrder,
 
         case QMG_DIRECTION_DIFF_WITH_PREV :
 
-            // Preserved Order°¡ ÀÌÀü ¹æÇâ°ú ´Ù¸¥ °æ¿ì
+            // Preserved Orderê°€ ì´ì „ ë°©í–¥ê³¼ ë‹¤ë¥¸ ê²½ìš°
 
             if ( aPrevDirection == aWantOrder->direction )
             {
@@ -4003,12 +4003,12 @@ qmg::checkSameDirection( qmgPreservedOrder * aWantOrder,
 /***********************************************************************
  *
  * Description :
- *     ¿øÇÏ´Â Order°¡ Preserved Order¿Í µ¿ÀÏÇÑ(»ç¿ë °¡´ÉÇÑ)
- *     ¹æÇâ¼ºÀ» °®°í ÀÖ´Â Áö °Ë»çÇÑ´Ù.
+ *     ì›í•˜ëŠ” Orderê°€ Preserved Orderì™€ ë™ì¼í•œ(ì‚¬ìš© ê°€ëŠ¥í•œ)
+ *     ë°©í–¥ì„±ì„ ê°–ê³  ìˆëŠ” ì§€ ê²€ì‚¬í•œë‹¤.
  *
  * Implementation :
- *     Preserved Order°¡ °®´Â ¹æÇâ¼º¿¡ µû¶ó,
- *     ¿øÇÏ´Â Order¸¦ »ç¿ëÇÒ ¼ö ÀÖ´ÂÁö¸¦ ÆÇ´Ü
+ *     Preserved Orderê°€ ê°–ëŠ” ë°©í–¥ì„±ì— ë”°ë¼,
+ *     ì›í•˜ëŠ” Orderë¥¼ ì‚¬ìš©í•  ìˆ˜ ìˆëŠ”ì§€ë¥¼ íŒë‹¨
  *
  ***********************************************************************/
 
@@ -4018,7 +4018,7 @@ qmg::checkSameDirection( qmgPreservedOrder * aWantOrder,
     IDU_FIT_POINT_FATAL( "qmg::checkSameDirection::__FT__" );
 
     //---------------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //---------------------------------------------------
 
     IDE_DASSERT( aWantOrder != NULL );
@@ -4027,21 +4027,21 @@ qmg::checkSameDirection( qmgPreservedOrder * aWantOrder,
     IDE_DASSERT( aUsable    != NULL );
 
     //---------------------------------------------------
-    // ¹æÇâ¼º °Ë»ç
+    // ë°©í–¥ì„± ê²€ì‚¬
     //---------------------------------------------------
 
     switch ( aPresOrder->direction )
     {
         case QMG_DIRECTION_NOT_DEFINED :
 
-            // Preserved Order¿¡ ¾î¶°ÇÑ ¹æÇâ¼ºµµ ¾ø´Â °æ¿ì
+            // Preserved Orderì— ì–´ë– í•œ ë°©í–¥ì„±ë„ ì—†ëŠ” ê²½ìš°
             sDirection = aWantOrder->direction;
             sUsable = ID_TRUE;
             break;
 
         case QMG_DIRECTION_SAME_WITH_PREV :
 
-            // Preserved Order°¡ ÀÌÀü ¹æÇâ°ú µ¿ÀÏÇÑ °æ¿ì
+            // Preserved Orderê°€ ì´ì „ ë°©í–¥ê³¼ ë™ì¼í•œ ê²½ìš°
 
             if ( aPrevDirection == aWantOrder->direction )
             {
@@ -4056,7 +4056,7 @@ qmg::checkSameDirection( qmgPreservedOrder * aWantOrder,
 
         case QMG_DIRECTION_DIFF_WITH_PREV :
 
-            // Preserved Order°¡ ÀÌÀü ¹æÇâ°ú ´Ù¸¥ °æ¿ì
+            // Preserved Orderê°€ ì´ì „ ë°©í–¥ê³¼ ë‹¤ë¥¸ ê²½ìš°
 
             if ( aPrevDirection == aWantOrder->direction )
             {
@@ -4159,22 +4159,22 @@ qmg::makeOrder4Graph( qcStatement       * aStatement,
  *
  * Description :
  *
- *    ÁÖ¾îÁø Order¸¦ ÀÌ¿ëÇÏ¿© GraphÀÇ
- *    Preserved Order¸¦ »ı¼ºÇÑ´Ù.
+ *    ì£¼ì–´ì§„ Orderë¥¼ ì´ìš©í•˜ì—¬ Graphì˜
+ *    Preserved Orderë¥¼ ìƒì„±í•œë‹¤.
  *
  * Implementation :
  *
- *    ÇØ´ç GraphÀÇ Á¾·ù¿¡ µû¶ó Ã³¸®
- *        - Selection GraphÀÎ °æ¿ì
- *            - Base Table ÀÎ °æ¿ì :
- *                ÇØ´ç Index¸¦ Ã£Àº ÈÄ Preserved Order Build
- *            - ViewÀÎ °æ¿ì
- *                ÇÏÀ§ TargetÀÇ ID·Î º¯°æÇÏ¿© Child Graph¿¡ ´ëÇÑ Ã³¸®
- *                ÀÔ·ÂµÈ Want Order·Î Preserved Order Build
- *        - Set, Dnf, HierarchyÀÎ °æ¿ì
- *            - ÇØ´ç »çÇ× ¾øÀ½.
- *        - ÀÌ ¿ÜÀÇ GraphÀÎ °æ¿ì
- *            - Non-Leaf Graph¿¡ ´ëÇÑ Preserved Order Build
+ *    í•´ë‹¹ Graphì˜ ì¢…ë¥˜ì— ë”°ë¼ ì²˜ë¦¬
+ *        - Selection Graphì¸ ê²½ìš°
+ *            - Base Table ì¸ ê²½ìš° :
+ *                í•´ë‹¹ Indexë¥¼ ì°¾ì€ í›„ Preserved Order Build
+ *            - Viewì¸ ê²½ìš°
+ *                í•˜ìœ„ Targetì˜ IDë¡œ ë³€ê²½í•˜ì—¬ Child Graphì— ëŒ€í•œ ì²˜ë¦¬
+ *                ì…ë ¥ëœ Want Orderë¡œ Preserved Order Build
+ *        - Set, Dnf, Hierarchyì¸ ê²½ìš°
+ *            - í•´ë‹¹ ì‚¬í•­ ì—†ìŒ.
+ *        - ì´ ì™¸ì˜ Graphì¸ ê²½ìš°
+ *            - Non-Leaf Graphì— ëŒ€í•œ Preserved Order Build
  *
  ***********************************************************************/
 
@@ -4200,16 +4200,16 @@ qmg::makeOrder4Graph( qcStatement       * aStatement,
     sIsSorted = ID_FALSE;
 
     //---------------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //---------------------------------------------------
 
     IDE_FT_ASSERT( aStatement != NULL );
     IDE_FT_ASSERT( aGraph != NULL );
     IDE_FT_ASSERT( aWantOrder != NULL );
 
-    // Order°¡ Áß¿äÇÑÁö¸¦ ÆÇ´Ü.
+    // Orderê°€ ì¤‘ìš”í•œì§€ë¥¼ íŒë‹¨.
     // BUG-40361 supporting to indexable analytic function
-    // aWantOrderÀÇ ¸ğµç Node°¡ NOT DEFINED ÀÎÁö È®ÀÎÇÑ´Ù
+    // aWantOrderì˜ ëª¨ë“  Nodeê°€ NOT DEFINED ì¸ì§€ í™•ì¸í•œë‹¤
     sOrderImportant = ID_FALSE;
     for ( sWantOrder = aWantOrder; sWantOrder != NULL; sWantOrder = sWantOrder->next )
     {
@@ -4223,7 +4223,7 @@ qmg::makeOrder4Graph( qcStatement       * aStatement,
             /* Nothing to do */
         }
     }
-    // Graph Á¾·ù¿¡ µû¸¥ Preserved Order ±¸Ãà
+    // Graph ì¢…ë¥˜ì— ë”°ë¥¸ Preserved Order êµ¬ì¶•
     switch ( aGraph->type )
     {
         case QMG_SET :
@@ -4231,7 +4231,7 @@ qmg::makeOrder4Graph( qcStatement       * aStatement,
         case QMG_HIERARCHY :
 
             //--------------------------------
-            // Order¸¦ Àû¿ëÇÒ ¼ö ¾ø´Â GraphÀÎ °æ¿ì
+            // Orderë¥¼ ì ìš©í•  ìˆ˜ ì—†ëŠ” Graphì¸ ê²½ìš°
             //--------------------------------
 
             IDE_DASSERT( 0 );
@@ -4242,9 +4242,9 @@ qmg::makeOrder4Graph( qcStatement       * aStatement,
             if ( ( aGraph->flag & QMG_PRESERVED_ORDER_MASK )
                  == QMG_PRESERVED_ORDER_DEFINED_NOT_FIXED )
             {
-                // Windowing Graph¿¡ preserved order°¡ Á¸ÀçÇÏ´Â °æ¿ì,
-                // Want Order¿Í µ¿ÀÏÇÑ Sorting KeyÀÇ Sorting ¼ø¼­¸¦
-                // ¸¶Áö¸·À¸·Î º¯°æÇÑ´Ù.
+                // Windowing Graphì— preserved orderê°€ ì¡´ì¬í•˜ëŠ” ê²½ìš°,
+                // Want Orderì™€ ë™ì¼í•œ Sorting Keyì˜ Sorting ìˆœì„œë¥¼
+                // ë§ˆì§€ë§‰ìœ¼ë¡œ ë³€ê²½í•œë‹¤.
                 IDE_TEST( qmgWindowing::alterSortingOrder( aStatement,
                                                            aGraph,
                                                            aWantOrder,
@@ -4266,9 +4266,9 @@ qmg::makeOrder4Graph( qcStatement       * aStatement,
                     if ( sUsable == ID_TRUE )
                     {
                         // BUG-21812
-                        // Windowing Graph¿¡ preserved order°¡ Á¸ÀçÇÏÁö ¾Ê´Â °æ¿ì
-                        // ( ºó overÀıÀ» °¡Áø analytic functionµé¸¸ÀÌ Á¸ÀçÇÏ´Â
-                        //   °æ¿ì )
+                        // Windowing Graphì— preserved orderê°€ ì¡´ì¬í•˜ì§€ ì•ŠëŠ” ê²½ìš°
+                        // ( ë¹ˆ overì ˆì„ ê°€ì§„ analytic functionë“¤ë§Œì´ ì¡´ì¬í•˜ëŠ”
+                        //   ê²½ìš° )
                         IDE_TEST( makeOrder4NonLeafGraph( aStatement,
                                                           aGraph,
                                                           aWantOrder )
@@ -4291,9 +4291,9 @@ qmg::makeOrder4Graph( qcStatement       * aStatement,
 
             if ( aGraph->myFrom->tableRef->view == NULL )
             {
-                // ÀÏ¹İ TableÀ» À§ÇÑ Selection GraphÀÎ °æ¿ì
+                // ì¼ë°˜ Tableì„ ìœ„í•œ Selection Graphì¸ ê²½ìš°
 
-                // Order¿¡ ºÎÇÕÇÏ´Â Index ÃßÃâ
+                // Orderì— ë¶€í•©í•˜ëŠ” Index ì¶”ì¶œ
                 IDE_TEST( checkUsableIndex4Selection( aGraph,
                                                       aWantOrder,
                                                       sOrderImportant,
@@ -4302,10 +4302,10 @@ qmg::makeOrder4Graph( qcStatement       * aStatement,
                                                       & sUsable )
                           != IDE_SUCCESS );
 
-                // BUG-45062 sUsable °ªÀ» Ã¼Å©ÇØ¾ß ÇÕ´Ï´Ù.
+                // BUG-45062 sUsable ê°’ì„ ì²´í¬í•´ì•¼ í•©ë‹ˆë‹¤.
                 if ( sUsable == ID_TRUE )
                 {
-                    // Selection Graph¿¡ ´ëÇÑ Order »ı¼º
+                    // Selection Graphì— ëŒ€í•œ Order ìƒì„±
                     IDE_TEST( makeOrder4Index( aStatement,
                                                aGraph,
                                                sSelMethod,
@@ -4319,9 +4319,9 @@ qmg::makeOrder4Graph( qcStatement       * aStatement,
             }
             else
             {
-                // View¸¦ À§ÇÑ Selection GraphÀÎ °æ¿ì
+                // Viewë¥¼ ìœ„í•œ Selection Graphì¸ ê²½ìš°
 
-                // ÇØ´ç GraphÀÇ Preserved Order¸¦ À§ÇÑ º¹»ç
+                // í•´ë‹¹ Graphì˜ Preserved Orderë¥¼ ìœ„í•œ ë³µì‚¬
                 for ( sOrder = aWantOrder;
                       sOrder != NULL;
                       sOrder = sOrder->next )
@@ -4348,18 +4348,18 @@ qmg::makeOrder4Graph( qcStatement       * aStatement,
                     }
                 }
 
-                // Child Graph¸¦ À§ÇÑ ID º¯°æ
+                // Child Graphë¥¼ ìœ„í•œ ID ë³€ê²½
                 sParseTree = (qmsParseTree *)
                     aGraph->myFrom->tableRef->view->myPlan->parseTree;
 
-                // ¿øÇÏ´Â OrderÀÇ ID¸¦
-                // ViewÀÇ Target¿¡ ºÎÇÕÇÏ´Â ID·Î º¯°æ
+                // ì›í•˜ëŠ” Orderì˜ IDë¥¼
+                // Viewì˜ Targetì— ë¶€í•©í•˜ëŠ” IDë¡œ ë³€ê²½
                 IDE_TEST(
                     refineID4Target( aWantOrder,
                                      sParseTree->querySet->target )
                     != IDE_SUCCESS );
 
-                // Child Graph¿¡ ´ëÇÑ Preserved Order »ı¼º
+                // Child Graphì— ëŒ€í•œ Preserved Order ìƒì„±
                 IDE_TEST( makeOrder4NonLeafGraph(
                               aGraph->myFrom->tableRef->view,
                               aGraph->left,
@@ -4368,7 +4368,7 @@ qmg::makeOrder4Graph( qcStatement       * aStatement,
 
                 IDE_DASSERT( aGraph->left->preservedOrder != NULL );
 
-                // ViewÀÇ Preserved Order¿¡ ´ëÇÑ direction Á¤º¸ ¼³Á¤
+                // Viewì˜ Preserved Orderì— ëŒ€í•œ direction ì •ë³´ ì„¤ì •
                 for ( sNewOrder = sFirstOrder,
                           sOrder = aGraph->left->preservedOrder;
                       sNewOrder != NULL && sOrder != NULL;
@@ -4377,7 +4377,7 @@ qmg::makeOrder4Graph( qcStatement       * aStatement,
                     sNewOrder->direction = sOrder->direction;
                 }
 
-                // ViewÀÇ Selection Graph¿¡ ´ëÇÑ Á¤º¸ ¼³Á¤
+                // Viewì˜ Selection Graphì— ëŒ€í•œ ì •ë³´ ì„¤ì •
                 aGraph->flag &= ~QMG_PRESERVED_ORDER_MASK;
                 aGraph->flag |= QMG_PRESERVED_ORDER_DEFINED_FIXED;
                 aGraph->preservedOrder = sFirstOrder;
@@ -4387,7 +4387,7 @@ qmg::makeOrder4Graph( qcStatement       * aStatement,
 
         case QMG_PARTITION :
 
-            // Order¿¡ ºÎÇÕÇÏ´Â Index ÃßÃâ
+            // Orderì— ë¶€í•©í•˜ëŠ” Index ì¶”ì¶œ
             IDE_TEST( checkUsableIndex4Partition( aGraph,
                                                   aWantOrder,
                                                   sOrderImportant,
@@ -4396,10 +4396,10 @@ qmg::makeOrder4Graph( qcStatement       * aStatement,
                                                   & sUsable )
                       != IDE_SUCCESS );
 
-            // BUG-45062 sUsable °ªÀ» Ã¼Å©ÇØ¾ß ÇÕ´Ï´Ù.
+            // BUG-45062 sUsable ê°’ì„ ì²´í¬í•´ì•¼ í•©ë‹ˆë‹¤.
             if ( sUsable == ID_TRUE )
             {
-                // Selection Graph¿¡ ´ëÇÑ Order »ı¼º
+                // Selection Graphì— ëŒ€í•œ Order ìƒì„±
                 IDE_TEST( makeOrder4Index( aStatement,
                                            aGraph,
                                            sSelMethod,
@@ -4413,7 +4413,7 @@ qmg::makeOrder4Graph( qcStatement       * aStatement,
             break;
             
             // To fix BUG-14336
-            // joinÀÇ preserved order´Â child¿Í °ü·ÃµÈ orderÀÓ.
+            // joinì˜ preserved orderëŠ” childì™€ ê´€ë ¨ëœ orderì„.
         case QMG_PROJECTION :
         case QMG_INNER_JOIN :
         case QMG_SEMI_JOIN:
@@ -4436,12 +4436,12 @@ qmg::makeOrder4Graph( qcStatement       * aStatement,
             if ( aGraph->preservedOrder != NULL )
             {
                 // To fix BUG-14336
-                // grouping, sorting, distinction graph°¡ sorting¿¡ ÀÇÇØ
-                // preserved order°¡ »ı¼ºµÈ °æ¿ì´Â ´ÙÀ½°ú °°´Ù.
+                // grouping, sorting, distinction graphê°€ sortingì— ì˜í•´
+                // preserved orderê°€ ìƒì„±ëœ ê²½ìš°ëŠ” ë‹¤ìŒê³¼ ê°™ë‹¤.
                 switch( aGraph->type )
                 {
                     case QMG_GROUPING:
-                        // grouping ÆÁÀÌ noneÀÎ °æ¿ì sort¿¡ ÀÇÇØ preserved order »ı¼º
+                        // grouping íŒì´ noneì¸ ê²½ìš° sortì— ì˜í•´ preserved order ìƒì„±
                         if( ( aGraph->flag & QMG_GROP_OPT_TIP_MASK ) == QMG_GROP_OPT_TIP_NONE )
                         {
                             sIsSorted = ID_TRUE;
@@ -4453,7 +4453,7 @@ qmg::makeOrder4Graph( qcStatement       * aStatement,
                         break;
 
                     case QMG_SORTING:
-                        // sort ÆÁÀÌ none ÀÌ°Å³ª lmstÀÎ °æ¿ì sort¿¡ ÀÇÇØ preserved order »ı¼º
+                        // sort íŒì´ none ì´ê±°ë‚˜ lmstì¸ ê²½ìš° sortì— ì˜í•´ preserved order ìƒì„±
                         if( ( ( aGraph->flag & QMG_SORT_OPT_TIP_MASK ) == QMG_SORT_OPT_TIP_NONE ) ||
                             ( ( aGraph->flag & QMG_SORT_OPT_TIP_MASK ) == QMG_SORT_OPT_TIP_LMST ) )
                         {
@@ -4466,7 +4466,7 @@ qmg::makeOrder4Graph( qcStatement       * aStatement,
                         break;
 
                     case QMG_DISTINCTION:
-                        // distinct ÆÁÀÌ noneÀÎ °æ¿ì sort¿¡ ÀÇÇØ preserved order »ı¼º
+                        // distinct íŒì´ noneì¸ ê²½ìš° sortì— ì˜í•´ preserved order ìƒì„±
                         if( ( aGraph->flag & QMG_DIST_OPT_TIP_MASK ) == QMG_DIST_OPT_TIP_NONE )
                         {
                             sIsSorted = ID_TRUE;
@@ -4485,7 +4485,7 @@ qmg::makeOrder4Graph( qcStatement       * aStatement,
                 if ( sIsSorted == ID_TRUE )
                 {
                     //---------------------------------------------------
-                    // sorting¿¡ ÀÇÇÏ¿© »õ·Î preserved order°¡ »ı¼ºµÈ °æ¿ì
+                    // sortingì— ì˜í•˜ì—¬ ìƒˆë¡œ preserved orderê°€ ìƒì„±ëœ ê²½ìš°
                     //---------------------------------------------------
 
                     if ( aGraph->preservedOrder->direction ==
@@ -4545,14 +4545,14 @@ qmg::makeOrder4Index( qcStatement       * aStatement,
  *
  * Description :
  *
- *    ÁÖ¾îÁø Order¿Í index¸¦ ÀÌ¿ëÇÏ¿© Selection GraphÀÇ
- *    Preserved Order¸¦ »ı¼ºÇÑ´Ù.
+ *    ì£¼ì–´ì§„ Orderì™€ indexë¥¼ ì´ìš©í•˜ì—¬ Selection Graphì˜
+ *    Preserved Orderë¥¼ ìƒì„±í•œë‹¤.
  *
  * Implementation :
  *
- *    »óÀ§ Graph¿¡¼­ÀÇ Merge¸¦ À§ÇØ IndexÀÇ ¸ğµç Presreved Order¸¦
- *    »ı¼ºÇÏÁö ¾Ê°í, ÁÖ¾îÁø Order¿¡ ÇØ´çÇÏ´Â Preserved Order¸¦
- *    »ı¼ºÇÑ´Ù.
+ *    ìƒìœ„ Graphì—ì„œì˜ Mergeë¥¼ ìœ„í•´ Indexì˜ ëª¨ë“  Presreved Orderë¥¼
+ *    ìƒì„±í•˜ì§€ ì•Šê³ , ì£¼ì–´ì§„ Orderì— í•´ë‹¹í•˜ëŠ” Preserved Orderë¥¼
+ *    ìƒì„±í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -4575,7 +4575,7 @@ qmg::makeOrder4Index( qcStatement       * aStatement,
     IDU_FIT_POINT_FATAL( "qmg::makeOrder4Index::__FT__" );
 
     //---------------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //---------------------------------------------------
 
     IDE_FT_ASSERT( aStatement != NULL );
@@ -4586,12 +4586,12 @@ qmg::makeOrder4Index( qcStatement       * aStatement,
     IDE_FT_ASSERT( aWantOrder != NULL );
 
     //---------------------------------------------------
-    // Index¸¦ ÀÌ¿ëÇÑ Preserved Order ±¸¼º
+    // Indexë¥¼ ì´ìš©í•œ Preserved Order êµ¬ì„±
     //---------------------------------------------------
 
-    // Order°¡ Áß¿äÇÑÁö¸¦ ÆÇ´Ü.
+    // Orderê°€ ì¤‘ìš”í•œì§€ë¥¼ íŒë‹¨.
     // BUG-40361 supporting to indexable analytic function
-    // aWantOrderÀÇ ¸ğµç Node°¡ NOT DEFINED ÀÎÁö È®ÀÎÇÑ´Ù
+    // aWantOrderì˜ ëª¨ë“  Nodeê°€ NOT DEFINED ì¸ì§€ í™•ì¸í•œë‹¤
     sOrderImportant = ID_FALSE;
     for ( sOrder = aWantOrder; sOrder != NULL; sOrder = sOrder->next )
     {
@@ -4608,11 +4608,11 @@ qmg::makeOrder4Index( qcStatement       * aStatement,
 
     if ( sOrderImportant == ID_TRUE )
     {
-        // Order°¡ Áß¿äÇÑ °æ¿ì
-        // Want Order¿Í µ¿ÀÏÇÑ Preserved Order¸¦ »ı¼ºÇÑ´Ù.
+        // Orderê°€ ì¤‘ìš”í•œ ê²½ìš°
+        // Want Orderì™€ ë™ì¼í•œ Preserved Orderë¥¼ ìƒì„±í•œë‹¤.
 
-        // Key Column Order¿ÍWant Order°¡ µ¿ÀÏÇÑ ¼ø¼­·Î ±¸¼ºµÇ¾î ÀÖÀ¸¸ç,
-        // ÀÌ¹Ì ÇØ´ç index¸¦ ÀÌ¿ëÇÑ ÀûÇÕ¼º °Ë»ç´Â ¸ğµÎ ÀÌ·ç¾îÁø »óÅÂÀÓ
+        // Key Column Orderì™€Want Orderê°€ ë™ì¼í•œ ìˆœì„œë¡œ êµ¬ì„±ë˜ì–´ ìˆìœ¼ë©°,
+        // ì´ë¯¸ í•´ë‹¹ indexë¥¼ ì´ìš©í•œ ì í•©ì„± ê²€ì‚¬ëŠ” ëª¨ë‘ ì´ë£¨ì–´ì§„ ìƒíƒœì„
 
         for ( sOrder = aWantOrder;
               sOrder != NULL;
@@ -4639,18 +4639,18 @@ qmg::makeOrder4Index( qcStatement       * aStatement,
     }
     else
     {
-        // Order°¡ Áß¿äÇÏÁö ¾ÊÀº °æ¿ì
-        // °¢ Preserved OrderÀÇ ¹æÇâ¼ºÀ» °áÁ¤ÇÔ.
+        // Orderê°€ ì¤‘ìš”í•˜ì§€ ì•Šì€ ê²½ìš°
+        // ê° Preserved Orderì˜ ë°©í–¥ì„±ì„ ê²°ì •í•¨.
 
-        // Key Column ¼ø¼­¿¡ ÇØ´çÇÏ´Â Want Order´Â Á¸ÀçÇÏ³ª
-        // ±× ¼ø¼­°¡ ÀÏÁ¤Ä¡ ¾ÊÀ½
+        // Key Column ìˆœì„œì— í•´ë‹¹í•˜ëŠ” Want OrderëŠ” ì¡´ì¬í•˜ë‚˜
+        // ê·¸ ìˆœì„œê°€ ì¼ì •ì¹˜ ì•ŠìŒ
 
-        // ÀÎµ¦½º Á¤º¸ È¹µæ
+        // ì¸ë±ìŠ¤ ì •ë³´ íšë“
         sIndex = aMethod->method->index;
 
-        // Ã¹¹øÂ° Column¿¡ ´ëÇÑ Order Á¤º¸ ¼³Á¤
-        // ¹İµå½Ã Ã¹¹øÂ° ColumnÀº Want Order¿¡ Æ÷ÇÔµÇ¾î ÀÖÀ½À»
-        // º¸ÀåÇÑ´Ù.
+        // ì²«ë²ˆì§¸ Columnì— ëŒ€í•œ Order ì •ë³´ ì„¤ì •
+        // ë°˜ë“œì‹œ ì²«ë²ˆì§¸ Columnì€ Want Orderì— í¬í•¨ë˜ì–´ ìˆìŒì„
+        // ë³´ì¥í•œë‹¤.
 
         sOrder = aWantOrder;
 
@@ -4659,32 +4659,32 @@ qmg::makeOrder4Index( qcStatement       * aStatement,
                   != IDE_SUCCESS );
 
         // To Fix PR-8572
-        // ¼ø¼­°¡ Áß¿äÇÏÁö ¾Ê´Ù¸é, IndexÀÇ Key ColumnÀÇ ¼ø¼­´ë·Î
-        // Selection Graph¿¡ Preserved Order¸¦ »ı¼ºÇÏ¿©¾ß ÇÑ´Ù.
+        // ìˆœì„œê°€ ì¤‘ìš”í•˜ì§€ ì•Šë‹¤ë©´, Indexì˜ Key Columnì˜ ìˆœì„œëŒ€ë¡œ
+        // Selection Graphì— Preserved Orderë¥¼ ìƒì„±í•˜ì—¬ì•¼ í•œë‹¤.
         sNewOrder->table = sOrder->table;
         sNewOrder->column =
             sIndex->keyColumns[0].column.id % SMI_COLUMN_ID_MAXIMUM;
         sNewOrder->next = NULL;
 
-        // OrderÀÇ ¹æÇâ ¼³Á¤
+        // Orderì˜ ë°©í–¥ ì„¤ì •
         switch ( aMethod->method->flag & QMO_STAT_CARD_IDX_HINT_MASK )
         {
             case QMO_STAT_CARD_IDX_INDEX_ASC :
 
-                // Index¿¡ ´ëÇÏ¿© Ascending Hint°¡ ÀÖ´Â °æ¿ì
+                // Indexì— ëŒ€í•˜ì—¬ Ascending Hintê°€ ìˆëŠ” ê²½ìš°
                 sNewOrder->direction = QMG_DIRECTION_ASC;
                 sHintExist = ID_TRUE;
                 break;
 
             case QMO_STAT_CARD_IDX_INDEX_DESC :
 
-                // Index¿¡ ´ëÇÏ¿© Descending Hint°¡ ÀÖ´Â °æ¿ì
+                // Indexì— ëŒ€í•˜ì—¬ Descending Hintê°€ ìˆëŠ” ê²½ìš°
                 sNewOrder->direction = QMG_DIRECTION_DESC;
                 sHintExist = ID_TRUE;
                 break;
 
             default:
-                // º°µµÀÇ Hint °¡ ¾ø´Â °æ¿ì
+                // ë³„ë„ì˜ Hint ê°€ ì—†ëŠ” ê²½ìš°
                 sNewOrder->direction = QMG_DIRECTION_NOT_DEFINED;
                 sHintExist = ID_FALSE;
                 break;
@@ -4697,15 +4697,15 @@ qmg::makeOrder4Index( qcStatement       * aStatement,
 
         for ( i = 1; i < sIndex->keyColCount; i++ )
         {
-            // Index Key Column°ú µ¿ÀÏÇÑ Want Order¸¦ °Ë»öÇÑ´Ù.
-            // Á¸ÀçÇÏÁö ¾ÊÀ» ¶§±îÁö ¹İº¹ÇÑ´Ù.
+            // Index Key Columnê³¼ ë™ì¼í•œ Want Orderë¥¼ ê²€ìƒ‰í•œë‹¤.
+            // ì¡´ì¬í•˜ì§€ ì•Šì„ ë•Œê¹Œì§€ ë°˜ë³µí•œë‹¤.
 
             for ( sOrder = aWantOrder; sOrder != NULL; sOrder = sOrder->next )
             {
                 sColumnPosition = (UShort)(sIndex->keyColumns[i].column.id % SMI_COLUMN_ID_MAXIMUM);
                 if ( sColumnPosition == sOrder->column )
                 {
-                    // µ¿ÀÏÇÑ ColumnÀÌ Á¸ÀçÇÏ´Â °æ¿ì
+                    // ë™ì¼í•œ Columnì´ ì¡´ì¬í•˜ëŠ” ê²½ìš°
                     break;
                 }
                 else
@@ -4716,7 +4716,7 @@ qmg::makeOrder4Index( qcStatement       * aStatement,
 
             if ( sOrder != NULL )
             {
-                // Key Column°ú µ¿ÀÏÇÑ Order°¡ Á¸ÀçÇÔ
+                // Key Columnê³¼ ë™ì¼í•œ Orderê°€ ì¡´ì¬í•¨
 
                 IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF(qmgPreservedOrder),
                                                          (void**) & sNewOrder )
@@ -4724,11 +4724,11 @@ qmg::makeOrder4Index( qcStatement       * aStatement,
 
                 idlOS::memcpy( sNewOrder, sOrder, ID_SIZEOF(qmgPreservedOrder) );
 
-                // Direction °áÁ¤
+                // Direction ê²°ì •
                 if ( ( sIndex->keyColsFlag[i] & SMI_COLUMN_ORDER_MASK )
                      == sPrevOrder )
                 {
-                    // ÀÌÀü°ú ¹æÇâÀÌ µ¿ÀÏÇÑ °æ¿ì
+                    // ì´ì „ê³¼ ë°©í–¥ì´ ë™ì¼í•œ ê²½ìš°
 
                     if ( sHintExist == ID_TRUE )
                     {
@@ -4741,7 +4741,7 @@ qmg::makeOrder4Index( qcStatement       * aStatement,
                 }
                 else
                 {
-                    // ÀÌÀü°ú ¹æÇâÀÌ ´Ù¸¥ °æ¿ì
+                    // ì´ì „ê³¼ ë°©í–¥ì´ ë‹¤ë¥¸ ê²½ìš°
 
                     if ( sHintExist == ID_TRUE )
                     {
@@ -4773,15 +4773,15 @@ qmg::makeOrder4Index( qcStatement       * aStatement,
             }
             else
             {
-                // Key Column°ú µ¿ÀÏÇÑ Order°¡ Á¸ÀçÇÏÁö ¾ÊÀ½
-                // ´õ ÀÌ»ó ÁøÇàÇÒ ÇÊ¿ä°¡ ¾øÀ½
+                // Key Columnê³¼ ë™ì¼í•œ Orderê°€ ì¡´ì¬í•˜ì§€ ì•ŠìŒ
+                // ë” ì´ìƒ ì§„í–‰í•  í•„ìš”ê°€ ì—†ìŒ
                 break;
             }
         }
     }
 
     //---------------------------------------------------
-    // Selection Graph¿¡ Á¤º¸ ¼³Á¤
+    // Selection Graphì— ì •ë³´ ì„¤ì •
     //---------------------------------------------------
 
     switch ( aGraph->type )
@@ -4790,16 +4790,16 @@ qmg::makeOrder4Index( qcStatement       * aStatement,
             
             sSELTgraph = (qmgSELT *) aGraph;
 
-            // ¼±ÅÃ Index º¯°æ
+            // ì„ íƒ Index ë³€ê²½
             IDE_TEST( qmgSelection::alterSelectedIndex( aStatement,
                                                         sSELTgraph,
                                                         aMethod->method->index )
                       != IDE_SUCCESS );
 
-            // Preserved Order ¿¬°á
+            // Preserved Order ì—°ê²°
             sSELTgraph->graph.preservedOrder = sFirstOrder;
 
-            // Preserved Order Mask ¼³Á¤
+            // Preserved Order Mask ì„¤ì •
             sSELTgraph->graph.flag &= ~QMG_PRESERVED_ORDER_MASK;
             sSELTgraph->graph.flag |= QMG_PRESERVED_ORDER_DEFINED_FIXED;
             
@@ -4809,16 +4809,16 @@ qmg::makeOrder4Index( qcStatement       * aStatement,
 
             sPARTgraph = (qmgPARTITION *) aGraph;
 
-            // ¼±ÅÃ Index º¯°æ
+            // ì„ íƒ Index ë³€ê²½
             IDE_TEST( qmgPartition::alterSelectedIndex( aStatement,
                                                         sPARTgraph,
                                                         aMethod->method->index )
                       != IDE_SUCCESS );
 
-            // Preserved Order ¿¬°á
+            // Preserved Order ì—°ê²°
             sPARTgraph->graph.preservedOrder = sFirstOrder;
 
-            // Preserved Order Mask ¼³Á¤
+            // Preserved Order Mask ì„¤ì •
             sPARTgraph->graph.flag &= ~QMG_PRESERVED_ORDER_MASK;
             sPARTgraph->graph.flag |= QMG_PRESERVED_ORDER_DEFINED_FIXED;
             
@@ -4846,13 +4846,13 @@ qmg::makeOrder4NonLeafGraph( qcStatement       * aStatement,
  *
  * Description :
  *
- *    ÁÖ¾îÁø Order¸¦ ÀÌ¿ëÇÏ¿© Non Leaf GraphÀÇ
- *    Preserved Order¸¦ »ı¼ºÇÑ´Ù.
+ *    ì£¼ì–´ì§„ Orderë¥¼ ì´ìš©í•˜ì—¬ Non Leaf Graphì˜
+ *    Preserved Orderë¥¼ ìƒì„±í•œë‹¤.
  *
  * Implementation :
  *
- *    Child Graph¿¡ ´ëÇÑ Preserved Order Build
- *    Child GraphÀÇ Preserved Order Á¤º¸¸¦ Á¶ÇÕÇÏ¿© Preserverd Order Build
+ *    Child Graphì— ëŒ€í•œ Preserved Order Build
+ *    Child Graphì˜ Preserved Order ì •ë³´ë¥¼ ì¡°í•©í•˜ì—¬ Preserverd Order Build
  *
  ***********************************************************************/
 
@@ -4865,7 +4865,7 @@ qmg::makeOrder4NonLeafGraph( qcStatement       * aStatement,
     IDU_FIT_POINT_FATAL( "qmg::makeOrder4NonLeafGraph::__FT__" );
 
     //---------------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //---------------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -4873,34 +4873,34 @@ qmg::makeOrder4NonLeafGraph( qcStatement       * aStatement,
     IDE_DASSERT( aWantOrder != NULL );
 
     //---------------------------------------------------
-    // Child Graph¿¡ ´ëÇÑ Preserved Order »ı¼º
+    // Child Graphì— ëŒ€í•œ Preserved Order ìƒì„±
     //---------------------------------------------------
 
-    // Child Graph ¿¡ ´ëÇÑ OrderÁ¤º¸ ±¸Ãà
+    // Child Graph ì— ëŒ€í•œ Orderì •ë³´ êµ¬ì¶•
     IDE_TEST( setOrder4Child( aStatement,
                               aWantOrder,
                               aGraph->left )
               != IDE_SUCCESS );
 
     //---------------------------------------------------
-    // Non-Leaf Graph¿¡ ´ëÇÑ Preserved Order »ı¼º
+    // Non-Leaf Graphì— ëŒ€í•œ Preserved Order ìƒì„±
     //---------------------------------------------------
 
-    // ±âÁ¸ÀÇ Preserved Order Á¤º¸´Â ¹«½ÃÇÏ¸ç,
-    // ÁÖ¾îÁø Preserved Order¸¦ ÀÌ¿ëÇÏ¿© »õ·Î »ı¼ºÇÑ´Ù.
+    // ê¸°ì¡´ì˜ Preserved Order ì •ë³´ëŠ” ë¬´ì‹œí•˜ë©°,
+    // ì£¼ì–´ì§„ Preserved Orderë¥¼ ì´ìš©í•˜ì—¬ ìƒˆë¡œ ìƒì„±í•œë‹¤.
 
     aGraph->flag &= ~QMG_PRESERVED_ORDER_MASK;
     aGraph->flag |= QMG_PRESERVED_ORDER_DEFINED_FIXED;
 
-    // ChildÀÇ Order Á¤º¸¸¦ ÀÌ¿ëÇÏ¿© OrderÁ¤º¸¸¦ ±¸¼ºÇÑ´Ù.
-    // Child Graph´Â ÁÖ¾îÁø Order¸¸À¸·Î Preserved Order°¡
-    // ±¸¼ºµÇ¾î ÀÖ´Ù.
+    // Childì˜ Order ì •ë³´ë¥¼ ì´ìš©í•˜ì—¬ Orderì •ë³´ë¥¼ êµ¬ì„±í•œë‹¤.
+    // Child GraphëŠ” ì£¼ì–´ì§„ Orderë§Œìœ¼ë¡œ Preserved Orderê°€
+    // êµ¬ì„±ë˜ì–´ ìˆë‹¤.
 
-    // Left Graph´Â ¹İµå½Ã Preserved Order°¡ Á¸ÀçÇÑ´Ù.
+    // Left GraphëŠ” ë°˜ë“œì‹œ Preserved Orderê°€ ì¡´ì¬í•œë‹¤.
     IDE_DASSERT( aGraph->left->preservedOrder != NULL );
 
     //------------------------------------
-    // Left Graph·ÎºÎÅÍ Order ÃßÃâ
+    // Left Graphë¡œë¶€í„° Order ì¶”ì¶œ
     //------------------------------------
 
     for ( sOrder = aGraph->left->preservedOrder;
@@ -4927,12 +4927,12 @@ qmg::makeOrder4NonLeafGraph( qcStatement       * aStatement,
     }
 
     //------------------------------------
-    // Right Graph·ÎºÎÅÍ Preserved Order ÃßÃâ
+    // Right Graphë¡œë¶€í„° Preserved Order ì¶”ì¶œ
     //------------------------------------
 
     if ( aGraph->right != NULL )
     {
-        // Right Graph¿¡´Â Preserved Order°¡ Á¸ÀçÇÏÁö ¾ÊÀ» ¼ö ÀÖÀ½
+        // Right Graphì—ëŠ” Preserved Orderê°€ ì¡´ì¬í•˜ì§€ ì•Šì„ ìˆ˜ ìˆìŒ
         for ( sOrder = aGraph->right->preservedOrder;
               sOrder != NULL;
               sOrder = sOrder->next )
@@ -4979,8 +4979,8 @@ qmg::makeAnalFuncResultMtrNode( qcStatement       * aStatement,
 {
 /***********************************************************************
  *
- * Description : Analytic Function °á°ú°¡ ÀúÀåµÉ materialize node¸¦
- *               »ı¼º
+ * Description : Analytic Function ê²°ê³¼ê°€ ì €ì¥ë  materialize nodeë¥¼
+ *               ìƒì„±
  *
  * Implementation :
  *
@@ -4992,7 +4992,7 @@ qmg::makeAnalFuncResultMtrNode( qcStatement       * aStatement,
     IDU_FIT_POINT_FATAL( "qmg::makeAnalFuncResultMtrNode::__FT__" );
 
     //----------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //----------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -5000,19 +5000,19 @@ qmg::makeAnalFuncResultMtrNode( qcStatement       * aStatement,
     IDE_DASSERT( aColumnCount != NULL );
 
     //----------------------------------
-    // ±âº» ÃÊ±âÈ­
+    // ê¸°ë³¸ ì´ˆê¸°í™”
     //----------------------------------
     
     sLastMtrNode = *aLastMtrNode;
     
     //----------------------------------
-    //  1. Analytic FunctionÀÇ Result°¡ ÀúÀåµÉ materialize node »ı¼º
+    //  1. Analytic Functionì˜ Resultê°€ ì €ì¥ë  materialize node ìƒì„±
     //----------------------------------
 
     IDE_TEST( STRUCT_ALLOC(QC_QMP_MEM(aStatement), qmcMtrNode, &sNewMtrNode)
               != IDE_SUCCESS);
 
-    // ÃÊ±âÈ­
+    // ì´ˆê¸°í™”
     sNewMtrNode->srcNode = NULL;
     sNewMtrNode->dstNode = NULL;
     sNewMtrNode->flag = 0;
@@ -5020,7 +5020,7 @@ qmg::makeAnalFuncResultMtrNode( qcStatement       * aStatement,
     sNewMtrNode->myDist = NULL;
     sNewMtrNode->bucketCnt = 0;
 
-    // flag ¼³Á¤
+    // flag ì„¤ì •
     sNewMtrNode->flag &= ~QMC_MTR_TYPE_MASK;
     sNewMtrNode->flag |= QMC_MTR_TYPE_COPY_VALUE;
 
@@ -5028,7 +5028,7 @@ qmg::makeAnalFuncResultMtrNode( qcStatement       * aStatement,
     sNewMtrNode->flag |= QMC_MTR_CHANGE_COLUMN_LOCATE_TRUE;
 
     //--------------
-    // srcNode ±¸¼º
+    // srcNode êµ¬ì„±
     //--------------
     
     IDE_TEST(
@@ -5043,7 +5043,7 @@ qmg::makeAnalFuncResultMtrNode( qcStatement       * aStatement,
                    ID_SIZEOF( qtcNode ) );
 
     //--------------
-    // dstNode ±¸¼º
+    // dstNode êµ¬ì„±
     //--------------
     
     IDE_TEST( qtc::makeInternalColumn( aStatement,
@@ -5058,13 +5058,13 @@ qmg::makeAnalFuncResultMtrNode( qcStatement       * aStatement,
 
     sNewMtrNode->dstNode->node.table  = aTupleID;
     sNewMtrNode->dstNode->node.column = *aColumnCount;
-    // Aggregate functionÀÇ °á°ú¸¸ º¹»çÇÏ¸é µÇ¹Ç·Î value/column node·Î ¼³Á¤ÇÑ´Ù.
+    // Aggregate functionì˜ ê²°ê³¼ë§Œ ë³µì‚¬í•˜ë©´ ë˜ë¯€ë¡œ value/column nodeë¡œ ì„¤ì •í•œë‹¤.
     sNewMtrNode->dstNode->node.module = &qtc::valueModule;
 
     *aColumnCount += (sNewMtrNode->dstNode->node.module->lflag & MTC_NODE_COLUMN_COUNT_MASK);
     
     //----------------------------------
-    // »õ·Î¿î materialize node »ı¼ºÇÑ °æ¿ì, ÀÌ¸¦ ¿¬°á
+    // ìƒˆë¡œìš´ materialize node ìƒì„±í•œ ê²½ìš°, ì´ë¥¼ ì—°ê²°
     //----------------------------------
     if( sLastMtrNode == NULL )
     {
@@ -5097,7 +5097,7 @@ qmg::makeSortMtrNode( qcStatement        * aStatement,
 {
 /***********************************************************************
  *
- * Description : sort key¿¡ ´ëÇÑ materialize node¸¦ »ı¼ºÇÔ
+ * Description : sort keyì— ëŒ€í•œ materialize nodeë¥¼ ìƒì„±í•¨
  *
  * Implementation :
  *
@@ -5119,16 +5119,16 @@ qmg::makeSortMtrNode( qcStatement        * aStatement,
 
     IDU_FIT_POINT_FATAL( "qmg::makeSortMtrNode::__FT__" );
 
-    // ÃÊ±âÈ­
+    // ì´ˆê¸°í™”
     sFirstSortMtrNode = NULL;
     sAnalyticFunc     = NULL;
     sOverColumnCount  = 0;
 
     // BUG-33663 Ranking Function
-    // sort key¿¡´Â ¿©·¯°³ÀÇ analytic functionµéÀÌ ´Ş·ÁÀÖ°í
-    // sort node¸¦ »ı¼º½Ã ÀÌ µéÁß¿¡¼­ over columnÀÌ °¡Àå ¸¹Àº °ÍÀ» ±âÁØÀ¸·Î »ı¼ºÇÑ´Ù.
-    // ±âÁ¸¿¡´Â preserved order¸¸À¸·Î °¡´ÉÇß¾úÀ¸³ª
-    // order¸¦ °í·ÁÇÏ¿© over columnÀ» Á÷Á¢ ÂüÁ¶ÇØ¾ß ÇÑ´Ù.
+    // sort keyì—ëŠ” ì—¬ëŸ¬ê°œì˜ analytic functionë“¤ì´ ë‹¬ë ¤ìˆê³ 
+    // sort nodeë¥¼ ìƒì„±ì‹œ ì´ ë“¤ì¤‘ì—ì„œ over columnì´ ê°€ì¥ ë§ì€ ê²ƒì„ ê¸°ì¤€ìœ¼ë¡œ ìƒì„±í•œë‹¤.
+    // ê¸°ì¡´ì—ëŠ” preserved orderë§Œìœ¼ë¡œ ê°€ëŠ¥í–ˆì—ˆìœ¼ë‚˜
+    // orderë¥¼ ê³ ë ¤í•˜ì—¬ over columnì„ ì§ì ‘ ì°¸ì¡°í•´ì•¼ í•œë‹¤.
     for ( sCurAnalyticFunc = aAnalFuncList;
           sCurAnalyticFunc != NULL;
           sCurAnalyticFunc = sCurAnalyticFunc->next )
@@ -5153,20 +5153,20 @@ qmg::makeSortMtrNode( qcStatement        * aStatement,
         }
     }
 
-    // sort key¿¡ ÇØ´çÇÏ´Â analytic functionÀº ¹İµå½Ã Á¸ÀçÇÑ´Ù.
+    // sort keyì— í•´ë‹¹í•˜ëŠ” analytic functionì€ ë°˜ë“œì‹œ ì¡´ì¬í•œë‹¤.
     IDE_TEST_RAISE( sAnalyticFunc == NULL, ERR_INVALID_ANALYTIC_FUNCTION );
     
-    // Sort Key¿¡ ÇØ´çÇÏ´Â materialize node¸¦ Ã£À½
+    // Sort Keyì— í•´ë‹¹í•˜ëŠ” materialize nodeë¥¼ ì°¾ìŒ
     for ( sCurSortKeyCol = aSortKey,
               sOverColumn = sAnalyticFunc->analyticFuncNode->overClause->overColumn;
           sCurSortKeyCol != NULL;
           sCurSortKeyCol = sCurSortKeyCol->next,
               sOverColumn = sOverColumn->next )
     {
-        // sort key¿¡ ´ëÀÀµÇ´Â over columnÀÌ ¹İµå½Ã Á¸ÀçÇØ¾ß ÇÑ´Ù.
+        // sort keyì— ëŒ€ì‘ë˜ëŠ” over columnì´ ë°˜ë“œì‹œ ì¡´ì¬í•´ì•¼ í•œë‹¤.
         IDE_TEST_RAISE( sOverColumn == NULL, ERR_INVALID_OVER_COLUMN );
         
-        // Ä®·³ÀÇ ÇöÀç (table, column) Á¤º¸¸¦ Ã£À½
+        // ì¹¼ëŸ¼ì˜ í˜„ì¬ (table, column) ì •ë³´ë¥¼ ì°¾ìŒ
         IDE_TEST( qmg::findColumnLocate( aStatement,
                                          aTupleID,
                                          sCurSortKeyCol->table,
@@ -5175,7 +5175,7 @@ qmg::makeSortMtrNode( qcStatement        * aStatement,
                                          & sColumn )
                   != IDE_SUCCESS );
     
-        // ÇöÀç sort key columnÀÇ mtr node¸¦ Ã£À½
+        // í˜„ì¬ sort key columnì˜ mtr nodeë¥¼ ì°¾ìŒ
         sExist = ID_FALSE;
         
         for ( sCurNode = aMtrNode;
@@ -5195,12 +5195,12 @@ qmg::makeSortMtrNode( qcStatement        * aStatement,
                     if ( ( sCurNode->flag & QMC_MTR_SORT_NEED_MASK )
                          == QMC_MTR_SORT_NEED_TRUE )
                     {
-                        // partition by columnÀÌ¾î¾ß ÇÔ
-                        // partition by columnÀº sorting ÇØ¾ß ÇÏ¹Ç·Î
-                        // QMC_MTR_SORT_NEED_TRUE°¡ ¼³Á¤µÇ¾î ÀÖÀ½
+                        // partition by columnì´ì–´ì•¼ í•¨
+                        // partition by columnì€ sorting í•´ì•¼ í•˜ë¯€ë¡œ
+                        // QMC_MTR_SORT_NEED_TRUEê°€ ì„¤ì •ë˜ì–´ ìˆìŒ
                         
                         // BUG-33663 Ranking Function
-                        // mtr node°¡ order columnÀÎ °æ¿ì¿¡ ´ëÇØ¼­ µ¿ÀÏÇÑ order¸¦ °®´Â ÄÃ·³À» Ã£´Â´Ù.
+                        // mtr nodeê°€ order columnì¸ ê²½ìš°ì— ëŒ€í•´ì„œ ë™ì¼í•œ orderë¥¼ ê°–ëŠ” ì»¬ëŸ¼ì„ ì°¾ëŠ”ë‹¤.
                         if ( (sOverColumn->flag & QTC_OVER_COLUMN_MASK)
                              == QTC_OVER_COLUMN_NORMAL )
                         {
@@ -5229,8 +5229,8 @@ qmg::makeSortMtrNode( qcStatement        * aStatement,
                                      ( (sOverColumn->flag & QTC_OVER_COLUMN_ORDER_MASK)
                                        == QTC_OVER_COLUMN_ORDER_ASC ) )
                                 {
-                                    // BUG-42145 Nulls Option ÀÌ ´Ù¸¥ °æ¿ìµµ
-                                    // Ã¼Å©ÇØ¾ßÇÑ´Ù.
+                                    // BUG-42145 Nulls Option ì´ ë‹¤ë¥¸ ê²½ìš°ë„
+                                    // ì²´í¬í•´ì•¼í•œë‹¤.
                                     if ( ( ( sCurNode->flag & QMC_MTR_SORT_NULLS_ORDER_MASK )
                                            == QMC_MTR_SORT_NULLS_ORDER_NONE ) &&
                                          ( ( sOverColumn->flag & QTC_OVER_COLUMN_NULLS_ORDER_MASK )
@@ -5282,8 +5282,8 @@ qmg::makeSortMtrNode( qcStatement        * aStatement,
                                      ( (sOverColumn->flag & QTC_OVER_COLUMN_ORDER_MASK)
                                        == QTC_OVER_COLUMN_ORDER_DESC ) )
                                 {
-                                    // BUG-42145 Nulls Option ÀÌ ´Ù¸¥ °æ¿ìµµ
-                                    // Ã¼Å©ÇØ¾ßÇÑ´Ù.
+                                    // BUG-42145 Nulls Option ì´ ë‹¤ë¥¸ ê²½ìš°ë„
+                                    // ì²´í¬í•´ì•¼í•œë‹¤.
                                     if ( ( ( sCurNode->flag & QMC_MTR_SORT_NULLS_ORDER_MASK )
                                            == QMC_MTR_SORT_NULLS_ORDER_NONE ) &&
                                          ( ( sOverColumn->flag & QTC_OVER_COLUMN_NULLS_ORDER_MASK )
@@ -5342,8 +5342,8 @@ qmg::makeSortMtrNode( qcStatement        * aStatement,
                 }
                 else
                 {
-                    // tableÀ» Ç¥ÇöÇÏ±â À§ÇÑ columnÀÎ °æ¿ì
-                    // ´Ù¸¥ Ä®·³ÀÓ¿¡µµ ºÒ±¸ÇÏ°í °°À» ¼ö ÀÖÀ½
+                    // tableì„ í‘œí˜„í•˜ê¸° ìœ„í•œ columnì¸ ê²½ìš°
+                    // ë‹¤ë¥¸ ì¹¼ëŸ¼ì„ì—ë„ ë¶ˆêµ¬í•˜ê³  ê°™ì„ ìˆ˜ ìˆìŒ
                 }
             }
             else
@@ -5352,15 +5352,15 @@ qmg::makeSortMtrNode( qcStatement        * aStatement,
             }
         }
 
-        // Partition By Column¿¡ ´ëÇÏ¿© materialize node°¡ ÀÌ¹Ì
-        // »ı¼ºµÇÀÖÀ¸¹Ç·Î, ¹«Á¶°Ç Á¸ÀçÇØ¾ßÇÔ
+        // Partition By Columnì— ëŒ€í•˜ì—¬ materialize nodeê°€ ì´ë¯¸
+        // ìƒì„±ë˜ìˆìœ¼ë¯€ë¡œ, ë¬´ì¡°ê±´ ì¡´ì¬í•´ì•¼í•¨
         IDE_TEST_RAISE( sExist == ID_FALSE, ERR_MTR_NODE_NOT_EXISTS );
 
         IDE_TEST( STRUCT_ALLOC(QC_QMP_MEM(aStatement), qmcMtrNode, &sNewMtrNode)
                   != IDE_SUCCESS);
 
         // BUG-28507
-        // Partition By Column¿¡ sorting directionÀ» ¼³Á¤ÇÔ
+        // Partition By Columnì— sorting directionì„ ì„¤ì •í•¨
         if ( (sCurNode->flag & QMC_MTR_SORT_ORDER_FIXED_MASK)
              == QMC_MTR_SORT_ORDER_FIXED_FALSE )
         {
@@ -5439,8 +5439,8 @@ qmg::makeDistNode( qcStatement        * aStatement,
 {
 /***********************************************************************
  *
- * Description : Materialize NodeÀÇ distNode¸¦ ±¸¼ºÇÏ°í,
- *               PlanÀÇ distNode¿¡ µî·ÏÇÑ´Ù.
+ * Description : Materialize Nodeì˜ distNodeë¥¼ êµ¬ì„±í•˜ê³ ,
+ *               Planì˜ distNodeì— ë“±ë¡í•œë‹¤.
  *
  * Implementation :
  *
@@ -5460,18 +5460,18 @@ qmg::makeDistNode( qcStatement        * aStatement,
 
     IDU_FIT_POINT_FATAL( "qmg::makeDistNode::__FT__" );
 
-    // ±âº» ÃÊ±âÈ­
+    // ê¸°ë³¸ ì´ˆê¸°í™”
     sExistSameDistNode = ID_FALSE;
     sDistNodeCount = *aDistNodeCount;
     sDistAggArg = NULL;
     sMtcTemplate = & QC_SHARED_TMPLATE(aStatement)->tmplate;
 
-    /* PROJ-1353 dist node¸¦ Áßº¹ÇØ¼­ ¸¸µé±â À§ÇØ »ç¿ë */
+    /* PROJ-1353 dist nodeë¥¼ ì¤‘ë³µí•´ì„œ ë§Œë“¤ê¸° ìœ„í•´ ì‚¬ìš© */
     if ( ( aMtrNode->flag & QMC_MTR_DIST_DUP_MASK )
          == QMC_MTR_DIST_DUP_FALSE )
     {
-        // Plan¿¡ µî·ÏµÈ distinct nodeµé Áß¿¡¼­
-        // µ¿ÀÏÇÑ distinct node Á¸ÀçÇÏ´ÂÁö °Ë»ç
+        // Planì— ë“±ë¡ëœ distinct nodeë“¤ ì¤‘ì—ì„œ
+        // ë™ì¼í•œ distinct node ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬
         for ( sDistNode = *aPlanDistNode;
               sDistNode != NULL;
               sDistNode = sDistNode->next )
@@ -5500,26 +5500,26 @@ qmg::makeDistNode( qcStatement        * aStatement,
     }
     if ( sExistSameDistNode == ID_TRUE )
     {
-        // µ¿ÀÏÇÑ Distinct Argument°¡ ÀÖÀ» °æ¿ì,
-        // »õ·Î¿î distNode »ı¼ºÇÏÁö ¾Ê°í µ¿ÀÏÇÑ distNode¸¦ °¡¸®Å´
+        // ë™ì¼í•œ Distinct Argumentê°€ ìˆì„ ê²½ìš°,
+        // ìƒˆë¡œìš´ distNode ìƒì„±í•˜ì§€ ì•Šê³  ë™ì¼í•œ distNodeë¥¼ ê°€ë¦¬í‚´
         aMtrNode->myDist = sDistNode;
         aMtrNode->bucketCnt = sDistNode->bucketCnt;
     }
     else
     {
-        //ÇØ´ç bucketCount¸¦ Ã£±â À§ÇØ¼­ °°Àº aggregationÀÎÁö Ã£À½
+        //í•´ë‹¹ bucketCountë¥¼ ì°¾ê¸° ìœ„í•´ì„œ ê°™ì€ aggregationì¸ì§€ ì°¾ìŒ
         for( sDistAggArg = aDistAggArg ;
              sDistAggArg != NULL ;
              sDistAggArg = sDistAggArg->next )
         {
-            //°°Àº aggregationÀÌ¶ó¸é
+            //ê°™ì€ aggregationì´ë¼ë©´
             if( aAggrNode->node.arguments == (mtcNode*)sDistAggArg->aggArg )
             {
                 sDistNodeCount++;
                 sDistColumnCount = 0;
 
                 //----------------------------------
-                // Distinct¿¡ ´ëÇÑ Æ©ÇÃÀÇ ÇÒ´ç
+                // Distinctì— ëŒ€í•œ íŠœí”Œì˜ í• ë‹¹
                 //----------------------------------
                 IDE_TEST( qtc::nextTable( &sDistTupleID ,
                                           aStatement ,
@@ -5547,12 +5547,12 @@ qmg::makeDistNode( qcStatement        * aStatement,
                 }
 
                 // PROJ-1358
-                // Next Table ÈÄ¿¡´Â Internal Tuple SetÀÇ
-                // ¸Ş¸ğ¸® È®ÀåÀ¸·Î ±âÁ¸ °ªÀ» »ç¿ëÇÏÁö ¸øÇÏ´Â
-                // °æ¿ì°¡ ÀÖ´Ù.
-                // mtcTuple * Áö¿ªº¯¼ö¸¦ »ç¿ëÇÏ¸é ¾ÈµÊ
-                // ÄÃ·³ÀÇ ´ëÃ¼ ¿©ºÎ¸¦ °áÁ¤ÇÏ±â À§ÇØ¼­´Â
-                // TupleÀÇ ÀúÀå ¸ÅÃ¼ Á¤º¸¸¦ ¹Ì¸® ±â·ÏÇÏ°í ÀÖ¾î¾ß ÇÑ´Ù.
+                // Next Table í›„ì—ëŠ” Internal Tuple Setì˜
+                // ë©”ëª¨ë¦¬ í™•ì¥ìœ¼ë¡œ ê¸°ì¡´ ê°’ì„ ì‚¬ìš©í•˜ì§€ ëª»í•˜ëŠ”
+                // ê²½ìš°ê°€ ìˆë‹¤.
+                // mtcTuple * ì§€ì—­ë³€ìˆ˜ë¥¼ ì‚¬ìš©í•˜ë©´ ì•ˆë¨
+                // ì»¬ëŸ¼ì˜ ëŒ€ì²´ ì—¬ë¶€ë¥¼ ê²°ì •í•˜ê¸° ìœ„í•´ì„œëŠ”
+                // Tupleì˜ ì €ì¥ ë§¤ì²´ ì •ë³´ë¥¼ ë¯¸ë¦¬ ê¸°ë¡í•˜ê³  ìˆì–´ì•¼ í•œë‹¤.
                 if( (aFlag & QMN_PLAN_STORAGE_MASK) ==
                     QMN_PLAN_STORAGE_MEMORY )
                 {
@@ -5571,7 +5571,7 @@ qmg::makeDistNode( qcStatement        * aStatement,
 
                 sCopiedNode = *sDistAggArg->aggArg;
 
-                //distNode »ı¼º
+                //distNode ìƒì„±
                 IDE_TEST( qmg::makeColumnMtrNode( aStatement ,
                                                   aQuerySet ,
                                                   &sCopiedNode ,
@@ -5603,7 +5603,7 @@ qmg::makeDistNode( qcStatement        * aStatement,
                 
                 aMtrNode->myDist = sNewMtrNode;
 
-                //°¢ TupleÀÇ ÇÒ´ç
+                //ê° Tupleì˜ í• ë‹¹
                 IDE_TEST(
                     qtc::allocIntermediateTuple(
                         aStatement ,
@@ -5640,7 +5640,7 @@ qmg::makeDistNode( qcStatement        * aStatement,
                     // Nothing To Do 
                 }
                         
-                //GRAPH¿¡¼­ ÁöÁ¤ÇÑ ÀúÀå¸ÅÃ¼¸¦ »ç¿ëÇÑ´Ù.
+                //GRAPHì—ì„œ ì§€ì •í•œ ì €ì¥ë§¤ì²´ë¥¼ ì‚¬ìš©í•œë‹¤.
                 if( (aFlag & QMN_PLAN_STORAGE_MASK) ==
                     QMN_PLAN_STORAGE_MEMORY )                    
                 {
@@ -5671,10 +5671,10 @@ qmg::makeDistNode( qcStatement        * aStatement,
                     // Nothing to do.
                 }
 
-                //passNodeÀÇ »ı¼º
-                // qtc::columnModuleÀÌ°Å³ª
-                // memory temp tableÀÎ °æ¿ì´Â pass node¸¦ »ı¼ºÇÏÁö
-                // ¾Ê´Â´Ù. ÀÌ¶§, conversionÀº NULLÀÌ¾î¾ß ÇÑ´Ù.
+                //passNodeì˜ ìƒì„±
+                // qtc::columnModuleì´ê±°ë‚˜
+                // memory temp tableì¸ ê²½ìš°ëŠ” pass nodeë¥¼ ìƒì„±í•˜ì§€
+                // ì•ŠëŠ”ë‹¤. ì´ë•Œ, conversionì€ NULLì´ì–´ì•¼ í•œë‹¤.
                 if( ( ( sNewMtrNode->srcNode->node.module
                         == &(qtc::columnModule ) ) ||
                       ( ( sNewMtrNode->flag & QMC_MTR_TYPE_MASK )
@@ -5684,9 +5684,9 @@ qmg::makeDistNode( qcStatement        * aStatement,
                     &&
                     ( sNewMtrNode->srcNode->node.conversion == NULL ) )
                 {
-                    //memory Temp Table¿¡ ÀúÀåµÇ°í Memory ColumnÀ»
-                    //Á¦¿ÜÇÏ°í´Â myNode->dstNoode->node.argument¸¦
-                    //º¯°æ ½ÃÅ²´Ù
+                    //memory Temp Tableì— ì €ì¥ë˜ê³  Memory Columnì„
+                    //ì œì™¸í•˜ê³ ëŠ” myNode->dstNoode->node.argumentë¥¼
+                    //ë³€ê²½ ì‹œí‚¨ë‹¤
                     if( ( ( sMtcTemplate
                             ->rows[sDistAggArg->aggArg->node.table]
                             .lflag
@@ -5700,7 +5700,7 @@ qmg::makeDistNode( qcStatement        * aStatement,
                     }
                     else
                     {
-                        /* BUG-43698 GROUP_CONCAT()¿¡¼­ DISTINCT()ÀÇ next¸¦ »ç¿ëÇÑ´Ù. */
+                        /* BUG-43698 GROUP_CONCAT()ì—ì„œ DISTINCT()ì˜ nextë¥¼ ì‚¬ìš©í•œë‹¤. */
                         sNewMtrNode->dstNode->node.next = aMtrNode->dstNode->node.arguments->next;
 
                         aMtrNode->dstNode->node.arguments =
@@ -5727,7 +5727,7 @@ qmg::makeDistNode( qcStatement        * aStatement,
                                                      sNewMtrNode->dstNode ,
                                                      &sPassNode )
                                   != IDE_SUCCESS );
-                        /* BUG-45387 GROUP_CONCAT()¿¡¼­ DISTINCT()ÀÇ next¸¦ »ç¿ëÇÑ´Ù. */
+                        /* BUG-45387 GROUP_CONCAT()ì—ì„œ DISTINCT()ì˜ nextë¥¼ ì‚¬ìš©í•œë‹¤. */
                         sMtcNode = aMtrNode->dstNode->node.arguments->next;
 
                         aMtrNode->dstNode->node.arguments =
@@ -5735,7 +5735,7 @@ qmg::makeDistNode( qcStatement        * aStatement,
 
                         aAggrNode->node.arguments = (mtcNode *)sPassNode;
 
-                        /* BUG-45387 GROUP_CONCAT()¿¡¼­ DISTINCT()ÀÇ next¸¦ »ç¿ëÇÑ´Ù. */
+                        /* BUG-45387 GROUP_CONCAT()ì—ì„œ DISTINCT()ì˜ nextë¥¼ ì‚¬ìš©í•œë‹¤. */
                         sPassNode->node.next = sMtcNode;
                     }
                 }
@@ -5765,7 +5765,7 @@ qmg::setDirection4SortColumn( qmgPreservedOrder  * aPreservedOrder,
 {
 /***********************************************************************
  *
- * Description : sort ÄÃ·³±¸¼º½Ã¿¡ Á¤·Ä ¹æÇâÀ» °áÁ¤ÇÑ´Ù.
+ * Description : sort ì»¬ëŸ¼êµ¬ì„±ì‹œì— ì •ë ¬ ë°©í–¥ì„ ê²°ì •í•œë‹¤.
  *
  *
  * Implementation :
@@ -5773,8 +5773,8 @@ qmg::setDirection4SortColumn( qmgPreservedOrder  * aPreservedOrder,
  *     - NOT DEFINE : ASC
  *     - ACS        : ASC
  *     - DESC       : DESC
- *     - SAME_PREV  : ¾Õ°ú ¹æÇâÀÌ µ¿ÀÏ.
- *     - DIFF_PREV  : ¾Õ°ú ¹æÇâÀÌ ¹İ´ë.
+ *     - SAME_PREV  : ì•ê³¼ ë°©í–¥ì´ ë™ì¼.
+ *     - DIFF_PREV  : ì•ê³¼ ë°©í–¥ì´ ë°˜ëŒ€.
  *
  ***********************************************************************/
 
@@ -5787,7 +5787,7 @@ qmg::setDirection4SortColumn( qmgPreservedOrder  * aPreservedOrder,
     IDU_FIT_POINT_FATAL( "qmg::setDirection4SortColumn::__FT__" );
 
     //---------------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //---------------------------------------------------
     IDE_DASSERT( aPreservedOrder != NULL );
 
@@ -5805,10 +5805,10 @@ qmg::setDirection4SortColumn( qmgPreservedOrder  * aPreservedOrder,
                 sIsASC = ID_FALSE;
                 break;
             case QMG_DIRECTION_SAME_WITH_PREV:
-                //ÀÌÀü°ú µ¿ÀÏ
+                //ì´ì „ê³¼ ë™ì¼
                 break;
             case QMG_DIRECTION_DIFF_WITH_PREV:
-                //¹İ´ë ¹æÇâÀÌ´Ù.
+                //ë°˜ëŒ€ ë°©í–¥ì´ë‹¤.
                 if( sIsASC == ID_TRUE )
                 {
                     sIsASC = ID_FALSE;
@@ -5881,7 +5881,7 @@ qmg::makeOuterJoinFilter(qcStatement   * aStatement,
 {
 /***********************************************************************
  *
- * Description : Outer Join¿¡¼­ ¾²ÀÏ Filter¸¦ ±¸¼ºÇÑ´Ù
+ * Description : Outer Joinì—ì„œ ì“°ì¼ Filterë¥¼ êµ¬ì„±í•œë‹¤
  *
  *
  * Implementation :
@@ -5895,7 +5895,7 @@ qmg::makeOuterJoinFilter(qcStatement   * aStatement,
     IDU_FIT_POINT_FATAL( "qmg::makeOuterJoinFilter::__FT__" );
 
     //---------------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //---------------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -5903,13 +5903,13 @@ qmg::makeOuterJoinFilter(qcStatement   * aStatement,
 
     //---------------------------------------------------
     // To Fix BUG-10988
-    // on condition CNFÀÇ constant predicate, one table predicate,
-    // nonJoinable PredicateÀ» ¿¬°á
+    // on condition CNFì˜ constant predicate, one table predicate,
+    // nonJoinable Predicateì„ ì—°ê²°
     //
     // - Input : aPredicate
-    //   aPredicate[0] : constant predicateÀÇ pointer
-    //   aPredicate[1] : one table predicateÀÇ pointer
-    //   aPredicate[2] : join predicateÀÇ pointer
+    //   aPredicate[0] : constant predicateì˜ pointer
+    //   aPredicate[1] : one table predicateì˜ pointer
+    //   aPredicate[2] : join predicateì˜ pointer
     //   -------------------
     //  |     |      |      |
     //   ---|-----|------|--
@@ -5934,9 +5934,9 @@ qmg::makeOuterJoinFilter(qcStatement   * aStatement,
         if ( sOnLastPredicate != NULL )
         {
             // constant predicate, one table predicate, nonjoinable predicate
-            // °¢°¢ÀÌ µÎ°³ ÀÌ»óÀÇ predicate °¡Áú °æ¿ì,
-            // last predicateÀ¸·Î ÀÌµ¿ÇØ ÁÖÁö ¾ÊÀ¸¸é µÎ¹øÂ° ÀÌ»óÀÇ predicateÀ»
-            // ÀÒ¾î¹ö¸®°Ô µÊ
+            // ê°ê°ì´ ë‘ê°œ ì´ìƒì˜ predicate ê°€ì§ˆ ê²½ìš°,
+            // last predicateìœ¼ë¡œ ì´ë™í•´ ì£¼ì§€ ì•Šìœ¼ë©´ ë‘ë²ˆì§¸ ì´ìƒì˜ predicateì„
+            // ìƒì–´ë²„ë¦¬ê²Œ ë¨
             for ( ; sOnLastPredicate->next != NULL;
                   sOnLastPredicate = sOnLastPredicate->next ) ;
         }
@@ -6053,7 +6053,7 @@ qmg::removeSDF( qcStatement * aStatement, qmgGraph * aGraph )
     }
 
     // fix BUG-19147
-    // aGraph°¡ QMG_PARTITIONÀÏ °æ¿ì, aGraph->childrenÀÌ ´Ş¸°´Ù.
+    // aGraphê°€ QMG_PARTITIONì¼ ê²½ìš°, aGraph->childrenì´ ë‹¬ë¦°ë‹¤.
     for( sChildren = aGraph->children;
          sChildren != NULL;
          sChildren = sChildren->next )
@@ -6319,7 +6319,7 @@ qmg::makeLeftSORT4Join( qcStatement  * aStatement,
 {
 /***********************************************************************
  *
- * Description : Sort Join½Ã, JoinÀÇ ¿ŞÂÊ¿¡ À§Ä¡ÇÒ SORT plan node »ı¼º
+ * Description : Sort Joinì‹œ, Joinì˜ ì™¼ìª½ì— ìœ„ì¹˜í•  SORT plan node ìƒì„±
  *
  *
  * Implementation :
@@ -6343,7 +6343,7 @@ qmg::makeLeftSORT4Join( qcStatement  * aStatement,
     switch ( aJoinFlag & QMO_JOIN_LEFT_NODE_MASK )
     {
         case QMO_JOIN_LEFT_NODE_NONE :
-            // ¾Æ¹«·± ³ëµåµµ »ı¼ºÇÏÁö ¾Ê´Â´Ù.
+            // ì•„ë¬´ëŸ° ë…¸ë“œë„ ìƒì„±í•˜ì§€ ì•ŠëŠ”ë‹¤.
             break;
         case QMO_JOIN_LEFT_NODE_STORE :
 
@@ -6543,7 +6543,7 @@ qmg::makeRightSORT4Join( qcStatement  * aStatement,
 {
 /***********************************************************************
  *
- * Description : Sort Join½Ã, JoinÀÇ ¿À¸¥ÂÊ¿¡ À§Ä¡ÇÒ SORT plan node »ı¼º
+ * Description : Sort Joinì‹œ, Joinì˜ ì˜¤ë¥¸ìª½ì— ìœ„ì¹˜í•  SORT plan node ìƒì„±
  *
  *
  * Implementation :
@@ -6552,7 +6552,7 @@ qmg::makeRightSORT4Join( qcStatement  * aStatement,
 
     IDU_FIT_POINT_FATAL( "qmg::makeRightSORT4Join::__FT__" );
     
-    //ÀúÀå ¸ÅÃ¼ÀÇ ¼±ÅÃ
+    //ì €ì¥ ë§¤ì²´ì˜ ì„ íƒ
     if ( ( aJoinFlag &
            QMO_JOIN_METHOD_RIGHT_STORAGE_MASK )
          == QMO_JOIN_METHOD_RIGHT_STORAGE_MEMORY )
@@ -6646,11 +6646,11 @@ qmg::usableIndexScanHint( qcmIndex            * aHintIndex,
 {
 /***********************************************************************
  *
- * Description : »ç¿ë °¡´ÉÇÑ INDEX SCAN HintÀÎÁö °Ë»ç
+ * Description : ì‚¬ìš© ê°€ëŠ¥í•œ INDEX SCAN Hintì¸ì§€ ê²€ì‚¬
  *
  * Implementation :
- *    (1) Hint Index°¡ Á¸ÀçÇÏ´ÂÁö °Ë»ç
- *    (2) ÇØ´ç index¿¡ ÀÌ¹Ì ´Ù¸¥ Hint°¡ Àû¿ëµÇ¾ú´ÂÁö °Ë»ç
+ *    (1) Hint Indexê°€ ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬
+ *    (2) í•´ë‹¹ indexì— ì´ë¯¸ ë‹¤ë¥¸ Hintê°€ ì ìš©ë˜ì—ˆëŠ”ì§€ ê²€ì‚¬
  *
  ***********************************************************************/
 
@@ -6661,11 +6661,11 @@ qmg::usableIndexScanHint( qcmIndex            * aHintIndex,
     IDU_FIT_POINT_FATAL( "qmg::usableIndexScanHint::__FT__" );
 
     //---------------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //---------------------------------------------------
 
     //---------------------------------------------------
-    // ÇØ´ç Index°¡ Á¸ÀçÇÏ´ÂÁö °Ë»ç
+    // í•´ë‹¹ Indexê°€ ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬
     //---------------------------------------------------
 
     if( aHintIndex != NULL )
@@ -6673,12 +6673,12 @@ qmg::usableIndexScanHint( qcmIndex            * aHintIndex,
         for ( i = 0; i < aIdxCnt; i++ )
         {
             // PROJ-1502 PARTITIONED DISK TABLE
-            // index Æ÷ÀÎÅÍ·Î ºñ±³ÇÏÁö ¾Ê°í index id°¡ °°Àº °ÍÀ¸·Î ºñ±³ÇÑ´Ù.
-            // ±× ÀÌÀ¯´Â, partitioned tableÀÇ index¸¦ hint·Î ÁÖ¾úÀ» ¶§
-            // partitionÀÇ index°¡ ¼±ÅÃµÇ¾î¾ß ÇÏ±â ¶§¹®ÀÌ´Ù.
+            // index í¬ì¸í„°ë¡œ ë¹„êµí•˜ì§€ ì•Šê³  index idê°€ ê°™ì€ ê²ƒìœ¼ë¡œ ë¹„êµí•œë‹¤.
+            // ê·¸ ì´ìœ ëŠ”, partitioned tableì˜ indexë¥¼ hintë¡œ ì£¼ì—ˆì„ ë•Œ
+            // partitionì˜ indexê°€ ì„ íƒë˜ì–´ì•¼ í•˜ê¸° ë•Œë¬¸ì´ë‹¤.
             if ( aIdxCardInfo[i].index->indexId == aHintIndex->indexId )
             {
-                // Index Hint¿Í µ¿ÀÏÇÑ index°¡ Á¸ÀçÇÏ´Â °æ¿ì
+                // Index Hintì™€ ë™ì¼í•œ indexê°€ ì¡´ì¬í•˜ëŠ” ê²½ìš°
                 if ( aIdxCardInfo[i].index->isOnlineTBS == ID_TRUE )
                 {
                     sSelected = & aIdxCardInfo[i];
@@ -6699,14 +6699,14 @@ qmg::usableIndexScanHint( qcmIndex            * aHintIndex,
     if ( sSelected != NULL )
     {
         //---------------------------------------------------
-        // ÇØ´ç Index°¡ Á¸ÀçÇÒ °æ¿ì
+        // í•´ë‹¹ Indexê°€ ì¡´ì¬í•  ê²½ìš°
         //---------------------------------------------------
 
         if ( ( sSelected->flag & QMO_STAT_CARD_IDX_HINT_MASK) ==
              QMO_STAT_CARD_IDX_HINT_NONE )
         {
             //---------------------------------------------------
-            // ÇØ´ç Index¿¡ ´ëÇØ ÀÌÀü¿¡ ´Ù¸¥ Hint°¡ ¾ø¾úÀ» °æ¿ì
+            // í•´ë‹¹ Indexì— ëŒ€í•´ ì´ì „ì— ë‹¤ë¥¸ Hintê°€ ì—†ì—ˆì„ ê²½ìš°
             //---------------------------------------------------
 
             switch ( aHintAccessType )
@@ -6715,8 +6715,8 @@ qmg::usableIndexScanHint( qcmIndex            * aHintIndex,
                     sSelected->flag &= ~QMO_STAT_CARD_IDX_HINT_MASK;
                     sSelected->flag |= QMO_STAT_CARD_IDX_NO_INDEX;
 
-                    // ÀÇ¹Ì»óÀ¸·Î »ç¿ë °¡´ÉÇÑ HintÁö¸¸ No Index HintÀÇ °æ¿ì,
-                    // ÇØ´ç indexÀÇ access method Á¤º¸¸¦ ±¸ÃàÇÏÁö ¾Ê±â À§ÇØ
+                    // ì˜ë¯¸ìƒìœ¼ë¡œ ì‚¬ìš© ê°€ëŠ¥í•œ Hintì§€ë§Œ No Index Hintì˜ ê²½ìš°,
+                    // í•´ë‹¹ indexì˜ access method ì •ë³´ë¥¼ êµ¬ì¶•í•˜ì§€ ì•Šê¸° ìœ„í•´
                     sUsableIndexHint = ID_FALSE;
                     break;
                 case QMO_ACCESS_METHOD_TYPE_INDEXACCESS_SCAN :
@@ -6741,13 +6741,13 @@ qmg::usableIndexScanHint( qcmIndex            * aHintIndex,
         }
         else
         {
-            // ÀÌÀü¿¡ ´Ù¸¥ Hint°¡ Á¸ÀçÇßÀ» °æ¿ì
+            // ì´ì „ì— ë‹¤ë¥¸ Hintê°€ ì¡´ì¬í–ˆì„ ê²½ìš°
             sUsableIndexHint = ID_FALSE;
         }
     }
     else
     {
-        // ÇØ´ç Index°¡ Á¸ÀçÇÏÁö ¾ÊÀ» °æ¿ì
+        // í•´ë‹¹ Indexê°€ ì¡´ì¬í•˜ì§€ ì•Šì„ ê²½ìš°
         sUsableIndexHint = ID_FALSE;
     }
 
@@ -6763,17 +6763,17 @@ IDE_RC qmg::resetColumnLocate( qcStatement * aStatement, UShort aTupleID )
  *
  * Description :
  *    PROJ-2179
- *    tuple-set¿¡ columnLocateÀÇ °ªµéÀ» ÃÊ±â»óÅÂ·Î µÇµ¹¸°´Ù.
- *    Disjunctive query »ç¿ë ½Ã CONCATENATORÀÇ childµéÀÇ »ı¼º ½Ã
- *    left »ı¼ºÈÄ right »ı¼º Àü È£ÃâµÈ´Ù.
- *    Left¿¡¼­ HASHµîÀÌ »ı¼ºµÇ´Â °æ¿ì ¿ø·¡ tableÀÇ SCAN ID°¡ ¾Æ´Ñ HASHÀÇ
- *    ID¸¦ right»ı¼º ½Ã Àß¸ø ÂüÁ¶ÇÒ ¼ö ÀÖ±â ¶§¹®ÀÌ´Ù.
+ *    tuple-setì— columnLocateì˜ ê°’ë“¤ì„ ì´ˆê¸°ìƒíƒœë¡œ ë˜ëŒë¦°ë‹¤.
+ *    Disjunctive query ì‚¬ìš© ì‹œ CONCATENATORì˜ childë“¤ì˜ ìƒì„± ì‹œ
+ *    left ìƒì„±í›„ right ìƒì„± ì „ í˜¸ì¶œëœë‹¤.
+ *    Leftì—ì„œ HASHë“±ì´ ìƒì„±ë˜ëŠ” ê²½ìš° ì›ë˜ tableì˜ SCAN IDê°€ ì•„ë‹Œ HASHì˜
+ *    IDë¥¼ rightìƒì„± ì‹œ ì˜ëª» ì°¸ì¡°í•  ìˆ˜ ìˆê¸° ë•Œë¬¸ì´ë‹¤.
  *
  *    BUG-37324
- *    ¿ÜºÎ ÂüÁ¶ ÄÃ·³¿¡ ´ëÇØ¼­´Â µğÆæ´ø½Ã¸¦ reset ÇÏ¸é ¾ÈµÊ
+ *    ì™¸ë¶€ ì°¸ì¡° ì»¬ëŸ¼ì— ëŒ€í•´ì„œëŠ” ë””íœë˜ì‹œë¥¼ reset í•˜ë©´ ì•ˆë¨
  * Implementation :
- *    ÀÔ·Â¹ŞÀº aTupleID ¿¡ columnLocate°¡ ÇÒ´çµÇ¾îÀÖ´Â °æ¿ì
- *    ÃÊ±â°ªÀ¸·Î µÇµ¹¸°´Ù.
+ *    ì…ë ¥ë°›ì€ aTupleID ì— columnLocateê°€ í• ë‹¹ë˜ì–´ìˆëŠ” ê²½ìš°
+ *    ì´ˆê¸°ê°’ìœ¼ë¡œ ë˜ëŒë¦°ë‹¤.
  *
  ***********************************************************************/
 
@@ -6872,11 +6872,11 @@ IDE_RC qmg::setColumnLocate( qcStatement * aStatement,
         else
         {
             //------------------------------------------------------
-            // srcNode¿¡ conversion node°¡ ÀÖ¾î ÀÌ °è»êµÈ °ªÀ»
-            // dstNode¿¡ ÀúÀåÇÏ´Â °æ¿ì·Î,
-            // »óÀ§ ³ëµå¿¡¼­ ÀÌ ³ëµåÀÇ °ªÀ» ÀÌ¿ëÇÏµµ·Ï ÇØ¾ß ÇÔ.
-            // base columnÀÇ column locate´Â º¯°æÇÏ¸é ¾ÈµÊ.
-            // ¿¹ ) TC/Server/qp4/Bugs/PR-13286/PR-13286.sql
+            // srcNodeì— conversion nodeê°€ ìˆì–´ ì´ ê³„ì‚°ëœ ê°’ì„
+            // dstNodeì— ì €ì¥í•˜ëŠ” ê²½ìš°ë¡œ,
+            // ìƒìœ„ ë…¸ë“œì—ì„œ ì´ ë…¸ë“œì˜ ê°’ì„ ì´ìš©í•˜ë„ë¡ í•´ì•¼ í•¨.
+            // base columnì˜ column locateëŠ” ë³€ê²½í•˜ë©´ ì•ˆë¨.
+            // ì˜ˆ ) TC/Server/qp4/Bugs/PR-13286/PR-13286.sql
             //      SELECT /*+ USE_ONE_PASS_SORT( D2, D1 ) */
             //      * FROM D1, D2
             //      WHERE D1.I1 > D2.I1 AND D1.I1 < D2.I1 + '10';
@@ -6904,8 +6904,8 @@ IDE_RC qmg::setColumnLocate( qcStatement * aStatement,
                 |= SMI_COLUMN_TYPE_FIXED;
 
             // BUG-38494
-            // Compressed Column ¿ª½Ã °ª ÀÚÃ¼°¡ ÀúÀåµÇ¹Ç·Î
-            // Compressed ¼Ó¼ºÀ» »èÁ¦ÇÑ´Ù
+            // Compressed Column ì—­ì‹œ ê°’ ìì²´ê°€ ì €ì¥ë˜ë¯€ë¡œ
+            // Compressed ì†ì„±ì„ ì‚­ì œí•œë‹¤
             sMtcTemplate->rows[sLastMtrNode->dstNode->node.table].
                 columns[sLastMtrNode->dstNode->node.column].column.flag
                 &= ~SMI_COLUMN_COMPRESSION_MASK;
@@ -6922,24 +6922,24 @@ IDE_RC qmg::setColumnLocate( qcStatement * aStatement,
                 & MTC_TUPLE_VIEW_MASK ) == MTC_TUPLE_VIEW_TRUE ) )
         {
             // TABLE type
-            // RID ¹æ½Ä°ú Push Projection ¹æ½ÄÀÌ ÇÔ²² ¾²¿©µµ
-            // ¿ø·¡ Å×ÀÌºíÀÇ ¼öÇà ¹æ½ÄÀº ¹Ù²îÁö ¾Ê´Â´Ù. ( BUG-22068, BUG-31873 )
-            // ex ) RID ¹æ½Ä t1, Push Projection ¹æ½Ä t2
+            // RID ë°©ì‹ê³¼ Push Projection ë°©ì‹ì´ í•¨ê»˜ ì“°ì—¬ë„
+            // ì›ë˜ í…Œì´ë¸”ì˜ ìˆ˜í–‰ ë°©ì‹ì€ ë°”ë€Œì§€ ì•ŠëŠ”ë‹¤. ( BUG-22068, BUG-31873 )
+            // ex ) RID ë°©ì‹ t1, Push Projection ë°©ì‹ t2
             //      SELECT t1.i1, t2.i1 FROM t1, t2 ORDER BY t1.i1, t2.i1;
-            //      ORDER BY Ã³¸®¸¦ À§ÇÏ¿© Áß°£ °á°ú¸¦ ÀúÀåÇÒ¶§,
-            //      t1 Å×ÀÌºíÀÇ Ä®·³µéÀº RID ¹æ½ÄÀ¸·Î
-            //      t2 Å×ÀÌºíÀÇ Ä®·³µéÀº Push Projection ¹æ½ÄÀ¸·Î ÀúÀåµÈ´Ù.
+            //      ORDER BY ì²˜ë¦¬ë¥¼ ìœ„í•˜ì—¬ ì¤‘ê°„ ê²°ê³¼ë¥¼ ì €ì¥í• ë•Œ,
+            //      t1 í…Œì´ë¸”ì˜ ì¹¼ëŸ¼ë“¤ì€ RID ë°©ì‹ìœ¼ë¡œ
+            //      t2 í…Œì´ë¸”ì˜ ì¹¼ëŸ¼ë“¤ì€ Push Projection ë°©ì‹ìœ¼ë¡œ ì €ì¥ëœë‹¤.
         }
         else
         {
             // CONSTANT, VARIABLE, INTERMEDIATE type
-            // À§ÀÇ tupleµéÀº RID Å¸ÀÔÀ¸·Î ÃÊ±âÈ­µÈ´Ù.
-            // ÇÏÁö¸¸ Push Projection ¹æ½ÄÀÏ¶§´Â À§ tupleÀÇ Å¸ÀÔµµ Push Projection
-            // Å¸ÀÔÀ¸·Î º¯°æÇÑ´Ù.
+            // ìœ„ì˜ tupleë“¤ì€ RID íƒ€ì…ìœ¼ë¡œ ì´ˆê¸°í™”ëœë‹¤.
+            // í•˜ì§€ë§Œ Push Projection ë°©ì‹ì¼ë•ŒëŠ” ìœ„ tupleì˜ íƒ€ì…ë„ Push Projection
+            // íƒ€ì…ìœ¼ë¡œ ë³€ê²½í•œë‹¤.
             
             // BUG-28212
-            // sysdate, unix_date, current_date Å¸ÀÔÀº statementÀÇ tmplate¿¡ ¼³Á¤µÈ´Ù.
-            // ±×¸®°í ±× °ªÀº RID Å¸ÀÔÀ¸·Î Á¢±ÙÇØ¾ß ÇÑ´Ù.
+            // sysdate, unix_date, current_date íƒ€ì…ì€ statementì˜ tmplateì— ì„¤ì •ëœë‹¤.
+            // ê·¸ë¦¬ê³  ê·¸ ê°’ì€ RID íƒ€ì…ìœ¼ë¡œ ì ‘ê·¼í•´ì•¼ í•œë‹¤.
 
             sPushProject = ID_TRUE;
 
@@ -7025,8 +7025,8 @@ IDE_RC qmg::changeColumnLocate( qcStatement  * aStatement,
 {
 /***********************************************************************
  *
- * Description : validation½Ã ¼³Á¤µÈ ³ëµåÀÇ ±âº»À§Ä¡Á¤º¸¸¦
- *               ½ÇÁ¦·Î ÂüÁ¶ÇØ¾ß ÇÒ º¯°æµÈ À§Ä¡Á¤º¸·Î º¯°æÇÑ´Ù.
+ * Description : validationì‹œ ì„¤ì •ëœ ë…¸ë“œì˜ ê¸°ë³¸ìœ„ì¹˜ì •ë³´ë¥¼
+ *               ì‹¤ì œë¡œ ì°¸ì¡°í•´ì•¼ í•  ë³€ê²½ëœ ìœ„ì¹˜ì •ë³´ë¡œ ë³€ê²½í•œë‹¤.
  *
  * Implementation :
  *
@@ -7056,8 +7056,8 @@ IDE_RC qmg::changeColumnLocate( qcStatement  * aStatement,
             if( aNext == ID_FALSE )        
             {
                 //---------------------------------------------------
-                // target columnµîÀÇ node Ã³¸®½Ã
-                // node->next ´Â µû¶ó°¡Áö ¾Êµµ·Ï ÇÑ´Ù.
+                // target columnë“±ì˜ node ì²˜ë¦¬ì‹œ
+                // node->next ëŠ” ë”°ë¼ê°€ì§€ ì•Šë„ë¡ í•œë‹¤.
                 //---------------------------------------------------
         
                 if( aNode->node.arguments != NULL )
@@ -7079,8 +7079,8 @@ IDE_RC qmg::changeColumnLocate( qcStatement  * aStatement,
                 if( ( sNode->node.lflag & MTC_NODE_COLUMN_LOCATE_CHANGE_MASK )
                     == MTC_NODE_COLUMN_LOCATE_CHANGE_FALSE )
                 {
-                    // BUG-43723 disk table¿¡¼­ merge join ¼öÇà °á°ú°¡ ´Ù¸¨´Ï´Ù.
-                    // MTC_NODE_COLUMN_LOCATE_CHANGE_FALSE ¿©µµ next´Â È®ÀÎÇØ¾ß ÇÑ´Ù.
+                    // BUG-43723 disk tableì—ì„œ merge join ìˆ˜í–‰ ê²°ê³¼ê°€ ë‹¤ë¦…ë‹ˆë‹¤.
+                    // MTC_NODE_COLUMN_LOCATE_CHANGE_FALSE ì—¬ë„ nextëŠ” í™•ì¸í•´ì•¼ í•œë‹¤.
                 }
                 else
                 {
@@ -7096,7 +7096,7 @@ IDE_RC qmg::changeColumnLocate( qcStatement  * aStatement,
             {
                 /*
                  * BUG-39605
-                 * procedure variable ÀÏ °æ¿ì¿¡µµ changeColumnLocate ÇÏÁö ¾Ê´Â´Ù.
+                 * procedure variable ì¼ ê²½ìš°ì—ë„ changeColumnLocate í•˜ì§€ ì•ŠëŠ”ë‹¤.
                  */
                 if ((aNode->node.column != MTC_RID_COLUMN_ID) &&
                     (aNode->node.table != QC_SHARED_TMPLATE(aStatement)->tmplate.variableRow))
@@ -7143,8 +7143,8 @@ IDE_RC qmg::changeColumnLocateInternal( qcStatement  * aStatement,
 {
 /***********************************************************************
  *
- * Description : validation½Ã ¼³Á¤µÈ ³ëµåÀÇ ±âº»À§Ä¡Á¤º¸¸¦
- *               ½ÇÁ¦·Î ÂüÁ¶ÇØ¾ß ÇÒ º¯°æµÈ À§Ä¡Á¤º¸·Î º¯°æÇÑ´Ù.
+ * Description : validationì‹œ ì„¤ì •ëœ ë…¸ë“œì˜ ê¸°ë³¸ìœ„ì¹˜ì •ë³´ë¥¼
+ *               ì‹¤ì œë¡œ ì°¸ì¡°í•´ì•¼ í•  ë³€ê²½ëœ ìœ„ì¹˜ì •ë³´ë¡œ ë³€ê²½í•œë‹¤.
  *
  * Implementation :
  *
@@ -7165,8 +7165,8 @@ IDE_RC qmg::changeColumnLocateInternal( qcStatement  * aStatement,
         if( ( sNode->node.lflag & MTC_NODE_COLUMN_LOCATE_CHANGE_MASK )
             == MTC_NODE_COLUMN_LOCATE_CHANGE_FALSE )
         {
-            // BUG-43723 disk table¿¡¼­ merge join ¼öÇà °á°ú°¡ ´Ù¸¨´Ï´Ù.
-            // MTC_NODE_COLUMN_LOCATE_CHANGE_FALSE ¿©µµ next´Â È®ÀÎÇØ¾ß ÇÑ´Ù.
+            // BUG-43723 disk tableì—ì„œ merge join ìˆ˜í–‰ ê²°ê³¼ê°€ ë‹¤ë¦…ë‹ˆë‹¤.
+            // MTC_NODE_COLUMN_LOCATE_CHANGE_FALSE ì—¬ë„ nextëŠ” í™•ì¸í•´ì•¼ í•œë‹¤.
         }
         else
         {
@@ -7180,7 +7180,7 @@ IDE_RC qmg::changeColumnLocateInternal( qcStatement  * aStatement,
 
     /*
      * BUG-39605
-     * procedure variable ÀÏ °æ¿ì¿¡µµ changeColumnLocate ÇÏÁö ¾Ê´Â´Ù.
+     * procedure variable ì¼ ê²½ìš°ì—ë„ changeColumnLocate í•˜ì§€ ì•ŠëŠ”ë‹¤.
      */
     if ((aNode->node.column != MTC_RID_COLUMN_ID) &&
         (aNode->node.table != QC_SHARED_TMPLATE(aStatement)->tmplate.variableRow))
@@ -7224,23 +7224,23 @@ IDE_RC qmg::findColumnLocate( qcStatement  * aStatement,
  *
  * Description : 
  *    PROJ-2179
- *    ±âÁ¸ÀÇ findColumnLocate¿Í ´Ş¸® Ãß°¡ ÀÎÀÚ·Î aParentTupleID¸¦ °®´Â´Ù.
- *    SubqueryÀÇ execution plan¿¡¼­ »óÀ§ operator·Î materializeµÈ °ªÀ»
- *    ÂüÁ¶ÇÏ´Â°ÍÀ» ¹æÁöÇÏµµ·Ï ÇÑ´Ù
+ *    ê¸°ì¡´ì˜ findColumnLocateì™€ ë‹¬ë¦¬ ì¶”ê°€ ì¸ìë¡œ aParentTupleIDë¥¼ ê°–ëŠ”ë‹¤.
+ *    Subqueryì˜ execution planì—ì„œ ìƒìœ„ operatorë¡œ materializeëœ ê°’ì„
+ *    ì°¸ì¡°í•˜ëŠ”ê²ƒì„ ë°©ì§€í•˜ë„ë¡ í•œë‹¤
  *
  *    Ex) SELECT i1, (SELECT COUNT(*) FROM t2 WHERE t2.i1 = t1.i1)
  *            FROM t1 ORDER BY 2, 1;
- *        * t1, t2´Â ¸ğµÎ disk table
+ *        * t1, t2ëŠ” ëª¨ë‘ disk table
  *
- *        À§ SQL±¸¹®ÀÇ °æ¿ì outerquery¿¡¼­ SORT¸¦ »ı¼ºÇÏ°í sort¿¡¼­
- *        t3.i1°ú subqueryÀÇ °á°ú¸¦ materializeÇÑ´Ù.
- *        ÀÌ ¶§ subqueryÀÇ WHEREÀı¿¡¼­ t1.i1À» outerqueryÀÇ SORT¿¡¼­
- *        materializeµÈ À§Ä¡¸¦ °¡¸®Å°Áö ¾Êµµ·Ï SORTÀÇ ID¸¦ aParentTupleID
- *        ·Î ¼³Á¤ÇØÁØ´Ù.
+ *        ìœ„ SQLêµ¬ë¬¸ì˜ ê²½ìš° outerqueryì—ì„œ SORTë¥¼ ìƒì„±í•˜ê³  sortì—ì„œ
+ *        t3.i1ê³¼ subqueryì˜ ê²°ê³¼ë¥¼ materializeí•œë‹¤.
+ *        ì´ ë•Œ subqueryì˜ WHEREì ˆì—ì„œ t1.i1ì„ outerqueryì˜ SORTì—ì„œ
+ *        materializeëœ ìœ„ì¹˜ë¥¼ ê°€ë¦¬í‚¤ì§€ ì•Šë„ë¡ SORTì˜ IDë¥¼ aParentTupleID
+ *        ë¡œ ì„¤ì •í•´ì¤€ë‹¤.
  *
  * Implementation :
- *    aParentTupleID¸¦ columnLocate¿¡¼­ °¡¸®Å°´Â °æ¿ì ÀÌ¸¦ ¹«½ÃÇÏ°í
- *    ÀÌÀü±îÁö Ã£Àº À§Ä¡¸¦ ¹İÈ¯ÇÑ´Ù.
+ *    aParentTupleIDë¥¼ columnLocateì—ì„œ ê°€ë¦¬í‚¤ëŠ” ê²½ìš° ì´ë¥¼ ë¬´ì‹œí•˜ê³ 
+ *    ì´ì „ê¹Œì§€ ì°¾ì€ ìœ„ì¹˜ë¥¼ ë°˜í™˜í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -7278,16 +7278,16 @@ IDE_RC qmg::findColumnLocate( qcStatement  * aStatement,
         }
         else
         {
-            // tupleÀÌ ¾ÆÁ÷ ÇÒ´çµÇÁö ¾ÊÀº »óÅÂ.
-            // mtrNode ±¸¼º½Ã, ÁúÀÇ¿¡ »ç¿ëµÈ ÄÃ·³µéÀ» ÀúÀåÇÏ´Âµ¥.....
+            // tupleì´ ì•„ì§ í• ë‹¹ë˜ì§€ ì•Šì€ ìƒíƒœ.
+            // mtrNode êµ¬ì„±ì‹œ, ì§ˆì˜ì— ì‚¬ìš©ëœ ì»¬ëŸ¼ë“¤ì„ ì €ì¥í•˜ëŠ”ë°.....
             *aChangeTable = aOrgTable;
             *aChangeColumn = aOrgColumn;
         }
     }
     else
     {
-        // tupleÀÌ ¾ÆÁ÷ ÇÒ´çµÇÁö ¾ÊÀº »óÅÂ.
-        // mtrNode ±¸¼º½Ã, ÁúÀÇ¿¡ »ç¿ëµÈ ÄÃ·³µéÀ» ÀúÀåÇÏ´Âµ¥.....
+        // tupleì´ ì•„ì§ í• ë‹¹ë˜ì§€ ì•Šì€ ìƒíƒœ.
+        // mtrNode êµ¬ì„±ì‹œ, ì§ˆì˜ì— ì‚¬ìš©ëœ ì»¬ëŸ¼ë“¤ì„ ì €ì¥í•˜ëŠ”ë°.....
         *aChangeTable = aOrgTable;
         *aChangeColumn = aOrgColumn;
     }
@@ -7343,16 +7343,16 @@ IDE_RC qmg::findColumnLocate( qcStatement  * aStatement,
         }
         else
         {
-            // tupleÀÌ ¾ÆÁ÷ ÇÒ´çµÇÁö ¾ÊÀº »óÅÂ.
-            // mtrNode ±¸¼º½Ã, ÁúÀÇ¿¡ »ç¿ëµÈ ÄÃ·³µéÀ» ÀúÀåÇÏ´Âµ¥.....
+            // tupleì´ ì•„ì§ í• ë‹¹ë˜ì§€ ì•Šì€ ìƒíƒœ.
+            // mtrNode êµ¬ì„±ì‹œ, ì§ˆì˜ì— ì‚¬ìš©ëœ ì»¬ëŸ¼ë“¤ì„ ì €ì¥í•˜ëŠ”ë°.....
             *aChangeTable = aOrgTable;
             *aChangeColumn = aOrgColumn;
         }
     }
     else
     {
-        // tupleÀÌ ¾ÆÁ÷ ÇÒ´çµÇÁö ¾ÊÀº »óÅÂ.
-        // mtrNode ±¸¼º½Ã, ÁúÀÇ¿¡ »ç¿ëµÈ ÄÃ·³µéÀ» ÀúÀåÇÏ´Âµ¥.....
+        // tupleì´ ì•„ì§ í• ë‹¹ë˜ì§€ ì•Šì€ ìƒíƒœ.
+        // mtrNode êµ¬ì„±ì‹œ, ì§ˆì˜ì— ì‚¬ìš©ëœ ì»¬ëŸ¼ë“¤ì„ ì €ì¥í•˜ëŠ”ë°.....
         *aChangeTable = aOrgTable;
         *aChangeColumn = aOrgColumn;
     }
@@ -7510,7 +7510,7 @@ qmg::copyPreservedOrderDirection( qmgPreservedOrder * aDstOrder,
 
     IDU_FIT_POINT_FATAL( "qmg::copyPreservedOrderDirection::__FT__" );
     
-    // Source Preserved order·Î directionÀ» copy ÇÑ´Ù.
+    // Source Preserved orderë¡œ directionì„ copy í•œë‹¤.
     for ( sDstOrder = aDstOrder,
               sSrcOrder = aSrcOrder;
           sDstOrder != NULL && sSrcOrder != NULL;
@@ -7531,7 +7531,7 @@ qmg::isSamePreservedOrder( qmgPreservedOrder * aDstOrder,
 {
 /***********************************************************************
  *
- * Description : µÎ preserved order°¡ °°ÀºÁö °Ë»ç
+ * Description : ë‘ preserved orderê°€ ê°™ì€ì§€ ê²€ì‚¬
  *
  * Implementation :
  *         1. Compatability Check
@@ -7545,7 +7545,7 @@ qmg::isSamePreservedOrder( qmgPreservedOrder * aDstOrder,
 
     sIsSame = ID_TRUE;
 
-    // 1. Source¿Í Destination Preserved order°¡ µ¿ÀÏÇÑ ÄÃ·³À» ÀÇ¹ÌÇÏ´ÂÁö °Ë»çÇÑ´Ù.
+    // 1. Sourceì™€ Destination Preserved orderê°€ ë™ì¼í•œ ì»¬ëŸ¼ì„ ì˜ë¯¸í•˜ëŠ”ì§€ ê²€ì‚¬í•œë‹¤.
     for ( sDstOrder = aDstOrder,
               sSrcOrder = aSrcOrder;
           sDstOrder != NULL && sSrcOrder != NULL;
@@ -7567,7 +7567,7 @@ qmg::isSamePreservedOrder( qmgPreservedOrder * aDstOrder,
     // 2. Check Preserved order size
     if ( sDstOrder != NULL )
     {
-        // Source°¡ Destination Preserved order¸¦ ¸ğµÎ ¸¸Á·½ÃÅ°Áö ¸øÇÔ
+        // Sourceê°€ Destination Preserved orderë¥¼ ëª¨ë‘ ë§Œì¡±ì‹œí‚¤ì§€ ëª»í•¨
         sIsSame = ID_FALSE;
     }
     else
@@ -7588,11 +7588,11 @@ qmg::makeDummyMtrNode( qcStatement  * aStatement ,
 /***********************************************************************
  *
  * Description :
- *    PROJ-2179 SORT¿¡¼­ result descriptor°¡ ºñ¾îÀÖ¾îÀÖ´Â °æ¿ì¿¡ ´ëºñÇÏ¿©
- *    dummy °ªÀ» materialize ÇÏµµ·Ï ÇÑ´Ù.
+ *    PROJ-2179 SORTì—ì„œ result descriptorê°€ ë¹„ì–´ìˆì–´ìˆëŠ” ê²½ìš°ì— ëŒ€ë¹„í•˜ì—¬
+ *    dummy ê°’ì„ materialize í•˜ë„ë¡ í•œë‹¤.
  *
  * Implementation :
- *    CHARÇüÀÇ '1'À» materlializeÇÏµµ·Ï node¸¦ »ı¼ºÇÑ´Ù.
+ *    CHARí˜•ì˜ '1'ì„ materlializeí•˜ë„ë¡ nodeë¥¼ ìƒì„±í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -7641,12 +7641,12 @@ qmg::getMtrMethod( qcStatement * aStatement,
 /***********************************************************************
  *
  * Description :
- *    ¾î¶² ¹æ¹ıÀ¸·Î materialize ÇØ¾ßÇÏ´ÂÁö °áÁ¤ÇÏ¿© ¹İÈ­ÇÑ´Ù.
- *    - Complete record : TRUE¸¦ ¹İÈ¯
- *    - Surrogate key   : FALSE¸¦ ¹İÈ¯
+ *    ì–´ë–¤ ë°©ë²•ìœ¼ë¡œ materialize í•´ì•¼í•˜ëŠ”ì§€ ê²°ì •í•˜ì—¬ ë°˜í™”í•œë‹¤.
+ *    - Complete record : TRUEë¥¼ ë°˜í™˜
+ *    - Surrogate key   : FALSEë¥¼ ë°˜í™˜
  *
  * Implementation :
- *    Source¿Í destination tupleÀÇ flag¿Í Á¾·ù¸¦ º¸°í ÆÇ´ÜÇÑ´Ù.
+ *    Sourceì™€ destination tupleì˜ flagì™€ ì¢…ë¥˜ë¥¼ ë³´ê³  íŒë‹¨í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -7662,14 +7662,14 @@ qmg::getMtrMethod( qcStatement * aStatement,
         return ID_TRUE;
     }
 
-    // View´Â surrogate-key°¡ Á¸ÀçÇÏÁö ¾Ê´Â´Ù.
+    // ViewëŠ” surrogate-keyê°€ ì¡´ì¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
     if( ( sMtcTemplate->rows[aSrcTupleID].lflag & MTC_TUPLE_VIEW_MASK )
         == MTC_TUPLE_VIEW_TRUE )
     {
         return ID_TRUE;
     }
 
-    // ExpressionÀ» À§ÇÑ intermediate tupleÀÎ °æ¿ì
+    // Expressionì„ ìœ„í•œ intermediate tupleì¸ ê²½ìš°
     if( ( ( sMtcTemplate->rows[aSrcTupleID].lflag & MTC_TUPLE_TYPE_MASK )
           == MTC_TUPLE_TYPE_INTERMEDIATE ) &&
         ( ( sMtcTemplate->rows[aSrcTupleID].lflag & MTC_TUPLE_PLAN_MTR_MASK )
@@ -7693,7 +7693,7 @@ qmg::existBaseTable( qmcMtrNode * aMtrNode,
                      UInt         aFlag,
                      UShort       aTable )
 {
-    // aMtrNode¿¡¼­ aFlag¿Í aTableÀ» °®´Â node°¡ Á¸ÀçÇÏ´ÂÁö È®ÀÎÇÑ´Ù.
+    // aMtrNodeì—ì„œ aFlagì™€ aTableì„ ê°–ëŠ” nodeê°€ ì¡´ì¬í•˜ëŠ”ì§€ í™•ì¸í•œë‹¤.
 
     qmcMtrNode * sMtrNode;
 
@@ -7717,9 +7717,9 @@ qmg::existBaseTable( qmcMtrNode * aMtrNode,
 UInt
 qmg::getBaseTableType( ULong aTupleFlag )
 {
-    // TupleÀÇ flag¿¡ µû¶ó base tableÀÇ materialize typeÀ» ¹İÈ¯ÇÑ´Ù.
+    // Tupleì˜ flagì— ë”°ë¼ base tableì˜ materialize typeì„ ë°˜í™˜í•œë‹¤.
 
-    /* PROJ-2464 hybrid partitioned table Áö¿ø */
+    /* PROJ-2464 hybrid partitioned table ì§€ì› */
     if ( ( aTupleFlag & MTC_TUPLE_HYBRID_PARTITIONED_TABLE_MASK ) == MTC_TUPLE_HYBRID_PARTITIONED_TABLE_TRUE )
     {
         return QMC_MTR_TYPE_HYBRID_PARTITIONED_TABLE;
@@ -7754,7 +7754,7 @@ qmg::getBaseTableType( ULong aTupleFlag )
 idBool
 qmg::isTempTable( ULong aTupleFlag )
 {
-    // ÇØ´ç tupleÀÌ temp tableÀÇ tupleÀÎÁö ¿©ºÎ¸¦ ¹İÈ¯ÇÑ´Ù.
+    // í•´ë‹¹ tupleì´ temp tableì˜ tupleì¸ì§€ ì—¬ë¶€ë¥¼ ë°˜í™˜í•œë‹¤.
 
     if( ( ( aTupleFlag & MTC_TUPLE_PLAN_MTR_MASK ) == MTC_TUPLE_PLAN_MTR_TRUE ) ||
         ( ( aTupleFlag & MTC_TUPLE_VSCN_MASK ) == MTC_TUPLE_VSCN_TRUE ) )
@@ -7842,14 +7842,14 @@ qmg::isDatePseudoColumn( qcStatement * aStatement,
     return sResult;
 }
 
-// PROJ-2242 qmgGraphÀÇ cost Á¤º¸¸¦ qmnPlan À¸·Î º¹»çÇÔ
+// PROJ-2242 qmgGraphì˜ cost ì •ë³´ë¥¼ qmnPlan ìœ¼ë¡œ ë³µì‚¬í•¨
 void qmg::setPlanInfo( qcStatement  * aStatement,
                        qmnPlan      * aPlan,
                        qmgGraph     * aGraph )
 {
     aPlan->qmgOuput   = aGraph->costInfo.outputRecordCnt;
 
-    // insert, delete ±¸¹®¿¡¼­´Â mSysStatÀÌ null ÀÌµÈ´Ù.
+    // insert, delete êµ¬ë¬¸ì—ì„œëŠ” mSysStatì´ null ì´ëœë‹¤.
     if( aStatement->mSysStat != NULL )
     {
         aPlan->qmgAllCost = aGraph->costInfo.totalAllCost /
@@ -7870,7 +7870,7 @@ IDE_RC qmg::isolatePassNode( qcStatement * aStatement,
  *
  * Implementation :
  *
- *    Source Node Tree¸¦ TraverseÇÏ¸é¼­ passNodeÀÇ ÀÎÀÚ¸¦ µ¶¸³½ÃÅ²´Ù.
+ *    Source Node Treeë¥¼ Traverseí•˜ë©´ì„œ passNodeì˜ ì¸ìë¥¼ ë…ë¦½ì‹œí‚¨ë‹¤.
  *
  ***********************************************************************/
 
@@ -7885,7 +7885,7 @@ IDE_RC qmg::isolatePassNode( qcStatement * aStatement,
         if( ( aSource->node.lflag & MTC_NODE_OPERATOR_MASK )
             == MTC_NODE_OPERATOR_SUBQUERY )
         {
-            // Subquery³ëµåÀÏ °æ¿ì¿£ arguments¸¦ º¹»çÇÏÁö ¾Ê´Â´Ù.
+            // Subqueryë…¸ë“œì¼ ê²½ìš°ì—” argumentsë¥¼ ë³µì‚¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
         }
         else
         {
@@ -7908,7 +7908,7 @@ IDE_RC qmg::isolatePassNode( qcStatement * aStatement,
     }
     
     // BUG-37355
-    // argument°¡ passNode¶ó¸é qtcNode¸¦ º¹»çÇØ¼­ ´õ ÀÌ»ó º¯°æµÇÁö ¾Êµµ·Ï ÇÑ´Ù.
+    // argumentê°€ passNodeë¼ë©´ qtcNodeë¥¼ ë³µì‚¬í•´ì„œ ë” ì´ìƒ ë³€ê²½ë˜ì§€ ì•Šë„ë¡ í•œë‹¤.
     if( aSource->node.module == &qtc::passModule )
     {
         IDE_TEST( STRUCT_ALLOC( QC_QMP_MEM(aStatement), qtcNode, &sNewNode )
@@ -7956,11 +7956,11 @@ IDE_RC qmg::getGraphLateralDepInfo( qmgGraph      * aGraph,
  * 
  *  Description : PROJ-2418 Cross/Outer APPLY & Lateral View
  *
- *   GraphÀÇ lateralDepInfo¸¦ ¹İÈ¯ÇÑ´Ù.
+ *   Graphì˜ lateralDepInfoë¥¼ ë°˜í™˜í•œë‹¤.
  *  
  *  Implementation :
- *  - Graph°¡ SELECTION / PARTITIONÀÌ¶ó¸é ³»ºÎÀÇ lateralDepInfo¸¦ ¹İÈ¯
- *  - ±× ¿ÜÀÇ GraphÀÎ °æ¿ì, ºó depInfo¸¦ ¹İÈ¯
+ *  - Graphê°€ SELECTION / PARTITIONì´ë¼ë©´ ë‚´ë¶€ì˜ lateralDepInfoë¥¼ ë°˜í™˜
+ *  - ê·¸ ì™¸ì˜ Graphì¸ ê²½ìš°, ë¹ˆ depInfoë¥¼ ë°˜í™˜
  * 
  ********************************************************************/
 
@@ -7999,14 +7999,14 @@ IDE_RC qmg::resetDupNodeToMtrNode( qcStatement * aStatement,
 /*********************************************************************
  * 
  *  Description : BUG-43088 (PR-13286 diff)
- *                mtrNode ÀÇ original ³ëµå¿Í Áßº¹µÈ ³ëµå¸¦ Ã£¾Æ
- *                mtrNode °ªÀ¸·Î º¯°æÇÏ±â À§ÇÔ
+ *                mtrNode ì˜ original ë…¸ë“œì™€ ì¤‘ë³µëœ ë…¸ë“œë¥¼ ì°¾ì•„
+ *                mtrNode ê°’ìœ¼ë¡œ ë³€ê²½í•˜ê¸° ìœ„í•¨
  *  
  *  Implementation :
  *
- *          aNode tree ¸¦ ¼øÈ¸ÇÏ¸ç
- *          aOrgTable, aOrgColumn °ú µ¿ÀÏÇÑ table, column À» Ã£¾Æ
- *          aChageNode ÀÇ table, column À¸·Î º¯°æÇÑ´Ù.
+ *          aNode tree ë¥¼ ìˆœíšŒí•˜ë©°
+ *          aOrgTable, aOrgColumn ê³¼ ë™ì¼í•œ table, column ì„ ì°¾ì•„
+ *          aChageNode ì˜ table, column ìœ¼ë¡œ ë³€ê²½í•œë‹¤.
  * 
  ********************************************************************/
 
@@ -8054,11 +8054,11 @@ IDE_RC qmg::lookUpMaterializeGraph( qmgGraph * aGraph, idBool * aFound )
 /***********************************************************************
  *
  * Description :
- *    BUG-43493 delay operator¸¦ Ãß°¡ÇØ execution timeÀ» ÁÙÀÎ´Ù.
+ *    BUG-43493 delay operatorë¥¼ ì¶”ê°€í•´ execution timeì„ ì¤„ì¸ë‹¤.
  *
  * Implementation :
- *    graphÀÇ left¸¸ ¼øÈ¸ÇÏ¸ç materializeÇÒ¸¸ÇÑ(°¡´É¼º ÀÖ´Â)
- *    operator°¡ ÀÖ´ÂÁö Ã£¾Æº»´Ù.
+ *    graphì˜ leftë§Œ ìˆœíšŒí•˜ë©° materializeí• ë§Œí•œ(ê°€ëŠ¥ì„± ìˆëŠ”)
+ *    operatorê°€ ìˆëŠ”ì§€ ì°¾ì•„ë³¸ë‹¤.
  *
  ***********************************************************************/
 
@@ -8069,7 +8069,7 @@ IDE_RC qmg::lookUpMaterializeGraph( qmgGraph * aGraph, idBool * aFound )
     {
         switch( sGraph->type )
         {
-            // materialize °¡´É¼º ÀÖ´Â graph
+            // materialize ê°€ëŠ¥ì„± ìˆëŠ” graph
             case QMG_DISTINCTION :
             case QMG_GROUPING :
             case QMG_SORTING :

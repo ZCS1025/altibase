@@ -730,7 +730,7 @@ void stndrBUBuild::getCPFromIBuildKey( UChar            ** aBuildKeyMap,
 
 
 /* ------------------------------------------------
- * KeyMap¿¡¼­ swap
+ * KeyMapì—ì„œ swap
  * ----------------------------------------------*/
 void stndrBUBuild::swapBuildKeyMap( UChar ** aBuildKeyMap,
                                     UInt     aPos1,
@@ -749,7 +749,7 @@ void stndrBUBuild::swapBuildKeyMap( UChar ** aBuildKeyMap,
 
 
 /* ------------------------------------------------
- * ¾²·¹µå ÀÛ¾÷ ½ÃÀÛ ·çÆ¾
+ * ì“°ë ˆë“œ ì‘ì—… ì‹œì‘ ë£¨í‹´
  * ----------------------------------------------*/
 IDE_RC stndrBUBuild::threadRun( UInt            aPhase,
                                 UInt            aThreadCnt,
@@ -757,7 +757,7 @@ IDE_RC stndrBUBuild::threadRun( UInt            aPhase,
 {
     UInt             i;
 
-    // Working Thread ½ÇÇà
+    // Working Thread ì‹¤í–‰
     for( i = 0; i < aThreadCnt; i++ )
     {
         aThreads[i].mPhase = aPhase;
@@ -765,13 +765,13 @@ IDE_RC stndrBUBuild::threadRun( UInt            aPhase,
         IDE_TEST( aThreads[i].start() != IDE_SUCCESS );
     }
 
-    // Working Thread Á¾·á ´ë±â
+    // Working Thread ì¢…ë£Œ ëŒ€ê¸°
     for( i = 0; i < aThreadCnt; i++ )
     {
         IDE_TEST(aThreads[i].join() != IDE_SUCCESS);
     }
 
-    // Working Thread ¼öÇà °á°ú È®ÀÎ
+    // Working Thread ìˆ˜í–‰ ê²°ê³¼ í™•ì¸
     for( i = 0; i < aThreadCnt; i++ )
     {
         if( aThreads[i].mIsSuccess == ID_FALSE )
@@ -846,7 +846,7 @@ IDE_RC stndrBUBuild::main( idvSQL          *aStatistics,
     sSortAreaSize      = aTotalSortAreaSize / aThreadCnt;
     sAvailablePageSize = getAvailablePageSize();
 
-    // Åë°èÄ¡ Á¤º¸
+    // í†µê³„ì¹˜ ì •ë³´
     idlOS::memset( &sIndexStat, 0x00, ID_SIZEOF(stndrStatistic) );
 
     sBuildKeyValueLength = stndrRTree::getKeyValueLength();
@@ -932,7 +932,7 @@ IDE_RC stndrBUBuild::main( idvSQL          *aStatistics,
 
     IDE_TEST( sThreads[0].collectRun( sThreads, aThreadCnt ) != IDE_SUCCESS );
 
-    // BUG-29315: ·±ÀÇ °¹¼ö°¡ 0ÀÏ °æ¿ì ºñÁ¤»ó Á¾·áÇÏ´Â ¹®Á¦
+    // BUG-29315: ëŸ°ì˜ ê°¯ìˆ˜ê°€ 0ì¼ ê²½ìš° ë¹„ì •ìƒ ì¢…ë£Œí•˜ëŠ” ë¬¸ì œ
     IDE_TEST_RAISE( sThreads[0].mRunQueue.getQueueLength() == 0, SKIP_MERGE );
 
     sThreads[0].makePartition( STNDR_NODE_LKEY );
@@ -977,7 +977,7 @@ IDE_RC stndrBUBuild::main( idvSQL          *aStatistics,
                                  (void**)&sThreads[0].mKeyBuffer )
               != IDE_SUCCESS );
 
-    // nodeCount °¡ 1 ÀÌ¸é root node ÀÌ¹Ç·Î Áß´ÜÇÑ´Ù.
+    // nodeCount ê°€ 1 ì´ë©´ root node ì´ë¯€ë¡œ ì¤‘ë‹¨í•œë‹¤.
     while( sNodeCount > 1 )
     {
         sHeight++;
@@ -1006,11 +1006,11 @@ IDE_RC stndrBUBuild::main( idvSQL          *aStatistics,
 
     IDE_TEST( sThreads[0].removeFreePage() != IDE_SUCCESS );
 
-    // BUG-18201 : Memory/Disk Index Åë°èÄ¡
+    // BUG-18201 : Memory/Disk Index í†µê³„ì¹˜
     STNDR_ADD_STATISTIC( &(((stndrHeader*)aIndex->mHeader)->mDMLStat),
                          &sIndexStat );
 
-    // BUG-29290: Disk R-Tree Bottom-Up Build½Ã TreeMBRÀÌ °»½ÅµÇÁø ¾Ê´Â ¹®Á¦
+    // BUG-29290: Disk R-Tree Bottom-Up Buildì‹œ TreeMBRì´ ê°±ì‹ ë˜ì§„ ì•ŠëŠ” ë¬¸ì œ
     IDE_TEST( updateStatistics( aStatistics,
                                 NULL, // aMtx
                                 aIndex,
@@ -1047,7 +1047,7 @@ IDE_RC stndrBUBuild::main( idvSQL          *aStatistics,
 /* ------------------------------------------------
  * Description :
  *
- * Index build ¾²·¹µå ÃÊ±âÈ­
+ * Index build ì“°ë ˆë“œ ì´ˆê¸°í™”
  * ----------------------------------------------*/
 IDE_RC stndrBUBuild::initialize( UInt             aTotalThreadCnt,
                                  UInt             aID,
@@ -1172,7 +1172,7 @@ IDE_RC stndrBUBuild::initialize( UInt             aTotalThreadCnt,
 /* ------------------------------------------------
  * Description :
  *
- * buffer flush ¾²·¹µå ÇØÁ¦
+ * buffer flush ì“°ë ˆë“œ í•´ì œ
  * ----------------------------------------------*/
 IDE_RC stndrBUBuild::destroy()
 {
@@ -1230,7 +1230,7 @@ IDE_RC stndrBUBuild::destroy()
 /* ------------------------------------------------
  * Description :
  *
- * ¾²·¹µå ¸ŞÀÎ ½ÇÇà ·çÆ¾
+ * ì“°ë ˆë“œ ë©”ì¸ ì‹¤í–‰ ë£¨í‹´
  *
  * ----------------------------------------------*/
 void stndrBUBuild::run()
@@ -1297,7 +1297,7 @@ IDE_RC stndrBUBuild::extractNSort()
     ULong                sKeyValueBuf[ ID_SIZEOF(stdGeometryHeader) ];
     idBool               sIsRowDeleted;
     sdbMPRMgr            sMPRMgr;
-    UChar                sBuffer4Compaction[ SD_PAGE_SIZE ]; //Â¥Åõ¸®¸¦ ÀúÀåÇØµÎ´Â °ø°£
+    UChar                sBuffer4Compaction[ SD_PAGE_SIZE ]; //ì§œíˆ¬ë¦¬ë¥¼ ì €ì¥í•´ë‘ëŠ” ê³µê°„
     idBool               sIsPageLatchReleased = ID_TRUE;
     scPageID             sRowPID;
     scSlotNum            sRowSlotNum;
@@ -1332,7 +1332,7 @@ IDE_RC stndrBUBuild::extractNSort()
 
     IDE_TEST( sMPRMgr.beforeFst() != IDE_SUCCESS );
 
-    // table¿¡ allocµÈ extent list¸¦ ¼øÈ¸ÇÏ¸ç ÀÛ¾÷
+    // tableì— allocëœ extent listë¥¼ ìˆœíšŒí•˜ë©° ì‘ì—…
     while (1)              // 1
     {
         IDE_TEST( sMPRMgr.getNxtPageID( (void*)&sFilter4Scan,
@@ -1364,7 +1364,7 @@ IDE_RC stndrBUBuild::extractNSort()
             sSlotDirPtr = sdpPhyPage::getSlotDirStartPtr( sPage );
             sSlotCount  = sdpSlotDirectory::getCount( sSlotDirPtr );
 
-            // page¿¡ allocµÈ slot ¼øÈ¸
+            // pageì— allocëœ slot ìˆœíšŒ
             for( i = 0; i < (UInt)sSlotCount; i++ )       // 4
             {
                 if( sdpSlotDirectory::isUnusedSlotEntry(sSlotDirPtr, i)
@@ -1412,16 +1412,16 @@ IDE_RC stndrBUBuild::extractNSort()
                 IDE_ASSERT( sIsRowDeleted == ID_FALSE );
 
                 /* BUG-23319
-                 * [SD] ÀÎµ¦½º Scan½Ã sdcRow::fetch ÇÔ¼ö¿¡¼­ Deadlock ¹ß»ı°¡´É¼ºÀÌ ÀÖÀ½. */
-                /* row fetch¸¦ ÇÏ´ÂÁß¿¡ next rowpiece·Î ÀÌµ¿ÇØ¾ß ÇÏ´Â °æ¿ì,
-                 * ±âÁ¸ pageÀÇ latch¸¦ Ç®Áö ¾ÊÀ¸¸é deadlock ¹ß»ı°¡´É¼ºÀÌ ÀÖ´Ù.
-                 * ±×·¡¼­ page latch¸¦ Ç¬ ´ÙÀ½ next rowpiece·Î ÀÌµ¿ÇÏ´Âµ¥,
-                 * »óÀ§ ÇÔ¼ö¿¡¼­´Â page latch¸¦ Ç®¾ú´ÂÁö ¿©ºÎ¸¦ output parameter·Î È®ÀÎÇÏ°í
-                 * »óÈ²¿¡ µû¶ó ÀûÀıÇÑ Ã³¸®¸¦ ÇØ¾ß ÇÑ´Ù. */
+                 * [SD] ì¸ë±ìŠ¤ Scanì‹œ sdcRow::fetch í•¨ìˆ˜ì—ì„œ Deadlock ë°œìƒê°€ëŠ¥ì„±ì´ ìˆìŒ. */
+                /* row fetchë¥¼ í•˜ëŠ”ì¤‘ì— next rowpieceë¡œ ì´ë™í•´ì•¼ í•˜ëŠ” ê²½ìš°,
+                 * ê¸°ì¡´ pageì˜ latchë¥¼ í’€ì§€ ì•Šìœ¼ë©´ deadlock ë°œìƒê°€ëŠ¥ì„±ì´ ìˆë‹¤.
+                 * ê·¸ë˜ì„œ page latchë¥¼ í‘¼ ë‹¤ìŒ next rowpieceë¡œ ì´ë™í•˜ëŠ”ë°,
+                 * ìƒìœ„ í•¨ìˆ˜ì—ì„œëŠ” page latchë¥¼ í’€ì—ˆëŠ”ì§€ ì—¬ë¶€ë¥¼ output parameterë¡œ í™•ì¸í•˜ê³ 
+                 * ìƒí™©ì— ë”°ë¼ ì ì ˆí•œ ì²˜ë¦¬ë¥¼ í•´ì•¼ í•œë‹¤. */
                 if( sIsPageLatchReleased == ID_TRUE )
                 {
                     /* BUG-25126
-                     * [5.3.1 SD] Index Bottom-up Build ½Ã Page fetch½Ã ¼­¹ö»ç¸Á!! */
+                     * [5.3.1 SD] Index Bottom-up Build ì‹œ Page fetchì‹œ ì„œë²„ì‚¬ë§!! */
                     IDE_TEST( sdbBufferMgr::getPage( mStatistics,
                                                      sTBSID,
                                                      sCurPageID,
@@ -1436,8 +1436,8 @@ IDE_RC stndrBUBuild::extractNSort()
                     sSlotDirPtr = sdpPhyPage::getSlotDirStartPtr( sPage );
                     sSlotCount  = sdpSlotDirectory::getCount( sSlotDirPtr );
 
-                    /* page latch°¡ Ç®¸° »çÀÌ¿¡ ´Ù¸¥ Æ®·£Àè¼ÇÀÌ
-                     * µ¿ÀÏ ÆäÀÌÁö¿¡ Á¢±ÙÇÏ¿© º¯°æ ¿¬»êÀ» ¼öÇàÇÒ ¼ö ÀÖ´Ù. */
+                    /* page latchê°€ í’€ë¦° ì‚¬ì´ì— ë‹¤ë¥¸ íŠ¸ëœì­ì…˜ì´
+                     * ë™ì¼ í˜ì´ì§€ì— ì ‘ê·¼í•˜ì—¬ ë³€ê²½ ì—°ì‚°ì„ ìˆ˜í–‰í•  ìˆ˜ ìˆë‹¤. */
                     if( sdpSlotDirectory::isUnusedSlotEntry( sSlotDirPtr, i )
                         == ID_TRUE )
                     {
@@ -1458,22 +1458,22 @@ IDE_RC stndrBUBuild::extractNSort()
                     /* do nothing */
                 }
 
-                // makePartition() ¿¡¼­ »ç¿ëÇÏ±â À§ÇØ »óÀ§ height ÀÇ node °¹¼ö °è»ê¿¡ ÀÌ¿ë
+                // makePartition() ì—ì„œ ì‚¬ìš©í•˜ê¸° ìœ„í•´ ìƒìœ„ height ì˜ node ê°¯ìˆ˜ ê³„ì‚°ì— ì´ìš©
                 mPropagatedKeyCount++;
 
-                // fix BUG-23525 InsertableKeyCnt ¿¡ µµ´ŞÇÏ¸é
+                // fix BUG-23525 InsertableKeyCnt ì— ë„ë‹¬í•˜ë©´
                 if( (sUsedBufferSize + sBuildKeyLength) > mKeyBufferSize )
                 {
                     IDE_DASSERT( sInsertedBuildKeyCnt <= mMaxKeyMapCount );
 
-                    // sort areaÀÇ key Á¤·Ä
+                    // sort areaì˜ key ì •ë ¬
                     IDE_TEST( quickSort( 0,
                                          sNextPos - 1,
                                          STNDR_NODE_LKEY,
                                          STNDR_SORT_X )
                               != IDE_SUCCESS );
 
-                    // temp segment ¿¡ ³»¸²
+                    // temp segment ì— ë‚´ë¦¼
                     IDE_TEST( storeSortedRun( 0,
                                               sNextPos - 1,
                                               &sLeftPos,
@@ -1487,18 +1487,18 @@ IDE_RC stndrBUBuild::extractNSort()
 
                     if( sLeftCnt > 0 )
                     {
-                        //KeyValueµéÀ» ¸Ç ¾ÕÂÊÀ¸·Î ºÙ¿©³Ö±â
+                        //KeyValueë“¤ì„ ë§¨ ì•ìª½ìœ¼ë¡œ ë¶™ì—¬ë„£ê¸°
                         for( j = 0; j < sLeftCnt; j++ )
                         {
                             swapBuildKeyMap( mKeyMap, j, (sLeftPos + j) );
 
-                            // BUG-31024: Bottom-UP ºôµå ½Ã¿¡ ÇàÀÌ °É¸®´Â ¹®Á¦
-                            //            Buffer Overflow·Î ÀÎÇØ ¹ß»ı
+                            // BUG-31024: Bottom-UP ë¹Œë“œ ì‹œì— í–‰ì´ ê±¸ë¦¬ëŠ” ë¬¸ì œ
+                            //            Buffer Overflowë¡œ ì¸í•´ ë°œìƒ
                             IDE_ASSERT( (sUsedBufferSize + sBuildKeyLength)
                                         <= ID_SIZEOF(sBuffer4Compaction) );
 
-                            /* fix BUG-23525 ÀúÀåµÇ´Â Å°ÀÇ ±æÀÌ°¡ VaraibaleÇÏ¸é 
-                             * FragmentationÀÌ ÀÏ¾î³¯ ¼ö ¹Û¿¡ ¾ø°í, µû¶ó¼­ Compaction°úÁ¤Àº ÇÊ¼ö */
+                            /* fix BUG-23525 ì €ì¥ë˜ëŠ” í‚¤ì˜ ê¸¸ì´ê°€ Varaibaleí•˜ë©´ 
+                             * Fragmentationì´ ì¼ì–´ë‚  ìˆ˜ ë°–ì— ì—†ê³ , ë”°ë¼ì„œ Compactionê³¼ì •ì€ í•„ìˆ˜ */
                             idlOS::memcpy( &sBuffer4Compaction[ sUsedBufferSize ],
                                            mKeyMap[j],
                                            sBuildKeyLength );
@@ -1552,7 +1552,7 @@ IDE_RC stndrBUBuild::extractNSort()
     sState = 1;
     IDE_TEST( sMPRMgr.destroy() != IDE_SUCCESS );
 
-    // ÀÛ¾÷ °ø°£¿¡ ³²¾Æ ÀÖ´Â °Íµé Ã³¸®
+    // ì‘ì—… ê³µê°„ì— ë‚¨ì•„ ìˆëŠ” ê²ƒë“¤ ì²˜ë¦¬
     if( sNextPos > 0 )
     {
         // in-memory sort
@@ -1561,7 +1561,7 @@ IDE_RC stndrBUBuild::extractNSort()
                              STNDR_NODE_LKEY,
                              STNDR_SORT_X )
                   != IDE_SUCCESS );
-        // temp segment·Î ³»¸°´Ù.
+        // temp segmentë¡œ ë‚´ë¦°ë‹¤.
         IDE_TEST( storeSortedRun( 0,
                                   sNextPos - 1,
                                   NULL,
@@ -1622,7 +1622,7 @@ IDE_RC stndrBUBuild::quickSort( UInt              aHead,
     idBool               sEmpty;
     SInt                 sRet;
 
-    // fix BUG-27403 ÃÖÃÊ ÇØ¾ßÇÒ ÀÏ ÀÔ·Â
+    // fix BUG-27403 ìµœì´ˆ í•´ì•¼í•  ì¼ ì…ë ¥
     sCurStack.mLeftPos   = aHead;
     sCurStack.mRightPos  = aTail;
     IDE_TEST( mSortStack.push( ID_FALSE, &sCurStack ) != IDE_SUCCESS );
@@ -1635,8 +1635,8 @@ IDE_RC stndrBUBuild::quickSort( UInt              aHead,
                   != IDE_SUCCESS);
 
         // Bug-27403
-        // QuickSortÀÇ ¾Ë°í¸®Áò»ó, CallStackÀº ItemCountº¸´Ù ¸¹¾ÆÁú ¼ö ¾ø´Ù.
-        // µû¶ó¼­ ÀÌº¸´Ù ¸¹À¸¸é, ¹«ÇÑ·çÇÁ¿¡ ºüÁ³À» °¡´É¼ºÀÌ ³ô´Ù.
+        // QuickSortì˜ ì•Œê³ ë¦¬ì¦˜ìƒ, CallStackì€ ItemCountë³´ë‹¤ ë§ì•„ì§ˆ ìˆ˜ ì—†ë‹¤.
+        // ë”°ë¼ì„œ ì´ë³´ë‹¤ ë§ìœ¼ë©´, ë¬´í•œë£¨í”„ì— ë¹ ì¡Œì„ ê°€ëŠ¥ì„±ì´ ë†’ë‹¤.
         IDE_ASSERT( (aTail - aHead + 1 ) > mSortStack.getTotItemCnt() );
 
         if( sEmpty == ID_TRUE)
@@ -1731,7 +1731,7 @@ IDE_RC stndrBUBuild::quickSort( UInt              aHead,
 
 
 /* ------------------------------------------------
- * sorted blockÀ» disk¿¡ ³»¸²
+ * sorted blockì„ diskì— ë‚´ë¦¼
  * ----------------------------------------------*/
 IDE_RC stndrBUBuild::storeSortedRun( UInt             aHead,
                                      UInt             aTail,
@@ -1759,7 +1759,7 @@ IDE_RC stndrBUBuild::storeSortedRun( UInt             aHead,
     sBuildKeyValueLength = stndrRTree::getKeyValueLength();
     sBuildKeyLength      = gCallbackFuncs4Build[ aNodeType ].getBuildKeyLength( sBuildKeyValueLength );
 
-    // sorted runÀ» ÀúÀåÇÒ page¸¦ ÇÒ´ç
+    // sorted runì„ ì €ì¥í•  pageë¥¼ í• ë‹¹
     sAllocatedPageCnt++;
 
     IDE_TEST( sdrMiniTrans::begin( mStatistics, /* idvSQL* */
@@ -1771,8 +1771,8 @@ IDE_RC stndrBUBuild::storeSortedRun( UInt             aHead,
               != IDE_SUCCESS );
     sState = 1;
 
-    // NOLOGGING mini-transactionÀÇ Persistent flag ¼³Á¤
-    // PERSISTENT_ON : Persistent (nologging index buildÀÏ °æ¿ì¿¡¸¸)
+    // NOLOGGING mini-transactionì˜ Persistent flag ì„¤ì •
+    // PERSISTENT_ON : Persistent (nologging index buildì¼ ê²½ìš°ì—ë§Œ)
     sdrMiniTrans::setNologgingPersistent ( &sMtx );
 
     IDE_TEST( allocAndLinkPage( &sMtx,
@@ -1784,7 +1784,7 @@ IDE_RC stndrBUBuild::storeSortedRun( UInt             aHead,
                                 &sNullPID ) // aNextPID
               != IDE_SUCCESS );
 
-    // sorted runÀÇ Ã¹¹øÂ° pageÀÇ PID¸¦ PIDBlkQueue¿¡ enqueue
+    // sorted runì˜ ì²«ë²ˆì§¸ pageì˜ PIDë¥¼ PIDBlkQueueì— enqueue
     sQueueInfo.mStartPID = sCurrPID;
     IDE_TEST( mRunQueue.enqueue( ID_FALSE, (void*)&sQueueInfo )
               != IDE_SUCCESS );
@@ -1793,7 +1793,7 @@ IDE_RC stndrBUBuild::storeSortedRun( UInt             aHead,
 
     if( aLeftPos != NULL )
     {
-        /* BUG-23525 ³²Àº Å° Å©±â °è»êÀ» À§ÇØ aLeftSizeµµ ÀÖ¾î¾ß ÇÔ. */
+        /* BUG-23525 ë‚¨ì€ í‚¤ í¬ê¸° ê³„ì‚°ì„ ìœ„í•´ aLeftSizeë„ ìˆì–´ì•¼ í•¨. */
         IDE_ASSERT( aLeftSize != NULL ); 
         *aLeftPos = aTail + 1;
     }
@@ -1807,8 +1807,8 @@ IDE_RC stndrBUBuild::storeSortedRun( UInt             aHead,
                 1 )
             != ID_TRUE )
         {
-            // ³²Àº Å°°¡ ÀÏÁ¤ ÀÌ»óÀÌ¶ó¸é ´Ù½Ã »ğÀÔÀ», ÀÏÁ¤ ÀÌÇÏ·Î ÀÛ´Ù¸é ´ÙÀ½À¸·Î ¹Ì·é´Ù.
-            // Å°ÀÇ Å©±â°¡ ÀÛ´Ù¸é ´ÙÀ½¿¡ ´Ù½Ã ÇÑ¹ø sortingÇÑ´Ù.
+            // ë‚¨ì€ í‚¤ê°€ ì¼ì • ì´ìƒì´ë¼ë©´ ë‹¤ì‹œ ì‚½ì…ì„, ì¼ì • ì´í•˜ë¡œ ì‘ë‹¤ë©´ ë‹¤ìŒìœ¼ë¡œ ë¯¸ë£¬ë‹¤.
+            // í‚¤ì˜ í¬ê¸°ê°€ ì‘ë‹¤ë©´ ë‹¤ìŒì— ë‹¤ì‹œ í•œë²ˆ sortingí•œë‹¤.
             if( aLeftPos != NULL )
             {
                 if( mLeftSizeThreshold > *aLeftSize )
@@ -1818,7 +1818,7 @@ IDE_RC stndrBUBuild::storeSortedRun( UInt             aHead,
                 }
             }
 
-            // Page¿¡ ÃæºĞÇÑ °ø°£ÀÌ ³²¾ÆÀÖÁö ¾Ê´Ù¸é »õ·Î¿î Page Alloc
+            // Pageì— ì¶©ë¶„í•œ ê³µê°„ì´ ë‚¨ì•„ìˆì§€ ì•Šë‹¤ë©´ ìƒˆë¡œìš´ Page Alloc
             sPrevPID = sCurrPage->mPageID;
 
             IDE_TEST( allocAndLinkPage( &sMtx,
@@ -1843,11 +1843,11 @@ IDE_RC stndrBUBuild::storeSortedRun( UInt             aHead,
                       != IDE_SUCCESS );
             sState = 1;
 
-            // NOLOGGING mini-transactionÀÇ Persistent flag ¼³Á¤
-            // PERSISTENT_ON : Persistent (nologging index buildÀÏ °æ¿ì¿¡¸¸)
+            // NOLOGGING mini-transactionì˜ Persistent flag ì„¤ì •
+            // PERSISTENT_ON : Persistent (nologging index buildì¼ ê²½ìš°ì—ë§Œ)
             sdrMiniTrans::setNologgingPersistent ( &sMtx );
 
-            // ÀÌÀü page¸¦ PrevTail¿¡ getpage
+            // ì´ì „ pageë¥¼ PrevTailì— getpage
             IDE_TEST( sdbBufferMgr::getPageByPID( mStatistics,
                                                   mIndex->mIndexSegDesc.mSpaceID,
                                                   sCurrPID,
@@ -1860,17 +1860,17 @@ IDE_RC stndrBUBuild::storeSortedRun( UInt             aHead,
                                                   NULL )
                       != IDE_SUCCESS );
 
-            /* BUG-27527 Disk Index Bottom Up Build½Ã, ·Î±× ¾øÀÌ Key InsertÇÒ °æ¿ì
-             * ÆäÀÌÁö°¡ DirtyµÇÁö ¾ÊÀ½.
-             * ÀÌÈÄ¿¡ ÀÌ ÆäÀÌÁö¿¡ ·Î±×¸¦ ³²±âÁö ¾Ê´Â WriteÀÛ¾÷ÀÌ ÀÏ¾î³ª, ÆäÀÌÁö°¡
-             * DirtyµÇÁö ¾Ê´Â´Ù.  µû¶ó¼­ °­Á¦·Î Dirt½ÃÅ²´Ù.*/
+            /* BUG-27527 Disk Index Bottom Up Buildì‹œ, ë¡œê·¸ ì—†ì´ Key Insertí•  ê²½ìš°
+             * í˜ì´ì§€ê°€ Dirtyë˜ì§€ ì•ŠìŒ.
+             * ì´í›„ì— ì´ í˜ì´ì§€ì— ë¡œê·¸ë¥¼ ë‚¨ê¸°ì§€ ì•ŠëŠ” Writeì‘ì—…ì´ ì¼ì–´ë‚˜, í˜ì´ì§€ê°€
+             * Dirtyë˜ì§€ ì•ŠëŠ”ë‹¤.  ë”°ë¼ì„œ ê°•ì œë¡œ Dirtì‹œí‚¨ë‹¤.*/
             sdbBufferMgr::setDirtyPageToBCB( mStatistics, (UChar*)sCurrPage );
             
             sSlotSeq = -1;
         }
         sSlotSeq++;
 
-        //fix BUG-23525 ÆäÀÌÁö ÇÒ´çÀ» À§ÇÑ ÆÇ´Ü ÀÚ·á
+        //fix BUG-23525 í˜ì´ì§€ í• ë‹¹ì„ ìœ„í•œ íŒë‹¨ ìë£Œ
         if( aLeftSize != NULL )
         {
             IDE_DASSERT( sBuildKeyLength <= (*aLeftSize) );
@@ -1900,7 +1900,7 @@ IDE_RC stndrBUBuild::storeSortedRun( UInt             aHead,
 /*********************************************************************
  * FUNCTION DESCRIPTION : stndrBUBuild::preparePages                 *
  * ------------------------------------------------------------------*
- * ÁÖ¾îÁø °³¼ö¸¸Å­ÀÇ ÆäÀÌÁö¸¦ ÇÒ´ç¹ŞÀ»¼ö ÀÖÀ»Áö °Ë»çÇÑ´Ù.            *
+ * ì£¼ì–´ì§„ ê°œìˆ˜ë§Œí¼ì˜ í˜ì´ì§€ë¥¼ í• ë‹¹ë°›ì„ìˆ˜ ìˆì„ì§€ ê²€ì‚¬í•œë‹¤.            *
  *********************************************************************/
 IDE_RC stndrBUBuild::preparePages( UInt aNeedPageCnt )
 {
@@ -1974,11 +1974,11 @@ IDE_RC stndrBUBuild::allocAndLinkPage(sdrMtx         * aMtx,
                              &sIsEmpty )
               != IDE_SUCCESS );
 
-    if( sIsEmpty == ID_TRUE ) // »ç¿ëÈÄ free µÈ page°¡ ¾øÀ» °æ¿ì
+    if( sIsEmpty == ID_TRUE ) // ì‚¬ìš©í›„ free ëœ pageê°€ ì—†ì„ ê²½ìš°
     {
-        /* Bottom-up index build ½Ã »ç¿ëÇÒ pageµéÀ» ÇÒ´çÇÑ´Ù.
-         * Logging mode·Î new page¸¦ alloc ¹ŞÀ½ : index build¸¦
-         * undoÇÒ °æ¿ì extent¸¦ free ½ÃÅ°±â À§ÇØ¼­   */
+        /* Bottom-up index build ì‹œ ì‚¬ìš©í•  pageë“¤ì„ í• ë‹¹í•œë‹¤.
+         * Logging modeë¡œ new pageë¥¼ alloc ë°›ìŒ : index buildë¥¼
+         * undoí•  ê²½ìš° extentë¥¼ free ì‹œí‚¤ê¸° ìœ„í•´ì„œ   */
         IDE_TEST( sdrMiniTrans::begin( mStatistics, /* idvSQL* */
                                        &sMtx,
                                        mTrans,
@@ -2048,10 +2048,10 @@ IDE_RC stndrBUBuild::allocAndLinkPage(sdrMtx         * aMtx,
                                               NULL )
                   != IDE_SUCCESS );
 
-        // BUG-17615 ·Î±ë¾ç ÁÙÀÌ±â
-        // 1´Ü°è(extractNSort), 2´Ü°è(merge)¿¡¼­ ¹İÈ¯µÈ ÆäÀÌÁöµéÀº
-        // LOGICAL HEADER´Â »ç¿ëµÈÀûÀÌ ¾ø±â ¶§¹®¿¡ PHYSICAL HEADER¸¸
-        // RESET ÇÑ´Ù.
+        // BUG-17615 ë¡œê¹…ì–‘ ì¤„ì´ê¸°
+        // 1ë‹¨ê³„(extractNSort), 2ë‹¨ê³„(merge)ì—ì„œ ë°˜í™˜ëœ í˜ì´ì§€ë“¤ì€
+        // LOGICAL HEADERëŠ” ì‚¬ìš©ëœì ì´ ì—†ê¸° ë•Œë¬¸ì— PHYSICAL HEADERë§Œ
+        // RESET í•œë‹¤.
         IDE_TEST( sdpPhyPage::reset((sdpPhyPageHdr*)sCurrPage,
                                     ID_SIZEOF(stndrNodeHdr),
                                     aMtx) 
@@ -2276,7 +2276,7 @@ IDE_RC stndrBUBuild::merge( UInt            aMergePageCount,
     UInt                sState = 0;
     UInt                sHeapMapCount = 1;
 
-    // merge¿¡ »ç¿ëµÇ´Â runÀÇ ÀÚ·á±¸Á¶
+    // mergeì— ì‚¬ìš©ë˜ëŠ” runì˜ ìë£Œêµ¬ì¡°
     stndrRunInfo       *sRunInfo = NULL;
 
     scPageID            sCurrResultPID;
@@ -2289,7 +2289,7 @@ IDE_RC stndrBUBuild::merge( UInt            aMergePageCount,
 
     IDE_ASSERT( aMergePageCount > 0 );
     IDE_ASSERT( mMergePageCount >= aMergePageCount );
-    // BUG-29315: ·±ÀÇ °¹¼ö°¡ 0ÀÏ °æ¿ì ºñÁ¤»ó Á¾·áÇÏ´Â ¹®Á¦
+    // BUG-29315: ëŸ°ì˜ ê°¯ìˆ˜ê°€ 0ì¼ ê²½ìš° ë¹„ì •ìƒ ì¢…ë£Œí•˜ëŠ” ë¬¸ì œ
     IDE_TEST_RAISE( mRunQueue.getQueueLength() <= 1, SKIP_RUN_MERGE );
 
     sBuildKeyValueLength = stndrRTree::getKeyValueLength();
@@ -2325,13 +2325,13 @@ IDE_RC stndrBUBuild::merge( UInt            aMergePageCount,
 
         sQueueLength = mRunQueue.getQueueLength();
 
-        // mergeÇØ¾ß ÇÒ runÀÇ ¼ö°¡ ÀÔ·Â¹ŞÀº ¼öº¸´Ù ÀÛÀ¸¸é merge ¸¦ Á¾·áÇÑ´Ù.
+        // mergeí•´ì•¼ í•  runì˜ ìˆ˜ê°€ ì…ë ¥ë°›ì€ ìˆ˜ë³´ë‹¤ ì‘ìœ¼ë©´ merge ë¥¼ ì¢…ë£Œí•œë‹¤.
         if( sQueueLength <= aMergePageCount )
         {
             break;
         }
 
-        // ÇÑ¹ø¿¡ mergeÇÒ page ¼ö¸¸Å­ °¢ runÀÇ Ã¹¹øÂ° page¸¦ fix
+        // í•œë²ˆì— mergeí•  page ìˆ˜ë§Œí¼ ê° runì˜ ì²«ë²ˆì§¸ pageë¥¼ fix
         while( 1 )
         {
             sQueueLength = mRunQueue.getQueueLength();
@@ -2359,7 +2359,7 @@ IDE_RC stndrBUBuild::merge( UInt            aMergePageCount,
 
             sRunInfoCount++;
 
-            // ¹è¿­ ¹üÀ§¸¦ ³Ñ¾î°¥ °æ¿ì Áß´ÜÇÑ´Ù.
+            // ë°°ì—´ ë²”ìœ„ë¥¼ ë„˜ì–´ê°ˆ ê²½ìš° ì¤‘ë‹¨í•œë‹¤.
             if( sRunInfoCount > (mMergePageCount - 1) )
             {
                 break;
@@ -2375,8 +2375,8 @@ IDE_RC stndrBUBuild::merge( UInt            aMergePageCount,
                   != IDE_SUCCESS );
         sState = 3;
 
-        // NOLOGGING mini-transactionÀÇ Persistent flag ¼³Á¤
-        // PERSISTENT_ON : Persistent (nologging index buildÀÏ °æ¿ì¿¡¸¸)
+        // NOLOGGING mini-transactionì˜ Persistent flag ì„¤ì •
+        // PERSISTENT_ON : Persistent (nologging index buildì¼ ê²½ìš°ì—ë§Œ)
         sdrMiniTrans::setNologgingPersistent ( &sMtx );
 
         IDE_TEST( allocAndLinkPage( &sMtx,
@@ -2424,8 +2424,8 @@ IDE_RC stndrBUBuild::merge( UInt            aMergePageCount,
                     1 )
                 != ID_TRUE )
             {
-                // Page¿¡ ÃæºĞÇÑ °ø°£ÀÌ ³²¾ÆÀÖÁö ¾Ê´Ù¸é
-                // »õ·Î¿î Page Alloc
+                // Pageì— ì¶©ë¶„í•œ ê³µê°„ì´ ë‚¨ì•„ìˆì§€ ì•Šë‹¤ë©´
+                // ìƒˆë¡œìš´ Page Alloc
                 sPrevResultPID = sCurrResultPID;
 
                 IDE_TEST( allocAndLinkPage( &sMtx,
@@ -2449,8 +2449,8 @@ IDE_RC stndrBUBuild::merge( UInt            aMergePageCount,
                           != IDE_SUCCESS );
                 sState = 3;
 
-                // NOLOGGING mini-transactionÀÇ Persistent flag ¼³Á¤
-                // PERSISTENT_ON : Persistent (nologging index buildÀÏ °æ¿ì¿¡¸¸)
+                // NOLOGGING mini-transactionì˜ Persistent flag ì„¤ì •
+                // PERSISTENT_ON : Persistent (nologging index buildì¼ ê²½ìš°ì—ë§Œ)
                 sdrMiniTrans::setNologgingPersistent ( &sMtx );
 
                 IDE_TEST( sdbBufferMgr::getPageByPID( mStatistics,
@@ -2465,10 +2465,10 @@ IDE_RC stndrBUBuild::merge( UInt            aMergePageCount,
                                                       NULL )
                           != IDE_SUCCESS );                                
 
-                /* BUG-27527 Disk Index Bottom Up Build½Ã, ·Î±× ¾øÀÌ Key InsertÇÒ °æ¿ì
-                 * ÆäÀÌÁö°¡ DirtyµÇÁö ¾ÊÀ½.
-                 * ÀÌÈÄ¿¡ ÀÌ ÆäÀÌÁö¿¡ ·Î±×¸¦ ³²±âÁö ¾Ê´Â WriteÀÛ¾÷ÀÌ ÀÏ¾î³ª, ÆäÀÌÁö°¡
-                 * DirtyµÇÁö ¾Ê´Â´Ù.  µû¶ó¼­ °­Á¦·Î Dirty½ÃÅ²´Ù.*/
+                /* BUG-27527 Disk Index Bottom Up Buildì‹œ, ë¡œê·¸ ì—†ì´ Key Insertí•  ê²½ìš°
+                 * í˜ì´ì§€ê°€ Dirtyë˜ì§€ ì•ŠìŒ.
+                 * ì´í›„ì— ì´ í˜ì´ì§€ì— ë¡œê·¸ë¥¼ ë‚¨ê¸°ì§€ ì•ŠëŠ” Writeì‘ì—…ì´ ì¼ì–´ë‚˜, í˜ì´ì§€ê°€
+                 * Dirtyë˜ì§€ ì•ŠëŠ”ë‹¤.  ë”°ë¼ì„œ ê°•ì œë¡œ Dirtyì‹œí‚¨ë‹¤.*/
                 sdbBufferMgr::setDirtyPageToBCB( mStatistics, (UChar*)sCurrResultRun );
 
                 sResultSlotSeq = -1;
@@ -2614,7 +2614,7 @@ IDE_RC stndrBUBuild::heapInit( UInt            aRunCount,
                 }
                 else
                 {
-                    // BUG-29998: µ¿ÀÏ Å°¿¡ ´ëÇØ¼­ HeapMap ¼³Á¤ÇÏÁö ¾Ê´Â ¹®Á¦
+                    // BUG-29998: ë™ì¼ í‚¤ì— ëŒ€í•´ì„œ HeapMap ì„¤ì •í•˜ì§€ ì•ŠëŠ” ë¬¸ì œ
                     aHeapMap[i + sPos] = aHeapMap[sLChild];
                 }
             }                
@@ -2740,7 +2740,7 @@ IDE_RC stndrBUBuild::heapPop( UInt               aMinIdx,
             }
             else
             {
-                // BUG-29273: µ¿ÀÏ Å°¿¡ ´ëÇØ¼­ HeapMap ¼³Á¤ÇÏÁö ¾Ê´Â ¹®Á¦
+                // BUG-29273: ë™ì¼ í‚¤ì— ëŒ€í•´ì„œ HeapMap ì„¤ì •í•˜ì§€ ì•ŠëŠ” ë¬¸ì œ
                 aHeapMap[sPos] = aHeapMap[sLChild];
             }
         }
@@ -2761,9 +2761,9 @@ IDE_RC stndrBUBuild::heapPop( UInt               aMinIdx,
 
 void stndrBUBuild::makePartition( stndrNodeType aNodeType )
 {
-    UInt          sPageCount4Matrix;    // matrix ¿¡ ÇÊ¿äÇÑ page count
-    UInt          sTempSqrt;            // ¿ÏÀüÁ¦°ö¼ö ÆÇ´ÜÇÏ´Âµ¥ ÇÊ¿äÇÑ ÀÓ½Ãº¯¼ö
-    UInt          sSqrt;                // sPerfectSqrt ÀÇ ¾çÀÇ Á¦°ö±Ù
+    UInt          sPageCount4Matrix;    // matrix ì— í•„ìš”í•œ page count
+    UInt          sTempSqrt;            // ì™„ì „ì œê³±ìˆ˜ íŒë‹¨í•˜ëŠ”ë° í•„ìš”í•œ ì„ì‹œë³€ìˆ˜
+    UInt          sSqrt;                // sPerfectSqrt ì˜ ì–‘ì˜ ì œê³±ê·¼
     UInt          sKeyValueLength;
     UInt          sNodeKeyLength;
     UInt          sPropertyKeyCount;
@@ -2790,10 +2790,10 @@ void stndrBUBuild::makePartition( stndrNodeType aNodeType )
         // nothing to do
     }
 
-    // matrix ¿¡ ÇÊ¿äÇÑ ÀüÃ¼ ÆäÀÌÁö °¹¼ö¸¦ ±¸ÇÑ´Ù.
+    // matrix ì— í•„ìš”í•œ ì „ì²´ í˜ì´ì§€ ê°¯ìˆ˜ë¥¼ êµ¬í•œë‹¤.
     sPageCount4Matrix = ( mPropagatedKeyCount + mKeyCount4EmptyNode - 1 ) / mKeyCount4EmptyNode;
 
-    // ¿ÏÀüÁ¦°ö¼ö°¡ ¸Â´ÂÁö Ã¼Å©ÇÑ´Ù.
+    // ì™„ì „ì œê³±ìˆ˜ê°€ ë§ëŠ”ì§€ ì²´í¬í•œë‹¤.
     sTempSqrt = (UInt)idlOS::sqrt( sPageCount4Matrix );
     if( sPageCount4Matrix == (sTempSqrt * sTempSqrt) )
     {
@@ -2804,7 +2804,7 @@ void stndrBUBuild::makePartition( stndrNodeType aNodeType )
         sSqrt = sTempSqrt + 1;
     }
 
-    // 1°³ÀÇ Y Sorted Run ¿¡ µé¾î°¡´Â key count
+    // 1ê°œì˜ Y Sorted Run ì— ë“¤ì–´ê°€ëŠ” key count
     mKeyCount4Partition = sSqrt * mKeyCount4EmptyNode;
 }
 
@@ -2816,8 +2816,8 @@ IDE_RC stndrBUBuild::collectRun( stndrBUBuild   * aThreads,
     idBool               sIsEmpty;
     stndrSortedBlk       sQueueInfo;
 
-    // ¿©·¯ ¾²·¹µå¿¡ Èğ¾îÁ® ÀÖ´Â run µéÀ» thread[0] ¿¡ ÇÕÄ£´Ù.
-    // thread[1] ºÎÅÍ ¼öÇàÀ» ÇØ¾ß ÇÑ´Ù.
+    // ì—¬ëŸ¬ ì“°ë ˆë“œì— í©ì–´ì ¸ ìˆëŠ” run ë“¤ì„ thread[0] ì— í•©ì¹œë‹¤.
+    // thread[1] ë¶€í„° ìˆ˜í–‰ì„ í•´ì•¼ í•œë‹¤.
     for( i = 1; i < aThreadCnt; i++ )
     {
         while(1)
@@ -2955,7 +2955,7 @@ IDE_RC stndrBUBuild::sortY( UInt          aMergePageCnt,
     UInt                 sBuildKeyLength;
     UInt                 sInsertedBuildKeyCnt = 0;
     UInt                 sUsedBufferSize = 0;
-    UChar                sBuffer4Compaction[ SD_PAGE_SIZE ]; //Â¥Åõ¸®¸¦ ÀúÀåÇØµÎ´Â °ø°£
+    UChar                sBuffer4Compaction[ SD_PAGE_SIZE ]; //ì§œíˆ¬ë¦¬ë¥¼ ì €ì¥í•´ë‘ëŠ” ê³µê°„
 
     sBuildKeyValueLength = stndrRTree::getKeyValueLength();
     sBuildKeyLength      = gCallbackFuncs4Build[ aNodeType ].getBuildKeyLength( sBuildKeyValueLength );
@@ -3020,8 +3020,8 @@ IDE_RC stndrBUBuild::sortY( UInt          aMergePageCnt,
 
     sClosedRun = 0;
 
-    // ¿©±â¼­ºÎÅÍ Á¾·áÁ¶°Ç Àß ºÁ¾ßÇÔ.
-    // sState µµ ³ªÁß¿¡ Á¤¸®ÇØ¾ß ÇÔ.
+    // ì—¬ê¸°ì„œë¶€í„° ì¢…ë£Œì¡°ê±´ ì˜ ë´ì•¼í•¨.
+    // sState ë„ ë‚˜ì¤‘ì— ì •ë¦¬í•´ì•¼ í•¨.
     while(1)
     {
         sNextPos = 0;
@@ -3039,19 +3039,19 @@ IDE_RC stndrBUBuild::sortY( UInt          aMergePageCnt,
 
             sMinIdx = sHeapMap[1];   // the root of selection tree
 
-            // fix BUG-23525 InsertableKeyCnt ¿¡ µµ´ŞÇÏ¸é
+            // fix BUG-23525 InsertableKeyCnt ì— ë„ë‹¬í•˜ë©´
             if( (sUsedBufferSize + sBuildKeyLength) > mKeyBufferSize )
             {
                 IDE_DASSERT( sInsertedBuildKeyCnt <= mMaxKeyMapCount );
 
-                // sort areaÀÇ key Á¤·Ä
+                // sort areaì˜ key ì •ë ¬
                 IDE_TEST( quickSort( 0,
                                      sNextPos - 1,
                                      aNodeType,
                                      STNDR_SORT_Y )
                           != IDE_SUCCESS );
 
-                // temp segment ¿¡ ³»¸²
+                // temp segment ì— ë‚´ë¦¼
                 IDE_TEST( storeSortedRun( 0,
                                           sNextPos - 1,
                                           &sLeftPos,
@@ -3064,18 +3064,18 @@ IDE_RC stndrBUBuild::sortY( UInt          aMergePageCnt,
 
                 if( sLeftCnt > 0 )
                 {
-                    //KeyValueµéÀ» ¸Ç ¾ÕÂÊÀ¸·Î ºÙ¿©³Ö±â
+                    //KeyValueë“¤ì„ ë§¨ ì•ìª½ìœ¼ë¡œ ë¶™ì—¬ë„£ê¸°
                     for( j = 0; j < sLeftCnt; j++ )
                     {
                         swapBuildKeyMap( mKeyMap, j, (sLeftPos + j) );
 
-                        // BUG-31024: Bottom-UP ºôµå ½Ã¿¡ ÇàÀÌ °É¸®´Â ¹®Á¦
-                        //            Buffer Overflow·Î ÀÎÇØ ¹ß»ı
+                        // BUG-31024: Bottom-UP ë¹Œë“œ ì‹œì— í–‰ì´ ê±¸ë¦¬ëŠ” ë¬¸ì œ
+                        //            Buffer Overflowë¡œ ì¸í•´ ë°œìƒ
                         IDE_ASSERT( (sUsedBufferSize + sBuildKeyLength)
                                     <= ID_SIZEOF(sBuffer4Compaction) );
 
-                        /* fix BUG-23525 ÀúÀåµÇ´Â Å°ÀÇ ±æÀÌ°¡ VaraibaleÇÏ¸é 
-                         * FragmentationÀÌ ÀÏ¾î³¯ ¼ö ¹Û¿¡ ¾ø°í, µû¶ó¼­ Compaction°úÁ¤Àº ÇÊ¼ö */
+                        /* fix BUG-23525 ì €ì¥ë˜ëŠ” í‚¤ì˜ ê¸¸ì´ê°€ Varaibaleí•˜ë©´ 
+                         * Fragmentationì´ ì¼ì–´ë‚  ìˆ˜ ë°–ì— ì—†ê³ , ë”°ë¼ì„œ Compactionê³¼ì •ì€ í•„ìˆ˜ */
                         idlOS::memcpy( &sBuffer4Compaction[ sUsedBufferSize ],
                                        mKeyMap[j],
                                        sBuildKeyLength );
@@ -3121,7 +3121,7 @@ IDE_RC stndrBUBuild::sortY( UInt          aMergePageCnt,
             }
         } // for( i = 0; i < mKeyCount4Partition; i++ )
 
-        // ÀÛ¾÷ °ø°£¿¡ ³²¾Æ ÀÖ´Â °Íµé Ã³¸®
+        // ì‘ì—… ê³µê°„ì— ë‚¨ì•„ ìˆëŠ” ê²ƒë“¤ ì²˜ë¦¬
         if( sNextPos > 0 )
         {
             // in-memory sort
@@ -3130,7 +3130,7 @@ IDE_RC stndrBUBuild::sortY( UInt          aMergePageCnt,
                                  aNodeType,
                                  STNDR_SORT_Y )
                       != IDE_SUCCESS );
-            // temp segment·Î ³»¸°´Ù.
+            // temp segmentë¡œ ë‚´ë¦°ë‹¤.
             IDE_TEST( storeSortedRun( 0,
                                       sNextPos - 1,
                                       NULL,
@@ -3142,7 +3142,7 @@ IDE_RC stndrBUBuild::sortY( UInt          aMergePageCnt,
         // Y merge
         IDE_TEST( merge( 1, aNodeType, STNDR_SORT_Y ) != IDE_SUCCESS );
 
-        // Y merge °¡ Á¤»óÀûÀ¸·Î ³¡³µ¾ú´Ù¸é, ¹«Á¶°Ç 1°³ÀÇ run ¸¸ Á¸ÀçÇØ¾ß ÇÑ´Ù.
+        // Y merge ê°€ ì •ìƒì ìœ¼ë¡œ ëë‚¬ì—ˆë‹¤ë©´, ë¬´ì¡°ê±´ 1ê°œì˜ run ë§Œ ì¡´ì¬í•´ì•¼ í•œë‹¤.
         IDE_ASSERT( mRunQueue.getQueueLength() == 1 );
 
         IDE_TEST( mRunQueue.dequeue( ID_FALSE,
@@ -3260,17 +3260,17 @@ IDE_RC stndrBUBuild::write2Node( sdrMtx          *aMtx,
     if( sSlotSeq == mKeyCount4EmptyNode )
     {
         /*
-         *  page ÇÒ´ç ½ÇÆĞ·Î ÀÎÇÑ ¿¹¿Ü ¹ß»ıÀ¸·Î ÀÎÇÏ¿©
-         *  log°¡ ºÎºĞÀûÀ¸·Î¸¸ ¾²ÀÏ ¼ö ÀÖ´Ù.
-         *  µû¶ó¼­ ¹Ì¸® page°¡ ÇÒ´ç °¡´ÉÇÑÁö ÆÇ´ÜÇØ¾ß ÇÑ´Ù.
+         *  page í• ë‹¹ ì‹¤íŒ¨ë¡œ ì¸í•œ ì˜ˆì™¸ ë°œìƒìœ¼ë¡œ ì¸í•˜ì—¬
+         *  logê°€ ë¶€ë¶„ì ìœ¼ë¡œë§Œ ì“°ì¼ ìˆ˜ ìˆë‹¤.
+         *  ë”°ë¼ì„œ ë¯¸ë¦¬ pageê°€ í• ë‹¹ ê°€ëŠ¥í•œì§€ íŒë‹¨í•´ì•¼ í•œë‹¤.
          */
         IDE_TEST( preparePages( 1 ) != IDE_SUCCESS );
 
-        // Page¿¡ ÃæºĞÇÑ °ø°£ÀÌ ¾ø´Ù¸é
-        // »õ·Î¿î Page Alloc
+        // Pageì— ì¶©ë¶„í•œ ê³µê°„ì´ ì—†ë‹¤ë©´
+        // ìƒˆë¡œìš´ Page Alloc
         sPrevPID = sCurrPage->mPageID;
 
-        // BUG-17615 ·Î±ë·® ÁÙÀÌ±â
+        // BUG-17615 ë¡œê¹…ëŸ‰ ì¤„ì´ê¸°
         IDE_TEST( sdrMiniTrans::writeLogRec( aMtx, 
                                              (UChar*)sCurrPage,
                                              (void*)sCurrPage,
@@ -3280,7 +3280,7 @@ IDE_RC stndrBUBuild::write2Node( sdrMtx          *aMtx,
 
         /*
          * To fix BUG-23676
-         * NOLOGGING¿¡¼­ÀÇ Consistent Flag´Â »ğÀÔµÈ Å°¿Í °°ÀÌ Ä¿¹ÔµÇ¾î¾ß ÇÑ´Ù.
+         * NOLOGGINGì—ì„œì˜ Consistent FlagëŠ” ì‚½ì…ëœ í‚¤ì™€ ê°™ì´ ì»¤ë°‹ë˜ì–´ì•¼ í•œë‹¤.
          */
         if( mLoggingMode == SDR_MTX_NOLOGGING )
         {
@@ -3324,8 +3324,8 @@ IDE_RC stndrBUBuild::write2Node( sdrMtx          *aMtx,
                                        gMtxDLogType )
                   != IDE_SUCCESS );
 
-        // NOLOGGING mini-transactionÀÇ Persistent flag ¼³Á¤
-        // PERSISTENT_ON : Persistent (nologging index buildÀÏ °æ¿ì¿¡¸¸)
+        // NOLOGGING mini-transactionì˜ Persistent flag ì„¤ì •
+        // PERSISTENT_ON : Persistent (nologging index buildì¼ ê²½ìš°ì—ë§Œ)
         sdrMiniTrans::setNologgingPersistent ( aMtx );
 
         IDE_TEST( sdbBufferMgr::getPageByPID( mStatistics, /* idvSQL* */
@@ -3355,7 +3355,7 @@ IDE_RC stndrBUBuild::write2Node( sdrMtx          *aMtx,
 
     *aPage = sCurrPage;
     *aSlotSeq = sSlotSeq + 1;
-    // ¸Ç ¸¶Áö¸· node ÀÇ PID ¸¦ ¾ò¾î¿Â´Ù.
+    // ë§¨ ë§ˆì§€ë§‰ node ì˜ PID ë¥¼ ì–»ì–´ì˜¨ë‹¤.
     *aPageID = sCurrPID;
 
     return IDE_SUCCESS;
@@ -3420,7 +3420,7 @@ IDE_RC stndrBUBuild::makeNodeAndSort( UShort           aHeight,
     UChar              * sPagePtr;
     UChar              * sSlotDirPtr;
     void               * sBuildKey = NULL;
-    UChar                sBuffer4Compaction[ SD_PAGE_SIZE ]; //Â¥Åõ¸®¸¦ ÀúÀåÇØµÎ´Â °ø°£
+    UChar                sBuffer4Compaction[ SD_PAGE_SIZE ]; //ì§œíˆ¬ë¦¬ë¥¼ ì €ì¥í•´ë‘ëŠ” ê³µê°„
     UChar                sIsConsistent = SDP_PAGE_CONSISTENT;
 
 
@@ -3432,7 +3432,7 @@ IDE_RC stndrBUBuild::makeNodeAndSort( UShort           aHeight,
     sBuildKeyLength      = gCallbackFuncs4Build[ STNDR_NODE_IKEY ].getBuildKeyLength(
         sBuildKeyValueLength );
 
-    // makePartition() ¿¡¼­ »ç¿ëÇÏ±â À§ÇØ »óÀ§ height ÀÇ node °¹¼ö °è»ê¿¡ ÀÌ¿ë
+    // makePartition() ì—ì„œ ì‚¬ìš©í•˜ê¸° ìœ„í•´ ìƒìœ„ height ì˜ node ê°¯ìˆ˜ ê³„ì‚°ì— ì´ìš©
     mPropagatedKeyCount = 0;
 
     IDE_TEST( sdrMiniTrans::begin( mStatistics, /* idvSQL* */
@@ -3445,8 +3445,8 @@ IDE_RC stndrBUBuild::makeNodeAndSort( UShort           aHeight,
     sState = 1;
 
     // BUG-29568
-    // NOLOGGING mini-transactionÀÇ Persistent flag ¼³Á¤
-    // PERSISTENT_ON : Persistent (nologging index buildÀÏ °æ¿ì¿¡¸¸)
+    // NOLOGGING mini-transactionì˜ Persistent flag ì„¤ì •
+    // PERSISTENT_ON : Persistent (nologging index buildì¼ ê²½ìš°ì—ë§Œ)
     sdrMiniTrans::setNologgingPersistent ( &sMtx );
 
     while(1)
@@ -3505,20 +3505,20 @@ IDE_RC stndrBUBuild::makeNodeAndSort( UShort           aHeight,
             {
                 mPropagatedKeyCount++;
 
-                // fix BUG-23525 InsertableKeyCnt ¿¡ µµ´ŞÇÏ¸é
+                // fix BUG-23525 InsertableKeyCnt ì— ë„ë‹¬í•˜ë©´
                 if( (sUsedBufferSize + sBuildKeyLength) > mKeyBufferSize )
                 {
                     IDE_DASSERT( sInsertedBuildKeyCnt <= mMaxKeyMapCount );
 
-                    // sort areaÀÇ key Á¤·Ä
+                    // sort areaì˜ key ì •ë ¬
                     IDE_TEST( quickSort( 0,
                                          sNextPos - 1,
                                          STNDR_NODE_IKEY,
                                          STNDR_SORT_X )
                               != IDE_SUCCESS );
 
-                    // BUG-31024: ÀúÀåµÇ´Â ³ëµå Å¸ÀÔÀº STNDR_NODE_IKEY ÀÌ¾î¾ßÇÑ´Ù.
-                    // temp segment ¿¡ ³»¸²
+                    // BUG-31024: ì €ì¥ë˜ëŠ” ë…¸ë“œ íƒ€ì…ì€ STNDR_NODE_IKEY ì´ì–´ì•¼í•œë‹¤.
+                    // temp segment ì— ë‚´ë¦¼
                     IDE_TEST( storeSortedRun( 0,
                                               sNextPos - 1,
                                               &sLeftPos,
@@ -3531,18 +3531,18 @@ IDE_RC stndrBUBuild::makeNodeAndSort( UShort           aHeight,
 
                     if( sLeftCnt > 0 )
                     {
-                        //KeyValueµéÀ» ¸Ç ¾ÕÂÊÀ¸·Î ºÙ¿©³Ö±â
+                        //KeyValueë“¤ì„ ë§¨ ì•ìª½ìœ¼ë¡œ ë¶™ì—¬ë„£ê¸°
                         for( j = 0; j < sLeftCnt; j++ )
                         {
                             swapBuildKeyMap( mKeyMap, j, (sLeftPos + j) );
 
-                            // BUG-31024: Bottom-UP ºôµå ½Ã¿¡ ÇàÀÌ °É¸®´Â ¹®Á¦
-                            //            Buffer Overflow·Î ÀÎÇØ ¹ß»ı
+                            // BUG-31024: Bottom-UP ë¹Œë“œ ì‹œì— í–‰ì´ ê±¸ë¦¬ëŠ” ë¬¸ì œ
+                            //            Buffer Overflowë¡œ ì¸í•´ ë°œìƒ
                             IDE_ASSERT( (sUsedBufferSize + sBuildKeyLength)
                                         <= ID_SIZEOF(sBuffer4Compaction) );
 
-                            /* fix BUG-23525 ÀúÀåµÇ´Â Å°ÀÇ ±æÀÌ°¡ VaraibaleÇÏ¸é 
-                             * FragmentationÀÌ ÀÏ¾î³¯ ¼ö ¹Û¿¡ ¾ø°í, µû¶ó¼­ Compaction°úÁ¤Àº ÇÊ¼ö */
+                            /* fix BUG-23525 ì €ì¥ë˜ëŠ” í‚¤ì˜ ê¸¸ì´ê°€ Varaibaleí•˜ë©´ 
+                             * Fragmentationì´ ì¼ì–´ë‚  ìˆ˜ ë°–ì— ì—†ê³ , ë”°ë¼ì„œ Compactionê³¼ì •ì€ í•„ìˆ˜ */
                             idlOS::memcpy( &sBuffer4Compaction[ sUsedBufferSize ],
                                            mKeyMap[j],
                                            sBuildKeyLength );
@@ -3568,7 +3568,7 @@ IDE_RC stndrBUBuild::makeNodeAndSort( UShort           aHeight,
                 // key extraction
                 mKeyMap[sNextPos] = &mKeyBuffer[ sUsedBufferSize ] ;
 
-                // ÇöÀç node ÀÇ »õ·Î¿î MBR À» ±¸ÇÑ´Ù.
+                // í˜„ì¬ node ì˜ ìƒˆë¡œìš´ MBR ì„ êµ¬í•œë‹¤.
                 IDE_ASSERT( stndrRTree::adjustNodeMBR(
                                 (stndrHeader*)mIndex->mHeader,
                                 sCurrPage,
@@ -3608,7 +3608,7 @@ IDE_RC stndrBUBuild::makeNodeAndSort( UShort           aHeight,
 
         /*
          * To fix BUG-23676
-         * NOLOGGING¿¡¼­ÀÇ Consistent Flag´Â »ğÀÔµÈ Å°¿Í °°ÀÌ Ä¿¹ÔµÇ¾î¾ß ÇÑ´Ù.
+         * NOLOGGINGì—ì„œì˜ Consistent FlagëŠ” ì‚½ì…ëœ í‚¤ì™€ ê°™ì´ ì»¤ë°‹ë˜ì–´ì•¼ í•œë‹¤.
          */
         if( mLoggingMode == SDR_MTX_NOLOGGING )
         {
@@ -3621,26 +3621,26 @@ IDE_RC stndrBUBuild::makeNodeAndSort( UShort           aHeight,
         sSlotDirPtr = sdpPhyPage::getSlotDirStartPtr( (UChar*)sCurrPage );
         sSlotCount  = sdpSlotDirectory::getCount( sSlotDirPtr );
 
-        // ¸¸¾à ÇöÀç node ¿¡ slot ÀÌ Á¸ÀçÇÏ¸é, node MBR À» ÀúÀåÇÑ´Ù.
-        // ÇöÀç node »óÅÂ°¡ full ÀÌ ¾Æ´Ï´õ¶óµµ, ´õ ÀÌ»ó slot À» ³ÖÀ¸¸é ¾ÈµÈ´Ù.
+        // ë§Œì•½ í˜„ì¬ node ì— slot ì´ ì¡´ì¬í•˜ë©´, node MBR ì„ ì €ì¥í•œë‹¤.
+        // í˜„ì¬ node ìƒíƒœê°€ full ì´ ì•„ë‹ˆë”ë¼ë„, ë” ì´ìƒ slot ì„ ë„£ìœ¼ë©´ ì•ˆëœë‹¤.
         if( sSlotCount > 0 )
         {
             mPropagatedKeyCount++;
 
-            // fix BUG-23525 InsertableKeyCnt ¿¡ µµ´ŞÇÏ¸é
+            // fix BUG-23525 InsertableKeyCnt ì— ë„ë‹¬í•˜ë©´
             if( (sUsedBufferSize + sBuildKeyLength) > mKeyBufferSize )
             {
                 IDE_DASSERT( sInsertedBuildKeyCnt <= mMaxKeyMapCount );
 
-                // sort areaÀÇ key Á¤·Ä
+                // sort areaì˜ key ì •ë ¬
                 IDE_TEST( quickSort( 0,
                                      sNextPos - 1,
                                      STNDR_NODE_IKEY,
                                      STNDR_SORT_X )
                           != IDE_SUCCESS );
 
-                // BUG-31024: ÀúÀåµÇ´Â ³ëµå Å¸ÀÔÀº STNDR_NODE_IKEY ÀÌ¾î¾ßÇÑ´Ù.
-                // temp segment ¿¡ ³»¸²
+                // BUG-31024: ì €ì¥ë˜ëŠ” ë…¸ë“œ íƒ€ì…ì€ STNDR_NODE_IKEY ì´ì–´ì•¼í•œë‹¤.
+                // temp segment ì— ë‚´ë¦¼
                 IDE_TEST( storeSortedRun( 0,
                                           sNextPos - 1,
                                           &sLeftPos,
@@ -3654,18 +3654,18 @@ IDE_RC stndrBUBuild::makeNodeAndSort( UShort           aHeight,
 
                 if( sLeftCnt > 0 )
                 {
-                    //KeyValueµéÀ» ¸Ç ¾ÕÂÊÀ¸·Î ºÙ¿©³Ö±â
+                    //KeyValueë“¤ì„ ë§¨ ì•ìª½ìœ¼ë¡œ ë¶™ì—¬ë„£ê¸°
                     for( j = 0; j < sLeftCnt; j++ )
                     {
                         swapBuildKeyMap( mKeyMap, j, (sLeftPos + j) );
 
-                        // BUG-31024: Bottom-UP ºôµå ½Ã¿¡ ÇàÀÌ °É¸®´Â ¹®Á¦
-                        //            Buffer Overflow·Î ÀÎÇØ ¹ß»ı
+                        // BUG-31024: Bottom-UP ë¹Œë“œ ì‹œì— í–‰ì´ ê±¸ë¦¬ëŠ” ë¬¸ì œ
+                        //            Buffer Overflowë¡œ ì¸í•´ ë°œìƒ
                         IDE_ASSERT( (sUsedBufferSize + sBuildKeyLength)
                                     <= ID_SIZEOF(sBuffer4Compaction) );
 
-                        /* fix BUG-23525 ÀúÀåµÇ´Â Å°ÀÇ ±æÀÌ°¡ VaraibaleÇÏ¸é 
-                         * FragmentationÀÌ ÀÏ¾î³¯ ¼ö ¹Û¿¡ ¾ø°í, µû¶ó¼­ Compaction°úÁ¤Àº ÇÊ¼ö */
+                        /* fix BUG-23525 ì €ì¥ë˜ëŠ” í‚¤ì˜ ê¸¸ì´ê°€ Varaibaleí•˜ë©´ 
+                         * Fragmentationì´ ì¼ì–´ë‚  ìˆ˜ ë°–ì— ì—†ê³ , ë”°ë¼ì„œ Compactionê³¼ì •ì€ í•„ìˆ˜ */
                         idlOS::memcpy( &sBuffer4Compaction[ sUsedBufferSize ],
                                        mKeyMap[j],
                                        sBuildKeyLength );
@@ -3691,7 +3691,7 @@ IDE_RC stndrBUBuild::makeNodeAndSort( UShort           aHeight,
             // key extraction
             mKeyMap[sNextPos] = &mKeyBuffer[ sUsedBufferSize ] ;
 
-            // ÇöÀç node ÀÇ »õ·Î¿î MBR À» ±¸ÇÑ´Ù.
+            // í˜„ì¬ node ì˜ ìƒˆë¡œìš´ MBR ì„ êµ¬í•œë‹¤.
             IDE_ASSERT( stndrRTree::adjustNodeMBR(
                             (stndrHeader*)mIndex->mHeader,
                             sCurrPage,
@@ -3707,7 +3707,7 @@ IDE_RC stndrBUBuild::makeNodeAndSort( UShort           aHeight,
             sNodeHdr->mMBR = sNodeMBR;
 
             // To fix BUG-29558
-            // ÄÄÆÄÀÏ ÃÖÀûÈ­¿¡ ÀÇÇØ¼­ º¯¼ö°£ dependency°¡ º¸ÀåµÇÁö ¾Ê½À´Ï´Ù.
+            // ì»´íŒŒì¼ ìµœì í™”ì— ì˜í•´ì„œ ë³€ìˆ˜ê°„ dependencyê°€ ë³´ì¥ë˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
             IDL_MEM_BARRIER;
 
             IDE_TEST( sdrMiniTrans::writeLogRec( &sMtx, 
@@ -3727,8 +3727,8 @@ IDE_RC stndrBUBuild::makeNodeAndSort( UShort           aHeight,
             sNextPos++;
         } // if( sSlotCount > 0 )
 
-        // ¸¸¾à run ÀÌ ´õ Á¸ÀçÇÑ´Ù¸é »õ·Î¿î node ¸¦ ÇÒ´ç¹Ş¾Æ¾ß ÇÑ´Ù.
-        // ÇöÀç node »óÅÂ°¡ full ÀÌ ¾Æ´Ï´õ¶óµµ »õ·Î¿î node ¸¦ ÇÒ´ç¹Ş¾Æ¾ß ÇÑ´Ù.
+        // ë§Œì•½ run ì´ ë” ì¡´ì¬í•œë‹¤ë©´ ìƒˆë¡œìš´ node ë¥¼ í• ë‹¹ë°›ì•„ì•¼ í•œë‹¤.
+        // í˜„ì¬ node ìƒíƒœê°€ full ì´ ì•„ë‹ˆë”ë¼ë„ ìƒˆë¡œìš´ node ë¥¼ í• ë‹¹ë°›ì•„ì•¼ í•œë‹¤.
         if( mPartitionQueue.getQueueLength() > 0 )
         {
             sSlotSeq = 0;
@@ -3761,7 +3761,7 @@ IDE_RC stndrBUBuild::makeNodeAndSort( UShort           aHeight,
     } // while(1)
 
 
-    // ÀÛ¾÷ °ø°£¿¡ ³²¾Æ ÀÖ´Â °Íµé Ã³¸®
+    // ì‘ì—… ê³µê°„ì— ë‚¨ì•„ ìˆëŠ” ê²ƒë“¤ ì²˜ë¦¬
     if( sNextPos > 0 )
     {
         // in-memory sort
@@ -3771,8 +3771,8 @@ IDE_RC stndrBUBuild::makeNodeAndSort( UShort           aHeight,
                              STNDR_SORT_X )
                   != IDE_SUCCESS );
 
-        // BUG-31024: ÀúÀåµÇ´Â ³ëµå Å¸ÀÔÀº STNDR_NODE_IKEY ÀÌ¾î¾ßÇÑ´Ù.
-        // temp segment·Î ³»¸°´Ù.
+        // BUG-31024: ì €ì¥ë˜ëŠ” ë…¸ë“œ íƒ€ì…ì€ STNDR_NODE_IKEY ì´ì–´ì•¼í•œë‹¤.
+        // temp segmentë¡œ ë‚´ë¦°ë‹¤.
         IDE_TEST( storeSortedRun( 0,
                                   sNextPos - 1,
                                   NULL,

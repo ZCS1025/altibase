@@ -19,11 +19,11 @@
  * $Id: qmgUpdate.cpp 53774 2012-06-15 04:53:31Z eerien $
  *
  * Description :
- *     Update Graph¸¦ À§ÇÑ ¼öÇà ÇÔ¼ö
+ *     Update Graphë¥¼ ìœ„í•œ ìˆ˜í–‰ í•¨ìˆ˜
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  **********************************************************************/
 
@@ -45,12 +45,12 @@ qmgUpdate::init( qcStatement * aStatement,
 {
 /***********************************************************************
  *
- * Description : qmgUpdate GraphÀÇ ÃÊ±âÈ­
+ * Description : qmgUpdate Graphì˜ ì´ˆê¸°í™”
  *
  * Implementation :
- *    (1) qmgUpdateÀ» À§ÇÑ °ø°£ ÇÒ´ç
- *    (2) graph( ¸ğµç Graph¸¦ À§ÇÑ °øÅë ÀÚ·á ±¸Á¶) ÃÊ±âÈ­
- *    (3) out ¼³Á¤
+ *    (1) qmgUpdateì„ ìœ„í•œ ê³µê°„ í• ë‹¹
+ *    (2) graph( ëª¨ë“  Graphë¥¼ ìœ„í•œ ê³µí†µ ìë£Œ êµ¬ì¡°) ì´ˆê¸°í™”
+ *    (3) out ì„¤ì •
  *
  ***********************************************************************/
 
@@ -61,7 +61,7 @@ qmgUpdate::init( qcStatement * aStatement,
     IDU_FIT_POINT_FATAL( "qmgUpdate::init::__FT__" );
 
     //---------------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //---------------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -69,15 +69,15 @@ qmgUpdate::init( qcStatement * aStatement,
     IDE_DASSERT( aChildGraph != NULL );
 
     //---------------------------------------------------
-    // Update Graph¸¦ À§ÇÑ ±âº» ÃÊ±âÈ­
+    // Update Graphë¥¼ ìœ„í•œ ê¸°ë³¸ ì´ˆê¸°í™”
     //---------------------------------------------------
 
-    // qmgUpdateÀ» À§ÇÑ °ø°£ ÇÒ´ç
+    // qmgUpdateì„ ìœ„í•œ ê³µê°„ í• ë‹¹
     IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF( qmgUPTE ),
                                              (void**) &sMyGraph )
               != IDE_SUCCESS );
 
-    // Graph °øÅë Á¤º¸ÀÇ ÃÊ±âÈ­
+    // Graph ê³µí†µ ì •ë³´ì˜ ì´ˆê¸°í™”
     IDE_TEST( qmg::initGraph( & sMyGraph->graph ) != IDE_SUCCESS );
 
     sMyGraph->graph.type = QMG_UPDATE;
@@ -91,7 +91,7 @@ qmgUpdate::init( qcStatement * aStatement,
     sMyGraph->graph.makePlan = qmgUpdate::makePlan;
     sMyGraph->graph.printGraph = qmgUpdate::printGraph;
 
-    // Disk/Memory Á¤º¸ ¼³Á¤
+    // Disk/Memory ì •ë³´ ì„¤ì •
     for ( sQuerySet = aQuerySet;
           sQuerySet->left != NULL;
           sQuerySet = sQuerySet->left ) ;
@@ -99,7 +99,7 @@ qmgUpdate::init( qcStatement * aStatement,
     switch(  sQuerySet->SFWGH->hints->interResultType )
     {
         case QMO_INTER_RESULT_TYPE_NOT_DEFINED :
-            // Áß°£ °á°ú Type Hint°¡ ¾ø´Â °æ¿ì, ÇÏÀ§ÀÇ TypeÀ» µû¸¥´Ù.
+            // ì¤‘ê°„ ê²°ê³¼ Type Hintê°€ ì—†ëŠ” ê²½ìš°, í•˜ìœ„ì˜ Typeì„ ë”°ë¥¸ë‹¤.
             if ( ( aChildGraph->flag & QMG_GRAPH_TYPE_MASK )
                  == QMG_GRAPH_TYPE_DISK )
             {
@@ -126,7 +126,7 @@ qmgUpdate::init( qcStatement * aStatement,
     }
 
     //---------------------------------------------------
-    // Update Graph ¸¸À» À§ÇÑ ÃÊ±âÈ­
+    // Update Graph ë§Œì„ ìœ„í•œ ì´ˆê¸°í™”
     //---------------------------------------------------
 
     sParseTree = (qmmUptParseTree *)aStatement->myPlan->parseTree;
@@ -134,12 +134,12 @@ qmgUpdate::init( qcStatement * aStatement,
     /* PROJ-2204 JOIN UPDATE, DELETE */
     sMyGraph->updateTableRef    = sParseTree->updateTableRef;
     
-    // ÃÖ»óÀ§ graphÀÎ update graph¿¡ update columns Á¤º¸¸¦ ¼³Á¤
+    // ìµœìƒìœ„ graphì¸ update graphì— update columns ì •ë³´ë¥¼ ì„¤ì •
     sMyGraph->columns           = sParseTree->updateColumns;
     sMyGraph->updateColumnList  = sParseTree->uptColumnList;
     sMyGraph->updateColumnCount = sParseTree->uptColCount;
     
-    // ÃÖ»óÀ§ graphÀÎ update graph¿¡ update values Á¤º¸¸¦ ¼³Á¤
+    // ìµœìƒìœ„ graphì¸ update graphì— update values ì •ë³´ë¥¼ ì„¤ì •
     sMyGraph->values         = sParseTree->values;
     sMyGraph->subqueries     = sParseTree->subqueries;
     sMyGraph->lists          = sParseTree->lists;
@@ -148,28 +148,28 @@ qmgUpdate::init( qcStatement * aStatement,
     sMyGraph->compressedTuple= sParseTree->compressedTuple;     // PROJ-2264
     sMyGraph->isNull         = sParseTree->isNull;
 
-    // ÃÖ»óÀ§ graphÀÎ update graph¿¡ sequence Á¤º¸¸¦ ¼³Á¤
+    // ìµœìƒìœ„ graphì¸ update graphì— sequence ì •ë³´ë¥¼ ì„¤ì •
     sMyGraph->nextValSeqs = sParseTree->common.nextValSeqs;
     
-    // ÃÖ»óÀ§ graphÀÎ update graph¿¡ instead of triggerÁ¤º¸¸¦ ¼³Á¤
+    // ìµœìƒìœ„ graphì¸ update graphì— instead of triggerì •ë³´ë¥¼ ì„¤ì •
     sMyGraph->insteadOfTrigger = sParseTree->insteadOfTrigger;
 
-    // ÃÖ»óÀ§ graphÀÎ update graph¿¡ limitÀ» ¿¬°á
+    // ìµœìƒìœ„ graphì¸ update graphì— limitì„ ì—°ê²°
     sMyGraph->limit = sParseTree->limit;
 
-    // ÃÖ»óÀ§ graphÀÎ update graph¿¡ constraint¸¦ ¿¬°á
+    // ìµœìƒìœ„ graphì¸ update graphì— constraintë¥¼ ì—°ê²°
     sMyGraph->parentConstraints = sParseTree->parentConstraints;
     sMyGraph->childConstraints  = sParseTree->childConstraints;
     sMyGraph->checkConstrList   = sParseTree->checkConstrList;
 
-    // ÃÖ»óÀ§ graphÀÎ update graph¿¡ return into¸¦ ¿¬°á
+    // ìµœìƒìœ„ graphì¸ update graphì— return intoë¥¼ ì—°ê²°
     sMyGraph->returnInto = sParseTree->returnInto;
 
-    // ÃÖ»óÀ§ graphÀÎ insert graph¿¡ Default ExprÀ» ¿¬°á
+    // ìµœìƒìœ„ graphì¸ insert graphì— Default Exprì„ ì—°ê²°
     sMyGraph->defaultExprTableRef = sParseTree->defaultTableRef;
     sMyGraph->defaultExprColumns  = sParseTree->defaultExprColumns;
 
-    // out ¼³Á¤
+    // out ì„¤ì •
     *aGraph = (qmgGraph *)sMyGraph;
 
     return IDE_SUCCESS;
@@ -184,15 +184,15 @@ qmgUpdate::optimize( qcStatement * aStatement, qmgGraph * aGraph )
 {
 /***********************************************************************
  *
- * Description : qmgUpdateÀÇ ÃÖÀûÈ­
+ * Description : qmgUpdateì˜ ìµœì í™”
  *
  * Implementation :
  *    (1) CASE 2 : UPDATE...SET column = (subquery)
- *        qmoSubquery::optimizeExpr()ÀÇ ¼öÇà
+ *        qmoSubquery::optimizeExpr()ì˜ ìˆ˜í–‰
  *    (2) CASE 3 : UPDATE...SET (column list) = (subquery)
- *        qmoSubquery::optimizeExpr()ÀÇ ¼öÇà
- *    (3) SCAN Limit ÃÖÀûÈ­
- *    (4) °øÅë ºñ¿ë Á¤º¸ ¼³Á¤
+ *        qmoSubquery::optimizeExpr()ì˜ ìˆ˜í–‰
+ *    (3) SCAN Limit ìµœì í™”
+ *    (4) ê³µí†µ ë¹„ìš© ì •ë³´ ì„¤ì •
  *
  ***********************************************************************/
 
@@ -212,14 +212,14 @@ qmgUpdate::optimize( qcStatement * aStatement, qmgGraph * aGraph )
     IDU_FIT_POINT_FATAL( "qmgUpdate::optimize::__FT__" );
 
     //---------------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //---------------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aGraph != NULL );
 
     //---------------------------------------------------
-    // ±âº» ÃÊ±âÈ­
+    // ê¸°ë³¸ ì´ˆê¸°í™”
     //---------------------------------------------------
 
     sMyGraph = (qmgUPTE*) aGraph;
@@ -228,7 +228,7 @@ qmgUpdate::optimize( qcStatement * aStatement, qmgGraph * aGraph )
     sTableRef = sMyGraph->updateTableRef;
 
     //---------------------------------------------------
-    // update hidden column ÃÖÀûÈ­
+    // update hidden column ìµœì í™”
     //---------------------------------------------------
 
     /* PROJ-1090 Function-based Index */
@@ -239,10 +239,10 @@ qmgUpdate::optimize( qcStatement * aStatement, qmgGraph * aGraph )
                   &(sMyGraph->defaultExprBaseColumns) )
               != IDE_SUCCESS );
 
-    // Disk Table¿¡ Default ExprÀ» Àû¿ë
-    /* PROJ-2464 hybrid partitioned table Áö¿ø
-     *  qmoPartition::optimizeInto()¿¡¼­ PartitionÀÇ Tuple¿¡ ¼³Á¤ÇÏ¹Ç·Î,
-     *  qmoPartition::optimizeInto()¸¦ È£ÃâÇÏ±â Àü¿¡ ¼öÇàÇØ¾ß ÇÑ´Ù.
+    // Disk Tableì— Default Exprì„ ì ìš©
+    /* PROJ-2464 hybrid partitioned table ì§€ì›
+     *  qmoPartition::optimizeInto()ì—ì„œ Partitionì˜ Tupleì— ì„¤ì •í•˜ë¯€ë¡œ,
+     *  qmoPartition::optimizeInto()ë¥¼ í˜¸ì¶œí•˜ê¸° ì „ì— ìˆ˜í–‰í•´ì•¼ í•œë‹¤.
      */
     qmsDefaultExpr::setUsedColumnToTableRef(
         &(QC_SHARED_TMPLATE(aStatement)->tmplate),
@@ -251,13 +251,13 @@ qmgUpdate::optimize( qcStatement * aStatement, qmgGraph * aGraph )
         ID_TRUE );
 
     //---------------------------------------------------
-    // Row Movement ÃÖÀûÈ­
+    // Row Movement ìµœì í™”
     //---------------------------------------------------
 
     // PROJ-1502 PARTITIONED DISK TABLE
-    // partitioned tableÀÇ °æ¿ì setÀı¿¡ partition key°¡ Æ÷ÇÔµÇ¾î ÀÖ°í,
-    // tableÀÇ row movement°¡ È°¼ºÈ­ µÇ¾î ÀÖ´Ù¸é,
-    // insert table reference¸¦ »ç¿ëÇØ¾ß ÇÑ´Ù.
+    // partitioned tableì˜ ê²½ìš° setì ˆì— partition keyê°€ í¬í•¨ë˜ì–´ ìˆê³ ,
+    // tableì˜ row movementê°€ í™œì„±í™” ë˜ì–´ ìˆë‹¤ë©´,
+    // insert table referenceë¥¼ ì‚¬ìš©í•´ì•¼ í•œë‹¤.
     if ( sTableRef->tableInfo->tablePartitionType == QCM_PARTITIONED_TABLE )
     {
         IDE_TEST( qmoPartition::isIntersectPartKeyColumn(
@@ -281,14 +281,14 @@ qmgUpdate::optimize( qcStatement * aStatement, qmgGraph * aGraph )
                                sTableRef,
                                ID_SIZEOF(qmsTableRef) );
 
-                /* PROJ-2464 hybrid partitioned table Áö¿ø
-                 *  Partition Summary´Â °øÀ¯ÇÏÁö ¾Ê´Â´Ù.
+                /* PROJ-2464 hybrid partitioned table ì§€ì›
+                 *  Partition SummaryëŠ” ê³µìœ í•˜ì§€ ì•ŠëŠ”ë‹¤.
                  */
                 sMyGraph->insertTableRef->partitionSummary = NULL;
 
-                // row movement°¡ È°¼ºÈ­ µÇ¾î ÀÖ´Ù¸é
-                // pre pruningÀ» ¹«½ÃÇÏ°í ´Ù¸¥ ÆÄÆ¼¼Ç¿¡µµ
-                // row°¡ ¿Å°Ü°¥ ¼ö ÀÖ¾î¾ß ÇÑ´Ù.
+                // row movementê°€ í™œì„±í™” ë˜ì–´ ìˆë‹¤ë©´
+                // pre pruningì„ ë¬´ì‹œí•˜ê³  ë‹¤ë¥¸ íŒŒí‹°ì…˜ì—ë„
+                // rowê°€ ì˜®ê²¨ê°ˆ ìˆ˜ ìˆì–´ì•¼ í•œë‹¤.
                 sMyGraph->insertTableRef->partitionRef = NULL;
 
                 sMyGraph->insertTableRef->flag &=
@@ -296,38 +296,38 @@ qmgUpdate::optimize( qcStatement * aStatement, qmgGraph * aGraph )
                 sMyGraph->insertTableRef->flag |=
                     QMS_TABLE_REF_PRE_PRUNING_FALSE;
 
-                // optimizeInto¸¦ »ç¿ë.
-                // insert(row movement)µÉ ¼ö ÀÖ´Â ÄÃ·³ÀÌ ¼ÓÇÏ¿© ÀÖ±â ¶§¹®.
-                // values³ëµå¿¡ ´ëÇØ¼­¸¸ pruningÀ» ÇÑ´Ù.
-                // listÇüµµ °á±¹ values³ëµå·Î ±¸¼ºµÇ¸ç,
-                // subqueryÇüÀÇ °æ¿ì pruning´ë»ó¿¡¼­ ¿ø·¡ºÎÅÍ Á¦¿ÜµÈ´Ù.
+                // optimizeIntoë¥¼ ì‚¬ìš©.
+                // insert(row movement)ë  ìˆ˜ ìˆëŠ” ì»¬ëŸ¼ì´ ì†í•˜ì—¬ ìˆê¸° ë•Œë¬¸.
+                // valuesë…¸ë“œì— ëŒ€í•´ì„œë§Œ pruningì„ í•œë‹¤.
+                // listí˜•ë„ ê²°êµ­ valuesë…¸ë“œë¡œ êµ¬ì„±ë˜ë©°,
+                // subqueryí˜•ì˜ ê²½ìš° pruningëŒ€ìƒì—ì„œ ì›ë˜ë¶€í„° ì œì™¸ëœë‹¤.
                 IDE_TEST( qmoPartition::optimizeInto(
                               aStatement,
                               sMyGraph->insertTableRef )
                           != IDE_SUCCESS );
             
-                // insert°¡ ÀÏ¾î³ª´Â partition list¿¡¼­
-                // update°¡ ÀÏ¾î³ª´Â partition list¿Í °°Àº °ÍÀÌ ÀÖÀ¸¸é Á¦°ÅÇÑ´Ù.
-                // insert/delete/update¸¦ ÇÏ³ªÀÇ Ä¿¼­¸¸À¸·Î ÇØ¾ß ÇÏ±â ¶§¹®ÀÓ.
+                // insertê°€ ì¼ì–´ë‚˜ëŠ” partition listì—ì„œ
+                // updateê°€ ì¼ì–´ë‚˜ëŠ” partition listì™€ ê°™ì€ ê²ƒì´ ìˆìœ¼ë©´ ì œê±°í•œë‹¤.
+                // insert/delete/updateë¥¼ í•˜ë‚˜ì˜ ì»¤ì„œë§Œìœ¼ë¡œ í•´ì•¼ í•˜ê¸° ë•Œë¬¸ì„.
                 IDE_TEST( qmoPartition::minusPartitionRef(
                               sMyGraph->insertTableRef,
                               sTableRef )
                           != IDE_SUCCESS );
 
-                /* PROJ-2464 hybrid partitioned table Áö¿ø */
+                /* PROJ-2464 hybrid partitioned table ì§€ì› */
                 IDE_TEST( qcmPartition::makePartitionSummary( aStatement, sMyGraph->insertTableRef )
                           != IDE_SUCCESS );
 
-                // row movement°¡ ¹ß»ıÇÏ¸é delete-insert·Î Ã³¸®ÇÏ´Â update
+                // row movementê°€ ë°œìƒí•˜ë©´ delete-insertë¡œ ì²˜ë¦¬í•˜ëŠ” update
                 sMyGraph->updateType = QMO_UPDATE_ROWMOVEMENT;    
-                // insert/update/delete°¡ ¸ğµÎ ¹ß»ıÇÒ ¼ö ÀÖ´Â cursor
+                // insert/update/deleteê°€ ëª¨ë‘ ë°œìƒí•  ìˆ˜ ìˆëŠ” cursor
                 sMyGraph->cursorType = SMI_COMPOSITE_CURSOR;
             }
             else
             {
                 sMyGraph->insertTableRef = NULL;
                 
-                // row movement°¡ ¹ß»ıÇÏ¸é ¿¡·¯³»´Â update
+                // row movementê°€ ë°œìƒí•˜ë©´ ì—ëŸ¬ë‚´ëŠ” update
                 sMyGraph->updateType = QMO_UPDATE_CHECK_ROWMOVEMENT;
                 // update cursor
                 sMyGraph->cursorType = SMI_UPDATE_CURSOR;
@@ -337,7 +337,7 @@ qmgUpdate::optimize( qcStatement * aStatement, qmgGraph * aGraph )
         {
             sMyGraph->insertTableRef = NULL;
             
-            // row movement°¡ ÀÏ¾î³ªÁö ¾Ê´Â update
+            // row movementê°€ ì¼ì–´ë‚˜ì§€ ì•ŠëŠ” update
             sMyGraph->updateType = QMO_UPDATE_NO_ROWMOVEMENT;
             // update cursor
             sMyGraph->cursorType = SMI_UPDATE_CURSOR;
@@ -347,30 +347,30 @@ qmgUpdate::optimize( qcStatement * aStatement, qmgGraph * aGraph )
     {
         sMyGraph->insertTableRef = NULL;
         
-        // ÀÏ¹İ Å×ÀÌºíÀÇ update
+        // ì¼ë°˜ í…Œì´ë¸”ì˜ update
         sMyGraph->updateType = QMO_UPDATE_NORMAL;
         // update cursor
         sMyGraph->cursorType = SMI_UPDATE_CURSOR;
     }
 
     // PROJ-1502 PARTITIONED DISK TABLE
-    // rowmovement°¡ ÀÏ¾î³¯ °¡´É¼ºÀÌ ÀÖ´ÂÁö¸¦ parsetree¿¡ ÀúÀå.
+    // rowmovementê°€ ì¼ì–´ë‚  ê°€ëŠ¥ì„±ì´ ìˆëŠ”ì§€ë¥¼ parsetreeì— ì €ì¥.
     sMyGraph->isRowMovementUpdate = sIsRowMovementUpdate;
 
     //---------------------------------------------------
-    // Cursor ¼³Á¤
+    // Cursor ì„¤ì •
     //---------------------------------------------------
     
     //----------------------------------
     // PROJ-1509
-    // INPLACE UPDATE ¿©ºÎ ¼³Á¤
-    // MEMORY table¿¡¼­´Â,
-    // trigger or foreign key°¡ Á¸ÀçÇÏ´Â °æ¿ì,
-    // º¯°æ ÀÌÀü/ÀÌÈÄ °ªÀ» ÀĞ±â À§ÇØ¼­´Â
-    // inplace update°¡ µÇÁö ¾Êµµ·Ï flagÁ¤º¸¸¦ sm¿¡ ³»·ÁÁØ´Ù.
+    // INPLACE UPDATE ì—¬ë¶€ ì„¤ì •
+    // MEMORY tableì—ì„œëŠ”,
+    // trigger or foreign keyê°€ ì¡´ì¬í•˜ëŠ” ê²½ìš°,
+    // ë³€ê²½ ì´ì „/ì´í›„ ê°’ì„ ì½ê¸° ìœ„í•´ì„œëŠ”
+    // inplace updateê°€ ë˜ì§€ ì•Šë„ë¡ flagì •ë³´ë¥¼ smì— ë‚´ë ¤ì¤€ë‹¤.
     //----------------------------------
 
-    /* PROJ-2464 hybrid partitioned table Áö¿ø */
+    /* PROJ-2464 hybrid partitioned table ì§€ì› */
     if ( sTableRef->tableInfo->tablePartitionType == QCM_PARTITIONED_TABLE )
     {
         if ( ( sTableRef->partitionSummary->memoryPartitionCount +
@@ -409,7 +409,7 @@ qmgUpdate::optimize( qcStatement * aStatement, qmgGraph * aGraph )
     }
 
     //---------------------------------------------------
-    // SCAN Limit ÃÖÀûÈ­
+    // SCAN Limit ìµœì í™”
     //---------------------------------------------------
 
     sIsScanLimit = ID_FALSE;
@@ -418,18 +418,18 @@ qmgUpdate::optimize( qcStatement * aStatement, qmgGraph * aGraph )
         if ( sChildGraph->type == QMG_SELECTION )
         {
             //---------------------------------------------------
-            // ÇÏÀ§°¡ ÀÏ¹İ qmgSelectionÀÎ °æ¿ì
-            // Áï, Set, Order By, Group By, Aggregation, Distinct, JoinÀÌ
-            //  ¾ø´Â °æ¿ì
+            // í•˜ìœ„ê°€ ì¼ë°˜ qmgSelectionì¸ ê²½ìš°
+            // ì¦‰, Set, Order By, Group By, Aggregation, Distinct, Joinì´
+            //  ì—†ëŠ” ê²½ìš°
             //---------------------------------------------------
             if ( sChildGraph->myFrom->tableRef->view == NULL )
             {
-                // View °¡ ¾Æ´Ñ °æ¿ì, SCAN Limit Àû¿ë
+                // View ê°€ ì•„ë‹Œ ê²½ìš°, SCAN Limit ì ìš©
                 sNode = (qtcNode *)sChildGraph->myQuerySet->SFWGH->where;
 
                 if ( sNode != NULL )
                 {
-                    // where°¡ Á¸ÀçÇÏ´Â °æ¿ì, subquery Á¸Àç À¯¹« °Ë»ç
+                    // whereê°€ ì¡´ì¬í•˜ëŠ” ê²½ìš°, subquery ì¡´ì¬ ìœ ë¬´ ê²€ì‚¬
                     if ( ( sNode->lflag & QTC_NODE_SUBQUERY_MASK )
                          != QTC_NODE_SUBQUERY_EXIST )
                     {
@@ -442,7 +442,7 @@ qmgUpdate::optimize( qcStatement * aStatement, qmgGraph * aGraph )
                 }
                 else
                 {
-                    // where°¡ Á¸ÀçÇÏÁö ¾Ê´Â °æ¿ì,SCAN Limit Àû¿ë
+                    // whereê°€ ì¡´ì¬í•˜ì§€ ì•ŠëŠ” ê²½ìš°,SCAN Limit ì ìš©
                     sIsScanLimit = ID_TRUE;
                 }
             }
@@ -453,8 +453,8 @@ qmgUpdate::optimize( qcStatement * aStatement, qmgGraph * aGraph )
         }
         else
         {
-            // Set, Order By, Group By, Distinct, Aggregation, Join, View°¡
-            // ÀÖ´Â °æ¿ì :
+            // Set, Order By, Group By, Distinct, Aggregation, Join, Viewê°€
+            // ìˆëŠ” ê²½ìš° :
             // nothing to do
         }
     }
@@ -464,7 +464,7 @@ qmgUpdate::optimize( qcStatement * aStatement, qmgGraph * aGraph )
     }
 
     //---------------------------------------------------
-    // SCAN Limit TipÀÌ Àû¿ëµÈ °æ¿ì
+    // SCAN Limit Tipì´ ì ìš©ëœ ê²½ìš°
     //---------------------------------------------------
 
     if ( sIsScanLimit == ID_TRUE )
@@ -478,10 +478,10 @@ qmgUpdate::optimize( qcStatement * aStatement, qmgGraph * aGraph )
             != IDE_SUCCESS );
 
         // fix BUG-13482
-        // parse treeÀÇ limitÁ¤º¸¸¦ ÇöÀç °¡Áö¸ç,
-        // UPTE ³ëµå »ı¼º½Ã,
-        // ÇÏÀ§ SCAN ³ëµå¿¡¼­ SCAN Limit Àû¿ëÀÌ È®Á¤µÇ¸é,
-        // UPTE ³ëµåÀÇ limit start¸¦ 1·Î º¯°æÇÑ´Ù.
+        // parse treeì˜ limitì •ë³´ë¥¼ í˜„ì¬ ê°€ì§€ë©°,
+        // UPTE ë…¸ë“œ ìƒì„±ì‹œ,
+        // í•˜ìœ„ SCAN ë…¸ë“œì—ì„œ SCAN Limit ì ìš©ì´ í™•ì •ë˜ë©´,
+        // UPTE ë…¸ë“œì˜ limit startë¥¼ 1ë¡œ ë³€ê²½í•œë‹¤.
 
         qmsLimitI::setStart( sLimit,
                              qmsLimitI::getStart( sMyGraph->limit ) );
@@ -499,7 +499,7 @@ qmgUpdate::optimize( qcStatement * aStatement, qmgGraph * aGraph )
     }
 
     //---------------------------------------------------
-    // °øÅë ºñ¿ë Á¤º¸ ¼³Á¤
+    // ê³µí†µ ë¹„ìš© ì •ë³´ ì„¤ì •
     //---------------------------------------------------
 
     // recordSize
@@ -536,7 +536,7 @@ qmgUpdate::optimize( qcStatement * aStatement, qmgGraph * aGraph )
         sMyGraph->graph.costInfo.myAllCost;
 
     //---------------------------------------------------
-    // Preserved Order ¼³Á¤
+    // Preserved Order ì„¤ì •
     //---------------------------------------------------
 
     sMyGraph->graph.flag &= ~QMG_PRESERVED_ORDER_MASK;
@@ -557,10 +557,10 @@ qmgUpdate::makePlan( qcStatement     * aStatement,
 {
 /***********************************************************************
  *
- * Description : qmgUpdateÀ¸·Î ºÎÅÍ PlanÀ» »ı¼ºÇÑ´Ù.
+ * Description : qmgUpdateìœ¼ë¡œ ë¶€í„° Planì„ ìƒì„±í•œë‹¤.
  *
  * Implementation :
- *    - qmgUpdateÀ¸·Î »ı¼º°¡´ÉÇÑ Plan
+ *    - qmgUpdateìœ¼ë¡œ ìƒì„±ê°€ëŠ¥í•œ Plan
  *
  *           [UPTE]
  *
@@ -579,7 +579,7 @@ qmgUpdate::makePlan( qcStatement     * aStatement,
     IDU_FIT_POINT_FATAL( "qmgUpdate::makePlan::__FT__" );
 
     //---------------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //---------------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -588,7 +588,7 @@ qmgUpdate::makePlan( qcStatement     * aStatement,
     sMyGraph = (qmgUPTE*) aGraph;
 
     //---------------------------
-    // Current CNFÀÇ µî·Ï
+    // Current CNFì˜ ë“±ë¡
     //---------------------------
 
     if ( sMyGraph->graph.myCNF != NULL )
@@ -606,10 +606,10 @@ qmgUpdate::makePlan( qcStatement     * aStatement,
     sMyGraph->graph.flag |= QMG_PARALLEL_IMPOSSIBLE_TRUE;
 
     //---------------------------
-    // PlanÀÇ »ı¼º
+    // Planì˜ ìƒì„±
     //---------------------------
 
-    // ÃÖ»óÀ§ planÀÌ´Ù.
+    // ìµœìƒìœ„ planì´ë‹¤.
     IDE_DASSERT( aParent == NULL );
     
     IDE_TEST( qmoOneNonPlan::initUPTE( aStatement ,
@@ -618,7 +618,7 @@ qmgUpdate::makePlan( qcStatement     * aStatement,
     sMyGraph->graph.myPlan = sPlan;
     
     //---------------------------
-    // ÇÏÀ§ PlanÀÇ »ı¼º
+    // í•˜ìœ„ Planì˜ ìƒì„±
     //---------------------------
 
     IDE_TEST( sMyGraph->graph.left->makePlan( aStatement ,
@@ -627,12 +627,12 @@ qmgUpdate::makePlan( qcStatement     * aStatement,
               != IDE_SUCCESS);
 
     // fix BUG-13482
-    // SCAN Limit ÃÖÀûÈ­ Àû¿ë¿¡ µû¸¥ UPTE planÀÇ start value °áÁ¤À¯¹«
+    // SCAN Limit ìµœì í™” ì ìš©ì— ë”°ë¥¸ UPTE planì˜ start value ê²°ì •ìœ ë¬´
     if( sMyGraph->graph.left->type == QMG_SELECTION )
     {
-        // projection ÇÏÀ§°¡ SCANÀÌ°í,
-        // SCAN limit ÃÖÀûÈ­°¡ Àû¿ëµÈ °æ¿ìÀÌ¸é,
-        // UPTEÀÇ limit start value¸¦ 1·Î Á¶Á¤ÇÑ´Ù.
+        // projection í•˜ìœ„ê°€ SCANì´ê³ ,
+        // SCAN limit ìµœì í™”ê°€ ì ìš©ëœ ê²½ìš°ì´ë©´,
+        // UPTEì˜ limit start valueë¥¼ 1ë¡œ ì¡°ì •í•œë‹¤.
         if( ((qmgSELT*)(sMyGraph->graph.left))->limit != NULL )
         {
             qmsLimitI::setStartValue( sMyGraph->limit, 1 );
@@ -647,16 +647,16 @@ qmgUpdate::makePlan( qcStatement     * aStatement,
         // Nothing To Do
     }
 
-    // child°¡Á®¿À±â
+    // childê°€ì ¸ì˜¤ê¸°
     sChildPlan = sMyGraph->graph.left->myPlan;
 
     //---------------------------------------------------
-    // Process »óÅÂ ¼³Á¤ 
+    // Process ìƒíƒœ ì„¤ì • 
     //---------------------------------------------------
     sMyGraph->graph.myQuerySet->processPhase = QMS_MAKEPLAN_UPDATE;
 
     //----------------------------
-    // UPTEÀÇ »ı¼º
+    // UPTEì˜ ìƒì„±
     //----------------------------
     
     sUPTEInfo.updateTableRef      = sMyGraph->updateTableRef;
@@ -695,8 +695,8 @@ qmgUpdate::makePlan( qcStatement     * aStatement,
               != IDE_SUCCESS);
     sMyGraph->graph.myPlan = sPlan;
 
-    /* PROJ-2464 hybrid partitioned table Áö¿ø */
-    // qmnUPTE::updateOneRowForRowmovement()¿¡¼­ rowOffsetÀ» »ç¿ëÇÑ´Ù.
+    /* PROJ-2464 hybrid partitioned table ì§€ì› */
+    // qmnUPTE::updateOneRowForRowmovement()ì—ì„œ rowOffsetì„ ì‚¬ìš©í•œë‹¤.
     if ( sMyGraph->insertTableRef != NULL )
     {
         for ( sPartitionRef = sMyGraph->insertTableRef->partitionRef;
@@ -717,11 +717,11 @@ qmgUpdate::makePlan( qcStatement     * aStatement,
     //------------------------------------------
     // MAKE GRAPH
     // BUG-32584
-    // ¸ğµç ¼­ºêÄõ¸®¿¡ ´ëÇØ¼­ MakeGraph ÇÑÈÄ¿¡ MakePlanÀ» ÇØ¾ß ÇÑ´Ù.
+    // ëª¨ë“  ì„œë¸Œì¿¼ë¦¬ì— ëŒ€í•´ì„œ MakeGraph í•œí›„ì— MakePlanì„ í•´ì•¼ í•œë‹¤.
     //------------------------------------------
 
     //------------------------------------------
-    // SET ±¸¹® ³»ÀÇ Subquery ÃÖÀûÈ­
+    // SET êµ¬ë¬¸ ë‚´ì˜ Subquery ìµœì í™”
     // ex) SET i1 = (subquery)
     //------------------------------------------
 
@@ -731,7 +731,7 @@ qmgUpdate::makePlan( qcStatement     * aStatement,
     {
         if ( sSubquery->subquery != NULL )
         {
-            // Subquery ÃÖÀûÈ­
+            // Subquery ìµœì í™”
             IDE_TEST( qmoSubquery::optimizeExprMakeGraph( aStatement,
                                                           ID_UINT_MAX,
                                                           sSubquery->subquery )
@@ -744,7 +744,7 @@ qmgUpdate::makePlan( qcStatement     * aStatement,
     }
 
     //------------------------------------------
-    // SET ±¸¹®ÀÇ LIST ³»ÀÇ Subquery ÃÖÀûÈ­
+    // SET êµ¬ë¬¸ì˜ LIST ë‚´ì˜ Subquery ìµœì í™”
     // ex) SET (i1,i2) = (SELECT a1, a2 ... )
     //------------------------------------------
 
@@ -752,7 +752,7 @@ qmgUpdate::makePlan( qcStatement     * aStatement,
           sValue != NULL;
           sValue = sValue->next )
     {
-        // Subquery Á¸ÀçÇÒ °æ¿ì Subquery ÃÖÀûÈ­
+        // Subquery ì¡´ì¬í•  ê²½ìš° Subquery ìµœì í™”
         if ( (sValue->value->lflag & QTC_NODE_SUBQUERY_MASK )
              == QTC_NODE_SUBQUERY_EXIST )
         {
@@ -768,7 +768,7 @@ qmgUpdate::makePlan( qcStatement     * aStatement,
     }
 
     //------------------------------------------
-    // VALUE ³»ÀÇ Subquery ÃÖÀûÈ­
+    // VALUE ë‚´ì˜ Subquery ìµœì í™”
     // ex) SET i1 = (1 + subquery)
     //------------------------------------------
 
@@ -776,7 +776,7 @@ qmgUpdate::makePlan( qcStatement     * aStatement,
           sValue != NULL;
           sValue = sValue->next )
     {
-        // Subquery Á¸ÀçÇÒ °æ¿ì Subquery ÃÖÀûÈ­
+        // Subquery ì¡´ì¬í•  ê²½ìš° Subquery ìµœì í™”
         if ( (sValue->value->lflag & QTC_NODE_SUBQUERY_MASK )
              == QTC_NODE_SUBQUERY_EXIST )
         {
@@ -794,11 +794,11 @@ qmgUpdate::makePlan( qcStatement     * aStatement,
     //------------------------------------------
     // MAKE PLAN
     // BUG-32584
-    // ¸ğµç ¼­ºêÄõ¸®¿¡ ´ëÇØ¼­ MakeGraph ÇÑÈÄ¿¡ MakePlanÀ» ÇØ¾ß ÇÑ´Ù.
+    // ëª¨ë“  ì„œë¸Œì¿¼ë¦¬ì— ëŒ€í•´ì„œ MakeGraph í•œí›„ì— MakePlanì„ í•´ì•¼ í•œë‹¤.
     //------------------------------------------
 
     //------------------------------------------
-    // SET ±¸¹® ³»ÀÇ Subquery ÃÖÀûÈ­
+    // SET êµ¬ë¬¸ ë‚´ì˜ Subquery ìµœì í™”
     // ex) SET i1 = (subquery)
     //------------------------------------------
 
@@ -808,7 +808,7 @@ qmgUpdate::makePlan( qcStatement     * aStatement,
     {
         if ( sSubquery->subquery != NULL )
         {
-            // Subquery ÃÖÀûÈ­
+            // Subquery ìµœì í™”
             IDE_TEST( qmoSubquery::optimizeExprMakePlan( aStatement,
                                                          ID_UINT_MAX,
                                                          sSubquery->subquery )
@@ -821,7 +821,7 @@ qmgUpdate::makePlan( qcStatement     * aStatement,
     }
 
     //------------------------------------------
-    // SET ±¸¹®ÀÇ LIST ³»ÀÇ Subquery ÃÖÀûÈ­
+    // SET êµ¬ë¬¸ì˜ LIST ë‚´ì˜ Subquery ìµœì í™”
     // ex) SET (i1,i2) = (SELECT a1, a2 ... )
     //------------------------------------------
 
@@ -829,7 +829,7 @@ qmgUpdate::makePlan( qcStatement     * aStatement,
           sValue != NULL;
           sValue = sValue->next )
     {
-        // Subquery Á¸ÀçÇÒ °æ¿ì Subquery ÃÖÀûÈ­
+        // Subquery ì¡´ì¬í•  ê²½ìš° Subquery ìµœì í™”
         if ( (sValue->value->lflag & QTC_NODE_SUBQUERY_MASK )
              == QTC_NODE_SUBQUERY_EXIST )
         {
@@ -845,7 +845,7 @@ qmgUpdate::makePlan( qcStatement     * aStatement,
     }
 
     //------------------------------------------
-    // VALUE ³»ÀÇ Subquery ÃÖÀûÈ­
+    // VALUE ë‚´ì˜ Subquery ìµœì í™”
     // ex) SET i1 = (1 + subquery)
     //------------------------------------------
 
@@ -853,7 +853,7 @@ qmgUpdate::makePlan( qcStatement     * aStatement,
           sValue != NULL;
           sValue = sValue->next )
     {
-        // Subquery Á¸ÀçÇÒ °æ¿ì Subquery ÃÖÀûÈ­
+        // Subquery ì¡´ì¬í•  ê²½ìš° Subquery ìµœì í™”
         if ( (sValue->value->lflag & QTC_NODE_SUBQUERY_MASK )
              == QTC_NODE_SUBQUERY_EXIST )
         {
@@ -884,7 +884,7 @@ qmgUpdate::printGraph( qcStatement  * aStatement,
 /***********************************************************************
  *
  * Description :
- *    Graph¸¦ ±¸¼ºÇÏ´Â °øÅë Á¤º¸¸¦ Ãâ·ÂÇÑ´Ù.
+ *    Graphë¥¼ êµ¬ì„±í•˜ëŠ” ê³µí†µ ì •ë³´ë¥¼ ì¶œë ¥í•œë‹¤.
  *
  *
  * Implementation :
@@ -896,7 +896,7 @@ qmgUpdate::printGraph( qcStatement  * aStatement,
     IDU_FIT_POINT_FATAL( "qmgUpdate::printGraph::__FT__" );
 
     //-----------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //-----------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -904,7 +904,7 @@ qmgUpdate::printGraph( qcStatement  * aStatement,
     IDE_DASSERT( aString != NULL );
 
     //-----------------------------------
-    // GraphÀÇ ½ÃÀÛ Ãâ·Â
+    // Graphì˜ ì‹œì‘ ì¶œë ¥
     //-----------------------------------
 
     if ( aDepth == 0 )
@@ -919,7 +919,7 @@ qmgUpdate::printGraph( qcStatement  * aStatement,
     }
 
     //-----------------------------------
-    // Graph °øÅë Á¤º¸ÀÇ Ãâ·Â
+    // Graph ê³µí†µ ì •ë³´ì˜ ì¶œë ¥
     //-----------------------------------
 
     IDE_TEST( qmg::printGraph( aStatement,
@@ -929,12 +929,12 @@ qmgUpdate::printGraph( qcStatement  * aStatement,
               != IDE_SUCCESS );
 
     //-----------------------------------
-    // Graph °íÀ¯ Á¤º¸ÀÇ Ãâ·Â
+    // Graph ê³ ìœ  ì •ë³´ì˜ ì¶œë ¥
     //-----------------------------------
 
 
     //-----------------------------------
-    // Child Graph °íÀ¯ Á¤º¸ÀÇ Ãâ·Â
+    // Child Graph ê³ ìœ  ì •ë³´ì˜ ì¶œë ¥
     //-----------------------------------
 
     IDE_TEST( aGraph->left->printGraph( aStatement,
@@ -944,7 +944,7 @@ qmgUpdate::printGraph( qcStatement  * aStatement,
               != IDE_SUCCESS );
 
     //-----------------------------------
-    // GraphÀÇ ¸¶Áö¸· Ãâ·Â
+    // Graphì˜ ë§ˆì§€ë§‰ ì¶œë ¥
     //-----------------------------------
 
     if ( aDepth == 0 )

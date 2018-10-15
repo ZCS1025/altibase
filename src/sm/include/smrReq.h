@@ -358,7 +358,7 @@ class smrReqFunc
         static void allocRSGroupID( void * aTrans,
                                     UInt * aPageListIdx )
         {
-            /* TransactionÀÌ »ç¿ëÇÒ RS ID ¸¦ °¡Á®¿Â´Ù.*/
+            /* Transactionì´ ì‚¬ìš©í•  RS ID ë¥¼ ê°€ì ¸ì˜¨ë‹¤.*/
             smxTrans::allocRSGroupID( aTrans,
                                       aPageListIdx );
         };
@@ -620,7 +620,7 @@ class smrReqFunc
 
         /* table  redo-undo function */
 
-        /* PRJ-1496 commit log¿¡ disk table row count ÀúÀå */
+        /* PRJ-1496 commit logì— disk table row count ì €ì¥ */
         static IDE_RC redoAllTableInfoToDB( SChar     * aAfterImage,
                                             SInt        aSize,
                                             idBool      aForMediaRecovery )
@@ -1648,7 +1648,7 @@ class smrReqFunc
                                                      aPID );
         };
 
-        /* PROJ-1665 : PageÀÇ consistent »óÅÂ ¿©ºÎ ¹İÈ¯ */
+        /* PROJ-1665 : Pageì˜ consistent ìƒíƒœ ì—¬ë¶€ ë°˜í™˜ */
         static idBool isConsistentPage4DRDB( UChar * aPageHdr )
         {
             return sdpPhyPage::isConsistentPage( aPageHdr );

@@ -47,7 +47,7 @@
 #define MMC_STMT_ID(aSession, aPage, aSlot) ( ((aSession) << (MMC_STMT_ID_PAGE_BIT + MMC_STMT_ID_SLOT_BIT)) | (((aPage) << MMC_STMT_ID_SLOT_BIT) & MMC_STMT_ID_PAGE_MASK) | ((aSlot) & MMC_STMT_ID_SLOT_MASK) )
 
 /* PROJ-2177 User Interface - Cancel
- * Note. ULN_STMT_CID_* ¿Í °ªÀ» ¸ÂÃâ °Í */
+ * Note. ULN_STMT_CID_* ì™€ ê°’ì„ ë§žì¶œ ê²ƒ */
 
 #define MMC_STMT_CID_SIZE_BIT           32
 #define MMC_STMT_CID_SESSION_BIT        16
@@ -71,12 +71,12 @@ typedef struct mmcStmtSlot
 
 typedef struct mmcStmtPage
 {
-    /* fix BUG-28669 statement slot°Ë»öÀ» latch-freeÇÏ°ÔÇÒ¼ö ÀÖ¾î¾ß ÇÑ´Ù.
+    /* fix BUG-28669 statement slotê²€ìƒ‰ì„ latch-freeí•˜ê²Œí• ìˆ˜ ìžˆì–´ì•¼ í•œë‹¤.
        
-       WAS¿¡¼­ statement cachingÀ» on½ÃÅ²»óÅÂ¿¡¼­ Áß°£¿¡ Altibaes°¡ restart
-       µÇ¾ú´Ù¸é,°ú°ÅÀÇ statement-id ·Î °Ë»öÇÏ´Â °æ¿ì¿¡, Statement-id°¡ ¼ÓÇÑ
-       Page Body°¡ ¾ÆÁ÷ ÇÒ´çµÇÁö¾Ê´Â »óÅÂÀÏ¼ö ÀÖ°Å³ª ÇÒ´ç°úÁ¤À» Ã³¸®Áß ÀÏ¶§
-       ¾ÈÀüÇÏ°Ô statement slot°Ë»öÀ» ÇÏ °ÔÇÑ´Ù.
+       WASì—ì„œ statement cachingì„ onì‹œí‚¨ìƒíƒœì—ì„œ ì¤‘ê°„ì— Altibaesê°€ restart
+       ë˜ì—ˆë‹¤ë©´,ê³¼ê±°ì˜ statement-id ë¡œ ê²€ìƒ‰í•˜ëŠ” ê²½ìš°ì—, Statement-idê°€ ì†í•œ
+       Page Bodyê°€ ì•„ì§ í• ë‹¹ë˜ì§€ì•ŠëŠ” ìƒíƒœì¼ìˆ˜ ìžˆê±°ë‚˜ í• ë‹¹ê³¼ì •ì„ ì²˜ë¦¬ì¤‘ ì¼ë•Œ
+       ì•ˆì „í•˜ê²Œ statement slotê²€ìƒ‰ì„ í•˜ ê²Œí•œë‹¤.
        
      */
     // PROJ-2408
@@ -91,8 +91,8 @@ typedef struct mmcStmtPage
 typedef struct mmcStmtPageTable
 {
     UShort      mFirstFreePageID;
-    /* fix BUG-28669 statement slot°Ë»öÀ» latch-freeÇÏ°ÔÇÒ¼ö ÀÖ¾î¾ß ÇÑ´Ù.
-       PCH(Page Control Header) allocate ¿¡ ¼º°øÇÑ Page°¹¼ö   */
+    /* fix BUG-28669 statement slotê²€ìƒ‰ì„ latch-freeí•˜ê²Œí• ìˆ˜ ìžˆì–´ì•¼ í•œë‹¤.
+       PCH(Page Control Header) allocate ì— ì„±ê³µí•œ Pageê°¯ìˆ˜   */
     UInt        mAllocPchCnt;
     mmcStmtPage mPage[MMC_STMT_ID_PAGE_MAX];
 } mmcStmtPageTable;
@@ -115,7 +115,7 @@ private:
     static mmcStmtPageTable **mStmtPageTableArr;
 
     // fix BUG-30731
-    // mmcStatementManagerÀÇ Mutex Á¤º¸¸¦ Ãâ·ÂÇÑ´Ù.
+    // mmcStatementManagerì˜ Mutex ì •ë³´ë¥¼ ì¶œë ¥í•œë‹¤.
     static idvSQL           mStatistics;
     static idvSession       mCurrSess;
     static idvSession       mOldSess;
@@ -132,15 +132,15 @@ public:
     
     static IDE_RC freeStatement(mmcStatement *aStatement);
 
-    /* fix BUG-28669 statement slot°Ë»öÀ» latch-freeÇÏ°ÔÇÒ¼ö ÀÖ¾î¾ß ÇÑ´Ù.
-       freeStmtSlotÀÇ latch durationÀ» Á¶±ÝÀÌ³ª ÁÙÀÌÀÚ.
+    /* fix BUG-28669 statement slotê²€ìƒ‰ì„ latch-freeí•˜ê²Œí• ìˆ˜ ìžˆì–´ì•¼ í•œë‹¤.
+       freeStmtSlotì˜ latch durationì„ ì¡°ê¸ˆì´ë‚˜ ì¤„ì´ìž.
      */
     static IDE_RC findStatement(mmcStatement **aStatement,
                                 mmcSession    *aSession,
                                 mmcStmtID      aStatementID);
 
     // fix BUG-30731
-    // mmtSessionManager¿¡¼­ ÁÖ±âÀûÀ¸·Î Åë°èÁ¤º¸ ¹Ý¿µ
+    // mmtSessionManagerì—ì„œ ì£¼ê¸°ì ìœ¼ë¡œ í†µê³„ì •ë³´ ë°˜ì˜
     static void   applyStatisticsForSystem();
 
     /* PROJ-2109 : Remove the bottleneck of alloc/free stmts. */

@@ -27,9 +27,9 @@
 
 /****************************************************************************
  * Abstraction :
- *  ¸®Ä¿¹ö¸®½Ã¿¡ º» ÇÔ¼ö ¼öÇà½ÃÅ´.
- *  °¢ Double write File(DWFile)ÆÄÀÏµéÀÌ Á¸ÀçÇÏ´Â µğ·ºÅä¸®·Î °¡¼­
- *  ±× ÆÄÀÏµéÀ» ¿­¾î¼­, °¢ ÆÄÀÏ¿¡ ´ëÇØ recoverDWFileÀ» ¼öÇàÇÏ´Â ¿ªÈ°À» ÇÑ´Ù.
+ *  ë¦¬ì»¤ë²„ë¦¬ì‹œì— ë³¸ í•¨ìˆ˜ ìˆ˜í–‰ì‹œí‚´.
+ *  ê° Double write File(DWFile)íŒŒì¼ë“¤ì´ ì¡´ì¬í•˜ëŠ” ë””ë ‰í† ë¦¬ë¡œ ê°€ì„œ
+ *  ê·¸ íŒŒì¼ë“¤ì„ ì—´ì–´ì„œ, ê° íŒŒì¼ì— ëŒ€í•´ recoverDWFileì„ ìˆ˜í–‰í•˜ëŠ” ì—­í™œì„ í•œë‹¤.
  ****************************************************************************/
 IDE_RC sdbDWRecoveryMgr::recoverCorruptedPages()
 {
@@ -83,10 +83,10 @@ IDE_RC sdbDWRecoveryMgr::recoverCorruptedPages()
                 break;
             }
 
-            /* BUG-24946 Server Start½Ã DWFile load°úÁ¤¿¡¼­ ¹ß»ıÇÑ ¿¡·¯ÄÚµå¸¦
-             *           ¹«½ÃÇÏ°í, Clear ÇØÁÖ¾î¾ßÇÔ.
-             * ÇÁ·ÎÆÛÆ¼¿¡ Á¤ÀÇµÈ DWDir ³»ÀÇ ¸ğµç ÆÄÀÏÀÌ³ª µğ·ºÅä¸®¿¡ ´ëÇØ¼­ load
-             * ÇØº¸Áö ¾Ê°í, prefix°¡ ÀÏÄ¡ÇÏ´Â °Í¿¡ ´ëÇØ¼­¸¸ loadÇØº»´Ù. */
+            /* BUG-24946 Server Startì‹œ DWFile loadê³¼ì •ì—ì„œ ë°œìƒí•œ ì—ëŸ¬ì½”ë“œë¥¼
+             *           ë¬´ì‹œí•˜ê³ , Clear í•´ì£¼ì–´ì•¼í•¨.
+             * í”„ë¡œí¼í‹°ì— ì •ì˜ëœ DWDir ë‚´ì˜ ëª¨ë“  íŒŒì¼ì´ë‚˜ ë””ë ‰í† ë¦¬ì— ëŒ€í•´ì„œ load
+             * í•´ë³´ì§€ ì•Šê³ , prefixê°€ ì¼ì¹˜í•˜ëŠ” ê²ƒì— ëŒ€í•´ì„œë§Œ loadí•´ë³¸ë‹¤. */
 
             if ( idlOS::strncmp( sResDirEnt->d_name,
                                  SDD_DWFILE_NAME_PREFIX,
@@ -95,7 +95,7 @@ IDE_RC sdbDWRecoveryMgr::recoverCorruptedPages()
                 continue;
             }
 
-            // full file name ¸¸µé±â
+            // full file name ë§Œë“¤ê¸°
             sFullFileName[0] = '\0';
             idlOS::sprintf(sFullFileName,
                            "%s%c%s",
@@ -105,9 +105,9 @@ IDE_RC sdbDWRecoveryMgr::recoverCorruptedPages()
 
             if ( sDWFile.load(sFullFileName, &sRightDWFile) != IDE_SUCCESS )
             {
-                /* ÆÄÀÏ¿¡ ´ëÇÑ permission ¿¡·¯³ª open ¿¡·¯°¡ ¹ß»ıÇÏ¿©µµ
-                 * ¹«½ÃÇÏ°Ú´Ù¶ó¸é ´ÙÀ½ ¿¡·¯ÄÚµå¸¦ À§ÇØ¼­ ÇöÀç ¼³Á¤µÈ ¿¡·¯ÄÚµå¸¦ Á¦°ÅÇÑ´Ù.
-                 * ±×·¸Áö ¾ÊÀ¸¸é ÀÌÈÄ Exception CallStack¿¡ ¼¯¿© Ãâ·ÂÇÏ°ÔµÊ */
+                /* íŒŒì¼ì— ëŒ€í•œ permission ì—ëŸ¬ë‚˜ open ì—ëŸ¬ê°€ ë°œìƒí•˜ì—¬ë„
+                 * ë¬´ì‹œí•˜ê² ë‹¤ë¼ë©´ ë‹¤ìŒ ì—ëŸ¬ì½”ë“œë¥¼ ìœ„í•´ì„œ í˜„ì¬ ì„¤ì •ëœ ì—ëŸ¬ì½”ë“œë¥¼ ì œê±°í•œë‹¤.
+                 * ê·¸ë ‡ì§€ ì•Šìœ¼ë©´ ì´í›„ Exception CallStackì— ì„ì—¬ ì¶œë ¥í•˜ê²Œë¨ */
                 IDE_CLEAR();
             }
 
@@ -123,7 +123,7 @@ IDE_RC sdbDWRecoveryMgr::recoverCorruptedPages()
 
             /* BUG-27776 the server startup can be fail since the dw file is 
              * removed after DW recovery. 
-             * DWFileÀ» Áö¿ì´Â ´ë½Å ResetÇÕ´Ï´Ù.*/
+             * DWFileì„ ì§€ìš°ëŠ” ëŒ€ì‹  Resetí•©ë‹ˆë‹¤.*/
             IDE_TEST( sDWFile.reset() != IDE_SUCCESS );
             (void)sDWFile.destroy();
         }
@@ -136,9 +136,9 @@ IDE_RC sdbDWRecoveryMgr::recoverCorruptedPages()
     IDE_TEST(iduMemMgr::free(sDirEnt) != IDE_SUCCESS);
     
     /*
-     * BUG-25957 [SD] ºñÁ¤»óÁ¾·áÈÄ restart½Ã DOUBLE_WRITE_DIRECTORY,
-     *           DOUBLE_WRITE_DIRECTORY_COUNTproperty°ªÀ» º¯°æÇÏ¸é corruptµÈ 
-     *           pageµé¿¡´ëÇÑ º¹±¸°¡ ºÒ¿ÏÀüÇÏ°Ô ÀÌ·ïÁú¼ö ÀÖÀ½.
+     * BUG-25957 [SD] ë¹„ì •ìƒì¢…ë£Œí›„ restartì‹œ DOUBLE_WRITE_DIRECTORY,
+     *           DOUBLE_WRITE_DIRECTORY_COUNTpropertyê°’ì„ ë³€ê²½í•˜ë©´ corruptëœ 
+     *           pageë“¤ì—ëŒ€í•œ ë³µêµ¬ê°€ ë¶ˆì™„ì „í•˜ê²Œ ì´ë¤„ì§ˆìˆ˜ ìˆìŒ.
      */
     if( sFound  == ID_FALSE )
     {
@@ -162,9 +162,9 @@ IDE_RC sdbDWRecoveryMgr::recoverCorruptedPages()
 
 /****************************************************************************
  * Abstraction :
- *  DWFileÀ» º¸°í ÇØ´ç space ID¿Í page ID °¡Á®¿Í¼­ 
- *  ½ÇÁ¦ DB¿¡¼­ ÇØ´ç ÇÏ´Â ÆäÀÌÁö°¡ Á¦´ë·Î µÇ¾î ÀÖ´ÂÁö È®ÀÎÇÑ´Ù. 
- *  ¸¸¾à ±úÁ® ÀÖ´Ù¸é, DWFile¿¡ ÇØ´ç ºÎºĞÀ» ½ÇÁ¦ DB¿¡ WriteÇÑ´Ù.
+ *  DWFileì„ ë³´ê³  í•´ë‹¹ space IDì™€ page ID ê°€ì ¸ì™€ì„œ 
+ *  ì‹¤ì œ DBì—ì„œ í•´ë‹¹ í•˜ëŠ” í˜ì´ì§€ê°€ ì œëŒ€ë¡œ ë˜ì–´ ìˆëŠ”ì§€ í™•ì¸í•œë‹¤. 
+ *  ë§Œì•½ ê¹¨ì ¸ ìˆë‹¤ë©´, DWFileì— í•´ë‹¹ ë¶€ë¶„ì„ ì‹¤ì œ DBì— Writeí•œë‹¤.
  ****************************************************************************/
 IDE_RC sdbDWRecoveryMgr::recoverDWFile(sddDWFile *aDWFile)
 {
@@ -200,22 +200,22 @@ IDE_RC sdbDWRecoveryMgr::recoverDWFile(sddDWFile *aDWFile)
         sPageID = smLayerCallback::getPageID( (UChar*)sDWBuffer );
         sSpaceID = ((sdbFrameHdr*)(sDWBuffer))->mSpaceID;
 
-        // disk manager¿¡ ÇÊ¿ä
-        // ÀüÇô »ç¿ëµÇÁö ¾ÊÀº dw buffer frameÀÏ °æ¿ì
-        // ¹«½ÃÇÑ´Ù. ÃÊ±âÈ­ÇÑ »óÅÂ ±×´ë·ÎÀÏ °ÍÀÓ.
+        // disk managerì— í•„ìš”
+        // ì „í˜€ ì‚¬ìš©ë˜ì§€ ì•Šì€ dw buffer frameì¼ ê²½ìš°
+        // ë¬´ì‹œí•œë‹¤. ì´ˆê¸°í™”í•œ ìƒíƒœ ê·¸ëŒ€ë¡œì¼ ê²ƒì„.
         if((sSpaceID == SC_NULL_SPACEID) && (sPageID == SC_NULL_PID))
         {
             continue;
         }
 
-        // Fix BUG-17158 ¿¡ ´ëÇÑ ³»¿ë
-        // offline È¤Àº Discard Disk TBS¿¡ ´ëÇØ¼­ Double Write Buffer·ÎºÎÅÍ
-        // º¹±¸¸¦ ÁøÇàÇÏÁö ¾Ê´Â´Ù.
-        // 1. offline ¿¬»ê ¼öÇà½Ã flush°¡ ¿Ï·áµÈ ÀÌÈÄ¿¡ Offline »óÅÂ·Î º¯°æµÇ±â
-        // ¶§¹®¿¡ flush Çß´ø PageµéÀº ¸ğµÎ ¾ÈÀüÇÏ°Ô µ¥ÀÌÅ¸ÆÄÀÏ¿¡ syncµÊÀ»
-        // º¸ÀåÇÑ´Ù.
-        // 2. discard TBS´Â Control ´Ü°è¿¡¼­ °áÁ¤ÀÌ µÇ±â ¶§¹®¿¡ ±× ÀÌÈÄ¿¡´Â
-        // ¹«½ÃÇÏ¸é µÈ´Ù.
+        // Fix BUG-17158 ì— ëŒ€í•œ ë‚´ìš©
+        // offline í˜¹ì€ Discard Disk TBSì— ëŒ€í•´ì„œ Double Write Bufferë¡œë¶€í„°
+        // ë³µêµ¬ë¥¼ ì§„í–‰í•˜ì§€ ì•ŠëŠ”ë‹¤.
+        // 1. offline ì—°ì‚° ìˆ˜í–‰ì‹œ flushê°€ ì™„ë£Œëœ ì´í›„ì— Offline ìƒíƒœë¡œ ë³€ê²½ë˜ê¸°
+        // ë•Œë¬¸ì— flush í–ˆë˜ Pageë“¤ì€ ëª¨ë‘ ì•ˆì „í•˜ê²Œ ë°ì´íƒ€íŒŒì¼ì— syncë¨ì„
+        // ë³´ì¥í•œë‹¤.
+        // 2. discard TBSëŠ” Control ë‹¨ê³„ì—ì„œ ê²°ì •ì´ ë˜ê¸° ë•Œë¬¸ì— ê·¸ ì´í›„ì—ëŠ”
+        // ë¬´ì‹œí•˜ë©´ ëœë‹¤.
         IDE_TEST(sddDiskMgr::isValidPageID(NULL,
                                            sSpaceID,
                                            sPageID,
@@ -227,14 +227,14 @@ IDE_RC sdbDWRecoveryMgr::recoverDWFile(sddDWFile *aDWFile)
             continue;
         }
 
-        /* BUG-19477 [SM-DISK] IOB¿µ¿ª¿¡ Temp TablespaceÀÇ MetaÆäÀÌÁö°¡ ÀÖÀ» °æ¿ì
-         *           ¼­¹ö°¡ Media Recovery Áß ºñÁ¤»ó Á¾·á
+        /* BUG-19477 [SM-DISK] IOBì˜ì—­ì— Temp Tablespaceì˜ Metaí˜ì´ì§€ê°€ ìˆì„ ê²½ìš°
+         *           ì„œë²„ê°€ Media Recovery ì¤‘ ë¹„ì •ìƒ ì¢…ë£Œ
          *
-         * Temp TablespaceÀÇ Meta ÆäÀÌÁö ¶ÇÇÑ DWA(Double Write Area)¿¡ ±â·ÏÀÌ µÈ´Ù.
-         * ÇÏÁö¸¸ Temp Tablespace´Â Media Recovery´ë»óÀÌ ¾Æ´Ï±â¶§¹®¿¡ Media Recovery½Ã
-         * Temp´Â Àç»ı¼ºÀÌ µÇ¾î ÃÊ±âÅ©±â·Î ¸¸µé¾îÁø´Ù. ±×·±µ¥ Media Recovery½Ã ÃÊ±âÅ©±â
-         * ÀÌÈÄ ÀÌ¹ÌÁö°¡ DWA¿¡ ±â·ÏÀÌ µÇ¾îÀÖÀ¸¸é Media Recovery½Ã Á¸ÀçÇÏÁö ¾Ê´Â ÆäÀÌÁö
-         * ¿¡ ´ëÇØ¼­ Read¸¦ ¿äÃ»ÇÏ¿© ¼­¹ö°¡ Á×À» ¼ö ÀÖ½À´Ï´Ù.
+         * Temp Tablespaceì˜ Meta í˜ì´ì§€ ë˜í•œ DWA(Double Write Area)ì— ê¸°ë¡ì´ ëœë‹¤.
+         * í•˜ì§€ë§Œ Temp TablespaceëŠ” Media RecoveryëŒ€ìƒì´ ì•„ë‹ˆê¸°ë•Œë¬¸ì— Media Recoveryì‹œ
+         * TempëŠ” ì¬ìƒì„±ì´ ë˜ì–´ ì´ˆê¸°í¬ê¸°ë¡œ ë§Œë“¤ì–´ì§„ë‹¤. ê·¸ëŸ°ë° Media Recoveryì‹œ ì´ˆê¸°í¬ê¸°
+         * ì´í›„ ì´ë¯¸ì§€ê°€ DWAì— ê¸°ë¡ì´ ë˜ì–´ìˆìœ¼ë©´ Media Recoveryì‹œ ì¡´ì¬í•˜ì§€ ì•ŠëŠ” í˜ì´ì§€
+         * ì— ëŒ€í•´ì„œ Readë¥¼ ìš”ì²­í•˜ì—¬ ì„œë²„ê°€ ì£½ì„ ìˆ˜ ìˆìŠµë‹ˆë‹¤.
          *
          **/
         if ( smLayerCallback::isTempTableSpace( sSpaceID ) == ID_TRUE )
@@ -255,18 +255,18 @@ IDE_RC sdbDWRecoveryMgr::recoverDWFile(sddDWFile *aDWFile)
                                                (UChar*)sDataBuffer) == ID_TRUE )
         {
             if ( smLayerCallback::isPageCorrupted(
-                      0, // TBS ID´Â ´ÜÁö Ãâ·ÂÀ» À§ÇØ¼­¸¸ »ç¿ëµÊ.
+                      0, // TBS IDëŠ” ë‹¨ì§€ ì¶œë ¥ì„ ìœ„í•´ì„œë§Œ ì‚¬ìš©ë¨.
                       (UChar*)sDWBuffer) == ID_TRUE)
             {
                 IDE_RAISE(page_corruption_error);
             }
 
-            // offline TBS¿¡ double write buffer·Î º¹±¸ÇÏ´Â °æ¿ì°¡ ÀÖ´Ù¸é
-            // ±× ¿øÀÎÀº offline ¿¬»êÁß¿¡ ±úÁø °ÍÀÌ ¾Æ´Ï¶ó
-            // offlineÀÌ ¿Ï·áµÈ ÀÌÈÄ¿¡ ¿ÜºÎ¿äÀÎ¿¡ ÀÇÇØ ±úÁø°ÍÀÌ¶ó ÇÏ°Ú´Ù.
-            // double write buffer´Â buffer manager°¡ flushÇÏ´Â µµÁß¿¡
-            // crash°¡ ¹ß»ıÇÏ¿© ³¢Áö´Â °ÍÀ» º¹±¸ÇÏ·Á´Â °ÍÀÌÁö ¸ğµç Media
-            // ¿À·ù¿¡ ´ëÇÑ º¹±¸¸¦ Áö¿øÇÏ´Â °ÍÀÌ ¾Æ´Ï´Ù.
+            // offline TBSì— double write bufferë¡œ ë³µêµ¬í•˜ëŠ” ê²½ìš°ê°€ ìˆë‹¤ë©´
+            // ê·¸ ì›ì¸ì€ offline ì—°ì‚°ì¤‘ì— ê¹¨ì§„ ê²ƒì´ ì•„ë‹ˆë¼
+            // offlineì´ ì™„ë£Œëœ ì´í›„ì— ì™¸ë¶€ìš”ì¸ì— ì˜í•´ ê¹¨ì§„ê²ƒì´ë¼ í•˜ê² ë‹¤.
+            // double write bufferëŠ” buffer managerê°€ flushí•˜ëŠ” ë„ì¤‘ì—
+            // crashê°€ ë°œìƒí•˜ì—¬ ë¼ì§€ëŠ” ê²ƒì„ ë³µêµ¬í•˜ë ¤ëŠ” ê²ƒì´ì§€ ëª¨ë“  Media
+            // ì˜¤ë¥˜ì— ëŒ€í•œ ë³µêµ¬ë¥¼ ì§€ì›í•˜ëŠ” ê²ƒì´ ì•„ë‹ˆë‹¤.
             IDE_TEST(sddDiskMgr::write(NULL,
                                        sSpaceID,
                                        sPageID,

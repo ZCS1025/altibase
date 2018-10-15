@@ -111,7 +111,7 @@ IDE_RC mtfDecryptEstimate( mtcNode*     aNode,
                   != IDE_SUCCESS );
     }
 
-    // echar¿Í evarchar°¡ °°´Ù.
+    // echarì™€ evarcharê°€ ê°™ë‹¤.
     aTemplate->rows[aNode->table].execute[aNode->column] = mtfExecute;
 
     return IDE_SUCCESS;

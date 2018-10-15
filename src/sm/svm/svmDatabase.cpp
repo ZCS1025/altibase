@@ -25,10 +25,10 @@
 #include <smu.h>
 #include <smr.h>
 
-/* µ¥ÀÌÅÍº£ÀÌ½º »ı¼º½Ã membase¸¦ ÃÊ±âÈ­ÇÑ´Ù.
- * aDBName           [IN] µ¥ÀÌÅÍº£ÀÌ½º ÀÌ¸§
- * aDbFilePageCount  [IN] ÇÏ³ªÀÇ µ¥ÀÌÅÍº£ÀÌ½º ÆÄÀÏÀÌ °¡Áö´Â Page¼ö
- * aChunkPageCount   [IN] ÇÏ³ªÀÇ Expand Chunk´ç Page¼ö
+/* ë°ì´í„°ë² ì´ìŠ¤ ìƒì„±ì‹œ membaseë¥¼ ì´ˆê¸°í™”í•œë‹¤.
+ * aDBName           [IN] ë°ì´í„°ë² ì´ìŠ¤ ì´ë¦„
+ * aDbFilePageCount  [IN] í•˜ë‚˜ì˜ ë°ì´í„°ë² ì´ìŠ¤ íŒŒì¼ì´ ê°€ì§€ëŠ” Pageìˆ˜
+ * aChunkPageCount   [IN] í•˜ë‚˜ì˜ Expand Chunkë‹¹ Pageìˆ˜
  */
 IDE_RC svmDatabase::initializeMembase( svmTBSNode * aTBSNode,
                                        SChar *      aDBName,
@@ -49,7 +49,7 @@ IDE_RC svmDatabase::initializeMembase( svmTBSNode * aTBSNode,
     aTBSNode->mMemBase.mExpandChunkPageCnt = aChunkPageCount ;
     aTBSNode->mMemBase.mCurrentExpandChunkCnt = 0;
 
-    // Free Page List¸¦ ÃÊ±âÈ­ ÇÑ´Ù.
+    // Free Page Listë¥¼ ì´ˆê¸°í™” í•œë‹¤.
     for ( i = 0 ; i< SVM_MAX_FPL_COUNT ; i++ )
     {
         aTBSNode->mMemBase.mFreePageLists[i].mFirstFreePageID = SM_NULL_PID;
@@ -62,49 +62,49 @@ IDE_RC svmDatabase::initializeMembase( svmTBSNode * aTBSNode,
 }
 
 /*
- * Expand Chunk°ü·ÃµÈ ÇÁ·ÎÆÛÆ¼ °ªµéÀÌ Á¦´ë·Î µÈ °ªÀÎÁö Ã¼Å©ÇÑ´Ù.
+ * Expand Chunkê´€ë ¨ëœ í”„ë¡œí¼í‹° ê°’ë“¤ì´ ì œëŒ€ë¡œ ëœ ê°’ì¸ì§€ ì²´í¬í•œë‹¤.
  *
- * 1. ÇÏ³ªÀÇ Chunk¾ÈÀÇ µ¥ÀÌÅÍ ÆäÀÌÁö¸¦ ¿©·¯ Free Page List¿¡ ºĞ¹èÇÒ ¶§,
- *    ÃÖ¼ÒÇÑ ÇÑ¹øÀº ºĞ¹è°¡ µÇ´ÂÁö Ã¼Å©
+ * 1. í•˜ë‚˜ì˜ Chunkì•ˆì˜ ë°ì´í„° í˜ì´ì§€ë¥¼ ì—¬ëŸ¬ Free Page Listì— ë¶„ë°°í•  ë•Œ,
+ *    ìµœì†Œí•œ í•œë²ˆì€ ë¶„ë°°ê°€ ë˜ëŠ”ì§€ ì²´í¬
  *
- *    ¸¸Á·Á¶°Ç : Chunk´ç µ¥ÀÌÅÍÆäÀÌÁö¼ö >= 2 * List´ç ºĞ¹èÇÒ Page¼ö * List ¼ö
+ *    ë§Œì¡±ì¡°ê±´ : Chunkë‹¹ ë°ì´í„°í˜ì´ì§€ìˆ˜ >= 2 * Listë‹¹ ë¶„ë°°í•  Pageìˆ˜ * List ìˆ˜
  *
- * aChunkDataPageCount [IN] Expand Chunk¾ÈÀÇ µ¥ÀÌÅÍÆäÀÌÁö ¼ö
- *                          ( FLI Page¸¦ Á¦¿ÜÇÑ PageÀÇ ¼ö )
+ * aChunkDataPageCount [IN] Expand Chunkì•ˆì˜ ë°ì´í„°í˜ì´ì§€ ìˆ˜
+ *                          ( FLI Pageë¥¼ ì œì™¸í•œ Pageì˜ ìˆ˜ )
  */
 IDE_RC svmDatabase::checkExpandChunkProps( svmMemBase * aMemBase )
 {
     IDE_DASSERT( aMemBase != NULL );
 
-    // ´ÙÁßÈ­µÈ Free Page List¼ö°¡  createdb½ÃÁ¡°ú ´Ù¸¥ °æ¿ì
+    // ë‹¤ì¤‘í™”ëœ Free Page Listìˆ˜ê°€  createdbì‹œì ê³¼ ë‹¤ë¥¸ ê²½ìš°
     IDE_TEST_RAISE( aMemBase->mFreePageListCount !=
                     SVM_FREE_PAGE_LIST_COUNT,
                     different_page_list_count );
 
-    // Expand Chunk¾ÈÀÇ Page¼ö°¡ createdb½ÃÁ¡°ú ´Ù¸¥ °æ¿ì
+    // Expand Chunkì•ˆì˜ Pageìˆ˜ê°€ createdbì‹œì ê³¼ ë‹¤ë¥¸ ê²½ìš°
     IDE_TEST_RAISE( aMemBase->mExpandChunkPageCnt !=
                     smuProperty::getExpandChunkPageCount() ,
                     different_expand_chunk_page_count );
 
-    //  Expand Chunk°¡ Ãß°¡µÉ ¶§
-    //  ( µ¥ÀÌÅÍº£ÀÌ½º Chunk°¡ »õ·Î ÇÒ´çµÉ ¶§  )
-    //  ±× ¾ÈÀÇ Free PageµéÀº ¿©·¯°³ÀÇ ´ÙÁßÈ­µÈ Free Page List·Î ºĞ¹èµÈ´Ù.
+    //  Expand Chunkê°€ ì¶”ê°€ë  ë•Œ
+    //  ( ë°ì´í„°ë² ì´ìŠ¤ Chunkê°€ ìƒˆë¡œ í• ë‹¹ë  ë•Œ  )
+    //  ê·¸ ì•ˆì˜ Free Pageë“¤ì€ ì—¬ëŸ¬ê°œì˜ ë‹¤ì¤‘í™”ëœ Free Page Listë¡œ ë¶„ë°°ëœë‹¤.
     //
-    //  ÀÌ ¶§, °¢°¢ÀÇ Free Page List¿¡ ÃÖ¼ÒÇÑ ÇÏ³ªÀÇ Free Page°¡
-    //  ºĞ¹èµÇ¾î¾ß ÇÏµµ·Ï ½Ã½ºÅÛÀÇ ¾ÆÅ°ÅØÃÄ°¡ ¼³°èµÇ¾î ÀÖ´Ù.
+    //  ì´ ë•Œ, ê°ê°ì˜ Free Page Listì— ìµœì†Œí•œ í•˜ë‚˜ì˜ Free Pageê°€
+    //  ë¶„ë°°ë˜ì–´ì•¼ í•˜ë„ë¡ ì‹œìŠ¤í…œì˜ ì•„í‚¤í…ì³ê°€ ì„¤ê³„ë˜ì–´ ìˆë‹¤.
     //
-    //  ¸¸¾à Expand Chunk¾ÈÀÇ Free Page¼ö°¡ ÃæºĞÇÏÁö ¾Ê¾Æ¼­,
-    //  PER_LIST_DIST_PAGE_COUNT °³¾¿ ¸ğµç Free Page List¿¡ ºĞ¹èÇÒ ¼ö°¡
-    //  ¾ø´Ù¸é ¿¡·¯¸¦ ¹ß»ı½ÃÅ²´Ù.
+    //  ë§Œì•½ Expand Chunkì•ˆì˜ Free Pageìˆ˜ê°€ ì¶©ë¶„í•˜ì§€ ì•Šì•„ì„œ,
+    //  PER_LIST_DIST_PAGE_COUNT ê°œì”© ëª¨ë“  Free Page Listì— ë¶„ë°°í•  ìˆ˜ê°€
+    //  ì—†ë‹¤ë©´ ì—ëŸ¬ë¥¼ ë°œìƒì‹œí‚¨ë‹¤.
     //
-    //  Expand Chunk¾ÈÀÇ Free List Info Page¸¦ Á¦¿ÜÇÑ
-    //  µ¥ÀÌÅÍÆäÀÌÁö¸¸ÀÌ Free Page List¿¡ ºĞ¹èµÇ¹Ç·Î, ÀÌ °¹¼ö¸¦ Ã¼Å©ÇØ¾ß ÇÑ´Ù.
-    //  ±×·¯³ª, ÀÌ·¯ÇÑ ¸ğµç ³»¿ëÀ» ÀÏ¹İ »ç¿ëÀÚ°¡ ÀÌÇØÇÏ±â¿¡´Â ³Ê¹« ³­ÇØÇÏ´Ù.
+    //  Expand Chunkì•ˆì˜ Free List Info Pageë¥¼ ì œì™¸í•œ
+    //  ë°ì´í„°í˜ì´ì§€ë§Œì´ Free Page Listì— ë¶„ë°°ë˜ë¯€ë¡œ, ì´ ê°¯ìˆ˜ë¥¼ ì²´í¬í•´ì•¼ í•œë‹¤.
+    //  ê·¸ëŸ¬ë‚˜, ì´ëŸ¬í•œ ëª¨ë“  ë‚´ìš©ì„ ì¼ë°˜ ì‚¬ìš©ìê°€ ì´í•´í•˜ê¸°ì—ëŠ” ë„ˆë¬´ ë‚œí•´í•˜ë‹¤.
     //
-    //  Expand ChunkÀÇ ÆäÀÌÁö ¼ö´Â Free Page List¿¡ µÎ¹ø¾¿ ºĞ¹èÇÒ ¼ö ÀÖÀ»¸¸Å­
-    //  ÃæºĞÇÑ Å©±â¸¦ °¡Áöµµ·Ï °­Á¦ÇÑ´Ù.
+    //  Expand Chunkì˜ í˜ì´ì§€ ìˆ˜ëŠ” Free Page Listì— ë‘ë²ˆì”© ë¶„ë°°í•  ìˆ˜ ìˆì„ë§Œí¼
+    //  ì¶©ë¶„í•œ í¬ê¸°ë¥¼ ê°€ì§€ë„ë¡ ê°•ì œí•œë‹¤.
     //
-    //  Á¶°Ç½Ä : EXPAND_CHUNK_PAGE_COUNT <=
+    //  ì¡°ê±´ì‹ : EXPAND_CHUNK_PAGE_COUNT <=
     //           2 * PER_LIST_DIST_PAGE_COUNT * PAGE_LIST_GROUP_COUNT
    IDE_TEST_RAISE( aMemBase->mExpandChunkPageCnt <
                    ( 2 * SVM_PER_LIST_DIST_PAGE_COUNT * aMemBase->mFreePageListCount ),

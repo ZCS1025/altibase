@@ -150,7 +150,7 @@ IDE_RC smapChildMgr::initialize( SInt aThreadCount)
         mChildArray[i] = new (mChildArray[i])smapChild();
     }
 
-    // ¸Å´ÏÀú ÃÊ±âÈ­
+    // ë§¤ë‹ˆì € ì´ˆê¸°í™”
     IDE_TEST(smtPJMgr::initialize(aThreadCount,
                                   (smtPJChild **)mChildArray,
                                   &mSuccess)
@@ -216,17 +216,17 @@ IDE_RC smapChildMgr::assignJob(SInt aReqChild, idBool *aJobAssigned)
 
             mCurTablePtr  = sNxtTablePtr;
 
-            /* BUG-14975: Delete Row AllocÈÄ °ð¹Ù·Î Undo½Ã ASSERT¹ß»ý.
+            /* BUG-14975: Delete Row Allocí›„ ê³§ë°”ë¡œ Undoì‹œ ASSERTë°œìƒ.
                IDE_ASSERT(SM_SCN_IS_NOT_INFINITE(sScn) ||
                (sSlot->mDropFlag == SMP_SLOT_DROP_TRUE));
             */
 
             /* BUG-35568 - When refining a table, XDB acceses a uninitialized
              *             table header.
-             * DROP_FALSEÀÌ°í delete bit°¡ ¼³Á¤µÈ °æ¿ì.
-             * Å×ÀÌºí »ý¼ºÇÏ´Ù°¡ ½ÇÆÐÇÑ °æ¿ì¿¡´Â DROP_FALSEÀÌ°í delete bit°¡
-             * ¼³Á¤µÇ¾î ÀÖÀ» ¼ö ÀÖ´Ù.
-             * ÀÌ °æ¿ì catalog refine½Ã slot¸¸ freeÇÏ±â ¶§¹®¿¡ ±×³É skipÇÑ´Ù. */
+             * DROP_FALSEì´ê³  delete bitê°€ ì„¤ì •ëœ ê²½ìš°.
+             * í…Œì´ë¸” ìƒì„±í•˜ë‹¤ê°€ ì‹¤íŒ¨í•œ ê²½ìš°ì—ëŠ” DROP_FALSEì´ê³  delete bitê°€
+             * ì„¤ì •ë˜ì–´ ìžˆì„ ìˆ˜ ìžˆë‹¤.
+             * ì´ ê²½ìš° catalog refineì‹œ slotë§Œ freeí•˜ê¸° ë•Œë¬¸ì— ê·¸ëƒ¥ skipí•œë‹¤. */
             if( SMP_SLOT_IS_NOT_DROP( sSlot ) &&
                 SM_SCN_IS_DELETED( sScn ) )
             {
@@ -236,19 +236,19 @@ IDE_RC smapChildMgr::assignJob(SInt aReqChild, idBool *aJobAssigned)
             // added for A4
             if( SMI_TABLE_TYPE_IS_DISK( sCurTable ) == ID_TRUE )
             {
-                /* DISK tableÀº smrRecoveryMgr::restart() ¿¡¼­ DRDB Table
-                 * refine °úÁ¤À» ÅëÇØ lock itemÀ» ÃÊ±âÈ­ ÇÏ°í runtime itemµéÀ»
-                 * ¼³Á¤ÇÏ¹Ç·Î ¿©±â¼­´Â °Ç³Ê¶Ú´Ù. */
+                /* DISK tableì€ smrRecoveryMgr::restart() ì—ì„œ DRDB Table
+                 * refine ê³¼ì •ì„ í†µí•´ lock itemì„ ì´ˆê¸°í™” í•˜ê³  runtime itemë“¤ì„
+                 * ì„¤ì •í•˜ë¯€ë¡œ ì—¬ê¸°ì„œëŠ” ê±´ë„ˆë›´ë‹¤. */
 
                 continue;
             }
 
-            // Refine SKIPÇÒ TablespaceÀÎÁö Ã¼Å© ( DICARD/OFFLINE TBS)
+            // Refine SKIPí•  Tablespaceì¸ì§€ ì²´í¬ ( DICARD/OFFLINE TBS)
             if ( sctTableSpaceMgr::hasState( sCurTable->mSpaceID,
                                              SCT_SS_SKIP_REFINE ) == ID_TRUE )
             {
-                // Table headerÀÇ Lock ItemÀ» ÇÒ´ç,ÃÊ±âÈ­ ÇÏ°í
-                // Runtime ItemµéÀº NULL·Î ¼³Á¤ÇÑ´Ù.
+                // Table headerì˜ Lock Itemì„ í• ë‹¹,ì´ˆê¸°í™” í•˜ê³ 
+                // Runtime Itemë“¤ì€ NULLë¡œ ì„¤ì •í•œë‹¤.
                 IDE_TEST( smcTable::initLockAndSetRuntimeNull( sCurTable )
                           != IDE_SUCCESS );
 
@@ -260,18 +260,18 @@ IDE_RC smapChildMgr::assignJob(SInt aReqChild, idBool *aJobAssigned)
                DROP_FALSE
                2. droped table
                DROP_TRUE
-               3. create table by abort ( NTA·Î±×±îÁö Âï¾úÁö¸¸ AbortÇÏ¿© Logical Undo )
+               3. create table by abort ( NTAë¡œê·¸ê¹Œì§€ ì°ì—ˆì§€ë§Œ Abortí•˜ì—¬ Logical Undo )
                DROP_TRUE deletebit
-               4. create table by abort ( allocslot ±îÁö µÇ°í NTA ·Î±× ¸øÂï°í Physical Undo)
+               4. create table by abort ( allocslot ê¹Œì§€ ë˜ê³  NTA ë¡œê·¸ ëª»ì°ê³  Physical Undo)
                DROP_FALSE deletebit
 
                case 1,2,3  -> initLockAndRuntimeItem
-                 -  1¹ø  => »ç¿ëÁßÀÎ TableÀÌ¹Ç·Î ÃÊ±âÈ­ÇØ¾ßÇÔ
-                 -  2¹ø, => catalog table refine½Ã¿¡
-                            drop Table pendingÀÌ È£ÃâµÊ
-                    3¹ø    ( drop table pending¼öÇàÀ» À§ÇØ¼­ ÃÊ±âÈ­ ÇÊ¿ä)
+                 -  1ë²ˆ  => ì‚¬ìš©ì¤‘ì¸ Tableì´ë¯€ë¡œ ì´ˆê¸°í™”í•´ì•¼í•¨
+                 -  2ë²ˆ, => catalog table refineì‹œì—
+                            drop Table pendingì´ í˜¸ì¶œë¨
+                    3ë²ˆ    ( drop table pendingìˆ˜í–‰ì„ ìœ„í•´ì„œ ì´ˆê¸°í™” í•„ìš”)
                case 4      -> skip
-                 -  4¹ø  => catalog table refine½Ã catalog table row¸¸ Áö¿öÁü
+                 -  4ë²ˆ  => catalog table refineì‹œ catalog table rowë§Œ ì§€ì›Œì§
             */
             /*
                if  (sSlot->mDropFlag == SMP_SLOT_DROP_TRUE)  ||
@@ -296,10 +296,10 @@ IDE_RC smapChildMgr::assignJob(SInt aReqChild, idBool *aJobAssigned)
             }
 
             /* PROJ-1594 Volatile TBS */
-            /* Volatile table¿¡ ´ëÇÑ refine ÀÛ¾÷Àº
-               Service ´Ü°è¿¡¼­ ÀÌ·ç¾îÁø´Ù. µû¶ó¼­ ¿©±â¼­´Â skip ÇÑ´Ù.
-               ÇÏÁö¸¸ À§ drop flag¿¡ ´ëÇÑ Ã³¸®´Â ¸Þ¸ð¸® Å×ÀÌºí°ú
-               °øÅëÀ¸·Î Ã³¸®ÇØ¾ß ÇÑ´Ù. */
+            /* Volatile tableì— ëŒ€í•œ refine ìž‘ì—…ì€
+               Service ë‹¨ê³„ì—ì„œ ì´ë£¨ì–´ì§„ë‹¤. ë”°ë¼ì„œ ì—¬ê¸°ì„œëŠ” skip í•œë‹¤.
+               í•˜ì§€ë§Œ ìœ„ drop flagì— ëŒ€í•œ ì²˜ë¦¬ëŠ” ë©”ëª¨ë¦¬ í…Œì´ë¸”ê³¼
+               ê³µí†µìœ¼ë¡œ ì²˜ë¦¬í•´ì•¼ í•œë‹¤. */
             if( SMI_TABLE_TYPE_IS_VOLATILE( sCurTable ) == ID_TRUE )
             {
                 continue;
@@ -350,7 +350,7 @@ smapRebuildJobItem smapManager::mJobItemHeader;
 IDE_RC smapManager::doIt(SInt aLoaderCnt)
 {
     /* ------------------------------------------------
-     *  [1] Normal Table¿¡ ´ëÇØ RefineDB¸¦ ¼öÇà
+     *  [1] Normal Tableì— ëŒ€í•´ RefineDBë¥¼ ìˆ˜í–‰
      * ----------------------------------------------*/
     smapChildMgr  * sLoadMgr    = NULL;
     smxTrans      * sTrans      = NULL;
@@ -400,10 +400,10 @@ IDE_RC smapManager::doIt(SInt aLoaderCnt)
     IDE_TEST(sLoadMgr->waitToStart() != IDE_SUCCESS);
     IDE_TEST_RAISE(sLoadMgr->join() != IDE_SUCCESS, thr_join_error);
     IDE_TEST(sLoadMgr->destroy() != IDE_SUCCESS);
-    /* BUG-40933 thread ÇÑ°è»óÈ²¿¡¼­ FATAL¿¡·¯ ³»Áö ¾Êµµ·Ï ¼öÁ¤
-     * thread¸¦ ÇÏ³ªµµ »ý¼ºÇÏÁö ¸øÇÏ¿© ABORTµÈ °æ¿ì¿¡
-     * smapChildMgr thread join ÈÄ ±× °á°ú¸¦ È®ÀÎÇÏ¿©
-     * ABORT¿¡·¯¸¦ ³¾ ¼ö ÀÖµµ·Ï ÇÑ´Ù. */
+    /* BUG-40933 thread í•œê³„ìƒí™©ì—ì„œ FATALì—ëŸ¬ ë‚´ì§€ ì•Šë„ë¡ ìˆ˜ì •
+     * threadë¥¼ í•˜ë‚˜ë„ ìƒì„±í•˜ì§€ ëª»í•˜ì—¬ ABORTëœ ê²½ìš°ì—
+     * smapChildMgr thread join í›„ ê·¸ ê²°ê³¼ë¥¼ í™•ì¸í•˜ì—¬
+     * ABORTì—ëŸ¬ë¥¼ ë‚¼ ìˆ˜ ìžˆë„ë¡ í•œë‹¤. */
     IDE_TEST(sLoadMgr->getResult() == ID_FALSE);
 
     IDE_TEST(iduMemMgr::free(sLoadMgr)
@@ -412,7 +412,7 @@ IDE_RC smapManager::doIt(SInt aLoaderCnt)
     sLoadMgr = NULL;
 
     /* ------------------------------------------------
-     *  [2] Catalog Table¿¡ ´ëÇØ RefineDB¸¦ ¼öÇà
+     *  [2] Catalog Tableì— ëŒ€í•´ RefineDBë¥¼ ìˆ˜í–‰
      * ----------------------------------------------*/
     IDE_TEST( smxTransMgr::alloc( (smxTrans**)&sTrans ) != IDE_SUCCESS );
     IDE_TEST( sTrans->begin( NULL,

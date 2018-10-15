@@ -27,8 +27,8 @@
  *
  *  Primitive Mutex Implementations
  *
- *  => ¸ğµç ÇÃ·§ÆûÀº ¾Æ·¡ÀÇ 3°³ÀÇ Define°ú 3°³ÀÇ ÇÔ¼ö¸¦ ±¸ÇöÇÏ¸é,
- *     ÀÚµ¿À¸·Î LatchÀÇ µ¿ÀÛÀÌ ±¸ÇöµÇµµ·Ï µÇ¾î ÀÖ´Ù.
+ *  => ëª¨ë“  í”Œë«í¼ì€ ì•„ë˜ì˜ 3ê°œì˜ Defineê³¼ 3ê°œì˜ í•¨ìˆ˜ë¥¼ êµ¬í˜„í•˜ë©´,
+ *     ìë™ìœ¼ë¡œ Latchì˜ ë™ì‘ì´ êµ¬í˜„ë˜ë„ë¡ ë˜ì–´ ìˆë‹¤.
  *  Wrappers Implementations
  *
  *  - Used Symbol
@@ -53,7 +53,7 @@ extern "C" {
 
 static IDE_RC iduNativeInitializeStatic()
 {
-    /* Å©±â°¡ º¯ÇÒ °æ¿ì È®ÀÎ ¿ä¸Á. mMutex[128] */
+    /* í¬ê¸°ê°€ ë³€í•  ê²½ìš° í™•ì¸ ìš”ë§. mMutex[128] */
     IDE_DCASSERT( ID_SIZEOF(iduNativeMutexObj) <= 128);
 
     return IDE_SUCCESS;

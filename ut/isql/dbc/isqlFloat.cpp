@@ -29,14 +29,14 @@ IDE_RC isqlFloat::CheckFormat( UChar       * aFmt,
 {
 /***********************************************************************
  *
- * Description : SET NUMFORMAT fmt ¸í·ÉÀÇ fmt °ËÁõ
- *               mtcfTo_char.cÀÇ mtfToCharInterface_checkFormat È£Ãâ
+ * Description : SET NUMFORMAT fmt ëª…ë ¹ì˜ fmt ê²€ì¦
+ *               mtcfTo_char.cì˜ mtfToCharInterface_checkFormat í˜¸ì¶œ
  *
  * Implementation :
  *
- * @param[in]  aFmt : ÀÔ·ÂµÈ Æ÷¸Ë
- * @param[in]  aFmtLen : aFmtÀÇ ¹®ÀÚ¿­ ±æÀÌ
- * @param[out] aToken : ´Ù¸¥ ÇÔ¼ö¿¡¼­ »ç¿ëµÉ number format token
+ * @param[in]  aFmt : ì…ë ¥ëœ í¬ë§·
+ * @param[in]  aFmtLen : aFmtì˜ ë¬¸ìì—´ ê¸¸ì´
+ * @param[out] aToken : ë‹¤ë¥¸ í•¨ìˆ˜ì—ì„œ ì‚¬ìš©ë  number format token
  *
 ***********************************************************************/
     IDE_TEST( mtfToCharInterface_checkFormat( aFmt,
@@ -61,18 +61,18 @@ IDE_RC isqlFloat::ToChar( SChar       * aDst,
 {
 /***********************************************************************
  *
- * Description : number µ¥ÀÌÅÍÀÇ Ç¥½Ã Çü½Ä º¯È¯
- *               mtcfTo_char.cÀÇ mtfToCharInterface_mtfTo_char È£Ãâ
+ * Description : number ë°ì´í„°ì˜ í‘œì‹œ í˜•ì‹ ë³€í™˜
+ *               mtcfTo_char.cì˜ mtfToCharInterface_mtfTo_char í˜¸ì¶œ
  *
  * Implementation :
  *
- * @param[out] aDst : º¯È¯µÈ ¹®ÀÚ¿­
- * @param[in]  aSrc : ¹®ÀÚ¿­·Î Ç¥ÇöµÈ number µ¥ÀÌÅÍ
- * @param[in]  aSrcLen : aSrcÀÇ ¹®ÀÚ¿­ ±æÀÌ
- * @param[in]  aFmt : ÀÔ·ÂµÈ Æ÷¸Ë
- * @param[in]  aFmtLen : aFmtÀÇ ¹®ÀÚ¿­ ±æÀÌ
+ * @param[out] aDst : ë³€í™˜ëœ ë¬¸ìì—´
+ * @param[in]  aSrc : ë¬¸ìì—´ë¡œ í‘œí˜„ëœ number ë°ì´í„°
+ * @param[in]  aSrcLen : aSrcì˜ ë¬¸ìì—´ ê¸¸ì´
+ * @param[in]  aFmt : ì…ë ¥ëœ í¬ë§·
+ * @param[in]  aFmtLen : aFmtì˜ ë¬¸ìì—´ ê¸¸ì´
  * @param[in]  aToken : number format token
- * @param[in]  aCurrency : ÇØ´ç ¼¼¼ÇÀÇ NLS_ISO_CURRENCY, NLS_CURRENCY,
+ * @param[in]  aCurrency : í•´ë‹¹ ì„¸ì…˜ì˜ NLS_ISO_CURRENCY, NLS_CURRENCY,
  *                         NLS_NUMERIC_CHARACTERS
  *
 ***********************************************************************/
@@ -83,7 +83,7 @@ IDE_RC isqlFloat::ToChar( SChar       * aDst,
     mtdNumericType * sSrcValue;
     mtdCharType    * sDstValue;
     mtdCharType    * sFmtValue;
-    SChar            sSrcBuf[ID_SIZEOF(UInt) + FLOAT_SIZE]; // mtcCharType->len + isqlÀÇ FLOAT »çÀÌÁî
+    SChar            sSrcBuf[ID_SIZEOF(UInt) + FLOAT_SIZE]; // mtcCharType->len + isqlì˜ FLOAT ì‚¬ì´ì¦ˆ
     SChar            sDstBuf[ID_SIZEOF(UInt) + MTC_TO_CHAR_MAX_PRECISION];
     SChar            sFmtBuf[ID_SIZEOF(UInt) + WORD_LEN];
     mtcStack         sStack[3];
@@ -111,14 +111,14 @@ IDE_RC isqlFloat::ToChar( SChar       * aDst,
                 0 )
             != ACI_SUCCESS );
 
-    /* BUGBUG mtcInitializeColumn¿¡¼­ precision Á¤º¸¸¦
-     * ¼³Á¤ÇÏÁö ¾ÊÀ¸¹Ç·Î °­Á¦·Î ¼³Á¤.
-     * mtcInitializeColumn¸¦ ¼öÁ¤ÇÒ ¼öµµ ÀÖÀ¸³ª ÆÇ´Ü ºÒ°¡ */
+    /* BUGBUG mtcInitializeColumnì—ì„œ precision ì •ë³´ë¥¼
+     * ì„¤ì •í•˜ì§€ ì•Šìœ¼ë¯€ë¡œ ê°•ì œë¡œ ì„¤ì •.
+     * mtcInitializeColumnë¥¼ ìˆ˜ì •í•  ìˆ˜ë„ ìˆìœ¼ë‚˜ íŒë‹¨ ë¶ˆê°€ */
     IDE_TEST( mtcInitializeColumn(
                 &sDstColumn,
                 &mtcdVarchar,
                 1,
-                MTC_TO_CHAR_MAX_PRECISION, /* mtfTo_char.cpp:2224 ÂüÁ¶ */
+                MTC_TO_CHAR_MAX_PRECISION, /* mtfTo_char.cpp:2224 ì°¸ì¡° */
                 0 )
               != ACI_SUCCESS );
     IDE_TEST( mtcInitializeColumn(
@@ -154,7 +154,7 @@ IDE_RC isqlFloat::ToChar( SChar       * aDst,
 
     IDE_EXCEPTION_END;
 
-    /* º¯È¯ ¿À·ù(mtERR_ABORT_INVALID_LENGTH)°¡ ¹ß»ıÇÏ¸é #À¸·Î Ã¤¿öÁÜ */
+    /* ë³€í™˜ ì˜¤ë¥˜(mtERR_ABORT_INVALID_LENGTH)ê°€ ë°œìƒí•˜ë©´ #ìœ¼ë¡œ ì±„ì›Œì¤Œ */
     sColSize = GetColSize( aCurrency, aFmt, aToken ) - 1;
     idlOS::memset( aDst, '#', sColSize );
     aDst[sColSize] = '\0';
@@ -170,12 +170,12 @@ SInt isqlFloat::GetColSize( mtlCurrency  *aCurrency,
 
     if ( idlOS::strncasecmp( aFmt, "RN", 2 ) == 0 )
     {
-        // RN ÀÇ °æ¿ì 15·Î Á¦ÇÑ (mtfTo_char.cpp:2229 ÂüÁ¶)
+        // RN ì˜ ê²½ìš° 15ë¡œ ì œí•œ (mtfTo_char.cpp:2229 ì°¸ì¡°)
         sColSize = 15 + 1;
     }
     else if ( idlOS::strncasecmp( aFmt, "XXXX", 4 ) == 0 )
     {
-        // XXXX ÀÇ °æ¿ì signed integer°ªÀ¸·Î Á¦ÇÑ(mtfTo_char.cpp:2230 ÂüÁ¶)
+        // XXXX ì˜ ê²½ìš° signed integerê°’ìœ¼ë¡œ ì œí•œ(mtfTo_char.cpp:2230 ì°¸ì¡°)
         sColSize = 8 + 1;
     }
     else

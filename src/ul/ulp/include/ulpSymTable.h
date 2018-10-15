@@ -32,18 +32,18 @@ typedef struct ulpSymTElement
 {
     SChar            mName[MAX_HOSTVAR_NAME_SIZE];   // var name
     ulpHostType      mType;                          // variable type
-    idBool           mIsTypedef;                     // typdef·Î Á¤ÀÇµÈ type ÀÌ¸§ÀÌ³Ä?
+    idBool           mIsTypedef;                     // typdefë¡œ ì •ì˜ëœ type ì´ë¦„ì´ëƒ?
     idBool           mIsarray;
     SChar            mArraySize[MAX_NUMBER_LEN];
     SChar            mArraySize2[MAX_NUMBER_LEN];
     idBool           mIsstruct;
     SChar            mStructName[MAX_HOSTVAR_NAME_SIZE];  // struct tag name
-    ulpStructTNode  *mStructLink;             // struct typeÀÏ°æ¿ì link
+    ulpStructTNode  *mStructLink;             // struct typeì¼ê²½ìš° link
     idBool           mIssign;                 // unsigned or signed
     SShort           mPointer;
-    idBool           mAlloc;                  // application¿¡¼­ Á÷Á¢ allocÇß´ÂÁö ¿©ºÎ.
+    idBool           mAlloc;                  // applicationì—ì„œ ì§ì ‘ allocí–ˆëŠ”ì§€ ì—¬ë¶€.
     UInt             mMoreInfo;               // Some additional infomation.
-    /* BUG-28118 : system Çì´õÆÄÀÏµéµµ ÆÄ½ÌµÅ¾ßÇÔ.                                 *
+    /* BUG-28118 : system í—¤ë”íŒŒì¼ë“¤ë„ íŒŒì‹±ë¼ì•¼í•¨.                                 *
      * 8th. problem : can't resolve extern variable type at declaring section. */
     idBool           mIsExtern;               // is extern variable?
 } ulpSymTElement;
@@ -58,7 +58,7 @@ typedef struct ulpSymTNode
 
 /******************************
  * ulpSymTable
- * host variableÀÇ °ü¸®¸¦ À§ÇÑ class
+ * host variableì˜ ê´€ë¦¬ë¥¼ ìœ„í•œ class
  ******************************/
 class ulpSymTable
 {
@@ -71,13 +71,13 @@ public:
 
     void ulpFinalize();
 
-    // host variable¸¦ Symbol Table¿¡ ÀúÀåÇÑ´Ù.
+    // host variableë¥¼ Symbol Tableì— ì €ì¥í•œë‹¤.
     ulpSymTNode *   ulpSymAdd ( ulpSymTElement *aSym );
 
-    // Æ¯Á¤ ÀÌ¸§À» °®´Â º¯¼ö¸¦ symbol table¿¡¼­ °Ë»öÇÑ´Ù.
+    // íŠ¹ì • ì´ë¦„ì„ ê°–ëŠ” ë³€ìˆ˜ë¥¼ symbol tableì—ì„œ ê²€ìƒ‰í•œë‹¤.
     ulpSymTElement *ulpSymLookup( SChar *aName );
 
-    // Æ¯Á¤ ÀÌ¸§À» °®´Â º¯¼ö¸¦ symbol table¿¡¼­ Á¦°ÅÇÑ´Ù.
+    // íŠ¹ì • ì´ë¦„ì„ ê°–ëŠ” ë³€ìˆ˜ë¥¼ symbol tableì—ì„œ ì œê±°í•œë‹¤.
     void            ulpSymDelete( SChar *aName );
 
     // print symbol table for debug
@@ -85,16 +85,16 @@ public:
 
 /* ATTRIBUTES */
 public:
-    SInt mCnt;  // m_SymbolTable¿¡ ÀúÀåµÈ host variablesÀÇ °³¼ö
+    SInt mCnt;  // m_SymbolTableì— ì €ì¥ëœ host variablesì˜ ê°œìˆ˜
     SInt mSize; // max number of symbol table buckets
 
-    ulpSymTNode *mInOrderList;  // structureÀÇ field ¼±¾ğ ¼ø¼­´ë·Î ¼øÈ¸ÇÏ±â À§ÇÑ list.
-                                // ÄÚµå »ı¼º½Ã »ç¿ëµÊ.
+    ulpSymTNode *mInOrderList;  // structureì˜ field ì„ ì–¸ ìˆœì„œëŒ€ë¡œ ìˆœíšŒí•˜ê¸° ìœ„í•œ list.
+                                // ì½”ë“œ ìƒì„±ì‹œ ì‚¬ìš©ë¨.
 
 private:
     UInt     (*mHash) (UChar *);       /* hash function */
 
-    // mSymbolTable : host variablesÀ» ÀúÀåÇÒ symbol table(hash table)
+    // mSymbolTable : host variablesì„ ì €ì¥í•  symbol table(hash table)
     ulpSymTNode *mSymbolTable[MAX_SYMTABLE_ELEMENTS];
 };
 

@@ -48,71 +48,71 @@ class smaLogicalAger : public idtBaseThread
     static smaOidList*  mTailDeleteThread;
 
     static smaLogicalAger *mLogicalAgerList;
-    // »ı¼ºµÈ Logical Ager ThreadÀÇ °¹¼ö
+    // ìƒì„±ëœ Logical Ager Threadì˜ ê°¯ìˆ˜
     static UInt            mCreatedThreadCount;
     
-    // ÇöÀç ¼öÇàÁßÀÎ Logical Ager ThreadÀÇ °¹¼ö
+    // í˜„ì¬ ìˆ˜í–‰ì¤‘ì¸ Logical Ager Threadì˜ ê°¯ìˆ˜
     static UInt            mRunningThreadCount;
 
-    /* BUG-17417 V$AgerÁ¤º¸ÀÇ Add OID°¹¼ö´Â ½ÇÁ¦ Ager°¡
-     *           ÇØ¾ßÇÒ ÀÛ¾÷ÀÇ °¹¼ö°¡ ¾Æ´Ï´Ù.
+    /* BUG-17417 V$Agerì •ë³´ì˜ Add OIDê°¯ìˆ˜ëŠ” ì‹¤ì œ Agerê°€
+     *           í•´ì•¼í•  ì‘ì—…ì˜ ê°¯ìˆ˜ê°€ ì•„ë‹ˆë‹¤.
      *
-     * mMetaMtx¸¦ Ãß°¡ÇÔ. mAgingRequestOIDCntf¸¦ µ¿½Ã¿¡
-     * TransactionÀÌ °»½ÅÇÏ´Â °ÍÀ» ¹æÁöÇÏ±â À§ÇÔ. */
+     * mMetaMtxë¥¼ ì¶”ê°€í•¨. mAgingRequestOIDCntfë¥¼ ë™ì‹œì—
+     * Transactionì´ ê°±ì‹ í•˜ëŠ” ê²ƒì„ ë°©ì§€í•˜ê¸° ìœ„í•¨. */
     static iduMutex        mMetaMtxForAddRequest;
 
-    /* mMetaMtx¸¦ Ãß°¡ÇÔ. mAgingProcessOIDCntf¸¦ µ¿½Ã¿¡
-     * TransactionÀÌ °»½ÅÇÏ´Â °ÍÀ» ¹æÁöÇÏ±â À§ÇÔ. */
+    /* mMetaMtxë¥¼ ì¶”ê°€í•¨. mAgingProcessOIDCntfë¥¼ ë™ì‹œì—
+     * Transactionì´ ê°±ì‹ í•˜ëŠ” ê²ƒì„ ë°©ì§€í•˜ê¸° ìœ„í•¨. */
     static iduMutex        mMetaMtxForAddProcess;
 
-    // Ager°¡ ÃÊ±âÈ­ µÇ¾ú´ÂÁö ¿©ºÎ
+    // Agerê°€ ì´ˆê¸°í™” ë˜ì—ˆëŠ”ì§€ ì—¬ë¶€
     static idBool          mIsInitialized;
 
-    //BUG-17371 [MMDB] AgingÀÌ ¹Ğ¸±°æ¿ì System¿¡ °úºÎÈ­ ¹× AgingÀÌ
-    //                 ¹Ğ¸®´Â Çö»óÀÌ ´õ ½ÉÈ­µÊ
-    // getMinSCN ÇßÀ»¶§, MinSCN ¶§¹®¿¡ ÀÛ¾÷ÇÏÁö ¸øÇÑ È½¼ö
+    //BUG-17371 [MMDB] Agingì´ ë°€ë¦´ê²½ìš° Systemì— ê³¼ë¶€í™” ë° Agingì´
+    //                 ë°€ë¦¬ëŠ” í˜„ìƒì´ ë” ì‹¬í™”ë¨
+    // getMinSCN í–ˆì„ë•Œ, MinSCN ë•Œë¬¸ì— ì‘ì—…í•˜ì§€ ëª»í•œ íšŸìˆ˜
     static ULong           mSleepCountOnAgingCondition;
 
-    /* Logical Ager Thread°¹¼ö¸¦ º¯°æÇÏ·Á´Â Thread°¡
-     * È¹µæÇØ¾ß ÇÏ´Â Mutex
+    /* Logical Ager Threadê°¯ìˆ˜ë¥¼ ë³€ê²½í•˜ë ¤ëŠ” Threadê°€
+     * íšë“í•´ì•¼ í•˜ëŠ” Mutex
      */
     static iduMutex        mAgerCountChangeMutex;
 
-    /* BUG-17474 Index Free Node List¿¡ ´ëÇÑ µ¿½Ã¼º Á¦¾î°¡ µÇ°í ÀÖÁö
-     *           ¾Ê½À´Ï´Ù. */
+    /* BUG-17474 Index Free Node Listì— ëŒ€í•œ ë™ì‹œì„± ì œì–´ê°€ ë˜ê³  ìˆì§€
+     *           ì•ŠìŠµë‹ˆë‹¤. */
     static iduMutex        mFreeNodeListMutex;
     /* TASK-4990 changing the method of collecting index statistics
-     * FreeNode¸¦ ¸·´Â´Ù. NodeÀçÈ°¿ëÀ» ¸·¾Æ¼­ ScanÀ» Æí¸®ÇÏ°Ô ÇÏ±â À§ÇÔÀÌ´Ù.*/
+     * FreeNodeë¥¼ ë§‰ëŠ”ë‹¤. Nodeì¬í™œìš©ì„ ë§‰ì•„ì„œ Scanì„ í¸ë¦¬í•˜ê²Œ í•˜ê¸° ìœ„í•¨ì´ë‹¤.*/
     static SInt            mBlockFreeNodeCount;
 
     /* BUG-35179 Add property for parallel logical ager */
     static UInt            mIsParallelMode;
 
     /* BUG-35179 Add property for parallel logical ager 
-     * drop table, drop tablespace¿ÍÀÇ µ¿½Ã¼º ¹®Á¦¸¦ ÇØ°áÇÏ±â À§ÇØ °¢ threadº°·Î
-     * lockÀ» Ãß°¡ÇÑ´Ù. */
+     * drop table, drop tablespaceì™€ì˜ ë™ì‹œì„± ë¬¸ì œë¥¼ í•´ê²°í•˜ê¸° ìœ„í•´ ê° threadë³„ë¡œ
+     * lockì„ ì¶”ê°€í•œë‹¤. */
     iduMutex               mWaitForNoAccessAftDropTblLock;
 
     smSCN                  mViewSCN;
 
 public:
-    /* TransactionÀÌ Commmit/Abort½Ã Aging List¸¦ ³Ñ±â´Âµ¥
-     * ÀÌ¶§ 1½ÄÁõ°¡ */
+    /* Transactionì´ Commmit/Abortì‹œ Aging Listë¥¼ ë„˜ê¸°ëŠ”ë°
+     * ì´ë•Œ 1ì‹ì¦ê°€ */
     static ULong  mAddCount;
-    /* Ager°¡ List¸¦ ÇÏ³ª¾¿ Ã³¸®ÇÏ´Âµ¥ ÀÌ¶§ 1½ÄÁõ°¡ */
+    /* Agerê°€ Listë¥¼ í•˜ë‚˜ì”© ì²˜ë¦¬í•˜ëŠ”ë° ì´ë•Œ 1ì‹ì¦ê°€ */
     static ULong  mHandledCount;
 
-    /* BUG-17417 V$AgerÁ¤º¸ÀÇ Add OID°¹¼ö´Â ½ÇÁ¦ Ager°¡
-     *           ÇØ¾ßÇÒ ÀÛ¾÷ÀÇ °¹¼ö°¡ ¾Æ´Ï´Ù.
+    /* BUG-17417 V$Agerì •ë³´ì˜ Add OIDê°¯ìˆ˜ëŠ” ì‹¤ì œ Agerê°€
+     *           í•´ì•¼í•  ì‘ì—…ì˜ ê°¯ìˆ˜ê°€ ì•„ë‹ˆë‹¤.
      *
      * mAgingRequestOIDCnt, mAgingProcessedOIDCnt
-     * Ãß°¡ÇÔ.  */
+     * ì¶”ê°€í•¨.  */
 
-    /* TransactionÀÌ Commmit/Abort½Ã OID List¿¡ AgingÀ» ¼öÇàÇØ¾ßÇÒ
-     * OID°¹¼ö°¡ ´õÇØÁø´Ù.*/
+    /* Transactionì´ Commmit/Abortì‹œ OID Listì— Agingì„ ìˆ˜í–‰í•´ì•¼í• 
+     * OIDê°¯ìˆ˜ê°€ ë”í•´ì§„ë‹¤.*/
     static ULong  mAgingRequestOIDCnt;
 
-    /* Ager°¡ OID ListÀÇ OID¸¦ ÇÏ³ª¾¿ Ã³¸®ÇÏ´Âµ¥ ÀÌ¶§ 1½ÄÁõ°¡ */
+    /* Agerê°€ OID Listì˜ OIDë¥¼ í•˜ë‚˜ì”© ì²˜ë¦¬í•˜ëŠ”ë° ì´ë•Œ 1ì‹ì¦ê°€ */
     static ULong  mAgingProcessedOIDCnt;
 
 public:
@@ -130,7 +130,7 @@ public:
     
     static IDE_RC setAger( idBool aValue);
 
-    // Ager°¡ ÃÊ±âÈ­µÇ¾ú´ÂÁö ¿©ºÎ¸¦ ¸®ÅÏÇÑ´Ù.
+    // Agerê°€ ì´ˆê¸°í™”ë˜ì—ˆëŠ”ì§€ ì—¬ë¶€ë¥¼ ë¦¬í„´í•œë‹¤.
     static idBool isInitialized( void );
     
     static IDE_RC block( void );
@@ -162,34 +162,34 @@ public:
 
     static void setOIDListFinished( void* aOIDList, idBool aFlag);
 
-    // AgingÇÒ OID¸¦ °¡¸®Å°´Â Index SlotÀ» Á¦°ÅÇÑ´Ù.
+    // Agingí•  OIDë¥¼ ê°€ë¦¬í‚¤ëŠ” Index Slotì„ ì œê±°í•œë‹¤.
     static IDE_RC deleteIndex(smaOidList            * aOIDList,
                               smaInstantAgingFilter * aAgingFilter,
                               UInt                  * aDidDelOldKey );
 
-    // Instant Aging Filter¸¦ ÃÊ±âÈ­ÇÑ´Ù ( smaDef.h Âü°í )
+    // Instant Aging Filterë¥¼ ì´ˆê¸°í™”í•œë‹¤ ( smaDef.h ì°¸ê³  )
     static void initInstantAgingFilter( smaInstantAgingFilter * sAgingFilter );
 
-    // Aging FilterÁ¶°Ç¿¡ ºÎÇÕÇÏ´ÂÁö Ã¼Å©
+    // Aging Filterì¡°ê±´ì— ë¶€í•©í•˜ëŠ”ì§€ ì²´í¬
     static idBool isAgingFilterTrue( smaInstantAgingFilter * aAgingFilter,
                                      scSpaceID               aTBSID,
                                      smOID                   aTableOID );
     
     
-    // Æ¯Á¤ Tablespace¿¡ ¼ÓÇÑ OID¿¡ ´ëÇØ¼­ Áï½Ã Aging½Ç½Ã
+    // íŠ¹ì • Tablespaceì— ì†í•œ OIDì— ëŒ€í•´ì„œ ì¦‰ì‹œ Agingì‹¤ì‹œ
     static IDE_RC doInstantAgingWithTBS( scSpaceID aTBSID );
     
-    // Æ¯Á¤ Table¿¡ ¼ÓÇÑ OID¿¡ ´ëÇØ¼­ Áï½Ã Aging½Ç½Ã
+    // íŠ¹ì • Tableì— ì†í•œ OIDì— ëŒ€í•´ì„œ ì¦‰ì‹œ Agingì‹¤ì‹œ
     static IDE_RC doInstantAgingWithTable( smOID aTableOID );
     
-    // smaPhysicalAgerÁ¦°Å¿¡ µû¸¥ Ãß°¡ÇÔ¼öµé.
+    // smaPhysicalAgerì œê±°ì— ë”°ë¥¸ ì¶”ê°€í•¨ìˆ˜ë“¤.
     static void addFreeNodes(void*      aFreeNodeList,
                              smnNode*   aFreeNodes);
     /* TASK-4990 changing the method of collecting index statistics
-     * FreeNode¸¦ ¸·´Â´Ù. NodeÀçÈ°¿ëÀ» ¸·¾Æ¼­ TreeLatch ¾øÀÌ
-     * Node¸¦ FullScan ÇÏ±â À§ÇÔÀÌ´Ù. 
-     * ´Ù¸¸ µ¿½Ã¿¡ RebuildStatÀÌ ¿©·µ ¼öÇàµÉ ¼ö ÀÖÀ¸¹Ç·Î,
-     * Block ¿©ºÎ¸¦ Count·Î Á¶È¸ÇÑ´Ù. */
+     * FreeNodeë¥¼ ë§‰ëŠ”ë‹¤. Nodeì¬í™œìš©ì„ ë§‰ì•„ì„œ TreeLatch ì—†ì´
+     * Nodeë¥¼ FullScan í•˜ê¸° ìœ„í•¨ì´ë‹¤. 
+     * ë‹¤ë§Œ ë™ì‹œì— RebuildStatì´ ì—¬ëŸ¿ ìˆ˜í–‰ë  ìˆ˜ ìˆìœ¼ë¯€ë¡œ,
+     * Block ì—¬ë¶€ë¥¼ Countë¡œ ì¡°íšŒí•œë‹¤. */
     static void blockFreeNode()
     {
         IDE_ASSERT( mBlockFreeNodeCount >= 0 );
@@ -222,9 +222,9 @@ public:
     virtual void run();
 
     /*********************************************************************
-     * Description : aOID°¡ dummy OIDÀÎÁö ¹¯´Â´Ù.
+     * Description : aOIDê°€ dummy OIDì¸ì§€ ë¬»ëŠ”ë‹¤.
      *
-     *     BUG-15306À» À§ÇØ Ãß°¡µÈ ÇÔ¼öÀÓ
+     *     BUG-15306ì„ ìœ„í•´ ì¶”ê°€ëœ í•¨ìˆ˜ì„
      *********************************************************************/
     static inline idBool isDummyOID( smaOidList* aOID )
     {
@@ -243,25 +243,25 @@ public:
 
     static void addAgingRequestCnt( ULong aAgingRequestCnt );
 
-    // Ager ThreadÀÇ °¹¼ö¸¦ Æ¯Á¤ °¹¼ö°¡ µÇµµ·Ï »ı¼º,Á¦°ÅÇÑ´Ù.
+    // Ager Threadì˜ ê°¯ìˆ˜ë¥¼ íŠ¹ì • ê°¯ìˆ˜ê°€ ë˜ë„ë¡ ìƒì„±,ì œê±°í•œë‹¤.
     static IDE_RC changeAgerCount( UInt aAgerCount );
 
 private:
-    // Ager Thread¸¦ ÇÏ³ª Ãß°¡ÇÑ´Ù.
+    // Ager Threadë¥¼ í•˜ë‚˜ ì¶”ê°€í•œë‹¤.
     static IDE_RC addOneAger();
     
-    // Ager Thread¸¦ ÇÏ³ª Á¦°ÅÇÑ´Ù.
+    // Ager Threadë¥¼ í•˜ë‚˜ ì œê±°í•œë‹¤.
     static IDE_RC removeOneAger();
 
     static IDE_RC addDummyOID( void );
 
-    // Æ¯Á¤ Table¾ÈÀÇ OID³ª Æ¯Á¤ Tablespace¾ÈÀÇ OID¿¡ ´ëÇØ
-    // Áï½Ã AgingÀ» ½Ç½ÃÇÑ´Ù.
+    // íŠ¹ì • Tableì•ˆì˜ OIDë‚˜ íŠ¹ì • Tablespaceì•ˆì˜ OIDì— ëŒ€í•´
+    // ì¦‰ì‹œ Agingì„ ì‹¤ì‹œí•œë‹¤.
     static IDE_RC agingInstantly( smaInstantAgingFilter * aAgingFilter );
 
     /* BUG-35179 Add property for parallel logical ager 
-     * drop table, drop tablespace¿ÍÀÇ µ¿½Ã¼º ¹®Á¦¸¦ ÇØ°áÇÏ±â À§ÇØ °¢ threadº°·Î
-     * lockÀ» Ãß°¡ÇÑ´Ù. */
+     * drop table, drop tablespaceì™€ì˜ ë™ì‹œì„± ë¬¸ì œë¥¼ í•´ê²°í•˜ê¸° ìœ„í•´ ê° threadë³„ë¡œ
+     * lockì„ ì¶”ê°€í•œë‹¤. */
 
     inline IDE_RC lockWaitForNoAccessAftDropTbl()
     {

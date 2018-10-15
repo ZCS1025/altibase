@@ -65,7 +65,7 @@ public class RealColumn extends AbstractColumn
 
     public int getMaxDisplaySize()
     {
-        // ¿¹Àü JDBC µå¶óÀÌ¹ö ¼Ò½º·ÎºÎÅÍ...
+        // ì˜ˆì „ JDBC ë“œë¼ì´ë²„ ì†ŒìŠ¤ë¡œë¶€í„°...
         return 10;
     }
 
@@ -175,7 +175,7 @@ public class RealColumn extends AbstractColumn
 
     protected BigDecimal getBigDecimalSub() throws SQLException
     {
-        // Á¤¼ö °ªÀÌ¸é ¼Ò¼öÁ¡Àº ¶¼°í ¹ÝÈ¯. ex) 3.0 ==> 3
+        // ì •ìˆ˜ ê°’ì´ë©´ ì†Œìˆ˜ì ì€ ë–¼ê³  ë°˜í™˜. ex) 3.0 ==> 3
         if (Float.compare(mFloatValue, (long)mFloatValue) == 0)
         {
             return new BigDecimal(Long.toString((long)mFloatValue));

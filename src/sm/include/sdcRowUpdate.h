@@ -25,7 +25,7 @@
 #include <sdcDef.h>
 #include <sdcRow.h>
 
-/* row¿¡ ´ëÇÑ undo, redo¸¦ ¼öÇàÇÑ´Ù. */
+/* rowì— ëŒ€í•œ undo, redoë¥¼ ìˆ˜í–‰í•œë‹¤. */
 class sdcRowUpdate
 {
 public:

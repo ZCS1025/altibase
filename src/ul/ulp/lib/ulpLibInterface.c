@@ -23,10 +23,10 @@
 #include <ulpLibInterFuncB.h>
 #include <ulpLibMacro.h>
 
-/* ÃÊ±âÈ­ ÄÚµå°¡ Ã³¸®µÅ¾ßÇÏ´ÂÁö¿¡ ´ëÇÑ flag */
+/* ì´ˆê¸°í™” ì½”ë“œê°€ ì²˜ë¦¬ë¼ì•¼í•˜ëŠ”ì§€ì— ëŒ€í•œ flag */
 acp_bool_t gUlpLibDoInitProc = ACP_TRUE;
 
-/* ÃÊ±âÈ­ ÄÚµå ÇÑ¹øÈ£Ãú¿ï º¸ÀåÇÏ±â À§ÇÑ latch */
+/* ì´ˆê¸°í™” ì½”ë“œ í•œë²ˆí˜¸ì¸¨ìš¸ ë³´ìž¥í•˜ê¸° ìœ„í•œ latch */
 acp_thr_rwlock_t  gUlpLibLatch4Init;
 
 typedef ACI_RC ulpLibInterFunc ( acp_char_t *aConnName,
@@ -69,7 +69,7 @@ static
 void ulpLibInit( void )
 {
     /* Initialize for latch */
-    /* Fix BUG-27644 Apre ÀÇ ulpConnMgr::ulpInitialzie, finalize°¡ Àß¸øµÊ. */
+    /* Fix BUG-27644 Apre ì˜ ulpConnMgr::ulpInitialzie, finalizeê°€ ìž˜ëª»ë¨. */
     ACE_ASSERT( ulnInitialize() == ACI_SUCCESS );
 
     /* init grobal latch for the first call of ulpDoEmsql function */
@@ -113,16 +113,16 @@ ulpSqlstate *ulpGetSqlstate( void )
 EXTERN_C
 void ulpDoEmsql( acp_char_t * aConnName, ulpSqlstmt *aSqlstmt, void *aReserved )
 {
-    /* ÃÊ±âÈ­ ÇÔ¼ö¸¦ È£ÃâÇÏ±âÀ§ÇÔ.*/
+    /* ì´ˆê¸°í™” í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•˜ê¸°ìœ„í•¨.*/
     static acp_thr_once_t sOnceControl = ACP_THR_ONCE_INITIALIZER;
-    /* library ÃÊ±âÈ­ ÇÔ¼ö ulpLibInit È£ÃâÇÔ.*/
+    /* library ì´ˆê¸°í™” í•¨ìˆ˜ ulpLibInit í˜¸ì¶œí•¨.*/
     acpThrOnce( &sOnceControl, ulpLibInit );
 
     /*
      *    Initilaize
      */
 
-    /* ulpDoEmsqlÀÌ Ã³À½ È£ÃâµÉ °æ¿ì¿¡¸¸ Ã³¸®µÇ°ÔÇÔ. */
+    /* ulpDoEmsqlì´ ì²˜ìŒ í˜¸ì¶œë  ê²½ìš°ì—ë§Œ ì²˜ë¦¬ë˜ê²Œí•¨. */
     if ( gUlpLibDoInitProc == ACP_TRUE )
     {
         /* get write lock */
@@ -132,7 +132,7 @@ void ulpDoEmsql( acp_char_t * aConnName, ulpSqlstmt *aSqlstmt, void *aReserved )
         /* do some initial job */
         if ( gUlpLibDoInitProc == ACP_TRUE )
         {
-            /* BUG-28209 : AIX ¿¡¼­ c compiler·Î ÄÄÆÄÀÏÇÏ¸é »ý¼ºÀÚ È£Ãâ¾ÈµÊ. */
+            /* BUG-28209 : AIX ì—ì„œ c compilerë¡œ ì»´íŒŒì¼í•˜ë©´ ìƒì„±ìž í˜¸ì¶œì•ˆë¨. */
             /* initialize ConnMgr class*/
             ACE_ASSERT( ulpInitializeConnMgr() == ACI_SUCCESS );
         }
@@ -146,7 +146,7 @@ void ulpDoEmsql( acp_char_t * aConnName, ulpSqlstmt *aSqlstmt, void *aReserved )
      */
     if ( (acp_bool_t) aSqlstmt->ismt == ACP_TRUE )
     {
-        /* BUG-43429 ÇÑ¹øÄÑÁö¸é ²¨ÁöÁö ¾Ê´Â´Ù. */
+        /* BUG-43429 í•œë²ˆì¼œì§€ë©´ êº¼ì§€ì§€ ì•ŠëŠ”ë‹¤. */
         gUlpLibOption.mIsMultiThread = ACP_TRUE;
     }
     else

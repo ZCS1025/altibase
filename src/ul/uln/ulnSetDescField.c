@@ -48,14 +48,14 @@ static ACI_RC ulnSetDescHeaderField(ulnFnContext *aFnContext,
              *
              *          SQL_DESC_ARRAY_SIZE
              *
-             * ±×·¯³ª ´©°¡ 20¾ï°³ ÀÌ»óÀÇ ¿ø¼Ò°¡ ÀÖ´Â ¹è¿­À» array ·Î ¹ÙÀÎµå ÇÏ°Ú´Â°¡.
-             * ¸ÅÇÎ¸¸ ½ÃÅ°°í ³»ºÎ¿¡¼­´Â ´Ü¼øÈ÷ acp_uint32_t ¸¦ »ç¿ëÇÏµµ·Ï ÇÑ´Ù.
+             * ê·¸ëŸ¬ë‚˜ ëˆ„ê°€ 20ì–µê°œ ì´ìƒì˜ ì›ì†Œê°€ ìˆëŠ” ë°°ì—´ì„ array ë¡œ ë°”ì¸ë“œ í•˜ê² ëŠ”ê°€.
+             * ë§¤í•‘ë§Œ ì‹œí‚¤ê³  ë‚´ë¶€ì—ì„œëŠ” ë‹¨ìˆœíˆ acp_uint32_t ë¥¼ ì‚¬ìš©í•˜ë„ë¡ í•œë‹¤.
              *
-             * ulnStmtSetAttrRowArraySize() ÇÔ¼öÀÇ ÁÖ¼® ÂüÁ¶
+             * ulnStmtSetAttrRowArraySize() í•¨ìˆ˜ì˜ ì£¼ì„ ì°¸ì¡°
              */
-            //BUG-21253 ÇÑ¹ø¿¡ array insertÇÏ´Â ¾çÀ» Á¦ÇÑÇØ¾ß ÇÕ´Ï´Ù.
-            // array insertÀÎ °æ¿ì´Â descTypeÀÌ ULN_DESC_TYPE_APDÀÎ °æ¿ì¿¡ ÇØ´çÇÑ´Ù.
-            // array fetchÀÎ °æ¿ì¿¡´Â size¸¦ Á¦ÇÑÇÏÁö ¾Ê´Â´Ù.
+            //BUG-21253 í•œë²ˆì— array insertí•˜ëŠ” ì–‘ì„ ì œí•œí•´ì•¼ í•©ë‹ˆë‹¤.
+            // array insertì¸ ê²½ìš°ëŠ” descTypeì´ ULN_DESC_TYPE_APDì¸ ê²½ìš°ì— í•´ë‹¹í•œë‹¤.
+            // array fetchì¸ ê²½ìš°ì—ëŠ” sizeë¥¼ ì œí•œí•˜ì§€ ì•ŠëŠ”ë‹¤.
             if( aDescType == ULN_DESC_TYPE_APD )
             {
                 ACI_TEST_RAISE( sValue > ACP_UINT16_MAX,
@@ -70,7 +70,7 @@ static ACI_RC ulnSetDescHeaderField(ulnFnContext *aFnContext,
 
         case SQL_DESC_COUNT:
             /*
-             * BUGBUG : ÀÌ°Å ÁÖÀÇÇØ¾ß ÇÑ´Ù! DescRec °¹¼ö¸¦ ´Ã¿©¾ß ÇÏ³ª? -_-;
+             * BUGBUG : ì´ê±° ì£¼ì˜í•´ì•¼ í•œë‹¤! DescRec ê°¯ìˆ˜ë¥¼ ëŠ˜ì—¬ì•¼ í•˜ë‚˜? -_-;
              */
             ACI_TEST_RAISE(aDescType == ULN_DESC_TYPE_IRD, LABEL_READ_ONLY_FIELD);
             break;
@@ -130,8 +130,8 @@ static ACI_RC ulnSetDescRecordField(ulnFnContext *aFnContext,
     sDescRec  = ulnDescGetDescRec(sDesc, aRecNumber);
 
     // fix BUG-24380
-    // ¹ÙÀÎµå ¾ÈÇÑ ·¹ÄÚµå ³Ñ¹ö¿¡ ´ëÇØ¼­ SetDescField() ¸¦ ÇÏ¸é
-    // »õ DescRec ¸¦ »ı¼ºÇØ¼­ ¼¼ÆÃ
+    // ë°”ì¸ë“œ ì•ˆí•œ ë ˆì½”ë“œ ë„˜ë²„ì— ëŒ€í•´ì„œ SetDescField() ë¥¼ í•˜ë©´
+    // ìƒˆ DescRec ë¥¼ ìƒì„±í•´ì„œ ì„¸íŒ…
 
     if (sDescRec == NULL)
     {
@@ -143,14 +143,14 @@ static ACI_RC ulnSetDescRecordField(ulnFnContext *aFnContext,
             case ULN_DESC_TYPE_ARD:
                 sStmtDesc = sStmt->mAttrArd;
                 break;
-            // fix BUG-20745 BIND_OFFSET_PTR Áö¿ø
+            // fix BUG-20745 BIND_OFFSET_PTR ì§€ì›
             case ULN_DESC_TYPE_IRD:
                 sStmtDesc = sStmt->mAttrIrd;
                 break;
             case ULN_DESC_TYPE_IPD:
                 sStmtDesc = sStmt->mAttrIpd;
                 break;
-            // fix BUG-24874 APD¸¦ »õ·Î ÇÒ´ç½Ã execute½Ã ¿¡·¯ ¹ß»ı
+            // fix BUG-24874 APDë¥¼ ìƒˆë¡œ í• ë‹¹ì‹œ executeì‹œ ì—ëŸ¬ ë°œìƒ
             case ULN_DESC_TYPE_APD:
             default:
                 ACI_RAISE(LABEL_INVALID_DESC_INDEX);
@@ -158,7 +158,7 @@ static ACI_RC ulnSetDescRecordField(ulnFnContext *aFnContext,
         }
 
         //
-        // Desc record ÁØºñ
+        // Desc record ì¤€ë¹„
         //
         ACI_TEST_RAISE(ulnBindArrangeNewDescRec(sStmtDesc, aRecNumber, &sDescRec)
                        != ACI_SUCCESS,
@@ -168,7 +168,7 @@ static ACI_RC ulnSetDescRecordField(ulnFnContext *aFnContext,
         ulnDescRecSetParamInOut(sDescRec, ULN_PARAM_INOUT_TYPE_MAX);
 
         //
-        // Desc record ¸¦ Stmt Desc¿¡ ¸Å´Ş±â
+        // Desc record ë¥¼ Stmt Descì— ë§¤ë‹¬ê¸°
         //
         ACI_TEST_RAISE(ulnDescAddDescRec(sStmtDesc, sDescRec) != ACI_SUCCESS,
                        LABEL_NOT_ENOUGH_MEM);
@@ -181,9 +181,9 @@ static ACI_RC ulnSetDescRecordField(ulnFnContext *aFnContext,
     {
         case SQL_DESC_DATA_PTR:
             /*
-             * BUGBUG : IRD, IPD ÀÏ ¶§ mDataPtr À» ¼¼ÆÃÇÏ´Â °ÍÀº, consistency check ¸¦ prompt
-             *          ÇÑ´Ù°Å³ª ¹¹¶ó°Å³ª ½Ã²ô·´°Ô M$ odbc ¸Å´º¾ó¿¡¼­ ¶°µé¾î ´ë´Âµ¥,
-             *          ÀÏ´ÜÀº ±×³É °¡ÀÚ.
+             * BUGBUG : IRD, IPD ì¼ ë•Œ mDataPtr ì„ ì„¸íŒ…í•˜ëŠ” ê²ƒì€, consistency check ë¥¼ prompt
+             *          í•œë‹¤ê±°ë‚˜ ë­ë¼ê±°ë‚˜ ì‹œë„ëŸ½ê²Œ M$ odbc ë§¤ë‰´ì–¼ì—ì„œ ë– ë“¤ì–´ ëŒ€ëŠ”ë°,
+             *          ì¼ë‹¨ì€ ê·¸ëƒ¥ ê°€ì.
              */
             if(aDescType == ULN_DESC_TYPE_ARD || aDescType == ULN_DESC_TYPE_APD)
             {
@@ -319,7 +319,7 @@ static ACI_RC ulnSetDescRecordField(ulnFnContext *aFnContext,
             else
             {
                 /*
-                 * ÇÔ¼ö ÁøÀÔ½Ã Ã¼Å©ÇÑ´Ù.
+                 * í•¨ìˆ˜ ì§„ì…ì‹œ ì²´í¬í•œë‹¤.
                  */
             }
             break;

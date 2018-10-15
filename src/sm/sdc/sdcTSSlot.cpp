@@ -20,7 +20,7 @@
  *
  * Description :
  *
- * º» ÆÄÀÏÀº transaction status slot¿¡ ´ëÇÑ ±¸ÇöÆÄÀÏÀÔ´Ï´Ù.
+ * ë³¸ íŒŒì¼ì€ transaction status slotì— ëŒ€í•œ êµ¬í˜„íŒŒì¼ì…ë‹ˆë‹¤.
  *
  **********************************************************************/
 
@@ -32,9 +32,9 @@
 
 
 /***********************************************************************
- * Description : TSS ÃÊ±âÈ­ ¹× SDR_SDC_BIND_TSS ·Î±ë
+ * Description : TSS ì´ˆê¸°í™” ë° SDR_SDC_BIND_TSS ë¡œê¹…
  *
- * [ ÀÎÀÚ ]
+ * [ ì¸ì ]
  *
  **********************************************************************/
 IDE_RC sdcTSSlot::logAndInit( sdrMtx    * aMtx,
@@ -94,7 +94,7 @@ IDE_RC sdcTSSlot::logAndInit( sdrMtx    * aMtx,
 }
 
 /***********************************************************************
- * Description :  Commit SCN ¼³Á¤
+ * Description :  Commit SCN ì„¤ì •
  **********************************************************************/
 IDE_RC sdcTSSlot::setCommitSCN( sdrMtx    * aMtx,
                                 sdcTSS    * aSlotPtr,
@@ -133,7 +133,7 @@ IDE_RC sdcTSSlot::setCommitSCN( sdrMtx    * aMtx,
 }
 
 /***********************************************************************
- * Description : TSS »óÅÂ¼³Á¤
+ * Description : TSS ìƒíƒœì„¤ì •
  **********************************************************************/
 IDE_RC sdcTSSlot::setState( sdrMtx     * aMtx,
                             sdcTSS     * aSlotPtr,

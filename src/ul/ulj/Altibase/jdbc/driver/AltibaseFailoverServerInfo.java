@@ -33,7 +33,7 @@ class AltibaseFailoverServerInfo
     }
 
     /**
-     * Á¢¼ÓÇÒ ¼­¹öÀÇ host °ªÀ» ¾ò´Â´Ù.
+     * ì ‘ì†í•  ì„œë²„ì˜ host ê°’ì„ ì–»ëŠ”ë‹¤.
      *
      * @return host
      */
@@ -43,7 +43,7 @@ class AltibaseFailoverServerInfo
     }
 
     /**
-     * Á¢¼ÓÇÒ ¼­¹öÀÇ port number¸¦ ¾ò´Â´Ù.
+     * ì ‘ì†í•  ì„œë²„ì˜ port numberë¥¼ ì–»ëŠ”ë‹¤.
      *
      * @return port number
      */
@@ -52,12 +52,12 @@ class AltibaseFailoverServerInfo
         return mPortNo;
     }
 
-    // #region ¼­¹ö »ç¿ë ½ÃÀÛ, Á¢¼Ó ½ÇÆĞ ½Ã°£ Á¤º¸
+    // #region ì„œë²„ ì‚¬ìš© ì‹œì‘, ì ‘ì† ì‹¤íŒ¨ ì‹œê°„ ì •ë³´
 
     /**
-     * ¼­¹ö Á¢¼Ó¿¡ ½ÇÆĞÇÑ ½Ã°£À» ¾ò´Â´Ù.
+     * ì„œë²„ ì ‘ì†ì— ì‹¤íŒ¨í•œ ì‹œê°„ì„ ì–»ëŠ”ë‹¤.
      *
-     * @return ¼­¹ö Á¢¼Ó¿¡ ½ÇÆĞÇÑ ½Ã°£
+     * @return ì„œë²„ ì ‘ì†ì— ì‹¤íŒ¨í•œ ì‹œê°„
      */
     public long getFailStartTime()
     {
@@ -66,7 +66,7 @@ class AltibaseFailoverServerInfo
     }
 
     /**
-     * Á¢¼ÓÇÒ ¼­¹öÀÇ DB NameÀ» ¾ò´Â´Ù.
+     * ì ‘ì†í•  ì„œë²„ì˜ DB Nameì„ ì–»ëŠ”ë‹¤.
      *
      * @return DB Name
      */
@@ -83,14 +83,14 @@ class AltibaseFailoverServerInfo
 
     // #endregion
 
-    // #region Object ¿À¹ö¶óÀÌµå
+    // #region Object ì˜¤ë²„ë¼ì´ë“œ
 
     /**
-     * alternate servers string Æ÷¸Ë¿¡ ¸Â´Â ¹®ÀÚ¿­ °ªÀ» ¾ò´Â´Ù.
+     * alternate servers string í¬ë§·ì— ë§ëŠ” ë¬¸ìì—´ ê°’ì„ ì–»ëŠ”ë‹¤.
      */
     public String toString()
     {
-        /* alternateservers Æ÷¸Ë¿¡ ¸ÂÃã */
+        /* alternateservers í¬ë§·ì— ë§ì¶¤ */
         String sDbName = (StringUtils.isEmpty(mDbName)) ? "" : "/" + mDbName;
         return mServer + ":" + mPortNo + sDbName;
     }
@@ -101,7 +101,7 @@ class AltibaseFailoverServerInfo
     }
 
     /**
-     * Server¿Í Port, Database NameÀÌ °°ÀºÁö È®ÀÎÇÑ´Ù.
+     * Serverì™€ Port, Database Nameì´ ê°™ì€ì§€ í™•ì¸í•œë‹¤.
      */
     public boolean equals(Object aObj)
     {

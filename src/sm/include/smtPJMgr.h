@@ -60,13 +60,13 @@ public:
     
     virtual void run();
     
-//     virtual IDE_RC restartClient(SInt    aChild, // Child ¹øÈ£
-//                                  idBool  isInit, // ÃÊ±âÈ­½Ã È£Ãâ?
-//                                  idBool *aJobAssigned  // ÀÏÀÌ ÇÒ´çµÇ¾ú³ª?
+//     virtual IDE_RC restartClient(SInt    aChild, // Child ë²ˆí˜¸
+//                                  idBool  isInit, // ì´ˆê¸°í™”ì‹œ í˜¸ì¶œ?
+//                                  idBool *aJobAssigned  // ì¼ì´ í• ë‹¹ë˜ì—ˆë‚˜?
 //                                  ) = 0;
     
-    virtual IDE_RC assignJob(SInt    aChild, // Child ¹øÈ£
-                             idBool *aJobAssigned  // ÀÏÀÌ ÇÒ´çµÇ¾ú³ª?
+    virtual IDE_RC assignJob(SInt    aChild, // Child ë²ˆí˜¸
+                             idBool *aJobAssigned  // ì¼ì´ í• ë‹¹ë˜ì—ˆë‚˜?
                              ) = 0;
     idBool    getResult() { return mLocalSuccess; }
     UInt      getErrorNo() { return mErrorNo ; }

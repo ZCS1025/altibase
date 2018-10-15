@@ -71,12 +71,12 @@ static ACI_RC ulnParamProcess_DATA(ulnFnContext      *aFnContext,
     if (aUserIndLenPair->mLengthPtr == NULL)
     {
         /*
-         * ODBC spec. SQLBindParameter() StrLen_or_IndPtr argument ÀÇ ¼³¸í :
-         * ÀÌ°Ô NULL ÀÌ¸é ¸ğµç input parameter °¡ non-null ÀÌ°í,
-         * char, binary µ¥ÀÌÅÍ´Â null-terminated µÈ °ÍÀÌ¶ó°í °¡Á¤ÇØ¾ß ÇÑ´Ù.
+         * ODBC spec. SQLBindParameter() StrLen_or_IndPtr argument ì˜ ì„¤ëª… :
+         * ì´ê²Œ NULL ì´ë©´ ëª¨ë“  input parameter ê°€ non-null ì´ê³ ,
+         * char, binary ë°ì´í„°ëŠ” null-terminated ëœ ê²ƒì´ë¼ê³  ê°€ì •í•´ì•¼ í•œë‹¤.
          *
-         * BUG-13704 SES ÀÇ -n ¿É¼ÇÀ» À§ÇÑ Ã³¸®. ÀÚ¼¼ÇÑ ³»¿ëÀº
-         *           SQL_ATTR_INPUT_NTS °¡ ¼±¾ğµÈ Çì´õÆÄÀÏÀÇ ÁÖ¼®À» Âü°íÇÒ °Í.
+         * BUG-13704 SES ì˜ -n ì˜µì…˜ì„ ìœ„í•œ ì²˜ë¦¬. ìì„¸í•œ ë‚´ìš©ì€
+         *           SQL_ATTR_INPUT_NTS ê°€ ì„ ì–¸ëœ í—¤ë”íŒŒì¼ì˜ ì£¼ì„ì„ ì°¸ê³ í•  ê²ƒ.
          */
         if (ulnStmtGetAttrInputNTS(sStmt) == ACP_TRUE)
         {
@@ -93,8 +93,8 @@ static ACI_RC ulnParamProcess_DATA(ulnFnContext      *aFnContext,
     }
 
     /*
-     * ÀÌ ÇÔ¼ö´Â output parameter ¿¡ ´ëÇØ¼­´Â Àı´ë·Î È£ÃâµÇÁö ¾Ê´Â´Ù.
-     *      --> µû¶ó¼­ in/out Å¸ÀÔ Ã¼Å© ÇÒ ÇÊ¿ä ¾øÀÌ ¾È½ÉÇÏ°í PARAM DATA IN ÇØµµ µÈ´Ù.
+     * ì´ í•¨ìˆ˜ëŠ” output parameter ì— ëŒ€í•´ì„œëŠ” ì ˆëŒ€ë¡œ í˜¸ì¶œë˜ì§€ ì•ŠëŠ”ë‹¤.
+     *      --> ë”°ë¼ì„œ in/out íƒ€ì… ì²´í¬ í•  í•„ìš” ì—†ì´ ì•ˆì‹¬í•˜ê³  PARAM DATA IN í•´ë„ ëœë‹¤.
      */
 
     ACI_TEST( aDescRecApd->mBindInfo.mParamDataInBuildAnyFunc( aFnContext,
@@ -115,7 +115,7 @@ static ACI_RC ulnParamProcess_DATA(ulnFnContext      *aFnContext,
                                     &aDescRecIpd->mMeta) != ACI_SUCCESS);
 
     ulnStmtChunkReset( sStmt );
-    // BUGBUG : ÀÌ°Å ¾ø¾Öµµ µÇ³ª?
+    // BUGBUG : ì´ê±° ì—†ì• ë„ ë˜ë‚˜?
     // aDescRecApd->mState = ULN_DR_ST_INITIAL;
     sState = 0;
     ulnCharSetFinalize(&sCharSet);
@@ -155,10 +155,10 @@ static ACI_RC ulnParamProcess_DATA_AT_EXEC(ulnFnContext      *aFnContext,
             ACI_RAISE(LABEL_INVALID_STATE);
             break;
 
-        case ULN_PD_ST_CREATED:     /* SQLExecute() ¿¡¼­ µé¾î¿È */
-        case ULN_PD_ST_NEED_DATA:   /* SQLParamData() ¿¡¼­ µé¾î¿È */
+        case ULN_PD_ST_CREATED:     /* SQLExecute() ì—ì„œ ë“¤ì–´ì˜´ */
+        case ULN_PD_ST_NEED_DATA:   /* SQLParamData() ì—ì„œ ë“¤ì–´ì˜´ */
             /*
-             * ÃÖÃÊÀÇ SQLPutData() È£Ãâ½Ã ¾Æ·¡ÀÇ »óÅÂÀüÀÌ ¹ß»ı :
+             * ìµœì´ˆì˜ SQLPutData() í˜¸ì¶œì‹œ ì•„ë˜ì˜ ìƒíƒœì „ì´ ë°œìƒ :
              *      ULN_PD_ST_NEED_DATA --> ULN_PD_ST_ACCUMULATING_DATA
              */
             ulnPDContextSetState(sPDContext, ULN_PD_ST_NEED_DATA);
@@ -168,9 +168,9 @@ static ACI_RC ulnParamProcess_DATA_AT_EXEC(ulnFnContext      *aFnContext,
         case ULN_PD_ST_ACCUMULATING_DATA:
 
             /*
-             * SQLPutData() ¸¦ ÀÌ¿ëÇØ¼­ µ¥ÀÌÅÍ¸¦ ½×°í ÀÖ´Â state ¿¡
-             * SQLParamData() °¡ È£ÃâµÇ¾úÀ¸¹Ç·Î ÀÌ°÷À¸·Î µé¾î¿È.
-             * SQLParamData() È£ÃâÀº µ¥ÀÌÅÍ ÀûÀç°¡ ³¡³µ´Ù´Â ÀÇ¹ÌÀÌ¹Ç·Î ÀûÀçµÈ µ¥ÀÌÅÍ Àü¼Û.
+             * SQLPutData() ë¥¼ ì´ìš©í•´ì„œ ë°ì´í„°ë¥¼ ìŒ“ê³  ìˆëŠ” state ì—
+             * SQLParamData() ê°€ í˜¸ì¶œë˜ì—ˆìœ¼ë¯€ë¡œ ì´ê³³ìœ¼ë¡œ ë“¤ì–´ì˜´.
+             * SQLParamData() í˜¸ì¶œì€ ë°ì´í„° ì ì¬ê°€ ëë‚¬ë‹¤ëŠ” ì˜ë¯¸ì´ë¯€ë¡œ ì ì¬ëœ ë°ì´í„° ì „ì†¡.
              */
 
             sAccumulatedDataLength        = ulnPDContextGetDataLength(sPDContext);
@@ -238,15 +238,15 @@ static ACI_RC ulnParamProcess_ERROR(ulnFnContext      *aFnContext,
     ACP_UNUSED(aRowNumber);
 
     /*
-     * ÀÌ ÇÔ¼ö´Â DATA AT EXEC ÆÄ¶ó¹ÌÅÍ¸¦ output À¸·Î ¹ÙÀÎµù ÇßÀ» ¶§
-     * È£ÃâµÇ´Â ÇÔ¼öÀÌ´Ù. ¹«Á¶°Ç ¿¡·¯¸¦ ¸®ÅÏÇÏ°í ÂĞ³½´Ù.
+     * ì´ í•¨ìˆ˜ëŠ” DATA AT EXEC íŒŒë¼ë¯¸í„°ë¥¼ output ìœ¼ë¡œ ë°”ì¸ë”© í–ˆì„ ë•Œ
+     * í˜¸ì¶œë˜ëŠ” í•¨ìˆ˜ì´ë‹¤. ë¬´ì¡°ê±´ ì—ëŸ¬ë¥¼ ë¦¬í„´í•˜ê³  ì«‘ë‚¸ë‹¤.
      */
 
     /*
-     * Note : OUTPUT ÆÄ¶ó¹ÌÅÍÀÏ ¶§¿¡´Â StrLenOrIndPtr À» ¹«½ÃÇÏ¹Ç·Î
-     *        DATA AT EXEC ÀÎÁö ¹ºÁö ¾Ë µµ¸®°¡ ¾ø´Ù.
+     * Note : OUTPUT íŒŒë¼ë¯¸í„°ì¼ ë•Œì—ëŠ” StrLenOrIndPtr ì„ ë¬´ì‹œí•˜ë¯€ë¡œ
+     *        DATA AT EXEC ì¸ì§€ ë­”ì§€ ì•Œ ë„ë¦¬ê°€ ì—†ë‹¤.
      *
-     *        ±×³É ¸®ÅÏ.
+     *        ê·¸ëƒ¥ ë¦¬í„´.
      */
 
     return ACI_SUCCESS;
@@ -274,10 +274,10 @@ static ulnParamProcessFunc * const gUlnParamProcessorTable[ULN_PARAM_TYPE_MAX] =
 ACI_RC ulnBindDataWriteRow(ulnFnContext *aFnContext,
                            ulnPtContext *aPtContext,
                            ulnStmt      *aStmt,
-                           acp_uint32_t  aRowNumber)  /* 0 º£ÀÌ½º */
+                           acp_uint32_t  aRowNumber)  /* 0 ë² ì´ìŠ¤ */
 {
     acp_uint32_t sParamNumber;
-    acp_uint16_t sNumberOfParams;      /* ÆÄ¶ó¹ÌÅÍÀÇ °¹¼ö */
+    acp_uint16_t sNumberOfParams;      /* íŒŒë¼ë¯¸í„°ì˜ ê°¯ìˆ˜ */
 
     ulnDescRec  *sDescRecIpd;
     ulnDescRec  *sDescRecApd;
@@ -297,7 +297,7 @@ ACI_RC ulnBindDataWriteRow(ulnFnContext *aFnContext,
         aStmt->mProcessingParamNumber = sParamNumber;
 
         /*
-         * APD, IPD È¹µæ
+         * APD, IPD íšë“
          */
         sDescRecApd = ulnStmtGetApdRec(aStmt, sParamNumber);
         ACI_TEST_RAISE(sDescRecApd == NULL, LABEL_NOT_BOUND);
@@ -306,7 +306,7 @@ ACI_RC ulnBindDataWriteRow(ulnFnContext *aFnContext,
         ACI_TEST_RAISE(sDescRecIpd == NULL, LABEL_MEM_MANAGE_ERR);
 
         /*
-         * sParamType °áÁ¤
+         * sParamType ê²°ì •
          */
 
         sParamType   = 0;
@@ -324,8 +324,8 @@ ACI_RC ulnBindDataWriteRow(ulnFnContext *aFnContext,
         if (ulnDescRecIsDataAtExecParam(sDescRecApd, aRowNumber) == ACP_TRUE)
         {
             /*
-             * BUG-16491 output param ÀÇ °æ¿ì data at exec ¶ó´Â °ÍÀÇ ÀÇ¹Ì°¡ ¾ø´Ù.
-             *           StrLenOrInd Æ÷ÀÎÅÍ°¡ °¡¸®Å°´Â °÷ÀÇ °ªÀº Ãâ·Â Àü¿ëÀÌ±â ¶§¹®ÀÌ´Ù.
+             * BUG-16491 output param ì˜ ê²½ìš° data at exec ë¼ëŠ” ê²ƒì˜ ì˜ë¯¸ê°€ ì—†ë‹¤.
+             *           StrLenOrInd í¬ì¸í„°ê°€ ê°€ë¦¬í‚¤ëŠ” ê³³ì˜ ê°’ì€ ì¶œë ¥ ì „ìš©ì´ê¸° ë•Œë¬¸ì´ë‹¤.
              */
 
             if (sInOutType != ULN_PARAM_INOUT_TYPE_OUTPUT)
@@ -346,7 +346,7 @@ ACI_RC ulnBindDataWriteRow(ulnFnContext *aFnContext,
         }
 
         /*
-         * sParamType ¿¡ µû¸¥ ÆÄ¶ó¹ÌÅÍ Ã³¸® ÇÔ¼ö È£Ãâ
+         * sParamType ì— ë”°ë¥¸ íŒŒë¼ë¯¸í„° ì²˜ë¦¬ í•¨ìˆ˜ í˜¸ì¶œ
          */
 
         ACI_TEST(gUlnParamProcessorTable[sParamType](aFnContext,
@@ -358,19 +358,19 @@ ACI_RC ulnBindDataWriteRow(ulnFnContext *aFnContext,
                                                      aRowNumber) != ACI_SUCCESS);
 
         /*
-         * OUTPUT PARAMETER ÀÎ °æ¿ì ¸¶¹«¸®
+         * OUTPUT PARAMETER ì¸ ê²½ìš° ë§ˆë¬´ë¦¬
          */
 
         if (sInOutType == ULN_PARAM_INOUT_TYPE_OUTPUT ||
             sInOutType == ULN_PARAM_INOUT_TYPE_IN_OUT)
         {
             /*
-             * Note : ¸¸¾à, »ç¿ëÀÚ°¡ ÁöÁ¤ÇÑ OUTPUT È¤Àº in/out ÆÄ¶ó¹ÌÅÍ¿¡ ´ëÇØ¼­
-             *        ¼­¹ö°¡ BINDDATA OUT À» ÁÖÁö ¾ÊÀ¸¸é StrLen_or_IndPtr °¡
-             *        °¡¸®Å°´Â °÷¿¡ SQL_NULL_DATA ¸¦ ³Ö¾îÁÖ¾î¾ß ÇÑ´Ù.
-             *        ÀÏÀÏÀÌ BINDDATA OUT À» Ã¼Å©ÇÏ·Á¸é º¹ÀâÇÏ¹Ç·Î ÀÏ´Ü
-             *        BINDDATA IN À» ÇÑ ÈÄ¿¡ ¹Ì¸® SQL_NULL_DATA ·Î ÃÊ±âÈ­ ½ÃÄÑµĞ´Ù.
-             *        Á» ÀÖ´Ù°¡ BINDDATA OUT ÀÌ ¿À¸é ÇØ´ç ¸Ş¸ğ¸®¿¡ ±æÀÌ¸¦ ¼¼ÆÃÇÒ °ÍÀÌ´Ù.
+             * Note : ë§Œì•½, ì‚¬ìš©ìê°€ ì§€ì •í•œ OUTPUT í˜¹ì€ in/out íŒŒë¼ë¯¸í„°ì— ëŒ€í•´ì„œ
+             *        ì„œë²„ê°€ BINDDATA OUT ì„ ì£¼ì§€ ì•Šìœ¼ë©´ StrLen_or_IndPtr ê°€
+             *        ê°€ë¦¬í‚¤ëŠ” ê³³ì— SQL_NULL_DATA ë¥¼ ë„£ì–´ì£¼ì–´ì•¼ í•œë‹¤.
+             *        ì¼ì¼ì´ BINDDATA OUT ì„ ì²´í¬í•˜ë ¤ë©´ ë³µì¡í•˜ë¯€ë¡œ ì¼ë‹¨
+             *        BINDDATA IN ì„ í•œ í›„ì— ë¯¸ë¦¬ SQL_NULL_DATA ë¡œ ì´ˆê¸°í™” ì‹œì¼œë‘”ë‹¤.
+             *        ì¢€ ìˆë‹¤ê°€ BINDDATA OUT ì´ ì˜¤ë©´ í•´ë‹¹ ë©”ëª¨ë¦¬ì— ê¸¸ì´ë¥¼ ì„¸íŒ…í•  ê²ƒì´ë‹¤.
              */
             ulnBindSetUserIndLenValue(&sUserIndLenPair, SQL_NULL_DATA);
         }
@@ -396,8 +396,8 @@ ACI_RC ulnBindDataWriteRow(ulnFnContext *aFnContext,
     ACI_EXCEPTION(LABEL_NOT_BOUND)
     {
         /*
-         * BUGBUG: ÇØ´ç ÆÄ¶ó¹ÌÅÍ¿¡ ´ëÇÑ ¹ÙÀÎµå Á¤º¸°¡ ¾ø´Ù.
-         * ¾î¶² ¿¡·¯¸¦ ÇØ¾ß ÇÒÁö Á¤ÀÇµÇÁö ¾Ê¾Æ¼­ general error ·Î Çß´Ù.
+         * BUGBUG: í•´ë‹¹ íŒŒë¼ë¯¸í„°ì— ëŒ€í•œ ë°”ì¸ë“œ ì •ë³´ê°€ ì—†ë‹¤.
+         * ì–´ë–¤ ì—ëŸ¬ë¥¼ í•´ì•¼ í• ì§€ ì •ì˜ë˜ì§€ ì•Šì•„ì„œ general error ë¡œ í–ˆë‹¤.
          */
         ulnErrorExtended(aFnContext,
                          aRowNumber + 1,
@@ -413,7 +413,7 @@ ACI_RC ulnBindDataWriteRow(ulnFnContext *aFnContext,
 /*
  * ==============================================
  *
- * BIND PARAM DATA OUT Ã³¸®
+ * BIND PARAM DATA OUT ì²˜ë¦¬
  *
  * ==============================================
  */
@@ -430,14 +430,14 @@ static ACI_RC ulnBindStoreLobLocator(ulnFnContext *aFnContext,
     acp_uint8_t  *sSrc  = aData;
     acp_uint8_t  *sDest = (acp_uint8_t*)(&sLobLocatorID);
     /*
-     * »ç¿ëÀÚ°¡ memory È¤Àº file ·Î ¹ÙÀÎµåÇÑ lob column or parameter
-     * Àü´ŞµÇ¾î ¿Â lob locator ´Â IRD ³»ºÎ¿¡ ÇÒ´çÇØ µĞ lob array ÀÇ ulnLob ±¸Á¶Ã¼¿¡
-     * ¼¼ÆÃµÈ´Ù.
+     * ì‚¬ìš©ìê°€ memory í˜¹ì€ file ë¡œ ë°”ì¸ë“œí•œ lob column or parameter
+     * ì „ë‹¬ë˜ì–´ ì˜¨ lob locator ëŠ” IRD ë‚´ë¶€ì— í• ë‹¹í•´ ë‘” lob array ì˜ ulnLob êµ¬ì¡°ì²´ì—
+     * ì„¸íŒ…ëœë‹¤.
      *
-     * ÀÌ ÇÔ¼ö¿¡¼­´Â ulnLob À» ÃÊ±âÈ­ÇÏ°í, locator ¸¦ ¼¼ÆÃÇÑ´Ù.
+     * ì´ í•¨ìˆ˜ì—ì„œëŠ” ulnLob ì„ ì´ˆê¸°í™”í•˜ê³ , locator ë¥¼ ì„¸íŒ…í•œë‹¤.
      *
-     * ulnExecSendLobParamData() ÇÔ¼ö¿¡¼­ »ç¿ëÀÚ°¡ ¹ÙÀÎµåÇÑ µ¥ÀÌÅÍ¸¦
-     * ¼­¹ö·Î Àü¼ÛÇÑ´Ù.
+     * ulnExecSendLobParamData() í•¨ìˆ˜ì—ì„œ ì‚¬ìš©ìê°€ ë°”ì¸ë“œí•œ ë°ì´í„°ë¥¼
+     * ì„œë²„ë¡œ ì „ì†¡í•œë‹¤.
      */
     sLob = ulnDescRecGetLobElement(aDescRec, aRowNumber);
     ACI_TEST_RAISE(sLob == NULL, LABEL_MEM_MANAGE_ERR);
@@ -450,7 +450,7 @@ static ACI_RC ulnBindStoreLobLocator(ulnFnContext *aFnContext,
                    LABEL_INVALID_LOB_TYPE);
 
     /*
-     * locator ¾ò±â
+     * locator ì–»ê¸°
      */
     // proj_2160 cm_type removal
     CM_ENDIAN_ASSIGN8(sDest, sSrc);
@@ -469,7 +469,7 @@ static ACI_RC ulnBindStoreLobLocator(ulnFnContext *aFnContext,
     }
 
     /*
-     * locator ¼¼ÆÃ
+     * locator ì„¸íŒ…
      */
     ACI_TEST_RAISE(sLob->mOp->mSetLocator(aFnContext, sLob, sLobLocatorID) != ACI_SUCCESS,
                    LABEL_INVALID_LOB_STATE);
@@ -527,7 +527,7 @@ static ACI_RC ulnBindProcssOutParamData(ulnFnContext   *aFnContext,
     ulnStmt          *sStmt = aFnContext->mHandle.mStmt;
 
     /*
-     * »ç¿ëÀÚ ¹öÆÛ ÁÖ¼Ò °ª ¼¼ÆÃ
+     * ì‚¬ìš©ì ë²„í¼ ì£¼ì†Œ ê°’ ì„¸íŒ…
      */
     sAppBuffer.mCTYPE        = ulnMetaGetCTYPE(&aDescRecApd->mMeta);
     sAppBuffer.mBuffer       = (acp_uint8_t *)ulnBindCalcUserDataAddr(aDescRecApd,
@@ -539,7 +539,7 @@ static ACI_RC ulnBindProcssOutParamData(ulnFnContext   *aFnContext,
 
     /*
      * --------------------------------------
-     * ÀÓ½Ã ulnColumn ¿¡ ¼ö½ÅÇÑ µ¥ÀÌÅÍ º¹»ç
+     * ì„ì‹œ ulnColumn ì— ìˆ˜ì‹ í•œ ë°ì´í„° ë³µì‚¬
      * --------------------------------------
      */
     sColumn = aDescRecIpd->mOutParamBuffer;
@@ -552,7 +552,7 @@ static ACI_RC ulnBindProcssOutParamData(ulnFnContext   *aFnContext,
 
     if ( sStmt->mShardStmtCxt.mIsMtDataFetch == ACP_TRUE )
     {
-        /* BUG-45392 MT type ±×´ë·Î º¹»ç */
+        /* BUG-45392 MT type ê·¸ëŒ€ë¡œ ë³µì‚¬ */
         ACI_TEST( ulsdDataCopyFromMT(aFnContext,
                                      aData,
                                      sAppBuffer.mBuffer,
@@ -570,7 +570,7 @@ static ACI_RC ulnBindProcssOutParamData(ulnFnContext   *aFnContext,
 
     /*
      * --------------------------------------
-     * conversion ÇÏ¿© »ç¿ëÀÚ¹öÆÛ¿¡ º¹»ç
+     * conversion í•˜ì—¬ ì‚¬ìš©ìë²„í¼ì— ë³µì‚¬
      * --------------------------------------
      */
 
@@ -584,9 +584,9 @@ static ACI_RC ulnBindProcssOutParamData(ulnFnContext   *aFnContext,
             /*
              * 22002 :
              *
-             * NULL ÀÌ ÄÃ·³¿¡ fetch µÇ¾î ¿Í¼­, SQL_NULL_DATA ¸¦ »ç¿ëÀÚ°¡ ÁöÁ¤ÇÑ
-             * StrLen_or_IndPtr ¿¡ ½á Áà¾ß ÇÏ´Âµ¥, ÀÌ³à¼®ÀÌ NULL Æ÷ÀÎÅÍÀÌ´Ù.
-             * ±×·²¶§¿¡ ¹ß»ı½ÃÄÑ ÁÖ´Â ¿¡·¯.
+             * NULL ì´ ì»¬ëŸ¼ì— fetch ë˜ì–´ ì™€ì„œ, SQL_NULL_DATA ë¥¼ ì‚¬ìš©ìê°€ ì§€ì •í•œ
+             * StrLen_or_IndPtr ì— ì¨ ì¤˜ì•¼ í•˜ëŠ”ë°, ì´ë…€ì„ì´ NULL í¬ì¸í„°ì´ë‹¤.
+             * ê·¸ëŸ´ë•Œì— ë°œìƒì‹œì¼œ ì£¼ëŠ” ì—ëŸ¬.
              */
             ulnErrorExtended(aFnContext,
                              aRowNumber,
@@ -599,7 +599,7 @@ static ACI_RC ulnBindProcssOutParamData(ulnFnContext   *aFnContext,
         if ( sStmt->mShardStmtCxt.mIsMtDataFetch == ACP_FALSE )
         {
             /*
-             * conversion ÇÔ¼ö ±¸ÇÏ±â
+             * conversion í•¨ìˆ˜ êµ¬í•˜ê¸°
              */
             sFilter = ulnConvGetFilter(aDescRecApd->mMeta.mCTYPE,
                                        (ulnMTypeID)sColumn->mMtype);
@@ -615,7 +615,7 @@ static ACI_RC ulnBindProcssOutParamData(ulnFnContext   *aFnContext,
             }
             else
             {
-                // BUGBUG : param status ptr Àº?
+                // BUGBUG : param status ptr ì€?
                 // sAppBuffer.mColumnStatus = ULN_ROW_ERROR;
             }
         }
@@ -673,7 +673,7 @@ ACI_RC ulnCallbackParamDataOutList(cmiProtocolContext *aPtContext,
     ulnDbc        *sDbc;
     ulnStmt       *sStmt      = sFnContext->mHandle.mStmt;
     acp_uint16_t   sNumberOfParams;
-    // BUG-25315 [CodeSonar] ÃÊ±âÈ­µÇÁö ¾Ê´Â º¯¼ö »ç¿ë
+    // BUG-25315 [CodeSonar] ì´ˆê¸°í™”ë˜ì§€ ì•ŠëŠ” ë³€ìˆ˜ ì‚¬ìš©
     acp_uint16_t   i = 0;
     acp_uint32_t   sInOutType;
     acp_bool_t     sIsLob;
@@ -702,7 +702,7 @@ ACI_RC ulnCallbackParamDataOutList(cmiProtocolContext *aPtContext,
 
     if (cmiGetLinkImpl(aPtContext) == CMI_LINK_IMPL_IPCDA)
     {
-        /* PROJ-2616 ¸Ş¸ğ¸®¿¡ ¹Ù·Î Á¢±ÙÇÏ¿© µ¥ÀÌÅÍ¸¦ ÀĞµµ·Ï ÇÑ´Ù. */
+        /* PROJ-2616 ë©”ëª¨ë¦¬ì— ë°”ë¡œ ì ‘ê·¼í•˜ì—¬ ë°ì´í„°ë¥¼ ì½ë„ë¡ í•œë‹¤. */
         ACI_TEST_RAISE( cmiSplitReadIPCDA(aPtContext,
                                           sRowSize,
                                           &sRow,
@@ -747,11 +747,11 @@ ACI_RC ulnCallbackParamDataOutList(cmiProtocolContext *aPtContext,
             {
                 /*
                  * ------------------------------------
-                 * LOB locator ¼ö½Å (mem bound lob)
+                 * LOB locator ìˆ˜ì‹  (mem bound lob)
                  * ------------------------------------
                  *
-                 * BindInfo ¸¦ Àü¼ÛÇÏ¸é¼­ ÇÒ´çÇÑ lob array ¿¡¼­ ulnLob À» ÇÏ³ª °¡Á®¿Í¼­
-                 * Initialize ÇÏ°í, locator ¼¼ÆÃ.
+                 * BindInfo ë¥¼ ì „ì†¡í•˜ë©´ì„œ í• ë‹¹í•œ lob array ì—ì„œ ulnLob ì„ í•˜ë‚˜ ê°€ì ¸ì™€ì„œ
+                 * Initialize í•˜ê³ , locator ì„¸íŒ….
                  */
                 ACI_TEST(ulnBindStoreLobLocator(sFnContext,
                                                 sDescRecIpd,
@@ -768,7 +768,7 @@ ACI_RC ulnCallbackParamDataOutList(cmiProtocolContext *aPtContext,
             {
                 /*
                  * ------------------------------------------------------------
-                 * LOB ¾Æ´Ñ, ÀÏ¹İÀûÀÎ output parameter : locator binding Æ÷ÇÔ
+                 * LOB ì•„ë‹Œ, ì¼ë°˜ì ì¸ output parameter : locator binding í¬í•¨
                  * ------------------------------------------------------------
                  */
 
@@ -817,13 +817,13 @@ ACI_RC ulnCallbackParamDataOutList(cmiProtocolContext *aPtContext,
     }
 
     /*
-     * Note : ACI_SUCCESS ¸¦ ¸®ÅÏÇÏ´Â °ÍÀº ¹ö±×°¡ ¾Æ´Ï´Ù.
-     *        cm ÀÇ Äİ¹éÇÔ¼ö°¡ ACI_FAILURE ¸¦ ¸®ÅÏÇÏ¸é communication error ·Î Ãë±ŞµÇ¾î ¹ö¸®±â
-     *        ¶§¹®ÀÌ´Ù.
+     * Note : ACI_SUCCESS ë¥¼ ë¦¬í„´í•˜ëŠ” ê²ƒì€ ë²„ê·¸ê°€ ì•„ë‹ˆë‹¤.
+     *        cm ì˜ ì½œë°±í•¨ìˆ˜ê°€ ACI_FAILURE ë¥¼ ë¦¬í„´í•˜ë©´ communication error ë¡œ ì·¨ê¸‰ë˜ì–´ ë²„ë¦¬ê¸°
+     *        ë•Œë¬¸ì´ë‹¤.
      *
-     *        ¾îÂîµÇ¾ú´ø °£¿¡, Function Context ÀÇ ¸â¹öÀÎ mSqlReturn ¿¡ ÇÔ¼ö ¸®ÅÏ°ªÀÌ
-     *        ÀúÀåµÇ°Ô µÉ °ÍÀÌ¸ç, uln ÀÇ cmi ¸ÅÇÎ ÇÔ¼öÀÎ ulnReadProtocol() ÇÔ¼ö ¾È¿¡¼­
-     *        Function Context ÀÇ mSqlReturn À» Ã¼Å©ÇØ¼­ ÀûÀıÇÑ Á¶Ä¡¸¦ ÃëÇÏ°Ô µÉ °ÍÀÌ´Ù.
+     *        ì–´ì°Œë˜ì—ˆë˜ ê°„ì—, Function Context ì˜ ë©¤ë²„ì¸ mSqlReturn ì— í•¨ìˆ˜ ë¦¬í„´ê°’ì´
+     *        ì €ì¥ë˜ê²Œ ë  ê²ƒì´ë©°, uln ì˜ cmi ë§¤í•‘ í•¨ìˆ˜ì¸ ulnReadProtocol() í•¨ìˆ˜ ì•ˆì—ì„œ
+     *        Function Context ì˜ mSqlReturn ì„ ì²´í¬í•´ì„œ ì ì ˆí•œ ì¡°ì¹˜ë¥¼ ì·¨í•˜ê²Œ ë  ê²ƒì´ë‹¤.
      */
     return ACI_SUCCESS;
 }
@@ -858,7 +858,7 @@ ACI_RC ulnCallbackParamDataInListResult(cmiProtocolContext *aProtocolContext,
 
     /*
      * -----------------------
-     * ResultSet Count ¼³Á¤
+     * ResultSet Count ì„¤ì •
      * -----------------------
      */
 
@@ -866,7 +866,7 @@ ACI_RC ulnCallbackParamDataInListResult(cmiProtocolContext *aProtocolContext,
 
     /*
      * -----------------------
-     * new result »ı¼º, ¸Å´Ş±â
+     * new result ìƒì„±, ë§¤ë‹¬ê¸°
      * -----------------------
      */
 
@@ -950,7 +950,7 @@ ACI_RC ulnCallbackParamDataInListResult(cmiProtocolContext *aProtocolContext,
     ACI_EXCEPTION_END;
 
     /*
-     * Note : callback ÀÌ¹Ç·Î ACI_SUCCESS ¸¦ ¸®ÅÏÇØ¾ß ÇÑ´Ù.
+     * Note : callback ì´ë¯€ë¡œ ACI_SUCCESS ë¥¼ ë¦¬í„´í•´ì•¼ í•œë‹¤.
      */
 
     return ACI_SUCCESS;
@@ -958,7 +958,7 @@ ACI_RC ulnCallbackParamDataInListResult(cmiProtocolContext *aProtocolContext,
 
 ACI_RC ulnParamProcess_INFOs(ulnFnContext *aFnContext,
                              ulnPtContext *aPtContext,
-                             acp_uint32_t  aRowNumber ) /* 0 º£ÀÌ½º */
+                             acp_uint32_t  aRowNumber ) /* 0 ë² ì´ìŠ¤ */
 {
     ulnDbc       *sDbc               = NULL;
     ulnStmt      *sStmt              = aFnContext->mHandle.mStmt;
@@ -969,7 +969,7 @@ ACI_RC ulnParamProcess_INFOs(ulnFnContext *aFnContext,
     acp_uint32_t  sParamNumber;
     acp_uint32_t  sParamMaxSize = 0;
     acp_uint8_t   *sTemp;
-    acp_uint16_t  sNumberOfParams;      /* ÆÄ¶ó¹ÌÅÍÀÇ °¹¼ö */
+    acp_uint16_t  sNumberOfParams;      /* íŒŒë¼ë¯¸í„°ì˜ ê°¯ìˆ˜ */
     ulnDescRec   *sDescRecIpd;
     ulnDescRec   *sDescRecApd;
 
@@ -1007,7 +1007,7 @@ ACI_RC ulnParamProcess_INFOs(ulnFnContext *aFnContext,
         }
     }
 
-    /* BUG-42096 BindInfo°¡ º¯°æµÇÁö ¾Ê¾Æµµ ParamSetSize º¯°æÀ» Ã¼Å©ÇØ¾ß ÇÑ´Ù. */
+    /* BUG-42096 BindInfoê°€ ë³€ê²½ë˜ì§€ ì•Šì•„ë„ ParamSetSize ë³€ê²½ì„ ì²´í¬í•´ì•¼ í•œë‹¤. */
     ACI_TEST( ulnStmtAllocChunk( sStmt,
                                  sParamMaxSize * ulnStmtGetAttrParamsetSize(sStmt),
                                  &sTemp )
@@ -1040,8 +1040,8 @@ ACI_RC ulnParamProcess_INFOs(ulnFnContext *aFnContext,
         else
         {
             /*
-             * output parameter ÀÇ °æ¿ì param data out ÀÌ ¼ö½ÅµÉ ¶§ ¼ö½ÅµÈ data ¸¦ ÀÓ½Ã·Î
-             * ÀúÀåÇÏ±â À§ÇÑ ulnColumn À» À§ÇÑ °ø°£À» ¹Ì¸® ÇÒ´çÇØ µĞ´Ù.
+             * output parameter ì˜ ê²½ìš° param data out ì´ ìˆ˜ì‹ ë  ë•Œ ìˆ˜ì‹ ëœ data ë¥¼ ì„ì‹œë¡œ
+             * ì €ì¥í•˜ê¸° ìœ„í•œ ulnColumn ì„ ìœ„í•œ ê³µê°„ì„ ë¯¸ë¦¬ í• ë‹¹í•´ ë‘”ë‹¤.
              */
             if (sInOutType == ULN_PARAM_INOUT_TYPE_OUTPUT ||
                 sInOutType == ULN_PARAM_INOUT_TYPE_IN_OUT)
@@ -1131,23 +1131,23 @@ ACI_RC ulnParamProcess_INFOs(ulnFnContext *aFnContext,
 
 /*********************************************************************
  * ulnParamProcess_IPCDA_DATAs
- *  : »ç¿ëÀÚÀÇ ÀÔ·Â µ¥ÀÌÅÍ¸¦ °øÀ¯ ¸Ş¸ğ¸®¿¡ ±â·ÏÇÏ´Â ÇÔ¼ö.
- *    »ç¿ëÀÚÀÇ µ¥ÀÌÅÍ¸¦ È®ÀÎÇÏ¿© NONE-ENDIAN Å¸ÀÔÀ¸·Î
- *    °øÀ¯ ¸Ş¸ğ¸®¿¡ ¾´´Ù.
+ *  : ì‚¬ìš©ìì˜ ì…ë ¥ ë°ì´í„°ë¥¼ ê³µìœ  ë©”ëª¨ë¦¬ì— ê¸°ë¡í•˜ëŠ” í•¨ìˆ˜.
+ *    ì‚¬ìš©ìì˜ ë°ì´í„°ë¥¼ í™•ì¸í•˜ì—¬ NONE-ENDIAN íƒ€ì…ìœ¼ë¡œ
+ *    ê³µìœ  ë©”ëª¨ë¦¬ì— ì“´ë‹¤.
  *
  * aFnContext [IN] - ulnFnContext
  * aPtContext [IN] - ulnPtContext
- * aRowNumber [IN] - acp_uint32_t, Row ¹øÈ£
- * aDataSize  [OUT] - acp_uint64_t, ROW¸¦ ±¸¼ºÇÏ´Â µ¥ÀÌÅÍÀÇ ÀüÃ¼ Å©±â.
+ * aRowNumber [IN] - acp_uint32_t, Row ë²ˆí˜¸
+ * aDataSize  [OUT] - acp_uint64_t, ROWë¥¼ êµ¬ì„±í•˜ëŠ” ë°ì´í„°ì˜ ì „ì²´ í¬ê¸°.
  *********************************************************************/
 ACI_RC ulnParamProcess_IPCDA_DATAs(ulnFnContext       *aFnContext,
                                    ulnPtContext       *aPtContext,
                                    acp_uint32_t        aRowNumber,
-                                   acp_uint64_t       *aDataSize) /* 0 º£ÀÌ½º */
+                                   acp_uint64_t       *aDataSize) /* 0 ë² ì´ìŠ¤ */
 {
     ulnStmt          *sStmt = aFnContext->mHandle.mStmt;
     acp_uint32_t      sParamNumber;
-    acp_uint16_t      sNumberOfParams;      /* ÆÄ¶ó¹ÌÅÍÀÇ °¹¼ö */
+    acp_uint16_t      sNumberOfParams;      /* íŒŒë¼ë¯¸í„°ì˜ ê°¯ìˆ˜ */
     ulnDescRec       *sDescRecIpd;
     ulnDescRec       *sDescRecApd;
     acp_uint16_t      sUserDataLength = 0;
@@ -1282,8 +1282,8 @@ ACI_RC ulnParamProcess_IPCDA_DATAs(ulnFnContext       *aFnContext,
     ACI_EXCEPTION_END;
 
     /* proj_2160 cm_type removal */
-    /* parameter ÇÑ°³¿¡¼­ ¿¡·¯°¡ ³ª¸é, row ´ÜÀ§·Î Ã³¸®ÇØ¾ß ÇÏ¹Ç·Î */
-    /* cursor¸¦ ÀÌÀü row À§Ä¡(È¤Àº ÆÄ¶ó¹ÌÅÍ ¾ø´Â »óÅÂ)·Î µ¹¸°´Ù. */
+    /* parameter í•œê°œì—ì„œ ì—ëŸ¬ê°€ ë‚˜ë©´, row ë‹¨ìœ„ë¡œ ì²˜ë¦¬í•´ì•¼ í•˜ë¯€ë¡œ */
+    /* cursorë¥¼ ì´ì „ row ìœ„ì¹˜(í˜¹ì€ íŒŒë¼ë¯¸í„° ì—†ëŠ” ìƒíƒœ)ë¡œ ëŒë¦°ë‹¤. */
     sStmt->mChunk.mCursor = sOrgChunkCursor;
 
     return ACI_FAILURE;
@@ -1291,11 +1291,11 @@ ACI_RC ulnParamProcess_IPCDA_DATAs(ulnFnContext       *aFnContext,
 
 ACI_RC ulnParamProcess_DATAs(ulnFnContext *aFnContext,
                              ulnPtContext *aPtContext,
-                             acp_uint32_t  aRowNumber ) /* 0 º£ÀÌ½º */
+                             acp_uint32_t  aRowNumber ) /* 0 ë² ì´ìŠ¤ */
 {
     ulnStmt               *sStmt = aFnContext->mHandle.mStmt;
     acp_uint32_t           sParamNumber;
-    acp_uint16_t           sNumberOfParams;      /* ÆÄ¶ó¹ÌÅÍÀÇ °¹¼ö */
+    acp_uint16_t           sNumberOfParams;      /* íŒŒë¼ë¯¸í„°ì˜ ê°¯ìˆ˜ */
     ulnDescRec            *sDescRecIpd;
     ulnDescRec            *sDescRecApd;
 
@@ -1305,8 +1305,8 @@ ACI_RC ulnParamProcess_DATAs(ulnFnContext *aFnContext,
     acp_sint32_t           sUserOctetLength;
 
     /*
-     * PROJ-1697 : SQL_C_BIT´Â ³»ºÎÀûÀ¸·Î Å¬¶óÀÌ¾ğÆ®¿¡¼­ º¯È¯(SQL_*)ÀÌ
-     * ÀÌ·ç¾îÁö±â ¶§¹®¿¡, º¯È¯¿¡ ÇÊ¿äÇÑ º°µµÀÇ °ø°£ÀÌ ÇÊ¿äÇÏ´Ù.
+     * PROJ-1697 : SQL_C_BITëŠ” ë‚´ë¶€ì ìœ¼ë¡œ í´ë¼ì´ì–¸íŠ¸ì—ì„œ ë³€í™˜(SQL_*)ì´
+     * ì´ë£¨ì–´ì§€ê¸° ë•Œë¬¸ì—, ë³€í™˜ì— í•„ìš”í•œ ë³„ë„ì˜ ê³µê°„ì´ í•„ìš”í•˜ë‹¤.
      */
     acp_uint8_t            sConversionBuffer;
     ulnCharSet             sCharSet;
@@ -1415,8 +1415,8 @@ ACI_RC ulnParamProcess_DATAs(ulnFnContext *aFnContext,
     ACI_EXCEPTION_END;
 
     // proj_2160 cm_type removal
-    // parameter ÇÑ°³¿¡¼­ ¿¡·¯°¡ ³ª¸é, row ´ÜÀ§·Î Ã³¸®ÇØ¾ß ÇÏ¹Ç·Î
-    // cursor¸¦ ÀÌÀü row À§Ä¡(È¤Àº ÆÄ¶ó¹ÌÅÍ ¾ø´Â »óÅÂ)·Î µ¹¸°´Ù.
+    // parameter í•œê°œì—ì„œ ì—ëŸ¬ê°€ ë‚˜ë©´, row ë‹¨ìœ„ë¡œ ì²˜ë¦¬í•´ì•¼ í•˜ë¯€ë¡œ
+    // cursorë¥¼ ì´ì „ row ìœ„ì¹˜(í˜¹ì€ íŒŒë¼ë¯¸í„° ì—†ëŠ” ìƒíƒœ)ë¡œ ëŒë¦°ë‹¤.
     sStmt->mChunk.mCursor = sOrgChunkCursor;
 
     if (sState == 1)
@@ -1431,7 +1431,7 @@ ACI_RC ulnBindDataSetUserIndLenValue(ulnStmt      *aStmt,
                                      acp_uint32_t  aRowNumber)
 {
     acp_uint32_t sParamNumber;
-    acp_uint16_t sNumberOfParams;      /* ÆÄ¶ó¹ÌÅÍÀÇ °¹¼ö */
+    acp_uint16_t sNumberOfParams;      /* íŒŒë¼ë¯¸í„°ì˜ ê°¯ìˆ˜ */
 
     ulnDescRec *sDescRecIpd;
     ulnDescRec *sDescRecApd;
@@ -1452,8 +1452,8 @@ ACI_RC ulnBindDataSetUserIndLenValue(ulnStmt      *aStmt,
 
         /*
          * BUG-28623 [CodeSonar]Null Pointer Dereference
-         * sDescRecIpdµµ NULLÀÌ µÉ ¼ö ÀÖÀ½
-         * µû¶ó¼­ ACI_TEST·Î °Ë»ç
+         * sDescRecIpdë„ NULLì´ ë  ìˆ˜ ìˆìŒ
+         * ë”°ë¼ì„œ ACI_TESTë¡œ ê²€ì‚¬
          */
         ACI_TEST( sDescRecIpd == NULL );
 

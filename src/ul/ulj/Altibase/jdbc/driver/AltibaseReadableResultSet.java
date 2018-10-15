@@ -35,15 +35,15 @@ import Altibase.jdbc.driver.ex.ErrorDef;
 abstract class AltibaseReadableResultSet extends AltibaseResultSet
 {
     /**
-     * FetchÇÑ µ¥ÀÌÅ¸¿¡ Á¢±ÙÇÏ±â À§ÇÑ handleÀ» ¾ò´Â´Ù.
+     * Fetchí•œ ë°ì´íƒ€ì— ì ‘ê·¼í•˜ê¸° ìœ„í•œ handleì„ ì–»ëŠ”ë‹¤.
      *
-     * @return row µ¥ÀÌÅ¸¿¡ Á¢±ÙÇÏ±â À§ÇÑ handle
+     * @return row ë°ì´íƒ€ì— ì ‘ê·¼í•˜ê¸° ìœ„í•œ handle
      */
     abstract protected RowHandle rowHandle();
 
 
 
-    // #region scrollable interface °øÅë ±¸Çö
+    // #region scrollable interface ê³µí†µ êµ¬í˜„
 
     public final boolean first() throws SQLException
     {
@@ -100,9 +100,9 @@ abstract class AltibaseReadableResultSet extends AltibaseResultSet
 
 
 
-    // #region updatable interface ±âº» ±¸Çö
-    // updatableÀº AltibaseUpdatableResultSetÀ¸·Î °¨½Î¼­ ¸¸µé¹Ç·Î,
-    // AltibaseReadableResultSetÀº ¸ğµÎ READ_ONLY¶ó°í º»´Ù.
+    // #region updatable interface ê¸°ë³¸ êµ¬í˜„
+    // updatableì€ AltibaseUpdatableResultSetìœ¼ë¡œ ê°ì‹¸ì„œ ë§Œë“¤ë¯€ë¡œ,
+    // AltibaseReadableResultSetì€ ëª¨ë‘ READ_ONLYë¼ê³  ë³¸ë‹¤.
 
     public int getConcurrency() throws SQLException
     {

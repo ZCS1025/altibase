@@ -64,8 +64,8 @@ static ACI_RC ulnFKCreateQueryString(ulnFnContext *aFnContext,
                        "F.FK_COLUMN_NAME as FKCOLUMN_NAME,"
                        "cast( F.KEY_SEQ as SMALLINT ) as KEY_SEQ,"
                        "3"             " as UPDATE_RULE,"
-                       // BUG-25175 delete cascade ¸¦ Ã³¸®ÇÏÁö ¸øÇÕ´Ï´Ù.
-                       // delete cascade ÀÏ °æ¿ì ¼­¹ö¿¡¼­ 1À» º¸³»ÁÜ
+                       // BUG-25175 delete cascade ë¥¼ ì²˜ë¦¬í•˜ì§€ ëª»í•©ë‹ˆë‹¤.
+                       // delete cascade ì¼ ê²½ìš° ì„œë²„ì—ì„œ 1ì„ ë³´ë‚´ì¤Œ
                        // SQL_CASCADE     0
                        // SQL_RESTRICT    1
                        // SQL_SET_NULL    2
@@ -104,7 +104,7 @@ static ACI_RC ulnFKCreateQueryString(ulnFnContext *aFnContext,
 
     /* 1. PK_SCHEMA */
     // bug-25905: conn nls not applied to client lang module
-    // aFnContext ÀÎÀÚ Ãß°¡
+    // aFnContext ì¸ìž ì¶”ê°€
     sSize = ulnAppendFormatParameter(aFnContext,
                                      aQueryBuffer,
                                      aQueryBufferSize,
@@ -125,7 +125,7 @@ static ACI_RC ulnFKCreateQueryString(ulnFnContext *aFnContext,
 
     /* 2. PK_TABLE */
     // bug-25905: conn nls not applied to client lang module
-    // aFnContext ÀÎÀÚ Ãß°¡
+    // aFnContext ì¸ìž ì¶”ê°€
     sSize = ulnAppendFormatParameter(aFnContext,
                                      aQueryBuffer,
                                      aQueryBufferSize,
@@ -166,7 +166,7 @@ static ACI_RC ulnFKCreateQueryString(ulnFnContext *aFnContext,
 
     /* 3. FK_SCHEMA */
     // bug-25905: conn nls not applied to client lang module
-    // aFnContext ÀÎÀÚ Ãß°¡
+    // aFnContext ì¸ìž ì¶”ê°€
     sSize = ulnAppendFormatParameter(aFnContext,
                                      aQueryBuffer,
                                      aQueryBufferSize,
@@ -187,7 +187,7 @@ static ACI_RC ulnFKCreateQueryString(ulnFnContext *aFnContext,
 
     /* 4. FK_TABLE */
     // bug-25905: conn nls not applied to client lang module
-    // aFnContext ÀÎÀÚ Ãß°¡
+    // aFnContext ì¸ìž ì¶”ê°€
     sSize = ulnAppendFormatParameter(aFnContext,
                                      aQueryBuffer,
                                      aQueryBufferSize,
@@ -212,20 +212,20 @@ static ACI_RC ulnFKCreateQueryString(ulnFnContext *aFnContext,
     if( aFKTableName != NULL)
     {
         // To Fix BUG-17907
-        // ¹®Á¦ 1 )
-        //    ODBC Ç¥ÁØ¿¡ ÀÇ°Å ÇØ´ç Å×ÀÌºíÀÌ ÂüÁ¶ÇÏ°í ÀÖ´Â
-        //    Foreign Key Á¤º¸°¡ ¿äÃ»µÉ °æ¿ì,
-        //    ´ÙÀ½ ¼ø¼­·Î ORDER BY µÊ :
+        // ë¬¸ì œ 1 )
+        //    ODBC í‘œì¤€ì— ì˜ê±° í•´ë‹¹ í…Œì´ë¸”ì´ ì°¸ì¡°í•˜ê³  ìžˆëŠ”
+        //    Foreign Key ì •ë³´ê°€ ìš”ì²­ë  ê²½ìš°,
+        //    ë‹¤ìŒ ìˆœì„œë¡œ ORDER BY ë¨ :
         //    PKTABLE_CAT(1), PKTABLE_SCHEM(2), PKTABLE_NAME(3), KEY_SEQ(9)
-        // ¹®Á¦ 2 )
-        //    ODBC Ç¥ÁØ¿¡´Â Foreign Key Name ¿¡ ´ëÇÑ
-        //    Sorting ¿©ºÎ°¡ Á¸ÀçÇÏÁö ¾ÊÀ¸¸ç,
-        //    Vendor ¿¡ µû¶ó NULL°ªÀÌ ¿Ã¼ö ÀÖÀ½À» Çã¿ëÇÏ°í ÀÖ´Ù.
-        //    ±×·¯³ª, µ¿ÀÏÇÑ Primary Key¸¦ ÂüÁ¶ÇÏ°í ÀÖ´Â
-        //    Foreign Key Constraint°¡ ¿©·¯°³ÀÏ °æ¿ì
-        //    Foreign Key NameÀ¸·Î OrderingÇÏÁö ¾ÊÀ¸¸é
-        //    KEY_SEQ ÀÇ ¿¬°ü °ü°è¸¦ ÆÄ¾ÇÇÒ ¼ö ¾ø°Ô µÈ´Ù.
-        // Ç¥ÁØ ORDER BY 1, 2, 3, 9 => ORDER BY 1, 2, 3, 12(FK_NAME), 9
+        // ë¬¸ì œ 2 )
+        //    ODBC í‘œì¤€ì—ëŠ” Foreign Key Name ì— ëŒ€í•œ
+        //    Sorting ì—¬ë¶€ê°€ ì¡´ìž¬í•˜ì§€ ì•Šìœ¼ë©°,
+        //    Vendor ì— ë”°ë¼ NULLê°’ì´ ì˜¬ìˆ˜ ìžˆìŒì„ í—ˆìš©í•˜ê³  ìžˆë‹¤.
+        //    ê·¸ëŸ¬ë‚˜, ë™ì¼í•œ Primary Keyë¥¼ ì°¸ì¡°í•˜ê³  ìžˆëŠ”
+        //    Foreign Key Constraintê°€ ì—¬ëŸ¬ê°œì¼ ê²½ìš°
+        //    Foreign Key Nameìœ¼ë¡œ Orderingí•˜ì§€ ì•Šìœ¼ë©´
+        //    KEY_SEQ ì˜ ì—°ê´€ ê´€ê³„ë¥¼ íŒŒì•…í•  ìˆ˜ ì—†ê²Œ ëœë‹¤.
+        // í‘œì¤€ ORDER BY 1, 2, 3, 9 => ORDER BY 1, 2, 3, 12(FK_NAME), 9
         sSize = aciVaAppendFormat(aQueryBuffer,
                                   aQueryBufferSize,
                                   "ORDER BY 1,2,3,12,9");
@@ -233,19 +233,19 @@ static ACI_RC ulnFKCreateQueryString(ulnFnContext *aFnContext,
     else
     {
         // To Fix BUG-17907
-        // ¹®Á¦ 1 )
-        //    ODBC Ç¥ÁØ¿¡ ÀÇ°Å ÇØ´ç Å×ÀÌºíÀÇ Primary Key¿Í
-        //    ¿¬°üÀÌ ÀÖ´Â ´Ù¸¥ Å×ÀÌºíÀÇ Foreign Key Á¤º¸°¡ ¿äÃ»µÉ °æ¿ì
-        //    ´ÙÀ½ ¼ø¼­·Î ORDER BY µÊ :
+        // ë¬¸ì œ 1 )
+        //    ODBC í‘œì¤€ì— ì˜ê±° í•´ë‹¹ í…Œì´ë¸”ì˜ Primary Keyì™€
+        //    ì—°ê´€ì´ ìžˆëŠ” ë‹¤ë¥¸ í…Œì´ë¸”ì˜ Foreign Key ì •ë³´ê°€ ìš”ì²­ë  ê²½ìš°
+        //    ë‹¤ìŒ ìˆœì„œë¡œ ORDER BY ë¨ :
         //     FKTABLE_CAT(5), FKTABLE_SCHEM(6), FKTABLE_NAME(7), KEY_SEQ(9)
-        // ¹®Á¦ 2 )
-        //    ODBC Ç¥ÁØ¿¡´Â Foreign Key Name ¿¡ ´ëÇÑ Sorting ¿©ºÎ°¡ Á¸ÀçÇÏÁö ¾ÊÀ¸¸ç,
-        //    Vendor ¿¡ µû¶ó NULL°ªÀÌ ¿Ã¼ö ÀÖÀ½À» Çã¿ëÇÏ°í ÀÖ´Ù.
-        //    ±×·¯³ª, ´Ù¸¥ Å×ÀÌºí¿¡¼­ µ¿ÀÏÇÑ ³ªÀÇ Primary Key¸¦ ÂüÁ¶ÇÏ°í ÀÖ´Â
-        //    Foreign Key Constraint°¡ ¿©·¯°³ÀÏ °æ¿ì
-        //    Foreign Key NameÀ¸·Î OrderingÇÏÁö ¾ÊÀ¸¸é
-        //    KEY_SEQ ÀÇ ¿¬°ü °ü°è¸¦ ÆÄ¾ÇÇÒ ¼ö ¾ø°Ô µÈ´Ù.
-        // Ç¥ÁØ ORDER BY 5, 6, 7, 9 => ORDER BY 5, 6, 7, 12(FK_NAME), 9
+        // ë¬¸ì œ 2 )
+        //    ODBC í‘œì¤€ì—ëŠ” Foreign Key Name ì— ëŒ€í•œ Sorting ì—¬ë¶€ê°€ ì¡´ìž¬í•˜ì§€ ì•Šìœ¼ë©°,
+        //    Vendor ì— ë”°ë¼ NULLê°’ì´ ì˜¬ìˆ˜ ìžˆìŒì„ í—ˆìš©í•˜ê³  ìžˆë‹¤.
+        //    ê·¸ëŸ¬ë‚˜, ë‹¤ë¥¸ í…Œì´ë¸”ì—ì„œ ë™ì¼í•œ ë‚˜ì˜ Primary Keyë¥¼ ì°¸ì¡°í•˜ê³  ìžˆëŠ”
+        //    Foreign Key Constraintê°€ ì—¬ëŸ¬ê°œì¼ ê²½ìš°
+        //    Foreign Key Nameìœ¼ë¡œ Orderingí•˜ì§€ ì•Šìœ¼ë©´
+        //    KEY_SEQ ì˜ ì—°ê´€ ê´€ê³„ë¥¼ íŒŒì•…í•  ìˆ˜ ì—†ê²Œ ëœë‹¤.
+        // í‘œì¤€ ORDER BY 5, 6, 7, 9 => ORDER BY 5, 6, 7, 12(FK_NAME), 9
         sSize = aciVaAppendFormat(aQueryBuffer,
                                   aQueryBufferSize,
                                   "ORDER BY 5,6,7,12,9");
@@ -308,7 +308,7 @@ SQLRETURN ulnForeignKeys(ulnStmt      *aStmt,
     ULN_FLAG(sNeedFinPtContext);
 
     ulnFnContext sFnContext;
-    acp_char_t sQueryStringBuffer[10240];   /* BUGBUG : Å©±â´Â ÃæºÐÇÑ°¡? */
+    acp_char_t sQueryStringBuffer[10240];   /* BUGBUG : í¬ê¸°ëŠ” ì¶©ë¶„í•œê°€? */
 
     ACP_UNUSED(aPKCatalogName);
     ACP_UNUSED(aNameLength1);
@@ -326,7 +326,7 @@ SQLRETURN ulnForeignKeys(ulnStmt      *aStmt,
     ULN_FLAG_UP(sNeedExit);
 
     /*
-     * BUGBUG : Argument validity checking À» ¼öÇàÇØ¾ß ÇÑ´Ù.
+     * BUGBUG : Argument validity checking ì„ ìˆ˜í–‰í•´ì•¼ í•œë‹¤.
      */
 
     ACI_TEST(ulnFKCreateQueryString(&sFnContext,
@@ -342,7 +342,7 @@ SQLRETURN ulnForeignKeys(ulnStmt      *aStmt,
                                     ACI_SIZEOF(sQueryStringBuffer)) != ACI_SUCCESS);
 
     /*
-     * Protocol Context ÃÊ±âÈ­
+     * Protocol Context ì´ˆê¸°í™”
      */
     //fix BUG-17722
     ACI_TEST(ulnInitializeProtocolContext(&sFnContext,
@@ -372,7 +372,7 @@ SQLRETURN ulnForeignKeys(ulnStmt      *aStmt,
                                      aStmt->mParentDbc->mConnTimeoutValue) != ACI_SUCCESS);
 
     /*
-     * Protocol Context Á¤¸®
+     * Protocol Context ì •ë¦¬
      */
     ULN_FLAG_DOWN(sNeedFinPtContext);
     //fix BUG-17722
@@ -380,7 +380,7 @@ SQLRETURN ulnForeignKeys(ulnStmt      *aStmt,
                                   &(aStmt->mParentDbc->mPtContext)) != ACI_SUCCESS);
 
     /*
-     * BUGBUG : ÄÃ·³ÀÇ Å¸ÀÔÀ» °­Á¦·Î ÁöÁ¤ÇØ ÁÖ´Â ÄÚµå°¡ cli2 ¿¡´Â ÀÖ¾ú´Ù.
+     * BUGBUG : ì»¬ëŸ¼ì˜ íƒ€ìž…ì„ ê°•ì œë¡œ ì§€ì •í•´ ì£¼ëŠ” ì½”ë“œê°€ cli2 ì—ëŠ” ìžˆì—ˆë‹¤.
      *          stmt->bindings[8-1].forced_type = SQL_C_SSHORT;
      */
 

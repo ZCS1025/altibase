@@ -45,7 +45,7 @@ static IDE_RC mtfDatenameEstimate( mtcNode*     aNode,
 mtfModule mtfDatename = {
     1|MTC_NODE_OPERATOR_FUNCTION,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
+    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìžê°€ ì•„ë‹˜)
     mtfDatenameFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -145,9 +145,9 @@ IDE_RC mtfDatenameCalculate( mtcNode*     aNode,
  * Implementation :
  *    DATENAME( date, fmt )
  *
- *    aStack[0] : ÀÔ·ÂµÈ ³¯Â¥ÇüÀÇ ÀÌ¸§À» Ãâ·ÂÇÔ.
+ *    aStack[0] : ìž…ë ¥ëœ ë‚ ì§œí˜•ì˜ ì´ë¦„ì„ ì¶œë ¥í•¨.
  *    aStack[1] : date
- *    aStack[2] : fmt ( charÀÇ ³¯Â¥ Çü½Ä )
+ *    aStack[2] : fmt ( charì˜ ë‚ ì§œ í˜•ì‹ )
  *
  *    ex) DATENAME( '19-OCT-2005', 'DAY')
  *       ==> 'WEDNESDAY'

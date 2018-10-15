@@ -39,8 +39,8 @@ qmoViewMerging::doTransform( qcStatement  * aStatement,
 /***********************************************************************
  *
  * Description : PROJ-1413 Simple View Merging
- *     ¿¸√º query¿« parseTreeø° ¥Î«œø© View Merging¿ª ºˆ«‡«œ∞Ì
- *     transformed parseTree∏¶ ª˝º∫«—¥Ÿ.
+ *     Ï†ÑÏ≤¥ queryÏùò parseTreeÏóê ÎåÄÌïòÏó¨ View MergingÏùÑ ÏàòÌñâÌïòÍ≥†
+ *     transformed parseTreeÎ•º ÏÉùÏÑ±ÌïúÎã§.
  *
  * Implementation :
  *
@@ -49,25 +49,25 @@ qmoViewMerging::doTransform( qcStatement  * aStatement,
     IDU_FIT_POINT_FATAL( "qmoViewMerging::doTransform::__FT__" );
 
     //------------------------------------------
-    // ¿˚«’º∫ ∞ÀªÁ
+    // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aQuerySet  != NULL );
 
     //------------------------------------------
-    // Simple View Merging ºˆ«‡
+    // Simple View Merging ÏàòÌñâ
     //------------------------------------------
 
     if ( QCU_OPTIMIZER_SIMPLE_VIEW_MERGING_DISABLE == 0 )
     {
-        // Simple View Merge∏¶ ºˆ«‡«—¥Ÿ.
+        // Simple View MergeÎ•º ÏàòÌñâÌïúÎã§.
         IDE_TEST( processTransform( aStatement,
                                     aStatement->myPlan->parseTree,
                                     aQuerySet )
                   != IDE_SUCCESS );
 
-        // mergeµ» µø¿œ view reference∏¶ ¡¶∞≈«—¥Ÿ.
+        // mergeÎêú ÎèôÏùº view referenceÎ•º Ï†úÍ±∞ÌïúÎã§.
         IDE_TEST( modifySameViewRef( aStatement )
                   != IDE_SUCCESS );
     }
@@ -76,7 +76,7 @@ qmoViewMerging::doTransform( qcStatement  * aStatement,
         // Nothing to do.
     }
 
-    // environment¿« ±‚∑œ
+    // environmentÏùò Í∏∞Î°ù
     qcgPlan::registerPlanProperty( aStatement,
                                    PLAN_PROPERTY_OPTIMIZER_SIMPLE_VIEW_MERGE_DISABLE );
 
@@ -119,9 +119,9 @@ qmoViewMerging::processTransform( qcStatement  * aStatement,
 /***********************************************************************
  *
  * Description : PROJ-1413 Simple View Merging
- *     query blockø° ¥Î«œø© subquery∏¶ ¡¶ø‹«— ∏µÁ query set¿ª
- *     bottom-up¿∏∑Œ º¯»∏«œ∏Á Simple View Merging¿ª ºˆ«‡«—¥Ÿ.
- *     (query block¿Ã∂ı qmsParseTree∏¶ ¿«πÃ«—¥Ÿ.)
+ *     query blockÏóê ÎåÄÌïòÏó¨ subqueryÎ•º Ï†úÏô∏Ìïú Î™®Îì† query setÏùÑ
+ *     bottom-upÏúºÎ°ú ÏàúÌöåÌïòÎ©∞ Simple View MergingÏùÑ ÏàòÌñâÌïúÎã§.
+ *     (query blockÏù¥ÎûÄ qmsParseTreeÎ•º ÏùòÎØ∏ÌïúÎã§.)
  *
  * Implementation :
  *
@@ -133,14 +133,14 @@ qmoViewMerging::processTransform( qcStatement  * aStatement,
     IDU_FIT_POINT_FATAL( "qmoViewMerging::processTransform::__FT__" );
 
     //------------------------------------------
-    // ¿˚«’º∫ ∞ÀªÁ
+    // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aQuerySet  != NULL );
 
     //------------------------------------------
-    // Simple View Merging¿« ºˆ«‡
+    // Simple View MergingÏùò ÏàòÌñâ
     //------------------------------------------
 
     IDE_TEST( processTransformForQuerySet( aStatement,
@@ -149,15 +149,15 @@ qmoViewMerging::processTransform( qcStatement  * aStatement,
               != IDE_SUCCESS );
 
     //------------------------------------------
-    // ORDER-BY ¿˝¿« validation ºˆ«‡
+    // ORDER-BY Ï†àÏùò validation ÏàòÌñâ
     //------------------------------------------
 
-    // SETø¨ªÍ¿Ã ¿÷¥¬ ∞ÊøÏ ORDER-BY ¿˝¿∫ ∫Ø∞Êµ«¡ˆ æ ¥¬¥Ÿ.
+    // SETÏó∞ÏÇ∞Ïù¥ ÏûàÎäî Í≤ΩÏö∞ ORDER-BY Ï†àÏùÄ Î≥ÄÍ≤ΩÎêòÏßÄ ÏïäÎäîÎã§.
     if ( ( sIsTransformed == ID_TRUE ) &&
          ( aQuerySet->setOp == QMS_NONE ) )
     {
         sParseTree = (qmsParseTree*)aParseTree;
-        // parseTreeø° ≥ÎµÂ∫Ø»≠∞° πﬂª˝µ«æ˙¿Ω¿ª ±‚∑œ«—¥Ÿ.
+        // parseTreeÏóê ÎÖ∏ÎìúÎ≥ÄÌôîÍ∞Ä Î∞úÏÉùÎêòÏóàÏùåÏùÑ Í∏∞Î°ùÌïúÎã§.
         sParseTree->isTransformed = ID_TRUE;
 
         IDE_TEST( validateOrderBy( aStatement,
@@ -184,15 +184,15 @@ qmoViewMerging::processTransformForQuerySet( qcStatement  * aStatement,
 /***********************************************************************
  *
  * Description : PROJ-1413 Simple View Merging
- *     query setø° ¥Î«œø© subquery∏¶ ¡¶ø‹«— ∏µÁ query set¿ª
- *     bottom-up¿∏∑Œ º¯»∏«œ∏Á Simple View Merging¿ª ºˆ«‡«—¥Ÿ.
+ *     query setÏóê ÎåÄÌïòÏó¨ subqueryÎ•º Ï†úÏô∏Ìïú Î™®Îì† query setÏùÑ
+ *     bottom-upÏúºÎ°ú ÏàúÌöåÌïòÎ©∞ Simple View MergingÏùÑ ÏàòÌñâÌïúÎã§.
  *
  * Implementation :
- *     «ˆ¿Á query set¿Ã ∞°¡¯ «œ¿ß view∏¶ º¯»∏«œ∏Á
- *     (1) view∞° simple view¿Œ¡ˆ, merge ∞°¥…«—¡ˆ ∞ÀªÁ«—¥Ÿ.
- *     (2) view∏¶ merge«—¥Ÿ.
- *     (3) mergeµ» view∏¶ ¡¶∞≈«—¥Ÿ.
- *     (4) «ˆ¿Á query setø° ¥Î«œø© ¥ŸΩ√ validation¿ª ºˆ«‡«—¥Ÿ.
+ *     ÌòÑÏû¨ query setÏù¥ Í∞ÄÏßÑ ÌïòÏúÑ viewÎ•º ÏàúÌöåÌïòÎ©∞
+ *     (1) viewÍ∞Ä simple viewÏù∏ÏßÄ, merge Í∞ÄÎä•ÌïúÏßÄ Í≤ÄÏÇ¨ÌïúÎã§.
+ *     (2) viewÎ•º mergeÌïúÎã§.
+ *     (3) mergeÎêú viewÎ•º Ï†úÍ±∞ÌïúÎã§.
+ *     (4) ÌòÑÏû¨ query setÏóê ÎåÄÌïòÏó¨ Îã§Ïãú validationÏùÑ ÏàòÌñâÌïúÎã§.
  *
  ***********************************************************************/
 
@@ -210,7 +210,7 @@ qmoViewMerging::processTransformForQuerySet( qcStatement  * aStatement,
     IDU_FIT_POINT_FATAL( "qmoViewMerging::processTransformForQuerySet::__FT__" );
 
     //------------------------------------------
-    // ¿˚«’º∫ ∞ÀªÁ
+    // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
     //------------------------------------------
     
     IDE_DASSERT( aStatement != NULL );
@@ -218,23 +218,23 @@ qmoViewMerging::processTransformForQuerySet( qcStatement  * aStatement,
     IDE_DASSERT( aIsTransformed != NULL );
     
     //------------------------------------------
-    // √ ±‚»≠
+    // Ï¥àÍ∏∞Ìôî
     //------------------------------------------
 
     sCurrentQuerySet = aQuerySet;
     sIsTransformed = ID_FALSE;
     
     //------------------------------------------
-    // Simple View Merging¿« ºˆ«‡
+    // Simple View MergingÏùò ÏàòÌñâ
     //------------------------------------------
     
     if ( sCurrentQuerySet->setOp == QMS_NONE )
     {
         sCurrentSFWGH = (qmsSFWGH *)sCurrentQuerySet->SFWGH;
 
-        // SubqueryµÈ¿ª ∏µŒ √£æ∆ view merging¿ª ∏’¿˙ Ω√µµ«—¥Ÿ.
+        // SubqueryÎì§ÏùÑ Î™®Îëê Ï∞æÏïÑ view mergingÏùÑ Î®ºÏ†Ä ÏãúÎèÑÌïúÎã§.
 
-        // SELECT¿˝¿« subquery∏¶ √£æ∆ view merging Ω√µµ
+        // SELECTÏ†àÏùò subqueryÎ•º Ï∞æÏïÑ view merging ÏãúÎèÑ
         for( sTarget = sCurrentSFWGH->target;
              sTarget != NULL;
              sTarget = sTarget->next )
@@ -243,21 +243,21 @@ qmoViewMerging::processTransformForQuerySet( qcStatement  * aStatement,
                       != IDE_SUCCESS );
         }
 
-        // WHERE¿˝¿« subquery∏¶ √£æ∆ view merging Ω√µµ
+        // WHEREÏ†àÏùò subqueryÎ•º Ï∞æÏïÑ view merging ÏãúÎèÑ
         IDE_TEST( processTransformForExpression( aStatement, sCurrentSFWGH->where )
                   != IDE_SUCCESS );
 
-        // HAVING¿˝¿« subquery∏¶ √£æ∆ view merging Ω√µµ
+        // HAVINGÏ†àÏùò subqueryÎ•º Ï∞æÏïÑ view merging ÏãúÎèÑ
         IDE_TEST( processTransformForExpression( aStatement, sCurrentSFWGH->having )
                   != IDE_SUCCESS );
 
         if( sCurrentSFWGH->hierarchy != NULL )
         {
-            // START WITH ¿˝¿« subquery∏¶ √£æ∆ view merging Ω√µµ
+            // START WITH Ï†àÏùò subqueryÎ•º Ï∞æÏïÑ view merging ÏãúÎèÑ
             IDE_TEST( processTransformForExpression( aStatement, sCurrentSFWGH->hierarchy->startWith )
                       != IDE_SUCCESS );
 
-            // CONNECT BY ¿˝¿« subquery∏¶ √£æ∆ view merging Ω√µµ
+            // CONNECT BY Ï†àÏùò subqueryÎ•º Ï∞æÏïÑ view merging ÏãúÎèÑ
             IDE_TEST( processTransformForExpression( aStatement, sCurrentSFWGH->hierarchy->connectBy )
                       != IDE_SUCCESS );
         }
@@ -266,7 +266,7 @@ qmoViewMerging::processTransformForQuerySet( qcStatement  * aStatement,
             // Nothing to do.
         }
 
-        // FROM¿˝¿« ∞¢ view∏¶ merging Ω√µµ
+        // FROMÏ†àÏùò Í∞Å viewÎ•º merging ÏãúÎèÑ
         for ( sFrom = sCurrentSFWGH->from; sFrom != NULL; sFrom = sFrom->next )
         {
             if ( sFrom->joinType == QMS_NO_JOIN )
@@ -276,26 +276,26 @@ qmoViewMerging::processTransformForQuerySet( qcStatement  * aStatement,
                     sUnderBlock = (qmsParseTree *) sFrom->tableRef->view->myPlan->parseTree;
                     sUnderQuerySet = sUnderBlock->querySet;
 
-                    // «œ¿ß viewø° ¥Î«œø© bottom-up¿∏∑Œ º¯»∏«œ∏Á
-                    // Simple View Merging¿ª ºˆ«‡«—¥Ÿ.
+                    // ÌïòÏúÑ viewÏóê ÎåÄÌïòÏó¨ bottom-upÏúºÎ°ú ÏàúÌöåÌïòÎ©∞
+                    // Simple View MergingÏùÑ ÏàòÌñâÌïúÎã§.
                     IDE_TEST( processTransform( aStatement,
                                                 &(sUnderBlock->common),
                                                 sUnderQuerySet )
                               != IDE_SUCCESS );
 
                     //------------------------------------------
-                    // (1) Simple View & Merge ∞°¥… ∞ÀªÁ
+                    // (1) Simple View & Merge Í∞ÄÎä• Í≤ÄÏÇ¨
                     //------------------------------------------
 
-                    // ¿ÃπÃ view¿Ãπ«∑Œ simple query¿Œ¡ˆ∏∏ ∞ÀªÁ«—¥Ÿ.
+                    // Ïù¥ÎØ∏ viewÏù¥ÎØÄÎ°ú simple queryÏù∏ÏßÄÎßå Í≤ÄÏÇ¨ÌïúÎã§.
                     IDE_TEST( isSimpleQuery( sUnderBlock,
                                              & sIsSimpleQuery )
                               != IDE_SUCCESS );
                     
                     if ( sIsSimpleQuery  == ID_TRUE )
                     {
-                        // merge ∞°¥…«—¡ˆ ∞ÀªÁ«—¥Ÿ.
-                        // «ˆ¿Á querySet∞˙ «œ¿ß querySet¿∫ SET¿Ã æ¯¥Ÿ.
+                        // merge Í∞ÄÎä•ÌïúÏßÄ Í≤ÄÏÇ¨ÌïúÎã§.
+                        // ÌòÑÏû¨ querySetÍ≥º ÌïòÏúÑ querySetÏùÄ SETÏù¥ ÏóÜÎã§.
                         IDE_TEST( canMergeView( aStatement,
                                                 sCurrentQuerySet->SFWGH,
                                                 sUnderQuerySet->SFWGH,
@@ -306,7 +306,7 @@ qmoViewMerging::processTransformForQuerySet( qcStatement  * aStatement,
                         if ( sCanMergeView == ID_TRUE )
                         {
                             //------------------------------------------
-                            // (2) Merge∏¶ ºˆ«‡«—¥Ÿ.
+                            // (2) MergeÎ•º ÏàòÌñâÌïúÎã§.
                             //------------------------------------------
                             
                             IDE_TEST( processMerging( aStatement,
@@ -318,8 +318,8 @@ qmoViewMerging::processTransformForQuerySet( qcStatement  * aStatement,
                             
                             if ( sIsMerged == ID_TRUE )
                             {
-                                // «œ¿ß SFWGH∞° «ˆ¿Á SFWGH∑Œ
-                                // mergeµ«æ˙¿Ω¿ª «•Ω√«—¥Ÿ.
+                                // ÌïòÏúÑ SFWGHÍ∞Ä ÌòÑÏû¨ SFWGHÎ°ú
+                                // mergeÎêòÏóàÏùåÏùÑ ÌëúÏãúÌïúÎã§.
                                 sUnderQuerySet->SFWGH->mergedSFWGH =
                                     sCurrentQuerySet->SFWGH;
                                 
@@ -361,24 +361,24 @@ qmoViewMerging::processTransformForQuerySet( qcStatement  * aStatement,
         if ( sIsTransformed == ID_TRUE )
         {
             //------------------------------------------
-            // (3) Mergeµ» View∏¶ ¡¶∞≈«—¥Ÿ.
+            // (3) MergeÎêú ViewÎ•º Ï†úÍ±∞ÌïúÎã§.
             //------------------------------------------
             
             IDE_TEST( removeMergedView( sCurrentQuerySet->SFWGH )
                       != IDE_SUCCESS );
 
-            // SFWGHø° ≥ÎµÂ∫Ø»≠∞° πﬂª˝µ«æ˙¿Ω¿ª ±‚∑œ«—¥Ÿ.
+            // SFWGHÏóê ÎÖ∏ÎìúÎ≥ÄÌôîÍ∞Ä Î∞úÏÉùÎêòÏóàÏùåÏùÑ Í∏∞Î°ùÌïúÎã§.
             sCurrentQuerySet->SFWGH->isTransformed = ID_TRUE;
             
             //------------------------------------------
-            // (4) validation¿ª ºˆ«‡«—¥Ÿ.
+            // (4) validationÏùÑ ÏàòÌñâÌïúÎã§.
             //------------------------------------------
             
             IDE_TEST( validateSFWGH( aStatement,
                                      sCurrentQuerySet->SFWGH )
                       != IDE_SUCCESS );
 
-            // dependency∏¶ ¿Áº≥¡§«—¥Ÿ.
+            // dependencyÎ•º Ïû¨ÏÑ§Ï†ïÌïúÎã§.
             qtc::dependencySetWithDep( & sCurrentQuerySet->depInfo,
                                        & sCurrentQuerySet->SFWGH->depInfo );
 
@@ -401,19 +401,19 @@ qmoViewMerging::processTransformForQuerySet( qcStatement  * aStatement,
     }
     else
     {
-        // left subquery¿« simple view merging ºˆ«‡
+        // left subqueryÏùò simple view merging ÏàòÌñâ
         IDE_TEST( processTransformForQuerySet( aStatement,
                                                sCurrentQuerySet->left,
                                                & sIsMerged )
                   != IDE_SUCCESS );
 
-        // right subquery¿« simple view merging ºˆ«‡
+        // right subqueryÏùò simple view merging ÏàòÌñâ
         IDE_TEST( processTransformForQuerySet( aStatement,
                                                sCurrentQuerySet->right,
                                                & sIsMerged )
                   != IDE_SUCCESS );
 
-        // outer column dependency¥¬ «œ¿ß dependency∏¶ OR-ing«—¥Ÿ.
+        // outer column dependencyÎäî ÌïòÏúÑ dependencyÎ•º OR-ingÌïúÎã§.
         qtc::dependencyClear( & sCurrentQuerySet->outerDepInfo );
 
         IDE_TEST( qtc::dependencyOr( & sCurrentQuerySet->left->outerDepInfo,
@@ -443,8 +443,8 @@ qmoViewMerging::processTransformForJoinedTable( qcStatement  * aStatement,
 /***********************************************************************
  *
  * Description : PROJ-1413 Simple View Merging
- *     joined table¿« «œ¿ß query set¿ª º¯»∏«œ∏Á simple view merging∏¶
- *     ºˆ«‡«—¥Ÿ.
+ *     joined tableÏùò ÌïòÏúÑ query setÏùÑ ÏàúÌöåÌïòÎ©∞ simple view mergingÎ•º
+ *     ÏàòÌñâÌïúÎã§.
  *
  * Implementation :
  *
@@ -455,14 +455,14 @@ qmoViewMerging::processTransformForJoinedTable( qcStatement  * aStatement,
     IDU_FIT_POINT_FATAL( "qmoViewMerging::processTransformForJoinedTable::__FT__" );
 
     //------------------------------------------
-    // ¿˚«’º∫ ∞ÀªÁ
+    // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
     //------------------------------------------
     
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aFrom != NULL );
 
     //------------------------------------------
-    // Joined Table¿« bottom-up º¯»∏
+    // Joined TableÏùò bottom-up ÏàúÌöå
     //------------------------------------------
 
     if ( aFrom->joinType == QMS_NO_JOIN )
@@ -472,7 +472,7 @@ qmoViewMerging::processTransformForJoinedTable( qcStatement  * aStatement,
             sViewParseTree = (qmsParseTree *) aFrom->tableRef->view->myPlan->parseTree;
 
             //------------------------------------------
-            // Simple View Merging ºˆ«‡
+            // Simple View Merging ÏàòÌñâ
             //------------------------------------------
 
             IDE_TEST( processTransform( aStatement,
@@ -512,8 +512,8 @@ qmoViewMerging::processTransformForExpression( qcStatement * aStatement,
 {
 /***********************************************************************
  *
- * Description : Predicate¿Ã≥™ expressionø° ∆˜«‘µ» subquery∏¶ √£æ∆
- *               view merging¿ª ºˆ«‡«—¥Ÿ.
+ * Description : PredicateÏù¥ÎÇò expressionÏóê Ìè¨Ìï®Îêú subqueryÎ•º Ï∞æÏïÑ
+ *               view mergingÏùÑ ÏàòÌñâÌïúÎã§.
  *
  * Implementation :
  *
@@ -569,17 +569,17 @@ qmoViewMerging::isSimpleQuery( qmsParseTree * aParseTree,
 /***********************************************************************
  *
  * Description : PROJ-1413 Simple View Merging
- *     Simple Query¿Œ¡ˆ ∞ÀªÁ«—¥Ÿ.
+ *     Simple QueryÏù∏ÏßÄ Í≤ÄÏÇ¨ÌïúÎã§.
  *
  * Implementation :
- *     (1) SELECT, FROM, WHERE ¿˝∏∏ ¿÷∞Ì
- *     (2) AGGREGATION¿Ã æ¯¥Ÿ.
- *     (3) targetø° DISTINCT∞° æ¯∞Ì, Analytic Functionµµ æ¯¥Ÿ.
- *     (4) targetø° DISTINCT∞° æ¯¥Ÿ.
- *     (5) START WITH, CONNECT BY ¿˝¿Ã æ¯¥Ÿ.
- *     (6) GROUP BY, HAVING ¿˝¿Ã æ¯¥Ÿ.
- *     (7) ORDER BY, LIMIT ∂«¥¬ LOOP ¿˝¿Ã æ¯¥Ÿ.
- *     (8) SHARD ±∏πÆ¿Ã æ∆¥œ¥Ÿ.
+ *     (1) SELECT, FROM, WHERE Ï†àÎßå ÏûàÍ≥†
+ *     (2) AGGREGATIONÏù¥ ÏóÜÎã§.
+ *     (3) targetÏóê DISTINCTÍ∞Ä ÏóÜÍ≥†, Analytic FunctionÎèÑ ÏóÜÎã§.
+ *     (4) targetÏóê DISTINCTÍ∞Ä ÏóÜÎã§.
+ *     (5) START WITH, CONNECT BY Ï†àÏù¥ ÏóÜÎã§.
+ *     (6) GROUP BY, HAVING Ï†àÏù¥ ÏóÜÎã§.
+ *     (7) ORDER BY, LIMIT ÎòêÎäî LOOP Ï†àÏù¥ ÏóÜÎã§.
+ *     (8) SHARD Íµ¨Î¨∏Ïù¥ ÏïÑÎãàÎã§.
  *
  ***********************************************************************/
 
@@ -590,14 +590,14 @@ qmoViewMerging::isSimpleQuery( qmsParseTree * aParseTree,
     IDU_FIT_POINT_FATAL( "qmoViewMerging::isSimpleQuery::__FT__" );
 
     //------------------------------------------
-    // ¿˚«’º∫ ∞ÀªÁ
+    // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
     //------------------------------------------
 
     IDE_DASSERT( aParseTree != NULL );
     IDE_DASSERT( aIsSimpleQuery != NULL );
 
     //------------------------------------------
-    // Simple Query ∞ÀªÁ
+    // Simple Query Í≤ÄÏÇ¨
     //------------------------------------------
 
     if ( ( aParseTree->orderBy == NULL ) &&
@@ -652,14 +652,14 @@ qmoViewMerging::canMergeView( qcStatement  * aStatement,
 /***********************************************************************
  *
  * Description : PROJ-1413 Simple View Merging
- *     «ˆ¿Á SFWGHøÕ «œ¿ß SFWGH∞° merge ∞°¥…«—¡ˆ ∞ÀªÁ«—¥Ÿ.
+ *     ÌòÑÏû¨ SFWGHÏôÄ ÌïòÏúÑ SFWGHÍ∞Ä merge Í∞ÄÎä•ÌïúÏßÄ Í≤ÄÏÇ¨ÌïúÎã§.
  *
  * Implementation :
- *     (1) Environment ¡∂∞« ∞ÀªÁ
- *     (2) «ˆ¿Á SFWGH ¡∂∞« ∞ÀªÁ
- *     (3) «œ¿ß SFWGH ¡∂∞« ∞ÀªÁ
- *     (4) Dependency ∞ÀªÁ
- *     (5) NormalForm ∞ÀªÁ
+ *     (1) Environment Ï°∞Í±¥ Í≤ÄÏÇ¨
+ *     (2) ÌòÑÏû¨ SFWGH Ï°∞Í±¥ Í≤ÄÏÇ¨
+ *     (3) ÌïòÏúÑ SFWGH Ï°∞Í±¥ Í≤ÄÏÇ¨
+ *     (4) Dependency Í≤ÄÏÇ¨
+ *     (5) NormalForm Í≤ÄÏÇ¨
  *
  ***********************************************************************/
 
@@ -668,7 +668,7 @@ qmoViewMerging::canMergeView( qcStatement  * aStatement,
     IDU_FIT_POINT_FATAL( "qmoViewMerging::canMergeView::__FT__" );
 
     //------------------------------------------
-    // ¿˚«’º∫ ∞ÀªÁ
+    // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
     //------------------------------------------
     
     IDE_DASSERT( aStatement != NULL );
@@ -678,19 +678,19 @@ qmoViewMerging::canMergeView( qcStatement  * aStatement,
     IDE_DASSERT( aCanMergeView != NULL );
 
     //------------------------------------------
-    // Merge ∞°¥… ¡∂∞« ∞ÀªÁ
+    // Merge Í∞ÄÎä• Ï°∞Í±¥ Í≤ÄÏÇ¨
     //------------------------------------------
 
     while ( 1 )
     {
         //------------------------------------------
-        // (1) Environment ¡∂∞« ∞ÀªÁ
+        // (1) Environment Ï°∞Í±¥ Í≤ÄÏÇ¨
         //------------------------------------------
 
-        // ¿ÃπÃ «ﬂ¿Ω
+        // Ïù¥ÎØ∏ ÌñàÏùå
         
         //------------------------------------------
-        // (2) «ˆ¿Á SFWGH ¡∂∞« ∞ÀªÁ
+        // (2) ÌòÑÏû¨ SFWGH Ï°∞Í±¥ Í≤ÄÏÇ¨
         //------------------------------------------
         
         IDE_TEST( checkCurrentSFWGH( aCurrentSFWGH,
@@ -707,7 +707,7 @@ qmoViewMerging::canMergeView( qcStatement  * aStatement,
         }
         
         //------------------------------------------
-        // (3) «œ¿ß SFWGH ¡∂∞« ∞ÀªÁ
+        // (3) ÌïòÏúÑ SFWGH Ï°∞Í±¥ Í≤ÄÏÇ¨
         //------------------------------------------
         
         IDE_TEST( checkUnderSFWGH( aStatement,
@@ -726,7 +726,7 @@ qmoViewMerging::canMergeView( qcStatement  * aStatement,
         }
         
         //------------------------------------------
-        // (4) Dependency ∞ÀªÁ
+        // (4) Dependency Í≤ÄÏÇ¨
         //------------------------------------------
         
         IDE_TEST( checkDependency( aCurrentSFWGH,
@@ -744,7 +744,7 @@ qmoViewMerging::canMergeView( qcStatement  * aStatement,
         }
         
         //------------------------------------------
-        // (5) NormalForm ∞ÀªÁ
+        // (5) NormalForm Í≤ÄÏÇ¨
         //------------------------------------------
         
         IDE_TEST( checkNormalForm( aStatement,
@@ -781,11 +781,11 @@ qmoViewMerging::checkCurrentSFWGH( qmsSFWGH     * aSFWGH,
 /***********************************************************************
  *
  * Description : PROJ-1413 Simple View Merging
- *     «ˆ¿Á query block¿« merge ¡∂∞«¿ª ∞ÀªÁ«—¥Ÿ.
+ *     ÌòÑÏû¨ query blockÏùò merge Ï°∞Í±¥ÏùÑ Í≤ÄÏÇ¨ÌïúÎã§.
  *
  * Implementation :
- *     (1) hint ∞ÀªÁ
- *     (2) pseudo column ∞ÀªÁ
+ *     (1) hint Í≤ÄÏÇ¨
+ *     (2) pseudo column Í≤ÄÏÇ¨
  *
  ***********************************************************************/
 
@@ -794,20 +794,20 @@ qmoViewMerging::checkCurrentSFWGH( qmsSFWGH     * aSFWGH,
     IDU_FIT_POINT_FATAL( "qmoViewMerging::checkCurrentSFWGH::__FT__" );
 
     //------------------------------------------
-    // ¿˚«’º∫ ∞ÀªÁ
+    // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
     //------------------------------------------
 
     IDE_DASSERT( aSFWGH != NULL );
     IDE_DASSERT( aCanMerge != NULL );
 
     //------------------------------------------
-    // «ˆ¿Á SFWGH ∞ÀªÁ
+    // ÌòÑÏû¨ SFWGH Í≤ÄÏÇ¨
     //------------------------------------------
     
     while ( 1 )
     {
         //------------------------------------------
-        // hint ∞ÀªÁ
+        // hint Í≤ÄÏÇ¨
         //------------------------------------------
         
         // dnf
@@ -833,10 +833,10 @@ qmoViewMerging::checkCurrentSFWGH( qmsSFWGH     * aSFWGH,
         }
         
         //------------------------------------------
-        // pseudo column ∞ÀªÁ
+        // pseudo column Í≤ÄÏÇ¨
         //------------------------------------------
 
-        // BUG-37314 º≠∫Íƒı∏Æø° rownum ¿Ã ¿÷¥¬ ∞ÊøÏø°∏∏ unnest ∏¶ ¡¶«—«ÿæﬂ «—¥Ÿ.
+        // BUG-37314 ÏÑúÎ∏åÏøºÎ¶¨Ïóê rownum Ïù¥ ÏûàÎäî Í≤ΩÏö∞ÏóêÎßå unnest Î•º Ï†úÌïúÌï¥Ïïº ÌïúÎã§.
         if( ( aSFWGH->outerQuery != NULL ) &&
             ( aSFWGH->rownum     != NULL ) )
         {
@@ -899,22 +899,22 @@ qmoViewMerging::checkUnderSFWGH( qcStatement  * aStatement,
 /***********************************************************************
  *
  * Description : PROJ-1413 Simple View Merging
- *     «œ¿ß query block¿« merge ¡∂∞«¿ª ∞ÀªÁ«—¥Ÿ.
+ *     ÌïòÏúÑ query blockÏùò merge Ï°∞Í±¥ÏùÑ Í≤ÄÏÇ¨ÌïúÎã§.
  *
  *     [Enhancement]
- *     view targetø° subquery, user-defined function µÓ merge«“ ºˆ æ¯¥¬
- *     simple view∂Û «œ¥ı∂Ûµµ «ÿ¥Á target¿ª ¬¸¡∂«œ¡ˆ æ ¥¬ ∞ÊøÏø°¥¬
- *     merge∞° ∞°¥…«œµµ∑œ ºˆ¡§«—¥Ÿ.
+ *     view targetÏóê subquery, user-defined function Îì± mergeÌï† Ïàò ÏóÜÎäî
+ *     simple viewÎùº ÌïòÎçîÎùºÎèÑ Ìï¥Îãπ targetÏùÑ Ï∞∏Ï°∞ÌïòÏßÄ ÏïäÎäî Í≤ΩÏö∞ÏóêÎäî
+ *     mergeÍ∞Ä Í∞ÄÎä•ÌïòÎèÑÎ°ù ÏàòÏ†ïÌïúÎã§.
  *
  *     ex) select count(*) from ( select func1(i1) from t1 ) v1;
  *         -> select count(*) from t1;
  *
  * Implementation :
- *     (1) hint ∞ÀªÁ
- *     (2) pseudo column ∞ÀªÁ
- *     (3) performance view ∞ÀªÁ
- *     (4) target list ∞ÀªÁ
- *     (5) disk table ∞ÀªÁ
+ *     (1) hint Í≤ÄÏÇ¨
+ *     (2) pseudo column Í≤ÄÏÇ¨
+ *     (3) performance view Í≤ÄÏÇ¨
+ *     (4) target list Í≤ÄÏÇ¨
+ *     (5) disk table Í≤ÄÏÇ¨
  *
  ***********************************************************************/
 
@@ -931,7 +931,7 @@ qmoViewMerging::checkUnderSFWGH( qcStatement  * aStatement,
     IDU_FIT_POINT_FATAL( "qmoViewMerging::checkUnderSFWGH::__FT__" );
 
     //------------------------------------------
-    // ¿˚«’º∫ ∞ÀªÁ
+    // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
     //------------------------------------------
     
     IDE_DASSERT( aStatement != NULL );
@@ -940,17 +940,17 @@ qmoViewMerging::checkUnderSFWGH( qcStatement  * aStatement,
     IDE_DASSERT( aCanMerge != NULL );
 
     //------------------------------------------
-    // «œ¿ß SFWGH ∞ÀªÁ
+    // ÌïòÏúÑ SFWGH Í≤ÄÏÇ¨
     //------------------------------------------
 
     while ( 1 )
     {
         //------------------------------------------
-        // hint ∞ÀªÁ
+        // hint Í≤ÄÏÇ¨
         //------------------------------------------
         
-        // currentSFWGHø°º≠ «ˆ¿Á viewø° ¥Î«œø© no_merge,
-        // push_selection_view, push_pred∏¶ ∏ÌΩ√«— ∞ÊøÏ
+        // currentSFWGHÏóêÏÑú ÌòÑÏû¨ viewÏóê ÎåÄÌïòÏó¨ no_merge,
+        // push_selection_view, push_predÎ•º Î™ÖÏãúÌïú Í≤ΩÏö∞
         if ( aTableRef->noMergeHint == ID_TRUE )
         {
             sCanMerge = ID_FALSE;
@@ -961,7 +961,7 @@ qmoViewMerging::checkUnderSFWGH( qcStatement  * aStatement,
             // Nothing to do.
         }
         
-        // underSFWGHø°º≠ push_selection_view∏¶ ªÁøÎ«— ∞ÊøÏ
+        // underSFWGHÏóêÏÑú push_selection_viewÎ•º ÏÇ¨Ïö©Ìïú Í≤ΩÏö∞
         if ( aSFWGH->hints->viewOptHint != NULL )
         {
             sCanMerge = ID_FALSE;
@@ -972,7 +972,7 @@ qmoViewMerging::checkUnderSFWGH( qcStatement  * aStatement,
             // Nothing to do.
         }
         
-        // underSFWGHø°º≠ push_pred∏¶ ªÁøÎ«— ∞ÊøÏ
+        // underSFWGHÏóêÏÑú push_predÎ•º ÏÇ¨Ïö©Ìïú Í≤ΩÏö∞
         if ( aSFWGH->hints->pushPredHint != NULL )
         {
             sCanMerge = ID_FALSE;
@@ -1005,7 +1005,7 @@ qmoViewMerging::checkUnderSFWGH( qcStatement  * aStatement,
             // Nothing to do.
         }
 
-        // BUG-43536 no_merge() »˘∆Æ ¡ˆø¯
+        // BUG-43536 no_merge() ÌûåÌä∏ ÏßÄÏõê
         for( sNoMergeHint = aSFWGH->hints->noMergeHint;
              sNoMergeHint != NULL;
              sNoMergeHint = sNoMergeHint->next )
@@ -1022,7 +1022,7 @@ qmoViewMerging::checkUnderSFWGH( qcStatement  * aStatement,
         }
 
         //------------------------------------------
-        // pseudo column ∞ÀªÁ
+        // pseudo column Í≤ÄÏÇ¨
         //------------------------------------------
         
         if ( aSFWGH->rownum != NULL )
@@ -1057,10 +1057,10 @@ qmoViewMerging::checkUnderSFWGH( qcStatement  * aStatement,
         }
 
         //------------------------------------------
-        // performance view ∞ÀªÁ
+        // performance view Í≤ÄÏÇ¨
         //------------------------------------------
         
-        // performance view¥¬ merge«“ ºˆ æ¯¥Ÿ.
+        // performance viewÎäî mergeÌï† Ïàò ÏóÜÎã§.
         if ( aTableRef->tableInfo->tableType == QCM_PERFORMANCE_VIEW )
         {
             sCanMerge = ID_FALSE;
@@ -1094,8 +1094,8 @@ qmoViewMerging::checkUnderSFWGH( qcStatement  * aStatement,
         }
         
         // PROJ-2418
-        // UnderSFWGH¿« Fromø°º≠ Lateral View∞° ¡∏¿Á«œ∏È Merging «“ ºˆ æ¯¥Ÿ.
-        // ¥‹, Lateral View∞° ¿Ã¿¸ø° ∏µŒ Merging µ«æ˙¥Ÿ∏È Merging¿Ã ∞°¥…«œ¥Ÿ.
+        // UnderSFWGHÏùò FromÏóêÏÑú Lateral ViewÍ∞Ä Ï°¥Ïû¨ÌïòÎ©¥ Merging Ìï† Ïàò ÏóÜÎã§.
+        // Îã®, Lateral ViewÍ∞Ä Ïù¥Ï†ÑÏóê Î™®Îëê Merging ÎêòÏóàÎã§Î©¥ MergingÏù¥ Í∞ÄÎä•ÌïòÎã§.
         for ( sViewFrom = aSFWGH->from; sViewFrom != NULL; sViewFrom = sViewFrom->next )
         {
             IDE_TEST( qmvQTC::getFromLateralDepInfo( sViewFrom, & sDepInfo )
@@ -1103,7 +1103,7 @@ qmoViewMerging::checkUnderSFWGH( qcStatement  * aStatement,
 
             if ( qtc::haveDependencies( & sDepInfo ) == ID_TRUE )
             {
-                // «ÿ¥Á Fromø° Lateral View∞° ¡∏¿Á«œ∏È Merging ∫“∞°
+                // Ìï¥Îãπ FromÏóê Lateral ViewÍ∞Ä Ï°¥Ïû¨ÌïòÎ©¥ Merging Î∂àÍ∞Ä
                 sCanMerge = ID_FALSE;
                 break;
             }
@@ -1114,17 +1114,17 @@ qmoViewMerging::checkUnderSFWGH( qcStatement  * aStatement,
         }
 
         //------------------------------------------
-        // ªÛ¿ß query blockø°º≠ ¬¸¡∂«œ¥¬ target column  ∞ÀªÁ
+        // ÏÉÅÏúÑ query blockÏóêÏÑú Ï∞∏Ï°∞ÌïòÎäî target column  Í≤ÄÏÇ¨
         //------------------------------------------
 
-        // BUGBUG µø¿œ«— view ƒ√∑≥¿ª ¡ﬂ∫π∞ÀªÁ«“ ºˆ ¿÷¥Ÿ.
+        // BUGBUG ÎèôÏùºÌïú view Ïª¨ÎüºÏùÑ Ï§ëÎ≥µÍ≤ÄÏÇ¨Ìï† Ïàò ÏûàÎã§.
         for ( sColumnRef = aTableRef->viewColumnRefList;
               sColumnRef != NULL;
               sColumnRef = sColumnRef->next )
         {
             if ( sColumnRef->column->node.module == & qtc::passModule )
             {
-                // view ¬¸¡∂ ƒ√∑≥¿Ãæ˙¥Ÿ∞° passNode∑Œ πŸ≤Ô∞ÊøÏ
+                // view Ï∞∏Ï°∞ Ïª¨ÎüºÏù¥ÏóàÎã§Í∞Ä passNodeÎ°ú Î∞îÎÄêÍ≤ΩÏö∞
                 
                 // Nothing to do.
             }
@@ -1152,7 +1152,7 @@ qmoViewMerging::checkUnderSFWGH( qcStatement  * aStatement,
             
                 IDE_TEST_RAISE( sViewTarget == NULL, ERR_COLUMN_NOT_FOUND );
 
-                // (1) subquery ∆˜«‘«œ¡ˆ æ ¥¬¥Ÿ.
+                // (1) subquery Ìè¨Ìï®ÌïòÏßÄ ÏïäÎäîÎã§.
                 if ((sViewTarget->targetColumn->lflag & QTC_NODE_SUBQUERY_MASK)
                     == QTC_NODE_SUBQUERY_EXIST)
                 {
@@ -1160,7 +1160,7 @@ qmoViewMerging::checkUnderSFWGH( qcStatement  * aStatement,
                     break;
                 }
 
-                // (2) user-defined function¿ª ∆˜«‘«œ¡ˆ æ ¥¬¥Ÿ.
+                // (2) user-defined functionÏùÑ Ìè¨Ìï®ÌïòÏßÄ ÏïäÎäîÎã§.
                 if ( ( sViewTarget->targetColumn->lflag & QTC_NODE_PROC_FUNCTION_MASK )
                      == QTC_NODE_PROC_FUNCTION_TRUE )
                 {
@@ -1172,7 +1172,7 @@ qmoViewMerging::checkUnderSFWGH( qcStatement  * aStatement,
                     // Nothing to do.
                 }
             
-                // (3) variable build-in function¿ª ∆˜«‘«œ¡ˆ æ ¥¬¥Ÿ.
+                // (3) variable build-in functionÏùÑ Ìè¨Ìï®ÌïòÏßÄ ÏïäÎäîÎã§.
                 if ( ( sViewTarget->targetColumn->lflag & QTC_NODE_VAR_FUNCTION_MASK )
                      == QTC_NODE_VAR_FUNCTION_EXIST )
                 {
@@ -1184,7 +1184,7 @@ qmoViewMerging::checkUnderSFWGH( qcStatement  * aStatement,
                     // Nothing to do.
                 }
 
-                /* (4) _prowid ∏¶ ∆˜«‘«œ¡ˆ æ ¥¬¥Ÿ. (BUG-41218) */
+                /* (4) _prowid Î•º Ìè¨Ìï®ÌïòÏßÄ ÏïäÎäîÎã§. (BUG-41218) */
                 if ( ( sViewTarget->targetColumn->lflag & QTC_NODE_COLUMN_RID_MASK )
                      == QTC_NODE_COLUMN_RID_EXIST)
                 {
@@ -1224,17 +1224,17 @@ qmoViewMerging::checkDependency( qmsSFWGH     * aCurrentSFWGH,
 /***********************************************************************
  *
  * Description : PROJ-1413 Simple View Merging
- *     merge»ƒ √÷¥Î ¬¸¡∂ relation¿« ºˆ∏¶ ≥—¡ˆ æ ¥¬¡ˆ ∞ÀªÁ«—¥Ÿ.
+ *     mergeÌõÑ ÏµúÎåÄ Ï∞∏Ï°∞ relationÏùò ÏàòÎ•º ÎÑòÏßÄ ÏïäÎäîÏßÄ Í≤ÄÏÇ¨ÌïúÎã§.
  *
  * Implementation :
- *     ªÛººº≥∞ËΩ√ ∞¢ SFWGHOø° ¥Î«œø© ∞¢∞¢ dependency ¡§∫∏∏¶ ∞ÀªÁ«œ∑¡∞Ì
- *     «ﬂ¿∏≥™ ƒ⁄µÂ ∫π¿‚µµ∏∏ ≥Ùæ∆¡ˆ∞Ì, ∞ÀªÁ¡∂∞«¿∏∑Œ ¡§»Æ«œ∞‘ ∞ÀªÁ«“
- *     « ø‰∞° æ¯æÓ, ≈©∞‘ SFWGH ¿¸√ºø° ¥Î«— dependency ¡§∫∏∏∏¿∏∑Œ
- *     ∞ËªÍ«—¥Ÿ. SFWGH¿« dependency¥¬ SFWGH ≥ª¿« inner dependencyøÕ
- *     outer dependency¿« «’¿∏∑Œ ∞ËªÍ«—¥Ÿ.
+ *     ÏÉÅÏÑ∏ÏÑ§Í≥ÑÏãú Í∞Å SFWGHOÏóê ÎåÄÌïòÏó¨ Í∞ÅÍ∞Å dependency Ï†ïÎ≥¥Î•º Í≤ÄÏÇ¨ÌïòÎ†§Í≥†
+ *     ÌñàÏúºÎÇò ÏΩîÎìú Î≥µÏû°ÎèÑÎßå ÎÜíÏïÑÏßÄÍ≥†, Í≤ÄÏÇ¨Ï°∞Í±¥ÏúºÎ°ú Ï†ïÌôïÌïòÍ≤å Í≤ÄÏÇ¨Ìï†
+ *     ÌïÑÏöîÍ∞Ä ÏóÜÏñ¥, ÌÅ¨Í≤å SFWGH Ï†ÑÏ≤¥Ïóê ÎåÄÌïú dependency Ï†ïÎ≥¥ÎßåÏúºÎ°ú
+ *     Í≥ÑÏÇ∞ÌïúÎã§. SFWGHÏùò dependencyÎäî SFWGH ÎÇ¥Ïùò inner dependencyÏôÄ
+ *     outer dependencyÏùò Ìï©ÏúºÎ°ú Í≥ÑÏÇ∞ÌïúÎã§.
  *
- *     ±◊∏Æ∞Ì, order-by ¿˝ø° ¥Î«ÿº≠¥¬ outer dependency∏¶ ∞°¡˙ ºˆ æ¯∞Ì,
- *     SFWGH dependencyø° º”«œπ«∑Œ ∫∞µµ∑Œ ∞Ì∑¡«“ « ø‰∞° æ¯¥Ÿ.
+ *     Í∑∏Î¶¨Í≥†, order-by Ï†àÏóê ÎåÄÌï¥ÏÑúÎäî outer dependencyÎ•º Í∞ÄÏßà Ïàò ÏóÜÍ≥†,
+ *     SFWGH dependencyÏóê ÏÜçÌïòÎØÄÎ°ú Î≥ÑÎèÑÎ°ú Í≥†Î†§Ìï† ÌïÑÏöîÍ∞Ä ÏóÜÎã§.
  *
  ***********************************************************************/
 
@@ -1244,7 +1244,7 @@ qmoViewMerging::checkDependency( qmsSFWGH     * aCurrentSFWGH,
     IDU_FIT_POINT_FATAL( "qmoViewMerging::checkDependency::__FT__" );
 
     //------------------------------------------
-    // ¿˚«’º∫ ∞ÀªÁ
+    // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
     //------------------------------------------
 
     IDE_DASSERT( aCurrentSFWGH != NULL );
@@ -1252,23 +1252,23 @@ qmoViewMerging::checkDependency( qmsSFWGH     * aCurrentSFWGH,
     IDE_DASSERT( aCanMerge != NULL );
 
     //------------------------------------------
-    // dependency ∞ÀªÁ
+    // dependency Í≤ÄÏÇ¨
     //------------------------------------------
 
-    // SFWGH¿« dependency
+    // SFWGHÏùò dependency
     sDepCount = aCurrentSFWGH->depInfo.depCount +
         aUnderSFWGH->depInfo.depCount;
 
-    // SFWGH¿« outer dependency
+    // SFWGHÏùò outer dependency
     sDepCount += aCurrentSFWGH->outerDepInfo.depCount +
         aUnderSFWGH->outerDepInfo.depCount;
 
     IDE_DASSERT( sDepCount > 0 );
     
-    // merge∑Œ ¡¶∞≈µ… view¿« dependency∏¶ «œ≥™ ª´¥Ÿ.
+    // mergeÎ°ú Ï†úÍ±∞Îê† viewÏùò dependencyÎ•º ÌïòÎÇò Î∫ÄÎã§.
     sDepCount -= 1;
     
-    // merge»ƒ ∞°¡˙ √÷¥Î dependency∑Œ ∞ÀªÁ«—¥Ÿ.
+    // mergeÌõÑ Í∞ÄÏßà ÏµúÎåÄ dependencyÎ°ú Í≤ÄÏÇ¨ÌïúÎã§.
     if ( sDepCount > QC_MAX_REF_TABLE_CNT )
     {
         sCanMerge = ID_FALSE;
@@ -1292,10 +1292,10 @@ qmoViewMerging::checkNormalForm( qcStatement  * aStatement,
 /***********************************************************************
  *
  * Description : PROJ-1413 Simple View Merging
- *     merge»ƒ predicate¿« normal form maximum¿ª ∞ÀªÁ«—¥Ÿ.
+ *     mergeÌõÑ predicateÏùò normal form maximumÏùÑ Í≤ÄÏÇ¨ÌïúÎã§.
  *
  * Implementation :
- *     µŒ where¿˝¿Ã AND∑Œ ø¨∞·µ… ∞Õ¿Ãπ«∑Œ √ﬂ¡§ ∞™¿ª ¥ı«œø© ∫Ò±≥«—¥Ÿ.
+ *     Îëê whereÏ†àÏù¥ ANDÎ°ú Ïó∞Í≤∞Îê† Í≤ÉÏù¥ÎØÄÎ°ú Ï∂îÏ†ï Í∞íÏùÑ ÎçîÌïòÏó¨ ÎπÑÍµêÌïúÎã§.
  *
  ***********************************************************************/
 
@@ -1307,7 +1307,7 @@ qmoViewMerging::checkNormalForm( qcStatement  * aStatement,
     IDU_FIT_POINT_FATAL( "qmoViewMerging::checkNormalForm::__FT__" );
 
     //------------------------------------------
-    // ¿˚«’º∫ ∞ÀªÁ
+    // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
     //------------------------------------------
     
     IDE_DASSERT( aStatement != NULL );
@@ -1316,7 +1316,7 @@ qmoViewMerging::checkNormalForm( qcStatement  * aStatement,
     IDE_DASSERT( aCanMerge != NULL );
 
     //------------------------------------------
-    // normal form ∞ÀªÁ
+    // normal form Í≤ÄÏÇ¨
     //------------------------------------------
 
     if ( aCurrentSFWGH->where != NULL )
@@ -1343,12 +1343,12 @@ qmoViewMerging::checkNormalForm( qcStatement  * aStatement,
     
     sNormalFormMaximum = QCG_GET_SESSION_NORMALFORM_MAXIMUM( aStatement );
 
-    // environment¿« ±‚∑œ
+    // environmentÏùò Í∏∞Î°ù
     qcgPlan::registerPlanProperty( aStatement,
                                    PLAN_PROPERTY_NORMAL_FORM_MAXIMUM );
     
-    // and∑Œ ø¨∞·µ… ∞Õ¿∏π«∑Œ ¥ı«œ∏È µ»¥Ÿ.
-    // »§¿∫ æÓ¥¿ «œ≥™∂Ûµµ normalFormMaxinum¿ª ≥—¿∏∏È merge«œ¡ˆ æ ¥¬¥Ÿ.
+    // andÎ°ú Ïó∞Í≤∞Îê† Í≤ÉÏúºÎØÄÎ°ú ÎçîÌïòÎ©¥ ÎêúÎã§.
+    // ÌòπÏùÄ Ïñ¥Îäê ÌïòÎÇòÎùºÎèÑ normalFormMaxinumÏùÑ ÎÑòÏúºÎ©¥ mergeÌïòÏßÄ ÏïäÎäîÎã§.
     if ( sCurrentEstimateCnfCnt + sUnderEstimateCnfCnt > sNormalFormMaximum )
     {
         sCanMerge = ID_FALSE;
@@ -1377,13 +1377,13 @@ qmoViewMerging::processMerging( qcStatement  * aStatement,
 /***********************************************************************
  *
  * Description : PROJ-1413 Simple View Merging
- *     ∞¢ ¿˝ø° ¥Î«œø© merge∏¶ ºˆ«‡«—¥Ÿ.
+ *     Í∞Å Ï†àÏóê ÎåÄÌïòÏó¨ mergeÎ•º ÏàòÌñâÌïúÎã§.
  *
  * Implementation :
- *     (1) hint ¿˝¿ª merge«—¥Ÿ.
- *     (2) from ¿˝¿ª merge«—¥Ÿ.
- *     (3) target list∏¶ merge«—¥Ÿ.
- *     (4) where ¿˝¿ª merge«—¥Ÿ.
+ *     (1) hint Ï†àÏùÑ mergeÌïúÎã§.
+ *     (2) from Ï†àÏùÑ mergeÌïúÎã§.
+ *     (3) target listÎ•º mergeÌïúÎã§.
+ *     (4) where Ï†àÏùÑ mergeÌïúÎã§.
  *
  ***********************************************************************/
 
@@ -1394,7 +1394,7 @@ qmoViewMerging::processMerging( qcStatement  * aStatement,
     IDU_FIT_POINT_FATAL( "qmoViewMerging::processMerging::__FT__" );
 
     //------------------------------------------
-    // ¿˚«’º∫ ∞ÀªÁ
+    // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
     //------------------------------------------
     
     IDE_DASSERT( aStatement != NULL );
@@ -1404,7 +1404,7 @@ qmoViewMerging::processMerging( qcStatement  * aStatement,
     IDE_DASSERT( aIsMerged != NULL );
 
     //------------------------------------------
-    // merge ºˆ«‡
+    // merge ÏàòÌñâ
     //------------------------------------------
 
     sRollbackInfo.hintMerged   = ID_FALSE;
@@ -1415,7 +1415,7 @@ qmoViewMerging::processMerging( qcStatement  * aStatement,
     while ( 1 )
     {
         //------------------------------------------
-        // hint ¿˝¿« merge ºˆ«‡
+        // hint Ï†àÏùò merge ÏàòÌñâ
         //------------------------------------------
 
         IDE_TEST( mergeForHint( aCurrentSFWGH,
@@ -1435,7 +1435,7 @@ qmoViewMerging::processMerging( qcStatement  * aStatement,
         }
     
         //------------------------------------------
-        // from ¿˝¿« merge ºˆ«‡
+        // from Ï†àÏùò merge ÏàòÌñâ
         //------------------------------------------
         
         IDE_TEST( mergeForFrom( aStatement,
@@ -1456,7 +1456,7 @@ qmoViewMerging::processMerging( qcStatement  * aStatement,
         }
     
         //------------------------------------------
-        // target list¿« merge ºˆ«‡
+        // target listÏùò merge ÏàòÌñâ
         //------------------------------------------
         
         IDE_TEST( mergeForTargetList( aStatement,
@@ -1476,7 +1476,7 @@ qmoViewMerging::processMerging( qcStatement  * aStatement,
         }
     
         //------------------------------------------
-        // where ¿˝¿« merge ºˆ«‡
+        // where Ï†àÏùò merge ÏàòÌñâ
         //------------------------------------------
         
         IDE_TEST( mergeForWhere( aStatement,
@@ -1496,10 +1496,10 @@ qmoViewMerging::processMerging( qcStatement  * aStatement,
         }
         
         //------------------------------------------
-        // ¥Ÿ¿Ω merge∏¶ ¿ß«— dependency ¡§∫∏ º≥¡§
+        // Îã§Ïùå mergeÎ•º ÏúÑÌïú dependency Ï†ïÎ≥¥ ÏÑ§Ï†ï
         //------------------------------------------
         
-        // view dependency ¡¶∞≈
+        // view dependency Ï†úÍ±∞
         qtc::dependencyRemove( aUnderFrom->tableRef->table,
                                & aCurrentSFWGH->depInfo,
                                & aCurrentSFWGH->depInfo );
@@ -1516,7 +1516,7 @@ qmoViewMerging::processMerging( qcStatement  * aStatement,
 
         //------------------------------------------
         // PROJ-2418
-        // LATERAL_VIEW Flag∏¶ Unmask «—¥Ÿ.
+        // LATERAL_VIEW FlagÎ•º Unmask ÌïúÎã§.
         //------------------------------------------
         aUnderFrom->tableRef->flag &= ~QMS_TABLE_REF_LATERAL_VIEW_MASK;
         aUnderFrom->tableRef->flag |= QMS_TABLE_REF_LATERAL_VIEW_FALSE;
@@ -1525,13 +1525,13 @@ qmoViewMerging::processMerging( qcStatement  * aStatement,
     }
     
     //------------------------------------------
-    // merge∞° Ω«∆–«— ∞ÊøÏ rollback ºˆ«‡
+    // mergeÍ∞Ä Ïã§Ìå®Ìïú Í≤ΩÏö∞ rollback ÏàòÌñâ
     //------------------------------------------
 
     if ( sIsMerged == ID_TRUE )
     {
         // PROJ-2179
-        // Mergeµ» ∞ÊøÏ ORDER BY∞˙ SELECT¿˝¿« attribute ¬¸¡∂ ∞¸∞Ë∞° ¿Áº≥¡§µ«æÓæﬂ «—¥Ÿ.
+        // MergeÎêú Í≤ΩÏö∞ ORDER BYÍ≥º SELECTÏ†àÏùò attribute Ï∞∏Ï°∞ Í¥ÄÍ≥ÑÍ∞Ä Ïû¨ÏÑ§Ï†ïÎêòÏñ¥Ïïº ÌïúÎã§.
         for( sTarget = aCurrentSFWGH->target;
              sTarget != NULL;
              sTarget = sTarget->next )
@@ -1592,7 +1592,7 @@ qmoViewMerging::mergeForHint( qmsSFWGH            * aCurrentSFWGH,
     IDU_FIT_POINT_FATAL( "qmoViewMerging::mergeForHint::__FT__" );
 
     //------------------------------------------
-    // ¿˚«’º∫ ∞ÀªÁ
+    // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
     //------------------------------------------
 
     IDE_DASSERT( aCurrentSFWGH != NULL );
@@ -1601,7 +1601,7 @@ qmoViewMerging::mergeForHint( qmsSFWGH            * aCurrentSFWGH,
     IDE_DASSERT( aIsMerged != NULL );
 
     //------------------------------------------
-    // rollbackInfo √ ±‚»≠
+    // rollbackInfo Ï¥àÍ∏∞Ìôî
     //------------------------------------------
 
     aRollbackInfo->hintMerged = ID_FALSE;
@@ -1609,7 +1609,7 @@ qmoViewMerging::mergeForHint( qmsSFWGH            * aCurrentSFWGH,
     aRollbackInfo->lastTableAccess = NULL;
     
     //------------------------------------------
-    // hint ¿˝¿« rollback ¡§∫∏ º≥¡§
+    // hint Ï†àÏùò rollback Ï†ïÎ≥¥ ÏÑ§Ï†ï
     //------------------------------------------
 
     // join method hint
@@ -1643,7 +1643,7 @@ qmoViewMerging::mergeForHint( qmsSFWGH            * aCurrentSFWGH,
     }
     
     //------------------------------------------
-    // hint ¿˝¿« merge ºˆ«‡
+    // hint Ï†àÏùò merge ÏàòÌñâ
     //------------------------------------------
 
     // join method hint
@@ -1659,8 +1659,8 @@ qmoViewMerging::mergeForHint( qmsSFWGH            * aCurrentSFWGH,
     }
 
     // PROJ-1718 Subquery unnesting
-    // Viewø° ∆˜«‘µ» relation¿Ã 1∞≥¿Œ ∞ÊøÏ outer queryø°º≠ º≥¡§«— join method hint∞°
-    // view merging ¿Ã»ƒø°µµ ¿Ø»ø«œµµ∑œ º≥¡§«—¥Ÿ.
+    // ViewÏóê Ìè¨Ìï®Îêú relationÏù¥ 1Í∞úÏù∏ Í≤ΩÏö∞ outer queryÏóêÏÑú ÏÑ§Ï†ïÌïú join method hintÍ∞Ä
+    // view merging Ïù¥ÌõÑÏóêÎèÑ Ïú†Ìö®ÌïòÎèÑÎ°ù ÏÑ§Ï†ïÌïúÎã§.
     if( aUnderSFWGH->from->next == NULL )
     {
         for( sJoinMethodHint = aCurrentSFWGH->hints->joinMethod;
@@ -1669,8 +1669,8 @@ qmoViewMerging::mergeForHint( qmsSFWGH            * aCurrentSFWGH,
         {
             qtc::dependencyClear( &sJoinMethodHint->depInfo );
 
-            // BUG-43923 NO_USE_SORT(a) »˘∆Æ∏¶ ªÁøÎ«œ∏È FATAL¿Ã πﬂª˝«’¥œ¥Ÿ.
-            // joinTables ¿Ã 1∞≥ ¿ÃªÛ¿œ∂ßµµ √≥∏Æ∞°¥…«œ∞‘ «—¥Ÿ.
+            // BUG-43923 NO_USE_SORT(a) ÌûåÌä∏Î•º ÏÇ¨Ïö©ÌïòÎ©¥ FATALÏù¥ Î∞úÏÉùÌï©ÎãàÎã§.
+            // joinTables Ïù¥ 1Í∞ú Ïù¥ÏÉÅÏùºÎïåÎèÑ Ï≤òÎ¶¨Í∞ÄÎä•ÌïòÍ≤å ÌïúÎã§.
             for ( sHintTable = sJoinMethodHint->joinTables;
                   sHintTable != NULL;
                   sHintTable = sHintTable->next )
@@ -1718,8 +1718,8 @@ qmoViewMerging::mergeForHint( qmsSFWGH            * aCurrentSFWGH,
     if ( aCurrentSFWGH->hints->interResultType
          == QMO_INTER_RESULT_TYPE_NOT_DEFINED )
     {
-        // «ˆ¿Á query blockø° ¡ﬂ∞£ ∞·∞˙ ≈∏¿‘ Hint∞° ¡÷æÓ¡ˆ¡ˆ æ ¿∫ ∞ÊøÏ,
-        // view¿« ¡ﬂ∞£ ∞·∞˙ ≈∏¿‘ Hint∏¶ ¿˚øÎ«—¥Ÿ.
+        // ÌòÑÏû¨ query blockÏóê Ï§ëÍ∞Ñ Í≤∞Í≥º ÌÉÄÏûÖ HintÍ∞Ä Ï£ºÏñ¥ÏßÄÏßÄ ÏïäÏùÄ Í≤ΩÏö∞,
+        // viewÏùò Ï§ëÍ∞Ñ Í≤∞Í≥º ÌÉÄÏûÖ HintÎ•º Ï†ÅÏö©ÌïúÎã§.
         aRollbackInfo->interResultType = QMO_INTER_RESULT_TYPE_NOT_DEFINED;
         
         aCurrentSFWGH->hints->interResultType =
@@ -1752,14 +1752,14 @@ qmoViewMerging::rollbackForHint( qmsSFWGH            * aCurrentSFWGH,
     IDU_FIT_POINT_FATAL( "qmoViewMerging::rollbackForHint::__FT__" );
 
     //------------------------------------------
-    // ¿˚«’º∫ ∞ÀªÁ
+    // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
     //------------------------------------------
 
     IDE_DASSERT( aCurrentSFWGH != NULL );
     IDE_DASSERT( aRollbackInfo != NULL );
 
     //------------------------------------------
-    // hint ¿˝¿« rollback ºˆ«‡
+    // hint Ï†àÏùò rollback ÏàòÌñâ
     //------------------------------------------
 
     if ( aRollbackInfo->hintMerged == ID_TRUE )
@@ -1785,7 +1785,7 @@ qmoViewMerging::rollbackForHint( qmsSFWGH            * aCurrentSFWGH,
         }
 
         // BUG-22236
-        // ¡ﬂ∞£ ∞·∞˙ ¿˙¿Â ≈∏¿‘ hint
+        // Ï§ëÍ∞Ñ Í≤∞Í≥º Ï†ÄÏû• ÌÉÄÏûÖ hint
         if ( aRollbackInfo->interResultType ==
              QMO_INTER_RESULT_TYPE_NOT_DEFINED )
         {
@@ -1830,7 +1830,7 @@ qmoViewMerging::mergeForTargetList( qcStatement         * aStatement,
     IDU_FIT_POINT_FATAL( "qmoViewMerging::mergeForTargetList::__FT__" );
 
     //------------------------------------------
-    // ¿˚«’º∫ ∞ÀªÁ
+    // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
     //------------------------------------------
     
     IDE_DASSERT( aStatement != NULL );
@@ -1840,13 +1840,13 @@ qmoViewMerging::mergeForTargetList( qcStatement         * aStatement,
     IDE_DASSERT( aIsMerged != NULL );
 
     //------------------------------------------
-    // rollbackInfo √ ±‚»≠
+    // rollbackInfo Ï¥àÍ∏∞Ìôî
     //------------------------------------------
     
     aRollbackInfo->targetMerged = ID_FALSE;
 
     //------------------------------------------
-    // target list¿« merge ºˆ«‡
+    // target listÏùò merge ÏàòÌñâ
     //------------------------------------------
 
     for ( sColumnRef = aUnderTableRef->viewColumnRefList;
@@ -1855,7 +1855,7 @@ qmoViewMerging::mergeForTargetList( qcStatement         * aStatement,
     {
         if ( sColumnRef->column->node.module == & qtc::passModule )
         {
-            // view ¬¸¡∂ ƒ√∑≥¿Ãæ˙¥Ÿ∞° passNode∑Œ πŸ≤Ô∞ÊøÏ
+            // view Ï∞∏Ï°∞ Ïª¨ÎüºÏù¥ÏóàÎã§Í∞Ä passNodeÎ°ú Î∞îÎÄêÍ≤ΩÏö∞
 
             // Nothing to do.
         }
@@ -1865,8 +1865,8 @@ qmoViewMerging::mergeForTargetList( qcStatement         * aStatement,
                  == QTC_NODE_MERGED_COLUMN_TRUE )
             {
                 // BUG-23467
-                // case when ∞∞¿∫ «œ≥™¿« ≥ÎµÂ∏¶ ∞¯¿Ø«ÿº≠ ªÁøÎ«œ¥¬ ø¨ªÍ¿⁄¿« ∞ÊøÏ
-                // ¿ÃπÃ merge∏¶ ºˆ«‡«ﬂ¿ª ºˆ µµ ¿÷¥Ÿ.
+                // case when Í∞ôÏùÄ ÌïòÎÇòÏùò ÎÖ∏ÎìúÎ•º Í≥µÏú†Ìï¥ÏÑú ÏÇ¨Ïö©ÌïòÎäî Ïó∞ÏÇ∞ÏûêÏùò Í≤ΩÏö∞
+                // Ïù¥ÎØ∏ mergeÎ•º ÏàòÌñâÌñàÏùÑ Ïàò ÎèÑ ÏûàÎã§.
                 
                 // Nothing to do.
             }
@@ -1904,7 +1904,7 @@ qmoViewMerging::mergeForTargetList( qcStatement         * aStatement,
                 }
                 else if ( sViewTarget->targetColumn->node.module == & qtc::valueModule )
                 {
-                    // view target¿Ã ªÛºˆ¿Œ ∞ÊøÏ
+                    // view targetÏù¥ ÏÉÅÏàòÏù∏ Í≤ΩÏö∞
                 
                     IDE_TEST( mergeForTargetValue( aStatement,
                                                    sColumnRef,
@@ -1914,7 +1914,7 @@ qmoViewMerging::mergeForTargetList( qcStatement         * aStatement,
                 }
                 else
                 {
-                    // view target¿Ã expression¿Œ ∞ÊøÏ
+                    // view targetÏù¥ expressionÏù∏ Í≤ΩÏö∞
                 
                     IDE_TEST( mergeForTargetExpression( aStatement,
                                                         aUnderSFWGH,
@@ -1962,7 +1962,7 @@ qmoViewMerging::mergeForTargetColumn( qcStatement         * aStatement,
 /***********************************************************************
  *
  * Description : PROJ-1413 Simple View Merging
- *     target¿Ã º¯ºˆ ƒ√∑≥¿œ ∂ß merge∏¶ ºˆ«‡«—¥Ÿ.
+ *     targetÏù¥ ÏàúÏàò Ïª¨ÎüºÏùº Îïå mergeÎ•º ÏàòÌñâÌïúÎã§.
  *
  * Implementation :
  *
@@ -1976,7 +1976,7 @@ qmoViewMerging::mergeForTargetColumn( qcStatement         * aStatement,
     IDU_FIT_POINT_FATAL( "qmoViewMerging::mergeForTargetColumn::__FT__" );
 
     //------------------------------------------
-    // ¿˚«’º∫ ∞ÀªÁ
+    // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
     //------------------------------------------
     
     IDE_DASSERT( aStatement != NULL );
@@ -1985,7 +1985,7 @@ qmoViewMerging::mergeForTargetColumn( qcStatement         * aStatement,
     IDE_DASSERT( aIsMerged != NULL );
     
     //------------------------------------------
-    // target¿« rollback ¡§∫∏ º≥¡§
+    // targetÏùò rollback Ï†ïÎ≥¥ ÏÑ§Ï†ï
     //------------------------------------------
     
     IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF(qtcNode),
@@ -1996,19 +1996,19 @@ qmoViewMerging::mergeForTargetColumn( qcStatement         * aStatement,
                    ID_SIZEOF( qtcNode ) );
 
     //------------------------------------------
-    // target¿« merge ºˆ«‡
+    // targetÏùò merge ÏàòÌñâ
     //------------------------------------------
 
-    // ≥ÎµÂ∏¶ ƒ°»Ø«—¥Ÿ.
+    // ÎÖ∏ÎìúÎ•º ÏπòÌôòÌïúÎã§.
     idlOS::memcpy( aColumnRef->column, aTargetColumn,
                    ID_SIZEOF( qtcNode ) );
 
     // To fix BUG-21405
-    // º¯ºˆ ƒ√∑≥¿Œ ∞ÊøÏ ªı∑Œ estimate ∏¶ «œ¡ˆ æ ¿∏π«∑Œ
-    // push projection∞¸∑√ flag∞° setµ«¡ˆ æ ¥¬¥Ÿ.
-    // ƒ√∑≥ ƒ°»Ø¿ª «“ ∂ß ƒ√∑≥¿« flagµµ ORing«—¥Ÿ.
+    // ÏàúÏàò Ïª¨ÎüºÏù∏ Í≤ΩÏö∞ ÏÉàÎ°ú estimate Î•º ÌïòÏßÄ ÏïäÏúºÎØÄÎ°ú
+    // push projectionÍ¥ÄÎ†® flagÍ∞Ä setÎêòÏßÄ ÏïäÎäîÎã§.
+    // Ïª¨Îüº ÏπòÌôòÏùÑ Ìï† Îïå Ïª¨ÎüºÏùò flagÎèÑ ORingÌïúÎã§.
     // To fix BUG-21425
-    // disk tableø° «—«ÿ flag∏¶ ORing«—¥Ÿ.
+    // disk tableÏóê ÌïúÌï¥ flagÎ•º ORingÌïúÎã§.
 
     sTargetTuple  = QTC_STMT_TUPLE( aStatement, aColumnRef->column );
     sTargetColumn = QTC_TUPLE_COLUMN( sTargetTuple, aColumnRef->column );
@@ -2027,19 +2027,19 @@ qmoViewMerging::mergeForTargetColumn( qcStatement         * aStatement,
         // Nothing to do.
     }
         
-    // conversion ≥ÎµÂ∏¶ ø≈±‰¥Ÿ.
+    // conversion ÎÖ∏ÎìúÎ•º ÏòÆÍ∏¥Îã§.
     aColumnRef->column->node.conversion = aColumnRef->orgColumn->node.conversion;
     aColumnRef->column->node.leftConversion = aColumnRef->orgColumn->node.leftConversion;
 
-    // next∏¶ ø≈±‰¥Ÿ.
+    // nextÎ•º ÏòÆÍ∏¥Îã§.
     aColumnRef->column->node.next = aColumnRef->orgColumn->node.next;
     
-    // name¿ª º≥¡§«—¥Ÿ.
+    // nameÏùÑ ÏÑ§Ï†ïÌïúÎã§.
     SET_POSITION( aColumnRef->column->userName, aColumnRef->orgColumn->userName );
     SET_POSITION( aColumnRef->column->tableName, aColumnRef->orgColumn->tableName );
     SET_POSITION( aColumnRef->column->columnName, aColumnRef->orgColumn->columnName );
 
-    // flag∏¶ º≥¡§«—¥Ÿ.
+    // flagÎ•º ÏÑ§Ï†ïÌïúÎã§.
     aColumnRef->column->lflag &= ~QTC_NODE_MERGED_COLUMN_MASK;
     aColumnRef->column->lflag |= QTC_NODE_MERGED_COLUMN_TRUE;
         
@@ -2063,7 +2063,7 @@ qmoViewMerging::mergeForTargetValue( qcStatement         * aStatement,
 /***********************************************************************
  *
  * Description : PROJ-1413 Simple View Merging
- *     target¿Ã ªÛºˆ¿œ ∂ß merge∏¶ ºˆ«‡«—¥Ÿ.
+ *     targetÏù¥ ÏÉÅÏàòÏùº Îïå mergeÎ•º ÏàòÌñâÌïúÎã§.
  *
  * Implementation :
  *
@@ -2074,7 +2074,7 @@ qmoViewMerging::mergeForTargetValue( qcStatement         * aStatement,
     IDU_FIT_POINT_FATAL( "qmoViewMerging::mergeForTargetValue::__FT__" );
 
     //------------------------------------------
-    // ¿˚«’º∫ ∞ÀªÁ
+    // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
     //------------------------------------------
     
     IDE_DASSERT( aStatement != NULL );
@@ -2083,7 +2083,7 @@ qmoViewMerging::mergeForTargetValue( qcStatement         * aStatement,
     IDE_DASSERT( aIsMerged != NULL );
     
     //------------------------------------------
-    // target¿« rollback ¡§∫∏ º≥¡§
+    // targetÏùò rollback Ï†ïÎ≥¥ ÏÑ§Ï†ï
     //------------------------------------------
     
     IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF(qtcNode),
@@ -2094,21 +2094,21 @@ qmoViewMerging::mergeForTargetValue( qcStatement         * aStatement,
                    ID_SIZEOF( qtcNode ) );
 
     //------------------------------------------
-    // target¿« merge ºˆ«‡
+    // targetÏùò merge ÏàòÌñâ
     //------------------------------------------
 
-    // ≥ÎµÂ∏¶ ƒ°»Ø«—¥Ÿ.
+    // ÎÖ∏ÎìúÎ•º ÏπòÌôòÌïúÎã§.
     idlOS::memcpy( aColumnRef->column, aTargetColumn,
                    ID_SIZEOF( qtcNode ) );
  
-    // conversion ≥ÎµÂ∏¶ ø≈±‰¥Ÿ.
+    // conversion ÎÖ∏ÎìúÎ•º ÏòÆÍ∏¥Îã§.
     aColumnRef->column->node.conversion = aColumnRef->orgColumn->node.conversion;
     aColumnRef->column->node.leftConversion = aColumnRef->orgColumn->node.leftConversion;
     
-    // next∏¶ ø≈±‰¥Ÿ.
+    // nextÎ•º ÏòÆÍ∏¥Îã§.
     aColumnRef->column->node.next = aColumnRef->orgColumn->node.next;
     
-    // flag∏¶ º≥¡§«—¥Ÿ.
+    // flagÎ•º ÏÑ§Ï†ïÌïúÎã§.
     aColumnRef->column->lflag &= ~QTC_NODE_MERGED_COLUMN_MASK;
     aColumnRef->column->lflag |= QTC_NODE_MERGED_COLUMN_TRUE;
     
@@ -2133,15 +2133,15 @@ qmoViewMerging::mergeForTargetExpression( qcStatement         * aStatement,
 /***********************************************************************
  *
  * Description : PROJ-1413 Simple View Merging
- *     target¿Ã expression¿œ ∂ß merge∏¶ ºˆ«‡«—¥Ÿ.
+ *     targetÏù¥ expressionÏùº Îïå mergeÎ•º ÏàòÌñâÌïúÎã§.
  *
  * Implementation :
- *     (1) view ƒ√∑≥ ≥ÎµÂ∏¶ ∫πªÁ ª˝º∫«œø© ∫∏∞¸«—¥Ÿ.
- *     (2) expr ≥ÎµÂ ∞·∞˙∏¶ ¿˙¿Â«“ template ∞¯∞£¿ª «“¥Á«—¥Ÿ.
- *     (3) expr ≥ÎµÂ ∆Æ∏Æ∏¶ ∫πªÁ ª˝º∫«—¥Ÿ.
- *     (4) ∫πªÁ ª˝º∫«— expr¿« √÷ªÛ¿ß ≥ÎµÂ¿« ¿˙¿Â ∞¯∞£¿ª ∫Ø∞Ê«—¥Ÿ.
- *     (5) view ƒ√∑≥¿« conversion ≥ÎµÂ∏¶ expr¿« √÷ªÛ¿ß ≥ÎµÂ∑Œ ø≈±‰¥Ÿ.
- *     (6) view ƒ√∑≥∞˙ expr¿« √÷ªÛ¿ß ≥ÎµÂ∏¶ ƒ°»Ø«—¥Ÿ.
+ *     (1) view Ïª¨Îüº ÎÖ∏ÎìúÎ•º Î≥µÏÇ¨ ÏÉùÏÑ±ÌïòÏó¨ Î≥¥Í¥ÄÌïúÎã§.
+ *     (2) expr ÎÖ∏Îìú Í≤∞Í≥ºÎ•º Ï†ÄÏû•Ìï† template Í≥µÍ∞ÑÏùÑ Ìï†ÎãπÌïúÎã§.
+ *     (3) expr ÎÖ∏Îìú Ìä∏Î¶¨Î•º Î≥µÏÇ¨ ÏÉùÏÑ±ÌïúÎã§.
+ *     (4) Î≥µÏÇ¨ ÏÉùÏÑ±Ìïú exprÏùò ÏµúÏÉÅÏúÑ ÎÖ∏ÎìúÏùò Ï†ÄÏû• Í≥µÍ∞ÑÏùÑ Î≥ÄÍ≤ΩÌïúÎã§.
+ *     (5) view Ïª¨ÎüºÏùò conversion ÎÖ∏ÎìúÎ•º exprÏùò ÏµúÏÉÅÏúÑ ÎÖ∏ÎìúÎ°ú ÏòÆÍ∏¥Îã§.
+ *     (6) view Ïª¨ÎüºÍ≥º exprÏùò ÏµúÏÉÅÏúÑ ÎÖ∏ÎìúÎ•º ÏπòÌôòÌïúÎã§.
  *
  ***********************************************************************/
 
@@ -2152,7 +2152,7 @@ qmoViewMerging::mergeForTargetExpression( qcStatement         * aStatement,
     IDU_FIT_POINT_FATAL( "qmoViewMerging::mergeForTargetExpression::__FT__" );
 
     //------------------------------------------
-    // ¿˚«’º∫ ∞ÀªÁ
+    // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
     //------------------------------------------
     
     IDE_DASSERT( aStatement != NULL );
@@ -2162,7 +2162,7 @@ qmoViewMerging::mergeForTargetExpression( qcStatement         * aStatement,
     IDE_DASSERT( aIsMerged != NULL );
     
     //------------------------------------------
-    // target¿« rollback ¡§∫∏ º≥¡§
+    // targetÏùò rollback Ï†ïÎ≥¥ ÏÑ§Ï†ï
     //------------------------------------------
     
     IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF(qtcNode),
@@ -2173,35 +2173,35 @@ qmoViewMerging::mergeForTargetExpression( qcStatement         * aStatement,
                    ID_SIZEOF( qtcNode ) );
 
     //------------------------------------------
-    // target¿« merge ºˆ«‡
+    // targetÏùò merge ÏàòÌñâ
     //------------------------------------------
 
-    // expr¿« ∞·∞˙∏¶ ¿˙¿Â«“ template ∞¯∞£¿ª ª˝º∫«—¥Ÿ.
+    // exprÏùò Í≤∞Í≥ºÎ•º Ï†ÄÏû•Ìï† template Í≥µÍ∞ÑÏùÑ ÏÉùÏÑ±ÌïúÎã§.
     IDE_TEST( qtc::makeNode( aStatement,
                              sNode,
                              & aTargetColumn->position,
                              (mtfModule*) aTargetColumn->node.module )
               != IDE_SUCCESS );
 
-    // expr ≥ÎµÂ ∆Æ∏Æ∏¶ ∫πªÁ ª˝º∫«—¥Ÿ.
+    // expr ÎÖ∏Îìú Ìä∏Î¶¨Î•º Î≥µÏÇ¨ ÏÉùÏÑ±ÌïúÎã§.
     IDE_TEST( qtc::cloneQTCNodeTree( QC_QMP_MEM(aStatement),
                                      (qtcNode*) aTargetColumn,
                                      & sNewNode,
-                                     ID_FALSE,  // root¿« next¥¬ ∫πªÁ«œ¡ˆ æ ¥¬¥Ÿ.
-                                     ID_TRUE,   // conversion¿ª ≤˜¥¬¥Ÿ.
-                                     ID_TRUE,   // constant node±Ó¡ˆ ∫πªÁ«—¥Ÿ.
-                                     ID_TRUE )  // constant node∏¶ ø¯∫π«—¥Ÿ.
+                                     ID_FALSE,  // rootÏùò nextÎäî Î≥µÏÇ¨ÌïòÏßÄ ÏïäÎäîÎã§.
+                                     ID_TRUE,   // conversionÏùÑ ÎÅäÎäîÎã§.
+                                     ID_TRUE,   // constant nodeÍπåÏßÄ Î≥µÏÇ¨ÌïúÎã§.
+                                     ID_TRUE )  // constant nodeÎ•º ÏõêÎ≥µÌïúÎã§.
               != IDE_SUCCESS );
 
-    // template ¿ßƒ°∏¶ ∫Ø∞Ê«—¥Ÿ.
+    // template ÏúÑÏπòÎ•º Î≥ÄÍ≤ΩÌïúÎã§.
     sNewNode->node.table = sNode[0]->node.table;
     sNewNode->node.column = sNode[0]->node.column;
 
-    // BUG-45187 view merge Ω√ø° baseTable º≥¡§«ÿæﬂ «’¥œ¥Ÿ.
+    // BUG-45187 view merge ÏãúÏóê baseTable ÏÑ§Ï†ïÌï¥Ïïº Ìï©ÎãàÎã§.
     sNewNode->node.baseTable = sNode[0]->node.baseTable;
     sNewNode->node.baseColumn = sNode[0]->node.baseColumn;
 
-    // estimate∏¶ ºˆ«‡«—¥Ÿ. (√ ±‚»≠«—¥Ÿ.)
+    // estimateÎ•º ÏàòÌñâÌïúÎã§. (Ï¥àÍ∏∞ÌôîÌïúÎã§.)
     IDE_TEST( qtc::estimate( sNewNode,
                              QC_SHARED_TMPLATE(aStatement),
                              aStatement,
@@ -2210,18 +2210,18 @@ qmoViewMerging::mergeForTargetExpression( qcStatement         * aStatement,
                              NULL )
               != IDE_SUCCESS );
 
-    // conversion ≥ÎµÂ∏¶ ø≈±‰¥Ÿ.
+    // conversion ÎÖ∏ÎìúÎ•º ÏòÆÍ∏¥Îã§.
     sNewNode->node.conversion = aColumnRef->column->node.conversion;
     sNewNode->node.leftConversion = aColumnRef->column->node.leftConversion;
 
-    // next∏¶ ø≈±‰¥Ÿ.
+    // nextÎ•º ÏòÆÍ∏¥Îã§.
     sNewNode->node.next = aColumnRef->column->node.next;
     
-    // ≥ÎµÂ∏¶ ƒ°»Ø«—¥Ÿ.
+    // ÎÖ∏ÎìúÎ•º ÏπòÌôòÌïúÎã§.
     idlOS::memcpy( aColumnRef->column, sNewNode,
                    ID_SIZEOF( qtcNode ) );
 
-    // flag∏¶ º≥¡§«—¥Ÿ.
+    // flagÎ•º ÏÑ§Ï†ïÌïúÎã§.
     aColumnRef->column->lflag &= ~QTC_NODE_MERGED_COLUMN_MASK;
     aColumnRef->column->lflag |= QTC_NODE_MERGED_COLUMN_TRUE;
     
@@ -2253,14 +2253,14 @@ qmoViewMerging::rollbackForTargetList( qmsTableRef         * aUnderTableRef,
     IDU_FIT_POINT_FATAL( "qmoViewMerging::rollbackForTargetList::__FT__" );
 
     //------------------------------------------
-    // ¿˚«’º∫ ∞ÀªÁ
+    // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
     //------------------------------------------
 
     IDE_DASSERT( aUnderTableRef != NULL );
     IDE_DASSERT( aRollbackInfo != NULL );
     
     //------------------------------------------
-    // target list¿« rollback ºˆ«‡
+    // target listÏùò rollback ÏàòÌñâ
     //------------------------------------------
 
     if ( aRollbackInfo->targetMerged == ID_TRUE )
@@ -2315,7 +2315,7 @@ qmoViewMerging::mergeForFrom( qcStatement         * aStatement,
     IDU_FIT_POINT_FATAL( "qmoViewMerging::mergeForFrom::__FT__" );
 
     //------------------------------------------
-    // ¿˚«’º∫ ∞ÀªÁ
+    // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
     //------------------------------------------
     
     IDE_DASSERT( aStatement != NULL );
@@ -2326,7 +2326,7 @@ qmoViewMerging::mergeForFrom( qcStatement         * aStatement,
     IDE_DASSERT( aIsMerged != NULL );
 
     //------------------------------------------
-    // rollbackInfo √ ±‚»≠
+    // rollbackInfo Ï¥àÍ∏∞Ìôî
     //------------------------------------------
 
     aRollbackInfo->fromMerged = ID_FALSE;
@@ -2336,7 +2336,7 @@ qmoViewMerging::mergeForFrom( qcStatement         * aStatement,
     aRollbackInfo->newAliasName = NULL;
     
     //------------------------------------------
-    // from ¿˝¿« rollback ¡§∫∏ º≥¡§
+    // from Ï†àÏùò rollback Ï†ïÎ≥¥ ÏÑ§Ï†ï
     //------------------------------------------
 
     // currentSFWGH
@@ -2369,7 +2369,7 @@ qmoViewMerging::mergeForFrom( qcStatement         * aStatement,
 
     if ( sAliasCount > 0 )
     {
-        // old alias name¿« ∫∏∞¸
+        // old alias nameÏùò Î≥¥Í¥Ä
         IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF(qcNamePosition) * sAliasCount,
                                                  (void **) & aRollbackInfo->oldAliasName )
                   != IDE_SUCCESS );
@@ -2380,14 +2380,14 @@ qmoViewMerging::mergeForFrom( qcStatement         * aStatement,
         {
             if ( sFrom->joinType == QMS_NO_JOIN )
             {
-                // tuple variable ¿˙¿Â
+                // tuple variable Ï†ÄÏû•
                 SET_POSITION( (*sAliasName), sFrom->tableRef->aliasName );
                 
                 sAliasName++;
             }
             else
             {
-                // joined table¿∫ tuple variable¿ª ∞Æ¡ˆ æ ¥¬¥Ÿ.
+                // joined tableÏùÄ tuple variableÏùÑ Í∞ñÏßÄ ÏïäÎäîÎã§.
                 
                 // Nothing to do.
             }
@@ -2395,18 +2395,18 @@ qmoViewMerging::mergeForFrom( qcStatement         * aStatement,
     }
     else
     {
-        // from ¿˝¿Ã joined table∑Œ∏∏ ¿Ã∑ÁæÓ¡¯ ∞ÊøÏ aliasCount∞° 0¿Ã¥Ÿ.
+        // from Ï†àÏù¥ joined tableÎ°úÎßå Ïù¥Î£®Ïñ¥ÏßÑ Í≤ΩÏö∞ aliasCountÍ∞Ä 0Ïù¥Îã§.
         
         // Nothing to do.
     }
 
     //------------------------------------------
-    // tuple variable ª˝º∫
+    // tuple variable ÏÉùÏÑ±
     //------------------------------------------
 
     if ( sAliasCount > 0 )
     {
-        // new alias name¿« ∫∏∞¸
+        // new alias nameÏùò Î≥¥Í¥Ä
         IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF(qcNamePosition) * sAliasCount,
                                                  (void **) & aRollbackInfo->newAliasName )
                   != IDE_SUCCESS );
@@ -2449,7 +2449,7 @@ qmoViewMerging::mergeForFrom( qcStatement         * aStatement,
     }
         
     //------------------------------------------
-    // from ¿˝¿« merge ºˆ«‡
+    // from Ï†àÏùò merge ÏàòÌñâ
     //------------------------------------------
 
     if ( sIsCreated == ID_TRUE )
@@ -2458,14 +2458,14 @@ qmoViewMerging::mergeForFrom( qcStatement         * aStatement,
         {
             sAliasName = aRollbackInfo->newAliasName;
 
-            // new alias∑Œ ∫Ø∞Ê«—¥Ÿ.
+            // new aliasÎ°ú Î≥ÄÍ≤ΩÌïúÎã§.
             for ( sFrom = aUnderSFWGH->from; sFrom != NULL; sFrom = sFrom->next )
             {
                 if ( sFrom->joinType == QMS_NO_JOIN )
                 {
                     SET_POSITION( sFrom->tableRef->aliasName, (*sAliasName) );
                     
-                    // mergeø° ¿««ÿ ª˝º∫µ» alias¿”¿ª ±‚∑œ«—¥Ÿ.
+                    // mergeÏóê ÏùòÌï¥ ÏÉùÏÑ±Îêú aliasÏûÑÏùÑ Í∏∞Î°ùÌïúÎã§.
                     sFrom->tableRef->isNewAliasName = ID_TRUE;
                     
                     sAliasName++;
@@ -2477,7 +2477,7 @@ qmoViewMerging::mergeForFrom( qcStatement         * aStatement,
             }
 
             // PROJ-1718 Subquery unnesting
-            // View∞° ∞Æ∞Ì¿÷¥¯ semi/anti join¿« dependency ¡§∫∏∏¶ table¿Ã ∞Æµµ∑œ º≥¡§
+            // ViewÍ∞Ä Í∞ñÍ≥†ÏûàÎçò semi/anti joinÏùò dependency Ï†ïÎ≥¥Î•º tableÏù¥ Í∞ñÎèÑÎ°ù ÏÑ§Ï†ï
             if( ( aUnderSFWGH->from->next == NULL ) &&
                 ( qtc::haveDependencies( &aUnderFrom->semiAntiJoinDepInfo ) == ID_TRUE ) )
             {
@@ -2504,7 +2504,7 @@ qmoViewMerging::mergeForFrom( qcStatement         * aStatement,
     }
     else
     {
-        // merge∞° Ω«∆–«ﬂ¥Ÿ.
+        // mergeÍ∞Ä Ïã§Ìå®ÌñàÎã§.
         sIsMerged = ID_FALSE;
     }
 
@@ -2530,13 +2530,13 @@ qmoViewMerging::makeTupleVariable( qcStatement    * aStatement,
 /***********************************************************************
  *
  * Description : PROJ-1413 Simple View Merging
- *     from¿˝¿« mergeΩ√ ªÁøÎ«“ tuple variable¿ª ª˝º∫«—¥Ÿ.
+ *     fromÏ†àÏùò mergeÏãú ÏÇ¨Ïö©Ìï† tuple variableÏùÑ ÏÉùÏÑ±ÌïúÎã§.
  *
  *     [Enhancement]
- *     ªÛººº≥∞ËΩ√ 'SYS_ALIAS_n_'∂Û¥¬ prefix∏¶ ªÁøÎ«œ∑¡«ﬂ¿∏≥™ ≥ π´ ±ÊæÓ
- *     ø¿»˜∑¡ ∞°µ∂º∫¿Ã ∂≥æÓ¡Æ, ∫∏¥Ÿ ¬™¿∫ '$$n_'∑Œ ∫Ø∞Ê«—¥Ÿ.
- *     ±◊∏Æ∞Ì viewøÕ table¿« ¿Ã∏ß _∞° ∏π¿Ã ªÁøÎµ«π«∑Œ ±∏∫–¿⁄∑Œ
- *     '_$'∏¶ ªÁøÎ«œø© ¥ı ¿ﬂ ±∏∫–µ«µµ∑œ ∫Ø∞Ê«—¥Ÿ.
+ *     ÏÉÅÏÑ∏ÏÑ§Í≥ÑÏãú 'SYS_ALIAS_n_'ÎùºÎäî prefixÎ•º ÏÇ¨Ïö©ÌïòÎ†§ÌñàÏúºÎÇò ÎÑàÎ¨¥ Í∏∏Ïñ¥
+ *     Ïò§ÌûàÎ†§ Í∞ÄÎèÖÏÑ±Ïù¥ Îñ®Ïñ¥Ï†∏, Î≥¥Îã§ ÏßßÏùÄ '$$n_'Î°ú Î≥ÄÍ≤ΩÌïúÎã§.
+ *     Í∑∏Î¶¨Í≥† viewÏôÄ tableÏùò Ïù¥Î¶Ñ _Í∞Ä ÎßéÏù¥ ÏÇ¨Ïö©ÎêòÎØÄÎ°ú Íµ¨Î∂ÑÏûêÎ°ú
+ *     '_$'Î•º ÏÇ¨Ïö©ÌïòÏó¨ Îçî Ïûò Íµ¨Î∂ÑÎêòÎèÑÎ°ù Î≥ÄÍ≤ΩÌïúÎã§.
  *
  *     ex) $$1_$view_$table
  *         $$2_$view_v2_$view_v1_$table
@@ -2561,7 +2561,7 @@ qmoViewMerging::makeTupleVariable( qcStatement    * aStatement,
     IDU_FIT_POINT_FATAL( "qmoViewMerging::makeTupleVariable::__FT__" );
 
     //------------------------------------------
-    // ¿˚«’º∫ ∞ÀªÁ
+    // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -2571,12 +2571,12 @@ qmoViewMerging::makeTupleVariable( qcStatement    * aStatement,
     IDE_DASSERT( aIsCreated != NULL );
 
     //------------------------------------------
-    // √ ±‚»≠
+    // Ï¥àÍ∏∞Ìôî
     //------------------------------------------
 
     sTemplate = QC_SHARED_TMPLATE(aStatement);
     
-    // $$1_ ∫Œ≈Õ Ω√¿€«—¥Ÿ.
+    // $$1_ Î∂ÄÌÑ∞ ÏãúÏûëÌïúÎã§.
     if ( sTemplate->tupleVarGenNumber == 0 )
     {
         sTemplate->tupleVarGenNumber = 1;
@@ -2586,12 +2586,12 @@ qmoViewMerging::makeTupleVariable( qcStatement    * aStatement,
         // Nothing to do.
     }
 
-    // default name¿« √ ±‚»≠
+    // default nameÏùò Ï¥àÍ∏∞Ìôî
     sDefaultName.stmtText = DEFAULT_VIEW_NAME;
     sDefaultName.offset   = 0;
     sDefaultName.size     = DEFAULT_VIEW_NAME_LEN;
     
-    // ¿Ã∏ß æ¯¥¬ view¿« ¿Ã∏ß¿ª default∑Œ πŸ≤€¥Ÿ.
+    // Ïù¥Î¶Ñ ÏóÜÎäî viewÏùò Ïù¥Î¶ÑÏùÑ defaultÎ°ú Î∞îÍæºÎã§.
     if ( QC_IS_NULL_NAME( (*aViewName) ) == ID_TRUE )
     {
         sViewName = & sDefaultName;
@@ -2601,8 +2601,8 @@ qmoViewMerging::makeTupleVariable( qcStatement    * aStatement,
         sViewName = aViewName;
     }
 
-    // ¿Ã∏ß æ¯¥¬ table¿« ¿Ã∏ß¿ª default∑Œ πŸ≤€¥Ÿ.
-    // (mergeµ«¡ˆ æ ¿∫ ¿Ã∏ßæ¯¥¬ view¿Œ ∞ÊøÏ)
+    // Ïù¥Î¶Ñ ÏóÜÎäî tableÏùò Ïù¥Î¶ÑÏùÑ defaultÎ°ú Î∞îÍæºÎã§.
+    // (mergeÎêòÏßÄ ÏïäÏùÄ Ïù¥Î¶ÑÏóÜÎäî viewÏù∏ Í≤ΩÏö∞)
     if ( QC_IS_NULL_NAME( (*aTableName) ) == ID_TRUE )
     {
         sTableName = & sDefaultName;
@@ -2613,41 +2613,41 @@ qmoViewMerging::makeTupleVariable( qcStatement    * aStatement,
     }
 
     //------------------------------------------
-    // name buffer ª˝º∫
+    // name buffer ÏÉùÏÑ±
     //------------------------------------------
 
-    // name buffer length √ﬂ¡§
+    // name buffer length Ï∂îÏ†ï
     if ( aIsNewTableName == ID_FALSE )
     {
-        // √÷√  mergeµ«¥¬ ∞ÊøÏ
-        // ex) view V1¿« T1 -> $$1_$V1_$T1
+        // ÏµúÏ¥à mergeÎêòÎäî Í≤ΩÏö∞
+        // ex) view V1Ïùò T1 -> $$1_$V1_$T1
         //                     ~~~~ ~~  ~~
         sNameLen = QC_TUPLE_VAR_HEADER_SIZE +
             sViewName->size +
             sTableName->size +
-            4 +   // 2∞≥¿« '_$'
-            10 +  // º˝¿⁄¿« ±Ê¿Ã √÷¥Î 10
+            4 +   // 2Í∞úÏùò '_$'
+            10 +  // Ïà´ÏûêÏùò Í∏∏Ïù¥ ÏµúÎåÄ 10
             1;    // '\0'
     }
     else
     {
-        // ¿ÃπÃ «—π¯ mergeµ«æÓ tule variable header∏¶ ∞°¡¯ ∞ÊøÏ
-        // ex) view V2¿« $$1_$V1_$T1 -> $$2_$V2_$V1_$T1
+        // Ïù¥ÎØ∏ ÌïúÎ≤à mergeÎêòÏñ¥ tule variable headerÎ•º Í∞ÄÏßÑ Í≤ΩÏö∞
+        // ex) view V2Ïùò $$1_$V1_$T1 -> $$2_$V2_$V1_$T1
         //                              ~~~~ ~~ ~~~~~~~
         sNameLen = sTableName->size +
             sViewName->size +
-            2 +   // 1∞≥¿« '_$'
-            10 +  // º˝¿⁄¿« ±Ê¿Ã √÷¥Î 10
+            2 +   // 1Í∞úÏùò '_$'
+            10 +  // Ïà´ÏûêÏùò Í∏∏Ïù¥ ÏµúÎåÄ 10
             1;    // '\0'
     }
     
-    // name buffer ª˝º∫
+    // name buffer ÏÉùÏÑ±
     IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF(SChar) * sNameLen,
                                              (void **) & sNameBuffer )
               != IDE_SUCCESS );
 
     //------------------------------------------
-    // tuple variable ª˝º∫
+    // tuple variable ÏÉùÏÑ±
     //------------------------------------------
     
     for ( i = 0; i < MAKE_TUPLE_RETRY_COUNT; i++ )
@@ -2684,8 +2684,8 @@ qmoViewMerging::makeTupleVariable( qcStatement    * aStatement,
         }
         else
         {
-            // ¿ÃπÃ mergeµ«æÓ alias∞° ∫Ø∞Êµ«æ˙¿∏π«∑Œ
-            // $$1_$V1_$T1ø°º≠ $V1_$T1¿ª ªÃæ∆≥Ω¥Ÿ.
+            // Ïù¥ÎØ∏ mergeÎêòÏñ¥ aliasÍ∞Ä Î≥ÄÍ≤ΩÎêòÏóàÏúºÎØÄÎ°ú
+            // $$1_$V1_$T1ÏóêÏÑú $V1_$T1ÏùÑ ÎΩëÏïÑÎÇ∏Îã§.
             sRealTableName = sTableName->stmtText + sTableName->offset;
             sRealTableNameLen = sTableName->size;
             
@@ -2696,7 +2696,7 @@ qmoViewMerging::makeTupleVariable( qcStatement    * aStatement,
             {
                 if ( *sRealTableName == '_' )
                 {
-                    // '_'¥¬ ¡¶ø‹«—¥Ÿ.
+                    // '_'Îäî Ï†úÏô∏ÌïúÎã§.
                     sRealTableName++;
                     sRealTableNameLen--;
                     
@@ -2718,11 +2718,11 @@ qmoViewMerging::makeTupleVariable( qcStatement    * aStatement,
         
         sNameBuffer[sNameLen] = '\0';
         
-        // generated number ¡ı∞°
+        // generated number Ï¶ùÍ∞Ä
         sTemplate->tupleVarGenNumber++;
 
         //------------------------------------------
-        // ¡ﬂ∫π tuple variable ∞ÀªÁ
+        // Ï§ëÎ≥µ tuple variable Í≤ÄÏÇ¨
         //------------------------------------------
 
         sFound = ID_FALSE;
@@ -2748,7 +2748,7 @@ qmoViewMerging::makeTupleVariable( qcStatement    * aStatement,
         }
         else
         {
-            // ª˝º∫«— tuple variable ≥¢∏Æ¥¬ √Êµπ«œ¡ˆ æ ¥¬¥Ÿ.
+            // ÏÉùÏÑ±Ìïú tuple variable ÎÅºÎ¶¨Îäî Ï∂©ÎèåÌïòÏßÄ ÏïäÎäîÎã§.
             
             // Nothing to do.
         }
@@ -2793,7 +2793,7 @@ qmoViewMerging::rollbackForFrom( qmsSFWGH            * aCurrentSFWGH,
     IDU_FIT_POINT_FATAL( "qmoViewMerging::rollbackForFrom::__FT__" );
 
     //------------------------------------------
-    // ¿˚«’º∫ ∞ÀªÁ
+    // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
     //------------------------------------------
 
     IDE_DASSERT( aCurrentSFWGH != NULL );
@@ -2801,12 +2801,12 @@ qmoViewMerging::rollbackForFrom( qmsSFWGH            * aCurrentSFWGH,
     IDE_DASSERT( aRollbackInfo != NULL );
     
     //------------------------------------------
-    // from ¿˝¿« rollback ºˆ«‡
+    // from Ï†àÏùò rollback ÏàòÌñâ
     //------------------------------------------
 
     if ( aRollbackInfo->fromMerged == ID_TRUE )
     {
-        // tuple variable ø¯∫π
+        // tuple variable ÏõêÎ≥µ
         sAliasName = aRollbackInfo->oldAliasName;
         
         for ( sFrom = aUnderSFWGH->from; sFrom != NULL; sFrom = sFrom->next )
@@ -2823,7 +2823,7 @@ qmoViewMerging::rollbackForFrom( qmsSFWGH            * aCurrentSFWGH,
             }
         }
 
-        // from ¿˝¿« ø¯∫π
+        // from Ï†àÏùò ÏõêÎ≥µ
         aRollbackInfo->lastFrom->next = NULL;
         aCurrentSFWGH->from = aRollbackInfo->firstFrom;
     }
@@ -2859,7 +2859,7 @@ qmoViewMerging::mergeForWhere( qcStatement         * aStatement,
     IDU_FIT_POINT_FATAL( "qmoViewMerging::mergeForWhere::__FT__" );
 
     //------------------------------------------
-    // ¿˚«’º∫ ∞ÀªÁ
+    // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
     //------------------------------------------
     
     IDE_DASSERT( aStatement != NULL );
@@ -2869,13 +2869,13 @@ qmoViewMerging::mergeForWhere( qcStatement         * aStatement,
     IDE_DASSERT( aIsMerged != NULL );
 
     //------------------------------------------
-    // √ ±‚»≠
+    // Ï¥àÍ∏∞Ìôî
     //------------------------------------------
     
     SET_EMPTY_POSITION( sNullPosition );
     
     //------------------------------------------
-    // rollbackInfo √ ±‚»≠
+    // rollbackInfo Ï¥àÍ∏∞Ìôî
     //------------------------------------------
     
     aRollbackInfo->currentWhere = NULL;
@@ -2883,7 +2883,7 @@ qmoViewMerging::mergeForWhere( qcStatement         * aStatement,
     aRollbackInfo->whereMerged = ID_FALSE;
     
     //------------------------------------------
-    // where ¿˝¿« rollback ¡§∫∏ º≥¡§
+    // where Ï†àÏùò rollback Ï†ïÎ≥¥ ÏÑ§Ï†ï
     //------------------------------------------
 
     if ( aCurrentSFWGH->where != NULL )
@@ -2915,17 +2915,17 @@ qmoViewMerging::mergeForWhere( qcStatement         * aStatement,
     }
 
     //------------------------------------------
-    // where ¿˝¿« merge ºˆ«‡
+    // where Ï†àÏùò merge ÏàòÌñâ
     //------------------------------------------
 
     if ( aCurrentSFWGH->where != NULL )
     {
         if ( aUnderSFWGH->where != NULL )
         {
-            // «ˆ¿Á SFWGHø° where¿˝¿Ã ¿÷∞Ì
-            // «œ¿ß SFWGHø°µµ where ¿˝¿Ã ¿÷¥¬ ∞ÊøÏ
+            // ÌòÑÏû¨ SFWGHÏóê whereÏ†àÏù¥ ÏûàÍ≥†
+            // ÌïòÏúÑ SFWGHÏóêÎèÑ where Ï†àÏù¥ ÏûàÎäî Í≤ΩÏö∞
 
-            // ªı∑ŒøÓ AND ≥ÎµÂ∏¶ «œ≥™ ª˝º∫«—¥Ÿ.
+            // ÏÉàÎ°úÏö¥ AND ÎÖ∏ÎìúÎ•º ÌïòÎÇò ÏÉùÏÑ±ÌïúÎã§.
             IDE_TEST( qtc::makeNode( aStatement,
                                      sAndNode,
                                      & sNullPosition,
@@ -2935,7 +2935,7 @@ qmoViewMerging::mergeForWhere( qcStatement         * aStatement,
             
             IDE_DASSERT( aCurrentSFWGH->where->node.next == NULL );
             
-            // arguments∏¶ ø¨∞·«—¥Ÿ.
+            // argumentsÎ•º Ïó∞Í≤∞ÌïúÎã§.
             // BUG-43017
             if ( ( ( aCurrentSFWGH->where->node.lflag & MTC_NODE_LOGICAL_CONDITION_MASK )
                    == MTC_NODE_LOGICAL_CONDITION_TRUE ) &&
@@ -2967,18 +2967,18 @@ qmoViewMerging::mergeForWhere( qcStatement         * aStatement,
 
             sAndNode[0]->node.lflag |= 2;
 
-            // estimate∏¶ ºˆ«‡«—¥Ÿ.
+            // estimateÎ•º ÏàòÌñâÌïúÎã§.
             IDE_TEST( qtc::estimateNodeWithoutArgument( aStatement,
                                                         sAndNode[0] )
                       != IDE_SUCCESS );
 
-            // where¿˝ø° ø¨∞·«—¥Ÿ.
+            // whereÏ†àÏóê Ïó∞Í≤∞ÌïúÎã§.
             aCurrentSFWGH->where = sAndNode[0];
         }
         else
         {
-            // «ˆ¿Á SFWGHø°¥¬ where¿˝¿Ã ¿÷¿∏≥™
-            // «œ¿ß SFWGHø°¥¬ where¿˝¿Ã æ¯¥¬ ∞ÊøÏ
+            // ÌòÑÏû¨ SFWGHÏóêÎäî whereÏ†àÏù¥ ÏûàÏúºÎÇò
+            // ÌïòÏúÑ SFWGHÏóêÎäî whereÏ†àÏù¥ ÏóÜÎäî Í≤ΩÏö∞
 
             // Nothing to do.
         }
@@ -3001,16 +3001,16 @@ qmoViewMerging::mergeForWhere( qcStatement         * aStatement,
     {
         if ( aUnderSFWGH->where != NULL )
         {
-            // «ˆ¿Á SFWGHø°¥¬ where¿˝¿Ã æ¯¿∏≥™
-            // «œ¿ß SFWGHø°¥¬ where¿˝¿Ã ¿÷¥¬ ∞ÊøÏ
+            // ÌòÑÏû¨ SFWGHÏóêÎäî whereÏ†àÏù¥ ÏóÜÏúºÎÇò
+            // ÌïòÏúÑ SFWGHÏóêÎäî whereÏ†àÏù¥ ÏûàÎäî Í≤ΩÏö∞
 
-            // where¿˝ø° ø¨∞·«—¥Ÿ.
+            // whereÏ†àÏóê Ïó∞Í≤∞ÌïúÎã§.
             aCurrentSFWGH->where = aUnderSFWGH->where;
         }
         else
         {
-            // «ˆ¿Á SFWGHø°µµ where¿˝¿Ã æ¯∞Ì
-            // «œ¿ß SFWGHø°µµ where ¿˝¿Ã æ¯∞Ì ∞ÊøÏ
+            // ÌòÑÏû¨ SFWGHÏóêÎèÑ whereÏ†àÏù¥ ÏóÜÍ≥†
+            // ÌïòÏúÑ SFWGHÏóêÎèÑ where Ï†àÏù¥ ÏóÜÍ≥† Í≤ΩÏö∞
 
             // Nothing to do.
         }
@@ -3043,7 +3043,7 @@ qmoViewMerging::rollbackForWhere( qmsSFWGH            * aCurrentSFWGH,
     IDU_FIT_POINT_FATAL( "qmoViewMerging::rollbackForWhere::__FT__" );
 
     //------------------------------------------
-    // ¿˚«’º∫ ∞ÀªÁ
+    // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
     //------------------------------------------
 
     IDE_DASSERT( aCurrentSFWGH != NULL );
@@ -3051,15 +3051,15 @@ qmoViewMerging::rollbackForWhere( qmsSFWGH            * aCurrentSFWGH,
     IDE_DASSERT( aRollbackInfo != NULL );
     
     //------------------------------------------
-    // where ¿˝¿« rollback ºˆ«‡
+    // where Ï†àÏùò rollback ÏàòÌñâ
     //------------------------------------------
 
     if ( aRollbackInfo->whereMerged == ID_TRUE )
     {
-        // «ˆ¿Á where¿˝¿ª ø¯∫π
+        // ÌòÑÏû¨ whereÏ†àÏùÑ ÏõêÎ≥µ
         aCurrentSFWGH->where = aRollbackInfo->currentWhere;
         
-        // «œ¿ß where¿˝¿ª ø¯∫π
+        // ÌïòÏúÑ whereÏ†àÏùÑ ÏõêÎ≥µ
         aUnderSFWGH->where = aRollbackInfo->underWhere;
     }
     else
@@ -3076,7 +3076,7 @@ qmoViewMerging::removeMergedView( qmsSFWGH     * aSFWGH )
 /***********************************************************************
  *
  * Description : PROJ-1413 Simple View Merging
- *     mergeµ» view∏¶ ¡¶∞≈«—¥Ÿ.
+ *     mergeÎêú viewÎ•º Ï†úÍ±∞ÌïúÎã§.
  *
  * Implementation :
  *
@@ -3089,20 +3089,20 @@ qmoViewMerging::removeMergedView( qmsSFWGH     * aSFWGH )
     IDU_FIT_POINT_FATAL( "qmoViewMerging::removeMergedView::__FT__" );
 
     //------------------------------------------
-    // ¿˚«’º∫ ∞ÀªÁ
+    // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
     //------------------------------------------
 
     IDE_DASSERT( aSFWGH != NULL );
 
     //------------------------------------------
-    // mergeµ» view¿« ¡¶∞≈
+    // mergeÎêú viewÏùò Ï†úÍ±∞
     //------------------------------------------
 
     for ( sFrom = aSFWGH->from; sFrom != NULL; sFrom = sFrom->next )
     {
         if ( sFrom->joinType == QMS_NO_JOIN )
         {
-            // mergeµ«¡ˆ æ ¿∫ from¿ª º±≈√«—¥Ÿ.
+            // mergeÎêòÏßÄ ÏïäÏùÄ fromÏùÑ ÏÑ†ÌÉùÌïúÎã§.
             if ( sFrom->tableRef->isMerged == ID_FALSE )
             {
                 sFirstFrom = sFrom;
@@ -3115,7 +3115,7 @@ qmoViewMerging::removeMergedView( qmsSFWGH     * aSFWGH )
         }
         else
         {
-            // joined table¿∫ merge¥ÎªÛ¿Ã æ∆¥œπ«∑Œ πŸ∑Œ º±≈√«—¥Ÿ.
+            // joined tableÏùÄ mergeÎåÄÏÉÅÏù¥ ÏïÑÎãàÎØÄÎ°ú Î∞îÎ°ú ÏÑ†ÌÉùÌïúÎã§.
             sFirstFrom = sFrom;
             break;
         }
@@ -3129,7 +3129,7 @@ qmoViewMerging::removeMergedView( qmsSFWGH     * aSFWGH )
     {
         if ( sFrom->joinType == QMS_NO_JOIN )
         {
-            // mergeµ«¡ˆ æ ¿∫ from¿ª ø¨∞·«—¥Ÿ.
+            // mergeÎêòÏßÄ ÏïäÏùÄ fromÏùÑ Ïó∞Í≤∞ÌïúÎã§.
             if ( sFrom->tableRef->isMerged == ID_FALSE )
             {
                 sCurFrom->next = sFrom;
@@ -3142,7 +3142,7 @@ qmoViewMerging::removeMergedView( qmsSFWGH     * aSFWGH )
         }
         else
         {
-            // joined table¿∫ merge¥ÎªÛ¿Ã æ∆¥œπ«∑Œ πŸ∑Œ ø¨∞·«—¥Ÿ.
+            // joined tableÏùÄ mergeÎåÄÏÉÅÏù¥ ÏïÑÎãàÎØÄÎ°ú Î∞îÎ°ú Ïó∞Í≤∞ÌïúÎã§.
             sCurFrom->next = sFrom;
             sCurFrom = sFrom;
         }
@@ -3152,7 +3152,7 @@ qmoViewMerging::removeMergedView( qmsSFWGH     * aSFWGH )
     
     aSFWGH->from = sFirstFrom;
 
-    // BUG-45177 view merge ¿Ã»ƒø° ≥≤æ∆ ¿÷¥¬ view ¥¬ noMerge«œ∞‘ «—¥Ÿ.
+    // BUG-45177 view merge Ïù¥ÌõÑÏóê ÎÇ®ÏïÑ ÏûàÎäî view Îäî noMergeÌïòÍ≤å ÌïúÎã§.
     for ( sFrom = aSFWGH->from; sFrom != NULL; sFrom = sFrom->next )
     {
         if ( sFrom->joinType == QMS_NO_JOIN )
@@ -3175,7 +3175,7 @@ qmoViewMerging::validateQuerySet( qcStatement  * aStatement,
 /***********************************************************************
  *
  * Description : PROJ-1413 Simple View Merging
- *     «œ¿ß view∞° mergeµ«æÓ «ˆ¿Á query setø° validation¿ª ºˆ«‡«—¥Ÿ.
+ *     ÌïòÏúÑ viewÍ∞Ä mergeÎêòÏñ¥ ÌòÑÏû¨ query setÏóê validationÏùÑ ÏàòÌñâÌïúÎã§.
  *
  * Implementation :
  *
@@ -3184,14 +3184,14 @@ qmoViewMerging::validateQuerySet( qcStatement  * aStatement,
     IDU_FIT_POINT_FATAL( "qmoViewMerging::validateQuerySet::__FT__" );
 
     //------------------------------------------
-    // ¿˚«’º∫ ∞ÀªÁ
+    // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
     //------------------------------------------
     
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aQuerySet != NULL );
 
     //------------------------------------------
-    // validation ºˆ«‡
+    // validation ÏàòÌñâ
     //------------------------------------------
 
     if ( aQuerySet->setOp == QMS_NONE )
@@ -3213,7 +3213,7 @@ qmoViewMerging::validateQuerySet( qcStatement  * aStatement,
                                    & aQuerySet->SFWGH->outerDepInfo );
 
         // PROJ-2418
-        // Lateral View¿« outerDepInfo º≥¡§
+        // Lateral ViewÏùò outerDepInfo ÏÑ§Ï†ï
         IDE_TEST( qmvQTC::setLateralDependencies( aQuerySet->SFWGH,
                                                   & aQuerySet->lateralDepInfo )
                   != IDE_SUCCESS );
@@ -3232,7 +3232,7 @@ qmoViewMerging::validateQuerySet( qcStatement  * aStatement,
                                     aQuerySet->right )
                   != IDE_SUCCESS );
         
-        // outer column dependency¥¬ «œ¿ß dependency∏¶ OR-ing«—¥Ÿ.
+        // outer column dependencyÎäî ÌïòÏúÑ dependencyÎ•º OR-ingÌïúÎã§.
         qtc::dependencyClear( & aQuerySet->outerDepInfo );
         
         IDE_TEST( qtc::dependencyOr( & aQuerySet->left->outerDepInfo,
@@ -3246,7 +3246,7 @@ qmoViewMerging::validateQuerySet( qcStatement  * aStatement,
                   != IDE_SUCCESS );
 
         // PROJ-2418
-        // lateral view¿« dependency¥¬ «œ¿ß dependency∏¶ OR-ing«—¥Ÿ.
+        // lateral viewÏùò dependencyÎäî ÌïòÏúÑ dependencyÎ•º OR-ingÌïúÎã§.
         IDE_TEST( qtc::dependencyOr( & aQuerySet->left->lateralDepInfo,
                                      & aQuerySet->lateralDepInfo,
                                      & aQuerySet->lateralDepInfo )
@@ -3272,15 +3272,15 @@ qmoViewMerging::validateSFWGH( qcStatement  * aStatement,
 /***********************************************************************
  *
  * Description : PROJ-1413 Simple View Merging
- *     «œ¿ß view∞° mergeµ«æÓ «ˆ¿Á SFWGHø° validation¿ª ºˆ«‡«—¥Ÿ.
- *     ∂««—, «ˆ¿Á SFWGHø° ∆˜«‘µ» subqueryµµ ø‹∫Œ ¬¸¡∂ ƒ√∑≥¿ª ∞°¡˙ ºˆ
- *     ¿÷¿∏π«∑Œ subqueryø°µµ validation¿ª ºˆ«‡«—¥Ÿ.
+ *     ÌïòÏúÑ viewÍ∞Ä mergeÎêòÏñ¥ ÌòÑÏû¨ SFWGHÏóê validationÏùÑ ÏàòÌñâÌïúÎã§.
+ *     ÎòêÌïú, ÌòÑÏû¨ SFWGHÏóê Ìè¨Ìï®Îêú subqueryÎèÑ Ïô∏Î∂Ä Ï∞∏Ï°∞ Ïª¨ÎüºÏùÑ Í∞ÄÏßà Ïàò
+ *     ÏûàÏúºÎØÄÎ°ú subqueryÏóêÎèÑ validationÏùÑ ÏàòÌñâÌïúÎã§.
  *
  * Implementation :
- *     view merge»ƒ ºˆ«‡«œ¥¬ validation¿∫ ∞¢ clause¿« expression »§¿∫
- *     predicate¿« ≥ÎµÂ ∆Æ∏Æ∏¶ º¯»∏«œ∏Á
- *     (1) ≥ÎµÂ¿« dependency ¡§∫∏, ∫Œ∞° ¡§∫∏µÓ¿ª √≥∏Æ«—¥Ÿ.
- *     (2) ¡¶∞≈µ» viewø° ¥Î«œø© dependency ¡§∫∏∞° ≥≤æ∆¿÷¥¬¡ˆ ∞ÀªÁ«—¥Ÿ.
+ *     view mergeÌõÑ ÏàòÌñâÌïòÎäî validationÏùÄ Í∞Å clauseÏùò expression ÌòπÏùÄ
+ *     predicateÏùò ÎÖ∏Îìú Ìä∏Î¶¨Î•º ÏàúÌöåÌïòÎ©∞
+ *     (1) ÎÖ∏ÎìúÏùò dependency Ï†ïÎ≥¥, Î∂ÄÍ∞Ä Ï†ïÎ≥¥Îì±ÏùÑ Ï≤òÎ¶¨ÌïúÎã§.
+ *     (2) Ï†úÍ±∞Îêú viewÏóê ÎåÄÌïòÏó¨ dependency Ï†ïÎ≥¥Í∞Ä ÎÇ®ÏïÑÏûàÎäîÏßÄ Í≤ÄÏÇ¨ÌïúÎã§.
  *
  ***********************************************************************/
 
@@ -3295,7 +3295,7 @@ qmoViewMerging::validateSFWGH( qcStatement  * aStatement,
     IDU_FIT_POINT_FATAL( "qmoViewMerging::validateSFWGH::__FT__" );
 
     //------------------------------------------
-    // ¿˚«’º∫ ∞ÀªÁ
+    // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
     //------------------------------------------
     
     IDE_DASSERT( aStatement != NULL );
@@ -3310,7 +3310,7 @@ qmoViewMerging::validateSFWGH( qcStatement  * aStatement,
     for ( sFrom = aSFWGH->from; sFrom != NULL; sFrom = sFrom->next )
     {
         // PROJ-2418
-        // View Merging ¿Ã»ƒ Lateral View¥¬ ¥ŸΩ√ Validation «ÿæﬂ «—¥Ÿ
+        // View Merging Ïù¥ÌõÑ Lateral ViewÎäî Îã§Ïãú Validation Ìï¥Ïïº ÌïúÎã§
         IDE_TEST( validateFrom( sFrom ) != IDE_SUCCESS );
 
         IDE_TEST( qtc::dependencyOr( & sFrom->depInfo,
@@ -3319,7 +3319,7 @@ qmoViewMerging::validateSFWGH( qcStatement  * aStatement,
                   != IDE_SUCCESS );
 
         // PROJ-2415 Grouping Sets Clause
-        // View¿« Dependency √≥∏Æ √ﬂ∞°ø° µ˚∂Û «œ¿ß View¿« Outer Dependency∏¶ Or«ÿ¡ÿ¥Ÿ.
+        // ViewÏùò Dependency Ï≤òÎ¶¨ Ï∂îÍ∞ÄÏóê Îî∞Îùº ÌïòÏúÑ ViewÏùò Outer DependencyÎ•º OrÌï¥Ï§ÄÎã§.
         if ( sFrom->tableRef != NULL )
         {
             if ( sFrom->tableRef->view != NULL )
@@ -3455,8 +3455,8 @@ qmoViewMerging::validateSFWGH( qcStatement  * aStatement,
     //---------------------------------------------------
     // validation of aggregate functions
     //---------------------------------------------------
-    // PROJ-2179 Aggregate functionø° ¥Î«ÿº≠µµ validation¿ª ¥ŸΩ√
-    // ºˆ«‡«ÿ¡÷æÓæﬂ ¥Ÿ¿Ω∞˙ ∞∞¿∫ SQL±∏πÆ¿Ã πÆ¡¶æ¯¿Ã µø¿€«—¥Ÿ.
+    // PROJ-2179 Aggregate functionÏóê ÎåÄÌï¥ÏÑúÎèÑ validationÏùÑ Îã§Ïãú
+    // ÏàòÌñâÌï¥Ï£ºÏñ¥Ïïº Îã§ÏùåÍ≥º Í∞ôÏùÄ SQLÍµ¨Î¨∏Ïù¥ Î¨∏Ï†úÏóÜÏù¥ ÎèôÏûëÌïúÎã§.
     // SELECT /*+NO_PLAN_CACHE*/ MAX(c1) + MIN(c1) FROM (SELECT c1 FROM t1) ORDER BY MAX(c1) + MIN(c1);
     for( sAggNode = aSFWGH->aggsDepth1;
          sAggNode != NULL;
@@ -3498,7 +3498,7 @@ qmoViewMerging::validateOrderBy( qcStatement  * aStatement,
 /***********************************************************************
  *
  * Description : PROJ-1413 Simple View Merging
- *     order by ¿˝¿« validation¿ª ºˆ«‡«—¥Ÿ.
+ *     order by Ï†àÏùò validationÏùÑ ÏàòÌñâÌïúÎã§.
  *
  * Implementation :
  *
@@ -3509,14 +3509,14 @@ qmoViewMerging::validateOrderBy( qcStatement  * aStatement,
     IDU_FIT_POINT_FATAL( "qmoViewMerging::validateOrderBy::__FT__" );
 
     //------------------------------------------
-    // ¿˚«’º∫ ∞ÀªÁ
+    // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
     //------------------------------------------
     
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aParseTree != NULL );
 
     //------------------------------------------
-    // validation ºˆ«‡
+    // validation ÏàòÌñâ
     //------------------------------------------
 
     if ( aParseTree->orderBy != NULL )
@@ -3556,11 +3556,11 @@ qmoViewMerging::validateNode( qcStatement  * aStatement,
 /***********************************************************************
  *
  * Description : PROJ-1413 Simple View Merging
- *     ≥ÎµÂ¿« validation¿ª ºˆ«‡«—¥Ÿ.
+ *     ÎÖ∏ÎìúÏùò validationÏùÑ ÏàòÌñâÌïúÎã§.
  *
  * Implementation :
- *     (1) dependency ¡§∫∏¥¬ ¿Áº≥¡§«—¥Ÿ.
- *     (2) ∫Œ∞° ¡§∫∏¥¬ ¥©¿˚«—¥Ÿ.
+ *     (1) dependency Ï†ïÎ≥¥Îäî Ïû¨ÏÑ§Ï†ïÌïúÎã§.
+ *     (2) Î∂ÄÍ∞Ä Ï†ïÎ≥¥Îäî ÎàÑÏ†ÅÌïúÎã§.
  *
  ***********************************************************************/
 
@@ -3571,57 +3571,57 @@ qmoViewMerging::validateNode( qcStatement  * aStatement,
     IDU_FIT_POINT_FATAL( "qmoViewMerging::validateNode::__FT__" );
 
     //------------------------------------------
-    // ¿˚«’º∫ ∞ÀªÁ
+    // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
     //------------------------------------------
     
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aNode != NULL );
     
     //------------------------------------------
-    // dependency ¡§∫∏ ¿Áº≥¡§
+    // dependency Ï†ïÎ≥¥ Ïû¨ÏÑ§Ï†ï
     //------------------------------------------
     
     if ( aNode->node.module == & qtc::subqueryModule )
     {
-        // subquery ≥ÎµÂ¿Œ ∞ÊøÏ
+        // subquery ÎÖ∏ÎìúÏù∏ Í≤ΩÏö∞
         sStatement = ((qtcNode*) aNode)->subquery;
         sParseTree = (qmsParseTree*) sStatement->myPlan->parseTree;
 
-        // outer dependency∞° ¿÷¥¬ subqueryø° ¥Î«œø© validation¿ª ºˆ«‡«—¥Ÿ.
+        // outer dependencyÍ∞Ä ÏûàÎäî subqueryÏóê ÎåÄÌïòÏó¨ validationÏùÑ ÏàòÌñâÌïúÎã§.
         if ( qtc::haveDependencies( & sParseTree->querySet->outerDepInfo ) == ID_TRUE )
         {
             IDE_TEST( validateQuerySet( aStatement,
                                         sParseTree->querySet )
                       != IDE_SUCCESS );
         
-            // dependency ¡§∫∏ √ ±‚»≠
+            // dependency Ï†ïÎ≥¥ Ï¥àÍ∏∞Ìôî
             qtc::dependencySetWithDep( & aNode->depInfo,
                                        & sParseTree->querySet->outerDepInfo );
         }
         else
         {
-            // dependency ¡§∫∏ √ ±‚»≠
+            // dependency Ï†ïÎ≥¥ Ï¥àÍ∏∞Ìôî
             qtc::dependencyClear( & aNode->depInfo );
         }
     }
     else if ( aNode->node.module == & qtc::passModule )
     {
-        // pass ≥ÎµÂ¿Œ ∞ÊøÏ
+        // pass ÎÖ∏ÎìúÏù∏ Í≤ΩÏö∞
         sNode = (qtcNode*) aNode->node.arguments;
         
-        // dependency ¡§∫∏ º≥¡§
+        // dependency Ï†ïÎ≥¥ ÏÑ§Ï†ï
         qtc::dependencySetWithDep( & aNode->depInfo,
                                    & sNode->depInfo );
 
-        // flag ¡§∫∏ º≥¡§
+        // flag Ï†ïÎ≥¥ ÏÑ§Ï†ï
         aNode->node.lflag |= sNode->node.lflag & MTC_NODE_MASK;
         aNode->lflag |= sNode->lflag & QTC_NODE_MASK;
 
-        // variable built-in function ¡§∫∏ º≥¡§
+        // variable built-in function Ï†ïÎ≥¥ ÏÑ§Ï†ï
         aNode->lflag &= ~QTC_NODE_VAR_FUNCTION_MASK;
         aNode->lflag |= sNode->lflag & QTC_NODE_VAR_FUNCTION_MASK;
         
-        // Lob or Binary Type ¡§∫∏ º≥¡§
+        // Lob or Binary Type Ï†ïÎ≥¥ ÏÑ§Ï†ï
         aNode->lflag &= ~QTC_NODE_BINARY_MASK;
         aNode->lflag |= sNode->lflag & QTC_NODE_BINARY_MASK;
     }
@@ -3634,19 +3634,19 @@ qmoViewMerging::validateNode( qcStatement  * aStatement,
              )
         {
             //------------------------------------------------------
-            // (1) ∏ª¥‹ ≥ÎµÂ¿Ã∞≈≥™
-            // (2) ¿ÃπÃ ªÛºˆ»≠∏¶ ºˆ«‡«— ≥ÎµÂ¿Ã∞≈≥™
+            // (1) ÎßêÎã® ÎÖ∏ÎìúÏù¥Í±∞ÎÇò
+            // (2) Ïù¥ÎØ∏ ÏÉÅÏàòÌôîÎ•º ÏàòÌñâÌïú ÎÖ∏ÎìúÏù¥Í±∞ÎÇò
             //
-            // ∏µŒ ∏ª¥‹ ≥ÎµÂ∂Û∞Ì ∫º ºˆ ¿÷¥Ÿ. ∏ª¥‹ ≥ÎµÂø° ¥Î«ÿº≠¥¬
-            // ¿ÃπÃ º≥¡§µ» dependency ¡§∫∏øÕ flag ¡§∫∏∏¶ ¿ÃøÎ«œπ«∑Œ
-            // validation¿ª ºˆ«‡«“ « ø‰∞° æ¯¥Ÿ.
+            // Î™®Îëê ÎßêÎã® ÎÖ∏ÎìúÎùºÍ≥† Î≥º Ïàò ÏûàÎã§. ÎßêÎã® ÎÖ∏ÎìúÏóê ÎåÄÌï¥ÏÑúÎäî
+            // Ïù¥ÎØ∏ ÏÑ§Ï†ïÎêú dependency Ï†ïÎ≥¥ÏôÄ flag Ï†ïÎ≥¥Î•º Ïù¥Ïö©ÌïòÎØÄÎ°ú
+            // validationÏùÑ ÏàòÌñâÌï† ÌïÑÏöîÍ∞Ä ÏóÜÎã§.
             //------------------------------------------------------
             
             //------------------------------------------------------
             // BUG-30115
-            // ∏ª¥‹ ≥ÎµÂ∂Ûµµ, ±◊ ≥ÎµÂ∞° analytic function¿Œ ∞ÊøÏ,
-            // over¿˝ø° ¥Î«— dependency ¡§∫∏∑Œ dependency∏¶ ¿Áº≥¡§ «ÿæﬂ«‘
-            // ex) æ∆∑°øÕ ∞∞¿∫ ¡˙¿«∞° view merging µ…∂ß
+            // ÎßêÎã® ÎÖ∏ÎìúÎùºÎèÑ, Í∑∏ ÎÖ∏ÎìúÍ∞Ä analytic functionÏù∏ Í≤ΩÏö∞,
+            // overÏ†àÏóê ÎåÄÌïú dependency Ï†ïÎ≥¥Î°ú dependencyÎ•º Ïû¨ÏÑ§Ï†ï Ìï¥ÏïºÌï®
+            // ex) ÏïÑÎûòÏôÄ Í∞ôÏùÄ ÏßàÏùòÍ∞Ä view merging Îê†Îïå
             //     SELECT COUNT(*) OVER ( PARTITION BY v1.i1 )
             //     FROM ( SELECT i1 FROM t1 )v1
             //     -> view merging 
@@ -3656,15 +3656,15 @@ qmoViewMerging::validateNode( qcStatement  * aStatement,
 
             if( aNode->overClause != NULL )
             {
-                // anayltic function ≥ÎµÂ¿« dependency ¡§∫∏ √ ±‚»≠
+                // anayltic function ÎÖ∏ÎìúÏùò dependency Ï†ïÎ≥¥ Ï¥àÍ∏∞Ìôî
                 qtc::dependencyClear( & aNode->depInfo );
 
-                // over¿˝¿« dependency ¡§∫∏ ¿Áº≥¡§
+                // overÏ†àÏùò dependency Ï†ïÎ≥¥ Ïû¨ÏÑ§Ï†ï
                 IDE_TEST( validateNode4OverClause( aStatement,
                                                    aNode )
                           != IDE_SUCCESS );
                 
-                // analytic function¿Ã ¿÷¿Ω¿ª º≥¡§
+                // analytic functionÏù¥ ÏûàÏùåÏùÑ ÏÑ§Ï†ï
                 aNode->lflag &= ~QTC_NODE_ANAL_FUNC_MASK;
                 aNode->lflag |= QTC_NODE_ANAL_FUNC_EXIST;
             }
@@ -3675,11 +3675,11 @@ qmoViewMerging::validateNode( qcStatement  * aStatement,
         }
         else
         {
-            // ¡ﬂ∞£ ≥ÎµÂ¿« dependency ¡§∫∏ √ ±‚»≠
+            // Ï§ëÍ∞Ñ ÎÖ∏ÎìúÏùò dependency Ï†ïÎ≥¥ Ï¥àÍ∏∞Ìôî
             qtc::dependencyClear( & aNode->depInfo );
 
             //------------------------------------------
-            // validation ºˆ«‡
+            // validation ÏàòÌñâ
             //------------------------------------------
         
             for( sNode  = (qtcNode*) aNode->node.arguments;
@@ -3690,19 +3690,19 @@ qmoViewMerging::validateNode( qcStatement  * aStatement,
                           != IDE_SUCCESS );
                 
                 //------------------------------------------------------
-                // Argument¿« ¡§∫∏ ¡ﬂ « ø‰«— ¡§∫∏∏¶ ∏µŒ √ﬂ√‚«—¥Ÿ.
-                //    [Index ªÁøÎ ∞°¥… ¡§∫∏]
-                //     aNode->module->mask : «œ¿ß Node¡ﬂ column¿Ã ¿÷¿ª ∞ÊøÏ,
-                //     «œ¿ß ≥ÎµÂ¿« flag¿∫ index∏¶ ªÁøÎ«“ ºˆ ¿÷¿Ω¿Ã Settingµ«æÓ ¿÷¿Ω.
-                //     ¿Ã ∂ß, ø¨ªÍ¿⁄ ≥ÎµÂ¿« ∆Øº∫¿ª ¿«πÃ«œ¥¬ mask∏¶ ¿ÃøÎ«ÿ flag¿ª
-                //     ¿Áª˝º∫«‘¿∏∑Œº≠ index∏¶ ≈ª ºˆ ¿÷¿Ω¿ª «•«ˆ«“ ºˆ ¿÷¥Ÿ.
+                // ArgumentÏùò Ï†ïÎ≥¥ Ï§ë ÌïÑÏöîÌïú Ï†ïÎ≥¥Î•º Î™®Îëê Ï∂îÏ∂úÌïúÎã§.
+                //    [Index ÏÇ¨Ïö© Í∞ÄÎä• Ï†ïÎ≥¥]
+                //     aNode->module->mask : ÌïòÏúÑ NodeÏ§ë columnÏù¥ ÏûàÏùÑ Í≤ΩÏö∞,
+                //     ÌïòÏúÑ ÎÖ∏ÎìúÏùò flagÏùÄ indexÎ•º ÏÇ¨Ïö©Ìï† Ïàò ÏûàÏùåÏù¥ SettingÎêòÏñ¥ ÏûàÏùå.
+                //     Ïù¥ Îïå, Ïó∞ÏÇ∞Ïûê ÎÖ∏ÎìúÏùò ÌäπÏÑ±ÏùÑ ÏùòÎØ∏ÌïòÎäî maskÎ•º Ïù¥Ïö©Ìï¥ flagÏùÑ
+                //     Ïû¨ÏÉùÏÑ±Ìï®ÏúºÎ°úÏÑú indexÎ•º ÌÉà Ïàò ÏûàÏùåÏùÑ ÌëúÌòÑÌï† Ïàò ÏûàÎã§.
                 //------------------------------------------------------
             
                 aNode->node.lflag |=
                     sNode->node.lflag & aNode->node.module->lmask & MTC_NODE_MASK;
                 aNode->lflag |= sNode->lflag & QTC_NODE_MASK;
             
-                // Argument¿« dependencies∏¶ ∏µŒ ∆˜«‘«—¥Ÿ.
+                // ArgumentÏùò dependenciesÎ•º Î™®Îëê Ìè¨Ìï®ÌïúÎã§.
                 IDE_TEST( qtc::dependencyOr( & aNode->depInfo,
                                              & sNode->depInfo,
                                              & aNode->depInfo )
@@ -3711,7 +3711,7 @@ qmoViewMerging::validateNode( qcStatement  * aStatement,
             
             //------------------------------------------------------
             // BUG-27526
-            // over¿˝ø° ¥Î«— validation¿ª ºˆ«‡«—¥Ÿ.
+            // overÏ†àÏóê ÎåÄÌïú validationÏùÑ ÏàòÌñâÌïúÎã§.
             //------------------------------------------------------
             
             if( aNode->overClause != NULL )
@@ -3721,7 +3721,7 @@ qmoViewMerging::validateNode( qcStatement  * aStatement,
                           != IDE_SUCCESS );
                 
                 // BUG-27457
-                // analytic function¿Ã ¿÷¿Ω¿ª º≥¡§
+                // analytic functionÏù¥ ÏûàÏùåÏùÑ ÏÑ§Ï†ï
                 aNode->lflag &= ~QTC_NODE_ANAL_FUNC_MASK;
                 aNode->lflag |= QTC_NODE_ANAL_FUNC_EXIST;
             }
@@ -3732,7 +3732,7 @@ qmoViewMerging::validateNode( qcStatement  * aStatement,
             
             //------------------------------------------------------
             // BUG-16000
-            // Column¿Ã≥™ Function¿« Type¿Ã Lob or Binary Type¿Ã∏È flagº≥¡§
+            // ColumnÏù¥ÎÇò FunctionÏùò TypeÏù¥ Lob or Binary TypeÏù¥Î©¥ flagÏÑ§Ï†ï
             //------------------------------------------------------
             
             aNode->lflag &= ~QTC_NODE_BINARY_MASK;
@@ -3749,7 +3749,7 @@ qmoViewMerging::validateNode( qcStatement  * aStatement,
 
             //------------------------------------------------------
             // PROJ-1404
-            // variable built-in function¿ª ªÁøÎ«— ∞ÊøÏ º≥¡§«—¥Ÿ.
+            // variable built-in functionÏùÑ ÏÇ¨Ïö©Ìïú Í≤ΩÏö∞ ÏÑ§Ï†ïÌïúÎã§.
             //------------------------------------------------------
             
             if ( ( aNode->node.lflag & MTC_NODE_VARIABLE_MASK )
@@ -3779,11 +3779,11 @@ qmoViewMerging::validateNode4OverClause( qcStatement  * aStatement,
 /***********************************************************************
  *
  * Description : BUG-27526
- *     over¿˝ ≥ÎµÂ¿« validation¿ª ºˆ«‡«—¥Ÿ.
+ *     overÏ†à ÎÖ∏ÎìúÏùò validationÏùÑ ÏàòÌñâÌïúÎã§.
  *
  * Implementation :
- *     (1) dependency ¡§∫∏¥¬ ¿Áº≥¡§«—¥Ÿ.
- *     (2) ∫Œ∞° ¡§∫∏¥¬ ¥©¿˚«—¥Ÿ.
+ *     (1) dependency Ï†ïÎ≥¥Îäî Ïû¨ÏÑ§Ï†ïÌïúÎã§.
+ *     (2) Î∂ÄÍ∞Ä Ï†ïÎ≥¥Îäî ÎàÑÏ†ÅÌïúÎã§.
  *
  ***********************************************************************/
 
@@ -3792,17 +3792,17 @@ qmoViewMerging::validateNode4OverClause( qcStatement  * aStatement,
     IDU_FIT_POINT_FATAL( "qmoViewMerging::validateNode4OverClause::__FT__" );
 
     //------------------------------------------
-    // ¿˚«’º∫ ∞ÀªÁ
+    // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
     //------------------------------------------
     
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aNode != NULL );
     
     //------------------------------------------
-    // dependency ¡§∫∏ ¿Áº≥¡§
+    // dependency Ï†ïÎ≥¥ Ïû¨ÏÑ§Ï†ï
     //------------------------------------------
     
-    // Partition By column µÈø° ¥Î«— estimate
+    // Partition By column Îì§Ïóê ÎåÄÌïú estimate
     for ( sCurOverColumn = aNode->overClause->overColumn;
           sCurOverColumn != NULL;
           sCurOverColumn = sCurOverColumn->next )
@@ -3811,7 +3811,7 @@ qmoViewMerging::validateNode4OverClause( qcStatement  * aStatement,
                                 sCurOverColumn->node )
                   != IDE_SUCCESS );
         
-        // partition by column¿« dependencies∏¶ ∏µŒ ∆˜«‘«—¥Ÿ.
+        // partition by columnÏùò dependenciesÎ•º Î™®Îëê Ìè¨Ìï®ÌïúÎã§.
         IDE_TEST( qtc::dependencyOr( & aNode->depInfo,
                                      & sCurOverColumn->node->depInfo,
                                      & aNode->depInfo )
@@ -3832,7 +3832,7 @@ qmoViewMerging::checkViewDependency( qcStatement  * aStatement,
 /***********************************************************************
  *
  * Description : PROJ-1413 Simple View Merging
- *     merge∑Œ ¡¶∞≈µ» view¿« dependency∞° ≥≤æ∆¿÷¥¬¡ˆ ∞ÀªÁ«—¥Ÿ.
+ *     mergeÎ°ú Ï†úÍ±∞Îêú viewÏùò dependencyÍ∞Ä ÎÇ®ÏïÑÏûàÎäîÏßÄ Í≤ÄÏÇ¨ÌïúÎã§.
  *
  * Implementation :
  *
@@ -3845,20 +3845,20 @@ qmoViewMerging::checkViewDependency( qcStatement  * aStatement,
     IDU_FIT_POINT_FATAL( "qmoViewMerging::checkViewDependency::__FT__" );
 
     //------------------------------------------
-    // ¿˚«’º∫ ∞ÀªÁ
+    // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
     //------------------------------------------
     
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aDepInfo != NULL );
 
     //------------------------------------------
-    // √ ±‚»≠
+    // Ï¥àÍ∏∞Ìôî
     //------------------------------------------
     
     sTableMap = QC_SHARED_TMPLATE(aStatement)->tableMap;
     
     //------------------------------------------
-    // dependency ∞ÀªÁ
+    // dependency Í≤ÄÏÇ¨
     //------------------------------------------
 
     sTable = qtc::getPosFirstBitSet( aDepInfo );
@@ -3869,9 +3869,9 @@ qmoViewMerging::checkViewDependency( qcStatement  * aStatement,
         {
             sFrom = sTableMap[sTable].from;
             
-            // ø©±‚º≠ ∞≠∑¬«œ∞‘ ∞ÀªÁ«œ¡ˆ æ ¿∏∏È
-            // optimizeΩ√≥™ »§¿∫ executionΩ√ ∫–ºÆ«œ±‚ »˚µÁ
-            // ø°∑Ø∞° πﬂª˝«œ∞‘ µ»¥Ÿ.
+            // Ïó¨Í∏∞ÏÑú Í∞ïÎ†•ÌïòÍ≤å Í≤ÄÏÇ¨ÌïòÏßÄ ÏïäÏúºÎ©¥
+            // optimizeÏãúÎÇò ÌòπÏùÄ executionÏãú Î∂ÑÏÑùÌïòÍ∏∞ ÌûòÎì†
+            // ÏóêÎü¨Í∞Ä Î∞úÏÉùÌïòÍ≤å ÎêúÎã§.
             IDE_FT_ASSERT( sFrom->tableRef->isMerged!= ID_TRUE );
         }
         else
@@ -3891,7 +3891,7 @@ qmoViewMerging::modifySameViewRef( qcStatement  * aStatement )
 /***********************************************************************
  *
  * Description : PROJ-1413 Simple View Merging
- *     mergeµ» viewø° ¥Î«— µø¿œ view reference∏¶ ¡¶∞≈«—¥Ÿ.
+ *     mergeÎêú viewÏóê ÎåÄÌïú ÎèôÏùº view referenceÎ•º Ï†úÍ±∞ÌïúÎã§.
  *
  * Implementation :
  *
@@ -3905,19 +3905,19 @@ qmoViewMerging::modifySameViewRef( qcStatement  * aStatement )
     IDU_FIT_POINT_FATAL( "qmoViewMerging::modifySameViewRef::__FT__" );
 
     //------------------------------------------
-    // ¿˚«’º∫ ∞ÀªÁ
+    // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     
     //------------------------------------------
-    // tableMap »πµÊ
+    // tableMap ÌöçÎìù
     //------------------------------------------
 
     sTableMap = QC_SHARED_TMPLATE(aStatement)->tableMap;
     
     //------------------------------------------
-    // same view reference ºˆ¡§
+    // same view reference ÏàòÏ†ï
     //------------------------------------------
 
     for ( i = 0; i < QC_SHARED_TMPLATE(aStatement)->tmplate.rowCount; i++ )
@@ -3932,7 +3932,7 @@ qmoViewMerging::modifySameViewRef( qcStatement  * aStatement )
 
                 if ( sTableRef->isMerged == ID_TRUE )
                 {
-                    // sameViewRef∞° mergeµ«æ˙¥Ÿ∏È NULL∑Œ πŸ≤€¥Ÿ.
+                    // sameViewRefÍ∞Ä mergeÎêòÏóàÎã§Î©¥ NULLÎ°ú Î∞îÍæºÎã§.
                     sFrom->tableRef->sameViewRef = NULL;
                 }
                 else
@@ -3960,10 +3960,10 @@ IDE_RC qmoViewMerging::validateFrom( qmsFrom * aFrom )
  *
  *  Description : PROJ-2418 Cross/Outer APPLY & Lateral View
  *
- *  Mergeµ» Lateral View∏¶ ø‹∫Œ ¬¸¡∂«œ¥¬ ¥Ÿ∏• Lateral View∞° ¿÷¿ª ºˆ ¿÷¿∏π«∑Œ
- *  Lateral Viewø° «—«ÿ, ≥ª∫Œ¿« querySet∏∏ ¥ŸΩ√ Validation «—¥Ÿ.
+ *  MergeÎêú Lateral ViewÎ•º Ïô∏Î∂Ä Ï∞∏Ï°∞ÌïòÎäî Îã§Î•∏ Lateral ViewÍ∞Ä ÏûàÏùÑ Ïàò ÏûàÏúºÎØÄÎ°ú
+ *  Lateral ViewÏóê ÌïúÌï¥, ÎÇ¥Î∂ÄÏùò querySetÎßå Îã§Ïãú Validation ÌïúÎã§.
  * 
- *  Mergeµ» View∏¶ ¬¸¡∂«œ¥¯ Subquery∏¶ ¥ŸΩ√ Validation «œ¥¬ ∞Õ∞˙ µø¿œ ∞≥≥‰¿Ã¥Ÿ.
+ *  MergeÎêú ViewÎ•º Ï∞∏Ï°∞ÌïòÎçò SubqueryÎ•º Îã§Ïãú Validation ÌïòÎäî Í≤ÉÍ≥º ÎèôÏùº Í∞úÎÖêÏù¥Îã§.
  *
  ************************************************************************/
 
@@ -3982,25 +3982,25 @@ IDE_RC qmoViewMerging::validateFrom( qmsFrom * aFrom )
             sStatement = aFrom->tableRef->view;
             sParseTree = (qmsParseTree *) sStatement->myPlan->parseTree;
 
-            // Lateral Viewø° «—«ÿº≠ ¥ŸΩ√ Validation¿Ã « ø‰«œ¥Ÿ.
+            // Lateral ViewÏóê ÌïúÌï¥ÏÑú Îã§Ïãú ValidationÏù¥ ÌïÑÏöîÌïòÎã§.
             IDE_TEST( validateQuerySet( sStatement,
                                         sParseTree->querySet )
                       != IDE_SUCCESS );
 
-            // View QuerySetø° outerDepInfo∞° ¡∏¿Á«œ¥¬ ∞ÊøÏø°¥¬
-            // lateralDepInfoø° outerDepInfo∏¶ ORing «—¥Ÿ.
+            // View QuerySetÏóê outerDepInfoÍ∞Ä Ï°¥Ïû¨ÌïòÎäî Í≤ΩÏö∞ÏóêÎäî
+            // lateralDepInfoÏóê outerDepInfoÎ•º ORing ÌïúÎã§.
             IDE_TEST( qmvQTC::setLateralDependenciesLast( sParseTree->querySet )
                       != IDE_SUCCESS );
         }
         else
         {
-            // Lateral View∞° æ∆¥— Object
+            // Lateral ViewÍ∞Ä ÏïÑÎãå Object
             // Nothing to do.
         }
     }
     else
     {
-        // JOIN¿Œ ∞ÊøÏ, LEFT/RIGHTø° ¥Î«ÿ ∞¢∞¢ »£√‚«—¥Ÿ.
+        // JOINÏù∏ Í≤ΩÏö∞, LEFT/RIGHTÏóê ÎåÄÌï¥ Í∞ÅÍ∞Å Ìò∏Ï∂úÌïúÎã§.
         IDE_TEST( validateFrom( aFrom->left  ) != IDE_SUCCESS );
         IDE_TEST( validateFrom( aFrom->right ) != IDE_SUCCESS );
     }

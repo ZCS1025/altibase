@@ -159,13 +159,13 @@ private:
                                          scPageID     aLstAllocPageID );
 };
 
-/* SegmentÀÇ Extent°¹¼ö¸¦ ¸®ÅÏÇÑ´Ù. */
+/* Segmentì˜ Extentê°¯ìˆ˜ë¥¼ ë¦¬í„´í•œë‹¤. */
 inline ULong sdpsfExtMgr::getExtCnt( sdpsfSegHdr *aSegHdr )
 {
     return aSegHdr->mTotExtCnt;
 }
 
-/* Extent ListÀÇ Ã¹¹øÂ° Extent¸¦ ¸®ÅÏÇÑ´Ù. */
+/* Extent Listì˜ ì²«ë²ˆì§¸ Extentë¥¼ ë¦¬í„´í•œë‹¤. */
 inline sdRID sdpsfExtMgr::getFstExt( sdpsfSegHdr *aSegHdr )
 {
     return sdpsfExtDirPage::getFstExtRID( &aSegHdr->mExtDirCntlHdr );
@@ -176,7 +176,7 @@ inline sdRID sdpsfExtMgr::getLstExt( sdpsfSegHdr *aSegHdr )
     return aSegHdr->mAllocExtRID;
 }
 
-/* aRID°¡ °¡¸®Å°´Â ExtDesc¸¦ ±¸ÇÑ´Ù. */
+/* aRIDê°€ ê°€ë¦¬í‚¤ëŠ” ExtDescë¥¼ êµ¬í•œë‹¤. */
 inline IDE_RC sdpsfExtMgr::fixAndGetExtDesc4Update(
     idvSQL          * aStatistics,
     sdrMtx          * aMtx,
@@ -202,7 +202,7 @@ inline IDE_RC sdpsfExtMgr::fixAndGetExtDesc4Update(
     return IDE_FAILURE;
 }
 
-/* aPageID°¡ ¼ÓÇÑ Extent¿¡ aPageIDÀÌÈÄ·Î Free Page°¡ ÀÖ´ÂÁö Á¶»çÇÑ´Ù. */
+/* aPageIDê°€ ì†í•œ Extentì— aPageIDì´í›„ë¡œ Free Pageê°€ ìˆëŠ”ì§€ ì¡°ì‚¬í•œë‹¤. */
 inline idBool sdpsfExtMgr::isFreePIDInExt( sdpsfSegHdr *aSegHdr,
                                            scPageID     aFstPIDOfAllocExt,
                                            scPageID     aLstAllocPageID )

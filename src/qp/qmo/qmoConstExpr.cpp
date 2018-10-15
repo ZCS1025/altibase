@@ -60,21 +60,21 @@ qmoConstExpr::processConstExpr( qcStatement  * aStatement,
     IDU_FIT_POINT_FATAL( "qmoConstExpr::processConstExpr::__FT__" );
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aSFWGH != NULL );
 
     //---------------------------------------------------
-    // constant expression ³ëµå º¯È¯
+    // constant expression ë…¸ë“œ ë³€í™˜
     //---------------------------------------------------
 
-    // simple view merging¿¡ ÀÇÇØ ÇÊ¿äÇÑ °æ¿ì¸¸ Ã³¸®ÇÑ´Ù.
+    // simple view mergingì— ì˜í•´ í•„ìš”í•œ ê²½ìš°ë§Œ ì²˜ë¦¬í•œë‹¤.
     if ( aSFWGH->isTransformed == ID_TRUE )
     {
         //---------------------------------------------------
-        // WHERE ÀıÀÇ ³ëµå º¯È¯
+        // WHERE ì ˆì˜ ë…¸ë“œ ë³€í™˜
         //---------------------------------------------------
 
         if ( aSFWGH->where != NULL )
@@ -92,7 +92,7 @@ qmoConstExpr::processConstExpr( qcStatement  * aStatement,
         }
 
         //---------------------------------------------------
-        // GROUP BY ÀıÀÇ ³ëµå º¯È¯
+        // GROUP BY ì ˆì˜ ë…¸ë“œ ë³€í™˜
         //---------------------------------------------------
 
         for ( sElement  = aSFWGH->group;
@@ -144,7 +144,7 @@ qmoConstExpr::processConstExpr( qcStatement  * aStatement,
         }
 
         //---------------------------------------------------
-        // target listÀÇ ³ëµå º¯È¯
+        // target listì˜ ë…¸ë“œ ë³€í™˜
         //---------------------------------------------------
 
         for ( sTarget  = aSFWGH->target;
@@ -160,7 +160,7 @@ qmoConstExpr::processConstExpr( qcStatement  * aStatement,
         }
 
         //---------------------------------------------------
-        // HAVING ÀıÀÇ ³ëµå º¯È¯
+        // HAVING ì ˆì˜ ë…¸ë“œ ë³€í™˜
         //---------------------------------------------------
 
         if ( aSFWGH->having != NULL )
@@ -221,17 +221,17 @@ qmoConstExpr::processConstExprForOrderBy( qcStatement  * aStatement,
     IDU_FIT_POINT_FATAL( "qmoConstExpr::processConstExprForOrderBy::__FT__" );
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aParseTree != NULL );
 
     //------------------------------------------
-    // validation ¼öÇà
+    // validation ìˆ˜í–‰
     //------------------------------------------
 
-    // simple view merging¿¡ ÀÇÇØ ÇÊ¿äÇÑ °æ¿ì¸¸ Ã³¸®ÇÑ´Ù.
+    // simple view mergingì— ì˜í•´ í•„ìš”í•œ ê²½ìš°ë§Œ ì²˜ë¦¬í•œë‹¤.
     if ( aParseTree->isTransformed == ID_TRUE )
     {
         if ( aParseTree->orderBy != NULL )
@@ -290,7 +290,7 @@ qmoConstExpr::processNode( qtcNode*     aNode,
     IDU_FIT_POINT_FATAL( "qmoConstExpr::processNode::__FT__" );
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_DASSERT( aNode != NULL );
@@ -298,13 +298,13 @@ qmoConstExpr::processNode( qtcNode*     aNode,
     IDE_DASSERT( aCallBack != NULL );
 
     //------------------------------------------
-    // ÃÊ±âÈ­
+    // ì´ˆê¸°í™”
     //------------------------------------------
 
     sInfo = (qtcCallBackInfo*) aCallBack->info;
 
     //------------------------------------------
-    // ³ëµå Æ®¸® ¼øÈ¸
+    // ë…¸ë“œ íŠ¸ë¦¬ ìˆœíšŒ
     //------------------------------------------
 
     for( sNode  = (qtcNode*) aNode->node.arguments;
@@ -313,13 +313,13 @@ qmoConstExpr::processNode( qtcNode*     aNode,
     {
         if ( sNode->node.module == & qtc::subqueryModule )
         {
-            // subquery ³ëµå´Â ¼øÈ¸ÇÏÁö ¾Ê´Â´Ù.
+            // subquery ë…¸ë“œëŠ” ìˆœíšŒí•˜ì§€ ì•ŠëŠ”ë‹¤.
 
             // Nothing to do.
         }
         else if ( sNode->node.module == & qtc::passModule )
         {
-            // pass ³ëµå´Â ¼øÈ¸ÇÏÁö ¾Ê´Â´Ù.
+            // pass ë…¸ë“œëŠ” ìˆœíšŒí•˜ì§€ ì•ŠëŠ”ë‹¤.
 
             // Nothing to do.
         }
@@ -335,10 +335,10 @@ qmoConstExpr::processNode( qtcNode*     aNode,
     }
 
     //------------------------------------------
-    // constant exprssionÀÇ »ó¼ö º¯È¯
+    // constant exprssionì˜ ìƒìˆ˜ ë³€í™˜
     //------------------------------------------
 
-    // Constant Expression¿¡ ´ëÇÑ ¼±Ã³¸®¸¦ ½ÃµµÇÑ´Ù.
+    // Constant Expressionì— ëŒ€í•œ ì„ ì²˜ë¦¬ë¥¼ ì‹œë„í•œë‹¤.
     IDE_TEST( qtc::preProcessConstExpr( sInfo->statement,
                                         aNode,
                                         aTemplate,
@@ -350,7 +350,7 @@ qmoConstExpr::processNode( qtcNode*     aNode,
     if ( ( aNode->node.lflag & MTC_NODE_REESTIMATE_MASK )
          == MTC_NODE_REESTIMATE_TRUE )
     {
-        // BUG-37483 nodeÀÇ estimate½Ã argumentÀÇ stackÀ» ½×¾ÆÁØ´Ù.
+        // BUG-37483 nodeì˜ estimateì‹œ argumentì˜ stackì„ ìŒ“ì•„ì¤€ë‹¤.
         for( sNode  = (qtcNode*) aNode->node.arguments,
                  sStack = aStack + 1, sRemain = aRemain - 1;
              sNode != NULL;
@@ -384,8 +384,8 @@ qmoConstExpr::processNode( qtcNode*     aNode,
         }
 
         // PROJ-1413
-        // re-estimate¸¦ ¼öÇàÇßÀ¸¹Ç·Î ´ÙÀ½ estimate¸¦ À§ÇØ
-        // re-estimate¸¦ ²¨µĞ´Ù.
+        // re-estimateë¥¼ ìˆ˜í–‰í–ˆìœ¼ë¯€ë¡œ ë‹¤ìŒ estimateë¥¼ ìœ„í•´
+        // re-estimateë¥¼ êº¼ë‘”ë‹¤.
         aNode->node.lflag &= ~MTC_NODE_REESTIMATE_MASK;
         aNode->node.lflag |= MTC_NODE_REESTIMATE_FALSE;
     }
@@ -398,7 +398,7 @@ qmoConstExpr::processNode( qtcNode*     aNode,
 
     IDE_EXCEPTION( ERR_PASS );
     {
-        // sqlSourceInfo°¡ ¾ø´Â error¶ó¸é.
+        // sqlSourceInfoê°€ ì—†ëŠ” errorë¼ë©´.
         if ( ideHasErrorPosition() == ID_FALSE )
         {
             sSqlCode = ideGetErrorCode();

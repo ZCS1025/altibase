@@ -104,7 +104,7 @@ static IDE_RC mtfMedianEstimate( mtcNode     * aNode,
 mtfModule mtfMedian = {
     2 | MTC_NODE_OPERATOR_AGGREGATION | MTC_NODE_FUNCTION_WINDOWING_TRUE,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
+    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìê°€ ì•„ë‹˜)
     mtfMedianFunctionName,
     NULL,
     mtfMedianInitialize,
@@ -173,7 +173,7 @@ static mtfSubModule mtfMedianEstimates[4] = {
 };
 
 // BUG-41994
-// high performance¿ë group table
+// high performanceìš© group table
 static mtfSubModule mtfMedianEstimatesHighPerformance[3] = {
     { mtfMedianEstimatesHighPerformance + 1, mtfMedianEstimateDouble },
     { mtfMedianEstimatesHighPerformance + 2, mtfMedianEstimateBigint },
@@ -282,7 +282,7 @@ IDE_RC mtfMedianInitialize( mtcNode     * aNode,
     sRow    = (UChar *)aTemplate->rows[aNode->table].row;
     sBinary = (mtdBinaryType *)(sRow + sColumn[1].column.offset);
 
-    // ÃÖÃÊ µî·Ï
+    // ìµœì´ˆ ë“±ë¡
     if ( aTemplate->funcData[aNode->info] == NULL )
     {
         IDE_TEST( mtf::allocFuncDataMemory( &sMemoryMgr )
@@ -300,7 +300,7 @@ IDE_RC mtfMedianInitialize( mtcNode     * aNode,
                                                     sMemoryMgr )
                   != IDE_SUCCESS );
 
-        // µî·Ï
+        // ë“±ë¡
         aTemplate->funcData[aNode->info] = sFuncDataInfo;
     }
     else
@@ -515,7 +515,7 @@ IDE_RC mtfMedianEstimateFloat( mtcNode     * aNode,
                     ( aStack[1].column->module == &mtdBoolean ),
                     ERR_CONVERSION_NOT_APPLICABLE );
 
-    // funcData »ç¿ë
+    // funcData ì‚¬ìš©
     aNode->info = aTemplate->funcDataCnt;
     aTemplate->funcDataCnt++;
 
@@ -569,7 +569,7 @@ IDE_RC mtfMedianFinalizeFloat( mtcNode      * aNode,
     // sort
     //------------------------------------------
 
-    // chunk¸¦ ÇÏ³ª·Î ÇÕÃÄ  data¸¦ »ı¼ºÇÑ´Ù.
+    // chunkë¥¼ í•˜ë‚˜ë¡œ í•©ì³  dataë¥¼ ìƒì„±í•œë‹¤.
     IDE_TEST( makeTotalDataMedianFuncData( sFuncDataBasicInfo,
                                            sMedianFuncData )
               != IDE_SUCCESS );
@@ -580,12 +580,12 @@ IDE_RC mtfMedianFinalizeFloat( mtcNode      * aNode,
               != IDE_SUCCESS );
 
     //------------------------------------------
-    // ¿¬»ê ¼öÇà
+    // ì—°ì‚° ìˆ˜í–‰
     //------------------------------------------
 
     if ( sMedianFuncData->totalCount > 0 )
     {
-        // RN(Áß°£ rowÀ§Ä¡)À» ±¸ÇÑ´Ù.
+        // RN(ì¤‘ê°„ rowìœ„ì¹˜)ì„ êµ¬í•œë‹¤.
         sRowNum = 1 + ( 0.5 * ( sMedianFuncData->totalCount - 1 ) );
 
         // ceil row num
@@ -594,7 +594,7 @@ IDE_RC mtfMedianFinalizeFloat( mtcNode      * aNode,
         // floor row num
         sFloorRowNum = idlOS::floor( sRowNum );
 
-        // row num = ceil, row num = floor °°Àº °æ¿ì ¶Ç´Â row num ÃÑ°³°¡ È¦¼ö.
+        // row num = ceil, row num = floor ê°™ì€ ê²½ìš° ë˜ëŠ” row num ì´ê°œê°€ í™€ìˆ˜.
         if ( ( MEDIAN_FLOATING_POINT_EQ( sRowNum, (SDouble)sCeilRowNum ) ) &&
              ( MEDIAN_FLOATING_POINT_EQ( sRowNum, (SDouble)sFloorRowNum ) ) )
         {
@@ -715,7 +715,7 @@ IDE_RC mtfMedianEstimateDouble( mtcNode     * aNode,
                     ( aStack[1].column->module == &mtdBoolean ),
                     ERR_CONVERSION_NOT_APPLICABLE );
 
-    // funcData »ç¿ë
+    // funcData ì‚¬ìš©
     aNode->info = aTemplate->funcDataCnt;
     aTemplate->funcDataCnt++;
 
@@ -761,7 +761,7 @@ IDE_RC mtfMedianFinalizeDouble( mtcNode     * aNode,
     // sort
     //------------------------------------------
 
-    // chunk¸¦ ÇÏ³ª·Î ÇÕÃÄ  data¸¦ »ı¼ºÇÑ´Ù.
+    // chunkë¥¼ í•˜ë‚˜ë¡œ í•©ì³  dataë¥¼ ìƒì„±í•œë‹¤.
     IDE_TEST( makeTotalDataMedianFuncData( sFuncDataBasicInfo,
                                            sMedianFuncData )
               != IDE_SUCCESS );
@@ -772,12 +772,12 @@ IDE_RC mtfMedianFinalizeDouble( mtcNode     * aNode,
               != IDE_SUCCESS );
 
     //------------------------------------------
-    // ¿¬»ê ¼öÇà
+    // ì—°ì‚° ìˆ˜í–‰
     //------------------------------------------
 
     if ( sMedianFuncData->totalCount > 0 )
     {
-        // RN(Áß°£ rowÀ§Ä¡)À» ±¸ÇÑ´Ù.
+        // RN(ì¤‘ê°„ rowìœ„ì¹˜)ì„ êµ¬í•œë‹¤.
         sRowNum = 1 + ( 0.5 * ( sMedianFuncData->totalCount - 1 ) );
 
         // ceil row num
@@ -786,7 +786,7 @@ IDE_RC mtfMedianFinalizeDouble( mtcNode     * aNode,
         // floor row num
         sFloorRowNum = idlOS::floor( sRowNum );
 
-        // row num = ceil, row num = floor °°Àº °æ¿ì ¶Ç´Â row num ÃÑ°³°¡ È¦¼ö.
+        // row num = ceil, row num = floor ê°™ì€ ê²½ìš° ë˜ëŠ” row num ì´ê°œê°€ í™€ìˆ˜.
         if ( ( MEDIAN_FLOATING_POINT_EQ( sRowNum, (SDouble)sCeilRowNum ) ) &&
              ( MEDIAN_FLOATING_POINT_EQ( sRowNum, (SDouble)sFloorRowNum ) ) )
         {
@@ -881,7 +881,7 @@ IDE_RC mtfMedianEstimateBigint( mtcNode     * aNode,
                     ( aStack[1].column->module == &mtdBoolean ),
                     ERR_CONVERSION_NOT_APPLICABLE );
 
-    // funcData »ç¿ë
+    // funcData ì‚¬ìš©
     aNode->info = aTemplate->funcDataCnt;
     aTemplate->funcDataCnt++;
 
@@ -927,7 +927,7 @@ IDE_RC mtfMedianFinalizeBigint( mtcNode     * aNode,
     // sort
     //------------------------------------------
 
-    // chunk¸¦ ÇÏ³ª·Î ÇÕÃÄ total data¸¦ »ı¼ºÇÑ´Ù.
+    // chunkë¥¼ í•˜ë‚˜ë¡œ í•©ì³ total dataë¥¼ ìƒì„±í•œë‹¤.
     IDE_TEST( makeTotalDataMedianFuncData( sFuncDataBasicInfo,
                                            sMedianFuncData )
               != IDE_SUCCESS );
@@ -938,12 +938,12 @@ IDE_RC mtfMedianFinalizeBigint( mtcNode     * aNode,
               != IDE_SUCCESS );
 
     //------------------------------------------
-    // ¿¬»ê ¼öÇà
+    // ì—°ì‚° ìˆ˜í–‰
     //------------------------------------------
 
     if ( sMedianFuncData->totalCount > 0 )
     {
-        // RN(Áß°£ rowÀ§Ä¡)À» ±¸ÇÑ´Ù.
+        // RN(ì¤‘ê°„ rowìœ„ì¹˜)ì„ êµ¬í•œë‹¤.
         sRowNum = 1 + ( 0.5 * ( sMedianFuncData->totalCount - 1 ) );
 
         // ceil row num
@@ -952,7 +952,7 @@ IDE_RC mtfMedianFinalizeBigint( mtcNode     * aNode,
         // floor row num
         sFloorRowNum = idlOS::floor( sRowNum );
 
-        // row num = ceil, row num = floor °°Àº °æ¿ì ¶Ç´Â row num ÃÑ°³°¡ È¦¼ö.
+        // row num = ceil, row num = floor ê°™ì€ ê²½ìš° ë˜ëŠ” row num ì´ê°œê°€ í™€ìˆ˜.
         if ( ( MEDIAN_FLOATING_POINT_EQ( sRowNum, (SDouble)sCeilRowNum ) ) &&
              ( MEDIAN_FLOATING_POINT_EQ( sRowNum, (SDouble)sFloorRowNum ) ) )
         {
@@ -1048,7 +1048,7 @@ IDE_RC mtfMedianEstimateDate( mtcNode     * aNode,
                     ( aStack[1].column->module == &mtdBoolean ),
                     ERR_CONVERSION_NOT_APPLICABLE );
 
-    // funcData »ç¿ë
+    // funcData ì‚¬ìš©
     aNode->info = aTemplate->funcDataCnt;
     aTemplate->funcDataCnt++;
 
@@ -1110,7 +1110,7 @@ IDE_RC mtfMedianFinalizeDate( mtcNode      * aNode,
     // sort
     //------------------------------------------
 
-    // chunk¸¦ ÇÏ³ª·Î ÇÕÃÄ total data¸¦ »ı¼ºÇÑ´Ù.
+    // chunkë¥¼ í•˜ë‚˜ë¡œ í•©ì³ total dataë¥¼ ìƒì„±í•œë‹¤.
     IDE_TEST( makeTotalDataMedianFuncData( sFuncDataBasicInfo,
                                            sMedianFuncData )
               != IDE_SUCCESS );
@@ -1121,12 +1121,12 @@ IDE_RC mtfMedianFinalizeDate( mtcNode      * aNode,
               != IDE_SUCCESS );
 
     //------------------------------------------
-    // ¿¬»ê ¼öÇà
+    // ì—°ì‚° ìˆ˜í–‰
     //------------------------------------------
 
     if ( sMedianFuncData->totalCount > 0 )
     {
-        // RN( Áß°£ rowÀ§Ä¡) À» ±¸ÇÑ´Ù.
+        // RN( ì¤‘ê°„ rowìœ„ì¹˜) ì„ êµ¬í•œë‹¤.
         sRowNum = ( 1 + ( 0.5 * ( sMedianFuncData->totalCount - 1 ) ) );
 
         // ceil row num
@@ -1135,7 +1135,7 @@ IDE_RC mtfMedianFinalizeDate( mtcNode      * aNode,
         // floor row num
         sFloorRowNum = idlOS::floor( sRowNum );
 
-        // row num = ceil, row num = floor °°Àº °æ¿ì ¶Ç´Â row num ÃÑ°³°¡ È¦¼ö.
+        // row num = ceil, row num = floor ê°™ì€ ê²½ìš° ë˜ëŠ” row num ì´ê°œê°€ í™€ìˆ˜.
         if ( ( MEDIAN_FLOATING_POINT_EQ( sRowNum, (SDouble)sCeilRowNum ) ) &&
              ( MEDIAN_FLOATING_POINT_EQ( sRowNum, (SDouble)sFloorRowNum ) ) )
         {
@@ -1433,7 +1433,7 @@ IDE_RC makeTotalDataMedianFuncData( mtfFuncDataBasicInfo * aFuncDataInfo,
         }
         else
         {
-            // chunk°¡ 1°³ÀÎ °æ¿ì
+            // chunkê°€ 1ê°œì¸ ê²½ìš°
             aMedianFuncData->totalData = aMedianFuncData->list->data;
         }
     }

@@ -19,11 +19,11 @@
  * $Id: qmgWindowing.cpp 29304 2008-11-14 08:17:42Z jakim $
  *
  * Description :
- *     Windowing Graph¸¦ À§ÇÑ ¼öÇà ÇÔ¼ö
+ *     Windowing Graphë¥¼ ìœ„í•œ ìˆ˜í–‰ í•¨ìˆ˜
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  **********************************************************************/
 
@@ -44,12 +44,12 @@ qmgWindowing::init( qcStatement * aStatement,
 {
 /***********************************************************************
  *
- * Description : qmgWindowingÀÇ ÃÊ±âÈ­
+ * Description : qmgWindowingì˜ ì´ˆê¸°í™”
  *
  * Implementation :
- *    (1) qmgWindowingÀ» À§ÇÑ °ø°£ ÇÒ´ç
- *    (2) graph( ¸ğµç Graph¸¦ À§ÇÑ °øÅë ÀÚ·á ±¸Á¶ ) ÃÊ±âÈ­
- *    (3) out ¼³Á¤
+ *    (1) qmgWindowingì„ ìœ„í•œ ê³µê°„ í• ë‹¹
+ *    (2) graph( ëª¨ë“  Graphë¥¼ ìœ„í•œ ê³µí†µ ìë£Œ êµ¬ì¡° ) ì´ˆê¸°í™”
+ *    (3) out ì„¤ì •
  *
  ***********************************************************************/
 
@@ -59,7 +59,7 @@ qmgWindowing::init( qcStatement * aStatement,
     IDU_FIT_POINT_FATAL( "qmgWindowing::init::__FT__" );
 
     //---------------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //---------------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -67,15 +67,15 @@ qmgWindowing::init( qcStatement * aStatement,
     IDE_DASSERT( aChildGraph != NULL );
 
     //---------------------------------------------------
-    // Windowing Graph¸¦ À§ÇÑ ±âº» ÃÊ±âÈ­
+    // Windowing Graphë¥¼ ìœ„í•œ ê¸°ë³¸ ì´ˆê¸°í™”
     //---------------------------------------------------
 
-    // qmgWindowingÀ» À§ÇÑ °ø°£ ÇÒ´ç
+    // qmgWindowingì„ ìœ„í•œ ê³µê°„ í• ë‹¹
     IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF( qmgWINDOW ),
                                              (void**) &sMyGraph )
               != IDE_SUCCESS );
 
-    // Graph °øÅë Á¤º¸ÀÇ ÃÊ±âÈ­
+    // Graph ê³µí†µ ì •ë³´ì˜ ì´ˆê¸°í™”
     IDE_TEST( qmg::initGraph( & sMyGraph->graph ) != IDE_SUCCESS );
 
     sMyGraph->graph.type = QMG_WINDOWING;
@@ -90,7 +90,7 @@ qmgWindowing::init( qcStatement * aStatement,
     sMyGraph->graph.makePlan = qmgWindowing::makePlan;
     sMyGraph->graph.printGraph = qmgWindowing::printGraph;
 
-    // Disk/Memory Á¤º¸ ¼³Á¤
+    // Disk/Memory ì •ë³´ ì„¤ì •
     for ( sQuerySet = aQuerySet;
           sQuerySet->left != NULL;
           sQuerySet = sQuerySet->left ) ;
@@ -98,7 +98,7 @@ qmgWindowing::init( qcStatement * aStatement,
     switch(  sQuerySet->SFWGH->hints->interResultType )
     {
         case QMO_INTER_RESULT_TYPE_NOT_DEFINED :
-            // Áß°£ °á°ú Type Hint°¡ ¾ø´Â °æ¿ì, ÇÏÀ§ÀÇ TypeÀ» µû¸¥´Ù.
+            // ì¤‘ê°„ ê²°ê³¼ Type Hintê°€ ì—†ëŠ” ê²½ìš°, í•˜ìœ„ì˜ Typeì„ ë”°ë¥¸ë‹¤.
             if ( ( aChildGraph->flag & QMG_GRAPH_TYPE_MASK )
                  == QMG_GRAPH_TYPE_DISK )
             {
@@ -125,7 +125,7 @@ qmgWindowing::init( qcStatement * aStatement,
     }
 
     //---------------------------------------------------
-    // Windowing Graph °íÀ¯ Á¤º¸¸¦ À§ÇÑ ±âº» ÃÊ±âÈ­
+    // Windowing Graph ê³ ìœ  ì •ë³´ë¥¼ ìœ„í•œ ê¸°ë³¸ ì´ˆê¸°í™”
     //---------------------------------------------------
 
     sMyGraph->analyticFuncList = aQuerySet->analyticFuncList;
@@ -133,7 +133,7 @@ qmgWindowing::init( qcStatement * aStatement,
     sMyGraph->sortingKeyCount = 0;
     sMyGraph->sortingKeyPtrArr = NULL;
 
-    // out ¼³Á¤
+    // out ì„¤ì •
     *aGraph = (qmgGraph *)sMyGraph;
 
     return IDE_SUCCESS;
@@ -148,16 +148,16 @@ qmgWindowing::optimize( qcStatement * aStatement, qmgGraph * aGraph )
 {
 /***********************************************************************
  *
- * Description : qmgWindowingÀÇ ÃÖÀûÈ­
+ * Description : qmgWindowingì˜ ìµœì í™”
  *
  * Implementation :
- *    (1) Analytic Function °³¼ö ±¸ÇÏ°í, sorting key ºĞ·ù¸¦ À§ÇÑ
- *        ÀÚ·á ±¸Á¶ »ı¼º
- *    (2) Sorting Key ºĞ·ù
- *    (3) Analytic Function ºĞ·ù
- *    (4) Sorting ¼öÇà ¼ø¼­ °áÁ¤
- *    (5) Preserved Order ¼³Á¤
- *    (6) °øÅë ºñ¿ë Á¤º¸ÀÇ ¼³Á¤
+ *    (1) Analytic Function ê°œìˆ˜ êµ¬í•˜ê³ , sorting key ë¶„ë¥˜ë¥¼ ìœ„í•œ
+ *        ìë£Œ êµ¬ì¡° ìƒì„±
+ *    (2) Sorting Key ë¶„ë¥˜
+ *    (3) Analytic Function ë¶„ë¥˜
+ *    (4) Sorting ìˆ˜í–‰ ìˆœì„œ ê²°ì •
+ *    (5) Preserved Order ì„¤ì •
+ *    (6) ê³µí†µ ë¹„ìš© ì •ë³´ì˜ ì„¤ì •
  *
  ***********************************************************************/
 
@@ -186,14 +186,14 @@ qmgWindowing::optimize( qcStatement * aStatement, qmgGraph * aGraph )
     IDU_FIT_POINT_FATAL( "qmgWindowing::optimize::__FT__" );
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aGraph != NULL );
 
     //------------------------------------------
-    // ±âº» ÃÊ±âÈ­
+    // ê¸°ë³¸ ì´ˆê¸°í™”
     //------------------------------------------
 
     sMyGraph            = (qmgWINDOW*) aGraph;
@@ -201,17 +201,17 @@ qmgWindowing::optimize( qcStatement * aStatement, qmgGraph * aGraph )
     sRowNumberFuncCount = 0;
     sFirstDistAggr      = NULL;
 
-    // analytic function °³¼ö·Î sorting key °³¼ö¸¦ ÃÊ±âÈ­ÇÑ´Ù.
-    // sorting key ºĞ·ù ¹× analytic function ºĞ·ù ½Ã¿¡ Á¤È®ÇÑ °³¼ö°¡
-    // ¼³Á¤µÈ´Ù.
-    // distinct aggregation argument ¼³Á¤
+    // analytic function ê°œìˆ˜ë¡œ sorting key ê°œìˆ˜ë¥¼ ì´ˆê¸°í™”í•œë‹¤.
+    // sorting key ë¶„ë¥˜ ë° analytic function ë¶„ë¥˜ ì‹œì— ì •í™•í•œ ê°œìˆ˜ê°€
+    // ì„¤ì •ëœë‹¤.
+    // distinct aggregation argument ì„¤ì •
     for ( sCurAnalFunc = sMyGraph->analyticFuncList;
           sCurAnalFunc != NULL;
           sCurAnalFunc = sCurAnalFunc->next )
     {
         sAnalFuncCount++;
 
-        // aggregationÀÇ subquery ÃÖÀûÈ­
+        // aggregationì˜ subquery ìµœì í™”
         IDE_TEST(
             qmoPred::optimizeSubqueryInNode(aStatement,
                                             sCurAnalFunc->analyticFuncNode,
@@ -224,7 +224,7 @@ qmgWindowing::optimize( qcStatement * aStatement, qmgGraph * aGraph )
               sOverColumn != NULL;
               sOverColumn = sOverColumn->next )
         {
-            // partition by ÀÇ subquery ÃÖÀûÈ­
+            // partition by ì˜ subquery ìµœì í™”
             IDE_TEST(
                 qmoPred::optimizeSubqueryInNode(aStatement,
                                                 sOverColumn->node,
@@ -233,7 +233,7 @@ qmgWindowing::optimize( qcStatement * aStatement, qmgGraph * aGraph )
                 != IDE_SUCCESS );
         }
 
-        // distinct aggreagtion argument ¼³Á¤
+        // distinct aggreagtion argument ì„¤ì •
         if( ( sCurAnalFunc->analyticFuncNode->node.lflag &
               MTC_NODE_DISTINCT_MASK )
             == MTC_NODE_DISTINCT_TRUE )
@@ -249,8 +249,8 @@ qmgWindowing::optimize( qcStatement * aStatement, qmgGraph * aGraph )
 
             if( sCurAnalFunc->analyticFuncNode->overClause->partitionByColumn != NULL )
             {
-                // distinct ÀÇ bucket °¹¼ö¸¦ ±¸ÇÏ±â À§ÇØ¼­
-                // partition by ÀÇ bucket °¹¼ö¸¦ ±¸ÇÑ´Ù.
+                // distinct ì˜ bucket ê°¯ìˆ˜ë¥¼ êµ¬í•˜ê¸° ìœ„í•´ì„œ
+                // partition by ì˜ bucket ê°¯ìˆ˜ë¥¼ êµ¬í•œë‹¤.
                 IDE_TEST(
                     getBucketCnt4Windowing(
                         aStatement,
@@ -314,8 +314,8 @@ qmgWindowing::optimize( qcStatement * aStatement, qmgGraph * aGraph )
     }
     
     //------------------------------------------
-    // Sorting Key Pointer Array¿Í
-    // Analytic Function List¸¦ °¡¸®Å°´Â Pointer ArrayÀÇ »ı¼º ¹× ÃÊ±âÈ­
+    // Sorting Key Pointer Arrayì™€
+    // Analytic Function Listë¥¼ ê°€ë¦¬í‚¤ëŠ” Pointer Arrayì˜ ìƒì„± ë° ì´ˆê¸°í™”
     //-----------------------------------------
 
     IDE_TEST( QC_QMP_MEM(aStatement)->alloc((ID_SIZEOF(qmgPreservedOrder*) *
@@ -343,14 +343,14 @@ qmgWindowing::optimize( qcStatement * aStatement, qmgGraph * aGraph )
     sMyGraph->analyticFuncListPtrArr = sAnalyticFuncListPtrArr;
 
     //------------------------------------------
-    // Sorting Key ¹× Analytic Function  ºĞ·ù
+    // Sorting Key ë° Analytic Function  ë¶„ë¥˜
     //-----------------------------------------
 
     IDE_TEST( classifySortingKeyNAnalFunc( aStatement, sMyGraph )
               != IDE_SUCCESS );
                                            
 
-    // ½ÇÁ¦ sorting key count ¼³Á¤
+    // ì‹¤ì œ sorting key count ì„¤ì •
     for ( i = 0 ; i < sMyGraph->sortingKeyCount; i ++ )
     {
         if ( sSortingKeyPtrArr[i] == NULL )
@@ -365,18 +365,18 @@ qmgWindowing::optimize( qcStatement * aStatement, qmgGraph * aGraph )
     sMyGraph->sortingKeyCount = i;
     
     //------------------------------------------
-    // Ã¹¹øÂ° Sorting ¼öÇà ¼ø¼­ °áÁ¤ ¹×
-    // Preserved Order ¼³Á¤
+    // ì²«ë²ˆì§¸ Sorting ìˆ˜í–‰ ìˆœì„œ ê²°ì • ë°
+    // Preserved Order ì„¤ì •
     //-----------------------------------------
     
     if ( sMyGraph->graph.left->preservedOrder != NULL )
     {
-        // childÀÇ preserved order¿Í µ¿ÀÏÇÑ sorting key°¡ ÀÖÀ¸¸é
-        // ÀÌ¸¦ Ã¹¹øÂ°·Î ¿Å°Ü preserved order¸¦ ÀÌ¿ëÇÏµµ·Ï ÇÑ´Ù.
+        // childì˜ preserved orderì™€ ë™ì¼í•œ sorting keyê°€ ìˆìœ¼ë©´
+        // ì´ë¥¼ ì²«ë²ˆì§¸ë¡œ ì˜®ê²¨ preserved orderë¥¼ ì´ìš©í•˜ë„ë¡ í•œë‹¤.
         IDE_TEST( alterSortingOrder( aStatement,
                                      aGraph,
                                      aGraph->left->preservedOrder,
-                                     ID_TRUE )// Ã¹¹øÂ° sorting key º¯°æ ¿©ºÎ
+                                     ID_TRUE )// ì²«ë²ˆì§¸ sorting key ë³€ê²½ ì—¬ë¶€
                   != IDE_SUCCESS );
     }
     else
@@ -406,9 +406,9 @@ qmgWindowing::optimize( qcStatement * aStatement, qmgGraph * aGraph )
             }
 
             // BUG-21812
-            // child plan¿¡ preserved order°¡ ¾ø´Â °æ¿ì,
-            // ÇöÀç sorting orderÀÇ ¸¶Áö¸· sorting key°¡
-            // preserved order°¡ µÊ
+            // child planì— preserved orderê°€ ì—†ëŠ” ê²½ìš°,
+            // í˜„ì¬ sorting orderì˜ ë§ˆì§€ë§‰ sorting keyê°€
+            // preserved orderê°€ ë¨
             sMyGraph->graph.preservedOrder =
                 sMyGraph->sortingKeyPtrArr[sMyGraph->sortingKeyCount - 1];
             sMyGraph->graph.flag &= ~QMG_PRESERVED_ORDER_MASK;
@@ -416,9 +416,9 @@ qmgWindowing::optimize( qcStatement * aStatement, qmgGraph * aGraph )
         }
         else
         {
-            // child plan¿¡ preserved order ¾ø°í,
-            // window graphÀÇ sorting keyµµ ¾øÀ» °æ¿ì¿¡´Â
-            // preserved order°¡ not defined ÀÓ
+            // child planì— preserved order ì—†ê³ ,
+            // window graphì˜ sorting keyë„ ì—†ì„ ê²½ìš°ì—ëŠ”
+            // preserved orderê°€ not defined ì„
             sMyGraph->graph.preservedOrder = NULL;
 
             sMyGraph->graph.flag &= ~QMG_PRESERVED_ORDER_MASK;
@@ -434,10 +434,10 @@ qmgWindowing::optimize( qcStatement * aStatement, qmgGraph * aGraph )
                     == QMG_GROUPBY_EXTENSION_TRUE, ERR_NOT_WINDOWING );
 
     //------------------------------------------
-    // °øÅë ºñ¿ë Á¤º¸ÀÇ ¼³Á¤
+    // ê³µí†µ ë¹„ìš© ì •ë³´ì˜ ì„¤ì •
     //------------------------------------------
 
-    // recordSize °è»ê
+    // recordSize ê³„ì‚°
     sRecordSize = 0;
     for ( sTarget = aGraph->myQuerySet->SFWGH->target;
           sTarget != NULL;
@@ -448,7 +448,7 @@ qmgWindowing::optimize( qcStatement * aStatement, qmgGraph * aGraph )
         sMtcColumn   = QTC_TMPL_COLUMN(QC_SHARED_TMPLATE(aStatement), sNode);
         sRecordSize += sMtcColumn->column.size;
     }
-    // BUG-36463 sRecordSize ´Â 0ÀÌ µÇ¾î¼­´Â ¾ÈµÈ´Ù.
+    // BUG-36463 sRecordSize ëŠ” 0ì´ ë˜ì–´ì„œëŠ” ì•ˆëœë‹¤.
     sRecordSize = IDL_MAX( sRecordSize, 1 );
 
     sMyGraph->graph.costInfo.recordSize = sRecordSize;
@@ -467,7 +467,7 @@ qmgWindowing::optimize( qcStatement * aStatement, qmgGraph * aGraph )
     // myCost
     IDE_TEST( qmg::isDiskTempTable( aGraph, & sIsDisk ) != IDE_SUCCESS );
 
-    // BUG-36463 sortingKeyCount °¡ 0ÀÎ °æ¿ì´Â sort ¸¦ ¾ÈÇÏ°í ÀúÀå¸¸ ÇÔ
+    // BUG-36463 sortingKeyCount ê°€ 0ì¸ ê²½ìš°ëŠ” sort ë¥¼ ì•ˆí•˜ê³  ì €ì¥ë§Œ í•¨
     sTempNodeCount = IDL_MAX( sMyGraph->sortingKeyCount, 1 );
 
     if( sIsDisk == ID_FALSE )
@@ -476,7 +476,7 @@ qmgWindowing::optimize( qcStatement * aStatement, qmgGraph * aGraph )
                                              &(aGraph->left->costInfo),
                                              sTempNodeCount );
 
-        // analytic function ±¸ÇÒ¶§ µÎ¹ø °Ë»öÇÔ?
+        // analytic function êµ¬í• ë•Œ ë‘ë²ˆ ê²€ìƒ‰í•¨?
         sMyGraph->graph.costInfo.myAccessCost = sCost;
         sMyGraph->graph.costInfo.myDiskCost   = 0;
     }
@@ -487,12 +487,12 @@ qmgWindowing::optimize( qcStatement * aStatement, qmgGraph * aGraph )
                                               sTempNodeCount,
                                               sRecordSize );
 
-        // analytic function ±¸ÇÒ¶§ µÎ¹ø °Ë»öÇÔ?
+        // analytic function êµ¬í• ë•Œ ë‘ë²ˆ ê²€ìƒ‰í•¨?
         sMyGraph->graph.costInfo.myAccessCost = 0;
         sMyGraph->graph.costInfo.myDiskCost   = sCost;
     }
 
-    // My Access Cost¿Í My Disk Cost´Â ÀÌ¹Ì °è»êµÊ.
+    // My Access Costì™€ My Disk CostëŠ” ì´ë¯¸ ê³„ì‚°ë¨.
     sMyGraph->graph.costInfo.myAllCost =
         sMyGraph->graph.costInfo.myAccessCost +
         sMyGraph->graph.costInfo.myDiskCost;
@@ -530,16 +530,16 @@ qmgWindowing::classifySortingKeyNAnalFunc( qcStatement     * aStatement,
 {
     /***********************************************************************
      *
-     * Description : sorting key¿Í analytic function ºĞ·ù
+     * Description : sorting keyì™€ analytic function ë¶„ë¥˜
      *
      * Implementation :
-     *    (1) ÀÌ¹Ì µî·ÏµÈ sorting keyµéÀ» ¹æ¹®ÇÏ¿©
-     *        ÇöÀç Partition By Column ÀÌ¿ë °¡´ÉÇÑÁö °Ë»ç
-     *    (2) »ç¿ë °¡´ÉÇÑ °æ¿ì,
-     *        (i)   sorting key È®Àå ¿©ºÎ °áÁ¤
-     *        (ii) È®ÀåÇØ¾ß ÇÏ´Â °æ¿ì, sorting key È®Àå
-     *        »ç¿ë ºÒ°¡´ÉÇÑ °æ¿ì, sorting key »ı¼º
-     *    (3) analytic functionÀ» ´ëÀÀµÇ´Â sorting key À§Ä¡¿¡ µî·Ï
+     *    (1) ì´ë¯¸ ë“±ë¡ëœ sorting keyë“¤ì„ ë°©ë¬¸í•˜ì—¬
+     *        í˜„ì¬ Partition By Column ì´ìš© ê°€ëŠ¥í•œì§€ ê²€ì‚¬
+     *    (2) ì‚¬ìš© ê°€ëŠ¥í•œ ê²½ìš°,
+     *        (i)   sorting key í™•ì¥ ì—¬ë¶€ ê²°ì •
+     *        (ii) í™•ì¥í•´ì•¼ í•˜ëŠ” ê²½ìš°, sorting key í™•ì¥
+     *        ì‚¬ìš© ë¶ˆê°€ëŠ¥í•œ ê²½ìš°, sorting key ìƒì„±
+     *    (3) analytic functionì„ ëŒ€ì‘ë˜ëŠ” sorting key ìœ„ì¹˜ì— ë“±ë¡
      *
      ***********************************************************************/
 
@@ -562,7 +562,7 @@ qmgWindowing::classifySortingKeyNAnalFunc( qcStatement     * aStatement,
     IDU_FIT_POINT_FATAL( "qmgWindowing::classifySortingKeyNAnalFunc::__FT__" );
 
     //--------------
-    // ±âº» ÃÊ±âÈ­
+    // ê¸°ë³¸ ì´ˆê¸°í™”
     //--------------
     sSortingKeyPosition  = 0;
     sSortingKeyPtrArr    = aMyGraph->sortingKeyPtrArr;
@@ -598,8 +598,8 @@ qmgWindowing::classifySortingKeyNAnalFunc( qcStatement     * aStatement,
 
         if ( sOverColumn == NULL )
         {
-            // Partition By ÀıÀÌ Á¸ÀçÇÏÁö ¾ÊÀ¸¹Ç·Î
-            // º°µµÀÇ sortingÀÌ ÇÊ¿ä¾øÀ½
+            // Partition By ì ˆì´ ì¡´ì¬í•˜ì§€ ì•Šìœ¼ë¯€ë¡œ
+            // ë³„ë„ì˜ sortingì´ í•„ìš”ì—†ìŒ
             sFoundSameSortingKey = ID_TRUE;
             sReplaceSortingKey   = ID_FALSE;
             sSortingKeyPosition  = 0;
@@ -609,7 +609,7 @@ qmgWindowing::classifySortingKeyNAnalFunc( qcStatement     * aStatement,
             sFoundSameSortingKey = ID_FALSE;
             sReplaceSortingKey   = ID_FALSE;
 
-            // partition by¿Í µ¿ÀÏÇÑ sorting key°¡ µî·ÏµÇ¾îÀÖ´ÂÁö °Ë»ç
+            // partition byì™€ ë™ì¼í•œ sorting keyê°€ ë“±ë¡ë˜ì–´ìˆëŠ”ì§€ ê²€ì‚¬
             IDE_TEST( existSameSortingKeyAndDirection(
                           aMyGraph->sortingKeyCount,
                           sSortingKeyPtrArr,
@@ -625,12 +625,12 @@ qmgWindowing::classifySortingKeyNAnalFunc( qcStatement     * aStatement,
             if ( sReplaceSortingKey == ID_TRUE )
             {
                 //----------------------------------------
-                // ÇöÀç µî·ÏµÈ sorting key¸¦ È®Àå
+                // í˜„ì¬ ë“±ë¡ëœ sorting keyë¥¼ í™•ì¥
                 //----------------------------------------
 
-                // (1) ¸¶Áö¸· sorting Ã£À½
-                // (2) Ãß°¡ÇÒ sorting key col Á¤º¸¸¦ °¡Áö´Â Ã¹¹øÂ°
-                //     partition column Ã£À½
+                // (1) ë§ˆì§€ë§‰ sorting ì°¾ìŒ
+                // (2) ì¶”ê°€í•  sorting key col ì •ë³´ë¥¼ ê°€ì§€ëŠ” ì²«ë²ˆì§¸
+                //     partition column ì°¾ìŒ
                 for ( sLastSortingKeyCol =
                           sSortingKeyPtrArr[sSortingKeyPosition],
                           sCurOverColumn = sOverColumn;
@@ -640,8 +640,8 @@ qmgWindowing::classifySortingKeyNAnalFunc( qcStatement     * aStatement,
                 
                 sExpandOverColumn = sCurOverColumn->next;
                 
-                // (3) ³²¾ÆÀÖ´Â partition key columnµéÀ»
-                //     sorting key columnµé µÚ¿¡ Ãß°¡ÇÑ´Ù.
+                // (3) ë‚¨ì•„ìˆëŠ” partition key columnë“¤ì„
+                //     sorting key columnë“¤ ë’¤ì— ì¶”ê°€í•œë‹¤.
                 while ( sExpandOverColumn != NULL )
                 {
                     IDE_TEST(
@@ -650,7 +650,7 @@ qmgWindowing::classifySortingKeyNAnalFunc( qcStatement     * aStatement,
                             (void**) &sNewSortingKeyCol )
                         != IDE_SUCCESS );
 
-                    // BUG-34966 Pass node ÀÏ ¼ö ÀÖÀ¸¹Ç·Î ½ÇÁ¦ °ªÀÇ À§Ä¡¸¦ ¼³Á¤ÇÑ´Ù.
+                    // BUG-34966 Pass node ì¼ ìˆ˜ ìˆìœ¼ë¯€ë¡œ ì‹¤ì œ ê°’ì˜ ìœ„ì¹˜ë¥¼ ì„¤ì •í•œë‹¤.
                     sNode = &sExpandOverColumn->node->node;
 
                     while( sNode->module == &qtc::passModule )
@@ -724,15 +724,15 @@ qmgWindowing::classifySortingKeyNAnalFunc( qcStatement     * aStatement,
             }
             else
             {
-                // ÀÌ¹Ì sorting key°¡ µî·ÏµÇ¾úÀ¸¸ç,
-                // sorting key¸¦ È®ÀåÇÒ ÇÊ¿äµµ ¾ø´Â °æ¿ì
+                // ì´ë¯¸ sorting keyê°€ ë“±ë¡ë˜ì—ˆìœ¼ë©°,
+                // sorting keyë¥¼ í™•ì¥í•  í•„ìš”ë„ ì—†ëŠ” ê²½ìš°
                 // nothing to do 
             }
         }
         else
         {
             //----------------------------------------
-            // »õ·Î¿î sorting key¸¦ µî·Ï
+            // ìƒˆë¡œìš´ sorting keyë¥¼ ë“±ë¡
             //----------------------------------------
             sLastSortingKeyCol = NULL;
             
@@ -746,7 +746,7 @@ qmgWindowing::classifySortingKeyNAnalFunc( qcStatement     * aStatement,
                         (void**) & sNewSortingKeyCol )
                     != IDE_SUCCESS );
 
-                // BUG-34966 Pass node ÀÏ ¼ö ÀÖÀ¸¹Ç·Î ½ÇÁ¦ °ªÀÇ À§Ä¡¸¦ ¼³Á¤ÇÑ´Ù.
+                // BUG-34966 Pass node ì¼ ìˆ˜ ìˆìœ¼ë¯€ë¡œ ì‹¤ì œ ê°’ì˜ ìœ„ì¹˜ë¥¼ ì„¤ì •í•œë‹¤.
                 sNode = &sCurOverColumn->node->node;
 
                 while( sNode->module == &qtc::passModule )
@@ -813,7 +813,7 @@ qmgWindowing::classifySortingKeyNAnalFunc( qcStatement     * aStatement,
                 
                 if ( sLastSortingKeyCol == NULL )
                 {
-                    // Ã¹¹øÂ° columnÀÎ °æ¿ì
+                    // ì²«ë²ˆì§¸ columnì¸ ê²½ìš°
                     sSortingKeyPtrArr[sSortingKeyPosition] = sNewSortingKeyCol;
                     sLastSortingKeyCol = sNewSortingKeyCol;
                 }
@@ -826,9 +826,9 @@ qmgWindowing::classifySortingKeyNAnalFunc( qcStatement     * aStatement,
         }
 
         //----------------------------------------
-        // ÇöÀç analytic functionÀ»
-        // Sorting key¿Í ´ëÀÀµÇ´Â À§Ä¡ÀÇ
-        // analytic function list¿¡ ¿¬°áÇÑ´Ù.
+        // í˜„ì¬ analytic functionì„
+        // Sorting keyì™€ ëŒ€ì‘ë˜ëŠ” ìœ„ì¹˜ì˜
+        // analytic function listì— ì—°ê²°í•œë‹¤.
         //----------------------------------------
 
         IDE_TEST( QC_QMP_MEM(aStatement)->alloc(ID_SIZEOF(qmsAnalyticFunc),
@@ -848,7 +848,7 @@ qmgWindowing::classifySortingKeyNAnalFunc( qcStatement     * aStatement,
         }
         else
         {
-            // analytic function Ã¹ µî·ÏÀÎ °æ¿ì
+            // analytic function ì²« ë“±ë¡ì¸ ê²½ìš°
             sAnalyticFuncPtrArr[sSortingKeyPosition] = sNewAnalFunc;
         }
 
@@ -873,16 +873,16 @@ qmgWindowing::existSameSortingKeyAndDirection( UInt                 aSortingKeyC
 {
 /***********************************************************************
  *
- * Description : µ¿ÀÏÇÑ sorting key, direction Á¸Àç À¯¹« ¹İÈ¯
+ * Description : ë™ì¼í•œ sorting key, direction ì¡´ì¬ ìœ ë¬´ ë°˜í™˜
  *
  * Implementation :
- *    (1) ÀÌ¹Ì µî·ÏµÈ sorting keyµéÀ» ¹æ¹®ÇÏ¿©
- *        ÇöÀç Partition By Column ÀÌ¿ë °¡´ÉÇÑÁö °Ë»ç
- *    (2) »ç¿ë °¡´ÉÇÑ °æ¿ì,
- *        (i)   sorting key È®Àå ¿©ºÎ °áÁ¤
- *        (ii) È®ÀåÇØ¾ß ÇÏ´Â °æ¿ì, sorting key È®Àå
- *        »ç¿ë ºÒ°¡´ÉÇÑ °æ¿ì, sorting key »ı¼º
- *    (3) analytic functionÀ» ´ëÀÀµÇ´Â sorting key À§Ä¡¿¡ µî·Ï
+ *    (1) ì´ë¯¸ ë“±ë¡ëœ sorting keyë“¤ì„ ë°©ë¬¸í•˜ì—¬
+ *        í˜„ì¬ Partition By Column ì´ìš© ê°€ëŠ¥í•œì§€ ê²€ì‚¬
+ *    (2) ì‚¬ìš© ê°€ëŠ¥í•œ ê²½ìš°,
+ *        (i)   sorting key í™•ì¥ ì—¬ë¶€ ê²°ì •
+ *        (ii) í™•ì¥í•´ì•¼ í•˜ëŠ” ê²½ìš°, sorting key í™•ì¥
+ *        ì‚¬ìš© ë¶ˆê°€ëŠ¥í•œ ê²½ìš°, sorting key ìƒì„±
+ *    (3) analytic functionì„ ëŒ€ì‘ë˜ëŠ” sorting key ìœ„ì¹˜ì— ë“±ë¡
  *
  ***********************************************************************/
 
@@ -893,17 +893,17 @@ qmgWindowing::existSameSortingKeyAndDirection( UInt                 aSortingKeyC
     IDU_FIT_POINT_FATAL( "qmgWindowing::existSameSortingKeyAndDirection::__FT__" );
 
     //----------------------------------------------------
-    // ÀÌ¹Ì µî·ÏµÇ¾î ÀÖ´Â sorting key¸¦ µû¶ó°¡¸ç
-    // ÇöÀç partition by column list¿Í µ¿ÀÏÇÑ sorting key°¡
-    // Á¸ÀçÇÏ´ÂÁö °Ë»ç
+    // ì´ë¯¸ ë“±ë¡ë˜ì–´ ìˆëŠ” sorting keyë¥¼ ë”°ë¼ê°€ë©°
+    // í˜„ì¬ partition by column listì™€ ë™ì¼í•œ sorting keyê°€
+    // ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬
     //----------------------------------------------------
     
     for ( i = 0; i < aSortingKeyCount; i ++ )
     {
-        // ÇöÀç Sorting Key ¾òÀ½
+        // í˜„ì¬ Sorting Key ì–»ìŒ
         if ( aSortingKeyPtrArr[i] == NULL )
         {
-            // ´õÀÌ»ó µî·ÏµÈ sorting key°¡ ¾øÀ½
+            // ë”ì´ìƒ ë“±ë¡ëœ sorting keyê°€ ì—†ìŒ
             *aSortingKeyPosition = i;
             break;
         }
@@ -913,8 +913,8 @@ qmgWindowing::existSameSortingKeyAndDirection( UInt                 aSortingKeyC
         }
         
         //----------------------------------------
-        // µî·ÏµÈ sorting key columnµé°ú
-        // partition by, order by columnµéÀÌ µ¿ÀÏÇÑÁö °Ë»ç
+        // ë“±ë¡ëœ sorting key columnë“¤ê³¼
+        // partition by, order by columnë“¤ì´ ë™ì¼í•œì§€ ê²€ì‚¬
         //----------------------------------------
         *aFoundSameSortingKey = ID_TRUE;
 
@@ -926,7 +926,7 @@ qmgWindowing::existSameSortingKeyAndDirection( UInt                 aSortingKeyC
                 (sCurOverColumn->node->node.column == sCurSortingKeyCol->column))
             {
                 // BUG-33663 Ranking Function
-                // order by columnÀÇ °æ¿ì order±îÁö °°¾Æ¾ß ÇÑ´Ù.
+                // order by columnì˜ ê²½ìš° orderê¹Œì§€ ê°™ì•„ì•¼ í•œë‹¤.
                 switch ( sCurSortingKeyCol->direction )
                 {
                     case QMG_DIRECTION_NOT_DEFINED:
@@ -934,7 +934,7 @@ qmgWindowing::existSameSortingKeyAndDirection( UInt                 aSortingKeyC
                         if ( (sCurOverColumn->flag & QTC_OVER_COLUMN_MASK)
                              == QTC_OVER_COLUMN_NORMAL )
                         {
-                            // ÇöÀç Ä®·³Àº µ¿ÀÏ
+                            // í˜„ì¬ ì¹¼ëŸ¼ì€ ë™ì¼
                         }
                         else
                         {
@@ -952,7 +952,7 @@ qmgWindowing::existSameSortingKeyAndDirection( UInt                 aSortingKeyC
                              ( (sCurOverColumn->flag & QTC_OVER_COLUMN_NULLS_ORDER_MASK)
                                == QTC_OVER_COLUMN_NULLS_ORDER_NONE ) )
                         {
-                            // ÇöÀç Ä®·³Àº µ¿ÀÏ
+                            // í˜„ì¬ ì¹¼ëŸ¼ì€ ë™ì¼
                         }
                         else
                         {
@@ -970,7 +970,7 @@ qmgWindowing::existSameSortingKeyAndDirection( UInt                 aSortingKeyC
                              ( (sCurOverColumn->flag & QTC_OVER_COLUMN_NULLS_ORDER_MASK)
                                == QTC_OVER_COLUMN_NULLS_ORDER_NONE ) )
                         {
-                            // ÇöÀç Ä®·³Àº µ¿ÀÏ
+                            // í˜„ì¬ ì¹¼ëŸ¼ì€ ë™ì¼
                         }
                         else
                         {
@@ -988,7 +988,7 @@ qmgWindowing::existSameSortingKeyAndDirection( UInt                 aSortingKeyC
                              ( (sCurOverColumn->flag & QTC_OVER_COLUMN_NULLS_ORDER_MASK)
                                == QTC_OVER_COLUMN_NULLS_ORDER_FIRST ) )
                         {
-                            // ÇöÀç Ä®·³Àº µ¿ÀÏ
+                            // í˜„ì¬ ì¹¼ëŸ¼ì€ ë™ì¼
                         }
                         else
                         {
@@ -1006,7 +1006,7 @@ qmgWindowing::existSameSortingKeyAndDirection( UInt                 aSortingKeyC
                              ( (sCurOverColumn->flag & QTC_OVER_COLUMN_NULLS_ORDER_MASK)
                                == QTC_OVER_COLUMN_NULLS_ORDER_LAST ) )
                         {
-                            // ÇöÀç Ä®·³Àº µ¿ÀÏ
+                            // í˜„ì¬ ì¹¼ëŸ¼ì€ ë™ì¼
                         }
                         else
                         {
@@ -1024,7 +1024,7 @@ qmgWindowing::existSameSortingKeyAndDirection( UInt                 aSortingKeyC
                              ( (sCurOverColumn->flag & QTC_OVER_COLUMN_NULLS_ORDER_MASK)
                                == QTC_OVER_COLUMN_NULLS_ORDER_FIRST ) )
                         {
-                            // ÇöÀç Ä®·³Àº µ¿ÀÏ
+                            // í˜„ì¬ ì¹¼ëŸ¼ì€ ë™ì¼
                         }
                         else
                         {
@@ -1042,7 +1042,7 @@ qmgWindowing::existSameSortingKeyAndDirection( UInt                 aSortingKeyC
                              ( (sCurOverColumn->flag & QTC_OVER_COLUMN_NULLS_ORDER_MASK)
                                == QTC_OVER_COLUMN_NULLS_ORDER_LAST ) )
                         {
-                            // ÇöÀç Ä®·³Àº µ¿ÀÏ
+                            // í˜„ì¬ ì¹¼ëŸ¼ì€ ë™ì¼
                         }
                         else
                         {
@@ -1064,7 +1064,7 @@ qmgWindowing::existSameSortingKeyAndDirection( UInt                 aSortingKeyC
                 }
                 else
                 {
-                    // ´ÙÀ½ Ä®·³ °Ë»ç ÁøÇà
+                    // ë‹¤ìŒ ì¹¼ëŸ¼ ê²€ì‚¬ ì§„í–‰
                 }
             }
             else
@@ -1076,22 +1076,22 @@ qmgWindowing::existSameSortingKeyAndDirection( UInt                 aSortingKeyC
 
         if ( *aFoundSameSortingKey == ID_TRUE )
         {
-            // µ¿ÀÏ sorting key Ã£Àº °æ¿ì
+            // ë™ì¼ sorting key ì°¾ì€ ê²½ìš°
             if ( ( sCurOverColumn != NULL ) &&
                  ( sCurSortingKeyCol == NULL ) )
             {
-                // Partition Key°¡ Sorting Keyº¸´Ù Ä®·³ÀÌ ´õ ¸¹Àº °æ¿ì,
-                // µî·ÏµÈ Sorting Key¸¦ È®ÀåÇÑ´Ù.
+                // Partition Keyê°€ Sorting Keyë³´ë‹¤ ì¹¼ëŸ¼ì´ ë” ë§ì€ ê²½ìš°,
+                // ë“±ë¡ëœ Sorting Keyë¥¼ í™•ì¥í•œë‹¤.
                 // ex) SELECT sum(i1) over ( partition by i1 ),
                 //            sum(i2) over ( partition by i1, i2 )
                 //     FROM t1;
-                // (i1)ÀÌ sorting key·Î µî·ÏµÈ °æ¿ì,
-                // (i1, i2)·Î sorting key¸¦ È®ÀåÇØ¾ß ÇÑ´Ù.
+                // (i1)ì´ sorting keyë¡œ ë“±ë¡ëœ ê²½ìš°,
+                // (i1, i2)ë¡œ sorting keyë¥¼ í™•ì¥í•´ì•¼ í•œë‹¤.
                 *aReplaceSortingKey = ID_TRUE;
             }
             else
             {
-                // ÇöÀç sorting key¸¦ ±×´ë·Î ÀÌ¿ë °¡´ÉÇÔ
+                // í˜„ì¬ sorting keyë¥¼ ê·¸ëŒ€ë¡œ ì´ìš© ê°€ëŠ¥í•¨
                 *aReplaceSortingKey = ID_FALSE;
             }
             
@@ -1115,15 +1115,15 @@ qmgWindowing::existWantOrderInSortingKey( qmgGraph          * aGraph,
 {
 /***********************************************************************
  *
- * Description : ¿øÇÏ´Â order°¡ sorting keyµé Áß¿¡ Á¸ÀçÇÏ´ÂÁö °Ë»ç
+ * Description : ì›í•˜ëŠ” orderê°€ sorting keyë“¤ ì¤‘ì— ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬
  *
  * Implementation :
- *    (1) ¿øÇÏ´Â preserved order¿Í µ¿ÀÏÇÑ sorting key°¡ Á¸ÀçÇÏ´ÂÁö
- *        °Ë»ç
- *    (2) Á¸ÀçÇÏ´Â °æ¿ì, Ã¹¹øÂ° ¶Ç´Â ¸¶Áö¸· sorting ¼ø¼­·Î º¯°æ
- *        - Ã¹¹øÂ° sorting key·Î ¼³Á¤
- *        - ¸¶Áö¸· sorting key·Î ¼³Á¤
- *    (3) ³ªÀÇ preserved order¸¦ ¸¶Áö¸· sorting key·Î ¼³Á¤
+ *    (1) ì›í•˜ëŠ” preserved orderì™€ ë™ì¼í•œ sorting keyê°€ ì¡´ì¬í•˜ëŠ”ì§€
+ *        ê²€ì‚¬
+ *    (2) ì¡´ì¬í•˜ëŠ” ê²½ìš°, ì²«ë²ˆì§¸ ë˜ëŠ” ë§ˆì§€ë§‰ sorting ìˆœì„œë¡œ ë³€ê²½
+ *        - ì²«ë²ˆì§¸ sorting keyë¡œ ì„¤ì •
+ *        - ë§ˆì§€ë§‰ sorting keyë¡œ ì„¤ì •
+ *    (3) ë‚˜ì˜ preserved orderë¥¼ ë§ˆì§€ë§‰ sorting keyë¡œ ì„¤ì •
  ***********************************************************************/
 
     qmgPreservedOrder  ** sSortingKeyPtrArr;
@@ -1138,7 +1138,7 @@ qmgWindowing::existWantOrderInSortingKey( qmgGraph          * aGraph,
     IDU_FIT_POINT_FATAL( "qmgWindowing::existWantOrderInSortingKey::__FT__" );
 
     //--------------
-    // ±âº» ÃÊ±âÈ­
+    // ê¸°ë³¸ ì´ˆê¸°í™”
     //--------------
 
     sFind                   = ID_FALSE;
@@ -1149,7 +1149,7 @@ qmgWindowing::existWantOrderInSortingKey( qmgGraph          * aGraph,
     for ( i = 0 ; i < sSortingKeyCount; i ++ )
     {
         //------------------------------
-        // µ¿ÀÏÇÑ sorting key¸¦ Ã£À½
+        // ë™ì¼í•œ sorting keyë¥¼ ì°¾ìŒ
         //------------------------------
 
         sPrevDirection = QMG_DIRECTION_NOT_DEFINED;
@@ -1165,8 +1165,8 @@ qmgWindowing::existWantOrderInSortingKey( qmgGraph          * aGraph,
                  ( sCurSortingKeyCol->column == sCurOrderCol->column ) )
             {
                 /* BUG-42145
-                 * TableÀÌ³ª Partition¿¡ Index°¡ ÀÖ´Â °æ¿ì¶ó¸é
-                 * Nulls Option ÀÌ °í·ÁµÈ Direction Check¸¦ ÇÑ´Ù.
+                 * Tableì´ë‚˜ Partitionì— Indexê°€ ìˆëŠ” ê²½ìš°ë¼ë©´
+                 * Nulls Option ì´ ê³ ë ¤ëœ Direction Checkë¥¼ í•œë‹¤.
                  */
                 if ( ( ( aGraph->left->type == QMG_SELECTION ) ||
                        ( aGraph->left->type == QMG_PARTITION ) ) &&
@@ -1182,8 +1182,8 @@ qmgWindowing::existWantOrderInSortingKey( qmgGraph          * aGraph,
                 else
                 {
                     // BUG-28507
-                    // sorting key°¡ µ¿ÀÏÇÑ °æ¿ì,
-                    // soringÀÇ ¹æÇâ¼º(ASC, DESC) °Ë»ç
+                    // sorting keyê°€ ë™ì¼í•œ ê²½ìš°,
+                    // soringì˜ ë°©í–¥ì„±(ASC, DESC) ê²€ì‚¬
                     IDE_TEST( qmg::checkSameDirection( sCurOrderCol,
                                                        sCurSortingKeyCol,
                                                        sPrevDirection,
@@ -1194,12 +1194,12 @@ qmgWindowing::existWantOrderInSortingKey( qmgGraph          * aGraph,
 
                 if ( sSameDirection == ID_TRUE )
                 {
-                    // ´ÙÀ½ Ä®·³ ºñ±³
+                    // ë‹¤ìŒ ì¹¼ëŸ¼ ë¹„êµ
                     sFind = ID_TRUE;
                 }
                 else
                 {
-                    // ¹æÇâ¼º ´Ş¶ó µ¿ÀÏ order·Î º¼ ¼ö ¾øÀ½
+                    // ë°©í–¥ì„± ë‹¬ë¼ ë™ì¼ orderë¡œ ë³¼ ìˆ˜ ì—†ìŒ
                     sFind = ID_FALSE;
                     break;
                 }
@@ -1217,13 +1217,13 @@ qmgWindowing::existWantOrderInSortingKey( qmgGraph          * aGraph,
         {
             if ( ( sCurOrderCol != NULL ) || ( sCurSortingKeyCol != NULL ) )
             {
-                // Order ColumnÀÌ ³²Àº °æ¿ì,
-                // µ¿ÀÏ order¸¦ °¡Áö´Â sorting key Ã£´Â°ÍÀº ½ÇÆĞÇÑ °ÍÀÓ
+                // Order Columnì´ ë‚¨ì€ ê²½ìš°,
+                // ë™ì¼ orderë¥¼ ê°€ì§€ëŠ” sorting key ì°¾ëŠ”ê²ƒì€ ì‹¤íŒ¨í•œ ê²ƒì„
                 sFind = ID_FALSE;
             }
             else
             {
-                // order¿Í µ¿ÀÏÇÑ sorting key Ã£À½
+                // orderì™€ ë™ì¼í•œ sorting key ì°¾ìŒ
                 *aFindSortingKeyPosition = i;
                 break;
             }
@@ -1252,15 +1252,15 @@ qmgWindowing::alterSortingOrder( qcStatement       * aStatement,
 {
 /***********************************************************************
  *
- * Description : first sorting key ¼³Á¤
+ * Description : first sorting key ì„¤ì •
  *
  * Implementation :
- *    (1) ¿øÇÏ´Â preserved order¿Í µ¿ÀÏÇÑ sorting key°¡ Á¸ÀçÇÏ´ÂÁö
- *        °Ë»ç
- *    (2) Á¸ÀçÇÏ´Â °æ¿ì, Ã¹¹øÂ° ¶Ç´Â ¸¶Áö¸· sorting ¼ø¼­·Î º¯°æ
- *        - Ã¹¹øÂ° sorting key·Î ¼³Á¤
- *        - ¸¶Áö¸· sorting key·Î ¼³Á¤
- *    (3) ³ªÀÇ preserved order¸¦ ¸¶Áö¸· sorting key·Î ¼³Á¤
+ *    (1) ì›í•˜ëŠ” preserved orderì™€ ë™ì¼í•œ sorting keyê°€ ì¡´ì¬í•˜ëŠ”ì§€
+ *        ê²€ì‚¬
+ *    (2) ì¡´ì¬í•˜ëŠ” ê²½ìš°, ì²«ë²ˆì§¸ ë˜ëŠ” ë§ˆì§€ë§‰ sorting ìˆœì„œë¡œ ë³€ê²½
+ *        - ì²«ë²ˆì§¸ sorting keyë¡œ ì„¤ì •
+ *        - ë§ˆì§€ë§‰ sorting keyë¡œ ì„¤ì •
+ *    (3) ë‚˜ì˜ preserved orderë¥¼ ë§ˆì§€ë§‰ sorting keyë¡œ ì„¤ì •
  ***********************************************************************/
 
     qmgWINDOW           * sMyGraph;
@@ -1277,7 +1277,7 @@ qmgWindowing::alterSortingOrder( qcStatement       * aStatement,
     IDU_FIT_POINT_FATAL( "qmgWindowing::alterSortingOrder::__FT__" );
 
     //--------------
-    // ±âº» ÃÊ±âÈ­
+    // ê¸°ë³¸ ì´ˆê¸°í™”
     //--------------
 
     sMyGraph                = (qmgWINDOW*)aGraph;
@@ -1287,7 +1287,7 @@ qmgWindowing::alterSortingOrder( qcStatement       * aStatement,
     sFindSortingKeyPosition = 0;
     
     //------------------------------
-    // want order¿Í µ¿ÀÏÇÑ sorting Ã£À½
+    // want orderì™€ ë™ì¼í•œ sorting ì°¾ìŒ
     //------------------------------
     
     IDE_TEST( existWantOrderInSortingKey( aGraph,
@@ -1299,10 +1299,10 @@ qmgWindowing::alterSortingOrder( qcStatement       * aStatement,
     if ( aAlterFirstOrder == ID_TRUE )
     {
         //------------------------------
-        // Ã£Àº sorting key¸¦ Ã¹¹øÂ°·Î ¿Å±è
-        // ÇÏÀ§ graph¿¡¼­ ¿Ã¶ó¿À´Â preserved order »ç¿ë °¡´ÉÇÑ °æ¿ì,
-        // ÀÌ¸¦ Ã¹¹øÂ° sorting À§Ä¡·Î µÎ¾î º°µµÀÇ sortingÀ»
-        // ÇÏÁö ¾Êµµ·Ï ÇÔ
+        // ì°¾ì€ sorting keyë¥¼ ì²«ë²ˆì§¸ë¡œ ì˜®ê¹€
+        // í•˜ìœ„ graphì—ì„œ ì˜¬ë¼ì˜¤ëŠ” preserved order ì‚¬ìš© ê°€ëŠ¥í•œ ê²½ìš°,
+        // ì´ë¥¼ ì²«ë²ˆì§¸ sorting ìœ„ì¹˜ë¡œ ë‘ì–´ ë³„ë„ì˜ sortingì„
+        // í•˜ì§€ ì•Šë„ë¡ í•¨
         //------------------------------
         if ( sFind == ID_TRUE )
         {
@@ -1318,7 +1318,7 @@ qmgWindowing::alterSortingOrder( qcStatement       * aStatement,
                 sAnalFuncListPtrArr[0];
             sAnalFuncListPtrArr[0] = sFindAnalFuncListPtr;
 
-            /* BUG-43690 ÇÏÀ§ preserved orderÀÇ directionµµ °áÁ¤ÇÑ´Ù. */
+            /* BUG-43690 í•˜ìœ„ preserved orderì˜ directionë„ ê²°ì •í•œë‹¤. */
             if ( ( aGraph->left->preservedOrder->direction == QMG_DIRECTION_NOT_DEFINED ) &&
                  ( aGraph->left->preservedOrder->table == sFindSortingKeyPtr->table ) &&
                  ( aGraph->left->preservedOrder->column == sFindSortingKeyPtr->column ) )
@@ -1332,8 +1332,8 @@ qmgWindowing::alterSortingOrder( qcStatement       * aStatement,
         }
         else
         {
-            // »ç¿ë °¡´ÉÇÑ preserved order°¡ ¾ø´Â °æ¿ì,
-            // child preserved order »ç¿ëÇÒ ¼ö ¾øÀ½
+            // ì‚¬ìš© ê°€ëŠ¥í•œ preserved orderê°€ ì—†ëŠ” ê²½ìš°,
+            // child preserved order ì‚¬ìš©í•  ìˆ˜ ì—†ìŒ
             aGraph->flag &= ~QMG_CHILD_PRESERVED_ORDER_USE_MASK;
             aGraph->flag |= QMG_CHILD_PRESERVED_ORDER_CANNOT_USE;
         }
@@ -1341,10 +1341,10 @@ qmgWindowing::alterSortingOrder( qcStatement       * aStatement,
         if ( sMyGraph->sortingKeyCount > 0 )
         {
             //------------------------------
-            // ¸¶Áö¸· sorting key¸¦ Preserved Order ¼³Á¤
-            // ( »óÀ§ Graph¿¡¼­ ¿øÇÏ´Â preserved order·Î º¯°æ °¡´ÉÇÏ¹Ç·Î
-            //    Defined Not Fixed ÀÌ¸ç, µ¿ÀÏ order º¯°æ ¿©ºÎ¿¡ »ó°ü¾øÀÌ
-            //    ¸¶Áö¸· sorting key¸¦ ³ªÀÇ preserved order·Î ¼³Á¤ )
+            // ë§ˆì§€ë§‰ sorting keyë¥¼ Preserved Order ì„¤ì •
+            // ( ìƒìœ„ Graphì—ì„œ ì›í•˜ëŠ” preserved orderë¡œ ë³€ê²½ ê°€ëŠ¥í•˜ë¯€ë¡œ
+            //    Defined Not Fixed ì´ë©°, ë™ì¼ order ë³€ê²½ ì—¬ë¶€ì— ìƒê´€ì—†ì´
+            //    ë§ˆì§€ë§‰ sorting keyë¥¼ ë‚˜ì˜ preserved orderë¡œ ì„¤ì • )
             //------------------------------
             sMyGraph->graph.preservedOrder =
                 sSortingKeyPtrArr[sMyGraph->sortingKeyCount - 1];
@@ -1353,8 +1353,8 @@ qmgWindowing::alterSortingOrder( qcStatement       * aStatement,
         }
         else
         {
-            // sorting key°¡ ¾ø´Â °æ¿ì
-            // ÇÏÀ§ÀÇ preserved order¸¦ ³ªÀÇ order·Î ¼³Á¤ÇÔ
+            // sorting keyê°€ ì—†ëŠ” ê²½ìš°
+            // í•˜ìœ„ì˜ preserved orderë¥¼ ë‚˜ì˜ orderë¡œ ì„¤ì •í•¨
             sMyGraph->graph.preservedOrder = aWantOrder;
 
             sMyGraph->graph.flag &= ~QMG_PRESERVED_ORDER_MASK;
@@ -1365,11 +1365,11 @@ qmgWindowing::alterSortingOrder( qcStatement       * aStatement,
     else
     {
         //------------------------------
-        // Ã£Àº sorting key¸¦ ¸¶Áö¸·À¸·Î ¿Å±è
-        // qmgWindowing »óÀ§ Graph (Áï, qmgSorting)¿¡¼­
-        // ÇÊ¿äÇÑ want order¸¦ Ã£Àº °æ¿ì,
-        // ¸¶Áö¸·¿¡ sorting ÇÏµµ·Ï ÇÏ¿© »óÀ§ graph¿¡¼­
-        // º°µµÀÇ sortingÀ» ÇÏÁö ¾Êµµ·Ï ÇÔ
+        // ì°¾ì€ sorting keyë¥¼ ë§ˆì§€ë§‰ìœ¼ë¡œ ì˜®ê¹€
+        // qmgWindowing ìƒìœ„ Graph (ì¦‰, qmgSorting)ì—ì„œ
+        // í•„ìš”í•œ want orderë¥¼ ì°¾ì€ ê²½ìš°,
+        // ë§ˆì§€ë§‰ì— sorting í•˜ë„ë¡ í•˜ì—¬ ìƒìœ„ graphì—ì„œ
+        // ë³„ë„ì˜ sortingì„ í•˜ì§€ ì•Šë„ë¡ í•¨
         //------------------------------
         
         if ( sFind == ID_TRUE )
@@ -1378,16 +1378,16 @@ qmgWindowing::alterSortingOrder( qcStatement       * aStatement,
                  ( sMyGraph->sortingKeyCount > 1 ) )
             {
                 // BUG-28507
-                // Ã£Àº sorting order°¡ Ã¹¹øÂ° ÀÎ °æ¿ì,
-                // ÇÏÀ§ preserved order¸¦ »ç¿ëÇÒ ¼ö ¾ø´Ù°í ¼³Á¤ÇØ¾ßÇÔ
+                // ì°¾ì€ sorting orderê°€ ì²«ë²ˆì§¸ ì¸ ê²½ìš°,
+                // í•˜ìœ„ preserved orderë¥¼ ì‚¬ìš©í•  ìˆ˜ ì—†ë‹¤ê³  ì„¤ì •í•´ì•¼í•¨
                 aGraph->flag &= ~QMG_CHILD_PRESERVED_ORDER_USE_MASK;
                 aGraph->flag |= QMG_CHILD_PRESERVED_ORDER_CANNOT_USE;
             }
             else
             {
                 // BUG-40361
-                // Sort Key°¡ 1°³ÀÌ°í ÇÏÀ§ Order Á¤ÇØÁ® ÀÖÁö ¾Ê´Ù¸é
-                // ÇÏÀ§¿¡µµ »óÀ§¿¡¼­ ³»·Á¿Â Sort Key¸¦ Á¤ÇØÁÖµµ·Ï ÇÑ´Ù.
+                // Sort Keyê°€ 1ê°œì´ê³  í•˜ìœ„ Order ì •í•´ì ¸ ìˆì§€ ì•Šë‹¤ë©´
+                // í•˜ìœ„ì—ë„ ìƒìœ„ì—ì„œ ë‚´ë ¤ì˜¨ Sort Keyë¥¼ ì •í•´ì£¼ë„ë¡ í•œë‹¤.
                 if ( sMyGraph->sortingKeyCount == 1 )
                 {
                     IDE_TEST( qmg::tryPreservedOrder( aStatement,
@@ -1426,10 +1426,10 @@ qmgWindowing::alterSortingOrder( qcStatement       * aStatement,
                 sFindAnalFuncListPtr;
 
             //------------------------------
-            // ¸¶Áö¸· sorting key¸¦ Preserved Order ¼³Á¤
-            // ( »óÀ§¿¡¼­ ÇÊ¿äÇÑ prserved order·Î ¼³Á¤ÇÑ °æ¿ìÀÌ¹Ç·Î
-            //    Defined Fixed ÀÌ¸ç, ¸¶Áö¸· sorting key°¡ º¯°æµÇ¾úÀ»
-            //    ¶§¿¡¸¸ ³ªÀÇ preserved order º¯°æ )
+            // ë§ˆì§€ë§‰ sorting keyë¥¼ Preserved Order ì„¤ì •
+            // ( ìƒìœ„ì—ì„œ í•„ìš”í•œ prserved orderë¡œ ì„¤ì •í•œ ê²½ìš°ì´ë¯€ë¡œ
+            //    Defined Fixed ì´ë©°, ë§ˆì§€ë§‰ sorting keyê°€ ë³€ê²½ë˜ì—ˆì„
+            //    ë•Œì—ë§Œ ë‚˜ì˜ preserved order ë³€ê²½ )
             //------------------------------
             sMyGraph->graph.preservedOrder =
                 sSortingKeyPtrArr[sMyGraph->sortingKeyCount - 1];
@@ -1438,8 +1438,8 @@ qmgWindowing::alterSortingOrder( qcStatement       * aStatement,
         }
         else
         {
-            // »ç¿ë °¡´ÉÇÑ preserved order°¡ ¾ø´Â °æ¿ì,
-            // child preserved order »ç¿ëÇÒ ¼ö ¾øÀ½
+            // ì‚¬ìš© ê°€ëŠ¥í•œ preserved orderê°€ ì—†ëŠ” ê²½ìš°,
+            // child preserved order ì‚¬ìš©í•  ìˆ˜ ì—†ìŒ
             aGraph->flag &= ~QMG_CHILD_PRESERVED_ORDER_USE_MASK;
             aGraph->flag |= QMG_CHILD_PRESERVED_ORDER_CANNOT_USE;
         }
@@ -1482,29 +1482,29 @@ qmgWindowing::makePlan( qcStatement * aStatement, const qmgGraph * aParent, qmgG
 {
 /***********************************************************************
  *
- * Description : qmgWindowingÀ¸·Î ºÎÅÍ PlanÀ» »ı¼ºÇÑ´Ù.
+ * Description : qmgWindowingìœ¼ë¡œ ë¶€í„° Planì„ ìƒì„±í•œë‹¤.
  *
  * Implementation :
- *    (1) WNSTÀÇ materialize node ±¸¼º ¹æ½Ä °áÁ¤
+ *    (1) WNSTì˜ materialize node êµ¬ì„± ë°©ì‹ ê²°ì •
  *        Base Table + Column + Analytic Functions
- *       < RID ¹æ½Ä >
- *       - ÀÏ¹İ
- *         Base Table         : °ü·Ã tableµéÀÇ RID
+ *       < RID ë°©ì‹ >
+ *       - ì¼ë°˜
+ *         Base Table         : ê´€ë ¨ tableë“¤ì˜ RID
  *         Column             : Partition By Columns + Arguments
  *         Analytic Functions 
- *       - ÇÏÀ§¿¡ Hash Based Grouping Ã³¸®°¡ ÀÖÀ» °æ¿ì
- *         Base Table         : ÇÏÀ§ GRAGÀÇ RID
+ *       - í•˜ìœ„ì— Hash Based Grouping ì²˜ë¦¬ê°€ ìˆì„ ê²½ìš°
+ *         Base Table         : í•˜ìœ„ GRAGì˜ RID
  *         Column             : Partition By Columns + Arguments
  *         Analytic Functions 
- *       - ÇÏÀ§¿¡ Sort Based Grouping Ã³¸®°¡ ÀÖÀ» °æ¿ì
- *         Base Table         : target list¿¡ ¼ÓÇÑ columnµé
+ *       - í•˜ìœ„ì— Sort Based Grouping ì²˜ë¦¬ê°€ ìˆì„ ê²½ìš°
+ *         Base Table         : target listì— ì†í•œ columnë“¤
  *         Column             : Partition By Columns + Arguments
  *         Analytic Functions 
- *       < Push Projection ¹æ½Ä >
- *       Base Table        : »óÀ§ plan ¼öÇà¿¡ ÇÊ¿äÇÑ Ä®·³
+ *       < Push Projection ë°©ì‹ >
+ *       Base Table        : ìƒìœ„ plan ìˆ˜í–‰ì— í•„ìš”í•œ ì¹¼ëŸ¼
  *       Column            : Partition By Columns + Arguments
  *       Analytic Functions 
- *    (2) WNST plan »ı¼º
+ *    (2) WNST plan ìƒì„±
  ***********************************************************************/
 
     qmgWINDOW       * sMyGraph;
@@ -1514,14 +1514,14 @@ qmgWindowing::makePlan( qcStatement * aStatement, const qmgGraph * aParent, qmgG
     IDU_FIT_POINT_FATAL( "qmgWindowing::makePlan::__FT__" );
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aGraph != NULL );
 
     //------------------------------------------
-    // ±âº» ÃÊ±âÈ­
+    // ê¸°ë³¸ ì´ˆê¸°í™”
     //------------------------------------------
     sMyGraph = (qmgWINDOW*) aGraph;
     sFlag    = 0;
@@ -1531,7 +1531,7 @@ qmgWindowing::makePlan( qcStatement * aStatement, const qmgGraph * aParent, qmgG
     aGraph->flag |= (aParent->flag & QMG_PARALLEL_IMPOSSIBLE_MASK);
 
     // BUG-38410
-    // SCAN parallel flag ¸¦ ÀÚ½Ä ³ëµå·Î ¹°·ÁÁØ´Ù.
+    // SCAN parallel flag ë¥¼ ìì‹ ë…¸ë“œë¡œ ë¬¼ë ¤ì¤€ë‹¤.
     aGraph->left->flag  |= (aGraph->flag & QMG_PLAN_EXEC_REPEATED_MASK);
 
     // BUG-37277
@@ -1556,7 +1556,7 @@ qmgWindowing::makePlan( qcStatement * aStatement, const qmgGraph * aParent, qmgG
     sMyGraph->graph.myPlan = sWNST;
 
     //---------------------------------------------------
-    // ÇÏÀ§ PlanÀÇ »ı¼º
+    // í•˜ìœ„ Planì˜ ìƒì„±
     //---------------------------------------------------
 
     IDE_TEST( sMyGraph->graph.left->makePlan( aStatement ,
@@ -1566,24 +1566,24 @@ qmgWindowing::makePlan( qcStatement * aStatement, const qmgGraph * aParent, qmgG
     sMyGraph->graph.myPlan = sMyGraph->graph.left->myPlan;
 
     //---------------------------------------------------
-    // Process »óÅÂ ¼³Á¤
+    // Process ìƒíƒœ ì„¤ì •
     //---------------------------------------------------
     sMyGraph->graph.myQuerySet->processPhase = QMS_MAKEPLAN_WINDOW;
 
     //-----------------------------------------------------
-    // WNST ³ëµå »ı¼º½Ã Base TableÀ» ÀúÀåÇÏ´Â ¹æ¹ı
+    // WNST ë…¸ë“œ ìƒì„±ì‹œ Base Tableì„ ì €ì¥í•˜ëŠ” ë°©ë²•
     //
-    // 1. ÇÏÀ§ Graph°¡ ÀÏ¹İ GraphÀÎ °æ¿ì
-    //    ChildÀÇ dependencies¸¦ ÀÌ¿ëÇÑ Base TableÀÇ »ı¼º
+    // 1. í•˜ìœ„ Graphê°€ ì¼ë°˜ Graphì¸ ê²½ìš°
+    //    Childì˜ dependenciesë¥¼ ì´ìš©í•œ Base Tableì˜ ìƒì„±
     //
-    // 2. ÇÏÀ§°¡ GroupingÀÎ °æ¿ì
-    //    - Sort-BasedÀÎ °æ¿ì : Target°ú Order By¸¦ ¸ğµÎÀúÀå
-    //                          (ÈÄ¿¡ targetÀ» sortÀÇ dst·Î º¯°æ)
-    //    - Hash-BasedÀÎ °æ¿ì : child¿¡¼­ GRAG¸¦ Ã£¾Æ Base Table·Î ÀúÀå
-    //                          (Áß°£¿¡ FILT°¡ ¿Ã¼öÀÖ´Ù )
+    // 2. í•˜ìœ„ê°€ Groupingì¸ ê²½ìš°
+    //    - Sort-Basedì¸ ê²½ìš° : Targetê³¼ Order Byë¥¼ ëª¨ë‘ì €ì¥
+    //                          (í›„ì— targetì„ sortì˜ dstë¡œ ë³€ê²½)
+    //    - Hash-Basedì¸ ê²½ìš° : childì—ì„œ GRAGë¥¼ ì°¾ì•„ Base Tableë¡œ ì €ì¥
+    //                          (ì¤‘ê°„ì— FILTê°€ ì˜¬ìˆ˜ìˆë‹¤ )
     //
-    // 3. ÇÏÀ§°¡ SetÀÎ °æ¿ì
-    //    childÀÎ HSDS¸¦ Base Table·Î ÀúÀå
+    // 3. í•˜ìœ„ê°€ Setì¸ ê²½ìš°
+    //    childì¸ HSDSë¥¼ Base Tableë¡œ ì €ì¥
     //-----------------------------------------------------
 
     sFlag = 0;
@@ -1605,9 +1605,9 @@ qmgWindowing::makePlan( qcStatement * aStatement, const qmgGraph * aParent, qmgG
     {
         //----------------------------------------------------------
         // PR-8369
-        // ÇÏÀ§°¡ SETÀÎ°æ¿ì VIEW°¡ »ı¼ºµÇ¹Ç·Î DEPENDENCY·Î ºÎÅÍ
-        // BASE TABLEÀ» »ı¼ºÇÑ´Ù.
-        // ´Ù¸¸, UNIONÀÎ °æ¿ì , HSDS·Î ºÎÅÍ BASE TABLEÀ» ÀúÀåÇÑ´Ù.
+        // í•˜ìœ„ê°€ SETì¸ê²½ìš° VIEWê°€ ìƒì„±ë˜ë¯€ë¡œ DEPENDENCYë¡œ ë¶€í„°
+        // BASE TABLEì„ ìƒì„±í•œë‹¤.
+        // ë‹¤ë§Œ, UNIONì¸ ê²½ìš° , HSDSë¡œ ë¶€í„° BASE TABLEì„ ì €ì¥í•œë‹¤.
         //----------------------------------------------------------
         if( ((qmgSET*)sMyGraph->graph.left)->setOp == QMS_UNION )
         {
@@ -1627,7 +1627,7 @@ qmgWindowing::makePlan( qcStatement * aStatement, const qmgGraph * aParent, qmgG
     }
 
     //----------------------------
-    // WNST ³ëµåÀÇ »ı¼º
+    // WNST ë…¸ë“œì˜ ìƒì„±
     //----------------------------
     
     if ( ( sMyGraph->graph.flag & QMG_CHILD_PRESERVED_ORDER_USE_MASK )
@@ -1642,7 +1642,7 @@ qmgWindowing::makePlan( qcStatement * aStatement, const qmgGraph * aParent, qmgG
         sFlag |= QMO_MAKEWNST_PRESERVED_ORDER_TRUE;
     }
 
-    //ÀúÀå ¸ÅÃ¼ÀÇ ¼±ÅÃ
+    //ì €ì¥ ë§¤ì²´ì˜ ì„ íƒ
     if( (sMyGraph->graph.flag & QMG_GRAPH_TYPE_MASK) ==
         QMG_GRAPH_TYPE_MEMORY )
     {
@@ -1655,19 +1655,19 @@ qmgWindowing::makePlan( qcStatement * aStatement, const qmgGraph * aParent, qmgG
         sFlag |= QMO_MAKEWNST_DISK_TEMP_TABLE;
     }
     
-    // sorting key´Â analytic functionÀÇ partition by columnµéÀÇ
-    // (table, column) °ª°ú µ¿ÀÏÇÏ´Ù.
-    // ±×·¯³ª partition by column ÀÇ (table, column)°ªÀÌ
-    // ÇÏÀ§ plan »ı¼º ½Ã¿¡ º¯ÇÒ ¼öµµ ÀÖ´Ù.
-    // µû¶ó¼­ ÀÌ¿¡ µû¶ó sorting key ¸¦ º¸Á¤ÇÏ¿©¾ß ÇÑ´Ù.
+    // sorting keyëŠ” analytic functionì˜ partition by columnë“¤ì˜
+    // (table, column) ê°’ê³¼ ë™ì¼í•˜ë‹¤.
+    // ê·¸ëŸ¬ë‚˜ partition by column ì˜ (table, column)ê°’ì´
+    // í•˜ìœ„ plan ìƒì„± ì‹œì— ë³€í•  ìˆ˜ë„ ìˆë‹¤.
+    // ë”°ë¼ì„œ ì´ì— ë”°ë¼ sorting key ë¥¼ ë³´ì •í•˜ì—¬ì•¼ í•œë‹¤.
     IDE_TEST( resetSortingKey( sMyGraph->sortingKeyPtrArr,
                                sMyGraph->sortingKeyCount,
                                sMyGraph->analyticFuncListPtrArr )
               != IDE_SUCCESS );
 
     // BUG-33663 Ranking Function
-    // partition by exprÀÇ order°¡ °áÁ¤µÈ ÈÄ sorting key array¿¡¼­
-    // Á¦°Å°¡´ÉÇÑ sorting key¸¦ Á¦°Å
+    // partition by exprì˜ orderê°€ ê²°ì •ëœ í›„ sorting key arrayì—ì„œ
+    // ì œê±°ê°€ëŠ¥í•œ sorting keyë¥¼ ì œê±°
     IDE_TEST( compactSortingKeyArr( sMyGraph->graph.flag,
                                     sMyGraph->sortingKeyPtrArr,
                                     & sMyGraph->sortingKeyCount,
@@ -1728,9 +1728,9 @@ qmgWindowing::resetSortingKey( qmgPreservedOrder ** aSortingKeyPtrArr,
  * Description :
  *
  * Implementation :
- *    Child Plan »ı¼º ½Ã¿¡ Sorting Key (table, column) Á¤º¸°¡
- *    º¯°æµÇ´Â °æ¿ì°¡ ÀÖÀ½
- *    µû¶ó¼­ Child Plan »ı¼º ÈÄ, ÀÌ¸¦ º¸Á¤ÇØÁÜ
+ *    Child Plan ìƒì„± ì‹œì— Sorting Key (table, column) ì •ë³´ê°€
+ *    ë³€ê²½ë˜ëŠ” ê²½ìš°ê°€ ìˆìŒ
+ *    ë”°ë¼ì„œ Child Plan ìƒì„± í›„, ì´ë¥¼ ë³´ì •í•´ì¤Œ
  *
  ***********************************************************************/
 
@@ -1747,8 +1747,8 @@ qmgWindowing::resetSortingKey( qmgPreservedOrder ** aSortingKeyPtrArr,
     for ( i = 0; i < aSortingKeyCount; i++ )
     {
         //--------------------------------------------------
-        // Sorting Key¿Í µ¿ÀÏÇÑ Partition By ColumnÀ» °¡Áö´Â
-        // Analytic FunctionÀ» Ã£À½
+        // Sorting Keyì™€ ë™ì¼í•œ Partition By Columnì„ ê°€ì§€ëŠ”
+        // Analytic Functionì„ ì°¾ìŒ
         //--------------------------------------------------
         sSortingKeyColCnt = 0;
         for ( sCurSortingKeyCol = aSortingKeyPtrArr[i];
@@ -1758,11 +1758,11 @@ qmgWindowing::resetSortingKey( qmgPreservedOrder ** aSortingKeyPtrArr,
             sSortingKeyColCnt++;
         }
 
-        // sorting key array¿¡¼­ i¹øÂ° sorting key´Â
-        // analytic function list pointer array¿¡¼­ i¹øÂ°¿¡ ÀÖ´Â
-        // anlaytic function listµéÀÇ sorting key ÀÌ¹Ç·Î
-        // ÀÌÁß¿¡¼­ µ¿ÀÏ key count¸¦ °¡Áö´Â partition by columnÀ» Ã£À¸¸é
-        // µÈ´Ù.
+        // sorting key arrayì—ì„œ ië²ˆì§¸ sorting keyëŠ”
+        // analytic function list pointer arrayì—ì„œ ië²ˆì§¸ì— ìˆëŠ”
+        // anlaytic function listë“¤ì˜ sorting key ì´ë¯€ë¡œ
+        // ì´ì¤‘ì—ì„œ ë™ì¼ key countë¥¼ ê°€ì§€ëŠ” partition by columnì„ ì°¾ìœ¼ë©´
+        // ëœë‹¤.
         for ( sAnalFunc = aAnalyticFuncListPtrArr[i];
               sAnalFunc != NULL;
               sAnalFunc = sAnalFunc->next )
@@ -1782,7 +1782,7 @@ qmgWindowing::resetSortingKey( qmgPreservedOrder ** aSortingKeyPtrArr,
             }
             else
             {
-                // »õ·Î¿î analytic function Ã£À½
+                // ìƒˆë¡œìš´ analytic function ì°¾ìŒ
             }
         }
 
@@ -1790,7 +1790,7 @@ qmgWindowing::resetSortingKey( qmgPreservedOrder ** aSortingKeyPtrArr,
                         ERR_INVALID_ANAL_FUNC );
 
         //--------------------------------------------------
-        // Sorting Key Á¤º¸°¡ º¯°æµÈ °æ¿ì, Àç ¼³Á¤
+        // Sorting Key ì •ë³´ê°€ ë³€ê²½ëœ ê²½ìš°, ì¬ ì„¤ì •
         //--------------------------------------------------
         
         for ( sCurSortingKeyCol = aSortingKeyPtrArr[i],
@@ -1812,8 +1812,8 @@ qmgWindowing::resetSortingKey( qmgPreservedOrder ** aSortingKeyPtrArr,
             sCurSortingKeyCol->column = sNode->column;
         }
 
-        // sorting key¿Í partition by colÀº µ¿ÀÏÇÑ °¹¼ö·Î ÀÖ¾î¾ß ÇÔ
-        // ³²´Â °æ¿ì ¾øÀ½
+        // sorting keyì™€ partition by colì€ ë™ì¼í•œ ê°¯ìˆ˜ë¡œ ìˆì–´ì•¼ í•¨
+        // ë‚¨ëŠ” ê²½ìš° ì—†ìŒ
         IDE_DASSERT( sCurSortingKeyCol == NULL );
         IDE_DASSERT( sCurPartAndOrderByCol == NULL );
     }
@@ -1840,14 +1840,14 @@ qmgWindowing::compactSortingKeyArr( UInt                 aFlag,
 /***********************************************************************
  *
  * Description :
- *    order by exprÀº order°¡ °íÁ¤µÇ°í º°µµÀÇ sorting key·Î µî·ÏµÇ¾ú´Ù.
- *    ÀÌÈÄ partition by exprÀÇ order°¡ °áÁ¤µÇ¸é µ¿ÀÏÇÑ order¸¦
- *    °¡Áú ¼ö ÀÖÀ¸¹Ç·Î sorting key¸¦ Á¦°ÅÇÒ ¼ö ÀÖ´Ù.
+ *    order by exprì€ orderê°€ ê³ ì •ë˜ê³  ë³„ë„ì˜ sorting keyë¡œ ë“±ë¡ë˜ì—ˆë‹¤.
+ *    ì´í›„ partition by exprì˜ orderê°€ ê²°ì •ë˜ë©´ ë™ì¼í•œ orderë¥¼
+ *    ê°€ì§ˆ ìˆ˜ ìˆìœ¼ë¯€ë¡œ sorting keyë¥¼ ì œê±°í•  ìˆ˜ ìˆë‹¤.
  *
  * Implementation :
- *    first order(child preserved order)¿Í
- *    last order(parent preserved order)¸¦ °í·ÁÇÏ¿© sorting key array¿¡¼­
- *    µ¿ÀÏÇÑ order¸¦ °®´Â sorting key¸¦ Á¦°ÅÇÑ´Ù.
+ *    first order(child preserved order)ì™€
+ *    last order(parent preserved order)ë¥¼ ê³ ë ¤í•˜ì—¬ sorting key arrayì—ì„œ
+ *    ë™ì¼í•œ orderë¥¼ ê°–ëŠ” sorting keyë¥¼ ì œê±°í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -1866,7 +1866,7 @@ qmgWindowing::compactSortingKeyArr( UInt                 aFlag,
     if ( sSortingKeyCount > 1 )
     {
         //----------------------------------
-        // last order¸¦ Á¦¿ÜÇÑ ºÎºĞ Áßº¹ Á¦°Å
+        // last orderë¥¼ ì œì™¸í•œ ë¶€ë¶„ ì¤‘ë³µ ì œê±°
         //----------------------------------
 
         sStartKey = 0;
@@ -1927,7 +1927,7 @@ qmgWindowing::compactSortingKeyArr( UInt                 aFlag,
         }
 
         //----------------------------------
-        // last order Áßº¹ Á¦°Å
+        // last order ì¤‘ë³µ ì œê±°
         //----------------------------------
 
         if ( (aFlag & QMG_PRESERVED_ORDER_MASK)
@@ -1986,7 +1986,7 @@ qmgWindowing::compactSortingKeyArr( UInt                 aFlag,
         }
         
         //----------------------------------
-        // Á¦°ÅÇÑ sort key Á¤¸®
+        // ì œê±°í•œ sort key ì •ë¦¬
         //----------------------------------
 
         sStartKey = 0;
@@ -2057,7 +2057,7 @@ qmgWindowing::isSameSortingKey( qmgPreservedOrder * aSortingKey1,
 /***********************************************************************
  *
  * Description :
- *     aSortingKey1°ú aSortingKey2°¡ °°Àº order¸¦ °®´ÂÁö ºñ±³ÇÑ´Ù.
+ *     aSortingKey1ê³¼ aSortingKey2ê°€ ê°™ì€ orderë¥¼ ê°–ëŠ”ì§€ ë¹„êµí•œë‹¤.
  *
  * Implementation :
  *
@@ -2248,7 +2248,7 @@ qmgWindowing::mergeSortingKey( qmgPreservedOrder * aSortingKey1,
 /***********************************************************************
  *
  * Description :
- *     aSortingKey1¿¡ aSortingKey2ÀÇ order¸¦ º´ÇÕÇÑ´Ù.
+ *     aSortingKey1ì— aSortingKey2ì˜ orderë¥¼ ë³‘í•©í•œë‹¤.
  *
  * Implementation :
  *
@@ -2304,7 +2304,7 @@ qmgWindowing::printGraph( qcStatement  * aStatement,
 /***********************************************************************
  *
  * Description :
- *    Graph¸¦ ±¸¼ºÇÏ´Â °øÅë Á¤º¸¸¦ Ãâ·ÂÇÑ´Ù.
+ *    Graphë¥¼ êµ¬ì„±í•˜ëŠ” ê³µí†µ ì •ë³´ë¥¼ ì¶œë ¥í•œë‹¤.
  *
  *
  * Implementation :
@@ -2314,7 +2314,7 @@ qmgWindowing::printGraph( qcStatement  * aStatement,
     IDU_FIT_POINT_FATAL( "qmgWindowing::printGraph::__FT__" );
 
     //-----------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //-----------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -2322,7 +2322,7 @@ qmgWindowing::printGraph( qcStatement  * aStatement,
     IDE_DASSERT( aString != NULL );
 
     //-----------------------------------
-    // Graph °øÅë Á¤º¸ÀÇ Ãâ·Â
+    // Graph ê³µí†µ ì •ë³´ì˜ ì¶œë ¥
     //-----------------------------------
 
     IDE_TEST( qmg::printGraph( aStatement,
@@ -2332,12 +2332,12 @@ qmgWindowing::printGraph( qcStatement  * aStatement,
               != IDE_SUCCESS );
 
     //-----------------------------------
-    // Graph °íÀ¯ Á¤º¸ÀÇ Ãâ·Â
+    // Graph ê³ ìœ  ì •ë³´ì˜ ì¶œë ¥
     //-----------------------------------
 
 
     //-----------------------------------
-    // Child Graph °íÀ¯ Á¤º¸ÀÇ Ãâ·Â
+    // Child Graph ê³ ìœ  ì •ë³´ì˜ ì¶œë ¥
     //-----------------------------------
 
     IDE_TEST( aGraph->left->printGraph( aStatement,
@@ -2358,15 +2358,15 @@ qmgWindowing::finalizePreservedOrder( qmgGraph * aGraph )
 {
 /***********************************************************************
  *
- *  Description : Windowing GraphÀÇ Preserved order FinalizingÀº
- *                ´Ù¸¥ graph¿Í ´Ù¸£°Ô Sorting key¸¦ Ã³¸®ÇÑ´Ù.
- *                ¹è¿­ÀÇ Ã¹¹øÂ° key´Â child graphÀÇ directionÀ» µû¸¥´Ù.
- *  (´Ü, graphÀÇ flag¿¡ QMG_CHILD_PRESERVED_ORDER_CANNOT_USE°¡ ¼¼ÆÃµÇ¾î ÀÖÀ¸¸é ¾ÈµÈ´Ù.)
- *                ¹è¿­ÀÇ µÎ¹øÂ°ºÎÅÍ ¸¶Áö¸· key±îÁö´Â directionÀº ascendingÀ¸·Î ÀÓÀÇ ÁöÁ¤ÇÑ´Ù.
+ *  Description : Windowing Graphì˜ Preserved order Finalizingì€
+ *                ë‹¤ë¥¸ graphì™€ ë‹¤ë¥´ê²Œ Sorting keyë¥¼ ì²˜ë¦¬í•œë‹¤.
+ *                ë°°ì—´ì˜ ì²«ë²ˆì§¸ keyëŠ” child graphì˜ directionì„ ë”°ë¥¸ë‹¤.
+ *  (ë‹¨, graphì˜ flagì— QMG_CHILD_PRESERVED_ORDER_CANNOT_USEê°€ ì„¸íŒ…ë˜ì–´ ìˆìœ¼ë©´ ì•ˆëœë‹¤.)
+ *                ë°°ì—´ì˜ ë‘ë²ˆì§¸ë¶€í„° ë§ˆì§€ë§‰ keyê¹Œì§€ëŠ” directionì€ ascendingìœ¼ë¡œ ì„ì˜ ì§€ì •í•œë‹¤.
  *
  *  Implementation :
- *     1. Child graphÀÇ Preserved order »ç¿ë ¿©ºÎ¿¡ µû¶ó Ã¹¹øÂ° Sorting Key¸¦ ¼³Á¤ÇÑ´Ù.
- *     2. ³ª¸ÓÁö´Â AscendingÀ¸·Î ÁöÁ¤ÇÑ´Ù.
+ *     1. Child graphì˜ Preserved order ì‚¬ìš© ì—¬ë¶€ì— ë”°ë¼ ì²«ë²ˆì§¸ Sorting Keyë¥¼ ì„¤ì •í•œë‹¤.
+ *     2. ë‚˜ë¨¸ì§€ëŠ” Ascendingìœ¼ë¡œ ì§€ì •í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -2389,11 +2389,11 @@ qmgWindowing::finalizePreservedOrder( qmgGraph * aGraph )
     sPreservedOrder   = aGraph->preservedOrder;
     sChildOrder       = aGraph->left->preservedOrder;
 
-    /* BUG-43380 windowsort Optimize µµÁß¿¡ fatal */
-    /* ÇÏÀ§¿¡ index°¡ Á¸ÀçÇØ sortingÇÒ ÇÊ¿ä°¡ ¾øÀ»¼ö ÀÖÀ½ */
+    /* BUG-43380 windowsort Optimize ë„ì¤‘ì— fatal */
+    /* í•˜ìœ„ì— indexê°€ ì¡´ì¬í•´ sortingí•  í•„ìš”ê°€ ì—†ì„ìˆ˜ ìˆìŒ */
     if ( sMyGraph->sortingKeyCount > 0 )
     {
-        // 1. Child graphÀÇ Preserved order »ç¿ë ¿©ºÎ¿¡ µû¶ó Ã¹¹øÂ° Sorting Key¸¦ ¼³Á¤ÇÑ´Ù.
+        // 1. Child graphì˜ Preserved order ì‚¬ìš© ì—¬ë¶€ì— ë”°ë¼ ì²«ë²ˆì§¸ Sorting Keyë¥¼ ì„¤ì •í•œë‹¤.
         if ( ( aGraph->flag & QMG_CHILD_PRESERVED_ORDER_USE_MASK )
              == QMG_CHILD_PRESERVED_ORDER_CAN_USE )
         {
@@ -2425,7 +2425,7 @@ qmgWindowing::finalizePreservedOrder( qmgGraph * aGraph )
             }
         }
 
-        // µÎ¹øÂ° Ä®·³Àº ÀÌÀü Ä®·³ÀÇ direction Á¤º¸¿¡ µû¶ó ¼öÇàÇÔ
+        // ë‘ë²ˆì§¸ ì¹¼ëŸ¼ì€ ì´ì „ ì¹¼ëŸ¼ì˜ direction ì •ë³´ì— ë”°ë¼ ìˆ˜í–‰í•¨
         for ( sPreservedOrder = sPreservedOrder->next;
               sPreservedOrder != NULL;
               sPreservedOrder = sPreservedOrder->next )
@@ -2439,7 +2439,7 @@ qmgWindowing::finalizePreservedOrder( qmgGraph * aGraph )
                     sPreservedOrder->direction = sPrevDirection;
                     break;
                 case QMG_DIRECTION_DIFF_WITH_PREV :
-                    // directionÀÌ ÀÌÀü Ä®·³ÀÇ direction°ú ´Ù¸¦ °æ¿ì
+                    // directionì´ ì´ì „ ì¹¼ëŸ¼ì˜ directionê³¼ ë‹¤ë¥¼ ê²½ìš°
                     if ( sPrevDirection == QMG_DIRECTION_ASC )
                     {
                         sPreservedOrder->direction = QMG_DIRECTION_DESC;
@@ -2474,7 +2474,7 @@ qmgWindowing::finalizePreservedOrder( qmgGraph * aGraph )
         /* Nothing to do */
     }
 
-    // 2. ³ª¸ÓÁö´Â AscendingÀ¸·Î ÁöÁ¤ÇÑ´Ù.
+    // 2. ë‚˜ë¨¸ì§€ëŠ” Ascendingìœ¼ë¡œ ì§€ì •í•œë‹¤.
     for ( i = 1; i < sMyGraph->sortingKeyCount; i++ )
     {
         sPreservedOrder = sSortingKeyPtrArr[i];
@@ -2484,7 +2484,7 @@ qmgWindowing::finalizePreservedOrder( qmgGraph * aGraph )
             sPreservedOrder->direction = QMG_DIRECTION_ASC;
             sPrevDirection = QMG_DIRECTION_ASC;
 
-            // µÎ¹øÂ° Ä®·³Àº ÀÌÀü Ä®·³ÀÇ direction Á¤º¸¿¡ µû¶ó ¼öÇàÇÔ
+            // ë‘ë²ˆì§¸ ì¹¼ëŸ¼ì€ ì´ì „ ì¹¼ëŸ¼ì˜ direction ì •ë³´ì— ë”°ë¼ ìˆ˜í–‰í•¨
             for ( sPreservedOrder = sPreservedOrder->next;
                   sPreservedOrder != NULL;
                   sPreservedOrder = sPreservedOrder->next )
@@ -2498,7 +2498,7 @@ qmgWindowing::finalizePreservedOrder( qmgGraph * aGraph )
                         sPreservedOrder->direction = sPrevDirection;
                         break;
                     case QMG_DIRECTION_DIFF_WITH_PREV :
-                        // directionÀÌ ÀÌÀü Ä®·³ÀÇ direction°ú ´Ù¸¦ °æ¿ì
+                        // directionì´ ì´ì „ ì¹¼ëŸ¼ì˜ directionê³¼ ë‹¤ë¥¼ ê²½ìš°
                         if ( sPrevDirection == QMG_DIRECTION_ASC )
                         {
                             sPreservedOrder->direction = QMG_DIRECTION_DESC;
@@ -2546,8 +2546,8 @@ qmgWindowing::getBucketCnt4Windowing( qcStatement  * aStatement,
 {
 /***********************************************************************
  *
- *  Description : qmgGrouping::getBucketCnt4Group°ú
- *                µ¿ÀÏÇÑ ÇÔ¼ö ÀÎÅÍÆäÀÌ½º°¡ ¼­·Î ´Ş¶ó¼­ º¹»ç¸¦ ÇßÀ½
+ *  Description : qmgGrouping::getBucketCnt4Groupê³¼
+ *                ë™ì¼í•œ í•¨ìˆ˜ ì¸í„°í˜ì´ìŠ¤ê°€ ì„œë¡œ ë‹¬ë¼ì„œ ë³µì‚¬ë¥¼ í–ˆìŒ
  *
  ***********************************************************************/
 
@@ -2564,14 +2564,14 @@ qmgWindowing::getBucketCnt4Windowing( qcStatement  * aStatement,
     IDU_FIT_POINT_FATAL( "qmgWindowing::getBucketCnt4Windowing::__FT__" );
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aMyGraph   != NULL );
 
     //------------------------------------------
-    // ±âº» ÃÊ±âÈ­
+    // ê¸°ë³¸ ì´ˆê¸°í™”
     //------------------------------------------
 
     sAllColumn = ID_TRUE;
@@ -2582,14 +2582,14 @@ qmgWindowing::getBucketCnt4Windowing( qcStatement  * aStatement,
     {
 
         //------------------------------------------
-        // hash bucket count hint°¡ Á¸ÀçÇÏÁö ¾Ê´Â °æ¿ì
+        // hash bucket count hintê°€ ì¡´ì¬í•˜ì§€ ì•ŠëŠ” ê²½ìš°
         //------------------------------------------
 
         sBucketCnt = aMyGraph->graph.left->costInfo.outputRecordCnt / 2.0;
         sBucketCnt = ( sBucketCnt < 1 ) ? 1 : sBucketCnt;
 
         //------------------------------------------
-        // group columnµéÀÇ cardinality °ªÀ» ±¸ÇÑ´Ù.
+        // group columnë“¤ì˜ cardinality ê°’ì„ êµ¬í•œë‹¤.
         //------------------------------------------
 
         for ( sGroup = aGroupBy;
@@ -2600,7 +2600,7 @@ qmgWindowing::getBucketCnt4Windowing( qcStatement  * aStatement,
 
             if ( QTC_IS_COLUMN( aStatement, sNode ) == ID_TRUE )
             {
-                // group ´ë»óÀÌ ¼ø¼öÇÑ Ä®·³ÀÎ °æ¿ì
+                // group ëŒ€ìƒì´ ìˆœìˆ˜í•œ ì¹¼ëŸ¼ì¸ ê²½ìš°
                 sColCardInfo = QC_SHARED_TMPLATE(aStatement)->
                     tableMap[sNode->node.table].
                     from->tableRef->statInfo->colCardInfo;
@@ -2609,7 +2609,7 @@ qmgWindowing::getBucketCnt4Windowing( qcStatement  * aStatement,
 
                 if ( sCardinality > QMC_MEM_HASH_MAX_BUCKET_CNT )
                 {
-                    // max bucket countº¸´Ù Å¬ °æ¿ì
+                    // max bucket countë³´ë‹¤ í´ ê²½ìš°
                     sCardinality = QMC_MEM_HASH_MAX_BUCKET_CNT;
                     break;
                 }
@@ -2628,8 +2628,8 @@ qmgWindowing::getBucketCnt4Windowing( qcStatement  * aStatement,
         if ( sAllColumn == ID_TRUE )
         {
             //------------------------------------------
-            // MIN( ÇÏÀ§ graphÀÇ outputRecordCnt / 2,
-            //      Group ColumnµéÀÇ cardinality °ö )
+            // MIN( í•˜ìœ„ graphì˜ outputRecordCnt / 2,
+            //      Group Columnë“¤ì˜ cardinality ê³± )
             //------------------------------------------
 
             if ( sBucketCnt > sCardinality )
@@ -2646,7 +2646,7 @@ qmgWindowing::getBucketCnt4Windowing( qcStatement  * aStatement,
             // nothing to do
         }
 
-        //  hash bucket countÀÇ º¸Á¤
+        //  hash bucket countì˜ ë³´ì •
         if ( sBucketCnt < QCU_OPTIMIZER_BUCKET_COUNT_MIN )
         {
             sBucketCnt = QCU_OPTIMIZER_BUCKET_COUNT_MIN;
@@ -2654,8 +2654,8 @@ qmgWindowing::getBucketCnt4Windowing( qcStatement  * aStatement,
         else if ( sBucketCnt > QMC_MEM_HASH_MAX_BUCKET_CNT )
         {
             // fix BUG-14070
-            // bucketCnt°¡ QMC_MEM_HASH_MAX_BUCKET_CNT(10240000)¸¦ ³ÑÀ¸¸é
-            // QMC_MEM_HASH_MAX_BUCKET_CNT °ªÀ¸·Î º¸Á¤ÇØÁØ´Ù.
+            // bucketCntê°€ QMC_MEM_HASH_MAX_BUCKET_CNT(10240000)ë¥¼ ë„˜ìœ¼ë©´
+            // QMC_MEM_HASH_MAX_BUCKET_CNT ê°’ìœ¼ë¡œ ë³´ì •í•´ì¤€ë‹¤.
             sBucketCnt = QMC_MEM_HASH_MAX_BUCKET_CNT;
         }
         else
@@ -2665,11 +2665,11 @@ qmgWindowing::getBucketCnt4Windowing( qcStatement  * aStatement,
     }
     else
     {
-        // bucket count hint°¡ Á¸ÀçÇÏ´Â °æ¿ì
+        // bucket count hintê°€ ì¡´ì¬í•˜ëŠ” ê²½ìš°
         sBucketCnt = aHintBucketCnt;
     }
 
-    // BUG-36403 ÇÃ·§Æû¸¶´Ù BucketCnt °¡ ´Ş¶óÁö´Â °æ¿ì°¡ ÀÖ½À´Ï´Ù.
+    // BUG-36403 í”Œë«í¼ë§ˆë‹¤ BucketCnt ê°€ ë‹¬ë¼ì§€ëŠ” ê²½ìš°ê°€ ìˆìŠµë‹ˆë‹¤.
     sBucketCntOutput = DOUBLE_TO_UINT64( sBucketCnt );
     *aBucketCnt      = (UInt)sBucketCntOutput;
 

@@ -32,62 +32,62 @@
         ((const smcTableHeader*)((const smpSlotHeader*)aTable+1))
 
 /* PROJ-2433
- * direct key ÃÖ¼Ò±æÀÌ */
+ * direct key ìµœì†Œê¸¸ì´ */
 #define SMI_MEM_INDEX_MIN_KEY_SIZE ( 8 )
 
-/* FOR A4 : ¿ø·¡´Â smiMakeDatabaseFileName( )ÀÌ¾ú´ø °ÍÀ»
-   Memory DB¿Í Disk DB¸¦ ±¸º°ÇÏ±â À§ÇÏ¿© ¾Æ·¡¿Í °°ÀÌ º¯°æÇÔ
-   Disk Table Space °ü·Ã ÇÔ¼öµéÀº smiTableSpace.cpp¿¡¼­ °ü¸® */
+/* FOR A4 : ì›ë˜ëŠ” smiMakeDatabaseFileName( )ì´ì—ˆë˜ ê²ƒì„
+   Memory DBì™€ Disk DBë¥¼ êµ¬ë³„í•˜ê¸° ìœ„í•˜ì—¬ ì•„ë˜ì™€ ê°™ì´ ë³€ê²½í•¨
+   Disk Table Space ê´€ë ¨ í•¨ìˆ˜ë“¤ì€ smiTableSpace.cppì—ì„œ ê´€ë¦¬ */
 
 /*---------------------------------------------*/
-/* µ¥ÀÌÅÍ º£ÀÌ½º ±âº» Á¤º¸                         */
+/* ë°ì´í„° ë² ì´ìŠ¤ ê¸°ë³¸ ì •ë³´                         */
 /*---------------------------------------------*/
 
-/* FOR A4 : Memory DB¿Í Disk DB¸¦ ±¸º°ÇÏ±â À§ÇÏ¿© aTSType ÀÎÀÚ Ãß°¡ */
+/* FOR A4 : Memory DBì™€ Disk DBë¥¼ êµ¬ë³„í•˜ê¸° ìœ„í•˜ì—¬ aTSType ì¸ì ì¶”ê°€ */
 UInt             smiGetPageSize( smiTableSpaceType aTSType );
 
-/* Disk DBÀÇ ÇöÀç ÃÑ »çÀÌÁî¸¦ ±¸ÇÑ´Ù. */
+/* Disk DBì˜ í˜„ì¬ ì´ ì‚¬ì´ì¦ˆë¥¼ êµ¬í•œë‹¤. */
 ULong           smiGetDiskDBFullSize();
 
-/* FOR A4 : sdbBufferMgr¿¡¼­ »ç¿ëÇÏ´Â buffer poolÀÇ ÆäÀÌÁö °³¼ö */
+/* FOR A4 : sdbBufferMgrì—ì„œ ì‚¬ìš©í•˜ëŠ” buffer poolì˜ í˜ì´ì§€ ê°œìˆ˜ */
 UInt             smiGetBufferPoolSize( );
 
 // To Fix BUG-15361
-// Database NameÀ» È¹µæÇÑ´Ù.
+// Database Nameì„ íšë“í•œë‹¤.
 SChar *          smiGetDBName( );
 
 // PROJ-1579 NCHAR
-// µ¥ÀÌÅÍº£ÀÌ½º Ä³¸¯ÅÍ ¼ÂÀ» ¾ò´Â´Ù.
+// ë°ì´í„°ë² ì´ìŠ¤ ìºë¦­í„° ì…‹ì„ ì–»ëŠ”ë‹¤.
 SChar *          smiGetDBCharSet( );
 
 // PROJ-1579 NCHAR
-// ³»¼Å³Î Ä³¸¯ÅÍ ¼ÂÀ» ¾ò´Â´Ù.
+// ë‚´ì…”ë„ ìºë¦­í„° ì…‹ì„ ì–»ëŠ”ë‹¤.
 SChar *          smiGetNationalCharSet( );
 
 /*---------------------------------------------*/
-/* Å×ÀÌºí ±âº» ÇÔ¼ö                               */
+/* í…Œì´ë¸” ê¸°ë³¸ í•¨ìˆ˜                               */
 /*---------------------------------------------*/
 
 const void*      smiGetCatalogTable( void );
 
-/* FOR A4 : Memory Table¿Í Disk TableÀ» ±¸º°ÇÏ±â À§ÇÏ¿©
-   aTableType ÀÎÀÚ Ãß°¡ */
+/* FOR A4 : Memory Tableì™€ Disk Tableì„ êµ¬ë³„í•˜ê¸° ìœ„í•˜ì—¬
+   aTableType ì¸ì ì¶”ê°€ */
 UInt             smiGetVariableColumnSize( UInt aTableType );
 UInt             smiGetVariableColumnSize4DiskIndex();
 
 UInt             smiGetVCDescInModeSize();
 
-/* FOR A4 : Memory Table¿Í Disk TableÀ» ±¸º°ÇÏ±â À§ÇÏ¿©
-   aTableType ÀÎÀÚ Ãß°¡ */
+/* FOR A4 : Memory Tableì™€ Disk Tableì„ êµ¬ë³„í•˜ê¸° ìœ„í•˜ì—¬
+   aTableType ì¸ì ì¶”ê°€ */
 UInt             smiGetRowHeaderSize( UInt aTableType );
 
-/* FOR A4 : Memory TableÁß¿¡¼­µµ TableHandle¿¡ ´ëÇØ¼­¸¸ »ç¿ëÇØ¾ß ÇÔ */
+/* FOR A4 : Memory Tableì¤‘ì—ì„œë„ TableHandleì— ëŒ€í•´ì„œë§Œ ì‚¬ìš©í•´ì•¼ í•¨ */
 smSCN            smiGetRowSCN( const void* aRow );
 
 
 
 /*---------------------------------------------*/
-/* ÀÎµ¦½º Type ¼±ÅÃ ÇÔ¼ö                          */
+/* ì¸ë±ìŠ¤ Type ì„ íƒ í•¨ìˆ˜                          */
 /*---------------------------------------------*/
 
 IDE_RC           smiFindIndexType( SChar* aName,
@@ -101,26 +101,26 @@ const SChar*     smiGetIndexName( UInt aType );
 
 idBool           smiGetIndexUnique( const void * aIndex );
     
-/* FOR A4 : Memory Table¿Í Disk TableÀ» ±¸º°ÇÏ±â À§ÇÏ¿©
-   aTableType ÀÎÀÚ Ãß°¡ */
+/* FOR A4 : Memory Tableì™€ Disk Tableì„ êµ¬ë³„í•˜ê¸° ìœ„í•˜ì—¬
+   aTableType ì¸ì ì¶”ê°€ */
 UInt             smiGetDefaultIndexType( void );
 
-// ÀÎµ¦½º Å¸ÀÔÀÌ Unique°¡ °¡´ÉÇÑÁöÀÇ ¿©ºÎ
+// ì¸ë±ìŠ¤ íƒ€ì…ì´ Uniqueê°€ ê°€ëŠ¥í•œì§€ì˜ ì—¬ë¶€
 idBool           smiCanUseUniqueIndex( UInt aIndexType );
 
 // PROJ-1502 PARTITIONED DISK TABLE
-// ´ë¼Òºñ±³ °¡´ÉÇÑ ÀÎµ¦½º Å¸ÀÔÀÎÁö Ã¼Å©
+// ëŒ€ì†Œë¹„êµ ê°€ëŠ¥í•œ ì¸ë±ìŠ¤ íƒ€ì…ì¸ì§€ ì²´í¬
 idBool           smiGreaterLessValidIndexType( UInt aIndexType );
 
 // PROJ-1704 MVCC Renewal
 idBool           smiIsAgableIndex( const void * aIndex );
 
 // To Fix BUG-16218
-// ÀÎµ¦½º Å¸ÀÔÀÌ Composite Index°¡ °¡´ÉÇÑÁöÀÇ ¿©ºÎ
+// ì¸ë±ìŠ¤ íƒ€ì…ì´ Composite Indexê°€ ê°€ëŠ¥í•œì§€ì˜ ì—¬ë¶€
 idBool           smiCanUseCompositeIndex( UInt aIndexType );
 
 /*---------------------------------------------*/
-/* Å×ÀÌºí Á¤º¸ ÃßÃâ ÇÔ¼ö                          */
+/* í…Œì´ë¸” ì •ë³´ ì¶”ì¶œ í•¨ìˆ˜                          */
 /*---------------------------------------------*/
 
 const void *     smiGetTable( smOID aTableId );
@@ -184,9 +184,9 @@ IDE_RC           smiGetTableBlockCount( const void * aTable,
 
 IDE_RC           smiGetTableSpaceID(const void * aTable );
 
-/* BUG-28752 lock table ... in row share mode ±¸¹®ÀÌ ¸ÔÈ÷Áö ¾Ê½À´Ï´Ù.
- * implicit/explicit lockÀ» ±¸ºĞÇÏ¿© °Ì´Ï´Ù. 
- * explicit LockÀ» °Å´Â °÷Àº QPÀÇ qmx::executeLockTable»ÓÀÔ´Ï´Ù. */ 
+/* BUG-28752 lock table ... in row share mode êµ¬ë¬¸ì´ ë¨¹íˆì§€ ì•ŠìŠµë‹ˆë‹¤.
+ * implicit/explicit lockì„ êµ¬ë¶„í•˜ì—¬ ê²ë‹ˆë‹¤. 
+ * explicit Lockì„ ê±°ëŠ” ê³³ì€ QPì˜ qmx::executeLockTableë¿ì…ë‹ˆë‹¤. */ 
 IDE_RC           smiValidateAndLockObjects( smiTrans          * aTrans,
                                             const void*         aTable,
                                             smSCN               aSCN,
@@ -199,11 +199,11 @@ IDE_RC           smiValidateObjects( const void        * aTable,
                                      smSCN               aSCN);
 
 /* PROJ-2268 Reuse Catalog Table Slot 
- * Table SlotÀÌ ÀçÈ°¿ëµÇ¾ú´ÂÁö È®ÀÎÇÑ´Ù. */
+ * Table Slotì´ ì¬í™œìš©ë˜ì—ˆëŠ”ì§€ í™•ì¸í•œë‹¤. */
 IDE_RC           smiValidatePlanHandle( const void * aHandle,
                                         smSCN        aCachedSCN );
 
-// Å×ÀÌºí ½ºÆäÀÌ½º¿¡ ´ëÇØ LockÀ» È¹µæÇÏ°í ValidationÀ» ¼öÇàÇÑ´Ù.
+// í…Œì´ë¸” ìŠ¤í˜ì´ìŠ¤ì— ëŒ€í•´ Lockì„ íšë“í•˜ê³  Validationì„ ìˆ˜í–‰í•œë‹¤.
 IDE_RC          smiValidateAndLockTBS( smiStatement      * aStmt,
                                       scSpaceID             aSpaceID,
                                       smiTBSLockMode        aLockMode,
@@ -225,7 +225,7 @@ IDE_RC           smiGetGRIDFromRowPtr( const void   * aRowPtr,
 
 
 /*---------------------------------------------*/
-/* ÀÎµ¦½º Á¤º¸ ÃßÃâ ÇÔ¼ö                           */
+/* ì¸ë±ìŠ¤ ì •ë³´ ì¶”ì¶œ í•¨ìˆ˜                           */
 /*---------------------------------------------*/
 
 
@@ -269,7 +269,7 @@ UInt smiGetVarColumnLength( const void*       aRow,
 
 
 /*---------------------------------------------*/
-/* FOR A4 : Cursor °ü·Ã ÇÔ¼öµé                   */
+/* FOR A4 : Cursor ê´€ë ¨ í•¨ìˆ˜ë“¤                   */
 /*---------------------------------------------*/
 
 smiRange * smiGetDefaultKeyRange( );
@@ -277,11 +277,11 @@ smiRange * smiGetDefaultKeyRange( );
 smiCallBack * smiGetDefaultFilter( );
 
 
-/* check point ¼öÇàÇÔ¼ö */
+/* check point ìˆ˜í–‰í•¨ìˆ˜ */
 IDE_RC smiCheckPoint( idvSQL  * aStatistics,
                       idBool    aStart );
 
-/* In-Doubt Æ®·£Àè¼ÇÀÇ Á¤º¸ ¾ò±â */
+/* In-Doubt íŠ¸ëœì­ì…˜ì˜ ì •ë³´ ì–»ê¸° */
 IDE_RC smiXaRecover(SInt           *a_slotID, 
                     /* BUG-18981 */
                     ID_XID            *a_xid, 
@@ -289,28 +289,28 @@ IDE_RC smiXaRecover(SInt           *a_slotID,
                     smiCommitState *a_state); 
 
 /*
- *  ÇöÀç DatabaseÀÇ selective loading ¸ğµå ¾ò±â
- *  QP¿¡¼­ pin, unpin Áö¿øÇÒ °æ¿ì °Ë»çÇØ¾ß ÇÔ.
+ *  í˜„ì¬ Databaseì˜ selective loading ëª¨ë“œ ì–»ê¸°
+ *  QPì—ì„œ pin, unpin ì§€ì›í•  ê²½ìš° ê²€ì‚¬í•´ì•¼ í•¨.
  */
 idBool isRuntimeSelectiveLoadingSupport();
 
 /* ------------------------------------------------
- *  Status Á¤º¸¸¦ Ãâ·ÂÇÏ±â À§ÇÔ.
+ *  Status ì •ë³´ë¥¼ ì¶œë ¥í•˜ê¸° ìœ„í•¨.
  * ----------------------------------------------*/
 
 void smiGetTxLockInfo(smiTrans *aTrans, smTID *aOwnerList, UInt *aOwnerCount);
 
 
-//  For A4 : TableSpace typeº°·Î Maximum fixed row size¸¦ ¹İÈ¯ÇÑ´Ù.
-//  slot header Æ÷ÇÔ.
+//  For A4 : TableSpace typeë³„ë¡œ Maximum fixed row sizeë¥¼ ë°˜í™˜í•œë‹¤.
+//  slot header í¬í•¨.
 UInt smiGetMaxFixedRowSize(smiTableSpaceType aTblSpaceType );
 
 
 // PROJ-1362
-// LOB Column PieceÀÇ Å©±â¸¦ ¹İÈ¯ÇÑ´Ù.
+// LOB Column Pieceì˜ í¬ê¸°ë¥¼ ë°˜í™˜í•œë‹¤.
 UInt smiGetLobColumnSize(UInt aTableType);
 
-// LOB ColumnÀÌ NULL(length == 0)ÀÎÁö È®ÀÎÇÑ´Ù.
+// LOB Columnì´ NULL(length == 0)ì¸ì§€ í™•ì¸í•œë‹¤.
 idBool smiIsNullLobColumn(const void*       aRow,
                           const smiColumn * aColumn);
 
@@ -320,11 +320,11 @@ idBool   smiIsReplicationLogging();
 
 /*
   For A4 :
-      TableSpaceº°·Î Database Size¸¦ ¹İÈ¯ÇÑ´Ù.
+      TableSpaceë³„ë¡œ Database Sizeë¥¼ ë°˜í™˜í•œë‹¤.
 */
 ULong    smiTBSSize( scSpaceID aTableSpaceID );
 
-// Disk Segment¸¦ »ı¼ºÇÏ±â À§ÇÑ ÃÖ¼Ò Extent °³¼ö
+// Disk Segmentë¥¼ ìƒì„±í•˜ê¸° ìœ„í•œ ìµœì†Œ Extent ê°œìˆ˜
 UInt smiGetMinExtPageCnt();
 
 void smiSetEmergency(idBool aFlag);
@@ -337,8 +337,8 @@ UInt smiGetCurrTime();
 /* ------------------------------------------------
  * interface for replication 
  * ----------------------------------------------*/
-/* Callback FunctionÀ» SettingÇØÁØ´Ù.*/
-/* BUG-26482 ´ë±â ÇÔ¼ö¸¦ CommitLog ±â·Ï ÀüÈÄ·Î ºĞ¸®ÇÏ¿© È£ÃâÇÕ´Ï´Ù. */
+/* Callback Functionì„ Settingí•´ì¤€ë‹¤.*/
+/* BUG-26482 ëŒ€ê¸° í•¨ìˆ˜ë¥¼ CommitLog ê¸°ë¡ ì „í›„ë¡œ ë¶„ë¦¬í•˜ì—¬ í˜¸ì¶œí•©ë‹ˆë‹¤. */
 void smiSetCallbackFunction(
         smGetMinSN                   aGetMinSNFunc,
         smIsReplCompleteBeforeCommit aIsReplCompleteBeforeCommitFunc = NULL,
@@ -357,30 +357,30 @@ IDE_RC smiGetFirstNeedLFN( smSN         aMinLSN,
 
 SChar * smiGetImplSVPName( );
 
-// ¸¶Áö¸·À¸·Î Log¸¦ ±â·ÏÇÏ±â À§ÇØ "»ç¿ëµÈ/ÀúÀåµÈ" LSN°ªÀ» ¸®ÅÏÇÑ´Ù.
+// ë§ˆì§€ë§‰ìœ¼ë¡œ Logë¥¼ ê¸°ë¡í•˜ê¸° ìœ„í•´ "ì‚¬ìš©ëœ/ì €ì¥ëœ" LSNê°’ì„ ë¦¬í„´í•œë‹¤.
 IDE_RC smiGetLastUsedGSN( smSN *aSN );
 IDE_RC smiGetLastUsedLSN( smLSN  * aLSN );
 
 /* BUG-43426 */
 IDE_RC smiWaitAndGetLastValidGSN( smSN *aSN );
 
-// ¸¶Áö¸·À¸·Î ±â·ÏÇÑ ·Î±× ·¹ÄÚµåÀÇ LSN
+// ë§ˆì§€ë§‰ìœ¼ë¡œ ê¸°ë¡í•œ ë¡œê·¸ ë ˆì½”ë“œì˜ LSN
 IDE_RC smiGetLastValidGSN( smSN *aSN );
 IDE_RC smiGetLastValidLSN( smLSN * aLSN );
 
-// Transaction Table Size¸¦ returnÇÑ´Ù.
+// Transaction Table Sizeë¥¼ returní•œë‹¤.
 UInt smiGetTransTblSize();
 
-// Archive Log °æ·Î¸¦ return ÇÑ´Ù.
+// Archive Log ê²½ë¡œë¥¼ return í•œë‹¤.
 const SChar * smiGetArchiveDirPath();
 
-// Archive Mode return ÇÑ´Ù.
+// Archive Mode return í•œë‹¤.
 smiArchiveMode smiGetArchiveMode();
 
 
-// SM¿¡ Á¸ÀçÇÏ´Â ½Ã½ºÅÛÀÇ Åë°èÁ¤º¸¸¦ ¹İ¿µÇÑ´Ù.
-// ÀÌ ÇÔ¼ö¿¡¼­´Â SM ³»ºÎÀÇ °¢ ¸ğµâ¿¡¼­ ½Ã½ºÅÛ¿¡ ¹İ¿µµÇ¾î¾ß ÇÏ´Â
-// Åë°èÁ¤º¸¸¦ v$sysstatÀ¸·Î ¹İ¿µÇÏµµ·Ï ÇÏ¸é µÈ´Ù.
+// SMì— ì¡´ì¬í•˜ëŠ” ì‹œìŠ¤í…œì˜ í†µê³„ì •ë³´ë¥¼ ë°˜ì˜í•œë‹¤.
+// ì´ í•¨ìˆ˜ì—ì„œëŠ” SM ë‚´ë¶€ì˜ ê° ëª¨ë“ˆì—ì„œ ì‹œìŠ¤í…œì— ë°˜ì˜ë˜ì–´ì•¼ í•˜ëŠ”
+// í†µê³„ì •ë³´ë¥¼ v$sysstatìœ¼ë¡œ ë°˜ì˜í•˜ë„ë¡ í•˜ë©´ ëœë‹¤.
 void smiApplyStatisticsForSystem();
 
 
@@ -388,23 +388,23 @@ void smiApplyStatisticsForSystem();
 
  Description :
 
- SMÀÇ ÇÑ tablespaceÀÇ ³»¿ëÀ» °ËÁõÇÑ´Ù.
+ SMì˜ í•œ tablespaceì˜ ë‚´ìš©ì„ ê²€ì¦í•œë‹¤.
 
- ALTER SYSTEM VERIFY ¿Í °°Àº ·ùÀÇ SQLÀ» »ç¿ëÀÚ°¡ Ã³¸®ÇÑ´Ù¸é
- QP¿¡¼­ ±¸¹® ÆÄ½ÌÈÄ  ÀÌ ÇÔ¼ö¸¦ È£ÃâÇÑ´Ù.
+ ALTER SYSTEM VERIFY ì™€ ê°™ì€ ë¥˜ì˜ SQLì„ ì‚¬ìš©ìê°€ ì²˜ë¦¬í•œë‹¤ë©´
+ QPì—ì„œ êµ¬ë¬¸ íŒŒì‹±í›„  ì´ í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•œë‹¤.
 
- ÇöÀç´Â SMI_VERIFY_TBS ¸¸ µ¿ÀÛÇÏÁö¸¸, ÃßÈÄ¿¡ ±â´ÉÀÌ Ãß°¡µÉ ¼ö ÀÖ´Ù.
+ í˜„ì¬ëŠ” SMI_VERIFY_TBS ë§Œ ë™ì‘í•˜ì§€ë§Œ, ì¶”í›„ì— ê¸°ëŠ¥ì´ ì¶”ê°€ë  ìˆ˜ ìˆë‹¤.
 
- È£Ãâ ¿¹) smiVerifySM(SMI_VERIFY_TBS)
+ í˜¸ì¶œ ì˜ˆ) smiVerifySM(SMI_VERIFY_TBS)
 
  **********************************************************************/
 IDE_RC smiVerifySM( idvSQL*  aStatistics, UInt      aFlag );
 
-/* BUG-35392 FastUnlockLogAllocMutex ±â´ÉÀ» »ç¿ëÇÏ´ÂÁö ¿©ºÎ */
+/* BUG-35392 FastUnlockLogAllocMutex ê¸°ëŠ¥ì„ ì‚¬ìš©í•˜ëŠ”ì§€ ì—¬ë¶€ */
 idBool smiIsFastUnlockLogAllocMutex();
 
 //PROJ-1362 QP-Large Record & Internal LOB support
-// tableÀÇ ÄÃ·³°¹¼ö¿Í ÀÎµ¦½º °³¼ö Á¦ÇÑ Ç®±â.
+// tableì˜ ì»¬ëŸ¼ê°¯ìˆ˜ì™€ ì¸ë±ìŠ¤ ê°œìˆ˜ ì œí•œ í’€ê¸°.
 IDE_RC smiGetTableColumns( const void        * aTable,
                            const UInt          aIndex,
                            const smiColumn  ** aColumn );
@@ -422,8 +422,8 @@ IDE_RC smiSBufferFlusherOnOff( idvSQL *aStatistics,
 
 IDE_RC smiUpdateIndexModule(void *aIndexModule);
 
-/* PROJ-1723 [MDW/INTEGRATOR] Altibase Plugin °³¹ß
-   DDL Statement TextÀÇ ·Î±ë
+/* PROJ-1723 [MDW/INTEGRATOR] Altibase Plugin ê°œë°œ
+   DDL Statement Textì˜ ë¡œê¹…
  */
 IDE_RC smiWriteDDLStmtTextLog( idvSQL*          aStatistics,
                                smiStatement   * aStmt,
@@ -450,8 +450,8 @@ SChar* smiGetPsmSvpName( void );
 IDE_RC smiRebuildMinViewSCN( idvSQL * aStatistics );
 
 /*
- * BUG-27949 [5.3.3] add datafile ¿¡¼­. DDL_LOCK_TIMEOUT À» 
- *           ¹«½ÃÇÏ°í ÀÖ½À´Ï´Ù. (±Ù·Îº¹Áö°ø´Ü) 
+ * BUG-27949 [5.3.3] add datafile ì—ì„œ. DDL_LOCK_TIMEOUT ì„ 
+ *           ë¬´ì‹œí•˜ê³  ìˆìŠµë‹ˆë‹¤. (ê·¼ë¡œë³µì§€ê³µë‹¨) 
  */
 SInt smiGetDDLLockTimeOut(void);
 
@@ -526,7 +526,7 @@ IDE_RC smiSet2PCCallbackFunction( smGetDtxMinLSN aGetDtxMinLSN,
                                   smManageDtxInfo aManageDtxInfo,
                                   smGetDtxGlobalTxId aGetDtxGlobalTxId );
 
-/* PROJ-2626 Memory DB ¿Í Disk UNDO ÀÇ ÇöÀç ÃÑ »çÀÌÁî¸¦ ±¸ÇÑ´Ù. */
+/* PROJ-2626 Memory DB ì™€ Disk UNDO ì˜ í˜„ì¬ ì´ ì‚¬ì´ì¦ˆë¥¼ êµ¬í•œë‹¤. */
 void smiGetMemUsedSize( ULong * aMemSize );
 IDE_RC smiGetDiskUndoUsedSize( ULong * aSize );
 

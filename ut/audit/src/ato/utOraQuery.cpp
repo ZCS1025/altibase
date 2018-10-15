@@ -588,7 +588,7 @@ void utOraQuery::free (binds_t * aBS)
     }
 }
 
-/* TASK-4212: auditÅøÀÇ ´ë¿ë·® Ã³¸®½Ã °³¼± */
+/* TASK-4212: auditíˆ´ì˜ ëŒ€ìš©ëŸ‰ ì²˜ë¦¬ì‹œ ê°œì„  */
 IDE_RC utOraQuery::utaCloseCur(void)
 {
     return IDE_SUCCESS;

@@ -22,7 +22,7 @@
 class svmDatabase
 {
 public :
-     // membase¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+     // membaseë¥¼ ì´ˆê¸°í™”í•œë‹¤.
     static IDE_RC initializeMembase( svmTBSNode * aTBSNode,
                                      SChar      * aDBName,
                                      vULong       aChunkPageCount );

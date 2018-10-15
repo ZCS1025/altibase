@@ -25,7 +25,7 @@ abstract class CmOperationDef
     static final byte             DB_OP_GET_PROPERTY                     = 8;
     static final byte             DB_OP_GET_PROPERTY_RESULT              = 9;
     static final byte             DB_OP_SET_PROPERTY_RESULT              = 11;
-    static final byte             DB_OP_PREPARE                          = 12;  // »ç¿ëÇÏÁö ¾ÊÀ½. ´ë½Å OPERATION_PREPARE_BY_CID »ç¿ë.
+    static final byte             DB_OP_PREPARE                          = 12;  // ì‚¬ìš©í•˜ì§€ ì•ŠìŒ. ëŒ€ì‹  OPERATION_PREPARE_BY_CID ì‚¬ìš©.
     static final byte             DB_OP_PREPARE_RESULT                   = 13;
     static final byte             DB_OP_GET_PLAN                         = 14;
     static final byte             DB_OP_GET_PLAN_RESULT                  = 15;
@@ -45,7 +45,7 @@ abstract class CmOperationDef
     static final byte             DB_OP_FETCH_END_RESULT                 = 40;
     static final byte             DB_OP_FREE                             = 41;
     static final byte             DB_OP_FREE_RESULT                      = 42;
-    static final byte             DB_OP_CANCEL                           = 43;  // »ç¿ëÇÏÁö ¾ÊÀ½. ´ë½Å OPERATION_CANCEL_BY_CID »ç¿ë.
+    static final byte             DB_OP_CANCEL                           = 43;  // ì‚¬ìš©í•˜ì§€ ì•ŠìŒ. ëŒ€ì‹  OPERATION_CANCEL_BY_CID ì‚¬ìš©.
     static final byte             DB_OP_CANCEL_RESULT                    = 44;
     static final byte             DB_OP_TRANSACTION                      = 45;
     static final byte             DB_OP_TRANSACTION_RESULT               = 46;
@@ -232,10 +232,10 @@ abstract class CmOperationDef
     }
 
     /**
-     * aOp¿¡ ÇØ´çÇÏ´Â Operation ÀÌ¸§À» ¾ò´Â´Ù.
+     * aOpì— í•´ë‹¹í•˜ëŠ” Operation ì´ë¦„ì„ ì–»ëŠ”ë‹¤.
      * 
      * @param aOp Operation Code
-     * @return Operation ÀÌ¸§
+     * @return Operation ì´ë¦„
      */
     public static String getOperationName(int aOp)
     {
@@ -243,13 +243,13 @@ abstract class CmOperationDef
     }
 
     /**
-     * aOp¿¡ ÇØ´çÇÏ´Â Operation ÀÌ¸§À» ¾ò´Â´Ù.
+     * aOpì— í•´ë‹¹í•˜ëŠ” Operation ì´ë¦„ì„ ì–»ëŠ”ë‹¤.
      * <p>
-     * aWithID¸¦ true·Î ÁÖ¸é 'OPERATION_NAME(99)'¿Í °°ÀÌ ID°ªÀÌ Æ÷ÇÔµÈ ÇüÅÂ·Î ÁØ´Ù.
+     * aWithIDë¥¼ trueë¡œ ì£¼ë©´ 'OPERATION_NAME(99)'ì™€ ê°™ì´ IDê°’ì´ í¬í•¨ëœ í˜•íƒœë¡œ ì¤€ë‹¤.
      * 
      * @param aOp Operation Code
-     * @param aWithID ID°ªÀÌ Æ÷ÇÔµÈ ÇüÅÂ·Î ¾òÀ»°ÍÀÎÁö ¿©ºÎ
-     * @return Operation ÀÌ¸§
+     * @param aWithID IDê°’ì´ í¬í•¨ëœ í˜•íƒœë¡œ ì–»ì„ê²ƒì¸ì§€ ì—¬ë¶€
+     * @return Operation ì´ë¦„
      */
     public static String getOperationName(int aOp, boolean aWithID)
     {

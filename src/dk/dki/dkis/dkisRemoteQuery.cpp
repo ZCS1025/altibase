@@ -154,7 +154,7 @@ static IDE_RC dkisOpenRemoteQuery( smiTableCursor * aCursor,
 
     IDE_DASSERT( aCursor != NULL );
     /* BUG-43787 */
-    /* dblink´Â parallel ÈùÆ®¸¦ Áö¿øÇÏÁö ¾ÊÀ½. */
+    /* dblinkëŠ” parallel ížŒíŠ¸ë¥¼ ì§€ì›í•˜ì§€ ì•ŠìŒ. */
     IDE_TEST_RAISE( aCursor->mCursorProp.mParallelReadProperties.mThreadCnt > 1,
                     ERR_NOT_APPLY_PARALLEL );
 

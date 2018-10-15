@@ -48,7 +48,7 @@ static IDE_RC mtfDecodeStddevEstimate( mtcNode*     aNode,
 mtfModule mtfDecodeStddev = {
     2|MTC_NODE_OPERATOR_AGGREGATION,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
+    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìžê°€ ì•„ë‹˜)
     mtfDecodeStddevFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -93,23 +93,23 @@ static const mtcExecute mtfDecodeStddevExecute = {
 
 typedef struct mtfDecodeStddevInfo
 {
-    // Ã¹¹øÂ° ÀÎÀÚ
+    // ì²«ë²ˆì§¸ ì¸ìž
     mtcExecute   * sStddevColumnExecute;
     mtcNode      * sStddevColumnNode;
 
-    // µÎ¹øÂ° ÀÎÀÚ
+    // ë‘ë²ˆì§¸ ì¸ìž
     mtcExecute   * sExprExecute;
     mtcNode      * sExprNode;
 
-    // ¼¼¹øÂ° ÀÎÀÚ
+    // ì„¸ë²ˆì§¸ ì¸ìž
     mtcExecute   * sSearchExecute;
     mtcNode      * sSearchNode;
 
-    // return ÀÎÀÚ
+    // return ì¸ìž
     mtcColumn    * sReturnColumn;
     void         * sReturnValue;
 
-    // ÀÓ½Ãº¯¼ö
+    // ìž„ì‹œë³€ìˆ˜
     mtdDoubleType  sPow;
     mtdDoubleType  sSum;
     ULong          sCount;
@@ -134,7 +134,7 @@ IDE_RC mtfDecodeStddevEstimate( mtcNode*     aNode,
 
     sFence = aNode->lflag & MTC_NODE_ARGUMENT_COUNT_MASK;
 
-    // 1 È¤Àº 3°³ÀÇ ÀÎÀÚ
+    // 1 í˜¹ì€ 3ê°œì˜ ì¸ìž
     IDE_TEST_RAISE( (sFence != 1) && (sFence != 3),
                     ERR_INVALID_FUNCTION_ARGUMENT );
 
@@ -241,7 +241,7 @@ IDE_RC mtfDecodeStddevEstimate( mtcNode*     aNode,
 
     aTemplate->rows[aNode->table].execute[aNode->column] = mtfDecodeStddevExecute;
 
-    // stddev °á°ú¸¦ ÀúÀåÇÔ
+    // stddev ê²°ê³¼ë¥¼ ì €ìž¥í•¨
     IDE_TEST( mtc::initializeColumn( aStack[0].column,
                                      & mtdDouble,
                                      0,
@@ -249,7 +249,7 @@ IDE_RC mtfDecodeStddevEstimate( mtcNode*     aNode,
                                      0 )
               != IDE_SUCCESS );
 
-    // stddev info Á¤º¸¸¦ mtdBinary¿¡ ÀúÀå
+    // stddev info ì •ë³´ë¥¼ mtdBinaryì— ì €ìž¥
     sBinaryPrecision = ID_SIZEOF(mtfDecodeStddevInfo);
 
     IDE_TEST( mtc::initializeColumn( aStack[0].column + 1,
@@ -299,11 +299,11 @@ IDE_RC mtfDecodeStddevInitialize( mtcNode*     aNode,
     sInfo = (mtfDecodeStddevInfo*)(sValue->mValue);
 
     //-----------------------------
-    // stddev info ÃÊ±âÈ­
+    // stddev info ì´ˆê¸°í™”
     //-----------------------------
     sArgNode[0] = aNode->arguments;
 
-    // stddev column ¼³Á¤
+    // stddev column ì„¤ì •
     sInfo->sStddevColumnExecute = aTemplate->rows[sArgNode[0]->table].execute + sArgNode[0]->column;
     sInfo->sStddevColumnNode    = sArgNode[0];
 
@@ -312,11 +312,11 @@ IDE_RC mtfDecodeStddevInitialize( mtcNode*     aNode,
         sArgNode[1] = sArgNode[0]->next;
         sArgNode[2] = sArgNode[1]->next;
 
-        // expression column ¼³Á¤
+        // expression column ì„¤ì •
         sInfo->sExprExecute = aTemplate->rows[sArgNode[1]->table].execute + sArgNode[1]->column;
         sInfo->sExprNode    = sArgNode[1];
 
-        // search value ¼³Á¤
+        // search value ì„¤ì •
         sInfo->sSearchExecute = aTemplate->rows[sArgNode[2]->table].execute + sArgNode[2]->column;
         sInfo->sSearchNode    = sArgNode[2];
     }
@@ -329,18 +329,18 @@ IDE_RC mtfDecodeStddevInitialize( mtcNode*     aNode,
         sInfo->sSearchNode    = NULL;
     }
 
-    // return column ¼³Á¤
+    // return column ì„¤ì •
     sInfo->sReturnColumn = aTemplate->rows[aNode->table].columns + aNode->column;
     sInfo->sReturnValue  = (void *)
         ((UChar*) aTemplate->rows[aNode->table].row + sInfo->sReturnColumn->column.offset);
 
-    // ÀÓ½Ãº¯¼ö ÃÊ±âÈ­
+    // ìž„ì‹œë³€ìˆ˜ ì´ˆê¸°í™”
     sInfo->sPow   = 0;
     sInfo->sSum   = 0;
     sInfo->sCount = 0;
 
     //-----------------------------
-    // stddev °á°ú¸¦ ÃÊ±âÈ­
+    // stddev ê²°ê³¼ë¥¼ ì´ˆê¸°í™”
     //-----------------------------
 
     *(mtdDoubleType*)(sInfo->sReturnValue) = 0;
@@ -382,7 +382,7 @@ IDE_RC mtfDecodeStddevAggregate( mtcNode*     aNode,
     {
         IDE_TEST_RAISE( aRemain < 2, ERR_STACK_OVERFLOW );
 
-        // µÎ¹øÂ° ÀÎÀÚ
+        // ë‘ë²ˆì§¸ ì¸ìž
         IDE_TEST( sInfo->sExprExecute->calculate( sInfo->sExprNode,
                                                   aStack,
                                                   aRemain,
@@ -400,7 +400,7 @@ IDE_RC mtfDecodeStddevAggregate( mtcNode*     aNode,
                       != IDE_SUCCESS );
         }
 
-        // ¼¼¹øÂ° ÀÎÀÚ
+        // ì„¸ë²ˆì§¸ ì¸ìž
         IDE_TEST( sInfo->sSearchExecute->calculate( sInfo->sSearchNode,
                                                     aStack + 1,
                                                     aRemain - 1,
@@ -418,7 +418,7 @@ IDE_RC mtfDecodeStddevAggregate( mtcNode*     aNode,
                       != IDE_SUCCESS );
         }
 
-        // decode ¿¬»ê¼öÇà
+        // decode ì—°ì‚°ìˆ˜í–‰
         if ( aStack[0].column->module != &mtdList )
         {
             IDE_DASSERT( aStack[0].column->module == aStack[1].column->module );
@@ -442,7 +442,7 @@ IDE_RC mtfDecodeStddevAggregate( mtcNode*     aNode,
                 sValueInfo2.value  = aStack[1].value;
                 sValueInfo2.flag   = MTD_OFFSET_USELESS;
 
-                // µÎ¹øÂ° ÀÎÀÚ¿Í ¼¼¹øÂ° ÀÎÀÚÀÇ ºñ±³
+                // ë‘ë²ˆì§¸ ì¸ìžì™€ ì„¸ë²ˆì§¸ ì¸ìžì˜ ë¹„êµ
                 sCompare = sModule->logicalCompare[MTD_COMPARE_ASCENDING]( &sValueInfo1,
                                                                            &sValueInfo2 );
             }
@@ -494,7 +494,7 @@ IDE_RC mtfDecodeStddevAggregate( mtcNode*     aNode,
         sCompare = 0;
     }
 
-    // Ã¹¹øÂ° ÀÎÀÚ
+    // ì²«ë²ˆì§¸ ì¸ìž
     IDE_TEST( sInfo->sStddevColumnExecute->calculate( sInfo->sStddevColumnNode,
                                                       aStack,
                                                       aRemain,

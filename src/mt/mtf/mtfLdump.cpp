@@ -45,7 +45,7 @@ static IDE_RC mtfLdumpEstimate( mtcNode*     aNode,
 mtfModule mtfLdump = {
     2|MTC_NODE_OPERATOR_FUNCTION|MTC_NODE_EAT_NULL_TRUE,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (∫Ò±≥ ø¨ªÍ¿⁄∞° æ∆¥‘)
+    1.0,  // default selectivity (ÎπÑÍµê Ïó∞ÏÇ∞ÏûêÍ∞Ä ÏïÑÎãò)
     mtfLdumpFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -165,7 +165,7 @@ static UChar* mtfCalculateCopyDecNumber( UChar* aIterator,
  * Description : Copy Decimal Number
  *
  * Implementation :
- *    aValue∏¶ aIteratorø° ∫πªÁ
+ *    aValueÎ•º aIteratorÏóê Î≥µÏÇ¨
  *
  ***********************************************************************/
     if( aValue >= 10 )
@@ -192,7 +192,7 @@ static UChar* mtfCalculateCopyHexNumber( UChar* aIterator,
  * Description : Copy Hex Number
  *
  * Implementation :
- *    aValue∏¶ aIteratorø° ∫πªÁ 
+ *    aValueÎ•º aIteratorÏóê Î≥µÏÇ¨ 
  *
  ***********************************************************************/
     if( aValue >= 16 )
@@ -242,7 +242,7 @@ static UChar * mtfCalculateCopyString( UChar *     aIterator,
  * Description : Copy String
  *
  * Implementation :
- *    aString¿ª aIteratorø° ∫πªÁ 
+ *    aStringÏùÑ aIteratorÏóê Î≥µÏÇ¨ 
  *
  ***********************************************************************/
     for( ; *aString != '\0' && aIterator < aFence; aString++, aIterator++ )
@@ -266,12 +266,12 @@ IDE_RC mtfLdumpCalculate( mtcNode*     aNode,
  * Implementation :
  *    DUMP( expression )
  *
- *    aStack[0] : ¿‘∑¬µ» ¿⁄∑·∏¶ ∫–ºÆ«œø© '¿⁄∑·«¸, ±Ê¿Ã, ∏ﬁ∏∏Æ ≥ªøÎ'¿«
- *                «¸Ωƒ¿∏∑Œ ¿˙¿Â«— ∞™
- *    aStack[1] : ¿‘∑¬µ» ¿⁄∑·
- *    aStack[2] : ∏ﬁ∏∏Æ ≥ªøÎ¿ª 10¡¯ºˆ ∂«¥¬ 16¡¯ºˆ∑Œ ∫º ºˆ ¿÷∞‘ «—¥Ÿ.
- *                (10 ∂«¥¬ 16∏∏ ¿‘∑¬¿∏∑Œ πﬁ¿ª ºˆ ¿÷¥Ÿ.)
- *                ¿Œ¿⁄∞° æ¯∞≈≥™ NULL¿Ã∏È 10¡¯ºˆ∑Œ ∫∏ø©¡ÿ¥Ÿ.
+ *    aStack[0] : ÏûÖÎ†•Îêú ÏûêÎ£åÎ•º Î∂ÑÏÑùÌïòÏó¨ 'ÏûêÎ£åÌòï, Í∏∏Ïù¥, Î©îÎ™®Î¶¨ ÎÇ¥Ïö©'Ïùò
+ *                ÌòïÏãùÏúºÎ°ú Ï†ÄÏû•Ìïú Í∞í
+ *    aStack[1] : ÏûÖÎ†•Îêú ÏûêÎ£å
+ *    aStack[2] : Î©îÎ™®Î¶¨ ÎÇ¥Ïö©ÏùÑ 10ÏßÑÏàò ÎòêÎäî 16ÏßÑÏàòÎ°ú Î≥º Ïàò ÏûàÍ≤å ÌïúÎã§.
+ *                (10 ÎòêÎäî 16Îßå ÏûÖÎ†•ÏúºÎ°ú Î∞õÏùÑ Ïàò ÏûàÎã§.)
+ *                Ïù∏ÏûêÍ∞Ä ÏóÜÍ±∞ÎÇò NULLÏù¥Î©¥ 10ÏßÑÏàòÎ°ú Î≥¥Ïó¨Ï§ÄÎã§.
  *
  *    ex ) DUMP(ename)
  *         ==> Type=CHAR(ENGLISH) Length=22: 0,20,83,87,78,...
@@ -297,29 +297,29 @@ IDE_RC mtfLdumpCalculate( mtcNode*     aNode,
                                      aTemplate )
               != IDE_SUCCESS );
 
-    // ∞·∞˙∞™
-    // sResult->value : ¿⁄∑·«¸ + ±Ê¿Ã + ∏ﬁ∏∏Æ ≥ªøÎ
-    // sResult->length : valueø° ¿˙¿Âµ» ∞·∞˙∞™¿« ±Ê¿Ã
+    // Í≤∞Í≥ºÍ∞í
+    // sResult->value : ÏûêÎ£åÌòï + Í∏∏Ïù¥ + Î©îÎ™®Î¶¨ ÎÇ¥Ïö©
+    // sResult->length : valueÏóê Ï†ÄÏû•Îêú Í≤∞Í≥ºÍ∞íÏùò Í∏∏Ïù¥
     sResult        = (mtdCharType*)aStack[0].value;
     
     sCurResultVal  = sResult->value; 
     sFence         = sCurResultVal + aStack[0].column->precision;
 
-    // data module : data type ¡§∫∏ »πµÊ Ω√ « ø‰
+    // data module : data type Ï†ïÎ≥¥ ÌöçÎìù Ïãú ÌïÑÏöî
     sModule   = aStack[1].column->module;
 
-    // language module : language type ¡§∫∏ »πµÊ Ω√ « ø‰ 
+    // language module : language type Ï†ïÎ≥¥ ÌöçÎìù Ïãú ÌïÑÏöî 
     sLanguage = aStack[1].column->language;
     
     if( sModule->isNull( aStack[1].column,
                          aStack[1].value ) == ID_TRUE )
     {
-        // ¿‘∑¬µ» ¿⁄∑·∞° NULL¿Œ ∞ÊøÏ
+        // ÏûÖÎ†•Îêú ÏûêÎ£åÍ∞Ä NULLÏù∏ Í≤ΩÏö∞
         sCurResultVal = mtfCalculateCopyString( sCurResultVal, sFence, "NULL" );
     }
     else
     {
-        // expressionø° «ÿ¥Á«œ¥¬ ∞™¿ª ∫πªÁ«—¥Ÿ.
+        // expressionÏóê Ìï¥ÎãπÌïòÎäî Í∞íÏùÑ Î≥µÏÇ¨ÌïúÎã§.
         sTempValue = (UChar*)aStack[1].value;
         sActualSize = sModule->actualSize( aStack[1].column,
                                           aStack[1].value );
@@ -336,7 +336,7 @@ IDE_RC mtfLdumpCalculate( mtcNode*     aNode,
 #endif
         
         //--------------------------------------
-        // ∏ﬁ∏∏Æ ≥ªøÎ¿ª ∫∏ø©¡Ÿ «¸≈¬∏¶ ∞·¡§(10¡¯ºˆ ∂«¥¬ 16¡¯ºˆ)
+        // Î©îÎ™®Î¶¨ ÎÇ¥Ïö©ÏùÑ Î≥¥Ïó¨Ï§Ñ ÌòïÌÉúÎ•º Í≤∞Ï†ï(10ÏßÑÏàò ÎòêÎäî 16ÏßÑÏàò)
         //--------------------------------------
         if( ( aNode->lflag & MTC_NODE_ARGUMENT_COUNT_MASK ) == 1 )
         {
@@ -360,7 +360,7 @@ IDE_RC mtfLdumpCalculate( mtcNode*     aNode,
         }
         
         //--------------------------------------
-        // µ•¿Ã≈∏ ≈∏¿‘ ¡§∫∏ º≥¡§ ( ex. Type=CHAR )
+        // Îç∞Ïù¥ÌÉÄ ÌÉÄÏûÖ Ï†ïÎ≥¥ ÏÑ§Ï†ï ( ex. Type=CHAR )
         //--------------------------------------
 
         sCurResultVal =
@@ -372,7 +372,7 @@ IDE_RC mtfLdumpCalculate( mtcNode*     aNode,
                                    (const char*)sModule->names->string );
         
         //--------------------------------------
-        // Language ¡§∫∏ º≥¡§ ( ex. (ENGLISH) )
+        // Language Ï†ïÎ≥¥ ÏÑ§Ï†ï ( ex. (ENGLISH) )
         //--------------------------------------
         
         if( sLanguage != NULL )
@@ -394,7 +394,7 @@ IDE_RC mtfLdumpCalculate( mtcNode*     aNode,
         }
 
         //--------------------------------------
-        // ±Ê¿Ã ¡§∫∏ º≥¡§ ( ex. Length : 22 )
+        // Í∏∏Ïù¥ Ï†ïÎ≥¥ ÏÑ§Ï†ï ( ex. Length : 22 )
         //--------------------------------------
 
         sCurResultVal =
@@ -406,7 +406,7 @@ IDE_RC mtfLdumpCalculate( mtcNode*     aNode,
                                        sValueFence - sValue );
 
         //--------------------------------------
-        // ∏ﬁ∏∏Æ ≥ªøÎ
+        // Î©îÎ™®Î¶¨ ÎÇ¥Ïö©
         //--------------------------------------
 
          sCurResultVal = mtfCalculateCopyString( sCurResultVal, sFence, ":" );

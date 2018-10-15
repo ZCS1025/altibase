@@ -82,10 +82,10 @@ public class GeometryColumnTest extends AltibaseTestCase
         sSelStmt.close();
     }
 
-    // ¿¡·¯°¡ ¶³¾îÁø´Ù: Conversion not applicable
-    // ¸®ÅÍ·²·Î GEOMETRY'POINT(1 1)'Ã³·³ ³Ö´Â°Ç µÇÁö¸¸, ÆÄ¶ó¹ÌÅÍ·Î´Â ¾ÈµÈ´Ù.
-    // ¹«Á¶°Ç ¹ÙÀÌ³Ê¸®·Î º¯È¯ÇÑ µÚ ³Ö¾î¾ß ÇÑ´Ù.
-    // ³ªÁß¿¡¶óµµ JDBC¿¡¼­ GEOMETRY¸¦ Áö¿øÇÑ´Ù¸é, WKT·Î ÀÔ·ÂÇÒ ¼öµµ ÀÖ°Ô ÇÒ°ÇÁö °í¹ÎÇØºÁ¾ß ÇÒ °Í.
+    // ì—ëŸ¬ê°€ ë–¨ì–´ì§„ë‹¤: Conversion not applicable
+    // ë¦¬í„°ëŸ´ë¡œ GEOMETRY'POINT(1 1)'ì²˜ëŸ¼ ë„£ëŠ”ê±´ ë˜ì§€ë§Œ, íŒŒë¼ë¯¸í„°ë¡œëŠ” ì•ˆëœë‹¤.
+    // ë¬´ì¡°ê±´ ë°”ì´ë„ˆë¦¬ë¡œ ë³€í™˜í•œ ë’¤ ë„£ì–´ì•¼ í•œë‹¤.
+    // ë‚˜ì¤‘ì—ë¼ë„ JDBCì—ì„œ GEOMETRYë¥¼ ì§€ì›í•œë‹¤ë©´, WKTë¡œ ì…ë ¥í•  ìˆ˜ë„ ìˆê²Œ í• ê±´ì§€ ê³ ë¯¼í•´ë´ì•¼ í•  ê²ƒ.
     public void _NOTSUPOORT_testInsertByWKT() throws Exception
     {
         PreparedStatement sStmt;
@@ -108,13 +108,13 @@ public class GeometryColumnTest extends AltibaseTestCase
         sStmt.close();
     }
 
-    // BUG-44738 endian °ü·Ã diff°¡ ¹ß»ıÇÒ ¼ö ÀÖ±â¶§¹®¿¡ skipÃ³¸®
+    // BUG-44738 endian ê´€ë ¨ diffê°€ ë°œìƒí•  ìˆ˜ ìˆê¸°ë•Œë¬¸ì— skipì²˜ë¦¬
     public void _SKIP_testInsertByBinary() throws SQLException
     {
         testInsertBy(Types.BINARY);
     }
 
-    // BUG-44738 endian °ü·Ã diff°¡ ¹ß»ıÇÒ ¼ö ÀÖ±â¶§¹®¿¡ skipÃ³¸®
+    // BUG-44738 endian ê´€ë ¨ diffê°€ ë°œìƒí•  ìˆ˜ ìˆê¸°ë•Œë¬¸ì— skipì²˜ë¦¬
     public void _SKIP_testInsertByGeometry() throws SQLException
     {
         testInsertBy(AltibaseTypes.GEOMETRY);
@@ -211,16 +211,16 @@ public class GeometryColumnTest extends AltibaseTestCase
         sStmt.close();
     }
 
-    // #region WKB ÇÔ¼ö
+    // #region WKB í•¨ìˆ˜
 
     private static final int  WKB_TYPE_POINT = 1;
     private static final byte WKB_ENDIAN_BE  = 0;
     private static final byte WKB_ENDIAN_LE  = 1;
 
     /**
-     * WKB POINT(x y)¸¦ »ı¼ºÇÑ´Ù.
+     * WKB POINT(x y)ë¥¼ ìƒì„±í•œë‹¤.
      * <p>
-     * WKB POINTÀÇ ±¸¼ºÀº ´ÙÀ½°ú °°´Ù:
+     * WKB POINTì˜ êµ¬ì„±ì€ ë‹¤ìŒê³¼ ê°™ë‹¤:
      * <code><pre>
      * wkb_point
      * {
@@ -231,9 +231,9 @@ public class GeometryColumnTest extends AltibaseTestCase
      * }
      * </pre></code>
      * 
-     * @param aPointX x °ª
-     * @param aPointY y °ª
-     * @return x, y¸¦ Á¡À¸·Î ÇÏ´Â WKB POINT
+     * @param aPointX x ê°’
+     * @param aPointY y ê°’
+     * @return x, yë¥¼ ì ìœ¼ë¡œ í•˜ëŠ” WKB POINT
      */
     private static byte[] createWKBPoint(double aPointX, double aPointY)
     {

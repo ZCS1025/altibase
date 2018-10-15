@@ -42,9 +42,9 @@ typedef struct cmnLinkPeerIPC
 {
     cmnLinkPeer    mLinkPeer;
     cmnLinkDescIPC mDesc;
-    SChar*         mLastWriteBuffer; // Å¬¶óÀÌ¾ğÆ® ºñÁ¤»ó Á¾·á½Ã ¼­¹ö°¡ writeÇÑ ¸¶Áö¸· ¹öÆÛ ÁÖ¼Ò
-    SChar*         mPrevWriteBuffer; // ¸¶Áö¸·À¸·Î writeÇÑ shared memory ³»ÀÇ ¹öÆÛÁÖ¼Ò
-    SChar*         mPrevReadBuffer;  // ¸¶Áö¸·À¸·Î readÇÑ shared memory ³»ÀÇ ¹öÆÛÁÖ¼Ò
+    SChar*         mLastWriteBuffer; // í´ë¼ì´ì–¸íŠ¸ ë¹„ì •ìƒ ì¢…ë£Œì‹œ ì„œë²„ê°€ writeí•œ ë§ˆì§€ë§‰ ë²„í¼ ì£¼ì†Œ
+    SChar*         mPrevWriteBuffer; // ë§ˆì§€ë§‰ìœ¼ë¡œ writeí•œ shared memory ë‚´ì˜ ë²„í¼ì£¼ì†Œ
+    SChar*         mPrevReadBuffer;  // ë§ˆì§€ë§‰ìœ¼ë¡œ readí•œ shared memory ë‚´ì˜ ë²„í¼ì£¼ì†Œ
 } cmnLinkPeerIPC;
 
 IDE_RC cmnLinkPeerInitializeServerIPC(cmnLink *aLink)
@@ -53,7 +53,7 @@ IDE_RC cmnLinkPeerInitializeServerIPC(cmnLink *aLink)
     cmnLinkDescIPC *sDesc = &sLink->mDesc;
 
     /*
-     * ¸â¹ö ÃÊ±âÈ­
+     * ë©¤ë²„ ì´ˆê¸°í™”
      */
 
     sLink->mLastWriteBuffer = NULL;
@@ -93,9 +93,9 @@ IDE_RC cmnLinkPeerFinalizeIPC(cmnLink *aLink)
 
 /*
  * !!!!!!!!!!!!!!!!!!!! WARNING !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
- * Å¬¶óÀÌ¾ğÆ®ÀÇ Á¾·á¸¦ ±â´Ù¸± ¶§ *Àı´ë·Î* mutex¸¦ Àâ¾Æ¼­´Â
- * ¾ÈµÈ´Ù. mutex¸¦ Àâ°í Á¾·á¸¦ ±â´Ù¸± °æ¿ì ½Ã½ºÅÛ ÀüÃ¼°¡
- * Á¤ÁöµÉ ¼ö ÀÖ´Ù.
+ * í´ë¼ì´ì–¸íŠ¸ì˜ ì¢…ë£Œë¥¼ ê¸°ë‹¤ë¦´ ë•Œ *ì ˆëŒ€ë¡œ* mutexë¥¼ ì¡ì•„ì„œëŠ”
+ * ì•ˆëœë‹¤. mutexë¥¼ ì¡ê³  ì¢…ë£Œë¥¼ ê¸°ë‹¤ë¦´ ê²½ìš° ì‹œìŠ¤í…œ ì „ì²´ê°€
+ * ì •ì§€ë  ìˆ˜ ìˆë‹¤.
  * PR-4407
  */
 
@@ -148,7 +148,7 @@ IDE_RC cmnLinkPeerCloseServerIPC(cmnLink *aLink)
 
             /*
              * BUG-32398
-             * °ªÀ» º¯°æÇØ ¿©·¯ Client·ÎÀÇ È¥¼±À» ¿¹¹æÇÏÀÚ.
+             * ê°’ì„ ë³€ê²½í•´ ì—¬ëŸ¬ Clientë¡œì˜ í˜¼ì„ ì„ ì˜ˆë°©í•˜ì.
              */
             sChannelInfo = cmbShmGetChannelInfo(gIpcShmBuffer, sDesc->mChannelID);
             sChannelInfo->mTicketNum++;
@@ -163,7 +163,7 @@ IDE_RC cmnLinkPeerCloseServerIPC(cmnLink *aLink)
     }
 
     /*
-     * socketÀÌ ¿­·ÁÀÖÀ¸¸é ´İÀ½
+     * socketì´ ì—´ë ¤ìˆìœ¼ë©´ ë‹«ìŒ
      */
 
     if (sLink->mDesc.mHandle != PDL_INVALID_SOCKET)
@@ -273,7 +273,7 @@ IDE_RC cmnLinkPeerGetDescIPC(cmnLinkPeer *aLink, void *aDesc)
     cmnLinkPeerIPC *sLink = (cmnLinkPeerIPC *)aLink;
 
     /*
-     * Desc¸¦ µ¹·ÁÁÜ
+     * Descë¥¼ ëŒë ¤ì¤Œ
      */
     *(cmnLinkDescIPC **)aDesc = &sLink->mDesc;
 
@@ -289,21 +289,21 @@ IDE_RC cmnLinkPeerConnectIPC(cmnLinkPeer       *aLink,
     UInt               sPathLen;
 
     /*
-     * socket »ı¼º
+     * socket ìƒì„±
      */
 
     sLink->mDesc.mHandle = idlOS::socket(AF_UNIX, SOCK_STREAM, 0);
     IDE_TEST_RAISE(sLink->mDesc.mHandle == PDL_INVALID_SOCKET, SocketError);
 
     /*
-     * IPC ÆÄÀÏÀÌ¸§ ±æÀÌ °Ë»ç
+     * IPC íŒŒì¼ì´ë¦„ ê¸¸ì´ ê²€ì‚¬
      */
 
     sPathLen = idlOS::strlen(aConnectArg->mIPC.mFilePath);
     IDE_TEST_RAISE(ID_SIZEOF(sLink->mDesc.mAddr.sun_path) <= sPathLen, IpcPathTruncated);
 
     /*
-     * IPC ÁÖ¼Ò ¼¼ÆÃ
+     * IPC ì£¼ì†Œ ì„¸íŒ…
      */
 
     sLink->mDesc.mAddr.sun_family = AF_UNIX;
@@ -381,8 +381,8 @@ IDE_RC cmnLinkPeerAllocChannelServerIPC(cmnLinkPeer *aLink, SInt *aChannelID)
 
     gIpcShmInfo.mUsedChannelCount++;
 
-    // BUG-25420 [CodeSonar] Lock, Unlock ¿¡·¯ ÇÚµé¸µ ¿À·ù¿¡ ÀÇÇÑ Double Unlock
-    // unlock ¸¦ ÇÏ±âÀü¿¡ ¼¼ÆÃÀ»ÇØ¾ß Double Unlock À» ¸·À»¼ö ÀÖ´Ù.
+    // BUG-25420 [CodeSonar] Lock, Unlock ì—ëŸ¬ í•¸ë“¤ë§ ì˜¤ë¥˜ì— ì˜í•œ Double Unlock
+    // unlock ë¥¼ í•˜ê¸°ì „ì— ì„¸íŒ…ì„í•´ì•¼ Double Unlock ì„ ë§‰ì„ìˆ˜ ìˆë‹¤.
     sLocked = ID_FALSE;
     rc = idlOS::thread_mutex_unlock(&gIpcMutex);
     IDE_TEST_RAISE( rc !=0, UnlockError);
@@ -442,40 +442,40 @@ IDE_RC cmnLinkPeerSetOperation(cmnLinkDescIPC *aDesc)
 {
     //=====================================================
     // bug-28340 rename semop name for readability
-    // °¡µ¶¼ºÀ» À§ÇØ semaphore op º¯¼ö¸íÀ» ´ÙÀ½°ú °°ÀÌ º¯°æ
+    // ê°€ë…ì„±ì„ ìœ„í•´ semaphore op ë³€ìˆ˜ëª…ì„ ë‹¤ìŒê³¼ ê°™ì´ ë³€ê²½
     //=====================================================
     // IPC_SEM_SERVER_DETECT  > IPC_SEM_CHECK_SVR_EXIT (0)
-    // server_detect_init     > InitSvrExit  : ¼­¹ö°¡ Àâ°í ½ÃÀÛ
-    // server_detect_try      > CheckSvrExit : ¼­¹ö°¡ Á×¾ú´ÂÁö È®ÀÎ
-    // server_detect_release  > SignSvrExit  : ¼­¹ö°¡ Á¾·á½ÅÈ£ º¸³¿
+    // server_detect_init     > InitSvrExit  : ì„œë²„ê°€ ì¡ê³  ì‹œì‘
+    // server_detect_try      > CheckSvrExit : ì„œë²„ê°€ ì£½ì—ˆëŠ”ì§€ í™•ì¸
+    // server_detect_release  > SignSvrExit  : ì„œë²„ê°€ ì¢…ë£Œì‹ í˜¸ ë³´ëƒ„
     //=====================================================
     // IPC_SEM_CLIENT_DETECT  > IPC_SEM_CHECK_CLI_EXIT (1)
-    // client_detect_init     > InitCliExit  : cli°¡ Àâ°í ½ÃÀÛ
-    // client_detect_try      > CheckCliExit : cli°¡ Á×¾ú´ÂÁö È®ÀÎ
-    // client_detect_hold     > WaitCliExit  : cli Á¾·á¶§±îÁö ´ë±â
-    // client_detect_release  > SignCliExit  : cli°¡ Á¾·á½ÅÈ£ º¸³¿
+    // client_detect_init     > InitCliExit  : cliê°€ ì¡ê³  ì‹œì‘
+    // client_detect_try      > CheckCliExit : cliê°€ ì£½ì—ˆëŠ”ì§€ í™•ì¸
+    // client_detect_hold     > WaitCliExit  : cli ì¢…ë£Œë•Œê¹Œì§€ ëŒ€ê¸°
+    // client_detect_release  > SignCliExit  : cliê°€ ì¢…ë£Œì‹ í˜¸ ë³´ëƒ„
     //=====================================================
     // IPC_SEM_SERVER_CHANNEL > IPC_SEM_SEND_TO_SVR (2)
-    // server_channel_init    > InitSendToSvr :cli°¡ Àâ°í ½ÃÀÛ
-    // server_channel_hold    > WaitSendToSvr :¼­¹ö°¡ ¼ö½Å´ë±â
-    // server_channel_release > SignSendToSvr :cli°¡ ¼­¹ö¼ö½ÅÇã¶ô
+    // server_channel_init    > InitSendToSvr :cliê°€ ì¡ê³  ì‹œì‘
+    // server_channel_hold    > WaitSendToSvr :ì„œë²„ê°€ ìˆ˜ì‹ ëŒ€ê¸°
+    // server_channel_release > SignSendToSvr :cliê°€ ì„œë²„ìˆ˜ì‹ í—ˆë½
     //=====================================================
     // IPC_SEM_CLIENT_CHANNLE > IPC_SEM_SEND_TO_CLI (3)
-    // client_channel_init    > InitSendToCli :¼­¹ö°¡ Àâ°í ½ÃÀÛ
-    // client_channel_hold    > WaitSendToCli :cli°¡ ¼ö½Å´ë±â
-    // client_channel_release > SignSendToCli :¼­¹ö°¡ cli¼ö½ÅÇã¶ô
+    // client_channel_init    > InitSendToCli :ì„œë²„ê°€ ì¡ê³  ì‹œì‘
+    // client_channel_hold    > WaitSendToCli :cliê°€ ìˆ˜ì‹ ëŒ€ê¸°
+    // client_channel_release > SignSendToCli :ì„œë²„ê°€ cliìˆ˜ì‹ í—ˆë½
     //=====================================================
     // IPC_SEM_CLI_SENDMORE  > IPC_SEM_SENDMORE_TO_SVR (4)
-    // cli_sendmore_init     > InitSendMoreToSvr  :¼­¹ö°¡ Àâ°í ½ÃÀÛ
-    // cli_sendmore_try      > CheckSendMoreToSvr :cli°¡ ¼Û½Å½Ãµµ
-    // cli_sendmore_hold     > WaitSendMoreToSvr  :cli°¡ ¼Û½Å´ë±â
-    // cli_sendmore_release  > SignSendMoreToSvr  :¼­¹ö°¡ ¼Û½ÅÇã¶ô
+    // cli_sendmore_init     > InitSendMoreToSvr  :ì„œë²„ê°€ ì¡ê³  ì‹œì‘
+    // cli_sendmore_try      > CheckSendMoreToSvr :cliê°€ ì†¡ì‹ ì‹œë„
+    // cli_sendmore_hold     > WaitSendMoreToSvr  :cliê°€ ì†¡ì‹ ëŒ€ê¸°
+    // cli_sendmore_release  > SignSendMoreToSvr  :ì„œë²„ê°€ ì†¡ì‹ í—ˆë½
     //=====================================================
     // IPC_SEM_SVR_SENDMORE  > IPC_SEM_SENDMORE_TO_CLI (5)
-    // svr_sendmore_init     > InitSendMoreToCli  :cli°¡ Àâ°í ½ÃÀÛ
-    // svr_sendmore_try      > CheckSendMoreToCli :¼­¹ö°¡ ¼Û½Å½Ãµµ
-    // svr_sendmore_hold     > WaitSendMoreToCli  :¼­¹ö°¡ ¼Û½Å´ë±â
-    // svr_sendmore_release  > SignSendMoreToCli  :cli°¡ ¼Û½ÅÇã¶ô
+    // svr_sendmore_init     > InitSendMoreToCli  :cliê°€ ì¡ê³  ì‹œì‘
+    // svr_sendmore_try      > CheckSendMoreToCli :ì„œë²„ê°€ ì†¡ì‹ ì‹œë„
+    // svr_sendmore_hold     > WaitSendMoreToCli  :ì„œë²„ê°€ ì†¡ì‹ ëŒ€ê¸°
+    // svr_sendmore_release  > SignSendMoreToCli  :cliê°€ ì†¡ì‹ í—ˆë½
     //=====================================================
 
     //=====================================================
@@ -548,7 +548,7 @@ IDE_RC cmnLinkPeerSetOperation(cmnLinkDescIPC *aDesc)
     aDesc->mOpSignSendToCli[0].sem_flg = 0;
 
     // bug-27250 free Buf list can be crushed when client killed
-    // Å« ÇÁ·ÎÅäÄİ¿¡ ´ëÇÑ ´ÙÀ½ ÆĞÅ¶ ¼Û½Å ½ÅÈ£ Á¦¾î¿ë semaphore
+    // í° í”„ë¡œí† ì½œì— ëŒ€í•œ ë‹¤ìŒ íŒ¨í‚· ì†¡ì‹  ì‹ í˜¸ ì œì–´ìš© semaphore
     //=====================================================
     // IPC_SEM_SENDMORE_TO_SVR (4)
     aDesc->mOpInitSendMoreToSvr[0].sem_num = IPC_SEM_SENDMORE_TO_SVR;
@@ -559,7 +559,7 @@ IDE_RC cmnLinkPeerSetOperation(cmnLinkDescIPC *aDesc)
     aDesc->mOpCheckSendMoreToSvr[0].sem_op  = -1;
     aDesc->mOpCheckSendMoreToSvr[0].sem_flg = IPC_NOWAIT;
 
-    // cmnDispatcherWaitLink ¿¡¼­ ¹«ÇÑ´ë±â ÇÏ±âÀ§ÇØ »ç¿ë.
+    // cmnDispatcherWaitLink ì—ì„œ ë¬´í•œëŒ€ê¸° í•˜ê¸°ìœ„í•´ ì‚¬ìš©.
     aDesc->mOpWaitSendMoreToSvr[0].sem_num = IPC_SEM_SENDMORE_TO_SVR;
     aDesc->mOpWaitSendMoreToSvr[0].sem_op  = -1;
     aDesc->mOpWaitSendMoreToSvr[0].sem_flg = 0;
@@ -581,7 +581,7 @@ IDE_RC cmnLinkPeerSetOperation(cmnLinkDescIPC *aDesc)
     aDesc->mOpCheckSendMoreToCli[0].sem_op  = -1;
     aDesc->mOpCheckSendMoreToCli[0].sem_flg = IPC_NOWAIT;
 
-    // cmnDispatcherWaitLink ¿¡¼­ ¹«ÇÑ´ë±â ÇÏ±âÀ§ÇØ »ç¿ë.
+    // cmnDispatcherWaitLink ì—ì„œ ë¬´í•œëŒ€ê¸° í•˜ê¸°ìœ„í•´ ì‚¬ìš©.
     aDesc->mOpWaitSendMoreToCli[0].sem_num = IPC_SEM_SENDMORE_TO_CLI;
     aDesc->mOpWaitSendMoreToCli[0].sem_op  = -1;
     aDesc->mOpWaitSendMoreToCli[0].sem_flg = 0;
@@ -598,7 +598,7 @@ IDE_RC cmnLinkPeerSetOperation(cmnLinkDescIPC *aDesc)
 
 IDE_RC cmnLinkPeerSyncServerIPC(cmnLinkDescIPC *aDesc)
 {
-    // ½ÃÀÛÇÏ±â À§ÇÑ µ¿±âÈ­
+    // ì‹œì‘í•˜ê¸° ìœ„í•œ ë™ê¸°í™”
     // fix BUG-19265
     while (0 !=idlOS::semop(gIpcSemChannelID[aDesc->mChannelID],
                              aDesc->mOpSignSendToCli, 1))
@@ -712,8 +712,8 @@ IDE_RC cmnLinkPeerHandshakeServerIPC(cmnLinkPeer *aLink)
     sChannelInfo = cmbShmGetChannelInfo(gIpcShmBuffer, sDesc->mChannelID);
     /*
      * BUG-32398
-     * Å¸ÀÓ½ºÅÆÇÁ ´ë½Å Æ¼ÄÏ¹øÈ£À» »ç¿ëÇÑ´Ù.
-     * ÃÊ´ÜÀ§¶ó¼­ °°Àº °ªÀ» °¡Áö´Â Å¬¶óÀÌ¾ğÆ®°¡ Á¸ÀçÇÒ °¡´É¼ºÀÌ ÀÖ´Ù.
+     * íƒ€ì„ìŠ¤íƒ¬í”„ ëŒ€ì‹  í‹°ì¼“ë²ˆí˜¸ì„ ì‚¬ìš©í•œë‹¤.
+     * ì´ˆë‹¨ìœ„ë¼ì„œ ê°™ì€ ê°’ì„ ê°€ì§€ëŠ” í´ë¼ì´ì–¸íŠ¸ê°€ ì¡´ì¬í•  ê°€ëŠ¥ì„±ì´ ìˆë‹¤.
      */
     sDesc->mTicketNum = sChannelInfo->mTicketNum;
 
@@ -895,11 +895,11 @@ IDE_RC cmnLinkPeerShutdownServerIPC(cmnLinkPeer *aLink,
             /*
              * BUG-32398
              *
-             * Shutdown½Ã ±âÁ¸Ã³·³ ¸ğµå¿¡ µû¶ó ¼¼¸¶Æ÷¾î¸¦ Ç®¾îÁØ´Ù.
+             * Shutdownì‹œ ê¸°ì¡´ì²˜ëŸ¼ ëª¨ë“œì— ë”°ë¼ ì„¸ë§ˆí¬ì–´ë¥¼ í’€ì–´ì¤€ë‹¤.
              */
             if (aMode == CMN_SHUTDOWN_MODE_FORCE)
             {
-                // client°¡ Á¾·áÇß´Ù°í Ç¥½Ã.
+                // clientê°€ ì¢…ë£Œí–ˆë‹¤ê³  í‘œì‹œ.
                 while (0 != idlOS::semop(gIpcSemChannelID[sDesc->mChannelID],
                                             sDesc->mOpSignCliExit,
                                             1))
@@ -907,7 +907,7 @@ IDE_RC cmnLinkPeerShutdownServerIPC(cmnLinkPeer *aLink,
                     IDE_TEST_RAISE(errno != EINTR, SemOpError);
                 }
 
-                // client·Î ¼Û½Å´ë±âÇÏ´Â lockÀ» Ç®¾îÁÜ.
+                // clientë¡œ ì†¡ì‹ ëŒ€ê¸°í•˜ëŠ” lockì„ í’€ì–´ì¤Œ.
                 while (0 != idlOS::semop(gIpcSemChannelID[sDesc->mChannelID],
                                             sDesc->mOpSignSendMoreToCli,
                                             1))
@@ -920,13 +920,13 @@ IDE_RC cmnLinkPeerShutdownServerIPC(cmnLinkPeer *aLink,
             /*
              * BUG-32398
              *
-             * Client ¼ö½Å´ë±â ¼¼¸¶Æ÷¾î¸¦ Ç®¾îÁÖ¾î ¼¼¼ÇÁ¾·á °úÁ¤½Ã
-             * ºí·°µÇÁö ¾Êµµ·Ï ÇÑ´Ù.
+             * Client ìˆ˜ì‹ ëŒ€ê¸° ì„¸ë§ˆí¬ì–´ë¥¼ í’€ì–´ì£¼ì–´ ì„¸ì…˜ì¢…ë£Œ ê³¼ì •ì‹œ
+             * ë¸”ëŸ­ë˜ì§€ ì•Šë„ë¡ í•œë‹¤.
              *
-             * Áï Shutdown½Ã FORCE ¸ğµå¸¦ Á¦¿ÜÇÏ°í´Â ¼­¹öÂÊ ¼¼¸¶Æ÷¾î¸¸
-             * Ç®¾îÁÖ´Âµ¥ ¿¹¿ÜÀûÀ¸·Î Client ¼ö½Å´ë±â ¼¼¸¶Æ÷¾îµµ Ç®¾îÁØ´Ù.
+             * ì¦‰ Shutdownì‹œ FORCE ëª¨ë“œë¥¼ ì œì™¸í•˜ê³ ëŠ” ì„œë²„ìª½ ì„¸ë§ˆí¬ì–´ë§Œ
+             * í’€ì–´ì£¼ëŠ”ë° ì˜ˆì™¸ì ìœ¼ë¡œ Client ìˆ˜ì‹ ëŒ€ê¸° ì„¸ë§ˆí¬ì–´ë„ í’€ì–´ì¤€ë‹¤.
              */
-            // client·ÎºÎÅÍ ¼ö½Å´ë±âÇÏ´Â lockÀ» Ç®¾îÁÜ.
+            // clientë¡œë¶€í„° ìˆ˜ì‹ ëŒ€ê¸°í•˜ëŠ” lockì„ í’€ì–´ì¤Œ.
             while (0 != idlOS::semop(gIpcSemChannelID[sDesc->mChannelID],
                                         sDesc->mOpSignSendToSvr,
                                         1))
@@ -1029,20 +1029,20 @@ IDE_RC cmnLinkPeerAllocBlockServerIPC(cmnLinkPeer *aLink, cmbBlock **aBlock)
 {
     // bug-27250 free Buf list can be crushed when client killed
     // modify: to be same as tcp
-    // º¯°æÀü: °øÀ¯ ¸Ş¸ğ¸® blockÀ» ÇÒ´ç
-    // º¯°æÈÄ:  mAllocBlock¿¡¼­ ÀÏ¹İ block buffer¸¦ ÇÒ´ç
+    // ë³€ê²½ì „: ê³µìœ  ë©”ëª¨ë¦¬ blockì„ í• ë‹¹
+    // ë³€ê²½í›„:  mAllocBlockì—ì„œ ì¼ë°˜ block bufferë¥¼ í• ë‹¹
     cmbBlock *sBlock;
 
     IDE_TEST(aLink->mPool->mOp->mAllocBlock(aLink->mPool, &sBlock) != IDE_SUCCESS);
 
     /*
-     * Write Block ÃÊ±âÈ­
+     * Write Block ì´ˆê¸°í™”
      */
     sBlock->mDataSize    = CMP_HEADER_SIZE;
     sBlock->mCursor      = CMP_HEADER_SIZE;
 
     /*
-     * Write BlockÀ» µ¹·ÁÁÜ
+     * Write Blockì„ ëŒë ¤ì¤Œ
      */
     *aBlock = sBlock;
 
@@ -1061,8 +1061,8 @@ IDE_RC cmnLinkPeerAllocBlockClientIPC(cmnLinkPeer * /* aLink */,
 IDE_RC cmnLinkPeerFreeBlockServerIPC(cmnLinkPeer *aLink, cmbBlock *aBlock)
 {
     // bug-27250 free Buf list can be crushed when client killed
-    // °øÀ¯ ¸Ş¸ğ¸® linked list Á¶Á¤ÇÏ´Â ºÎºĞ Á¦°Å
-    // Block ÇØÁ¦
+    // ê³µìœ  ë©”ëª¨ë¦¬ linked list ì¡°ì •í•˜ëŠ” ë¶€ë¶„ ì œê±°
+    // Block í•´ì œ
     IDE_TEST(aLink->mPool->mOp->mFreeBlock(aLink->mPool, aBlock) != IDE_SUCCESS);
 
     return IDE_SUCCESS;
@@ -1084,13 +1084,13 @@ IDE_RC cmnLinkPeerRecvServerIPC(cmnLinkPeer    *aLink,
                                 PDL_Time_Value */*aTimeout*/)
 {
     /*
-     * semaphore´Â mutex°¡ ¾Æ´Ï´Ù!!!!
+     * semaphoreëŠ” mutexê°€ ì•„ë‹ˆë‹¤!!!!
      *
-     * lockÀ» È¹µæ, ¹İÈ¯ÇÏ´Â °³³äÀÌ ¾Æ´Ï¶ó
-     * »ç¿ëÇÒ ¼ö ÀÖ´Â ÀÚ¿øÀÇ °¹¼ö·Î ÆÇ´ÜÇÑ´Ù.
+     * lockì„ íšë“, ë°˜í™˜í•˜ëŠ” ê°œë…ì´ ì•„ë‹ˆë¼
+     * ì‚¬ìš©í•  ìˆ˜ ìˆëŠ” ìì›ì˜ ê°¯ìˆ˜ë¡œ íŒë‹¨í•œë‹¤.
      *
-     * write : ¹«Á¶°Ç ¾²°í +1
-     * read  : -1 ÈÄ ÀĞ±â
+     * write : ë¬´ì¡°ê±´ ì“°ê³  +1
+     * read  : -1 í›„ ì½ê¸°
      */
 
     cmnLinkPeerIPC *sLink = (cmnLinkPeerIPC *)aLink;
@@ -1146,11 +1146,11 @@ IDE_RC cmnLinkPeerRecvServerIPC(cmnLinkPeer    *aLink,
     /*
      * BUG-32398
      *
-     * FetchTimeoutµî ¼­¹ö¼¼¼ÇÀÌ ¸ÕÀú Á¾·áÇÑ °æ¿ì¸¦ Ã¼Å©ÇØ
-     * Å¬¶óÀÌ¾ğÆ®¿Í »ó°ü¾øÀÌ ¼¼¼ÇÀÇ statement¸¦ Á¤¸®ÇÏÀÚ.
+     * FetchTimeoutë“± ì„œë²„ì„¸ì…˜ì´ ë¨¼ì € ì¢…ë£Œí•œ ê²½ìš°ë¥¼ ì²´í¬í•´
+     * í´ë¼ì´ì–¸íŠ¸ì™€ ìƒê´€ì—†ì´ ì„¸ì…˜ì˜ statementë¥¼ ì •ë¦¬í•˜ì.
      *
-     * ÃÖÁ¾ÀûÀÎ Close ´Ü°è¿¡¼­ Å¬¶óÀÌ¾ğÆ®ÀÇ Á¾·á¸¦ ±â´Ù¸®±â ¶§¹®¿¡
-     * ´Ù¸¥ Å¬¶óÀÌ¾ğÆ®°¡ Á¢¼ÓÇÒ ¼ö ¾ø´Ù.
+     * ìµœì¢…ì ì¸ Close ë‹¨ê³„ì—ì„œ í´ë¼ì´ì–¸íŠ¸ì˜ ì¢…ë£Œë¥¼ ê¸°ë‹¤ë¦¬ê¸° ë•Œë¬¸ì—
+     * ë‹¤ë¥¸ í´ë¼ì´ì–¸íŠ¸ê°€ ì ‘ì†í•  ìˆ˜ ì—†ë‹¤.
      */
     rc = idlOS::semop(gIpcSemChannelID[sDesc->mChannelID],
                       sDesc->mOpCheckSvrExit, 2);
@@ -1159,31 +1159,31 @@ IDE_RC cmnLinkPeerRecvServerIPC(cmnLinkPeer    *aLink,
 
     //======================================================
     // bug-27250 free Buf list can be crushed when client killed
-    // º¯°æÀü: °íÁ¤ ¶Ç´Â ¿©ºĞÀÇ block ¾ò¾î¿È.
-    // º¯°æÈÄ: ¹«Á¶°Ç °íÁ¤µÈ Åë½Å block ¾ò¾î¿È.
+    // ë³€ê²½ì „: ê³ ì • ë˜ëŠ” ì—¬ë¶„ì˜ block ì–»ì–´ì˜´.
+    // ë³€ê²½í›„: ë¬´ì¡°ê±´ ê³ ì •ëœ í†µì‹  block ì–»ì–´ì˜´.
 
     sDataBlock = cmbShmGetDefaultServerBuffer(gIpcShmBuffer,
                                               gIpcShmInfo.mMaxChannelCount,
                                               sDesc->mChannelID);
     // proj_2160 cm_type removal
-    // A5: blockÀ» ¸Å ¼ö½Å½Ã¸¶´Ù ¿©±â¼­ ÇÒ´çÇØ¾ß ÇÑ´Ù
+    // A5: blockì„ ë§¤ ìˆ˜ì‹ ì‹œë§ˆë‹¤ ì—¬ê¸°ì„œ í• ë‹¹í•´ì•¼ í•œë‹¤
     if (sPacketType == CMP_PACKET_TYPE_A5)
     {
         IDE_TEST(sPool->mOp->mAllocBlock(sPool, &sBlock) != IDE_SUCCESS);
     }
-    // A7 or CMP_PACKET_TYPE_UNKNOWN: blockÀÌ ÀÌ¹Ì ÇÒ´çµÅ ÀÖ´Ù
+    // A7 or CMP_PACKET_TYPE_UNKNOWN: blockì´ ì´ë¯¸ í• ë‹¹ë¼ ìˆë‹¤
     else
     {
         sBlock = *aBlock;
     }
 
-    // Çì´õ¸¦ ¸ÕÀú ÀĞ¾î data size¸¦ ±¸ÇÑ ´ÙÀ½¿¡ ÇØ´ç size ¸¸Å­
-    // buffer¿¡ º¹»çÇØ µĞ´Ù. ´Ù¸¥ buffer·Î º¹»çÇÏ´Â ÀÌÀ¯´Â,
-    // ÀÌÈÄ marshal ´Ü°è¿¡¼­ º¹»ç°¡ ¾Æ´Ñ Æ÷ÀÎÅÍ¸¦ »ç¿ëÇÏ±â ¶§¹®.
+    // í—¤ë”ë¥¼ ë¨¼ì € ì½ì–´ data sizeë¥¼ êµ¬í•œ ë‹¤ìŒì— í•´ë‹¹ size ë§Œí¼
+    // bufferì— ë³µì‚¬í•´ ë‘”ë‹¤. ë‹¤ë¥¸ bufferë¡œ ë³µì‚¬í•˜ëŠ” ì´ìœ ëŠ”,
+    // ì´í›„ marshal ë‹¨ê³„ì—ì„œ ë³µì‚¬ê°€ ì•„ë‹Œ í¬ì¸í„°ë¥¼ ì‚¬ìš©í•˜ê¸° ë•Œë¬¸.
     // read header
     idlOS::memcpy(sBlock->mData, sDataBlock, CMP_HEADER_SIZE);
     sBlock->mDataSize = CMP_HEADER_SIZE;
-    // Protocol Header ÇØ¼®
+    // Protocol Header í•´ì„
     IDE_TEST(cmpHeaderRead(aLink, &sHeader, sBlock) != IDE_SUCCESS);
 
     // read payload
@@ -1194,14 +1194,14 @@ IDE_RC cmnLinkPeerRecvServerIPC(cmnLinkPeer    *aLink,
 
     //======================================================
     // bug-27250 free Buf list can be crushed when client killed.
-    // ÇÁ·ÎÅäÄİ data°¡ Ä¿¼­ ¿©·¯ ÆĞÅ¶¿¡ ³ª´µ¾î ¼ö½ÅÇÏ´Â °æ¿ì,
-    // ´ÙÀ½ ÆĞÅ¶À» ¼ö½ÅÇÒ ÁØºñ°¡ µÇ¾î ÀÖÀ½À» ¼­¹ö¿¡ ¾Ë·ÁÁÖ¾î
-    // µ¿±âÈ­¸¦ ½ÃÅ²´Ù.(¹İµå½Ã block º¹»ç ÀÌÈÄ¿¡ Ç®¾îÁÖ¾î¾ß ÇÔ)
+    // í”„ë¡œí† ì½œ dataê°€ ì»¤ì„œ ì—¬ëŸ¬ íŒ¨í‚·ì— ë‚˜ë‰˜ì–´ ìˆ˜ì‹ í•˜ëŠ” ê²½ìš°,
+    // ë‹¤ìŒ íŒ¨í‚·ì„ ìˆ˜ì‹ í•  ì¤€ë¹„ê°€ ë˜ì–´ ìˆìŒì„ ì„œë²„ì— ì•Œë ¤ì£¼ì–´
+    // ë™ê¸°í™”ë¥¼ ì‹œí‚¨ë‹¤.(ë°˜ë“œì‹œ block ë³µì‚¬ ì´í›„ì— í’€ì–´ì£¼ì–´ì•¼ í•¨)
     // need to recv next packet.
-    // seq end°¡ ¾Æ´Ï¶ó´Â °ÍÀº ¼ö½ÅÇÒ ´ÙÀ½ ÆĞÅ¶ÀÌ ´õ ÀÖÀ½À» ÀÇ¹Ì
+    // seq endê°€ ì•„ë‹ˆë¼ëŠ” ê²ƒì€ ìˆ˜ì‹ í•  ë‹¤ìŒ íŒ¨í‚·ì´ ë” ìˆìŒì„ ì˜ë¯¸
     if (CMP_HEADER_PROTO_END_IS_SET(&sHeader) == ID_FALSE)
     {
-        // Å« ÇÁ·ÎÅäÄİ ÆĞÅ¶ ¼Û½Å ½ÅÈ£ Á¦¾î¿ë semaphore »ç¿ë
+        // í° í”„ë¡œí† ì½œ íŒ¨í‚· ì†¡ì‹  ì‹ í˜¸ ì œì–´ìš© semaphore ì‚¬ìš©
         while(1)
         {
             rc = idlOS::semop(gIpcSemChannelID[sDesc->mChannelID],
@@ -1321,13 +1321,13 @@ idBool cmnLinkPeerHasPendingRequestIPC(cmnLinkPeer * /*aLink*/)
 IDE_RC cmnLinkPeerSendServerIPC(cmnLinkPeer *aLink, cmbBlock *aBlock)
 {
     /*
-     * semaphore´Â mutex°¡ ¾Æ´Ï´Ù!!!!
+     * semaphoreëŠ” mutexê°€ ì•„ë‹ˆë‹¤!!!!
      *
-     * lockÀ» È¹µæ, ¹İÈ¯ÇÏ´Â °³³äÀÌ ¾Æ´Ï¶ó
-     * »ç¿ëÇÒ ¼ö ÀÖ´Â ÀÚ¿øÀÇ °¹¼ö·Î ÆÇ´ÜÇÑ´Ù.
+     * lockì„ íšë“, ë°˜í™˜í•˜ëŠ” ê°œë…ì´ ì•„ë‹ˆë¼
+     * ì‚¬ìš©í•  ìˆ˜ ìˆëŠ” ìì›ì˜ ê°¯ìˆ˜ë¡œ íŒë‹¨í•œë‹¤.
      *
-     * write : ¹«Á¶°Ç ¾²°í +1
-     * read  : -1 ÈÄ ÀĞ±â
+     * write : ë¬´ì¡°ê±´ ì“°ê³  +1
+     * read  : -1 í›„ ì½ê¸°
      */
 
     cmnLinkPeerIPC *sLink = (cmnLinkPeerIPC *)aLink;
@@ -1347,11 +1347,11 @@ IDE_RC cmnLinkPeerSendServerIPC(cmnLinkPeer *aLink, cmbBlock *aBlock)
 
     //=======================================================
     // bug-27250 free Buf list can be crushed when client killed
-    // client°¡ ´ÙÀ½ ÆĞÅ¶À» ¼ö½ÅÇÒ ÁØºñ µÇ¾ú´ÂÁö È®ÀÎ(try)
-    // ÁØºñ°¡ ¾ÈµÆ´Ù¸é WirteBlockList¿¡ Ãß°¡µÇ¾î ³ªÁß¿¡ retry.
+    // clientê°€ ë‹¤ìŒ íŒ¨í‚·ì„ ìˆ˜ì‹ í•  ì¤€ë¹„ ë˜ì—ˆëŠ”ì§€ í™•ì¸(try)
+    // ì¤€ë¹„ê°€ ì•ˆëë‹¤ë©´ WirteBlockListì— ì¶”ê°€ë˜ì–´ ë‚˜ì¤‘ì— retry.
     if (sLink->mPrevWriteBuffer != NULL)
     {
-        // Å« ÇÁ·ÎÅäÄİ ÆĞÅ¶ ¼Û½Å ½ÅÈ£ Á¦¾î¿ë semaphore »ç¿ë
+        // í° í”„ë¡œí† ì½œ íŒ¨í‚· ì†¡ì‹  ì‹ í˜¸ ì œì–´ìš© semaphore ì‚¬ìš©
         while(1)
         {
             rc = idlOS::semop(gIpcSemChannelID[sDesc->mChannelID],
@@ -1362,7 +1362,7 @@ IDE_RC cmnLinkPeerSendServerIPC(cmnLinkPeer *aLink, cmbBlock *aBlock)
             }
             else
             {
-                // lock try¿¡ ½ÇÆĞÇÏ¸é goto retry
+                // lock tryì— ì‹¤íŒ¨í•˜ë©´ goto retry
                 IDE_TEST_RAISE(EAGAIN == errno, Retry);
                 IDE_TEST_RAISE(EIDRM == errno, SemRemoved);
                 IDE_TEST_RAISE(EINTR != errno, SemOpError);
@@ -1371,10 +1371,10 @@ IDE_RC cmnLinkPeerSendServerIPC(cmnLinkPeer *aLink, cmbBlock *aBlock)
     }
 
     // bug-27250 free Buf list can be crushed when client killed.
-    // block µ¥ÀÌÅÍ¸¦ °øÀ¯ ¸Ş¸ğ¸® Åë½Å ¹öÆÛ·Î º¹»çÇÑÈÄ ¼Û½ÅÇÑ´Ù.
-    // Çì´õ Á¤º¸´Â datasize¸¦ ¾Ë±â À§ÇØ ÇÊ¿äÇÏ´Ù.
-    // ¼ö½ÅÃøÀÇ marshal ´Ü°è¿¡¼­ °øÀ¯ ¸Ş¸ğ¸®¸¦ Á÷Á¢ ÂüÁ¶ÇÏ´Â °ÍÀ»
-    // ¸·±â À§ÇØ º¹»ç¸¦ ÇÑ´Ù.
+    // block ë°ì´í„°ë¥¼ ê³µìœ  ë©”ëª¨ë¦¬ í†µì‹  ë²„í¼ë¡œ ë³µì‚¬í•œí›„ ì†¡ì‹ í•œë‹¤.
+    // í—¤ë” ì •ë³´ëŠ” datasizeë¥¼ ì•Œê¸° ìœ„í•´ í•„ìš”í•˜ë‹¤.
+    // ìˆ˜ì‹ ì¸¡ì˜ marshal ë‹¨ê³„ì—ì„œ ê³µìœ  ë©”ëª¨ë¦¬ë¥¼ ì§ì ‘ ì°¸ì¡°í•˜ëŠ” ê²ƒì„
+    // ë§‰ê¸° ìœ„í•´ ë³µì‚¬ë¥¼ í•œë‹¤.
     IDE_TEST(cmpHeaderRead(aLink, &sHeader, aBlock) != IDE_SUCCESS);
     aBlock->mCursor = 0;
 
@@ -1403,9 +1403,9 @@ IDE_RC cmnLinkPeerSendServerIPC(cmnLinkPeer *aLink, cmbBlock *aBlock)
 
     //=======================================================
     // bug-27250 free Buf list can be crushed when client killed
-    // ÇÁ·ÎÅäÄİ data°¡ Ä¿¼­ ¿©·¯ ÆĞÅ¶¿¡ ³ª´µ¾î ¼Û½ÅÇÏ´Â °æ¿ì,
-    // ÀÏ´Ü mark¸¸ ÇØµĞ´Ù.(´ÙÀ½ È£Ãâ½Ã À§ÂÊÀÇ ÄÚµå¸¦ Å¸°Ô µÊ)
-    // seq end°¡ ¾Æ´Ï¶ó´Â °ÍÀº ¼Û½ÅÇÒ ´ÙÀ½ ÆĞÅ¶ÀÌ ´õ ÀÖÀ½À» ÀÇ¹Ì
+    // í”„ë¡œí† ì½œ dataê°€ ì»¤ì„œ ì—¬ëŸ¬ íŒ¨í‚·ì— ë‚˜ë‰˜ì–´ ì†¡ì‹ í•˜ëŠ” ê²½ìš°,
+    // ì¼ë‹¨ markë§Œ í•´ë‘”ë‹¤.(ë‹¤ìŒ í˜¸ì¶œì‹œ ìœ„ìª½ì˜ ì½”ë“œë¥¼ íƒ€ê²Œ ë¨)
+    // seq endê°€ ì•„ë‹ˆë¼ëŠ” ê²ƒì€ ì†¡ì‹ í•  ë‹¤ìŒ íŒ¨í‚·ì´ ë” ìˆìŒì„ ì˜ë¯¸
     if (CMP_HEADER_PROTO_END_IS_SET(&sHeader) == ID_FALSE)
     {
         sLink->mPrevWriteBuffer = sDataBlock;
@@ -1452,8 +1452,8 @@ IDE_RC cmnLinkPeerSendClientIPC(cmnLinkPeer * /*aLink*/, cmbBlock * /*aBlock*/)
 /* 
  * TASK-5894 Permit sysdba via IPC
  *
- * IPC¿¡¼­ SYSDBA Á¢¼ÓÀ» Çã¿ëÇÏ±â À§ÇØ Ã¤³Î 1°³´Â Ç×»ó ºñ¿öµĞ´Ù.
- * ÀÏ¹İ »ç¿ëÀÚ°¡ Á¢¼Ó ÇßÀ» ¶§ ³²Àº Ã¤³Î¼ö¸¦ È®ÀÎÇØ Çã¿ë ¿©ºÎ¸¦ °áÁ¤ÇÑ´Ù.
+ * IPCì—ì„œ SYSDBA ì ‘ì†ì„ í—ˆìš©í•˜ê¸° ìœ„í•´ ì±„ë„ 1ê°œëŠ” í•­ìƒ ë¹„ì›Œë‘”ë‹¤.
+ * ì¼ë°˜ ì‚¬ìš©ìê°€ ì ‘ì† í–ˆì„ ë•Œ ë‚¨ì€ ì±„ë„ìˆ˜ë¥¼ í™•ì¸í•´ í—ˆìš© ì—¬ë¶€ë¥¼ ê²°ì •í•œë‹¤.
  */
 IDE_RC cmnLinkPeerPermitConnectionServerIPC(cmnLinkPeer* /*aLink*/,
                                             idBool         aHasSysdbaViaIPC,
@@ -1464,9 +1464,9 @@ IDE_RC cmnLinkPeerPermitConnectionServerIPC(cmnLinkPeer* /*aLink*/,
     IDE_TEST_RAISE( idlOS::thread_mutex_lock(&gIpcMutex) != 0, LockError );
     sNeedUnlock = ID_TRUE;
 
-    /* IPC ChannelÀÌ ²Ë Âù °æ¿ì,
-     * Sysdba°¡ Á¢¼ÓµÇ¾î ÀÖÁö ¾Ê°í Á¢¼Ó½ÃµµÁßÀÎ Å¬¶óÀÌ¾ğÆ®°¡ 
-     * Sysdba°¡ ¾Æ´Ï¸é Á¢¼ÓÀ» Çã¿ëÇÏÁö ¾Ê¾Æ¾ß ÇÑ´Ù. */
+    /* IPC Channelì´ ê½‰ ì°¬ ê²½ìš°,
+     * Sysdbaê°€ ì ‘ì†ë˜ì–´ ìˆì§€ ì•Šê³  ì ‘ì†ì‹œë„ì¤‘ì¸ í´ë¼ì´ì–¸íŠ¸ê°€ 
+     * Sysdbaê°€ ì•„ë‹ˆë©´ ì ‘ì†ì„ í—ˆìš©í•˜ì§€ ì•Šì•„ì•¼ í•œë‹¤. */
     IDE_TEST_RAISE( (gIpcShmInfo.mUsedChannelCount >= gIpcShmInfo.mMaxChannelCount) &&
                     (aHasSysdbaViaIPC == ID_FALSE) &&
                     (aIsSysdba == ID_FALSE),
@@ -1562,24 +1562,24 @@ IDE_RC cmnLinkPeerServerMapIPC(cmnLink *aLink)
     cmnLinkPeer *sLink = (cmnLinkPeer *)aLink;
 
     /*
-     * Link °Ë»ç
+     * Link ê²€ì‚¬
      */
     IDE_ASSERT(aLink->mType == CMN_LINK_TYPE_PEER_SERVER);
     IDE_ASSERT(aLink->mImpl == CMN_LINK_IMPL_IPC);
 
     /*
-     * BUGBUG: IPC Pool È¹µæ
+     * BUGBUG: IPC Pool íšë“
      */
     IDE_TEST(cmbPoolGetSharedPool(&sLink->mPool, CMB_POOL_IMPL_IPC) != IDE_SUCCESS);
 
     /*
-     * ÇÔ¼ö Æ÷ÀÎÅÍ ¼¼ÆÃ
+     * í•¨ìˆ˜ í¬ì¸í„° ì„¸íŒ…
      */
     aLink->mOp     = &gCmnLinkPeerServerOpIPC;
     sLink->mPeerOp = &gCmnLinkPeerPeerServerOpIPC;
 
     /*
-     * ¸â¹ö ÃÊ±âÈ­
+     * ë©¤ë²„ ì´ˆê¸°í™”
      */
     sLink->mStatistics = NULL;
     sLink->mUserPtr    = NULL;
@@ -1657,24 +1657,24 @@ IDE_RC cmnLinkPeerClientMapIPC(cmnLink *aLink)
     cmnLinkPeer *sLink = (cmnLinkPeer *)aLink;
 
     /*
-     * Link °Ë»ç
+     * Link ê²€ì‚¬
      */
     IDE_ASSERT(aLink->mType == CMN_LINK_TYPE_PEER_CLIENT);
     IDE_ASSERT(aLink->mImpl == CMN_LINK_IMPL_IPC);
 
     /*
-     * BUGBUG: IPC Pool È¹µæ
+     * BUGBUG: IPC Pool íšë“
      */
     IDE_TEST(cmbPoolGetSharedPool(&sLink->mPool, CMB_POOL_IMPL_IPC) != IDE_SUCCESS);
 
     /*
-     * ÇÔ¼ö Æ÷ÀÎÅÍ ¼¼ÆÃ
+     * í•¨ìˆ˜ í¬ì¸í„° ì„¸íŒ…
      */
     aLink->mOp     = &gCmnLinkPeerClientOpIPC;
     sLink->mPeerOp = &gCmnLinkPeerPeerClientOpIPC;
 
     /*
-     * ¸â¹ö ÃÊ±âÈ­
+     * ë©¤ë²„ ì´ˆê¸°í™”
      */
     sLink->mStatistics = NULL;
     sLink->mUserPtr    = NULL;
@@ -1691,10 +1691,10 @@ UInt cmnLinkPeerClientSizeIPC()
 
 
 // bug-27250 free Buf list can be crushed when client killed.
-// cmiWriteBlock¿¡¼­ protocol end packet ¼Û½Å½Ã
-// pending blockÀÌ ÀÖ´Â °æ¿ì ÀÌ ÄÚµå ¼öÇà.
-// ¼Û½Å ´ë±â list¿¡ Å« ÇÁ·ÎÅäÄİ packetµéÀÌ ´ë±âÇÏ°í ÀÖ´Â °æ¿ì,
-// receiver°¡ ¼ö½Å ÁØºñ°¡ µÆ´ÂÁö È®ÀÎÇÏ±â À§ÇØ ´ÙÀ½ ¼öÇà
+// cmiWriteBlockì—ì„œ protocol end packet ì†¡ì‹ ì‹œ
+// pending blockì´ ìˆëŠ” ê²½ìš° ì´ ì½”ë“œ ìˆ˜í–‰.
+// ì†¡ì‹  ëŒ€ê¸° listì— í° í”„ë¡œí† ì½œ packetë“¤ì´ ëŒ€ê¸°í•˜ê³  ìˆëŠ” ê²½ìš°,
+// receiverê°€ ìˆ˜ì‹  ì¤€ë¹„ê°€ ëëŠ”ì§€ í™•ì¸í•˜ê¸° ìœ„í•´ ë‹¤ìŒ ìˆ˜í–‰
 IDE_RC cmnLinkPeerWaitSendServerIPC(cmnLink* aLink)
 {
 
@@ -1702,7 +1702,7 @@ IDE_RC cmnLinkPeerWaitSendServerIPC(cmnLink* aLink)
     cmnLinkDescIPC *sDesc = &sLink->mDesc;
     SInt            rc;
 
-    // receiver°¡ ¼Û½Å Çã¶ô ½ÅÈ£¸¦ ÁÙ¶§±îÁö ¹«ÇÑ ´ë±â
+    // receiverê°€ ì†¡ì‹  í—ˆë½ ì‹ í˜¸ë¥¼ ì¤„ë•Œê¹Œì§€ ë¬´í•œ ëŒ€ê¸°
     while(1)
     {
         rc = idlOS::semop(gIpcSemChannelID[sDesc->mChannelID],
@@ -1743,8 +1743,8 @@ IDE_RC cmnLinkPeerWaitSendServerIPC(cmnLink* aLink)
 }
 
 // bug-27250 free Buf list can be crushed when client killed.
-// cmiWriteBlock¿¡¼­ protocol end packet ¼Û½Å½Ã
-// pending blockÀÌ ÀÖ´Â °æ¿ì ÀÌ ÄÚµå ¼öÇà
+// cmiWriteBlockì—ì„œ protocol end packet ì†¡ì‹ ì‹œ
+// pending blockì´ ìˆëŠ” ê²½ìš° ì´ ì½”ë“œ ìˆ˜í–‰
 IDE_RC cmnLinkPeerWaitSendClientIPC(cmnLink* /*aLink*/)
 {
     return IDE_FAILURE;

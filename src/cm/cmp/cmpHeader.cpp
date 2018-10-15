@@ -46,7 +46,7 @@ IDE_RC cmpHeaderRead(cmnLinkPeer *aLink, cmpHeader *aHeader, cmbBlock *aBlock)
     SChar  sPeerInfo[IDL_IP_ADDR_MAX_LEN];
 
     /*
-     * Cursor À§Ä¡ ¼¼ÆÃ
+     * Cursor ìœ„ì¹˜ ì„¸íŒ…
      */
     aBlock->mCursor = 0;
 
@@ -102,7 +102,7 @@ IDE_RC cmpHeaderRead(cmnLinkPeer *aLink, cmpHeader *aHeader, cmbBlock *aBlock)
 
     IDE_EXCEPTION_END;
     {
-        // BUG-24993 ÇÁ·ÎÅäÄÝ Çì´õ¿¡·¯ ¸Þ½ÃÁö »ó¼¼È­
+        // BUG-24993 í”„ë¡œí† ì½œ í—¤ë”ì—ëŸ¬ ë©”ì‹œì§€ ìƒì„¸í™”
         aLink->mPeerOp->mGetInfo(aLink, sPeerInfo, ID_SIZEOF(sPeerInfo),
                                  CMI_LINK_INFO_ALL);
         IDE_SET(ideSetErrorCode(cmERR_ABORT_PROTOCOL_HEADER_ERROR, sPeerInfo));
@@ -116,12 +116,12 @@ IDE_RC cmpHeaderWrite(cmpHeader *aHeader, cmbBlock *aBlock)
     UShort sCursor;
 
     /*
-     * Cursor À§Ä¡¿Í DataSize ÀÏÄ¡¿©ºÎ °Ë»ç
+     * Cursor ìœ„ì¹˜ì™€ DataSize ì¼ì¹˜ì—¬ë¶€ ê²€ì‚¬
      */
     IDE_ASSERT(aBlock->mCursor == aBlock->mDataSize);
 
     /*
-     * Cursor À§Ä¡ ÀúÀå
+     * Cursor ìœ„ì¹˜ ì €ìž¥
      */
     sCursor = aBlock->mCursor;
     aBlock->mCursor = 0;
@@ -151,7 +151,7 @@ IDE_RC cmpHeaderWrite(cmpHeader *aHeader, cmbBlock *aBlock)
     }
 
     /*
-     * Cursor À§Ä¡ ¹× Date Size º¹±¸
+     * Cursor ìœ„ì¹˜ ë° Date Size ë³µêµ¬
      */
     aBlock->mCursor   = sCursor;
     aBlock->mDataSize = sCursor;

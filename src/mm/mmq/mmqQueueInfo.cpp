@@ -105,7 +105,7 @@ IDE_RC mmqQueueInfo::timedwaitDequeue(ULong aWaitSec, idBool* aTimeOut)
     *aTimeOut = ID_FALSE;
     if (aWaitSec == 0)
     {
-        // ´ë±â ¾ÈÇÔ
+        // ëŒ€ê¸° ì•ˆí•¨
     }
     else
     {
@@ -114,8 +114,8 @@ IDE_RC mmqQueueInfo::timedwaitDequeue(ULong aWaitSec, idBool* aTimeOut)
             //fix BUG-30949 A waiting time for enqueue event in transformed dedicated thread should not be infinite. 
             sWaitSec  = mmuProperty::getMaxEnqWaitTime()/1000000;
             sWaitUSec = mmuProperty::getMaxEnqWaitTime() %1000000;
-            // BUG-27292 HP-UX¿¡ 2038³â ¹®Á¦°¡ ÀÖ¾î¼­
-            // Time°ªÀÌ ³Ñ¾î¼­Áö ¾Êµµ·Ï WaitSec¸¦ Á¶Á¤ÇÕ´Ï´Ù.
+            // BUG-27292 HP-UXì— 2038ë…„ ë¬¸ì œê°€ ìˆì–´ì„œ
+            // Timeê°’ì´ ë„˜ì–´ì„œì§€ ì•Šë„ë¡ WaitSecë¥¼ ì¡°ì •í•©ë‹ˆë‹¤.
             if( sWaitSec > IDV_MAX_TIME_INTERVAL_SEC )
             {
                 sWaitSec = IDV_MAX_TIME_INTERVAL_SEC ;
@@ -125,18 +125,18 @@ IDE_RC mmqQueueInfo::timedwaitDequeue(ULong aWaitSec, idBool* aTimeOut)
             sTimeValue += sAddValue;
             rc = mDequeueCond.timedwait(&mMutex, &sTimeValue, IDU_IGNORE_TIMEDOUT);
             //fix BUG-30949 A waiting time for enqueue event in transformed dedicated thread should not be infinite. 
-            //infinite¸¦ emulationÇÏ±â À§ÇÏ¿© timeout¿¡´ëÇÑ output parameter¼³Á¤À» ÇÏÁö ¾Ê´Â´Ù.
+            //infiniteë¥¼ emulationí•˜ê¸° ìœ„í•˜ì—¬ timeoutì—ëŒ€í•œ output parameterì„¤ì •ì„ í•˜ì§€ ì•ŠëŠ”ë‹¤.
         }
         else
         {
-            // ÁÖ¾îÁø ½Ã°£¸¸Å­ ´ë±â
-            // BUGBUG : sessionÀÇ mQueueEndTimeÀ¸·Î ÇÏ´Â°ÍÀÌ ´õ Á¤È®ÇÏÁö ¾ÊÀ»±î?
+            // ì£¼ì–´ì§„ ì‹œê°„ë§Œí¼ ëŒ€ê¸°
+            // BUGBUG : sessionì˜ mQueueEndTimeìœ¼ë¡œ í•˜ëŠ”ê²ƒì´ ë” ì •í™•í•˜ì§€ ì•Šì„ê¹Œ?
 
             sWaitSec  = aWaitSec/1000000;
             sWaitUSec = aWaitSec%1000000;
 
-            // BUG-27292 HP-UX¿¡ 2038³â ¹®Á¦°¡ ÀÖ¾î¼­
-            // Time°ªÀÌ ³Ñ¾î¼­Áö ¾Êµµ·Ï WaitSec¸¦ Á¶Á¤ÇÕ´Ï´Ù.
+            // BUG-27292 HP-UXì— 2038ë…„ ë¬¸ì œê°€ ìˆì–´ì„œ
+            // Timeê°’ì´ ë„˜ì–´ì„œì§€ ì•Šë„ë¡ WaitSecë¥¼ ì¡°ì •í•©ë‹ˆë‹¤.
             if( sWaitSec > IDV_MAX_TIME_INTERVAL_SEC )
             {
                 sWaitSec = IDV_MAX_TIME_INTERVAL_SEC ;
@@ -183,7 +183,7 @@ IDE_RC mmqQueueInfo::broadcastEnqueue()
 //fix BUG-19321
 void mmqQueueInfo::addSession(mmcSession *aSession)
 {
-    //fix BUG-21361 drop queue µ¿½Ã¼º ¹®Á¦·Î ¼­¹ö ºñÁ¤»ó Á¾·áµÉ¼ö ÀÖÀ½.
+    //fix BUG-21361 drop queue ë™ì‹œì„± ë¬¸ì œë¡œ ì„œë²„ ë¹„ì •ìƒ ì¢…ë£Œë ìˆ˜ ìˆìŒ.
     lock();
     IDU_LIST_ADD_LAST(&mSessionList, aSession->getQueueListNode());
     unlock();
@@ -192,8 +192,8 @@ void mmqQueueInfo::addSession(mmcSession *aSession)
 void mmqQueueInfo::removeSession(mmcSession *aSession)
 {
     idBool sFreeFlag = ID_FALSE;
-    //fix BUG-24362 dequeue ´ë±â ¼¼¼ÇÀÌ closeµÉ¶§ , sessionÀÇ queue ¼³Á¤¿¡¼­
-    // µ¿½Ã¼º¿¡ ¹®Á¦°¡ ÀÖÀ½.
+    //fix BUG-24362 dequeue ëŒ€ê¸° ì„¸ì…˜ì´ closeë ë•Œ , sessionì˜ queue ì„¤ì •ì—ì„œ
+    // ë™ì‹œì„±ì— ë¬¸ì œê°€ ìˆìŒ.
     lock();
 
     aSession->setQueueInfo(NULL);
@@ -212,8 +212,8 @@ void mmqQueueInfo::removeSession(mmcSession *aSession)
         }
 
     }
-    //fix BUG-24362 dequeue ´ë±â ¼¼¼ÇÀÌ closeµÉ¶§ , sessionÀÇ queue ¼³Á¤¿¡¼­
-    // µ¿½Ã¼º¿¡ ¹®Á¦°¡ ÀÖÀ½.
+    //fix BUG-24362 dequeue ëŒ€ê¸° ì„¸ì…˜ì´ closeë ë•Œ , sessionì˜ queue ì„¤ì •ì—ì„œ
+    // ë™ì‹œì„±ì— ë¬¸ì œê°€ ìˆìŒ.
     unlock();
 
     if (sFreeFlag == ID_TRUE)

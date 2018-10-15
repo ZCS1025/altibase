@@ -43,7 +43,7 @@ static IDE_RC mtfAsciiEstimate( mtcNode*     aNode,
 mtfModule mtfAscii = {
     1|MTC_NODE_OPERATOR_FUNCTION,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
+    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìžê°€ ì•„ë‹˜)
     mtfAsciiFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -85,7 +85,7 @@ IDE_RC mtfAsciiEstimate( mtcNode*     aNode,
 
     aStack[0].column = aTemplate->rows[aNode->table].columns + aNode->column;
 
-    // mtdModule ¼³Á¤
+    // mtdModule ì„¤ì •
     IDE_TEST( mtf::getCharFuncResultModule( &sModules[0],
                                             aStack[1].column->module )
               != IDE_SUCCESS );
@@ -135,8 +135,8 @@ IDE_RC mtfAsciiCalculate( mtcNode*     aNode,
  * Implementation :
  *    ASCII( char )
  * 
- *    aStack[0] : ÀÔ·Â ½ºÆ®¸µÀÇ °¡Àå ¿ÞÂÊ ¹®ÀÚÀÇ ASCII ÄÚµå°ª
- *    aStack[1] : char ( ÀÔ·Â ½ºÆ®¸µ )
+ *    aStack[0] : ìž…ë ¥ ìŠ¤íŠ¸ë§ì˜ ê°€ìž¥ ì™¼ìª½ ë¬¸ìžì˜ ASCII ì½”ë“œê°’
+ *    aStack[1] : char ( ìž…ë ¥ ìŠ¤íŠ¸ë§ )
  *
  ***********************************************************************/
 
@@ -171,7 +171,7 @@ IDE_RC mtfAsciiCalculate( mtcNode*     aNode,
         
         (void)sLanguage->nextCharPtr( & sIndex, sFence );
         
-        // ÇÑ ¹®ÀÚ¸¦ Integer °ªÀ¸·Î º¯°æ
+        // í•œ ë¬¸ìžë¥¼ Integer ê°’ìœ¼ë¡œ ë³€ê²½
         sResult = sSource->value[0];
         sNextCharIndex = sIndex - sSource->value;
         

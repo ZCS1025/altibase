@@ -78,13 +78,13 @@ class smiTrans
       dequeue statement begin  ----------------- > execute .... 
                                           ^
                                           |
-                                        get queue stamp (sessionÀÇ queue stamp¿¡ ÀúÀå)
+                                        get queue stamp (sessionì˜ queue stampì— ì €ì¥)
                                         
-      dequeue statement begin°ú execute ¹Ù·Î Á÷Àü¿¡ queue itemÀÌ commitµÇ¾ú´Ù¸é,
-      dequeue execute½Ã¿¡  ÇØ´ç queue itemÀ» MVCC¶§¹®¿¡ º¼¼ö ¾ø¾î¼­ ´ë±â »óÅÂ·Î °£´Ù.
-      ±×¸®°í sessionÀÇ queue timestamp¿Í queue timestamp°ú °°¾Æ¼­  ´ÙÀ½ enqueue
-      event°¡ ¹ß»ıÇÒ¶§ ±îÁö  queue¿¡ µ¥ÀÌÅ¸°¡ ÀÖÀ½¿¡µµ ºÒ±¸ÇÏ°í dequeue¸¦ ÇÒ¼ö ¾ø´Ù .
-      ÀÌ¹®Á¦¸¦ ÇØ°á ÇÏ±â À§ÇÏ¿©  commitSCNÀ» µÎ¾ú´Ù. */
+      dequeue statement beginê³¼ execute ë°”ë¡œ ì§ì „ì— queue itemì´ commitë˜ì—ˆë‹¤ë©´,
+      dequeue executeì‹œì—  í•´ë‹¹ queue itemì„ MVCCë•Œë¬¸ì— ë³¼ìˆ˜ ì—†ì–´ì„œ ëŒ€ê¸° ìƒíƒœë¡œ ê°„ë‹¤.
+      ê·¸ë¦¬ê³  sessionì˜ queue timestampì™€ queue timestampê³¼ ê°™ì•„ì„œ  ë‹¤ìŒ enqueue
+      eventê°€ ë°œìƒí• ë•Œ ê¹Œì§€  queueì— ë°ì´íƒ€ê°€ ìˆìŒì—ë„ ë¶ˆêµ¬í•˜ê³  dequeueë¥¼ í• ìˆ˜ ì—†ë‹¤ .
+      ì´ë¬¸ì œë¥¼ í•´ê²° í•˜ê¸° ìœ„í•˜ì—¬  commitSCNì„ ë‘ì—ˆë‹¤. */
     
     IDE_RC commit(smSCN* aCommitSCN, UInt aTransReleasePolicy = SMI_RELEASE_TRANSACTION);
 
@@ -113,13 +113,13 @@ class smiTrans
 
     UInt   getFirstUpdateTime();
 
-    // QP¿¡¼­ Meta°¡ Á¢±ÙµÈ °æ¿ì ÀÌ ÇÔ¼ö¸¦ È£ÃâÇÏ¿©
-    // Transaction¿¡ MetaÁ¢±Ù ¿©ºÎ¸¦ ¼¼ÆÃÇÑ´Ù
+    // QPì—ì„œ Metaê°€ ì ‘ê·¼ëœ ê²½ìš° ì´ í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•˜ì—¬
+    // Transactionì— Metaì ‘ê·¼ ì—¬ë¶€ë¥¼ ì„¸íŒ…í•œë‹¤
     IDE_RC setMetaTableModified();
     smSN getBeginSN();
     smSN getCommitSN();
 
-    // DDL TransactionÀ» Ç¥½ÃÇÏ´Â Log Record¸¦ ±â·ÏÇÑ´Ù.
+    // DDL Transactionì„ í‘œì‹œí•˜ëŠ” Log Recordë¥¼ ê¸°ë¡í•œë‹¤.
     IDE_RC writeDDLLog();
 
     void  setStatistics( idvSQL * aStatistics );

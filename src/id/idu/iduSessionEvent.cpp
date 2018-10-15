@@ -14,18 +14,18 @@
 
 /*----------------------------------------------------------------------
   Name:
-      iduSessionErrorFilter() -- ¿¡·¯ÄÚµå¸¦ ¸¸µé¾î »óÀ§·Î µÇµ¹¸²
+      iduSessionErrorFilter() -- ì—ëŸ¬ì½”ë“œë¥¼ ë§Œë“¤ì–´ ìƒìœ„ë¡œ ë˜ëŒë¦¼
 
   Argument:
       aFlag - Event Flag
 
   Return:
-      Event°¡ ¹ß»ýÇßÀ¸¸é IDE_FAILURE
+      Eventê°€ ë°œìƒí–ˆìœ¼ë©´ IDE_FAILURE
 
   Description:
-      ÀÌ ÇÔ¼ö´Â »óÀ§¿¡¼­ È£ÃâÇÏ¿©, ¼¼¼ÇÀÇ Event¸¦ °¨ÁöÇÏ´Â
-      °ÍÀ¸·Î¼­ Close, Timeout Event¸¦ °ËÃâÇÑ´Ù.
-      ¶ÇÇÑ, Ãß°¡µÉ °æ¿ì ÀÌ ºÎºÐ¿¡ Ãß°¡µÇ´Â ÄÚµå¸¦ ³ÖÀ¸¸é µÈ´Ù.
+      ì´ í•¨ìˆ˜ëŠ” ìƒìœ„ì—ì„œ í˜¸ì¶œí•˜ì—¬, ì„¸ì…˜ì˜ Eventë¥¼ ê°ì§€í•˜ëŠ”
+      ê²ƒìœ¼ë¡œì„œ Close, Timeout Eventë¥¼ ê²€ì¶œí•œë‹¤.
+      ë˜í•œ, ì¶”ê°€ë  ê²½ìš° ì´ ë¶€ë¶„ì— ì¶”ê°€ë˜ëŠ” ì½”ë“œë¥¼ ë„£ìœ¼ë©´ ëœë‹¤.
  *--------------------------------------------------------------------*/
 
 IDE_RC iduSessionErrorFilter( ULong aFlag, UInt aCurrStmtID )

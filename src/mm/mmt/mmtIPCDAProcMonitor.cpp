@@ -126,7 +126,7 @@ IDE_RC mmtIPCDAProcThread::finalize()
     return this->join();
 }
 
-/* cm connect ¼º°øÈÄ ctx¿Í cmlinkIPCDA ¿¡¼­ pid°ªÀ» ³Ñ°Ü ¹Þ´Â´Ù. */
+/* cm connect ì„±ê³µí›„ ctxì™€ cmlinkIPCDA ì—ì„œ pidê°’ì„ ë„˜ê²¨ ë°›ëŠ”ë‹¤. */
 IDE_RC mmtIPCDAProcThread::addIPCDAProcInfo(cmiProtocolContext *aCtx)
 {
     lock();
@@ -143,7 +143,7 @@ IDE_RC mmtIPCDAProcThread::addIPCDAProcInfo(cmiProtocolContext *aCtx)
     return IDE_FAILURE;
 }
 
-/* cm disconnect ¼º°øÈÄ ctx¿Í cmlinkIPCDA ¿¡¼­ pid°ªÀ» ³Ñ°Ü ¹Þ´Â´Ù. */
+/* cm disconnect ì„±ê³µí›„ ctxì™€ cmlinkIPCDA ì—ì„œ pidê°’ì„ ë„˜ê²¨ ë°›ëŠ”ë‹¤. */
 IDE_RC mmtIPCDAProcThread::delIPCDAProcInfo(cmiProtocolContext *aCtx)
 {
     cmiProtocolContext * sCtx  = NULL;
@@ -190,7 +190,7 @@ IDE_RC mmtIPCDAProcThread::checkProc(vULong /* aKey */, void *aData, void */* aV
         }
         else
         {
-            /* ctx->mIsDisconnect ¸¦ true·Î ¼³Á¤ÇØÁØ´Ù. */
+            /* ctx->mIsDisconnect ë¥¼ trueë¡œ ì„¤ì •í•´ì¤€ë‹¤. */
             sCtx->mIsDisconnect = ID_TRUE;
         }
     }

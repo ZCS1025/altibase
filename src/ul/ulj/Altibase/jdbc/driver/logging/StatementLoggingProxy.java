@@ -26,7 +26,7 @@ import Altibase.jdbc.driver.AltibaseConnection;
 import Altibase.jdbc.driver.AltibaseLogicalConnection;
 
 /**
- * java.sql.Statement ÀÎÅÍÆäÀÌ½º¸¦ hookingÇÏ´Â ProxyÅ¬·¡½º
+ * java.sql.Statement ì¸í„°í˜ì´ìŠ¤ë¥¼ hookingí•˜ëŠ” Proxyí´ë˜ìŠ¤
  * 
  * @author yjpark
  */
@@ -57,7 +57,7 @@ public class StatementLoggingProxy extends LoggingProxy
 
     public void logSql(Method aMethod, Object aResult, Object[] aArgs)
     {
-        // ¸Ş¼Òµå¸íÀÌ execute·Î ½ÃÀÛÇÏ´Â °æ¿ì¿¡¸¸ sql¹®À» Ãâ·ÂÇÑ´Ù.
+        // ë©”ì†Œë“œëª…ì´ executeë¡œ ì‹œì‘í•˜ëŠ” ê²½ìš°ì—ë§Œ sqlë¬¸ì„ ì¶œë ¥í•œë‹¤.
         if (aMethod.getName().startsWith(METHOD_PREFIX_EXECUTE) && aArgs != null)
         {
             mLogger.log(Level.CONFIG, "{0} executing sql : {1}", new Object[] { getUniqueId(), aArgs[0] });
@@ -102,7 +102,7 @@ public class StatementLoggingProxy extends LoggingProxy
     }
     
     /**
-     * Statement °°Àº °æ¿ì ObjectÀÇ hashcode¸¦ unique id·Î »ç¿ëÇÑ´Ù.
+     * Statement ê°™ì€ ê²½ìš° Objectì˜ hashcodeë¥¼ unique idë¡œ ì‚¬ìš©í•œë‹¤.
      */
     public String getUniqueId()
     {

@@ -54,7 +54,7 @@ IDE_RC smmSlotList::initialize( UInt aSlotSize,
     mSlots.prev  = &mSlots;
     mSlots.next  = &mSlots;
 
-    // BUG-18122 : MEM_BTREE_NODEPOOL performance view Ãß°¡
+    // BUG-18122 : MEM_BTREE_NODEPOOL performance view ì¶”ê°€
     mTotalAllocReq = (ULong)0;
     mTotalFreeReq  = (ULong)0;
 
@@ -137,7 +137,7 @@ IDE_RC smmSlotList::allocateSlots( UInt         aNumber,
         }
     }
 
-    // BUG-18122 : MEM_BTREE_NODEPOOL performance view Ãß°¡
+    // BUG-18122 : MEM_BTREE_NODEPOOL performance view ì¶”ê°€
     mTotalAllocReq += (ULong)aNumber;
 
     mNumber -= aNumber;
@@ -217,7 +217,7 @@ IDE_RC smmSlotList::releaseSlots( UInt     aNumber,
         }
     }
 
-    // BUG-18122 : MEM_BTREE_NODEPOOL performance view Ãß°¡
+    // BUG-18122 : MEM_BTREE_NODEPOOL performance view ì¶”ê°€
     mTotalFreeReq += (ULong)aNumber;
     
     if( sLocked == ID_TRUE )

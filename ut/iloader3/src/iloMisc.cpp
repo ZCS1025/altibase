@@ -33,10 +33,10 @@ FILE* iloFileOpen( ALTIBASE_ILOADER_HANDLE  aHandle,
 
 /**************************************************************
  * bug-21465: VC6 compile error
- * VC6¿¡´Â fopen_s() ÇÔ¼ö°¡ ¾ø¾î¼­ compile error °¡ ³­´Ù
- * ±×·¡¼­ ÀÓ½Ã ¹æÆíÀ¸·Î windows VC6 ÄÄÆÄÀÏ·¯ÀÎ °æ¿ì
- * file lockÀ» »ç¿ëÇÏÁö ¾Êµµ·Ï ÇÑ´Ù(mFlockFlag = ID_FALSE)
- * (ÃßÈÄ ¼öÁ¤ ¿ä¸Á)
+ * VC6ì—ëŠ” fopen_s() í•¨ìˆ˜ê°€ ì—†ì–´ì„œ compile error ê°€ ë‚œë‹¤
+ * ê·¸ëž˜ì„œ ìž„ì‹œ ë°©íŽ¸ìœ¼ë¡œ windows VC6 ì»´íŒŒì¼ëŸ¬ì¸ ê²½ìš°
+ * file lockì„ ì‚¬ìš©í•˜ì§€ ì•Šë„ë¡ í•œë‹¤(mFlockFlag = ID_FALSE)
+ * (ì¶”í›„ ìˆ˜ì • ìš”ë§)
 **************************************************************/
 #if defined(VC_WIN32) || defined(VC_WIN64) || defined(VC_WINCE)
 #if (_MSC_VER < 1300) // if VC <= 6
@@ -116,8 +116,8 @@ FILE* iloFileOpen( ALTIBASE_ILOADER_HANDLE  aHandle,
     return sFp;
 }
 
-// BUG-25421 [CodeSonar] mutex ÀÇ ¿¡·¯Ã³¸®°¡ ¾ø½À´Ï´Ù.
-// ¿¡·¯¸Þ½ÃÁö¸¦ Ãâ·ÂÇÏ°í ASSERT ·Î Á×µµ·Ï ÇÑ´Ù.
+// BUG-25421 [CodeSonar] mutex ì˜ ì—ëŸ¬ì²˜ë¦¬ê°€ ì—†ìŠµë‹ˆë‹¤.
+// ì—ëŸ¬ë©”ì‹œì§€ë¥¼ ì¶œë ¥í•˜ê³  ASSERT ë¡œ ì£½ë„ë¡ í•œë‹¤.
 void iloMutexLock( ALTIBASE_ILOADER_HANDLE aHandle, PDL_thread_mutex_t *aMutex)
 {
     iloaderHandle *sHandle = (iloaderHandle *) aHandle;

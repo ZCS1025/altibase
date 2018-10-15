@@ -48,7 +48,7 @@ ACI_RC ulncCHAR_FLOAT(ulnFnContext  *aFnContext,
     ACI_TEST_RAISE(sDoubleValue > (10e38), LABEL_OUT_OF_RANGE);
 
     /*
-     * BUGBUG : FRACTIONAL TRUNCATION À» µğÅØÆ®ÇÏ´Â ·çÆ¾À» ¸¸µé¾î ³Ö¾î¾ß ÇÑ´Ù.
+     * BUGBUG : FRACTIONAL TRUNCATION ì„ ë””í…íŠ¸í•˜ëŠ” ë£¨í‹´ì„ ë§Œë“¤ì–´ ë„£ì–´ì•¼ í•œë‹¤.
      */
     // *(acp_float_t *)aAppBuffer->mBuffer = sFloatValue;
     *(acp_float_t *)aAppBuffer->mBuffer = sDoubleValue;
@@ -62,7 +62,7 @@ ACI_RC ulncCHAR_FLOAT(ulnFnContext  *aFnContext,
         /*
          * 01s07
          *
-         * BUGBUG : out of range ¸¦ ³»¾î Áà¾ß ÇÒÁö, fractional truncation À» Áà¾ß ÇÒÁö..
+         * BUGBUG : out of range ë¥¼ ë‚´ì–´ ì¤˜ì•¼ í• ì§€, fractional truncation ì„ ì¤˜ì•¼ í• ì§€..
          */
         ulnErrorExtended(aFnContext,
                          aRowNumber,
@@ -165,7 +165,7 @@ ACI_RC ulncSMALLINT_FLOAT(ulnFnContext  *aFnContext,
         /*
          * 01s07
          *
-         * BUGBUG : out of range ¸¦ ³»¾î Áà¾ß ÇÒÁö, fractional truncation À» Áà¾ß ÇÒÁö..
+         * BUGBUG : out of range ë¥¼ ë‚´ì–´ ì¤˜ì•¼ í• ì§€, fractional truncation ì„ ì¤˜ì•¼ í• ì§€..
          */
         ulnErrorExtended(aFnContext,
                          aRowNumber,
@@ -200,7 +200,7 @@ ACI_RC ulncINTEGER_FLOAT(ulnFnContext  *aFnContext,
         /*
          * 01s07
          *
-         * BUGBUG : out of range ¸¦ ³»¾î Áà¾ß ÇÒÁö, fractional truncation À» Áà¾ß ÇÒÁö..
+         * BUGBUG : out of range ë¥¼ ë‚´ì–´ ì¤˜ì•¼ í• ì§€, fractional truncation ì„ ì¤˜ì•¼ í• ì§€..
          */
         ulnErrorExtended(aFnContext,
                          aRowNumber,
@@ -235,7 +235,7 @@ ACI_RC ulncBIGINT_FLOAT(ulnFnContext  *aFnContext,
         /*
          * 01s07
          *
-         * BUGBUG : out of range ¸¦ ³»¾î Áà¾ß ÇÒÁö, fractional truncation À» Áà¾ß ÇÒÁö..
+         * BUGBUG : out of range ë¥¼ ë‚´ì–´ ì¤˜ì•¼ í• ì§€, fractional truncation ì„ ì¤˜ì•¼ í• ì§€..
          */
         ulnErrorExtended(aFnContext,
                          aRowNumber,
@@ -297,7 +297,7 @@ ACI_RC ulncDOUBLE_FLOAT(ulnFnContext  *aFnContext,
         /*
          * 01s07
          *
-         * BUGBUG : out of range ¸¦ ³»¾î Áà¾ß ÇÒÁö, fractional truncation À» Áà¾ß ÇÒÁö..
+         * BUGBUG : out of range ë¥¼ ë‚´ì–´ ì¤˜ì•¼ í• ì§€, fractional truncation ì„ ì¤˜ì•¼ í• ì§€..
          */
         ulnErrorExtended(aFnContext,
                          aRowNumber,
@@ -333,7 +333,7 @@ ACI_RC ulncINTERVAL_FLOAT(ulnFnContext  *aFnContext,
                           acp_uint16_t   aRowNumber)
 {
     // BUG-21348
-    // INTERVAL Å¸ÀÔÀ» DOUBLE, FLOAT·Î ÄÁ¹öÀüÇÏ´Â ÇÔ¼ö°¡ ±¸ÇöµÇ¾î ÀÖÁö ¾Ê¾ÒÀ½
+    // INTERVAL íƒ€ì…ì„ DOUBLE, FLOATë¡œ ì»¨ë²„ì „í•˜ëŠ” í•¨ìˆ˜ê°€ êµ¬í˜„ë˜ì–´ ìˆì§€ ì•Šì•˜ìŒ
     cmtInterval  *sCmInterval;
     acp_double_t  sDoubleValue;
 
@@ -439,7 +439,7 @@ ACI_RC ulncNCHAR_FLOAT(ulnFnContext  *aFnContext,
     ACI_TEST_RAISE(sDoubleValue > (10e38), LABEL_OUT_OF_RANGE);
 
     /*
-     * BUGBUG : FRACTIONAL TRUNCATION À» µğÅØÆ®ÇÏ´Â ·çÆ¾À» ¸¸µé¾î ³Ö¾î¾ß ÇÑ´Ù.
+     * BUGBUG : FRACTIONAL TRUNCATION ì„ ë””í…íŠ¸í•˜ëŠ” ë£¨í‹´ì„ ë§Œë“¤ì–´ ë„£ì–´ì•¼ í•œë‹¤.
      */
     // *(acp_float_t *)aAppBuffer->mBuffer = sFloatValue;
     *(acp_float_t *)aAppBuffer->mBuffer = sDoubleValue;
@@ -453,7 +453,7 @@ ACI_RC ulncNCHAR_FLOAT(ulnFnContext  *aFnContext,
         /*
          * 01s07
          *
-         * BUGBUG : out of range ¸¦ ³»¾î Áà¾ß ÇÒÁö, fractional truncation À» Áà¾ß ÇÒÁö..
+         * BUGBUG : out of range ë¥¼ ë‚´ì–´ ì¤˜ì•¼ í• ì§€, fractional truncation ì„ ì¤˜ì•¼ í• ì§€..
          */
         ulnErrorExtended(aFnContext,
                          aRowNumber,

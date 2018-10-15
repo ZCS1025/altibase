@@ -132,7 +132,7 @@ IDE_RC idvProfile::openFile()
     return IDE_SUCCESS;
     IDE_EXCEPTION(fopen_error);
     {
-        // BUG-21760 profiling file openÀÇ ½ÇÆĞ´Â ABORT·Î ÃæºĞÇÏ´Ù.
+        // BUG-21760 profiling file openì˜ ì‹¤íŒ¨ëŠ” ABORTë¡œ ì¶©ë¶„í•˜ë‹¤.
         IDE_SET(ideSetErrorCode(idERR_ABORT_FILE_OPEN, mFileName));
         mFP = PDL_INVALID_HANDLE;
     }
@@ -151,7 +151,7 @@ IDE_RC idvProfile::closeFile()
     return IDE_SUCCESS;
     IDE_EXCEPTION(fclose_error);
     {
-        // BUG-21760 profiling file closeÀÇ ½ÇÆĞ´Â ABORT·Î ÃæºĞÇÏ´Ù.
+        // BUG-21760 profiling file closeì˜ ì‹¤íŒ¨ëŠ” ABORTë¡œ ì¶©ë¶„í•˜ë‹¤.
         IDE_SET(ideSetErrorCode(idERR_ABORT_FILE_CLOSE));
     }
 
@@ -162,14 +162,14 @@ IDE_RC idvProfile::closeFile()
 /* ------------------------------------------------
  *  Action from property
  *
- *  FileMutex¿Í Header/TailMutex¸¦ ÇÔ²² Àâ¾Æ¾ß ÇÑ´Ù.
- *  ¼º´É»óÀÇ ÀÕÁ¡À» ¾ò±â À§ÇØ
- *  ºóµµ°¡ ³ôÀº ¹öÆÛ¿¡ ±â·ÏÇÏ´Â ³ğÀº HeaderMutex¸¸À» Àâ°í,
- *  ºóµµ°¡ ³ôÀº È­ÀÏ¿¡ ±â·ÏÇÏ´Â ³ğÀº
- *  TailMutex¸¸À» Àâ°í ¼öÇàÇÏ°í,
+ *  FileMutexì™€ Header/TailMutexë¥¼ í•¨ê»˜ ì¡ì•„ì•¼ í•œë‹¤.
+ *  ì„±ëŠ¥ìƒì˜ ì‡ì ì„ ì–»ê¸° ìœ„í•´
+ *  ë¹ˆë„ê°€ ë†’ì€ ë²„í¼ì— ê¸°ë¡í•˜ëŠ” ë†ˆì€ HeaderMutexë§Œì„ ì¡ê³ ,
+ *  ë¹ˆë„ê°€ ë†’ì€ í™”ì¼ì— ê¸°ë¡í•˜ëŠ” ë†ˆì€
+ *  TailMutexë§Œì„ ì¡ê³  ìˆ˜í–‰í•˜ê³ ,
  *
- *  »ó´ëÀûÀ¸·Î ºóµµ°¡ ³·Àº ÇÁ·ÎÆÛÆ¼ º¯°æÇÏ´Â ³ğÀº
- *  File°ú Tail Mutex, Header¸¦ ¸ğµÎ Àâ°í ¼öÇàÇÑ´Ù.
+ *  ìƒëŒ€ì ìœ¼ë¡œ ë¹ˆë„ê°€ ë‚®ì€ í”„ë¡œí¼í‹° ë³€ê²½í•˜ëŠ” ë†ˆì€
+ *  Fileê³¼ Tail Mutex, Headerë¥¼ ëª¨ë‘ ì¡ê³  ìˆ˜í–‰í•œë‹¤.
  *
  * ----------------------------------------------*/
 
@@ -180,7 +180,7 @@ IDE_RC idvProfile::setProfFlag(UInt aFlag)
     idBool  sNeedUnlock  = ID_FALSE;
 
     /* 
-     * BUG-43563   [mm] profile¿¡¼­ flag¸¦ Àß¸øÀÔ·ÂÇØµµ ¿¡·¯°¡ ¹ß»ıÇÏÁö ¾ÊÀ½. 
+     * BUG-43563   [mm] profileì—ì„œ flagë¥¼ ì˜ëª»ì…ë ¥í•´ë„ ì—ëŸ¬ê°€ ë°œìƒí•˜ì§€ ì•ŠìŒ. 
      */
     IDE_TEST_RAISE( aFlag > IDV_PROF_TYPE_MAX_FLAG, wrong_flag );
 
@@ -215,8 +215,8 @@ IDE_RC idvProfile::setProfFlag(UInt aFlag)
         // write succeeds or not.
         (void)writeBufferToDiskInternal();
 
-        // BUG-21760 file »èÁ¦°¡ ½ÇÆĞÇÏ´õ¶óµµ profilingÀº
-        // ²ø ¼ö ÀÖ¾î¾ß ÇÑ´Ù.
+        // BUG-21760 file ì‚­ì œê°€ ì‹¤íŒ¨í•˜ë”ë¼ë„ profilingì€
+        // ëŒ ìˆ˜ ìˆì–´ì•¼ í•œë‹¤.
         (void) closeFile();
         
         (void) closeBuffer();
@@ -529,10 +529,10 @@ void   idvProfile::increaseTail  (UInt aWrittenSize)
 
 /* ------------------------------------------------
  *
- *  1. normal order ÀÏ °æ¿ì ±×³É ¾²±â
- *  2. reverse orderÀÏ °æ¿ì¿¡´Â
- *     Tail ºÎÅÍ ³¡±îÁö.
- *     Ã³À½ºÎÅÍ Header±îÁö.
+ *  1. normal order ì¼ ê²½ìš° ê·¸ëƒ¥ ì“°ê¸°
+ *  2. reverse orderì¼ ê²½ìš°ì—ëŠ”
+ *     Tail ë¶€í„° ëê¹Œì§€.
+ *     ì²˜ìŒë¶€í„° Headerê¹Œì§€.
  * ----------------------------------------------*/
 
 IDE_RC idvProfile::writeBufferToDisk()
@@ -583,11 +583,11 @@ IDE_RC idvProfile::writeBufferToDisk()
 IDE_RC idvProfile::writeBufferToDiskInternal()
 {
     /* ------------------------------------------------
-     * ¹İµå½Ã ÀÓ½Ãº¯¼ö·Î º¹»çÇÑ ÀÌÈÄ¿¡ »ç¿ëÇØ¾ß ÇÑ´Ù.
-     * ¿Ö³ÄÇÏ¸é, header offsetÀÇ °æ¿ì¿¡´Â mutex¸¦ ÀâÁö
-     * ¾Ê±â ¶§¹®¿¡ ¿©·¯¹ø Á¢±Ù½Ã ±× °ªÀÌ °è¼Ó º¯ÇÏ±â ¶§¹®¿¡
-     * ¹®Á¦°¡ »ı±æ¼ö ÀÖ´Ù. º¹»çÇÑ ÀÌÈÄ ±× °ªÀ» ÀÌ¿ëÇÏ¿©
-     * ±â·ÏÇØ¾ß ÇÑ´Ù.
+     * ë°˜ë“œì‹œ ì„ì‹œë³€ìˆ˜ë¡œ ë³µì‚¬í•œ ì´í›„ì— ì‚¬ìš©í•´ì•¼ í•œë‹¤.
+     * ì™œëƒí•˜ë©´, header offsetì˜ ê²½ìš°ì—ëŠ” mutexë¥¼ ì¡ì§€
+     * ì•Šê¸° ë•Œë¬¸ì— ì—¬ëŸ¬ë²ˆ ì ‘ê·¼ì‹œ ê·¸ ê°’ì´ ê³„ì† ë³€í•˜ê¸° ë•Œë¬¸ì—
+     * ë¬¸ì œê°€ ìƒê¸¸ìˆ˜ ìˆë‹¤. ë³µì‚¬í•œ ì´í›„ ê·¸ ê°’ì„ ì´ìš©í•˜ì—¬
+     * ê¸°ë¡í•´ì•¼ í•œë‹¤.
      * ----------------------------------------------*/
     UInt sHeader, sTail, sUsed;
 
@@ -626,9 +626,9 @@ IDE_RC idvProfile::writeBufferToDiskInternal()
         /* 
          * BUG-40123 A file split of a query profiling is not correct.
          *
-         * idlOS::writeÀÇ ¸®ÅÏ°ª ¸»°í sUsed¸¦ »ç¿ëÇÑ´Ù. ÃÖÁ¾ÀûÀ¸·Î ³ª¿Â prof ÆÄÀÏÀÇ
-         * Å©±â°¡ QUERY_PROF_FILE_SIZE¿Í ¸¹ÀÌ Â÷ÀÌ°¡ ³­´Ù¸é  write()°¡ ½ÇÆĞÇÑ °æ¿ì¶ó°í
-         * º¼ ¼ö ÀÖ´Ù.
+         * idlOS::writeì˜ ë¦¬í„´ê°’ ë§ê³  sUsedë¥¼ ì‚¬ìš©í•œë‹¤. ìµœì¢…ì ìœ¼ë¡œ ë‚˜ì˜¨ prof íŒŒì¼ì˜
+         * í¬ê¸°ê°€ QUERY_PROF_FILE_SIZEì™€ ë§ì´ ì°¨ì´ê°€ ë‚œë‹¤ë©´  write()ê°€ ì‹¤íŒ¨í•œ ê²½ìš°ë¼ê³ 
+         * ë³¼ ìˆ˜ ìˆë‹¤.
          */
         mCurrFileSize += sUsed;
     }
@@ -712,7 +712,7 @@ IDE_RC idvProfile::copyToBuffer(idvProfDescInfo *aInfo)
     }
     else
     {
-        // °ø°£ÀÌ ºÎÁ·ÇÔ.
+        // ê³µê°„ì´ ë¶€ì¡±í•¨.
         if (mBufSkipFlag == ID_TRUE)
         {
             // just skip.

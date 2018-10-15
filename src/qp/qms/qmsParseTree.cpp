@@ -20,7 +20,7 @@
 
 /*
  * BUG-42296
- * startValue ¿Í countValue ¸¦ °¡Á®¿À´Â interface ºĞ¸®
+ * startValue ì™€ countValue ë¥¼ ê°€ì ¸ì˜¤ëŠ” interface ë¶„ë¦¬
  */
 
 IDE_RC qmsLimitI::getStartValue(qcTemplate* aTemplate,
@@ -40,8 +40,8 @@ IDE_RC qmsLimitI::getStartValue(qcTemplate* aTemplate,
                  != IDE_SUCCESS);
 
         /* BUG-36580 supported TOP */
-        // To fix BUG-12557 limitÀı¿¡ È£½ºÆ®º¯¼ö »ç¿ë
-        // È£½ºÆ®º¯¼ö »ç¿ë½Ã, °ªÀÌ 0º¸´Ù Ä¿¾ß ÇÑ´Ù.
+        // To fix BUG-12557 limitì ˆì— í˜¸ìŠ¤íŠ¸ë³€ìˆ˜ ì‚¬ìš©
+        // í˜¸ìŠ¤íŠ¸ë³€ìˆ˜ ì‚¬ìš©ì‹œ, ê°’ì´ 0ë³´ë‹¤ ì»¤ì•¼ í•œë‹¤.
         IDE_TEST_RAISE( sValue <= 0, limit_bound_error );
 
         *aResultValue = sValue;
@@ -77,8 +77,8 @@ IDE_RC qmsLimitI::getCountValue(qcTemplate* aTemplate,
                  != IDE_SUCCESS);
 
         /* BUG-36580 supported TOP */
-        // To fix BUG-12557 limitÀı¿¡ È£½ºÆ®º¯¼ö »ç¿ë
-        // È£½ºÆ®º¯¼ö »ç¿ë½Ã, °ªÀÌ 0º¸´Ù Ä¿¾ß ÇÑ´Ù.
+        // To fix BUG-12557 limitì ˆì— í˜¸ìŠ¤íŠ¸ë³€ìˆ˜ ì‚¬ìš©
+        // í˜¸ìŠ¤íŠ¸ë³€ìˆ˜ ì‚¬ìš©ì‹œ, ê°’ì´ 0ë³´ë‹¤ ì»¤ì•¼ í•œë‹¤.
         IDE_TEST_RAISE( sValue < 0, limit_bound_error );
 
         *aResultValue = sValue;

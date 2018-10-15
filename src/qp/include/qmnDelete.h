@@ -21,11 +21,11 @@
  * Description :
  *     DETE(DEleTE) Node
  *
- *     °ü°èÇü ¸ğµ¨¿¡¼­ delete¸¦ ¼öÇàÇÏ´Â Plan Node ÀÌ´Ù.
+ *     ê´€ê³„í˜• ëª¨ë¸ì—ì„œ deleteë¥¼ ìˆ˜í–‰í•˜ëŠ” Plan Node ì´ë‹¤.
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  **********************************************************************/
 
@@ -44,13 +44,13 @@
 //-----------------
 
 // qmncDETE.flag
-// LimitÀ» °¡Áö´ÂÁö¿¡ ´ëÇÑ ¿©ºÎ
+// Limitì„ ê°€ì§€ëŠ”ì§€ì— ëŒ€í•œ ì—¬ë¶€
 # define QMNC_DETE_LIMIT_MASK               (0x00000002)
 # define QMNC_DETE_LIMIT_FALSE              (0x00000000)
 # define QMNC_DETE_LIMIT_TRUE               (0x00000002)
 
 // qmncDETE.flag
-// VIEW¿¡ ´ëÇÑ deleteÀÎÁö ¿©ºÎ
+// VIEWì— ëŒ€í•œ deleteì¸ì§€ ì—¬ë¶€
 # define QMNC_DETE_VIEW_MASK                (0x00000004)
 # define QMNC_DETE_VIEW_FALSE               (0x00000000)
 # define QMNC_DETE_VIEW_TRUE                (0x00000004)
@@ -82,7 +82,7 @@
 typedef struct qmncDETE  
 {
     //---------------------------------
-    // Code ¿µ¿ª °øÅë Á¤º¸
+    // Code ì˜ì—­ ê³µí†µ ì •ë³´
     //---------------------------------
 
     qmnPlan               plan;
@@ -90,42 +90,42 @@ typedef struct qmncDETE
     UInt                  planID;
 
     //---------------------------------
-    // querySet °ü·Ã Á¤º¸
+    // querySet ê´€ë ¨ ì •ë³´
     //---------------------------------
     
     qmsTableRef         * tableRef;
 
     //---------------------------------
-    // delete °ü·Ã Á¤º¸
+    // delete ê´€ë ¨ ì •ë³´
     //---------------------------------
     
-    // instead of triggerÀÎ °æ¿ì
+    // instead of triggerì¸ ê²½ìš°
     idBool                insteadOfTrigger;
 
-    // PROJ-2551 simple query ÃÖÀûÈ­
+    // PROJ-2551 simple query ìµœì í™”
     idBool                isSimple;    // simple delete
     
     //---------------------------------
-    // Limitation °ü·Ã Á¤º¸
+    // Limitation ê´€ë ¨ ì •ë³´
     //---------------------------------
     
     qmsLimit            * limit;
 
     //---------------------------------
-    // child constraint Ã³¸®¸¦ À§ÇÑ Á¤º¸
+    // child constraint ì²˜ë¦¬ë¥¼ ìœ„í•œ ì •ë³´
     //---------------------------------
 
     qcmRefChildInfo     * childConstraints;
 
     //---------------------------------
-    // return into Ã³¸®¸¦ À§ÇÑ Á¤º¸
+    // return into ì²˜ë¦¬ë¥¼ ìœ„í•œ ì •ë³´
     //---------------------------------
     
     /* PROJ-1584 DML Return Clause */
     qmmReturnInto       * returnInto;
     
     //---------------------------------
-    // Display °ü·Ã Á¤º¸
+    // Display ê´€ë ¨ ì •ë³´
     //---------------------------------
 
     qmsNamePosition       tableOwnerName;     // Table Owner Name
@@ -145,58 +145,58 @@ typedef struct qmncDETE
 typedef struct qmndDETE
 {
     //---------------------------------
-    // Data ¿µ¿ª °øÅë Á¤º¸
+    // Data ì˜ì—­ ê³µí†µ ì •ë³´
     //---------------------------------
     qmndPlan              plan;
     doItFunc              doIt;
     UInt                * flag;        
 
     //---------------------------------
-    // DETE °íÀ¯ Á¤º¸
+    // DETE ê³ ìœ  ì •ë³´
     //---------------------------------
 
     mtcTuple            * deleteTuple;
     UShort                deleteTupleID;
     smiTableCursor      * deleteCursor;
 
-    /* PROJ-2464 hybrid partitioned table Áö¿ø */
+    /* PROJ-2464 hybrid partitioned table ì§€ì› */
     qcmTableInfo        * deletePartInfo;
 
     //---------------------------------
-    // Limitation °ü·Ã Á¤º¸
+    // Limitation ê´€ë ¨ ì •ë³´
     //---------------------------------
     
-    ULong                 limitCurrent;    // ÇöÀç Limit °ª
-    ULong                 limitStart;      // ½ÃÀÛ Limit °ª
-    ULong                 limitEnd;        // ÃÖÁ¾ Limit °ª
+    ULong                 limitCurrent;    // í˜„ì¬ Limit ê°’
+    ULong                 limitStart;      // ì‹œì‘ Limit ê°’
+    ULong                 limitEnd;        // ìµœì¢… Limit ê°’
 
     //---------------------------------
-    // Trigger Ã³¸®¸¦ À§ÇÑ Á¤º¸
+    // Trigger ì²˜ë¦¬ë¥¼ ìœ„í•œ ì •ë³´
     //---------------------------------
 
     qcmColumn           * columnsForRow;
-    void                * oldRow;    // OLD ROW Reference¸¦ À§ÇÑ °ø°£
+    void                * oldRow;    // OLD ROW Referenceë¥¼ ìœ„í•œ ê³µê°„
 
     // PROJ-1705
-    // trigger row°¡ ÇÊ¿ä¿©ºÎ Á¤º¸
+    // trigger rowê°€ í•„ìš”ì—¬ë¶€ ì •ë³´
     idBool                needTriggerRow;
     idBool                existTrigger;
     
     //---------------------------------
-    // return into Ã³¸®¸¦ À§ÇÑ Á¤º¸
+    // return into ì²˜ë¦¬ë¥¼ ìœ„í•œ ì •ë³´
     //---------------------------------
 
-    // instead of triggerÀÇ oldRow´Â smiValueÀÌ¹Ç·Î
-    // return into¸¦ À§ÇÑ tableRow°¡ ÇÊ¿äÇÏ´Ù.
+    // instead of triggerì˜ oldRowëŠ” smiValueì´ë¯€ë¡œ
+    // return intoë¥¼ ìœ„í•œ tableRowê°€ í•„ìš”í•˜ë‹¤.
     void                * returnRow;
     
     //---------------------------------
-    // index table Ã³¸®¸¦ À§ÇÑ Á¤º¸
+    // index table ì²˜ë¦¬ë¥¼ ìœ„í•œ ì •ë³´
     //---------------------------------
 
     qmsIndexTableCursors  indexTableCursorInfo;
 
-    // selection¿¡ »ç¿ëµÈ index table cursorÀÇ ÀÎÀÚ
+    // selectionì— ì‚¬ìš©ëœ index table cursorì˜ ì¸ì
     smiTableCursor      * indexDeleteCursor;
     mtcTuple            * indexDeleteTuple;
 
@@ -222,11 +222,11 @@ public:
     // Base Function Pointer
     //------------------------
 
-    // ÃÊ±âÈ­
+    // ì´ˆê¸°í™”
     static IDE_RC init( qcTemplate * aTemplate,
                         qmnPlan    * aPlan );
 
-    // ¼öÇà ÇÔ¼ö
+    // ìˆ˜í–‰ í•¨ìˆ˜
     static IDE_RC doIt( qcTemplate * aTemplate,
                         qmnPlan    * aPlan,
                         qmcRowFlag * aFlag );
@@ -235,7 +235,7 @@ public:
     static IDE_RC padNull( qcTemplate * aTemplate,
                            qmnPlan    * aPlan );
     
-    // Plan Á¤º¸ Ãâ·Â
+    // Plan ì •ë³´ ì¶œë ¥
     static IDE_RC printPlan( qcTemplate   * aTemplate,
                              qmnPlan      * aPlan,
                              ULong          aDepth,
@@ -246,7 +246,7 @@ public:
     static IDE_RC checkDeleteRef( qcTemplate * aTemplate,
                                   qmnPlan    * aPlan );
     
-    // CursorÀÇ Close
+    // Cursorì˜ Close
     static IDE_RC closeCursor( qcTemplate * aTemplate,
                                qmnPlan    * aPlan );
 
@@ -256,15 +256,15 @@ public:
 private:    
 
     //------------------------
-    // ÃÊ±âÈ­ °ü·Ã ÇÔ¼ö
+    // ì´ˆê¸°í™” ê´€ë ¨ í•¨ìˆ˜
     //------------------------
 
-    // ÃÖÃÊ ÃÊ±âÈ­
+    // ìµœì´ˆ ì´ˆê¸°í™”
     static IDE_RC firstInit( qcTemplate * aTemplate,
                              qmncDETE   * aCodePlan,
                              qmndDETE   * aDataPlan );
 
-    // cursor info »ı¼º
+    // cursor info ìƒì„±
     static IDE_RC allocCursorInfo( qcTemplate * aTemplate,
                                    qmncDETE   * aCodePlan,
                                    qmndDETE   * aDataPlan );
@@ -284,17 +284,17 @@ private:
                                          qmncDETE   * aCodePlan,
                                          qmndDETE   * aDataPlan );
     
-    // È£ÃâµÇ¾î¼­´Â ¾ÈµÊ.
+    // í˜¸ì¶œë˜ì–´ì„œëŠ” ì•ˆë¨.
     static IDE_RC doItDefault( qcTemplate * aTemplate,
                                qmnPlan    * aPlan,
                                qmcRowFlag * aFlag );
 
-    // ÃÖÃÊ DETEÀ» ¼öÇà
+    // ìµœì´ˆ DETEì„ ìˆ˜í–‰
     static IDE_RC doItFirst( qcTemplate * aTemplate,
                              qmnPlan    * aPlan,
                              qmcRowFlag * aFlag );
 
-    // ´ÙÀ½ DETEÀ» ¼öÇà
+    // ë‹¤ìŒ DETEì„ ìˆ˜í–‰
     static IDE_RC doItNext( qcTemplate * aTemplate,
                             qmnPlan    * aPlan,
                             qmcRowFlag * aFlag );
@@ -303,7 +303,7 @@ private:
     static IDE_RC checkTrigger( qcTemplate * aTemplate,
                                 qmnPlan    * aPlan );
     
-    // CursorÀÇ Get
+    // Cursorì˜ Get
     static IDE_RC getCursor( qcTemplate * aTemplate,
                              qmnPlan    * aPlan,
                              idBool     * aIsTableCursorChanged );

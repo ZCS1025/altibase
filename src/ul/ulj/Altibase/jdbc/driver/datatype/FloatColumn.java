@@ -49,13 +49,13 @@ public class FloatColumn extends CommonNumericColumn
 
     protected void checkScaleOverflow(int aScale)
     {
-        // BUG-41061 floatŸ���� ��� �ܼ��� scale������ ���ϸ� �ȵǰ� signExponent�� ������
-        // üũ�ؾߵǱ� ������ �ش� �޼ҵ带 �������� �ʵ��� �������̵��Ѵ�.
+        // BUG-41061 float타입인 경우 단순히 scale값으로 비교하면 안되고 signExponent의 값으로
+        // 체크해야되기 때문에 해당 메소드를 구현하지 않도록 오버라이딩한다.
     }
     
     protected void checkPrecisionOverflow(int aPrecision)
     {
-        // BUG-41061 floatŸ���� ��� �ܼ��� precision������ ���ϸ� �ȵǰ� signExponent�� ������
-        // üũ�ؾߵǱ� ������ �ش� �޼ҵ带 �������� �ʵ��� �������̵��Ѵ�.
+        // BUG-41061 float타입인 경우 단순히 precision값으로 비교하면 안되고 signExponent의 값으로
+        // 체크해야되기 때문에 해당 메소드를 구현하지 않도록 오버라이딩한다.
     }
 }

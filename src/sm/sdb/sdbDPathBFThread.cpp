@@ -36,9 +36,9 @@ sdbDPathBFThread::~sdbDPathBFThread()
 }
 
 /*******************************************************************************
- * Description : DPathBCBInfo ÃÊ±âÈ­
+ * Description : DPathBCBInfo ì´ˆê¸°í™”
  *
- * aDPathBCBInfo - [IN] ÃÊ±âÈ­ ÇÒ DPathBuffInfo
+ * aDPathBCBInfo - [IN] ì´ˆê¸°í™” í•  DPathBuffInfo
  ******************************************************************************/
 IDE_RC sdbDPathBFThread::initialize( sdbDPathBuffInfo  * aDPathBCBInfo )
 {
@@ -56,7 +56,7 @@ IDE_RC sdbDPathBFThread::initialize( sdbDPathBuffInfo  * aDPathBCBInfo )
 }
 
 /*******************************************************************************
- * Description : ÇÒ´çµÈ Resource¸¦ Free ½ÃÅ²´Ù.
+ * Description : í• ë‹¹ëœ Resourceë¥¼ Free ì‹œí‚¨ë‹¤.
  ******************************************************************************/
 IDE_RC sdbDPathBFThread::destroy()
 {
@@ -73,7 +73,7 @@ IDE_RC sdbDPathBFThread::destroy()
 }
 
 /***********************************************************************
- * Description : Flush Thread¸¦ ½ÃÀÛ½ÃÅ²´Ù.
+ * Description : Flush Threadë¥¼ ì‹œì‘ì‹œí‚¨ë‹¤.
  **********************************************************************/
 IDE_RC sdbDPathBFThread::startThread()
 {
@@ -88,9 +88,9 @@ IDE_RC sdbDPathBFThread::startThread()
 }
 
 /***********************************************************************
- * Description : mDPathBCBInfo°¡ °¡¸®Å°´Â Flush Request List¿¡ ´ëÇØ¼­
- *               FlushÀÛ¾÷À» ¼öÇàÇÑ´Ù. ±ú¾î³ª´Â ÁÖ±â´Â
- *               __DIRECT_BUFFER_FLUSH_THREAD_SYNC_INTERVALÀÌ´Ù.
+ * Description : mDPathBCBInfoê°€ ê°€ë¦¬í‚¤ëŠ” Flush Request Listì— ëŒ€í•´ì„œ
+ *               Flushì‘ì—…ì„ ìˆ˜í–‰í•œë‹¤. ê¹¨ì–´ë‚˜ëŠ” ì£¼ê¸°ëŠ”
+ *               __DIRECT_BUFFER_FLUSH_THREAD_SYNC_INTERVALì´ë‹¤.
  **********************************************************************/
 void sdbDPathBFThread::run()
 {
@@ -108,7 +108,7 @@ void sdbDPathBFThread::run()
             break;
         }
 
-        /* Flush Request List¿¡ ´ëÇØ¼­ FlushÀÛ¾÷À» ¿äÃ»ÇÑ´Ù. */
+        /* Flush Request Listì— ëŒ€í•´ì„œ Flushì‘ì—…ì„ ìš”ì²­í•œë‹¤. */
         IDE_TEST( sdbDPathBufferMgr::flushBCBInList(
                       NULL, /* idvSQL* */
                       mDPathBCBInfo,
@@ -127,8 +127,8 @@ void sdbDPathBFThread::run()
 
     if( sNeedSyncSpaceID != 0 )
     {
-        /* ¸¶Áö¸· writePageÈ£Ãâ½Ã write°¡ ¼öÇàµÈ TableSpace¿¡ ´ëÇØ
-         * Sync¸¦ ¼öÇàÇÑ´Ù. */
+        /* ë§ˆì§€ë§‰ writePageí˜¸ì¶œì‹œ writeê°€ ìˆ˜í–‰ëœ TableSpaceì— ëŒ€í•´
+         * Syncë¥¼ ìˆ˜í–‰í•œë‹¤. */
         IDE_TEST( sddDiskMgr::syncTBSInNormal(
                       NULL, /* idvSQL* */
                       sNeedSyncSpaceID ) != IDE_SUCCESS );
@@ -142,7 +142,7 @@ void sdbDPathBFThread::run()
 }
 
 /***********************************************************************
- * Description : Flush Thread°¡ Á¾·á½ÃÅ°°í Á¾·áµÉ¶§±îÁö ±â´Ù¸°´Ù.
+ * Description : Flush Threadê°€ ì¢…ë£Œì‹œí‚¤ê³  ì¢…ë£Œë ë•Œê¹Œì§€ ê¸°ë‹¤ë¦°ë‹¤.
  **********************************************************************/
 IDE_RC sdbDPathBFThread::shutdown()
 {

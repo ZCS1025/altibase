@@ -32,7 +32,7 @@
 #include <smmTBSMultiPhase.h>
 
 /*
-  »ı¼ºÀÚ (¾Æ¹«°Íµµ ¾ÈÇÔ)
+  ìƒì„±ì (ì•„ë¬´ê²ƒë„ ì•ˆí•¨)
 */
 smmTBSStartupShutdown::smmTBSStartupShutdown()
 {
@@ -42,11 +42,11 @@ smmTBSStartupShutdown::smmTBSStartupShutdown()
 
 
 /*
-    Server startup½Ã Log AnchorÀÇ Tablespace Attribute¸¦ ¹ÙÅÁÀ¸·Î
-    Tablespace Node¸¦ ±¸ÃàÇÑ´Ù.
+    Server startupì‹œ Log Anchorì˜ Tablespace Attributeë¥¼ ë°”íƒ•ìœ¼ë¡œ
+    Tablespace Nodeë¥¼ êµ¬ì¶•í•œë‹¤.
 
-    [IN] aTBSAttr      - Log Anchor¿¡ ÀúÀåµÈ TablespaceÀÇ Attribute
-    [IN] aAnchorOffset - Log Anchor»ó¿¡ Tablespace Attribute°¡ ÀúÀåµÈ Offset
+    [IN] aTBSAttr      - Log Anchorì— ì €ì¥ëœ Tablespaceì˜ Attribute
+    [IN] aAnchorOffset - Log Anchorìƒì— Tablespace Attributeê°€ ì €ì¥ëœ Offset
 */
 IDE_RC smmTBSStartupShutdown::loadTableSpaceNode(
                                            smiTableSpaceAttr   * aTBSAttr,
@@ -67,28 +67,28 @@ IDE_RC smmTBSStartupShutdown::loadTableSpaceNode(
                  != IDE_SUCCESS);
     sState  = 1;
 
-    // TablespaceÀÇ »óÅÂ¿¡ µû¸¥ ´Ù´Ü°è ÃÊ±âÈ­ ¼öÇà
-    // ¿ì¼± STATE´Ü°Ô±îÁö¸¸ ÃÊ±âÈ­ÇÑ´Ù.
+    // Tablespaceì˜ ìƒíƒœì— ë”°ë¥¸ ë‹¤ë‹¨ê³„ ì´ˆê¸°í™” ìˆ˜í–‰
+    // ìš°ì„  STATEë‹¨ê²Œê¹Œì§€ë§Œ ì´ˆê¸°í™”í•œë‹¤.
     //
-    // MEDIA´Ü°è ÃÊ±âÈ­¸¦ À§ÇØ¼­´Â Ã¼Å©Æ÷ÀÎÆ® °æ·Î¸¦ ÇÊ¿ä·Î ÇÑ´Ù.
-    // Log Anchor·ÎºÎÅÍ ¸ğµç Ã¼Å©Æ÷ÀÎÆ® ÆĞ½º ³ëµå °¡ ÀüºÎ ·ÎµåµÈ ÈÄ¿¡
-    // MEDIA´Ü°è ÀÌÈÄÀÇ ÃÊ±âÈ­¸¦ ÁøÇàÇÑ´Ù.
+    // MEDIAë‹¨ê³„ ì´ˆê¸°í™”ë¥¼ ìœ„í•´ì„œëŠ” ì²´í¬í¬ì¸íŠ¸ ê²½ë¡œë¥¼ í•„ìš”ë¡œ í•œë‹¤.
+    // Log Anchorë¡œë¶€í„° ëª¨ë“  ì²´í¬í¬ì¸íŠ¸ íŒ¨ìŠ¤ ë…¸ë“œ ê°€ ì „ë¶€ ë¡œë“œëœ í›„ì—
+    // MEDIAë‹¨ê³„ ì´í›„ì˜ ì´ˆê¸°í™”ë¥¼ ì§„í–‰í•œë‹¤.
 
-    // ¿©±â¿¡¼­ TBSNode.mState¿¡ TBSAttr.mTBSStateOnLA¸¦ º¹»ç
+    // ì—¬ê¸°ì—ì„œ TBSNode.mStateì— TBSAttr.mTBSStateOnLAë¥¼ ë³µì‚¬
     IDE_TEST( smmTBSMultiPhase::initStatePhase( sTBSNode,
                                                 aTBSAttr )
               != IDE_SUCCESS );
 
-    // Log Anchor»óÀÇ OffsetÃÊ±âÈ­
+    // Log Anchorìƒì˜ Offsetì´ˆê¸°í™”
     sTBSNode->mAnchorOffset = aAnchorOffset;
 
 
-    /* µ¿ÀÏÇÑ tablespace¸íÀÌ Á¸ÀçÇÏ´ÂÁö °Ë»çÇÑ´Ù. */
-    // BUG-26695 TBS Node°¡ ¾ø´Â°ÍÀÌ Á¤»óÀÌ¹Ç·Î ¾øÀ» °æ¿ì ¿À·ù ¸Ş½ÃÁö¸¦ ¹İÈ¯ÇÏÁö ¾Êµµ·Ï ¼öÁ¤
+    /* ë™ì¼í•œ tablespaceëª…ì´ ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬í•œë‹¤. */
+    // BUG-26695 TBS Nodeê°€ ì—†ëŠ”ê²ƒì´ ì •ìƒì´ë¯€ë¡œ ì—†ì„ ê²½ìš° ì˜¤ë¥˜ ë©”ì‹œì§€ë¥¼ ë°˜í™˜í•˜ì§€ ì•Šë„ë¡ ìˆ˜ì •
     IDE_ASSERT( sctTableSpaceMgr::checkExistSpaceNodeByName(
                     sTBSNode->mHeader.mName ) == ID_FALSE );
 
-    // »ı¼ºÇÑ Tablespace Node¸¦ Tablespace°ü¸®ÀÚ¿¡ Ãß°¡
+    // ìƒì„±í•œ Tablespace Nodeë¥¼ Tablespaceê´€ë¦¬ìì— ì¶”ê°€
     sctTableSpaceMgr::addTableSpaceNode( (sctTableSpaceNode*)sTBSNode );
 
     return IDE_SUCCESS;
@@ -104,8 +104,8 @@ IDE_RC smmTBSStartupShutdown::loadTableSpaceNode(
             break;
     }
 
-    // ¼­¹ö±¸µ¿Áß Tablespace LoadµµÁß ½ÇÆĞ½Ã
-    // ¿¡·¯Ã³¸®ÇÏÁö ¾Ê°í FATAL·Î Á×ÀÎ´Ù.
+    // ì„œë²„êµ¬ë™ì¤‘ Tablespace Loadë„ì¤‘ ì‹¤íŒ¨ì‹œ
+    // ì—ëŸ¬ì²˜ë¦¬í•˜ì§€ ì•Šê³  FATALë¡œ ì£½ì¸ë‹¤.
 
     IDE_CALLBACK_FATAL("Failed to initialize Tablespace reading from loganchor ");
 
@@ -113,12 +113,12 @@ IDE_RC smmTBSStartupShutdown::loadTableSpaceNode(
 }
 
 /*
-  ·Î±×¾ŞÄ¿·Î ºÎÅÍ ÆÇµ¶µÈ Checkpoint Image Attribute¸¦
-  ·±Å¸ÀÓ Çì´õÀÇ ¼³Á¤ÇÑ´Ù. ÆÄÀÏÀ» ¿ÀÇÂÇÏÁö´Â ¾Ê´Â´Ù.
+  ë¡œê·¸ì•µì»¤ë¡œ ë¶€í„° íŒë…ëœ Checkpoint Image Attributeë¥¼
+  ëŸ°íƒ€ì„ í—¤ë”ì˜ ì„¤ì •í•œë‹¤. íŒŒì¼ì„ ì˜¤í”ˆí•˜ì§€ëŠ” ì•ŠëŠ”ë‹¤.
 
-  [IN] aChkptImageAttr - ·Î±×¾ŞÄ¿¿¡ ÆÇµ¶µÈ ¸Ş¸ğ¸® µ¥ÀÌÅ¸ÆÄÀÏ ¼Ó¼º
-  [IN] aMemRedoLSN  - ·Î±×¾ŞÄ¿¿¡ ÀúÀåµÈ ¸Ş¸ğ¸® Redo LSN
-  [IN] aAnchorOffset   - ¼Ó¼ºÀÌ ÀúÀåµÈ LogAnchor Offset
+  [IN] aChkptImageAttr - ë¡œê·¸ì•µì»¤ì— íŒë…ëœ ë©”ëª¨ë¦¬ ë°ì´íƒ€íŒŒì¼ ì†ì„±
+  [IN] aMemRedoLSN  - ë¡œê·¸ì•µì»¤ì— ì €ì¥ëœ ë©”ëª¨ë¦¬ Redo LSN
+  [IN] aAnchorOffset   - ì†ì„±ì´ ì €ì¥ëœ LogAnchor Offset
  */
 IDE_RC smmTBSStartupShutdown::initializeChkptImageAttr(
                                smmChkptImageAttr * aChkptImageAttr,
@@ -135,7 +135,7 @@ IDE_RC smmTBSStartupShutdown::initializeChkptImageAttr(
     IDE_DASSERT( sctTableSpaceMgr::isMemTableSpace(
                  aChkptImageAttr->mSpaceID ) == ID_TRUE );
 
-    // Å×ÀÌºí½ºÆäÀÌ½º ³ëµå °Ë»ö
+    // í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ë…¸ë“œ ê²€ìƒ‰
     sctTableSpaceMgr::findSpaceNodeIncludingDropped(
         aChkptImageAttr->mSpaceID,
         (void**)&sSpaceNode );
@@ -144,20 +144,20 @@ IDE_RC smmTBSStartupShutdown::initializeChkptImageAttr(
     {
         if ( SMI_TBS_IS_DROPPED(sSpaceNode->mHeader.mState) )
         {
-            // DropµÈ TablespaceÀÇ °æ¿ì ¹«½Ã
-            // ÁÖÀÇ ! DROP_PENDINGÀÎ °æ¿ì
-            //        ¾ÆÁ÷ Ã³¸®ÇÏÁö ¸øÇÑ DROPÀÛ¾÷À» ¿Ï·áÇØ¾ß ÇÏ±â ¶§¹®¿¡
-            //        ¾Æ·¡ else¸¦ Å¸¾ß ÇÔ.
+            // Dropëœ Tablespaceì˜ ê²½ìš° ë¬´ì‹œ
+            // ì£¼ì˜ ! DROP_PENDINGì¸ ê²½ìš°
+            //        ì•„ì§ ì²˜ë¦¬í•˜ì§€ ëª»í•œ DROPì‘ì—…ì„ ì™„ë£Œí•´ì•¼ í•˜ê¸° ë•Œë¬¸ì—
+            //        ì•„ë˜ elseë¥¼ íƒ€ì•¼ í•¨.
         }
         else
         {
-            // Å×ÀÌºí½ºÆäÀÌ½º ³ëµå°¡ Á¸ÀçÇÏ´Â °æ¿ì
+            // í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ë…¸ë“œê°€ ì¡´ì¬í•˜ëŠ” ê²½ìš°
 
-            // µ¥ÀÌÅ¸ÆÄÀÏ °´Ã¼¸¦ °Ë»öÇÑ´Ù.
-            // ½ÇÁ¦ ÆÄÀÏÀÌ Á¸ÀçÇÏ´ÂÁö´Â identifyDatabase¿¡¼­
-            // Ã³¸®ÇÑ´Ù.
+            // ë°ì´íƒ€íŒŒì¼ ê°ì²´ë¥¼ ê²€ìƒ‰í•œë‹¤.
+            // ì‹¤ì œ íŒŒì¼ì´ ì¡´ì¬í•˜ëŠ”ì§€ëŠ” identifyDatabaseì—ì„œ
+            // ì²˜ë¦¬í•œë‹¤.
 
-            // ·Î±×¾ŞÄ¿·ÎºÎÅÍ ÀúÀåµÈ ¹ÙÀÌ³Ê¸® ¹öÀüÀ» ¾ò´Â´Ù.
+            // ë¡œê·¸ì•µì»¤ë¡œë¶€í„° ì €ì¥ëœ ë°”ì´ë„ˆë¦¬ ë²„ì „ì„ ì–»ëŠ”ë‹¤.
             sSmVersion = smLayerCallback::getSmVersionIDFromLogAnchor();
 
             for ( sLoop = 0; sLoop < SMM_PINGPONG_COUNT; sLoop ++ )
@@ -177,9 +177,9 @@ IDE_RC smmTBSStartupShutdown::initializeChkptImageAttr(
                                         &aChkptImageAttr->mDataFileDescSlotID );
             }
 
-            // ·Î±×¾ŞÄ¿¿¡ ÀúÀåµÈ ÆÄÀÏµéÀº ¸ğµÎ »ı¼ºµÈ ÆÄÀÏÀÌ¹Ç·Î
-            // crtdbfile ÇÃ·¡±×¸¦ true·Î ¼³Á¤ÇÏ¿© ·Î±×¾ŞÄ¿¿¡
-            // Áßº¹ Ãß°¡µÇÁö ¾Êµµ·Ï ÇÑ´Ù.
+            // ë¡œê·¸ì•µì»¤ì— ì €ì¥ëœ íŒŒì¼ë“¤ì€ ëª¨ë‘ ìƒì„±ëœ íŒŒì¼ì´ë¯€ë¡œ
+            // crtdbfile í”Œë˜ê·¸ë¥¼ trueë¡œ ì„¤ì •í•˜ì—¬ ë¡œê·¸ì•µì»¤ì—
+            // ì¤‘ë³µ ì¶”ê°€ë˜ì§€ ì•Šë„ë¡ í•œë‹¤.
             for ( sLoop = 0; sLoop < SMM_PINGPONG_COUNT; sLoop++ )
             {
                 IDE_ASSERT ( smmManager::getCreateDBFileOnDisk(
@@ -189,9 +189,9 @@ IDE_RC smmTBSStartupShutdown::initializeChkptImageAttr(
                              == ID_FALSE );
             }
 
-            // µ¥ÀÌÅ¸º£ÀÌ½º °ËÁõ°úÁ¤°ú ¹Ìµğ¾îº¹±¸°úÁ¤¿¡¼­
-            // ·Î±×¾ŞÄ¿¿¡ ÀúÀåµÈ µ¥ÀÌÅ¸ÆÄÀÏÀ» ´ë»óÀ¸·Î °ËÁõÇÏ°í
-            // º¹±¸µµ ÇÏ±â À§ÇØ LstCreatedDBFile À» ¼³Á¤ÇÑ´Ù.
+            // ë°ì´íƒ€ë² ì´ìŠ¤ ê²€ì¦ê³¼ì •ê³¼ ë¯¸ë””ì–´ë³µêµ¬ê³¼ì •ì—ì„œ
+            // ë¡œê·¸ì•µì»¤ì— ì €ì¥ëœ ë°ì´íƒ€íŒŒì¼ì„ ëŒ€ìƒìœ¼ë¡œ ê²€ì¦í•˜ê³ 
+            // ë³µêµ¬ë„ í•˜ê¸° ìœ„í•´ LstCreatedDBFile ì„ ì„¤ì •í•œë‹¤.
             if ( aChkptImageAttr->mFileNum > 0 )
             {
                 IDE_ASSERT( aChkptImageAttr->mFileNum >
@@ -217,7 +217,7 @@ IDE_RC smmTBSStartupShutdown::initializeChkptImageAttr(
     }
     else
     {
-        // DROPPEDÀÌ µÇ¾ú°Å³ª Á¸ÀçÇÏÁö ¾Ê´Â °æ¿ì¿¡´Â
+        // DROPPEDì´ ë˜ì—ˆê±°ë‚˜ ì¡´ì¬í•˜ì§€ ì•ŠëŠ” ê²½ìš°ì—ëŠ”
         // NOTHING TO DO...
     }
 
@@ -230,10 +230,10 @@ IDE_RC smmTBSStartupShutdown::initializeChkptImageAttr(
 
 
 /*
- * Loganchor·ÎºÎÅÍ ÀĞ¾îµéÀÎ Checkpoint Path Attribute·Î Node¸¦ »ı¼ºÇÑ´Ù.
+ * Loganchorë¡œë¶€í„° ì½ì–´ë“¤ì¸ Checkpoint Path Attributeë¡œ Nodeë¥¼ ìƒì„±í•œë‹¤.
  *
- * aChkptPathAttr [IN] - Ãß°¡ÇÒ smiChkptPathAttr* Å¸ÀÔÀÇ Attribute
- * aAnchorOffset  [IN] - LoganchorÀÇ ¸Ş¸ğ¸®¹öÆÛ»óÀÇ ChkptPath Attribute ¿ÀÇÁ¼Â
+ * aChkptPathAttr [IN] - ì¶”ê°€í•  smiChkptPathAttr* íƒ€ì…ì˜ Attribute
+ * aAnchorOffset  [IN] - Loganchorì˜ ë©”ëª¨ë¦¬ë²„í¼ìƒì˜ ChkptPath Attribute ì˜¤í”„ì…‹
  */
 IDE_RC smmTBSStartupShutdown::createChkptPathNode(
                                  smiChkptPathAttr *  aChkptPathAttr,
@@ -271,7 +271,7 @@ IDE_RC smmTBSStartupShutdown::createChkptPathNode(
               != IDE_SUCCESS);
     sState = 2;
 
-    // Å×ÀÌºí½ºÆäÀÌ½º ³ëµå °Ë»ö
+    // í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ë…¸ë“œ ê²€ìƒ‰
     sctTableSpaceMgr::findSpaceNodeIncludingDropped(
                                                 aChkptPathAttr->mSpaceID,
                                                 (void**)&sTBSNode );
@@ -280,10 +280,10 @@ IDE_RC smmTBSStartupShutdown::createChkptPathNode(
     {
         if ( SMI_TBS_IS_DROPPED(sTBSNode->mHeader.mState) )
         {
-            // DropµÈ TablespaceÀÇ °æ¿ì ¹«½Ã
-            // ÁÖÀÇ ! DROP_PENDINGÀÎ °æ¿ì
-            //        ¾ÆÁ÷ Ã³¸®ÇÏÁö ¸øÇÑ DROPÀÛ¾÷À» ¿Ï·áÇØ¾ß ÇÏ±â ¶§¹®¿¡
-            //        ¾Æ·¡ else¸¦ Å¸¾ß ÇÔ.
+            // Dropëœ Tablespaceì˜ ê²½ìš° ë¬´ì‹œ
+            // ì£¼ì˜ ! DROP_PENDINGì¸ ê²½ìš°
+            //        ì•„ì§ ì²˜ë¦¬í•˜ì§€ ëª»í•œ DROPì‘ì—…ì„ ì™„ë£Œí•´ì•¼ í•˜ê¸° ë•Œë¬¸ì—
+            //        ì•„ë˜ elseë¥¼ íƒ€ì•¼ í•¨.
         }
         else
         {
@@ -294,7 +294,7 @@ IDE_RC smmTBSStartupShutdown::createChkptPathNode(
     }
     else
     {
-        // DropµÈ TablespaceÀÇ °æ¿ì ¹«½Ã
+        // Dropëœ Tablespaceì˜ ê²½ìš° ë¬´ì‹œ
     }
 
     sState = 1;
@@ -325,7 +325,7 @@ IDE_RC smmTBSStartupShutdown::createChkptPathNode(
 
 
 
-/* smmTBSStartupShutdown::initFromStatePhase4AllTBS ÀÇ ¾×¼Ç ÇÔ¼ö
+/* smmTBSStartupShutdown::initFromStatePhase4AllTBS ì˜ ì•¡ì…˜ í•¨ìˆ˜
  */
 IDE_RC smmTBSStartupShutdown::initFromStatePhaseAction(
            idvSQL            * /*aStatistics */,
@@ -349,20 +349,20 @@ IDE_RC smmTBSStartupShutdown::initFromStatePhaseAction(
 }
 
 /*
- * ¸ğµç TablespaceÀÇ ´Ù´Ü°è ÃÊ±âÈ­¸¦ ¼öÇàÇÑ´Ù.
+ * ëª¨ë“  Tablespaceì˜ ë‹¤ë‹¨ê³„ ì´ˆê¸°í™”ë¥¼ ìˆ˜í–‰í•œë‹¤.
  *
- * ¸Ş¸ğ¸® Tablespace´Â STATE => MEDIA => PAGE ÀÇ ¼ø¼­·Î
- * ´Ü°èº°·Î ÃÊ±âÈ­ µÈ´Ù.
+ * ë©”ëª¨ë¦¬ TablespaceëŠ” STATE => MEDIA => PAGE ì˜ ìˆœì„œë¡œ
+ * ë‹¨ê³„ë³„ë¡œ ì´ˆê¸°í™” ëœë‹¤.
  *
- * STATE´Ü°è´Â Log Anchor¿¡¼­ Tablespace Node¸¦ ÀĞ¾îµéÀÏ¶§ ÃÊ±âÈ­µÇ°í,
- * MEDIA, PAGE´Ü°è´Â Log Anchor·ÎºÎÅÍ ¸ğµç Tablespace Node¿Í
- * °ü·Ã Á¤º¸¸¦ ´Ù ÀĞ¾îµéÀÎÈÄ¿¡ ÃÊ±âÈ­ µÈ´Ù.
+ * STATEë‹¨ê³„ëŠ” Log Anchorì—ì„œ Tablespace Nodeë¥¼ ì½ì–´ë“¤ì¼ë•Œ ì´ˆê¸°í™”ë˜ê³ ,
+ * MEDIA, PAGEë‹¨ê³„ëŠ” Log Anchorë¡œë¶€í„° ëª¨ë“  Tablespace Nodeì™€
+ * ê´€ë ¨ ì •ë³´ë¥¼ ë‹¤ ì½ì–´ë“¤ì¸í›„ì— ì´ˆê¸°í™” ëœë‹¤.
  *
- * MEDIA Phase¸¦ ÃÊ±âÈ­ÇÏ±â À§ÇØ¼­´Â Tablespace Node¿¡
- * Ã¼Å©Æ÷ÀÎÆ® °æ·Î°¡ ¼¼ÆÃµÇ¾î ÀÖ¾î¾ß ÇÑ´Ù.
- * ±×·±µ¥, Ã¼Å©Æ÷ÀÎÆ® °æ·Î Attribute°¡ ÀúÀåµÈ ³»¿ëÀÌ Log AnchorÀÇ
- * Áß°£ Áß°£¿¡ ³ªÅ¸³¯ ¼ö ÀÖ±â ¶§¹®¿¡,
- * Log AnchorÀÇ ·Îµå°¡ ¸ğµÎ ¿Ï·áµÈ ÈÄ¿¡ MEDIA´Ü°è¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+ * MEDIA Phaseë¥¼ ì´ˆê¸°í™”í•˜ê¸° ìœ„í•´ì„œëŠ” Tablespace Nodeì—
+ * ì²´í¬í¬ì¸íŠ¸ ê²½ë¡œê°€ ì„¸íŒ…ë˜ì–´ ìˆì–´ì•¼ í•œë‹¤.
+ * ê·¸ëŸ°ë°, ì²´í¬í¬ì¸íŠ¸ ê²½ë¡œ Attributeê°€ ì €ì¥ëœ ë‚´ìš©ì´ Log Anchorì˜
+ * ì¤‘ê°„ ì¤‘ê°„ì— ë‚˜íƒ€ë‚  ìˆ˜ ìˆê¸° ë•Œë¬¸ì—,
+ * Log Anchorì˜ ë¡œë“œê°€ ëª¨ë‘ ì™„ë£Œëœ í›„ì— MEDIAë‹¨ê³„ë¥¼ ì´ˆê¸°í™”í•œë‹¤.
  *
  */
 IDE_RC smmTBSStartupShutdown::initFromStatePhase4AllTBS()
@@ -384,7 +384,7 @@ IDE_RC smmTBSStartupShutdown::initFromStatePhase4AllTBS()
 
 
 /*
- * ¸ğµç Tablespace¸¦ destroyÇÑ´Ù.
+ * ëª¨ë“  Tablespaceë¥¼ destroyí•œë‹¤.
  */
 IDE_RC smmTBSStartupShutdown::destroyAllTBSNode()
 {
@@ -405,8 +405,8 @@ IDE_RC smmTBSStartupShutdown::destroyAllTBSNode()
             sctTableSpaceMgr::removeTableSpaceNode( sCurrSpaceNode );
 
             /* BUG-40451 Valgrind Warning
-             * - smmTBSDrop::dropTableSpacePending()ÀÇ Ã³¸®¸¦ À§ÇØ¼­, ¸ÕÀú °Ë»ç
-             *   ÇÏ°í svmManager::finiTBS()¸¦ È£ÃâÇÕ´Ï´Ù.
+             * - smmTBSDrop::dropTableSpacePending()ì˜ ì²˜ë¦¬ë¥¼ ìœ„í•´ì„œ, ë¨¼ì € ê²€ì‚¬
+             *   í•˜ê³  svmManager::finiTBS()ë¥¼ í˜¸ì¶œí•©ë‹ˆë‹¤.
              */ 
             if ( ( sCurrSpaceNode->mState & SMI_TBS_DROPPED )
                  != SMI_TBS_DROPPED )
@@ -417,11 +417,11 @@ IDE_RC smmTBSStartupShutdown::destroyAllTBSNode()
             }
             else
             {
-                // DropµÈ TBS´Â  ÀÌ¹Ì ÀÚ¿øÀÌ ÇØÁ¦µÇ¾î ÀÖ´Ù.
+                // Dropëœ TBSëŠ”  ì´ë¯¸ ìì›ì´ í•´ì œë˜ì–´ ìˆë‹¤.
             }
 
             // To Fix BUG-18178
-            //    Shutdown½Ã Tablespace Node Memory¸¦ ÇØÁ¦ÇÏÁö ¾ÊÀ½
+            //    Shutdownì‹œ Tablespace Node Memoryë¥¼ í•´ì œí•˜ì§€ ì•ŠìŒ
             IDE_TEST( iduMemMgr::free( sCurrSpaceNode ) != IDE_SUCCESS );
         }
 
@@ -437,11 +437,11 @@ IDE_RC smmTBSStartupShutdown::destroyAllTBSNode()
 
 
 /*
-    Memory Tablespace °ü¸®ÀÚÀÇ ÃÊ±âÈ­
+    Memory Tablespace ê´€ë¦¬ìì˜ ì´ˆê¸°í™”
  */
 IDE_RC smmTBSStartupShutdown::initializeStatic()
 {
-    // ¾Æ¹«°Íµµ ÇÏÁö ¾Ê´Â´Ù.
+    // ì•„ë¬´ê²ƒë„ í•˜ì§€ ì•ŠëŠ”ë‹¤.
 
     return IDE_SUCCESS;
 }
@@ -449,11 +449,11 @@ IDE_RC smmTBSStartupShutdown::initializeStatic()
 
 
 /*
-    Memory Tablespace°ü¸®ÀÚÀÇ ÇØÁ¦
+    Memory Tablespaceê´€ë¦¬ìì˜ í•´ì œ
  */
 IDE_RC smmTBSStartupShutdown::destroyStatic()
 {
-    // ¸ğµç Memory Tablespace¸¦ destroyÇÑ´Ù.
+    // ëª¨ë“  Memory Tablespaceë¥¼ destroyí•œë‹¤.
     IDE_TEST( destroyAllTBSNode() != IDE_SUCCESS );
 
     return IDE_SUCCESS;

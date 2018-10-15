@@ -178,8 +178,8 @@ ace_rc_t aciVarStringAppendLength(aci_var_string_t *aString, const acp_char_t *a
 {
     aci_var_string_piece_t *sPiece = NULL;
     acp_list_node_t   *sIterator = aString->mPieceList.mPrev;
-    acp_uint32_t       sLenLeft; /* º¹»çÇØ¾ßÇÒ ¹®ÀÚ¿­ÀÇ ³²Àº ±æÀÌ */
-    acp_uint32_t       sLenCopy; /* Piece¿¡ º¹»çÇÒ(ÇÑ) ±æÀÌ       */
+    acp_uint32_t       sLenLeft; /* ë³µì‚¬í•´ì•¼í•  ë¬¸ìžì—´ì˜ ë‚¨ì€ ê¸¸ì´ */
+    acp_uint32_t       sLenCopy; /* Pieceì— ë³µì‚¬í• (í•œ) ê¸¸ì´       */
 
     for (sLenLeft = aLength; sLenLeft > 0; sIterator = sPiece->mPieceListNode.mNext)
     {

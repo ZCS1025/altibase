@@ -36,7 +36,7 @@
 #define QMS_PARTKEYCONDVAL_TYPE_COUNT           (3)
 
 /***********************************************************************
- * [Parse Tree¸¦ À§ÇÑ »ó¼ö Á¤ÀÇ]
+ * [Parse Treeë¥¼ ìœ„í•œ ìƒìˆ˜ ì •ì˜]
  *
  ***********************************************************************/
 
@@ -107,13 +107,13 @@
 #define QMS_TABLE_REF_SCAN_FOR_NON_SELECT_TRUE  (0x00000010)
 
 // for qmsTableRef.flag
-// exec_remote hint¿¡ ÀÇÇØ »ı¼ºµÈ tableRefÀÓÀ» ¼³Á¤
+// exec_remote hintì— ì˜í•´ ìƒì„±ëœ tableRefì„ì„ ì„¤ì •
 #define QMS_TABLE_REF_EXEC_REMOTE_MASK          (0x00000020)
 #define QMS_TABLE_REF_EXEC_REMOTE_FALSE         (0x00000000)
 #define QMS_TABLE_REF_EXEC_REMOTE_TRUE          (0x00000020)
 
 // BUG-26800
-// inner join¿¡ Àû¿ëµÈ push_pred hintÀÓÀ» ¼³Á¤
+// inner joinì— ì ìš©ëœ push_pred hintì„ì„ ì„¤ì •
 // for qmsTableRef.flag
 #define QMS_TABLE_REF_PUSH_PRED_HINT_INNER_JOIN_MASK  (0x00000040)
 #define QMS_TABLE_REF_PUSH_PRED_HINT_INNER_JOIN_FALSE (0x00000000)
@@ -121,21 +121,21 @@
 
 // BUG-29598
 // for qmsTableRef.flag
-// dual tableÀÇ tableRefÀÓÀ» ¼³Á¤
+// dual tableì˜ tableRefì„ì„ ì„¤ì •
 #define QMS_TABLE_REF_BASE_TABLE_DUAL_MASK      (0x00000080)
 #define QMS_TABLE_REF_BASE_TABLE_DUAL_FALSE     (0x00000000)
 #define QMS_TABLE_REF_BASE_TABLE_DUAL_TRUE      (0x00000080)
 
 // BUG-37237
 // for qmsTableRef.flag
-// hierarchy query¿¡¼­ »ç¿ëµÈ viewÀÓÀ» ¼³Á¤
+// hierarchy queryì—ì„œ ì‚¬ìš©ëœ viewì„ì„ ì„¤ì •
 #define QMS_TABLE_REF_HIER_VIEW_MASK            (0x00000100)
 #define QMS_TABLE_REF_HIER_VIEW_FALSE           (0x00000000)
 #define QMS_TABLE_REF_HIER_VIEW_TRUE            (0x00000100)
 
 // PROJ-2418 Cross/Outer APPLY & Lateral View
 // for qmsTableRef.flag
-// ÇØ´ç view°¡ Lateral ViewÀÓÀ» ¼³Á¤
+// í•´ë‹¹ viewê°€ Lateral Viewì„ì„ ì„¤ì •
 #define QMS_TABLE_REF_LATERAL_VIEW_MASK         (0x00001000)
 #define QMS_TABLE_REF_LATERAL_VIEW_FALSE        (0x00000000)
 #define QMS_TABLE_REF_LATERAL_VIEW_TRUE         (0x00001000)
@@ -152,13 +152,13 @@
 #define QMS_HIERARCHY_IGNORE_LOOP_TRUE          (0x00000001)
 
 //----------------------------------------------
-// BUCKET COUNT °ü·Ã »ó¼ö
+// BUCKET COUNT ê´€ë ¨ ìƒìˆ˜
 //----------------------------------------------
 
-// BUCKET COUNT HINTS°¡ Á¤ÀÇµÇÁö ¾ÊÀº °æ¿ì¸¦ ÀÇ¹Ì
+// BUCKET COUNT HINTSê°€ ì •ì˜ë˜ì§€ ì•Šì€ ê²½ìš°ë¥¼ ì˜ë¯¸
 #define QMS_NOT_DEFINED_BUCKET_CNT                       (0)
 #define QMS_NOT_DEFINED_TEMP_TABLE_CNT                   (0)
-// BUCKET COUNTÀÇ ÃÖ´ë°ª
+// BUCKET COUNTì˜ ìµœëŒ€ê°’
 #define QMS_MAX_BUCKET_CNT                       (102400000)
 
 //PROJ-1583 large geometry
@@ -171,7 +171,7 @@
 #define QMS_MIN_FIRST_ROWS_N                             (1)
 #define QMS_MAX_FIRST_ROWS_N                   (ID_UINT_MAX)
 
-// SET ¿¬»êÀÚÀÇ Á¾·ù
+// SET ì—°ì‚°ìì˜ ì¢…ë¥˜
 typedef enum qmsSetOpType
 {
     QMS_NONE,
@@ -181,14 +181,14 @@ typedef enum qmsSetOpType
     QMS_INTERSECT
 } qmsSetOpType;
 
-// SELECT TargetÀÇ Á¾·ù
+// SELECT Targetì˜ ì¢…ë¥˜
 typedef enum qmsSelectType
 {
     QMS_ALL,        // SELECT ALL ...
     QMS_DISTINCT    // SELECT DISTINCT ...
 } qmsSelectType;
 
-// JoinÀÇ Á¾·ù
+// Joinì˜ ì¢…ë¥˜
 typedef enum qmsJoinType
 {
     QMS_NO_JOIN,
@@ -198,7 +198,7 @@ typedef enum qmsJoinType
     QMS_RIGHT_OUTER_JOIN
 } qmsJoinType;
 
-// GROUP BY ÀÇ Á¾·ù
+// GROUP BY ì˜ ì¢…ë¥˜
 typedef enum qmsGroupByType
 {
     QMS_GROUPBY_NORMAL = 0,
@@ -206,8 +206,8 @@ typedef enum qmsGroupByType
     QMS_GROUPBY_CUBE,
     QMS_GROUPBY_GROUPING_SETS,
     // PROJ-2415 Grouping Sets Clause
-    // QMS_GROUPBY_NULL TypeÀº Grouping Sets Transform½Ã »ç¿ë µÇ¸ç
-    // Validation ´Ü°è°¡ Áö³ª¸é QMS_GROUPBY_NULL TypeÀº Á¸ÀçÇÏÁö ¾Ê´Â´Ù.
+    // QMS_GROUPBY_NULL Typeì€ Grouping Sets Transformì‹œ ì‚¬ìš© ë˜ë©°
+    // Validation ë‹¨ê³„ê°€ ì§€ë‚˜ë©´ QMS_GROUPBY_NULL Typeì€ ì¡´ì¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
     QMS_GROUPBY_NULL
 } qmsGroupByType;
 
@@ -241,7 +241,7 @@ typedef enum qmsProcessPhase
 } qmsProcessPhase;
 
 /***********************************************************************
- * [Hints ¸¦ À§ÇÑ Á¤ÀÇ]
+ * [Hints ë¥¼ ìœ„í•œ ì •ì˜]
  *
  ***********************************************************************/
 
@@ -302,7 +302,7 @@ typedef struct qmsTableAccessHints
 
 // PROJ-1495
 // PUSH_PRED( view_name )
-// view ³»ºÎ·Î join predicateÀ» ³»¸°´Ù.
+// view ë‚´ë¶€ë¡œ join predicateì„ ë‚´ë¦°ë‹¤.
 typedef struct qmsPushPredHints
 {
     qmsHintTables            * table;
@@ -353,14 +353,14 @@ typedef enum qmsDelayHint
     QMS_DELAY_FALSE
 } qmsDelayHint;
 
-// HINTS ÀüÃ¼¸¦ À§ÇÑ ÀÚ·á ±¸Á¶
-// TODO : tableAccess Hint°¡ Á¸ÀçÇÏ¸é qmsTableRef::tableAccessHints¿¡ ¿¬°á,
-//         qmsHints::viewOptTypeÀ» qmsTableRef::viewOptType¿¡ ¼³Á¤
+// HINTS ì „ì²´ë¥¼ ìœ„í•œ ìë£Œ êµ¬ì¡°
+// TODO : tableAccess Hintê°€ ì¡´ì¬í•˜ë©´ qmsTableRef::tableAccessHintsì— ì—°ê²°,
+//         qmsHints::viewOptTypeì„ qmsTableRef::viewOptTypeì— ì„¤ì •
 typedef struct qmsHints
 {
-    qmoOptGoalType                 optGoalType;        // RULE ¶Ç´Â COST
-    qmoNormalType                  normalType;         // CNF ¶Ç´Â DNF
-    // tupleset ¶Ç´Â push projectionÀÌ Àû¿ëµÈ ·¹ÄÚµåÀúÀå¹æ½ÄÀÇ Ã³¸®¹æ¹ıÁöÁ¤ 
+    qmoOptGoalType                 optGoalType;        // RULE ë˜ëŠ” COST
+    qmoNormalType                  normalType;         // CNF ë˜ëŠ” DNF
+    // tupleset ë˜ëŠ” push projectionì´ ì ìš©ëœ ë ˆì½”ë“œì €ì¥ë°©ì‹ì˜ ì²˜ë¦¬ë°©ë²•ì§€ì • 
     qmoMaterializeType             materializeType;  
     qmoJoinOrderType               joinOrderType;      // ORDERED
     qmoInterResultType             interResultType;    // DISK/MEMORY
@@ -381,7 +381,7 @@ typedef struct qmsHints
 
     //-------------------------------------------------------------------
     // View Optimization Hint
-    //    : VIEW ³»ºÎ·Î join predicateÀ» ³»¸°´Ù.
+    //    : VIEW ë‚´ë¶€ë¡œ join predicateì„ ë‚´ë¦°ë‹¤.
     //
     //    - PUSH_PRED, PUSH_PRED( view_name )
     //------------------------------------------------------------------
@@ -389,7 +389,7 @@ typedef struct qmsHints
 
     //-------------------------------------------------------------------
     // No View Merging Hint
-    //    : View¸¦ mergeÇÏÁö ¾Ê´Â´Ù.
+    //    : Viewë¥¼ mergeí•˜ì§€ ì•ŠëŠ”ë‹¤.
     //
     //    - NO_MERGE ( v1, v2, ... )
     //------------------------------------------------------------------
@@ -435,8 +435,8 @@ typedef struct qmsHints
     // ---- for SITS, SDIF node
     UInt                           setBucketCnt; // default 0
 
-    // PROJ-1566 : INSERT ¹æ½Ä¿¡ ´ëÇÑ Hint
-    //             APPENDÀÏ °æ¿ì, ³»ºÎÀûÀ¸·Î direct-path INSERT·Î Ã³¸®µÊ
+    // PROJ-1566 : INSERT ë°©ì‹ì— ëŒ€í•œ Hint
+    //             APPENDì¼ ê²½ìš°, ë‚´ë¶€ì ìœ¼ë¡œ direct-path INSERTë¡œ ì²˜ë¦¬ë¨
     UInt                           directPathInsHintFlag;
 
     //PROJ-1583 large geometry
@@ -452,12 +452,12 @@ typedef struct qmsHints
     qmsParallelHints             * parallelHint;
 
     // PROJ-1436
-    // no_plan_cache : plan cache ´ë»óÀÌ´õ¶óµµ planÀ» cacheÇÏÁö ¾Ê°Ô ÇÔ
-    // keep_plan : »ı¼ºµÈ plan¿¡ ´ëÇÏ¿© Åë°èÁ¤º¸ º¯°æ¿¡µµ ±×´ë·Î »ç¿ëÇÏ°Ô ÇÔ
+    // no_plan_cache : plan cache ëŒ€ìƒì´ë”ë¼ë„ planì„ cacheí•˜ì§€ ì•Šê²Œ í•¨
+    // keep_plan : ìƒì„±ëœ planì— ëŒ€í•˜ì—¬ í†µê³„ì •ë³´ ë³€ê²½ì—ë„ ê·¸ëŒ€ë¡œ ì‚¬ìš©í•˜ê²Œ í•¨
     idBool                         noPlanCache;
     idBool                         keepPlan;
 
-    // PROJ-2206 MATERIALIZE, NO_MATERIALIZE ÈùÆ®
+    // PROJ-2206 MATERIALIZE, NO_MATERIALIZE íŒíŠ¸
     qmoViewOptMtrType              viewOptMtrType;
 
     /* PROJ-2211 Materialized View */
@@ -485,7 +485,7 @@ typedef struct qmsHints
     // BUG-43493
     qmsDelayHint                   delayedExec;
 
-    // PROJ-2673 insert before/after trigger¸¦ µ¿ÀÛ½ÃÅ°Áö ¾Ê´Â´Ù. (ºñ°ø°³)
+    // PROJ-2673 insert before/after triggerë¥¼ ë™ì‘ì‹œí‚¤ì§€ ì•ŠëŠ”ë‹¤. (ë¹„ê³µê°œ)
     idBool                         disableInsTrigger;
 
 } qmsHints;
@@ -548,7 +548,7 @@ typedef struct qmsHints
     (_dst_)->mLeadingTables   = NULL;                         \
 }
 
-// qmsQuerySet ÀÚ·á ±¸Á¶ÀÇ ÃÊ±âÈ­
+// qmsQuerySet ìë£Œ êµ¬ì¡°ì˜ ì´ˆê¸°í™”
 #define QCP_SET_INIT_QMS_QUERY_SET(_dst_)                         \
 {                                                                 \
     (_dst_)->setOp  = QMS_NONE;                                   \
@@ -573,7 +573,7 @@ typedef struct qmsHints
     (_dst_)->mShardPredicate = NULL;                              \
 }
 
-// qmsSFWGH ÀÚ·á ±¸Á¶ÀÇ ÃÊ±âÈ­
+// qmsSFWGH ìë£Œ êµ¬ì¡°ì˜ ì´ˆê¸°í™”
 #define QCP_SET_INIT_QMS_SFWGH(_dst_)                   \
 {                                                       \
     (_dst_)->selectType      = QMS_ALL;                 \
@@ -616,7 +616,7 @@ typedef struct qmsHints
         
 
 
-// qmsFrom ÀÚ·á ±¸Á¶ÀÇ ÃÊ±âÈ­
+// qmsFrom ìë£Œ êµ¬ì¡°ì˜ ì´ˆê¸°í™”
 #define QCP_SET_INIT_QMS_FROM(_dst_)                          \
 {                                                             \
     (_dst_)->joinType = QMS_NO_JOIN;                          \
@@ -630,7 +630,7 @@ typedef struct qmsHints
     (_dst_)->right = NULL;                                    \
 }
 
-// qmsTableRef ÀÚ·á ±¸Á¶ÀÇ ÃÊ±âÈ­
+// qmsTableRef ìë£Œ êµ¬ì¡°ì˜ ì´ˆê¸°í™”
 #define QCP_SET_INIT_QMS_TABLE_REF(_dst_)                           \
 {                                                                   \
     SET_EMPTY_POSITION((_dst_)->position);                          \
@@ -674,7 +674,7 @@ typedef struct qmsHints
     (_dst_)->mShardObjInfo      = NULL;                             \
 }
 
-// qmsPartitionRef ÀÚ·á ±¸Á¶ÀÇ ÃÊ±âÈ­
+// qmsPartitionRef ìë£Œ êµ¬ì¡°ì˜ ì´ˆê¸°í™”
 #define QCP_SET_INIT_QMS_PARTITION_REF(_dst_)   \
 {                                               \
     SET_EMPTY_POSITION((_dst_)->position);      \
@@ -751,12 +751,12 @@ typedef struct qmsHints
     (_dst_)->next    = NULL;                \
 }
 /***********************************************************************
- * [°Ë»ö(SELECT) ±¸¹®À» À§ÇÑ Parse Tree Á¤ÀÇ]
+ * [ê²€ìƒ‰(SELECT) êµ¬ë¬¸ì„ ìœ„í•œ Parse Tree ì •ì˜]
  *
  ***********************************************************************/
 
 // BUG-25109
-// simple select query¿¡¼­ ÂüÁ¶µÈ base table name
+// simple select queryì—ì„œ ì°¸ì¡°ëœ base table name
 typedef struct qmsBaseTableInfo
 {
     SChar           tableOwnerName[QC_MAX_OBJECT_NAME_LEN + 1];
@@ -770,7 +770,7 @@ typedef struct qmsOrderBy
     idBool                  isSiblings;
 } qmsOrderBy;
 
-// °Ë»ö(SELECT) ±¸¹®À» À§ÇÑ Parse Tree
+// ê²€ìƒ‰(SELECT) êµ¬ë¬¸ì„ ìœ„í•œ Parse Tree
 typedef struct qmsParseTree
 {
     qcParseTree               common;
@@ -788,23 +788,23 @@ typedef struct qmsParseTree
     struct qtcNode          * loopNode;
 
     // Proj-1360 Queue
-    // Dequeue statement¸¦ ¼öÇàÇÒ °æ¿ì¿¡¸¸ ¼³Á¤µÊ.
+    // Dequeue statementë¥¼ ìˆ˜í–‰í•  ê²½ìš°ì—ë§Œ ì„¤ì •ë¨.
     struct qmsQueue         * queue;
 
     // BUG-25109
-    // Äõ¸®¿¡¼­ ÂüÁ¶µÈ base table Á¤º¸
+    // ì¿¼ë¦¬ì—ì„œ ì°¸ì¡°ëœ base table ì •ë³´
     struct qmsBaseTableInfo   baseTableInfo;
 
     // PROJ-1413
-    // ÇöÀç parseTree¿¡ merge°¡ ¼öÇàµÇ¾ú´ÂÁö ¿©ºÎ
-    // order byÀı¿¡ ³ëµåº¯È­°¡ ¹ß»ıµÇ¾úÀ½À» ³ªÅ¸³½´Ù.
+    // í˜„ì¬ parseTreeì— mergeê°€ ìˆ˜í–‰ë˜ì—ˆëŠ”ì§€ ì—¬ë¶€
+    // order byì ˆì— ë…¸ë“œë³€í™”ê°€ ë°œìƒë˜ì—ˆìŒì„ ë‚˜íƒ€ë‚¸ë‹¤.
     idBool                    isTransformed;
     idBool                    isSiblings;
 
     /* PROJ-2598 Shard pilot(shard Analyze) */
     struct sdiParseTree     * mShardAnalysis;
-    idBool                    isView;       /* viewÀÎÁö ¿©ºÎ */
-    idBool                    isShardView;  /* PROJ-2646 shard viewÀÎÁö ¿©ºÎ */
+    idBool                    isView;       /* viewì¸ì§€ ì—¬ë¶€ */
+    idBool                    isShardView;  /* PROJ-2646 shard viewì¸ì§€ ì—¬ë¶€ */
 
 } qmsParseTree;
 
@@ -813,16 +813,16 @@ typedef struct qmsParseTree
 typedef struct qmsQueue
 {
     idBool     isFifo;
-    // dequeue¸¦ ¼öÇàÇÒ Å¥ Å×ÀÌºíÀÇ ID (mm¿¡¼­ »ç¿ë)
+    // dequeueë¥¼ ìˆ˜í–‰í•  í í…Œì´ë¸”ì˜ ID (mmì—ì„œ ì‚¬ìš©)
     UInt       tableID;
-    // dequeue½Ã ´ë±â ½Ã°£ (mm¿¡¼­ »ç¿ë)
+    // dequeueì‹œ ëŒ€ê¸° ì‹œê°„ (mmì—ì„œ ì‚¬ìš©)
     ULong      waitSec;
 } qmsQueue;
 
 
 # define QMS_LIMIT_UNKNOWN    ID_ULONG_MAX
 
-// LIMIT Ç¥ÇöÀ» À§ÇÑ ÀÚ·á ±¸Á¶
+// LIMIT í‘œí˜„ì„ ìœ„í•œ ìë£Œ êµ¬ì¡°
 typedef struct qmsLimitValue {
     ULong     constant;
     qtcNode * hostBindNode;
@@ -903,7 +903,7 @@ public:
 
     /////////////////////////////////////////////////////////////////////////////
     //
-    // qmsLimitValue¿¡ ´ëÇÑ interface functionµé
+    // qmsLimitValueì— ëŒ€í•œ interface functionë“¤
     //
     /////////////////////////////////////////////////////////////////////////////
 
@@ -944,7 +944,7 @@ typedef struct qmsLimitOrLoop
     qtcNode    * loopNode;
 } qmsLimitOrLoop;
 
-// FOR UPDATE ±¸¹®À» À§ÇÑ ÀÚ·á ±¸Á¶
+// FOR UPDATE êµ¬ë¬¸ì„ ìœ„í•œ ìë£Œ êµ¬ì¡°
 typedef struct qmsForUpdate
 {
 // Proj-1360 Queue
@@ -962,7 +962,7 @@ typedef enum qmsNullsOption
     QMS_NULLS_LAST  = 2
 } qmsNullsOption;
 
-// ORDER BY ±¸¹®À» À§ÇÑ ÀÚ·á ±¸Á¶
+// ORDER BY êµ¬ë¬¸ì„ ìœ„í•œ ìë£Œ êµ¬ì¡°
 typedef struct qmsSortColumns
 {
     qtcNode             * sortColumn;
@@ -972,7 +972,7 @@ typedef struct qmsSortColumns
     qmsSortColumns      * next;
 } qmsSortColumns;
 
-// SET ±¸¹®À» À§ÇÑ ÀÚ·á ±¸Á¶
+// SET êµ¬ë¬¸ì„ ìœ„í•œ ìë£Œ êµ¬ì¡°
 typedef struct qmsQuerySet
 {
     qmsSetOpType        setOp;
@@ -980,12 +980,12 @@ typedef struct qmsQuerySet
     struct qmsSFWGH   * SFWGH;
 
     //----------------------------------------------------
-    // [Query SetÀÇ dependencies]
+    // [Query Setì˜ dependencies]
     //
-    // dependencies : ÇÏÀ§ qmsSFWGHÀÇ dependenciesÀÇ Á¶ÇÕ
-    // SETÀÌ ¾Æ´Ñ °æ¿ì
+    // dependencies : í•˜ìœ„ qmsSFWGHì˜ dependenciesì˜ ì¡°í•©
+    // SETì´ ì•„ë‹Œ ê²½ìš°
     //     - dependencies = SFWGH->myDependencies;
-    // SETÀÎ °æ¿ì
+    // SETì¸ ê²½ìš°
     //     - dependencies =
     //       left->dependencies | right->dependencies | view dependencies
     //----------------------------------------------------
@@ -994,16 +994,16 @@ typedef struct qmsQuerySet
 
     qcDepInfo           depInfo;
     qcDepInfo           outerDepInfo;    // PROJ-1413 outer column dependencies
-    UShort              parentTupleID;   // PROJ-2179 subqueryÀÇ °æ¿ì¿¡ ÇÊ¿ä
+    UShort              parentTupleID;   // PROJ-2179 subqueryì˜ ê²½ìš°ì— í•„ìš”
 
     // PROJ-2415 Grouping Sets Clause
-    // Grouping Sets TransformÀÌ »ı¼ºÇÑ View´Â °³³äÀûÀ¸·Î Åõ¸íÇÑ( Dependency¸¦ °¡Áú ¼ö ÀÖ´Â )View ÀÌ¸ç
-    // ÀÌ Åõ¸íÇÑ View°¡ Dependency¸¦ °¡Áú ¼ö ÀÖµµ·Ï »óÀ§ SFWGH¸¦ ÇÏÀ§ inLineView¿¡°Ô Àü´ŞÇÏ±â À§ÇØ Ãß°¡.
+    // Grouping Sets Transformì´ ìƒì„±í•œ ViewëŠ” ê°œë…ì ìœ¼ë¡œ íˆ¬ëª…í•œ( Dependencyë¥¼ ê°€ì§ˆ ìˆ˜ ìˆëŠ” )View ì´ë©°
+    // ì´ íˆ¬ëª…í•œ Viewê°€ Dependencyë¥¼ ê°€ì§ˆ ìˆ˜ ìˆë„ë¡ ìƒìœ„ SFWGHë¥¼ í•˜ìœ„ inLineViewì—ê²Œ ì „ë‹¬í•˜ê¸° ìœ„í•´ ì¶”ê°€.
     qmsSFWGH          * outerSFWGH;
 
     // PROJ-2418 
-    // Lateral View°¡ ¿ÜºÎ ÂüÁ¶ÇØ¾ß ÇÏ´Â depInfo¸¦ ³ªÅ¸³½´Ù.
-    // SubqueryÀÇ outerDepInfo¿Í´Â ±¸º°µÈ´Ù.
+    // Lateral Viewê°€ ì™¸ë¶€ ì°¸ì¡°í•´ì•¼ í•˜ëŠ” depInfoë¥¼ ë‚˜íƒ€ë‚¸ë‹¤.
+    // Subqueryì˜ outerDepInfoì™€ëŠ” êµ¬ë³„ëœë‹¤.
     qcDepInfo           lateralDepInfo;  
 
     qmsQuerySet       * left;
@@ -1016,28 +1016,28 @@ typedef struct qmsQuerySet
     qcNamePosition      startPos;
     qcNamePosition      endPos;
     
-    // qmv::validateSelect¿¡ ÀÎÀÚ¸¦ Ãß°¡ÇÏÁö ¸øÇÏ¹Ç·Î »ı±ä member data.
-    // qmsSFWGH¿¡ flag¸¦ ³Ñ°ÜÁÖ±â À§ÇÔ.
+    // qmv::validateSelectì— ì¸ìë¥¼ ì¶”ê°€í•˜ì§€ ëª»í•˜ë¯€ë¡œ ìƒê¸´ member data.
+    // qmsSFWGHì— flagë¥¼ ë„˜ê²¨ì£¼ê¸° ìœ„í•¨.
     UInt                flag;
 
     //------------------------------
-    // Non Critical Path : optimizer¿¡¼­ »ç¿ë
+    // Non Critical Path : optimizerì—ì„œ ì‚¬ìš©
     //------------------------------
 
     struct qmoNonCrtPath     * nonCrtPath;
 
-    // PROJ-1762 ( SFWGH¿¡¼­ QuerySetÀ¸·Î À§Ä¡ ¿Å±è, SetÀÇ OrderBy Column¿¡
-    // ´ëÇÑ estimate ½Ã¿¡´Â SFWGH Á¤º¸¸¦ ³Ñ±âÁö ¾Ê±â ¶§¹® )
+    // PROJ-1762 ( SFWGHì—ì„œ QuerySetìœ¼ë¡œ ìœ„ì¹˜ ì˜®ê¹€, Setì˜ OrderBy Columnì—
+    // ëŒ€í•œ estimate ì‹œì—ëŠ” SFWGH ì •ë³´ë¥¼ ë„˜ê¸°ì§€ ì•Šê¸° ë•Œë¬¸ )
     // for detecting current parent's validation phase
     qmsProcessPhase      processPhase;
     
     //--------------------------------
-    // Analytic Function Á¤º¸ ( PROJ-1762 ) 
+    // Analytic Function ì •ë³´ ( PROJ-1762 ) 
     //--------------------------------
 
     struct qmsAnalyticFunc * analyticFuncList;
 
-    // loop node Á¤º¸
+    // loop node ì •ë³´
     qtcNode           * loopNode;
     mtcStack            loopStack;
 
@@ -1050,7 +1050,7 @@ typedef struct qmsQuerySet
 
 
 /***********************************************************************
- * [GROUP BY¸¦ À§ÇÑ ÀÚ·á ±¸Á¶]
+ * [GROUP BYë¥¼ ìœ„í•œ ìë£Œ êµ¬ì¡°]
  *
  * group by is composed of lists of qmsConcantElement
  *
@@ -1069,14 +1069,14 @@ typedef struct qmsConcatElement
 
 
 /***********************************************************************
- * [Hierarchy ±¸¹®À» À§ÇÑ ÀÚ·á ±¸Á¶]
+ * [Hierarchy êµ¬ë¬¸ì„ ìœ„í•œ ìë£Œ êµ¬ì¡°]
  *
  ***********************************************************************/
 
 typedef struct qmsHierarchy
 {
-    qtcNode         * startWith;     // START WITH ±¸¹®
-    qtcNode         * connectBy;     // CONNECT BY ±¸¹®
+    qtcNode         * startWith;     // START WITH êµ¬ë¬¸
+    qtcNode         * connectBy;     // CONNECT BY êµ¬ë¬¸
     qmsSortColumns  * siblings;      // order siblings by
     UInt              flag;
 
@@ -1091,7 +1091,7 @@ typedef struct qmsConnectBy
 } qmsConnectBy;
 
 /***********************************************************************
- * [Analytic FunctionÀ» À§ÇÑ ÀÚ·á ±¸Á¶]
+ * [Analytic Functionì„ ìœ„í•œ ìë£Œ êµ¬ì¡°]
  *
  ***********************************************************************/
 
@@ -1102,7 +1102,7 @@ typedef struct qmsAnalyticFunc
 } qmsAnalyticFunc;
 
 /***********************************************************************
- * [AggregationÀ» À§ÇÑ ÀÚ·á ±¸Á¶]
+ * [Aggregationì„ ìœ„í•œ ìë£Œ êµ¬ì¡°]
  *
  ***********************************************************************/
 
@@ -1117,7 +1117,7 @@ typedef struct qmsAggNode
     ( (_SFWGH_->aggsDepth1 != NULL) ? ID_TRUE : ID_FALSE )
 
 /***********************************************************************
- * [SELECT TargetÀ» À§ÇÑ ÀÚ·á ±¸Á¶]
+ * [SELECT Targetì„ ìœ„í•œ ìë£Œ êµ¬ì¡°]
  *
  ***********************************************************************/
 
@@ -1170,7 +1170,7 @@ typedef struct qmsInto
 } qmsInto;
 
 // To fix BUG-17642
-// CASE ... WHEN ±¸¹®À» Ã³¸®ÇÏ±â À§ÇÑ ±¸Á¶Ã¼
+// CASE ... WHEN êµ¬ë¬¸ì„ ì²˜ë¦¬í•˜ê¸° ìœ„í•œ êµ¬ì¡°ì²´
 typedef struct qmsCaseExpr {
     struct qmsWhenThenList * whenThenList;
     qtcNode                * elseNode;
@@ -1183,7 +1183,7 @@ typedef struct qmsWhenThenList {
 } qmsWhenThenList;
 
 /***********************************************************************
- * [FROM ±¸¹®À» À§ÇÑ ÀÚ·á ±¸Á¶]
+ * [FROM êµ¬ë¬¸ì„ ìœ„í•œ ìë£Œ êµ¬ì¡°]
  *
  ***********************************************************************/
 
@@ -1195,12 +1195,12 @@ typedef struct qmsFrom
 
     qmsTableRef   * tableRef;     // one table information
     qtcNode       * onCondition;  // join condition
-    // fromÀıÀÌ on condtion joinÀÎ °æ¿ì¿¡ on condition joinÀ» ±¸¼ºÇÏ´Â
-    // tableµéÀÇ dependenciesÀÇ °ªÀ» ¼³Á¤.
+    // fromì ˆì´ on condtion joinì¸ ê²½ìš°ì— on condition joinì„ êµ¬ì„±í•˜ëŠ”
+    // tableë“¤ì˜ dependenciesì˜ ê°’ì„ ì„¤ì •.
     qcDepInfo       depInfo;
 
     // PROJ-1718 Subquery unnesting
-    // Semi/anti join½Ã outer/inner tableÀ» ¸ğµÎ Æ÷ÇÔÇÏ´Â °ªÀ» ¼³Á¤ÇÑ´Ù.
+    // Semi/anti joinì‹œ outer/inner tableì„ ëª¨ë‘ í¬í•¨í•˜ëŠ” ê°’ì„ ì„¤ì •í•œë‹¤.
     qcDepInfo       semiAntiJoinDepInfo;
 
     qmsFrom       * next;
@@ -1245,10 +1245,10 @@ typedef struct qmsColumnRefList
     idBool                isMerged;
     
     // PROJ-2469 Optimize View Materialization
-    idBool                isUsed;          // Default:TRUE ·Î »ı¼ºµÇ¸ç, Optimization ½Ã¿¡ »ç¿ë 
-    idBool                usedInTarget;    // Target Validation ¶§ µî·ÏµÈ ColumnÀÎÁö ¿©ºÎ
-    UShort                targetOrder;     // ÇØ´ç Node°¡ TargetÀ¸·ÎºÎÅÍ ÂüÁ¶ µÉ ¶§, TargetÀÇ ¼ø¹ø
-    UShort                viewTargetOrder; // ÇØ´ç Node°¡ °¡¸®Å°´Â ViewÀÇ Target ¼ø¹ø
+    idBool                isUsed;          // Default:TRUE ë¡œ ìƒì„±ë˜ë©°, Optimization ì‹œì— ì‚¬ìš© 
+    idBool                usedInTarget;    // Target Validation ë•Œ ë“±ë¡ëœ Columnì¸ì§€ ì—¬ë¶€
+    UShort                targetOrder;     // í•´ë‹¹ Nodeê°€ Targetìœ¼ë¡œë¶€í„° ì°¸ì¡° ë  ë•Œ, Targetì˜ ìˆœë²ˆ
+    UShort                viewTargetOrder; // í•´ë‹¹ Nodeê°€ ê°€ë¦¬í‚¤ëŠ” Viewì˜ Target ìˆœë²ˆ
     
     qmsColumnRefList    * next;
 } qmsColumnRefList;
@@ -1332,7 +1332,7 @@ typedef struct qmsRemoteTable
         SET_EMPTY_POSITION( (_dst_)->remoteQuery );    \
     }
 
-/* PROJ-2464 hybrid partitioned table Áö¿ø */
+/* PROJ-2464 hybrid partitioned table ì§€ì› */
 typedef struct qmsPartitionSummary
 {
     UInt                     memoryPartitionCount;
@@ -1366,10 +1366,10 @@ typedef struct qmsTableRef
 
     qcStatement         * view;          // created (or inline) view
     qcStatement         * recursiveView;     // created (or inline) recursive view
-    qcStatement         * tempRecursiveView; // Àç±ÍÈ£ÃâÀ» À§ÇØ ÀÓ½Ã·Î »ç¿ëÇÏ´Â recursive view
+    qcStatement         * tempRecursiveView; // ì¬ê·€í˜¸ì¶œì„ ìœ„í•´ ì„ì‹œë¡œ ì‚¬ìš©í•˜ëŠ” recursive view
     
-    qmsTableRef         * sameViewRef;   // »óÀ§ Query¿¡ Á¸ÀçÇÏ´Â µ¿ÀÏÇÑ View
-    qcWithStmt          * withStmt;      // withÀı¿¡ °Ë»öµÈ withStmt
+    qmsTableRef         * sameViewRef;   // ìƒìœ„ Queryì— ì¡´ì¬í•˜ëŠ” ë™ì¼í•œ View
+    qcWithStmt          * withStmt;      // withì ˆì— ê²€ìƒ‰ëœ withStmt
 
     UInt                  flag;
 
@@ -1391,13 +1391,13 @@ typedef struct qmsTableRef
     qcmTableInfo        * tableInfo;
     smSCN                 tableSCN;
 
-    // PROJ-1350 Plan Tree ÀÚµ¿ Àç±¸¼º
-    // Execution ½ÃÁ¡¿¡ tableInfo³»¿ëÀ» ÂüÁ¶ÇÒ ¼ö ¾ø´Ù.
-    // µû¶ó¼­, Execution ½ÃÁ¡¿¡ tableHandleÀ» Á¢±ÙÇÏ±â À§ÇÏ¿©
-    // ÀÌ°÷¿¡ table handle Á¤º¸¸¦ ÀúÀåÇØ µĞ´Ù.
+    // PROJ-1350 Plan Tree ìë™ ì¬êµ¬ì„±
+    // Execution ì‹œì ì— tableInfoë‚´ìš©ì„ ì°¸ì¡°í•  ìˆ˜ ì—†ë‹¤.
+    // ë”°ë¼ì„œ, Execution ì‹œì ì— tableHandleì„ ì ‘ê·¼í•˜ê¸° ìœ„í•˜ì—¬
+    // ì´ê³³ì— table handle ì •ë³´ë¥¼ ì €ì¥í•´ ë‘”ë‹¤.
     void                * tableHandle;
     // BUG-29598
-    // table typeÀ» tableRef¿¡ ±â·ÏÇØµĞ´Ù.
+    // table typeì„ tableRefì— ê¸°ë¡í•´ë‘”ë‹¤.
     qcmTableType          tableType;
     UInt                  tableFlag;
     smOID                 tableOID;
@@ -1410,9 +1410,9 @@ typedef struct qmsTableRef
     //---------------------------
 
     // PROJ-1413 Simple View Merging
-    qmsColumnRefList    * viewColumnRefList; // view ÄÃ·³ ÂüÁ¶ ³ëµå¸¦ ±â·Ï
-    idBool                isMerged;          // mergeµÈ viewÀÓÀ» Ç¥½Ã
-    idBool                isNewAliasName;    // merge¿¡ ÀÇÇØ »ı¼ºµÈ aliasÀÓÀ» Ç¥½Ã
+    qmsColumnRefList    * viewColumnRefList; // view ì»¬ëŸ¼ ì°¸ì¡° ë…¸ë“œë¥¼ ê¸°ë¡
+    idBool                isMerged;          // mergeëœ viewì„ì„ í‘œì‹œ
+    idBool                isNewAliasName;    // mergeì— ì˜í•´ ìƒì„±ëœ aliasì„ì„ í‘œì‹œ
     
     /* PROJ-1090 Function-based Index */
     struct qmsExprNode  * defaultExprList;
@@ -1426,13 +1426,13 @@ typedef struct qmsTableRef
     idBool                noMergeHint;
 
     //---------------------------
-    // Åë°è Á¤º¸
-    // - ÀÏ¹İ TableÀÎ °æ¿ì, Vaildation°úÁ¤
-    // - ViewÀÇ °æ¿ì, Validation °úÁ¤ NULL
-    //                Optimization °úÁ¤ Áß¿¡ Á¤º¸ ¼³Á¤
+    // í†µê³„ ì •ë³´
+    // - ì¼ë°˜ Tableì¸ ê²½ìš°, Vaildationê³¼ì •
+    // - Viewì˜ ê²½ìš°, Validation ê³¼ì • NULL
+    //                Optimization ê³¼ì • ì¤‘ì— ì •ë³´ ì„¤ì •
     //---------------------------
 
-    struct qmoStatistics   * statInfo;  // TableÀÇ Åë°è Á¤º¸
+    struct qmoStatistics   * statInfo;  // Tableì˜ í†µê³„ ì •ë³´
 
     //---------------------------
     // PROJ-1502 PARTITIONED DISK TABLE
@@ -1442,7 +1442,7 @@ typedef struct qmsTableRef
     UInt                     partitionCount;
     UInt                     selectedPartitionID;
 
-    /* PROJ-2464 hybrid partitioned table Áö¿ø */
+    /* PROJ-2464 hybrid partitioned table ì§€ì› */
     qmsPartitionSummary    * partitionSummary;
 
     //---------------------------
@@ -1451,11 +1451,11 @@ typedef struct qmsTableRef
 
     struct qmsIndexTableRef * indexTableRef;
     UInt                      indexTableCount;
-    // index table scan½Ã ¼±ÅÃµÈ index table
+    // index table scanì‹œ ì„ íƒëœ index table
     struct qmsIndexTableRef * selectedIndexTable;
     
     /* BUG-31570
-     * DDLÀÌ ºó¹øÇÑ È¯°æ¿¡¼­ plan text¸¦ ¾ÈÀüÇÏ°Ô º¸¿©ÁÖ´Â ¹æ¹ıÀÌ ÇÊ¿äÇÏ´Ù.
+     * DDLì´ ë¹ˆë²ˆí•œ í™˜ê²½ì—ì„œ plan textë¥¼ ì•ˆì „í•˜ê²Œ ë³´ì—¬ì£¼ëŠ” ë°©ë²•ì´ í•„ìš”í•˜ë‹¤.
      */
     SChar              (* columnsName)[QC_MAX_OBJECT_NAME_LEN + 1];
 
@@ -1519,7 +1519,7 @@ typedef struct qmsIndexTableRef
 } qmsIndexTableRef;
 
 // PROJ-2204 Join Update, Delete
-// composite unique index¸¦ Ã³¸®ÇÏ±â À§ÇÑ ÀÚ·á±¸Á¶
+// composite unique indexë¥¼ ì²˜ë¦¬í•˜ê¸° ìœ„í•œ ìë£Œêµ¬ì¡°
 // (t1[i1,i2]->t2) -> (t1[i1,i2]->t3) -> null
 typedef struct qmsUniqueInfo
 {
@@ -1530,7 +1530,7 @@ typedef struct qmsUniqueInfo
 } qmsUniqueInfo;
     
 // PROJ-2204 Join Update, Delete
-// key preserved tableÀ» °è»êÇÏ±â À§ÇÑ ÀÚ·á±¸Á¶
+// key preserved tableì„ ê³„ì‚°í•˜ê¸° ìœ„í•œ ìë£Œêµ¬ì¡°
 typedef struct qmsPreservedInfo
 {
     UInt             tableCount;
@@ -1540,12 +1540,12 @@ typedef struct qmsPreservedInfo
 } qmsPreservedInfo;
 
 /***********************************************************************
- * [±âÅ¸ Á¤º¸¸¦ À§ÇÑ ÀÚ·á ±¸Á¶]
+ * [ê¸°íƒ€ ì •ë³´ë¥¼ ìœ„í•œ ìë£Œ êµ¬ì¡°]
  *
  ***********************************************************************/
 
-// Validation¿ëµµ·Î »ç¿ëÇÏ¸ç,
-// Optimizer¿¡¼­´Â Type JÀÇ ÆÇ´ÜÀÌ °¡´ÉÇÔ.
+// Validationìš©ë„ë¡œ ì‚¬ìš©í•˜ë©°,
+// Optimizerì—ì„œëŠ” Type Jì˜ íŒë‹¨ì´ ê°€ëŠ¥í•¨.
 
 typedef struct qmsOuterNode
 {
@@ -1554,14 +1554,14 @@ typedef struct qmsOuterNode
 
     //--------------------------------
     // PROJ-2448 Scalar subquery caching
-    // outer column ÀÇ materialize node ÀÇ position È¹µæ
+    // outer column ì˜ materialize node ì˜ position íšë“
     //--------------------------------
     UShort            cacheTable;
     UShort            cacheColumn;
 } qmsOuterNode;
 
 /***********************************************************************
-// ±âº» SELECT ±¸¹®À» À§ÇÑ ÀÚ·á ±¸Á¶
+// ê¸°ë³¸ SELECT êµ¬ë¬¸ì„ ìœ„í•œ ìë£Œ êµ¬ì¡°
 // SELECT ...
 // FROM ...
 // WHERE ...
@@ -1574,61 +1574,61 @@ typedef struct qmsOuterNode
 typedef struct qmsSFWGH
 {
     //--------------------------------
-    // SELECT ±¸¹®À» À§ÇÑ ÀÚ·á ±¸Á¶
+    // SELECT êµ¬ë¬¸ì„ ìœ„í•œ ìë£Œ êµ¬ì¡°
     //--------------------------------
 
     qmsSelectType         selectType;       // ALL, DISTINCT
-    struct qmsHints     * hints;            // Hint Á¤º¸
+    struct qmsHints     * hints;            // Hint ì •ë³´
     struct qmsTarget    * target;           // Select Target List
     struct qmsInto      * intoVariables;    // for stored procedure
 
     struct qmsLimit     * top;              /* BUG-36580 supported TOP */
     
     //--------------------------------
-    // FROM ±¸¹®À» À§ÇÑ ÀÚ·á ±¸Á¶
+    // FROM êµ¬ë¬¸ì„ ìœ„í•œ ìë£Œ êµ¬ì¡°
     //--------------------------------
 
     struct qmsFrom      * from;
     // BUG-34295 Join ordering ANSI style query
-    // ANSI style ·Î ±â¼úµÈ left outer join ÀÇ qmsFrom À» ´ã´Â´Ù.
+    // ANSI style ë¡œ ê¸°ìˆ ëœ left outer join ì˜ qmsFrom ì„ ë‹´ëŠ”ë‹¤.
     struct qmsFrom      * outerJoinTree;
-    // FROM Àı¿¡ ÀÖ´Â ¸ğµç Table¸¸ÀÇ DependencyÀÇ ÇÕ
+    // FROM ì ˆì— ìˆëŠ” ëª¨ë“  Tableë§Œì˜ Dependencyì˜ í•©
     qcDepInfo             depInfo;
 
     //--------------------------------
-    // WHERE ±¸¹®À» À§ÇÑ ÀÚ·á ±¸Á¶
+    // WHERE êµ¬ë¬¸ì„ ìœ„í•œ ìë£Œ êµ¬ì¡°
     //--------------------------------
 
     qtcNode             * where;
 
     //--------------------------------
-    // Hierarchy ([START WITH] [CONNECT BY]) ¸¦ À§ÇÑ ÀÚ·á ±¸Á¶
+    // Hierarchy ([START WITH] [CONNECT BY]) ë¥¼ ìœ„í•œ ìë£Œ êµ¬ì¡°
     //--------------------------------
 
     struct qmsHierarchy * hierarchy;
 
     //--------------------------------
-    // GROUP BY ¸¦ À§ÇÑ ÀÚ·á ±¸Á¶
+    // GROUP BY ë¥¼ ìœ„í•œ ìë£Œ êµ¬ì¡°
     //--------------------------------
     qmsConcatElement    * group;
 
     //--------------------------------
-    // HAVINGÀ» À§ÇÑ ÀÚ·á ±¸Á¶
+    // HAVINGì„ ìœ„í•œ ìë£Œ êµ¬ì¡°
     //--------------------------------
     qtcNode             * having;
 
     //--------------------------------
-    // Aggregation Á¤º¸
+    // Aggregation ì •ë³´
     //--------------------------------
 
-    struct qmsAggNode   * aggsDepth1;  // ÀÏ¹İ Aggregation
+    struct qmsAggNode   * aggsDepth1;  // ì¼ë°˜ Aggregation
     struct qmsAggNode   * aggsDepth2;  // Nested Aggregation
 
     //--------------------------------
-    // ±âÅ¸ Á¤º¸
+    // ê¸°íƒ€ ì •ë³´
     //--------------------------------
 
-    // SELECT ±¸¹®ÀÇ ½ÃÀÛ À§Ä¡ (for SP error message)
+    // SELECT êµ¬ë¬¸ì˜ ì‹œì‘ ìœ„ì¹˜ (for SP error message)
     qcNamePosition        startPos;
     qcNamePosition        endPos;
 
@@ -1658,31 +1658,31 @@ typedef struct qmsSFWGH
     qtcNode             * groupingInfoAddr;
 
     // PROJ-1413
-    // ÇÏÀ§ SFWGH°¡ ÇöÀç SFWGH·Î mergeµÈ ÈÄ
-    // ÇÏÀ§ SFWGH¸¦ ±â·ÏÇÑ outerColumns¿¡¼­
-    // ÇöÀç SFWGH¸¦ Ã£À» ¼ö ÀÖµµ·Ï ÇöÀç SFWGH¸¦ ±â·ÏÇÑ´Ù.
+    // í•˜ìœ„ SFWGHê°€ í˜„ì¬ SFWGHë¡œ mergeëœ í›„
+    // í•˜ìœ„ SFWGHë¥¼ ê¸°ë¡í•œ outerColumnsì—ì„œ
+    // í˜„ì¬ SFWGHë¥¼ ì°¾ì„ ìˆ˜ ìˆë„ë¡ í˜„ì¬ SFWGHë¥¼ ê¸°ë¡í•œë‹¤.
     qmsSFWGH            * mergedSFWGH;
 
     // PROJ-1413
-    // ÇöÀç SFWGH¿¡ merge°¡ ¼öÇàµÇ¾ú´ÂÁö ¿©ºÎ
-    // ¸ğµç SFWGH¿¡ ³ëµåº¯È­°¡ ¹ß»ıµÇ¾úÀ½À» ³ªÅ¸³½´Ù.
+    // í˜„ì¬ SFWGHì— mergeê°€ ìˆ˜í–‰ë˜ì—ˆëŠ”ì§€ ì—¬ë¶€
+    // ëª¨ë“  SFWGHì— ë…¸ë“œë³€í™”ê°€ ë°œìƒë˜ì—ˆìŒì„ ë‚˜íƒ€ë‚¸ë‹¤.
     idBool                isTransformed;
 
     // PROJ-2204 Join Update, Delete
     qmsPreservedInfo    * preservedInfo;
 
     //------------------------------------
-    // Critical Path : optimizer ¿¡¼­ »ç¿ë
+    // Critical Path : optimizer ì—ì„œ ì‚¬ìš©
     //------------------------------------
 
     struct qmoCrtPath   * crtPath;
 
     // PROJ-2469 Optimize View Materialization
-    // Target Validation½Ã¿¡ ¸î ¹ø Â° TargetÀ» ValidationÇÏ´Â ÁßÀÎÁö ±â·ÏÇÑ´Ù.
+    // Target Validationì‹œì— ëª‡ ë²ˆ ì§¸ Targetì„ Validationí•˜ëŠ” ì¤‘ì¸ì§€ ê¸°ë¡í•œë‹¤.
     UShort                currentTargetNum;
 
     // PROJ-2582 recursive with
-    // SFWGH¿¡ bottom recursive view°¡ ÀÖ´Ù¸é, reference id¸¦ ±â·ÏÇÑ´Ù.
+    // SFWGHì— bottom recursive viewê°€ ìˆë‹¤ë©´, reference idë¥¼ ê¸°ë¡í•œë‹¤.
     UShort                recursiveViewID;
 
     qmsQuerySet         * thisQuerySet;
@@ -1690,7 +1690,7 @@ typedef struct qmsSFWGH
 } qmsSFWGH;
 
 /***********************************************************************
- * [WITH ±¸¹®À» À§ÇÑ ÀÚ·á ±¸Á¶]
+ * [WITH êµ¬ë¬¸ì„ ìœ„í•œ ìë£Œ êµ¬ì¡°]
  * WITH query_name1 AS ( query_block1 ),
  *      query_name2 AS ( query_block2 )
  * SELECT * FROM query_name1, query_name2;

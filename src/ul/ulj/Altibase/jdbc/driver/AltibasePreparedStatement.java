@@ -66,14 +66,14 @@ public class AltibasePreparedStatement extends AltibaseStatement implements Prep
     protected List mContext;
     protected List<Column> mBindColumns;
     protected BatchDataHandle mBatchRowHandle;
-    // LobUpdator´Â ÇØ´ç Å×ÀÌºíÀÇ LOB ÄÃ·³¿¡ INSERT³ª UPDATE°¡ ¹ß»ıÇÒ °æ¿ì »ç¿ëµÈ´Ù.
-    // PreparedStatementÀÇ setter method¸¦ ÇØ´ç Å×ÀÌºíÀÇ LOB ÄÃ·³¿¡ ´ëÇØ »ç¿ëÇÒ °æ¿ì
-    // execute protocolÀÌ ¾Æ´Ñ LOB °ü·Ã protocolÀ» ÅëÇØ µ¥ÀÌÅÍ°¡ »ğÀÔµÈ´Ù.
-    // ÀÌ¸¦ À§ÇØ ÇØ´ç column¿¡ »ğÀÔÇÒ µ¥ÀÌÅÍµéÀ» LobUpdator¿¡ ÀúÀåÇØµĞ ÈÄ, execute ÈÄ¿¡ LOB protocolÀ» ÅëÇØ »ğÀÔÇÑ´Ù.
+    // LobUpdatorëŠ” í•´ë‹¹ í…Œì´ë¸”ì˜ LOB ì»¬ëŸ¼ì— INSERTë‚˜ UPDATEê°€ ë°œìƒí•  ê²½ìš° ì‚¬ìš©ëœë‹¤.
+    // PreparedStatementì˜ setter methodë¥¼ í•´ë‹¹ í…Œì´ë¸”ì˜ LOB ì»¬ëŸ¼ì— ëŒ€í•´ ì‚¬ìš©í•  ê²½ìš°
+    // execute protocolì´ ì•„ë‹Œ LOB ê´€ë ¨ protocolì„ í†µí•´ ë°ì´í„°ê°€ ì‚½ì…ëœë‹¤.
+    // ì´ë¥¼ ìœ„í•´ í•´ë‹¹ columnì— ì‚½ì…í•  ë°ì´í„°ë“¤ì„ LobUpdatorì— ì €ì¥í•´ë‘” í›„, execute í›„ì— LOB protocolì„ í†µí•´ ì‚½ì…í•œë‹¤.
     protected LobUpdator mLobUpdator = null;
-    // PROJ-2368 Batch ÀÛ¾÷¿¡ Atomic Operation Àû¿ë ¿©ºÎ Flag, Default ´Â false
+    // PROJ-2368 Batch ì‘ì—…ì— Atomic Operation ì ìš© ì—¬ë¶€ Flag, Default ëŠ” false
     private boolean mIsAtomicBatch = false;
-    // BUG-40081 batchÃ³¸®½Ã ÀÓ½ÃÄÃ·³°ªÀ» ÀúÀåÇÒ¶§ »ç¿ëµÈ´Ù.
+    // BUG-40081 batchì²˜ë¦¬ì‹œ ì„ì‹œì»¬ëŸ¼ê°’ì„ ì €ì¥í• ë•Œ ì‚¬ìš©ëœë‹¤.
     private List mTempArgValueList = new ArrayList();
     private static Logger mLogger;
 
@@ -102,7 +102,7 @@ public class AltibasePreparedStatement extends AltibaseStatement implements Prep
         try
         {
             aSql = procDowngradeAndGetTargetSql(aSql);
-            // BUG-42712 deferred »óÅÂÀÏ¶§´Â prepare µ¿ÀÛÀ» ³»ºÎ ArrayList¿¡ ÀúÀå¸¸ ÇÏ°í ³Ñ¾î°£´Ù.
+            // BUG-42712 deferred ìƒíƒœì¼ë•ŒëŠ” prepare ë™ì‘ì„ ë‚´ë¶€ ArrayListì— ì €ì¥ë§Œ í•˜ê³  ë„˜ì–´ê°„ë‹¤.
             if (mIsDeferred)
             {
                 Map sMethodInfo = new HashMap();
@@ -143,18 +143,18 @@ public class AltibasePreparedStatement extends AltibaseStatement implements Prep
             mPrepareResultColumns = getProtocolContext().getGetColumnInfoResult().getColumns();
         }
 
-        //BUG-42424 deferredÀÎ °æ¿ì¿¡´Â ÆÄ¶ó¸ŞÅÍÀÇ °¹¼ö°¡ ¸î °³ÀÎÁö ¾Ë ¼ö ¾øÀ¸¹Ç·Î ArrayList·Î ¼±¾ğ
+        //BUG-42424 deferredì¸ ê²½ìš°ì—ëŠ” íŒŒë¼ë©”í„°ì˜ ê°¯ìˆ˜ê°€ ëª‡ ê°œì¸ì§€ ì•Œ ìˆ˜ ì—†ìœ¼ë¯€ë¡œ ArrayListë¡œ ì„ ì–¸
         mBindColumns = new ArrayList<Column>();
         if (mIsDeferred)
         {
-            // BUG-42424 deferredÀÎ °æ¿ì PrepareResult Á¤º¸¸¦ ¼öµ¿»ı¼ºÇÑ´Ù.
+            // BUG-42424 deferredì¸ ê²½ìš° PrepareResult ì •ë³´ë¥¼ ìˆ˜ë™ìƒì„±í•œë‹¤.
             CmPrepareResult sPrepareResult = (CmPrepareResult)sContext.getCmResult(CmPrepareResult.MY_OP);
             sPrepareResult.setResultSetCount(1);
             sPrepareResult.setStatementId(0);
         }
         else
         {
-            // BUG-42424 deferred°¡ ¾Æ´Ñ °æ¿ì ÆÄ¶ó¸ŞÅÍ °¹¼ö¸¸Å­ List¸¦ null·Î Ã¤¿î´Ù.
+            // BUG-42424 deferredê°€ ì•„ë‹Œ ê²½ìš° íŒŒë¼ë©”í„° ê°¯ìˆ˜ë§Œí¼ Listë¥¼ nullë¡œ ì±„ìš´ë‹¤.
             for (int i = 0; i < mPrepareResult.getParameterCount(); i++)
             {
                 mBindColumns.add(null);
@@ -164,7 +164,7 @@ public class AltibasePreparedStatement extends AltibaseStatement implements Prep
 
     public void setAtomicBatch(boolean aValue) throws SQLException
     {
-    	// Target Table ¿¡ Lob Column ÀÌ Á¸ÀçÇÏ´Â °æ¿ì, Atomic Batch ¸¦ »ç¿ëÇÒ ¼ö ¾øÀ½
+    	// Target Table ì— Lob Column ì´ ì¡´ì¬í•˜ëŠ” ê²½ìš°, Atomic Batch ë¥¼ ì‚¬ìš©í•  ìˆ˜ ì—†ìŒ
         if ((aValue == true && mBatchRowHandle instanceof RowHandle))
         {
             Error.throwSQLException(ErrorDef.UNSUPPORTED_FEATURE, "atomic batch with LOB column");
@@ -246,7 +246,7 @@ public class AltibasePreparedStatement extends AltibaseStatement implements Prep
         }
         else
         {
-            // BUG-43719 setBytes¸¦ ÇßÀ»¶§ byte[]ÀÇ Å©±â¿¡ µû¶ó lob locator¸¦ »ç¿ëÇØ¾ß ÇÏ´ÂÁö ¿©ºÎ¸¦ °áÁ¤ÇÑ´Ù.
+            // BUG-43719 setBytesë¥¼ í–ˆì„ë•Œ byte[]ì˜ í¬ê¸°ì— ë”°ë¼ lob locatorë¥¼ ì‚¬ìš©í•´ì•¼ í•˜ëŠ”ì§€ ì—¬ë¶€ë¥¼ ê²°ì •í•œë‹¤.
             boolean sChangeToLob = (aValue instanceof byte[] &&
                                     ((byte[])aValue).length > ColumnConst.MAX_BYTE_LENGTH);
             changeBindColumnInfo(changeSqlType(aSqlType, sColumnInfo.getDataType(), sChangeToLob), aIndex, sColumnInfo);
@@ -255,7 +255,7 @@ public class AltibasePreparedStatement extends AltibaseStatement implements Prep
     }
 
     /**
-     * Bind Column Á¤º¸°¡ ¾øÀ» ¶§ »õ·Î ±¸¼ºÇÑ´Ù.<br/>ÀÌ¶§ ColumnInfo°´Ã¼ÀÇ change type flag¸¦ enable½ÃÅ²´Ù.
+     * Bind Column ì •ë³´ê°€ ì—†ì„ ë•Œ ìƒˆë¡œ êµ¬ì„±í•œë‹¤.<br/>ì´ë•Œ ColumnInfoê°ì²´ì˜ change type flagë¥¼ enableì‹œí‚¨ë‹¤.
      * @param aIndex
      * @param aColumnInfo
      */
@@ -264,16 +264,16 @@ public class AltibasePreparedStatement extends AltibaseStatement implements Prep
         int sColumntype = this.changeColumnType(aColumnInfo.getDataType());
         mBindColumns.set(aIndex, mConnection.channel().getColumnFactory().getInstance(sColumntype));
         ColumnInfo sClonedColumnInfo = (ColumnInfo)aColumnInfo.clone();
-        // BUG-40081 setNullÀÌ È£ÃâµÇ¾úÀ»¶§´Â ColumnInfo °´Ã¼ÀÇ shouldChangeType flag¸¦ true·Î ¼ÂÆÃÇÑ´Ù.
+        // BUG-40081 setNullì´ í˜¸ì¶œë˜ì—ˆì„ë•ŒëŠ” ColumnInfo ê°ì²´ì˜ shouldChangeType flagë¥¼ trueë¡œ ì…‹íŒ…í•œë‹¤.
         sClonedColumnInfo.setShouldChangeType(true);
         mBindColumns.get(aIndex).getDefaultColumnInfo(sClonedColumnInfo);
         mBindColumns.get(aIndex).setColumnInfo(sClonedColumnInfo);
     }
 
     /**
-     * µ¥ÀÌÅ¸¸¦ ÁÖ°í¹Ş´Âµ¥ »ç¿ëÇÏÁö ¾Ê´Â Å¸ÀÔÀº, ÀûÇÕÇÑ Å¸ÀÔÀ¸·Î ¹Ù²ãÁØ´Ù.</br>
-     * CLOB, BLOB, GEOMETRY, CHAR, NCHARÀÇ ÄÃ·³Å¸ÀÔÀ» °¢°¢ CLOB_LOCATOR, BLOB_LOCATOR, BINARY, </br>
-     * VARCHAR, NVARCHAR·Î ¹Ù²ãÁØ´Ù.
+     * ë°ì´íƒ€ë¥¼ ì£¼ê³ ë°›ëŠ”ë° ì‚¬ìš©í•˜ì§€ ì•ŠëŠ” íƒ€ì…ì€, ì í•©í•œ íƒ€ì…ìœ¼ë¡œ ë°”ê¿”ì¤€ë‹¤.</br>
+     * CLOB, BLOB, GEOMETRY, CHAR, NCHARì˜ ì»¬ëŸ¼íƒ€ì…ì„ ê°ê° CLOB_LOCATOR, BLOB_LOCATOR, BINARY, </br>
+     * VARCHAR, NVARCHARë¡œ ë°”ê¿”ì¤€ë‹¤.
      */
     private int changeColumnType(int aColumnType)
     {
@@ -290,7 +290,7 @@ public class AltibasePreparedStatement extends AltibaseStatement implements Prep
                 sResultColumnType = ColumnTypes.BINARY;
                 break;
 
-            // Batch¿¡¼­ÀÇ CHAR ¹®Á¦ ¿ìÈ¸¸¦ À§ÇÑ ²Ä¼ö (ref. BUG-39624)
+            // Batchì—ì„œì˜ CHAR ë¬¸ì œ ìš°íšŒë¥¼ ìœ„í•œ ê¼¼ìˆ˜ (ref. BUG-39624)
             case ColumnTypes.CHAR:
                 sResultColumnType = ColumnTypes.VARCHAR;
                 break;
@@ -304,10 +304,10 @@ public class AltibasePreparedStatement extends AltibaseStatement implements Prep
     }
 
     /**
-     * NCHAR ÄÃ·³°ú GEOMETRY, LOB ÄÃ·³Àº »óÈ²¿¡ ¸Â°Ô º¸Á¤ÇØ ÁØ´Ù.
+     * NCHAR ì»¬ëŸ¼ê³¼ GEOMETRY, LOB ì»¬ëŸ¼ì€ ìƒí™©ì— ë§ê²Œ ë³´ì •í•´ ì¤€ë‹¤.
      * @param aSqlType
      * @param aColumnType
-     * @param aChangeToLob lob ÄÃ·³À¸·Î º¯°æÇØ¾ß ÇÏ´ÂÁö¸¦ ³ªÅ¸³»´Â flag
+     * @param aChangeToLob lob ì»¬ëŸ¼ìœ¼ë¡œ ë³€ê²½í•´ì•¼ í•˜ëŠ”ì§€ë¥¼ ë‚˜íƒ€ë‚´ëŠ” flag
      * @return
      */
     private int changeSqlType(int aSqlType, int aColumnType, boolean aChangeToLob)
@@ -316,7 +316,7 @@ public class AltibasePreparedStatement extends AltibaseStatement implements Prep
 
         switch (aSqlType)
         {
-            // NCHAR ÄÃ·³Àº CHAR ÄÃ·³°ú charsetÀÌ ´Ù¸£¹Ç·Î º¸Á¤ÇØÁÖ¾î¾ß ÇÑ´Ù.
+            // NCHAR ì»¬ëŸ¼ì€ CHAR ì»¬ëŸ¼ê³¼ charsetì´ ë‹¤ë¥´ë¯€ë¡œ ë³´ì •í•´ì£¼ì–´ì•¼ í•œë‹¤.
             case Types.CHAR:
                 if (ColumnTypes.isNCharType(aColumnType))
                 {
@@ -324,7 +324,7 @@ public class AltibasePreparedStatement extends AltibaseStatement implements Prep
                 }
                 else
                 {
-                    // CHAR ¹®Á¦ ¿ìÈ¸¸¦ À§ÇÑ ²Ä¼ö: padding (ref. BUG-27818), Batch (ref. BUG-39624)
+                    // CHAR ë¬¸ì œ ìš°íšŒë¥¼ ìœ„í•œ ê¼¼ìˆ˜: padding (ref. BUG-27818), Batch (ref. BUG-39624)
                     sResultSqlType = AltibaseTypes.VARCHAR;
                 }
                 break;
@@ -335,14 +335,14 @@ public class AltibasePreparedStatement extends AltibaseStatement implements Prep
                 }
                 break;
 
-            // setBytes(), setObject(BINARY)·Îµµ geometry¸¦ ¼³Á¤ÇÒ ¼ö ÀÖ°Ô ÇÏ±â À§ÇÔ.
-            // BUGBUG (2012-12-14) GEOMFROMWKB() µîÀ» ½èÀ»¶§´Â ¿©ÀüÈ÷ ¾ÈµÈ´Ù; ¿ØÁö ColumnTypeÀÌ VARCHAR·Î ³ª¿Í¼­¸®;
+            // setBytes(), setObject(BINARY)ë¡œë„ geometryë¥¼ ì„¤ì •í•  ìˆ˜ ìˆê²Œ í•˜ê¸° ìœ„í•¨.
+            // BUGBUG (2012-12-14) GEOMFROMWKB() ë“±ì„ ì¼ì„ë•ŒëŠ” ì—¬ì „íˆ ì•ˆëœë‹¤; ì™ ì§€ ColumnTypeì´ VARCHARë¡œ ë‚˜ì™€ì„œë¦¬;
             case Types.BINARY:
                 if (ColumnTypes.isGeometryType(aColumnType))
                 {
                     sResultSqlType = AltibaseTypes.GEOMETRY;
                 }
-                /* clientsideautocommitÀÌ È°¼ºÈ­ µÇ¾î ÀÕ°Å³ª BUG-43719 byte[] »çÀÌÁî°¡ 65534¸¦ ³ÑÀ» ¶§´Â lob typeÀ¸·Î º¯°æÇÑ´Ù. */
+                /* clientsideautocommitì´ í™œì„±í™” ë˜ì–´ ì‡ê±°ë‚˜ BUG-43719 byte[] ì‚¬ì´ì¦ˆê°€ 65534ë¥¼ ë„˜ì„ ë•ŒëŠ” lob typeìœ¼ë¡œ ë³€ê²½í•œë‹¤. */
                 if (mConnection.isClientSideAutoCommit() || aChangeToLob)
                 {
                     if (aColumnType == ColumnTypes.BLOB)
@@ -357,7 +357,7 @@ public class AltibasePreparedStatement extends AltibaseStatement implements Prep
 
                 break;
             case Types.NUMERIC:
-                // BUG-41061 overflowÃ³¸®¸¦ À§ÇØ typeÀÌ floatÀÎ °æ¿ì numeric¿¡¼­ floatÀ¸·Î º¯°æ½ÃÅ²´Ù. 
+                // BUG-41061 overflowì²˜ë¦¬ë¥¼ ìœ„í•´ typeì´ floatì¸ ê²½ìš° numericì—ì„œ floatìœ¼ë¡œ ë³€ê²½ì‹œí‚¨ë‹¤. 
                 if (aColumnType == ColumnTypes.FLOAT)
                 {
                     sResultSqlType = AltibaseTypes.FLOAT;
@@ -370,8 +370,8 @@ public class AltibasePreparedStatement extends AltibaseStatement implements Prep
     }
 
     /**
-     * bind column Á¤º¸°¡ ¾ø°Å³ª typeÀÌ º¯°æµÇ¾úÀ»¶§ Á¤º¸¸¦ Àç±¸¼ºÇÑ´Ù.<br/>
-     * ÀÌ¶§ ColumnInfo °´Ã¼ÀÇ change flag°¡ enable µÇ¾î ÀÖ´Â °æ¿ì exceptionÀ» ¹ß»ı½ÃÅ°Áö ¾Ê°í bind ÄÃ·³Å¸ÀÔÀ» ±³Ã¼ÇÑ´Ù.
+     * bind column ì •ë³´ê°€ ì—†ê±°ë‚˜ typeì´ ë³€ê²½ë˜ì—ˆì„ë•Œ ì •ë³´ë¥¼ ì¬êµ¬ì„±í•œë‹¤.<br/>
+     * ì´ë•Œ ColumnInfo ê°ì²´ì˜ change flagê°€ enable ë˜ì–´ ìˆëŠ” ê²½ìš° exceptionì„ ë°œìƒì‹œí‚¤ì§€ ì•Šê³  bind ì»¬ëŸ¼íƒ€ì…ì„ êµì²´í•œë‹¤.
      * @param aSqlType
      * @param aIndex
      * @param aColumnInfo
@@ -384,18 +384,18 @@ public class AltibasePreparedStatement extends AltibaseStatement implements Prep
         Column sBindColumn = mBindColumns.get(aIndex - 1);
         if (sBindColumn == null || !sBindColumn.isMappedJDBCType(aSqlType))
         {
-            // IN-OUT Å¸ÀÔÀº ¼­¹ö¿¡¼­ ¹Ş¾Æ¿À´Â°Ô ¾Æ´Ï¹Ç·Î ¹é¾÷ÇØµ×´Ù°¡ ´Ù½Ã ½á¾ßÇÑ´Ù.
+            // IN-OUT íƒ€ì…ì€ ì„œë²„ì—ì„œ ë°›ì•„ì˜¤ëŠ”ê²Œ ì•„ë‹ˆë¯€ë¡œ ë°±ì—…í•´ë’€ë‹¤ê°€ ë‹¤ì‹œ ì¨ì•¼í•œë‹¤.
             byte sInOutType = (sBindColumn == null) ? ColumnInfo.IN_OUT_TARGET_TYPE_NONE : 
                                   sBindColumn.getColumnInfo().getInOutTargetType(); 
             Column sMappedColumn = mConnection.channel().getColumnFactory().getMappedColumn(aSqlType);
 
-            /* BUG-45572 bind type º¯°æ½Ã columnInfo¸¦ Ç×»ó clone ÇÏµµ·Ï º¯°æ */
+            /* BUG-45572 bind type ë³€ê²½ì‹œ columnInfoë¥¼ í•­ìƒ clone í•˜ë„ë¡ ë³€ê²½ */
             if (sMappedColumn == null)
             {
                 Error.throwSQLException(ErrorDef.UNSUPPORTED_FEATURE, AltibaseTypes.toString(aSqlType) + " type");
             }
             
-            // BUG-40081 batch¸ğµåÀÌ°í ColumnInfoÀÇ changetype flag°¡ trueÀÏ¶§´Â bind column typeÀ» ¹Ù²ãÁØ´Ù.
+            // BUG-40081 batchëª¨ë“œì´ê³  ColumnInfoì˜ changetype flagê°€ trueì¼ë•ŒëŠ” bind column typeì„ ë°”ê¿”ì¤€ë‹¤.
             if (mBatchAdded && shouldChangeBindColumnType(aSqlType, aIndex))
             {
                 mBatchRowHandle.changeBindColumnType(aIndex - 1, sMappedColumn, sColumnInfo, sInOutType);
@@ -418,20 +418,20 @@ public class AltibasePreparedStatement extends AltibaseStatement implements Prep
     }
     
     /**
-     * mArgValueListÀÇ Å©±â¸¸Å­ ·çÇÁ¸¦ µ¹¸é¼­ ÀÓÁöÀúÀå¼Ò¿¡ ÀúÀåÇß´ø °ªµéÀ» RowHandle¿¡ storeÇÑ´Ù.
+     * mArgValueListì˜ í¬ê¸°ë§Œí¼ ë£¨í”„ë¥¼ ëŒë©´ì„œ ì„ì§€ì €ì¥ì†Œì— ì €ì¥í–ˆë˜ ê°’ë“¤ì„ RowHandleì— storeí•œë‹¤.
      * @throws SQLException
      */
     private void storeTempArgValuesToRowHandle() throws SQLException
     {
         ArrayList sArgOriValue = new ArrayList();
-        // BUG-40081 ¿ø·¡ °ªµéÀ» º°µµÀÇ ArrayList¿¡ ÀúÀåÇÑ´Ù.
+        // BUG-40081 ì›ë˜ ê°’ë“¤ì„ ë³„ë„ì˜ ArrayListì— ì €ì¥í•œë‹¤.
         for (Column sColumn : mBindColumns)
         {
             sArgOriValue.add(sColumn.getObject());
         }
 
         int sStoreCursorPos = mTempArgValueList.size();
-        // BUG-40081 ÀÓ½ÃÀúÀå¼Ò¿¡ ÀúÀåÇß´ø °ªµéÀ» bind column¿¡ ¼ÂÆÃÇÑ ÈÄ storeÇÑ´Ù.
+        // BUG-40081 ì„ì‹œì €ì¥ì†Œì— ì €ì¥í–ˆë˜ ê°’ë“¤ì„ bind columnì— ì…‹íŒ…í•œ í›„ storeí•œë‹¤.
         for (int sIdx=0 ; sIdx < sStoreCursorPos; sIdx++)
         {
             ArrayList sArgumentInfo = (ArrayList)mTempArgValueList.get(sIdx);
@@ -442,7 +442,7 @@ public class AltibasePreparedStatement extends AltibaseStatement implements Prep
             mBatchRowHandle.store();
         }
         mTempArgValueList.clear();
-        // BUG-40081 ¿ø·¡ °ªµéÀ» º¹¿øÇÑ´Ù.
+        // BUG-40081 ì›ë˜ ê°’ë“¤ì„ ë³µì›í•œë‹¤.
         for (int sIdx=0; sIdx < sArgOriValue.size(); sIdx++)
         {
             mBindColumns.get(sIdx).setValue(sArgOriValue.get(sIdx));
@@ -450,9 +450,9 @@ public class AltibasePreparedStatement extends AltibaseStatement implements Prep
     }
 
     /**
-     * BUG-40081 batch ¸ğµåÀÏ¶§ ¹ÙÀÎµåµÈ ÄÃ·³ Áß typeÀ» ¹Ù²ã¾ß ÇÏ´ÂÁö È®ÀÎÇÑ´Ù.</br>
-     * ColumnInfo°´Ã¼ÀÇ change flag°¡ falseÀÌ°Å³ª ±âÁ¸ ÄÃ·³ÀÌ LOB_LOCATORÀÎ °æ¿ì¿¡´Â 
-     * CANNOT_BIND_THE_DATA_TYPE_DURING_ADDING_BATCH_JOB exceptionÀ» ´øÁø´Ù.
+     * BUG-40081 batch ëª¨ë“œì¼ë•Œ ë°”ì¸ë“œëœ ì»¬ëŸ¼ ì¤‘ typeì„ ë°”ê¿”ì•¼ í•˜ëŠ”ì§€ í™•ì¸í•œë‹¤.</br>
+     * ColumnInfoê°ì²´ì˜ change flagê°€ falseì´ê±°ë‚˜ ê¸°ì¡´ ì»¬ëŸ¼ì´ LOB_LOCATORì¸ ê²½ìš°ì—ëŠ” 
+     * CANNOT_BIND_THE_DATA_TYPE_DURING_ADDING_BATCH_JOB exceptionì„ ë˜ì§„ë‹¤.
      * @param aSqlType
      * @param aIndex
      * @return
@@ -463,7 +463,7 @@ public class AltibasePreparedStatement extends AltibaseStatement implements Prep
         if (mBindColumns.get(aIndex - 1) != null)
         {
             ColumnInfo sColumnInfo = mBindColumns.get(aIndex - 1).getColumnInfo();
-            // BUG-40081 ±âÁ¸ ÄÃ·³ÀÌ LOB_LOCATORÀÌ°Å³ª set null flag°¡ falseÀÏ¶§´Â ExceptionÀ» ´øÁø´Ù.
+            // BUG-40081 ê¸°ì¡´ ì»¬ëŸ¼ì´ LOB_LOCATORì´ê±°ë‚˜ set null flagê°€ falseì¼ë•ŒëŠ” Exceptionì„ ë˜ì§„ë‹¤.
             if (!(sColumnInfo.shouldChangeType()) || sColumnInfo.getDataType() == ColumnTypes.CLOB_LOCATOR || 
                     sColumnInfo.getDataType() == ColumnTypes.BLOB_LOCATOR)
             {
@@ -490,7 +490,7 @@ public class AltibasePreparedStatement extends AltibaseStatement implements Prep
 
         if (mIsDeferred)
         {
-            // BUG-42424 deferredÀÎ °æ¿ì ColumnInfo¸¦ ¼öµ¿»ı¼ºÇÑ´Ù.
+            // BUG-42424 deferredì¸ ê²½ìš° ColumnInfoë¥¼ ìˆ˜ë™ìƒì„±í•œë‹¤.
             addMetaColumnInfo(aIndex, aSqlType, getDefaultPrecisionForDeferred(aSqlType, aValue));
         }
         
@@ -543,7 +543,7 @@ public class AltibasePreparedStatement extends AltibaseStatement implements Prep
     {
         throwErrorForClosed();
         
-        // Ã¹  ¹øÂ° addBatch ÀÏ ¶§¸¸ ¼öÇà 
+        // ì²«  ë²ˆì§¸ addBatch ì¼ ë•Œë§Œ ìˆ˜í–‰ 
         if (!mBatchAdded)
         {
             checkParameters();
@@ -555,7 +555,7 @@ public class AltibasePreparedStatement extends AltibaseStatement implements Prep
             else
             {
                 mBatchRowHandle = new ListBufferHandle();
-                // ListBufferHandle ÀÇ Encoder ¿¡ Àû¿ëÇÒ charset name µéÀ» °¡Á®¿Í¾ßÇÑ´Ù.
+                // ListBufferHandle ì˜ Encoder ì— ì ìš©í•  charset name ë“¤ì„ ê°€ì ¸ì™€ì•¼í•œë‹¤.
                 ((CmBufferWriter)mBatchRowHandle).setCharset(mConnection.channel().getCharset(), 
                                                              mConnection.channel().getNCharset());
             }
@@ -563,7 +563,7 @@ public class AltibasePreparedStatement extends AltibaseStatement implements Prep
             mBatchRowHandle.setColumns(mBindColumns);
             mBatchRowHandle.initToStore();
         }        
-        // BUG-24704 parameter°¡ ¾øÀ¸¸é 1°Ç¸¸ add
+        // BUG-24704 parameterê°€ ì—†ìœ¼ë©´ 1ê±´ë§Œ add
         else if (mBindColumns.size() == 0)
         {
             return;
@@ -574,7 +574,7 @@ public class AltibasePreparedStatement extends AltibaseStatement implements Prep
             Error.throwSQLException(ErrorDef.TOO_MANY_BATCH_JOBS);
         }
 
-        // BUG-40081 LOBÄÃ·³ÀÌ ¾ø°í ÄÃ·³¿¡ setNullÀÌ È£ÃâµÇ¾ú´Ù¸é RowHandle¿¡ ÀúÀåÇÏÁö¾Ê°í ÀÓÁöÀúÀå¼Ò¿¡ value°ªµéÀ» ÀúÀåÇÑ´Ù.
+        // BUG-40081 LOBì»¬ëŸ¼ì´ ì—†ê³  ì»¬ëŸ¼ì— setNullì´ í˜¸ì¶œë˜ì—ˆë‹¤ë©´ RowHandleì— ì €ì¥í•˜ì§€ì•Šê³  ì„ì§€ì €ì¥ì†Œì— valueê°’ë“¤ì„ ì €ì¥í•œë‹¤.
         if (mLobUpdator == null)
         {
             if (setNullColumnExist())
@@ -588,8 +588,8 @@ public class AltibasePreparedStatement extends AltibaseStatement implements Prep
                 mBatchAdded = true;
                 return;
             }
-            /* BUG-40081 null columnÀº ¾øÁö¸¸ ÀÓ½Ãargument°ªÀÌ Á¸ÀçÇÑ´Ù¸é ÀÓ½ÃÀúÀå¼Ò¿¡ ÀÖ´Â argument°ªµéÀ» </br>
-               RowHandle·Î ÀÌµ¿½ÃÅ²´Ù.  */
+            /* BUG-40081 null columnì€ ì—†ì§€ë§Œ ì„ì‹œargumentê°’ì´ ì¡´ì¬í•œë‹¤ë©´ ì„ì‹œì €ì¥ì†Œì— ìˆëŠ” argumentê°’ë“¤ì„ </br>
+               RowHandleë¡œ ì´ë™ì‹œí‚¨ë‹¤.  */
             else if (mTempArgValueList.size() > 0)
             {
                 storeTempArgValuesToRowHandle();
@@ -600,7 +600,7 @@ public class AltibasePreparedStatement extends AltibaseStatement implements Prep
     }
 
     /**
-     * BindµÈ ÄÃ·³ Áß setNull¿¡ ÀÇÇØ Null¼ÂÆÃÀÌ µÇ¾î ÀÖ´Â ÄÃ·³ÀÌ ÀÖ´ÂÁö È®ÀÎÇÑ´Ù.
+     * Bindëœ ì»¬ëŸ¼ ì¤‘ setNullì— ì˜í•´ Nullì…‹íŒ…ì´ ë˜ì–´ ìˆëŠ” ì»¬ëŸ¼ì´ ìˆëŠ”ì§€ í™•ì¸í•œë‹¤.
      */
     private boolean setNullColumnExist()
     {
@@ -647,12 +647,12 @@ public class AltibasePreparedStatement extends AltibaseStatement implements Prep
             return EMPTY_BATCH_RESULT;
         }
         
-        // Lob Column ÀÌ Á¸ÀçÇÏ´Â °æ¿ì ÀÌÀü RowHandle »ç¿ë
+        // Lob Column ì´ ì¡´ì¬í•˜ëŠ” ê²½ìš° ì´ì „ RowHandle ì‚¬ìš©
         if (mLobUpdator != null)
         {
         	((RowHandle)mBatchRowHandle).beforeFirst();
         }
-        else if (setNullColumnExist()) // BUG-40081 setNullÄÃ·³ flag°¡ ÀÖ´Â °æ¿ì ÀÓ½ÃÀúÀå¼ÒÀÇ °ªµéÀ» RowHandle·Î storeÇÑ´Ù.
+        else if (setNullColumnExist()) // BUG-40081 setNullì»¬ëŸ¼ flagê°€ ìˆëŠ” ê²½ìš° ì„ì‹œì €ì¥ì†Œì˜ ê°’ë“¤ì„ RowHandleë¡œ storeí•œë‹¤.
         {
             storeTempArgValuesToRowHandle();
         }
@@ -666,7 +666,7 @@ public class AltibasePreparedStatement extends AltibaseStatement implements Prep
         
         try
         {
-            // LOB Column ÀÌ Á¸ÀçÇÏÁö ¾Ê´Â °æ¿ì¿¡¸¸ List Protocol À» »ç¿ë
+            // LOB Column ì´ ì¡´ì¬í•˜ì§€ ì•ŠëŠ” ê²½ìš°ì—ë§Œ List Protocol ì„ ì‚¬ìš©
             if(mLobUpdator == null)
             {
                 CmProtocol.preparedExecuteBatchUsingList((CmProtocolContextPrepExec)mContext.get(mCurrentResultIndex), 
@@ -688,7 +688,7 @@ public class AltibasePreparedStatement extends AltibaseStatement implements Prep
                 sRowHandle.beforeFirst();
                 mLobUpdator.updateLobColumns();
             }
-            /* PROJ-2190 executeBatch ÈÄ commit ÇÁ·ÎÅäÄİ Àü¼Û  */
+            /* PROJ-2190 executeBatch í›„ commit í”„ë¡œí† ì½œ ì „ì†¡  */
             CmProtocol.clientCommit((CmProtocolContextPrepExec)mContext.get(mCurrentResultIndex), mConnection.isClientSideAutoCommit());
         }
         catch (SQLException ex)
@@ -697,7 +697,7 @@ public class AltibasePreparedStatement extends AltibaseStatement implements Prep
         }
         finally
         {
-            // BUGBUG (2012-11-28) ½ºÆå¿¡¼­´Â executeBatch ÇßÀ»¶§ clearµÇ´Â°Ô ¸íÈ®ÇÏ°Ô ³ª¿ÀÁö ¾ÊÀº µí. oracle¿¡ µû¸¥´Ù.
+            // BUGBUG (2012-11-28) ìŠ¤í™ì—ì„œëŠ” executeBatch í–ˆì„ë•Œ clearë˜ëŠ”ê²Œ ëª…í™•í•˜ê²Œ ë‚˜ì˜¤ì§€ ì•Šì€ ë“¯. oracleì— ë”°ë¥¸ë‹¤.
             clearBatch();
         }
         try
@@ -714,10 +714,10 @@ public class AltibasePreparedStatement extends AltibaseStatement implements Prep
 
         if (mIsAtomicBatch && mPrepareResult.isInsertStatement())
         {
-            /* Atomic Operation Insert ¿¡ ¼º°ø ÇßÀ» °æ¿ì, array index 0 ¿¡ »ğÀÔ¿¡ ¼º°øÇÑ ·¹ÄÚµå ¼ıÀÚÀÇ ÇÕÀÌ ¹İÈ¯ µÈ´Ù. 
-               (Atomic Àº ´ÜÀÏ Insert ±¸¹®¸¸ °í·ÁÇÏ¿© ¼³°èÇÏ¿´±â ¶§¹®¿¡, ´ÜÀÏ Insert ±¸¹®ÀÌ ¾Æ´Ñ °æ¿ì, µ¿ÀÛÀ» º¸ÀåÇÒ ¼ö ¾ø´Ù.)
-               Atomic Operation µµÁß ½ÇÆĞÇÏ¸é »ó´ÜÀÇ SQLException Àı¿¡¼­ Ã³¸® µÇ¹Ç·Î ¿©±â¼­´Â ¼º°ø ÇßÀ» °æ¿ì¸¸ °í·ÁÇÏ¸é µÈ´Ù.
-                              ±âÁ¸ executeBatch Interface ¿¡ ¸ÂÃçÁÖ±â À§ÇØ »ğÀÔ¿¡ ¼º°øÇÑ ·¹ÄÚµå ¼ıÀÚ Size ÀÇ int array ¸¦ ¸¸µé°í ÀüºÎ 1 À» ³Ö¾î ¹İÈ¯ÇÑ´Ù. */
+            /* Atomic Operation Insert ì— ì„±ê³µ í–ˆì„ ê²½ìš°, array index 0 ì— ì‚½ì…ì— ì„±ê³µí•œ ë ˆì½”ë“œ ìˆ«ìì˜ í•©ì´ ë°˜í™˜ ëœë‹¤. 
+               (Atomic ì€ ë‹¨ì¼ Insert êµ¬ë¬¸ë§Œ ê³ ë ¤í•˜ì—¬ ì„¤ê³„í•˜ì˜€ê¸° ë•Œë¬¸ì—, ë‹¨ì¼ Insert êµ¬ë¬¸ì´ ì•„ë‹Œ ê²½ìš°, ë™ì‘ì„ ë³´ì¥í•  ìˆ˜ ì—†ë‹¤.)
+               Atomic Operation ë„ì¤‘ ì‹¤íŒ¨í•˜ë©´ ìƒë‹¨ì˜ SQLException ì ˆì—ì„œ ì²˜ë¦¬ ë˜ë¯€ë¡œ ì—¬ê¸°ì„œëŠ” ì„±ê³µ í–ˆì„ ê²½ìš°ë§Œ ê³ ë ¤í•˜ë©´ ëœë‹¤.
+                              ê¸°ì¡´ executeBatch Interface ì— ë§ì¶°ì£¼ê¸° ìœ„í•´ ì‚½ì…ì— ì„±ê³µí•œ ë ˆì½”ë“œ ìˆ«ì Size ì˜ int array ë¥¼ ë§Œë“¤ê³  ì „ë¶€ 1 ì„ ë„£ì–´ ë°˜í™˜í•œë‹¤. */
             sUpdatedRowCounts = new int[sUpdatedRowCounts[0]];
 
             for(int i = 0; i < sUpdatedRowCounts.length; i++)
@@ -747,7 +747,7 @@ public class AltibasePreparedStatement extends AltibaseStatement implements Prep
 
         try
         {
-            // PROJ-2427 cursor¸¦ ´İ¾Æ¾ß ÇÏ´Â Á¶°ÇÀ» °°ÀÌ ³Ñ°ÜÁØ´Ù.
+            // PROJ-2427 cursorë¥¼ ë‹«ì•„ì•¼ í•˜ëŠ” ì¡°ê±´ì„ ê°™ì´ ë„˜ê²¨ì¤€ë‹¤.
             CmProtocol.preparedExecute((CmProtocolContextPrepExec)mContext.get(mCurrentResultIndex), 
                                        mBindColumns, 
                                        mConnection.isClientSideAutoCommit(), 
@@ -763,7 +763,7 @@ public class AltibasePreparedStatement extends AltibaseStatement implements Prep
         if (mLobUpdator != null)
         {
             mLobUpdator.updateLobColumns(); 
-            /* PROJ-2190 lob ÄÃ·³ÀÌ Æ÷ÇÔµÇ¾î ÀÖÀ» ¶§´Â updateLobColumns ÈÄ º°µµ·Î commit ÇÁ·ÎÅäÄİÀ» Àü¼ÛÇÑ´Ù. */
+            /* PROJ-2190 lob ì»¬ëŸ¼ì´ í¬í•¨ë˜ì–´ ìˆì„ ë•ŒëŠ” updateLobColumns í›„ ë³„ë„ë¡œ commit í”„ë¡œí† ì½œì„ ì „ì†¡í•œë‹¤. */
             CmProtocol.clientCommit((CmProtocolContextPrepExec)mContext.get(mCurrentResultIndex), mConnection.isClientSideAutoCommit());
         }
         
@@ -777,11 +777,11 @@ public class AltibasePreparedStatement extends AltibaseStatement implements Prep
         throwErrorForClosed();
         throwErrorForBatchJob("executeQuery");
         
-        // BUGBUG (2013-02-21) ResultSetÀ» ¸¸µéÁö ¾Ê´Â PSMÀ» ¼öÇàÇÏ¸é ¿¹¿Ü´Â ³ªÁö¸¸ ¼öÇàÀº µÈ´Ù.
-        // ¼­¹ö¿¡¼­ È®ÀÎÇÏÁö ¾ÊÀ¸¹Ç·Î ResultSetÀ» ¸¸µé °¡´É¼ºÀÌ ÀÖ´Â SELECT, PSMÀÌ ¾Æ´Ò¶§¸¸ ¹Ù·Î ¿¹¿Ü¸¦ ´øÁø´Ù.
-        // PSMÀÌ ResultSetÀ» ¸¸µéÁö ¾ÊÀ» °æ¿ì¿¡´Â processExecutionQueryResult()¿¡¼­ ¿¹¿Ü¸¦ ¿Ã¸®´Âµ¥,
-        // Äõ¸® ¼öÇàÀº ÀÌ¹Ì Á¤»óÀûÀ¸·Î ´Ù ¼öÇà µÈ ´ÙÀ½ÀÌ´Ù.
-        // BUG-42424 deferred »óÅÂÀÏ¶§´Â sql¹®ÀÇ Å¸ÀÔÀ» ¾Ë ¼ö ¾ø±â¶§¹®¿¡ ÇØ´ç Á¶°ÇÀ» ¹«½ÃÇÑ´Ù.
+        // BUGBUG (2013-02-21) ResultSetì„ ë§Œë“¤ì§€ ì•ŠëŠ” PSMì„ ìˆ˜í–‰í•˜ë©´ ì˜ˆì™¸ëŠ” ë‚˜ì§€ë§Œ ìˆ˜í–‰ì€ ëœë‹¤.
+        // ì„œë²„ì—ì„œ í™•ì¸í•˜ì§€ ì•Šìœ¼ë¯€ë¡œ ResultSetì„ ë§Œë“¤ ê°€ëŠ¥ì„±ì´ ìˆëŠ” SELECT, PSMì´ ì•„ë‹ë•Œë§Œ ë°”ë¡œ ì˜ˆì™¸ë¥¼ ë˜ì§„ë‹¤.
+        // PSMì´ ResultSetì„ ë§Œë“¤ì§€ ì•Šì„ ê²½ìš°ì—ëŠ” processExecutionQueryResult()ì—ì„œ ì˜ˆì™¸ë¥¼ ì˜¬ë¦¬ëŠ”ë°,
+        // ì¿¼ë¦¬ ìˆ˜í–‰ì€ ì´ë¯¸ ì •ìƒì ìœ¼ë¡œ ë‹¤ ìˆ˜í–‰ ëœ ë‹¤ìŒì´ë‹¤.
+        // BUG-42424 deferred ìƒíƒœì¼ë•ŒëŠ” sqlë¬¸ì˜ íƒ€ì…ì„ ì•Œ ìˆ˜ ì—†ê¸°ë•Œë¬¸ì— í•´ë‹¹ ì¡°ê±´ì„ ë¬´ì‹œí•œë‹¤.
         if (!mIsDeferred && !mPrepareResult.isSelectStatement() && !mPrepareResult.isStoredProcedureStatement())
         {
             Error.throwSQLException(ErrorDef.NO_RESULTSET, getSql());
@@ -792,7 +792,7 @@ public class AltibasePreparedStatement extends AltibaseStatement implements Prep
 
         try
         {
-            // PROJ-2427 cursor¸¦ ´İ¾Æ¾ß ÇÏ´Â Á¶°ÇÀ» °°ÀÌ ³Ñ°ÜÁØ´Ù.
+            // PROJ-2427 cursorë¥¼ ë‹«ì•„ì•¼ í•˜ëŠ” ì¡°ê±´ì„ ê°™ì´ ë„˜ê²¨ì¤€ë‹¤.
             CmProtocol.preparedExecuteAndFetch((CmProtocolContextPrepExec)mContext.get(mCurrentResultIndex),
                                                 mBindColumns, 
                                                 mFetchSize, 
@@ -815,7 +815,7 @@ public class AltibasePreparedStatement extends AltibaseStatement implements Prep
     public int executeUpdate() throws SQLException
     {
         boolean sHasResult = execute();
-        // BUGBUG (2013-01-31) spec¿¡ µû¸£¸é ¿¹¿Ü¸¦ ´øÁ®¾ß ÇÑ´Ù. ±×·±µ¥, oracleÀº ¾È±×·±´Ù. ´õ·¯¿î oracle..
+        // BUGBUG (2013-01-31) specì— ë”°ë¥´ë©´ ì˜ˆì™¸ë¥¼ ë˜ì ¸ì•¼ í•œë‹¤. ê·¸ëŸ°ë°, oracleì€ ì•ˆê·¸ëŸ°ë‹¤. ë”ëŸ¬ìš´ oracle..
 //        Error.checkAndThrowSQLException(sHasResult, ErrorDef.SQL_RETURNS_RESULTSET, getSql());
         return mExecuteResultMgr.getFirst().mUpdatedCount;
     }
@@ -823,7 +823,7 @@ public class AltibasePreparedStatement extends AltibaseStatement implements Prep
     public ParameterMetaData getParameterMetaData() throws SQLException
     {
         throwErrorForClosed();
-        // BUG-42424 deferred ÀÏ¶§´Â ¸ÕÀú ÆÄ¶ó¸ŞÅÍ ¸ŞÅ¸Á¤º¸¸¦ ¹Ş¾Æ¿Í¾ß getParameterMetaData¸¦ ¼öÇàÇÒ ¼ö ÀÖ´Ù.
+        // BUG-42424 deferred ì¼ë•ŒëŠ” ë¨¼ì € íŒŒë¼ë©”í„° ë©”íƒ€ì •ë³´ë¥¼ ë°›ì•„ì™€ì•¼ getParameterMetaDataë¥¼ ìˆ˜í–‰í•  ìˆ˜ ìˆë‹¤.
         if (mIsDeferred)
         {
             receivePrepareResults();
@@ -887,7 +887,7 @@ public class AltibasePreparedStatement extends AltibaseStatement implements Prep
 
     public void setBoolean(int aParameterIndex, boolean aValue) throws SQLException
     {
-        // BUG-42424 deferredÀÏ¶§´Â booleanÀÇ precisionÀ» VARCHAR¿Í Æ²¸®°Ô º¸³»¾ß ÇÏ±â¶§¹®¿¡ value°ªÀ» °°ÀÌ º¸³½´Ù.
+        // BUG-42424 deferredì¼ë•ŒëŠ” booleanì˜ precisionì„ VARCHARì™€ í‹€ë¦¬ê²Œ ë³´ë‚´ì•¼ í•˜ê¸°ë•Œë¬¸ì— valueê°’ì„ ê°™ì´ ë³´ë‚¸ë‹¤.
         ((CommonCharVarcharColumn)getColumnForInType(aParameterIndex, Types.VARCHAR, 
                                                      Boolean.valueOf(aValue))).setTypedValue(aValue);
     }
@@ -899,7 +899,7 @@ public class AltibasePreparedStatement extends AltibaseStatement implements Prep
 
     public void setBytes(int aParameterIndex, byte[] aValue) throws SQLException
     {
-        setObject(aParameterIndex, aValue, Types.BINARY);  // BUG-38043 clientAutoCommitÀÌ È°¼ºÈ­ µÇ¾î ÀÖ´Â °æ¿ì lob locator¸¦ »ç¿ëÇÏµµ·Ï ÇÏ±â À§ÇØ setObject¸¦ È£ÃâÇÑ´Ù.
+        setObject(aParameterIndex, aValue, Types.BINARY);  // BUG-38043 clientAutoCommitì´ í™œì„±í™” ë˜ì–´ ìˆëŠ” ê²½ìš° lob locatorë¥¼ ì‚¬ìš©í•˜ë„ë¡ í•˜ê¸° ìœ„í•´ setObjectë¥¼ í˜¸ì¶œí•œë‹¤.
     }
 
     public void setCharacterStream(int aParameterIndex, Reader aValue) throws SQLException
@@ -960,8 +960,8 @@ public class AltibasePreparedStatement extends AltibaseStatement implements Prep
     }
 
     /**
-     * deferred»óÅÂÀÏ¶§ ÄÃ·³ ¸ŞÅ¸ Á¤º¸¸¦ ¼öµ¿À¸·Î »ı¼ºÇÑ´Ù. ÀÌ¶§ »ı¼ºÇÏ´Â ±âÁØÀº setXXXÇÒ¶§ÀÇ sqlTypeÀÌ´Ù.
-     * @param aIndex ÄÃ·³ ÀÎµ¦½º(1 base)
+     * deferredìƒíƒœì¼ë•Œ ì»¬ëŸ¼ ë©”íƒ€ ì •ë³´ë¥¼ ìˆ˜ë™ìœ¼ë¡œ ìƒì„±í•œë‹¤. ì´ë•Œ ìƒì„±í•˜ëŠ” ê¸°ì¤€ì€ setXXXí• ë•Œì˜ sqlTypeì´ë‹¤.
+     * @param aIndex ì»¬ëŸ¼ ì¸ë±ìŠ¤(1 base)
      * @param aDataType sql type
      * @param aPrecision Precision
      */
@@ -970,7 +970,7 @@ public class AltibasePreparedStatement extends AltibaseStatement implements Prep
         CmProtocolContextPrepExec sContext = (CmProtocolContextPrepExec)mContext.get(mCurrentResultIndex);
         CmGetBindParamInfoResult sBindParamInfoResult = (CmGetBindParamInfoResult)sContext.getCmResult(CmGetBindParamInfoResult.MY_OP);
         if (sBindParamInfoResult.getColumnInfoListSize() < aIndex ||
-            sBindParamInfoResult.getColumnInfo(aIndex) == null) // BUG-42424 ÀÌ¹Ì ÄÃ·³¸ŞÅ¸Á¤º¸°¡ »ı¼ºµÇ¾î ÀÖ´Ù¸é °Ç³Ê¶Ú´Ù.
+            sBindParamInfoResult.getColumnInfo(aIndex) == null) // BUG-42424 ì´ë¯¸ ì»¬ëŸ¼ë©”íƒ€ì •ë³´ê°€ ìƒì„±ë˜ì–´ ìˆë‹¤ë©´ ê±´ë„ˆë›´ë‹¤.
         {
             ColumnInfo sColumnInfo = new ColumnInfo();
             sColumnInfo.makeDefaultValues();
@@ -981,8 +981,8 @@ public class AltibasePreparedStatement extends AltibaseStatement implements Prep
                 mLogger.log(Level.INFO, "created bind param info for deferred : {0}", sColumnInfo);
             }
             /*
-             * BUG-42879 mBindColumns´Â changeBindColumnInfo¸Ş¼Òµå¿¡¼­ ¸¸µé¾îÁö±â¶§¹®¿¡ ¿©±â¼± null·Î ¸®½ºÆ®¸¦ Ã¤¿î´Ù.
-             * setXXX(3, 1)°ú °°ÀÌ ¼¼¹øÂ° Ç×¸ñÀ» ¸ÕÀú ¼ÂÆÃÇÑ °æ¿ì¿¡´Â Ã¹¹øÂ°¿Í µÎ¹øÂ°¸¦ null·Î Ã¤¿îÈÄ ¸¶Áö¸·À» null·Î Ã¤¿î´Ù.
+             * BUG-42879 mBindColumnsëŠ” changeBindColumnInfoë©”ì†Œë“œì—ì„œ ë§Œë“¤ì–´ì§€ê¸°ë•Œë¬¸ì— ì—¬ê¸°ì„  nullë¡œ ë¦¬ìŠ¤íŠ¸ë¥¼ ì±„ìš´ë‹¤.
+             * setXXX(3, 1)ê³¼ ê°™ì´ ì„¸ë²ˆì§¸ í•­ëª©ì„ ë¨¼ì € ì…‹íŒ…í•œ ê²½ìš°ì—ëŠ” ì²«ë²ˆì§¸ì™€ ë‘ë²ˆì§¸ë¥¼ nullë¡œ ì±„ìš´í›„ ë§ˆì§€ë§‰ì„ nullë¡œ ì±„ìš´ë‹¤.
              */
             if (mBindColumns.size() < aIndex)
             {
@@ -1002,14 +1002,14 @@ public class AltibasePreparedStatement extends AltibaseStatement implements Prep
 
     public void setNull(int aParameterIndex, int aSqlType) throws SQLException
     {
-        // BUG-38681 batch Ã³¸® µµÁß sqlTypeÀÌ ¹Ù²ğ ¼ö ÀÖ°í lob ÄÃ·³ÀÎ °æ¿ì ÇØ´ç °ªÀÌ nullÀÌ´õ¶óµµ
-        // loblocator¸¦ »ı¼ºÇØ¾ßÇÏ±â ¶§¹®¿¡ setObject(,,Types.NULL)·Î È£ÃâÇÑ´Ù.
+        // BUG-38681 batch ì²˜ë¦¬ ë„ì¤‘ sqlTypeì´ ë°”ë€” ìˆ˜ ìˆê³  lob ì»¬ëŸ¼ì¸ ê²½ìš° í•´ë‹¹ ê°’ì´ nullì´ë”ë¼ë„
+        // loblocatorë¥¼ ìƒì„±í•´ì•¼í•˜ê¸° ë•Œë¬¸ì— setObject(,,Types.NULL)ë¡œ í˜¸ì¶œí•œë‹¤.
         this.setObject(aParameterIndex, null, Types.NULL);
     }
 
     public void setNull(int aParameterIndex, int aSqlType, String aTypeName) throws SQLException
     {
-        // REF, STRUCT, DISTINCT¸¦ Áö¿øÇÏÁö ¾Ê±â ¶§¹®¿¡ aTypeNameÀ» ¹«½ÃÇÑ´Ù.
+        // REF, STRUCT, DISTINCTë¥¼ ì§€ì›í•˜ì§€ ì•Šê¸° ë•Œë¬¸ì— aTypeNameì„ ë¬´ì‹œí•œë‹¤.
         setNull(aParameterIndex, aSqlType);
     }
 
@@ -1017,7 +1017,7 @@ public class AltibasePreparedStatement extends AltibaseStatement implements Prep
     {
         if (aTargetSqlType == Types.NUMERIC || aTargetSqlType == Types.DECIMAL)
         {
-            // oracleÀÌ scaleÀ» ¹«½ÃÇÑ´Ù. ¿ì¸®µµ ¹«½Ã;
+            // oracleì´ scaleì„ ë¬´ì‹œí•œë‹¤. ìš°ë¦¬ë„ ë¬´ì‹œ;
             BigDecimal sDecimalValue = new BigDecimal(aValue.toString());
             setBigDecimal(aParameterIndex, sDecimalValue);
         }
@@ -1029,19 +1029,19 @@ public class AltibasePreparedStatement extends AltibaseStatement implements Prep
 
     public void setObject(int aParameterIndex, Object aValue, int aTargetSqlType) throws SQLException
     {
-        // BUG-42424 setObject(int, Object, int)°°Àº °æ¿ì ¼­¹ö·ÎºÎÅÍ ¸ÕÀú prepare°á°ú¸¦ ¹Ş¾Æ¾ßÇÑ´Ù.
+        // BUG-42424 setObject(int, Object, int)ê°™ì€ ê²½ìš° ì„œë²„ë¡œë¶€í„° ë¨¼ì € prepareê²°ê³¼ë¥¼ ë°›ì•„ì•¼í•œë‹¤.
         if (mIsDeferred)
         {
             receivePrepareResults();
         }
         Column sColumn = getColumnForInType(aParameterIndex, aTargetSqlType, aValue);
 
-        // BLOB°ú CLOBÀ» ºĞ¸®ÇÏ´Â ÀÌÀ¯´Â »ğÀÔ °´Ã¼ À¯Çü¿¡ µû¶ó »ğÀÔ °¡´ÉÇÑ °´Ã¼°¡ ´Ù¸£±â ¶§¹®ÀÌ´Ù.
-        // instanceof ¿¬»êÀ¸·Î °´Ã¼ÀÇ Å¸ÀÔÀ» Ã£´Â ¿¬»êÀº ºñ¿ëÀÌ Å©¹Ç·Î ÀÌ¸¦ ÁÙÀÌ±â À§ÇØ == ¿¬»êÀ¸·Î Ã³¸®ÇÒ ¼ö ÀÖ´Â ºÎºĞÀ» ¹Ì¸® Ã³¸®ÇÔ.
+        // BLOBê³¼ CLOBì„ ë¶„ë¦¬í•˜ëŠ” ì´ìœ ëŠ” ì‚½ì… ê°ì²´ ìœ í˜•ì— ë”°ë¼ ì‚½ì… ê°€ëŠ¥í•œ ê°ì²´ê°€ ë‹¤ë¥´ê¸° ë•Œë¬¸ì´ë‹¤.
+        // instanceof ì—°ì‚°ìœ¼ë¡œ ê°ì²´ì˜ íƒ€ì…ì„ ì°¾ëŠ” ì—°ì‚°ì€ ë¹„ìš©ì´ í¬ë¯€ë¡œ ì´ë¥¼ ì¤„ì´ê¸° ìœ„í•´ == ì—°ì‚°ìœ¼ë¡œ ì²˜ë¦¬í•  ìˆ˜ ìˆëŠ” ë¶€ë¶„ì„ ë¯¸ë¦¬ ì²˜ë¦¬í•¨.
         setObjectInternal(aValue, sColumn);
     }
 
-    // BUG-42424 getMetaData°¡ PreparedStatementÀÇ ÀÎÅÍÆäÀÌ½ºÀÌ±â¶§¹®¿¡ AltibaseStatement¿¡¼­ AltibasePreparedStatement·Î ÀÌµ¿ÇÑ´Ù.
+    // BUG-42424 getMetaDataê°€ PreparedStatementì˜ ì¸í„°í˜ì´ìŠ¤ì´ê¸°ë•Œë¬¸ì— AltibaseStatementì—ì„œ AltibasePreparedStatementë¡œ ì´ë™í•œë‹¤.
     public ResultSetMetaData getMetaData() throws SQLException
     {
         throwErrorForClosed();
@@ -1049,7 +1049,7 @@ public class AltibasePreparedStatement extends AltibaseStatement implements Prep
 
         if (mIsDeferred)
         {
-            // BUG-42424 deferred»óÅÂÀÏ¶§´Â ¸ÕÀú prepare °á°ú¸¦ ¹Ş¾Æ¿Í¾ß ÇÑ´Ù.
+            // BUG-42424 deferredìƒíƒœì¼ë•ŒëŠ” ë¨¼ì € prepare ê²°ê³¼ë¥¼ ë°›ì•„ì™€ì•¼ í•œë‹¤.
             receivePrepareResults();
         }
         
@@ -1065,14 +1065,14 @@ public class AltibasePreparedStatement extends AltibaseStatement implements Prep
     }
 
     /**
-     * deferred »óÅÂÀÏ¶§ Æ¯Á¤ÇÑ °æ¿ì¿¡´Â ¸ÕÀú prepareÇÑ °á°ú¸¦ ¹Ş¾Æ¿Â´Ù.
+     * deferred ìƒíƒœì¼ë•Œ íŠ¹ì •í•œ ê²½ìš°ì—ëŠ” ë¨¼ì € prepareí•œ ê²°ê³¼ë¥¼ ë°›ì•„ì˜¨ë‹¤.
      * @throws SQLException
      */
     private void receivePrepareResults() throws SQLException
     {
         CmProtocolContextPrepExec sContext = (CmProtocolContextPrepExec)mContext.get(mCurrentResultIndex);
         CmPrepareResult sPrepareResult = (CmPrepareResult)sContext.getCmResult(CmPrepareResult.MY_OP);
-        // BUG-42424 PrepareResult°¡ ¾øÀ» °æ¿ì defer ¿äÃ»À» ¹«½ÃÇÏ°í prepare¿äÃ»À» ¸ÕÀú º¸³½´Ù.
+        // BUG-42424 PrepareResultê°€ ì—†ì„ ê²½ìš° defer ìš”ì²­ì„ ë¬´ì‹œí•˜ê³  prepareìš”ì²­ì„ ë¨¼ì € ë³´ë‚¸ë‹¤.
         if (!sPrepareResult.isDataArrived()) 
         {
             if (TraceFlag.TRACE_COMPILE && TraceFlag.TRACE_ENABLED)
@@ -1081,14 +1081,14 @@ public class AltibasePreparedStatement extends AltibaseStatement implements Prep
             }
             synchronized (mConnection.channel())
             {
-                // BUG-42712 prepare°á°ú¸¦ ¹Ş±âÀü ¸ÕÀú deferredµÈ ¿äÃ»À» ¹öÆÛ¿¡ writeÇÑ´Ù.
+                // BUG-42712 prepareê²°ê³¼ë¥¼ ë°›ê¸°ì „ ë¨¼ì € deferredëœ ìš”ì²­ì„ ë²„í¼ì— writeí•œë‹¤.
                 CmProtocol.invokeDeferredRequests(mDeferredRequests);
                 mConnection.channel().sendAndReceive();
                 CmOperation.readProtocolResult(sContext);
                 mPrepareResult = sContext.getPrepareResult();
                 int sParamCnt = mPrepareResult.getParameterCount();
                 int sBindColumnSize = mBindColumns.size();
-                // BUG-42879 ÇöÀç ¹ÙÀÎµåµÈ ÄÃ·³¼ö°¡ ¼­¹ö·ÎºÎÅÍ ¹Ş¾Æ¿Â ÄÃ·³¼öº¸´Ù ÀÛÀº °æ¿ì ³ª¸ÓÁö¸¦ null·Î Ã¤¿î´Ù.
+                // BUG-42879 í˜„ì¬ ë°”ì¸ë“œëœ ì»¬ëŸ¼ìˆ˜ê°€ ì„œë²„ë¡œë¶€í„° ë°›ì•„ì˜¨ ì»¬ëŸ¼ìˆ˜ë³´ë‹¤ ì‘ì€ ê²½ìš° ë‚˜ë¨¸ì§€ë¥¼ nullë¡œ ì±„ìš´ë‹¤.
                 for (int i = 0; i < sParamCnt - sBindColumnSize; i++)
                 {
                     mBindColumns.add(null);
@@ -1102,8 +1102,8 @@ public class AltibasePreparedStatement extends AltibaseStatement implements Prep
     }
 
     /**
-     * sqlType¿¡ ÇØ´çÇÏ´Â ±âº» precision °ªÀ» ±¸ÇÑ´Ù.</br> VARCHARÅ¸ÀÔÀÎ °æ¿ì value¸¦ ÀÌ¿ëÇØ precisionÀ» °è»êÇØ¾ß ÇÏ±â¶§¹®¿¡
-     * argument·Î °ªÀ» Àü´Ş¹Ş´Â´Ù.</br> deferredÀÎ °æ¿ì¿¡¸¸ ÇØ´ç ¸Ş¼Òµå¸¦ ÀÌ¿ëÇÑ´Ù.
+     * sqlTypeì— í•´ë‹¹í•˜ëŠ” ê¸°ë³¸ precision ê°’ì„ êµ¬í•œë‹¤.</br> VARCHARíƒ€ì…ì¸ ê²½ìš° valueë¥¼ ì´ìš©í•´ precisionì„ ê³„ì‚°í•´ì•¼ í•˜ê¸°ë•Œë¬¸ì—
+     * argumentë¡œ ê°’ì„ ì „ë‹¬ë°›ëŠ”ë‹¤.</br> deferredì¸ ê²½ìš°ì—ë§Œ í•´ë‹¹ ë©”ì†Œë“œë¥¼ ì´ìš©í•œë‹¤.
      * @param aTargetSqlType
      * @param aValue
      * @return
@@ -1307,7 +1307,7 @@ public class AltibasePreparedStatement extends AltibaseStatement implements Prep
 
     public void setString(int aParameterIndex, String aValue) throws SQLException
     {
-        // BUG-42424 precision °ª °è»êÀ» À§ÇØ value¸¦ °°ÀÌ ³Ñ°ÜÁØ´Ù.
+        // BUG-42424 precision ê°’ ê³„ì‚°ì„ ìœ„í•´ valueë¥¼ ê°™ì´ ë„˜ê²¨ì¤€ë‹¤.
         getColumnForInType(aParameterIndex, Types.VARCHAR, aValue).setValue(aValue);
     }
 
@@ -1406,7 +1406,7 @@ public class AltibasePreparedStatement extends AltibaseStatement implements Prep
     
     private void checkBindColumnLength(int aIndex) throws SQLException
     {
-        if (mIsDeferred) return;    // BUG-42424 deferred»óÅÂÀÏ¶§´Â ¹ÙÀÎµåÄÃ·³±æÀÌ¸¦ ¾ËÁö¸øÇÏ±â ¶§¹®¿¡ ¹«½ÃÇÑ´Ù.
+        if (mIsDeferred) return;    // BUG-42424 deferredìƒíƒœì¼ë•ŒëŠ” ë°”ì¸ë“œì»¬ëŸ¼ê¸¸ì´ë¥¼ ì•Œì§€ëª»í•˜ê¸° ë•Œë¬¸ì— ë¬´ì‹œí•œë‹¤.
         
         if (mBindColumns.size() == 0 && aIndex > 0)
         {
@@ -1434,7 +1434,7 @@ public class AltibasePreparedStatement extends AltibaseStatement implements Prep
     }
 
     /**
-     * Trace logging ½Ã statement °£ ½Äº°À» À§ÇØ unique id ¸¦ ¹İÈ¯ÇÑ´Ù.
+     * Trace logging ì‹œ statement ê°„ ì‹ë³„ì„ ìœ„í•´ unique id ë¥¼ ë°˜í™˜í•œë‹¤.
      */
     String getTraceUniqueId()
     {

@@ -929,7 +929,7 @@ IDE_RC rpdConvertSQL::getColumnClause( rpdColumn    * aColumnForSource,
             /* do nothing */
         }
 
-        /* trim ÇÏ°í pad ÀÌÈÄ¿¡ À§Ä¡¸¦ º¯°æ ÇÏ¿©¾ß ÇÑ´Ù */
+        /* trim í•˜ê³  pad ì´í›„ì— ìœ„ì¹˜ë¥¼ ë³€ê²½ í•˜ì—¬ì•¼ í•œë‹¤ */
         sColumnValueLength = sColumnValueLength - idlOS::strlen( sColumnValue );
         sColumnValue = sColumnValue + idlOS::strlen( sColumnValue );
 

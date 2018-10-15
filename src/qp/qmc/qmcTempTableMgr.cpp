@@ -35,7 +35,7 @@ qmcTempTableMgr::init( qmcdTempTableMgr * aTableMgr,
 /***********************************************************************
  *
  * Description :
- *    Temp Table Manager¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+ *    Temp Table Managerë¥¼ ì´ˆê¸°í™”í•œë‹¤.
  *
  * Implementation :
  *
@@ -46,12 +46,12 @@ qmcTempTableMgr::init( qmcdTempTableMgr * aTableMgr,
 
     IDE_DASSERT( aTableMgr != NULL );
 
-    // Table ManagerÀÇ ¸â¹ö ÃÊ±âÈ­
+    // Table Managerì˜ ë©¤ë²„ ì´ˆê¸°í™”
     aTableMgr->mTop = NULL;
     aTableMgr->mCurrent = NULL;
     aTableMgr->mMemory = NULL;
 
-    // Table Handle °´Ã¼ °ü¸®¸¦ À§ÇÑ Memory °ü¸®ÀÚÀÇ ÃÊ±âÈ­
+    // Table Handle ê°ì²´ ê´€ë¦¬ë¥¼ ìœ„í•œ Memory ê´€ë¦¬ìžì˜ ì´ˆê¸°í™”
     IDU_FIT_POINT( "qmcTempTableMgr::init::alloc::mMemory",
                     idERR_ABORT_InsufficientMemory );
 
@@ -74,15 +74,15 @@ qmcTempTableMgr::init( qmcdTempTableMgr * aTableMgr,
 }
 
 /* BUG-38290 
- * Table manager ÀÇ addTempTable ÇÔ¼ö´Â µ¿½Ã¿¡ È£ÃâµÉ ¼ö ¾ø¾î¼­
- * µ¿½Ã¼º ¹®Á¦°¡ ¹ß»ýÇÏÁö ¾Ê´Â´Ù.
- * µû¶ó¼­ addTempTable ÇÔ¼ö´Â mutex ¸¦ ÅëÇÑ µ¿½Ã¼º Á¦¾î¸¦ ÇÒ ÇÊ¿ä°¡ ¾ø´Ù.
+ * Table manager ì˜ addTempTable í•¨ìˆ˜ëŠ” ë™ì‹œì— í˜¸ì¶œë  ìˆ˜ ì—†ì–´ì„œ
+ * ë™ì‹œì„± ë¬¸ì œê°€ ë°œìƒí•˜ì§€ ì•ŠëŠ”ë‹¤.
+ * ë”°ë¼ì„œ addTempTable í•¨ìˆ˜ëŠ” mutex ë¥¼ í†µí•œ ë™ì‹œì„± ì œì–´ë¥¼ í•  í•„ìš”ê°€ ì—†ë‹¤.
  *
- * µ¿½Ã¼º ¹®Á¦°¡ ¹ß»ýÇÏ·Á¸é addTempTable ÇÔ¼ö°¡ µ¿½Ã¿¡ È£ÃâµÇ¾î¾ß ÇÑ´Ù.
- * ±×·¯±â À§ÇØ¼­´Â service thread ¿Í worker thread,
- * È¤Àº worker thread ¿Í worker thread °¡ µ¿½Ã¿¡ temp table À» »ý¼ºÇØ¾ß ÇÑ´Ù.
+ * ë™ì‹œì„± ë¬¸ì œê°€ ë°œìƒí•˜ë ¤ë©´ addTempTable í•¨ìˆ˜ê°€ ë™ì‹œì— í˜¸ì¶œë˜ì–´ì•¼ í•œë‹¤.
+ * ê·¸ëŸ¬ê¸° ìœ„í•´ì„œëŠ” service thread ì™€ worker thread,
+ * í˜¹ì€ worker thread ì™€ worker thread ê°€ ë™ì‹œì— temp table ì„ ìƒì„±í•´ì•¼ í•œë‹¤.
  *
- * ÇöÀç temp table À» »ý¼ºÇÏ´Â °÷Àº ´ÙÀ½ ³ëµåµéÀÇ firstInit ÇÔ¼öÀÌ´Ù.
+ * í˜„ìž¬ temp table ì„ ìƒì„±í•˜ëŠ” ê³³ì€ ë‹¤ìŒ ë…¸ë“œë“¤ì˜ firstInit í•¨ìˆ˜ì´ë‹¤.
  *   AGGR
  *   CUBE
  *   GRAG
@@ -93,24 +93,24 @@ qmcTempTableMgr::init( qmcdTempTableMgr * aTableMgr,
  *   SITS
  *   WNST
  *
- * Worker thread ¿¡ ÀÇÇØ init ÀÌ ½ÇÇàµÇ·Á¸é PRLQ ÀÇ ¾Æ·¡¿¡
- * ÇÃ·£ ³ëµå°¡ À§Ä¡ÇØ¾ß ÇÏ´Âµ¥, À§ ³ëµåµéÀº ÇöÀç PRLQ ÀÇ ¾Æ·¡¿¡ ¿Ã ¼ö ¾ø´Ù.
- * ±×·¯¹Ç·Î ÀÏ¹ÝÀûÀÎ °æ¿ì¿¡´Â worker thread ¿¡ ÀÇÇØ temp table ÀÌ
- * »ý¼ºµÉ ¼ö ¾ø°í, µ¿½Ã¼º ¹®Á¦µµ ¹ß»ýÇÏÁö ¾Ê´Â´Ù.
+ * Worker thread ì— ì˜í•´ init ì´ ì‹¤í–‰ë˜ë ¤ë©´ PRLQ ì˜ ì•„ëž˜ì—
+ * í”Œëžœ ë…¸ë“œê°€ ìœ„ì¹˜í•´ì•¼ í•˜ëŠ”ë°, ìœ„ ë…¸ë“œë“¤ì€ í˜„ìž¬ PRLQ ì˜ ì•„ëž˜ì— ì˜¬ ìˆ˜ ì—†ë‹¤.
+ * ê·¸ëŸ¬ë¯€ë¡œ ì¼ë°˜ì ì¸ ê²½ìš°ì—ëŠ” worker thread ì— ì˜í•´ temp table ì´
+ * ìƒì„±ë  ìˆ˜ ì—†ê³ , ë™ì‹œì„± ë¬¸ì œë„ ë°œìƒí•˜ì§€ ì•ŠëŠ”ë‹¤.
  *
- * ´Ù¸¸ ÇÑ°¡Áö ¿¹¿Ü·Î¼­ À§ ³ëµåµéÀÌ subquery filter ¿¡ Á¸ÀçÇÒ °æ¿ì¿¡´Â
- * worker thread ¸¦ ÅëÇØ init µÉ ¼ö ÀÖ´Ù.
+ * ë‹¤ë§Œ í•œê°€ì§€ ì˜ˆì™¸ë¡œì„œ ìœ„ ë…¸ë“œë“¤ì´ subquery filter ì— ì¡´ìž¬í•  ê²½ìš°ì—ëŠ”
+ * worker thread ë¥¼ í†µí•´ init ë  ìˆ˜ ìžˆë‹¤.
  *
- * ÇÏÁö¸¸ subquery filter ´Â partitioned table ÀÇ SCAN ¿¡ ´Þ¸± ¼ö ¾øÀ¸¹Ç·Î
- * PRLQ ¾Æ·¡¿¡ ÀÖ´Â SCAN Áß subqeury filter ¸¦ °¡Áö´Â °æ¿ì´Â
- * HASH, SORT, GRAG µîÀÇ ³ëµå·Î Á¦ÇÑµÈ´Ù.
+ * í•˜ì§€ë§Œ subquery filter ëŠ” partitioned table ì˜ SCAN ì— ë‹¬ë¦´ ìˆ˜ ì—†ìœ¼ë¯€ë¡œ
+ * PRLQ ì•„ëž˜ì— ìžˆëŠ” SCAN ì¤‘ subqeury filter ë¥¼ ê°€ì§€ëŠ” ê²½ìš°ëŠ”
+ * HASH, SORT, GRAG ë“±ì˜ ë…¸ë“œë¡œ ì œí•œëœë‹¤.
  *
- * ÀÌ·± ³ëµåµéÀº °¢ ³ëµå°¡ init µÉ ¶§ SCAN ÀÇ doIt À» ¸ðµÎ ¸¶Ä¡¹Ç·Î
- * µ¿½Ã¼º ¹®Á¦°¡ ¹ß»ýÇÏ·Á¸é µÎ °³ ÀÌ»óÀÇ HASH, SORT È¤Àº GRAG °¡
- * µ¿½Ã¿¡ init µÇ¾î¾ß ÇÑ´Ù.
+ * ì´ëŸ° ë…¸ë“œë“¤ì€ ê° ë…¸ë“œê°€ init ë  ë•Œ SCAN ì˜ doIt ì„ ëª¨ë‘ ë§ˆì¹˜ë¯€ë¡œ
+ * ë™ì‹œì„± ë¬¸ì œê°€ ë°œìƒí•˜ë ¤ë©´ ë‘ ê°œ ì´ìƒì˜ HASH, SORT í˜¹ì€ GRAG ê°€
+ * ë™ì‹œì— init ë˜ì–´ì•¼ í•œë‹¤.
  *
- * ÇÏÁö¸¸ ÇÃ·£ ³ëµå°¡ µ¿½Ã¿¡ init µÇ´Â °æ¿ì´Â Á¸ÀçÇÏÁö ¾ÊÀ¸¹Ç·Î,
- * temp table manager ÀÇ µ¿½Ã¼º ¹®Á¦´Â ¹ß»ýÇÏÁö ¾Ê´Â´Ù.
+ * í•˜ì§€ë§Œ í”Œëžœ ë…¸ë“œê°€ ë™ì‹œì— init ë˜ëŠ” ê²½ìš°ëŠ” ì¡´ìž¬í•˜ì§€ ì•Šìœ¼ë¯€ë¡œ,
+ * temp table manager ì˜ ë™ì‹œì„± ë¬¸ì œëŠ” ë°œìƒí•˜ì§€ ì•ŠëŠ”ë‹¤.
  */
 IDE_RC qmcTempTableMgr::addTempTable( iduMemory        * aMemory,
                                       qmcdTempTableMgr * aTableMgr,
@@ -119,7 +119,7 @@ IDE_RC qmcTempTableMgr::addTempTable( iduMemory        * aMemory,
 /***********************************************************************
  *
  * Description :
- *    Temp Table Manager¿¡ »ý¼ºµÈ Temp TableÀÇ HandleÀ» µî·ÏÇÑ´Ù.
+ *    Temp Table Managerì— ìƒì„±ëœ Temp Tableì˜ Handleì„ ë“±ë¡í•œë‹¤.
  *
  * Implementation :
  *
@@ -130,7 +130,7 @@ IDE_RC qmcTempTableMgr::addTempTable( iduMemory        * aMemory,
 
     qmcCreatedTable * sTable;
 
-    // Table Handle ÀúÀåÀ» À§ÇÑ °ø°£ ÇÒ´ç
+    // Table Handle ì €ìž¥ì„ ìœ„í•œ ê³µê°„ í• ë‹¹
     IDU_FIT_POINT( "qmcTempTableMgr::addTempTable::alloc::sTable",
                     idERR_ABORT_InsufficientMemory );
 
@@ -140,19 +140,19 @@ IDE_RC qmcTempTableMgr::addTempTable( iduMemory        * aMemory,
                                          (void**) & sTable )
               != IDE_SUCCESS);
 
-    // Table Handle Á¤º¸ÀÇ Setting
+    // Table Handle ì •ë³´ì˜ Setting
     sTable->tableHandle = aTableHandle;
     sTable->next   = NULL;
 
-    // Temp Table Manager¿¡ ¿¬°á
+    // Temp Table Managerì— ì—°ê²°
     if ( aTableMgr->mTop == NULL )
     {
-        // ÃÖÃÊ µî·ÏÀÎ °æ¿ì
+        // ìµœì´ˆ ë“±ë¡ì¸ ê²½ìš°
         aTableMgr->mTop = aTableMgr->mCurrent = sTable;
     }
     else
     {
-        // ÀÌ¹Ì µî·ÏµÇ¾î ÀÖ´Â °æ¿ì
+        // ì´ë¯¸ ë“±ë¡ë˜ì–´ ìžˆëŠ” ê²½ìš°
         aTableMgr->mCurrent->next = sTable;
         aTableMgr->mCurrent = sTable;
     }
@@ -173,8 +173,8 @@ qmcTempTableMgr::dropAllTempTable( qmcdTempTableMgr   * aTableMgr )
 /***********************************************************************
  *
  * Description :
- *     Temp Table Manager¿¡ µî·ÏµÈ ¸ðµç Table Handle¿¡ ´ëÇÑ
- *     Temp TableµéÀ» ¸ðµÎ »èÁ¦ÇÑ´Ù.
+ *     Temp Table Managerì— ë“±ë¡ëœ ëª¨ë“  Table Handleì— ëŒ€í•œ
+ *     Temp Tableë“¤ì„ ëª¨ë‘ ì‚­ì œí•œë‹¤.
  *
  * Implementation :
  *
@@ -185,7 +185,7 @@ qmcTempTableMgr::dropAllTempTable( qmcdTempTableMgr   * aTableMgr )
 
     qmcCreatedTable * sTable;
 
-    // ¸ðµç Table Handle¿¡ ´ëÇÏ¿© TableÀ» Drop ÇÑ´Ù.
+    // ëª¨ë“  Table Handleì— ëŒ€í•˜ì—¬ Tableì„ Drop í•œë‹¤.
     for ( sTable = aTableMgr->mTop;
           sTable != NULL;
           sTable = sTable->next )
@@ -193,13 +193,13 @@ qmcTempTableMgr::dropAllTempTable( qmcdTempTableMgr   * aTableMgr )
         IDE_TEST(smiTempTable::drop( sTable->tableHandle ) != IDE_SUCCESS);
     }
 
-    // Àç»ç¿ëÀ» À§ÇØ Memory¸¦ ClearÇÑ´Ù.
+    // ìž¬ì‚¬ìš©ì„ ìœ„í•´ Memoryë¥¼ Clearí•œë‹¤.
     if ( aTableMgr->mMemory != NULL )
     {
         // To fix BUG-17591
-        // º» ÇÔ¼ö°¡ ºÒ¸®´Â ½ÃÁ¡Àº qmxMemory°¡ query statement´ÜÀ§·Î
-        // execute½ÃÀÛÁöÁ¡À¸·Î µ¹¾Æ°¥ ¶§ ÀÌ±â ¶§¹®¿¡
-        // ¸Þ¸ð¸®¸¦ ÀüºÎ ÃÊ±âÈ­ ÇÏ±â À§ÇØ qmcMemory::clearÇÔ¼ö¸¦ È£ÃâÇÑ´Ù.
+        // ë³¸ í•¨ìˆ˜ê°€ ë¶ˆë¦¬ëŠ” ì‹œì ì€ qmxMemoryê°€ query statementë‹¨ìœ„ë¡œ
+        // executeì‹œìž‘ì§€ì ìœ¼ë¡œ ëŒì•„ê°ˆ ë•Œ ì´ê¸° ë•Œë¬¸ì—
+        // ë©”ëª¨ë¦¬ë¥¼ ì „ë¶€ ì´ˆê¸°í™” í•˜ê¸° ìœ„í•´ qmcMemory::clearí•¨ìˆ˜ë¥¼ í˜¸ì¶œí•œë‹¤.
         aTableMgr->mMemory->clear( ID_SIZEOF(qmcCreatedTable) );
     }
     aTableMgr->mTop = aTableMgr->mCurrent = NULL;
@@ -208,7 +208,7 @@ qmcTempTableMgr::dropAllTempTable( qmcdTempTableMgr   * aTableMgr )
 
     IDE_EXCEPTION_END;
 
-    // Error ¹ß»ý ½Ã ³²¾Æ ÀÖ´Â HandleÀ» ¸ðµÎ Á¦°ÅÇÑ´Ù.
+    // Error ë°œìƒ ì‹œ ë‚¨ì•„ ìžˆëŠ” Handleì„ ëª¨ë‘ ì œê±°í•œë‹¤.
     sTable = sTable->next;
 
     for ( ; sTable != NULL; sTable = sTable->next )

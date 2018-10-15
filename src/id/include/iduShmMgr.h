@@ -47,21 +47,21 @@ class iduShmMgr
     friend class iduShmDump;
 
 public:
-    /* ÇÒ´çµÈ Segment Header Array */
+    /* í• ë‹¹ëœ Segment Header Array */
     static iduShmHeader      ** mArrSegment;
     static SInt                 mOffsetBitSize4ShmAddr;
     static UInt                 mMaxBlockSize;
-    /* Daemon Process°¡ Startup µÈ ½Ã°£ */
+    /* Daemon Processê°€ Startup ëœ ì‹œê°„ */
     static struct timeval       mStartUpTime;
 
 private:
     /* System Segment Header */
     static iduShmSSegment     * mSSegment;
-    /* AttachµÈ SegmentÀÇ °¹¼ö */
+    /* Attachëœ Segmentì˜ ê°¯ìˆ˜ */
     static ULong                mAttachSegCnt;
 
     static SInt                 mMSBit4FF[];
-    /* Shutdown½Ã ShmÀ» ¾î¶»°Ô(Destroy or Detach) Ã³¸®ÇÒ °ÍÀÎ°¡ */
+    /* Shutdownì‹œ Shmì„ ì–´ë–»ê²Œ(Destroy or Detach) ì²˜ë¦¬í•  ê²ƒì¸ê°€ */
     static idBool               mIsShmAreaFreeAtShutdown;
 
     /* BUG-40895 Cannot destroy the shared memory segments which is created as other user */
@@ -603,15 +603,15 @@ inline void iduShmMgr::getMatrixIdx4Ins( UInt   aSize,
     if( aSize < IDU_SHM_SMALL_BLOCK_SIZE )
     {
         sFstLvlIdx = 0;
-        /* SCM_SHM_SMALL_BLOCK_SIZEº¸´Ù ÀÛÀº BlockÀº
-         * ( SCM_SHM_SMALL_BLOCK_SIZE / SCM_SHM_SND_LVL_INDEX_COUNT )·Î ³ª´©¾îÁø
-         * 1Â÷¿øÀÇ Mapping Array¸¦ ÀÌ¿ëÇÑ´Ù. */
+        /* SCM_SHM_SMALL_BLOCK_SIZEë³´ë‹¤ ì‘ì€ Blockì€
+         * ( SCM_SHM_SMALL_BLOCK_SIZE / SCM_SHM_SND_LVL_INDEX_COUNT )ë¡œ ë‚˜ëˆ„ì–´ì§„
+         * 1ì°¨ì›ì˜ Mapping Arrayë¥¼ ì´ìš©í•œë‹¤. */
         sSndLvlIdx = aSize / ( IDU_SHM_SMALL_BLOCK_SIZE / IDU_SHM_SND_LVL_INDEX_COUNT );
     }
     else
     {
-        /* SCM_SHM_SMALL_BLOCK_SIZEº¸´Ù Å« BlockÀº
-         * 2Â÷¿ø Array¸¦ ÀÌ¿ëÇÑ´Ù. */
+        /* SCM_SHM_SMALL_BLOCK_SIZEë³´ë‹¤ í° Blockì€
+         * 2ì°¨ì› Arrayë¥¼ ì´ìš©í•œë‹¤. */
         sFstLvlIdx = getMSBit( (SInt)(aSize) );
 
         sSndLvlIdx = (UInt)
@@ -636,7 +636,7 @@ inline void iduShmMgr::searchMapping( UInt   aSize,
 
     if( sSize > ( 1 << IDU_SHM_SND_LVL_IDX_COUNT_LOG2 ) )
     {
-        /* Round-Up Split Policy¸¦ »ç¿ëÇÑ´Ù. ÀÌÀ¯´Â ³í¹®À» ÂüÁ¶ÇÏ±â ¹Ù¶õ´Ù.*/
+        /* Round-Up Split Policyë¥¼ ì‚¬ìš©í•œë‹¤. ì´ìœ ëŠ” ë…¼ë¬¸ì„ ì°¸ì¡°í•˜ê¸° ë°”ë€ë‹¤.*/
         sAlignUpSize = ( 1 << ( getMSBit( aSize ) -
                                 IDU_SHM_SND_LVL_IDX_COUNT_LOG2 ) ) - 1;
         sSize += sAlignUpSize;
@@ -1102,7 +1102,7 @@ inline IDE_RC iduShmMgr::trimFreeLeading( iduShmTxInfo       * aShmTxInfo,
                               &sRemainBlockPtr )
                   != IDE_SUCCESS );
 
-        /* SplitBlock¿¡¼­ Undo Image°¡ LoggingµÇ±â ¶§¹®¿¡ LoggingÀÌ ºÒÇÊ¿ä */
+        /* SplitBlockì—ì„œ Undo Imageê°€ Loggingë˜ê¸° ë•Œë¬¸ì— Loggingì´ ë¶ˆí•„ìš” */
         IDE_TEST( setPrevBlockFree( aShmTxInfo, sRemainBlockPtr )
                   != IDE_SUCCESS );
 
@@ -1242,15 +1242,15 @@ inline void iduShmMgr::getMaxSegCnt( ULong   aMaxSize,
     ULong sShmMaxChunkCnt;
     ULong sMaxSegmentIDCnt;
 
-    /* Shared Memory Chunk ÃÖ´ë°¹¼ö¸¦ °è»êÇÑ´Ù. */
+    /* Shared Memory Chunk ìµœëŒ€ê°¯ìˆ˜ë¥¼ ê³„ì‚°í•œë‹¤. */
     sShmMaxChunkCnt = aMaxSize / aShmChunkSize;
 
     // For System Segment, Add one.
     sShmMaxChunkCnt++;
 
-    // 2 ^ (32 - mOffsetBitSize4ShmAddr)¸¸Å­ÀÇ Segment¸¸ Ç¥ÇöÇÒ ¼ö ÀÖ´Ù.
+    // 2 ^ (32 - mOffsetBitSize4ShmAddr)ë§Œí¼ì˜ Segmentë§Œ í‘œí˜„í•  ìˆ˜ ìˆë‹¤.
     IDE_ASSERT( ID_SIZEOF(idShmAddr) == ID_SIZEOF(vULong) );
-    sMaxSegmentIDCnt = IDU_SHM_GET_ADDR_SEGID( ID_vULONG_MAX ) + 1; // 0ºÎÅÍ ½ÃÀÛÇÏ¹Ç·Î
+    sMaxSegmentIDCnt = IDU_SHM_GET_ADDR_SEGID( ID_vULONG_MAX ) + 1; // 0ë¶€í„° ì‹œì‘í•˜ë¯€ë¡œ
 
     if( sShmMaxChunkCnt > sMaxSegmentIDCnt )
     {
@@ -1355,10 +1355,10 @@ inline ULong iduShmMgr::getChunkSize( ULong aReqAllocSize )
     sChunkSize    = iduProperty::getShmChunkSize();
     sSize         = aReqAllocSize;
 
-    // Round-Up Split Policy·Î ÀÎÇØ Ãß°¡µÇ´Â °ø°£À» ChunkSize¿¡ Ãß°¡ÇÑ´Ù.
+    // Round-Up Split Policyë¡œ ì¸í•´ ì¶”ê°€ë˜ëŠ” ê³µê°„ì„ ChunkSizeì— ì¶”ê°€í•œë‹¤.
     if( sSize > ( 1 << IDU_SHM_SND_LVL_IDX_COUNT_LOG2 ) )
     {
-        /* Round-Up Split Policy¸¦ »ç¿ëÇÑ´Ù. ÀÌÀ¯´Â ³í¹®À» ÂüÁ¶ÇÏ±â ¹Ù¶õ´Ù.*/
+        /* Round-Up Split Policyë¥¼ ì‚¬ìš©í•œë‹¤. ì´ìœ ëŠ” ë…¼ë¬¸ì„ ì°¸ì¡°í•˜ê¸° ë°”ë€ë‹¤.*/
         sAlignUpSize = ( 1 << ( getMSBit( aReqAllocSize ) -
                                 IDU_SHM_SND_LVL_IDX_COUNT_LOG2 ) ) - 1;
         sSize += sAlignUpSize;

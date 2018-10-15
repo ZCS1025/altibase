@@ -16,23 +16,23 @@
 
 #include <ulnPrivate.h>
 
-// BUGBUG (2014-10-15) Á¤±Ô½ÄÀÌµç yaccÀÌµç Á¤È®ÇÑ Æ÷¸ËÀ» È®ÀÎÇÏ°í ÆÄ½ÌÇÏ´Â ¹æ¹ýÀ¸·Î ¹Ù²ã¾ßÇÑ´Ù.
+// BUGBUG (2014-10-15) ì •ê·œì‹ì´ë“  yaccì´ë“  ì •í™•í•œ í¬ë§·ì„ í™•ì¸í•˜ê³  íŒŒì‹±í•˜ëŠ” ë°©ë²•ìœ¼ë¡œ ë°”ê¿”ì•¼í•œë‹¤.
 /**
- * ¿¬°á ¹®ÀÚ¿­À» ÅëÇØ ¿¬°á ¼Ó¼ºÀ» ¼³Á¤ÇÑ´Ù.
+ * ì—°ê²° ë¬¸ìžì—´ì„ í†µí•´ ì—°ê²° ì†ì„±ì„ ì„¤ì •í•œë‹¤.
  *
- * ¿¬°á ¹®ÀÚ¿­ÀÇ ÇüÅÂ´Â ´ÙÀ½À» Âü°íÇÑ´Ù:
+ * ì—°ê²° ë¬¸ìžì—´ì˜ í˜•íƒœëŠ” ë‹¤ìŒì„ ì°¸ê³ í•œë‹¤:
  * http://nok.altibase.com/x/MBr2AQ
  *
  * @param[in]  aContext     context
- * @param[in]  aConnStr     ¿¬°á ¹®ÀÚ¿­
- * @param[in]  aConnStrLen  ¿¬°á ¹®ÀÚ¿­ÀÇ ±æÀÌ(octet length)
- * @param[in]  aCallback    ÆÄ½ÌÇÑ ¼Ó¼º Ã³¸®¿¡ »ç¿ëÇÒ ÄÝ¹é
- * @param[in]  aFilter      callback¿¡¼­ »ç¿ëÇÒ ÇÊÅÍ
+ * @param[in]  aConnStr     ì—°ê²° ë¬¸ìžì—´
+ * @param[in]  aConnStrLen  ì—°ê²° ë¬¸ìžì—´ì˜ ê¸¸ì´(octet length)
+ * @param[in]  aCallback    íŒŒì‹±í•œ ì†ì„± ì²˜ë¦¬ì— ì‚¬ìš©í•  ì½œë°±
+ * @param[in]  aFilter      callbackì—ì„œ ì‚¬ìš©í•  í•„í„°
  *
- * @return Ã³¸®ÇÑ ¼Ó¼º ¼ö. ¿¡·¯°¡ ¹ß»ýÇß´Ù¸é -1
+ * @return ì²˜ë¦¬í•œ ì†ì„± ìˆ˜. ì—ëŸ¬ê°€ ë°œìƒí–ˆë‹¤ë©´ -1
  *
- * @warning ulERR_IGNORE_CONNECTION_STR_IGNORED     ¿¬°á ¹®ÀÚ¿­¿¡¼­ ÁöÁ¤ÇÑ ¼Ó¼ºÀ» ¹«½ÃÇßÀ» °æ¿ì
- * @error   ulERR_ABORT_INVALID_CONNECTION_STR_FORM ¿¬°á ¹®ÀÚ¿­ Æ÷¸ËÀÌ Àß¸øµÈ °æ¿ì
+ * @warning ulERR_IGNORE_CONNECTION_STR_IGNORED     ì—°ê²° ë¬¸ìžì—´ì—ì„œ ì§€ì •í•œ ì†ì„±ì„ ë¬´ì‹œí–ˆì„ ê²½ìš°
+ * @error   ulERR_ABORT_INVALID_CONNECTION_STR_FORM ì—°ê²° ë¬¸ìžì—´ í¬ë§·ì´ ìž˜ëª»ëœ ê²½ìš°
  */
 acp_sint32_t ulnConnStrParse( void                    *aContext,
                               const acp_char_t        *aConnStr,

@@ -171,7 +171,7 @@ typedef struct oaLogRecordCommon
  */
 /*
     Common Log : COMMIT, KEEP_ALIVE, REPL_STOP, CHANGE_META
-    °øÅëÀÎ ¸â¹ö  mType °ú mSN À» °Ë»çÇÒ¶§µµ mCommon À» ÀÌ¿ëÇÏ¿© Á¢±ÙÇÑ´Ù.
+    ê³µí†µì¸ ë©¤ë²„  mType ê³¼ mSN ì„ ê²€ì‚¬í• ë•Œë„ mCommon ì„ ì´ìš©í•˜ì—¬ ì ‘ê·¼í•œë‹¤.
 */
 typedef union oaLogRecord 
 {

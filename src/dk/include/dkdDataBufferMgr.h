@@ -26,34 +26,34 @@
 #include <dkd.h>
 
 /************************************************************************
- * DK DATA BUFFER MANAGER (ÃßÈÄº¸¿ÏÀ» À§ÇÑ comment)
+ * DK DATA BUFFER MANAGER (ì¶”í›„ë³´ì™„ì„ ìœ„í•œ comment)
  *
  *  1. Concept
  *
- *   ¿©±â¼­ data buffer ´Â DK ¸ğµâÀ» ÅëÇØ remote query °¡ ¼öÇàµÈ °æ¿ì,
- *  AltiLinker  ÇÁ·Î¼¼½º¸¦ ÅëÇØ ¿ø°İ ¼­¹ö·ÎºÎÅÍ Àü¼Û¹ŞÀº ¿ø°İ°´Ã¼ÀÇ
- *  µ¥ÀÌÅÍ¸¦ QP ·Î fetch °¡ ¿Ï·áµÇ±â Àü±îÁö ÀúÀåÇÏ±â À§ÇØ ÀÏ½ÃÀûÀ¸·Î 
- *  Á¦°øµÇ´Â record buffer µéÀÇ ÃÑÇÕÀ» ÀÇ¹ÌÇÑ´Ù. 
- *   ±×·¯³ª ¸ğµç ¸Ş¸ğ¸®¿µ¿ªÀ» ´ë»óÀ¸·Î buffer ¸¦ ÇÒ´çÇÏµµ·Ï ÇÒ ¼ö´Â ¾ø°í
- *  Á¦ÇÑµÈ Å©±â ( DKU_DBLINK_DATA_BUFFER_SIZE ) ¸¦ ½Ã½ºÅÛ ÇÁ·ÎÆÛÆ¼·Î 
- *  ÀÔ·Â¹Ş¾Æ ÇØ´ç Å©±â¸¸Å­¸¸ »ç¿ëÇÒ ¼ö ÀÖµµ·Ï ÇÑ´Ù.
+ *   ì—¬ê¸°ì„œ data buffer ëŠ” DK ëª¨ë“ˆì„ í†µí•´ remote query ê°€ ìˆ˜í–‰ëœ ê²½ìš°,
+ *  AltiLinker  í”„ë¡œì„¸ìŠ¤ë¥¼ í†µí•´ ì›ê²© ì„œë²„ë¡œë¶€í„° ì „ì†¡ë°›ì€ ì›ê²©ê°ì²´ì˜
+ *  ë°ì´í„°ë¥¼ QP ë¡œ fetch ê°€ ì™„ë£Œë˜ê¸° ì „ê¹Œì§€ ì €ì¥í•˜ê¸° ìœ„í•´ ì¼ì‹œì ìœ¼ë¡œ 
+ *  ì œê³µë˜ëŠ” record buffer ë“¤ì˜ ì´í•©ì„ ì˜ë¯¸í•œë‹¤. 
+ *   ê·¸ëŸ¬ë‚˜ ëª¨ë“  ë©”ëª¨ë¦¬ì˜ì—­ì„ ëŒ€ìƒìœ¼ë¡œ buffer ë¥¼ í• ë‹¹í•˜ë„ë¡ í•  ìˆ˜ëŠ” ì—†ê³ 
+ *  ì œí•œëœ í¬ê¸° ( DKU_DBLINK_DATA_BUFFER_SIZE ) ë¥¼ ì‹œìŠ¤í…œ í”„ë¡œí¼í‹°ë¡œ 
+ *  ì…ë ¥ë°›ì•„ í•´ë‹¹ í¬ê¸°ë§Œí¼ë§Œ ì‚¬ìš©í•  ìˆ˜ ìˆë„ë¡ í•œë‹¤.
  *
  *  2. Implementation
  *  
- *   ÇÁ·ÎÆÛÆ¼·ÎºÎÅÍ ÀÔ·Â¹ŞÀº ÃÖ´ë Å©±â ¾È¿¡¼­ µ¿ÀûÇÒ´çÇÏ´Â ¹æ¹ıÀ¸·Î 
- *  ±¸ÇöÇÑ´Ù. iduMemPool À» ÀÌ¿ëÇÏ¿© block * count ¸¸Å­ ÇÒ´çÇÏ´Â ¹æ¹ıÀ» 
- *  »ç¿ëÇÏ´Â °æ¿ì, data buffer allocation mechanism ¼³°è»ó alloc list ¿Í 
- *  free list ¸¦ µû·Î »ı¼ºÇÏ¿© À¯ÁöÇØ¾ß ÇÏ´Â ¹ø°Å·Î¿òÀÌ ÀÖÀ¸¹Ç·Î ÀÏ´ÜÀº 
- *  record buffer ¸¦ ÇÒ´ç¹ŞÀ» ¶§¸¶´Ù data buffer ÃÖ´ë Å©±â¸¦ ºñ±³ÇÏ¿© 
- *  ±× ¾È¿¡¼­¸¸ ÇÒ´ç¹ŞÀ» ¼ö ÀÖµµ·Ï ÇÏ´Â ¹æ¹ıÀ¸·Î ÇÑ´Ù. µû¶ó¼­ iduMemMgr
- *  ¸¦ ÀÌ¿ëÇÏ¿© ÇÊ¿äÇÒ ¶§¸¶´Ù record buffer ÀÇ ÇÒ´ç ¹× ÇØÁ¦¸¦ ÇÏ´Â ½ÄÀ¸·Î 
- *  ±¸ÇöÇÏ¸ç dkdDataBufferMgr ÃÊ±âÈ­ ½Ã º°µµÀÇ memory pool À» ÇÒ´ç¹ŞÀ» 
- *  ÇÊ¿ä°¡ ¾ø°í ±×·¯¹Ç·Î mutex µîÀ» ÅëÇØ memory ÀÇ µ¿½ÃÁ¢±ÙÀ» ¸·À» ÇÊ¿äµµ 
- *  ¾ø´Ù. 
- *   ¸¸¾à record buffer ÀÇ ÇÒ´ç ¹× ÇØÁ¦°¡ ¼º´É»ó overhead °¡ µÈ´Ù¸é ÃßÈÄ 
- *  iduMemPool À» ÀÌ¿ëÇÏ´Â ¹æ½ÄÀ» »ı°¢ÇØº¸µµ·Ï ÇÑ´Ù. 
+ *   í”„ë¡œí¼í‹°ë¡œë¶€í„° ì…ë ¥ë°›ì€ ìµœëŒ€ í¬ê¸° ì•ˆì—ì„œ ë™ì í• ë‹¹í•˜ëŠ” ë°©ë²•ìœ¼ë¡œ 
+ *  êµ¬í˜„í•œë‹¤. iduMemPool ì„ ì´ìš©í•˜ì—¬ block * count ë§Œí¼ í• ë‹¹í•˜ëŠ” ë°©ë²•ì„ 
+ *  ì‚¬ìš©í•˜ëŠ” ê²½ìš°, data buffer allocation mechanism ì„¤ê³„ìƒ alloc list ì™€ 
+ *  free list ë¥¼ ë”°ë¡œ ìƒì„±í•˜ì—¬ ìœ ì§€í•´ì•¼ í•˜ëŠ” ë²ˆê±°ë¡œì›€ì´ ìˆìœ¼ë¯€ë¡œ ì¼ë‹¨ì€ 
+ *  record buffer ë¥¼ í• ë‹¹ë°›ì„ ë•Œë§ˆë‹¤ data buffer ìµœëŒ€ í¬ê¸°ë¥¼ ë¹„êµí•˜ì—¬ 
+ *  ê·¸ ì•ˆì—ì„œë§Œ í• ë‹¹ë°›ì„ ìˆ˜ ìˆë„ë¡ í•˜ëŠ” ë°©ë²•ìœ¼ë¡œ í•œë‹¤. ë”°ë¼ì„œ iduMemMgr
+ *  ë¥¼ ì´ìš©í•˜ì—¬ í•„ìš”í•  ë•Œë§ˆë‹¤ record buffer ì˜ í• ë‹¹ ë° í•´ì œë¥¼ í•˜ëŠ” ì‹ìœ¼ë¡œ 
+ *  êµ¬í˜„í•˜ë©° dkdDataBufferMgr ì´ˆê¸°í™” ì‹œ ë³„ë„ì˜ memory pool ì„ í• ë‹¹ë°›ì„ 
+ *  í•„ìš”ê°€ ì—†ê³  ê·¸ëŸ¬ë¯€ë¡œ mutex ë“±ì„ í†µí•´ memory ì˜ ë™ì‹œì ‘ê·¼ì„ ë§‰ì„ í•„ìš”ë„ 
+ *  ì—†ë‹¤. 
+ *   ë§Œì•½ record buffer ì˜ í• ë‹¹ ë° í•´ì œê°€ ì„±ëŠ¥ìƒ overhead ê°€ ëœë‹¤ë©´ ì¶”í›„ 
+ *  iduMemPool ì„ ì´ìš©í•˜ëŠ” ë°©ì‹ì„ ìƒê°í•´ë³´ë„ë¡ í•œë‹¤. 
  *
- *   ±×·¯³ª ÃßÈÄ °³¼±ÀÇ ¿©Áö¸¦ »ı°¢ÇÏ¿© ´ÙÀ½°ú °°Àº Æ²¾È¿¡¼­ ±¸ÇöÇÑ´Ù.
+ *   ê·¸ëŸ¬ë‚˜ ì¶”í›„ ê°œì„ ì˜ ì—¬ì§€ë¥¼ ìƒê°í•˜ì—¬ ë‹¤ìŒê³¼ ê°™ì€ í‹€ì•ˆì—ì„œ êµ¬í˜„í•œë‹¤.
  *
  *      data_buffer_size >= SUM( allocated_record_buffer_size )
  *      record_buffer_size = block_size * count
@@ -62,10 +62,10 @@
 class dkdDataBufferMgr
 {
 private:
-    static UInt     mBufferBlockSize;        /* ¹öÆÛºí·ÏÀÇ Å©±â */
-    static UInt     mMaxBufferBlockCnt;      /* ÃÖ´ë ÇÒ´ç°¡´ÉÇÑ ¹öÆÛºí·Ï°³¼ö */
-    static UInt     mUsedBufferBlockCnt;     /* »ç¿ëÇÑ ¹öÆÛºí·Ï°³¼ö */
-    static UInt     mRecordBufferAllocRatio; /* ·¹ÄÚµå¹öÆÛ ÇÒ´çºñÀ² *//* BUG-36895: SDouble -> UInt */
+    static UInt     mBufferBlockSize;        /* ë²„í¼ë¸”ë¡ì˜ í¬ê¸° */
+    static UInt     mMaxBufferBlockCnt;      /* ìµœëŒ€ í• ë‹¹ê°€ëŠ¥í•œ ë²„í¼ë¸”ë¡ê°œìˆ˜ */
+    static UInt     mUsedBufferBlockCnt;     /* ì‚¬ìš©í•œ ë²„í¼ë¸”ë¡ê°œìˆ˜ */
+    static UInt     mRecordBufferAllocRatio; /* ë ˆì½”ë“œë²„í¼ í• ë‹¹ë¹„ìœ¨ *//* BUG-36895: SDouble -> UInt */
 
     static iduMemAllocator * mAllocator;       /* TLSF memory allocator BUG-37215 */
     static iduMutex mDbmMutex;
@@ -75,7 +75,7 @@ public:
     static IDE_RC       initializeStatic(); /* allocate DK buffer blocks */
     static IDE_RC       finalizeStatic();   /* free DK buffer blocks */
 
-    /* ÀÔ·Â¹ŞÀº °¹¼ö¸¸Å­ buffer block À» ÇÒ´ç ¹× ¹İÈ¯ */
+    /* ì…ë ¥ë°›ì€ ê°¯ìˆ˜ë§Œí¼ buffer block ì„ í• ë‹¹ ë° ë°˜í™˜ */
     static IDE_RC       allocRecordBuffer( UInt *aSize, void  **aRecBuf );
     static IDE_RC       deallocRecordBuffer( void *aRecBuf, UInt aBlockCnt );
 

@@ -59,7 +59,7 @@ extern mtdModule mtdNchar;        // PROJ-1579 NCHAR
 extern mtdModule mtdNvarchar;     // PROJ-1579 NCHAR
 extern mtdModule mtdEchar;        // PROJ-2002 Column Security
 extern mtdModule mtdEvarchar;     // PROJ-2002 Column Security
-extern mtdModule mtdUndef;        // PROJ-2163 ¹ÙÀÎµå ÀçÁ¤¸³
+extern mtdModule mtdUndef;        // PROJ-2163 ë°”ì¸ë“œ ì¬ì •ë¦½
 extern mtdModule mtdVarbyte;      // BUG-40973
 extern mtdModule mtsConnect;      // BUG-40854
 
@@ -97,7 +97,7 @@ const mtdModule* mtd::mInternalModule[] = {
     &mtdNvarchar,     // PROJ-1579 NCHAR
     &mtdEchar,        // PROJ-2002 Column Security
     &mtdEvarchar,     // PROJ-2002 Column Security
-    &mtdUndef,        // PROJ-2163 ¹ÙÀÎµå ÀçÁ¤¸³
+    &mtdUndef,        // PROJ-2163 ë°”ì¸ë“œ ì¬ì •ë¦½
     &mtdVarbyte,      // BUG-40973
     &mtsConnect,      // BUG-40854
     NULL
@@ -223,18 +223,18 @@ static UInt          mtdNumberOfModulesByName;
 static mtdNameIndex* mtdModulesByName = NULL;
 
 // PROJ-1364
-// ¼ıÀÚÇü °è¿­°£ ºñ±³½Ã ¾Æ·¡ conversion matrix¿¡ ÀÇÇÏ¿©
-// ºñ±³±âÁØ data typeÀÌ Á¤ÇØÁø´Ù.
+// ìˆ«ìí˜• ê³„ì—´ê°„ ë¹„êµì‹œ ì•„ë˜ conversion matrixì— ì˜í•˜ì—¬
+// ë¹„êµê¸°ì¤€ data typeì´ ì •í•´ì§„ë‹¤.
 // ------------------------------------------
-//        |  N/A   | Á¤¼öÇü | ½Ç¼öÇü | Áö¼öÇü
+//        |  N/A   | ì •ìˆ˜í˜• | ì‹¤ìˆ˜í˜• | ì§€ìˆ˜í˜•
 // ------------------------------------------
 //   N/A  |  N/A   |  N/A   |  N/A   |  N/A
 // ------------------------------------------
-// Á¤¼öÇü |  N/A   | Á¤¼öÇü | ½Ç¼öÇü | Áö¼öÇü
+// ì •ìˆ˜í˜• |  N/A   | ì •ìˆ˜í˜• | ì‹¤ìˆ˜í˜• | ì§€ìˆ˜í˜•
 // ------------------------------------------
-// ½Ç¼öÇü |  N/A   | ½Ç¼öÇü | ½Ç¼öÇü | ½Ç¼öÇü
+// ì‹¤ìˆ˜í˜• |  N/A   | ì‹¤ìˆ˜í˜• | ì‹¤ìˆ˜í˜• | ì‹¤ìˆ˜í˜•
 // ------------------------------------------
-// Áö¼öÇü |  N/A   | Áö¼öÇü | ½Ç¼öÇü | Áö¼öÇü
+// ì§€ìˆ˜í˜• |  N/A   | ì§€ìˆ˜í˜• | ì‹¤ìˆ˜í˜• | ì§€ìˆ˜í˜•
 // ------------------------------------------
 const UInt mtd::comparisonNumberType[4][4] = {
     { MTD_NUMBER_GROUP_TYPE_NONE,
@@ -242,17 +242,17 @@ const UInt mtd::comparisonNumberType[4][4] = {
       MTD_NUMBER_GROUP_TYPE_NONE,
       MTD_NUMBER_GROUP_TYPE_NONE },
     { MTD_NUMBER_GROUP_TYPE_NONE,
-      MTD_NUMBER_GROUP_TYPE_BIGINT,     // Á¤¼öÇü
-      MTD_NUMBER_GROUP_TYPE_DOUBLE,     // ½Ç¼öÇü
-      MTD_NUMBER_GROUP_TYPE_NUMERIC },  // Áö¼öÇü
+      MTD_NUMBER_GROUP_TYPE_BIGINT,     // ì •ìˆ˜í˜•
+      MTD_NUMBER_GROUP_TYPE_DOUBLE,     // ì‹¤ìˆ˜í˜•
+      MTD_NUMBER_GROUP_TYPE_NUMERIC },  // ì§€ìˆ˜í˜•
     { MTD_NUMBER_GROUP_TYPE_NONE,
-      MTD_NUMBER_GROUP_TYPE_DOUBLE,     // ½Ç¼öÇü
-      MTD_NUMBER_GROUP_TYPE_DOUBLE,     // ½Ç¼öÇü
-      MTD_NUMBER_GROUP_TYPE_DOUBLE },   // ½Ç¼öÇü
+      MTD_NUMBER_GROUP_TYPE_DOUBLE,     // ì‹¤ìˆ˜í˜•
+      MTD_NUMBER_GROUP_TYPE_DOUBLE,     // ì‹¤ìˆ˜í˜•
+      MTD_NUMBER_GROUP_TYPE_DOUBLE },   // ì‹¤ìˆ˜í˜•
     { MTD_NUMBER_GROUP_TYPE_NONE,
-      MTD_NUMBER_GROUP_TYPE_NUMERIC,    // Áö¼öÇü
-      MTD_NUMBER_GROUP_TYPE_DOUBLE,     // ½Ç¼öÇü
-      MTD_NUMBER_GROUP_TYPE_NUMERIC }   // Áö¼öÇü
+      MTD_NUMBER_GROUP_TYPE_NUMERIC,    // ì§€ìˆ˜í˜•
+      MTD_NUMBER_GROUP_TYPE_DOUBLE,     // ì‹¤ìˆ˜í˜•
+      MTD_NUMBER_GROUP_TYPE_NUMERIC }   // ì§€ìˆ˜í˜•
 };
 
 
@@ -335,7 +335,7 @@ IDE_RC mtd::initializeModule( mtdModule* aModule,
 {
 /***********************************************************************
  *
- * Description : mtd moduleÀÇ ÃÊ±âÈ­
+ * Description : mtd moduleì˜ ì´ˆê¸°í™”
  *
  * Implementation :
  *
@@ -356,7 +356,7 @@ IDE_RC mtd::initialize( mtdModule *** aExtTypeModuleGroup,
  *
  * Description : mtd initialize
  *
- * Implementation : data type Á¤º¸ ±¸Ãà
+ * Implementation : data type ì •ë³´ êµ¬ì¶•
  *
  *   mtdModulesById
  *    --------------------------
@@ -388,17 +388,17 @@ IDE_RC mtd::initialize( mtdModule *** aExtTypeModuleGroup,
     const mtcName*    sName;
 
     //---------------------------------------------------------
-    // ½ÇÁ¦ mtdModuleÀÇ °³¼ö, mtd module name¿¡ µû¸¥ mtdModule °³¼ö ±¸ÇÔ
-    // mtdModuleÀº ÇÑ°³ ÀÌ»óÀÇ ÀÌ¸§À» °¡Áú ¼ö ÀÖÀ½
-    //     ex ) mtdNumeric :  NUMERIC°ú DECIMAL µÎ °³ÀÇ nameÀ» °¡Áü
-    //          mtdVarchar : VARCHAR¿Í VARCHAR2 µÎ °³ÀÇ nameÀ» °¡Áü
+    // ì‹¤ì œ mtdModuleì˜ ê°œìˆ˜, mtd module nameì— ë”°ë¥¸ mtdModule ê°œìˆ˜ êµ¬í•¨
+    // mtdModuleì€ í•œê°œ ì´ìƒì˜ ì´ë¦„ì„ ê°€ì§ˆ ìˆ˜ ìˆìŒ
+    //     ex ) mtdNumeric :  NUMERICê³¼ DECIMAL ë‘ ê°œì˜ nameì„ ê°€ì§
+    //          mtdVarchar : VARCHARì™€ VARCHAR2 ë‘ ê°œì˜ nameì„ ê°€ì§
     //---------------------------------------------------------
 
     mtdNumberOfModules       = 0;
     mtdNumberOfModulesByName = 0;
 
     //---------------------------------------------------------------
-    // ³»ºÎ Data TypeÀÇ ÃÊ±âÈ­
+    // ë‚´ë¶€ Data Typeì˜ ì´ˆê¸°í™”
     //---------------------------------------------------------------
 
     for( sModule = (mtdModule**) mInternalModule; *sModule != NULL; sModule++ )
@@ -419,7 +419,7 @@ IDE_RC mtd::initialize( mtdModule *** aExtTypeModuleGroup,
     }
 
     //---------------------------------------------------------------
-    // ¿ÜºÎ Data TypeÀÇ ÃÊ±âÈ­
+    // ì™¸ë¶€ Data Typeì˜ ì´ˆê¸°í™”
     //---------------------------------------------------------------
 
     for ( i = 0; i < aGroupCnt; i++ )
@@ -447,11 +447,11 @@ IDE_RC mtd::initialize( mtdModule *** aExtTypeModuleGroup,
     mAllModule[mtdNumberOfModules] = NULL;
 
     //---------------------------------------------------------
-    // mtdModulesById ¿Í mtdModulesByNameÀ» ±¸¼º
+    // mtdModulesById ì™€ mtdModulesByNameì„ êµ¬ì„±
     //---------------------------------------------------------
 
     // BUG-34209
-    // aix¿¡¼­´Â callocÀÌ ½ÇÆĞÇÒ ¼ö ÀÖ¾î mallocÀ» »ç¿ëÇÑ´Ù.
+    // aixì—ì„œëŠ” callocì´ ì‹¤íŒ¨í•  ìˆ˜ ìˆì–´ mallocì„ ì‚¬ìš©í•œë‹¤.
     IDE_TEST(iduMemMgr::malloc(IDU_MEM_MT,
                                ID_SIZEOF(mtdIdIndex) * 128,
                                (void**)&mtdModulesById)
@@ -471,11 +471,11 @@ IDE_RC mtd::initialize( mtdModule *** aExtTypeModuleGroup,
     mtdNumberOfModulesByName = 0;
     for( sModule = (mtdModule**) mAllModule; *sModule != NULL; sModule++ )
     {
-        // mtdModuleById ±¸¼º
+        // mtdModuleById êµ¬ì„±
         sModuleIndex = ( (*sModule)->id & 0x003F );
         mtdModulesById[sModuleIndex].module = *sModule;
 
-        // mtdModuleByName ±¸¼º
+        // mtdModuleByName êµ¬ì„±
         for( sName = (*sModule)->names; sName != NULL; sName = sName->next )
         {
             mtdModulesByName[mtdNumberOfModulesByName].name   = sName;
@@ -512,7 +512,7 @@ IDE_RC mtd::finalize( void )
  *
  * Description : mtd finalize
  *
- * Implementation : data type Á¤º¸ ÀúÀåµÈ ¸Ş¸ğ¸® °ø°£ ÇØÁ¦
+ * Implementation : data type ì •ë³´ ì €ì¥ëœ ë©”ëª¨ë¦¬ ê³µê°„ í•´ì œ
  *
  ***********************************************************************/
 
@@ -544,10 +544,10 @@ IDE_RC mtd::moduleByName( const mtdModule** aModule,
 {
 /***********************************************************************
  *
- * Description : data type nameÀ¸·Î mtd module °Ë»ö
+ * Description : data type nameìœ¼ë¡œ mtd module ê²€ìƒ‰
  *
  * Implementation :
- *    mtdModuleByName¿¡¼­ ÇØ´ç data type name°ú µ¿ÀÏÇÑ mtd moduleÀ» Ã£¾ÆÁÜ
+ *    mtdModuleByNameì—ì„œ í•´ë‹¹ data type nameê³¼ ë™ì¼í•œ mtd moduleì„ ì°¾ì•„ì¤Œ
  *
  ***********************************************************************/
 
@@ -585,7 +585,7 @@ IDE_RC mtd::moduleByName( const mtdModule** aModule,
 
     *aModule = mtdModulesByName[sFound].module;
 
-    // PROJ-2163 : ³»ºÎ¿¡¼­¸¸ ¾²ÀÌ´Â Å¸ÀÔ
+    // PROJ-2163 : ë‚´ë¶€ì—ì„œë§Œ ì“°ì´ëŠ” íƒ€ì…
     IDE_TEST_RAISE( ( (*aModule)->flag & MTD_INTERNAL_TYPE_MASK )
                     == MTD_INTERNAL_TYPE_TRUE,
                     ERR_NOT_FOUND );
@@ -630,10 +630,10 @@ IDE_RC mtd::moduleById( const mtdModule** aModule,
 {
 /***********************************************************************
  *
- * Description : data typeÀ¸·Î mtd module °Ë»ö
+ * Description : data typeìœ¼ë¡œ mtd module ê²€ìƒ‰
  *
  * Implementation :
- *    mtdModuleById¿¡¼­ ÇØ´ç data type°ú µ¿ÀÏÇÑ mtd moduleÀ» Ã£¾ÆÁÜ
+ *    mtdModuleByIdì—ì„œ í•´ë‹¹ data typeê³¼ ë™ì¼í•œ mtd moduleì„ ì°¾ì•„ì¤Œ
  *
  ***********************************************************************/
 
@@ -668,10 +668,10 @@ IDE_RC mtd::moduleByNo( const mtdModule** aModule,
 {
 /***********************************************************************
  *
- * Description : data type no·Î mtd module °Ë»ö
+ * Description : data type noë¡œ mtd module ê²€ìƒ‰
  *
  * Implementation :
- *    mtd module number·Î ÇØ´ç mtd moduleÀ» Ã£¾ÆÁÜ
+ *    mtd module numberë¡œ í•´ë‹¹ mtd moduleì„ ì°¾ì•„ì¤Œ
  *
  ***********************************************************************/
 
@@ -922,8 +922,8 @@ SDouble mtd::selectivityNA( void     * /* aColumnMax      */,
                             SDouble    /* aBoundFactor    */,
                             SDouble    /* aTotalRecordCnt */ )
 {
-    // Selectivity¸¦ ÃßÃâÇÒ ¼ö ¾ø´Â °æ¿ì·Î,
-    // ÀÌ ÇÔ¼ö°¡ È£ÃâµÇ¾î¼­´Â ¾ÈµÊ.
+    // Selectivityë¥¼ ì¶”ì¶œí•  ìˆ˜ ì—†ëŠ” ê²½ìš°ë¡œ,
+    // ì´ í•¨ìˆ˜ê°€ í˜¸ì¶œë˜ì–´ì„œëŠ” ì•ˆë¨.
     IDE_CALLBACK_FATAL ( "mtd::selectivityNA() : "
                          "This Data Type does not Support Selectivity" );
 
@@ -943,12 +943,12 @@ SDouble mtd::selectivityDefault( void     * /* aColumnMax      */,
  *      PROJ-2242 GEOMETRY
  *
  * Description
- *      ¸ÖÆ¼¹ÙÀÌÆ® Ä³¸¯ÅÍ ¼Â¿¡ ´ëÇÑ selectivity ÃøÁ¤ ½Ã,
- *      CHAR Å¸ÀÔ¿¡¼­ »ç¿ëÇÏ°í ÀÖ´Â mtdSelectivityChar() ÇÔ¼ö¸¦ »ç¿ëÇÒ °æ¿ì
- *      ¿ÏÀüÈ÷ Àß¸øµÈ °ªÀÌ ³ª¿Ã ¼ö ÀÖ´Ù.
- *      µû¶ó¼­, ¸ğµç Ä³¸¯ÅÍ ¼Â¿¡ ´ëÇÑ selectivity ¸¦ ±¸ÇÏ´Â ÇÔ¼ö¸¦ µû·Î
- *      ±¸ÇöÇÏ±â Àü±îÁö´Â ¸ÖÆ¼¹ÙÀÌÆ® Ä³¸¯ÅÍ ¼Â¿¡ ´ëÇØ¼­´Â
- *      default selectivity ¸¦ »ç¿ëÇÏµµ·Ï ÇÑ´Ù.
+ *      ë©€í‹°ë°”ì´íŠ¸ ìºë¦­í„° ì…‹ì— ëŒ€í•œ selectivity ì¸¡ì • ì‹œ,
+ *      CHAR íƒ€ì…ì—ì„œ ì‚¬ìš©í•˜ê³  ìˆëŠ” mtdSelectivityChar() í•¨ìˆ˜ë¥¼ ì‚¬ìš©í•  ê²½ìš°
+ *      ì™„ì „íˆ ì˜ëª»ëœ ê°’ì´ ë‚˜ì˜¬ ìˆ˜ ìˆë‹¤.
+ *      ë”°ë¼ì„œ, ëª¨ë“  ìºë¦­í„° ì…‹ì— ëŒ€í•œ selectivity ë¥¼ êµ¬í•˜ëŠ” í•¨ìˆ˜ë¥¼ ë”°ë¡œ
+ *      êµ¬í˜„í•˜ê¸° ì „ê¹Œì§€ëŠ” ë©€í‹°ë°”ì´íŠ¸ ìºë¦­í„° ì…‹ì— ëŒ€í•´ì„œëŠ”
+ *      default selectivity ë¥¼ ì‚¬ìš©í•˜ë„ë¡ í•œë‹¤.
  *
  *******************************************************************/
 
@@ -961,7 +961,7 @@ void mtd::convertNumeric2DoubleType( UChar           aNumericLength,
 {
 /***********************************************************************
  *
- * Description : NUMERIC typeÀÇ value¸¦ DOUBLE typeÀ¸·Î conversion
+ * Description : NUMERIC typeì˜ valueë¥¼ DOUBLE typeìœ¼ë¡œ conversion
  *
  * Implementation : ( PROJ-1364 )
  *
@@ -992,7 +992,7 @@ void mtd::convertBigint2NumericType( mtdBigintType  * aBigintValue,
 {
 /***********************************************************************
  *
- * Description : BIGINT typeÀÇ value¸¦ NUMERIC typeÀ¸·Î conversion
+ * Description : BIGINT typeì˜ valueë¥¼ NUMERIC typeìœ¼ë¡œ conversion
  *
  * Implementation : ( PROJ-1364 )
  *
@@ -1044,7 +1044,7 @@ IDE_RC mtd::assignNullValueById( UInt    aId,
 {
 /***********************************************************************
  *
- * Description : data typeÀ¸·Î mtd moduleÀÇ staticNull ÁöÁ¤
+ * Description : data typeìœ¼ë¡œ mtd moduleì˜ staticNull ì§€ì •
  *
  * Implementation : ( PROJ-1558 )
  *
@@ -1072,7 +1072,7 @@ IDE_RC mtd::checkNullValueById( UInt     aId,
 {
 /***********************************************************************
  *
- * Description : data typeÀ¸·Î mtd moduleÀÇ isNull °Ë»ç
+ * Description : data typeìœ¼ë¡œ mtd moduleì˜ isNull ê²€ì‚¬
  *
  * Implementation : ( PROJ-1558 )
  *
@@ -1108,7 +1108,7 @@ IDE_RC mtd::mtdStoredValue2MtdValueNA( UInt              /* aColumnSize */,
 {
 /***********************************************************************
  * PROJ-1705
- * ÀúÀåµÇÁö ¾Ê´Â Å¸ÀÔ¿¡ ´ëÇÑ Ã³¸®
+ * ì €ì¥ë˜ì§€ ì•ŠëŠ” íƒ€ì…ì— ëŒ€í•œ ì²˜ë¦¬
  ***********************************************************************/
 
     IDE_SET(ideSetErrorCode(mtERR_ABORT_NOT_APPLICABLE));
@@ -1158,10 +1158,10 @@ IDE_RC mtd::modifyNls4MtdModule()
     SChar       * sNationalCharSetStr = NULL;
 
     //---------------------------------------------------------
-    // DB Ä³¸¯ÅÍ ¼Â°ú ³»¼Å³Î Ä³¸¯ÅÍ ¼Â ¼¼ÆÃ
+    // DB ìºë¦­í„° ì…‹ê³¼ ë‚´ì…”ë„ ìºë¦­í„° ì…‹ ì„¸íŒ…
     //---------------------------------------------------------
 
-    // CallBack ÇÔ¼ö¿¡ ´Ş·ÁÀÖ´Â smiGetDBCharSet()À» ÀÌ¿ëÇØ¼­ °¡Á®¿Â´Ù.
+    // CallBack í•¨ìˆ˜ì— ë‹¬ë ¤ìˆëŠ” smiGetDBCharSet()ì„ ì´ìš©í•´ì„œ ê°€ì ¸ì˜¨ë‹¤.
     sDBCharSetStr = mtc::getDBCharSet();
     sNationalCharSetStr = mtc::getNationalCharSet();
 
@@ -1183,7 +1183,7 @@ IDE_RC mtd::modifyNls4MtdModule()
 
 
     //----------------------
-    // language Á¤º¸ Àç¼³Á¤
+    // language ì •ë³´ ì¬ì„¤ì •
     //----------------------
 
     // CHAR
@@ -1220,15 +1220,15 @@ IDE_RC mtd::modifyNls4MtdModule()
     mtdEvarchar.column->language = mtl::mDBCharSet;
 
     //----------------------
-    // compare ÇÔ¼ö Àç¼³Á¤
+    // compare í•¨ìˆ˜ ì¬ì„¤ì •
     //----------------------
 
     //------------------------------------------------
-    // ÇÑ±ÛÁ¤·ÄÀÏ °æ¿ì, ( BUG-13838 )
-    // mtdCharÀÇ compareÇÔ¼ö¸¦ °¢ ¾ğ¾îÀÇ  collation compareÇÔ¼ö·Î ¹Ù²ãÁØ´Ù.
-    // ÇÑ±ÛÁ¤·ÄÀº ÃÊ¼ºÀ» Æ÷ÇÔÇÑ ÇÑ±ÛÁ¤·ÄÀÓ.
-    // ( KSC5601, MS949¸¸ Áö¿øµÇ¸ç,
-    //   MS949°¡ KSC5601ÀÇ super setÀ¸·Î KSC5601ÀÇ ¸ğµç ÄÚµå¸¦ Æ÷ÇÔÇÑ´Ù. )
+    // í•œê¸€ì •ë ¬ì¼ ê²½ìš°, ( BUG-13838 )
+    // mtdCharì˜ compareí•¨ìˆ˜ë¥¼ ê° ì–¸ì–´ì˜  collation compareí•¨ìˆ˜ë¡œ ë°”ê¿”ì¤€ë‹¤.
+    // í•œê¸€ì •ë ¬ì€ ì´ˆì„±ì„ í¬í•¨í•œ í•œê¸€ì •ë ¬ì„.
+    // ( KSC5601, MS949ë§Œ ì§€ì›ë˜ë©°,
+    //   MS949ê°€ KSC5601ì˜ super setìœ¼ë¡œ KSC5601ì˜ ëª¨ë“  ì½”ë“œë¥¼ í¬í•¨í•œë‹¤. )
     //-------------------------------------------------
 
     if( MTU_NLS_COMP_MODE == MTU_NLS_COMP_ANSI )
@@ -1368,7 +1368,7 @@ IDE_RC mtd::modifyNls4MtdModule()
 
     //----------------------
     // BUG-28921
-    // nchar, nvarcharÀÇ maxStorePrecision Àç¼³Á¤
+    // nchar, nvarcharì˜ maxStorePrecision ì¬ì„¤ì •
     //----------------------
 
     if ( mtl::mNationalCharSet->id == MTL_UTF8_ID )
@@ -1416,13 +1416,13 @@ void mtd::convertToBigintType4MtdValue( mtdValueInfo   * aValueInfo,
 {
 /***********************************************************************
  *
- * Description : ÇØ´ç data typeÀÇ value¸¦ bigint typeÀ¸·Î conversion
+ * Description : í•´ë‹¹ data typeì˜ valueë¥¼ bigint typeìœ¼ë¡œ conversion
  *
  * Implementation : ( PROJ-1364 )
  *
- *  ÀÌ ÇÔ¼ö·Î µé¾î¿Ã ¼ö ÀÖ´Â data typeÀº ´ÙÀ½°ú °°´Ù.
+ *  ì´ í•¨ìˆ˜ë¡œ ë“¤ì–´ì˜¬ ìˆ˜ ìˆëŠ” data typeì€ ë‹¤ìŒê³¼ ê°™ë‹¤.
  *
- *  Á¤¼öÇü : BIGINT, INTEGER, SMALLINT
+ *  ì •ìˆ˜í˜• : BIGINT, INTEGER, SMALLINT
  *
  ***********************************************************************/
     
@@ -1473,16 +1473,16 @@ mtd::convertToBigintType4StoredValue( mtdValueInfo  * aValueInfo,
 {
 /***********************************************************************
  *
- * Description : ÇØ´ç data typeÀÇ value¸¦ bigint typeÀ¸·Î conversion
+ * Description : í•´ë‹¹ data typeì˜ valueë¥¼ bigint typeìœ¼ë¡œ conversion
  * 
  * Implementation : ( PROJ-1364 )
  *
- *  ÀÌ ÇÔ¼ö·Î µé¾î¿Ã ¼ö ÀÖ´Â data typeÀº ´ÙÀ½°ú °°´Ù.
+ *  ì´ í•¨ìˆ˜ë¡œ ë“¤ì–´ì˜¬ ìˆ˜ ìˆëŠ” data typeì€ ë‹¤ìŒê³¼ ê°™ë‹¤.
  *
- *  Á¤¼öÇü : BIGINT, INTEGER, SMALLINT
+ *  ì •ìˆ˜í˜• : BIGINT, INTEGER, SMALLINT
  * 
- *  mtdValueInfoÀÇ value´Â Page¿¡ ÀúÀåµÈ value¸¦ °¡¸®Å´
- *  µû¶ó¼­ align µÇÁö ¾Ê¾ÒÀ» ¼öµµ ÀÖ±â ¶§¹®¿¡ byte assign ÇÏ¿©¾ß ÇÔ
+ *  mtdValueInfoì˜ valueëŠ” Pageì— ì €ì¥ëœ valueë¥¼ ê°€ë¦¬í‚´
+ *  ë”°ë¼ì„œ align ë˜ì§€ ì•Šì•˜ì„ ìˆ˜ë„ ìˆê¸° ë•Œë¬¸ì— byte assign í•˜ì—¬ì•¼ í•¨
  ***********************************************************************/
     
     const mtcColumn * sColumn;
@@ -1669,16 +1669,16 @@ void mtd::convertToDoubleType4MtdValue( mtdValueInfo  * aValueInfo,
 {
 /***********************************************************************
  *
- * Description : ÇØ´ç data typeÀÇ value¸¦ double typeÀ¸·Î conversion
+ * Description : í•´ë‹¹ data typeì˜ valueë¥¼ double typeìœ¼ë¡œ conversion
  *
  * Implementation : ( PROJ-1364 )
  *
- *   ÀÌ ÇÔ¼ö·Î µé¾î¿Ã ¼ö ÀÖ´Â data typeÀº ´ÙÀ½°ú °°´Ù.
+ *   ì´ í•¨ìˆ˜ë¡œ ë“¤ì–´ì˜¬ ìˆ˜ ìˆëŠ” data typeì€ ë‹¤ìŒê³¼ ê°™ë‹¤.
  *
- *   Á¤¼öÇü : BIGINT, INTEGER, SMALLINT
- *   ½Ç¼öÇü : DOUBLE, REAL
- *   Áö¼öÇü : °íÁ¤¼Ò¼öÁ¡Çü : NUMERIC, DECIMAL, NUMBER(P), NUMER(P,S)
- *            ºÎÁ¤¼Ò¼öÁ¡Çü : FLOAT, NUMBER
+ *   ì •ìˆ˜í˜• : BIGINT, INTEGER, SMALLINT
+ *   ì‹¤ìˆ˜í˜• : DOUBLE, REAL
+ *   ì§€ìˆ˜í˜• : ê³ ì •ì†Œìˆ˜ì í˜• : NUMERIC, DECIMAL, NUMBER(P), NUMER(P,S)
+ *            ë¶€ì •ì†Œìˆ˜ì í˜• : FLOAT, NUMBER
  *
  ***********************************************************************/
 
@@ -1754,16 +1754,16 @@ void mtd::convertToDoubleType4StoredValue( mtdValueInfo  * aValueInfo,
 {
 /***********************************************************************
  *
- * Description : ÇØ´ç data typeÀÇ value¸¦ double typeÀ¸·Î conversion
+ * Description : í•´ë‹¹ data typeì˜ valueë¥¼ double typeìœ¼ë¡œ conversion
  *
  * Implementation : ( PROJ-1364 )
  *
- *   ÀÌ ÇÔ¼ö·Î µé¾î¿Ã ¼ö ÀÖ´Â data typeÀº ´ÙÀ½°ú °°´Ù.
+ *   ì´ í•¨ìˆ˜ë¡œ ë“¤ì–´ì˜¬ ìˆ˜ ìˆëŠ” data typeì€ ë‹¤ìŒê³¼ ê°™ë‹¤.
  *
- *   Á¤¼öÇü : BIGINT, INTEGER, SMALLINT
- *   ½Ç¼öÇü : DOUBLE, REAL
- *   Áö¼öÇü : °íÁ¤¼Ò¼öÁ¡Çü : NUMERIC, DECIMAL, NUMBER(P), NUMER(P,S)
- *            ºÎÁ¤¼Ò¼öÁ¡Çü : FLOAT, NUMBER
+ *   ì •ìˆ˜í˜• : BIGINT, INTEGER, SMALLINT
+ *   ì‹¤ìˆ˜í˜• : DOUBLE, REAL
+ *   ì§€ìˆ˜í˜• : ê³ ì •ì†Œìˆ˜ì í˜• : NUMERIC, DECIMAL, NUMBER(P), NUMER(P,S)
+ *            ë¶€ì •ì†Œìˆ˜ì í˜• : FLOAT, NUMBER
  *
  ***********************************************************************/
 
@@ -1993,19 +1993,19 @@ void mtd::convertToNumericType4MtdValue( mtdValueInfo    * aValueInfo,
 {
 /***********************************************************************
  *
- * Description : ÇØ´ç data typeÀÇ value¸¦ numeric typeÀ¸·Î conversion
+ * Description : í•´ë‹¹ data typeì˜ valueë¥¼ numeric typeìœ¼ë¡œ conversion
  *
  * Implementation : ( PROJ-1364 )
  *
- *   ÀÌ ÇÔ¼ö·Î µé¾î¿Ã ¼ö ÀÖ´Â data typeÀº ´ÙÀ½°ú °°´Ù.
+ *   ì´ í•¨ìˆ˜ë¡œ ë“¤ì–´ì˜¬ ìˆ˜ ìˆëŠ” data typeì€ ë‹¤ìŒê³¼ ê°™ë‹¤.
  *
- *   Á¤¼öÇü : BIGINT, INTEGER, SMALLINT
- *   Áö¼öÇü : °íÁ¤¼Ò¼öÁ¡Çü : NUMERIC, DECIMAL, NUMBER(P), NUMER(P,S)
- *            ºÎÁ¤¼Ò¼öÁ¡Çü : FLOAT, NUMBER
+ *   ì •ìˆ˜í˜• : BIGINT, INTEGER, SMALLINT
+ *   ì§€ìˆ˜í˜• : ê³ ì •ì†Œìˆ˜ì í˜• : NUMERIC, DECIMAL, NUMBER(P), NUMER(P,S)
+ *            ë¶€ì •ì†Œìˆ˜ì í˜• : FLOAT, NUMBER
  *
- *   Á¤¼öÇü°è¿­Àº (Á¤¼öÇü==>BIGINT==>NUMERIC)À¸·Î º¯È¯¼öÇà
- *   Áö¼öÇü°è¿­Àº ¸ğµÎ mtdNumericTypeÀ» »ç¿ëÇÏ¹Ç·Î
- *   ÇØ´ç pointer¸¸ ¾ò¾î¿Â´Ù.
+ *   ì •ìˆ˜í˜•ê³„ì—´ì€ (ì •ìˆ˜í˜•==>BIGINT==>NUMERIC)ìœ¼ë¡œ ë³€í™˜ìˆ˜í–‰
+ *   ì§€ìˆ˜í˜•ê³„ì—´ì€ ëª¨ë‘ mtdNumericTypeì„ ì‚¬ìš©í•˜ë¯€ë¡œ
+ *   í•´ë‹¹ pointerë§Œ ì–»ì–´ì˜¨ë‹¤.
  *
  ***********************************************************************/
 
@@ -2053,19 +2053,19 @@ void mtd::convertToNumericType4StoredValue( mtdValueInfo    * aValueInfo,
 {
 /***********************************************************************
  *
- * Description : ÇØ´ç data typeÀÇ value¸¦ numeric typeÀ¸·Î conversion
+ * Description : í•´ë‹¹ data typeì˜ valueë¥¼ numeric typeìœ¼ë¡œ conversion
  *
  * Implementation : ( PROJ-1364 )
  *
- *   ÀÌ ÇÔ¼ö·Î µé¾î¿Ã ¼ö ÀÖ´Â data typeÀº ´ÙÀ½°ú °°´Ù.
+ *   ì´ í•¨ìˆ˜ë¡œ ë“¤ì–´ì˜¬ ìˆ˜ ìˆëŠ” data typeì€ ë‹¤ìŒê³¼ ê°™ë‹¤.
  *
- *   Á¤¼öÇü : BIGINT, INTEGER, SMALLINT
- *   Áö¼öÇü : °íÁ¤¼Ò¼öÁ¡Çü : NUMERIC, DECIMAL, NUMBER(P), NUMER(P,S)
- *            ºÎÁ¤¼Ò¼öÁ¡Çü : FLOAT, NUMBER
+ *   ì •ìˆ˜í˜• : BIGINT, INTEGER, SMALLINT
+ *   ì§€ìˆ˜í˜• : ê³ ì •ì†Œìˆ˜ì í˜• : NUMERIC, DECIMAL, NUMBER(P), NUMER(P,S)
+ *            ë¶€ì •ì†Œìˆ˜ì í˜• : FLOAT, NUMBER
  *
- *   Á¤¼öÇü°è¿­Àº (Á¤¼öÇü==>BIGINT==>NUMERIC)À¸·Î º¯È¯¼öÇà
- *   Áö¼öÇü°è¿­Àº ¸ğµÎ mtdNumericTypeÀ» »ç¿ëÇÏ¹Ç·Î
- *   ÇØ´ç pointer¸¸ ¾ò¾î¿Â´Ù.
+ *   ì •ìˆ˜í˜•ê³„ì—´ì€ (ì •ìˆ˜í˜•==>BIGINT==>NUMERIC)ìœ¼ë¡œ ë³€í™˜ìˆ˜í–‰
+ *   ì§€ìˆ˜í˜•ê³„ì—´ì€ ëª¨ë‘ mtdNumericTypeì„ ì‚¬ìš©í•˜ë¯€ë¡œ
+ *   í•´ë‹¹ pointerë§Œ ì–»ì–´ì˜¨ë‹¤.
  *
  ***********************************************************************/
 
@@ -2108,21 +2108,21 @@ void mtd::convertToNumericType4StoredValue( mtdValueInfo    * aValueInfo,
 SInt mtd::compareNumberGroupNumericMtdMtdAsc( mtdValueInfo * aValueInfo1,
                                               mtdValueInfo * aValueInfo2 )
 {
-    // Á¤¼öÇü°è¿­¿¡¼­ NUMERIC À¸·Î º¯È¯½Ã, ÄÃ·³Å©±â °áÁ¤
-    // Á¤¼öÇüÀÇ numeric typeÀ¸·ÎÀÇ º¯È¯Àº
-    // Á¤¼öÇü==>BIGINT==>NUMERIC ÀÇ º¯È¯ °úÁ¤À» °ÅÄ¡¸ç,
-    // BIGINT==>NUMERICÀ¸·ÎÀÇ º¯È¯°úÁ¤½Ã,
-    // NUMERIC typeÀ» ¸¸µé °ø°£
+    // ì •ìˆ˜í˜•ê³„ì—´ì—ì„œ NUMERIC ìœ¼ë¡œ ë³€í™˜ì‹œ, ì»¬ëŸ¼í¬ê¸° ê²°ì •
+    // ì •ìˆ˜í˜•ì˜ numeric typeìœ¼ë¡œì˜ ë³€í™˜ì€
+    // ì •ìˆ˜í˜•==>BIGINT==>NUMERIC ì˜ ë³€í™˜ ê³¼ì •ì„ ê±°ì¹˜ë©°,
+    // BIGINT==>NUMERICìœ¼ë¡œì˜ ë³€í™˜ê³¼ì •ì‹œ,
+    // NUMERIC typeì„ ë§Œë“¤ ê³µê°„
     SChar            sNumericValue1[MTD_NUMERIC_SIZE_MAXIMUM];
     SChar            sNumericValue2[MTD_NUMERIC_SIZE_MAXIMUM];
     mtdNumericType * sNumericValuePtr1;
     mtdNumericType * sNumericValuePtr2;
 
-    // Áö¼öÇü°è¿­¿¡¼­ NUMERIC typeÀ¸·ÎÀÇ º¯È¯½Ã´Â
-    // µ¿ÀÏÇÑ data type ±¸Á¶ÀÎ  mtdNumericTypeÀ» »ç¿ëÇÏ±â¶§¹®¿¡
-    // ÇØ´ç pointer¸¸ ¾ò¾î¿À°Ô µÇ¸ç(memcpy¸¦ ÇÏÁö ¾Ê¾Æµµ µÊ),
-    // Á¤¼öÇü°è¿­¿¡¼­ NUMERIC À¸·Î º¯È¯½Ã´Â
-    // numeric typeÀ» ¸¸µé °ø°£ÀÌ ÇÊ¿ä.
+    // ì§€ìˆ˜í˜•ê³„ì—´ì—ì„œ NUMERIC typeìœ¼ë¡œì˜ ë³€í™˜ì‹œëŠ”
+    // ë™ì¼í•œ data type êµ¬ì¡°ì¸  mtdNumericTypeì„ ì‚¬ìš©í•˜ê¸°ë•Œë¬¸ì—
+    // í•´ë‹¹ pointerë§Œ ì–»ì–´ì˜¤ê²Œ ë˜ë©°(memcpyë¥¼ í•˜ì§€ ì•Šì•„ë„ ë¨),
+    // ì •ìˆ˜í˜•ê³„ì—´ì—ì„œ NUMERIC ìœ¼ë¡œ ë³€í™˜ì‹œëŠ”
+    // numeric typeì„ ë§Œë“¤ ê³µê°„ì´ í•„ìš”.
     sNumericValuePtr1 = (mtdNumericType*)sNumericValue1;
     sNumericValuePtr2 = (mtdNumericType*)sNumericValue2;
     
@@ -2144,21 +2144,21 @@ SInt mtd::compareNumberGroupNumericMtdMtdAsc( mtdValueInfo * aValueInfo1,
 SInt mtd::compareNumberGroupNumericMtdMtdDesc( mtdValueInfo * aValueInfo1,
                                                mtdValueInfo * aValueInfo2 )
 {
-    // Á¤¼öÇü°è¿­¿¡¼­ NUMERIC À¸·Î º¯È¯½Ã, ÄÃ·³Å©±â °áÁ¤
-    // Á¤¼öÇüÀÇ numeric typeÀ¸·ÎÀÇ º¯È¯Àº
-    // Á¤¼öÇü==>BIGINT==>NUMERIC ÀÇ º¯È¯ °úÁ¤À» °ÅÄ¡¸ç,
-    // BIGINT==>NUMERICÀ¸·ÎÀÇ º¯È¯°úÁ¤½Ã,
-    // NUMERIC typeÀ» ¸¸µé °ø°£
+    // ì •ìˆ˜í˜•ê³„ì—´ì—ì„œ NUMERIC ìœ¼ë¡œ ë³€í™˜ì‹œ, ì»¬ëŸ¼í¬ê¸° ê²°ì •
+    // ì •ìˆ˜í˜•ì˜ numeric typeìœ¼ë¡œì˜ ë³€í™˜ì€
+    // ì •ìˆ˜í˜•==>BIGINT==>NUMERIC ì˜ ë³€í™˜ ê³¼ì •ì„ ê±°ì¹˜ë©°,
+    // BIGINT==>NUMERICìœ¼ë¡œì˜ ë³€í™˜ê³¼ì •ì‹œ,
+    // NUMERIC typeì„ ë§Œë“¤ ê³µê°„
     SChar            sNumericValue1[MTD_NUMERIC_SIZE_MAXIMUM];
     SChar            sNumericValue2[MTD_NUMERIC_SIZE_MAXIMUM];
     mtdNumericType * sNumericValuePtr1;
     mtdNumericType * sNumericValuePtr2;
 
-    // Áö¼öÇü°è¿­¿¡¼­ NUMERIC typeÀ¸·ÎÀÇ º¯È¯½Ã´Â
-    // µ¿ÀÏÇÑ data type ±¸Á¶ÀÎ  mtdNumericTypeÀ» »ç¿ëÇÏ±â¶§¹®¿¡
-    // ÇØ´ç pointer¸¸ ¾ò¾î¿À°Ô µÇ¸ç(memcpy¸¦ ÇÏÁö ¾Ê¾Æµµ µÊ),
-    // Á¤¼öÇü°è¿­¿¡¼­ NUMERIC À¸·Î º¯È¯½Ã´Â
-    // numeric typeÀ» ¸¸µé °ø°£ÀÌ ÇÊ¿ä.
+    // ì§€ìˆ˜í˜•ê³„ì—´ì—ì„œ NUMERIC typeìœ¼ë¡œì˜ ë³€í™˜ì‹œëŠ”
+    // ë™ì¼í•œ data type êµ¬ì¡°ì¸  mtdNumericTypeì„ ì‚¬ìš©í•˜ê¸°ë•Œë¬¸ì—
+    // í•´ë‹¹ pointerë§Œ ì–»ì–´ì˜¤ê²Œ ë˜ë©°(memcpyë¥¼ í•˜ì§€ ì•Šì•„ë„ ë¨),
+    // ì •ìˆ˜í˜•ê³„ì—´ì—ì„œ NUMERIC ìœ¼ë¡œ ë³€í™˜ì‹œëŠ”
+    // numeric typeì„ ë§Œë“¤ ê³µê°„ì´ í•„ìš”.
     sNumericValuePtr1 = (mtdNumericType*)sNumericValue1;
     sNumericValuePtr2 = (mtdNumericType*)sNumericValue2;
     
@@ -2182,11 +2182,11 @@ SInt mtd::compareNumberGroupNumericMtdMtdDesc( mtdValueInfo * aValueInfo1,
 SInt mtd::compareNumberGroupNumericStoredMtdAsc( mtdValueInfo * aValueInfo1,
                                                  mtdValueInfo * aValueInfo2 )
 {
-    // Á¤¼öÇü°è¿­¿¡¼­ NUMERIC À¸·Î º¯È¯½Ã, ÄÃ·³Å©±â °áÁ¤
-    // Á¤¼öÇüÀÇ numeric typeÀ¸·ÎÀÇ º¯È¯Àº
-    // Á¤¼öÇü==>BIGINT==>NUMERIC ÀÇ º¯È¯ °úÁ¤À» °ÅÄ¡¸ç,
-    // BIGINT==>NUMERICÀ¸·ÎÀÇ º¯È¯°úÁ¤½Ã,
-    // NUMERIC typeÀ» ¸¸µé °ø°£
+    // ì •ìˆ˜í˜•ê³„ì—´ì—ì„œ NUMERIC ìœ¼ë¡œ ë³€í™˜ì‹œ, ì»¬ëŸ¼í¬ê¸° ê²°ì •
+    // ì •ìˆ˜í˜•ì˜ numeric typeìœ¼ë¡œì˜ ë³€í™˜ì€
+    // ì •ìˆ˜í˜•==>BIGINT==>NUMERIC ì˜ ë³€í™˜ ê³¼ì •ì„ ê±°ì¹˜ë©°,
+    // BIGINT==>NUMERICìœ¼ë¡œì˜ ë³€í™˜ê³¼ì •ì‹œ,
+    // NUMERIC typeì„ ë§Œë“¤ ê³µê°„
     SChar            sNumericValue1[MTD_NUMERIC_SIZE_MAXIMUM];
     SChar            sNumericValue2[MTD_NUMERIC_SIZE_MAXIMUM];
     mtdNumericType * sNumericValuePtr1;
@@ -2194,11 +2194,11 @@ SInt mtd::compareNumberGroupNumericStoredMtdAsc( mtdValueInfo * aValueInfo1,
     UChar            sLength1;
     UChar          * sSignExponentMantissa1;
 
-    // Áö¼öÇü°è¿­¿¡¼­ NUMERIC typeÀ¸·ÎÀÇ º¯È¯½Ã´Â
-    // µ¿ÀÏÇÑ data type ±¸Á¶ÀÎ  mtdNumericTypeÀ» »ç¿ëÇÏ±â¶§¹®¿¡
-    // ÇØ´ç pointer¸¸ ¾ò¾î¿À°Ô µÇ¸ç(memcpy¸¦ ÇÏÁö ¾Ê¾Æµµ µÊ),
-    // Á¤¼öÇü°è¿­¿¡¼­ NUMERIC À¸·Î º¯È¯½Ã´Â
-    // numeric typeÀ» ¸¸µé °ø°£ÀÌ ÇÊ¿ä.
+    // ì§€ìˆ˜í˜•ê³„ì—´ì—ì„œ NUMERIC typeìœ¼ë¡œì˜ ë³€í™˜ì‹œëŠ”
+    // ë™ì¼í•œ data type êµ¬ì¡°ì¸  mtdNumericTypeì„ ì‚¬ìš©í•˜ê¸°ë•Œë¬¸ì—
+    // í•´ë‹¹ pointerë§Œ ì–»ì–´ì˜¤ê²Œ ë˜ë©°(memcpyë¥¼ í•˜ì§€ ì•Šì•„ë„ ë¨),
+    // ì •ìˆ˜í˜•ê³„ì—´ì—ì„œ NUMERIC ìœ¼ë¡œ ë³€í™˜ì‹œëŠ”
+    // numeric typeì„ ë§Œë“¤ ê³µê°„ì´ í•„ìš”.
     sNumericValuePtr1 = (mtdNumericType*)sNumericValue1;
     sNumericValuePtr2 = (mtdNumericType*)sNumericValue2;
 
@@ -2227,11 +2227,11 @@ SInt mtd::compareNumberGroupNumericStoredMtdAsc( mtdValueInfo * aValueInfo1,
 SInt mtd::compareNumberGroupNumericStoredMtdDesc( mtdValueInfo * aValueInfo1,
                                                   mtdValueInfo * aValueInfo2 )
 {
-    // Á¤¼öÇü°è¿­¿¡¼­ NUMERIC À¸·Î º¯È¯½Ã, ÄÃ·³Å©±â °áÁ¤
-    // Á¤¼öÇüÀÇ numeric typeÀ¸·ÎÀÇ º¯È¯Àº
-    // Á¤¼öÇü==>BIGINT==>NUMERIC ÀÇ º¯È¯ °úÁ¤À» °ÅÄ¡¸ç,
-    // BIGINT==>NUMERICÀ¸·ÎÀÇ º¯È¯°úÁ¤½Ã,
-    // NUMERIC typeÀ» ¸¸µé °ø°£
+    // ì •ìˆ˜í˜•ê³„ì—´ì—ì„œ NUMERIC ìœ¼ë¡œ ë³€í™˜ì‹œ, ì»¬ëŸ¼í¬ê¸° ê²°ì •
+    // ì •ìˆ˜í˜•ì˜ numeric typeìœ¼ë¡œì˜ ë³€í™˜ì€
+    // ì •ìˆ˜í˜•==>BIGINT==>NUMERIC ì˜ ë³€í™˜ ê³¼ì •ì„ ê±°ì¹˜ë©°,
+    // BIGINT==>NUMERICìœ¼ë¡œì˜ ë³€í™˜ê³¼ì •ì‹œ,
+    // NUMERIC typeì„ ë§Œë“¤ ê³µê°„
     SChar            sNumericValue1[MTD_NUMERIC_SIZE_MAXIMUM];
     SChar            sNumericValue2[MTD_NUMERIC_SIZE_MAXIMUM];
     mtdNumericType * sNumericValuePtr1;
@@ -2239,11 +2239,11 @@ SInt mtd::compareNumberGroupNumericStoredMtdDesc( mtdValueInfo * aValueInfo1,
     UChar            sLength1;
     UChar          * sSignExponentMantissa1;
 
-    // Áö¼öÇü°è¿­¿¡¼­ NUMERIC typeÀ¸·ÎÀÇ º¯È¯½Ã´Â
-    // µ¿ÀÏÇÑ data type ±¸Á¶ÀÎ  mtdNumericTypeÀ» »ç¿ëÇÏ±â¶§¹®¿¡
-    // ÇØ´ç pointer¸¸ ¾ò¾î¿À°Ô µÇ¸ç(memcpy¸¦ ÇÏÁö ¾Ê¾Æµµ µÊ),
-    // Á¤¼öÇü°è¿­¿¡¼­ NUMERIC À¸·Î º¯È¯½Ã´Â
-    // numeric typeÀ» ¸¸µé °ø°£ÀÌ ÇÊ¿ä.
+    // ì§€ìˆ˜í˜•ê³„ì—´ì—ì„œ NUMERIC typeìœ¼ë¡œì˜ ë³€í™˜ì‹œëŠ”
+    // ë™ì¼í•œ data type êµ¬ì¡°ì¸  mtdNumericTypeì„ ì‚¬ìš©í•˜ê¸°ë•Œë¬¸ì—
+    // í•´ë‹¹ pointerë§Œ ì–»ì–´ì˜¤ê²Œ ë˜ë©°(memcpyë¥¼ í•˜ì§€ ì•Šì•„ë„ ë¨),
+    // ì •ìˆ˜í˜•ê³„ì—´ì—ì„œ NUMERIC ìœ¼ë¡œ ë³€í™˜ì‹œëŠ”
+    // numeric typeì„ ë§Œë“¤ ê³µê°„ì´ í•„ìš”.
     sNumericValuePtr1 = (mtdNumericType*)sNumericValue1;
     sNumericValuePtr2 = (mtdNumericType*)sNumericValue2;
 
@@ -2272,11 +2272,11 @@ SInt mtd::compareNumberGroupNumericStoredMtdDesc( mtdValueInfo * aValueInfo1,
 SInt mtd::compareNumberGroupNumericStoredStoredAsc( mtdValueInfo * aValueInfo1,
                                                     mtdValueInfo * aValueInfo2 )
 {
-    // Á¤¼öÇü°è¿­¿¡¼­ NUMERIC À¸·Î º¯È¯½Ã, ÄÃ·³Å©±â °áÁ¤
-    // Á¤¼öÇüÀÇ numeric typeÀ¸·ÎÀÇ º¯È¯Àº
-    // Á¤¼öÇü==>BIGINT==>NUMERIC ÀÇ º¯È¯ °úÁ¤À» °ÅÄ¡¸ç,
-    // BIGINT==>NUMERICÀ¸·ÎÀÇ º¯È¯°úÁ¤½Ã,
-    // NUMERIC typeÀ» ¸¸µé °ø°£
+    // ì •ìˆ˜í˜•ê³„ì—´ì—ì„œ NUMERIC ìœ¼ë¡œ ë³€í™˜ì‹œ, ì»¬ëŸ¼í¬ê¸° ê²°ì •
+    // ì •ìˆ˜í˜•ì˜ numeric typeìœ¼ë¡œì˜ ë³€í™˜ì€
+    // ì •ìˆ˜í˜•==>BIGINT==>NUMERIC ì˜ ë³€í™˜ ê³¼ì •ì„ ê±°ì¹˜ë©°,
+    // BIGINT==>NUMERICìœ¼ë¡œì˜ ë³€í™˜ê³¼ì •ì‹œ,
+    // NUMERIC typeì„ ë§Œë“¤ ê³µê°„
     SChar            sNumericValue1[MTD_NUMERIC_SIZE_MAXIMUM];
     SChar            sNumericValue2[MTD_NUMERIC_SIZE_MAXIMUM];
     mtdNumericType * sNumericValuePtr1;
@@ -2286,11 +2286,11 @@ SInt mtd::compareNumberGroupNumericStoredStoredAsc( mtdValueInfo * aValueInfo1,
     UChar            sLength2;
     UChar          * sSignExponentMantissa2;    
 
-    // Áö¼öÇü°è¿­¿¡¼­ NUMERIC typeÀ¸·ÎÀÇ º¯È¯½Ã´Â
-    // µ¿ÀÏÇÑ data type ±¸Á¶ÀÎ  mtdNumericTypeÀ» »ç¿ëÇÏ±â¶§¹®¿¡
-    // ÇØ´ç pointer¸¸ ¾ò¾î¿À°Ô µÇ¸ç(memcpy¸¦ ÇÏÁö ¾Ê¾Æµµ µÊ),
-    // Á¤¼öÇü°è¿­¿¡¼­ NUMERIC À¸·Î º¯È¯½Ã´Â
-    // numeric typeÀ» ¸¸µé °ø°£ÀÌ ÇÊ¿ä.
+    // ì§€ìˆ˜í˜•ê³„ì—´ì—ì„œ NUMERIC typeìœ¼ë¡œì˜ ë³€í™˜ì‹œëŠ”
+    // ë™ì¼í•œ data type êµ¬ì¡°ì¸  mtdNumericTypeì„ ì‚¬ìš©í•˜ê¸°ë•Œë¬¸ì—
+    // í•´ë‹¹ pointerë§Œ ì–»ì–´ì˜¤ê²Œ ë˜ë©°(memcpyë¥¼ í•˜ì§€ ì•Šì•„ë„ ë¨),
+    // ì •ìˆ˜í˜•ê³„ì—´ì—ì„œ NUMERIC ìœ¼ë¡œ ë³€í™˜ì‹œëŠ”
+    // numeric typeì„ ë§Œë“¤ ê³µê°„ì´ í•„ìš”.
     sNumericValuePtr1 = (mtdNumericType*)sNumericValue1;
     sNumericValuePtr2 = (mtdNumericType*)sNumericValue2;
     
@@ -2322,11 +2322,11 @@ SInt mtd::compareNumberGroupNumericStoredStoredAsc( mtdValueInfo * aValueInfo1,
 SInt mtd::compareNumberGroupNumericStoredStoredDesc( mtdValueInfo * aValueInfo1,
                                                      mtdValueInfo * aValueInfo2 )
 {
-    // Á¤¼öÇü°è¿­¿¡¼­ NUMERIC À¸·Î º¯È¯½Ã, ÄÃ·³Å©±â °áÁ¤
-    // Á¤¼öÇüÀÇ numeric typeÀ¸·ÎÀÇ º¯È¯Àº
-    // Á¤¼öÇü==>BIGINT==>NUMERIC ÀÇ º¯È¯ °úÁ¤À» °ÅÄ¡¸ç,
-    // BIGINT==>NUMERICÀ¸·ÎÀÇ º¯È¯°úÁ¤½Ã,
-    // NUMERIC typeÀ» ¸¸µé °ø°£
+    // ì •ìˆ˜í˜•ê³„ì—´ì—ì„œ NUMERIC ìœ¼ë¡œ ë³€í™˜ì‹œ, ì»¬ëŸ¼í¬ê¸° ê²°ì •
+    // ì •ìˆ˜í˜•ì˜ numeric typeìœ¼ë¡œì˜ ë³€í™˜ì€
+    // ì •ìˆ˜í˜•==>BIGINT==>NUMERIC ì˜ ë³€í™˜ ê³¼ì •ì„ ê±°ì¹˜ë©°,
+    // BIGINT==>NUMERICìœ¼ë¡œì˜ ë³€í™˜ê³¼ì •ì‹œ,
+    // NUMERIC typeì„ ë§Œë“¤ ê³µê°„
     SChar            sNumericValue1[MTD_NUMERIC_SIZE_MAXIMUM];
     SChar            sNumericValue2[MTD_NUMERIC_SIZE_MAXIMUM];
     mtdNumericType * sNumericValuePtr1;
@@ -2336,11 +2336,11 @@ SInt mtd::compareNumberGroupNumericStoredStoredDesc( mtdValueInfo * aValueInfo1,
     UChar            sLength2;
     UChar          * sSignExponentMantissa2;    
 
-    // Áö¼öÇü°è¿­¿¡¼­ NUMERIC typeÀ¸·ÎÀÇ º¯È¯½Ã´Â
-    // µ¿ÀÏÇÑ data type ±¸Á¶ÀÎ  mtdNumericTypeÀ» »ç¿ëÇÏ±â¶§¹®¿¡
-    // ÇØ´ç pointer¸¸ ¾ò¾î¿À°Ô µÇ¸ç(memcpy¸¦ ÇÏÁö ¾Ê¾Æµµ µÊ),
-    // Á¤¼öÇü°è¿­¿¡¼­ NUMERIC À¸·Î º¯È¯½Ã´Â
-    // numeric typeÀ» ¸¸µé °ø°£ÀÌ ÇÊ¿ä.
+    // ì§€ìˆ˜í˜•ê³„ì—´ì—ì„œ NUMERIC typeìœ¼ë¡œì˜ ë³€í™˜ì‹œëŠ”
+    // ë™ì¼í•œ data type êµ¬ì¡°ì¸  mtdNumericTypeì„ ì‚¬ìš©í•˜ê¸°ë•Œë¬¸ì—
+    // í•´ë‹¹ pointerë§Œ ì–»ì–´ì˜¤ê²Œ ë˜ë©°(memcpyë¥¼ í•˜ì§€ ì•Šì•„ë„ ë¨),
+    // ì •ìˆ˜í˜•ê³„ì—´ì—ì„œ NUMERIC ìœ¼ë¡œ ë³€í™˜ì‹œëŠ”
+    // numeric typeì„ ë§Œë“¤ ê³µê°„ì´ í•„ìš”.
     sNumericValuePtr1 = (mtdNumericType*)sNumericValue1;
     sNumericValuePtr2 = (mtdNumericType*)sNumericValue2;
     
@@ -2377,49 +2377,49 @@ mtd::findCompareFunc( mtcColumn * aColumn,
 {
 /***********************************************************************
  *
- * Description : µ¿ÀÏ°è¿­¿¡ ¼ÓÇÏ´Â ¼­·Î ´Ù¸¥ data type°£ÀÇ ºñ±³ÇÔ¼ö
- *               Ã£¾ÆÁÖ´Â ÇÔ¼ö
+ * Description : ë™ì¼ê³„ì—´ì— ì†í•˜ëŠ” ì„œë¡œ ë‹¤ë¥¸ data typeê°„ì˜ ë¹„êµí•¨ìˆ˜
+ *               ì°¾ì•„ì£¼ëŠ” í•¨ìˆ˜
  *
  * Implementation : ( PROJ-1364 )
  *
- *   °¢ °è¿­°£ ºñ±³ÇÔ¼ö¸¦ È£ÃâÇØ¼­, ºñ±³¿¬»êÀ» ¼öÇàÇÑ´Ù.
+ *   ê° ê³„ì—´ê°„ ë¹„êµí•¨ìˆ˜ë¥¼ í˜¸ì¶œí•´ì„œ, ë¹„êµì—°ì‚°ì„ ìˆ˜í–‰í•œë‹¤.
  *
- *   1. ¹®ÀÚÇü°è¿­
- *      char¿Í varchar°£ÀÇ ºñ±³
+ *   1. ë¬¸ìí˜•ê³„ì—´
+ *      charì™€ varcharê°„ì˜ ë¹„êµ
  *
- *   2. ¼ıÀÚÇü°è¿­
- *      (1) ºñ±³±âÁØ data typeÀÌ Á¤¼öÇü
- *      (2) ºñ±³±âÁØ data typeÀÌ ½Ç¼öÇü
- *      (3) ºñ±³±âÁØ data typeÀÌ Áö¼öÇü
+ *   2. ìˆ«ìí˜•ê³„ì—´
+ *      (1) ë¹„êµê¸°ì¤€ data typeì´ ì •ìˆ˜í˜•
+ *      (2) ë¹„êµê¸°ì¤€ data typeì´ ì‹¤ìˆ˜í˜•
+ *      (3) ë¹„êµê¸°ì¤€ data typeì´ ì§€ìˆ˜í˜•
  *
- *      ¼ıÀÚÇü °è¿­°£ ºñ±³½Ã ¾Æ·¡ conversion matrix¿¡ ÀÇÇÏ¿©
- *      ºñ±³±âÁØ data typeÀÌ Á¤ÇØÁø´Ù.
+ *      ìˆ«ìí˜• ê³„ì—´ê°„ ë¹„êµì‹œ ì•„ë˜ conversion matrixì— ì˜í•˜ì—¬
+ *      ë¹„êµê¸°ì¤€ data typeì´ ì •í•´ì§„ë‹¤.
  *      ------------------------------------------
- *             |  N/A   | Á¤¼öÇü | ½Ç¼öÇü | Áö¼öÇü
+ *             |  N/A   | ì •ìˆ˜í˜• | ì‹¤ìˆ˜í˜• | ì§€ìˆ˜í˜•
  *      ------------------------------------------
  *        N/A  |  N/A   |  N/A   |  N/A   |  N/A
  *      ------------------------------------------
- *      Á¤¼öÇü |  N/A   | Á¤¼öÇü | ½Ç¼öÇü | Áö¼öÇü
+ *      ì •ìˆ˜í˜• |  N/A   | ì •ìˆ˜í˜• | ì‹¤ìˆ˜í˜• | ì§€ìˆ˜í˜•
  *      ------------------------------------------
- *      ½Ç¼öÇü |  N/A   | ½Ç¼öÇü | ½Ç¼öÇü | ½Ç¼öÇü
+ *      ì‹¤ìˆ˜í˜• |  N/A   | ì‹¤ìˆ˜í˜• | ì‹¤ìˆ˜í˜• | ì‹¤ìˆ˜í˜•
  *      ------------------------------------------
- *      Áö¼öÇü |  N/A   | Áö¼öÇü | ½Ç¼öÇü | Áö¼öÇü
+ *      ì§€ìˆ˜í˜• |  N/A   | ì§€ìˆ˜í˜• | ì‹¤ìˆ˜í˜• | ì§€ìˆ˜í˜•
  *      ------------------------------------------
  *
- * << data typeÀÇ ºĞ·ù >>
+ * << data typeì˜ ë¶„ë¥˜ >>
  * -----------------------------------------------------------------------
- *            |                                                | ´ëÇ¥type
+ *            |                                                | ëŒ€í‘œtype
  * ----------------------------------------------------------------------
- * ¹®ÀÚÇü°è¿­ | CHAR, VARCHAR                                  | VARCHAR
+ * ë¬¸ìí˜•ê³„ì—´ | CHAR, VARCHAR                                  | VARCHAR
  * ----------------------------------------------------------------------
- * ¼ıÀÚÇü°è¿­ | Native | Á¤¼öÇü | BIGINT, INTEGER, SMALLINT    | BIGINT
+ * ìˆ«ìí˜•ê³„ì—´ | Native | ì •ìˆ˜í˜• | BIGINT, INTEGER, SMALLINT    | BIGINT
  *            |        |-------------------------------------------------
- *            |        | ½Ç¼öÇü | DOUBLE, REAL                 | DOUBLE
+ *            |        | ì‹¤ìˆ˜í˜• | DOUBLE, REAL                 | DOUBLE
  *            -----------------------------------------------------------
- *            | Non-   | °íÁ¤¼Ò¼öÁ¡Çü | NUMERIC, DECIMAL,      |
+ *            | Non-   | ê³ ì •ì†Œìˆ˜ì í˜• | NUMERIC, DECIMAL,      |
  *            | Native |              | NUMBER(p), NUMBER(p,s) | NUMERIC
- *            |(Áö¼öÇü)|----------------------------------------
- *            |        | ºÎÁ¤¼Ò¼öÁ¡Çü | FLOAT, NUMBER          |
+ *            |(ì§€ìˆ˜í˜•)|----------------------------------------
+ *            |        | ë¶€ì •ì†Œìˆ˜ì í˜• | FLOAT, NUMBER          |
  * ----------------------------------------------------------------------
  *
  ***********************************************************************/
@@ -2433,7 +2433,7 @@ mtd::findCompareFunc( mtcColumn * aColumn,
           == MTD_GROUP_TEXT )
     {
         //-------------------------------
-        // ¹®ÀÚÇü °è¿­
+        // ë¬¸ìí˜• ê³„ì—´
         //-------------------------------
 
         sCompare = mtdVarchar.keyCompare[aCompValueType][aDirection];
@@ -2441,7 +2441,7 @@ mtd::findCompareFunc( mtcColumn * aColumn,
     else
     {
         //------------------------------
-        // ¼ıÀÚÇü °è¿­
+        // ìˆ«ìí˜• ê³„ì—´
         //------------------------------
 
         sColumn1GroupFlag =
@@ -2457,20 +2457,20 @@ mtd::findCompareFunc( mtcColumn * aColumn,
         switch( sType )
         {
             case ( MTD_NUMBER_GROUP_TYPE_BIGINT ) :
-                // ºñ±³±âÁØ data typeÀÌ Á¤¼öÇü
+                // ë¹„êµê¸°ì¤€ data typeì´ ì •ìˆ˜í˜•
 
                  sCompare = mtd::compareNumberGroupBigintFuncs[aCompValueType]
                                                               [aDirection];
                 break;
             case ( MTD_NUMBER_GROUP_TYPE_DOUBLE ) :
-                // ºñ±³±âÁØ data typeÀÌ ½Ç¼öÇü
+                // ë¹„êµê¸°ì¤€ data typeì´ ì‹¤ìˆ˜í˜•
 
                  sCompare = mtd::compareNumberGroupDoubleFuncs[aCompValueType]
                                                               [aDirection];
 
                 break;
             case ( MTD_NUMBER_GROUP_TYPE_NUMERIC ) :
-                // ºñ±³±âÁØ data typeÀÌ Áö¼öÇü
+                // ë¹„êµê¸°ì¤€ data typeì´ ì§€ìˆ˜í˜•
                 
                 sCompare = mtd::compareNumberGroupNumericFuncs[aCompValueType]
                                                               [aDirection];
@@ -2497,19 +2497,19 @@ IDE_RC mtd::mtdStoredValue2MtdValue4CompressColumn( UInt           /*  aColumnSi
 {
 /*******************************************************************
  * PROJ-1705
- * µğ½ºÅ©Å×ÀÌºíÄÃ·³ÀÇ µ¥ÀÌÅ¸¸¦
- * qp ·¹ÄÚµåÃ³¸®¿µ¿ªÀÇ ÇØ´ç ÄÃ·³À§Ä¡¿¡ º¹»ç
+ * ë””ìŠ¤í¬í…Œì´ë¸”ì»¬ëŸ¼ì˜ ë°ì´íƒ€ë¥¼
+ * qp ë ˆì½”ë“œì²˜ë¦¬ì˜ì—­ì˜ í•´ë‹¹ ì»¬ëŸ¼ìœ„ì¹˜ì— ë³µì‚¬
  *******************************************************************/
 
     smOID* sSmOIDValue;
 
-    // °íÁ¤±æÀÌ µ¥ÀÌÅ¸ Å¸ÀÔÀÇ °æ¿ì
-    // ÇÏ³ªÀÇ ÄÃ·³ µ¥ÀÌÅ¸°¡ ¿©·¯ÆäÀÌÁö¿¡ ³ª´©¾î ÀúÀåµÇ´Â °æ¿ì´Â ¾ø´Ù.
+    // ê³ ì •ê¸¸ì´ ë°ì´íƒ€ íƒ€ì…ì˜ ê²½ìš°
+    // í•˜ë‚˜ì˜ ì»¬ëŸ¼ ë°ì´íƒ€ê°€ ì—¬ëŸ¬í˜ì´ì§€ì— ë‚˜ëˆ„ì–´ ì €ì¥ë˜ëŠ” ê²½ìš°ëŠ” ì—†ë‹¤.
 
     sSmOIDValue = (smOID*)aDestValue;
     
-    /* ÀúÀåµÈ smOIDÀÇÅ©±â´Â columnÀÇ Å©±âº¸´Ù Å¬ ¼ö ¾ø´Ù.
-      compress column¿¡´Â null data°¡ Á¸Àç ÇÏÁö ¾Ê´Â´Ù.( Ç×»ó smOID°ªÀÌ ÀÖ´Ù.)*/
+    /* ì €ì¥ëœ smOIDì˜í¬ê¸°ëŠ” columnì˜ í¬ê¸°ë³´ë‹¤ í´ ìˆ˜ ì—†ë‹¤.
+      compress columnì—ëŠ” null dataê°€ ì¡´ì¬ í•˜ì§€ ì•ŠëŠ”ë‹¤.( í•­ìƒ smOIDê°’ì´ ìˆë‹¤.)*/
     IDE_TEST_RAISE( aLength != ID_SIZEOF( smOID ), ERR_INVALID_STORED_VALUE );
 
     ID_LONG_BYTE_ASSIGN( sSmOIDValue, aValue );

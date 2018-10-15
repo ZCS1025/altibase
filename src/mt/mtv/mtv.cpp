@@ -97,7 +97,7 @@ IDE_RC mtv::estimateConvertInternal( mtfCalculateFunc* aConvert,
 
     return IDE_FAILURE;
 }
-/* ÀÌ ÇÔ¼ö´Â mMtvTableCheck¸¦ ¸¸µé±â À§ÇØ Á¸ÀçÇÑ´Ù.
+/* ì´ í•¨ìˆ˜ëŠ” mMtvTableCheckë¥¼ ë§Œë“¤ê¸° ìœ„í•´ ì¡´ì¬í•œë‹¤.
 char * getDataTypeNameById(UInt a)
 {
     switch(a)
@@ -196,10 +196,10 @@ IDE_RC mtv::initialize( mtvModule *** aExtCvtModuleGroup,
     UInt**            sTarget;
 
     //------------------------------------
-    // Run Time Covert Module ÀÇ ±¸Ãà
+    // Run Time Covert Module ì˜ êµ¬ì¶•
     //------------------------------------
 
-    // ³»ºÎ Convert ModuleÀÇ °³¼ö
+    // ë‚´ë¶€ Convert Moduleì˜ ê°œìˆ˜
     sInternalCvtModuleCnt = 0;
     for (  sModule = (mtvModule**) mtv::mInternalModule;
            *sModule != NULL;
@@ -208,7 +208,7 @@ IDE_RC mtv::initialize( mtvModule *** aExtCvtModuleGroup,
         sInternalCvtModuleCnt++;
     }
 
-    // ¿ÜºÎ Convert ModuleÀÇ °³¼ö
+    // ì™¸ë¶€ Convert Moduleì˜ ê°œìˆ˜
     sExternalCvtModuleCnt = 0;
     for ( i = 0; i < aGroupCnt; i++ )
     {
@@ -220,7 +220,7 @@ IDE_RC mtv::initialize( mtvModule *** aExtCvtModuleGroup,
         }
     }
 
-    // RunTime Convert ModuleÀÇ ¸Ş¸ğ¸® ÇÒ´ç
+    // RunTime Convert Moduleì˜ ë©”ëª¨ë¦¬ í• ë‹¹
     IDE_TEST(iduMemMgr::malloc(IDU_MEM_MT,
                                ID_SIZEOF(mtvModule*)
                                * (sInternalCvtModuleCnt +
@@ -229,7 +229,7 @@ IDE_RC mtv::initialize( mtvModule *** aExtCvtModuleGroup,
              != IDE_SUCCESS);
     sStage = 1;
 
-    // RunTime Convert ModuleÀÇ ±¸Ãà
+    // RunTime Convert Moduleì˜ êµ¬ì¶•
     idlOS::memcpy ( & mtv::mAllModule[0],
                     & mtv::mInternalModule[0],
                     ID_SIZEOF(mtvModule*) * sInternalCvtModuleCnt );
@@ -375,10 +375,10 @@ IDE_RC mtv::initialize( mtvModule *** aExtCvtModuleGroup,
     }
 
 /* make mtvTableCheck
- * PROJ-2183 MT Çüº¯È¯ °³¼± ÀÛ¾÷¿¡¼­ mtÆÀ°ú ÄÚµå ¸®ºä ÈÄ, Ç×»ó Çüº¯È¯Å×ÀÌºíÀÌ mtvTableCheckÇüÅÂ·Î
- * ¸¸µé¾îÁö´Â °ÍÀ» °ËÁõÇÏ±â À§ÇØ ¸¸µé¾îÁ³´Ù. debug¸ğµå¿¡¼­ Ã¼Å©ÇÏµµ·ÏÇÑ´Ù.
- * ÇÏÁö¸¸, µ¥ÀÌÅÍÅ¸ÀÔÀÌ ÇÏ³ª Ãß°¡µÉ ¶§¸¶´Ù ÀÌ Å×ÀÌºíÀ» À¯Áöº¸¼öÇØ¾ßÇÏ´Â ¹ø°Å·Î¿òÀÌ ÀÖÀ¸¹Ç·Î
- * °è¼Ó À¯ÁöÇÏ´Â °Í¿¡ ´ëÇØ¼­´Â Â÷ÈÄ ´ã´çÆÀ¿¡¼­ ´Ù½ÃÇÑ¹ø »ı°¢ÇØ º¼ ÇÊ¿ä°¡ ÀÖ´Ù.
+ * PROJ-2183 MT í˜•ë³€í™˜ ê°œì„  ì‘ì—…ì—ì„œ mtíŒ€ê³¼ ì½”ë“œ ë¦¬ë·° í›„, í•­ìƒ í˜•ë³€í™˜í…Œì´ë¸”ì´ mtvTableCheckí˜•íƒœë¡œ
+ * ë§Œë“¤ì–´ì§€ëŠ” ê²ƒì„ ê²€ì¦í•˜ê¸° ìœ„í•´ ë§Œë“¤ì–´ì¡Œë‹¤. debugëª¨ë“œì—ì„œ ì²´í¬í•˜ë„ë¡í•œë‹¤.
+ * í•˜ì§€ë§Œ, ë°ì´í„°íƒ€ì…ì´ í•˜ë‚˜ ì¶”ê°€ë  ë•Œë§ˆë‹¤ ì´ í…Œì´ë¸”ì„ ìœ ì§€ë³´ìˆ˜í•´ì•¼í•˜ëŠ” ë²ˆê±°ë¡œì›€ì´ ìˆìœ¼ë¯€ë¡œ
+ * ê³„ì† ìœ ì§€í•˜ëŠ” ê²ƒì— ëŒ€í•´ì„œëŠ” ì°¨í›„ ë‹´ë‹¹íŒ€ì—ì„œ ë‹¤ì‹œí•œë²ˆ ìƒê°í•´ ë³¼ í•„ìš”ê°€ ìˆë‹¤.
 
     ideLog::logMessage( IDE_SERVER_0, "{\n" );
     for( sFrom = 0; sFrom < mtd::getNumberOfModules(); sFrom++ )
@@ -603,7 +603,7 @@ IDE_RC mtv::estimateConvert4Server( iduMemory*   aMemory,
     sNode.lflag    = 0;
 
     // BUG-16078
-    // estimate¿¡ ÇÊ¿äÇÑ callbackÇÔ¼ö¸¦ ¿¬°áÇÑ´Ù.
+    // estimateì— í•„ìš”í•œ callbackí•¨ìˆ˜ë¥¼ ì—°ê²°í•œë‹¤.
     sTemplate.getOpenedCursor = aTemplate->getOpenedCursor;
     sTemplate.addOpenedLobCursor = aTemplate->addOpenedLobCursor;
     sTemplate.isBaseTable     = aTemplate->isBaseTable;
@@ -619,7 +619,7 @@ IDE_RC mtv::estimateConvert4Server( iduMemory*   aMemory,
     sTemplate.getECCSize       = aTemplate->getECCSize;
     
     // PROJ-1358
-    // ½ÇÇà ½ÃÁ¡ÀÇ conversionÀ» À§ÇÏ¿© °¡»ó TemplateÀ» »ı¼ºÇÑ´Ù.
+    // ì‹¤í–‰ ì‹œì ì˜ conversionì„ ìœ„í•˜ì—¬ ê°€ìƒ Templateì„ ìƒì„±í•œë‹¤.
     sTemplate.rows          = & sTuple;
     sTemplate.rowArrayCount = 1;
     sTemplate.rowCount      = 0;
@@ -709,7 +709,7 @@ IDE_RC mtv::estimateConvert4Server( iduMemory*   aMemory,
     *aConvert = sConvert;
 
     // PROJ-1436
-    // dateFormatÀ» ÂüÁ¶ÇßÀ½À» Ç¥½ÃÇÑ´Ù.
+    // dateFormatì„ ì°¸ì¡°í–ˆìŒì„ í‘œì‹œí•œë‹¤.
     aTemplate->dateFormatRef = sTemplate.dateFormatRef;
     
     /* PROJ-2208 Multi Currency */
@@ -782,7 +782,7 @@ IDE_RC mtv::estimateConvert4Server( iduVarMemList * aMemory,
     sNode.lflag    = 0;
 
     // BUG-16078
-    // estimate¿¡ ÇÊ¿äÇÑ callbackÇÔ¼ö¸¦ ¿¬°áÇÑ´Ù.
+    // estimateì— í•„ìš”í•œ callbackí•¨ìˆ˜ë¥¼ ì—°ê²°í•œë‹¤.
     sTemplate.getOpenedCursor = aTemplate->getOpenedCursor;
     sTemplate.addOpenedLobCursor = aTemplate->addOpenedLobCursor;
     sTemplate.isBaseTable     = aTemplate->isBaseTable;
@@ -798,7 +798,7 @@ IDE_RC mtv::estimateConvert4Server( iduVarMemList * aMemory,
     sTemplate.getECCSize       = aTemplate->getECCSize;
     
     // PROJ-1358
-    // ½ÇÇà ½ÃÁ¡ÀÇ conversionÀ» À§ÇÏ¿© °¡»ó TemplateÀ» »ı¼ºÇÑ´Ù.
+    // ì‹¤í–‰ ì‹œì ì˜ conversionì„ ìœ„í•˜ì—¬ ê°€ìƒ Templateì„ ìƒì„±í•œë‹¤.
     sTemplate.rows          = & sTuple;
     sTemplate.rowArrayCount = 1;
     sTemplate.rowCount      = 0;
@@ -888,7 +888,7 @@ IDE_RC mtv::estimateConvert4Server( iduVarMemList * aMemory,
     *aConvert = sConvert;
 
     // PROJ-1436
-    // dateFormatÀ» ÂüÁ¶ÇßÀ½À» Ç¥½ÃÇÑ´Ù.
+    // dateFormatì„ ì°¸ì¡°í–ˆìŒì„ í‘œì‹œí•œë‹¤.
     aTemplate->dateFormatRef = sTemplate.dateFormatRef;
 
     /* PROJ-2208 Multi Currency */
@@ -960,7 +960,7 @@ IDE_RC mtv::estimateConvert4Cli( mtvConvert** aConvert,
     sNode.lflag    = 0;
 
     // BUG-16078
-    // estimate¿¡ ÇÊ¿äÇÑ callbackÇÔ¼ö¸¦ ¿¬°áÇÑ´Ù.
+    // estimateì— í•„ìš”í•œ callbackí•¨ìˆ˜ë¥¼ ì—°ê²°í•œë‹¤.
     sTemplate.getOpenedCursor = aTemplate->getOpenedCursor;
     sTemplate.addOpenedLobCursor = aTemplate->addOpenedLobCursor;
     sTemplate.isBaseTable     = aTemplate->isBaseTable;
@@ -976,7 +976,7 @@ IDE_RC mtv::estimateConvert4Cli( mtvConvert** aConvert,
     sTemplate.getECCSize       = aTemplate->getECCSize;
     
     // PROJ-1358
-    // ½ÇÇà ½ÃÁ¡ÀÇ conversionÀ» À§ÇÏ¿© °¡»ó TemplateÀ» »ı¼ºÇÑ´Ù.
+    // ì‹¤í–‰ ì‹œì ì˜ conversionì„ ìœ„í•˜ì—¬ ê°€ìƒ Templateì„ ìƒì„±í•œë‹¤.
     sTemplate.rows          = & sTuple;
     sTemplate.rowArrayCount = 1;
     sTemplate.rowCount      = 0;
@@ -1068,7 +1068,7 @@ IDE_RC mtv::estimateConvert4Cli( mtvConvert** aConvert,
     *aConvert = sConvert;
 
     // PROJ-1436
-    // dateFormatÀ» ÂüÁ¶ÇßÀ½À» Ç¥½ÃÇÑ´Ù.
+    // dateFormatì„ ì°¸ì¡°í–ˆìŒì„ í‘œì‹œí•œë‹¤.
     aTemplate->dateFormatRef = sTemplate.dateFormatRef;
 
     /* PROJ-2208 Multi Currency */
@@ -1405,7 +1405,7 @@ IDE_RC mtv::character2NativeN( mtdCharType* aInChar, mtdBigintType* aOutBigint )
     return IDE_FAILURE;
 }
 
-/* aOutChar´Â char 20À¸·Î estimateµÇ¾îÀÖ´Ù.
+/* aOutCharëŠ” char 20ìœ¼ë¡œ estimateë˜ì–´ìˆë‹¤.
  */
 IDE_RC mtv::nativeN2Character( mtdBigintType aInBigint, mtdCharType* aOutChar )
 {
@@ -1455,7 +1455,7 @@ IDE_RC mtv::nativeN2Character( mtdBigintType aInBigint, mtdCharType* aOutChar )
     return IDE_SUCCESS;
 }
 
-/* aOutChar´Â char 22·Î estimateµÇ¾îÀÖ´Ù.
+/* aOutCharëŠ” char 22ë¡œ estimateë˜ì–´ìˆë‹¤.
  */
 IDE_RC mtv::nativeR2Character( mtdDoubleType aInDouble, mtdCharType* aOutChar )
 {

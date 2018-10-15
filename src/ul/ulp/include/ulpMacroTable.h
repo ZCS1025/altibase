@@ -40,7 +40,7 @@ typedef struct ulpMacroNode
 
 /******************************
  *
- * macro¸¦ ÀúÀå, °ü¸®ÇÑ±â À§ÇÑ class
+ * macroë¥¼ ì €ì¥, ê´€ë¦¬í•œê¸° ìœ„í•œ class
  ******************************/
 class ulpMacroTable
 {
@@ -53,18 +53,18 @@ public:
 
     void ulpFinalize();
 
-    // defined macro¸¦ hash table¿¡ ÀúÀåÇÑ´Ù.
+    // defined macroë¥¼ hash tableì— ì €ì¥í•œë‹¤.
     IDE_RC          ulpMDefine ( SChar *aName, SChar *aText, idBool aIsFunc );
 
-    // Æ¯Á¤ ÀÌ¸§À» °®´Â defined macro¸¦ hash table¿¡¼­ °Ë»öÇÑ´Ù.
+    // íŠ¹ì • ì´ë¦„ì„ ê°–ëŠ” defined macroë¥¼ hash tableì—ì„œ ê²€ìƒ‰í•œë‹¤.
     ulpMacroNode   *ulpMLookup( SChar *aName );
 
-    // Æ¯Á¤ ÀÌ¸§À» °®´Â defined macro¸¦ hash table¿¡¼­ Á¦°ÅÇÑ´Ù.
+    // íŠ¹ì • ì´ë¦„ì„ ê°–ëŠ” defined macroë¥¼ hash tableì—ì„œ ì œê±°í•œë‹¤.
     void            ulpMUndef( SChar *aName );
 
-    /* BUG-28118 : system Çì´õÆÄÀÏµéµµ ÆÄ½ÌµÅ¾ßÇÔ.                    *
-     * 11th. problem : C preoprocessor¿¡¼­ ¸ÅÅ©·Î ÇÔ¼ö ÀÎÀÚ Ã³¸® ¸øÇÔ. *
-     * 12th. problem : C preprocessor¿¡¼­ µÎ ÅäÅ«À» concatenationÇÒ¶§ »ç¿ëµÇ´Â '##' ÅäÅ« Ã³¸®ÇØ¾ßÇÔ. */
+    /* BUG-28118 : system í—¤ë”íŒŒì¼ë“¤ë„ íŒŒì‹±ë¼ì•¼í•¨.                    *
+     * 11th. problem : C preoprocessorì—ì„œ ë§¤í¬ë¡œ í•¨ìˆ˜ ì¸ì ì²˜ë¦¬ ëª»í•¨. *
+     * 12th. problem : C preprocessorì—ì„œ ë‘ í† í°ì„ concatenationí• ë•Œ ì‚¬ìš©ë˜ëŠ” '##' í† í° ì²˜ë¦¬í•´ì•¼í•¨. */
      void ulpMEraseSharp4MFunc( SChar *aText );
 
     // for debugging
@@ -74,7 +74,7 @@ private:
 
 /* ATTRIBUTES */
 public:
-    // ulpMacroTable ÀúÀåµÈ defined macroÀÇ °³¼ö
+    // ulpMacroTable ì €ì¥ëœ defined macroì˜ ê°œìˆ˜
     SInt mCnt;
 
     // max number of ulpMacroTable buckets
@@ -84,7 +84,7 @@ private:
     // hash function
     UInt     (*mHash) (UChar *);
 
-    // marco¸¦ ÀúÀåÇÒ hash table
+    // marcoë¥¼ ì €ì¥í•  hash table
     ulpMacroNode* mMacroTable[MAX_SYMTABLE_ELEMENTS];
 };
 

@@ -21,9 +21,9 @@
  * Description :
  *     SDEX(Shard DML EXecutor) Node
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  **********************************************************************/
 
@@ -57,7 +57,7 @@
 typedef struct qmncSDEX
 {
     //---------------------------------
-    // Code ¿µ¿ª °øÅë Á¤º¸
+    // Code ì˜ì—­ ê³µí†µ ì •ë³´
     //---------------------------------
 
     qmnPlan          plan;
@@ -65,7 +65,7 @@ typedef struct qmncSDEX
     UInt             planID;
 
     //---------------------------------
-    // °íÀ¯ Á¤º¸
+    // ê³ ìœ  ì •ë³´
     //---------------------------------
 
     UInt             shardDataIndex;
@@ -84,7 +84,7 @@ typedef struct qmncSDEX
 typedef struct qmndSDEX
 {
     //---------------------------------
-    // Data ¿µ¿ª °øÅë Á¤º¸
+    // Data ì˜ì—­ ê³µí†µ ì •ë³´
     //---------------------------------
 
     qmndPlan       plan;
@@ -92,7 +92,7 @@ typedef struct qmndSDEX
     UInt         * flag;
 
     //---------------------------------
-    // °íÀ¯ Á¤º¸
+    // ê³ ìœ  ì •ë³´
     //---------------------------------
 
     sdiDataNodes * mDataInfo;
@@ -107,11 +107,11 @@ public:
     // Base Function Pointer
     //------------------------
 
-    // ÃÊ±âÈ­
+    // ì´ˆê¸°í™”
     static IDE_RC init( qcTemplate * aTemplate,
                         qmnPlan    * aPlan );
 
-    // ¼öÇà ÇÔ¼ö
+    // ìˆ˜í–‰ í•¨ìˆ˜
     static IDE_RC doIt( qcTemplate * aTemplate,
                         qmnPlan    * aPlan,
                         qmcRowFlag * aFlag );
@@ -120,14 +120,14 @@ public:
     static IDE_RC padNull( qcTemplate * aTemplate,
                            qmnPlan    * aPlan );
 
-    // Plan Á¤º¸ Ãâ·Â
+    // Plan ì •ë³´ ì¶œë ¥
     static IDE_RC printPlan( qcTemplate   * aTemplate,
                              qmnPlan      * aPlan,
                              ULong          aDepth,
                              iduVarString * aString,
                              qmnDisplay     aMode );
 
-    // ¼öÇàÁ¤º¸ Ãâ·Â
+    // ìˆ˜í–‰ì •ë³´ ì¶œë ¥
     static IDE_RC printDataInfo( qcTemplate    * aTemplate,
                                  sdiClientInfo * aClientInfo,
                                  sdiDataNodes  * aDataInfo,
@@ -138,7 +138,7 @@ public:
 
 private:
 
-    // ÃÖÃÊ ÃÊ±âÈ­
+    // ìµœì´ˆ ì´ˆê¸°í™”
     static IDE_RC firstInit( qcTemplate * aTemplate,
                              qmncSDEX   * aCodePlan,
                              qmndSDEX   * aDataPlan );

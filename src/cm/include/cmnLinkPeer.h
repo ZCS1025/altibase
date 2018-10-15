@@ -50,14 +50,14 @@ typedef struct cmnLinkPeerIPCDA
 {
     struct cmnLinkPeer       mLinkPeer;
     struct cmnLinkDescIPCDA  mDesc;
-    UInt                     mClientPID;       // IPCDA·Î Á¢¼ÓÇÑ clientÀÇ process idle
+    UInt                     mClientPID;       // IPCDAë¡œ ì ‘ì†í•œ clientì˜ process idle
 #if defined(ALTI_CFG_OS_LINUX)
     cmnIPCDAMessageQ         mMessageQ;
 #endif
 } cmnLinkPeerIPCDA;
 
 // bug-28277 ipc: server stop failed when idle clis exist
-// cmnLinkPeerOP mShutdown ÇÔ¼ö¿¡¼­ 3¹øÂ° ÀÎÀÚ·Î Ãß°¡ÇÏ¿© »ç¿ëµÊ.
+// cmnLinkPeerOP mShutdown í•¨ìˆ˜ì—ì„œ 3ë²ˆì§¸ ì¸ìë¡œ ì¶”ê°€í•˜ì—¬ ì‚¬ìš©ë¨.
 typedef enum
 {
     CMN_SHUTDOWN_MODE_NORMAL = 0,

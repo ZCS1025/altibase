@@ -21,11 +21,11 @@
  * Description :
  *     PROJ(PROJection) Node
  *
- *     °ü°èÇü ¸ğµ¨¿¡¼­ projectionÀ» ¼öÇàÇÏ´Â Plan Node ÀÌ´Ù.
+ *     ê´€ê³„í˜• ëª¨ë¸ì—ì„œ projectionì„ ìˆ˜í–‰í•˜ëŠ” Plan Node ì´ë‹¤.
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  **********************************************************************/
 
@@ -42,19 +42,19 @@
 //-----------------
 
 // qmncPROJ.flag
-// LimitÀ» °¡Áö´ÂÁö¿¡ ´ëÇÑ ¿©ºÎ
+// Limitì„ ê°€ì§€ëŠ”ì§€ì— ëŒ€í•œ ì—¬ë¶€
 # define QMNC_PROJ_LIMIT_MASK               (0x00000001)
 # define QMNC_PROJ_LIMIT_FALSE              (0x00000000)
 # define QMNC_PROJ_LIMIT_TRUE               (0x00000001)
 
 // qmncPROJ.flag
-// Top Projection¿¡¼­ »ç¿ëµÇ´Â ÁöÀÇ ¿©ºÎ
+// Top Projectionì—ì„œ ì‚¬ìš©ë˜ëŠ” ì§€ì˜ ì—¬ë¶€
 #define QMNC_PROJ_TOP_MASK                  (0x00000002)
 #define QMNC_PROJ_TOP_FALSE                 (0x00000000)
 #define QMNC_PROJ_TOP_TRUE                  (0x00000002)
 
 // qmncPROJ.flag
-// Indexable MIN-MAX ÃÖÀûÈ­°¡ Àû¿ëµÇ¾ú´ÂÁöÀÇ ¿©ºÎ
+// Indexable MIN-MAX ìµœì í™”ê°€ ì ìš©ë˜ì—ˆëŠ”ì§€ì˜ ì—¬ë¶€
 #define QMNC_PROJ_MINMAX_MASK               (0x00000004)
 #define QMNC_PROJ_MINMAX_FALSE              (0x00000000)
 #define QMNC_PROJ_MINMAX_TRUE               (0x00000004)
@@ -62,7 +62,7 @@
 /*
  * PROJ-1071 Parallel Query
  * qmncPROJ.flag
- * subquery ÀÇ top ÀÎÁö..
+ * subquery ì˜ top ì¸ì§€..
  */
 #define QMNC_PROJ_QUERYSET_TOP_MASK         (0x00000008)
 #define QMNC_PROJ_QUERYSET_TOP_FALSE        (0x00000000)
@@ -109,7 +109,7 @@
 typedef struct qmncPROJ  
 {
     //---------------------------------
-    // Code ¿µ¿ª °øÅë Á¤º¸
+    // Code ì˜ì—­ ê³µí†µ ì •ë³´
     //---------------------------------
 
     qmnPlan               plan;
@@ -117,17 +117,17 @@ typedef struct qmncPROJ
     UInt                  planID;
 
     //---------------------------------
-    // Target °ü·Ã Á¤º¸
+    // Target ê´€ë ¨ ì •ë³´
     //---------------------------------
-    UInt                  targetCount;  // Target ColumnÀÇ °³¼ö
-    qmsTarget           * myTarget;     // Target Á¤º¸
-    qcParseSeqCaches    * nextValSeqs;  // Sequence Next Value Á¤º¸
-    qtcNode             * level;        // LEVEL Pseudo Column Á¤º¸
+    UInt                  targetCount;  // Target Columnì˜ ê°œìˆ˜
+    qmsTarget           * myTarget;     // Target ì •ë³´
+    qcParseSeqCaches    * nextValSeqs;  // Sequence Next Value ì •ë³´
+    qtcNode             * level;        // LEVEL Pseudo Column ì •ë³´
 
     /* PROJ-1715 Hierarchy Pseudo Column */
     qtcNode             * isLeaf;
 
-    // PROJ-2551 simple query ÃÖÀûÈ­
+    // PROJ-2551 simple query ìµœì í™”
     idBool                isSimple;    // simple target
     qmnValueInfo        * simpleValues;
     UInt                * simpleValueSizes;
@@ -135,28 +135,28 @@ typedef struct qmncPROJ
     UInt                  simpleResultSize;
     
     //---------------------------------
-    // Limitation °ü·Ã Á¤º¸
+    // Limitation ê´€ë ¨ ì •ë³´
     //---------------------------------
     qmsLimit            * limit;
 
     //---------------------------------
-    // LOOP °ü·Ã Á¤º¸
+    // LOOP ê´€ë ¨ ì •ë³´
     //---------------------------------
     qtcNode             * loopNode;
-    qtcNode             * loopLevel;        // LOOP_LEVEL Pseudo Column Á¤º¸    
+    qtcNode             * loopLevel;        // LOOP_LEVEL Pseudo Column ì •ë³´    
 
     //---------------------------------
-    // Data ¿µ¿ª °ü·Ã Á¤º¸
+    // Data ì˜ì—­ ê´€ë ¨ ì •ë³´
     //---------------------------------
     
-    UInt                  myTargetOffset; // myTargetÀÇ ¿µ¿ª
+    UInt                  myTargetOffset; // myTargetì˜ ì˜ì—­
     
 } qmncPROJ;
 
 typedef struct qmndPROJ
 {
     //---------------------------------
-    // Data ¿µ¿ª °øÅë Á¤º¸
+    // Data ì˜ì—­ ê³µí†µ ì •ë³´
     //---------------------------------
 
     qmndPlan       plan;
@@ -164,39 +164,39 @@ typedef struct qmndPROJ
     UInt         * flag;        
 
     //---------------------------------
-    // PROJ °íÀ¯ Á¤º¸
+    // PROJ ê³ ìœ  ì •ë³´
     //---------------------------------
 
-    ULong          tupleOffset; // Top Projection¿¡¼­ ½ÇÁ¦ RecordÀÇ Å©±â °ü¸®
+    ULong          tupleOffset; // Top Projectionì—ì„œ ì‹¤ì œ Recordì˜ í¬ê¸° ê´€ë¦¬
 
     //---------------------------------
-    // Limitation °ü·Ã Á¤º¸
+    // Limitation ê´€ë ¨ ì •ë³´
     //---------------------------------
     
     doItFunc       limitExec;    // only for limit option
-    ULong          limitCurrent; // ÇöÀç Limit °ª
-    ULong          limitStart;   // ½ÃÀÛ Limit °ª
-    ULong          limitEnd;     // ÃÖÁ¾ Limit °ª
+    ULong          limitCurrent; // í˜„ì¬ Limit ê°’
+    ULong          limitStart;   // ì‹œì‘ Limit ê°’
+    ULong          limitEnd;     // ìµœì¢… Limit ê°’
 
     //---------------------------------
-    // Loop °ü·Ã Á¤º¸
+    // Loop ê´€ë ¨ ì •ë³´
     //---------------------------------
 
     SLong        * loopCurrentPtr;
-    SLong          loopCurrent; // ÇöÀç Loop °ª
-    SLong          loopCount;   // ÃÖÁ¾ Limit °ª
+    SLong          loopCurrent; // í˜„ì¬ Loop ê°’
+    SLong          loopCount;   // ìµœì¢… Limit ê°’
 
     //---------------------------------
-    // Null Row °ü·Ã Á¤º¸
+    // Null Row ê´€ë ¨ ì •ë³´
     //---------------------------------
 
-    UInt           rowSize;    // RowÀÇ ÃÖ´ë Size
+    UInt           rowSize;    // Rowì˜ ìµœëŒ€ Size
     void         * nullRow;    // Null Row
-    mtcColumn    * nullColumn; // Null RowÀÇ Column Á¤º¸
+    mtcColumn    * nullColumn; // Null Rowì˜ Column ì •ë³´
 
     // PROJ-2462 ResultCache
-    // Top Result Cache°¡ »ç¿ëµÉ °æ¿ì VMTR »óÀ§¿¡ PROJ
-    // »ı¼ºµÈ´Ù ÀÌ¶§ PROJ Àº ViewSCAN ¿ªÈ°À» ÇÑ´Ù.
+    // Top Result Cacheê°€ ì‚¬ìš©ë  ê²½ìš° VMTR ìƒìœ„ì— PROJ
+    // ìƒì„±ëœë‹¤ ì´ë•Œ PROJ ì€ ViewSCAN ì—­í™œì„ í•œë‹¤.
     qmcdMemSortTemp * memSortMgr;
     qmdMtrNode      * memSortRecord;
     SLong             recordCnt;
@@ -212,11 +212,11 @@ public:
     // Base Function Pointer
     //------------------------
 
-    // ÃÊ±âÈ­
+    // ì´ˆê¸°í™”
     static IDE_RC init( qcTemplate * aTemplate,
                         qmnPlan    * aPlan );
 
-    // ¼öÇà ÇÔ¼ö
+    // ìˆ˜í–‰ í•¨ìˆ˜
     static IDE_RC doIt( qcTemplate * aTemplate,
                         qmnPlan    * aPlan,
                         qmcRowFlag * aFlag );
@@ -225,7 +225,7 @@ public:
     static IDE_RC padNull( qcTemplate * aTemplate,
                            qmnPlan    * aPlan );
 
-    // Plan Á¤º¸ Ãâ·Â
+    // Plan ì •ë³´ ì¶œë ¥
     static IDE_RC printPlan( qcTemplate   * aTemplate,
                              qmnPlan      * aPlan,
                              ULong          aDepth,
@@ -236,22 +236,22 @@ public:
     // mapping by doIt() function pointer
     //------------------------
 
-    // È£ÃâµÇ¾î¼­´Â ¾ÈµÊ.
+    // í˜¸ì¶œë˜ì–´ì„œëŠ” ì•ˆë¨.
     static IDE_RC doItDefault( qcTemplate * aTemplate,
                                qmnPlan    * aPlan,
                                qmcRowFlag * aFlag );
 
-    // Non-Top ProjectionÀ» ¼öÇà
+    // Non-Top Projectionì„ ìˆ˜í–‰
     static IDE_RC doItProject( qcTemplate * aTemplate,
                                qmnPlan    * aPlan,
                                qmcRowFlag * aFlag );
 
-    // Top ProjectionÀ» ¼öÇà
+    // Top Projectionì„ ìˆ˜í–‰
     static IDE_RC doItTopProject( qcTemplate * aTemplate,
                                   qmnPlan    * aPlan,
                                   qmcRowFlag * aFlag );
 
-    // Limit ProjectionÀ» ¼öÇà
+    // Limit Projectionì„ ìˆ˜í–‰
     static IDE_RC doItWithLimit( qcTemplate * aTemplate,
                                  qmnPlan    * aPlan,
                                  qmcRowFlag * aFlag );
@@ -260,53 +260,53 @@ public:
     // Direct External Call only for root node
     //------------------------
 
-    // TargetÀÇ ÃÖ´ë Å©±â È¹µæ
+    // Targetì˜ ìµœëŒ€ í¬ê¸° íšë“
     static IDE_RC getRowSize( qcTemplate * aTemplate,
                               qmnPlan    * aPlan,
                               UInt       * aSize );
 
-    // Target Á¤º¸ È¹µæ
+    // Target ì •ë³´ íšë“
     static IDE_RC getCodeTargetPtr( qmnPlan    * aPlan,
                                     qmsTarget ** aTarget );
 
-    // Communication Buffer¿¡ ½ÇÁ¦ ¾²¿©Áø Å©±â
+    // Communication Bufferì— ì‹¤ì œ ì“°ì—¬ì§„ í¬ê¸°
     static ULong  getActualSize( qcTemplate * aTemplate,
                                  qmnPlan    * aPlan );
 
-    // PROJ-1075 target columnÀÇ °³¼ö
+    // PROJ-1075 target columnì˜ ê°œìˆ˜
     static UInt   getTargetCount( qmnPlan    * aPlan );
 
 private:
 
     //------------------------
-    // ÃÊ±âÈ­ °ü·Ã ÇÔ¼ö
+    // ì´ˆê¸°í™” ê´€ë ¨ í•¨ìˆ˜
     //------------------------
 
-    // ÃÖÃÊ ÃÊ±âÈ­
+    // ìµœì´ˆ ì´ˆê¸°í™”
     static IDE_RC firstInit( qcTemplate * aTemplate,
                              qmncPROJ   * aCodePlan,
                              qmndPROJ   * aDataPlan );
 
-    // TargetÀÇ ÃÖ´ë Å©±â °è»ê
+    // Targetì˜ ìµœëŒ€ í¬ê¸° ê³„ì‚°
     static IDE_RC getMaxRowSize( qcTemplate * aTemplate,
                                  qmncPROJ   * aCodePlan,
                                  UInt       * aSize );
     
-    // Null RowÀÇ »ı¼º
+    // Null Rowì˜ ìƒì„±
     static IDE_RC makeNullRow( qcTemplate * aTemplate,
                                qmncPROJ   * aCodePlan,
                                qmndPROJ   * aDataPlan );
 
-    // LEVEL pseudo columnÀÇ °ª ÃÊ±âÈ­
+    // LEVEL pseudo columnì˜ ê°’ ì´ˆê¸°í™”
     static IDE_RC initLevel( qcTemplate * aTemplate,
                              qmncPROJ   * aCodePlan );
 
-    // Flag¿¡ µû¸¥ ¼öÇà ÇÔ¼ö °áÁ¤
+    // Flagì— ë”°ë¥¸ ìˆ˜í–‰ í•¨ìˆ˜ ê²°ì •
     static IDE_RC setDoItFunction( qmncPROJ   * aCodePlan,
                                    qmndPROJ   * aDataPlan );
 
     //------------------------
-    // doIt °ü·Ã ÇÔ¼ö
+    // doIt ê´€ë ¨ í•¨ìˆ˜
     //------------------------
 
     static IDE_RC readSequence( qcTemplate * aTemplate,
@@ -317,10 +317,10 @@ private:
                                 qmnPlan    * aPlan );
     
     //------------------------
-    // Plan Display °ü·Ã ÇÔ¼ö
+    // Plan Display ê´€ë ¨ í•¨ìˆ˜
     //------------------------
 
-    // Target Á¤º¸¸¦ Ãâ·ÂÇÑ´Ù.
+    // Target ì •ë³´ë¥¼ ì¶œë ¥í•œë‹¤.
     static IDE_RC printTargetInfo( qcTemplate   * aTemplate,
                                    qmncPROJ     * aCodePlan,
                                    iduVarString * aString );

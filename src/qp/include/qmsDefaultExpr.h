@@ -30,11 +30,11 @@
 
 typedef struct qmsExprNode
 {
-    // transform¿ë ÀÚ·á
+    // transformìš© ìë£Œ
     qmsTableRef  * tableRef;
     qcmColumn    * column;
 
-    // compare¿ë node tree
+    // compareìš© node tree
     qtcNode      * node;
     
     qmsExprNode  * next;
@@ -67,7 +67,7 @@ public:
                                                 qcmColumn    ** aColumnList,
                                                 qtcNode       * aNode );
 
-    /* BUG-35445 Check Constraint, Function-Based Index¿¡¼­ »ç¿ë ÁßÀÎ FunctionÀ» º¯°æ/Á¦°Å ¹æÁö */
+    /* BUG-35445 Check Constraint, Function-Based Indexì—ì„œ ì‚¬ìš© ì¤‘ì¸ Functionì„ ë³€ê²½/ì œê±° ë°©ì§€ */
     static IDE_RC makeFunctionNameListFromExpression( qcStatement         * aStatement,
                                                       qdFunctionNameList ** aFunctionNameList,
                                                       qtcNode             * aTargetNode,

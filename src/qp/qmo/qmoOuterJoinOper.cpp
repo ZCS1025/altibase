@@ -21,9 +21,9 @@
  * Description :
  *     PROJ-1653 Outer Join Operator (+)
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  **********************************************************************/
 
@@ -62,46 +62,46 @@ extern mtfModule mtfGreaterEqual;
 extern mtfModule mtfLessEqual;
 
 /***********************************************************************
- *  ** Âü°í »çÇ×
+ *  ** ì°¸ê³  ì‚¬í•­
  *
- *  Outer Join Operator ¿¡ ´ëÇÑ ¿À¶óÅ¬°ú ¾ËÆ¼º£ÀÌ½ºÀÇ Á¦¾à»çÇ× Â÷ÀÌÁ¡
+ *  Outer Join Operator ì— ëŒ€í•œ ì˜¤ë¼í´ê³¼ ì•Œí‹°ë² ì´ìŠ¤ì˜ ì œì•½ì‚¬í•­ ì°¨ì´ì 
  *
- *  1. ¿À¶óÅ¬Àº "(", "+", ")" ¹®ÀÚ »çÀÌ¿¡ white space °¡ ¿Ã ¼ö ÀÖ´Ù.
- *     ¾ËÆ¼º£ÀÌ½º´Â ¾ÈµÈ´Ù. ¼¼¹®ÀÚ°¡ ÇÏ³ªÀÇ ÅäÅ«ÀÌ´Ù.
+ *  1. ì˜¤ë¼í´ì€ "(", "+", ")" ë¬¸ì ì‚¬ì´ì— white space ê°€ ì˜¬ ìˆ˜ ìˆë‹¤.
+ *     ì•Œí‹°ë² ì´ìŠ¤ëŠ” ì•ˆëœë‹¤. ì„¸ë¬¸ìê°€ í•˜ë‚˜ì˜ í† í°ì´ë‹¤.
  *
- *     °¡. ¿À¶óÅ¬
+ *     ê°€. ì˜¤ë¼í´
  *         where t1.i1( + ) = 1 -- (O)
  *         where t1.i1(
  *                   + ) = 1 -- (O)
- *     ³ª. ¾ËÆ¼º£ÀÌ½º
+ *     ë‚˜. ì•Œí‹°ë² ì´ìŠ¤
  *         where t1.i1(+) = 1 -- (O)
  *         where t1.i1( +) = 1 -- (X)
  *
- *  2. ¿À¶óÅ¬ÀÇ °æ¿ì´Â equal ¿¬»êÀÚ¿¡¼­ list argument ¸¦ »ç¿ëÇÒ ¼ö ¾ø´Ù.
- *     ¾ËÆ¼º£ÀÌ½º´Â °¡´ÉÇÏ´Ù.
+ *  2. ì˜¤ë¼í´ì˜ ê²½ìš°ëŠ” equal ì—°ì‚°ìì—ì„œ list argument ë¥¼ ì‚¬ìš©í•  ìˆ˜ ì—†ë‹¤.
+ *     ì•Œí‹°ë² ì´ìŠ¤ëŠ” ê°€ëŠ¥í•˜ë‹¤.
  *
- *     °¡. ¿À¶óÅ¬
+ *     ê°€. ì˜¤ë¼í´
  *         where (t1.i1(+),2) = (1,2) -- (X)
  *         where (t1.i1(+),2) = (t2.i1,2) -- (X)
- *     ³ª. ¾ËÆ¼º£ÀÌ½º
+ *     ë‚˜. ì•Œí‹°ë² ì´ìŠ¤
  *         where (t1.i1(+),2) = (1,2) -- (O)
  *         where (t1.i1(+),2) = (t2.i1,2) -- (O)
  *
- *  3. ¿À¶óÅ¬ÀÇ °æ¿ì´Â order by, group by, on Àı µî¿¡ outer join operator °¡ »ç¿ëÇÒ ¼ö ¾ø´Ù.
- *     ¾ËÆ¼º£ÀÌ½ºÀÇ °æ¿ì´Â ÀÖ¾îµµ ÀÇ¹Ì¾ø´Â °æ¿ì´Â ±»ÀÌ ¿¡·¯Ã³¸®¸¦ ÇÏÁö ¾Ê´Â´Ù.
+ *  3. ì˜¤ë¼í´ì˜ ê²½ìš°ëŠ” order by, group by, on ì ˆ ë“±ì— outer join operator ê°€ ì‚¬ìš©í•  ìˆ˜ ì—†ë‹¤.
+ *     ì•Œí‹°ë² ì´ìŠ¤ì˜ ê²½ìš°ëŠ” ìˆì–´ë„ ì˜ë¯¸ì—†ëŠ” ê²½ìš°ëŠ” êµ³ì´ ì—ëŸ¬ì²˜ë¦¬ë¥¼ í•˜ì§€ ì•ŠëŠ”ë‹¤.
  *
- *  4. ¿À¶óÅ¬ÀÇ °æ¿ì subquery ¿Í outer join µÉ ¼ö ¾ø´Ù. (ÇÏÁö¸¸, rule ÀÌ ¸íÈ®ÇÏÁö ¾Ê´Ù.)
- *     ¾ËÆ¼º£ÀÌ´Â Æ¯¼ö³ëµåÀÇ º¯È¯ÀÌ ¹ß»ıÇØ¾ßÇÒ °æ¿ì¿¡ predicate ¿¡ subquery °¡ ÀÖÀ¸¸é ¾ÈµÈ´Ù.
- *     (Áï, Between/List Arg Style ÀÇ Predicate ¿¡¼­, (+)°¡ Á¸ÀçÇÏ°í
- *     dependency table ÀÌ 2 °³ ÀÌ»óÀÏ ¶§ subquery ¿Í ÇÔ²² »ç¿ëµÇ¸é ¿¡·¯ÀÌ´Ù.)
+ *  4. ì˜¤ë¼í´ì˜ ê²½ìš° subquery ì™€ outer join ë  ìˆ˜ ì—†ë‹¤. (í•˜ì§€ë§Œ, rule ì´ ëª…í™•í•˜ì§€ ì•Šë‹¤.)
+ *     ì•Œí‹°ë² ì´ëŠ” íŠ¹ìˆ˜ë…¸ë“œì˜ ë³€í™˜ì´ ë°œìƒí•´ì•¼í•  ê²½ìš°ì— predicate ì— subquery ê°€ ìˆìœ¼ë©´ ì•ˆëœë‹¤.
+ *     (ì¦‰, Between/List Arg Style ì˜ Predicate ì—ì„œ, (+)ê°€ ì¡´ì¬í•˜ê³ 
+ *     dependency table ì´ 2 ê°œ ì´ìƒì¼ ë•Œ subquery ì™€ í•¨ê»˜ ì‚¬ìš©ë˜ë©´ ì—ëŸ¬ì´ë‹¤.)
  *
- *     °¡. ¿À¶óÅ¬
+ *     ê°€. ì˜¤ë¼í´
  *         where t1.i1(+) = (select 1 from dual) -- (X)
  *         where t1.i1(+) - (select 1 from dual) = 0 -- (O)
  *         where t1.i1=t2.i1(+) and t1.i1(+)=(select 1 from dual) -- (X)
  *         where ((select 1 from dual),2)=((t1.i1(+),t2.i1)) -- (O)
  *         where t1.i1(+)-(select 1 from dual)=0 or t1.i1(+)=2 -- (X)
- *     ³ª. ¾ËÆ¼º£ÀÌ½º
+ *     ë‚˜. ì•Œí‹°ë² ì´ìŠ¤
  *         where t1.i1(+) = (select 1 from dual) -- (O)
  *         where t1.i1(+) - (select 1 from dual) = 0 -- (O)
  *         where t1.i1=t2.i1(+) and t1.i1(+)=(select 1 from dual) -- (O)
@@ -119,44 +119,44 @@ qmoOuterJoinOper::transform2ANSIJoin( qcStatement  * aStatement,
  *
  * PROJ-1653 Outer Join Operator (+)
  *
- * Description : (+) °¡ ÀÖ´Â normalCNF ¸¦ ANSI Join ÇüÅÂ·Î º¯È¯
+ * Description : (+) ê°€ ìˆëŠ” normalCNF ë¥¼ ANSI Join í˜•íƒœë¡œ ë³€í™˜
  *
  * Implementation :
  *
- *   ¾Æ·¡ÀÇ ¼¼°¡Áö °úÁ¤À» ÅëÇØ
- *   Outer Join Operator(+) °¡ ÀÖ´Â normalCNF ¸¦ ±âÁ¸ÀÇ ANSI Outer
- *   Join À» »ç¿ëÇßÀ» ¶§¿Í °°Àº ÀÚ·á±¸Á¶ ÇüÅÂ·Î º¯È¯ÇÑ´Ù.
- *   Áï, From Tree ¸¦ Left Outer Join ³ëµå¸¦ »ç¿ëÇÏ´Â ÇüÅÂ·Î
- *   º¯ÇüÇÏ°í, ±×¿¡ µû¸£´Â onCondition ³ëµåµéÀ» ±âÁ¸ÀÇ ´ëÀÀµÇ´Â
- *   normalCNF Predicate ¿¡¼­ ºĞ¸®ÇÏ¿© ¿Å°ÜÁÖ´Â µîÀÇ ÀÛ¾÷ÀÌ´Ù.
- *   ±× ÀÌÈÄÀÇ Optimization ÀÛ¾÷µéÀº ÀÌ·¯ÇÑ º¯È¯µÈ From,
- *   normalCNF¸¦ ÀÌ¿ëÇÏ¿© ¼öÇàÇÏ°Ô µÈ´Ù.
+ *   ì•„ë˜ì˜ ì„¸ê°€ì§€ ê³¼ì •ì„ í†µí•´
+ *   Outer Join Operator(+) ê°€ ìˆëŠ” normalCNF ë¥¼ ê¸°ì¡´ì˜ ANSI Outer
+ *   Join ì„ ì‚¬ìš©í–ˆì„ ë•Œì™€ ê°™ì€ ìë£Œêµ¬ì¡° í˜•íƒœë¡œ ë³€í™˜í•œë‹¤.
+ *   ì¦‰, From Tree ë¥¼ Left Outer Join ë…¸ë“œë¥¼ ì‚¬ìš©í•˜ëŠ” í˜•íƒœë¡œ
+ *   ë³€í˜•í•˜ê³ , ê·¸ì— ë”°ë¥´ëŠ” onCondition ë…¸ë“œë“¤ì„ ê¸°ì¡´ì˜ ëŒ€ì‘ë˜ëŠ”
+ *   normalCNF Predicate ì—ì„œ ë¶„ë¦¬í•˜ì—¬ ì˜®ê²¨ì£¼ëŠ” ë“±ì˜ ì‘ì—…ì´ë‹¤.
+ *   ê·¸ ì´í›„ì˜ Optimization ì‘ì—…ë“¤ì€ ì´ëŸ¬í•œ ë³€í™˜ëœ From,
+ *   normalCNFë¥¼ ì´ìš©í•˜ì—¬ ìˆ˜í–‰í•˜ê²Œ ëœë‹¤.
  *
- *   1. sNormalForm ÀÇ ³ëµå Áß¿¡¼­ between/any,all,in °ú °°Àº
- *      ºñ±³¿¬»êÀÚ´Â ´Ü¼ø ºñ±³ ¿¬»êÀÚ³ëµå·Î º¯È¯ÇØ¾ß ÇÑ´Ù.
- *      ±×·¸Áö ¾ÊÀ¸¸é, ¾Æ·¡¿Í °°ÀÌ ´Ù¼ö Å×ÀÌºíÀÌ ¾ôÈù
- *      Join Predicate ÀÇ °æ¿ì onCondition Àı·Î º¯È¯ÇÏ±â°¡ ¾î·Æ´Ù.
+ *   1. sNormalForm ì˜ ë…¸ë“œ ì¤‘ì—ì„œ between/any,all,in ê³¼ ê°™ì€
+ *      ë¹„êµì—°ì‚°ìëŠ” ë‹¨ìˆœ ë¹„êµ ì—°ì‚°ìë…¸ë“œë¡œ ë³€í™˜í•´ì•¼ í•œë‹¤.
+ *      ê·¸ë ‡ì§€ ì•Šìœ¼ë©´, ì•„ë˜ì™€ ê°™ì´ ë‹¤ìˆ˜ í…Œì´ë¸”ì´ ì–½íŒ
+ *      Join Predicate ì˜ ê²½ìš° onCondition ì ˆë¡œ ë³€í™˜í•˜ê¸°ê°€ ì–´ë µë‹¤.
  *
  *      (t1.i1(+),t2.i1(+),1) in ((t2.i1,t3.i1,t3.i1(+)))
  *
- *   2. Normalize µÈ Tree ÀÇ predicate À» traverse ÇÏ¸é¼­
- *      Outer Join Operator ¿¡ °ü·ÃµÈ °¢Á¾ Á¦¾à»çÇ×À» °Ë»çÇÑ´Ù.
- *      terminal node¸¦ À§ÇÑ Á¦¾à»çÇ×Àº qtc::estimateInternal
- *      ÇÔ¼ö¿¡¼­ ÀüÃ¼ node traverse ½Ã¿¡ °É·¯³½´Ù.
- *      predicate °ü°è¿¡ µû¸¥ Á¦¾à»çÇ×Àº transformStruct2ANSIStyle
- *      ´Ü°è¿¡¼­ °Ë»çÇÑ´Ù.
+ *   2. Normalize ëœ Tree ì˜ predicate ì„ traverse í•˜ë©´ì„œ
+ *      Outer Join Operator ì— ê´€ë ¨ëœ ê°ì¢… ì œì•½ì‚¬í•­ì„ ê²€ì‚¬í•œë‹¤.
+ *      terminal nodeë¥¼ ìœ„í•œ ì œì•½ì‚¬í•­ì€ qtc::estimateInternal
+ *      í•¨ìˆ˜ì—ì„œ ì „ì²´ node traverse ì‹œì— ê±¸ëŸ¬ë‚¸ë‹¤.
+ *      predicate ê´€ê³„ì— ë”°ë¥¸ ì œì•½ì‚¬í•­ì€ transformStruct2ANSIStyle
+ *      ë‹¨ê³„ì—ì„œ ê²€ì‚¬í•œë‹¤.
  *
- *   3. normalized µÈ where ÀıÀÇ Outer Join Operator°¡ ºÙÀº Á¶°ÇµéÀ»
- *      ANSI ÇüÅÂÀÇ From, normalCNF Àı·Î Transform
+ *   3. normalized ëœ where ì ˆì˜ Outer Join Operatorê°€ ë¶™ì€ ì¡°ê±´ë“¤ì„
+ *      ANSI í˜•íƒœì˜ From, normalCNF ì ˆë¡œ Transform
  *
- *  ** Âü°í
- *   À§¿Í °°Àº º¯È¯ °úÁ¤¿¡¼­ join grouping, join relationing ÀÌ¶ó´Â ¿ë¾î°¡
- *   µîÀåÇÏ´Âµ¥, ÀÌ´Â ÀÌÈÄ optimization ´Ü°è¿¡¼­ ¼öÇàÇÏ´Â ±×°Í°ú´Â
- *   º°°³ÀÌ´Ù.
- *   È¥µ¿À» ÇÇÇÏ±â À§ÇØ µÇµµ·Ï ÇÔ¼ö¸í µîÀº joinOperGrouping, joinOperRelationing °ú
- *   °°ÀÌ joinOper ¸¦ ºÙ¿©¼­ »ç¿ëÇÏ¿´´Ù.
- *   ÁÖ¼®¿¡¼­Á¶Â÷ joinOper ¸¦ ºÙ¿©¼­ ¼³¸íÇÏ´Â °ÍÀº ¾î»öÇÏ±â ¶§¹®¿¡
- *   join grouping, relationing µîÀ» ±×´ë·Î »ç¿ëÇÏ¿´´Ù.
+ *  ** ì°¸ê³ 
+ *   ìœ„ì™€ ê°™ì€ ë³€í™˜ ê³¼ì •ì—ì„œ join grouping, join relationing ì´ë¼ëŠ” ìš©ì–´ê°€
+ *   ë“±ì¥í•˜ëŠ”ë°, ì´ëŠ” ì´í›„ optimization ë‹¨ê³„ì—ì„œ ìˆ˜í–‰í•˜ëŠ” ê·¸ê²ƒê³¼ëŠ”
+ *   ë³„ê°œì´ë‹¤.
+ *   í˜¼ë™ì„ í”¼í•˜ê¸° ìœ„í•´ ë˜ë„ë¡ í•¨ìˆ˜ëª… ë“±ì€ joinOperGrouping, joinOperRelationing ê³¼
+ *   ê°™ì´ joinOper ë¥¼ ë¶™ì—¬ì„œ ì‚¬ìš©í•˜ì˜€ë‹¤.
+ *   ì£¼ì„ì—ì„œì¡°ì°¨ joinOper ë¥¼ ë¶™ì—¬ì„œ ì„¤ëª…í•˜ëŠ” ê²ƒì€ ì–´ìƒ‰í•˜ê¸° ë•Œë¬¸ì—
+ *   join grouping, relationing ë“±ì„ ê·¸ëŒ€ë¡œ ì‚¬ìš©í•˜ì˜€ë‹¤.
  ***********************************************************************/
 
     qtcNode            * sNormalForm = NULL;
@@ -175,7 +175,7 @@ qmoOuterJoinOper::transform2ANSIJoin( qcStatement  * aStatement,
                     ERR_NOT_ALLOWED_OUTER_JOIN_OPER );
 
     // --------------------------------------------------------------
-    // º¯È¯¿¡ ÇÊ¿äÇÑ qmoJoinOperTrans ±¸Á¶Ã¼¸¦ ÇÒ´ç ¹× ÃÊ±âÈ­
+    // ë³€í™˜ì— í•„ìš”í•œ qmoJoinOperTrans êµ¬ì¡°ì²´ë¥¼ í• ë‹¹ ë° ì´ˆê¸°í™”
     // --------------------------------------------------------------
 
     IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF( qmoJoinOperTrans ),
@@ -186,7 +186,7 @@ qmoOuterJoinOper::transform2ANSIJoin( qcStatement  * aStatement,
               != IDE_SUCCESS );
 
     // --------------------------------------------------------------
-    // in/between °°Àº ³ëµå¸¦ ´Ü¼ø Predicate ³ëµå·Î º¯È¯
+    // in/between ê°™ì€ ë…¸ë“œë¥¼ ë‹¨ìˆœ Predicate ë…¸ë“œë¡œ ë³€í™˜
     // --------------------------------------------------------------
 
     IDE_TEST( transNormalCNF4SpecialPred( aStatement,
@@ -195,7 +195,7 @@ qmoOuterJoinOper::transform2ANSIJoin( qcStatement  * aStatement,
               != IDE_SUCCESS );
 
     // --------------------------------------------------------------
-    // Predicate º°·Î Á¦¾à»çÇ× °Ë»ç
+    // Predicate ë³„ë¡œ ì œì•½ì‚¬í•­ ê²€ì‚¬
     // --------------------------------------------------------------
 
     IDE_TEST( validateJoinOperConstraints( aStatement,
@@ -204,7 +204,7 @@ qmoOuterJoinOper::transform2ANSIJoin( qcStatement  * aStatement,
               != IDE_SUCCESS );
 
     // --------------------------------------------------------------
-    // ANSI ÇüÅÂ·Î ÀÚ·á ±¸Á¶ º¯È¯ (From, normalCNF)
+    // ANSI í˜•íƒœë¡œ ìë£Œ êµ¬ì¡° ë³€í™˜ (From, normalCNF)
     // --------------------------------------------------------------
 
     IDE_TEST( transformStruct2ANSIStyle( aStatement,
@@ -233,7 +233,7 @@ qmoOuterJoinOper::initJoinOperTrans( qmoJoinOperTrans * aTrans,
 /***********************************************************************
  * PROJ-1653 Outer Join Operator (+)
  *
- * Description : qmoJoinOperTrans ÀÚ·á±¸Á¶ ÃÊ±âÈ­
+ * Description : qmoJoinOperTrans ìë£Œêµ¬ì¡° ì´ˆê¸°í™”
  *
  * Implementation :
  ***********************************************************************/
@@ -264,75 +264,75 @@ qmoOuterJoinOper::transNormalCNF4SpecialPred( qcStatement       * aStatement,
  *
  * PROJ-1653 Outer Join Operator (+)
  *
- * Description : Æ¯¼öºñ±³ ³ëµå¸¦ ÀÏ¹İ ºñ±³ Predicate ³ëµå·Î º¯È¯
+ * Description : íŠ¹ìˆ˜ë¹„êµ ë…¸ë“œë¥¼ ì¼ë°˜ ë¹„êµ Predicate ë…¸ë“œë¡œ ë³€í™˜
  *
  * Implementation :
- *    Outer Join Operator ¸¦ »ç¿ëÇÏ´Â Predicate µé Áß
+ *    Outer Join Operator ë¥¼ ì‚¬ìš©í•˜ëŠ” Predicate ë“¤ ì¤‘
  *
- *     - Between, NotBetween °ú °°ÀÌ ¹üÀ§¸¦ ºñ±³ÇÏ´Â
- *       Between Style ÀÇ ºñ±³¿¬»êÀÚ¿Í,
- *     - Equal,EqualAny,EqualAll,NotEqual °ú °°ÀÌ List Argument ¸¦
- *       °¡Áö´Â Style ÀÇ ºñ±³¿¬»êÀÚ´Â
+ *     - Between, NotBetween ê³¼ ê°™ì´ ë²”ìœ„ë¥¼ ë¹„êµí•˜ëŠ”
+ *       Between Style ì˜ ë¹„êµì—°ì‚°ìì™€,
+ *     - Equal,EqualAny,EqualAll,NotEqual ê³¼ ê°™ì´ List Argument ë¥¼
+ *       ê°€ì§€ëŠ” Style ì˜ ë¹„êµì—°ì‚°ìëŠ”
  *
- *    ´Ù¼öÀÇ Å×ÀÌºí¿¡ dependency ¸¦ °¡Áú ¼ö ÀÖ°í, Outer Join Operator ¶ÇÇÑ
- *    º¹ÀâÇÑ ÇüÅÂ·Î µîÀåÇÒ ¼ö ÀÖ´Ù.
+ *    ë‹¤ìˆ˜ì˜ í…Œì´ë¸”ì— dependency ë¥¼ ê°€ì§ˆ ìˆ˜ ìˆê³ , Outer Join Operator ë˜í•œ
+ *    ë³µì¡í•œ í˜•íƒœë¡œ ë“±ì¥í•  ìˆ˜ ìˆë‹¤.
  *
- *    Áï, (=,>,<,...) µî°ú °°Àº ÀÏ¹İ ºñ±³¿¬»êÀÚ´Â ÇÏ³ªÀÇ Predicate ¿¡
- *    ´Ü ÇÏ³ªÀÇ Outer Join Operator ¿Í µÎ°³ ÀÌÇÏÀÇ dependency table ¹Û¿¡
- *    »ç¿ëÇÒ ¼ö ¾ø´Ù´Â ¸íÈ®ÇÑ ±ÔÄ¢ÀÌ Á¸ÀçÇÑ´Ù.
- *    ±×·¯³ª, À§ÀÇ µÎ°¡Áö Style ÀÇ ºñ±³¿¬»êÀÚ´Â ±×·¯ÇÑ ±ÔÄ¢À»
- *    Àû¿ëÇÒ ¼ö ¾ø´Â º¹ÀâÇÑ »ç¿ëÇüÅÂ¸¦ °¡Áú ¼ö ÀÖ´Ù.
+ *    ì¦‰, (=,>,<,...) ë“±ê³¼ ê°™ì€ ì¼ë°˜ ë¹„êµì—°ì‚°ìëŠ” í•˜ë‚˜ì˜ Predicate ì—
+ *    ë‹¨ í•˜ë‚˜ì˜ Outer Join Operator ì™€ ë‘ê°œ ì´í•˜ì˜ dependency table ë°–ì—
+ *    ì‚¬ìš©í•  ìˆ˜ ì—†ë‹¤ëŠ” ëª…í™•í•œ ê·œì¹™ì´ ì¡´ì¬í•œë‹¤.
+ *    ê·¸ëŸ¬ë‚˜, ìœ„ì˜ ë‘ê°€ì§€ Style ì˜ ë¹„êµì—°ì‚°ìëŠ” ê·¸ëŸ¬í•œ ê·œì¹™ì„
+ *    ì ìš©í•  ìˆ˜ ì—†ëŠ” ë³µì¡í•œ ì‚¬ìš©í˜•íƒœë¥¼ ê°€ì§ˆ ìˆ˜ ìˆë‹¤.
  *
- *    ÀÌ·± °æ¿ì´Â (+) Join ±¸¹®À» ANSI ÇüÅÂ·Î transform °úÁ¤¿¡¼­
- *    ÇØ´ç Predicate À» onCondition Àı·Î ¿Å±æ ¶§ Predicate À»
- *    ¿¬»êÀÚ Á¾·ùº°·Î ¿¹¿ÜÃ³¸® °úÁ¤À» ÅëÇØ ¸ğµÎ ºĞ·ùÇÏ¿© °¢°¢¿¡ ¸Â´Â
- *    LEFT OUTER JOIN Àı¿¡ ºÙ¿©Áà¾ß ÇÑ´Ù.
+ *    ì´ëŸ° ê²½ìš°ëŠ” (+) Join êµ¬ë¬¸ì„ ANSI í˜•íƒœë¡œ transform ê³¼ì •ì—ì„œ
+ *    í•´ë‹¹ Predicate ì„ onCondition ì ˆë¡œ ì˜®ê¸¸ ë•Œ Predicate ì„
+ *    ì—°ì‚°ì ì¢…ë¥˜ë³„ë¡œ ì˜ˆì™¸ì²˜ë¦¬ ê³¼ì •ì„ í†µí•´ ëª¨ë‘ ë¶„ë¥˜í•˜ì—¬ ê°ê°ì— ë§ëŠ”
+ *    LEFT OUTER JOIN ì ˆì— ë¶™ì—¬ì¤˜ì•¼ í•œë‹¤.
  *
- *    ¿¹¸¦ µé¾î ¾Æ·¡ÀÇ ¿¹¸¦ »ìÆìº¸ÀÚ.
- *    ¾Æ·¡ÀÇ ±¸¹®Àº ±×´ë·Î onCondition Àı¿¡ ¿¬°áÇÒ ¼ö ¾ø´Ù.
- *    dependency table ÀÌ t1,t2,t3 ¼¼°³°¡ Á¸ÀçÇÏ±â ¶§¹®¿¡,
- *    µÎ°³ÀÇ Å×ÀÌºí°£ÀÇ Join °ü°è¸¦ Ç¥ÇöÇÏ´Â on Àı¿¡ ¿Ã ¼ö°¡ ¾ø´Â °ÍÀÌ´Ù.
- *    ±×·¯¹Ç·Î, Predicate À» ¿©·¯°³·Î ºĞ¸®ÇÏÁö¾Ê´Â ÇÑ º¯È¯ÀÌ ºÒ°¡´ÉÇÏ´Ù.
+ *    ì˜ˆë¥¼ ë“¤ì–´ ì•„ë˜ì˜ ì˜ˆë¥¼ ì‚´í´ë³´ì.
+ *    ì•„ë˜ì˜ êµ¬ë¬¸ì€ ê·¸ëŒ€ë¡œ onCondition ì ˆì— ì—°ê²°í•  ìˆ˜ ì—†ë‹¤.
+ *    dependency table ì´ t1,t2,t3 ì„¸ê°œê°€ ì¡´ì¬í•˜ê¸° ë•Œë¬¸ì—,
+ *    ë‘ê°œì˜ í…Œì´ë¸”ê°„ì˜ Join ê´€ê³„ë¥¼ í‘œí˜„í•˜ëŠ” on ì ˆì— ì˜¬ ìˆ˜ê°€ ì—†ëŠ” ê²ƒì´ë‹¤.
+ *    ê·¸ëŸ¬ë¯€ë¡œ, Predicate ì„ ì—¬ëŸ¬ê°œë¡œ ë¶„ë¦¬í•˜ì§€ì•ŠëŠ” í•œ ë³€í™˜ì´ ë¶ˆê°€ëŠ¥í•˜ë‹¤.
  *
  *      (t1.i1(+),t2.i1(+),1) in ((t2.i1,t3.i1,t3.i1(+)))
  *
- *    ´ÙÀ½°ú °°ÀÌ º¯È¯ÇÑ ÈÄ Predicate º°·Î °¢°¢¿¡ ¸Â´Â OUTER JOIN ³ëµåÀÇ
- *    onConditio ¿¡ ¿¬°áÇØÁà¾ß ÇÑ´Ù.
+ *    ë‹¤ìŒê³¼ ê°™ì´ ë³€í™˜í•œ í›„ Predicate ë³„ë¡œ ê°ê°ì— ë§ëŠ” OUTER JOIN ë…¸ë“œì˜
+ *    onConditio ì— ì—°ê²°í•´ì¤˜ì•¼ í•œë‹¤.
  *
  *         t1.i1(+) = t2.i1
  *     and t2.i1(+) = t3.i1
  *     and 1 = t3.i1(+)
  *
- *    ÀÌ¸¦ transform °úÁ¤¿¡¼­ ¼öÇàÇÏ¸é Áö³ªÄ¡°Ô º¹ÀâÇÑ ·ÎÁ÷ÀÌ µÉ ¼ö ÀÖ´Ù.
- *    ºÒ°¡´ÉÇÑ°Ç ¾Æ´ÏÁö¸¸ Áö³ªÄ¡°Ô º¹ÀâÇÑ °ÍÀÌ ¹®Á¦´Ù.
- *    À§ÀÇ ±¸¹®Àº in ÀıÀ» ¿¹·Î µé¾úÁö¸¸, any, all ¿¬»êÀÚ°¡ ºÎµîÈ£¿Í ÇÔ²²
- *    »ç¿ëµÇ¸é ´õ¿í º¹ÀâÇØÁø´Ù.
+ *    ì´ë¥¼ transform ê³¼ì •ì—ì„œ ìˆ˜í–‰í•˜ë©´ ì§€ë‚˜ì¹˜ê²Œ ë³µì¡í•œ ë¡œì§ì´ ë  ìˆ˜ ìˆë‹¤.
+ *    ë¶ˆê°€ëŠ¥í•œê±´ ì•„ë‹ˆì§€ë§Œ ì§€ë‚˜ì¹˜ê²Œ ë³µì¡í•œ ê²ƒì´ ë¬¸ì œë‹¤.
+ *    ìœ„ì˜ êµ¬ë¬¸ì€ in ì ˆì„ ì˜ˆë¡œ ë“¤ì—ˆì§€ë§Œ, any, all ì—°ì‚°ìê°€ ë¶€ë“±í˜¸ì™€ í•¨ê»˜
+ *    ì‚¬ìš©ë˜ë©´ ë”ìš± ë³µì¡í•´ì§„ë‹¤.
  *
- *    µû¶ó¼­, Á¦¾à»çÇ× °Ë»ç ¹× transform °úÁ¤¿¡¼­ ¸ğµç Join Predicate ÀÌ
- *    ´Ü¼øºñ±³ ¿¬»êÀÚ ÇüÅÂ¶ó°í ¹Ï°í Ã³¸®ÇÒ ¼ö ÀÖµµ·Ï »çÀü¿¡ 1 ´Ü°èÀÇ
- *    º¯È¯ÀÛ¾÷À» ¼öÇàÇÒ ÇÊ¿ä°¡ ÀÖ´Ù.
- *    ±×°ÍÀÌ ÀÌ ÇÔ¼ö¿¡¼­ ÇÏ´Â ÀÏÀÌ´Ù.
+ *    ë”°ë¼ì„œ, ì œì•½ì‚¬í•­ ê²€ì‚¬ ë° transform ê³¼ì •ì—ì„œ ëª¨ë“  Join Predicate ì´
+ *    ë‹¨ìˆœë¹„êµ ì—°ì‚°ì í˜•íƒœë¼ê³  ë¯¿ê³  ì²˜ë¦¬í•  ìˆ˜ ìˆë„ë¡ ì‚¬ì „ì— 1 ë‹¨ê³„ì˜
+ *    ë³€í™˜ì‘ì—…ì„ ìˆ˜í–‰í•  í•„ìš”ê°€ ìˆë‹¤.
+ *    ê·¸ê²ƒì´ ì´ í•¨ìˆ˜ì—ì„œ í•˜ëŠ” ì¼ì´ë‹¤.
  *
- *    ÀÌ·¯ÇÑ º¯È¯ÀÛ¾÷À» Ãß°¡·Î ¼öÇàÇÏ¸é, ´ÙÀ½°ú °°Àº Á¶°ÇÀÏ ¶§ Predicate
- *    º¯È¯¿¡ µû¶ó ³ëµå¼ö°¡ ¾à°£ ´Ã¾î³ª¹Ç·Î ¸Ş¸ğ¸® »ç¿ë·® Áõ°¡¿Í ¼º´ÉÀúÇÏ°¡
- *    ÀÖÀ» ¼ö ÀÖ´Ù.
- *    ÇÏÁö¸¸, ¾Æ·¡¿Í °°ÀÌ »ç¿ëµÇ´Â ¿¹´Â °ÅÀÇ Àü¹«ÇÒ °ÍÀ¸·Î ¿¹»óµÈ´Ù.
+ *    ì´ëŸ¬í•œ ë³€í™˜ì‘ì—…ì„ ì¶”ê°€ë¡œ ìˆ˜í–‰í•˜ë©´, ë‹¤ìŒê³¼ ê°™ì€ ì¡°ê±´ì¼ ë•Œ Predicate
+ *    ë³€í™˜ì— ë”°ë¼ ë…¸ë“œìˆ˜ê°€ ì•½ê°„ ëŠ˜ì–´ë‚˜ë¯€ë¡œ ë©”ëª¨ë¦¬ ì‚¬ìš©ëŸ‰ ì¦ê°€ì™€ ì„±ëŠ¥ì €í•˜ê°€
+ *    ìˆì„ ìˆ˜ ìˆë‹¤.
+ *    í•˜ì§€ë§Œ, ì•„ë˜ì™€ ê°™ì´ ì‚¬ìš©ë˜ëŠ” ì˜ˆëŠ” ê±°ì˜ ì „ë¬´í•  ê²ƒìœ¼ë¡œ ì˜ˆìƒëœë‹¤.
  *
- *    ( 2°³ ÀÌ»óÀÇ dependency table + 1 °³ ÀÌ»óÀÇ Outer Join Operator
- *                                  + ´Ù¼öÀÇ list argument )
+ *    ( 2ê°œ ì´ìƒì˜ dependency table + 1 ê°œ ì´ìƒì˜ Outer Join Operator
+ *                                  + ë‹¤ìˆ˜ì˜ list argument )
  *
  *
- *    ÀÌ º¯È¯¿¡¼­ °¡Àå ¿ì·ÁµÇ´Â °ÍÀº LIST Argument Style ÀÇ Predicate À»
- *    Ç®¾î¼­ º¯È¯ÇÒ ¶§ ½Å±Ô·Î »ı¼ºµÇ´Â ³ëµå°¡ ¾öÃ»³ª°Ô ¸¹¾ÆÁöÁö ¾ÊÀ»±îÀÌ´Ù.
- *    ±×·¯³ª, »ç¿ëÀÚ´Â ´ëºÎºĞ ¾Æ·¡ÀÇ (1) ÇüÅÂ·Î »ç¿ëÇÒ »Ó
- *    (2),(3) °ú °°ÀÌ »ç¿ëÇÏÁö´Â ¾Ê´Â´Ù.
- *    (+)¸¦ °í·ÁÇÑ °á°ú¸¦ ¿¹ÃøÇÏ¿© Äõ¸®¸¦ ¸¸µé¾î³»±âµµ ºÒ°¡´ÉÇÒ »Ó´õ·¯,
- *    (2),(3) °ú °°Àº ±¸¹®Àº O »ç¿¡¼­µµ Áö¿øÇÏÁöµµ ¾Ê´Â´Ù.
+ *    ì´ ë³€í™˜ì—ì„œ ê°€ì¥ ìš°ë ¤ë˜ëŠ” ê²ƒì€ LIST Argument Style ì˜ Predicate ì„
+ *    í’€ì–´ì„œ ë³€í™˜í•  ë•Œ ì‹ ê·œë¡œ ìƒì„±ë˜ëŠ” ë…¸ë“œê°€ ì—„ì²­ë‚˜ê²Œ ë§ì•„ì§€ì§€ ì•Šì„ê¹Œì´ë‹¤.
+ *    ê·¸ëŸ¬ë‚˜, ì‚¬ìš©ìëŠ” ëŒ€ë¶€ë¶„ ì•„ë˜ì˜ (1) í˜•íƒœë¡œ ì‚¬ìš©í•  ë¿
+ *    (2),(3) ê³¼ ê°™ì´ ì‚¬ìš©í•˜ì§€ëŠ” ì•ŠëŠ”ë‹¤.
+ *    (+)ë¥¼ ê³ ë ¤í•œ ê²°ê³¼ë¥¼ ì˜ˆì¸¡í•˜ì—¬ ì¿¼ë¦¬ë¥¼ ë§Œë“¤ì–´ë‚´ê¸°ë„ ë¶ˆê°€ëŠ¥í•  ë¿ë”ëŸ¬,
+ *    (2),(3) ê³¼ ê°™ì€ êµ¬ë¬¸ì€ O ì‚¬ì—ì„œë„ ì§€ì›í•˜ì§€ë„ ì•ŠëŠ”ë‹¤.
  *
- *    (1) ÀÇ °æ¿ì´Â ÀÌ ÇÔ¼ö¿¡¼­ º¯È¯ÇØÁÙ ÇÊ¿ä°¡ ¾øÀ¸¹Ç·Î ¿ì·ÁÇÏÁö ¾Ê¾Æµµ µÈ´Ù.
- *    ¿Ö³ÄÇÏ¸é, (1) °ú °°Àº ÇüÅÂ´Â Join Predicate ÀÌ ¾Æ´Ï¹Ç·Î
- *    ÃßÈÄ transform °úÁ¤¿¡¼­ ´ëÀÀµÇ´Â onCondition ¿¡ ±×³É ¿¬°á¸¸ ÇØÁÖ¸é
- *    µÇ±â ¶§¹®ÀÌ´Ù.
+ *    (1) ì˜ ê²½ìš°ëŠ” ì´ í•¨ìˆ˜ì—ì„œ ë³€í™˜í•´ì¤„ í•„ìš”ê°€ ì—†ìœ¼ë¯€ë¡œ ìš°ë ¤í•˜ì§€ ì•Šì•„ë„ ëœë‹¤.
+ *    ì™œëƒí•˜ë©´, (1) ê³¼ ê°™ì€ í˜•íƒœëŠ” Join Predicate ì´ ì•„ë‹ˆë¯€ë¡œ
+ *    ì¶”í›„ transform ê³¼ì •ì—ì„œ ëŒ€ì‘ë˜ëŠ” onCondition ì— ê·¸ëƒ¥ ì—°ê²°ë§Œ í•´ì£¼ë©´
+ *    ë˜ê¸° ë•Œë¬¸ì´ë‹¤.
  *
  *    (1) t1.i1(+) in (1,2,3,4)
  *    (2) (t1.i1(+),t2.i1) in ((t3.i1,t4.i1(+)),(t2.i1,t1.i2(+)))
@@ -340,7 +340,7 @@ qmoOuterJoinOper::transNormalCNF4SpecialPred( qcStatement       * aStatement,
  *
  *
  *
- *    º¯È¯°úÁ¤À» »ìÆìº¸ÀÚ. ((+) ±âÈ£´Â »ı·«Çß´Ù.)
+ *    ë³€í™˜ê³¼ì •ì„ ì‚´í´ë³´ì. ((+) ê¸°í˜¸ëŠ” ìƒëµí–ˆë‹¤.)
  *
  *    (AND)
  *      |
@@ -360,20 +360,20 @@ qmoOuterJoinOper::transNormalCNF4SpecialPred( qcStatement       * aStatement,
  *                                 (b1) -> (b2)
  *
  *
- *    À§¿Í °°Àº CNF Tree ´Â ´ÙÀ½°ú °°Àº Äõ¸®¸¦ »ç¿ëÇÒ ¶§ »ı±æ °ÍÀÌ´Ù.
+ *    ìœ„ì™€ ê°™ì€ CNF Tree ëŠ” ë‹¤ìŒê³¼ ê°™ì€ ì¿¼ë¦¬ë¥¼ ì‚¬ìš©í•  ë•Œ ìƒê¸¸ ê²ƒì´ë‹¤.
  *
  *    where a1 = a2
  *      and (a1,a2) in ((b1,b2))
  *      and c1 between c2 and c3
  *
  *
- *    À§ÀÇ ±¸¹®À» ¾Æ·¡¿Í °°Àº ÇüÅÂ·Î º¯È¯ÇØ¾ß ÇÑ´Ù.
+ *    ìœ„ì˜ êµ¬ë¬¸ì„ ì•„ë˜ì™€ ê°™ì€ í˜•íƒœë¡œ ë³€í™˜í•´ì•¼ í•œë‹¤.
  *
  *    where a1 = a2
  *      and (a1 = b1  and a2 = b2)
  *      and (c1 >= c2 and c1 <= c3)
  *
- *    ÀÌ¸¦ CNF Tree ¿¡ ¹İ¿µÇÏ¸é,
+ *    ì´ë¥¼ CNF Tree ì— ë°˜ì˜í•˜ë©´,
  *
  *    (AND)
  *      |
@@ -387,12 +387,12 @@ qmoOuterJoinOper::transNormalCNF4SpecialPred( qcStatement       * aStatement,
  *    (a1) -> (a2)  (a1) -> (b1)  (a2) -> (b2)  (c1) -> (c2) (c1) -> (c3)
  *
  *
- *    À§¿¡¼­´Â °³³äÀûÀ¸·Î ±âÁ¸ Æ¯¼ö³ëµåÀÇ ÀÚ¸®¿¡ ´ëÃ¼ÇÏ´Â ÇüÅÂ·Î
- *    ¼³¸íÇßÁö¸¸, ½ÇÁ¦ ±¸Çö ½Ã¿¡´Â ³ëµå ¸®½ºÆ®ÀÇ ¸Ç¾Õ¿¡
- *    ¿¬°áÇØÁÖ¸é µÈ´Ù.
+ *    ìœ„ì—ì„œëŠ” ê°œë…ì ìœ¼ë¡œ ê¸°ì¡´ íŠ¹ìˆ˜ë…¸ë“œì˜ ìë¦¬ì— ëŒ€ì²´í•˜ëŠ” í˜•íƒœë¡œ
+ *    ì„¤ëª…í–ˆì§€ë§Œ, ì‹¤ì œ êµ¬í˜„ ì‹œì—ëŠ” ë…¸ë“œ ë¦¬ìŠ¤íŠ¸ì˜ ë§¨ì•ì—
+ *    ì—°ê²°í•´ì£¼ë©´ ëœë‹¤.
  *
- *    ¸¸¾à a1 in (b1,2,3) °ú °°Àº Predicate Àº ´ÙÀ½°ú °°ÀÌ º¯È¯µÉ °ÍÀÌ´Ù.
- *    OR ÀÇ argument ·Î ¸ğµÎ ¿¬°áµÇ¾ú´Ù´Â °ÍÀÌ À§¿Í ´Ù¸¥ Á¡ÀÌ´Ù.
+ *    ë§Œì•½ a1 in (b1,2,3) ê³¼ ê°™ì€ Predicate ì€ ë‹¤ìŒê³¼ ê°™ì´ ë³€í™˜ë  ê²ƒì´ë‹¤.
+ *    OR ì˜ argument ë¡œ ëª¨ë‘ ì—°ê²°ë˜ì—ˆë‹¤ëŠ” ê²ƒì´ ìœ„ì™€ ë‹¤ë¥¸ ì ì´ë‹¤.
  *
  *    (AND)
  *      |
@@ -407,20 +407,20 @@ qmoOuterJoinOper::transNormalCNF4SpecialPred( qcStatement       * aStatement,
  *
  *
  *
- *    º¯È¯ÀÌ ÇÊ¿äÇÑ °æ¿ì¿Í ºÒÇÊ¿äÇÑ °æ¿ìÀÇ ºĞ·ù
- *    (¾Æ·¡ ¾ğ±ŞµÈ Æ¯¼öºñ±³¿¬»êÀÚ´Â Between / LIST Argument Style ÀÇ
- *     ºñ±³ ¿¬»êÀÚ Å¸ÀÔÀ» ¸»ÇÑ´Ù.)
+ *    ë³€í™˜ì´ í•„ìš”í•œ ê²½ìš°ì™€ ë¶ˆí•„ìš”í•œ ê²½ìš°ì˜ ë¶„ë¥˜
+ *    (ì•„ë˜ ì–¸ê¸‰ëœ íŠ¹ìˆ˜ë¹„êµì—°ì‚°ìëŠ” Between / LIST Argument Style ì˜
+ *     ë¹„êµ ì—°ì‚°ì íƒ€ì…ì„ ë§í•œë‹¤.)
  *
- *    1. Predicate º¯È¯ ºÒÇÊ¿ä
+ *    1. Predicate ë³€í™˜ ë¶ˆí•„ìš”
  *
- *       °¡. (+)¸¦ »ç¿ëÇÏÁö ¾Ê´Â ¸ğµç °æ¿ì
- *       ³ª. (+)°¡ 1°³ÀÌ¸é¼­ dependency table ÀÌ 2°³ ¹Ì¸¸ÀÎ ¸ğµç °æ¿ì
- *       ´Ù. (+)¿Í dependency table °¹¼ö¿¡ »ó°ü¾øÀÌ ÀÏ¹İ¿¬»êÀÚÀÎ °æ¿ì
+ *       ê°€. (+)ë¥¼ ì‚¬ìš©í•˜ì§€ ì•ŠëŠ” ëª¨ë“  ê²½ìš°
+ *       ë‚˜. (+)ê°€ 1ê°œì´ë©´ì„œ dependency table ì´ 2ê°œ ë¯¸ë§Œì¸ ëª¨ë“  ê²½ìš°
+ *       ë‹¤. (+)ì™€ dependency table ê°¯ìˆ˜ì— ìƒê´€ì—†ì´ ì¼ë°˜ì—°ì‚°ìì¸ ê²½ìš°
  *
- *    2. Predicate º¯È¯ ÇÊ¿ä (Æ¯¼öºñ±³¿¬»êÀÚ¸¦ »ç¿ëÇÒ °æ¿ì¸¸ ÇØ´ç)
+ *    2. Predicate ë³€í™˜ í•„ìš” (íŠ¹ìˆ˜ë¹„êµì—°ì‚°ìë¥¼ ì‚¬ìš©í•  ê²½ìš°ë§Œ í•´ë‹¹)
  *
- *       °¡. (+) °¡ 2°³ ÀÌ»óÀÎ °æ¿ì
- *       ³ª. (+)°¡ 1°³ÀÌ¸é¼­ dependency table ÀÌ 2°³¸¦ ÃÊ°úÇÒ °æ¿ì
+ *       ê°€. (+) ê°€ 2ê°œ ì´ìƒì¸ ê²½ìš°
+ *       ë‚˜. (+)ê°€ 1ê°œì´ë©´ì„œ dependency table ì´ 2ê°œë¥¼ ì´ˆê³¼í•  ê²½ìš°
  ***********************************************************************/
 
     qcuSqlSourceInfo   sqlInfo;
@@ -468,17 +468,17 @@ qmoOuterJoinOper::transNormalCNF4SpecialPred( qcStatement       * aStatement,
               sPredCur  = (qtcNode *)sPredCur->node.next )
         {
             //----------------------------------------------------
-            //    Between / LIST Argument Style ºñ±³¿¬»êÀÚ Á¾·ù¸¦ »ìÆìº¸ÀÚ.
+            //    Between / LIST Argument Style ë¹„êµì—°ì‚°ì ì¢…ë¥˜ë¥¼ ì‚´í´ë³´ì.
             //
             //    ex> t1.i1 between 1 and 10
             //          ^           ^      ^
             //          |           |      |
-            //       source      target  target   (source 1 °³, target 2 °³)
+            //       source      target  target   (source 1 ê°œ, target 2 ê°œ)
             //
             //        t1.i1 in (1,2)
             //          ^        ^
             //          |        |
-            //       source    target             (source 1 °³, target list)
+            //       source    target             (source 1 ê°œ, target list)
             //
             //       (t1.i1,t2.i1) in ((1,2))
             //             ^             ^
@@ -519,10 +519,10 @@ qmoOuterJoinOper::transNormalCNF4SpecialPred( qcStatement       * aStatement,
             //    ======================================================
             //
             //
-            //    À§ÀÇ ´Ù¾çÇÑ ¿¬»ê Áß¿¡¼­ source °¡ list ³ëµåÀÏ ¼ö ÀÖ´Â
-            //    ´ÙÀ½ÀÇ ¿¬»êµéÀº (+)¿Í ÇÔ²² »ç¿ëÇÒ ¶§ Á¦¾à»çÇ×À» µÎµµ·Ï ÇÑ´Ù.
-            //    ÀÌ´Â »ç¿ëÀÚ°¡ ±×·¸°Ô »ç¿ëÇÏÁöµµ ¾ÊÀ» »Ó´õ·¯, ºÒÇÊ¿äÇÑ º¯È¯ÀÇ
-            //    ¾î·Á¿òÀ» ´ú±â À§ÇØ¼­ÀÌ´Ù.
+            //    ìœ„ì˜ ë‹¤ì–‘í•œ ì—°ì‚° ì¤‘ì—ì„œ source ê°€ list ë…¸ë“œì¼ ìˆ˜ ìˆëŠ”
+            //    ë‹¤ìŒì˜ ì—°ì‚°ë“¤ì€ (+)ì™€ í•¨ê»˜ ì‚¬ìš©í•  ë•Œ ì œì•½ì‚¬í•­ì„ ë‘ë„ë¡ í•œë‹¤.
+            //    ì´ëŠ” ì‚¬ìš©ìê°€ ê·¸ë ‡ê²Œ ì‚¬ìš©í•˜ì§€ë„ ì•Šì„ ë¿ë”ëŸ¬, ë¶ˆí•„ìš”í•œ ë³€í™˜ì˜
+            //    ì–´ë ¤ì›€ì„ ëœê¸° ìœ„í•´ì„œì´ë‹¤.
             //
             //    mtfEqual           : =             : list    :  list
             //    mtfEqualAll        : =ALL          : list    :  list
@@ -531,26 +531,26 @@ qmoOuterJoinOper::transNormalCNF4SpecialPred( qcStatement       * aStatement,
             //    mtfNotEqualAll     : <>ALL         : list    :  list
             //    mtfNotEqualAny     : <>ANY         : list    :  list
             //
-            //    ==> source °¡ list ÀÌ¸é¼­ (+) °¡ ÇÏ³ªÀÌ»ó »ç¿ëµÇ¾ú°í
-            //        dependency table ÀÌ 2 °³ ÀÌ»ó »ç¿ëµÇ¾úÀ» °æ¿ì,
-            //        target ÀÇ list ´Â argument °¡ 2 °³ ÀÌ»ó »ç¿ëµÉ ¼ö ¾ø´Ù.
-            //        (mtfEqual ÀÇ °æ¿ì´Â ¿ø·¡ target list °¡ 2 °³ ÀÌ»óÀÎ
-            //        ±¸¹® ÀÚÃ¼¸¦ Áö¿øÇÏÁö ¾Ê´Â´Ù.)
+            //    ==> source ê°€ list ì´ë©´ì„œ (+) ê°€ í•˜ë‚˜ì´ìƒ ì‚¬ìš©ë˜ì—ˆê³ 
+            //        dependency table ì´ 2 ê°œ ì´ìƒ ì‚¬ìš©ë˜ì—ˆì„ ê²½ìš°,
+            //        target ì˜ list ëŠ” argument ê°€ 2 ê°œ ì´ìƒ ì‚¬ìš©ë  ìˆ˜ ì—†ë‹¤.
+            //        (mtfEqual ì˜ ê²½ìš°ëŠ” ì›ë˜ target list ê°€ 2 ê°œ ì´ìƒì¸
+            //        êµ¬ë¬¸ ìì²´ë¥¼ ì§€ì›í•˜ì§€ ì•ŠëŠ”ë‹¤.)
             //
             //
             //
-            //   À§ÀÇ ¸î°¡Áö ¿¬»êÀÚ º°·Î º¯È¯±ÔÄ¢À» ¸¸µé¾îº¸ÀÚ.
+            //   ìœ„ì˜ ëª‡ê°€ì§€ ì—°ì‚°ì ë³„ë¡œ ë³€í™˜ê·œì¹™ì„ ë§Œë“¤ì–´ë³´ì.
             //
-            //   ±âº» ±ÔÄ¢À» º¸¸é,
-            //   sPredCur ¸¦ º¯È¯ÇÑ ÈÄ list head ¿Í tale À» sTransStart ¿Í
-            //   sTransEnd °¡ °¡¸®Å°µµ·Ï ÇÑ´Ù.
-            //   ÀÌ sTransStart ¿Í sTransEnd ¸¦ ±âÁ¸ÀÇ normalCNF ¿¡
-            //   ³¢¿ö³Ö°í, ±âÁ¸ÀÇ sPredCur ´Â Á¦°ÅÇÑ´Ù.
+            //   ê¸°ë³¸ ê·œì¹™ì„ ë³´ë©´,
+            //   sPredCur ë¥¼ ë³€í™˜í•œ í›„ list head ì™€ tale ì„ sTransStart ì™€
+            //   sTransEnd ê°€ ê°€ë¦¬í‚¤ë„ë¡ í•œë‹¤.
+            //   ì´ sTransStart ì™€ sTransEnd ë¥¼ ê¸°ì¡´ì˜ normalCNF ì—
+            //   ë¼ì›Œë„£ê³ , ê¸°ì¡´ì˜ sPredCur ëŠ” ì œê±°í•œë‹¤.
             //
             //
             //   (1) mtfBetween
             //
-            //       ** º¯È¯ Àü
+            //       ** ë³€í™˜ ì „
             //       a1 between a2 and a3
             //
             //        (AND)
@@ -564,7 +564,7 @@ qmoOuterJoinOper::transNormalCNF4SpecialPred( qcStatement       * aStatement,
             //          V
             //        (a1) -> (a2) -> (a3)
             //
-            //       ** º¯È¯ ÈÄ
+            //       ** ë³€í™˜ í›„
             //       a1 >= a2 and a1 <= a3
             //
             //        (AND)
@@ -581,7 +581,7 @@ qmoOuterJoinOper::transNormalCNF4SpecialPred( qcStatement       * aStatement,
             //
             //   (2) mtfNotBetween
             //
-            //       ** º¯È¯ Àü
+            //       ** ë³€í™˜ ì „
             //       a1 not between a2 and a3
             //
             //        (AND)
@@ -595,7 +595,7 @@ qmoOuterJoinOper::transNormalCNF4SpecialPred( qcStatement       * aStatement,
             //          V
             //        (a1) -> (a2) -> (a3)
             //
-            //       ** º¯È¯ ÈÄ
+            //       ** ë³€í™˜ í›„
             //       a1 < a2 and a1 > a3
             //
             //        (AND)
@@ -612,7 +612,7 @@ qmoOuterJoinOper::transNormalCNF4SpecialPred( qcStatement       * aStatement,
             //
             //   (3) mtfEqualAll
             //
-            //       ** º¯È¯ Àü
+            //       ** ë³€í™˜ ì „
             //       (a1,a2) =ALL ((b1,b2))
             //
             //        (AND)
@@ -632,7 +632,7 @@ qmoOuterJoinOper::transNormalCNF4SpecialPred( qcStatement       * aStatement,
             //                         V
             //                       (b1) -> (b2)
             //
-            //       ** º¯È¯ ÈÄ
+            //       ** ë³€í™˜ í›„
             //       a1 = b1 and a2 = b2
             //
             //        (AND)
@@ -649,7 +649,7 @@ qmoOuterJoinOper::transNormalCNF4SpecialPred( qcStatement       * aStatement,
             //
             //   (4) mtfEqualAny
             //
-            //       ** º¯È¯ Àü
+            //       ** ë³€í™˜ ì „
             //       (a1,a2) =ANY ((b1,b2))
             //
             //        (AND)
@@ -669,7 +669,7 @@ qmoOuterJoinOper::transNormalCNF4SpecialPred( qcStatement       * aStatement,
             //                         V
             //                       (b1) -> (b2)
             //
-            //       ** º¯È¯ ÈÄ
+            //       ** ë³€í™˜ í›„
             //       a1 = b1 and a2 = b2
             //
             //        (AND)
@@ -684,18 +684,18 @@ qmoOuterJoinOper::transNormalCNF4SpecialPred( qcStatement       * aStatement,
             //        (a1) -> (a2)    (b1) -> (b2)
             //
             //
-            //   ³ª¸ÓÁö´Â °¢ ÇÔ¼ö¿¡¼­...
+            //   ë‚˜ë¨¸ì§€ëŠ” ê° í•¨ìˆ˜ì—ì„œ...
             //----------------------------------------------------
 
             //---------------------------------------------
-            // Outer Join Operator °¡ ÀÖÀ» ¶§¸¸ º¯È¯À» »ı°¢ÇÏ¸é µÊ.
+            // Outer Join Operator ê°€ ìˆì„ ë•Œë§Œ ë³€í™˜ì„ ìƒê°í•˜ë©´ ë¨.
             //---------------------------------------------
 
             if ( ( sPredCur->lflag & QTC_NODE_JOIN_OPERATOR_MASK )
                     == QTC_NODE_JOIN_OPERATOR_EXIST )
             {
                 //---------------------------------------------
-                // Between / LIST Argument Style ºñ±³¿¬»êÀÚÀÎÁö °Ë»ç
+                // Between / LIST Argument Style ë¹„êµì—°ì‚°ìì¸ì§€ ê²€ì‚¬
                 //
                 // MTC_NODE_GROUP_COMPARISON_TRUE
                 //   - mtfEqualAll
@@ -728,7 +728,7 @@ qmoOuterJoinOper::transNormalCNF4SpecialPred( qcStatement       * aStatement,
 
 
                 //---------------------------------------------
-                // Æ¯¼ö¿¬»êÀÚ(Between / LIST Argument Style ºñ±³¿¬»êÀÚ)ÀÎ °æ¿ì
+                // íŠ¹ìˆ˜ì—°ì‚°ì(Between / LIST Argument Style ë¹„êµì—°ì‚°ì)ì¸ ê²½ìš°
                 //---------------------------------------------
 
                 if ( sIsSpecialOperand == ID_TRUE )
@@ -739,16 +739,16 @@ qmoOuterJoinOper::transNormalCNF4SpecialPred( qcStatement       * aStatement,
                     sTrgNode = (qtcNode *)sPredCur->node.arguments->next;
 
                     //---------------------------------------------
-                    // Source °¡ list ÀÏ ¼ö ÀÖ´Â ¿¬»êÀÚµé
+                    // Source ê°€ list ì¼ ìˆ˜ ìˆëŠ” ì—°ì‚°ìë“¤
                     //---------------------------------------------
 
                     if ( QMO_SRC_IS_LIST_MODULE( sPredCur->node.module ) == ID_TRUE )
                     {
                         //---------------------------------------------
-                        // mtfEqual,mtfNotEqual ¿¬»êÀÚ´Â Source °¡ list ÀÏ ¶§
-                        // ¿Ü¿¡´Â º¯È¯ÇØÁÙ ÀÏÀÌ ¾øÀ¸¹Ç·Î ±×³É continue ÇÑ´Ù.
-                        // (t1.i1,t2.i1(+)) = (1,2) ¿Í °°ÀÌ »ç¿ëµÉ ¶§´Â
-                        // º¯È¯ÇØÁÖ¾î¾ß ÇÑ´Ù.
+                        // mtfEqual,mtfNotEqual ì—°ì‚°ìëŠ” Source ê°€ list ì¼ ë•Œ
+                        // ì™¸ì—ëŠ” ë³€í™˜í•´ì¤„ ì¼ì´ ì—†ìœ¼ë¯€ë¡œ ê·¸ëƒ¥ continue í•œë‹¤.
+                        // (t1.i1,t2.i1(+)) = (1,2) ì™€ ê°™ì´ ì‚¬ìš©ë  ë•ŒëŠ”
+                        // ë³€í™˜í•´ì£¼ì–´ì•¼ í•œë‹¤.
                         //---------------------------------------------
 
                         if ( ( ( sPredCur->node.module == & mtfEqual )
@@ -763,13 +763,13 @@ qmoOuterJoinOper::transNormalCNF4SpecialPred( qcStatement       * aStatement,
                         }
                     }
                     //---------------------------------------------
-                    // Source °¡ list ÀÏ ¼ö ¾ø´Â ¿¬»êÀÚµé
+                    // Source ê°€ list ì¼ ìˆ˜ ì—†ëŠ” ì—°ì‚°ìë“¤
                     //---------------------------------------------
                     else
                     {
                         //---------------------------------------------
-                        // ³ª¸ÓÁö Æ¯¼ö ºñ±³¿¬»êÀÚµéÀº Source ÂÊ¿¡
-                        // list °¡ ¿Ã ¼ö ¾ø´Ù.
+                        // ë‚˜ë¨¸ì§€ íŠ¹ìˆ˜ ë¹„êµì—°ì‚°ìë“¤ì€ Source ìª½ì—
+                        // list ê°€ ì˜¬ ìˆ˜ ì—†ë‹¤.
                         //---------------------------------------------
 
                         sSrcNode = (qtcNode *)sPredCur->node.arguments;
@@ -788,7 +788,7 @@ qmoOuterJoinOper::transNormalCNF4SpecialPred( qcStatement       * aStatement,
 
 
                     //---------------------------------------------
-                    // dependency table & Outer Join Operator ÀÇ °¹¼ö °Ë»ç
+                    // dependency table & Outer Join Operator ì˜ ê°¯ìˆ˜ ê²€ì‚¬
                     //---------------------------------------------
 
                     sJoinOperCount = qtc::getCountJoinOperator( & sPredCur->depInfo );
@@ -798,9 +798,9 @@ qmoOuterJoinOper::transNormalCNF4SpecialPred( qcStatement       * aStatement,
                       && ( sDepCount < QMO_JOIN_OPER_DEPENDENCY_TABLE_CNT_PER_PRED ) )
                     {
                         //---------------------------------------------
-                        // Outer Join Operator ÀÇ °¹¼ö°¡ 1 °³ÀÌ°í,
-                        // dependency table °¹¼ö°¡ 2 °³ ¹Ì¸¸ÀÌ¸é
-                        // º¯È¯ÀÌ ºÒÇÊ¿äÇÏ´Ù.
+                        // Outer Join Operator ì˜ ê°¯ìˆ˜ê°€ 1 ê°œì´ê³ ,
+                        // dependency table ê°¯ìˆ˜ê°€ 2 ê°œ ë¯¸ë§Œì´ë©´
+                        // ë³€í™˜ì´ ë¶ˆí•„ìš”í•˜ë‹¤.
                         //---------------------------------------------
 
                         continue;
@@ -808,10 +808,10 @@ qmoOuterJoinOper::transNormalCNF4SpecialPred( qcStatement       * aStatement,
                     else
                     {
                         //---------------------------------------------
-                        // Source °¡ list ÀÌ¸é¼­ (+) ¸¦ »ç¿ëÇÏ°í,
-                        // dependency table ÀÌ 2 °³ ÀÌ»óÀÏ ¶§´Â
-                        // Target list °¡ 2 °³ ÀÌ»óÀÌ ¿Ã ¼ö ¾ø´Ù´Â Á¦¾à»çÇ×À» µĞ´Ù.
-                        // (mtfEqual,mtfNotEqual Àº Á¦¿Ü)
+                        // Source ê°€ list ì´ë©´ì„œ (+) ë¥¼ ì‚¬ìš©í•˜ê³ ,
+                        // dependency table ì´ 2 ê°œ ì´ìƒì¼ ë•ŒëŠ”
+                        // Target list ê°€ 2 ê°œ ì´ìƒì´ ì˜¬ ìˆ˜ ì—†ë‹¤ëŠ” ì œì•½ì‚¬í•­ì„ ë‘”ë‹¤.
+                        // (mtfEqual,mtfNotEqual ì€ ì œì™¸)
                         //---------------------------------------------
                         if ( ( sPredCur->node.module != & mtfEqual )
                           && ( sPredCur->node.module != & mtfNotEqual ) )
@@ -843,8 +843,8 @@ qmoOuterJoinOper::transNormalCNF4SpecialPred( qcStatement       * aStatement,
                         }
 
                         //---------------------------------------------
-                        // º¯È¯ ´ë»ó Predicate ¿¡¼­ Subquery ¸¦ »ç¿ëÇÏ¸é
-                        // ¾ÈµÇ´Â °ÍÀ¸·Î Á¦¾à»çÇ×À» µĞ´Ù.
+                        // ë³€í™˜ ëŒ€ìƒ Predicate ì—ì„œ Subquery ë¥¼ ì‚¬ìš©í•˜ë©´
+                        // ì•ˆë˜ëŠ” ê²ƒìœ¼ë¡œ ì œì•½ì‚¬í•­ì„ ë‘”ë‹¤.
                         //---------------------------------------------
                         if ( ( sPredCur->lflag & QTC_NODE_SUBQUERY_MASK )
                                == QTC_NODE_SUBQUERY_EXIST )
@@ -859,11 +859,11 @@ qmoOuterJoinOper::transNormalCNF4SpecialPred( qcStatement       * aStatement,
                         }
 
                         //---------------------------------------------
-                        // Style º°·Î º¯È¯ ÀÛ¾÷ ¼öÇà
+                        // Style ë³„ë¡œ ë³€í™˜ ì‘ì—… ìˆ˜í–‰
                         //
-                        // sPredCur ¸¦ Àü´ŞÇÏ¿© sPredCur ¸¦ º¯È¯ÇÑ´Ù.
-                        // sPredCur ¸¦ º¯È¯ÇÑ °á°ú´Â sTransStart ¿Í sTransEnd ¿¡
-                        // ´ã¾Æ¼­ return ÇÑ´Ù.
+                        // sPredCur ë¥¼ ì „ë‹¬í•˜ì—¬ sPredCur ë¥¼ ë³€í™˜í•œë‹¤.
+                        // sPredCur ë¥¼ ë³€í™˜í•œ ê²°ê³¼ëŠ” sTransStart ì™€ sTransEnd ì—
+                        // ë‹´ì•„ì„œ return í•œë‹¤.
                         //---------------------------------------------
 
                         if ( ( sPredCur->node.module == & mtfBetween )
@@ -887,8 +887,8 @@ qmoOuterJoinOper::transNormalCNF4SpecialPred( qcStatement       * aStatement,
                         }
 
                         //---------------------------------------------
-                        // º¯È¯ ¿Ï·áÇÑ ¿øº» Predicate Àº OR ³ëµå¿¡¼­
-                        // ¿¬°á Á¦°Å
+                        // ë³€í™˜ ì™„ë£Œí•œ ì›ë³¸ Predicate ì€ OR ë…¸ë“œì—ì„œ
+                        // ì—°ê²° ì œê±°
                         //---------------------------------------------
 
                         if ( sPredCur == (qtcNode *)sCurOR->node.arguments )
@@ -901,9 +901,9 @@ qmoOuterJoinOper::transNormalCNF4SpecialPred( qcStatement       * aStatement,
                         }
 
                         //---------------------------------------------
-                        // OR ³ëµå°¡ °¡Áö°í ÀÖ´Â ¸ğµç Predicate ÀÌ º¯È¯µÇ¾î¼­
-                        // ´õÀÌ»ó argument °¡ ¾ø´Ù¸é OR ³ëµå´Â ±âÁ¸ normalCNF¿¡¼­
-                        // Á¦°ÅµÇ¾î¾ß ÇÑ´Ù.
+                        // OR ë…¸ë“œê°€ ê°€ì§€ê³  ìˆëŠ” ëª¨ë“  Predicate ì´ ë³€í™˜ë˜ì–´ì„œ
+                        // ë”ì´ìƒ argument ê°€ ì—†ë‹¤ë©´ OR ë…¸ë“œëŠ” ê¸°ì¡´ normalCNFì—ì„œ
+                        // ì œê±°ë˜ì–´ì•¼ í•œë‹¤.
                         //---------------------------------------------
 
                         if ( sCurOR->node.arguments == NULL )
@@ -923,7 +923,7 @@ qmoOuterJoinOper::transNormalCNF4SpecialPred( qcStatement       * aStatement,
                         }
 
                         //---------------------------------------------
-                        // º¯È¯µÈ °á°ú ³ëµåµéÀº ÀÏ´Ü Â÷·ÊÂ÷·Ê º°µµ·Î ¸ğµÎ ¿¬°áÇØµĞ´Ù.
+                        // ë³€í™˜ëœ ê²°ê³¼ ë…¸ë“œë“¤ì€ ì¼ë‹¨ ì°¨ë¡€ì°¨ë¡€ ë³„ë„ë¡œ ëª¨ë‘ ì—°ê²°í•´ë‘”ë‹¤.
                         //
                         //  (OR) -> (OR) -> ... -> (OR) -> (OR) -> NULL
                         //   ^                              ^
@@ -934,7 +934,7 @@ qmoOuterJoinOper::transNormalCNF4SpecialPred( qcStatement       * aStatement,
                         if ( sIsTransFirst == ID_FALSE )
                         {
                             //---------------------------------------------
-                            // normalCNF ¸¦ ÅëÆ²¾î Ã³À½ º¯È¯ÀÌ ¹ß»ıÇßÀ» ¶§
+                            // normalCNF ë¥¼ í†µí‹€ì–´ ì²˜ìŒ ë³€í™˜ì´ ë°œìƒí–ˆì„ ë•Œ
                             //---------------------------------------------
                             sTmpTransStart = sTransStart;
                             sTmpTransEnd   = sTransEnd;
@@ -948,8 +948,8 @@ qmoOuterJoinOper::transNormalCNF4SpecialPred( qcStatement       * aStatement,
                         }
 
                         //---------------------------------------------
-                        // ÇöÀçÀÇ OR ³ëµå ÀÌÇÏ¿¡¼­ º¯È¯µÈ Predicate ÀÌ
-                        // ÀÖ¾ú´Ù´Â °ÍÀ» Ç¥½ÃÇØµÒ.
+                        // í˜„ì¬ì˜ OR ë…¸ë“œ ì´í•˜ì—ì„œ ë³€í™˜ëœ Predicate ì´
+                        // ìˆì—ˆë‹¤ëŠ” ê²ƒì„ í‘œì‹œí•´ë‘ .
                         //---------------------------------------------
 
                         sIsTransformedOR = ID_TRUE;
@@ -965,21 +965,21 @@ qmoOuterJoinOper::transNormalCNF4SpecialPred( qcStatement       * aStatement,
                 //---------------------------------------------
                 // Nothing to do.
                 //
-                // (+) °¡ ¾ø´Â Predicate Àº ÃßÈÄ ANSI ÇüÅÂ·Î
-                // º¯È¯ÇÑ ÈÄ¿¡µµ ±×´ë·Î normalCNF ¿¡ ³²¾ÆÀÖ°Ô
-                // µÇ¹Ç·Î ÀüÇô »ó°ü¾ø´Ù.
+                // (+) ê°€ ì—†ëŠ” Predicate ì€ ì¶”í›„ ANSI í˜•íƒœë¡œ
+                // ë³€í™˜í•œ í›„ì—ë„ ê·¸ëŒ€ë¡œ normalCNF ì— ë‚¨ì•„ìˆê²Œ
+                // ë˜ë¯€ë¡œ ì „í˜€ ìƒê´€ì—†ë‹¤.
                 //---------------------------------------------
             }
         } // for sPredCur
 
         //---------------------------------------------
-        // ÇöÀçÀÇ OR ³ëµå ÀÌÇÏÀÇ Predicate Áß¿¡¼­ º¯È¯ÀÌ
-        // ¹ß»ıÇß´Ù¸é OR ³ëµå¿¡ ´ëÇØ ´Ù½Ã estimation
-        // ±×¸®°í, Á¦°ÅµÇÁö ¾ÊÀº ¸¶Áö¸· OR ³ëµå¸¦ sPrevOR ¿¡
-        // ±â¾ïÇØµĞ´Ù.
-        // ÀÌ´Â ¾Æ·¡¿Í °°Àº ¿¬°á¿¡¼­ (OR 2)°¡ º¯È¯µÉ °æ¿ì
-        // (OR 1)À» ±â¾ïÇØµÒÀ¸·Î½á (OR 2)À» ¸®½ºÆ®ÀÇ ¿¬°á¿¡¼­
-        // ²÷±â À§ÇÔÀÌ´Ù.
+        // í˜„ì¬ì˜ OR ë…¸ë“œ ì´í•˜ì˜ Predicate ì¤‘ì—ì„œ ë³€í™˜ì´
+        // ë°œìƒí–ˆë‹¤ë©´ OR ë…¸ë“œì— ëŒ€í•´ ë‹¤ì‹œ estimation
+        // ê·¸ë¦¬ê³ , ì œê±°ë˜ì§€ ì•Šì€ ë§ˆì§€ë§‰ OR ë…¸ë“œë¥¼ sPrevOR ì—
+        // ê¸°ì–µí•´ë‘”ë‹¤.
+        // ì´ëŠ” ì•„ë˜ì™€ ê°™ì€ ì—°ê²°ì—ì„œ (OR 2)ê°€ ë³€í™˜ë  ê²½ìš°
+        // (OR 1)ì„ ê¸°ì–µí•´ë‘ ìœ¼ë¡œì¨ (OR 2)ì„ ë¦¬ìŠ¤íŠ¸ì˜ ì—°ê²°ì—ì„œ
+        // ëŠê¸° ìœ„í•¨ì´ë‹¤.
         //
         // (OR 1) -> (OR 2) -> (OR 3)
         //---------------------------------------------
@@ -1006,9 +1006,9 @@ qmoOuterJoinOper::transNormalCNF4SpecialPred( qcStatement       * aStatement,
 
 
     //---------------------------------------------
-    // º¯È¯ÀÌ ÇÑ¹øÀÌ¶óµµ ¹ß»ıÇß´Ù¸é ÀÓ½Ã·Î ÀúÀåÇØµĞ
-    // sTmpTransStart ¿Í sTmpTransEnd °¡ ÀÖÀ» °ÍÀÌ´Ù.
-    // ÀÌ¸¦ ±âÁ¸ÀÇ normalCNF ÀÇ ¸Ç¾Õ¿¡ ¿¬°áÇØÁØ´Ù.
+    // ë³€í™˜ì´ í•œë²ˆì´ë¼ë„ ë°œìƒí–ˆë‹¤ë©´ ì„ì‹œë¡œ ì €ì¥í•´ë‘”
+    // sTmpTransStart ì™€ sTmpTransEnd ê°€ ìˆì„ ê²ƒì´ë‹¤.
+    // ì´ë¥¼ ê¸°ì¡´ì˜ normalCNF ì˜ ë§¨ì•ì— ì—°ê²°í•´ì¤€ë‹¤.
     //---------------------------------------------
 
     if ( sIsTransFirst == ID_TRUE )
@@ -1068,13 +1068,13 @@ qmoOuterJoinOper::validateJoinOperConstraints( qcStatement * aStatement,
  * PROJ-1653 Outer Join Operator (+)
  *
  * Description :
- *    transNormalCNF4SpecialPred ¸¦ ÅëÇØ º¯È¯ÀÌ ¿Ï·áµÈ Tree ÀÇ
- *    °¢ Predicate ¿¡ ´ëÇØ Á¦¾à»çÇ× °Ë»ç
+ *    transNormalCNF4SpecialPred ë¥¼ í†µí•´ ë³€í™˜ì´ ì™„ë£Œëœ Tree ì˜
+ *    ê° Predicate ì— ëŒ€í•´ ì œì•½ì‚¬í•­ ê²€ì‚¬
  *
  * Implementation :
  *
- *    Predicate ´ÜÀ§·Î °Ë»ç°¡ ºÒ°¡´ÉÇÑ Á¦¾à»çÇ×Àº Predicate °£ÀÇ
- *    °ü°è°¡ ¿Ï¼ºµÇ´Â transformStruct2ANSIStyle ³»¿¡¼­ ¼öÇàÇÑ´Ù.
+ *    Predicate ë‹¨ìœ„ë¡œ ê²€ì‚¬ê°€ ë¶ˆê°€ëŠ¥í•œ ì œì•½ì‚¬í•­ì€ Predicate ê°„ì˜
+ *    ê´€ê³„ê°€ ì™„ì„±ë˜ëŠ” transformStruct2ANSIStyle ë‚´ì—ì„œ ìˆ˜í–‰í•œë‹¤.
  *
  *    (AND)
  *      |
@@ -1082,48 +1082,48 @@ qmoOuterJoinOper::validateJoinOperConstraints( qcStatement * aStatement,
  *    (OR)  ->  (OR)  ->  (OR)  -> ...
  *      |         |         |
  *      V         V         V
- *    (Pred)    (Pred)    (Pred)   <--- °¢°¢ Á¦¾à»çÇ× °Ë»ç
+ *    (Pred)    (Pred)    (Pred)   <--- ê°ê° ì œì•½ì‚¬í•­ ê²€ì‚¬
  *
  *
- *   (+) »ç¿ë ½Ã Á¦¾à»çÇ×À» °Ë»çÇÏ´Â ±ÔÄ¢À» ¾Ë¾Æº¸ÀÚ.
+ *   (+) ì‚¬ìš© ì‹œ ì œì•½ì‚¬í•­ì„ ê²€ì‚¬í•˜ëŠ” ê·œì¹™ì„ ì•Œì•„ë³´ì.
  *
- *   ¸ğµç Predicate Àº ÇÏ³ªÀÇ °á°ú¸¦ ´Ù¸¥ °á°ú¿Í ºñ±³¸¦
- *   ÇÏ´Â °ÍÀÌ´Ù. (Áï, selectivity °¡ Á¸ÀçÇÑ´Ù.)
- *   ÀÌ ¸»Àº ºñ±³ÁÖÃ¼¿Í ºñ±³´ë»óÀÌ ¹İµå½Ã Á¸ÀçÇÑ´Ù´Â ¸»ÀÌ´Ù.
- *   Áï, =, between, in, >=, ... µî ¸ğµç Predicate ¿¬»êÀÚ´Â
- *   ¸ğµÎ ºñ±³ÁÖÃ¼¿Í ºñ±³´ë»óÀÌ ÇÊ¿äÇÏ´Ù.
+ *   ëª¨ë“  Predicate ì€ í•˜ë‚˜ì˜ ê²°ê³¼ë¥¼ ë‹¤ë¥¸ ê²°ê³¼ì™€ ë¹„êµë¥¼
+ *   í•˜ëŠ” ê²ƒì´ë‹¤. (ì¦‰, selectivity ê°€ ì¡´ì¬í•œë‹¤.)
+ *   ì´ ë§ì€ ë¹„êµì£¼ì²´ì™€ ë¹„êµëŒ€ìƒì´ ë°˜ë“œì‹œ ì¡´ì¬í•œë‹¤ëŠ” ë§ì´ë‹¤.
+ *   ì¦‰, =, between, in, >=, ... ë“± ëª¨ë“  Predicate ì—°ì‚°ìëŠ”
+ *   ëª¨ë‘ ë¹„êµì£¼ì²´ì™€ ë¹„êµëŒ€ìƒì´ í•„ìš”í•˜ë‹¤.
  *
- *   (+) ÀÇ Á¦¾à»çÇ× °ü·ÃÇÏ¿© ÀÌ·¯ÇÑ ºñ±³¿¡¼­ Áß¿äÇÑ °ÍÀº
- *   Join °ü°è¸¦ °¡Áú ¶§ÀÌ´Ù.
- *   Áï, ºñ±³ÁÖÃ¼³ª ºñ±³´ë»óÀÌ constant value °¡ ¾Æ´Ñ °æ¿ì¸¦
- *   ¸»ÇÑ´Ù.
- *   Áö±İºÎÅÍ ºñ±³ÁÖÃ¼¸¦ Join Source, ºñ±³´ë»óÀ» Join Target
- *   ÀÌ¶ó°í ÁöÄªÇÏ°í ¼³¸íÇÏµµ·Ï ÇÑ´Ù.
- *   (º¸Åë Inner/Outer Å×ÀÌºíÀÌ¶ó´Â ¿ë¾î¸¦ »ç¿ëÇÏÁö¸¸
- *    Á»´õ ÀÏ¹İÀûÀÎ ½¬¿î ¿ë¾î·Î ¼³¸íÇÑ´Ù.)
- *
- *
- *   (+)¸¦ »ç¿ëÇÏ°í Join °ü°è¸¦ °¡Áö´Â Predicate ¿¡¼­
- *   ¸íÈ®ÇÑ Á¦¾à»çÇ×Àº ´ÙÀ½ÀÇ ¼¼°¡Áö °æ¿ìÀÌ´Ù.
+ *   (+) ì˜ ì œì•½ì‚¬í•­ ê´€ë ¨í•˜ì—¬ ì´ëŸ¬í•œ ë¹„êµì—ì„œ ì¤‘ìš”í•œ ê²ƒì€
+ *   Join ê´€ê³„ë¥¼ ê°€ì§ˆ ë•Œì´ë‹¤.
+ *   ì¦‰, ë¹„êµì£¼ì²´ë‚˜ ë¹„êµëŒ€ìƒì´ constant value ê°€ ì•„ë‹Œ ê²½ìš°ë¥¼
+ *   ë§í•œë‹¤.
+ *   ì§€ê¸ˆë¶€í„° ë¹„êµì£¼ì²´ë¥¼ Join Source, ë¹„êµëŒ€ìƒì„ Join Target
+ *   ì´ë¼ê³  ì§€ì¹­í•˜ê³  ì„¤ëª…í•˜ë„ë¡ í•œë‹¤.
+ *   (ë³´í†µ Inner/Outer í…Œì´ë¸”ì´ë¼ëŠ” ìš©ì–´ë¥¼ ì‚¬ìš©í•˜ì§€ë§Œ
+ *    ì¢€ë” ì¼ë°˜ì ì¸ ì‰¬ìš´ ìš©ì–´ë¡œ ì„¤ëª…í•œë‹¤.)
  *
  *
- *   (1) Join Source ¿Í Join Target ¾çÂÊ¿¡ (+)¸¦ »ç¿ëÇÒ ¼ö ¾ø´Ù.
+ *   (+)ë¥¼ ì‚¬ìš©í•˜ê³  Join ê´€ê³„ë¥¼ ê°€ì§€ëŠ” Predicate ì—ì„œ
+ *   ëª…í™•í•œ ì œì•½ì‚¬í•­ì€ ë‹¤ìŒì˜ ì„¸ê°€ì§€ ê²½ìš°ì´ë‹¤.
+ *
+ *
+ *   (1) Join Source ì™€ Join Target ì–‘ìª½ì— (+)ë¥¼ ì‚¬ìš©í•  ìˆ˜ ì—†ë‹¤.
  *       ex> t1.i1(+) = t2.i1(+), 1 = t2.i1(+)+t3.i1(+)
  *
- *   (2) (+) ¸¦ »ç¿ëÇÏ´Â Join Source ¿¡ ´ëÇÑ Join Target Å×ÀÌºíÀº
- *       2 °³ ÀÌ»óÀÏ ¼ö ¾ø´Ù.
+ *   (2) (+) ë¥¼ ì‚¬ìš©í•˜ëŠ” Join Source ì— ëŒ€í•œ Join Target í…Œì´ë¸”ì€
+ *       2 ê°œ ì´ìƒì¼ ìˆ˜ ì—†ë‹¤.
  *       ex> t1.i1(+) = t2.i1+t3.i1, t1.i1 = t2.i1(+)+t3.i1
  *
- *   (3) (+) ¸¦ »ç¿ëÇÏ´Â Å×ÀÌºíÀÌ ÀÚ±âÀÚ½Å°ú Outer Join µÉ ¼ö ¾ø´Ù.
- *       ¾Æ·¡ µÎ¹øÂ° ex ´Â Join ÀÌ ¿¬°áÀ» °ÅµìÇÏ¿© °á±¹ ÀÚ½Å°ú
- *       ¿¬°áµÇ´Â °æ¿ìÀÌ´Ù.
+ *   (3) (+) ë¥¼ ì‚¬ìš©í•˜ëŠ” í…Œì´ë¸”ì´ ìê¸°ìì‹ ê³¼ Outer Join ë  ìˆ˜ ì—†ë‹¤.
+ *       ì•„ë˜ ë‘ë²ˆì§¸ ex ëŠ” Join ì´ ì—°ê²°ì„ ê±°ë“­í•˜ì—¬ ê²°êµ­ ìì‹ ê³¼
+ *       ì—°ê²°ë˜ëŠ” ê²½ìš°ì´ë‹¤.
  *       ex> t1.i1(+) = t1.i2, t1.i2-t1.i1(+) = 10
  *       ex> t1.i1(+) = t2.i1 and t2.i1(+) = t3.i1 and t3.i1(+) = t1.i1
  *
  *
- *   À§¿Í °°ÀÌ Predicate ´ÜÀ§·Î ´Ü¼ø¸í·áÇÑ Rule À» Àû¿ëÇÒ ¼ö ÀÖ´Â °ÍÀº
- *   ÀÌ¹Ì Between ·ù¿Í List Argument ¸¦ °¡Áö´Â ºñ±³¿¬»êÀÚ·ù ´ëÇØ ÀÌ¹Ì
- *   º¯È¯ÀÛ¾÷À» ÇÑ »óÅÂ·Î °Ë»ç¸¦ ÇÏ±â ¶§¹®ÀÌ´Ù. (transNormalCNF4SpecialPred)
+ *   ìœ„ì™€ ê°™ì´ Predicate ë‹¨ìœ„ë¡œ ë‹¨ìˆœëª…ë£Œí•œ Rule ì„ ì ìš©í•  ìˆ˜ ìˆëŠ” ê²ƒì€
+ *   ì´ë¯¸ Between ë¥˜ì™€ List Argument ë¥¼ ê°€ì§€ëŠ” ë¹„êµì—°ì‚°ìë¥˜ ëŒ€í•´ ì´ë¯¸
+ *   ë³€í™˜ì‘ì—…ì„ í•œ ìƒíƒœë¡œ ê²€ì‚¬ë¥¼ í•˜ê¸° ë•Œë¬¸ì´ë‹¤. (transNormalCNF4SpecialPred)
  ***********************************************************************/
 
     qcuSqlSourceInfo    sSqlInfo;
@@ -1145,9 +1145,9 @@ qmoOuterJoinOper::validateJoinOperConstraints( qcStatement * aStatement,
 
 
     //------------------------------------------------------
-    // Outer Join Operator ´Â ANSI Join ±¸¹®°ú ÇÔ²² »ç¿ëµÉ ¼ö ¾ø´Ù.
-    // ´Ù¸¸, ÀÌ´Â Where Àı¿¡¸¸ ÇØ´çµÇ°í ´Ù¸¥ Àı¿¡ Æ÷ÇÔµÈ °ÍÀº
-    // ±×³É ¹«½ÃÇÏ¸é µÈ´Ù. (on Àıµµ ¸¶Âù°¡Áö)
+    // Outer Join Operator ëŠ” ANSI Join êµ¬ë¬¸ê³¼ í•¨ê»˜ ì‚¬ìš©ë  ìˆ˜ ì—†ë‹¤.
+    // ë‹¤ë§Œ, ì´ëŠ” Where ì ˆì—ë§Œ í•´ë‹¹ë˜ê³  ë‹¤ë¥¸ ì ˆì— í¬í•¨ëœ ê²ƒì€
+    // ê·¸ëƒ¥ ë¬´ì‹œí•˜ë©´ ëœë‹¤. (on ì ˆë„ ë§ˆì°¬ê°€ì§€)
     //------------------------------------------------------
 
     for ( sFrom  = aQuerySet->SFWGH->from;
@@ -1189,11 +1189,11 @@ qmoOuterJoinOper::validateJoinOperConstraints( qcStatement * aStatement,
         }
 
         //------------------------------------------------------
-        // OR ÀÇ argument ³ëµå°¡ ´Ù¼öÀÏ ¶§ dependency Á¤º¸ÀÇ ºñ±³¸¦
-        // À§ÇØ ÀúÀåÇØ µĞ´Ù.
-        // OR ÇÏÀ§ÀÇ °¢ predicate µéÀº dependency Á¤º¸°¡ Àı´ë ´Ş¶ó¼­´Â ¾ÈµÈ´Ù.
-        // ÃßÈÄ ANSI ±¸¹®À¸·ÎÀÇ º¯È¯ ½Ã OR ³ëµå°¡ ÅëÂ°·Î ÇÏ³ªÀÇ predicate Ã³·³
-        // ¿òÁ÷ÀÏ ¼ö ÀÖ´Â Á¶°ÇÀÌ¾î¾ß °á°ú°¡ Æ²·ÁÁöÁö ¾Ê´Â´Ù.
+        // OR ì˜ argument ë…¸ë“œê°€ ë‹¤ìˆ˜ì¼ ë•Œ dependency ì •ë³´ì˜ ë¹„êµë¥¼
+        // ìœ„í•´ ì €ì¥í•´ ë‘”ë‹¤.
+        // OR í•˜ìœ„ì˜ ê° predicate ë“¤ì€ dependency ì •ë³´ê°€ ì ˆëŒ€ ë‹¬ë¼ì„œëŠ” ì•ˆëœë‹¤.
+        // ì¶”í›„ ANSI êµ¬ë¬¸ìœ¼ë¡œì˜ ë³€í™˜ ì‹œ OR ë…¸ë“œê°€ í†µì§¸ë¡œ í•˜ë‚˜ì˜ predicate ì²˜ëŸ¼
+        // ì›€ì§ì¼ ìˆ˜ ìˆëŠ” ì¡°ê±´ì´ì–´ì•¼ ê²°ê³¼ê°€ í‹€ë ¤ì§€ì§€ ì•ŠëŠ”ë‹¤.
         //------------------------------------------------------
         qtc::dependencySetWithDep( & sCompareDep, & ((qtcNode*)sCurOR->node.arguments)->depInfo );
 
@@ -1202,16 +1202,16 @@ qmoOuterJoinOper::validateJoinOperConstraints( qcStatement * aStatement,
               sCurPred  = (qtcNode *)sCurPred->node.next )
         {
             //------------------------------------------------------
-            // Predicate Level ¿¡¼­ Outer Join Operator °¡ ÀÖ´Â °Í¸¸
-            // Á¦¾à»çÇ×À» °Ë»çÇÏ¸é µÈ´Ù. (±âº»Á¦¾à»çÇ× °Ë»ç)
+            // Predicate Level ì—ì„œ Outer Join Operator ê°€ ìˆëŠ” ê²ƒë§Œ
+            // ì œì•½ì‚¬í•­ì„ ê²€ì‚¬í•˜ë©´ ëœë‹¤. (ê¸°ë³¸ì œì•½ì‚¬í•­ ê²€ì‚¬)
             //------------------------------------------------------
 
             if ( ( sCurPred->lflag & QTC_NODE_JOIN_OPERATOR_MASK )
                    == QTC_NODE_JOIN_OPERATOR_EXIST )
             {
                 //------------------------------------------------------
-                // terminal predicate ¿¡¼­ 2 °³ ÀÌ»óÀÇ dependency table¿¡
-                // (+)¸¦ »ç¿ëÇßÀ» °æ¿ì
+                // terminal predicate ì—ì„œ 2 ê°œ ì´ìƒì˜ dependency tableì—
+                // (+)ë¥¼ ì‚¬ìš©í–ˆì„ ê²½ìš°
                 //------------------------------------------------------
                 sJoinOperCount = qtc::getCountJoinOperator( &sCurPred->depInfo );
 
@@ -1227,8 +1227,8 @@ qmoOuterJoinOper::validateJoinOperConstraints( qcStatement * aStatement,
                 }
 
                 //------------------------------------------------------
-                // terminal predicate ¿¡¼­ (+) ¸¦ »ç¿ëÇÏ¸é¼­
-                // dependency table ÀÌ 2 °³¸¦ ³ÑÀ» ¼ö ¾ø´Ù.
+                // terminal predicate ì—ì„œ (+) ë¥¼ ì‚¬ìš©í•˜ë©´ì„œ
+                // dependency table ì´ 2 ê°œë¥¼ ë„˜ì„ ìˆ˜ ì—†ë‹¤.
                 //------------------------------------------------------
                 sDepCount = qtc::getCountBitSet( & sCurPred->depInfo );
 
@@ -1244,8 +1244,8 @@ qmoOuterJoinOper::validateJoinOperConstraints( qcStatement * aStatement,
                 }
 
                 //------------------------------------------------------
-                // predicate ³»¿¡¼­ t1.i1(+) - t1.i2 = 1 °ú °°ÀÌ ÇÑ Å×ÀÌºíÀÌ
-                // ¼­·Î Outer Join ÀÇ ´ë»óÀÌ µÉ ¼ö ¾ø´Ù.
+                // predicate ë‚´ì—ì„œ t1.i1(+) - t1.i2 = 1 ê³¼ ê°™ì´ í•œ í…Œì´ë¸”ì´
+                // ì„œë¡œ Outer Join ì˜ ëŒ€ìƒì´ ë  ìˆ˜ ì—†ë‹¤.
                 //------------------------------------------------------
                 if( qtc::isOneTableOuterEachOther( &sCurPred->depInfo )
                     == ID_TRUE )
@@ -1265,24 +1265,24 @@ qmoOuterJoinOper::validateJoinOperConstraints( qcStatement * aStatement,
             }
 
             //------------------------------------------------------
-            // 1. OR ³ëµå ÀÌÇÏ¿¡¼­ outer join operator °¡ »ç¿ëµÇÁö ¾ÊÀ»
-            //    °æ¿ì¿Í argument °¡ 1 °³ÀÏ °æ¿ì´Â ÀüÇô »ó°ü¾ø´Ù.
-            // 2. OR ³ëµå ÀÌÇÏ¿¡¼­ outer join operator °¡ »ç¿ëµÇ¾úÀ» °æ¿ì,
-            //    dependency table ÀÌ 2 °³ ÀÌ»óÀÏ ¼ö ¾ø´Ù.
-            // 3. OR ³ëµå ÀÌÇÏ¿¡¼­ outer join operator °¡ »ç¿ëµÈ´Ù¸é dependency table Àº
-            //    1 °³ÀÏ ¼ö ¹Û¿¡ ¾øÀ¸¹Ç·Î, OR ³ëµåÀÇ argument µé °¢°¢Àº ¸ğµÎ
-            //    outer join operator °¡ ºÙÀº °°Àº dependency table ÀÌ¾î¾ßÇÑ´Ù.
-            //    dependency table ÀÌ 1 °³ÀÌ¸é¼­ °¢ predicate ¿¡¼­ °°Àº dependency table ¿¡
-            //    ´ëÇØ outer join operator À¯¹«°¡ ´Ş¶ó¼­´Â ¾ÈµÈ´Ù.
+            // 1. OR ë…¸ë“œ ì´í•˜ì—ì„œ outer join operator ê°€ ì‚¬ìš©ë˜ì§€ ì•Šì„
+            //    ê²½ìš°ì™€ argument ê°€ 1 ê°œì¼ ê²½ìš°ëŠ” ì „í˜€ ìƒê´€ì—†ë‹¤.
+            // 2. OR ë…¸ë“œ ì´í•˜ì—ì„œ outer join operator ê°€ ì‚¬ìš©ë˜ì—ˆì„ ê²½ìš°,
+            //    dependency table ì´ 2 ê°œ ì´ìƒì¼ ìˆ˜ ì—†ë‹¤.
+            // 3. OR ë…¸ë“œ ì´í•˜ì—ì„œ outer join operator ê°€ ì‚¬ìš©ëœë‹¤ë©´ dependency table ì€
+            //    1 ê°œì¼ ìˆ˜ ë°–ì— ì—†ìœ¼ë¯€ë¡œ, OR ë…¸ë“œì˜ argument ë“¤ ê°ê°ì€ ëª¨ë‘
+            //    outer join operator ê°€ ë¶™ì€ ê°™ì€ dependency table ì´ì–´ì•¼í•œë‹¤.
+            //    dependency table ì´ 1 ê°œì´ë©´ì„œ ê° predicate ì—ì„œ ê°™ì€ dependency table ì—
+            //    ëŒ€í•´ outer join operator ìœ ë¬´ê°€ ë‹¬ë¼ì„œëŠ” ì•ˆëœë‹¤.
             //
-            //    Áï, À§ÀÇ ±ÔÄ¢µéÀ» °£´ÜÈ÷ ¿ä¾àÇÏ¸é,
+            //    ì¦‰, ìœ„ì˜ ê·œì¹™ë“¤ì„ ê°„ë‹¨íˆ ìš”ì•½í•˜ë©´,
             //
-            //    "OR ÀÌÇÏ ³ëµåµéÀº ¸ğµÎ ¹­¾î¼­ ÇÏ³ªÀÇ prediicate À¸·Î Ãë±ŞÇØ¾ß ÇÑ´Ù.
-            //     ´Ù¸£°Ô ¸»ÇÏ¸é, ANSI outer join ±¸¹®À¸·Î º¯°æÇßÀ» ¶§ OR ÀÌÇÏÀÇ
-            //     Æ¯Á¤ argument ´Â on Àı·Î ¿Å°ÜÁö°í ¾î¶² argument ´Â ±×´ë·Î ³²°í
-            //     ÇÒ ¼ö´Â ¾ø´Ù´Â ¸»ÀÌ´Ù.
-            //     ¸ğµç argument °¡ ÇÔ²² ¿Å°Ü°¡°Ü³ª ³²¾ÆÀÖ°Å³ª µÑ ÁßÀÇ ÇÏ³ª´Ù.
-            //     ÀÌ·¯ÇÑ Rule À» À§¹èÇÏ¸é ¹«Á¶°Ç ¿¡·¯¸¦ ¹ß»ı½ÃÅ°¸é µÈ´Ù."
+            //    "OR ì´í•˜ ë…¸ë“œë“¤ì€ ëª¨ë‘ ë¬¶ì–´ì„œ í•˜ë‚˜ì˜ prediicate ìœ¼ë¡œ ì·¨ê¸‰í•´ì•¼ í•œë‹¤.
+            //     ë‹¤ë¥´ê²Œ ë§í•˜ë©´, ANSI outer join êµ¬ë¬¸ìœ¼ë¡œ ë³€ê²½í–ˆì„ ë•Œ OR ì´í•˜ì˜
+            //     íŠ¹ì • argument ëŠ” on ì ˆë¡œ ì˜®ê²¨ì§€ê³  ì–´ë–¤ argument ëŠ” ê·¸ëŒ€ë¡œ ë‚¨ê³ 
+            //     í•  ìˆ˜ëŠ” ì—†ë‹¤ëŠ” ë§ì´ë‹¤.
+            //     ëª¨ë“  argument ê°€ í•¨ê»˜ ì˜®ê²¨ê°€ê²¨ë‚˜ ë‚¨ì•„ìˆê±°ë‚˜ ë‘˜ ì¤‘ì˜ í•˜ë‚˜ë‹¤.
+            //     ì´ëŸ¬í•œ Rule ì„ ìœ„ë°°í•˜ë©´ ë¬´ì¡°ê±´ ì—ëŸ¬ë¥¼ ë°œìƒì‹œí‚¤ë©´ ëœë‹¤."
             //------------------------------------------------------
             if ( ( sCurOR->lflag & QTC_NODE_JOIN_OPERATOR_MASK )
                    == QTC_NODE_JOIN_OPERATOR_EXIST )
@@ -1370,37 +1370,37 @@ qmoOuterJoinOper::transformStruct2ANSIStyle( qcStatement      * aStatement,
  *
  * PROJ-1653 Outer Join Operator (+)
  *
- * Description : Outer Join Operator¸¦ »ç¿ëÇÏ´Â where ÀıÀ» ANSI ÇüÅÂ·Î º¯È¯
+ * Description : Outer Join Operatorë¥¼ ì‚¬ìš©í•˜ëŠ” where ì ˆì„ ANSI í˜•íƒœë¡œ ë³€í™˜
  *
  * Implementation :
  *
- *    ÀÌ ÇÔ¼ö¿¡¼­´Â normalCNF ÀÇ ¸ğµç Predicate À» Outer Join Operator À¯¹«,
- *    Join/constant/onetable Predicate ¿©ºÎ, °¢ Predicate µéÀÇ
- *    dependency table µé°£ÀÇ °ü°è¸¦ ÆÄ¾ÇÇÏ¿© ºĞ·ù ¹× Grouping,
- *    normalCNF ¹× From Tree º¯È¯À» ¼öÇàÇÑ´Ù.
+ *    ì´ í•¨ìˆ˜ì—ì„œëŠ” normalCNF ì˜ ëª¨ë“  Predicate ì„ Outer Join Operator ìœ ë¬´,
+ *    Join/constant/onetable Predicate ì—¬ë¶€, ê° Predicate ë“¤ì˜
+ *    dependency table ë“¤ê°„ì˜ ê´€ê³„ë¥¼ íŒŒì•…í•˜ì—¬ ë¶„ë¥˜ ë° Grouping,
+ *    normalCNF ë° From Tree ë³€í™˜ì„ ìˆ˜í–‰í•œë‹¤.
  *
- *    ÀÌ ÇÔ¼ö¿¡¼­´Â ´ÙÀ½°ú °°Àº ÀÏÀ» ¼öÇàÇÑ´Ù.
+ *    ì´ í•¨ìˆ˜ì—ì„œëŠ” ë‹¤ìŒê³¼ ê°™ì€ ì¼ì„ ìˆ˜í–‰í•œë‹¤.
  *
- *     1. Predicate À» ´ÙÀ½ÀÇ 3 °¡Áö·Î ºĞ·ù
- *        °¡. (+)¾ø´Â predicate           : qmoJoinOperTrans->generalPred
- *        ³ª. (+)ÀÖ°í one table predicate : qmoJoinOperTrans->oneTablePred
- *        ´Ù. (+)ÀÖ°í join predicate      : qmoJoinOperTrans->joinOperPred
- *     2. qmoJoinOperTrans->joinOperPred À» Grouping
+ *     1. Predicate ì„ ë‹¤ìŒì˜ 3 ê°€ì§€ë¡œ ë¶„ë¥˜
+ *        ê°€. (+)ì—†ëŠ” predicate           : qmoJoinOperTrans->generalPred
+ *        ë‚˜. (+)ìˆê³  one table predicate : qmoJoinOperTrans->oneTablePred
+ *        ë‹¤. (+)ìˆê³  join predicate      : qmoJoinOperTrans->joinOperPred
+ *     2. qmoJoinOperTrans->joinOperPred ì„ Grouping
  *        : qmoJoinOperTrans->joinOperGroup
- *     3. qmoJoinOperTrans->joinOperGroup º°·Î dependency info ¸¦ Relationing
- *        °¡. Áßº¹ Relation Á¦°Å
- *        ³ª. qmoJoinOperTrans->joinOperGroup->joinRelation À»
- *            depend(TupleId) °ª¿¡ µû¶ó ÀçÁ¤·Ä
- *     4. qmoJoinOperTrans ÀÇ predicate, grouping, relation Á¤º¸¸¦ ÀÌ¿ëÇÏ¿©
- *        ANSI ÇüÅÂ·Î º¯È¯
+ *     3. qmoJoinOperTrans->joinOperGroup ë³„ë¡œ dependency info ë¥¼ Relationing
+ *        ê°€. ì¤‘ë³µ Relation ì œê±°
+ *        ë‚˜. qmoJoinOperTrans->joinOperGroup->joinRelation ì„
+ *            depend(TupleId) ê°’ì— ë”°ë¼ ì¬ì •ë ¬
+ *     4. qmoJoinOperTrans ì˜ predicate, grouping, relation ì •ë³´ë¥¼ ì´ìš©í•˜ì—¬
+ *        ANSI í˜•íƒœë¡œ ë³€í™˜
  *
  *
- *    º¯È¯°úÁ¤¿¡¼­ ¾Æ·¡ÀÇ ÀÚ·á±¸Á¶¸¦ ¾î¶»°Ô ¸¸µé°í ÀÌ¿ë´ÂÁö »ìÆìº¸ÀÚ.
+ *    ë³€í™˜ê³¼ì •ì—ì„œ ì•„ë˜ì˜ ìë£Œêµ¬ì¡°ë¥¼ ì–´ë–»ê²Œ ë§Œë“¤ê³  ì´ìš©ëŠ”ì§€ ì‚´í´ë³´ì.
  *
  *    -------------------------------------------------------
- *    *  qmoJoinOperGroup ³»ÀÇ joinRelation Àº ½ÇÁ¦ÀûÀ¸·Î´Â *
- *    *  Array ÇüÅÂÀÌ´Ù.                                    *
- *    *  ¼³¸íÀ» ¿ëÀÌÇÏ°Ô ÇÏ±â À§ÇØ list ÀÎ °ÍÃ³·³ ¼³¸íÇÑ´Ù. *
+ *    *  qmoJoinOperGroup ë‚´ì˜ joinRelation ì€ ì‹¤ì œì ìœ¼ë¡œëŠ” *
+ *    *  Array í˜•íƒœì´ë‹¤.                                    *
+ *    *  ì„¤ëª…ì„ ìš©ì´í•˜ê²Œ í•˜ê¸° ìœ„í•´ list ì¸ ê²ƒì²˜ëŸ¼ ì„¤ëª…í•œë‹¤. *
  *    -------------------------------------------------------
  *
  *    ================
@@ -1426,7 +1426,7 @@ qmoOuterJoinOper::transformStruct2ANSIStyle( qcStatement      * aStatement,
  *                              ===================
  *
  *
- *    ´ÙÀ½°ú °°Àº Á¶°ÇÀ» °¡Áø SQL ÀÌ ÀÖ´Ù°í °¡Á¤ÇÏÀÚ.
+ *    ë‹¤ìŒê³¼ ê°™ì€ ì¡°ê±´ì„ ê°€ì§„ SQL ì´ ìˆë‹¤ê³  ê°€ì •í•˜ì.
  *
  *    where pred1  -> one table (+) predicate
  *      and pred2  -> one table (+) predicate
@@ -1437,9 +1437,9 @@ qmoOuterJoinOper::transformStruct2ANSIStyle( qcStatement      * aStatement,
  *      and pred7  -> none (+) predicate
  *
  *
- *    (1) Predicate ÀÇ ºĞ·ù
- *        À§ÀÇ °¢ predicate ¿¡ ´ëÇØ qtcNode ÀÇ depInfo Á¤º¸¸¦ ÅëÇØ
- *        ´ÙÀ½°ú °°ÀÌ ¼¼°³ÀÇ ÀÚ·á±¸Á¶ ¸®½ºÆ®¿¡ ¿¬°áÇØµĞ´Ù.
+ *    (1) Predicate ì˜ ë¶„ë¥˜
+ *        ìœ„ì˜ ê° predicate ì— ëŒ€í•´ qtcNode ì˜ depInfo ì •ë³´ë¥¼ í†µí•´
+ *        ë‹¤ìŒê³¼ ê°™ì´ ì„¸ê°œì˜ ìë£Œêµ¬ì¡° ë¦¬ìŠ¤íŠ¸ì— ì—°ê²°í•´ë‘”ë‹¤.
  *
  *        ================
  *        qmoJoinOperTrans    ----> (*pred1) -> (*pred2) -> NULL
@@ -1451,14 +1451,14 @@ qmoOuterJoinOper::transformStruct2ANSIStyle( qcStatement      * aStatement,
  *        |              |    ----> (*pred6) -> (*pred7) -> NULL
  *        ================
  *
- *    (2) (+) °¡ ÀÖ´Â Join Predicate µéÀ» Grouping
- *        À§¿¡¼­ ºĞ·ùÇÑ ¸®½ºÆ® Áß (+) °¡ Á¸ÀçÇÏ°í Join °ü°è¸¦ °¡Áø Predicate
- *        µéÀ» °¡Áö°í ÀÖ´Â joinOperPred ¸®½ºÆ®ÀÇ ³ëµåµéÀ» Grouping ÇÑ´Ù.
- *        (Join °ü°è°¡ ÀÖ´Â °Íµé³¢¸® ¹­´Â´Ù´Â ¶æÀÌ´Ù)
+ *    (2) (+) ê°€ ìˆëŠ” Join Predicate ë“¤ì„ Grouping
+ *        ìœ„ì—ì„œ ë¶„ë¥˜í•œ ë¦¬ìŠ¤íŠ¸ ì¤‘ (+) ê°€ ì¡´ì¬í•˜ê³  Join ê´€ê³„ë¥¼ ê°€ì§„ Predicate
+ *        ë“¤ì„ ê°€ì§€ê³  ìˆëŠ” joinOperPred ë¦¬ìŠ¤íŠ¸ì˜ ë…¸ë“œë“¤ì„ Grouping í•œë‹¤.
+ *        (Join ê´€ê³„ê°€ ìˆëŠ” ê²ƒë“¤ë¼ë¦¬ ë¬¶ëŠ”ë‹¤ëŠ” ëœ»ì´ë‹¤)
  *
- *        joinOperPred ¸®½ºÆ®ÀÇ ³ëµå¸¦ ¼øÈ¸ÇÏ¸ç join °ü°è°¡ ÀÖ´Â °ÍµéÀ»
- *        Â÷·Ê·Î °¢°¢ÀÇ qmoJoinOperGroup ÀÇ joinPredicate ¿¡ ¿¬°áÇÏ°í
- *        ¿ø·¡ÀÇ joinOperPred ¿¡¼­´Â Á¦°ÅÇÑ´Ù.
+ *        joinOperPred ë¦¬ìŠ¤íŠ¸ì˜ ë…¸ë“œë¥¼ ìˆœíšŒí•˜ë©° join ê´€ê³„ê°€ ìˆëŠ” ê²ƒë“¤ì„
+ *        ì°¨ë¡€ë¡œ ê°ê°ì˜ qmoJoinOperGroup ì˜ joinPredicate ì— ì—°ê²°í•˜ê³ 
+ *        ì›ë˜ì˜ joinOperPred ì—ì„œëŠ” ì œê±°í•œë‹¤.
  *
  *        ================
  *        qmoJoinOperTrans
@@ -1481,10 +1481,10 @@ qmoOuterJoinOper::transformStruct2ANSIStyle( qcStatement      * aStatement,
  *                                ===================
  *
  *    (3) Join Relationning
- *        (2) ¿¡¼­ Grouping À» ÅëÇØ ¿Ï¼ºÇÑ °¢ Group ÀÇ joinPredicate ÀÇ
- *        ¸®½ºÆ®³ëµå¸¦ ¼øÈ¸ÇÏ¸é¼­ depInfo->depend °ª¿¡ µû¶ó Á¤·ÄÇÏ°í(Quick Sort),
- *        Áßº¹µÈ dependency Á¤º¸¸¦ °¡Áö´Â Predicate ÀÇ °æ¿ì´Â »« ÈÄ
- *        joinRelation ¸®½ºÆ®¿¡ ¿¬°áÇÑ´Ù.
+ *        (2) ì—ì„œ Grouping ì„ í†µí•´ ì™„ì„±í•œ ê° Group ì˜ joinPredicate ì˜
+ *        ë¦¬ìŠ¤íŠ¸ë…¸ë“œë¥¼ ìˆœíšŒí•˜ë©´ì„œ depInfo->depend ê°’ì— ë”°ë¼ ì •ë ¬í•˜ê³ (Quick Sort),
+ *        ì¤‘ë³µëœ dependency ì •ë³´ë¥¼ ê°€ì§€ëŠ” Predicate ì˜ ê²½ìš°ëŠ” ëº€ í›„
+ *        joinRelation ë¦¬ìŠ¤íŠ¸ì— ì—°ê²°í•œë‹¤.
  *                     
  *        ================
  *        qmoJoinOperTrans
@@ -1504,33 +1504,33 @@ qmoOuterJoinOper::transformStruct2ANSIStyle( qcStatement      * aStatement,
  *                                | joinRelation    -----> (*pred4) -> NULL
  *                                ===================
  *
- *   (4) joinRelation Á¤º¸¸¦ ÀÌ¿ëÇÑ º¯È¯
- *       ÀÌÁ¦ ½ÇÁúÀûÀ¸·Î º¯È¯ÀÛ¾÷À» ÇØ¾ßÇÑ´Ù.
- *       º¯È¯´ë»óÀº qmsSFWGH->from Tree ¿Í qmoJoinOperTrans->normalCNF Tree ÀÌ´Ù.
- *       ´ÙÀ½ÀÇ °úÁ¤À¸·Î º¯È¯ÀÛ¾÷À» ¼öÇàÇÑ´Ù.
+ *   (4) joinRelation ì •ë³´ë¥¼ ì´ìš©í•œ ë³€í™˜
+ *       ì´ì œ ì‹¤ì§ˆì ìœ¼ë¡œ ë³€í™˜ì‘ì—…ì„ í•´ì•¼í•œë‹¤.
+ *       ë³€í™˜ëŒ€ìƒì€ qmsSFWGH->from Tree ì™€ qmoJoinOperTrans->normalCNF Tree ì´ë‹¤.
+ *       ë‹¤ìŒì˜ ê³¼ì •ìœ¼ë¡œ ë³€í™˜ì‘ì—…ì„ ìˆ˜í–‰í•œë‹¤.
  *
- *       (°¡) Ã¹¹øÂ° joinRelation ³ëµåÀÇ dependency Á¤º¸¸¦ ÀÌ¿ëÇÏ¿©
- *            From ¸®½ºÆ®¿¡¼­ °ü·Ã ³ëµå¸¦ Ã£´Â´Ù.
+ *       (ê°€) ì²«ë²ˆì§¸ joinRelation ë…¸ë“œì˜ dependency ì •ë³´ë¥¼ ì´ìš©í•˜ì—¬
+ *            From ë¦¬ìŠ¤íŠ¸ì—ì„œ ê´€ë ¨ ë…¸ë“œë¥¼ ì°¾ëŠ”ë‹¤.
  *
- *       (³ª) Ã£¾Æ³½ From ³ëµåµéÀ» Left outer join ³ëµå Tree ÇüÅÂ·Î
- *            º¯È¯ÇÑ´Ù.
+ *       (ë‚˜) ì°¾ì•„ë‚¸ From ë…¸ë“œë“¤ì„ Left outer join ë…¸ë“œ Tree í˜•íƒœë¡œ
+ *            ë³€í™˜í•œë‹¤.
  *
- *       (´Ù) º¯È¯µÈ Left outer join ³ëµåÀÇ onCondition ¿¡ ¿¬°áÇÒ
- *            Predicate À» ¸ğµÎ Ã£¾Æ¼­ ¿¬°áÇØÁØ´Ù.
+ *       (ë‹¤) ë³€í™˜ëœ Left outer join ë…¸ë“œì˜ onCondition ì— ì—°ê²°í• 
+ *            Predicate ì„ ëª¨ë‘ ì°¾ì•„ì„œ ì—°ê²°í•´ì¤€ë‹¤.
  *
- *            a. joinRelation ¿¡ ´ëÀÀÇÏ´Â joinPredicate À» Ã£¾Æ¼­
- *               onCondition ¿¡ ¿¬°á ÈÄ ¸®½ºÆ®¿¡¼­ Á¦°ÅÇÑ´Ù.
- *            b. (1)¿¡¼­ ºĞ·ùÇØ µÎ¾ú´ø oneTablePred Áß¿¡¼­ °ü·ÃµÈ
- *               °ÍÀ» onCondtion ¿¡ ¿¬°áÇÑ ÈÄ ¸®½ºÆ®¿¡¼­ Á¦°ÅÇÑ´Ù.
+ *            a. joinRelation ì— ëŒ€ì‘í•˜ëŠ” joinPredicate ì„ ì°¾ì•„ì„œ
+ *               onCondition ì— ì—°ê²° í›„ ë¦¬ìŠ¤íŠ¸ì—ì„œ ì œê±°í•œë‹¤.
+ *            b. (1)ì—ì„œ ë¶„ë¥˜í•´ ë‘ì—ˆë˜ oneTablePred ì¤‘ì—ì„œ ê´€ë ¨ëœ
+ *               ê²ƒì„ onCondtion ì— ì—°ê²°í•œ í›„ ë¦¬ìŠ¤íŠ¸ì—ì„œ ì œê±°í•œë‹¤.
  *
- *       (¶ó) ´ÙÀ½ joinRelation ³ëµå¿¡ ´ëÇØ (°¡)ÀÇ °úÁ¤ºÎÅÍ ¹İº¹ÇÑ´Ù.
+ *       (ë¼) ë‹¤ìŒ joinRelation ë…¸ë“œì— ëŒ€í•´ (ê°€)ì˜ ê³¼ì •ë¶€í„° ë°˜ë³µí•œë‹¤.
  *
- *       ** joinPredicate ¹× oneTablePred ³ëµå¸¦ ¸®½ºÆ®¿¡¼­ Á¦°ÅÇÒ ¶§´Â
- *          ÇØ´ç ³ëµå°¡ °¡¸®Å°´Â Predicate ³ëµå ¶ÇÇÑ normalCNF ¿¡¼­
- *          Á¦°ÅÇØ ÁÖ¾î¾ß ÇÑ´Ù.
- *          °á±¹, where Á¶°ÇÀ» ÅëÇØ ¸¸µé¾îÁø ¸ğµç predicate ³ëµåµéÀ»
- *          °¡Áö°í ÀÖ´ø normalCNF ´Â, º¯È¯ÀÛ¾÷ÀÌ ³¡³ª¸é Left Outer Join
- *          ÀÇ onCondition À¸·Î ¿Å°ÜÁø ³ëµå¸¦ Á¦¿ÜÇÑ °Íµé¸¸ ³²°Ô µÈ´Ù.
+ *       ** joinPredicate ë° oneTablePred ë…¸ë“œë¥¼ ë¦¬ìŠ¤íŠ¸ì—ì„œ ì œê±°í•  ë•ŒëŠ”
+ *          í•´ë‹¹ ë…¸ë“œê°€ ê°€ë¦¬í‚¤ëŠ” Predicate ë…¸ë“œ ë˜í•œ normalCNF ì—ì„œ
+ *          ì œê±°í•´ ì£¼ì–´ì•¼ í•œë‹¤.
+ *          ê²°êµ­, where ì¡°ê±´ì„ í†µí•´ ë§Œë“¤ì–´ì§„ ëª¨ë“  predicate ë…¸ë“œë“¤ì„
+ *          ê°€ì§€ê³  ìˆë˜ normalCNF ëŠ”, ë³€í™˜ì‘ì—…ì´ ëë‚˜ë©´ Left Outer Join
+ *          ì˜ onCondition ìœ¼ë¡œ ì˜®ê²¨ì§„ ë…¸ë“œë¥¼ ì œì™¸í•œ ê²ƒë“¤ë§Œ ë‚¨ê²Œ ëœë‹¤.
  *
  ***********************************************************************/
 
@@ -1542,54 +1542,54 @@ qmoOuterJoinOper::transformStruct2ANSIStyle( qcStatement      * aStatement,
 
 
     //------------------------------------------
-    // ÀÌ ´Ü°è¿¡¼­ max join group À» ¾Ë±â´Â Èûµé°í
-    // Query ÀÇ dependency table ÀÇ °¹¼ö¸¦ max ·Î Àâ´Â´Ù.
+    // ì´ ë‹¨ê³„ì—ì„œ max join group ì„ ì•Œê¸°ëŠ” í˜ë“¤ê³ 
+    // Query ì˜ dependency table ì˜ ê°¯ìˆ˜ë¥¼ max ë¡œ ì¡ëŠ”ë‹¤.
     //------------------------------------------
 
-    // BUG-43897 Àß¸øµÈ predicateÀ» °í·ÁÇÏ¿© ÃæºĞÈ÷ ¸¸µé¾îµĞ´Ù.
+    // BUG-43897 ì˜ëª»ëœ predicateì„ ê³ ë ¤í•˜ì—¬ ì¶©ë¶„íˆ ë§Œë“¤ì–´ë‘”ë‹¤.
     aTrans->maxJoinOperGroupCnt = qtc::getCountBitSet( &aQuerySet->SFWGH->depInfo ) * 4;
 
     //------------------------------------------
-    // PredicateÀÇ ºĞ·ù
+    // Predicateì˜ ë¶„ë¥˜
     //------------------------------------------
 
     IDE_TEST( classifyJoinOperPredicate( aStatement, aQuerySet, aTrans )
               != IDE_SUCCESS );
 
     //------------------------------------------
-    // Predicate À» ºĞ·ùÇÑ ÈÄ joinOperPred ÀÌ ¾ø´Ù¸é,
-    // ¾Æ·¡ÀÇ °úÁ¤Àº ºÒÇÊ¿äÇÏ´Ù.
-    // Áï, Outer Join Operator ¸¦ »ç¿ëÇß´õ¶óµµ,
-    // constant Predicate °ú one table predicate ¸¸
-    // ÀÖ´Â °æ¿ì´Â ANSI ±¸Á¶·Î º¯°æÇÒ ÀÌÀ¯°¡ ¾ø´Ù.
+    // Predicate ì„ ë¶„ë¥˜í•œ í›„ joinOperPred ì´ ì—†ë‹¤ë©´,
+    // ì•„ë˜ì˜ ê³¼ì •ì€ ë¶ˆí•„ìš”í•˜ë‹¤.
+    // ì¦‰, Outer Join Operator ë¥¼ ì‚¬ìš©í–ˆë”ë¼ë„,
+    // constant Predicate ê³¼ one table predicate ë§Œ
+    // ìˆëŠ” ê²½ìš°ëŠ” ANSI êµ¬ì¡°ë¡œ ë³€ê²½í•  ì´ìœ ê°€ ì—†ë‹¤.
     //------------------------------------------
 
     if ( aTrans->joinOperPred != NULL )
     {
         //------------------------------------------
-        // joinOperGroup ¹è¿­ °ø°£ È®º¸ ¹× ÃÊ±âÈ­
+        // joinOperGroup ë°°ì—´ ê³µê°„ í™•ë³´ ë° ì´ˆê¸°í™”
         //------------------------------------------
 
         IDE_TEST( QC_QMP_MEM( aStatement )->alloc( ID_SIZEOF( qmoJoinOperGroup ) * aTrans->maxJoinOperGroupCnt,
                                                    (void **) & aTrans->joinOperGroup )
                   != IDE_SUCCESS );
 
-        // joinOperGroupµéÀÇ ÃÊ±âÈ­
+        // joinOperGroupë“¤ì˜ ì´ˆê¸°í™”
         IDE_TEST( initJoinOperGroup( aStatement,
                                      aTrans->joinOperGroup,
                                      aTrans->maxJoinOperGroupCnt )
                   != IDE_SUCCESS );
 
         //------------------------------------------
-        // Join Predicate ÀÇ Grouping ¹× Relationing, Ordering
+        // Join Predicate ì˜ Grouping ë° Relationing, Ordering
         //------------------------------------------
 
         IDE_TEST( joinOperOrdering( aStatement, aTrans )
                   != IDE_SUCCESS );
 
         //------------------------------------------
-        // Relationing µÈ List ¸¦ ÀÌ¿ëÇÏ¿© ANSI ÇüÅÂ·Î º¯È¯
-        //  - From, normalCNF, On Àı
+        // Relationing ëœ List ë¥¼ ì´ìš©í•˜ì—¬ ANSI í˜•íƒœë¡œ ë³€í™˜
+        //  - From, normalCNF, On ì ˆ
         //------------------------------------------
 
         IDE_TEST( transformJoinOper( aStatement, aQuerySet, aTrans )
@@ -1615,10 +1615,10 @@ qmoOuterJoinOper::isOneTableJoinOperPred( qmsQuerySet * aQuerySet,
 {
 /***********************************************************************
  *
- * Description : one table predicateÀÇ ÆÇ´Ü
+ * Description : one table predicateì˜ íŒë‹¨
  *
- *     one table predicate: dependency table ÀÌ 1 °³ÀÎ predicate
- *     ¿¹) T1.i1 = 1
+ *     one table predicate: dependency table ì´ 1 ê°œì¸ predicate
+ *     ì˜ˆ) T1.i1 = 1
  *
  * Implementation :
  *
@@ -1632,7 +1632,7 @@ qmoOuterJoinOper::isOneTableJoinOperPred( qmsQuerySet * aQuerySet,
     IDE_DASSERT( aPredicate        != NULL );
     IDE_DASSERT( aIsTrue           != NULL );
 
-    // BUG-35468 ¿ÜºÎ ÂüÁ¶ ÄÃ·³ÀÇ depInfo´Â Á¦°ÅÇÑ´Ù.
+    // BUG-35468 ì™¸ë¶€ ì°¸ì¡° ì»¬ëŸ¼ì˜ depInfoëŠ” ì œê±°í•œë‹¤.
     qtc::dependencyAnd( & aQuerySet->SFWGH->depInfo,
                         & aPredicate->depInfo,
                         & sAndDependencies );
@@ -1659,10 +1659,10 @@ qmoOuterJoinOper::isConstJoinOperPred( qmsQuerySet * aQuerySet,
 {
 /***********************************************************************
  *
- * Description : constant predicateÀÇ ÆÇ´Ü
+ * Description : constant predicateì˜ íŒë‹¨
  *
- *     constant predicateÀº dependency table ÀÌ ¾ø´Â Predicate À¸·Î Á¤ÀÇ
- *     ¿¹)  1 = 1
+ *     constant predicateì€ dependency table ì´ ì—†ëŠ” Predicate ìœ¼ë¡œ ì •ì˜
+ *     ì˜ˆ)  1 = 1
  *
  * Implementation :
  *
@@ -1677,11 +1677,11 @@ qmoOuterJoinOper::isConstJoinOperPred( qmsQuerySet * aQuerySet,
     IDE_DASSERT( aIsTrue           != NULL );
 
     //--------------------------------------
-    // constant predicateÀÇ ÆÇ´Ü
-    // dependencies´Â ÃÖ»óÀ§ ³ëµå¿¡¼­ ÆÇ´ÜÇÑ´Ù.
+    // constant predicateì˜ íŒë‹¨
+    // dependenciesëŠ” ìµœìƒìœ„ ë…¸ë“œì—ì„œ íŒë‹¨í•œë‹¤.
     //--------------------------------------
 
-    // BUG-36358 ¿ÜºÎ ÂüÁ¶ ÄÃ·³ÀÇ depInfo´Â Á¦°ÅÇÑ´Ù.
+    // BUG-36358 ì™¸ë¶€ ì°¸ì¡° ì»¬ëŸ¼ì˜ depInfoëŠ” ì œê±°í•œë‹¤.
     qtc::dependencyAnd( & aQuerySet->SFWGH->depInfo,
                         & aPredicate->depInfo,
                         & sAndDependencies );
@@ -1710,7 +1710,7 @@ qmoOuterJoinOper::createJoinOperPred( qcStatement      * aStatement,
  * PROJ-1653 Outer Join Operator (+)
  *
  * Description :
- *    Outer Join Operator ¸¦ Æ÷ÇÔÇÏ´Â Join Predicate À» °ü¸®ÇÒ ÀÚ·á±¸Á¶ »ı¼º
+ *    Outer Join Operator ë¥¼ í¬í•¨í•˜ëŠ” Join Predicate ì„ ê´€ë¦¬í•  ìë£Œêµ¬ì¡° ìƒì„±
  *
  *
  * Implementation :
@@ -1743,11 +1743,11 @@ qmoOuterJoinOper::initJoinOperGroup( qcStatement      * aStatement,
  *
  * PROJ-1653 Outer Join Operator (+)
  *
- * Description : Join Oper GroupÀÇ ÃÊ±âÈ­
+ * Description : Join Oper Groupì˜ ì´ˆê¸°í™”
  *
  * Implementation :
- *    Join Oper Group À» ÃÊ±âÈ­ÇÏ¸é¼­, °¢ Group ³»¿¡
- *    joinRelation À» Array ÇüÅÂ·Î ¹Ì¸® ÇÒ´çÇÏ°í ÃÊ±âÈ­ÇÑ´Ù.
+ *    Join Oper Group ì„ ì´ˆê¸°í™”í•˜ë©´ì„œ, ê° Group ë‚´ì—
+ *    joinRelation ì„ Array í˜•íƒœë¡œ ë¯¸ë¦¬ í• ë‹¹í•˜ê³  ì´ˆê¸°í™”í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -1757,7 +1757,7 @@ qmoOuterJoinOper::initJoinOperGroup( qcStatement      * aStatement,
 
     IDU_FIT_POINT_FATAL( "qmoOuterJoinOper::initJoinOperGroup::__FT__" );
 
-    // °¢ Join Oper GroupÀÇ ÃÊ±âÈ­
+    // ê° Join Oper Groupì˜ ì´ˆê¸°í™”
     for ( i = 0;
           i < aJoinGroupCnt;
           i++ )
@@ -1800,15 +1800,15 @@ qmoOuterJoinOper::classifyJoinOperPredicate( qcStatement       * aStatement,
  *
  * PROJ-1653 Outer Join Operator (+)
  *
- * Description : normalCNFÀÇ Predicate ºĞ·ù
+ * Description : normalCNFì˜ Predicate ë¶„ë¥˜
  *
  * Implementation :
- *    qmoJoinOperTrans::normalCNFÀÇ °¢ Predicate¿¡ ´ëÇÏ¿© ´ÙÀ½À» ¼öÇà
+ *    qmoJoinOperTrans::normalCNFì˜ ê° Predicateì— ëŒ€í•˜ì—¬ ë‹¤ìŒì„ ìˆ˜í–‰
  *
- *    (1) Constant Predicate ºĞ·ù -> generalPred ¿¡ ¿¬°á
- *    (2) Outer Join Operator + One Table PredicateÀÇ ºĞ·ù -> oneTablePred ¿¡ ¿¬°á
- *    (3) Outer Join Operator + Join PredicateÀÇ ºĞ·ù -> joinOperPred ¿¡ ¿¬°á
- *    (4) Outer Join Operator °¡ ¾ø´Â Predicate ºĞ·ù -> generalPred ¿¡ ¿¬°á
+ *    (1) Constant Predicate ë¶„ë¥˜ -> generalPred ì— ì—°ê²°
+ *    (2) Outer Join Operator + One Table Predicateì˜ ë¶„ë¥˜ -> oneTablePred ì— ì—°ê²°
+ *    (3) Outer Join Operator + Join Predicateì˜ ë¶„ë¥˜ -> joinOperPred ì— ì—°ê²°
+ *    (4) Outer Join Operator ê°€ ì—†ëŠ” Predicate ë¶„ë¥˜ -> generalPred ì— ì—°ê²°
  *
  ***********************************************************************/
 
@@ -1821,14 +1821,14 @@ qmoOuterJoinOper::classifyJoinOperPredicate( qcStatement       * aStatement,
     IDU_FIT_POINT_FATAL( "qmoOuterJoinOper::classifyJoinOperPredicate::__FT__" );
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aTrans     != NULL );
 
 
-    // Predicate ºĞ·ù ´ë»ó Node
+    // Predicate ë¶„ë¥˜ ëŒ€ìƒ Node
     if ( aTrans->normalCNF != NULL )
     {
         sNode = (qtcNode *)aTrans->normalCNF->node.arguments;
@@ -1840,15 +1840,15 @@ qmoOuterJoinOper::classifyJoinOperPredicate( qcStatement       * aStatement,
 
     while ( sNode != NULL )
     {
-        // qmoJoinOperPred »ı¼º
+        // qmoJoinOperPred ìƒì„±
         IDE_TEST( createJoinOperPred( aStatement,
                                       sNode,
                                       & sNewPred )
                   != IDE_SUCCESS );
 
         //-------------------------------------------------
-        // Constant Predicate °Ë»ç
-        // constant Predicate ÀÌ¸é ¹«Á¶°Ç generalPred ¿¡ ¿¬°á
+        // Constant Predicate ê²€ì‚¬
+        // constant Predicate ì´ë©´ ë¬´ì¡°ê±´ generalPred ì— ì—°ê²°
         //-------------------------------------------------
 
         IDE_TEST( isConstJoinOperPred( aQuerySet,
@@ -1864,16 +1864,16 @@ qmoOuterJoinOper::classifyJoinOperPredicate( qcStatement       * aStatement,
         else
         {
             //---------------------------------------------
-            // Predicate Node ¿¡ Outer Join Operator °¡ ÀÖÀ¸¸é,
-            // oneTable predicate °ú twoTable predicate À» ºĞ·ùÇÏ¿© ÀúÀå.
-            // Outer Join Operator °¡ ¾øÀ¸¸é ¹«Á¶°Ç generalPred ¿¡ ¿¬°á.
+            // Predicate Node ì— Outer Join Operator ê°€ ìˆìœ¼ë©´,
+            // oneTable predicate ê³¼ twoTable predicate ì„ ë¶„ë¥˜í•˜ì—¬ ì €ì¥.
+            // Outer Join Operator ê°€ ì—†ìœ¼ë©´ ë¬´ì¡°ê±´ generalPred ì— ì—°ê²°.
             //---------------------------------------------
 
             if ( ( sNode->lflag & QTC_NODE_JOIN_OPERATOR_MASK )
                  == QTC_NODE_JOIN_OPERATOR_EXIST )
             {
                 //---------------------------------------------
-                // One Table Predicate °Ë»ç
+                // One Table Predicate ê²€ì‚¬
                 //---------------------------------------------
 
                 IDE_TEST( isOneTableJoinOperPred( aQuerySet,
@@ -1889,8 +1889,8 @@ qmoOuterJoinOper::classifyJoinOperPredicate( qcStatement       * aStatement,
                 else
                 {
                     //---------------------------------------------
-                    // oneTablePredicateÀÌ ¾Æ´Ï¸é
-                    // aTrans->joinOperPred¿¡ ¿¬°á
+                    // oneTablePredicateì´ ì•„ë‹ˆë©´
+                    // aTrans->joinOperPredì— ì—°ê²°
                     //---------------------------------------------
 
                     sNewPred->next       = aTrans->joinOperPred;
@@ -1920,12 +1920,12 @@ qmoOuterJoinOper::joinOperGrouping( qmoJoinOperTrans  * aTrans )
  *
  * PROJ-1653 Outer Join Operator (+)
  *
- * Description : Join GroupÀÇ ºĞ·ù
+ * Description : Join Groupì˜ ë¶„ë¥˜
  *
  * Implemenation :
- *      qmoJoinOperTrans::joinOperPred ¿¡ ÀÖ´Â ¸ğµç Predicate µéÀ»
- *      Join Group º°·Î ³ª´©¾î¼­ qmoJoinOperTrans::joinOperGroup ÀÇ
- *      joinPredicate ¿¡ ¿¬°áÇØµĞ´Ù.
+ *      qmoJoinOperTrans::joinOperPred ì— ìˆëŠ” ëª¨ë“  Predicate ë“¤ì„
+ *      Join Group ë³„ë¡œ ë‚˜ëˆ„ì–´ì„œ qmoJoinOperTrans::joinOperGroup ì˜
+ *      joinPredicate ì— ì—°ê²°í•´ë‘”ë‹¤.
  *
  ***********************************************************************/
 
@@ -1956,9 +1956,9 @@ qmoOuterJoinOper::joinOperGrouping( qmoJoinOperTrans  * aTrans )
     {
 
         //------------------------------------------
-        // Join Group¿¡ ¼ÓÇÏÁö ¾Ê´Â Ã¹¹øÂ° Predicate Á¸Àç :
-        //    Join Group¿¡ ¼ÓÇÏÁö ¾ÊÀº Ã¹¹øÂ° PredicateÀÇ
-        //    dependencies·Î »õ·Î¿î Join GroupÀÇ dependencies¸¦ ¼³Á¤
+        // Join Groupì— ì†í•˜ì§€ ì•ŠëŠ” ì²«ë²ˆì§¸ Predicate ì¡´ì¬ :
+        //    Join Groupì— ì†í•˜ì§€ ì•Šì€ ì²«ë²ˆì§¸ Predicateì˜
+        //    dependenciesë¡œ ìƒˆë¡œìš´ Join Groupì˜ dependenciesë¥¼ ì„¤ì •
         //------------------------------------------
 
         ++sJoinGroupIndex;
@@ -1981,8 +1981,8 @@ qmoOuterJoinOper::joinOperGrouping( qmoJoinOperTrans  * aTrans )
                   != IDE_SUCCESS );
 
         //------------------------------------------
-        // ÇöÀç JoinGroup°ú ¿¬°üµÈ ¸ğµç Join PredicateÀ» Ã£¾Æ
-        // JoinGroup¿¡ µî·Ï
+        // í˜„ì¬ JoinGroupê³¼ ì—°ê´€ëœ ëª¨ë“  Join Predicateì„ ì°¾ì•„
+        // JoinGroupì— ë“±ë¡
         //------------------------------------------
 
         sCurPred  = sFirstPred;
@@ -2001,20 +2001,20 @@ qmoOuterJoinOper::joinOperGrouping( qmoJoinOperTrans  * aTrans )
                  == ID_FALSE )
             {
                 //------------------------------------------
-                // Join Group°ú ¿¬°üµÈ Predicate
+                // Join Groupê³¼ ì—°ê´€ëœ Predicate
                 //------------------------------------------
 
-                // Join Group¿¡ »õ·Ó°Ô µî·ÏÇÏ´Â PredicateÀÌ Á¸Àç
+                // Join Groupì— ìƒˆë¡­ê²Œ ë“±ë¡í•˜ëŠ” Predicateì´ ì¡´ì¬
                 sIsInsert = ID_TRUE;
 
-                // Join GroupÀÇ µî·Ï
+                // Join Groupì˜ ë“±ë¡
                 IDE_TEST( qtc::dependencyOr( & sCurJoinGroup->depInfo,
                                              & sCurPred->node->depInfo,
                                              & sCurJoinGroup->depInfo )
                           != IDE_SUCCESS );
 
-                // PredicateÀ» Join Predicate¿¡¼­ ¿¬°áÀ» ²÷°í,
-                // JoinGroupÀÇ joinPredicate¿¡ ¿¬°á½ÃÅ´
+                // Predicateì„ Join Predicateì—ì„œ ì—°ê²°ì„ ëŠê³ ,
+                // JoinGroupì˜ joinPredicateì— ì—°ê²°ì‹œí‚´
 
                 if ( sCurJoinGroup->joinPredicate == NULL )
                 {
@@ -2041,7 +2041,7 @@ qmoOuterJoinOper::joinOperGrouping( qmoJoinOperTrans  * aTrans )
             }
             else
             {
-                // Join Group°ú ¿¬°üµÇÁö ¾ÊÀº Predicate : nothing to do
+                // Join Groupê³¼ ì—°ê´€ë˜ì§€ ì•Šì€ Predicate : nothing to do
                 sPrevPred = sCurPred;
                 sCurPred = sCurPred->next;
             }
@@ -2049,8 +2049,8 @@ qmoOuterJoinOper::joinOperGrouping( qmoJoinOperTrans  * aTrans )
             if ( ( sCurPred == NULL ) && ( sIsInsert == ID_TRUE ) )
             {
                 //------------------------------------------
-                // Join Group¿¡ Ãß°¡ µî·ÏÇÑ PredicateÀÌ Á¸ÀçÇÏ´Â °æ¿ì,
-                // Ãß°¡µÈ Predicate°ú ¿¬°üµÈ Join PredicateÀÌ Á¸ÀçÇÒ ¼ö ÀÖÀ½
+                // Join Groupì— ì¶”ê°€ ë“±ë¡í•œ Predicateì´ ì¡´ì¬í•˜ëŠ” ê²½ìš°,
+                // ì¶”ê°€ëœ Predicateê³¼ ì—°ê´€ëœ Join Predicateì´ ì¡´ì¬í•  ìˆ˜ ìˆìŒ
                 //------------------------------------------
 
                 sCurPred  = sFirstPred;
@@ -2059,15 +2059,15 @@ qmoOuterJoinOper::joinOperGrouping( qmoJoinOperTrans  * aTrans )
             }
             else
             {
-                // ´õ ÀÌ»ó ¿¬°üµÈ Predicate ¾øÀ½ : nothing to do
+                // ë” ì´ìƒ ì—°ê´€ëœ Predicate ì—†ìŒ : nothing to do
             }
         }
     }
 
-    // ½ÇÁ¦ Join Group °³¼ö ¼³Á¤
+    // ì‹¤ì œ Join Group ê°œìˆ˜ ì„¤ì •
     aTrans->joinOperGroupCnt = sJoinGroupCnt;
 
-    // aTransÀÇ joinOperPredÀ» joinGroupÀÇ joinPredicateÀ¸·Î ¸ğµÎ ºĞ·ù½ÃÅ´
+    // aTransì˜ joinOperPredì„ joinGroupì˜ joinPredicateìœ¼ë¡œ ëª¨ë‘ ë¶„ë¥˜ì‹œí‚´
     aTrans->joinOperPred = NULL;
 
     return IDE_SUCCESS;
@@ -2091,20 +2091,20 @@ compareJoinOperRel( const void * aElem1,
  *
  * PROJ-1653 Outer Join Operator (+)
  *
- * Description : Join Relation ÀÇ Quick Sort
+ * Description : Join Relation ì˜ Quick Sort
  *
  * Implementation :
- *    ¸¸¾à ´ÙÀ½°ú °°ÀÌ Join Relation µéÀÌ µî·ÏµÇ¾î ÀÖÀ» °æ¿ì °¢
- *    table °ª¿¡ µû¶ó Á¤·ÄÇÑ´Ù.
- *    (Ã¹¹øÂ°,µÎ¹øÂ° table °ª¿¡ µû¶ó)
+ *    ë§Œì•½ ë‹¤ìŒê³¼ ê°™ì´ Join Relation ë“¤ì´ ë“±ë¡ë˜ì–´ ìˆì„ ê²½ìš° ê°
+ *    table ê°’ì— ë”°ë¼ ì •ë ¬í•œë‹¤.
+ *    (ì²«ë²ˆì§¸,ë‘ë²ˆì§¸ table ê°’ì— ë”°ë¼)
  *
- *    Á¤·ÄÀü
+ *    ì •ë ¬ì „
  *    (2,3) -> (1,3) -> (2,5) -> (3,4) -> (1,2)
  *
- *    Á¤·ÄÈÄ
+ *    ì •ë ¬í›„
  *    (1,2) -> (1,3) -> (2,3) -> (2,5) -> (3,4)
  *
- *   qmoJoinOperGroup->joinRelation Àº array.
+ *   qmoJoinOperGroup->joinRelation ì€ array.
  *
  ***********************************************************************/
 
@@ -2145,12 +2145,12 @@ qmoOuterJoinOper::joinOperRelationing( qcStatement          * aStatement,
  *
  * PROJ-1653 Outer Join Operator (+)
  *
- * Description : Join Group ³»ÀÇ Join Relation ±¸¼º
+ * Description : Join Group ë‚´ì˜ Join Relation êµ¬ì„±
  *
  * Implementation :
- *    ÇÏ³ªÀÇ Join Group À» argument ·Î ¹Ş¾Æ¼­ ÇØ´ç Join Group ÀÇ
- *    joinPredicate ¿¡ ¿¬°áµÈ ¸ğµç ³ëµåµéÀ» Áßº¹°Ë»ç, Sorting À» ÅëÇØ
- *    joinRelation ¿¡ ¼ø¼­´ë·Î ÀúÀåÇÑ´Ù.
+ *    í•˜ë‚˜ì˜ Join Group ì„ argument ë¡œ ë°›ì•„ì„œ í•´ë‹¹ Join Group ì˜
+ *    joinPredicate ì— ì—°ê²°ëœ ëª¨ë“  ë…¸ë“œë“¤ì„ ì¤‘ë³µê²€ì‚¬, Sorting ì„ í†µí•´
+ *    joinRelation ì— ìˆœì„œëŒ€ë¡œ ì €ì¥í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -2176,13 +2176,13 @@ qmoOuterJoinOper::joinOperRelationing( qcStatement          * aStatement,
     IDE_DASSERT( aJoinGroup != NULL );
 
     //------------------------------------------
-    // Âü°í>
-    // aJoinGroup->joinPredicate ¿¡ ¿¬°áµÇ¾î ÀÖ´Â
-    // ¸ğµç Predicate Àº dependency table À» 2°³,
-    // Outer Join operator À» 1 °³ °¡Áö°í ÀÖ´Ù´Â °ÍÀÌº¸ÀåµÈ´Ù.
+    // ì°¸ê³ >
+    // aJoinGroup->joinPredicate ì— ì—°ê²°ë˜ì–´ ìˆëŠ”
+    // ëª¨ë“  Predicate ì€ dependency table ì„ 2ê°œ,
+    // Outer Join operator ì„ 1 ê°œ ê°€ì§€ê³  ìˆë‹¤ëŠ” ê²ƒì´ë³´ì¥ëœë‹¤.
     //
-    // ±×·¸Áö ¾ÊÀº °ÍµéÀº ÀÌ¹Ì Predicate º° Á¦¾à»çÇ× °Ë»ç
-    // °úÁ¤¿¡¼­ °É·¯Áø »óÅÂÀÌ´Ù.
+    // ê·¸ë ‡ì§€ ì•Šì€ ê²ƒë“¤ì€ ì´ë¯¸ Predicate ë³„ ì œì•½ì‚¬í•­ ê²€ì‚¬
+    // ê³¼ì •ì—ì„œ ê±¸ëŸ¬ì§„ ìƒíƒœì´ë‹¤.
     //------------------------------------------
 
     for ( sCurPred  = aJoinGroup->joinPredicate;
@@ -2190,7 +2190,7 @@ qmoOuterJoinOper::joinOperRelationing( qcStatement          * aStatement,
           sCurPred  = sCurPred->next )
     {
         //------------------------------------------
-        // ÀÌ¹Ì joinRelation ¿¡ Ãß°¡µÈ °Í°ú depInfo °¡ Áßº¹µÇ´ÂÁö °Ë»ç
+        // ì´ë¯¸ joinRelation ì— ì¶”ê°€ëœ ê²ƒê³¼ depInfo ê°€ ì¤‘ë³µë˜ëŠ”ì§€ ê²€ì‚¬
         //------------------------------------------
 
         for ( i = 0 ; i < aJoinGroup->joinRelationCnt ; i++ )
@@ -2206,7 +2206,7 @@ qmoOuterJoinOper::joinOperRelationing( qcStatement          * aStatement,
             }
             else
             {
-                // Áßº¹µÈ Predicate Àº Relation ¿¡ ¹ÌÆ÷ÇÔ
+                // ì¤‘ë³µëœ Predicate ì€ Relation ì— ë¯¸í¬í•¨
                 sExist = ID_FALSE;
             }
         }
@@ -2216,8 +2216,8 @@ qmoOuterJoinOper::joinOperRelationing( qcStatement          * aStatement,
             IDE_FT_ASSERT( aJoinGroup->joinRelationCnt < aJoinGroup->joinRelationCntMax );
 
             //------------------------------------------
-            // »õ·Î¿î Predicate À» Relation ¿¡ Ãß°¡ÇÏ°í
-            // dependency Á¤º¸µµ Oring Ãß°¡
+            // ìƒˆë¡œìš´ Predicate ì„ Relation ì— ì¶”ê°€í•˜ê³ 
+            // dependency ì •ë³´ë„ Oring ì¶”ê°€
             //------------------------------------------
             sAddRelPosition = (qmoJoinOperRel *)&aJoinGroup->joinRelation[aJoinGroup->joinRelationCnt];
             qtc::dependencySetWithDep( & sAddRelPosition->depInfo, & sCurPred->node->depInfo );
@@ -2232,16 +2232,16 @@ qmoOuterJoinOper::joinOperRelationing( qcStatement          * aStatement,
     }
 
     //------------------------------------------
-    // joinRelation ¿¡ ´ëÇÑ Predicate ÀÇ Ãß°¡°¡ ¿Ï·áµÇ¾úÀ¸¹Ç·Î
-    // joinRelation ³»¿¡¼­ÀÇ table °ª¿¡ µû¶ó Á¤·ÄÀ» ¼öÇàÇÑ´Ù.
-    // Á¤·ÄÀ» ¼öÇàÇÏ´Â ÀÌÀ¯´Â µÚ¿¡¼­ º¯È¯¼öÇà ½Ã
-    // From À» Left Outer Join Tree ·Î º¯°æÇÏ°Ô µÇ´Âµ¥,
-    // ÀÌ ¶§ ³ëµåµéÀÇ ¿¬°áÁ¡À» Ã£À» ¼ö ÀÖµµ·Ï ÇÏ±â À§ÇÔÀÌ´Ù.
+    // joinRelation ì— ëŒ€í•œ Predicate ì˜ ì¶”ê°€ê°€ ì™„ë£Œë˜ì—ˆìœ¼ë¯€ë¡œ
+    // joinRelation ë‚´ì—ì„œì˜ table ê°’ì— ë”°ë¼ ì •ë ¬ì„ ìˆ˜í–‰í•œë‹¤.
+    // ì •ë ¬ì„ ìˆ˜í–‰í•˜ëŠ” ì´ìœ ëŠ” ë’¤ì—ì„œ ë³€í™˜ìˆ˜í–‰ ì‹œ
+    // From ì„ Left Outer Join Tree ë¡œ ë³€ê²½í•˜ê²Œ ë˜ëŠ”ë°,
+    // ì´ ë•Œ ë…¸ë“œë“¤ì˜ ì—°ê²°ì ì„ ì°¾ì„ ìˆ˜ ìˆë„ë¡ í•˜ê¸° ìœ„í•¨ì´ë‹¤.
     //
-    //    Á¤·ÄÀü
+    //    ì •ë ¬ì „
     //    (2,3) -> (1,3) -> (2,5) -> (3,4) -> (1,2)
     //
-    //    Á¤·ÄÈÄ
+    //    ì •ë ¬í›„
     //    (1,2) -> (1,3) -> (2,3) -> (2,5) -> (3,4)
     //------------------------------------------
 
@@ -2260,48 +2260,48 @@ qmoOuterJoinOper::joinOperRelationing( qcStatement          * aStatement,
     }
 
     //------------------------------------------
-    // sTotalRelDepOR ´Â ¾Æ·¡¿¡¼­ Â÷·Ê´ë·Î ±¸¼ºµÇ´Â
-    // Relation µéÀÇ depInfo Á¤º¸¸¦ Â÷·Ê·Î Oring ÇØ¼­
-    // °¡Áö°í ÀÖ±â À§ÇÑ °ÍÀÌ´Ù.
+    // sTotalRelDepOR ëŠ” ì•„ë˜ì—ì„œ ì°¨ë¡€ëŒ€ë¡œ êµ¬ì„±ë˜ëŠ”
+    // Relation ë“¤ì˜ depInfo ì •ë³´ë¥¼ ì°¨ë¡€ë¡œ Oring í•´ì„œ
+    // ê°€ì§€ê³  ìˆê¸° ìœ„í•œ ê²ƒì´ë‹¤.
     //------------------------------------------
     qtc::dependencyClear( & sTotalRelDepOR );
 
     //------------------------------------------
-    // Relation Àº Áß¿äÇÑ ÇÊ¼öÁ¶°ÇÀÌ ÇÏ³ª ÀÖ´Ù.
-    // °°Àº Join Group ³»ÀÇ °¢ Relation µéÀº ¹İµå½Ã ¿¬°áÁ¡ÀÌ ÀÖ´Ù´Â °ÍÀÌ´Ù.
-    // °¢ Á¶°Ç°£¿¡ ¿¬°áÁ¡ÀÌ ¾ø´Ù¸é °°Àº Join Group ³»¿¡ Æ÷ÇÔµÉ ¼ö
-    // ¾øÀ» °ÍÀÌ´Ù.
-    // ÀÌ¿Í ´õºÒ¾î joinRelation Àº À§¿¡¼­¿Í °°ÀÌ qsort ¸¦ ÅëÇØ
-    // Á¤·ÄµÇ¾î ÀÖ±â¸¸ ÇÏ¸é ¾ÈµÈ´Ù.
-    // °¢ ¸â¹ö°¡ ¹Ù·Î ¾Õ ¸â¹ö¿Í ¿¬°áÁ¡À» °¡Á®¾ß ÃßÈÄ º¯È¯°úÁ¤¿¡¼­
-    // From Tree ¸¦ ¸¸µé ¼ö ÀÖ´Ù.
+    // Relation ì€ ì¤‘ìš”í•œ í•„ìˆ˜ì¡°ê±´ì´ í•˜ë‚˜ ìˆë‹¤.
+    // ê°™ì€ Join Group ë‚´ì˜ ê° Relation ë“¤ì€ ë°˜ë“œì‹œ ì—°ê²°ì ì´ ìˆë‹¤ëŠ” ê²ƒì´ë‹¤.
+    // ê° ì¡°ê±´ê°„ì— ì—°ê²°ì ì´ ì—†ë‹¤ë©´ ê°™ì€ Join Group ë‚´ì— í¬í•¨ë  ìˆ˜
+    // ì—†ì„ ê²ƒì´ë‹¤.
+    // ì´ì™€ ë”ë¶ˆì–´ joinRelation ì€ ìœ„ì—ì„œì™€ ê°™ì´ qsort ë¥¼ í†µí•´
+    // ì •ë ¬ë˜ì–´ ìˆê¸°ë§Œ í•˜ë©´ ì•ˆëœë‹¤.
+    // ê° ë©¤ë²„ê°€ ë°”ë¡œ ì• ë©¤ë²„ì™€ ì—°ê²°ì ì„ ê°€ì ¸ì•¼ ì¶”í›„ ë³€í™˜ê³¼ì •ì—ì„œ
+    // From Tree ë¥¼ ë§Œë“¤ ìˆ˜ ìˆë‹¤.
     //
-    // Áï, ´ÙÀ½ÀÇ °æ¿ì¸¦ »ı°¢ÇØº¸ÀÚ.
+    // ì¦‰, ë‹¤ìŒì˜ ê²½ìš°ë¥¼ ìƒê°í•´ë³´ì.
     //    _      _    _
     // (1,4)->(2,3)->(2,4)
     //
-    // qsort ÈÄÀÇ Æ¯Á¤ Join Group ÀÇ Relation ÀÌ À§¿Í °°´Ù°í ÇÒ ¶§,
-    // ÀÌ¸¦ ±×´ë·Î ÀÌ¿ëÇÏ¸é µÎ°¡Áö ¹®Á¦Á¡ÀÌ ÀÖ´Ù.
+    // qsort í›„ì˜ íŠ¹ì • Join Group ì˜ Relation ì´ ìœ„ì™€ ê°™ë‹¤ê³  í•  ë•Œ,
+    // ì´ë¥¼ ê·¸ëŒ€ë¡œ ì´ìš©í•˜ë©´ ë‘ê°€ì§€ ë¬¸ì œì ì´ ìˆë‹¤.
     //         _        _
-    //   1. (1,4) ¿Í (2,3) ÀÌ tuple id ¿¡ ÀÇÇÑ ¿¬°áÁ¡ÀÌ ¾øÀ¸¹Ç·Î
-    //      ÃßÈÄ From Tree ¸¦ ±¸¼ºÇÒ ¶§ ¿¬°áÁ¡À» Ã£À» ¼ö ¾ø¾î¼­
-    //      ANSI ÇüÅÂ·Î º¯È¯ÀÌ ½ÇÆĞÇÑ´Ù.
-    //   2. ¾Æ·¡ÂÊ¿¡¼­ Join Looping À» Á¤È®ÇÏ°Ô °Ë»çÇÏ±â À§ÇØ¼­´Â
-    //      ¿¬°áÁ¡À» °í·ÁÇÑ Á¤·ÄÀÌ µÇ¾î ÀÖ¾î¾ß ÇÑ´Ù.
+    //   1. (1,4) ì™€ (2,3) ì´ tuple id ì— ì˜í•œ ì—°ê²°ì ì´ ì—†ìœ¼ë¯€ë¡œ
+    //      ì¶”í›„ From Tree ë¥¼ êµ¬ì„±í•  ë•Œ ì—°ê²°ì ì„ ì°¾ì„ ìˆ˜ ì—†ì–´ì„œ
+    //      ANSI í˜•íƒœë¡œ ë³€í™˜ì´ ì‹¤íŒ¨í•œë‹¤.
+    //   2. ì•„ë˜ìª½ì—ì„œ Join Looping ì„ ì •í™•í•˜ê²Œ ê²€ì‚¬í•˜ê¸° ìœ„í•´ì„œëŠ”
+    //      ì—°ê²°ì ì„ ê³ ë ¤í•œ ì •ë ¬ì´ ë˜ì–´ ìˆì–´ì•¼ í•œë‹¤.
     //                     _
-    //      ±×·¸Áö ¾ÊÀ¸¸é (2,4) predicate ¿¡ ´ëÇØ °Ë»ç¸¦ ÇÒ ¶§,
+    //      ê·¸ë ‡ì§€ ì•Šìœ¼ë©´ (2,4) predicate ì— ëŒ€í•´ ê²€ì‚¬ë¥¼ í•  ë•Œ,
     //       _                 _
-    //      (2,4) ÀÇ ¹İ´ëÀÎ (2,4) °¡ ÀÌ¹Ì sTotalRelDepOR ¿¡ ÀÖ±â ¶§¹®¿¡
-    //      ¿¡·¯¸¦ ¹ß»ı½ÃÅ²´Ù. (Á¤»óÀûÀÎ Äõ¸®ÀÎµ¥µµ ¸»ÀÌ´Ù.)
+    //      (2,4) ì˜ ë°˜ëŒ€ì¸ (2,4) ê°€ ì´ë¯¸ sTotalRelDepOR ì— ìˆê¸° ë•Œë¬¸ì—
+    //      ì—ëŸ¬ë¥¼ ë°œìƒì‹œí‚¨ë‹¤. (ì •ìƒì ì¸ ì¿¼ë¦¬ì¸ë°ë„ ë§ì´ë‹¤.)
     //
-    // µû¶ó¼­, À§ÀÇ °æ¿ì´Â ¾Æ·¡¿Í °°ÀÌ Á¤·ÄµÇ¾î ÀÖ¾î¾ß ÇÑ´Ù.
-    // (1,4) ¿Í (2,4)ÀÇ ¿¬°áÁ¡Àº 4 ÀÌ°í, (2,4)¿Í (2,3)ÀÇ ¿¬°áÁ¡Àº 2 ÀÌ´Ù.
+    // ë”°ë¼ì„œ, ìœ„ì˜ ê²½ìš°ëŠ” ì•„ë˜ì™€ ê°™ì´ ì •ë ¬ë˜ì–´ ìˆì–´ì•¼ í•œë‹¤.
+    // (1,4) ì™€ (2,4)ì˜ ì—°ê²°ì ì€ 4 ì´ê³ , (2,4)ì™€ (2,3)ì˜ ì—°ê²°ì ì€ 2 ì´ë‹¤.
     //    _    _        _
     // (1,4)->(2,4)->(2,3)
     //
-    // ÀÌ·¸°Ô ¹Ù·Î ¾ÕÀÇ Relation ³ëµå¿Í ¿¬°áÇÒ ¼ö ÀÖ´Â °ÍµéÀº ¸ğµÎ
-    // ÀÌ¿¡ ±Ù°ÅÇØ¼­ Á¤·ÄÇØµÎ°í, ±× ´ÙÀ½ ³ª¸ÓÁöµéÀº qsort ¿¡ ÀÇÇØ
-    // Á¤·ÄµÈ´ë·Î µÎ¸é µÈ´Ù.
+    // ì´ë ‡ê²Œ ë°”ë¡œ ì•ì˜ Relation ë…¸ë“œì™€ ì—°ê²°í•  ìˆ˜ ìˆëŠ” ê²ƒë“¤ì€ ëª¨ë‘
+    // ì´ì— ê·¼ê±°í•´ì„œ ì •ë ¬í•´ë‘ê³ , ê·¸ ë‹¤ìŒ ë‚˜ë¨¸ì§€ë“¤ì€ qsort ì— ì˜í•´
+    // ì •ë ¬ëœëŒ€ë¡œ ë‘ë©´ ëœë‹¤.
     //------------------------------------------
     for ( i = 0 ; i < aJoinGroup->joinRelationCnt ; i++ )
     {
@@ -2368,36 +2368,36 @@ qmoOuterJoinOper::joinOperRelationing( qcStatement          * aStatement,
         }
 
         //------------------------------------------
-        // ´ÙÀ½°ú °°ÀÌ ÇÏ³ªÀÇ Å×ÀÌºíÀÌ 2 °³ ÀÌ»óÀÇ Å×ÀÌºí°ú
-        // Outer Join µÇ´Â °æ¿ì ¿¡·¯
+        // ë‹¤ìŒê³¼ ê°™ì´ í•˜ë‚˜ì˜ í…Œì´ë¸”ì´ 2 ê°œ ì´ìƒì˜ í…Œì´ë¸”ê³¼
+        // Outer Join ë˜ëŠ” ê²½ìš° ì—ëŸ¬
         //
         // where t1.i1(+) = t2.i1
         //   and t1.i1(+) = t3.i1
         //
-        // ´ÙÀ½ÀÇ ¿¹¸¦ º¸ÀÚ.
+        // ë‹¤ìŒì˜ ì˜ˆë¥¼ ë³´ì.
         //  _        _    _      _
         // (1,2)->(1,5)->(2,3)->(4,5)
         //
-        // ÇöÀç±îÁö sTotalRelDepOR ¿¡ Oring µÈ Predicate ÀÌ À§¿Í °°´Ù¸é,
-        // ÀÌ ¶§±îÁöÀÇ sTotalRelDepOR °á°ú´Â ´ÙÀ½°ú °°À» °ÍÀÌ´Ù.
+        // í˜„ì¬ê¹Œì§€ sTotalRelDepOR ì— Oring ëœ Predicate ì´ ìœ„ì™€ ê°™ë‹¤ë©´,
+        // ì´ ë•Œê¹Œì§€ì˜ sTotalRelDepOR ê²°ê³¼ëŠ” ë‹¤ìŒê³¼ ê°™ì„ ê²ƒì´ë‹¤.
         // (F:QMO_JOIN_OPER_FALSE, T:QMO_JOIN_OPER_TRUE, B:QMO_JOIN_OPER_BOTH)
         //
         //   1  2  3  4  5
         //   B  B  F  T  B
         //         _
-        // ¿©±â¿¡ (1,6) À» Ãß°¡ÇÏ·Á°í ÇÏ¸é ¿¡·¯°¡ ³ª¾ß ÇÑ´Ù.
+        // ì—¬ê¸°ì— (1,6) ì„ ì¶”ê°€í•˜ë ¤ê³  í•˜ë©´ ì—ëŸ¬ê°€ ë‚˜ì•¼ í•œë‹¤.
         //
         //   1  2  3  4  5  (AND)  1  6  = 1
         //   B  B  F  T  B         T  F    T(B)
         //              _
-        // À§ÀÇ °á°ú´Â (1) ÀÌ´Ù.
-        // ÀÌ·± °á°ú°¡ ³ª¿À¸é ÀÌ´Â ÇÑÅ×ÀÌºíÀÌ 2 °³ ÀÌ»óÀÇ Å×ÀÌºí°ú
-        // Outer Join °ü°è¿¡ ÀÖ´Ù´Â °ÍÀÌ¹Ç·Î ¿¡·¯ÀÌ´Ù.
+        // ìœ„ì˜ ê²°ê³¼ëŠ” (1) ì´ë‹¤.
+        // ì´ëŸ° ê²°ê³¼ê°€ ë‚˜ì˜¤ë©´ ì´ëŠ” í•œí…Œì´ë¸”ì´ 2 ê°œ ì´ìƒì˜ í…Œì´ë¸”ê³¼
+        // Outer Join ê´€ê³„ì— ìˆë‹¤ëŠ” ê²ƒì´ë¯€ë¡œ ì—ëŸ¬ì´ë‹¤.
         //
-        // Áï, ¾Õ¼­ ³ª¿Â predicate ¿¡¼­´Â 1 ¿¡ ´ëÇØ outer join operator °¡
-        // ºÙ¾îÀÖ´Â°Ô ÀÖ¾ú´Âµ¥, 6 À» Æ÷ÇÔÇÑ predicate Àº ¾ø¾ú´Ù´Â ÀÇ¹Ì°¡ µÇ¹Ç·Î
-        // °á±¹ t1.i1(+)=t3.i1 and t1.i1(+)=t6.i1 Ã³·³ t1.i1(+) ÀÌ µÎ°³ÀÇ
-        // Å×ÀÌºí¿¡ outer join µÇ°í ÀÖ´Ù´Â ÀÇ¹ÌÀÌ´Ù.
+        // ì¦‰, ì•ì„œ ë‚˜ì˜¨ predicate ì—ì„œëŠ” 1 ì— ëŒ€í•´ outer join operator ê°€
+        // ë¶™ì–´ìˆëŠ”ê²Œ ìˆì—ˆëŠ”ë°, 6 ì„ í¬í•¨í•œ predicate ì€ ì—†ì—ˆë‹¤ëŠ” ì˜ë¯¸ê°€ ë˜ë¯€ë¡œ
+        // ê²°êµ­ t1.i1(+)=t3.i1 and t1.i1(+)=t6.i1 ì²˜ëŸ¼ t1.i1(+) ì´ ë‘ê°œì˜
+        // í…Œì´ë¸”ì— outer join ë˜ê³  ìˆë‹¤ëŠ” ì˜ë¯¸ì´ë‹¤.
         //------------------------------------------
 
         qtc::dependencyClear( & sAndDependencies );
@@ -2428,8 +2428,8 @@ qmoOuterJoinOper::joinOperRelationing( qcStatement          * aStatement,
         //------------------------------------------
         // ## Join Looping
         //
-        // ´ÙÀ½°ú °°ÀÌ Outer Join °ü°è°¡ looping µÇ¾î °á±¹ ÀÚ½Å°ú
-        // Outer Join µÉ °æ¿ìµµ ¿¡·¯¸¦ ¹ß»ı½ÃÄÑ¾ß ÇÑ´Ù.
+        // ë‹¤ìŒê³¼ ê°™ì´ Outer Join ê´€ê³„ê°€ looping ë˜ì–´ ê²°êµ­ ìì‹ ê³¼
+        // Outer Join ë  ê²½ìš°ë„ ì—ëŸ¬ë¥¼ ë°œìƒì‹œì¼œì•¼ í•œë‹¤.
         //
         // where t1.i1(+) = t2.i1
         //   and t2.i1(+) = t1.i1
@@ -2438,39 +2438,39 @@ qmoOuterJoinOper::joinOperRelationing( qcStatement          * aStatement,
         //   and t2.i1(+) = t3.i1
         //   and t3.i1(+) = t1.i1
         //
-        // ÀÌ·± °æ¿ì´Â ¾î¶»°Ô ÃßÃâÇÒ±î ?
+        // ì´ëŸ° ê²½ìš°ëŠ” ì–´ë–»ê²Œ ì¶”ì¶œí• ê¹Œ ?
         //  _        _    _ 
         // (1,2)->(1,5)->(2,3)
         //
-        // À§¿Í °°Àº Relation ¿¡ ´ëÇØ sTotalRelDepOR ¿¡ ORing µÈ »óÅÂÀÏ ¶§,
-        // ´ÙÀ½ÀÇ Current Relation ¿¡ ´ëÇØ Á¦¾à»çÇ×À» °Ë»çÇÏ·Á°í ÇÑ´Ù.
+        // ìœ„ì™€ ê°™ì€ Relation ì— ëŒ€í•´ sTotalRelDepOR ì— ORing ëœ ìƒíƒœì¼ ë•Œ,
+        // ë‹¤ìŒì˜ Current Relation ì— ëŒ€í•´ ì œì•½ì‚¬í•­ì„ ê²€ì‚¬í•˜ë ¤ê³  í•œë‹¤.
         //  _
         // (4,5)
         //
-        // °ú¿¬ Á¤»óÀÏ±î ? ¿¡·¯ÀÏ±î ?
+        // ê³¼ì—° ì •ìƒì¼ê¹Œ ? ì—ëŸ¬ì¼ê¹Œ ?
         //
-        // ÀÌ ÆÇ´ÜÀº ÀÌÀü¿¡ ¸ğµÎ Oring µÇ¾î ÀÖ´Â sTotalRelDepOR ¿¡
+        // ì´ íŒë‹¨ì€ ì´ì „ì— ëª¨ë‘ Oring ë˜ì–´ ìˆëŠ” sTotalRelDepOR ì—
         //      _                            _
-        // 4 ¿Í 5 °¡ Á¸ÀçÇÏ´À³Ä·Î ÆÇ´ÜÇÑ´Ù. (4 ¿Í 5 ÀÇ ¹İ´ë)
-        // Áï, Current Relation node ÀÇ dependency table µé¿¡ ´ëÇØ (+) ÀÇ
-        // À¯¹«°¡ ¹İ´ë »óÅÂÀÎ °ÍÀÌ sTotalRelDepOR ¿¡ Á¸ÀçÇÏ¸é ¿¡·¯ÀÌ´Ù.
+        // 4 ì™€ 5 ê°€ ì¡´ì¬í•˜ëŠëƒë¡œ íŒë‹¨í•œë‹¤. (4 ì™€ 5 ì˜ ë°˜ëŒ€)
+        // ì¦‰, Current Relation node ì˜ dependency table ë“¤ì— ëŒ€í•´ (+) ì˜
+        // ìœ ë¬´ê°€ ë°˜ëŒ€ ìƒíƒœì¸ ê²ƒì´ sTotalRelDepOR ì— ì¡´ì¬í•˜ë©´ ì—ëŸ¬ì´ë‹¤.
         //
-        // ÀÌ´Â ´ÙÀ½°ú °°ÀÌ ¿¬»êÀ» ÅëÇØ È®ÀÎÇÏ¸é µÈ´Ù.
+        // ì´ëŠ” ë‹¤ìŒê³¼ ê°™ì´ ì—°ì‚°ì„ í†µí•´ í™•ì¸í•˜ë©´ ëœë‹¤.
         //
-        //                      (°¡)    (³ª)
+        //                      (ê°€)    (ë‚˜)
         //   1  2  3  5  (AND)  4  5  =  5
         //   B  B  F  T         F  T     T
         //
-        // À§¿¡¼­ (°¡)¿Í (³ª)ÀÇ °á°ú°¡ °°À¸¸é ¿¡·¯ÀÌ´Ù.
-        // À§ÀÇ °æ¿ì´Â ´Ù¸£¹Ç·Î Á¤»óÀûÀÌ¶ó°í º¼ ¼ö ÀÖ´Ù.
+        // ìœ„ì—ì„œ (ê°€)ì™€ (ë‚˜)ì˜ ê²°ê³¼ê°€ ê°™ìœ¼ë©´ ì—ëŸ¬ì´ë‹¤.
+        // ìœ„ì˜ ê²½ìš°ëŠ” ë‹¤ë¥´ë¯€ë¡œ ì •ìƒì ì´ë¼ê³  ë³¼ ìˆ˜ ìˆë‹¤.
         //                               _
-        // ±×·³ ¸¸¾à ´ÙÀ½ Relation node (3,5) ´Â ¾î¶³±î ?
+        // ê·¸ëŸ¼ ë§Œì•½ ë‹¤ìŒ Relation node (3,5) ëŠ” ì–´ë–¨ê¹Œ ?
         //
-        //                         (°¡)     (³ª)
+        //                         (ê°€)     (ë‚˜)
         //   1  2  3  4  5  (AND)  3  5  =  3  5
         //   B  B  F  T  B         F  T     F  T
         //
-        // ÀÌ ¶§´Â (°¡)¿Í (³ª)ÀÇ °á°ú°¡ °°À¸¹Ç·Î ¿¡·¯ÀÌ´Ù.
+        // ì´ ë•ŒëŠ” (ê°€)ì™€ (ë‚˜)ì˜ ê²°ê³¼ê°€ ê°™ìœ¼ë¯€ë¡œ ì—ëŸ¬ì´ë‹¤.
         //------------------------------------------
 
         qtc::getJoinOperCounter( &sCounterDep, &sCurRel->depInfo );
@@ -2492,9 +2492,9 @@ qmoOuterJoinOper::joinOperRelationing( qcStatement          * aStatement,
         }
 
         //------------------------------------------
-        // À§ÀÇ Á¦¾à»çÇ×µéÀ» relation node º°·Î °Ë»çÇÏ±â À§ÇØ
-        // ¾Õ¿¡¼­ºÎÅÍ Â÷·Ê·Î °¢ node ÀÇ dependency Á¤º¸¸¦
-        // sTotalRelDepOR ¿¡ Oring ÇØµĞ´Ù.
+        // ìœ„ì˜ ì œì•½ì‚¬í•­ë“¤ì„ relation node ë³„ë¡œ ê²€ì‚¬í•˜ê¸° ìœ„í•´
+        // ì•ì—ì„œë¶€í„° ì°¨ë¡€ë¡œ ê° node ì˜ dependency ì •ë³´ë¥¼
+        // sTotalRelDepOR ì— Oring í•´ë‘”ë‹¤.
         //------------------------------------------
         IDE_TEST( qtc::dependencyOr( & sTotalRelDepOR,
                                      & sCurRel->depInfo,
@@ -2532,12 +2532,12 @@ qmoOuterJoinOper::joinOperOrdering( qcStatement      * aStatement,
  *
  * PROJ-1653 Outer Join Operator (+)
  *
- * Description : Join OrderÀÇ °áÁ¤
+ * Description : Join Orderì˜ ê²°ì •
  *
  * Implemenation :
- *    (1) Join GroupÀÇ ºĞ·ù
- *    (2) °¢ Join Group ³» Join RelationÀÇ Ç¥Çö
- *    (3) °¢ Join Group ³» Join OrderÀÇ °áÁ¤
+ *    (1) Join Groupì˜ ë¶„ë¥˜
+ *    (2) ê° Join Group ë‚´ Join Relationì˜ í‘œí˜„
+ *    (3) ê° Join Group ë‚´ Join Orderì˜ ê²°ì •
  *
  ***********************************************************************/
 
@@ -2548,7 +2548,7 @@ qmoOuterJoinOper::joinOperOrdering( qcStatement      * aStatement,
     IDU_FIT_POINT_FATAL( "qmoOuterJoinOper::joinOperOrdering::__FT__" );
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -2556,7 +2556,7 @@ qmoOuterJoinOper::joinOperOrdering( qcStatement      * aStatement,
 
 
     //------------------------------------------
-    // Join GroupingÀÇ ºĞ·ù
+    // Join Groupingì˜ ë¶„ë¥˜
     //------------------------------------------
 
     IDE_TEST( joinOperGrouping( aTrans ) != IDE_SUCCESS );
@@ -2567,10 +2567,10 @@ qmoOuterJoinOper::joinOperOrdering( qcStatement      * aStatement,
     for ( i = 0; i < sJoinGroupCnt; i++ )
     {
         //------------------------------------------
-        // Join Group ÇÏ³ª¾¿À» Àü´ŞÇÏ¿©
-        // Join Group ³»ÀÇ joinPredicate ¿¡ ¿¬°áµÈ
-        // ¸ğµç Predicate µéÀ» Áßº¹°Ë»ç, Sort ¸¦ ¼öÇàÇÏ¿©
-        // joinRelation ¿¡ ¿¬°áÇÑ´Ù.
+        // Join Group í•˜ë‚˜ì”©ì„ ì „ë‹¬í•˜ì—¬
+        // Join Group ë‚´ì˜ joinPredicate ì— ì—°ê²°ëœ
+        // ëª¨ë“  Predicate ë“¤ì„ ì¤‘ë³µê²€ì‚¬, Sort ë¥¼ ìˆ˜í–‰í•˜ì—¬
+        // joinRelation ì— ì—°ê²°í•œë‹¤.
         //------------------------------------------
 
         IDE_TEST( joinOperRelationing( aStatement, & sJoinGroup[i] )
@@ -2593,12 +2593,12 @@ qmoOuterJoinOper::isAvailableJoinOperRel( qcDepInfo  * aDepInfo,
  *
  * PROJ-1653 Outer Join Operator (+)
  *
- * Description : Outer Join Operator ¸¦ °¡Áø Join Relation ÀÇ À¯È¿¼º°Ë»ç
+ * Description : Outer Join Operator ë¥¼ ê°€ì§„ Join Relation ì˜ ìœ íš¨ì„±ê²€ì‚¬
  *
  * Implemenation :
- *    Join Relation ÀÇ dependency Á¤º¸°¡ À¯È¿ÇÏ·Á¸é
- *    dependency table Àº 2 °³ÀÌ¸é¼­ ÇÑÂÊ¿¡¸¸ (+)°¡
- *    ÀÖ¾î¾ß ÇÑ´Ù.
+ *    Join Relation ì˜ dependency ì •ë³´ê°€ ìœ íš¨í•˜ë ¤ë©´
+ *    dependency table ì€ 2 ê°œì´ë©´ì„œ í•œìª½ì—ë§Œ (+)ê°€
+ *    ìˆì–´ì•¼ í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -2634,13 +2634,13 @@ qmoOuterJoinOper::movePred2OnCondition( qcStatement      * aStatement,
  *
  * PROJ-1653 Outer Join Operator (+)
  *
- * Description : onCondition Àı ÀÛ¼º
+ * Description : onCondition ì ˆ ì‘ì„±
  *
  * Implemenation :
- *   joinPredicate °ú oneTablePred Áß¿¡¼­ aNewFrom °ú °ü·ÃÀÖ´Â °ÍÀ»
- *   aNewFrom ÀÇ onCondition ¿¡ ¿¬°áÇÑ´Ù.
- *   °¢°¢ joinPredicate °ú oneTablePred list ¿¡¼­ Á¦°ÅÇÑ ÈÄ
- *   Á¦°ÅÇÑ ³ëµå°¡ °¡¸®Å°´Â normalCNF ³ëµå¸¦ ºĞ¸®ÇÏ¿© onCondition ¿¡ ¿¬°áÇÑ´Ù.
+ *   joinPredicate ê³¼ oneTablePred ì¤‘ì—ì„œ aNewFrom ê³¼ ê´€ë ¨ìˆëŠ” ê²ƒì„
+ *   aNewFrom ì˜ onCondition ì— ì—°ê²°í•œë‹¤.
+ *   ê°ê° joinPredicate ê³¼ oneTablePred list ì—ì„œ ì œê±°í•œ í›„
+ *   ì œê±°í•œ ë…¸ë“œê°€ ê°€ë¦¬í‚¤ëŠ” normalCNF ë…¸ë“œë¥¼ ë¶„ë¦¬í•˜ì—¬ onCondition ì— ì—°ê²°í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -2668,10 +2668,10 @@ qmoOuterJoinOper::movePred2OnCondition( qcStatement      * aStatement,
 
 
     //------------------------------------------------------
-    // qmoJoinOperTrans->joinOperGroup->joinPredicate ¿¡¼­ aNewFrom ¿¡
-    // ÇÕÃÄÁø °Í°ú depInfo °¡ °°Àº node ¸¦ Ã£¾Æ¼­, ÀÌ°ÍÀÌ °¡¸®Å°´Â
-    // nomalizedCNF node ¸¦ Ã£¾Æ¼­ aNewFrom ÀÇ onCondition ¿¡
-    // ¿¬°áÇÑ ÈÄ normalCNF ¿¡¼­´Â Á¦°ÅÇÑ´Ù.
+    // qmoJoinOperTrans->joinOperGroup->joinPredicate ì—ì„œ aNewFrom ì—
+    // í•©ì³ì§„ ê²ƒê³¼ depInfo ê°€ ê°™ì€ node ë¥¼ ì°¾ì•„ì„œ, ì´ê²ƒì´ ê°€ë¦¬í‚¤ëŠ”
+    // nomalizedCNF node ë¥¼ ì°¾ì•„ì„œ aNewFrom ì˜ onCondition ì—
+    // ì—°ê²°í•œ í›„ normalCNF ì—ì„œëŠ” ì œê±°í•œë‹¤.
     //------------------------------------------------------
 
     sCurStart = aJoinGroupPred;
@@ -2729,14 +2729,14 @@ qmoOuterJoinOper::movePred2OnCondition( qcStatement      * aStatement,
                 if ( aNewFrom->onCondition == NULL )
                 {
                     //------------------------------------------------------
-                    // ¶¼¾î³õÀº normalCNF ÀÇ predicate ³ëµå¸¦ Ã³À½À¸·Î
-                    // aNewFrom ³ëµåÀÇ onCondition ¿¡ ¿¬°á
+                    // ë–¼ì–´ë†“ì€ normalCNF ì˜ predicate ë…¸ë“œë¥¼ ì²˜ìŒìœ¼ë¡œ
+                    // aNewFrom ë…¸ë“œì˜ onCondition ì— ì—°ê²°
                     //------------------------------------------------------
 
                     aNewFrom->onCondition = (qtcNode *)sNorCur->node.arguments;
 
                     //------------------------------------------------------
-                    // ´ÙÀ½ ¿¬°áÀ» À§ÇØ onCondition ÀÇ ¸¶Áö¸·À» ±â¾ïÇØµĞ´Ù.
+                    // ë‹¤ìŒ ì—°ê²°ì„ ìœ„í•´ onCondition ì˜ ë§ˆì§€ë§‰ì„ ê¸°ì–µí•´ë‘”ë‹¤.
                     //------------------------------------------------------
 
                     sCurOnCond = aNewFrom->onCondition;
@@ -2744,16 +2744,16 @@ qmoOuterJoinOper::movePred2OnCondition( qcStatement      * aStatement,
                 else
                 {
                     //------------------------------------------------------
-                    // onCondition ¿¡ µÎ°³ ÀÌ»óÀÇ ³ëµå°¡ ´Ş¸®°Ô µÇ´Â °æ¿ì´Â
-                    // AND ³ëµå¸¦ Ãß°¡ÇÑ ÈÄ ¿¬°áÇØÁà¾ß ÇÑ´Ù.
-                    // aNewFrom->onCondition ÀÌ °¡¸®Å°´Â ³ëµå°¡ AND ³ëµå°¡
-                    // ¾Æ´Ò °æ¿ì¿¡¸¸ ÇØÁÖ¸é µÈ´Ù.
+                    // onCondition ì— ë‘ê°œ ì´ìƒì˜ ë…¸ë“œê°€ ë‹¬ë¦¬ê²Œ ë˜ëŠ” ê²½ìš°ëŠ”
+                    // AND ë…¸ë“œë¥¼ ì¶”ê°€í•œ í›„ ì—°ê²°í•´ì¤˜ì•¼ í•œë‹¤.
+                    // aNewFrom->onCondition ì´ ê°€ë¦¬í‚¤ëŠ” ë…¸ë“œê°€ AND ë…¸ë“œê°€
+                    // ì•„ë‹ ê²½ìš°ì—ë§Œ í•´ì£¼ë©´ ëœë‹¤.
                     //------------------------------------------------------
 
                     if ( aNewFrom->onCondition->node.module != &mtfAnd )
                     {
                         //------------------------------------------------------
-                        // AND ³ëµå¸¦ »ı¼ºÇÑ´Ù.
+                        // AND ë…¸ë“œë¥¼ ìƒì„±í•œë‹¤.
                         //------------------------------------------------------
                         SET_EMPTY_POSITION(sNullPosition);
 
@@ -2769,15 +2769,15 @@ qmoOuterJoinOper::movePred2OnCondition( qcStatement      * aStatement,
                         // sANDNode->node.lflag |= 1;
 
                         //------------------------------------------------------
-                        // »ı¼ºÇÑ AND ³ëµå¸¦ onCondition ÀÇ ¸ÇÃ³À½¿¡ ³¢¿ö³Ö´Â´Ù.
+                        // ìƒì„±í•œ AND ë…¸ë“œë¥¼ onCondition ì˜ ë§¨ì²˜ìŒì— ë¼ì›Œë„£ëŠ”ë‹¤.
                         //------------------------------------------------------
 
                         sANDNode->node.arguments = (mtcNode *)aNewFrom->onCondition;
                         aNewFrom->onCondition = sANDNode;
 
                         //------------------------------------------------------
-                        // sCurOnCond ´Â ÀÌÀü¿¡ Ãß°¡µÈ ³ëµå¸¦ ±â¾ïÇÏ°í ÀÖÀ¸¹Ç·Î
-                        // ±× µÚ¿¡ ¿¬°áÇØÁÖ°í ´Ù½Ã ¸¶Áö¸·À» ±â¾ïÇÑ´Ù.
+                        // sCurOnCond ëŠ” ì´ì „ì— ì¶”ê°€ëœ ë…¸ë“œë¥¼ ê¸°ì–µí•˜ê³  ìˆìœ¼ë¯€ë¡œ
+                        // ê·¸ ë’¤ì— ì—°ê²°í•´ì£¼ê³  ë‹¤ì‹œ ë§ˆì§€ë§‰ì„ ê¸°ì–µí•œë‹¤.
                         //------------------------------------------------------
 
                         sCurOnCond->node.next = sNorCur->node.arguments;
@@ -2786,8 +2786,8 @@ qmoOuterJoinOper::movePred2OnCondition( qcStatement      * aStatement,
                     else
                     {
                         //------------------------------------------------------
-                        // ±â¾ïÇØµĞ onCondition ÀÇ ¸¶Áö¸·¿¡ Ãß°¡·Î ¿¬°áÇÑ´Ù.
-                        // ±×¸®°í, Ãß°¡·Î ¿¬°áÇÑ ³ëµå¸¦ ´Ù½Ã ±â¾ïÇØµĞ´Ù.
+                        // ê¸°ì–µí•´ë‘” onCondition ì˜ ë§ˆì§€ë§‰ì— ì¶”ê°€ë¡œ ì—°ê²°í•œë‹¤.
+                        // ê·¸ë¦¬ê³ , ì¶”ê°€ë¡œ ì—°ê²°í•œ ë…¸ë“œë¥¼ ë‹¤ì‹œ ê¸°ì–µí•´ë‘”ë‹¤.
                         //------------------------------------------------------
 
                         sCurOnCond->node.next = sNorCur->node.arguments;
@@ -2801,15 +2801,15 @@ qmoOuterJoinOper::movePred2OnCondition( qcStatement      * aStatement,
     }
 
     //------------------------------------------------------
-    // qmoJoinOperTrans->oneTablePred ¿¡¼­µµ (+)°¡ ºÙÀº °°Àº dependency table À»
-    // °¡Áø Predicate À» Ã£¾Æ¼­ Á¦°ÅÇÑ ÈÄ onCondition ¿¡ ¿¬°áÇÑ´Ù.
-    // nomalizedCNF ¿¡¼­µµ ÇØ´ç Predicate ¸¦ Ã£¾Æ¼­ Á¦°ÅÇÑ ÈÄ
-    // ÀÌ¸¦ aNewFrom ÀÇ onCondition ¿¡ ¿¬°áÇÑ´Ù.
+    // qmoJoinOperTrans->oneTablePred ì—ì„œë„ (+)ê°€ ë¶™ì€ ê°™ì€ dependency table ì„
+    // ê°€ì§„ Predicate ì„ ì°¾ì•„ì„œ ì œê±°í•œ í›„ onCondition ì— ì—°ê²°í•œë‹¤.
+    // nomalizedCNF ì—ì„œë„ í•´ë‹¹ Predicate ë¥¼ ì°¾ì•„ì„œ ì œê±°í•œ í›„
+    // ì´ë¥¼ aNewFrom ì˜ onCondition ì— ì—°ê²°í•œë‹¤.
     //                                           _
-    // Áï, Left Outer Join ÀÇ dependency Á¤º¸°¡ (1,2) ¶ó¸é,
+    // ì¦‰, Left Outer Join ì˜ dependency ì •ë³´ê°€ (1,2) ë¼ë©´,
     //  _
-    // (1) À» °¡Áø one table predicate ³ëµå¸¸ ÇØ´ç left outer join ÀÇ
-    // on condition ¿¡ ¿¬°áÇÑ´Ù.
+    // (1) ì„ ê°€ì§„ one table predicate ë…¸ë“œë§Œ í•´ë‹¹ left outer join ì˜
+    // on condition ì— ì—°ê²°í•œë‹¤.
     //------------------------------------------------------
 
     sCurStart = aTrans->oneTablePred;
@@ -2819,15 +2819,15 @@ qmoOuterJoinOper::movePred2OnCondition( qcStatement      * aStatement,
           sPrev = sCur, sCur = (qmoJoinOperPred *)sCur->next )
     {
         //------------------------------------------------------
-        // ¹İµå½Ã depend Á¤º¸ »Ó ¾Æ´Ï¶ó Outer Join Operator ¿©ºÎµµ
-        // °°Àº °ÍÀÌ ÀÖ´ÂÁö¸¦ Ã£¾Æ¾ß ÇÑ´Ù.
+        // ë°˜ë“œì‹œ depend ì •ë³´ ë¿ ì•„ë‹ˆë¼ Outer Join Operator ì—¬ë¶€ë„
+        // ê°™ì€ ê²ƒì´ ìˆëŠ”ì§€ë¥¼ ì°¾ì•„ì•¼ í•œë‹¤.
         //
         // where t1.i1(+) = t2.i1
         //   and t2.i1(+) = 1  <- oneTablePred
         //
-        // À§¿Í °°Àº °æ¿ì´Â oneTablePred ¿¡ ÀÖ´Â °ÍÀº º¯È¯ ÈÄ¿¡µµ
-        // ±×´ë·Î normalCNF ¿¡ ³²¾ÆÀÖ¾î¾ß ÇÑ´Ù.
-        // onCondition ¿¡ ¿¬°áÇÏ¸é °á°ú°¡ ´Ş¶óÁø´Ù.
+        // ìœ„ì™€ ê°™ì€ ê²½ìš°ëŠ” oneTablePred ì— ìˆëŠ” ê²ƒì€ ë³€í™˜ í›„ì—ë„
+        // ê·¸ëŒ€ë¡œ normalCNF ì— ë‚¨ì•„ìˆì–´ì•¼ í•œë‹¤.
+        // onCondition ì— ì—°ê²°í•˜ë©´ ê²°ê³¼ê°€ ë‹¬ë¼ì§„ë‹¤.
         //------------------------------------------------------
 
         qtc::dependencyJoinOperAnd( & sCur->node->depInfo,
@@ -2882,14 +2882,14 @@ qmoOuterJoinOper::movePred2OnCondition( qcStatement      * aStatement,
                 if ( aNewFrom->onCondition == NULL )
                 {
                     //------------------------------------------------------
-                    // ¶¼¾î³õÀº normalCNF ÀÇ predicate ³ëµå¸¦ Ã³À½À¸·Î
-                    // aNewFrom ³ëµåÀÇ onCondition ¿¡ ¿¬°á
+                    // ë–¼ì–´ë†“ì€ normalCNF ì˜ predicate ë…¸ë“œë¥¼ ì²˜ìŒìœ¼ë¡œ
+                    // aNewFrom ë…¸ë“œì˜ onCondition ì— ì—°ê²°
                     //------------------------------------------------------
 
                     aNewFrom->onCondition = sNorCur;
 
                     //------------------------------------------------------
-                    // ´ÙÀ½ ¿¬°áÀ» À§ÇØ onCondition ÀÇ ¸¶Áö¸·À» ±â¾ïÇØµĞ´Ù.
+                    // ë‹¤ìŒ ì—°ê²°ì„ ìœ„í•´ onCondition ì˜ ë§ˆì§€ë§‰ì„ ê¸°ì–µí•´ë‘”ë‹¤.
                     //------------------------------------------------------
 
                     sCurOnCond = aNewFrom->onCondition;
@@ -2897,16 +2897,16 @@ qmoOuterJoinOper::movePred2OnCondition( qcStatement      * aStatement,
                 else
                 {
                     //------------------------------------------------------
-                    // onCondition ¿¡ µÎ°³ ÀÌ»óÀÇ ³ëµå°¡ ´Ş¸®°Ô µÇ´Â °æ¿ì´Â
-                    // AND ³ëµå¸¦ Ãß°¡ÇÑ ÈÄ ¿¬°áÇØÁà¾ß ÇÑ´Ù.
-                    // aNewFrom->onCondition ÀÌ °¡¸®Å°´Â ³ëµå°¡ AND ³ëµå°¡
-                    // ¾Æ´Ò °æ¿ì¿¡¸¸ ÇØÁÖ¸é µÈ´Ù.
+                    // onCondition ì— ë‘ê°œ ì´ìƒì˜ ë…¸ë“œê°€ ë‹¬ë¦¬ê²Œ ë˜ëŠ” ê²½ìš°ëŠ”
+                    // AND ë…¸ë“œë¥¼ ì¶”ê°€í•œ í›„ ì—°ê²°í•´ì¤˜ì•¼ í•œë‹¤.
+                    // aNewFrom->onCondition ì´ ê°€ë¦¬í‚¤ëŠ” ë…¸ë“œê°€ AND ë…¸ë“œê°€
+                    // ì•„ë‹ ê²½ìš°ì—ë§Œ í•´ì£¼ë©´ ëœë‹¤.
                     //------------------------------------------------------
 
                     if ( aNewFrom->onCondition->node.module != &mtfAnd )
                     {
                         //------------------------------------------------------
-                        // AND ³ëµå¸¦ »ı¼ºÇÑ´Ù.
+                        // AND ë…¸ë“œë¥¼ ìƒì„±í•œë‹¤.
                         //------------------------------------------------------
                         SET_EMPTY_POSITION(sNullPosition);
 
@@ -2922,15 +2922,15 @@ qmoOuterJoinOper::movePred2OnCondition( qcStatement      * aStatement,
                         // sANDNode->node.lflag |= 1;
 
                         //------------------------------------------------------
-                        // »ı¼ºÇÑ AND ³ëµå¸¦ onCondition ÀÇ ¸ÇÃ³À½¿¡ ³¢¿ö³Ö´Â´Ù.
+                        // ìƒì„±í•œ AND ë…¸ë“œë¥¼ onCondition ì˜ ë§¨ì²˜ìŒì— ë¼ì›Œë„£ëŠ”ë‹¤.
                         //------------------------------------------------------
 
                         sANDNode->node.arguments = (mtcNode *)aNewFrom->onCondition;
                         aNewFrom->onCondition = sANDNode;
 
                         //------------------------------------------------------
-                        // sCurOnCond ´Â ÀÌÀü¿¡ Ãß°¡µÈ ³ëµå¸¦ ±â¾ïÇÏ°í ÀÖÀ¸¹Ç·Î
-                        // ±× µÚ¿¡ ¿¬°áÇØÁÖ°í ´Ù½Ã ¸¶Áö¸·À» ±â¾ïÇÑ´Ù.
+                        // sCurOnCond ëŠ” ì´ì „ì— ì¶”ê°€ëœ ë…¸ë“œë¥¼ ê¸°ì–µí•˜ê³  ìˆìœ¼ë¯€ë¡œ
+                        // ê·¸ ë’¤ì— ì—°ê²°í•´ì£¼ê³  ë‹¤ì‹œ ë§ˆì§€ë§‰ì„ ê¸°ì–µí•œë‹¤.
                         //------------------------------------------------------
 
                         sCurOnCond->node.next = (mtcNode*)sNorCur;
@@ -2939,8 +2939,8 @@ qmoOuterJoinOper::movePred2OnCondition( qcStatement      * aStatement,
                     else
                     {
                         //------------------------------------------------------
-                        // ±â¾ïÇØµĞ onCondition ÀÇ ¸¶Áö¸·¿¡ Ãß°¡·Î ¿¬°áÇÑ´Ù.
-                        // ±×¸®°í, Ãß°¡·Î ¿¬°áÇÑ ³ëµå¸¦ ´Ù½Ã ±â¾ïÇØµĞ´Ù.
+                        // ê¸°ì–µí•´ë‘” onCondition ì˜ ë§ˆì§€ë§‰ì— ì¶”ê°€ë¡œ ì—°ê²°í•œë‹¤.
+                        // ê·¸ë¦¬ê³ , ì¶”ê°€ë¡œ ì—°ê²°í•œ ë…¸ë“œë¥¼ ë‹¤ì‹œ ê¸°ì–µí•´ë‘”ë‹¤.
                         //------------------------------------------------------
 
                         sCurOnCond->node.next = (mtcNode*)sNorCur;
@@ -2958,7 +2958,7 @@ qmoOuterJoinOper::movePred2OnCondition( qcStatement      * aStatement,
     }
 
     //------------------------------------------------------
-    // ±¸Á¶°¡ º¯°æµÈ onCondition °ú normalCNF ¿¡ ´ëÇØ estimate
+    // êµ¬ì¡°ê°€ ë³€ê²½ëœ onCondition ê³¼ normalCNF ì— ëŒ€í•´ estimate
     //------------------------------------------------------
 
     if ( aNewFrom->onCondition != NULL )
@@ -3013,11 +3013,11 @@ qmoOuterJoinOper::transJoinOperBetweenStyle( qcStatement * aStatement,
  *    mtfNotBetween      : NOT BETWEEN   :   1     :   2 (not list)
  *    ======================================================
  *
- *    between ÀÇ °æ¿ì´Â Source ¿Í Target ¿¡ list °¡ ¿Ã ¼ö ¾ø´Ù.
+ *    between ì˜ ê²½ìš°ëŠ” Source ì™€ Target ì— list ê°€ ì˜¬ ìˆ˜ ì—†ë‹¤.
  *
  *   (1) mtfBetween
  *
- *       ** º¯È¯ Àü
+ *       ** ë³€í™˜ ì „
  *       a1 between a2 and a3
  *
  *        (AND)
@@ -3031,7 +3031,7 @@ qmoOuterJoinOper::transJoinOperBetweenStyle( qcStatement * aStatement,
  *          V
  *        (a1) -> (a2) -> (a3)
  *
- *       ** º¯È¯ ÈÄ
+ *       ** ë³€í™˜ í›„
  *       a1 >= a2 and a1 <= a3
  *
  *        (AND)
@@ -3048,7 +3048,7 @@ qmoOuterJoinOper::transJoinOperBetweenStyle( qcStatement * aStatement,
  *
  *   (2) mtfNotBetween
  *
- *       ** º¯È¯ Àü
+ *       ** ë³€í™˜ ì „
  *       a1 not between a2 and a3
  *
  *        (AND)
@@ -3062,7 +3062,7 @@ qmoOuterJoinOper::transJoinOperBetweenStyle( qcStatement * aStatement,
  *          V
  *        (a1) -> (a2) -> (a3)
  *
- *       ** º¯È¯ ÈÄ
+ *       ** ë³€í™˜ í›„
  *       a1 < a2 or a1 > a3
  *
  *        (AND)
@@ -3100,11 +3100,11 @@ qmoOuterJoinOper::transJoinOperBetweenStyle( qcStatement * aStatement,
     if ( aInNode->node.module == & mtfBetween )
     {
         //---------------------------------------------
-        // Between ¿¬»êÀÚÀÇ Argument ¸¦ ¼øÈ¸ÇÏ¸ç
-        // src = trg1 and src = trg2 ¿Í °°Àº ÇüÅÂ·Î
-        // predicate À» ºĞ¸®ÇÑ´Ù.
-        // »õ·Î ±¸¼ºÇÏ´Â Predicate ÀÇ ±¸¼º³ëµåµéÀº
-        // ½Å±Ô·Î »ı¼ºÇÏ¿© »ç¿ëÇÑ´Ù.
+        // Between ì—°ì‚°ìì˜ Argument ë¥¼ ìˆœíšŒí•˜ë©°
+        // src = trg1 and src = trg2 ì™€ ê°™ì€ í˜•íƒœë¡œ
+        // predicate ì„ ë¶„ë¦¬í•œë‹¤.
+        // ìƒˆë¡œ êµ¬ì„±í•˜ëŠ” Predicate ì˜ êµ¬ì„±ë…¸ë“œë“¤ì€
+        // ì‹ ê·œë¡œ ìƒì„±í•˜ì—¬ ì‚¬ìš©í•œë‹¤.
         //---------------------------------------------
 
         sOldSrc = (qtcNode *)aInNode->node.arguments;
@@ -3115,7 +3115,7 @@ qmoOuterJoinOper::transJoinOperBetweenStyle( qcStatement * aStatement,
               sOldTrg  = (qtcNode *)sOldTrg->node.next )
         {
             //---------------------------------------------
-            // Ã¹¹øÂ° Target ³ëµåÀÏ ¶§
+            // ì²«ë²ˆì§¸ Target ë…¸ë“œì¼ ë•Œ
             //---------------------------------------------
             if ( sOldTrg == sOldTrgStart )
             {
@@ -3132,8 +3132,8 @@ qmoOuterJoinOper::transJoinOperBetweenStyle( qcStatement * aStatement,
                           != IDE_SUCCESS);
             }
             //---------------------------------------------
-            // µÎ¹øÂ° Target ³ëµåÀÏ ¶§
-            // Target Node ´Â µÎ°³¹Û¿¡ ¾ø´Ù.
+            // ë‘ë²ˆì§¸ Target ë…¸ë“œì¼ ë•Œ
+            // Target Node ëŠ” ë‘ê°œë°–ì— ì—†ë‹¤.
             //---------------------------------------------
             else
             {
@@ -3163,7 +3163,7 @@ qmoOuterJoinOper::transJoinOperBetweenStyle( qcStatement * aStatement,
             }
 
             /****************************************************
-             * ´ÙÀ½°ú °°Àº ½Å±Ô Tree °¡ ¿Ï¼ºµÇ¾ú´Ù.
+             * ë‹¤ìŒê³¼ ê°™ì€ ì‹ ê·œ Tree ê°€ ì™„ì„±ë˜ì—ˆë‹¤.
              *
              *             _______ sPredStart  _______ sPredEnd
              *            /                   /
@@ -3188,7 +3188,7 @@ qmoOuterJoinOper::transJoinOperBetweenStyle( qcStatement * aStatement,
               sOldTrg  = (qtcNode *)sOldTrg->node.next )
         {
             //---------------------------------------------
-            // Ã¹¹øÂ° Target ³ëµåÀÏ ¶§
+            // ì²«ë²ˆì§¸ Target ë…¸ë“œì¼ ë•Œ
             //---------------------------------------------
             if ( sOldTrg == sOldTrgStart )
             {
@@ -3205,8 +3205,8 @@ qmoOuterJoinOper::transJoinOperBetweenStyle( qcStatement * aStatement,
                           != IDE_SUCCESS);
             }
             //---------------------------------------------
-            // µÎ¹øÂ° Target ³ëµåÀÏ ¶§.
-            // (Target Node ´Â µÎ°³¹Û¿¡ ¾ø´Ù)
+            // ë‘ë²ˆì§¸ Target ë…¸ë“œì¼ ë•Œ.
+            // (Target Node ëŠ” ë‘ê°œë°–ì— ì—†ë‹¤)
             //---------------------------------------------
             else
             {
@@ -3225,7 +3225,7 @@ qmoOuterJoinOper::transJoinOperBetweenStyle( qcStatement * aStatement,
             }
 
             //---------------------------------------------
-            // OR ³ëµå°¡ ÇÑ°³ÀÌ±â ¶§¹®¿¡ Start ¿Í End °¡ °°´Ù.
+            // OR ë…¸ë“œê°€ í•œê°œì´ê¸° ë•Œë¬¸ì— Start ì™€ End ê°€ ê°™ë‹¤.
             //---------------------------------------------
             if ( sOldTrg == (qtcNode *)sOldSrc->node.next )
             {
@@ -3237,7 +3237,7 @@ qmoOuterJoinOper::transJoinOperBetweenStyle( qcStatement * aStatement,
             }
 
             /****************************************************
-             * ´ÙÀ½°ú °°Àº ½Å±Ô Tree °¡ ¿Ï¼ºµÇ¾ú´Ù.
+             * ë‹¤ìŒê³¼ ê°™ì€ ì‹ ê·œ Tree ê°€ ì™„ì„±ë˜ì—ˆë‹¤.
              *
              *             _______ sPredStart, sPredEnd
              *            /
@@ -3252,8 +3252,8 @@ qmoOuterJoinOper::transJoinOperBetweenStyle( qcStatement * aStatement,
         }
 
         //---------------------------------------------
-        // estimate ¼öÇà.
-        // OR ³ëµå´Â ÇÏ³ªÀÌ±â ¶§¹®¿¡ ¸¶Áö¸·¿¡ ÇÑ¹ø¸¸ ¼öÇà.
+        // estimate ìˆ˜í–‰.
+        // OR ë…¸ë“œëŠ” í•˜ë‚˜ì´ê¸° ë•Œë¬¸ì— ë§ˆì§€ë§‰ì— í•œë²ˆë§Œ ìˆ˜í–‰.
         //---------------------------------------------
         IDE_TEST( qtc::estimate( sORNode,
                                  QC_SHARED_TMPLATE(aStatement),
@@ -3269,8 +3269,8 @@ qmoOuterJoinOper::transJoinOperBetweenStyle( qcStatement * aStatement,
     }
 
     //---------------------------------------------
-    // º¯È¯ÇÑ Tree ÀÇ Start OR ³ëµå¿Í End OR ³ëµå¸¦
-    // ¹İÈ¯ÇÑ´Ù.
+    // ë³€í™˜í•œ Tree ì˜ Start OR ë…¸ë“œì™€ End OR ë…¸ë“œë¥¼
+    // ë°˜í™˜í•œë‹¤.
     //---------------------------------------------
 
     *aTransStart = sPredStart;
@@ -3375,7 +3375,7 @@ qmoOuterJoinOper::makeNewORNodeTree( qcStatement  * aStatement,
  * Description :
  *
  * Implementation :
- *  ´ÙÀ½°ú °°Àº Tree °¡ »ı±ä´Ù.
+ *  ë‹¤ìŒê³¼ ê°™ì€ Tree ê°€ ìƒê¸´ë‹¤.
  *
  *        (OR)
  *          |
@@ -3393,8 +3393,8 @@ qmoOuterJoinOper::makeNewORNodeTree( qcStatement  * aStatement,
     IDU_FIT_POINT_FATAL( "qmoOuterJoinOper::makeNewORNodeTree::__FT__" );
 
     //---------------------------------------------
-    // sOldSrc ³ëµå°¡ Root °¡ µÇ´Â Tree ³ëµåµéÀ»
-    // ÅëÂ°·Î º¹»çÇÑ´Ù.
+    // sOldSrc ë…¸ë“œê°€ Root ê°€ ë˜ëŠ” Tree ë…¸ë“œë“¤ì„
+    // í†µì§¸ë¡œ ë³µì‚¬í•œë‹¤.
     //---------------------------------------------
     IDE_TEST( qtc::cloneQTCNodeTree( QC_QMP_MEM( aStatement ),
                                      aOldSrc,
@@ -3406,8 +3406,8 @@ qmoOuterJoinOper::makeNewORNodeTree( qcStatement  * aStatement,
               != IDE_SUCCESS );
 
     //---------------------------------------------
-    // sOldTrg ³ëµå°¡ Root °¡ µÇ´Â Tree ³ëµåµéÀ»
-    // ÅëÂ°·Î º¹»çÇÑ´Ù.
+    // sOldTrg ë…¸ë“œê°€ Root ê°€ ë˜ëŠ” Tree ë…¸ë“œë“¤ì„
+    // í†µì§¸ë¡œ ë³µì‚¬í•œë‹¤.
     //---------------------------------------------
     IDE_TEST( qtc::cloneQTCNodeTree( QC_QMP_MEM( aStatement ),
                                      aOldTrg,
@@ -3423,7 +3423,7 @@ qmoOuterJoinOper::makeNewORNodeTree( qcStatement  * aStatement,
     (*aNewTrg)->node.next = NULL;
 
     //---------------------------------------------
-    // º¯È¯ ¿¬»êÀÚ ³ëµå ÇÒ´ç
+    // ë³€í™˜ ì—°ì‚°ì ë…¸ë“œ í• ë‹¹
     //---------------------------------------------
     IDE_TEST( qtc::makeNode( aStatement,
                              sTmpNode,
@@ -3433,8 +3433,8 @@ qmoOuterJoinOper::makeNewORNodeTree( qcStatement  * aStatement,
 
 
     //---------------------------------------------
-    // ¸ğµç º¯È¯ ¿¬»êÀÚ°¡ argument ¸¦ 2 °³ ÇÊ¿ä·Î ÇÏ¹Ç·Î
-    // ¼ÂÆÃÇÑ´Ù.
+    // ëª¨ë“  ë³€í™˜ ì—°ì‚°ìê°€ argument ë¥¼ 2 ê°œ í•„ìš”ë¡œ í•˜ë¯€ë¡œ
+    // ì…‹íŒ…í•œë‹¤.
     //---------------------------------------------
 
     sOperNode = sTmpNode[0];
@@ -3451,7 +3451,7 @@ qmoOuterJoinOper::makeNewORNodeTree( qcStatement  * aStatement,
               != IDE_SUCCESS );
 
     //---------------------------------------------
-    // OR °¡ ÇÊ¿ä·Î ÇÏ´Â argument ´Â 1 °³
+    // OR ê°€ í•„ìš”ë¡œ í•˜ëŠ” argument ëŠ” 1 ê°œ
     //---------------------------------------------
 
     sORNode = sTmpNode[0];
@@ -3462,7 +3462,7 @@ qmoOuterJoinOper::makeNewORNodeTree( qcStatement  * aStatement,
     sORNode->node.next = NULL;
 
     //---------------------------------------------
-    // estimate ¼öÇà
+    // estimate ìˆ˜í–‰
     //---------------------------------------------
 
     if ( aEstimate == ID_TRUE )
@@ -3502,7 +3502,7 @@ qmoOuterJoinOper::makeNewOperNodeTree( qcStatement  * aStatement,
  * Description :
  *
  * Implementation :
- *  ´ÙÀ½°ú °°Àº Tree °¡ »ı±ä´Ù.
+ *  ë‹¤ìŒê³¼ ê°™ì€ Tree ê°€ ìƒê¸´ë‹¤.
  *
  *       (Oper)
  *          |
@@ -3516,8 +3516,8 @@ qmoOuterJoinOper::makeNewOperNodeTree( qcStatement  * aStatement,
     IDU_FIT_POINT_FATAL( "qmoOuterJoinOper::makeNewOperNodeTree::__FT__" );
 
     //---------------------------------------------
-    // sOldSrc ³ëµå°¡ Root °¡ µÇ´Â Tree ³ëµåµéÀ»
-    // ÅëÂ°·Î º¹»çÇÑ´Ù.
+    // sOldSrc ë…¸ë“œê°€ Root ê°€ ë˜ëŠ” Tree ë…¸ë“œë“¤ì„
+    // í†µì§¸ë¡œ ë³µì‚¬í•œë‹¤.
     //---------------------------------------------
     IDE_TEST( qtc::cloneQTCNodeTree( QC_QMP_MEM( aStatement ),
                                      aOldSrc,
@@ -3529,8 +3529,8 @@ qmoOuterJoinOper::makeNewOperNodeTree( qcStatement  * aStatement,
               != IDE_SUCCESS );
 
     //---------------------------------------------
-    // sOldTrg ³ëµå°¡ Root °¡ µÇ´Â Tree ³ëµåµéÀ»
-    // ÅëÂ°·Î º¹»çÇÑ´Ù.
+    // sOldTrg ë…¸ë“œê°€ Root ê°€ ë˜ëŠ” Tree ë…¸ë“œë“¤ì„
+    // í†µì§¸ë¡œ ë³µì‚¬í•œë‹¤.
     //---------------------------------------------
     IDE_TEST( qtc::cloneQTCNodeTree( QC_QMP_MEM( aStatement ),
                                      aOldTrg,
@@ -3546,7 +3546,7 @@ qmoOuterJoinOper::makeNewOperNodeTree( qcStatement  * aStatement,
     (*aNewTrg)->node.next = NULL;
 
     //---------------------------------------------
-    // º¯È¯ ¿¬»êÀÚ ³ëµå ÇÒ´ç
+    // ë³€í™˜ ì—°ì‚°ì ë…¸ë“œ í• ë‹¹
     //---------------------------------------------
     IDE_TEST( qtc::makeNode( aStatement,
                              sTmpNode,
@@ -3556,8 +3556,8 @@ qmoOuterJoinOper::makeNewOperNodeTree( qcStatement  * aStatement,
 
 
     //---------------------------------------------
-    // ¸ğµç º¯È¯ ¿¬»êÀÚ°¡ argument ¸¦ 2 °³ ÇÊ¿ä·Î ÇÏ¹Ç·Î
-    // ¼ÂÆÃÇÑ´Ù.
+    // ëª¨ë“  ë³€í™˜ ì—°ì‚°ìê°€ argument ë¥¼ 2 ê°œ í•„ìš”ë¡œ í•˜ë¯€ë¡œ
+    // ì…‹íŒ…í•œë‹¤.
     //---------------------------------------------
 
     sOperNode = sTmpNode[0];
@@ -3591,7 +3591,7 @@ qmoOuterJoinOper::transJoinOperListArgStyle( qcStatement * aStatement,
  * Description :
  *
  * Implementation :
- *    ÀÌ ÇÔ¼ö¿¡¼­´Â ´ÙÀ½ÀÇ ¿¬»êÀÚµéÀÇ º¯È¯À» ¼öÇàÇÑ´Ù.
+ *    ì´ í•¨ìˆ˜ì—ì„œëŠ” ë‹¤ìŒì˜ ì—°ì‚°ìë“¤ì˜ ë³€í™˜ì„ ìˆ˜í–‰í•œë‹¤.
  *
  *    LIST Argument Style
  *    ======================================================
@@ -3617,14 +3617,14 @@ qmoOuterJoinOper::transJoinOperListArgStyle( qcStatement * aStatement,
  *    ======================================================
  *
  *
- *   ¾Æ·¡¿Í °°Àº ¹æ¹ıÀ¸·Î º¯È¯À» ¼öÇàÇÏ¸é µÈ´Ù.
- *   ¸î°¡Áö ¿¬»êÀÚ¸¸ ¿¹·Î µé¾î º¯È¯ÇØº¸ÀÚ.
- *   Between Style °ú ´Ù¸¥ Á¡ÀÌ¶ó¸é list °¡ ¿Ã ¼ö ÀÖ´Ù´Â °ÍÀÌ°í,
- *   list ÀÇ argument °¡ ¿©·¯°³ ¿Ã ¼ö ÀÖ´Ù´Â Á¡ÀÌ´Ù.
+ *   ì•„ë˜ì™€ ê°™ì€ ë°©ë²•ìœ¼ë¡œ ë³€í™˜ì„ ìˆ˜í–‰í•˜ë©´ ëœë‹¤.
+ *   ëª‡ê°€ì§€ ì—°ì‚°ìë§Œ ì˜ˆë¡œ ë“¤ì–´ ë³€í™˜í•´ë³´ì.
+ *   Between Style ê³¼ ë‹¤ë¥¸ ì ì´ë¼ë©´ list ê°€ ì˜¬ ìˆ˜ ìˆë‹¤ëŠ” ê²ƒì´ê³ ,
+ *   list ì˜ argument ê°€ ì—¬ëŸ¬ê°œ ì˜¬ ìˆ˜ ìˆë‹¤ëŠ” ì ì´ë‹¤.
  *
  *   (1) mtfEqualAll
  *
- *       ** º¯È¯ Àü
+ *       ** ë³€í™˜ ì „
  *       (a1,a2) =ALL ((b1,b2))
  *
  *        (AND)
@@ -3644,7 +3644,7 @@ qmoOuterJoinOper::transJoinOperListArgStyle( qcStatement * aStatement,
  *                         V
  *                       (b1) -> (b2)
  *
- *       ** º¯È¯ ÈÄ
+ *       ** ë³€í™˜ í›„
  *       a1 = b1 and a2 = b2
  *
  *        (AND)
@@ -3661,7 +3661,7 @@ qmoOuterJoinOper::transJoinOperListArgStyle( qcStatement * aStatement,
  *
  *   (2) mtfEqualAny
  *
- *       ** º¯È¯ Àü
+ *       ** ë³€í™˜ ì „
  *       (a1,a2) =ANY ((b1,b2))
  *
  *        (AND)
@@ -3681,7 +3681,7 @@ qmoOuterJoinOper::transJoinOperListArgStyle( qcStatement * aStatement,
  *                         V
  *                       (b1) -> (b2)
  *
- *       ** º¯È¯ ÈÄ
+ *       ** ë³€í™˜ í›„
  *       a1 = b1 and a2 = b2
  *
  *        (AND)
@@ -3698,7 +3698,7 @@ qmoOuterJoinOper::transJoinOperListArgStyle( qcStatement * aStatement,
  *
  *   (3) mtfGreaterEqualAll
  *
- *       ** º¯È¯ Àü
+ *       ** ë³€í™˜ ì „
  *       a1 >=ALL (b1,b2)
  *
  *        (AND)
@@ -3715,7 +3715,7 @@ qmoOuterJoinOper::transJoinOperListArgStyle( qcStatement * aStatement,
  *                      V
  *                    (b1) -> (b2)
  *
- *       ** º¯È¯ ÈÄ
+ *       ** ë³€í™˜ í›„
  *       a1 >= b1 and a1 >= b2
  *
  *        (AND)
@@ -3732,7 +3732,7 @@ qmoOuterJoinOper::transJoinOperListArgStyle( qcStatement * aStatement,
  *
  *   (4) mtfGreaterEqualAny
  *
- *       ** º¯È¯ Àü
+ *       ** ë³€í™˜ ì „
  *       a1 >=ANY (b1,b2)
  *
  *        (AND)
@@ -3749,7 +3749,7 @@ qmoOuterJoinOper::transJoinOperListArgStyle( qcStatement * aStatement,
  *                      V
  *                    (b1) -> (b2)
  *
- *       ** º¯È¯ ÈÄ
+ *       ** ë³€í™˜ í›„
  *       a1 >= b1 or a1 >= b2
  *
  *        (AND)
@@ -3765,31 +3765,31 @@ qmoOuterJoinOper::transJoinOperListArgStyle( qcStatement * aStatement,
  *
  *
  *
- *   À§ÀÇ º¯È¯µéÀ» Âü°í·Î ÇÏ¿© º¯È¯ ±ÔÄ¢À» ¸¸µé¾îº¸ÀÚ.
- *   Å©°Ô ANY ¿Í ALL Type À¸·Î ³ª´©¾î »ı°¢ÇØº¼ ¼ö ÀÖ´Ù.
+ *   ìœ„ì˜ ë³€í™˜ë“¤ì„ ì°¸ê³ ë¡œ í•˜ì—¬ ë³€í™˜ ê·œì¹™ì„ ë§Œë“¤ì–´ë³´ì.
+ *   í¬ê²Œ ANY ì™€ ALL Type ìœ¼ë¡œ ë‚˜ëˆ„ì–´ ìƒê°í•´ë³¼ ìˆ˜ ìˆë‹¤.
  *
  *   (1) ANY Type
  *
- *   ANY ´Â List argument µé°£ÀÇ ºñ±³¸¦ OR ÇüÅÂ·Î ¹­Àº °ÍÀÌ´Ù.
- *   Source °¡ List ÀÏ ¶§¿Í List °¡ ¾Æ´Ò¶§¸¦ ±¸ºĞÇØ¼­ »ı°¢ÇØ¾ß ÇÑ´Ù.
+ *   ANY ëŠ” List argument ë“¤ê°„ì˜ ë¹„êµë¥¼ OR í˜•íƒœë¡œ ë¬¶ì€ ê²ƒì´ë‹¤.
+ *   Source ê°€ List ì¼ ë•Œì™€ List ê°€ ì•„ë‹ë•Œë¥¼ êµ¬ë¶„í•´ì„œ ìƒê°í•´ì•¼ í•œë‹¤.
  *
- *   º¯È¯Àü
- *   °¡. (a1,a2) =any ((b1,b2),(c1,c2))
- *   ³ª. (a1,a2) =any ((b1,b2)))
- *   ´Ù.  a1     =any (b1,b2)
+ *   ë³€í™˜ì „
+ *   ê°€. (a1,a2) =any ((b1,b2),(c1,c2))
+ *   ë‚˜. (a1,a2) =any ((b1,b2)))
+ *   ë‹¤.  a1     =any (b1,b2)
  *
- *   º¯È¯ÈÄ
- *   °¡. (a1=b1 and a2=b2) or (a1=c1 and a2=c2)
- *   ³ª. (a1=b1 and a2=b2)
- *   ´Ù. (a1=b1) or (a1=b2)
+ *   ë³€í™˜í›„
+ *   ê°€. (a1=b1 and a2=b2) or (a1=c1 and a2=c2)
+ *   ë‚˜. (a1=b1 and a2=b2)
+ *   ë‹¤. (a1=b1) or (a1=b2)
  *
- *   À§ÀÇ °æ¿ìÁß (°¡)ÀÇ °æ¿ì´Â °í·Á»çÇ×¿¡¼­ Á¦¿ÜÇØµµ µÈ´Ù.
- *   ¿Ö³ÄÇÏ¸é, ÀÌ¹Ì ¾Õ¿¡¼­ (+) »ç¿ë ½Ã¿¡ Source ÂÊÀÌ List ÀÌ¸é
- *   Target ÂÊÀº 2 °³ ÀÌ»óÀÇ List ¸¦ »ç¿ëÇÒ ¼ö ¾øµµ·Ï Á¦¾à»çÇ×À¸·Î
- *   °É·¯³Â±â ¶§¹®ÀÌ´Ù.
+ *   ìœ„ì˜ ê²½ìš°ì¤‘ (ê°€)ì˜ ê²½ìš°ëŠ” ê³ ë ¤ì‚¬í•­ì—ì„œ ì œì™¸í•´ë„ ëœë‹¤.
+ *   ì™œëƒí•˜ë©´, ì´ë¯¸ ì•ì—ì„œ (+) ì‚¬ìš© ì‹œì— Source ìª½ì´ List ì´ë©´
+ *   Target ìª½ì€ 2 ê°œ ì´ìƒì˜ List ë¥¼ ì‚¬ìš©í•  ìˆ˜ ì—†ë„ë¡ ì œì•½ì‚¬í•­ìœ¼ë¡œ
+ *   ê±¸ëŸ¬ëƒˆê¸° ë•Œë¬¸ì´ë‹¤.
  *
- *   µû¶ó¼­, =any, >=any, <>any µî ¸ğµÎ µÎ°¡Áö º¯È¯ÇüÅÂ·Î ¾ĞÃàÇÒ ¼ö ÀÖ´Ù.
- *   ÇÏ³ª´Â (pred) and (pred) ÀÌ°í, ÇÏ³ª´Â (pred) or (pred) ÇüÅÂÀÌ´Ù.
+ *   ë”°ë¼ì„œ, =any, >=any, <>any ë“± ëª¨ë‘ ë‘ê°€ì§€ ë³€í™˜í˜•íƒœë¡œ ì••ì¶•í•  ìˆ˜ ìˆë‹¤.
+ *   í•˜ë‚˜ëŠ” (pred) and (pred) ì´ê³ , í•˜ë‚˜ëŠ” (pred) or (pred) í˜•íƒœì´ë‹¤.
  *
  *         (OR)          (OR)
  *          |              |
@@ -3810,23 +3810,23 @@ qmoOuterJoinOper::transJoinOperListArgStyle( qcStatement * aStatement,
  *
  *   (2) ALL Type
  *
- *   ALL Àº List argument µé°£ÀÇ ºñ±³¸¦ AND ÇüÅÂ·Î ¹­Àº °ÍÀÌ´Ù.
+ *   ALL ì€ List argument ë“¤ê°„ì˜ ë¹„êµë¥¼ AND í˜•íƒœë¡œ ë¬¶ì€ ê²ƒì´ë‹¤.
  *
- *   º¯È¯Àü
- *   °¡. (a1,a2) =all ((b1,b2),(c1,c2))
- *   ³ª. (a1,a2) =all ((b1,b2)))
- *   ´Ù.  a1     =all (b1,b2)
+ *   ë³€í™˜ì „
+ *   ê°€. (a1,a2) =all ((b1,b2),(c1,c2))
+ *   ë‚˜. (a1,a2) =all ((b1,b2)))
+ *   ë‹¤.  a1     =all (b1,b2)
  *
- *   º¯È¯ÈÄ
- *   °¡. (a1=b1 and a2=b2) and (a1=c1 and a2=c2)
- *   ³ª. (a1=b1 and a2=b2)
- *   ´Ù. (a1=b1) and (a1=b2)
+ *   ë³€í™˜í›„
+ *   ê°€. (a1=b1 and a2=b2) and (a1=c1 and a2=c2)
+ *   ë‚˜. (a1=b1 and a2=b2)
+ *   ë‹¤. (a1=b1) and (a1=b2)
  *
- *   ¸¶Âù°¡Áö·Î (°¡)ÀÇ °æ¿ì´Â Á¦¾à»çÇ×¿¡¼­ °É·¯Áö¹Ç·Î °í·ÁÇÒ ÇÊ¿ä°¡ ¾ø´Ù.
- *   ALL Type ÀÇ °æ¿ì´Â ANY Type °ú´Â ´Ş¸® ¸ğµÎ ¾Æ·¡¿Í °°Àº
- *   ÇüÅÂ·Î µ¿ÀÏÇÏ°Ô º¯È¯ÇÒ ¼ö ÀÖ´Ù.
- *   Source °¡ list ÀÎ°¡ ¾Æ´Ñ°¡¿¡ µû¶ó * °¡ ºÙÀº °÷ÀÌ a1 ¶Ç´Â a2 ·Î
- *   ´Ş¶óÁú »ÓÀÌ´Ù.
+ *   ë§ˆì°¬ê°€ì§€ë¡œ (ê°€)ì˜ ê²½ìš°ëŠ” ì œì•½ì‚¬í•­ì—ì„œ ê±¸ëŸ¬ì§€ë¯€ë¡œ ê³ ë ¤í•  í•„ìš”ê°€ ì—†ë‹¤.
+ *   ALL Type ì˜ ê²½ìš°ëŠ” ANY Type ê³¼ëŠ” ë‹¬ë¦¬ ëª¨ë‘ ì•„ë˜ì™€ ê°™ì€
+ *   í˜•íƒœë¡œ ë™ì¼í•˜ê²Œ ë³€í™˜í•  ìˆ˜ ìˆë‹¤.
+ *   Source ê°€ list ì¸ê°€ ì•„ë‹Œê°€ì— ë”°ë¼ * ê°€ ë¶™ì€ ê³³ì´ a1 ë˜ëŠ” a2 ë¡œ
+ *   ë‹¬ë¼ì§ˆ ë¿ì´ë‹¤.
  *
  *
  *         (OR)          (OR)
@@ -3873,15 +3873,15 @@ qmoOuterJoinOper::transJoinOperListArgStyle( qcStatement * aStatement,
     IDE_DASSERT( aTransEnd   != NULL );
 
     //---------------------------------------------
-    // 1. ANY Type ¿¬»êÀÚÀÇ º¯È¯
+    // 1. ANY Type ì—°ì‚°ìì˜ ë³€í™˜
     //---------------------------------------------
     if ( QMO_IS_ANY_TYPE_MODULE( aInNode->node.module ) == ID_TRUE )
     {
         //---------------------------------------------
-        // ºñ±³ Source ÂÊÀÌ list ÀÌ¸é, target ÂÊÀº
-        // list °¡ 2 °³ÀÌ»óÀÏ ¼ö ¾ø±â ¶§¹®¿¡
-        // ÇÑ°³¶ó°í »ı°¢ÇÏ°í º¯È¯ÇÏ¸é µÈ´Ù.
-        // (ÀÌ ÇÔ¼ö¿¡ ¿À±â Àü¿¡ ÀÌ¹Ì °É·¯Á³´Ù.)
+        // ë¹„êµ Source ìª½ì´ list ì´ë©´, target ìª½ì€
+        // list ê°€ 2 ê°œì´ìƒì¼ ìˆ˜ ì—†ê¸° ë•Œë¬¸ì—
+        // í•œê°œë¼ê³  ìƒê°í•˜ê³  ë³€í™˜í•˜ë©´ ëœë‹¤.
+        // (ì´ í•¨ìˆ˜ì— ì˜¤ê¸° ì „ì— ì´ë¯¸ ê±¸ëŸ¬ì¡Œë‹¤.)
         //---------------------------------------------
         if ( aInNode->node.arguments->module == & mtfList )
         {
@@ -3889,9 +3889,9 @@ qmoOuterJoinOper::transJoinOperListArgStyle( qcStatement * aStatement,
             sOldTrgList = (qtcNode *)aInNode->node.arguments->next->arguments;
 
             //---------------------------------------------
-            // Source List ÀÇ argument °¹¼ö¿Í Target List ÀÇ
-            // argument °¹¼ö´Â Ç×»ó °°À¸¹Ç·Î °¢ ´ëÀÀµÇ´Â
-            // argument µéÀ» °¡Áö°í ¿¬»êÀÚ·Î ¹­À¸¸é µÈ´Ù.
+            // Source List ì˜ argument ê°¯ìˆ˜ì™€ Target List ì˜
+            // argument ê°¯ìˆ˜ëŠ” í•­ìƒ ê°™ìœ¼ë¯€ë¡œ ê° ëŒ€ì‘ë˜ëŠ”
+            // argument ë“¤ì„ ê°€ì§€ê³  ì—°ì‚°ìë¡œ ë¬¶ìœ¼ë©´ ëœë‹¤.
             //---------------------------------------------
             for ( sOldSrc  = (qtcNode *)sOldSrcList->node.arguments,
                   sOldTrg  = (qtcNode *)sOldTrgList->node.arguments;
@@ -3901,15 +3901,15 @@ qmoOuterJoinOper::transJoinOperListArgStyle( qcStatement * aStatement,
             {
 
                 //---------------------------------------------
-                // ¿ø·¡ module À» ÁÖ¸é º¯È¯ÇÒ ¶§ »ç¿ëÇÒ ¿¬»ê module À» ¸®ÅÏ
+                // ì›ë˜ module ì„ ì£¼ë©´ ë³€í™˜í•  ë•Œ ì‚¬ìš©í•  ì—°ì‚° module ì„ ë¦¬í„´
                 //---------------------------------------------
                 IDE_TEST( getCompModule4List( (mtfModule *)aInNode->node.module,
                                               & sCompModule)
                           != IDE_SUCCESS);
 
                 /**********************************************
-                 *  Looping À» µ¹¶§¸¶´Ù ´ÙÀ½°ú °°Àº Tree °¡ »ı±ä´Ù.
-                 *  ÀÌ·¯ÇÑ Tree ÀÇ OR ³ëµåµéÀ» ¿¬°áÇØ³ª°£´Ù.
+                 *  Looping ì„ ëŒë•Œë§ˆë‹¤ ë‹¤ìŒê³¼ ê°™ì€ Tree ê°€ ìƒê¸´ë‹¤.
+                 *  ì´ëŸ¬í•œ Tree ì˜ OR ë…¸ë“œë“¤ì„ ì—°ê²°í•´ë‚˜ê°„ë‹¤.
                  *
                  *        (OR)
                  *          |
@@ -3946,12 +3946,12 @@ qmoOuterJoinOper::transJoinOperListArgStyle( qcStatement * aStatement,
             }
 
             //---------------------------------------------
-            // mtfList ³ëµå´Â ÀÌÁ¦ ºÒÇÊ¿äÇÑ ³ëµå°¡ µÈ´Ù.
-            // ±×·±µ¥, host º¯¼ö¸¦ »ç¿ëÇÒ ¶§ ¾Æ·¡¿Í °°ÀÌ ¼³Á¤ÇØÁÖÁö ¾ÊÀ¸¸é,
-            // fixAfterBinding ´Ü°è¿¡¼­ module ÀÌ ¼³Á¤µÇÁö ¾Ê¾Ò´Ù°í
-            // ¿¡·¯¸¦ ¹ß»ı½ÃÅ²´Ù.
-            // ±×¸®°í, size ¸¦ 0 À¸·Î ÇØÁÜÀ¸·Î½á ºÒÇÊ¿äÇÑ row »çÀÌÁî
-            // ÇÒ´çÀ» ¸·´Â´Ù.
+            // mtfList ë…¸ë“œëŠ” ì´ì œ ë¶ˆí•„ìš”í•œ ë…¸ë“œê°€ ëœë‹¤.
+            // ê·¸ëŸ°ë°, host ë³€ìˆ˜ë¥¼ ì‚¬ìš©í•  ë•Œ ì•„ë˜ì™€ ê°™ì´ ì„¤ì •í•´ì£¼ì§€ ì•Šìœ¼ë©´,
+            // fixAfterBinding ë‹¨ê³„ì—ì„œ module ì´ ì„¤ì •ë˜ì§€ ì•Šì•˜ë‹¤ê³ 
+            // ì—ëŸ¬ë¥¼ ë°œìƒì‹œí‚¨ë‹¤.
+            // ê·¸ë¦¬ê³ , size ë¥¼ 0 ìœ¼ë¡œ í•´ì¤Œìœ¼ë¡œì¨ ë¶ˆí•„ìš”í•œ row ì‚¬ì´ì¦ˆ
+            // í• ë‹¹ì„ ë§‰ëŠ”ë‹¤.
             //---------------------------------------------
             QTC_STMT_COLUMN( aStatement, sOldSrcList )->column.size = 0;
             QTC_STMT_COLUMN( aStatement, sOldSrcList )->module = & mtdList;
@@ -3960,7 +3960,7 @@ qmoOuterJoinOper::transJoinOperListArgStyle( qcStatement * aStatement,
             QTC_STMT_COLUMN( aStatement, sOldTrgList )->module = & mtdList;
 
             /**********************************************
-             *  ´ÙÀ½°ú °°Àº Tree °¡ ¿Ï¼ºµÇ¾ú´Ù.
+             *  ë‹¤ìŒê³¼ ê°™ì€ Tree ê°€ ì™„ì„±ë˜ì—ˆë‹¤.
              *
              *            ____ sPrevStart  ____ sPrevEnd
              *           /                /
@@ -3975,7 +3975,7 @@ qmoOuterJoinOper::transJoinOperListArgStyle( qcStatement * aStatement,
         }
 
         //---------------------------------------------
-        // Source °¡ list °¡ ¾Æ´Ò ¶§
+        // Source ê°€ list ê°€ ì•„ë‹ ë•Œ
         //---------------------------------------------
         else
         {
@@ -4012,7 +4012,7 @@ qmoOuterJoinOper::transJoinOperListArgStyle( qcStatement * aStatement,
                     sPrevOperNode = (qtcNode *)sORNode->node.arguments;
 
                     //---------------------------------------------
-                    // OR ³ëµå´Â ÇÏ³ª¸¸ »ı±â±â ¶§¹®¿¡ Start ¿Í End °¡ µ¿ÀÏÇÏ´Ù.
+                    // OR ë…¸ë“œëŠ” í•˜ë‚˜ë§Œ ìƒê¸°ê¸° ë•Œë¬¸ì— Start ì™€ End ê°€ ë™ì¼í•˜ë‹¤.
                     //---------------------------------------------
                     sPredStart = sORNode;
                     sPredEnd = sORNode;
@@ -4030,8 +4030,8 @@ qmoOuterJoinOper::transJoinOperListArgStyle( qcStatement * aStatement,
                               != IDE_SUCCESS );
 
                     //---------------------------------------------
-                    // ½Å±Ô·Î »ı¼ºµÈ ºñ±³¿¬»êÀÚ ³ëµå¸¦ ±âÁ¸ÀÇ ¸®½ºÆ®¿¡
-                    // ¿¬°áÇÑ´Ù.
+                    // ì‹ ê·œë¡œ ìƒì„±ëœ ë¹„êµì—°ì‚°ì ë…¸ë“œë¥¼ ê¸°ì¡´ì˜ ë¦¬ìŠ¤íŠ¸ì—
+                    // ì—°ê²°í•œë‹¤.
                     //---------------------------------------------
                     sORArgCount++;
                     sORNode->node.lflag |= sORArgCount;
@@ -4044,7 +4044,7 @@ qmoOuterJoinOper::transJoinOperListArgStyle( qcStatement * aStatement,
             }
 
             //---------------------------------------------
-            // estimate ¼öÇà
+            // estimate ìˆ˜í–‰
             //---------------------------------------------
             IDE_TEST( qtc::estimate( sORNode,
                                      QC_SHARED_TMPLATE(aStatement),
@@ -4055,7 +4055,7 @@ qmoOuterJoinOper::transJoinOperListArgStyle( qcStatement * aStatement,
                       != IDE_SUCCESS );
 
             /**********************************************
-             *  ´ÙÀ½°ú °°Àº Tree °¡ ¿Ï¼ºµÇ¾ú´Ù.
+             *  ë‹¤ìŒê³¼ ê°™ì€ Tree ê°€ ì™„ì„±ë˜ì—ˆë‹¤.
              *
              *            ____ sPrevStart, sPrevEnd
              *           /
@@ -4074,17 +4074,17 @@ qmoOuterJoinOper::transJoinOperListArgStyle( qcStatement * aStatement,
     }
 
     //---------------------------------------------
-    // 2. ALL Type ¿¬»êÀÚÀÇ º¯È¯
-    //    mtfEqual, mtfNotEqual ¿¬»êÀÚ´Â ALL Type Àº ¾Æ´ÏÁö¸¸
-    //    Source ¿¡ list °¡ ¿À´Â ÇüÅÂ·Î µ¿ÀÏÇÏ°Ô Ã³¸®ÇØÁÖ¸é µÈ´Ù.
+    // 2. ALL Type ì—°ì‚°ìì˜ ë³€í™˜
+    //    mtfEqual, mtfNotEqual ì—°ì‚°ìëŠ” ALL Type ì€ ì•„ë‹ˆì§€ë§Œ
+    //    Source ì— list ê°€ ì˜¤ëŠ” í˜•íƒœë¡œ ë™ì¼í•˜ê²Œ ì²˜ë¦¬í•´ì£¼ë©´ ëœë‹¤.
     //---------------------------------------------
     else if ( QMO_IS_ALL_TYPE_MODULE( aInNode->node.module ) == ID_TRUE )
     {
         //---------------------------------------------
-        // ºñ±³ Source ÂÊÀÌ list ÀÌ¸é, target ÂÊÀº
-        // list °¡ 2 °³ÀÌ»óÀÏ ¼ö ¾ø±â ¶§¹®¿¡
-        // ÇÑ°³¶ó°í »ı°¢ÇÏ°í º¯È¯ÇÏ¸é µÈ´Ù.
-        // (ÀÌ ÇÔ¼ö¿¡ ¿À±â Àü¿¡ ÀÌ¹Ì °É·¯Á³´Ù.)
+        // ë¹„êµ Source ìª½ì´ list ì´ë©´, target ìª½ì€
+        // list ê°€ 2 ê°œì´ìƒì¼ ìˆ˜ ì—†ê¸° ë•Œë¬¸ì—
+        // í•œê°œë¼ê³  ìƒê°í•˜ê³  ë³€í™˜í•˜ë©´ ëœë‹¤.
+        // (ì´ í•¨ìˆ˜ì— ì˜¤ê¸° ì „ì— ì´ë¯¸ ê±¸ëŸ¬ì¡Œë‹¤.)
         //---------------------------------------------
         if ( aInNode->node.arguments->module == & mtfList )
         {
@@ -4101,9 +4101,9 @@ qmoOuterJoinOper::transJoinOperListArgStyle( qcStatement * aStatement,
             }
 
             //---------------------------------------------
-            // Source List ÀÇ argument °¹¼ö¿Í Target List ÀÇ
-            // argument °¹¼ö´Â Ç×»ó °°À¸¹Ç·Î °¢ ´ëÀÀµÇ´Â
-            // argument µéÀ» °¡Áö°í ¿¬»êÀÚ·Î ¹­À¸¸é µÈ´Ù.
+            // Source List ì˜ argument ê°¯ìˆ˜ì™€ Target List ì˜
+            // argument ê°¯ìˆ˜ëŠ” í•­ìƒ ê°™ìœ¼ë¯€ë¡œ ê° ëŒ€ì‘ë˜ëŠ”
+            // argument ë“¤ì„ ê°€ì§€ê³  ì—°ì‚°ìë¡œ ë¬¶ìœ¼ë©´ ëœë‹¤.
             //---------------------------------------------
             for ( sOldSrc  = (qtcNode *)sOldSrcList->node.arguments,
                   sOldTrg  = (qtcNode *)sOldTrgList->node.arguments;
@@ -4117,8 +4117,8 @@ qmoOuterJoinOper::transJoinOperListArgStyle( qcStatement * aStatement,
                           != IDE_SUCCESS );
 
                 /**********************************************
-                 *  Looping À» µ¹¶§¸¶´Ù ´ÙÀ½°ú °°Àº Tree °¡ »ı±ä´Ù.
-                 *  ÀÌ·¯ÇÑ Tree ÀÇ OR ³ëµåµéÀ» ¿¬°áÇØ³ª°£´Ù.
+                 *  Looping ì„ ëŒë•Œë§ˆë‹¤ ë‹¤ìŒê³¼ ê°™ì€ Tree ê°€ ìƒê¸´ë‹¤.
+                 *  ì´ëŸ¬í•œ Tree ì˜ OR ë…¸ë“œë“¤ì„ ì—°ê²°í•´ë‚˜ê°„ë‹¤.
                  *
                  *        (OR)
                  *          |
@@ -4155,7 +4155,7 @@ qmoOuterJoinOper::transJoinOperListArgStyle( qcStatement * aStatement,
             }
 
             /**********************************************
-             *  ´ÙÀ½°ú °°Àº Tree °¡ ¿Ï¼ºµÇ¾ú´Ù.
+             *  ë‹¤ìŒê³¼ ê°™ì€ Tree ê°€ ì™„ì„±ë˜ì—ˆë‹¤.
              *
              *            ____ sPrevStart  ____ sPrevEnd
              *           /                /
@@ -4176,7 +4176,7 @@ qmoOuterJoinOper::transJoinOperListArgStyle( qcStatement * aStatement,
         }
 
         //---------------------------------------------
-        // Source °¡ list °¡ ¾Æ´Ò ¶§
+        // Source ê°€ list ê°€ ì•„ë‹ ë•Œ
         //---------------------------------------------
         else
         {
@@ -4203,8 +4203,8 @@ qmoOuterJoinOper::transJoinOperListArgStyle( qcStatement * aStatement,
                           != IDE_SUCCESS );
 
                 /**********************************************
-                 *  Looping À» µ¹¶§¸¶´Ù ´ÙÀ½°ú °°Àº Tree °¡ »ı±ä´Ù.
-                 *  ÀÌ·¯ÇÑ Tree ÀÇ OR ³ëµåµéÀ» ¿¬°áÇØ³ª°£´Ù.
+                 *  Looping ì„ ëŒë•Œë§ˆë‹¤ ë‹¤ìŒê³¼ ê°™ì€ Tree ê°€ ìƒê¸´ë‹¤.
+                 *  ì´ëŸ¬í•œ Tree ì˜ OR ë…¸ë“œë“¤ì„ ì—°ê²°í•´ë‚˜ê°„ë‹¤.
                  *
                  *        (OR)
                  *          |
@@ -4241,7 +4241,7 @@ qmoOuterJoinOper::transJoinOperListArgStyle( qcStatement * aStatement,
             }
 
             /**********************************************
-             *  ´ÙÀ½°ú °°Àº Tree °¡ ¿Ï¼ºµÇ¾ú´Ù.
+             *  ë‹¤ìŒê³¼ ê°™ì€ Tree ê°€ ì™„ì„±ë˜ì—ˆë‹¤.
              *
              *            ____ sPrevStart  ____ sPrevEnd
              *           /                /
@@ -4264,8 +4264,8 @@ qmoOuterJoinOper::transJoinOperListArgStyle( qcStatement * aStatement,
     }
 
     //---------------------------------------------
-    // º¯È¯ÇÑ Tree ÀÇ Start OR ³ëµå¿Í End OR ³ëµå¸¦
-    // ¹İÈ¯ÇÑ´Ù.
+    // ë³€í™˜í•œ Tree ì˜ Start OR ë…¸ë“œì™€ End OR ë…¸ë“œë¥¼
+    // ë°˜í™˜í•œë‹¤.
     //---------------------------------------------
 
     *aTransStart = sPredStart;
@@ -4299,12 +4299,12 @@ qmoOuterJoinOper::merge2ANSIStyleFromTree( qmsFrom     * aFromFrom,
  * Description :
  *
  * Implemenation :
- *    aFromFrom ³ëµå¸¦ aToFrom ÂÊÀ¸·Î merge
- *    1. aFindDepInfo ¸¦ ÀÌ¿ëÇÏ¿© aToFrom ¿¡¼­ ¿¬°áÁ¡À» Ã£´Â´Ù.
- *    2. ÇØ´ç ¿¬°áÁ¡ ´ë½Å aNewFrom À» ¿¬°áÇÑ ÈÄ left, right ¸¦ ¿¬°áÇÑ´Ù.
+ *    aFromFrom ë…¸ë“œë¥¼ aToFrom ìª½ìœ¼ë¡œ merge
+ *    1. aFindDepInfo ë¥¼ ì´ìš©í•˜ì—¬ aToFrom ì—ì„œ ì—°ê²°ì ì„ ì°¾ëŠ”ë‹¤.
+ *    2. í•´ë‹¹ ì—°ê²°ì  ëŒ€ì‹  aNewFrom ì„ ì—°ê²°í•œ í›„ left, right ë¥¼ ì—°ê²°í•œë‹¤.
  *
- *    aFirstIsLeft ´Â Ã¹¹øÂ° argument ÀÎ aFromFrom ÀÌ Left Outer ÀÇ
- *    left ÀÎÁö¿©ºÎ¸¦ ³ªÅ¸³½´Ù. (ID_TRUE/ID_FALSE)
+ *    aFirstIsLeft ëŠ” ì²«ë²ˆì§¸ argument ì¸ aFromFrom ì´ Left Outer ì˜
+ *    left ì¸ì§€ì—¬ë¶€ë¥¼ ë‚˜íƒ€ë‚¸ë‹¤. (ID_TRUE/ID_FALSE)
  *
  ***********************************************************************/
 
@@ -4323,8 +4323,8 @@ qmoOuterJoinOper::merge2ANSIStyleFromTree( qmsFrom     * aFromFrom,
 
 
     //------------------------------------------------------
-    // µÎ °³ÀÇ From ³ëµå°£¿¡´Â ¿¬°áÁ¡ÀÌ ¹İµå½Ã ÀÖ¾î¾ß ÇÑ´Ù.
-    // ÀÌ¸¦ depInfo ¸¦ ÅëÇØ °Ë»çÇÑ´Ù.
+    // ë‘ ê°œì˜ From ë…¸ë“œê°„ì—ëŠ” ì—°ê²°ì ì´ ë°˜ë“œì‹œ ìˆì–´ì•¼ í•œë‹¤.
+    // ì´ë¥¼ depInfo ë¥¼ í†µí•´ ê²€ì‚¬í•œë‹¤.
     //------------------------------------------------------
 
     qtc::dependencyAnd( aFindDepInfo,
@@ -4336,8 +4336,8 @@ qmoOuterJoinOper::merge2ANSIStyleFromTree( qmsFrom     * aFromFrom,
               == ID_TRUE );
 
     //------------------------------------------------------
-    // left, right °¡ ¸ğµÎ leaf node ÀÏ ¶§´Â ´õÀÌ»ó
-    // traverse ÇÒ ÇÊ¿ä°¡ ¾ø´Ù.
+    // left, right ê°€ ëª¨ë‘ leaf node ì¼ ë•ŒëŠ” ë”ì´ìƒ
+    // traverse í•  í•„ìš”ê°€ ì—†ë‹¤.
     //------------------------------------------------------
 
     if ( ( sToFrom->left->joinType == QMS_NO_JOIN )
@@ -4345,7 +4345,7 @@ qmoOuterJoinOper::merge2ANSIStyleFromTree( qmsFrom     * aFromFrom,
     {
 
         //------------------------------------------------------
-        // ¿¬°áÁ¡ÀÌ left ³ëµåÀÎ °æ¿ì
+        // ì—°ê²°ì ì´ left ë…¸ë“œì¸ ê²½ìš°
         //------------------------------------------------------
 
         if( qtc::dependencyEqual( aFindDepInfo,
@@ -4367,7 +4367,7 @@ qmoOuterJoinOper::merge2ANSIStyleFromTree( qmsFrom     * aFromFrom,
         }
 
         //------------------------------------------------------
-        // ¿¬°áÁ¡ÀÌ right ³ëµåÀÎ °æ¿ì
+        // ì—°ê²°ì ì´ right ë…¸ë“œì¸ ê²½ìš°
         //------------------------------------------------------
 
         else if( qtc::dependencyEqual( aFindDepInfo,
@@ -4389,7 +4389,7 @@ qmoOuterJoinOper::merge2ANSIStyleFromTree( qmsFrom     * aFromFrom,
         }
 
         //------------------------------------------------------
-        // ÀÌµµÀúµµ ¾Æ´Ï¸é ¿¡·¯
+        // ì´ë„ì €ë„ ì•„ë‹ˆë©´ ì—ëŸ¬
         //------------------------------------------------------
 
         else
@@ -4398,7 +4398,7 @@ qmoOuterJoinOper::merge2ANSIStyleFromTree( qmsFrom     * aFromFrom,
         }
 
         //------------------------------------------------------
-        // ¿¬°áÇÏ´Â ³ëµåÀÇ dependency Á¤º¸ Oring
+        // ì—°ê²°í•˜ëŠ” ë…¸ë“œì˜ dependency ì •ë³´ Oring
         //------------------------------------------------------
 
         IDE_TEST( qtc::dependencyOr( & aNewFrom->left->depInfo,
@@ -4413,14 +4413,14 @@ qmoOuterJoinOper::merge2ANSIStyleFromTree( qmsFrom     * aFromFrom,
     }
 
     //------------------------------------------------------
-    // right ÂÊÀº leaf ÀÌ°í, left ÂÊÀº tree ÀÎ °æ¿ì
+    // right ìª½ì€ leaf ì´ê³ , left ìª½ì€ tree ì¸ ê²½ìš°
     //------------------------------------------------------
 
     else if ( ( sToFrom->left->joinType != QMS_NO_JOIN )
            && ( sToFrom->right->joinType == QMS_NO_JOIN ) )
     {
         //------------------------------------------------------
-        // ¿¬°áÁ¡ÀÌ left ³ëµåÀÎ °æ¿ì
+        // ì—°ê²°ì ì´ left ë…¸ë“œì¸ ê²½ìš°
         //------------------------------------------------------
 
         qtc::dependencyAnd( aFindDepInfo,
@@ -4440,7 +4440,7 @@ qmoOuterJoinOper::merge2ANSIStyleFromTree( qmsFrom     * aFromFrom,
         }
 
         //------------------------------------------------------
-        // ¿¬°áÁ¡ÀÌ right ³ëµåÀÎ °æ¿ì
+        // ì—°ê²°ì ì´ right ë…¸ë“œì¸ ê²½ìš°
         //------------------------------------------------------
 
         else
@@ -4465,7 +4465,7 @@ qmoOuterJoinOper::merge2ANSIStyleFromTree( qmsFrom     * aFromFrom,
         }
 
         //------------------------------------------------------
-        // ¿¬°áÇÏ´Â ³ëµåÀÇ dependency Á¤º¸ Oring
+        // ì—°ê²°í•˜ëŠ” ë…¸ë“œì˜ dependency ì •ë³´ Oring
         //------------------------------------------------------
 
         IDE_TEST( qtc::dependencyOr( & sToFrom->depInfo,
@@ -4475,14 +4475,14 @@ qmoOuterJoinOper::merge2ANSIStyleFromTree( qmsFrom     * aFromFrom,
     }
 
     //------------------------------------------------------
-    // right ÂÊÀº tree ÀÌ°í, left ÂÊÀº leaf ÀÎ °æ¿ì
+    // right ìª½ì€ tree ì´ê³ , left ìª½ì€ leaf ì¸ ê²½ìš°
     //------------------------------------------------------
 
     else if ( ( sToFrom->left->joinType == QMS_NO_JOIN )
            && ( sToFrom->right->joinType != QMS_NO_JOIN ) )
     {
         //------------------------------------------------------
-        // ¿¬°áÁ¡ÀÌ right ³ëµåÀÎ °æ¿ì
+        // ì—°ê²°ì ì´ right ë…¸ë“œì¸ ê²½ìš°
         //------------------------------------------------------
 
         qtc::dependencyAnd( aFindDepInfo,
@@ -4502,7 +4502,7 @@ qmoOuterJoinOper::merge2ANSIStyleFromTree( qmsFrom     * aFromFrom,
         }
 
         //------------------------------------------------------
-        // ¿¬°áÁ¡ÀÌ left ³ëµåÀÎ °æ¿ì
+        // ì—°ê²°ì ì´ left ë…¸ë“œì¸ ê²½ìš°
         //------------------------------------------------------
 
         else
@@ -4527,7 +4527,7 @@ qmoOuterJoinOper::merge2ANSIStyleFromTree( qmsFrom     * aFromFrom,
         }
 
         //------------------------------------------------------
-        // ¿¬°áÇÏ´Â ³ëµåÀÇ dependency Á¤º¸ Oring
+        // ì—°ê²°í•˜ëŠ” ë…¸ë“œì˜ dependency ì •ë³´ Oring
         //------------------------------------------------------
 
         IDE_TEST( qtc::dependencyOr( & sToFrom->depInfo,
@@ -4541,7 +4541,7 @@ qmoOuterJoinOper::merge2ANSIStyleFromTree( qmsFrom     * aFromFrom,
         // && ( sToFrom->right->joinType != QMS_NO_JOIN ) )
 
         //------------------------------------------------------
-        // ¿¬°áÁ¡ÀÌ left ³ëµåÀÎ °æ¿ì
+        // ì—°ê²°ì ì´ left ë…¸ë“œì¸ ê²½ìš°
         //------------------------------------------------------
 
         qtc::dependencyAnd( aFindDepInfo,
@@ -4561,7 +4561,7 @@ qmoOuterJoinOper::merge2ANSIStyleFromTree( qmsFrom     * aFromFrom,
         }
 
         //------------------------------------------------------
-        // ¿¬°áÁ¡ÀÌ right ³ëµåÀÎ °æ¿ì
+        // ì—°ê²°ì ì´ right ë…¸ë“œì¸ ê²½ìš°
         //------------------------------------------------------
 
         else
@@ -4575,7 +4575,7 @@ qmoOuterJoinOper::merge2ANSIStyleFromTree( qmsFrom     * aFromFrom,
         }
 
         //------------------------------------------------------
-        // ¿¬°áÇÏ´Â ³ëµåÀÇ dependency Á¤º¸ Oring
+        // ì—°ê²°í•˜ëŠ” ë…¸ë“œì˜ dependency ì •ë³´ Oring
         //------------------------------------------------------
 
         IDE_TEST( qtc::dependencyOr( & sToFrom->depInfo,
@@ -4614,7 +4614,7 @@ qmoOuterJoinOper::transformJoinOper2From( qcStatement      * aStatement,
  *
  * Implemenation :
  *
- *    ¾Æ·¡ ¿¹¸¦ ÅëÇØ º¯È¯¹æ¹ıÀ» »ìÆìº¸ÀÚ.
+ *    ì•„ë˜ ì˜ˆë¥¼ í†µí•´ ë³€í™˜ë°©ë²•ì„ ì‚´í´ë³´ì.
  *
  *    select t1.*, t2.*, t3.*, t4.*, t5.*
  *      from t1, t2, t3, t4, t5
@@ -4623,13 +4623,13 @@ qmoOuterJoinOper::transformJoinOper2From( qcStatement      * aStatement,
  *       and t2.i1    = t4.i1(+)
  *       and t3.i1(+) = t5.i1;
  *    
- *    À§ÀÇ SQL ¿¡¼­ Join Relation À» »Ì¾Æº¸¸é ´ÙÀ½°ú °°´Ù.
- *    Á¶°ÇÀÇ ¼ø¼­¸¦ ¹Ù²Ù¾îµµ ¾Æ·¡¿Í °°ÀÌ table °ª ¼ø¼­·Î Á¤·ÄµÈ´Ù.
- *    (Join Group º°·Î ÀÌ¹Ì Á¤·ÄµÇ¾î ÀÌ ÇÔ¼ö·Î ³Ñ¾î¿Â´Ù.)
+ *    ìœ„ì˜ SQL ì—ì„œ Join Relation ì„ ë½‘ì•„ë³´ë©´ ë‹¤ìŒê³¼ ê°™ë‹¤.
+ *    ì¡°ê±´ì˜ ìˆœì„œë¥¼ ë°”ê¾¸ì–´ë„ ì•„ë˜ì™€ ê°™ì´ table ê°’ ìˆœì„œë¡œ ì •ë ¬ëœë‹¤.
+ *    (Join Group ë³„ë¡œ ì´ë¯¸ ì •ë ¬ë˜ì–´ ì´ í•¨ìˆ˜ë¡œ ë„˜ì–´ì˜¨ë‹¤.)
  *          _    _        _    _
  *       (1,2)->(1,5)->(2,4)->(3,5)
  *    
- *    À§ÀÇ Join Relation Àº ¾Æ·¡¿Í °°ÀÌ tree ±¸Á¶·Î º¯°æµÉ ¼ö ÀÖ´Ù.
+ *    ìœ„ì˜ Join Relation ì€ ì•„ë˜ì™€ ê°™ì´ tree êµ¬ì¡°ë¡œ ë³€ê²½ë  ìˆ˜ ìˆë‹¤.
  *    
  *                left
  *              /      \
@@ -4639,25 +4639,25 @@ qmoOuterJoinOper::transformJoinOper2From( qcStatement      * aStatement,
  *         /  \
  *        5    3
  *    
- *    À§ÀÇ °³³ä tree ´Â ¾Æ·¡ÀÇ °úÁ¤À» ÅëÇØ ¿Ï¼ºµÈ´Ù.
- *    ¸ğµç Join Àº Left Outer Join À¸·Î¸¸ »ı¼ºÇÏ°í,
- *    (+)°¡ ºÙÁö ¾ÊÀº Å×ÀÌºíÀ» ÁÂÃø¿¡ À§Ä¡½ÃÅ²´Ù.
- *    Relation List ¸¦ ÇÏ³ª¾¿ °¡Á®¿Í¼­ Tree ÀÇ ¿¬°áÁ¡À» Ã£¾Æ ¿¬°áÇØÁÖ´Â °úÁ¤ÀÌ´Ù.
+ *    ìœ„ì˜ ê°œë… tree ëŠ” ì•„ë˜ì˜ ê³¼ì •ì„ í†µí•´ ì™„ì„±ëœë‹¤.
+ *    ëª¨ë“  Join ì€ Left Outer Join ìœ¼ë¡œë§Œ ìƒì„±í•˜ê³ ,
+ *    (+)ê°€ ë¶™ì§€ ì•Šì€ í…Œì´ë¸”ì„ ì¢Œì¸¡ì— ìœ„ì¹˜ì‹œí‚¨ë‹¤.
+ *    Relation List ë¥¼ í•˜ë‚˜ì”© ê°€ì ¸ì™€ì„œ Tree ì˜ ì—°ê²°ì ì„ ì°¾ì•„ ì—°ê²°í•´ì£¼ëŠ” ê³¼ì •ì´ë‹¤.
  *
- *    ÇÏ³ªÀÇ Join Group ³»¿¡¼­ table °ªÀ¸·Î Á¤·ÄµÈ Join Relation List ´Â
- *    °¢ List µéÀÌ dependency Å×ÀÌºíÀ» ÅëÇØ ¿¬°á°ü°è¸¦ °¡Áú ¼ö ¹Û¿¡ ¾ø´Ù.
- *    µû¶ó¼­, °á·ĞÀûÀ¸·Î´Â ÇÏ³ªÀÇ Join Group ³»ÀÇ
- *    Join Relation List ´Â ÇÏ³ªÀÇ tree ·Î ¿Ï¼ºµÈ´Ù.
+ *    í•˜ë‚˜ì˜ Join Group ë‚´ì—ì„œ table ê°’ìœ¼ë¡œ ì •ë ¬ëœ Join Relation List ëŠ”
+ *    ê° List ë“¤ì´ dependency í…Œì´ë¸”ì„ í†µí•´ ì—°ê²°ê´€ê³„ë¥¼ ê°€ì§ˆ ìˆ˜ ë°–ì— ì—†ë‹¤.
+ *    ë”°ë¼ì„œ, ê²°ë¡ ì ìœ¼ë¡œëŠ” í•˜ë‚˜ì˜ Join Group ë‚´ì˜
+ *    Join Relation List ëŠ” í•˜ë‚˜ì˜ tree ë¡œ ì™„ì„±ëœë‹¤.
  *    
  *            _
- *    (°¡) (1,2)
+ *    (ê°€) (1,2)
  *    
  *                left           --> on t1.i1=t2.i1
  *              /      \
  *             1        2
  *    
  *          _
- *    (³ª) (1,5)
+ *    (ë‚˜) (1,5)
  *    
  *                left
  *              /      \
@@ -4666,7 +4666,7 @@ qmoOuterJoinOper::transformJoinOper2From( qcStatement      * aStatement,
  *          5      1
  *    
  *            _
- *    (´Ù) (2,4)
+ *    (ë‹¤) (2,4)
  *    
  *                left
  *              /      \
@@ -4675,7 +4675,7 @@ qmoOuterJoinOper::transformJoinOper2From( qcStatement      * aStatement,
  *          5      1 2     4
  *    
  *          _
- *    (¶ó) (3,5)
+ *    (ë¼) (3,5)
  *    
  *                left
  *              /      \
@@ -4685,11 +4685,11 @@ qmoOuterJoinOper::transformJoinOper2From( qcStatement      * aStatement,
  *        /   \
  *       5     3
  *    
- *    À§ÀÇ °³³äÀûÀÎ tree ±¸Á¶¸¦ ANSI ±¸¹®À¸·Î Ç¥ÇöÇÏ¸é ¾Æ·¡¿Í °°´Ù.
- *    ½ÇÁ¦ Á¶È¸¸¦ ÇØº¸¸é À§¿¡¼­ (+)¸¦ »ç¿ëÇÑ ±¸¹®ÀÇ °á°ú¿Í Á¤È®È÷
- *    ÀÏÄ¡ÇÔÀ» È®ÀÎÇÒ ¼ö ÀÖ´Ù.
- *    ÁÂÃøºÎÅÍ bottom up ÇüÅÂ·Î ±¸¹®¿¡ Ç¥ÇöÇØÁÖ¸é µÈ´Ù.
- *    À§ÀÇ tree ±¸Á¶¿Í ºñ±³°¡ ½±µµ·Ï ±¸¹®À» Ç¥ÇöÇß´Ù.
+ *    ìœ„ì˜ ê°œë…ì ì¸ tree êµ¬ì¡°ë¥¼ ANSI êµ¬ë¬¸ìœ¼ë¡œ í‘œí˜„í•˜ë©´ ì•„ë˜ì™€ ê°™ë‹¤.
+ *    ì‹¤ì œ ì¡°íšŒë¥¼ í•´ë³´ë©´ ìœ„ì—ì„œ (+)ë¥¼ ì‚¬ìš©í•œ êµ¬ë¬¸ì˜ ê²°ê³¼ì™€ ì •í™•íˆ
+ *    ì¼ì¹˜í•¨ì„ í™•ì¸í•  ìˆ˜ ìˆë‹¤.
+ *    ì¢Œì¸¡ë¶€í„° bottom up í˜•íƒœë¡œ êµ¬ë¬¸ì— í‘œí˜„í•´ì£¼ë©´ ëœë‹¤.
+ *    ìœ„ì˜ tree êµ¬ì¡°ì™€ ë¹„êµê°€ ì‰½ë„ë¡ êµ¬ë¬¸ì„ í‘œí˜„í–ˆë‹¤.
  *    
  *    select t1.*, t2.*, t3.*, t4.*, t5.*
  *      from                t5
@@ -4741,9 +4741,9 @@ qmoOuterJoinOper::transformJoinOper2From( qcStatement      * aStatement,
 
 
     //------------------------------------------------------
-    // Join Relation ÀÇ µÎ°³ dependency table ¿¡ ´ëÇÑ
-    // (+) À¯¹«¿¡ µû¶ó Left, Right Å×ÀÌºíÀ» °áÁ¤
-    // (+) °¡ ¾ø´Â ÂÊÀÌ Left
+    // Join Relation ì˜ ë‘ê°œ dependency table ì— ëŒ€í•œ
+    // (+) ìœ ë¬´ì— ë”°ë¼ Left, Right í…Œì´ë¸”ì„ ê²°ì •
+    // (+) ê°€ ì—†ëŠ” ìª½ì´ Left
     //------------------------------------------------------
 
     sJoinOper = qtc::getDependJoinOper( &aJoinGroupRel->depInfo, 0 );
@@ -4761,38 +4761,38 @@ qmoOuterJoinOper::transformJoinOper2From( qcStatement      * aStatement,
     }
 
     //------------------------------------------------------
-    // aNewFrom ³ëµå¸¦ Ãß°¡ÇÒ À§Ä¡¸¦ Ã£±â À§ÇØ traverse ½Ã
-    // ºñ±³ÇÒ Left/Right table °ª
+    // aNewFrom ë…¸ë“œë¥¼ ì¶”ê°€í•  ìœ„ì¹˜ë¥¼ ì°¾ê¸° ìœ„í•´ traverse ì‹œ
+    // ë¹„êµí•  Left/Right table ê°’
     //------------------------------------------------------
 
     qtc::dependencySet( sLeft, &sLeftDepInfo );
     qtc::dependencySet( sRight, &sRightDepInfo );
 
     //------------------------------------------------------
-    // À§ÀÇ Left, Right Á¤º¸¸¦ ÀÌ¿ëÇÏ¿© qmsFrom List ¸¦
-    // Å½»öÇÑ ÈÄ Ã£Àº qmsFrom type ¿¡ µû¶ó ´Ù¸¥ Ã³¸® ¼öÇà
+    // ìœ„ì˜ Left, Right ì •ë³´ë¥¼ ì´ìš©í•˜ì—¬ qmsFrom List ë¥¼
+    // íƒìƒ‰í•œ í›„ ì°¾ì€ qmsFrom type ì— ë”°ë¼ ë‹¤ë¥¸ ì²˜ë¦¬ ìˆ˜í–‰
     //
     //  1. Left = QMS_NO_JOIN, Right = QMS_NO_JOIN
-    //     => NewFrom(QMS_LEFT_OUTER_JOIN) ¿¡ Left, Right ¿¬°á
+    //     => NewFrom(QMS_LEFT_OUTER_JOIN) ì— Left, Right ì—°ê²°
     //
     //  2. Left != QMS_NO_JOIN, Right = QMS_NO_JOIN
-    //     => Left °ªÀ» ÀÌ¿ëÇÏ¿© Tree Å½»öÇÏ¿© °°Àº dependency table
-    //        Á¤º¸¸¦ °¡Áø ³ëµå¸¦ ¹ß°ßÇÏ¸é NewFrom(QMS_LEFT_OUTER_JOIN)À»
-    //        ÇØ´ç ³ëµå ´ë½Å ´ëÃ¼ÇÑ ÈÄ Left,Right ¿¬°á
+    //     => Left ê°’ì„ ì´ìš©í•˜ì—¬ Tree íƒìƒ‰í•˜ì—¬ ê°™ì€ dependency table
+    //        ì •ë³´ë¥¼ ê°€ì§„ ë…¸ë“œë¥¼ ë°œê²¬í•˜ë©´ NewFrom(QMS_LEFT_OUTER_JOIN)ì„
+    //        í•´ë‹¹ ë…¸ë“œ ëŒ€ì‹  ëŒ€ì²´í•œ í›„ Left,Right ì—°ê²°
     //
     //  3. Left = QMS_NO_JOIN, Right != QMS_NO_JOIN
-    //     => Right °ªÀ» ÀÌ¿ëÇÏ¿© Tree Å½»öÇÏ¿© °°Àº dependency table
-    //        Á¤º¸¸¦ °¡Áø ³ëµå¸¦ ¹ß°ßÇÏ¸é NewFrom(QMS_LEFT_OUTER_JOIN)À»
-    //        ÇØ´ç ³ëµå ´ë½Å ´ëÃ¼ÇÑ ÈÄ Left,Right ¿¬°á
+    //     => Right ê°’ì„ ì´ìš©í•˜ì—¬ Tree íƒìƒ‰í•˜ì—¬ ê°™ì€ dependency table
+    //        ì •ë³´ë¥¼ ê°€ì§„ ë…¸ë“œë¥¼ ë°œê²¬í•˜ë©´ NewFrom(QMS_LEFT_OUTER_JOIN)ì„
+    //        í•´ë‹¹ ë…¸ë“œ ëŒ€ì‹  ëŒ€ì²´í•œ í›„ Left,Right ì—°ê²°
     //
     //  4. Left != QMS_NO_JOIN, Right != QMS_NO_JOIN
-    //     => Join Relation Àº ÇÏ³ªÀÇ Tree ·Î ¿Ï¼ºµÇ±â ¶§¹®¿¡
-    //        ÀÌ·± °æ¿ì´Â ¹ß»ıÇÒ ¼ö ¾ø´Ù. (¿¡·¯)
+    //     => Join Relation ì€ í•˜ë‚˜ì˜ Tree ë¡œ ì™„ì„±ë˜ê¸° ë•Œë¬¸ì—
+    //        ì´ëŸ° ê²½ìš°ëŠ” ë°œìƒí•  ìˆ˜ ì—†ë‹¤. (ì—ëŸ¬)
     //------------------------------------------------------
 
     //------------------------------------------------------
-    // sLeftDepInfo ¿Í sRightDepInfo Á¤º¸¸¦ ÀÌ¿ëÇÏ¿©
-    // °¢°¢ÀÇ Å×ÀÌºíÀÌ Æ÷ÇÔµÈ From node ¸¦ Ã£´Â´Ù.
+    // sLeftDepInfo ì™€ sRightDepInfo ì •ë³´ë¥¼ ì´ìš©í•˜ì—¬
+    // ê°ê°ì˜ í…Œì´ë¸”ì´ í¬í•¨ëœ From node ë¥¼ ì°¾ëŠ”ë‹¤.
     //
     //     sFromRightPrev sFromLeftPrev
     //          |             |
@@ -4802,8 +4802,8 @@ qmoOuterJoinOper::transformJoinOper2From( qcStatement      * aStatement,
     //                 |             |
     //             sFromRight    sFromLeft
     //
-    // ¶Ç´Â, ÀÏºÎ Join Relation ÀÌ ÀÌ¹Ì tree ÇüÅÂ·Î ÀüÈ¯µÈ »óÅÂ¶ó¸é
-    // ´ÙÀ½°ú °°Àº »óÅÂÀÏ ¼öµµ ÀÖ´Ù. (L Àº QMS_LEFT_OUTER_JOIN)
+    // ë˜ëŠ”, ì¼ë¶€ Join Relation ì´ ì´ë¯¸ tree í˜•íƒœë¡œ ì „í™˜ëœ ìƒíƒœë¼ë©´
+    // ë‹¤ìŒê³¼ ê°™ì€ ìƒíƒœì¼ ìˆ˜ë„ ìˆë‹¤. (L ì€ QMS_LEFT_OUTER_JOIN)
     //
     //              sFromRight
     //                 |
@@ -4880,7 +4880,7 @@ qmoOuterJoinOper::transformJoinOper2From( qcStatement      * aStatement,
     }
 
     /*------------------------------------------------------
-     * Left, Right ³ëµå¸¦ from list ¿¡¼­ Á¦°Å
+     * Left, Right ë…¸ë“œë¥¼ from list ì—ì„œ ì œê±°
      *
      * from -> (3) -> (4) -> null
      *
@@ -4893,19 +4893,19 @@ qmoOuterJoinOper::transformJoinOper2From( qcStatement      * aStatement,
      *-----------------------------------------------------*/
 
     //------------------------------------------------------
-    // Left ¿Í Right ÀÇ À§Ä¡¿¡ µû¶ó Ã³¸®
-    //  0. Left ¿Í Right°¡ °°Àº °æ¿ì ÀÌ´Â NewFromÀ¸·Î ±¸¼ºµÈ Æ®¸®¿¡
-    //     ÂüÁ¶ Å×ÀÌºíÀÌ ¸ğµÎ ÀÖ´Â °æ¿ì (BUG-37693)
-    //  1. Left °¡ list ÀÇ ¸Ç¾ÕÀÌ°í ±× ´ÙÀ½ Right °¡ ¹Ù·Î ¿Ã¶§
-    //  2. Right °¡ list ÀÇ ¸Ç¾ÕÀÌ°í ±× ´ÙÀ½ Left °¡ ¹Ù·Î ¿Ã¶§
-    //  3. Left ¿Í Right °¡ list ÀÇ Áß°£¿¡ ¿Ã ¶§
+    // Left ì™€ Right ì˜ ìœ„ì¹˜ì— ë”°ë¼ ì²˜ë¦¬
+    //  0. Left ì™€ Rightê°€ ê°™ì€ ê²½ìš° ì´ëŠ” NewFromìœ¼ë¡œ êµ¬ì„±ëœ íŠ¸ë¦¬ì—
+    //     ì°¸ì¡° í…Œì´ë¸”ì´ ëª¨ë‘ ìˆëŠ” ê²½ìš° (BUG-37693)
+    //  1. Left ê°€ list ì˜ ë§¨ì•ì´ê³  ê·¸ ë‹¤ìŒ Right ê°€ ë°”ë¡œ ì˜¬ë•Œ
+    //  2. Right ê°€ list ì˜ ë§¨ì•ì´ê³  ê·¸ ë‹¤ìŒ Left ê°€ ë°”ë¡œ ì˜¬ë•Œ
+    //  3. Left ì™€ Right ê°€ list ì˜ ì¤‘ê°„ì— ì˜¬ ë•Œ
     //------------------------------------------------------
 
     if ( sFromLeft == sFromRight )
     {
         /* BUG-37693
-         * ÀÌ¹Ì Æ®¸®·Î ±¸¼ºµÈ from¿¡ ¸ğµç ÂüÁ¶ Å×ÀÌºíÀÌ ÀÖ´Â °æ¿ì·Î
-         * ´õÀÌ»ó Æ®¸® ±¸¼ºÀÌ³ª ¸ÓÁö°¡ ÇÊ¿ä ¾ø´Ù.
+         * ì´ë¯¸ íŠ¸ë¦¬ë¡œ êµ¬ì„±ëœ fromì— ëª¨ë“  ì°¸ì¡° í…Œì´ë¸”ì´ ìˆëŠ” ê²½ìš°ë¡œ
+         * ë”ì´ìƒ íŠ¸ë¦¬ êµ¬ì„±ì´ë‚˜ ë¨¸ì§€ê°€ í•„ìš” ì—†ë‹¤.
          */
         IDE_CONT(NORMAL_EXIT);
     }
@@ -4992,15 +4992,15 @@ qmoOuterJoinOper::transformJoinOper2From( qcStatement      * aStatement,
     }
 
     //------------------------------------------------------
-    // Left, Right ³ëµåÀÇ joinType ¿¡ ¸Â°Ô Ã³¸®
+    // Left, Right ë…¸ë“œì˜ joinType ì— ë§ê²Œ ì²˜ë¦¬
     //------------------------------------------------------
 
     if ( ( sFromLeft->joinType  == QMS_NO_JOIN ) &&
          ( sFromRight->joinType == QMS_NO_JOIN ) )
     {
         /*------------------------------------------------------
-         * From node list °¡ ¾Æ·¡¿Í °°Àº »óÅÂÀÏ ¶§ÀÇ Ã³¸®ÀÌ´Ù.
-         * sFromLeft ¶Ç´Â sFromRight °¡ list ÀÇ ¸Ç¾ÕÀÏ ¶§¸¦ °í·ÁÇÑ´Ù.
+         * From node list ê°€ ì•„ë˜ì™€ ê°™ì€ ìƒíƒœì¼ ë•Œì˜ ì²˜ë¦¬ì´ë‹¤.
+         * sFromLeft ë˜ëŠ” sFromRight ê°€ list ì˜ ë§¨ì•ì¼ ë•Œë¥¼ ê³ ë ¤í•œë‹¤.
          *
          *     sFromRightPrev sFromLeftPrev
          *          |             |
@@ -5010,7 +5010,7 @@ qmoOuterJoinOper::transformJoinOper2From( qcStatement      * aStatement,
          *                 |             |
          *             sFromRight    sFromLeft
          *
-         * Ã³¸®ÈÄÀÇ From List ´Â ´ÙÀ½°ú °°ÀÌ º¯°æµÈ´Ù.
+         * ì²˜ë¦¬í›„ì˜ From List ëŠ” ë‹¤ìŒê³¼ ê°™ì´ ë³€ê²½ëœë‹¤.
          *
          * from -> (L) -> (5) -> (3) -> (4) -> null
          *        /   \
@@ -5018,14 +5018,14 @@ qmoOuterJoinOper::transformJoinOper2From( qcStatement      * aStatement,
          *-----------------------------------------------------*/
 
         //------------------------------------------------------
-        // aNewFrom ¿¡ Left, Right ³ëµå ¿¬°á
+        // aNewFrom ì— Left, Right ë…¸ë“œ ì—°ê²°
         //------------------------------------------------------
 
         aNewFrom->left  = sFromLeft;
         aNewFrom->right = sFromRight;
 
         //------------------------------------------------------
-        // ¿¬°áÇÏ´Â ³ëµåÀÇ dependency Á¤º¸ Oring
+        // ì—°ê²°í•˜ëŠ” ë…¸ë“œì˜ dependency ì •ë³´ Oring
         //------------------------------------------------------
 
         IDE_TEST( qtc::dependencyOr( & sFromLeft->depInfo,
@@ -5034,7 +5034,7 @@ qmoOuterJoinOper::transformJoinOper2From( qcStatement      * aStatement,
                   != IDE_SUCCESS );
 
         //------------------------------------------------------
-        // aNewFrom ÀÇ onCondition ÀÛ¼º
+        // aNewFrom ì˜ onCondition ì‘ì„±
         //------------------------------------------------------
 
         IDE_TEST( movePred2OnCondition( aStatement,
@@ -5045,7 +5045,7 @@ qmoOuterJoinOper::transformJoinOper2From( qcStatement      * aStatement,
                   != IDE_SUCCESS );
 
         //------------------------------------------------------
-        // ¿Ï¼ºµÈ tree ¸¦ from list ÀÇ ¸Ç¾Õ¿¡ ¿¬°á
+        // ì™„ì„±ëœ tree ë¥¼ from list ì˜ ë§¨ì•ì— ì—°ê²°
         //------------------------------------------------------
 
         aNewFrom->next         = aQuerySet->SFWGH->from;
@@ -5057,9 +5057,9 @@ qmoOuterJoinOper::transformJoinOper2From( qcStatement      * aStatement,
              ( sFromRight->joinType == QMS_NO_JOIN ) )
         {
             /*------------------------------------------------------
-             * From node list °¡ ¾Æ·¡¿Í °°Àº »óÅÂÀÏ ¶§ÀÇ Ã³¸®ÀÌ´Ù.
+             * From node list ê°€ ì•„ë˜ì™€ ê°™ì€ ìƒíƒœì¼ ë•Œì˜ ì²˜ë¦¬ì´ë‹¤.
              *    _
-             * (5,2) ÀÇ Ãß°¡
+             * (5,2) ì˜ ì¶”ê°€
              *
              *    sFromRight sFromLeft
              *          |      |
@@ -5068,7 +5068,7 @@ qmoOuterJoinOper::transformJoinOper2From( qcStatement      * aStatement,
              *               /   \
              *             (1)   (2)
              *
-             * Ã³¸®ÈÄÀÇ From List ´Â ´ÙÀ½°ú °°ÀÌ º¯°æµÈ´Ù.
+             * ì²˜ë¦¬í›„ì˜ From List ëŠ” ë‹¤ìŒê³¼ ê°™ì´ ë³€ê²½ëœë‹¤.
              *
              * from -> (L) -> (3) -> (4) -> null
              *        /   \
@@ -5078,7 +5078,7 @@ qmoOuterJoinOper::transformJoinOper2From( qcStatement      * aStatement,
              *-----------------------------------------------------*/
 
             //------------------------------------------------------
-            // tree ÀÇ ¿¬°áÁ¡À» Ã£¾Æ¼­ aNewFrom À» »ğÀÔ
+            // tree ì˜ ì—°ê²°ì ì„ ì°¾ì•„ì„œ aNewFrom ì„ ì‚½ì…
             // Merge sFromRight -> sFromLeft
             //------------------------------------------------------
 
@@ -5093,7 +5093,7 @@ qmoOuterJoinOper::transformJoinOper2From( qcStatement      * aStatement,
 
 
             //------------------------------------------------------
-            // aNewFrom ÀÇ onCondition ÀÛ¼º
+            // aNewFrom ì˜ onCondition ì‘ì„±
             //------------------------------------------------------
 
             IDE_TEST( movePred2OnCondition( aStatement,
@@ -5104,7 +5104,7 @@ qmoOuterJoinOper::transformJoinOper2From( qcStatement      * aStatement,
                       != IDE_SUCCESS );
 
             //------------------------------------------------------
-            // ¿Ï¼ºµÈ tree ¸¦ from list ÀÇ ¸Ç¾Õ¿¡ ¿¬°á
+            // ì™„ì„±ëœ tree ë¥¼ from list ì˜ ë§¨ì•ì— ì—°ê²°
             //------------------------------------------------------
 
             sFromLeft->next        = aQuerySet->SFWGH->from;
@@ -5116,10 +5116,10 @@ qmoOuterJoinOper::transformJoinOper2From( qcStatement      * aStatement,
                  ( sFromRight->joinType != QMS_NO_JOIN ) )
             {
                 /*------------------------------------------------------
-                 * From node list °¡ ¾Æ·¡¿Í °°Àº »óÅÂÀÏ ¶§ÀÇ Ã³¸®ÀÌ´Ù.
+                 * From node list ê°€ ì•„ë˜ì™€ ê°™ì€ ìƒíƒœì¼ ë•Œì˜ ì²˜ë¦¬ì´ë‹¤.
                  *
                  *  _
-                 * (1,5) ÀÇ Ãß°¡
+                 * (1,5) ì˜ ì¶”ê°€
                  *
                  *    sFromRight sFromLeft
                  *          |      |
@@ -5128,7 +5128,7 @@ qmoOuterJoinOper::transformJoinOper2From( qcStatement      * aStatement,
                  *        /   \
                  *      (1)   (2)
                  *
-                 * Ã³¸®ÈÄÀÇ From List ´Â ´ÙÀ½°ú °°ÀÌ º¯°æµÈ´Ù.
+                 * ì²˜ë¦¬í›„ì˜ From List ëŠ” ë‹¤ìŒê³¼ ê°™ì´ ë³€ê²½ëœë‹¤.
                  *
                  * from -> (L) -> (3) -> (4) -> null
                  *        /   \
@@ -5141,7 +5141,7 @@ qmoOuterJoinOper::transformJoinOper2From( qcStatement      * aStatement,
                  *-----------------------------------------------------*/
 
                 //------------------------------------------------------
-                // tree ÀÇ ¿¬°áÁ¡À» Ã£¾Æ¼­ aNewFrom À» »ğÀÔ
+                // tree ì˜ ì—°ê²°ì ì„ ì°¾ì•„ì„œ aNewFrom ì„ ì‚½ì…
                 //------------------------------------------------------
 
                 sFirstIsLeft = ID_TRUE;
@@ -5155,7 +5155,7 @@ qmoOuterJoinOper::transformJoinOper2From( qcStatement      * aStatement,
 
 
                 //------------------------------------------------------
-                // aNewFrom ÀÇ onCondition ÀÛ¼º
+                // aNewFrom ì˜ onCondition ì‘ì„±
                 //------------------------------------------------------
 
                 IDE_TEST( movePred2OnCondition( aStatement,
@@ -5166,7 +5166,7 @@ qmoOuterJoinOper::transformJoinOper2From( qcStatement      * aStatement,
                           != IDE_SUCCESS );
 
                 //------------------------------------------------------
-                // ¿Ï¼ºµÈ tree ¸¦ from list ÀÇ ¸Ç¾Õ¿¡ ¿¬°á
+                // ì™„ì„±ëœ tree ë¥¼ from list ì˜ ë§¨ì•ì— ì—°ê²°
                 //------------------------------------------------------
 
                 sFromRight->next = aQuerySet->SFWGH->from;
@@ -5178,8 +5178,8 @@ qmoOuterJoinOper::transformJoinOper2From( qcStatement      * aStatement,
                 //  ( ( sFromLeft->qmsJoinType  != QMS_NO_JOIN )
                 // && ( sFromRight->qmsJoinType != QMS_NO_JOIN ) )
                 //
-                // Join Relation Àº ÇÏ³ªÀÇ From Tree ·Î º¯È¯ÀÌ µÇ±â ¶§¹®¿¡
-                // ÀÌ·± °æ¿ì´Â ÀÖÀ» ¼ö ¾øÀ½. -> ¿¡·¯
+                // Join Relation ì€ í•˜ë‚˜ì˜ From Tree ë¡œ ë³€í™˜ì´ ë˜ê¸° ë•Œë¬¸ì—
+                // ì´ëŸ° ê²½ìš°ëŠ” ìˆì„ ìˆ˜ ì—†ìŒ. -> ì—ëŸ¬
                 //------------------------------------------------------
 
                 IDE_RAISE( ERR_INVALID_FROM_JOIN_TYPE );
@@ -5231,14 +5231,14 @@ qmoOuterJoinOper::transformJoinOper( qcStatement       * aStatement,
  *
  * PROJ-1653 Outer Join Operator (+)
  *
- * Description : Outer Join Operator ¸¦ ANSI ÇüÅÂ·ÎÀÇ º¯È¯
+ * Description : Outer Join Operator ë¥¼ ANSI í˜•íƒœë¡œì˜ ë³€í™˜
  *
  * Implemenation :
- *    1. Join Relation List ¸¦ ¼øÈ¸ÇÏ¸ç qmsFrom tree ±¸¼º
- *    2. qmsFrom tree ¸¦ ±¸¼ºÇÑ Join Predicate ÀÌ °¡¸®Å°´Â qtcNode ³ëµå¸¦
- *       onCondition À¸·Î ÀÌµ¿
- *    3. oneTablePred ¿¡¼­ °°Àº Å×ÀÌºí¿¡ (+)°¡ ÀÖ´Â °ÍÀ» °ñ¶ó
- *       ¸¶Âù°¡Áö·Î onCondition À¸·Î ÀÌµ¿
+ *    1. Join Relation List ë¥¼ ìˆœíšŒí•˜ë©° qmsFrom tree êµ¬ì„±
+ *    2. qmsFrom tree ë¥¼ êµ¬ì„±í•œ Join Predicate ì´ ê°€ë¦¬í‚¤ëŠ” qtcNode ë…¸ë“œë¥¼
+ *       onCondition ìœ¼ë¡œ ì´ë™
+ *    3. oneTablePred ì—ì„œ ê°™ì€ í…Œì´ë¸”ì— (+)ê°€ ìˆëŠ” ê²ƒì„ ê³¨ë¼
+ *       ë§ˆì°¬ê°€ì§€ë¡œ onCondition ìœ¼ë¡œ ì´ë™
  *
  ***********************************************************************/
 
@@ -5275,7 +5275,7 @@ qmoOuterJoinOper::transformJoinOper( qcStatement       * aStatement,
             sJoinRel = (qmoJoinOperRel *) & sCurJoinGroup->joinRelation[j];
 
             //------------------------------------------------------
-            // Join Relation ÀÇ dependency Á¤º¸ À¯È¿¼º °Ë»ç
+            // Join Relation ì˜ dependency ì •ë³´ ìœ íš¨ì„± ê²€ì‚¬
             //------------------------------------------------------
 
             IDE_TEST( isAvailableJoinOperRel( & sJoinRel->depInfo,
@@ -5283,8 +5283,8 @@ qmoOuterJoinOper::transformJoinOper( qcStatement       * aStatement,
                       != IDE_SUCCESS);
 
             //------------------------------------------------------
-            // Join Relation ÀÇ µÎ Å×ÀÌºí¿¡ ´ëÇØ From ÀÚ·á±¸Á¶¸¦
-            // Left Outer Join ±¸Á¶·Î ¹Ù²Ù±â À§ÇØ qmsFrom ±¸Á¶Ã¼ ÇÒ´ç
+            // Join Relation ì˜ ë‘ í…Œì´ë¸”ì— ëŒ€í•´ From ìë£Œêµ¬ì¡°ë¥¼
+            // Left Outer Join êµ¬ì¡°ë¡œ ë°”ê¾¸ê¸° ìœ„í•´ qmsFrom êµ¬ì¡°ì²´ í• ë‹¹
             //------------------------------------------------------
 
             IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF( qmsFrom ),
@@ -5292,7 +5292,7 @@ qmoOuterJoinOper::transformJoinOper( qcStatement       * aStatement,
                       != IDE_SUCCESS );
 
             //------------------------------------------------------
-            // qmsFrom ±¸Á¶Ã¼ ÃÊ±âÈ­
+            // qmsFrom êµ¬ì¡°ì²´ ì´ˆê¸°í™”
             //------------------------------------------------------
 
             QCP_SET_INIT_QMS_FROM(sNewFrom);
@@ -5300,15 +5300,15 @@ qmoOuterJoinOper::transformJoinOper( qcStatement       * aStatement,
             sNewFrom->joinType = QMS_LEFT_OUTER_JOIN;
 
             //------------------------------------------------------
-            // Join Relation ÇÏ³ª¸¦ Àü´ŞÇÏ¿© ´ÙÀ½ÀÇ °úÁ¤À» ¼öÇà
+            // Join Relation í•˜ë‚˜ë¥¼ ì „ë‹¬í•˜ì—¬ ë‹¤ìŒì˜ ê³¼ì •ì„ ìˆ˜í–‰
             //
-            //  1. Left Outer Join Tree ±¸¼º (sNewFrom)
-            //  2. aTrans ³»ÀÇ joinPredicate ¿¡¼­ depInfo °¡ °°Àº °ÍÀ»
-            //     Ã£¾Æ¼­ ÇØ´çµÇ´Â normalCNF ³ëµå¸¦ Ã£Àº ´ÙÀ½ onCondition ¿¡ ¿¬°á.
-            //     normalCNF ¿¡¼­´Â Á¦°Å.
-            //  3. aTrans ³»ÀÇ oneTablePred ¿¡ ´ëÇØ¼­µµ 2¹ø°ú °°Àº °úÁ¤ ¼öÇà
+            //  1. Left Outer Join Tree êµ¬ì„± (sNewFrom)
+            //  2. aTrans ë‚´ì˜ joinPredicate ì—ì„œ depInfo ê°€ ê°™ì€ ê²ƒì„
+            //     ì°¾ì•„ì„œ í•´ë‹¹ë˜ëŠ” normalCNF ë…¸ë“œë¥¼ ì°¾ì€ ë‹¤ìŒ onCondition ì— ì—°ê²°.
+            //     normalCNF ì—ì„œëŠ” ì œê±°.
+            //  3. aTrans ë‚´ì˜ oneTablePred ì— ëŒ€í•´ì„œë„ 2ë²ˆê³¼ ê°™ì€ ê³¼ì • ìˆ˜í–‰
             //
-            //  aTrans ¸¦ Àü´ŞÇÏ´Â °ÍÀº normalCNF ¿Í oneTablePred À» Á¢±ÙÇÏ±â À§ÇÔ.
+            //  aTrans ë¥¼ ì „ë‹¬í•˜ëŠ” ê²ƒì€ normalCNF ì™€ oneTablePred ì„ ì ‘ê·¼í•˜ê¸° ìœ„í•¨.
             //------------------------------------------------------
 
             IDE_TEST( transformJoinOper2From( aStatement,
@@ -5322,8 +5322,8 @@ qmoOuterJoinOper::transformJoinOper( qcStatement       * aStatement,
     }
 
     //------------------------------------------------------
-    // Á¤¸®µÈ normalCNF predicate node ¸¦ ¼øÈ¸ÇÏ¸ç
-    // ÃÖÁ¾ÀûÀ¸·Î dependency & joinOper Oring
+    // ì •ë¦¬ëœ normalCNF predicate node ë¥¼ ìˆœíšŒí•˜ë©°
+    // ìµœì¢…ì ìœ¼ë¡œ dependency & joinOper Oring
     //------------------------------------------------------
 
     if ( aTrans->normalCNF != NULL )

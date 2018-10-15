@@ -277,7 +277,7 @@ IDE_RC dumpLoganchor( SChar*   aLogAnchorPath )
 
     if ( sFileSize > ID_SIZEOF(smrLogAnchor) )
     {
-        // °¡º¯¿µ¿ªÀÇ Ã¹¹øÂ° Node Attribute TypeÀ» ÆÇµ¶ÇÑ´Ù. 
+        // ê°€ë³€ì˜ì—­ì˜ ì²«ë²ˆì§¸ Node Attribute Typeì„ íŒë…í•œë‹¤. 
         IDE_TEST( smrLogAnchorMgr::getFstNodeAttrType( &sFile,
                                                        &sReadOffset,
                                                        &sAttrType ) != IDE_SUCCESS );
@@ -554,14 +554,14 @@ IDE_RC dumpLoganchor( SChar*   aLogAnchorPath )
                     }
             }
 
-            // EOF È®ÀÎ
+            // EOF í™•ì¸
             if ( sFileSize <= ((ULong)sReadOffset) )
             {
                 idlOS::printf( "\nEND OF LOGANCHOR\n" );
                 break;  
             }
             
-            // attribute type ÆÇµ¶
+            // attribute type íŒë…
             IDE_TEST( smrLogAnchorMgr::getNxtNodeAttrType( &sFile,
                                                            sReadOffset,
                                                            &sAttrType ) != IDE_SUCCESS );
@@ -569,7 +569,7 @@ IDE_RC dumpLoganchor( SChar*   aLogAnchorPath )
     }
     else
     {
-        // CREATE DATABASE °úÁ¤Áß LoganchorÀÇ °íÁ¤¿µ¿ª¸¸ ÀúÀåµÈ °æ¿ì
+        // CREATE DATABASE ê³¼ì •ì¤‘ Loganchorì˜ ê³ ì •ì˜ì—­ë§Œ ì €ì¥ëœ ê²½ìš°
         // nothing to do ...
     }
 

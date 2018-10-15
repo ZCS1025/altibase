@@ -46,7 +46,7 @@ static IDE_RC qsfEstimate( mtcNode*     aNode,
 mtfModule qsfColumnValueRealModule = {
     1|MTC_NODE_OPERATOR_MISC,
     ~0,
-    1.0,                    // default selectivity (∫Ò±≥ ø¨ªÍ¿⁄ æ∆¥‘)
+    1.0,                    // default selectivity (ÎπÑÍµê Ïó∞ÏÇ∞Ïûê ÏïÑÎãò)
     qsfFunctionName,
     NULL,
     mtf::initializeDefault,

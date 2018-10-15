@@ -49,7 +49,7 @@ static IDE_RC mtfDecodeOffsetEstimate( mtcNode*     aNode,
 mtfModule mtfDecodeOffset= {
     1 | MTC_NODE_OPERATOR_FUNCTION | MTC_NODE_EAT_NULL_TRUE,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
+    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìê°€ ì•„ë‹˜)
     mtfDecodeOffsetFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -86,7 +86,7 @@ IDE_RC mtfDecodeOffsetEstimate( mtcNode*     aNode,
     const mtdModule* sModules[MTC_NODE_ARGUMENT_COUNT_MAXIMUM];
     idBool           sNvarchar = ID_FALSE;
 
-    // Argument°¡ ÃÖ¼Ò µÎ°³ ÀÖ¾î¾ß ÇÑ´Ù. EX : DECODE_OFFSET( 1, A )
+    // Argumentê°€ ìµœì†Œ ë‘ê°œ ìˆì–´ì•¼ í•œë‹¤. EX : DECODE_OFFSET( 1, A )
     IDE_TEST_RAISE( ( aNode->lflag & MTC_NODE_ARGUMENT_COUNT_MASK ) < 2,
                     ERR_INVALID_FUNCTION_ARGUMENT );
 
@@ -101,7 +101,7 @@ IDE_RC mtfDecodeOffsetEstimate( mtcNode*     aNode,
 
     sFence = aNode->lflag & MTC_NODE_ARGUMENT_COUNT_MASK;
 
-    // DECODE_OFFSETÀÇ Ã¹ ¹ø Â° ÀÎÀÚ´Â offsetÀ» ³ªÅ¸³»´Â Á¤¼öÇüÀÌ ¿Â´Ù.
+    // DECODE_OFFSETì˜ ì²« ë²ˆ ì§¸ ì¸ìëŠ” offsetì„ ë‚˜íƒ€ë‚´ëŠ” ì •ìˆ˜í˜•ì´ ì˜¨ë‹¤.
     sModules[0] = &mtdInteger;
 
     // Initialization for type group
@@ -110,7 +110,7 @@ IDE_RC mtfDecodeOffsetEstimate( mtcNode*     aNode,
         sGroups[sCount] = 0;
     }
 
-    // µÎ ¹ø Â° ÀÎÀÚºÎÅÍ, ¾î¶² ±×·ì¿¡ ¼ÓÇÏ´Â typeÀÎÁö ±¸ÇÑ´Ù.
+    // ë‘ ë²ˆ ì§¸ ì¸ìë¶€í„°, ì–´ë–¤ ê·¸ë£¹ì— ì†í•˜ëŠ” typeì¸ì§€ êµ¬í•œë‹¤.
     for ( sCount = 2; sCount <= sFence; sCount++ )
     {
         sGroups[aStack[sCount].column->module->flag & MTD_GROUP_MASK] = 1;
@@ -120,30 +120,30 @@ IDE_RC mtfDecodeOffsetEstimate( mtcNode*     aNode,
          ( sGroups[MTD_GROUP_DATE]   == 0 ) && ( sGroups[MTD_GROUP_MISC] == 0 ) &&
          ( sGroups[MTD_GROUP_INTERVAL] == 0 )  )
     {
-        // ¼ıÀÚ Çü ¸¸ ÀÖÀ» °æ¿ì ¸®ÅÏ Å¸ÀÔÀº floatÀÌ µÈ´Ù.
+        // ìˆ«ì í˜• ë§Œ ìˆì„ ê²½ìš° ë¦¬í„´ íƒ€ì…ì€ floatì´ ëœë‹¤.
         sModules[1] = &mtdFloat;
     }
     else if ( ( sGroups[MTD_GROUP_NUMBER] == 0 ) && ( sGroups[MTD_GROUP_TEXT] == 0 ) &&
               ( sGroups[MTD_GROUP_DATE] != 0 ) && ( sGroups[MTD_GROUP_MISC] == 0 ) &&
               ( sGroups[MTD_GROUP_INTERVAL] == 0 ) )
     {
-        // Date Çü ¸¸ ÀÖÀ» °æ¿ì ¸®ÅÏ Å¸ÀÔÀº date°¡ µÈ´Ù.
+        // Date í˜• ë§Œ ìˆì„ ê²½ìš° ë¦¬í„´ íƒ€ì…ì€ dateê°€ ëœë‹¤.
         sModules[1] = &mtdDate;
     }
     else if ( ( sGroups[MTD_GROUP_NUMBER] == 0 ) && ( sGroups[MTD_GROUP_TEXT] == 0 ) &&
               ( sGroups[MTD_GROUP_DATE] == 0 ) && ( sGroups[MTD_GROUP_MISC] == 0 ) &&
               ( sGroups[MTD_GROUP_INTERVAL] != 0 ) )
     {
-        // Interval Çü ¸¸ ÀÖÀ» °æ¿ì ¸®ÅÏ Å¸ÀÔÀº intervalÀÌ µÈ´Ù.
+        // Interval í˜• ë§Œ ìˆì„ ê²½ìš° ë¦¬í„´ íƒ€ì…ì€ intervalì´ ëœë‹¤.
         sModules[1] = &mtdInterval;
     }
     else
     {
-        // NULL Å¸ÀÔÀ» Æ÷ÇÔÇÑ ±× ¹ÛÀÇ Å¸ÀÔµéÀÌ Á¸Àç ÇÒ °æ¿ì,
-        // ¸®ÅÏ Å¸ÀÔÀº varchar°¡ µÈ´Ù.
+        // NULL íƒ€ì…ì„ í¬í•¨í•œ ê·¸ ë°–ì˜ íƒ€ì…ë“¤ì´ ì¡´ì¬ í•  ê²½ìš°,
+        // ë¦¬í„´ íƒ€ì…ì€ varcharê°€ ëœë‹¤.
         for ( sCount = 2; sCount <= sFence; sCount++ )
         {
-            // Æ¯º°È÷, Nvarchar ¶Ç´Â Nchar°¡ Á¸Àç ÇÒ °æ¿ì ¸®ÅÏ Å¸ÀÔÀº Nvarchar·Î °áÁ¤µÈ´Ù.
+            // íŠ¹ë³„íˆ, Nvarchar ë˜ëŠ” Ncharê°€ ì¡´ì¬ í•  ê²½ìš° ë¦¬í„´ íƒ€ì…ì€ Nvarcharë¡œ ê²°ì •ëœë‹¤.
             if ( ( aStack[sCount].column->module->id == mtdNvarchar.id ) ||
                  ( aStack[sCount].column->module->id == mtdNchar.id    ) )
             {
@@ -166,7 +166,7 @@ IDE_RC mtfDecodeOffsetEstimate( mtcNode*     aNode,
         }
     }
 
-    // À§¿¡¼­ ±¸ÇØÁø ´ëÇ¥Å¸ÀÔ( ¸®ÅÏÅ¸ÀÔ )À¸·Î ÄÁ¹öÁ¯ ³ëµå¸¦ »ı¼ºÇÑ´Ù. ( Ã¹ ¹ø Â° ÀÎÀÚ´Â integer )
+    // ìœ„ì—ì„œ êµ¬í•´ì§„ ëŒ€í‘œíƒ€ì…( ë¦¬í„´íƒ€ì… )ìœ¼ë¡œ ì»¨ë²„ì ¼ ë…¸ë“œë¥¼ ìƒì„±í•œë‹¤. ( ì²« ë²ˆ ì§¸ ì¸ìëŠ” integer )
     for ( sCount = 2; sCount < sFence; sCount++ )
     {
         sModules[sCount] = sModules[1];
@@ -180,11 +180,11 @@ IDE_RC mtfDecodeOffsetEstimate( mtcNode*     aNode,
                                         sModules )
               != IDE_SUCCESS );
 
-    // Byte´Â length ÇÊµå°¡ ¾ø´Ù.
+    // ByteëŠ” length í•„ë“œê°€ ì—†ë‹¤.
     if ( ( aStack[1].column->module->flag & MTD_NON_LENGTH_MASK )
          == MTD_NON_LENGTH_TYPE )
     {
-        // ByteÀÇ °æ¿ì Precision, ScaleÀÌ µ¿ÀÏÇÑ °æ¿ì¿¡¸¸ µ¿ÀÛÇÏµµ·Ï ÇÑ´Ù.
+        // Byteì˜ ê²½ìš° Precision, Scaleì´ ë™ì¼í•œ ê²½ìš°ì—ë§Œ ë™ì‘í•˜ë„ë¡ í•œë‹¤.
         for ( sCount = 2; sCount <= sFence; sCount++ )
         {
             IDE_TEST_RAISE( !mtc::isSameType( aStack[1].column,
@@ -197,12 +197,12 @@ IDE_RC mtfDecodeOffsetEstimate( mtcNode*     aNode,
         // Nothing to do.
     }
 
-    // ¸®ÅÏ Å¸ÀÔÀÇ ÃÊ±âÈ­
+    // ë¦¬í„´ íƒ€ì…ì˜ ì´ˆê¸°í™”
     mtc::initializeColumn( aStack[0].column, aStack[2].column );
 
     for ( sCount = 3; sCount <= sFence; sCount++ )
     {
-        // Size°¡ °¡Àå Å« columnÀ¸·Î ÃÊ±âÈ­ È¯´Ù.
+        // Sizeê°€ ê°€ì¥ í° columnìœ¼ë¡œ ì´ˆê¸°í™” í™˜ë‹¤.
         if ( aStack[0].column->column.size < aStack[sCount].column->column.size )
         {
             mtc::initializeColumn( aStack[0].column, aStack[sCount].column );
@@ -306,7 +306,7 @@ IDE_RC mtfDecodeOffsetCalculate( mtcNode*     aNode,
             // Nothing to do.
         }
 
-        // ¹üÀ§¸¦ ³ÑÀ¸¸é ¿¡·¯
+        // ë²”ìœ„ë¥¼ ë„˜ìœ¼ë©´ ì—ëŸ¬
         IDE_TEST_RAISE( ( sValue <= 0 ) || ( sValue > ( sFence - 1 ) ),
                          ERR_ARGUMENT_NOT_APPLICABLE );
 

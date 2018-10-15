@@ -111,7 +111,7 @@ void iloColumns::AllFree()
 }
 
 /* PROJ-1714
- * Download½Ã ArrayFetch¸¦ À§ÇØ m_Len, m_Value°ªÀ» ÇÒ´ç..
+ * Downloadì‹œ ArrayFetchë¥¼ ìœ„í•´ m_Len, m_Valueê°’ì„ í• ë‹¹..
  */
 
 SInt iloColumns::SetSize(SInt nColCount)
@@ -251,7 +251,7 @@ SInt iloColumns::Resize(SInt nColCount)
 SInt iloColumns::SetName(SInt nCol, SChar *szName)
 {
     IDE_TEST( nCol >= m_nCol );
-    /* BUG-17563 : iloader ¿¡¼­ Å«µû¿ÈÇ¥ ÀÌ¿ëÇÑ Naming Rule Á¦¾à Á¦°Å  */
+    /* BUG-17563 : iloader ì—ì„œ í°ë”°ì˜´í‘œ ì´ìš©í•œ Naming Rule ì œì•½ ì œê±°  */
     idlOS::snprintf((SChar *)m_Name[nCol],
                     ID_SIZEOF(m_Name[nCol]),
                     "\"%s\"",
@@ -464,7 +464,7 @@ IDE_RC iloSQLApi::Open(SChar * aHost,
     sSqlRC = SQLAllocConnect(m_IEnv, &m_ICon);
     IDE_TEST_RAISE(sSqlRC != SQL_SUCCESS, AllocDBCError);
 
-    // fix BUG-17969 Áö¿øÆíÀÇ¼ºÀ» À§ÇØ APP_INFO ¼³Á¤
+    // fix BUG-17969 ì§€ì›í¸ì˜ì„±ì„ ìœ„í•´ APP_INFO ì„¤ì •
     IDE_TEST( utString::AppendConnStrAttr(mErrorMgr, sConnStr,
                 ID_SIZEOF(sConnStr), (SChar*)"DSN", aHost) );
     IDE_TEST( utString::AppendConnStrAttr(mErrorMgr, sConnStr,
@@ -570,9 +570,9 @@ IDE_RC iloSQLApi::Open(SChar * aHost,
 /**
  * SetAltiDateFmt.
  *
- * DBCÀÇ ALTIBASE_DATE_FORMATÀ» ¼³Á¤ÇØÁØ´Ù.
- * È¯°æº¯¼ö ALTIBASE_DATE_FORMATÀÌ ¼³Á¤µÇ¾îÀÖÀ¸¸é È¯°æº¯¼ö·Î ¼³Á¤ÇÏ°í,
- * ±×·¸Áö ¾ÊÀ¸¸é ±âº»°ª "YYYY/MM/DD HH:MI:SS"·Î ¼³Á¤ÇÑ´Ù.
+ * DBCì˜ ALTIBASE_DATE_FORMATì„ ì„¤ì •í•´ì¤€ë‹¤.
+ * í™˜ê²½ë³€ìˆ˜ ALTIBASE_DATE_FORMATì´ ì„¤ì •ë˜ì–´ìˆìœ¼ë©´ í™˜ê²½ë³€ìˆ˜ë¡œ ì„¤ì •í•˜ê³ ,
+ * ê·¸ë ‡ì§€ ì•Šìœ¼ë©´ ê¸°ë³¸ê°’ "YYYY/MM/DD HH:MI:SS"ë¡œ ì„¤ì •í•œë‹¤.
  */
 IDE_RC iloSQLApi::SetAltiDateFmt()
 {
@@ -659,16 +659,16 @@ SInt iloSQLApi::CheckIsQueue( ALTIBASE_ILOADER_HANDLE  aHandle,
 
     iloaderHandle *sHandle = (iloaderHandle *) aHandle;
 
-    /* BUG-17563 : iloader ¿¡¼­ Å«µû¿ÈÇ¥ ÀÌ¿ëÇÑ Naming Rule Á¦¾à Á¦°Å */
+    /* BUG-17563 : iloader ì—ì„œ í°ë”°ì˜´í‘œ ì´ìš©í•œ Naming Rule ì œì•½ ì œê±° */
     if ((aTableName != NULL)&&(aTableName[0] != '\0'))
     {
-        // CommandParser¿¡¼­ ÀÌ¹Ì tableÀÌ¸§À» ´ë¹®ÀÚ or "..."·Î º¯È¯ÇØÁÖ¾ú´Ù.
+        // CommandParserì—ì„œ ì´ë¯¸ tableì´ë¦„ì„ ëŒ€ë¬¸ì or "..."ë¡œ ë³€í™˜í•´ì£¼ì—ˆë‹¤.
         sTableName = aTableName;
     }
 
     if ((aUserName != NULL)&&(aUserName[0] != '\0'))
     {
-        // CommandParser¿¡¼­ ÀÌ¹Ì UserNameÀ» ´ë¹®ÀÚ or "..."·Î º¯È¯ÇØÁÖ¾ú´Ù.
+        // CommandParserì—ì„œ ì´ë¯¸ UserNameì„ ëŒ€ë¬¸ì or "..."ë¡œ ë³€í™˜í•´ì£¼ì—ˆë‹¤.
         sUserName = aUserName;
     }
     /* SQLTables Execute */
@@ -681,7 +681,7 @@ SInt iloSQLApi::CheckIsQueue( ALTIBASE_ILOADER_HANDLE  aHandle,
 
     if (sUserName != NULL)
     {
-        /* BUG-17563 : iloader ¿¡¼­ Å«µû¿ÈÇ¥ ÀÌ¿ëÇÑ Naming Rule Á¦¾à Á¦°Å */
+        /* BUG-17563 : iloader ì—ì„œ í°ë”°ì˜´í‘œ ì´ìš©í•œ Naming Rule ì œì•½ ì œê±° */
         // "Abc" => Abc or Abc => ABC
         utString::makeNameInSQL( sUserNameBuf,
                                  ID_SIZEOF(sUserNameBuf),
@@ -690,7 +690,7 @@ SInt iloSQLApi::CheckIsQueue( ALTIBASE_ILOADER_HANDLE  aHandle,
         IDE_TEST(CheckUserExist(sUserNameBuf) != SQL_TRUE);
     }
 
-    // sUserName, sTableName ¿¡ "..." °¡ ¿Ã ¼ö ÀÖ´Ù.
+    // sUserName, sTableName ì— "..." ê°€ ì˜¬ ìˆ˜ ìˆë‹¤.
     sSQLRC = SQLTables(m_IStmt, NULL, 0, (SQLCHAR *)sUserName, SQL_NTS,
                        (SQLCHAR *)sTableName, SQL_NTS,
                        (SQLCHAR *)"TABLE,QUEUE", 11);
@@ -767,11 +767,11 @@ SInt iloSQLApi::Columns( ALTIBASE_ILOADER_HANDLE  aHandle,
 
     if ((aTableName != NULL)&&(aTableName[0] != '\0'))
     {
-        /* BUG-17563 : iloader ¿¡¼­ Å«µû¿ÈÇ¥ ÀÌ¿ëÇÑ Naming Rule Á¦¾à Á¦°Å  */
-        /*    - Quoted NameÀÎ °æ¿ì
-               : QuotationÀ» Á¦°Å - "Quoted Name" ==> Quoted Name
-             - Non-Quoted NameÀÎ °æ¿ì
-               : ´ë¹®ÀÚ·Î º¯°æ - NonQuotedName ==> NONQUOTEDNAME
+        /* BUG-17563 : iloader ì—ì„œ í°ë”°ì˜´í‘œ ì´ìš©í•œ Naming Rule ì œì•½ ì œê±°  */
+        /*    - Quoted Nameì¸ ê²½ìš°
+               : Quotationì„ ì œê±° - "Quoted Name" ==> Quoted Name
+             - Non-Quoted Nameì¸ ê²½ìš°
+               : ëŒ€ë¬¸ìë¡œ ë³€ê²½ - NonQuotedName ==> NONQUOTEDNAME
         */
         utString::makeNameInSQL( sTableNameBuf,
                                  ID_SIZEOF(sTableNameBuf),
@@ -781,15 +781,15 @@ SInt iloSQLApi::Columns( ALTIBASE_ILOADER_HANDLE  aHandle,
 
     if ( sHandle->mProgOption->m_bExist_TabOwner == SQL_FALSE )
     {
-        /* BUG-17563 : iloader ¿¡¼­ Å«µû¿ÈÇ¥ ÀÌ¿ëÇÑ Naming Rule Á¦¾à Á¦°Å  */
-        // sTableOwner ´Â "..."°¡ ¿Ã ¼ö ÀÖ´Ù.
+        /* BUG-17563 : iloader ì—ì„œ í°ë”°ì˜´í‘œ ì´ìš©í•œ Naming Rule ì œì•½ ì œê±°  */
+        // sTableOwner ëŠ” "..."ê°€ ì˜¬ ìˆ˜ ìˆë‹¤.
         sTableOwner = sHandle->mProgOption->GetLoginID();
     }
     else
     {
         if ((aTableOwner != NULL)&&(aTableOwner[0] != '\0'))
         {
-            // sTableOwner ´Â "..."°¡ ¿Ã ¼ö ÀÖ´Ù.
+            // sTableOwner ëŠ” "..."ê°€ ì˜¬ ìˆ˜ ìˆë‹¤.
             sTableOwner = aTableOwner;
         }
     }
@@ -804,8 +804,8 @@ SInt iloSQLApi::Columns( ALTIBASE_ILOADER_HANDLE  aHandle,
         IDE_TEST(CheckUserExist(sTableOwnerBuf) != SQL_TRUE);
     }
 
-    /* BUG-17563 : iloader ¿¡¼­ Å«µû¿ÈÇ¥ ÀÌ¿ëÇÑ Naming Rule Á¦¾à Á¦°Å  */
-    /* sTableOwner, aTableNameÀº ´ë¼Ò¹®ÀÚ ±¸ºĞÀ» À§ÇÑ "..."°¡ ¿Ã¼ö ÀÖ´Ù. */
+    /* BUG-17563 : iloader ì—ì„œ í°ë”°ì˜´í‘œ ì´ìš©í•œ Naming Rule ì œì•½ ì œê±°  */
+    /* sTableOwner, aTableNameì€ ëŒ€ì†Œë¬¸ì êµ¬ë¶„ì„ ìœ„í•œ "..."ê°€ ì˜¬ìˆ˜ ìˆë‹¤. */
     sSqlRC = SQLColumns(m_IStmt, NULL, 0, (SQLCHAR *)sTableOwner,
                         (SQLSMALLINT)idlOS::strlen(sTableOwner),
                         (SQLCHAR *)aTableName,
@@ -813,8 +813,8 @@ SInt iloSQLApi::Columns( ALTIBASE_ILOADER_HANDLE  aHandle,
     IDE_TEST_RAISE(sSqlRC != SQL_SUCCESS, ColumnsOrBindError);
 
     /* Bind columns in result set to buffers */
-    // BUG-24775 SQLColumns ¸¦ È£ÃâÇÏ´Â ÄÚµå¸¦ °Ë»çÇØ¾ßÇÔ
-    // SQLColumns ´Â ÆĞÅÏ °Ë»öÀ» ÇÏ±â¶§¹®¿¡ °á°ú¸¦ ÀÔ·Á°ª°ú È®ÀÎÀ» ÇØ¾ßÇÔ
+    // BUG-24775 SQLColumns ë¥¼ í˜¸ì¶œí•˜ëŠ” ì½”ë“œë¥¼ ê²€ì‚¬í•´ì•¼í•¨
+    // SQLColumns ëŠ” íŒ¨í„´ ê²€ìƒ‰ì„ í•˜ê¸°ë•Œë¬¸ì— ê²°ê³¼ë¥¼ ì…ë ¤ê°’ê³¼ í™•ì¸ì„ í•´ì•¼í•¨
     sSqlRC = SQLBindCol(m_IStmt, 2, SQL_C_CHAR, (SQLPOINTER)sGetUserName,
                         MAX_OBJNAME_LEN, NULL);
     IDE_TEST_RAISE(sSqlRC != SQL_SUCCESS, ColumnsOrBindError);
@@ -843,8 +843,8 @@ SInt iloSQLApi::Columns( ALTIBASE_ILOADER_HANDLE  aHandle,
     {
         IDE_TEST_RAISE( sSqlRC != SQL_SUCCESS, FetchError );
 
-        // BUG-24775 SQLColumns ¸¦ È£ÃâÇÏ´Â ÄÚµå¸¦ °Ë»çÇØ¾ßÇÔ
-        // SQLColumns ´Â ÆĞÅÏ °Ë»öÀ» ÇÏ±â¶§¹®¿¡ °á°ú¸¦ ÀÔ·Á°ª°ú È®ÀÎÀ» ÇØ¾ßÇÔ
+        // BUG-24775 SQLColumns ë¥¼ í˜¸ì¶œí•˜ëŠ” ì½”ë“œë¥¼ ê²€ì‚¬í•´ì•¼í•¨
+        // SQLColumns ëŠ” íŒ¨í„´ ê²€ìƒ‰ì„ í•˜ê¸°ë•Œë¬¸ì— ê²°ê³¼ë¥¼ ì…ë ¤ê°’ê³¼ í™•ì¸ì„ í•´ì•¼í•¨
         if((idlOS::strncmp(sTableOwnerBuf, sGetUserName,  ID_SIZEOF(sGetUserName)) != 0) ||
            (idlOS::strncmp(sTableNameBuf,  sGetTableName, ID_SIZEOF(sGetTableName)) != 0))
         {
@@ -1126,9 +1126,9 @@ SInt iloSQLApi::Prepare()
 }
 
 /* PROJ-1714 Parallel iLoader
- * selectExecute : ÇØ´ç Handle¿¡ Execute Á¤º¸ ÇÒ´ç
- * DescibeColumn : DownloadÇÒ TableÀÇ Column Á¤º¸¸¦ ¾ò´Â´Ù.
- * BindColumn    : ÇØ´ç Handle¿¡ ½ÇÇà °á°ú¸¦ Fetch½Ã ¾ò¾î¿Ã ¼ö ÀÖµµ·Ï ColumnsÀ» BindÇÑ´Ù.
+ * selectExecute : í•´ë‹¹ Handleì— Execute ì •ë³´ í• ë‹¹
+ * DescibeColumn : Downloadí•  Tableì˜ Column ì •ë³´ë¥¼ ì–»ëŠ”ë‹¤.
+ * BindColumn    : í•´ë‹¹ Handleì— ì‹¤í–‰ ê²°ê³¼ë¥¼ Fetchì‹œ ì–»ì–´ì˜¬ ìˆ˜ ìˆë„ë¡ Columnsì„ Bindí•œë‹¤.
  */
 
 SInt iloSQLApi::SelectExecute(iloTableInfo * /*aTableInfo*/)
@@ -1235,7 +1235,7 @@ SInt iloSQLApi::BindColumns( ALTIBASE_ILOADER_HANDLE  aHandle,
     
     iloaderHandle *sHandle = (iloaderHandle *) aHandle;
     
-    //PROJ-1714 Bind¸¦ µû·Î »¬ °æ¿ì, ÀÌ ¼³Á¤À» BINDÂÊÀ¸·Î º¯°æÇØ Áà¾ß ÇÔ
+    //PROJ-1714 Bindë¥¼ ë”°ë¡œ ëº„ ê²½ìš°, ì´ ì„¤ì •ì„ BINDìª½ìœ¼ë¡œ ë³€ê²½í•´ ì¤˜ì•¼ í•¨
     aColumns->m_RowsFetched = 0;
 
     for (i = 0; i < aColumns->GetSize(); i++)
@@ -1314,20 +1314,20 @@ SInt iloSQLApi::BindColumns( ALTIBASE_ILOADER_HANDLE  aHandle,
             break;
         case SQL_NUMERIC:
         case SQL_DECIMAL:
-            /* ºÎÈ£(-) 1±ÛÀÚ, ¼Ò¼öÁ¡ 1±ÛÀÚ, Áö¼öºÎ ½ÃÀÛ(E ¶Ç´Â e) 1±ÛÀÚ,
-             * Áö¼öºÎ ºÎÈ£(+ ¶Ç´Â -) 1±ÛÀÚ, Áö¼öºÎ ¼ıÀÚ ÃÖ´ë 2±ÛÀÚ,
-             * ¸ğµÎ ´õÇÏ¸é sColSizeº¸´Ù 6±ÛÀÚ±îÁö ´Ã¾î³¯ ¼ö ÀÖÀ½. */
+            /* ë¶€í˜¸(-) 1ê¸€ì, ì†Œìˆ˜ì  1ê¸€ì, ì§€ìˆ˜ë¶€ ì‹œì‘(E ë˜ëŠ” e) 1ê¸€ì,
+             * ì§€ìˆ˜ë¶€ ë¶€í˜¸(+ ë˜ëŠ” -) 1ê¸€ì, ì§€ìˆ˜ë¶€ ìˆ«ì ìµœëŒ€ 2ê¸€ì,
+             * ëª¨ë‘ ë”í•˜ë©´ sColSizeë³´ë‹¤ 6ê¸€ìê¹Œì§€ ëŠ˜ì–´ë‚  ìˆ˜ ìˆìŒ. */
             /* BUGBUG: ODBCCLI misreturns SQL_FLOAT as SQL_NUMERIC. */
             /*sBufLen = (UInt)(sColSize + 7);*/
-            /* 176¹ÙÀÌÆ®¸é µÇ³ª ³Ë³ËÇÏ°Ô ÇÒ´çÇÔ. */
+            /* 176ë°”ì´íŠ¸ë©´ ë˜ë‚˜ ë„‰ë„‰í•˜ê²Œ í• ë‹¹í•¨. */
             sBufLen = 192;
             sCType = SQL_C_CHAR;
             break;
         case SQL_FLOAT:
-            /* ¼Ò¼öÁ¡ 1±ÛÀÚ, Áö¼öºÎ ½ÃÀÛ(E ¶Ç´Â e) 1±ÛÀÚ,
-             * Áö¼öºÎ ºÎÈ£(+ ¶Ç´Â -) 1±ÛÀÚ, Áö¼öºÎ ¼ıÀÚ ÃÖ´ë 3±ÛÀÚ,
-             * ¸ğµÎ ´õÇÏ¸é 168±ÛÀÚº¸´Ù 6±ÛÀÚ±îÁö ´Ã¾î³¯ ¼ö ÀÖÀ½. */
-            /* 176¹ÙÀÌÆ®¸é µÇ³ª ³Ë³ËÇÏ°Ô ÇÒ´çÇÔ. */
+            /* ì†Œìˆ˜ì  1ê¸€ì, ì§€ìˆ˜ë¶€ ì‹œì‘(E ë˜ëŠ” e) 1ê¸€ì,
+             * ì§€ìˆ˜ë¶€ ë¶€í˜¸(+ ë˜ëŠ” -) 1ê¸€ì, ì§€ìˆ˜ë¶€ ìˆ«ì ìµœëŒ€ 3ê¸€ì,
+             * ëª¨ë‘ ë”í•˜ë©´ 168ê¸€ìë³´ë‹¤ 6ê¸€ìê¹Œì§€ ëŠ˜ì–´ë‚  ìˆ˜ ìˆìŒ. */
+            /* 176ë°”ì´íŠ¸ë©´ ë˜ë‚˜ ë„‰ë„‰í•˜ê²Œ í• ë‹¹í•¨. */
             sBufLen = 192;
             sCType = SQL_C_CHAR;
             break;
@@ -1335,9 +1335,9 @@ SInt iloSQLApi::BindColumns( ALTIBASE_ILOADER_HANDLE  aHandle,
         case SQL_TIMESTAMP :
         case SQL_TYPE_DATE:
         case SQL_TYPE_TIMESTAMP:
-            /* DATE_FORMATÀÌ ÃÖ´ë 64±ÛÀÚÀÌ°í
-             * FF Çü½ÄÁöÁ¤¹®ÀÚ¸¦ »ç¿ëÇÏ¸é ±æÀÌ°¡ 3¹è±îÁö ´Ã¾î³¯ ¼ö ÀÖÀ¸¹Ç·Î,
-             * 192±ÛÀÚ±îÁö °¡´É. */
+            /* DATE_FORMATì´ ìµœëŒ€ 64ê¸€ìì´ê³ 
+             * FF í˜•ì‹ì§€ì •ë¬¸ìë¥¼ ì‚¬ìš©í•˜ë©´ ê¸¸ì´ê°€ 3ë°°ê¹Œì§€ ëŠ˜ì–´ë‚  ìˆ˜ ìˆìœ¼ë¯€ë¡œ,
+             * 192ê¸€ìê¹Œì§€ ê°€ëŠ¥. */
             sBufLen = 193;
             sCType = SQL_C_CHAR;
             break;
@@ -1357,7 +1357,7 @@ SInt iloSQLApi::BindColumns( ALTIBASE_ILOADER_HANDLE  aHandle,
     
     /* PROJ-1714
      * For Download ArrayFetch
-     * ArrayCount°¡ 1ÀÏ °æ¿ì¿¡´Â ArrayFetch °ü·Ã SettingÀ» ÇÒ ÇÊ¿ä°¡ ¾ø´Ù.
+     * ArrayCountê°€ 1ì¼ ê²½ìš°ì—ëŠ” ArrayFetch ê´€ë ¨ Settingì„ í•  í•„ìš”ê°€ ì—†ë‹¤.
      */ 
     if (aColumns->m_ArrayCount > 1)
     {
@@ -1648,8 +1648,8 @@ SInt iloSQLApi::StmtClose()
 /**
  * StmtInit.
  *
- * m_IStmt¸¦ ÃÊ±âÈ­ÇÑ´Ù.
- * m_IStmt´Â ÀÌ¹Ì ÇÒ´çµÇ¾îÀÖ¾î¾ß ÇÑ´Ù.
+ * m_IStmtë¥¼ ì´ˆê¸°í™”í•œë‹¤.
+ * m_IStmtëŠ” ì´ë¯¸ í• ë‹¹ë˜ì–´ìˆì–´ì•¼ í•œë‹¤.
  */
 IDE_RC iloSQLApi::StmtInit()
 {
@@ -1707,15 +1707,15 @@ void iloSQLApi::Close()
 /**
  * SetColwiseParamBind.
  *
- * SQLÀÇ ÆÄ¶ó¹ÌÅÍ array bindingÀ» »ç¿ëÇÒ ¶§,
- * m_IStmt¿¡ ¹è¿­ÀÇ Å©±â ¹× SQL ½ÇÇà status¸¦ ¾ò¾î¿Ã ¹è¿­À» ¼³Á¤ÇÑ´Ù.
- * ÀÎÀÚ aParamSetSize¸¦ 1·Î ÇÏ¿© È£ÃâÇÏ¸é
- * m_IStmt¿¡ ¼³Á¤ÇØ³õÀº array bindingÀ» ÇØÁ¦ÇÑ´Ù.
+ * SQLì˜ íŒŒë¼ë¯¸í„° array bindingì„ ì‚¬ìš©í•  ë•Œ,
+ * m_IStmtì— ë°°ì—´ì˜ í¬ê¸° ë° SQL ì‹¤í–‰ statusë¥¼ ì–»ì–´ì˜¬ ë°°ì—´ì„ ì„¤ì •í•œë‹¤.
+ * ì¸ì aParamSetSizeë¥¼ 1ë¡œ í•˜ì—¬ í˜¸ì¶œí•˜ë©´
+ * m_IStmtì— ì„¤ì •í•´ë†“ì€ array bindingì„ í•´ì œí•œë‹¤.
  *
  * @param[in] aParamSetSize
- *  ÆÄ¶ó¹ÌÅÍ array bindingÀÇ ¹è¿­ Å©±â.
+ *  íŒŒë¼ë¯¸í„° array bindingì˜ ë°°ì—´ í¬ê¸°.
  * @param[in] aParamStatusPtr
- *  SQL ½ÇÇà¿¡ ÀÇÇØ °¢ ¹è¿­ ¿ø¼Òº°·Î status¸¦ ¾ò¾î¿Ã ¹è¿­ÀÇ ÁÖ¼Ò.
+ *  SQL ì‹¤í–‰ì— ì˜í•´ ê° ë°°ì—´ ì›ì†Œë³„ë¡œ statusë¥¼ ì–»ì–´ì˜¬ ë°°ì—´ì˜ ì£¼ì†Œ.
  */
 IDE_RC iloSQLApi::SetColwiseParamBind( ALTIBASE_ILOADER_HANDLE  aHandle,
                                        UInt                     aParamSetSize,
@@ -1735,8 +1735,8 @@ IDE_RC iloSQLApi::SetColwiseParamBind( ALTIBASE_ILOADER_HANDLE  aHandle,
     
     /* 
      * PROJ-1760
-     * -Direct ¿É¼ÇÀÌ ÀÖÀ» °æ¿ì, Statement Attribute¸¦ ATOMICÀ¸·Î ¼³Á¤ÇÑ´Ù.
-     * Direct Path Upload´Â AtomicÇÑ Ã³¸®°¡ ÇÊ¿äÇÏ´Ù.
+     * -Direct ì˜µì…˜ì´ ìˆì„ ê²½ìš°, Statement Attributeë¥¼ ATOMICìœ¼ë¡œ ì„¤ì •í•œë‹¤.
+     * Direct Path UploadëŠ” Atomicí•œ ì²˜ë¦¬ê°€ í•„ìš”í•˜ë‹¤.
      */
     if ( ( sHandle->mProgOption->m_bExist_atomic == SQL_TRUE)|| 
          ( sHandle->mProgOption->m_bExist_direct == SQL_TRUE) )
@@ -1823,8 +1823,8 @@ IDE_RC iloSQLApi::SetColwiseParamBind_StmtRetry(void)
 /**
  * BindParameter.
  *
- * SQLBindParameter()ÀÇ wrapper ÇÔ¼ö.
- * ÀÎÀÚµµ stmt¸¦ Á¦¿ÜÇÏ°í SQLBindParameter()¿Í µ¿ÀÏÇÏ´Ù.
+ * SQLBindParameter()ì˜ wrapper í•¨ìˆ˜.
+ * ì¸ìë„ stmtë¥¼ ì œì™¸í•˜ê³  SQLBindParameter()ì™€ ë™ì¼í•˜ë‹¤.
  */
 IDE_RC iloSQLApi::BindParameter(UShort aParamNo, SQLSMALLINT aInOutType,
                                 SQLSMALLINT aValType, SQLSMALLINT aParamType,
@@ -1846,7 +1846,7 @@ IDE_RC iloSQLApi::BindParameter(UShort aParamNo, SQLSMALLINT aInOutType,
         /*
          * BUG-32641 Codesonar warnings
          *
-         * ¸®ÅÏ°ª Ã¼Å©
+         * ë¦¬í„´ê°’ ì²´í¬
          */
         sSqlRC = SQLBindParameter(m_IStmtRetry, (SQLUSMALLINT)aParamNo, aInOutType,
                                   aValType, aParamType, (SQLULEN)aColSize,
@@ -1868,8 +1868,8 @@ IDE_RC iloSQLApi::BindParameter(UShort aParamNo, SQLSMALLINT aInOutType,
 /**
  * SetErrorMsgAfterAllocEnv.
  *
- * SQLAllocEnv() È£Ãâ¿¡¼­ ¿À·ù ¹ß»ı ½Ã
- * ¸â¹ö º¯¼ö mErrorMgr, mErrorCode¿¡ ¿À·ù Á¤º¸¸¦ ¼³Á¤ÇÑ´Ù.
+ * SQLAllocEnv() í˜¸ì¶œì—ì„œ ì˜¤ë¥˜ ë°œìƒ ì‹œ
+ * ë©¤ë²„ ë³€ìˆ˜ mErrorMgr, mErrorCodeì— ì˜¤ë¥˜ ì •ë³´ë¥¼ ì„¤ì •í•œë‹¤.
  */
 IDE_RC iloSQLApi::SetErrorMsgAfterAllocEnv()
 {
@@ -1884,7 +1884,7 @@ IDE_RC iloSQLApi::SetErrorMsgAfterAllocEnv()
 /**
  * SetErrorMsgWithHandle.
  *
- * ÇÚµé°ú ¿¬°üµÈ ¿À·ù Á¤º¸¸¦ ¾ò¾î¿Í ¸â¹ö º¯¼ö mErrorMgr, mErrorCode¿¡ ¼³Á¤ÇÑ´Ù.
+ * í•¸ë“¤ê³¼ ì—°ê´€ëœ ì˜¤ë¥˜ ì •ë³´ë¥¼ ì–»ì–´ì™€ ë©¤ë²„ ë³€ìˆ˜ mErrorMgr, mErrorCodeì— ì„¤ì •í•œë‹¤.
  */
 IDE_RC iloSQLApi::SetErrorMsgWithHandle(SQLSMALLINT aHandleType,
                                         SQLHANDLE   aHandle)
@@ -1981,8 +1981,8 @@ IDE_RC iloSQLApi::SetErrorMsgWithHandle(SQLSMALLINT aHandleType,
 /**
  * GetLOBLength.
  *
- * SQLGetLobLength()ÀÇ wrapper ÇÔ¼ö.
- * ÀÎÀÚµµ stmt¸¦ Á¦¿ÜÇÏ°í SQLGetLobLength()¿Í µ¿ÀÏÇÏ´Ù.
+ * SQLGetLobLength()ì˜ wrapper í•¨ìˆ˜.
+ * ì¸ìë„ stmtë¥¼ ì œì™¸í•˜ê³  SQLGetLobLength()ì™€ ë™ì¼í•˜ë‹¤.
  */
 IDE_RC iloSQLApi::GetLOBLength(SQLUBIGINT aLOBLoc, SQLSMALLINT aLOBLocCType,
                                UInt *aLOBLen)
@@ -2006,8 +2006,8 @@ IDE_RC iloSQLApi::GetLOBLength(SQLUBIGINT aLOBLoc, SQLSMALLINT aLOBLocCType,
 /**
  * GetLOB.
  *
- * SQLGetLob()ÀÇ wrapper ÇÔ¼ö.
- * ÀÎÀÚµµ stmt¸¦ Á¦¿ÜÇÏ°í SQLGetLob()°ú µ¿ÀÏÇÏ´Ù.
+ * SQLGetLob()ì˜ wrapper í•¨ìˆ˜.
+ * ì¸ìë„ stmtë¥¼ ì œì™¸í•˜ê³  SQLGetLob()ê³¼ ë™ì¼í•˜ë‹¤.
  */
 IDE_RC iloSQLApi::GetLOB(SQLSMALLINT aLocatorCType, SQLUBIGINT aSourceLocator,
                          UInt aFromPosition, UInt aForLength,
@@ -2035,8 +2035,8 @@ IDE_RC iloSQLApi::GetLOB(SQLSMALLINT aLocatorCType, SQLUBIGINT aSourceLocator,
 /**
  * PutLOB.
  *
- * SQLPutLob()ÀÇ wrapper ÇÔ¼ö.
- * ÀÎÀÚµµ stmt¸¦ Á¦¿ÜÇÏ°í SQLPutLob()°ú µ¿ÀÏÇÏ´Ù.
+ * SQLPutLob()ì˜ wrapper í•¨ìˆ˜.
+ * ì¸ìë„ stmtë¥¼ ì œì™¸í•˜ê³  SQLPutLob()ê³¼ ë™ì¼í•˜ë‹¤.
  */
 IDE_RC iloSQLApi::PutLOB(SQLSMALLINT aLocatorCType, SQLUBIGINT aTargetLocator,
                          UInt aFromPosition, UInt aForLength,
@@ -2064,8 +2064,8 @@ IDE_RC iloSQLApi::PutLOB(SQLSMALLINT aLocatorCType, SQLUBIGINT aTargetLocator,
 /**
  * FreeLOB.
  *
- * SQLFreeLob()ÀÇ wrapper ÇÔ¼ö.
- * ÀÎÀÚµµ stmt¸¦ Á¦¿ÜÇÏ°í SQLFreeLob()°ú µ¿ÀÏÇÏ´Ù.
+ * SQLFreeLob()ì˜ wrapper í•¨ìˆ˜.
+ * ì¸ìë„ stmtë¥¼ ì œì™¸í•˜ê³  SQLFreeLob()ê³¼ ë™ì¼í•˜ë‹¤.
  */
 IDE_RC iloSQLApi::FreeLOB(SQLUBIGINT aLocator)
 {
@@ -2091,10 +2091,10 @@ SChar *iloSQLApi::getSqlStatement()
 /**
  * StrToUpper.
  *
- * ¹®ÀÚ¿­À» ´ë¹®ÀÚ·Î ¸¸µç´Ù.
+ * ë¬¸ìì—´ì„ ëŒ€ë¬¸ìë¡œ ë§Œë“ ë‹¤.
  *
  * @param[in,out] aStr
- *  ´ë¹®ÀÚ·Î ¸¸µé ¹®ÀÚ¿­.
+ *  ëŒ€ë¬¸ìë¡œ ë§Œë“¤ ë¬¸ìì—´.
  */
 IDE_RC iloSQLApi::StrToUpper(SChar *aStr)
 {
@@ -2103,9 +2103,9 @@ IDE_RC iloSQLApi::StrToUpper(SChar *aStr)
     const mtlModule * sNlsModule = NULL;
 
     // bug-26661: nls_use not applied to nls module for ut
-    // º¯°æÀü: mtl::defaultModule¸¸ »ç¿ë
-    // º¯°æÈÄ: gNlsModuleForUT¸¦ »ç¿ë
-    // ulnInitialze È£Ãâ Àü¿¡´Â nullÀÏ ¼ö ÀÖÀ½.
+    // ë³€ê²½ì „: mtl::defaultModuleë§Œ ì‚¬ìš©
+    // ë³€ê²½í›„: gNlsModuleForUTë¥¼ ì‚¬ìš©
+    // ulnInitialze í˜¸ì¶œ ì „ì—ëŠ” nullì¼ ìˆ˜ ìˆìŒ.
     if (gNlsModuleForUT == NULL)
     {
         sNlsModule = mtlDefaultModule();
@@ -2133,7 +2133,7 @@ IDE_RC iloSQLApi::StrToUpper(SChar *aStr)
     return IDE_SUCCESS;
 }
 
-/* BUG-17563 : iloader ¿¡¼­ Å«µû¿ÈÇ¥ ÀÌ¿ëÇÑ Naming Rule Á¦¾à Á¦°Å  */
+/* BUG-17563 : iloader ì—ì„œ í°ë”°ì˜´í‘œ ì´ìš©í•œ Naming Rule ì œì•½ ì œê±°  */
 SChar *iloColumns::GetTransName(SInt nCol, SChar *aName, UInt aLen)
 {
     SChar *sColName = NULL;
@@ -2226,10 +2226,10 @@ IDE_RC iloSQLApi::SetAsyncPrefetch( asyncPrefetchType aType )
 
         IDE_TEST(sRc == SQL_ERROR);
 
-        /* Asynchronous Prefetch Auto TuningÀ» Áö¿øÇÏ´Â ¾ÊÀ» °æ¿ì CLI¿¡¼­
+        /* Asynchronous Prefetch Auto Tuningì„ ì§€ì›í•˜ëŠ” ì•Šì„ ê²½ìš° CLIì—ì„œ
          * 0x52011(Option value changed. ALTIBASE_PREFETCH_AUTO_TUNING changed to OFF.)
-         * ¿¡·¯ ÄÚµå¿Í ÇÔ²² SQL_SUCCESS_WITH_INFO°¡ ¹İÈ¯µÊ.
-         * ÀÌ °æ¿ì ¹«½ÃÇÏ°í °è¼Ó ÁøÇàÇÏ±â À§ÇØ IDE_SUCCESS ¸®ÅÏ. */
+         * ì—ëŸ¬ ì½”ë“œì™€ í•¨ê»˜ SQL_SUCCESS_WITH_INFOê°€ ë°˜í™˜ë¨.
+         * ì´ ê²½ìš° ë¬´ì‹œí•˜ê³  ê³„ì† ì§„í–‰í•˜ê¸° ìœ„í•´ IDE_SUCCESS ë¦¬í„´. */
         if (sRc == SQL_SUCCESS_WITH_INFO)
         {
             (void)SetErrorMsgWithHandle(SQL_HANDLE_STMT, (SQLHANDLE)m_IStmt);

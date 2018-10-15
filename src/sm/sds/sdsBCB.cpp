@@ -21,7 +21,7 @@
 
 /***********************************************************************
  * PROJ-2102 The Fast Secondary Buffer 
- * SBCB  °ü¸® ¹× ±âÅ¸ »óÅÂ Á¤º¸¸¦ °ü¸®ÇÑ´Ù 
+ * SBCB  ê´€ë¦¬ ë° ê¸°íƒ€ ìƒíƒœ ì •ë³´ë¥¼ ê´€ë¦¬í•œë‹¤ 
  **********************************************************************/
 
 #include <idu.h>
@@ -35,7 +35,7 @@
 
 /***********************************************************************
  * Description :
- *  aSBCBID          - [IN] SBCB ½Äº°ÀÚ
+ *  aSBCBID          - [IN] SBCB ì‹ë³„ìž
  ***********************************************************************/
 IDE_RC sdsBCB::initialize( UInt aSBCBID )
 {
@@ -46,7 +46,7 @@ IDE_RC sdsBCB::initialize( UInt aSBCBID )
     mSpaceID = 0;
     mPageID  = 0;
     mSBCBID  = aSBCBID;
-    /* Buffer Pool¿¡ ÀÖ´Â BCB Á¤º¸*/
+    /* Buffer Poolì— ìžˆëŠ” BCB ì •ë³´*/
     mBCB     = NULL;
 
     idlOS::snprintf( sMutexName,
@@ -101,7 +101,7 @@ IDE_RC sdsBCB::initialize( UInt aSBCBID )
 
 /***********************************************************************
  * Description :
- *  sdsBCB ¼Ò¸êÀÚ.
+ *  sdsBCB ì†Œë©¸ìž.
  ***********************************************************************/
 IDE_RC sdsBCB::destroy()
 {
@@ -113,7 +113,7 @@ IDE_RC sdsBCB::destroy()
 
 /***********************************************************************
  * Description :
- *  sdsBCB¸¦  FREE »óÅÂ·Î º¯°æ
+ *  sdsBCBë¥¼  FREE ìƒíƒœë¡œ ë³€ê²½
  ***********************************************************************/
 IDE_RC sdsBCB::setFree()
 {
@@ -126,7 +126,7 @@ IDE_RC sdsBCB::setFree()
         } 
         else 
         {
-            /* OLD»óÅÂ¿¡¼­ È£ÃâµÇ¸é mBCB->mSBCB´Â NULL/NextBCB ÀÏ¼öÀÖÀ½ */
+            /* OLDìƒíƒœì—ì„œ í˜¸ì¶œë˜ë©´ mBCB->mSBCBëŠ” NULL/NextBCB ì¼ìˆ˜ìžˆìŒ */
             IDE_ASSERT( mState == SDS_SBCB_OLD );
         }
     

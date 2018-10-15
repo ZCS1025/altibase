@@ -19,18 +19,18 @@
  * $Id
  *
  * - WorkAreaMap
- *     SortTempÀÇ extractNSort&insertNSort½ÃÀÇ SortGroup¿¡ Á¸ÀçÇÏ´Â KeyMap°ú
- *     Merge½ÃÀÇ Heap, UniquehashTempÀÇ HashGroupµéÀº ´ÙÀ½ µÎ°¡Áö °øÅëÁ¡ÀÌ
- *     ÀÖ´Ù.
- *          WAPage»ó¿¡¸¸ Á¸ÀçÇÑ´Ù. Áï NPage·Î ³»·Á°¡Áö ¾Ê´Â´Ù.
- *          Áï PointingÇÏ±â À§ÇÑ Á¤º¸µéÀÌ Array/Map½ÄÀ¸·Î Á¸ÀçÇÑ´Ù.
- *     À§ ¼¼°¡Áö ¸ğµÎ µ¶ÀÚ±¸ÇöÀ» ÇÏ·Á ÇÏ¿´À¸³ª, »ó¼¼¼³°è µµÁß Áßº¹ÄÚµå°¡ µÉ°Å
- *     °°¾Æ¼­ sdtWAMapÀ¸·Î ÇÏ³ª·Î ÇÕÄ£´Ù.
+ *     SortTempì˜ extractNSort&insertNSortì‹œì˜ SortGroupì— ì¡´ì¬í•˜ëŠ” KeyMapê³¼
+ *     Mergeì‹œì˜ Heap, UniquehashTempì˜ HashGroupë“¤ì€ ë‹¤ìŒ ë‘ê°€ì§€ ê³µí†µì ì´
+ *     ìˆë‹¤.
+ *          WAPageìƒì—ë§Œ ì¡´ì¬í•œë‹¤. ì¦‰ NPageë¡œ ë‚´ë ¤ê°€ì§€ ì•ŠëŠ”ë‹¤.
+ *          ì¦‰ Pointingí•˜ê¸° ìœ„í•œ ì •ë³´ë“¤ì´ Array/Mapì‹ìœ¼ë¡œ ì¡´ì¬í•œë‹¤.
+ *     ìœ„ ì„¸ê°€ì§€ ëª¨ë‘ ë…ìêµ¬í˜„ì„ í•˜ë ¤ í•˜ì˜€ìœ¼ë‚˜, ìƒì„¸ì„¤ê³„ ë„ì¤‘ ì¤‘ë³µì½”ë“œê°€ ë ê±°
+ *     ê°™ì•„ì„œ sdtWAMapìœ¼ë¡œ í•˜ë‚˜ë¡œ í•©ì¹œë‹¤.
  *
- * - Æ¯Â¡
- *     NPage¿Í Assign µÅÁö ¾Ê´Â´Ù.
- *     Array¸¦ ±¸¼ºÇÏ´Â SlotÀÇ Å©±â´Â ÀÚÀ¯ÀÌ´Ù.
- *     Address¸¦ ¹ÙÅÁÀ¸·Î ÇØ´ç Array¿¡ Random Access ÇÏ´Â ½ÄÀÌ´Ù.
+ * - íŠ¹ì§•
+ *     NPageì™€ Assign ë¼ì§€ ì•ŠëŠ”ë‹¤.
+ *     Arrayë¥¼ êµ¬ì„±í•˜ëŠ” Slotì˜ í¬ê¸°ëŠ” ììœ ì´ë‹¤.
+ *     Addressë¥¼ ë°”íƒ•ìœ¼ë¡œ í•´ë‹¹ Arrayì— Random Access í•˜ëŠ” ì‹ì´ë‹¤.
  **********************************************************************/
 
 #ifndef _O_SDT_WA_MAP_H_
@@ -103,7 +103,7 @@ public:
                           scPageID   aLimitPID,
                           UInt     * aIdx );
 
-    /* MapÀÇ Å©±â (Map³»ºÎÀÇ Slot°³¼ö)¸¦ ¹İÈ¯ÇÔ */
+    /* Mapì˜ í¬ê¸° (Mapë‚´ë¶€ì˜ Slotê°œìˆ˜)ë¥¼ ë°˜í™˜í•¨ */
     static UInt getSlotCount( void * aWAMapHdr )
     {
         sdtWAMapHdr * sWAMap = (sdtWAMapHdr*)aWAMapHdr;
@@ -111,7 +111,7 @@ public:
         return sWAMap->mSlotCount;
     }
 
-    /* SlotÇÏ³ªÀÇ Å©±â¸¦ ¹İÈ¯ÇÔ. */
+    /* Slotí•˜ë‚˜ì˜ í¬ê¸°ë¥¼ ë°˜í™˜í•¨. */
     static UInt getSlotSize( void * aWAMapHdr )
     {
         sdtWAMapHdr * sWAMap = (sdtWAMapHdr*)aWAMapHdr;
@@ -119,7 +119,7 @@ public:
         return mWMTypeDesc[ sWAMap->mWMType ].mSlotSize;
     }
 
-    /* WAMapÀÌ »ç¿ëÇÏ´Â ÆäÀÌÁöÀÇ °³¼ö¸¦ ¹İÈ¯*/
+    /* WAMapì´ ì‚¬ìš©í•˜ëŠ” í˜ì´ì§€ì˜ ê°œìˆ˜ë¥¼ ë°˜í™˜*/
     static UInt getWPageCount( void * aWAMapHdr )
     {
         sdtWAMapHdr * sWAMap = (sdtWAMapHdr*)aWAMapHdr;
@@ -135,7 +135,7 @@ public:
                      / SD_PAGE_SIZE ) + 1;
         }
     }
-    /* WAMapÀÌ »ç¿ëÇÏ´Â ¸¶Áö¸· ÆäÀÌÁö¸¦ ¹İÈ¯ÇÔ */
+    /* WAMapì´ ì‚¬ìš©í•˜ëŠ” ë§ˆì§€ë§‰ í˜ì´ì§€ë¥¼ ë°˜í™˜í•¨ */
     static scPageID getEndWPID( void * aWAMapHdr )
     {
         sdtWAMapHdr * sWAMap = (sdtWAMapHdr*)aWAMapHdr;
@@ -153,12 +153,12 @@ private:
 
 /**************************************************************************
  * Description :
- * ÇØ´ç WAMap¿¡ Index¹ø Slot¿¡ Value¸¦ ¼³Á¤ÇÑ´Ù.
+ * í•´ë‹¹ WAMapì— Indexë²ˆ Slotì— Valueë¥¼ ì„¤ì •í•œë‹¤.
  *
  * <IN>
- * aWAMap         - ´ë»ó WAMap
- * aIdx           - ´ë»ó Index
- * aValue         - ¼³Á¤ÇÒ Value
+ * aWAMap         - ëŒ€ìƒ WAMap
+ * aIdx           - ëŒ€ìƒ Index
+ * aValue         - ì„¤ì •í•  Value
  ***************************************************************************/
 IDE_RC sdtWAMap::set( void * aWAMapHdr, UInt aIdx, void * aValue )
 {
@@ -182,13 +182,13 @@ IDE_RC sdtWAMap::set( void * aWAMapHdr, UInt aIdx, void * aValue )
 
 /**************************************************************************
  * Description :
- * ÇØ´ç WAMap¿¡ Index¹ø Slot¿¡ Value¸¦ ¼³Á¤ÇÏµÇ, '´ÙÀ½ ¹öÀü'¿¡ ¼³Á¤ÇÑ´Ù.
- * sdtSortModule::mergeSort ÂüÁ¶
+ * í•´ë‹¹ WAMapì— Indexë²ˆ Slotì— Valueë¥¼ ì„¤ì •í•˜ë˜, 'ë‹¤ìŒ ë²„ì „'ì— ì„¤ì •í•œë‹¤.
+ * sdtSortModule::mergeSort ì°¸ì¡°
  *
  * <IN>
- * aWAMap         - ´ë»ó WAMap
- * aIdx           - ´ë»ó Index
- * aValue         - ¼³Á¤ÇÒ Value
+ * aWAMap         - ëŒ€ìƒ WAMap
+ * aIdx           - ëŒ€ìƒ Index
+ * aValue         - ì„¤ì •í•  Value
  ***************************************************************************/
 IDE_RC sdtWAMap::setNextVersion( void * aWAMapHdr,
                                  UInt   aIdx,
@@ -220,12 +220,12 @@ IDE_RC sdtWAMap::setNextVersion( void * aWAMapHdr,
 
 /**************************************************************************
  * Description :
- * ÇØ´ç WAMap¿¡ Index¹ø Slot¿¡¼­ vULongValue¸¦ ¼³Á¤ÇÑ´Ù.
+ * í•´ë‹¹ WAMapì— Indexë²ˆ Slotì—ì„œ vULongValueë¥¼ ì„¤ì •í•œë‹¤.
  *
  * <IN>
- * aWAMap         - ´ë»ó WAMap
- * aIdx           - ´ë»ó Index
- * aValue         - ¼³Á¤ÇÒ Value
+ * aWAMap         - ëŒ€ìƒ WAMap
+ * aIdx           - ëŒ€ìƒ Index
+ * aValue         - ì„¤ì •í•  Value
  ***************************************************************************/
 IDE_RC sdtWAMap::setvULong( void * aWAMapHdr, UInt aIdx, vULong * aValue )
 {
@@ -249,12 +249,12 @@ IDE_RC sdtWAMap::setvULong( void * aWAMapHdr, UInt aIdx, vULong * aValue )
 
 /**************************************************************************
  * Description :
- * ÇØ´ç WAMap¿¡ Index¹ø Slot¿¡¼­ Value¸¦ °¡Á®¿Â´Ù.
+ * í•´ë‹¹ WAMapì— Indexë²ˆ Slotì—ì„œ Valueë¥¼ ê°€ì ¸ì˜¨ë‹¤.
  *
  * <IN>
- * aWAMap         - ´ë»ó WAMap
- * aIdx           - ´ë»ó Index
- * aValue         - ¼³Á¤ÇÒ Value
+ * aWAMap         - ëŒ€ìƒ WAMap
+ * aIdx           - ëŒ€ìƒ Index
+ * aValue         - ì„¤ì •í•  Value
  ***************************************************************************/
 IDE_RC sdtWAMap::get( void * aWAMapHdr, UInt aIdx, void * aValue )
 {
@@ -277,12 +277,12 @@ IDE_RC sdtWAMap::get( void * aWAMapHdr, UInt aIdx, void * aValue )
 
 /**************************************************************************
  * Description :
- * ÇØ´ç WAMap¿¡ Index¹ø Slot¿¡¼­ vULongValue¸¦ °¡Á®¿Â´Ù.
+ * í•´ë‹¹ WAMapì— Indexë²ˆ Slotì—ì„œ vULongValueë¥¼ ê°€ì ¸ì˜¨ë‹¤.
  *
  * <IN>
- * aWAMap         - ´ë»ó WAMap
- * aIdx           - ´ë»ó Index
- * aValue         - ¼³Á¤ÇÒ Value
+ * aWAMap         - ëŒ€ìƒ WAMap
+ * aIdx           - ëŒ€ìƒ Index
+ * aValue         - ì„¤ì •í•  Value
  ***************************************************************************/
 IDE_RC sdtWAMap::getvULong( void * aWAMapHdr, UInt aIdx, vULong * aValue )
 {
@@ -305,14 +305,14 @@ IDE_RC sdtWAMap::getvULong( void * aWAMapHdr, UInt aIdx, vULong * aValue )
 
 /**************************************************************************
  * Description :
- * WAMapÀÇ ÇØ´ç SlotÀÇ ÁÖ¼Ò°ªÀ» ¹İÈ¯ÇÑ´Ù.
+ * WAMapì˜ í•´ë‹¹ Slotì˜ ì£¼ì†Œê°’ì„ ë°˜í™˜í•œë‹¤.
  *
  * <IN>
- * aWAMap         - ´ë»ó WAMap
- * aIdx           - ´ë»ó Index
- * aSlotSize      - ´ë»ó WAMap¿¡¼­ ÇÑ SlotÀÇ Å©±â
+ * aWAMap         - ëŒ€ìƒ WAMap
+ * aIdx           - ëŒ€ìƒ Index
+ * aSlotSize      - ëŒ€ìƒ WAMapì—ì„œ í•œ Slotì˜ í¬ê¸°
  * <OUT>
- * aSlotPtr       - Ã£Àº SlotÀÇ À§Ä¡
+ * aSlotPtr       - ì°¾ì€ Slotì˜ ìœ„ì¹˜
  ***************************************************************************/
 IDE_RC sdtWAMap::getSlotPtr( void *  aWAMapHdr,
                              UInt    aIdx,
@@ -330,17 +330,17 @@ IDE_RC sdtWAMap::getSlotPtr( void *  aWAMapHdr,
 
 /**************************************************************************
  * Description :
- * getSlotPtr°ú °°µÇ, WAMap SlotÀ» ¼ÒÀ¯ÇÑ PageÀÇ »óÅÂ¸¦ È®ÀÎÇÏ°í °¡Á®¿Â´Ù.
- * PageState°¡ noneÀÌ¸é ÃÖÃÊ Á¢±ÙÀÌ¶ó ÃÊ±âÈ­µÇ¾îÀÖÁö ¾Ê¾Æ DirtyValue¸¦
- * ÀĞ±â ¶§¹®ÀÌ´Ù.
- * ±×·¯¸é ÃÊ±âÈ­ ÇØÁÖ°í PageState¸¦ InitÀ¸·Î º¯°æÇÑ´Ù.
- * sdtUniqueHashModule::insert ÂüÁ¶
+ * getSlotPtrê³¼ ê°™ë˜, WAMap Slotì„ ì†Œìœ í•œ Pageì˜ ìƒíƒœë¥¼ í™•ì¸í•˜ê³  ê°€ì ¸ì˜¨ë‹¤.
+ * PageStateê°€ noneì´ë©´ ìµœì´ˆ ì ‘ê·¼ì´ë¼ ì´ˆê¸°í™”ë˜ì–´ìˆì§€ ì•Šì•„ DirtyValueë¥¼
+ * ì½ê¸° ë•Œë¬¸ì´ë‹¤.
+ * ê·¸ëŸ¬ë©´ ì´ˆê¸°í™” í•´ì£¼ê³  PageStateë¥¼ Initìœ¼ë¡œ ë³€ê²½í•œë‹¤.
+ * sdtUniqueHashModule::insert ì°¸ì¡°
  *
  * <IN>
- * aWAMap         - ´ë»ó WAMap
- * aIdx           - ´ë»ó Index
+ * aWAMap         - ëŒ€ìƒ WAMap
+ * aIdx           - ëŒ€ìƒ Index
  * <OUT>
- * aSlotPtr       - Ã£Àº SlotÀÇ À§Ä¡
+ * aSlotPtr       - ì°¾ì€ Slotì˜ ìœ„ì¹˜
  ***************************************************************************/
 IDE_RC sdtWAMap::getSlotPtrWithCheckState( void    * aWAMapHdr,
                                            UInt      aIdx,
@@ -395,14 +395,14 @@ IDE_RC sdtWAMap::getSlotPtrWithCheckState( void    * aWAMapHdr,
 
 /**************************************************************************
  * Description :
- * WAMapÀÇ ÇØ´ç SlotÀÇ ÁÖ¼Ò°ªÀ» ¹İÈ¯ÇÑ´Ù. VersionÀ» °í·ÁÇÏ¿© °¡Á®¿Â´Ù.
+ * WAMapì˜ í•´ë‹¹ Slotì˜ ì£¼ì†Œê°’ì„ ë°˜í™˜í•œë‹¤. Versionì„ ê³ ë ¤í•˜ì—¬ ê°€ì ¸ì˜¨ë‹¤.
  *
  * <IN>
- * aWAMap         - ´ë»ó WAMap
- * aIdx           - ´ë»ó Index
- * aSlotSize      - ´ë»ó WAMap¿¡¼­ ÇÑ SlotÀÇ Å©±â
+ * aWAMap         - ëŒ€ìƒ WAMap
+ * aIdx           - ëŒ€ìƒ Index
+ * aSlotSize      - ëŒ€ìƒ WAMapì—ì„œ í•œ Slotì˜ í¬ê¸°
  * <OUT>
- * aSlotPtr       - Ã£Àº SlotÀÇ À§Ä¡
+ * aSlotPtr       - ì°¾ì€ Slotì˜ ìœ„ì¹˜
  ***************************************************************************/
 IDE_RC sdtWAMap::getSlotPtrWithVersion( void *  aWAMapHdr,
                                         UInt    aVersionIdx,
@@ -426,13 +426,13 @@ IDE_RC sdtWAMap::getSlotPtrWithVersion( void *  aWAMapHdr,
 
 /**************************************************************************
  * Description :
- * WAMapÀÇ ÇØ´ç SlotÀÇ ÁÖ¼Ò°ªÀ» OffsetÀ» ¹ÙÅÁÀ¸·Î Ã£´Â´Ù.
+ * WAMapì˜ í•´ë‹¹ Slotì˜ ì£¼ì†Œê°’ì„ Offsetì„ ë°”íƒ•ìœ¼ë¡œ ì°¾ëŠ”ë‹¤.
  *
  * <IN>
- * aWAMap         - ´ë»ó WAMap
- * aOffset        - ´ë»ó Offset
+ * aWAMap         - ëŒ€ìƒ WAMap
+ * aOffset        - ëŒ€ìƒ Offset
  * <OUT>
- * aSlotPtr       - Ã£Àº SlotÀÇ À§Ä¡
+ * aSlotPtr       - ì°¾ì€ Slotì˜ ìœ„ì¹˜
  ***************************************************************************/
 UChar * sdtWAMap::getPtrByOffset( void *  aWAMapHdr,
                                   UInt    aOffset )
@@ -448,12 +448,12 @@ UChar * sdtWAMap::getPtrByOffset( void *  aWAMapHdr,
 
 /**************************************************************************
  * Description :
- * µÎ SlotÀÇ °ªÀ» ±³È¯ÇÑ´Ù.
- * sdtTempTable::quickSort ÂüÁ¶
+ * ë‘ Slotì˜ ê°’ì„ êµí™˜í•œë‹¤.
+ * sdtTempTable::quickSort ì°¸ì¡°
  *
  * <IN>
- * aWAMap         - ´ë»ó WAMap
- * aIdx1,aIdx2    - Ä¡È¯ÇÒ µÎ Slot
+ * aWAMap         - ëŒ€ìƒ WAMap
+ * aIdx1,aIdx2    - ì¹˜í™˜í•  ë‘ Slot
  ***************************************************************************/
 IDE_RC sdtWAMap::swap( void * aWAMapHdr, UInt aIdx1, UInt aIdx2 )
 {
@@ -465,7 +465,7 @@ IDE_RC sdtWAMap::swap( void * aWAMapHdr, UInt aIdx1, UInt aIdx2 )
 
     if ( aIdx1 == aIdx2 )
     {
-        /* °°À¸¸é ±³È¯ÇÒ ÇÊ¿ä ¾øÀ½ */
+        /* ê°™ìœ¼ë©´ êµí™˜í•  í•„ìš” ì—†ìŒ */
     }
     else
     {
@@ -477,10 +477,10 @@ IDE_RC sdtWAMap::swap( void * aWAMapHdr, UInt aIdx1, UInt aIdx2 )
                   != IDE_SUCCESS );
 
 #if defined(DEBUG)
-        /* ´Ù¸¥ µÎ °ªÀ» ºñ±³ÇØ¾ß ÇÑ´Ù. */
+        /* ë‹¤ë¥¸ ë‘ ê°’ì„ ë¹„êµí•´ì•¼ í•œë‹¤. */
         IDE_ERROR( sSlotPtr1 != sSlotPtr2 );
-        /* µÎ Slot°£ÀÇ Â÷ÀÌ°¡ SlotÀÇ Å©±âº¸´Ù °°°Å³ª Ä¿¼­,
-         * °ãÄ¡Áö ¾Êµµ·Ï ÇØ¾ß ÇÑ´Ù. */
+        /* ë‘ Slotê°„ì˜ ì°¨ì´ê°€ Slotì˜ í¬ê¸°ë³´ë‹¤ ê°™ê±°ë‚˜ ì»¤ì„œ,
+         * ê²¹ì¹˜ì§€ ì•Šë„ë¡ í•´ì•¼ í•œë‹¤. */
         if ( sSlotPtr1 < sSlotPtr2 )
         {
             IDE_ERROR( ((UChar*)sSlotPtr2) - ((UChar*)sSlotPtr1) >= sSlotSize );
@@ -505,12 +505,12 @@ IDE_RC sdtWAMap::swap( void * aWAMapHdr, UInt aIdx1, UInt aIdx2 )
 
 /**************************************************************************
  * Description :
- * µÎ vULongSlotÀÇ °ªÀ» ±³È¯ÇÑ´Ù.
- * sdtTempTable::quickSort ÂüÁ¶
+ * ë‘ vULongSlotì˜ ê°’ì„ êµí™˜í•œë‹¤.
+ * sdtTempTable::quickSort ì°¸ì¡°
  *
  * <IN>
- * aWAMap         - ´ë»ó WAMap
- * aIdx1,aIdx2    - Ä¡È¯ÇÒ µÎ Slot
+ * aWAMap         - ëŒ€ìƒ WAMap
+ * aIdx1,aIdx2    - ì¹˜í™˜í•  ë‘ Slot
  ***************************************************************************/
 IDE_RC sdtWAMap::swapvULong( void * aWAMapHdr, UInt aIdx1, UInt aIdx2 )
 {
@@ -525,7 +525,7 @@ IDE_RC sdtWAMap::swapvULong( void * aWAMapHdr, UInt aIdx1, UInt aIdx2 )
 
     if ( aIdx1 == aIdx2 )
     {
-        /* °°À¸¸é ±³È¯ÇÒ ÇÊ¿ä ¾øÀ½ */
+        /* ê°™ìœ¼ë©´ êµí™˜í•  í•„ìš” ì—†ìŒ */
     }
     else
     {
@@ -537,10 +537,10 @@ IDE_RC sdtWAMap::swapvULong( void * aWAMapHdr, UInt aIdx1, UInt aIdx2 )
                   != IDE_SUCCESS );
 
 #if defined(DEBUG)
-        /* ´Ù¸¥ µÎ °ªÀ» ºñ±³ÇØ¾ß ÇÑ´Ù. */
+        /* ë‹¤ë¥¸ ë‘ ê°’ì„ ë¹„êµí•´ì•¼ í•œë‹¤. */
         IDE_ERROR( sSlotPtr1 != sSlotPtr2 );
-        /* µÎ Slot°£ÀÇ Â÷ÀÌ°¡ SlotÀÇ Å©±âº¸´Ù °°°Å³ª Ä¿¼­,
-         * °ãÄ¡Áö ¾Êµµ·Ï ÇØ¾ß ÇÑ´Ù. */
+        /* ë‘ Slotê°„ì˜ ì°¨ì´ê°€ Slotì˜ í¬ê¸°ë³´ë‹¤ ê°™ê±°ë‚˜ ì»¤ì„œ,
+         * ê²¹ì¹˜ì§€ ì•Šë„ë¡ í•´ì•¼ í•œë‹¤. */
         if ( sSlotPtr1 < sSlotPtr2 )
         {
             IDE_ERROR( ((UChar*)sSlotPtr2) - ((UChar*)sSlotPtr1) >= sSlotSize );
@@ -565,10 +565,10 @@ IDE_RC sdtWAMap::swapvULong( void * aWAMapHdr, UInt aIdx1, UInt aIdx2 )
 
 /**************************************************************************
  * Description :
- * MapÀÇ ¹öÀüÀ» Áõ°¡½ÃÅ²´Ù.
+ * Mapì˜ ë²„ì „ì„ ì¦ê°€ì‹œí‚¨ë‹¤.
  *
  * <IN>
- * aWAMap         - ´ë»ó WAMap
+ * aWAMap         - ëŒ€ìƒ WAMap
  ***************************************************************************/
 IDE_RC sdtWAMap::incVersionIdx( void * aWAMapHdr )
 {

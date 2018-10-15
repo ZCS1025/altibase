@@ -278,11 +278,11 @@ void idsSHA256::convertHexToString( UChar * aString, UChar * aByte )
 
 /* BUG-39303
  *
- * void idsSHA256::digestToByte       : Byte ·Î ¹ÝÈ¯ÇÏ´Â ÇØ½Ì
+ * void idsSHA256::digestToByte       : Byte ë¡œ ë°˜í™˜í•˜ëŠ” í•´ì‹±
  *
- * void idsSHA256::initializeForGroup : Aggregation ÇØ½ÌÀÇ ÃÊ±âÈ­ ÇÔ¼ö
- * void idsSHA256::digestForGroup     : Aggregation ÇØ½Ì ÇÔ¼ö
- * void idsSHA256::finalizeForGroup   : Aggregation ÇØ½ÌÀÇ Á¾·á ÇÔ¼ö
+ * void idsSHA256::initializeForGroup : Aggregation í•´ì‹±ì˜ ì´ˆê¸°í™” í•¨ìˆ˜
+ * void idsSHA256::digestForGroup     : Aggregation í•´ì‹± í•¨ìˆ˜
+ * void idsSHA256::finalizeForGroup   : Aggregation í•´ì‹±ì˜ ì¢…ë£Œ í•¨ìˆ˜
  *
  */
 void idsSHA256::digestToByte( UChar * aResult,
@@ -295,7 +295,7 @@ void idsSHA256::digestToByte( UChar * aResult,
  *
  * Implementation :
  *
- *  ÇØ½ÌÀ» È£ÃâÇÑ ÈÄ ¹ÙÀÌÆ®·Î ¹ÝÈ¯ÇÑ´Ù.
+ *  í•´ì‹±ì„ í˜¸ì¶œí•œ í›„ ë°”ì´íŠ¸ë¡œ ë°˜í™˜í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -309,11 +309,11 @@ void idsSHA256::initializeForGroup( idsSHA256Context * aContext )
  *
  * Implementation :
  *
- *  ÇØ½Ì ÄÁÅØ½ºÆ®¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+ *  í•´ì‹± ì»¨í…ìŠ¤íŠ¸ë¥¼ ì´ˆê¸°í™”í•œë‹¤.
  *
  ***********************************************************************/
 
-    /* ÇØ½Ì ÄÁÅØ½ºÆ®¸¦ ÃÊ±âÈ­ ÇÑ´Ù. */
+    /* í•´ì‹± ì»¨í…ìŠ¤íŠ¸ë¥¼ ì´ˆê¸°í™” í•œë‹¤. */
     aContext->mTotalSize  = 0;
     aContext->mBufferSize = 0;
     /* SHA-256 Initial hash value described in FIPS 180-4 Ch.5.3.3 */
@@ -335,12 +335,12 @@ void idsSHA256::digestForGroup( idsSHA256Context * aContext )
  *
  * Implementation :
  *
- *  Aggregation ÇØ½ÌÀ» ¼öÇàÇÑ´Ù. 3 °¡Áö °æ¿ì·Î ¼öÇàÇÑ´Ù.
- *    1. ºí·Ï Å©±âº¸´Ù ÀÛÀº ¿ø¹®Àº ¹öÆÛ¿¡ ÀûÀçÇÑ´Ù.
- *    2. ¹öÆÛ°¡ ºó °æ¿ì, ¿ø¹®À» ÇØ½ÌÇÏ°í ³²´Â ¿ø¹®Àº ¹öÆÛ¿¡ ÀûÀçÇÑ´Ù.
- *    3. ¹öÆÛ¿¡ ¿ø¹®ÀÌ Á¸ÀçÇÏ´Â °æ¿ì¿¡, ¹öÆÛ¸¦ Ã¤¿ö¼­ ÇØ½ÌÇÏ°í, ±× ´ÙÀ½¿¡ ¿ø¹®À»
- *       ÇØ½ÌÇÏ¸ç, ³²´Â ¿ø¹®Àº ¹öÆÛ¿¡ ÀûÀçÇÑ´Ù
- *       ( »óÀ§¿¡¼­ ¹öÆÛ¸¦ ¸ÕÀú ÇØ½ÌÇÑ ÈÄ, ÇÏÀ§¿¡¼­ 2¹øÀÇ Àü·«À» ¼öÇàÇÑ´Ù. )
+ *  Aggregation í•´ì‹±ì„ ìˆ˜í–‰í•œë‹¤. 3 ê°€ì§€ ê²½ìš°ë¡œ ìˆ˜í–‰í•œë‹¤.
+ *    1. ë¸”ë¡ í¬ê¸°ë³´ë‹¤ ìž‘ì€ ì›ë¬¸ì€ ë²„í¼ì— ì ìž¬í•œë‹¤.
+ *    2. ë²„í¼ê°€ ë¹ˆ ê²½ìš°, ì›ë¬¸ì„ í•´ì‹±í•˜ê³  ë‚¨ëŠ” ì›ë¬¸ì€ ë²„í¼ì— ì ìž¬í•œë‹¤.
+ *    3. ë²„í¼ì— ì›ë¬¸ì´ ì¡´ìž¬í•˜ëŠ” ê²½ìš°ì—, ë²„í¼ë¥¼ ì±„ì›Œì„œ í•´ì‹±í•˜ê³ , ê·¸ ë‹¤ìŒì— ì›ë¬¸ì„
+ *       í•´ì‹±í•˜ë©°, ë‚¨ëŠ” ì›ë¬¸ì€ ë²„í¼ì— ì ìž¬í•œë‹¤
+ *       ( ìƒìœ„ì—ì„œ ë²„í¼ë¥¼ ë¨¼ì € í•´ì‹±í•œ í›„, í•˜ìœ„ì—ì„œ 2ë²ˆì˜ ì „ëžµì„ ìˆ˜í–‰í•œë‹¤. )
  *
  ***********************************************************************/
 
@@ -350,10 +350,10 @@ void idsSHA256::digestForGroup( idsSHA256Context * aContext )
     UChar * sMessage     = aContext->mMessage;
     UChar * sBuffer      = aContext->mBuffer + aContext->mBufferSize;
 
-    /* finalForGroup ÀÇ processReamins ÀÇ ÀÎÀÚ¸¦ À§ÇÑ ±â·Ï */
+    /* finalForGroup ì˜ processReamins ì˜ ì¸ìžë¥¼ ìœ„í•œ ê¸°ë¡ */
     aContext->mTotalSize += sRemainsSize;
 
-    /* 1. ºí·Ï Å©±âº¸´Ù ÀÛÀº ¿ø¹®Àº ¹öÆÛ¿¡ ÀûÀçÇÑ´Ù. */
+    /* 1. ë¸”ë¡ í¬ê¸°ë³´ë‹¤ ìž‘ì€ ì›ë¬¸ì€ ë²„í¼ì— ì ìž¬í•œë‹¤. */
     if ( ( aContext->mBufferSize + sRemainsSize ) < SHA256_BLK_SIZE )
     {
         idlOS::memcpy( (void*) sBuffer,
@@ -366,7 +366,7 @@ void idsSHA256::digestForGroup( idsSHA256Context * aContext )
     {
         if ( aContext->mBufferSize == 0 )
         {
-            /* 2. ¹öÆÛ°¡ ºó °æ¿ì, ¿ø¹®À» ÇØ½ÌÇÏ°í ³²´Â ¿ø¹®Àº ¹öÆÛ¿¡ ÀûÀçÇÑ´Ù. */
+            /* 2. ë²„í¼ê°€ ë¹ˆ ê²½ìš°, ì›ë¬¸ì„ í•´ì‹±í•˜ê³  ë‚¨ëŠ” ì›ë¬¸ì€ ë²„í¼ì— ì ìž¬í•œë‹¤. */
             while( sRemainsSize >= SHA256_BLK_SIZE )
             {
                 processBlock( sDigest, sMessage );
@@ -389,8 +389,8 @@ void idsSHA256::digestForGroup( idsSHA256Context * aContext )
         }
         else
         {
-            /* 3. ¹öÆÛ¿¡ ¿ø¹®ÀÌ Á¸ÀçÇÏ´Â °æ¿ì¿¡, ¹öÆÛ¸¦ Ã¤¿ö¼­ ÇØ½ÌÇÏ°í, ±× ´ÙÀ½
-             *    ¿ø¹®À» ÇØ½ÌÇÏ¸ç, ³²´Â ¿ø¹®Àº ¹öÆÛ¿¡ ÀûÀçÇÑ´Ù.
+            /* 3. ë²„í¼ì— ì›ë¬¸ì´ ì¡´ìž¬í•˜ëŠ” ê²½ìš°ì—, ë²„í¼ë¥¼ ì±„ì›Œì„œ í•´ì‹±í•˜ê³ , ê·¸ ë‹¤ìŒ
+             *    ì›ë¬¸ì„ í•´ì‹±í•˜ë©°, ë‚¨ëŠ” ì›ë¬¸ì€ ë²„í¼ì— ì ìž¬í•œë‹¤.
              */
             if ( ( aContext->mBufferSize + sRemainsSize ) >= SHA256_BLK_SIZE )
             {
@@ -404,8 +404,8 @@ void idsSHA256::digestForGroup( idsSHA256Context * aContext )
                 sMessage     += sRetrySize;
                 sRemainsSize -= sRetrySize;
 
-                /* 2. ¹öÆÛ¸¦ ºñ¿üÀ¸¹Ç·Î, ¿ø¹®À» ÇØ½ÌÇÏ°í ³²´Â ¿ø¹®Àº ¹öÆÛ¿¡ ÀûÀç
-                 *    ÇÑ´Ù.
+                /* 2. ë²„í¼ë¥¼ ë¹„ì› ìœ¼ë¯€ë¡œ, ì›ë¬¸ì„ í•´ì‹±í•˜ê³  ë‚¨ëŠ” ì›ë¬¸ì€ ë²„í¼ì— ì ìž¬
+                 *    í•œë‹¤.
                  */
                 while ( sRemainsSize >= SHA256_BLK_SIZE )
                 {
@@ -444,16 +444,16 @@ void idsSHA256::finalizeForGroup( UChar * aResult,
  *
  * Implementation :
  *
- *  Aggregation ÇØ½ÌÀ» ¿Ï·áÇÑ´Ù. 2 °¡Áö °æ¿ì·Î ¼öÇàµÈ´Ù.
- *    1. ¹öÆÛ¿¡ ºí·Ï Å©±â º¸´Ù ÀûÀº ¿ø¹®ÀÌ Á¸ÀçÇÏ¸é, processRemains ¸¦ È£ÃâÇÑ´Ù.
- *    2. ¹öÆÛ°¡ ºó °æ¿ì¿¡´Â º°µµÀÇ ÀÛ¾÷À» ¼öÇàÇÏÁö ¾Ê´Â´Ù.
+ *  Aggregation í•´ì‹±ì„ ì™„ë£Œí•œë‹¤. 2 ê°€ì§€ ê²½ìš°ë¡œ ìˆ˜í–‰ëœë‹¤.
+ *    1. ë²„í¼ì— ë¸”ë¡ í¬ê¸° ë³´ë‹¤ ì ì€ ì›ë¬¸ì´ ì¡´ìž¬í•˜ë©´, processRemains ë¥¼ í˜¸ì¶œí•œë‹¤.
+ *    2. ë²„í¼ê°€ ë¹ˆ ê²½ìš°ì—ëŠ” ë³„ë„ì˜ ìž‘ì—…ì„ ìˆ˜í–‰í•˜ì§€ ì•ŠëŠ”ë‹¤.
  *
  ***********************************************************************/
 
     if ( aContext->mBufferSize != 0 )
     {
-        /* 1. ¹öÆÛ¿¡ ºí·Ï Å©±â º¸´Ù ÀûÀº ¿ø¹®ÀÌ Á¸ÀçÇÏ¸é, processRemains ¸¦ È£Ãâ
-         *    ÇÑ´Ù.
+        /* 1. ë²„í¼ì— ë¸”ë¡ í¬ê¸° ë³´ë‹¤ ì ì€ ì›ë¬¸ì´ ì¡´ìž¬í•˜ë©´, processRemains ë¥¼ í˜¸ì¶œ
+         *    í•œë‹¤.
          */
         processRemains( aContext->mDigest,
                         aContext->mBuffer,
@@ -462,7 +462,7 @@ void idsSHA256::finalizeForGroup( UChar * aResult,
     }
     else
     {
-        /* 2. ¹öÆÛ°¡ ºó °æ¿ì¿¡´Â º°µµÀÇ ÀÛ¾÷À» ¼öÇàÇÏÁö ¾Ê´Â´Ù.
+        /* 2. ë²„í¼ê°€ ë¹ˆ ê²½ìš°ì—ëŠ” ë³„ë„ì˜ ìž‘ì—…ì„ ìˆ˜í–‰í•˜ì§€ ì•ŠëŠ”ë‹¤.
          *
          * Nothing to do
          *

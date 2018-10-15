@@ -64,7 +64,7 @@ public class AltibaseUpdatableResultSet extends AltibaseResultSet
         mBaseResultSet = aBaseResultSet;
         mStatement = mBaseResultSet.mStatement;
 
-        // row id´Â targetÀı ¸Ç ³¡¿¡ µ¡ºÙ´Â´Ù.
+        // row idëŠ” targetì ˆ ë§¨ ëì— ë§ë¶™ëŠ”ë‹¤.
         mBaseResultRowIdColumnIndex = mBaseResultSet.getTargetColumnCount();
         mUsedAsParameterForInsert = new boolean[mBaseResultRowIdColumnIndex - 1];
         mUsedAsParameterForUpdate = new boolean[mBaseResultRowIdColumnIndex - 1];
@@ -72,7 +72,7 @@ public class AltibaseUpdatableResultSet extends AltibaseResultSet
         clearUpdated();
         
         mDeleteStmt = mStatement.mConnection.prepareStatement(AltiSqlProcessor.makeDeleteRowSql(getBaseTableName()));
-        mInsertStmt = null; // insert, update ±¸¹®Àº updateµÇ´Â ÄÃ·³ÀÇ °³¼ö¿¡ µû¶ó sql¹®ÀÌ °¡º¯ÀûÀÌ´Ù.
+        mInsertStmt = null; // insert, update êµ¬ë¬¸ì€ updateë˜ëŠ” ì»¬ëŸ¼ì˜ ê°œìˆ˜ì— ë”°ë¼ sqlë¬¸ì´ ê°€ë³€ì ì´ë‹¤.
         mUpdateStmt = null;
         mLobLength = new int[mBaseResultRowIdColumnIndex - 1];
         
@@ -82,8 +82,8 @@ public class AltibaseUpdatableResultSet extends AltibaseResultSet
 
     private String getBaseTableName() throws SQLException
     {
-        // UpdatableResultSetÀ» ¾òÀ¸·Á¸é ¿øº» Äõ¸®°¡ '´ÜÀÏ Å×ÀÌºí¿¡ ´ëÇÑ ÁúÀÇ'¿©¾ß ÇÑ´Ù´Â Á¦¾àÀÌ ÀÖ´Ù.
-        // ±×·¯¹Ç·Î ¾Æ¹« ÄÃ·³¿¡¼­³ª Å×ÀÌºí ÀÌ¸§À» ¾ò¾î¿Íµµ µÈ´Ù.
+        // UpdatableResultSetì„ ì–»ìœ¼ë ¤ë©´ ì›ë³¸ ì¿¼ë¦¬ê°€ 'ë‹¨ì¼ í…Œì´ë¸”ì— ëŒ€í•œ ì§ˆì˜'ì—¬ì•¼ í•œë‹¤ëŠ” ì œì•½ì´ ìˆë‹¤.
+        // ê·¸ëŸ¬ë¯€ë¡œ ì•„ë¬´ ì»¬ëŸ¼ì—ì„œë‚˜ í…Œì´ë¸” ì´ë¦„ì„ ì–»ì–´ì™€ë„ ëœë‹¤.
         return mBaseResultSet.getTargetColumnInfo(1).getBaseTableName();
     }
 
@@ -387,7 +387,7 @@ public class AltibaseUpdatableResultSet extends AltibaseResultSet
                     break;
             }
         }
-        // ¸¶Áö¸·À¸·Î where Á¶°ÇÀÇ _prowid¸¦ ¼¼ÆÃÇÑ´Ù.
+        // ë§ˆì§€ë§‰ìœ¼ë¡œ where ì¡°ê±´ì˜ _prowidë¥¼ ì„¸íŒ…í•œë‹¤.
         mUpdateStmt.setLong(sPstmtParamIndex, mBaseResultSet.getLong(mBaseResultRowIdColumnIndex));
         mUpdateStmt.executeUpdate();
 

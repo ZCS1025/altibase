@@ -47,7 +47,7 @@ qmoPushPred::doPushDownViewPredicate( qcStatement  * aStatement,
  *
  * Description :
  *     BUG-18367 view push selection
- *     view¿¡ ´ëÇÑ one table predicateÀ» push selectionÇÑ´Ù.
+ *     viewì— ëŒ€í•œ one table predicateì„ push selectioní•œë‹¤.
  *
  * Implementation :
  *
@@ -60,7 +60,7 @@ qmoPushPred::doPushDownViewPredicate( qcStatement  * aStatement,
     IDU_FIT_POINT_FATAL( "qmoPushPred::doPushDownViewPredicate::__FT__" );
 
     //---------------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //---------------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -70,7 +70,7 @@ qmoPushPred::doPushDownViewPredicate( qcStatement  * aStatement,
     IDE_DASSERT( aIsPushed != NULL );
     IDE_DASSERT( aIsPushedAll != NULL );
 
-    // recursive view´Â pushdownÇÒ ¼ö ¾ø´Ù.
+    // recursive viewëŠ” pushdowní•  ìˆ˜ ì—†ë‹¤.
     if ( ( aViewQuerySet->flag & QMV_QUERYSET_RECURSIVE_VIEW_MASK )
          == QMV_QUERYSET_RECURSIVE_VIEW_TOP )
     {
@@ -89,8 +89,8 @@ qmoPushPred::doPushDownViewPredicate( qcStatement  * aStatement,
         sCanPushDown = ID_TRUE;
 
         //---------------------------------------------------
-        // Push Selection ¼öÇàÇØµµ µÇ´Â ±¸¹®ÀÎÁö °Ë»ç
-        // ( query set ´ÜÀ§·Î °Ë»ç )
+        // Push Selection ìˆ˜í–‰í•´ë„ ë˜ëŠ” êµ¬ë¬¸ì¸ì§€ ê²€ì‚¬
+        // ( query set ë‹¨ìœ„ë¡œ ê²€ì‚¬ )
         //---------------------------------------------------
         IDE_TEST( canPushSelectionQuerySet( aViewParseTree,
                                             aViewQuerySet,
@@ -99,7 +99,7 @@ qmoPushPred::doPushDownViewPredicate( qcStatement  * aStatement,
                   != IDE_SUCCESS );
 
         //---------------------------------------------------
-        // Push selection ÇØµµ µÇ´Â predicateÀÎÁö °Ë»ç
+        // Push selection í•´ë„ ë˜ëŠ” predicateì¸ì§€ ê²€ì‚¬
         //---------------------------------------------------
         if ( sCanPushDown == ID_TRUE )
         {
@@ -108,7 +108,7 @@ qmoPushPred::doPushDownViewPredicate( qcStatement  * aStatement,
                                             aViewQuerySet->target,
                                             aViewTupleId,
                                             aPredicate->node,
-                                            ID_FALSE,  // next´Â °Ë»çÇÏÁö ¾Ê´Â´Ù.
+                                            ID_FALSE,  // nextëŠ” ê²€ì‚¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
                                             & sCanPushDown )
                       != IDE_SUCCESS );
         }
@@ -120,7 +120,7 @@ qmoPushPred::doPushDownViewPredicate( qcStatement  * aStatement,
         if ( sCanPushDown == ID_TRUE )
         {
             //---------------------------------------------------
-            // Pushdown ÇØµµ µÇ´Â °æ¿ì, ½ÇÁ¦·Î predicateÀ» pushdown
+            // Pushdown í•´ë„ ë˜ëŠ” ê²½ìš°, ì‹¤ì œë¡œ predicateì„ pushdown
             //---------------------------------------------------
             IDE_TEST( pushDownPredicate( aStatement,
                                          aViewQuerySet,
@@ -143,7 +143,7 @@ qmoPushPred::doPushDownViewPredicate( qcStatement  * aStatement,
         {
             sCanPushDown = ID_TRUE;
 
-            /* push°¡´ÉÇÑ predicateÀÎÁö, viewÀÎÁö È®ÀÎÇÑ´Ù. */
+            /* pushê°€ëŠ¥í•œ predicateì¸ì§€, viewì¸ì§€ í™•ì¸í•œë‹¤. */
             IDE_TEST( isPushableRankPred( aStatement,
                                           aViewParseTree,
                                           aViewQuerySet,
@@ -162,7 +162,7 @@ qmoPushPred::doPushDownViewPredicate( qcStatement  * aStatement,
                                                  sPushedRankLimit )
                           != IDE_SUCCESS );
 
-                /* rank pred´Â ³²°Ü³õ¾Æ¾ß ÇÑ´Ù. */
+                /* rank predëŠ” ë‚¨ê²¨ë†“ì•„ì•¼ í•œë‹¤. */
                 *aRemainPushedPredicate = ID_TRUE;
             }
             else
@@ -177,12 +177,12 @@ qmoPushPred::doPushDownViewPredicate( qcStatement  * aStatement,
 
         if ( sCanPushDown == ID_TRUE )
         {
-            // ÇÏ³ª¶óµµ ¼º°øÇÏ¸é ¼º°ø
+            // í•˜ë‚˜ë¼ë„ ì„±ê³µí•˜ë©´ ì„±ê³µ
             *aIsPushed  = ID_TRUE;
         }
         else
         {
-            // ÇÏ³ª¶óµµ ½ÇÆĞÇÏ¸é ½ÇÆĞ
+            // í•˜ë‚˜ë¼ë„ ì‹¤íŒ¨í•˜ë©´ ì‹¤íŒ¨
             *aIsPushedAll = ID_FALSE;
         }
     }
@@ -245,25 +245,25 @@ qmoPushPred::canPushSelectionQuerySet( qmsParseTree * aViewParseTree,
 /***********************************************************************
  *
  * Description :
- *     Push selection ÇØµµ µÇ´Â ±¸¹®ÀÎÁö query set ´ÜÀ§·Î °Ë»ç
+ *     Push selection í•´ë„ ë˜ëŠ” êµ¬ë¬¸ì¸ì§€ query set ë‹¨ìœ„ë¡œ ê²€ì‚¬
  *
  * Implementation :
- *    (1) View¿¡ limit ÀıÀÌ Á¸ÀçÇÏ´Â °æ¿ì,
- *        Predicate Pushdown ±İÁö ( °á°ú Æ²¸² )
- *    (2) View¿¡ analytic functionÀÌ Á¸ÀçÇÏ´Â °æ¿ì,
- *        Predicate Pushdown ±İÁö ( Pushdown ÇÏ¸é °á°ú Æ²¸² )
- *    (3) View¿¡ row numÀÌ Á¸ÀçÇÏ´Â °æ¿ì,
- *        Predicate Pushdown ±İÁö ( BUG-20953 : Pushdown ÇÏ¸é °á°ú Æ²¸² )
- *    (4) ViewÀÇ target list¿¡ aggregate functionÀÌ Á¸ÀçÇÏ´Â °æ¿ì,
- *        PredicateÀ» pushdown ÇØµµ µÇÁö¸¸ »óÀ§¿¡ predicateÀ» ±×´ë·Î ³²°ÜµÎ¾î¾ß ÇÔ
- *       ( BUG-31399 : Predicate pushdown ÈÄ, »óÀ§¿¡¼­ predicateÀ» »èÁ¦ÇÏ¸é
- *         °á°ú Æ²¸² )
- *    (5) View¿¡ group by extensionÀÌ ÀÖ´Â °æ¿ì
- *        Predicate Pushdown ±İÁö ( °á°ú Æ²¸² )
- *    (6) View°¡ Grouping Sets Transformed ViewÀÏ °æ¿ì
- *        Predicate Pushdown ±İÁö
- *    (7) View¿¡ loop ÀıÀÌ Á¸ÀçÇÏ´Â °æ¿ì
- *        Predicate Pushdown ±İÁö
+ *    (1) Viewì— limit ì ˆì´ ì¡´ì¬í•˜ëŠ” ê²½ìš°,
+ *        Predicate Pushdown ê¸ˆì§€ ( ê²°ê³¼ í‹€ë¦¼ )
+ *    (2) Viewì— analytic functionì´ ì¡´ì¬í•˜ëŠ” ê²½ìš°,
+ *        Predicate Pushdown ê¸ˆì§€ ( Pushdown í•˜ë©´ ê²°ê³¼ í‹€ë¦¼ )
+ *    (3) Viewì— row numì´ ì¡´ì¬í•˜ëŠ” ê²½ìš°,
+ *        Predicate Pushdown ê¸ˆì§€ ( BUG-20953 : Pushdown í•˜ë©´ ê²°ê³¼ í‹€ë¦¼ )
+ *    (4) Viewì˜ target listì— aggregate functionì´ ì¡´ì¬í•˜ëŠ” ê²½ìš°,
+ *        Predicateì„ pushdown í•´ë„ ë˜ì§€ë§Œ ìƒìœ„ì— predicateì„ ê·¸ëŒ€ë¡œ ë‚¨ê²¨ë‘ì–´ì•¼ í•¨
+ *       ( BUG-31399 : Predicate pushdown í›„, ìƒìœ„ì—ì„œ predicateì„ ì‚­ì œí•˜ë©´
+ *         ê²°ê³¼ í‹€ë¦¼ )
+ *    (5) Viewì— group by extensionì´ ìˆëŠ” ê²½ìš°
+ *        Predicate Pushdown ê¸ˆì§€ ( ê²°ê³¼ í‹€ë¦¼ )
+ *    (6) Viewê°€ Grouping Sets Transformed Viewì¼ ê²½ìš°
+ *        Predicate Pushdown ê¸ˆì§€
+ *    (7) Viewì— loop ì ˆì´ ì¡´ì¬í•˜ëŠ” ê²½ìš°
+ *        Predicate Pushdown ê¸ˆì§€
  *
  ***********************************************************************/
 
@@ -275,7 +275,7 @@ qmoPushPred::canPushSelectionQuerySet( qmsParseTree * aViewParseTree,
     if ( aViewParseTree->limit != NULL )
     {
         //---------------------------------------
-        // (1) View¿¡ limit ÀıÀÌ Á¸ÀçÇÏ´Â °æ¿ì
+        // (1) Viewì— limit ì ˆì´ ì¡´ì¬í•˜ëŠ” ê²½ìš°
         //---------------------------------------
         *aCanPushDown = ID_FALSE;
     }
@@ -288,7 +288,7 @@ qmoPushPred::canPushSelectionQuerySet( qmsParseTree * aViewParseTree,
     if ( aViewQuerySet->SFWGH->top != NULL )
     {
         //---------------------------------------
-        // (1-1) View¿¡ topÀÌ Á¸ÀçÇÏ´Â °æ¿ì
+        // (1-1) Viewì— topì´ ì¡´ì¬í•˜ëŠ” ê²½ìš°
         //---------------------------------------
         *aCanPushDown = ID_FALSE;
     }
@@ -300,7 +300,7 @@ qmoPushPred::canPushSelectionQuerySet( qmsParseTree * aViewParseTree,
     if ( aViewQuerySet->analyticFuncList != NULL )
     {
         //---------------------------------------
-        // (2) View¿¡ analytic functionÀÌ Á¸ÀçÇÏ´Â °æ¿ì
+        // (2) Viewì— analytic functionì´ ì¡´ì¬í•˜ëŠ” ê²½ìš°
         //---------------------------------------
         *aCanPushDown = ID_FALSE;
     }
@@ -312,7 +312,7 @@ qmoPushPred::canPushSelectionQuerySet( qmsParseTree * aViewParseTree,
     if( aViewQuerySet->SFWGH->rownum != NULL )
     {
         //---------------------------------------
-        // (3) view¿¡ row numÀÌ Á¸ÀçÇÏ´Â °æ¿ì
+        // (3) viewì— row numì´ ì¡´ì¬í•˜ëŠ” ê²½ìš°
         //---------------------------------------
         *aCanPushDown = ID_FALSE;
     }
@@ -328,7 +328,7 @@ qmoPushPred::canPushSelectionQuerySet( qmsParseTree * aViewParseTree,
         if ( QTC_HAVE_AGGREGATE( sTarget->targetColumn) == ID_TRUE )
         {
             //---------------------------------------
-            // (4) ViewÀÇ target list¿¡ aggregate functionÀÌ Á¸ÀçÇÏ´Â °æ¿ì
+            // (4) Viewì˜ target listì— aggregate functionì´ ì¡´ì¬í•˜ëŠ” ê²½ìš°
             //---------------------------------------
             *aRemainPushedPred = ID_TRUE;
             break;
@@ -339,8 +339,8 @@ qmoPushPred::canPushSelectionQuerySet( qmsParseTree * aViewParseTree,
         }
     }
 
-    // BUG-37047 group by extensionÀº row¸¦ »ı¼ºÇÏ´Â °æ¿ì°¡ ÀÖ¾î
-    // predicateÀ» group by ¾Æ·¡·Î ³»¸± ¼ö ¾ø´Ù.
+    // BUG-37047 group by extensionì€ rowë¥¼ ìƒì„±í•˜ëŠ” ê²½ìš°ê°€ ìˆì–´
+    // predicateì„ group by ì•„ë˜ë¡œ ë‚´ë¦´ ìˆ˜ ì—†ë‹¤.
     for ( sElement  = aViewQuerySet->SFWGH->group;
           sElement != NULL;
           sElement  = sElement->next )
@@ -348,7 +348,7 @@ qmoPushPred::canPushSelectionQuerySet( qmsParseTree * aViewParseTree,
         if ( sElement->type != QMS_GROUPBY_NORMAL )
         {
             //---------------------------------------
-            // (5) View¿¡ group by extensionÀÌ ÀÖ´Â °æ¿ì
+            // (5) Viewì— group by extensionì´ ìˆëŠ” ê²½ìš°
             //---------------------------------------
             *aCanPushDown = ID_FALSE;
             break;
@@ -364,7 +364,7 @@ qmoPushPred::canPushSelectionQuerySet( qmsParseTree * aViewParseTree,
          QMV_SFWGH_GBGS_TRANSFORM_NONE )
     {
         //---------------------------------------
-        // (6) view°¡ Grouping Sets Transformed View ÀÎ °æ¿ì
+        // (6) viewê°€ Grouping Sets Transformed View ì¸ ê²½ìš°
         //---------------------------------------
         *aCanPushDown = ID_FALSE;
     }
@@ -376,7 +376,7 @@ qmoPushPred::canPushSelectionQuerySet( qmsParseTree * aViewParseTree,
     if ( aViewParseTree->loopNode != NULL )
     {
         //---------------------------------------
-        // (7) View¿¡ loop ÀıÀÌ Á¸ÀçÇÏ´Â °æ¿ì
+        // (7) Viewì— loop ì ˆì´ ì¡´ì¬í•˜ëŠ” ê²½ìš°
         //---------------------------------------
         *aCanPushDown = ID_FALSE;
     }
@@ -401,14 +401,14 @@ qmoPushPred::canPushDownPredicate( qcStatement  * aStatement,
 /***********************************************************************
  *
  * Description :
- *     Push selection ÇØµµ µÇ´Â predicateÀÎÁö °Ë»ç
+ *     Push selection í•´ë„ ë˜ëŠ” predicateì¸ì§€ ê²€ì‚¬
  *     BUG-18367 view push selection
  *
  * Implementation :
- *     predicate¿¡ »ç¿ëµÈ view columnÀÌ ´ëÀÀµÇ´Â viewÀÇ target column¿¡
- *     ´ëÇØ ¼ø¼ö ÄÃ·³ÀÌ¾î¾ß ÇÑ´Ù.
+ *     predicateì— ì‚¬ìš©ëœ view columnì´ ëŒ€ì‘ë˜ëŠ” viewì˜ target columnì—
+ *     ëŒ€í•´ ìˆœìˆ˜ ì»¬ëŸ¼ì´ì–´ì•¼ í•œë‹¤.
  *
- *     aCanPushSelectionÀÇ ÃÊ±â°ªÀº ID_TRUE·Î ¼³Á¤µÇ¾îÀÖ´Ù.
+ *     aCanPushSelectionì˜ ì´ˆê¸°ê°’ì€ ID_TRUEë¡œ ì„¤ì •ë˜ì–´ìˆë‹¤.
  *
  ***********************************************************************/
 
@@ -423,7 +423,7 @@ qmoPushPred::canPushDownPredicate( qcStatement  * aStatement,
     IDU_FIT_POINT_FATAL( "qmoPushPred::canPushDownPredicate::__FT__" );
 
     //---------------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //---------------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -441,8 +441,8 @@ qmoPushPred::canPushDownPredicate( qcStatement  * aStatement,
                 //---------------------------------------------------
                 // PROJ-1653 Outer Join Operator (+)
                 //
-                // Predicate ¿¡ Outer Join Operator °¡ »ç¿ëµÇ¾úÀ¸¸é
-                // PushDown Predicate À» ¼öÇàÇÏÁö ¾Ê´Â´Ù.
+                // Predicate ì— Outer Join Operator ê°€ ì‚¬ìš©ë˜ì—ˆìœ¼ë©´
+                // PushDown Predicate ì„ ìˆ˜í–‰í•˜ì§€ ì•ŠëŠ”ë‹¤.
                 //---------------------------------------------------
                 if ( ( aNode->lflag & QTC_NODE_JOIN_OPERATOR_MASK )
                         == QTC_NODE_JOIN_OPERATOR_EXIST )
@@ -480,9 +480,9 @@ qmoPushPred::canPushDownPredicate( qcStatement  * aStatement,
                         QTC_STMT_COLUMN(aStatement, sTargetColumn)->type.dataTypeId;
 
                     /* BUG-33843
-                    PushDownPredicate À» ÇÒ¶§¿¡´Â Å¸ÀÔ ÄÁ¹öÁ¯ÀÌ ¼­·Î ´Ù¸£°Ô »ı¼ºµÇ¸é ¾ÈµÈ´Ù.
-                    ÄÃ·³ÀÇ Å¸ÀÔÀÌ ¼­·Î ´Ù¸£¸é ´Ù¸¥ ÄÁ¹öÁ¯ÀÌ »ı¼ºÀÌ µÈ´Ù.
-                    µû¶ó¼­ ÄÃ·³ÀÇ Å¸ÀÔÀ» ºñ±³ÇÏ¿© È®ÀÎÇÑ´Ù. */
+                    PushDownPredicate ì„ í• ë•Œì—ëŠ” íƒ€ì… ì»¨ë²„ì ¼ì´ ì„œë¡œ ë‹¤ë¥´ê²Œ ìƒì„±ë˜ë©´ ì•ˆëœë‹¤.
+                    ì»¬ëŸ¼ì˜ íƒ€ì…ì´ ì„œë¡œ ë‹¤ë¥´ë©´ ë‹¤ë¥¸ ì»¨ë²„ì ¼ì´ ìƒì„±ì´ ëœë‹¤.
+                    ë”°ë¼ì„œ ì»¬ëŸ¼ì˜ íƒ€ì…ì„ ë¹„êµí•˜ì—¬ í™•ì¸í•œë‹¤. */
                     if ( sOrgDataTypeId != sViewDataTypeId )
                     {
                         *aCanPushDown = ID_FALSE;
@@ -568,7 +568,7 @@ qmoPushPred::canPushDownPredicate( qcStatement  * aStatement,
         }
         else
         {
-            // »ó¼öÀÏ¶§
+            // ìƒìˆ˜ì¼ë•Œ
 
             // Nothing to do.
         }
@@ -620,7 +620,7 @@ qmoPushPred::pushDownPredicate( qcStatement  * aStatement,
  *
  * Description :
  *     BUG-18367 view push selection
- *     push predicateÀ» ¼öÇàÇÏ¿© viewÀÇ whereÀı¿¡ ¿¬°áÇÑ´Ù.
+ *     push predicateì„ ìˆ˜í–‰í•˜ì—¬ viewì˜ whereì ˆì— ì—°ê²°í•œë‹¤.
  *
  * Implementation :
  *
@@ -637,7 +637,7 @@ qmoPushPred::pushDownPredicate( qcStatement  * aStatement,
     IDU_FIT_POINT_FATAL( "qmoPushPred::pushDownPredicate::__FT__" );
 
     //---------------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //---------------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -646,33 +646,33 @@ qmoPushPred::pushDownPredicate( qcStatement  * aStatement,
     IDE_DASSERT( aPredicate != NULL );
 
     //---------------------------------------------------
-    // ±âº» ÃÊ±âÈ­
+    // ê¸°ë³¸ ì´ˆê¸°í™”
     //---------------------------------------------------
 
     SET_EMPTY_POSITION( sNullPosition );
 
     //---------------------------------------------------
-    // Node º¹»ç
+    // Node ë³µì‚¬
     //---------------------------------------------------
 
     IDE_TEST( qtc::cloneQTCNodeTree( QC_QMP_MEM(aStatement),
                                      aPredicate->node,
                                      & sNode,
-                                     ID_FALSE,  // rootÀÇ next´Â º¹»çÇÏÁö ¾Ê´Â´Ù.
-                                     ID_TRUE,   // conversionÀ» ²÷´Â´Ù.
-                                     ID_TRUE,   // constant node±îÁö º¹»çÇÑ´Ù.
-                                     ID_FALSE ) // constant node¸¦ ¿øº¹ÇÏÁö ¾Ê´Â´Ù.
+                                     ID_FALSE,  // rootì˜ nextëŠ” ë³µì‚¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
+                                     ID_TRUE,   // conversionì„ ëŠëŠ”ë‹¤.
+                                     ID_TRUE,   // constant nodeê¹Œì§€ ë³µì‚¬í•œë‹¤.
+                                     ID_FALSE ) // constant nodeë¥¼ ì›ë³µí•˜ì§€ ì•ŠëŠ”ë‹¤.
               != IDE_SUCCESS );
 
     //---------------------------------------------------
-    // viewÀÇ predicateÀ» view ³»ºÎÀÇ table predicateÀ¸·Î º¯È¯
+    // viewì˜ predicateì„ view ë‚´ë¶€ì˜ table predicateìœ¼ë¡œ ë³€í™˜
     //---------------------------------------------------
 
     IDE_TEST( changeViewPredIntoTablePred( aStatement,
                                            aViewQuerySet->target,
                                            aViewTupleId,
                                            sNode,
-                                           ID_FALSE ) // next´Â ¹Ù²ÙÁö ¾Ê´Â´Ù.
+                                           ID_FALSE ) // nextëŠ” ë°”ê¾¸ì§€ ì•ŠëŠ”ë‹¤.
              != IDE_SUCCESS );
 
     //---------------------------------------------------
@@ -690,7 +690,7 @@ qmoPushPred::pushDownPredicate( qcStatement  * aStatement,
               != IDE_SUCCESS);
 
     //---------------------------------------------------
-    // viewÀÇ where Àı¿¡ ¿¬°á
+    // viewì˜ where ì ˆì— ì—°ê²°
     //---------------------------------------------------
 
     // To Fix BUG-9645
@@ -712,10 +712,10 @@ qmoPushPred::pushDownPredicate( qcStatement  * aStatement,
     }
 
     // PR-12955
-    // ÀÌ¹Ì whereÀıÀÌ AND·Î ¿¬°áµÈ °æ¿ì °è´Ü½ÄÀÇ AND¿¬°á ´ë½Å¿¡
-    // ÇÏ³ªÀÇ AND nodeÀÇ arguments->next...->next·Î¸¸ ¿¬°á½ÃÄÑ
-    // CNF only·Î ÆÇº°ÇÒ ¼ö ÀÖµµ·Ï ÇÔ.
-    // CompareNode°¡ NULL ÀÎ °æ¿ì OR ³ëµå¿¡ 2°³ ÀÌ»óÀÇ argument°¡ ÀÖÀ½.
+    // ì´ë¯¸ whereì ˆì´ ANDë¡œ ì—°ê²°ëœ ê²½ìš° ê³„ë‹¨ì‹ì˜ ANDì—°ê²° ëŒ€ì‹ ì—
+    // í•˜ë‚˜ì˜ AND nodeì˜ arguments->next...->nextë¡œë§Œ ì—°ê²°ì‹œì¼œ
+    // CNF onlyë¡œ íŒë³„í•  ìˆ˜ ìˆë„ë¡ í•¨.
+    // CompareNodeê°€ NULL ì¸ ê²½ìš° OR ë…¸ë“œì— 2ê°œ ì´ìƒì˜ argumentê°€ ìˆìŒ.
     if ( aViewQuerySet->SFWGH->where != NULL )
     {
         if ( (aViewQuerySet->SFWGH->where->node.lflag &
@@ -747,7 +747,7 @@ qmoPushPred::pushDownPredicate( qcStatement  * aStatement,
         }
         else
         {
-            // ¾Æ·¡ else¹®°ú µ¿ÀÏÇÑ ±¸¹®.
+            // ì•„ë˜ elseë¬¸ê³¼ ë™ì¼í•œ êµ¬ë¬¸.
             IDE_TEST( qtc::makeNode( aStatement,
                                      sAndNode,
                                      & sNullPosition,
@@ -763,7 +763,7 @@ qmoPushPred::pushDownPredicate( qcStatement  * aStatement,
     }
     else
     {
-        // À§ else¹®°ú µ¿ÀÏÇÑ ±¸¹®
+        // ìœ„ elseë¬¸ê³¼ ë™ì¼í•œ êµ¬ë¬¸
         IDE_TEST( qtc::makeNode( aStatement,
                                  sAndNode,
                                  & sNullPosition,
@@ -779,13 +779,13 @@ qmoPushPred::pushDownPredicate( qcStatement  * aStatement,
 
     //---------------------------------------------------
     // To Fix BUG-10577
-    // »õ·Î »ı¼ºµÈ AND ³ëµåÀÇ estimate ¹× Push Selection PredicateÀÇ
-    // column ³ëµåÀÇ table ID º¯°æÀ¸·Î ÀÎÇÑ dependenciesµµ ¹İ¿µµÇ¾î¾ß ÇÔ
-    //     - column nodeÀÇ »óÀ§ ³ëµå : column node¿Í ±× ¿ÜÀÇ nodeµéÀÇ
-    //                                 dependenciesµéÀÇ ORing °ª
+    // ìƒˆë¡œ ìƒì„±ëœ AND ë…¸ë“œì˜ estimate ë° Push Selection Predicateì˜
+    // column ë…¸ë“œì˜ table ID ë³€ê²½ìœ¼ë¡œ ì¸í•œ dependenciesë„ ë°˜ì˜ë˜ì–´ì•¼ í•¨
+    //     - column nodeì˜ ìƒìœ„ ë…¸ë“œ : column nodeì™€ ê·¸ ì™¸ì˜ nodeë“¤ì˜
+    //                                 dependenciesë“¤ì˜ ORing ê°’
     //---------------------------------------------------
 
-    // PR-12955, AND ³ëµå°¡ ÃÖ»óÀ§°¡ ¾Æ´Ò ¼ö ÀÖÀ½. sAndNode[0]¸¦ whereÀı·Î ´ëÄ¡
+    // PR-12955, AND ë…¸ë“œê°€ ìµœìƒìœ„ê°€ ì•„ë‹ ìˆ˜ ìˆìŒ. sAndNode[0]ë¥¼ whereì ˆë¡œ ëŒ€ì¹˜
     IDE_TEST(qtc::estimateNodeWithoutArgument( aStatement,
                                                aViewQuerySet->SFWGH->where )
              != IDE_SUCCESS);
@@ -805,8 +805,8 @@ qmoPushPred::pushDownPredicate( qcStatement  * aStatement,
     }
 
     //---------------------------------------------------
-    // outer columnÀ» Æ÷ÇÔÇÑ predicateÀ» ³»¸° °æ¿ì,
-    // outer query¸¦ ¼³Á¤ÇØ ÁØ´Ù.
+    // outer columnì„ í¬í•¨í•œ predicateì„ ë‚´ë¦° ê²½ìš°,
+    // outer queryë¥¼ ì„¤ì •í•´ ì¤€ë‹¤.
     // PROJ-1495
     //---------------------------------------------------
 
@@ -815,19 +815,19 @@ qmoPushPred::pushDownPredicate( qcStatement  * aStatement,
             qtc::getPosFirstBitSet( & aPredicate->node->depInfo ) )
         == QTC_DEPENDENCIES_END )
     {
-        // outer columnÀÌ Æ÷ÇÔµÇÁö ¾ÊÀº °æ¿ì,
+        // outer columnì´ í¬í•¨ë˜ì§€ ì•Šì€ ê²½ìš°,
         // Nothing To Do
     }
     else
     {
-        // outer columnÀÌ Æ÷ÇÔµÈ °æ¿ì,
+        // outer columnì´ í¬í•¨ëœ ê²½ìš°,
         aViewQuerySet->SFWGH->outerQuery = aSFWGH;
         aViewQuerySet->SFWGH->outerFrom = aFrom;
     }
 
     // BUG-43077
-    // view¾È¿¡¼­ ÂüÁ¶ÇÏ´Â ¿ÜºÎ ÂüÁ¶ ÄÃ·³µéÀ» Result descriptor¿¡ Ãß°¡ÇØ¾ß ÇÑ´Ù.
-    // push_pred ¸¦ »ç¿ëÇÒ °æ¿ì¿¡µµ outerColumns¿¡ Ãß°¡ÇØ ÁÖ¾î¾ß ÇÑ´Ù.
+    // viewì•ˆì—ì„œ ì°¸ì¡°í•˜ëŠ” ì™¸ë¶€ ì°¸ì¡° ì»¬ëŸ¼ë“¤ì„ Result descriptorì— ì¶”ê°€í•´ì•¼ í•œë‹¤.
+    // push_pred ë¥¼ ì‚¬ìš©í•  ê²½ìš°ì—ë„ outerColumnsì— ì¶”ê°€í•´ ì£¼ì–´ì•¼ í•œë‹¤.
     IDE_TEST( qmvQTC::setOuterColumns( aStatement,
                                        & aFrom->depInfo,
                                        aViewQuerySet->SFWGH,
@@ -852,7 +852,7 @@ qmoPushPred::changeViewPredIntoTablePred( qcStatement  * aStatement,
  *
  * Description :
  *     BUG-19756 view predicate pushdown
- *     viewÀÇ predicateÀ» view ³»ºÎÀÇ table predicateÀ¸·Î º¯È¯ÇÑ´Ù.
+ *     viewì˜ predicateì„ view ë‚´ë¶€ì˜ table predicateìœ¼ë¡œ ë³€í™˜í•œë‹¤.
  *
  * Implementation :
  *
@@ -867,7 +867,7 @@ qmoPushPred::changeViewPredIntoTablePred( qcStatement  * aStatement,
     IDU_FIT_POINT_FATAL( "qmoPushPred::changeViewPredIntoTablePred::__FT__" );
 
     //---------------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //---------------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -875,7 +875,7 @@ qmoPushPred::changeViewPredIntoTablePred( qcStatement  * aStatement,
     IDE_DASSERT( aNode != NULL );
 
     //---------------------------------------------------
-    // push selection °Ë»ç
+    // push selection ê²€ì‚¬
     //---------------------------------------------------
 
     if ( qtc::dependencyEqual( & aNode->depInfo,
@@ -920,21 +920,21 @@ qmoPushPred::changeViewPredIntoTablePred( qcStatement  * aStatement,
             // BUG-19756
             if ( sTargetColumn->node.module == & qtc::columnModule )
             {
-                // columnÀÎ °æ¿ì
+                // columnì¸ ê²½ìš°
                 IDE_TEST( transformToTargetColumn( aNode,
                                                    sTargetColumn )
                           != IDE_SUCCESS );
             }
             else if ( sTargetColumn->node.module == & qtc::valueModule )
             {
-                // valueÀÎ °æ¿ì
+                // valueì¸ ê²½ìš°
                 IDE_TEST( transformToTargetValue( aNode,
                                                   sTargetColumn )
                              != IDE_SUCCESS );
             }
             else
             {
-                // expressionÀÎ °æ¿ì
+                // expressionì¸ ê²½ìš°
                 IDE_TEST( transformToTargetExpression( aStatement,
                                                        aNode,
                                                        sTargetColumn )
@@ -962,7 +962,7 @@ qmoPushPred::changeViewPredIntoTablePred( qcStatement  * aStatement,
     }
     else
     {
-        // »ó¼öÀÏ¶§
+        // ìƒìˆ˜ì¼ë•Œ
 
         // Nothing to do.
     }
@@ -1012,30 +1012,30 @@ qmoPushPred::transformToTargetColumn( qtcNode      * aNode,
     IDU_FIT_POINT_FATAL( "qmoPushPred::transformToTargetColumn::__FT__" );
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_DASSERT( aNode != NULL );
     IDE_DASSERT( aTargetColumn != NULL );
 
     //------------------------------------------
-    // view ÄÃ·³ÀÇ transform ¼öÇà
+    // view ì»¬ëŸ¼ì˜ transform ìˆ˜í–‰
     //------------------------------------------
 
-    // ³ëµå¸¦ ¹é¾÷ÇÑ´Ù.
+    // ë…¸ë“œë¥¼ ë°±ì—…í•œë‹¤.
     idlOS::memcpy( & sOrgNode, aNode, ID_SIZEOF( qtcNode ) );
 
-    // ³ëµå¸¦ Ä¡È¯ÇÑ´Ù.
+    // ë…¸ë“œë¥¼ ì¹˜í™˜í•œë‹¤.
     idlOS::memcpy( aNode, aTargetColumn, ID_SIZEOF( qtcNode ) );
 
-    // conversion ³ëµå¸¦ ¿Å±ä´Ù.
+    // conversion ë…¸ë“œë¥¼ ì˜®ê¸´ë‹¤.
     aNode->node.conversion = sOrgNode.node.conversion;
     aNode->node.leftConversion = sOrgNode.node.leftConversion;
 
-    // next¸¦ ¿Å±ä´Ù.
+    // nextë¥¼ ì˜®ê¸´ë‹¤.
     aNode->node.next = sOrgNode.node.next;
 
-    // nameÀ» ¼³Á¤ÇÑ´Ù.
+    // nameì„ ì„¤ì •í•œë‹¤.
     SET_POSITION( aNode->userName, sOrgNode.userName );
     SET_POSITION( aNode->tableName, sOrgNode.tableName );
     SET_POSITION( aNode->columnName, sOrgNode.columnName );
@@ -1060,27 +1060,27 @@ qmoPushPred::transformToTargetValue( qtcNode      * aNode,
     IDU_FIT_POINT_FATAL( "qmoPushPred::transformToTargetValue::__FT__" );
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_DASSERT( aNode != NULL );
     IDE_DASSERT( aTargetColumn != NULL );
 
     //------------------------------------------
-    // view ÄÃ·³ÀÇ transform ¼öÇà
+    // view ì»¬ëŸ¼ì˜ transform ìˆ˜í–‰
     //------------------------------------------
 
-    // ³ëµå¸¦ ¹é¾÷ÇÑ´Ù.
+    // ë…¸ë“œë¥¼ ë°±ì—…í•œë‹¤.
     idlOS::memcpy( & sOrgNode, aNode, ID_SIZEOF( qtcNode ) );
 
-    // ³ëµå¸¦ Ä¡È¯ÇÑ´Ù.
+    // ë…¸ë“œë¥¼ ì¹˜í™˜í•œë‹¤.
     idlOS::memcpy( aNode, aTargetColumn, ID_SIZEOF( qtcNode ) );
 
-    // conversion ³ëµå¸¦ ¿Å±ä´Ù.
+    // conversion ë…¸ë“œë¥¼ ì˜®ê¸´ë‹¤.
     aNode->node.conversion = sOrgNode.node.conversion;
     aNode->node.leftConversion = sOrgNode.node.leftConversion;
 
-    // next¸¦ ¿Å±ä´Ù.
+    // nextë¥¼ ì˜®ê¸´ë‹¤.
     aNode->node.next = sOrgNode.node.next;
 
     return IDE_SUCCESS;
@@ -1105,7 +1105,7 @@ qmoPushPred::transformToTargetExpression( qcStatement  * aStatement,
     IDU_FIT_POINT_FATAL( "qmoPushPred::transformToTargetExpression::__FT__" );
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -1113,31 +1113,31 @@ qmoPushPred::transformToTargetExpression( qcStatement  * aStatement,
     IDE_DASSERT( aTargetColumn != NULL );
 
     //------------------------------------------
-    // view ÄÃ·³ÀÇ transform ¼öÇà
+    // view ì»¬ëŸ¼ì˜ transform ìˆ˜í–‰
     //------------------------------------------
 
-    // exprÀÇ °á°ú¸¦ ÀúÀåÇÒ template °ø°£À» »ı¼ºÇÑ´Ù.
+    // exprì˜ ê²°ê³¼ë¥¼ ì €ì¥í•  template ê³µê°„ì„ ìƒì„±í•œë‹¤.
     IDE_TEST( qtc::makeNode( aStatement,
                              sNode,
                              & aTargetColumn->position,
                              (mtfModule*) aTargetColumn->node.module )
               != IDE_SUCCESS );
 
-    // expr ³ëµå Æ®¸®¸¦ º¹»ç »ı¼ºÇÑ´Ù.
+    // expr ë…¸ë“œ íŠ¸ë¦¬ë¥¼ ë³µì‚¬ ìƒì„±í•œë‹¤.
     IDE_TEST( qtc::cloneQTCNodeTree( QC_QMP_MEM(aStatement),
                                      aTargetColumn,
                                      & sNewNode,
-                                     ID_FALSE,  // rootÀÇ next´Â º¹»çÇÏÁö ¾Ê´Â´Ù.
-                                     ID_TRUE,   // conversionÀ» ²÷´Â´Ù.
-                                     ID_TRUE,   // constant node±îÁö º¹»çÇÑ´Ù.
-                                     ID_TRUE )  // constant node¸¦ ¿øº¹ÇÑ´Ù.
+                                     ID_FALSE,  // rootì˜ nextëŠ” ë³µì‚¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
+                                     ID_TRUE,   // conversionì„ ëŠëŠ”ë‹¤.
+                                     ID_TRUE,   // constant nodeê¹Œì§€ ë³µì‚¬í•œë‹¤.
+                                     ID_TRUE )  // constant nodeë¥¼ ì›ë³µí•œë‹¤.
               != IDE_SUCCESS );
 
-    // template À§Ä¡¸¦ º¯°æÇÑ´Ù.
+    // template ìœ„ì¹˜ë¥¼ ë³€ê²½í•œë‹¤.
     sNewNode->node.table = sNode[0]->node.table;
     sNewNode->node.column = sNode[0]->node.column;
 
-    // conversion ³ëµå¸¦ ¿Å±ä´Ù.
+    // conversion ë…¸ë“œë¥¼ ì˜®ê¸´ë‹¤.
     sNewNode->node.conversion = aNode->node.conversion;
     sNewNode->node.leftConversion = aNode->node.leftConversion;
 
@@ -1145,10 +1145,10 @@ qmoPushPred::transformToTargetExpression( qcStatement  * aStatement,
     sNewNode->node.lflag &= ~MTC_NODE_REESTIMATE_MASK;
     sNewNode->node.lflag |= MTC_NODE_REESTIMATE_FALSE;
 
-    // next¸¦ ¿Å±ä´Ù.
+    // nextë¥¼ ì˜®ê¸´ë‹¤.
     sNewNode->node.next = aNode->node.next;
 
-    // ³ëµå¸¦ Ä¡È¯ÇÑ´Ù.
+    // ë…¸ë“œë¥¼ ì¹˜í™˜í•œë‹¤.
     idlOS::memcpy( aNode, sNewNode, ID_SIZEOF( qtcNode ) );
 
     return IDE_SUCCESS;
@@ -1173,10 +1173,10 @@ qmoPushPred::isPushableRankPred( qcStatement  * aStatement,
  * Description :
  *
  * Implementation :
- *     1. push °¡´ÉÇÑ rank predicateÀÎÁö È®ÀÎÇÑ´Ù.
- *        <, <=, >, >=, =ÀÇ ºñ±³¿¬»ê¸¸ °¡´ÉÇÏ´Ù.
- *     2. push °¡´ÉÇÑ viewÀÎÁö È®ÀÎÇÑ´Ù.
- *        rank predicateÀÇ ÄÃ·³ÀÌ view¿¡¼­ row_number ÇÔ¼öÀÌ¾î¾ß ÇÑ´Ù.
+ *     1. push ê°€ëŠ¥í•œ rank predicateì¸ì§€ í™•ì¸í•œë‹¤.
+ *        <, <=, >, >=, =ì˜ ë¹„êµì—°ì‚°ë§Œ ê°€ëŠ¥í•˜ë‹¤.
+ *     2. push ê°€ëŠ¥í•œ viewì¸ì§€ í™•ì¸í•œë‹¤.
+ *        rank predicateì˜ ì»¬ëŸ¼ì´ viewì—ì„œ row_number í•¨ìˆ˜ì´ì–´ì•¼ í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -1194,7 +1194,7 @@ qmoPushPred::isPushableRankPred( qcStatement  * aStatement,
     IDU_FIT_POINT_FATAL( "qmoPushPred::isPushableRankPred::__FT__" );
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_DASSERT( aStatement     != NULL );
@@ -1203,31 +1203,31 @@ qmoPushPred::isPushableRankPred( qcStatement  * aStatement,
     IDE_DASSERT( aNode          != NULL );
 
     //--------------------------------------
-    // ÃÊ±âÈ­ ÀÛ¾÷
+    // ì´ˆê¸°í™” ì‘ì—…
     //--------------------------------------
 
     sOrNode = aNode;
     sIsPushable = ID_FALSE;
 
     //--------------------------------------
-    // pushable rank predicate °Ë»ç
+    // pushable rank predicate ê²€ì‚¬
     //--------------------------------------
 
-    // ÃÖ»óÀ§ ³ëµå´Â OR ³ëµå¿©¾ß ÇÑ´Ù.
+    // ìµœìƒìœ„ ë…¸ë“œëŠ” OR ë…¸ë“œì—¬ì•¼ í•œë‹¤.
     if ( ( sOrNode->node.lflag & MTC_NODE_OPERATOR_MASK )
          == MTC_NODE_OPERATOR_OR )
     {
         sCompareNode = (qtcNode*) sOrNode->node.arguments;
 
-        // ºñ±³¿¬»êÀÚÀÇ next´Â NULLÀÌ¾î¾ß ÇÑ´Ù.
+        // ë¹„êµì—°ì‚°ìì˜ nextëŠ” NULLì´ì–´ì•¼ í•œë‹¤.
         if ( sCompareNode->node.next == NULL )
         {
             switch ( sCompareNode->node.lflag & MTC_NODE_OPERATOR_MASK )
             {
                 case MTC_NODE_OPERATOR_LESS:
-                    // COLUMN < »ó¼ö/È£½ºÆ® º¯¼ö
+                    // COLUMN < ìƒìˆ˜/í˜¸ìŠ¤íŠ¸ ë³€ìˆ˜
                 case MTC_NODE_OPERATOR_LESS_EQUAL:
-                    // COLUMN <= »ó¼ö/È£½ºÆ® º¯¼ö
+                    // COLUMN <= ìƒìˆ˜/í˜¸ìŠ¤íŠ¸ ë³€ìˆ˜
 
                     sColumnNode = (qtcNode*) sCompareNode->node.arguments;
                     sValueNode = (qtcNode*) sColumnNode->node.next;
@@ -1240,9 +1240,9 @@ qmoPushPred::isPushableRankPred( qcStatement  * aStatement,
                     break;
 
                 case MTC_NODE_OPERATOR_GREATER:
-                    // »ó¼ö/È£½ºÆ® º¯¼ö > COLUMN
+                    // ìƒìˆ˜/í˜¸ìŠ¤íŠ¸ ë³€ìˆ˜ > COLUMN
                 case MTC_NODE_OPERATOR_GREATER_EQUAL:
-                    // »ó¼ö/È£½ºÆ® º¯¼ö >= COLUMN
+                    // ìƒìˆ˜/í˜¸ìŠ¤íŠ¸ ë³€ìˆ˜ >= COLUMN
 
                     sValueNode = (qtcNode*) sCompareNode->node.arguments;
                     sColumnNode = (qtcNode*) sValueNode->node.next;
@@ -1256,7 +1256,7 @@ qmoPushPred::isPushableRankPred( qcStatement  * aStatement,
 
                 case MTC_NODE_OPERATOR_EQUAL:
 
-                    // COLUMN = »ó¼ö/È£½ºÆ® º¯¼ö
+                    // COLUMN = ìƒìˆ˜/í˜¸ìŠ¤íŠ¸ ë³€ìˆ˜
                     sColumnNode = (qtcNode*) sCompareNode->node.arguments;
                     sValueNode = (qtcNode*) sColumnNode->node.next;
 
@@ -1268,7 +1268,7 @@ qmoPushPred::isPushableRankPred( qcStatement  * aStatement,
 
                     if ( sIsPushable == ID_FALSE )
                     {
-                        // »ó¼ö/È£½ºÆ® º¯¼ö = COLUMN
+                        // ìƒìˆ˜/í˜¸ìŠ¤íŠ¸ ë³€ìˆ˜ = COLUMN
                         sValueNode = (qtcNode*) sCompareNode->node.arguments;
                         sColumnNode = (qtcNode*) sValueNode->node.next;
 
@@ -1299,12 +1299,12 @@ qmoPushPred::isPushableRankPred( qcStatement  * aStatement,
     }
 
     //--------------------------------------
-    // view °Ë»ç
+    // view ê²€ì‚¬
     //--------------------------------------
 
     if ( sIsPushable == ID_TRUE )
     {
-        // order by°¡ ÀÖÀ¸¸é ¾ÈµÈ´Ù.
+        // order byê°€ ìˆìœ¼ë©´ ì•ˆëœë‹¤.
         if ( aViewParseTree->orderBy != NULL )
         {
             sIsPushable = ID_FALSE;
@@ -1321,7 +1321,7 @@ qmoPushPred::isPushableRankPred( qcStatement  * aStatement,
 
     if ( sIsPushable == ID_TRUE )
     {
-        // root ³ëµå°¡ row_numberÀÌ¾î¾ß ÇÑ´Ù.
+        // root ë…¸ë“œê°€ row_numberì´ì–´ì•¼ í•œë‹¤.
         for ( sTarget = aViewQuerySet->target, sTargetOrder = 0;
               sTarget != NULL;
               sTarget = sTarget->next, sTargetOrder++ )
@@ -1351,16 +1351,16 @@ qmoPushPred::isPushableRankPred( qcStatement  * aStatement,
     }
 
     //---------------------------------------------------
-    // sValueNode °Ë»ç
+    // sValueNode ê²€ì‚¬
     //---------------------------------------------------
 
     if ( sIsPushable == ID_TRUE )
     {
         sColumn = QTC_STMT_COLUMN( aStatement, sValueNode );
 
-        // BUG-40409 ¼ıÀÚ°¡ Ä¿Áö¸é ¿ÀÈ÷·Á ¼º´ÉÀÌ ´À·ÁÁø´Ù.
-        // °ªÀ» °Ë»çÇÏ±â À§ÇØ¼­ bind º¯¼ö´Â Á¦¿ÜÇÑ´Ù.
-        // ¶ÇÇÑ µ¥ÀÌÅ¸ Å¸ÀÔÀ» bigint Çü¸¸ Áö¿øÇÑ´Ù.
+        // BUG-40409 ìˆ«ìê°€ ì»¤ì§€ë©´ ì˜¤íˆë ¤ ì„±ëŠ¥ì´ ëŠë ¤ì§„ë‹¤.
+        // ê°’ì„ ê²€ì‚¬í•˜ê¸° ìœ„í•´ì„œ bind ë³€ìˆ˜ëŠ” ì œì™¸í•œë‹¤.
+        // ë˜í•œ ë°ì´íƒ€ íƒ€ì…ì„ bigint í˜•ë§Œ ì§€ì›í•œë‹¤.
         if ( (sValueNode->node.lflag & MTC_NODE_BIND_MASK) == MTC_NODE_BIND_EXIST )
         {
             sIsPushable = ID_FALSE;
@@ -1385,7 +1385,7 @@ qmoPushPred::isPushableRankPred( qcStatement  * aStatement,
     }
 
     //---------------------------------------------------
-    // sValueNode °Ë»ç 2
+    // sValueNode ê²€ì‚¬ 2
     //---------------------------------------------------
 
     if ( sIsPushable == ID_TRUE )
@@ -1395,8 +1395,8 @@ qmoPushPred::isPushableRankPred( qcStatement  * aStatement,
                                                 &sValue )
                 == ID_TRUE )
         {
-            // BUG-40409 ¼ıÀÚ°¡ Ä¿Áö¸é ¿ÀÈ÷·Á ¼º´ÉÀÌ ´À·ÁÁø´Ù.
-            // ÃÖ´ë 1024°³ ÀÏ¶§±îÁö¸¸ Çã¿ëÇÑ´Ù.
+            // BUG-40409 ìˆ«ìê°€ ì»¤ì§€ë©´ ì˜¤íˆë ¤ ì„±ëŠ¥ì´ ëŠë ¤ì§„ë‹¤.
+            // ìµœëŒ€ 1024ê°œ ì¼ë•Œê¹Œì§€ë§Œ í—ˆìš©í•œë‹¤.
             if ( sValue > QMO_PUSH_RANK_MAX )
             {
                 sIsPushable = ID_FALSE;
@@ -1417,7 +1417,7 @@ qmoPushPred::isPushableRankPred( qcStatement  * aStatement,
     }
 
     //---------------------------------------------------
-    // Node º¹»ç
+    // Node ë³µì‚¬
     //---------------------------------------------------
 
     if ( sIsPushable == ID_TRUE )
@@ -1425,10 +1425,10 @@ qmoPushPred::isPushableRankPred( qcStatement  * aStatement,
         IDE_TEST( qtc::cloneQTCNodeTree( QC_QMP_MEM(aStatement),
                                          sValueNode,
                                          & sNode,
-                                         ID_FALSE,  // rootÀÇ next´Â º¹»çÇÏÁö ¾Ê´Â´Ù.
-                                         ID_TRUE,   // conversionÀ» ²÷´Â´Ù.
-                                         ID_TRUE,   // constant node±îÁö º¹»çÇÑ´Ù.
-                                         ID_FALSE ) // constant node¸¦ ¿øº¹ÇÏÁö ¾Ê´Â´Ù.
+                                         ID_FALSE,  // rootì˜ nextëŠ” ë³µì‚¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
+                                         ID_TRUE,   // conversionì„ ëŠëŠ”ë‹¤.
+                                         ID_TRUE,   // constant nodeê¹Œì§€ ë³µì‚¬í•œë‹¤.
+                                         ID_FALSE ) // constant nodeë¥¼ ì›ë³µí•˜ì§€ ì•ŠëŠ”ë‹¤.
                   != IDE_SUCCESS );
 
         // Node Estimate
@@ -1468,7 +1468,7 @@ qmoPushPred::isStopKeyPred( UShort         aViewTupleId,
  * Description :
  *
  * Implementation :
- *     stop keyÀÇ Á¶°ÇÀ» ¸¸Á·ÇØ¾ß ÇÑ´Ù.
+ *     stop keyì˜ ì¡°ê±´ì„ ë§Œì¡±í•´ì•¼ í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -1510,7 +1510,7 @@ qmoPushPred::pushDownRankPredicate( qcStatement  * aStatement,
  * Description :
  *
  * Implementation :
- *     target ÄÃ·³ÀÇ row_number¸¦ row_number_limitÀ¸·Î º¯°æÇÑ´Ù.
+ *     target ì»¬ëŸ¼ì˜ row_numberë¥¼ row_number_limitìœ¼ë¡œ ë³€ê²½í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -1521,7 +1521,7 @@ qmoPushPred::pushDownRankPredicate( qcStatement  * aStatement,
     IDU_FIT_POINT_FATAL( "qmoPushPred::pushDownRankPredicate::__FT__" );
 
     //------------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //------------------------------------------
 
     IDE_DASSERT( aStatement    != NULL );
@@ -1545,10 +1545,10 @@ qmoPushPred::pushDownRankPredicate( qcStatement  * aStatement,
 
             sTargetColumn->node.arguments = (mtcNode*) aRankLimit;
 
-            /* row_number_limit ÇÔ¼ö·Î º¯°æÇÑ´Ù. */
+            /* row_number_limit í•¨ìˆ˜ë¡œ ë³€ê²½í•œë‹¤. */
             sTargetColumn->node.module = &mtfRowNumberLimit;
 
-            /* ÇÔ¼ö¸¸ estimate¸¦ ¼öÇàÇÑ´Ù. */
+            /* í•¨ìˆ˜ë§Œ estimateë¥¼ ìˆ˜í–‰í•œë‹¤. */
             IDE_TEST( qtc::estimateNodeWithArgument( aStatement,
                                                      sTargetColumn )
                       != IDE_SUCCESS );

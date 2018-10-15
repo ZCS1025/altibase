@@ -20,7 +20,7 @@
  *
  * Description :
  *
- * º» ÆÄÀÏÀº µğ½ºÅ©°ü¸®ÀÚÀÇ datafile ³ëµå¿¡ ´ëÇÑ Çì´õÆÄÀÏÀÌ´Ù.
+ * ë³¸ íŒŒì¼ì€ ë””ìŠ¤í¬ê´€ë¦¬ìì˜ datafile ë…¸ë“œì— ëŒ€í•œ í—¤ë”íŒŒì¼ì´ë‹¤.
  *
  *
  **********************************************************************/
@@ -77,7 +77,7 @@ public:
     static IDE_RC addPendingOperation( 
                      void             *aTrans,
                      sddDataFileNode  *aDataFileNode,
-                     idBool            aIsCommit,  /* µ¿ÀÛ ½Ã±â °áÁ¤ */  
+                     idBool            aIsCommit,  /* ë™ì‘ ì‹œê¸° ê²°ì • */  
                      sctPendingOpType  aPendingOpType,
                      sctPendingOp    **aPendingOp = NULL );
     
@@ -100,14 +100,14 @@ public:
     static void setInitSize(sddDataFileNode*  aDataFileNode,
                             ULong             aSize );
 
-    /* PRJ-1149 µ¥ÀÌÅ¸³ëµå¿Í ÆÄÀÏheader¸¦ ºñ±³ÇÏ¿© media recovery°¡
-       ÇÊ¿äÇÑÁö °Ë»ç */
+    /* PRJ-1149 ë°ì´íƒ€ë…¸ë“œì™€ íŒŒì¼headerë¥¼ ë¹„êµí•˜ì—¬ media recoveryê°€
+       í•„ìš”í•œì§€ ê²€ì‚¬ */
     static IDE_RC checkValidationDBFHdr( 
                        sddDataFileNode*   aFileNode,
                        sddDataFileHdr*    aFileMetaHdr,
                        idBool*            aNeedRecovery );
     
-    //PROJ-2133 incremental backup aDataFileDescSlotIDÃß°¡
+    //PROJ-2133 incremental backup aDataFileDescSlotIDì¶”ê°€
     static void setDBFHdr( sddDataFileHdr*              aFileMetaHdr,
                            smLSN*                       aRedoLSN,
                            smLSN*                       aCreateLSN,
@@ -124,25 +124,25 @@ public:
     static void getDataFileAttr(sddDataFileNode* aDataFileNode,
                                 smiDataFileAttr* aDataFileAttr);
 
-    /* datafile ³ëµåÀÇ Á¤º¸¸¦ Ãâ·Â */
+    /* datafile ë…¸ë“œì˜ ì •ë³´ë¥¼ ì¶œë ¥ */
     static IDE_RC dumpDataFileNode(sddDataFileNode* aDataFileNode);
 
     // PRJ-1548 User Memory Tablespace
-    // µ¥ÀÌÅ¸ÆÄÀÏ ³ëµåÀÇ OpenÀÌ µÇ¾î ÀÖ´ÂÁö ¹İÈ¯
+    // ë°ì´íƒ€íŒŒì¼ ë…¸ë“œì˜ Openì´ ë˜ì–´ ìˆëŠ”ì§€ ë°˜í™˜
     static idBool isOpened( sddDataFileNode  * aFileNode ) 
     { return aFileNode->mIsOpened; }
 
-    // µ¥ÀÌÅ¸ÆÄÀÏ ³ëµå¸¦ ÂüÁ¶ÇÏ´Â I/O °³¼ö ¹İÈ¯
+    // ë°ì´íƒ€íŒŒì¼ ë…¸ë“œë¥¼ ì°¸ì¡°í•˜ëŠ” I/O ê°œìˆ˜ ë°˜í™˜
     static UInt getIOCount( sddDataFileNode * aFileNode )
     { return aFileNode->mIOCount; }
 
-    // Datafile¿¡ Header¸¦ ±â·ÏÇÑ´Ù.
+    // Datafileì— Headerë¥¼ ê¸°ë¡í•œë‹¤.
     static IDE_RC writeDBFileHdr(
                      idvSQL          * aStatistics,
                      sddDataFileNode * aDataFileNode,
                      sddDataFileHdr  * aDBFileHdr );
 
-    // ÀÓÀÇÀÇ °æ·ÎÀÇ Datafile¿¡ Header¸¦ ±â·ÏÇÑ´Ù.
+    // ì„ì˜ì˜ ê²½ë¡œì˜ Datafileì— Headerë¥¼ ê¸°ë¡í•œë‹¤.
     static IDE_RC writeDBFileHdrByPath(
                      SChar           * aDBFilePath,
                      sddDataFileHdr  * aDBFileHdr );
@@ -152,7 +152,7 @@ public:
     static inline idBool isDropped( sddDataFileNode *aDataFileNode );
 
 private:
-    // BUG-17415 µ¥ÀÌÅÍ ÆÄÀÏ »ı¼º ¶Ç´Â reuse½Ã ÆÄÀÏ ÃÊ±âÈ­ writingÀ» ¼öÇàÇÑ´Ù.
+    // BUG-17415 ë°ì´í„° íŒŒì¼ ìƒì„± ë˜ëŠ” reuseì‹œ íŒŒì¼ ì´ˆê¸°í™” writingì„ ìˆ˜í–‰í•œë‹¤.
     static IDE_RC writeNewPages(idvSQL          *aStatistics,
                                 sddDataFileNode *aDataFileNode);
 

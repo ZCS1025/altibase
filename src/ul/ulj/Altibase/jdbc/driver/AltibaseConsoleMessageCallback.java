@@ -17,7 +17,7 @@
 package Altibase.jdbc.driver;
 
 /**
- * DB Message ÇÁ·ÎÅäÄİÀ» Ã³¸®ÇÏ´Â ±âº» ±¸ÇöÃ¼.<br> ´Ü¼øÈ÷ ¼­¹ö·ÎºÎÅÍ ³Ñ¾î¿Â ¸Ş½ÃÁö¸¦ ÄÜ¼Ö¿¡ Ãâ·ÂÇÑ´Ù.
+ * DB Message í”„ë¡œí† ì½œì„ ì²˜ë¦¬í•˜ëŠ” ê¸°ë³¸ êµ¬í˜„ì²´.<br> ë‹¨ìˆœíˆ ì„œë²„ë¡œë¶€í„° ë„˜ì–´ì˜¨ ë©”ì‹œì§€ë¥¼ ì½˜ì†”ì— ì¶œë ¥í•œë‹¤.
  */
 public class AltibaseConsoleMessageCallback implements AltibaseMessageCallback
 {

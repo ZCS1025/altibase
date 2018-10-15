@@ -19,11 +19,11 @@
  * $Id: qmgSelection.h 82075 2018-01-17 06:39:52Z jina.kim $
  *
  * Description :
- *     Selection Graph¸¦ À§ÇÑ Á¤ÀÇ
+ *     Selection Graphë¥¼ ìœ„í•œ ì •ì˜
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  **********************************************************************/
 
@@ -35,39 +35,39 @@
 
 
 //---------------------------------------------------
-// Selection GraphÀÇ Define »ó¼ö
+// Selection Graphì˜ Define ìƒìˆ˜
 //---------------------------------------------------
 
-// PROJ-1446 Host variableÀ» Æ÷ÇÔÇÑ ÁúÀÇ ÃÖÀûÈ­
+// PROJ-1446 Host variableì„ í¬í•¨í•œ ì§ˆì˜ ìµœì í™”
 // local definition
-// optimize() ÇÔ¼ö¿Í getBestAccessMethod() ÇÔ¼ö¿ÍÀÇ ÀÇ»ç¼ÒÅë¿¡ »ç¿ëµÊ.
+// optimize() í•¨ìˆ˜ì™€ getBestAccessMethod() í•¨ìˆ˜ì™€ì˜ ì˜ì‚¬ì†Œí†µì— ì‚¬ìš©ë¨.
 #define QMG_NOT_USED_SCAN_HINT        (0)
 #define QMG_USED_SCAN_HINT            (1)
 #define QMG_USED_ONLY_FULL_SCAN_HINT  (2)
 
 // To Fix PR-11937
 // qmgSELT.graph.flag
-// FULL SCAN ÈùÆ®°¡ Àû¿ëµÇ¾ú´ÂÁöÀÇ ¿©ºÎ
-//    FULL SCAN ÈùÆ®°¡ Àû¿ëµÈ °æ¿ì
-//    ÇØ´ç TableÀÌ right°¡ µÇ¾î Index Nested Loop JoinÀ» »ç¿ëÇÒ ¼ö ¾ø´Ù.
+// FULL SCAN íŒíŠ¸ê°€ ì ìš©ë˜ì—ˆëŠ”ì§€ì˜ ì—¬ë¶€
+//    FULL SCAN íŒíŠ¸ê°€ ì ìš©ëœ ê²½ìš°
+//    í•´ë‹¹ Tableì´ rightê°€ ë˜ì–´ Index Nested Loop Joinì„ ì‚¬ìš©í•  ìˆ˜ ì—†ë‹¤.
 #define QMG_SELT_FULL_SCAN_HINT_MASK            (0x20000000)
 #define QMG_SELT_FULL_SCAN_HINT_FALSE           (0x00000000)
 #define QMG_SELT_FULL_SCAN_HINT_TRUE            (0x20000000)
 
 // qmgSELT.graph.flag
-// Not Null Key Range Flag°¡ »ç¿ëµÇ´Â °æ¿ì
-// (1) indexable Min Max°¡ Àû¿ëµÈ Selection GraphÀÎ °æ¿ì
+// Not Null Key Range Flagê°€ ì‚¬ìš©ë˜ëŠ” ê²½ìš°
+// (1) indexable Min Maxê°€ ì ìš©ëœ Selection Graphì¸ ê²½ìš°
 #define QMG_SELT_NOTNULL_KEYRANGE_MASK          (0x40000000)
 #define QMG_SELT_NOTNULL_KEYRANGE_FALSE         (0x00000000)
 #define QMG_SELT_NOTNULL_KEYRANGE_TRUE          (0x40000000)
 
 // PROJ-1502 PARTITIONED DISK TABLE
-// qmgPartition ±×·¡ÇÁ¿¡¼­´Â ´ÙÀ½ À§ÀÇ flag¸¦ °øÀ¯ÇÑ´Ù.
+// qmgPartition ê·¸ë˜í”„ì—ì„œëŠ” ë‹¤ìŒ ìœ„ì˜ flagë¥¼ ê³µìœ í•œë‹¤.
 // QMG_SELT_FULL_SCAN_HINT_MASK
 // QMG_SELT_NOTNULL_KEYRANGE_MASK
 
 // PROJ-1502 PARTITIONED DISK TABLE
-// partition¿¡ ´ëÇÑ selection graphÀÎ °æ¿ì
+// partitionì— ëŒ€í•œ selection graphì¸ ê²½ìš°
 #define QMG_SELT_PARTITION_MASK                 (0x80000000)
 #define QMG_SELT_PARTITION_FALSE                (0x00000000)
 #define QMG_SELT_PARTITION_TRUE                 (0x80000000)
@@ -92,54 +92,54 @@
 #define QMG_HIERARCHY_QUERY_DISK_IO_ADJUST_VALUE (10)
 
 //---------------------------------------------------
-// Selection Graph ¸¦ °ü¸®ÇÏ±â À§ÇÑ ÀÚ·á ±¸Á¶
+// Selection Graph ë¥¼ ê´€ë¦¬í•˜ê¸° ìœ„í•œ ìë£Œ êµ¬ì¡°
 //---------------------------------------------------
 
 typedef struct qmgSELT
 {
-    qmgGraph          graph;    // °øÅë Graph Á¤º¸
+    qmgGraph          graph;    // ê³µí†µ Graph ì •ë³´
 
-    qmsLimit        * limit;    // SCAN Limit ÃÖÀûÈ­ Àû¿ë½Ã, limit Á¤º¸ ¼³Á¤
+    qmsLimit        * limit;    // SCAN Limit ìµœì í™” ì ìš©ì‹œ, limit ì •ë³´ ì„¤ì •
 
     //------------------------------------------------
-    // Access Method¸¦ À§ÇÑ Á¤º¸
-    //     - selectedIndex : ¼±ÅÃµÈ AccessMethod°¡ FULL SCANÀÌ ¾Æ´Ñ °æ¿ì,
-    //                       ¼±ÅÃµÈ AccessMethod Index
-    //     - accessMethodCnt : ÇØ´ç TableÀÇ index °³¼ö + 1
-    //     - accessMethod : °¢ accessMethod Á¤º¸¿Í Cost Á¤º¸
+    // Access Methodë¥¼ ìœ„í•œ ì •ë³´
+    //     - selectedIndex : ì„ íƒëœ AccessMethodê°€ FULL SCANì´ ì•„ë‹Œ ê²½ìš°,
+    //                       ì„ íƒëœ AccessMethod Index
+    //     - accessMethodCnt : í•´ë‹¹ Tableì˜ index ê°œìˆ˜ + 1
+    //     - accessMethod : ê° accessMethod ì •ë³´ì™€ Cost ì •ë³´
     //------------------------------------------------
     qcmIndex        * selectedIndex;
-    qmoAccessMethod * selectedMethod; // ¼±ÅÃµÈ Access Method
+    qmoAccessMethod * selectedMethod; // ì„ íƒëœ Access Method
     UInt              accessMethodCnt;
     qmoAccessMethod * accessMethod;
 
     qmoScanDecisionFactor * sdf;
 
     // PROJ-1502 PARTITIONED DISK TABLE
-    // partition¿¡ ´ëÇÑ selection graphÀÎ °æ¿ì
+    // partitionì— ëŒ€í•œ selection graphì¸ ê²½ìš°
     qmsPartitionRef * partitionRef;
 
-    /* BUG-44659 ¹Ì»ç¿ë PartitionÀÇ Åë°è Á¤º¸¸¦ Ãâ·ÂÇÏ´Ù°¡,
-     *           GraphÀÇ Partition/Column/Index Name ºÎºĞ¿¡¼­ ºñÁ¤»ó Á¾·áÇÒ ¼ö ÀÖ½À´Ï´Ù.
-     *  LockÀ» ÀâÁö ¾Ê°í Meta Cache¸¦ »ç¿ëÇÏ¸é, ºñÁ¤»ó Á¾·áÇÒ ¼ö ÀÖ½À´Ï´Ù.
-     *  qmgSELT¿¡¼­ Partition NameÀ» º¸°üÇÏµµ·Ï ¼öÁ¤ÇÕ´Ï´Ù.
+    /* BUG-44659 ë¯¸ì‚¬ìš© Partitionì˜ í†µê³„ ì •ë³´ë¥¼ ì¶œë ¥í•˜ë‹¤ê°€,
+     *           Graphì˜ Partition/Column/Index Name ë¶€ë¶„ì—ì„œ ë¹„ì •ìƒ ì¢…ë£Œí•  ìˆ˜ ìˆìŠµë‹ˆë‹¤.
+     *  Lockì„ ì¡ì§€ ì•Šê³  Meta Cacheë¥¼ ì‚¬ìš©í•˜ë©´, ë¹„ì •ìƒ ì¢…ë£Œí•  ìˆ˜ ìˆìŠµë‹ˆë‹¤.
+     *  qmgSELTì—ì„œ Partition Nameì„ ë³´ê´€í•˜ë„ë¡ ìˆ˜ì •í•©ë‹ˆë‹¤.
      */
     SChar             partitionName[QC_MAX_OBJECT_NAME_LEN + 1];
 
     idBool            forceIndexScan;
-    idBool            forceRidScan;    // index table scanÀÎ °æ¿ì
+    idBool            forceRidScan;    // index table scanì¸ ê²½ìš°
 
     UInt              mFlag;
 } qmgSELT;
 
 //---------------------------------------------------
-// Selection Graph ¸¦ °ü¸®ÇÏ±â À§ÇÑ ÇÔ¼ö
+// Selection Graph ë¥¼ ê´€ë¦¬í•˜ê¸° ìœ„í•œ í•¨ìˆ˜
 //---------------------------------------------------
 
 class qmgSelection
 {
 public:
-    // Graph ÀÇ ÃÊ±âÈ­
+    // Graph ì˜ ì´ˆê¸°í™”
     static IDE_RC  init( qcStatement * aStatement,
                          qmsQuerySet * aQuerySet,
                          qmsFrom     * aFrom,
@@ -151,16 +151,16 @@ public:
                          qmsPartitionRef * aPartitionRef,
                          qmgGraph       ** aGraph );
 
-    // GraphÀÇ ÃÖÀûÈ­ ¼öÇà
+    // Graphì˜ ìµœì í™” ìˆ˜í–‰
     static IDE_RC optimize( qcStatement * aStatement,
                             qmgGraph * aGraph );
 
-    // GraphÀÇ Plan Tree »ı¼º
+    // Graphì˜ Plan Tree ìƒì„±
     static IDE_RC makePlan( qcStatement * aStatement,
                             const qmgGraph * aParent, 
                             qmgGraph * aGraph );
 
-    // GraphÀÇ °øÅë Á¤º¸¸¦ Ãâ·ÂÇÔ.
+    // Graphì˜ ê³µí†µ ì •ë³´ë¥¼ ì¶œë ¥í•¨.
     static IDE_RC printGraph( qcStatement  * aStatement,
                               qmgGraph     * aGraph,
                               ULong          aDepth,
@@ -188,13 +188,13 @@ public:
         iduVarString * aString );
     // PROJ-1502 PARTITIONED DISK TABLE - END -
 
-    // Preserved Order¸¦ ¸¸µå´Â ÇÔ¼ö
+    // Preserved Orderë¥¼ ë§Œë“œëŠ” í•¨ìˆ˜
     static IDE_RC makePreservedOrder( qcStatement        * aStatement,
                                       qmoIdxCardInfo     * aIdxCardInfo,
                                       UShort               aTable,
                                       qmgPreservedOrder ** aPreservedOrder );
 
-    // °¡Àå ÁÁÀº accessMethod¸¦ Ã£¾ÆÁÖ´Â ÇÔ¼ö
+    // ê°€ì¥ ì¢‹ì€ accessMethodë¥¼ ì°¾ì•„ì£¼ëŠ” í•¨ìˆ˜
     static IDE_RC getBestAccessMethod(qcStatement     * aStatement,
                                       qmgGraph        * aGraph,
                                       qmoStatistics   * aStatInfo,
@@ -207,7 +207,7 @@ public:
                                       UInt               aParallelDegree,
                                       UInt               aFlag );
 
-    // PROJ-1446 Host variableÀ» Æ÷ÇÔÇÑ ÁúÀÇ ÃÖÀûÈ­
+    // PROJ-1446 Host variableì„ í¬í•¨í•œ ì§ˆì˜ ìµœì í™”
     static IDE_RC getBestAccessMethodInExecutionTime(
         qcStatement     * aStatement,
         qmgGraph        * aGraph,
@@ -216,17 +216,17 @@ public:
         qmoAccessMethod * aAccessMethod,
         qmoAccessMethod ** aSelectedAccessMethod );
 
-    // PROJ-1446 Host variableÀ» Æ÷ÇÔÇÑ ÁúÀÇ ÃÖÀûÈ­
-    // »óÀ§ graph¿¡ ÀÇÇØ access method°¡ ¹Ù²ï °æ¿ì
-    // selection graphÀÇ sdf¸¦ disable ½ÃÅ²´Ù.
+    // PROJ-1446 Host variableì„ í¬í•¨í•œ ì§ˆì˜ ìµœì í™”
+    // ìƒìœ„ graphì— ì˜í•´ access methodê°€ ë°”ë€ ê²½ìš°
+    // selection graphì˜ sdfë¥¼ disable ì‹œí‚¨ë‹¤.
     static IDE_RC alterSelectedIndex( qcStatement * aStatement,
                                       qmgSELT     * aGraph,
                                       qcmIndex    * aNewIndex );
 
-    // PROJ-1446 Host variableÀ» Æ÷ÇÔÇÑ ÁúÀÇ ÃÖÀûÈ­
-    // »óÀ§ JOIN graph¿¡¼­ ANTI·Î Ã³¸®ÇÒ ¶§
-    // ÇÏÀ§ SELT graph¸¦ º¹»çÇÏ´Âµ¥ ÀÌ¶§ ÀÌ ÇÔ¼ö¸¦
-    // ÅëÇØ¼­ º¹»çÇÏµµ·Ï ÇØ¾ß ¾ÈÀüÇÏ´Ù.
+    // PROJ-1446 Host variableì„ í¬í•¨í•œ ì§ˆì˜ ìµœì í™”
+    // ìƒìœ„ JOIN graphì—ì„œ ANTIë¡œ ì²˜ë¦¬í•  ë•Œ
+    // í•˜ìœ„ SELT graphë¥¼ ë³µì‚¬í•˜ëŠ”ë° ì´ë•Œ ì´ í•¨ìˆ˜ë¥¼
+    // í†µí•´ì„œ ë³µì‚¬í•˜ë„ë¡ í•´ì•¼ ì•ˆì „í•˜ë‹¤.
     static IDE_RC copySELTAndAlterSelectedIndex(
         qcStatement * aStatement,
         qmgSELT     * aSource,
@@ -235,22 +235,22 @@ public:
         UInt          aWhichOne );
 
     // PROJ-1502 PARTITIONED DISK TABLE
-    // push-down join predicate¸¦ ¹Ş¾Æ¼­ ÀÚ½ÅÀÇ ±×·¡ÇÁ¿¡ ¿¬°á.
+    // push-down join predicateë¥¼ ë°›ì•„ì„œ ìì‹ ì˜ ê·¸ë˜í”„ì— ì—°ê²°.
     static IDE_RC setJoinPushDownPredicate( qmgSELT       * aGraph,
                                             qmoPredicate ** aPredicate );
 
     // PROJ-1502 PARTITIONED DISK TABLE
-    // push-down non-join predicate¸¦ ¹Ş¾Æ¼­ ÀÚ½ÅÀÇ ±×·¡ÇÁ¿¡ ¿¬°á.
+    // push-down non-join predicateë¥¼ ë°›ì•„ì„œ ìì‹ ì˜ ê·¸ë˜í”„ì— ì—°ê²°.
     static IDE_RC setNonJoinPushDownPredicate( qmgSELT       * aGraph,
                                                qmoPredicate ** aPredicate );
 
     static IDE_RC finalizePreservedOrder( qmgGraph * aGraph );
 
-    // View GraphÀÇ »ı¼ºÇÏ¿© aGraphÀÇ left¿¡ ¿¬°á
+    // View Graphì˜ ìƒì„±í•˜ì—¬ aGraphì˜ leftì— ì—°ê²°
     static IDE_RC makeViewGraph( qcStatement * aStatement, qmgGraph * aGraph );
 
     // PROJ-1624 global non-partitioned index
-    // index table scan¿ë graph·Î º¯°æÇÑ´Ù.
+    // index table scanìš© graphë¡œ ë³€ê²½í•œë‹¤.
     static IDE_RC alterForceRidScan( qcStatement * aStatement,
                                      qmgGraph    * aGraph );
 
@@ -262,11 +262,11 @@ public:
                                    UInt               aParallelDegree,
                                    idBool             aInExecutionTime );
 private:
-    // SCANÀ» »ı¼º
+    // SCANì„ ìƒì„±
     static IDE_RC makeTableScan( qcStatement * aStatement,
                                  qmgSELT     * aMyGraph );
 
-    // VSCNÀ» »ı¼º
+    // VSCNì„ ìƒì„±
     static IDE_RC makeViewScan( qcStatement * aStatement,
                                 qmgSELT     * aMyGraph );
 
@@ -279,31 +279,31 @@ private:
     static IDE_RC makeParallelScan(qcStatement* aStatement, qmgSELT* aMyGraph);
     static void setParallelScanFlag(qcStatement* aStatement, qmgGraph* aGraph);
 
-    // VIEW index hint¸¦ view ÇÏÀ§ base table¿¡ Àû¿ë
+    // VIEW index hintë¥¼ view í•˜ìœ„ base tableì— ì ìš©
     static IDE_RC setViewIndexHints( qcStatement         * aStatement,
                                      qmsTableRef         * aTableRef );
 
-    // VIEW index hint¸¦ Àû¿ëÇÏ±â À§ÇØ setÀÌ ¾Æ´Ñ querySetÀ» Ã£¾Æ hint Àû¿ë
+    // VIEW index hintë¥¼ ì ìš©í•˜ê¸° ìœ„í•´ setì´ ì•„ë‹Œ querySetì„ ì°¾ì•„ hint ì ìš©
     static IDE_RC findQuerySet4ViewIndexHints( qcStatement   * aStatement,
                                                qmsQuerySet       * aQuerySet,
                                                qmsTableAccessHints * aAccessHint );
 
-    // VIEW index hint¿¡ ÇØ´çÇÏ´Â base tableÀ» Ã£¾Æ¼­ hint Àû¿ë
+    // VIEW index hintì— í•´ë‹¹í•˜ëŠ” base tableì„ ì°¾ì•„ì„œ hint ì ìš©
     static IDE_RC findBaseTableNSetIndexHint( qcStatement * aStatement,
                                               qmsFrom     * aFrom,
                                               qmsTableAccessHints * aAccessHint );
 
-    // VIEW index hint¸¦ ÇØ´ç base table¿¡ Àû¿ë
+    // VIEW index hintë¥¼ í•´ë‹¹ base tableì— ì ìš©
     static IDE_RC setViewIndexHintInBaseTable( qcStatement * aStatement,
                                                qmsFrom     * aFrom,
                                                qmsTableAccessHints * aAccessHint );
 
-    // PROJ-1473 view¿¡ ´ëÇÑ push projection ¼öÇà
+    // PROJ-1473 viewì— ëŒ€í•œ push projection ìˆ˜í–‰
     static IDE_RC doViewPushProjection( qcStatement  * aViewStatement,
                                         qmsTableRef  * aViewTableRef,
                                         qmsQuerySet  * aQuerySet );
 
-    // PROJ-1473 view¿¡ ´ëÇÑ push projection ¼öÇà
+    // PROJ-1473 viewì— ëŒ€í•œ push projection ìˆ˜í–‰
     static IDE_RC doPushProjection( qcStatement  * aViewStatement,
                                     qmsTableRef  * aViewTableRef,
                                     qmsQuerySet  * aQuerySet );    
@@ -312,7 +312,7 @@ private:
     static void setViewPushProjMask( qcStatement * aStatement,
                                      qtcNode     * aNode );
 
-    // BUG-18367 view¿¡ ´ëÇØ push selection ¼öÇà
+    // BUG-18367 viewì— ëŒ€í•´ push selection ìˆ˜í–‰
     static IDE_RC doViewPushSelection( qcStatement  * aStatement,
                                        qmsTableRef  * aTableRef,
                                        qmoPredicate * aPredicate,
@@ -329,19 +329,19 @@ private:
                                       idBool             aIsMemory,
                                       idBool             aInExecutionTime );
 
-    // viewÀÇ preserved order¸¦ º¹»çÇÏ°í, Table ID¸¦ º¯°æÇÏ´Â ÇÔ¼ö
+    // viewì˜ preserved orderë¥¼ ë³µì‚¬í•˜ê³ , Table IDë¥¼ ë³€ê²½í•˜ëŠ” í•¨ìˆ˜
     static IDE_RC copyPreservedOrderFromView( qcStatement        * aStatement,
                                               qmgGraph           * aChildGraph,
                                               UShort               aTableId,
                                               qmgPreservedOrder ** aNewOrder );
 
-    // PROJ-1446 Host variableÀ» Æ÷ÇÔÇÑ ÁúÀÇ ÃÖÀûÈ­
-    // host variable¿¡ ´ëÇÑ ÃÖÀûÈ­¸¦ À§ÇÑ ÁØºñÇÑ´Ù.
+    // PROJ-1446 Host variableì„ í¬í•¨í•œ ì§ˆì˜ ìµœì í™”
+    // host variableì— ëŒ€í•œ ìµœì í™”ë¥¼ ìœ„í•œ ì¤€ë¹„í•œë‹¤.
     static IDE_RC prepareScanDecisionFactor( qcStatement * aStatement,
                                              qmgSELT     * aGraph );
 
-    // PROJ-1446 Host variableÀ» Æ÷ÇÔÇÑ ÁúÀÇ ÃÖÀûÈ­
-    // predicate¿Í SDF¿¡ µ¥ÀÌÅÍ ¿µ¿ª offsetÀ» ÁöÁ¤ÇÑ´Ù.
+    // PROJ-1446 Host variableì„ í¬í•¨í•œ ì§ˆì˜ ìµœì í™”
+    // predicateì™€ SDFì— ë°ì´í„° ì˜ì—­ offsetì„ ì§€ì •í•œë‹¤.
     static IDE_RC setSelectivityOffset( qcStatement  * aStatement,
                                         qmoPredicate * aPredicate );
 
@@ -351,9 +351,9 @@ private:
     static IDE_RC setTotalSelectivityOffset( qcStatement  * aStatement,
                                              qmoPredicate * aPredicate );
 
-    // PROJ-1446 Host variableÀ» Æ÷ÇÔÇÑ ÁúÀÇ ÃÖÀûÈ­
-    // getBestAccessMethod()¿¡¼­ ºĞ¸®µÈ ÇÔ¼ö
-    // ÁÖ¾îÁø access methodµé Áß¿¡¼­ ÃÖ»óÀÇ method¸¦ ¼±ÅÃÇÑ´Ù.
+    // PROJ-1446 Host variableì„ í¬í•¨í•œ ì§ˆì˜ ìµœì í™”
+    // getBestAccessMethod()ì—ì„œ ë¶„ë¦¬ëœ í•¨ìˆ˜
+    // ì£¼ì–´ì§„ access methodë“¤ ì¤‘ì—ì„œ ìµœìƒì˜ methodë¥¼ ì„ íƒí•œë‹¤.
     static IDE_RC selectBestMethod( qcStatement      * aStatement,
                                     qcmTableInfo     * aTableInfo,
                                     qmoAccessMethod  * aAccessMethod,

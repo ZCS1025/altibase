@@ -46,8 +46,8 @@ typedef struct
     char      mClientNls[40+1];             /* The client character set */
     char      mDBUserName[40+1];            /* The database user name */
     int       mDBUserID;                    /* The database user identifier */
-    long long mDefaultTbsID;                /* The user¡¯s default tablespace identifier */
-    long long mDefaultTempTbsID;            /* The user¡¯s default temporary tablespaceidentifier */
+    long long mDefaultTbsID;                /* The userâ€™s default tablespace identifier */
+    long long mDefaultTempTbsID;            /* The userâ€™s default temporary tablespaceidentifier */
     int       mSysDbaFlag;                  /* Indicates whether the connection was made as sysdba */
     int       mAutoCommitFlag;              /* The autocommit flag */
     char      mSessionState[13+1];          /* The status of the session */

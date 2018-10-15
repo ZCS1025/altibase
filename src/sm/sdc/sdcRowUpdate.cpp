@@ -76,9 +76,9 @@ IDE_RC sdcRowUpdate::redo_SDR_SDC_INSERT_ROW_PIECE( SChar       * aLogPtr,
     sSlotNumBeforeCrash = aRedoInfo->mSlotNum;
     sSlotNumAfterCrash  = SD_MAKE_SLOTNUM(sAllocSlotSID);
 
-    /* recovery´Â redo all, undo all ÀÌ¹Ç·Î,
-     * restart redo½Ã¿¡ ÇÒ´çÇÑ slot num´Â
-     * crash ÀÌÀü¿¡ ÇÒ´çÇÑ slot num¿Í ¹İµå½Ã °°¾Æ¾ß ÇÑ´Ù.
+    /* recoveryëŠ” redo all, undo all ì´ë¯€ë¡œ,
+     * restart redoì‹œì— í• ë‹¹í•œ slot numëŠ”
+     * crash ì´ì „ì— í• ë‹¹í•œ slot numì™€ ë°˜ë“œì‹œ ê°™ì•„ì•¼ í•œë‹¤.
      * */
     IDE_ERROR_MSG( sSlotNumBeforeCrash == sSlotNumAfterCrash,
                    " sSlotNumBeforeCrash : %"ID_UINT32_FMT"\n"
@@ -135,19 +135,19 @@ IDE_RC sdcRowUpdate::redo_SDR_SDC_INSERT_ROW_PIECE_FOR_DELETEUNDO( SChar       *
     IDE_ERROR( sCanAlloc == ID_TRUE );
 
     /* BUG-23989
-     * [TSM] delete rollback¿¡ ´ëÇÑ
-     * restart redo°¡ Á¤»óÀûÀ¸·Î ¼öÇàµÇÁö ¾Ê½À´Ï´Ù. */
+     * [TSM] delete rollbackì— ëŒ€í•œ
+     * restart redoê°€ ì •ìƒì ìœ¼ë¡œ ìˆ˜í–‰ë˜ì§€ ì•ŠìŠµë‹ˆë‹¤. */
 
-    /* delete undo ¿¬»ê¿¡ ´ëÇÑ CLRÀÏ °æ¿ì,
-     * ·Î±×¿¡ ÀûÇôÀÖ´Â slot num·Î allocSlot() ÇÑÈÄ,
-     * ÇÒ´çÇÑ slot¿¡ old image¸¦ writeÇØ¾ß ÇÑ´Ù.
+    /* delete undo ì—°ì‚°ì— ëŒ€í•œ CLRì¼ ê²½ìš°,
+     * ë¡œê·¸ì— ì í˜€ìˆëŠ” slot numë¡œ allocSlot() í•œí›„,
+     * í• ë‹¹í•œ slotì— old imageë¥¼ writeí•´ì•¼ í•œë‹¤.
      *
-     * ±×·±µ¥ sdpPageList::allocSlot() ÇÔ¼ö´Â
-     * ³»ºÎÀûÀ¸·Î sdpSlotDirectory::findUnusedSlotEntry()¸¦ ÇÏ¿©
-     * minimum slot entry¸¦ ±¸ÇÑ´Ù.
+     * ê·¸ëŸ°ë° sdpPageList::allocSlot() í•¨ìˆ˜ëŠ”
+     * ë‚´ë¶€ì ìœ¼ë¡œ sdpSlotDirectory::findUnusedSlotEntry()ë¥¼ í•˜ì—¬
+     * minimum slot entryë¥¼ êµ¬í•œë‹¤.
      *
-     * ±×·¯¹Ç·Î ÀÌ ÇÔ¼ö¸¦ È£ÃâÇÏ¸é ¾ÈµÇ°í
-     * sdpPhyPage::allocSlot4SID()¸¦ Á÷Á¢ È£ÃâÇØ¾ß ÇÑ´Ù. */
+     * ê·¸ëŸ¬ë¯€ë¡œ ì´ í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•˜ë©´ ì•ˆë˜ê³ 
+     * sdpPhyPage::allocSlot4SID()ë¥¼ ì§ì ‘ í˜¸ì¶œí•´ì•¼ í•œë‹¤. */
 
     IDE_TEST( sdpPhyPage::allocSlot4SID( sPageHdr,
                                          sRowPieceSize,
@@ -491,8 +491,8 @@ IDE_RC sdcRowUpdate::undo_SDR_SDC_UPDATE_ROW_PIECE( idvSQL  * aStatistics,
                         smcTable::getDiskPageListEntry(sTableHeader);
                     IDE_DASSERT(sEntry != NULL);
 
-                    // reallocSlotÀ» ÇÑÀÌÈÄ¿¡,
-                    // Segment¿¡ ´ëÇÑ °¡¿ëµµ º¯°æ¿¬»êÀ» ¼öÇàÇÑ´Ù.
+                    // reallocSlotì„ í•œì´í›„ì—,
+                    // Segmentì— ëŒ€í•œ ê°€ìš©ë„ ë³€ê²½ì—°ì‚°ì„ ìˆ˜í–‰í•œë‹¤.
                     IDE_TEST( sdpPageList::updatePageState(
                                   aStatistics,
                                   SC_MAKE_SPACE(aRecGRID),
@@ -713,8 +713,8 @@ IDE_RC sdcRowUpdate::undo_SDR_SDC_OVERWRITE_ROW_PIECE( idvSQL * aStatistics,
                     smcTable::getDiskPageListEntry(sTableHeader);
                 IDE_DASSERT(sEntry != NULL);
 
-                // reallocSlotÀ» ÇÑÀÌÈÄ¿¡, Segment¿¡ ´ëÇÑ
-                // °¡¿ëµµ º¯°æ¿¬»êÀ» ¼öÇàÇÑ´Ù.
+                // reallocSlotì„ í•œì´í›„ì—, Segmentì— ëŒ€í•œ
+                // ê°€ìš©ë„ ë³€ê²½ì—°ì‚°ì„ ìˆ˜í–‰í•œë‹¤.
                 IDE_TEST( sdpPageList::updatePageState(
                               aStatistics,
                               SC_MAKE_SPACE(aRecGRID),
@@ -867,29 +867,29 @@ IDE_RC sdcRowUpdate::redo_SDR_SDC_CHANGE_ROW_PIECE_LINK( SChar       * aLogPtr,
                        sOldRowPieceSize );
 
         /*
-         * ###   FSC ÇÃ·¡±×   ###
+         * ###   FSC í”Œë˜ê·¸   ###
          *
-         * DML ¿¬»êÁß¿¡´Â ´ç¿¬È÷ FSC¸¦ reserve ÇØ¾ß ÇÑ´Ù.
-         * ±×·¯¸é redo³ª undo½Ã¿¡´Â ¾î¶»°Ô ÇØ¾ß ÇÏ³ª?
+         * DML ì—°ì‚°ì¤‘ì—ëŠ” ë‹¹ì—°íˆ FSCë¥¼ reserve í•´ì•¼ í•œë‹¤.
+         * ê·¸ëŸ¬ë©´ redoë‚˜ undoì‹œì—ëŠ” ì–´ë–»ê²Œ í•´ì•¼ í•˜ë‚˜?
          *
-         * redo´Â DML ¿¬»êÀ» ´Ù½Ã ¼öÇàÇÏ´Â °ÍÀÌ¹Ç·Î,
-         * DML ¿¬»êÇÒ¶§¿Í µ¿ÀÏÇÏ°Ô FSC¸¦ reserve ÇØ¾ß ÇÑ´Ù.
+         * redoëŠ” DML ì—°ì‚°ì„ ë‹¤ì‹œ ìˆ˜í–‰í•˜ëŠ” ê²ƒì´ë¯€ë¡œ,
+         * DML ì—°ì‚°í• ë•Œì™€ ë™ì¼í•˜ê²Œ FSCë¥¼ reserve í•´ì•¼ í•œë‹¤.
          *
-         * ¹İ¸é undo½Ã¿¡´Â FSC¸¦ reserveÇÏ¸é ¾ÈµÈ´Ù.
-         * ¿Ö³ªÇÏ¸é FSC´Â DML ¿¬»êÀ» undo½ÃÅ³¶§¸¦ ´ëºñÇØ¼­
-         * °ø°£À» ¿¹¾àÇØµÎ´Â °ÍÀÌ¹Ç·Î,
-         * undo½Ã¿¡´Â ÀÌÀü¿¡ reserveÇØµĞ FSC¸¦
-         * ÆäÀÌÁö¿¡ µÇµ¹·Á(restore)ÁÖ¾î¾ß ÇÏ°í,
-         * undo½Ã¿¡ ¶Ç ´Ù½Ã FSC¸¦ reserveÇÏ·Á°í ÇØ¼­´Â ¾ÈµÈ´Ù.
+         * ë°˜ë©´ undoì‹œì—ëŠ” FSCë¥¼ reserveí•˜ë©´ ì•ˆëœë‹¤.
+         * ì™œë‚˜í•˜ë©´ FSCëŠ” DML ì—°ì‚°ì„ undoì‹œí‚¬ë•Œë¥¼ ëŒ€ë¹„í•´ì„œ
+         * ê³µê°„ì„ ì˜ˆì•½í•´ë‘ëŠ” ê²ƒì´ë¯€ë¡œ,
+         * undoì‹œì—ëŠ” ì´ì „ì— reserveí•´ë‘” FSCë¥¼
+         * í˜ì´ì§€ì— ë˜ëŒë ¤(restore)ì£¼ì–´ì•¼ í•˜ê³ ,
+         * undoì‹œì— ë˜ ë‹¤ì‹œ FSCë¥¼ reserveí•˜ë ¤ê³  í•´ì„œëŠ” ì•ˆëœë‹¤.
          *
-         * clrÀº undo¿¡ ´ëÇÑ redoÀÌ¹Ç·Î undo¶§¿Í µ¿ÀÏÇÏ°Ô
-         * FSC¸¦ reserveÇÏ¸é ¾ÈµÈ´Ù.
+         * clrì€ undoì— ëŒ€í•œ redoì´ë¯€ë¡œ undoë•Œì™€ ë™ì¼í•˜ê²Œ
+         * FSCë¥¼ reserveí•˜ë©´ ì•ˆëœë‹¤.
          *
-         * ÀÌ ¼¼°¡Áö °æ¿ì¸¦ ±¸ºĞÇÏ¿©
-         * FSC reserve Ã³¸®¸¦ ÇØ¾ß ÇÏ´Âµ¥,
-         * ³ª(upinel9)´Â ·Î±×¸¦ ±â·ÏÇÒ¶§ FSC reserve ¿©ºÎ¸¦ ÇÃ·¡±×·Î ³²°Ü¼­,
-         * redo³ª undo½Ã¿¡´Â ÀÌ ÇÃ·¡±×¸¸ º¸°í
-         * reallocSlot()À» ÇÏµµ·Ï ¼³°èÇÏ¿´´Ù.
+         * ì´ ì„¸ê°€ì§€ ê²½ìš°ë¥¼ êµ¬ë¶„í•˜ì—¬
+         * FSC reserve ì²˜ë¦¬ë¥¼ í•´ì•¼ í•˜ëŠ”ë°,
+         * ë‚˜(upinel9)ëŠ” ë¡œê·¸ë¥¼ ê¸°ë¡í• ë•Œ FSC reserve ì—¬ë¶€ë¥¼ í”Œë˜ê·¸ë¡œ ë‚¨ê²¨ì„œ,
+         * redoë‚˜ undoì‹œì—ëŠ” ì´ í”Œë˜ê·¸ë§Œ ë³´ê³ 
+         * reallocSlot()ì„ í•˜ë„ë¡ ì„¤ê³„í•˜ì˜€ë‹¤.
          *
          * redo     : SDC_UPDATE_LOG_FLAG_RESERVE_FREESPACE_CREDIT_TRUE
          * undo     : SDC_UPDATE_LOG_FLAG_RESERVE_FREESPACE_CREDIT_FALSE
@@ -1058,8 +1058,8 @@ IDE_RC sdcRowUpdate::undo_SDR_SDC_CHANGE_ROW_PIECE_LINK( idvSQL * aStatistics,
                     smcTable::getDiskPageListEntry(sTableHeader);
                 IDE_DASSERT(sEntry != NULL);
 
-                // reallocSlotÀ» ÇÑÀÌÈÄ¿¡, Segment¿¡ ´ëÇÑ
-                // °¡¿ëµµ º¯°æ¿¬»êÀ» ¼öÇàÇÑ´Ù.
+                // reallocSlotì„ í•œì´í›„ì—, Segmentì— ëŒ€í•œ
+                // ê°€ìš©ë„ ë³€ê²½ì—°ì‚°ì„ ìˆ˜í–‰í•œë‹¤.
                 IDE_TEST( sdpPageList::updatePageState(
                               aStatistics,
                               SC_MAKE_SPACE(aRecGRID),
@@ -1193,29 +1193,29 @@ IDE_RC sdcRowUpdate::redo_SDR_SDC_DELETE_FIRST_COLUMN_PIECE( SChar       * aLogP
     sNewRowPieceSize = sOldRowPieceSize + (sChangeSize);
 
     /*
-     * ###   FSC ÇÃ·¡±×   ###
+     * ###   FSC í”Œë˜ê·¸   ###
      *
-     * DML ¿¬»êÁß¿¡´Â ´ç¿¬È÷ FSC¸¦ reserve ÇØ¾ß ÇÑ´Ù.
-     * ±×·¯¸é redo³ª undo½Ã¿¡´Â ¾î¶»°Ô ÇØ¾ß ÇÏ³ª?
+     * DML ì—°ì‚°ì¤‘ì—ëŠ” ë‹¹ì—°íˆ FSCë¥¼ reserve í•´ì•¼ í•œë‹¤.
+     * ê·¸ëŸ¬ë©´ redoë‚˜ undoì‹œì—ëŠ” ì–´ë–»ê²Œ í•´ì•¼ í•˜ë‚˜?
      *
-     * redo´Â DML ¿¬»êÀ» ´Ù½Ã ¼öÇàÇÏ´Â °ÍÀÌ¹Ç·Î,
-     * DML ¿¬»êÇÒ¶§¿Í µ¿ÀÏÇÏ°Ô FSC¸¦ reserve ÇØ¾ß ÇÑ´Ù.
+     * redoëŠ” DML ì—°ì‚°ì„ ë‹¤ì‹œ ìˆ˜í–‰í•˜ëŠ” ê²ƒì´ë¯€ë¡œ,
+     * DML ì—°ì‚°í• ë•Œì™€ ë™ì¼í•˜ê²Œ FSCë¥¼ reserve í•´ì•¼ í•œë‹¤.
      *
-     * ¹İ¸é undo½Ã¿¡´Â FSC¸¦ reserveÇÏ¸é ¾ÈµÈ´Ù.
-     * ¿Ö³ªÇÏ¸é FSC´Â DML ¿¬»êÀ» undo½ÃÅ³¶§¸¦ ´ëºñÇØ¼­
-     * °ø°£À» ¿¹¾àÇØµÎ´Â °ÍÀÌ¹Ç·Î,
-     * undo½Ã¿¡´Â ÀÌÀü¿¡ reserveÇØµĞ FSC¸¦
-     * ÆäÀÌÁö¿¡ µÇµ¹·Á(restore)ÁÖ¾î¾ß ÇÏ°í,
-     * undo½Ã¿¡ ¶Ç ´Ù½Ã FSC¸¦ reserveÇÏ·Á°í ÇØ¼­´Â ¾ÈµÈ´Ù.
+     * ë°˜ë©´ undoì‹œì—ëŠ” FSCë¥¼ reserveí•˜ë©´ ì•ˆëœë‹¤.
+     * ì™œë‚˜í•˜ë©´ FSCëŠ” DML ì—°ì‚°ì„ undoì‹œí‚¬ë•Œë¥¼ ëŒ€ë¹„í•´ì„œ
+     * ê³µê°„ì„ ì˜ˆì•½í•´ë‘ëŠ” ê²ƒì´ë¯€ë¡œ,
+     * undoì‹œì—ëŠ” ì´ì „ì— reserveí•´ë‘” FSCë¥¼
+     * í˜ì´ì§€ì— ë˜ëŒë ¤(restore)ì£¼ì–´ì•¼ í•˜ê³ ,
+     * undoì‹œì— ë˜ ë‹¤ì‹œ FSCë¥¼ reserveí•˜ë ¤ê³  í•´ì„œëŠ” ì•ˆëœë‹¤.
      *
-     * clrÀº undo¿¡ ´ëÇÑ redoÀÌ¹Ç·Î undo¶§¿Í µ¿ÀÏÇÏ°Ô
-     * FSC¸¦ reserveÇÏ¸é ¾ÈµÈ´Ù.
+     * clrì€ undoì— ëŒ€í•œ redoì´ë¯€ë¡œ undoë•Œì™€ ë™ì¼í•˜ê²Œ
+     * FSCë¥¼ reserveí•˜ë©´ ì•ˆëœë‹¤.
      *
-     * ÀÌ ¼¼°¡Áö °æ¿ì¸¦ ±¸ºĞÇÏ¿©
-     * FSC reserve Ã³¸®¸¦ ÇØ¾ß ÇÏ´Âµ¥,
-     * ³ª(upinel9)´Â ·Î±×¸¦ ±â·ÏÇÒ¶§ FSC reserve ¿©ºÎ¸¦ ÇÃ·¡±×·Î ³²°Ü¼­,
-     * redo³ª undo½Ã¿¡´Â ÀÌ ÇÃ·¡±×¸¸ º¸°í
-     * reallocSlot()À» ÇÏµµ·Ï ¼³°èÇÏ¿´´Ù.
+     * ì´ ì„¸ê°€ì§€ ê²½ìš°ë¥¼ êµ¬ë¶„í•˜ì—¬
+     * FSC reserve ì²˜ë¦¬ë¥¼ í•´ì•¼ í•˜ëŠ”ë°,
+     * ë‚˜(upinel9)ëŠ” ë¡œê·¸ë¥¼ ê¸°ë¡í• ë•Œ FSC reserve ì—¬ë¶€ë¥¼ í”Œë˜ê·¸ë¡œ ë‚¨ê²¨ì„œ,
+     * redoë‚˜ undoì‹œì—ëŠ” ì´ í”Œë˜ê·¸ë§Œ ë³´ê³ 
+     * reallocSlot()ì„ í•˜ë„ë¡ ì„¤ê³„í•˜ì˜€ë‹¤.
      *
      * redo     : SDC_UPDATE_LOG_FLAG_RESERVE_FREESPACE_CREDIT_TRUE
      * undo     : SDC_UPDATE_LOG_FLAG_RESERVE_FREESPACE_CREDIT_FALSE
@@ -1379,7 +1379,7 @@ IDE_RC sdcRowUpdate::undo_SDR_SDC_DELETE_FIRST_COLUMN_PIECE( idvSQL * aStatistic
                 smcTable::getDiskPageListEntry(sTableHeader);
             IDE_DASSERT(sEntry != NULL);
 
-            // reallocSlotÀ» ÇÑÀÌÈÄ¿¡, Segment¿¡ ´ëÇÑ °¡¿ëµµ º¯°æ¿¬»êÀ» ¼öÇàÇÑ´Ù.
+            // reallocSlotì„ í•œì´í›„ì—, Segmentì— ëŒ€í•œ ê°€ìš©ë„ ë³€ê²½ì—°ì‚°ì„ ìˆ˜í–‰í•œë‹¤.
             IDE_TEST( sdpPageList::updatePageState(
                           aStatistics,
                           SC_MAKE_SPACE(aRecGRID),
@@ -1710,8 +1710,8 @@ IDE_RC sdcRowUpdate::undo_SDR_SDC_DELETE_ROW_PIECE( idvSQL * aStatistics,
 
             IDE_ERROR( sdcRow::isDeleted(sNewSlotPtr) != ID_TRUE );
 
-            /* DeleteµÈ RowPiece ¸¸ ³²¾ÆÀÖ´ø °ÍÀ» FreeSlotÇÏµµ·Ï Redo·Î±×¸¸ 
-             * ³²±ä´Ù. */
+            /* Deleteëœ RowPiece ë§Œ ë‚¨ì•„ìˆë˜ ê²ƒì„ FreeSlotí•˜ë„ë¡ Redoë¡œê·¸ë§Œ 
+             * ë‚¨ê¸´ë‹¤. */
             IDE_TEST( sdrMiniTrans::writeLogRec( &sMtx,
                                                  aRecGRID,
                                                  &sOldRowPieceSize,
@@ -1732,8 +1732,8 @@ IDE_RC sdcRowUpdate::undo_SDR_SDC_DELETE_ROW_PIECE( idvSQL * aStatistics,
             sEntry = (sdpPageListEntry*) smcTable::getDiskPageListEntry(sTableHeader);
             IDE_DASSERT(sEntry != NULL);
 
-            // reallocSlotÀ» ÇÑÀÌÈÄ¿¡,
-            // Segment¿¡ ´ëÇÑ °¡¿ëµµ º¯°æ¿¬»êÀ» ¼öÇàÇÑ´Ù.
+            // reallocSlotì„ í•œì´í›„ì—,
+            // Segmentì— ëŒ€í•œ ê°€ìš©ë„ ë³€ê²½ì—°ì‚°ì„ ìˆ˜í–‰í•œë‹¤.
             IDE_TEST( sdpPageList::updatePageState( aStatistics,
                                                     SC_MAKE_SPACE(aRecGRID),
                                                     sEntry,

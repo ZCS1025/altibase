@@ -47,7 +47,7 @@
 
 #define     QSX_OTHER_SYSTEM_ERROR_NO       (-101)
 
-// user-defined exceptionÀ» re-raiseÇÒ ¶§ »ç¿ë.
+// user-defined exceptionì„ re-raiseí•  ë•Œ ì‚¬ìš©.
 #define     QSX_USER_DEFINED_EXCEPTION_NO   (-998)
 
 #define     QSX_LATEST_CURSOR_ID            (-999)

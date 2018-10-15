@@ -32,12 +32,12 @@ typedef IDE_RC (*svrUndoFunc)(svrLogEnv *aEnv,
                               svrLSN     aSubLSN);
 
 
-/* svrLogRec°ú svrLogÀÇ Â÷ÀÌÁ¡ */
-/* svrLogRecÀº svrLogMgr ³»ºÎ¿¡¼­ »ç¿ëÇÏ´Â ÀÚ·á±¸Á¶·Î¼­,
-   head¿Í body·Î ±¸¼ºµÈ´Ù.
-   svrLog´Â user logÀÇ ÃÖ»óÀ§ Å¸ÀÔÀ¸·Î¼­
-   mTypeÀ» °¡Áö°í ÀÖ´Ù. svrLogMgrÀÇ readLog, writeLog½Ã
-   ´ë»ó Å¸ÀÔÀ¸·Î »ç¿ëµÈ´Ù. ±×¸®°í svrLog´Â svrLogRecÀÇ body¿¡ ÇØ´çÇÑ´Ù. */
+/* svrLogRecê³¼ svrLogì˜ ì°¨ì´ì  */
+/* svrLogRecì€ svrLogMgr ë‚´ë¶€ì—ì„œ ì‚¬ìš©í•˜ëŠ” ìžë£Œêµ¬ì¡°ë¡œì„œ,
+   headì™€ bodyë¡œ êµ¬ì„±ëœë‹¤.
+   svrLogëŠ” user logì˜ ìµœìƒìœ„ íƒ€ìž…ìœ¼ë¡œì„œ
+   mTypeì„ ê°€ì§€ê³  ìžˆë‹¤. svrLogMgrì˜ readLog, writeLogì‹œ
+   ëŒ€ìƒ íƒ€ìž…ìœ¼ë¡œ ì‚¬ìš©ëœë‹¤. ê·¸ë¦¬ê³  svrLogëŠ” svrLogRecì˜ bodyì— í•´ë‹¹í•œë‹¤. */
 typedef struct svrLog
 {
     svrUndoFunc     mUndo;
@@ -48,18 +48,18 @@ typedef struct svrLogEnv
     svrLogPage     *mHeadPage;
     svrLogPage     *mCurrentPage;
 
-    /* mPageOffsetÀº ·Î±× ·¹ÄÚµå°¡ ±â·ÏµÉ À§Ä¡¸¦ °¡¸®Å²´Ù.
-       mAlignForce°¡ ID_TRUEÀÌ¸é mPageOffsetÀº
-       Ç×»ó alignµÈ »óÅÂÀÌ¾î¾ß ÇÑ´Ù. */
+    /* mPageOffsetì€ ë¡œê·¸ ë ˆì½”ë“œê°€ ê¸°ë¡ë  ìœ„ì¹˜ë¥¼ ê°€ë¦¬í‚¨ë‹¤.
+       mAlignForceê°€ ID_TRUEì´ë©´ mPageOffsetì€
+       í•­ìƒ alignëœ ìƒíƒœì´ì–´ì•¼ í•œë‹¤. */
     UInt            mPageOffset;
     svrLogRec      *mLastLogRec;
 
-    /* ¸¶Áö¸·¿¡ ±â·ÏÇß´ø sub log record */
+    /* ë§ˆì§€ë§‰ì— ê¸°ë¡í–ˆë˜ sub log record */
     svrLogRec      *mLastSubLogRec;
     idBool          mAlignForce;
     UInt            mAllocPageCount;
 
-    /* ÀÌ Env¸¦ »ç¿ëÇÑ transactionÀÌ ±â·ÏÇÑ Ã³À½ LSN */
+    /* ì´ Envë¥¼ ì‚¬ìš©í•œ transactionì´ ê¸°ë¡í•œ ì²˜ìŒ LSN */
     svrLSN          mFirstLSN;
 } svrLogEnv;
 

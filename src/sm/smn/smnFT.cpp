@@ -37,7 +37,7 @@
 
 //======================================================================
 //  X$INDEX
-//  indexÀÇ general informationÀ» º¸¿©ÁÖ´Â peformance view
+//  indexì˜ general informationì„ ë³´ì—¬ì£¼ëŠ” peformance view
 //======================================================================
 
 IDE_RC smnFT::buildRecordForIndexInfo(idvSQL              * /*aStatistics*/,
@@ -73,8 +73,8 @@ IDE_RC smnFT::buildRecordForIndexInfo(idvSQL              * /*aStatistics*/,
     {
         /* BUG-32292 [sm-util] Self deadlock occur since fixed-table building
          * operation uses another transaction. 
-         * NestedTransactionÀ» »ç¿ëÇÏ¸é Self-deadlock ¿ì·Á°¡ ÀÖ´Ù.
-         * µû¶ó¼­ id Memory ¿µ¿ªÀ¸·ÎºÎÅÍ Iterator¸¦ ¾ò¾î TransactionÀ» ¾ò¾î³½´Ù. */
+         * NestedTransactionì„ ì‚¬ìš©í•˜ë©´ Self-deadlock ìš°ë ¤ê°€ ìˆë‹¤.
+         * ë”°ë¼ì„œ id Memory ì˜ì—­ìœ¼ë¡œë¶€í„° Iteratorë¥¼ ì–»ì–´ Transactionì„ ì–»ì–´ë‚¸ë‹¤. */
         sTrans = ((smiIterator*)aMemory->getContext())->trans;
     }
 
@@ -90,7 +90,7 @@ IDE_RC smnFT::buildRecordForIndexInfo(idvSQL              * /*aStatistics*/,
         // To fix BUG-14681
         if( SM_SCN_IS_INFINITE(sPtr->mCreateSCN) == ID_TRUE )
         {
-            /* BUG-14974: ¹«ÇÑ Loop¹ß»ı.*/
+            /* BUG-14974: ë¬´í•œ Loopë°œìƒ.*/
             sCurPtr = sNxtPtr;
             continue;
         }
@@ -106,7 +106,7 @@ IDE_RC smnFT::buildRecordForIndexInfo(idvSQL              * /*aStatistics*/,
 
         if( sIndexCnt != 0  )
         {
-            //DDL À» ¹æÁö.
+            //DDL ì„ ë°©ì§€.
             IDE_TEST( smLayerCallback::setImpSavepoint( sTrans, 
                                                         &sISavepoint,
                                                         sDummy )
@@ -115,7 +115,7 @@ IDE_RC smnFT::buildRecordForIndexInfo(idvSQL              * /*aStatistics*/,
                                                         SMC_TABLE_LOCK( sTableHeader ) )
                       != IDE_SUCCESS );
 
-            //lockÀ» Àâ¾ÒÁö¸¸ tableÀÌ dropµÈ °æ¿ì¿¡´Â skip;
+            //lockì„ ì¡ì•˜ì§€ë§Œ tableì´ dropëœ ê²½ìš°ì—ëŠ” skip;
             if(smcTable::isDropedTable(sTableHeader) == ID_TRUE)
             {
                 IDE_TEST( smLayerCallback::abortToImpSavepoint( sTrans, 
@@ -128,10 +128,10 @@ IDE_RC smnFT::buildRecordForIndexInfo(idvSQL              * /*aStatistics*/,
                 continue;
             }//if
 
-            // lockÀ» ´ë±âÇÏ´Â µ¿¾È index°¡ dropµÇ¾ú°Å³ª, »õ·Î¿î index°¡
-            // »ı¼ºµÇ¾úÀ» ¼ö ÀÖÀ¸¹Ç·Î Á¤È®ÇÑ index ¼ö¸¦ ´Ù½Ã ±¸ÇÑ´Ù.
-            // »Ó¸¸ ¾Æ´Ï¶ó, index cnt¸¦ Áõ°¡½ÃÅ² ÈÄ index¸¦ »ı¼ºÇÏ¹Ç·Î
-            // index°¡ ¿Ï·áµÇÁö ¸øÇÏ¸é index cnt°¡ °¨¼ÒÇÏ¹Ç·Î ´Ù½Ã ±¸ÇØ¾ß ÇÔ.
+            // lockì„ ëŒ€ê¸°í•˜ëŠ” ë™ì•ˆ indexê°€ dropë˜ì—ˆê±°ë‚˜, ìƒˆë¡œìš´ indexê°€
+            // ìƒì„±ë˜ì—ˆì„ ìˆ˜ ìˆìœ¼ë¯€ë¡œ ì •í™•í•œ index ìˆ˜ë¥¼ ë‹¤ì‹œ êµ¬í•œë‹¤.
+            // ë¿ë§Œ ì•„ë‹ˆë¼, index cntë¥¼ ì¦ê°€ì‹œí‚¨ í›„ indexë¥¼ ìƒì„±í•˜ë¯€ë¡œ
+            // indexê°€ ì™„ë£Œë˜ì§€ ëª»í•˜ë©´ index cntê°€ ê°ì†Œí•˜ë¯€ë¡œ ë‹¤ì‹œ êµ¬í•´ì•¼ í•¨.
             sIndexCnt = smcTable::getIndexCount(sTableHeader);
 
             for(i=0;i < sIndexCnt; i++ )
@@ -142,7 +142,7 @@ IDE_RC smnFT::buildRecordForIndexInfo(idvSQL              * /*aStatistics*/,
                 sIndexInfo.mTableOID     = sIndexCursor->mTableOID;
                 sIndexInfo.mIndexSegPID  = SC_MAKE_PID(sIndexCursor->mIndexSegDesc);
                 sIndexInfo.mIndexID      = sIndexCursor->mId;
-                // primary key³ª ÀÏ¹İ ÀÎµ¦½º ³Ä?
+                // primary keyë‚˜ ì¼ë°˜ ì¸ë±ìŠ¤ ëƒ?
                 sIndexInfo.mIndexType  =   sIndexCursor->mFlag &  SMI_INDEX_TYPE_MASK;
 
                 IDE_TEST(iduFixedTable::buildRecord(aHeader,
@@ -158,7 +158,7 @@ IDE_RC smnFT::buildRecordForIndexInfo(idvSQL              * /*aStatistics*/,
             IDE_TEST( smLayerCallback::unsetImpSavepoint( sTrans, 
                                                           sISavepoint )
                       != IDE_SUCCESS );
-        }// if ÀÎµ¦½º°¡ ÀÖÀ¸¸é
+        }// if ì¸ë±ìŠ¤ê°€ ìˆìœ¼ë©´
         sCurPtr = sNxtPtr;
     }// while
 

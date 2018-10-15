@@ -2,7 +2,7 @@
 
 include ../mtEnv.mk
 
-# NLS Áß ¿µ¾î ¿¡·¯ ¸Þ½ÃÁö È­ÀÏ Á¤ÀÇ
+# NLS ì¤‘ ì˜ì–´ ì—ëŸ¬ ë©”ì‹œì§€ í™”ì¼ ì •ì˜
 E_MT_US_MSG    = E_MT_US7ASCII.msg
 ALLMSG         = $(E_MT_US_MSG)
 

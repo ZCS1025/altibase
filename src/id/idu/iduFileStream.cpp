@@ -20,12 +20,12 @@ IDE_RC iduFileStream::openFile( FILE** aFp,
 {
 /***********************************************************************
  *
- * Description : fileÀ» openÇÔ
+ * Description : fileì„ opení•¨
  *
  * Implementation :
- *    1. fopen ÇÔ¼ö È£Ãâ
- *    2. ¹İÈ¯µÈ fp°¡ nullÀÌ¸é errno °Ë»ç
- *    3. errno¿¡ µû¶ó¼­ ÀûÀıÇÑ error ¹İÈ¯
+ *    1. fopen í•¨ìˆ˜ í˜¸ì¶œ
+ *    2. ë°˜í™˜ëœ fpê°€ nullì´ë©´ errno ê²€ì‚¬
+ *    3. errnoì— ë”°ë¼ì„œ ì ì ˆí•œ error ë°˜í™˜
  *
  ***********************************************************************/
 #define IDE_FN "iduFileStream::openFile"
@@ -89,12 +89,12 @@ IDE_RC iduFileStream::closeFile( FILE* aFp )
 {
 /***********************************************************************
  *
- * Description : fileÀ» closeÇÔ
+ * Description : fileì„ closeí•¨
  *
  * Implementation :
- *    1. fclose ÇÔ¼ö È£Ãâ
- *    2. return value°¡ 0ÀÌ ¾Æ´Ï¸é ¿¡·¯
- *    3. errno¿¡ µû¶ó¼­ ÀûÀıÇÑ error ¹İÈ¯
+ *    1. fclose í•¨ìˆ˜ í˜¸ì¶œ
+ *    2. return valueê°€ 0ì´ ì•„ë‹ˆë©´ ì—ëŸ¬
+ *    3. errnoì— ë”°ë¼ì„œ ì ì ˆí•œ error ë°˜í™˜
  *
  ***********************************************************************/
 #define IDE_FN "iduFileStream::closeFile"
@@ -110,8 +110,8 @@ IDE_RC iduFileStream::closeFile( FILE* aFp )
     
     IDE_EXCEPTION(CLOSE_ERROR);
     {
-        // BUG-21760 PSM¿¡¼­ »ı¼ºÇÑ ÆÄÀÏ¿¡ ´ëÇÏ¿© closeÀÇ ½ÇÆĞ´Â
-        // ABORT·Î ÃæºĞÇÏ´Ù.
+        // BUG-21760 PSMì—ì„œ ìƒì„±í•œ íŒŒì¼ì— ëŒ€í•˜ì—¬ closeì˜ ì‹¤íŒ¨ëŠ”
+        // ABORTë¡œ ì¶©ë¶„í•˜ë‹¤.
         IDE_SET(ideSetErrorCode(idERR_ABORT_FILE_CLOSE));
     }
 
@@ -128,12 +128,12 @@ IDE_RC iduFileStream::getString( SChar* aStr,
 {
 /***********************************************************************
  *
- * Description : ÇÑ lineÀ» ÆÄÀÏ¿¡¼­ ÀĞ¾î¿È
+ * Description : í•œ lineì„ íŒŒì¼ì—ì„œ ì½ì–´ì˜´
  *
  * Implementation :
- *    1. fgets ÇÔ¼ö È£Ãâ
- *    2. return value°¡ NULLÀÌ¸é ¿¡·¯
- *    3. ÆÄÀÏÀÇ ³¡ÀÌ¶ó¸é no data found, ±×·¸Áö ¾Ê´Ù¸é invalid operation
+ *    1. fgets í•¨ìˆ˜ í˜¸ì¶œ
+ *    2. return valueê°€ NULLì´ë©´ ì—ëŸ¬
+ *    3. íŒŒì¼ì˜ ëì´ë¼ë©´ no data found, ê·¸ë ‡ì§€ ì•Šë‹¤ë©´ invalid operation
  *
  ***********************************************************************/
 #define IDE_FN "iduFileStream::getString"
@@ -183,11 +183,11 @@ IDE_RC iduFileStream::putString( SChar* aStr,
 {
 /***********************************************************************
  *
- * Description : stringÀ» ÆÄÀÏ¿¡ ±â·Ï
+ * Description : stringì„ íŒŒì¼ì— ê¸°ë¡
  *
  * Implementation :
- *    1. fputs ÇÔ¼ö È£Ãâ
- *    2. return value°¡ EOF(-1)ÀÌ¸é ¿¡·¯
+ *    1. fputs í•¨ìˆ˜ í˜¸ì¶œ
+ *    2. return valueê°€ EOF(-1)ì´ë©´ ì—ëŸ¬
  *
  ***********************************************************************/
 #define IDE_FN "iduFileStream::putString"
@@ -217,12 +217,12 @@ IDE_RC iduFileStream::flushFile( FILE* aFp )
 {
 /***********************************************************************
  *
- * Description : stringÀ» ÆÄÀÏ¿¡ ±â·Ï
+ * Description : stringì„ íŒŒì¼ì— ê¸°ë¡
  *
  * Implementation :
- *    1. fflush ÇÔ¼ö È£Ãâ
- *    2. return value°¡ 0ÀÌ ¾Æ´Ï¶ó¸é ¿¡·¯
- *    3. errno¿¡ µû¶ó¼­ ÀûÀıÇÑ error ¹İÈ¯
+ *    1. fflush í•¨ìˆ˜ í˜¸ì¶œ
+ *    2. return valueê°€ 0ì´ ì•„ë‹ˆë¼ë©´ ì—ëŸ¬
+ *    3. errnoì— ë”°ë¼ì„œ ì ì ˆí•œ error ë°˜í™˜
  *
  ***********************************************************************/
 #define IDE_FN "iduFileStream::flushFile"
@@ -287,11 +287,11 @@ IDE_RC iduFileStream::removeFile( SChar* aFilePath )
 {
 /***********************************************************************
  *
- * Description : ÆÄÀÏ »èÁ¦
+ * Description : íŒŒì¼ ì‚­ì œ
  *
  * Implementation :
- *    1. remove ÇÔ¼ö È£Ãâ
- *    2. return value°¡ 0ÀÌ ¾Æ´Ï¶ó¸é ¿¡·¯
+ *    1. remove í•¨ìˆ˜ í˜¸ì¶œ
+ *    2. return valueê°€ 0ì´ ì•„ë‹ˆë¼ë©´ ì—ëŸ¬
  *
  ***********************************************************************/
 #define IDE_FN "iduFileStream::removeFile"
@@ -323,12 +323,12 @@ IDE_RC iduFileStream::renameFile( SChar* aOldFilePath,
 {
 /***********************************************************************
  *
- * Description : ÆÄÀÏ ÀÌµ¿(or rename)
+ * Description : íŒŒì¼ ì´ë™(or rename)
  *
  * Implementation :
- *    1. overwrite°¡ ¼¼ÆÃµÇ¾î ÀÖÀ¸¸é aNewFilePath¿¡ ÀÌ¹Ì Á¸ÀçÇÏ¸é ¿¡·¯
- *    2. remove ÇÔ¼ö È£Ãâ
- *    3. return value°¡ 0ÀÌ ¾Æ´Ï¶ó¸é ¿¡·¯
+ *    1. overwriteê°€ ì„¸íŒ…ë˜ì–´ ìˆìœ¼ë©´ aNewFilePathì— ì´ë¯¸ ì¡´ì¬í•˜ë©´ ì—ëŸ¬
+ *    2. remove í•¨ìˆ˜ í˜¸ì¶œ
+ *    3. return valueê°€ 0ì´ ì•„ë‹ˆë¼ë©´ ì—ëŸ¬
  *
  ***********************************************************************/
 #define IDE_FN "iduFileStream::renameFile"

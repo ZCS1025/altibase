@@ -48,7 +48,7 @@ static IDE_RC mtfSubstrbEstimate( mtcNode*     aNode,
 mtfModule mtfSubstrb = {
     1|MTC_NODE_OPERATOR_FUNCTION,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
+    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìžê°€ ì•„ë‹˜)
     mtfSubstrbFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -80,14 +80,14 @@ IDE_RC mtfSubstrbCalculateXlobLocator3( mtcNode*     aNode,
                                         void*        aInfo,
                                         mtcTemplate* aTemplate );
 
-/* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø */
+/* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ìž… ì§€ì› */
 static IDE_RC mtfSubstringCalculateClobValue2( mtcNode     * aNode,
                                                mtcStack    * aStack,
                                                SInt          aRemain,
                                                void        * aInfo,
                                                mtcTemplate * aTemplate );
 
-/* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø */
+/* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ìž… ì§€ì› */
 static IDE_RC mtfSubstringCalculateClobValue3( mtcNode     * aNode,
                                                mtcStack    * aStack,
                                                SInt          aRemain,
@@ -138,7 +138,7 @@ const mtcExecute mtfExecuteXlobLocator3 = {
     mtk::extractRangeNA
 };
 
-/* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø */
+/* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ìž… ì§€ì› */
 const mtcExecute mtfExecuteClobValue2 = {
     mtf::calculateNA,
     mtf::calculateNA,
@@ -150,7 +150,7 @@ const mtcExecute mtfExecuteClobValue2 = {
     mtk::extractRangeNA
 };
 
-/* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø */
+/* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ìž… ì§€ì› */
 const mtcExecute mtfExecuteClobValue3 = {
     mtf::calculateNA,
     mtf::calculateNA,
@@ -206,9 +206,9 @@ IDE_RC mtfSubstrbEstimate( mtcNode*     aNode,
         }
 
         // fix BUG-25560
-        // precisonÀ» clobÀÇ ÃÖ´ë Å©±â·Î ¼³Á¤
-        /* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø
-         * Lob Locator´Â VARCHAR·Î °¡´ÉÇÑ ÃÖ´ë Å©±â·Î ¼³Á¤
+        // precisonì„ clobì˜ ìµœëŒ€ í¬ê¸°ë¡œ ì„¤ì •
+        /* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ìž… ì§€ì›
+         * Lob LocatorëŠ” VARCHARë¡œ ê°€ëŠ¥í•œ ìµœëŒ€ í¬ê¸°ë¡œ ì„¤ì •
          */
         sPrecision = MTD_VARCHAR_PRECISION_MAXIMUM;
     }
@@ -241,9 +241,9 @@ IDE_RC mtfSubstrbEstimate( mtcNode*     aNode,
             }
 
             // fix BUG-25560
-            // precisonÀ» clobÀÇ ÃÖ´ë Å©±â·Î ¼³Á¤
-            /* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø
-             * Lob ColumnÀÌ¸é VARCHAR·Î °¡´ÉÇÑ ÃÖ´ë Å©±â·Î ¼³Á¤ÇÑ´Ù.
+            // precisonì„ clobì˜ ìµœëŒ€ í¬ê¸°ë¡œ ì„¤ì •
+            /* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ìž… ì§€ì›
+             * Lob Columnì´ë©´ VARCHARë¡œ ê°€ëŠ¥í•œ ìµœëŒ€ í¬ê¸°ë¡œ ì„¤ì •í•œë‹¤.
              */
             sPrecision = MTD_VARCHAR_PRECISION_MAXIMUM;
         }
@@ -271,9 +271,9 @@ IDE_RC mtfSubstrbEstimate( mtcNode*     aNode,
             }
 
             // fix BUG-25560
-            // precisonÀ» clobÀÇ ÃÖ´ë Å©±â·Î ¼³Á¤
-            /* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø
-             * Lob ValueÀÌ¸é VARCHARÀÇ ÃÖ´ë Å©±â¿Í Lob ValueÀÇ Å©±â Áß ÀÛÀº °ÍÀ¸·Î ¼³Á¤ÇÑ´Ù.
+            // precisonì„ clobì˜ ìµœëŒ€ í¬ê¸°ë¡œ ì„¤ì •
+            /* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ìž… ì§€ì›
+             * Lob Valueì´ë©´ VARCHARì˜ ìµœëŒ€ í¬ê¸°ì™€ Lob Valueì˜ í¬ê¸° ì¤‘ ìž‘ì€ ê²ƒìœ¼ë¡œ ì„¤ì •í•œë‹¤.
              */
             sPrecision = IDL_MIN( MTD_VARCHAR_PRECISION_MAXIMUM,
                                   aStack[1].column->precision );

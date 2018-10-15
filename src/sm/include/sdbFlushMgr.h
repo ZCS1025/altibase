@@ -30,7 +30,7 @@
 #include <smuQueueMgr.h>
 #include <sdsBCB.h>
 
-// flushMgrÀÌ ÇÑ¼ø°£¿¡ ÃÖ´ë·Î À¯ÁöÇÒ ¼ö ÀÖ´Â ÀÛ¾÷¼ö
+// flushMgrì´ í•œìˆœê°„ì— ìµœëŒ€ë¡œ ìœ ì§€í•  ìˆ˜ ìˆëŠ” ì‘ì—…ìˆ˜
 #define SDB_FLUSH_JOB_MAX          (64)
 #define SDB_FLUSH_COUNT_UNLIMITED  (ID_ULONG_MAX)
 
@@ -46,53 +46,53 @@ typedef struct sdbLRUList sdbLRUList;
 typedef struct sdbFlushList sdbFlushList;
 typedef struct sdbCPListSet sdbCPListSet;
 
-// replace flush¸¦ À§ÇØ ÇÊ¿äÇÑ ÀÚ·á±¸Á¶
+// replace flushë¥¼ ìœ„í•´ í•„ìš”í•œ ìë£Œêµ¬ì¡°
 typedef struct sdbReplaceFlushJobParam
 {
-    // replace flush¸¦ ÇØ¾ßÇÒ flush list
+    // replace flushë¥¼ í•´ì•¼í•  flush list
     sdbFlushList    *mFlushList;
-    // replace´ë»óÀÌ ¾Æ´Ñ BCBµéÀ» ¿Å±æ LRU List
+    // replaceëŒ€ìƒì´ ì•„ë‹Œ BCBë“¤ì„ ì˜®ê¸¸ LRU List
     sdbLRUList      *mLRUList;
 } sdbReplaceFlushJobParam;
 
-// checkpoint flush¸¦ À§ÇØ ÇÊ¿äÇÑ ÀÚ·á±¸Á¶
-// BUG-22857 ·Î ÀÎÇÏ¿© CP List¿¡ DirtyPage°¡ °ú´ÙÇÒ °æ¿ì
-// ÃæºĞÈ÷ Á¤¸®ÇØ ÁÖ±â À§ÇØ¼­ Ãß°¡ µÇ¾úÀ½
+// checkpoint flushë¥¼ ìœ„í•´ í•„ìš”í•œ ìë£Œêµ¬ì¡°
+// BUG-22857 ë¡œ ì¸í•˜ì—¬ CP Listì— DirtyPageê°€ ê³¼ë‹¤í•  ê²½ìš°
+// ì¶©ë¶„íˆ ì •ë¦¬í•´ ì£¼ê¸° ìœ„í•´ì„œ ì¶”ê°€ ë˜ì—ˆìŒ
 typedef struct sdbChkptFlushJobParam
 {
-    // Restart Recovery½Ã¿¡ RedoÇÒ Page ¼ö
-    // ¹İ´ë·Î ¸»ÇÏ¸é Buffer Pool¿¡ ³²°ÜµÑ
-    // Dirty Page ¼ö
+    // Restart Recoveryì‹œì— Redoí•  Page ìˆ˜
+    // ë°˜ëŒ€ë¡œ ë§í•˜ë©´ Buffer Poolì— ë‚¨ê²¨ë‘˜
+    // Dirty Page ìˆ˜
     ULong             mRedoPageCount;
-    // Restart Recovery½Ã¿¡ RedoÇÒ log file ¼ö
+    // Restart Recoveryì‹œì— Redoí•  log file ìˆ˜
     UInt              mRedoLogFileCount;
 
     sdbCheckpointType mCheckpointType;
 
 } sdbChkptFlushJobParam;
 
-// DB object flush¸¦ À§ÇØ ÇÊ¿äÇÑ ÀÚ·á±¸Á¶
+// DB object flushë¥¼ ìœ„í•´ í•„ìš”í•œ ìë£Œêµ¬ì¡°
 typedef struct sdbObjectFlushJobParam
 {
-    // flush ÇØ¾ß ÇÒ BCBÆ÷ÀÎÅÍµéÀÌ µé¾îÀÖ´Â Å¥
+    // flush í•´ì•¼ í•  BCBí¬ì¸í„°ë“¤ì´ ë“¤ì–´ìˆëŠ” í
     smuQueueMgr *mBCBQueue;
-    // flush ÇØ¾ß ÇÒ BCBÀÇ Á¶°ÇÀÌ º¯°æµÇ¾úÀ» °¡´É¼ºÀÌ ÀÖÀ¸¹Ç·Î
-    // ´Ù½Ã È®ÀÎÇÏ±â À§ÇÑ ÇÔ¼ö
+    // flush í•´ì•¼ í•  BCBì˜ ì¡°ê±´ì´ ë³€ê²½ë˜ì—ˆì„ ê°€ëŠ¥ì„±ì´ ìˆìœ¼ë¯€ë¡œ
+    // ë‹¤ì‹œ í™•ì¸í•˜ê¸° ìœ„í•œ í•¨ìˆ˜
     sdbFiltFunc  mFiltFunc;
-    // mFiltFunc¿¡ ¹İµå½Ã °°ÀÌ ³Ö¾î ÁÖ´Â º¯¼ö
+    // mFiltFuncì— ë°˜ë“œì‹œ ê°™ì´ ë„£ì–´ ì£¼ëŠ” ë³€ìˆ˜
     void        *mFiltObj;
 } sdbObjectFlushJobParam;
 
 
-// flush jobÀÌ ³¡³µÀ» ½Ã ÀÛ¾÷À» Ã³¸®ÇÏ±â À§ÇØ
-// ÇÊ¿äÇÑ ÀÚ·á±¸Á¶. ³»ºÎ¿¡¼­¸¸ »ç¿ëÇÑ´Ù.
+// flush jobì´ ëë‚¬ì„ ì‹œ ì‘ì—…ì„ ì²˜ë¦¬í•˜ê¸° ìœ„í•´
+// í•„ìš”í•œ ìë£Œêµ¬ì¡°. ë‚´ë¶€ì—ì„œë§Œ ì‚¬ìš©í•œë‹¤.
 typedef struct sdbFlushJobDoneNotifyParam
 {
-    // jobÀÌ ³¡³¯¶§ ±îÁö ´ë±â¸¦ ÇØ¾ß ÇÏ´Âµ¥, ÀÌ¶§ ÇÊ¿äÇÑ mutex
+    // jobì´ ëë‚ ë•Œ ê¹Œì§€ ëŒ€ê¸°ë¥¼ í•´ì•¼ í•˜ëŠ”ë°, ì´ë•Œ í•„ìš”í•œ mutex
     iduMutex    mMutex;
-    // jobÀÌ ³¡³¯¶§ ±îÁö ´ë±â¸¦ ÇØ¾ß ÇÏ´Âµ¥, ÀÌ¶§ ÇÊ¿äÇÑ variable
+    // jobì´ ëë‚ ë•Œ ê¹Œì§€ ëŒ€ê¸°ë¥¼ í•´ì•¼ í•˜ëŠ”ë°, ì´ë•Œ í•„ìš”í•œ variable
     iduCond     mCondVar;
-    // jobÀÌ ³¡³µ´ÂÁö ¿©ºÎ.
+    // jobì´ ëë‚¬ëŠ”ì§€ ì—¬ë¶€.
     idBool      mJobDone;
 } sdbFlushJobDoneNotifyParam;
 
@@ -106,12 +106,12 @@ typedef struct sdbFlushJob
 {
     // flush job type
     sdbFlushJobType             mType;
-    // ¿äÃ»µÈ flush ÆäÀÌÁö °³¼ö
+    // ìš”ì²­ëœ flush í˜ì´ì§€ ê°œìˆ˜
     ULong                       mReqFlushCount;
-    // flushÀÛ¾÷ÀÌ ¿Ï·á µÉ ¶§±îÁö ±â´Ù·Á¾ß ÇÏ´Â °æ¿ì¿¡ »ç¿ëÇÔ
+    // flushì‘ì—…ì´ ì™„ë£Œ ë  ë•Œê¹Œì§€ ê¸°ë‹¤ë ¤ì•¼ í•˜ëŠ” ê²½ìš°ì— ì‚¬ìš©í•¨
     sdbFlushJobDoneNotifyParam *mJobDoneParam;
 
-    // flush ÀÛ¾÷¿¡ ÇÊ¿äÇÑ ÆÄ¶ó¹ÌÅÍ Á¤º¸
+    // flush ì‘ì—…ì— í•„ìš”í•œ íŒŒë¼ë¯¸í„° ì •ë³´
     union
     {
         sdbReplaceFlushJobParam       mReplaceFlush;
@@ -221,38 +221,38 @@ private:
                           sdbFlushJob  *aRetJob);
 
 private:
-    // JobÀ» µî·ÏÇÏ°í °¡Á®¿Ã¶§ »ç¿ëÇÏ´Â mutex
-    // mReqJobMutex´Â Æ®·£Àè¼Ç ¾²·¹µå°¡ req jobÀ» µî·ÏÇÒ¶§,
-    // ±×¸®°í flusher°¡ getJobÇÒ ¶§ »ç¿ëµÈ´Ù. µû¶ó¼­ Æ®·£Àè¼Ç ¾²·¹µå¿Í
-    // flusherµé °£¿¡ °æÇÕÀÌ ¹ß»ıÇÒ ¼ö ÀÖ´Ù.
-    // µû¶ó¼­ ÃÖ¼ÒÇÑÀÇ mutex ±¸°£À» À¯ÁöÇØ¾ß ÇÑ´Ù.
+    // Jobì„ ë“±ë¡í•˜ê³  ê°€ì ¸ì˜¬ë•Œ ì‚¬ìš©í•˜ëŠ” mutex
+    // mReqJobMutexëŠ” íŠ¸ëœì­ì…˜ ì“°ë ˆë“œê°€ req jobì„ ë“±ë¡í• ë•Œ,
+    // ê·¸ë¦¬ê³  flusherê°€ getJobí•  ë•Œ ì‚¬ìš©ëœë‹¤. ë”°ë¼ì„œ íŠ¸ëœì­ì…˜ ì“°ë ˆë“œì™€
+    // flusherë“¤ ê°„ì— ê²½í•©ì´ ë°œìƒí•  ìˆ˜ ìˆë‹¤.
+    // ë”°ë¼ì„œ ìµœì†Œí•œì˜ mutex êµ¬ê°„ì„ ìœ ì§€í•´ì•¼ í•œë‹¤.
     static iduMutex      mReqJobMutex;
 
-    // JobÀ» µî·ÏÇÒ¶§ »ç¿ëÇÏ´Â ÀÚ·á±¸Á¶
+    // Jobì„ ë“±ë¡í• ë•Œ ì‚¬ìš©í•˜ëŠ” ìë£Œêµ¬ì¡°
     static sdbFlushJob   mReqJobQueue[SDB_FLUSH_JOB_MAX];
 
-    // JobÀ» µî·ÏÇÒ¶§ »ç¿ëÇÏ´Â º¯¼ö,
+    // Jobì„ ë“±ë¡í• ë•Œ ì‚¬ìš©í•˜ëŠ” ë³€ìˆ˜,
     // mReqJobQueue[mReqJobAddPos++] = job
     static UInt          mReqJobAddPos;
 
-    // JobÀ» °¡Á® ¿Ã¶§ »ç¿ëÇÏ´Â º¯¼ö,
+    // Jobì„ ê°€ì ¸ ì˜¬ë•Œ ì‚¬ìš©í•˜ëŠ” ë³€ìˆ˜,
     // job = mReqJobQueue[mReqJobGetPos++]
     static UInt          mReqJobGetPos;
 
     // BUG-26476
-    // checkpoint ¼öÇà°ú flusher controlÀ» À§ÇÑ mutex
+    // checkpoint ìˆ˜í–‰ê³¼ flusher controlì„ ìœ„í•œ mutex
     static iduLatch   mFCLatch; // flusher control latch
 
-    // flusher¸¦ ¹è¿­ÇüÅÂ·Î °¡Áö°í ÀÖ´Ù.
+    // flusherë¥¼ ë°°ì—´í˜•íƒœë¡œ ê°€ì§€ê³  ìˆë‹¤.
     static sdbFlusher   *mFlushers;
 
-    // sdbFlushMgrÀÌ ÃÖ´ë·Î °¡Áú ¼ö ÀÖ´Â flusher°¹¼ö
+    // sdbFlushMgrì´ ìµœëŒ€ë¡œ ê°€ì§ˆ ìˆ˜ ìˆëŠ” flusherê°¯ìˆ˜
     static UInt          mFlusherCount;
 
-    // ¸¶Áö¸·¿¡ flushÇÑ ½Ã°£
+    // ë§ˆì§€ë§‰ì— flushí•œ ì‹œê°„
     static idvTime       mLastFlushedTime;
     
-    // flush MgrÀÌ ÀÛ¾÷ÇØ¾ßÇÒ buffer pool¿¡ ¼ÓÇØ ÀÖ´Â checkpoint list
+    // flush Mgrì´ ì‘ì—…í•´ì•¼í•  buffer poolì— ì†í•´ ìˆëŠ” checkpoint list
     static sdbCPListSet *mCPListSet;
 };
 
@@ -265,9 +265,9 @@ void sdbFlushMgr::initJob(sdbFlushJob *aJob)
 
 /***************************************************************************
  *  description:
- *      ÇöÀç jobQueue¿¡¼­ÀÇ positionÀ» Áõ°¡½ÃÅ²´Ù.
- *      mReqJobQueue´Â Å©±â°¡ °íÁ¤µÇ¾î ÀÖ±â ¶§¹®¿¡, SDB_FLUSH_JOB_MAX¸¦
- *      ÃÊ°úÇÏ´Â °æ¿ì¿£ 0À¸·Î µÈ´Ù.
+ *      í˜„ì¬ jobQueueì—ì„œì˜ positionì„ ì¦ê°€ì‹œí‚¨ë‹¤.
+ *      mReqJobQueueëŠ” í¬ê¸°ê°€ ê³ ì •ë˜ì–´ ìˆê¸° ë•Œë¬¸ì—, SDB_FLUSH_JOB_MAXë¥¼
+ *      ì´ˆê³¼í•˜ëŠ” ê²½ìš°ì—” 0ìœ¼ë¡œ ëœë‹¤.
  ***************************************************************************/
 void sdbFlushMgr::incPos(UInt *aPos)
 {

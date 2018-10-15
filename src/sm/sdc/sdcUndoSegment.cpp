@@ -20,7 +20,7 @@
  *
  * Description :
  *
- * º» ÆÄÀÏÀº undo segment¿¡ ´ëÇÑ ±¸Çö ÆÄÀÏÀÌ´Ù.
+ * ë³¸ íŒŒì¼ì€ undo segmentì— ëŒ€í•œ êµ¬í˜„ íŒŒì¼ì´ë‹¤.
  *
  **********************************************************************/
 
@@ -40,13 +40,13 @@
 
 /***********************************************************************
  *
- * Description : Undo ¼¼±×¸ÕÆ® »ı¼º
+ * Description : Undo ì„¸ê·¸ë¨¼íŠ¸ ìƒì„±
  *
- * µğºñ »ı¼º°úÁ¤¿¡¼­ Undo ¼¼±×¸ÕÆ®¸¦ »ı¼ºÇÑ´Ù.
+ * ë””ë¹„ ìƒì„±ê³¼ì •ì—ì„œ Undo ì„¸ê·¸ë¨¼íŠ¸ë¥¼ ìƒì„±í•œë‹¤.
  *
- * aStatistics  - [IN] Åë°èÁ¤º¸
- * aStartInfo   - [IN] Mini Transaction ½ÃÀÛ Á¤º¸.
- * aUDSegPID    - [IN] »ı¼ºµÈ Segment Hdr PageID
+ * aStatistics  - [IN] í†µê³„ì •ë³´
+ * aStartInfo   - [IN] Mini Transaction ì‹œì‘ ì •ë³´.
+ * aUDSegPID    - [IN] ìƒì„±ëœ Segment Hdr PageID
  *
  ***********************************************************************/
 IDE_RC sdcUndoSegment::create( idvSQL          * aStatistics,
@@ -69,17 +69,17 @@ IDE_RC sdcUndoSegment::create( idvSQL          * aStatistics,
               != IDE_SUCCESS );
     sState = 1;
 
-    /* Undo Segment »ı¼º */
+    /* Undo Segment ìƒì„± */
     sdpSegDescMgr::setDefaultSegAttr(
                                     sdpSegDescMgr::getSegAttr( &sUndoSegDesc ),
                                     SDP_SEG_TYPE_UNDO);
     sdpSegDescMgr::setDefaultSegStoAttr(
                                     sdpSegDescMgr::getSegStoAttr( &sUndoSegDesc ));
 
-    // Undo Segment Handle¿¡ Segment Cache¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+    // Undo Segment Handleì— Segment Cacheë¥¼ ì´ˆê¸°í™”í•œë‹¤.
     IDE_TEST( sdpSegDescMgr::initSegDesc( &sUndoSegDesc,
                                           SMI_ID_TABLESPACE_SYSTEM_DISK_UNDO,
-                                          SD_NULL_PID, // Segment »ı¼ºÀü
+                                          SD_NULL_PID, // Segment ìƒì„±ì „
                                           SDP_SEG_TYPE_UNDO,
                                           SM_NULL_OID,
                                           SM_NULL_INDEX_ID ) 
@@ -119,13 +119,13 @@ IDE_RC sdcUndoSegment::create( idvSQL          * aStatistics,
 
 /***********************************************************************
  *
- * Description : Undo ¼¼±×¸ÕÆ® ÃÊ±âÈ­
+ * Description : Undo ì„¸ê·¸ë¨¼íŠ¸ ì´ˆê¸°í™”
  *
- * aUDSegPID¿¡ ÇØ´çÇÏ´Â Undo ¼¼±×¸ÕÆ® ±â¼úÀÚ¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+ * aUDSegPIDì— í•´ë‹¹í•˜ëŠ” Undo ì„¸ê·¸ë¨¼íŠ¸ ê¸°ìˆ ìë¥¼ ì´ˆê¸°í™”í•œë‹¤.
  *
- * aStatistics  - [IN] Åë°èÁ¤º¸
- * aEntry       - [IN] ÀÚ½ÅÀÌ ¼Ò¼ÓµÈ Æ®·£Àè¼Ç ¼¼±×¸ÕÆ® ¿£Æ®¸® Æ÷ÀÎÅÍ
- * aUDSegPID    - [IN] Undo ¼¼±×¸ÕÆ® Çì´õ ÆäÀÌÁö ID
+ * aStatistics  - [IN] í†µê³„ì •ë³´
+ * aEntry       - [IN] ìì‹ ì´ ì†Œì†ëœ íŠ¸ëœì­ì…˜ ì„¸ê·¸ë¨¼íŠ¸ ì—”íŠ¸ë¦¬ í¬ì¸í„°
+ * aUDSegPID    - [IN] Undo ì„¸ê·¸ë¨¼íŠ¸ í—¤ë” í˜ì´ì§€ ID
  *
  ***********************************************************************/
 IDE_RC sdcUndoSegment::initialize( idvSQL        * aStatistics,
@@ -153,8 +153,8 @@ IDE_RC sdcUndoSegment::initialize( idvSQL        * aStatistics,
     // codesonar::Null Pointer Dereference
     IDE_ERROR( sSegMgmtOp != NULL );
 
-    /* Undo Tablespace´Â ½Ã½ºÅÛ¿¡ ÀÇÇØ¼­ ÀÚµ¿À¸·Î °ü¸®µÇ¹Ç·Î
-     * Segment Storage Parameter µéÀ» ¸ğµÎ ¹«½ÃÇÑ´Ù */
+    /* Undo TablespaceëŠ” ì‹œìŠ¤í…œì— ì˜í•´ì„œ ìë™ìœ¼ë¡œ ê´€ë¦¬ë˜ë¯€ë¡œ
+     * Segment Storage Parameter ë“¤ì„ ëª¨ë‘ ë¬´ì‹œí•œë‹¤ */
     sdpSegDescMgr::setDefaultSegAttr(
                                     sdpSegDescMgr::getSegAttr( &mUDSegDesc ),
                                     SDP_SEG_TYPE_UNDO );
@@ -174,7 +174,7 @@ IDE_RC sdcUndoSegment::initialize( idvSQL        * aStatistics,
     mFreeUndoPageCnt   = 0;
     mEntryPtr          = aEntry;
     /* BUG-40014 [PROJ-2506] Insure++ Warning
-     * - ¸â¹ö º¯¼öÀÇ ÃÊ±âÈ­°¡ ÇÊ¿äÇÕ´Ï´Ù.
+     * - ë©¤ë²„ ë³€ìˆ˜ì˜ ì´ˆê¸°í™”ê°€ í•„ìš”í•©ë‹ˆë‹¤.
      */
     mCurAllocExtRID = ID_ULONG_MAX;
     mFstPIDOfCurAllocExt = ID_UINT_MAX;
@@ -200,7 +200,7 @@ IDE_RC sdcUndoSegment::initialize( idvSQL        * aStatistics,
 }
 
 /***********************************************************************
- * Description : aUDSegPID¿¡ ÇØ´çÇÏ´Â Undo Segment¸¦ Á¤¸®ÇÑ´Ù.
+ * Description : aUDSegPIDì— í•´ë‹¹í•˜ëŠ” Undo Segmentë¥¼ ì •ë¦¬í•œë‹¤.
  ***********************************************************************/
 IDE_RC sdcUndoSegment::destroy()
 {
@@ -211,7 +211,7 @@ IDE_RC sdcUndoSegment::destroy()
 }
 
 /***********************************************************************
- * Description : Undo PageÀÇ CntlHdr ÃÊ±âÈ­ ¹× ·Î±ë
+ * Description : Undo Pageì˜ CntlHdr ì´ˆê¸°í™” ë° ë¡œê¹…
  **********************************************************************/
 IDE_RC sdcUndoSegment::logAndInitPage( sdrMtx      * aMtx,
                                        UChar       * aPagePtr )
@@ -335,9 +335,9 @@ IDE_RC sdcUndoSegment::addInsertRowPieceUndoRec(
         /* BUG-31092 When updating foreign key, The table cursor  is not
          * considering that The undo record of UPDATE_LOBDESC can have 
          * a head-rowpiece flag. 
-         * Update µµÁß Overflow°¡ ¹ß»ıÇßÀ»¶§, Áï ¿øº» ÆäÀÌÁöÀÇ °ø°£ÀÌ
-         * ºÎÁ·ÇØ ´Ù¸¥ Page¿¡ ±â·ÏÇÒ¶§ INSERT_ROW_PIECE_FOR_UPDATE°¡
-         * ¼öÇàµÊ. µû¶ó¼­ HeadRowPiece¸¦ ±â·ÏÇÏ´Â °æ¿ì´Â ºÒ°¡´É. */
+         * Update ë„ì¤‘ Overflowê°€ ë°œìƒí–ˆì„ë•Œ, ì¦‰ ì›ë³¸ í˜ì´ì§€ì˜ ê³µê°„ì´
+         * ë¶€ì¡±í•´ ë‹¤ë¥¸ Pageì— ê¸°ë¡í• ë•Œ INSERT_ROW_PIECE_FOR_UPDATEê°€
+         * ìˆ˜í–‰ë¨. ë”°ë¼ì„œ HeadRowPieceë¥¼ ê¸°ë¡í•˜ëŠ” ê²½ìš°ëŠ” ë¶ˆê°€ëŠ¥. */
         IDE_TEST_RAISE( sUndoRecType == SDC_UNDO_INSERT_ROW_PIECE_FOR_UPDATE,
                         ERR_ASSERT );
     }
@@ -553,7 +553,7 @@ IDE_RC sdcUndoSegment::addUpdateRowPieceUndoRec(
             sdcRow::calcUpdateRowPieceLogSize4RP(aUpdateInfo, ID_TRUE);
     }
 
-    sdrMiniTrans::setRefOffset(&sMtx, aTableOID); // undo ·Î±× À§Ä¡ ±â·Ï
+    sdrMiniTrans::setRefOffset(&sMtx, aTableOID); // undo ë¡œê·¸ ìœ„ì¹˜ ê¸°ë¡
 
     IDE_TEST( sdrMiniTrans::writeLogRec(&sMtx,
                                         (UChar*)sUndoRecHdr,
@@ -740,7 +740,7 @@ IDE_RC sdcUndoSegment::addOverwriteRowPieceUndoRec(
                                                      ID_TRUE );
     }
 
-    sdrMiniTrans::setRefOffset(&sMtx, aTableOID); // undo ·Î±× À§Ä¡ ±â·Ï
+    sdrMiniTrans::setRefOffset(&sMtx, aTableOID); // undo ë¡œê·¸ ìœ„ì¹˜ ê¸°ë¡
 
     // make undo record's redo log
     IDE_TEST( sdrMiniTrans::writeLogRec(&sMtx,
@@ -897,9 +897,9 @@ IDE_RC sdcUndoSegment::addChangeRowPieceLinkUndoRec(
     ID_WRITE_AND_MOVE_DEST(sWritePtr, &aUptRecGRID, ID_SIZEOF(scGRID));
 
     /*
-     * ###   FSC ÇÃ·¡±×   ###
+     * ###   FSC í”Œë˜ê·¸   ###
      *
-     * FSC ÇÃ·¡±× ¼³Á¤¹æ¹ı¿¡ ´ëÇÑ ÀÚ¼¼ÇÑ ¼³¸íÀº sdcRow.hÀÇ ÁÖ¼®À» Âü°íÇÏ¶ó
+     * FSC í”Œë˜ê·¸ ì„¤ì •ë°©ë²•ì— ëŒ€í•œ ìì„¸í•œ ì„¤ëª…ì€ sdcRow.hì˜ ì£¼ì„ì„ ì°¸ê³ í•˜ë¼
      *
      * redo     : SDC_UPDATE_LOG_FLAG_RESERVE_FREESPACE_CREDIT_TRUE
      * undo     : SDC_UPDATE_LOG_FLAG_RESERVE_FREESPACE_CREDIT_FALSE
@@ -1103,7 +1103,7 @@ IDE_RC sdcUndoSegment::addDeleteFstColumnPieceUndoRec(
                                                      aReplicate );
     }
 
-    sdrMiniTrans::setRefOffset(&sMtx, aTableOID); // undo ·Î±× À§Ä¡ ±â·Ï
+    sdrMiniTrans::setRefOffset(&sMtx, aTableOID); // undo ë¡œê·¸ ìœ„ì¹˜ ê¸°ë¡
 
     IDE_TEST( sdrMiniTrans::writeLogRec(&sMtx,
                                         (UChar*)sUndoRecHdr,
@@ -1183,8 +1183,8 @@ IDE_RC sdcUndoSegment::addDeleteFstColumnPieceUndoRec(
  *   -----------------------------------------------------------------------------------
  *
  *   TASK-5030
- *   supplemental log¸¦ Ãß°¡·Î ³²±â´Â °æ¿ì, SDC_UNDO_DELETE_ROW_PIECE ¿¡¼­
- *   rp info°¡ ±â·ÏµÈ´Ù.
+ *   supplemental logë¥¼ ì¶”ê°€ë¡œ ë‚¨ê¸°ëŠ” ê²½ìš°, SDC_UNDO_DELETE_ROW_PIECE ì—ì„œ
+ *   rp infoê°€ ê¸°ë¡ëœë‹¤.
  *   -----------------------------------------------------------------------------------
  *   | [column count(2)], [ {column seq(2),column id(4)} ... ]
  *   -----------------------------------------------------------------------------------
@@ -1249,13 +1249,13 @@ IDE_RC sdcUndoSegment::addDeleteRowPieceUndoRec(
     sLogAttr |= (aReplicate == ID_TRUE) ?
                  SM_DLOG_ATTR_REPLICATE : SM_DLOG_ATTR_NORMAL;
 
-    /* Insert Undo Rec¿¡ ´ëÇØ¼­´Â Undo¸¦ ÇÏÁö ¾Êµµ·Ï ÇÕ´Ï´Ù. ¿Ö³Ä¸é
-     * Insert¿¡ ´ëÇÑ Undo½Ã Ager°¡ InsertµÈ Record¸¦ »èÁ¦ÇÏµµ·Ï Undo
-     * Page¿¡ ÀÖ´Â Insert Undo Rec¸¦ Delete Undo Record·Î º¯°æÇÕ´Ï´Ù.
-     * ¶§¹®¿¡ Undo½Ã Áö¿ì¸é ¾ÈµË´Ï´Ù. ÇÏÁö¸¸ Insert DML Log¸¦ ÂïÁö
-     * ¸øÇÏ°í Server°¡ Á×Àº °æ¿ì¿¡´Â Undo¸¦ ¼öÇàÇÏ¿© Insert Undo
-     * Record¸¦ TruncateÇÏ¿©¾ß ÇÏ³ª ÇÏÁö ¾Ê¾Æµµ ¹®Á¦¾ø½À´Ï´Ù. Ager´Â
-     * ÀÌ Insert Undo Record¸¦ ¹«½ÃÇÕ´Ï´Ù. */
+    /* Insert Undo Recì— ëŒ€í•´ì„œëŠ” Undoë¥¼ í•˜ì§€ ì•Šë„ë¡ í•©ë‹ˆë‹¤. ì™œëƒë©´
+     * Insertì— ëŒ€í•œ Undoì‹œ Agerê°€ Insertëœ Recordë¥¼ ì‚­ì œí•˜ë„ë¡ Undo
+     * Pageì— ìˆëŠ” Insert Undo Recë¥¼ Delete Undo Recordë¡œ ë³€ê²½í•©ë‹ˆë‹¤.
+     * ë•Œë¬¸ì— Undoì‹œ ì§€ìš°ë©´ ì•ˆë©ë‹ˆë‹¤. í•˜ì§€ë§Œ Insert DML Logë¥¼ ì°ì§€
+     * ëª»í•˜ê³  Serverê°€ ì£½ì€ ê²½ìš°ì—ëŠ” Undoë¥¼ ìˆ˜í–‰í•˜ì—¬ Insert Undo
+     * Recordë¥¼ Truncateí•˜ì—¬ì•¼ í•˜ë‚˜ í•˜ì§€ ì•Šì•„ë„ ë¬¸ì œì—†ìŠµë‹ˆë‹¤. AgerëŠ”
+     * ì´ Insert Undo Recordë¥¼ ë¬´ì‹œí•©ë‹ˆë‹¤. */
     IDE_TEST( sdrMiniTrans::begin( aStatistics,
                                    &sMtx,
                                    aStartInfo,
@@ -1378,7 +1378,7 @@ IDE_RC sdcUndoSegment::addDeleteRowPieceUndoRec(
                                                               aUpdateInfo );
     }
 
-    sdrMiniTrans::setRefOffset(&sMtx, aTableOID); // undo ·Î±× À§Ä¡ ±â·Ï
+    sdrMiniTrans::setRefOffset(&sMtx, aTableOID); // undo ë¡œê·¸ ìœ„ì¹˜ ê¸°ë¡
 
     // make undo record's redo log
     IDE_TEST( sdrMiniTrans::writeLogRec(&sMtx,
@@ -1835,20 +1835,20 @@ IDE_RC sdcUndoSegment::addUpdateLobLeafKeyUndoRec(
 
 /***********************************************************************
  *
- * Description : Undo Slot ÇÒ´ç
+ * Description : Undo Slot í• ë‹¹
  *
- * Undo Page·ÎºÎÅÍ Undo Record¸¦ ÀúÀåÇÒ ¼ö ÀÖ´Â slotÀ» ÇÒ´çÇÑ´Ù.
- * Undo Page¸¦ »õ·Î »ı¼ºÇÏ´Â °æ¿ì¿¡´Â Ã¹¹øÂ° Slot Entry´Â ÆäÀÌÁöÀÇ FooterÀÇ
- * OffsetÀ» ÀúÀåÇÏ´Âµ¥ »ç¿ëÇÏ°í, µÎ¹øÂ° Slot EntryºÎÅÍ Undo RecordµéÀÇ ¿ÀÇÁ¼ÂÀ»
- * ÀúÀåÇÏ´Âµ¥ »ç¿ëÇÑ´Ù.( Undo RecordÀÇ ±æÀÌ °è»êÀ» À§ÇØ¼­ )
+ * Undo Pageë¡œë¶€í„° Undo Recordë¥¼ ì €ì¥í•  ìˆ˜ ìˆëŠ” slotì„ í• ë‹¹í•œë‹¤.
+ * Undo Pageë¥¼ ìƒˆë¡œ ìƒì„±í•˜ëŠ” ê²½ìš°ì—ëŠ” ì²«ë²ˆì§¸ Slot EntryëŠ” í˜ì´ì§€ì˜ Footerì˜
+ * Offsetì„ ì €ì¥í•˜ëŠ”ë° ì‚¬ìš©í•˜ê³ , ë‘ë²ˆì§¸ Slot Entryë¶€í„° Undo Recordë“¤ì˜ ì˜¤í”„ì…‹ì„
+ * ì €ì¥í•˜ëŠ”ë° ì‚¬ìš©í•œë‹¤.( Undo Recordì˜ ê¸¸ì´ ê³„ì‚°ì„ ìœ„í•´ì„œ )
  *
- * aStatistics       - [IN] Åë°èÁ¤º¸
- * aTrans            - [IN] Æ®·£Àè¼Ç Æ÷ÀÎÅÍ
- * aUndoRecSize      - [IN] SlotEntry ÇÒ´ç¿©ºÎ
- * aIsAllocSlotEntry - [IN] SlotEntry ÇÒ´ç¿©ºÎ
- * aMtx              - [IN] Mtx Æ÷ÀÎÅÍ
- * aSlotPtr          - [OUT] Slot Æ÷ÀÎÅÍ
- * aUndoSID          - [OUT] UndoRowÀÇ SID
+ * aStatistics       - [IN] í†µê³„ì •ë³´
+ * aTrans            - [IN] íŠ¸ëœì­ì…˜ í¬ì¸í„°
+ * aUndoRecSize      - [IN] SlotEntry í• ë‹¹ì—¬ë¶€
+ * aIsAllocSlotEntry - [IN] SlotEntry í• ë‹¹ì—¬ë¶€
+ * aMtx              - [IN] Mtx í¬ì¸í„°
+ * aSlotPtr          - [OUT] Slot í¬ì¸í„°
+ * aUndoSID          - [OUT] UndoRowì˜ SID
  *
  ***********************************************************************/
 IDE_RC sdcUndoSegment::allocSlot( idvSQL           * aStatistics,
@@ -1896,7 +1896,7 @@ IDE_RC sdcUndoSegment::allocSlot( idvSQL           * aStatistics,
 
         if( sPageType != SDP_PAGE_UNDO )
         {
-            // BUG-28785 Case-23923ÀÇ Server ºñÁ¤»ó Á¾·á¿¡ ´ëÇÑ µğ¹ö±ë ÄÚµå Ãß°¡
+            // BUG-28785 Case-23923ì˜ Server ë¹„ì •ìƒ ì¢…ë£Œì— ëŒ€í•œ ë””ë²„ê¹… ì½”ë“œ ì¶”ê°€
             // Dump Page Hex and Page Hdr
             (void)sdpPhyPage::tracePage( IDE_SERVER_0,
                                          (UChar*)sPageHdr,
@@ -1956,17 +1956,17 @@ IDE_RC sdcUndoSegment::allocSlot( idvSQL           * aStatistics,
     IDE_ASSERT( sAllocSlotPtr != NULL );
     sState = 1;
 
-    /* ÆäÀÌÁö¸¦ »ç¿ëÇÏ´Â Æ®·£Àè¼ÇÀÇ Begin SCNÀ» Extent Dir.
-     * ÆäÀÌÁö¿¡ ±â·ÏÇØµÎ¾î¼­ °è¼Ó »ç¿ëµÇ´Ù°¡ ÀÚ½ÅÀÌ »ç¿ëÇÑ Extent Dir.À»
-     * Àç»ç¿ëÇÏ´Â ÀÏÀÌ ¾øµµ·Ï ÇÑ´Ù. */
+    /* í˜ì´ì§€ë¥¼ ì‚¬ìš©í•˜ëŠ” íŠ¸ëœì­ì…˜ì˜ Begin SCNì„ Extent Dir.
+     * í˜ì´ì§€ì— ê¸°ë¡í•´ë‘ì–´ì„œ ê³„ì† ì‚¬ìš©ë˜ë‹¤ê°€ ìì‹ ì´ ì‚¬ìš©í•œ Extent Dir.ì„
+     * ì¬ì‚¬ìš©í•˜ëŠ” ì¼ì´ ì—†ë„ë¡ í•œë‹¤. */
     sFstDskViewSCN = smxTrans::getFstDskViewSCN( aTrans );
 
     if ( (!SM_SCN_IS_EQ( &mFstDskViewSCNofCurTrans, &sFstDskViewSCN )) ||
          (SD_MAKE_PID(sPrvAllocExtRID) != SD_MAKE_PID(mCurAllocExtRID)) )
     {
-        /* ÇØ´ç UDS¸¦ »ç¿ëÇÑ ¸¶Áö¸· Æ®·£Àè¼ÇÀÇ Begin SCN°ú µ¿ÀÏÇÏÁö ¾ÊÀº °æ¿ì¸¸
-         * Extent Dir. ÆäÀÌÁö¿¡ Begin SCNÀ» ±â·ÏÇÏµµ·ÏÇÏ¿© µ¿ÀÏÇÑ Æ®·£Àè¼Ç´ç
-         * ÇÑ¹ø¸¸ ¼³Á¤ÇÏµµ·Ï ÇÑ´Ù. */
+        /* í•´ë‹¹ UDSë¥¼ ì‚¬ìš©í•œ ë§ˆì§€ë§‰ íŠ¸ëœì­ì…˜ì˜ Begin SCNê³¼ ë™ì¼í•˜ì§€ ì•Šì€ ê²½ìš°ë§Œ
+         * Extent Dir. í˜ì´ì§€ì— Begin SCNì„ ê¸°ë¡í•˜ë„ë¡í•˜ì—¬ ë™ì¼í•œ íŠ¸ëœì­ì…˜ë‹¹
+         * í•œë²ˆë§Œ ì„¤ì •í•˜ë„ë¡ í•œë‹¤. */
         IDE_TEST( mUDSegDesc.mSegMgmtOp->mSetSCNAtAlloc(
                     aStatistics,
                     SMI_ID_TABLESPACE_SYSTEM_DISK_UNDO,
@@ -2005,16 +2005,16 @@ IDE_RC sdcUndoSegment::allocSlot( idvSQL           * aStatistics,
 
 /******************************************************************************
  *
- * Description : °¡¿ëÇÑ ¾ğµÎ ÆäÀÌÁö¸¦ ÇÒ´çÇÑ´Ù.
+ * Description : ê°€ìš©í•œ ì–¸ë‘ í˜ì´ì§€ë¥¼ í• ë‹¹í•œë‹¤.
  *
- * ÇØ´ç ¼¼±×¸ÕÆ®¿¡ Á¸ÀçÇÏÁö ¾Ê´Â´Ù¸é, ¿ÀÇÁ¶óÀÎ ¿£Æ®¸®·ÎºÎÅÍ °¡¿ëÇÑ
- * ÀÍ½ºÅÙÆ® Dir.¸¦ ¾ò´Â´Ù.
+ * í•´ë‹¹ ì„¸ê·¸ë¨¼íŠ¸ì— ì¡´ì¬í•˜ì§€ ì•ŠëŠ”ë‹¤ë©´, ì˜¤í”„ë¼ì¸ ì—”íŠ¸ë¦¬ë¡œë¶€í„° ê°€ìš©í•œ
+ * ìµìŠ¤í…íŠ¸ Dir.ë¥¼ ì–»ëŠ”ë‹¤.
  *
- * aStatistics      - [IN]  Åë°èÁ¤º¸
- * aStartInfo       - [IN]  Mtx ½ÃÀÛÁ¤º¸
- * aTransID         - [IN]  Æ®·£Àè¼Ç ID
- * aTransBSCN       - [IN]  ÆäÀÌÁö¸¦ ÇÒ´çÇÑ Æ®·£Àè¼ÇÀÇ BegingSCN
- * aPhyPagePtr      - [OUT] ÇÒ´ç¹ŞÀº ÆäÀÌÁö Æ÷ÀÎÅÍ
+ * aStatistics      - [IN]  í†µê³„ì •ë³´
+ * aStartInfo       - [IN]  Mtx ì‹œì‘ì •ë³´
+ * aTransID         - [IN]  íŠ¸ëœì­ì…˜ ID
+ * aTransBSCN       - [IN]  í˜ì´ì§€ë¥¼ í• ë‹¹í•œ íŠ¸ëœì­ì…˜ì˜ BegingSCN
+ * aPhyPagePtr      - [OUT] í• ë‹¹ë°›ì€ í˜ì´ì§€ í¬ì¸í„°
  *
  ******************************************************************************/
 IDE_RC sdcUndoSegment::allocNewPage( idvSQL  * aStatistics,
@@ -2089,11 +2089,11 @@ IDE_RC sdcUndoSegment::allocNewPage( idvSQL  * aStatistics,
     IDE_TEST( logAndInitPage( aMtx,
                               sNewCurPagePtr ) != IDE_SUCCESS );
 
-    /* Mtx°¡ AbortµÇ¸é, PageImage¸¸ RollbackµÇÁö RuntimeValud´Â
-     * º¹±¸µÇÁö ¾Ê½À´Ï´Ù.
-     * µû¶ó¼­ Rollback½Ã ÀÌÀü °ªÀ¸·Î º¹±¸ÇÏµµ·Ï ÇÕ´Ï´Ù.
-     * ¾îÂ÷ÇÇ Segment´Â Transaction´ç ÇÏ³ª¾¿ È¥ÀÚ¾²´Â °´Ã¼ÀÌ±â
-     * ¶§¹®¿¡ ¹é¾÷º»Àº ÇÏ³ª¸¸ ÀÖÀ¸¸é µË´Ï´Ù.*/
+    /* Mtxê°€ Abortë˜ë©´, PageImageë§Œ Rollbackë˜ì§€ RuntimeValudëŠ”
+     * ë³µêµ¬ë˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
+     * ë”°ë¼ì„œ Rollbackì‹œ ì´ì „ ê°’ìœ¼ë¡œ ë³µêµ¬í•˜ë„ë¡ í•©ë‹ˆë‹¤.
+     * ì–´ì°¨í”¼ SegmentëŠ” Transactionë‹¹ í•˜ë‚˜ì”© í˜¼ìì“°ëŠ” ê°ì²´ì´ê¸°
+     * ë•Œë¬¸ì— ë°±ì—…ë³¸ì€ í•˜ë‚˜ë§Œ ìˆìœ¼ë©´ ë©ë‹ˆë‹¤.*/
     IDE_TEST( sdrMiniTrans::addPendingJob( aMtx,
                                            ID_FALSE, // isCommitJob
                                            ID_FALSE, // aFreeData
@@ -2124,15 +2124,15 @@ IDE_RC sdcUndoSegment::allocNewPage( idvSQL  * aStatistics,
 
 /******************************************************************************
  *
- * Description : °¡¿ëÇÑ ¾ğµÎ ÆäÀÌÁö¸¦ È®º¸ÇÑ´Ù.
+ * Description : ê°€ìš©í•œ ì–¸ë‘ í˜ì´ì§€ë¥¼ í™•ë³´í•œë‹¤.
  *
- * ÇöÀç È®º¸µÈ Extent·ÎºÎÅÍ ´ÙÀ½ ÆäÀÌÁö¸¦ ÇÒ´çÇÒ ¼ö ÀÖ´ÂÁö È®ÀÎÇÏ°í,
- * ¾Æ´Ï¸é ´ÙÀ½ Extent, ¾Æ´Ï¸é »õ·Î¿î Extent¸¦ ÇÒ´çÇØ µĞ´Ù.
- * ÃÖÁ¾ÀûÀ¸·Î È®º¸°¡ ºÒ°¡´ÉÇÏ´Ù°í ÆÇ´ÜµÇ¸é, SpaceNotEnough ¿¡·¯°¡
- * ¹İÈ¯µÈ´Ù.
+ * í˜„ì¬ í™•ë³´ëœ Extentë¡œë¶€í„° ë‹¤ìŒ í˜ì´ì§€ë¥¼ í• ë‹¹í•  ìˆ˜ ìˆëŠ”ì§€ í™•ì¸í•˜ê³ ,
+ * ì•„ë‹ˆë©´ ë‹¤ìŒ Extent, ì•„ë‹ˆë©´ ìƒˆë¡œìš´ Extentë¥¼ í• ë‹¹í•´ ë‘”ë‹¤.
+ * ìµœì¢…ì ìœ¼ë¡œ í™•ë³´ê°€ ë¶ˆê°€ëŠ¥í•˜ë‹¤ê³  íŒë‹¨ë˜ë©´, SpaceNotEnough ì—ëŸ¬ê°€
+ * ë°˜í™˜ëœë‹¤.
  *
- * aStatistics  - [IN] Åë°èÁ¤º¸
- * aMtx         - [IN] Mtx ½ÃÀÛÁ¤º¸
+ * aStatistics  - [IN] í†µê³„ì •ë³´
+ * aMtx         - [IN] Mtx ì‹œì‘ì •ë³´
  *
  ******************************************************************************/
 IDE_RC sdcUndoSegment::prepareNewPage( idvSQL       * aStatistics,
@@ -2150,8 +2150,8 @@ IDE_RC sdcUndoSegment::prepareNewPage( idvSQL       * aStatistics,
 
     sSegMgmtOp = mUDSegDesc.mSegMgmtOp;
 
-    /* BUG-43538 µğ½ºÅ© ÀÎµ¦½º°¡ undo Page¸¦ ÇÒ´çÇØ °¥¶§µµ
-     * Segment°£ Steal Á¤Ã¥À» µû¶ó¾ß ÇÕ´Ï´Ù.
+    /* BUG-43538 ë””ìŠ¤í¬ ì¸ë±ìŠ¤ê°€ undo Pageë¥¼ í• ë‹¹í•´ ê°ˆë•Œë„
+     * Segmentê°„ Steal ì •ì±…ì„ ë”°ë¼ì•¼ í•©ë‹ˆë‹¤.
      */
     for ( sLoop = 0 ; sLoop < 2 ; sLoop++ )
     {
@@ -2196,11 +2196,11 @@ IDE_RC sdcUndoSegment::prepareNewPage( idvSQL       * aStatistics,
 
 /***********************************************************************
  *
- * Description : SDR_SDC_INSERT_UNDO_REC ·Î±ë
+ * Description : SDR_SDC_INSERT_UNDO_REC ë¡œê¹…
  *
- * undo record¸¦ ÀÛ¼ºÇÑ ÈÄ ÀÌ ÇÔ¼ö°¡ È£ÃâµÇ¾î redo ·Î±×¸¦ mtx¿¡ ¹öÆÛ¸µÇÑ´Ù.
- * - SDR_UNDO_INSERT Å¸ÀÔÀ¸·Î undo record image¸¦
- * ¹öÆÛ¸µÇÑ´Ù.
+ * undo recordë¥¼ ì‘ì„±í•œ í›„ ì´ í•¨ìˆ˜ê°€ í˜¸ì¶œë˜ì–´ redo ë¡œê·¸ë¥¼ mtxì— ë²„í¼ë§í•œë‹¤.
+ * - SDR_UNDO_INSERT íƒ€ì…ìœ¼ë¡œ undo record imageë¥¼
+ * ë²„í¼ë§í•œë‹¤.
  *
  ***********************************************************************/
 IDE_RC sdcUndoSegment::makeRedoLogOfUndoRec( UChar*        aUndoRecPtr,
@@ -2212,7 +2212,7 @@ IDE_RC sdcUndoSegment::makeRedoLogOfUndoRec( UChar*        aUndoRecPtr,
     IDE_DASSERT( aLength     != 0 );
     IDE_DASSERT( aMtx        != NULL );
 
-    sdrMiniTrans::setRefOffset(aMtx, aTableOID); // undo ·Î±× À§Ä¡ ±â·Ï
+    sdrMiniTrans::setRefOffset(aMtx, aTableOID); // undo ë¡œê·¸ ìœ„ì¹˜ ê¸°ë¡
 
     IDE_TEST( sdrMiniTrans::writeLogRec( aMtx,
                                          aUndoRecPtr,
@@ -2240,18 +2240,18 @@ IDE_RC sdcUndoSegment::makeRedoLogOfUndoRec( UChar*        aUndoRecPtr,
 
 
 /***********************************************************************
- * Description : UndoRecÀ» ÇÒ´çÇÑ ExtDirÀÇ CntlHdr¿¡ SCNÀ» ¼³Á¤
+ * Description : UndoRecì„ í• ë‹¹í•œ ExtDirì˜ CntlHdrì— SCNì„ ì„¤ì •
  *
- * unbind TSS °úÁ¤¿¡¼­ CommitSCN È¤Àº Abort SCNÀ» ÇØ´ç Æ®·£Àè¼ÇÀÌ »ç¿ëÇß´ø
- * ExtDir ÆäÀÌÁö¿¡ No-LoggingÀ¸·Î ¸ğµÎ ±â·ÏÇÑ´Ù. ÀÌ¶§ ±â·ÏµÈ SCNÀ» ±âÁØÀ¸·Î
- * UDSÀÇ Extent Dir.ÆäÀÌÁöÀÇ Àç»ç¿ë¿©ºÎ¸¦ ÆÇ´ÜÇÑ´Ù.
+ * unbind TSS ê³¼ì •ì—ì„œ CommitSCN í˜¹ì€ Abort SCNì„ í•´ë‹¹ íŠ¸ëœì­ì…˜ì´ ì‚¬ìš©í–ˆë˜
+ * ExtDir í˜ì´ì§€ì— No-Loggingìœ¼ë¡œ ëª¨ë‘ ê¸°ë¡í•œë‹¤. ì´ë•Œ ê¸°ë¡ëœ SCNì„ ê¸°ì¤€ìœ¼ë¡œ
+ * UDSì˜ Extent Dir.í˜ì´ì§€ì˜ ì¬ì‚¬ìš©ì—¬ë¶€ë¥¼ íŒë‹¨í•œë‹¤.
  *
- * aStatistics - [IN] Åë°èÁ¤º¸
- * aSpaceID    - [IN] Å×ÀÌºí½ºÆäÀÌ½º ID
- * aSegPID     - [IN] UDSÀÇ Segment PID
- * aFstExtRID  - [IN] Æ®·£Àè¼ÇÀÌ »ç¿ëÇÑ Ã¹¹øÂ° ExtRID
- * aLstExtRID  - [IN] Æ®·£Àè¼ÇÀÌ »ç¿ëÇÑ ¸¶Áö¸· ExtRID
- * aCSCNorASCN - [IN] ¼³Á¤ÇÒ CommitSCN È¤Àº AbortSCN(GSCN)
+ * aStatistics - [IN] í†µê³„ì •ë³´
+ * aSpaceID    - [IN] í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ID
+ * aSegPID     - [IN] UDSì˜ Segment PID
+ * aFstExtRID  - [IN] íŠ¸ëœì­ì…˜ì´ ì‚¬ìš©í•œ ì²«ë²ˆì§¸ ExtRID
+ * aLstExtRID  - [IN] íŠ¸ëœì­ì…˜ì´ ì‚¬ìš©í•œ ë§ˆì§€ë§‰ ExtRID
+ * aCSCNorASCN - [IN] ì„¤ì •í•  CommitSCN í˜¹ì€ AbortSCN(GSCN)
  *
  ***********************************************************************/
 IDE_RC sdcUndoSegment::markSCN4ReCycle( idvSQL   * aStatistics,
@@ -2293,7 +2293,7 @@ IDE_RC sdcUndoSegment::markSCN4ReCycle( idvSQL   * aStatistics,
  
 /* BUG-31055 Can not reuse undo pages immediately after it is used to 
  * aborted transaction 
- * Áï½Ã ÀçÈ°¿ë ÇÒ ¼ö ÀÖµµ·Ï, EDµéÀ» ShrinkÇÑ´Ù. */
+ * ì¦‰ì‹œ ì¬í™œìš© í•  ìˆ˜ ìˆë„ë¡, EDë“¤ì„ Shrinkí•œë‹¤. */
 IDE_RC sdcUndoSegment::shrinkExts( idvSQL            * aStatistics,
                                    sdrMtxStartInfo   * aStartInfo,
                                    scSpaceID           aSpaceID,
@@ -2328,12 +2328,12 @@ IDE_RC sdcUndoSegment::shrinkExts( idvSQL            * aStatistics,
     return IDE_FAILURE;
 }
 
-/* TASK-4007 [SM]PBT¸¦ À§ÇÑ ±â´É Ãß°¡
- * Page¿¡¼­ Undo Rec¸¦ DumpÇÏ¿© º¸¿©ÁØ´Ù.
+/* TASK-4007 [SM]PBTë¥¼ ìœ„í•œ ê¸°ëŠ¥ ì¶”ê°€
+ * Pageì—ì„œ Undo Recë¥¼ Dumpí•˜ì—¬ ë³´ì—¬ì¤€ë‹¤.
  *
- * BUG-28379 [SD] sdnbBTree::dumpNodeHdr( UChar *aPage ) ³»¿¡¼­
- * local ArrayÀÇ ptr¸¦ ¹İÈ¯ÇÏ°í ÀÖ½À´Ï´Ù.
- * Local Array´ë½Å OutBuf¸¦ ¹Ş¾Æ ¸®ÅÏÇÏµµ·Ï ¼öÁ¤ÇÕ´Ï´Ù. */
+ * BUG-28379 [SD] sdnbBTree::dumpNodeHdr( UChar *aPage ) ë‚´ì—ì„œ
+ * local Arrayì˜ ptrë¥¼ ë°˜í™˜í•˜ê³  ìˆìŠµë‹ˆë‹¤.
+ * Local ArrayëŒ€ì‹  OutBufë¥¼ ë°›ì•„ ë¦¬í„´í•˜ë„ë¡ ìˆ˜ì •í•©ë‹ˆë‹¤. */
 
 IDE_RC sdcUndoSegment::dump( UChar *aPage ,
                              SChar *aOutBuf ,
@@ -2361,7 +2361,7 @@ IDE_RC sdcUndoSegment::dump( UChar *aPage ,
                      aOutSize,
                      "----------- Undo Page Begin ----------\n" );
 
-    // Undo Record´Â 1¹øºÎÅÍ ½ÃÀÛµÊ
+    // Undo RecordëŠ” 1ë²ˆë¶€í„° ì‹œì‘ë¨
     for( sSlotNum=1; sSlotNum < sSlotCount; sSlotNum++ )
     {
         sSlotEntry = SDP_GET_SLOT_ENTRY(sSlotDirPtr, sSlotNum);
@@ -2425,14 +2425,14 @@ IDE_RC sdcUndoSegment::dump( UChar *aPage ,
 
 /***********************************************************************
  *
- * Description : Undo Record Size ¹İÈ¯
+ * Description : Undo Record Size ë°˜í™˜
  *
- * Undo Record Çì´õ¿¡´Â Undo Record ÀÚ½ÅÀÇ ±æÀÌ¸¦ ÀúÀåÇÏÁö ¾Ê´Â´Ù.
- * ¿Ö³ÄÇÏ¸é SlotEntry·Î °è»êÀÌ °¡´ÉÇÏ±â ¶§¹®ÀÌ´Ù.
- * °è»ê½ÄÀº ÀÚ½ÅÀÇ SlotEntry¿¡ ÀúÀåµÈ ¿ÀÇÁ¼Â - ÀÌÀü SlotEntry¿¡ ÀúÀåµÈ ¿ÀÇÁ¼Â
- * ÀÌ´Ù.
+ * Undo Record í—¤ë”ì—ëŠ” Undo Record ìì‹ ì˜ ê¸¸ì´ë¥¼ ì €ì¥í•˜ì§€ ì•ŠëŠ”ë‹¤.
+ * ì™œëƒí•˜ë©´ SlotEntryë¡œ ê³„ì‚°ì´ ê°€ëŠ¥í•˜ê¸° ë•Œë¬¸ì´ë‹¤.
+ * ê³„ì‚°ì‹ì€ ìì‹ ì˜ SlotEntryì— ì €ì¥ëœ ì˜¤í”„ì…‹ - ì´ì „ SlotEntryì— ì €ì¥ëœ ì˜¤í”„ì…‹
+ * ì´ë‹¤.
  *
- * aUndoRecHdr - [IN] Undo Record Çì´õ Æ÷ÀÎÅÍ
+ * aUndoRecHdr - [IN] Undo Record í—¤ë” í¬ì¸í„°
  *
  ***********************************************************************/
 UShort  sdcUndoSegment::getUndoRecSize( UChar    * aSlotDirStartPtr,
@@ -2582,7 +2582,7 @@ IDE_RC sdcUndoSegment::build4RecordPerfV( UInt                  aSegSeq,
 
         sPhyPageHdr = sdpPhyPage::getHdr( sCurPagePtr );
 
-        /* TypeÀÌ ´Ù¸£¸é ExtDirÀÌ ÀçÈ°¿ëµÈ°ÍÀÏ¼öµµ ÀÖ´Ù */
+        /* Typeì´ ë‹¤ë¥´ë©´ ExtDirì´ ì¬í™œìš©ëœê²ƒì¼ìˆ˜ë„ ìˆë‹¤ */
         IDE_TEST_CONT( sPhyPageHdr->mPageType != SDP_PAGE_UNDO, CONT_NO_UNDO_PAGE );
 
         sSlotDirPtr = sdpPhyPage::getSlotDirStartPtr((UChar*)sPhyPageHdr);
@@ -2663,14 +2663,14 @@ IDE_RC sdcUndoSegment::build4RecordPerfV( UInt                  aSegSeq,
 
 /***********************************************************************
  *
- * Description : ±âÁ¸ÀÇ ÇÒ´ç Á¤º¸·Î º¹±¸
+ * Description : ê¸°ì¡´ì˜ í• ë‹¹ ì •ë³´ë¡œ ë³µêµ¬
  *
- *               MtxRollbackÀ» ÇÒ °æ¿ì, DiskPage´Â º¹±¸µÇÁö¸¸ Runtime
- *               Á¤º¸´Â º¹±¸µÇÁö ¾Ê´Â´Ù. µû¶ó¼­ º¹±¸ÇÏ±â À§ÇØ
- *               °ªÀ» ÀúÀåÇØµÎ°í, MtxRollback½Ã º¹±¸ÇÑ´Ù.
+ *               MtxRollbackì„ í•  ê²½ìš°, DiskPageëŠ” ë³µêµ¬ë˜ì§€ë§Œ Runtime
+ *               ì •ë³´ëŠ” ë³µêµ¬ë˜ì§€ ì•ŠëŠ”ë‹¤. ë”°ë¼ì„œ ë³µêµ¬í•˜ê¸° ìœ„í•´
+ *               ê°’ì„ ì €ì¥í•´ë‘ê³ , MtxRollbackì‹œ ë³µêµ¬í•œë‹¤.
  *
- * [IN] aIsCommitJob         - ÀÌ°ÍÀÌ CommitÀ» À§ÇÑ ÀÛ¾÷ÀÌ³Ä, ¾Æ´Ï³Ä
- * [IN] aUndoSegment         - AbortÇÏ·Á´Â UndoSegment
+ * [IN] aIsCommitJob         - ì´ê²ƒì´ Commitì„ ìœ„í•œ ì‘ì—…ì´ëƒ, ì•„ë‹ˆëƒ
+ * [IN] aUndoSegment         - Abortí•˜ë ¤ëŠ” UndoSegment
  *
  **********************************************************************/
 IDE_RC sdcUndoSegment::abortCurAllocInfo( void * aUndoSegment )

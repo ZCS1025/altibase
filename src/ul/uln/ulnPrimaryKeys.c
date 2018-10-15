@@ -80,7 +80,7 @@ static ACI_RC ulnPKCreateQueryString(ulnFnContext *aFnContext,
     if( aSchemaName != NULL )
     {
         // bug-25905: conn nls not applied to client lang module
-        // aFnContext ÀÎÀÚ Ãß°¡
+        // aFnContext ì¸ìž ì¶”ê°€
         sSize = ulnAppendFormatParameter(aFnContext,
                                          aQueryStringBuffer,
                                          aQueryStringBufferSize,
@@ -94,7 +94,7 @@ static ACI_RC ulnPKCreateQueryString(ulnFnContext *aFnContext,
 
     /* compulsary TableName parameter append */
     // bug-25905: conn nls not applied to client lang module
-    // aFnContext ÀÎÀÚ Ãß°¡
+    // aFnContext ì¸ìž ì¶”ê°€
     sSize = ulnAppendFormatParameter(aFnContext,
                                      aQueryStringBuffer,
                                      aQueryStringBufferSize,
@@ -161,7 +161,7 @@ SQLRETURN ulnPrimaryKeys(ulnStmt      *aStmt,
     ULN_FLAG_UP(sNeedExit);
 
     /*
-     * BUGBUG : Argument validity checking À» ¼öÇàÇØ¾ß ÇÑ´Ù.
+     * BUGBUG : Argument validity checking ì„ ìˆ˜í–‰í•´ì•¼ í•œë‹¤.
      */
 
     ACI_TEST(ulnPKCreateQueryString(&sFnContext,
@@ -173,7 +173,7 @@ SQLRETURN ulnPrimaryKeys(ulnStmt      *aStmt,
                                     ACI_SIZEOF(sQueryString)) != ACI_SUCCESS);
 
     /*
-     * Protocol Context ÃÊ±âÈ­
+     * Protocol Context ì´ˆê¸°í™”
      */
     //fix BUG-17722
     ACI_TEST(ulnInitializeProtocolContext(&sFnContext,
@@ -203,7 +203,7 @@ SQLRETURN ulnPrimaryKeys(ulnStmt      *aStmt,
                                      aStmt->mParentDbc->mConnTimeoutValue) != ACI_SUCCESS);
 
     /*
-     * Protocol Context Á¤¸®
+     * Protocol Context ì •ë¦¬
      */
     ULN_FLAG_DOWN(sNeedFinPtContext);
     //fix BUG-17722

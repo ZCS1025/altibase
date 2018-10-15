@@ -20,9 +20,9 @@
  *
  * Description :
  *
- * ¿ë¾î¼³¸í :
+ * ìš©ì–´ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  * 
  **********************************************************************/
 
@@ -46,8 +46,8 @@
 # define STNMR_SLOT_MAX             (64)
 # define STNMR_SLOT_MIN             (0)
 /* BUG-28319
-   Memory R-TreeÀÇ Iterator¿¡¼­ ³»ºÎ mStackÀÌ Overflow³¯ ¼ö ÀÖ½À´Ï´Ù.
-   STNMR_STACK_DEPTH¸¦ 256¿¡¼­ 2048·Î º¯°æÇÕ´Ï´Ù. */
+   Memory R-Treeì˜ Iteratorì—ì„œ ë‚´ë¶€ mStackì´ Overflowë‚  ìˆ˜ ìˆìŠµë‹ˆë‹¤.
+   STNMR_STACK_DEPTHë¥¼ 256ì—ì„œ 2048ë¡œ ë³€ê²½í•©ë‹ˆë‹¤. */
 # define STNMR_STACK_DEPTH          (2048)
 # define STNMR_NODE_TYPE_MASK       (0x00000001)
 # define STNMR_NODE_TYPE_INTERNAL   (0x00000000)
@@ -170,7 +170,7 @@ typedef struct stnmrHeader
     SInt         mDepth;
     stdMBR       mTreeMBR;
 
-    // BUG-18604 STMT¹× AGER·Î ÀÎÇÑ Åë°èÁ¤º¸ ±¸Ãà
+    // BUG-18604 STMTë° AGERë¡œ ì¸í•œ í†µê³„ì •ë³´ êµ¬ì¶•
     ULong          mKeyCount;
     stnmrStatistic mStmtStat;
     stnmrStatistic mAgerStat;
@@ -195,14 +195,14 @@ typedef struct stnmrIterator
     smSCN       mInfinite;
     void*       mTrans;
     void*       mTable;
-    SChar*      mCurRecPtr;  // MRDB scan module¿¡¼­¸¸ Á¤ÀÇÇØ¼­ ¾²µµ·Ï ¼öÁ¤?
+    SChar*      mCurRecPtr;  // MRDB scan moduleì—ì„œë§Œ ì •ì˜í•´ì„œ ì“°ë„ë¡ ìˆ˜ì •?
     SChar*      mLstFetchRecPtr;
     scGRID      mRowGRID;
     smTID       mTid;
     UInt        mFlag;
 
     smiCursorProperties  * mProperties;
-    /* smiIterator °øÅë º¯¼ö ³¡ */
+    /* smiIterator ê³µí†µ ë³€ìˆ˜ ë */
 
     idBool             mLeast;
     idBool             mHighest;
@@ -235,7 +235,7 @@ typedef struct stnmrHeader4PerfV
 } stnmrHeader4PerfV;
 
 //-------------------------------
-// X$MEM_RTREE_STAT ÀÇ ±¸Á¶
+// X$MEM_RTREE_STAT ì˜ êµ¬ì¡°
 //-------------------------------
 typedef struct stnmrStat4PerfV
 {
@@ -249,7 +249,7 @@ typedef struct stnmrStat4PerfV
 } stnmrStat4PerfV;
 
 //-------------------------------
-// X$MEM_RTREE_NODEPOOL ÀÇ ±¸Á¶
+// X$MEM_RTREE_NODEPOOL ì˜ êµ¬ì¡°
 //-------------------------------
 typedef struct stnmrNodePool4PerfV
 {

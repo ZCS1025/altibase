@@ -180,7 +180,7 @@ void rpcHBT::stop()
         IDE_CALLBACK_FATAL("[Repl HBT] Thread join error");
     }
 
-    // ¸ðµç Å¬¶óÀÌ¾ðÆ®°¡ Á¾·áÇØ¾ß µÊ.
+    // ëª¨ë“  í´ë¼ì´ì–¸íŠ¸ê°€ ì¢…ë£Œí•´ì•¼ ë¨.
     IDE_DASSERT( IDU_LIST_IS_EMPTY( &mHostRscList ) == ID_TRUE );
 
     if ( IDU_LIST_IS_EMPTY( &mHostRscList ) != ID_TRUE )
@@ -273,13 +273,13 @@ void rpcHBT::run()
 
         sRC = mCond.timedwait(&mMutex, &checkTime, IDU_IGNORE_TIMEDOUT);
         /* ------------------------------------------------
-         *  À§ÀÇ °á°ú´Â µÎ°¡ÁöÀÇ µ¿ÀÛ¿¡ ÀÇÇØ °áÁ¤
-         *  1. timeout »óÈ²
-         *     ÀÌ¶§ err = -1, errno = ETIME
-         *  2. shutdown½Ã signalÀÌ ³¯¾Æ¿Â »óÈ²
-         *     ÀÌ¶§ err = 0
+         *  ìœ„ì˜ ê²°ê³¼ëŠ” ë‘ê°€ì§€ì˜ ë™ìž‘ì— ì˜í•´ ê²°ì •
+         *  1. timeout ìƒí™©
+         *     ì´ë•Œ err = -1, errno = ETIME
+         *  2. shutdownì‹œ signalì´ ë‚ ì•„ì˜¨ ìƒí™©
+         *     ì´ë•Œ err = 0
          *
-         * À§ÀÇ µÎ°æ¿ì°¡ ¾Æ´Ï¶ó¸é ¿¡·¯ÀÓ.
+         * ìœ„ì˜ ë‘ê²½ìš°ê°€ ì•„ë‹ˆë¼ë©´ ì—ëŸ¬ìž„.
          * ----------------------------------------------*/
         if (sRC != IDE_SUCCESS)
         {

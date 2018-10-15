@@ -41,7 +41,7 @@ static IDE_RC mtfPKCS7UNPADEstimate( mtcNode*     aNode,
 mtfModule mtfPKCS7UNPAD = {
     1|MTC_NODE_OPERATOR_FUNCTION,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (∫Ò±≥ ø¨ªÍ¿⁄∞° æ∆¥‘)
+    1.0,  // default selectivity (ÎπÑÍµê Ïó∞ÏÇ∞ÏûêÍ∞Ä ÏïÑÎãò)
     mtfPKCS7UNPADFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -93,7 +93,7 @@ IDE_RC mtfPKCS7UNPADEstimate( mtcNode*     aNode,
                                         sModules )
               != IDE_SUCCESS );
 
-    /* ∞·∞˙∏¶ ¿˙¿Â«‘ */
+    /* Í≤∞Í≥ºÎ•º Ï†ÄÏû•Ìï® */
     IDE_TEST( mtc::initializeColumn( aStack[0].column,
                                      &mtdVarchar,
                                      1,

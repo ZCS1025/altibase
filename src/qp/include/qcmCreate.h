@@ -84,10 +84,10 @@ private:
         qcStatement * aStatement,
         SChar       * aText );
 
-    // Meta TableÀÇ SM Flag¸¦ ÃÊ±âÈ­ ÇÑ´Ù.
+    // Meta Tableì˜ SM Flagë¥¼ ì´ˆê¸°í™” í•œë‹¤.
     static IDE_RC initMetaTableFlag( smiStatement     * aSmiStmt );
 
-    // Meta TableÀÇ Log Flush Flag¸¦ ²ö´Ù.
+    // Meta Tableì˜ Log Flush Flagë¥¼ ëˆë‹¤.
     static IDE_RC turnOffMetaTableLogFlushFlag( smiStatement * aSmiStmt );
 
     // BUG-45571 Upgrade meta for authid clause of PSM

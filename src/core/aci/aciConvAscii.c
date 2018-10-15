@@ -102,7 +102,7 @@ ACP_EXPORT acp_sint32_t aciConvCopyAscii( void    * aSrc,
 /***********************************************************************
  *
  * Description :
- *      ASCII ���� �״�� �̿��� �� �ִ� ��쿡 ����ϴ� �Լ��̴�.
+ *      ASCII 값을 그대로 이용할 수 있는 경우에 사용하는 함수이다.
  *
  * Implementation :
  *

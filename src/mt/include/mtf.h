@@ -85,11 +85,11 @@ private:
 
     static IDE_RC finalizeComparisonTable( void );
 
-    // Conversion Cost¸¦ º¯°æ ¹× ¿øº¹
+    // Conversion Costë¥¼ ë³€ê²½ ë° ì›ë³µ
     static IDE_RC changeConvertCost( void );
     static IDE_RC restoreConvertCost( void );
 
-    // ¿øº¹ÇÏ±â À§ÇØ ÀúÀåÇÏ´Â °ø°£
+    // ì›ë³µí•˜ê¸° ìœ„í•´ ì €ì¥í•˜ëŠ” ê³µê°„
     static ULong  saveCost[3][3];
     static const mtdModule*** comparisonTable;
 
@@ -197,28 +197,28 @@ public:
                                 const void*       aName,
                                 UInt              aLength );
 
-    // To Fix BUG-12306 Filter°¡ ÇÊ¿äÇÑÁö °Ë»ç
+    // To Fix BUG-12306 Filterê°€ í•„ìš”í•œì§€ ê²€ì‚¬
     static IDE_RC checkNeedFilter( mtcTemplate * aTmplate,
                                    mtcNode     * aNode,
                                    idBool      * aNeedFilter );
 
-    // PROJ-1075 module->no¿¡ ´ëÀÀµÇ´Â comparisonModuleÀ» ¹İÈ¯.
+    // PROJ-1075 module->noì— ëŒ€ì‘ë˜ëŠ” comparisonModuleì„ ë°˜í™˜.
     static IDE_RC getComparisonModule( const mtdModule** aModule,
                                        UInt              aNo1,
                                        UInt              aNo2 );
 
-    // PROJ-1075 module->no¿¡ ´ëÀÀµÇ´Â mtfSubModuleÀ» ¹İÈ¯.
+    // PROJ-1075 module->noì— ëŒ€ì‘ë˜ëŠ” mtfSubModuleì„ ë°˜í™˜.
     static IDE_RC getSubModule1Arg( const mtfSubModule** aModule,
                                     mtfSubModule**       aTable,
                                     UInt aNo );
 
-    // PROJ-1075 2°³ÀÇ module->no¿¡ ´ëÀÀµÇ´Â mtfSubModuleÀ» ¹İÈ¯.
+    // PROJ-1075 2ê°œì˜ module->noì— ëŒ€ì‘ë˜ëŠ” mtfSubModuleì„ ë°˜í™˜.
     static IDE_RC getSubModule2Args( const mtfSubModule** aModule,
                                      mtfSubModule***      aTable,
                                      UInt                 aNo1,
                                      UInt                 aNo2 );
 
-    // BUG-15208, BUG-15212 µ¿Ä¡ ºñ±³°¡ °¡´ÉÇÑ Data TypeÀÎÁö °Ë»ç
+    // BUG-15208, BUG-15212 ë™ì¹˜ ë¹„êµê°€ ê°€ëŠ¥í•œ Data Typeì¸ì§€ ê²€ì‚¬
     static idBool isEquiValidType( const mtdModule * aModule );
     static idBool isGreaterLessValidType( const mtdModule * aModule );
 

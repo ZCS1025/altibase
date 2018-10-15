@@ -31,7 +31,7 @@
 PDL_Time_Value  dkpProtocolMgr::mTV1Sec;
 
 /**********************************************************************
- * Description : Protocol manager component ¸¦ ÃÊ±âÈ­ÇØÁØ´Ù.
+ * Description : Protocol manager component ë¥¼ ì´ˆê¸°í™”í•´ì¤€ë‹¤.
  **********************************************************************/
 IDE_RC  dkpProtocolMgr::initializeStatic()
 {
@@ -41,7 +41,7 @@ IDE_RC  dkpProtocolMgr::initializeStatic()
 }
 
 /**********************************************************************
- * Description : Protocol manager component ¸¦ Á¤¸®ÇØÁØ´Ù.
+ * Description : Protocol manager component ë¥¼ ì •ë¦¬í•´ì¤€ë‹¤.
  **********************************************************************/
 IDE_RC  dkpProtocolMgr::finalizeStatic()
 {
@@ -55,7 +55,7 @@ UChar  dkpProtocolMgr::makeHeaderFlags( dksSession         * aSession,
 
     IDE_DASSERT( aSession != NULL );
 
-    // Ç×»ó Data SessionÀÌ¾î¾ß¸¸ ÇÑ´Ù.
+    // í•­ìƒ Data Sessionì´ì–´ì•¼ë§Œ í•œë‹¤.
     if ( aSession->mIsXA == ID_TRUE )
     {
         DKP_ADLP_PACKET_FLAGS_SET_XA( sHdrFlags );
@@ -78,14 +78,14 @@ UChar  dkpProtocolMgr::makeHeaderFlags( dksSession         * aSession,
 }
 
 /**********************************************************************
- * Description : ADLP protocol À» ÅëÇØ Àü¼ÛÇÒ ÆĞÅ¶ÀÇ cm block ¿¡
- *               ÀÔ·Â¹ŞÀº ÇÁ·ÎÅäÄİ common header ÀÇ °ªÀ» setting ÇØÁØ´Ù.
+ * Description : ADLP protocol ì„ í†µí•´ ì „ì†¡í•  íŒ¨í‚·ì˜ cm block ì—
+ *               ì…ë ¥ë°›ì€ í”„ë¡œí† ì½œ common header ì˜ ê°’ì„ setting í•´ì¤€ë‹¤.
  *
- * aSession         - [IN] Operation À» ¼öÇàÇÏ´Â ¼¼¼ÇÁ¤º¸
- * aOpID            - [IN] ¼öÇàÇÒ operation ÀÇ id
- * aParam           - [IN] ¼öÇàÇÒ operation °ú ÇÔ²² Àü´ŞµÇ´Â ÀÎÀÚ
- * aSessionID       - [IN] Operation À» ¼öÇàÇÏ´Â ¼¼¼ÇÀÇ id
- * aDataLength      - [IN] Operation °ú ÇÔ²² Àü´ŞµÇ´Â data ÀÇ ±æÀÌ(byte)
+ * aSession         - [IN] Operation ì„ ìˆ˜í–‰í•˜ëŠ” ì„¸ì…˜ì •ë³´
+ * aOpID            - [IN] ìˆ˜í–‰í•  operation ì˜ id
+ * aParam           - [IN] ìˆ˜í–‰í•  operation ê³¼ í•¨ê»˜ ì „ë‹¬ë˜ëŠ” ì¸ì
+ * aSessionID       - [IN] Operation ì„ ìˆ˜í–‰í•˜ëŠ” ì„¸ì…˜ì˜ id
+ * aDataLength      - [IN] Operation ê³¼ í•¨ê»˜ ì „ë‹¬ë˜ëŠ” data ì˜ ê¸¸ì´(byte)
  **********************************************************************/
 IDE_RC  dkpProtocolMgr::setProtocolHeader( dksSession   *aSession,
                                            UChar         aOpID,
@@ -126,13 +126,13 @@ IDE_RC  dkpProtocolMgr::setProtocolHeader( dksSession   *aSession,
 }
 
 /**********************************************************************
- * Description : Cm block À» ÇÏ³ª ¹Ş¾Æ¿Â´Ù. ³»ºÎÀûÀ¸·Î cmiRecv ¸¦ È£Ãâ.
+ * Description : Cm block ì„ í•˜ë‚˜ ë°›ì•„ì˜¨ë‹¤. ë‚´ë¶€ì ìœ¼ë¡œ cmiRecv ë¥¼ í˜¸ì¶œ.
  *
- * sProtocolContext - [IN] ¹Ş¾Æ¿Â cm block À» °®°í ÀÖÀ» cm protocol
- *                         ±¸Á¶Ã¼
- * aIsTimeOut       - [OUT] ÀÌ ÇÔ¼ö ¼öÇà½Ã ÀÎÀÚ·Î ÀÔ·Â¹ŞÀº timeout °ª
- *                          ÀÌ Áö³ªµµ·Ï cm block À» ¾ò¾î¿ÀÁö ¸øÇÑ °æ¿ì
- *                          TRUE ·Î ¼³Á¤µÈ´Ù.
+ * sProtocolContext - [IN] ë°›ì•„ì˜¨ cm block ì„ ê°–ê³  ìˆì„ cm protocol
+ *                         êµ¬ì¡°ì²´
+ * aIsTimeOut       - [OUT] ì´ í•¨ìˆ˜ ìˆ˜í–‰ì‹œ ì¸ìë¡œ ì…ë ¥ë°›ì€ timeout ê°’
+ *                          ì´ ì§€ë‚˜ë„ë¡ cm block ì„ ì–»ì–´ì˜¤ì§€ ëª»í•œ ê²½ìš°
+ *                          TRUE ë¡œ ì„¤ì •ëœë‹¤.
  *
  **********************************************************************/
 IDE_RC  dkpProtocolMgr::getCmBlock( dksSession          *aSession,
@@ -166,14 +166,14 @@ IDE_RC  dkpProtocolMgr::getCmBlock( dksSession          *aSession,
 }
 
 /************************************************************************
- * Description : ÀÔ·Â¹ŞÀº protocol context °¡ °®°í ÀÖ´Â cm read block
- *               À¸·ÎºÎÅÍ ADLP protocol ÀÇ common header ¸¦ ÀĞ¾î ±× ³»¿ëÀÇ
- *               Å¸´ç¼ºÀ» °ËÁõÇÏ°í ´õ ÀĞ¾î¾ß ÇÒ µ¥ÀÌÅÍÀÇ ±æÀÌ¸¦ ¾ò¾î¿Â´Ù.
+ * Description : ì…ë ¥ë°›ì€ protocol context ê°€ ê°–ê³  ìˆëŠ” cm read block
+ *               ìœ¼ë¡œë¶€í„° ADLP protocol ì˜ common header ë¥¼ ì½ì–´ ê·¸ ë‚´ìš©ì˜
+ *               íƒ€ë‹¹ì„±ì„ ê²€ì¦í•˜ê³  ë” ì½ì–´ì•¼ í•  ë°ì´í„°ì˜ ê¸¸ì´ë¥¼ ì–»ì–´ì˜¨ë‹¤.
  *
  *
- * aContext         - [IN] Operation À» ¼öÇàÇÏ´Â ¼¼¼ÇÀÌ °®°í ÀÖ´Â CM
+ * aContext         - [IN] Operation ì„ ìˆ˜í–‰í•˜ëŠ” ì„¸ì…˜ì´ ê°–ê³  ìˆëŠ” CM
  *                         protocol context
- * aOperationId     - [IN] °Ë»çÇÏ·Á´Â operation ÀÇ id
+ * aOperationId     - [IN] ê²€ì‚¬í•˜ë ¤ëŠ” operation ì˜ id
  *
  ************************************************************************/
 IDE_RC  dkpProtocolMgr::analyzeCommonHeader( dksSession         *aSession,
@@ -234,12 +234,12 @@ IDE_RC  dkpProtocolMgr::analyzeCommonHeader( dksSession         *aSession,
 }
 
 /************************************************************************
- * Description : AltiLinker ÇÁ·Î¼¼½º¿¡ DK ÀÇ linker control session °ú
- *               1:1 ¸ÅÇÎµÇ´Â session À» »ı¼ºÇÏµµ·Ï ÇÏ´Â operation.
+ * Description : AltiLinker í”„ë¡œì„¸ìŠ¤ì— DK ì˜ linker control session ê³¼
+ *               1:1 ë§¤í•‘ë˜ëŠ” session ì„ ìƒì„±í•˜ë„ë¡ í•˜ëŠ” operation.
  *
- *  aSession        - [IN] Operation À» ¼öÇàÇÏ´Â ¼¼¼ÇÁ¤º¸
- *  aProdInfoStr    - [IN] Altibase server package Á¤º¸
- *  aDbCharSet      - [IN] Altibase server ÀÇ DB character set
+ *  aSession        - [IN] Operation ì„ ìˆ˜í–‰í•˜ëŠ” ì„¸ì…˜ì •ë³´
+ *  aProdInfoStr    - [IN] Altibase server package ì •ë³´
+ *  aDbCharSet      - [IN] Altibase server ì˜ DB character set
  *
  ************************************************************************/
 IDE_RC  dkpProtocolMgr::sendCreateLinkerCtrlSession( dksSession *aSession,
@@ -745,12 +745,12 @@ IDE_RC  dkpProtocolMgr::sendCreateLinkerCtrlSession( dksSession *aSession,
 }
 
 /************************************************************************
- * Description : sendCreateLinkerCtrlSession operation ÀÇ °á°ú¸¦ ¹Ş´Â´Ù.
+ * Description : sendCreateLinkerCtrlSession operation ì˜ ê²°ê³¼ë¥¼ ë°›ëŠ”ë‹¤.
  *
- *  aSession        - [IN] Operation À» ¼öÇàÇÏ´Â ¼¼¼ÇÁ¤º¸
- *  aResultCode     - [OUT] Operation ÀÇ ¼öÇà °á°ú·Î ¾ò´Â result code
- *  aProtocolVer    - [IN] AltiLinker ÇÁ·Î¼¼½º¿¡ Àû¿ëµÈ ÇÁ·ÎÅäÄİ ¹öÀü
- *  aTimeoutSec     - [IN] cm block À» ¹ø¼Û¹Ş±â À§ÇÑ ´ë±â½Ã°£
+ *  aSession        - [IN] Operation ì„ ìˆ˜í–‰í•˜ëŠ” ì„¸ì…˜ì •ë³´
+ *  aResultCode     - [OUT] Operation ì˜ ìˆ˜í–‰ ê²°ê³¼ë¡œ ì–»ëŠ” result code
+ *  aProtocolVer    - [IN] AltiLinker í”„ë¡œì„¸ìŠ¤ì— ì ìš©ëœ í”„ë¡œí† ì½œ ë²„ì „
+ *  aTimeoutSec     - [IN] cm block ì„ ë²ˆì†¡ë°›ê¸° ìœ„í•œ ëŒ€ê¸°ì‹œê°„
  *
  ************************************************************************/
 IDE_RC  dkpProtocolMgr::recvCreateLinkerCtrlSessionResult( dksSession        *aSession,
@@ -785,7 +785,7 @@ IDE_RC  dkpProtocolMgr::recvCreateLinkerCtrlSessionResult( dksSession        *aS
                                    &sDataLen )
               != IDE_SUCCESS );
 
-    // 4 ¹ÙÀÌÆ® ÀÌ»ó ¾Æ´Ñ°¡??
+    // 4 ë°”ì´íŠ¸ ì´ìƒ ì•„ë‹Œê°€??
     if ( sDataLen >= 8 )
     {
         /* Get ADLP protocol version */
@@ -857,11 +857,11 @@ IDE_RC  dkpProtocolMgr::recvCreateLinkerCtrlSessionResult( dksSession        *aS
 }
 
 /************************************************************************
- * Description : AltiLinker ÇÁ·Î¼¼½º¿¡ ÀÔ·Â¹Ş´Â DK ÀÇ linker data session
- *               °ú 1:1 ¸ÅÇÎµÇ´Â session À» »ı¼ºÇÏµµ·Ï ÇÏ´Â operation.
+ * Description : AltiLinker í”„ë¡œì„¸ìŠ¤ì— ì…ë ¥ë°›ëŠ” DK ì˜ linker data session
+ *               ê³¼ 1:1 ë§¤í•‘ë˜ëŠ” session ì„ ìƒì„±í•˜ë„ë¡ í•˜ëŠ” operation.
  *
- *  aSession    - [IN] Operation À» ¼öÇàÇÏ´Â ¼¼¼ÇÁ¤º¸
- *  aSessionId  - [IN] Destroy ÇÏ·Á´Â ¼¼¼ÇÀÇ id
+ *  aSession    - [IN] Operation ì„ ìˆ˜í–‰í•˜ëŠ” ì„¸ì…˜ì •ë³´
+ *  aSessionId  - [IN] Destroy í•˜ë ¤ëŠ” ì„¸ì…˜ì˜ id
  *
  ************************************************************************/
 IDE_RC  dkpProtocolMgr::sendCreateLinkerDataSession( dksSession *aSession,
@@ -899,11 +899,11 @@ IDE_RC  dkpProtocolMgr::sendCreateLinkerDataSession( dksSession *aSession,
 }
 
 /************************************************************************
- * Description : sendCreateLinkerDataSession operation ÀÇ °á°ú¸¦ ¹Ş´Â´Ù.
+ * Description : sendCreateLinkerDataSession operation ì˜ ê²°ê³¼ë¥¼ ë°›ëŠ”ë‹¤.
  *
- *  aSession    - [IN] Operation À» ¼öÇàÇÏ´Â ¼¼¼ÇÁ¤º¸
- *  aSessionId  - [IN] AltiLinker ÇÁ·Î¼¼½º¿¡ »ı¼ºÇÒ ¼¼¼ÇÀÇ id
- *  aResultCode - [OUT] Operation ÀÇ ¼öÇà °á°ú·Î ¾ò´Â result code
+ *  aSession    - [IN] Operation ì„ ìˆ˜í–‰í•˜ëŠ” ì„¸ì…˜ì •ë³´
+ *  aSessionId  - [IN] AltiLinker í”„ë¡œì„¸ìŠ¤ì— ìƒì„±í•  ì„¸ì…˜ì˜ id
+ *  aResultCode - [OUT] Operation ì˜ ìˆ˜í–‰ ê²°ê³¼ë¡œ ì–»ëŠ” result code
  *  aTimeoutSec - [IN] Operation timeout value
  *
  ************************************************************************/
@@ -957,11 +957,11 @@ IDE_RC  dkpProtocolMgr::recvCreateLinkerDataSessionResult( dksSession *aSession,
 }
 
 /************************************************************************
- * Description : AltiLinker ÇÁ·Î¼¼½º¿¡ ÀÔ·Â¹Ş´Â DK ÀÇ linker data session
- *               °ú 1:1 ¸ÅÇÎµÇ´Â session À» »ı¼ºÇÏµµ·Ï ÇÏ´Â operation.
+ * Description : AltiLinker í”„ë¡œì„¸ìŠ¤ì— ì…ë ¥ë°›ëŠ” DK ì˜ linker data session
+ *               ê³¼ 1:1 ë§¤í•‘ë˜ëŠ” session ì„ ìƒì„±í•˜ë„ë¡ í•˜ëŠ” operation.
  *
- *  aSession    - [IN] Operation À» ¼öÇàÇÏ´Â ¼¼¼ÇÁ¤º¸
- *  aSessionId  - [IN] Destroy ÇÏ·Á´Â ¼¼¼ÇÀÇ id
+ *  aSession    - [IN] Operation ì„ ìˆ˜í–‰í•˜ëŠ” ì„¸ì…˜ì •ë³´
+ *  aSessionId  - [IN] Destroy í•˜ë ¤ëŠ” ì„¸ì…˜ì˜ id
  *
  ************************************************************************/
 IDE_RC  dkpProtocolMgr::sendDestroyLinkerDataSession( dksSession    *aSession,
@@ -999,11 +999,11 @@ IDE_RC  dkpProtocolMgr::sendDestroyLinkerDataSession( dksSession    *aSession,
 }
 
 /************************************************************************
- * Description : sendDestroyLinkerDataSession operation ÀÇ °á°ú¸¦ ¹Ş´Â´Ù.
+ * Description : sendDestroyLinkerDataSession operation ì˜ ê²°ê³¼ë¥¼ ë°›ëŠ”ë‹¤.
  *
- *  aSession    - [IN] Operation À» ¼öÇàÇÏ´Â ¼¼¼ÇÁ¤º¸
- *  aSessionId  - [IN] Destroy ÇÏ·Á´Â ¼¼¼ÇÀÇ id
- *  aResultCode - [OUT] Operation ÀÇ ¼öÇà °á°ú·Î ¾ò´Â result code
+ *  aSession    - [IN] Operation ì„ ìˆ˜í–‰í•˜ëŠ” ì„¸ì…˜ì •ë³´
+ *  aSessionId  - [IN] Destroy í•˜ë ¤ëŠ” ì„¸ì…˜ì˜ id
+ *  aResultCode - [OUT] Operation ì˜ ìˆ˜í–‰ ê²°ê³¼ë¡œ ì–»ëŠ” result code
  *  aTimeoutSec - [IN] Operation timeout value
  *
  ************************************************************************/
@@ -1057,9 +1057,9 @@ IDE_RC  dkpProtocolMgr::recvDestroyLinkerDataSessionResult( dksSession *aSession
 }
 
 /************************************************************************
- * Description : AltiLinker ÇÁ·Î¼¼½ºÀÇ ÇöÀç »óÅÂÁ¤º¸¸¦ ¿äÃ»ÇÑ´Ù.
+ * Description : AltiLinker í”„ë¡œì„¸ìŠ¤ì˜ í˜„ì¬ ìƒíƒœì •ë³´ë¥¼ ìš”ì²­í•œë‹¤.
  *
- * aSession         - [IN] Operation À» ¼öÇàÇÏ´Â ¼¼¼ÇÁ¤º¸
+ * aSession         - [IN] Operation ì„ ìˆ˜í–‰í•˜ëŠ” ì„¸ì…˜ì •ë³´
  ************************************************************************/
 IDE_RC  dkpProtocolMgr::sendRequestLinkerStatus( dksSession  *aSession )
 {
@@ -1085,12 +1085,12 @@ IDE_RC  dkpProtocolMgr::sendRequestLinkerStatus( dksSession  *aSession )
 }
 
 /************************************************************************
- * Description : sendRequestLinkerStatus operation ÀÇ °á°ú¸¦ ¹Ş´Â´Ù.
+ * Description : sendRequestLinkerStatus operation ì˜ ê²°ê³¼ë¥¼ ë°›ëŠ”ë‹¤.
  *
- * aSession         - [IN] Operation À» ¼öÇàÇÏ´Â ¼¼¼ÇÁ¤º¸
- * aResultCode      - [OUT] Operation ÀÇ ¼öÇà °á°ú·Î ¾ò´Â result code
- * aLinkerStatus    - [OUT] AltiLinker process ÀÇ »óÅÂÁ¤º¸
- * aTimeoutSec      - [IN] CM block ÀÇ ÀĞ±â timeout °ª
+ * aSession         - [IN] Operation ì„ ìˆ˜í–‰í•˜ëŠ” ì„¸ì…˜ì •ë³´
+ * aResultCode      - [OUT] Operation ì˜ ìˆ˜í–‰ ê²°ê³¼ë¡œ ì–»ëŠ” result code
+ * aLinkerStatus    - [OUT] AltiLinker process ì˜ ìƒíƒœì •ë³´
+ * aTimeoutSec      - [IN] CM block ì˜ ì½ê¸° timeout ê°’
  ************************************************************************/
 IDE_RC  dkpProtocolMgr::recvRequestLinkerStatusResult( dksSession      *aSession,
                                                        UInt            *aResultCode,
@@ -1143,11 +1143,11 @@ IDE_RC  dkpProtocolMgr::recvRequestLinkerStatusResult( dksSession      *aSession
 }
 
 /************************************************************************
- * Description : V$DBLINK_ALTILINKER_INFO performance view ¸¦ ±¸¼ºÇÏ´Âµ¥
- *               ÇÊ¿äÇÑ Á¤º¸¸¦ AltiLinker ÇÁ·Î¼¼½º·ÎºÎÅÍ ¾ò±â À§ÇØ ¼öÇà
- *               ÇÏ´Â operation.
+ * Description : V$DBLINK_ALTILINKER_INFO performance view ë¥¼ êµ¬ì„±í•˜ëŠ”ë°
+ *               í•„ìš”í•œ ì •ë³´ë¥¼ AltiLinker í”„ë¡œì„¸ìŠ¤ë¡œë¶€í„° ì–»ê¸° ìœ„í•´ ìˆ˜í–‰
+ *               í•˜ëŠ” operation.
  *
- * aSession         - [IN] Operation À» ¼öÇàÇÏ´Â ¼¼¼ÇÁ¤º¸
+ * aSession         - [IN] Operation ì„ ìˆ˜í–‰í•˜ëŠ” ì„¸ì…˜ì •ë³´
  ************************************************************************/
 IDE_RC  dkpProtocolMgr::sendRequestDblinkAltiLnkerStatusPvInfo( dksSession *aSession )
 {
@@ -1173,34 +1173,34 @@ IDE_RC  dkpProtocolMgr::sendRequestDblinkAltiLnkerStatusPvInfo( dksSession *aSes
 }
 
 /************************************************************************
- * Description : sendRequestDblinkAltiLnkerStatusPvInfo operation ÀÇ
- *               °á°ú¸¦ ¹Ş´Â´Ù.
+ * Description : sendRequestDblinkAltiLnkerStatusPvInfo operation ì˜
+ *               ê²°ê³¼ë¥¼ ë°›ëŠ”ë‹¤.
  *
- *            ++ AltiLinker process ¿¡ ´ëÇÑ »óÅÂÁ¤º¸µé Áß ¾Æ·¡
- *               performance view ¿¡¼­ ¿ä±¸ÇÏ´Â Á¤º¸µéÀº ´ÙÀ½°ú °°´Ù.
+ *            ++ AltiLinker process ì— ëŒ€í•œ ìƒíƒœì •ë³´ë“¤ ì¤‘ ì•„ë˜
+ *               performance view ì—ì„œ ìš”êµ¬í•˜ëŠ” ì •ë³´ë“¤ì€ ë‹¤ìŒê³¼ ê°™ë‹¤.
  *
- *               1. AltiLinker ÇÁ·Î¼¼½ºÀÇ ÇöÀç »óÅÂ
- *               2. AltiLinker ÇÁ·Î¼¼½ºÀÇ start time
- *               3. ÇöÀç ¾ËÆ¼º£ÀÌ½º ¼­¹ö¿Í AltiLinker ÇÁ·Î¼¼½º°£ »ı¼ºµÈ
- *                  linker control session °ú linker data session ÀÇ °³¼ö
- *               4. AltiLinker ÇÁ·Î¼¼½º°¡ ÇöÀç remote node µé°ú ¸Î°í ÀÖ´Â
- *                  session ÀÇ °³¼ö
- *               5. AltiLinker ÇÁ·Î¼¼½º°¡ ÇöÀç »ç¿ëÇÏ°í ÀÖ´Â JVM memory
- *                  »ç¿ë·®
- *               6. AltiLinker ÇÁ·Î¼¼½º°¡ µ¹¾Æ°¡´Â JVM ÀÌ ÇÒ´ç°¡´ÉÇÑ memory ÀÇ
- *                  ÃÖ´ë Å©±â
+ *               1. AltiLinker í”„ë¡œì„¸ìŠ¤ì˜ í˜„ì¬ ìƒíƒœ
+ *               2. AltiLinker í”„ë¡œì„¸ìŠ¤ì˜ start time
+ *               3. í˜„ì¬ ì•Œí‹°ë² ì´ìŠ¤ ì„œë²„ì™€ AltiLinker í”„ë¡œì„¸ìŠ¤ê°„ ìƒì„±ëœ
+ *                  linker control session ê³¼ linker data session ì˜ ê°œìˆ˜
+ *               4. AltiLinker í”„ë¡œì„¸ìŠ¤ê°€ í˜„ì¬ remote node ë“¤ê³¼ ë§ºê³  ìˆëŠ”
+ *                  session ì˜ ê°œìˆ˜
+ *               5. AltiLinker í”„ë¡œì„¸ìŠ¤ê°€ í˜„ì¬ ì‚¬ìš©í•˜ê³  ìˆëŠ” JVM memory
+ *                  ì‚¬ìš©ëŸ‰
+ *               6. AltiLinker í”„ë¡œì„¸ìŠ¤ê°€ ëŒì•„ê°€ëŠ” JVM ì´ í• ë‹¹ê°€ëŠ¥í•œ memory ì˜
+ *                  ìµœëŒ€ í¬ê¸°
  *
- *               ÀÌÁß¿¡¼­ 1, 2, 3, 6 Á¤º¸µéÀº DK ¿¡¼­ ÀÌ¹Ì ¾Ë°í ÀÖ´Â
- *               Á¤º¸µéÀÌ³ª 4, 5¹ø¿¡ ÇØ´çÇÏ´Â Á¤º¸µéÀº Á¤º¸¸¦ ¿äÃ»ÇÑ
- *               ½ÃÁ¡¿¡ AltiLinker ÇÁ·Î¼¼½º·ÎºÎÅÍ ¾ò¾î¿ÍÇá ÇÑ´Ù.
- *               µû¶ó¼­ ÀÌ protocol operation Àº 4, 5¹ø Á¤º¸¸¦ ¾ò¾î¿À±â
- *               À§ÇÑ operation ÀÌ´Ù.
+ *               ì´ì¤‘ì—ì„œ 1, 2, 3, 6 ì •ë³´ë“¤ì€ DK ì—ì„œ ì´ë¯¸ ì•Œê³  ìˆëŠ”
+ *               ì •ë³´ë“¤ì´ë‚˜ 4, 5ë²ˆì— í•´ë‹¹í•˜ëŠ” ì •ë³´ë“¤ì€ ì •ë³´ë¥¼ ìš”ì²­í•œ
+ *               ì‹œì ì— AltiLinker í”„ë¡œì„¸ìŠ¤ë¡œë¶€í„° ì–»ì–´ì™€í– í•œë‹¤.
+ *               ë”°ë¼ì„œ ì´ protocol operation ì€ 4, 5ë²ˆ ì •ë³´ë¥¼ ì–»ì–´ì˜¤ê¸°
+ *               ìœ„í•œ operation ì´ë‹¤.
  *
- *  aSession         - [IN] Operation À» ¼öÇàÇÏ´Â ¼¼¼ÇÁ¤º¸
- *  aResultCode      - [OUT] Operation ÀÇ ¼öÇà °á°ú·Î ¾ò´Â result code
- *  aLinkerProcInfo  - [OUT] ÀÌ operation ÀÌ ¹İÈ¯ÇÒ AltiLinker ÇÁ·Î¼¼½º
- *                           Á¤º¸
- *  aTimeoutSec      - [IN] CM block ÀÇ ÀĞ±â timeout °ª
+ *  aSession         - [IN] Operation ì„ ìˆ˜í–‰í•˜ëŠ” ì„¸ì…˜ì •ë³´
+ *  aResultCode      - [OUT] Operation ì˜ ìˆ˜í–‰ ê²°ê³¼ë¡œ ì–»ëŠ” result code
+ *  aLinkerProcInfo  - [OUT] ì´ operation ì´ ë°˜í™˜í•  AltiLinker í”„ë¡œì„¸ìŠ¤
+ *                           ì •ë³´
+ *  aTimeoutSec      - [IN] CM block ì˜ ì½ê¸° timeout ê°’
  *
  ************************************************************************/
 IDE_RC  dkpProtocolMgr::recvRequestDblinkAltiLnkerStatusPvInfoResult( dksSession        *aSession,
@@ -1259,11 +1259,11 @@ IDE_RC  dkpProtocolMgr::recvRequestDblinkAltiLnkerStatusPvInfoResult( dksSession
 }
 
 /************************************************************************
- * Description : AltiLinker ÇÁ·Î¼¼½º¿¡ Á¾·á¸í·ÉÀ» ³»¸®±â Àü¿¡ AltiLinker
- *               ÇÁ·Î¼¼½º·Î ÇÏ¿©±İ Á¾·á¸¦ À§ÇÑ ÁØºñ¸¦ ¼öÇàÇÒ °ÍÀ» ¿äÃ»
- *               ÇÏ±â À§ÇØ ¼öÇàµÇ´Â operation.
+ * Description : AltiLinker í”„ë¡œì„¸ìŠ¤ì— ì¢…ë£Œëª…ë ¹ì„ ë‚´ë¦¬ê¸° ì „ì— AltiLinker
+ *               í”„ë¡œì„¸ìŠ¤ë¡œ í•˜ì—¬ê¸ˆ ì¢…ë£Œë¥¼ ìœ„í•œ ì¤€ë¹„ë¥¼ ìˆ˜í–‰í•  ê²ƒì„ ìš”ì²­
+ *               í•˜ê¸° ìœ„í•´ ìˆ˜í–‰ë˜ëŠ” operation.
  *
- * aSession         - [IN] Operation À» ¼öÇàÇÏ´Â ¼¼¼ÇÁ¤º¸
+ * aSession         - [IN] Operation ì„ ìˆ˜í–‰í•˜ëŠ” ì„¸ì…˜ì •ë³´
  ************************************************************************/
 IDE_RC  dkpProtocolMgr::sendPrepareLinkerShutdown( dksSession  *aSession )
 {
@@ -1289,13 +1289,13 @@ IDE_RC  dkpProtocolMgr::sendPrepareLinkerShutdown( dksSession  *aSession )
 }
 
 /************************************************************************
- * Description : sendPrepareLinkerShutdown operation ÀÇ °á°ú¸¦ ¹Ş´Â´Ù.
- *            ++ ¼öÇàÁßÀÎ remote transaction È¤Àº remote statement °¡
- *               Á¸ÀçÇÏ´Â °æ¿ì aResultCode ´Â DKP_RC_BUSY ·Î ¼³Á¤µÈ´Ù.
+ * Description : sendPrepareLinkerShutdown operation ì˜ ê²°ê³¼ë¥¼ ë°›ëŠ”ë‹¤.
+ *            ++ ìˆ˜í–‰ì¤‘ì¸ remote transaction í˜¹ì€ remote statement ê°€
+ *               ì¡´ì¬í•˜ëŠ” ê²½ìš° aResultCode ëŠ” DKP_RC_BUSY ë¡œ ì„¤ì •ëœë‹¤.
  *
- * aSession         - [IN] Operation À» ¼öÇàÇÏ´Â ¼¼¼ÇÁ¤º¸
- * aResultCode      - [OUT] Operation ÀÇ ¼öÇà °á°ú·Î ¾ò´Â result code
- * aTimeoutSec      - [IN] CM block ÀÇ ÀĞ±â timeout °ª
+ * aSession         - [IN] Operation ì„ ìˆ˜í–‰í•˜ëŠ” ì„¸ì…˜ì •ë³´
+ * aResultCode      - [OUT] Operation ì˜ ìˆ˜í–‰ ê²°ê³¼ë¡œ ì–»ëŠ” result code
+ * aTimeoutSec      - [IN] CM block ì˜ ì½ê¸° timeout ê°’
  ************************************************************************/
 IDE_RC  dkpProtocolMgr::recvPrepareLinkerShutdownResult( dksSession *aSession,
                                                          UInt       *aResultCode,
@@ -1337,10 +1337,10 @@ IDE_RC  dkpProtocolMgr::recvPrepareLinkerShutdownResult( dksSession *aSession,
 }
 
 /************************************************************************
- * Description : AltiLinker ÇÁ·Î¼¼½º¿¡ stack traceµîÀÇ Á¤º¸¸¦ dumpÇÏ¶ó´Â
- *               ¿äÃ»À» ÇÏ±â À§ÇØ ¼öÇàµÇ´Â operation.
+ * Description : AltiLinker í”„ë¡œì„¸ìŠ¤ì— stack traceë“±ì˜ ì •ë³´ë¥¼ dumpí•˜ë¼ëŠ”
+ *               ìš”ì²­ì„ í•˜ê¸° ìœ„í•´ ìˆ˜í–‰ë˜ëŠ” operation.
  *
- * aSession         - [IN] Operation À» ¼öÇàÇÏ´Â ¼¼¼ÇÁ¤º¸
+ * aSession         - [IN] Operation ì„ ìˆ˜í–‰í•˜ëŠ” ì„¸ì…˜ì •ë³´
  ************************************************************************/
 IDE_RC  dkpProtocolMgr::sendLinkerDump( dksSession  *aSession )
 {
@@ -1366,13 +1366,13 @@ IDE_RC  dkpProtocolMgr::sendLinkerDump( dksSession  *aSession )
 }
 
 /************************************************************************
- * Description : sendLinkerDump operation ÀÇ °á°ú¸¦ ¹Ş´Â´Ù.
- *               OperationÀÌ ¼º°øÀûÀ¸·Î ¼öÇàµÇ¾î trace fileÀÌ ³²À¸¸é success¸¦
- *               ¹İÈ¯ÇÑ´Ù.
+ * Description : sendLinkerDump operation ì˜ ê²°ê³¼ë¥¼ ë°›ëŠ”ë‹¤.
+ *               Operationì´ ì„±ê³µì ìœ¼ë¡œ ìˆ˜í–‰ë˜ì–´ trace fileì´ ë‚¨ìœ¼ë©´ successë¥¼
+ *               ë°˜í™˜í•œë‹¤.
  *
- * aSession         - [IN] Operation À» ¼öÇàÇÏ´Â ¼¼¼ÇÁ¤º¸
- * aResultCode      - [OUT] Operation ÀÇ ¼öÇà °á°ú·Î ¾ò´Â result code
- * aTimeoutSec      - [IN] CM block ÀÇ ÀĞ±â timeout °ª
+ * aSession         - [IN] Operation ì„ ìˆ˜í–‰í•˜ëŠ” ì„¸ì…˜ì •ë³´
+ * aResultCode      - [OUT] Operation ì˜ ìˆ˜í–‰ ê²°ê³¼ë¡œ ì–»ëŠ” result code
+ * aTimeoutSec      - [IN] CM block ì˜ ì½ê¸° timeout ê°’
  ************************************************************************/
 IDE_RC  dkpProtocolMgr::recvLinkerDumpResult( dksSession *aSession,
                                               UInt       *aResultCode,
@@ -1414,10 +1414,10 @@ IDE_RC  dkpProtocolMgr::recvLinkerDumpResult( dksSession *aSession,
 }
 
 /************************************************************************
- * Description : AltiLinker ÇÁ·Î¼¼½º·Î ÇÏ¿©±İ ½º½º·Î Á¾·á phase ¸¦ ¼öÇà
- *               ÇÏµµ·Ï ÇÏ´Â operation.
+ * Description : AltiLinker í”„ë¡œì„¸ìŠ¤ë¡œ í•˜ì—¬ê¸ˆ ìŠ¤ìŠ¤ë¡œ ì¢…ë£Œ phase ë¥¼ ìˆ˜í–‰
+ *               í•˜ë„ë¡ í•˜ëŠ” operation.
  *
- *  aSession    - [IN] Operation À» ¼öÇàÇÏ´Â ¼¼¼ÇÁ¤º¸
+ *  aSession    - [IN] Operation ì„ ìˆ˜í–‰í•˜ëŠ” ì„¸ì…˜ì •ë³´
  *
  ************************************************************************/
 IDE_RC  dkpProtocolMgr::doLinkerShutdown( dksSession    *aSession )
@@ -1470,7 +1470,7 @@ IDE_RC dkpProtocolMgr::sendPrepareRemoteStmtInternal( dksSession       *aSession
         
     /* Get the length of data */
     /* PROJ-2569 */
-    // Ç×»ó Data SessionÀÌ¾î¾ß¸¸ ÇÑ´Ù.
+    // í•­ìƒ Data Sessionì´ì–´ì•¼ë§Œ í•œë‹¤.
     if ( DKP_ADLP_PACKET_FLAGS_IS_XA( sFlags ) == ID_TRUE )
     {
         sPacketDataLen += DKT_2PC_XIDDATASIZE;
@@ -1661,13 +1661,13 @@ IDE_RC dkpProtocolMgr::recvPrepareRemoteStmtResultInternal( dksSession     *aSes
 
 
 /************************************************************************
- * Description : AltiLinker ÇÁ·Î¼¼½º¿¡ remote statement ÀÇ prepare ¸¦
- *               ¿äÃ»ÇÑ´Ù.
+ * Description : AltiLinker í”„ë¡œì„¸ìŠ¤ì— remote statement ì˜ prepare ë¥¼
+ *               ìš”ì²­í•œë‹¤.
  *
- *  aSession        - [IN] Operation À» ¼öÇàÇÏ´Â ¼¼¼ÇÁ¤º¸
+ *  aSession        - [IN] Operation ì„ ìˆ˜í–‰í•˜ëŠ” ì„¸ì…˜ì •ë³´
  *  aSessionId      - [IN] Linker data session id 
- *  aLinkInfo       - [IN] Target server ·ÎÀÇ ¿¬°áÁ¤º¸¸¦ °®°í ÀÖ´Â ±¸Á¶Ã¼
- *  aRemoteStmtId   - [IN] ¿ø°İ¿¡¼­ ¼öÇàÇÒ remote statement ÀÇ id
+ *  aLinkInfo       - [IN] Target server ë¡œì˜ ì—°ê²°ì •ë³´ë¥¼ ê°–ê³  ìˆëŠ” êµ¬ì¡°ì²´
+ *  aRemoteStmtId   - [IN] ì›ê²©ì—ì„œ ìˆ˜í–‰í•  remote statement ì˜ id
  *  aRemoteStmtStr  - [IN] Remote statement string 
  *
  ************************************************************************/
@@ -1697,15 +1697,15 @@ IDE_RC  dkpProtocolMgr::sendPrepareRemoteStmt( dksSession   *aSession,
 }
 
 /************************************************************************
- * Description : sendPrepareRemoteStmt operation ÀÇ °á°ú¸¦ ¹Ş´Â´Ù.
+ * Description : sendPrepareRemoteStmt operation ì˜ ê²°ê³¼ë¥¼ ë°›ëŠ”ë‹¤.
  *
- * aSession             - [IN] Operation À» ¼öÇàÇÏ´Â ¼¼¼ÇÁ¤º¸
+ * aSession             - [IN] Operation ì„ ìˆ˜í–‰í•˜ëŠ” ì„¸ì…˜ì •ë³´
  * aSessionId           - [IN] Linker data session id 
  * aRemoteStmtId        - [IN] Remote statement id
- * aResultCode          - [OUT] Operation ÀÇ ¼öÇà °á°ú·Î ¾ò´Â result code
- * aRemoteNodeSessionId - [OUT] Operation ¼öÇà°á°ú·Î ¾ò¾î¿À´Â remote
- *                              node session ÀÇ id
- * aTimeoutSec          - [IN] CM block ÀÇ ÀĞ±â timeout °ª
+ * aResultCode          - [OUT] Operation ì˜ ìˆ˜í–‰ ê²°ê³¼ë¡œ ì–»ëŠ” result code
+ * aRemoteNodeSessionId - [OUT] Operation ìˆ˜í–‰ê²°ê³¼ë¡œ ì–»ì–´ì˜¤ëŠ” remote
+ *                              node session ì˜ id
+ * aTimeoutSec          - [IN] CM block ì˜ ì½ê¸° timeout ê°’
  ************************************************************************/
 IDE_RC dkpProtocolMgr::recvPrepareRemoteStmtResult( dksSession    *aSession, 
                                                     UInt           aSessionId,
@@ -1818,14 +1818,14 @@ IDE_RC dkpProtocolMgr::sendRequestRemoteErrorInfo( dksSession    *aSession,
 }
 
 /************************************************************************
- * Description : sendRequestRemoteErrorInfo operation ÀÇ °á°ú¸¦ ¹Ş´Â´Ù.
+ * Description : sendRequestRemoteErrorInfo operation ì˜ ê²°ê³¼ë¥¼ ë°›ëŠ”ë‹¤.
  *
- *  aSession         - [IN] Operation À» ¼öÇàÇÏ´Â ¼¼¼ÇÁ¤º¸
- *  aSessionId       - [IN] Operation À» ¼öÇàÇÏ´Â session ÀÇ id
- *  aResultCode      - [OUT] Operation ÀÇ ¼öÇà °á°ú·Î ¾ò´Â result code
+ *  aSession         - [IN] Operation ì„ ìˆ˜í–‰í•˜ëŠ” ì„¸ì…˜ì •ë³´
+ *  aSessionId       - [IN] Operation ì„ ìˆ˜í–‰í•˜ëŠ” session ì˜ id
+ *  aResultCode      - [OUT] Operation ì˜ ìˆ˜í–‰ ê²°ê³¼ë¡œ ì–»ëŠ” result code
  *  aRemoteStmtId    - [IN] Remote statement id
- *  aErrorInfo       - [IN/OUT] Remote statement ÀÇ ¿¡·¯Á¤º¸
- *  aTimeoutSec      - [IN] CM block ÀÇ ÀĞ±â timeout °ª
+ *  aErrorInfo       - [IN/OUT] Remote statement ì˜ ì—ëŸ¬ì •ë³´
+ *  aTimeoutSec      - [IN] CM block ì˜ ì½ê¸° timeout ê°’
  *
  ************************************************************************/
 IDE_RC  dkpProtocolMgr::recvRequestRemoteErrorInfoResult( dksSession    *aSession,
@@ -1938,17 +1938,17 @@ IDE_RC  dkpProtocolMgr::recvRequestRemoteErrorInfoResult( dksSession    *aSessio
 }
 
 /************************************************************************
- * Description : AltiLinker ÇÁ·Î¼¼½º¿¡ remote statement ÀÇ execute ¸¦
- *               ¿äÃ»ÇÑ´Ù. Prepare operation À» ¼±ÇàÀûÀ¸·Î ¼öÇàÇÏÁö ¾Ê°í
- *               ÀÌ operation ÀÌ ¼öÇàµÇ´Â °æ¿ì AltiLinker ÇÁ·Î¼¼½º¿¡¼­
- *               ÀÌ operation À» ÅëÇØ Àü´Ş¹Ş´Â Á¤º¸µéÀ» ÀÌ¿ëÇØ prepare
- *               ¸¦ ¼öÇàÇØ¾ß ÇÏ¹Ç·Î target Á¤º¸ ¹× remote statement Á¤º¸
- *               µéÀ» Àü´ŞÇÑ´Ù.
+ * Description : AltiLinker í”„ë¡œì„¸ìŠ¤ì— remote statement ì˜ execute ë¥¼
+ *               ìš”ì²­í•œë‹¤. Prepare operation ì„ ì„ í–‰ì ìœ¼ë¡œ ìˆ˜í–‰í•˜ì§€ ì•Šê³ 
+ *               ì´ operation ì´ ìˆ˜í–‰ë˜ëŠ” ê²½ìš° AltiLinker í”„ë¡œì„¸ìŠ¤ì—ì„œ
+ *               ì´ operation ì„ í†µí•´ ì „ë‹¬ë°›ëŠ” ì •ë³´ë“¤ì„ ì´ìš©í•´ prepare
+ *               ë¥¼ ìˆ˜í–‰í•´ì•¼ í•˜ë¯€ë¡œ target ì •ë³´ ë° remote statement ì •ë³´
+ *               ë“¤ì„ ì „ë‹¬í•œë‹¤.
  *
- * aSession         - [IN] Operation À» ¼öÇàÇÏ´Â ¼¼¼ÇÁ¤º¸
+ * aSession         - [IN] Operation ì„ ìˆ˜í–‰í•˜ëŠ” ì„¸ì…˜ì •ë³´
  * aSessionId       - [IN] Linker data session id
- * aLinkInfo        - [IN] Target server ·ÎÀÇ ¿¬°áÁ¤º¸¸¦ °®°í ÀÖ´Â ±¸Á¶Ã¼
- * aRemoteStmtInfo  - [IN] ¿ø°İ¿¡¼­ ¼öÇàÇÒ remote statement Á¤º¸
+ * aLinkInfo        - [IN] Target server ë¡œì˜ ì—°ê²°ì •ë³´ë¥¼ ê°–ê³  ìˆëŠ” êµ¬ì¡°ì²´
+ * aRemoteStmtInfo  - [IN] ì›ê²©ì—ì„œ ìˆ˜í–‰í•  remote statement ì •ë³´
  ************************************************************************/
 IDE_RC  dkpProtocolMgr::sendExecuteRemoteStmt( dksSession    *aSession,
                                                UInt           aSessionId,
@@ -2091,22 +2091,22 @@ IDE_RC  dkpProtocolMgr::sendExecuteRemoteStmt( dksSession    *aSession,
 }
 
 /************************************************************************
- * Description : sendExecuteRemoteStmt operation ÀÇ °á°ú¸¦ ¹Ş´Â´Ù.
+ * Description : sendExecuteRemoteStmt operation ì˜ ê²°ê³¼ë¥¼ ë°›ëŠ”ë‹¤.
  *
- *  aSession             - [IN] Operation À» ¼öÇàÇÏ´Â ¼¼¼ÇÁ¤º¸
+ *  aSession             - [IN] Operation ì„ ìˆ˜í–‰í•˜ëŠ” ì„¸ì…˜ì •ë³´
  *  aSessionId           - [IN] Linker data session id
  *  aRemoteStmtId        - [IN] Remote statement id
- *  aResultCode          - [OUT] Operation ÀÇ ¼öÇà °á°ú·Î ¾ò´Â result code
- *  aRemoteNodeSessionId - [OUT] Operation ¼öÇà°á°ú·Î ¾ò¾î¿À´Â remote
- *                               node session ÀÇ id
+ *  aResultCode          - [OUT] Operation ì˜ ìˆ˜í–‰ ê²°ê³¼ë¡œ ì–»ëŠ” result code
+ *  aRemoteNodeSessionId - [OUT] Operation ìˆ˜í–‰ê²°ê³¼ë¡œ ì–»ì–´ì˜¤ëŠ” remote
+ *                               node session ì˜ id
  *  aResults             - [OUT] Execute Result Value
- *      ++ ÀÌ °ªÀº result code °¡ SUCCESS ÀÎ °æ¿ì¸¸ À¯È¿ÇÏ´Ù.
- *         ¸¸¾à ¼öÇàÇÑ statement type ÀÌ DML ÀÎ °æ¿ì´Â row ÀÇ °¹¼ö, DDL
- *         ÀÎ °æ¿ì´Â SUCCESS ÀÎ °æ¿ì 0, ¼öÇà ½ÇÆĞÀÇ °æ¿ì´Â -1 À» ¹İÈ¯ÇÑ´Ù.
- *         ÀÌ °æ¿ì caller ´Â result code ¸¦ È®ÀÎÇÏ¿© ÇÊ¿äÇÑ µ¿ÀÛÀ» ¼öÇàÇÏ
- *         µµ·Ï ÇØ¾ßÇÑ´Ù.
+ *      ++ ì´ ê°’ì€ result code ê°€ SUCCESS ì¸ ê²½ìš°ë§Œ ìœ íš¨í•˜ë‹¤.
+ *         ë§Œì•½ ìˆ˜í–‰í•œ statement type ì´ DML ì¸ ê²½ìš°ëŠ” row ì˜ ê°¯ìˆ˜, DDL
+ *         ì¸ ê²½ìš°ëŠ” SUCCESS ì¸ ê²½ìš° 0, ìˆ˜í–‰ ì‹¤íŒ¨ì˜ ê²½ìš°ëŠ” -1 ì„ ë°˜í™˜í•œë‹¤.
+ *         ì´ ê²½ìš° caller ëŠ” result code ë¥¼ í™•ì¸í•˜ì—¬ í•„ìš”í•œ ë™ì‘ì„ ìˆ˜í–‰í•˜
+ *         ë„ë¡ í•´ì•¼í•œë‹¤.
  *
- *  aTimeoutSec          - [IN] CM block ÀÇ ÀĞ±â timeout °ª
+ *  aTimeoutSec          - [IN] CM block ì˜ ì½ê¸° timeout ê°’
  *
  ************************************************************************/
 IDE_RC  dkpProtocolMgr::recvExecuteRemoteStmtResult( dksSession    *aSession,
@@ -2681,9 +2681,9 @@ IDE_RC  dkpProtocolMgr::recvRequestFreeRemoteStmtResultInternal( dksSession     
 }
 
 /************************************************************************
- * Description : Remote statement ¸¦ Á¾·áÇÏ±â À§ÇÑ operation.
+ * Description : Remote statement ë¥¼ ì¢…ë£Œí•˜ê¸° ìœ„í•œ operation.
  * 
- *  aSession         - [IN] Operation À» ¼öÇàÇÏ´Â ¼¼¼ÇÁ¤º¸
+ *  aSession         - [IN] Operation ì„ ìˆ˜í–‰í•˜ëŠ” ì„¸ì…˜ì •ë³´
  *  aSessionId       - [IN] Linker data session id 
  *  aRemoteStmtId    - [IN] Remote statement id
  *
@@ -2706,14 +2706,14 @@ IDE_RC  dkpProtocolMgr::sendRequestFreeRemoteStmt( dksSession    *aSession,
 }
 
 /************************************************************************
- * Description : sendRequestFreeRemoteStmt operation ÀÇ °á°ú¸¦ ¹Ş´Â´Ù.
+ * Description : sendRequestFreeRemoteStmt operation ì˜ ê²°ê³¼ë¥¼ ë°›ëŠ”ë‹¤.
  *
- *  aSession             - [IN] Operation À» ¼öÇàÇÏ´Â ¼¼¼ÇÁ¤º¸
+ *  aSession             - [IN] Operation ì„ ìˆ˜í–‰í•˜ëŠ” ì„¸ì…˜ì •ë³´
  *  aSessionId           - [IN] Linker data session id 
  *  aRemoteStmtId        - [IN] Remote statement id
- *  aResultCode          - [OUT] Operation ÀÇ ¼öÇà °á°ú·Î ¾ò´Â result code
- *                               node session ÀÇ id
- *  aTimeoutSec          - [IN] CM block ÀÇ ÀĞ±â timeout °ª
+ *  aResultCode          - [OUT] Operation ì˜ ìˆ˜í–‰ ê²°ê³¼ë¡œ ì–»ëŠ” result code
+ *                               node session ì˜ id
+ *  aTimeoutSec          - [IN] CM block ì˜ ì½ê¸° timeout ê°’
  *
  ************************************************************************/
 IDE_RC  dkpProtocolMgr::recvRequestFreeRemoteStmtResult( dksSession    *aSession, 
@@ -2782,13 +2782,13 @@ IDE_RC dkpProtocolMgr::recvRequestFreeRemoteStmtBatchResult( dksSession    *aSes
 }
 
 /************************************************************************
- * Description : Remote query ÀÇ ¼öÇà°á°ú°¡ SUCCESS ÀÎ °æ¿ì, ±× °á°úÁıÇÕ
- *               ÀÎ row µéÀ» fetch ÇØ¿À±â À§ÇÑ operation.
+ * Description : Remote query ì˜ ìˆ˜í–‰ê²°ê³¼ê°€ SUCCESS ì¸ ê²½ìš°, ê·¸ ê²°ê³¼ì§‘í•©
+ *               ì¸ row ë“¤ì„ fetch í•´ì˜¤ê¸° ìœ„í•œ operation.
  *
- *  aSession         - [IN] Operation À» ¼öÇàÇÏ´Â ¼¼¼ÇÁ¤º¸
+ *  aSession         - [IN] Operation ì„ ìˆ˜í–‰í•˜ëŠ” ì„¸ì…˜ì •ë³´
  *  aSessionId       - [IN] Linker data session id
  *  aRemoteStmtId    - [IN] Remote statement id
- *  aFetchRowCount   - [IN] Fetch ÇÒ row ÀÇ °¹¼ö
+ *  aFetchRowCount   - [IN] Fetch í•  row ì˜ ê°¯ìˆ˜
  *
  ************************************************************************/
 IDE_RC  dkpProtocolMgr::sendFetchResultSet( dksSession    *aSession,
@@ -2827,18 +2827,18 @@ IDE_RC  dkpProtocolMgr::sendFetchResultSet( dksSession    *aSession,
 }
 
 /************************************************************************
- * Description : sendFetchResultSet operation ÀÇ °á°ú¸¦ ¹Ş´Â´Ù.
+ * Description : sendFetchResultSet operation ì˜ ê²°ê³¼ë¥¼ ë°›ëŠ”ë‹¤.
  *
- *  aSession        - [IN] Operation À» ¼öÇàÇÏ´Â ¼¼¼ÇÁ¤º¸
+ *  aSession        - [IN] Operation ì„ ìˆ˜í–‰í•˜ëŠ” ì„¸ì…˜ì •ë³´
  *  aSessionId      - [IN] Linker data session id
  *  aRemoteStmtId   - [IN] Remote statement id
- *  aRecvRowBuffer  - [IN] AltiLinker process ·ÎºÎÅÍ ¹ŞÀº packet ÀÇ
- *                         data µéÀ» ¿Å°Ü´ã±â À§ÇÑ buffer
- *  aRecvRowLen     - [IN] aRecvRowBuffer ¿¡ ´ãÀº ÃÑ Å©±â
- *  aRecvRowCnt     - [IN] AltiLinker process ·ÎºÎÅÍ ¹ŞÀº row ÀÇ °¹¼ö
- *  aResultCode     - [OUT] Operation ÀÇ ¼öÇà °á°ú·Î ¾ò´Â result code
- *                          node session ÀÇ id
- *  aTimeoutSec     - [IN] CM block ÀÇ ÀĞ±â timeout °ª
+ *  aRecvRowBuffer  - [IN] AltiLinker process ë¡œë¶€í„° ë°›ì€ packet ì˜
+ *                         data ë“¤ì„ ì˜®ê²¨ë‹´ê¸° ìœ„í•œ buffer
+ *  aRecvRowLen     - [IN] aRecvRowBuffer ì— ë‹´ì€ ì´ í¬ê¸°
+ *  aRecvRowCnt     - [IN] AltiLinker process ë¡œë¶€í„° ë°›ì€ row ì˜ ê°¯ìˆ˜
+ *  aResultCode     - [OUT] Operation ì˜ ìˆ˜í–‰ ê²°ê³¼ë¡œ ì–»ëŠ” result code
+ *                          node session ì˜ id
+ *  aTimeoutSec     - [IN] CM block ì˜ ì½ê¸° timeout ê°’
  *
  ************************************************************************/
 IDE_RC  dkpProtocolMgr::recvFetchResultRow( dksSession    *aSession,
@@ -3003,10 +3003,10 @@ IDE_RC  dkpProtocolMgr::recvFetchResultRow( dksSession    *aSession,
 }
 
 /************************************************************************
- * Description : Remote query ÀÇ ¼öÇà°á°ú ¾ò°ÔµÉ °á°úÁıÇÕÀÇ ½ºÅ°¸¶¸¦
- *               ¾ò¾î¿À±â À§ÇÑ operation.
+ * Description : Remote query ì˜ ìˆ˜í–‰ê²°ê³¼ ì–»ê²Œë  ê²°ê³¼ì§‘í•©ì˜ ìŠ¤í‚¤ë§ˆë¥¼
+ *               ì–»ì–´ì˜¤ê¸° ìœ„í•œ operation.
  *
- *  aSession         - [IN] Operation À» ¼öÇàÇÏ´Â ¼¼¼ÇÁ¤º¸
+ *  aSession         - [IN] Operation ì„ ìˆ˜í–‰í•˜ëŠ” ì„¸ì…˜ì •ë³´
  *  aSessionId       - [IN] Linker data session id
  *  aRemoteStmtId    - [IN] Remote statement id
  *
@@ -3072,19 +3072,19 @@ static void checkAndMakeColumnName( SChar * aColumnName, UInt aColumnNameLen )
 }
 
 /************************************************************************
- * Description : sendRequestResultSetMeta operation ÀÇ °á°ú¸¦ ¹Ş´Â´Ù.
+ * Description : sendRequestResultSetMeta operation ì˜ ê²°ê³¼ë¥¼ ë°›ëŠ”ë‹¤.
  *
- * WARNING     : aColMeta ´Â ÀÌ ÇÔ¼ö ³»ºÎ¿¡¼­ ÀÚ¿øÇÒ´ç ÈÄ ÇØÁ¦ÇÏÁö
- *               ¾ÊÀ¸¹Ç·Î ÀÌ ÇÔ¼ö¸¦ È£ÃâÇÏ´Â ÂÊ¿¡¼­´Â ¹İµå½Ã ÀÚ¿øÀ»
- *               ÇØÁ¦ÇØÁÖ¾î¾ß ÇÑ´Ù.
+ * WARNING     : aColMeta ëŠ” ì´ í•¨ìˆ˜ ë‚´ë¶€ì—ì„œ ìì›í• ë‹¹ í›„ í•´ì œí•˜ì§€
+ *               ì•Šìœ¼ë¯€ë¡œ ì´ í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•˜ëŠ” ìª½ì—ì„œëŠ” ë°˜ë“œì‹œ ìì›ì„
+ *               í•´ì œí•´ì£¼ì–´ì•¼ í•œë‹¤.
  *
- *  aSession        - [IN] Operation À» ¼öÇàÇÏ´Â ¼¼¼ÇÁ¤º¸
+ *  aSession        - [IN] Operation ì„ ìˆ˜í–‰í•˜ëŠ” ì„¸ì…˜ì •ë³´
  *  aSessionId      - [IN] Linker data session id
  *  aRemoteStmtId   - [IN] Remote statement id
- *  aResultCode     - [OUT] Operation ÀÇ ¼öÇà °á°ú·Î ¾ò´Â result code
- *  aColumnCnt      - [OUT] Result set meta ÀÇ column °¹¼ö
+ *  aResultCode     - [OUT] Operation ì˜ ìˆ˜í–‰ ê²°ê³¼ë¡œ ì–»ëŠ” result code
+ *  aColumnCnt      - [OUT] Result set meta ì˜ column ê°¯ìˆ˜
  *  aColMeta        - [OUT] Result set meta column array
- *  aTimeoutSec     - [IN] CM block ÀÇ ÀĞ±â timeout °ª
+ *  aTimeoutSec     - [IN] CM block ì˜ ì½ê¸° timeout ê°’
  *
  ************************************************************************/
 IDE_RC  dkpProtocolMgr::recvRequestResultSetMetaResult( dksSession    *aSession,
@@ -3261,9 +3261,9 @@ IDE_RC  dkpProtocolMgr::recvRequestResultSetMetaResult( dksSession    *aSession,
 }
 
 /************************************************************************
- * Description : Remote server ¿¡ binding À» ¼öÇàÇÏ±â À§ÇÑ operation.
+ * Description : Remote server ì— binding ì„ ìˆ˜í–‰í•˜ê¸° ìœ„í•œ operation.
  *
- *  aSession         - [IN] Operation À» ¼öÇàÇÏ´Â ¼¼¼ÇÁ¤º¸
+ *  aSession         - [IN] Operation ì„ ìˆ˜í–‰í•˜ëŠ” ì„¸ì…˜ì •ë³´
  *  aSessionId       - [IN] Linker data session id
  *  aRemoteStmtId    - [IN] Remote statement id
  *  aBindVarIdx      - [IN] Bind variable's index number
@@ -3365,14 +3365,14 @@ IDE_RC  dkpProtocolMgr::sendBindRemoteVariable( dksSession    *aSession,
 }
 
 /************************************************************************
- * Description : sendBindRemoteVariable operation ÀÇ °á°ú¸¦ ¹Ş´Â´Ù.
+ * Description : sendBindRemoteVariable operation ì˜ ê²°ê³¼ë¥¼ ë°›ëŠ”ë‹¤.
  *
- *  aSession        - [IN] Operation À» ¼öÇàÇÏ´Â ¼¼¼ÇÁ¤º¸
+ *  aSession        - [IN] Operation ì„ ìˆ˜í–‰í•˜ëŠ” ì„¸ì…˜ì •ë³´
  *  aSessionId      - [IN] Linker data session id
  *  aRemoteStmtId   - [IN] Remote statement id
- *  aResultCode     - [OUT] Operation ÀÇ ¼öÇà °á°ú·Î ¾ò´Â result code
- *                          node session ÀÇ id
- *  aTimeoutSec     - [IN] CM block ÀÇ ÀĞ±â timeout °ª
+ *  aResultCode     - [OUT] Operation ì˜ ìˆ˜í–‰ ê²°ê³¼ë¡œ ì–»ëŠ” result code
+ *                          node session ì˜ id
+ *  aTimeoutSec     - [IN] CM block ì˜ ì½ê¸° timeout ê°’
  *
  ************************************************************************/
 IDE_RC  dkpProtocolMgr::recvBindRemoteVariableResult( dksSession    *aSession,
@@ -3433,17 +3433,17 @@ IDE_RC  dkpProtocolMgr::recvBindRemoteVariableResult( dksSession    *aSession,
 }
 
 /************************************************************************
- * Description : Remote node session À» close ÇÏ±â À§ÇÑ operation.
+ * Description : Remote node session ì„ close í•˜ê¸° ìœ„í•œ operation.
  *
- *      @ °ü·Ã ±¸¹®
+ *      @ ê´€ë ¨ êµ¬ë¬¸
  *          1. ALTER SESSION CLOSE DATABASE LINK ALL
  *          2. ALTER SESSION CLOSE DATABASE LINK dblink_name
  *
- *  aSession             - [IN] Operation À» ¼öÇàÇÏ´Â ¼¼¼ÇÁ¤º¸
+ *  aSession             - [IN] Operation ì„ ìˆ˜í–‰í•˜ëŠ” ì„¸ì…˜ì •ë³´
  *  aSessionId           - [IN] Linker data session id
- *  aRemoteNodeSessionId - [IN] Close ÇÏ·Á´Â remote node session ÀÇ id,
- *                              ¸¸¾à ÀÌ °ªÀÌ 0 ÀÎ °æ¿ì´Â À§ °ü·Ã ±¸¹® Áß
- *                              1À» ¼öÇà, ¾Æ´Ï¸é 2¸¦ ¼öÇàÇÑ´Ù.
+ *  aRemoteNodeSessionId - [IN] Close í•˜ë ¤ëŠ” remote node session ì˜ id,
+ *                              ë§Œì•½ ì´ ê°’ì´ 0 ì¸ ê²½ìš°ëŠ” ìœ„ ê´€ë ¨ êµ¬ë¬¸ ì¤‘
+ *                              1ì„ ìˆ˜í–‰, ì•„ë‹ˆë©´ 2ë¥¼ ìˆ˜í–‰í•œë‹¤.
  *
  ************************************************************************/
 IDE_RC  dkpProtocolMgr::sendRequestCloseRemoteNodeSession( dksSession    *aSession,
@@ -3477,15 +3477,15 @@ IDE_RC  dkpProtocolMgr::sendRequestCloseRemoteNodeSession( dksSession    *aSessi
 }
 
 /************************************************************************
- * Description : sendRequestCloseRemoteNodeSession operation ÀÇ °á°ú¸¦
- *               ¹Ş´Â´Ù.
+ * Description : sendRequestCloseRemoteNodeSession operation ì˜ ê²°ê³¼ë¥¼
+ *               ë°›ëŠ”ë‹¤.
  *
- *  aSession            - [IN] Operation À» ¼öÇàÇÏ´Â ¼¼¼ÇÁ¤º¸
+ *  aSession            - [IN] Operation ì„ ìˆ˜í–‰í•˜ëŠ” ì„¸ì…˜ì •ë³´
  *  aSessionId          - [IN] Linker data session id
- *  aResultCode         - [OUT] Operation ÀÇ ¼öÇà °á°ú·Î ¾ò´Â result code
- *                              node session ÀÇ id
+ *  aResultCode         - [OUT] Operation ì˜ ìˆ˜í–‰ ê²°ê³¼ë¡œ ì–»ëŠ” result code
+ *                              node session ì˜ id
  *  aRemainedNodeCnt    - [OUT] Remained remote node count
- *  aTimeoutSec         - [IN] CM block ÀÇ ÀĞ±â timeout °ª
+ *  aTimeoutSec         - [IN] CM block ì˜ ì½ê¸° timeout ê°’
  *
  ************************************************************************/
 IDE_RC  dkpProtocolMgr::recvRequestCloseRemoteNodeSessionResult( dksSession    *aSession,
@@ -3549,17 +3549,17 @@ IDE_RC  dkpProtocolMgr::recvRequestCloseRemoteNodeSessionResult( dksSession    *
 }
 
 /************************************************************************
- * Description : Remote server ¿¡ auto-commit mode ¸¦ ¼³Á¤ÇÏ±â À§ÇØ
- *               ¼öÇàÇÏ´Â operation.
+ * Description : Remote server ì— auto-commit mode ë¥¼ ì„¤ì •í•˜ê¸° ìœ„í•´
+ *               ìˆ˜í–‰í•˜ëŠ” operation.
  *
  *      @ Auto Commit Mode
- *       --> ¼³Á¤Àº ADLP common header ÀÇ µÎ¹øÂ° ¿ä¼Ò°ª(1 byte)¿¡ µû¸¥´Ù.
+ *       --> ì„¤ì •ì€ ADLP common header ì˜ ë‘ë²ˆì§¸ ìš”ì†Œê°’(1 byte)ì— ë”°ë¥¸ë‹¤.
  *              0: ON
  *              1: OFF
  *
- *  aSession         - [IN] Operation À» ¼öÇàÇÏ´Â ¼¼¼ÇÁ¤º¸
+ *  aSession         - [IN] Operation ì„ ìˆ˜í–‰í•˜ëŠ” ì„¸ì…˜ì •ë³´
  *  aSessionId       - [IN] Linker data session id
- *  aAutoCommitMode  - [IN] ¼³Á¤ÇÒ autocommit mode
+ *  aAutoCommitMode  - [IN] ì„¤ì •í•  autocommit mode
  *
  ************************************************************************/
 IDE_RC  dkpProtocolMgr::sendSetAutoCommitMode( dksSession    *aSession,
@@ -3588,13 +3588,13 @@ IDE_RC  dkpProtocolMgr::sendSetAutoCommitMode( dksSession    *aSession,
 }
 
 /************************************************************************
- * Description : sendSetAutoCommitMode operation ÀÇ °á°ú¸¦ ¹Ş´Â´Ù.
+ * Description : sendSetAutoCommitMode operation ì˜ ê²°ê³¼ë¥¼ ë°›ëŠ”ë‹¤.
  *
- *  aSession             - [IN] Operation À» ¼öÇàÇÏ´Â ¼¼¼ÇÁ¤º¸
+ *  aSession             - [IN] Operation ì„ ìˆ˜í–‰í•˜ëŠ” ì„¸ì…˜ì •ë³´
  *  aSessionId           - [IN] Linker data session id
- *  aResultCode          - [OUT] Operation ÀÇ ¼öÇà °á°ú·Î ¾ò´Â result code
- *                               node session ÀÇ id
- *  aTimeoutSec          - [IN] CM block ÀÇ ÀĞ±â timeout °ª
+ *  aResultCode          - [OUT] Operation ì˜ ìˆ˜í–‰ ê²°ê³¼ë¡œ ì–»ëŠ” result code
+ *                               node session ì˜ id
+ *  aTimeoutSec          - [IN] CM block ì˜ ì½ê¸° timeout ê°’
  *
  ************************************************************************/
 IDE_RC  dkpProtocolMgr::recvSetAutoCommitModeResult( dksSession    *aSession,
@@ -3638,12 +3638,12 @@ IDE_RC  dkpProtocolMgr::recvSetAutoCommitModeResult( dksSession    *aSession,
 }
 
 /************************************************************************
- * Description : Remote node session À» close ÇÏ±â À§ÇÑ operation.
+ * Description : Remote node session ì„ close í•˜ê¸° ìœ„í•œ operation.
  *
- *  aSession             - [IN] Operation À» ¼öÇàÇÏ´Â ¼¼¼ÇÁ¤º¸
+ *  aSession             - [IN] Operation ì„ ìˆ˜í–‰í•˜ëŠ” ì„¸ì…˜ì •ë³´
  *  aSessionId           - [IN] Linker data session id
- *  aRemoteNodeSessionId - [IN] Remote node session id, ÀÌ °ªÀÌ 0ÀÎ °æ¿ì´Â
- *                              ¸ğµç remote node session À» check ÇÑ´Ù.
+ *  aRemoteNodeSessionId - [IN] Remote node session id, ì´ ê°’ì´ 0ì¸ ê²½ìš°ëŠ”
+ *                              ëª¨ë“  remote node session ì„ check í•œë‹¤.
  *
  ************************************************************************/
 IDE_RC  dkpProtocolMgr::sendCheckRemoteSession( dksSession    *aSession,
@@ -3677,14 +3677,14 @@ IDE_RC  dkpProtocolMgr::sendCheckRemoteSession( dksSession    *aSession,
 }
 
 /************************************************************************
- * Description : sendCheckRemoteSession operation ÀÇ °á°ú¸¦ ¹Ş´Â´Ù.
+ * Description : sendCheckRemoteSession operation ì˜ ê²°ê³¼ë¥¼ ë°›ëŠ”ë‹¤.
  *
- *  aSession                 - [IN] Operation À» ¼öÇàÇÏ´Â ¼¼¼ÇÁ¤º¸
+ *  aSession                 - [IN] Operation ì„ ìˆ˜í–‰í•˜ëŠ” ì„¸ì…˜ì •ë³´
  *  aSessionId               - [IN] Linker data session id
- *  aResultCode              - [OUT] Operation ÀÇ °á°ú·Î ¾ò´Â result code
- *  aRemoteNodeCnt           - [OUT] Remote node session ÀÇ °³¼ö
- *  aRemoteNodeSessionInfo   - [OUT] ¸ğµç remote node session ÀÇ »óÅÂÁ¤º¸
- *  aTimeoutSec              - [IN] CM block ÀÇ ÀĞ±â timeout °ª
+ *  aResultCode              - [OUT] Operation ì˜ ê²°ê³¼ë¡œ ì–»ëŠ” result code
+ *  aRemoteNodeCnt           - [OUT] Remote node session ì˜ ê°œìˆ˜
+ *  aRemoteNodeSessionInfo   - [OUT] ëª¨ë“  remote node session ì˜ ìƒíƒœì •ë³´
+ *  aTimeoutSec              - [IN] CM block ì˜ ì½ê¸° timeout ê°’
  *
  ************************************************************************/
 IDE_RC  dkpProtocolMgr::recvCheckRemoteSessionResult( dksSession          *aSession,
@@ -3773,9 +3773,9 @@ IDE_RC  dkpProtocolMgr::recvCheckRemoteSessionResult( dksSession          *aSess
 }
 
 /************************************************************************
- * Description : Remote server ¿¡ commit À» ¼öÇàÇÏ±â À§ÇÑ operation.
+ * Description : Remote server ì— commit ì„ ìˆ˜í–‰í•˜ê¸° ìœ„í•œ operation.
  *
- *  aSession         - [IN] Operation À» ¼öÇàÇÏ´Â ¼¼¼ÇÁ¤º¸
+ *  aSession         - [IN] Operation ì„ ìˆ˜í–‰í•˜ëŠ” ì„¸ì…˜ì •ë³´
  *  aSessionId       - [IN] Linker data session id
  *
  ************************************************************************/
@@ -3804,13 +3804,13 @@ IDE_RC  dkpProtocolMgr::sendCommit( dksSession    *aSession,
 }
 
 /************************************************************************
- * Description : sendCommit operation ÀÇ °á°ú¸¦ ¹Ş´Â´Ù.
+ * Description : sendCommit operation ì˜ ê²°ê³¼ë¥¼ ë°›ëŠ”ë‹¤.
  *
- *  aSession             - [IN] Operation À» ¼öÇàÇÏ´Â ¼¼¼ÇÁ¤º¸
+ *  aSession             - [IN] Operation ì„ ìˆ˜í–‰í•˜ëŠ” ì„¸ì…˜ì •ë³´
  *  aSessionId           - [IN] Linker data session id
- *  aResultCode          - [OUT] Operation ÀÇ ¼öÇà °á°ú·Î ¾ò´Â result code
- *                               node session ÀÇ id
- *  aTimeoutSec          - [IN] CM block ÀÇ ÀĞ±â timeout °ª
+ *  aResultCode          - [OUT] Operation ì˜ ìˆ˜í–‰ ê²°ê³¼ë¡œ ì–»ëŠ” result code
+ *                               node session ì˜ id
+ *  aTimeoutSec          - [IN] CM block ì˜ ì½ê¸° timeout ê°’
  *
  ************************************************************************/
 IDE_RC  dkpProtocolMgr::recvCommitResult( dksSession    *aSession,
@@ -3854,14 +3854,14 @@ IDE_RC  dkpProtocolMgr::recvCommitResult( dksSession    *aSession,
 }
 
 /************************************************************************
- * Description : Remote server ¿¡ rollback À» ¼öÇàÇÏ±â À§ÇÑ operation.
+ * Description : Remote server ì— rollback ì„ ìˆ˜í–‰í•˜ê¸° ìœ„í•œ operation.
  *
- *  aSession         - [IN] Operation À» ¼öÇàÇÏ´Â ¼¼¼ÇÁ¤º¸
+ *  aSession         - [IN] Operation ì„ ìˆ˜í–‰í•˜ëŠ” ì„¸ì…˜ì •ë³´
  *  aSessionId       - [IN] Linker data session id
- *  aSavepointName   - [IN] ¾îµğ±îÁö rollback À» ¼öÇàÇÒ °ÍÀÎ°¡¸¦ ¸í½ÃÇÏ´Â
+ *  aSavepointName   - [IN] ì–´ë””ê¹Œì§€ rollback ì„ ìˆ˜í–‰í•  ê²ƒì¸ê°€ë¥¼ ëª…ì‹œí•˜ëŠ”
  *                          savepoint name
- *  aRemoteNodeCnt   - [IN] ÇØ´ç savepoint ¸¦ ÁöÁ¤ÇÑ remote node ÀÇ ¼ö
- *  aRemoteNodeIdArr - [IN] ÇØ´ç savepoint ¸¦ ÁöÁ¤ÇÑ remote node id ¹è¿­
+ *  aRemoteNodeCnt   - [IN] í•´ë‹¹ savepoint ë¥¼ ì§€ì •í•œ remote node ì˜ ìˆ˜
+ *  aRemoteNodeIdArr - [IN] í•´ë‹¹ savepoint ë¥¼ ì§€ì •í•œ remote node id ë°°ì—´
  *
  ************************************************************************/
 IDE_RC  dkpProtocolMgr::sendRollback( dksSession    *aSession,
@@ -3939,13 +3939,13 @@ IDE_RC  dkpProtocolMgr::sendRollback( dksSession    *aSession,
 }
 
 /************************************************************************
- * Description : sendRollback operation ÀÇ °á°ú¸¦ ¹Ş´Â´Ù.
+ * Description : sendRollback operation ì˜ ê²°ê³¼ë¥¼ ë°›ëŠ”ë‹¤.
  *
- *  aSession             - [IN] Operation À» ¼öÇàÇÏ´Â ¼¼¼ÇÁ¤º¸
+ *  aSession             - [IN] Operation ì„ ìˆ˜í–‰í•˜ëŠ” ì„¸ì…˜ì •ë³´
  *  aSessionId           - [IN] Linker data session id
- *  aResultCode          - [OUT] Operation ÀÇ ¼öÇà °á°ú·Î ¾ò´Â result code
- *                               node session ÀÇ id
- *  aTimeoutSec          - [IN] CM block ÀÇ ÀĞ±â timeout °ª
+ *  aResultCode          - [OUT] Operation ì˜ ìˆ˜í–‰ ê²°ê³¼ë¡œ ì–»ëŠ” result code
+ *                               node session ì˜ id
+ *  aTimeoutSec          - [IN] CM block ì˜ ì½ê¸° timeout ê°’
  *
  ************************************************************************/
 IDE_RC  dkpProtocolMgr::recvRollbackResult( dksSession    *aSession,
@@ -3989,11 +3989,11 @@ IDE_RC  dkpProtocolMgr::recvRollbackResult( dksSession    *aSession,
 }
 
 /************************************************************************
- * Description : Remote server ¿¡ savepoint ¸¦ ¼öÇàÇÏ±â À§ÇÑ operation.
+ * Description : Remote server ì— savepoint ë¥¼ ìˆ˜í–‰í•˜ê¸° ìœ„í•œ operation.
  *
- *  aSession         - [IN] Operation À» ¼öÇàÇÏ´Â ¼¼¼ÇÁ¤º¸
+ *  aSession         - [IN] Operation ì„ ìˆ˜í–‰í•˜ëŠ” ì„¸ì…˜ì •ë³´
  *  aSessionId       - [IN] Linker data session id
- *  aSavepointName   - [IN] ÁöÁ¤ÇÒ savepoint name
+ *  aSavepointName   - [IN] ì§€ì •í•  savepoint name
  *
  ************************************************************************/
 IDE_RC  dkpProtocolMgr::sendSavepoint( dksSession    *aSession,
@@ -4049,13 +4049,13 @@ IDE_RC  dkpProtocolMgr::sendSavepoint( dksSession    *aSession,
 }
 
 /************************************************************************
- * Description : sendSavepoint operation ÀÇ °á°ú¸¦ ¹Ş´Â´Ù.
+ * Description : sendSavepoint operation ì˜ ê²°ê³¼ë¥¼ ë°›ëŠ”ë‹¤.
  *
- *  aSession             - [IN] Operation À» ¼öÇàÇÏ´Â ¼¼¼ÇÁ¤º¸
+ *  aSession             - [IN] Operation ì„ ìˆ˜í–‰í•˜ëŠ” ì„¸ì…˜ì •ë³´
  *  aSessionId           - [IN] Linker data session id
- *  aResultCode          - [OUT] Operation ÀÇ ¼öÇà °á°ú·Î ¾ò´Â result code
- *                               node session ÀÇ id
- *  aTimeoutSec          - [IN] CM block ÀÇ ÀĞ±â timeout °ª
+ *  aResultCode          - [OUT] Operation ì˜ ìˆ˜í–‰ ê²°ê³¼ë¡œ ì–»ëŠ” result code
+ *                               node session ì˜ id
+ *  aTimeoutSec          - [IN] CM block ì˜ ì½ê¸° timeout ê°’
  *
  ************************************************************************/
 IDE_RC  dkpProtocolMgr::recvSavepointResult( dksSession    *aSession,
@@ -4099,9 +4099,9 @@ IDE_RC  dkpProtocolMgr::recvSavepointResult( dksSession    *aSession,
 }
 
 /************************************************************************
- * Description : Remote statement ¸¦ abort ÇÏ±â À§ÇØ ¼öÇàÇÏ´Â operation.
+ * Description : Remote statement ë¥¼ abort í•˜ê¸° ìœ„í•´ ìˆ˜í–‰í•˜ëŠ” operation.
  *
- *  aSession         - [IN] Operation À» ¼öÇàÇÏ´Â ¼¼¼ÇÁ¤º¸
+ *  aSession         - [IN] Operation ì„ ìˆ˜í–‰í•˜ëŠ” ì„¸ì…˜ì •ë³´
  *  aSessionId       - [IN] Linker data session id
  *  aRemoteStmtId    - [IN] Remote statement id
  *
@@ -4139,14 +4139,14 @@ IDE_RC  dkpProtocolMgr::sendAbortRemoteStmt( dksSession    *aSession,
 }
 
 /************************************************************************
- * Description : sendAbortRemoteStmt operation ÀÇ °á°ú¸¦ ¹Ş´Â´Ù.
+ * Description : sendAbortRemoteStmt operation ì˜ ê²°ê³¼ë¥¼ ë°›ëŠ”ë‹¤.
  *
- *  aSession        - [IN] Operation À» ¼öÇàÇÏ´Â ¼¼¼ÇÁ¤º¸
+ *  aSession        - [IN] Operation ì„ ìˆ˜í–‰í•˜ëŠ” ì„¸ì…˜ì •ë³´
  *  aSessionId      - [IN] Linker data session id
  *  aRemoteStmtId   - [IN] Remote statement id
- *  aResultCode     - [OUT] Operation ÀÇ ¼öÇà °á°ú·Î ¾ò´Â result code
- *                          node session ÀÇ id
- *  aTimeoutSec     - [IN] CM block ÀÇ ÀĞ±â timeout °ª
+ *  aResultCode     - [OUT] Operation ì˜ ìˆ˜í–‰ ê²°ê³¼ë¡œ ì–»ëŠ” result code
+ *                          node session ì˜ id
+ *  aTimeoutSec     - [IN] CM block ì˜ ì½ê¸° timeout ê°’
  *
  ************************************************************************/
 IDE_RC  dkpProtocolMgr::recvAbortRemoteStmtResult( dksSession    *aSession,
@@ -4470,14 +4470,14 @@ void dkpProtocolMgr::freeXARecvResult( ID_XID * aRDOnlyXIDs,
 }
 
 /************************************************************************
- * Description : Remote server ¿¡ rollback À» ¼öÇàÇÏ±â À§ÇÑ operation.
+ * Description : Remote server ì— rollback ì„ ìˆ˜í–‰í•˜ê¸° ìœ„í•œ operation.
  *
- *  aSession         - [IN] Operation À» ¼öÇàÇÏ´Â ¼¼¼ÇÁ¤º¸
+ *  aSession         - [IN] Operation ì„ ìˆ˜í–‰í•˜ëŠ” ì„¸ì…˜ì •ë³´
  *  aSessionId       - [IN] Linker data session id
- *  aSavepointName   - [IN] ¾îµğ±îÁö rollback À» ¼öÇàÇÒ °ÍÀÎ°¡¸¦ ¸í½ÃÇÏ´Â
+ *  aSavepointName   - [IN] ì–´ë””ê¹Œì§€ rollback ì„ ìˆ˜í–‰í•  ê²ƒì¸ê°€ë¥¼ ëª…ì‹œí•˜ëŠ”
  *                          savepoint name
- *  aRemoteNodeCnt   - [IN] ÇØ´ç savepoint ¸¦ ÁöÁ¤ÇÑ remote node ÀÇ ¼ö
- *  aRemoteNodeIdArr - [IN] ÇØ´ç savepoint ¸¦ ÁöÁ¤ÇÑ remote node id ¹è¿­
+ *  aRemoteNodeCnt   - [IN] í•´ë‹¹ savepoint ë¥¼ ì§€ì •í•œ remote node ì˜ ìˆ˜
+ *  aRemoteNodeIdArr - [IN] í•´ë‹¹ savepoint ë¥¼ ì§€ì •í•œ remote node id ë°°ì—´
  *
  ************************************************************************/
 IDE_RC  dkpProtocolMgr::sendXARollback( dksSession    *aSession,
@@ -4548,13 +4548,13 @@ IDE_RC  dkpProtocolMgr::sendXARollback( dksSession    *aSession,
 }
 
 /************************************************************************
- * Description : sendRollback operation ÀÇ °á°ú¸¦ ¹Ş´Â´Ù.
+ * Description : sendRollback operation ì˜ ê²°ê³¼ë¥¼ ë°›ëŠ”ë‹¤.
  *
- *  aSession             - [IN] Operation À» ¼öÇàÇÏ´Â ¼¼¼ÇÁ¤º¸
+ *  aSession             - [IN] Operation ì„ ìˆ˜í–‰í•˜ëŠ” ì„¸ì…˜ì •ë³´
  *  aSessionId           - [IN] Linker data session id
- *  aResultCode          - [OUT] Operation ÀÇ ¼öÇà °á°ú·Î ¾ò´Â result code
- *                               node session ÀÇ id
- *  aTimeoutSec          - [IN] CM block ÀÇ ÀĞ±â timeout °ª
+ *  aResultCode          - [OUT] Operation ì˜ ìˆ˜í–‰ ê²°ê³¼ë¡œ ì–»ëŠ” result code
+ *                               node session ì˜ id
+ *  aTimeoutSec          - [IN] CM block ì˜ ì½ê¸° timeout ê°’
  *
  ************************************************************************/
 IDE_RC  dkpProtocolMgr::recvXARollbackResult( dksSession    *aSession,
@@ -4767,13 +4767,13 @@ IDE_RC  dkpProtocolMgr::sendXACommit( dksSession    *aSession,
 }
 
 /************************************************************************
- * Description : sendCommit operation ÀÇ °á°ú¸¦ ¹Ş´Â´Ù.
+ * Description : sendCommit operation ì˜ ê²°ê³¼ë¥¼ ë°›ëŠ”ë‹¤.
  *
- *  aSession             - [IN] Operation À» ¼öÇàÇÏ´Â ¼¼¼ÇÁ¤º¸
+ *  aSession             - [IN] Operation ì„ ìˆ˜í–‰í•˜ëŠ” ì„¸ì…˜ì •ë³´
  *  aSessionId           - [IN] Linker data session id
- *  aResultCode          - [OUT] Operation ÀÇ ¼öÇà °á°ú·Î ¾ò´Â result code
- *                               node session ÀÇ id
- *  aTimeoutSec          - [IN] CM block ÀÇ ÀĞ±â timeout °ª
+ *  aResultCode          - [OUT] Operation ì˜ ìˆ˜í–‰ ê²°ê³¼ë¡œ ì–»ëŠ” result code
+ *                               node session ì˜ id
+ *  aTimeoutSec          - [IN] CM block ì˜ ì½ê¸° timeout ê°’
  *
  ************************************************************************/
 IDE_RC  dkpProtocolMgr::recvXACommitResult( dksSession    *aSession,
@@ -4950,7 +4950,7 @@ IDE_RC dkpProtocolMgr::readLinkBufferInternal( dknLink * aLink,
                            sReadBufferLen )
               != IDE_SUCCESS );
     
-    // aDestination ¹öÆÛ¸¦ Ã¤¿ì°í ³²Àº data µéÀº skip Ã³¸® ÇÑ´Ù.
+    // aDestination ë²„í¼ë¥¼ ì±„ìš°ê³  ë‚¨ì€ data ë“¤ì€ skip ì²˜ë¦¬ í•œë‹¤.
     for ( i = 0 ; i < sRemainLen ; i ++ )
     {
         IDE_TEST( dknLinkReadOneByteNumber( aLink, &sTemp ) != IDE_SUCCESS );
@@ -4971,10 +4971,10 @@ IDE_RC dkpProtocolMgr::readLinkBufferInternal( dknLink * aLink,
 
 
 /************************************************************************
- * Description : ÀÌ remote statement ¼öÇà°á°ú°¡ error ÀÎ °æ¿ì, ÇÁ·ÎÅäÄİ
- *               À» ÅëÇØ AltiLinker ÇÁ·Î¼¼½º·ÎºÎÅÍ ¿ø°İ¼­¹öÀÇ error Á¤
- *               º¸¸¦ ¹Ş¾Æ¿Ã ¼ö ÀÖ´Âµ¥ ÀÌ·¸°Ô ¹Ş¾Æ¿Â error Á¤º¸¸¦ remote
- *               statement °´Ã¼¿¡ ÀúÀåÇÏ±â À§ÇØ ¼öÇàµÇ´Â ÇÔ¼ö
+ * Description : ì´ remote statement ìˆ˜í–‰ê²°ê³¼ê°€ error ì¸ ê²½ìš°, í”„ë¡œí† ì½œ
+ *               ì„ í†µí•´ AltiLinker í”„ë¡œì„¸ìŠ¤ë¡œë¶€í„° ì›ê²©ì„œë²„ì˜ error ì •
+ *               ë³´ë¥¼ ë°›ì•„ì˜¬ ìˆ˜ ìˆëŠ”ë° ì´ë ‡ê²Œ ë°›ì•„ì˜¨ error ì •ë³´ë¥¼ remote
+ *               statement ê°ì²´ì— ì €ì¥í•˜ê¸° ìœ„í•´ ìˆ˜í–‰ë˜ëŠ” í•¨ìˆ˜
  ************************************************************************/
 IDE_RC  dkpProtocolMgr::getErrorInfoFromProtocol( dksSession   *aSession,
                                                   UInt          aSessionId,

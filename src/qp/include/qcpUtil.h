@@ -31,7 +31,7 @@ typedef struct qcpUtilReservedWordTables
 {
     const SChar * mWord;
     UInt          mLen;
-    UInt          mReservedType;   // qcply.yÆÄÀÏ¿¡¼­ column_name¿¡ Ãß°¡µÇ¾úÀ¸¸é 1 , Ãß°¡µÇÁö ¾Ê¾ÒÀ¸¸é 0
+    UInt          mReservedType;   // qcply.yíŒŒì¼ì—ì„œ column_nameì— ì¶”ê°€ë˜ì—ˆìœ¼ë©´ 1 , ì¶”ê°€ë˜ì§€ ì•Šì•˜ìœ¼ë©´ 0
 } qcpUtilReservedWordTables;
 
 class qcpUtil
@@ -56,7 +56,7 @@ class qcpUtil
         SChar               * aString,
         SInt                  aStrlen);
 
-    /* PROJ-1107 Check Constraint Áö¿ø */
+    /* PROJ-1107 Check Constraint ì§€ì› */
     static IDE_RC makeConstraintColumnsFromExpression(
         qcStatement         * aStatement,
         qcmColumn          ** aConstraintColumns,

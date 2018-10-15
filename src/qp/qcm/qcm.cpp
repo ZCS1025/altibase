@@ -105,7 +105,7 @@ const void * gQcmReplItems;
 const void * gQcmReplItemsIndex [ QCM_MAX_META_INDICES ];
 const void * gQcmReplRecoveryInfos;
 
-/* PROJ-1442 Replication Online Áß DDL Çã¿ë */
+/* PROJ-1442 Replication Online ì¤‘ DDL í—ˆìš© */
 const void * gQcmReplOldItems;
 const void * gQcmReplOldItemsIndex  [QCM_MAX_META_INDICES];
 const void * gQcmReplOldCols;
@@ -248,8 +248,8 @@ IDE_RC qcm::check(smiStatement * aSmiStmt)
     IDE_EXCEPTION_END;
 
     // To Fix PR-11656
-    // Global º¯¼ö´Â ¹İµå½Ã ÃÊ±âÈ­µÇ¾î¾ß ÇÔ.
-    // Create DB => Drop DB => Create DB (¿ä±â¼­ ¹®Á¦ ¹ß»ıÇÔ)
+    // Global ë³€ìˆ˜ëŠ” ë°˜ë“œì‹œ ì´ˆê¸°í™”ë˜ì–´ì•¼ í•¨.
+    // Create DB => Drop DB => Create DB (ìš”ê¸°ì„œ ë¬¸ì œ ë°œìƒí•¨)
     initializeGlobalVariables( NULL );
 
     return IDE_FAILURE;
@@ -304,7 +304,7 @@ void qcm::initializeGlobalVariables( const void * aTable )
     gQcmReplHosts             = NULL;
     gQcmReplItems             = NULL;
 
-    // PROJ-1442 Replication Online Áß DDL Çã¿ë
+    // PROJ-1442 Replication Online ì¤‘ DDL í—ˆìš©
     gQcmReplOldItems          = NULL;
     gQcmReplOldCols           = NULL;
     gQcmReplOldIdxs           = NULL;
@@ -354,7 +354,7 @@ void qcm::initializeGlobalVariables( const void * aTable )
     /* PROJ-2264 */
     gQcmCompressionTables     = NULL;
 
-    /* BUG-35445 Check Constraint, Function-Based Index¿¡¼­ »ç¿ë ÁßÀÎ FunctionÀ» º¯°æ/Á¦°Å ¹æÁö */
+    /* BUG-35445 Check Constraint, Function-Based Indexì—ì„œ ì‚¬ìš© ì¤‘ì¸ Functionì„ ë³€ê²½/ì œê±° ë°©ì§€ */
     gQcmConstraintRelated     = NULL;
     gQcmIndexRelated          = NULL;
 
@@ -381,7 +381,7 @@ void qcm::initializeGlobalVariables( const void * aTable )
         gQcmReplHostsIndex[i]             = NULL;
         gQcmReplItemsIndex[i]             = NULL;
 
-        // PROJ-1442 Replication Online Áß DDL Çã¿ë
+        // PROJ-1442 Replication Online ì¤‘ DDL í—ˆìš©
         gQcmReplOldItemsIndex[i]          = NULL;
         gQcmReplOldColsIndex[i]           = NULL;
         gQcmReplOldIdxsIndex[i]           = NULL;
@@ -451,7 +451,7 @@ void qcm::initializeGlobalVariables( const void * aTable )
         /* PROJ-2264 */
         gQcmCompressionTablesIndex[i]     = NULL;
 
-        /* BUG-35445 Check Constraint, Function-Based Index¿¡¼­ »ç¿ë ÁßÀÎ FunctionÀ» º¯°æ/Á¦°Å ¹æÁö */
+        /* BUG-35445 Check Constraint, Function-Based Indexì—ì„œ ì‚¬ìš© ì¤‘ì¸ Functionì„ ë³€ê²½/ì œê±° ë°©ì§€ */
         gQcmConstraintRelatedIndex[i]     = NULL;
         gQcmIndexRelatedIndex[i]          = NULL;
 
@@ -610,7 +610,7 @@ IDE_RC qcm::checkDiskEdition( smiStatement * aSmiStmt )
         /* Nothing to do */
     }
 
-    /* User Memory/Volatile Table (Temporary TableÀº ¿¹¿Ü) */
+    /* User Memory/Volatile Table (Temporary Tableì€ ì˜ˆì™¸) */
     idlOS::snprintf( sSqlBuffer,
                      QD_MAX_SQL_LENGTH,
                      "SELECT C.NAME"
@@ -712,8 +712,8 @@ IDE_RC qcm::initMetaHandles(  smiStatement * aSmiStmt,
     UInt sColumnCnt;
     mtcColumn * sColumn;
 
-    // ¸Å¹ø Zero Dependencies¸¦ »ı¼ºÇÏ´Â °ÍÀ» ¹æÁöÇÏ±â À§ÇÏ¿©
-    // GlobalÇÑ Zero Dependencies¸¦ »ı¼ºÇÔ.
+    // ë§¤ë²ˆ Zero Dependenciesë¥¼ ìƒì„±í•˜ëŠ” ê²ƒì„ ë°©ì§€í•˜ê¸° ìœ„í•˜ì—¬
+    // Globalí•œ Zero Dependenciesë¥¼ ìƒì„±í•¨.
     qtc::dependencyClear( & qtc::zeroDependencies );
     sColumnCnt = smiGetTableColumnCount( gQcmTables);
     //-------------------------------------------
@@ -724,23 +724,23 @@ IDE_RC qcm::initMetaHandles(  smiStatement * aSmiStmt,
                             gQcmTables ) != IDE_SUCCESS);
 
     // PROJ-1359 Trigger
-    // ¼­¹ö ±¸µ¿ ½Ã ÇÑ¹ø¸¸ Module Pointer¸¦ ¼³Á¤ÇÏ¸é µÈ´Ù.
+    // ì„œë²„ êµ¬ë™ ì‹œ í•œë²ˆë§Œ Module Pointerë¥¼ ì„¤ì •í•˜ë©´ ëœë‹¤.
 
     for ( i = 0; i < sColumnCnt; i++ )
     {
         //PROJ-1362 QP-Large Record & Internal LOB support,
-        //table columnÁ¦¾à Ç®±â.
+        //table columnì œì•½ í’€ê¸°.
         IDE_TEST( smiGetTableColumns( gQcmTables,
                                       i,
                                       (const smiColumn**)&sColumn  )
                   != IDE_SUCCESS );
 
-        // mtdModule ¼³Á¤
+        // mtdModule ì„¤ì •
         IDE_TEST( mtd::moduleById( &sColumn->module,
                                    sColumn->type.dataTypeId )
                   != IDE_SUCCESS );
 
-        // mtlModule ¼³Á¤
+        // mtlModule ì„¤ì •
         IDE_TEST( mtl::moduleById( &sColumn->language,
                                    sColumn->type.languageId )
                   != IDE_SUCCESS );
@@ -858,7 +858,7 @@ IDE_RC qcm::initMetaHandles(  smiStatement * aSmiStmt,
                                  & gQcmReplItems,
                                  aSmiStmt ) != IDE_SUCCESS );
 
-    // PROJ-1442 Replication Online Áß DDL Çã¿ë
+    // PROJ-1442 Replication Online ì¤‘ DDL í—ˆìš©
     IDE_TEST( qcm::getMetaTable( QCM_REPL_OLD_ITEMS,
                                  & gQcmReplOldItems,
                                  aSmiStmt ) != IDE_SUCCESS );
@@ -961,7 +961,7 @@ IDE_RC qcm::initMetaHandles(  smiStatement * aSmiStmt,
                                  & gQcmCompressionTables,
                                  aSmiStmt ) != IDE_SUCCESS );
 
-    /* BUG-35445 Check Constraint, Function-Based Index¿¡¼­ »ç¿ë ÁßÀÎ FunctionÀ» º¯°æ/Á¦°Å ¹æÁö */
+    /* BUG-35445 Check Constraint, Function-Based Indexì—ì„œ ì‚¬ìš© ì¤‘ì¸ Functionì„ ë³€ê²½/ì œê±° ë°©ì§€ */
     IDE_TEST( qcm::getMetaTable( QCM_CONSTRAINT_RELATED,
                                  & gQcmConstraintRelated,
                                  aSmiStmt ) != IDE_SUCCESS );
@@ -1030,7 +1030,7 @@ IDE_RC qcm::initMetaHandles(  smiStatement * aSmiStmt,
     IDE_TEST( getMetaIndex( gQcmReplItemsIndex,
                             gQcmReplItems ) != IDE_SUCCESS);
 
-    // PROJ-1442 Replication Online Áß DDL Çã¿ë
+    // PROJ-1442 Replication Online ì¤‘ DDL í—ˆìš©
     IDE_TEST( getMetaIndex( gQcmReplOldItemsIndex,
                             gQcmReplOldItems ) != IDE_SUCCESS);
 
@@ -1146,7 +1146,7 @@ IDE_RC qcm::initMetaHandles(  smiStatement * aSmiStmt,
     IDE_TEST( getMetaIndex( gQcmAuditAllOptsIndex,
                             gQcmAuditAllOpts ) != IDE_SUCCESS );
 
-    /* BUG-35445 Check Constraint, Function-Based Index¿¡¼­ »ç¿ë ÁßÀÎ FunctionÀ» º¯°æ/Á¦°Å ¹æÁö */
+    /* BUG-35445 Check Constraint, Function-Based Indexì—ì„œ ì‚¬ìš© ì¤‘ì¸ Functionì„ ë³€ê²½/ì œê±° ë°©ì§€ */
     IDE_TEST( getMetaIndex( gQcmConstraintRelatedIndex,
                             gQcmConstraintRelated ) != IDE_SUCCESS);
 
@@ -1242,13 +1242,13 @@ IDE_RC qcm::initMetaCaches(smiStatement * aSmiStmt)
 /***********************************************************************
  *
  * Description :
- *    Å×ÀÌºíµéÀÇ ¸ŞÅ¸ Ä³½¬ qcmTableInfo ¸¦ ¸¸µç´Ù
+ *    í…Œì´ë¸”ë“¤ì˜ ë©”íƒ€ ìºì‰¬ qcmTableInfo ë¥¼ ë§Œë“ ë‹¤
  *
  * Implementation :
  *    1. read all tuple in QCM_TABLES_
- *    2. table OID, table id ±¸ÇÏ±â
- *    3. makeAndSetQcmTableInfo À» ÅëÇØ¼­ ¸ŞÅ¸ Ä³½¬¸¦ ¸¸µç´Ù
- *    4. gQcmUsersTempInfo, gQcmIndicesTableInfo ¸¦ ±¸ÇØ µĞ´Ù
+ *    2. table OID, table id êµ¬í•˜ê¸°
+ *    3. makeAndSetQcmTableInfo ì„ í†µí•´ì„œ ë©”íƒ€ ìºì‰¬ë¥¼ ë§Œë“ ë‹¤
+ *    4. gQcmUsersTempInfo, gQcmIndicesTableInfo ë¥¼ êµ¬í•´ ë‘”ë‹¤
  *
  ***********************************************************************/
 
@@ -1262,7 +1262,7 @@ IDE_RC qcm::initMetaCaches(smiStatement * aSmiStmt)
     mtcColumn       * sQcmTableIDColumn;
     mtcColumn       * sQcmTablesTableTypeColumn;
 
-    scGRID            sRid; // Disk TableÀ» À§ÇÑ Record IDentifier
+    scGRID            sRid; // Disk Tableì„ ìœ„í•œ Record IDentifier
 
     UChar           * sTableType;
     mtdCharType     * sTableTypeStr;
@@ -1390,8 +1390,8 @@ IDE_RC qcm::getMetaIndex( const void ** v_indexHandle,
     // BUGBUG : re-consider this function!!
     for (i = 0; i < v_idxCount; i++)
     {
-        // BUG-28454 smiGetTableIndexes ÇÔ¼öÀÇ »ç¿ëÀº ÀÌ°÷¿¡¼­¸¸ Çã¿ë
-        // ÀÌ ¿Ü ¸ğµç °æ¿ì¿¡´Â smiGetTableIndexById¸¦ »ç¿ëÇØ¾ß ÇÔ
+        // BUG-28454 smiGetTableIndexes í•¨ìˆ˜ì˜ ì‚¬ìš©ì€ ì´ê³³ì—ì„œë§Œ í—ˆìš©
+        // ì´ ì™¸ ëª¨ë“  ê²½ìš°ì—ëŠ” smiGetTableIndexByIdë¥¼ ì‚¬ìš©í•´ì•¼ í•¨
         v_indexHandle[i] = smiGetTableIndexes( v_tableHandle, i );
     }
 
@@ -1402,7 +1402,7 @@ IDE_RC qcm::getMetaIndex( const void ** v_indexHandle,
     return IDE_FAILURE;
 }
 
-/* Meta TableÀÇ Tablespace IDÇÊµå·ÎºÎÅÍ µ¥ÀÌÅÍ¸¦ ÀĞ¾î¿Â´Ù */
+/* Meta Tableì˜ Tablespace IDí•„ë“œë¡œë¶€í„° ë°ì´í„°ë¥¼ ì½ì–´ì˜¨ë‹¤ */
 scSpaceID qcm::getSpaceID(const void * aTableRow,
                           UInt         aFieldOffset )
 {
@@ -2013,7 +2013,7 @@ IDE_RC qcm::makeAndSetQcmTableInfo( smiStatement * aSmiStmt,
     // table handle
     sTableInfo->tableHandle = (void*) smiGetTable( aTableOID );
 
-    // ±âÅ¸ ÀÚÁÖ »ç¿ëÇÏ´Â Á¤º¸
+    // ê¸°íƒ€ ìì£¼ ì‚¬ìš©í•˜ëŠ” ì •ë³´
     sTableInfo->tableOID     = aTableOID;
     sTableInfo->tableFlag    = smiGetTableFlag( sTableInfo->tableHandle );
     sTableInfo->isDictionary = smiIsDictionaryTable( sTableInfo->tableHandle );
@@ -2031,7 +2031,7 @@ IDE_RC qcm::makeAndSetQcmTableInfo( smiStatement * aSmiStmt,
         IDE_TEST(getQcmColumn(aSmiStmt, sTableInfo) != IDE_SUCCESS);
 
         // BUG-42877
-        // lob columnÀÌ ÀÖÀ¸¸é lob Á¤º¸¸¦ sTableInfo->columnsÀÇ flag¿¡ Ãß°¡ÇÑ´Ù.
+        // lob columnì´ ìˆìœ¼ë©´ lob ì •ë³´ë¥¼ sTableInfo->columnsì˜ flagì— ì¶”ê°€í•œë‹¤.
         if ( sTableInfo->lobColumnCount > 0 )
         {
             IDE_TEST(getQcmLobColumn(aSmiStmt, sTableInfo ) != IDE_SUCCESS);
@@ -2070,15 +2070,15 @@ IDE_RC qcm::makeAndSetQcmTableInfo( smiStatement * aSmiStmt,
                 if ( sTableInfo->indices[i].indexPartitionType ==
                      QCM_NONE_PARTITIONED_INDEX )
                 {
-                    // partitioned tableÀÇ index°¡ non-partitioned index¶ó¸é
-                    // ÀÌ index´Â global indexÀÌ°í indexTableID°¡ ¹İµå½Ã Á¸ÀçÇØ¾ßÇÑ´Ù.
+                    // partitioned tableì˜ indexê°€ non-partitioned indexë¼ë©´
+                    // ì´ indexëŠ” global indexì´ê³  indexTableIDê°€ ë°˜ë“œì‹œ ì¡´ì¬í•´ì•¼í•œë‹¤.
                     IDE_TEST_RAISE( sTableInfo->indices[i].indexTableID == 0,
                                     ERR_META_CRASH );
                 }
                 else
                 {
-                    // partitioned tableÀÇ index°¡ partitioned index¶ó¸é
-                    // indexTableID´Â Á¸ÀçÇÒ ¼ö ¾ø´Ù.
+                    // partitioned tableì˜ indexê°€ partitioned indexë¼ë©´
+                    // indexTableIDëŠ” ì¡´ì¬í•  ìˆ˜ ì—†ë‹¤.
                     IDE_TEST_RAISE( sTableInfo->indices[i].indexTableID != 0,
                                     ERR_META_CRASH );
                 }
@@ -2088,13 +2088,13 @@ IDE_RC qcm::makeAndSetQcmTableInfo( smiStatement * aSmiStmt,
         {
             for ( i = 0; i < sTableInfo->indexCount; i++ )
             {
-                // non-partitioned tableÀÇ index´Â non-partitioned indexÀÌ¾î¾ß ÇÑ´Ù.
+                // non-partitioned tableì˜ indexëŠ” non-partitioned indexì´ì–´ì•¼ í•œë‹¤.
                 IDE_TEST_RAISE( sTableInfo->indices[i].indexPartitionType !=
                                 QCM_NONE_PARTITIONED_INDEX,
                                 ERR_META_CRASH );
 
-                // non-partitioned tableÀÇ non-partitioned index´Â
-                // indexTableID°¡ Á¸ÀçÇÒ ¼ö ¾ø´Ù.
+                // non-partitioned tableì˜ non-partitioned indexëŠ”
+                // indexTableIDê°€ ì¡´ì¬í•  ìˆ˜ ì—†ë‹¤.
                 IDE_TEST_RAISE( sTableInfo->indices[i].indexTableID != 0,
                                 ERR_META_CRASH );
             }
@@ -2127,7 +2127,7 @@ IDE_RC qcm::makeAndSetQcmTableInfo( smiStatement * aSmiStmt,
         sTableInfo->notNullCount = 0;
         sTableInfo->notNulls     = NULL;
 
-        /* PROJ-1107 Check Constraint Áö¿ø */
+        /* PROJ-1107 Check Constraint ì§€ì› */
         sTableInfo->checkCount = 0;
         sTableInfo->checks     = NULL;
 
@@ -2248,7 +2248,7 @@ void qcm::destroyQcmTableInfo(qcmTableInfo *aInfo)
             aInfo->notNulls = NULL;
         }
 
-        /* PROJ-1107 Check Constraint Áö¿ø */
+        /* PROJ-1107 Check Constraint ì§€ì› */
         if ( aInfo->checks != NULL )
         {
             if ( aInfo->checks->checkCondition != NULL )
@@ -2336,15 +2336,15 @@ IDE_RC qcm::getQcmColumn( smiStatement * aSmiStmt,
 /***********************************************************************
  *
  * Description :
- *    makeAndSetQcmTableInfo ·ÎºÎÅÍ È£ÃâµÇ¸ç ÄÃ·³µéÀÇ Ä³½¬¸¦ ¸¸µç´Ù
+ *    makeAndSetQcmTableInfo ë¡œë¶€í„° í˜¸ì¶œë˜ë©° ì»¬ëŸ¼ë“¤ì˜ ìºì‰¬ë¥¼ ë§Œë“ ë‹¤
  *
  * Implementation :
- *    1. SYS_COLUMNS_ Å×ÀÌºíÀÇ TABLE_ID, COLUMN_NAME, IS_NULLABLE, COLUMN_ORDER
- *       ÄÃ·³À» ±¸ÇÑ´Ù.
- *    2. QCM_COLUMNS_TABLEID_COLID_IDX_ORDER ¿¡ ÀÎµ¦½º°¡ ÀÖÀ¸¸é ¸í½ÃµÈ
- *       table ID ·Î keyRange ¸¦ ¸¸µç´Ù.
- *    3. ÇÑ °Ç¾¿ ÀĞÀ¸¸é¼­ ¸ŞÅ¸ Ä³½¬¸¦ ±¸¼ºÇÑ´Ù.( ÀÌ ¶§ 2¿¡¼­ ÀÎµ¦½º°¡ ¾ø¾úÀ¸¸é
- *       ¸í½ÃµÈ table ID ¿Í µ¿ÀÏÇÑ °Ç¿¡ ´ëÇØ¼­¸¸ ¼öÇàÇÑ´Ù.
+ *    1. SYS_COLUMNS_ í…Œì´ë¸”ì˜ TABLE_ID, COLUMN_NAME, IS_NULLABLE, COLUMN_ORDER
+ *       ì»¬ëŸ¼ì„ êµ¬í•œë‹¤.
+ *    2. QCM_COLUMNS_TABLEID_COLID_IDX_ORDER ì— ì¸ë±ìŠ¤ê°€ ìˆìœ¼ë©´ ëª…ì‹œëœ
+ *       table ID ë¡œ keyRange ë¥¼ ë§Œë“ ë‹¤.
+ *    3. í•œ ê±´ì”© ì½ìœ¼ë©´ì„œ ë©”íƒ€ ìºì‰¬ë¥¼ êµ¬ì„±í•œë‹¤.( ì´ ë•Œ 2ì—ì„œ ì¸ë±ìŠ¤ê°€ ì—†ì—ˆìœ¼ë©´
+ *       ëª…ì‹œëœ table ID ì™€ ë™ì¼í•œ ê±´ì— ëŒ€í•´ì„œë§Œ ìˆ˜í–‰í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -2368,7 +2368,7 @@ IDE_RC qcm::getQcmColumn( smiStatement * aSmiStmt,
     smiTableCursor          sCursor;
     smiCursorProperties     sCursorProperty;
 
-    scGRID                  sRid; // Disk TableÀ» À§ÇÑ Record IDentifier
+    scGRID                  sRid; // Disk Tableì„ ìœ„í•œ Record IDentifier
 
     sCursor.initialize();
 
@@ -2381,12 +2381,12 @@ IDE_RC qcm::getQcmColumn( smiStatement * aSmiStmt,
                                   (const smiColumn**)&sQcmColumnsIndexColumn )
               != IDE_SUCCESS );
 
-    // mtdModule ¼³Á¤
+    // mtdModule ì„¤ì •
     IDE_TEST(mtd::moduleById( &(sQcmColumnsIndexColumn->module),
                               sQcmColumnsIndexColumn->type.dataTypeId )
              != IDE_SUCCESS);
 
-    // mtlModule ¼³Á¤
+    // mtlModule ì„¤ì •
     IDE_TEST(mtl::moduleById( &(sQcmColumnsIndexColumn->language),
                               sQcmColumnsIndexColumn->type.languageId )
              != IDE_SUCCESS);
@@ -2400,12 +2400,12 @@ IDE_RC qcm::getQcmColumn( smiStatement * aSmiStmt,
                                   (const smiColumn**)&sColNameColInfo )
               != IDE_SUCCESS );
 
-    // mtdModule ¼³Á¤
+    // mtdModule ì„¤ì •
     IDE_TEST(mtd::moduleById( &(sColNameColInfo->module),
                               sColNameColInfo->type.dataTypeId )
              != IDE_SUCCESS);
 
-    // mtdModule ¼³Á¤
+    // mtdModule ì„¤ì •
     IDE_TEST(mtl::moduleById( &(sColNameColInfo->language),
                               sColNameColInfo->type.languageId )
              != IDE_SUCCESS);
@@ -2419,7 +2419,7 @@ IDE_RC qcm::getQcmColumn( smiStatement * aSmiStmt,
                                   (const smiColumn**)&sColIsNullColInfo )
               != IDE_SUCCESS );
 
-    // mtdModule ¼³Á¤
+    // mtdModule ì„¤ì •
     IDE_TEST(mtd::moduleById( &(sColIsNullColInfo->module),
                               sColIsNullColInfo->type.dataTypeId )
              != IDE_SUCCESS);
@@ -2437,7 +2437,7 @@ IDE_RC qcm::getQcmColumn( smiStatement * aSmiStmt,
                                   (const smiColumn**)&sColOrderColInfo )
               != IDE_SUCCESS );
 
-    // mtdModule ¼³Á¤
+    // mtdModule ì„¤ì •
     IDE_TEST(mtd::moduleById( &(sColOrderColInfo->module),
                               sColOrderColInfo->type.dataTypeId )
              != IDE_SUCCESS);
@@ -2455,7 +2455,7 @@ IDE_RC qcm::getQcmColumn( smiStatement * aSmiStmt,
                                   QCM_COLUMNS_DEFAULT_VAL_COL_ORDER,
                                   (const smiColumn**)&sColDefaultColInfo )
               != IDE_SUCCESS );
-    // mtdModule ¼³Á¤
+    // mtdModule ì„¤ì •
     // To Fix PR-5795
     IDE_TEST(mtd::moduleById( &(sColDefaultColInfo->module),
                               sColDefaultColInfo->type.dataTypeId )
@@ -2474,7 +2474,7 @@ IDE_RC qcm::getQcmColumn( smiStatement * aSmiStmt,
                                   (const smiColumn**)&sColHiddenColInfo )
               != IDE_SUCCESS );
 
-    // mtdModule ¼³Á¤
+    // mtdModule ì„¤ì •
     IDE_TEST( mtd::moduleById( &(sColHiddenColInfo->module),
                                sColHiddenColInfo->type.dataTypeId )
               != IDE_SUCCESS);
@@ -2492,7 +2492,7 @@ IDE_RC qcm::getQcmColumn( smiStatement * aSmiStmt,
                                   (const smiColumn**)&sColKeyPrevColInfo )
               != IDE_SUCCESS );
 
-    // mtdModule ¼³Á¤
+    // mtdModule ì„¤ì •
     IDE_TEST( mtd::moduleById( &(sColKeyPrevColInfo->module),
                                sColKeyPrevColInfo->type.dataTypeId )
               != IDE_SUCCESS);
@@ -2502,7 +2502,7 @@ IDE_RC qcm::getQcmColumn( smiStatement * aSmiStmt,
               != IDE_SUCCESS );
 
     //----------------------------
-    // Meta Cache ±¸¼º
+    // Meta Cache êµ¬ì„±
     //----------------------------
 
     if (aTableInfo->columnCount == 0)
@@ -2598,23 +2598,23 @@ IDE_RC qcm::getQcmColumn( smiStatement * aSmiStmt,
                 aTableInfo->columns[i].flag = 0;
 
                 // BUG-25886
-                // table headerÀÇ ÄÃ·³Á¤º¸¿¡µµ module°ú language¸¦ ¼³Á¤ÇÑ´Ù.
+                // table headerì˜ ì»¬ëŸ¼ì •ë³´ì—ë„ moduleê³¼ languageë¥¼ ì„¤ì •í•œë‹¤.
                 IDE_TEST( smiGetTableColumns( aTableInfo->tableHandle,
                                               i,
                                               (const smiColumn**)&sColumn )
                           != IDE_SUCCESS );
 
-                // mtdModule ¼³Á¤
+                // mtdModule ì„¤ì •
                 IDE_TEST( mtd::moduleById( &(sColumn->module),
                                            sColumn->type.dataTypeId )
                           != IDE_SUCCESS );
 
-                // mtlModule ¼³Á¤
+                // mtlModule ì„¤ì •
                 IDE_TEST( mtl::moduleById( &(sColumn->language),
                                            sColumn->type.languageId )
                           != IDE_SUCCESS );
 
-                // PROJ-1877 basicInfo¸¦ º¹»ç »ı¼ºÇÑ´Ù.
+                // PROJ-1877 basicInfoë¥¼ ë³µì‚¬ ìƒì„±í•œë‹¤.
                 IDU_FIT_POINT( "qcm::getQcmColumn::malloc::basicInfo",
                                 idERR_ABORT_InsufficientMemory );
 
@@ -2724,13 +2724,13 @@ IDE_RC qcm::getQcmColumn( smiStatement * aSmiStmt,
                 }
 
                 // PROJ-1488 AST
-                // External ModuleÀÇ Data TypeÀ» À§ÇÑ ¸ŞÅ¸Å×ÀÌºí ±¸Ãà
+                // External Moduleì˜ Data Typeì„ ìœ„í•œ ë©”íƒ€í…Œì´ë¸” êµ¬ì¶•
                 IDE_TEST( aTableInfo->columns[i].basicInfo->module
                           ->makeColumnInfo( aSmiStmt, aTableInfo, i )
                           != IDE_SUCCESS );
 
                 // PROJ-1362
-                // lobColumnCount´Â ÀÌ¹Ì ÃÊ±âÈ­ µÇ¾î ÀÖ´Ù.
+                // lobColumnCountëŠ” ì´ë¯¸ ì´ˆê¸°í™” ë˜ì–´ ìˆë‹¤.
                 if ( (aTableInfo->columns[i].basicInfo->module->flag &
                       MTD_COLUMN_TYPE_MASK)
                      == MTD_COLUMN_TYPE_LOB )
@@ -2776,14 +2776,14 @@ IDE_RC qcm::getQcmIndices( smiStatement * aSmiStmt,
 /***********************************************************************
  *
  * Description :
- *    makeAndSetQcmTableInfo ·ÎºÎÅÍ È£ÃâµÇ¸ç Å×ÀÌºíÀÇ ÀÎµ¦½º Ä³½¬¸¦ ¸¸µç´Ù
+ *    makeAndSetQcmTableInfo ë¡œë¶€í„° í˜¸ì¶œë˜ë©° í…Œì´ë¸”ì˜ ì¸ë±ìŠ¤ ìºì‰¬ë¥¼ ë§Œë“ ë‹¤
  *
  * Implementation :
- *    1. SYS_INDICES_ Å×ÀÌºíÀÇ TABLE_ID, INDEX_ID ÄÃ·³À» ±¸ÇÑ´Ù.
- *    2. SYS_INDICES_ Å×ÀÌºí¿¡ ÀÎµ¦½º°¡ ÀÖÀ¸¸é ¸í½ÃµÈ table ID ·Î
- *       keyRange ¸¦ ¸¸µç´Ù.
- *    3. ÇÑ °Ç¾¿ ÀĞÀ¸¸é¼­ ¸ŞÅ¸ Ä³½¬¸¦ ±¸¼ºÇÑ´Ù.( ÀÌ ¶§ 2¿¡¼­ ÀÎµ¦½º°¡
- *       ¾ø¾úÀ¸¸é ¸í½ÃµÈ table ID ¿Í µ¿ÀÏÇÑ °Ç¿¡ ´ëÇØ¼­¸¸ ¼öÇàÇÑ´Ù.
+ *    1. SYS_INDICES_ í…Œì´ë¸”ì˜ TABLE_ID, INDEX_ID ì»¬ëŸ¼ì„ êµ¬í•œë‹¤.
+ *    2. SYS_INDICES_ í…Œì´ë¸”ì— ì¸ë±ìŠ¤ê°€ ìˆìœ¼ë©´ ëª…ì‹œëœ table ID ë¡œ
+ *       keyRange ë¥¼ ë§Œë“ ë‹¤.
+ *    3. í•œ ê±´ì”© ì½ìœ¼ë©´ì„œ ë©”íƒ€ ìºì‰¬ë¥¼ êµ¬ì„±í•œë‹¤.( ì´ ë•Œ 2ì—ì„œ ì¸ë±ìŠ¤ê°€
+ *       ì—†ì—ˆìœ¼ë©´ ëª…ì‹œëœ table ID ì™€ ë™ì¼í•œ ê±´ì— ëŒ€í•´ì„œë§Œ ìˆ˜í–‰í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -2804,7 +2804,7 @@ IDE_RC qcm::getQcmIndices( smiStatement * aSmiStmt,
     smiCursorProperties     sCursorProperty;
 
     smiTableSpaceAttr       sTBSAttr;
-    scGRID                  sRid; // Disk TableÀ» À§ÇÑ Record IDentifier
+    scGRID                  sRid; // Disk Tableì„ ìœ„í•œ Record IDentifier
     UInt                  * sKeyCols;
     UInt                    k = 0;
     UInt                    c = 0;
@@ -2844,7 +2844,7 @@ IDE_RC qcm::getQcmIndices( smiStatement * aSmiStmt,
                                   (const smiColumn**)&sQcmIndexTableIDCol )
               != IDE_SUCCESS );
 
-    // mtdModule ¼³Á¤
+    // mtdModule ì„¤ì •
     IDE_TEST(mtd::moduleById( &(sQcmIndexTableIDCol->module),
                               sQcmIndexTableIDCol->type.dataTypeId )
              != IDE_SUCCESS);
@@ -2857,7 +2857,7 @@ IDE_RC qcm::getQcmIndices( smiStatement * aSmiStmt,
                                   (const smiColumn**)&sQcmIndexIndexIDCol )
               != IDE_SUCCESS );
 
-    // mtdModule ¼³Á¤
+    // mtdModule ì„¤ì •
     IDE_TEST(mtd::moduleById( &(sQcmIndexIndexIDCol->module),
                               sQcmIndexIndexIDCol->type.dataTypeId )
              != IDE_SUCCESS);
@@ -2955,12 +2955,12 @@ IDE_RC qcm::getQcmIndices( smiStatement * aSmiStmt,
                                           (const smiColumn**)&sMtcColumnInfo )
                       != IDE_SUCCESS );
 
-            // mtdModule ¼³Á¤
+            // mtdModule ì„¤ì •
             IDE_TEST(mtd::moduleById( &(sMtcColumnInfo->module),
                                       sMtcColumnInfo->type.dataTypeId )
                      != IDE_SUCCESS);
 
-            // mtlModule ¼³Á¤
+            // mtlModule ì„¤ì •
             IDE_TEST(mtl::moduleById( &(sMtcColumnInfo->language),
                                       sMtcColumnInfo->type.languageId )
                      != IDE_SUCCESS);
@@ -3053,12 +3053,12 @@ IDE_RC qcm::getQcmIndices( smiStatement * aSmiStmt,
                                           (const smiColumn**)&sMtcColumnInfo )
                       != IDE_SUCCESS );
 
-            // mtdModule ¼³Á¤
+            // mtdModule ì„¤ì •
             IDE_TEST(mtd::moduleById( &(sMtcColumnInfo->module),
                                       sMtcColumnInfo->type.dataTypeId )
                      != IDE_SUCCESS);
 
-            // mtlModule ¼³Á¤
+            // mtlModule ì„¤ì •
             IDE_TEST(mtl::moduleById( &(sMtcColumnInfo->language),
                                       sMtcColumnInfo->type.languageId )
                      != IDE_SUCCESS);
@@ -3093,12 +3093,12 @@ IDE_RC qcm::getQcmIndices( smiStatement * aSmiStmt,
                                           (const smiColumn**)&sMtcColumnInfo )
                       != IDE_SUCCESS );
 
-            // mtdModule ¼³Á¤
+            // mtdModule ì„¤ì •
             IDE_TEST(mtd::moduleById( &(sMtcColumnInfo->module),
                                       sMtcColumnInfo->type.dataTypeId )
                      != IDE_SUCCESS);
 
-            // mtlModule ¼³Á¤
+            // mtlModule ì„¤ì •
             IDE_TEST(mtl::moduleById( &(sMtcColumnInfo->language),
                                       sMtcColumnInfo->type.languageId )
                      != IDE_SUCCESS);
@@ -3115,12 +3115,12 @@ IDE_RC qcm::getQcmIndices( smiStatement * aSmiStmt,
                                           (const smiColumn**)&sMtcColumnInfo )
                       != IDE_SUCCESS );
 
-            // mtdModule ¼³Á¤
+            // mtdModule ì„¤ì •
             IDE_TEST(mtd::moduleById( &(sMtcColumnInfo->module),
                                       sMtcColumnInfo->type.dataTypeId )
                      != IDE_SUCCESS);
 
-            // mtlModule ¼³Á¤
+            // mtlModule ì„¤ì •
             IDE_TEST(mtl::moduleById( &(sMtcColumnInfo->language),
                                       sMtcColumnInfo->type.languageId )
                      != IDE_SUCCESS);
@@ -3142,12 +3142,12 @@ IDE_RC qcm::getQcmIndices( smiStatement * aSmiStmt,
                                           (const smiColumn**)&sMtcColumnInfo )
                       != IDE_SUCCESS );
 
-            // mtdModule ¼³Á¤
+            // mtdModule ì„¤ì •
             IDE_TEST(mtd::moduleById( &(sMtcColumnInfo->module),
                                       sMtcColumnInfo->type.dataTypeId )
                      != IDE_SUCCESS);
 
-            // mtlModule ¼³Á¤
+            // mtlModule ì„¤ì •
             IDE_TEST(mtl::moduleById( &(sMtcColumnInfo->language),
                                       sMtcColumnInfo->type.languageId )
                      != IDE_SUCCESS);
@@ -3177,12 +3177,12 @@ IDE_RC qcm::getQcmIndices( smiStatement * aSmiStmt,
                                           (const smiColumn**)&sMtcColumnInfo )
                       != IDE_SUCCESS );
 
-            // mtdModule ¼³Á¤
+            // mtdModule ì„¤ì •
             IDE_TEST(mtd::moduleById( &(sMtcColumnInfo->module),
                                       sMtcColumnInfo->type.dataTypeId )
                      != IDE_SUCCESS);
 
-            // mtlModule ¼³Á¤
+            // mtlModule ì„¤ì •
             IDE_TEST(mtl::moduleById( &(sMtcColumnInfo->language),
                                       sMtcColumnInfo->type.languageId )
                      != IDE_SUCCESS);
@@ -3208,12 +3208,12 @@ IDE_RC qcm::getQcmIndices( smiStatement * aSmiStmt,
                                           QCM_INDICES_TBSID_COL_ORDER,
                                           (const smiColumn**)&sMtcColumnInfo )
                       != IDE_SUCCESS );
-            // mtdModule ¼³Á¤
+            // mtdModule ì„¤ì •
             IDE_TEST(mtd::moduleById( &(sMtcColumnInfo->module),
                                       sMtcColumnInfo->type.dataTypeId )
                      != IDE_SUCCESS);
 
-            // mtlModule ¼³Á¤
+            // mtlModule ì„¤ì •
             IDE_TEST(mtl::moduleById( &(sMtcColumnInfo->language),
                                       sMtcColumnInfo->type.languageId )
                      != IDE_SUCCESS);
@@ -3275,12 +3275,12 @@ IDE_RC qcm::getQcmIndices( smiStatement * aSmiStmt,
                                           (const smiColumn**)&sMtcColumnInfo )
                       != IDE_SUCCESS );
 
-            // mtdModule ¼³Á¤
+            // mtdModule ì„¤ì •
             IDE_TEST(mtd::moduleById( &(sMtcColumnInfo->module),
                                       sMtcColumnInfo->type.dataTypeId )
                      != IDE_SUCCESS);
 
-            // mtlModule ¼³Á¤
+            // mtlModule ì„¤ì •
             IDE_TEST(mtl::moduleById( &(sMtcColumnInfo->language),
                                       sMtcColumnInfo->type.languageId )
                      != IDE_SUCCESS);
@@ -3297,7 +3297,7 @@ IDE_RC qcm::getQcmIndices( smiStatement * aSmiStmt,
     sStage = 0;
     IDE_TEST(sCursor.close() != IDE_SUCCESS);
 
-    // indexCount¿Í i´Â °°¾Æ¾ß ÇÑ´Ù.
+    // indexCountì™€ iëŠ” ê°™ì•„ì•¼ í•œë‹¤.
     IDE_DASSERT( aTableInfo->indexCount == (UInt)i );
 
     return IDE_SUCCESS;
@@ -3324,16 +3324,16 @@ IDE_RC qcm::getQcmConstraints( smiStatement  * aSmiStmt,
 /***********************************************************************
  *
  * Description :
- *    makeAndSetQcmTableInfo ·ÎºÎÅÍ È£ÃâµÇ¸ç Å×ÀÌºíÀÇ constraint Ä³½¬¸¦
- *    ¸¸µç´Ù
+ *    makeAndSetQcmTableInfo ë¡œë¶€í„° í˜¸ì¶œë˜ë©° í…Œì´ë¸”ì˜ constraint ìºì‰¬ë¥¼
+ *    ë§Œë“ ë‹¤
  *
  * Implementation :
- *    1. SYS_CONSTRAINTS_ Å×ÀÌºíÀÇ TABLE_ID, CONSTRAINT_NAME, CONSTRAINT_ID,
+ *    1. SYS_CONSTRAINTS_ í…Œì´ë¸”ì˜ TABLE_ID, CONSTRAINT_NAME, CONSTRAINT_ID,
  *       INDEX_ID, COLUMN_CNT, CONSTRAINT_TYPE, REFERENCED_TABLE_ID, REFERENCED_CONSTRAINT_ID,
- *       DELETE_RULE, CHECK_CONDITION ÄÃ·³À» ±¸ÇÑ´Ù.
- *    2. ¸í½ÃµÈ table ID ·Î keyRange ¸¦ ¸¸µç´Ù.
- *    3. ÇÑ °Ç¾¿ ÀĞÀ¸¸é¼­ ¸ŞÅ¸ Ä³½¬(constraint Á¾·ù¿¡ µû¶ó¼­ qcmForeignKey,
- *       qcmUnique, qcmNotNull, qcmCheck°¡ µÉ ¼ö ÀÖ´Ù) ¸¦ ±¸¼ºÇÑ´Ù.
+ *       DELETE_RULE, CHECK_CONDITION ì»¬ëŸ¼ì„ êµ¬í•œë‹¤.
+ *    2. ëª…ì‹œëœ table ID ë¡œ keyRange ë¥¼ ë§Œë“ ë‹¤.
+ *    3. í•œ ê±´ì”© ì½ìœ¼ë©´ì„œ ë©”íƒ€ ìºì‰¬(constraint ì¢…ë¥˜ì— ë”°ë¼ì„œ qcmForeignKey,
+ *       qcmUnique, qcmNotNull, qcmCheckê°€ ë  ìˆ˜ ìˆë‹¤) ë¥¼ êµ¬ì„±í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -3355,7 +3355,7 @@ IDE_RC qcm::getQcmConstraints( smiStatement  * aSmiStmt,
     mtcColumn    * sReferencedTableIDCol;
     mtcColumn    * sReferencedConstraintIDCol;
     mtcColumn    * sDeleteRuleIDCol;
-    mtcColumn    * sCheckConditionCol;  /* PROJ-1107 Check Constraint Áö¿ø */
+    mtcColumn    * sCheckConditionCol;  /* PROJ-1107 Check Constraint ì§€ì› */
     mtcColumn    * sValidatedCol = NULL;
     UInt           sIndexID;
     mtdCharType  * sCharStr; /* for constraint name */
@@ -3363,17 +3363,17 @@ IDE_RC qcm::getQcmConstraints( smiStatement  * aSmiStmt,
     UInt           sIdxForeignKey;
     UInt           sIdxUniqueKey;
     UInt           sIdxNotNull;
-    UInt           sIdxCheck;           /* PROJ-1107 Check Constraint Áö¿ø */
+    UInt           sIdxCheck;           /* PROJ-1107 Check Constraint ì§€ì› */
     UInt           sTimeStampCount = 0;
 
-    scGRID         sRid; // Disk TableÀ» À§ÇÑ Record IDentifier
+    scGRID         sRid; // Disk Tableì„ ìœ„í•œ Record IDentifier
     UInt           sQcmConstraintsColCnt;
     smiCursorProperties sCursorProperty;
 
     aTableInfo->uniqueKeyCount  = 0;
     aTableInfo->foreignKeyCount = 0;
     aTableInfo->notNullCount    = 0;
-    aTableInfo->checkCount      = 0;    /* PROJ-1107 Check Constraint Áö¿ø */
+    aTableInfo->checkCount      = 0;    /* PROJ-1107 Check Constraint ì§€ì› */
     aTableInfo->primaryKey      = NULL;
     aTableInfo->timestamp       = NULL;
 
@@ -3386,7 +3386,7 @@ IDE_RC qcm::getQcmConstraints( smiStatement  * aSmiStmt,
         aTableInfo->uniqueKeys  = NULL;
         aTableInfo->foreignKeys = NULL;
         aTableInfo->notNulls    = NULL;
-        aTableInfo->checks      = NULL; /* PROJ-1107 Check Constraint Áö¿ø */
+        aTableInfo->checks      = NULL; /* PROJ-1107 Check Constraint ì§€ì› */
         aTableInfo->timestamp   = NULL;
 
         return IDE_SUCCESS;
@@ -3400,7 +3400,7 @@ IDE_RC qcm::getQcmConstraints( smiStatement  * aSmiStmt,
                                   (const smiColumn**)&sTableIDCol )
               != IDE_SUCCESS );
 
-    // mtdModule ¼³Á¤
+    // mtdModule ì„¤ì •
     IDE_TEST(mtd::moduleById( &sTableIDCol->module,
                               sTableIDCol->type.dataTypeId )
              != IDE_SUCCESS);
@@ -3410,7 +3410,7 @@ IDE_RC qcm::getQcmConstraints( smiStatement  * aSmiStmt,
                                   (const smiColumn**)&sConstraintNameCol )
               != IDE_SUCCESS );
 
-    // mtdModule ¼³Á¤
+    // mtdModule ì„¤ì •
     IDE_TEST(mtd::moduleById( &sConstraintNameCol->module,
                               sConstraintNameCol->type.dataTypeId )
              != IDE_SUCCESS);
@@ -3419,7 +3419,7 @@ IDE_RC qcm::getQcmConstraints( smiStatement  * aSmiStmt,
                                   QCM_CONSTRAINTS_CONSTRAINT_ID_COL_ORDER,
                                   (const smiColumn**)&sConstraintIDCol )
               != IDE_SUCCESS );
-    // mtdModule ¼³Á¤
+    // mtdModule ì„¤ì •
     IDE_TEST(mtd::moduleById( &sConstraintIDCol->module,
                               sConstraintIDCol->type.dataTypeId )
              != IDE_SUCCESS);
@@ -3428,7 +3428,7 @@ IDE_RC qcm::getQcmConstraints( smiStatement  * aSmiStmt,
                                   QCM_CONSTRAINTS_INDEX_ID_COL_ORDER,
                                   (const smiColumn**)&sTableIndexIDCol )
               != IDE_SUCCESS );
-    // mtdModule ¼³Á¤
+    // mtdModule ì„¤ì •
     IDE_TEST(mtd::moduleById( &sTableIndexIDCol->module,
                               sTableIndexIDCol->type.dataTypeId )
              != IDE_SUCCESS);
@@ -3437,7 +3437,7 @@ IDE_RC qcm::getQcmConstraints( smiStatement  * aSmiStmt,
                                   QCM_CONSTRAINTS_COLUMN_CNT_COL_ORDER,
                                   (const smiColumn**)&sColumnCountCol )
               != IDE_SUCCESS );
-    // mtdModule ¼³Á¤
+    // mtdModule ì„¤ì •
     IDE_TEST(mtd::moduleById( &sColumnCountCol->module,
                               sColumnCountCol->type.dataTypeId )
              != IDE_SUCCESS);
@@ -3446,7 +3446,7 @@ IDE_RC qcm::getQcmConstraints( smiStatement  * aSmiStmt,
                                   QCM_CONSTRAINTS_CONSTRAINT_TYPE_COL_ORDER,
                                   (const smiColumn**)&sConstraintTypeCol )
               != IDE_SUCCESS );
-    // mtdModule ¼³Á¤
+    // mtdModule ì„¤ì •
     IDE_TEST(mtd::moduleById( &sConstraintTypeCol->module,
                               sConstraintTypeCol->type.dataTypeId )
              != IDE_SUCCESS);
@@ -3455,7 +3455,7 @@ IDE_RC qcm::getQcmConstraints( smiStatement  * aSmiStmt,
                                   QCM_CONSTRAINTS_REFERENCED_TABLE_ID_COL_ORDER,
                                   (const smiColumn**)&sReferencedTableIDCol )
               != IDE_SUCCESS );
-    // mtdModule ¼³Á¤
+    // mtdModule ì„¤ì •
     IDE_TEST(mtd::moduleById( &sReferencedTableIDCol->module,
                               sReferencedTableIDCol->type.dataTypeId )
              != IDE_SUCCESS);
@@ -3464,7 +3464,7 @@ IDE_RC qcm::getQcmConstraints( smiStatement  * aSmiStmt,
                                   QCM_CONSTRAINTS_REFERENCED_CONSTRAINT_ID_COL_ORDER,
                                   (const smiColumn**)&sReferencedConstraintIDCol )
               != IDE_SUCCESS );
-    // mtdModule ¼³Á¤
+    // mtdModule ì„¤ì •
     IDE_TEST(mtd::moduleById( &sReferencedConstraintIDCol->module,
                               sReferencedConstraintIDCol->type.dataTypeId )
              != IDE_SUCCESS);
@@ -3473,31 +3473,31 @@ IDE_RC qcm::getQcmConstraints( smiStatement  * aSmiStmt,
                                   QCM_CONSTRAINTS_DELETE_RULE_COL_ORDER,
                                   (const smiColumn**)&sDeleteRuleIDCol )
               != IDE_SUCCESS );
-    // mtdModule ¼³Á¤
+    // mtdModule ì„¤ì •
     IDE_TEST(mtd::moduleById( &sDeleteRuleIDCol->module,
                               sDeleteRuleIDCol->type.dataTypeId )
              != IDE_SUCCESS );
 
-    /* PROJ-1107 Check Constraint Áö¿ø */
+    /* PROJ-1107 Check Constraint ì§€ì› */
     IDE_TEST( smiGetTableColumns( gQcmConstraints,
                                   QCM_CONSTRAINTS_CHECK_CONDITION_COL_ORDER,
                                   (const smiColumn**)&sCheckConditionCol )
               != IDE_SUCCESS );
-    /* mtdModule ¼³Á¤ */
+    /* mtdModule ì„¤ì • */
     IDE_TEST( mtd::moduleById( &sCheckConditionCol->module,
                                sCheckConditionCol->type.dataTypeId )
               != IDE_SUCCESS );
 
     // PROJ-1874 FK Novalidate
-    // SYS_CONSTRAINTS_ TableÀÇ º¯°æ¿¡ µû¸¥ ÀÌÀü ¹öÀü°úÀÇ È£È¯¼º À¯Áö
-    // SYS_CONSTRAINTS_ Table¿¡ VALIDATED ÄÃ·³ÀÌ Á¸ÀçÇÏ´ÂÁö °Ë»çÇÏ°í ÀĞ¾î¿ÃÁö¸¦ °áÁ¤ÇÑ´Ù.
+    // SYS_CONSTRAINTS_ Tableì˜ ë³€ê²½ì— ë”°ë¥¸ ì´ì „ ë²„ì „ê³¼ì˜ í˜¸í™˜ì„± ìœ ì§€
+    // SYS_CONSTRAINTS_ Tableì— VALIDATED ì»¬ëŸ¼ì´ ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬í•˜ê³  ì½ì–´ì˜¬ì§€ë¥¼ ê²°ì •í•œë‹¤.
     if( sQcmConstraintsColCnt >= QCM_CONSTRAINTS_VALIDATED_ORDER+1 )
     {
         IDE_TEST( smiGetTableColumns( gQcmConstraints,
                                       QCM_CONSTRAINTS_VALIDATED_ORDER,
                                       (const smiColumn**)&sValidatedCol )
                   != IDE_SUCCESS );
-        // mtdModule ¼³Á¤
+        // mtdModule ì„¤ì •
         IDE_TEST(mtd::moduleById( &sValidatedCol->module,
                                   sValidatedCol->type.dataTypeId )
                  != IDE_SUCCESS );
@@ -3522,7 +3522,7 @@ IDE_RC qcm::getQcmConstraints( smiStatement  * aSmiStmt,
         aTableInfo->uniqueKeys  = NULL;
         aTableInfo->foreignKeys = NULL;
         aTableInfo->notNulls    = NULL;
-        aTableInfo->checks      = NULL; /* PROJ-1107 Check Constraint Áö¿ø */
+        aTableInfo->checks      = NULL; /* PROJ-1107 Check Constraint ì§€ì› */
 
         return IDE_SUCCESS;
     }
@@ -3580,7 +3580,7 @@ IDE_RC qcm::getQcmConstraints( smiStatement  * aSmiStmt,
         {
             aTableInfo->notNullCount ++;
         }
-        else if ( sConstraintType == QD_CHECK ) /* PROJ-1107 Check Constraint Áö¿ø */
+        else if ( sConstraintType == QD_CHECK ) /* PROJ-1107 Check Constraint ì§€ì› */
         {
             aTableInfo->checkCount++;
         }
@@ -3638,7 +3638,7 @@ IDE_RC qcm::getQcmConstraints( smiStatement  * aSmiStmt,
         aTableInfo->notNulls = NULL;
     }
 
-    /* PROJ-1107 Check Constraint Áö¿ø */
+    /* PROJ-1107 Check Constraint ì§€ì› */
     if ( aTableInfo->checkCount != 0 )
     {
         IDE_TEST( iduMemMgr::calloc( IDU_MEM_QCM,
@@ -3711,8 +3711,8 @@ IDE_RC qcm::getQcmConstraints( smiStatement  * aSmiStmt,
                                                           (UChar *)sRow + sDeleteRuleIDCol->column.offset));
 
             // PROJ-1874 FK Novalidate
-            // SYS_CONSTRAINTS_ TableÀÇ º¯°æ¿¡ µû¸¥ ÀÌÀü ¹öÀü°úÀÇ È£È¯¼º À¯Áö
-            // SYS_CONSTRAINTS_ Table¿¡ VALIDATED ÄÃ·³ÀÌ Á¸ÀçÇÏ´ÂÁö °Ë»çÇÏ°í ÀĞ¾î¿ÃÁö¸¦ °áÁ¤ÇÑ´Ù.
+            // SYS_CONSTRAINTS_ Tableì˜ ë³€ê²½ì— ë”°ë¥¸ ì´ì „ ë²„ì „ê³¼ì˜ í˜¸í™˜ì„± ìœ ì§€
+            // SYS_CONSTRAINTS_ Tableì— VALIDATED ì»¬ëŸ¼ì´ ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬í•˜ê³  ì½ì–´ì˜¬ì§€ë¥¼ ê²°ì •í•œë‹¤.
             if( sQcmConstraintsColCnt >= QCM_CONSTRAINTS_VALIDATED_ORDER+1 )
             {
                 sCharStr = (mtdCharType *)(
@@ -3732,7 +3732,7 @@ IDE_RC qcm::getQcmConstraints( smiStatement  * aSmiStmt,
             }
             else
             {
-                // ÀÌÀü ¹öÀü È£È¯¼ºÀ» À§ÇØ ÄÃ·³ °³¼ö¸¦ º¸°í µğÆúÆ® °ªÀ» ³Ö´Â´Ù.
+                // ì´ì „ ë²„ì „ í˜¸í™˜ì„±ì„ ìœ„í•´ ì»¬ëŸ¼ ê°œìˆ˜ë¥¼ ë³´ê³  ë””í´íŠ¸ ê°’ì„ ë„£ëŠ”ë‹¤.
                 aTableInfo->foreignKeys[sIdxForeignKey].validated = ID_TRUE;
             }
 
@@ -3825,7 +3825,7 @@ IDE_RC qcm::getQcmConstraints( smiStatement  * aSmiStmt,
                 != IDE_SUCCESS);
             sIdxNotNull++;
         }
-        /* PROJ-1107 Check Constraint Áö¿ø */
+        /* PROJ-1107 Check Constraint ì§€ì› */
         else if ( sConstraintType == QD_CHECK )
         {
             IDE_TEST_RAISE( (sIdxCheck >= aTableInfo->checkCount) ||
@@ -3927,16 +3927,16 @@ IDE_RC qcm::getQcmLocalUniqueByCols( smiStatement  * aSmiStmt,
 /***********************************************************************
  *
  * Description :
- *    makeAndSetQcmTableInfo ·ÎºÎÅÍ È£ÃâµÇ¸ç Å×ÀÌºíÀÇ constraint Ä³½¬¸¦
- *    ¸¸µç´Ù
+ *    makeAndSetQcmTableInfo ë¡œë¶€í„° í˜¸ì¶œë˜ë©° í…Œì´ë¸”ì˜ constraint ìºì‰¬ë¥¼
+ *    ë§Œë“ ë‹¤
  *
  * Implementation :
- *    1. SYS_CONSTRAINTS_ Å×ÀÌºíÀÇ TABLE_ID, CONSTRAINT_NAME, CONSTRAINT_ID,
+ *    1. SYS_CONSTRAINTS_ í…Œì´ë¸”ì˜ TABLE_ID, CONSTRAINT_NAME, CONSTRAINT_ID,
  *       INDEX_ID, COLUMN_CNT,REFERENCED_TABLE_ID,REFERENCED_CONSTRAINT_ID
- *       ÄÃ·³À» ±¸ÇÑ´Ù.
- *    2. ¸í½ÃµÈ table ID ·Î keyRange ¸¦ ¸¸µç´Ù.
- *    3. ÇÑ °Ç¾¿ ÀĞÀ¸¸é¼­ ¸ŞÅ¸ Ä³½¬(constraint Á¾·ù¿¡ µû¶ó¼­ qcmForeignKey,
- *       qcmUnique,qcmNotNull ÀÌ µÉ ¼ö ÀÖ´Ù) ¸¦ ±¸¼ºÇÑ´Ù.
+ *       ì»¬ëŸ¼ì„ êµ¬í•œë‹¤.
+ *    2. ëª…ì‹œëœ table ID ë¡œ keyRange ë¥¼ ë§Œë“ ë‹¤.
+ *    3. í•œ ê±´ì”© ì½ìœ¼ë©´ì„œ ë©”íƒ€ ìºì‰¬(constraint ì¢…ë¥˜ì— ë”°ë¼ì„œ qcmForeignKey,
+ *       qcmUnique,qcmNotNull ì´ ë  ìˆ˜ ìˆë‹¤) ë¥¼ êµ¬ì„±í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -3966,7 +3966,7 @@ IDE_RC qcm::getQcmLocalUniqueByCols( smiStatement  * aSmiStmt,
     idBool         sMatchFound;
     qcmIndex     * sIndex;
     qcmUnique      sLocalUnique;
-    scGRID         sRid; // Disk TableÀ» À§ÇÑ Record IDentifier
+    scGRID         sRid; // Disk Tableì„ ìœ„í•œ Record IDentifier
     idBool         sFound;
     smiCursorProperties sCursorProperty;
 
@@ -3978,7 +3978,7 @@ IDE_RC qcm::getQcmLocalUniqueByCols( smiStatement  * aSmiStmt,
                                   (const smiColumn**)&sTableIDCol )
               != IDE_SUCCESS );
 
-    // mtdModule ¼³Á¤
+    // mtdModule ì„¤ì •
     IDE_TEST(mtd::moduleById( &sTableIDCol->module,
                               sTableIDCol->type.dataTypeId )
              != IDE_SUCCESS);
@@ -3987,7 +3987,7 @@ IDE_RC qcm::getQcmLocalUniqueByCols( smiStatement  * aSmiStmt,
                                   QCM_CONSTRAINTS_CONSTRAINT_NAME_COL_ORDER,
                                   (const smiColumn**)&sConstraintNameCol )
               != IDE_SUCCESS );
-    // mtdModule ¼³Á¤
+    // mtdModule ì„¤ì •
     IDE_TEST(mtd::moduleById( &sConstraintNameCol->module,
                               sConstraintNameCol->type.dataTypeId )
              != IDE_SUCCESS);
@@ -3996,7 +3996,7 @@ IDE_RC qcm::getQcmLocalUniqueByCols( smiStatement  * aSmiStmt,
                                   QCM_CONSTRAINTS_CONSTRAINT_ID_COL_ORDER,
                                   (const smiColumn**)&sConstraintIDCol )
               != IDE_SUCCESS );
-    // mtdModule ¼³Á¤
+    // mtdModule ì„¤ì •
     IDE_TEST(mtd::moduleById( &sConstraintIDCol->module,
                               sConstraintIDCol->type.dataTypeId )
              != IDE_SUCCESS);
@@ -4005,7 +4005,7 @@ IDE_RC qcm::getQcmLocalUniqueByCols( smiStatement  * aSmiStmt,
                                   QCM_CONSTRAINTS_INDEX_ID_COL_ORDER,
                                   (const smiColumn**)&sTableIndexIDCol )
               != IDE_SUCCESS );
-    // mtdModule ¼³Á¤
+    // mtdModule ì„¤ì •
     IDE_TEST(mtd::moduleById( &sTableIndexIDCol->module,
                               sTableIndexIDCol->type.dataTypeId )
              != IDE_SUCCESS);
@@ -4014,7 +4014,7 @@ IDE_RC qcm::getQcmLocalUniqueByCols( smiStatement  * aSmiStmt,
                                   QCM_CONSTRAINTS_COLUMN_CNT_COL_ORDER,
                                   (const smiColumn**)&sColumnCountCol )
               != IDE_SUCCESS );
-    // mtdModule ¼³Á¤
+    // mtdModule ì„¤ì •
     IDE_TEST(mtd::moduleById( &sColumnCountCol->module,
                               sColumnCountCol->type.dataTypeId )
              != IDE_SUCCESS);
@@ -4023,7 +4023,7 @@ IDE_RC qcm::getQcmLocalUniqueByCols( smiStatement  * aSmiStmt,
                                   QCM_CONSTRAINTS_CONSTRAINT_TYPE_COL_ORDER,
                                   (const smiColumn**)&sConstraintTypeCol )
               != IDE_SUCCESS );
-    // mtdModule ¼³Á¤
+    // mtdModule ì„¤ì •
     IDE_TEST(mtd::moduleById( &sConstraintTypeCol->module,
                               sConstraintTypeCol->type.dataTypeId )
              != IDE_SUCCESS);
@@ -4032,7 +4032,7 @@ IDE_RC qcm::getQcmLocalUniqueByCols( smiStatement  * aSmiStmt,
                                   QCM_CONSTRAINTS_REFERENCED_TABLE_ID_COL_ORDER,
                                   (const smiColumn**)&sReferencedTableIDCol )
               != IDE_SUCCESS );
-    // mtdModule ¼³Á¤
+    // mtdModule ì„¤ì •
     IDE_TEST(mtd::moduleById( &sReferencedTableIDCol->module,
                               sReferencedTableIDCol->type.dataTypeId )
              != IDE_SUCCESS);
@@ -4041,7 +4041,7 @@ IDE_RC qcm::getQcmLocalUniqueByCols( smiStatement  * aSmiStmt,
                                   QCM_CONSTRAINTS_REFERENCED_CONSTRAINT_ID_COL_ORDER,
                                   (const smiColumn**)&sReferencedConstraintIDCol )
               != IDE_SUCCESS );
-    // mtdModule ¼³Á¤
+    // mtdModule ì„¤ì •
     IDE_TEST(mtd::moduleById( &sReferencedConstraintIDCol->module,
                               sReferencedConstraintIDCol->type.dataTypeId )
              != IDE_SUCCESS);
@@ -4050,7 +4050,7 @@ IDE_RC qcm::getQcmLocalUniqueByCols( smiStatement  * aSmiStmt,
                                   QCM_CONSTRAINTS_DELETE_RULE_COL_ORDER,
                                   (const smiColumn**)&sDeleteRuleIDCol )
               != IDE_SUCCESS );
-    // mtdModule ¼³Á¤
+    // mtdModule ì„¤ì •
     IDE_TEST(mtd::moduleById( &sDeleteRuleIDCol->module,
                               sDeleteRuleIDCol->type.dataTypeId )
              != IDE_SUCCESS );
@@ -4201,13 +4201,13 @@ IDE_RC qcm::getQcmConstraintColumn( smiStatement  * aSmiStmt,
 /***********************************************************************
  *
  * Description :
- *    constraint ¸¦ ±¸¼ºÇÏ´Â ÄÃ·³¿¡ ´ëÇÑ Á¤º¸¸¦ Ä³½¬ÇÑ´Ù.
+ *    constraint ë¥¼ êµ¬ì„±í•˜ëŠ” ì»¬ëŸ¼ì— ëŒ€í•œ ì •ë³´ë¥¼ ìºì‰¬í•œë‹¤.
  *
  * Implementation :
- *    1. SYS_CONSTRAINT_COLUMNS_ Å×ÀÌºíÀÇ CONSTRAINT_ID, COLUMN_ID,
- *       CONSTRAINT_COL_ORDER ÄÃ·³À» ±¸ÇÑ´Ù.
- *    2. ¸í½ÃµÈ aConstrID ·Î keyRange ¸¦ ¸¸µç´Ù.
- *    3. ÇÑ °Ç¾¿ ÀĞÀ¸¸é¼­ ¸ŞÅ¸ Ä³½¬( ÄÃ·³ ID ÀÇ ¹è¿­, aColumns ) ¸¦ ±¸¼ºÇÑ´Ù.
+ *    1. SYS_CONSTRAINT_COLUMNS_ í…Œì´ë¸”ì˜ CONSTRAINT_ID, COLUMN_ID,
+ *       CONSTRAINT_COL_ORDER ì»¬ëŸ¼ì„ êµ¬í•œë‹¤.
+ *    2. ëª…ì‹œëœ aConstrID ë¡œ keyRange ë¥¼ ë§Œë“ ë‹¤.
+ *    3. í•œ ê±´ì”© ì½ìœ¼ë©´ì„œ ë©”íƒ€ ìºì‰¬( ì»¬ëŸ¼ ID ì˜ ë°°ì—´, aColumns ) ë¥¼ êµ¬ì„±í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -4224,7 +4224,7 @@ IDE_RC qcm::getQcmConstraintColumn( smiStatement  * aSmiStmt,
     mtcColumn    * sColumnIDCol;
     mtcColumn    * sColumnOrderCol;
 
-    scGRID         sRid; // Disk TableÀ» À§ÇÑ Record IDentifier
+    scGRID         sRid; // Disk Tableì„ ìœ„í•œ Record IDentifier
     smiCursorProperties sCursorProperty;
 
     sCursor.initialize();
@@ -4246,7 +4246,7 @@ IDE_RC qcm::getQcmConstraintColumn( smiStatement  * aSmiStmt,
                                   QCM_CONSTRAINT_COLUMNS_CONSTRAINT_ID_COL_ORDER,
                                   (const smiColumn**)&sConstraintColumnConstraintID )
               != IDE_SUCCESS );
-    // mtdModule ¼³Á¤
+    // mtdModule ì„¤ì •
     IDE_TEST(mtd::moduleById( &sConstraintColumnConstraintID->module,
                               sConstraintColumnConstraintID->type.dataTypeId )
              != IDE_SUCCESS);
@@ -4255,7 +4255,7 @@ IDE_RC qcm::getQcmConstraintColumn( smiStatement  * aSmiStmt,
                                   QCM_CONSTRAINT_COLUMNS_COLUMN_ID_COL_ORDER,
                                   (const smiColumn**)&sColumnIDCol )
               != IDE_SUCCESS );
-    // mtdModule ¼³Á¤
+    // mtdModule ì„¤ì •
     IDE_TEST(mtd::moduleById( &sColumnIDCol->module,
                               sColumnIDCol->type.dataTypeId )
              != IDE_SUCCESS);
@@ -4265,7 +4265,7 @@ IDE_RC qcm::getQcmConstraintColumn( smiStatement  * aSmiStmt,
                                   QCM_CONSTRAINT_COLUMNS_CONSTRAINT_COL_ORDER,
                                   (const smiColumn**)&sColumnOrderCol )
               != IDE_SUCCESS );
-    // mtdModule ¼³Á¤
+    // mtdModule ì„¤ì •
     IDE_TEST(mtd::moduleById( &sColumnOrderCol->module,
                               sColumnOrderCol->type.dataTypeId )
              != IDE_SUCCESS);
@@ -4344,11 +4344,11 @@ IDE_RC qcm::finiMetaCaches(smiStatement * aSmiStmt)
 /***********************************************************************
  *
  * Description :
- *    constraint ¸¦ ±¸¼ºÇÏ´Â ÄÃ·³¿¡ ´ëÇÑ Á¤º¸¸¦ Ä³½¬ÇÑ´Ù.
+ *    constraint ë¥¼ êµ¬ì„±í•˜ëŠ” ì»¬ëŸ¼ì— ëŒ€í•œ ì •ë³´ë¥¼ ìºì‰¬í•œë‹¤.
  *
  * Implementation :
- *    1. SYS_TABLES_ ÀÇ ¸ğµç tuple À» ÀĞ´Â´Ù.
- *    2. ÇÑ °Ç¾¿ ÀĞÀ¸¸é¼­ °¢ Å×ÀÌºíÀÇ ¸ŞÅ¸ Ä³½¬¸¦ destroy ÇÑ´Ù.
+ *    1. SYS_TABLES_ ì˜ ëª¨ë“  tuple ì„ ì½ëŠ”ë‹¤.
+ *    2. í•œ ê±´ì”© ì½ìœ¼ë©´ì„œ ê° í…Œì´ë¸”ì˜ ë©”íƒ€ ìºì‰¬ë¥¼ destroy í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -4361,7 +4361,7 @@ IDE_RC qcm::finiMetaCaches(smiStatement * aSmiStmt)
     qcmTableInfo    * sTableInfo;
     const void      * sTableHandle;
 
-    scGRID            sRid; // Disk TableÀ» À§ÇÑ Record IDentifier
+    scGRID            sRid; // Disk Tableì„ ìœ„í•œ Record IDentifier
 
     sCursor.initialize();
 
@@ -4605,7 +4605,7 @@ IDE_RC qcm::setOperatableFlag( qcmTableInfo * aTableInfo )
     else if( aTableInfo->tableType == QCM_INDEX_TABLE )
     {
         // PROJ-1624 non-partitioned index
-        // hidden table(index table)¿¡´Â ¸ğµç DDL, DMLÀ» ±İÁöÇÑ´Ù.
+        // hidden table(index table)ì—ëŠ” ëª¨ë“  DDL, DMLì„ ê¸ˆì§€í•œë‹¤.
         aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_REPL_DISABLE);
         aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_LOCK_TABLE_DISABLE);
         aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_CREATE_TABLE_DISABLE);
@@ -4628,8 +4628,8 @@ IDE_RC qcm::setOperatableFlag( qcmTableInfo * aTableInfo )
     else if( aTableInfo->tableType == QCM_SEQUENCE_TABLE )
     {
         // PROJ-2365 sequence table
-        // sequence table¿¡´Â select¿Í replicationÀ» Á¦¿ÜÇÑ ¸ğµç DDL, DMLÀ» ±İÁöÇÑ´Ù.
-        // test³ª ÀÀ±Ş»óÈ²À» °í·ÁÇØ updateµµ Ãß°¡ Çã¿ëÇÑ´Ù.
+        // sequence tableì—ëŠ” selectì™€ replicationì„ ì œì™¸í•œ ëª¨ë“  DDL, DMLì„ ê¸ˆì§€í•œë‹¤.
+        // testë‚˜ ì‘ê¸‰ìƒí™©ì„ ê³ ë ¤í•´ updateë„ ì¶”ê°€ í—ˆìš©í•œë‹¤.
         aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_REPL_ENABLE);
         aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_LOCK_TABLE_DISABLE);
         aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_CREATE_TABLE_DISABLE);
@@ -4653,7 +4653,7 @@ IDE_RC qcm::setOperatableFlag( qcmTableInfo * aTableInfo )
     else if( aTableInfo->tableType == QCM_RECYCLEBIN_TABLE )
     {
         /*
-         SELECT, PURGE, FLASHBACK ¸¸ Çã¿ë
+         SELECT, PURGE, FLASHBACK ë§Œ í—ˆìš©
         */
         aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_REPL_DISABLE);
         aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_LOCK_TABLE_DISABLE);
@@ -4699,7 +4699,7 @@ IDE_RC qcm::setOperatableFlag( qcmTableInfo * aTableInfo )
     else
     {
         // BUG-16980
-        // QCM_SEQUENCE³ª QCM_QUEUE_SEQUENCE¿©¼­´Â ¾ÈµÈ´Ù.
+        // QCM_SEQUENCEë‚˜ QCM_QUEUE_SEQUENCEì—¬ì„œëŠ” ì•ˆëœë‹¤.
         IDE_DASSERT( 0 );
     }
 
@@ -4735,9 +4735,9 @@ IDE_RC qcm::existObject(
     *aExist    = ID_FALSE;
 
     /*
-     * Synonym ½ºÅ°¸¶ °´Ã¼¿¡´Â PUBLICÀÌ¶ó´Â °³³äÀÌ Á¸ÀçÇÑ´Ù.
-     * PUBLIC °´Ã¼´Â Æ¯Á¤ À¯Àú¿¡ ¼ÓÇÑ °´Ã¼°¡ ¾Æ´Ï°í, ¸ğµç »ç¿ëÀÚ°¡ »ç¿ëÇÒ ¼ö
-     * ÀÖ´Â °´Ã¼ÀÌ´Ù.
+     * Synonym ìŠ¤í‚¤ë§ˆ ê°ì²´ì—ëŠ” PUBLICì´ë¼ëŠ” ê°œë…ì´ ì¡´ì¬í•œë‹¤.
+     * PUBLIC ê°ì²´ëŠ” íŠ¹ì • ìœ ì €ì— ì†í•œ ê°ì²´ê°€ ì•„ë‹ˆê³ , ëª¨ë“  ì‚¬ìš©ìê°€ ì‚¬ìš©í•  ìˆ˜
+     * ìˆëŠ” ê°ì²´ì´ë‹¤.
      */
 
     // Public Object
@@ -4750,18 +4750,18 @@ IDE_RC qcm::existObject(
     {
         if(QC_IS_NULL_NAME(aUserName) == ID_TRUE)
         {
-            // UserNameÀ» ÁöÁ¤ÇÏÁö ¾ÊÀ¸¸é Session User°¡ °´Ã¼ÀÇ ¼ÒÀ¯ÀÚ°¡ µÊ
+            // UserNameì„ ì§€ì •í•˜ì§€ ì•Šìœ¼ë©´ Session Userê°€ ê°ì²´ì˜ ì†Œìœ ìê°€ ë¨
             *aUserID = QCG_GET_SESSION_USER_ID(aStatement);
         }
         else
         {
-            // UserNameÀ¸·Î UserID¸¦ Ã£À½
+            // UserNameìœ¼ë¡œ UserIDë¥¼ ì°¾ìŒ
             IDE_TEST(qcmUser::getUserID( aStatement, aUserName, aUserID )
                      != IDE_SUCCESS);
         }
     }
 
-    // °´Ã¼ ÀÌ¸§ÀÌ NULLÀÎ °æ¿ì
+    // ê°ì²´ ì´ë¦„ì´ NULLì¸ ê²½ìš°
     if (QC_IS_NULL_NAME(aObjectName) == ID_TRUE)
     {
         IDE_RAISE(OBJECT_NOT_EXIST);
@@ -4781,8 +4781,8 @@ IDE_RC qcm::existObject(
         // Nothing to do.
     }
 
-    // table, sequence, procedureÀÇ °æ¿ì´Â
-    // public object°¡ Á¸ÀçÇÏÁö ¾Ê´Â´Ù.
+    // table, sequence, procedureì˜ ê²½ìš°ëŠ”
+    // public objectê°€ ì¡´ì¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
     if(ID_TRUE != aIsPublicObject)
     {
         // get table
@@ -4830,9 +4830,9 @@ IDE_RC qcm::existObject(
             if(QS_EMPTY_OID != sObjectID)
             {
                 // BUG-37293
-                // psm °´Ã¼ ¶Ç´Â package »ı¼º ½Ã,
-                // psm °´Ã¼ÀÎÁö packageÀÎÁö ±¸ºĞÇÏ¿©
-                // µ¿ÀÏÇÑ ÀÌ¸§¿¡ ´ëÇÑ °´Ã¼ÀÇ Á¸Àç ¿©ºÎ¸¦ ÆÇ´ÜÇØ¾ß ÇÑ´Ù.
+                // psm ê°ì²´ ë˜ëŠ” package ìƒì„± ì‹œ,
+                // psm ê°ì²´ì¸ì§€ packageì¸ì§€ êµ¬ë¶„í•˜ì—¬
+                // ë™ì¼í•œ ì´ë¦„ì— ëŒ€í•œ ê°ì²´ì˜ ì¡´ì¬ ì—¬ë¶€ë¥¼ íŒë‹¨í•´ì•¼ í•œë‹¤.
                 if( (aObjectType == QS_PROC) ||
                     (aObjectType == QS_FUNC) ||
                     (aObjectType == QS_TYPESET) )
@@ -4842,7 +4842,7 @@ IDE_RC qcm::existObject(
                 else
                 {
                     // Nothing to do.
-                    // *aObjectID´Â QS_EMPTY_OIDÀÓ
+                    // *aObjectIDëŠ” QS_EMPTY_OIDì„
                 }
 
                 IDE_RAISE(OBJECT_EXIST);
@@ -4879,9 +4879,9 @@ IDE_RC qcm::existObject(
             if(QS_EMPTY_OID != sObjectID)
             {
                 // BUG-37293
-                // psm °´Ã¼ ¶Ç´Â package »ı¼º ½Ã,
-                // psm °´Ã¼ÀÎÁö packageÀÎÁö ±¸ºĞÇÏ¿©
-                // µ¿ÀÏÇÑ ÀÌ¸§¿¡ ´ëÇÑ °´Ã¼ÀÇ Á¸Àç ¿©ºÎ¸¦ ÆÇ´ÜÇØ¾ß ÇÑ´Ù.
+                // psm ê°ì²´ ë˜ëŠ” package ìƒì„± ì‹œ,
+                // psm ê°ì²´ì¸ì§€ packageì¸ì§€ êµ¬ë¶„í•˜ì—¬
+                // ë™ì¼í•œ ì´ë¦„ì— ëŒ€í•œ ê°ì²´ì˜ ì¡´ì¬ ì—¬ë¶€ë¥¼ íŒë‹¨í•´ì•¼ í•œë‹¤.
                 if( aObjectType == QS_PKG )
 
                 {
@@ -4890,7 +4890,7 @@ IDE_RC qcm::existObject(
                 else
                 {
                     // Nothing to do.
-                    // *aObjectID´Â QS_EMPTY_OID
+                    // *aObjectIDëŠ” QS_EMPTY_OID
                 }
 
                 IDE_RAISE(OBJECT_EXIST);
@@ -4914,17 +4914,17 @@ IDE_RC qcm::existObject(
     }
 
     /*
-     * ¿©±â±îÁö ¿Ô´Ù¸é °´Ã¼¸¦ Ã£Áö ¸øÇÑ °ÍÀÌ´Ù.
+     * ì—¬ê¸°ê¹Œì§€ ì™”ë‹¤ë©´ ê°ì²´ë¥¼ ì°¾ì§€ ëª»í•œ ê²ƒì´ë‹¤.
      */
 
 
-// °´Ã¼¸¦ Ã£Áö ¸øÇÏ¸é ¿©±â·Î ÀÌµ¿ÇÑ´Ù.
+// ê°ì²´ë¥¼ ì°¾ì§€ ëª»í•˜ë©´ ì—¬ê¸°ë¡œ ì´ë™í•œë‹¤.
 OBJECT_NOT_EXIST :
     *aExist = ID_FALSE;
 
     return IDE_SUCCESS;
 
-// °´Ã¼¸¦ Ã£À¸¸é ¿©±â·Î ÀÌµ¿ÇÑ´Ù.
+// ê°ì²´ë¥¼ ì°¾ìœ¼ë©´ ì—¬ê¸°ë¡œ ì´ë™í•œë‹¤.
 OBJECT_EXIST :
     *aExist = ID_TRUE;
 
@@ -4949,11 +4949,11 @@ IDE_RC qcm::getTableInfo( qcStatement     *aStatement,
 /***********************************************************************
  *
  * Description :
- *    Å×ÀÌºí ÀÌ¸§À¸·Î Ä³½¬µÈ ¸ŞÅ¸¿¡¼­ qcmTableInfo ±¸Á¶Ã¼¸¦ ±¸ÇÑ´Ù
+ *    í…Œì´ë¸” ì´ë¦„ìœ¼ë¡œ ìºì‰¬ëœ ë©”íƒ€ì—ì„œ qcmTableInfo êµ¬ì¡°ì²´ë¥¼ êµ¬í•œë‹¤
  *
  * Implementation :
- *    1. Å×ÀÌºí ÀÌ¸§À¸·Î Å×ÀÌºíÀÇ ÇÚµéÀ» ±¸ÇÑ´Ù.
- *    2. 1ÀÇ ÇÚµé·Î Å×ÀÌºí info ¸¦ ±¸ÇÑ´Ù => smiGetTableTempInfo
+ *    1. í…Œì´ë¸” ì´ë¦„ìœ¼ë¡œ í…Œì´ë¸”ì˜ í•¸ë“¤ì„ êµ¬í•œë‹¤.
+ *    2. 1ì˜ í•¸ë“¤ë¡œ í…Œì´ë¸” info ë¥¼ êµ¬í•œë‹¤ => smiGetTableTempInfo
  *
  ***********************************************************************/
 
@@ -4972,8 +4972,8 @@ IDE_RC qcm::getTableInfo( qcStatement     *aStatement,
     else
     {
         // To Fix UMR
-        // In-line VIEWÀÏ °æ¿ì Table NameÀÌ Á¸ÀçÇÏÁö ¾Ê¾Æ
-        // UMRÀÌ ¹ß»ıÇÏ°Ô µÈ´Ù.
+        // In-line VIEWì¼ ê²½ìš° Table Nameì´ ì¡´ì¬í•˜ì§€ ì•Šì•„
+        // UMRì´ ë°œìƒí•˜ê²Œ ëœë‹¤.
         IDE_RAISE( ERR_NOT_EXIST_TABLE );
     }
 
@@ -5000,11 +5000,11 @@ IDE_RC qcm::getTableInfo(
 /***********************************************************************
  *
  * Description :
- *    Å×ÀÌºí ÀÌ¸§À¸·Î Ä³½¬µÈ ¸ŞÅ¸¿¡¼­ qcmTableInfo ±¸Á¶Ã¼¸¦ ±¸ÇÑ´Ù
+ *    í…Œì´ë¸” ì´ë¦„ìœ¼ë¡œ ìºì‰¬ëœ ë©”íƒ€ì—ì„œ qcmTableInfo êµ¬ì¡°ì²´ë¥¼ êµ¬í•œë‹¤
  *
  * Implementation :
- *    1. Å×ÀÌºí ÀÌ¸§À¸·Î Å×ÀÌºíÀÇ ÇÚµéÀ» ±¸ÇÑ´Ù.
- *    2. 1ÀÇ ÇÚµé·Î Å×ÀÌºí info ¸¦ ±¸ÇÑ´Ù => smiGetTableTempInfo
+ *    1. í…Œì´ë¸” ì´ë¦„ìœ¼ë¡œ í…Œì´ë¸”ì˜ í•¸ë“¤ì„ êµ¬í•œë‹¤.
+ *    2. 1ì˜ í•¸ë“¤ë¡œ í…Œì´ë¸” info ë¥¼ êµ¬í•œë‹¤ => smiGetTableTempInfo
  *
  ***********************************************************************/
 
@@ -5027,8 +5027,8 @@ IDE_RC qcm::getTableInfo(
         sFlag = smiGetTableFlag(*aTableHandle);
 
         // To fix BUG-14826
-        // tableinfo´Â ¾ÆÁ÷ lockÀ» ÀâÁö ¾È¾ÑÀ¸¹Ç·Î À¯È¿ÇÏÁö ¾Ê´Ù.
-        // tablehandle·Î ºñ±³ÇØ¾ß ÇÔ.
+        // tableinfoëŠ” ì•„ì§ lockì„ ì¡ì§€ ì•ˆì•—ìœ¼ë¯€ë¡œ ìœ íš¨í•˜ì§€ ì•Šë‹¤.
+        // tablehandleë¡œ ë¹„êµí•´ì•¼ í•¨.
         if( ( (sFlag & SMI_TABLE_TYPE_MASK) == SMI_TABLE_MEMORY) ||
             ( (sFlag & SMI_TABLE_TYPE_MASK) == SMI_TABLE_META) ||
             ( (sFlag & SMI_TABLE_TYPE_MASK) == SMI_TABLE_VOLATILE) )
@@ -5062,16 +5062,16 @@ IDE_RC qcm::getTableHandleByName( smiStatement     * aSmiStmt,
 /***********************************************************************
  *
  * Description :
- *    userID, Å×ÀÌºí ÀÌ¸§À¸·Î Å×ÀÌºí ÇÚµéÀ» ±¸ÇÑ´Ù.
+ *    userID, í…Œì´ë¸” ì´ë¦„ìœ¼ë¡œ í…Œì´ë¸” í•¸ë“¤ì„ êµ¬í•œë‹¤.
  *
  * Implementation :
- *    1. SYS_TABLES_ Å×ÀÌºíÀÇ TABLE_NAME, TABLE_OID ÄÃ·³À» ±¸ÇÑ´Ù.
- *    2. SYS_TABLES_ Å×ÀÌºí¿¡ ÀÎµ¦½º°¡ ÀÖÀ¸¸é, ¸í½ÃµÈ userID, tableName À¸·Î
- *       keyRange ¸¦ ¸¸µç´Ù
- *    3. table OID ¸¦ ±¸ÇÑ ´ÙÀ½, ( 2¿¡¼­ ÀÎµ¦½º°¡ ¾øÀ¸¸é read ÇÏ¸é¼­ ¸í½ÃµÈ
- *       userID, tableName À» ºñ±³ÇØ¼­ Ã£´Â´Ù ) smiGetTable À» ÅëÇØ¼­
- *       Å×ÀÌºí ÇÚµéÀ» ±¸ÇÑ´Ù. Á¶°Ç¿¡ ¸Â´Â °Ç¼ö°¡ ¾øÀ¸¸é ¿¡·¯¸¦ ¹İÈ¯ÇÑ´Ù.
- *    4. TABLE_TYPE ÀÌ 'S'(½ÃÄö½º) È¤Àº 'W'(Å¥½ÃÄö½º)ÀÌ¸é ¸øÃ£¾Ò´Ù.
+ *    1. SYS_TABLES_ í…Œì´ë¸”ì˜ TABLE_NAME, TABLE_OID ì»¬ëŸ¼ì„ êµ¬í•œë‹¤.
+ *    2. SYS_TABLES_ í…Œì´ë¸”ì— ì¸ë±ìŠ¤ê°€ ìˆìœ¼ë©´, ëª…ì‹œëœ userID, tableName ìœ¼ë¡œ
+ *       keyRange ë¥¼ ë§Œë“ ë‹¤
+ *    3. table OID ë¥¼ êµ¬í•œ ë‹¤ìŒ, ( 2ì—ì„œ ì¸ë±ìŠ¤ê°€ ì—†ìœ¼ë©´ read í•˜ë©´ì„œ ëª…ì‹œëœ
+ *       userID, tableName ì„ ë¹„êµí•´ì„œ ì°¾ëŠ”ë‹¤ ) smiGetTable ì„ í†µí•´ì„œ
+ *       í…Œì´ë¸” í•¸ë“¤ì„ êµ¬í•œë‹¤. ì¡°ê±´ì— ë§ëŠ” ê±´ìˆ˜ê°€ ì—†ìœ¼ë©´ ì—ëŸ¬ë¥¼ ë°˜í™˜í•œë‹¤.
+ *    4. TABLE_TYPE ì´ 'S'(ì‹œí€€ìŠ¤) í˜¹ì€ 'W'(íì‹œí€€ìŠ¤)ì´ë©´ ëª»ì°¾ì•˜ë‹¤.
  *
  ***********************************************************************/
 
@@ -5097,7 +5097,7 @@ IDE_RC qcm::getTableHandleByName( smiStatement     * aSmiStmt,
     UChar               * sTableType                = NULL;
     mtdCharType         * sTableTypeStr             = NULL;
 
-    scGRID                sRid; // Disk TableÀ» À§ÇÑ Record IDentifier
+    scGRID                sRid; // Disk Tableì„ ìœ„í•œ Record IDentifier
     smiCursorProperties   sCursorProperty;
 
     IDE_TEST_RAISE( aTableNameSize > QC_MAX_OBJECT_NAME_LEN,
@@ -5177,12 +5177,12 @@ IDE_RC qcm::getTableHandleByName( smiStatement     * aSmiStmt,
     }
     else
     {
-        // mtdModule ¼³Á¤
+        // mtdModule ì„¤ì •
         IDE_TEST(mtd::moduleById( &(sQcmTablesUserIDColumn->module),
                                   sQcmTablesUserIDColumn->type.dataTypeId )
                  != IDE_SUCCESS);
 
-        // mtdModule ¼³Á¤
+        // mtdModule ì„¤ì •
         IDE_TEST(mtd::moduleById( &(sQcmTablesTableNameColumn->module),
                                   sQcmTablesTableNameColumn->type.dataTypeId )
                  != IDE_SUCCESS);
@@ -5283,15 +5283,15 @@ IDE_RC qcm::getTableHandleByID( smiStatement  * aSmiStmt,
 /***********************************************************************
  *
  * Description :
- *    Å×ÀÌºí ID ·Î Å×ÀÌºí ÇÚµéÀ» ±¸ÇÑ´Ù.
+ *    í…Œì´ë¸” ID ë¡œ í…Œì´ë¸” í•¸ë“¤ì„ êµ¬í•œë‹¤.
  *
  * Implementation :
- *    1. SYS_TABLES_ Å×ÀÌºíÀÇ TABLE_ID, TABLE_OID ÄÃ·³À» ±¸ÇÑ´Ù.
- *    2. ¸í½ÃµÈ aTableID ·Î keyRange ¸¦ ¸¸µç´Ù
- *    3. table OID ¸¦ ±¸ÇÑ ´ÙÀ½, smiGetTable À» ÅëÇØ¼­ Å×ÀÌºí ÇÚµéÀ» ±¸ÇÑ´Ù.
- *       Á¶°Ç¿¡ ¸Â´Â °Ç¼ö°¡ ¾øÀ¸¸é ¿¡·¯¸¦ ¹İÈ¯ÇÑ´Ù.
- *    4. aTouchTable °ªÀÌ ID_TRUE ÀÌ¸é ÇØ´ç tuple À» updateRow(NULL) ÇÑ´Ù.
- *    5. TableHandle, SCN, TableRow ¸¦ ¹İÈ¯ÇÑ´Ù.
+ *    1. SYS_TABLES_ í…Œì´ë¸”ì˜ TABLE_ID, TABLE_OID ì»¬ëŸ¼ì„ êµ¬í•œë‹¤.
+ *    2. ëª…ì‹œëœ aTableID ë¡œ keyRange ë¥¼ ë§Œë“ ë‹¤
+ *    3. table OID ë¥¼ êµ¬í•œ ë‹¤ìŒ, smiGetTable ì„ í†µí•´ì„œ í…Œì´ë¸” í•¸ë“¤ì„ êµ¬í•œë‹¤.
+ *       ì¡°ê±´ì— ë§ëŠ” ê±´ìˆ˜ê°€ ì—†ìœ¼ë©´ ì—ëŸ¬ë¥¼ ë°˜í™˜í•œë‹¤.
+ *    4. aTouchTable ê°’ì´ ID_TRUE ì´ë©´ í•´ë‹¹ tuple ì„ updateRow(NULL) í•œë‹¤.
+ *    5. TableHandle, SCN, TableRow ë¥¼ ë°˜í™˜í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -5312,7 +5312,7 @@ IDE_RC qcm::getTableHandleByID( smiStatement  * aSmiStmt,
     UChar               * sTableType    = NULL;
     mtdCharType         * sTableTypeStr = NULL;
 
-    scGRID                sRid; // Disk TableÀ» À§ÇÑ Record IDentifier
+    scGRID                sRid; // Disk Tableì„ ìœ„í•œ Record IDentifier
     smiCursorType         sCursorType;
     smiCursorProperties   sCursorProperty;
 
@@ -5334,8 +5334,8 @@ IDE_RC qcm::getTableHandleByID( smiStatement  * aSmiStmt,
               != IDE_SUCCESS );
 
     // To fix BUG-17593
-    // touchTableÀ» ÇÒ ¶§´Â update cursor type
-    // touchTableÀ» ¾È ÇÒ ¶§´Â select cursor type
+    // touchTableì„ í•  ë•ŒëŠ” update cursor type
+    // touchTableì„ ì•ˆ í•  ë•ŒëŠ” select cursor type
     if (aTouchTable == ID_TRUE)
     {
         sFlag = (SMI_LOCK_WRITE|SMI_TRAVERSE_FORWARD|SMI_PREVIOUS_DISABLE);
@@ -5531,14 +5531,14 @@ IDE_RC qcm::getTableInfoByID( qcStatement    *aStatement,
             ((smiGetTableFlag(*aTableHandle) & SMI_TABLE_TYPE_MASK) == SMI_TABLE_META) ||
             ((smiGetTableFlag(*aTableHandle) & SMI_TABLE_TYPE_MASK) == SMI_TABLE_VOLATILE) )
         {
-            // Memory Table Space¸¦ »ç¿ëÇÏ´Â DDLÀÎ °æ¿ì
-            // Cursor FlagÀÇ ´©Àû
+            // Memory Table Spaceë¥¼ ì‚¬ìš©í•˜ëŠ” DDLì¸ ê²½ìš°
+            // Cursor Flagì˜ ëˆ„ì 
             QC_SHARED_TMPLATE(aStatement)->smiStatementFlag |= SMI_STATEMENT_MEMORY_CURSOR;
         }
         else
         {
-            // Disk Table Space¸¦ »ç¿ëÇÏ´Â DDLÀÎ °æ¿ì
-            // Cursor FlagÀÇ ´©Àû
+            // Disk Table Spaceë¥¼ ì‚¬ìš©í•˜ëŠ” DDLì¸ ê²½ìš°
+            // Cursor Flagì˜ ëˆ„ì 
             QC_SHARED_TMPLATE(aStatement)->smiStatementFlag |= SMI_STATEMENT_DISK_CURSOR;
         }
     }
@@ -5564,7 +5564,7 @@ IDE_RC qcm::getSequenceHandleByName( smiStatement   * aSmiStmt,
  *
  * Description :
  *    BUG-16980
- *    userID, ½ÃÄö½º ÀÌ¸§À¸·Î ½ÃÄö½º ÇÚµéÀ» ±¸ÇÑ´Ù.
+ *    userID, ì‹œí€€ìŠ¤ ì´ë¦„ìœ¼ë¡œ ì‹œí€€ìŠ¤ í•¸ë“¤ì„ êµ¬í•œë‹¤.
  *
  * Implementation :
  *
@@ -5594,16 +5594,16 @@ IDE_RC qcm::getSequenceInfoByName( smiStatement     * aSmiStmt,
  *
  * Description :
  *    BUG-16980
- *    userID, ½ÃÄö½º ÀÌ¸§À¸·Î ½ÃÄö½º Á¤º¸(handle,id) ¸¦ ±¸ÇÑ´Ù.
+ *    userID, ì‹œí€€ìŠ¤ ì´ë¦„ìœ¼ë¡œ ì‹œí€€ìŠ¤ ì •ë³´(handle,id) ë¥¼ êµ¬í•œë‹¤.
  *
  * Implementation :
- *    1. SYS_TABLES_ Å×ÀÌºíÀÇ TABLE_NAME, TABLE_OID ÄÃ·³À» ±¸ÇÑ´Ù.
- *    2. SYS_TABLES_ Å×ÀÌºí¿¡ ÀÎµ¦½º°¡ ÀÖÀ¸¸é, ¸í½ÃµÈ userID, tableName À¸·Î
- *       keyRange ¸¦ ¸¸µç´Ù
- *    3. table OID ¸¦ ±¸ÇÑ ´ÙÀ½, ( 2¿¡¼­ ÀÎµ¦½º°¡ ¾øÀ¸¸é read ÇÏ¸é¼­ ¸í½ÃµÈ
- *       userID, tableName À» ºñ±³ÇØ¼­ Ã£´Â´Ù ) smiGetTable À» ÅëÇØ¼­
- *       Å×ÀÌºí ÇÚµéÀ» ±¸ÇÑ´Ù. Á¶°Ç¿¡ ¸Â´Â °Ç¼ö°¡ ¾øÀ¸¸é ¿¡·¯¸¦ ¹İÈ¯ÇÑ´Ù.
- *    4. TABLE_TYPE ÀÌ 'S'(½ÃÄö½º) È¤Àº 'W'(Å¥½ÃÄö½º)ÀÌ¸é Ã£¾Ò´Ù.
+ *    1. SYS_TABLES_ í…Œì´ë¸”ì˜ TABLE_NAME, TABLE_OID ì»¬ëŸ¼ì„ êµ¬í•œë‹¤.
+ *    2. SYS_TABLES_ í…Œì´ë¸”ì— ì¸ë±ìŠ¤ê°€ ìˆìœ¼ë©´, ëª…ì‹œëœ userID, tableName ìœ¼ë¡œ
+ *       keyRange ë¥¼ ë§Œë“ ë‹¤
+ *    3. table OID ë¥¼ êµ¬í•œ ë‹¤ìŒ, ( 2ì—ì„œ ì¸ë±ìŠ¤ê°€ ì—†ìœ¼ë©´ read í•˜ë©´ì„œ ëª…ì‹œëœ
+ *       userID, tableName ì„ ë¹„êµí•´ì„œ ì°¾ëŠ”ë‹¤ ) smiGetTable ì„ í†µí•´ì„œ
+ *       í…Œì´ë¸” í•¸ë“¤ì„ êµ¬í•œë‹¤. ì¡°ê±´ì— ë§ëŠ” ê±´ìˆ˜ê°€ ì—†ìœ¼ë©´ ì—ëŸ¬ë¥¼ ë°˜í™˜í•œë‹¤.
+ *    4. TABLE_TYPE ì´ 'S'(ì‹œí€€ìŠ¤) í˜¹ì€ 'W'(íì‹œí€€ìŠ¤)ì´ë©´ ì°¾ì•˜ë‹¤.
  *
  ***********************************************************************/
 
@@ -5631,7 +5631,7 @@ IDE_RC qcm::getSequenceInfoByName( smiStatement     * aSmiStmt,
     UChar               * sTableType                = NULL;
     mtdCharType         * sTableTypeStr             = NULL;
 
-    scGRID                sRid; // Disk TableÀ» À§ÇÑ Record IDentifier
+    scGRID                sRid; // Disk Tableì„ ìœ„í•œ Record IDentifier
     smiCursorProperties   sCursorProperty;
 
     IDE_TEST_RAISE( aSequenceNameSize > QC_MAX_OBJECT_NAME_LEN,
@@ -5715,12 +5715,12 @@ IDE_RC qcm::getSequenceInfoByName( smiStatement     * aSmiStmt,
     }
     else
     {
-        // mtdModule ¼³Á¤
+        // mtdModule ì„¤ì •
         IDE_TEST(mtd::moduleById( &(sQcmTablesUserIDColumn->module),
                                   sQcmTablesUserIDColumn->type.dataTypeId )
                  != IDE_SUCCESS);
 
-        // mtdModule ¼³Á¤
+        // mtdModule ì„¤ì •
         IDE_TEST(mtd::moduleById( &(sQcmTablesTableNameColumn->module),
                                   sQcmTablesTableNameColumn->type.dataTypeId )
                  != IDE_SUCCESS);
@@ -5862,7 +5862,7 @@ IDE_RC qcm::getSequenceInfo( qcStatement      * aStatement,
 /***********************************************************************
  *
  * Description :
- *    ½ÃÄö½º ÀÌ¸§À¸·Î ½ÃÄö½ºÀÇ sequenceInfo¸¦ ±¸ÇÑ´Ù.
+ *    ì‹œí€€ìŠ¤ ì´ë¦„ìœ¼ë¡œ ì‹œí€€ìŠ¤ì˜ sequenceInfoë¥¼ êµ¬í•œë‹¤.
  *
  * Implementation :
  *
@@ -5919,17 +5919,17 @@ IDE_RC qcm::checkIndexByUser( qcStatement       *aStatement,
 /***********************************************************************
  *
  * Description :
- *    userName.indexName À» Ã¼Å©ÇÑ´Ù.
+ *    userName.indexName ì„ ì²´í¬í•œë‹¤.
  *
  * Implementation :
- *    1. user °¡ ÀÖ´ÂÁö Ã¼Å©ÇØ¼­ userID ¸¦ ±¸ÇÑ´Ù.
- *    2. SYS_INDICES_ Ä³½¬·ÎºÎÅÍ USER_ID, INDEX_NAME ÄÃ·³À» ±¸ÇØ µĞ´Ù.
- *    3. 2°¡ ¾øÀ¸¸é META_CRASH ¿¡·¯ ¹İÈ¯
- *    4. SYS_INDICES_ ¸ŞÅ¸ Å×ÀÌºí¿¡ USERID_INDEXNAME ¿¡ ÀÎµ¦½º°¡ ÀÖÀ¸¸é,
- *       userID, indexName À¸·Î keyRange ¸¦ ¸¸µç´Ù.
- *    5. ÇÑ Row ¾¿ ÀĞÀ¸¸é¼­(4¿¡¼­ ÀÎµ¦½º°¡ ¾øÀ¸¸é, userID, indexNameÀ»
- *       ºñ±³ÇØ¼­ ÀÏÄ¡ÇÏ´Â °Í¸¸) tableID, indexID ¸¦ ±¸ÇÑ´Ù.
- *    6. ÀÏÄ¡ÇÏ´Â ÀÎµ¦½º°¡ ¾øÀ¸¸é ¿¡·¯¸¦ ¹İÈ¯ÇÑ´Ù.
+ *    1. user ê°€ ìˆëŠ”ì§€ ì²´í¬í•´ì„œ userID ë¥¼ êµ¬í•œë‹¤.
+ *    2. SYS_INDICES_ ìºì‰¬ë¡œë¶€í„° USER_ID, INDEX_NAME ì»¬ëŸ¼ì„ êµ¬í•´ ë‘”ë‹¤.
+ *    3. 2ê°€ ì—†ìœ¼ë©´ META_CRASH ì—ëŸ¬ ë°˜í™˜
+ *    4. SYS_INDICES_ ë©”íƒ€ í…Œì´ë¸”ì— USERID_INDEXNAME ì— ì¸ë±ìŠ¤ê°€ ìˆìœ¼ë©´,
+ *       userID, indexName ìœ¼ë¡œ keyRange ë¥¼ ë§Œë“ ë‹¤.
+ *    5. í•œ Row ì”© ì½ìœ¼ë©´ì„œ(4ì—ì„œ ì¸ë±ìŠ¤ê°€ ì—†ìœ¼ë©´, userID, indexNameì„
+ *       ë¹„êµí•´ì„œ ì¼ì¹˜í•˜ëŠ” ê²ƒë§Œ) tableID, indexID ë¥¼ êµ¬í•œë‹¤.
+ *    6. ì¼ì¹˜í•˜ëŠ” ì¸ë±ìŠ¤ê°€ ì—†ìœ¼ë©´ ì—ëŸ¬ë¥¼ ë°˜í™˜í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -5952,7 +5952,7 @@ IDE_RC qcm::checkIndexByUser( qcStatement       *aStatement,
     qtcMetaRangeColumn      sFirstRangeColumn;
     qtcMetaRangeColumn      sSecondRangeColumn;
     smiCursorProperties     sCursorProperty;
-    scGRID                  sRid; // Disk TableÀ» À§ÇÑ Record IDentifier
+    scGRID                  sRid; // Disk Tableì„ ìœ„í•œ Record IDentifier
 
     *aIndexID = 0;
 
@@ -6155,8 +6155,8 @@ void qcm::makeMetaRangeSingleColumn( qtcMetaRangeColumn  * aRangeColumn,
     UInt sCompareType;
 
     // PROJ-1872
-    // index°¡ ÀÖ´Â Ä®·³¿¡ meta range¸¦ ¾²°Ô µÇ¸ç
-    // disk index columnÀÇ compare´Â stored type°ú mt type °£ÀÇ ºñ±³ÀÌ´Ù.
+    // indexê°€ ìˆëŠ” ì¹¼ëŸ¼ì— meta rangeë¥¼ ì“°ê²Œ ë˜ë©°
+    // disk index columnì˜ compareëŠ” stored typeê³¼ mt type ê°„ì˜ ë¹„êµì´ë‹¤.
     if ( ( aColumnDesc->column.flag & SMI_COLUMN_STORAGE_MASK )
          == SMI_COLUMN_STORAGE_DISK )
     {
@@ -6193,11 +6193,11 @@ void qcm::makeMetaRangeDoubleColumn(
     UInt sCompareType;
 
     // PROJ-1872
-    // index°¡ ÀÖ´Â Ä®·³¿¡ meta range¸¦ ¾²°Ô µÇ¸ç
-    // disk index columnÀÇ compare´Â stored type°ú mt type °£ÀÇ ºñ±³ÀÌ´Ù.
-    // First Column°ú Second Column ¸ğµÎ µ¿ÀÏ table typeÀÌ¹Ç·Î
-    // Ã¹¹øÂ° typeÀÇ ÀúÀå Å¸ÀÔ¸¸À¸·Î µÑ ¸ğµÎÀÇ compare typeÀ»
-    // ±¸ÇÒ¼ö ÀÖ´Ù.
+    // indexê°€ ìˆëŠ” ì¹¼ëŸ¼ì— meta rangeë¥¼ ì“°ê²Œ ë˜ë©°
+    // disk index columnì˜ compareëŠ” stored typeê³¼ mt type ê°„ì˜ ë¹„êµì´ë‹¤.
+    // First Columnê³¼ Second Column ëª¨ë‘ ë™ì¼ table typeì´ë¯€ë¡œ
+    // ì²«ë²ˆì§¸ typeì˜ ì €ì¥ íƒ€ì…ë§Œìœ¼ë¡œ ë‘˜ ëª¨ë‘ì˜ compare typeì„
+    // êµ¬í• ìˆ˜ ìˆë‹¤.
     if ( ( aFirstColumnDesc->column.flag & SMI_COLUMN_STORAGE_MASK )
          == SMI_COLUMN_STORAGE_DISK )
     {
@@ -6245,11 +6245,11 @@ void qcm::makeMetaRangeTripleColumn( qtcMetaRangeColumn  * aFirstRangeColumn,
     UInt sCompareType;
 
     // PROJ-1872
-    // index°¡ ÀÖ´Â Ä®·³¿¡ meta range¸¦ ¾²°Ô µÇ¸ç
-    // disk index columnÀÇ compare´Â stored type°ú mt type °£ÀÇ ºñ±³ÀÌ´Ù.
-    // First, Second, Third Column ¸ğµÎ µ¿ÀÏ table typeÀÌ¹Ç·Î
-    // Ã¹¹øÂ° typeÀÇ ÀúÀå Å¸ÀÔ¸¸À¸·Î µÑ ¸ğµÎÀÇ compare typeÀ»
-    // ±¸ÇÒ¼ö ÀÖ´Ù.
+    // indexê°€ ìˆëŠ” ì¹¼ëŸ¼ì— meta rangeë¥¼ ì“°ê²Œ ë˜ë©°
+    // disk index columnì˜ compareëŠ” stored typeê³¼ mt type ê°„ì˜ ë¹„êµì´ë‹¤.
+    // First, Second, Third Column ëª¨ë‘ ë™ì¼ table typeì´ë¯€ë¡œ
+    // ì²«ë²ˆì§¸ typeì˜ ì €ì¥ íƒ€ì…ë§Œìœ¼ë¡œ ë‘˜ ëª¨ë‘ì˜ compare typeì„
+    // êµ¬í• ìˆ˜ ìˆë‹¤.
     if ( ( aFirstColumnDesc->column.flag & SMI_COLUMN_STORAGE_MASK )
          == SMI_COLUMN_STORAGE_DISK )
     {
@@ -6310,11 +6310,11 @@ void qcm::makeMetaRangeFourColumn( qtcMetaRangeColumn  * aFirstRangeColumn,
     UInt sCompareType;
 
     // PROJ-1872
-    // index°¡ ÀÖ´Â Ä®·³¿¡ meta range¸¦ ¾²°Ô µÇ¸ç
-    // disk index columnÀÇ compare´Â stored type°ú mt type °£ÀÇ ºñ±³ÀÌ´Ù.
-    // First, Second, Third, Fourth Column ¸ğµÎ µ¿ÀÏ table typeÀÌ¹Ç·Î
-    // Ã¹¹øÂ° typeÀÇ ÀúÀå Å¸ÀÔ¸¸À¸·Î µÑ ¸ğµÎÀÇ compare typeÀ»
-    // ±¸ÇÒ¼ö ÀÖ´Ù.
+    // indexê°€ ìˆëŠ” ì¹¼ëŸ¼ì— meta rangeë¥¼ ì“°ê²Œ ë˜ë©°
+    // disk index columnì˜ compareëŠ” stored typeê³¼ mt type ê°„ì˜ ë¹„êµì´ë‹¤.
+    // First, Second, Third, Fourth Column ëª¨ë‘ ë™ì¼ table typeì´ë¯€ë¡œ
+    // ì²«ë²ˆì§¸ typeì˜ ì €ì¥ íƒ€ì…ë§Œìœ¼ë¡œ ë‘˜ ëª¨ë‘ì˜ compare typeì„
+    // êµ¬í• ìˆ˜ ìˆë‹¤.
     if ( ( aFirstColumnDesc->column.flag & SMI_COLUMN_STORAGE_MASK )
          == SMI_COLUMN_STORAGE_DISK )
     {
@@ -6387,11 +6387,11 @@ void qcm::makeMetaRangeFiveColumn( qtcMetaRangeColumn  * aFirstRangeColumn,
     UInt sCompareType;
 
     // PROJ-1872
-    // index°¡ ÀÖ´Â Ä®·³¿¡ meta range¸¦ ¾²°Ô µÇ¸ç
-    // disk index columnÀÇ compare´Â stored type°ú mt type °£ÀÇ ºñ±³ÀÌ´Ù.
-    // First, Second, Third, Fourth, Fifth Column ¸ğµÎ µ¿ÀÏ table typeÀÌ¹Ç·Î
-    // Ã¹¹øÂ° typeÀÇ ÀúÀå Å¸ÀÔ¸¸À¸·Î µÑ ¸ğµÎÀÇ compare typeÀ»
-    // ±¸ÇÒ¼ö ÀÖ´Ù.
+    // indexê°€ ìˆëŠ” ì¹¼ëŸ¼ì— meta rangeë¥¼ ì“°ê²Œ ë˜ë©°
+    // disk index columnì˜ compareëŠ” stored typeê³¼ mt type ê°„ì˜ ë¹„êµì´ë‹¤.
+    // First, Second, Third, Fourth, Fifth Column ëª¨ë‘ ë™ì¼ table typeì´ë¯€ë¡œ
+    // ì²«ë²ˆì§¸ typeì˜ ì €ì¥ íƒ€ì…ë§Œìœ¼ë¡œ ë‘˜ ëª¨ë‘ì˜ compare typeì„
+    // êµ¬í• ìˆ˜ ìˆë‹¤.
     if ( ( aFirstColumnDesc->column.flag & SMI_COLUMN_STORAGE_MASK )
          == SMI_COLUMN_STORAGE_DISK )
     {
@@ -6482,9 +6482,9 @@ IDE_RC qcm::getNextTableID(qcStatement *aStatement,
                                          NULL )
                  != IDE_SUCCESS );
 
-        // sSeqValÀº ºñ·Ï SLongÀÌÁö¸¸, sequence¸¦ »ı¼ºÇÒ ¶§
-        // max¸¦ integer max¸¦ ¾È³Ñµµ·Ï ÇÏ¿´±â ¶§¹®¿¡
-        // ¿©±â¼­ overflowÃ¼Å©´Â ÇÏÁö ¾Ê´Â´Ù.
+        // sSeqValì€ ë¹„ë¡ SLongì´ì§€ë§Œ, sequenceë¥¼ ìƒì„±í•  ë•Œ
+        // maxë¥¼ integer maxë¥¼ ì•ˆë„˜ë„ë¡ í•˜ì˜€ê¸° ë•Œë¬¸ì—
+        // ì—¬ê¸°ì„œ overflowì²´í¬ëŠ” í•˜ì§€ ì•ŠëŠ”ë‹¤.
         IDE_TEST( searchTableID( QC_SMI_STMT( aStatement ),
                                  (SInt)sSeqVal,
                                  &sExist )
@@ -6497,8 +6497,8 @@ IDE_RC qcm::getNextTableID(qcStatement *aStatement,
         }
         else
         {
-            // Ã£´ÙÃ£´Ù ÇÑ¹ÙÄû µ· °æ¿ì.
-            // ÀÌ´Â object°¡ ²Ë Âù °ÍÀ» ÀÇ¹ÌÇÔ.
+            // ì°¾ë‹¤ì°¾ë‹¤ í•œë°”í€´ ëˆ ê²½ìš°.
+            // ì´ëŠ” objectê°€ ê½‰ ì°¬ ê²ƒì„ ì˜ë¯¸í•¨.
             IDE_TEST_RAISE( sSeqVal == sSeqValFirst, ERR_OBJECTS_OVERFLOW );
         }
     }
@@ -6547,9 +6547,9 @@ IDE_RC qcm::getNextIndexID( qcStatement *aStatement,
                                          NULL )
                  != IDE_SUCCESS );
 
-        // sSeqValÀº ºñ·Ï SLongÀÌÁö¸¸, sequence¸¦ »ı¼ºÇÒ ¶§
-        // max¸¦ integer max¸¦ ¾È³Ñµµ·Ï ÇÏ¿´±â ¶§¹®¿¡
-        // ¿©±â¼­ overflowÃ¼Å©´Â ÇÏÁö ¾Ê´Â´Ù.
+        // sSeqValì€ ë¹„ë¡ SLongì´ì§€ë§Œ, sequenceë¥¼ ìƒì„±í•  ë•Œ
+        // maxë¥¼ integer maxë¥¼ ì•ˆë„˜ë„ë¡ í•˜ì˜€ê¸° ë•Œë¬¸ì—
+        // ì—¬ê¸°ì„œ overflowì²´í¬ëŠ” í•˜ì§€ ì•ŠëŠ”ë‹¤.
         IDE_TEST( searchIndexID( QC_SMI_STMT( aStatement ),
                                  (SInt)sSeqVal,
                                  &sExist )
@@ -6562,8 +6562,8 @@ IDE_RC qcm::getNextIndexID( qcStatement *aStatement,
         }
         else
         {
-            // Ã£´ÙÃ£´Ù ÇÑ¹ÙÄû µ· °æ¿ì.
-            // ÀÌ´Â object°¡ ²Ë Âù °ÍÀ» ÀÇ¹ÌÇÔ.
+            // ì°¾ë‹¤ì°¾ë‹¤ í•œë°”í€´ ëˆ ê²½ìš°.
+            // ì´ëŠ” objectê°€ ê½‰ ì°¬ ê²ƒì„ ì˜ë¯¸í•¨.
             IDE_TEST_RAISE( sSeqVal == sSeqValFirst, ERR_OBJECTS_OVERFLOW );
         }
     }
@@ -6612,9 +6612,9 @@ IDE_RC qcm::getNextConstrID( qcStatement *aStatement,
                                          NULL )
                  != IDE_SUCCESS );
 
-        // sSeqValÀº ºñ·Ï SLongÀÌÁö¸¸, sequence¸¦ »ı¼ºÇÒ ¶§
-        // max¸¦ integer max¸¦ ¾È³Ñµµ·Ï ÇÏ¿´±â ¶§¹®¿¡
-        // ¿©±â¼­ overflowÃ¼Å©´Â ÇÏÁö ¾Ê´Â´Ù.
+        // sSeqValì€ ë¹„ë¡ SLongì´ì§€ë§Œ, sequenceë¥¼ ìƒì„±í•  ë•Œ
+        // maxë¥¼ integer maxë¥¼ ì•ˆë„˜ë„ë¡ í•˜ì˜€ê¸° ë•Œë¬¸ì—
+        // ì—¬ê¸°ì„œ overflowì²´í¬ëŠ” í•˜ì§€ ì•ŠëŠ”ë‹¤.
         IDE_TEST( searchConstrID( QC_SMI_STMT( aStatement ),
                                   (SInt)sSeqVal,
                                   &sExist )
@@ -6627,8 +6627,8 @@ IDE_RC qcm::getNextConstrID( qcStatement *aStatement,
         }
         else
         {
-            // Ã£´ÙÃ£´Ù ÇÑ¹ÙÄû µ· °æ¿ì.
-            // ÀÌ´Â object°¡ ²Ë Âù °ÍÀ» ÀÇ¹ÌÇÔ.
+            // ì°¾ë‹¤ì°¾ë‹¤ í•œë°”í€´ ëˆ ê²½ìš°.
+            // ì´ëŠ” objectê°€ ê½‰ ì°¬ ê²ƒì„ ì˜ë¯¸í•¨.
             IDE_TEST_RAISE( sSeqVal == sSeqValFirst, ERR_OBJECTS_OVERFLOW );
         }
     }
@@ -6769,9 +6769,9 @@ IDE_RC qcm::getNextJobID( qcStatement * aStatement, UInt * aJobID )
                                          NULL )
                  != IDE_SUCCESS );
 
-        // sSeqValÀº ºñ·Ï SLongÀÌÁö¸¸, sequence¸¦ »ı¼ºÇÒ ¶§
-        // max¸¦ integer max¸¦ ¾È³Ñµµ·Ï ÇÏ¿´±â ¶§¹®¿¡
-        // ¿©±â¼­ overflowÃ¼Å©´Â ÇÏÁö ¾Ê´Â´Ù.
+        // sSeqValì€ ë¹„ë¡ SLongì´ì§€ë§Œ, sequenceë¥¼ ìƒì„±í•  ë•Œ
+        // maxë¥¼ integer maxë¥¼ ì•ˆë„˜ë„ë¡ í•˜ì˜€ê¸° ë•Œë¬¸ì—
+        // ì—¬ê¸°ì„œ overflowì²´í¬ëŠ” í•˜ì§€ ì•ŠëŠ”ë‹¤.
         IDE_TEST( searchJobID( QC_SMI_STMT( aStatement ),
                                  (SInt)sSeqVal,
                                  &sExist )
@@ -6784,8 +6784,8 @@ IDE_RC qcm::getNextJobID( qcStatement * aStatement, UInt * aJobID )
         }
         else
         {
-            // Ã£´ÙÃ£´Ù ÇÑ¹ÙÄû µ· °æ¿ì.
-            // ÀÌ´Â object°¡ ²Ë Âù °ÍÀ» ÀÇ¹ÌÇÔ.
+            // ì°¾ë‹¤ì°¾ë‹¤ í•œë°”í€´ ëˆ ê²½ìš°.
+            // ì´ëŠ” objectê°€ ê½‰ ì°¬ ê²ƒì„ ì˜ë¯¸í•¨.
             IDE_TEST_RAISE( sSeqVal == sSeqValFirst, ERR_OBJECTS_OVERFLOW );
         }
     }
@@ -6812,7 +6812,7 @@ IDE_RC qcm::searchTableID( smiStatement * aSmiStmt,
 {
 /***********************************************************************
  *
- * Description : table id°¡ Á¸ÀçÇÏ´ÂÁö °Ë»ç.
+ * Description : table idê°€ ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬.
  *
  * Implementation :
  *
@@ -6826,15 +6826,15 @@ IDE_RC qcm::searchTableID( smiStatement * aSmiStmt,
     mtcColumn           *sQcmTablesIndexColumn;
     qtcMetaRangeColumn  sRangeColumn;
 
-    scGRID              sRid; // Disk TableÀ» À§ÇÑ Record IDentifier
+    scGRID              sRid; // Disk Tableì„ ìœ„í•œ Record IDentifier
     smiCursorProperties sCursorProperty;
 
     *aExist = ID_FALSE;
 
     if( gQcmTablesIndex[QCM_TABLES_TABLEID_IDX_ORDER] == NULL )
     {
-        // createdbÇÏ´Â °æ¿ìÀÓ.
-        // ÀÌ¶§´Â °Ë»ç ÇÒ ÇÊ¿ä°¡ ¾ø´Ù
+        // createdbí•˜ëŠ” ê²½ìš°ì„.
+        // ì´ë•ŒëŠ” ê²€ì‚¬ í•  í•„ìš”ê°€ ì—†ë‹¤
     }
     else
     {
@@ -6902,7 +6902,7 @@ IDE_RC qcm::searchIndexID( smiStatement * aSmiStmt,
 {
 /***********************************************************************
  *
- * Description : index id°¡ Á¸ÀçÇÏ´ÂÁö °Ë»ç.
+ * Description : index idê°€ ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬.
  *
  * Implementation :
  *
@@ -6916,13 +6916,13 @@ IDE_RC qcm::searchIndexID( smiStatement * aSmiStmt,
     mtcColumn           *sQcmIndicesIndexColumn;
     qtcMetaRangeColumn  sRangeColumn;
 
-    scGRID              sRid; // Disk TableÀ» À§ÇÑ Record IDentifier
+    scGRID              sRid; // Disk Tableì„ ìœ„í•œ Record IDentifier
     smiCursorProperties sCursorProperty;
 
     if( gQcmIndicesIndex[QCM_INDICES_INDEXID_INDEX_TYPE_IDX_ORDER] == NULL )
     {
-        // createdbÇÏ´Â °æ¿ìÀÓ.
-        // ÀÌ¶§´Â °Ë»ç ÇÒ ÇÊ¿ä°¡ ¾ø´Ù
+        // createdbí•˜ëŠ” ê²½ìš°ì„.
+        // ì´ë•ŒëŠ” ê²€ì‚¬ í•  í•„ìš”ê°€ ì—†ë‹¤
         *aExist = ID_FALSE;
     }
     else
@@ -6991,7 +6991,7 @@ IDE_RC qcm::searchConstrID( smiStatement * aSmiStmt,
 {
 /***********************************************************************
  *
- * Description : constraint id°¡ Á¸ÀçÇÏ´ÂÁö °Ë»ç.
+ * Description : constraint idê°€ ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬.
  *
  * Implementation :
  *
@@ -7005,13 +7005,13 @@ IDE_RC qcm::searchConstrID( smiStatement * aSmiStmt,
     mtcColumn           *sQcmConstraintsIndexColumn;
     qtcMetaRangeColumn  sRangeColumn;
 
-    scGRID              sRid; // Disk TableÀ» À§ÇÑ Record IDentifier
+    scGRID              sRid; // Disk Tableì„ ìœ„í•œ Record IDentifier
     smiCursorProperties sCursorProperty;
 
     if( gQcmConstraintsIndex[QCM_CONSTRAINTS_CONSTID_IDX_ORDER] == NULL )
     {
-        // createdbÇÏ´Â °æ¿ìÀÓ.
-        // ÀÌ¶§´Â °Ë»ç ÇÒ ÇÊ¿ä°¡ ¾ø´Ù
+        // createdbí•˜ëŠ” ê²½ìš°ì„.
+        // ì´ë•ŒëŠ” ê²€ì‚¬ í•  í•„ìš”ê°€ ì—†ë‹¤
         *aExist = ID_FALSE;
     }
     else
@@ -7086,13 +7086,13 @@ IDE_RC qcm::searchJobID( smiStatement * aSmiStmt,
     mtcColumn           *sQcmJobIDColumn;
     qtcMetaRangeColumn  sRangeColumn;
 
-    scGRID              sRid; // Disk TableÀ» À§ÇÑ Record IDentifier
+    scGRID              sRid; // Disk Tableì„ ìœ„í•œ Record IDentifier
     smiCursorProperties sCursorProperty;
 
     if( gQcmJobsIndex[QCM_JOBS_ID_IDX_ORDER] == NULL )
     {
-        // createdbÇÏ´Â °æ¿ìÀÓ.
-        // ÀÌ¶§´Â °Ë»ç ÇÒ ÇÊ¿ä°¡ ¾ø´Ù
+        // createdbí•˜ëŠ” ê²½ìš°ì„.
+        // ì´ë•ŒëŠ” ê²€ì‚¬ í•  í•„ìš”ê°€ ì—†ë‹¤
         *aExist = ID_FALSE;
     }
     else
@@ -7177,7 +7177,7 @@ IDE_RC qcm::getMetaTable( const SChar   * aMetaTableName,
              != IDE_SUCCESS );
 
     // PROJ-1359 Trigger
-    // ¼­¹ö ±¸µ¿ ½Ã ÇÑ¹ø¸¸ Module Pointer¸¦ ¼³Á¤ÇÏ¸é µÈ´Ù.
+    // ì„œë²„ êµ¬ë™ ì‹œ í•œë²ˆë§Œ Module Pointerë¥¼ ì„¤ì •í•˜ë©´ ëœë‹¤.
     sColumnCnt = smiGetTableColumnCount( *aTableHandle );
     for ( i = 0; i < sColumnCnt; i++ )
     {
@@ -7186,12 +7186,12 @@ IDE_RC qcm::getMetaTable( const SChar   * aMetaTableName,
                                       (const smiColumn**)&sColumn )
                   != IDE_SUCCESS );
 
-        // mtdModule ¼³Á¤
+        // mtdModule ì„¤ì •
         IDE_TEST( mtd::moduleById( &sColumn->module,
                                    sColumn->type.dataTypeId )
                   != IDE_SUCCESS );
 
-        // mtlModule ¼³Á¤
+        // mtlModule ì„¤ì •
         IDE_TEST( mtl::moduleById( &sColumn->language,
                                    sColumn->type.languageId )
                   != IDE_SUCCESS );
@@ -7212,15 +7212,15 @@ IDE_RC qcm::checkObjectByUserID( qcStatement * aStatement,
 /***********************************************************************
  *
  * Description :
- *    ¸í½ÃµÈ userID ¼ÒÀ¯ÀÇ ¿ÀºêÁ§Æ®°¡ ÀÖ´ÂÁö Ã¼Å©ÇÑ´Ù.
+ *    ëª…ì‹œëœ userID ì†Œìœ ì˜ ì˜¤ë¸Œì íŠ¸ê°€ ìˆëŠ”ì§€ ì²´í¬í•œë‹¤.
  *
  * Implementation :
- *    1. SYS_TABLES_ Å×ÀÌºíÀÇ USER_ID ÄÃ·³À» ±¸ÇØ µĞ´Ù.
- *    2. ¸í½ÃµÈ userID ·Î keyRange ¸¦ ¸¸µç´Ù.
- *    3. ÀÏÄ¡ÇÏ´Â object ÀÌ ÀÖÀ¸¸é aIsTrue ¸¦ ID_TRUE ·Î º¯°æÇÑ´Ù.
- *    4. 1,2,3 ÀÇ °úÁ¤À» sys_indices_, sys_constraints_, sys_procedures_
- *       ¿¡ ´ëÇØ¼­ ¹İº¹ÇÑ´Ù.
- *    5. ¼ÒÀ¯ÇÏ°í ÀÖ´Â object ÀÌ ¾øÀ¸¸é aIsTrue °ªÀÌ ID_FALSE ·Î ¹İÈ¯µÈ´Ù.
+ *    1. SYS_TABLES_ í…Œì´ë¸”ì˜ USER_ID ì»¬ëŸ¼ì„ êµ¬í•´ ë‘”ë‹¤.
+ *    2. ëª…ì‹œëœ userID ë¡œ keyRange ë¥¼ ë§Œë“ ë‹¤.
+ *    3. ì¼ì¹˜í•˜ëŠ” object ì´ ìˆìœ¼ë©´ aIsTrue ë¥¼ ID_TRUE ë¡œ ë³€ê²½í•œë‹¤.
+ *    4. 1,2,3 ì˜ ê³¼ì •ì„ sys_indices_, sys_constraints_, sys_procedures_
+ *       ì— ëŒ€í•´ì„œ ë°˜ë³µí•œë‹¤.
+ *    5. ì†Œìœ í•˜ê³  ìˆëŠ” object ì´ ì—†ìœ¼ë©´ aIsTrue ê°’ì´ ID_FALSE ë¡œ ë°˜í™˜ëœë‹¤.
  *
  ***********************************************************************/
 
@@ -7231,7 +7231,7 @@ IDE_RC qcm::checkObjectByUserID( qcStatement * aStatement,
     const void            * sRow;
     smiTableCursor          sCursor;
     smiCursorProperties     sCursorProperty;
-    scGRID                  sRid; // Disk TableÀ» À§ÇÑ Record IDentifier
+    scGRID                  sRid; // Disk Tableì„ ìœ„í•œ Record IDentifier
 
     *aIsTrue = ID_FALSE;
 
@@ -7731,13 +7731,13 @@ IDE_RC qcm::checkObjectByUserID( qcStatement * aStatement,
         /* Nothing to do */
     }
 
-    // ¿©±â ±îÁö ¿ÔÀ¸¸é °´Ã¼°¡ ¾ø´Â °ÍÀÓ
+    // ì—¬ê¸° ê¹Œì§€ ì™”ìœ¼ë©´ ê°ì²´ê°€ ì—†ëŠ” ê²ƒì„
     *aIsTrue = ID_FALSE;
     sStage = 0;
 
     IDE_TEST(sCursor.close() != IDE_SUCCESS);
 
-    // °´Ã¼¸¦ Ã£À¸¸é ¿©±â·Î ÀÌµ¿ÇÑ´Ù.
+    // ê°ì²´ë¥¼ ì°¾ìœ¼ë©´ ì—¬ê¸°ë¡œ ì´ë™í•œë‹¤.
     IDE_EXCEPTION_CONT(OBJECT_EXIST);
     
     return IDE_SUCCESS;
@@ -7804,13 +7804,13 @@ IDE_RC qcm::getParentKey( qcStatement   * aStatement,
               != IDE_SUCCESS );
     
     // BUG-17119, 34492
-    // ÂüÁ¶¸¸ÇÏ¹Ç·Î validation lockÀÌ¸é ÃæºĞÇÏ´Ù.
+    // ì°¸ì¡°ë§Œí•˜ë¯€ë¡œ validation lockì´ë©´ ì¶©ë¶„í•˜ë‹¤.
     IDE_TEST( lockTableForDMLValidation( aStatement,
                                          sTableRef->tableHandle,
                                          sTableRef->tableSCN )
               != IDE_SUCCESS );
 
-    // environmentÀÇ ±â·Ï
+    // environmentì˜ ê¸°ë¡
     IDE_TEST( qcgPlan::registerPlanTable( aStatement,
                                           sTableRef->tableHandle,
                                           sTableRef->tableSCN )
@@ -7845,13 +7845,13 @@ IDE_RC qcm::getParentKey( qcStatement   * aStatement,
                                                                       SMI_TABLE_LOCK_IS )
                       != IDE_SUCCESS );
 
-            // environmentÀÇ ±â·Ï
+            // environmentì˜ ê¸°ë¡
             IDE_TEST( qcgPlan::registerPlanTable( aStatement,
                                                   sIndexTableRef->tableHandle,
                                                   sIndexTableRef->tableSCN )
                       != IDE_SUCCESS );
 
-            // key index¸¦ Ã£´Â´Ù.
+            // key indexë¥¼ ì°¾ëŠ”ë‹¤.
             IDE_TEST( qmsIndexTable::findKeyIndex( sIndexTableRef->tableInfo,
                                                    & sIndexTableIndex )
                       != IDE_SUCCESS );
@@ -7874,7 +7874,7 @@ IDE_RC qcm::getParentKey( qcStatement   * aStatement,
                           SMI_TABLE_LOCK_IS )
                       != IDE_SUCCESS );
 
-            /* PROJ-2464 hybrid partitioned table Áö¿ø */
+            /* PROJ-2464 hybrid partitioned table ì§€ì› */
             IDE_TEST( qcmPartition::makePartitionSummary( aStatement, sTableRef )
                       != IDE_SUCCESS );
 
@@ -7898,19 +7898,19 @@ IDE_RC qcm::getChildKeys( qcStatement      * aStatement,
 /***********************************************************************
  *
  * Description :
- *    childKey ¸¦ ±¸ÇÑ´Ù.
+ *    childKey ë¥¼ êµ¬í•œë‹¤.
  *
  * Implementation :
- *    1. SYS_CONSTRAINTS_ Å×ÀÌºíÀÇ
+ *    1. SYS_CONSTRAINTS_ í…Œì´ë¸”ì˜
  *       REFERENCED_TABLE_ID, REFERENCED_CONSTRAINT_ID,
- *       TABLE_ID ÄÃ·³À» ±¸ÇØ µĞ´Ù.
- *    2. ¸í½ÃµÈ tableID, indexID ·Î keyRange ¸¦ ¸¸µç´Ù
- *       (¸í½ÃµÈ Å×ÀÌºí,ÀÎµ¦½º¸¦
- *        ÂüÁ¶ÇÏ´Â child Å×ÀÌºíÀ» ±¸ÇÏ°íÀÚ ÇÑ´Ù)
- *    3. ÇÑ row ¾¿ ÀĞÀ¸¸é¼­ TABLE_ID ·ÎºÎÅÍ Å×ÀÌºí ÇÚµéÀ» ±¸ÇÑ´Ù.
- *    4. 3¿¡¼­ ±¸ÇÑ child Å×ÀÌºíÀÇ foreignkey Á¤º¸ Áß¿¡¼­ ¸í½ÃµÈ indexID ¸¦
- *       ¸¦ ÂüÁ¶ÇÏ´Â key °¡ ÀÖ´ÂÁö Ã¼Å©ÇÑ´Ù.
- *    5. 4¿¡¼­ ±¸ÇÑ foreignkey ¸¦ aChildInfo ¸®½ºÆ®¿¡ ¹İÈ¯ÇÑ´Ù.
+ *       TABLE_ID ì»¬ëŸ¼ì„ êµ¬í•´ ë‘”ë‹¤.
+ *    2. ëª…ì‹œëœ tableID, indexID ë¡œ keyRange ë¥¼ ë§Œë“ ë‹¤
+ *       (ëª…ì‹œëœ í…Œì´ë¸”,ì¸ë±ìŠ¤ë¥¼
+ *        ì°¸ì¡°í•˜ëŠ” child í…Œì´ë¸”ì„ êµ¬í•˜ê³ ì í•œë‹¤)
+ *    3. í•œ row ì”© ì½ìœ¼ë©´ì„œ TABLE_ID ë¡œë¶€í„° í…Œì´ë¸” í•¸ë“¤ì„ êµ¬í•œë‹¤.
+ *    4. 3ì—ì„œ êµ¬í•œ child í…Œì´ë¸”ì˜ foreignkey ì •ë³´ ì¤‘ì—ì„œ ëª…ì‹œëœ indexID ë¥¼
+ *       ë¥¼ ì°¸ì¡°í•˜ëŠ” key ê°€ ìˆëŠ”ì§€ ì²´í¬í•œë‹¤.
+ *    5. 4ì—ì„œ êµ¬í•œ foreignkey ë¥¼ aChildInfo ë¦¬ìŠ¤íŠ¸ì— ë°˜í™˜í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -7937,7 +7937,7 @@ IDE_RC qcm::getChildKeys( qcStatement      * aStatement,
     UInt                    i;
     const void            * sRow;
     smiCursorProperties     sCursorProperty;
-    scGRID                  sRid; // Disk TableÀ» À§ÇÑ Record IDentifier
+    scGRID                  sRid; // Disk Tableì„ ìœ„í•œ Record IDentifier
 
     qmsTableRef           * sChildTableRef;
     qdConstraintSpec      * sConstr;
@@ -8049,8 +8049,8 @@ IDE_RC qcm::getChildKeys( qcStatement      * aStatement,
                          &sChildTableRef->tableSCN)
                      != IDE_SUCCESS);
 
-            // sChildTableInfo¸¦ ÂüÁ¶ÇÏ±â À§ÇØ IS LOCKÀ» Àâ´Â´Ù.
-            // DML°ú DDLÀÇ Validation¿¡¼­ È£ÃâÇÑ´Ù.
+            // sChildTableInfoë¥¼ ì°¸ì¡°í•˜ê¸° ìœ„í•´ IS LOCKì„ ì¡ëŠ”ë‹¤.
+            // DMLê³¼ DDLì˜ Validationì—ì„œ í˜¸ì¶œí•œë‹¤.
             IDE_TEST( qcm::validateAndLockTable( aStatement,
                                                  sChildTableRef->tableHandle,
                                                  sChildTableRef->tableSCN,
@@ -8064,7 +8064,7 @@ IDE_RC qcm::getChildKeys( qcStatement      * aStatement,
             sChildTableRef->tableInfo = sChildTableInfo;
 
             // BUG-21816
-            // environmentÀÇ ±â·Ï
+            // environmentì˜ ê¸°ë¡
             IDE_TEST( qcgPlan::registerPlanTable( aStatement,
                                                   sChildTableRef->tableHandle,
                                                   sChildTableRef->tableSCN )
@@ -8108,11 +8108,11 @@ IDE_RC qcm::getChildKeys( qcStatement      * aStatement,
                                                                    SMI_TABLE_LOCK_IS )
                           != IDE_SUCCESS );
 
-                /* PROJ-2464 hybrid partitioned table Áö¿ø */
+                /* PROJ-2464 hybrid partitioned table ì§€ì› */
                 IDE_TEST( qcmPartition::makePartitionSummary( aStatement, sChildTableRef )
                           != IDE_SUCCESS );
 
-                /* PROJ-2464 hybrid partitioned table Áö¿ø */
+                /* PROJ-2464 hybrid partitioned table ì§€ì› */
                 if ( sChildTableRef->partitionSummary->isHybridPartitionedTable == ID_TRUE )
                 {
                     QC_SHARED_TMPLATE(aStatement)->tmplate.rows[sChildTableRef->table].lflag
@@ -8163,9 +8163,9 @@ IDE_RC qcm::getChildKeys( qcStatement      * aStatement,
             for ( i = 0; i < sChildTableInfo->foreignKeyCount; i++)
             {
                 // BUG-23145
-                // foreign key Áß¿¡ ÇöÀç sRow°¡ °¡¸®Å°´Â foreign key¸¦ ¾ò¾î¿Í¾ßÇÏ±â ¶§¹®¿¡
-                // sConstraintID¿Í ºñ±³ÇÑ´Ù.
-                // (constraintID´Â uniqueÇÏ¹Ç·Î indexID´Â ºñ±³ÇÏÁö ¾Ê¾Æµµ µÊ)
+                // foreign key ì¤‘ì— í˜„ì¬ sRowê°€ ê°€ë¦¬í‚¤ëŠ” foreign keyë¥¼ ì–»ì–´ì™€ì•¼í•˜ê¸° ë•Œë¬¸ì—
+                // sConstraintIDì™€ ë¹„êµí•œë‹¤.
+                // (constraintIDëŠ” uniqueí•˜ë¯€ë¡œ indexIDëŠ” ë¹„êµí•˜ì§€ ì•Šì•„ë„ ë¨)
                 if ( sChildTableInfo->foreignKeys[i].constraintID == sConstraintID )
                 {
                     sForeignKey = &(sChildTableInfo->foreignKeys[i]);
@@ -8221,10 +8221,10 @@ IDE_RC qcm::getChildKeys( qcStatement      * aStatement,
                  == (QD_FOREIGN_DELETE_SET_NULL & QD_FOREIGN_OPTION_MASK) )
             {
                 // BUG-34440
-                // on delete set nullÀÌ¸ç child table¿¡ check constraint°¡ ÀÖ´Â °æ¿ì
-                // child tableÀÇ check condition °Ë»ç¸¦ À§ÇØ
-                // 1. tupleÀ» ÇÒ´çÇÏ°í
-                // 2. check conditionÀ» validation ÇÑ´Ù.
+                // on delete set nullì´ë©° child tableì— check constraintê°€ ìˆëŠ” ê²½ìš°
+                // child tableì˜ check condition ê²€ì‚¬ë¥¼ ìœ„í•´
+                // 1. tupleì„ í• ë‹¹í•˜ê³ 
+                // 2. check conditionì„ validation í•œë‹¤.
                 if ( sChildTableInfo->checkCount > 0 )
                 {
                     for ( i = 0; i < sForeignKey->constraintColumnCount; i++ )
@@ -8238,7 +8238,7 @@ IDE_RC qcm::getChildKeys( qcStatement      * aStatement,
                                   != IDE_SUCCESS );
                     }
 
-                    /* PROJ-1107 Check Constraint Áö¿ø */
+                    /* PROJ-1107 Check Constraint ì§€ì› */
                     IDE_TEST( qdnCheck::setMtcColumnToCheckConstrList(
                                   aStatement,
                                   sChildTableInfo,
@@ -8267,7 +8267,7 @@ IDE_RC qcm::getChildKeys( qcStatement      * aStatement,
                 }
 
                 /* PROJ-1090 Function-based Index */
-                /* default expression column list »ı¼º */
+                /* default expression column list ìƒì„± */
                 for ( i = 0; i < sForeignKey->constraintColumnCount; i++ )
                 {
                     IDE_TEST( qmsDefaultExpr::addDefaultExpressionColumnsRelatedToColumn(
@@ -8312,7 +8312,7 @@ IDE_RC qcm::getChildKeys( qcStatement      * aStatement,
                         // Nothing to do.
                     }
 
-                    /* Memory TableÀÌ¸é, Variable ColumnÀ» Fixed ColumnÀ¸·Î º¯È¯ÇÑ TableRef¸¦ ¸¸µç´Ù. */
+                    /* Memory Tableì´ë©´, Variable Columnì„ Fixed Columnìœ¼ë¡œ ë³€í™˜í•œ TableRefë¥¼ ë§Œë“ ë‹¤. */
                     if ( ( sTableType == SMI_TABLE_MEMORY ) ||
                          ( sTableType == SMI_TABLE_VOLATILE ) )
                     {
@@ -8325,7 +8325,7 @@ IDE_RC qcm::getChildKeys( qcStatement      * aStatement,
                     }
                     else
                     {
-                        /* Disk TableÀÇ Row Buffer¿¡´Â Variable ColumnÀÌ ¾ø´Ù. */
+                        /* Disk Tableì˜ Row Bufferì—ëŠ” Variable Columnì´ ì—†ë‹¤. */
                     }
 
                     QCP_SET_INIT_QMS_FROM( (&sFrom) );
@@ -8399,7 +8399,7 @@ IDE_RC qcm::getChildKeys( qcStatement      * aStatement,
                                    ID_SIZEOF(qcmColumn) );
                 }
 
-                /* Column ID ¼ø¼­´ë·Î Á¤·ÄÇÏ¸é, DISKÀÇ °æ¿ì¿¡ ¼º´É Çâ»óÀÌ ÀÖ´Ù. */
+                /* Column ID ìˆœì„œëŒ€ë¡œ ì •ë ¬í•˜ë©´, DISKì˜ ê²½ìš°ì— ì„±ëŠ¥ í–¥ìƒì´ ìˆë‹¤. */
                 if ( sUpdateColCount > 1 )
                 {
                     idlOS::qsort( sUpdateColumn,
@@ -8428,7 +8428,7 @@ IDE_RC qcm::getChildKeys( qcStatement      * aStatement,
                 sUpdateColumn[sUpdateColCount - 1].next = NULL;
                 sUpdateColumnList[sUpdateColCount - 1].next = NULL;
 
-                // BUG-35379 on delete set null½Ã row movement¸¦ °í·ÁÇØ¾ßÇÔ
+                // BUG-35379 on delete set nullì‹œ row movementë¥¼ ê³ ë ¤í•´ì•¼í•¨
                 sUpdateRowMovement = QCM_CHILD_UPDATE_NORMAL;
 
                 if( sChildTableInfo->tablePartitionType == QCM_PARTITIONED_TABLE )
@@ -8443,12 +8443,12 @@ IDE_RC qcm::getChildKeys( qcStatement      * aStatement,
                     {
                         if ( sChildTableInfo->rowMovement == ID_TRUE )
                         {
-                            // row movement update °¡´É¼º ÀÖÀ½
+                            // row movement update ê°€ëŠ¥ì„± ìˆìŒ
                             sUpdateRowMovement = QCM_CHILD_UPDATE_ROWMOVEMENT;
                         }
                         else
                         {
-                            // row movement°¡ ¹ß»ıÇÏ¸é ¿¡·¯
+                            // row movementê°€ ë°œìƒí•˜ë©´ ì—ëŸ¬
                             sUpdateRowMovement = QCM_CHILD_UPDATE_CHECK_ROWMOVEMENT;
                         }
                     }
@@ -8516,24 +8516,24 @@ IDE_RC qcm::getChildKeysForDelete( qcStatement       * aStatement,
 /***********************************************************************
  *
  * Description :
- *    childKey ¸¦ ±¸ÇÑ´Ù.
+ *    childKey ë¥¼ êµ¬í•œë‹¤.
  *
  *    TASK-2176
- *    validation½Ã È£ÃâµÇ´Â ÇÔ¼ö¿Í execution½Ã È£ÃâµÇ´Â ÇÔ¼ö ºĞ¸®
- *    getChildKeys´Â DML,DDLÀÇ validation½Ã È£ÃâµÇ°í,
- *    getChildKeysForDeleteÀº DDLÀÇ execution½Ã È£ÃâµÈ´Ù.
+ *    validationì‹œ í˜¸ì¶œë˜ëŠ” í•¨ìˆ˜ì™€ executionì‹œ í˜¸ì¶œë˜ëŠ” í•¨ìˆ˜ ë¶„ë¦¬
+ *    getChildKeysëŠ” DML,DDLì˜ validationì‹œ í˜¸ì¶œë˜ê³ ,
+ *    getChildKeysForDeleteì€ DDLì˜ executionì‹œ í˜¸ì¶œëœë‹¤.
  *
  * Implementation :
- *    1. SYS_CONSTRAINTS_ Å×ÀÌºíÀÇ
+ *    1. SYS_CONSTRAINTS_ í…Œì´ë¸”ì˜
  *       REFERENCED_TABLE_ID, REFERENCED_CONSTRAINT_ID,
- *       TABLE_ID ÄÃ·³À» ±¸ÇØ µĞ´Ù.
- *    2. ¸í½ÃµÈ tableID, indexID ·Î keyRange ¸¦ ¸¸µç´Ù
- *       (¸í½ÃµÈ Å×ÀÌºí,ÀÎµ¦½º¸¦
- *        ÂüÁ¶ÇÏ´Â child Å×ÀÌºíÀ» ±¸ÇÏ°íÀÚ ÇÑ´Ù)
- *    3. ÇÑ row ¾¿ ÀĞÀ¸¸é¼­ TABLE_ID ·ÎºÎÅÍ Å×ÀÌºí ÇÚµéÀ» ±¸ÇÑ´Ù.
- *    4. 3¿¡¼­ ±¸ÇÑ child Å×ÀÌºíÀÇ foreignkey Á¤º¸ Áß¿¡¼­ ¸í½ÃµÈ indexID ¸¦
- *       ¸¦ ÂüÁ¶ÇÏ´Â key °¡ ÀÖ´ÂÁö Ã¼Å©ÇÑ´Ù.
- *    5. 4¿¡¼­ ±¸ÇÑ foreignkey ¸¦ aChildInfo ¸®½ºÆ®¿¡ ¹İÈ¯ÇÑ´Ù.
+ *       TABLE_ID ì»¬ëŸ¼ì„ êµ¬í•´ ë‘”ë‹¤.
+ *    2. ëª…ì‹œëœ tableID, indexID ë¡œ keyRange ë¥¼ ë§Œë“ ë‹¤
+ *       (ëª…ì‹œëœ í…Œì´ë¸”,ì¸ë±ìŠ¤ë¥¼
+ *        ì°¸ì¡°í•˜ëŠ” child í…Œì´ë¸”ì„ êµ¬í•˜ê³ ì í•œë‹¤)
+ *    3. í•œ row ì”© ì½ìœ¼ë©´ì„œ TABLE_ID ë¡œë¶€í„° í…Œì´ë¸” í•¸ë“¤ì„ êµ¬í•œë‹¤.
+ *    4. 3ì—ì„œ êµ¬í•œ child í…Œì´ë¸”ì˜ foreignkey ì •ë³´ ì¤‘ì—ì„œ ëª…ì‹œëœ indexID ë¥¼
+ *       ë¥¼ ì°¸ì¡°í•˜ëŠ” key ê°€ ìˆëŠ”ì§€ ì²´í¬í•œë‹¤.
+ *    5. 4ì—ì„œ êµ¬í•œ foreignkey ë¥¼ aChildInfo ë¦¬ìŠ¤íŠ¸ì— ë°˜í™˜í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -8562,7 +8562,7 @@ IDE_RC qcm::getChildKeysForDelete( qcStatement       * aStatement,
     UInt                 i;
     const void         * sRow;
     smiCursorProperties  sCursorProperty;
-    scGRID               sRid; // Disk TableÀ» À§ÇÑ Record IDentifier
+    scGRID               sRid; // Disk Tableì„ ìœ„í•œ Record IDentifier
 
     qmsTableRef        * sChildTableRef;
     qmsPartitionRef    * sPartitionRef = NULL;
@@ -8573,7 +8573,7 @@ IDE_RC qcm::getChildKeysForDelete( qcStatement       * aStatement,
 
     sCursor.initialize();
 
-    /* BUG-43299 Drop TablespaceÀÎ °æ¿ì, SMI_TBSLV_DROP_TBSÀ» »ç¿ëÇØ¾ß ÇÑ´Ù. */
+    /* BUG-43299 Drop Tablespaceì¸ ê²½ìš°, SMI_TBSLV_DROP_TBSì„ ì‚¬ìš©í•´ì•¼ í•œë‹¤. */
     if ( aDropTablespace == ID_TRUE )
     {
         sTBSLockValidType = SMI_TBSLV_DROP_TBS;
@@ -8682,16 +8682,16 @@ IDE_RC qcm::getChildKeysForDelete( qcStatement       * aStatement,
                                             &sChildTableRef->tableHandle)
                           != IDE_SUCCESS);
 
-                // sChildTableInfo¸¦ ÂüÁ¶ÇÏ±â À§ÇØ LOCKÀ» Àâ´Â´Ù.
+                // sChildTableInfoë¥¼ ì°¸ì¡°í•˜ê¸° ìœ„í•´ LOCKì„ ì¡ëŠ”ë‹¤.
                 IDE_TEST( smiValidateAndLockObjects( (QC_SMI_STMT( aStatement ))->getTrans(),
                                                      sChildTableRef->tableHandle,
                                                      sChildTableRef->tableSCN,
-                                                     sTBSLockValidType, // TBS Validation ¿É¼Ç
+                                                     sTBSLockValidType, // TBS Validation ì˜µì…˜
                                                      SMI_TABLE_LOCK_X,
                                                      ( ( smiGetDDLLockTimeOut() == -1 ) ?
                                                        ID_ULONG_MAX :
                                                        smiGetDDLLockTimeOut() * 1000000 ),
-                                                     ID_FALSE ) // BUG-28752 ¸í½ÃÀû Lock°ú ³»ÀçÀû LockÀ» ±¸ºĞÇÕ´Ï´Ù.
+                                                     ID_FALSE ) // BUG-28752 ëª…ì‹œì  Lockê³¼ ë‚´ì¬ì  Lockì„ êµ¬ë¶„í•©ë‹ˆë‹¤.
                           != IDE_SUCCESS );
 
                 sChildTableRef->tableInfo = sChildTableInfo;
@@ -8722,7 +8722,7 @@ IDE_RC qcm::getChildKeysForDelete( qcStatement       * aStatement,
                                   != IDE_SUCCESS );
                     }
 
-                    /* PROJ-2464 hybrid partitioned table Áö¿ø */
+                    /* PROJ-2464 hybrid partitioned table ì§€ì› */
                     IDE_TEST( qcmPartition::makePartitionSummary( aStatement, sChildTableRef )
                               != IDE_SUCCESS );
                 }
@@ -8733,9 +8733,9 @@ IDE_RC qcm::getChildKeysForDelete( qcStatement       * aStatement,
                 for ( i = 0; i < sChildTableInfo->foreignKeyCount; i++)
                 {
                     // BUG-23145
-                    // referenced index id¸¸À¸·Î °Ë»öÀ» ÇÒ ¼ö ¾ø´Ù.
-                    // T1(i1) -> T2(i1) / T1(i1) -> T2(i2)°¡ µ¿½Ã¿¡ Á¸ÀçÇÒ ¼ö ÀÖÀ½
-                    // µû¶ó¼­ constraintID·Î °Ë»çÇØ¾ß ÇÔ
+                    // referenced index idë§Œìœ¼ë¡œ ê²€ìƒ‰ì„ í•  ìˆ˜ ì—†ë‹¤.
+                    // T1(i1) -> T2(i1) / T1(i1) -> T2(i2)ê°€ ë™ì‹œì— ì¡´ì¬í•  ìˆ˜ ìˆìŒ
+                    // ë”°ë¼ì„œ constraintIDë¡œ ê²€ì‚¬í•´ì•¼ í•¨
                     if (sChildTableInfo->foreignKeys[i].constraintID
                         == sConstraintID)
                     {
@@ -8853,17 +8853,17 @@ IDE_RC qcm::selectRow
 /***********************************************************************
  *
  * Description :
- *    childKey ¸¦ ±¸ÇÑ´Ù.
+ *    childKey ë¥¼ êµ¬í•œë‹¤.
  *
  * Implementation :
- *    1. Å×ÀÌºí ÄÃ·³ °³¼ö, ÄÃ·³À» ±¸ÇÑ ´ÙÀ½ smiColumnList ÇüÅÂ·Î ±¸¼º
- *    2. Ä¿¼­ ¿ÀÇÂ ÈÄ ÇÑ ·¹ÄÚµå¾¿ ÀĞÀ¸¸é¼­ count Áõ°¡ => count ¹İÈ¯
- *    3. ÀÎÀÚ¿¡ ¸í½ÃµÈ meta ±¸Á¶Ã¼ ¼ÂÆÃ function °ú ¼ÂÆÃÇÒ ¹öÆÛ, ±¸Á¶Ã¼ °³¼ö
- *       ¸¦ ÀÌ¿ëÇØ¼­ meta ±¸Á¶Ã¼ ¿¡ ÀûÀıÇÑ °ªÀ» ¼ÂÆÃÇÏ°Ô µÈ´Ù.
+ *    1. í…Œì´ë¸” ì»¬ëŸ¼ ê°œìˆ˜, ì»¬ëŸ¼ì„ êµ¬í•œ ë‹¤ìŒ smiColumnList í˜•íƒœë¡œ êµ¬ì„±
+ *    2. ì»¤ì„œ ì˜¤í”ˆ í›„ í•œ ë ˆì½”ë“œì”© ì½ìœ¼ë©´ì„œ count ì¦ê°€ => count ë°˜í™˜
+ *    3. ì¸ìì— ëª…ì‹œëœ meta êµ¬ì¡°ì²´ ì…‹íŒ… function ê³¼ ì…‹íŒ…í•  ë²„í¼, êµ¬ì¡°ì²´ ê°œìˆ˜
+ *       ë¥¼ ì´ìš©í•´ì„œ meta êµ¬ì¡°ì²´ ì— ì ì ˆí•œ ê°’ì„ ì…‹íŒ…í•˜ê²Œ ëœë‹¤.
  *
  *    PROJ-1705
- *    ÀÌ ÇÔ¼ö´Â ¸ŞÅ¸Å×ÀÌºí¿¡ ´ëÇÑ Ã³¸®ÀÌ¹Ç·Î
- *    fetch column list¸¦ ±¸¼ºÇÏÁö ¾Ê´Â´Ù.
+ *    ì´ í•¨ìˆ˜ëŠ” ë©”íƒ€í…Œì´ë¸”ì— ëŒ€í•œ ì²˜ë¦¬ì´ë¯€ë¡œ
+ *    fetch column listë¥¼ êµ¬ì„±í•˜ì§€ ì•ŠëŠ”ë‹¤.
  *
  ***********************************************************************/
 
@@ -8875,7 +8875,7 @@ IDE_RC qcm::selectRow
     UInt            sColumnCount;
     mtcColumn      *sColumn;
     smiColumnList   sColumnList[QCM_MAX_META_COLUMNS];
-    scGRID          sRid; // Disk TableÀ» À§ÇÑ Record IDentifier
+    scGRID          sRid; // Disk Tableì„ ìœ„í•œ Record IDentifier
     smiCursorProperties sCursorProperty;
 
     sCursor.initialize();
@@ -9073,7 +9073,7 @@ void qcm::getBigintFieldValue ( const void * aRow,
  *    If result set exists, then aExist = ID_TRUE
  *                          else aExist = ID_FALSE
  *
- *    Âü°í·Î REFERENCED_TABLE_ID¸¦ °¡Áö´Â CONSTRAINT´Â FOREIGN KEY¹Û¿¡ ¾ø´Ù.
+ *    ì°¸ê³ ë¡œ REFERENCED_TABLE_IDë¥¼ ê°€ì§€ëŠ” CONSTRAINTëŠ” FOREIGN KEYë°–ì— ì—†ë‹¤.
  * ---------------------------------------------------------------------------*/
 
 IDE_RC qcm::checkCascadeOption( qcStatement * aStatement,
@@ -9090,7 +9090,7 @@ IDE_RC qcm::checkCascadeOption( qcStatement * aStatement,
     SInt                   sStage = 0;
     const void           * sRow = NULL;
     smiCursorProperties    sCursorProperty;
-    scGRID                 sRid; // Disk TableÀ» À§ÇÑ Record IDentifier
+    scGRID                 sRid; // Disk Tableì„ ìœ„í•œ Record IDentifier
     mtcColumn            * sFstMtcColumn;
     mtcColumn            * sSndMtcColumn;
 
@@ -9293,12 +9293,12 @@ IDE_RC qcm::getIsDefaultTBS( qcStatement   * aStatement,
  *
  * Description :
  *
- *    Meta cacheÀÇ column¿¡´Â ÀÓÀÇÀÇ Æ÷ÀÎÅÍ¸¦ ¹Ù²Ü ¼ö°¡ ¾ø´Ù.
- *    qmx µî¿¡¼­ meta cacheÀÇ column¸¦ ÂüÁ¶ÇÏ¸é¼­
- *    basicInfo->column.value µîÀÇ Á¤º¸¸¦ ¹Ù²Ù±â À§ÇØ¼­´Â
- *    ¹İµå½Ã columns¸¦ º¹»çÇÑ ÈÄ »ç¿ëÇØ¾ß ÇÑ´Ù.
- *    ±×¸®°í qcmColumn µéÀ» º¹»çÇÒ °æ¿ì¿¡´Â ¹İµå½Ã mtcColumn Æ÷ÀÎÅÍ(basicInfo)µµ
- *    Ä«ÇÇÇØ¾ß ÇÑ´Ù. (shallow copy°¡ ¾Æ´Ñ deep copy¿©¾ß ÇÑ´Ù.)
+ *    Meta cacheì˜ columnì—ëŠ” ì„ì˜ì˜ í¬ì¸í„°ë¥¼ ë°”ê¿€ ìˆ˜ê°€ ì—†ë‹¤.
+ *    qmx ë“±ì—ì„œ meta cacheì˜ columnë¥¼ ì°¸ì¡°í•˜ë©´ì„œ
+ *    basicInfo->column.value ë“±ì˜ ì •ë³´ë¥¼ ë°”ê¾¸ê¸° ìœ„í•´ì„œëŠ”
+ *    ë°˜ë“œì‹œ columnsë¥¼ ë³µì‚¬í•œ í›„ ì‚¬ìš©í•´ì•¼ í•œë‹¤.
+ *    ê·¸ë¦¬ê³  qcmColumn ë“¤ì„ ë³µì‚¬í•  ê²½ìš°ì—ëŠ” ë°˜ë“œì‹œ mtcColumn í¬ì¸í„°(basicInfo)ë„
+ *    ì¹´í”¼í•´ì•¼ í•œë‹¤. (shallow copyê°€ ì•„ë‹Œ deep copyì—¬ì•¼ í•œë‹¤.)
  *
  * ---------------------------------------------------------------------------*/
 
@@ -9405,14 +9405,14 @@ IDE_RC qcm::validateAndLockTable( qcStatement      * aStatement,
  *
  * Description :
  *    TASK-2176
- *    stmtKind¿¡ µû¶ó ´ÙÀ½°ú °°ÀÌ µ¿ÀÛÇÑ´Ù.
- *    1. DMLÀÎ °æ¿ì tableHandleÀº NULLÀÌ ¾Æ´Ï¾î¾ß ÇÑ´Ù.
- *    2. DDLÀÎ °æ¿ì tableHandleÀº NULLÀÏ ¼ö ÀÖ´Ù. (CREATE TABLE µî)
- *       (QCI_STMT_NON_SCHEMA_DDLÀÌ¶ó°í ÇØ¼­ tableHandleÀÌ ¹İµå½Ã NULLÀº ¾Æ´Ï´Ù.)
- *    3. DCL/EAB/DBÀÎ °æ¿ì tableHandleÀº Å×ÀÌºíÀÇ handleÀÌ ¾Æ´Ï°í,
- *       NULLÀÌ¾î¾ß ÇÑ´Ù.
- *    4. SPÀÎ °æ¿ì tableHandleÀº Å×ÀÌºíÀÇ handleÀÌ ¾Æ´Ï°í, NULLÀÌ¾î¾ß ÇÑ´Ù.
- *       (PSMÀÇ handleÀÌÁö¸¸ ÇöÀç ¾Ë¾Æ³¾ ¹æ¹ıÀº ¾ø´Ù.)
+ *    stmtKindì— ë”°ë¼ ë‹¤ìŒê³¼ ê°™ì´ ë™ì‘í•œë‹¤.
+ *    1. DMLì¸ ê²½ìš° tableHandleì€ NULLì´ ì•„ë‹ˆì–´ì•¼ í•œë‹¤.
+ *    2. DDLì¸ ê²½ìš° tableHandleì€ NULLì¼ ìˆ˜ ìˆë‹¤. (CREATE TABLE ë“±)
+ *       (QCI_STMT_NON_SCHEMA_DDLì´ë¼ê³  í•´ì„œ tableHandleì´ ë°˜ë“œì‹œ NULLì€ ì•„ë‹ˆë‹¤.)
+ *    3. DCL/EAB/DBì¸ ê²½ìš° tableHandleì€ í…Œì´ë¸”ì˜ handleì´ ì•„ë‹ˆê³ ,
+ *       NULLì´ì–´ì•¼ í•œë‹¤.
+ *    4. SPì¸ ê²½ìš° tableHandleì€ í…Œì´ë¸”ì˜ handleì´ ì•„ë‹ˆê³ , NULLì´ì–´ì•¼ í•œë‹¤.
+ *       (PSMì˜ handleì´ì§€ë§Œ í˜„ì¬ ì•Œì•„ë‚¼ ë°©ë²•ì€ ì—†ë‹¤.)
  *
  * Implementation :
  *
@@ -9432,7 +9432,7 @@ IDE_RC qcm::validateAndLockTable( qcStatement      * aStatement,
                 ideLog::log(IDE_QP_0,"[LOCK_TABLE_FOR_DML] TableHanle is NULL\n%s\n",
                             aStatement->myPlan->stmtText );
 
-                // tableHandleÀÌ NULLÀÎ DMLÀº ÀÖÀ» ¼ö ¾ø´Ù.
+                // tableHandleì´ NULLì¸ DMLì€ ìˆì„ ìˆ˜ ì—†ë‹¤.
                 IDE_DASSERT(0);
             }
             else
@@ -9446,7 +9446,7 @@ IDE_RC qcm::validateAndLockTable( qcStatement      * aStatement,
                     ideLog::log(IDE_QP_0,"[LOCK_TABLE_FOR_DML] TableHandle is fixed type\n%s\n",
                                 aStatement->myPlan->stmtText );
 
-                    // Fixed Type¿¡ validateLockTableÀ» È£ÃâÇØ¼­´Â ¾ÈµÈ´Ù.
+                    // Fixed Typeì— validateLockTableì„ í˜¸ì¶œí•´ì„œëŠ” ì•ˆëœë‹¤.
                     IDE_DASSERT(0);
                 }
                 else
@@ -9454,10 +9454,10 @@ IDE_RC qcm::validateAndLockTable( qcStatement      * aStatement,
                         IDE_TEST(smiValidateAndLockObjects( (QC_SMI_STMT( aStatement ))->getTrans(),
                                                             aTableHandle,
                                                             aSCN,
-                                                            SMI_TBSLV_DDL_DML, // TBS Validation ¿É¼Ç
+                                                            SMI_TBSLV_DDL_DML, // TBS Validation ì˜µì…˜
                                                             aLockMode,
                                                             ID_ULONG_MAX,
-                                                            ID_FALSE) // BUG-28752 ¸í½ÃÀû Lock°ú ³»ÀçÀû LockÀ» ±¸ºĞÇÕ´Ï´Ù.
+                                                            ID_FALSE) // BUG-28752 ëª…ì‹œì  Lockê³¼ ë‚´ì¬ì  Lockì„ êµ¬ë¶„í•©ë‹ˆë‹¤.
                                  != IDE_SUCCESS);
                 }
             }
@@ -9484,12 +9484,12 @@ IDE_RC qcm::validateAndLockTable( qcStatement      * aStatement,
                     IDE_TEST(smiValidateAndLockObjects( (QC_SMI_STMT( aStatement ))->getTrans(),
                                                         aTableHandle,
                                                         aSCN,
-                                                        SMI_TBSLV_DDL_DML, // TBS Validation ¿É¼Ç
+                                                        SMI_TBSLV_DDL_DML, // TBS Validation ì˜µì…˜
                                                         aLockMode,
                                                         ((smiGetDDLLockTimeOut() == -1) ?
                                                          ID_ULONG_MAX :
                                                          smiGetDDLLockTimeOut()*1000000),
-                                                        ID_FALSE) // BUG-28752 ¸í½ÃÀû Lock°ú ³»ÀçÀû LockÀ» ±¸ºĞÇÕ´Ï´Ù.
+                                                        ID_FALSE) // BUG-28752 ëª…ì‹œì  Lockê³¼ ë‚´ì¬ì  Lockì„ êµ¬ë¶„í•©ë‹ˆë‹¤.
                              != IDE_SUCCESS);
                 }
             }
@@ -9507,7 +9507,7 @@ IDE_RC qcm::validateAndLockTable( qcStatement      * aStatement,
                 ideLog::log(IDE_QP_0,"[LOCK_TABLE_FOR_DCL] TableHanle is not NULL\n%s\n",
                             aStatement->myPlan->stmtText );
 
-                // tableHandleÀÌ NULLÀÌ ¾Æ´Ñ DCLÀº ÀÖÀ» ¼ö ¾ø´Ù.
+                // tableHandleì´ NULLì´ ì•„ë‹Œ DCLì€ ìˆì„ ìˆ˜ ì—†ë‹¤.
                 IDE_DASSERT(0);
             }
             break;
@@ -9523,7 +9523,7 @@ IDE_RC qcm::validateAndLockTable( qcStatement      * aStatement,
                 ideLog::log(IDE_QP_0,"[LOCK_TABLE_FOR_SP] TableHanle is not NULL\n%s\n",
                             aStatement->myPlan->stmtText );
 
-                // tableHandleÀÌ NULLÀÌ ¾Æ´Ñ SP´Â ÀÖÀ» ¼ö ¾ø´Ù.
+                // tableHandleì´ NULLì´ ì•„ë‹Œ SPëŠ” ìˆì„ ìˆ˜ ì—†ë‹¤.
                 IDE_DASSERT(0);
             }
             break;
@@ -9545,14 +9545,14 @@ IDE_RC qcm::validateAndLockAllObjects( qcStatement *aStatement )
  *
  * Description :
  *    BUG-17455
- *    Statement¿¡¼­ »ç¿ëÇÏ´Â ObjectµéÀÌ À¯È¿ÇÑÁö °Ë»çÇÏ°í
- *    ObjectÀÇ Á¾·ù¿¡ µû¶ó ¾Ë¸ÂÀº ¶ôÀ» È¹µæÇÑ´Ù.
+ *    Statementì—ì„œ ì‚¬ìš©í•˜ëŠ” Objectë“¤ì´ ìœ íš¨í•œì§€ ê²€ì‚¬í•˜ê³ 
+ *    Objectì˜ ì¢…ë¥˜ì— ë”°ë¼ ì•Œë§ì€ ë½ì„ íšë“í•œë‹¤.
  *
  * Implementation :
  *    1. Table/Queue
- *       smiValidateAndLockObjectsÀ¸·Î º¯°æÀ» °Ë»çÇÏ°í ¶ôÀ» È¹µæÇÑ´Ù.
+ *       smiValidateAndLockObjectsìœ¼ë¡œ ë³€ê²½ì„ ê²€ì‚¬í•˜ê³  ë½ì„ íšë“í•œë‹¤.
  *    2. Sequence
- *       checkSequence·Î º¯°æÀ» °Ë»çÇÑ´Ù. ¶ôÀº ¾øÀ½
+ *       checkSequenceë¡œ ë³€ê²½ì„ ê²€ì‚¬í•œë‹¤. ë½ì€ ì—†ìŒ
  *
  ***********************************************************************/
 
@@ -9569,7 +9569,7 @@ IDE_RC qcm::validateAndLockAllObjects( qcStatement *aStatement )
     IDE_DASSERT( aStatement != NULL );
 
     //------------------------------------------
-    // TABLE or VIEW °´Ã¼ÀÇ º¯°æ°Ë»ç
+    // TABLE or VIEW ê°ì²´ì˜ ë³€ê²½ê²€ì‚¬
     //------------------------------------------
 
     sTemplate = QC_PRIVATE_TMPLATE(aStatement);
@@ -9587,21 +9587,21 @@ IDE_RC qcm::validateAndLockAllObjects( qcStatement *aStatement )
         {
             if ( sTableMap->from != NULL )
             {
-                // FROM¿¡ ÇØ´çÇÏ´Â °´Ã¼ÀÎ °æ¿ì
+                // FROMì— í•´ë‹¹í•˜ëŠ” ê°ì²´ì¸ ê²½ìš°
 
                 if( ( sRows->lflag & MTC_TUPLE_PARTITION_MASK ) ==
                     MTC_TUPLE_PARTITION_FALSE )
                 {
                     // PROJ-2582 recursive CTE
-                    // recursive memberÀÇ right subqueryÀÇ with query_nameÀº
-                    //valdiate ´Ü°è¿¡¼­ table·Î Ã³¸® ÇÏ±â À§ÇØ ÀÓ½Ã tableInfo¸¦ ±¸¼ºÇÏ¿´´Ù.
-                    // execute ´Ü°è¿¡¼­´Â view Ã³·³ Ã³¸® ÇÏ¿©¾ß ÇÑ´Ù.
+                    // recursive memberì˜ right subqueryì˜ with query_nameì€
+                    //valdiate ë‹¨ê³„ì—ì„œ tableë¡œ ì²˜ë¦¬ í•˜ê¸° ìœ„í•´ ì„ì‹œ tableInfoë¥¼ êµ¬ì„±í•˜ì˜€ë‹¤.
+                    // execute ë‹¨ê³„ì—ì„œëŠ” view ì²˜ëŸ¼ ì²˜ë¦¬ í•˜ì—¬ì•¼ í•œë‹¤.
                     if ( ( sTableMap->from->tableRef->view == NULL ) &&
                          ( ( sTableMap->from->tableRef->flag &
                              QMS_TABLE_REF_RECURSIVE_VIEW_MASK )
                            != QMS_TABLE_REF_RECURSIVE_VIEW_TRUE ) )
                     {
-                        // TableÀÎ °æ¿ì
+                        // Tableì¸ ê²½ìš°
                         sTableRef = sTableMap->from->tableRef;
 
                         if ( (sTableRef->flag & QMS_TABLE_REF_SCAN_FOR_NON_SELECT_MASK) ==
@@ -9610,9 +9610,9 @@ IDE_RC qcm::validateAndLockAllObjects( qcStatement *aStatement )
                             // Nothing to do.
 
                             // BUG-17409
-                            // Lock EscalationÀº DeadLockÀ» À¯¹ßÇÒ ¼ö ÀÖÀ¸¹Ç·Î
-                            // Insert/Update/Delete/MoveÀÇ Target Table¿¡ ´ëÇØ¼­´Â
-                            // ÇØ´ç executeÇÔ¼ö¿¡¼­ Á÷Á¢ ÀûÀıÇÑ Lock Mode¸¦ È¹µæÇÑ´Ù.
+                            // Lock Escalationì€ DeadLockì„ ìœ ë°œí•  ìˆ˜ ìˆìœ¼ë¯€ë¡œ
+                            // Insert/Update/Delete/Moveì˜ Target Tableì— ëŒ€í•´ì„œëŠ”
+                            // í•´ë‹¹ executeí•¨ìˆ˜ì—ì„œ ì§ì ‘ ì ì ˆí•œ Lock Modeë¥¼ íšë“í•œë‹¤.
                         }
                         else
                         {
@@ -9625,21 +9625,21 @@ IDE_RC qcm::validateAndLockAllObjects( qcStatement *aStatement )
                                 // Table Lock
 
                                 // BUG-21361
-                                // queue tableÀÎ °æ¿ì IX_LOCKÀ» È¹µæÇÑ´Ù. dequeue´Â queue table¿¡
-                                // ´ëÇØ¼­¸¸ ¼öÇàÀÌ °¡´ÉÇÏ¸ç queue tableÀÌ¿ÜÀÇ table¿¡ ´ëÇØ¼­´Â
-                                // ÂüÁ¶ÇÒ ¼ö ¾ø´Ù. (dequeue¿¡¼­´Â subquery°¡ ºÒ°¡ÇÏ´Ù.)
+                                // queue tableì¸ ê²½ìš° IX_LOCKì„ íšë“í•œë‹¤. dequeueëŠ” queue tableì—
+                                // ëŒ€í•´ì„œë§Œ ìˆ˜í–‰ì´ ê°€ëŠ¥í•˜ë©° queue tableì´ì™¸ì˜ tableì— ëŒ€í•´ì„œëŠ”
+                                // ì°¸ì¡°í•  ìˆ˜ ì—†ë‹¤. (dequeueì—ì„œëŠ” subqueryê°€ ë¶ˆê°€í•˜ë‹¤.)
                                 if( aStatement->myPlan->parseTree->stmtKind == QCI_STMT_DEQUEUE )
                                 {
                                     IDE_TEST( smiValidateAndLockObjects( (QC_SMI_STMT( aStatement ))->getTrans(),
                                                   sTableRef->tableHandle,
                                                   sTableRef->tableSCN,
-                                                  SMI_TBSLV_DDL_DML, // TBS Validation ¿É¼Ç
+                                                  SMI_TBSLV_DDL_DML, // TBS Validation ì˜µì…˜
                                                   SMI_TABLE_LOCK_IX,
                                                   ID_ULONG_MAX,
-                                                  ID_FALSE ) // BUG-28752 ¸í½ÃÀû Lock°ú ³»ÀçÀû LockÀ» ±¸ºĞÇÕ´Ï´Ù.
+                                                  ID_FALSE ) // BUG-28752 ëª…ì‹œì  Lockê³¼ ë‚´ì¬ì  Lockì„ êµ¬ë¶„í•©ë‹ˆë‹¤.
                                               != IDE_SUCCESS );
 
-                                    // queue tableÀº partitioned tableÀÌ ¾Æ´Ï´Ù.
+                                    // queue tableì€ partitioned tableì´ ì•„ë‹ˆë‹¤.
                                     IDE_DASSERT( ( sRows->lflag & MTC_TUPLE_PARTITIONED_TABLE_MASK ) ==
                                                  MTC_TUPLE_PARTITIONED_TABLE_FALSE );
                                 }
@@ -9649,17 +9649,17 @@ IDE_RC qcm::validateAndLockAllObjects( qcStatement *aStatement )
                                     IDE_TEST( smiValidateAndLockObjects( (QC_SMI_STMT( aStatement ))->getTrans(),
                                                                          sTableRef->tableHandle,
                                                                          sTableRef->tableSCN,
-                                                                         SMI_TBSLV_DDL_DML, // TBS Validation ¿É¼Ç
+                                                                         SMI_TBSLV_DDL_DML, // TBS Validation ì˜µì…˜
                                                                          SMI_TABLE_LOCK_IS,
                                                                          ID_ULONG_MAX,
-                                                                         ID_FALSE ) // BUG-28752 ¸í½ÃÀû Lock°ú ³»ÀçÀû LockÀ» ±¸ºĞÇÕ´Ï´Ù.
+                                                                         ID_FALSE ) // BUG-28752 ëª…ì‹œì  Lockê³¼ ë‚´ì¬ì  Lockì„ êµ¬ë¶„í•©ë‹ˆë‹¤.
                                               != IDE_SUCCESS );
                                     // PROJ-2462 ResultCache
-                                    // ±âÁ¸¿¡ ParitionÀÎ °æ¿ì smiValidationAndLockÀ» ¾ÊÀâ°í
-                                    // ¼±ÅÃµÈ Partition¿¡¼­¸¸ Execution¿¡¼­¸¸ LockÀ» Àâ´Â´Ù.
-                                    // ResultCache¿¡¼­´Â CacheµÈ PartitioÀÇ invalid ¿©ºÎ¸¦
-                                    // ¾Ë¾Æ¾ß¸¸ CacheµÈ Row Pointer°¡ À¯È¿ÇÑÁö ¾Ë¼ö ÀÖ´Ù.
-                                    // µû¶ó¼­ °¢ PartitionÀÇ ScnÀÌ À¯È¿ÇÑÁö¸¸ °Ë»çÇÑ´Ù.
+                                    // ê¸°ì¡´ì— Paritionì¸ ê²½ìš° smiValidationAndLockì„ ì•Šì¡ê³ 
+                                    // ì„ íƒëœ Partitionì—ì„œë§Œ Executionì—ì„œë§Œ Lockì„ ì¡ëŠ”ë‹¤.
+                                    // ResultCacheì—ì„œëŠ” Cacheëœ Partitioì˜ invalid ì—¬ë¶€ë¥¼
+                                    // ì•Œì•„ì•¼ë§Œ Cacheëœ Row Pointerê°€ ìœ íš¨í•œì§€ ì•Œìˆ˜ ìˆë‹¤.
+                                    // ë”°ë¼ì„œ ê° Partitionì˜ Scnì´ ìœ íš¨í•œì§€ë§Œ ê²€ì‚¬í•œë‹¤.
                                     if ( ( sTemplate->resultCache.count > 0 ) &&
                                          ( ( sTemplate->resultCache.flag & QC_RESULT_CACHE_MAX_EXCEED_MASK )
                                            == QC_RESULT_CACHE_MAX_EXCEED_FALSE ) )
@@ -9683,7 +9683,7 @@ IDE_RC qcm::validateAndLockAllObjects( qcStatement *aStatement )
                     }
                     else
                     {
-                        // ViewÀÎ °æ¿ì
+                        // Viewì¸ ê²½ìš°
 
                         // BUG-37832, BUG-38264
                         sTableRef = sTableMap->from->tableRef;
@@ -9692,15 +9692,15 @@ IDE_RC qcm::validateAndLockAllObjects( qcStatement *aStatement )
                              ( ( sTableRef->tableType == QCM_VIEW ) ||
                                ( sTableRef->tableType == QCM_MVIEW_VIEW ) ) )
                         {
-                            // subquery ÇüÅÂ°¡ ¾Æ´Ñ VIEW
+                            // subquery í˜•íƒœê°€ ì•„ë‹Œ VIEW
                             // ex) FROM t1, v1
                             IDE_TEST( smiValidateAndLockObjects( (QC_SMI_STMT( aStatement ) )->getTrans(),
                                           sTableRef->tableHandle,
                                           sTableRef->tableSCN,
-                                          SMI_TBSLV_DDL_DML, // TBS Validation ¿É¼Ç
+                                          SMI_TBSLV_DDL_DML, // TBS Validation ì˜µì…˜
                                           SMI_TABLE_LOCK_IS,
                                           ID_ULONG_MAX,
-                                          ID_FALSE ) // BUG-28752 ¸í½ÃÀû Lock°ú ³»ÀçÀû LockÀ» ±¸ºĞÇÕ´Ï´Ù.
+                                          ID_FALSE ) // BUG-28752 ëª…ì‹œì  Lockê³¼ ë‚´ì¬ì  Lockì„ êµ¬ë¶„í•©ë‹ˆë‹¤.
                                       != IDE_SUCCESS );
                         }
                         else
@@ -9711,7 +9711,7 @@ IDE_RC qcm::validateAndLockAllObjects( qcStatement *aStatement )
                 }
                 else
                 {
-                    // partitionÀÎ °æ¿ì
+                    // partitionì¸ ê²½ìš°
                     // Nothing to do.
                 }
             }
@@ -9725,13 +9725,13 @@ IDE_RC qcm::validateAndLockAllObjects( qcStatement *aStatement )
     {
         // Nothing to do.
 
-        // planCount°¡ 0ÀÎ °æ¿ì °¢ executeÇÔ¼ö¿¡¼­ ÀûÀıÇÑ ¶ôÀ» È¹µæÇÑ´Ù.
-        // (planCount°¡ 0ÀÎ °æ¿ì°¡ ¸ğµÎ DDLÀº ¾Æ´Ô)
+        // planCountê°€ 0ì¸ ê²½ìš° ê° executeí•¨ìˆ˜ì—ì„œ ì ì ˆí•œ ë½ì„ íšë“í•œë‹¤.
+        // (planCountê°€ 0ì¸ ê²½ìš°ê°€ ëª¨ë‘ DDLì€ ì•„ë‹˜)
     }
 
     //------------------------------------------
     // BUG-17455
-    // SEQUENCE °´Ã¼ÀÇ º¯°æ°Ë»ç
+    // SEQUENCE ê°ì²´ì˜ ë³€ê²½ê²€ì‚¬
     //------------------------------------------
 
     // CurrVal
@@ -9771,7 +9771,7 @@ IDE_RC qcm::validateAndLockAllObjects( qcStatement *aStatement )
     }
 
     //------------------------------------------
-    // BUG-45402 shard meta º¯°æ °Ë»ç
+    // BUG-45402 shard meta ë³€ê²½ ê²€ì‚¬
     //------------------------------------------
 
     if ( aStatement->myPlan->planEnv != NULL )
@@ -9807,21 +9807,21 @@ IDE_RC qcm::lockTableForDMLValidation(qcStatement  * aStatement,
  *
  * Description : BUG-34492
  *
- *    DMLÀÇ Validation ½Ã, Å×ÀÌºí¿¡ LOCK(IS)¸¦ Àâ´Â ÇÔ¼öÀÔ´Ï´Ù.
+ *    DMLì˜ Validation ì‹œ, í…Œì´ë¸”ì— LOCK(IS)ë¥¼ ì¡ëŠ” í•¨ìˆ˜ì…ë‹ˆë‹¤.
  *
  * Implementation :
  *
  *
  ***********************************************************************/
 
-    // Å×ÀÌºí¿¡ LOCK(IS)
+    // í…Œì´ë¸”ì— LOCK(IS)
     IDE_TEST(smiValidateAndLockObjects( (QC_SMI_STMT( aStatement ))->getTrans(),
                                         aTableHandle,
                                         aSCN,
-                                        SMI_TBSLV_DDL_DML, // TBS Validation ¿É¼Ç
+                                        SMI_TBSLV_DDL_DML, // TBS Validation ì˜µì…˜
                                         SMI_TABLE_LOCK_IS,
                                         ID_ULONG_MAX,
-                                        ID_FALSE ) // BUG-28752 ¸í½ÃÀû Lock°ú ³»ÀçÀû LockÀ» ±¸ºĞÇÕ´Ï´Ù.
+                                        ID_FALSE ) // BUG-28752 ëª…ì‹œì  Lockê³¼ ë‚´ì¬ì  Lockì„ êµ¬ë¶„í•©ë‹ˆë‹¤.
              != IDE_SUCCESS);
 
     return IDE_SUCCESS;
@@ -9839,26 +9839,26 @@ IDE_RC qcm::lockTableForDDLValidation(qcStatement * aStatement,
  *
  * Description :
  *
- *    DDLÀÇ Validation ½Ã, Å×ÀÌºí¿¡ LOCK(IS)¸¦ Àâ´Â ÇÔ¼öÀÔ´Ï´Ù.
+ *    DDLì˜ Validation ì‹œ, í…Œì´ë¸”ì— LOCK(IS)ë¥¼ ì¡ëŠ” í•¨ìˆ˜ì…ë‹ˆë‹¤.
  *
- *    BUG-17547ÀÇ fix¸¦ À§ÇØ ÀÓ½Ã·Î ¸¸µç ÇÔ¼öÀÔ´Ï´Ù.
- *    TASK-2176À» ÅëÇØ¼­ ´Ù½Ã Á¤¸®µÇ¾î¾ß ÇÕ´Ï´Ù.
+ *    BUG-17547ì˜ fixë¥¼ ìœ„í•´ ì„ì‹œë¡œ ë§Œë“  í•¨ìˆ˜ì…ë‹ˆë‹¤.
+ *    TASK-2176ì„ í†µí•´ì„œ ë‹¤ì‹œ ì •ë¦¬ë˜ì–´ì•¼ í•©ë‹ˆë‹¤.
  *
  * Implementation :
  *
  *
  ***********************************************************************/
 
-    // Å×ÀÌºí¿¡ LOCK(IS)
+    // í…Œì´ë¸”ì— LOCK(IS)
     IDE_TEST(smiValidateAndLockObjects( (QC_SMI_STMT( aStatement ))->getTrans(),
                                         aTableHandle,
                                         aSCN,
-                                        SMI_TBSLV_DDL_DML, // TBS Validation ¿É¼Ç
+                                        SMI_TBSLV_DDL_DML, // TBS Validation ì˜µì…˜
                                         SMI_TABLE_LOCK_IS,
                                         ((smiGetDDLLockTimeOut() == -1) ?
                                          ID_ULONG_MAX :
                                          smiGetDDLLockTimeOut()*1000000),
-                                        ID_FALSE ) // BUG-28752 ¸í½ÃÀû Lock°ú ³»ÀçÀû LockÀ» ±¸ºĞÇÕ´Ï´Ù.
+                                        ID_FALSE ) // BUG-28752 ëª…ì‹œì  Lockê³¼ ë‚´ì¬ì  Lockì„ êµ¬ë¶„í•©ë‹ˆë‹¤.
              != IDE_SUCCESS);
 
     return IDE_SUCCESS;
@@ -9873,7 +9873,7 @@ IDE_RC qcm::lockTableForDDLValidation(qcStatement * aStatement,
  * ----------------------------------------------*/
 
 // BUG-17202
-// °¢ ÇÊµåÀÇ ¼Ó¼ºÀ» ODBC SPEC¿¡ ¸Âµµ·Ï º¯°æ
+// ê° í•„ë“œì˜ ì†ì„±ì„ ODBC SPECì— ë§ë„ë¡ ë³€ê²½
 
 static iduFixedTableColDesc gDataTypeColDesc[] =
 {
@@ -9895,7 +9895,7 @@ static iduFixedTableColDesc gDataTypeColDesc[] =
         0, 0, NULL // for internal use
     },
 
-    // BUG-17202¸¦ À§ÇØ ÇÊµå Ãß°¡
+    // BUG-17202ë¥¼ ìœ„í•´ í•„ë“œ ì¶”ê°€
     {
         (SChar *)"ODBC_DATA_TYPE",
         offsetof(mtdType, mODBCDataType),
@@ -10031,7 +10031,7 @@ static iduFixedTableColDesc gDataTypeColDesc[] =
         0, 0, NULL // for internal use
     },
 
-    // BUG-17202¸¦ À§ÇØ ÇÊµå Ãß°¡
+    // BUG-17202ë¥¼ ìœ„í•´ í•„ë“œ ì¶”ê°€
     {
         (SChar *)"ODBC_SQL_DATA_TYPE",
         offsetof(mtdType, mODBCSQLDataType),
@@ -10085,7 +10085,7 @@ IDE_RC buildRecordForDATATYPE( idvSQL              * /*aStatistics*/,
 {
 /***********************************************************************
  *
- * Description : X$DATATYPEÀ» ±¸¼ºÇÏ±â À§ÇÑ ·¹ÄÚµå Á¤º¸ ±¸¼º
+ * Description : X$DATATYPEì„ êµ¬ì„±í•˜ê¸° ìœ„í•œ ë ˆì½”ë“œ ì •ë³´ êµ¬ì„±
  *
  * Implementation : ( PROJ-1362 )
  *
@@ -10125,10 +10125,10 @@ IDE_RC buildRecordForDATATYPE( idvSQL              * /*aStatistics*/,
             sDataType.mDataType      = sModule->id;
 
             //fix BUG-17202
-            // ¿¹Àü¿¡´Â DECODE Äõ¸®·Î °ªÀ» º¯°æ ÇßÀ¸³ª
-            // DECODE·Î º¯°æÇÑ °ªÀº NUMERIC ¼Ó¼ºÀ» °®À½
-            // ODBC SPECÀÎ SMALLINT Å¸ÀÔÀ¸·Î º¯È¯ÇÏ±â À§ÇØ
-            // DECODE °á°ú°ªÀ» ODBC_DATA_TYPE¿¡ ÀúÀå
+            // ì˜ˆì „ì—ëŠ” DECODE ì¿¼ë¦¬ë¡œ ê°’ì„ ë³€ê²½ í–ˆìœ¼ë‚˜
+            // DECODEë¡œ ë³€ê²½í•œ ê°’ì€ NUMERIC ì†ì„±ì„ ê°–ìŒ
+            // ODBC SPECì¸ SMALLINT íƒ€ì…ìœ¼ë¡œ ë³€í™˜í•˜ê¸° ìœ„í•´
+            // DECODE ê²°ê³¼ê°’ì„ ODBC_DATA_TYPEì— ì €ì¥
             switch ( sDataType.mDataType )
             {
                 // PROJ-2002 Column Security
@@ -10256,10 +10256,10 @@ IDE_RC buildRecordForDATATYPE( idvSQL              * /*aStatistics*/,
             }
 
             //fix BUG-17202
-            // ¿¹Àü¿¡´Â DECODE Äõ¸®·Î °ªÀ» º¯°æ ÇßÀ¸³ª
-            // DECODE·Î º¯°æÇÑ °ªÀº NUMERIC ¼Ó¼ºÀ» °®À½
-            // ODBC SPECÀÎ SMALLINT Å¸ÀÔÀ¸·Î º¯È¯ÇÏ±â À§ÇØ
-            // DECODE °á°ú°ªÀ» ODBC_SQL_DATA_TYPE¿¡ ÀúÀå
+            // ì˜ˆì „ì—ëŠ” DECODE ì¿¼ë¦¬ë¡œ ê°’ì„ ë³€ê²½ í–ˆìœ¼ë‚˜
+            // DECODEë¡œ ë³€ê²½í•œ ê°’ì€ NUMERIC ì†ì„±ì„ ê°–ìŒ
+            // ODBC SPECì¸ SMALLINT íƒ€ì…ìœ¼ë¡œ ë³€í™˜í•˜ê¸° ìœ„í•´
+            // DECODE ê²°ê³¼ê°’ì„ ODBC_SQL_DATA_TYPEì— ì €ì¥
 
             sDataType.mSQLDataType = sDataType.mDataType;
 
@@ -10274,7 +10274,7 @@ IDE_RC buildRecordForDATATYPE( idvSQL              * /*aStatistics*/,
                     sDataType.mODBCSQLDataType = 12;
                     break;
                 // BUG-21574, 21594
-                // float = 6, date = 11 ·Î ÇÑ´Ù.
+                // float = 6, date = 11 ë¡œ í•œë‹¤.
                 case 9:
                     sDataType.mODBCSQLDataType = 11;
                     break;
@@ -10583,12 +10583,12 @@ IDE_RC qcm::getQcmLobColumn(smiStatement * aSmiStmt,
  *
  * Description :
  *    BUG-42877
- *    makeAndSetQcmTableInfo ·ÎºÎÅÍ È£ÃâµÇ¸ç
- *    lob columnÀÌ ÀÖÀ¸¸é lob Á¤º¸¸¦ sTableInfo->columnsÀÇ flag¿¡ Ãß°¡ÇÑ´Ù.
+ *    makeAndSetQcmTableInfo ë¡œë¶€í„° í˜¸ì¶œë˜ë©°
+ *    lob columnì´ ìˆìœ¼ë©´ lob ì •ë³´ë¥¼ sTableInfo->columnsì˜ flagì— ì¶”ê°€í•œë‹¤.
  *
  * Implementation :
- *    1. SYS_LOBS_ Å×ÀÌºíÀÇ IS_DEFAULT_TBS ÄÃ·³À» ±¸ÇÑ´Ù.
- *    2. ÇÑ °Ç¾¿ ÀĞÀ¸¸é¼­ ¸ŞÅ¸ Ä³½¬¿¡ Ãß°¡ÇÑ´Ù.
+ *    1. SYS_LOBS_ í…Œì´ë¸”ì˜ IS_DEFAULT_TBS ì»¬ëŸ¼ì„ êµ¬í•œë‹¤.
+ *    2. í•œ ê±´ì”© ì½ìœ¼ë©´ì„œ ë©”íƒ€ ìºì‰¬ì— ì¶”ê°€í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -10604,7 +10604,7 @@ IDE_RC qcm::getQcmLobColumn(smiStatement * aSmiStmt,
     smiTableCursor          sCursor;
     smiCursorProperties     sCursorProperty;
 
-    scGRID                  sRid; // Disk TableÀ» À§ÇÑ Record IDentifier
+    scGRID                  sRid; // Disk Tableì„ ìœ„í•œ Record IDentifier
 
     sCursor.initialize();
 

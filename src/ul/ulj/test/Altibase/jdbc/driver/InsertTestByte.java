@@ -95,8 +95,8 @@ public class InsertTestByte extends AltibaseTestCase
         assertEquals(1, sStmt.executeUpdate());
         assertExecuteScalar("567800");
 
-        // ColumnInfo¸¦ ÃÊ±âÈ­ÇÏ±â À§ÇØ¼­ ´Ù¸¥ Å¸ÀÔÀ¸·Î ÇÑ¹ø set ÇÑ´Ù.
-        // Áö¿øÇÏÁö ¾Ê´Â Å¸ÀÔÀÌ¹Ç·Î ´ç¿¬È÷ ¿¡·¯°¡ ¶³¾îÁø´Ù.
+        // ColumnInfoë¥¼ ì´ˆê¸°í™”í•˜ê¸° ìœ„í•´ì„œ ë‹¤ë¥¸ íƒ€ì…ìœ¼ë¡œ í•œë²ˆ set í•œë‹¤.
+        // ì§€ì›í•˜ì§€ ì•ŠëŠ” íƒ€ì…ì´ë¯€ë¡œ ë‹¹ì—°íˆ ì—ëŸ¬ê°€ ë–¨ì–´ì§„ë‹¤.
         sStmt.setObject(1, new java.sql.Date(1));
         try
         {
@@ -107,7 +107,7 @@ public class InsertTestByte extends AltibaseTestCase
         {
         }
 
-        // BYTE Å¸ÀÔ¿ë ColumnInfo¸¦ ´Ù½Ã ¸¸µå¹Ç·Î PrecisionÀÌ 0À¸·Î ÃÊ±âÈ­µÇ¾îÀÖ´Ù.
+        // BYTE íƒ€ì…ìš© ColumnInfoë¥¼ ë‹¤ì‹œ ë§Œë“œë¯€ë¡œ Precisionì´ 0ìœ¼ë¡œ ì´ˆê¸°í™”ë˜ì–´ìˆë‹¤.
         sStmt.setObject(1, new byte[] { 0x1a, 0x2b });
         assertEquals(1, sStmt.executeUpdate());
         assertExecuteScalar("1a2b00");
@@ -130,7 +130,7 @@ public class InsertTestByte extends AltibaseTestCase
         sInsStmt.setBytes(1, DAT_32_VAL2);
         assertEquals(false, sInsStmt.execute());
 
-        // »ç¿ëÀÚ°¡ ³Ñ±ä µ¥ÀÌÅ¸(DAT_32_VAL?)´Â °Çµå¸®Áö ¾Ê¾Æ¾ß ÇÑ´Ù.
+        // ì‚¬ìš©ìê°€ ë„˜ê¸´ ë°ì´íƒ€(DAT_32_VAL?)ëŠ” ê±´ë“œë¦¬ì§€ ì•Šì•„ì•¼ í•œë‹¤.
         Statement sSelStmt = connection().createStatement();
         ResultSet sRS = sSelStmt.executeQuery("SELECT c2 FROM t1");
         assertEquals(true, sRS.next());

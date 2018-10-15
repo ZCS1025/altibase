@@ -27,15 +27,15 @@
 #include <smiDef.h>
 #include <scpModule.h>
 
-// Export ¶Ç´Â Import ¼öÇà Áß »ç¿ëµÇ´Â Handle.
-// scpManager¸¦ ÅëÇØ °ü¸®µÈ´Ù.
+// Export ë˜ëŠ” Import ìˆ˜í–‰ ì¤‘ ì‚¬ìš©ë˜ëŠ” Handle.
+// scpManagerë¥¼ í†µí•´ ê´€ë¦¬ëœë‹¤.
 typedef struct scpHandle
 {
     UChar                mJobName[ SMI_DATAPORT_JOBNAME_SIZE ];
     UInt                 mType;
-    smiDataPortHeader  * mHeader;       // °øÅë Çì´õ
-    scpModule          * mModule;       // ¼¼ºÎ scpModule
-    void               * mSelf;         // »èÁ¦¸¦ À§ÇØ ÀÚ½ÅÀÇ Node Ptr¸¦ °¡Áü
+    smiDataPortHeader  * mHeader;       // ê³µí†µ í—¤ë”
+    scpModule          * mModule;       // ì„¸ë¶€ scpModule
+    void               * mSelf;         // ì‚­ì œë¥¼ ìœ„í•´ ìì‹ ì˜ Node Ptrë¥¼ ê°€ì§
 } scpHandle;
 
  

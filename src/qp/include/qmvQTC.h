@@ -77,7 +77,7 @@ public:
         idBool       * aIdcFlag,
         qmsSFWGH    ** aColumnSFWGH );
 
-    // PROJ-2533 function object¿¡ ´ëÇØ¼­ °¢°¢ÀÇ object¿¡ ¸Â°Ô node º¯°æ
+    // PROJ-2533 function objectì— ëŒ€í•´ì„œ ê°ê°ì˜ objectì— ë§ê²Œ node ë³€ê²½
     static IDE_RC changeModuleToArray( 
         qtcNode      * aNode,
         mtcCallBack  * aCallBack );
@@ -127,10 +127,10 @@ public:
 
     /* PROJ-2469 Optimize View Materialization
      *
-     * Á¶Á¤ °¡´É¼ºÀÌ ÀÖ´Â, Target¿¡ ÀÇÇØ µî·ÏµÈ ÂüÁ¶ ¸®½ºÆ®¸¦ »ı¼ºÇÏ´Â ÇÔ¼ö
+     * ì¡°ì • ê°€ëŠ¥ì„±ì´ ìˆëŠ”, Targetì— ì˜í•´ ë“±ë¡ëœ ì°¸ì¡° ë¦¬ìŠ¤íŠ¸ë¥¼ ìƒì„±í•˜ëŠ” í•¨ìˆ˜
      *
-     * Args :  aTargetOrder     - ¸î ¹ø Â° Target¿¡¼­ ÂüÁ¶ÇÏ´ÂÁö ¼ø¹ø
-     *         aViewTargetOrder - Grouping SetsÀÇ Transparent ViewÀÇ Ã³¸®¸¦ À§ÇÑ ÀÎÀÚ
+     * Args :  aTargetOrder     - ëª‡ ë²ˆ ì§¸ Targetì—ì„œ ì°¸ì¡°í•˜ëŠ”ì§€ ìˆœë²ˆ
+     *         aViewTargetOrder - Grouping Setsì˜ Transparent Viewì˜ ì²˜ë¦¬ë¥¼ ìœ„í•œ ì¸ì
      */
     static IDE_RC addViewColumnRefListForTarget(
         qcStatement     * aStatement,
@@ -153,17 +153,17 @@ public:
                                       qmsSFWGH    * aSQSFWGH );
 
     // PROJ-2418
-    // QuerySetÀÇ lateralDepInfo ¼³Á¤
+    // QuerySetì˜ lateralDepInfo ì„¤ì •
     static IDE_RC setLateralDependencies( qmsSFWGH  * aSFWGH,
                                           qcDepInfo * aLateralDepInfo );
 
     // PROJ-2418
-    // FromÀÇ lateralDepInfo È¹µæ
+    // Fromì˜ lateralDepInfo íšë“
     static IDE_RC getFromLateralDepInfo( qmsFrom   * aFrom,
                                          qcDepInfo * aFromLateralDepInfo );
 
     // BUG-39567
-    // Set OperationÀ» °í·ÁÇÑ lateralDepInfo ¸¶Áö¸· ¼³Á¤
+    // Set Operationì„ ê³ ë ¤í•œ lateralDepInfo ë§ˆì§€ë§‰ ì„¤ì •
     static IDE_RC setLateralDependenciesLast( qmsQuerySet * aLateralQuerySet );
 
 private:

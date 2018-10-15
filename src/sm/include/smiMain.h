@@ -26,27 +26,27 @@
 #include <smDef.h>
 #include <smiDef.h>
 
-/* SM¿¡¼­ »ç¿ëÇÒ Äİ¹éÇÔ¼öµé */
+/* SMì—ì„œ ì‚¬ìš©í•  ì½œë°±í•¨ìˆ˜ë“¤ */
 extern smiGlobalCallBackList gSmiGlobalCallBackList;
 
-/* MEM_MAX_DB_SIZE property°ªÀÌ ¿Ã¹Ù¸¥Áö °Ë»çÇÑ´Ù. */
+/* MEM_MAX_DB_SIZE propertyê°’ì´ ì˜¬ë°”ë¥¸ì§€ ê²€ì‚¬í•œë‹¤. */
 IDE_RC smiCheckMemMaxDBSize( void );
 
-// »ç¿ëÀÚ°¡ ÁöÁ¤ÇÑ µ¥ÀÌÅÍº£ÀÌ½º Å©±â¸¦ Åä´ë·Î 
-// ½ÇÁ¦·Î »ı¼ºÇÒ µ¥ÀÌÅÍº£ÀÌ½º Å©±â¸¦ °è»êÇÑ´Ù.
+// ì‚¬ìš©ìê°€ ì§€ì •í•œ ë°ì´í„°ë² ì´ìŠ¤ í¬ê¸°ë¥¼ í† ëŒ€ë¡œ 
+// ì‹¤ì œë¡œ ìƒì„±í•  ë°ì´í„°ë² ì´ìŠ¤ í¬ê¸°ë¥¼ ê³„ì‚°í•œë‹¤.
 IDE_RC smiCalculateDBSize( scPageID   aUserDbCreatePageCount,
                            scPageID * aDbCreatePageCount );
 
-// µ¥ÀÌÅÍº£ÀÌ½º°¡ »ı¼ºÇÒ ¼ö ÀÖ´Â ÃÖ´ë Page¼ö¸¦ °è»ê
+// ë°ì´í„°ë² ì´ìŠ¤ê°€ ìƒì„±í•  ìˆ˜ ìˆëŠ” ìµœëŒ€ Pageìˆ˜ë¥¼ ê³„ì‚°
 scPageID smiGetMaxDBPageCount( void );
 
-// µ¥ÀÌÅÍº£ÀÌ½º°¡ »ı¼ºÇÒ ¼ö ÀÖ´Â ÃÖ¼Ò Page¼ö¸¦ °è»ê
+// ë°ì´í„°ë² ì´ìŠ¤ê°€ ìƒì„±í•  ìˆ˜ ìˆëŠ” ìµœì†Œ Pageìˆ˜ë¥¼ ê³„ì‚°
 scPageID smiGetMinDBPageCount( void );
 
-// ÇÏ³ªÀÇ µ¥ÀÌÅÍº£ÀÌ½º ÆÄÀÏÀÌ Áö´Ï´Â PageÀÇ ¼ö¸¦ ¸®ÅÏÇÑ´Ù 
+// í•˜ë‚˜ì˜ ë°ì´í„°ë² ì´ìŠ¤ íŒŒì¼ì´ ì§€ë‹ˆëŠ” Pageì˜ ìˆ˜ë¥¼ ë¦¬í„´í•œë‹¤ 
 IDE_RC smiGetTBSFilePageCount(scSpaceID aSpaceID, scPageID * aDBFilePageCount);
 
-// µ¥ÀÌÅÍº£ÀÌ½º¸¦ »ı¼ºÇÑ´Ù.
+// ë°ì´í„°ë² ì´ìŠ¤ë¥¼ ìƒì„±í•œë‹¤.
 IDE_RC smiCreateDB(SChar        * aDBName,
                    scPageID       aCreatePageCount,
                    SChar        * aDBCharSet,
@@ -58,8 +58,8 @@ idBool smiRuntimeSelectiveLoadingSupport();
 /* for A4 Startup Phase */
 
 /*
- *  ÀÌ ÇÔ¼ö´Â ¿©·¯¹ø È£ÃâµÉ ¼ö ÀÖÀ½.
- *  Áõ°¡ÇÏ´Â ¹æÇâÀ¸·Î È£ÃâµÇ¸ç, °¨¼ÒÇÒ ¼ö´Â ¾ø´Ù. 
+ *  ì´ í•¨ìˆ˜ëŠ” ì—¬ëŸ¬ë²ˆ í˜¸ì¶œë  ìˆ˜ ìˆìŒ.
+ *  ì¦ê°€í•˜ëŠ” ë°©í–¥ìœ¼ë¡œ í˜¸ì¶œë˜ë©°, ê°ì†Œí•  ìˆ˜ëŠ” ì—†ë‹¤. 
  */
 
 IDE_RC smiCreateDBCoreInit(smiGlobalCallBackList *   /*aCallBack*/);
@@ -81,7 +81,7 @@ IDE_RC smiStartup(smiStartupPhase        aPhase,
 
 IDE_RC smiSetRecStartupEnd();
 /*
- * ÇöÀçÀÇ Startup Phase¸¦ µ¹·Á¹Ş´Â´Ù. 
+ * í˜„ì¬ì˜ Startup Phaseë¥¼ ëŒë ¤ë°›ëŠ”ë‹¤. 
  */
 smiStartupPhase smiGetStartupPhase();
 

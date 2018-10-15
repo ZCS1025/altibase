@@ -33,10 +33,10 @@ static SInt               gCheckServerCount;
 
 
 /**
- * ¶óÀÌºê·¯¸®¿¡¼­ °øÅëÀ¸·Î ¾²´Â Àü¿ª º¯¼ö¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+ * ë¼ì´ë¸ŒëŸ¬ë¦¬ì—ì„œ ê³µí†µìœ¼ë¡œ ì“°ëŠ” ì „ì—­ ë³€ìˆ˜ë¥¼ ì´ˆê¸°í™”í•œë‹¤.
  *
- * ¶óÀÌºê·¯¸®¸¦ »ç¿ëÇÏ±â Àü¿¡ È£ÃâµÇ¾î¾ß ÇÏ¸ç,
- * ¹İµå½Ã ÇÁ·Î¼¼½º´ç 1¹ø¸¸ È£ÃâµÇ¾î¾ß ÇÑ´Ù.
+ * ë¼ì´ë¸ŒëŸ¬ë¦¬ë¥¼ ì‚¬ìš©í•˜ê¸° ì „ì— í˜¸ì¶œë˜ì–´ì•¼ í•˜ë©°,
+ * ë°˜ë“œì‹œ í”„ë¡œì„¸ìŠ¤ë‹¹ 1ë²ˆë§Œ í˜¸ì¶œë˜ì–´ì•¼ í•œë‹¤.
  */
 CHKSVR_INTERNAL_FOR_CALLBACK
 void checkServerInitializeOnce (void)
@@ -47,9 +47,9 @@ void checkServerInitializeOnce (void)
 }
 
 /**
- * ¶óÀÌºê·¯¸®¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+ * ë¼ì´ë¸ŒëŸ¬ë¦¬ë¥¼ ì´ˆê¸°í™”í•œë‹¤.
  *
- * @return °á°ú ÄÚµå °ª
+ * @return ê²°ê³¼ ì½”ë“œ ê°’
  */
 CHKSVR_INTERNAL
 CHKSVR_RC checkServerLibraryInit (void)
@@ -64,9 +64,9 @@ CHKSVR_RC checkServerLibraryInit (void)
 
     IDE_ASSERT(idlOS::thread_mutex_lock(&gCheckServerMutex) == 0);
 
-    /* BUGBUG: ³»ºÎ¿¡¼­ Àü¿ªÀÎ idp µîÀ» ¾²±â ¶§¹®¿¡ µ¿½Ã »ç¿ëÀº ¾ÈµÈ´Ù.
-       ÇÚµé ¹æ½ÄÀÇ ÀÎÅÍÆäÀÌ½ºÁö¸¸ ÇÁ·Î¼¼½º ´ç ÇÏ³ª¸¸ ¾µ ¼ö ÀÖ´Ù.
-       idp µîÀ» »ç¿ëÇÏ´Â ´Ù¸¥ ¶óÀÌºê·¯¸®¿Íµµ µ¿½Ã¿¡ »ç¿ëÇÒ ¼ö ¾ø´Ù. */
+    /* BUGBUG: ë‚´ë¶€ì—ì„œ ì „ì—­ì¸ idp ë“±ì„ ì“°ê¸° ë•Œë¬¸ì— ë™ì‹œ ì‚¬ìš©ì€ ì•ˆëœë‹¤.
+       í•¸ë“¤ ë°©ì‹ì˜ ì¸í„°í˜ì´ìŠ¤ì§€ë§Œ í”„ë¡œì„¸ìŠ¤ ë‹¹ í•˜ë‚˜ë§Œ ì“¸ ìˆ˜ ìˆë‹¤.
+       idp ë“±ì„ ì‚¬ìš©í•˜ëŠ” ë‹¤ë¥¸ ë¼ì´ë¸ŒëŸ¬ë¦¬ì™€ë„ ë™ì‹œì— ì‚¬ìš©í•  ìˆ˜ ì—†ë‹¤. */
     IDE_TEST_RAISE(gCheckServerCount != 0, DupInitError);
 
     /* Global Memory Manager initialize */
@@ -104,9 +104,9 @@ CHKSVR_RC checkServerLibraryInit (void)
 }
 
 /**
- * ¶óÀÌºê·¯¸® ÃÊ±âÈ­¸¦ ÇØÁöÇÑ´Ù.
+ * ë¼ì´ë¸ŒëŸ¬ë¦¬ ì´ˆê¸°í™”ë¥¼ í•´ì§€í•œë‹¤.
  *
- * @return °á°ú ÄÚµå °ª
+ * @return ê²°ê³¼ ì½”ë“œ ê°’
  */
 CHKSVR_INTERNAL
 CHKSVR_RC checkServerLibraryDestroy (void)
@@ -155,10 +155,10 @@ CHKSVR_RC checkServerLibraryDestroy (void)
 }
 
 /**
- * ÀÏÁ¤ ½Ã°£µ¿¾È ´ë±âÇÑ´Ù.
+ * ì¼ì • ì‹œê°„ë™ì•ˆ ëŒ€ê¸°í•œë‹¤.
  *
- * @param[IN] aMSec ´ë±âÇÒ ½Ã°£(¹Ğ¸®(1/1000)ÃÊ ´ÜÀ§)
- * @return °á°ú ÄÚµå °ª
+ * @param[IN] aMSec ëŒ€ê¸°í•  ì‹œê°„(ë°€ë¦¬(1/1000)ì´ˆ ë‹¨ìœ„)
+ * @return ê²°ê³¼ ì½”ë“œ ê°’
  */
 CHKSVR_INTERNAL
 CHKSVR_RC checkServerSleep (SInt aMSec)
@@ -185,12 +185,12 @@ CHKSVR_RC checkServerSleep (SInt aMSec)
 }
 
 /**
- * ¼­¹ö ¼Ó¼ºÀ» ÀĞ¾î¿Â´Ù.
+ * ì„œë²„ ì†ì„±ì„ ì½ì–´ì˜¨ë‹¤.
  *
- * @param[IN] aHandle ÇÚµé
- * @param[IN] aHomePath ¾ËÆ¼º£ÀÌ½º ¼­¹ö°¡ ¼³Ä¡µÈ µğ·ºÅä¸®.
- *                      È¯°æº¯¼ö¿¡ ¼³Á¤µÈ °ªÀ» »ç¿ëÇÏ·Á¸é NULL.
- * @return °á°ú ÄÚµå °ª
+ * @param[IN] aHandle í•¸ë“¤
+ * @param[IN] aHomePath ì•Œí‹°ë² ì´ìŠ¤ ì„œë²„ê°€ ì„¤ì¹˜ëœ ë””ë ‰í† ë¦¬.
+ *                      í™˜ê²½ë³€ìˆ˜ì— ì„¤ì •ëœ ê°’ì„ ì‚¬ìš©í•˜ë ¤ë©´ NULL.
+ * @return ê²°ê³¼ ì½”ë“œ ê°’
  */
 CHKSVR_INTERNAL
 CHKSVR_RC checkServerLoadProperties (CheckServerHandle *aHandle, SChar *aHomePath)
@@ -256,10 +256,10 @@ CHKSVR_RC checkServerLoadProperties (CheckServerHandle *aHandle, SChar *aHomePat
 }
 
 /**
- * ÀĞ¾î¿Â ¼­¹ö ¼Ó¼º°ú °ü·ÃµÈ ÀÚ¿øÀ» ÇØÁöÇÑ´Ù.
+ * ì½ì–´ì˜¨ ì„œë²„ ì†ì„±ê³¼ ê´€ë ¨ëœ ìì›ì„ í•´ì§€í•œë‹¤.
  *
- * @param[IN] aHandle ÇÚµé
- * @return °á°ú ÄÚµå °ª
+ * @param[IN] aHandle í•¸ë“¤
+ * @return ê²°ê³¼ ì½”ë“œ ê°’
  */
 CHKSVR_INTERNAL
 CHKSVR_RC checkServerUnloadProperties (CheckServerHandle *aHandle)
@@ -279,12 +279,12 @@ CHKSVR_RC checkServerUnloadProperties (CheckServerHandle *aHandle)
 }
 
 /**
- * ÇöÀç ½Ã°£À» "YYYY/MM/DD HH:mm:ss" Çü½ÄÀÇ ¹®ÀÚ¿­·Î ¾ò´Â´Ù.
+ * í˜„ì¬ ì‹œê°„ì„ "YYYY/MM/DD HH:mm:ss" í˜•ì‹ì˜ ë¬¸ìì—´ë¡œ ì–»ëŠ”ë‹¤.
  *
- * @param[IN,OUT] aBuf ÇöÀç ½Ã°£ ¹®ÀÚ¿­À» ¹ŞÀ» ¹öÆÛ
- * @param[IN] aBufSize ¹öÆÛÀÇ Å©±â
- * @return ¹®ÀÚ¿­À» Àß ¹İÈ¯ÇßÀ¸¸é ALTIBASE_CS_SUCCESS,
- *         ¹öÆÛ°¡ ÃæºĞÇÏÁö ¾ÊÀ¸¸é ALTIBASE_CS_SUCCESS_WITH_INFO
+ * @param[IN,OUT] aBuf í˜„ì¬ ì‹œê°„ ë¬¸ìì—´ì„ ë°›ì„ ë²„í¼
+ * @param[IN] aBufSize ë²„í¼ì˜ í¬ê¸°
+ * @return ë¬¸ìì—´ì„ ì˜ ë°˜í™˜í–ˆìœ¼ë©´ ALTIBASE_CS_SUCCESS,
+ *         ë²„í¼ê°€ ì¶©ë¶„í•˜ì§€ ì•Šìœ¼ë©´ ALTIBASE_CS_SUCCESS_WITH_INFO
  */
 CHKSVR_INTERNAL
 CHKSVR_RC getTimeString (SChar *aBuf, SInt aBufSize)
@@ -333,14 +333,14 @@ CHKSVR_RC getTimeString (SChar *aBuf, SInt aBufSize)
 }
 
 /**
- * ·Î±× ¸Ş½ÃÁö¸¦ ³²±ä´Ù.
+ * ë¡œê·¸ ë©”ì‹œì§€ë¥¼ ë‚¨ê¸´ë‹¤.
  *
- * @param[IN] aHandle ÇÚµé
- * @param[IN] aForm ·Î±× ¸Ş½ÃÁö Æû
- * @param[IN] aVaList ·Î±× ¸Ş½ÃÁö¿¡ Ãâ·ÂÇÒ °ª
- * @return ·Î±× ¸Ş½ÃÁö¸¦ Àß ³²°åÀ¸¸é ALTIBASE_CS_SUCCESS,
- *         ·Î±× ¿É¼ÇÀÌ ²¨Á® ÀÖÀ¸¸é ALTIBASE_CS_SUCCESS_WITH_INFO,
- *         ÇÚµéÀÌ À¯È¿ÇÏÁö ¾ÊÀ¸¸é ALTIBASE_CS_INVALID_HANDLE
+ * @param[IN] aHandle í•¸ë“¤
+ * @param[IN] aForm ë¡œê·¸ ë©”ì‹œì§€ í¼
+ * @param[IN] aVaList ë¡œê·¸ ë©”ì‹œì§€ì— ì¶œë ¥í•  ê°’
+ * @return ë¡œê·¸ ë©”ì‹œì§€ë¥¼ ì˜ ë‚¨ê²¼ìœ¼ë©´ ALTIBASE_CS_SUCCESS,
+ *         ë¡œê·¸ ì˜µì…˜ì´ êº¼ì ¸ ìˆìœ¼ë©´ ALTIBASE_CS_SUCCESS_WITH_INFO,
+ *         í•¸ë“¤ì´ ìœ íš¨í•˜ì§€ ì•Šìœ¼ë©´ ALTIBASE_CS_INVALID_HANDLE
  */
 CHKSVR_INTERNAL_FOR_EXTERNAL
 CHKSVR_RC checkServerLogV (CheckServerHandle *aHandle, const SChar *aForm, va_list aVaList)
@@ -382,12 +382,12 @@ CHKSVR_RC checkServerLogV (CheckServerHandle *aHandle, const SChar *aForm, va_li
 }
 
 /**
- * ·Î±× ¸Ş½ÃÁö¸¦ ³²±ä´Ù.
+ * ë¡œê·¸ ë©”ì‹œì§€ë¥¼ ë‚¨ê¸´ë‹¤.
  *
- * @param[IN] aHandle ÇÚµé
- * @param[IN] aForm ·Î±× ¸Ş½ÃÁö Æû
- * @param[IN] args ·Î±× ¸Ş½ÃÁö¿¡ Ãâ·ÂÇÒ °ª
- * @return °á°ú ÄÚµå °ª
+ * @param[IN] aHandle í•¸ë“¤
+ * @param[IN] aForm ë¡œê·¸ ë©”ì‹œì§€ í¼
+ * @param[IN] args ë¡œê·¸ ë©”ì‹œì§€ì— ì¶œë ¥í•  ê°’
+ * @return ê²°ê³¼ ì½”ë“œ ê°’
  */
 CHKSVR_INTERNAL_FOR_EXTERNAL
 CHKSVR_RC checkServerLog (CheckServerHandle *aHandle, const SChar *aForm, ...)
@@ -403,14 +403,14 @@ CHKSVR_RC checkServerLog (CheckServerHandle *aHandle, const SChar *aForm, ...)
 }
 
 /**
- * ¼Ó¼º °ªÀ» ¾ò´Â´Ù.
+ * ì†ì„± ê°’ì„ ì–»ëŠ”ë‹¤.
  *
- * @param[IN] aHandle ÇÚµé
- * @param[IN] aAttrType ¼Ó¼º À¯Çü
- * @param[IN,OUT] aValuePtr ¼Ó¼º °ªÀ» ´ãÀº ¹öÆÛ
- * @param[IN] aBufSize ¹öÆÛ Å©±â
- * @param[IN,OUT] aStrLenPtr ¼Ó¼º °ªÀÌ ¹®ÀÚ¿­ ÀÏ ¶§, ¹®ÀÚ¿­ ±æÀÌ¸¦ ¹İÈ¯¹ŞÀ» Æ÷ÀÎÅÍ
- * @return °á°ú ÄÚµå °ª
+ * @param[IN] aHandle í•¸ë“¤
+ * @param[IN] aAttrType ì†ì„± ìœ í˜•
+ * @param[IN,OUT] aValuePtr ì†ì„± ê°’ì„ ë‹´ì€ ë²„í¼
+ * @param[IN] aBufSize ë²„í¼ í¬ê¸°
+ * @param[IN,OUT] aStrLenPtr ì†ì„± ê°’ì´ ë¬¸ìì—´ ì¼ ë•Œ, ë¬¸ìì—´ ê¸¸ì´ë¥¼ ë°˜í™˜ë°›ì„ í¬ì¸í„°
+ * @return ê²°ê³¼ ì½”ë“œ ê°’
  */
 CHKSVR_INTERNAL_FOR_EXTERNAL
 CHKSVR_RC checkServerGetAttr (CheckServerHandle          *aHandle,
@@ -494,12 +494,12 @@ CHKSVR_RC checkServerGetAttr (CheckServerHandle          *aHandle,
 }
 
 /**
- * ¼Ó¼ºÀ» ¼³Á¤ÇÑ´Ù.
+ * ì†ì„±ì„ ì„¤ì •í•œë‹¤.
  *
- * @param[IN] aHandle ÇÚµé
- * @param[IN] aAttrType ¼Ó¼º À¯Çü
- * @param[IN] aValuePtr ¼Ó¼º °ªÀ» °¡¸®Å°´Â Æ÷ÀÎÅÍ
- * @return °á°ú ÄÚµå °ª
+ * @param[IN] aHandle í•¸ë“¤
+ * @param[IN] aAttrType ì†ì„± ìœ í˜•
+ * @param[IN] aValuePtr ì†ì„± ê°’ì„ ê°€ë¦¬í‚¤ëŠ” í¬ì¸í„°
+ * @return ê²°ê³¼ ì½”ë“œ ê°’
  */
 CHKSVR_INTERNAL_FOR_EXTERNAL
 CHKSVR_RC checkServerSetAttr (CheckServerHandle          *aHandle,
@@ -576,10 +576,10 @@ CHKSVR_RC checkServerSetAttr (CheckServerHandle          *aHandle,
 }
 
 /**
- * ¾ËÆ¼º£ÀÌ½º ¼­¹ö°¡ Á×¾ú´ÂÁö È®ÀÎÇÏ±â À§ÇØ ÇÊ¿äÇÑ ÃÊ±âÈ­¸¦ ¼öÇàÇÑ´Ù.
+ * ì•Œí‹°ë² ì´ìŠ¤ ì„œë²„ê°€ ì£½ì—ˆëŠ”ì§€ í™•ì¸í•˜ê¸° ìœ„í•´ í•„ìš”í•œ ì´ˆê¸°í™”ë¥¼ ìˆ˜í–‰í•œë‹¤.
  *
- * @param[IN] aHandle ÇÚµé
- * @return °á°ú ÄÚµå °ª
+ * @param[IN] aHandle í•¸ë“¤
+ * @return ê²°ê³¼ ì½”ë“œ ê°’
  */
 CHKSVR_INTERNAL
 CHKSVR_RC checkServerOpen (CheckServerHandle *aHandle)
@@ -635,10 +635,10 @@ CHKSVR_RC checkServerOpen (CheckServerHandle *aHandle)
 }
 
 /**
- * ¾ËÆ¼º£ÀÌ½º ¼­¹ö°¡ Á×¾ú´ÂÁö È®ÀÎÇÏ±â À§ÇØ ¼öÇàÇÑ ÃÊ±âÈ­¸¦ ÇØÁöÇÑ´Ù.
+ * ì•Œí‹°ë² ì´ìŠ¤ ì„œë²„ê°€ ì£½ì—ˆëŠ”ì§€ í™•ì¸í•˜ê¸° ìœ„í•´ ìˆ˜í–‰í•œ ì´ˆê¸°í™”ë¥¼ í•´ì§€í•œë‹¤.
  *
- * @param[IN] aHandle ÇÚµé
- * @return °á°ú ÄÚµå °ª
+ * @param[IN] aHandle í•¸ë“¤
+ * @return ê²°ê³¼ ì½”ë“œ ê°’
  */
 CHKSVR_INTERNAL
 CHKSVR_RC checkServerClose (CheckServerHandle *aHandle)
@@ -677,12 +677,12 @@ CHKSVR_RC checkServerClose (CheckServerHandle *aHandle)
 }
 
 /**
- * ÇÚµéÀ» »ı¼ºÇÑ´Ù.
+ * í•¸ë“¤ì„ ìƒì„±í•œë‹¤.
  *
- * @param[IN,OUT] aHandlePtr »ı¼ºµÈ ÇÚµéÀ» ¹ŞÀ» Æ÷ÀÎÅÍ
- * @param[IN] aHomePath ¾ËÆ¼º£ÀÌ½º ¼­¹ö°¡ ¼³Ä¡µÈ µğ·ºÅä¸®.
- *                      È¯°æº¯¼ö¿¡ ¼³Á¤µÈ °ªÀ» »ç¿ëÇÏ·Á¸é NULL.
- * @return °á°ú ÄÚµå °ª
+ * @param[IN,OUT] aHandlePtr ìƒì„±ëœ í•¸ë“¤ì„ ë°›ì„ í¬ì¸í„°
+ * @param[IN] aHomePath ì•Œí‹°ë² ì´ìŠ¤ ì„œë²„ê°€ ì„¤ì¹˜ëœ ë””ë ‰í† ë¦¬.
+ *                      í™˜ê²½ë³€ìˆ˜ì— ì„¤ì •ëœ ê°’ì„ ì‚¬ìš©í•˜ë ¤ë©´ NULL.
+ * @return ê²°ê³¼ ì½”ë“œ ê°’
  */
 CHKSVR_INTERNAL_FOR_EXTERNAL
 CHKSVR_RC checkServerInit (CheckServerHandle **aHandlePtr, SChar *aHomePath)
@@ -739,10 +739,10 @@ CHKSVR_RC checkServerInit (CheckServerHandle **aHandlePtr, SChar *aHomePath)
 }
 
 /**
- * ¾ËÆ¼º£ÀÌ½º ¼­¹ö°¡ Á¾·áµÇ¾ú´ÂÁö È®ÀÎÇÏ±â À§ÇØ ÇÒ´çÇÑ ÇÚµéÀ» ÇØÁ¦ÇÑ´Ù.
+ * ì•Œí‹°ë² ì´ìŠ¤ ì„œë²„ê°€ ì¢…ë£Œë˜ì—ˆëŠ”ì§€ í™•ì¸í•˜ê¸° ìœ„í•´ í• ë‹¹í•œ í•¸ë“¤ì„ í•´ì œí•œë‹¤.
  *
- * @param[IN,OUT] aHandlePtr ÇØÁ¦ ÈÄ NULL·Î ÃÊ±âÈ­ ÇÒ ÇÚµé Æ÷ÀÎÅÍ
- * @return °á°ú ÄÚµå °ª
+ * @param[IN,OUT] aHandlePtr í•´ì œ í›„ NULLë¡œ ì´ˆê¸°í™” í•  í•¸ë“¤ í¬ì¸í„°
+ * @return ê²°ê³¼ ì½”ë“œ ê°’
  */
 CHKSVR_INTERNAL_FOR_EXTERNAL
 CHKSVR_RC checkServerDestroy (CheckServerHandle **aHandlePtr)
@@ -783,12 +783,12 @@ CHKSVR_RC checkServerDestroy (CheckServerHandle **aHandlePtr)
 }
 
 /**
- * port¸¦ ÀÌ¿ëÇØ¼­ ¼­¹ö°¡ ½ÇÇàÁßÀÎÁö È®ÀÎÇÑ´Ù.
+ * portë¥¼ ì´ìš©í•´ì„œ ì„œë²„ê°€ ì‹¤í–‰ì¤‘ì¸ì§€ í™•ì¸í•œë‹¤.
  *
- * @param[IN] aHandle ÇÚµé
- * @param[IN,OUT] aServerRunning ¼­¹ö°¡ ½ÇÇà ÁßÀÎÁö ¿©ºÎ¸¦ ¹ŞÀ» Æ÷ÀÎÅÍ.
- *                               ¼­¹ö°¡ ½ÇÇà ÁßÀÌ¸é ID_TRUE, ¾Æ´Ï¸é ID_FALSE
- * @return °á°ú ÄÚµå °ª
+ * @param[IN] aHandle í•¸ë“¤
+ * @param[IN,OUT] aServerRunning ì„œë²„ê°€ ì‹¤í–‰ ì¤‘ì¸ì§€ ì—¬ë¶€ë¥¼ ë°›ì„ í¬ì¸í„°.
+ *                               ì„œë²„ê°€ ì‹¤í–‰ ì¤‘ì´ë©´ ID_TRUE, ì•„ë‹ˆë©´ ID_FALSE
+ * @return ê²°ê³¼ ì½”ë“œ ê°’
  */
 CHKSVR_INTERNAL
 CHKSVR_RC checkServerRunByPortBinding (CheckServerHandle *aHandle, idBool *aServerRunning)
@@ -819,7 +819,7 @@ CHKSVR_RC checkServerRunByPortBinding (CheckServerHandle *aHandle, idBool *aServ
         checkServerLog(aHandle, "    => Server is Running (port=%d) : errno=%d",
                        aHandle->mPortNo, errno);
     }
-    else // ¹ÙÀÎµå ¼º°ø
+    else // ë°”ì¸ë“œ ì„±ê³µ
     {
         *aServerRunning = ID_FALSE;
         checkServerLog(aHandle, "    => Server is Not Running (port=%d)",
@@ -854,7 +854,7 @@ CHKSVR_RC checkServerRunByPortBinding (CheckServerHandle *aHandle, idBool *aServ
 }
 
 /**
- * checkServerCancel()À» À§ÇÑ ½Ã±×³Î¿ë ´õ¹Ì ÇÚµé·¯
+ * checkServerCancel()ì„ ìœ„í•œ ì‹œê·¸ë„ìš© ë”ë¯¸ í•¸ë“¤ëŸ¬
  */
 CHKSVR_INTERNAL_FOR_CALLBACK
 void checkServerSigDummyHandler (SInt aSigNo)
@@ -865,18 +865,18 @@ void checkServerSigDummyHandler (SInt aSigNo)
 }
 
 /**
- * ¾ËÆ¼º£ÀÌ½º ¼­¹ö°¡ Á¾·áµÇ¾ú´ÂÁö È®ÀÎÇÑ´Ù.
+ * ì•Œí‹°ë² ì´ìŠ¤ ì„œë²„ê°€ ì¢…ë£Œë˜ì—ˆëŠ”ì§€ í™•ì¸í•œë‹¤.
  *
- * ÇÔ¼ö¸¦ È£ÃâÇÏ¸é Áï°¢ ºí·°µÇ´Âµ¥,
- * ¾ËÆ¼¿¡ºñ½º ¼­¹ö°¡ Á¾·áµÇ°Å³ª ¿¹¿Ü°¡ ¹ß»ıÇÏ¸é ¸®ÅÏµÈ´Ù.
+ * í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•˜ë©´ ì¦‰ê° ë¸”ëŸ­ë˜ëŠ”ë°,
+ * ì•Œí‹°ì—ë¹„ìŠ¤ ì„œë²„ê°€ ì¢…ë£Œë˜ê±°ë‚˜ ì˜ˆì™¸ê°€ ë°œìƒí•˜ë©´ ë¦¬í„´ëœë‹¤.
  *
- * ¾ËÆ¼º£ÀÌ½º ¼­¹ö°¡ »ì¾ÆÀÖ´ÂÁö È®ÀÎÇÏ±â À§ÇØ¼­
- * ÆÄÀÏ ¶ô°ú ¼ÒÄÏÀ» ÀÌ¿ëÇÏ¹Ç·Î
- * ¶ô ¶Ç´Â ¼ÒÄÏÀ» Ã³¸®ÇÏ´Ù°¡ ½ÇÆĞ ÇÒ ¼ö ÀÖ´Âµ¥,
- * °á°ú ÄÚµå °ªÀ» ÀÌ¿ëÇÏ¸é ÀÌ¸¦ È®ÀÎÇÒ ¼ö ÀÖ´Ù.
+ * ì•Œí‹°ë² ì´ìŠ¤ ì„œë²„ê°€ ì‚´ì•„ìˆëŠ”ì§€ í™•ì¸í•˜ê¸° ìœ„í•´ì„œ
+ * íŒŒì¼ ë½ê³¼ ì†Œì¼“ì„ ì´ìš©í•˜ë¯€ë¡œ
+ * ë½ ë˜ëŠ” ì†Œì¼“ì„ ì²˜ë¦¬í•˜ë‹¤ê°€ ì‹¤íŒ¨ í•  ìˆ˜ ìˆëŠ”ë°,
+ * ê²°ê³¼ ì½”ë“œ ê°’ì„ ì´ìš©í•˜ë©´ ì´ë¥¼ í™•ì¸í•  ìˆ˜ ìˆë‹¤.
  *
- * @param[IN] aHandle ÇÚµé
- * @return °á°ú ÄÚµå °ª
+ * @param[IN] aHandle í•¸ë“¤
+ * @return ê²°ê³¼ ì½”ë“œ ê°’
  */
 CHKSVR_INTERNAL_FOR_EXTERNAL
 CHKSVR_RC checkServerRun (CheckServerHandle *aHandle)
@@ -900,7 +900,7 @@ CHKSVR_RC checkServerRun (CheckServerHandle *aHandle)
         if (aHandle->mOptUseCancel == ID_TRUE)
         {
             IDE_TEST_RAISE(STATE_IS_CANCELED(aHandle), CancelOccurred);
-            /* tryhold() Ã¹½Ãµµ ¶§¸¸ ·Î±×¸¦ Âï´Â´Ù. */
+            /* tryhold() ì²«ì‹œë„ ë•Œë§Œ ë¡œê·¸ë¥¼ ì°ëŠ”ë‹¤. */
             if (sIsReTryhold == ID_FALSE)
             {
                 checkServerLog(aHandle, "Waiting For Altibase Event...  ");
@@ -909,7 +909,7 @@ CHKSVR_RC checkServerRun (CheckServerHandle *aHandle)
             sRC = aHandle->mServerStat->tryhold();
             if (sRC != IDE_SUCCESS)
             {
-                /* tryhold¸¦ ½ÇÇàÇÒ ÁÖ±â (500 millisecond) */
+                /* tryholdë¥¼ ì‹¤í–‰í•  ì£¼ê¸° (500 millisecond) */
                 checkServerSleep(500);
                 sServerRunning = ID_TRUE;
                 sIsReTryhold = ID_TRUE;
@@ -978,10 +978,10 @@ CHKSVR_RC checkServerRun (CheckServerHandle *aHandle)
 }
 
 /**
- * check server ¼öÇàÀ» ¸ØÃá´Ù.
+ * check server ìˆ˜í–‰ì„ ë©ˆì¶˜ë‹¤.
  *
- * @param[IN] aHandle ÇÚµé
- * @return °á°ú ÄÚµå °ª
+ * @param[IN] aHandle í•¸ë“¤
+ * @return ê²°ê³¼ ì½”ë“œ ê°’
  */
 CHKSVR_INTERNAL_FOR_EXTERNAL
 CHKSVR_RC checkServerCancel (CheckServerHandle *aHandle)
@@ -1010,10 +1010,10 @@ CHKSVR_RC checkServerCancel (CheckServerHandle *aHandle)
 }
 
 /**
- * check server ÇÁ·Î¼¼½º¸¦ Á×ÀÎ´Ù.
+ * check server í”„ë¡œì„¸ìŠ¤ë¥¼ ì£½ì¸ë‹¤.
  *
- * @param[IN] aHandle ÇÚµé
- * @return °á°ú ÄÚµå °ª
+ * @param[IN] aHandle í•¸ë“¤
+ * @return ê²°ê³¼ ì½”ë“œ ê°’
  */
 CHKSVR_INTERNAL_FOR_EXTERNAL
 CHKSVR_RC checkServerKill (CheckServerHandle *aHandle)

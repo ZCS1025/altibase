@@ -44,7 +44,7 @@ public abstract class AltibaseResultSet implements ResultSet
     private boolean                    mClosed;
     private ArrayList                  mListeners;
     private int                        mLastReadColumnIndex = 0;
-    // getXXX() È£Ãâ¶§¸¶´Ù ¸Å¹ø row À§Ä¡ Å×½ºÆ®¸¦ ÇÏ´Â ºñ¿ëÀ» ÁÙÀÌ±â À§ÇÑ ÇÊµå
+    // getXXX() í˜¸ì¶œë•Œë§ˆë‹¤ ë§¤ë²ˆ row ìœ„ì¹˜ í…ŒìŠ¤íŠ¸ë¥¼ í•˜ëŠ” ë¹„ìš©ì„ ì¤„ì´ê¸° ìœ„í•œ í•„ë“œ
     private boolean                    mCursorTested        = false;
 
     static ResultSet createResultSet(AltibaseStatement aStatement, int aResultSetType, int aResultSetConcurrency) throws SQLException
@@ -64,9 +64,9 @@ public abstract class AltibaseResultSet implements ResultSet
         }
         else
         {
-            // BUGBUG ºÒÇÊ¿äÇÑ °´Ã¼ »ı¼º È¸ÇÇ
-            // ResultSetÀ» ¸¸µé±â Àü¿¡ Ã¼Å©¸¦ ¸ÕÀú ÇÒ ¼ö ÀÖ°Ô ÇÏ´Â °ÍÀÌ ÁÁ°ÚÀ½
-            // ºÒÇÊ¿äÇÑ °´Ã¼ »ı¼ºÀ» ¸·À» ÇÊ¿ä°¡ ÀÖÀ½
+            // BUGBUG ë¶ˆí•„ìš”í•œ ê°ì²´ ìƒì„± íšŒí”¼
+            // ResultSetì„ ë§Œë“¤ê¸° ì „ì— ì²´í¬ë¥¼ ë¨¼ì € í•  ìˆ˜ ìˆê²Œ í•˜ëŠ” ê²ƒì´ ì¢‹ê² ìŒ
+            // ë¶ˆí•„ìš”í•œ ê°ì²´ ìƒì„±ì„ ë§‰ì„ í•„ìš”ê°€ ìˆìŒ
             switch (aResultSetType)
             {
                 case ResultSet.TYPE_FORWARD_ONLY:
@@ -177,9 +177,9 @@ public abstract class AltibaseResultSet implements ResultSet
     }
 
     /**
-     * ResultSetÀÇ Å©±â(ÀüÃ¼ row ¼ö)¸¦ ¾ò´Â´Ù.
+     * ResultSetì˜ í¬ê¸°(ì „ì²´ row ìˆ˜)ë¥¼ ì–»ëŠ”ë‹¤.
      * 
-     * @return Å©±â¸¦ Á¤È®È÷ ¾Ë ¼ö ÀÖÀ¸¸é ±× °ª, ¾Æ´Ï¸é Å« °ª(Integer.MAX_VALUE)
+     * @return í¬ê¸°ë¥¼ ì •í™•íˆ ì•Œ ìˆ˜ ìˆìœ¼ë©´ ê·¸ ê°’, ì•„ë‹ˆë©´ í° ê°’(Integer.MAX_VALUE)
      */
     abstract int size();
 
@@ -217,9 +217,9 @@ public abstract class AltibaseResultSet implements ResultSet
     }
 
     /**
-     * ResultSetÀÌ ´İÇû´ÂÁö È®ÀÎÇÑ´Ù.
+     * ResultSetì´ ë‹«í˜”ëŠ”ì§€ í™•ì¸í•œë‹¤.
      * 
-     * @return ResultsetÀÌ closeµÇ¾úÀ¸¸é true, ¾Æ´Ï¸é false
+     * @return Resultsetì´ closeë˜ì—ˆìœ¼ë©´ true, ì•„ë‹ˆë©´ false
      */
     public final boolean isClosed() throws SQLException
     {
@@ -283,12 +283,12 @@ public abstract class AltibaseResultSet implements ResultSet
     }
 
     /**
-     * ResultSetÀ» {@link #close()} ÇÒ ¶§ ´İ¾ÆÁÙ °´Ã¼¸¦ µî·ÏÇÑ´Ù.
+     * ResultSetì„ {@link #close()} í•  ë•Œ ë‹«ì•„ì¤„ ê°ì²´ë¥¼ ë“±ë¡í•œë‹¤.
      * <p>
-     * µî·ÏÇÒ ¼ö ÀÖ´Â °´Ã¼´Â ´ÙÀ½ Áß ÇÏ³ª¿©¾ß ÇÑ´Ù:
+     * ë“±ë¡í•  ìˆ˜ ìˆëŠ” ê°ì²´ëŠ” ë‹¤ìŒ ì¤‘ í•˜ë‚˜ì—¬ì•¼ í•œë‹¤:
      * Statement
      *
-     * @param aClosableObject ResultSetÀ» ´İÀ» ¶§ ´İÀ» °´Ã¼
+     * @param aClosableObject ResultSetì„ ë‹«ì„ ë•Œ ë‹«ì„ ê°ì²´
      */
     protected final void registerTarget(Object aClosableObject)
     {
@@ -339,17 +339,17 @@ public abstract class AltibaseResultSet implements ResultSet
 
 
 
-    // #region getter interface¸¦ À§ÇÑ °øÅë ±¸Çö
-    // BUGBUG (2012-10-18) : getXXX() ¸Ş¼Òµå´Â rowDeleted() ÀÏ ¶§ SQL NULL¿¡ ÇØ´çÇÏ´Â °ªÀ» Áà¾ßÇÑ´Ù.
-    // SQL NULLÀÏ ¶§ ¹İÈ¯ÇÏ´Â °ªÀº º¸Åë °´Ã¼¸¦ ¹İÈ¯ÇÏ´Â ¸Ş¼Òµå¸é null °ªÀ» ¹İÈ¯ÇÏ´Â ¸Ş¼Òµå¸é 0ÀÌ´Ù.
+    // #region getter interfaceë¥¼ ìœ„í•œ ê³µí†µ êµ¬í˜„
+    // BUGBUG (2012-10-18) : getXXX() ë©”ì†Œë“œëŠ” rowDeleted() ì¼ ë•Œ SQL NULLì— í•´ë‹¹í•˜ëŠ” ê°’ì„ ì¤˜ì•¼í•œë‹¤.
+    // SQL NULLì¼ ë•Œ ë°˜í™˜í•˜ëŠ” ê°’ì€ ë³´í†µ ê°ì²´ë¥¼ ë°˜í™˜í•˜ëŠ” ë©”ì†Œë“œë©´ null ê°’ì„ ë°˜í™˜í•˜ëŠ” ë©”ì†Œë“œë©´ 0ì´ë‹¤.
 
     /**
-     * @return Å¸°Ù ÄÃ·³¸Ê
+     * @return íƒ€ê²Ÿ ì»¬ëŸ¼ë§µ
      */
     protected abstract List getTargetColumns();
 
     /**
-     * @return Å¸°Ù ÄÃ·³ °¹¼ö
+     * @return íƒ€ê²Ÿ ì»¬ëŸ¼ ê°¯ìˆ˜
      */
     protected final int getTargetColumnCount()
     {
@@ -357,10 +357,10 @@ public abstract class AltibaseResultSet implements ResultSet
     }
 
     /**
-     * column index¿¡ ÇØ´çÇÏ´Â Column °´Ã¼¸¦ ¾ò´Â´Ù.
+     * column indexì— í•´ë‹¹í•˜ëŠ” Column ê°ì²´ë¥¼ ì–»ëŠ”ë‹¤.
      * 
      * @param aColumnIndex column index (1 base)
-     * @return Column °´Ã¼
+     * @return Column ê°ì²´
      */
     protected final Column getTargetColumn(int aColumnIndex)
     {
@@ -368,10 +368,10 @@ public abstract class AltibaseResultSet implements ResultSet
     }
 
     /**
-     * column index¿¡ ÇØ´çÇÏ´Â column Á¤º¸¸¦ ¾ò´Â´Ù.
+     * column indexì— í•´ë‹¹í•˜ëŠ” column ì •ë³´ë¥¼ ì–»ëŠ”ë‹¤.
      * 
      * @param aColumnIndex column index (1 base)
-     * @return ÄÃ·³ Á¤º¸
+     * @return ì»¬ëŸ¼ ì •ë³´
      */
     protected ColumnInfo getTargetColumnInfo(int aColumnIndex)
     {
@@ -381,7 +381,7 @@ public abstract class AltibaseResultSet implements ResultSet
     public final int findColumn(String aColName) throws SQLException
     {
         throwErrorForClosed();
-        // (spec) column nameÀº case insensitive. °°Àº ÀÌ¸§ÀÌ ÀÖÀ¸¸é ¾ÕÀÇ °Å ¹İÈ¯.
+        // (spec) column nameì€ case insensitive. ê°™ì€ ì´ë¦„ì´ ìˆìœ¼ë©´ ì•ì˜ ê±° ë°˜í™˜.
         for (int i = 1; i <= getTargetColumnCount(); i++)
         {
             if (getTargetColumnInfo(i).getDisplayColumnName().equalsIgnoreCase(aColName))
@@ -405,7 +405,7 @@ public abstract class AltibaseResultSet implements ResultSet
         
         if (mMetaData == null)
         {
-            // _prowid¸¦ ¾²´Â Å¸ÀÔÀÌ¸é, _prowid´Â ¶¼°í ³Ñ°ÜÁØ´Ù.
+            // _prowidë¥¼ ì“°ëŠ” íƒ€ì…ì´ë©´, _prowidëŠ” ë–¼ê³  ë„˜ê²¨ì¤€ë‹¤.
             if (getType() == TYPE_SCROLL_SENSITIVE || getConcurrency() == CONCUR_UPDATABLE)
             {
                 mMetaData = new AltibaseResultSetMetaData(getTargetColumns(), getTargetColumnCount() - 1);
@@ -420,12 +420,12 @@ public abstract class AltibaseResultSet implements ResultSet
     }
 
     /**
-     * ResultSet »óÅÂ¿Í column index°¡ À¯È¿ÇÑÁö È®ÀÎÇÑ´Ù.
+     * ResultSet ìƒíƒœì™€ column indexê°€ ìœ íš¨í•œì§€ í™•ì¸í•œë‹¤.
      * 
      * @param aColumnIndex column index (1 base)
-     * @throws SQLException ResultSetÀÌ ÀÌ¹Ì ´İÈù °æ¿ì
-     * @throws SQLException column index°¡ À¯È¿ÇÏÁö ¾ÊÀ» °æ¿ì
-     * @throws SQLException Ä¿¼­ À§Ä¡°¡ before first ¶Ç´Â after lastÀÎ °æ¿ì
+     * @throws SQLException ResultSetì´ ì´ë¯¸ ë‹«íŒ ê²½ìš°
+     * @throws SQLException column indexê°€ ìœ íš¨í•˜ì§€ ì•Šì„ ê²½ìš°
+     * @throws SQLException ì»¤ì„œ ìœ„ì¹˜ê°€ before first ë˜ëŠ” after lastì¸ ê²½ìš°
      */
     private void checkStateAndColumnIndexForGetXXX(int aColumnIndex) throws SQLException
     {
@@ -453,9 +453,9 @@ public abstract class AltibaseResultSet implements ResultSet
     }
 
     /**
-     * Ä¿¼­ À§Ä¡°¡ ¹Ù²¼À½À» ¾Ë¸°´Ù.
+     * ì»¤ì„œ ìœ„ì¹˜ê°€ ë°”ê¼ˆìŒì„ ì•Œë¦°ë‹¤.
      * <p>
-     * Ä¿¼­ À§Ä¡°¡ ¹Ù²î¸é ´ÙÀ½¿¡ µ¥ÀÌÅ¸¸¦ ¾òÀ» ¶§ À¯È¿ÇÑ À§Ä¡ÀÎÁö ´Ù½Ã È®ÀÎÇÑ´Ù.
+     * ì»¤ì„œ ìœ„ì¹˜ê°€ ë°”ë€Œë©´ ë‹¤ìŒì— ë°ì´íƒ€ë¥¼ ì–»ì„ ë•Œ ìœ íš¨í•œ ìœ„ì¹˜ì¸ì§€ ë‹¤ì‹œ í™•ì¸í•œë‹¤.
      */
     protected final void cursorMoved()
     {
@@ -488,7 +488,7 @@ public abstract class AltibaseResultSet implements ResultSet
             BlobInputStream blobStream = (BlobInputStream)sStream;
             if (blobStream.isClosed())
             {
-                blobStream.open(mStatement.mConnection.channel()); // BUG-38008 blobStreamÀÌ ´İÇôÀÖÀ»¶§´Â Ã¤³ÎÀ» ¿­µµ·Ï Ã³¸®
+                blobStream.open(mStatement.mConnection.channel()); // BUG-38008 blobStreamì´ ë‹«í˜€ìˆì„ë•ŒëŠ” ì±„ë„ì„ ì—´ë„ë¡ ì²˜ë¦¬
             }
         }
         return sStream;
@@ -505,7 +505,7 @@ public abstract class AltibaseResultSet implements ResultSet
         
         if (sResult != null)
         {
-            // BUG-43937 BigDecimalÀÌ immutableÀÌ±â ¶§¹®¿¡ setScale°á°ú¸¦ ´Ù½Ã sResult·Î ÇÒ´çÇÑ´Ù.
+            // BUG-43937 BigDecimalì´ immutableì´ê¸° ë•Œë¬¸ì— setScaleê²°ê³¼ë¥¼ ë‹¤ì‹œ sResultë¡œ í• ë‹¹í•œë‹¤.
             sResult = sResult.setScale(aScale, BigDecimal.ROUND_HALF_EVEN);
         }
         
@@ -567,7 +567,7 @@ public abstract class AltibaseResultSet implements ResultSet
             return null;
         }
         mLastReadColumnIndex = aColumnIndex;
-        // IMPROVEMENT beforeFirst ÈÄ¿¡ ´Ù½Ã °¡Á®¿À¸é »õ·Î ¸¸µç´Ù. ¸Ş¸ğ¸® ÃÖÀûÈ­°¡ ÇÊ¿äÇÔ.
+        // IMPROVEMENT beforeFirst í›„ì— ë‹¤ì‹œ ê°€ì ¸ì˜¤ë©´ ìƒˆë¡œ ë§Œë“ ë‹¤. ë©”ëª¨ë¦¬ ìµœì í™”ê°€ í•„ìš”í•¨.
         AltibaseBlob sBlob = (AltibaseBlob)getTargetColumn(aColumnIndex).getBlob();
         if (sBlob != null)
         {
@@ -924,7 +924,7 @@ public abstract class AltibaseResultSet implements ResultSet
 
 
 
-    // #region updatable interface °øÅë ±¸Çö
+    // #region updatable interface ê³µí†µ êµ¬í˜„
 
     public void updateArray(String aColumnName, Array aValue) throws SQLException
     {
@@ -1045,19 +1045,19 @@ public abstract class AltibaseResultSet implements ResultSet
 
 
 
-    // #region Altibase Æ¯¼ö ±â´É
+    // #region Altibase íŠ¹ìˆ˜ ê¸°ëŠ¥
 
     /**
-     * Plan text¸¦ ¾ò´Â´Ù.
+     * Plan textë¥¼ ì–»ëŠ”ë‹¤.
      * <p>
-     * °ü·Ã Statement¿¡ ´ëÇÑ Plan text¸¦ ¾ò´Â °ÍÀÌ¹Ç·Î, ¸¸¾à ResultSetÀ» ¾òÀº ÈÄ ´Ù¸¥ ±¸¹®À» ¼öÇàÇß´Ù¸é ´Ù¸¥
-     * Äõ¸®¿¡ ´ëÇÑ Plan text¸¦ ¾òÀ» ¼ö ÀÖ´Ù.
+     * ê´€ë ¨ Statementì— ëŒ€í•œ Plan textë¥¼ ì–»ëŠ” ê²ƒì´ë¯€ë¡œ, ë§Œì•½ ResultSetì„ ì–»ì€ í›„ ë‹¤ë¥¸ êµ¬ë¬¸ì„ ìˆ˜í–‰í–ˆë‹¤ë©´ ë‹¤ë¥¸
+     * ì¿¼ë¦¬ì— ëŒ€í•œ Plan textë¥¼ ì–»ì„ ìˆ˜ ìˆë‹¤.
      * <p>
-     * ´Ü¼ø Plan text Á¶È¸¸¦ ¿øÇÑ´Ù¸é Prepare ¶Ç´Â Execute ÈÄ¿¡, º¸´Ù Á¤È®ÇÑ Plan text Á¶È¸¸¦ ¿øÇÑ´Ù¸é
-     * Fetch ¿Ï·á ÈÄ¿¡ ¼öÇàÇÒ°ÍÀ» ±ÇÀåÇÑ´Ù.
+     * ë‹¨ìˆœ Plan text ì¡°íšŒë¥¼ ì›í•œë‹¤ë©´ Prepare ë˜ëŠ” Execute í›„ì—, ë³´ë‹¤ ì •í™•í•œ Plan text ì¡°íšŒë¥¼ ì›í•œë‹¤ë©´
+     * Fetch ì™„ë£Œ í›„ì— ìˆ˜í–‰í• ê²ƒì„ ê¶Œì¥í•œë‹¤.
      * 
      * @return Plan text
-     * @throws SQLException Plan text ¿äÃ»ÀÌ³ª °á°ú¸¦ ¾ò´Âµ¥ ½ÇÆĞÇßÀ» ¶§
+     * @throws SQLException Plan text ìš”ì²­ì´ë‚˜ ê²°ê³¼ë¥¼ ì–»ëŠ”ë° ì‹¤íŒ¨í–ˆì„ ë•Œ
      */
     public final String getExplainPlan() throws SQLException
     {

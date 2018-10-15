@@ -47,7 +47,7 @@ public:
                               smnGetRowFunc     aGetRowFunc,
                               SChar           * aNullPtr );
 
-    /* ¾²·¹µå ÃÊ±âÈ­ */
+    /* ì“°ë ˆë“œ ì´ˆê¸°í™” */
     IDE_RC initialize( void        * aTrans,
                        idvSQL      * aStatistics,
                        smnpJobItem * aJobInfo,
@@ -100,7 +100,7 @@ public:
     IDE_RC duplicate( smnIndexHeader * aSrcIndex,
                       smnIndexHeader * aDestIndex);
 
-    IDE_RC destroy();       /* ¾²·¹µå ÇØÁ¦ */
+    IDE_RC destroy();       /* ì“°ë ˆë“œ í•´ì œ */
 
     void run();
     

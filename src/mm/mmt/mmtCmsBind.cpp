@@ -39,7 +39,7 @@ typedef struct mmtCmsBindContext
 
 /*
  * PROJ-1697
- * Array Execute resultÀÇ Åë½Å Àü¼Û·®À» Ãà¼ÒÇÏ±â À§ÇÑ ±¸Á¶Ã¼
+ * Array Execute resultì˜ í†µì‹  ì „ì†¡ëŸ‰ì„ ì¶•ì†Œí•˜ê¸° ìœ„í•œ êµ¬ì¡°ì²´
  */
 typedef struct mmtBindDataListResult
 {
@@ -106,7 +106,7 @@ static IDE_RC answerColumnInfoGetResult(cmiProtocolContext    *aProtocolContext,
                     sBindColumn.mSchemaNameSize +
                     sBindColumn.mCatalogNameSize;
 
-    /* BUG-44125 [mm-cli] IPCDA ¸ðµå Å×½ºÆ® Áß hang - iloader CLOB */
+    /* BUG-44125 [mm-cli] IPCDA ëª¨ë“œ í…ŒìŠ¤íŠ¸ ì¤‘ hang - iloader CLOB */
     // 1+4+2+2+4+4+1+4+4+1+7+sTotalNameLen
     sWriteCheckState = CMI_WRITE_CHECK_ACTIVATED;
     CMI_WRITE_CHECK_WITH_IPCDA(aProtocolContext, 34 + sTotalNameLen, 34 + sTotalNameLen + 4);
@@ -156,7 +156,7 @@ static IDE_RC answerColumnInfoGetResult(cmiProtocolContext    *aProtocolContext,
 
     IDE_EXCEPTION_END;
 
-    /* BUG-44124 ipcda ¸ðµå »ç¿ë Áß hang - iloader ÄÃ·³ÀÌ ¸¹Àº Å×ÀÌºí */
+    /* BUG-44124 ipcda ëª¨ë“œ ì‚¬ìš© ì¤‘ hang - iloader ì»¬ëŸ¼ì´ ë§Žì€ í…Œì´ë¸” */
     if( (sWriteCheckState == CMI_WRITE_CHECK_ACTIVATED) && (cmiGetLinkImpl(aProtocolContext) == CMI_LINK_IMPL_IPCDA) )
     {
         IDE_SET(ideSetErrorCode(mmERR_ABORT_IPCDA_MESSAGE_TOO_LONG, CMB_BLOCK_DEFAULT_SIZE));
@@ -211,7 +211,7 @@ static IDE_RC answerColumnInfoGetListResult(cmiProtocolContext    *aProtocolCont
                         sBindColumn.mSchemaNameSize +
                         sBindColumn.mCatalogNameSize;
 
-        /* BUG-44125 [mm-cli] IPCDA ¸ðµå Å×½ºÆ® Áß hang - iloader CLOB */
+        /* BUG-44125 [mm-cli] IPCDA ëª¨ë“œ í…ŒìŠ¤íŠ¸ ì¤‘ hang - iloader CLOB */
         sWriteCheckState = CMI_WRITE_CHECK_ACTIVATED;
         CMI_WRITE_CHECK_WITH_IPCDA(aProtocolContext, 25 + sTotalNameLen, 25 + sTotalNameLen + 4);
         sWriteCheckState = CMI_WRITE_CHECK_DEACTIVATED;
@@ -257,7 +257,7 @@ static IDE_RC answerColumnInfoGetListResult(cmiProtocolContext    *aProtocolCont
 
     IDE_EXCEPTION_END;
 
-    /* BUG-44124 ipcda ¸ðµå »ç¿ë Áß hang - iloader ÄÃ·³ÀÌ ¸¹Àº Å×ÀÌºí */
+    /* BUG-44124 ipcda ëª¨ë“œ ì‚¬ìš© ì¤‘ hang - iloader ì»¬ëŸ¼ì´ ë§Žì€ í…Œì´ë¸” */
     if( (sWriteCheckState == CMI_WRITE_CHECK_ACTIVATED) && (cmiGetLinkImpl(aProtocolContext) == CMI_LINK_IMPL_IPCDA) )
     {
         IDE_SET(ideSetErrorCode(mmERR_ABORT_IPCDA_MESSAGE_TOO_LONG, CMB_BLOCK_DEFAULT_SIZE));
@@ -306,7 +306,7 @@ static IDE_RC answerParamInfoGetResult(cmiProtocolContext   *aProtocolContext,
 
     IDE_EXCEPTION_END;
 
-    /* BUG-44124 ipcda ¸ðµå »ç¿ë Áß hang - iloader ÄÃ·³ÀÌ ¸¹Àº Å×ÀÌºí */
+    /* BUG-44124 ipcda ëª¨ë“œ ì‚¬ìš© ì¤‘ hang - iloader ì»¬ëŸ¼ì´ ë§Žì€ í…Œì´ë¸” */
     if( (sWriteCheckState == CMI_WRITE_CHECK_ACTIVATED) && (cmiGetLinkImpl(aProtocolContext) == CMI_LINK_IMPL_IPCDA) )
     {
         IDE_SET(ideSetErrorCode(mmERR_ABORT_IPCDA_MESSAGE_TOO_LONG, CMB_BLOCK_DEFAULT_SIZE));
@@ -332,7 +332,7 @@ static IDE_RC answerParamInfoSetListResult(cmiProtocolContext *aProtocolContext)
 
     IDE_EXCEPTION_END;
 
-    /* BUG-44124 ipcda ¸ðµå »ç¿ë Áß hang - iloader ÄÃ·³ÀÌ ¸¹Àº Å×ÀÌºí */
+    /* BUG-44124 ipcda ëª¨ë“œ ì‚¬ìš© ì¤‘ hang - iloader ì»¬ëŸ¼ì´ ë§Žì€ í…Œì´ë¸” */
     if( (sWriteCheckState == CMI_WRITE_CHECK_ACTIVATED) && (cmiGetLinkImpl(aProtocolContext) == CMI_LINK_IMPL_IPCDA) )
     {
         IDE_SET(ideSetErrorCode(mmERR_ABORT_IPCDA_MESSAGE_TOO_LONG, CMB_BLOCK_DEFAULT_SIZE));
@@ -387,7 +387,7 @@ static IDE_RC answerParamDataInListResult(cmiProtocolContext *aProtocolContext,
 
     IDE_EXCEPTION_END;
 
-    /* BUG-44124 ipcda ¸ðµå »ç¿ë Áß hang - iloader ÄÃ·³ÀÌ ¸¹Àº Å×ÀÌºí */
+    /* BUG-44124 ipcda ëª¨ë“œ ì‚¬ìš© ì¤‘ hang - iloader ì»¬ëŸ¼ì´ ë§Žì€ í…Œì´ë¸” */
     if( (sWriteCheckState == CMI_WRITE_CHECK_ACTIVATED) && (cmiGetLinkImpl(aProtocolContext) == CMI_LINK_IMPL_IPCDA) )
     {
         IDE_SET(ideSetErrorCode(mmERR_ABORT_IPCDA_MESSAGE_TOO_LONG, CMB_BLOCK_DEFAULT_SIZE));
@@ -397,8 +397,8 @@ static IDE_RC answerParamDataInListResult(cmiProtocolContext *aProtocolContext,
 }
 
 // bug-28259: ipc needs paramDataInResult
-// ipcÀÎ °æ¿ì protocol¿¡ ´ëÇÑ ¿äÃ»/ÀÀ´ä Â¦ÀÌ ¸Â¾Æ¾ß ÇÑ´Ù.
-// ±×·¡¼­ paramDataIn¿¡ ´ëÇÑ dummy ÀÀ´ä protocol Ãß°¡.
+// ipcì¸ ê²½ìš° protocolì— ëŒ€í•œ ìš”ì²­/ì‘ë‹µ ì§ì´ ë§žì•„ì•¼ í•œë‹¤.
+// ê·¸ëž˜ì„œ paramDataInì— ëŒ€í•œ dummy ì‘ë‹µ protocol ì¶”ê°€.
 static IDE_RC answerParamDataInResult(cmiProtocolContext *aProtocolContext)
 {
     cmiWriteCheckState sWriteCheckState = CMI_WRITE_CHECK_DEACTIVATED;
@@ -416,7 +416,7 @@ static IDE_RC answerParamDataInResult(cmiProtocolContext *aProtocolContext)
 
     IDE_EXCEPTION_END;
 
-    /* BUG-44124 ipcda ¸ðµå »ç¿ë Áß hang - iloader ÄÃ·³ÀÌ ¸¹Àº Å×ÀÌºí */
+    /* BUG-44124 ipcda ëª¨ë“œ ì‚¬ìš© ì¤‘ hang - iloader ì»¬ëŸ¼ì´ ë§Žì€ í…Œì´ë¸” */
     if( (sWriteCheckState == CMI_WRITE_CHECK_ACTIVATED) && (cmiGetLinkImpl(aProtocolContext) == CMI_LINK_IMPL_IPCDA) )
     {
         IDE_SET(ideSetErrorCode(mmERR_ABORT_IPCDA_MESSAGE_TOO_LONG, CMB_BLOCK_DEFAULT_SIZE));
@@ -426,9 +426,9 @@ static IDE_RC answerParamDataInResult(cmiProtocolContext *aProtocolContext)
 }
 
 /*******************************************************************
- PROJ-2160 CM Å¸ÀÔÁ¦°Å
- Description : cm µ¥ÀÌÅ¸¸¦ QP ÀÇ ¸Þ¸ð¸®·Î º¹»çÇØÁÖ´Â ÇÔ¼ö
-               A7ÀÇ °æ¿ì µ¿ÀÏÇÑ µ¥ÀÌÅ¸¸¦ »ç¿ëÇÏ¹Ç·Î º°µµÀÇ ÄÁ¹öÁ¯ÀÌ ÇÊ¿ä¾ø´Ù.
+ PROJ-2160 CM íƒ€ìž…ì œê±°
+ Description : cm ë°ì´íƒ€ë¥¼ QP ì˜ ë©”ëª¨ë¦¬ë¡œ ë³µì‚¬í•´ì£¼ëŠ” í•¨ìˆ˜
+               A7ì˜ ê²½ìš° ë™ì¼í•œ ë°ì´íƒ€ë¥¼ ì‚¬ìš©í•˜ë¯€ë¡œ ë³„ë„ì˜ ì»¨ë²„ì ¼ì´ í•„ìš”ì—†ë‹¤.
 ********************************************************************/
 IDE_RC mmtServiceThread::setParamData4RebuildCallback(idvSQL * /* aStatistics */,
                                                       void   * aBindParam,
@@ -490,13 +490,13 @@ UInt profWriteBindCallback(idvProfBind     *aBindInfo,
     UShort         sLen16;
     UInt           sLen32;
  
-    // parameter ¹øÈ£ (1-base), mtdType ±â·Ï
+    // parameter ë²ˆí˜¸ (1-base), mtdType ê¸°ë¡
     aInfo[sDescIdx].mData   = aBindInfo; // structure copy
     aInfo[sDescIdx].mLength = 8;         // mParamNo(4) + mType(4)
     sTotalSize += 8;
     sDescIdx++;
 
-    // data ±â·Ï
+    // data ê¸°ë¡
     switch (aBindInfo->mType)
     {
         case MTD_NULL_ID :
@@ -504,7 +504,7 @@ UInt profWriteBindCallback(idvProfBind     *aBindInfo,
             break;
 
         case MTD_BINARY_ID  :
-            // ¿øº» qp µ¥ÀÌÅÍ´Â alignÀÌ ¾ÈµÇ¾î ÀÖ´Ù
+            // ì›ë³¸ qp ë°ì´í„°ëŠ” alignì´ ì•ˆë˜ì–´ ìžˆë‹¤
             ID_4_BYTE_ASSIGN(&sLen32, sSrcData);
             sDescLen = ID_SIZEOF(SDouble) + sLen32;
             break;
@@ -646,7 +646,7 @@ IDE_RC mmtServiceThread::columnInfoGetProtocol(cmiProtocolContext *aProtocolCont
     }
     else
     {
-        // BUG-20756 sResultSet->mResultSetStmt ÀÌ NULLÀÌ µÉ¼ö ÀÖ´Ù.
+        // BUG-20756 sResultSet->mResultSetStmt ì´ NULLì´ ë ìˆ˜ ìžˆë‹¤.
         if(sResultSet->mResultSetStmt == NULL)
         {
             sResultSetStmt = sStatement;
@@ -663,7 +663,7 @@ IDE_RC mmtServiceThread::columnInfoGetProtocol(cmiProtocolContext *aProtocolCont
     IDE_TEST_RAISE(sColumnCount == 0, NoColumn);
 
     // BUG-17544
-    // Prepare ÈÄ ÄÃ·³ Á¤º¸¸¦ º¸³ÂÀ¸¸é ´Ù½Ã ÄÃ·³ Á¤º¸¸¦ º¸³»Áö ¾Ê´Â´Ù.
+    // Prepare í›„ ì»¬ëŸ¼ ì •ë³´ë¥¼ ë³´ëƒˆìœ¼ë©´ ë‹¤ì‹œ ì»¬ëŸ¼ ì •ë³´ë¥¼ ë³´ë‚´ì§€ ì•ŠëŠ”ë‹¤.
     IDE_TEST_RAISE(sStatement->getSendBindColumnInfo() == ID_TRUE, NoError);
 
     if (sColumnNumber == 0)
@@ -688,8 +688,8 @@ IDE_RC mmtServiceThread::columnInfoGetProtocol(cmiProtocolContext *aProtocolCont
     }
 
     // BUG-17544
-    // Prepare ÈÄ ÄÃ·³ Á¤º¸¸¦ º¸³ÂÀ¸¸é Execute ÈÄ¿¡´Â ÄÃ·³ Á¤º¸¸¦ º¸³»Áö ¾Êµµ·Ï ¼³Á¤ÇÑ´Ù.
-    // JDBCÀÇ °æ¿ì Execute °¹¼ö¸¸Å­ ÄÃ·³ Á¤º¸¸¦ ¿äÃ»ÇÒ ¼ö ÀÖ´Ù.
+    // Prepare í›„ ì»¬ëŸ¼ ì •ë³´ë¥¼ ë³´ëƒˆìœ¼ë©´ Execute í›„ì—ëŠ” ì»¬ëŸ¼ ì •ë³´ë¥¼ ë³´ë‚´ì§€ ì•Šë„ë¡ ì„¤ì •í•œë‹¤.
+    // JDBCì˜ ê²½ìš° Execute ê°¯ìˆ˜ë§Œí¼ ì»¬ëŸ¼ ì •ë³´ë¥¼ ìš”ì²­í•  ìˆ˜ ìžˆë‹¤.
     if (sStatement->getStmtState() == MMC_STMT_STATE_PREPARED)
     {
         sStatement->setSendBindColumnInfo(ID_TRUE);
@@ -796,7 +796,7 @@ IDE_RC mmtServiceThread::paramInfoGetProtocol(cmiProtocolContext *aProtocolConte
 }
 
 /*
- * PROJ-1697 : bind parameterÀÇ information list¸¦ Ã³¸®ÇÏ´Â ÇÁ·ÎÅäÄÝ
+ * PROJ-1697 : bind parameterì˜ information listë¥¼ ì²˜ë¦¬í•˜ëŠ” í”„ë¡œí† ì½œ
  */
 IDE_RC mmtServiceThread::paramInfoSetListProtocol(cmiProtocolContext *aProtocolContext,
                                                   cmiProtocol        *,
@@ -885,8 +885,8 @@ IDE_RC mmtServiceThread::paramInfoSetListProtocol(cmiProtocolContext *aProtocolC
     /* PROJ-2616 */
     if (cmiGetLinkImpl(aProtocolContext) == CMI_LINK_IMPL_IPCDA)
     {
-        /* IPCDA & SimpleQueryÀÎ °æ¿ì¿¡ C_TYPEÀÌ Ãß°¡ µÈ´Ù. ±×·¡¼­, ¾Æ·¡ÀÇ
-         * mCursorÀÇ À§Ä¡ º¯°æ¿¡¼­ Ãß°¡ µÈ C_TYPE ¸¸Å­ ±æÀÌ¸¦ ´õÇØ Áà¾ß ÇÑ´Ù.
+        /* IPCDA & SimpleQueryì¸ ê²½ìš°ì— C_TYPEì´ ì¶”ê°€ ëœë‹¤. ê·¸ëž˜ì„œ, ì•„ëž˜ì˜
+         * mCursorì˜ ìœ„ì¹˜ ë³€ê²½ì—ì„œ ì¶”ê°€ ëœ C_TYPE ë§Œí¼ ê¸¸ì´ë¥¼ ë”í•´ ì¤˜ì•¼ í•œë‹¤.
          */
         aProtocolContext->mReadBlock->mCursor = sOrgCursor + (sParamCount * (20 + 2));
     }
@@ -933,8 +933,8 @@ static IDE_RC mmtCopyBindParamDataCallback(qciBindParam *aBindParam, UChar *aSou
     /* BUG-43294 The server raises an assertion becauseof bindings to NULL columns */
     IDU_FIT_POINT_RAISE( "mmtCopyBindParamDataCallback::aBindParam::type", InvalidType );
 
-    // endianÀ» °í·ÁÇØ¼­ ÀÐ¾î¾ßÇÑ´Ù.
-    // aSource ¸Þ¸ð¸® ´Â alignÀÌ ¾ÈµÇ¾î ÀÖ´Ù.
+    // endianì„ ê³ ë ¤í•´ì„œ ì½ì–´ì•¼í•œë‹¤.
+    // aSource ë©”ëª¨ë¦¬ ëŠ” alignì´ ì•ˆë˜ì–´ ìžˆë‹¤.
     switch (aBindParam->type)
     {
         case MTD_BINARY_ID :
@@ -951,7 +951,7 @@ static IDE_RC mmtCopyBindParamDataCallback(qciBindParam *aBindParam, UChar *aSou
         case MTD_CHAR_ID:
         case MTD_VARCHAR_ID:
             CM_ENDIAN_ASSIGN2(&sLen16, aSource);
-            // º¹»çÇÏ±â Àü¿¡ ¹öÆÛÅ©±â¸¦ ³Ñ´ÂÁö È®ÀÎÇØ¾ß ÇÑ´Ù
+            // ë³µì‚¬í•˜ê¸° ì „ì— ë²„í¼í¬ê¸°ë¥¼ ë„˜ëŠ”ì§€ í™•ì¸í•´ì•¼ í•œë‹¤
             sStructSize = MTD_CHAR_TYPE_STRUCT_SIZE(sLen16);
             IDE_TEST_RAISE(sStructSize > aBindParam->dataSize, InvalidSize);
 
@@ -1215,7 +1215,7 @@ IDE_RC mmtServiceThread::paramDataInProtocol(cmiProtocolContext *aProtocolContex
 
     if(qci::setBindParamData(sQciStmt, sParamNumber - 1, sRow, mmtCopyBindParamDataCallback) != IDE_SUCCESS)
     {
-        // BUG-22712 VC6 ÄÄÆÄÀÏ ¿À·ù ¼öÁ¤
+        // BUG-22712 VC6 ì»´íŒŒì¼ ì˜¤ë¥˜ ìˆ˜ì •
         IDE_TEST(sStatement->isAtomic() != ID_TRUE);
 
         // BUG-21489
@@ -1224,9 +1224,9 @@ IDE_RC mmtServiceThread::paramDataInProtocol(cmiProtocolContext *aProtocolContex
         IDE_RAISE(SkipExecute);
     }
 
-    // bug-25312: prepare ÀÌÈÄ¿¡ autocommitÀ» off¿¡¼­ onÀ¸·Î º¯°æÇÏ°í
-    // bind ÇÏ¸é stmt->mTrans °¡ nullÀÌ¾î¼­ segv.
-    // º¯°æ: stmt->mTrans¸¦ ±¸ÇÏ¿© nullÀÌ¸é TransID·Î 0À» ³Ñ±âµµ·Î ¼öÁ¤
+    // bug-25312: prepare ì´í›„ì— autocommitì„ offì—ì„œ onìœ¼ë¡œ ë³€ê²½í•˜ê³ 
+    // bind í•˜ë©´ stmt->mTrans ê°€ nullì´ì–´ì„œ segv.
+    // ë³€ê²½: stmt->mTransë¥¼ êµ¬í•˜ì—¬ nullì´ë©´ TransIDë¡œ 0ì„ ë„˜ê¸°ë„ë¡œ ìˆ˜ì •
     if ((idvProfile::getProfFlag() & IDV_PROF_TYPE_BIND_FLAG) == IDV_PROF_TYPE_BIND_FLAG)
     {
         smiTrans *sTrans = sSession->getTrans(sStatement, ID_FALSE);
@@ -1257,8 +1257,8 @@ IDE_RC mmtServiceThread::paramDataInProtocol(cmiProtocolContext *aProtocolContex
     IDE_EXCEPTION_CONT(SkipExecute);
 
     // bug-28259: ipc needs paramDataInResult
-    // ipcÀÎ °æ¿ì protocol¿¡ ´ëÇÑ ¿äÃ»/ÀÀ´ä Â¦ÀÌ ¸Â¾Æ¾ß ÇÑ´Ù.
-    // client°¡ ÀÀ´ä È®ÀÎ ¾øÀÌ ¿äÃ»¸¸ ¼Û½ÅÇÏ¸é ¹öÆÛ¸¦ µ¤¾î¾²°Ô µÊ.
+    // ipcì¸ ê²½ìš° protocolì— ëŒ€í•œ ìš”ì²­/ì‘ë‹µ ì§ì´ ë§žì•„ì•¼ í•œë‹¤.
+    // clientê°€ ì‘ë‹µ í™•ì¸ ì—†ì´ ìš”ì²­ë§Œ ì†¡ì‹ í•˜ë©´ ë²„í¼ë¥¼ ë®ì–´ì“°ê²Œ ë¨.
     if ((cmiGetLinkImpl( aProtocolContext ) == CMI_LINK_IMPL_IPC) ||
         (cmiGetLinkImpl( aProtocolContext ) == CMI_LINK_IMPL_IPCDA))
     {
@@ -1299,7 +1299,7 @@ IDE_RC mmtServiceThread::paramDataInProtocol(cmiProtocolContext *aProtocolContex
 
 /*
  * PROJ-1697
- * bind parameterÀÇ data list¸¦ Ã³¸®ÇÏ´Â ÇÁ·ÎÅäÄÝ
+ * bind parameterì˜ data listë¥¼ ì²˜ë¦¬í•˜ëŠ” í”„ë¡œí† ì½œ
  */
 IDE_RC mmtServiceThread::paramDataInListProtocol(cmiProtocolContext *aProtocolContext,
                                                  cmiProtocol        *aProtocol,
@@ -1367,8 +1367,8 @@ IDE_RC mmtServiceThread::paramDataInListProtocol(cmiProtocolContext *aProtocolCo
     // PROJ-1518
     if( sThread->atomicCheck( sStatement, &(sExecuteOption) ) != IDE_SUCCESS )
     {
-        /* PROJ-2160 CM Å¸ÀÔÁ¦°Å
-           ¸ðµÎ ÀÐÀº ´ÙÀ½¿¡ ÇÁ·ÎÅäÄÝÀ» Ã³¸®ÇØ¾ß ÇÑ´Ù. */
+        /* PROJ-2160 CM íƒ€ìž…ì œê±°
+           ëª¨ë‘ ì½ì€ ë‹¤ìŒì— í”„ë¡œí† ì½œì„ ì²˜ë¦¬í•´ì•¼ í•œë‹¤. */
         IDE_TEST_RAISE( cmiSplitSkipRead( aProtocolContext,
                                           sRowSize,
                                           NULL )
@@ -1387,11 +1387,11 @@ IDE_RC mmtServiceThread::paramDataInListProtocol(cmiProtocolContext *aProtocolCo
     {
         sStatement->setBindState(MMC_STMT_BIND_DATA);
 
-        /* ÀÌ Á¤º¸´Â SimpleQuery¿¡¼­ »ç¿ëµÇ±â ¶§¹®¿¡, CMP_OP_DB_Execute³ª
-         * CMP_OP_DB_ParamDataInListÀÇ ÆÐÅ¶¿¡ °°ÀÌ ¼­¹ö·Î º¸³»°Ô µÈ´Ù.
-         * ±×·±µ¥, Prepare¸¦ ÀÀ´äÀ» ¹ÞÁö ¾Ê°í ¹Ù·Î Execute³ª ParamDataInList¸¦
-         * º¸³»´Â °æ¿ì¿¡´Â SimpleQueryÀÎÁö¸¦ ¾Ë ¼ö ¾ø´Ù.
-         * ±×·¡¼­, IPCDAÀÎ °æ¿ì¿¡´Â ¹«Á¶°Ç ÀÌ Á¤º¸¸¦ Àü¼ÛÇÏµµ·Ï ÇÏ¿´´Ù.
+        /* ì´ ì •ë³´ëŠ” SimpleQueryì—ì„œ ì‚¬ìš©ë˜ê¸° ë•Œë¬¸ì—, CMP_OP_DB_Executeë‚˜
+         * CMP_OP_DB_ParamDataInListì˜ íŒ¨í‚·ì— ê°™ì´ ì„œë²„ë¡œ ë³´ë‚´ê²Œ ëœë‹¤.
+         * ê·¸ëŸ°ë°, Prepareë¥¼ ì‘ë‹µì„ ë°›ì§€ ì•Šê³  ë°”ë¡œ Executeë‚˜ ParamDataInListë¥¼
+         * ë³´ë‚´ëŠ” ê²½ìš°ì—ëŠ” SimpleQueryì¸ì§€ë¥¼ ì•Œ ìˆ˜ ì—†ë‹¤.
+         * ê·¸ëž˜ì„œ, IPCDAì¸ ê²½ìš°ì—ëŠ” ë¬´ì¡°ê±´ ì´ ì •ë³´ë¥¼ ì „ì†¡í•˜ë„ë¡ í•˜ì˜€ë‹¤.
          */
         sBindColInfo = (UShort *)(aProtocolContext->mReadBlock->mData +
                                   aProtocolContext->mReadBlock->mCursor);
@@ -1434,15 +1434,15 @@ IDE_RC mmtServiceThread::paramDataInListProtocol(cmiProtocolContext *aProtocolCo
     }
     else
     {
-        /* PROJ-2160 CM Å¸ÀÔÁ¦°Å
-           ¸ðµÎ ÀÐÀº ´ÙÀ½¿¡ ÇÁ·ÎÅäÄÝÀ» Ã³¸®ÇØ¾ß ÇÑ´Ù. */
+        /* PROJ-2160 CM íƒ€ìž…ì œê±°
+           ëª¨ë‘ ì½ì€ ë‹¤ìŒì— í”„ë¡œí† ì½œì„ ì²˜ë¦¬í•´ì•¼ í•œë‹¤. */
         if (cmiGetLinkImpl(aProtocolContext) == CMI_LINK_IMPL_IPCDA)
         {
-            /* ÀÌ Á¤º¸´Â SimpleQuery¿¡¼­ »ç¿ëµÇ±â ¶§¹®¿¡, CMP_OP_DB_Execute³ª
-             * CMP_OP_DB_ParamDataInListÀÇ ÆÐÅ¶¿¡ °°ÀÌ ¼­¹ö·Î º¸³»°Ô µÈ´Ù.
-             * ±×·±µ¥, Prepare¸¦ ÀÀ´äÀ» ¹ÞÁö ¾Ê°í ¹Ù·Î Execute³ª ParamDataInList¸¦
-             * º¸³»´Â °æ¿ì¿¡´Â SimpleQueryÀÎÁö¸¦ ¾Ë ¼ö ¾ø´Ù.
-             * ±×·¡¼­, IPCDAÀÎ °æ¿ì¿¡´Â ¹«Á¶°Ç ÀÌ Á¤º¸¸¦ Àü¼ÛÇÏµµ·Ï ÇÏ¿´´Ù.
+            /* ì´ ì •ë³´ëŠ” SimpleQueryì—ì„œ ì‚¬ìš©ë˜ê¸° ë•Œë¬¸ì—, CMP_OP_DB_Executeë‚˜
+             * CMP_OP_DB_ParamDataInListì˜ íŒ¨í‚·ì— ê°™ì´ ì„œë²„ë¡œ ë³´ë‚´ê²Œ ëœë‹¤.
+             * ê·¸ëŸ°ë°, Prepareë¥¼ ì‘ë‹µì„ ë°›ì§€ ì•Šê³  ë°”ë¡œ Executeë‚˜ ParamDataInListë¥¼
+             * ë³´ë‚´ëŠ” ê²½ìš°ì—ëŠ” SimpleQueryì¸ì§€ë¥¼ ì•Œ ìˆ˜ ì—†ë‹¤.
+             * ê·¸ëž˜ì„œ, IPCDAì¸ ê²½ìš°ì—ëŠ” ë¬´ì¡°ê±´ ì´ ì •ë³´ë¥¼ ì „ì†¡í•˜ë„ë¡ í•˜ì˜€ë‹¤.
              */
             sBindColNum = *((UShort *)(aProtocolContext->mReadBlock->mData +
                                        aProtocolContext->mReadBlock->mCursor));
@@ -1484,7 +1484,7 @@ IDE_RC mmtServiceThread::paramDataInListProtocol(cmiProtocolContext *aProtocolCo
                 != IDE_SUCCESS )
             {
                 // BUG-21489
-                // BUG-23054 mmcStatement::setAtomicLastErrorCode() ¿¡¼­ Valgrind BUG ¹ß»ýÇÕ´Ï´Ù.
+                // BUG-23054 mmcStatement::setAtomicLastErrorCode() ì—ì„œ Valgrind BUG ë°œìƒí•©ë‹ˆë‹¤.
                 if( sStatement->isAtomic() == ID_TRUE )
                 {
                     sStatement->setAtomicLastErrorCode(ideGetErrorCode());
@@ -1507,9 +1507,9 @@ IDE_RC mmtServiceThread::paramDataInListProtocol(cmiProtocolContext *aProtocolCo
             // fix BUG-22058
             if ((idvProfile::getProfFlag() & IDV_PROF_TYPE_BIND_FLAG) == IDV_PROF_TYPE_BIND_FLAG)
             {
-                // bug-25312: prepare ÀÌÈÄ¿¡ autocommitÀ» off¿¡¼­ onÀ¸·Î º¯°æÇÏ°í
-                // bind ÇÏ¸é stmt->mTrans °¡ nullÀÌ¾î¼­ segv.
-                // º¯°æ: stmt->mTrans¸¦ ±¸ÇÏ¿© nullÀÌ¸é TransID·Î 0À» ³Ñ±âµµ·Î ¼öÁ¤
+                // bug-25312: prepare ì´í›„ì— autocommitì„ offì—ì„œ onìœ¼ë¡œ ë³€ê²½í•˜ê³ 
+                // bind í•˜ë©´ stmt->mTrans ê°€ nullì´ì–´ì„œ segv.
+                // ë³€ê²½: stmt->mTransë¥¼ êµ¬í•˜ì—¬ nullì´ë©´ TransIDë¡œ 0ì„ ë„˜ê¸°ë„ë¡œ ìˆ˜ì •
                 smiTrans *sTrans = sSession->getTrans(sStatement, ID_FALSE);
                 smTID sTransID = (sTrans != NULL) ? sTrans->getTransID() : 0;
 
@@ -1519,19 +1519,19 @@ IDE_RC mmtServiceThread::paramDataInListProtocol(cmiProtocolContext *aProtocolCo
 
                     IDE_TEST(qci::getBindParamInfo(sQciStmt, &sBindParam) != IDE_SUCCESS);
 
-                    // fix BUG-24877 paramDataInListProtocol¿¡¼­
-                    // output paramÀ» ProfilingÇÏ·Á ÇÕ´Ï´Ù.
-                    // Å¬¶óÀÌ¾ðÆ®·ÎºÎÅÍ INPUT, INPUT_OUTPUTÀÇ
-                    // µ¥ÀÌÅÍ¸¸ Àü¼ÛµÇ¹Ç·Î OUTPUT PARAMÀº SKIPÇÑ´Ù.
+                    // fix BUG-24877 paramDataInListProtocolì—ì„œ
+                    // output paramì„ Profilingí•˜ë ¤ í•©ë‹ˆë‹¤.
+                    // í´ë¼ì´ì–¸íŠ¸ë¡œë¶€í„° INPUT, INPUT_OUTPUTì˜
+                    // ë°ì´í„°ë§Œ ì „ì†¡ë˜ë¯€ë¡œ OUTPUT PARAMì€ SKIPí•œë‹¤.
                     if ((sBindParam.inoutType == CMP_DB_PARAM_INPUT) ||
                         (sBindParam.inoutType == CMP_DB_PARAM_INPUT_OUTPUT))
                     {
                         // proj_2160 cm_type removal
-                        // cmblock µ¥ÀÌÅÍ°¡ ¾Æ´Ñ qp ÀúÀå µ¥ÀÌÅÍ¸¦ »ç¿ë.
-                        // why? out-binding µ¥ÀÌÅÍ´Â Å« ÆÐÅ¶ÀÇ °æ¿ì
-                        // cmblock µ¥ÀÌÅÍ¸¦ »ç¿ëÇÏ±â Èûµé±â ¶§¹®.
-                        // altiProfile¿¡¼­ ¸Å ÆÄ¶ó¹ÌÅÍ¸¶´Ù °íÁ¤¹öÆÛ
-                        // À§Ä¡¿¡ ÀûÀçÇÏ¹Ç·Î align ¹®Á¦´Â ¾øÀ½.
+                        // cmblock ë°ì´í„°ê°€ ì•„ë‹Œ qp ì €ìž¥ ë°ì´í„°ë¥¼ ì‚¬ìš©.
+                        // why? out-binding ë°ì´í„°ëŠ” í° íŒ¨í‚·ì˜ ê²½ìš°
+                        // cmblock ë°ì´í„°ë¥¼ ì‚¬ìš©í•˜ê¸° íž˜ë“¤ê¸° ë•Œë¬¸.
+                        // altiProfileì—ì„œ ë§¤ íŒŒë¼ë¯¸í„°ë§ˆë‹¤ ê³ ì •ë²„í¼
+                        // ìœ„ì¹˜ì— ì ìž¬í•˜ë¯€ë¡œ align ë¬¸ì œëŠ” ì—†ìŒ.
                         sProfBind.mParamNo = j + 1;
                         sProfBind.mType = sBindParam.type;
                         sProfBind.mData = sBindParam.data;
@@ -1631,8 +1631,8 @@ IDE_RC mmtServiceThread::paramDataInListProtocol(cmiProtocolContext *aProtocolCo
                     // PROJ-1518
                 case CMP_DB_EXECUTE_ATOMIC_EXECUTE:
                     sStatement->setRowNumber(i);
-                    // Rebuild Error ¸¦ Ã³¸®ÇÏ±â À§ÇØ¼­´Â Bind°¡ ³¡³­ ½ÃÁ¡¿¡¼­
-                    // atomicBegin À» È£ÃâÇØ¾ß ÇÑ´Ù.
+                    // Rebuild Error ë¥¼ ì²˜ë¦¬í•˜ê¸° ìœ„í•´ì„œëŠ” Bindê°€ ëë‚œ ì‹œì ì—ì„œ
+                    // atomicBegin ì„ í˜¸ì¶œí•´ì•¼ í•œë‹¤.
                     if( i == 1)
                     {
                         IDE_TEST_RAISE((sThread->atomicBegin(sStatement) != IDE_SUCCESS), SkipExecute);
@@ -1640,7 +1640,7 @@ IDE_RC mmtServiceThread::paramDataInListProtocol(cmiProtocolContext *aProtocolCo
 
                     IDE_TEST_RAISE(sThread->atomicExecute(sStatement, aProtocolContext) != IDE_SUCCESS, SkipExecute);
                     break;
-                    // ´Ù¸¥ ¿É¼ÇÀº ÀÌ°÷¿¡ ¿Ã¼ö ¾ø´Ù.
+                    // ë‹¤ë¥¸ ì˜µì…˜ì€ ì´ê³³ì— ì˜¬ìˆ˜ ì—†ë‹¤.
                 case CMP_DB_EXECUTE_ATOMIC_BEGIN:
                 case CMP_DB_EXECUTE_ATOMIC_END:
                 default:
@@ -1657,7 +1657,7 @@ IDE_RC mmtServiceThread::paramDataInListProtocol(cmiProtocolContext *aProtocolCo
     }
 
     // fix BUG-30990
-    // DEQUEUE ´ë±â½Ã IDE_CM_STOP¸¦ ¹ÝÈ¯
+    // DEQUEUE ëŒ€ê¸°ì‹œ IDE_CM_STOPë¥¼ ë°˜í™˜
     return (sSuspended == ID_TRUE) ? IDE_CM_STOP : IDE_SUCCESS;
 
     IDE_EXCEPTION(InvalidStatementState)
@@ -1685,11 +1685,11 @@ IDE_RC mmtServiceThread::paramDataInListProtocol(cmiProtocolContext *aProtocolCo
     IDE_EXCEPTION_END;
 
     // proj_2160 cm_type removal
-    // Ã³¸®µµÁß ¿¡·¯°¡ ¹ß»ýÇÑ °æ¿ì
-    // ´ÙÀ½ ÇÁ·ÎÅäÄÝÀ» Á¤»óÀûÀ¸·Î Ã³¸®ÇÏ±â À§ÇØ
-    // ³²Àº µ¥ÀÌÅÍ¸¦ skip ÇÑ´Ù.
-    // sRowSize°¡ 0ÀÎ °æ¿ì´Â, ÇÁ·ÎÅäÄÝ µ¥ÀÌÅÍ¸¦ ÀÌ¹Ì ´Ù ÀÐÀº °æ¿ìÀÓ.
-    // ex) prepare ÇÁ·ÎÅäÄÝ½Ã table not found ¿¡·¯
+    // ì²˜ë¦¬ë„ì¤‘ ì—ëŸ¬ê°€ ë°œìƒí•œ ê²½ìš°
+    // ë‹¤ìŒ í”„ë¡œí† ì½œì„ ì •ìƒì ìœ¼ë¡œ ì²˜ë¦¬í•˜ê¸° ìœ„í•´
+    // ë‚¨ì€ ë°ì´í„°ë¥¼ skip í•œë‹¤.
+    // sRowSizeê°€ 0ì¸ ê²½ìš°ëŠ”, í”„ë¡œí† ì½œ ë°ì´í„°ë¥¼ ì´ë¯¸ ë‹¤ ì½ì€ ê²½ìš°ìž„.
+    // ex) prepare í”„ë¡œí† ì½œì‹œ table not found ì—ëŸ¬
     if( sRowSize > 0 )
     {
         IDE_TEST_RAISE( cmiSplitSkipRead( aProtocolContext,

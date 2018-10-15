@@ -24,7 +24,7 @@ import Altibase.jdbc.driver.ex.Error;
 import Altibase.jdbc.driver.ex.ErrorDef;
 
 /**
- * Altibae INTERVALÀº second°ú nanos·Î ÀÌ·ç¾îÁø ½Ã°£Â÷ °ªÀ¸·Î, DATE°£ Â÷ÀÌ¸¦ ±¸ÇßÀ» ¶§ ±× °á°ú·Î ¾ò´Â´Ù.
+ * Altibae INTERVALì€ secondê³¼ nanosë¡œ ì´ë£¨ì–´ì§„ ì‹œê°„ì°¨ ê°’ìœ¼ë¡œ, DATEê°„ ì°¨ì´ë¥¼ êµ¬í–ˆì„ ë•Œ ê·¸ ê²°ê³¼ë¡œ ì–»ëŠ”ë‹¤.
  */
 public class AltibaseInterval
 {
@@ -47,9 +47,9 @@ public class AltibaseInterval
     }
 
     /**
-     * second °ªÀ» ¾ò´Â´Ù.
+     * second ê°’ì„ ì–»ëŠ”ë‹¤.
      * 
-     * @return second °ª
+     * @return second ê°’
      */
     public long getSecond()
     {
@@ -57,9 +57,9 @@ public class AltibaseInterval
     }
 
     /**
-     * nanos °ªÀ» ¾ò´Â´Ù.
+     * nanos ê°’ì„ ì–»ëŠ”ë‹¤.
      * 
-     * @return nanos °ªÀ» ¾ò´Â´Ù.
+     * @return nanos ê°’ì„ ì–»ëŠ”ë‹¤.
      */
     public long getNanos()
     {
@@ -101,11 +101,11 @@ public class AltibaseInterval
     }
 
     /**
-     * IntervalÀ» "dd hh:mm:ss.ff9" Çü½ÄÀÇ ¹®ÀÚ¿­·Î º¯È¯ÇÑ´Ù.
-     * ¿©±â¼­ ff9´Â nanosecond ´ÜÀ§ÀÌ´Ù.
+     * Intervalì„ "dd hh:mm:ss.ff9" í˜•ì‹ì˜ ë¬¸ìì—´ë¡œ ë³€í™˜í•œë‹¤.
+     * ì—¬ê¸°ì„œ ff9ëŠ” nanosecond ë‹¨ìœ„ì´ë‹¤.
      * 
-     * @param aInterval Interval °´Ã¼
-     * @return "dd hh:mm:ss.ff9" Æ÷¸ËÀ¸·Î º¯È¯ÇÑ ¹®ÀÚ¿­
+     * @param aInterval Interval ê°ì²´
+     * @return "dd hh:mm:ss.ff9" í¬ë§·ìœ¼ë¡œ ë³€í™˜í•œ ë¬¸ìì—´
      */
     public static String toString(AltibaseInterval aInterval)
     {
@@ -113,12 +113,12 @@ public class AltibaseInterval
     }
 
     /**
-     * second, nanosecond¸¦ "dd hh:mm:ss.ff9" Çü½ÄÀÇ ¹®ÀÚ¿­·Î º¯È¯ÇÑ´Ù.
-     * ¿©±â¼­ ff9´Â nanosecond ´ÜÀ§ÀÌ´Ù.
+     * second, nanosecondë¥¼ "dd hh:mm:ss.ff9" í˜•ì‹ì˜ ë¬¸ìì—´ë¡œ ë³€í™˜í•œë‹¤.
+     * ì—¬ê¸°ì„œ ff9ëŠ” nanosecond ë‹¨ìœ„ì´ë‹¤.
      * 
      * @param aSecond second
      * @param aNanos nanosecond
-     * @return "dd hh:mm:ss.ff9" Æ÷¸ËÀ¸·Î º¯È¯ÇÑ ¹®ÀÚ¿­
+     * @return "dd hh:mm:ss.ff9" í¬ë§·ìœ¼ë¡œ ë³€í™˜í•œ ë¬¸ìì—´
      */
     public static String toString(long aSecond, long aNanos)
     {
@@ -194,10 +194,10 @@ public class AltibaseInterval
     private static final long NANOS_OF_DAY  = SECOND_OF_DAY * 1000000000L;
 
     /**
-     * ³¯Â¥·Î °è»êÇßÀ» ¶§ ¾ó¸¶ Â÷ÀÌÀÎÁö¸¦ ±¸ÇÑ´Ù.
-     * ÇÏ·ç°¡ ¾ÈµÇ´Â ½Ã°£Àº ¼Ò¼öÁ¡À¸·Î Ç¥ÇöÇÑ´Ù.
+     * ë‚ ì§œë¡œ ê³„ì‚°í–ˆì„ ë•Œ ì–¼ë§ˆ ì°¨ì´ì¸ì§€ë¥¼ êµ¬í•œë‹¤.
+     * í•˜ë£¨ê°€ ì•ˆë˜ëŠ” ì‹œê°„ì€ ì†Œìˆ˜ì ìœ¼ë¡œ í‘œí˜„í•œë‹¤.
      * 
-     * @return ³¯Â¥ ´ÜÀ§·Î º» Â÷ÀÌ°ª
+     * @return ë‚ ì§œ ë‹¨ìœ„ë¡œ ë³¸ ì°¨ì´ê°’
      */
     public double toNumberOfDays()
     {
@@ -205,12 +205,12 @@ public class AltibaseInterval
     }
 
     /**
-     * ³¯Â¥·Î °è»êÇßÀ» ¶§ ¾ó¸¶ Â÷ÀÌÀÎÁö¸¦ ±¸ÇÑ´Ù.
-     * ÇÏ·ç°¡ ¾ÈµÇ´Â ½Ã°£Àº ¼Ò¼öÁ¡À¸·Î Ç¥ÇöÇÑ´Ù.
+     * ë‚ ì§œë¡œ ê³„ì‚°í–ˆì„ ë•Œ ì–¼ë§ˆ ì°¨ì´ì¸ì§€ë¥¼ êµ¬í•œë‹¤.
+     * í•˜ë£¨ê°€ ì•ˆë˜ëŠ” ì‹œê°„ì€ ì†Œìˆ˜ì ìœ¼ë¡œ í‘œí˜„í•œë‹¤.
      * 
-     * @param aSecond second °ª
-     * @param aNanos nanos °ª
-     * @return ³¯Â¥ ´ÜÀ§·Î º» Â÷ÀÌ°ª
+     * @param aSecond second ê°’
+     * @param aNanos nanos ê°’
+     * @return ë‚ ì§œ ë‹¨ìœ„ë¡œ ë³¸ ì°¨ì´ê°’
      */
     public static double toNumberOfDays(long aSecond, long aNanos)
     {

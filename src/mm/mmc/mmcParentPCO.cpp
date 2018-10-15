@@ -44,8 +44,8 @@ IDE_RC mmcParentPCO::initialize(UInt     aSQLTextIdInBucket,
     IDU_FIT_POINT_RAISE( "mmcParentPCO::initialize::malloc::SQLString4HardPrepare",
                           InsufficientMemory );
     
-    //QP¿¡¼­ parsing°úÁ¤¿¡¼­ identifier¸¦ ´ë¹®ÀÚ·Î º¯°æÇÏ±â¶§¹®¿¡
-    //ºÒÇÊ¿äÇÏ°Ô º°µµÀÇ String buffer°¡ ÇÊ¿äÇÏ´Ù.
+    //QPì—ì„œ parsingê³¼ì •ì—ì„œ identifierë¥¼ ëŒ€ë¬¸ìë¡œ ë³€ê²½í•˜ê¸°ë•Œë¬¸ì—
+    //ë¶ˆí•„ìš”í•˜ê²Œ ë³„ë„ì˜ String bufferê°€ í•„ìš”í•˜ë‹¤.
     IDE_TEST_RAISE(iduMemMgr::malloc(IDU_MEM_MMPLAN_CACHE_CONTROL,
                                      aSQLStringLen+1,
                                      (void**)&mSQLString4HardPrepare)
@@ -111,8 +111,8 @@ void mmcParentPCO::finalize()
     IDE_ASSERT(mPrepareLatch.destroy() == IDE_SUCCESS);
 }
 
-// used child list¿¡ child PCO¿¡ PCB¸¦ µî·ÏÇÑ´Ù.
-// parent PCOÀÇ prepare latch¸¦ x-latch¸¦ Àâ°í ÀÌÇÔ¼ö¸¦ È£ÃâÇØ¾ß ÇÑ´Ù.
+// used child listì— child PCOì— PCBë¥¼ ë“±ë¡í•œë‹¤.
+// parent PCOì˜ prepare latchë¥¼ x-latchë¥¼ ì¡ê³  ì´í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•´ì•¼ í•œë‹¤.
 void mmcParentPCO::addPCBOfChild(mmcPCB* aPCB)
 {
     IDU_LIST_ADD_LAST(&mUsedChildLst,aPCB->getChildLstNode());
@@ -126,9 +126,9 @@ void mmcParentPCO::addPCBOfChild(mmcPCB* aPCB)
 
 void  mmcParentPCO::movePCBOfChildToUnUsedLst(mmcPCB* aPCB)
 {
-    //used child list¿¡¼­ »èÁ¦.
+    //used child listì—ì„œ ì‚­ì œ.
     IDU_LIST_REMOVE(aPCB->getChildLstNode());
-    //unused child list¿¡ Ãß°¡.
+    //unused child listì— ì¶”ê°€.
     IDU_LIST_ADD_LAST(&mUnUsedChildLst,aPCB->getChildLstNode());
 }
 
@@ -164,8 +164,8 @@ void mmcParentPCO::validateChildLst2(iduList       *aHead,
 }
 
 
-// parent PCOÀÇ prepare latch¸¦ x-latch¸¦ Àâ°í ÀÌÇÔ¼ö¸¦ È£ÃâÇØ¾ß ÇÑ´Ù.
-// child PCO¸¦  Parent PCOÀÇ child list¿¡¼­ »èÁ¦ÇÑ´Ù.
+// parent PCOì˜ prepare latchë¥¼ x-latchë¥¼ ì¡ê³  ì´í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•´ì•¼ í•œë‹¤.
+// child PCOë¥¼  Parent PCOì˜ child listì—ì„œ ì‚­ì œí•œë‹¤.
 void mmcParentPCO::deletePCBOfChild(mmcPCB* aPCB)
 {
     IDU_LIST_REMOVE(aPCB->getChildLstNode());
@@ -211,9 +211,9 @@ void mmcParentPCO::releasePrepareLatch()
     IDE_ASSERT(mPrepareLatch.unlock() == IDE_SUCCESS);
 }
 
-// startChild PCB°¡ nullÀÌ ¾Æ´Ï¸é ÇØ´ç child PCOÀ¸·Î ºÎÅÍ,
-// °Ë»öÀ» ½ÃÀÛÇÑ´Ù.
-// null ÀÌ¸é Ã³À½ºÎÅÍ °Ë»öÇÑ´Ù.
+// startChild PCBê°€ nullì´ ì•„ë‹ˆë©´ í•´ë‹¹ child PCOìœ¼ë¡œ ë¶€í„°,
+// ê²€ìƒ‰ì„ ì‹œì‘í•œë‹¤.
+// null ì´ë©´ ì²˜ìŒë¶€í„° ê²€ìƒ‰í•œë‹¤.
 IDE_RC  mmcParentPCO::searchChildPCO(mmcStatement          *aStatement,
                                      mmcPCB                **aPCBofChildPCO,
                                      mmcChildPCOPlanState  *aChildPCOPlanState,
@@ -231,9 +231,9 @@ IDE_RC  mmcParentPCO::searchChildPCO(mmcStatement          *aStatement,
     *aPCBofChildPCO = (mmcPCB*) NULL;
     *aChildPCOPlanState = MMC_CHILD_PCO_PLAN_IS_NOT_READY;
 
-    // fix BUG-24685 mmcParentPCO::searchChild PCO¿¡¼­
-    // assertÀ¸·Î ºñÁ¤»ó Á¾·á.
-    // PCB reuse »óÅÂ¸¦ Á¦°ÅÇÔ.
+    // fix BUG-24685 mmcParentPCO::searchChild PCOì—ì„œ
+    // assertìœ¼ë¡œ ë¹„ì •ìƒ ì¢…ë£Œ.
+    // PCB reuse ìƒíƒœë¥¼ ì œê±°í•¨.
     for(sIterator =  mUsedChildLst.mNext; (&mUsedChildLst != sIterator); sIterator = sIterator->mNext,*aChildPCOPlanState = MMC_CHILD_PCO_PLAN_IS_NOT_READY)   
     {
         sPCB = (mmcPCB*)sIterator->mObj;
@@ -254,9 +254,9 @@ IDE_RC  mmcParentPCO::searchChildPCO(mmcStatement          *aStatement,
             if(sIsMatched == ID_TRUE)
             {
                 sChildPCO->getPlanState(aChildPCOPlanState);
-                // fix BUG-24685 mmcParentPCO::searchChild PCO¿¡¼­
-                // assertÀ¸·Î ºñÁ¤»ó Á¾·á.
-                // PCB reuse »óÅÂ¸¦ Á¦°ÅÇÔ.
+                // fix BUG-24685 mmcParentPCO::searchChild PCOì—ì„œ
+                // assertìœ¼ë¡œ ë¹„ì •ìƒ ì¢…ë£Œ.
+                // PCB reuse ìƒíƒœë¥¼ ì œê±°í•¨.
                 if(*aChildPCOPlanState != MMC_CHILD_PCO_PLAN_IS_NOT_READY)
                 {
                     //MMC_CHILD_PCO_PLAN_NEED_HARD_PREPARE
@@ -268,9 +268,9 @@ IDE_RC  mmcParentPCO::searchChildPCO(mmcStatement          *aStatement,
                     else
                     {
                         IDE_ASSERT((*aChildPCOPlanState == MMC_CHILD_PCO_PLAN_NEED_HARD_PREPARE));
-                        //fix BUG-24685 mmcParentPCO::searchChildPCO¿¡¼­
-                        // assert·Î ºñÁ¤»ó Á¾·áµË´Ï´Ù.
-                        // parent PCOÀÇ prepare-latch¸¦ releasÇÕ´Ï´Ù.
+                        //fix BUG-24685 mmcParentPCO::searchChildPCOì—ì„œ
+                        // assertë¡œ ë¹„ì •ìƒ ì¢…ë£Œë©ë‹ˆë‹¤.
+                        // parent PCOì˜ prepare-latchë¥¼ releasí•©ë‹ˆë‹¤.
                         *aPCOLatchState = MMC_PCO_LOCK_RELEASED;
                         releasePrepareLatch();
                     }                    
@@ -278,8 +278,8 @@ IDE_RC  mmcParentPCO::searchChildPCO(mmcStatement          *aStatement,
                 else
                 {
                     //MMC_CHILD_PCO_PLAN_IS_NOT_READY
-                    //hard prepare¸¦ ´ë±âÇÏ±â À§ÇÏ¿©
-                    //parent prepare-latch¸¦ Ç¬´Ù.
+                    //hard prepareë¥¼ ëŒ€ê¸°í•˜ê¸° ìœ„í•˜ì—¬
+                    //parent prepare-latchë¥¼ í‘¼ë‹¤.
                     sPCB->planFix(sStatistics);
                     IDE_DASSERT(*aPCOLatchState == MMC_PCO_LOCK_ACQUIRED_SHARED);
                     releasePrepareLatch();
@@ -301,12 +301,12 @@ IDE_RC  mmcParentPCO::searchChildPCO(mmcStatement          *aStatement,
                     }
                     else
                     {
-                        //fix BUG-24607 hard-prepare´ë±â ¿Ï·áÈÄ¿¡ child PCO°¡
-                        //old PCO listÀ¸·Î ¿Å°ÜÁú¼ö ÀÖ´Ù.
-                        // wait¿¡¼­ ±ú¾î³ª°í³ª¼­ ÇØ´ç child PCO°¡ old°¡ µÉ¼ö ÀÖ´Ù.
+                        //fix BUG-24607 hard-prepareëŒ€ê¸° ì™„ë£Œí›„ì— child PCOê°€
+                        //old PCO listìœ¼ë¡œ ì˜®ê²¨ì§ˆìˆ˜ ìˆë‹¤.
+                        // waitì—ì„œ ê¹¨ì–´ë‚˜ê³ ë‚˜ì„œ í•´ë‹¹ child PCOê°€ oldê°€ ë ìˆ˜ ìˆë‹¤.
                         if(*aChildPCOPlanState ==  MMC_CHILD_PCO_PLAN_IS_UNUSED)
                         {
-                            //ÀÌ·¯ÇÑ °æ¿ì. used listÃ³À½ºÎÅÍ °Ë»öÀ» ½ÃÀÛÇÑ´Ù.
+                            //ì´ëŸ¬í•œ ê²½ìš°. used listì²˜ìŒë¶€í„° ê²€ìƒ‰ì„ ì‹œì‘í•œë‹¤.
                             sIterator = &mUsedChildLst;
                             continue;
                         }
@@ -333,9 +333,9 @@ IDE_RC  mmcParentPCO::searchChildPCO(mmcStatement          *aStatement,
             sChildPCO->getPlanState(aChildPCOPlanState);
             if(*aChildPCOPlanState == MMC_CHILD_PCO_PLAN_NEED_HARD_PREPARE)
             {
-                //fix BUG-24685 mmcParentPCO::searchChildPCO¿¡¼­
-                // assert·Î ºñÁ¤»ó Á¾·áµË´Ï´Ù.
-                // parent PCOÀÇ prepare-latch¸¦ releasÇÕ´Ï´Ù.
+                //fix BUG-24685 mmcParentPCO::searchChildPCOì—ì„œ
+                // assertë¡œ ë¹„ì •ìƒ ì¢…ë£Œë©ë‹ˆë‹¤.
+                // parent PCOì˜ prepare-latchë¥¼ releasí•©ë‹ˆë‹¤.
                 *aPCOLatchState = MMC_PCO_LOCK_RELEASED;
                 releasePrepareLatch();
                 break;
@@ -349,8 +349,8 @@ IDE_RC  mmcParentPCO::searchChildPCO(mmcStatement          *aStatement,
                 else
                 {
                     IDE_DASSERT(*aChildPCOPlanState == MMC_CHILD_PCO_PLAN_IS_NOT_READY);
-                    //hard prepare¸¦ ´ë±âÇÏ±â À§ÇÏ¿©
-                    //parent prepare-latch¸¦ Ç¬´Ù.
+                    //hard prepareë¥¼ ëŒ€ê¸°í•˜ê¸° ìœ„í•˜ì—¬
+                    //parent prepare-latchë¥¼ í‘¼ë‹¤.
                     sPCB->planFix(aStatement->getStatistics());
                     IDE_DASSERT(*aPCOLatchState == MMC_PCO_LOCK_ACQUIRED_SHARED);
                     releasePrepareLatch();
@@ -372,12 +372,12 @@ IDE_RC  mmcParentPCO::searchChildPCO(mmcStatement          *aStatement,
                     }
                     else
                     {
-                        //fix BUG-24607 hard-prepare´ë±â ¿Ï·áÈÄ¿¡ child PCO°¡
-                        //old PCO listÀ¸·Î ¿Å°ÜÁú¼ö ÀÖ´Ù.
-                        // wait¿¡¼­ ±ú¾î³ª°í³ª¼­ ÇØ´ç child PCO°¡ old°¡ µÉ¼ö ÀÖ´Ù.
+                        //fix BUG-24607 hard-prepareëŒ€ê¸° ì™„ë£Œí›„ì— child PCOê°€
+                        //old PCO listìœ¼ë¡œ ì˜®ê²¨ì§ˆìˆ˜ ìˆë‹¤.
+                        // waitì—ì„œ ê¹¨ì–´ë‚˜ê³ ë‚˜ì„œ í•´ë‹¹ child PCOê°€ oldê°€ ë ìˆ˜ ìˆë‹¤.
                         if(*aChildPCOPlanState ==  MMC_CHILD_PCO_PLAN_IS_UNUSED)
                         {
-                            //ÀÌ·¯ÇÑ °æ¿ì. used listÃ³À½ºÎÅÍ °Ë»öÀ» ½ÃÀÛÇÑ´Ù.
+                            //ì´ëŸ¬í•œ ê²½ìš°. used listì²˜ìŒë¶€í„° ê²€ìƒ‰ì„ ì‹œì‘í•œë‹¤.
                             sIterator = &mUsedChildLst;
                             continue;
                         }

@@ -19,11 +19,11 @@
 
 
 /**
- * ÄÃ·³ ¸ñ·ÏÀ» ¾ò´Â´Ù.
+ * ì»¬ëŸ¼ ëª©ë¡ì„ ì–»ëŠ”ë‹¤.
  *
- * @param[in] aABConn ¿¬°á ÇÚµé
- * @param[in] aRestrictions Á¦¾à Á¶°Ç
- * @return ÄÃ·³ ¸ñ·ÏÀ» ´ãÀº °á°ú ÇÚµé
+ * @param[in] aABConn ì—°ê²° í•¸ë“¤
+ * @param[in] aRestrictions ì œì•½ ì¡°ê±´
+ * @return ì»¬ëŸ¼ ëª©ë¡ì„ ë‹´ì€ ê²°ê³¼ í•¸ë“¤
  */
 CDBC_EXPORT
 ALTIBASE_RES altibase_list_fields (ALTIBASE aABConn, const acp_char_t *aRestrictions[])
@@ -83,11 +83,11 @@ ALTIBASE_RES altibase_list_fields (ALTIBASE aABConn, const acp_char_t *aRestrict
 }
 
 /**
- * Å×ÀÌºí ¸ñ·ÏÀ» ¾ò´Â´Ù.
+ * í…Œì´ë¸” ëª©ë¡ì„ ì–»ëŠ”ë‹¤.
  *
- * @param[in] aABConn ¿¬°á ÇÚµé
- * @param[in] aRestrictions Á¦¾à Á¶°Ç
- * @return Å×ÀÌºí ¸ñ·ÏÀ» ´ãÀº °á°ú ÇÚµé
+ * @param[in] aABConn ì—°ê²° í•¸ë“¤
+ * @param[in] aRestrictions ì œì•½ ì¡°ê±´
+ * @return í…Œì´ë¸” ëª©ë¡ì„ ë‹´ì€ ê²°ê³¼ í•¸ë“¤
  */
 CDBC_EXPORT
 ALTIBASE_RES altibase_list_tables (ALTIBASE aABConn, const acp_char_t *aRestrictions[])
@@ -148,12 +148,12 @@ ALTIBASE_RES altibase_list_tables (ALTIBASE aABConn, const acp_char_t *aRestrict
 }
 
 /**
- * ´ÙÀ½ °á°ú¼ÂÀ¸·Î Ä¿¼­¸¦ ÀÌµ¿ÇÑ´Ù.
+ * ë‹¤ìŒ ê²°ê³¼ì…‹ìœ¼ë¡œ ì»¤ì„œë¥¼ ì´ë™í•œë‹¤.
  *
- * @param[in] aABConn ¿¬°á ÇÚµé
- * @return ALTIBASE_SUCCESS: ¼º°øÇß°í ´ÙÀ½ °á°ú¼ÂÀ» °¡Á®¿Ô´Ù.
- *         ALTIBASE_NO_DATA: ¼º°øÇßÁö¸¸ ´õ °¡Á®¿Ã °á°ú¼ÂÀÌ ¾ø´Ù.
- *         ALTIBASE_ERROR  : ½ÇÆÐ
+ * @param[in] aABConn ì—°ê²° í•¸ë“¤
+ * @return ALTIBASE_SUCCESS: ì„±ê³µí–ˆê³  ë‹¤ìŒ ê²°ê³¼ì…‹ì„ ê°€ì ¸ì™”ë‹¤.
+ *         ALTIBASE_NO_DATA: ì„±ê³µí–ˆì§€ë§Œ ë” ê°€ì ¸ì˜¬ ê²°ê³¼ì…‹ì´ ì—†ë‹¤.
+ *         ALTIBASE_ERROR  : ì‹¤íŒ¨
  */
 CDBC_EXPORT
 ALTIBASE_RC altibase_next_result (ALTIBASE aABConn)
@@ -169,12 +169,12 @@ ALTIBASE_RC altibase_next_result (ALTIBASE aABConn)
 
     altibase_init_errinfo(&(sABConn->mDiagRec));
 
-    /* free result¸¦ ÇÏ¸é executed »óÅÂ¸¦ unsetÇÏ¹Ç·Î
-       °á°ú¼ÂÀÌ ¿©·¯°³ÀÏ¶§´Â Àü¿¡ ½ÇÇàÀ» Çß¾ú´ÂÁö ¾ÈÇß¾ú´ÂÁö È®ÀÎÇÒ ¼ö ¾ø´Ù.
-       free result ¶§ executed »óÅÂ¸¦ unsetÇÏ´Â ÀÌÀ¯´Â
-       ±×·¸°Ô ¾ÈÇÏ¸é ÇÑ¹ø execute ÇÑ ÈÄ¿¡´Â °è¼Ó execute »óÅÂ·Î ³²¾ÆÀÖ°Ô µÇ±â ¶§¹® */
+    /* free resultë¥¼ í•˜ë©´ executed ìƒíƒœë¥¼ unsetí•˜ë¯€ë¡œ
+       ê²°ê³¼ì…‹ì´ ì—¬ëŸ¬ê°œì¼ë•ŒëŠ” ì „ì— ì‹¤í–‰ì„ í–ˆì—ˆëŠ”ì§€ ì•ˆí–ˆì—ˆëŠ”ì§€ í™•ì¸í•  ìˆ˜ ì—†ë‹¤.
+       free result ë•Œ executed ìƒíƒœë¥¼ unsetí•˜ëŠ” ì´ìœ ëŠ”
+       ê·¸ë ‡ê²Œ ì•ˆí•˜ë©´ í•œë²ˆ execute í•œ í›„ì—ëŠ” ê³„ì† execute ìƒíƒœë¡œ ë‚¨ì•„ìžˆê²Œ ë˜ê¸° ë•Œë¬¸ */
     /*CDBC_TEST_RAISE(CONN_NOT_EXECUTED(sABConn), FuncSeqError);*/
-    /* ÀÌ ÇÔ¼ö¸¦ È£ÃâÇÏ±â Àü¿¡ ¹Ýµå½Ã free result¸¦ ÇØ¾ßÇÑ´Ù. */
+    /* ì´ í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•˜ê¸° ì „ì— ë°˜ë“œì‹œ free resultë¥¼ í•´ì•¼í•œë‹¤. */
     CDBC_TEST_RAISE(CONN_IS_FETCHED(sABConn), FuncSeqError);
 
     CDBCLOG_CALL("SQLMoreResults");
@@ -214,12 +214,12 @@ ALTIBASE_RC altibase_next_result (ALTIBASE aABConn)
 }
 
 /**
- * ´ÙÀ½ °á°ú¼ÂÀ¸·Î Ä¿¼­¸¦ ÀÌµ¿ÇÑ´Ù.
+ * ë‹¤ìŒ ê²°ê³¼ì…‹ìœ¼ë¡œ ì»¤ì„œë¥¼ ì´ë™í•œë‹¤.
  *
- * @param[in] aABStmt ¸í·É¹® ÇÚµé
- * @return ALTIBASE_SUCCESS: ¼º°øÇß°í ´ÙÀ½ °á°ú¼ÂÀ» °¡Á®¿Ô´Ù.
- *         ALTIBASE_NO_DATA: ¼º°øÇßÁö¸¸ ´õ °¡Á®¿Ã °á°ú¼ÂÀÌ ¾ø´Ù.
- *         ALTIBASE_ERROR  : ½ÇÆÐ
+ * @param[in] aABStmt ëª…ë ¹ë¬¸ í•¸ë“¤
+ * @return ALTIBASE_SUCCESS: ì„±ê³µí–ˆê³  ë‹¤ìŒ ê²°ê³¼ì…‹ì„ ê°€ì ¸ì™”ë‹¤.
+ *         ALTIBASE_NO_DATA: ì„±ê³µí–ˆì§€ë§Œ ë” ê°€ì ¸ì˜¬ ê²°ê³¼ì…‹ì´ ì—†ë‹¤.
+ *         ALTIBASE_ERROR  : ì‹¤íŒ¨
  */
 CDBC_EXPORT
 ALTIBASE_RC altibase_stmt_next_result (ALTIBASE_STMT aABStmt)
@@ -275,11 +275,11 @@ ALTIBASE_RC altibase_stmt_next_result (ALTIBASE_STMT aABStmt)
 }
 
 /**
- * Äõ¸®¸¦ ¼öÇàÇÑ´Ù.
+ * ì¿¼ë¦¬ë¥¼ ìˆ˜í–‰í•œë‹¤.
  *
- * @param[in] aABConn ¿¬°á ÇÚµé
- * @param[in] aQstr Äõ¸®¹®
- * @return ¼º°øÇßÀ¸¸é ALTIBASE_SUCCESS, ±×·¸Áö ¾ÊÀ¸¸é ALTIBASE_ERROR
+ * @param[in] aABConn ì—°ê²° í•¸ë“¤
+ * @param[in] aQstr ì¿¼ë¦¬ë¬¸
+ * @return ì„±ê³µí–ˆìœ¼ë©´ ALTIBASE_SUCCESS, ê·¸ë ‡ì§€ ì•Šìœ¼ë©´ ALTIBASE_ERROR
  */
 CDBC_EXPORT
 ALTIBASE_RC altibase_query (ALTIBASE aABConn, const acp_char_t *aQstr)
@@ -339,11 +339,11 @@ ALTIBASE_RC altibase_query (ALTIBASE aABConn, const acp_char_t *aQstr)
 }
 
 /**
- * SQL¹®À» prepare ÇÑ´Ù.
+ * SQLë¬¸ì„ prepare í•œë‹¤.
  *
- * @param[in] aABStmt ¸í·É¹® ÇÚµé
- * @param[in] aQstr prepareÇÒ SQL¹®
- * @return ¼º°øÇßÀ¸¸é ALTIBASE_SUCCESS, ±×·¸Áö ¾ÊÀ¸¸é ALTIBASE_ERROR
+ * @param[in] aABStmt ëª…ë ¹ë¬¸ í•¸ë“¤
+ * @param[in] aQstr prepareí•  SQLë¬¸
+ * @return ì„±ê³µí–ˆìœ¼ë©´ ALTIBASE_SUCCESS, ê·¸ë ‡ì§€ ì•Šìœ¼ë©´ ALTIBASE_ERROR
  */
 CDBC_EXPORT
 ALTIBASE_RC altibase_stmt_prepare (ALTIBASE_STMT aABStmt, const acp_char_t *aQstr)
@@ -380,7 +380,7 @@ ALTIBASE_RC altibase_stmt_prepare (ALTIBASE_STMT aABStmt, const acp_char_t *aQst
     CDBCLOG_BACK_VAL("SQLPrepare", "%d", sRC);
     CDBC_TEST_RAISE(CDBC_CLI_NOT_SUCCEEDED(sRC), STMTError);
 
-    /* if ¹®¿¡ ¿©·¯ Á¶°ÇÀ» ÁáÀ» ¶§, ¼ø¼­´ë·Î È®ÀÎÇÑ´Ù´Â º¸ÀåÀÌ ¾øÀ¸¹Ç·Î ÀÌ·¸°Ô Ã³¸® */
+    /* if ë¬¸ì— ì—¬ëŸ¬ ì¡°ê±´ì„ ì¤¬ì„ ë•Œ, ìˆœì„œëŒ€ë¡œ í™•ì¸í•œë‹¤ëŠ” ë³´ìž¥ì´ ì—†ìœ¼ë¯€ë¡œ ì´ë ‡ê²Œ ì²˜ë¦¬ */
     if (sABStmt->mQstr == NULL)
     {
         sIsNeedQstrCopy = ACP_TRUE;
@@ -408,7 +408,7 @@ ALTIBASE_RC altibase_stmt_prepare (ALTIBASE_STMT aABStmt, const acp_char_t *aQst
         CDBC_TEST_RAISE(ACP_RC_NOT_SUCCESS(sRC), MAllocError);
     }
 
-    /* BUGBUG: prepare ÈÄ ¼­¹ö¿¡¼­ ¹ÝÈ¯ÇÑ Äõ¸® Á¾·ù¸¦ È®ÀÎÇØ¼­ ¼³Á¤ÇÏ¸é ÁÁ´Ù. */
+    /* BUGBUG: prepare í›„ ì„œë²„ì—ì„œ ë°˜í™˜í•œ ì¿¼ë¦¬ ì¢…ë¥˜ë¥¼ í™•ì¸í•´ì„œ ì„¤ì •í•˜ë©´ ì¢‹ë‹¤. */
     sABStmt->mQueryType = altibase_query_type(aQstr);
 
     CDBCLOG_CALL("SQLNumParams");
@@ -476,10 +476,10 @@ ALTIBASE_RC altibase_stmt_prepare (ALTIBASE_STMT aABStmt, const acp_char_t *aQst
 }
 
 /**
- * prepare¸¸ µÈ »óÅÂ·Î µÇµ¹¸°´Ù.
+ * prepareë§Œ ëœ ìƒíƒœë¡œ ë˜ëŒë¦°ë‹¤.
  *
- * @param[in] aABStmt ¸í·É¹® ÇÚµé
- * @return ¼º°øÇßÀ¸¸é ALTIBASE_SUCCESS, ±×·¸Áö ¾ÊÀ¸¸é ALTIBASE_ERROR
+ * @param[in] aABStmt ëª…ë ¹ë¬¸ í•¸ë“¤
+ * @return ì„±ê³µí–ˆìœ¼ë©´ ALTIBASE_SUCCESS, ê·¸ë ‡ì§€ ì•Šìœ¼ë©´ ALTIBASE_ERROR
  */
 CDBC_EXPORT
 ALTIBASE_RC altibase_stmt_reset (ALTIBASE_STMT aABStmt)
@@ -507,13 +507,13 @@ ALTIBASE_RC altibase_stmt_reset (ALTIBASE_STMT aABStmt)
     CDBCLOG_BACK_VAL("SQLFreeStmt", "%d", sRC);
     CDBC_TEST_RAISE(CDBC_CLI_NOT_SUCCEEDED(sRC), STMTError);
 
-    /* ¼º°ø ¿©ºÎ¿Í °ü°è¾øÀÌ ¹ÙÀÎµå Á¤º¸´Â ÃÊ±âÈ­ ÇÑ´Ù.
-       failover°¡ ¹ß»ýÇÏ´õ¶óµµ ´Ù½Ã ¹ÙÀÎµå ÇÏÁö ¾Êµµ·Ï ÇÏ±â À§ÇÔ. */
+    /* ì„±ê³µ ì—¬ë¶€ì™€ ê´€ê³„ì—†ì´ ë°”ì¸ë“œ ì •ë³´ëŠ” ì´ˆê¸°í™” í•œë‹¤.
+       failoverê°€ ë°œìƒí•˜ë”ë¼ë„ ë‹¤ì‹œ ë°”ì¸ë“œ í•˜ì§€ ì•Šë„ë¡ í•˜ê¸° ìœ„í•¨. */
     sABStmt->mBindParam = NULL;
     sABStmt->mBindResult = NULL;
     altibase_stmt_parambind_free(sABStmt);
 
-    /* prepare ÇÑ ÀûÀÌ ¾øÀ» °æ¿ì ³Ñ¾î°¨ */
+    /* prepare í•œ ì ì´ ì—†ì„ ê²½ìš° ë„˜ì–´ê° */
     if (sABStmt->mRes != NULL)
     {
         altibase_result_bind_free(sABStmt->mRes);
@@ -562,10 +562,10 @@ ALTIBASE_RC altibase_stmt_reset (ALTIBASE_STMT aABStmt)
 }
 
 /**
- * ÁØºñµÈ ¹®ÀåÀ» ½ÇÇàÇÑ´Ù.
+ * ì¤€ë¹„ëœ ë¬¸ìž¥ì„ ì‹¤í–‰í•œë‹¤.
  *
- * @param[in] aABStmt ¸í·É¹® ÇÚµé
- * @return ¼º°øÇßÀ¸¸é ALTIBASE_SUCCESS, ±×·¸Áö ¾ÊÀ¸¸é ALTIBASE_ERROR
+ * @param[in] aABStmt ëª…ë ¹ë¬¸ í•¸ë“¤
+ * @return ì„±ê³µí–ˆìœ¼ë©´ ALTIBASE_SUCCESS, ê·¸ë ‡ì§€ ì•Šìœ¼ë©´ ALTIBASE_ERROR
  */
 CDBC_EXPORT
 ALTIBASE_RC altibase_stmt_execute (ALTIBASE_STMT aABStmt)
@@ -583,7 +583,7 @@ ALTIBASE_RC altibase_stmt_execute (ALTIBASE_STMT aABStmt)
 
     altibase_init_errinfo(&(sABStmt->mDiagRec));
 
-    /* ¸í½ÃÀûÀ¸·Î free result¸¦ ÇØÁÖÁö ¾Ê¾Æµµ, ´Ù½Ã execute ÇÒ ¶§´Â ¾Ë¾Æ¼­ Á¤¸® */
+    /* ëª…ì‹œì ìœ¼ë¡œ free resultë¥¼ í•´ì£¼ì§€ ì•Šì•„ë„, ë‹¤ì‹œ execute í•  ë•ŒëŠ” ì•Œì•„ì„œ ì •ë¦¬ */
     if (STMT_IS_EXECUTED(sABStmt) && QUERY_IS_SELECTABLE(sABStmt->mQueryType))
     {
         sRC = altibase_stmt_free_result(sABStmt);
@@ -599,7 +599,7 @@ ALTIBASE_RC altibase_stmt_execute (ALTIBASE_STMT aABStmt)
     sRC = SQLExecute(sABStmt->mHstmt);
     CDBCLOG_BACK_VAL("SQLExecute", "%d", sRC);
 
-    /* BUGBUG (2014-11-28) altibase_stmt_send_long_data()¸¦ ±¸ÇöÇÑ´Ù¸é »©¾ßÇÑ´Ù. */
+    /* BUGBUG (2014-11-28) altibase_stmt_send_long_data()ë¥¼ êµ¬í˜„í•œë‹¤ë©´ ë¹¼ì•¼í•œë‹¤. */
     /* BUG-38527 [ux-cdbc] cdbc is not output error message when the SQL_NEED_DATA error */
     CDBC_TEST_RAISE(sRC == SQL_NEED_DATA, INDICATORError);
 
@@ -642,13 +642,13 @@ ALTIBASE_RC altibase_stmt_execute (ALTIBASE_STMT aABStmt)
 }
 
 /**
- * ´ë¿ë·® µ¥ÀÌÅ¸¸¦ Àü¼ÛÇÑ´Ù.
+ * ëŒ€ìš©ëŸ‰ ë°ì´íƒ€ë¥¼ ì „ì†¡í•œë‹¤.
  *
- * @param[in] aABStmt ¸í·É¹® ÇÚµé
- * @param[in] aParamNum ÆÄ¶ó¹ÌÅÍ ¼ø¹ø (0ºÎÅÍ ½ÃÀÛ)
- * @param[in] aValue °ª
- * @param[in] aValueLength °ª ±æÀÌ
- * @return ¼º°øÇßÀ¸¸é ¸ÞÅ¸ ALTIBASE_SUCCESS, ±×·¸Áö ¾ÊÀ¸¸é ALTIBASE_ERROR
+ * @param[in] aABStmt ëª…ë ¹ë¬¸ í•¸ë“¤
+ * @param[in] aParamNum íŒŒë¼ë¯¸í„° ìˆœë²ˆ (0ë¶€í„° ì‹œìž‘)
+ * @param[in] aValue ê°’
+ * @param[in] aValueLength ê°’ ê¸¸ì´
+ * @return ì„±ê³µí–ˆìœ¼ë©´ ë©”íƒ€ ALTIBASE_SUCCESS, ê·¸ë ‡ì§€ ì•Šìœ¼ë©´ ALTIBASE_ERROR
  */
 CDBC_EXPORT
 ALTIBASE_RC altibase_stmt_send_long_data (ALTIBASE_STMT  aABStmt,
@@ -667,7 +667,7 @@ ALTIBASE_RC altibase_stmt_send_long_data (ALTIBASE_STMT  aABStmt,
 
     altibase_init_errinfo(&(sABStmt->mDiagRec));
 
-    /* BUGBUG: (CLI) Æ¯Á¤ ÆÄ¶ó¹ÌÅÍ ¼ø¹øÀ» ÁöÁ¤ÇØ¼­ µ¥ÀÌÅ¸¸¦ º¸³¾ ¼ö ¾ø´Ù */
+    /* BUGBUG: (CLI) íŠ¹ì • íŒŒë¼ë¯¸í„° ìˆœë²ˆì„ ì§€ì •í•´ì„œ ë°ì´íƒ€ë¥¼ ë³´ë‚¼ ìˆ˜ ì—†ë‹¤ */
     ACP_UNUSED(aParamNum);
     ACP_UNUSED(aValue);
     ACP_UNUSED(aValueLength);

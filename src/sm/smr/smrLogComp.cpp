@@ -26,15 +26,15 @@
 #include <smrLogHeadI.h>
 #include <sctTableSpaceMgr.h>
 
-/* ·Î±×ÆÄÀÏÀÇ Æ¯Á¤ Offset¿¡¼­ ·Î±× ·¹ÄÚµå¸¦ ÀĞ¾î¿Â´Ù.
-   ¾ĞÃàµÈ ·Î±×ÀÇ °æ¿ì, ·Î±× ¾ĞÃàÇØÁ¦¸¦ ¼öÇàÇÑ´Ù.
+/* ë¡œê·¸íŒŒì¼ì˜ íŠ¹ì • Offsetì—ì„œ ë¡œê·¸ ë ˆì½”ë“œë¥¼ ì½ì–´ì˜¨ë‹¤.
+   ì••ì¶•ëœ ë¡œê·¸ì˜ ê²½ìš°, ë¡œê·¸ ì••ì¶•í•´ì œë¥¼ ìˆ˜í–‰í•œë‹¤.
 
-   [IN] aDecompBufferHandle   - ¾ĞÃà ÇØÁ¦ ¹öÆÛÀÇ ÇÚµé
-   [IN] aLogFile            - ·Î±×¸¦ ÀĞ¾î¿Ã ·Î±×ÆÄÀÏ
-   [IN] aLogOffset          - ·Î±×¸¦ ÀĞ¾î¿Ã ¿ÀÇÁ¼Â
-   [OUT] aRawLogHead        - ·Î±×ÀÇ Head
-   [OUT] aRawLogPtr         - ÀĞ¾î³½ ·Î±× (¾ĞÃàÇØÁ¦µÈ ·Î±×)
-   [OUT] aLogSizeAtDisk     - ÆÄÀÏ¿¡¼­ ÀĞ¾î³½ ·Î±× µ¥ÀÌÅÍÀÇ ¾ç
+   [IN] aDecompBufferHandle   - ì••ì¶• í•´ì œ ë²„í¼ì˜ í•¸ë“¤
+   [IN] aLogFile            - ë¡œê·¸ë¥¼ ì½ì–´ì˜¬ ë¡œê·¸íŒŒì¼
+   [IN] aLogOffset          - ë¡œê·¸ë¥¼ ì½ì–´ì˜¬ ì˜¤í”„ì…‹
+   [OUT] aRawLogHead        - ë¡œê·¸ì˜ Head
+   [OUT] aRawLogPtr         - ì½ì–´ë‚¸ ë¡œê·¸ (ì••ì¶•í•´ì œëœ ë¡œê·¸)
+   [OUT] aLogSizeAtDisk     - íŒŒì¼ì—ì„œ ì½ì–´ë‚¸ ë¡œê·¸ ë°ì´í„°ì˜ ì–‘
 */
 IDE_RC smrLogComp::readLog( iduMemoryHandle    * aDecompBufferHandle,
                             smrLogFile         * aLogFile,
@@ -43,7 +43,7 @@ IDE_RC smrLogComp::readLog( iduMemoryHandle    * aDecompBufferHandle,
                             SChar             ** aRawLogPtr,
                             UInt               * aLogSizeAtDisk )
 {
-    // ºñ¾ĞÃà ·Î±×¸¦ ÀĞ´Â °æ¿ì aDecompBufferHandleÀÌ NULL·Î µé¾î¿Â´Ù
+    // ë¹„ì••ì¶• ë¡œê·¸ë¥¼ ì½ëŠ” ê²½ìš° aDecompBufferHandleì´ NULLë¡œ ë“¤ì–´ì˜¨ë‹¤
     IDE_DASSERT( aLogFile       != NULL );
     IDE_DASSERT( aRawLogHead    != NULL );
     IDE_DASSERT( aRawLogPtr     != NULL );
@@ -55,7 +55,7 @@ IDE_RC smrLogComp::readLog( iduMemoryHandle    * aDecompBufferHandle,
 
     aLogFile->read(aLogOffset, &sRawOrCompLog);
 
-    // File No¿Í OffsetÀ¸·ÎºÎÅÍ Magic°ª °è»ê
+    // File Noì™€ Offsetìœ¼ë¡œë¶€í„° Magicê°’ ê³„ì‚°
     sValidLogMagic = smrLogFile::makeMagicNumber( aLogFile->getFileNo(),
                                                   aLogOffset );
 
@@ -71,7 +71,7 @@ IDE_RC smrLogComp::readLog( iduMemoryHandle    * aDecompBufferHandle,
 
     IDE_EXCEPTION_END;
 
-    // BUG-26695 log decompress size ºÒÀÏÄ¡·Î Recovery ½ÇÆĞÇÕ´Ï´Ù.
+    // BUG-26695 log decompress size ë¶ˆì¼ì¹˜ë¡œ Recovery ì‹¤íŒ¨í•©ë‹ˆë‹¤.
     IDE_PUSH();
     IDE_SET( ideSetErrorCode( smERR_ABORT_INVALID_LOGFILE,
                               aLogFile->getFileName() ) );
@@ -81,18 +81,18 @@ IDE_RC smrLogComp::readLog( iduMemoryHandle    * aDecompBufferHandle,
 }
 
 
-/* ¾ĞÃàµÈ, È¤Àº ¾ĞÃàµÇÁö ¾ÊÀº ·Î±× ·¹ÄÚµå·ÎºÎÅÍ
-   ¾ĞÃàµÇÁö ¾ÊÀº ÇüÅÂÀÇ Log Head¿Í Log PtrÀ» °¡Á®¿Â´Ù.
+/* ì••ì¶•ëœ, í˜¹ì€ ì••ì¶•ë˜ì§€ ì•Šì€ ë¡œê·¸ ë ˆì½”ë“œë¡œë¶€í„°
+   ì••ì¶•ë˜ì§€ ì•Šì€ í˜•íƒœì˜ Log Headì™€ Log Ptrì„ ê°€ì ¸ì˜¨ë‹¤.
 
-   ( ¾ĞÃàµÈ ·Î±×ÀÇ °æ¿ì, ·Î±× ¾ĞÃàÇØÁ¦¸¦ ¼öÇàÇÑ´Ù. )
+   ( ì••ì¶•ëœ ë¡œê·¸ì˜ ê²½ìš°, ë¡œê·¸ ì••ì¶•í•´ì œë¥¼ ìˆ˜í–‰í•œë‹¤. )
 
-   [IN] aDecompBufferHandle - ¾ĞÃà ÇØÁ¦ ¹öÆÛÀÇ ÇÚµé
-   [IN] aRawLogOffset       - ·Î±× Offset
-   [IN] aRawOrCompLog       - ·Î±×¸¦ ÀĞ¾î¿Ã ¿ÀÇÁ¼Â
-   [IN] aValidLogMagic      - ·Î±×ÀÇ Á¤»óÀûÀÎ Magic°ª
-   [OUT] aRawLogHead        - ·Î±×ÀÇ Head
-   [OUT] aRawLogPtr         - ÀĞ¾î³½ ·Î±× (¾ĞÃàÇØÁ¦µÈ ·Î±×)
-   [OUT] aLogSizeAtDisk     - ÆÄÀÏ¿¡¼­ ÀĞ¾î³½ ·Î±× µ¥ÀÌÅÍÀÇ ¾ç
+   [IN] aDecompBufferHandle - ì••ì¶• í•´ì œ ë²„í¼ì˜ í•¸ë“¤
+   [IN] aRawLogOffset       - ë¡œê·¸ Offset
+   [IN] aRawOrCompLog       - ë¡œê·¸ë¥¼ ì½ì–´ì˜¬ ì˜¤í”„ì…‹
+   [IN] aValidLogMagic      - ë¡œê·¸ì˜ ì •ìƒì ì¸ Magicê°’
+   [OUT] aRawLogHead        - ë¡œê·¸ì˜ Head
+   [OUT] aRawLogPtr         - ì½ì–´ë‚¸ ë¡œê·¸ (ì••ì¶•í•´ì œëœ ë¡œê·¸)
+   [OUT] aLogSizeAtDisk     - íŒŒì¼ì—ì„œ ì½ì–´ë‚¸ ë¡œê·¸ ë°ì´í„°ì˜ ì–‘
 */
 IDE_RC smrLogComp::getRawLog( iduMemoryHandle    * aDecompBufferHandle,
                               UInt                 aRawLogOffset,
@@ -102,22 +102,22 @@ IDE_RC smrLogComp::getRawLog( iduMemoryHandle    * aDecompBufferHandle,
                               SChar             ** aRawLogPtr,
                               UInt               * aLogSizeAtDisk )
 {
-    // ºñ¾ĞÃà ·Î±×¸¦ ÀĞ´Â °æ¿ì aDecompBufferHandleÀÌ NULL·Î µé¾î¿Â´Ù
+    // ë¹„ì••ì¶• ë¡œê·¸ë¥¼ ì½ëŠ” ê²½ìš° aDecompBufferHandleì´ NULLë¡œ ë“¤ì–´ì˜¨ë‹¤
     IDE_DASSERT( aRawOrCompLog  != NULL );
     IDE_DASSERT( aRawLogHead    != NULL );
     IDE_DASSERT( aRawLogPtr     != NULL );
     IDE_DASSERT( aLogSizeAtDisk != NULL );    
 
     SChar      * sDecompLog = NULL;
-    UInt         sCompLogSize; // ¾ĞÃà·Î±×ÀÇ Head + Body + TailÅ©±â
+    UInt         sCompLogSize; // ì••ì¶•ë¡œê·¸ì˜ Head + Body + Tailí¬ê¸°
     smMagic      sMagicValue;
     smLSN        sLogLSN;
     smrLogHead   sInvalidLogHead;
     idBool       sIsValid = ID_TRUE;
 
     /* BUG-38962
-     * Magic Number¸¦ ¸ÕÀú °Ë»çÇØ¼­ invalid ¿©ºÎ¸¦ ÆÇ´ÜÇÑ´Ù.
-     * invalid log´Â ¹«Á¶°Ç ºñ¾ĞÃà ·Î±×·Î Ãë±ŞÇÑ ÈÄ, »óÀ§ ¸ğµâ¿¡¼­ ¿À·ù Ã³¸®ÇÑ´Ù. 
+     * Magic Numberë¥¼ ë¨¼ì € ê²€ì‚¬í•´ì„œ invalid ì—¬ë¶€ë¥¼ íŒë‹¨í•œë‹¤.
+     * invalid logëŠ” ë¬´ì¡°ê±´ ë¹„ì••ì¶• ë¡œê·¸ë¡œ ì·¨ê¸‰í•œ í›„, ìƒìœ„ ëª¨ë“ˆì—ì„œ ì˜¤ë¥˜ ì²˜ë¦¬í•œë‹¤. 
      */
     idlOS::memcpy( &sMagicValue,
                    aRawOrCompLog + SMR_COMP_LOG_MAGIC_OFFSET,
@@ -138,11 +138,11 @@ IDE_RC smrLogComp::getRawLog( iduMemoryHandle    * aDecompBufferHandle,
         /* BUG-35392 */
         if( smrLogHeadI::isDummyLog( aRawOrCompLog ) == ID_FALSE )
         {
-            /* ¾ĞÃàµÈ ·Î±×¸¦ ÀĞ±â À§ÇØ¼­´Â
-             * ¾ĞÃà·Î±× ¹öÆÛ ÇÚµéÀ» ÀÎÀÚ·Î ³Ñ°Ü¾ß ÇÔ */
+            /* ì••ì¶•ëœ ë¡œê·¸ë¥¼ ì½ê¸° ìœ„í•´ì„œëŠ”
+             * ì••ì¶•ë¡œê·¸ ë²„í¼ í•¸ë“¤ì„ ì¸ìë¡œ ë„˜ê²¨ì•¼ í•¨ */
             IDE_ASSERT( aDecompBufferHandle != NULL );
 
-            /* ¾ĞÃàµÈ ·Î±×ÀÌ´Ù. ¾ĞÃà ÇØÁ¦ÈÄ ¸®ÅÏ. */
+            /* ì••ì¶•ëœ ë¡œê·¸ì´ë‹¤. ì••ì¶• í•´ì œí›„ ë¦¬í„´. */
             IDE_TEST_RAISE( decompressLog( aDecompBufferHandle,
                                            aRawLogOffset,
                                            aRawOrCompLog,
@@ -155,18 +155,18 @@ IDE_RC smrLogComp::getRawLog( iduMemoryHandle    * aDecompBufferHandle,
 
             *aRawLogPtr = sDecompLog;
 
-            /* Log Header¸¦ º¹»çÇÑ´Ù.
-               Log°¡ ±â·ÏµÉ¶§ LogÀÇ Å©±â°¡ alignµÇÁö ¾Ê¾Ò±â
-               ¶§¹®¿¡ º¹»çÇØ¼­ °ü¸®ÇÑ´Ù.*/
+            /* Log Headerë¥¼ ë³µì‚¬í•œë‹¤.
+               Logê°€ ê¸°ë¡ë ë•Œ Logì˜ í¬ê¸°ê°€ alignë˜ì§€ ì•Šì•˜ê¸°
+               ë•Œë¬¸ì— ë³µì‚¬í•´ì„œ ê´€ë¦¬í•œë‹¤.*/
             idlOS::memcpy(aRawLogHead, sDecompLog, ID_SIZEOF(smrLogHead));
 
-            /* ¾ĞÃà ÇØÁ¦µÈ LogÀÇ Head¿¡ LSN°ú MagicÀ» ¼¼ÆÃ
-             * - ÀÌÀ¯ : ¾ĞÃàµÈ compHead¸¦ ÀÛ¼ºÇÒ¶§ LSN°ú magicNo´Â 0À¸·Î ¼¼ÆÃÇÔ
-             * smrLogComp.hÀÇ <¾ĞÃà·Î±×ÀÇ ÆÇµ¶ ÀıÂ÷> Âü°í */
+            /* ì••ì¶• í•´ì œëœ Logì˜ Headì— LSNê³¼ Magicì„ ì„¸íŒ…
+             * - ì´ìœ  : ì••ì¶•ëœ compHeadë¥¼ ì‘ì„±í• ë•Œ LSNê³¼ magicNoëŠ” 0ìœ¼ë¡œ ì„¸íŒ…í•¨
+             * smrLogComp.hì˜ <ì••ì¶•ë¡œê·¸ì˜ íŒë… ì ˆì°¨> ì°¸ê³  */
             smrLogHeadI::setMagic( aRawLogHead, sMagicValue );
             smrLogHeadI::setLSN( aRawLogHead, sLogLSN );
 
-            /* º¯°æµÈ LogÀÇ Head¸¦ ¾ĞÃàÇØÁ¦µÈ ·Î±×¿¡ º¹»ç */
+            /* ë³€ê²½ëœ Logì˜ Headë¥¼ ì••ì¶•í•´ì œëœ ë¡œê·¸ì— ë³µì‚¬ */
             idlOS::memcpy( sDecompLog, aRawLogHead, ID_SIZEOF(smrLogHead) );
 
             *aLogSizeAtDisk = sCompLogSize;
@@ -175,10 +175,10 @@ IDE_RC smrLogComp::getRawLog( iduMemoryHandle    * aDecompBufferHandle,
         }
         else
         {
-            /* Dummy logÀÌ¸é size¸¸ return */
+            /* Dummy logì´ë©´ sizeë§Œ return */
             *aRawLogPtr = aRawOrCompLog;
 
-            /* Log Header¸¦ º¹»çÇÑ´Ù.*/
+            /* Log Headerë¥¼ ë³µì‚¬í•œë‹¤.*/
             idlOS::memcpy(aRawLogHead, aRawOrCompLog, ID_SIZEOF(smrLogHead));
 
             idlOS::memcpy( (void*)&sLogLSN,
@@ -194,13 +194,13 @@ IDE_RC smrLogComp::getRawLog( iduMemoryHandle    * aDecompBufferHandle,
     }
     else
     {
-        /* ¾ĞÃàµÈ ·Î±×°¡ ¾Æ´Ï´Ù. Áï½Ã ¸®ÅÏ. */
+        /* ì••ì¶•ëœ ë¡œê·¸ê°€ ì•„ë‹ˆë‹¤. ì¦‰ì‹œ ë¦¬í„´. */
         *aRawLogPtr = aRawOrCompLog;
 
-        /* Log Header¸¦ º¹»çÇÑ´Ù.*/
+        /* Log Headerë¥¼ ë³µì‚¬í•œë‹¤.*/
         idlOS::memcpy(aRawLogHead, aRawOrCompLog, ID_SIZEOF(smrLogHead));
 
-        /* sIsValid°¡ ID_FALSE°¡ ÀÖ±â ¶§¹®¿¡ °Ë»ç´Â ÇÏÁö ¾Ê´Â´Ù. */
+        /* sIsValidê°€ ID_FALSEê°€ ìˆê¸° ë•Œë¬¸ì— ê²€ì‚¬ëŠ” í•˜ì§€ ì•ŠëŠ”ë‹¤. */
         *aLogSizeAtDisk = smrLogHeadI::getSize( aRawLogHead );
     }
 
@@ -208,7 +208,7 @@ IDE_RC smrLogComp::getRawLog( iduMemoryHandle    * aDecompBufferHandle,
 
     IDE_EXCEPTION( err_fail_log_decompress );
     {
-        // BUG-26695 log decompress size ºÒÀÏÄ¡·Î Recovery ½ÇÆĞÇÕ´Ï´Ù.
+        // BUG-26695 log decompress size ë¶ˆì¼ì¹˜ë¡œ Recovery ì‹¤íŒ¨í•©ë‹ˆë‹¤.
         ideLog::log( SM_TRC_LOG_LEVEL_MRECOV,
                      SM_TRC_MRECOVER_INVALID_DECOMP_LOG_LSN,
                      sLogLSN.mFileNo,
@@ -216,8 +216,8 @@ IDE_RC smrLogComp::getRawLog( iduMemoryHandle    * aDecompBufferHandle,
 
         if( sDecompLog != NULL )
         {
-            // Decompressed Log Size°¡ Log Head Sizeº¸´Ù ´õ Å¬ °æ¿ì¿¡¸¸
-            // ¾î¶»°Ô Àß¸øµÇ¾ú´ÂÁö ¾Ë±âÀ§ÇØ Àß¸øµÈ Log Head Á¤º¸¸¦ Ãâ·Â
+            // Decompressed Log Sizeê°€ Log Head Sizeë³´ë‹¤ ë” í´ ê²½ìš°ì—ë§Œ
+            // ì–´ë–»ê²Œ ì˜ëª»ë˜ì—ˆëŠ”ì§€ ì•Œê¸°ìœ„í•´ ì˜ëª»ëœ Log Head ì •ë³´ë¥¼ ì¶œë ¥
             idlOS::memcpy( &sInvalidLogHead,
                            sDecompLog,
                            ID_SIZEOF(smrLogHead));
@@ -257,17 +257,17 @@ IDE_RC smrLogComp::getRawLog( iduMemoryHandle    * aDecompBufferHandle,
 }
 
 
-/* ¾ĞÃà¹öÆÛ¿¡ ¾ĞÃà·Î±×¸¦ ±â·ÏÇÑ´Ù.
+/* ì••ì¶•ë²„í¼ì— ì••ì¶•ë¡œê·¸ë¥¼ ê¸°ë¡í•œë‹¤.
 
-   ¿øº»·Î±×ÀÇ ¾ĞÃàµÈ Å©±â¸¦ ¾Ë¾Æ³»±â À§ÇØ
-   ¿øº»·Î±×ÀÇ ¾ĞÃàÀ» ¸ÕÀú ½Ç½ÃÇÑ´Ù.
+   ì›ë³¸ë¡œê·¸ì˜ ì••ì¶•ëœ í¬ê¸°ë¥¼ ì•Œì•„ë‚´ê¸° ìœ„í•´
+   ì›ë³¸ë¡œê·¸ì˜ ì••ì¶•ì„ ë¨¼ì € ì‹¤ì‹œí•œë‹¤.
 
-   [IN] aCompBufferHandle - ¾ĞÃà ¹öÆÛÀÇ ÇÚµé
-   [IN] aCompWorkMem      - ¾ĞÃàÀ» À§ÇÑ ÀÛ¾÷ ¸Ş¸ğ¸®
-   [IN] aRawLog           - ¾ĞÃàµÇ±â ÀüÀÇ ¿øº» ·Î±×
-   [IN] aRawLogSize       - ¾ĞÃàµÇ±â ÀüÀÇ ¿øº» ·Î±×ÀÇ Å©±â
-   [IN] aCompLog          - ¾ĞÃàµÈ ·Î±×
-   [IN] aCompLogSize      - ¾ĞÃàµÈ ·Î±×ÀÇ Å©±â
+   [IN] aCompBufferHandle - ì••ì¶• ë²„í¼ì˜ í•¸ë“¤
+   [IN] aCompWorkMem      - ì••ì¶•ì„ ìœ„í•œ ì‘ì—… ë©”ëª¨ë¦¬
+   [IN] aRawLog           - ì••ì¶•ë˜ê¸° ì „ì˜ ì›ë³¸ ë¡œê·¸
+   [IN] aRawLogSize       - ì••ì¶•ë˜ê¸° ì „ì˜ ì›ë³¸ ë¡œê·¸ì˜ í¬ê¸°
+   [IN] aCompLog          - ì••ì¶•ëœ ë¡œê·¸
+   [IN] aCompLogSize      - ì••ì¶•ëœ ë¡œê·¸ì˜ í¬ê¸°
  */
 IDE_RC smrLogComp::createCompLog( iduMemoryHandle    * aCompBufferHandle,
                                   void               * aCompWorkMem,
@@ -290,7 +290,7 @@ IDE_RC smrLogComp::createCompLog( iduMemoryHandle    * aCompBufferHandle,
     IDU_FIT_POINT( "1.BUG-31009@smrLogComp::createCompLog" );
 
     // ******************************************************
-    // ¾ĞÃàÀ» À§ÇØ ¾ĞÃà ¹öÆÛ ÁØºñ
+    // ì••ì¶•ì„ ìœ„í•´ ì••ì¶• ë²„í¼ ì¤€ë¹„
     IDE_TEST( prepareCompBuffer( aCompBufferHandle,
                                  aRawLogSize,
                                  & sCompBuffer,
@@ -298,7 +298,7 @@ IDE_RC smrLogComp::createCompLog( iduMemoryHandle    * aCompBufferHandle,
               != IDE_SUCCESS );
 
     // ******************************************************
-    // ¾ĞÃà·Î±×ÀÇ Body±â·Ï ( ¿øº» ·Î±×¸¦ ¾ĞÃàÇÑ µ¥ÀÌÅÍ )
+    // ì••ì¶•ë¡œê·¸ì˜ Bodyê¸°ë¡ ( ì›ë³¸ ë¡œê·¸ë¥¼ ì••ì¶•í•œ ë°ì´í„° )
     IDE_TEST( writeCompBody( sCompBuffer + SMR_COMP_LOG_HEAD_SIZE,
                              sCompBufferSize - SMR_COMP_LOG_OVERHEAD,
                              aCompWorkMem,
@@ -308,7 +308,7 @@ IDE_RC smrLogComp::createCompLog( iduMemoryHandle    * aCompBufferHandle,
               != IDE_SUCCESS );
 
     // ******************************************************
-    // ¾ĞÃà·Î±×ÀÇ Head±â·Ï
+    // ì••ì¶•ë¡œê·¸ì˜ Headê¸°ë¡
     IDE_TEST( writeCompHead( sCompBuffer,
                              aRawLog,
                              aRawLogSize,
@@ -316,7 +316,7 @@ IDE_RC smrLogComp::createCompLog( iduMemoryHandle    * aCompBufferHandle,
               != IDE_SUCCESS );
 
     // ******************************************************
-    // ¾ĞÃà·Î±×ÀÇ Tail±â·Ï
+    // ì••ì¶•ë¡œê·¸ì˜ Tailê¸°ë¡
     IDE_TEST( writeCompTail( sCompBuffer +
                                SMR_COMP_LOG_HEAD_SIZE +
                                sCompressedRawLogSize,
@@ -336,13 +336,13 @@ IDE_RC smrLogComp::createCompLog( iduMemoryHandle    * aCompBufferHandle,
 }
 
 /*
-    ¿øº»·Î±×¸¦ ¾ĞÃàÇÑ µ¥ÀÌÅÍ¸¦ ¾ĞÃà·Î±× Body·Î ±â·ÏÇÑ´Ù.
-    [IN] aCompDestPtr  - ¾ĞÃà·Î±× Body°¡ ±â·ÏµÉ ¸Ş¸ğ¸® ÁÖ¼Ò
-    [IN] aCompDestSize - ¾ĞÃà·Î±× Body°¡ ±â·ÏµÉ ¸Ş¸ğ¸®ÀÇ Å©±â
-    [IN] aCompWorkMem  - ¾ĞÃà¿¡ »ç¿ëÇÒ ÀÛ¾÷ ¸Ş¸ğ¸®
-    [IN] aRawLog       - ¿øº»·Î±×
-    [IN] aRawLogSize   - ¿øº»·Î±× Å©±â
-    [OUT] aCompressedRawLogSize - ¿øº»·Î±×°¡ ¾ĞÃàµÈ µ¥ÀÌÅÍÀÇ Å©±â
+    ì›ë³¸ë¡œê·¸ë¥¼ ì••ì¶•í•œ ë°ì´í„°ë¥¼ ì••ì¶•ë¡œê·¸ Bodyë¡œ ê¸°ë¡í•œë‹¤.
+    [IN] aCompDestPtr  - ì••ì¶•ë¡œê·¸ Bodyê°€ ê¸°ë¡ë  ë©”ëª¨ë¦¬ ì£¼ì†Œ
+    [IN] aCompDestSize - ì••ì¶•ë¡œê·¸ Bodyê°€ ê¸°ë¡ë  ë©”ëª¨ë¦¬ì˜ í¬ê¸°
+    [IN] aCompWorkMem  - ì••ì¶•ì— ì‚¬ìš©í•  ì‘ì—… ë©”ëª¨ë¦¬
+    [IN] aRawLog       - ì›ë³¸ë¡œê·¸
+    [IN] aRawLogSize   - ì›ë³¸ë¡œê·¸ í¬ê¸°
+    [OUT] aCompressedRawLogSize - ì›ë³¸ë¡œê·¸ê°€ ì••ì¶•ëœ ë°ì´í„°ì˜ í¬ê¸°
  */
 IDE_RC smrLogComp::writeCompBody( SChar  * aCompDestPtr,
                                   UInt     aCompDestSize,
@@ -366,7 +366,7 @@ IDE_RC smrLogComp::writeCompBody( SChar  * aCompDestPtr,
                                         aCompWorkMem )           /* Work Mem */
               != IDE_SUCCESS );
 
-    // ¾ĞÃà µ¥ÀÌÅÍÀÇ Å©±â´Â ¾ĞÃà¹öÆÛÀÇ Å©±â¸¦ ³Ñ¾î¼³ ¼ö ¾ø´Ù.
+    // ì••ì¶• ë°ì´í„°ì˜ í¬ê¸°ëŠ” ì••ì¶•ë²„í¼ì˜ í¬ê¸°ë¥¼ ë„˜ì–´ì„¤ ìˆ˜ ì—†ë‹¤.
     IDE_ASSERT( *aCompressedRawLogSize <= aCompDestSize )
 
     return IDE_SUCCESS;
@@ -377,12 +377,12 @@ IDE_RC smrLogComp::writeCompBody( SChar  * aCompDestPtr,
 }
 
 /*
-    ¾ĞÃà·Î±×ÀÇ Head¸¦ ±â·ÏÇÑ´Ù.
+    ì••ì¶•ë¡œê·¸ì˜ Headë¥¼ ê¸°ë¡í•œë‹¤.
 
-    [IN] aHeadDestPtr - ¾ĞÃà·Î±×ÀÇ Head°¡ ±â·ÏµÉ ¸Ş¸ğ¸® ÁÖ¼Ò
-    [IN] aRawLog      - ¾ĞÃà ÀÌÀüÀÇ ¿øº» ·Î±×
-    [IN] aRawLogSize  - ¾ĞÃà ÀÌÀüÀÇ ¿øº» ·Î±× Å©±â
-    [IN] aCompressedRawLogSize - ¾ĞÃàµÈ ·Î±×ÀÇ Å©±â
+    [IN] aHeadDestPtr - ì••ì¶•ë¡œê·¸ì˜ Headê°€ ê¸°ë¡ë  ë©”ëª¨ë¦¬ ì£¼ì†Œ
+    [IN] aRawLog      - ì••ì¶• ì´ì „ì˜ ì›ë³¸ ë¡œê·¸
+    [IN] aRawLogSize  - ì••ì¶• ì´ì „ì˜ ì›ë³¸ ë¡œê·¸ í¬ê¸°
+    [IN] aCompressedRawLogSize - ì••ì¶•ëœ ë¡œê·¸ì˜ í¬ê¸°
 
  */
 IDE_RC smrLogComp::writeCompHead( SChar  * aHeadDestPtr,
@@ -417,12 +417,12 @@ IDE_RC smrLogComp::writeCompHead( SChar  * aHeadDestPtr,
         sBufferOffset += SMR_COMP_LOG_FLAG_SIZE;
     }
 
-    /* 4 bytes  ¾ĞÃàµÈ ·Î±×Å©±â */
+    /* 4 bytes  ì••ì¶•ëœ ë¡œê·¸í¬ê¸° */
     {
         IDE_ASSERT( ID_SIZEOF( aCompressedRawLogSize ) == SMR_COMP_LOG_COMP_SIZE );
 
         /* BUG-35392
-         * ¾ĞÃàµÈ ·Î±× Å©±â + head,tailÀÇ Å©±â¸¦ ´õÇØ ÀüÃ¼ ¾ĞÃà·Î±× Å©±â ÀúÀå */
+         * ì••ì¶•ëœ ë¡œê·¸ í¬ê¸° + head,tailì˜ í¬ê¸°ë¥¼ ë”í•´ ì „ì²´ ì••ì¶•ë¡œê·¸ í¬ê¸° ì €ì¥ */
         aCompressedRawLogSize += SMR_COMP_LOG_OVERHEAD;
 
         idlOS::memcpy( aHeadDestPtr + sBufferOffset,
@@ -435,8 +435,8 @@ IDE_RC smrLogComp::writeCompHead( SChar  * aHeadDestPtr,
     /* 8 bytes LSN */
     {
         IDE_ASSERT( sBufferOffset == SMR_COMP_LOG_LSN_OFFSET );
-        /* ¿©±â¼­´Â 0À¸·Î ¼¼ÆÃÇÏ°í ÃßÈÄ ·Î±× ±â·Ï½Ã¿¡
-         * ·Î±× ³¡´ÜÀÇ Mutex¸¦ ÀâÀº »óÅÂ·Î LSNÀ» µû¼­ ±â·ÏÇÑ´Ù. */
+        /* ì—¬ê¸°ì„œëŠ” 0ìœ¼ë¡œ ì„¸íŒ…í•˜ê³  ì¶”í›„ ë¡œê·¸ ê¸°ë¡ì‹œì—
+         * ë¡œê·¸ ëë‹¨ì˜ Mutexë¥¼ ì¡ì€ ìƒíƒœë¡œ LSNì„ ë”°ì„œ ê¸°ë¡í•œë‹¤. */
         idlOS::memset( aHeadDestPtr + sBufferOffset,
                        0,
                        SMR_COMP_LOG_LSN_SIZE );
@@ -446,16 +446,16 @@ IDE_RC smrLogComp::writeCompHead( SChar  * aHeadDestPtr,
     /* 2 bytes Magic Number */
     {
         IDE_ASSERT( sBufferOffset == SMR_COMP_LOG_MAGIC_OFFSET );
-        /* ¿©±â¼­´Â 0À¸·Î ¼¼ÆÃÇÏ°í ÃßÈÄ ·Î±× ±â·Ï½Ã¿¡
-         * ·Î±× ³¡´ÜÀÇ Mutex¸¦ ÀâÀº »óÅÂ·Î
-         * ·Î±×°¡ ±â·ÏµÉ LSNÀ» µû¼­ MagicÀ» °è»êÇÏ°í ±â·ÏÇÑ´Ù. */
+        /* ì—¬ê¸°ì„œëŠ” 0ìœ¼ë¡œ ì„¸íŒ…í•˜ê³  ì¶”í›„ ë¡œê·¸ ê¸°ë¡ì‹œì—
+         * ë¡œê·¸ ëë‹¨ì˜ Mutexë¥¼ ì¡ì€ ìƒíƒœë¡œ
+         * ë¡œê·¸ê°€ ê¸°ë¡ë  LSNì„ ë”°ì„œ Magicì„ ê³„ì‚°í•˜ê³  ê¸°ë¡í•œë‹¤. */
         idlOS::memset( aHeadDestPtr + sBufferOffset,
                        0,
                        SMR_COMP_LOG_MAGIC_SIZE );
         sBufferOffset += SMR_COMP_LOG_MAGIC_SIZE;
     }
 
-    /* 4 bytes  ¿øº»·Î±×Å©±â */
+    /* 4 bytes  ì›ë³¸ë¡œê·¸í¬ê¸° */
     {
         IDE_ASSERT( ID_SIZEOF( aRawLogSize ) == SMR_COMP_LOG_DECOMP_SIZE );
 
@@ -472,14 +472,14 @@ IDE_RC smrLogComp::writeCompHead( SChar  * aHeadDestPtr,
 
 
 /*
-   ¾ĞÃà·Î±×ÀÇ TailÀ» ±â·ÏÇÑ´Ù.
+   ì••ì¶•ë¡œê·¸ì˜ Tailì„ ê¸°ë¡í•œë‹¤.
 
-   ¾ĞÃà·Î±×ÀÇ TailÀÇ ±¸Á¶´Â ´ÙÀ½°ú °°´Ù
+   ì••ì¶•ë¡œê·¸ì˜ Tailì˜ êµ¬ì¡°ëŠ” ë‹¤ìŒê³¼ ê°™ë‹¤
 
-       [ 4 bytes ] ¿øº» ·Î±×ÀÇ Å©±â
+       [ 4 bytes ] ì›ë³¸ ë¡œê·¸ì˜ í¬ê¸°
 
-   [IN] aTailDestPtr      - ¾ĞÃà·Î±×ÀÇ TailÀÌ ±â·ÏµÉ À§Ä¡
-   [IN] aRawLogSize       - ¿øº» ·Î±×ÀÇ Å©±â
+   [IN] aTailDestPtr      - ì••ì¶•ë¡œê·¸ì˜ Tailì´ ê¸°ë¡ë  ìœ„ì¹˜
+   [IN] aRawLogSize       - ì›ë³¸ ë¡œê·¸ì˜ í¬ê¸°
  */
 IDE_RC smrLogComp::writeCompTail( SChar * aTailDestPtr,
                                   UInt    aRawLogSize )
@@ -497,12 +497,12 @@ IDE_RC smrLogComp::writeCompTail( SChar * aTailDestPtr,
 }
 
 /*
-   »õ·Î ±â·ÏÇÒ ¾ĞÃàµÈ ·Î±×¸¦ À§ÇÑ ¸Ş¸ğ¸® °ø°£ ÁØºñ
+   ìƒˆë¡œ ê¸°ë¡í•  ì••ì¶•ëœ ë¡œê·¸ë¥¼ ìœ„í•œ ë©”ëª¨ë¦¬ ê³µê°„ ì¤€ë¹„
 
-   [IN] aCompBufferHandle - ¾ĞÃà ¹öÆÛÀÇ ÇÚµé
-   [IN] aRawLogSize       - ¾ĞÃàµÇ±â ÀüÀÇ ¿øº» ·Î±×ÀÇ Å©±â
-   [OUT] aCompBuffer      - ÁØºñµÈ ¾ĞÃà ¹öÆÛ ¸Ş¸ğ¸®
-   [OUT] aCompBufferSize  - ÁØºñµÈ ¾ĞÃà ¹öÆÛÀÇ Å©±â
+   [IN] aCompBufferHandle - ì••ì¶• ë²„í¼ì˜ í•¸ë“¤
+   [IN] aRawLogSize       - ì••ì¶•ë˜ê¸° ì „ì˜ ì›ë³¸ ë¡œê·¸ì˜ í¬ê¸°
+   [OUT] aCompBuffer      - ì¤€ë¹„ëœ ì••ì¶• ë²„í¼ ë©”ëª¨ë¦¬
+   [OUT] aCompBufferSize  - ì¤€ë¹„ëœ ì••ì¶• ë²„í¼ì˜ í¬ê¸°
  */
 IDE_RC smrLogComp::prepareCompBuffer( iduMemoryHandle    * aCompBufferHandle,
                                       UInt                 aRawLogSize,
@@ -532,12 +532,12 @@ IDE_RC smrLogComp::prepareCompBuffer( iduMemoryHandle    * aCompBufferHandle,
 
 
 /*
-   ¾ĞÃàÇØÁ¦¸¦ À§ÇÑ ¸Ş¸ğ¸® °ø°£ ÁØºñ
+   ì••ì¶•í•´ì œë¥¼ ìœ„í•œ ë©”ëª¨ë¦¬ ê³µê°„ ì¤€ë¹„
 
-   [IN] aDecompBufferHandle - ¾ĞÃà ÇØÁ¦ ¹öÆÛÀÇ ÇÚµé
-   [IN] aRawLogSize       - ¾ĞÃàµÇ±â ÀüÀÇ ¿øº» ·Î±×ÀÇ Å©±â
-   [OUT] aDecompBuffer      - ÁØºñµÈ ¾ĞÃà ÇØÁ¦ ¹öÆÛ ¸Ş¸ğ¸®
-   [OUT] aDecompBufferSize  - ÁØºñµÈ ¾ĞÃà ÇØÁ¦ ¹öÆÛÀÇ Å©±â
+   [IN] aDecompBufferHandle - ì••ì¶• í•´ì œ ë²„í¼ì˜ í•¸ë“¤
+   [IN] aRawLogSize       - ì••ì¶•ë˜ê¸° ì „ì˜ ì›ë³¸ ë¡œê·¸ì˜ í¬ê¸°
+   [OUT] aDecompBuffer      - ì¤€ë¹„ëœ ì••ì¶• í•´ì œ ë²„í¼ ë©”ëª¨ë¦¬
+   [OUT] aDecompBufferSize  - ì¤€ë¹„ëœ ì••ì¶• í•´ì œ ë²„í¼ì˜ í¬ê¸°
  */
 IDE_RC smrLogComp::prepareDecompBuffer(
                       iduMemoryHandle    * aDecompBufferHandle,
@@ -563,16 +563,16 @@ IDE_RC smrLogComp::prepareDecompBuffer(
     return IDE_FAILURE;
 }
 
-/* ¾ĞÃàµÈ ·Î±×ÀÇ ¾ĞÃàÇØÁ¦¸¦ ¼öÇàÇÑ´Ù
+/* ì••ì¶•ëœ ë¡œê·¸ì˜ ì••ì¶•í•´ì œë¥¼ ìˆ˜í–‰í•œë‹¤
 
-   [IN] aDecompBufferHandle - ¾ĞÃàÇØÁ¦ ¹öÆÛÀÇ ÇÚµé
-   [IN] aCompLogOffset      - CompressµÈ ·Î±×ÀÇ Offset
-   [IN] aValidLogMagic      - ·Î±×ÀÇ Á¤»óÀûÀÎ Magic°ª
-   [IN] aCompLog            - ¾ĞÃàµÈ ·Î±×
-   [OUT] aRawLog            - ¾ĞÃàÇØÁ¦µÈ ·Î±×
-   [OUT] aMagicValue        - ·Î±×ÀÇ Magic°ª
-   [OUT] aLogLSN             - ·Î±×ÀÇ ÀÏ·Ã¹øÈ£
-   [OUT] aCompLogSize       - ¾ĞÃà·Î±×ÀÇ ÀüÃ¼Å©±â (Head+Body+Tail)
+   [IN] aDecompBufferHandle - ì••ì¶•í•´ì œ ë²„í¼ì˜ í•¸ë“¤
+   [IN] aCompLogOffset      - Compressëœ ë¡œê·¸ì˜ Offset
+   [IN] aValidLogMagic      - ë¡œê·¸ì˜ ì •ìƒì ì¸ Magicê°’
+   [IN] aCompLog            - ì••ì¶•ëœ ë¡œê·¸
+   [OUT] aRawLog            - ì••ì¶•í•´ì œëœ ë¡œê·¸
+   [OUT] aMagicValue        - ë¡œê·¸ì˜ Magicê°’
+   [OUT] aLogLSN             - ë¡œê·¸ì˜ ì¼ë ¨ë²ˆí˜¸
+   [OUT] aCompLogSize       - ì••ì¶•ë¡œê·¸ì˜ ì „ì²´í¬ê¸° (Head+Body+Tail)
  */
 IDE_RC smrLogComp::decompressLog( iduMemoryHandle    * aDecompBufferHandle,
                                   UInt                 aCompLogOffset,
@@ -595,9 +595,9 @@ IDE_RC smrLogComp::decompressLog( iduMemoryHandle    * aDecompBufferHandle,
     UInt     sCompressedRawLogSize;
     UInt     sDecompressedLogSize;
 
-    // ¾ĞÃà·Î±× ºĞ¼®
-    //   1. ¾ĞÃà HeadÀÇ ÇÊµå ÀĞ±â
-    //   2. ¾ĞÃà TailÀ» ÅëÇØ ÀÏºÎ¸¸ ±â·ÏµÈ ºñÁ¤»ó ·Î±×ÀÎÁö ÆÇº°
+    // ì••ì¶•ë¡œê·¸ ë¶„ì„
+    //   1. ì••ì¶• Headì˜ í•„ë“œ ì½ê¸°
+    //   2. ì••ì¶• Tailì„ í†µí•´ ì¼ë¶€ë§Œ ê¸°ë¡ëœ ë¹„ì •ìƒ ë¡œê·¸ì¸ì§€ íŒë³„
     IDE_TEST( analizeCompLog( aCompLog,
                               aCompLogOffset,
                               aValidLogMagic,
@@ -610,14 +610,14 @@ IDE_RC smrLogComp::decompressLog( iduMemoryHandle    * aDecompBufferHandle,
 
     if ( sIsValidLog == ID_TRUE )
     {
-        // ¾ĞÃà ÇØÁ¦ÇÒ ¾ĞÃà ÇØÁ¦ ¹öÆÛ ÁØºñ
+        // ì••ì¶• í•´ì œí•  ì••ì¶• í•´ì œ ë²„í¼ ì¤€ë¹„
         IDE_TEST( prepareDecompBuffer( aDecompBufferHandle,
                                        sRawLogSize,
                                        & sDecompLogBuffer,
                                        & sDecompLogBufferSize )
                   != IDE_SUCCESS );
 
-        // ¾ĞÃàÇØÁ¦ ½Ç½Ã
+        // ì••ì¶•í•´ì œ ì‹¤ì‹œ
         IDE_TEST_RAISE( iduCompression::decompress(
                             (UChar*) aCompLog + SMR_COMP_LOG_HEAD_SIZE, /* aSrc */
                             sCompressedRawLogSize,                   /* aSrcLen */
@@ -626,7 +626,7 @@ IDE_RC smrLogComp::decompressLog( iduMemoryHandle    * aDecompBufferHandle,
                             & sDecompressedLogSize )              /* aResultLen */
                         != IDE_SUCCESS, err_fail_log_decompress );
 
-        // ¿øº» ·Î±×ÀÇ Å©±â¿Í ¾ĞÃà ÇØÁ¦ÈÄ ·Î±×ÀÇ Å©±â°¡ °°¾Æ¾ß ÇÔ
+        // ì›ë³¸ ë¡œê·¸ì˜ í¬ê¸°ì™€ ì••ì¶• í•´ì œí›„ ë¡œê·¸ì˜ í¬ê¸°ê°€ ê°™ì•„ì•¼ í•¨
         IDE_ASSERT( sRawLogSize == sDecompressedLogSize );
 
         *aRawLog      = sDecompLogBuffer;
@@ -636,16 +636,16 @@ IDE_RC smrLogComp::decompressLog( iduMemoryHandle    * aDecompBufferHandle,
     }
     else
     {
-        /* ¾ĞÃà ÇØÁ¦µÈ ÇüÅÂ·Î Invalid Log¸¦ ÀÏºÎ·¯ ¸¸µé¾î ³õ´Â´Ù */
-        /* ÀÌ ÇÔ¼öÀÇ È£ÃâÀÚ´Â ¾ĞÃà ÇØÁ¦µÈ ·Î±×ÀÇ Head¿Í TailÀ» º¸°í
-           ·Î±×ÀÇ ¸ğµç ³»¿ëÀÌ ¿ÂÀüÈ÷ ±â·ÏµÈ ValidÇÑ ·Î±×ÀÎÁö
-           ÆÇº°ÇØ¾ß ÇÑ´Ù */
+        /* ì••ì¶• í•´ì œëœ í˜•íƒœë¡œ Invalid Logë¥¼ ì¼ë¶€ëŸ¬ ë§Œë“¤ì–´ ë†“ëŠ”ë‹¤ */
+        /* ì´ í•¨ìˆ˜ì˜ í˜¸ì¶œìëŠ” ì••ì¶• í•´ì œëœ ë¡œê·¸ì˜ Headì™€ Tailì„ ë³´ê³ 
+           ë¡œê·¸ì˜ ëª¨ë“  ë‚´ìš©ì´ ì˜¨ì „íˆ ê¸°ë¡ëœ Validí•œ ë¡œê·¸ì¸ì§€
+           íŒë³„í•´ì•¼ í•œë‹¤ */
         IDE_TEST( createInvalidLog( aDecompBufferHandle,
                                     aRawLog )
                   != IDE_SUCCESS );
 
-        // InvalidÇÑ ·Î±×ÀÌ¹Ç·Î, ¿øº» ¾ĞÃà·Î±×ÀÇ Å©±â´Â Å« ÀÇ¹Ì°¡ ¾ø´Ù.
-        // ¾ĞÃà·Î±×ÀÇ HEAD + TAILÀÇ Å©±â¸¦ ¸®ÅÏ
+        // Invalidí•œ ë¡œê·¸ì´ë¯€ë¡œ, ì›ë³¸ ì••ì¶•ë¡œê·¸ì˜ í¬ê¸°ëŠ” í° ì˜ë¯¸ê°€ ì—†ë‹¤.
+        // ì••ì¶•ë¡œê·¸ì˜ HEAD + TAILì˜ í¬ê¸°ë¥¼ ë¦¬í„´
         *aCompLogSize = SMR_COMP_LOG_HEAD_SIZE + SMR_COMP_LOG_TAIL_SIZE ;
     }
 
@@ -653,10 +653,10 @@ IDE_RC smrLogComp::decompressLog( iduMemoryHandle    * aDecompBufferHandle,
 
     IDE_EXCEPTION( err_fail_log_decompress );
     {
-        // BUG-26695 log decompress size ºÒÀÏÄ¡·Î Recovery ½ÇÆĞÇÕ´Ï´Ù.
-        // Decompressed Log Size°¡ Log Head Sizeº¸´Ù ´õ Å¬ °æ¿ì¿¡¸¸
-        // Àß¸øµÈ Log Head Á¤º¸¶óµµ Âï¾îÁÖ±â À§ÇØ DecompressedµÈ
-        // Log ÀÇ Buffer Pointer¸¦ ³Ñ°ÜÁİ´Ï´Ù.
+        // BUG-26695 log decompress size ë¶ˆì¼ì¹˜ë¡œ Recovery ì‹¤íŒ¨í•©ë‹ˆë‹¤.
+        // Decompressed Log Sizeê°€ Log Head Sizeë³´ë‹¤ ë” í´ ê²½ìš°ì—ë§Œ
+        // ì˜ëª»ëœ Log Head ì •ë³´ë¼ë„ ì°ì–´ì£¼ê¸° ìœ„í•´ Decompressedëœ
+        // Log ì˜ Buffer Pointerë¥¼ ë„˜ê²¨ì¤ë‹ˆë‹¤.
         if( ID_SIZEOF(smrLogHead) <= sDecompressedLogSize )
         {
             *aRawLog = sDecompLogBuffer;
@@ -667,18 +667,18 @@ IDE_RC smrLogComp::decompressLog( iduMemoryHandle    * aDecompBufferHandle,
     return IDE_FAILURE;
 }
 
-/* ¾ĞÃà·Î±×¸¦ ÇØ¼®ÇÑ´Ù.
+/* ì••ì¶•ë¡œê·¸ë¥¼ í•´ì„í•œë‹¤.
 
-   [IN] aDeompBufferHandle     - ¾ĞÃà ÇØÁ¦ ¹öÆÛÀÇ ÇÚµé
-   [IN] aCompLogOffset         - ¾ĞÃà ·Î±× Offset
-   [IN] aValidLogMagic         - ·Î±×ÀÇ Á¤»óÀûÀÎ Magic°ª
+   [IN] aDeompBufferHandle     - ì••ì¶• í•´ì œ ë²„í¼ì˜ í•¸ë“¤
+   [IN] aCompLogOffset         - ì••ì¶• ë¡œê·¸ Offset
+   [IN] aValidLogMagic         - ë¡œê·¸ì˜ ì •ìƒì ì¸ Magicê°’
 
-   [OUT] aIsValid              - ¾ĞÃà·Î±×°¡ VALIDÇÑÁö ¿©ºÎ
-   [OUT] aFlag                 - ¾ĞÃà·Î±×ÀÇ Flag
-   [OUT] aMagicValue           - ·Î±×ÀÇ LSNÀ¸·Î °è»êµÈ Magic Value
-   [OUT] aLogLSN               - ·Î±×ÀÇ ÀÏ·Ã¹øÈ£
-   [OUT] aRawLogSize           - ¾ĞÃàµÇ±âÀü ¿øº» ·Î±×ÀÇ Å©±â
-   [OUT] aCompressedRawLogSize - ¿øº»·Î±×¸¦ ¾ĞÃàÇÑ µ¥ÀÌÅÍÀÇ Å©±â
+   [OUT] aIsValid              - ì••ì¶•ë¡œê·¸ê°€ VALIDí•œì§€ ì—¬ë¶€
+   [OUT] aFlag                 - ì••ì¶•ë¡œê·¸ì˜ Flag
+   [OUT] aMagicValue           - ë¡œê·¸ì˜ LSNìœ¼ë¡œ ê³„ì‚°ëœ Magic Value
+   [OUT] aLogLSN               - ë¡œê·¸ì˜ ì¼ë ¨ë²ˆí˜¸
+   [OUT] aRawLogSize           - ì••ì¶•ë˜ê¸°ì „ ì›ë³¸ ë¡œê·¸ì˜ í¬ê¸°
+   [OUT] aCompressedRawLogSize - ì›ë³¸ë¡œê·¸ë¥¼ ì••ì¶•í•œ ë°ì´í„°ì˜ í¬ê¸°
 */
 IDE_RC smrLogComp::analizeCompLog( SChar    * aCompLog,
                                    UInt       aCompLogOffset,
@@ -709,8 +709,8 @@ IDE_RC smrLogComp::analizeCompLog( SChar    * aCompLog,
     /* 4 byte Flag */
     {
         /* BUG-35392
-         * ¾ĞÃà ·Î±×¿¡¼­ ÇÃ·¡±×¸¦ ÀĞÀ»¶§´Â alignÀ» °í·ÁÇØ¾ß ÇÑ´Ù.
-         * memcpy·Î ÀĞ¾î¾ß ÇÔ */
+         * ì••ì¶• ë¡œê·¸ì—ì„œ í”Œë˜ê·¸ë¥¼ ì½ì„ë•ŒëŠ” alignì„ ê³ ë ¤í•´ì•¼ í•œë‹¤.
+         * memcpyë¡œ ì½ì–´ì•¼ í•¨ */
         idlOS::memcpy( &sLogFlag,
                        aCompLog,
                        SMR_COMP_LOG_FLAG_SIZE );
@@ -720,32 +720,32 @@ IDE_RC smrLogComp::analizeCompLog( SChar    * aCompLog,
         aCompLog += SMR_COMP_LOG_FLAG_SIZE;
     }
 
-    /* 4 bytes ¾ĞÃà µÈ ·Î±×Å©±â */
+    /* 4 bytes ì••ì¶• ëœ ë¡œê·¸í¬ê¸° */
     {
         idlOS::memcpy( aCompressedRawLogSize, aCompLog, SMR_COMP_LOG_COMP_SIZE );
         aCompLog += SMR_COMP_LOG_COMP_SIZE;
 
         /* BUG-35392
-         * head,tail Å©±â¸¦ »© ½ÇÁ¦ ¾ĞÃà·Î±× Å©±â¸¦ ±¸ÇÔ */
+         * head,tail í¬ê¸°ë¥¼ ë¹¼ ì‹¤ì œ ì••ì¶•ë¡œê·¸ í¬ê¸°ë¥¼ êµ¬í•¨ */
         *aCompressedRawLogSize -= SMR_COMP_LOG_OVERHEAD;
     }
 
-    /* 8 bytes LogÀÇ LSN */
+    /* 8 bytes Logì˜ LSN */
     {
         idlOS::memcpy( aLogLSN, aCompLog, SMR_COMP_LOG_LSN_SIZE );
         aCompLog += SMR_COMP_LOG_LSN_SIZE;
     }
 
-    /* 2 bytes LogÀÇ Magic Value */
+    /* 2 bytes Logì˜ Magic Value */
     {
         idlOS::memcpy( aMagicValue, aCompLog, SMR_COMP_LOG_MAGIC_SIZE );
         aCompLog += SMR_COMP_LOG_MAGIC_SIZE;
     }
 
-    /* Magic°ªÀÌ ValidÇÏÁö ¾ÊÀº °æ¿ì Invalid·Î±×·Î ¼³Á¤*/
+    /* Magicê°’ì´ Validí•˜ì§€ ì•Šì€ ê²½ìš° Invalidë¡œê·¸ë¡œ ì„¤ì •*/
     IDE_TEST_CONT( aValidLogMagic != *aMagicValue, skip_invalid_log );
 
-    /* 4 bytes ¿øº»·Î±×Å©±â */
+    /* 4 bytes ì›ë³¸ë¡œê·¸í¬ê¸° */
     {
         idlOS::memcpy( aRawLogSize, aCompLog, SMR_COMP_LOG_DECOMP_SIZE );
         aCompLog += SMR_COMP_LOG_DECOMP_SIZE;
@@ -755,13 +755,13 @@ IDE_RC smrLogComp::analizeCompLog( SChar    * aCompLog,
 
     sMaxLogSize = sLogFileSize - aCompLogOffset;
 
-    /* BUG-24162: [SC] LogSize°¡ ¹«ÁöÇÏ°Ô Å«°ªÀ¸·Î µÇ¾î ÀÖ¾î LogTailÀ» Ã£±âÀ§ÇØ
-     *            ÀÌ °ªÀ» ÀÌ¿ëÇÏ´Ù°¡ invalidÇÑ memory¿µ¿ªÀ» Á¢±ÙÇÏ¿© ¼­¹ö »ç¸Á.
+    /* BUG-24162: [SC] LogSizeê°€ ë¬´ì§€í•˜ê²Œ í°ê°’ìœ¼ë¡œ ë˜ì–´ ìˆì–´ LogTailì„ ì°¾ê¸°ìœ„í•´
+     *            ì´ ê°’ì„ ì´ìš©í•˜ë‹¤ê°€ invalidí•œ memoryì˜ì—­ì„ ì ‘ê·¼í•˜ì—¬ ì„œë²„ ì‚¬ë§.
      *
-     * LogHeaderÀÇ LogSize°¡ ValidÇÑÁö °Ë»çÇÑ´Ù. */
+     * LogHeaderì˜ LogSizeê°€ Validí•œì§€ ê²€ì‚¬í•œë‹¤. */
     IDE_TEST_CONT( *aCompressedRawLogSize > sMaxLogSize, skip_invalid_log );
 
-    /* 4 bytes [Tail] ¿øº»·Î±×Å©±â */
+    /* 4 bytes [Tail] ì›ë³¸ë¡œê·¸í¬ê¸° */
     {
         idlOS::memcpy( &sCompLogTail,
                        aCompLog + *aCompressedRawLogSize,
@@ -770,13 +770,13 @@ IDE_RC smrLogComp::analizeCompLog( SChar    * aCompLog,
 
     IDE_TEST_CONT( *aRawLogSize != sCompLogTail, skip_invalid_log );
 
-    // Size°¡ 0ÀÎ °æ¿ì Invalid·Î±×·Î °£ÁÖ
-    //  ÀÌÀ¯ : smrLogComp.h¿¡ ±â¼úµÈ ¾ĞÃà ·Î±× Head¿¡¼­
-    //         Magic±îÁö ±â·ÏÀÌ µÇ°í ¿øº»/¾ĞÃà ·Î±×Å©±â ÀÌÈÄ·Î
-    //         ÀüÇô ±â·ÏÀÌ µÇÁö ¾ÊÀº °æ¿ì,
-    //         ¿øº» ·Î±× Å©±â, ¾ĞÃà·Î±×ÀÇ TailÀÌ ¸ğµÎ 0ÀÌ°í
-    //         Magic °ªµµ ¸Â¾Æ¶³¾îÁö±â ¶§¹®¿¡ ValidÇÑ ·Î±×·Î ÀÎ½ÄµÊ.
-    //         => Size°¡ 0ÀÌ¸é Invalid Log·Î °£ÁÖ
+    // Sizeê°€ 0ì¸ ê²½ìš° Invalidë¡œê·¸ë¡œ ê°„ì£¼
+    //  ì´ìœ  : smrLogComp.hì— ê¸°ìˆ ëœ ì••ì¶• ë¡œê·¸ Headì—ì„œ
+    //         Magicê¹Œì§€ ê¸°ë¡ì´ ë˜ê³  ì›ë³¸/ì••ì¶• ë¡œê·¸í¬ê¸° ì´í›„ë¡œ
+    //         ì „í˜€ ê¸°ë¡ì´ ë˜ì§€ ì•Šì€ ê²½ìš°,
+    //         ì›ë³¸ ë¡œê·¸ í¬ê¸°, ì••ì¶•ë¡œê·¸ì˜ Tailì´ ëª¨ë‘ 0ì´ê³ 
+    //         Magic ê°’ë„ ë§ì•„ë–¨ì–´ì§€ê¸° ë•Œë¬¸ì— Validí•œ ë¡œê·¸ë¡œ ì¸ì‹ë¨.
+    //         => Sizeê°€ 0ì´ë©´ Invalid Logë¡œ ê°„ì£¼
     IDE_TEST_CONT( *aRawLogSize == 0, skip_invalid_log );
 
     return IDE_SUCCESS;
@@ -790,28 +790,28 @@ IDE_RC smrLogComp::analizeCompLog( SChar    * aCompLog,
 
 
 /*
-   ¾ĞÃàµÈ ·Î±×°¡ InvalidÇÑ °æ¿ì
-   ¾ĞÃà ÇØÁ¦ ¹öÆÛ¿¡ ÀÏºÎ·¯ ¾ĞÃàÇØÁ¦ µÈ Çü½ÄÀ¸·Î Invalid·Î±× ±â·Ï */
+   ì••ì¶•ëœ ë¡œê·¸ê°€ Invalidí•œ ê²½ìš°
+   ì••ì¶• í•´ì œ ë²„í¼ì— ì¼ë¶€ëŸ¬ ì••ì¶•í•´ì œ ëœ í˜•ì‹ìœ¼ë¡œ Invalidë¡œê·¸ ê¸°ë¡ */
 typedef struct smrInvalidLog
 {
     smrLogHead    mHead;
     smrLogTail    mTail;
-    UChar         mLogRecFence; /* log recordÀÇ Å©±â¸¦ ±¸ÇÏ±â À§ÇØ »ç¿ëµÊ */
+    UChar         mLogRecFence; /* log recordì˜ í¬ê¸°ë¥¼ êµ¬í•˜ê¸° ìœ„í•´ ì‚¬ìš©ë¨ */
 } smrInvalidLog;
 
-/* VALIDÇÏÁö ¾ÊÀº ·Î±×¸¦ ¾ĞÃàµÇÁö ¾ÊÀº ÇüÅÂ·Î »ı¼ºÇÑ´Ù.
+/* VALIDí•˜ì§€ ì•Šì€ ë¡œê·¸ë¥¼ ì••ì¶•ë˜ì§€ ì•Šì€ í˜•íƒœë¡œ ìƒì„±í•œë‹¤.
 
-   ¾ĞÃà·Î±×°¡ ¿ÂÀüÈ÷ ±â·ÏµÇÁö ¸øÇÏ°í ÀÏºÎ¸¸ ±â·ÏµÈ °æ¿ì,
-   ¾ĞÃà ÇØÁ¦ ¹öÆÛ»ó¿¡ INVALIDÇÑ ·Î±×¸¦ ÀÏºÎ·¯ ±â·ÏÇÑ´Ù.
+   ì••ì¶•ë¡œê·¸ê°€ ì˜¨ì „íˆ ê¸°ë¡ë˜ì§€ ëª»í•˜ê³  ì¼ë¶€ë§Œ ê¸°ë¡ëœ ê²½ìš°,
+   ì••ì¶• í•´ì œ ë²„í¼ìƒì— INVALIDí•œ ë¡œê·¸ë¥¼ ì¼ë¶€ëŸ¬ ê¸°ë¡í•œë‹¤.
 
-   => Compression Transparency¸¦ º¸ÀåÇÏ±â À§ÇØ ÀÌ¿Í °°ÀÌ
-      ¾ĞÃàµÇÁö ¾ÊÀº ÇüÅÂÀÇ INVALIDÇÑ ·Î±×¸¦ ±â·ÏÇØµĞ´Ù.
-      ÀÌÈÄ ·Î±×¸¦ ÀĞ´Â ¸ğµâ¿¡¼­ ¾ĞÃàµÇÁö ¾ÊÀº ·Î±×ÀÇ
-      VALID¿©ºÎ¸¦ ÆÇ´ÜÇÏ´Â ¹æ½Ä°ú µ¿ÀÏÇÑ ¹æ½ÄÀ¸·Î
-      ÇØ´ç ·Î±×°¡ VALIDÇÑÁö °Ë»çÇÑ´Ù.
+   => Compression Transparencyë¥¼ ë³´ì¥í•˜ê¸° ìœ„í•´ ì´ì™€ ê°™ì´
+      ì••ì¶•ë˜ì§€ ì•Šì€ í˜•íƒœì˜ INVALIDí•œ ë¡œê·¸ë¥¼ ê¸°ë¡í•´ë‘”ë‹¤.
+      ì´í›„ ë¡œê·¸ë¥¼ ì½ëŠ” ëª¨ë“ˆì—ì„œ ì••ì¶•ë˜ì§€ ì•Šì€ ë¡œê·¸ì˜
+      VALIDì—¬ë¶€ë¥¼ íŒë‹¨í•˜ëŠ” ë°©ì‹ê³¼ ë™ì¼í•œ ë°©ì‹ìœ¼ë¡œ
+      í•´ë‹¹ ë¡œê·¸ê°€ VALIDí•œì§€ ê²€ì‚¬í•œë‹¤.
 
-   [IN] aDeompBufferHandle - ¾ĞÃà ÇØÁ¦ ¹öÆÛÀÇ ÇÚµé
-   [OUT] aInvalidRawLog    - INVALID ·Î±×ÀÇ ÁÖ¼Ò
+   [IN] aDeompBufferHandle - ì••ì¶• í•´ì œ ë²„í¼ì˜ í•¸ë“¤
+   [OUT] aInvalidRawLog    - INVALID ë¡œê·¸ì˜ ì£¼ì†Œ
  */
 IDE_RC smrLogComp::createInvalidLog( iduMemoryHandle    * aDecompBufferHandle,
                                      SChar             ** aInvalidRawLog )
@@ -823,16 +823,16 @@ IDE_RC smrLogComp::createInvalidLog( iduMemoryHandle    * aDecompBufferHandle,
 
     void * sLogBuffer;
 
-    // Invalid Log¸¦ ±â·ÏÇÒ ¸Ş¸ğ¸® °ø°£ ÁØºñ
+    // Invalid Logë¥¼ ê¸°ë¡í•  ë©”ëª¨ë¦¬ ê³µê°„ ì¤€ë¹„
     IDE_TEST( aDecompBufferHandle->prepareMemory( ID_SIZEOF( sInvalidLog ),
                                                   & sLogBuffer )
               != IDE_SUCCESS );
 
-    // sInvalidLogÀÇ ³»¿ëÀ» InvalidÇÑ ·Î±×·Î ¼¼ÆÃ
+    // sInvalidLogì˜ ë‚´ìš©ì„ Invalidí•œ ë¡œê·¸ë¡œ ì„¸íŒ…
     {
         idlOS::memset( & sInvalidLog, 0, ID_SIZEOF( sInvalidLog ) );
 
-        // InvalidÇÏ°Ô ÀÎ½ÄµÇµµ·Ï HeadÀÇ Type(1)°ú Tail(0)À» ´Ù¸£°Ô ±â·Ï
+        // Invalidí•˜ê²Œ ì¸ì‹ë˜ë„ë¡ Headì˜ Type(1)ê³¼ Tail(0)ì„ ë‹¤ë¥´ê²Œ ê¸°ë¡
         smrLogHeadI::setType( &sInvalidLog.mHead, 1 );
         sInvalidLog.mTail = 0;
 
@@ -862,11 +862,11 @@ IDE_RC smrLogComp::createInvalidLog( iduMemoryHandle    * aDecompBufferHandle,
     return IDE_FAILURE;
 }
 
-/* ¾ĞÃà ´ë»ó ·Î±×ÀÎÁö ÆÇº°ÇÑ´Ù
+/* ì••ì¶• ëŒ€ìƒ ë¡œê·¸ì¸ì§€ íŒë³„í•œë‹¤
 
-   [IN] aRawLog     - ¾ĞÃà´ë»ó ·Î±×ÀÎÁö¸¦ ÆÇº°ÇÒ ·Î±× ·¹ÄÚµå
-   [IN] aRawLogSize - ·Î±× ·¹ÄÚµåÀÇ Å©±â ( Head + Body + Tail )
-   [OUT] aDoCompLog - ·Î±× ¾ĞÃà ¿©ºÎ
+   [IN] aRawLog     - ì••ì¶•ëŒ€ìƒ ë¡œê·¸ì¸ì§€ë¥¼ íŒë³„í•  ë¡œê·¸ ë ˆì½”ë“œ
+   [IN] aRawLogSize - ë¡œê·¸ ë ˆì½”ë“œì˜ í¬ê¸° ( Head + Body + Tail )
+   [OUT] aDoCompLog - ë¡œê·¸ ì••ì¶• ì—¬ë¶€
  */
 IDE_RC smrLogComp::shouldLogBeCompressed( SChar  * aRawLog,
                                           UInt     aRawLogSize,
@@ -879,29 +879,29 @@ IDE_RC smrLogComp::shouldLogBeCompressed( SChar  * aRawLog,
 
     scSpaceID    sSpaceID;
     smrLogHead * sLogHead;
-    idBool       sDoComp; /* Log compress ¿©ºÎ */
+    idBool       sDoComp; /* Log compress ì—¬ë¶€ */
 
 
     sLogHead = (smrLogHead*)aRawLog;
 
     if ( smuProperty::getMinLogRecordSizeForCompress() == 0 )
     {
-        // Log CompressionÀÌ DisableµÈ »óÅÂ
-        // Log CompressionÀ» ¼öÇàÇÏÁö ¾Ê´Â´Ù.
+        // Log Compressionì´ Disableëœ ìƒíƒœ
+        // Log Compressionì„ ìˆ˜í–‰í•˜ì§€ ì•ŠëŠ”ë‹¤.
         sDoComp = ID_FALSE;
     }
     else
     {
         if ( aRawLogSize >= smuProperty::getMinLogRecordSizeForCompress() )
         {
-            // Tablespaceº° ·Î±× ¾ĞÃà¿©ºÎ ÆÇ´Ü ÇÊ¿ä
+            // Tablespaceë³„ ë¡œê·¸ ì••ì¶•ì—¬ë¶€ íŒë‹¨ í•„ìš”
             IDE_TEST( getSpaceIDOfLog( sLogHead, aRawLog, & sSpaceID )
                       != IDE_SUCCESS );
 
             if ( sSpaceID == SC_NULL_SPACEID )
             {
-                // Æ¯Á¤ Tablespace°ü·Ã ·Î±×°¡ ¾Æ´Ñ °æ¿ì
-                sDoComp = ID_TRUE; // ·Î±× ¾ĞÃà ½Ç½Ã
+                // íŠ¹ì • Tablespaceê´€ë ¨ ë¡œê·¸ê°€ ì•„ë‹Œ ê²½ìš°
+                sDoComp = ID_TRUE; // ë¡œê·¸ ì••ì¶• ì‹¤ì‹œ
             }
             else
             {
@@ -917,17 +917,17 @@ IDE_RC smrLogComp::shouldLogBeCompressed( SChar  * aRawLog,
 
         switch( smrLogHeadI::getType( sLogHead ) )
         {
-            // ·Î±×ÆÄÀÏÀÇ ¸Ç ¾Õ¿¡ ±â·ÏµÇ´Â
-            //  File Begin LogÀÇ °æ¿ì ¾ĞÃàÇÏÁö ¾Ê´Â´Ù.
-            // ÀÌÀ¯ :
-            //     FileÀÇ Ã¹¹øÂ° LogÀÇ LSNÀ» ÀĞ´Â ÀÛ¾÷À»
-            //     ºü¸£°Ô ¼öÇàÇÏ±â À§ÇÔ
+            // ë¡œê·¸íŒŒì¼ì˜ ë§¨ ì•ì— ê¸°ë¡ë˜ëŠ”
+            //  File Begin Logì˜ ê²½ìš° ì••ì¶•í•˜ì§€ ì•ŠëŠ”ë‹¤.
+            // ì´ìœ  :
+            //     Fileì˜ ì²«ë²ˆì§¸ Logì˜ LSNì„ ì½ëŠ” ì‘ì—…ì„
+            //     ë¹ ë¥´ê²Œ ìˆ˜í–‰í•˜ê¸° ìœ„í•¨
             case SMR_LT_FILE_BEGIN :
-            // ·Î±×ÆÄÀÏÀÇ Offset¹üÀ§ Ã¼Å©¸¦ ½±°Ô ÇÒ ¼ö ÀÖµµ·Ï ÇÏ±â À§ÇÔ
-            //    => Offset < (·Î±×ÆÄÀÏÅ©±â - smrLogHead - smrLogTail)
+            // ë¡œê·¸íŒŒì¼ì˜ Offsetë²”ìœ„ ì²´í¬ë¥¼ ì‰½ê²Œ í•  ìˆ˜ ìˆë„ë¡ í•˜ê¸° ìœ„í•¨
+            //    => Offset < (ë¡œê·¸íŒŒì¼í¬ê¸° - smrLogHead - smrLogTail)
             case SMR_LT_FILE_END :
 
-            // ·ÎÁ÷ÀÇ ´Ü¼øÈ­¸¦ À§ÇØ ¾ĞÃàÇÏÁö ¾Ê´Â ·Î±×µé
+            // ë¡œì§ì˜ ë‹¨ìˆœí™”ë¥¼ ìœ„í•´ ì••ì¶•í•˜ì§€ ì•ŠëŠ” ë¡œê·¸ë“¤
             case SMR_LT_CHKPT_BEGIN :
             case SMR_LT_CHKPT_END :
 
@@ -940,8 +940,8 @@ IDE_RC smrLogComp::shouldLogBeCompressed( SChar  * aRawLog,
         }
     }
 
-    // ·Î±× ¾ĞÃàÀ» ÇÏÁö ¾Êµµ·Ï Log Head¿¡ ¼³Á¤µÈ °æ¿ì
-    // ·Î±×¸¦ ¾ĞÃàÇÏÁö ¾Ê´Â´Ù.
+    // ë¡œê·¸ ì••ì¶•ì„ í•˜ì§€ ì•Šë„ë¡ Log Headì— ì„¤ì •ëœ ê²½ìš°
+    // ë¡œê·¸ë¥¼ ì••ì¶•í•˜ì§€ ì•ŠëŠ”ë‹¤.
     if ( ( smrLogHeadI::getFlag(sLogHead) & SMR_LOG_FORBID_COMPRESS_MASK )
          == SMR_LOG_FORBID_COMPRESS_OK )
     {
@@ -958,11 +958,11 @@ IDE_RC smrLogComp::shouldLogBeCompressed( SChar  * aRawLog,
 }
 
 /*
-    Log Record¿¡ ±â·ÏµÈ Tablespace ID¸¦ ¸®ÅÏÇÑ´Ù.
+    Log Recordì— ê¸°ë¡ëœ Tablespace IDë¥¼ ë¦¬í„´í•œë‹¤.
 
-    [IN] aLogHead - LogÀÇ Head
-    [IN] aRawLog  - LogÀÇ ÁÖ¼Ò
-    [OUT] aSpaceID - TablespaceÀÇ ID
+    [IN] aLogHead - Logì˜ Head
+    [IN] aRawLog  - Logì˜ ì£¼ì†Œ
+    [OUT] aSpaceID - Tablespaceì˜ ID
  */
 IDE_RC smrLogComp::getSpaceIDOfLog( smrLogHead * aLogHead,
                                     SChar      * aRawLog,
@@ -998,13 +998,13 @@ IDE_RC smrLogComp::getSpaceIDOfLog( smrLogHead * aLogHead,
         case SMR_DLT_UNDOABLE :
         case SMR_DLT_COMPENSATION :
             /*
-               Disk LogÀÇ °æ¿ì µÎ °³ ÀÌ»óÀÇ Tablespace¿¡ ´ëÇÑ
-               ·Î±×°¡ ±â·ÏµÉ ¼ö ÀÖ´Ù. (Ex> LOB Column )
+               Disk Logì˜ ê²½ìš° ë‘ ê°œ ì´ìƒì˜ Tablespaceì— ëŒ€í•œ
+               ë¡œê·¸ê°€ ê¸°ë¡ë  ìˆ˜ ìˆë‹¤. (Ex> LOB Column )
 
-               Space ID¸¦ NULL·Î ³Ñ±ä´Ù.
+               Space IDë¥¼ NULLë¡œ ë„˜ê¸´ë‹¤.
             */
         default :
-            /* ±âº»ÀûÀ¸·Î NULL SPACE ID¸¦ ³Ñ±ä´Ù
+            /* ê¸°ë³¸ì ìœ¼ë¡œ NULL SPACE IDë¥¼ ë„˜ê¸´ë‹¤
              */
             sSpaceID = SC_NULL_SPACEID;
             break;

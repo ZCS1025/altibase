@@ -18,14 +18,14 @@
 #define _O_MMS_SNMP_VERSION_H_ 1
 
 /*
- * PROJ-2473 SNMP Áö¿ø
+ * PROJ-2473 SNMP ì§€ì›
  */
 
 /*
- * ¼­¹öÂÊ¿¡ SNMP ¹öÀüÀÌ ÇÊ¿äÇÏ¸é ÃßÈÄ¿¡ ³Ö´Â´Ù.
- * ÇöÀç´Â SNMP°¡ Á¦´ë·Î È°¿ëµÉÁöµµ ÀÇ¹®ÀÌ°í Á¦´ë·Î µÈ ¹öÀü °ü¸®·êÀÌ
- * ¸¶¶¥Ä¡ ¾Ê¾Æ Á¦°ÅÇÑ´Ù. ±×³É ¾ËÆ¼º£ÀÌ½º ¹öÀüÀ» µû¶ó °¡ÀÚ.
- * Á¦´ë·Î ÇÒ·Á¸é Altibase¿Í Sub Agent°£¿¡ ÇÁ·ÎÅäÄÝ ÀÌ¸§ºÎÅÍ Á¤ÇØ¾ß ÇÑ´Ù.
+ * ì„œë²„ìª½ì— SNMP ë²„ì „ì´ í•„ìš”í•˜ë©´ ì¶”í›„ì— ë„£ëŠ”ë‹¤.
+ * í˜„ìž¬ëŠ” SNMPê°€ ì œëŒ€ë¡œ í™œìš©ë ì§€ë„ ì˜ë¬¸ì´ê³  ì œëŒ€ë¡œ ëœ ë²„ì „ ê´€ë¦¬ë£°ì´
+ * ë§ˆë•…ì¹˜ ì•Šì•„ ì œê±°í•œë‹¤. ê·¸ëƒ¥ ì•Œí‹°ë² ì´ìŠ¤ ë²„ì „ì„ ë”°ë¼ ê°€ìž.
+ * ì œëŒ€ë¡œ í• ë ¤ë©´ Altibaseì™€ Sub Agentê°„ì— í”„ë¡œí† ì½œ ì´ë¦„ë¶€í„° ì •í•´ì•¼ í•œë‹¤.
  */
 
 #endif /* _O_MMS_SNMP_VERSION_H_ */

@@ -25,7 +25,7 @@ extern ideMsgLog mMsgLogForce;
 sigset_t         mSigSet;
 
 
-// ºñÁ¤»óÀûÀÎ Á¾·á½Ã ½Ã±×³Î ÇÚµé·¯ ¼öÇà
+// ë¹„ì •ìƒì ì¸ ì¢…ë£Œì‹œ ì‹œê·¸ë„ í•¸ë“¤ëŸ¬ ìˆ˜í–‰
 #if defined(IBM_AIX)
 void problem_signal_handler(SInt signum, SInt dummy, struct sigcontext *SCP)
 #elif defined(SPARC_SOLARIS)
@@ -87,7 +87,7 @@ IDE_RC setupDefaultAltibaseSignal()
     
 
     /* ----------------------
-     * [2] idlOS::sigwait()À» À§ÇÑ ½Ã±×³Î ¼ÂÆÃ
+     * [2] idlOS::sigwait()ì„ ìœ„í•œ ì‹œê·¸ë„ ì…‹íŒ…
      * ----------------------*/
     IDE_TEST_RAISE(idlOS::sigemptyset(&mSigSet) != 0, sigemptyset_error);
 #ifdef DEC_TRU64
@@ -129,19 +129,19 @@ IDE_RC setupDefaultAltibaseSignal()
     IDE_TEST_RAISE(idlOS::sigdelset(&mSigSet, SIGSEGV) != 0, sigdelset_error);
     IDE_TEST_RAISE(idlOS::sigdelset(&mSigSet, SIGTRAP) != 0, sigdelset_error);
 
-    // [1] ÀÎÀ§ÀûÀÎ ÀÎÅÍ·´Æ® »ý¼ºÀ» À§ÇÔ.
+    // [1] ì¸ìœ„ì ì¸ ì¸í„°ëŸ½íŠ¸ ìƒì„±ì„ ìœ„í•¨.
     IDE_TEST_RAISE(idlOS::sigdelset(&mSigSet, SIGUSR2) != 0, sigdelset_error);
 
-    // [2] ÀÎÀ§Àû ÄÚ¾î »ý¼º : debug => ^\ : release => kill -SIGQUIT pid
+    // [2] ì¸ìœ„ì  ì½”ì–´ ìƒì„± : debug => ^\ : release => kill -SIGQUIT pid
     IDE_TEST_RAISE(idlOS::sigdelset(&mSigSet, SIGQUIT) != 0, sigdelset_error);
     
     /* 
-     * ¹®¸Æ»óÀ¸·Î´Â SIG_SETMASK°¡ ¸ÂÀ¸³ª, ÇöÀç±îÁö SIG_BLOCKÀ¸·Î
-     * Å×½ºÆ®°¡ µÇ¾ú±â ¶§¹®¿¡ ÀÌ°ÍÀ¸·Î À¯Áö.
-     * ´Ü, AIXÀÇ °æ¿ì SIG_BLOCKÀ¸·Î µ¿ÀÛÇÏÁö ¾Ê±â ¶§¹®¿¡ SIG_SETMASK·Î
-     * ³õ°í »ç¿ëÇÑ´Ù. 
-     * ÃÖÁ¾ÀûÀ¸·Î, ¸ðµç ÇÃ·§Æû¿¡¼­ SIG_SETMASK°¡ ¹®Á¦°¡ ¾ø´Ù°í Å×½ºÆ®
-     * µÇ¾úÀ» ¶§, SIG_BLOCKÀ» Á¦°ÅÇÏ¿©¾ß ÇÒ °ÍÀÓ. 2000/3/30 by gamestar
+     * ë¬¸ë§¥ìƒìœ¼ë¡œëŠ” SIG_SETMASKê°€ ë§žìœ¼ë‚˜, í˜„ìž¬ê¹Œì§€ SIG_BLOCKìœ¼ë¡œ
+     * í…ŒìŠ¤íŠ¸ê°€ ë˜ì—ˆê¸° ë•Œë¬¸ì— ì´ê²ƒìœ¼ë¡œ ìœ ì§€.
+     * ë‹¨, AIXì˜ ê²½ìš° SIG_BLOCKìœ¼ë¡œ ë™ìž‘í•˜ì§€ ì•Šê¸° ë•Œë¬¸ì— SIG_SETMASKë¡œ
+     * ë†“ê³  ì‚¬ìš©í•œë‹¤. 
+     * ìµœì¢…ì ìœ¼ë¡œ, ëª¨ë“  í”Œëž«í¼ì—ì„œ SIG_SETMASKê°€ ë¬¸ì œê°€ ì—†ë‹¤ê³  í…ŒìŠ¤íŠ¸
+     * ë˜ì—ˆì„ ë•Œ, SIG_BLOCKì„ ì œê±°í•˜ì—¬ì•¼ í•  ê²ƒìž„. 2000/3/30 by gamestar
      */
 #if defined(IBM_AIX)
     IDE_TEST_RAISE(idlOS::sigprocmask(SIG_SETMASK, &mSigSet, NULL) != 0,

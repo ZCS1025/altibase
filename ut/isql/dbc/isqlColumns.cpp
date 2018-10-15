@@ -158,7 +158,7 @@ IDE_RC utColumns::AddColumn(SInt         aIndex,
     case SQL_BINARY :
     case SQL_BLOB :
     case SQL_GEOMETRY :
-        // BUG-24273 plan only ÀÏ¶§´Â targetÀı blobÀÌ Æ÷ÇÔµÇ¾îµµ Á¶È¸ °¡´ÉÇÏ¿©¾ß ÇÕ´Ï´Ù.
+        // BUG-24273 plan only ì¼ë•ŒëŠ” targetì ˆ blobì´ í¬í•¨ë˜ì–´ë„ ì¡°íšŒ ê°€ëŠ¥í•˜ì—¬ì•¼ í•©ë‹ˆë‹¤.
         if (aExecute == ID_TRUE)
         {
             IDE_RAISE(undisplayable_datatype);
@@ -213,8 +213,8 @@ void utColumns::Reformat()
 
 /* BUG-43911 Refactoring of printing fetch result
  * 
- * Description: ÄÃ·³ µ¥ÀÌÅÍ¸¦ spool buffer¿¡ ¿Å°ÜÁÜ
- *              set vertical off ÀÏ ¶§ È£ÃâµÊ.
+ * Description: ì»¬ëŸ¼ ë°ì´í„°ë¥¼ spool bufferì— ì˜®ê²¨ì¤Œ
+ *              set vertical off ì¼ ë•Œ í˜¸ì¶œë¨.
  */
 SInt utColumns::AppendToBuffer(SInt aColNum, SChar *aBuf, SInt *aBufLen)
 {
@@ -223,8 +223,8 @@ SInt utColumns::AppendToBuffer(SInt aColNum, SChar *aBuf, SInt *aBufLen)
 
 /* BUG-43911 Refactoring of printing fetch result
  * 
- * Description: ÄÃ·³ ÀüÃ¼ µ¥ÀÌÅÍ¸¦ spool buffer¿¡ ¿Å°ÜÁÜ.
- *              set vertical on ÀÏ ¶§ È£ÃâµÊ.
+ * Description: ì»¬ëŸ¼ ì „ì²´ ë°ì´í„°ë¥¼ spool bufferì— ì˜®ê²¨ì¤Œ.
+ *              set vertical on ì¼ ë•Œ í˜¸ì¶œë¨.
  */
 void utColumns::AppendAllToBuffer(SInt aColNum, SChar *aBuf)
 {

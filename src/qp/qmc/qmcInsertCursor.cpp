@@ -40,12 +40,12 @@ IDE_RC qmcInsertCursor::initialize( iduMemory   * aMemory,
 /***********************************************************************
  *
  *  Description : PROJ-1502 PARTITIONED DISK TABLE
- *                insert cursor manager ¿« √ ±‚»≠
+ *                insert cursor manager Ïùò Ï¥àÍ∏∞Ìôî
  *
  *  Implementation :
- *         1) partitioned / non-partitioned∑Œ ±∏∫–.
- *         2) partitioned∂Û∏È «‚»ƒ partition filtering¿ª ∞Ì∑¡«œø©
- *            partition reference∏¶ ¿˙¿Â.
+ *         1) partitioned / non-partitionedÎ°ú Íµ¨Î∂Ñ.
+ *         2) partitionedÎùºÎ©¥ Ìñ•ÌõÑ partition filteringÏùÑ Í≥†Î†§ÌïòÏó¨
+ *            partition referenceÎ•º Ï†ÄÏû•.
  *
  ***********************************************************************/
 
@@ -70,7 +70,7 @@ IDE_RC qmcInsertCursor::initialize( iduMemory   * aMemory,
     {
         mIsPartitioned = ID_FALSE;
         
-        // alloc«œ¡ˆ æ ∞Ì internal cursor∏¶ ªÁøÎ«—¥Ÿ.
+        // allocÌïòÏßÄ ÏïäÍ≥† internal cursorÎ•º ÏÇ¨Ïö©ÌïúÎã§.
         mCursorIndex = & mInternalCursorIndex;
         mCursors     = & mInternalCursor;
         
@@ -130,7 +130,7 @@ IDE_RC qmcInsertCursor::openCursor( qcStatement         * aStatement,
 {
 /***********************************************************************
  *
- *  Description : cursor∏¶ open«—¥Ÿ.
+ *  Description : cursorÎ•º openÌïúÎã§.
  *
  *  Implementation :
  *
@@ -215,12 +215,12 @@ IDE_RC qmcInsertCursor::openCursor( qcStatement         * aStatement,
             mCursorIndex[i]->cursor.initialize();
         }
 
-        /* PROJ-2464 hybrid partitioned table ¡ˆø¯ */
+        /* PROJ-2464 hybrid partitioned table ÏßÄÏõê */
         sHintParallelDegree = aProperties->mHintParallelDegree;
 
         for ( i = 0; i < mCursorIndexCount; i++ )
         {
-            /* PROJ-2464 hybrid partitioned table ¡ˆø¯ */
+            /* PROJ-2464 hybrid partitioned table ÏßÄÏõê */
             if ( QCM_TABLE_TYPE_IS_DISK( mCursorIndex[i]->partitionRef->partitionInfo->tableFlag ) == ID_TRUE )
             {
                 sFlag = aFlag;
@@ -249,7 +249,7 @@ IDE_RC qmcInsertCursor::openCursor( qcStatement         * aStatement,
             sOpenedCount++;
         }
 
-        /* PROJ-2464 hybrid partitioned table ¡ˆø¯ */
+        /* PROJ-2464 hybrid partitioned table ÏßÄÏõê */
         aProperties->mHintParallelDegree = sHintParallelDegree;
 
         mCursorSmiStmt    = QC_SMI_STMT(aStatement);
@@ -265,7 +265,7 @@ IDE_RC qmcInsertCursor::openCursor( qcStatement         * aStatement,
     }
     IDE_EXCEPTION_END;
 
-    // BUG-27693 ∆ƒ∆ºº«≈◊¿Ã∫Ìø° ¥Î«— insert cursorø¿«¬Ω√, ø°∑Ø≥™¥¬ ∞ÊøÏø° ¥Î«— øπø‹√≥∏Æ∞° æ¯¿Ω.
+    // BUG-27693 ÌååÌã∞ÏÖòÌÖåÏù¥Î∏îÏóê ÎåÄÌïú insert cursorÏò§ÌîàÏãú, ÏóêÎü¨ÎÇòÎäî Í≤ΩÏö∞Ïóê ÎåÄÌïú ÏòàÏô∏Ï≤òÎ¶¨Í∞Ä ÏóÜÏùå.
     if ( mIsPartitioned == ID_FALSE )
     {
         // Nothing to do.
@@ -287,10 +287,10 @@ IDE_RC qmcInsertCursor::partitionFilteringWithRow( smiValue      * aValues,
 {
 /***********************************************************************
  *
- *  Description : partitioned tableø° ¥Î«œø© partition filtering¿ª «—¥Ÿ.
+ *  Description : partitioned tableÏóê ÎåÄÌïòÏó¨ partition filteringÏùÑ ÌïúÎã§.
  *
- *  Implementation : partition filtering¿Ã»ƒ lob¡§∫∏∏¶ filtering¿∏∑Œ ≥™ø¬
- *                   partition¿« ƒ√∑≥¿∏∑Œ ∞•æ∆ƒ£¥Ÿ.
+ *  Implementation : partition filteringÏù¥ÌõÑ lobÏ†ïÎ≥¥Î•º filteringÏúºÎ°ú ÎÇòÏò®
+ *                   partitionÏùò Ïª¨ÎüºÏúºÎ°ú Í∞àÏïÑÏπúÎã§.
  *
  *
  ***********************************************************************/
@@ -303,7 +303,7 @@ IDE_RC qmcInsertCursor::partitionFilteringWithRow( smiValue      * aValues,
 
     if( mIsPartitioned == ID_FALSE )
     {
-        // ¿œπ› ≈◊¿Ã∫Ì.
+        // ÏùºÎ∞ò ÌÖåÏù¥Î∏î.
         // Nothing to do.
     }
     else
@@ -331,7 +331,7 @@ IDE_RC qmcInsertCursor::partitionFilteringWithRow( smiValue      * aValues,
 
         if ( sFound == ID_FALSE )
         {
-            // BUGBUG partitionRefø° partIndex∞° ¿÷¥Ÿ∏È ∞Àªˆ«“ « ø‰∞° æ¯¥Ÿ.
+            // BUGBUG partitionRefÏóê partIndexÍ∞Ä ÏûàÎã§Î©¥ Í≤ÄÏÉâÌï† ÌïÑÏöîÍ∞Ä ÏóÜÎã§.
             for( sCurrRef = mTableRef->partitionRef, sPartIndex = 0;
                  sCurrRef != NULL;
                  sCurrRef = sCurrRef->next, sPartIndex++ )
@@ -398,7 +398,7 @@ IDE_RC qmcInsertCursor::getCursor( smiTableCursor ** aCursor )
 {
 /***********************************************************************
  *
- *  Description : «ˆ¿Á º±≈√µ» ƒøº≠∏¶ π›»Ø
+ *  Description : ÌòÑÏû¨ ÏÑ†ÌÉùÎêú Ïª§ÏÑúÎ•º Î∞òÌôò
  *
  *  Implementation :
  *
@@ -415,7 +415,7 @@ IDE_RC qmcInsertCursor::getSelectedPartitionOID( smOID * aPartOID )
 {
 /***********************************************************************
  *
- *  Description : «ˆ¿Á º±≈√µ» partition¿« oid∏¶ π›»Ø
+ *  Description : ÌòÑÏû¨ ÏÑ†ÌÉùÎêú partitionÏùò oidÎ•º Î∞òÌôò
  *
  *  Implementation :
  *
@@ -430,7 +430,7 @@ IDE_RC qmcInsertCursor::getSelectedPartitionOID( smOID * aPartOID )
 
 /***********************************************************************
  *
- *  Description : «ˆ¿Á º±≈√µ» Partition¿« Tuple ID∏¶ π›»Ø
+ *  Description : ÌòÑÏû¨ ÏÑ†ÌÉùÎêú PartitionÏùò Tuple IDÎ•º Î∞òÌôò
  *
  *  Implementation :
  *
@@ -448,7 +448,7 @@ IDE_RC qmcInsertCursor::closeCursor( )
 {
 /***********************************************************************
  *
- *  Description : ∏µÁ ƒøº≠∏¶ ¥›¿Ω.
+ *  Description : Î™®Îì† Ïª§ÏÑúÎ•º Îã´Ïùå.
  *
  *  Implementation :
  *
@@ -477,8 +477,8 @@ IDE_RC qmcInsertCursor::setColumnsForNewRow( )
 {
 /***********************************************************************
  *
- *  Description : trigger¿« newrow∏¶ «ÿºÆ«“ ºˆ ¿÷¥¬ column ¡§∫∏∏¶ ª˝º∫«—¥Ÿ.
- *                √÷√  «—π¯∏∏ ª˝º∫«œ∞Ì ¿Ã»ƒ∑Œ¥¬ ª˝º∫«œ¡ˆ æ ¿Ω.
+ *  Description : triggerÏùò newrowÎ•º Ìï¥ÏÑùÌï† Ïàò ÏûàÎäî column Ï†ïÎ≥¥Î•º ÏÉùÏÑ±ÌïúÎã§.
+ *                ÏµúÏ¥à ÌïúÎ≤àÎßå ÏÉùÏÑ±ÌïòÍ≥† Ïù¥ÌõÑÎ°úÎäî ÏÉùÏÑ±ÌïòÏßÄ ÏïäÏùå.
  *
  *  Implementation :
  *
@@ -515,7 +515,7 @@ IDE_RC qmcInsertCursor::getColumnsForNewRow( qcmColumn ** aColumnsForNewRow )
 {
 /***********************************************************************
  *
- *  Description : trigger new row∏¶ «ÿºÆ«œ±‚ ¿ß«— ƒ√∑≥¡§∫∏∏¶ ∞°¡Æø¬¥Ÿ.
+ *  Description : trigger new rowÎ•º Ìï¥ÏÑùÌïòÍ∏∞ ÏúÑÌïú Ïª¨ÎüºÏ†ïÎ≥¥Î•º Í∞ÄÏ†∏Ïò®Îã§.
  *
  *  Implementation :
  *
@@ -533,7 +533,7 @@ IDE_RC qmcInsertCursor::clearColumnsForNewRow()
 {
 /***********************************************************************
  *
- *  Description : trigger new row∏¶ «ÿºÆ«œ±‚ ¿ß«— ƒ√∑≥¡§∫∏∏¶ ∞°¡Æø¬¥Ÿ.
+ *  Description : trigger new rowÎ•º Ìï¥ÏÑùÌïòÍ∏∞ ÏúÑÌïú Ïª¨ÎüºÏ†ïÎ≥¥Î•º Í∞ÄÏ†∏Ïò®Îã§.
  *
  *  Implementation :
  *
@@ -559,10 +559,10 @@ IDE_RC qmcInsertCursor::openInsertPartCursor( qmcInsertPartCursor * aPartitionCu
 
     aPartitionCursor->cursor.initialize();
 
-    /* PROJ-2464 hybrid partitioned table ¡ˆø¯ */
+    /* PROJ-2464 hybrid partitioned table ÏßÄÏõê */
     sHintParallelDegree = mCursorProperties.mHintParallelDegree;
 
-    /* PROJ-2464 hybrid partitioned table ¡ˆø¯ */
+    /* PROJ-2464 hybrid partitioned table ÏßÄÏõê */
     if ( QCM_TABLE_TYPE_IS_DISK( aPartitionRef->partitionInfo->tableFlag ) == ID_TRUE )
     {
         sFlag = mCursorFlag;
@@ -588,7 +588,7 @@ IDE_RC qmcInsertCursor::openInsertPartCursor( qmcInsertPartCursor * aPartitionCu
                   & mCursorProperties )
               != IDE_SUCCESS );
     
-    /* PROJ-2464 hybrid partitioned table ¡ˆø¯ */
+    /* PROJ-2464 hybrid partitioned table ÏßÄÏõê */
     mCursorProperties.mHintParallelDegree = sHintParallelDegree;
 
     return IDE_SUCCESS;

@@ -23,10 +23,10 @@
 
 #include <idnConv.h>
 
-/* PROJ-2414 [±â´É¼º] GBK, CP936 character set Ãß°¡ */
+/* PROJ-2414 [ê¸°ëŠ¥ì„±] GBK, CP936 character set ì¶”ê°€ */
 #define IDN_GBKEXTINV_XOR_VALUE ( 9024 )
 
-/* PROJ-2414 [±â´É¼º] GBK, CP936 character set Ãß°¡ */
+/* PROJ-2414 [ê¸°ëŠ¥ì„±] GBK, CP936 character set ì¶”ê°€ */
 SInt convertWcToMb4Gbkextinv( void    * aSrc,
                               SInt      aSrcRemain,
                               void    * aDest,

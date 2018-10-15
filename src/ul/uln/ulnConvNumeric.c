@@ -20,18 +20,18 @@
 #include <ulnConvNumeric.h>
 
 /*
- * Note : ±ŞÁ¶ÇÑ ¼Ò½ºÀÌ¹Ç·Î ¸®ÆÑÅä¸µ Àı½ÇÈ÷ ÇÊ¿äÇÏ´Ù.
- *        ³ªÁß¿¡ ¸ô·¡ ÇÏÀÚ.
+ * Note : ê¸‰ì¡°í•œ ì†ŒìŠ¤ì´ë¯€ë¡œ ë¦¬íŒ©í† ë§ ì ˆì‹¤íˆ í•„ìš”í•˜ë‹¤.
+ *        ë‚˜ì¤‘ì— ëª°ë˜ í•˜ì.
  */
 
 /*
- * ¼Ò¼ıÁ¡ÀÌ mBuffer ÀÇ ¾ÕÂÊ ¹Ù±ù¿¡ ÀÖ´Ù°í °¡Á¤ÇÏ°í,
- * mScale ¸¸Å­ ¿À¸¥ÂÊÀ¸·Î ¼Ò¼ıÁ¡À» ¿Å°Ü¾ß Á¦´ë·Î µÈ ¼ıÀÚ°¡ ³ª¿Â´Ù.
+ * ì†Œìˆ«ì ì´ mBuffer ì˜ ì•ìª½ ë°”ê¹¥ì— ìˆë‹¤ê³  ê°€ì •í•˜ê³ ,
+ * mScale ë§Œí¼ ì˜¤ë¥¸ìª½ìœ¼ë¡œ ì†Œìˆ«ì ì„ ì˜®ê²¨ì•¼ ì œëŒ€ë¡œ ëœ ìˆ«ìê°€ ë‚˜ì˜¨ë‹¤.
  */
 // bug-25777: null-byte error when numeric to char conversion
-// ¹Ø¿¡¼­ sTargetPosition °ú BufferSize ºñ±³½Ã -1À» ÇØÁÖµµ·Ï º¯°æ
-// appl buffersize´Â null byte¸¦ Æ÷ÇÔÇÏ´Â Å©±âÀÌ±â ¶§¹®.
-// ¾È ±×·¯¸é buffersize¿Í µ¥ÀÌÅÍ Å©±â°¡ µ¿ÀÏÇÑ °æ¿ì ¹®Á¦ ¹ß»ı
+// ë°‘ì—ì„œ sTargetPosition ê³¼ BufferSize ë¹„êµì‹œ -1ì„ í•´ì£¼ë„ë¡ ë³€ê²½
+// appl buffersizeëŠ” null byteë¥¼ í¬í•¨í•˜ëŠ” í¬ê¸°ì´ê¸° ë•Œë¬¸.
+// ì•ˆ ê·¸ëŸ¬ë©´ buffersizeì™€ ë°ì´í„° í¬ê¸°ê°€ ë™ì¼í•œ ê²½ìš° ë¬¸ì œ ë°œìƒ
 #define ULNC_DECIMAL_PRINT_A_NUMBER(aCharacter)                 \
     do {                                                        \
         if (sSourcePosition >= aStartingPositionInSource)       \
@@ -101,7 +101,7 @@ void ulncDecimalPrint(ulncNumeric   *aDecimal,
             ULNC_DECIMAL_PRINT_A_NUMBER(aDecimal->mBuffer[i] + '0');
         }
 
-        // µÚ¿¡ µû¶óºÙ´Â trailing 0
+        // ë’¤ì— ë”°ë¼ë¶™ëŠ” trailing 0
         for (i = aDecimal->mScale; i < 0; i++)
         {
             ULNC_DECIMAL_PRINT_A_NUMBER('0');
@@ -163,7 +163,7 @@ void ulncDecimalPrintW(ulncNumeric   *aDecimal,
             ULNC_DECIMAL_PRINT_A_NUMBER(aDecimal->mBuffer[i] + 0x0030 /*'0'*/);
         }
 
-        // µÚ¿¡ µû¶óºÙ´Â trailing 0
+        // ë’¤ì— ë”°ë¼ë¶™ëŠ” trailing 0
         for (i = aDecimal->mScale; i < 0; i++)
         {
             ULNC_DECIMAL_PRINT_A_NUMBER(0x0030 /*'0'*/);
@@ -457,8 +457,8 @@ ACI_RC ulncCmtNumericToDecimal(cmtNumeric *aCmNumeric, ulncNumeric *aDecimal)
     }
 
     /*
-     * ÁÖÀÇ : ¾Æ·¡ÀÇ precision Àº aDecimal ÀÌ 10Áø¼öÀÌ±â ¶§¹®¿¡
-     *        mSize ¸¦ °ğÀå mPrecision ¿¡ ´ëÀÔÀÌ °¡´ÉÇÑ °ÍÀÌ´Ù.
+     * ì£¼ì˜ : ì•„ë˜ì˜ precision ì€ aDecimal ì´ 10ì§„ìˆ˜ì´ê¸° ë•Œë¬¸ì—
+     *        mSize ë¥¼ ê³§ì¥ mPrecision ì— ëŒ€ì…ì´ ê°€ëŠ¥í•œ ê²ƒì´ë‹¤.
      */
     aDecimal->mPrecision = aDecimal->mSize;
 
@@ -510,11 +510,11 @@ ACI_RC ulncNumericToNumeric(ulncNumeric *aDst, ulncNumeric *aSrc)
 }
 
 /**
- * BUG-42606 - Server¿¡¼­ NumericÀÇ double º¯È¯ÀÇ ¿ÀÂ÷¿Í Client¿¡¼­ NumericÀÇ
- * double º¯È¯ ¿ÀÂ÷°¡ ´Ş¶ó¼­ client¿¡¼­ º¯È¯µÈ °ªÀ¸·Î ¼­¹ö °ªÀ» Ã£À» ¼ö
- * ¾ø½À´Ï´Ù.
+ * BUG-42606 - Serverì—ì„œ Numericì˜ double ë³€í™˜ì˜ ì˜¤ì°¨ì™€ Clientì—ì„œ Numericì˜
+ * double ë³€í™˜ ì˜¤ì°¨ê°€ ë‹¬ë¼ì„œ clientì—ì„œ ë³€í™˜ëœ ê°’ìœ¼ë¡œ ì„œë²„ ê°’ì„ ì°¾ì„ ìˆ˜
+ * ì—†ìŠµë‹ˆë‹¤.
  *
- * 256 Áø¹ıÀÇ CM NumericÀ» 100Áø¹ıÀÇ MT NumericÀ¸·Î º¯È¯ÇÑ´Ù.
+ * 256 ì§„ë²•ì˜ CM Numericì„ 100ì§„ë²•ì˜ MT Numericìœ¼ë¡œ ë³€í™˜í•œë‹¤.
  */
 void ulncCmtNumericToMtNumeric( cmtNumeric * aNumeric, mtdNumericType * aMtNumeric )
 {
@@ -618,12 +618,12 @@ acp_double_t ulncCmtNumericToDouble( cmtNumeric * aNumeric )
     acp_uint8_t    * sMantissa;
     acp_uint8_t      sMantissaLen = 0;
 
-    // BUG-21610: NUMERICÀ» double·Î ¿Ã¹Ù·Î º¯È¯ÇÏÁö ¸øÇÒ ¼ö ÀÖ´Ù.
-    // doubleÀº ºñ·Ï NUMERICº¸´Ù Ç¥Çö°¡´ÉÇÑ precisionÀº ÀÛÁö¸¸
-    // ´õ ³ĞÀº scaleÀ» Áö¿øÇÏ¹Ç·Î ±×³É º¯È¯ÇØµµ ¹®Á¦¾ø´Ù.
-    /* BUG-42606 - Server¿¡¼­ NumericÀÇ double º¯È¯ÀÇ ¿ÀÂ÷¿Í Client¿¡¼­ NumericÀÇ
-     * double º¯È¯ ¿ÀÂ÷°¡ ´Ş¶ó¼­ client¿¡¼­ º¯È¯µÈ °ªÀ¸·Î ¼­¹ö °ªÀ» Ã£À» ¼ö
-     * ¾ø½À´Ï´Ù.
+    // BUG-21610: NUMERICì„ doubleë¡œ ì˜¬ë°”ë¡œ ë³€í™˜í•˜ì§€ ëª»í•  ìˆ˜ ìˆë‹¤.
+    // doubleì€ ë¹„ë¡ NUMERICë³´ë‹¤ í‘œí˜„ê°€ëŠ¥í•œ precisionì€ ì‘ì§€ë§Œ
+    // ë” ë„“ì€ scaleì„ ì§€ì›í•˜ë¯€ë¡œ ê·¸ëƒ¥ ë³€í™˜í•´ë„ ë¬¸ì œì—†ë‹¤.
+    /* BUG-42606 - Serverì—ì„œ Numericì˜ double ë³€í™˜ì˜ ì˜¤ì°¨ì™€ Clientì—ì„œ Numericì˜
+     * double ë³€í™˜ ì˜¤ì°¨ê°€ ë‹¬ë¼ì„œ clientì—ì„œ ë³€í™˜ëœ ê°’ìœ¼ë¡œ ì„œë²„ ê°’ì„ ì°¾ì„ ìˆ˜
+     * ì—†ìŠµë‹ˆë‹¤.
      */
     for ( i = 0; i < aNumeric->mSize; i++ )
     {
@@ -643,8 +643,8 @@ acp_double_t ulncCmtNumericToDouble( cmtNumeric * aNumeric )
         ulncCmtNumericToMtNumeric( aNumeric, sMtNumeric );
 
         /* BUG-42606
-         * CM NumericÀ» MT NumericÀ¸·Î º¯È¯ÈÄ 100Áø¹ıÀÇ Numeric
-         * À» Server¿¡¼­ Double·Î º¯È¯ÇÏ´Â ¹æ½ÄÀ¸·Î º¯È¯½ÃÅ²´Ù.
+         * CM Numericì„ MT Numericìœ¼ë¡œ ë³€í™˜í›„ 100ì§„ë²•ì˜ Numeric
+         * ì„ Serverì—ì„œ Doubleë¡œ ë³€í™˜í•˜ëŠ” ë°©ì‹ìœ¼ë¡œ ë³€í™˜ì‹œí‚¨ë‹¤.
          */
         sArgExponent = ( sMtNumeric->signExponent & 0x80 );
         sScale       = ( sMtNumeric->signExponent & 0x7F );
@@ -720,9 +720,9 @@ acp_float_t ulncCmtNumericToFloat(cmtNumeric *aNumeric)
     acp_double_t sDoubleValue = 0;
     acp_sint32_t i;
 
-    // BUG-21610: NUMERICÀ» double·Î ¿Ã¹Ù·Î º¯È¯ÇÏÁö ¸øÇÒ ¼ö ÀÖ´Ù.
-    // doubleÀº ºñ·Ï NUMERICº¸´Ù Ç¥Çö°¡´ÉÇÑ precisionÀº ÀÛÁö¸¸
-    // ´õ ³ĞÀº scaleÀ» Áö¿øÇÏ¹Ç·Î ±×³É º¯È¯ÇØµµ ¹®Á¦¾ø´Ù.
+    // BUG-21610: NUMERICì„ doubleë¡œ ì˜¬ë°”ë¡œ ë³€í™˜í•˜ì§€ ëª»í•  ìˆ˜ ìˆë‹¤.
+    // doubleì€ ë¹„ë¡ NUMERICë³´ë‹¤ í‘œí˜„ê°€ëŠ¥í•œ precisionì€ ì‘ì§€ë§Œ
+    // ë” ë„“ì€ scaleì„ ì§€ì›í•˜ë¯€ë¡œ ê·¸ëƒ¥ ë³€í™˜í•´ë„ ë¬¸ì œì—†ë‹¤.
     for ( i = aNumeric->mSize - 1; i >= 0; i-- )
     {
         sDoubleValue *= 256;
@@ -763,10 +763,10 @@ acp_float_t ulncCmtNumericToFloat(cmtNumeric *aNumeric)
 }
 
 /*
- * cmtNumeric ¿¡¼­ ¹Ù·Î ULong À¸·Î °¡ÀÚ´Ï, overflow detect ÇÏ±â°¡ ±î´Ù·Ó´Ù.
- * ±×·¡¼­ ÀÏ´Ü ulncDecimal ·Î º¯È¯ Çß´Ù°¡ °£´Ù. -_-;
+ * cmtNumeric ì—ì„œ ë°”ë¡œ ULong ìœ¼ë¡œ ê°€ìë‹ˆ, overflow detect í•˜ê¸°ê°€ ê¹Œë‹¤ë¡­ë‹¤.
+ * ê·¸ë˜ì„œ ì¼ë‹¨ ulncDecimal ë¡œ ë³€í™˜ í–ˆë‹¤ê°€ ê°„ë‹¤. -_-;
  *
- * BUGBUG : ¾Æ·¡ÀÇ ÇÔ¼ö µÑÀÇ °øÅëºÎºĞÀ» Ã£¾Æ¼­ ÇÏ³ªÀÇ ÄÚµåÆĞ½º¸¦ ¹âµµ·Ï ÇØ¾ß ÇÑ´Ù.
+ * BUGBUG : ì•„ë˜ì˜ í•¨ìˆ˜ ë‘˜ì˜ ê³µí†µë¶€ë¶„ì„ ì°¾ì•„ì„œ í•˜ë‚˜ì˜ ì½”ë“œíŒ¨ìŠ¤ë¥¼ ë°Ÿë„ë¡ í•´ì•¼ í•œë‹¤.
  *          ulncDecimalToULong()
  *          ulncDecimalToSLong()
  */
@@ -785,16 +785,16 @@ acp_uint64_t ulncDecimalToULong(ulncNumeric *aNumeric, acp_bool_t *aIsOverFlow)
 
     if (aNumeric->mSign == 0)
     {
-        // À½¼öÀÏ °æ¿ì
+        // ìŒìˆ˜ì¼ ê²½ìš°
         *aIsOverFlow = ACP_TRUE;
         return ACP_UINT64_LITERAL(0);
     }
 
-    //    ¿ø·¡´Â ¹İ¿Ã¸²À» Çß¾ú´Âµ¥,
-    //    Å×½ºÆ® ÄÉÀÌ½ºµéÀ» º¸´Ï ¹İ¿Ã¸²À» ÇØ¼­´Â ¾ÈµÉ°Å °°¾Æ¼­ ¾ø¾Ú.
+    //    ì›ë˜ëŠ” ë°˜ì˜¬ë¦¼ì„ í–ˆì—ˆëŠ”ë°,
+    //    í…ŒìŠ¤íŠ¸ ì¼€ì´ìŠ¤ë“¤ì„ ë³´ë‹ˆ ë°˜ì˜¬ë¦¼ì„ í•´ì„œëŠ” ì•ˆë ê±° ê°™ì•„ì„œ ì—†ì•°.
 //    if (aNumeric->mScale > 0)
 //    {
-//        // ¼Ò¼ıÁ¡ ¾Æ·¡ ¼ıÀÚ°¡ ÀÖ±ä ÇÏ´Ù. ¹İ¿Ã¸²À» ¹Ì¸® ÇØ µĞ´Ù.
+//        // ì†Œìˆ«ì  ì•„ë˜ ìˆ«ìê°€ ìˆê¸´ í•˜ë‹¤. ë°˜ì˜¬ë¦¼ì„ ë¯¸ë¦¬ í•´ ë‘”ë‹¤.
 //        if (aNumeric->mBuffer[aNumeric->mAllocSize - aNumeric->mScale] >= 5)
 //        {
 //            sRound = 1;
@@ -806,7 +806,7 @@ acp_uint64_t ulncDecimalToULong(ulncNumeric *aNumeric, acp_bool_t *aIsOverFlow)
 
     if (aNumeric->mPrecision - aNumeric->mScale <= 0)
     {
-        // ¼Ò¼ıÁ¡ À§¿¡´Â ÇÏ³ªµµ ¾ø´Â °æ¿ì
+        // ì†Œìˆ«ì  ìœ„ì—ëŠ” í•˜ë‚˜ë„ ì—†ëŠ” ê²½ìš°
         *aIsOverFlow = ACP_FALSE;
         return sRound;
     }
@@ -817,7 +817,7 @@ acp_uint64_t ulncDecimalToULong(ulncNumeric *aNumeric, acp_bool_t *aIsOverFlow)
         {
             if ((acp_sint32_t)aNumeric->mAllocSize - aNumeric->mScale == i)
             {
-                // ¼Ò¼ıÁ¡À» ¸¸³µ´Ù. ±×¸¸ÇÏ°í ¸®ÅÏÇÑ´Ù.
+                // ì†Œìˆ«ì ì„ ë§Œë‚¬ë‹¤. ê·¸ë§Œí•˜ê³  ë¦¬í„´í•œë‹¤.
                 *aIsOverFlow = ACP_FALSE;
                 return sULongValue + sRound;
             }
@@ -833,7 +833,7 @@ acp_uint64_t ulncDecimalToULong(ulncNumeric *aNumeric, acp_bool_t *aIsOverFlow)
             sULongValue += aNumeric->mBuffer[i];
         }
 
-        // µÚ¿¡ µû¶óºÙ´Â trailing 0 ¸¸Å­ 10¾¿ °öÇØÁØ´Ù.
+        // ë’¤ì— ë”°ë¼ë¶™ëŠ” trailing 0 ë§Œí¼ 10ì”© ê³±í•´ì¤€ë‹¤.
         for (i = aNumeric->mScale; i < 0; i++)
         {
             if ((sULongValue > sThreshold) ||
@@ -851,9 +851,9 @@ acp_uint64_t ulncDecimalToULong(ulncNumeric *aNumeric, acp_bool_t *aIsOverFlow)
 }
 
 /*
- * ÀÏ´Ü, ULong À» ¸®ÅÏÇÏ¸é, È£ÃâÀÚ°¡ ¾Ë¾Æ¼­ ºÎÈ£¸¦ °öÇØ ÁÖµµ·Ï ÇÑ´Ù.
+ * ì¼ë‹¨, ULong ì„ ë¦¬í„´í•˜ë©´, í˜¸ì¶œìê°€ ì•Œì•„ì„œ ë¶€í˜¸ë¥¼ ê³±í•´ ì£¼ë„ë¡ í•œë‹¤.
  *
- * BUGBUG : À§ÀÇ ÇÔ¼ö¿Í ¾Æ·¡ÀÇ ÇÔ¼öÀÇ °øÅëºÎºĞÀ» Ã£¾Æ¼­ ÇÏ³ªÀÇ ÄÚµåÆĞ½º¸¦ ¹âµµ·Ï ÇØ¾ß ÇÑ´Ù.
+ * BUGBUG : ìœ„ì˜ í•¨ìˆ˜ì™€ ì•„ë˜ì˜ í•¨ìˆ˜ì˜ ê³µí†µë¶€ë¶„ì„ ì°¾ì•„ì„œ í•˜ë‚˜ì˜ ì½”ë“œíŒ¨ìŠ¤ë¥¼ ë°Ÿë„ë¡ í•´ì•¼ í•œë‹¤.
  */
 acp_uint64_t ulncDecimalToSLong(ulncNumeric *aNumeric, acp_bool_t *aIsOverFlow)
 {
@@ -868,11 +868,11 @@ acp_uint64_t ulncDecimalToSLong(ulncNumeric *aNumeric, acp_bool_t *aIsOverFlow)
     ACE_ASSERT(aNumeric->mBase   == 10);
     ACE_ASSERT(aNumeric->mEndian == ULNC_ENDIAN_BIG);
 
-    //    ¿ø·¡´Â ¹İ¿Ã¸²À» Çß¾ú´Âµ¥,
-    //    Å×½ºÆ® ÄÉÀÌ½ºµéÀ» º¸´Ï ¹İ¿Ã¸²À» ÇØ¼­´Â ¾ÈµÉ°Å °°¾Æ¼­ ¾ø¾Ú.
+    //    ì›ë˜ëŠ” ë°˜ì˜¬ë¦¼ì„ í–ˆì—ˆëŠ”ë°,
+    //    í…ŒìŠ¤íŠ¸ ì¼€ì´ìŠ¤ë“¤ì„ ë³´ë‹ˆ ë°˜ì˜¬ë¦¼ì„ í•´ì„œëŠ” ì•ˆë ê±° ê°™ì•„ì„œ ì—†ì•°.
 //    if (aNumeric->mScale > 0)
 //    {
-//        // ¼Ò¼ıÁ¡ ¾Æ·¡ ¼ıÀÚ°¡ ÀÖ±ä ÇÏ´Ù. ¹İ¿Ã¸²À» ¹Ì¸® ÇØ µĞ´Ù.
+//        // ì†Œìˆ«ì  ì•„ë˜ ìˆ«ìê°€ ìˆê¸´ í•˜ë‹¤. ë°˜ì˜¬ë¦¼ì„ ë¯¸ë¦¬ í•´ ë‘”ë‹¤.
 //        if (aNumeric->mBuffer[aNumeric->mAllocSize - aNumeric->mScale] >= 5)
 //        {
 //            sRound = 1;
@@ -881,7 +881,7 @@ acp_uint64_t ulncDecimalToSLong(ulncNumeric *aNumeric, acp_bool_t *aIsOverFlow)
 
     if (aNumeric->mSign == 0)
     {
-        // À½¼öÀÏ °æ¿ì ¾ç¼öº¸´Ù Àı´ë°ª 1 À» ´õ Ç¥½ÃÇÒ ¼ö ÀÖ´Ù.
+        // ìŒìˆ˜ì¼ ê²½ìš° ì–‘ìˆ˜ë³´ë‹¤ ì ˆëŒ€ê°’ 1 ì„ ë” í‘œì‹œí•  ìˆ˜ ìˆë‹¤.
         sThreshold       = ((acp_uint64_t)ACP_SINT64_MAX + (acp_uint64_t)(ACP_SINT64_LITERAL(1)) - sRound) / 10;
         sMaxIncreaseUnit = ((acp_uint64_t)ACP_SINT64_MAX + (acp_uint64_t)(ACP_SINT64_LITERAL(1)) - sRound) % 10;
     }
@@ -894,7 +894,7 @@ acp_uint64_t ulncDecimalToSLong(ulncNumeric *aNumeric, acp_bool_t *aIsOverFlow)
 
     if (aNumeric->mPrecision - aNumeric->mScale <= 0)
     {
-        // ¼Ò¼ıÁ¡ À§¿¡´Â ÇÏ³ªµµ ¾ø´Â °æ¿ì
+        // ì†Œìˆ«ì  ìœ„ì—ëŠ” í•˜ë‚˜ë„ ì—†ëŠ” ê²½ìš°
         *aIsOverFlow = ACP_FALSE;
         return sRound;
     }
@@ -906,7 +906,7 @@ acp_uint64_t ulncDecimalToSLong(ulncNumeric *aNumeric, acp_bool_t *aIsOverFlow)
         {
             if ((acp_sint32_t)aNumeric->mAllocSize - aNumeric->mScale == i)
             {
-                // ¼Ò¼ıÁ¡À» ¸¸³µ´Ù. ±×¸¸ÇÏ°í ¸®ÅÏÇÑ´Ù.
+                // ì†Œìˆ«ì ì„ ë§Œë‚¬ë‹¤. ê·¸ë§Œí•˜ê³  ë¦¬í„´í•œë‹¤.
                 *aIsOverFlow = ACP_FALSE;
                 return sULongValue + sRound;
             }
@@ -922,7 +922,7 @@ acp_uint64_t ulncDecimalToSLong(ulncNumeric *aNumeric, acp_bool_t *aIsOverFlow)
             sULongValue += aNumeric->mBuffer[i];
         }
 
-        // µÚ¿¡ µû¶óºÙ´Â trailing 0 ¸¸Å­ 10¾¿ °öÇØÁØ´Ù.
+        // ë’¤ì— ë”°ë¼ë¶™ëŠ” trailing 0 ë§Œí¼ 10ì”© ê³±í•´ì¤€ë‹¤.
         for (i = aNumeric->mScale; i < 0; i++)
         {
             if ((sULongValue > sThreshold) ||
@@ -940,9 +940,9 @@ acp_uint64_t ulncDecimalToSLong(ulncNumeric *aNumeric, acp_bool_t *aIsOverFlow)
 }
 
 /*
- * ¾Æ·¡¿Í °°Àº ÇÔ¼ö°¡ ÇÊ¿äÇÑ °ÍÀº,
- * 12000 °ú °°Àº °æ¿ì, precision °ú scale À» numeric->add, numeric->multiply ¸¦ ÀÌ¿ëÇÒ °æ¿ì
- * Á¦´ë·Î 2, 3 ÀÌ¶ó°í ¾Ë¾ÆÂ÷¸®Áö ¸øÇÏ±â ¶§¹®ÀÌ´Ù.
+ * ì•„ë˜ì™€ ê°™ì€ í•¨ìˆ˜ê°€ í•„ìš”í•œ ê²ƒì€,
+ * 12000 ê³¼ ê°™ì€ ê²½ìš°, precision ê³¼ scale ì„ numeric->add, numeric->multiply ë¥¼ ì´ìš©í•  ê²½ìš°
+ * ì œëŒ€ë¡œ 2, 3 ì´ë¼ê³  ì•Œì•„ì°¨ë¦¬ì§€ ëª»í•˜ê¸° ë•Œë¬¸ì´ë‹¤.
  */
 void ulncSLongToSQLNUMERIC(acp_sint64_t aLongValue, SQL_NUMERIC_STRUCT *aNumeric)
 {
@@ -959,7 +959,7 @@ void ulncSLongToSQLNUMERIC(acp_sint64_t aLongValue, SQL_NUMERIC_STRUCT *aNumeric
         aNumeric->sign = 0;
 
         /*
-         * signed long ÀÏ ¶§ À½¼öÀÇ Àı´ëÄ¡ ÃÖ´ë°ªÀÌ ¾ç¼öÀÇ Àı´ëÄ¡ ÃÖ´ë°ªº¸´Ù 1 Å©´Ù.
+         * signed long ì¼ ë•Œ ìŒìˆ˜ì˜ ì ˆëŒ€ì¹˜ ìµœëŒ€ê°’ì´ ì–‘ìˆ˜ì˜ ì ˆëŒ€ì¹˜ ìµœëŒ€ê°’ë³´ë‹¤ 1 í¬ë‹¤.
          */
         sOriginalValue = (aLongValue + 1) * (-1);
         sOriginalValue++;
@@ -973,7 +973,7 @@ void ulncSLongToSQLNUMERIC(acp_sint64_t aLongValue, SQL_NUMERIC_STRUCT *aNumeric
     sLongValue = sOriginalValue;
 
     /*
-     * scale °è»ê
+     * scale ê³„ì‚°
      */
     while (sLongValue > 0)
     {
@@ -991,7 +991,7 @@ void ulncSLongToSQLNUMERIC(acp_sint64_t aLongValue, SQL_NUMERIC_STRUCT *aNumeric
     sOriginalValue = sLongValue;
 
     /*
-     * trailing 0 À» Á¦¿ÜÇÑ ¼ıÀÚ(precision ÆÄÆ®)¸¦ 256Áø¼ö·Î º¯È¯
+     * trailing 0 ì„ ì œì™¸í•œ ìˆ«ì(precision íŒŒíŠ¸)ë¥¼ 256ì§„ìˆ˜ë¡œ ë³€í™˜
      */
     while (sLongValue > 0)
     {
@@ -1003,7 +1003,7 @@ void ulncSLongToSQLNUMERIC(acp_sint64_t aLongValue, SQL_NUMERIC_STRUCT *aNumeric
     }
 
     /*
-     * precision ¼¼±â
+     * precision ì„¸ê¸°
      */
     sLongValue = sOriginalValue;
 
@@ -1020,7 +1020,7 @@ void ulncSLongToSQLNUMERIC(acp_sint64_t aLongValue, SQL_NUMERIC_STRUCT *aNumeric
 }
 
 /*
- * ¾Æ·¡ÀÇ ÇÔ¼ö´Â mtc::makeNumeric ÇÔ¼ö¸¦ ±×´ë·Î º¹»çÇØ ¿Í¼­ ¾à°£ ¼öÁ¤ÇÑ °ÍÀÌ´Ù.
+ * ì•„ë˜ì˜ í•¨ìˆ˜ëŠ” mtc::makeNumeric í•¨ìˆ˜ë¥¼ ê·¸ëŒ€ë¡œ ë³µì‚¬í•´ ì™€ì„œ ì•½ê°„ ìˆ˜ì •í•œ ê²ƒì´ë‹¤.
  */
 ulncConvResult ulncCharToNumeric(ulncNumeric       *aNumeric,
                                  acp_uint32_t       aMaximumMantissa,
@@ -1045,7 +1045,7 @@ ulncConvResult ulncCharToNumeric(ulncNumeric       *aNumeric,
     else
     {
         /*
-         * leading whitespace Á¦°Å
+         * leading whitespace ì œê±°
          */
         sSign  = 1;
         sFence = aString + aLength;
@@ -1059,7 +1059,7 @@ ulncConvResult ulncCharToNumeric(ulncNumeric       *aNumeric,
         ACI_TEST_RAISE( aString >= sFence, ERR_INVALID_LITERAL );
 
         /*
-         * ºÎÈ£
+         * ë¶€í˜¸
          */
         switch( *aString )
         {
@@ -1073,7 +1073,7 @@ ulncConvResult ulncCharToNumeric(ulncNumeric       *aNumeric,
         aNumeric->mSign = sSign;
 
         /*
-         * . À§Ä¡ Ã£±â
+         * . ìœ„ì¹˜ ì°¾ê¸°
          */
         if( *aString == '.' )
         {
@@ -1124,7 +1124,7 @@ ulncConvResult ulncCharToNumeric(ulncNumeric       *aNumeric,
         }
 
         /*
-         * e µÚÀÇ exponent °ª ±¸ÇÏ±â
+         * e ë’¤ì˜ exponent ê°’ êµ¬í•˜ê¸°
          */
         sExponent = 0;
         if( aString < sFence )
@@ -1179,7 +1179,7 @@ ulncConvResult ulncCharToNumeric(ulncNumeric       *aNumeric,
         }
 
         /*
-         * trailing white space Á¦°Å
+         * trailing white space ì œê±°
          */
         for( ; aString < sFence; aString++ )
         {
@@ -1191,7 +1191,7 @@ ulncConvResult ulncCharToNumeric(ulncNumeric       *aNumeric,
         ACI_TEST_RAISE( aString < sFence, ERR_INVALID_LITERAL );
 
         /*
-         * leading 0 ¿Í trailing 0 ¸¦ Á¦°ÅÇÏ´Â ºÎºĞ
+         * leading 0 ì™€ trailing 0 ë¥¼ ì œê±°í•˜ëŠ” ë¶€ë¶„
          */
         if( sPointPosition == NULL )
         {
@@ -1213,7 +1213,7 @@ ulncConvResult ulncCharToNumeric(ulncNumeric       *aNumeric,
         }
 
         /*
-         * ½ÇÁ¦ º¯È¯ÀÌ ½ÃÀÛµÇ´Â °÷ÀÌ´Ù.
+         * ì‹¤ì œ ë³€í™˜ì´ ì‹œì‘ë˜ëŠ” ê³³ì´ë‹¤.
          */
         if( sMantissaStart > sMantissaEnd )
         {
@@ -1222,7 +1222,7 @@ ulncConvResult ulncCharToNumeric(ulncNumeric       *aNumeric,
         else
         {
             /*
-             * ¼Ò¼ıÁ¡ÀÇ À§Ä¡¿¡ µû¶ó exponent °ªÀ» Á¶Á¤ÇØ ÁØ´Ù.
+             * ì†Œìˆ«ì ì˜ ìœ„ì¹˜ì— ë”°ë¼ exponent ê°’ì„ ì¡°ì •í•´ ì¤€ë‹¤.
              */
             if( sMantissaStart < sPointPosition )
             {
@@ -1268,7 +1268,7 @@ ulncConvResult ulncCharToNumeric(ulncNumeric       *aNumeric,
             }
 
             /*
-             *  ¸¶Áö¸· ²¿´Ù¸®¿¡ ³²Àº ¼ıÀÚ ÇÏ³ª¸¦ Ã³¸®ÇÏ´Â ³à¼®ÀÓ.
+             *  ë§ˆì§€ë§‰ ê¼¬ë‹¤ë¦¬ì— ë‚¨ì€ ìˆ«ì í•˜ë‚˜ë¥¼ ì²˜ë¦¬í•˜ëŠ” ë…€ì„ì„.
              */
             if( sMantissaIterator < (acp_sint32_t)aMaximumMantissa && sMantissaStart == sMantissaEnd )
             {
@@ -1283,7 +1283,7 @@ ulncConvResult ulncCharToNumeric(ulncNumeric       *aNumeric,
             if( sMantissaStart <= sMantissaEnd )
             {
                 /*
-                 * ¹İ¿Ã¸²
+                 * ë°˜ì˜¬ë¦¼
                  */
                 if( sMantissaStart[0] >= '5' )
                 {
@@ -1391,9 +1391,9 @@ ACI_RC ulncMtNumericToCmNumeric(cmtNumeric *aCmNumeric, mtdNumericType *aData)
     acp_uint32_t    i;
 
 
-    // Â÷ÈÄ¿¡ »ç¿ëÀÚ¹öÆÛ·Î º¹»çÇÒ¶§
-    // SQL_MAX_NUMERIC_LEN(16bytes)¸¸Å­ ¹«Á¶°Ç º¹»çÇÏ±â ¶§¹®¿¡
-    // ÃÊ±âÈ­¸¦ ÇÏÁö ¾ÊÀ¸¸é, ¾²·¹±â°¡ º¹»çµÈ´Ù.
+    // ì°¨í›„ì— ì‚¬ìš©ìë²„í¼ë¡œ ë³µì‚¬í• ë•Œ
+    // SQL_MAX_NUMERIC_LEN(16bytes)ë§Œí¼ ë¬´ì¡°ê±´ ë³µì‚¬í•˜ê¸° ë•Œë¬¸ì—
+    // ì´ˆê¸°í™”ë¥¼ í•˜ì§€ ì•Šìœ¼ë©´, ì“°ë ˆê¸°ê°€ ë³µì‚¬ëœë‹¤.
     // cf) ulncNUMERIC_NUMERIC()
     acpMemSet(aCmNumeric, 0, ACI_SIZEOF(cmtNumeric));
 

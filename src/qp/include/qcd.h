@@ -86,8 +86,8 @@ class qcd
                                         UShort     aBindColumnCount );
 
     /* PROJ-2197 PSM Renewal
-     * PSM¿¡¼­ ÀÏ¹İ DMLÀ» ¼öÇàÇÏ´Â °æ¿ì¿¡ ÇØ´ç DMLÀ» ¼öÇàÇÏ´Â
-     * qcStatement¸¦ °¡Á®¿À±â À§ÇÑ ÇÔ¼ö */
+     * PSMì—ì„œ ì¼ë°˜ DMLì„ ìˆ˜í–‰í•˜ëŠ” ê²½ìš°ì— í•´ë‹¹ DMLì„ ìˆ˜í–‰í•˜ëŠ”
+     * qcStatementë¥¼ ê°€ì ¸ì˜¤ê¸° ìœ„í•œ í•¨ìˆ˜ */
     static IDE_RC getQcStmt( QCD_HSTMT      aHstmt,
                              qcStatement ** aQcStmt );
 

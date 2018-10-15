@@ -1,20 +1,20 @@
 dnl $Id: configure.in 80615 2017-07-27 01:20:29Z hjjun $
 
-dnl ispeener ÄÄÆÄÀÏÀ» À§ÇÑ ÀÚµ¿ ½Ã½ºÅÛ ¼³Á¤ ½ºÅ©¸³Æ® ¸®¼Ò½º
+dnl ispeener ì»´íŒŒì¼ì„ ìœ„í•œ ìë™ ì‹œìŠ¤í…œ ì„¤ì • ìŠ¤í¬ë¦½íŠ¸ ë¦¬ì†ŒìŠ¤
 dnl Used by autoconf
 
-dnl ============ configÇÏ±âÀü ¹İµå½Ã Á¸ÀçÇÏ´Â È­ÀÏ ¹× ÃÊ±âÈ­ =================
+dnl ============ configí•˜ê¸°ì „ ë°˜ë“œì‹œ ì¡´ì¬í•˜ëŠ” í™”ì¼ ë° ì´ˆê¸°í™” =================
 
 AC_INIT(./configure)
 
-dnl ============ autoconf ¿ä±¸¹öÁ¯ =================
+dnl ============ autoconf ìš”êµ¬ë²„ì ¼ =================
 AC_PREREQ(2.13)
 
-dnl ============  configure ¼öÇà½Ã ºÎ°¡È­ÀÏ À§Ä¡  =================
+dnl ============  configure ìˆ˜í–‰ì‹œ ë¶€ê°€í™”ì¼ ìœ„ì¹˜  =================
 
 AC_CONFIG_AUX_DIR(./autoconfig)
 
-dnl ============ config.h¸¦ »ı¼º from config.h.in : ´Ù¼ö°¡´É =================
+dnl ============ config.hë¥¼ ìƒì„± from config.h.in : ë‹¤ìˆ˜ê°€ëŠ¥ =================
 
 AC_CONFIG_HEADERS([./src/core/include/acpConfigPlatform.h
                    ./src/pd/makeinclude/config-altibase.h
@@ -22,11 +22,11 @@ AC_CONFIG_HEADERS([./src/core/include/acpConfigPlatform.h
                    ])
 
 
-dnl =========== 885. ½Ã½ºÅÛ Ã¼Å© ===============
+dnl =========== 885. ì‹œìŠ¤í…œ ì²´í¬ ===============
 AC_CANONICAL_HOST()
 
-dnl Á¤±ÔÇ¥Çö½Ä¿¡¼­ [°ú ]¸¦ ¾²±â À§ÇØ¼­´Â changequote(, )¸¦
-dnl ¼öÇàÇØ¾ß ÇÔ.!
+dnl ì •ê·œí‘œí˜„ì‹ì—ì„œ [ê³¼ ]ë¥¼ ì“°ê¸° ìœ„í•´ì„œëŠ” changequote(, )ë¥¼
+dnl ìˆ˜í–‰í•´ì•¼ í•¨.!
 
 OS_TARGET=NOT_SUPPORTED
 OS_MAJORVER=0
@@ -582,7 +582,7 @@ fi
 changequote([, ])dnl
 
 
-dnl ============ BIGENDIANÀÌ¸é WORDS_BIGENDIAN °¡ Á¤ÀÇµÊ
+dnl ============ BIGENDIANì´ë©´ WORDS_BIGENDIAN ê°€ ì •ì˜ë¨
 
 if test "${target}" = "powerpc-linux"; then
     AC_DEFINE(ENDIAN_IS_BIG_ENDIAN)
@@ -602,9 +602,9 @@ else
 fi
 
 
-dnl ============ °¢Á¾ À¯Æ¿¸®Æ¼ ¼³Ä¡ °Ë»ç
+dnl ============ ê°ì¢… ìœ í‹¸ë¦¬í‹° ì„¤ì¹˜ ê²€ì‚¬
 
-# 1. GREP °Ë»ç
+# 1. GREP ê²€ì‚¬
 
 AC_PATH_PROG(GREP,
 grep,
@@ -612,7 +612,7 @@ AC_MSG_ERROR(can\'t find grep utility. check your path))
 
 AC_SUBST(GREP)
 
-# 2. GNU Make °Ë»ç
+# 2. GNU Make ê²€ì‚¬
 AC_PATH_PROG(GMAKE,
 make,
 AC_MSG_ERROR(can\'t find make utility. check your path))
@@ -632,7 +632,7 @@ else
 fi
 
 
-# 3. GNU awk (gawk °Ë»ç)
+# 3. GNU awk (gawk ê²€ì‚¬)
 AC_PATH_PROG(GAWK,
 gawk,
 AC_MSG_ERROR(can\'t find GNU awk\(gawk\) utility. Install it))
@@ -884,8 +884,8 @@ AC_SUBST([ALTIBASE_PRODUCT])
 AC_SUBST([PRODUCT_PREFIX])
 
 BUILD_MODE=debug
-dnl ============ 0. --build_mode ¿É¼Ç ==================
-dnl config.h¿¡ #undef COMPILE_64BIT °¡ #define COMPILE_64BIT 1 ·Î Ä¡È¯µÊ
+dnl ============ 0. --build_mode ì˜µì…˜ ==================
+dnl config.hì— #undef COMPILE_64BIT ê°€ #define COMPILE_64BIT 1 ë¡œ ì¹˜í™˜ë¨
 
 
 AC_ARG_WITH(build_mode,
@@ -922,8 +922,8 @@ AC_SUBST(BUILD_MODE)
 
 
 LINK_MODE=normal
-dnl ============ 0.1 --LINK_mode ¿É¼Ç ==================
-dnl config.h¿¡ #undef COMPILE_64BIT °¡ #define COMPILE_64BIT 1 ·Î Ä¡È¯µÊ
+dnl ============ 0.1 --LINK_mode ì˜µì…˜ ==================
+dnl config.hì— #undef COMPILE_64BIT ê°€ #define COMPILE_64BIT 1 ë¡œ ì¹˜í™˜ë¨
 
 AC_ARG_WITH(link_mode,
             [  --with-link_mode=       [normal(default),purify,quantify,purecov,purifycov] ],
@@ -959,8 +959,8 @@ AC_SUBST(LINK_MODE)
 
 
 OPTIMIZER_FLAG=debug
-dnl ============ 0. --optimizer_flag ¿É¼Ç ==================
-dnl config.h¿¡ #undef COMPILE_64BIT °¡ #define COMPILE_64BIT 1 ·Î Ä¡È¯µÊ
+dnl ============ 0. --optimizer_flag ì˜µì…˜ ==================
+dnl config.hì— #undef COMPILE_64BIT ê°€ #define COMPILE_64BIT 1 ë¡œ ì¹˜í™˜ë¨
 
 AC_ARG_WITH(optimizer_flag,
             [  --with-optimizer_flag=  [debug(default),prerelease,release] ],
@@ -970,9 +970,9 @@ AC_SUBST(ADDED_OPTIMIZER_FLAG)
 
 
 DBAI=0
-dnl ============ 0. DBADMIN INET »ç¿ë ¿É¼Ç =======================
-dnl == --enable-dbainet : gcc »ç¿ë
-dnl makefile ¸µÅ©¸¦ ¹Ù²Ş
+dnl ============ 0. DBADMIN INET ì‚¬ìš© ì˜µì…˜ =======================
+dnl == --enable-dbainet : gcc ì‚¬ìš©
+dnl makefile ë§í¬ë¥¼ ë°”ê¿ˆ
 
 if test "$OS_TARGET" = "NTO_QNX"; then
     AC_DEFINE(USE_ADMIN_INET)
@@ -984,7 +984,7 @@ else # NTO_QNX
     fi
 fi # NTO_QNX
 
-dnl ============  Memory Check Enable : purify¸¦ ÀÌ¿ëÇÑ ¸Ş¸ğ¸® Å×½ºÆ® enable  =======================
+dnl ============  Memory Check Enable : purifyë¥¼ ì´ìš©í•œ ë©”ëª¨ë¦¬ í…ŒìŠ¤íŠ¸ enable  =======================
 ALTIBASE_MEMORY_CHECK=
 AC_ARG_ENABLE(memcheck, [  --enable-memcheck       compile with memory check], MEMCHECK=yes)
 if test "$MEMCHECK" = "yes"; then
@@ -1027,7 +1027,7 @@ fi
 
 dnl '
 
-dnl ============  Limit Check Enable : Limit Å×½ºÆ®   =======================
+dnl ============  Limit Check Enable : Limit í…ŒìŠ¤íŠ¸   =======================
 ALTIBASE_LIMIT_CHECK=
 AC_ARG_ENABLE(limitcheck, [  --enable-limitcheck     compile with limit check], LIMITCHECK=yes)
 if test "$LIMITCHECK" = "yes"; then
@@ -1069,8 +1069,8 @@ else
     fi
 fi
 
-# Task-1994 ÃÊ°í¼Ó CoverageÃøÁ¤¹æ¹ı °í¾È
-dnl ============  Limit Check Enable : Limit Å×½ºÆ®   =======================
+# Task-1994 ì´ˆê³ ì† Coverageì¸¡ì •ë°©ë²• ê³ ì•ˆ
+dnl ============  Limit Check Enable : Limit í…ŒìŠ¤íŠ¸   =======================
 ALTIBASE_ENABLE_GCOV=
 AC_ARG_ENABLE(gcov, [  --enable-gcov           gcc coverage check], ENABLE_GCOV=yes)
 if test "$ENABLE_GCOV" = "yes"; then
@@ -1082,22 +1082,22 @@ fi
 AC_SUBST(ALTIBASE_ENABLE_GCOV)
 
 GCC=0
-dnl ============ 1. GNU gcc »ç¿ë ¿É¼Ç =======================
-dnl == --enable-gcc : gcc »ç¿ë
-dnl makefile ¸µÅ©¸¦ ¹Ù²Ş
+dnl ============ 1. GNU gcc ì‚¬ìš© ì˜µì…˜ =======================
+dnl == --enable-gcc : gcc ì‚¬ìš©
+dnl makefile ë§í¬ë¥¼ ë°”ê¿ˆ
 
 AC_ARG_ENABLE(gcc, [  --enable-gcc            compile with GNU compiler], GCCIS=yes)
 
 GCC=0
-dnl ============ 2. Intel icc »ç¿ë ¿É¼Ç =======================
-dnl == --enable-icc : gcc »ç¿ë
-dnl makefile ¸µÅ©¸¦ ¹Ù²Ş
+dnl ============ 2. Intel icc ì‚¬ìš© ì˜µì…˜ =======================
+dnl == --enable-icc : gcc ì‚¬ìš©
+dnl makefile ë§í¬ë¥¼ ë°”ê¿ˆ
 
 ICCIS=0
 AC_ARG_ENABLE(icc, [  --enable-icc            compile with INTEL C/C++ compiler], ICCIS=yes)
 
-dnl ============ 2. --enable-bit32 ¿É¼Ç ==================
-dnl 64ºñÆ®¿¡¼­ ÀÌ ¿É¼ÇÀ» ÁÖÁö ¾ÊÀ¸¸é config.h¿¡ #undef COMPILE_64BIT °¡ #define COMPILE_64BIT 1 ·Î Ä¡È¯µÊ
+dnl ============ 2. --enable-bit32 ì˜µì…˜ ==================
+dnl 64ë¹„íŠ¸ì—ì„œ ì´ ì˜µì…˜ì„ ì£¼ì§€ ì•Šìœ¼ë©´ config.hì— #undef COMPILE_64BIT ê°€ #define COMPILE_64BIT 1 ë¡œ ì¹˜í™˜ë¨
 
 XLCIS=0
 AC_ARG_ENABLE(xlc, [  --enable-xlc            compile with POWER C/C++ compiler], XLCIS=yes)
@@ -1322,9 +1322,9 @@ case "$OS_TARGET" in
         ;;
 esac
 
-dnl ============ 3. --enable-compat4 ¿É¼Ç =======================
-dnl == --enable-compat5 ¸¦ --enable-compat4·Î ¼öÁ¤ : 2000.2.21
-dnl smEnv.mk ¿¡ compat5=0·Î º¯°æ
+dnl ============ 3. --enable-compat4 ì˜µì…˜ =======================
+dnl == --enable-compat5 ë¥¼ --enable-compat4ë¡œ ìˆ˜ì • : 2000.2.21
+dnl smEnv.mk ì— compat5=0ë¡œ ë³€ê²½
 
 AC_ARG_ENABLE(compat4, [  --enable-compat4        compile with compat4 (only for sparc CC 5.0)], COMPATIS5=no)
 
@@ -1346,7 +1346,7 @@ fi
 
 SB=0
 
-dnl ============ 6-3. --enable-smp ¿É¼Ç =======================
+dnl ============ 6-3. --enable-smp ì˜µì…˜ =======================
 
 AV_COMPILE_FOR_SMP=no
 
@@ -1355,7 +1355,7 @@ if test "$AV_COMPILE_FOR_NO_SMP" = "yes"; then
     AC_DEFINE(COMPILE_FOR_NO_SMP)
 fi
 
-dnl ============ 6-4. --enable-page64 ¿É¼Ç =======================
+dnl ============ 6-4. --enable-page64 ì˜µì…˜ =======================
 
 AV_COMPILE_FOR_PAGE64=no
 
@@ -1391,7 +1391,7 @@ dnl ============ 6-6. --enable-largefile =======================
 dnl == --enable-altibase4 :
 AC_ARG_ENABLE(largefile, [  --enable-largefile      compile with largefile],  CONF_FOR_LF=yes)
 
-dnl ============ 6-3. --enable-block-sigterm-linux ¿É¼Ç =======================
+dnl ============ 6-3. --enable-block-sigterm-linux ì˜µì…˜ =======================
 
 AV_BLOCK_SIGTERM_IN_LINUX=no
 
@@ -1403,8 +1403,8 @@ then
 fi
 
 ALTI_CFG_EDITION=STANDARD
-dnl ============ 0. --edition_mode ¿É¼Ç ==================
-dnl config.h¿¡ #undef COMPILE_64BIT °¡ #define COMPILE_64BIT 1 ·Î Ä¡È¯µÊ
+dnl ============ 0. --edition_mode ì˜µì…˜ ==================
+dnl config.hì— #undef COMPILE_64BIT ê°€ #define COMPILE_64BIT 1 ë¡œ ì¹˜í™˜ë¨
 
 
 AC_ARG_WITH(edition_mode,
@@ -1567,8 +1567,8 @@ echo configure: creating platform.mk from $platform_makefile
 
 
 
-# ============ 8. µğ·ºÅä¸® ÀúÀå  ==================
-dnl #configure º¸´Ù ÇÑÄ­ À§
+# ============ 8. ë””ë ‰í† ë¦¬ ì €ì¥  ==================
+dnl #configure ë³´ë‹¤ í•œì¹¸ ìœ„
 DEV_DIR="`pwd -P`"
 ALTI_HOME="${DEV_DIR}/${PRODUCT_PREFIX}altibase_home"
 CORE_DIR="${DEV_DIR}/src/core"
@@ -1612,7 +1612,7 @@ AC_SUBST(CONFIG_LACKS_IOSTREAM)
 AC_SUBST(CONFIG_QP_COMPRESS_SCANNER_TABLES)
 
 
-dnl =========   999.   PD RELINK ¼öÇà ¿ä¸Á          ==========
+dnl =========   999.   PD RELINK ìˆ˜í–‰ ìš”ë§          ==========
 dnl =================  LINKAGE CLEAN ===============================
 rm -rf ${PD_DIR}/makeinclude/config-linkage.h
 rm -rf ${PD_DIR}/makefiles/platform_macros.GNU
@@ -2124,9 +2124,9 @@ else
     echo "--- MINOR VER is [$OS_MINORVER] ---"
 fi
 
-dnl ============ 5. ÃÖÁ¾ »ı¼ºÈ­ÀÏ ¸í½Ã ==================
-dnl °¢ È­ÀÏÀÇ .inÀ» ÂüÁ¶ÇØ¼­ ¸ñÀûÈ­ÀÏÀ» »ı¼º Makefile.in => Makefile
-dnl ¾øÀ¸¸é ¸¸µéÁö ¾ÊÀ½
+dnl ============ 5. ìµœì¢… ìƒì„±í™”ì¼ ëª…ì‹œ ==================
+dnl ê° í™”ì¼ì˜ .inì„ ì°¸ì¡°í•´ì„œ ëª©ì í™”ì¼ì„ ìƒì„± Makefile.in => Makefile
+dnl ì—†ìœ¼ë©´ ë§Œë“¤ì§€ ì•ŠìŒ
 AC_OUTPUT([env.mk
            vars.mk
            ./makefiles/config.mk

@@ -23,9 +23,9 @@
 
 
 /*
- * ¿ÜºÎ ¸ðµâ¿¡¼­ CM¸ðµâÀ» »ç¿ëÇÏ±â À§ÇØ ÇÊ¿äÇÑ HEADER ÆÄÀÏµé
+ * ì™¸ë¶€ ëª¨ë“ˆì—ì„œ CMëª¨ë“ˆì„ ì‚¬ìš©í•˜ê¸° ìœ„í•´ í•„ìš”í•œ HEADER íŒŒì¼ë“¤
  *
- * ¿ÜºÎ ¸ðµâ¿¡¼­ CM¸ðµâÀ» »ç¿ëÇÒ ¶§´Â ÀÌ HEADER ÆÄÀÏ¸¸ #include ÇÏ¸é µÊ
+ * ì™¸ë¶€ ëª¨ë“ˆì—ì„œ CMëª¨ë“ˆì„ ì‚¬ìš©í•  ë•ŒëŠ” ì´ HEADER íŒŒì¼ë§Œ #include í•˜ë©´ ë¨
  */
 
 #include <cmErrorCode.h>

@@ -19,11 +19,11 @@
  * $Id: qmn.cpp 82075 2018-01-17 06:39:52Z jina.kim $
  *
  * Description :
- *     ¿©·¯ Plan Node°¡ °øÅëÀûÀ¸·Î »ç¿ëÇÏ´Â ±â´ÉÀ» ÅëÇÕÇÔ.
+ *     ì—¬ëŸ¬ Plan Nodeê°€ ê³µí†µì ìœ¼ë¡œ ì‚¬ìš©í•˜ëŠ” ê¸°ëŠ¥ì„ í†µí•©í•¨.
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  **********************************************************************/
 
@@ -44,8 +44,8 @@ qmn::printSubqueryPlan( qcTemplate   * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    ÇØ´ç Expression¹× Predicate¿¡ Subquery°¡ ÀÖÀ» °æ¿ì,
- *    Subquery¿¡ ´ëÇÑ Plan Tree Á¤º¸¸¦ Ãâ·ÂÇÑ´Ù.
+ *    í•´ë‹¹ Expressionë° Predicateì— Subqueryê°€ ìˆì„ ê²½ìš°,
+ *    Subqueryì— ëŒ€í•œ Plan Tree ì •ë³´ë¥¼ ì¶œë ¥í•œë‹¤.
  *
  * Implementation :
  *
@@ -151,7 +151,7 @@ qmn::printResult( qcTemplate        * aTemplate,
         }
 
         // PROJ-2469 Optimize View Materialization
-        // »ç¿ëµÇÁö ¾Ê´Â Result¿¡ ´ëÇØ¼­ Plan¿¡ Ç¥½ÃÇÑ´Ù.
+        // ì‚¬ìš©ë˜ì§€ ì•ŠëŠ” Resultì— ëŒ€í•´ì„œ Planì— í‘œì‹œí•œë‹¤.
         if ( ( sItrAttr->flag & QMC_ATTR_USELESS_RESULT_MASK ) == QMC_ATTR_USELESS_RESULT_TRUE )
         {
             iduVarStringAppend( aString, "~" );
@@ -182,29 +182,29 @@ qmn::makeKeyRangeAndFilter( qcTemplate         * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    Cursor¸¦ ¿­±â À§ÇÑ Key Range, Key Filter, Filter¸¦ ±¸¼ºÇÑ´Ù.
+ *    Cursorë¥¼ ì—´ê¸° ìœ„í•œ Key Range, Key Filter, Filterë¥¼ êµ¬ì„±í•œë‹¤.
  *
  * Implementation :
- *    - Key Range ±¸¼º
- *    - Key Filter ±¸¼º
- *    - Filter ±¸¼º
- *        - Variable Key Range, Variable Key Filter°¡ Filter·Î
- *          ±¸ºĞµÇ¾úÀ» ¶§, ÀÌ¸¦ Á¶ÇÕÇÏ¿© ÇÏ³ªÀÇ Filter·Î ±¸¼ºÇÑ´Ù.
- *    - IN SUBQUERY°¡ Key Range·Î »ç¿ëµÉ °æ¿ì ´ÙÀ½°ú °°Àº »çÇ×À»
- *      ÁÖÀÇÇÏ¿© Ã³¸®ÇÑ´Ù.
- *        - Key Range »ı¼ºÀÌ ½ÇÆĞÇÏ´Â °ÍÀº ´õ ÀÌ»ó Key Range°¡ ¾ø´Ù´Â
- *          ÀÇ¹ÌÀÌ¹Ç·Î ´õ ÀÌ»ó record¸¦ fetchÇØ¼­´Â ¾ÈµÈ´Ù.
+ *    - Key Range êµ¬ì„±
+ *    - Key Filter êµ¬ì„±
+ *    - Filter êµ¬ì„±
+ *        - Variable Key Range, Variable Key Filterê°€ Filterë¡œ
+ *          êµ¬ë¶„ë˜ì—ˆì„ ë•Œ, ì´ë¥¼ ì¡°í•©í•˜ì—¬ í•˜ë‚˜ì˜ Filterë¡œ êµ¬ì„±í•œë‹¤.
+ *    - IN SUBQUERYê°€ Key Rangeë¡œ ì‚¬ìš©ë  ê²½ìš° ë‹¤ìŒê³¼ ê°™ì€ ì‚¬í•­ì„
+ *      ì£¼ì˜í•˜ì—¬ ì²˜ë¦¬í•œë‹¤.
+ *        - Key Range ìƒì„±ì´ ì‹¤íŒ¨í•˜ëŠ” ê²ƒì€ ë” ì´ìƒ Key Rangeê°€ ì—†ë‹¤ëŠ”
+ *          ì˜ë¯¸ì´ë¯€ë¡œ ë” ì´ìƒ recordë¥¼ fetchí•´ì„œëŠ” ì•ˆëœë‹¤.
  *
  ***********************************************************************/
 
 #define IDE_FN "qmn::makeKeyRangeAndFilter"
     IDE_MSGLOG_FUNC(IDE_MSGLOG_BODY(""));
 
-    qtcNode     * sKeyRangeFilter;  // Variable Key Range·ÎºÎÅÍ »ı¼ºµÈ Filter
-    qtcNode     * sKeyFilterFilter; // Variable Key Filter·ÎºÎÅÍ »ı¼ºµÈ Filter
+    qtcNode     * sKeyRangeFilter;  // Variable Key Rangeë¡œë¶€í„° ìƒì„±ëœ Filter
+    qtcNode     * sKeyFilterFilter; // Variable Key Filterë¡œë¶€í„° ìƒì„±ëœ Filter
 
     //----------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //----------------------------
 
     IDE_DASSERT( aTemplate != NULL );
@@ -223,7 +223,7 @@ qmn::makeKeyRangeAndFilter( qcTemplate         * aTemplate,
     sKeyFilterFilter = NULL;
 
     //---------------------------------------------------------------
-    // Key RangeÀÇ ¼³Á¤
+    // Key Rangeì˜ ì„¤ì •
     //---------------------------------------------------------------
 
     IDE_TEST( makeKeyRange( aTemplate,
@@ -231,7 +231,7 @@ qmn::makeKeyRangeAndFilter( qcTemplate         * aTemplate,
                             & sKeyRangeFilter ) != IDE_SUCCESS );
 
     //---------------------------------------------------------------
-    // Key FilterÀÇ ¼³Á¤
+    // Key Filterì˜ ì„¤ì •
     //---------------------------------------------------------------
 
     IDE_TEST( makeKeyFilter( aTemplate,
@@ -239,18 +239,18 @@ qmn::makeKeyRangeAndFilter( qcTemplate         * aTemplate,
                              & sKeyFilterFilter ) != IDE_SUCCESS );
 
     //---------------------------------------------------------------
-    // FilterÀÇ ¼³Á¤
-    //    A4¿¡¼­´Â ´ÙÀ½°ú °°ÀÌ ¼¼ Á¾·ùÀÇ Filter°¡ »ı¼ºµÉ ¼ö ÀÖ´Ù.
+    // Filterì˜ ì„¤ì •
+    //    A4ì—ì„œëŠ” ë‹¤ìŒê³¼ ê°™ì´ ì„¸ ì¢…ë¥˜ì˜ Filterê°€ ìƒì„±ë  ìˆ˜ ìˆë‹¤.
     //       - Variable Key Range => Filter
     //       - Variable Key Filter => Filter
     //       - Normal Filter => Filter
-    //    ´ÙÀ½°ú °°Àº Filter´Â Cursor¿¡ ÀÇÇØ Ã³¸®µÇÁö ¾Ê´Â´Ù.
-    //       - Constant Filter : ÀüÃ³¸®µÊ
-    //       - Subquery Filter : ÈÄÃ³¸®µÊ
+    //    ë‹¤ìŒê³¼ ê°™ì€ FilterëŠ” Cursorì— ì˜í•´ ì²˜ë¦¬ë˜ì§€ ì•ŠëŠ”ë‹¤.
+    //       - Constant Filter : ì „ì²˜ë¦¬ë¨
+    //       - Subquery Filter : í›„ì²˜ë¦¬ë¨
     //---------------------------------------------------------------
 
-    // ´Ù¾çÇÑ Filter¸¦ Storage Manager¿¡¼­ Ã³¸®ÇÒ ¼ö ÀÖµµ·Ï
-    // CallBackÀ» ±¸¼ºÇÑ´Ù.
+    // ë‹¤ì–‘í•œ Filterë¥¼ Storage Managerì—ì„œ ì²˜ë¦¬í•  ìˆ˜ ìˆë„ë¡
+    // CallBackì„ êµ¬ì„±í•œë‹¤.
     IDE_TEST( makeFilter( aTemplate,
                           aPredicate,
                           sKeyRangeFilter,
@@ -258,13 +258,13 @@ qmn::makeKeyRangeAndFilter( qcTemplate         * aTemplate,
                           aPredicate->filter ) != IDE_SUCCESS );
 
     //---------------------------------------------------------------
-    //  Key Range ¹× Key FilterÀÇ º¸Á¤
-    //      - Key Range°¡ Á¸ÀçÇÒ °æ¿ì Partial Key¸¦ ¼³Á¤
-    //      - Key Range°¡ ¾øÀ» °æ¿ì default key range »ç¿ë
-    //      - Key Filter°¡ ¾øÀ» °æ¿ì default key filter »ç¿ë
+    //  Key Range ë° Key Filterì˜ ë³´ì •
+    //      - Key Rangeê°€ ì¡´ì¬í•  ê²½ìš° Partial Keyë¥¼ ì„¤ì •
+    //      - Key Rangeê°€ ì—†ì„ ê²½ìš° default key range ì‚¬ìš©
+    //      - Key Filterê°€ ì—†ì„ ê²½ìš° default key filter ì‚¬ìš©
     //---------------------------------------------------------------
 
-    // Key Range ÃßÃâÀÌ ½ÇÆĞÇÑ °æ¿ì, Default Key Range¸¦ ¼³Á¤ÇÑ´Ù.
+    // Key Range ì¶”ì¶œì´ ì‹¤íŒ¨í•œ ê²½ìš°, Default Key Rangeë¥¼ ì„¤ì •í•œë‹¤.
     if ( aPredicate->keyRange == NULL )
     {
         aPredicate->keyRange = smiGetDefaultKeyRange();
@@ -274,10 +274,10 @@ qmn::makeKeyRangeAndFilter( qcTemplate         * aTemplate,
         // Nothing To Do
     }
 
-    // Key Filter ÃßÃâÀÌ ½ÇÆĞÇÑ °æ¿ì, Default Key Filter¸¦ ¼³Á¤ÇÑ´Ù.
+    // Key Filter ì¶”ì¶œì´ ì‹¤íŒ¨í•œ ê²½ìš°, Default Key Filterë¥¼ ì„¤ì •í•œë‹¤.
     if ( aPredicate->keyFilter == NULL )
     {
-        // Key Filter¿Í Key Range´Â µ¿ÀÏÇÑ ÇüÅÂ¸¦ °®´Â´Ù.
+        // Key Filterì™€ Key RangeëŠ” ë™ì¼í•œ í˜•íƒœë¥¼ ê°–ëŠ”ë‹¤.
         aPredicate->keyFilter = smiGetDefaultKeyRange();
     }
     else
@@ -302,14 +302,14 @@ qmn::makeKeyRange( qcTemplate         * aTemplate,
 /***********************************************************************
  *
  * Description :
- *     Key Range¸¦ »ı¼ºÇÑ´Ù.
+ *     Key Rangeë¥¼ ìƒì„±í•œë‹¤.
  *
  * Implementation :
- *     Key RangeÀÇ ¼³Á¤
- *       - Fixed Key RangeÀÇ °æ¿ì, Key Range »ı¼º
- *       - Variable Key RangeÀÇ °æ¿ì, Key Range »ı¼º
- *       - ½ÇÆĞ½Ã, Filter·Î Ã³¸®ÇÔ.
- *       - Not Null Key Range°¡ ÇÊ¿äÇÑ °æ¿ì, Key Range »ı¼º
+ *     Key Rangeì˜ ì„¤ì •
+ *       - Fixed Key Rangeì˜ ê²½ìš°, Key Range ìƒì„±
+ *       - Variable Key Rangeì˜ ê²½ìš°, Key Range ìƒì„±
+ *       - ì‹¤íŒ¨ì‹œ, Filterë¡œ ì²˜ë¦¬í•¨.
+ *       - Not Null Key Rangeê°€ í•„ìš”í•œ ê²½ìš°, Key Range ìƒì„±
  *
  ***********************************************************************/
 #define IDE_FN "qmn::makeKeyRange"
@@ -322,7 +322,7 @@ qmn::makeKeyRange( qcTemplate         * aTemplate,
     if ( aPredicate->fixKeyRangeOrg != NULL )
     {
         //------------------------------------
-        // Fixed Key Range°¡ Á¸ÀçÇÏ´Â °æ¿ì
+        // Fixed Key Rangeê°€ ì¡´ì¬í•˜ëŠ” ê²½ìš°
         //------------------------------------
 
         IDE_DASSERT( aPredicate->index != NULL );
@@ -333,21 +333,21 @@ qmn::makeKeyRange( qcTemplate         * aTemplate,
                & MTC_TUPLE_STORAGE_MASK )
              == MTC_TUPLE_STORAGE_DISK )
         {
-            // Disk TableÀÇ Key Range´Â
-            // Stored Å¸ÀÔÀÇ Ä®·³ value¿Í Mt Å¸ÀÔÀÇ value°£ÀÇ
+            // Disk Tableì˜ Key RangeëŠ”
+            // Stored íƒ€ì…ì˜ ì¹¼ëŸ¼ valueì™€ Mt íƒ€ì…ì˜ valueê°„ì˜
             // compare 
             sCompareType = MTD_COMPARE_STOREDVAL_MTDVAL;
         }
         else
         {
             /* BUG-43006 FixedTable Indexing Filter
-             * FixedTableÀÇ Index¿¡´Â indexHandleÀÌ ¾øÀ» ¼ö ÀÖ´Ù
+             * FixedTableì˜ Indexì—ëŠ” indexHandleì´ ì—†ì„ ìˆ˜ ìˆë‹¤
              */
             if ( aPredicate->index->indexHandle != NULL )
             {
                 /*
                  * PROJ-2433
-                 * Direct Key Index¸¦ À§ÇÑ key compare ÇÔ¼ö type ¼¼ÆÃ
+                 * Direct Key Indexë¥¼ ìœ„í•œ key compare í•¨ìˆ˜ type ì„¸íŒ…
                  */
                 if ( ( smiTable::getIndexInfo( aPredicate->index->indexHandle ) &
                      SMI_INDEX_DIRECTKEY_MASK ) == SMI_INDEX_DIRECTKEY_TRUE )
@@ -377,7 +377,7 @@ qmn::makeKeyRange( qcTemplate         * aTemplate,
                                        aFilter )
             != IDE_SUCCESS );
 
-        // host º¯¼ö°¡ ¾øÀ¸¹Ç·Î fixed key¸¦ »ı¼º ½ÇÆĞÇÏ´Â °æ¿ì´Â ¾ø´Ù.
+        // host ë³€ìˆ˜ê°€ ì—†ìœ¼ë¯€ë¡œ fixed keyë¥¼ ìƒì„± ì‹¤íŒ¨í•˜ëŠ” ê²½ìš°ëŠ” ì—†ë‹¤.
         IDE_DASSERT( *aFilter == NULL );
         
         aPredicate->keyRange = aPredicate->fixKeyRange;
@@ -387,7 +387,7 @@ qmn::makeKeyRange( qcTemplate         * aTemplate,
         if ( aPredicate->varKeyRangeOrg != NULL )
         {
             //------------------------------------
-            // Variable Key Range°¡ Á¸ÀçÇÏ´Â °æ¿ì
+            // Variable Key Rangeê°€ ì¡´ì¬í•˜ëŠ” ê²½ìš°
             //------------------------------------
 
             IDE_DASSERT( aPredicate->index != NULL );
@@ -398,21 +398,21 @@ qmn::makeKeyRange( qcTemplate         * aTemplate,
                    & MTC_TUPLE_STORAGE_MASK )
                  == MTC_TUPLE_STORAGE_DISK )
             {
-                // Disk TableÀÇ Key Range´Â
-                // Stored Å¸ÀÔÀÇ Ä®·³ value¿Í Mt Å¸ÀÔÀÇ value°£ÀÇ
+                // Disk Tableì˜ Key RangeëŠ”
+                // Stored íƒ€ì…ì˜ ì¹¼ëŸ¼ valueì™€ Mt íƒ€ì…ì˜ valueê°„ì˜
                 // compare 
                 sCompareType = MTD_COMPARE_STOREDVAL_MTDVAL;
             }
             else
             {
                 /* BUG-43006 FixedTable Indexing Filter
-                 * FixedTableÀÇ Index¿¡´Â indexHandleÀÌ ¾øÀ» ¼ö ÀÖ´Ù
+                 * FixedTableì˜ Indexì—ëŠ” indexHandleì´ ì—†ì„ ìˆ˜ ìˆë‹¤
                  */
                 if ( aPredicate->index->indexHandle != NULL )
                 {
                     /*
                      * PROJ-2433
-                     * Direct Key Index¸¦ À§ÇÑ key compare ÇÔ¼ö type ¼¼ÆÃ
+                     * Direct Key Indexë¥¼ ìœ„í•œ key compare í•¨ìˆ˜ type ì„¸íŒ…
                      */
                     if ( ( smiTable::getIndexInfo( aPredicate->index->indexHandle ) &
                          SMI_INDEX_DIRECTKEY_MASK ) == SMI_INDEX_DIRECTKEY_TRUE )
@@ -431,8 +431,8 @@ qmn::makeKeyRange( qcTemplate         * aTemplate,
             }
 
             // BUG-39036 select * from t1 where :emp is null or i1 = :emp;
-            // »ó¼ö°ªÀÌ Á¸ÀçÇÏ´Â keyRange ´Â ½ÇÇà½ÃÁ¡¿¡ ¼öÇàÀ» ÅëÇØ¼­ Á¦°ÅÇÑ´Ù.
-            // »ó¼ö°ªÀÌ true ÀÌ¸é keyRange ¸¦ Á¦°Å
+            // ìƒìˆ˜ê°’ì´ ì¡´ì¬í•˜ëŠ” keyRange ëŠ” ì‹¤í–‰ì‹œì ì— ìˆ˜í–‰ì„ í†µí•´ì„œ ì œê±°í•œë‹¤.
+            // ìƒìˆ˜ê°’ì´ true ì´ë©´ keyRange ë¥¼ ì œê±°
             for ( sAndNode = (qtcNode*)(aPredicate->varKeyRangeOrg->node.arguments);
                   sAndNode != NULL;
                   sAndNode = (qtcNode *)(sAndNode->node.next) )
@@ -481,13 +481,13 @@ qmn::makeKeyRange( qcTemplate         * aTemplate,
                 {
                     aPredicate->keyRange = NULL;
 
-                    // Key Range »ı¼ºÀÌ ½ÇÆĞÇÑ °æ¿ì ¹Ì¸®
-                    // ÀúÀåÇØ µĞ Fix Key Range¸¦ »ç¿ë
+                    // Key Range ìƒì„±ì´ ì‹¤íŒ¨í•œ ê²½ìš° ë¯¸ë¦¬
+                    // ì €ì¥í•´ ë‘” Fix Key Rangeë¥¼ ì‚¬ìš©
                     *aFilter = aPredicate->varKeyRange4FilterOrg;
                 }
                 else
                 {
-                    // Key Range »ı¼ºÀÌ ¼º°øÇÑ °æ¿ì
+                    // Key Range ìƒì„±ì´ ì„±ê³µí•œ ê²½ìš°
 
                     aPredicate->keyRange = aPredicate->varKeyRange;
                 }
@@ -500,12 +500,12 @@ qmn::makeKeyRange( qcTemplate         * aTemplate,
         else
         {
             //----------------------------------
-            // NOT NULL RANGE ±¸¼º
+            // NOT NULL RANGE êµ¬ì„±
             //----------------------------------    
 
-            // Not Null Ranage »ı¼º
-            // (1) indexable min-maxÀÎµ¥, keyrange°¡ ¾ø´Â °æ¿ì
-            // (2) Merge Join ÇÏÀ§ÀÇ SCAN ÀÏ °æ¿ì ( To Fix BUG-8747 )
+            // Not Null Ranage ìƒì„±
+            // (1) indexable min-maxì¸ë°, keyrangeê°€ ì—†ëŠ” ê²½ìš°
+            // (2) Merge Join í•˜ìœ„ì˜ SCAN ì¼ ê²½ìš° ( To Fix BUG-8747 )
             if ( (aPredicate->notNullKeyRange != NULL) &&
                  (aPredicate->index != NULL) )
             {    
@@ -519,7 +519,7 @@ qmn::makeKeyRange( qcTemplate         * aTemplate,
             else
             {
                 //------------------------------------
-                // Key Range°¡ ¾ø´Â °æ¿ì
+                // Key Rangeê°€ ì—†ëŠ” ê²½ìš°
                 //------------------------------------
                 
                 aPredicate->keyRange = NULL;
@@ -544,13 +544,13 @@ qmn::makeKeyFilter( qcTemplate         * aTemplate,
 /***********************************************************************
  *
  * Description :
- *     Key Filter¸¦ »ı¼ºÇÑ´Ù.
+ *     Key Filterë¥¼ ìƒì„±í•œë‹¤.
  *
  * Implementation :
- *     Key FilterÀÇ ¼³Á¤
- *       - Key Range°¡ Á¸ÀçÇÏ´Â °æ¿ì¿¡¸¸ À¯È¿ÇÏ´Ù.
- *       - Fixed Key FilterÀÎ °æ¿ì, Key Filter »ı¼º
- *       - Variable Key FilterÀÇ °æ¿ì, Key Filter »ı¼º
+ *     Key Filterì˜ ì„¤ì •
+ *       - Key Rangeê°€ ì¡´ì¬í•˜ëŠ” ê²½ìš°ì—ë§Œ ìœ íš¨í•˜ë‹¤.
+ *       - Fixed Key Filterì¸ ê²½ìš°, Key Filter ìƒì„±
+ *       - Variable Key Filterì˜ ê²½ìš°, Key Filter ìƒì„±
  *
  ***********************************************************************/
 #define IDE_FN "qmn::makeKeyFilter"
@@ -561,12 +561,12 @@ qmn::makeKeyFilter( qcTemplate         * aTemplate,
     if ( aPredicate->keyRange == NULL )
     {
         //------------------------------
-        // Key Range°¡ ¾ø´Â °æ¿ì
+        // Key Rangeê°€ ì—†ëŠ” ê²½ìš°
         //------------------------------
 
-        // ÀûÇÕ¼º °Ë»ç
-        // key range°¡ ¾ø°Å³ª ½ÇÆĞÇÏ´Â °æ¿ì¶ó¸é,
-        // Fixed Key Filter´Â Á¸ÀçÇÒ ¼ö ¾ø´Ù.
+        // ì í•©ì„± ê²€ì‚¬
+        // key rangeê°€ ì—†ê±°ë‚˜ ì‹¤íŒ¨í•˜ëŠ” ê²½ìš°ë¼ë©´,
+        // Fixed Key FilterëŠ” ì¡´ì¬í•  ìˆ˜ ì—†ë‹¤.
         IDE_DASSERT( aPredicate->fixKeyFilterOrg == NULL );
         
         aPredicate->keyFilter = NULL;        
@@ -575,17 +575,17 @@ qmn::makeKeyFilter( qcTemplate         * aTemplate,
     else
     {
         //------------------------------
-        // Key Range °¡ Á¸ÀçÇÏ´Â °æ¿ì
+        // Key Range ê°€ ì¡´ì¬í•˜ëŠ” ê²½ìš°
         //------------------------------
 
         if ( aPredicate->fixKeyFilterOrg != NULL )
         {
             //------------------------------
-            // Fixed Key Filter°¡ Á¸ÀçÇÏ´Â °æ¿ì
+            // Fixed Key Filterê°€ ì¡´ì¬í•˜ëŠ” ê²½ìš°
             //------------------------------
 
-            // ÀûÇÕ¼º °Ë»ç
-            // Fixed Key Filter¿Í Variable Key Range´Â »óÁ¸ÇÒ ¼ö ¾ø´Ù.
+            // ì í•©ì„± ê²€ì‚¬
+            // Fixed Key Filterì™€ Variable Key RangeëŠ” ìƒì¡´í•  ìˆ˜ ì—†ë‹¤.
             IDE_DASSERT( aPredicate->varKeyRangeOrg == NULL );
             
             IDE_DASSERT( aPredicate->index != NULL );
@@ -596,8 +596,8 @@ qmn::makeKeyFilter( qcTemplate         * aTemplate,
                    & MTC_TUPLE_STORAGE_MASK )
                  == MTC_TUPLE_STORAGE_DISK )
             {
-                // Disk TableÀÇ Key Range´Â
-                // Stored Å¸ÀÔÀÇ Ä®·³ value¿Í Mt Å¸ÀÔÀÇ value°£ÀÇ
+                // Disk Tableì˜ Key RangeëŠ”
+                // Stored íƒ€ì…ì˜ ì¹¼ëŸ¼ valueì™€ Mt íƒ€ì…ì˜ valueê°„ì˜
                 // compare 
                 sCompareType = MTD_COMPARE_STOREDVAL_MTDVAL;
             }
@@ -619,7 +619,7 @@ qmn::makeKeyFilter( qcTemplate         * aTemplate,
                     aFilter )
                 != IDE_SUCCESS );
 
-            // host º¯¼ö°¡ ¾øÀ¸¹Ç·Î fixed key¸¦ »ı¼º ½ÇÆĞÇÏ´Â °æ¿ì´Â ¾ø´Ù.
+            // host ë³€ìˆ˜ê°€ ì—†ìœ¼ë¯€ë¡œ fixed keyë¥¼ ìƒì„± ì‹¤íŒ¨í•˜ëŠ” ê²½ìš°ëŠ” ì—†ë‹¤.
             IDE_DASSERT( *aFilter == NULL );
             
             aPredicate->keyFilter = aPredicate->fixKeyFilter;
@@ -629,7 +629,7 @@ qmn::makeKeyFilter( qcTemplate         * aTemplate,
             if ( aPredicate->varKeyFilterOrg != NULL )
             {
                 //------------------------------
-                // Variable Key Filter°¡ Á¸ÀçÇÏ´Â °æ¿ì
+                // Variable Key Filterê°€ ì¡´ì¬í•˜ëŠ” ê²½ìš°
                 //------------------------------
 
                 IDE_DASSERT( aPredicate->index != NULL );
@@ -640,8 +640,8 @@ qmn::makeKeyFilter( qcTemplate         * aTemplate,
                        & MTC_TUPLE_STORAGE_MASK )
                      == MTC_TUPLE_STORAGE_DISK )
                 {
-                    // Disk TableÀÇ Key Range´Â
-                    // Stored Å¸ÀÔÀÇ Ä®·³ value¿Í Mt Å¸ÀÔÀÇ value°£ÀÇ
+                    // Disk Tableì˜ Key RangeëŠ”
+                    // Stored íƒ€ì…ì˜ ì¹¼ëŸ¼ valueì™€ Mt íƒ€ì…ì˜ valueê°„ì˜
                     // compare 
                     sCompareType = MTD_COMPARE_STOREDVAL_MTDVAL;
                 }
@@ -665,23 +665,23 @@ qmn::makeKeyFilter( qcTemplate         * aTemplate,
 
                 if ( *aFilter != NULL )
                 {
-                    // Key Filter »ı¼º ½ÇÆĞ
+                    // Key Filter ìƒì„± ì‹¤íŒ¨
                     aPredicate->keyFilter = NULL;
 
-                    // Key Filter »ı¼ºÀÌ ½ÇÆĞÇÑ °æ¿ì ¹Ì¸®
-                    // ÀúÀåÇØ µĞ Fix Key Filter¸¦ »ç¿ë
+                    // Key Filter ìƒì„±ì´ ì‹¤íŒ¨í•œ ê²½ìš° ë¯¸ë¦¬
+                    // ì €ì¥í•´ ë‘” Fix Key Filterë¥¼ ì‚¬ìš©
                     *aFilter = aPredicate->varKeyFilter4FilterOrg;
                 }
                 else
                 {
-                    // Key Filter »ı¼º ¼º°ø
+                    // Key Filter ìƒì„± ì„±ê³µ
                     aPredicate->keyFilter = aPredicate->varKeyFilter;
                 }
             }
             else
             {
                 //------------------------------
-                // Key Filter°¡ ¾ø´Â °æ¿ì
+                // Key Filterê°€ ì—†ëŠ” ê²½ìš°
                 //------------------------------
 
                 aPredicate->keyFilter = NULL;
@@ -708,11 +708,11 @@ qmn::makeFilter( qcTemplate         * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    ¿©·¯ Filter¸¦ Á¶ÇÕÇÏ¿© Storage Manager¿¡¼­ »ç¿ëÇÒ ¼ö ÀÖµµ·Ï
- *    CallBack À» »ı¼ºÇØ ÁØ´Ù.
+ *    ì—¬ëŸ¬ Filterë¥¼ ì¡°í•©í•˜ì—¬ Storage Managerì—ì„œ ì‚¬ìš©í•  ìˆ˜ ìˆë„ë¡
+ *    CallBack ì„ ìƒì„±í•´ ì¤€ë‹¤.
  * Implementation :
- *    ÀÔ·ÂµÈ Filter°¡ NULLÀÌ ¾Æ´Ò °æ¿ì, CallBackData¸¦ ±¸¼ºÇÏ°í
- *    ÃÖÁ¾ÀûÀ¸·Î CallBackAnd¸¦ ±¸¼ºÇÑ´Ù.
+ *    ì…ë ¥ëœ Filterê°€ NULLì´ ì•„ë‹ ê²½ìš°, CallBackDataë¥¼ êµ¬ì„±í•˜ê³ 
+ *    ìµœì¢…ì ìœ¼ë¡œ CallBackAndë¥¼ êµ¬ì„±í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -726,10 +726,10 @@ qmn::makeFilter( qcTemplate         * aTemplate,
          (aThirdFilter == NULL) )
     {
         //---------------------------------
-        // Filter°¡ ¾ø´Â °æ¿ì
+        // Filterê°€ ì—†ëŠ” ê²½ìš°
         //---------------------------------
 
-        // Default Filter¸¦ ¼³Á¤
+        // Default Filterë¥¼ ì„¤ì •
         idlOS::memcpy( aPredicate->filterCallBack,
                        smiGetDefaultFilter(),
                        ID_SIZEOF(smiCallBack) );
@@ -737,13 +737,13 @@ qmn::makeFilter( qcTemplate         * aTemplate,
     else
     {
         //---------------------------------
-        // Filter°¡ Á¸ÀçÇÏ´Â °æ¿ì
-        //     - Á¸ÀçÇÏ´Â °¢ Filter¸¶´Ù CallBack Data¸¦ ±¸¼ºÇÏ°í,
-        //     - °¢°¢ÀÇ CallBack Data¸¦ ¿¬°á
-        //     - ¸¶Áö¸·À¸·Î CallBackÀ» ±¸¼ºÇÑ´Ù.
+        // Filterê°€ ì¡´ì¬í•˜ëŠ” ê²½ìš°
+        //     - ì¡´ì¬í•˜ëŠ” ê° Filterë§ˆë‹¤ CallBack Dataë¥¼ êµ¬ì„±í•˜ê³ ,
+        //     - ê°ê°ì˜ CallBack Dataë¥¼ ì—°ê²°
+        //     - ë§ˆì§€ë§‰ìœ¼ë¡œ CallBackì„ êµ¬ì„±í•œë‹¤.
         //---------------------------------
 
-        // Filter°¡ Á¸ÀçÇÏ´Â °æ¿ì CallBack Data¸¦ ±¸¼ºÇÑ´Ù.
+        // Filterê°€ ì¡´ì¬í•˜ëŠ” ê²½ìš° CallBack Dataë¥¼ êµ¬ì„±í•œë‹¤.
         sFilterCnt = 0;
         if ( aFirstFilter != NULL )
         {
@@ -784,19 +784,19 @@ qmn::makeFilter( qcTemplate         * aTemplate,
             // Nothing to do.
         }
 
-        // CallBack DataµéÀ» ¿¬°áÇÑ´Ù.
+        // CallBack Dataë“¤ì„ ì—°ê²°í•œë‹¤.
         switch ( sFilterCnt )
         {
             case 1:
                 {
                     // BUG-12514 fix
-                    // Filter°¡ ÇÏ³ªÀÏ ¶§´Â callBackDataAnd¸¦ ¸¸µéÁö ¾Ê°í
-                    // ¹Ù·Î callBackData¸¦ ³Ñ°ÜÁØ´Ù.
+                    // Filterê°€ í•˜ë‚˜ì¼ ë•ŒëŠ” callBackDataAndë¥¼ ë§Œë“¤ì§€ ì•Šê³ 
+                    // ë°”ë¡œ callBackDataë¥¼ ë„˜ê²¨ì¤€ë‹¤.
                     break;
                 }
             case 2:
                 {
-                    // 2°³ÀÇ CallBack Data¸¦ ¿¬°á
+                    // 2ê°œì˜ CallBack Dataë¥¼ ì—°ê²°
                     qtc::setSmiCallBackAnd( aPredicate->callBackDataAnd,
                                             & aPredicate->callBackData[0],
                                             & aPredicate->callBackData[1],
@@ -805,7 +805,7 @@ qmn::makeFilter( qcTemplate         * aTemplate,
                 }
             case 3:
                 {
-                    // 3°³ÀÇ CallBack Data¸¦ ¿¬°á
+                    // 3ê°œì˜ CallBack Dataë¥¼ ì—°ê²°
                     qtc::setSmiCallBackAnd( aPredicate->callBackDataAnd,
                                             & aPredicate->callBackData[0],
                                             & aPredicate->callBackData[1],
@@ -820,8 +820,8 @@ qmn::makeFilter( qcTemplate         * aTemplate,
         } // end of switch
 
         // BUG-12514 fix
-        // Filter°¡ ÇÏ³ªÀÏ ¶§´Â callBackDataAnd¸¦ ¸¸µéÁö ¾Ê°í
-        // ¹Ù·Î callBackData¸¦ ³Ñ°ÜÁØ´Ù.
+        // Filterê°€ í•˜ë‚˜ì¼ ë•ŒëŠ” callBackDataAndë¥¼ ë§Œë“¤ì§€ ì•Šê³ 
+        // ë°”ë¡œ callBackDataë¥¼ ë„˜ê²¨ì¤€ë‹¤.
         if( sFilterCnt > 1 )
         {
             aPredicate->filterCallBack->callback = qtc::smiCallBackAnd;
@@ -934,8 +934,8 @@ qmn::makeNullRow( mtcTuple   * aTuple,
  *
  * Description : PROJ-1705 
  *
- *    µğ½ºÅ©Å×ÀÌºíÀÇ °æ¿ì, null row¸¦ sm¿¡¼­ °ü¸®ÇÏÁö ¾Ê°í,
- *    qp¿¡¼­ ÇÊ¿äÇÑ ½ÃÁ¡¿¡ null row¸¦ »ı¼º/ÀúÀåÇØµÎ°í ÀÌ¸¦ »ç¿ë
+ *    ë””ìŠ¤í¬í…Œì´ë¸”ì˜ ê²½ìš°, null rowë¥¼ smì—ì„œ ê´€ë¦¬í•˜ì§€ ì•Šê³ ,
+ *    qpì—ì„œ í•„ìš”í•œ ì‹œì ì— null rowë¥¼ ìƒì„±/ì €ì¥í•´ë‘ê³  ì´ë¥¼ ì‚¬ìš©
  * 
  * Implementation :
  *
@@ -949,9 +949,9 @@ qmn::makeNullRow( mtcTuple   * aTuple,
 
     //----------------------------------------------
     // PROJ_1705_PEH_TODO
-    // smÀ¸·ÎºÎÅÍ ÇÊ¿äÇÑ ÄÃ·³ÀÇ µ¥ÀÌÅ¸¸¸ qp¸Ş¸ğ¸®¿µ¿ªÀ¸·Î º¹»çÇÏ°Ô µÇ´Âµ¥,
-    // ÀÌ qp ¸Ş¸ğ¸®¿µ¿ªµµ ÇÊ¿äÇÑ ÄÃ·³¿¡ ´ëÇÑ °ø°£¸¸ ÇÒ´ç¹Ş°Ô ÄÚµå¼öÁ¤½Ã
-    // ÀÌ ºÎºĞµµ ÄÚµåº¯°æµÇ¾î¾ß ÇÔ.
+    // smìœ¼ë¡œë¶€í„° í•„ìš”í•œ ì»¬ëŸ¼ì˜ ë°ì´íƒ€ë§Œ qpë©”ëª¨ë¦¬ì˜ì—­ìœ¼ë¡œ ë³µì‚¬í•˜ê²Œ ë˜ëŠ”ë°,
+    // ì´ qp ë©”ëª¨ë¦¬ì˜ì—­ë„ í•„ìš”í•œ ì»¬ëŸ¼ì— ëŒ€í•œ ê³µê°„ë§Œ í• ë‹¹ë°›ê²Œ ì½”ë“œìˆ˜ì •ì‹œ
+    // ì´ ë¶€ë¶„ë„ ì½”ë“œë³€ê²½ë˜ì–´ì•¼ í•¨.
     //----------------------------------------------    
 
     for( sColumnCnt = 0; sColumnCnt < aTuple->columnCount; sColumnCnt++ )
@@ -997,7 +997,7 @@ void qmn::printMTRinfo( iduVarString * aString,
 /***********************************************************************
  *
  * Description : PROJ-2242
- *    mtr node info ¸¦ Ãâ·ÂÇÑ´Ù.
+ *    mtr node info ë¥¼ ì¶œë ¥í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -1005,7 +1005,7 @@ void qmn::printMTRinfo( iduVarString * aString,
     UInt  j;
 
     // BUG-37245
-    // tuple id type À» UShort ·Î ÅëÀÏÇÏµÇ default Ãâ·Â°ªÀº -1 ·Î À¯ÁöÇÑ´Ù.
+    // tuple id type ì„ UShort ë¡œ í†µì¼í•˜ë˜ default ì¶œë ¥ê°’ì€ -1 ë¡œ ìœ ì§€í•œë‹¤.
     SInt  sNonMtrId = QMN_PLAN_PRINT_NON_MTR_ID;
 
     qmcMtrNode  * sMtrNode;
@@ -1096,7 +1096,7 @@ void qmn::printJoinMethod( iduVarString * aString,
 /***********************************************************************
  *
  * Description : PROJ-2242
- *   JoinMethod¸¦ Ãâ·ÂÇÑ´Ù.
+ *   JoinMethodë¥¼ ì¶œë ¥í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -1147,7 +1147,7 @@ void qmn::printCost( iduVarString * aString,
 /***********************************************************************
  *
  * Description : PROJ-2242
- *   cost info¸¦ Ãâ·ÂÇÑ´Ù.
+ *   cost infoë¥¼ ì¶œë ¥í•œë‹¤.
  *
  ***********************************************************************/
 

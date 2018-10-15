@@ -1,5 +1,5 @@
 include $(dir $(word $(words $(MAKEFILE_LIST)),$(MAKEFILE_LIST)))/../env.mk
-# QP¿ë ºÎ°¡¿É¼Ç Ã³¸® 
+# QPìš© ë¶€ê°€ì˜µì…˜ ì²˜ë¦¬ 
 
 INCLUDES := $(IDROPT)$(MM_DIR)/src/include/ $(IDROPT)$(QP_DIR)/src/include/ $(IDROPT)$(SM_DIR)/src/include/ $(INCLUDES)
 
@@ -20,7 +20,7 @@ CLI_MT_LIBS = $(CLI_ID_MT_LIB) $(LIBS)
 QPLIB=$(QP_DIR)/src/lib/libqp.$(LIBEXT)
 CLILIB=$(UT_DIR)/sqlcli/lib/libsqlcli.$(LIBEXT)
 
-# ³ªÁß¿¡ »èÁ¦ÇÒ ¼ö ÀÖµµ·Ï : ÇöÀç È£È¯¼ºÀ» À§ÇØ Á¤ÀÇÇØ µÒ
+# ë‚˜ì¤‘ì— ì‚­ì œí•  ìˆ˜ ìžˆë„ë¡ : í˜„ìž¬ í˜¸í™˜ì„±ì„ ìœ„í•´ ì •ì˜í•´ ë‘ 
 COMPILE=compile
 INSTALL=install
 

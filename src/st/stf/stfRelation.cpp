@@ -19,7 +19,7 @@
  * $Id: stfRelation.cpp 18883 2006-11-14 01:48:40Z sabbra $
  *
  * Description:
- * Geometry °´Ã¼¿Í Geometry °´Ã¼°£ÀÇ °ü°è ÇÔ¼ö ±¸Çö
+ * Geometry ê°ì²´ì™€ Geometry ê°ì²´ê°„ì˜ ê´€ê³„ í•¨ìˆ˜ êµ¬í˜„
  **********************************************************************/
 
 #include <idl.h>
@@ -315,7 +315,7 @@ SInt stfRelation::stfFilterContains( mtdValueInfo * aValueInfo1, // from index.
 
 /***********************************************************************
  * Description:
- * µÎ Geometry °´Ã¼ÀÇ °ü°è°¡ Equals ÀÎÁö ÆÇº°
+ * ë‘ Geometry ê°ì²´ì˜ ê´€ê³„ê°€ Equals ì¸ì§€ íŒë³„
  *
  * mtcStack*    aStack(InOut):
  **********************************************************************/
@@ -339,7 +339,7 @@ IDE_RC stfRelation::isEquals(
     sQcTmplate = (qcTemplate*) aTemplate;
     sQmxMem    = QC_QMX_MEM( sQcTmplate->stmt );
     
-    // Fix BUG-15412 mtdModule.isNull »ç¿ë
+    // Fix BUG-15412 mtdModule.isNull ì‚¬ìš©
     if( (stdGeometry.isNull( NULL, sValue1 )==ID_TRUE) ||
         (stdGeometry.isNull( NULL, sValue2 )==ID_TRUE) )
     {
@@ -362,7 +362,7 @@ IDE_RC stfRelation::isEquals(
                 sPattern) != IDE_SUCCESS );
             if( idlOS::strlen((SChar*)sPattern) > 0 )
             {
-                // Memory Àç»ç¿ëÀ» À§ÇÏ¿© ÇöÀç À§Ä¡ ±â·Ï
+                // Memory ì¬ì‚¬ìš©ì„ ìœ„í•˜ì—¬ í˜„ì¬ ìœ„ì¹˜ ê¸°ë¡
                 IDE_TEST( sQmxMem->getStatus(&sQmxMemStatus) != IDE_SUCCESS);
                 sStage = 1;
 
@@ -373,7 +373,7 @@ IDE_RC stfRelation::isEquals(
                                                &sIsEquals )
                           != IDE_SUCCESS );
                 
-                // Memory Àç»ç¿ëÀ» À§ÇÑ Memory ÀÌµ¿
+                // Memory ì¬ì‚¬ìš©ì„ ìœ„í•œ Memory ì´ë™
                 sStage = 0;
                 IDE_TEST( sQmxMem->setStatus(&sQmxMemStatus) != IDE_SUCCESS);
             }
@@ -404,7 +404,7 @@ IDE_RC stfRelation::isEquals(
 
 /***********************************************************************
  * Description:
- * µÎ Geometry °´Ã¼ÀÇ °ü°è°¡ Disjoint ÀÎÁö ÆÇº°
+ * ë‘ Geometry ê°ì²´ì˜ ê´€ê³„ê°€ Disjoint ì¸ì§€ íŒë³„
  *
  * mtcStack*    aStack(InOut):
  **********************************************************************/
@@ -428,7 +428,7 @@ IDE_RC stfRelation::isDisjoint(
     sQcTmplate = (qcTemplate*) aTemplate;
     sQmxMem    = QC_QMX_MEM( sQcTmplate->stmt );
     
-    // Fix BUG-15412 mtdModule.isNull »ç¿ë
+    // Fix BUG-15412 mtdModule.isNull ì‚¬ìš©
     if( (stdGeometry.isNull( NULL, sValue1 )==ID_TRUE) ||
         (stdGeometry.isNull( NULL, sValue2 )==ID_TRUE) )
     {
@@ -451,7 +451,7 @@ IDE_RC stfRelation::isDisjoint(
                 sPattern) != IDE_SUCCESS );
             if( idlOS::strlen((SChar*)sPattern) > 0 )
             {
-                // Memory Àç»ç¿ëÀ» À§ÇÏ¿© ÇöÀç À§Ä¡ ±â·Ï
+                // Memory ì¬ì‚¬ìš©ì„ ìœ„í•˜ì—¬ í˜„ì¬ ìœ„ì¹˜ ê¸°ë¡
                 IDE_TEST( sQmxMem->getStatus(&sQmxMemStatus) != IDE_SUCCESS);
                 sStage = 1;
 
@@ -462,7 +462,7 @@ IDE_RC stfRelation::isDisjoint(
                                                &sIsDisjoint )
                           != IDE_SUCCESS );
             
-                // Memory Àç»ç¿ëÀ» À§ÇÑ Memory ÀÌµ¿
+                // Memory ì¬ì‚¬ìš©ì„ ìœ„í•œ Memory ì´ë™
                 sStage = 0;
                 IDE_TEST( sQmxMem->setStatus(&sQmxMemStatus) != IDE_SUCCESS);
             }
@@ -494,7 +494,7 @@ IDE_RC stfRelation::isDisjoint(
 
 /***********************************************************************
  * Description:
- * µÎ Geometry °´Ã¼ÀÇ °ü°è°¡ Intersects ÀÎÁö ÆÇº°
+ * ë‘ Geometry ê°ì²´ì˜ ê´€ê³„ê°€ Intersects ì¸ì§€ íŒë³„
  *
  * mtcStack*    aStack(InOut):
  **********************************************************************/
@@ -509,7 +509,7 @@ IDE_RC stfRelation::isIntersects(
     stdGeometryHeader*      sValue2 = (stdGeometryHeader *)aStack[2].value;
     mtdBooleanType          sIsIntersects;
 
-    // Fix BUG-15412 mtdModule.isNull »ç¿ë
+    // Fix BUG-15412 mtdModule.isNull ì‚¬ìš©
     if( (stdGeometry.isNull( NULL, sValue1 )==ID_TRUE) ||
         (stdGeometry.isNull( NULL, sValue2 )==ID_TRUE) )
     {
@@ -551,7 +551,7 @@ IDE_RC stfRelation::isIntersects(
 
 /***********************************************************************
  * Description:
- * µÎ Geometry °´Ã¼ÀÇ °ü°è°¡ Within ÀÎÁö ÆÇº°
+ * ë‘ Geometry ê°ì²´ì˜ ê´€ê³„ê°€ Within ì¸ì§€ íŒë³„
  *
  * mtcStack*    aStack(InOut):
  **********************************************************************/
@@ -575,7 +575,7 @@ IDE_RC stfRelation::isWithin(
     sQcTmplate = (qcTemplate*) aTemplate;
     sQmxMem    = QC_QMX_MEM( sQcTmplate->stmt );
     
-    // Fix BUG-15412 mtdModule.isNull »ç¿ë
+    // Fix BUG-15412 mtdModule.isNull ì‚¬ìš©
     if( (stdGeometry.isNull( NULL, sValue1 )==ID_TRUE) ||
         (stdGeometry.isNull( NULL, sValue2 )==ID_TRUE) )
     {
@@ -598,7 +598,7 @@ IDE_RC stfRelation::isWithin(
                 sPattern) != IDE_SUCCESS );
             if( idlOS::strlen((SChar*)sPattern) > 0 )
             {
-                // Memory Àç»ç¿ëÀ» À§ÇÏ¿© ÇöÀç À§Ä¡ ±â·Ï
+                // Memory ì¬ì‚¬ìš©ì„ ìœ„í•˜ì—¬ í˜„ì¬ ìœ„ì¹˜ ê¸°ë¡
                 IDE_TEST( sQmxMem->getStatus(&sQmxMemStatus) != IDE_SUCCESS);
                 sStage = 1;
 
@@ -609,7 +609,7 @@ IDE_RC stfRelation::isWithin(
                                                &sIsWithin )
                           != IDE_SUCCESS );
             
-                // Memory Àç»ç¿ëÀ» À§ÇÑ Memory ÀÌµ¿
+                // Memory ì¬ì‚¬ìš©ì„ ìœ„í•œ Memory ì´ë™
                 sStage = 0;
                 IDE_TEST( sQmxMem->setStatus(&sQmxMemStatus) != IDE_SUCCESS);
             }
@@ -640,7 +640,7 @@ IDE_RC stfRelation::isWithin(
 
 /***********************************************************************
  * Description:
- * µÎ Geometry °´Ã¼ÀÇ °ü°è°¡ Contains ÀÎÁö ÆÇº°
+ * ë‘ Geometry ê°ì²´ì˜ ê´€ê³„ê°€ Contains ì¸ì§€ íŒë³„
  *
  * mtcStack*    aStack(InOut):
  **********************************************************************/
@@ -664,7 +664,7 @@ IDE_RC stfRelation::isContains(
     sQcTmplate = (qcTemplate*) aTemplate;
     sQmxMem    = QC_QMX_MEM( sQcTmplate->stmt );
     
-    // Fix BUG-15412 mtdModule.isNull »ç¿ë
+    // Fix BUG-15412 mtdModule.isNull ì‚¬ìš©
     if( (stdGeometry.isNull( NULL, sValue1 )==ID_TRUE) ||
         (stdGeometry.isNull( NULL, sValue2 )==ID_TRUE) )
     {
@@ -687,7 +687,7 @@ IDE_RC stfRelation::isContains(
                 sPattern) != IDE_SUCCESS );
             if( idlOS::strlen((SChar*)sPattern) > 0 )
             {
-                // Memory Àç»ç¿ëÀ» À§ÇÏ¿© ÇöÀç À§Ä¡ ±â·Ï
+                // Memory ì¬ì‚¬ìš©ì„ ìœ„í•˜ì—¬ í˜„ì¬ ìœ„ì¹˜ ê¸°ë¡
                 IDE_TEST( sQmxMem->getStatus(&sQmxMemStatus) != IDE_SUCCESS);
                 sStage = 1;
 
@@ -698,7 +698,7 @@ IDE_RC stfRelation::isContains(
                                                &sIsContains )
                           != IDE_SUCCESS );
                 
-                // Memory Àç»ç¿ëÀ» À§ÇÑ Memory ÀÌµ¿
+                // Memory ì¬ì‚¬ìš©ì„ ìœ„í•œ Memory ì´ë™
                 sStage = 0;
                 IDE_TEST( sQmxMem->setStatus(&sQmxMemStatus) != IDE_SUCCESS);
             }
@@ -729,7 +729,7 @@ IDE_RC stfRelation::isContains(
 
 /***********************************************************************
  * Description:
- * µÎ Geometry °´Ã¼ÀÇ °ü°è°¡ Crosses ÀÎÁö ÆÇº°
+ * ë‘ Geometry ê°ì²´ì˜ ê´€ê³„ê°€ Crosses ì¸ì§€ íŒë³„
  *
  * mtcStack*    aStack(InOut):
  **********************************************************************/
@@ -753,7 +753,7 @@ IDE_RC stfRelation::isCrosses(
     sQcTmplate = (qcTemplate*) aTemplate;
     sQmxMem    = QC_QMX_MEM( sQcTmplate->stmt );
     
-    // Fix BUG-15412 mtdModule.isNull »ç¿ë
+    // Fix BUG-15412 mtdModule.isNull ì‚¬ìš©
     if( (stdGeometry.isNull( NULL, sValue1 )==ID_TRUE) ||
         (stdGeometry.isNull( NULL, sValue2 )==ID_TRUE) )
     {
@@ -776,7 +776,7 @@ IDE_RC stfRelation::isCrosses(
                 sPattern) != IDE_SUCCESS );
             if( idlOS::strlen((SChar*)sPattern) > 0 )
             {
-                // Memory Àç»ç¿ëÀ» À§ÇÏ¿© ÇöÀç À§Ä¡ ±â·Ï
+                // Memory ì¬ì‚¬ìš©ì„ ìœ„í•˜ì—¬ í˜„ì¬ ìœ„ì¹˜ ê¸°ë¡
                 IDE_TEST( sQmxMem->getStatus(&sQmxMemStatus) != IDE_SUCCESS);
                 sStage = 1;
 
@@ -787,7 +787,7 @@ IDE_RC stfRelation::isCrosses(
                                                &sIsCrosses )
                           != IDE_SUCCESS );
                           
-                // Memory Àç»ç¿ëÀ» À§ÇÑ Memory ÀÌµ¿
+                // Memory ì¬ì‚¬ìš©ì„ ìœ„í•œ Memory ì´ë™
                 sStage = 0;
                 IDE_TEST( sQmxMem->setStatus(&sQmxMemStatus) != IDE_SUCCESS);
             }
@@ -818,7 +818,7 @@ IDE_RC stfRelation::isCrosses(
 
 /***********************************************************************
  * Description:
- * µÎ Geometry °´Ã¼ÀÇ °ü°è°¡ Overlaps ÀÎÁö ÆÇº°
+ * ë‘ Geometry ê°ì²´ì˜ ê´€ê³„ê°€ Overlaps ì¸ì§€ íŒë³„
  *
  * mtcStack*    aStack(InOut):
  **********************************************************************/
@@ -842,7 +842,7 @@ IDE_RC stfRelation::isOverlaps(
     sQcTmplate = (qcTemplate*) aTemplate;
     sQmxMem    = QC_QMX_MEM( sQcTmplate->stmt );
     
-    // Fix BUG-15412 mtdModule.isNull »ç¿ë
+    // Fix BUG-15412 mtdModule.isNull ì‚¬ìš©
     if( (stdGeometry.isNull( NULL, sValue1 )==ID_TRUE) ||
         (stdGeometry.isNull( NULL, sValue2 )==ID_TRUE) )
     {
@@ -865,7 +865,7 @@ IDE_RC stfRelation::isOverlaps(
                 sPattern) != IDE_SUCCESS );
             if( idlOS::strlen((SChar*)sPattern) > 0 )
             {
-                // Memory Àç»ç¿ëÀ» À§ÇÏ¿© ÇöÀç À§Ä¡ ±â·Ï
+                // Memory ì¬ì‚¬ìš©ì„ ìœ„í•˜ì—¬ í˜„ì¬ ìœ„ì¹˜ ê¸°ë¡
                 IDE_TEST( sQmxMem->getStatus(&sQmxMemStatus) != IDE_SUCCESS);
                 sStage = 1;
 
@@ -876,7 +876,7 @@ IDE_RC stfRelation::isOverlaps(
                                                &sIsOverlaps )
                           != IDE_SUCCESS );
             
-                // Memory Àç»ç¿ëÀ» À§ÇÑ Memory ÀÌµ¿
+                // Memory ì¬ì‚¬ìš©ì„ ìœ„í•œ Memory ì´ë™
                 sStage = 0;
                 IDE_TEST( sQmxMem->setStatus(&sQmxMemStatus) != IDE_SUCCESS);
             }
@@ -907,7 +907,7 @@ IDE_RC stfRelation::isOverlaps(
 
 /***********************************************************************
  * Description:
- * µÎ Geometry °´Ã¼ÀÇ °ü°è°¡ Touches ÀÎÁö ÆÇº°
+ * ë‘ Geometry ê°ì²´ì˜ ê´€ê³„ê°€ Touches ì¸ì§€ íŒë³„
  *
  * mtcStack*    aStack(InOut):
  **********************************************************************/
@@ -935,7 +935,7 @@ IDE_RC stfRelation::isTouches(
     sQcTmplate = (qcTemplate*) aTemplate;
     sQmxMem    = QC_QMX_MEM( sQcTmplate->stmt );
 
-    // Fix BUG-15412 mtdModule.isNull »ç¿ë
+    // Fix BUG-15412 mtdModule.isNull ì‚¬ìš©
     if( (stdGeometry.isNull( NULL, sValue1 )==ID_TRUE) ||
         (stdGeometry.isNull( NULL, sValue2 )==ID_TRUE) )
     {
@@ -963,7 +963,7 @@ IDE_RC stfRelation::isTouches(
                 
                 for( i = 0; ((i < sPatternCnt) && (sPattern[i] != 0x00)); i++ )
                 {
-                    // Memory Àç»ç¿ëÀ» À§ÇÏ¿© ÇöÀç À§Ä¡ ±â·Ï
+                    // Memory ì¬ì‚¬ìš©ì„ ìœ„í•˜ì—¬ í˜„ì¬ ìœ„ì¹˜ ê¸°ë¡
                     IDE_TEST( sQmxMem->getStatus(&sQmxMemStatus) != IDE_SUCCESS);
                     sStage = 1;
 
@@ -974,7 +974,7 @@ IDE_RC stfRelation::isTouches(
                                                    &sIsTouches )
                               != IDE_SUCCESS );
             
-                    // Memory Àç»ç¿ëÀ» À§ÇÑ Memory ÀÌµ¿
+                    // Memory ì¬ì‚¬ìš©ì„ ìœ„í•œ Memory ì´ë™
                     sStage = 0;
                     IDE_TEST( sQmxMem->setStatus(&sQmxMemStatus) != IDE_SUCCESS);
                     
@@ -1012,8 +1012,8 @@ IDE_RC stfRelation::isTouches(
 // BUG-16478
 /***********************************************************************
  * Description:
- * Pattern½ºÆ®¸µÀÇ ³»¿ëÀÌ ¸Â´ÂÁö °ËÁõ 
- * '*TF012' ·Î¸¸ ±¸¼ºµÇ¾î¾ß ÇÑ´Ù.
+ * PatternìŠ¤íŠ¸ë§ì˜ ë‚´ìš©ì´ ë§ëŠ”ì§€ ê²€ì¦ 
+ * '*TF012' ë¡œë§Œ êµ¬ì„±ë˜ì–´ì•¼ í•œë‹¤.
  **********************************************************************/
 idBool stfRelation::isValidPatternContents( const SChar *aPattern )
 {
@@ -1036,7 +1036,7 @@ idBool stfRelation::isValidPatternContents( const SChar *aPattern )
 
 /***********************************************************************
  * Description:
- * µÎ Geometry °´Ã¼ÀÇ °ü°è°¡ ÁÖ¾îÁö´Â DE-9I ¸ÅÆ®¸¯½º¿Í ¸Â´ÂÁö ÆÇº°
+ * ë‘ Geometry ê°ì²´ì˜ ê´€ê³„ê°€ ì£¼ì–´ì§€ëŠ” DE-9I ë§¤íŠ¸ë¦­ìŠ¤ì™€ ë§ëŠ”ì§€ íŒë³„
  *
  * mtcStack*    aStack(InOut):
  **********************************************************************/
@@ -1073,7 +1073,7 @@ IDE_RC stfRelation::isRelate(
         IDE_RAISE( err_invalid_pattern );
     }
     
-    // Fix BUG-15412 mtdModule.isNull »ç¿ë
+    // Fix BUG-15412 mtdModule.isNull ì‚¬ìš©
     if( (stdGeometry.isNull( NULL, sValue1 )==ID_TRUE) ||
         (stdGeometry.isNull( NULL, sValue2 )==ID_TRUE) ||
         (mtdChar.isNull( NULL, sPattern )==ID_TRUE) )
@@ -1106,7 +1106,7 @@ IDE_RC stfRelation::isRelate(
         sIsSParam2D = stdUtils::is2DType(sValue2->mType);
         IDE_TEST_RAISE( sIsFParam2D != sIsSParam2D, err_incompatible_mType );
 
-        // Memory Àç»ç¿ëÀ» À§ÇÏ¿© ÇöÀç À§Ä¡ ±â·Ï
+        // Memory ì¬ì‚¬ìš©ì„ ìœ„í•˜ì—¬ í˜„ì¬ ìœ„ì¹˜ ê¸°ë¡
         IDE_TEST( sQmxMem->getStatus(&sQmxMemStatus) != IDE_SUCCESS);
         sStage = 1;
 
@@ -1119,7 +1119,7 @@ IDE_RC stfRelation::isRelate(
             
         *(mtdBooleanType*) aStack[0].value = sIsRelated;
         
-        // Memory Àç»ç¿ëÀ» À§ÇÑ Memory ÀÌµ¿
+        // Memory ì¬ì‚¬ìš©ì„ ìœ„í•œ Memory ì´ë™
         sStage = 0;
         IDE_TEST( sQmxMem->setStatus(&sQmxMemStatus) != IDE_SUCCESS);
     }
@@ -1161,11 +1161,11 @@ IDE_RC stfRelation::isRelate(
 
 /***********************************************************************
  * Description:
- * µÎ Geometry °´Ã¼ÀÇ Å¸ÀÔ¿¡ ¸Â´Â DE-9I Equals ¸ÅÆ®¸¯½º Ãâ·Â
+ * ë‘ Geometry ê°ì²´ì˜ íƒ€ì…ì— ë§ëŠ” DE-9I Equals ë§¤íŠ¸ë¦­ìŠ¤ ì¶œë ¥
  *
- * stdGeometryType*    aGeom1(In): °´Ã¼1
- * stdGeometryType*    aGeom2(In): °´Ã¼2
- * SChar*              aPattern(Out): °ü°è ¸ÅÆ®¸¯½º°¡ Ãâ·ÂµÉ ¹öÆÛ
+ * stdGeometryType*    aGeom1(In): ê°ì²´1
+ * stdGeometryType*    aGeom2(In): ê°ì²´2
+ * SChar*              aPattern(Out): ê´€ê³„ ë§¤íŠ¸ë¦­ìŠ¤ê°€ ì¶œë ¥ë  ë²„í¼
  **********************************************************************/
 IDE_RC stfRelation::matrixEquals(
                     stdGeometryType*    aGeom1,
@@ -1408,11 +1408,11 @@ IDE_RC stfRelation::matrixEquals(
 
 /***********************************************************************
  * Description:
- * µÎ Geometry °´Ã¼ÀÇ Å¸ÀÔ¿¡ ¸Â´Â DE-9I Disjoint ¸ÅÆ®¸¯½º Ãâ·Â
+ * ë‘ Geometry ê°ì²´ì˜ íƒ€ì…ì— ë§ëŠ” DE-9I Disjoint ë§¤íŠ¸ë¦­ìŠ¤ ì¶œë ¥
  *
- * stdGeometryType*    aGeom1(In): °´Ã¼1
- * stdGeometryType*    aGeom2(In): °´Ã¼2
- * SChar*              aPattern(Out): °ü°è ¸ÅÆ®¸¯½º°¡ Ãâ·ÂµÉ ¹öÆÛ
+ * stdGeometryType*    aGeom1(In): ê°ì²´1
+ * stdGeometryType*    aGeom2(In): ê°ì²´2
+ * SChar*              aPattern(Out): ê´€ê³„ ë§¤íŠ¸ë¦­ìŠ¤ê°€ ì¶œë ¥ë  ë²„í¼
  **********************************************************************/
 IDE_RC stfRelation::matrixDisjoint(
                     stdGeometryType*    aGeom1,
@@ -1577,11 +1577,11 @@ IDE_RC stfRelation::matrixDisjoint(
 
 /***********************************************************************
  * Description:
- * µÎ Geometry °´Ã¼ÀÇ Å¸ÀÔ¿¡ ¸Â´Â DE-9I Within ¸ÅÆ®¸¯½º Ãâ·Â
+ * ë‘ Geometry ê°ì²´ì˜ íƒ€ì…ì— ë§ëŠ” DE-9I Within ë§¤íŠ¸ë¦­ìŠ¤ ì¶œë ¥
  *
- * stdGeometryType*    aGeom1(In): °´Ã¼1
- * stdGeometryType*    aGeom2(In): °´Ã¼2
- * SChar*              aPattern(Out): °ü°è ¸ÅÆ®¸¯½º°¡ Ãâ·ÂµÉ ¹öÆÛ
+ * stdGeometryType*    aGeom1(In): ê°ì²´1
+ * stdGeometryType*    aGeom2(In): ê°ì²´2
+ * SChar*              aPattern(Out): ê´€ê³„ ë§¤íŠ¸ë¦­ìŠ¤ê°€ ì¶œë ¥ë  ë²„í¼
  **********************************************************************/
 IDE_RC stfRelation::matrixWithin(
                     stdGeometryType*    aGeom1,
@@ -1742,11 +1742,11 @@ IDE_RC stfRelation::matrixWithin(
 
 /***********************************************************************
  * Description:
- * µÎ Geometry °´Ã¼ÀÇ Å¸ÀÔ¿¡ ¸Â´Â DE-9I Crosses ¸ÅÆ®¸¯½º Ãâ·Â
+ * ë‘ Geometry ê°ì²´ì˜ íƒ€ì…ì— ë§ëŠ” DE-9I Crosses ë§¤íŠ¸ë¦­ìŠ¤ ì¶œë ¥
  *
- * stdGeometryType*    aGeom1(In): °´Ã¼1
- * stdGeometryType*    aGeom2(In): °´Ã¼2
- * SChar*              aPattern(Out): °ü°è ¸ÅÆ®¸¯½º°¡ Ãâ·ÂµÉ ¹öÆÛ
+ * stdGeometryType*    aGeom1(In): ê°ì²´1
+ * stdGeometryType*    aGeom2(In): ê°ì²´2
+ * SChar*              aPattern(Out): ê´€ê³„ ë§¤íŠ¸ë¦­ìŠ¤ê°€ ì¶œë ¥ë  ë²„í¼
  **********************************************************************/
 IDE_RC stfRelation::matrixCrosses(
                     stdGeometryType*    aGeom1,
@@ -1888,11 +1888,11 @@ IDE_RC stfRelation::matrixCrosses(
 
 /***********************************************************************
  * Description:
- * µÎ Geometry °´Ã¼ÀÇ Å¸ÀÔ¿¡ ¸Â´Â DE-9I Overlaps ¸ÅÆ®¸¯½º Ãâ·Â
+ * ë‘ Geometry ê°ì²´ì˜ íƒ€ì…ì— ë§ëŠ” DE-9I Overlaps ë§¤íŠ¸ë¦­ìŠ¤ ì¶œë ¥
  *
- * stdGeometryType*    aGeom1(In): °´Ã¼1
- * stdGeometryType*    aGeom2(In): °´Ã¼2
- * SChar*              aPattern(Out): °ü°è ¸ÅÆ®¸¯½º°¡ Ãâ·ÂµÉ ¹öÆÛ
+ * stdGeometryType*    aGeom1(In): ê°ì²´1
+ * stdGeometryType*    aGeom2(In): ê°ì²´2
+ * SChar*              aPattern(Out): ê´€ê³„ ë§¤íŠ¸ë¦­ìŠ¤ê°€ ì¶œë ¥ë  ë²„í¼
  **********************************************************************/
 IDE_RC stfRelation::matrixOverlaps(
                     stdGeometryType*    aGeom1,
@@ -2052,12 +2052,12 @@ IDE_RC stfRelation::matrixOverlaps(
 
 /***********************************************************************
  * Description:
- * µÎ Geometry °´Ã¼ÀÇ Å¸ÀÔ¿¡ ¸Â´Â DE-9I Touches ¸ÅÆ®¸¯½º Ãâ·Â
+ * ë‘ Geometry ê°ì²´ì˜ íƒ€ì…ì— ë§ëŠ” DE-9I Touches ë§¤íŠ¸ë¦­ìŠ¤ ì¶œë ¥
  *
- * stdGeometryType*    aGeom1(In): °´Ã¼1
- * stdGeometryType*    aGeom2(In): °´Ã¼2
- * SChar*              aPattern(Out): °ü°è ¸ÅÆ®¸¯½º°¡ Ãâ·ÂµÉ ¹öÆÛ
- * UInt&               aPatternCnt: ¸ÅÆ®¸¯½º °³¼ö
+ * stdGeometryType*    aGeom1(In): ê°ì²´1
+ * stdGeometryType*    aGeom2(In): ê°ì²´2
+ * SChar*              aPattern(Out): ê´€ê³„ ë§¤íŠ¸ë¦­ìŠ¤ê°€ ì¶œë ¥ë  ë²„í¼
+ * UInt&               aPatternCnt: ë§¤íŠ¸ë¦­ìŠ¤ ê°œìˆ˜
  **********************************************************************/
 IDE_RC stfRelation::matrixTouches(
                     stdGeometryType*    aGeom1,
@@ -2150,12 +2150,12 @@ IDE_RC stfRelation::matrixTouches(
 
 /***********************************************************************
  * Description:
- * µÎ Geometry °´Ã¼°¡ aPattern ¸ÅÆ®¸¯½º¿Í µ¿ÀÏÇÑ °ü°è¸¦ °®´ÂÁö ÆÇº°
- * °ü°è°¡ µ¿ÀÏÇÏ¸é MTD_BOOLEAN_TRUE ¾Æ´Ï¸é MTD_BOOLEAN_FALSE ¸®ÅÏ
+ * ë‘ Geometry ê°ì²´ê°€ aPattern ë§¤íŠ¸ë¦­ìŠ¤ì™€ ë™ì¼í•œ ê´€ê³„ë¥¼ ê°–ëŠ”ì§€ íŒë³„
+ * ê´€ê³„ê°€ ë™ì¼í•˜ë©´ MTD_BOOLEAN_TRUE ì•„ë‹ˆë©´ MTD_BOOLEAN_FALSE ë¦¬í„´
  *
- * const stdGeometryType* aObj1(In): °´Ã¼1
- * const stdGeometryType* aObj2(In): °´Ã¼2
- * SChar*                 aPattern(In): ÆĞÅÏ ¸ÅÆ®¸¯½º
+ * const stdGeometryType* aObj1(In): ê°ì²´1
+ * const stdGeometryType* aObj2(In): ê°ì²´2
+ * SChar*                 aPattern(In): íŒ¨í„´ ë§¤íŠ¸ë¦­ìŠ¤
  **********************************************************************/
 IDE_RC stfRelation::relate( iduMemory*             aQmxMem,
                             const stdGeometryType* aObj1,
@@ -2307,16 +2307,16 @@ IDE_RC stfRelation::relate( iduMemory*             aQmxMem,
 
 /***********************************************************************
  * Description:
- * Æ÷ÀÎÆ® °´Ã¼¿Í ´Ù¸¥ °´Ã¼ÀÇ ¸ÅÆ®¸¯½º ÀÎµ¦½º¿¡ ÇØ´çÇÏ´Â °ü°è¸¦ ¿¬»ê
- * °ãÄ¡´Â °ø°£ÀÇ Â÷¿øÀ» ¸®ÅÏÇÑ´Ù.
- * '0' Á¡
- * '1' ¼±
- * '2' ¸é
- * 'F' Á¸ÀçÇÏÁö ¾Ê´Â´Ù.
+ * í¬ì¸íŠ¸ ê°ì²´ì™€ ë‹¤ë¥¸ ê°ì²´ì˜ ë§¤íŠ¸ë¦­ìŠ¤ ì¸ë±ìŠ¤ì— í•´ë‹¹í•˜ëŠ” ê´€ê³„ë¥¼ ì—°ì‚°
+ * ê²¹ì¹˜ëŠ” ê³µê°„ì˜ ì°¨ì›ì„ ë¦¬í„´í•œë‹¤.
+ * '0' ì 
+ * '1' ì„ 
+ * '2' ë©´
+ * 'F' ì¡´ì¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
  *
- * SInt                  aIndex(In): ¸ÅÆ®¸¯½º ÀÎµ¦½º ¹øÈ£
- * const stdGeometryType* aObj1(In): °´Ã¼
- * const stdGeometryType* aObj2(In): ºñ±³µÉ °´Ã¼
+ * SInt                  aIndex(In): ë§¤íŠ¸ë¦­ìŠ¤ ì¸ë±ìŠ¤ ë²ˆí˜¸
+ * const stdGeometryType* aObj1(In): ê°ì²´
+ * const stdGeometryType* aObj2(In): ë¹„êµë  ê°ì²´
  **********************************************************************/
 SChar stfRelation::pointTogeometry( SInt                   aIndex,
                                     const stdGeometryType* aObj1,
@@ -2435,16 +2435,16 @@ SChar stfRelation::pointTogeometry( SInt                   aIndex,
 
 /***********************************************************************
  * Description:
- * ¶óÀÎ °´Ã¼¿Í ´Ù¸¥ °´Ã¼ÀÇ ¸ÅÆ®¸¯½º ÀÎµ¦½º¿¡ ÇØ´çÇÏ´Â °ü°è¸¦ ¿¬»ê
- * °ãÄ¡´Â °ø°£ÀÇ Â÷¿øÀ» ¸®ÅÏÇÑ´Ù.
- * '0' Á¡
- * '1' ¼±
- * '2' ¸é
- * 'F' Á¸ÀçÇÏÁö ¾Ê´Â´Ù.
+ * ë¼ì¸ ê°ì²´ì™€ ë‹¤ë¥¸ ê°ì²´ì˜ ë§¤íŠ¸ë¦­ìŠ¤ ì¸ë±ìŠ¤ì— í•´ë‹¹í•˜ëŠ” ê´€ê³„ë¥¼ ì—°ì‚°
+ * ê²¹ì¹˜ëŠ” ê³µê°„ì˜ ì°¨ì›ì„ ë¦¬í„´í•œë‹¤.
+ * '0' ì 
+ * '1' ì„ 
+ * '2' ë©´
+ * 'F' ì¡´ì¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
  *
- * SInt                  aIndex(In): ¸ÅÆ®¸¯½º ÀÎµ¦½º ¹øÈ£
- * const stdGeometryType* aObj1(In): °´Ã¼
- * const stdGeometryType* aObj2(In): ºñ±³µÉ °´Ã¼
+ * SInt                  aIndex(In): ë§¤íŠ¸ë¦­ìŠ¤ ì¸ë±ìŠ¤ ë²ˆí˜¸
+ * const stdGeometryType* aObj1(In): ê°ì²´
+ * const stdGeometryType* aObj2(In): ë¹„êµë  ê°ì²´
  **********************************************************************/
 SChar stfRelation::linestringTogeometry( SInt                   aIndex,
                                          const stdGeometryType* aObj1,
@@ -2737,16 +2737,16 @@ SChar stfRelation::linestringTogeometry( SInt                   aIndex,
 
 /***********************************************************************
  * Description:
- * Æú¸®°ï °´Ã¼¿Í ´Ù¸¥ °´Ã¼ÀÇ ¸ÅÆ®¸¯½º ÀÎµ¦½º¿¡ ÇØ´çÇÏ´Â °ü°è¸¦ ¿¬»ê
- * °ãÄ¡´Â °ø°£ÀÇ Â÷¿øÀ» ¸®ÅÏÇÑ´Ù.
- * '0' Á¡
- * '1' ¼±
- * '2' ¸é
- * 'F' Á¸ÀçÇÏÁö ¾Ê´Â´Ù.
+ * í´ë¦¬ê³¤ ê°ì²´ì™€ ë‹¤ë¥¸ ê°ì²´ì˜ ë§¤íŠ¸ë¦­ìŠ¤ ì¸ë±ìŠ¤ì— í•´ë‹¹í•˜ëŠ” ê´€ê³„ë¥¼ ì—°ì‚°
+ * ê²¹ì¹˜ëŠ” ê³µê°„ì˜ ì°¨ì›ì„ ë¦¬í„´í•œë‹¤.
+ * '0' ì 
+ * '1' ì„ 
+ * '2' ë©´
+ * 'F' ì¡´ì¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
  *
- * SInt                  aIndex(In): ¸ÅÆ®¸¯½º ÀÎµ¦½º ¹øÈ£
- * const stdGeometryType* aObj1(In): °´Ã¼
- * const stdGeometryType* aObj2(In): ºñ±³µÉ °´Ã¼
+ * SInt                  aIndex(In): ë§¤íŠ¸ë¦­ìŠ¤ ì¸ë±ìŠ¤ ë²ˆí˜¸
+ * const stdGeometryType* aObj1(In): ê°ì²´
+ * const stdGeometryType* aObj2(In): ë¹„êµë  ê°ì²´
  **********************************************************************/
 IDE_RC stfRelation::polygonTogeometry( iduMemory*             aQmxMem,
                                        SInt                   aIndex,
@@ -3032,16 +3032,16 @@ IDE_RC stfRelation::polygonTogeometry( iduMemory*             aQmxMem,
 
 /***********************************************************************
  * Description:
- * ¸ÖÆ¼Æ÷ÀÎÆ® °´Ã¼¿Í ´Ù¸¥ °´Ã¼ÀÇ ¸ÅÆ®¸¯½º ÀÎµ¦½º¿¡ ÇØ´çÇÏ´Â °ü°è¸¦ ¿¬»ê
- * °ãÄ¡´Â °ø°£ÀÇ Â÷¿øÀ» ¸®ÅÏÇÑ´Ù.
- * '0' Á¡
- * '1' ¼±
- * '2' ¸é
- * 'F' Á¸ÀçÇÏÁö ¾Ê´Â´Ù.
+ * ë©€í‹°í¬ì¸íŠ¸ ê°ì²´ì™€ ë‹¤ë¥¸ ê°ì²´ì˜ ë§¤íŠ¸ë¦­ìŠ¤ ì¸ë±ìŠ¤ì— í•´ë‹¹í•˜ëŠ” ê´€ê³„ë¥¼ ì—°ì‚°
+ * ê²¹ì¹˜ëŠ” ê³µê°„ì˜ ì°¨ì›ì„ ë¦¬í„´í•œë‹¤.
+ * '0' ì 
+ * '1' ì„ 
+ * '2' ë©´
+ * 'F' ì¡´ì¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
  *
- * SInt                  aIndex(In): ¸ÅÆ®¸¯½º ÀÎµ¦½º ¹øÈ£
- * const stdGeometryType* aObj1(In): °´Ã¼
- * const stdGeometryType* aObj2(In): ºñ±³µÉ °´Ã¼
+ * SInt                  aIndex(In): ë§¤íŠ¸ë¦­ìŠ¤ ì¸ë±ìŠ¤ ë²ˆí˜¸
+ * const stdGeometryType* aObj1(In): ê°ì²´
+ * const stdGeometryType* aObj2(In): ë¹„êµë  ê°ì²´
  **********************************************************************/
 SChar stfRelation::multipointTogeometry( SInt                   aIndex,
                                          const stdGeometryType* aObj1,
@@ -3160,16 +3160,16 @@ SChar stfRelation::multipointTogeometry( SInt                   aIndex,
 
 /***********************************************************************
  * Description:
- * ¸ÖÆ¼ ¶óÀÎ °´Ã¼¿Í ´Ù¸¥ °´Ã¼ÀÇ ¸ÅÆ®¸¯½º ÀÎµ¦½º¿¡ ÇØ´çÇÏ´Â °ü°è¸¦ ¿¬»ê
- * °ãÄ¡´Â °ø°£ÀÇ Â÷¿øÀ» ¸®ÅÏÇÑ´Ù.
- * '0' Á¡
- * '1' ¼±
- * '2' ¸é
- * 'F' Á¸ÀçÇÏÁö ¾Ê´Â´Ù.
+ * ë©€í‹° ë¼ì¸ ê°ì²´ì™€ ë‹¤ë¥¸ ê°ì²´ì˜ ë§¤íŠ¸ë¦­ìŠ¤ ì¸ë±ìŠ¤ì— í•´ë‹¹í•˜ëŠ” ê´€ê³„ë¥¼ ì—°ì‚°
+ * ê²¹ì¹˜ëŠ” ê³µê°„ì˜ ì°¨ì›ì„ ë¦¬í„´í•œë‹¤.
+ * '0' ì 
+ * '1' ì„ 
+ * '2' ë©´
+ * 'F' ì¡´ì¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
  *
- * SInt                  aIndex(In): ¸ÅÆ®¸¯½º ÀÎµ¦½º ¹øÈ£
- * const stdGeometryType* aObj1(In): °´Ã¼
- * const stdGeometryType* aObj2(In): ºñ±³µÉ °´Ã¼
+ * SInt                  aIndex(In): ë§¤íŠ¸ë¦­ìŠ¤ ì¸ë±ìŠ¤ ë²ˆí˜¸
+ * const stdGeometryType* aObj1(In): ê°ì²´
+ * const stdGeometryType* aObj2(In): ë¹„êµë  ê°ì²´
  **********************************************************************/
 SChar stfRelation::multilinestringTogeometry( SInt                   aIndex,
                                               const stdGeometryType* aObj1,
@@ -3462,16 +3462,16 @@ SChar stfRelation::multilinestringTogeometry( SInt                   aIndex,
 
 /***********************************************************************
  * Description:
- * ¸ÖÆ¼Æú¸®°ï °´Ã¼¿Í ´Ù¸¥ °´Ã¼ÀÇ ¸ÅÆ®¸¯½º ÀÎµ¦½º¿¡ ÇØ´çÇÏ´Â °ü°è¸¦ ¿¬»ê
- * °ãÄ¡´Â °ø°£ÀÇ Â÷¿øÀ» ¸®ÅÏÇÑ´Ù.
- * '0' Á¡
- * '1' ¼±
- * '2' ¸é
- * 'F' Á¸ÀçÇÏÁö ¾Ê´Â´Ù.
+ * ë©€í‹°í´ë¦¬ê³¤ ê°ì²´ì™€ ë‹¤ë¥¸ ê°ì²´ì˜ ë§¤íŠ¸ë¦­ìŠ¤ ì¸ë±ìŠ¤ì— í•´ë‹¹í•˜ëŠ” ê´€ê³„ë¥¼ ì—°ì‚°
+ * ê²¹ì¹˜ëŠ” ê³µê°„ì˜ ì°¨ì›ì„ ë¦¬í„´í•œë‹¤.
+ * '0' ì 
+ * '1' ì„ 
+ * '2' ë©´
+ * 'F' ì¡´ì¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
  *
- * SInt                  aIndex(In): ¸ÅÆ®¸¯½º ÀÎµ¦½º ¹øÈ£
- * const stdGeometryType* aObj1(In): °´Ã¼
- * const stdGeometryType* aObj2(In): ºñ±³µÉ °´Ã¼
+ * SInt                  aIndex(In): ë§¤íŠ¸ë¦­ìŠ¤ ì¸ë±ìŠ¤ ë²ˆí˜¸
+ * const stdGeometryType* aObj1(In): ê°ì²´
+ * const stdGeometryType* aObj2(In): ë¹„êµë  ê°ì²´
  **********************************************************************/
 IDE_RC stfRelation::multipolygonTogeometry( iduMemory*             aQmxMem,
                                             SInt                   aIndex,
@@ -3757,16 +3757,16 @@ IDE_RC stfRelation::multipolygonTogeometry( iduMemory*             aQmxMem,
 
 /***********************************************************************
  * Description:
- * Äİ·º¼Ç °´Ã¼¿Í ´Ù¸¥ °´Ã¼ÀÇ ¸ÅÆ®¸¯½º ÀÎµ¦½º¿¡ ÇØ´çÇÏ´Â °ü°è¸¦ ¿¬»ê
- * °ãÄ¡´Â °ø°£ÀÇ Â÷¿øÀ» ¸®ÅÏÇÑ´Ù.
- * '0' Á¡
- * '1' ¼±
- * '2' ¸é
- * 'F' Á¸ÀçÇÏÁö ¾Ê´Â´Ù.
+ * ì½œë ‰ì…˜ ê°ì²´ì™€ ë‹¤ë¥¸ ê°ì²´ì˜ ë§¤íŠ¸ë¦­ìŠ¤ ì¸ë±ìŠ¤ì— í•´ë‹¹í•˜ëŠ” ê´€ê³„ë¥¼ ì—°ì‚°
+ * ê²¹ì¹˜ëŠ” ê³µê°„ì˜ ì°¨ì›ì„ ë¦¬í„´í•œë‹¤.
+ * '0' ì 
+ * '1' ì„ 
+ * '2' ë©´
+ * 'F' ì¡´ì¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
  *
- * SInt                  aIndex(In): ¸ÅÆ®¸¯½º ÀÎµ¦½º ¹øÈ£
- * const stdGeometryType* aObj1(In): °´Ã¼
- * const stdGeometryType* aObj2(In): ºñ±³µÉ °´Ã¼
+ * SInt                  aIndex(In): ë§¤íŠ¸ë¦­ìŠ¤ ì¸ë±ìŠ¤ ë²ˆí˜¸
+ * const stdGeometryType* aObj1(In): ê°ì²´
+ * const stdGeometryType* aObj2(In): ë¹„êµë  ê°ì²´
  **********************************************************************/
 IDE_RC stfRelation::collectionTogeometry( iduMemory*             aQmxMem,
                                           SInt                   aIndex,
@@ -4052,16 +4052,16 @@ IDE_RC stfRelation::collectionTogeometry( iduMemory*             aQmxMem,
 
 /***********************************************************************
  * Description:
- * µÎ ¸ÅÆ®¸¯½ºÀÇ °ü°è°¡ ÀÏÄ¡ÇÏ´ÂÁö ÆÇº°
- * '0' '1' '2'ÀÇ Â÷¿ø °ªÀº 'T'°ª °úµµ ÀÏÄ¡ÇÑ´Ù.
- * °ü°è°¡ ÀÏÄ¡ÇÏ¸é MTD_BOOLEAN_TRUE ¾Æ´Ï¸é MTD_BOOLEAN_FALSE ¸®ÅÏ
+ * ë‘ ë§¤íŠ¸ë¦­ìŠ¤ì˜ ê´€ê³„ê°€ ì¼ì¹˜í•˜ëŠ”ì§€ íŒë³„
+ * '0' '1' '2'ì˜ ì°¨ì› ê°’ì€ 'T'ê°’ ê³¼ë„ ì¼ì¹˜í•œë‹¤.
+ * ê´€ê³„ê°€ ì¼ì¹˜í•˜ë©´ MTD_BOOLEAN_TRUE ì•„ë‹ˆë©´ MTD_BOOLEAN_FALSE ë¦¬í„´
  *
- * SChar aPM(In): ¸ÅÆ®¸¯½º1
- * SChar aResult(In): ¸ÅÆ®¸¯½º2
+ * SChar aPM(In): ë§¤íŠ¸ë¦­ìŠ¤1
+ * SChar aResult(In): ë§¤íŠ¸ë¦­ìŠ¤2
  **********************************************************************/
 mtdBooleanType stfRelation::checkMatch( SChar aPM, SChar aResult )
 {
-    // aResult´Â 0,1,2,F¸¸ Á¸ÀçÇÑ´Ù.
+    // aResultëŠ” 0,1,2,Fë§Œ ì¡´ì¬í•œë‹¤.
     switch( aPM )
     {
         case '0':
@@ -4107,59 +4107,59 @@ mtdBooleanType stfRelation::checkMatch( SChar aPM, SChar aResult )
 /***********************************************************************
  * Description:
  *
- *    ¼±ºĞ(Line Segment)°£ÀÇ DE-9IM °ü°è¸¦ ±¸ÇÑ´Ù.
+ *    ì„ ë¶„(Line Segment)ê°„ì˜ DE-9IM ê´€ê³„ë¥¼ êµ¬í•œë‹¤.
  *
  * Implementation:
  *
- *    ´ÙÀ½°ú °°Àº ¼±ºĞ°ú °ü°èµÇ´Â Á¡µéÀÇ °³¼ö¸¦ °í·ÁÇØ DE-9IM °ü°è¸¦ ±¸ÇÑ´Ù.
- *       - Á¡ÀÌ ¼±ºĞ°ú ¸¸³ª´Â °³¼ö
- *       - Á¡°ú Á¡ÀÌ ¸¸³ª´Â °³¼ö
- *       - ¸¸³ª´Â Á¡ÀÌ Á¾´ÜÁ¡ÀÎÁöÀÇ °³¼ö
+ *    ë‹¤ìŒê³¼ ê°™ì€ ì„ ë¶„ê³¼ ê´€ê³„ë˜ëŠ” ì ë“¤ì˜ ê°œìˆ˜ë¥¼ ê³ ë ¤í•´ DE-9IM ê´€ê³„ë¥¼ êµ¬í•œë‹¤.
+ *       - ì ì´ ì„ ë¶„ê³¼ ë§Œë‚˜ëŠ” ê°œìˆ˜
+ *       - ì ê³¼ ì ì´ ë§Œë‚˜ëŠ” ê°œìˆ˜
+ *       - ë§Œë‚˜ëŠ” ì ì´ ì¢…ë‹¨ì ì¸ì§€ì˜ ê°œìˆ˜
  *
- *    ¼±ºĞ°ú ¸¸³ª´Â Á¡ÀÇ °³¼ö¿¡ µû¸¥ ¼±ÀÇ °ü°è´Â ´ÙÀ½°ú °°´Ù.
+ *    ì„ ë¶„ê³¼ ë§Œë‚˜ëŠ” ì ì˜ ê°œìˆ˜ì— ë”°ë¥¸ ì„ ì˜ ê´€ê³„ëŠ” ë‹¤ìŒê³¼ ê°™ë‹¤.
  *
  *           S-----------S : Segment 1
  *           T-----------T : Segment 2
  *
- *    Á¡ 4°³°¡ ¼±ºĞ°ú ¸¸³ª´Â °æ¿ì
+ *    ì  4ê°œê°€ ì„ ë¶„ê³¼ ë§Œë‚˜ëŠ” ê²½ìš°
  *
  *         ST=======ST
  *
- *         ; ¼±¿¡¼­ ¸¸³² ('1')
+ *         ; ì„ ì—ì„œ ë§Œë‚¨ ('1')
  *
- *    Á¡ 3°³°¡ ¼±ºĞ°ú ¸¸³ª´Â °æ¿ì
+ *    ì  3ê°œê°€ ì„ ë¶„ê³¼ ë§Œë‚˜ëŠ” ê²½ìš°
  *
  *         ST=======S-------T
  *
- *         ; ¼±¿¡¼­ ¸¸³² ('1')
+ *         ; ì„ ì—ì„œ ë§Œë‚¨ ('1')
  *
- *    Á¡ 2°³°¡ ¼±ºĞ°ú ¸¸³ª´Â °æ¿ì
+ *    ì  2ê°œê°€ ì„ ë¶„ê³¼ ë§Œë‚˜ëŠ” ê²½ìš°
  *
  *         S-----T=====T-----S
  *
- *         ; Á¡³¢¸® ¸¸³ª´Â °æ¿ì°¡ ¾øÀ½ ('1')
+ *         ; ì ë¼ë¦¬ ë§Œë‚˜ëŠ” ê²½ìš°ê°€ ì—†ìŒ ('1')
  *
  *         S-----T=====S----T
  *
- *         ; Á¡³¢¸® ¸¸³ª´Â °æ¿ì°¡ ¾øÀ½ ('1')
+ *         ; ì ë¼ë¦¬ ë§Œë‚˜ëŠ” ê²½ìš°ê°€ ì—†ìŒ ('1')
  *
  *         S
  *         |
  *         |
  *         ST-------T
  *
- *         ; Á¡³¢¸® ¸¸³², Á¾´ÜÁ¡('F')ÀÎÁö ¿¬°áÁ¡('0')ÀÎÁö ÆÇ´ÜÇØ¾ß ÇÔ.
+ *         ; ì ë¼ë¦¬ ë§Œë‚¨, ì¢…ë‹¨ì ('F')ì¸ì§€ ì—°ê²°ì ('0')ì¸ì§€ íŒë‹¨í•´ì•¼ í•¨.
  *
- *    Á¡ 1°³°¡ ¼±ºĞ°ú ¸¸³ª´Â °æ¿ì
+ *    ì  1ê°œê°€ ì„ ë¶„ê³¼ ë§Œë‚˜ëŠ” ê²½ìš°
  *
  *               S
  *               |
  *               |
  *         T-----S-----T
  *
- *         ; Á¾´ÜÁ¡('F')ÀÎÁö ¿¬°áÁ¡('0')ÀÎÁö ÆÇ´ÜÇØ¾ß ÇÔ.
+ *         ; ì¢…ë‹¨ì ('F')ì¸ì§€ ì—°ê²°ì ('0')ì¸ì§€ íŒë‹¨í•´ì•¼ í•¨.
  *
- *    Á¡ 0°³°¡ ¼±ºĞ°ú ¸¸³ª´Â °æ¿ì
+ *    ì  0ê°œê°€ ì„ ë¶„ê³¼ ë§Œë‚˜ëŠ” ê²½ìš°
  *
  *         S-----S     T-----T
  *
@@ -4184,9 +4184,9 @@ stfRelation::compLineSegment( stdPoint2D * aSeg1Pt1,         // LineSeg 1
                               idBool       aIsTermSeg2Pt1,   // is terminal
                               idBool       aIsTermSeg2Pt2 )  // is terminal
 {
-    SInt    sMeetCnt;     // ¼±ºĞ°ú ¸¸³ª´Â Á¡ÀÇ °³¼ö
-    SInt    sOnPointCnt;  // Á¡°ú Á¡ÀÌ ÀÏÄ¡ÇÏ´Â °³¼ö
-    SInt    sTermMeetCnt; // ¼±ºĞ°ú ¸¸³ª´Â Á¡ÀÌ Á¾´ÜÁ¡ÀÎ °æ¿ìÀÇ °³¼ö
+    SInt    sMeetCnt;     // ì„ ë¶„ê³¼ ë§Œë‚˜ëŠ” ì ì˜ ê°œìˆ˜
+    SInt    sOnPointCnt;  // ì ê³¼ ì ì´ ì¼ì¹˜í•˜ëŠ” ê°œìˆ˜
+    SInt    sTermMeetCnt; // ì„ ë¶„ê³¼ ë§Œë‚˜ëŠ” ì ì´ ì¢…ë‹¨ì ì¸ ê²½ìš°ì˜ ê°œìˆ˜
     SChar   sResult;
 
     //----------------------------------------
@@ -4207,147 +4207,147 @@ stfRelation::compLineSegment( stdPoint2D * aSeg1Pt1,         // LineSeg 1
     sTermMeetCnt = 0;
 
     //----------------------------------------
-    // Á¡µé°ú ¼±ºĞÀÇ °ü°è¸¦ ÆÄ¾ÇÇÔ.
+    // ì ë“¤ê³¼ ì„ ë¶„ì˜ ê´€ê³„ë¥¼ íŒŒì•…í•¨.
     //----------------------------------------
 
-    // Segment1 ÀÇ Point1 À» °Ë»ç
+    // Segment1 ì˜ Point1 ì„ ê²€ì‚¬
     if( stdUtils::between2D( aSeg2Pt1, aSeg2Pt2, aSeg1Pt1 ) == ID_TRUE )
     {
-        // ¼±ºĞ°ú Á¡ÀÌ ¸¸³²
+        // ì„ ë¶„ê³¼ ì ì´ ë§Œë‚¨
         sMeetCnt++;
 
-        // ¾îµğ¼­ ¸¸³ª´ÂÁö °Ë»ç
+        // ì–´ë””ì„œ ë§Œë‚˜ëŠ”ì§€ ê²€ì‚¬
         if( (stdUtils::isSamePoints2D(aSeg2Pt1, aSeg1Pt1)==ID_TRUE) ||
             (stdUtils::isSamePoints2D(aSeg2Pt2, aSeg1Pt1)==ID_TRUE) )
         {
-            // Á¡°ú Á¡ÀÌ ¸¸³²
+            // ì ê³¼ ì ì´ ë§Œë‚¨
             sOnPointCnt++;
         }
         else
         {
-            // ¼±ºĞ³»¿¡¼­ Á¡ÀÌ ¸¸³²
+            // ì„ ë¶„ë‚´ì—ì„œ ì ì´ ë§Œë‚¨
         }
 
-        // Á¡ÀÇ Á¾·ù °Ë»ç
+        // ì ì˜ ì¢…ë¥˜ ê²€ì‚¬
         if ( aIsTermSeg1Pt1 == ID_TRUE )
         {
-            // Á¾´ÜÁ¡ÀÌ ¼±ºĞ°ú ¸¸³ª°í ÀÖÀ½
+            // ì¢…ë‹¨ì ì´ ì„ ë¶„ê³¼ ë§Œë‚˜ê³  ìˆìŒ
             sTermMeetCnt++;
         }
         else
         {
-            // ¿¬°áÁ¡ÀÌ ¼±ºĞ°ú ¸¸³ª°í ÀÖÀ½
+            // ì—°ê²°ì ì´ ì„ ë¶„ê³¼ ë§Œë‚˜ê³  ìˆìŒ
         }
     }
     else
     {
-        // ¸¸³ªÁö ¾ÊÀ½
+        // ë§Œë‚˜ì§€ ì•ŠìŒ
     }
 
-    // Segment1 ÀÇ Point2 À» °Ë»ç
+    // Segment1 ì˜ Point2 ì„ ê²€ì‚¬
     if( stdUtils::between2D( aSeg2Pt1, aSeg2Pt2, aSeg1Pt2 ) == ID_TRUE )
     {
-        // ¼±ºĞ°ú Á¡ÀÌ ¸¸³²
+        // ì„ ë¶„ê³¼ ì ì´ ë§Œë‚¨
         sMeetCnt++;
 
-        // ¾îµğ¼­ ¸¸³ª´ÂÁö °Ë»ç
+        // ì–´ë””ì„œ ë§Œë‚˜ëŠ”ì§€ ê²€ì‚¬
         if( (stdUtils::isSamePoints2D(aSeg2Pt1, aSeg1Pt2)==ID_TRUE) ||
             (stdUtils::isSamePoints2D(aSeg2Pt2, aSeg1Pt2)==ID_TRUE) )
         {
-            // Á¡°ú Á¡ÀÌ ¸¸³²
+            // ì ê³¼ ì ì´ ë§Œë‚¨
             sOnPointCnt++;
         }
         else
         {
-            // ¼±ºĞ³»¿¡¼­ Á¡ÀÌ ¸¸³²
+            // ì„ ë¶„ë‚´ì—ì„œ ì ì´ ë§Œë‚¨
         }
 
-        // Á¡ÀÇ Á¾·ù °Ë»ç
+        // ì ì˜ ì¢…ë¥˜ ê²€ì‚¬
         if ( aIsTermSeg1Pt2 == ID_TRUE )
         {
-            // Á¾´ÜÁ¡ÀÌ ¼±ºĞ°ú ¸¸³ª°í ÀÖÀ½
+            // ì¢…ë‹¨ì ì´ ì„ ë¶„ê³¼ ë§Œë‚˜ê³  ìˆìŒ
             sTermMeetCnt++;
         }
         else
         {
-            // ¿¬°áÁ¡ÀÌ ¼±ºĞ°ú ¸¸³ª°í ÀÖÀ½
+            // ì—°ê²°ì ì´ ì„ ë¶„ê³¼ ë§Œë‚˜ê³  ìˆìŒ
         }
     }
     else
     {
-        // ¸¸³ªÁö ¾ÊÀ½
+        // ë§Œë‚˜ì§€ ì•ŠìŒ
     }
 
-    // Segment2 ÀÇ Point1 À» °Ë»ç
+    // Segment2 ì˜ Point1 ì„ ê²€ì‚¬
     if( stdUtils::between2D( aSeg1Pt1, aSeg1Pt2, aSeg2Pt1 ) == ID_TRUE )
     {
-        // ¼±ºĞ°ú Á¡ÀÌ ¸¸³²
+        // ì„ ë¶„ê³¼ ì ì´ ë§Œë‚¨
         sMeetCnt++;
 
-        // ¾îµğ¼­ ¸¸³ª´ÂÁö °Ë»ç
+        // ì–´ë””ì„œ ë§Œë‚˜ëŠ”ì§€ ê²€ì‚¬
         if( (stdUtils::isSamePoints2D(aSeg1Pt1, aSeg2Pt1)==ID_TRUE) ||
             (stdUtils::isSamePoints2D(aSeg1Pt2, aSeg2Pt1)==ID_TRUE) )
         {
-            // Á¡°ú Á¡ÀÌ ¸¸³²
+            // ì ê³¼ ì ì´ ë§Œë‚¨
             sOnPointCnt++;
         }
         else
         {
-            // ¼±ºĞ³»¿¡¼­ Á¡ÀÌ ¸¸³²
+            // ì„ ë¶„ë‚´ì—ì„œ ì ì´ ë§Œë‚¨
         }
 
-        // Á¡ÀÇ Á¾·ù °Ë»ç
+        // ì ì˜ ì¢…ë¥˜ ê²€ì‚¬
         if ( aIsTermSeg2Pt1 == ID_TRUE )
         {
-            // Á¾´ÜÁ¡ÀÌ ¼±ºĞ°ú ¸¸³ª°í ÀÖÀ½
+            // ì¢…ë‹¨ì ì´ ì„ ë¶„ê³¼ ë§Œë‚˜ê³  ìˆìŒ
             sTermMeetCnt++;
         }
         else
         {
-            // ¿¬°áÁ¡ÀÌ ¼±ºĞ°ú ¸¸³ª°í ÀÖÀ½
+            // ì—°ê²°ì ì´ ì„ ë¶„ê³¼ ë§Œë‚˜ê³  ìˆìŒ
         }
     }
     else
     {
-        // ¸¸³ªÁö ¾ÊÀ½
+        // ë§Œë‚˜ì§€ ì•ŠìŒ
     }
 
-    // Segment2 ÀÇ Point2 À» °Ë»ç
+    // Segment2 ì˜ Point2 ì„ ê²€ì‚¬
     if( stdUtils::between2D( aSeg1Pt1, aSeg1Pt2, aSeg2Pt2 ) == ID_TRUE )
     {
-        // ¼±ºĞ°ú Á¡ÀÌ ¸¸³²
+        // ì„ ë¶„ê³¼ ì ì´ ë§Œë‚¨
         sMeetCnt++;
 
-        // ¾îµğ¼­ ¸¸³ª´ÂÁö °Ë»ç
+        // ì–´ë””ì„œ ë§Œë‚˜ëŠ”ì§€ ê²€ì‚¬
         if( (stdUtils::isSamePoints2D(aSeg1Pt1, aSeg2Pt2)==ID_TRUE) ||
             (stdUtils::isSamePoints2D(aSeg1Pt2, aSeg2Pt2)==ID_TRUE) )
         {
-            // Á¡°ú Á¡ÀÌ ¸¸³²
+            // ì ê³¼ ì ì´ ë§Œë‚¨
             sOnPointCnt++;
         }
         else
         {
-            // ¼±ºĞ³»¿¡¼­ Á¡ÀÌ ¸¸³²
+            // ì„ ë¶„ë‚´ì—ì„œ ì ì´ ë§Œë‚¨
         }
 
-        // Á¡ÀÇ Á¾·ù °Ë»ç
+        // ì ì˜ ì¢…ë¥˜ ê²€ì‚¬
         if ( aIsTermSeg2Pt2 == ID_TRUE )
         {
-            // Á¾´ÜÁ¡ÀÌ ¼±ºĞ°ú ¸¸³ª°í ÀÖÀ½
+            // ì¢…ë‹¨ì ì´ ì„ ë¶„ê³¼ ë§Œë‚˜ê³  ìˆìŒ
             sTermMeetCnt++;
         }
         else
         {
-            // ¿¬°áÁ¡ÀÌ ¼±ºĞ°ú ¸¸³ª°í ÀÖÀ½
+            // ì—°ê²°ì ì´ ì„ ë¶„ê³¼ ë§Œë‚˜ê³  ìˆìŒ
         }
     }
     else
     {
-        // ¸¸³ªÁö ¾ÊÀ½
+        // ë§Œë‚˜ì§€ ì•ŠìŒ
     }
     
     //----------------------------------------
-    // ¸¸³ª´Â Á¡ÀÇ °³¼ö¿¡ µû¸¥ 9IM °á°ú »ı¼º
+    // ë§Œë‚˜ëŠ” ì ì˜ ê°œìˆ˜ì— ë”°ë¥¸ 9IM ê²°ê³¼ ìƒì„±
     //----------------------------------------
     
     switch ( sMeetCnt )
@@ -4370,12 +4370,12 @@ stfRelation::compLineSegment( stdPoint2D * aSeg1Pt1,         // LineSeg 1
         case 1:
             if ( sTermMeetCnt == 0 )
             {
-                // ¿¬°áÁ¡ÀÌ ¼±ºĞ°ú ¸¸³²
+                // ì—°ê²°ì ì´ ì„ ë¶„ê³¼ ë§Œë‚¨
                 sResult = '0';
             }
             else
             {
-                // Á¾´ÜÁ¡ÀÌ ¼±ºĞ°ú ¸¸³²
+                // ì¢…ë‹¨ì ì´ ì„ ë¶„ê³¼ ë§Œë‚¨
                 IDE_DASSERT( sTermMeetCnt == 1 );
                 sResult = 'F';
             }
@@ -4384,22 +4384,22 @@ stfRelation::compLineSegment( stdPoint2D * aSeg1Pt1,         // LineSeg 1
         case 2:
             if ( sOnPointCnt == 0 )
             {
-                // Á¡¿¡¼­ ¸¸³ªÁö ¾Ê°í ¼±À¸·Î ¸¸³ª´Â °æ¿ì
+                // ì ì—ì„œ ë§Œë‚˜ì§€ ì•Šê³  ì„ ìœ¼ë¡œ ë§Œë‚˜ëŠ” ê²½ìš°
                 sResult = '1';
             }
             else
             {
-                // Á¡°ú Á¡ÀÌ ¸¸³²
+                // ì ê³¼ ì ì´ ë§Œë‚¨
                 IDE_DASSERT( sOnPointCnt == 2 );
                 
                 if ( sTermMeetCnt == 0 )
                 {
-                    // ¸ğµÎ ¿¬°áÁ¡ÀÌ ¸¸³ª°í ÀÖÀ½
+                    // ëª¨ë‘ ì—°ê²°ì ì´ ë§Œë‚˜ê³  ìˆìŒ
                     sResult = '0';
                 }
                 else
                 {
-                    // Á¾´ÜÁ¡ÀÌ ¸¸³ª°í ÀÖÀ½
+                    // ì¢…ë‹¨ì ì´ ë§Œë‚˜ê³  ìˆìŒ
                     IDE_DASSERT( sTermMeetCnt < 3 );
                     
                     sResult = 'F';
@@ -4420,13 +4420,13 @@ stfRelation::compLineSegment( stdPoint2D * aSeg1Pt1,         // LineSeg 1
 
 /***********************************************************************
  * Description:
- * ¼±ºĞ1°ú ¼±ºĞ2ÀÇ °ü°è ¸ÅÆ®¸¯½º¸¦ ¸®ÅÏÇÑ´Ù
- * aPtEndÀÇ Á¡Àº °ü°è ¿¬»ê¿¡¼­ Á¦¿ÜµÈ´Ù
+ * ì„ ë¶„1ê³¼ ì„ ë¶„2ì˜ ê´€ê³„ ë§¤íŠ¸ë¦­ìŠ¤ë¥¼ ë¦¬í„´í•œë‹¤
+ * aPtEndì˜ ì ì€ ê´€ê³„ ì—°ì‚°ì—ì„œ ì œì™¸ëœë‹¤
  *
- * stdPoint2D*     aPtEnd(In): ¼±ºĞ1
- * stdPoint2D*     aPtEndNext(In): ¼±ºĞ1
- * stdPoint2D*     aPtMid1(In): ¼±ºĞ2
- * stdPoint2D*     aPtMid2(In): ¼±ºĞ2
+ * stdPoint2D*     aPtEnd(In): ì„ ë¶„1
+ * stdPoint2D*     aPtEndNext(In): ì„ ë¶„1
+ * stdPoint2D*     aPtMid1(In): ì„ ë¶„2
+ * stdPoint2D*     aPtMid2(In): ì„ ë¶„2
  **********************************************************************/
 SChar stfRelation::EndLineToMidLine(
                 stdPoint2D*     aPtEnd,      // End Point
@@ -4498,12 +4498,12 @@ SChar stfRelation::EndLineToMidLine(
 
 /***********************************************************************
  * Description:
- * ¼±ºĞ1°ú ¼±ºĞ2ÀÇ °ü°è ¸ÅÆ®¸¯½º¸¦ ¸®ÅÏÇÑ´Ù
+ * ì„ ë¶„1ê³¼ ì„ ë¶„2ì˜ ê´€ê³„ ë§¤íŠ¸ë¦­ìŠ¤ë¥¼ ë¦¬í„´í•œë‹¤
  *
- * stdPoint2D*     aPt11(In): ¼±ºĞ1
- * stdPoint2D*     aPt12(In): ¼±ºĞ1
- * stdPoint2D*     aPt21(In): ¼±ºĞ2
- * stdPoint2D*     aPt22(In): ¼±ºĞ2
+ * stdPoint2D*     aPt11(In): ì„ ë¶„1
+ * stdPoint2D*     aPt12(In): ì„ ë¶„1
+ * stdPoint2D*     aPt21(In): ì„ ë¶„2
+ * stdPoint2D*     aPt22(In): ì„ ë¶„2
  **********************************************************************/
 SChar stfRelation::MidLineToMidLine(
                 stdPoint2D*     aPt11,
@@ -4564,27 +4564,27 @@ SChar stfRelation::MidLineToMidLine(
 /***********************************************************************
  * Description:
  *
- *    Line Segment°¡ Line String ³»¿¡ Á¸ÀçÇÏ´ÂÁö °Ë»ç
+ *    Line Segmentê°€ Line String ë‚´ì— ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬
  *
  * Implementation:
  *
- *    Line SegmentÀÇ µÎ Á¡°ú  Line StringÀ» ±¸¼ºÇÏ´Â Segment¿ÍÀÇ °ü°è¿Í
- *    Line Segment »çÀÌ¿¡ Á¸ÀçÇÏ´Â ¸ğµç Line StringÀÇ Á¡ÀÌ ÀÏÁ÷¼±À» ÀÌ·ç´ÂÁö·Î ÆÇ´Ü
+ *    Line Segmentì˜ ë‘ ì ê³¼  Line Stringì„ êµ¬ì„±í•˜ëŠ” Segmentì™€ì˜ ê´€ê³„ì™€
+ *    Line Segment ì‚¬ì´ì— ì¡´ì¬í•˜ëŠ” ëª¨ë“  Line Stringì˜ ì ì´ ì¼ì§ì„ ì„ ì´ë£¨ëŠ”ì§€ë¡œ íŒë‹¨
  *
- *    Segment SÀÇ Á¡ÀÌ ¸ğµÎ TÀÇ Segment¿¡ Á¸ÀçÇÏÁö ¾Ê´Â´Ù¸é Æ÷ÇÔµÇÁö ¾ÊÀ½
+ *    Segment Sì˜ ì ì´ ëª¨ë‘ Tì˜ Segmentì— ì¡´ì¬í•˜ì§€ ì•ŠëŠ”ë‹¤ë©´ í¬í•¨ë˜ì§€ ì•ŠìŒ
  *
  *                 S
  *                 |
  *        T----T---S---T---T
  *
- *    m ¹øÂ° Segment¿Í n ¹øÂ° Segment¿¡¼­ °¢Á¡ÀÌ Æ÷ÇÔµÇ¾ú´Ù¸é,
+ *    m ë²ˆì§¸ Segmentì™€ n ë²ˆì§¸ Segmentì—ì„œ ê°ì ì´ í¬í•¨ë˜ì—ˆë‹¤ë©´,
  *
  *      ...Tm----S1----T.......Tn---S2----T....
  *
- *    S1°ú S2 »çÀÌ¿¡ ÀÖ´Â ¸ğµç Á¡ T°¡ ÀÏÁ÷¼±»ó¿¡ À§Ä¡ÇÑ´Ù¸é
- *    Segment S´Â Line String T ³»¿¡ Á¸ÀçÇÑ´Ù.
+ *    S1ê³¼ S2 ì‚¬ì´ì— ìˆëŠ” ëª¨ë“  ì  Tê°€ ì¼ì§ì„ ìƒì— ìœ„ì¹˜í•œë‹¤ë©´
+ *    Segment SëŠ” Line String T ë‚´ì— ì¡´ì¬í•œë‹¤.
  *
- *    BUG-16941 °ú °°ÀÌ T °¡ closed line stringÀÏ °æ¿ì¸¦ °í·ÁÇÏ¿©¾ß ÇÑ´Ù.
+ *    BUG-16941 ê³¼ ê°™ì´ T ê°€ closed line stringì¼ ê²½ìš°ë¥¼ ê³ ë ¤í•˜ì—¬ì•¼ í•œë‹¤.
  *
  *      T-------------------------------------T
  *      |                                     |
@@ -4602,11 +4602,11 @@ stfRelation::lineInLineString( stdPoint2D                * aPt1,
 
     stdPoint2D * sFirstPt;
 
-    // Line StringÀÇ Segment °³¼ö
+    // Line Stringì˜ Segment ê°œìˆ˜
     SInt   sLSegCnt;
     idBool sClosed;
 
-    // Á¡ÀÌ Æ÷ÇÔµÇ´Â SegmentÀÇ À§Ä¡
+    // ì ì´ í¬í•¨ë˜ëŠ” Segmentì˜ ìœ„ì¹˜
     SInt sPt1SegIdx;
     SInt sPt2SegIdx;
 
@@ -4626,8 +4626,8 @@ stfRelation::lineInLineString( stdPoint2D                * aPt1,
     //-------------------------------------------
 
     sResult = ID_FALSE;
-    sPt1SegIdx = -1;  // Æ÷ÇÔµÇ´Â À§Ä¡°¡ ¾øÀ½
-    sPt2SegIdx = -1;  // Æ÷ÇÔµÇ´Â À§Ä¡°¡ ¾øÀ½
+    sPt1SegIdx = -1;  // í¬í•¨ë˜ëŠ” ìœ„ì¹˜ê°€ ì—†ìŒ
+    sPt2SegIdx = -1;  // í¬í•¨ë˜ëŠ” ìœ„ì¹˜ê°€ ì—†ìŒ
 
     sLSegCnt = STD_N_POINTS(aLine) - 1;
     sClosed = stdUtils::isClosed2D( (stdGeometryHeader*) aLine );
@@ -4635,85 +4635,85 @@ stfRelation::lineInLineString( stdPoint2D                * aPt1,
     sFirstPt = STD_FIRST_PT2D(aLine);
     
     //-------------------------------------------
-    // SegmentÀÇ µÎ Á¡ÀÌ
-    // Line StringÀÇ ¾î´À Segment¿¡ Æ÷ÇÔµÇ´ÂÁö °Ë»ç
+    // Segmentì˜ ë‘ ì ì´
+    // Line Stringì˜ ì–´ëŠ Segmentì— í¬í•¨ë˜ëŠ”ì§€ ê²€ì‚¬
     //-------------------------------------------
     
     for( i = 0; i < sLSegCnt; i++ )
     {
         //-------------------------------
-        // Á¡1 ÀÌ Segment¿¡ Æ÷ÇÔµÇ´ÂÁö °Ë»ç
+        // ì 1 ì´ Segmentì— í¬í•¨ë˜ëŠ”ì§€ ê²€ì‚¬
         //-------------------------------
 
         if( sPt1SegIdx == -1 )
         {
-            // À§Ä¡°¡ °áÁ¤µÇÁö ¾ÊÀ½
+            // ìœ„ì¹˜ê°€ ê²°ì •ë˜ì§€ ì•ŠìŒ
             if ( stdUtils::between2D( STD_NEXTN_PT2D(sFirstPt,i),
                                       STD_NEXTN_PT2D(sFirstPt,i+1),
                                       aPt1 )
                  == ID_TRUE )
             {
-                // Segment ³»¿¡ Á¡ÀÌ Á¸ÀçÇÏ´Â °æ¿ì
+                // Segment ë‚´ì— ì ì´ ì¡´ì¬í•˜ëŠ” ê²½ìš°
                 sPt1SegIdx = i;
             }
             else
             {
-                // Segment ³»¿¡ Á¸ÀçÇÏÁö ¾Ê´Â °æ¿ì
+                // Segment ë‚´ì— ì¡´ì¬í•˜ì§€ ì•ŠëŠ” ê²½ìš°
             }
         }
         else
         {
-            // ÀÌ¹Ì À§Ä¡°¡ °áÁ¤µÊ
+            // ì´ë¯¸ ìœ„ì¹˜ê°€ ê²°ì •ë¨
         }
 
         //-------------------------------
-        // Á¡2 °¡ Segment¿¡ Æ÷ÇÔµÇ´ÂÁö °Ë»ç
+        // ì 2 ê°€ Segmentì— í¬í•¨ë˜ëŠ”ì§€ ê²€ì‚¬
         //-------------------------------
 
         if( sPt2SegIdx == -1 )
         {
-            // À§Ä¡°¡ °áÁ¤µÇÁö ¾ÊÀ½
+            // ìœ„ì¹˜ê°€ ê²°ì •ë˜ì§€ ì•ŠìŒ
             if ( stdUtils::between2D( STD_NEXTN_PT2D(sFirstPt,i),
                                       STD_NEXTN_PT2D(sFirstPt,i+1),
                                       aPt2 )
                  == ID_TRUE )
             {
-                // Segment ³»¿¡ Á¡ÀÌ Á¸ÀçÇÏ´Â °æ¿ì
+                // Segment ë‚´ì— ì ì´ ì¡´ì¬í•˜ëŠ” ê²½ìš°
                 sPt2SegIdx = i;
             }
             else
             {
-                // Segment ³»¿¡ Á¸ÀçÇÏÁö ¾Ê´Â °æ¿ì
+                // Segment ë‚´ì— ì¡´ì¬í•˜ì§€ ì•ŠëŠ” ê²½ìš°
             }
         }
         else
         {
-            // ÀÌ¹Ì À§Ä¡°¡ °áÁ¤µÊ
+            // ì´ë¯¸ ìœ„ì¹˜ê°€ ê²°ì •ë¨
         }
 
         if( (sPt1SegIdx != -1) && (sPt2SegIdx != -1) )
         {
-            // µÎ Á¡ÀÌ ¸ğµÎ Segment¿¡ Æ÷ÇÔµÈ °æ¿ì 
+            // ë‘ ì ì´ ëª¨ë‘ Segmentì— í¬í•¨ëœ ê²½ìš° 
             break;
         }
     }
 
     //-------------------------------------------
-    // SegmentÀÇ µÎ Á¡ÀÇ À§Ä¡¸¦ ÀÌ¿ëÇÑ °Ë»ç
+    // Segmentì˜ ë‘ ì ì˜ ìœ„ì¹˜ë¥¼ ì´ìš©í•œ ê²€ì‚¬
     //-------------------------------------------
     
     if( (sPt1SegIdx == -1) || (sPt2SegIdx == -1) )
     {
-        // Line String »ó¿¡ µÎ Á¡ÀÌ Á¸ÀçÇÏÁö ¾Ê´Â´Ù
+        // Line String ìƒì— ë‘ ì ì´ ì¡´ì¬í•˜ì§€ ì•ŠëŠ”ë‹¤
         // S----ST-----T-----T
         //sResult = ID_FALSE;
     }
     else
     {
-        // µÎ Á¡ÀÌ ¸ğµÎ Line String³»ÀÇ ¾î´À Segment¿¡ Á¸ÀçÇÔ.
+        // ë‘ ì ì´ ëª¨ë‘ Line Stringë‚´ì˜ ì–´ëŠ Segmentì— ì¡´ì¬í•¨.
         if ( sPt1SegIdx == sPt2SegIdx )
         {
-            // µ¿ÀÏÇÑ Segment¿¡ µÎ Á¡ ¸ğµÎ Á¸ÀçÇÏ´Â °æ¿ì
+            // ë™ì¼í•œ Segmentì— ë‘ ì  ëª¨ë‘ ì¡´ì¬í•˜ëŠ” ê²½ìš°
             //
             // T...T---S====S----T...T
             
@@ -4721,10 +4721,10 @@ stfRelation::lineInLineString( stdPoint2D                * aPt1,
         }
         else
         {
-            // ¼­·Î ´Ù¸¥ Segment¿¡ µÎ Á¡ÀÌ Á¸Àç
+            // ì„œë¡œ ë‹¤ë¥¸ Segmentì— ë‘ ì ì´ ì¡´ì¬
             // T...T---S===T==T==S---T...T
             
-            // ½ÃÀÛ Segment¿Í Á¾·á Segment¸¦ °áÁ¤
+            // ì‹œì‘ Segmentì™€ ì¢…ë£Œ Segmentë¥¼ ê²°ì •
             if ( sPt1SegIdx < sPt2SegIdx )
             {
                 sBeginIdx = sPt1SegIdx;
@@ -4737,8 +4737,8 @@ stfRelation::lineInLineString( stdPoint2D                * aPt1,
             }
 
             //--------------------------------------
-            // µÎ Á¡ »çÀÌ¿¡ Á¸ÀçÇÏ´Â Line StringÀÇ Á¡µéÀÌ
-            // ÀÏÁ÷¼±À» ÀÌ·ç´ÂÁö Tb+1 ºÎÅÍ Te±îÁö °Ë»ç
+            // ë‘ ì  ì‚¬ì´ì— ì¡´ì¬í•˜ëŠ” Line Stringì˜ ì ë“¤ì´
+            // ì¼ì§ì„ ì„ ì´ë£¨ëŠ”ì§€ Tb+1 ë¶€í„° Teê¹Œì§€ ê²€ì‚¬
             //
             // T---Tb--S==T==..==Te==S--T--T--...
             //--------------------------------------
@@ -4750,12 +4750,12 @@ stfRelation::lineInLineString( stdPoint2D                * aPt1,
                                            STD_NEXTN_PT2D(sFirstPt,i) )
                     == ID_TRUE )
                 {
-                    // ¼¼Á¡ÀÌ ÀÏÁ÷¼±À» ÀÌ·ç°í ÀÖÀ½.
+                    // ì„¸ì ì´ ì¼ì§ì„ ì„ ì´ë£¨ê³  ìˆìŒ.
                     sResult = ID_TRUE;
                 }
                 else
                 {
-                    // ¼¼Á¡ÀÌ ÀÏÁ÷¼±ÀÌ ¾Æ´Ô
+                    // ì„¸ì ì´ ì¼ì§ì„ ì´ ì•„ë‹˜
                     //
                     //          Ti--S---T
                     //         /
@@ -4770,9 +4770,9 @@ stfRelation::lineInLineString( stdPoint2D                * aPt1,
             {
                 //--------------------------------------------
                 // BUG-16941
-                // Closed LineStringÀÎ °æ¿ì ¿ª¹æÇâ °Ë»ç°¡ ÇÊ¿äÇÔ
+                // Closed LineStringì¸ ê²½ìš° ì—­ë°©í–¥ ê²€ì‚¬ê°€ í•„ìš”í•¨
                 //
-                //                   ½ÃÀÛÁ¡°ú ³¡Á¡
+                //                   ì‹œì‘ì ê³¼ ëì 
                 //                      |
                 //                      V
                 // ...Te--S==T==..==T==TT0==T==..==Tb==S--T...
@@ -4785,7 +4785,7 @@ stfRelation::lineInLineString( stdPoint2D                * aPt1,
                                                STD_NEXTN_PT2D(sFirstPt,i) )
                         == ID_TRUE )
                     {
-                        // ¼¼Á¡ÀÌ ÀÏÁ÷¼±À» ÀÌ·ç°í ÀÖÀ½.
+                        // ì„¸ì ì´ ì¼ì§ì„ ì„ ì´ë£¨ê³  ìˆìŒ.
                         sResult = ID_TRUE;
                     }
                     else
@@ -4802,7 +4802,7 @@ stfRelation::lineInLineString( stdPoint2D                * aPt1,
                                                STD_NEXTN_PT2D(sFirstPt,i) )
                         == ID_TRUE )
                     {
-                        // ¼¼Á¡ÀÌ ÀÏÁ÷¼±À» ÀÌ·ç°í ÀÖÀ½.
+                        // ì„¸ì ì´ ì¼ì§ì„ ì„ ì´ë£¨ê³  ìˆìŒ.
                         sResult = ID_TRUE;
                     }
                     else
@@ -4827,11 +4827,11 @@ stfRelation::lineInLineString( stdPoint2D                * aPt1,
 
 /***********************************************************************
  * Description:
- * ÇÑ ¼±ºĞÀÌ ¸µÀÇ Boundary¿¡ Æ÷ÇÔµÇ¸é ID_TRUE ¾Æ´Ï¸é ID_FASLE ¸®ÅÏ
+ * í•œ ì„ ë¶„ì´ ë§ì˜ Boundaryì— í¬í•¨ë˜ë©´ ID_TRUE ì•„ë‹ˆë©´ ID_FASLE ë¦¬í„´
  *
- * stdPoint2D*             aPt1(In): ¼±ºĞ
- * stdPoint2D*             aPt2(In): ¼±ºĞ
- * stdLinearRing2D*        aRing(In): ¸µ
+ * stdPoint2D*             aPt1(In): ì„ ë¶„
+ * stdPoint2D*             aPt2(In): ì„ ë¶„
+ * stdLinearRing2D*        aRing(In): ë§
  **********************************************************************/
 idBool stfRelation::lineInRing(
                             stdPoint2D*             aPt1,
@@ -4938,7 +4938,7 @@ idBool stfRelation::lineInRing(
 }
 
 //==============================================================================
-// °´Ã¼¿Í °´Ã¼ÀÇ °ü°è¸¦ ¸®ÅÏÇÏ´Â ÇÔ¼öÀÇ ÀÌ¸§Àº ´ÙÀ½°ú °°´Ù
+// ê°ì²´ì™€ ê°ì²´ì˜ ê´€ê³„ë¥¼ ë¦¬í„´í•˜ëŠ” í•¨ìˆ˜ì˜ ì´ë¦„ì€ ë‹¤ìŒê³¼ ê°™ë‹¤
 //
 // Single       s
 // Multi        m
@@ -4952,11 +4952,11 @@ idBool stfRelation::lineInRing(
 // Boundary     b
 // Exterior     e
 //
-// °á°ú °ªÀº Â÷¿øÀ» ¸®ÅÏÇÑ´Ù
-// '0' Á¡
-// '1' ¼±
-// '2' ¸é
-// 'F' Á¸ÀçÇÏÁö ¾Ê´Â´Ù.
+// ê²°ê³¼ ê°’ì€ ì°¨ì›ì„ ë¦¬í„´í•œë‹¤
+// '0' ì 
+// '1' ì„ 
+// '2' ë©´
+// 'F' ì¡´ì¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
 //==============================================================================
 
 /* Point **************************************************************/
@@ -5054,7 +5054,7 @@ SChar stfRelation::spiTosle( const stdPoint2D*                  aObj1,
 }
 
 //==============================================================================
-// TASK-2015 ÇÑ Á¡ÀÌ ¸µ ³»ºÎ¿¡ Á¸ÀçÇÏ´ÂÁö ÆÇº°
+// TASK-2015 í•œ ì ì´ ë§ ë‚´ë¶€ì— ì¡´ì¬í•˜ëŠ”ì§€ íŒë³„
 //==============================================================================
 // point vs polygon
 SChar stfRelation::spiTosai( const stdPoint2D*                  aObj1,
@@ -5124,7 +5124,7 @@ SChar stfRelation::spiTosab( const stdPoint2D*                  aObj1,
 }
 
 //==============================================================================
-// TASK-2015 ÇÑ Á¡ÀÌ ¸µ ³»ºÎ¿¡ Á¸ÀçÇÏ´ÂÁö ÆÇº°
+// TASK-2015 í•œ ì ì´ ë§ ë‚´ë¶€ì— ì¡´ì¬í•˜ëŠ”ì§€ íŒë³„
 //==============================================================================
 SChar stfRelation::spiTosae( const stdPoint2D*                  aObj1,
                              const stdPolygon2DType*            aObj2 )
@@ -5595,12 +5595,12 @@ SChar stfRelation::speTogcb( const stdPoint2D*              /*aObj1*/,
 /***********************************************************************
  * Description:
  *
- *    SLI(Single LineString Internal)°ú SLIÀÇ
- *    DE-9IM °ü°è¸¦ ±¸ÇÑ´Ù.
+ *    SLI(Single LineString Internal)ê³¼ SLIì˜
+ *    DE-9IM ê´€ê³„ë¥¼ êµ¬í•œë‹¤.
  *
  * Implementation:
  *
- *    °¢ ¼±À» Segment ´ÜÀ§·Î ÂÉ°³¾î °ü°è¸¦ ±¸ÇÏ°í ÀÌÀÇ ÃÖ´ë°ªÀ» ±¸ÇÑ´Ù.
+ *    ê° ì„ ì„ Segment ë‹¨ìœ„ë¡œ ìª¼ê°œì–´ ê´€ê³„ë¥¼ êµ¬í•˜ê³  ì´ì˜ ìµœëŒ€ê°’ì„ êµ¬í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -5617,16 +5617,16 @@ stfRelation::sliTosli( const stdLineString2DType*         aObj1,
     stdPoint2D * sPt1;
     stdPoint2D * sPt2;
 
-    // LineStringÀ» ±¸¼ºÇÏ´Â SegmentÀÇ °³¼ö
+    // LineStringì„ êµ¬ì„±í•˜ëŠ” Segmentì˜ ê°œìˆ˜
     UInt         sLSegCnt1;
     UInt         sLSegCnt2;
 
-    // ´ÜÇôÀÖ´Â LineStringÀÎÁöÀÇ ¿©ºÎ
+    // ë‹¨í˜€ìˆëŠ” LineStringì¸ì§€ì˜ ì—¬ë¶€
     idBool       sClosed1;
     idBool       sClosed2;
 
     // To Fix BUG-16912
-    // Á¾´ÜÁ¡ÀÎÁö ¿¬°áÁ¡ÀÎÁöÀÇ ¿©ºÎ
+    // ì¢…ë‹¨ì ì¸ì§€ ì—°ê²°ì ì¸ì§€ì˜ ì—¬ë¶€
     idBool       sIsTermSeg1Begin;
     idBool       sIsTermSeg1End;
     idBool       sIsTermSeg2Begin;
@@ -5652,7 +5652,7 @@ stfRelation::sliTosli( const stdLineString2DType*         aObj1,
     sClosed2 = stdUtils::isClosed2D((stdGeometryHeader*)aObj2);
 
     //--------------------------------
-    // µÎ LineStringÀ» Segment ´ÜÀ§·Î °ü°è¸¦ °Ë»ç
+    // ë‘ LineStringì„ Segment ë‹¨ìœ„ë¡œ ê´€ê³„ë¥¼ ê²€ì‚¬
     //--------------------------------
     
     for( i = 0, sPt1 = STD_FIRST_PT2D(aObj1);
@@ -5660,12 +5660,12 @@ stfRelation::sliTosli( const stdLineString2DType*         aObj1,
          i++, sPt1 = STD_NEXT_PT2D(sPt1) )
     {
         //--------------------------
-        // BUG-16912 Segment1ÀÇ Á¡ÀÌ Á¾´ÜÁ¡ÀÎÁö ÆÇ´Ü
+        // BUG-16912 Segment1ì˜ ì ì´ ì¢…ë‹¨ì ì¸ì§€ íŒë‹¨
         //--------------------------
 
         if ( sClosed1 != ID_TRUE )
         {
-            // ¿­¸° LineStringÀÎ °æ¿ì
+            // ì—´ë¦° LineStringì¸ ê²½ìš°
             if ( i == 0 )
             {
                 sIsTermSeg1Begin = ID_TRUE;
@@ -5686,13 +5686,13 @@ stfRelation::sliTosli( const stdLineString2DType*         aObj1,
         }
         else
         {
-            // ´İÈù LineStringÀÎ °æ¿ì
+            // ë‹«íŒ LineStringì¸ ê²½ìš°
             sIsTermSeg1Begin = ID_FALSE;
             sIsTermSeg1End = ID_FALSE;
         }
 
         //--------------------------
-        // Segment1°ú LineStringÀÇ °ü°è¸¦ °Ë»ç
+        // Segment1ê³¼ LineStringì˜ ê´€ê³„ë¥¼ ê²€ì‚¬
         //--------------------------
         
         for( j = 0, sPt2 = STD_FIRST_PT2D(aObj2);
@@ -5700,12 +5700,12 @@ stfRelation::sliTosli( const stdLineString2DType*         aObj1,
              j++, sPt2 = STD_NEXT_PT2D(sPt2) )
         {
             //--------------------------
-            // BUG-16912 Segment2ÀÇ Á¡ÀÌ Á¾´ÜÁ¡ÀÎÁö ÆÇ´Ü
+            // BUG-16912 Segment2ì˜ ì ì´ ì¢…ë‹¨ì ì¸ì§€ íŒë‹¨
             //--------------------------
 
             if ( sClosed2 != ID_TRUE )
             {
-                // ¿­¸° LineStringÀÎ °æ¿ì
+                // ì—´ë¦° LineStringì¸ ê²½ìš°
                 if ( j == 0 )
                 {
                     sIsTermSeg2Begin = ID_TRUE;
@@ -5726,13 +5726,13 @@ stfRelation::sliTosli( const stdLineString2DType*         aObj1,
             }
             else
             {
-                // ´İÈù LineStringÀÎ °æ¿ì
+                // ë‹«íŒ LineStringì¸ ê²½ìš°
                 sIsTermSeg2Begin = ID_FALSE;
                 sIsTermSeg2End = ID_FALSE;
             }
 
             //--------------------------
-            // Line Segment°£ÀÇ °ü°è È¹µæ
+            // Line Segmentê°„ì˜ ê´€ê³„ íšë“
             //--------------------------
             
             sTemp = compLineSegment( sPt1,
@@ -5745,12 +5745,12 @@ stfRelation::sliTosli( const stdLineString2DType*         aObj1,
                                      sIsTermSeg2End );
 
             //--------------------------
-            // °ü°è °á°ú ´©Àû
+            // ê´€ê³„ ê²°ê³¼ ëˆ„ì 
             //--------------------------
             
             if ( sTemp == 'F' )
             {
-                // ´©ÀûÇÒ ÇÊ¿ä ¾øÀ½
+                // ëˆ„ì í•  í•„ìš” ì—†ìŒ
             }
             else
             {
@@ -5758,7 +5758,7 @@ stfRelation::sliTosli( const stdLineString2DType*         aObj1,
                 
                 sResult = sTemp;
                 
-                // ¼±ºĞÀÌ ±³Â÷ÇÏ´Â °æ¿ì°¡ ÃÖ´ë °ü°èÀÓ
+                // ì„ ë¶„ì´ êµì°¨í•˜ëŠ” ê²½ìš°ê°€ ìµœëŒ€ ê´€ê³„ì„
                 IDE_TEST_RAISE( sResult == '1', SLI2D_MAX_RESULT );
             }
         }
@@ -5880,25 +5880,25 @@ SChar stfRelation::slbTosle( const stdLineString2DType*         aObj1,
 /***********************************************************************
  * Description:
  *
- *    SLI(Single LineString Internal)°ú
- *    SAI(Single Area Internal)ÀÇ DE-9IM °ü°è¸¦ ±¸ÇÑ´Ù.
+ *    SLI(Single LineString Internal)ê³¼
+ *    SAI(Single Area Internal)ì˜ DE-9IM ê´€ê³„ë¥¼ êµ¬í•œë‹¤.
  *
  * Implementation:
  *
- *   LineStringÀ» ±¸¼ºÇÏ´Â [Á¡, ¼±ºĞ] °ú
- *   PolygonÀ» ±¸¼ºÇÏ´Â [Á¡, ¼±ºĞ, ¸é]ÀÇ °ü°è¸¦ ÅëÇØ ±¸ÇØ³½´Ù.
+ *   LineStringì„ êµ¬ì„±í•˜ëŠ” [ì , ì„ ë¶„] ê³¼
+ *   Polygonì„ êµ¬ì„±í•˜ëŠ” [ì , ì„ ë¶„, ë©´]ì˜ ê´€ê³„ë¥¼ í†µí•´ êµ¬í•´ë‚¸ë‹¤.
  *
  *   ================================
  *     LineString .vs. Polygon
  *   ================================
  *
- *   1. ¼±ºĞ .vs. ¸é
+ *   1. ì„ ë¶„ .vs. ë©´
  *
- *       - ÀÌ ÇÔ¼öÀÇ ¸ñÀûÀ¸·Î ´Ù¸¥ °ü°è·ÎºÎÅÍ À¯Ãß
+ *       - ì´ í•¨ìˆ˜ì˜ ëª©ì ìœ¼ë¡œ ë‹¤ë¥¸ ê´€ê³„ë¡œë¶€í„° ìœ ì¶”
  *
- *   2. Á¡ .vs. ¸é 
- *       - Á¡ÀÌ ¿ÜºÎ¿¡ Á¸Àç : À¯Ãß ºÒ°¡
- *       - Á¡ÀÌ ³»ºÎ¿¡ Á¸Àç : TRUE
+ *   2. ì  .vs. ë©´ 
+ *       - ì ì´ ì™¸ë¶€ì— ì¡´ì¬ : ìœ ì¶” ë¶ˆê°€
+ *       - ì ì´ ë‚´ë¶€ì— ì¡´ì¬ : TRUE
  *
  *                A--------A
  *                |        |
@@ -5906,9 +5906,9 @@ SChar stfRelation::slbTosle( const stdLineString2DType*         aObj1,
  *                |        |
  *                A--------A
  *                 
- *   3. ¼±ºĞ .vs. ¼±ºĞ
- *       - ±³Â÷ÇÏÁö ¾Ê´Â °æ¿ì : À¯Ãß ºÒ°¡
- *       - ¼±ºĞÀÌ ¼±ºĞÀ¸·Î ±³Â÷ : Á¡°ú Á¡ÀÇ °ü°è·ÎºÎÅÍ À¯Ãß °¡´É
+ *   3. ì„ ë¶„ .vs. ì„ ë¶„
+ *       - êµì°¨í•˜ì§€ ì•ŠëŠ” ê²½ìš° : ìœ ì¶” ë¶ˆê°€
+ *       - ì„ ë¶„ì´ ì„ ë¶„ìœ¼ë¡œ êµì°¨ : ì ê³¼ ì ì˜ ê´€ê³„ë¡œë¶€í„° ìœ ì¶” ê°€ëŠ¥
  *
  *             L---A====L----A
  *
@@ -5916,7 +5916,7 @@ SChar stfRelation::slbTosle( const stdLineString2DType*         aObj1,
  *
  *             A---L====L----A
  *
- *       - ¼±ºĞÀÌ Á¡¿¡¼­ ±³Â÷ : Á¡°ú Á¡ÀÇ °ü°è·ÎºÎÅÍ À¯Ãß
+ *       - ì„ ë¶„ì´ ì ì—ì„œ êµì°¨ : ì ê³¼ ì ì˜ ê´€ê³„ë¡œë¶€í„° ìœ ì¶”
  *
  *                L
  *                |
@@ -5924,8 +5924,8 @@ SChar stfRelation::slbTosle( const stdLineString2DType*         aObj1,
  *                |
  *                L
  *
- *          ±×·¯³ª, ±³Â÷ÇÏ´õ¶óµµ ´ÙÀ½°ú °°ÀÌ Interior RingÀÇ ÇÑÁ¡ÀÏ °æ¿ì¸¦
- *          °í·ÁÇÏ¿©¾ß ÇÑ´Ù.
+ *          ê·¸ëŸ¬ë‚˜, êµì°¨í•˜ë”ë¼ë„ ë‹¤ìŒê³¼ ê°™ì´ Interior Ringì˜ í•œì ì¼ ê²½ìš°ë¥¼
+ *          ê³ ë ¤í•˜ì—¬ì•¼ í•œë‹¤.
  *
  *                L
  *                |
@@ -5933,9 +5933,9 @@ SChar stfRelation::slbTosle( const stdLineString2DType*         aObj1,
  *               /|\
  *              I L I
  *
- *   4. Á¡ .vs. ¼±ºĞ
- *       - ±³Â÷ÇÏÁö ¾Ê´Â °æ¿ì : À¯Ãß ºÒ°¡
- *       - Á¡ÀÌ ¼±ºĞ¿¡¼­ ±³Â÷ : Á¡°ú Á¡ÀÇ °ü°è·ÎºÎÅÍ À¯Ãß °¡´É
+ *   4. ì  .vs. ì„ ë¶„
+ *       - êµì°¨í•˜ì§€ ì•ŠëŠ” ê²½ìš° : ìœ ì¶” ë¶ˆê°€
+ *       - ì ì´ ì„ ë¶„ì—ì„œ êµì°¨ : ì ê³¼ ì ì˜ ê´€ê³„ë¡œë¶€í„° ìœ ì¶” ê°€ëŠ¥
  *
  *               Lp                     Lp
  *               |                      |
@@ -5943,9 +5943,9 @@ SChar stfRelation::slbTosle( const stdLineString2DType*         aObj1,
  *               |                      |
  *               Ln                     Ln
  *
- *   5. ¼±ºĞ .vs. Á¡
- *       - ±³Â÷ÇÏÁö ¾Ê´Â °æ¿ì : À¯Ãß ºÒ°¡
- *       - Á¡ÀÌ ¼±ºĞ¿¡¼­ ±³Â÷ : Á¡°ú Á¡ÀÇ °ü°è·ÎºÎÅÍ À¯Ãß °¡´É
+ *   5. ì„ ë¶„ .vs. ì 
+ *       - êµì°¨í•˜ì§€ ì•ŠëŠ” ê²½ìš° : ìœ ì¶” ë¶ˆê°€
+ *       - ì ì´ ì„ ë¶„ì—ì„œ êµì°¨ : ì ê³¼ ì ì˜ ê´€ê³„ë¡œë¶€í„° ìœ ì¶” ê°€ëŠ¥
  *
  *               Ap                    Ap
  *               |                     |
@@ -5953,9 +5953,9 @@ SChar stfRelation::slbTosle( const stdLineString2DType*         aObj1,
  *               |                     |
  *               An                    An
  *
- *   6. Á¡ .vs. Á¡
- *       - ±³Â÷ÇÏÁö ¾Ê´Â °æ¿ì : À¯Ãß ºÒ°¡
- *       - Á¡¿¡¼­ ±³Â÷ : Á¡°ú Á¡ÀÇ °ü°è·ÎºÎÅÍ À¯Ãß
+ *   6. ì  .vs. ì 
+ *       - êµì°¨í•˜ì§€ ì•ŠëŠ” ê²½ìš° : ìœ ì¶” ë¶ˆê°€
+ *       - ì ì—ì„œ êµì°¨ : ì ê³¼ ì ì˜ ê´€ê³„ë¡œë¶€í„° ìœ ì¶”
  *
  *                Lp
  *                |
@@ -5963,16 +5963,16 @@ SChar stfRelation::slbTosle( const stdLineString2DType*         aObj1,
  *                |
  *                Ln
  *
- *   BUG-16977 : BUG-16952¿Í µ¿ÀÏÇÑ ¹æ½ÄÀ¸·Î ±âÁ¸ ·ÎÁ÷À» ´ÙÀ½°ú °°ÀÌ ¼öÁ¤ÇÔ
- *      1) LineÀÇ Á¡°ú AreaÀÇ ¼±ºĞÀÌ ±³Â÷ ·ÎÁ÷ ==> Á¡°ú Á¡ÀÇ ±³Â÷ ¾Ë°í¸®ÁòÀ¸·Î ¼öÁ¤
- *      2) LineÀÇ ¼±ºĞ°ú AreaÀÇ Á¡ÀÌ ±³Â÷ ·ÎÁ÷ ==> Á¡°ú Á¡ÀÇ ±³Â÷ ¾Ë°í¸®ÁòÀ¸·Î ¼öÁ¤
- *      3) Á¡°ú Á¡ÀÇ ±³Â÷ ·ÎÁ÷ ==> ¼öÆò¿¡ ´ëÇÑ °ËÃâÀÌ µÇµµ·Ï È®Àå
+ *   BUG-16977 : BUG-16952ì™€ ë™ì¼í•œ ë°©ì‹ìœ¼ë¡œ ê¸°ì¡´ ë¡œì§ì„ ë‹¤ìŒê³¼ ê°™ì´ ìˆ˜ì •í•¨
+ *      1) Lineì˜ ì ê³¼ Areaì˜ ì„ ë¶„ì´ êµì°¨ ë¡œì§ ==> ì ê³¼ ì ì˜ êµì°¨ ì•Œê³ ë¦¬ì¦˜ìœ¼ë¡œ ìˆ˜ì •
+ *      2) Lineì˜ ì„ ë¶„ê³¼ Areaì˜ ì ì´ êµì°¨ ë¡œì§ ==> ì ê³¼ ì ì˜ êµì°¨ ì•Œê³ ë¦¬ì¦˜ìœ¼ë¡œ ìˆ˜ì •
+ *      3) ì ê³¼ ì ì˜ êµì°¨ ë¡œì§ ==> ìˆ˜í‰ì— ëŒ€í•œ ê²€ì¶œì´ ë˜ë„ë¡ í™•ì¥
  *
- *   SLI.vs.SAE ¿Í ´Ş¸® ÁÖÀÇÇÏ¿©¾ß ÇÒ »çÇ×ÀÌ ÀÖ´Ù.
+ *   SLI.vs.SAE ì™€ ë‹¬ë¦¬ ì£¼ì˜í•˜ì—¬ì•¼ í•  ì‚¬í•­ì´ ìˆë‹¤.
  *
- *   Á¡°ú Á¡ÀÇ °ü°è¿¡¼­ ´ÙÀ½°ú °°ÀÌ ³»ºÎ¿¡ ÀÖ´Ù ÇÏ´õ¶óµµ
- *   ¼±ºĞÀÌ Interia Ring ¶§¹®¿¡ ³»ºÎ¿µ¿ª°ú ±³Â÷ÇÔÀ» º¸ÀåÇÒ ¼ö ¾ø´Ù.
- *   µû¶ó¼­, ±¸¼ºµÈ LineÀÌ Interior Ring³»ºÎ¿¡ Æ÷ÇÔµÇÁö ¾ÊÀ½À» °Ë»çÇØ¾ß ÇÔ.
+ *   ì ê³¼ ì ì˜ ê´€ê³„ì—ì„œ ë‹¤ìŒê³¼ ê°™ì´ ë‚´ë¶€ì— ìˆë‹¤ í•˜ë”ë¼ë„
+ *   ì„ ë¶„ì´ Interia Ring ë•Œë¬¸ì— ë‚´ë¶€ì˜ì—­ê³¼ êµì°¨í•¨ì„ ë³´ì¥í•  ìˆ˜ ì—†ë‹¤.
+ *   ë”°ë¼ì„œ, êµ¬ì„±ëœ Lineì´ Interior Ringë‚´ë¶€ì— í¬í•¨ë˜ì§€ ì•ŠìŒì„ ê²€ì‚¬í•´ì•¼ í•¨.
  *
  *      Ap  
  *       \    Area
@@ -5997,7 +5997,7 @@ stfRelation::sliTosai( const stdLineString2DType * aLineObj,
     SChar   sResult;
     
     //----------------------------
-    // Line String Á¤º¸
+    // Line String ì •ë³´
     //----------------------------
     
     stdPoint2D      * sLinePt;
@@ -6008,18 +6008,18 @@ stfRelation::sliTosai( const stdLineString2DType * aLineObj,
     UInt              sLinePtCnt;
     
     //----------------------------
-    // Ring Á¤º¸
+    // Ring ì •ë³´
     //----------------------------
     
     stdLinearRing2D * sRing;
     stdPoint2D      * sRingPt;
-    stdPoint2D      * sRingPrevPt;  // Ring PointÀÇ ÀÌÀü Point
-    stdPoint2D      * sRingCurrPt;  // Ring PointÀÇ ÀÌÀü Point
-    stdPoint2D      * sRingNextPt;  // Ring PointÀÇ ´ÙÀ½ Point
+    stdPoint2D      * sRingPrevPt;  // Ring Pointì˜ ì´ì „ Point
+    stdPoint2D      * sRingCurrPt;  // Ring Pointì˜ ì´ì „ Point
+    stdPoint2D      * sRingNextPt;  // Ring Pointì˜ ë‹¤ìŒ Point
     
     UInt              sRingCnt;     // Ring Count of a Polygon
     UInt              sRingSegCnt;  // Segment Count of a Ring
-    idBool            sRingCCWise;  // Ring ÀÌ ½Ã°è ¿ª¹æÇâÀÎÁöÀÇ ¿©ºÎ
+    idBool            sRingCCWise;  // Ring ì´ ì‹œê³„ ì—­ë°©í–¥ì¸ì§€ì˜ ì—¬ë¶€
 
     UInt              sCheckSegCnt;
     stdLinearRing2D * sCheckRing;
@@ -6045,14 +6045,14 @@ stfRelation::sliTosai( const stdLineString2DType * aLineObj,
     sRingCnt = STD_N_RINGS(aAreaObj);
     
     //----------------------------------------
-    // LineStringÀÇ Á¡°ú PolygonÀÇ ³»ºÎ ¸éÀÇ °ü°è
+    // LineStringì˜ ì ê³¼ Polygonì˜ ë‚´ë¶€ ë©´ì˜ ê´€ê³„
     //----------------------------------------
 
     for ( i = 0, sLinePt = STD_FIRST_PT2D(aLineObj);
           i < sLinePtCnt;
           i++, sLinePt = STD_NEXT_PT2D(sLinePt) )
     {
-        // LineStringÀÇ ÇÑÁ¡ÀÌ PolygonÀÇ ³»ºÎ¿¡ Á¸ÀçÇÏ´ÂÁö ÆÇ´Ü
+        // LineStringì˜ í•œì ì´ Polygonì˜ ë‚´ë¶€ì— ì¡´ì¬í•˜ëŠ”ì§€ íŒë‹¨
         if( spiTosai( sLinePt, aAreaObj ) == '0' )
         {
             sResult = '1';
@@ -6065,14 +6065,14 @@ stfRelation::sliTosai( const stdLineString2DType * aLineObj,
     }
 
     //----------------------------------------
-    // LineStringÀÇ Á¡, ¼±ºĞ°ú PolygonÀÇ Á¡, ¼±ºĞÀÇ °ü°è
+    // LineStringì˜ ì , ì„ ë¶„ê³¼ Polygonì˜ ì , ì„ ë¶„ì˜ ê´€ê³„
     //----------------------------------------
 
     for ( i = 0, sLinePt = STD_FIRST_PT2D(aLineObj), sLinePrevPt = NULL;
           i < sLinePtCnt;
           i++, sLinePrevPt = sLinePt, sLinePt = STD_NEXT_PT2D(sLinePt) )
     {
-        // RingÀÇ °³¼ö¸¸Å­ ¹İº¹
+        // Ringì˜ ê°œìˆ˜ë§Œí¼ ë°˜ë³µ
         for ( j = 0, sRing = STD_FIRST_RN2D(aAreaObj);
               j < sRingCnt;
               j++, sRing = STD_NEXT_RN2D(sRing) )
@@ -6080,26 +6080,26 @@ stfRelation::sliTosai( const stdLineString2DType * aLineObj,
             sRingSegCnt = STD_N_POINTS(sRing) - 1;
             sRingCCWise = stdUtils::isCCW2D(sRing);
 
-            // RingÀ» ±¸¼ºÇÏ´Â Segment °³¼ö¸¸Å­ ¹İº¹
+            // Ringì„ êµ¬ì„±í•˜ëŠ” Segment ê°œìˆ˜ë§Œí¼ ë°˜ë³µ
             for ( k = 0, sRingPt = STD_FIRST_PT2D(sRing);
                   k < sRingSegCnt;
                   k++, sRingPt = STD_NEXT_PT2D(sRingPt) )
             {
                 //----------------------------------------
-                // ´ÙÀ½ °ü°è¸¦ Á¡°ú Á¡ÀÇ °ü°è·Î ¸¸µé±â À§ÇÑ Á¶Á¤
-                //  - LineString ³»ºÎ ¼±ºĞ°ú RingÀÇ ¼±ºĞ°úÀÇ °ü°è
-                //  - LineString ³»ºÎ ¼±ºĞ°ú RingÀÇ Á¡°úÀÇ °ü°è
-                //  - RingÀÇ ³»ºÎ ¼±ºĞ°ú LineStringÀÇ Á¡°úÀÇ °ü°è
-                //  - LineStringÀÇ Á¡°ú RingÀÇ Á¡°úÀÇ °ü°è
+                // ë‹¤ìŒ ê´€ê³„ë¥¼ ì ê³¼ ì ì˜ ê´€ê³„ë¡œ ë§Œë“¤ê¸° ìœ„í•œ ì¡°ì •
+                //  - LineString ë‚´ë¶€ ì„ ë¶„ê³¼ Ringì˜ ì„ ë¶„ê³¼ì˜ ê´€ê³„
+                //  - LineString ë‚´ë¶€ ì„ ë¶„ê³¼ Ringì˜ ì ê³¼ì˜ ê´€ê³„
+                //  - Ringì˜ ë‚´ë¶€ ì„ ë¶„ê³¼ LineStringì˜ ì ê³¼ì˜ ê´€ê³„
+                //  - LineStringì˜ ì ê³¼ Ringì˜ ì ê³¼ì˜ ê´€ê³„
                 //----------------------------------------
 
                 sMeetOnPoint = ID_FALSE;
 
                 //----------------------------
-                // LineStringÀÇ ÇöÀçÁ¡, ÀÌÀüÁ¡, ÀÌÈÄÁ¡À» ±¸ÇÔ
+                // LineStringì˜ í˜„ì¬ì , ì´ì „ì , ì´í›„ì ì„ êµ¬í•¨
                 //----------------------------
                 
-                // sLinePrevPt :  for loopÀ» ÅëÇØ ÃßÃâ
+                // sLinePrevPt :  for loopì„ í†µí•´ ì¶”ì¶œ
                 sLineCurrPt = sLinePt;
                 if ( i == sLineSegCnt )
                 {
@@ -6111,7 +6111,7 @@ stfRelation::sliTosai( const stdLineString2DType * aLineObj,
                 }
                 
                 //----------------------------
-                // RingÀÇ ÇöÀçÁ¡, ÀÌÀüÁ¡, ÀÌÈÄÁ¡À» ±¸ÇÔ
+                // Ringì˜ í˜„ì¬ì , ì´ì „ì , ì´í›„ì ì„ êµ¬í•¨
                 //----------------------------
                 
                 sRingPrevPt = stdUtils::findPrevPointInRing2D( sRingPt,
@@ -6124,7 +6124,7 @@ stfRelation::sliTosai( const stdLineString2DType * aLineObj,
                                                                sRingSegCnt,
                                                                NULL );
 
-                // ¼±ºĞÀÇ ³»ºÎ°¡ ±³Â÷ÇÏ´ÂÁö °Ë»ç
+                // ì„ ë¶„ì˜ ë‚´ë¶€ê°€ êµì°¨í•˜ëŠ”ì§€ ê²€ì‚¬
                 if( ( i < sLineSegCnt ) &&
                     ( stdUtils::intersectI2D( sLinePt,
                                               STD_NEXT_PT2D(sLinePt),
@@ -6132,8 +6132,8 @@ stfRelation::sliTosai( const stdLineString2DType * aLineObj,
                                               STD_NEXT_PT2D(sRingPt) )
                       ==ID_TRUE ) )
                 {
-                    // ¼±ºĞÀÌ ±³Â÷ÇÏ´Â °æ¿ì
-                    // ¼±ºĞÀÌ ±³Â÷ÇÏ´õ¶óµµ ´Ù¸¥ RingÀÇ ÇÑÁ¡ÀÎÁö ÆÇ´ÜÇÏ¿©¾ß ÇÑ´Ù.
+                    // ì„ ë¶„ì´ êµì°¨í•˜ëŠ” ê²½ìš°
+                    // ì„ ë¶„ì´ êµì°¨í•˜ë”ë¼ë„ ë‹¤ë¥¸ Ringì˜ í•œì ì¸ì§€ íŒë‹¨í•˜ì—¬ì•¼ í•œë‹¤.
                     //
                     //      L
                     //      |
@@ -6168,7 +6168,7 @@ stfRelation::sliTosai( const stdLineString2DType * aLineObj,
                 }
                 
                 //----------------------------
-                // ¼±ºĞ³»¿¡ RingÀÇ Á¡ÀÌ Á¸ÀçÇÏ´ÂÁö °Ë»ç
+                // ì„ ë¶„ë‚´ì— Ringì˜ ì ì´ ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬
                 //----------------------------
                 
                 if ( ( i < sLineSegCnt ) &&
@@ -6176,7 +6176,7 @@ stfRelation::sliTosai( const stdLineString2DType * aLineObj,
                                              STD_NEXT_PT2D(sLinePt),
                                              sRingPt )==ID_TRUE ) )
                 {
-                    // Á¡ÀÌ ¼±ºĞ¿¡¼­ ±³Â÷ => Á¡°ú Á¡ÀÇ °ü°è·Î º¯°æ
+                    // ì ì´ ì„ ë¶„ì—ì„œ êµì°¨ => ì ê³¼ ì ì˜ ê´€ê³„ë¡œ ë³€ê²½
                     //               Ap                    Ap
                     //               |                     |
                     //         L-----A-----L  ==>   Lp----LA----Ln  
@@ -6190,14 +6190,14 @@ stfRelation::sliTosai( const stdLineString2DType * aLineObj,
                 }
                 
                 //----------------------------
-                // Ring ¼±ºĞ³»¿¡ LineStringÀÇ Á¡ÀÌ Á¸ÀçÇÏ´ÂÁö °Ë»ç
+                // Ring ì„ ë¶„ë‚´ì— LineStringì˜ ì ì´ ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬
                 //----------------------------
 
                 if ( stdUtils::betweenI2D( sRingPt,
                                            STD_NEXT_PT2D(sRingPt),
                                            sLinePt ) == ID_TRUE )
                 {
-                    // Á¡ÀÌ ¼±ºĞ¿¡¼­ ±³Â÷ => Á¡°ú Á¡ÀÇ °ü°è·Î º¯°æ
+                    // ì ì´ ì„ ë¶„ì—ì„œ êµì°¨ => ì ê³¼ ì ì˜ ê´€ê³„ë¡œ ë³€ê²½
                     //               Lp                     Lp
                     //               |                      |
                     //         A-----L------A  ==>   Ap----AL----An  
@@ -6214,25 +6214,25 @@ stfRelation::sliTosai( const stdLineString2DType * aLineObj,
                 }
 
                 //----------------------------
-                // Á¡°ú Á¡ÀÌ ±³Â÷ÇÏ´Â Áö °Ë»ç
+                // ì ê³¼ ì ì´ êµì°¨í•˜ëŠ” ì§€ ê²€ì‚¬
                 //----------------------------
                 
                 if ( stdUtils::isSamePoints2D( sLinePt, sRingPt ) == ID_TRUE )
                 {
                     sMeetOnPoint = ID_TRUE;
 
-                    // ÀÌ¹Ì ±¸ÇØÁø °ªÀ» »ç¿ë
+                    // ì´ë¯¸ êµ¬í•´ì§„ ê°’ì„ ì‚¬ìš©
                 }
 
                 //----------------------------
-                // Ring°ú RingÀÌ °ãÄ¡´Â Á¡ÀÎÁö ¿©ºÎ¸¦ °Ë»ç
+                // Ringê³¼ Ringì´ ê²¹ì¹˜ëŠ” ì ì¸ì§€ ì—¬ë¶€ë¥¼ ê²€ì‚¬
                 //----------------------------
                 
                 if ( sMeetOnPoint == ID_TRUE )
                 {
-                    // Ring°ú RingÀÌ °ãÄ¡´Â Á¡ÀÏ °æ¿ì
-                    // ³»ºÎ¿¡ Á¸ÀçÇÏ´Â Áö¸¦ ÆÇ´ÜÇÒ ¼ö ¾ø´Ù.
-                    // ´Ù¸¥ Á¡¿¡ ÀÇÇÏ¿© ÆÇº° °¡´ÉÇÏ´Ù.
+                    // Ringê³¼ Ringì´ ê²¹ì¹˜ëŠ” ì ì¼ ê²½ìš°
+                    // ë‚´ë¶€ì— ì¡´ì¬í•˜ëŠ” ì§€ë¥¼ íŒë‹¨í•  ìˆ˜ ì—†ë‹¤.
+                    // ë‹¤ë¥¸ ì ì— ì˜í•˜ì—¬ íŒë³„ ê°€ëŠ¥í•˜ë‹¤.
                     //
                     //              Pn
                     //       Ap       I
@@ -6247,7 +6247,7 @@ stfRelation::sliTosai( const stdLineString2DType * aLineObj,
                     {
                         if ( j == m )
                         {
-                            // ÀÚ½ÅÀÇ RingÀº °Ë»çÇÏÁö ¾ÊÀ½
+                            // ìì‹ ì˜ Ringì€ ê²€ì‚¬í•˜ì§€ ì•ŠìŒ
                             continue;
                         }
                         else
@@ -6279,7 +6279,7 @@ stfRelation::sliTosai( const stdLineString2DType * aLineObj,
                 }
                 
                 //----------------------------------------
-                // Á¡°ú Á¡ÀÇ °ü°è·ÎºÎÅÍ ¿ÜºÎ ±³Â÷ÀÇ ÆÇ´Ü
+                // ì ê³¼ ì ì˜ ê´€ê³„ë¡œë¶€í„° ì™¸ë¶€ êµì°¨ì˜ íŒë‹¨
                 //----------------------------------------
                 
                 if ( sMeetOnPoint == ID_TRUE )
@@ -6299,12 +6299,12 @@ stfRelation::sliTosai( const stdLineString2DType * aLineObj,
                     }
                     else
                     {
-                        // ±³Â÷ ¿©ºÎ¸¦ ÆÇ´ÜÇÒ ¼ö ¾øÀ½
+                        // êµì°¨ ì—¬ë¶€ë¥¼ íŒë‹¨í•  ìˆ˜ ì—†ìŒ
                     }
                 }
                 else // sMeetOnPoint == ID_FALSE
                 {
-                    // °Ë»ç ´ë»óÀÌ ¾Æ´Ô
+                    // ê²€ì‚¬ ëŒ€ìƒì´ ì•„ë‹˜
                 }
                 
             } // for k
@@ -6320,12 +6320,12 @@ stfRelation::sliTosai( const stdLineString2DType * aLineObj,
 /***********************************************************************
  * Description:
  *
- *    SLI(Single LineString Internal)°ú
- *    SAB(Single Area Boundary)ÀÇ DE-9IM °ü°è¸¦ ±¸ÇÑ´Ù.
+ *    SLI(Single LineString Internal)ê³¼
+ *    SAB(Single Area Boundary)ì˜ DE-9IM ê´€ê³„ë¥¼ êµ¬í•œë‹¤.
  *
  * Implementation:
  *
- *    °¢ ¼±À» Segment ´ÜÀ§·Î ÂÉ°³¾î °ü°è¸¦ ±¸ÇÏ°í ÀÌÀÇ ÃÖ´ë°ªÀ» ±¸ÇÑ´Ù.
+ *    ê° ì„ ì„ Segment ë‹¨ìœ„ë¡œ ìª¼ê°œì–´ ê´€ê³„ë¥¼ êµ¬í•˜ê³  ì´ì˜ ìµœëŒ€ê°’ì„ êµ¬í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -6344,15 +6344,15 @@ stfRelation::sliTosab( const stdLineString2DType*         aObj1,
     stdPoint2D      * sPt2;
     stdLinearRing2D * sRing;
     
-    UInt         sLineLSegCnt;  // Line StringÀÇ Line Segment °³¼ö
-    UInt         sRingCnt;      // PolygonÀ» ±¸¼ºÇÏ´Â RingÀÇ °³¼ö
-    UInt         sRingLSegCnt;  // °¢ RingÀ» ±¸¼ºÇÏ´Â Line Segment °³¼ö
+    UInt         sLineLSegCnt;  // Line Stringì˜ Line Segment ê°œìˆ˜
+    UInt         sRingCnt;      // Polygonì„ êµ¬ì„±í•˜ëŠ” Ringì˜ ê°œìˆ˜
+    UInt         sRingLSegCnt;  // ê° Ringì„ êµ¬ì„±í•˜ëŠ” Line Segment ê°œìˆ˜
 
-    // ´İÇôÀÖ´Â LineStringÀÎÁöÀÇ ¿©ºÎ
+    // ë‹«í˜€ìˆëŠ” LineStringì¸ì§€ì˜ ì—¬ë¶€
     idBool       sClosed;
 
     // To Fix BUG-16915
-    // Á¾´ÜÁ¡ÀÎÁö ¿¬°áÁ¡ÀÎÁöÀÇ ¿©ºÎ, PolygonÀº Á¾´ÜÁ¡ÀÌ ¾ø´Ù.
+    // ì¢…ë‹¨ì ì¸ì§€ ì—°ê²°ì ì¸ì§€ì˜ ì—¬ë¶€, Polygonì€ ì¢…ë‹¨ì ì´ ì—†ë‹¤.
     idBool       sIsTermSegBegin;
     idBool       sIsTermSegEnd;
 
@@ -6375,7 +6375,7 @@ stfRelation::sliTosab( const stdLineString2DType*         aObj1,
     sRingCnt = STD_N_RINGS(aObj2);
 
     //--------------------------------
-    // LineStringÀ» Segment ´ÜÀ§·Î °ü°è¸¦ °Ë»ç
+    // LineStringì„ Segment ë‹¨ìœ„ë¡œ ê´€ê³„ë¥¼ ê²€ì‚¬
     //--------------------------------
     
     for( i = 0, sPt1 = STD_FIRST_PT2D(aObj1);
@@ -6383,12 +6383,12 @@ stfRelation::sliTosab( const stdLineString2DType*         aObj1,
          i++, sPt1 = STD_NEXT_PT2D(sPt1) )
     {
         //--------------------------
-        // BUG-16915 Line SegmentÀÇ Á¡ÀÌ Á¾´ÜÁ¡ÀÎÁö ÆÇ´Ü
+        // BUG-16915 Line Segmentì˜ ì ì´ ì¢…ë‹¨ì ì¸ì§€ íŒë‹¨
         //--------------------------
 
         if ( sClosed != ID_TRUE )
         {
-            // ¿­¸° LineStringÀÎ °æ¿ì
+            // ì—´ë¦° LineStringì¸ ê²½ìš°
             if ( i == 0 )
             {
                 sIsTermSegBegin = ID_TRUE;
@@ -6409,23 +6409,23 @@ stfRelation::sliTosab( const stdLineString2DType*         aObj1,
         }
         else
         {
-            // BUG-16915 CLOSE ¿©ºÎ¸¦ ÆÇ´ÜÇØ¾ß ÇÔ.
-            // ´İÈù LineStringÀÎ °æ¿ì
+            // BUG-16915 CLOSE ì—¬ë¶€ë¥¼ íŒë‹¨í•´ì•¼ í•¨.
+            // ë‹«íŒ LineStringì¸ ê²½ìš°
             sIsTermSegBegin = ID_FALSE;
             sIsTermSegEnd = ID_FALSE;
         }
         
         //--------------------------------
-        // PolygonÀ» ±¸¼ºÇÏ´Â °¢ Ring ´ÜÀ§·Î °Ë»ç
+        // Polygonì„ êµ¬ì„±í•˜ëŠ” ê° Ring ë‹¨ìœ„ë¡œ ê²€ì‚¬
         //--------------------------------
 
-        // ´ÙÀ½ RingÀ» ±¸ÇÒ¶§´Â ÀÌÀü RingÀÇ ¸¶Áö¸· Á¡À¸·ÎºÎÅÍ ±¸ÇÑ´Ù.
+        // ë‹¤ìŒ Ringì„ êµ¬í• ë•ŒëŠ” ì´ì „ Ringì˜ ë§ˆì§€ë§‰ ì ìœ¼ë¡œë¶€í„° êµ¬í•œë‹¤.
         for( j = 0, sRing = STD_FIRST_RN2D(aObj2);
              j < sRingCnt;
              j++, sRing = (stdLinearRing2D*) STD_NEXT_PT2D(sPt2) )
         {
             //--------------------------------
-            // RingÀ» ±¸¼ºÇÏ´Â Line Segment ´ÜÀ§·Î °Ë»ç
+            // Ringì„ êµ¬ì„±í•˜ëŠ” Line Segment ë‹¨ìœ„ë¡œ ê²€ì‚¬
             //--------------------------------
 
             sRingLSegCnt = STD_N_POINTS(sRing) - 1;
@@ -6435,10 +6435,10 @@ stfRelation::sliTosab( const stdLineString2DType*         aObj1,
                  k++, sPt2 = STD_NEXT_PT2D(sPt2) )
             {
                 //------------------------------------
-                // LineStringÀÇ Segment¿Í RingÀÇ Segment°£ÀÇ °ü°è È¹µæ
+                // LineStringì˜ Segmentì™€ Ringì˜ Segmentê°„ì˜ ê´€ê³„ íšë“
                 //------------------------------------
 
-                // RingÀ» ±¸¼ºÇÏ´Â Line Segment´Â Á¾´ÜÁ¡ÀÌ ¾øÀ½
+                // Ringì„ êµ¬ì„±í•˜ëŠ” Line SegmentëŠ” ì¢…ë‹¨ì ì´ ì—†ìŒ
                 sTemp = compLineSegment( sPt1,
                                          STD_NEXT_PT2D(sPt1),
                                          sIsTermSegBegin,
@@ -6449,12 +6449,12 @@ stfRelation::sliTosab( const stdLineString2DType*         aObj1,
                                          ID_FALSE );
 
                 //--------------------------
-                // °ü°è °á°ú ´©Àû
+                // ê´€ê³„ ê²°ê³¼ ëˆ„ì 
                 //--------------------------
                 
                 if ( sTemp == 'F' )
                 {
-                    // ´©ÀûÇÒ ÇÊ¿ä ¾øÀ½
+                    // ëˆ„ì í•  í•„ìš” ì—†ìŒ
                 }
                 else
                 {
@@ -6462,7 +6462,7 @@ stfRelation::sliTosab( const stdLineString2DType*         aObj1,
                     
                     sResult = sTemp;
                     
-                    // ¼±ºĞÀÌ ±³Â÷ÇÏ´Â °æ¿ì°¡ ÃÖ´ë °ü°èÀÓ
+                    // ì„ ë¶„ì´ êµì°¨í•˜ëŠ” ê²½ìš°ê°€ ìµœëŒ€ ê´€ê³„ì„
                     IDE_TEST_RAISE( sResult == '1', SLISAB2D_MAX_RESULT );
                 }
                 
@@ -6478,34 +6478,34 @@ stfRelation::sliTosab( const stdLineString2DType*         aObj1,
 /***********************************************************************
  * Description:
  *
- *    SLI(Single LineString Internal)°ú
- *    SAE(Single Area External)ÀÇ DE-9IM °ü°è¸¦ ±¸ÇÑ´Ù.
+ *    SLI(Single LineString Internal)ê³¼
+ *    SAE(Single Area External)ì˜ DE-9IM ê´€ê³„ë¥¼ êµ¬í•œë‹¤.
  *
  * Implementation:
  *
- *   LineStringÀ» ±¸¼ºÇÏ´Â [Á¡, ¼±ºĞ] °ú
- *   PolygonÀ» ±¸¼ºÇÏ´Â [Á¡, ¼±ºĞ, ¸é]ÀÇ °ü°è¸¦ ÅëÇØ ±¸ÇØ³½´Ù.
+ *   LineStringì„ êµ¬ì„±í•˜ëŠ” [ì , ì„ ë¶„] ê³¼
+ *   Polygonì„ êµ¬ì„±í•˜ëŠ” [ì , ì„ ë¶„, ë©´]ì˜ ê´€ê³„ë¥¼ í†µí•´ êµ¬í•´ë‚¸ë‹¤.
  *
  *   ================================
  *     LineString .vs. Polygon
  *   ================================
  *
- *   1. ¼±ºĞ .vs. ¸é
+ *   1. ì„ ë¶„ .vs. ë©´
  *
- *       - ÀÌ ÇÔ¼öÀÇ ¸ñÀûÀ¸·Î ´Ù¸¥ °ü°è·ÎºÎÅÍ À¯Ãß
+ *       - ì´ í•¨ìˆ˜ì˜ ëª©ì ìœ¼ë¡œ ë‹¤ë¥¸ ê´€ê³„ë¡œë¶€í„° ìœ ì¶”
  *
- *   2. Á¡ .vs. ¸é 
- *       - Á¡ÀÌ ³»ºÎ¿¡ Á¸Àç : À¯Ãß ºÒ°¡
- *       - Á¡ÀÌ ¿ÜºÎ¿¡ Á¸Àç : TRUE
+ *   2. ì  .vs. ë©´ 
+ *       - ì ì´ ë‚´ë¶€ì— ì¡´ì¬ : ìœ ì¶” ë¶ˆê°€
+ *       - ì ì´ ì™¸ë¶€ì— ì¡´ì¬ : TRUE
  *
  *           L    A--------A
  *                |        |
  *                |        |
  *                A--------A
  *                 
- *   3. ¼±ºĞ .vs. ¼±ºĞ
- *       - ±³Â÷ÇÏÁö ¾Ê´Â °æ¿ì : À¯Ãß ºÒ°¡
- *       - ¼±ºĞÀÌ ¼±ºĞÀ¸·Î ±³Â÷ : Á¡°ú Á¡ÀÇ °ü°è·ÎºÎÅÍ À¯Ãß °¡´É
+ *   3. ì„ ë¶„ .vs. ì„ ë¶„
+ *       - êµì°¨í•˜ì§€ ì•ŠëŠ” ê²½ìš° : ìœ ì¶” ë¶ˆê°€
+ *       - ì„ ë¶„ì´ ì„ ë¶„ìœ¼ë¡œ êµì°¨ : ì ê³¼ ì ì˜ ê´€ê³„ë¡œë¶€í„° ìœ ì¶” ê°€ëŠ¥
  *
  *             L---A====L----A
  *
@@ -6513,7 +6513,7 @@ stfRelation::sliTosab( const stdLineString2DType*         aObj1,
  *
  *             A---L====L----A
  *
- *       - ¼±ºĞÀÌ Á¡¿¡¼­ ±³Â÷ : TRUE
+ *       - ì„ ë¶„ì´ ì ì—ì„œ êµì°¨ : TRUE
  *
  *                L
  *                |
@@ -6521,9 +6521,9 @@ stfRelation::sliTosab( const stdLineString2DType*         aObj1,
  *                |
  *                L
  *
- *   4. Á¡ .vs. ¼±ºĞ
- *       - ±³Â÷ÇÏÁö ¾Ê´Â °æ¿ì : À¯Ãß ºÒ°¡
- *       - Á¡ÀÌ ¼±ºĞ¿¡¼­ ±³Â÷ : Á¡°ú Á¡ÀÇ °ü°è·ÎºÎÅÍ À¯Ãß °¡´É
+ *   4. ì  .vs. ì„ ë¶„
+ *       - êµì°¨í•˜ì§€ ì•ŠëŠ” ê²½ìš° : ìœ ì¶” ë¶ˆê°€
+ *       - ì ì´ ì„ ë¶„ì—ì„œ êµì°¨ : ì ê³¼ ì ì˜ ê´€ê³„ë¡œë¶€í„° ìœ ì¶” ê°€ëŠ¥
  *
  *               Lp                     Lp
  *               |                      |
@@ -6531,9 +6531,9 @@ stfRelation::sliTosab( const stdLineString2DType*         aObj1,
  *               |                      |
  *               Ln                     Ln
  *
- *   5. ¼±ºĞ .vs. Á¡
- *       - ±³Â÷ÇÏÁö ¾Ê´Â °æ¿ì : À¯Ãß ºÒ°¡
- *       - Á¡ÀÌ ¼±ºĞ¿¡¼­ ±³Â÷ : Á¡°ú Á¡ÀÇ °ü°è·ÎºÎÅÍ À¯Ãß °¡´É
+ *   5. ì„ ë¶„ .vs. ì 
+ *       - êµì°¨í•˜ì§€ ì•ŠëŠ” ê²½ìš° : ìœ ì¶” ë¶ˆê°€
+ *       - ì ì´ ì„ ë¶„ì—ì„œ êµì°¨ : ì ê³¼ ì ì˜ ê´€ê³„ë¡œë¶€í„° ìœ ì¶” ê°€ëŠ¥
  *
  *               Ap                    Ap
  *               |                     |
@@ -6541,9 +6541,9 @@ stfRelation::sliTosab( const stdLineString2DType*         aObj1,
  *               |                     |
  *               An                    An
  *
- *   6. Á¡ .vs. Á¡
- *       - ±³Â÷ÇÏÁö ¾Ê´Â °æ¿ì : À¯Ãß ºÒ°¡
- *       - Á¡¿¡¼­ ±³Â÷ : Á¡°ú Á¡ÀÇ °ü°è·ÎºÎÅÍ À¯Ãß
+ *   6. ì  .vs. ì 
+ *       - êµì°¨í•˜ì§€ ì•ŠëŠ” ê²½ìš° : ìœ ì¶” ë¶ˆê°€
+ *       - ì ì—ì„œ êµì°¨ : ì ê³¼ ì ì˜ ê´€ê³„ë¡œë¶€í„° ìœ ì¶”
  *
  *                Lp
  *                |
@@ -6551,23 +6551,23 @@ stfRelation::sliTosab( const stdLineString2DType*         aObj1,
  *                |
  *                Ln
  *
- *   BUG-16952 ±âÁ¸ ·ÎÁ÷À» ´ÙÀ½°ú °°ÀÌ ¼öÁ¤ÇÔ
- *      1) LineÀÇ Á¡°ú AreaÀÇ ¼±ºĞÀÌ ±³Â÷ ·ÎÁ÷ ==> Á¡°ú Á¡ÀÇ ±³Â÷ ¾Ë°í¸®ÁòÀ¸·Î ¼öÁ¤
- *      2) LineÀÇ ¼±ºĞ°ú AreaÀÇ Á¡ÀÌ ±³Â÷ ·ÎÁ÷ ==> Á¡°ú Á¡ÀÇ ±³Â÷ ¾Ë°í¸®ÁòÀ¸·Î ¼öÁ¤
- *      3) Á¡°ú Á¡ÀÇ ±³Â÷ ·ÎÁ÷ ==> ¼öÆò¿¡ ´ëÇÑ °ËÃâÀÌ µÇµµ·Ï È®Àå
+ *   BUG-16952 ê¸°ì¡´ ë¡œì§ì„ ë‹¤ìŒê³¼ ê°™ì´ ìˆ˜ì •í•¨
+ *      1) Lineì˜ ì ê³¼ Areaì˜ ì„ ë¶„ì´ êµì°¨ ë¡œì§ ==> ì ê³¼ ì ì˜ êµì°¨ ì•Œê³ ë¦¬ì¦˜ìœ¼ë¡œ ìˆ˜ì •
+ *      2) Lineì˜ ì„ ë¶„ê³¼ Areaì˜ ì ì´ êµì°¨ ë¡œì§ ==> ì ê³¼ ì ì˜ êµì°¨ ì•Œê³ ë¦¬ì¦˜ìœ¼ë¡œ ìˆ˜ì •
+ *      3) ì ê³¼ ì ì˜ êµì°¨ ë¡œì§ ==> ìˆ˜í‰ì— ëŒ€í•œ ê²€ì¶œì´ ë˜ë„ë¡ í™•ì¥
  *
- *   ±âÁ¸ÀÇ Á¡°ú ¼±ºĞ¿¡ °ü·ÃµÈ °³³äÀ» ¿©±â¿¡ ±â¼úÇÔ
+ *   ê¸°ì¡´ì˜ ì ê³¼ ì„ ë¶„ì— ê´€ë ¨ëœ ê°œë…ì„ ì—¬ê¸°ì— ê¸°ìˆ í•¨
  *
  *   --------------------------------------------
- *   ±âÁ¸ ·ÎÁ÷) LineStringÀÇ ¼±ºĞ°ú Polygon Á¡ÀÇ °ü°è
+ *   ê¸°ì¡´ ë¡œì§) LineStringì˜ ì„ ë¶„ê³¼ Polygon ì ì˜ ê´€ê³„
  *   --------------------------------------------
  *
- *   LineStringÀÇ ¼±ºĞ³»¿¡ PolygonÀÇ Á¡ÀÌ Á¸ÀçÇÏ´Â °æ¿ì
+ *   LineStringì˜ ì„ ë¶„ë‚´ì— Polygonì˜ ì ì´ ì¡´ì¬í•˜ëŠ” ê²½ìš°
  *
  *        ----A----
  *
  *        if Area(Ap, A, Lp) * Area(A, An, Ln) < 0,
- *        ; TRUE(SLI ¿Í SAE °¡ ±³Â÷ÇÔ)
+ *        ; TRUE(SLI ì™€ SAE ê°€ êµì°¨í•¨)
  *
  *          Ap              
  *         / \             
@@ -6575,7 +6575,7 @@ stfRelation::sliTosab( const stdLineString2DType*         aObj1,
  *             \  /         
  *              An
  *
- *        ; ´ÙÀ½°ú °°Àº ¿¹°¡ °ËÃâµÊ
+ *        ; ë‹¤ìŒê³¼ ê°™ì€ ì˜ˆê°€ ê²€ì¶œë¨
  *
  *            A------Ap
  *            |   ** |
@@ -6586,29 +6586,29 @@ stfRelation::sliTosab( const stdLineString2DType*         aObj1,
  *            A----------------A
  *
  *        if Area(Ap, A, Lp) * Area(A, An, Ln) > 0,
- *        ; Á¡°ú ¸éÀÇ °ü°è¿¡¼­ À¯Ãß
+ *        ; ì ê³¼ ë©´ì˜ ê´€ê³„ì—ì„œ ìœ ì¶”
  *
  *          Ap  An            
  *         / \ /  \          
  *        Lp--A----Ln
  *
  *        if Area(Ap, A, Lp) * Area(A, An, Ln) == 0,
- *        ; ¼±ºĞ°ú ¼±ºĞÀÌ ¼±ºĞ¿¡¼­ ±³Â÷ÇÏ´Â °ü°è¿¡¼­ À¯Ãß (BUG-16952)
+ *        ; ì„ ë¶„ê³¼ ì„ ë¶„ì´ ì„ ë¶„ì—ì„œ êµì°¨í•˜ëŠ” ê´€ê³„ì—ì„œ ìœ ì¶” (BUG-16952)
  *
  *          Ap
  *         /  \
  *        Lp---A----Ln--An
  *
  *   ------------------------------------------------
- *   ±âÁ¸ ·ÎÁ÷) LineStringÀÇ Á¡°ú Polygon ³»ºÎ ¼±ºĞÀÇ °ü°è
+ *   ê¸°ì¡´ ë¡œì§) LineStringì˜ ì ê³¼ Polygon ë‚´ë¶€ ì„ ë¶„ì˜ ê´€ê³„
  *   ------------------------------------------------
  *
- *   Polygon ÀÇ ¼±ºĞ³»¿¡ LineStringÀÇ Á¡ÀÌ Á¸ÀçÇÏ´Â °æ¿ì
+ *   Polygon ì˜ ì„ ë¶„ë‚´ì— LineStringì˜ ì ì´ ì¡´ì¬í•˜ëŠ” ê²½ìš°
  *
  *        ----L----
  *
- *        if LÀÇ ÀÌÀü ¶Ç´Â ´ÙÀ½ Á¡ Lp°¡ ¿µ¿ªÀÇ ¿ÜºÎ¸¦ ÇâÇÏ°í ÀÖ´Ù¸é,
- *        ; TRUE(SLI ¿Í SAE °¡ ±³Â÷ÇÔ)
+ *        if Lì˜ ì´ì „ ë˜ëŠ” ë‹¤ìŒ ì  Lpê°€ ì˜ì—­ì˜ ì™¸ë¶€ë¥¼ í–¥í•˜ê³  ìˆë‹¤ë©´,
+ *        ; TRUE(SLI ì™€ SAE ê°€ êµì°¨í•¨)
  *
  *        A         A
  *        |  Area   |
@@ -6617,17 +6617,17 @@ stfRelation::sliTosab( const stdLineString2DType*         aObj1,
  *             |
  *             Lp
  *
- *        Area Segment»ó¿¡ Line StringÀÇ ÇÑ Á¡ÀÌ Á¸ÀçÇÒ °æ¿ì
- *        ÇØ´çÁ¡ÀÇ ÀÌÀü ÀÌÈÄÁ¡ÀÌ RingÀÇ ¿ø»ı¼º ¹æÇâÀÇ ¹İ´ëÆí¿¡ Á¸ÀçÇÏ´Â Áö °Ë»ç
+ *        Area Segmentìƒì— Line Stringì˜ í•œ ì ì´ ì¡´ì¬í•  ê²½ìš°
+ *        í•´ë‹¹ì ì˜ ì´ì „ ì´í›„ì ì´ Ringì˜ ì›ìƒì„± ë°©í–¥ì˜ ë°˜ëŒ€í¸ì— ì¡´ì¬í•˜ëŠ” ì§€ ê²€ì‚¬
  *
- *       ¿ÜºÎ¸µÀÎ °æ¿ì 
- *          ½Ã°è ¹æÇâÀÏ °æ¿ì ¿ŞÂÊ¿¡ Á¸ÀçÇÏ¸é SLI°¡ ¿ÜºÎ¿¡ Á¸Àç
- *          ½Ã°è ¹İ´ë¹æÇâÀÏ °æ¿ì ¿À¸¥ÂÊ¿¡ Á¸ÀçÇÏ¸é SLI°¡ ¿ÜºÎ¿¡ Á¸Àç
- *       ³»ºÎ¸µÀÎ °æ¿ì
- *          ½Ã°è ¹æÇâÀÏ °æ¿ì ¿À¸¥ÂÊ¿¡ Á¸ÀçÇÏ¸é SLI°¡ ¿ÜºÎ¿¡ Á¸Àç
- *          ½Ã°è ¹İ´ë¹æÇâÀÏ °æ¿ì ¿ŞÂÊ¿¡ Á¸ÀçÇÏ¸é SLI°¡ ¿ÜºÎ¿¡ Á¸Àç
+ *       ì™¸ë¶€ë§ì¸ ê²½ìš° 
+ *          ì‹œê³„ ë°©í–¥ì¼ ê²½ìš° ì™¼ìª½ì— ì¡´ì¬í•˜ë©´ SLIê°€ ì™¸ë¶€ì— ì¡´ì¬
+ *          ì‹œê³„ ë°˜ëŒ€ë°©í–¥ì¼ ê²½ìš° ì˜¤ë¥¸ìª½ì— ì¡´ì¬í•˜ë©´ SLIê°€ ì™¸ë¶€ì— ì¡´ì¬
+ *       ë‚´ë¶€ë§ì¸ ê²½ìš°
+ *          ì‹œê³„ ë°©í–¥ì¼ ê²½ìš° ì˜¤ë¥¸ìª½ì— ì¡´ì¬í•˜ë©´ SLIê°€ ì™¸ë¶€ì— ì¡´ì¬
+ *          ì‹œê³„ ë°˜ëŒ€ë°©í–¥ì¼ ê²½ìš° ì™¼ìª½ì— ì¡´ì¬í•˜ë©´ SLIê°€ ì™¸ë¶€ì— ì¡´ì¬
  *
- *       ´ÙÀ½°ú °°Àº ¿¹Á¦¸¦ °ËÃâÇØ³¿.
+ *       ë‹¤ìŒê³¼ ê°™ì€ ì˜ˆì œë¥¼ ê²€ì¶œí•´ëƒ„.
  *
  *       A----->>------A                 A----------A
  *       |             |                 |          |
@@ -6640,16 +6640,16 @@ stfRelation::sliTosab( const stdLineString2DType*         aObj1,
  *                                       A----------A
  *
  *
- *        if LÀÇ ÀÌÀü ¶Ç´Â ´ÙÀ½ Á¡ Lp°¡ ¿µ¿ªÀÇ ³»ºÎ¸¦ ÇâÇÏ°í ÀÖ´Ù¸é,
- *        ; Á¡°ú ¸éÀÇ °ü°è·ÎºÎÅÍ À¯ÃßµÊ
+ *        if Lì˜ ì´ì „ ë˜ëŠ” ë‹¤ìŒ ì  Lpê°€ ì˜ì—­ì˜ ë‚´ë¶€ë¥¼ í–¥í•˜ê³  ìˆë‹¤ë©´,
+ *        ; ì ê³¼ ë©´ì˜ ê´€ê³„ë¡œë¶€í„° ìœ ì¶”ë¨
  *
  *        A       Lp   A
  *        |  Area |    |
  *        |       |    |
  *        A-------L----A
  *
- *        if LÀÇ ÀÌÀü ¶Ç´Â ´ÙÀ½ Á¡ Lp°¡ ¿µ¿ªÀÇ °æ°è¿Í ÀÏÄ¡ÇÑ´Ù¸é,
- *        ; ¼±ºĞ°ú ¼±ºĞÀÌ ¼±ºĞ¿¡¼­ ±³Â÷ÇÏ´Â °ü°è·ÎºÎÅÍ À¯ÃßµÊ(BUG-16952)
+ *        if Lì˜ ì´ì „ ë˜ëŠ” ë‹¤ìŒ ì  Lpê°€ ì˜ì—­ì˜ ê²½ê³„ì™€ ì¼ì¹˜í•œë‹¤ë©´,
+ *        ; ì„ ë¶„ê³¼ ì„ ë¶„ì´ ì„ ë¶„ì—ì„œ êµì°¨í•˜ëŠ” ê´€ê³„ë¡œë¶€í„° ìœ ì¶”ë¨(BUG-16952)
  *
  *        A           A
  *        |   Area    |
@@ -6667,7 +6667,7 @@ stfRelation::sliTosae( const stdLineString2DType * aLineObj,
     SChar   sResult;
     
     //----------------------------
-    // Line String Á¤º¸
+    // Line String ì •ë³´
     //----------------------------
     
     stdPoint2D      * sLinePt;
@@ -6677,18 +6677,18 @@ stfRelation::sliTosae( const stdLineString2DType * aLineObj,
     UInt              sLinePtCnt;
     
     //----------------------------
-    // Ring Á¤º¸
+    // Ring ì •ë³´
     //----------------------------
     
     stdLinearRing2D * sRing;
     stdPoint2D      * sRingPt;
-    stdPoint2D      * sRingPrevPt;  // Ring PointÀÇ ÀÌÀü Point
-    stdPoint2D      * sRingCurrPt;  // Ring PointÀÇ ÀÌÀü Point
-    stdPoint2D      * sRingNextPt;  // Ring PointÀÇ ´ÙÀ½ Point
+    stdPoint2D      * sRingPrevPt;  // Ring Pointì˜ ì´ì „ Point
+    stdPoint2D      * sRingCurrPt;  // Ring Pointì˜ ì´ì „ Point
+    stdPoint2D      * sRingNextPt;  // Ring Pointì˜ ë‹¤ìŒ Point
     
     UInt              sRingCnt;     // Ring Count of a Polygon
     UInt              sRingSegCnt;  // Segment Count of a Ring
-    idBool            sRingCCWise;  // Ring ÀÌ ½Ã°è ¿ª¹æÇâÀÎÁöÀÇ ¿©ºÎ
+    idBool            sRingCCWise;  // Ring ì´ ì‹œê³„ ì—­ë°©í–¥ì¸ì§€ì˜ ì—¬ë¶€
 
     //----------------------------------------
     // Parameter Validation
@@ -6709,14 +6709,14 @@ stfRelation::sliTosae( const stdLineString2DType * aLineObj,
     sRingCnt = STD_N_RINGS(aAreaObj);
     
     //----------------------------------------
-    // LineStringÀÇ Á¡°ú PolygonÀÇ ³»ºÎ ¸éÀÇ °ü°è
+    // LineStringì˜ ì ê³¼ Polygonì˜ ë‚´ë¶€ ë©´ì˜ ê´€ê³„
     //----------------------------------------
 
     for ( i = 0, sLinePt = STD_FIRST_PT2D(aLineObj);
           i < sLinePtCnt;
           i++, sLinePt = STD_NEXT_PT2D(sLinePt) )
     {
-        // LineStringÀÇ ÇÑÁ¡ÀÌ PolygonÀÇ ¿ÜºÎ¿¡ Á¸ÀçÇÏ´ÂÁö ÆÇ´Ü
+        // LineStringì˜ í•œì ì´ Polygonì˜ ì™¸ë¶€ì— ì¡´ì¬í•˜ëŠ”ì§€ íŒë‹¨
         if( spiTosae( sLinePt, aAreaObj ) == '0' )
         {
             sResult = '1';
@@ -6729,14 +6729,14 @@ stfRelation::sliTosae( const stdLineString2DType * aLineObj,
     }
 
     //----------------------------------------
-    // LineStringÀÇ Á¡, ¼±ºĞ°ú PolygonÀÇ Á¡, ¼±ºĞÀÇ °ü°è
+    // LineStringì˜ ì , ì„ ë¶„ê³¼ Polygonì˜ ì , ì„ ë¶„ì˜ ê´€ê³„
     //----------------------------------------
 
     for ( i = 0, sLinePt = STD_FIRST_PT2D(aLineObj), sLinePrevPt = NULL;
           i < sLinePtCnt;
           i++, sLinePrevPt = sLinePt, sLinePt = STD_NEXT_PT2D(sLinePt) )
     {
-        // RingÀÇ °³¼ö¸¸Å­ ¹İº¹
+        // Ringì˜ ê°œìˆ˜ë§Œí¼ ë°˜ë³µ
         for ( j = 0, sRing = STD_FIRST_RN2D(aAreaObj);
               j < sRingCnt;
               j++, sRing = STD_NEXT_RN2D(sRing) )
@@ -6744,16 +6744,16 @@ stfRelation::sliTosae( const stdLineString2DType * aLineObj,
             sRingSegCnt = STD_N_POINTS(sRing) - 1;
             sRingCCWise = stdUtils::isCCW2D(sRing);
 
-            // RingÀ» ±¸¼ºÇÏ´Â Segment °³¼ö¸¸Å­ ¹İº¹
+            // Ringì„ êµ¬ì„±í•˜ëŠ” Segment ê°œìˆ˜ë§Œí¼ ë°˜ë³µ
             for ( k = 0, sRingPt = STD_FIRST_PT2D(sRing);
                   k < sRingSegCnt;
                   k++, sRingPt = STD_NEXT_PT2D(sRingPt) )
             {
                 //----------------------------------------
-                // LineString ³»ºÎ ¼±ºĞ°ú Polygon ³»ºÎ ¼±ºĞÀÇ °ü°è
+                // LineString ë‚´ë¶€ ì„ ë¶„ê³¼ Polygon ë‚´ë¶€ ì„ ë¶„ì˜ ê´€ê³„
                 //----------------------------------------
                 
-                // ¼±ºĞÀÇ ³»ºÎ°¡ ±³Â÷ÇÏ´ÂÁö °Ë»ç
+                // ì„ ë¶„ì˜ ë‚´ë¶€ê°€ êµì°¨í•˜ëŠ”ì§€ ê²€ì‚¬
                 if( ( i < sLineSegCnt ) &&
                     ( stdUtils::intersectI2D( sLinePt,
                                               STD_NEXT_PT2D(sLinePt),
@@ -6761,30 +6761,30 @@ stfRelation::sliTosae( const stdLineString2DType * aLineObj,
                                               STD_NEXT_PT2D(sRingPt) )
                       ==ID_TRUE ) )
                 {
-                    // ¼±ºĞÀÌ ±³Â÷ÇÏ´Â °æ¿ì
+                    // ì„ ë¶„ì´ êµì°¨í•˜ëŠ” ê²½ìš°
                     sResult = '1';
                     IDE_RAISE( SLISAE2D_MAX_RESULT );
                 }
                 else
                 {
-                    // ¼±ºĞÀÌ ±³Â÷ÇÏÁö ¾Ê´Â °æ¿ì
+                    // ì„ ë¶„ì´ êµì°¨í•˜ì§€ ì•ŠëŠ” ê²½ìš°
                     
                 }
 
                 //----------------------------------------
-                // ´ÙÀ½ °ü°è¸¦ Á¡°ú Á¡ÀÇ °ü°è·Î ¸¸µé±â À§ÇÑ Á¶Á¤
-                //  - LineString ³»ºÎ ¼±ºĞ°ú RingÀÇ Á¡°úÀÇ °ü°è
-                //  - RingÀÇ ³»ºÎ ¼±ºĞ°ú LineStringÀÇ Á¡°úÀÇ °ü°è
-                //  - LineStringÀÇ Á¡°ú RingÀÇ Á¡°úÀÇ °ü°è
+                // ë‹¤ìŒ ê´€ê³„ë¥¼ ì ê³¼ ì ì˜ ê´€ê³„ë¡œ ë§Œë“¤ê¸° ìœ„í•œ ì¡°ì •
+                //  - LineString ë‚´ë¶€ ì„ ë¶„ê³¼ Ringì˜ ì ê³¼ì˜ ê´€ê³„
+                //  - Ringì˜ ë‚´ë¶€ ì„ ë¶„ê³¼ LineStringì˜ ì ê³¼ì˜ ê´€ê³„
+                //  - LineStringì˜ ì ê³¼ Ringì˜ ì ê³¼ì˜ ê´€ê³„
                 //----------------------------------------
 
                 sMeetOnPoint = ID_FALSE;
 
                 //----------------------------
-                // LineStringÀÇ ÇöÀçÁ¡, ÀÌÀüÁ¡, ÀÌÈÄÁ¡À» ±¸ÇÔ
+                // LineStringì˜ í˜„ì¬ì , ì´ì „ì , ì´í›„ì ì„ êµ¬í•¨
                 //----------------------------
                 
-                // sLinePrevPt :  for loopÀ» ÅëÇØ ÃßÃâ
+                // sLinePrevPt :  for loopì„ í†µí•´ ì¶”ì¶œ
                 if ( i == sLineSegCnt )
                 {
                     sLineNextPt = NULL;
@@ -6795,7 +6795,7 @@ stfRelation::sliTosae( const stdLineString2DType * aLineObj,
                 }
                 
                 //----------------------------
-                // RingÀÇ ÇöÀçÁ¡, ÀÌÀüÁ¡, ÀÌÈÄÁ¡À» ±¸ÇÔ
+                // Ringì˜ í˜„ì¬ì , ì´ì „ì , ì´í›„ì ì„ êµ¬í•¨
                 //----------------------------
                 
                 sRingPrevPt = stdUtils::findPrevPointInRing2D( sRingPt,
@@ -6809,7 +6809,7 @@ stfRelation::sliTosae( const stdLineString2DType * aLineObj,
                                                                NULL );
                 
                 //----------------------------
-                // ¼±ºĞ³»¿¡ RingÀÇ Á¡ÀÌ Á¸ÀçÇÏ´ÂÁö °Ë»ç
+                // ì„ ë¶„ë‚´ì— Ringì˜ ì ì´ ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬
                 //----------------------------
                 
                 if ( ( i < sLineSegCnt ) &&
@@ -6817,7 +6817,7 @@ stfRelation::sliTosae( const stdLineString2DType * aLineObj,
                                              STD_NEXT_PT2D(sLinePt),
                                              sRingPt )==ID_TRUE ) )
                 {
-                    // Á¡ÀÌ ¼±ºĞ¿¡¼­ ±³Â÷ => Á¡°ú Á¡ÀÇ °ü°è·Î º¯°æ
+                    // ì ì´ ì„ ë¶„ì—ì„œ êµì°¨ => ì ê³¼ ì ì˜ ê´€ê³„ë¡œ ë³€ê²½
                     //               Ap                    Ap
                     //               |                     |
                     //         L-----A-----L  ==>   Lp----LA----Ln  
@@ -6830,14 +6830,14 @@ stfRelation::sliTosae( const stdLineString2DType * aLineObj,
                 }
                 
                 //----------------------------
-                // Ring ¼±ºĞ³»¿¡ LineStringÀÇ Á¡ÀÌ Á¸ÀçÇÏ´ÂÁö °Ë»ç
+                // Ring ì„ ë¶„ë‚´ì— LineStringì˜ ì ì´ ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬
                 //----------------------------
 
                 if ( stdUtils::betweenI2D( sRingPt,
                                            STD_NEXT_PT2D(sRingPt),
                                            sLinePt ) == ID_TRUE )
                 {
-                    // Á¡ÀÌ ¼±ºĞ¿¡¼­ ±³Â÷ => Á¡°ú Á¡ÀÇ °ü°è·Î º¯°æ
+                    // ì ì´ ì„ ë¶„ì—ì„œ êµì°¨ => ì ê³¼ ì ì˜ ê´€ê³„ë¡œ ë³€ê²½
                     //               Lp                     Lp
                     //               |                      |
                     //         A-----L------A  ==>   Ap----AL----An  
@@ -6854,18 +6854,18 @@ stfRelation::sliTosae( const stdLineString2DType * aLineObj,
                 }
 
                 //----------------------------
-                // Á¡°ú Á¡ÀÌ ±³Â÷ÇÏ´Â Áö °Ë»ç
+                // ì ê³¼ ì ì´ êµì°¨í•˜ëŠ” ì§€ ê²€ì‚¬
                 //----------------------------
                 
                 if ( stdUtils::isSamePoints2D( sLinePt, sRingPt ) == ID_TRUE )
                 {
                     sMeetOnPoint = ID_TRUE;
 
-                    // ÀÌ¹Ì ±¸ÇØÁø °ªÀ» »ç¿ë
+                    // ì´ë¯¸ êµ¬í•´ì§„ ê°’ì„ ì‚¬ìš©
                 }
 
                 //----------------------------------------
-                // Á¡°ú Á¡ÀÇ °ü°è·ÎºÎÅÍ ¿ÜºÎ ±³Â÷ÀÇ ÆÇ´Ü
+                // ì ê³¼ ì ì˜ ê´€ê³„ë¡œë¶€í„° ì™¸ë¶€ êµì°¨ì˜ íŒë‹¨
                 //----------------------------------------
                 
                 if ( sMeetOnPoint == ID_TRUE )
@@ -6885,12 +6885,12 @@ stfRelation::sliTosae( const stdLineString2DType * aLineObj,
                     }
                     else
                     {
-                        // ±³Â÷ ¿©ºÎ¸¦ ÆÇ´ÜÇÒ ¼ö ¾øÀ½
+                        // êµì°¨ ì—¬ë¶€ë¥¼ íŒë‹¨í•  ìˆ˜ ì—†ìŒ
                     }
                 }
                 else // sMeetOnPoint == ID_FALSE
                 {
-                    // °Ë»ç ´ë»óÀÌ ¾Æ´Ô
+                    // ê²€ì‚¬ ëŒ€ìƒì´ ì•„ë‹˜
                 }
                 
             } // for k
@@ -7436,14 +7436,14 @@ SChar stfRelation::sliTomab( const stdLineString2DType*         aObj1,
  *
  * Description :
  *
- *    ´ÜÀÏ ¶óÀÎ °´Ã¼ÀÇ ³»ºÎ ¿µ¿ª°ú ´ÙÁß ¿µ¿ª °´Ã¼ÀÇ ¿ÜºÎ ¿µ¿ª°úÀÇ °ü°è¸¦ ±¸ÇÔ.
+ *    ë‹¨ì¼ ë¼ì¸ ê°ì²´ì˜ ë‚´ë¶€ ì˜ì—­ê³¼ ë‹¤ì¤‘ ì˜ì—­ ê°ì²´ì˜ ì™¸ë¶€ ì˜ì—­ê³¼ì˜ ê´€ê³„ë¥¼ êµ¬í•¨.
  *    sli(single line internal), mae(multi area external)
  *
  * Implementation :
  *
- *    Ç¥±â¹ı : Ai (°´Ã¼ AÀÇ interior ¿µ¿ª)
+ *    í‘œê¸°ë²• : Ai (ê°ì²´ Aì˜ interior ì˜ì—­)
  *
- *    ´ÜÀÏ °´Ã¼ ³»ºÎ ¿µ¿ª°ú ´ÙÁß °´Ã¼ ¿ÜºÎ ¿µ¿ª°úÀÇ °ü°è´Â ´ÙÀ½°ú °°Àº ½ÄÀ¸·Î Ç¥Çö
+ *    ë‹¨ì¼ ê°ì²´ ë‚´ë¶€ ì˜ì—­ê³¼ ë‹¤ì¤‘ ê°ì²´ ì™¸ë¶€ ì˜ì—­ê³¼ì˜ ê´€ê³„ëŠ” ë‹¤ìŒê³¼ ê°™ì€ ì‹ìœ¼ë¡œ í‘œí˜„
  *
  *    Si ^ ( A U B U ...U N )e
  *    <==>
@@ -7466,7 +7466,7 @@ SChar stfRelation::sliTomae( const stdLineString2DType*         aObj1,
     sResult = '1';
     
     //--------------------------------------
-    // ¸ğµç ¿ÜºÎ ¿µ¿ª°ú ±³ÁıÇÕÀÌ ÀÖ´ÂÁö °Ë»ç
+    // ëª¨ë“  ì™¸ë¶€ ì˜ì—­ê³¼ êµì§‘í•©ì´ ìˆëŠ”ì§€ ê²€ì‚¬
     //--------------------------------------
     
     sPoly = STD_FIRST_POLY2D(aObj2);    
@@ -7478,13 +7478,13 @@ SChar stfRelation::sliTomae( const stdLineString2DType*         aObj1,
 
         if( sRet != '1' )
         {
-            // ±³ÁıÇÕÀÌ ¾øÀ½
+            // êµì§‘í•©ì´ ì—†ìŒ
             sResult = 'F';
             break;
         }
         else
         {
-            // ±³ÁıÇÕÀÌ Á¸ÀçÇÔ
+            // êµì§‘í•©ì´ ì¡´ì¬í•¨
         }
         
         sPoly = STD_NEXT_POLY2D(sPoly);
@@ -7763,7 +7763,7 @@ SChar stfRelation::sliTogce( const stdLineString2DType*         aObj1,
         default:
             return 'F';
         }
-        if( sRet == 'F' )     // ³ª¿Ã ¼ö ÀÖ´Â ÃÖÀú Â÷¿ø
+        if( sRet == 'F' )     // ë‚˜ì˜¬ ìˆ˜ ìˆëŠ” ìµœì € ì°¨ì›
         {
             return 'F';
         }
@@ -8067,7 +8067,7 @@ SChar stfRelation::slbTogce( const stdLineString2DType*         aObj1,
         default:
             return 'F';
         }
-        if( sRet == 'F' )     // ³ª¿Ã ¼ö ÀÖ´Â ÃÖÀú Â÷¿ø
+        if( sRet == 'F' )     // ë‚˜ì˜¬ ìˆ˜ ìˆëŠ” ìµœì € ì°¨ì›
         {
             return 'F';
         }
@@ -8228,24 +8228,24 @@ SChar stfRelation::sleTogcb( const stdLineString2DType*         aObj1,
 /***********************************************************************
  * Description:
  *
- *    SAI(Single Area Internal)°ú
- *    SAI(Single Area Internal)ÀÇ DE-9IM °ü°è¸¦ ±¸ÇÑ´Ù.
+ *    SAI(Single Area Internal)ê³¼
+ *    SAI(Single Area Internal)ì˜ DE-9IM ê´€ê³„ë¥¼ êµ¬í•œë‹¤.
  *
  * Implementation:
  *
  *   BUG-17003
  *
- *   PolygonÀ» ±¸¼ºÇÏ´Â [Á¡, ¼±ºĞ, ¸é] °ú
- *   PolygonÀ» ±¸¼ºÇÏ´Â [Á¡, ¼±ºĞ, ¸é] ÀÇ °ü°è¸¦ ÅëÇØ ±¸ÇØ³½´Ù.
+ *   Polygonì„ êµ¬ì„±í•˜ëŠ” [ì , ì„ ë¶„, ë©´] ê³¼
+ *   Polygonì„ êµ¬ì„±í•˜ëŠ” [ì , ì„ ë¶„, ë©´] ì˜ ê´€ê³„ë¥¼ í†µí•´ êµ¬í•´ë‚¸ë‹¤.
  *
  *   ================================
  *     Polygon(A) .vs. Polygon(B)
  *   ================================
  *
- *   1. ¸é .vs. ¸é
+ *   1. ë©´ .vs. ë©´
  *
- *       - ¸é°ú ¸éÀÌ ±³Â÷ÇÏ´Â ÁöÀÇ ¿©ºÎ : ´Ù¸¥ °ü°è·ÎºÎÅÍ À¯Ãß
- *       - ÇÑ¸é°ú ´Ù¸¥ ¸éÀ» ¿ÏÀüÈ÷ Æ÷ÇÔÇÏ´Â °æ¿ì : TRUE
+ *       - ë©´ê³¼ ë©´ì´ êµì°¨í•˜ëŠ” ì§€ì˜ ì—¬ë¶€ : ë‹¤ë¥¸ ê´€ê³„ë¡œë¶€í„° ìœ ì¶”
+ *       - í•œë©´ê³¼ ë‹¤ë¥¸ ë©´ì„ ì™„ì „íˆ í¬í•¨í•˜ëŠ” ê²½ìš° : TRUE
  *
  *          A-------A
  *          |       |
@@ -8255,13 +8255,13 @@ SChar stfRelation::sleTogcb( const stdLineString2DType*         aObj1,
  *          |       |
  *          A-------A
  *
- *   1. ¼±ºĞ .vs. ¸é
+ *   1. ì„ ë¶„ .vs. ë©´
  *
- *       - ¼±ºĞ°ú ¼±ºĞ, Á¡°ú Á¡ÀÇ °ü°è·ÎºÎÅÍ À¯Ãß
+ *       - ì„ ë¶„ê³¼ ì„ ë¶„, ì ê³¼ ì ì˜ ê´€ê³„ë¡œë¶€í„° ìœ ì¶”
  *
- *   2. Á¡ .vs. ¸é 
- *       - Á¡ÀÌ ´Ù¸¥ PolygonÀÇ ¿ÜºÎ¿¡ Á¸Àç : À¯Ãß ºÒ°¡
- *       - Á¡ÀÌ ´Ù¸¥ PolygonÀÇ ³»ºÎ¿¡ Á¸Àç : TRUE
+ *   2. ì  .vs. ë©´ 
+ *       - ì ì´ ë‹¤ë¥¸ Polygonì˜ ì™¸ë¶€ì— ì¡´ì¬ : ìœ ì¶” ë¶ˆê°€
+ *       - ì ì´ ë‹¤ë¥¸ Polygonì˜ ë‚´ë¶€ì— ì¡´ì¬ : TRUE
  *
  *                A--------A
  *                |        |
@@ -8269,10 +8269,10 @@ SChar stfRelation::sleTogcb( const stdLineString2DType*         aObj1,
  *                |        |
  *                A--------A
  *                 
- *   3. ¼±ºĞ .vs. ¼±ºĞ
- *       - ±³Â÷ÇÏÁö ¾Ê´Â °æ¿ì : À¯Ãß ºÒ°¡
+ *   3. ì„ ë¶„ .vs. ì„ ë¶„
+ *       - êµì°¨í•˜ì§€ ì•ŠëŠ” ê²½ìš° : ìœ ì¶” ë¶ˆê°€
  *
- *       - ¼±ºĞÀÌ ¼±ºĞÀ¸·Î ±³Â÷ : Á¡°ú Á¡ÀÇ °ü°è·ÎºÎÅÍ À¯Ãß °¡´É
+ *       - ì„ ë¶„ì´ ì„ ë¶„ìœ¼ë¡œ êµì°¨ : ì ê³¼ ì ì˜ ê´€ê³„ë¡œë¶€í„° ìœ ì¶” ê°€ëŠ¥
  *
  *             B---A====B----A
  *
@@ -8280,7 +8280,7 @@ SChar stfRelation::sleTogcb( const stdLineString2DType*         aObj1,
  *
  *             A---B====B----A
  *
- *       - ¼±ºĞÀÌ Á¡¿¡¼­ ±³Â÷ : TRUE
+ *       - ì„ ë¶„ì´ ì ì—ì„œ êµì°¨ : TRUE
  *
  *                B
  *                |
@@ -8288,7 +8288,7 @@ SChar stfRelation::sleTogcb( const stdLineString2DType*         aObj1,
  *                |
  *                B
  *
- *          SLI .vs. SAI¿Í ´Ş¸® ´ÙÀ½°ú °°Àº °æ¿ì¿¡µµ TRUEÀÓ.
+ *          SLI .vs. SAIì™€ ë‹¬ë¦¬ ë‹¤ìŒê³¼ ê°™ì€ ê²½ìš°ì—ë„ TRUEì„.
  *
  *                B
  *                |
@@ -8296,9 +8296,9 @@ SChar stfRelation::sleTogcb( const stdLineString2DType*         aObj1,
  *               /|\
  *              I B I
  *
- *   4. Á¡ .vs. ¼±ºĞ
- *       - ±³Â÷ÇÏÁö ¾Ê´Â °æ¿ì : À¯Ãß ºÒ°¡
- *       - Á¡ÀÌ ¼±ºĞ¿¡¼­ ±³Â÷ : Á¡°ú Á¡ÀÇ °ü°è·ÎºÎÅÍ À¯Ãß °¡´É
+ *   4. ì  .vs. ì„ ë¶„
+ *       - êµì°¨í•˜ì§€ ì•ŠëŠ” ê²½ìš° : ìœ ì¶” ë¶ˆê°€
+ *       - ì ì´ ì„ ë¶„ì—ì„œ êµì°¨ : ì ê³¼ ì ì˜ ê´€ê³„ë¡œë¶€í„° ìœ ì¶” ê°€ëŠ¥
  *
  *               Bp                     Bp
  *               |                      |
@@ -8306,9 +8306,9 @@ SChar stfRelation::sleTogcb( const stdLineString2DType*         aObj1,
  *               |                      |
  *               Bn                     Bn
  *
- *   5. Á¡ .vs. Á¡
- *       - ±³Â÷ÇÏÁö ¾Ê´Â °æ¿ì : À¯Ãß ºÒ°¡
- *       - Á¡¿¡¼­ ±³Â÷ : Á¡°ú Á¡ÀÇ °ü°è·ÎºÎÅÍ À¯Ãß
+ *   5. ì  .vs. ì 
+ *       - êµì°¨í•˜ì§€ ì•ŠëŠ” ê²½ìš° : ìœ ì¶” ë¶ˆê°€
+ *       - ì ì—ì„œ êµì°¨ : ì ê³¼ ì ì˜ ê´€ê³„ë¡œë¶€í„° ìœ ì¶”
  *
  *                Bp
  *                |
@@ -8316,9 +8316,9 @@ SChar stfRelation::sleTogcb( const stdLineString2DType*         aObj1,
  *                |
  *                Bn
  *
- *   Á¡°ú Á¡ÀÇ °ü°è¿¡¼­ ´ÙÀ½°ú °°ÀÌ ³»ºÎ¿¡ ÀÖ´Ù ÇÏ´õ¶óµµ
- *   ¼±ºĞÀÌ Interia Ring ¶§¹®¿¡ ³»ºÎ¿µ¿ª°ú ±³Â÷ÇÔÀ» º¸ÀåÇÒ ¼ö ¾ø´Ù.
- *   µû¶ó¼­, ±¸¼ºµÈ LineÀÌ Interior Ring³»ºÎ¿¡ Æ÷ÇÔµÇÁö ¾ÊÀ½À» °Ë»çÇØ¾ß ÇÔ.
+ *   ì ê³¼ ì ì˜ ê´€ê³„ì—ì„œ ë‹¤ìŒê³¼ ê°™ì´ ë‚´ë¶€ì— ìˆë‹¤ í•˜ë”ë¼ë„
+ *   ì„ ë¶„ì´ Interia Ring ë•Œë¬¸ì— ë‚´ë¶€ì˜ì—­ê³¼ êµì°¨í•¨ì„ ë³´ì¥í•  ìˆ˜ ì—†ë‹¤.
+ *   ë”°ë¼ì„œ, êµ¬ì„±ëœ Lineì´ Interior Ringë‚´ë¶€ì— í¬í•¨ë˜ì§€ ì•ŠìŒì„ ê²€ì‚¬í•´ì•¼ í•¨.
  *
  *      Ap  
  *       \     B
@@ -8347,30 +8347,30 @@ IDE_RC stfRelation::saiTosai( iduMemory *              aQmxMem,
     SChar   sResult;
     
     //----------------------------
-    // First Area Á¤º¸
+    // First Area ì •ë³´
     //----------------------------
     
     stdLinearRing2D * s1stRing;
     stdPoint2D      * s1stRingPt;
-    stdPoint2D      * s1stRingPrevPt;  // Ring PointÀÇ ÀÌÀü Point
-    stdPoint2D      * s1stRingCurrPt;  // Ring PointÀÇ ÀÌÀü Point
-    stdPoint2D      * s1stRingNextPt;  // Ring PointÀÇ ´ÙÀ½ Point
+    stdPoint2D      * s1stRingPrevPt;  // Ring Pointì˜ ì´ì „ Point
+    stdPoint2D      * s1stRingCurrPt;  // Ring Pointì˜ ì´ì „ Point
+    stdPoint2D      * s1stRingNextPt;  // Ring Pointì˜ ë‹¤ìŒ Point
     
     UInt              s1stRingCnt;     // Ring Count of a Polygon
     UInt              s1stRingSegCnt;  // Segment Count of a Ring
-    idBool            s1stRingCCWise;  // Ring ÀÌ ½Ã°è ¿ª¹æÇâÀÎÁöÀÇ ¿©ºÎ
+    idBool            s1stRingCCWise;  // Ring ì´ ì‹œê³„ ì—­ë°©í–¥ì¸ì§€ì˜ ì—¬ë¶€
 
     stdPoint2D        s1stSomePt;
     
     //----------------------------
-    // Second Area Á¤º¸
+    // Second Area ì •ë³´
     //----------------------------
     
     stdLinearRing2D * s2ndRing;
     stdPoint2D      * s2ndRingPt;
-    stdPoint2D      * s2ndRingPrevPt;  // Ring PointÀÇ ÀÌÀü Point
-    stdPoint2D      * s2ndRingCurrPt;  // Ring PointÀÇ ÀÌÀü Point
-    stdPoint2D      * s2ndRingNextPt;  // Ring PointÀÇ ´ÙÀ½ Point
+    stdPoint2D      * s2ndRingPrevPt;  // Ring Pointì˜ ì´ì „ Point
+    stdPoint2D      * s2ndRingCurrPt;  // Ring Pointì˜ ì´ì „ Point
+    stdPoint2D      * s2ndRingNextPt;  // Ring Pointì˜ ë‹¤ìŒ Point
     
     UInt              s2ndRingCnt;     // Ring Count of a Polygon
     UInt              s2ndRingSegCnt;  // Segment Count of a Ring
@@ -8378,7 +8378,7 @@ IDE_RC stfRelation::saiTosai( iduMemory *              aQmxMem,
     stdPoint2D        s2ndSomePt;
 
     //----------------------------
-    // Ring°ú RingÀÇ Áßº¹Á¡ÀÎÁö °Ë»ç
+    // Ringê³¼ Ringì˜ ì¤‘ë³µì ì¸ì§€ ê²€ì‚¬
     //----------------------------
     
     UInt              sCheckSegCnt;
@@ -8402,7 +8402,7 @@ IDE_RC stfRelation::saiTosai( iduMemory *              aQmxMem,
     s2ndRingCnt = STD_N_RINGS( a2ndArea );
 
     //----------------------------------------
-    // ¸é°ú ¸éÀÇ °ü°è·ÎºÎÅÍ ÃßÃâ
+    // ë©´ê³¼ ë©´ì˜ ê´€ê³„ë¡œë¶€í„° ì¶”ì¶œ
     //----------------------------------------
 
     IDE_TEST( stdUtils::getPointOnSurface2D( aQmxMem, a1stArea, & s1stSomePt )
@@ -8418,10 +8418,10 @@ IDE_RC stfRelation::saiTosai( iduMemory *              aQmxMem,
     }
     
     //----------------------------------------
-    // Á¡°ú ¸éÀÇ °ü°è·ÎºÎÅÍ ÃßÃâ
+    // ì ê³¼ ë©´ì˜ ê´€ê³„ë¡œë¶€í„° ì¶”ì¶œ
     //----------------------------------------
 
-    // First AreaÀÇ ÁÂÇ¥°¡ Second AreaÀÇ ³»ºÎ¿¡ ÀÖ´ÂÁö °Ë»ç
+    // First Areaì˜ ì¢Œí‘œê°€ Second Areaì˜ ë‚´ë¶€ì— ìˆëŠ”ì§€ ê²€ì‚¬
     for ( i = 0, s1stRing = STD_FIRST_RN2D(a1stArea);
           i < s1stRingCnt;
           i++, s1stRing = STD_NEXT_RN2D(s1stRing) )
@@ -8432,7 +8432,7 @@ IDE_RC stfRelation::saiTosai( iduMemory *              aQmxMem,
               j < s1stRingSegCnt;
               j++, s1stRingPt = STD_NEXT_PT2D(s1stRingPt) )
         {
-            // ÇÑÁ¡ÀÌ ´Ù¸¥ PolygonÀÇ ³»ºÎ¿¡ Á¸ÀçÇÏ´ÂÁö ÆÇ´Ü
+            // í•œì ì´ ë‹¤ë¥¸ Polygonì˜ ë‚´ë¶€ì— ì¡´ì¬í•˜ëŠ”ì§€ íŒë‹¨
             if( spiTosai( s1stRingPt, a2ndArea ) == '0' )
             {
                 sResult = '2';
@@ -8445,7 +8445,7 @@ IDE_RC stfRelation::saiTosai( iduMemory *              aQmxMem,
         }
     }
     
-    // Second AreaÀÇ ÁÂÇ¥°¡ First AreaÀÇ ³»ºÎ¿¡ ÀÖ´ÂÁö °Ë»ç
+    // Second Areaì˜ ì¢Œí‘œê°€ First Areaì˜ ë‚´ë¶€ì— ìˆëŠ”ì§€ ê²€ì‚¬
     for ( m = 0, s2ndRing = STD_FIRST_RN2D(a2ndArea);
           m < s2ndRingCnt;
           m++, s2ndRing = STD_NEXT_RN2D(s2ndRing) )
@@ -8456,7 +8456,7 @@ IDE_RC stfRelation::saiTosai( iduMemory *              aQmxMem,
               n < s2ndRingSegCnt;
               n++, s2ndRingPt = STD_NEXT_PT2D(s2ndRingPt) )
         {
-            // ÇÑÁ¡ÀÌ ´Ù¸¥ PolygonÀÇ ³»ºÎ¿¡ Á¸ÀçÇÏ´ÂÁö ÆÇ´Ü
+            // í•œì ì´ ë‹¤ë¥¸ Polygonì˜ ë‚´ë¶€ì— ì¡´ì¬í•˜ëŠ”ì§€ íŒë‹¨
             if( spiTosai( s2ndRingPt, a1stArea ) == '0' )
             {
                 sResult = '2';
@@ -8470,10 +8470,10 @@ IDE_RC stfRelation::saiTosai( iduMemory *              aQmxMem,
     }       
     
     //----------------------------------------
-    // First Area¿Í Second Area ÀÇ °ü°è ÃßÃâ
+    // First Areaì™€ Second Area ì˜ ê´€ê³„ ì¶”ì¶œ
     //----------------------------------------
 
-    // First Area°¡ ±¸¼ºÇÏ´Â RingÀÇ °³¼ö¸¸Å­ ¹İº¹
+    // First Areaê°€ êµ¬ì„±í•˜ëŠ” Ringì˜ ê°œìˆ˜ë§Œí¼ ë°˜ë³µ
     for ( i = 0, s1stRing = STD_FIRST_RN2D(a1stArea);
           i < s1stRingCnt;
           i++, s1stRing = STD_NEXT_RN2D(s1stRing) )
@@ -8481,25 +8481,25 @@ IDE_RC stfRelation::saiTosai( iduMemory *              aQmxMem,
         s1stRingSegCnt = STD_N_POINTS(s1stRing) - 1;
         s1stRingCCWise = stdUtils::isCCW2D(s1stRing);
         
-        // First AreaÀÇ RingÀÌ ±¸¼ºÇÏ´Â Segment°³¼ö¸¸Å­ ¹İº¹
+        // First Areaì˜ Ringì´ êµ¬ì„±í•˜ëŠ” Segmentê°œìˆ˜ë§Œí¼ ë°˜ë³µ
         for ( j = 0, s1stRingPt = STD_FIRST_PT2D(s1stRing);
               j < s1stRingSegCnt;
               j++, s1stRingPt = STD_NEXT_PT2D(s1stRingPt) )
         {
-            // Second Area°¡ ±¸¼ºÇÏ´Â RingÀÇ °³¼ö¸¸Å­ ¹İº¹
+            // Second Areaê°€ êµ¬ì„±í•˜ëŠ” Ringì˜ ê°œìˆ˜ë§Œí¼ ë°˜ë³µ
             for ( m = 0, s2ndRing = STD_FIRST_RN2D(a2ndArea);
                   m < s2ndRingCnt;
                   m++, s2ndRing = STD_NEXT_RN2D(s2ndRing) )
             {
                 s2ndRingSegCnt = STD_N_POINTS(s2ndRing) - 1;
                 
-                // Second AreaÀÇ RingÀÌ ±¸¼ºÇÏ´Â Segment°³¼ö¸¸Å­ ¹İº¹
+                // Second Areaì˜ Ringì´ êµ¬ì„±í•˜ëŠ” Segmentê°œìˆ˜ë§Œí¼ ë°˜ë³µ
                 for ( n = 0, s2ndRingPt = STD_FIRST_PT2D(s2ndRing);
                       n < s2ndRingSegCnt;
                       n++, s2ndRingPt = STD_NEXT_PT2D(s2ndRingPt) )
                 {
                     //----------------------------
-                    // First RingÀÇ ÇöÀçÁ¡, ÀÌÀüÁ¡, ÀÌÈÄÁ¡À» ±¸ÇÔ
+                    // First Ringì˜ í˜„ì¬ì , ì´ì „ì , ì´í›„ì ì„ êµ¬í•¨
                     //----------------------------
 
                     s1stRingPrevPt =
@@ -8515,7 +8515,7 @@ IDE_RC stfRelation::saiTosai( iduMemory *              aQmxMem,
                                                          NULL );
                     
                     //----------------------------
-                    // Second RingÀÇ ÇöÀçÁ¡, ÀÌÀüÁ¡, ÀÌÈÄÁ¡À» ±¸ÇÔ
+                    // Second Ringì˜ í˜„ì¬ì , ì´ì „ì , ì´í›„ì ì„ êµ¬í•¨
                     //----------------------------
                 
                     s2ndRingPrevPt =
@@ -8531,42 +8531,42 @@ IDE_RC stfRelation::saiTosai( iduMemory *              aQmxMem,
                                                          NULL );
 
                     //------------------------------------
-                    // ¼±ºĞ°ú ¼±ºĞÀÇ °ü°è·ÎºÎÅÍ À¯Ãß
+                    // ì„ ë¶„ê³¼ ì„ ë¶„ì˜ ê´€ê³„ë¡œë¶€í„° ìœ ì¶”
                     //------------------------------------
 
-                    // ¼±ºĞÀÌ Á¡¿¡¼­ ±³Â÷ÇÑ´Ù¸é TRUE
+                    // ì„ ë¶„ì´ ì ì—ì„œ êµì°¨í•œë‹¤ë©´ TRUE
                     if( ( stdUtils::intersectI2D( s1stRingPt,
                                                   STD_NEXT_PT2D(s1stRingPt),
                                                   s2ndRingPt,
                                                   STD_NEXT_PT2D(s2ndRingPt) )
                           ==ID_TRUE ) )
                     {
-                        // ¼±ºĞÀÌ ±³Â÷ÇÏ´Â °æ¿ì
+                        // ì„ ë¶„ì´ êµì°¨í•˜ëŠ” ê²½ìš°
                         sResult = '2';
                         IDE_RAISE( SAISAI2D_MAX_RESULT );
                     }
                     else
                     {
-                        // ¼±ºĞÀÌ ±³Â÷ÇÏÁö ¾Ê´Â °æ¿ì
+                        // ì„ ë¶„ì´ êµì°¨í•˜ì§€ ì•ŠëŠ” ê²½ìš°
                     }
                     
                     //----------------------------------------
-                    // ´ÙÀ½ °ü°è¸¦ Á¡°ú Á¡ÀÇ °ü°è·Î ¸¸µé±â À§ÇÑ Á¶Á¤
-                    //  - RingÀÇ ¼±ºĞ°ú Á¡°úÀÇ °ü°è
-                    //  - RingÀÇ Á¡°ú Á¡ÀÇ °ü°è
+                    // ë‹¤ìŒ ê´€ê³„ë¥¼ ì ê³¼ ì ì˜ ê´€ê³„ë¡œ ë§Œë“¤ê¸° ìœ„í•œ ì¡°ì •
+                    //  - Ringì˜ ì„ ë¶„ê³¼ ì ê³¼ì˜ ê´€ê³„
+                    //  - Ringì˜ ì ê³¼ ì ì˜ ê´€ê³„
                     //----------------------------------------
 
                     sMeetOnPoint = ID_FALSE;
                     
                     //----------------------------
-                    // First Ring ¼±ºĞ³»¿¡ Second RingÀÇ Á¡ÀÌ Á¸ÀçÇÏ´ÂÁö °Ë»ç
+                    // First Ring ì„ ë¶„ë‚´ì— Second Ringì˜ ì ì´ ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬
                     //----------------------------
                     
                     if ( ( stdUtils::betweenI2D( s1stRingPt,
                                                  STD_NEXT_PT2D(s1stRingPt),
                                                  s2ndRingPt )==ID_TRUE ) )
                     {
-                        // Á¡ÀÌ ¼±ºĞ¿¡¼­ ±³Â÷ => Á¡°ú Á¡ÀÇ °ü°è·Î º¯°æ
+                        // ì ì´ ì„ ë¶„ì—ì„œ êµì°¨ => ì ê³¼ ì ì˜ ê´€ê³„ë¡œ ë³€ê²½
                         //               Bp                    Bp
                         //               |                     |
                         //         A-----B-----A  ==>   Ap----AB----An  
@@ -8580,14 +8580,14 @@ IDE_RC stfRelation::saiTosai( iduMemory *              aQmxMem,
                     }
                 
                     //----------------------------
-                    // Second Ring ¼±ºĞ³»¿¡ First RingÀÇ Á¡ÀÌ Á¸ÀçÇÏ´ÂÁö °Ë»ç
+                    // Second Ring ì„ ë¶„ë‚´ì— First Ringì˜ ì ì´ ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬
                     //----------------------------
 
                     if ( stdUtils::betweenI2D( s2ndRingPt,
                                                STD_NEXT_PT2D(s2ndRingPt),
                                                s1stRingPt ) == ID_TRUE )
                     {
-                        // Á¡ÀÌ ¼±ºĞ¿¡¼­ ±³Â÷ => Á¡°ú Á¡ÀÇ °ü°è·Î º¯°æ
+                        // ì ì´ ì„ ë¶„ì—ì„œ êµì°¨ => ì ê³¼ ì ì˜ ê´€ê³„ë¡œ ë³€ê²½
                         //               Ap                     Ap
                         //               |                      |
                         //         B-----A------B  ==>   Bp----BA----Bn  
@@ -8601,7 +8601,7 @@ IDE_RC stfRelation::saiTosai( iduMemory *              aQmxMem,
                     }
 
                     //----------------------------
-                    // Á¡°ú Á¡ÀÌ ±³Â÷ÇÏ´Â Áö °Ë»ç
+                    // ì ê³¼ ì ì´ êµì°¨í•˜ëŠ” ì§€ ê²€ì‚¬
                     //----------------------------
                     
                     if ( stdUtils::isSamePoints2D( s1stRingPt,
@@ -8609,18 +8609,18 @@ IDE_RC stfRelation::saiTosai( iduMemory *              aQmxMem,
                     {
                         sMeetOnPoint = ID_TRUE;
                         
-                        // ÀÌ¹Ì ±¸ÇØÁø °ªÀ» »ç¿ë
+                        // ì´ë¯¸ êµ¬í•´ì§„ ê°’ì„ ì‚¬ìš©
                     }
 
                     //----------------------------
-                    // Ring°ú RingÀÌ °ãÄ¡´Â Á¡ÀÎÁö ¿©ºÎ¸¦ °Ë»ç
+                    // Ringê³¼ Ringì´ ê²¹ì¹˜ëŠ” ì ì¸ì§€ ì—¬ë¶€ë¥¼ ê²€ì‚¬
                     //----------------------------
                     
                     if ( sMeetOnPoint == ID_TRUE )
                     {
-                        // Ring°ú RingÀÌ °ãÄ¡´Â Á¡ÀÏ °æ¿ì
-                        // ³»ºÎ¿¡ Á¸ÀçÇÏ´Â Áö¸¦ ÆÇ´ÜÇÒ ¼ö ¾ø´Ù.
-                        // ´Ù¸¥ Á¡¿¡ ÀÇÇÏ¿© ÆÇº° °¡´ÉÇÏ´Ù.
+                        // Ringê³¼ Ringì´ ê²¹ì¹˜ëŠ” ì ì¼ ê²½ìš°
+                        // ë‚´ë¶€ì— ì¡´ì¬í•˜ëŠ” ì§€ë¥¼ íŒë‹¨í•  ìˆ˜ ì—†ë‹¤.
+                        // ë‹¤ë¥¸ ì ì— ì˜í•˜ì—¬ íŒë³„ ê°€ëŠ¥í•˜ë‹¤.
                         //
                         //              Pn
                         //       Ap       I
@@ -8629,14 +8629,14 @@ IDE_RC stfRelation::saiTosai( iduMemory *              aQmxMem,
                         //          \ |/
                         //           AIP-------An
 
-                        // First AreaÀÇ Á¡ÀÌ ´Ù¸¥ Ring°ú °ãÄ¡´ÂÁö °Ë»ç
+                        // First Areaì˜ ì ì´ ë‹¤ë¥¸ Ringê³¼ ê²¹ì¹˜ëŠ”ì§€ ê²€ì‚¬
                         for ( x = 0, sCheckRing = STD_FIRST_RN2D(a1stArea);
                               x < s1stRingCnt;
                               x++, sCheckRing = STD_NEXT_RN2D(sCheckRing) )
                         {
                             if ( i == x )
                             {
-                                // ÀÚ½ÅÀÇ RingÀº °Ë»çÇÏÁö ¾ÊÀ½
+                                // ìì‹ ì˜ Ringì€ ê²€ì‚¬í•˜ì§€ ì•ŠìŒ
                                 continue;
                             }
                             else
@@ -8669,14 +8669,14 @@ IDE_RC stfRelation::saiTosai( iduMemory *              aQmxMem,
                             continue;
                         }
                         
-                        // First AreaÀÇ Á¡ÀÌ ´Ù¸¥ Ring°ú °ãÄ¡´ÂÁö °Ë»ç
+                        // First Areaì˜ ì ì´ ë‹¤ë¥¸ Ringê³¼ ê²¹ì¹˜ëŠ”ì§€ ê²€ì‚¬
                         for ( x = 0, sCheckRing = STD_FIRST_RN2D(a2ndArea);
                               x < s2ndRingCnt;
                               x++, sCheckRing = STD_NEXT_RN2D(sCheckRing) )
                         {
                             if ( m == x )
                             {
-                                // ÀÚ½ÅÀÇ RingÀº °Ë»çÇÏÁö ¾ÊÀ½
+                                // ìì‹ ì˜ Ringì€ ê²€ì‚¬í•˜ì§€ ì•ŠìŒ
                                 continue;
                             }
                             else
@@ -8706,7 +8706,7 @@ IDE_RC stfRelation::saiTosai( iduMemory *              aQmxMem,
                     }
                     
                     //----------------------------------------
-                    // Á¡°ú Á¡ÀÇ °ü°è·ÎºÎÅÍ ¿ÜºÎ ±³Â÷ÀÇ ÆÇ´Ü
+                    // ì ê³¼ ì ì˜ ê´€ê³„ë¡œë¶€í„° ì™¸ë¶€ êµì°¨ì˜ íŒë‹¨
                     //----------------------------------------
                     
                     if ( sMeetOnPoint == ID_TRUE )
@@ -8726,12 +8726,12 @@ IDE_RC stfRelation::saiTosai( iduMemory *              aQmxMem,
                         }
                         else
                         {
-                            // ±³Â÷ ¿©ºÎ¸¦ ÆÇ´ÜÇÒ ¼ö ¾øÀ½
+                            // êµì°¨ ì—¬ë¶€ë¥¼ íŒë‹¨í•  ìˆ˜ ì—†ìŒ
                         }
                     }
                     else // sMeetOnPoint == ID_FALSE
                     {
-                        // °Ë»ç ´ë»óÀÌ ¾Æ´Ô
+                        // ê²€ì‚¬ ëŒ€ìƒì´ ì•„ë‹˜
                     }
                 } // for n
             } // for m
@@ -8752,27 +8752,27 @@ IDE_RC stfRelation::saiTosai( iduMemory *              aQmxMem,
 /***********************************************************************
  * Description:
  *
- *    SAI(Single Area Internal)°ú
- *    SAB(Single Area Boundary)ÀÇ DE-9IM °ü°è¸¦ ±¸ÇÑ´Ù.
+ *    SAI(Single Area Internal)ê³¼
+ *    SAB(Single Area Boundary)ì˜ DE-9IM ê´€ê³„ë¥¼ êµ¬í•œë‹¤.
  *
  * Implementation:
  *
  *   BUG-17010
  *
- *   Polygon Boundary¸¦ ±¸¼ºÇÏ´Â [Á¡, ¼±ºĞ] °ú
- *   Polygon InternalÀ» ±¸¼ºÇÏ´Â [Á¡, ¼±ºĞ, ¸é] ÀÇ °ü°è¸¦ ÅëÇØ ±¸ÇØ³½´Ù.
+ *   Polygon Boundaryë¥¼ êµ¬ì„±í•˜ëŠ” [ì , ì„ ë¶„] ê³¼
+ *   Polygon Internalì„ êµ¬ì„±í•˜ëŠ” [ì , ì„ ë¶„, ë©´] ì˜ ê´€ê³„ë¥¼ í†µí•´ êµ¬í•´ë‚¸ë‹¤.
  *
  *   ================================
  *     Boundary .vs. Internal
  *   ================================
  *
- *   1. ¼±ºĞ .vs. ¸é
+ *   1. ì„ ë¶„ .vs. ë©´
  *
- *       - ¼±ºĞ°ú ¼±ºĞ, Á¡°ú Á¡ÀÇ °ü°è·ÎºÎÅÍ À¯Ãß
+ *       - ì„ ë¶„ê³¼ ì„ ë¶„, ì ê³¼ ì ì˜ ê´€ê³„ë¡œë¶€í„° ìœ ì¶”
  *
- *   2. Á¡ .vs. ¸é 
- *       - Á¡ÀÌ PolygonÀÇ ¿ÜºÎ¿¡ Á¸Àç : À¯Ãß ºÒ°¡
- *       - Á¡ÀÌ PolygonÀÇ ³»ºÎ¿¡ Á¸Àç : TRUE
+ *   2. ì  .vs. ë©´ 
+ *       - ì ì´ Polygonì˜ ì™¸ë¶€ì— ì¡´ì¬ : ìœ ì¶” ë¶ˆê°€
+ *       - ì ì´ Polygonì˜ ë‚´ë¶€ì— ì¡´ì¬ : TRUE
  *
  *                A--------A
  *                |        |
@@ -8780,10 +8780,10 @@ IDE_RC stfRelation::saiTosai( iduMemory *              aQmxMem,
  *                |        |
  *                A--------A
  *                 
- *   3. ¼±ºĞ .vs. ¼±ºĞ
- *       - ±³Â÷ÇÏÁö ¾Ê´Â °æ¿ì : À¯Ãß ºÒ°¡
+ *   3. ì„ ë¶„ .vs. ì„ ë¶„
+ *       - êµì°¨í•˜ì§€ ì•ŠëŠ” ê²½ìš° : ìœ ì¶” ë¶ˆê°€
  *
- *       - ¼±ºĞÀÌ ¼±ºĞÀ¸·Î ±³Â÷ : Á¡°ú Á¡ÀÇ °ü°è·ÎºÎÅÍ À¯Ãß °¡´É
+ *       - ì„ ë¶„ì´ ì„ ë¶„ìœ¼ë¡œ êµì°¨ : ì ê³¼ ì ì˜ ê´€ê³„ë¡œë¶€í„° ìœ ì¶” ê°€ëŠ¥
  *
  *             B---A====B----A
  *
@@ -8791,7 +8791,7 @@ IDE_RC stfRelation::saiTosai( iduMemory *              aQmxMem,
  *
  *             A---B====B----A
  *
- *       - ¼±ºĞÀÌ Á¡¿¡¼­ ±³Â÷ : TRUE
+ *       - ì„ ë¶„ì´ ì ì—ì„œ êµì°¨ : TRUE
  *
  *                B
  *                |
@@ -8799,9 +8799,9 @@ IDE_RC stfRelation::saiTosai( iduMemory *              aQmxMem,
  *                |
  *                B
  *
- *   4. Á¡ .vs. ¼±ºĞ
- *       - ±³Â÷ÇÏÁö ¾Ê´Â °æ¿ì : À¯Ãß ºÒ°¡
- *       - Á¡ÀÌ ¼±ºĞ¿¡¼­ ±³Â÷ : Á¡°ú Á¡ÀÇ °ü°è·ÎºÎÅÍ À¯Ãß °¡´É
+ *   4. ì  .vs. ì„ ë¶„
+ *       - êµì°¨í•˜ì§€ ì•ŠëŠ” ê²½ìš° : ìœ ì¶” ë¶ˆê°€
+ *       - ì ì´ ì„ ë¶„ì—ì„œ êµì°¨ : ì ê³¼ ì ì˜ ê´€ê³„ë¡œë¶€í„° ìœ ì¶” ê°€ëŠ¥
  *
  *               Bp                     Bp
  *               |                      |
@@ -8809,9 +8809,9 @@ IDE_RC stfRelation::saiTosai( iduMemory *              aQmxMem,
  *               |                      |
  *               Bn                     Bn
  *
- *   5. Á¡ .vs. Á¡
- *       - ±³Â÷ÇÏÁö ¾Ê´Â °æ¿ì : À¯Ãß ºÒ°¡
- *       - Á¡¿¡¼­ ±³Â÷ : Á¡°ú Á¡ÀÇ °ü°è·ÎºÎÅÍ À¯Ãß
+ *   5. ì  .vs. ì 
+ *       - êµì°¨í•˜ì§€ ì•ŠëŠ” ê²½ìš° : ìœ ì¶” ë¶ˆê°€
+ *       - ì ì—ì„œ êµì°¨ : ì ê³¼ ì ì˜ ê´€ê³„ë¡œë¶€í„° ìœ ì¶”
  *
  *                Bp
  *                |
@@ -8819,9 +8819,9 @@ IDE_RC stfRelation::saiTosai( iduMemory *              aQmxMem,
  *                |
  *                Bn
  *
- *   Á¡°ú Á¡ÀÇ °ü°è¿¡¼­ ´ÙÀ½°ú °°ÀÌ ³»ºÎ¿¡ ÀÖ´Ù ÇÏ´õ¶óµµ
- *   ¼±ºĞÀÌ Interia Ring ¶§¹®¿¡ ³»ºÎ¿µ¿ª°ú ±³Â÷ÇÔÀ» º¸ÀåÇÒ ¼ö ¾ø´Ù.
- *   µû¶ó¼­, ±¸¼ºµÈ LineÀÌ Interior Ring³»ºÎ¿¡ Æ÷ÇÔµÇÁö ¾ÊÀ½À» °Ë»çÇØ¾ß ÇÔ.
+ *   ì ê³¼ ì ì˜ ê´€ê³„ì—ì„œ ë‹¤ìŒê³¼ ê°™ì´ ë‚´ë¶€ì— ìˆë‹¤ í•˜ë”ë¼ë„
+ *   ì„ ë¶„ì´ Interia Ring ë•Œë¬¸ì— ë‚´ë¶€ì˜ì—­ê³¼ êµì°¨í•¨ì„ ë³´ì¥í•  ìˆ˜ ì—†ë‹¤.
+ *   ë”°ë¼ì„œ, êµ¬ì„±ëœ Lineì´ Interior Ringë‚´ë¶€ì— í¬í•¨ë˜ì§€ ì•ŠìŒì„ ê²€ì‚¬í•´ì•¼ í•¨.
  *
  *      Ap  
  *       \     B
@@ -8849,33 +8849,33 @@ stfRelation::saiTosab( const stdPolygon2DType * aAreaInt,
     SChar   sResult;
     
     //----------------------------
-    // Area Internal Á¤º¸
+    // Area Internal ì •ë³´
     //----------------------------
     
     stdLinearRing2D * sAreaRing;
     stdPoint2D      * sAreaRingPt;
-    stdPoint2D      * sAreaRingPrevPt;  // Ring PointÀÇ ÀÌÀü Point
-    stdPoint2D      * sAreaRingCurrPt;  // Ring PointÀÇ ÀÌÀü Point
-    stdPoint2D      * sAreaRingNextPt;  // Ring PointÀÇ ´ÙÀ½ Point
+    stdPoint2D      * sAreaRingPrevPt;  // Ring Pointì˜ ì´ì „ Point
+    stdPoint2D      * sAreaRingCurrPt;  // Ring Pointì˜ ì´ì „ Point
+    stdPoint2D      * sAreaRingNextPt;  // Ring Pointì˜ ë‹¤ìŒ Point
     
     UInt              sAreaRingCnt;     // Ring Count of a Polygon
     UInt              sAreaRingSegCnt;  // Segment Count of a Ring
-    idBool            sAreaRingCCWise;  // Ring ÀÌ ½Ã°è ¿ª¹æÇâÀÎÁöÀÇ ¿©ºÎ
+    idBool            sAreaRingCCWise;  // Ring ì´ ì‹œê³„ ì—­ë°©í–¥ì¸ì§€ì˜ ì—¬ë¶€
 
     //----------------------------
-    // Area Boundary Á¤º¸
+    // Area Boundary ì •ë³´
     //----------------------------
     
     stdLinearRing2D * sBndRing;
     stdPoint2D      * sBndRingPt;
-    stdPoint2D      * sBndRingPrevPt;  // Ring PointÀÇ ÀÌÀü Point
-    stdPoint2D      * sBndRingNextPt;  // Ring PointÀÇ ´ÙÀ½ Point
+    stdPoint2D      * sBndRingPrevPt;  // Ring Pointì˜ ì´ì „ Point
+    stdPoint2D      * sBndRingNextPt;  // Ring Pointì˜ ë‹¤ìŒ Point
     
     UInt              sBndRingCnt;     // Ring Count of a Polygon
     UInt              sBndRingSegCnt;  // Segment Count of a Ring
 
     //----------------------------
-    // Ring°ú RingÀÇ Áßº¹Á¡ÀÎÁö °Ë»ç
+    // Ringê³¼ Ringì˜ ì¤‘ë³µì ì¸ì§€ ê²€ì‚¬
     //----------------------------
     
     UInt              sCheckSegCnt;
@@ -8899,10 +8899,10 @@ stfRelation::saiTosab( const stdPolygon2DType * aAreaInt,
     sBndRingCnt = STD_N_RINGS( aAreaBnd );
 
     //----------------------------------------
-    // Á¡°ú ¸éÀÇ °ü°è·ÎºÎÅÍ ÃßÃâ
+    // ì ê³¼ ë©´ì˜ ê´€ê³„ë¡œë¶€í„° ì¶”ì¶œ
     //----------------------------------------
 
-    // Area BoundaryÀÇ ÁÂÇ¥°¡ Area Internal¿¡ Æ÷ÇÔµÇ´Â Áö °Ë»ç
+    // Area Boundaryì˜ ì¢Œí‘œê°€ Area Internalì— í¬í•¨ë˜ëŠ” ì§€ ê²€ì‚¬
     for ( i = 0, sBndRing = STD_FIRST_RN2D(aAreaBnd);
           i < sBndRingCnt;
           i++, sBndRing = STD_NEXT_RN2D(sBndRing) )
@@ -8913,7 +8913,7 @@ stfRelation::saiTosab( const stdPolygon2DType * aAreaInt,
               j < sBndRingSegCnt;
               j++, sBndRingPt = STD_NEXT_PT2D(sBndRingPt) )
         {
-            // ÇÑÁ¡ÀÌ ´Ù¸¥ PolygonÀÇ ³»ºÎ¿¡ Á¸ÀçÇÏ´ÂÁö ÆÇ´Ü
+            // í•œì ì´ ë‹¤ë¥¸ Polygonì˜ ë‚´ë¶€ì— ì¡´ì¬í•˜ëŠ”ì§€ íŒë‹¨
             if( spiTosai( sBndRingPt, aAreaInt ) == '0' )
             {
                 sResult = '1';
@@ -8927,22 +8927,22 @@ stfRelation::saiTosab( const stdPolygon2DType * aAreaInt,
     }
     
     //----------------------------------------
-    // Á¡°ú ¼±ÀÇ °ü°è·ÎºÎÅÍ SAI .vs. SAB ÀÇ °ü°è ÃßÃâ
+    // ì ê³¼ ì„ ì˜ ê´€ê³„ë¡œë¶€í„° SAI .vs. SAB ì˜ ê´€ê³„ ì¶”ì¶œ
     //----------------------------------------
 
-    // Area Boundary°¡ ±¸¼ºÇÏ´Â RingÀÇ °³¼ö¸¸Å­ ¹İº¹
+    // Area Boundaryê°€ êµ¬ì„±í•˜ëŠ” Ringì˜ ê°œìˆ˜ë§Œí¼ ë°˜ë³µ
     for ( i = 0, sBndRing = STD_FIRST_RN2D(aAreaBnd);
           i < sBndRingCnt;
           i++, sBndRing = STD_NEXT_RN2D(sBndRing) )
     {
         sBndRingSegCnt = STD_N_POINTS(sBndRing) - 1;
         
-        // BoundaryÀÇ RingÀÌ ±¸¼ºÇÏ´Â Segment°³¼ö¸¸Å­ ¹İº¹
+        // Boundaryì˜ Ringì´ êµ¬ì„±í•˜ëŠ” Segmentê°œìˆ˜ë§Œí¼ ë°˜ë³µ
         for ( j = 0, sBndRingPt = STD_FIRST_PT2D(sBndRing);
               j < sBndRingSegCnt;
               j++, sBndRingPt = STD_NEXT_PT2D(sBndRingPt) )
         {
-            // Area InternalÀÌ ±¸¼ºÇÏ´Â RingÀÇ °³¼ö¸¸Å­ ¹İº¹
+            // Area Internalì´ êµ¬ì„±í•˜ëŠ” Ringì˜ ê°œìˆ˜ë§Œí¼ ë°˜ë³µ
             for ( m = 0, sAreaRing = STD_FIRST_RN2D(aAreaInt);
                   m < sAreaRingCnt;
                   m++, sAreaRing = STD_NEXT_RN2D(sAreaRing) )
@@ -8950,13 +8950,13 @@ stfRelation::saiTosab( const stdPolygon2DType * aAreaInt,
                 sAreaRingSegCnt = STD_N_POINTS(sAreaRing) - 1;
                 sAreaRingCCWise = stdUtils::isCCW2D(sAreaRing);
                 
-                // RingÀÌ ±¸¼ºÇÏ´Â Segment°³¼ö¸¸Å­ ¹İº¹
+                // Ringì´ êµ¬ì„±í•˜ëŠ” Segmentê°œìˆ˜ë§Œí¼ ë°˜ë³µ
                 for ( n = 0, sAreaRingPt = STD_FIRST_PT2D(sAreaRing);
                       n < sAreaRingSegCnt;
                       n++, sAreaRingPt = STD_NEXT_PT2D(sAreaRingPt) )
                 {
                     //----------------------------
-                    // Area RingÀÇ ÇöÀçÁ¡, ÀÌÀüÁ¡, ÀÌÈÄÁ¡À» ±¸ÇÔ
+                    // Area Ringì˜ í˜„ì¬ì , ì´ì „ì , ì´í›„ì ì„ êµ¬í•¨
                     //----------------------------
 
                     sAreaRingPrevPt =
@@ -8972,7 +8972,7 @@ stfRelation::saiTosab( const stdPolygon2DType * aAreaInt,
                                                          NULL );
                     
                     //----------------------------
-                    // Boundary RingÀÇ ÇöÀçÁ¡, ÀÌÀüÁ¡, ÀÌÈÄÁ¡À» ±¸ÇÔ
+                    // Boundary Ringì˜ í˜„ì¬ì , ì´ì „ì , ì´í›„ì ì„ êµ¬í•¨
                     //----------------------------
                 
                     sBndRingPrevPt =
@@ -8988,42 +8988,42 @@ stfRelation::saiTosab( const stdPolygon2DType * aAreaInt,
                                                          NULL );
 
                     //------------------------------------
-                    // ¼±ºĞ°ú ¼±ºĞÀÇ °ü°è·ÎºÎÅÍ À¯Ãß
+                    // ì„ ë¶„ê³¼ ì„ ë¶„ì˜ ê´€ê³„ë¡œë¶€í„° ìœ ì¶”
                     //------------------------------------
 
-                    // ¼±ºĞÀÌ Á¡¿¡¼­ ±³Â÷ÇÑ´Ù¸é TRUE
+                    // ì„ ë¶„ì´ ì ì—ì„œ êµì°¨í•œë‹¤ë©´ TRUE
                     if( ( stdUtils::intersectI2D( sAreaRingPt,
                                                   STD_NEXT_PT2D(sAreaRingPt),
                                                   sBndRingPt,
                                                   STD_NEXT_PT2D(sBndRingPt) )
                           ==ID_TRUE ) )
                     {
-                        // ¼±ºĞÀÌ ±³Â÷ÇÏ´Â °æ¿ì
+                        // ì„ ë¶„ì´ êµì°¨í•˜ëŠ” ê²½ìš°
                         sResult = '1';
                         IDE_RAISE( SAISAB2D_MAX_RESULT );
                     }
                     else
                     {
-                        // ¼±ºĞÀÌ ±³Â÷ÇÏÁö ¾Ê´Â °æ¿ì
+                        // ì„ ë¶„ì´ êµì°¨í•˜ì§€ ì•ŠëŠ” ê²½ìš°
                     }
                     
                     //----------------------------------------
-                    // ´ÙÀ½ °ü°è¸¦ Á¡°ú Á¡ÀÇ °ü°è·Î ¸¸µé±â À§ÇÑ Á¶Á¤
-                    //  - RingÀÇ ¼±ºĞ°ú Á¡°úÀÇ °ü°è
-                    //  - RingÀÇ Á¡°ú Á¡ÀÇ °ü°è
+                    // ë‹¤ìŒ ê´€ê³„ë¥¼ ì ê³¼ ì ì˜ ê´€ê³„ë¡œ ë§Œë“¤ê¸° ìœ„í•œ ì¡°ì •
+                    //  - Ringì˜ ì„ ë¶„ê³¼ ì ê³¼ì˜ ê´€ê³„
+                    //  - Ringì˜ ì ê³¼ ì ì˜ ê´€ê³„
                     //----------------------------------------
 
                     sMeetOnPoint = ID_FALSE;
                     
                     //----------------------------
-                    // Area Ring ¼±ºĞ³»¿¡ Boundary RingÀÇ Á¡ÀÌ Á¸ÀçÇÏ´ÂÁö °Ë»ç
+                    // Area Ring ì„ ë¶„ë‚´ì— Boundary Ringì˜ ì ì´ ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬
                     //----------------------------
                     
                     if ( ( stdUtils::betweenI2D( sAreaRingPt,
                                                  STD_NEXT_PT2D(sAreaRingPt),
                                                  sBndRingPt )==ID_TRUE ) )
                     {
-                        // Á¡ÀÌ ¼±ºĞ¿¡¼­ ±³Â÷ => Á¡°ú Á¡ÀÇ °ü°è·Î º¯°æ
+                        // ì ì´ ì„ ë¶„ì—ì„œ êµì°¨ => ì ê³¼ ì ì˜ ê´€ê³„ë¡œ ë³€ê²½
                         //               Bp                    Bp
                         //               |                     |
                         //         A-----B-----A  ==>   Ap----AB----An  
@@ -9037,14 +9037,14 @@ stfRelation::saiTosab( const stdPolygon2DType * aAreaInt,
                     }
                 
                     //----------------------------
-                    // Boundary Ring ¼±ºĞ³»¿¡ Area RingÀÇ Á¡ÀÌ Á¸ÀçÇÏ´ÂÁö °Ë»ç
+                    // Boundary Ring ì„ ë¶„ë‚´ì— Area Ringì˜ ì ì´ ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬
                     //----------------------------
 
                     if ( stdUtils::betweenI2D( sBndRingPt,
                                                STD_NEXT_PT2D(sBndRingPt),
                                                sAreaRingPt ) == ID_TRUE )
                     {
-                        // Á¡ÀÌ ¼±ºĞ¿¡¼­ ±³Â÷ => Á¡°ú Á¡ÀÇ °ü°è·Î º¯°æ
+                        // ì ì´ ì„ ë¶„ì—ì„œ êµì°¨ => ì ê³¼ ì ì˜ ê´€ê³„ë¡œ ë³€ê²½
                         //               Ap                     Ap
                         //               |                      |
                         //         B-----A------B  ==>   Bp----BA----Bn  
@@ -9057,7 +9057,7 @@ stfRelation::saiTosab( const stdPolygon2DType * aAreaInt,
                     }
 
                     //----------------------------
-                    // Á¡°ú Á¡ÀÌ ±³Â÷ÇÏ´Â Áö °Ë»ç
+                    // ì ê³¼ ì ì´ êµì°¨í•˜ëŠ” ì§€ ê²€ì‚¬
                     //----------------------------
                     
                     if ( stdUtils::isSamePoints2D( sAreaRingPt,
@@ -9065,18 +9065,18 @@ stfRelation::saiTosab( const stdPolygon2DType * aAreaInt,
                     {
                         sMeetOnPoint = ID_TRUE;
                         
-                        // ÀÌ¹Ì ±¸ÇØÁø °ªÀ» »ç¿ë
+                        // ì´ë¯¸ êµ¬í•´ì§„ ê°’ì„ ì‚¬ìš©
                     }
 
                     //----------------------------
-                    // Ring°ú RingÀÌ °ãÄ¡´Â Á¡ÀÎÁö ¿©ºÎ¸¦ °Ë»ç
+                    // Ringê³¼ Ringì´ ê²¹ì¹˜ëŠ” ì ì¸ì§€ ì—¬ë¶€ë¥¼ ê²€ì‚¬
                     //----------------------------
                     
                     if ( sMeetOnPoint == ID_TRUE )
                     {
-                        // Area¸¦ ±¸¼ºÇÏ´Â Ring°£¿¡ °ãÄ¡´Â Á¡ÀÏ °æ¿ì
-                        // ³»ºÎ¿¡ Á¸ÀçÇÏ´Â Áö¸¦ ÆÇ´ÜÇÒ ¼ö ¾ø´Ù.
-                        // ´Ù¸¥ Á¡¿¡ ÀÇÇÏ¿© ÆÇº° °¡´ÉÇÏ´Ù.
+                        // Areaë¥¼ êµ¬ì„±í•˜ëŠ” Ringê°„ì— ê²¹ì¹˜ëŠ” ì ì¼ ê²½ìš°
+                        // ë‚´ë¶€ì— ì¡´ì¬í•˜ëŠ” ì§€ë¥¼ íŒë‹¨í•  ìˆ˜ ì—†ë‹¤.
+                        // ë‹¤ë¥¸ ì ì— ì˜í•˜ì—¬ íŒë³„ ê°€ëŠ¥í•˜ë‹¤.
                         //
                         //              Bn
                         //       Ap       I
@@ -9085,14 +9085,14 @@ stfRelation::saiTosab( const stdPolygon2DType * aAreaInt,
                         //          \ |/
                         //           AIB-------An
 
-                        // First AreaÀÇ Á¡ÀÌ ´Ù¸¥ Ring°ú °ãÄ¡´ÂÁö °Ë»ç
+                        // First Areaì˜ ì ì´ ë‹¤ë¥¸ Ringê³¼ ê²¹ì¹˜ëŠ”ì§€ ê²€ì‚¬
                         for ( x = 0, sCheckRing = STD_FIRST_RN2D(aAreaInt);
                               x < sAreaRingCnt;
                               x++, sCheckRing = STD_NEXT_RN2D(sCheckRing) )
                         {
                             if ( m == x )
                             {
-                                // ÀÚ½ÅÀÇ RingÀº °Ë»çÇÏÁö ¾ÊÀ½
+                                // ìì‹ ì˜ Ringì€ ê²€ì‚¬í•˜ì§€ ì•ŠìŒ
                                 continue;
                             }
                             else
@@ -9122,7 +9122,7 @@ stfRelation::saiTosab( const stdPolygon2DType * aAreaInt,
                     }
                     
                     //----------------------------------------
-                    // Á¡°ú Á¡ÀÇ °ü°è·ÎºÎÅÍ ¿ÜºÎ ±³Â÷ÀÇ ÆÇ´Ü
+                    // ì ê³¼ ì ì˜ ê´€ê³„ë¡œë¶€í„° ì™¸ë¶€ êµì°¨ì˜ íŒë‹¨
                     //----------------------------------------
                     
                     if ( sMeetOnPoint == ID_TRUE )
@@ -9142,12 +9142,12 @@ stfRelation::saiTosab( const stdPolygon2DType * aAreaInt,
                         }
                         else
                         {
-                            // ±³Â÷ ¿©ºÎ¸¦ ÆÇ´ÜÇÒ ¼ö ¾øÀ½
+                            // êµì°¨ ì—¬ë¶€ë¥¼ íŒë‹¨í•  ìˆ˜ ì—†ìŒ
                         }
                     }
                     else // sMeetOnPoint == ID_FALSE
                     {
-                        // °Ë»ç ´ë»óÀÌ ¾Æ´Ô
+                        // ê²€ì‚¬ ëŒ€ìƒì´ ì•„ë‹˜
                     }
                 } // for n
             } // for m
@@ -9162,23 +9162,23 @@ stfRelation::saiTosab( const stdPolygon2DType * aAreaInt,
 /***********************************************************************
  * Description:
  *
- *    SAI(Single Area Internal)°ú
- *    SAE(Single Area External)ÀÇ DE-9IM °ü°è¸¦ ±¸ÇÑ´Ù.
+ *    SAI(Single Area Internal)ê³¼
+ *    SAE(Single Area External)ì˜ DE-9IM ê´€ê³„ë¥¼ êµ¬í•œë‹¤.
  *
  * Implementation:
  *
  *   BUG-17037
  *
- *   PolygonÀ» ±¸¼ºÇÏ´Â [Á¡, ¼±ºĞ, ¸é] °ú
- *   PolygonÀ» ±¸¼ºÇÏ´Â [Á¡, ¼±ºĞ, ¸é] ÀÇ °ü°è¸¦ ÅëÇØ ±¸ÇØ³½´Ù.
+ *   Polygonì„ êµ¬ì„±í•˜ëŠ” [ì , ì„ ë¶„, ë©´] ê³¼
+ *   Polygonì„ êµ¬ì„±í•˜ëŠ” [ì , ì„ ë¶„, ë©´] ì˜ ê´€ê³„ë¥¼ í†µí•´ êµ¬í•´ë‚¸ë‹¤.
  *
  *   ================================
  *     Polygon Interior .vs. Polygon Exterior
  *   ================================
  *
- *   1. ¸é .vs. ¸é
+ *   1. ë©´ .vs. ë©´
  *
- *       - AreaInt ³»ºÎÀÇ ÇÑÁ¡ÀÌ AreaExt ¿ÜºÎ¸é°ú ±³Â÷ÇÏ´ÂÁöÀÇ ¿©ºÎ : TRUE
+ *       - AreaInt ë‚´ë¶€ì˜ í•œì ì´ AreaExt ì™¸ë¶€ë©´ê³¼ êµì°¨í•˜ëŠ”ì§€ì˜ ì—¬ë¶€ : TRUE
  *
  *          A----------A
  *          |          |           X-----X
@@ -9189,13 +9189,13 @@ stfRelation::saiTosab( const stdPolygon2DType * aAreaInt,
  *          |          |
  *          A----------A
  *
- *   1. ¼±ºĞ .vs. ¸é
+ *   1. ì„ ë¶„ .vs. ë©´
  *
- *       - ¼±ºĞ°ú ¼±ºĞ, Á¡°ú Á¡ÀÇ °ü°è·ÎºÎÅÍ À¯Ãß
+ *       - ì„ ë¶„ê³¼ ì„ ë¶„, ì ê³¼ ì ì˜ ê´€ê³„ë¡œë¶€í„° ìœ ì¶”
  *
- *   2. Á¡ .vs. ¸é
+ *   2. ì  .vs. ë©´
  *
- *       - AreaIntÀÇ ÇÑÁ¡ÀÌ AreaExtÀÇ ¿ÜºÎ¿¡ Á¸Àç : TRUE
+ *       - AreaIntì˜ í•œì ì´ AreaExtì˜ ì™¸ë¶€ì— ì¡´ì¬ : TRUE
  *
  *                X--------X
  *            A   |        |
@@ -9203,7 +9203,7 @@ stfRelation::saiTosab( const stdPolygon2DType * aAreaInt,
  *                |        |
  *                X--------X
  *
- *       - AreaExtÀÇ ³»ºÎ¸µÀÇ ÇÑÁ¡ÀÌ AreaIntÀÇ ³»ºÎ¿¡ Á¸Àç : TRUE
+ *       - AreaExtì˜ ë‚´ë¶€ë§ì˜ í•œì ì´ AreaIntì˜ ë‚´ë¶€ì— ì¡´ì¬ : TRUE
  *
  *
  *        X-------------X
@@ -9217,10 +9217,10 @@ stfRelation::saiTosab( const stdPolygon2DType * aAreaInt,
  *        X-------------X
  *
  *                 
- *   3. ¼±ºĞ .vs. ¼±ºĞ
- *       - ±³Â÷ÇÏÁö ¾Ê´Â °æ¿ì : À¯Ãß ºÒ°¡
+ *   3. ì„ ë¶„ .vs. ì„ ë¶„
+ *       - êµì°¨í•˜ì§€ ì•ŠëŠ” ê²½ìš° : ìœ ì¶” ë¶ˆê°€
  *
- *       - ¼±ºĞÀÌ ¼±ºĞÀ¸·Î ±³Â÷ : Á¡°ú Á¡ÀÇ °ü°è·ÎºÎÅÍ À¯Ãß °¡´É
+ *       - ì„ ë¶„ì´ ì„ ë¶„ìœ¼ë¡œ êµì°¨ : ì ê³¼ ì ì˜ ê´€ê³„ë¡œë¶€í„° ìœ ì¶” ê°€ëŠ¥
  *
  *             B---A====B----A
  *
@@ -9228,7 +9228,7 @@ stfRelation::saiTosab( const stdPolygon2DType * aAreaInt,
  *
  *             A---B====B----A
  *
- *       - ¼±ºĞÀÌ Á¡¿¡¼­ ±³Â÷ : TRUE
+ *       - ì„ ë¶„ì´ ì ì—ì„œ êµì°¨ : TRUE
  *
  *                B
  *                |
@@ -9236,9 +9236,9 @@ stfRelation::saiTosab( const stdPolygon2DType * aAreaInt,
  *                |
  *                B
  *
- *   4. Á¡ .vs. ¼±ºĞ
- *       - ±³Â÷ÇÏÁö ¾Ê´Â °æ¿ì : À¯Ãß ºÒ°¡
- *       - Á¡ÀÌ ¼±ºĞ¿¡¼­ ±³Â÷ : Á¡°ú Á¡ÀÇ °ü°è·ÎºÎÅÍ À¯Ãß °¡´É
+ *   4. ì  .vs. ì„ ë¶„
+ *       - êµì°¨í•˜ì§€ ì•ŠëŠ” ê²½ìš° : ìœ ì¶” ë¶ˆê°€
+ *       - ì ì´ ì„ ë¶„ì—ì„œ êµì°¨ : ì ê³¼ ì ì˜ ê´€ê³„ë¡œë¶€í„° ìœ ì¶” ê°€ëŠ¥
  *
  *               Bp                     Bp
  *               |                      |
@@ -9246,9 +9246,9 @@ stfRelation::saiTosab( const stdPolygon2DType * aAreaInt,
  *               |                      |
  *               Bn                     Bn
  *
- *   5. Á¡ .vs. Á¡
- *       - ±³Â÷ÇÏÁö ¾Ê´Â °æ¿ì : À¯Ãß ºÒ°¡
- *       - Á¡¿¡¼­ ±³Â÷ : Á¡°ú Á¡ÀÇ °ü°è·ÎºÎÅÍ À¯Ãß
+ *   5. ì  .vs. ì 
+ *       - êµì°¨í•˜ì§€ ì•ŠëŠ” ê²½ìš° : ìœ ì¶” ë¶ˆê°€
+ *       - ì ì—ì„œ êµì°¨ : ì ê³¼ ì ì˜ ê´€ê³„ë¡œë¶€í„° ìœ ì¶”
  *
  *                Bp
  *                |
@@ -9256,9 +9256,9 @@ stfRelation::saiTosab( const stdPolygon2DType * aAreaInt,
  *                |
  *                Bn
  *
- *   Á¡°ú Á¡ÀÇ °ü°è¿¡¼­ ´ÙÀ½°ú °°ÀÌ ³»ºÎ¿¡ ÀÖ´Ù ÇÏ´õ¶óµµ
- *   ¼±ºĞÀÌ Interia Ring ¶§¹®¿¡ ³»ºÎ¿µ¿ª°ú ±³Â÷ÇÔÀ» º¸ÀåÇÒ ¼ö ¾ø´Ù.
- *   µû¶ó¼­, ±¸¼ºµÈ LineÀÌ Interior Ring³»ºÎ¿¡ Æ÷ÇÔµÇÁö ¾ÊÀ½À» °Ë»çÇØ¾ß ÇÔ.
+ *   ì ê³¼ ì ì˜ ê´€ê³„ì—ì„œ ë‹¤ìŒê³¼ ê°™ì´ ë‚´ë¶€ì— ìˆë‹¤ í•˜ë”ë¼ë„
+ *   ì„ ë¶„ì´ Interia Ring ë•Œë¬¸ì— ë‚´ë¶€ì˜ì—­ê³¼ êµì°¨í•¨ì„ ë³´ì¥í•  ìˆ˜ ì—†ë‹¤.
+ *   ë”°ë¼ì„œ, êµ¬ì„±ëœ Lineì´ Interior Ringë‚´ë¶€ì— í¬í•¨ë˜ì§€ ì•ŠìŒì„ ê²€ì‚¬í•´ì•¼ í•¨.
  *
  *      Ap  
  *       \     B
@@ -9287,14 +9287,14 @@ IDE_RC stfRelation::saiTosae( iduMemory *              aQmxMem,
     SChar   sResult;
     
     //----------------------------
-    // Internal Area Á¤º¸
+    // Internal Area ì •ë³´
     //----------------------------
     
     stdLinearRing2D * sIntRing;
     stdPoint2D      * sIntRingPt;
-    stdPoint2D      * sIntRingPrevPt;  // Ring PointÀÇ ÀÌÀü Point
-    stdPoint2D      * sIntRingCurrPt;  // Ring PointÀÇ ÀÌÀü Point
-    stdPoint2D      * sIntRingNextPt;  // Ring PointÀÇ ´ÙÀ½ Point
+    stdPoint2D      * sIntRingPrevPt;  // Ring Pointì˜ ì´ì „ Point
+    stdPoint2D      * sIntRingCurrPt;  // Ring Pointì˜ ì´ì „ Point
+    stdPoint2D      * sIntRingNextPt;  // Ring Pointì˜ ë‹¤ìŒ Point
     
     UInt              sIntRingCnt;     // Ring Count of a Polygon
     UInt              sIntRingSegCnt;  // Segment Count of a Ring
@@ -9302,21 +9302,21 @@ IDE_RC stfRelation::saiTosae( iduMemory *              aQmxMem,
     stdPoint2D        sIntSomePt;
     
     //----------------------------
-    // External Area Á¤º¸
+    // External Area ì •ë³´
     //----------------------------
     
     stdLinearRing2D * sExtRing;
     stdPoint2D      * sExtRingPt;
-    stdPoint2D      * sExtRingPrevPt;  // Ring PointÀÇ ÀÌÀü Point
-    stdPoint2D      * sExtRingCurrPt;  // Ring PointÀÇ ÀÌÀü Point
-    stdPoint2D      * sExtRingNextPt;  // Ring PointÀÇ ´ÙÀ½ Point
+    stdPoint2D      * sExtRingPrevPt;  // Ring Pointì˜ ì´ì „ Point
+    stdPoint2D      * sExtRingCurrPt;  // Ring Pointì˜ ì´ì „ Point
+    stdPoint2D      * sExtRingNextPt;  // Ring Pointì˜ ë‹¤ìŒ Point
     
     UInt              sExtRingCnt;     // Ring Count of a Polygon
     UInt              sExtRingSegCnt;  // Segment Count of a Ring
-    idBool            sExtRingCCWise;  // Ring ÀÌ ½Ã°è ¿ª¹æÇâÀÎÁöÀÇ ¿©ºÎ
+    idBool            sExtRingCCWise;  // Ring ì´ ì‹œê³„ ì—­ë°©í–¥ì¸ì§€ì˜ ì—¬ë¶€
 
     //----------------------------
-    // Ring°ú RingÀÇ Áßº¹Á¡ÀÎÁö °Ë»ç
+    // Ringê³¼ Ringì˜ ì¤‘ë³µì ì¸ì§€ ê²€ì‚¬
     //----------------------------
     
     UInt              sCheckSegCnt;
@@ -9340,10 +9340,10 @@ IDE_RC stfRelation::saiTosae( iduMemory *              aQmxMem,
     sExtRingCnt = STD_N_RINGS( aAreaExt );
 
     //----------------------------------------
-    // ¸é°ú ¸éÀÇ °ü°è·ÎºÎÅÍ ÃßÃâ
+    // ë©´ê³¼ ë©´ì˜ ê´€ê³„ë¡œë¶€í„° ì¶”ì¶œ
     //----------------------------------------
 
-    // AreaInt ³»ºÎÀÇ ¾î¶²Á¡ÀÌ AreaExtÀÇ ¿ÜºÎ¿¡ Á¸ÀçÇÏ´Â Áö °Ë»ç
+    // AreaInt ë‚´ë¶€ì˜ ì–´ë–¤ì ì´ AreaExtì˜ ì™¸ë¶€ì— ì¡´ì¬í•˜ëŠ” ì§€ ê²€ì‚¬
     IDE_TEST( stdUtils::getPointOnSurface2D( aQmxMem, aAreaInt, & sIntSomePt )
               != IDE_SUCCESS );
     
@@ -9354,10 +9354,10 @@ IDE_RC stfRelation::saiTosae( iduMemory *              aQmxMem,
     }
     
     //----------------------------------------
-    // Á¡°ú ¸éÀÇ °ü°è·ÎºÎÅÍ ÃßÃâ
+    // ì ê³¼ ë©´ì˜ ê´€ê³„ë¡œë¶€í„° ì¶”ì¶œ
     //----------------------------------------
 
-    // AreaIntÀÇ ÁÂÇ¥°¡ AreaExtÀÇ ¿ÜºÎ¿¡ ÀÖ´ÂÁö °Ë»ç
+    // AreaIntì˜ ì¢Œí‘œê°€ AreaExtì˜ ì™¸ë¶€ì— ìˆëŠ”ì§€ ê²€ì‚¬
     for ( i = 0, sIntRing = STD_FIRST_RN2D(aAreaInt);
           i < sIntRingCnt;
           i++, sIntRing = STD_NEXT_RN2D(sIntRing) )
@@ -9368,7 +9368,7 @@ IDE_RC stfRelation::saiTosae( iduMemory *              aQmxMem,
               j < sIntRingSegCnt;
               j++, sIntRingPt = STD_NEXT_PT2D(sIntRingPt) )
         {
-            // ÇÑÁ¡ÀÌ ´Ù¸¥ PolygonÀÇ ¿ÜºÎ¿¡ Á¸ÀçÇÏ´ÂÁö ÆÇ´Ü
+            // í•œì ì´ ë‹¤ë¥¸ Polygonì˜ ì™¸ë¶€ì— ì¡´ì¬í•˜ëŠ”ì§€ íŒë‹¨
             if( spiTosae( sIntRingPt, aAreaExt ) == '0' )
             {
                 sResult = '2';
@@ -9381,14 +9381,14 @@ IDE_RC stfRelation::saiTosae( iduMemory *              aQmxMem,
         }
     }
 
-    // AreaExtÀÇ ³»ºÎ¸µÀÇ ÇÑ ÁÂÇ¥°¡ AreaIntÀÇ ³»ºÎ¿¡ ÀÖ´ÂÁö Á¶»ç
+    // AreaExtì˜ ë‚´ë¶€ë§ì˜ í•œ ì¢Œí‘œê°€ AreaIntì˜ ë‚´ë¶€ì— ìˆëŠ”ì§€ ì¡°ì‚¬
     for ( m = 0, sExtRing = STD_FIRST_RN2D(aAreaExt);
           m < sExtRingCnt;
           m++, sExtRing = STD_NEXT_RN2D(sExtRing) )
     {
         if ( m == 0 )
         {
-            // ¿ÜºÎ¸µÀº °Ë»çÇÏÁö ¾ÊÀ½
+            // ì™¸ë¶€ë§ì€ ê²€ì‚¬í•˜ì§€ ì•ŠìŒ
             continue;
         }
         
@@ -9398,7 +9398,7 @@ IDE_RC stfRelation::saiTosae( iduMemory *              aQmxMem,
               n < sExtRingSegCnt;
               n++, sExtRingPt = STD_NEXT_PT2D(sExtRingPt) )
         {
-            // ÇÑÁ¡ÀÌ ´Ù¸¥ PolygonÀÇ ¿ÜºÎ¿¡ Á¸ÀçÇÏ´ÂÁö ÆÇ´Ü
+            // í•œì ì´ ë‹¤ë¥¸ Polygonì˜ ì™¸ë¶€ì— ì¡´ì¬í•˜ëŠ”ì§€ íŒë‹¨
             if( spiTosai( sExtRingPt, aAreaInt ) == '0' )
             {
                 sResult = '2';
@@ -9412,22 +9412,22 @@ IDE_RC stfRelation::saiTosae( iduMemory *              aQmxMem,
     }
     
     //----------------------------------------
-    // Internal Area¿Í External Area ÀÇ °ü°è ÃßÃâ
+    // Internal Areaì™€ External Area ì˜ ê´€ê³„ ì¶”ì¶œ
     //----------------------------------------
 
-    // Internal Area°¡ ±¸¼ºÇÏ´Â RingÀÇ °³¼ö¸¸Å­ ¹İº¹
+    // Internal Areaê°€ êµ¬ì„±í•˜ëŠ” Ringì˜ ê°œìˆ˜ë§Œí¼ ë°˜ë³µ
     for ( i = 0, sIntRing = STD_FIRST_RN2D(aAreaInt);
           i < sIntRingCnt;
           i++, sIntRing = STD_NEXT_RN2D(sIntRing) )
     {
         sIntRingSegCnt = STD_N_POINTS(sIntRing) - 1;
         
-        // RingÀÌ ±¸¼ºÇÏ´Â Segment°³¼ö¸¸Å­ ¹İº¹
+        // Ringì´ êµ¬ì„±í•˜ëŠ” Segmentê°œìˆ˜ë§Œí¼ ë°˜ë³µ
         for ( j = 0, sIntRingPt = STD_FIRST_PT2D(sIntRing);
               j < sIntRingSegCnt;
               j++, sIntRingPt = STD_NEXT_PT2D(sIntRingPt) )
         {
-            // External Area°¡ ±¸¼ºÇÏ´Â RingÀÇ °³¼ö¸¸Å­ ¹İº¹
+            // External Areaê°€ êµ¬ì„±í•˜ëŠ” Ringì˜ ê°œìˆ˜ë§Œí¼ ë°˜ë³µ
             for ( m = 0, sExtRing = STD_FIRST_RN2D(aAreaExt);
                   m < sExtRingCnt;
                   m++, sExtRing = STD_NEXT_RN2D(sExtRing) )
@@ -9435,13 +9435,13 @@ IDE_RC stfRelation::saiTosae( iduMemory *              aQmxMem,
                 sExtRingSegCnt = STD_N_POINTS(sExtRing) - 1;
                 sExtRingCCWise = stdUtils::isCCW2D(sExtRing);
                 
-                // RingÀÌ ±¸¼ºÇÏ´Â Segment°³¼ö¸¸Å­ ¹İº¹
+                // Ringì´ êµ¬ì„±í•˜ëŠ” Segmentê°œìˆ˜ë§Œí¼ ë°˜ë³µ
                 for ( n = 0, sExtRingPt = STD_FIRST_PT2D(sExtRing);
                       n < sExtRingSegCnt;
                       n++, sExtRingPt = STD_NEXT_PT2D(sExtRingPt) )
                 {
                     //----------------------------
-                    // Internal Area RingÀÇ ÇöÀçÁ¡, ÀÌÀüÁ¡, ÀÌÈÄÁ¡À» ±¸ÇÔ
+                    // Internal Area Ringì˜ í˜„ì¬ì , ì´ì „ì , ì´í›„ì ì„ êµ¬í•¨
                     //----------------------------
 
                     sIntRingPrevPt =
@@ -9457,7 +9457,7 @@ IDE_RC stfRelation::saiTosae( iduMemory *              aQmxMem,
                                                          NULL );
                     
                     //----------------------------
-                    // Exterior Area RingÀÇ ÇöÀçÁ¡, ÀÌÀüÁ¡, ÀÌÈÄÁ¡À» ±¸ÇÔ
+                    // Exterior Area Ringì˜ í˜„ì¬ì , ì´ì „ì , ì´í›„ì ì„ êµ¬í•¨
                     //----------------------------
                 
                     sExtRingPrevPt =
@@ -9473,43 +9473,43 @@ IDE_RC stfRelation::saiTosae( iduMemory *              aQmxMem,
                                                          NULL );
 
                     //------------------------------------
-                    // ¼±ºĞ°ú ¼±ºĞÀÇ °ü°è·ÎºÎÅÍ À¯Ãß
+                    // ì„ ë¶„ê³¼ ì„ ë¶„ì˜ ê´€ê³„ë¡œë¶€í„° ìœ ì¶”
                     //------------------------------------
 
-                    // ¼±ºĞÀÌ Á¡¿¡¼­ ±³Â÷ÇÑ´Ù¸é TRUE
+                    // ì„ ë¶„ì´ ì ì—ì„œ êµì°¨í•œë‹¤ë©´ TRUE
                     if( ( stdUtils::intersectI2D( sIntRingPt,
                                                   STD_NEXT_PT2D(sIntRingPt),
                                                   sExtRingPt,
                                                   STD_NEXT_PT2D(sExtRingPt) )
                           ==ID_TRUE ) )
                     {
-                        // ¼±ºĞÀÌ ±³Â÷ÇÏ´Â °æ¿ì
+                        // ì„ ë¶„ì´ êµì°¨í•˜ëŠ” ê²½ìš°
                         sResult = '2';
                         IDE_RAISE( SAISAE2D_MAX_RESULT );
                     }
                     else
                     {
-                        // ¼±ºĞÀÌ ±³Â÷ÇÏÁö ¾Ê´Â °æ¿ì
+                        // ì„ ë¶„ì´ êµì°¨í•˜ì§€ ì•ŠëŠ” ê²½ìš°
                     }
                     
                     //----------------------------------------
-                    // ´ÙÀ½ °ü°è¸¦ Á¡°ú Á¡ÀÇ °ü°è·Î ¸¸µé±â À§ÇÑ Á¶Á¤
-                    //  - RingÀÇ ¼±ºĞ°ú Á¡°úÀÇ °ü°è
-                    //  - RingÀÇ Á¡°ú Á¡ÀÇ °ü°è
+                    // ë‹¤ìŒ ê´€ê³„ë¥¼ ì ê³¼ ì ì˜ ê´€ê³„ë¡œ ë§Œë“¤ê¸° ìœ„í•œ ì¡°ì •
+                    //  - Ringì˜ ì„ ë¶„ê³¼ ì ê³¼ì˜ ê´€ê³„
+                    //  - Ringì˜ ì ê³¼ ì ì˜ ê´€ê³„
                     //----------------------------------------
 
                     sMeetOnPoint = ID_FALSE;
                     
                     //----------------------------
-                    // Internal Area Ring ¼±ºĞ³»¿¡
-                    // External Area Ring ÀÇ Á¡ÀÌ Á¸ÀçÇÏ´ÂÁö °Ë»ç
+                    // Internal Area Ring ì„ ë¶„ë‚´ì—
+                    // External Area Ring ì˜ ì ì´ ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬
                     //----------------------------
                     
                     if ( ( stdUtils::betweenI2D( sIntRingPt,
                                                  STD_NEXT_PT2D(sIntRingPt),
                                                  sExtRingPt )==ID_TRUE ) )
                     {
-                        // Á¡ÀÌ ¼±ºĞ¿¡¼­ ±³Â÷ => Á¡°ú Á¡ÀÇ °ü°è·Î º¯°æ
+                        // ì ì´ ì„ ë¶„ì—ì„œ êµì°¨ => ì ê³¼ ì ì˜ ê´€ê³„ë¡œ ë³€ê²½
                         //               Bp                    Bp
                         //               |                     |
                         //         A-----B-----A  ==>   Ap----AB----An  
@@ -9523,15 +9523,15 @@ IDE_RC stfRelation::saiTosae( iduMemory *              aQmxMem,
                     }
                 
                     //----------------------------
-                    // External Area Ring ¼±ºĞ³»¿¡
-                    // Internal Area RingÀÇ Á¡ÀÌ Á¸ÀçÇÏ´ÂÁö °Ë»ç
+                    // External Area Ring ì„ ë¶„ë‚´ì—
+                    // Internal Area Ringì˜ ì ì´ ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬
                     //----------------------------
 
                     if ( stdUtils::betweenI2D( sExtRingPt,
                                                STD_NEXT_PT2D(sExtRingPt),
                                                sIntRingPt ) == ID_TRUE )
                     {
-                        // Á¡ÀÌ ¼±ºĞ¿¡¼­ ±³Â÷ => Á¡°ú Á¡ÀÇ °ü°è·Î º¯°æ
+                        // ì ì´ ì„ ë¶„ì—ì„œ êµì°¨ => ì ê³¼ ì ì˜ ê´€ê³„ë¡œ ë³€ê²½
                         //               Ap                     Ap
                         //               |                      |
                         //         B-----A------B  ==>   Bp----BA----Bn  
@@ -9545,7 +9545,7 @@ IDE_RC stfRelation::saiTosae( iduMemory *              aQmxMem,
                     }
 
                     //----------------------------
-                    // Á¡°ú Á¡ÀÌ ±³Â÷ÇÏ´Â Áö °Ë»ç
+                    // ì ê³¼ ì ì´ êµì°¨í•˜ëŠ” ì§€ ê²€ì‚¬
                     //----------------------------
                     
                     if ( stdUtils::isSamePoints2D( sIntRingPt,
@@ -9553,18 +9553,18 @@ IDE_RC stfRelation::saiTosae( iduMemory *              aQmxMem,
                     {
                         sMeetOnPoint = ID_TRUE;
                         
-                        // ÀÌ¹Ì ±¸ÇØÁø °ªÀ» »ç¿ë
+                        // ì´ë¯¸ êµ¬í•´ì§„ ê°’ì„ ì‚¬ìš©
                     }
 
                     //----------------------------
-                    // Ring°ú RingÀÌ °ãÄ¡´Â Á¡ÀÎÁö ¿©ºÎ¸¦ °Ë»ç
+                    // Ringê³¼ Ringì´ ê²¹ì¹˜ëŠ” ì ì¸ì§€ ì—¬ë¶€ë¥¼ ê²€ì‚¬
                     //----------------------------
                     
                     if ( sMeetOnPoint == ID_TRUE )
                     {
-                        // Ring°ú RingÀÌ °ãÄ¡´Â Á¡ÀÏ °æ¿ì
-                        // ³»ºÎ¿¡ Á¸ÀçÇÏ´Â Áö¸¦ ÆÇ´ÜÇÒ ¼ö ¾ø´Ù.
-                        // ´Ù¸¥ Á¡¿¡ ÀÇÇÏ¿© ÆÇº° °¡´ÉÇÏ´Ù.
+                        // Ringê³¼ Ringì´ ê²¹ì¹˜ëŠ” ì ì¼ ê²½ìš°
+                        // ë‚´ë¶€ì— ì¡´ì¬í•˜ëŠ” ì§€ë¥¼ íŒë‹¨í•  ìˆ˜ ì—†ë‹¤.
+                        // ë‹¤ë¥¸ ì ì— ì˜í•˜ì—¬ íŒë³„ ê°€ëŠ¥í•˜ë‹¤.
                         //
                         //              Pn
                         //       Ap       I
@@ -9573,14 +9573,14 @@ IDE_RC stfRelation::saiTosae( iduMemory *              aQmxMem,
                         //          \ |/
                         //           AIP-------An
 
-                        // Internal AreaÀÇ Á¡ÀÌ ´Ù¸¥ Ring°ú °ãÄ¡´ÂÁö °Ë»ç
+                        // Internal Areaì˜ ì ì´ ë‹¤ë¥¸ Ringê³¼ ê²¹ì¹˜ëŠ”ì§€ ê²€ì‚¬
                         for ( x = 0, sCheckRing = STD_FIRST_RN2D(aAreaInt);
                               x < sIntRingCnt;
                               x++, sCheckRing = STD_NEXT_RN2D(sCheckRing) )
                         {
                             if ( i == x )
                             {
-                                // ÀÚ½ÅÀÇ RingÀº °Ë»çÇÏÁö ¾ÊÀ½
+                                // ìì‹ ì˜ Ringì€ ê²€ì‚¬í•˜ì§€ ì•ŠìŒ
                                 continue;
                             }
                             else
@@ -9613,14 +9613,14 @@ IDE_RC stfRelation::saiTosae( iduMemory *              aQmxMem,
                             continue;
                         }
                         
-                        // External AreaÀÇ Á¡ÀÌ ´Ù¸¥ Ring°ú °ãÄ¡´ÂÁö °Ë»ç
+                        // External Areaì˜ ì ì´ ë‹¤ë¥¸ Ringê³¼ ê²¹ì¹˜ëŠ”ì§€ ê²€ì‚¬
                         for ( x = 0, sCheckRing = STD_FIRST_RN2D(aAreaExt);
                               x < sExtRingCnt;
                               x++, sCheckRing = STD_NEXT_RN2D(sCheckRing) )
                         {
                             if ( m == x )
                             {
-                                // ÀÚ½ÅÀÇ RingÀº °Ë»çÇÏÁö ¾ÊÀ½
+                                // ìì‹ ì˜ Ringì€ ê²€ì‚¬í•˜ì§€ ì•ŠìŒ
                                 continue;
                             }
                             else
@@ -9650,7 +9650,7 @@ IDE_RC stfRelation::saiTosae( iduMemory *              aQmxMem,
                     }
                     
                     //----------------------------------------
-                    // Á¡°ú Á¡ÀÇ °ü°è·ÎºÎÅÍ ¿ÜºÎ ±³Â÷ÀÇ ÆÇ´Ü
+                    // ì ê³¼ ì ì˜ ê´€ê³„ë¡œë¶€í„° ì™¸ë¶€ êµì°¨ì˜ íŒë‹¨
                     //----------------------------------------
                     
                     if ( sMeetOnPoint == ID_TRUE )
@@ -9670,12 +9670,12 @@ IDE_RC stfRelation::saiTosae( iduMemory *              aQmxMem,
                         }
                         else
                         {
-                            // ±³Â÷ ¿©ºÎ¸¦ ÆÇ´ÜÇÒ ¼ö ¾øÀ½
+                            // êµì°¨ ì—¬ë¶€ë¥¼ íŒë‹¨í•  ìˆ˜ ì—†ìŒ
                         }
                     }
                     else // sMeetOnPoint == ID_FALSE
                     {
-                        // °Ë»ç ´ë»óÀÌ ¾Æ´Ô
+                        // ê²€ì‚¬ ëŒ€ìƒì´ ì•„ë‹˜
                     }
                 } // for n
             } // for m
@@ -9726,7 +9726,7 @@ SChar stfRelation::sabTosab( const stdPolygon2DType*    aObj1,
 
                     if( sTemp == '1' )
                     {
-                         return '1';    // ³ª¿Ã ¼ö ÀÖ´Â ÃÖ°í Â÷¿ø
+                         return '1';    // ë‚˜ì˜¬ ìˆ˜ ìˆëŠ” ìµœê³  ì°¨ì›
                     }
                     else if( (sResult < '0') && (sTemp == '0') )
                     {
@@ -9755,27 +9755,27 @@ SChar stfRelation::sabTosab( const stdPolygon2DType*    aObj1,
 /***********************************************************************
  * Description:
  *
- *    SAB(Single Area Boundary)°ú
- *    SAE(Single Area External)ÀÇ DE-9IM °ü°è¸¦ ±¸ÇÑ´Ù.
+ *    SAB(Single Area Boundary)ê³¼
+ *    SAE(Single Area External)ì˜ DE-9IM ê´€ê³„ë¥¼ êµ¬í•œë‹¤.
  *
  * Implementation:
  *
  *   BUG-17043
  *
- *   Polygon Boundary¸¦ ±¸¼ºÇÏ´Â [Á¡, ¼±ºĞ] °ú
- *   Polygon ExternalÀ» ±¸¼ºÇÏ´Â [Á¡, ¼±ºĞ, ¸é] ÀÇ °ü°è¸¦ ÅëÇØ ±¸ÇØ³½´Ù.
+ *   Polygon Boundaryë¥¼ êµ¬ì„±í•˜ëŠ” [ì , ì„ ë¶„] ê³¼
+ *   Polygon Externalì„ êµ¬ì„±í•˜ëŠ” [ì , ì„ ë¶„, ë©´] ì˜ ê´€ê³„ë¥¼ í†µí•´ êµ¬í•´ë‚¸ë‹¤.
  *
  *   ================================
  *     Boundary .vs. External
  *   ================================
  *
- *   1. ¼±ºĞ .vs. ¸é
+ *   1. ì„ ë¶„ .vs. ë©´
  *
- *       - ¼±ºĞ°ú ¼±ºĞ, Á¡°ú Á¡ÀÇ °ü°è·ÎºÎÅÍ À¯Ãß
+ *       - ì„ ë¶„ê³¼ ì„ ë¶„, ì ê³¼ ì ì˜ ê´€ê³„ë¡œë¶€í„° ìœ ì¶”
  *
- *   2. Á¡ .vs. ¸é 
- *       - Á¡ÀÌ PolygonÀÇ ³»ºÎ¿¡ Á¸Àç : À¯Ãß ºÒ°¡
- *       - Á¡ÀÌ PolygonÀÇ ¿ÜºÎ¿¡ Á¸Àç : TRUE
+ *   2. ì  .vs. ë©´ 
+ *       - ì ì´ Polygonì˜ ë‚´ë¶€ì— ì¡´ì¬ : ìœ ì¶” ë¶ˆê°€
+ *       - ì ì´ Polygonì˜ ì™¸ë¶€ì— ì¡´ì¬ : TRUE
  *
  *                A--------A
  *                |        |
@@ -9783,10 +9783,10 @@ SChar stfRelation::sabTosab( const stdPolygon2DType*    aObj1,
  *                |        |
  *                A--------A
  *                 
- *   3. ¼±ºĞ .vs. ¼±ºĞ
- *       - ±³Â÷ÇÏÁö ¾Ê´Â °æ¿ì : À¯Ãß ºÒ°¡
+ *   3. ì„ ë¶„ .vs. ì„ ë¶„
+ *       - êµì°¨í•˜ì§€ ì•ŠëŠ” ê²½ìš° : ìœ ì¶” ë¶ˆê°€
  *
- *       - ¼±ºĞÀÌ ¼±ºĞÀ¸·Î ±³Â÷ : Á¡°ú Á¡ÀÇ °ü°è·ÎºÎÅÍ À¯Ãß °¡´É
+ *       - ì„ ë¶„ì´ ì„ ë¶„ìœ¼ë¡œ êµì°¨ : ì ê³¼ ì ì˜ ê´€ê³„ë¡œë¶€í„° ìœ ì¶” ê°€ëŠ¥
  *
  *             B---A====B----A
  *
@@ -9794,7 +9794,7 @@ SChar stfRelation::sabTosab( const stdPolygon2DType*    aObj1,
  *
  *             A---B====B----A
  *
- *       - ¼±ºĞÀÌ Á¡¿¡¼­ ±³Â÷ : TRUE
+ *       - ì„ ë¶„ì´ ì ì—ì„œ êµì°¨ : TRUE
  *
  *                B
  *                |
@@ -9802,9 +9802,9 @@ SChar stfRelation::sabTosab( const stdPolygon2DType*    aObj1,
  *                |
  *                B
  *
- *   4. Á¡ .vs. ¼±ºĞ
- *       - ±³Â÷ÇÏÁö ¾Ê´Â °æ¿ì : À¯Ãß ºÒ°¡
- *       - Á¡ÀÌ ¼±ºĞ¿¡¼­ ±³Â÷ : Á¡°ú Á¡ÀÇ °ü°è·ÎºÎÅÍ À¯Ãß °¡´É
+ *   4. ì  .vs. ì„ ë¶„
+ *       - êµì°¨í•˜ì§€ ì•ŠëŠ” ê²½ìš° : ìœ ì¶” ë¶ˆê°€
+ *       - ì ì´ ì„ ë¶„ì—ì„œ êµì°¨ : ì ê³¼ ì ì˜ ê´€ê³„ë¡œë¶€í„° ìœ ì¶” ê°€ëŠ¥
  *
  *               Bp                     Bp
  *               |                      |
@@ -9812,9 +9812,9 @@ SChar stfRelation::sabTosab( const stdPolygon2DType*    aObj1,
  *               |                      |
  *               Bn                     Bn
  *
- *   5. Á¡ .vs. Á¡
- *       - ±³Â÷ÇÏÁö ¾Ê´Â °æ¿ì : À¯Ãß ºÒ°¡
- *       - Á¡¿¡¼­ ±³Â÷ : Á¡°ú Á¡ÀÇ °ü°è·ÎºÎÅÍ À¯Ãß
+ *   5. ì  .vs. ì 
+ *       - êµì°¨í•˜ì§€ ì•ŠëŠ” ê²½ìš° : ìœ ì¶” ë¶ˆê°€
+ *       - ì ì—ì„œ êµì°¨ : ì ê³¼ ì ì˜ ê´€ê³„ë¡œë¶€í„° ìœ ì¶”
  *
  *                Bp
  *                |
@@ -9835,27 +9835,27 @@ stfRelation::sabTosae( const stdPolygon2DType * aAreaBnd,
     SChar   sResult;
     
     //----------------------------
-    // Area External Á¤º¸
+    // Area External ì •ë³´
     //----------------------------
     
     stdLinearRing2D * sExtRing;
     stdPoint2D      * sExtRingPt;
-    stdPoint2D      * sExtRingPrevPt;  // Ring PointÀÇ ÀÌÀü Point
-    stdPoint2D      * sExtRingCurrPt;  // Ring PointÀÇ ÀÌÀü Point
-    stdPoint2D      * sExtRingNextPt;  // Ring PointÀÇ ´ÙÀ½ Point
+    stdPoint2D      * sExtRingPrevPt;  // Ring Pointì˜ ì´ì „ Point
+    stdPoint2D      * sExtRingCurrPt;  // Ring Pointì˜ ì´ì „ Point
+    stdPoint2D      * sExtRingNextPt;  // Ring Pointì˜ ë‹¤ìŒ Point
     
     UInt              sExtRingCnt;     // Ring Count of a Polygon
     UInt              sExtRingSegCnt;  // Segment Count of a Ring
-    idBool            sExtRingCCWise;  // Ring ÀÌ ½Ã°è ¿ª¹æÇâÀÎÁöÀÇ ¿©ºÎ
+    idBool            sExtRingCCWise;  // Ring ì´ ì‹œê³„ ì—­ë°©í–¥ì¸ì§€ì˜ ì—¬ë¶€
 
     //----------------------------
-    // Area Boundary Á¤º¸
+    // Area Boundary ì •ë³´
     //----------------------------
     
     stdLinearRing2D * sBndRing;
     stdPoint2D      * sBndRingPt;
-    stdPoint2D      * sBndRingPrevPt;  // Ring PointÀÇ ÀÌÀü Point
-    stdPoint2D      * sBndRingNextPt;  // Ring PointÀÇ ´ÙÀ½ Point
+    stdPoint2D      * sBndRingPrevPt;  // Ring Pointì˜ ì´ì „ Point
+    stdPoint2D      * sBndRingNextPt;  // Ring Pointì˜ ë‹¤ìŒ Point
     
     UInt              sBndRingCnt;     // Ring Count of a Polygon
     UInt              sBndRingSegCnt;  // Segment Count of a Ring
@@ -9877,10 +9877,10 @@ stfRelation::sabTosae( const stdPolygon2DType * aAreaBnd,
     sBndRingCnt = STD_N_RINGS( aAreaBnd );
 
     //----------------------------------------
-    // Á¡°ú ¸éÀÇ °ü°è·ÎºÎÅÍ ÃßÃâ
+    // ì ê³¼ ë©´ì˜ ê´€ê³„ë¡œë¶€í„° ì¶”ì¶œ
     //----------------------------------------
 
-    // AreaBndÀÇ ÁÂÇ¥°¡ AreaExt ¿ÜºÎ¿¡ Æ÷ÇÔµÇ´Â Áö °Ë»ç
+    // AreaBndì˜ ì¢Œí‘œê°€ AreaExt ì™¸ë¶€ì— í¬í•¨ë˜ëŠ” ì§€ ê²€ì‚¬
     for ( i = 0, sBndRing = STD_FIRST_RN2D(aAreaBnd);
           i < sBndRingCnt;
           i++, sBndRing = STD_NEXT_RN2D(sBndRing) )
@@ -9891,7 +9891,7 @@ stfRelation::sabTosae( const stdPolygon2DType * aAreaBnd,
               j < sBndRingSegCnt;
               j++, sBndRingPt = STD_NEXT_PT2D(sBndRingPt) )
         {
-            // ÇÑÁ¡ÀÌ ´Ù¸¥ PolygonÀÇ ³»ºÎ¿¡ Á¸ÀçÇÏ´ÂÁö ÆÇ´Ü
+            // í•œì ì´ ë‹¤ë¥¸ Polygonì˜ ë‚´ë¶€ì— ì¡´ì¬í•˜ëŠ”ì§€ íŒë‹¨
             if( spiTosae( sBndRingPt, aAreaExt ) == '0' )
             {
                 sResult = '1';
@@ -9905,22 +9905,22 @@ stfRelation::sabTosae( const stdPolygon2DType * aAreaBnd,
     }
     
     //----------------------------------------
-    // Á¡°ú ¼±ÀÇ °ü°è·ÎºÎÅÍ SAB .vs. SAE ÀÇ °ü°è ÃßÃâ
+    // ì ê³¼ ì„ ì˜ ê´€ê³„ë¡œë¶€í„° SAB .vs. SAE ì˜ ê´€ê³„ ì¶”ì¶œ
     //----------------------------------------
 
-    // AreaBnd°¡ ±¸¼ºÇÏ´Â RingÀÇ °³¼ö¸¸Å­ ¹İº¹
+    // AreaBndê°€ êµ¬ì„±í•˜ëŠ” Ringì˜ ê°œìˆ˜ë§Œí¼ ë°˜ë³µ
     for ( i = 0, sBndRing = STD_FIRST_RN2D(aAreaBnd);
           i < sBndRingCnt;
           i++, sBndRing = STD_NEXT_RN2D(sBndRing) )
     {
         sBndRingSegCnt = STD_N_POINTS(sBndRing) - 1;
         
-        // BoundaryÀÇ RingÀÌ ±¸¼ºÇÏ´Â Segment°³¼ö¸¸Å­ ¹İº¹
+        // Boundaryì˜ Ringì´ êµ¬ì„±í•˜ëŠ” Segmentê°œìˆ˜ë§Œí¼ ë°˜ë³µ
         for ( j = 0, sBndRingPt = STD_FIRST_PT2D(sBndRing);
               j < sBndRingSegCnt;
               j++, sBndRingPt = STD_NEXT_PT2D(sBndRingPt) )
         {
-            // AreaExtÀÌ ±¸¼ºÇÏ´Â RingÀÇ °³¼ö¸¸Å­ ¹İº¹
+            // AreaExtì´ êµ¬ì„±í•˜ëŠ” Ringì˜ ê°œìˆ˜ë§Œí¼ ë°˜ë³µ
             for ( m = 0, sExtRing = STD_FIRST_RN2D(aAreaExt);
                   m < sExtRingCnt;
                   m++, sExtRing = STD_NEXT_RN2D(sExtRing) )
@@ -9928,13 +9928,13 @@ stfRelation::sabTosae( const stdPolygon2DType * aAreaBnd,
                 sExtRingSegCnt = STD_N_POINTS(sExtRing) - 1;
                 sExtRingCCWise = stdUtils::isCCW2D(sExtRing);
                 
-                // RingÀÌ ±¸¼ºÇÏ´Â Segment°³¼ö¸¸Å­ ¹İº¹
+                // Ringì´ êµ¬ì„±í•˜ëŠ” Segmentê°œìˆ˜ë§Œí¼ ë°˜ë³µ
                 for ( n = 0, sExtRingPt = STD_FIRST_PT2D(sExtRing);
                       n < sExtRingSegCnt;
                       n++, sExtRingPt = STD_NEXT_PT2D(sExtRingPt) )
                 {
                     //----------------------------
-                    // AreaExt RingÀÇ ÇöÀçÁ¡, ÀÌÀüÁ¡, ÀÌÈÄÁ¡À» ±¸ÇÔ
+                    // AreaExt Ringì˜ í˜„ì¬ì , ì´ì „ì , ì´í›„ì ì„ êµ¬í•¨
                     //----------------------------
 
                     sExtRingPrevPt =
@@ -9950,7 +9950,7 @@ stfRelation::sabTosae( const stdPolygon2DType * aAreaBnd,
                                                          NULL );
                     
                     //----------------------------
-                    // AreaBnd RingÀÇ ÇöÀçÁ¡, ÀÌÀüÁ¡, ÀÌÈÄÁ¡À» ±¸ÇÔ
+                    // AreaBnd Ringì˜ í˜„ì¬ì , ì´ì „ì , ì´í›„ì ì„ êµ¬í•¨
                     //----------------------------
                 
                     sBndRingPrevPt =
@@ -9965,42 +9965,42 @@ stfRelation::sabTosae( const stdPolygon2DType * aAreaBnd,
                                                          NULL );
 
                     //------------------------------------
-                    // ¼±ºĞ°ú ¼±ºĞÀÇ °ü°è·ÎºÎÅÍ À¯Ãß
+                    // ì„ ë¶„ê³¼ ì„ ë¶„ì˜ ê´€ê³„ë¡œë¶€í„° ìœ ì¶”
                     //------------------------------------
 
-                    // ¼±ºĞÀÌ Á¡¿¡¼­ ±³Â÷ÇÑ´Ù¸é TRUE
+                    // ì„ ë¶„ì´ ì ì—ì„œ êµì°¨í•œë‹¤ë©´ TRUE
                     if( ( stdUtils::intersectI2D( sExtRingPt,
                                                   STD_NEXT_PT2D(sExtRingPt),
                                                   sBndRingPt,
                                                   STD_NEXT_PT2D(sBndRingPt) )
                           ==ID_TRUE ) )
                     {
-                        // ¼±ºĞÀÌ ±³Â÷ÇÏ´Â °æ¿ì
+                        // ì„ ë¶„ì´ êµì°¨í•˜ëŠ” ê²½ìš°
                         sResult = '1';
                         IDE_RAISE( SABSAE2D_MAX_RESULT );
                     }
                     else
                     {
-                        // ¼±ºĞÀÌ ±³Â÷ÇÏÁö ¾Ê´Â °æ¿ì
+                        // ì„ ë¶„ì´ êµì°¨í•˜ì§€ ì•ŠëŠ” ê²½ìš°
                     }
                     
                     //----------------------------------------
-                    // ´ÙÀ½ °ü°è¸¦ Á¡°ú Á¡ÀÇ °ü°è·Î ¸¸µé±â À§ÇÑ Á¶Á¤
-                    //  - RingÀÇ ¼±ºĞ°ú Á¡°úÀÇ °ü°è
-                    //  - RingÀÇ Á¡°ú Á¡ÀÇ °ü°è
+                    // ë‹¤ìŒ ê´€ê³„ë¥¼ ì ê³¼ ì ì˜ ê´€ê³„ë¡œ ë§Œë“¤ê¸° ìœ„í•œ ì¡°ì •
+                    //  - Ringì˜ ì„ ë¶„ê³¼ ì ê³¼ì˜ ê´€ê³„
+                    //  - Ringì˜ ì ê³¼ ì ì˜ ê´€ê³„
                     //----------------------------------------
 
                     sMeetOnPoint = ID_FALSE;
                     
                     //----------------------------
-                    // Area Ring ¼±ºĞ³»¿¡ Boundary RingÀÇ Á¡ÀÌ Á¸ÀçÇÏ´ÂÁö °Ë»ç
+                    // Area Ring ì„ ë¶„ë‚´ì— Boundary Ringì˜ ì ì´ ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬
                     //----------------------------
                     
                     if ( ( stdUtils::betweenI2D( sExtRingPt,
                                                  STD_NEXT_PT2D(sExtRingPt),
                                                  sBndRingPt )==ID_TRUE ) )
                     {
-                        // Á¡ÀÌ ¼±ºĞ¿¡¼­ ±³Â÷ => Á¡°ú Á¡ÀÇ °ü°è·Î º¯°æ
+                        // ì ì´ ì„ ë¶„ì—ì„œ êµì°¨ => ì ê³¼ ì ì˜ ê´€ê³„ë¡œ ë³€ê²½
                         //               Bp                    Bp
                         //               |                     |
                         //         A-----B-----A  ==>   Ap----AB----An  
@@ -10014,14 +10014,14 @@ stfRelation::sabTosae( const stdPolygon2DType * aAreaBnd,
                     }
                 
                     //----------------------------
-                    // Boundary Ring ¼±ºĞ³»¿¡ Area RingÀÇ Á¡ÀÌ Á¸ÀçÇÏ´ÂÁö °Ë»ç
+                    // Boundary Ring ì„ ë¶„ë‚´ì— Area Ringì˜ ì ì´ ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬
                     //----------------------------
 
                     if ( stdUtils::betweenI2D( sBndRingPt,
                                                STD_NEXT_PT2D(sBndRingPt),
                                                sExtRingPt ) == ID_TRUE )
                     {
-                        // Á¡ÀÌ ¼±ºĞ¿¡¼­ ±³Â÷ => Á¡°ú Á¡ÀÇ °ü°è·Î º¯°æ
+                        // ì ì´ ì„ ë¶„ì—ì„œ êµì°¨ => ì ê³¼ ì ì˜ ê´€ê³„ë¡œ ë³€ê²½
                         //               Ap                     Ap
                         //               |                      |
                         //         B-----A------B  ==>   Bp----BA----Bn  
@@ -10034,7 +10034,7 @@ stfRelation::sabTosae( const stdPolygon2DType * aAreaBnd,
                     }
 
                     //----------------------------
-                    // Á¡°ú Á¡ÀÌ ±³Â÷ÇÏ´Â Áö °Ë»ç
+                    // ì ê³¼ ì ì´ êµì°¨í•˜ëŠ” ì§€ ê²€ì‚¬
                     //----------------------------
                     
                     if ( stdUtils::isSamePoints2D( sExtRingPt,
@@ -10042,11 +10042,11 @@ stfRelation::sabTosae( const stdPolygon2DType * aAreaBnd,
                     {
                         sMeetOnPoint = ID_TRUE;
                         
-                        // ÀÌ¹Ì ±¸ÇØÁø °ªÀ» »ç¿ë
+                        // ì´ë¯¸ êµ¬í•´ì§„ ê°’ì„ ì‚¬ìš©
                     }
 
                     //----------------------------------------
-                    // Á¡°ú Á¡ÀÇ °ü°è·ÎºÎÅÍ ¿ÜºÎ ±³Â÷ÀÇ ÆÇ´Ü
+                    // ì ê³¼ ì ì˜ ê´€ê³„ë¡œë¶€í„° ì™¸ë¶€ êµì°¨ì˜ íŒë‹¨
                     //----------------------------------------
                     
                     if ( sMeetOnPoint == ID_TRUE )
@@ -10066,12 +10066,12 @@ stfRelation::sabTosae( const stdPolygon2DType * aAreaBnd,
                         }
                         else
                         {
-                            // ±³Â÷ ¿©ºÎ¸¦ ÆÇ´ÜÇÒ ¼ö ¾øÀ½
+                            // êµì°¨ ì—¬ë¶€ë¥¼ íŒë‹¨í•  ìˆ˜ ì—†ìŒ
                         }
                     }
                     else // sMeetOnPoint == ID_FALSE
                     {
-                        // °Ë»ç ´ë»óÀÌ ¾Æ´Ô
+                        // ê²€ì‚¬ ëŒ€ìƒì´ ì•„ë‹˜
                     }
                 } // for n
             } // for m
@@ -10526,15 +10526,15 @@ SChar stfRelation::saiTomab( const stdPolygon2DType*            aObj1,
  *
  * Description :
  *
- *    ´ÜÀÏ ¿µ¿ª °´Ã¼ÀÇ ³»ºÎ ¿µ¿ª°ú ´ÙÁß ¿µ¿ª °´Ã¼ÀÇ ¿ÜºÎ ¿µ¿ª°úÀÇ °ü°è¸¦ ±¸ÇÔ.
+ *    ë‹¨ì¼ ì˜ì—­ ê°ì²´ì˜ ë‚´ë¶€ ì˜ì—­ê³¼ ë‹¤ì¤‘ ì˜ì—­ ê°ì²´ì˜ ì™¸ë¶€ ì˜ì—­ê³¼ì˜ ê´€ê³„ë¥¼ êµ¬í•¨.
  *    sai(single area internal), mae(multi area external)
  *
  * Implementation :
  *
- *    Ç¥±â¹ı : Ai (°´Ã¼ AÀÇ interior ¿µ¿ª)
+ *    í‘œê¸°ë²• : Ai (ê°ì²´ Aì˜ interior ì˜ì—­)
  *
  *    BUG-16319
- *    ´ÜÀÏ °´Ã¼ ³»ºÎ ¿µ¿ª°ú ´ÙÁß °´Ã¼ ¿ÜºÎ ¿µ¿ª°úÀÇ °ü°è´Â ´ÙÀ½°ú °°Àº ½ÄÀ¸·Î Ç¥Çö
+ *    ë‹¨ì¼ ê°ì²´ ë‚´ë¶€ ì˜ì—­ê³¼ ë‹¤ì¤‘ ê°ì²´ ì™¸ë¶€ ì˜ì—­ê³¼ì˜ ê´€ê³„ëŠ” ë‹¤ìŒê³¼ ê°™ì€ ì‹ìœ¼ë¡œ í‘œí˜„
  *
  *    Si ^ ( A U B U ...U N )e
  *    <==>
@@ -10556,11 +10556,11 @@ IDE_RC stfRelation::saiTomae( iduMemory*                         aQmxMem,
     // Initialization
     //---------------------------------
     
-    // ´ÙÁß °´Ã¼ ¿ÜºÎ ¿µ¿ªÁß ¸ğµÎ ±³Â÷¿µ¿ªÀÌ ÀÖ¾î¾ß ±³Â÷¿µ¿ªÀÌ Á¸ÀçÇÑ´Ù.
+    // ë‹¤ì¤‘ ê°ì²´ ì™¸ë¶€ ì˜ì—­ì¤‘ ëª¨ë‘ êµì°¨ì˜ì—­ì´ ìˆì–´ì•¼ êµì°¨ì˜ì—­ì´ ì¡´ì¬í•œë‹¤.
     sResult = '2';
 
     //---------------------------------
-    // ¸ğµç °´Ã¼ÀÇ ¿ÜºÎ ¿µ¿ª°ú ±³Â÷¿µ¿ªÀÌ Á¸ÀçÇÏ´Â Áö¸¦ ÆÇ´Ü
+    // ëª¨ë“  ê°ì²´ì˜ ì™¸ë¶€ ì˜ì—­ê³¼ êµì°¨ì˜ì—­ì´ ì¡´ì¬í•˜ëŠ” ì§€ë¥¼ íŒë‹¨
     //---------------------------------
     
     sPoly = STD_FIRST_POLY2D(aObj2);
@@ -10578,7 +10578,7 @@ IDE_RC stfRelation::saiTomae( iduMemory*                         aQmxMem,
         }
         else
         {
-            // ±³Â÷ ¿µ¿ªÀÌ Á¸ÀçÇÔ
+            // êµì°¨ ì˜ì—­ì´ ì¡´ì¬í•¨
         }
         
         sPoly = STD_NEXT_POLY2D(sPoly);
@@ -10693,14 +10693,14 @@ SChar stfRelation::sabTomab( const stdPolygon2DType*            aObj1,
  *
  * Description :
  *
- *    ´ÜÀÏ ¿µ¿ª °´Ã¼ÀÇ °æ°è¿Í ´ÙÁß ¿µ¿ª °´Ã¼ÀÇ ¿ÜºÎ ¿µ¿ª°úÀÇ °ü°è¸¦ ±¸ÇÔ.
+ *    ë‹¨ì¼ ì˜ì—­ ê°ì²´ì˜ ê²½ê³„ì™€ ë‹¤ì¤‘ ì˜ì—­ ê°ì²´ì˜ ì™¸ë¶€ ì˜ì—­ê³¼ì˜ ê´€ê³„ë¥¼ êµ¬í•¨.
  *    sab(single area boundary), mae(multi area external)
  *
  * Implementation :
  *
- *    Ç¥±â¹ı : Ai (°´Ã¼ AÀÇ interior ¿µ¿ª)
+ *    í‘œê¸°ë²• : Ai (ê°ì²´ Aì˜ interior ì˜ì—­)
  *
- *    ´ÜÀÏ °´Ã¼ °æ°è¿Í ´ÙÁß °´Ã¼ ¿ÜºÎ ¿µ¿ª°úÀÇ °ü°è´Â ´ÙÀ½°ú °°Àº ½ÄÀ¸·Î Ç¥Çö
+ *    ë‹¨ì¼ ê°ì²´ ê²½ê³„ì™€ ë‹¤ì¤‘ ê°ì²´ ì™¸ë¶€ ì˜ì—­ê³¼ì˜ ê´€ê³„ëŠ” ë‹¤ìŒê³¼ ê°™ì€ ì‹ìœ¼ë¡œ í‘œí˜„
  *
  *    Sb ^ ( A U B U ...U N )e
  *    <==>
@@ -10720,11 +10720,11 @@ SChar stfRelation::sabTomae( const stdPolygon2DType*            aObj1,
     // Initialization
     //---------------------------------
     
-    // ´ÙÁß °´Ã¼ ¿ÜºÎ ¿µ¿ªÁß ¸ğµÎ ±³Â÷¿µ¿ªÀÌ ÀÖ¾î¾ß ±³Â÷¶óÀÎÀÌ Á¸ÀçÇÑ´Ù.
+    // ë‹¤ì¤‘ ê°ì²´ ì™¸ë¶€ ì˜ì—­ì¤‘ ëª¨ë‘ êµì°¨ì˜ì—­ì´ ìˆì–´ì•¼ êµì°¨ë¼ì¸ì´ ì¡´ì¬í•œë‹¤.
     sResult = '1';
 
     //---------------------------------
-    // ¸ğµç °´Ã¼ÀÇ ¿ÜºÎ ¿µ¿ª°ú ±³Â÷¿µ¿ªÀÌ Á¸ÀçÇÏ´Â Áö¸¦ ÆÇ´Ü
+    // ëª¨ë“  ê°ì²´ì˜ ì™¸ë¶€ ì˜ì—­ê³¼ êµì°¨ì˜ì—­ì´ ì¡´ì¬í•˜ëŠ” ì§€ë¥¼ íŒë‹¨
     //---------------------------------
     
     sPoly = STD_FIRST_POLY2D(aObj2);
@@ -11042,7 +11042,7 @@ IDE_RC stfRelation::saiTogce( iduMemory*                         aQmxMem,
                 sResult = 'F';
                 IDE_RAISE( normal_exit );
         }
-        if( sRet == 'F' )     // ³ª¿Ã ¼ö ÀÖ´Â ÃÖÀú Â÷¿ø
+        if( sRet == 'F' )     // ë‚˜ì˜¬ ìˆ˜ ìˆëŠ” ìµœì € ì°¨ì›
         {
             sResult = sRet;
             break;
@@ -11247,7 +11247,7 @@ SChar stfRelation::sabTogce( const stdPolygon2DType*            aObj1,
         default:
             return 'F';
         }
-        if( sRet == 'F' )     // ³ª¿Ã ¼ö ÀÖ´Â ÃÖÀú Â÷¿ø
+        if( sRet == 'F' )     // ë‚˜ì˜¬ ìˆ˜ ìˆëŠ” ìµœì € ì°¨ì›
         {
             return 'F';
         }
@@ -11756,7 +11756,7 @@ SChar stfRelation::mpiTogce( const stdMultiPoint2DType*         aObj1,
         default:
             return 'F';
         }
-        if( sRet == 'F' )     // ³ª¿Ã ¼ö ÀÖ´Â ÃÖÀú Â÷¿ø
+        if( sRet == 'F' )     // ë‚˜ì˜¬ ìˆ˜ ìˆëŠ” ìµœì € ì°¨ì›
         {
             return 'F';
         }
@@ -12521,7 +12521,7 @@ SChar stfRelation::mliTogce( const stdMultiLineString2DType*         aObj1,
         default:
             return 'F';
         }
-        if( sRet == 'F' )     // ³ª¿Ã ¼ö ÀÖ´Â ÃÖÀú Â÷¿ø
+        if( sRet == 'F' )     // ë‚˜ì˜¬ ìˆ˜ ìˆëŠ” ìµœì € ì°¨ì›
         {
             return 'F';
         }
@@ -12685,7 +12685,7 @@ SChar stfRelation::mlbTogce( const stdMultiLineString2DType*     aObj1,
         default:
             return 'F';
         }
-        if( sRet == 'F' )     // ³ª¿Ã ¼ö ÀÖ´Â ÃÖÀú Â÷¿ø
+        if( sRet == 'F' )     // ë‚˜ì˜¬ ìˆ˜ ìˆëŠ” ìµœì € ì°¨ì›
         {
             return 'F';
         }
@@ -13300,7 +13300,7 @@ IDE_RC stfRelation::maiTogce( iduMemory*                          aQmxMem,
                 sResult = 'F';
                 IDE_RAISE( normal_exit );
         }
-        if( sRet == 'F' )     // ³ª¿Ã ¼ö ÀÖ´Â ÃÖÀú Â÷¿ø
+        if( sRet == 'F' )     // ë‚˜ì˜¬ ìˆ˜ ìˆëŠ” ìµœì € ì°¨ì›
         {
             sResult = sRet;
             break;
@@ -13506,7 +13506,7 @@ SChar stfRelation::mabTogce( const stdMultiPolygon2DType*        aObj1,
         default:
             return 'F';
         }
-        if( sRet == 'F' )     // ³ª¿Ã ¼ö ÀÖ´Â ÃÖÀú Â÷¿ø
+        if( sRet == 'F' )     // ë‚˜ì˜¬ ìˆ˜ ìˆëŠ” ìµœì € ì°¨ì›
         {
             return 'F';
         }
@@ -13879,7 +13879,7 @@ IDE_RC stfRelation::gciTogce( iduMemory*                          aQmxMem,
                 sResult = 'F';
                 IDE_RAISE( normal_exit );
         }
-        if( sRet == 'F' )     // ³ª¿Ã ¼ö ÀÖ´Â ÃÖÀú Â÷¿ø
+        if( sRet == 'F' )     // ë‚˜ì˜¬ ìˆ˜ ìˆëŠ” ìµœì € ì°¨ì›
         {
             sResult = sRet;
             break;
@@ -14013,7 +14013,7 @@ SChar stfRelation::gcbTogce( const stdGeoCollection2DType*       aObj1,
         default:
             return 'F';
         }
-        if( sRet == 'F' )     // ³ª¿Ã ¼ö ÀÖ´Â ÃÖÀú Â÷¿ø
+        if( sRet == 'F' )     // ë‚˜ì˜¬ ìˆ˜ ìˆëŠ” ìµœì € ì°¨ì›
         {
             return 'F';
         }
@@ -14039,12 +14039,12 @@ SChar stfRelation::gcbTogce( const stdGeoCollection2DType*       aObj1,
  *
  * Description :
  *
- *    Line Segment¿Í Ring Segment°¡ (³»ºÎ/¿ÜºÎ) ±³Â÷°¡ Á¸ÀçÇÏ´Â Áö °Ë»ç
+ *    Line Segmentì™€ Ring Segmentê°€ (ë‚´ë¶€/ì™¸ë¶€) êµì°¨ê°€ ì¡´ì¬í•˜ëŠ” ì§€ ê²€ì‚¬
  *
  * Implementation :
  *
- *    Line Segment¿Í Ring Segment°¡ ÇÑ Á¡À» Áß½ÉÀ¸·Î ±³Â÷ÇÒ ¶§,
- *    µÑ °£ÀÇ ¿øÇÏ´Â ±³Â÷ °ü°è(³»ºÎ/¿ÜºÎ)°¡ Á¸ÀçÇÏ´Â Áö °Ë»çÇÔ.
+ *    Line Segmentì™€ Ring Segmentê°€ í•œ ì ì„ ì¤‘ì‹¬ìœ¼ë¡œ êµì°¨í•  ë•Œ,
+ *    ë‘˜ ê°„ì˜ ì›í•˜ëŠ” êµì°¨ ê´€ê³„(ë‚´ë¶€/ì™¸ë¶€)ê°€ ì¡´ì¬í•˜ëŠ” ì§€ ê²€ì‚¬í•¨.
  *
  *               Ap
  *               |
@@ -14093,18 +14093,18 @@ stfRelation::hasRelLineSegRingSeg( idBool      aIsExtRing,
         STF_OUTSIDE_ANGLE_POS : STF_INSIDE_ANGLE_POS;
     
     //----------------------------
-    // ÆÇ´ÜÀ» À§ÇÑ ºÎ°¡ Á¤º¸ »ı¼º
+    // íŒë‹¨ì„ ìœ„í•œ ë¶€ê°€ ì •ë³´ ìƒì„±
     //----------------------------
     
-    // Area > 0 : ½Ã°è¹İ´ë¹æÇâÀ¸·Î »ı¼ºµÈ ¸é
-    // Area < 0 : ½Ã°è¹æÇâÀ¸·Î »ı¼ºµÈ ¸é
-    // Area = 0 : ¼¼Á¡ÀÌ ÀÏÁ÷¼±
+    // Area > 0 : ì‹œê³„ë°˜ëŒ€ë°©í–¥ìœ¼ë¡œ ìƒì„±ëœ ë©´
+    // Area < 0 : ì‹œê³„ë°©í–¥ìœ¼ë¡œ ìƒì„±ëœ ë©´
+    // Area = 0 : ì„¸ì ì´ ì¼ì§ì„ 
     
     sTriangleArea = stdUtils::area2D( aRingPrevPt,
                                       aMeetPoint,
                                       aRingNextPt );
     
-    // ¶óÀÎÀÌ ¸µÀÌ ÀÌ·ç´Â °¢¿¡ Æ÷ÇÔµÇ´Â Áö °Ë»ç
+    // ë¼ì¸ì´ ë§ì´ ì´ë£¨ëŠ” ê°ì— í¬í•¨ë˜ëŠ” ì§€ ê²€ì‚¬
     if ( aLinePrevPt != NULL )
     {
         sLinePrevAnglePos =
@@ -14133,7 +14133,7 @@ stfRelation::hasRelLineSegRingSeg( idBool      aIsExtRing,
     
 
     //----------------------------
-    // Area ¿Í AngleÀ» ÀÌ¿ëÇÑ ±³Â÷ ¿©ºÎ ÆÇ´Ü
+    // Area ì™€ Angleì„ ì´ìš©í•œ êµì°¨ ì—¬ë¶€ íŒë‹¨
     //----------------------------
 
     if ( ( (aIsExtRing == ID_TRUE) && (aIsCCWiseRing == ID_TRUE )) ||
@@ -14155,7 +14155,7 @@ stfRelation::hasRelLineSegRingSeg( idBool      aIsExtRing,
             }
             else
             {
-                // ±³Â÷ ¿©ºÎ¸¦ ÆÇ´ÜÇÒ ¼ö ¾øÀ½
+                // êµì°¨ ì—¬ë¶€ë¥¼ íŒë‹¨í•  ìˆ˜ ì—†ìŒ
             }
         }
         else if ( sTriangleArea < 0 )
@@ -14174,13 +14174,13 @@ stfRelation::hasRelLineSegRingSeg( idBool      aIsExtRing,
             }
             else
             {
-                // ±³Â÷ ¿©ºÎ¸¦ ÆÇ´ÜÇÒ ¼ö ¾øÀ½
+                // êµì°¨ ì—¬ë¶€ë¥¼ íŒë‹¨í•  ìˆ˜ ì—†ìŒ
             }
                             
         }
         else // sTriangleArea == 0
         {
-            // Á÷¼±ÀÎ °æ¿ì
+            // ì§ì„ ì¸ ê²½ìš°
             //
             // A--->>--Ap---Ac---An-->>--A
 
@@ -14192,7 +14192,7 @@ stfRelation::hasRelLineSegRingSeg( idBool      aIsExtRing,
             }
             else
             {
-                // ±³Â÷ ¿©ºÎ¸¦ ÆÇ´ÜÇÒ ¼ö ¾øÀ½
+                // êµì°¨ ì—¬ë¶€ë¥¼ íŒë‹¨í•  ìˆ˜ ì—†ìŒ
             }
         }
     }
@@ -14214,7 +14214,7 @@ stfRelation::hasRelLineSegRingSeg( idBool      aIsExtRing,
             }
             else
             {
-                // ±³Â÷ ¿©ºÎ¸¦ ÆÇ´ÜÇÒ ¼ö ¾øÀ½
+                // êµì°¨ ì—¬ë¶€ë¥¼ íŒë‹¨í•  ìˆ˜ ì—†ìŒ
             }
         }
         else if ( sTriangleArea < 0 )
@@ -14232,12 +14232,12 @@ stfRelation::hasRelLineSegRingSeg( idBool      aIsExtRing,
             }
             else
             {
-                // ±³Â÷ ¿©ºÎ¸¦ ÆÇ´ÜÇÒ ¼ö ¾øÀ½
+                // êµì°¨ ì—¬ë¶€ë¥¼ íŒë‹¨í•  ìˆ˜ ì—†ìŒ
             }
         }
         else // sTriangleArea == 0
         {
-            // Á÷¼±ÀÎ °æ¿ì  Area
+            // ì§ì„ ì¸ ê²½ìš°  Area
             //
             // A---<<--An---Ac---Ap--<<--A
 
@@ -14249,7 +14249,7 @@ stfRelation::hasRelLineSegRingSeg( idBool      aIsExtRing,
             }
             else
             {
-                // ±³Â÷ ¿©ºÎ¸¦ ÆÇ´ÜÇÒ ¼ö ¾øÀ½
+                // êµì°¨ ì—¬ë¶€ë¥¼ íŒë‹¨í•  ìˆ˜ ì—†ìŒ
             }
 
         }
@@ -14264,11 +14264,11 @@ stfRelation::hasRelLineSegRingSeg( idBool      aIsExtRing,
  *
  * Description :
  *
- *    Point°¡ Angle»óÀÇ ¾îµğ¿¡ À§Ä¡ÇÏ´Â ÁöÀÇ ÆÇ´Ü
+ *    Pointê°€ Angleìƒì˜ ì–´ë””ì— ìœ„ì¹˜í•˜ëŠ” ì§€ì˜ íŒë‹¨
  *
  * Implementation :
  *
- *     Angle»ó¿¡¼­ÀÇ Á¡ÀÇ À§Ä¡
+ *     Angleìƒì—ì„œì˜ ì ì˜ ìœ„ì¹˜
  *
  *                  An
  *        1         |                               1
@@ -14294,15 +14294,15 @@ stfRelation::wherePointInAngle( stdPoint2D * aAnglePrevPt,
 {
     stfAnglePos sResult;
         
-    // Angle(Ap, Am, An)ÀÌ ÀÌ·ç´Â °¢°ú ¸éÀû
+    // Angle(Ap, Am, An)ì´ ì´ë£¨ëŠ” ê°ê³¼ ë©´ì 
     SDouble sAngleArea;
     SDouble sAngleAngle;
 
-    // Point(Ap, Am, P)°¡ ÀÌ·ç´Â °¢°ú ¸éÀû
+    // Point(Ap, Am, P)ê°€ ì´ë£¨ëŠ” ê°ê³¼ ë©´ì 
     SDouble sPointArea;
     SDouble sPointAngle;
 
-    // ÀÏÁ÷¼± »ó¿¡ Á¸ÀçÇÏ´ÂÁö À§ÇØ »ç¿ë
+    // ì¼ì§ì„  ìƒì— ì¡´ì¬í•˜ëŠ”ì§€ ìœ„í•´ ì‚¬ìš©
     SDouble sCorrArea;
     
     //--------------------------------------
@@ -14320,9 +14320,9 @@ stfRelation::wherePointInAngle( stdPoint2D * aAnglePrevPt,
 
     sResult = STF_UNKNOWN_ANGLE_POS;
 
-    // º¸Á¤À» À§ÇØ ÀÏÁ÷¼±»ó¿¡ Á¸ÀçÇÏ´Â Áö ÆÇ´Ü
-    // ´ÙÀ½°ú °°ÀÌ ´ë°¢¼±¿¡ À§Ä¡ÇÒ¶§
-    // (Ap,Am,An)°ú (Ap,Am,P)°¡ ´Ù¸¥ Angle°ªÀÌ ³ª¿Ã¼ö ÀÖ´Ù.
+    // ë³´ì •ì„ ìœ„í•´ ì¼ì§ì„ ìƒì— ì¡´ì¬í•˜ëŠ” ì§€ íŒë‹¨
+    // ë‹¤ìŒê³¼ ê°™ì´ ëŒ€ê°ì„ ì— ìœ„ì¹˜í• ë•Œ
+    // (Ap,Am,An)ê³¼ (Ap,Am,P)ê°€ ë‹¤ë¥¸ Angleê°’ì´ ë‚˜ì˜¬ìˆ˜ ìˆë‹¤.
     //
     //                   An
     //                  +  
@@ -14330,18 +14330,18 @@ stfRelation::wherePointInAngle( stdPoint2D * aAnglePrevPt,
     //                +
     //        Ap-----Am
 
-    // ÀÏÁ÷¼±»óÀÌ¶ó¸é Area´Â º¸Á¤µÇ¾î 0 °ªÀÌ ³ª¿Â´Ù.
+    // ì¼ì§ì„ ìƒì´ë¼ë©´ AreaëŠ” ë³´ì •ë˜ì–´ 0 ê°’ì´ ë‚˜ì˜¨ë‹¤.
     sCorrArea = stdUtils::area2D( aAngleMiddPt,
                                   aAngleNextPt,
                                   aTestPt );
         
     //--------------------------------------
-    // ¸éÀû°ú °¢À» ±¸ÇÑ´Ù.
+    // ë©´ì ê³¼ ê°ì„ êµ¬í•œë‹¤.
     //--------------------------------------
     
-    // Area > 0 : ½Ã°è¹İ´ë¹æÇâÀ¸·Î »ı¼ºµÈ ¸é
-    // Area < 0 : ½Ã°è¹æÇâÀ¸·Î »ı¼ºµÈ ¸é
-    // Area = 0 : ¼¼Á¡ÀÌ ÀÏÁ÷¼±
+    // Area > 0 : ì‹œê³„ë°˜ëŒ€ë°©í–¥ìœ¼ë¡œ ìƒì„±ëœ ë©´
+    // Area < 0 : ì‹œê³„ë°©í–¥ìœ¼ë¡œ ìƒì„±ëœ ë©´
+    // Area = 0 : ì„¸ì ì´ ì¼ì§ì„ 
 
     // 0 <= Angle <= 3.141592XXX
     
@@ -14361,7 +14361,7 @@ stfRelation::wherePointInAngle( stdPoint2D * aAnglePrevPt,
                                         aTestPt );
 
     //--------------------------------------
-    // ¸éÀû°ú °¢À» ÀÌ¿ëÇÑ Æ÷ÇÔ ¿©ºÎ ÆÇº°
+    // ë©´ì ê³¼ ê°ì„ ì´ìš©í•œ í¬í•¨ ì—¬ë¶€ íŒë³„
     //--------------------------------------
 
     if ( sAngleArea > 0 )
@@ -14376,8 +14376,8 @@ stfRelation::wherePointInAngle( stdPoint2D * aAnglePrevPt,
         {
             if ( sCorrArea == 0 )
             {
-                // sPointAngle == sAngleAngle À» ÆÇ´Ü
-                // Am-->P-->An ÀÌ Á÷¼±ÀÓ
+                // sPointAngle == sAngleAngle ì„ íŒë‹¨
+                // Am-->P-->An ì´ ì§ì„ ì„
                 sResult = STF_MAX_ANGLE_POS;
             }
             else
@@ -14412,9 +14412,9 @@ stfRelation::wherePointInAngle( stdPoint2D * aAnglePrevPt,
         }
         else // sPointArea == 0
         {
-            // 3.14º¸´Ù Å« °ÍÀ¸·Î ºñ±³ÇÑ ÀÌÀ¯
-            // 0 ¶Ç´Â 3.141592XXXX°¡ ³ª¿Í¾ß ÇÏÁö¸¸,
-            // ´ë°¢¼±À¸·Î Á¸ÀçÇÒ¶§´Â 0¿¡ °¡±î¿î ¾ÆÁÖ ÀÛÀº ¼ö°¡ ³ª¿Â´Ù.
+            // 3.14ë³´ë‹¤ í° ê²ƒìœ¼ë¡œ ë¹„êµí•œ ì´ìœ 
+            // 0 ë˜ëŠ” 3.141592XXXXê°€ ë‚˜ì™€ì•¼ í•˜ì§€ë§Œ,
+            // ëŒ€ê°ì„ ìœ¼ë¡œ ì¡´ì¬í• ë•ŒëŠ” 0ì— ê°€ê¹Œìš´ ì•„ì£¼ ì‘ì€ ìˆ˜ê°€ ë‚˜ì˜¨ë‹¤.
             
             if ( sPointAngle > 3.14 )
             {
@@ -14461,8 +14461,8 @@ stfRelation::wherePointInAngle( stdPoint2D * aAnglePrevPt,
         {
             if ( sCorrArea == 0 )
             {
-                // sPointAngle == sAngleAngle À» ÆÇ´Ü
-                // Am-->P-->An ÀÌ Á÷¼±ÀÓ
+                // sPointAngle == sAngleAngle ì„ íŒë‹¨
+                // Am-->P-->An ì´ ì§ì„ ì„
                 sResult = STF_MAX_ANGLE_POS;
             }
             else
@@ -14624,7 +14624,7 @@ IDE_RC stfRelation::relateAreaArea( iduMemory*             aQmxMem,
                     ((stdGeometryHeader*)aObj2)->mMbr.mMaxX :
                     ((stdGeometryHeader*)aObj1)->mMbr.mMaxX ;
 
-    /* °¢ Æú¸®°ïÀÇ ´ëÇ¥ Á¡À» ÀúÀåÇÒ ¹è¿­ ÇÒ´ç */
+    /* ê° í´ë¦¬ê³¤ì˜ ëŒ€í‘œ ì ì„ ì €ì¥í•  ë°°ì—´ í• ë‹¹ */
     IDE_TEST( aQmxMem->alloc( (sMax1 + sMax2) * ID_SIZEOF(stdRepPoint),
                               (void**) & sRepPoints )
               != IDE_SUCCESS);
@@ -14646,7 +14646,7 @@ IDE_RC stfRelation::relateAreaArea( iduMemory*             aQmxMem,
         {
             sMaxP        = STD_N_POINTS(sRing);
             sTotalPoint += sMaxP;
-            /* BUG-45528 ¸µÀ» Æ÷ÇÔÇÑ ¸ÖÆ¼Æú¸®°ï/Æú¸®°ïÀÇ ¿¬»ê ½Ã¿¡ ¸Ş¸ğ¸® ÇÒ´ç ¿À·ù°¡ ÀÖ½À´Ï´Ù. */
+            /* BUG-45528 ë§ì„ í¬í•¨í•œ ë©€í‹°í´ë¦¬ê³¤/í´ë¦¬ê³¤ì˜ ì—°ì‚° ì‹œì— ë©”ëª¨ë¦¬ í• ë‹¹ ì˜¤ë¥˜ê°€ ìˆìŠµë‹ˆë‹¤. */
             sRing        = STD_NEXT_RN2D(sRing);
         }
 
@@ -14671,7 +14671,7 @@ IDE_RC stfRelation::relateAreaArea( iduMemory*             aQmxMem,
         {
             sMaxP        = STD_N_POINTS(sRing);
             sTotalPoint += sMaxP;
-            /* BUG-45528 ¸µÀ» Æ÷ÇÔÇÑ ¸ÖÆ¼Æú¸®°ï/Æú¸®°ïÀÇ ¿¬»ê ½Ã¿¡ ¸Ş¸ğ¸® ÇÒ´ç ¿À·ù°¡ ÀÖ½À´Ï´Ù. */
+            /* BUG-45528 ë§ì„ í¬í•¨í•œ ë©€í‹°í´ë¦¬ê³¤/í´ë¦¬ê³¤ì˜ ì—°ì‚° ì‹œì— ë©”ëª¨ë¦¬ í• ë‹¹ ì˜¤ë¥˜ê°€ ìˆìŠµë‹ˆë‹¤. */
             sRing        = STD_NEXT_RN2D(sRing);
         }
         
@@ -14680,10 +14680,10 @@ IDE_RC stfRelation::relateAreaArea( iduMemory*             aQmxMem,
     }
 
     /* BUG-33634 
-     * ¿¬»êÀÇ °á°ú·Î »ı¼ºµÇ´Â Æú¸®°ïÀÇ ÀÎµ¦½º¸¦ ÀúÀåÇÏ±â À§ÇØ¼­ 
-     * sIndexSegÀÇ Å©±â¸¦ ¼öÁ¤ÇÔ. 
-     * sTempIndexSeg¿¡ ÇÒ´çÇÏ´Â ºÎºĞÀ» »èÁ¦ÇÏ°í,
-     * sRingSegListÀÇ Å©±â¸¦ RingÀÇ °³¼ö¿¡ ¸Â°Ô ¼öÁ¤ÇÔ. */
+     * ì—°ì‚°ì˜ ê²°ê³¼ë¡œ ìƒì„±ë˜ëŠ” í´ë¦¬ê³¤ì˜ ì¸ë±ìŠ¤ë¥¼ ì €ì¥í•˜ê¸° ìœ„í•´ì„œ 
+     * sIndexSegì˜ í¬ê¸°ë¥¼ ìˆ˜ì •í•¨. 
+     * sTempIndexSegì— í• ë‹¹í•˜ëŠ” ë¶€ë¶„ì„ ì‚­ì œí•˜ê³ ,
+     * sRingSegListì˜ í¬ê¸°ë¥¼ Ringì˜ ê°œìˆ˜ì— ë§ê²Œ ìˆ˜ì •í•¨. */
     IDE_TEST( aQmxMem->alloc( 3 * sTotalPoint * ID_SIZEOF(Segment*),
                               (void**) & sIndexSeg )
               != IDE_SUCCESS);
@@ -14742,7 +14742,7 @@ IDE_RC stfRelation::relateAreaArea( iduMemory*             aQmxMem,
                                             (stdGeometryHeader*)sPoly2);
     }
 
-    /* ÇÑÁ¡À¸·Î ÀÌ·ç¾îÁø Æú¸®°ïµé ³¢¸® ¸ÕÀú ºñ±³¸¦ ¼öÇà */
+    /* í•œì ìœ¼ë¡œ ì´ë£¨ì–´ì§„ í´ë¦¬ê³¤ë“¤ ë¼ë¦¬ ë¨¼ì € ë¹„êµë¥¼ ìˆ˜í–‰ */
     for ( i = 0 ; i < sMax1 ; i++ )
     {
         if ( sRepPoints[i].mIsValid == ID_FALSE )
@@ -14769,11 +14769,11 @@ IDE_RC stfRelation::relateAreaArea( iduMemory*             aQmxMem,
     }
 
     /* BUG-33436
-     * sIndexSeg´Â xÁÂÇ¥ ¼øÀ¸·Î Á¤·ÄµÇ¾î ÀÖ¾î¾ß ÇÑ´Ù. */
+     * sIndexSegëŠ” xì¢Œí‘œ ìˆœìœ¼ë¡œ ì •ë ¬ë˜ì–´ ìˆì–´ì•¼ í•œë‹¤. */
     iduHeapSort::sort( sIndexSeg, sIndexSegTotal, 
                        ID_SIZEOF(Segment*), cmpSegment );
 
-    /* °¢ ´ëÇ¥Á¡ÀÌ ´Ù¸¥ Æú¸®°ïÀÇ ³»ºÎ¿¡ Æ÷ÇÔµÇ´ÂÁö ºñ±³ ¼öÇà */
+    /* ê° ëŒ€í‘œì ì´ ë‹¤ë¥¸ í´ë¦¬ê³¤ì˜ ë‚´ë¶€ì— í¬í•¨ë˜ëŠ”ì§€ ë¹„êµ ìˆ˜í–‰ */
     for ( i = 0 ; i < sMax1; i++ )
     {
         sPointArea = stdUtils::isPointInside( sIndexSeg,
@@ -14882,14 +14882,14 @@ IDE_RC stfRelation::relateAreaArea( iduMemory*             aQmxMem,
             
             if ( sCmpSeg->mStart.mX > sCurrSeg->mEnd.mX )
             {
-                /* Àß ¸ø »ÌÀº ³ğÀº Àç»ç¿ë¿¡ ³Ö¾î¾ß ÇÑ´Ù. */
+                /* ì˜ ëª» ë½‘ì€ ë†ˆì€ ì¬ì‚¬ìš©ì— ë„£ì–´ì•¼ í•œë‹¤. */
                 break;                
             }
             
             do
             {
                 /*
-                  ¿©±â¼­ intersect¿Í ¹æÇâ¿¡ ´ëÇÑ °³³äÀ» ³Ö¾î ÃÄ³¾¼ö ÀÖ´Ù.                  
+                  ì—¬ê¸°ì„œ intersectì™€ ë°©í–¥ì— ëŒ€í•œ ê°œë…ì„ ë„£ì–´ ì³ë‚¼ìˆ˜ ìˆë‹¤.                  
                  */
                 if ( ( sCurrNext != sCmpSeg ) && ( sCurrPrev != sCmpSeg ) && 
                      ( ( ( sCurrSeg->mParent->mPolygonNum < sMax1 ) && ( sCmpSeg->mParent->mPolygonNum  >= sMax1 ) ) ||
@@ -14979,18 +14979,18 @@ IDE_RC stfRelation::relateAreaArea( iduMemory*             aQmxMem,
                     break;                    
                 }
             
-                /* ³¡±îÁö Á¶»çÇÑ´Ù. */
+                /* ëê¹Œì§€ ì¡°ì‚¬í•œë‹¤. */
 
             }while( sCmpSeg->mStart.mX <= sCurrSeg->mEnd.mX );
         }
         
-        /* Àç»ç¿ëÀ» Á¤¸® ÇÑ´Ù. */
+        /* ì¬ì‚¬ìš©ì„ ì •ë¦¬ í•œë‹¤. */
         
         for ( i =0; i < sReuseSegCount ; i++)
         {
             sPQueue.enqueue( sTempIndexSeg++, &sOverflow);
             IDE_TEST_RAISE( sOverflow == ID_TRUE, ERR_ABORT_ENQUEUE_ERROR );
-            /* Overflow °Ë»ç */
+            /* Overflow ê²€ì‚¬ */
         }
 
         if ( sCurrSeg->mNext != NULL )
@@ -15100,7 +15100,7 @@ void stfRelation::setDE9MatrixValue( SChar* aMatrix,
                                      SInt   aMatrixIndex, 
                                      SInt   aOrder )
 {
-    /* ÀÌ¹Ì ¼³Á¤µÈ °ªº¸´Ù Å« °æ¿ì¿¡¸¸ º¯°æÇÑ´Ù. */
+    /* ì´ë¯¸ ì„¤ì •ëœ ê°’ë³´ë‹¤ í° ê²½ìš°ì—ë§Œ ë³€ê²½í•œë‹¤. */
     if ( aMatrix[aMatrixIndex] < aOrder )
     {
         aMatrix[aMatrixIndex] = aOrder;

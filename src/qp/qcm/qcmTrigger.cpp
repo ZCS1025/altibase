@@ -22,11 +22,11 @@
  *
  *     [PROJ-1359] Trigger
  *
- *     Trigger∏¶ ¿ß«— Meta π◊ Cache ∞¸∏Æ∏¶ ¿ß«— «‘ºˆ
+ *     TriggerÎ•º ÏúÑÌïú Meta Î∞è Cache Í¥ÄÎ¶¨Î•º ÏúÑÌïú Ìï®Ïàò
  *
- * øÎæÓ º≥∏Ì :
+ * Ïö©Ïñ¥ ÏÑ§Î™Ö :
  *
- * æ‡æÓ :
+ * ÏïΩÏñ¥ :
  *
  **********************************************************************/
 
@@ -63,11 +63,11 @@ qcmTrigger::getTriggerOID( qcStatement    * aStatement,
 /***********************************************************************
  *
  * Description :
- *    «ÿ¥Á Trigger¿« ID∏¶ æÚ¿Ω.
+ *    Ìï¥Îãπ TriggerÏùò IDÎ•º ÏñªÏùå.
  *
  * Implementation :
  *
- *    ¥Ÿ¿Ω¿« ¡˙¿«∏¶ ≈Î«ÿ TRIGGER_ID∏¶ »πµÊ«‘.
+ *    Îã§ÏùåÏùò ÏßàÏùòÎ•º ÌÜµÌï¥ TRIGGER_IDÎ•º ÌöçÎìùÌï®.
  *
  *    SELECT TRIGGER_ID FROM SYSTEM_.SYS_TRIGGERS_
  *    WHERE USER_ID = aUserID AND TRIGGER_NAME = aTriggerName;
@@ -93,7 +93,7 @@ qcmTrigger::getTriggerOID( qcStatement    * aStatement,
     mtcColumn           * sTableIDMtcColumn;
 
     //-------------------------------------------
-    // ¿˚«’º∫ ∞ÀªÁ
+    // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
     //-------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -104,19 +104,19 @@ qcmTrigger::getTriggerOID( qcStatement    * aStatement,
 
     //-------------------------------------------
     // WHERE USER_ID = aUserID AND TRIGGER_NAME = aTriggerName;
-    // ∞Àªˆ¿ª ¿ß«— Key Range ª˝º∫
+    // Í≤ÄÏÉâÏùÑ ÏúÑÌïú Key Range ÏÉùÏÑ±
     //-------------------------------------------
 
-    // SYS_TRIGGERS_ meta_table¿« column¡§∫∏∏¶ »πµÊ
+    // SYS_TRIGGERS_ meta_tableÏùò columnÏ†ïÎ≥¥Î•º ÌöçÎìù
 
-    // C Type¿« ∞™¿ª DB Type¿∏∑Œ ∫Ø∞Ê
+    // C TypeÏùò Í∞íÏùÑ DB TypeÏúºÎ°ú Î≥ÄÍ≤Ω
     sUserID = (mtdIntegerType) aUserID;
     qtc::setVarcharValue( sTriggerName,
                           NULL,
                           aTriggerName.stmtText + aTriggerName.offset,
                           aTriggerName.size );
 
-    // µŒ ∞≥¿« Column¿ª ¿ÃøÎ«— Key Range ª˝º∫
+    // Îëê Í∞úÏùò ColumnÏùÑ Ïù¥Ïö©Ìïú Key Range ÏÉùÏÑ±
     IDE_TEST( smiGetTableColumns( gQcmTriggers,
                                   QCM_TRIGGERS_USER_ID,
                                   (const smiColumn**)&sFirstMtcColumn )
@@ -137,21 +137,21 @@ qcmTrigger::getTriggerOID( qcStatement    * aStatement,
         & sRange );
 
     //-------------------------------------------
-    // Data ∞Àªˆ
+    // Data Í≤ÄÏÉâ
     //-------------------------------------------
 
-    // Cursor¿« √ ±‚»≠
+    // CursorÏùò Ï¥àÍ∏∞Ìôî
     sCursor.initialize();
 
     SMI_CURSOR_PROP_INIT_FOR_META_INDEX_SCAN(&sCursorProperty, NULL);
 
-    // INDEX (USER_ID, TRIGGER_NAME)¿ª ¿ÃøÎ«— Cursor Open
+    // INDEX (USER_ID, TRIGGER_NAME)ÏùÑ Ïù¥Ïö©Ìïú Cursor Open
     IDE_TEST(
         sCursor.open( QC_SMI_STMT( aStatement ),     // smiStatement
                       gQcmTriggers,                  // Table Handle
                       gQcmTriggersIndex[QCM_TRIGGERS_USERID_TRIGGERNAME_INDEX],
                       smiGetRowSCN( gQcmTriggers ),  // Table SCN
-                      NULL,                          // Update Column¡§∫∏
+                      NULL,                          // Update ColumnÏ†ïÎ≥¥
                       & sRange,                      // Key Range
                       smiGetDefaultKeyRange(),       // Key Filter
                       smiGetDefaultFilter(),         // Filter
@@ -163,19 +163,19 @@ qcmTrigger::getTriggerOID( qcStatement    * aStatement,
     sIsCursorOpen = ID_TRUE;
 
     //-------------------------------------------
-    // Trigger ID¿« »πµÊ
+    // Trigger IDÏùò ÌöçÎìù
     //-------------------------------------------
 
-    // Data∏¶ Read«‘.
+    // DataÎ•º ReadÌï®.
     IDE_TEST( sCursor.beforeFirst() != IDE_SUCCESS );
     IDE_TEST( sCursor.readRow( (const void **) & sRow, & sRID, SMI_FIND_NEXT )
               != IDE_SUCCESS );
 
     if ( sRow != NULL )
     {
-        // Trigger ID∏¶ æÚ¿Ω
+        // Trigger IDÎ•º ÏñªÏùå
         // To Fix PR-10648
-        // smOID ¿« »πµÊ πÊπ˝¿Ã ¿ﬂ∏¯µ .
+        // smOID Ïùò ÌöçÎìù Î∞©Î≤ïÏù¥ ÏûòÎ™ªÎê®.
         // *aTriggerOID = *(smOID *)
         //    ( (UChar*)sRow+sColumn[QCM_TRIGGERS_TRIGGER_OID].column.offset );
         IDE_TEST( smiGetTableColumns( gQcmTriggers,
@@ -195,7 +195,7 @@ qcmTrigger::getTriggerOID( qcStatement    * aStatement,
     }
     else
     {
-        // µø¿œ«— Trigger∞° æ¯¿Ω
+        // ÎèôÏùºÌïú TriggerÍ∞Ä ÏóÜÏùå
         *aIsExist = ID_FALSE;
     }
 
@@ -224,14 +224,14 @@ qcmTrigger::checkTriggerCycle( qcStatement * aStatement,
  *
  * Description :
  *
- *    Meta Cacheø°¿« ø¨º”¿˚ ¡¢±Ÿ¿∫ µøΩ√º∫ ¡¶æÓ∏¶ « ø‰∑Œ «œ∞‘ µ«π«∑Œ
- *    Action Body∞° ¡¢±Ÿ«œ¥¬ Table ¡§∫∏∏¶ ±‚∑œ«œ∞Ì ¿÷¥¬
- *    SYS_TRIGGER_DML_TABLES_ ∏¶ ¿ÃøÎ«œø© Cycle¿ª ∞ÀªÁ«—¥Ÿ.
+ *    Meta CacheÏóêÏùò Ïó∞ÏÜçÏ†Å Ï†ëÍ∑ºÏùÄ ÎèôÏãúÏÑ± Ï†úÏñ¥Î•º ÌïÑÏöîÎ°ú ÌïòÍ≤å ÎêòÎØÄÎ°ú
+ *    Action BodyÍ∞Ä Ï†ëÍ∑ºÌïòÎäî Table Ï†ïÎ≥¥Î•º Í∏∞Î°ùÌïòÍ≥† ÏûàÎäî
+ *    SYS_TRIGGER_DML_TABLES_ Î•º Ïù¥Ïö©ÌïòÏó¨ CycleÏùÑ Í≤ÄÏÇ¨ÌïúÎã§.
  *
  * Implementation :
  *
- *    aTableID¿« Trigger∞° ¡¢±Ÿ«œ¥¬ Table¡ﬂ aCycleTableID∞°
- *    ¡∏¿Á«“ ∞ÊøÏ Cycle¿Ã ¡∏¿Á«‘.
+ *    aTableIDÏùò TriggerÍ∞Ä Ï†ëÍ∑ºÌïòÎäî TableÏ§ë aCycleTableIDÍ∞Ä
+ *    Ï°¥Ïû¨Ìï† Í≤ΩÏö∞ CycleÏù¥ Ï°¥Ïû¨Ìï®.
  *
  *    SELECT DML_TABLE_ID FROM SYS_TRIGGER_DML_TABLES_
  *           WHERE TABLE_ID = aTableID;
@@ -251,29 +251,29 @@ qcmTrigger::checkTriggerCycle( qcStatement * aStatement,
     mtcColumn           * sFirstMtcColumn;
 
     //---------------------------------------
-    // ¿˚«’º∫ ∞ÀªÁ
+    // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
     //---------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
 
     //---------------------------------------
-    // «ÿ¥Á Table¿Ã º“¿Ø«— Trigger∞° ¡¢±Ÿ«œ¥¬ TABLE¡ﬂø°
-    // Subject Table¿Ã ¡∏¿Á«œ¥¬ ¡ˆ∏¶ ∞ÀªÁ«—¥Ÿ.
+    // Ìï¥Îãπ TableÏù¥ ÏÜåÏú†Ìïú TriggerÍ∞Ä Ï†ëÍ∑ºÌïòÎäî TABLEÏ§ëÏóê
+    // Subject TableÏù¥ Ï°¥Ïû¨ÌïòÎäî ÏßÄÎ•º Í≤ÄÏÇ¨ÌïúÎã§.
     //---------------------------------------
 
     sIsCursorOpen = ID_FALSE;
 
     //-------------------------------------------
     // WHERE TABLE_ID = aTableID;
-    // ∞Àªˆ¿ª ¿ß«— Key Range ª˝º∫
+    // Í≤ÄÏÉâÏùÑ ÏúÑÌïú Key Range ÏÉùÏÑ±
     //-------------------------------------------
 
 
 
-    // C Type¿« ∞™¿ª DB Type¿∏∑Œ ∫Ø∞Ê
+    // C TypeÏùò Í∞íÏùÑ DB TypeÏúºÎ°ú Î≥ÄÍ≤Ω
     sTableID = (mtdIntegerType) aTableID;
 
-    // «œ≥™¿« Column¿ª ¿ÃøÎ«— Key Range ª˝º∫
+    // ÌïòÎÇòÏùò ColumnÏùÑ Ïù¥Ïö©Ìïú Key Range ÏÉùÏÑ±
     IDE_TEST( smiGetTableColumns( gQcmTriggerDmlTables,
                                   QCM_TRIGGER_DML_TABLES_TABLE_ID,
                                   (const smiColumn**)&sFirstMtcColumn )
@@ -286,21 +286,21 @@ qcmTrigger::checkTriggerCycle( qcStatement * aStatement,
         & sRange );
 
     //-------------------------------------------
-    // Data ∞Àªˆ
+    // Data Í≤ÄÏÉâ
     //-------------------------------------------
 
-    // Cursor¿« √ ±‚»≠
+    // CursorÏùò Ï¥àÍ∏∞Ìôî
     sCursor.initialize();
 
     SMI_CURSOR_PROP_INIT_FOR_META_INDEX_SCAN(&sCursorProperty, NULL);
 
-    // INDEX (USER_ID, TRIGGER_NAME)¿ª ¿ÃøÎ«— Cursor Open
+    // INDEX (USER_ID, TRIGGER_NAME)ÏùÑ Ïù¥Ïö©Ìïú Cursor Open
     IDE_TEST( sCursor.open(
                   QC_SMI_STMT( aStatement ),  // smiStatement
                   gQcmTriggerDmlTables,          // Table Handle
                   gQcmTriggerDmlTablesIndex[QCM_TRIGGER_DML_TABLES_TABLE_ID_INDEX],
                   smiGetRowSCN( gQcmTriggerDmlTables ),  // Table SCN
-                  NULL,                          // Update Column¡§∫∏
+                  NULL,                          // Update ColumnÏ†ïÎ≥¥
                   & sRange,                      // Key Range
                   smiGetDefaultKeyRange(),       // Key Filter
                   smiGetDefaultFilter(),         // Filter
@@ -315,11 +315,11 @@ qcmTrigger::checkTriggerCycle( qcStatement * aStatement,
     //
     //-------------------------------------------
 
-    // Data∏¶ Read«‘.
+    // DataÎ•º ReadÌï®.
     IDE_TEST( sCursor.beforeFirst() != IDE_SUCCESS );
     IDE_TEST( sCursor.readRow( (const void **) & sRow, & sRID, SMI_FIND_NEXT )
               != IDE_SUCCESS );
-    // SYS_TRIGGER_DML_TABLES_ meta_table¿« column¡§∫∏∏¶ »πµÊ
+    // SYS_TRIGGER_DML_TABLES_ meta_tableÏùò columnÏ†ïÎ≥¥Î•º ÌöçÎìù
     IDE_TEST( smiGetTableColumns( gQcmTriggerDmlTables,
                                   QCM_TRIGGER_DML_TABLES_DML_TABLE_ID,
                                   (const smiColumn**)&sDmlTableIDCol )
@@ -327,20 +327,20 @@ qcmTrigger::checkTriggerCycle( qcStatement * aStatement,
 
     while ( sRow != NULL )
     {
-        // DML_TABLE_ID ∏¶ æÚ¿Ω
+        // DML_TABLE_ID Î•º ÏñªÏùå
         sDMLTableID = *(SInt *)
             ( (UChar*)sRow +
               sDmlTableIDCol->column.offset );
 
-        // Cycle¿« ¡∏¿Á ø©∫Œ ∞ÀªÁ
+        // CycleÏùò Ï°¥Ïû¨ Ïó¨Î∂Ä Í≤ÄÏÇ¨
         IDE_TEST_RAISE( (UInt)sDMLTableID == aCycleTableID,
                         err_cycle_detected );
 
-        // æÚ¿∫ DML_TABLE_ID∑Œ∫Œ≈Õ √ﬂ∞°¿˚¿Œ Cycle¿Ã ¡∏¿Á«œ¥¬ ¡ˆ∏¶ ∞ÀªÁ
+        // ÏñªÏùÄ DML_TABLE_IDÎ°úÎ∂ÄÌÑ∞ Ï∂îÍ∞ÄÏ†ÅÏù∏ CycleÏù¥ Ï°¥Ïû¨ÌïòÎäî ÏßÄÎ•º Í≤ÄÏÇ¨
         //IDE_TEST ( checkTriggerCycle( aStatement, sDMLTableID, aCycleTableID )
         //           != IDE_SUCCESS );
 
-        // ¥Ÿ¿Ω Record Read
+        // Îã§Ïùå Record Read
         IDE_TEST( sCursor.readRow( (const void **) & sRow,
                                    & sRID,
                                    SMI_FIND_NEXT )
@@ -376,34 +376,34 @@ qcmTrigger::addMetaInfo( qcStatement * aStatement,
  *
  * Description :
  *
- *    Trigger ª˝º∫∞˙ ∞¸∑√µ» ∏µÁ Meta Tableø° ¡§∫∏∏¶ ª¿‘«—¥Ÿ.
+ *    Trigger ÏÉùÏÑ±Í≥º Í¥ÄÎ†®Îêú Î™®Îì† Meta TableÏóê Ï†ïÎ≥¥Î•º ÏÇΩÏûÖÌïúÎã§.
  *
  * Implementation :
  *
  *
  ***********************************************************************/
 
-    // SYS_TRIGGERS_ ∏¶ ¿ß«— ∞¸∏Æ ∫Øºˆ
+    // SYS_TRIGGERS_ Î•º ÏúÑÌïú Í¥ÄÎ¶¨ Î≥ÄÏàò
     smOID           sTriggerOID;
     SInt            sSubStringCnt;
     qdnTriggerRef * sRef;
     SInt            sRefRowCnt;
 
-    // SYS_TRIGGER_UPDATE_COLUMNS_∏¶ ¿ß«— ∞¸∏Æ ∫Øºˆ
+    // SYS_TRIGGER_UPDATE_COLUMNS_Î•º ÏúÑÌïú Í¥ÄÎ¶¨ Î≥ÄÏàò
     SInt          sUptColumnCnt;
     qcmColumn *   sUptColumn;
 
-    // SYS_TRIGGER_STRINGS_ ∏¶ ¿ß«— ∞¸∏Æ ∫Øºˆ
+    // SYS_TRIGGER_STRINGS_ Î•º ÏúÑÌïú Í¥ÄÎ¶¨ Î≥ÄÏàò
     SChar         sSubString[QCM_TRIGGER_SUBSTRING_LEN * 2 + 2];
     SInt          sCurrPos;
     SInt          sCurrLen;
     SInt          sSeqNo;
 
-    // SYS_TRIGGER_DML_TABLES_ ∏¶ ¿ß«— ∞¸∏Æ ∫Øºˆ
+    // SYS_TRIGGER_DML_TABLES_ Î•º ÏúÑÌïú Í¥ÄÎ¶¨ Î≥ÄÏàò
     qsModifiedTable  * sCheckTable;
     qsModifiedTable  * sSameTable;
 
-    // ∞¯≈Î ¡§∫∏
+    // Í≥µÌÜµ Ï†ïÎ≥¥
     vSLong         sRowCnt;
     SChar        * sBuffer;
     qdnCreateTriggerParseTree * sParseTree;
@@ -418,13 +418,13 @@ qcmTrigger::addMetaInfo( qcStatement * aStatement,
     UInt            sBufferSize = 0;
 
     //---------------------------------------
-    // ¿˚«’º∫ ∞ÀªÁ
+    // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
     //---------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
 
     //---------------------------------------
-    // String¿ª ¿ß«— ∞¯∞£ »πµÊ
+    // StringÏùÑ ÏúÑÌïú Í≥µÍ∞Ñ ÌöçÎìù
     //---------------------------------------
 
     IDU_LIMITPOINT("qcmTrigger::addMetaInfo::malloc1");
@@ -433,7 +433,7 @@ qcmTrigger::addMetaInfo( qcStatement * aStatement,
               != IDE_SUCCESS );
 
     //---------------------------------------
-    // ±‚∫ª ¡§∫∏¿« √ﬂ√‚
+    // Í∏∞Î≥∏ Ï†ïÎ≥¥Ïùò Ï∂îÏ∂ú
     //---------------------------------------
 
     sParseTree = (qdnCreateTriggerParseTree *) aStatement->myPlan->parseTree;
@@ -453,7 +453,7 @@ qcmTrigger::addMetaInfo( qcStatement * aStatement,
           sRef = sRef->next, sRefRowCnt++ ) ;
 
     //---------------------------------------
-    // SYS_TRIGGERS_ ø° ¡§∫∏ ª¿‘
+    // SYS_TRIGGERS_ Ïóê Ï†ïÎ≥¥ ÏÇΩÏûÖ
     //---------------------------------------
 
     idlOS::snprintf( sBuffer, QD_MAX_SQL_LENGTH,
@@ -496,14 +496,14 @@ qcmTrigger::addMetaInfo( qcStatement * aStatement,
     IDE_DASSERT( sRowCnt == 1 );
 
     //---------------------------------------
-    // SYS_TRIGGER_STRINGS ø° ¡§∫∏ ª¿‘
+    // SYS_TRIGGER_STRINGS Ïóê Ï†ïÎ≥¥ ÏÇΩÏûÖ
     //---------------------------------------
 
     sNcharList = sParseTree->ncharList;
 
     // PROJ-1579 NCHAR
-    // ∏ﬁ≈∏≈◊¿Ã∫Ìø° ¿˙¿Â«œ±‚ ¿ß«ÿ Ω∫∆Æ∏µ¿ª ∫–«“«œ±‚ ¿¸ø°
-    // N ≈∏¿‘¿Ã ¿÷¥¬ ∞ÊøÏ U ≈∏¿‘¿∏∑Œ ∫Ø»Ø«—¥Ÿ.
+    // Î©îÌÉÄÌÖåÏù¥Î∏îÏóê Ï†ÄÏû•ÌïòÍ∏∞ ÏúÑÌï¥ Ïä§Ìä∏ÎßÅÏùÑ Î∂ÑÌï†ÌïòÍ∏∞ Ï†ÑÏóê
+    // N ÌÉÄÏûÖÏù¥ ÏûàÎäî Í≤ΩÏö∞ U ÌÉÄÏûÖÏúºÎ°ú Î≥ÄÌôòÌïúÎã§.
     if( sNcharList != NULL )
     {
         for( sTempNamePosList = sNcharList;
@@ -512,14 +512,14 @@ qcmTrigger::addMetaInfo( qcStatement * aStatement,
         {
             sNamePos = sTempNamePosList->namePos;
 
-            // U ≈∏¿‘¿∏∑Œ ∫Ø»Ø«œ∏Èº≠ ¥√æÓ≥™¥¬ ªÁ¿Ã¡Ó ∞ËªÍ
-            // N'æ»' => U'\C548' ¿∏∑Œ ∫Ø»Øµ»¥Ÿ∏È
-            // 'æ»'¿« ƒ≥∏Ø≈Õ º¬¿Ã KSC5601¿Ã∂Û∞Ì ∞°¡§«ﬂ¿ª ∂ß,
-            // single-quoteæ»¿« πÆ¿⁄¥¬ 2 byte -> 5byte∑Œ ∫Ø∞Êµ»¥Ÿ.
-            // ¡Ô, 1.5πË∞° ¥√æÓ≥™¥¬ ∞Õ¿Ã¥Ÿ.
-            //(¿¸√º ªÁ¿Ã¡Ó∞° æ∆¥œ∂Û ¡ı∞°«œ¥¬ ªÁ¿Ã¡Ó∏∏ ∞ËªÍ«œ¥¬ ∞Õ¿”)
-            // «œ¡ˆ∏∏, æÓ∂≤ øπø‹¿˚¿Œ ƒ≥∏Ø≈Õ º¬¿Ã µÈæÓø√¡ˆ ∏∏£π«∑Œ
-            // * 2∑Œ √Ê∫–»˜ ¿‚¥¬¥Ÿ.
+            // U ÌÉÄÏûÖÏúºÎ°ú Î≥ÄÌôòÌïòÎ©¥ÏÑú ÎäòÏñ¥ÎÇòÎäî ÏÇ¨Ïù¥Ï¶à Í≥ÑÏÇ∞
+            // N'Ïïà' => U'\C548' ÏúºÎ°ú Î≥ÄÌôòÎêúÎã§Î©¥
+            // 'Ïïà'Ïùò Ï∫êÎ¶≠ÌÑ∞ ÏÖãÏù¥ KSC5601Ïù¥ÎùºÍ≥† Í∞ÄÏ†ïÌñàÏùÑ Îïå,
+            // single-quoteÏïàÏùò Î¨∏ÏûêÎäî 2 byte -> 5byteÎ°ú Î≥ÄÍ≤ΩÎêúÎã§.
+            // Ï¶â, 1.5Î∞∞Í∞Ä ÎäòÏñ¥ÎÇòÎäî Í≤ÉÏù¥Îã§.
+            //(Ï†ÑÏ≤¥ ÏÇ¨Ïù¥Ï¶àÍ∞Ä ÏïÑÎãàÎùº Ï¶ùÍ∞ÄÌïòÎäî ÏÇ¨Ïù¥Ï¶àÎßå Í≥ÑÏÇ∞ÌïòÎäî Í≤ÉÏûÑ)
+            // ÌïòÏßÄÎßå, Ïñ¥Îñ§ ÏòàÏô∏Ï†ÅÏù∏ Ï∫êÎ¶≠ÌÑ∞ ÏÖãÏù¥ Îì§Ïñ¥Ïò¨ÏßÄ Î™®Î•¥ÎØÄÎ°ú
+            // * 2Î°ú Ï∂©Î∂ÑÌûà Ïû°ÎäîÎã§.
             sAddSize += (sNamePos.size - 3) * 2;
         }
 
@@ -560,8 +560,8 @@ qcmTrigger::addMetaInfo( qcStatement * aStatement,
             sCurrLen = sStmtBufferLen - sCurrPos;
         }
 
-        // ['] øÕ ∞∞¿∫ πÆ¿⁄∏¶ √≥∏Æ«œ±‚ ¿ß«œø© [\'] øÕ ∞∞¿∫
-        // String¿∏∑Œ ∫Ø»Ø«œø© ∫πªÁ«—¥Ÿ.
+        // ['] ÏôÄ Í∞ôÏùÄ Î¨∏ÏûêÎ•º Ï≤òÎ¶¨ÌïòÍ∏∞ ÏúÑÌïòÏó¨ [\'] ÏôÄ Í∞ôÏùÄ
+        // StringÏúºÎ°ú Î≥ÄÌôòÌïòÏó¨ Î≥µÏÇ¨ÌïúÎã§.
         IDE_TEST(
             qcmProc::prsCopyStrDupAppo ( sSubString,
                                          sStmtBuffer + sCurrPos,
@@ -590,7 +590,7 @@ qcmTrigger::addMetaInfo( qcStatement * aStatement,
     }
 
     //---------------------------------------
-    // SYS_TRIGGER_UPDATE_COLUMNS ø° ¡§∫∏ ª¿‘
+    // SYS_TRIGGER_UPDATE_COLUMNS Ïóê Ï†ïÎ≥¥ ÏÇΩÏûÖ
     //---------------------------------------
 
     for ( sUptColumn = sParseTree->triggerEvent.eventTypeList->updateColumns;
@@ -615,7 +615,7 @@ qcmTrigger::addMetaInfo( qcStatement * aStatement,
     }
 
     //---------------------------------------
-    // SYS_TRIGGER_DML_TABLES ø° ¡§∫∏ ª¿‘
+    // SYS_TRIGGER_DML_TABLES Ïóê Ï†ïÎ≥¥ ÏÇΩÏûÖ
     //---------------------------------------
 
     for ( sCheckTable = aStatement->spvEnv->modifiedTableList;
@@ -628,7 +628,7 @@ qcmTrigger::addMetaInfo( qcStatement * aStatement,
         {
             if ( sSameTable->tableID == sCheckTable->tableID )
             {
-                // µø¿œ«— Table¿Ã ¿ÃπÃ ª¿‘µ«æ˙¿Ω.
+                // ÎèôÏùºÌïú TableÏù¥ Ïù¥ÎØ∏ ÏÇΩÏûÖÎêòÏóàÏùå.
                 break;
             }
             else
@@ -659,7 +659,7 @@ qcmTrigger::addMetaInfo( qcStatement * aStatement,
         }
         else
         {
-            // «ÿ¥Á DML_TABLE_ID∞° ª¿‘µ«æ˙¿Ω.
+            // Ìï¥Îãπ DML_TABLE_IDÍ∞Ä ÏÇΩÏûÖÎêòÏóàÏùå.
             // Nothing To Do
         }
     }
@@ -680,7 +680,7 @@ qcmTrigger::removeMetaInfo( qcStatement * aStatement,
  *
  * Description :
  *
- *    Trigger ª˝º∫∞˙ ∞¸∑√µ» ∏µÁ Meta Table ¡§∫∏∏¶ ªË¡¶«—¥Ÿ.
+ *    Trigger ÏÉùÏÑ±Í≥º Í¥ÄÎ†®Îêú Î™®Îì† Meta Table Ï†ïÎ≥¥Î•º ÏÇ≠Ï†úÌïúÎã§.
  *
  * Implementation :
  *
@@ -691,13 +691,13 @@ qcmTrigger::removeMetaInfo( qcStatement * aStatement,
     SChar       * sBuffer;
 
     //---------------------------------------
-    // ¿˚«’º∫ ∞ÀªÁ
+    // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
     //---------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
 
     //---------------------------------------
-    // String¿ª ¿ß«— ∞¯∞£ »πµÊ
+    // StringÏùÑ ÏúÑÌïú Í≥µÍ∞Ñ ÌöçÎìù
     //---------------------------------------
 
     IDU_LIMITPOINT("qcmTrigger::removeMetaInfo::malloc");
@@ -706,7 +706,7 @@ qcmTrigger::removeMetaInfo( qcStatement * aStatement,
               != IDE_SUCCESS );
 
     //---------------------------------------
-    // SYS_TRIGGERS_ ø°º≠ ¡§∫∏ ªË¡¶
+    // SYS_TRIGGERS_ ÏóêÏÑú Ï†ïÎ≥¥ ÏÇ≠Ï†ú
     // DELETE FROM SYS_TRIGGERS_ WHERE TRIGGER_OID = triggerOID;
     //---------------------------------------
 
@@ -723,7 +723,7 @@ qcmTrigger::removeMetaInfo( qcStatement * aStatement,
     IDE_DASSERT( sRowCnt == 1 );
 
     //---------------------------------------
-    // SYS_TRIGGER_STRINGS_ ø°º≠ ¡§∫∏ ªË¡¶
+    // SYS_TRIGGER_STRINGS_ ÏóêÏÑú Ï†ïÎ≥¥ ÏÇ≠Ï†ú
     // DELETE FROM SYS_TRIGGER_STRINGS_ WHERE TRIGGER_OID = triggerOID;
     //---------------------------------------
 
@@ -740,7 +740,7 @@ qcmTrigger::removeMetaInfo( qcStatement * aStatement,
     IDE_DASSERT( sRowCnt > 0 );
 
     //---------------------------------------
-    // SYS_TRIGGER_UPDATE_COLUMNS_ ø°º≠ ¡§∫∏ ªË¡¶
+    // SYS_TRIGGER_UPDATE_COLUMNS_ ÏóêÏÑú Ï†ïÎ≥¥ ÏÇ≠Ï†ú
     //---------------------------------------
 
     idlOS::snprintf( sBuffer, QD_MAX_SQL_LENGTH,
@@ -755,7 +755,7 @@ qcmTrigger::removeMetaInfo( qcStatement * aStatement,
               != IDE_SUCCESS );
 
     //---------------------------------------
-    // SYS_TRIGGER_DML_TABLES ø° ¡§∫∏ ª¿‘
+    // SYS_TRIGGER_DML_TABLES Ïóê Ï†ïÎ≥¥ ÏÇΩÏûÖ
     //---------------------------------------
 
     idlOS::snprintf( sBuffer, QD_MAX_SQL_LENGTH,
@@ -785,8 +785,8 @@ qcmTrigger::getTriggerMetaCache( smiStatement * aSmiStmt,
  *
  * Description :
  *
- *    Table Meta Cacheø°
- *    Trigger Meta Table ¡§∫∏∏¶ ¿–æÓ Trigger Cache ¡§∫∏∏¶ ª¿‘«—¥Ÿ.
+ *    Table Meta CacheÏóê
+ *    Trigger Meta Table Ï†ïÎ≥¥Î•º ÏùΩÏñ¥ Trigger Cache Ï†ïÎ≥¥Î•º ÏÇΩÏûÖÌïúÎã§.
  *
  * Implementation :
  *
@@ -821,7 +821,7 @@ qcmTrigger::getTriggerMetaCache( smiStatement * aSmiStmt,
     smiCursorProperties     sCursorProperty;
 
     //---------------------------------------
-    // ¿˚«’º∫ ∞ÀªÁ
+    // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
     //---------------------------------------
 
     IDE_DASSERT( aSmiStmt != NULL );
@@ -830,7 +830,7 @@ qcmTrigger::getTriggerMetaCache( smiStatement * aSmiStmt,
     sIsCursorOpen = ID_FALSE;
 
     //---------------------------------------
-    // Trigger ∞≥ºˆ¿« »πµÊ
+    // Trigger Í∞úÏàòÏùò ÌöçÎìù
     // SELECT COUNT(*)
     //   FROM SYS_TRIGGERS_
     //  WHERE TABLE_ID = aTableID
@@ -852,19 +852,19 @@ qcmTrigger::getTriggerMetaCache( smiStatement * aSmiStmt,
 
     //-------------------------------------------
     // WHERE TABLE_ID = aTableID;
-    // ∞Àªˆ¿ª ¿ß«— Key Range ª˝º∫
+    // Í≤ÄÏÉâÏùÑ ÏúÑÌïú Key Range ÏÉùÏÑ±
     //-------------------------------------------
 
-    // SYS_TRIGGERS_ meta_table¿« column¡§∫∏∏¶ »πµÊ
+    // SYS_TRIGGERS_ meta_tableÏùò columnÏ†ïÎ≥¥Î•º ÌöçÎìù
     IDE_TEST( smiGetTableColumns( gQcmTriggers,
                                   QCM_TRIGGERS_TABLE_ID,
                                   (const smiColumn**)&sTableIDCol )
               != IDE_SUCCESS );
 
-    // C Type¿« ∞™¿ª DB Type¿∏∑Œ ∫Ø∞Ê
+    // C TypeÏùò Í∞íÏùÑ DB TypeÏúºÎ°ú Î≥ÄÍ≤Ω
     sTableID = (mtdIntegerType) aTableID;
 
-    // «œ≥™¿« Column¿ª ¿ÃøÎ«— Key Range ª˝º∫
+    // ÌïòÎÇòÏùò ColumnÏùÑ Ïù¥Ïö©Ìïú Key Range ÏÉùÏÑ±
     qcm::makeMetaRangeSingleColumn(
         & sFirstMetaRange,
         (const mtcColumn*)sTableIDCol,
@@ -872,21 +872,21 @@ qcmTrigger::getTriggerMetaCache( smiStatement * aSmiStmt,
         & sRange );
 
     //-------------------------------------------
-    // COUNT(*) ∞Àªˆ
+    // COUNT(*) Í≤ÄÏÉâ
     //-------------------------------------------
 
-    // Cursor¿« √ ±‚»≠
+    // CursorÏùò Ï¥àÍ∏∞Ìôî
     sCursor.initialize();
 
     SMI_CURSOR_PROP_INIT_FOR_META_INDEX_SCAN(&sCursorProperty, NULL);
 
-    // INDEX (TABLE_ID)¿ª ¿ÃøÎ«— Cursor Open
+    // INDEX (TABLE_ID)ÏùÑ Ïù¥Ïö©Ìïú Cursor Open
     IDE_TEST(
         sCursor.open( aSmiStmt,  // smiStatement
                       gQcmTriggers,                  // Table Handle
                       gQcmTriggersIndex[QCM_TRIGGERS_TABLEID_TRIGGEROID_INDEX],
                       smiGetRowSCN( gQcmTriggers ),  // Table SCN
-                      NULL,                          // Update Column¡§∫∏
+                      NULL,                          // Update ColumnÏ†ïÎ≥¥
                       & sRange,                      // Key Range
                       smiGetDefaultKeyRange(),       // Key Filter
                       smiGetDefaultFilter(),         // Filter
@@ -897,7 +897,7 @@ qcmTrigger::getTriggerMetaCache( smiStatement * aSmiStmt,
 
     sIsCursorOpen = ID_TRUE;
 
-    // Data∏¶ Read«‘.
+    // DataÎ•º ReadÌï®.
     IDE_TEST( sCursor.beforeFirst() != IDE_SUCCESS );
     IDE_TEST( sCursor.readRow( & sRow, & sRID, SMI_FIND_NEXT )
               != IDE_SUCCESS );
@@ -910,12 +910,12 @@ qcmTrigger::getTriggerMetaCache( smiStatement * aSmiStmt,
     }
 
     //-------------------------------------------
-    // «ÿ¥Á ∞≥ºˆ∏∏≈≠ Table Trigger Cache ¡§∫∏∏¶ ±∏√‡
+    // Ìï¥Îãπ Í∞úÏàòÎßåÌÅº Table Trigger Cache Ï†ïÎ≥¥Î•º Íµ¨Ï∂ï
     //-------------------------------------------
 
     if ( aTableInfo->triggerCount > 0 )
     {
-        // Table Trigger Cache∏¶ ¿ß«— ∞¯∞£ «“¥Á
+        // Table Trigger CacheÎ•º ÏúÑÌïú Í≥µÍ∞Ñ Ìï†Îãπ
         IDU_LIMITPOINT("qcmTrigger::getTriggerMetaCache::malloc");
         IDE_TEST(iduMemMgr::malloc( IDU_MEM_QCM,
                                     ID_SIZEOF(qcmTriggerInfo) *
@@ -974,7 +974,7 @@ qcmTrigger::getTriggerMetaCache( smiStatement * aSmiStmt,
         while (sRow != NULL)
         {
             //-------------------------------------------
-            // ∞≥∫∞ Trigger Cache ¡§∫∏∏¶ ±∏√‡
+            // Í∞úÎ≥Ñ Trigger Cache Ï†ïÎ≥¥Î•º Íµ¨Ï∂ï
             //-------------------------------------------
 
             // SELECT USER_ID, USER_NAME, TRIGGER_OID, TRIGGER_NAME
@@ -998,7 +998,7 @@ qcmTrigger::getTriggerMetaCache( smiStatement * aSmiStmt,
 
             // TRIGGER_OID
             // To Fix PR-10648
-            // (ULong *)¿ª ∏ÌΩ√¿˚¿∏∑Œ (smOID*)∑Œ ∫Ø∞Ê«ÿº≠¥¬ æ»µ .
+            // (ULong *)ÏùÑ Î™ÖÏãúÏ†ÅÏúºÎ°ú (smOID*)Î°ú Î≥ÄÍ≤ΩÌï¥ÏÑúÎäî ÏïàÎê®.
             // aTableInfo->triggerInfo[i].triggerOID = *(smOID*)
             aTableInfo->triggerInfo[i].triggerOID = (smOID) * (ULong*)
                 ( (UChar*)sRow +
@@ -1098,8 +1098,8 @@ IDE_RC qcmTrigger::copyTriggerMetaInfo( qcStatement * aStatement,
  *      SYS_TRIGGERS_,
  *      SYS_TRIGGER_STRINGS_,
  *      SYS_TRIGGER_UPDATE_COLUMNS_,
- *      SYS_TRIGGER_DML_TABLES_∏¶
- *      Trigger ¥‹¿ß∑Œ ∫πªÁ«—¥Ÿ.
+ *      SYS_TRIGGER_DML_TABLES_Î•º
+ *      Trigger Îã®ÏúÑÎ°ú Î≥µÏÇ¨ÌïúÎã§.
  *
  * Implementation :
  *
@@ -1219,7 +1219,7 @@ IDE_RC qcmTrigger::updateTriggerStringsMetaInfo( qcStatement * aStatement,
 /***********************************************************************
  *
  * Description :
- *      SYS_TRIGGERS_¿« Trigger Strings ¡§∫∏∏¶ ∞ªΩ≈«—¥Ÿ.
+ *      SYS_TRIGGERS_Ïùò Trigger Strings Ï†ïÎ≥¥Î•º Í∞±Ïã†ÌïúÎã§.
  *
  * Implementation :
  *
@@ -1289,7 +1289,7 @@ IDE_RC qcmTrigger::insertTriggerStringsMetaInfo( qcStatement * aStatement,
 /***********************************************************************
  *
  * Description :
- *      SYS_TRIGGER_STRINGS_∏¶ ¿‘∑¬«—¥Ÿ.
+ *      SYS_TRIGGER_STRINGS_Î•º ÏûÖÎ†•ÌïúÎã§.
  *
  * Implementation :
  *
@@ -1324,7 +1324,7 @@ IDE_RC qcmTrigger::insertTriggerStringsMetaInfo( qcStatement * aStatement,
                                       & sSqlStr )
               != IDE_SUCCESS );
 
-    // qcmTrigger::addMetaInfo()ø°º≠ ¿œ∫Œ ƒ⁄µÂ ∫πªÁ
+    // qcmTrigger::addMetaInfo()ÏóêÏÑú ÏùºÎ∂Ä ÏΩîÎìú Î≥µÏÇ¨
     for ( sSeqNo = 0, sCurrPos = 0;
           sSeqNo < sSubStringCount;
           sSeqNo++ )
@@ -1338,7 +1338,7 @@ IDE_RC qcmTrigger::insertTriggerStringsMetaInfo( qcStatement * aStatement,
             sCurrLen = aDDLTextLength - sCurrPos;
         }
 
-        // ['] øÕ ∞∞¿∫ πÆ¿⁄∏¶ √≥∏Æ«œ±‚ ¿ß«œø© [\'] øÕ ∞∞¿∫ String¿∏∑Œ ∫Ø»Ø«œø© ∫πªÁ«—¥Ÿ.
+        // ['] ÏôÄ Í∞ôÏùÄ Î¨∏ÏûêÎ•º Ï≤òÎ¶¨ÌïòÍ∏∞ ÏúÑÌïòÏó¨ [\'] ÏôÄ Í∞ôÏùÄ StringÏúºÎ°ú Î≥ÄÌôòÌïòÏó¨ Î≥µÏÇ¨ÌïúÎã§.
         IDE_TEST( qcmProc::prsCopyStrDupAppo( sSubString,
                                               aDDLText + sCurrPos,
                                               sCurrLen )
@@ -1383,7 +1383,7 @@ IDE_RC qcmTrigger::removeTriggerStringsMetaInfo( qcStatement * aStatement,
 /***********************************************************************
  *
  * Description :
- *      SYS_TRIGGER_STRINGS_∏¶ ¡¶∞≈«—¥Ÿ.
+ *      SYS_TRIGGER_STRINGS_Î•º Ï†úÍ±∞ÌïúÎã§.
  *
  * Implementation :
  *
@@ -1433,8 +1433,8 @@ IDE_RC qcmTrigger::renameTriggerMetaInfoForSwap( qcStatement    * aStatement,
 /***********************************************************************
  *
  * Description :
- *      Prefix∏¶ ¡ˆ¡§«— ∞ÊøÏ, Source¿« TRIGGER_NAMEø° Prefix∏¶ ∫Ÿ¿Ã∞Ì,
- *      Target¿« TRIGGER_NAMEø°º≠ Prefix∏¶ ¡¶∞≈«—¥Ÿ.
+ *      PrefixÎ•º ÏßÄÏ†ïÌïú Í≤ΩÏö∞, SourceÏùò TRIGGER_NAMEÏóê PrefixÎ•º Î∂ôÏù¥Í≥†,
+ *      TargetÏùò TRIGGER_NAMEÏóêÏÑú PrefixÎ•º Ï†úÍ±∞ÌïúÎã§.
  *
  * Implementation :
  *
@@ -1457,7 +1457,7 @@ IDE_RC qcmTrigger::renameTriggerMetaInfoForSwap( qcStatement    * aStatement,
                                           & sSqlStr )
                   != IDE_SUCCESS );
 
-        // Source¿« TRIGGER_NAMEø° Prefix∏¶ ∫Ÿ¿Ã∞Ì, Target¿« TRIGGER_NAMEø°º≠ Prefix∏¶ ¡¶∞≈«—¥Ÿ.
+        // SourceÏùò TRIGGER_NAMEÏóê PrefixÎ•º Î∂ôÏù¥Í≥†, TargetÏùò TRIGGER_NAMEÏóêÏÑú PrefixÎ•º Ï†úÍ±∞ÌïúÎã§.
         idlOS::snprintf( sSqlStr,
                          QD_MAX_SQL_LENGTH,
                          "UPDATE SYS_TRIGGERS_ "
@@ -1503,9 +1503,9 @@ IDE_RC qcmTrigger::swapTriggerDMLTablesMetaInfo( qcStatement * aStatement,
 /***********************************************************************
  *
  * Description :
- *      ¥Ÿ∏• Trigger∞° Cycle Checkø° ªÁøÎ«œ¥¬ ¡§∫∏∏¶ ∞ªΩ≈«—¥Ÿ. (Meta Table)
+ *      Îã§Î•∏ TriggerÍ∞Ä Cycle CheckÏóê ÏÇ¨Ïö©ÌïòÎäî Ï†ïÎ≥¥Î•º Í∞±Ïã†ÌïúÎã§. (Meta Table)
  *          - SYS_TRIGGER_DML_TABLES_
- *              - DML_TABLE_ID = Table ID ¿Ã∏È, (TABLE_IDøÕ π´∞¸«œ∞‘) DML_TABLE_ID∏¶ Peer¿« Table ID∑Œ ±≥√º«—¥Ÿ.
+ *              - DML_TABLE_ID = Table ID Ïù¥Î©¥, (TABLE_IDÏôÄ Î¨¥Í¥ÄÌïòÍ≤å) DML_TABLE_IDÎ•º PeerÏùò Table IDÎ°ú ÍµêÏ≤¥ÌïúÎã§.
  *
  * Implementation :
  *

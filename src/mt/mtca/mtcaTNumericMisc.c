@@ -81,10 +81,10 @@
  * change naming to id
  *
  * Revision 1.1  2000/05/31 07:33:57  sjkim
- * id ¶óÀÌºê·¯¸® »ı¼º
+ * id ë¼ì´ë¸ŒëŸ¬ë¦¬ ìƒì„±
  *
  * Revision 1.5  2000/05/22 10:12:26  sjkim
- * ¿¡·¯ Ã³¸® ·çÆ¾ ¼öÁ¤ : ACTION Ãß°¡
+ * ì—ëŸ¬ ì²˜ë¦¬ ë£¨í‹´ ìˆ˜ì • : ACTION ì¶”ê°€
  *
  * Revision 1.4  2000/04/19 06:40:23  assam
  * mod added.
@@ -184,7 +184,7 @@ acp_sint32_t mtaCeil( mtaTNumericType* t1, const mtaTNumericType* t2 )
                     if( exponent < (acp_sint16_t)sizeof(t1->mantissa) )
                     {
                         // To Fix BUG-19869
-                        // MantissaÀÇ fraction¿¡ ÇØ´çÇÏ´Â ¸ğµç ¿µ¿ªÀÌ 0ÀÎÁö °Ë»çÇØ¾ß ÇÑ´Ù.
+                        // Mantissaì˜ fractionì— í•´ë‹¹í•˜ëŠ” ëª¨ë“  ì˜ì—­ì´ 0ì¸ì§€ ê²€ì‚¬í•´ì•¼ í•œë‹¤.
 
                         sHasFraction = ACP_FALSE;
 

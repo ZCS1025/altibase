@@ -47,9 +47,9 @@ public:
     
     static IDE_RC free(mmdXid *aXid, idBool aFreeTrans);
     //fix BUG-21794
-    /* BUG-27968 XA Fix/Unfix Scalability¸¦ Çâ»ó½ÃÄÑ¾ß ÇÕ´Ï´Ù.
-     XA Unfix ½Ã¿¡ latch duarationÀ» ÁÙÀÌ±âÀ§ÇÏ¿© xid fix-Count¸¦ xid list latch releaseÀü¿¡
-     ±¸ÇÑ´Ù.*/
+    /* BUG-27968 XA Fix/Unfix Scalabilityë¥¼ í–¥ìƒì‹œì¼œì•¼ í•©ë‹ˆë‹¤.
+     XA Unfix ì‹œì— latch duarationì„ ì¤„ì´ê¸°ìœ„í•˜ì—¬ xid fix-Countë¥¼ xid list latch releaseì „ì—
+     êµ¬í•œë‹¤.*/
     static IDE_RC free(mmdIdXidNode *aXidNode);
     /* fix BUG-35374 To improve scalability about XA, latch granularity of XID hash should be more better than now.
        that is to say , chanage the granularity from global to bucket level.*/

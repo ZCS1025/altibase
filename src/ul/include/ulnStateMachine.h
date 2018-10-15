@@ -20,12 +20,12 @@
 #define ULN_FID_MAX ULN_FID_NONE
 
 /*
- * Note : »õ·Î¿î SQL ÇÔ¼ö Ãß°¡½Ã
- *        1. ulnFuncId enumeration ¿¡ Ãß°¡.
- *        2. ulnStateEnvTbl, ulnStateDbcTbl, ulnStateStmtTbl ÀÇ ÀûÀýÇÑ À§Ä¡¿¡
- *           »õ·Î¿î ÇÔ¼öÀÇ »óÅÂ ÀüÀÌ Å×ÀÌºí Ãß°¡
+ * Note : ìƒˆë¡œìš´ SQL í•¨ìˆ˜ ì¶”ê°€ì‹œ
+ *        1. ulnFuncId enumeration ì— ì¶”ê°€.
+ *        2. ulnStateEnvTbl, ulnStateDbcTbl, ulnStateStmtTbl ì˜ ì ì ˆí•œ ìœ„ì¹˜ì—
+ *           ìƒˆë¡œìš´ í•¨ìˆ˜ì˜ ìƒíƒœ ì „ì´ í…Œì´ë¸” ì¶”ê°€
  *
- * »õ·Î¿î »óÅÂÀüÀÌ ÇÔ¼ö Ãß°¡¿Í´Â º°°³ÀÇ ¹®Á¦ÀÓÀ» ¸í½ÉÇÒ °Í.
+ * ìƒˆë¡œìš´ ìƒíƒœì „ì´ í•¨ìˆ˜ ì¶”ê°€ì™€ëŠ” ë³„ê°œì˜ ë¬¸ì œìž„ì„ ëª…ì‹¬í•  ê²ƒ.
  */
 typedef enum ulnFuncId
 {
@@ -50,8 +50,8 @@ typedef enum ulnFuncId
     ULN_FID_EXECUTE,
 
     /*
-     * Note : SQLFetch ¿Í SQLFetchScroll ÀÇ stmt »óÅÂÀüÀÌ´Â µ¿ÀÏÇÏ´Ù.
-     *        ±»ÀÌ FID ¸¦ ±¸ºÐÇÑ ÀÌÀ¯´Â ´Ü¼øÈ÷, stmt ¸¦ Àâ°í ÀÖ´Â ÇÔ¼öÀÇ ÀÌ¸§À» ¾Ë±â À§ÇØ¼­ÀÌ´Ù.
+     * Note : SQLFetch ì™€ SQLFetchScroll ì˜ stmt ìƒíƒœì „ì´ëŠ” ë™ì¼í•˜ë‹¤.
+     *        êµ³ì´ FID ë¥¼ êµ¬ë¶„í•œ ì´ìœ ëŠ” ë‹¨ìˆœížˆ, stmt ë¥¼ ìž¡ê³  ìžˆëŠ” í•¨ìˆ˜ì˜ ì´ë¦„ì„ ì•Œê¸° ìœ„í•´ì„œì´ë‹¤.
      */
     ULN_FID_FETCH,
     ULN_FID_FETCHSCROLL,    // 20
@@ -112,7 +112,7 @@ typedef enum ulnFuncId
     ULN_FID_FREELOB,
 
     /*
-     * ºñÇ¥ÁØ ÇÔ¼öµé
+     * ë¹„í‘œì¤€ í•¨ìˆ˜ë“¤
      */
     ULN_FID_GETPLAN,
     ULN_FID_XA, /*PROJ-1573 XA */
@@ -128,19 +128,19 @@ typedef enum ulnFuncId
  * These functions check the conditions stipulated in the ODBC state transition tables
  * and then move the object's state to the next state accordingly.
  *
- * »óÅÂÀüÀÌ ÇÔ¼öid µéÀÇ enumeration ÀÓ.
+ * ìƒíƒœì „ì´ í•¨ìˆ˜id ë“¤ì˜ enumeration ìž„.
  *
- * »õ·Î¿î »óÅÂÀüÀÌ ÇÔ¼ö¸¦ Ãß°¡ÇÏ´Â ¹ý :
- *      ºñ¾î ÀÖ´Â ½½·ÔÀ» Ã£¾Æ¼­ ÇÔ¼ö¸íÀ» Àû´Â´Ù.
- *      ulnStateMachine.h ¿¡ Á¤ÀÇµÇ¾î ÀÖ´Â
- *      ulnStateFuncId enumeration ¿¡ ÇØ´çÇÏ´Â ULN_SFID_XXX »ó¼ö¸¦ Ãß°¡ÇÑ´Ù.
- *      enum À» Ãß°¡ÇÑ À§Ä¡¿Í ÀÌ°÷¿¡¼­ ÇÔ¼ö Æ÷ÀÎÅÍ¸¦ Ãß°¡ÇÑ À§Ä¡´Â
- *      Á¤È®È÷ ÀÏÄ¡ÇØ¾ß ÇÑ´Ù.
+ * ìƒˆë¡œìš´ ìƒíƒœì „ì´ í•¨ìˆ˜ë¥¼ ì¶”ê°€í•˜ëŠ” ë²• :
+ *      ë¹„ì–´ ìžˆëŠ” ìŠ¬ë¡¯ì„ ì°¾ì•„ì„œ í•¨ìˆ˜ëª…ì„ ì ëŠ”ë‹¤.
+ *      ulnStateMachine.h ì— ì •ì˜ë˜ì–´ ìžˆëŠ”
+ *      ulnStateFuncId enumeration ì— í•´ë‹¹í•˜ëŠ” ULN_SFID_XXX ìƒìˆ˜ë¥¼ ì¶”ê°€í•œë‹¤.
+ *      enum ì„ ì¶”ê°€í•œ ìœ„ì¹˜ì™€ ì´ê³³ì—ì„œ í•¨ìˆ˜ í¬ì¸í„°ë¥¼ ì¶”ê°€í•œ ìœ„ì¹˜ëŠ”
+ *      ì •í™•ížˆ ì¼ì¹˜í•´ì•¼ í•œë‹¤.
  *
- *      ulnStateFuncTbl[] ¹è¿­¿¡ ÇØ´çÇÏ´Â ÇÔ¼öÀÇ Æ÷ÀÎÅÍ°¡ ¼¼ÆÃµÇ¾î ÀÖ´Â°ÍÀ» È®ÀÎÇÏ¿© 
- *      double check ÇØ¾ß ÇÑ´Ù.
+ *      ulnStateFuncTbl[] ë°°ì—´ì— í•´ë‹¹í•˜ëŠ” í•¨ìˆ˜ì˜ í¬ì¸í„°ê°€ ì„¸íŒ…ë˜ì–´ ìžˆëŠ”ê²ƒì„ í™•ì¸í•˜ì—¬ 
+ *      double check í•´ì•¼ í•œë‹¤.
  *
- * »õ·Î¿î SQL ÇÔ¼ö Ãß°¡¿Í´Â º°°³ÀÇ ¹®Á¦ÀÓÀ» ¸í½ÉÇÒ °Í.
+ * ìƒˆë¡œìš´ SQL í•¨ìˆ˜ ì¶”ê°€ì™€ëŠ” ë³„ê°œì˜ ë¬¸ì œìž„ì„ ëª…ì‹¬í•  ê²ƒ.
  */
 typedef enum ulnStateFunctionId
 {
@@ -255,9 +255,9 @@ typedef enum ulnStateFunctionId
 /*
  * ulnStateCheckPoint.
  *
- * ulnStateMachine() ÇÔ¼ö°¡ È£ÃâµÇ´Â À§Ä¡¸¦ ³ªÅ¸³»´Â »ó¼ö
- *      ENTRY_POINT : ulnEnter() ÇÔ¼ö¿¡¼­ È£ÃâµÊ
- *      EXIT_POINT  : ulnExit() ÇÔ¼ö¿¡¼­ È£ÃâµÊ
+ * ulnStateMachine() í•¨ìˆ˜ê°€ í˜¸ì¶œë˜ëŠ” ìœ„ì¹˜ë¥¼ ë‚˜íƒ€ë‚´ëŠ” ìƒìˆ˜
+ *      ENTRY_POINT : ulnEnter() í•¨ìˆ˜ì—ì„œ í˜¸ì¶œë¨
+ *      EXIT_POINT  : ulnExit() í•¨ìˆ˜ì—ì„œ í˜¸ì¶œë¨
  */
 typedef enum ulnStateCheckPoint
 {
@@ -277,9 +277,9 @@ struct ulnStateTblEntry
 };
 
 /*
- * Note: ULN_S_ ´Â ULN_STATE_ ÀÇ ¾àÀÚÀÓ.
- * ÀÌ·¸°Ô Âª°Ô ÇÑ ÀÌÀ¯´Â State Transition Table ¹è¿­À» Àû´Âµ¥
- * ÀÌ¸§ÀÌ ³Ê¹« ±æ¸é ¾Ë¾Æº¸±â°¡ ³Ê¹« Èûµé¾î¼­ÀÌ´Ù.
+ * Note: ULN_S_ ëŠ” ULN_STATE_ ì˜ ì•½ìžìž„.
+ * ì´ë ‡ê²Œ ì§§ê²Œ í•œ ì´ìœ ëŠ” State Transition Table ë°°ì—´ì„ ì ëŠ”ë°
+ * ì´ë¦„ì´ ë„ˆë¬´ ê¸¸ë©´ ì•Œì•„ë³´ê¸°ê°€ ë„ˆë¬´ íž˜ë“¤ì–´ì„œì´ë‹¤.
  */
 
 /************************************************************
@@ -327,12 +327,12 @@ typedef enum
     ULN_S_S11,
 
     /*
-     * Note: S12 »óÅÂ·Î °¡´Â °æ¿ì´Â Àý´ë·Î ¾ø´Ù. SQLCancel() ÇÔ¼ö°¡ À¯ÀÏÇÏ°Ô S12 ·ÎÀÇ »óÅÂ ÀüÀÌ¸¦
-     * Á¤ÀÇÇÏ°í ÀÖ´Â ÇÔ¼öÀÎµ¥, S12 ·Î ÀüÀÌÇÒ ÀÌº¥Æ® ÀÚÃ¼¸¦ Áö¿øÇÏÁö ¾Ê°Ú´Ù.
-     * SQL_AM_CONNECTION, SQL_AM_STATEMENT µÑ ´Ù Áö¿øÇÏÁö ¾ÊÀ» °èÈ¹ÀÌ±â ¶§¹®ÀÌ´Ù.
-     * ±×·¡¼­ S12 »óÅÂ´Â ¾Æ¿¹ ¾ø¾Ö¹ö·È´Ù.
+     * Note: S12 ìƒíƒœë¡œ ê°€ëŠ” ê²½ìš°ëŠ” ì ˆëŒ€ë¡œ ì—†ë‹¤. SQLCancel() í•¨ìˆ˜ê°€ ìœ ì¼í•˜ê²Œ S12 ë¡œì˜ ìƒíƒœ ì „ì´ë¥¼
+     * ì •ì˜í•˜ê³  ìžˆëŠ” í•¨ìˆ˜ì¸ë°, S12 ë¡œ ì „ì´í•  ì´ë²¤íŠ¸ ìžì²´ë¥¼ ì§€ì›í•˜ì§€ ì•Šê² ë‹¤.
+     * SQL_AM_CONNECTION, SQL_AM_STATEMENT ë‘˜ ë‹¤ ì§€ì›í•˜ì§€ ì•Šì„ ê³„íšì´ê¸° ë•Œë¬¸ì´ë‹¤.
+     * ê·¸ëž˜ì„œ S12 ìƒíƒœëŠ” ì•„ì˜ˆ ì—†ì• ë²„ë ¸ë‹¤.
      *
-     * ---> ÀÏ´ÜÀº ³²°Ü µÎÀÚ.
+     * ---> ì¼ë‹¨ì€ ë‚¨ê²¨ ë‘ìž.
      */
     ULN_S_S12,
 

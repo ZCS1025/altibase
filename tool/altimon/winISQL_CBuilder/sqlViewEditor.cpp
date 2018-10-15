@@ -23,7 +23,7 @@
 #include "sqlRun.h"
 
 
-// ¸î°¡Áö ÇÊ¿äÇÑ Å°°ªÀ» Á¤ÀÇÇÑ´Ù.
+// ëª‡ê°€ì§€ í•„ìš”í•œ í‚¤ê°’ì„ ì •ì˜í•œë‹¤.
 #define SPACE_KEY  32
 #define ENTER_KEY  13
 #define PG_DOWN    34
@@ -39,7 +39,7 @@
 #define DEL_KEY    46
 
 
-// ¿¡·¯¸Ş½ÃÁö ¹Ú½ºÀÇ ÄÁÆ®·Ñ Å©±âÁ¶ÀıÀ» À§ÇÑ MessageÁ¤ÀÇ
+// ì—ëŸ¬ë©”ì‹œì§€ ë°•ìŠ¤ì˜ ì»¨íŠ¸ë¡¤ í¬ê¸°ì¡°ì ˆì„ ìœ„í•œ Messageì •ì˜
 #define SC_DRAG_RESIZEL  0xf001  // left resize 
 #define SC_DRAG_RESIZER  0xf002  // right resize 
 #define SC_DRAG_RESIZEU  0xf003  // upper resize 
@@ -58,7 +58,7 @@ TForm6 *Form6;
 int X = 1, Y = 1;
 
 
-// ¿¹¾à¾î µî·ÏÀ» À§ÇÑ ´Ü¾î µî·Ï. º°·Î »ÏÁ·ÇÑ ¹æ¹ıÀ» ¸ğ¸£°Ú´Ù.
+// ì˜ˆì•½ì–´ ë“±ë¡ì„ ìœ„í•œ ë‹¨ì–´ ë“±ë¡. ë³„ë¡œ ë¾°ì¡±í•œ ë°©ë²•ì„ ëª¨ë¥´ê² ë‹¤.
 int WORD_COUNT = 59;
 char *WORD_CHK[] = {"CREATE",     "TABLE",      "CHAR",        "INTEGER",     "NUMERIC",
 					"BLOB",       "CLOB",       "DOUBLE",      "VARCHAR",     "VARCHAR2",
@@ -81,12 +81,12 @@ __fastcall TForm6::TForm6(TComponent* Owner)
 {
 }
 //---------------------------------------------------------------------------
-// ÇÁ·Î½ÃÁ®, Æ®¸®°Å, ÇÔ¼öÀÎÁö¸¦ Ã¼Å©ÇÑ´Ù.
+// í”„ë¡œì‹œì ¸, íŠ¸ë¦¬ê±°, í•¨ìˆ˜ì¸ì§€ë¥¼ ì²´í¬í•œë‹¤.
 int findProcedure(AnsiString SQL)
 {
 	int pos1, pos2, pos3, pos4;
 
-	// ±ÔÄ¢ : create¹®ÀÌ ÀÖÀ¸¸é¼­ ¾Æ·¡ 3°³´Ü¾îÁß¿¡ ÇÏ³ª°¡ ²¸ÀÖÀ¸¸é..
+	// ê·œì¹™ : createë¬¸ì´ ìˆìœ¼ë©´ì„œ ì•„ë˜ 3ê°œë‹¨ì–´ì¤‘ì— í•˜ë‚˜ê°€ ê»´ìˆìœ¼ë©´..
 	pos1 = SQL.Trim().UpperCase().AnsiPos("CREATE");
 	pos2 = SQL.Trim().UpperCase().AnsiPos("PROCEDURE");
     pos3 = SQL.Trim().UpperCase().AnsiPos("FUNCTION");
@@ -101,7 +101,7 @@ int findProcedure(AnsiString SQL)
 
 }
 //---------------------------------------------------------------------------
-// ODBC.INI¿¡¼­ DSN list¸¦ °¡Á®¿Â´Ù.
+// ODBC.INIì—ì„œ DSN listë¥¼ ê°€ì ¸ì˜¨ë‹¤.
 void __fastcall TForm6::GetDsnList()
 {
 	HKEY hKey, hKey2;
@@ -112,7 +112,7 @@ void __fastcall TForm6::GetDsnList()
 	FILETIME file_time;
 	AnsiString x;
 
-	// MainRootKey¸¦ ¿¬´Ù.
+	// MainRootKeyë¥¼ ì—°ë‹¤.
 	wsprintf(sBuf , "Software\\ODBC\\ODBC.INI");
 	if (RegOpenKeyEx(HKEY_LOCAL_MACHINE,
 				  sBuf,
@@ -127,12 +127,12 @@ void __fastcall TForm6::GetDsnList()
 	key_num = 0;
     DSNLIST->Clear();
 	
-	// EnumÀÌ ¿¡·¯°¡ ³¯¶§±îÁö ODBC.INI¸¦ µÚÁø´Ù.
+	// Enumì´ ì—ëŸ¬ê°€ ë‚ ë•Œê¹Œì§€ ODBC.INIë¥¼ ë’¤ì§„ë‹¤.
 	while (1)
 	{
 		subkey_length = 1024;
 		memset(subkey_name , 0x00, sizeof(subkey_name));
-		// ÀÌ ÇÔ¼ö¸¦ ÅëÇÏ¸é DSNLIST°¡ ³ª¿Â´Ù.
+		// ì´ í•¨ìˆ˜ë¥¼ í†µí•˜ë©´ DSNLISTê°€ ë‚˜ì˜¨ë‹¤.
 		if (RegEnumKeyEx( hKey,
 						  key_num,
 						  subkey_name,
@@ -146,7 +146,7 @@ void __fastcall TForm6::GetDsnList()
 			break;
 		}
 
-		// DSN¸íÀ» °¡Áö°í ´Ù½Ã Key¸¦ ¿¬´Ù.
+		// DSNëª…ì„ ê°€ì§€ê³  ë‹¤ì‹œ Keyë¥¼ ì—°ë‹¤.
 		wsprintf(sBuf, "Software\\ODBC\\ODBC.INI\\%s", subkey_name);
 		if (RegOpenKeyEx(HKEY_LOCAL_MACHINE,
 						 sBuf,
@@ -158,7 +158,7 @@ void __fastcall TForm6::GetDsnList()
 			break;
 		}
 
-		// ¿­¸° Key¿¡¼­ Dirver°¡ Altibase¿ëÀÎÁö È®ÀÎÇÑ´Ù.
+		// ì—´ë¦° Keyì—ì„œ Dirverê°€ Altibaseìš©ì¸ì§€ í™•ì¸í•œë‹¤.
 		length = 1024;
 		value_type = NULL;
 		memset(ByVal1 , 0x00, sizeof(ByVal1));
@@ -170,45 +170,45 @@ void __fastcall TForm6::GetDsnList()
 							ByVal1,
 							&length) == 0)
 		{
-			// AltibaseDLLÀ» ¾²´Â³ğÀÌ³Ä?
+			// AltibaseDLLì„ ì“°ëŠ”ë†ˆì´ëƒ?
 		   AnsiString x = ByVal1;
 		   int c;
 
-		   // a4_CM451.dll ÀÌ´Ù.
+		   // a4_CM451.dll ì´ë‹¤.
 		   c = x.Pos("a4_");
 		   if (c != 0)
 		   {
-              // ListBox¿¡ µî·ÏÇÑ´Ù.
+              // ListBoxì— ë“±ë¡í•œë‹¤.
 			  DSNLIST->Items->Add(subkey_name) ;
 		   }
 		}
 
-		// ¾ÈÂÊ¿¡ ¿­Àº°Í¸¸ ´İ´Â´Ù.
+		// ì•ˆìª½ì— ì—´ì€ê²ƒë§Œ ë‹«ëŠ”ë‹¤.
 		RegCloseKey(hKey2);
 		key_num++;
 
 	}
 
-	// ÃÖÁ¾ Key´İ´Â´Ù.
+	// ìµœì¢… Keyë‹«ëŠ”ë‹¤.
 	RegCloseKey(hKey);
     
 }
 //---------------------------------------------------------------------------
-// ÆûÀÌ ¿­¸±¶§ ÀÏ´Ü,
-// ODBCÁ¤º¸¸¦ °¡Á®¿À°í, »õ·Î¿î TabSheet ¹× RichEdit¸¦ Ãß°¡ÇÑ´Ù.
+// í¼ì´ ì—´ë¦´ë•Œ ì¼ë‹¨,
+// ODBCì •ë³´ë¥¼ ê°€ì ¸ì˜¤ê³ , ìƒˆë¡œìš´ TabSheet ë° RichEditë¥¼ ì¶”ê°€í•œë‹¤.
 void __fastcall TForm6::FormShow(TObject *Sender)
 {
 
-	// ½ÃÀÛ½Ã DSNÁ¤º¸µéÀ» °¡Á®¿Â´Ù.
+	// ì‹œì‘ì‹œ DSNì •ë³´ë“¤ì„ ê°€ì ¸ì˜¨ë‹¤.
 	GetDsnList();
 	DSNLIST->ItemIndex = 0;
 
-	// RichEditÀÇ ÆíÁıÅ©±â°¡ ¸Å¿ì ÀÛ¾Æ 10M·Î Áõ´ë½ÃÅ²´Ù.
+	// RichEditì˜ í¸ì§‘í¬ê¸°ê°€ ë§¤ìš° ì‘ì•„ 10Më¡œ ì¦ëŒ€ì‹œí‚¨ë‹¤.
     New1Click(this);
 
 }
 //---------------------------------------------------------------------------
-// ½ÇÇà¹öÆ°À» ´­·¶À» ¶§ÀÇ Ã³¸®
+// ì‹¤í–‰ë²„íŠ¼ì„ ëˆŒë €ì„ ë•Œì˜ ì²˜ë¦¬
 void __fastcall TForm6::Button1Click(TObject *Sender)
 {
 	AnsiString tmp;
@@ -216,19 +216,19 @@ void __fastcall TForm6::Button1Click(TObject *Sender)
 	int i, j, exec_count=0, stops=0;
 	int chkProc;
 
-	// Áö±İ ´­¸°°Ô ¾î¶² richEditÀÎÁö¸¦ ¾Ë¾Æ³»¾ß¸¸ ÇÑ´Ù.
-	// ActiveÇÑ page´Â ÇÑ¼ø°£¿¡ ÇÏ³ª´Ï±î ±×°É ±âÁØÀ¸·Î ¾Ë¾Æ³½´Ù.
+	// ì§€ê¸ˆ ëˆŒë¦°ê²Œ ì–´ë–¤ richEditì¸ì§€ë¥¼ ì•Œì•„ë‚´ì•¼ë§Œ í•œë‹¤.
+	// Activeí•œ pageëŠ” í•œìˆœê°„ì— í•˜ë‚˜ë‹ˆê¹Œ ê·¸ê±¸ ê¸°ì¤€ìœ¼ë¡œ ì•Œì•„ë‚¸ë‹¤.
 	TRichEdit *SenderControl = dynamic_cast<TRichEdit *>(PageControl1->ActivePage->FindChildControl("Rich_" + PageControl1->ActivePage->Name)) ;
 
 
-	// ¼±ÅÃµÈ Á¢¼ÓÁ¤º¸°¡ ¾øÀ¸¸é ¿¡·¯Ã³¸®
+	// ì„ íƒëœ ì ‘ì†ì •ë³´ê°€ ì—†ìœ¼ë©´ ì—ëŸ¬ì²˜ë¦¬
 	if (DSNLIST->Text.Length() == 0)
 	{
 		ShowMessage("Select ODBC DSN to Execute !!");
 		return;    
 	}
 
-	// ¸ğµç SQL¹®À» ¼û°ÜÁø RichEdit2¿¡¼­ º¹»çÇØ¼­ ÀÌ¸¦ ÀÌ¿ëÇÑ´Ù.
+	// ëª¨ë“  SQLë¬¸ì„ ìˆ¨ê²¨ì§„ RichEdit2ì—ì„œ ë³µì‚¬í•´ì„œ ì´ë¥¼ ì´ìš©í•œë‹¤.
 	RichEdit2->Clear();
 	if (SenderControl->SelText.Length() > 0)
 	{
@@ -237,25 +237,25 @@ void __fastcall TForm6::Button1Click(TObject *Sender)
         RichEdit2->Text = SenderControl->Text;
 	}
 
-	// ¿ÀÁ÷ ¼¼¹ÌÄİ·Ğ¸¸ÀÌ ±¸ºĞÀÚ ¿ªÇÒÀ» ÇÑ´Ù.
+	// ì˜¤ì§ ì„¸ë¯¸ì½œë¡ ë§Œì´ êµ¬ë¶„ì ì—­í• ì„ í•œë‹¤.
 	tmp = "";
 	RowCount = RichEdit2->Lines->Count;
 	for (i = 0; i < RowCount; i++)
 	{
-        // ÁÖ¼®Ã³¸®³ª ÀĞÀº ¹®ÀÚ¿­ÀÇ ±æÀÌ=0 ÀÌ¸é ¹«½ÃÇÑ´Ù.
+        // ì£¼ì„ì²˜ë¦¬ë‚˜ ì½ì€ ë¬¸ìì—´ì˜ ê¸¸ì´=0 ì´ë©´ ë¬´ì‹œí•œë‹¤.
 		if (RichEdit2->Lines->Strings[i].Trim().SubString(1, 2) == "--" || RichEdit2->Lines->Strings[i].Trim().Length() == 0 ||
 			RichEdit2->Lines->Strings[i].Trim().SubString(1, 1) == "\n")
 		{
 			continue;
 		}
 
-		// SQL¹®À» ¸¸µé¾î°£´Ù.
+		// SQLë¬¸ì„ ë§Œë“¤ì–´ê°„ë‹¤.
 		tmp = tmp + RichEdit2->Lines->Strings[i] + " ";
 
-		// ¼¼¹ÌÄİ·ĞÀÌ¸é ½ÇÇà¼öÇàÇÑ´Ù.
+		// ì„¸ë¯¸ì½œë¡ ì´ë©´ ì‹¤í–‰ìˆ˜í–‰í•œë‹¤.
 		if (tmp.AnsiPos(";") != 0)
 		{
-			// ¸¸ÀÏ ÇÁ·Î½ÃÁ®·Î ÆÇ´ÜÀÌ µÇ¸é  ÂŞ¿í ÀĞ¾îµéÀÎ´Ù "/" ³ª¿Ã¶§±îÁö.
+			// ë§Œì¼ í”„ë¡œì‹œì ¸ë¡œ íŒë‹¨ì´ ë˜ë©´  ì­ˆìš± ì½ì–´ë“¤ì¸ë‹¤ "/" ë‚˜ì˜¬ë•Œê¹Œì§€.
 			chkProc = findProcedure(tmp);
 			if (chkProc == 1)
 			{
@@ -270,8 +270,8 @@ void __fastcall TForm6::Button1Click(TObject *Sender)
 			}
 
 
-			// »õ·Î¿î ÆûÀ» ¸¸µé¾î ExecuteÃ¢¿¡¼­ ¼öÇàÇÑ´Ù.
-			// ÇâÈÄ¿¡´Â ¹İµå½Ã ¼º´ÉÀ» À§ÇØ ¾²·¹µå·Î ÇØ¾ß ÇÑ´Ù.
+			// ìƒˆë¡œìš´ í¼ì„ ë§Œë“¤ì–´ Executeì°½ì—ì„œ ìˆ˜í–‰í•œë‹¤.
+			// í–¥í›„ì—ëŠ” ë°˜ë“œì‹œ ì„±ëŠ¥ì„ ìœ„í•´ ì“°ë ˆë“œë¡œ í•´ì•¼ í•œë‹¤.
 			TForm1 *f1 = new TForm1(Application);
             f1->RichEdit1->Clear();
 			for (j=stops; j <=i; j++)
@@ -284,12 +284,12 @@ void __fastcall TForm6::Button1Click(TObject *Sender)
 				f1->RichEdit1->Lines->Add(RichEdit2->Lines->Strings[j]);
 			}
 
-            // »õ·Î¿î ÆûÀÇ DSNÁ¤º¸¸¦ ³Ñ°ÜÁØ´Ù. ³ªÁß¿¡ ½á¸ÔÀ»ÀÏÀÌ ÀÖÀ»²¨ °°´Ù.
+            // ìƒˆë¡œìš´ í¼ì˜ DSNì •ë³´ë¥¼ ë„˜ê²¨ì¤€ë‹¤. ë‚˜ì¤‘ì— ì¨ë¨¹ì„ì¼ì´ ìˆì„êº¼ ê°™ë‹¤.
 			f1->DSN->Caption = DSNLIST->Text;
 			if (!f1->dbConnect(f1->DSN->Caption))
 				return;
      
-			// ÀÏ´Ü select¸¦ À§ÇÑ Çì´õÁ¦°Å
+			// ì¼ë‹¨ selectë¥¼ ìœ„í•œ í—¤ë”ì œê±°
 			f1->ExecNonSelect("alter session set select_header_display = 1", 0);
 			if (tmp.TrimLeft().UpperCase().SubString(1, 6) == "SELECT") {
 				if (f1->ExecSelect(tmp))
@@ -308,7 +308,7 @@ void __fastcall TForm6::Button1Click(TObject *Sender)
 
 	}
 
-	// ¼öÇàÇÑ°Ç¼ö°¡ ¾øÀ¸¸é ¼¼¹ÌÄİ·ĞÀÌ ¾øÀ» °¡´É¼ºÀÌ 100%ÀÓÀ¸·Î..
+	// ìˆ˜í–‰í•œê±´ìˆ˜ê°€ ì—†ìœ¼ë©´ ì„¸ë¯¸ì½œë¡ ì´ ì—†ì„ ê°€ëŠ¥ì„±ì´ 100%ì„ìœ¼ë¡œ..
 	if (exec_count == 0)
 	{
 		ShowMessage("Statement need a charater ';' ");
@@ -321,14 +321,14 @@ void __fastcall TForm6::Memo1DblClick(TObject *Sender)
     Memo1->Clear();	
 }
 //---------------------------------------------------------------------------
-// ¸Ş¸ğ¹Ú½º¿¡¼­ ¸¶¿ì½º ¿òÁ÷ÀÓ¿¡ µû¶ó »çÀÌÁî º¯°æ.
+// ë©”ëª¨ë°•ìŠ¤ì—ì„œ ë§ˆìš°ìŠ¤ ì›€ì§ì„ì— ë”°ë¼ ì‚¬ì´ì¦ˆ ë³€ê²½.
 void __fastcall TForm6::Memo1MouseDown(TObject *Sender, TMouseButton Button,
       TShiftState Shift, int X, int Y)
 {
 	TControl *SenderControl = dynamic_cast<TControl *>(Sender);
     int SysCommWparam; 
 
-	// µé¾î¿Â ¸¶¿ì½ºÆ÷ÀÎÅÍ À§Ä¡¿¡ µû¶ó
+	// ë“¤ì–´ì˜¨ ë§ˆìš°ìŠ¤í¬ì¸í„° ìœ„ì¹˜ì— ë”°ë¼
 	if(X < 4 && Y < 4)
         SysCommWparam = SC_DRAG_RESIZEUL; 
     else if(X > SenderControl->Width-4 && Y > SenderControl->Height-4) 
@@ -347,14 +347,14 @@ void __fastcall TForm6::Memo1MouseDown(TObject *Sender, TMouseButton Button,
         SysCommWparam = SC_DRAG_RESIZED; 
 
 
-	// ¸Ş½ÃÁöÃ³¸®
+	// ë©”ì‹œì§€ì²˜ë¦¬
 	ReleaseCapture();
 	SendMessage(Memo1->Handle, WM_SYSCOMMAND, SysCommWparam, 0);
 	
 	
 }
 //---------------------------------------------------------------------------
-// ¸Ş¸ğ ¹Ú½º¿¡¼­ ¸¶¿ì½º ¿òÁ÷ÀÓ¿¡ µû¶ó Æ÷ÀÎÅÍ ¸ğ¾ç»õ º¯°æ.
+// ë©”ëª¨ ë°•ìŠ¤ì—ì„œ ë§ˆìš°ìŠ¤ ì›€ì§ì„ì— ë”°ë¼ í¬ì¸í„° ëª¨ì–‘ìƒˆ ë³€ê²½.
 void __fastcall TForm6::Memo1MouseMove(TObject *Sender, TShiftState Shift,
       int X, int Y)
 {
@@ -375,7 +375,7 @@ void __fastcall TForm6::Memo1MouseMove(TObject *Sender, TShiftState Shift,
 	
 }
 //---------------------------------------------------------------------------
-// ÇÏÀÌ¶óÀÌÆÃÀ» À§ÇØ¼­ RichEdit¿¡¼­ ±ÛÀÚ°¡ µé¾î¿À¸é Ã³¸®ÇÑ´Ù.
+// í•˜ì´ë¼ì´íŒ…ì„ ìœ„í•´ì„œ RichEditì—ì„œ ê¸€ìê°€ ë“¤ì–´ì˜¤ë©´ ì²˜ë¦¬í•œë‹¤.
 void __fastcall TForm6::MyKeyDown(TObject *Sender, WORD &Key, TShiftState Shift)
 {
 	TRichEdit *SenderControl = dynamic_cast<TRichEdit *>(Sender);
@@ -384,18 +384,18 @@ void __fastcall TForm6::MyKeyDown(TObject *Sender, WORD &Key, TShiftState Shift)
 	AnsiString tmp, tmp2;
 
 
-	// ÇöÀçÀÇ Ä¿¼­À§Ä¡¸¦ ÀúÀåÇØ ³õ´Â´Ù.
+	// í˜„ì¬ì˜ ì»¤ì„œìœ„ì¹˜ë¥¼ ì €ì¥í•´ ë†“ëŠ”ë‹¤.
 	TPoint oldPos   = SenderControl->CaretPos;
 
-	// Default»ö±òÀº °ËÁ¤»öÀÌ´Ù.
+	// Defaultìƒ‰ê¹”ì€ ê²€ì •ìƒ‰ì´ë‹¤.
 	TColor oldColor = clBlack;
 
-	// ÇöÀçÀÇ À§Ä¡¿¡¼­ x, y¸¦ ÆÇ´ÜÇÑ´Ù.
+	// í˜„ì¬ì˜ ìœ„ì¹˜ì—ì„œ x, yë¥¼ íŒë‹¨í•œë‹¤.
 	x = SenderControl->CaretPos.x;
 	y = SenderControl->CaretPos.y;
 
 
-    // Æ¯¼öÅ°ÀÌ¸é ¹«½ÃÇÑ´Ù.
+    // íŠ¹ìˆ˜í‚¤ì´ë©´ ë¬´ì‹œí•œë‹¤.
 	if (Key == DEL_KEY || Key == BACKSPACE || Key == CTRL_KEY
 		|| Shift.Contains(ssCtrl)
 		|| SenderControl->SelText.Length() > 0)
@@ -404,41 +404,41 @@ void __fastcall TForm6::MyKeyDown(TObject *Sender, WORD &Key, TShiftState Shift)
 	}
 
 
-	// µî·ÏµÈ ´Ü¾î¸®½ºÆ®¿¡¼­
+	// ë“±ë¡ëœ ë‹¨ì–´ë¦¬ìŠ¤íŠ¸ì—ì„œ
 	for (k = 0; k < WORD_COUNT ; k++)
 	{
-		// µî·ÏµÈ ´Ü¾îÀÇ ±æÀÌ
+		// ë“±ë¡ëœ ë‹¨ì–´ì˜ ê¸¸ì´
 		len = strlen(WORD_CHK[k]);
 
-		// ÇöÀç Â©¸° À§Ä¡°¡ 0º¸´Ù ÀÛÀ¸¸é.
+		// í˜„ì¬ ì§¤ë¦° ìœ„ì¹˜ê°€ 0ë³´ë‹¤ ì‘ìœ¼ë©´.
 		if ( (x-len+1) < 0)
 		{
 			 continue;
 		}
 
-		// ´Ü¾î Ä¸ÃÄ
+		// ë‹¨ì–´ ìº¡ì³
 		tmp  = SenderControl->Lines->Strings[y].SubString( (x-len+1), len).UpperCase().Trim();
 		if (Key != SPACE_KEY && Key != ENTER_KEY)
 		{
 			tmp = tmp + Key;
 		}
 
-		// °¡Àå ¿ŞÂÊÀÇ ¾Õ ÇÑ±ÛÀÚ.
+		// ê°€ì¥ ì™¼ìª½ì˜ ì• í•œê¸€ì.
 		tmp2 = SenderControl->Lines->Strings[y].SubString( (x-len), 1).UpperCase();
 
-		// ±æÀÌ°¡ 0º¸´Ù Å«µ¥.. ¿ŞÂÊ³¡ÀÌ Space°¡ ¾Æ´Ï¶ó¸é
+		// ê¸¸ì´ê°€ 0ë³´ë‹¤ í°ë°.. ì™¼ìª½ëì´ Spaceê°€ ì•„ë‹ˆë¼ë©´
 		if ( (x-len) > 0 && tmp2 != " ")
 		{
 			continue;
 		}
 		
-		// ¸Â´Â µî·ÏµÈ ´Ü¾î¶ó¸é ÇÏÀÌ¶óÆ®ÀÌÃ³¸®ÇÑ´Ù.
+		// ë§ëŠ” ë“±ë¡ëœ ë‹¨ì–´ë¼ë©´ í•˜ì´ë¼íŠ¸ì´ì²˜ë¦¬í•œë‹¤.
 		if (memcmp( tmp.c_str(), WORD_CHK[k], strlen(WORD_CHK[k]) ) == 0)
 		{
-			// À§Ä¡¼³Á¤.
+			// ìœ„ì¹˜ì„¤ì •.
 			SenderControl->CaretPos = TPoint((x-len), y);
 			SenderControl->SelLength = strlen(WORD_CHK[k]);
-			// ¼Ó¼ºº¯°æ.
+			// ì†ì„±ë³€ê²½.
 			SenderControl->SelAttributes->Color = clRed;
 			if (tmp == ";")
 			{
@@ -448,7 +448,7 @@ void __fastcall TForm6::MyKeyDown(TObject *Sender, WORD &Key, TShiftState Shift)
 		}
 	}
 
-    // ¿ø·¡´ë·Î Æ÷Áö¼ÇÀ» Ã£¾Æ°£´Ù.
+    // ì›ë˜ëŒ€ë¡œ í¬ì§€ì…˜ì„ ì°¾ì•„ê°„ë‹¤.
 	SenderControl->CaretPos = oldPos;
 	SenderControl->SelAttributes->Color = oldColor;
 
@@ -460,7 +460,7 @@ void __fastcall TForm6::Exit1Click(TObject *Sender)
     Form6->Close();	
 }
 //---------------------------------------------------------------------------
-// DSN ´Ù½Ã ÀĞ±â¸¦ ´©¸£¸é 
+// DSN ë‹¤ì‹œ ì½ê¸°ë¥¼ ëˆ„ë¥´ë©´ 
 void __fastcall TForm6::DSNreload1Click(TObject *Sender)
 {
 	DSNLIST->Clear();
@@ -468,7 +468,7 @@ void __fastcall TForm6::DSNreload1Click(TObject *Sender)
     DSNLIST->ItemIndex = 0;
 }
 //---------------------------------------------------------------------------
-// ÆÄÀÏ¿¡¼­ ÀĞ¾îµéÀÏ¶§.
+// íŒŒì¼ì—ì„œ ì½ì–´ë“¤ì¼ë•Œ.
 void __fastcall TForm6::OpenFromClick(TObject *Sender)
 {
 	int i, j, k, start  ;
@@ -482,18 +482,18 @@ void __fastcall TForm6::OpenFromClick(TObject *Sender)
 	}
 
 
-	// ÆÄÀÏ¿¡¼­ ÀĞ¾úÀ¸´Ï »õ·Î¿î TabSheet, RichEdit¸¦ ¸¸µé¾î³½´Ù.
+	// íŒŒì¼ì—ì„œ ì½ì—ˆìœ¼ë‹ˆ ìƒˆë¡œìš´ TabSheet, RichEditë¥¼ ë§Œë“¤ì–´ë‚¸ë‹¤.
 	New1Click(this);
 	TRichEdit *SenderControl = dynamic_cast<TRichEdit *>(PageControl1->ActivePage->FindChildControl("Rich_" + PageControl1->ActivePage->Name)) ;
 
-	// ÇÏÀÌ¶óÀÌÆÃÀ» À§ÇØ¼­´Â ¼û°ÜÁøÃ¢¿¡¼­ ºĞ¼®ÇÑÈÄ¿¡
-    // ÀÌ¸¦ ¿øº»¿¡ CopyÇÑ´Ù.
+	// í•˜ì´ë¼ì´íŒ…ì„ ìœ„í•´ì„œëŠ” ìˆ¨ê²¨ì§„ì°½ì—ì„œ ë¶„ì„í•œí›„ì—
+    // ì´ë¥¼ ì›ë³¸ì— Copyí•œë‹¤.
 	RichEdit2->Clear();
 	RichEdit2->Lines->LoadFromFile(OpenDialog1->FileName);
 
 	PageControl1->ActivePage->Caption = OpenDialog1->FileName;
 	
-	// ÇÏÀÌ¶óÀÌÆÃ
+	// í•˜ì´ë¼ì´íŒ…
 	for (k=0; k < RichEdit2->Lines->Count; k++)
 	{
 		tmp = RichEdit2->Lines->Strings[k];
@@ -512,13 +512,13 @@ void __fastcall TForm6::OpenFromClick(TObject *Sender)
 
 				for (i = 0; i < WORD_COUNT; i++)
 				{
-					// ¸Â´Â µî·ÏµÈ ´Ü¾î¶ó¸é ÇÏÀÌ¶óÆ® Ã³¸®ÇÑ´Ù.
+					// ë§ëŠ” ë“±ë¡ëœ ë‹¨ì–´ë¼ë©´ í•˜ì´ë¼íŠ¸ ì²˜ë¦¬í•œë‹¤.
 					if (memcmp( tmp2.c_str() , WORD_CHK[i], tmp2.Length() ) == 0)
 					{
-						// À§Ä¡¼³Á¤.
+						// ìœ„ì¹˜ì„¤ì •.
 						RichEdit2->CaretPos = TPoint((start-1), k);
 						RichEdit2->SelLength = strlen(WORD_CHK[i]);
-						// ¼Ó¼ºº¯°æ.
+						// ì†ì„±ë³€ê²½.
 						RichEdit2->SelAttributes->Color = clRed;
 						break;
 					}
@@ -530,7 +530,7 @@ void __fastcall TForm6::OpenFromClick(TObject *Sender)
 	}
 
 
-	// ¿ø·¡´ë·Î Æ÷Áö¼ÇÀ» Ã£¾Æ°£´Ù.
+	// ì›ë˜ëŒ€ë¡œ í¬ì§€ì…˜ì„ ì°¾ì•„ê°„ë‹¤.
 	RichEdit2->CaretPos = TPoint(0, 0);
 	RichEdit2->SelAttributes->Color = clBlack;
 
@@ -541,12 +541,12 @@ void __fastcall TForm6::OpenFromClick(TObject *Sender)
 
 }
 //---------------------------------------------------------------------------
-// ÆÄÀÏÀúÀåÇÏ±â
+// íŒŒì¼ì €ì¥í•˜ê¸°
 void __fastcall TForm6::SaveFile1Click(TObject *Sender)
 {
 	TRichEdit *SenderControl = dynamic_cast<TRichEdit *>(PageControl1->ActivePage->FindChildControl("Rich_" + PageControl1->ActivePage->Name)) ;
 
-	// untitleÀÌ ¾Æ´Ï¸é ±âÁ¸ ÆÄÀÏ¸í¿¡ ÀúÀåÀ» ÇÏ°í..
+	// untitleì´ ì•„ë‹ˆë©´ ê¸°ì¡´ íŒŒì¼ëª…ì— ì €ì¥ì„ í•˜ê³ ..
 	if (PageControl1->ActivePage->Caption != "untitle")
 	{
 		SenderControl->PlainText = true;
@@ -555,13 +555,13 @@ void __fastcall TForm6::SaveFile1Click(TObject *Sender)
 		return;
 	}
 
-	// »õ·Î¿î°Å¸é »õ·Î¿î ÆÄÀÏ¸í¿¡..
+	// ìƒˆë¡œìš´ê±°ë©´ ìƒˆë¡œìš´ íŒŒì¼ëª…ì—..
 	if (!SaveDialog1->Execute())
 	{
 		return;
 	}
 
-    // ÇÏÀÌ¶óÀÌÆÃ Á¤º¸¶§¹®¿¡ ¹İµå½Ã PlainText¼Ó¼ºÀ» º¯°æÇØ¾ß ÇÑ´Ù.
+    // í•˜ì´ë¼ì´íŒ… ì •ë³´ë•Œë¬¸ì— ë°˜ë“œì‹œ PlainTextì†ì„±ì„ ë³€ê²½í•´ì•¼ í•œë‹¤.
 	PageControl1->ActivePage->Caption = SaveDialog1->FileName;
 	SenderControl->PlainText = true;
 	SenderControl->Lines->SaveToFile(SaveDialog1->FileName);
@@ -583,7 +583,7 @@ void __fastcall TForm6::SaveMessage1Click(TObject *Sender)
 	Memo1->Lines->SaveToFile(SaveDialog1->FileName);
 }
 //---------------------------------------------------------------------------
-// ÇÙ½ÉÀÎµ¥.. ¸Ş¸ğ¸® ´©¼ö°¡ ¾ø´ÂÁö °ÆÁ¤ÀÌ´Ù. 
+// í•µì‹¬ì¸ë°.. ë©”ëª¨ë¦¬ ëˆ„ìˆ˜ê°€ ì—†ëŠ”ì§€ ê±±ì •ì´ë‹¤. 
 void __fastcall TForm6::New1Click(TObject *Sender)
 {
 	static int row = 1;
@@ -591,7 +591,7 @@ void __fastcall TForm6::New1Click(TObject *Sender)
 	
 	RichEdit2->Clear();
 
-	// RichEdit¸¦ ¸¸µé¾î³½´Ù.
+	// RichEditë¥¼ ë§Œë“¤ì–´ë‚¸ë‹¤.
 	TRichEdit *rch = new TRichEdit(this);
 	rch->Align = alClient;
 	rch->BevelInner = bvLowered;
@@ -604,14 +604,14 @@ void __fastcall TForm6::New1Click(TObject *Sender)
 	rch->OnKeyDown = MyKeyDown;
     rch->Text = "";
 	
-	// »õ·Î¿î TabSheet¸¦ ¸¸µé¾î³½´Ù.
+	// ìƒˆë¡œìš´ TabSheetë¥¼ ë§Œë“¤ì–´ë‚¸ë‹¤.
 	TTabSheet *tab = new TTabSheet(this);
 	tab->Parent = Form6;
 	tab->PageControl = PageControl1 ;
 	tab->InsertControl(rch);
 	tab->Caption = "untitle";
 
-	// FindComponent¸¦ ½±°Ô ÇÏ±â À§ÇØ¼­ ÀÌ¸§À» ÀÏ°ü¼ºÀÖ°Ô ¸¸µç´Ù.
+	// FindComponentë¥¼ ì‰½ê²Œ í•˜ê¸° ìœ„í•´ì„œ ì´ë¦„ì„ ì¼ê´€ì„±ìˆê²Œ ë§Œë“ ë‹¤.
 	sprintf(Names123, "tab_%d", row);
 	tab->Name = Names123;
 
@@ -619,14 +619,14 @@ void __fastcall TForm6::New1Click(TObject *Sender)
 	rch->Name = Names123;
 	rch->Clear();
 
-	// ºÎ¸ğµéÀ» ÁöÁ¤ÇØÁØ´Ù.
+	// ë¶€ëª¨ë“¤ì„ ì§€ì •í•´ì¤€ë‹¤.
 	rch->Parent = tab;
 
-	// Æ÷Ä¿½Ì Ã³¸®
+	// í¬ì»¤ì‹± ì²˜ë¦¬
 	PageControl1->ActivePage = tab;
 	rch->SetFocus();
 
-    // RichEditÀÇ readingÁ¦¾àÀ¸·Î 10M·Î ´Ã¸°´Ù.
+    // RichEditì˜ readingì œì•½ìœ¼ë¡œ 10Më¡œ ëŠ˜ë¦°ë‹¤.
 	SendMessage(rch->Handle, EM_EXLIMITTEXT, 0, (1024*1024*10));
 
 	row++;
@@ -658,31 +658,31 @@ void __fastcall TForm6::Save2Click(TObject *Sender)
 	SaveFile1Click(this);	
 }
 //---------------------------------------------------------------------------
-// º¹»çÇÏ±â
+// ë³µì‚¬í•˜ê¸°
 void __fastcall TForm6::Copy1Click(TObject *Sender)
 {
 	TRichEdit *SenderControl = dynamic_cast<TRichEdit *>(PageControl1->ActivePage->FindChildControl("Rich_" + PageControl1->ActivePage->Name)) ;
 	SenderControl->CopyToClipboard();
 }
 //---------------------------------------------------------------------------
-// ºÙÇô³Ö±â
+// ë¶™í˜€ë„£ê¸°
 void __fastcall TForm6::Paste1Click(TObject *Sender)
 {
 	TRichEdit *SenderControl = dynamic_cast<TRichEdit *>(PageControl1->ActivePage->FindChildControl("Rich_" + PageControl1->ActivePage->Name)) ;
 	SenderControl->PasteFromClipboard();
 }
 //---------------------------------------------------------------------------
-// ¿­¸° instance ´İ±â.
+// ì—´ë¦° instance ë‹«ê¸°.
 void __fastcall TForm6::CloseFile1Click(TObject *Sender)
 {
 
-    // ÆäÀÌÁö °¹¼ö°¡ 0°³ÀÌ¸é ¾Æ·¡ ÄÚµå´Â ¿¡·¯°¡ ³¯Å×´Ï ¸·´Â´Ù.
+    // í˜ì´ì§€ ê°¯ìˆ˜ê°€ 0ê°œì´ë©´ ì•„ë˜ ì½”ë“œëŠ” ì—ëŸ¬ê°€ ë‚ í…Œë‹ˆ ë§‰ëŠ”ë‹¤.
 	if (PageControl1->PageCount == 0)
 	{
         return;    
 	}
 
-    // ÇöÀç Æ÷Ä¿½ÌµÈ ³ğ¸¸ »èÁ¦ÇÑ´Ù.
+    // í˜„ì¬ í¬ì»¤ì‹±ëœ ë†ˆë§Œ ì‚­ì œí•œë‹¤.
 	TRichEdit *SenderControl = dynamic_cast<TRichEdit *>(PageControl1->ActivePage->FindChildControl("Rich_" + PageControl1->ActivePage->Name)) ;
 
 	SenderControl->Free() ;

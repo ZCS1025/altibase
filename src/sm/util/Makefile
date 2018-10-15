@@ -53,10 +53,10 @@ clean:
 	$(RM) core .dependency $(BINS) $(BINS_AFTER) $(OBJS) $(TARGET_DIR)/src/sm/util/*.$(OBJEXT) *.d SunWS_cache
 
 install: $(BINS)
-        # TASK-2693 dumplf, dumpla¸¦ Á¦Ç°È­ ½ÃÄÑ¾ß ÇÔ 
+        # TASK-2693 dumplf, dumplaë¥¼ ì œí’ˆí™” ì‹œì¼œì•¼ í•¨ 
 	$(COPY) DUMPLF.ban $(ALTI_HOME)/msg
 	$(COPY) DUMPLA.ban $(ALTI_HOME)/msg
-        # BUG-28510 dumpÀ¯Æ¿µéÀÇ Banner¾ç½ÄÀ» ÅëÀÏÇØ¾ß ÇÕ´Ï´Ù.
+        # BUG-28510 dumpìœ í‹¸ë“¤ì˜ Bannerì–‘ì‹ì„ í†µì¼í•´ì•¼ í•©ë‹ˆë‹¤.
 	$(COPY) DUMPCI.ban $(ALTI_HOME)/msg
 	$(COPY) DUMPDDF.ban $(ALTI_HOME)/msg
 	$(COPY) DUMPCT.ban $(ALTI_HOME)/msg

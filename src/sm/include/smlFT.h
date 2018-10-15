@@ -32,7 +32,7 @@
 class smlFT
 {
 private:
-    // TBL,TBS,DBF¿¡ LockNode¸¦ FixedTableÀÇ Record·Î »ı¼ºÇÑ´Ù. 
+    // TBL,TBS,DBFì— LockNodeë¥¼ FixedTableì˜ Recordë¡œ ìƒì„±í•œë‹¤. 
     static IDE_RC getLockItemNodes(void                 *aHeader,
                                     iduFixedTableMemory *aMemory,
                                     smlLockItem         *aLockItem);

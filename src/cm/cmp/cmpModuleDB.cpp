@@ -35,9 +35,9 @@ cmpModule gCmpModuleDB =
     CMP_MODULE_DB,
 
     // proj_2160 cm_type removal
-    // CMP_VER_DB_MAX¸¦ ´õÀÌ»ó »ç¿ëÇÏÁö ¾Ê±â ¶§¹®¿¡ 
-    // ´ë½Å CM_PATCH_VERSIONÀ¸·Î º¯°æ.
-    // ¿¹Àü¿¡µµ º° ÀÇ¹Ì ¾ø¾úÀ½(BaseHandshake ÇÒ¶§ DB ¹öÀü È®ÀÎ¿ë)
+    // CMP_VER_DB_MAXë¥¼ ë”ì´ìƒ ì‚¬ìš©í•˜ì§€ ì•Šê¸° ë•Œë¬¸ì— 
+    // ëŒ€ì‹  CM_PATCH_VERSIONìœ¼ë¡œ ë³€ê²½.
+    // ì˜ˆì „ì—ë„ ë³„ ì˜ë¯¸ ì—†ì—ˆìŒ(BaseHandshake í• ë•Œ DB ë²„ì „ í™•ì¸ìš©)
     CM_PATCH_VERSION,
     CMP_OP_DB_MAX_A5,  /* BUG-43080 */
     CMP_OP_DB_MAX,

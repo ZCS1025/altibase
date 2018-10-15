@@ -46,7 +46,7 @@ class svpFT
 public:
     //------------------------------------------
     // D$VOL_DB_PAGE
-    // Vol PCH·ÎºÎÅÍ ÆäÀÌÁö¸¦ DumpÇÑ´Ù.
+    // Vol PCHë¡œë¶€í„° í˜ì´ì§€ë¥¼ Dumpí•œë‹¤.
     //------------------------------------------
     static IDE_RC buildRecordVolDBPageDump(idvSQL              * /*aStatistics*/,
                                            void                *aHeader,

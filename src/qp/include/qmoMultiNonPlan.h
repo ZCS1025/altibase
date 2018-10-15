@@ -21,14 +21,14 @@
  * Description :
  *     Plan Generator
  *
- *     Multi-child Non-materialized PlanÀ» »ı¼ºÇÏ±â À§ÇÑ °ü¸®ÀÚÀÌ´Ù.
+ *     Multi-child Non-materialized Planì„ ìƒì„±í•˜ê¸° ìœ„í•œ ê´€ë¦¬ìì´ë‹¤.
  *
- *     ´ÙÀ½°ú °°Àº Plan NodeÀÇ »ı¼ºÀ» °ü¸®ÇÑ´Ù.
- *         - MultiBUNI ³ëµå
+ *     ë‹¤ìŒê³¼ ê°™ì€ Plan Nodeì˜ ìƒì„±ì„ ê´€ë¦¬í•œë‹¤.
+ *         - MultiBUNI ë…¸ë“œ
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  **********************************************************************/
 
@@ -45,7 +45,7 @@
 #include <qmoSubquery.h>
 
 //------------------------------
-// MULTI_BUNI³ëµåÀÇ dependency¸¦ È£ÃâÀ» À§ÇÑ flag
+// MULTI_BUNIë…¸ë“œì˜ dependencyë¥¼ í˜¸ì¶œì„ ìœ„í•œ flag
 //------------------------------
 #define QMO_MULTI_BUNI_DEPENDENCY                       \
     ( QMO_DEPENDENCY_STEP1_SET_TABLE_MAP_FALSE     |    \
@@ -56,7 +56,7 @@
       QMO_DEPENDENCY_STEP6_DEPENDENCIES_REFINE_FALSE )
 
 //------------------------------
-// PCRD³ëµåÀÇ dependency¸¦ È£ÃâÀ» À§ÇÑ flag
+// PCRDë…¸ë“œì˜ dependencyë¥¼ í˜¸ì¶œì„ ìœ„í•œ flag
 //------------------------------
 #define QMO_PCRD_DEPENDENCY ( QMO_DEPENDENCY_STEP1_SET_TABLE_MAP_TRUE     |     \
                               QMO_DEPENDENCY_STEP2_BASE_TABLE_TRUE        |     \
@@ -66,7 +66,7 @@
                               QMO_DEPENDENCY_STEP6_DEPENDENCIES_REFINE_FALSE )
 
 //------------------------------
-// MRGE³ëµåÀÇ dependency¸¦ È£ÃâÀ» À§ÇÑ flag
+// MRGEë…¸ë“œì˜ dependencyë¥¼ í˜¸ì¶œì„ ìœ„í•œ flag
 //------------------------------
 #define QMO_MRGE_DEPENDENCY ( QMO_DEPENDENCY_STEP1_SET_TABLE_MAP_FALSE    |     \
                               QMO_DEPENDENCY_STEP2_BASE_TABLE_FALSE       |     \
@@ -76,7 +76,7 @@
                               QMO_DEPENDENCY_STEP6_DEPENDENCIES_REFINE_FALSE )
 
 //------------------------------
-// MTIT³ëµåÀÇ dependency¸¦ È£ÃâÀ» À§ÇÑ flag
+// MTITë…¸ë“œì˜ dependencyë¥¼ í˜¸ì¶œì„ ìœ„í•œ flag
 //------------------------------
 #define QMO_MTIT_DEPENDENCY ( QMO_DEPENDENCY_STEP1_SET_TABLE_MAP_FALSE     |    \
                               QMO_DEPENDENCY_STEP2_BASE_TABLE_FALSE        |    \
@@ -95,7 +95,7 @@
 #define QMO_PCRD_INFO_NOTNULL_KEYRANGE_TRUE    (0x00000001)
 
 // PROJ-1502 PARTITIONED DISK TABLE
-// partition-coordinator ³ëµå¸¦ À§ÇÑ ÀÔ·Â Á¤º¸
+// partition-coordinator ë…¸ë“œë¥¼ ìœ„í•œ ì…ë ¥ ì •ë³´
 typedef struct qmoPCRDInfo
 {
     UInt                flag;
@@ -113,7 +113,7 @@ typedef struct qmoPCRDInfo
 } qmoPCRDInfo;
 
 // PROJ-2205 rownum in DML
-// mrege operator ³ëµå¸¦ À§ÇÑ ÀÔ·Â Á¤º¸
+// mrege operator ë…¸ë“œë¥¼ ìœ„í•œ ì…ë ¥ ì •ë³´
 typedef struct qmoMRGEInfo
 {
     qmsTableRef       * tableRef;
@@ -133,14 +133,14 @@ typedef struct qmoMRGEInfo
 } qmoMRGEInfo;
 
 //---------------------------------------------------
-// Multi-Child Non-Materialized PlanÀ» °ü¸®ÇÏ±â À§ÇÑ ÇÔ¼ö
+// Multi-Child Non-Materialized Planì„ ê´€ë¦¬í•˜ê¸° ìœ„í•œ í•¨ìˆ˜
 //---------------------------------------------------
 
 class qmoMultiNonPlan
 {
 public:
 
-    // MultiBUNI ³ëµåÀÇ »ı¼º
+    // MultiBUNI ë…¸ë“œì˜ ìƒì„±
     static IDE_RC    initMultiBUNI( qcStatement  * aStatement ,
                                     qmsQuerySet  * aQuerySet ,
                                     qmnPlan      * aParent,
@@ -151,7 +151,7 @@ public:
                                     qmgChildren  * aChildrenGraph,
                                     qmnPlan      * aPlan );
 
-    // PCRD ³ëµåÀÇ »ı¼º
+    // PCRD ë…¸ë“œì˜ ìƒì„±
     static IDE_RC    initPCRD( qcStatement  * aStatement ,
                                qmsQuerySet  * aQuerySet ,
                                qmnPlan      * aParent,
@@ -164,7 +164,7 @@ public:
                                qmnPlan      * aPlan );
 
     // PROJ-1071 Parallel query
-    // PPCRD ³ëµåÀÇ »ı¼º
+    // PPCRD ë…¸ë“œì˜ ìƒì„±
     static IDE_RC initPPCRD( qcStatement  * aStatement ,
                              qmsQuerySet  * aQuerySet,
                              qmnPlan      * aParent,
@@ -177,7 +177,7 @@ public:
                              qmnPlan      * aPlan );
 
     // PROJ-2205 rownum in DML
-    // MRGE ³ëµåÀÇ »ı¼º
+    // MRGE ë…¸ë“œì˜ ìƒì„±
     static IDE_RC    initMRGE( qcStatement  * aStatement ,
                                qmnPlan     ** aPlan );
     

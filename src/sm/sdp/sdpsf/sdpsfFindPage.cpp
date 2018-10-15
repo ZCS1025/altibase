@@ -33,25 +33,25 @@
 #include <sdpsfFindPage.h>
 
 /***********************************************************************
- * Description : aRecordSize°¡ »ğÀÏµÉ Free Page¸¦ Ã£´Â´Ù.
+ * Description : aRecordSizeê°€ ì‚½ì¼ë  Free Pageë¥¼ ì°¾ëŠ”ë‹¤.
  *
- * 1. SegHdr¿¡ SLatch¸¦ Àâ°í Free PID List¸¦ Ã£´Â´Ù.
- * 2. ¸¸¾à Free PID List¿¡ ¾ø´Ù¸é »õ·Î¿î ÆäÀÌÁö¸¦ ÇÒ´çÇÑ´Ù.
+ * 1. SegHdrì— SLatchë¥¼ ì¡ê³  Free PID Listë¥¼ ì°¾ëŠ”ë‹¤.
+ * 2. ë§Œì•½ Free PID Listì— ì—†ë‹¤ë©´ ìƒˆë¡œìš´ í˜ì´ì§€ë¥¼ í• ë‹¹í•œë‹¤.
  *
- * aStatistics  - [IN] Åë°è Á¤º¸
+ * aStatistics  - [IN] í†µê³„ ì •ë³´
  * aMtx         - [IN] Mini Transaction Pointer
  * aSpaceID     - [IN] TableSpace ID
  * aSegHandle   - [IN] Segment Handle
- * aTableInfo   - [IN] Insert, update, delete½Ã Transaction¿¡ Ãß°¡µÇ´Â
- *                     TableInfoÁ¤º¸·Î¼­ InsertPID Hint¸¦ ÂüÁ¶ÇÏ±â À§ÇØ
- *                     »ç¿ë
+ * aTableInfo   - [IN] Insert, update, deleteì‹œ Transactionì— ì¶”ê°€ë˜ëŠ”
+ *                     TableInfoì •ë³´ë¡œì„œ InsertPID Hintë¥¼ ì°¸ì¡°í•˜ê¸° ìœ„í•´
+ *                     ì‚¬ìš©
  * aPageType    - [IN] Page Type
  * aRecordSize  - [IN] Record Size
- * aNeedKeySlot - [IN] ÆäÀÌÁö free°ø°£ °è»ê½Ã KeySlotÀ» Æ÷ÇÔÇØ¼­ °è»êÇØ¾ß
- *                     µÇ¸é ID_TRUE, else ID_FALSE
+ * aNeedKeySlot - [IN] í˜ì´ì§€ freeê³µê°„ ê³„ì‚°ì‹œ KeySlotì„ í¬í•¨í•´ì„œ ê³„ì‚°í•´ì•¼
+ *                     ë˜ë©´ ID_TRUE, else ID_FALSE
  *
- * aPagePtr     - [OUT] Free°ø°£À» °¡Áø Page¿¡ ´ëÇÑ Pointer°¡ ¼³Á¤µÈ´Ù.
- *                      return ½Ã ÇØ´ç ÆäÀÌÁö¿¡ XLatch°¡ °É·ÁÀÖ´Ù.
+ * aPagePtr     - [OUT] Freeê³µê°„ì„ ê°€ì§„ Pageì— ëŒ€í•œ Pointerê°€ ì„¤ì •ëœë‹¤.
+ *                      return ì‹œ í•´ë‹¹ í˜ì´ì§€ì— XLatchê°€ ê±¸ë ¤ìˆë‹¤.
  *
  ***********************************************************************/
 IDE_RC sdpsfFindPage::findFreePage( idvSQL           *aStatistics,
@@ -94,7 +94,7 @@ IDE_RC sdpsfFindPage::findFreePage( idvSQL           *aStatistics,
 
     if( sPagePtr == NULL )
     {
-        /* SegHdr¿¡ XLatch¸¦ °Ç´Ù. */
+        /* SegHdrì— XLatchë¥¼ ê±´ë‹¤. */
         IDE_TEST( sdpsfSH::fixAndGetSegHdr4Update( aStatistics,
                                                    aSpaceID,
                                                    sSegPID,
@@ -102,7 +102,7 @@ IDE_RC sdpsfFindPage::findFreePage( idvSQL           *aStatistics,
                   != IDE_SUCCESS );
         sState = 1;
 
-        /* Free PID List¿¡¼­ Free Page¸¦ Ã£´Â´Ù. */
+        /* Free PID Listì—ì„œ Free Pageë¥¼ ì°¾ëŠ”ë‹¤. */
         IDE_TEST( sdpsfFreePIDList::walkAndUnlink( aStatistics,
                                                    aMtx,
                                                    aSpaceID,
@@ -115,8 +115,8 @@ IDE_RC sdpsfFindPage::findFreePage( idvSQL           *aStatistics,
 
         if( sPagePtr == NULL )
         {
-            /* Free PID List¿¡ ¾ø´Ù¸é Pvt, UFmt, Ext List¿¡¼­ ÆäÀÌÁö¸¦
-             * ÇÒ´ç¹Ş´Â´Ù. */
+            /* Free PID Listì— ì—†ë‹¤ë©´ Pvt, UFmt, Ext Listì—ì„œ í˜ì´ì§€ë¥¼
+             * í• ë‹¹ë°›ëŠ”ë‹¤. */
             IDE_TEST( sdpsfAllocPage::allocNewPage( aStatistics,
                                                     aMtx,
                                                     aSpaceID,
@@ -162,19 +162,19 @@ IDE_RC sdpsfFindPage::findFreePage( idvSQL           *aStatistics,
 }
 
 /***********************************************************************
- * Description : aTableInfo¿¡¼­ °¡¸®Å°´Â Hint Page¿¡ ºó °ø°£ÀÌ ÀÖ´ÂÁö Check
- *               ÇÑ´Ù.
+ * Description : aTableInfoì—ì„œ ê°€ë¦¬í‚¤ëŠ” Hint Pageì— ë¹ˆ ê³µê°„ì´ ìˆëŠ”ì§€ Check
+ *               í•œë‹¤.
  *
- * aStatistics  - [IN] Åë°è Á¤º¸
+ * aStatistics  - [IN] í†µê³„ ì •ë³´
  * aMtx         - [IN] Mini Transaction Pointer
  * aSpaceID     - [IN] TableSpace ID
  * aTableInfo   - [IN] TableInfo
  * aRecordSize  - [IN] Record Size
- * aNeedKeySlot - [IN] Insert½Ã KeySlotÀÌ ÇÊ¿äÇÑ°¡?
+ * aNeedKeySlot - [IN] Insertì‹œ KeySlotì´ í•„ìš”í•œê°€?
  *
- * aPagePtr     - [OUT] Hint PID°¡ °¡¸®Å°´Â ÆäÀÌÁö¿¡ Insert°¡ °¡´ÉÇÏ¸é Hint
- *                      PID°¡ °¡¸®Å°´Â Page Pointer°¡ ¸®ÅÏµÇ°í, ¾Æ´Ï¸é Null
- *                      ÀÌ Return
+ * aPagePtr     - [OUT] Hint PIDê°€ ê°€ë¦¬í‚¤ëŠ” í˜ì´ì§€ì— Insertê°€ ê°€ëŠ¥í•˜ë©´ Hint
+ *                      PIDê°€ ê°€ë¦¬í‚¤ëŠ” Page Pointerê°€ ë¦¬í„´ë˜ê³ , ì•„ë‹ˆë©´ Null
+ *                      ì´ Return
  ***********************************************************************/
 IDE_RC sdpsfFindPage::checkHintPID4Insert( idvSQL           *aStatistics,
                                            sdrMtx           *aMtx,
@@ -266,12 +266,12 @@ IDE_RC sdpsfFindPage::checkHintPID4Insert( idvSQL           *aStatistics,
 
 
 /***********************************************************************
- * Description : ÆäÀÌÁöÀÇ °¡¿ë°ø°£À» È®ÀÎÇÏ°í RowÀ» ÀúÀåÇÒ ¼ö ÀÖ´ÂÁö °Ë»ç
+ * Description : í˜ì´ì§€ì˜ ê°€ìš©ê³µê°„ì„ í™•ì¸í•˜ê³  Rowì„ ì €ì¥í•  ìˆ˜ ìˆëŠ”ì§€ ê²€ì‚¬
  *
  * aPagePtr      - [IN] Page Pointer
- * aRowSize      - [IN] ÀúÀåÇÒ Row Å©±â
- * aCanAllocSlot - [OUT] °¡¿ë°ø°£ ÇÒ´ç ¿©ºÎ
- * aCanAllocSlot - [OUT] List·ÎºÎÅÍ Á¦°Å¿©ºÎ
+ * aRowSize      - [IN] ì €ì¥í•  Row í¬ê¸°
+ * aCanAllocSlot - [OUT] ê°€ìš©ê³µê°„ í• ë‹¹ ì—¬ë¶€
+ * aCanAllocSlot - [OUT] Listë¡œë¶€í„° ì œê±°ì—¬ë¶€
  *
  ***********************************************************************/
 IDE_RC sdpsfFindPage::checkSizeAndAllocCTS(
@@ -374,14 +374,14 @@ IDE_RC sdpsfFindPage::checkSizeAndAllocCTS(
 }
 
 /***********************************************************************
- * Description : Page¿¡ »ç¿ë·®¿¡ µû¶ó¼­ ÆäÀÌÁöÀÇ »óÅÂ¸¦ UPDATE_ONLY³ª
- *               INSERTABLE·Î º¯°æÇÑ´Ù.
+ * Description : Pageì— ì‚¬ìš©ëŸ‰ì— ë”°ë¼ì„œ í˜ì´ì§€ì˜ ìƒíƒœë¥¼ UPDATE_ONLYë‚˜
+ *               INSERTABLEë¡œ ë³€ê²½í•œë‹¤.
  *
- * aStatistics   - [IN] Åë°è Á¤º¸
+ * aStatistics   - [IN] í†µê³„ ì •ë³´
  * aMtx          - [IN] Mini Transaction Pointer
  * aSpaceID      - [IN] TableSpace ID
  * aSegHandle    - [IN] Segment Handle
- * aDataPagePtr  - [IN] insert, update, delete°¡ ¹ß»ıÇÑ Data Page
+ * aDataPagePtr  - [IN] insert, update, deleteê°€ ë°œìƒí•œ Data Page
  *
  ***********************************************************************/
 IDE_RC sdpsfFindPage::updatePageState( idvSQL           * aStatistics,
@@ -404,18 +404,18 @@ IDE_RC sdpsfFindPage::updatePageState( idvSQL           * aStatistics,
     {
         sPageState = (sdpsfPageState)sdpPhyPage::getState( sPageHdr  );
 
-        /* PCTFREE¿Í PCTUSED¸¦ Á¶»çÇØ¾ß ÇÑ´Ù. */
+        /* PCTFREEì™€ PCTUSEDë¥¼ ì¡°ì‚¬í•´ì•¼ í•œë‹¤. */
         switch( sPageState )
         {
             case SDPSF_PAGE_USED_INSERTABLE:
-                /* InsertableÀÌ´Ù°¡ insertRow³ª updateRow¿¡ ÀÇÇØ¼­
-                 * ÆäÀÌÁöÀÇ »óÅÂ°¡ Update Only·Î ¹Ù²ä¼ö ÀÖ±â¶§¹®¿¡
-                 * CheckÇÑ´Ù. */
+                /* Insertableì´ë‹¤ê°€ insertRowë‚˜ updateRowì— ì˜í•´ì„œ
+                 * í˜ì´ì§€ì˜ ìƒíƒœê°€ Update Onlyë¡œ ë°”ê¿œìˆ˜ ìˆê¸°ë•Œë¬¸ì—
+                 * Checkí•œë‹¤. */
                 if( isPageUpdateOnly( sPageHdr,
                                       aSegHandle->mSegAttr.mPctFree )
                     == ID_TRUE )
                 {
-                    /* Page»óÅÂ¸¦ Update Only·Î ¹Ù²Û´Ù. */
+                    /* Pageìƒíƒœë¥¼ Update Onlyë¡œ ë°”ê¾¼ë‹¤. */
                     IDE_TEST( sdpPhyPage::setState(
                                     sPageHdr,
                                     (UShort)SDPSF_PAGE_USED_UPDATE_ONLY,
@@ -424,8 +424,8 @@ IDE_RC sdpsfFindPage::updatePageState( idvSQL           * aStatistics,
                 break;
 
             case SDPSF_PAGE_USED_UPDATE_ONLY:
-                /* Update Only¿´´Ù°¡ FreeRow¿¡ ÀÇÇØ¼­ »óÅÂ°¡ º¯°æµÉ ¼ö ÀÖ±â ¶§¹®¿¡ ÀÌ°ÍÀ»
-                 * CheckÇÑ´Ù. */
+                /* Update Onlyì˜€ë‹¤ê°€ FreeRowì— ì˜í•´ì„œ ìƒíƒœê°€ ë³€ê²½ë  ìˆ˜ ìˆê¸° ë•Œë¬¸ì— ì´ê²ƒì„
+                 * Checkí•œë‹¤. */
                 if( isPageInsertable( sPageHdr,
                                       aSegHandle->mSegAttr.mPctUsed )
                     == ID_TRUE )
@@ -437,7 +437,7 @@ IDE_RC sdpsfFindPage::updatePageState( idvSQL           * aStatistics,
 
                     if( sPageHdr->mLinkState == SDP_PAGE_LIST_UNLINK )
                     {
-                        /* ¸¸¾à Free PID List¿¡ µî·ÏÀÌ µÇ¾î ÀÖÁö ¾Ê´Ù¸é Add½ÃÅ²´Ù. */
+                        /* ë§Œì•½ Free PID Listì— ë“±ë¡ì´ ë˜ì–´ ìˆì§€ ì•Šë‹¤ë©´ Addì‹œí‚¨ë‹¤. */
                         IDE_TEST( sdpsfAllocPage::addPageToFreeList( aStatistics,
                                                                      aMtx,
                                                                      aSpaceID,
@@ -448,7 +448,7 @@ IDE_RC sdpsfFindPage::updatePageState( idvSQL           * aStatistics,
                 }
                 break;
 
-                /* ÀÌ»óÅÂ·Î µé¾î¿Ã¼ö ¾ø´Ù. */
+                /* ì´ìƒíƒœë¡œ ë“¤ì–´ì˜¬ìˆ˜ ì—†ë‹¤. */
             case SDPSF_PAGE_FREE:
             default:
                 IDE_ASSERT(0);

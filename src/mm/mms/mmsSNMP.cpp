@@ -23,10 +23,10 @@
 #define OID_MAX_LEN        (128)
 
 /*
- * PROJ-2473 SNMP Áö¿ø
+ * PROJ-2473 SNMP ì§€ì›
  *
- * ALTIBASE¿Í SNMP SUB-AGENT for ALTIBASE°£ÀÇ Åë½ÅÀ» À§ÇÑ ÇÁ·ÎÅäÄİÀÌ¸ç
- * °°Àº Àåºñ¿¡¼­ ¼öÇàµÇ±â ¶§¹®¿¡ ENDIAN º¯È¯Àº ÇÊ¿äÄ¡ ¾Ê´Ù.
+ * ALTIBASEì™€ SNMP SUB-AGENT for ALTIBASEê°„ì˜ í†µì‹ ì„ ìœ„í•œ í”„ë¡œí† ì½œì´ë©°
+ * ê°™ì€ ì¥ë¹„ì—ì„œ ìˆ˜í–‰ë˜ê¸° ë•Œë¬¸ì— ENDIAN ë³€í™˜ì€ í•„ìš”ì¹˜ ì•Šë‹¤.
  *
  * MMS Protocol - REQUEST
  *
@@ -40,8 +40,8 @@
  *  DATA Length                        - UINT                |--- mmsData
  *  DATA                               - UCHAR          -----+
  *
- *  OID´Â °¡º¯ÀÌ¸ç ÃÖ´ë°³¼ö´Â 128°³. 128°³¸¦ °íÁ¤À¸·Î Àâ´Â°Ô ³ªÀ»ÁöµÎ...
- *  DATA ¿ª½Ã °¡º¯ÀÌ´Ù.
+ *  OIDëŠ” ê°€ë³€ì´ë©° ìµœëŒ€ê°œìˆ˜ëŠ” 128ê°œ. 128ê°œë¥¼ ê³ ì •ìœ¼ë¡œ ì¡ëŠ”ê²Œ ë‚˜ì„ì§€ë‘...
+ *  DATA ì—­ì‹œ ê°€ë³€ì´ë‹¤.
  *
  *
  * MMS Protocol - RESPONSE
@@ -84,18 +84,18 @@ typedef struct
 {
     UInt  mValueType;
     UInt  mValueLen;
-    UChar mValue[4];  /* Padding ¶§¹®¿¡ 4ÀÇ ¹è¼ö·Î... */
+    UChar mValue[4];  /* Padding ë•Œë¬¸ì— 4ì˜ ë°°ìˆ˜ë¡œ... */
 } mmsData;
 
-/* PROJ-2473 SNMP Áö¿ø */
+/* PROJ-2473 SNMP ì§€ì› */
 mmsSNMP gMmsSNMP;
 
 /* 
  * LOG LEVEL
  *
- * IDE_SNMP_0 - ÃÊ±â Á¤º¸ ¹× ½É°¢ÇÑ ¿¡·¯ (½Ã½ºÅÛÄİ)
- * IDE_SNMP_1 - µ¿ÀÛ¿¡ ¿µÇâÀ» ÁÖÁö ¾Ê´Â ¿¡·¯ (INVALID Protocol)
- * IDE_SNMP_2 - ÆĞÅ¶ Á¤º¸ (DUMP Protocol)
+ * IDE_SNMP_0 - ì´ˆê¸° ì •ë³´ ë° ì‹¬ê°í•œ ì—ëŸ¬ (ì‹œìŠ¤í…œì½œ)
+ * IDE_SNMP_1 - ë™ì‘ì— ì˜í–¥ì„ ì£¼ì§€ ì•ŠëŠ” ì—ëŸ¬ (INVALID Protocol)
+ * IDE_SNMP_2 - íŒ¨í‚· ì •ë³´ (DUMP Protocol)
  * IDE_SNMP_3 - Not used yet.
  * IDE_SNMP_4 - Not used yet.
  */
@@ -103,7 +103,7 @@ mmsSNMP gMmsSNMP;
 /**
  *  mmsSNMP::processSNMP
  *
- *  SNMP Sub AgentÀÇ ¿äÃ»À» Ã³¸®ÇÑ´Ù.
+ *  SNMP Sub Agentì˜ ìš”ì²­ì„ ì²˜ë¦¬í•œë‹¤.
  */
 SInt mmsSNMP::processSNMP(UInt aRecvPacketLen)
 {
@@ -112,7 +112,7 @@ SInt mmsSNMP::processSNMP(UInt aRecvPacketLen)
     mmsData        *sData        = NULL;
     UInt            sDataLen     = 0;
 
-    /* idm¿¡¼­ ¾ò¾î¿À´Â °ªÀ» ÀúÀå */
+    /* idmì—ì„œ ì–»ì–´ì˜¤ëŠ” ê°’ì„ ì €ì¥ */
     UInt            sValueType;
     UInt            sValueLen;
     UChar          *sValue     = mValueBuf;
@@ -124,10 +124,10 @@ SInt mmsSNMP::processSNMP(UInt aRecvPacketLen)
 
     UInt            sSendPacketLen = 0;
 
-    /* static buf°¡ ¸®ÅÏµÈ´Ù */
+    /* static bufê°€ ë¦¬í„´ëœë‹¤ */
     mClientAddrStr = idlOS::inet_ntoa(((struct sockaddr_in *)&mClientAddr)->sin_addr);
 
-    /* UDP´Â µ¥ÀÌÅÍ°¡ ºĞÇÒµÇ´Â °æ¿ì´Â ¾ø´Ù. */
+    /* UDPëŠ” ë°ì´í„°ê°€ ë¶„í• ë˜ëŠ” ê²½ìš°ëŠ” ì—†ë‹¤. */
     IDE_TEST_RAISE(aRecvPacketLen < ID_SIZEOF(*sProtocol), ERR_SNMP_INVALID_PROTOCOL);
 
     sProtocol    = (mmsProtocol *)mPacketBuf;
@@ -135,13 +135,13 @@ SInt mmsSNMP::processSNMP(UInt aRecvPacketLen)
                    ID_SIZEOF(sProtocol->mOID.id) +
                    sProtocol->mOID.length * ID_SIZEOF(sProtocol->mOID.id);
 
-    /* UDP´Â µ¥ÀÌÅÍ°¡ ºĞÇÒµÇ´Â °æ¿ì´Â ¾ø´Ù. */
+    /* UDPëŠ” ë°ì´í„°ê°€ ë¶„í• ë˜ëŠ” ê²½ìš°ëŠ” ì—†ë‹¤. */
     IDE_TEST_RAISE(aRecvPacketLen < sProtocolLen, ERR_SNMP_INVALID_PROTOCOL);
 
-    /* OID°¡ °¡º¯ÀÌ±â ¶§¹®¿¡ mmsDataÀÇ À§Ä¡¸¦ °è»êÇØ ÁÖ¾î¾ß ÇÑ´Ù */
+    /* OIDê°€ ê°€ë³€ì´ê¸° ë•Œë¬¸ì— mmsDataì˜ ìœ„ì¹˜ë¥¼ ê³„ì‚°í•´ ì£¼ì–´ì•¼ í•œë‹¤ */
     sData = (mmsData *)(mPacketBuf + sProtocolLen);
 
-    /* ÇÁ·ÎÅäÄİ ·Î±× Ãâ·Â */
+    /* í”„ë¡œí† ì½œ ë¡œê·¸ ì¶œë ¥ */
     dumpSNMPProtocol(aRecvPacketLen);
 
     switch (sProtocol->mProtocolID)
@@ -176,12 +176,12 @@ SInt mmsSNMP::processSNMP(UInt aRecvPacketLen)
 
             sProtocol->mProtocolID = MMS_SNMP_PROTOCOL_SUCCESS;
 
-            /* NEXT OID¸¦ º¸³»±â À§ÇØ Packet Buffer¿¡ º¹»çÇÑ´Ù. */
+            /* NEXT OIDë¥¼ ë³´ë‚´ê¸° ìœ„í•´ Packet Bufferì— ë³µì‚¬í•œë‹¤. */
             sProtocol->mOID.length = sNextOID->length;
             sNextOIDLen = sNextOID->length * ID_SIZEOF(sNextOID->id);
             idlOS::memcpy(&sProtocol->mOID.id, sNextOID->id, sNextOIDLen);
 
-            /* OID°¡ º¯°æµÇ¾ú±â¿¡ ´Ù½Ã °è»êÇØ ÁÖ¾î¾ß ÇÑ´Ù. */
+            /* OIDê°€ ë³€ê²½ë˜ì—ˆê¸°ì— ë‹¤ì‹œ ê³„ì‚°í•´ ì£¼ì–´ì•¼ í•œë‹¤. */
             sProtocolLen = ID_SIZEOF(*sProtocol) -
                             ID_SIZEOF(sProtocol->mOID.id) +
                             sProtocol->mOID.length * ID_SIZEOF(sProtocol->mOID.id);
@@ -196,12 +196,12 @@ SInt mmsSNMP::processSNMP(UInt aRecvPacketLen)
             break;
 
         case MMS_SNMP_PROTOCOL_SET:
-            /* mmsDataÀÇ À¯È¿¼º Ã¼Å© */
+            /* mmsDataì˜ ìœ íš¨ì„± ì²´í¬ */
             sDataLen = ID_SIZEOF(*sData) - ID_SIZEOF(sData->mValue) + 1;
             IDE_TEST_RAISE(aRecvPacketLen < sProtocolLen + sDataLen,
                            ERR_SNMP_INVALID_PROTOCOL);
 
-            /* °è»êµÈ »çÀÌÁî°¡ aRecvPacketLenº¸´Ù Å¬ ¼ö ¾ø´Ù */
+            /* ê³„ì‚°ëœ ì‚¬ì´ì¦ˆê°€ aRecvPacketLenë³´ë‹¤ í´ ìˆ˜ ì—†ë‹¤ */
             sDataLen = ID_SIZEOF(*sData) - ID_SIZEOF(sData->mValue) + sData->mValueLen;
             IDE_TEST_RAISE(aRecvPacketLen < sProtocolLen + sDataLen,
                            ERR_SNMP_INVALID_PROTOCOL);
@@ -278,7 +278,7 @@ void mmsSNMP::dumpSNMPProtocol(UInt aRecvPacketLen)
                                   "%"ID_vULONG_FMT".",
                                   sProtocol->mOID.id[i]);
     }
-    /* ¸¶Áö¸· dot´Â Á¦°Å */
+    /* ë§ˆì§€ë§‰ dotëŠ” ì œê±° */
     if (sIndex > 0)
     {
         sOIDStr[sIndex - 1] = '\0';
@@ -368,7 +368,7 @@ void mmsSNMP::run()
 
             if (sRecvPacketLen > 0)
             {
-                /* ÆĞÅ¶À» Ã³¸®ÇÑ´Ù. */
+                /* íŒ¨í‚·ì„ ì²˜ë¦¬í•œë‹¤. */
                 sSendPacketLen = processSNMP(sRecvPacketLen);
             }
             else
@@ -388,13 +388,13 @@ void mmsSNMP::run()
             continue;
         }
 
-        /* processSNMP()¿¡¼­ ¿äÃ»¿¡ ´ëÇÑ ÀÀ´äÀ» º¸³»´Â °æ¿ì */
+        /* processSNMP()ì—ì„œ ìš”ì²­ì— ëŒ€í•œ ì‘ë‹µì„ ë³´ë‚´ëŠ” ê²½ìš° */
         if (sSendPacketLen > 0)
         {
             sTimeout.msec(mSNMPSendTimeout);
             FD_SET(mSock, &sWriteFdSet);
 
-            /* sendto()¿¡¼­ select´Â Å« ÀÇ¹Ì°¡ ¾ø´Ù */
+            /* sendto()ì—ì„œ selectëŠ” í° ì˜ë¯¸ê°€ ì—†ë‹¤ */
             sSelectRet = idmSNMP::selectSNMP(mSock,
                                              NULL, &sWriteFdSet,
                                              sTimeout, (SChar *)"SNMP_SEND");
@@ -451,7 +451,7 @@ IDE_RC mmsSNMP::startSNMPThread()
     sListenAddr.sin_addr.s_addr = htonl(INADDR_ANY);
     sListenAddr.sin_port        = htons(mSNMPPortNo);
 
-    /* SNMP Sub Agent¿Í UDP Åë½ÅÀ» À§ÇÑ ¼ÒÄÏ»ı¼º ¹× ¹ÙÀÎµå */
+    /* SNMP Sub Agentì™€ UDP í†µì‹ ì„ ìœ„í•œ ì†Œì¼“ìƒì„± ë° ë°”ì¸ë“œ */
     mSock = idlOS::socket(AF_INET, SOCK_DGRAM, 0);
     IDE_TEST_RAISE(mSock == PDL_INVALID_SOCKET, ERR_SOCKET_CREATE_FAILED);
 
@@ -460,7 +460,7 @@ IDE_RC mmsSNMP::startSNMPThread()
                                ID_SIZEOF(sListenAddr)) < 0,
                    ERR_SOCKET_BIND_FAILED);
 
-    /* Thread ±¸µ¿ */
+    /* Thread êµ¬ë™ */
     mRun = ID_TRUE;
     IDE_TEST_RAISE(gMmsSNMP.start() != IDE_SUCCESS, ERR_THREAD_CREATE_FAILED);
     IDE_TEST_RAISE(gMmsSNMP.waitToStart() != IDE_SUCCESS, ERR_THREAD_CREATE_FAILED);

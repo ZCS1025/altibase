@@ -52,8 +52,8 @@ SInt iloFormCompiler::FormFileParse( ALTIBASE_ILOADER_HANDLE aHandle, SChar *szF
     }
     IDE_EXCEPTION( err_parse );
     {
-        // BUG-24758 iloader¿¡¼­ formpaser error°¡ ¹ß»ýÇØµµ 
-        // command parser error¸¦ Ãâ·ÂÇÔ.
+        // BUG-24758 iloaderì—ì„œ formpaser errorê°€ ë°œìƒí•´ë„ 
+        // command parser errorë¥¼ ì¶œë ¥í•¨.
         uteSetErrorCode(sHandle->mErrorMgr, utERR_ABORT_Form_Parser_Error);
     }
     IDE_EXCEPTION_END;

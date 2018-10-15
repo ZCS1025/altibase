@@ -46,7 +46,7 @@ static IDE_RC mtfAdd_monthsEstimate( mtcNode*     aNode,
 mtfModule mtfAdd_months = {
     1|MTC_NODE_OPERATOR_FUNCTION,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
+    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìê°€ ì•„ë‹˜)
     mtfAdd_monthsFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -159,7 +159,7 @@ IDE_RC mtfAdd_monthsCalculate( mtcNode*     aNode,
         sMonth     = mtdDateInterface::month(sDate);
         sDay       = mtdDateInterface::day(sDate);
 
-        /* BUG-36296 dateÀÇ ÀÏ(day)ÀÌ ÇØ´ç ¿ùÀÇ ¸¶Áö¸· ÀÏ(day)ÀÎ °æ¿ì, number°³¿ùÀ» ´õÇÑ ÈÄ¿¡µµ ¸¶Áö¸· ÀÏ(day)ÀÌ´Ù. */
+        /* BUG-36296 dateì˜ ì¼(day)ì´ í•´ë‹¹ ì›”ì˜ ë§ˆì§€ë§‰ ì¼(day)ì¸ ê²½ìš°, numberê°œì›”ì„ ë”í•œ í›„ì—ë„ ë§ˆì§€ë§‰ ì¼(day)ì´ë‹¤. */
         if ( mtdDateInterface::isLeapYear( sYear ) == ID_TRUE )
         {
             sStartLastDays[2] = 29;
@@ -188,7 +188,7 @@ IDE_RC mtfAdd_monthsCalculate( mtcNode*     aNode,
         IDE_TEST( mtdDateInterface::setYear(sValue, sYear) != IDE_SUCCESS );
         IDE_TEST( mtdDateInterface::setMonth(sValue, sMonth) != IDE_SUCCESS );
         
-        /* BUG-36296 dateÀÇ ÀÏ(day)ÀÌ ÇØ´ç ¿ùÀÇ ¸¶Áö¸· ÀÏ(day)ÀÎ °æ¿ì, number°³¿ùÀ» ´õÇÑ ÈÄ¿¡µµ ¸¶Áö¸· ÀÏ(day)ÀÌ´Ù. */
+        /* BUG-36296 dateì˜ ì¼(day)ì´ í•´ë‹¹ ì›”ì˜ ë§ˆì§€ë§‰ ì¼(day)ì¸ ê²½ìš°, numberê°œì›”ì„ ë”í•œ í›„ì—ë„ ë§ˆì§€ë§‰ ì¼(day)ì´ë‹¤. */
         if ( mtdDateInterface::isLeapYear( sYear ) == ID_TRUE )
         {
             sEndLastDays[2] = 29;
@@ -205,7 +205,7 @@ IDE_RC mtfAdd_monthsCalculate( mtcNode*     aNode,
         }
         else
         {
-            /* BUG-36296 1582³â 10¿ù 4ÀÏ(¸ñ)¿¡¼­ 10¿ù 15ÀÏ(±İ)À¸·Î ¹Ù·Î °Ç³Ê¶Ú´Ù. */
+            /* BUG-36296 1582ë…„ 10ì›” 4ì¼(ëª©)ì—ì„œ 10ì›” 15ì¼(ê¸ˆ)ìœ¼ë¡œ ë°”ë¡œ ê±´ë„ˆë›´ë‹¤. */
             if ( ( sYear == 1582 ) &&
                  ( sMonth == 10 ) &&
                  ( 4 < sDay ) && ( sDay < 15 ) )

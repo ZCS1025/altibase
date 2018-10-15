@@ -18,12 +18,12 @@
 /***********************************************************************
  * $Id: sdpTableSpace.h 82075 2018-01-17 06:39:52Z jina.kim $
  *
- * Å×ÀÌºí½ºÆäÀÌ½º °ü¸®ÀÚ
+ * í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ê´€ë¦¬ì
  *
- * # ¸ñÀû
+ * # ëª©ì 
  *
- * ÇÏ³ª ÀÌ»óÀÇ ¹°¸®ÀûÀÎ µ¥ÀÌÅ¸ ÆÄÀÏ·Î ±¸¼ºµÈ Å×ÀÌºí½ºÆäÀÌ½ºÀÇ
- * ÆäÀÌÁö levelÀÇ ³í¸®ÀûÀÎ ÀÚ·á±¸Á¶ÀÇ °ü¸®ÀÚ
+ * í•˜ë‚˜ ì´ìƒì˜ ë¬¼ë¦¬ì ì¸ ë°ì´íƒ€ íŒŒì¼ë¡œ êµ¬ì„±ëœ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì˜
+ * í˜ì´ì§€ levelì˜ ë…¼ë¦¬ì ì¸ ìë£Œêµ¬ì¡°ì˜ ê´€ë¦¬ì
  *
  **********************************************************************/
 
@@ -39,9 +39,9 @@ class sdpTableSpace
 {
 public:
 
-    /* ¸ğµç Å×ÀÌºí½ºÆäÀÌ½º ¸ğµâ ÃÊ±âÈ­ */
+    /* ëª¨ë“  í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ëª¨ë“ˆ ì´ˆê¸°í™” */
     static IDE_RC initialize();
-    /* ¸ğµç Å×ÀÌºí½ºÆäÀÌ½º ¸ğµâ ÇØÁ¦ */
+    /* ëª¨ë“  í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ëª¨ë“ˆ í•´ì œ */
     static IDE_RC destroy();
 
     static IDE_RC createTBS( idvSQL            * aStatistics,
@@ -50,43 +50,43 @@ public:
                              UInt                aDataFileAttrCount,
                              void*               aTrans );
 
-    /* Tablespace »èÁ¦ */
+    /* Tablespace ì‚­ì œ */
     static IDE_RC dropTBS( idvSQL       *aStatistics,
                            void*         aTrans,
                            scSpaceID     aSpaceID,
                            smiTouchMode  aTouchMode );
 
-    /* Tablespace ¸®¼Â */
+    /* Tablespace ë¦¬ì…‹ */
     static IDE_RC resetTBS( idvSQL           *aStatistics,
                             scSpaceID         aSpaceID,
                             void             *aTrans );
 
-    /* Tablespace ¹«È¿È­ */
+    /* Tablespace ë¬´íš¨í™” */
     static IDE_RC alterTBSdiscard( sddTableSpaceNode * aTBSNode );
 
 
     // PRJ-1548 User Memory TableSpace
-    /* Disk Tablespace¿¡ ´ëÇØ Alter Tablespace Online/OfflineÀ» ¼öÇà */
+    /* Disk Tablespaceì— ëŒ€í•´ Alter Tablespace Online/Offlineì„ ìˆ˜í–‰ */
     static IDE_RC alterTBSStatus( idvSQL*             aStatistics,
                                   void              * aTrans,
                                   sddTableSpaceNode * aSpaceNode,
                                   UInt                aState );
 
-    /* µ¥ÀÌÅ¸ÆÄÀÏ »ı¼º */
+    /* ë°ì´íƒ€íŒŒì¼ ìƒì„± */
     static IDE_RC createDataFiles( idvSQL            *aStatistics,
                                    void*              aTrans,
                                    scSpaceID          aSpaceID,
                                    smiDataFileAttr  **aDataFileAttr,
                                    UInt               aDataFileAttrCount );
 
-    /* µ¥ÀÌÅ¸ÆÄÀÏ »èÁ¦ */
+    /* ë°ì´íƒ€íŒŒì¼ ì‚­ì œ */
     static IDE_RC removeDataFile( idvSQL         *aStatistics,
                                   void*           aTrans,
                                   scSpaceID       aSpaceID,
                                   SChar          *aFileName,
                                   SChar          *aValidDataFileName );
 
-    /* µ¥ÀÌÅ¸ÆÄÀÏ ÀÚµ¿È®Àå ¸ğµå º¯°æ */
+    /* ë°ì´íƒ€íŒŒì¼ ìë™í™•ì¥ ëª¨ë“œ ë³€ê²½ */
     static IDE_RC alterDataFileAutoExtend( idvSQL     *aStatistics,
                                            void*       aTrans,
                                            scSpaceID   aSpaceID,
@@ -96,13 +96,13 @@ public:
                                            ULong       aMaxSize,
                                            SChar      *aValidDataFileName );
 
-    /* µ¥ÀÌÅ¸ÆÄÀÏ °æ·Î º¯°æ */
+    /* ë°ì´íƒ€íŒŒì¼ ê²½ë¡œ ë³€ê²½ */
     static IDE_RC alterDataFileName( idvSQL*      aStatistics,
                                      scSpaceID    aSpaceID,
                                      SChar       *aOldName,
                                      SChar       *aNewName );
 
-    /* µ¥ÀÌÅ¸ÆÄÀÏ Å©±â º¯°æ */
+    /* ë°ì´íƒ€íŒŒì¼ í¬ê¸° ë³€ê²½ */
     static IDE_RC alterDataFileReSize( idvSQL       *aStatistics,
                                        void         *aTrans,
                                        scSpaceID     aSpaceID,
@@ -117,25 +117,25 @@ public:
      * Request Function
      * ================================================================
      */
-    // callback À¸·Î µî·ÏÇÏ±â À§ÇØ public¿¡ ¼±¾ğ
-    // Tablespace¸¦ OFFLINE½ÃÅ² Tx°¡ CommitµÇ¾úÀ» ¶§ ºÒ¸®´Â PendingÇÔ¼ö
+    // callback ìœ¼ë¡œ ë“±ë¡í•˜ê¸° ìœ„í•´ publicì— ì„ ì–¸
+    // Tablespaceë¥¼ OFFLINEì‹œí‚¨ Txê°€ Commitë˜ì—ˆì„ ë•Œ ë¶ˆë¦¬ëŠ” Pendingí•¨ìˆ˜
     static IDE_RC alterOfflineCommitPending(
                       idvSQL            * aStatistics,
                       sctTableSpaceNode * aTBSNode,
                       sctPendingOp      * aPendingOp );
 
-    // Tablespace¸¦ ONLINE½ÃÅ² Tx°¡ CommitµÇ¾úÀ» ¶§ ºÒ¸®´Â PendingÇÔ¼ö
+    // Tablespaceë¥¼ ONLINEì‹œí‚¨ Txê°€ Commitë˜ì—ˆì„ ë•Œ ë¶ˆë¦¬ëŠ” Pendingí•¨ìˆ˜
     static IDE_RC alterOnlineCommitPending(
                       idvSQL            * aStatistics,
                       sctTableSpaceNode * aTBSNode,
                       sctPendingOp      * aPendingOp );
 
-    /* BUG-15564 Å×ÀÌºí½ºÆäÀÌ½ºÀÇ ÃÑ ¹°¸®ÀûÀÎ ÆäÀÌÁö °³¼ö ¹İÈ¯ */
+    /* BUG-15564 í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì˜ ì´ ë¬¼ë¦¬ì ì¸ í˜ì´ì§€ ê°œìˆ˜ ë°˜í™˜ */
     static IDE_RC getTotalPageCount( idvSQL*      aStatistics,
                                      scSpaceID    aSpaceID,
                                      ULong       *aTotalPageCount );
 
-    // usedPageLimit¿¡¼­ allocPageCount·Î ÇÔ¼ö¿Í ÀÎÀÚ ÀÌ¸§À» ¹Ù²Û´Ù.
+    // usedPageLimitì—ì„œ allocPageCountë¡œ í•¨ìˆ˜ì™€ ì¸ì ì´ë¦„ì„ ë°”ê¾¼ë‹¤.
     static IDE_RC getAllocPageCount( idvSQL*      aStatistics,
                                      scSpaceID    aSpaceID,
                                      ULong       *aAllocPageCount );
@@ -163,11 +163,11 @@ public:
     static IDE_RC dump( scSpaceID  aSpaceID,
                         UInt       aDumpFlag );
 
-    /* Space Cache ÇÒ´ç ¹× ÃÊ±âÈ­ */
+    /* Space Cache í• ë‹¹ ë° ì´ˆê¸°í™” */
     static IDE_RC  doActAllocSpaceCache( idvSQL            * aStatistics,
                                          sctTableSpaceNode * aSpaceNode,
                                          void              * /*aActionArg*/ );
-    /* Space Cache ÇØÁ¦ */
+    /* Space Cache í•´ì œ */
     static IDE_RC  doActFreeSpaceCache( idvSQL            * aStatistics,
                                         sctTableSpaceNode * aSpaceNode,
                                         void              * /*aActionArg*/ );
@@ -182,13 +182,13 @@ public:
                                       sctTableSpaceNode * aSpaceNode,
                                       void              * /*aActionArg*/ );
 
-    //  Tablespace¿¡¼­ »ç¿ëÇÏ´Â extent °ø°£ °ü¸® ¹æ½Ä ¹İÈ¯
+    //  Tablespaceì—ì„œ ì‚¬ìš©í•˜ëŠ” extent ê³µê°„ ê´€ë¦¬ ë°©ì‹ ë°˜í™˜
     static smiExtMgmtType getExtMgmtType( scSpaceID aSpaceID );
 
-    /* Tablespace °ø°£°ü¸® ¹æ½Ä¿¡ µû¸¥ Segment °ø°£°ü¸® ¹æ½Ä ¹İÈ¯ */
+    /* Tablespace ê³µê°„ê´€ë¦¬ ë°©ì‹ì— ë”°ë¥¸ Segment ê³µê°„ê´€ë¦¬ ë°©ì‹ ë°˜í™˜ */
     static smiSegMgmtType getSegMgmtType( scSpaceID aSpaceID );
 
-    // TablespaceÀÇ extent´ç page¼ö¸¦ ¹İÈ¯ÇÑ´Ù.
+    // Tablespaceì˜ extentë‹¹ pageìˆ˜ë¥¼ ë°˜í™˜í•œë‹¤.
     static UInt getPagesPerExt( scSpaceID     aSpaceID );
 
     inline static sdpExtMgmtOp* getTBSMgmtOP( scSpaceID aSpaceID );

@@ -51,7 +51,7 @@ static IDE_RC mtfHostNameCalculate( mtcNode     * aNode,
 mtfModule mtfHostName = {
     1|MTC_NODE_OPERATOR_FUNCTION|MTC_NODE_VARIABLE_TRUE,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (∫Ò±≥ ø¨ªÍ¿⁄∞° æ∆¥‘)
+    1.0,  // default selectivity (ÎπÑÍµê Ïó∞ÏÇ∞ÏûêÍ∞Ä ÏïÑÎãò)
     mtfHostNameFunctionName,
     NULL,
     mtf::initializeDefault,

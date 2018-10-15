@@ -187,7 +187,7 @@ rpxSender::initialize(smiStatement    * aSmiStmt,
                                              IDV_WAIT_INDEX_NULL )
                     != IDE_SUCCESS, ERR_MUTEX_INIT );
 
-    /* BUG-31545 : sender Åë°èÁ¤º¸ ¼öÁıÀ» À§ÇÑ ÀÓÀÇ sessionÀ» ÃÊ±âÈ­ */
+    /* BUG-31545 : sender í†µê³„ì •ë³´ ìˆ˜ì§‘ì„ ìœ„í•œ ì„ì˜ sessionì„ ì´ˆê¸°í™” */
     idvManager::initSession(&mStatSession, 0 /* unuse */, NULL /* unuse */);
     idvManager::initSession(&mOldStatSession, 0 /* unuse */, NULL /* unuse */);
     idvManager::initSQL(&mOpStatistics,
@@ -202,8 +202,8 @@ rpxSender::initialize(smiStatement    * aSmiStmt,
 
     if((aTryHandshakeOnce != ID_TRUE) && (aStartType == RP_QUICK))
     {
-        /* QUICKSTART RETRYÀÇ °æ¿ì,
-        * Service Thread°¡ Restart SNÀ» °»½ÅÇÏ°í Sender Thread°¡ NORMAL START·Î Ã³¸®ÇÑ´Ù.
+        /* QUICKSTART RETRYì˜ ê²½ìš°,
+        * Service Threadê°€ Restart SNì„ ê°±ì‹ í•˜ê³  Sender Threadê°€ NORMAL STARTë¡œ ì²˜ë¦¬í•œë‹¤.
         */
         mCurrentType = RP_NORMAL;
     }
@@ -217,8 +217,8 @@ rpxSender::initialize(smiStatement    * aSmiStmt,
         // BUG-40603
         if ( mCurrentType != RP_RECOVERY )
         {
-            // PROJ-1442 Replication Online Áß DDL Çã¿ë
-            // Service ThreadÀÇ TransactionÀ» º¸°üÇÑ´Ù.
+            // PROJ-1442 Replication Online ì¤‘ DDL í—ˆìš©
+            // Service Threadì˜ Transactionì„ ë³´ê´€í•œë‹¤.
             mSvcThrRootStmt = aSmiStmt->getTrans()->getStatement();
         }
         else
@@ -247,7 +247,7 @@ rpxSender::initialize(smiStatement    * aSmiStmt,
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    // ¿©±â±îÁö´Â ½ÇÆĞÇÏÁö ¾Ê´Â´Ù.
+    // ì—¬ê¸°ê¹Œì§€ëŠ” ì‹¤íŒ¨í•˜ì§€ ì•ŠëŠ”ë‹¤.
     ////////////////////////////////////////////////////////////////////////////
 
     idlOS::snprintf(sName, IDU_MUTEX_NAME_LEN, "RP_%s_TIME_MUTEX", aRepName);
@@ -283,8 +283,8 @@ rpxSender::initialize(smiStatement    * aSmiStmt,
     //    set replication & start flag
     //--------------------------------------------------------------//
 
-    /* PROJ-1442 Replication Online Áß DDL Çã¿ë
-     * Meta¸¦ ±¸¼ºÇÏ±â Àü¿¡ SYNC ITEMÀ» ±¸ÇÑ´Ù.
+    /* PROJ-1442 Replication Online ì¤‘ DDL í—ˆìš©
+     * Metaë¥¼ êµ¬ì„±í•˜ê¸° ì „ì— SYNC ITEMì„ êµ¬í•œë‹¤.
      */
     if(aSyncItemList != NULL)
     {
@@ -330,7 +330,7 @@ rpxSender::initialize(smiStatement    * aSmiStmt,
 
     mSentLogCountArraySize      = mMeta.mReplication.mItemCount;
     
-    /* PROJ-1915 : off ·Î±× °æ·Î ¹× LFG Ä«¿îÆ® ¾ò±â */
+    /* PROJ-1915 : off ë¡œê·¸ ê²½ë¡œ ë° LFG ì¹´ìš´íŠ¸ ì–»ê¸° */
     switch(mCurrentType)
     {
         case RP_PARALLEL:
@@ -388,7 +388,7 @@ rpxSender::initialize(smiStatement    * aSmiStmt,
             //Check OFFLOG info
             IDE_TEST(checkOffLineLogInfo() != IDE_SUCCESS);
 
-            //OFFLINE_RECEIVER·Î µ¿ÀÛ ÇÏ°Ô
+            //OFFLINE_RECEIVERë¡œ ë™ì‘ í•˜ê²Œ
             rpdMeta::setReplFlagOfflineSender(&mMeta.mReplication);
             break;
 
@@ -400,11 +400,11 @@ rpxSender::initialize(smiStatement    * aSmiStmt,
             break;
     }
 
-    /* PROJ-1915 off-line replicator´Â RPLogBuffer¸¦ »ç¿ëÇÏÁö ¾Ê´Â´Ù.
-     * BUG-32654 ALAÀÌ¸é¼­ archive logÀÏ¶§´Â logBufferMgrÀ» ÀÌ¿ëÇÏÁö ¾Ê´Â´Ù
-     * ALA¿¡¼­ LSNÀ» ÀÌ¿ëÇØ¾ßÇÏ´Âµ¥, ·Î±×¹öÆÛ¸Å´ÏÀú¿¡´Â LSNÀ» ±â·ÏÇÏÁö ¾ÊÀ¸¹Ç·Î ÀÌ¿ëÇÒ ¼ö ¾ø´Ù.
-     * µû¶ó¼­, ALAÀÌ¸é¼­ archive logÀÏ¶§´Â ·Î±× ¹öÆÛ¸Å´ÏÀú¸¦ ÀÌ¿ëÇÏÁö ¾Ê´Â °ÍÀ¸·Î º¯°æÇÑ´Ù.
-     * BUG-42613 propagator´Â Àü´Ş ·Î±×¸¦ logbuffer¿¡¼­ ¾òÀ»¼ö ¾øÀ¸¹Ç·Î logbuffer¸¦ »ç¿ëÇÏÁö ¾ÊÀ½.
+    /* PROJ-1915 off-line replicatorëŠ” RPLogBufferë¥¼ ì‚¬ìš©í•˜ì§€ ì•ŠëŠ”ë‹¤.
+     * BUG-32654 ALAì´ë©´ì„œ archive logì¼ë•ŒëŠ” logBufferMgrì„ ì´ìš©í•˜ì§€ ì•ŠëŠ”ë‹¤
+     * ALAì—ì„œ LSNì„ ì´ìš©í•´ì•¼í•˜ëŠ”ë°, ë¡œê·¸ë²„í¼ë§¤ë‹ˆì €ì—ëŠ” LSNì„ ê¸°ë¡í•˜ì§€ ì•Šìœ¼ë¯€ë¡œ ì´ìš©í•  ìˆ˜ ì—†ë‹¤.
+     * ë”°ë¼ì„œ, ALAì´ë©´ì„œ archive logì¼ë•ŒëŠ” ë¡œê·¸ ë²„í¼ë§¤ë‹ˆì €ë¥¼ ì´ìš©í•˜ì§€ ì•ŠëŠ” ê²ƒìœ¼ë¡œ ë³€ê²½í•œë‹¤.
+     * BUG-42613 propagatorëŠ” ì „ë‹¬ ë¡œê·¸ë¥¼ logbufferì—ì„œ ì–»ì„ìˆ˜ ì—†ìœ¼ë¯€ë¡œ logbufferë¥¼ ì‚¬ìš©í•˜ì§€ ì•ŠìŒ.
      */
     if ( ( aStartType == RP_OFFLINE ) ||
          ( ( getRole() == RP_ROLE_ANALYSIS ) &&
@@ -429,7 +429,7 @@ rpxSender::initialize(smiStatement    * aSmiStmt,
                                         mMeta.mReplication.mHostCount,
                                        &sHostNum)
              != IDE_SUCCESS);
-    /* PROJ-1915 : IP , PORT¸¦ º¯°æ */
+    /* PROJ-1915 : IP , PORTë¥¼ ë³€ê²½ */
     if(mCurrentType == RP_OFFLINE)
     {
         idlOS::memset(mMeta.mReplication.mReplHosts[sHostNum].mHostIp,
@@ -545,8 +545,8 @@ rpxSender::initialize(smiStatement    * aSmiStmt,
         mSenderInfo = &mSenderInfoArray[mParallelID];
     }
 
-    //¾ÆÁ÷ Sender°¡ ½ÃÀÛÇÏÁö ¾Ê¾Ò±â ¶§¹®¿¡ ¼­ºñ½º¿¡ ¿µÇâÀ» ÁÖÁö ¾Ê±â À§ÇØ
-    //mSenderInfo¸¦ deActivateÇÏ°í, doReplicationÇÏ±â Àü¿¡ activateÇØ¾ß ÇÔ
+    //ì•„ì§ Senderê°€ ì‹œì‘í•˜ì§€ ì•Šì•˜ê¸° ë•Œë¬¸ì— ì„œë¹„ìŠ¤ì— ì˜í–¥ì„ ì£¼ì§€ ì•Šê¸° ìœ„í•´
+    //mSenderInfoë¥¼ deActivateí•˜ê³ , doReplicationí•˜ê¸° ì „ì— activateí•´ì•¼ í•¨
     mSenderInfo->deActivate();
 
     setStatus(RP_SENDER_STOP);
@@ -795,9 +795,9 @@ IDE_RC rpxSender::initializeThread()
     idBool                sIsAssignedTransAlloced = ID_FALSE;
     idBool                sIsServiceTransAlloced = ID_FALSE;
 
-    /* ThreadÀÇ run()¿¡¼­¸¸ »ç¿ëÇÏ´Â ¸Ş¸ğ¸®¸¦ ÇÒ´çÇÑ´Ù. */
+    /* Threadì˜ run()ì—ì„œë§Œ ì‚¬ìš©í•˜ëŠ” ë©”ëª¨ë¦¬ë¥¼ í• ë‹¹í•œë‹¤. */
 
-    /* mSyncerMutex´Â Service Thread¿¡¼­ »ç¿ëÇÏ¹Ç·Î, ¼º´É¿¡ ¿µÇâÀ» ÁÖÁö ¾Ê´Â´Ù. */
+    /* mSyncerMutexëŠ” Service Threadì—ì„œ ì‚¬ìš©í•˜ë¯€ë¡œ, ì„±ëŠ¥ì— ì˜í–¥ì„ ì£¼ì§€ ì•ŠëŠ”ë‹¤. */
 
     if ( sAllocType != ACL_MEM_ALLOC_LIBC )
     {
@@ -823,27 +823,27 @@ IDE_RC rpxSender::initializeThread()
         /* Nothing to do */
     }
 
-    /* mMeta´Â rpcManager Thread°¡ Handshake¸¦ ¼öÇàÇÒ ¶§¿¡µµ »ç¿ëÇÏ¹Ç·Î, ¿©±â¿¡ ¿À¸é ¾È µÈ´Ù. */
+    /* mMetaëŠ” rpcManager Threadê°€ Handshakeë¥¼ ìˆ˜í–‰í•  ë•Œì—ë„ ì‚¬ìš©í•˜ë¯€ë¡œ, ì—¬ê¸°ì— ì˜¤ë©´ ì•ˆ ëœë‹¤. */
 
-    /* mSyncItems´Â Meta¸¦ ±¸¼ºÇÒ ¶§ »ç¿ëÇÏ¹Ç·Î, ¿©±â¿¡ ¿À¸é ¾È µÈ´Ù. */
+    /* mSyncItemsëŠ” Metaë¥¼ êµ¬ì„±í•  ë•Œ ì‚¬ìš©í•˜ë¯€ë¡œ, ì—¬ê¸°ì— ì˜¤ë©´ ì•ˆ ëœë‹¤. */
 
-    /* mFinalMtx, mTimeMtxRmt, mTimeCondRmt, mChildArrayMtx´Â Thread Á¾·á ½Ã¿¡ »ç¿ëÇÏ¹Ç·Î, ¿©±â¿¡ ¿À¸é ¾È µÈ´Ù. */
+    /* mFinalMtx, mTimeMtxRmt, mTimeCondRmt, mChildArrayMtxëŠ” Thread ì¢…ë£Œ ì‹œì— ì‚¬ìš©í•˜ë¯€ë¡œ, ì—¬ê¸°ì— ì˜¤ë©´ ì•ˆ ëœë‹¤. */
 
     IDE_TEST( allocSentLogCount() != IDE_SUCCESS );
     rebuildSentLogCount();
 
-    /* mLogDirPath´Â RP_OFFLINEÀÏ ¶§¸¸ »ç¿ëÇÑ´Ù. ¼º´É Çâ»óÀ» À§ÇØ ¿©±â¿¡ ¿Å±æ ¼ö ÀÖ´Ù. */
+    /* mLogDirPathëŠ” RP_OFFLINEì¼ ë•Œë§Œ ì‚¬ìš©í•œë‹¤. ì„±ëŠ¥ í–¥ìƒì„ ìœ„í•´ ì—¬ê¸°ì— ì˜®ê¸¸ ìˆ˜ ìˆë‹¤. */
 
-    /* mMessenger, mReplicator, mSenderInfo´Â Service Thread°¡ Handshake¸¦ Á÷Á¢ ¼öÇàÇÒ ¶§¿¡µµ »ç¿ëÇÏ¹Ç·Î, ¿©±â¿¡ ¿À¸é ¾È µÈ´Ù. */
+    /* mMessenger, mReplicator, mSenderInfoëŠ” Service Threadê°€ Handshakeë¥¼ ì§ì ‘ ìˆ˜í–‰í•  ë•Œì—ë„ ì‚¬ìš©í•˜ë¯€ë¡œ, ì—¬ê¸°ì— ì˜¤ë©´ ì•ˆ ëœë‹¤. */
 
-    /* mThreadJoinCV, mThreadJoinMutex´Â Thread Á¾·á ½Ã¿¡ »ç¿ëÇÏ¹Ç·Î, ¿©±â¿¡ ¿À¸é ¾È µÈ´Ù. */
+    /* mThreadJoinCV, mThreadJoinMutexëŠ” Thread ì¢…ë£Œ ì‹œì— ì‚¬ìš©í•˜ë¯€ë¡œ, ì—¬ê¸°ì— ì˜¤ë©´ ì•ˆ ëœë‹¤. */
 
     if ( ( mMeta.mReplication.mReplMode == RP_EAGER_MODE ) &&
          ( mParallelID == RP_PARALLEL_PARENT_ID ) )
     {
         /* 
-         * rpxSender Æ÷ÀÎÅÍ : 4
-         * mTransTableSize ÀÇ MAXSIZE :16384
+         * rpxSender í¬ì¸í„° : 4
+         * mTransTableSize ì˜ MAXSIZE :16384
          */
         IDU_FIT_POINT( "rpxSender::initializeThread::malloc::AssignedTransTbl" );
         IDE_TEST( iduMemMgr::malloc( IDU_MEM_RP_RPX_SENDER,
@@ -855,7 +855,7 @@ IDE_RC rpxSender::initializeThread()
 
         /* 
          * idBool : 4
-         * mTransTableSize ÀÇ MAXSIZE :16384
+         * mTransTableSize ì˜ MAXSIZE :16384
          */
         IDU_FIT_POINT( "rpxSender::initializeThread::malloc::IsServiceTrans" );
         IDE_TEST( iduMemMgr::malloc( IDU_MEM_RP_RPX_SENDER,
@@ -1157,7 +1157,7 @@ void rpxSender::run()
     smSN       sRestartSN     = SM_SN_NULL;
     smSN       sDummySN;
 
-    // mTryHandshakeOnce°¡ ID_TRUEÀÌ¸é, Handshake°¡ ÀÌ¹Ì ¼º°øÇÑ °ÍÀÓ.
+    // mTryHandshakeOnceê°€ ID_TRUEì´ë©´, Handshakeê°€ ì´ë¯¸ ì„±ê³µí•œ ê²ƒì„.
     sHandshakeFlag = mTryHandshakeOnce;
 
     IDE_CLEAR();
@@ -1179,12 +1179,12 @@ void rpxSender::run()
         }
         else
         {
-            /* ¿ÀÇÁ¶óÀÎ ¼¾´õ°¡ ÀçÁ¢¼Ó ÇÏ·Á´Â °æ¿ì´Â ¸®½Ã¹ö ºñÁ¤»ó Á¾·áÀÌ¹Ç·Î
-             * ¿ÀÇÁ¶óÀÎ ¼¾´õµµ Á¤»ó Á¾·á°¡ ¾Æ´Ï°í ºñÁ¤»ó Á¾·áÀÌ´Ù.
+            /* ì˜¤í”„ë¼ì¸ ì„¼ë”ê°€ ì¬ì ‘ì† í•˜ë ¤ëŠ” ê²½ìš°ëŠ” ë¦¬ì‹œë²„ ë¹„ì •ìƒ ì¢…ë£Œì´ë¯€ë¡œ
+             * ì˜¤í”„ë¼ì¸ ì„¼ë”ë„ ì •ìƒ ì¢…ë£Œê°€ ì•„ë‹ˆê³  ë¹„ì •ìƒ ì¢…ë£Œì´ë‹¤.
              */
             IDE_TEST_RAISE ( mCurrentType == RP_OFFLINE, ERR_OFFLINE_SENDER_ABNORMALLY_EXIT );
             
-            //proj-1608 handshakeÀü¿¡ refineÀÌ ¼öÇàµÇ¾î¾ß ÇÑ´Ù
+            //proj-1608 handshakeì „ì— refineì´ ìˆ˜í–‰ë˜ì–´ì•¼ í•œë‹¤
             if(mCurrentType == RP_RECOVERY)
             {
                 (void)mSNMapMgr->refineSNMap(mActiveRPRecoverySN);
@@ -1201,19 +1201,19 @@ void rpxSender::run()
             IDE_DASSERT(sHandshakeFlag == ID_TRUE);
 
 
-            /* attemptHandshake¿¡¼­ mXSNÀÌ °»½ÅÀÌ µÇ¹Ç·Î,
-             * mLogMgr¸¦ ´Ù½Ã ÃÊ±âÈ­ ÇØÁÖ¾î¾ß ÇÑ´Ù.
+            /* attemptHandshakeì—ì„œ mXSNì´ ê°±ì‹ ì´ ë˜ë¯€ë¡œ,
+             * mLogMgrë¥¼ ë‹¤ì‹œ ì´ˆê¸°í™” í•´ì£¼ì–´ì•¼ í•œë‹¤.
              */
             IDE_TEST( mReplicator.destroyLogMgr() != IDE_SUCCESS );
         }
 
-        /* Handshake°¡ ¼º°øÇßÀ¸¹Ç·Î, ReplicationÀ» ½ÃÀÛÇÑ´Ù. */
-        //proj-1608 recovery senderÀÎ °æ¿ì sender apply¸¦ ½ÃÀÛÇÏÁö ¾ÊÀ½
+        /* Handshakeê°€ ì„±ê³µí–ˆìœ¼ë¯€ë¡œ, Replicationì„ ì‹œì‘í•œë‹¤. */
+        //proj-1608 recovery senderì¸ ê²½ìš° sender applyë¥¼ ì‹œì‘í•˜ì§€ ì•ŠìŒ
         if(mCurrentType != RP_RECOVERY)
         {
-            /* SenderApply´Â Handshake°¡ ¼º°øÇÏ¸é ¹Ù·Î ½ÃÀÛÇÑ´Ù.
-             * Handshake°¡ ¼º°øÇÏ¸é Sender´Â Sync ÁßÀÌ¶óµµ KeepAlive¸¦
-             * º¸³»±â ¶§¹®¿¡ KeepAlive¿¡ ÇØ´çÇÏ´Â Ack¸¦ ¼ö½ÅÇØ¾ßÇÑ´Ù.
+            /* SenderApplyëŠ” Handshakeê°€ ì„±ê³µí•˜ë©´ ë°”ë¡œ ì‹œì‘í•œë‹¤.
+             * Handshakeê°€ ì„±ê³µí•˜ë©´ SenderëŠ” Sync ì¤‘ì´ë¼ë„ KeepAliveë¥¼
+             * ë³´ë‚´ê¸° ë•Œë¬¸ì— KeepAliveì— í•´ë‹¹í•˜ëŠ” Ackë¥¼ ìˆ˜ì‹ í•´ì•¼í•œë‹¤.
              */
             IDE_TEST(startSenderApply() != IDE_SUCCESS);
         }
@@ -1221,7 +1221,7 @@ void rpxSender::run()
         IDE_TEST( execOnceAtStart() != IDE_SUCCESS );
 
         IDU_FIT_POINT( "rpxSender::run::checkInterrupt" );
-        // BUG-22291 RP_RECOVERYÀÇ °æ¿ì¿¡¸¸ °¡´É + SYNC ONLY
+        // BUG-22291 RP_RECOVERYì˜ ê²½ìš°ì—ë§Œ ê°€ëŠ¥ + SYNC ONLY
         if(checkInterrupt() == RP_INTR_EXIT)
         {
             continue;
@@ -1236,16 +1236,16 @@ void rpxSender::run()
                                mMeta.mReplication.mRole,
                                mAssignedTransTbl );
 
-        // BUG-18527 mXSNÀÌ ÃÖÁ¾ÀûÀ¸·Î °áÁ¤µÈ ÈÄ, Log Manager¸¦ ÃÊ±âÈ­
+        // BUG-18527 mXSNì´ ìµœì¢…ì ìœ¼ë¡œ ê²°ì •ëœ í›„, Log Managerë¥¼ ì´ˆê¸°í™”
         if ( mReplicator.isLogMgrInit() != ID_TRUE )
         {
-            /* PROJ-1915 off-line replicator ¸®¸ğÆ® ·Î±× ¸Ş´ÏÁ® init */
+            /* PROJ-1915 off-line replicator ë¦¬ëª¨íŠ¸ ë¡œê·¸ ë©”ë‹ˆì ¸ init */
             if(mCurrentType == RP_OFFLINE)
             {
                 IDE_TEST_RAISE(mXSN == SM_SN_NULL, ERR_INVALID_SN);
                 IDE_TEST( mReplicator.initializeLogMgr( mXSN,
                                                         0,
-                                                        ID_TRUE, //¸®¸ğÆ® ·Î±×
+                                                        ID_TRUE, //ë¦¬ëª¨íŠ¸ ë¡œê·¸
                                                         mMeta.mReplication.mLogFileSize,
                                                         mMeta.mReplication.mLFGCount,
                                                         mLogDirPath )
@@ -1256,12 +1256,12 @@ void rpxSender::run()
                 if(isArchiveALA() == ID_TRUE)
                 {
                     // BUGBUG
-                    // archive ALA°¡ startµÉ¶§ init log mgr½Ã¿¡´Â fileÀÌ Á¸ÀçÇÏÁö¸¸
-                    // ½ÇÁ¦ log fileÀ» ÀĞÀ»¶§´Â checkpoint°¡ fileÀ» »èÁ¦ÇÒ ¼ö ÀÖ¾î
-                    // archive ALA°¡ ¾ø´Â log fileÀ» ÀĞÀ» ¼ö ÀÖ´Ù.
+                    // archive ALAê°€ startë ë•Œ init log mgrì‹œì—ëŠ” fileì´ ì¡´ì¬í•˜ì§€ë§Œ
+                    // ì‹¤ì œ log fileì„ ì½ì„ë•ŒëŠ” checkpointê°€ fileì„ ì‚­ì œí•  ìˆ˜ ìˆì–´
+                    // archive ALAê°€ ì—†ëŠ” log fileì„ ì½ì„ ìˆ˜ ìˆë‹¤.
 
                     // BUG-29115
-                    // ala¿Í archive logÀÎ °æ¿ì archive log¸¦ ÀÌ¿ëÇÏ¿© startÇÒ ¼ö ÀÖ´Ù.
+                    // alaì™€ archive logì¸ ê²½ìš° archive logë¥¼ ì´ìš©í•˜ì—¬ startí•  ìˆ˜ ìˆë‹¤.
                     IDE_TEST( mReplicator.switchToRedoLogMgr( &sDummySN )
                               != IDE_SUCCESS );
                 }
@@ -1303,7 +1303,7 @@ void rpxSender::run()
 
             initReadLogCount();
 
-            // EagerÀÎ °æ¿ì, FailbackÀ» ¼öÇàÇÏ°í Child¸¦ »ı¼º&½ÃÀÛÇÑ´Ù.
+            // Eagerì¸ ê²½ìš°, Failbackì„ ìˆ˜í–‰í•˜ê³  Childë¥¼ ìƒì„±&ì‹œì‘í•œë‹¤.
             if( prepareForParallel() != IDE_SUCCESS )
             {
                 IDE_TEST( checkInterrupt() != RP_INTR_NETWORK );
@@ -1320,16 +1320,16 @@ void rpxSender::run()
 
         mReplicator.leaveLogBuffer();
 
-        // Sender Apply Thread°¡ ºñÁ¤»ó Á¾·áÇÏ¸é, CommitÀ» Áö¿¬½ÃÅ°°í
-        // Sender Thread¸¦ ºñÁ¤»ó Á¾·á½ÃÅ²´Ù.
+        // Sender Apply Threadê°€ ë¹„ì •ìƒ ì¢…ë£Œí•˜ë©´, Commitì„ ì§€ì—°ì‹œí‚¤ê³ 
+        // Sender Threadë¥¼ ë¹„ì •ìƒ ì¢…ë£Œì‹œí‚¨ë‹¤.
         IDE_TEST_RAISE(checkInterrupt() == RP_INTR_FAULT,
                        ERR_SENDER_APPLY_ABNORMAL_EXIT);
         mSenderInfo->deActivate();
 
-        // Network Àå¾Öº¸´Ù »óÀ§ ÀÎÅÍ·´Æ®ÀÎ °æ¿ì, Àç½Ãµµ¸¦ À§ÇÑ ÁØºñ¸¦ ÇÏÁö ¾Ê´Â´Ù.
+        // Network ì¥ì• ë³´ë‹¤ ìƒìœ„ ì¸í„°ëŸ½íŠ¸ì¸ ê²½ìš°, ì¬ì‹œë„ë¥¼ ìœ„í•œ ì¤€ë¹„ë¥¼ í•˜ì§€ ì•ŠëŠ”ë‹¤.
         if(checkInterrupt() == RP_INTR_NETWORK)
         {
-            // Retry »óÅÂ·Î º¯°æÇÑ´Ù.
+            // Retry ìƒíƒœë¡œ ë³€ê²½í•œë‹¤.
             setStatus( RP_SENDER_RETRY );
 
             waitUntilSendingByServiceThr();
@@ -1339,13 +1339,13 @@ void rpxSender::run()
             /* BUG-42138 */
             initializeTransTbl();
             initializeServiceTrans();
-            // Parallel Child´Â ¿©±â¿¡ ¿Ã ¼ö ¾ø´Ù.
+            // Parallel ChildëŠ” ì—¬ê¸°ì— ì˜¬ ìˆ˜ ì—†ë‹¤.
             IDE_DASSERT(isParallelChild() != ID_TRUE);
 
-            // ³×Æ®¿öÅ©°¡ ²÷°åÀ¸¹Ç·Î sender applyµµ Á¾·áµÇ¾î¾ß ÇÑ´Ù.
+            // ë„¤íŠ¸ì›Œí¬ê°€ ëŠê²¼ìœ¼ë¯€ë¡œ sender applyë„ ì¢…ë£Œë˜ì–´ì•¼ í•œë‹¤.
             shutdownSenderApply();
 
-            // replicationÀÌ Á¾·áµÇ¾úÀ¸¹Ç·Î, ¸®¼Ò½º ¸ğµÎ ÇØÁ¦
+            // replicationì´ ì¢…ë£Œë˜ì—ˆìœ¼ë¯€ë¡œ, ë¦¬ì†ŒìŠ¤ ëª¨ë‘ í•´ì œ
             sHandshakeFlag = ID_FALSE;  // reset
             releaseHandshake();
 
@@ -1356,7 +1356,7 @@ void rpxSender::run()
             {
                 IDE_TEST(getNextLastUsedHostNo() != IDE_SUCCESS);
                 mSetHostFlag = ID_FALSE;
-                // fix BUG-9671 : °°Àº È£½ºÆ®¿¡ ´Ù½Ã Á¢¼ÓÇÏ±â Àü¿¡ SLEEP
+                // fix BUG-9671 : ê°™ì€ í˜¸ìŠ¤íŠ¸ì— ë‹¤ì‹œ ì ‘ì†í•˜ê¸° ì „ì— SLEEP
                 mRetry++;
             }
         }
@@ -1368,20 +1368,20 @@ void rpxSender::run()
 
             cleanupForParallel();
 
-            // Parallel Child´Â ¸ğµç ÀÎÅÍ·´Æ®¿¡ ´ëÇØ ½º½º·Î Á¾·áÇÏ¹Ç·Î, ¿©±â·Î µé¾î¿Â´Ù.
+            // Parallel ChildëŠ” ëª¨ë“  ì¸í„°ëŸ½íŠ¸ì— ëŒ€í•´ ìŠ¤ìŠ¤ë¡œ ì¢…ë£Œí•˜ë¯€ë¡œ, ì—¬ê¸°ë¡œ ë“¤ì–´ì˜¨ë‹¤.
             // BUG-17748
             sRestartSN = getNextRestartSN();
         }
     } /* while */
-    // Sender Apply Thread°¡ ºñÁ¤»ó Á¾·áÇÏ¸é, Sender Thread¸¦ ºñÁ¤»ó Á¾·á½ÃÅ²´Ù.
+    // Sender Apply Threadê°€ ë¹„ì •ìƒ ì¢…ë£Œí•˜ë©´, Sender Threadë¥¼ ë¹„ì •ìƒ ì¢…ë£Œì‹œí‚¨ë‹¤.
     IDE_TEST_RAISE(checkInterrupt() == RP_INTR_FAULT,
                    ERR_SENDER_APPLY_ABNORMAL_EXIT);
 
-    //sync onlyÀÎ °æ¿ì
+    //sync onlyì¸ ê²½ìš°
     mSenderInfo->deActivate();
 
-    /* ÀÎÅÍ·´Æ® ´ë½Å mNetworkError¸¦ »ç¿ë : »óÀ§ ÀÎÅÍ·´Æ®°¡ °É·ÁÀÖ´Â °æ¿ì¿¡µµ,
-     *      Network Àå¾Ö°¡ ¾øÀ¸¸é Á¤»óÀûÀ¸·Î ¸¶¹«¸®ÇØ¾ß ÇÑ´Ù.
+    /* ì¸í„°ëŸ½íŠ¸ ëŒ€ì‹  mNetworkErrorë¥¼ ì‚¬ìš© : ìƒìœ„ ì¸í„°ëŸ½íŠ¸ê°€ ê±¸ë ¤ìˆëŠ” ê²½ìš°ì—ë„,
+     *      Network ì¥ì• ê°€ ì—†ìœ¼ë©´ ì •ìƒì ìœ¼ë¡œ ë§ˆë¬´ë¦¬í•´ì•¼ í•œë‹¤.
      */
     if ( ( sHandshakeFlag == ID_TRUE ) && ( mNetworkError != ID_TRUE ) )
     {
@@ -1407,7 +1407,7 @@ void rpxSender::run()
 
         if ( mCurrentType != RP_RECOVERY )
         {
-            //Send Stop ¸Ş¼¼Áö¿¡ ´ëÇÑ Ack¸¦ ¹Ş°í ½º½º·Î Á¾·á
+            //Send Stop ë©”ì„¸ì§€ì— ëŒ€í•œ Ackë¥¼ ë°›ê³  ìŠ¤ìŠ¤ë¡œ ì¢…ë£Œ
             finalizeSenderApply();
         }
         else
@@ -1420,7 +1420,7 @@ void rpxSender::run()
         shutdownSenderApply();
     }
 
-    /* STOP¿¡ ´ëÇÑ ACK¸¦ ¹ŞÀº ÈÄ¿¡, Handshake ÀÚ¿øÀ» ÇØÁ¦ÇÑ´Ù. */
+    /* STOPì— ëŒ€í•œ ACKë¥¼ ë°›ì€ í›„ì—, Handshake ìì›ì„ í•´ì œí•œë‹¤. */
     if ( sHandshakeFlag == ID_TRUE )
     {
         sHandshakeFlag = ID_FALSE;
@@ -1431,7 +1431,7 @@ void rpxSender::run()
         /* Nothing to do */
     }
 
-    /* Á¤»óÀûÀÎ ShutdownÀÇ °æ¿ì¿¡´Â ¿¡·¯°¡ ¾Æ´Ñ, ÀÏ¹İ ¸Ş¼¼Áö·Î Ã³¸® */
+    /* ì •ìƒì ì¸ Shutdownì˜ ê²½ìš°ì—ëŠ” ì—ëŸ¬ê°€ ì•„ë‹Œ, ì¼ë°˜ ë©”ì„¸ì§€ë¡œ ì²˜ë¦¬ */
     ideLog::log(IDE_RP_0, RP_TRC_S_SENDER_STOP,
                 mMeta.mReplication.mRepName,
                 mParallelID,
@@ -1484,7 +1484,7 @@ void rpxSender::run()
         }
     }
 
-    //doReplication¿¡¼­ FailÇÑ °æ¿ì
+    //doReplicationì—ì„œ Failí•œ ê²½ìš°
     mSenderInfo->deActivate();
 
     if ( mReplicator.isLogMgrInit() == ID_FALSE )
@@ -1495,9 +1495,9 @@ void rpxSender::run()
     // BUG-16377
     shutdownSenderApply();
 
-    if(sHandshakeFlag == ID_TRUE) // ¸®¼Ò½º ÇØÁ¦ ÀÛ¾÷ ÇÊ¿ä.
+    if(sHandshakeFlag == ID_TRUE) // ë¦¬ì†ŒìŠ¤ í•´ì œ ì‘ì—… í•„ìš”.
     {
-        // replicationÀÌ Á¾·áµÇ¾úÀ¸¹Ç·Î, ¸®¼Ò½º ¸ğµÎ ÇØÁ¦
+        // replicationì´ ì¢…ë£Œë˜ì—ˆìœ¼ë¯€ë¡œ, ë¦¬ì†ŒìŠ¤ ëª¨ë‘ í•´ì œ
         releaseHandshake();
     }
 
@@ -1549,8 +1549,8 @@ void rpxSender::initializeServiceTrans()
 
 /*****************************************************************
  * prepareForParallel()
- * runÀ» ¼öÇàÇÏ±â Àü¿¡ Ã³¸®ÇØ¾ßÇÒ ÀÛ¾÷À» ÇÑ´Ù.
- * ÇöÀç eager replication¿¡¼­ run Àü¿¡ failbackÀ» ÇØ¾ßÇÑ´Ù.
+ * runì„ ìˆ˜í–‰í•˜ê¸° ì „ì— ì²˜ë¦¬í•´ì•¼í•  ì‘ì—…ì„ í•œë‹¤.
+ * í˜„ì¬ eager replicationì—ì„œ run ì „ì— failbackì„ í•´ì•¼í•œë‹¤.
  *****************************************************************/
 IDE_RC rpxSender::prepareForParallel()
 {
@@ -1560,7 +1560,7 @@ IDE_RC rpxSender::prepareForParallel()
         mCurrentType = RP_PARALLEL;
     }
 
-    // Eager mode´Â FailbackÀ» ¼öÇàÇÑ ÈÄ, ReplicationÀ» ½ÃÀÛÇÑ´Ù.
+    // Eager modeëŠ” Failbackì„ ìˆ˜í–‰í•œ í›„, Replicationì„ ì‹œì‘í•œë‹¤.
     if( (mMeta.mReplication.mReplMode == RP_EAGER_MODE) &&
         (isParallelParent() == ID_TRUE) )
     {
@@ -1587,7 +1587,7 @@ IDE_RC rpxSender::prepareForParallel()
         }
     }
 
-    // Service ThreadÀÇ Statement°¡ ´õ ÀÌ»ó ÇÊ¿äÇÏÁö ¾Ê´Ù.
+    // Service Threadì˜ Statementê°€ ë” ì´ìƒ í•„ìš”í•˜ì§€ ì•Šë‹¤.
     mSvcThrRootStmt = NULL;
 
     /* BUG-42732 */
@@ -1624,7 +1624,7 @@ IDE_RC rpxSender::prepareForParallel()
             setStatus( RP_SENDER_RUN );
         }
 
-        /* senderÀÇ »óÅÂ°¡ runÀ¸·Î ¹Ù²ï ÈÄ remotefaultdetect¸¦ ÃÊ±âÈ­ */
+        /* senderì˜ ìƒíƒœê°€ runìœ¼ë¡œ ë°”ë€ í›„ remotefaultdetectë¥¼ ì´ˆê¸°í™” */
         mIsRemoteFaultDetect = ID_FALSE;
     }
     else
@@ -1648,17 +1648,17 @@ IDE_RC rpxSender::prepareForParallel()
 //
 // Called By:     rpxSender::run()
 //
-// Description: sender ½ÃÀÛ½Ã ÇÑ¹ø¸¸ ¼öÇàÇØ¾ßÇÏ´Â ÀÛ¾÷À» Ã³¸®ÇÏ°í,
-//              senderÀÇ Å¸ÀÔÀ» º¯°æÇÏ¿© ´Ù½Ã ¼öÇàµÇÁö ¾Êµµ·Ï ÇÑ´Ù.
+// Description: sender ì‹œì‘ì‹œ í•œë²ˆë§Œ ìˆ˜í–‰í•´ì•¼í•˜ëŠ” ì‘ì—…ì„ ì²˜ë¦¬í•˜ê³ ,
+//              senderì˜ íƒ€ì…ì„ ë³€ê²½í•˜ì—¬ ë‹¤ì‹œ ìˆ˜í–‰ë˜ì§€ ì•Šë„ë¡ í•œë‹¤.
 //
 //===================================================================
 
 IDE_RC rpxSender::execOnceAtStart()
 {
     //--------------------------------------------------------------//
-    // quickstart/sync start/ sync only startµîÀÇ
-    // ±¸¹®ÀÌ µé¾î¿ÔÀ» ¶§ Ã³¸®ÇÏ±â À§ÇÑ ÀÛ¾÷ÀÌ¸ç,
-    // ÀÌ ÇÔ¼ö³»¿¡ normal/parallel sender°¡ Æ¯Á¤ ÀÛ¾÷À» Ã³¸®ÇÏ¸é ¾ÈµÊ.
+    // quickstart/sync start/ sync only startë“±ì˜
+    // êµ¬ë¬¸ì´ ë“¤ì–´ì™”ì„ ë•Œ ì²˜ë¦¬í•˜ê¸° ìœ„í•œ ì‘ì—…ì´ë©°,
+    // ì´ í•¨ìˆ˜ë‚´ì— normal/parallel senderê°€ íŠ¹ì • ì‘ì—…ì„ ì²˜ë¦¬í•˜ë©´ ì•ˆë¨.
     //--------------------------------------------------------------//
     switch ( mCurrentType )
     {
@@ -1673,7 +1673,7 @@ IDE_RC rpxSender::execOnceAtStart()
             {
                 mCurrentType = RP_NORMAL;
 
-                // ´õ ÀÌ»ó Service Thread°¡ ´ë±âÇÏÁö ¾Ê´Â´Ù.
+                // ë” ì´ìƒ Service Threadê°€ ëŒ€ê¸°í•˜ì§€ ì•ŠëŠ”ë‹¤.
                 mSvcThrRootStmt = NULL;
             }
             break;
@@ -1709,7 +1709,7 @@ IDE_RC rpxSender::execOnceAtStart()
             }
             mExitFlag = ID_TRUE;
 
-            // ´õ ÀÌ»ó Service Thread°¡ ´ë±âÇÏÁö ¾Ê´Â´Ù.
+            // ë” ì´ìƒ Service Threadê°€ ëŒ€ê¸°í•˜ì§€ ì•ŠëŠ”ë‹¤.
             mSvcThrRootStmt = NULL;
             break;
 
@@ -1717,14 +1717,14 @@ IDE_RC rpxSender::execOnceAtStart()
         case RP_PARALLEL:
             if(mMeta.mReplication.mReplMode != RP_EAGER_MODE)
             {
-                // ´õ ÀÌ»ó Service Thread°¡ ´ë±âÇÏÁö ¾Ê´Â´Ù.
+                // ë” ì´ìƒ Service Threadê°€ ëŒ€ê¸°í•˜ì§€ ì•ŠëŠ”ë‹¤.
                 mSvcThrRootStmt = NULL;
             }
             break;
 
         case RP_RECOVERY:
         case RP_OFFLINE:
-            // Service ThreadÀÇ Statement°¡ ´õ ÀÌ»ó ÇÊ¿äÇÏÁö ¾Ê´Ù.
+            // Service Threadì˜ Statementê°€ ë” ì´ìƒ í•„ìš”í•˜ì§€ ì•Šë‹¤.
             mSvcThrRootStmt = NULL;
             break;
 
@@ -1789,9 +1789,9 @@ rpxSender::quickStart()
 
 /****************************************************************************
 * Description :
-*   run status¿¡¼­ ÇØ¾ßÇÒ ÀÛ¾÷À» ¼öÇàÇÑ´Ù.
-*   run status¿¡¼­´Â sender typeº°·Î ¸Ş¼¼Áö¸¦ ±â·ÏÇÏ°í
-*   replicationÀ» ÇÏ±âÀü¿¡ Ã³¸®ÇØ¾ßÇÒ ÀÛ¾÷À» ¼öÇàÇÑ ÈÄ replicationÀ» ¼öÇàÇÑ´Ù.
+*   run statusì—ì„œ í•´ì•¼í•  ì‘ì—…ì„ ìˆ˜í–‰í•œë‹¤.
+*   run statusì—ì„œëŠ” sender typeë³„ë¡œ ë©”ì„¸ì§€ë¥¼ ê¸°ë¡í•˜ê³ 
+*   replicationì„ í•˜ê¸°ì „ì— ì²˜ë¦¬í•´ì•¼í•  ì‘ì—…ì„ ìˆ˜í–‰í•œ í›„ replicationì„ ìˆ˜í–‰í•œë‹¤.
 *****************************************************************************/
 IDE_RC rpxSender::doRunning()
 {
@@ -1826,17 +1826,17 @@ IDE_RC rpxSender::doRunning()
     // BUG-22309
     if(mCurrentType != RP_RECOVERY)
     {
-        /* PROJ-1608 recovery Á¤º¸¸¦ standby¿¡ »õ·Î »ı¼º ÇÏ¿´À¸¹Ç·Î, invalid_recovery¸¦ °»½Å
-         *  invalid_recoveryÀÇ default°¡ RP_CAN_RECOVERYÀÌ¹Ç·Î, recovery¸¦ Áö¿øÇÏÁö ¾Ê´Â
-         *  replicationµµ Ç×»ó ¾Æ·¡ ÇÔ¼ö¸¦ ¼öÇàÇØµµ ¹®Á¦¾øÀ½
+        /* PROJ-1608 recovery ì •ë³´ë¥¼ standbyì— ìƒˆë¡œ ìƒì„± í•˜ì˜€ìœ¼ë¯€ë¡œ, invalid_recoveryë¥¼ ê°±ì‹ 
+         *  invalid_recoveryì˜ defaultê°€ RP_CAN_RECOVERYì´ë¯€ë¡œ, recoveryë¥¼ ì§€ì›í•˜ì§€ ì•ŠëŠ”
+         *  replicationë„ í•­ìƒ ì•„ë˜ í•¨ìˆ˜ë¥¼ ìˆ˜í–‰í•´ë„ ë¬¸ì œì—†ìŒ
          */
         IDE_TEST(updateInvalidRecovery(mRepName, RP_CAN_RECOVERY) != IDE_SUCCESS);
     }
 
     IDE_TEST(doReplication() != IDE_SUCCESS);
 
-    // »óÀ§ ÀÎÅÍ·´Æ®°¡ °É·ÁÀÖ´Â °æ¿ì¿¡µµ,
-    // Network/Apply Àå¾Ö¿¡ ´ëÇÑ Á¤Áö ¸Ş½ÃÁö¸¦ Ãâ·ÂÇÑ´Ù.
+    // ìƒìœ„ ì¸í„°ëŸ½íŠ¸ê°€ ê±¸ë ¤ìˆëŠ” ê²½ìš°ì—ë„,
+    // Network/Apply ì¥ì• ì— ëŒ€í•œ ì •ì§€ ë©”ì‹œì§€ë¥¼ ì¶œë ¥í•œë‹¤.
     if((mNetworkError == ID_TRUE) || (mApplyFaultFlag == ID_TRUE))
     {
         IDE_SET(ideSetErrorCode(rpERR_IGNORE_RP_SENDER_STOP,
@@ -1849,8 +1849,8 @@ IDE_RC rpxSender::doRunning()
 
     RP_LABEL(NORMAL_EXIT);
 
-    // »óÀ§ ÀÎÅÍ·´Æ®°¡ °É·ÁÀÖ´Â °æ¿ì¿¡µµ,
-    // Network Àå¾Ö°¡ ¹ß»ıÇÏ¸é Failback »óÅÂ¸¦ °áÁ¤ÇÏ´Â ÀÎÀÚ¸¦ °»½ÅÇÑ´Ù.
+    // ìƒìœ„ ì¸í„°ëŸ½íŠ¸ê°€ ê±¸ë ¤ìˆëŠ” ê²½ìš°ì—ë„,
+    // Network ì¥ì• ê°€ ë°œìƒí•˜ë©´ Failback ìƒíƒœë¥¼ ê²°ì •í•˜ëŠ” ì¸ìë¥¼ ê°±ì‹ í•œë‹¤.
     if((mNetworkError == ID_TRUE) && (isParallelChild() != ID_TRUE))
     {
         mIsRemoteFaultDetect = ID_TRUE;
@@ -1884,7 +1884,7 @@ rpxSender::doReplication()
     {
         if ( mStatus != RP_SENDER_IDLE )
         {
-            /* For Parallel Logging: Log Base·Î ReplicationÀ» ¼öÇà */
+            /* For Parallel Logging: Log Baseë¡œ Replicationì„ ìˆ˜í–‰ */
             IDU_FIT_POINT( "rpxSender::doReplication::SLEEP::replicateLogFiles::mReplicator" );
             IDE_TEST( mReplicator.replicateLogFiles( RP_WAIT_ON_NOGAP,
                                                      RP_SEND_XLOG_ON_ADD_XLOG,
@@ -1986,8 +1986,8 @@ rpxSender::getNextLastUsedHostNo( SInt *aIndex )
         *aIndex = sIndex;
     }
 
-    /* Service ThreadÀÇ TransactionÀ¸·Î ±¸µ¿µÇ°í ÀÖ´Â °æ¿ì,
-     * Service ThreadÀÇ TransactionÀ» »ç¿ëÇÑ´Ù.
+    /* Service Threadì˜ Transactionìœ¼ë¡œ êµ¬ë™ë˜ê³  ìˆëŠ” ê²½ìš°,
+     * Service Threadì˜ Transactionì„ ì‚¬ìš©í•œë‹¤.
      */
     if(mSvcThrRootStmt != NULL)
     {
@@ -2125,9 +2125,9 @@ ULong rpxSender::getSendDataCount( void )
 Name:
     waitComplete()
 Description:
-    ´Ù¸¥ ¼¼¼ÇÀÌ alter replication sync¸¦ ¼öÇàÇÏ¿© senderÀÇ startComplete
-    flag¸¦ °Ë»çÇÏ´Â µ¿¾È sender¸¦ freeÇÏ´Â °ÍÀ» ¸·±â À§ÇØ »ç¿ë
-    ¸Ş¸ğ¸® free°¡ ¹ß»ıÇÏ±â Àü¿¡ Ç×»ó ¼öÇàµÇ¾î¾ß ÇÔ
+    ë‹¤ë¥¸ ì„¸ì…˜ì´ alter replication syncë¥¼ ìˆ˜í–‰í•˜ì—¬ senderì˜ startComplete
+    flagë¥¼ ê²€ì‚¬í•˜ëŠ” ë™ì•ˆ senderë¥¼ freeí•˜ëŠ” ê²ƒì„ ë§‰ê¸° ìœ„í•´ ì‚¬ìš©
+    ë©”ëª¨ë¦¬ freeê°€ ë°œìƒí•˜ê¸° ì „ì— í•­ìƒ ìˆ˜í–‰ë˜ì–´ì•¼ í•¨
 *-----------------------------------------------------------------------------*/
 IDE_RC
 rpxSender::waitComplete( idvSQL     * aStatistics )
@@ -2293,7 +2293,7 @@ IDE_RC rpxSender::buildMeta(smiStatement   * aSmiStmt,
             sMetaBuildType = RP_META_BUILD_LAST;
             break;
 
-        /*offline sender´Â meta¸¦ buildÇÏÁö ¾Ê°í º¹»çÇÑ´Ù.*/
+        /*offline senderëŠ” metaë¥¼ buildí•˜ì§€ ì•Šê³  ë³µì‚¬í•œë‹¤.*/
         case RP_OFFLINE :
             sMetaBuildType = RP_META_NO_BUILD;
             sMeta = mRemoteMeta;
@@ -2308,8 +2308,8 @@ IDE_RC rpxSender::buildMeta(smiStatement   * aSmiStmt,
             }
             else
             {
-                // buildMeta°¡ ºÒ¸®´Â initialize½ÃÁ¡¿¡´Â parallel manager´Â
-                // normal typeÀ¸·Î µé¾î¿Â´Ù.
+                // buildMetaê°€ ë¶ˆë¦¬ëŠ” initializeì‹œì ì—ëŠ” parallel managerëŠ”
+                // normal typeìœ¼ë¡œ ë“¤ì–´ì˜¨ë‹¤.
                 IDE_DASSERT(0);
             }
             break;
@@ -2335,11 +2335,11 @@ IDE_RC rpxSender::buildMeta(smiStatement   * aSmiStmt,
     }
 
     mMeta.mReplication.mParallelID = mParallelID;
-    // Meta¸¦ ¸¸µé ¶§ ÀÌ¹Ì IS_LOCKÀ» Àâ¾Æ¼­, DDLÀ» ½ÇÇàÇÒ ¼ö ¾ø´Ù.
+    // Metaë¥¼ ë§Œë“¤ ë•Œ ì´ë¯¸ IS_LOCKì„ ì¡ì•„ì„œ, DDLì„ ì‹¤í–‰í•  ìˆ˜ ì—†ë‹¤.
     switch(aStartType)
     {
         case RP_NORMAL :
-            // º¸°üµÈ Meta°¡ ¾øÀ¸¸é, ÃÖ½Å Meta¸¦ º¸°üÇÑ´Ù.
+            // ë³´ê´€ëœ Metaê°€ ì—†ìœ¼ë©´, ìµœì‹  Metaë¥¼ ë³´ê´€í•œë‹¤.
             if(mMeta.mReplication.mXSN == SM_SN_NULL)
             {
                 IDE_TEST(rpdMeta::insertOldMetaRepl(aSmiStmt, &mMeta)
@@ -2348,31 +2348,31 @@ IDE_RC rpxSender::buildMeta(smiStatement   * aSmiStmt,
             break;
 
         case RP_QUICK :
-            // º¸°üµÈ Meta°¡ ÀÖÀ¸¸é, º¸°üµÈ Meta¸¦ Á¦°ÅÇÑ´Ù.
+            // ë³´ê´€ëœ Metaê°€ ìˆìœ¼ë©´, ë³´ê´€ëœ Metaë¥¼ ì œê±°í•œë‹¤.
             if(mMeta.mReplication.mXSN != SM_SN_NULL)
             {
                 IDE_TEST(rpdMeta::removeOldMetaRepl(aSmiStmt, aRepName)
                          != IDE_SUCCESS);
             }
 
-            // ÃÖ½Å Meta¸¦ º¸°üÇÑ´Ù.
+            // ìµœì‹  Metaë¥¼ ë³´ê´€í•œë‹¤.
             IDE_TEST(rpdMeta::insertOldMetaRepl(aSmiStmt, &mMeta)
                      != IDE_SUCCESS);
             break;
 
         case RP_SYNC :
         case RP_SYNC_ONLY :
-            // Sync ´ë»ó ItemÀÌ ÁöÁ¤µÇ°í º¸°üµÈ Meta°¡ ÀÖ´Â °æ¿ì
+            // Sync ëŒ€ìƒ Itemì´ ì§€ì •ë˜ê³  ë³´ê´€ëœ Metaê°€ ìˆëŠ” ê²½ìš°
             if((mSyncItems != NULL) && (mMeta.mReplication.mXSN != SM_SN_NULL))
             {
                 sSyncItem = mSyncItems;
                 while(sSyncItem != NULL)
                 {
                     /* PROJ-2366 partition case 
-                     * º¸°üµÈ ItemÀÇ Meta¸¦ Á¦°ÅÇÑ´Ù.
-                     * syncItemÀÇ °æ¿ì partition´ÜÀ§·Î µé¾î¿À±â ¶§¹®¿¡ ¸¶Áö¸· ÀÎÀÚ´Â PARTITION UNITÀÌ´Ù.
-                     * È¤¿© PARTITIONED TABLEÀÌ ¾Æ´Ñ °æ¿ì¿¡´Â partitionNameÀÌ syncItemÀÇ °Í°ú selectÇØ¿Â °ª ¸ğµÎ
-                     * \0ÀÌ±â ¶§¹®¿¡ »ó°ü¾ø´Ù.
+                     * ë³´ê´€ëœ Itemì˜ Metaë¥¼ ì œê±°í•œë‹¤.
+                     * syncItemì˜ ê²½ìš° partitionë‹¨ìœ„ë¡œ ë“¤ì–´ì˜¤ê¸° ë•Œë¬¸ì— ë§ˆì§€ë§‰ ì¸ìëŠ” PARTITION UNITì´ë‹¤.
+                     * í˜¹ì—¬ PARTITIONED TABLEì´ ì•„ë‹Œ ê²½ìš°ì—ëŠ” partitionNameì´ syncItemì˜ ê²ƒê³¼ selectí•´ì˜¨ ê°’ ëª¨ë‘
+                     * \0ì´ê¸° ë•Œë¬¸ì— ìƒê´€ì—†ë‹¤.
                      */
                     IDE_TEST(rpdMeta::deleteOldMetaItems(aSmiStmt,
                                                          aRepName,
@@ -2385,14 +2385,14 @@ IDE_RC rpxSender::buildMeta(smiStatement   * aSmiStmt,
                     sSyncItem = sSyncItem->next;
                 }
 
-                // SYNC ´ë»ó Item¸¸ Meta¸¦ º¸°üÇÑ´Ù.
+                // SYNC ëŒ€ìƒ Itemë§Œ Metaë¥¼ ë³´ê´€í•œë‹¤.
                 for(sIndex = 0;
                     sIndex < mMeta.mReplication.mItemCount;
                     sIndex++)
                 {
                     sItem = mMeta.mItemsOrderByTableOID[sIndex];
 
-                    // Replication TableÀÌ ÁöÁ¤ÇÑ Sync TableÀÎ °æ¿ì¿¡¸¸ °è¼Ó ÁøÇàÇÑ´Ù.
+                    // Replication Tableì´ ì§€ì •í•œ Sync Tableì¸ ê²½ìš°ì—ë§Œ ê³„ì† ì§„í–‰í•œë‹¤.
                     if(isSyncItem(mSyncItems,
                                   sItem->mItem.mLocalUsername,
                                   sItem->mItem.mLocalTablename,
@@ -2401,12 +2401,12 @@ IDE_RC rpxSender::buildMeta(smiStatement   * aSmiStmt,
                         continue;
                     }
 
-                    // ItemÀÇ ÃÖ½Å Meta¸¦ º¸°üÇÑ´Ù.
+                    // Itemì˜ ìµœì‹  Metaë¥¼ ë³´ê´€í•œë‹¤.
                     IDE_TEST(rpdMeta::insertOldMetaItem(aSmiStmt, sItem)
                              != IDE_SUCCESS);
                 }
 
-                // ÃÖ½Å Meta¸¦ Á¦°ÅÇÏ°í º¸°üµÈ Meta¸¦ ¾ò´Â´Ù.
+                // ìµœì‹  Metaë¥¼ ì œê±°í•˜ê³  ë³´ê´€ëœ Metaë¥¼ ì–»ëŠ”ë‹¤.
                 mMeta.finalize();
                 mMeta.initialize();
 
@@ -2417,17 +2417,17 @@ IDE_RC rpxSender::buildMeta(smiStatement   * aSmiStmt,
                                             SMI_TBSLV_DDL_DML )
                                != IDE_SUCCESS, ERR_META_BUILD);
             }
-            // ÀÌÀü MetaÀÇ À¯¹«¿¡ »ó°ü¾øÀÌ ÃÖ½Å Meta°¡ ÇÊ¿äÇÑ °æ¿ì
+            // ì´ì „ Metaì˜ ìœ ë¬´ì— ìƒê´€ì—†ì´ ìµœì‹  Metaê°€ í•„ìš”í•œ ê²½ìš°
             else
             {
-                // º¸°üµÈ Meta°¡ ÀÖÀ¸¸é, º¸°üµÈ Meta¸¦ Á¦°ÅÇÑ´Ù.
+                // ë³´ê´€ëœ Metaê°€ ìˆìœ¼ë©´, ë³´ê´€ëœ Metaë¥¼ ì œê±°í•œë‹¤.
                 if(mMeta.mReplication.mXSN != SM_SN_NULL)
                 {
                     IDE_TEST(rpdMeta::removeOldMetaRepl(aSmiStmt, aRepName)
                              != IDE_SUCCESS);
                 }
 
-                // ÃÖ½Å Meta¸¦ º¸°üÇÑ´Ù.
+                // ìµœì‹  Metaë¥¼ ë³´ê´€í•œë‹¤.
                 IDE_TEST(rpdMeta::insertOldMetaRepl(aSmiStmt, &mMeta)
                          != IDE_SUCCESS);
             }
@@ -2456,7 +2456,7 @@ IDE_RC rpxSender::buildMeta(smiStatement   * aSmiStmt,
 
             for(sTC = 0; sTC < mMeta.mReplication.mItemCount; sTC++)
             {
-                //BUG-28014 : off-line replicator DISK Å×ÀÌºí¿¡ °æ¿ì moduleÀÌ ÇÊ¿ä ÇÕ´Ï´Ù.
+                //BUG-28014 : off-line replicator DISK í…Œì´ë¸”ì— ê²½ìš° moduleì´ í•„ìš” í•©ë‹ˆë‹¤.
                 for(sCC = 0; sCC < mMeta.mItems[sTC].mColCount; sCC++)
                 {
                     IDU_FIT_POINT_RAISE( "rpxSender::buildMeta::Erratic::rpERR_ABORT_GET_MODULE",
@@ -2476,8 +2476,8 @@ IDE_RC rpxSender::buildMeta(smiStatement   * aSmiStmt,
             }
             else
             {
-                // buildMeta°¡ ºÒ¸®´Â initialize½ÃÁ¡¿¡´Â parallel manager´Â
-                // normal typeÀ¸·Î µé¾î¿À¹Ç·Î, ÀÌ ºÎºĞÀ» Å» ¼ö ¾ø´Ù.
+                // buildMetaê°€ ë¶ˆë¦¬ëŠ” initializeì‹œì ì—ëŠ” parallel managerëŠ”
+                // normal typeìœ¼ë¡œ ë“¤ì–´ì˜¤ë¯€ë¡œ, ì´ ë¶€ë¶„ì„ íƒˆ ìˆ˜ ì—†ë‹¤.
                 IDE_DASSERT(0);
             }
             break;
@@ -2599,7 +2599,7 @@ rpxSender::waitThreadJoin(idvSQL *aStatistics)
 
         if ( aStatistics != NULL )
         {
-            // BUG-22637 MM¿¡¼­ QUERY_TIMEOUT, Session Closed¸¦ ¼³Á¤Çß´ÂÁö È®ÀÎÇÑ´Ù
+            // BUG-22637 MMì—ì„œ QUERY_TIMEOUT, Session Closedë¥¼ ì„¤ì •í–ˆëŠ”ì§€ í™•ì¸í•œë‹¤
             IDE_TEST( iduCheckSessionEvent( aStatistics ) != IDE_SUCCESS );
         }
         else
@@ -2649,7 +2649,7 @@ void rpxSender::signalThreadJoin()
     return;
 }
 
-/* PROJ-1915 RemoteLog¿¡ ¸¶Áö¸· SNÀ» ¸®ÅÏ smrRemoteLFGMgr¿¡¼­ ÇÑ¹ø °áÁ¤ µÈ °ªÀ» ¸®ÅÏ ÇÑ´Ù.*/
+/* PROJ-1915 RemoteLogì— ë§ˆì§€ë§‰ SNì„ ë¦¬í„´ smrRemoteLFGMgrì—ì„œ í•œë²ˆ ê²°ì • ëœ ê°’ì„ ë¦¬í„´ í•œë‹¤.*/
 IDE_RC rpxSender::getRemoteLastUsedGSN(smSN * aSN)
 {
     IDE_TEST( mReplicator.getRemoteLastUsedGSN( aSN ) != IDE_SUCCESS );
@@ -2662,7 +2662,7 @@ IDE_RC rpxSender::getRemoteLastUsedGSN(smSN * aSN)
 }
 
 
-/* PROJ-1915 RemoteLog »ç¿ë °¡´É ¿©ºÎ °áÁ¤ */
+/* PROJ-1915 RemoteLog ì‚¬ìš© ê°€ëŠ¥ ì—¬ë¶€ ê²°ì • */
 IDE_RC rpxSender::checkOffLineLogInfo()
 {
     UInt   sCompileBit;
@@ -2698,7 +2698,7 @@ IDE_RC rpxSender::checkOffLineLogInfo()
     IDE_TEST_RAISE(sCompileBit != mMeta.mReplication.mCompileBit,
                    ERR_COMPILEBIT_MISMATCH);
 
-    //sm Version Àº ¸¶½ºÅ© ÇØ¼­ °Ë»ç ÇÑ´Ù.
+    //sm Version ì€ ë§ˆìŠ¤í¬ í•´ì„œ ê²€ì‚¬ í•œë‹¤.
     sSmVer1 = sSmVersionID & SM_CHECK_VERSION_MASK;
     sSmVer2 = mMeta.mReplication.mSmVersionID & SM_CHECK_VERSION_MASK;
 
@@ -2794,10 +2794,10 @@ void rpxSender::getMinRestartSNFromAllApply( smSN* aRestartSN )
 /***********************************************************************
  *  Description:
  *
- *    checkpoint thread¿¡ ÀÇÇØ È£ÃâµÇ¸ç, ÇöÀç redo log¸¦ ÀĞ°í ÀÖ°í
- *    give-up»óÈ²ÀÎ °æ¿ì archive log·Î ÀüÈ¯ÇÒ °ÍÀÎÁö ÆÇ´ÜÇÑ´Ù. ÀÌ¶§
- *    mLogSwitchMtx lockÀ» È¹µæÇÏ¿© redo log ÆÄÀÏÀ» ÀĞ°í ÀÖÁö ¾Ê´Â
- *    °ÍÀ» º¸ÀåÇÑ´Ù.
+ *    checkpoint threadì— ì˜í•´ í˜¸ì¶œë˜ë©°, í˜„ì¬ redo logë¥¼ ì½ê³  ìˆê³ 
+ *    give-upìƒí™©ì¸ ê²½ìš° archive logë¡œ ì „í™˜í•  ê²ƒì¸ì§€ íŒë‹¨í•œë‹¤. ì´ë•Œ
+ *    mLogSwitchMtx lockì„ íšë“í•˜ì—¬ redo log íŒŒì¼ì„ ì½ê³  ìˆì§€ ì•ŠëŠ”
+ *    ê²ƒì„ ë³´ì¥í•œë‹¤.
  **********************************************************************/
 void rpxSender::checkAndSetSwitchToArchiveLogMgr(const UInt  * aLastArchiveFileNo,
                                                  idBool      * aSetLogMgrSwitch)
@@ -2831,8 +2831,8 @@ IDE_RC rpxSender::failbackNormal()
                           mMeta.mReplication.mRepName,
                           mXSN);
 
-    // Lazy Mode·Î Replication GapÀ» Á¦°ÅÇÑ´Ù.
-    /* For Parallel Logging: Log Base·Î ReplicationÀ» ¼öÇà */
+    // Lazy Modeë¡œ Replication Gapì„ ì œê±°í•œë‹¤.
+    /* For Parallel Logging: Log Baseë¡œ Replicationì„ ìˆ˜í–‰ */
     IDE_TEST( mReplicator.replicateLogFiles( RP_RETURN_ON_NOGAP,
                                              RP_SEND_XLOG_ON_ADD_XLOG,
                                              NULL,
@@ -2840,13 +2840,13 @@ IDE_RC rpxSender::failbackNormal()
               != IDE_SUCCESS );
     IDE_TEST_CONT(checkInterrupt() != RP_INTR_NONE, NORMAL_EXIT);
 
-    // Eager Mode·Î ÀüÈ¯ÇÑ´Ù.
+    // Eager Modeë¡œ ì „í™˜í•œë‹¤.
     mSenderInfo->setSenderStatus(RP_SENDER_FAILBACK_EAGER);
 
-    // Eager Mode·Î Replication GapÀ» Á¦°ÅÇÑ´Ù.
+    // Eager Modeë¡œ Replication Gapì„ ì œê±°í•œë‹¤.
     while(checkInterrupt() == RP_INTR_NONE)
     {
-        /* For Parallel Logging: Log Base·Î ReplicationÀ» ¼öÇà */
+        /* For Parallel Logging: Log Baseë¡œ Replicationì„ ìˆ˜í–‰ */
         IDE_TEST( mReplicator.replicateLogFiles( RP_RETURN_ON_NOGAP,
                                                  RP_SEND_XLOG_ON_ADD_XLOG,
                                                  NULL,
@@ -2917,8 +2917,8 @@ IDE_RC rpxSender::failbackMaster()
                     != IDE_SUCCESS, ERR_MEMORY_ALLOC_RANGE_COLUMN );
     mRangeColumnCount = sMaxPkColCount;
 
-    // Peer Server¿¡¼­ Incremental Sync Primary Key¸¦ ¼ö½ÅÇÏ¿©,
-    // ÇØ´ç Row¸¦ Select & SendÇÑ´Ù.
+    // Peer Serverì—ì„œ Incremental Sync Primary Keyë¥¼ ìˆ˜ì‹ í•˜ì—¬,
+    // í•´ë‹¹ Rowë¥¼ Select & Sendí•œë‹¤.
     while((checkInterrupt() == RP_INTR_NONE) && (sIsSyncPKEnd != ID_TRUE))
     {
         if ( sFailbackWaitTime >= RPU_REPLICATION_RECEIVE_TIMEOUT )
@@ -2941,7 +2941,7 @@ IDE_RC rpxSender::failbackMaster()
                 case RP_SYNC_PK_BEGIN :
                     if(sIsSyncPKSent == ID_TRUE)
                     {
-                        // RollbackÀ» Àü¼ÛÇÏ¿© ÁøÇà ÁßÀÌ´ø TransactionÀ» Ãë¼ÒÇÑ´Ù.
+                        // Rollbackì„ ì „ì†¡í•˜ì—¬ ì§„í–‰ ì¤‘ì´ë˜ Transactionì„ ì·¨ì†Œí•œë‹¤.
                         IDE_TEST(addXLogSyncAbort() != IDE_SUCCESS);
                         sIsSyncPKSent = ID_FALSE;
                     }
@@ -2952,7 +2952,7 @@ IDE_RC rpxSender::failbackMaster()
                 case RP_SYNC_PK :
                     if(sIsSyncPKBegin == ID_TRUE)
                     {
-                        // ÇØ´ç Row°¡ ÀÖÀ¸¸é Delete & Insert·Î Ã³¸®ÇÏ°í, ¾øÀ¸¸é Delete·Î Ã³¸®ÇÑ´Ù.
+                        // í•´ë‹¹ Rowê°€ ìˆìœ¼ë©´ Delete & Insertë¡œ ì²˜ë¦¬í•˜ê³ , ì—†ìœ¼ë©´ Deleteë¡œ ì²˜ë¦¬í•œë‹¤.
                         IDE_TEST(addXLogSyncRow(sSyncPKEntry) != IDE_SUCCESS);
                         sIsSyncPKSent = ID_TRUE;
                     }
@@ -2961,17 +2961,17 @@ IDE_RC rpxSender::failbackMaster()
                 case RP_SYNC_PK_END :
                     if(sIsSyncPKBegin == ID_TRUE)
                     {
-                        // ¸¶Áö¸·ÀÌ ¾Æ´Ò ¼ö ÀÖÀ¸¹Ç·Î, Queue¿¡¼­ ÇÏ³ª ´õ ÀĞ¾î¿Â´Ù.
+                        // ë§ˆì§€ë§‰ì´ ì•„ë‹ ìˆ˜ ìˆìœ¼ë¯€ë¡œ, Queueì—ì„œ í•˜ë‚˜ ë” ì½ì–´ì˜¨ë‹¤.
                         mSenderInfo->removeSyncPKEntry(sSyncPKEntry);
                         sSyncPKEntry = NULL;
                         mSenderInfo->getFirstSyncPKEntry(&sSyncPKEntry);
 
-                        // ´õ ÀÌ»ó ¾øÀ¸¸é, ´ÙÀ½ ´Ü°è·Î ³Ñ¾î°£´Ù.
+                        // ë” ì´ìƒ ì—†ìœ¼ë©´, ë‹¤ìŒ ë‹¨ê³„ë¡œ ë„˜ì–´ê°„ë‹¤.
                         if(sSyncPKEntry == NULL)
                         {
                             if(sIsSyncPKSent == ID_TRUE)
                             {
-                                // CommitÀ» Àü¼ÛÇÏ¿© ÁøÇà ÁßÀÌ´ø TransactionÀ» ¿Ï·áÇÑ´Ù.
+                                // Commitì„ ì „ì†¡í•˜ì—¬ ì§„í–‰ ì¤‘ì´ë˜ Transactionì„ ì™„ë£Œí•œë‹¤.
                                 IDE_TEST(addXLogSyncCommit() != IDE_SUCCESS);
                             }
 
@@ -3000,8 +3000,8 @@ IDE_RC rpxSender::failbackMaster()
 
     IDE_TEST_CONT(checkInterrupt() != RP_INTR_NONE, NORMAL_EXIT);
 
-    // Lazy Mode·Î Replication GapÀ» Á¦°ÅÇÑ´Ù.
-    /* For Parallel Logging: Log Base·Î ReplicationÀ» ¼öÇà */
+    // Lazy Modeë¡œ Replication Gapì„ ì œê±°í•œë‹¤.
+    /* For Parallel Logging: Log Baseë¡œ Replicationì„ ìˆ˜í–‰ */
     IDE_TEST( mReplicator.replicateLogFiles( RP_RETURN_ON_NOGAP,
                                              RP_SEND_XLOG_ON_ADD_XLOG,
                                              NULL,
@@ -3009,13 +3009,13 @@ IDE_RC rpxSender::failbackMaster()
               != IDE_SUCCESS );
     IDE_TEST_CONT(checkInterrupt() != RP_INTR_NONE, NORMAL_EXIT);
 
-    // Eager Mode·Î ÀüÈ¯ÇÑ´Ù.
+    // Eager Modeë¡œ ì „í™˜í•œë‹¤.
     mSenderInfo->setSenderStatus(RP_SENDER_FAILBACK_EAGER);
 
-    // Eager Mode·Î Replication GapÀ» Á¦°ÅÇÑ´Ù.
+    // Eager Modeë¡œ Replication Gapì„ ì œê±°í•œë‹¤.
     while(checkInterrupt() == RP_INTR_NONE)
     {
-        /* For Parallel Logging: Log Base·Î ReplicationÀ» ¼öÇà */
+        /* For Parallel Logging: Log Baseë¡œ Replicationì„ ìˆ˜í–‰ */
         IDE_TEST( mReplicator.replicateLogFiles( RP_RETURN_ON_NOGAP,
                                                  RP_SEND_XLOG_ON_ADD_XLOG,
                                                  NULL,
@@ -3030,7 +3030,7 @@ IDE_RC rpxSender::failbackMaster()
 
     IDE_TEST_CONT(checkInterrupt() != RP_INTR_NONE, NORMAL_EXIT);
 
-    // Peer Server¿¡ Failback ¿Ï·á¸¦ ¾Ë¸°´Ù.
+    // Peer Serverì— Failback ì™„ë£Œë¥¼ ì•Œë¦°ë‹¤.
     IDE_TEST(addXLogFailbackEnd() != IDE_SUCCESS);
 
     if ( sIsSyncPKEnd == ID_TRUE )
@@ -3100,7 +3100,7 @@ IDE_RC rpxSender::failbackMaster()
 
 IDE_RC rpxSender::failbackSlave()
 {
-    // Committed TransactionÀÇ Begin SN ¼öÁı
+    // Committed Transactionì˜ Begin SN ìˆ˜ì§‘
     iduMemPool     sBeginSNPool;
     idBool         sBeginSNPoolInit = ID_FALSE;
     iduList        sBeginSNList;
@@ -3132,20 +3132,20 @@ IDE_RC rpxSender::failbackSlave()
                           mMeta.mReplication.mRepName,
                           mXSN);
 
-    /* BUG-31679 Incremental Sync Áß¿¡ SenderInfo¸¦ ÅëÇØ Transaction Table¿¡ Á¢±Ù±İÁö
-     *  Failback Slave´Â Incremental Sync Áß¿¡ Transaction Table¸¦ ÃÊ±âÈ­ÇÏ¹Ç·Î,
-     *  Incremental Sync Àü¿¡ SenderInfo¸¦ ºñÈ°¼ºÈ­ÇÑ´Ù.
+    /* BUG-31679 Incremental Sync ì¤‘ì— SenderInfoë¥¼ í†µí•´ Transaction Tableì— ì ‘ê·¼ê¸ˆì§€
+     *  Failback SlaveëŠ” Incremental Sync ì¤‘ì— Transaction Tableë¥¼ ì´ˆê¸°í™”í•˜ë¯€ë¡œ,
+     *  Incremental Sync ì „ì— SenderInfoë¥¼ ë¹„í™œì„±í™”í•œë‹¤.
      */
     mSenderInfo->deActivate();
 
     mSenderInfo->setPeerFailbackEnd(ID_FALSE);
 
-    // Peer Server¿¡°Ô Incremental Sync¸¦ À§ÇÑ Primary Key¸¦ Àü¼ÛÇÒ °ÍÀÓÀ» ¾Ë¸°´Ù.
+    // Peer Serverì—ê²Œ Incremental Syncë¥¼ ìœ„í•œ Primary Keyë¥¼ ì „ì†¡í•  ê²ƒì„ì„ ì•Œë¦°ë‹¤.
     IDE_TEST(addXLogSyncPKBegin() != IDE_SUCCESS);
     IDE_TEST_CONT(checkInterrupt() != RP_INTR_NONE, NORMAL_EXIT);
 
-    // Phase 1 : CommitµÈ TransactionÀÇ Begin SNÀ» ¼öÁıÇÑ´Ù.
-    /* For Parallel Logging: Log Base·Î ReplicationÀ» ¼öÇà */
+    // Phase 1 : Commitëœ Transactionì˜ Begin SNì„ ìˆ˜ì§‘í•œë‹¤.
+    /* For Parallel Logging: Log Baseë¡œ Replicationì„ ìˆ˜í–‰ */
     IDE_TEST( mReplicator.replicateLogFiles( RP_RETURN_ON_NOGAP,
                                              RP_COLLECT_BEGIN_SN_ON_ADD_XLOG,
                                              &sBeginSNPool,
@@ -3153,13 +3153,13 @@ IDE_RC rpxSender::failbackSlave()
               != IDE_SUCCESS );
     IDE_TEST_CONT(checkInterrupt() != RP_INTR_NONE, NORMAL_EXIT);
 
-    // SNÀ» ÃÊ±âÈ­ÇÑ´Ù.
+    // SNì„ ì´ˆê¸°í™”í•œë‹¤.
     mXSN = mMeta.mReplication.mXSN;
     mCommitXSN = mXSN;
 
     mReplicator.leaveLogBuffer();
 
-    // Log Manager¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+    // Log Managerë¥¼ ì´ˆê¸°í™”í•œë‹¤.
     IDE_ASSERT( mReplicator.isLogMgrInit() == ID_TRUE );
     IDE_TEST( mReplicator.destroyLogMgr() != IDE_SUCCESS );
 
@@ -3172,11 +3172,11 @@ IDE_RC rpxSender::failbackSlave()
               != IDE_SUCCESS );
     mReplicator.setNeedSN( mXSN ); //proj-1670
 
-    // Transaction TableÀ» ÃÊ±âÈ­ÇÑ´Ù.
+    // Transaction Tableì„ ì´ˆê¸°í™”í•œë‹¤.
     IDE_TEST( mReplicator.initTransTable() != IDE_SUCCESS );
 
-    // Phase 2 : CommitµÈ Transaction¿¡¼­ DMLÀÇ Primary Key¸¦ ÃßÃâÇÏ¿© Àü¼ÛÇÑ´Ù.
-    /* For Parallel Logging: Log Base·Î ReplicationÀ» ¼öÇà */
+    // Phase 2 : Commitëœ Transactionì—ì„œ DMLì˜ Primary Keyë¥¼ ì¶”ì¶œí•˜ì—¬ ì „ì†¡í•œë‹¤.
+    /* For Parallel Logging: Log Baseë¡œ Replicationì„ ìˆ˜í–‰ */
     IDE_TEST( mReplicator.replicateLogFiles( RP_RETURN_ON_NOGAP,
                                              RP_SEND_SYNC_PK_ON_ADD_XLOG,
                                              &sBeginSNPool,
@@ -3184,14 +3184,14 @@ IDE_RC rpxSender::failbackSlave()
               != IDE_SUCCESS );
     IDE_TEST_CONT(checkInterrupt() != RP_INTR_NONE, NORMAL_EXIT);
 
-    // Transaction TableÀ» ÃÊ±âÈ­ÇÑ´Ù.
+    // Transaction Tableì„ ì´ˆê¸°í™”í•œë‹¤.
     IDE_TEST( mReplicator.initTransTable() != IDE_SUCCESS );
 
-    // Peer Server¿¡°Ô Incremental Sync¿¡ ÇÊ¿äÇÑ Primary Key°¡ ´õ ÀÌ»ó ¾øÀ½À» ¾Ë¸°´Ù.
+    // Peer Serverì—ê²Œ Incremental Syncì— í•„ìš”í•œ Primary Keyê°€ ë” ì´ìƒ ì—†ìŒì„ ì•Œë¦°ë‹¤.
     IDE_TEST(addXLogSyncPKEnd() != IDE_SUCCESS);
     IDE_TEST_CONT(checkInterrupt() != RP_INTR_NONE, NORMAL_EXIT);
 
-    // Peer ServerÀÇ FailbackÀÌ ³¡³¯ ¶§±îÁö ±â´Ù¸°´Ù.
+    // Peer Serverì˜ Failbackì´ ëë‚  ë•Œê¹Œì§€ ê¸°ë‹¤ë¦°ë‹¤.
     while(checkInterrupt() == RP_INTR_NONE)
     {
         if ( rpcManager::isStartupFailback() != ID_TRUE )
@@ -3212,14 +3212,14 @@ IDE_RC rpxSender::failbackSlave()
     }
     IDE_TEST_CONT(checkInterrupt() != RP_INTR_NONE, NORMAL_EXIT);
 
-    // Restart SNÀ» °»½ÅÇÏ¿© ÀÌÀü ·Î±×¸¦ ¹«½ÃÇÑ´Ù.
-    //  mXSN´Â Phase 2¸¦ °ÅÄ¡¸é¼­ ÃÖ½ÅÀ¸·Î ÁöÁ¤µÇ¾î ÀÖ´Ù.
+    // Restart SNì„ ê°±ì‹ í•˜ì—¬ ì´ì „ ë¡œê·¸ë¥¼ ë¬´ì‹œí•œë‹¤.
+    //  mXSNëŠ” Phase 2ë¥¼ ê±°ì¹˜ë©´ì„œ ìµœì‹ ìœ¼ë¡œ ì§€ì •ë˜ì–´ ìˆë‹¤.
     IDE_TEST(updateXSN(mXSN) != IDE_SUCCESS);
     mCommitXSN = mXSN;
 
-    /* BUG-31679 Incremental Sync Áß¿¡ SenderInfo¸¦ ÅëÇØ Transaction Table¿¡ Á¢±Ù±İÁö
-     *  Failback Slave´Â Incremental Sync Áß¿¡ Transaction Table¸¦ ÃÊ±âÈ­ÇÏ¹Ç·Î,
-     *  Incremental Sync ÈÄ¿¡ SenderInfo¸¦ È°¼ºÈ­ÇÑ´Ù.
+    /* BUG-31679 Incremental Sync ì¤‘ì— SenderInfoë¥¼ í†µí•´ Transaction Tableì— ì ‘ê·¼ê¸ˆì§€
+     *  Failback SlaveëŠ” Incremental Sync ì¤‘ì— Transaction Tableë¥¼ ì´ˆê¸°í™”í•˜ë¯€ë¡œ,
+     *  Incremental Sync í›„ì— SenderInfoë¥¼ í™œì„±í™”í•œë‹¤.
      */
     mSenderInfo->activate( mReplicator.getTransTbl(),
                            mMeta.mReplication.mXSN,
@@ -3271,7 +3271,7 @@ IDE_RC rpxSender::createNStartChildren()
     UInt        sTmpIdx = 0;
     UInt        sStage = 0;
     rpxSender*  sTmpChildArray = NULL;
-    // child´Â parallel factor¿¡¼­ ÀÚ½ÅÀ» »« ¼ö(factor -1)¸¸Å­ »ı¼ºÇÏ¸é µÈ´Ù.
+    // childëŠ” parallel factorì—ì„œ ìì‹ ì„ ëº€ ìˆ˜(factor -1)ë§Œí¼ ìƒì„±í•˜ë©´ ëœë‹¤.
     UInt        sChildCount = RPU_REPLICATION_EAGER_PARALLEL_FACTOR - 1;
 
     if(sChildCount != 0)
@@ -3291,7 +3291,7 @@ IDE_RC rpxSender::createNStartChildren()
         {
             new (&sTmpChildArray[sChildInitIdx]) rpxSender;
 
-            // iÀÇ ID¸¦ °®´Â Parallel sender»ı¼º
+            // iì˜ IDë¥¼ ê°–ëŠ” Parallel senderìƒì„±
             //type,copyed meta, ID:i
             IDE_TEST(sTmpChildArray[sChildInitIdx].initialize(
                         NULL,                        //aSmiStmt
@@ -3321,7 +3321,7 @@ IDE_RC rpxSender::createNStartChildren()
         }
     }
 
-    // ChildÀÇ »óÅÂ°¡ ¸ğµÎ RUNÀÌ µÉ ¶§±îÁö ±â´Ù¸°´Ù.
+    // Childì˜ ìƒíƒœê°€ ëª¨ë‘ RUNì´ ë  ë•Œê¹Œì§€ ê¸°ë‹¤ë¦°ë‹¤.
     for(sTmpIdx = 0; sTmpIdx < sChildCount; sTmpIdx++)
     {
         while ( ( sTmpChildArray[sTmpIdx].checkInterrupt() == RP_INTR_NONE ) &&
@@ -3339,8 +3339,8 @@ IDE_RC rpxSender::createNStartChildren()
         }
     }
 
-    // performanceview¿¡¼­ mChildArray¸¦ Á¢±ÙÇÏ¹Ç·Î atomic operationÀ¸·Î ÇØ¾ßÇÑ´Ù.
-    // ±×·¯¹Ç·Î, ¸ğµç ÀÛ¾÷ÀÌ ¿Ï·áµÈ ÈÄ¿¡ mChildArray¸¦ ¼³Á¤ÇÑ´Ù.
+    // performanceviewì—ì„œ mChildArrayë¥¼ ì ‘ê·¼í•˜ë¯€ë¡œ atomic operationìœ¼ë¡œ í•´ì•¼í•œë‹¤.
+    // ê·¸ëŸ¬ë¯€ë¡œ, ëª¨ë“  ì‘ì—…ì´ ì™„ë£Œëœ í›„ì— mChildArrayë¥¼ ì„¤ì •í•œë‹¤.
     IDE_ASSERT(mChildArrayMtx.lock(NULL) == IDE_SUCCESS);
     mChildArray = sTmpChildArray;
     mChildCount = sChildCount;
@@ -3401,8 +3401,8 @@ void rpxSender::shutdownNDestroyChildren()
     {
         if(sTmpChildArray != NULL)
         {
-            // childArray¸¦ destroyÇÏ´Â Áß performance view¸¦ ÅëÇØ °Ë»öÇÏÁö ¸øÇÏµµ·Ï
-            // ÇÏ±âÀ§ÇØ¼­ mChildArray¸¦ ¹Ì¸® NULL·Î º¯°æÇÑ´Ù.
+            // childArrayë¥¼ destroyí•˜ëŠ” ì¤‘ performance viewë¥¼ í†µí•´ ê²€ìƒ‰í•˜ì§€ ëª»í•˜ë„ë¡
+            // í•˜ê¸°ìœ„í•´ì„œ mChildArrayë¥¼ ë¯¸ë¦¬ NULLë¡œ ë³€ê²½í•œë‹¤.
             IDE_ASSERT(mChildArrayMtx.lock(NULL) == IDE_SUCCESS);
             mChildArray = NULL;
             mChildCount = 0;
@@ -3432,7 +3432,7 @@ void rpxSender::shutdownNDestroyChildren()
     }
     else
     {
-        // Parallel Parent°¡ ¾Æ´Ï¸é, mChildArray°¡ NULLÀÌ´Ù.
+        // Parallel Parentê°€ ì•„ë‹ˆë©´, mChildArrayê°€ NULLì´ë‹¤.
         IDE_DASSERT(sTmpChildArray == NULL);
     }
 }
@@ -3440,16 +3440,16 @@ void rpxSender::shutdownNDestroyChildren()
 /*****************************************************************************
  * Description:
  *
- * All Sender-> mExitFlag, mApplyFaultFlag, mNetworkErrorÀ¸·Î ÀÎÅÍ·´Æ® Á¾·ù¸¦ È®ÀÎÇÑ´Ù.
- *              mApplyFaultFlagº¸´Ù mNetworkError¸¦ ¿ì¼±ÇÏ¿© ¼³Á¤ÇÑ´Ù.
+ * All Sender-> mExitFlag, mApplyFaultFlag, mNetworkErrorìœ¼ë¡œ ì¸í„°ëŸ½íŠ¸ ì¢…ë¥˜ë¥¼ í™•ì¸í•œë‹¤.
+ *              mApplyFaultFlagë³´ë‹¤ mNetworkErrorë¥¼ ìš°ì„ í•˜ì—¬ ì„¤ì •í•œë‹¤.
  *
- * Parallel-> Parent Sender´Â ¸ğµç ChildÀÇ ÀÎÅÍ·´Æ®¸¦ È®ÀÎÇÏ¿©, ÇÑ Child¶óµµ ÀÎÅÍ·´Æ®
- *            »óÅÂÀÌ¸é ÀÚ½ÅÀº Network Error·Î Ã³¸®ÇÑ´Ù.
+ * Parallel-> Parent SenderëŠ” ëª¨ë“  Childì˜ ì¸í„°ëŸ½íŠ¸ë¥¼ í™•ì¸í•˜ì—¬, í•œ Childë¼ë„ ì¸í„°ëŸ½íŠ¸
+ *            ìƒíƒœì´ë©´ ìì‹ ì€ Network Errorë¡œ ì²˜ë¦¬í•œë‹¤.
  *
- *            Child Sender¿¡ ÀÎÅÍ·´Æ®°¡ ¹ß»ıÇÏ¸é, Child¿¡ Exit Flag°¡ ¼³Á¤µÈ °ÍÀ¸·Î Ã³¸®ÇÑ´Ù.
+ *            Child Senderì— ì¸í„°ëŸ½íŠ¸ê°€ ë°œìƒí•˜ë©´, Childì— Exit Flagê°€ ì„¤ì •ëœ ê²ƒìœ¼ë¡œ ì²˜ë¦¬í•œë‹¤.
  *
- * Return value: check °á°ú¿¡ µû¶ó¼­ ÇØ¾ßÇÒ ÀÏ¿¡ ´ëÇÑ code¸¦ ³ªÅ¸³»´Â
- *               intrLevel(interrupt Level)À» ¹İÈ¯ÇÑ´Ù. intrLevelÀº ¾Æ·¡¿Í °°´Ù.
+ * Return value: check ê²°ê³¼ì— ë”°ë¼ì„œ í•´ì•¼í•  ì¼ì— ëŒ€í•œ codeë¥¼ ë‚˜íƒ€ë‚´ëŠ”
+ *               intrLevel(interrupt Level)ì„ ë°˜í™˜í•œë‹¤. intrLevelì€ ì•„ë˜ì™€ ê°™ë‹¤.
  * intrLevel: 0, RP_INTR_NONE        (No problem, continue replication)
  *            1, RP_INTR_NETWORK     (Network error occur, The sender must retry.)
  *            2, RP_INTR_FAULT       (Some fault occur, The sender must stop.)
@@ -3464,7 +3464,7 @@ RP_INTR_LEVEL rpxSender::checkInterrupt()
     //-------------------------------------------------------------
     // Self Check
     //-------------------------------------------------------------
-    // Normal(lazy/acked)/Recovery/Offline/Parallel Sender´Â ¸ğµÎ Self Check¸¦ ÇØ¾ßÇÑ´Ù.
+    // Normal(lazy/acked)/Recovery/Offline/Parallel SenderëŠ” ëª¨ë‘ Self Checkë¥¼ í•´ì•¼í•œë‹¤.
     if(mExitFlag == ID_TRUE)
     {
         sCheckResult = RP_INTR_EXIT;
@@ -3500,21 +3500,21 @@ RP_INTR_LEVEL rpxSender::checkInterrupt()
 
     //---------------------------------------------------------------------------
     // Children Check
-    // Self CheckÈÄ ¹®Á¦°¡ ¾ø´Â °æ¿ì Parallel Parent´Â ChildµéÀÌ ¹®Á¦ÀÖ´ÂÁö È®ÀÎÇØ¾ßÇÔ.
+    // Self Checkí›„ ë¬¸ì œê°€ ì—†ëŠ” ê²½ìš° Parallel ParentëŠ” Childë“¤ì´ ë¬¸ì œìˆëŠ”ì§€ í™•ì¸í•´ì•¼í•¨.
     //---------------------------------------------------------------------------
     if((isParallelParent() == ID_TRUE) && (sCheckResult == RP_INTR_NONE))
     {
-        // parallel ParentÀº childµéÀÇ ¸ğµç ¿¡·¯¸¦ °¨ÁöÇÏ¿©
-        // ¹®Á¦°¡ ÀÖ´Â °æ¿ì ParentÀÇ Network Error·Î Ã³¸®ÇÏ¿©
-        // Àç ½ÃÀÛÇÒ ¼ö ÀÖµµ·Ï ÇÑ´Ù.
+        // parallel Parentì€ childë“¤ì˜ ëª¨ë“  ì—ëŸ¬ë¥¼ ê°ì§€í•˜ì—¬
+        // ë¬¸ì œê°€ ìˆëŠ” ê²½ìš° Parentì˜ Network Errorë¡œ ì²˜ë¦¬í•˜ì—¬
+        // ì¬ ì‹œì‘í•  ìˆ˜ ìˆë„ë¡ í•œë‹¤.
         if(mChildArray != NULL)
         {
             for(i = 0; i < mChildCount; i++)
             {
                 if(mChildArray[i].checkInterrupt() != RP_INTR_NONE)
                 {
-                    // child°¡ network error°¡ ¹ß»ıÇÑ Á÷ÈÄ ¶Ç´Â
-                    // error·Î ÀÎÇØ Á¾·áµÇ¾î exit flag°¡ ¼³Á¤µÇ¾ú´Ù.
+                    // childê°€ network errorê°€ ë°œìƒí•œ ì§í›„ ë˜ëŠ”
+                    // errorë¡œ ì¸í•´ ì¢…ë£Œë˜ì–´ exit flagê°€ ì„¤ì •ë˜ì—ˆë‹¤.
                     mNetworkError = ID_TRUE;
                     mSenderInfo->deActivate(); //isDisconnect()
                     sCheckResult = RP_INTR_NETWORK;
@@ -4158,7 +4158,7 @@ void rpxSender::sendXLog( const SChar * aLogPtr,
                                     aIsBeginLog ) 
          == ID_TRUE )
     {
-        /* BUG-43051 ÀÓ½Ã·Î °íÄ£ ÄÚµåÀÔ´Ï´Ù. */
+        /* BUG-43051 ì„ì‹œë¡œ ê³ ì¹œ ì½”ë“œì…ë‹ˆë‹¤. */
         IDE_TEST_CONT( waitUntilFlushFailbackComplete() == ID_FALSE, NORMAL_EXIT );
 
         sSender = getAssignedSender( aTransID );

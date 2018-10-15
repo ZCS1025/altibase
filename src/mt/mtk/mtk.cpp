@@ -140,7 +140,7 @@ IDE_RC mtk::initialize( smiCallBackFunc ** aExtRangeFuncGroup,
     UInt               k;
     
     //---------------------------------------------------------
-    // mAllRangeFuncsÀ» ±¸¼º
+    // mAllRangeFuncsì„ êµ¬ì„±
     //---------------------------------------------------------
 
     for ( sRangeFunc = mInternalRangeFuncs;
@@ -211,7 +211,7 @@ IDE_RC mtk::initialize( smiCallBackFunc ** aExtRangeFuncGroup,
     }
 
     //---------------------------------------------------------
-    // mAllRangeFuncsIndex¸¦ ±¸¼º
+    // mAllRangeFuncsIndexë¥¼ êµ¬ì„±
     //---------------------------------------------------------
 
     for ( i = 0; i < mAllRangeFuncCount; i++ )
@@ -233,7 +233,7 @@ IDE_RC mtk::initialize( smiCallBackFunc ** aExtRangeFuncGroup,
     }
     
     //---------------------------------------------------------
-    // mAllCompareFuncsÀ» ±¸¼º
+    // mAllCompareFuncsì„ êµ¬ì„±
     //---------------------------------------------------------
 
     for ( sCompareFunc = mInternalCompareFuncs;
@@ -366,7 +366,7 @@ IDE_RC mtk::initialize( smiCallBackFunc ** aExtRangeFuncGroup,
     }
     
     //---------------------------------------------------------
-    // mAllCompareFuncsIndex¸¦ ±¸¼º
+    // mAllCompareFuncsIndexë¥¼ êµ¬ì„±
     //---------------------------------------------------------
 
     for ( i = 0; i < mAllCompareFuncCount; i++ )
@@ -546,10 +546,10 @@ SInt mtk::compareRange( const smiCallBack* aCallBack1,
                   == MTK_COMPARE_SAMEGROUP_TRUE ) )
             {
                 // PROJ-1364
-                // µ¿ÀÏ°è¿­³» ¼­·Î ´Ù¸¥ data type°£ index¸¦
-                // »ç¿ëÇÒ ¼ö ÀÖÀ¸¹Ç·Î value°¡ ¼­·Î ´Ù¸¥ data type
-                // ÀÏ ¼ö ÀÖ´Ù.
-                // ÀÌ¶§´Â ¼­·Î ´Ù¸¥ data type°£ ºñ±³ÇÔ¼ö¸¦ »ç¿ëÇØ¾ß ÇÑ´Ù.
+                // ë™ì¼ê³„ì—´ë‚´ ì„œë¡œ ë‹¤ë¥¸ data typeê°„ indexë¥¼
+                // ì‚¬ìš©í•  ìˆ˜ ìˆìœ¼ë¯€ë¡œ valueê°€ ì„œë¡œ ë‹¤ë¥¸ data type
+                // ì¼ ìˆ˜ ìˆë‹¤.
+                // ì´ë•ŒëŠ” ì„œë¡œ ë‹¤ë¥¸ data typeê°„ ë¹„êµí•¨ìˆ˜ë¥¼ ì‚¬ìš©í•´ì•¼ í•œë‹¤.
 
                 sDirection =
                     (sCallBack1->flag & MTK_COMPARE_DIRECTION_MASK);
@@ -570,7 +570,7 @@ SInt mtk::compareRange( const smiCallBack* aCallBack1,
             }
 
             //------------------------------------------------------------
-            // value°£ compare
+            // valueê°„ compare
             //------------------------------------------------------------
             sValueInfo1.column = &(sCallBack1->valueDesc);
             sValueInfo1.value  = sCallBack1->value;
@@ -872,8 +872,8 @@ SInt mtk::compareMaximumLimit4Stored( mtdValueInfo * aValueInfo1,
     const void  *   sRealValue;
 
     /* PROJ-2429 Dictionary based data compress for on-disk DB
-     * Null value´ë½Å null value°¡ ÀúÀåµÈ OID°ªÀ» °¡Áö°íÀÖ¾î
-     * maximum check°¡ Á¦´ë·Î µÇÁö ¾ÊÀ½
+     * Null valueëŒ€ì‹  null valueê°€ ì €ì¥ëœ OIDê°’ì„ ê°€ì§€ê³ ìˆì–´
+     * maximum checkê°€ ì œëŒ€ë¡œ ë˜ì§€ ì•ŠìŒ
      */
     if ( ( aValueInfo1->column->column.flag & SMI_COLUMN_COMPRESSION_MASK )
          != SMI_COLUMN_COMPRESSION_TRUE )
@@ -912,7 +912,7 @@ IDE_RC mtk::rangeCallBackGE4Mtd( idBool      * aResult,
 {
 /***********************************************************************
  *
- * Description : Mtd Å¸ÀÔÀÇ Key ColµéÀÇ greater & equal range callback
+ * Description : Mtd íƒ€ì…ì˜ Key Colë“¤ì˜ greater & equal range callback
  *
  * Implementation :
  *
@@ -957,7 +957,7 @@ IDE_RC mtk::rangeCallBackGE4Stored( idBool      * aResult,
 {
 /***********************************************************************
  *
- * Description : Stored Å¸ÀÔÀÇ Key ColµéÀÇ greater & equal range callback
+ * Description : Stored íƒ€ì…ì˜ Key Colë“¤ì˜ greater & equal range callback
  *
  * Implementation :
  *
@@ -1003,7 +1003,7 @@ IDE_RC mtk::rangeCallBackLE4Mtd( idBool      * aResult,
 {
 /***********************************************************************
  *
- * Description : Mtd Å¸ÀÔÀÇ Key ColµéÀÇ less & equal range callback
+ * Description : Mtd íƒ€ì…ì˜ Key Colë“¤ì˜ less & equal range callback
  *
  * Implementation :
  *
@@ -1048,7 +1048,7 @@ IDE_RC mtk::rangeCallBackLE4Stored( idBool      * aResult,
 {
 /***********************************************************************
  *
- * Description : Stored Å¸ÀÔÀÇ Key ColµéÀÇ less & equal range callback
+ * Description : Stored íƒ€ì…ì˜ Key Colë“¤ì˜ less & equal range callback
  *
  * Implementation :
  *
@@ -1094,7 +1094,7 @@ IDE_RC mtk::rangeCallBackGT4Mtd( idBool      * aResult,
 {
 /***********************************************************************
  *
- * Description : Mtd Å¸ÀÔÀÇ Key ColµéÀÇ greater than range callback
+ * Description : Mtd íƒ€ì…ì˜ Key Colë“¤ì˜ greater than range callback
  *
  * Implementation :
  *
@@ -1137,7 +1137,7 @@ IDE_RC mtk::rangeCallBackGT4Stored( idBool      * aResult,
 {
 /***********************************************************************
  *
- * Description : Stored Å¸ÀÔÀÇ Key ColµéÀÇ greater than range callback
+ * Description : Stored íƒ€ì…ì˜ Key Colë“¤ì˜ greater than range callback
  *
  * Implementation :
  *
@@ -1183,7 +1183,7 @@ IDE_RC mtk::rangeCallBackLT4Mtd( idBool      * aResult,
 {
 /***********************************************************************
  *
- * Description : Mtd Å¸ÀÔÀÇ Key ColµéÀÇ less than range callback
+ * Description : Mtd íƒ€ì…ì˜ Key Colë“¤ì˜ less than range callback
  *
  * Implementation :
  *
@@ -1226,7 +1226,7 @@ IDE_RC mtk::rangeCallBackLT4Stored( idBool      * aResult,
 {
 /***********************************************************************
  *
- * Description : Stored Å¸ÀÔÀÇ Key ColµéÀÇ less than range callback
+ * Description : Stored íƒ€ì…ì˜ Key Colë“¤ì˜ less than range callback
  *
  * Implementation :
  *
@@ -1277,9 +1277,9 @@ IDE_RC mtk::rangeCallBack4Rid( idBool      * /* aResult */,
 
 /*
  * PROJ-2433
- * Direct key IndexÀÇ direct key¿Í mtd¸¦ ºñ±³ÇÏ´Â range callback ÇÔ¼ö
- * - indexÀÇ Ã¹¹øÂ° ÄÃ·³¸¸ direct key·Î ºñ±³ÇÔ
- * - partial direct key¸¦ Ã³¸®ÇÏ´ÂºÎºĞ Ãß°¡
+ * Direct key Indexì˜ direct keyì™€ mtdë¥¼ ë¹„êµí•˜ëŠ” range callback í•¨ìˆ˜
+ * - indexì˜ ì²«ë²ˆì§¸ ì»¬ëŸ¼ë§Œ direct keyë¡œ ë¹„êµí•¨
+ * - partial direct keyë¥¼ ì²˜ë¦¬í•˜ëŠ”ë¶€ë¶„ ì¶”ê°€
  */
 IDE_RC mtk::rangeCallBackGE4IndexKey( idBool      * aResult,
                                       const void  * aColVal,
@@ -1303,13 +1303,13 @@ IDE_RC mtk::rangeCallBackGE4IndexKey( idBool      * aResult,
         {
             /*
              * PROJ-2433 Direct Key Index
-             * direct key°¡ NULL ÀÌ ¾Æ´Ñ°æ¿ì, Ã¹¹øÂ° ÄÃ·³Àº direct key¿Í ºñ±³ÇÑ´Ù.
+             * direct keyê°€ NULL ì´ ì•„ë‹Œê²½ìš°, ì²«ë²ˆì§¸ ì»¬ëŸ¼ì€ direct keyì™€ ë¹„êµí•œë‹¤.
              *
-             * - aDirectKeyPartialSize°¡ 0 ÀÌ ¾Æ´Ñ°æ¿ì,
-             *   partial direct key ÀÌ¹Ç·Î MTD_PARTIAL_KEY_ON À» flag¿¡ ¼¼ÆÃÇÑ´Ù.
+             * - aDirectKeyPartialSizeê°€ 0 ì´ ì•„ë‹Œê²½ìš°,
+             *   partial direct key ì´ë¯€ë¡œ MTD_PARTIAL_KEY_ON ì„ flagì— ì„¸íŒ…í•œë‹¤.
              *
-             * - partial direct keyÀÎ °æ¿ì,
-             *   ±× °á°ú°¡ Á¤È®ÇÑ °ªÀÌ ¾Æ´Ï¹Ç·Î µÎ¹øÂ° ÄÃ·³ ºñ±³¾øÀÌ ¹Ù·Î Á¾·áÇÑ´Ù.
+             * - partial direct keyì¸ ê²½ìš°,
+             *   ê·¸ ê²°ê³¼ê°€ ì •í™•í•œ ê°’ì´ ì•„ë‹ˆë¯€ë¡œ ë‘ë²ˆì§¸ ì»¬ëŸ¼ ë¹„êµì—†ì´ ë°”ë¡œ ì¢…ë£Œí•œë‹¤.
              */
             sValueInfo1.column = &(sData->columnDesc);
             sValueInfo1.value  = aDirectKey;
@@ -1337,13 +1337,13 @@ IDE_RC mtk::rangeCallBackGE4IndexKey( idBool      * aResult,
 
             if ( aDirectKeyPartialSize != 0 )
             {
-                /* partial key ÀÌ¸é,
-                 * ´ÙÀ½ ÄÃ·³ÀÇ ºñ±³´ÂÀÇ¹Ì¾ø´Ù. ¹Ù·Î³¡³½´Ù */
+                /* partial key ì´ë©´,
+                 * ë‹¤ìŒ ì»¬ëŸ¼ì˜ ë¹„êµëŠ”ì˜ë¯¸ì—†ë‹¤. ë°”ë¡œëë‚¸ë‹¤ */
                 break;
             }
             else
             {
-                aDirectKey = NULL; /* direct key´Â Ã¹ÄÃ·³¸¸ »ç¿ëÇÔ */
+                aDirectKey = NULL; /* direct keyëŠ” ì²«ì»¬ëŸ¼ë§Œ ì‚¬ìš©í•¨ */
             }
         }
         else
@@ -1390,13 +1390,13 @@ IDE_RC mtk::rangeCallBackLE4IndexKey( idBool      * aResult,
         {
             /*
              * PROJ-2433 Direct Key Index
-             * direct key°¡ NULL ÀÌ ¾Æ´Ñ°æ¿ì, Ã¹¹øÂ° ÄÃ·³Àº direct key¿Í ºñ±³ÇÑ´Ù.
+             * direct keyê°€ NULL ì´ ì•„ë‹Œê²½ìš°, ì²«ë²ˆì§¸ ì»¬ëŸ¼ì€ direct keyì™€ ë¹„êµí•œë‹¤.
              *
-             * - aDirectKeyPartialSize°¡ 0 ÀÌ ¾Æ´Ñ°æ¿ì,
-             *   partial direct key ÀÌ¹Ç·Î MTD_PARTIAL_KEY_ON À» flag¿¡ ¼¼ÆÃÇÑ´Ù.
+             * - aDirectKeyPartialSizeê°€ 0 ì´ ì•„ë‹Œê²½ìš°,
+             *   partial direct key ì´ë¯€ë¡œ MTD_PARTIAL_KEY_ON ì„ flagì— ì„¸íŒ…í•œë‹¤.
              *
-             * - partial direct keyÀÎ °æ¿ì,
-             *   ±× °á°ú°¡ Á¤È®ÇÑ °ªÀÌ ¾Æ´Ï¹Ç·Î µÎ¹øÂ° ÄÃ·³ ºñ±³¾øÀÌ ¹Ù·Î Á¾·áÇÑ´Ù.
+             * - partial direct keyì¸ ê²½ìš°,
+             *   ê·¸ ê²°ê³¼ê°€ ì •í™•í•œ ê°’ì´ ì•„ë‹ˆë¯€ë¡œ ë‘ë²ˆì§¸ ì»¬ëŸ¼ ë¹„êµì—†ì´ ë°”ë¡œ ì¢…ë£Œí•œë‹¤.
              */
             sValueInfo1.column = &(sData->columnDesc);
             sValueInfo1.value  = aDirectKey;
@@ -1424,13 +1424,13 @@ IDE_RC mtk::rangeCallBackLE4IndexKey( idBool      * aResult,
 
             if ( aDirectKeyPartialSize != 0 )
             {
-                /* partial key ÀÌ¸é,
-                 * ´ÙÀ½ ÄÃ·³ÀÇ ºñ±³´ÂÀÇ¹Ì¾ø´Ù. ¹Ù·Î³¡³½´Ù */
+                /* partial key ì´ë©´,
+                 * ë‹¤ìŒ ì»¬ëŸ¼ì˜ ë¹„êµëŠ”ì˜ë¯¸ì—†ë‹¤. ë°”ë¡œëë‚¸ë‹¤ */
                 break;
             }
             else
             {
-                aDirectKey = NULL; /* direct key´Â Ã¹¹øÂ° ÄÃ·³¿¡¼­¸¸ »ç¿ëµÊ */
+                aDirectKey = NULL; /* direct keyëŠ” ì²«ë²ˆì§¸ ì»¬ëŸ¼ì—ì„œë§Œ ì‚¬ìš©ë¨ */
             }
         }
         else
@@ -1464,7 +1464,7 @@ IDE_RC mtk::rangeCallBackGT4IndexKey( idBool      * aResult,
 {
 /***********************************************************************
  *
- * Description : Mtd Å¸ÀÔÀÇ Key ColµéÀÇ greater than range callback
+ * Description : Mtd íƒ€ì…ì˜ Key Colë“¤ì˜ greater than range callback
  *
  * Implementation :
  *
@@ -1483,13 +1483,13 @@ IDE_RC mtk::rangeCallBackGT4IndexKey( idBool      * aResult,
         {
             /*
              * PROJ-2433 Direct Key Index
-             * direct key°¡ NULL ÀÌ ¾Æ´Ñ°æ¿ì, Ã¹¹øÂ° ÄÃ·³Àº direct key¿Í ºñ±³ÇÑ´Ù.
+             * direct keyê°€ NULL ì´ ì•„ë‹Œê²½ìš°, ì²«ë²ˆì§¸ ì»¬ëŸ¼ì€ direct keyì™€ ë¹„êµí•œë‹¤.
              *
-             * - aDirectKeyPartialSize°¡ 0 ÀÌ ¾Æ´Ñ°æ¿ì,
-             *   partial direct key ÀÌ¹Ç·Î MTD_PARTIAL_KEY_ON À» flag¿¡ ¼¼ÆÃÇÑ´Ù.
+             * - aDirectKeyPartialSizeê°€ 0 ì´ ì•„ë‹Œê²½ìš°,
+             *   partial direct key ì´ë¯€ë¡œ MTD_PARTIAL_KEY_ON ì„ flagì— ì„¸íŒ…í•œë‹¤.
              *
-             * - partial direct keyÀÎ °æ¿ì,
-             *   ±× °á°ú°¡ Á¤È®ÇÑ °ªÀÌ ¾Æ´Ï¹Ç·Î µÎ¹øÂ° ÄÃ·³ ºñ±³¾øÀÌ ¹Ù·Î Á¾·áÇÑ´Ù.
+             * - partial direct keyì¸ ê²½ìš°,
+             *   ê·¸ ê²°ê³¼ê°€ ì •í™•í•œ ê°’ì´ ì•„ë‹ˆë¯€ë¡œ ë‘ë²ˆì§¸ ì»¬ëŸ¼ ë¹„êµì—†ì´ ë°”ë¡œ ì¢…ë£Œí•œë‹¤.
              */
             sValueInfo1.column = &(sData->columnDesc);
             sValueInfo1.value  = aDirectKey;
@@ -1518,19 +1518,19 @@ IDE_RC mtk::rangeCallBackGT4IndexKey( idBool      * aResult,
             if ( aDirectKeyPartialSize != 0 )
             {
                 /* PROJ-2433 Direct Key Index
-                 * partial key ÀÌ¸é Á¤È®ÇÑ ºñ±³°¡ µÉ¼ö¾øÀ¸¹Ç·Î
-                 * ¾Æ·¡¿Í °°ÀÌÃ³¸®ÇÑ´Ù.
-                 * 1. GT compare ÇÔ¼ö¶óµµ, GE compare ¶û µ¿ÀÏÇÏ°Ô Ã³¸®ÇÑ´Ù.
-                 *    Áï, µÎ °ªÀÌ °°Àº °æ¿ìµµ ID_TRUE ·Î Ã³¸®ÇÑ´Ù.
+                 * partial key ì´ë©´ ì •í™•í•œ ë¹„êµê°€ ë ìˆ˜ì—†ìœ¼ë¯€ë¡œ
+                 * ì•„ë˜ì™€ ê°™ì´ì²˜ë¦¬í•œë‹¤.
+                 * 1. GT compare í•¨ìˆ˜ë¼ë„, GE compare ë‘ ë™ì¼í•˜ê²Œ ì²˜ë¦¬í•œë‹¤.
+                 *    ì¦‰, ë‘ ê°’ì´ ê°™ì€ ê²½ìš°ë„ ID_TRUE ë¡œ ì²˜ë¦¬í•œë‹¤.
                  *
-                 * 2. composite key indexÀÎ°æ¿ì
-                 *    ´ÙÀ½ ÄÃ·³ÀÇ ºñ±³´ÂÀÇ¹Ì¾ø´Ù. ¹Ù·Î³¡³½´Ù */
+                 * 2. composite key indexì¸ê²½ìš°
+                 *    ë‹¤ìŒ ì»¬ëŸ¼ì˜ ë¹„êµëŠ”ì˜ë¯¸ì—†ë‹¤. ë°”ë¡œëë‚¸ë‹¤ */
                 *aResult = ( sOrder >= 0 ) ? ID_TRUE : ID_FALSE;
                 return IDE_SUCCESS;
             }
             else
             {
-                aDirectKey = NULL; /* direct key´Â ÇÑ¹ø¸¸ »ç¿ëµÊ */
+                aDirectKey = NULL; /* direct keyëŠ” í•œë²ˆë§Œ ì‚¬ìš©ë¨ */
             }
         }
         else
@@ -1575,13 +1575,13 @@ IDE_RC mtk::rangeCallBackLT4IndexKey( idBool      * aResult,
         {
             /*
              * PROJ-2433 Direct Key Index
-             * direct key°¡ NULL ÀÌ ¾Æ´Ñ°æ¿ì, Ã¹¹øÂ° ÄÃ·³Àº direct key¿Í ºñ±³ÇÑ´Ù.
+             * direct keyê°€ NULL ì´ ì•„ë‹Œê²½ìš°, ì²«ë²ˆì§¸ ì»¬ëŸ¼ì€ direct keyì™€ ë¹„êµí•œë‹¤.
              *
-             * - aDirectKeyPartialSize°¡ 0 ÀÌ ¾Æ´Ñ°æ¿ì,
-             *   partial direct key ÀÌ¹Ç·Î MTD_PARTIAL_KEY_ON À» flag¿¡ ¼¼ÆÃÇÑ´Ù.
+             * - aDirectKeyPartialSizeê°€ 0 ì´ ì•„ë‹Œê²½ìš°,
+             *   partial direct key ì´ë¯€ë¡œ MTD_PARTIAL_KEY_ON ì„ flagì— ì„¸íŒ…í•œë‹¤.
              *
-             * - partial direct keyÀÎ °æ¿ì,
-             *   ±× °á°ú°¡ Á¤È®ÇÑ °ªÀÌ ¾Æ´Ï¹Ç·Î µÎ¹øÂ° ÄÃ·³ ºñ±³¾øÀÌ ¹Ù·Î Á¾·áÇÑ´Ù.
+             * - partial direct keyì¸ ê²½ìš°,
+             *   ê·¸ ê²°ê³¼ê°€ ì •í™•í•œ ê°’ì´ ì•„ë‹ˆë¯€ë¡œ ë‘ë²ˆì§¸ ì»¬ëŸ¼ ë¹„êµì—†ì´ ë°”ë¡œ ì¢…ë£Œí•œë‹¤.
              */
             sValueInfo1.column = &(sData->columnDesc);
             sValueInfo1.value  = aDirectKey;
@@ -1610,19 +1610,19 @@ IDE_RC mtk::rangeCallBackLT4IndexKey( idBool      * aResult,
             if ( aDirectKeyPartialSize != 0 )
             {
                 /* PROJ-2433 Direct Key Index
-                 * partial key ÀÌ¸é Á¤È®ÇÑ ºñ±³°¡ µÉ¼ö¾øÀ¸¹Ç·Î
-                 * ¾Æ·¡¿Í °°ÀÌÃ³¸®ÇÑ´Ù.
-                 * 1. LT compare ÇÔ¼ö¶óµµ, LE compare ¶û µ¿ÀÏÇÏ°Ô Ã³¸®ÇÑ´Ù.
-                 *    Áï, µÎ °ªÀÌ °°Àº °æ¿ìµµ ID_TRUE ·Î Ã³¸®ÇÑ´Ù.
+                 * partial key ì´ë©´ ì •í™•í•œ ë¹„êµê°€ ë ìˆ˜ì—†ìœ¼ë¯€ë¡œ
+                 * ì•„ë˜ì™€ ê°™ì´ì²˜ë¦¬í•œë‹¤.
+                 * 1. LT compare í•¨ìˆ˜ë¼ë„, LE compare ë‘ ë™ì¼í•˜ê²Œ ì²˜ë¦¬í•œë‹¤.
+                 *    ì¦‰, ë‘ ê°’ì´ ê°™ì€ ê²½ìš°ë„ ID_TRUE ë¡œ ì²˜ë¦¬í•œë‹¤.
                  *
-                 * 2. composite key indexÀÎ°æ¿ì
-                 *    ´ÙÀ½ ÄÃ·³ÀÇ ºñ±³´ÂÀÇ¹Ì¾ø´Ù. ¹Ù·Î³¡³½´Ù */
+                 * 2. composite key indexì¸ê²½ìš°
+                 *    ë‹¤ìŒ ì»¬ëŸ¼ì˜ ë¹„êµëŠ”ì˜ë¯¸ì—†ë‹¤. ë°”ë¡œëë‚¸ë‹¤ */
                 *aResult = ( sOrder <= 0 ) ? ID_TRUE : ID_FALSE ;
                 return IDE_SUCCESS;
             }
             else
             {
-                aDirectKey = NULL; /* direct key´Â ÇÑ¹ø¸¸ »ç¿ëµÊ */
+                aDirectKey = NULL; /* direct keyëŠ” í•œë²ˆë§Œ ì‚¬ìš©ë¨ */
             }
         }
         else
@@ -1762,8 +1762,8 @@ IDE_RC mtk::mergeOrRangeListDefault( smiRange  * aMerged,
     SInt sIndex = 0;
     SInt i = 0;
 
-    /* PROJ-2446 ONE SOURCE XDBÀÎ °æ¿ì smiRange¿¡¼­ statistics °¡Á®¿À±â
-     * À§ÇØ ÀÚ·á ±¸Á¶¿¡ Ãß°¡ µÊ*/
+    /* PROJ-2446 ONE SOURCE XDBì¸ ê²½ìš° smiRangeì—ì„œ statistics ê°€ì ¸ì˜¤ê¸°
+     * ìœ„í•´ ìë£Œ êµ¬ì¡°ì— ì¶”ê°€ ë¨*/
     for( i = 0; i < aRangeCount; i++ )
     {
         aRangeListArray[i]->statistics = NULL;

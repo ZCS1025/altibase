@@ -27,9 +27,9 @@
 #include <sctTBSUpdate.h>
 
 /*
-    TablespaceÀÇ Attribute Flagº¯°æ¿¡ ´ëÇÑ ·Î±×¸¦ ºĞ¼®ÇÑ´Ù.
+    Tablespaceì˜ Attribute Flagë³€ê²½ì— ëŒ€í•œ ë¡œê·¸ë¥¼ ë¶„ì„í•œë‹¤.
 
-    [IN]  aValueSize     - Log Image ÀÇ Å©±â 
+    [IN]  aValueSize     - Log Image ì˜ í¬ê¸° 
     [IN]  aValuePtr      - Log Image
     [OUT] aAutoExtMode   - Auto extent mode
  */
@@ -52,13 +52,13 @@ IDE_RC sctTBSUpdate::getAlterAttrFlagImage( UInt       aValueSize,
 
 
 /*
-    TablespaceÀÇ Attribute Flagº¯°æ¿¡ ´ëÇÑ ·Î±×ÀÇ Redo¼öÇà
+    Tablespaceì˜ Attribute Flagë³€ê²½ì— ëŒ€í•œ ë¡œê·¸ì˜ Redoìˆ˜í–‰
 
-    [ ·Î±× ±¸Á¶ ]
+    [ ë¡œê·¸ êµ¬ì¡° ]
     After Image   --------------------------------------------
       UInt                aAfterAttrFlag
     
-    [ ALTER_TBS_AUTO_EXTEND ÀÇ REDO Ã³¸® ]
+    [ ALTER_TBS_AUTO_EXTEND ì˜ REDO ì²˜ë¦¬ ]
       (r-010) TBSNode.AttrFlag := AfterImage.AttrFlag
 */
 IDE_RC sctTBSUpdate::redo_SCT_UPDATE_ALTER_ATTR_FLAG(
@@ -79,8 +79,8 @@ IDE_RC sctTBSUpdate::redo_SCT_UPDATE_ALTER_ATTR_FLAG(
     IDE_DASSERT( aTrans != NULL );
     ACP_UNUSED( aTrans );
     
-    // aValueSize, aValuePtr ¿¡ ´ëÇÑ ÀÎÀÚ DASSERTIONÀº
-    // getAlterAttrFlagImage ¿¡¼­ ½Ç½Ã.
+    // aValueSize, aValuePtr ì— ëŒ€í•œ ì¸ì DASSERTIONì€
+    // getAlterAttrFlagImage ì—ì„œ ì‹¤ì‹œ.
     IDE_TEST( getAlterAttrFlagImage( aValueSize,
                                        aValuePtr,
                                        & sAttrFlag ) != IDE_SUCCESS );
@@ -91,7 +91,7 @@ IDE_RC sctTBSUpdate::redo_SCT_UPDATE_ALTER_ATTR_FLAG(
     if ( sSpaceNode != NULL )
     {
 
-        // Tablespace Attributeº¯°æÀ» À§ÇØ Attribute Flag Pointer¸¦ °¡Á®¿Â´Ù
+        // Tablespace Attributeë³€ê²½ì„ ìœ„í•´ Attribute Flag Pointerë¥¼ ê°€ì ¸ì˜¨ë‹¤
         IDE_TEST( sctTableSpaceMgr::getTBSAttrFlagPtrByID( sSpaceNode->mID,
                                                            & sAttrFlagPtr)
                   != IDE_SUCCESS );
@@ -100,7 +100,7 @@ IDE_RC sctTBSUpdate::redo_SCT_UPDATE_ALTER_ATTR_FLAG(
     }
     else
     {
-        // ÀÌ¹Ì DropµÈ TablespaceÀÎ °æ¿ì 
+        // ì´ë¯¸ Dropëœ Tablespaceì¸ ê²½ìš° 
         // nothing to do ...
     }
         
@@ -113,13 +113,13 @@ IDE_RC sctTBSUpdate::redo_SCT_UPDATE_ALTER_ATTR_FLAG(
 
 
 /*
-    TablespaceÀÇ Attribute Flagº¯°æ¿¡ ´ëÇÑ ·Î±×ÀÇ Undo¼öÇà
+    Tablespaceì˜ Attribute Flagë³€ê²½ì— ëŒ€í•œ ë¡œê·¸ì˜ Undoìˆ˜í–‰
 
-    [ ·Î±× ±¸Á¶ ]
+    [ ë¡œê·¸ êµ¬ì¡° ]
     After Image   --------------------------------------------
       UInt                aBeforeAttrFlag
     
-    [ ALTER_TBS_AUTO_EXTEND ÀÇ REDO Ã³¸® ]
+    [ ALTER_TBS_AUTO_EXTEND ì˜ REDO ì²˜ë¦¬ ]
       (r-010) TBSNode.AttrFlag := AfterImage.AttrFlag
 */
 IDE_RC sctTBSUpdate::undo_SCT_UPDATE_ALTER_ATTR_FLAG(
@@ -140,8 +140,8 @@ IDE_RC sctTBSUpdate::undo_SCT_UPDATE_ALTER_ATTR_FLAG(
     IDE_DASSERT( aTrans != NULL );
     ACP_UNUSED( aTrans );
     
-    // aValueSize, aValuePtr ¿¡ ´ëÇÑ ÀÎÀÚ DASSERTIONÀº
-    // getAlterAttrFlagImage ¿¡¼­ ½Ç½Ã.
+    // aValueSize, aValuePtr ì— ëŒ€í•œ ì¸ì DASSERTIONì€
+    // getAlterAttrFlagImage ì—ì„œ ì‹¤ì‹œ.
     IDE_TEST( getAlterAttrFlagImage( aValueSize,
                                        aValuePtr,
                                        & sAttrFlag ) != IDE_SUCCESS );
@@ -152,7 +152,7 @@ IDE_RC sctTBSUpdate::undo_SCT_UPDATE_ALTER_ATTR_FLAG(
     if ( sSpaceNode != NULL )
     {
 
-        // Tablespace Attributeº¯°æÀ» À§ÇØ Attribute Flag Pointer¸¦ °¡Á®¿Â´Ù
+        // Tablespace Attributeë³€ê²½ì„ ìœ„í•´ Attribute Flag Pointerë¥¼ ê°€ì ¸ì˜¨ë‹¤
         IDE_TEST( sctTableSpaceMgr::getTBSAttrFlagPtrByID( sSpaceNode->mID,
                                                            & sAttrFlagPtr)
                   != IDE_SUCCESS );
@@ -161,18 +161,18 @@ IDE_RC sctTBSUpdate::undo_SCT_UPDATE_ALTER_ATTR_FLAG(
 
         if (aIsRestart == ID_FALSE)
         {
-            // Log Anchor¿¡ flush.
+            // Log Anchorì— flush.
             IDE_TEST( smLayerCallback::updateTBSNodeAndFlush( (sctTableSpaceNode*)sSpaceNode )
                       != IDE_SUCCESS );
         }
         else
         {
-            // RESTART½Ã¿¡´Â Loganchor¸¦ flushÇÏÁö ¾Ê´Â´Ù.
+            // RESTARTì‹œì—ëŠ” Loganchorë¥¼ flushí•˜ì§€ ì•ŠëŠ”ë‹¤.
         }
     }
     else
     {
-        // ÀÌ¹Ì DropµÈ TablespaceÀÎ °æ¿ì 
+        // ì´ë¯¸ Dropëœ Tablespaceì¸ ê²½ìš° 
         // nothing to do ...
     }
         

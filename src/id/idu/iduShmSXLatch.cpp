@@ -30,9 +30,9 @@
 #include <iduProperty.h>
 
 /***********************************************************************
- * Description : aSXLatch¸¦ acquireÇÑ´Ù.
+ * Description : aSXLatchë¥¼ acquireí•œë‹¤.
  *
- * aStatistics       - [IN] ThreadÀÇ ContextÁ¤º¸
+ * aStatistics       - [IN] Threadì˜ Contextì •ë³´
  * aShmTxInfo        - [IN] Shared Memory Tx
  * aSXLatch          - [IN] SX latch
  * aMode             - [IN] latch acquire mode : shared or exclusive
@@ -227,9 +227,9 @@ IDE_RC iduShmSXLatchAcquire( idvSQL            * aStatistics,
 }
 
 /***********************************************************************
- * Description : aLatchOPInfo¿¡ ÇØ´çÇÏ´Â SXLatch¸¦ releaseÇÑ´Ù.
+ * Description : aLatchOPInfoì— í•´ë‹¹í•˜ëŠ” SXLatchë¥¼ releaseí•œë‹¤.
  *
- * aStatistics       - [IN] ThreadÀÇ ContextÁ¤º¸
+ * aStatistics       - [IN] Threadì˜ Contextì •ë³´
  * aShmTxInfo        - [IN] Shared Memory Tx
  * aLatchOPInfo      - [IN] latch stack OP info
  * aMode             - [IN] latch acquire mode : shared or exclusive

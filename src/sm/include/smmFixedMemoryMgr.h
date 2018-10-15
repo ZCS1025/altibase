@@ -50,7 +50,7 @@ public:
     static IDE_RC destroyStatic();
     static IDE_RC initialize(smmTBSNode * aTBSNode);
 
-    // TBSNodeÀÇ Á¤º¸Áß °øÀ¯¸Ş¸ğ¸® °ü¸®ÀÚ °ü·Ã ºÎºĞÀ» ÇØÁ¦ÇÑ´Ù.
+    // TBSNodeì˜ ì •ë³´ì¤‘ ê³µìœ ë©”ëª¨ë¦¬ ê´€ë¦¬ì ê´€ë ¨ ë¶€ë¶„ì„ í•´ì œí•œë‹¤.
     static IDE_RC destroy(smmTBSNode * aTBSNode);
 
     /* ------------------------------------------------
@@ -78,7 +78,7 @@ public:
     static IDE_RC allocShmPage(smmTBSNode *  aTBSNode,
                                smmTempPage **aPage);
 
-    // TablespaceÀÇ Ã¹¹øÂ° °øÀ¯¸Ş¸ğ¸® Chunk¸¦ »ı¼ºÇÑ´Ù.
+    // Tablespaceì˜ ì²«ë²ˆì§¸ ê³µìœ ë©”ëª¨ë¦¬ Chunkë¥¼ ìƒì„±í•œë‹¤.
     static IDE_RC createFirstChunk( smmTBSNode * aTBSNode,
                                     scPageID     aPageCount);
     

@@ -35,9 +35,9 @@ extern mtlModule mtclEUCJP;
 extern mtlModule mtclGB231280;
 extern mtlModule mtclBig5;
 extern mtlModule mtclMS949;
-/* PROJ-2414 [±â´É¼º] GBK, CP936 character set Ãß°¡ */
+/* PROJ-2414 [ê¸°ëŠ¥ì„±] GBK, CP936 character set ì¶”ê°€ */
 extern mtlModule mtclMS936;
-/* PROJ-2590 [±â´É¼º] CP932 database character set Áö¿ø */
+/* PROJ-2590 [ê¸°ëŠ¥ì„±] CP932 database character set ì§€ì› */
 extern mtlModule mtclMS932;
 extern mtnNlsCaseConvMap gNlsCaseConvMap[MTN_NLS_CASE_UNICODE_MAX];
 extern mtlNCRet mtlUTF8NextCharClobForClient( acp_uint8_t ** aSource,
@@ -53,9 +53,9 @@ const mtlModule* mtlModules[] = {
     & mtclGB231280,
     & mtclBig5,
     & mtclMS949,
-    /* PROJ-2414 [±â´É¼º] GBK, CP936 character set Ãß°¡ */
+    /* PROJ-2414 [ê¸°ëŠ¥ì„±] GBK, CP936 character set ì¶”ê°€ */
     & mtclMS936,
-    /* PROJ-2590 [±â´É¼º] CP932 database character set Áö¿ø */
+    /* PROJ-2590 [ê¸°ëŠ¥ì„±] CP932 database character set ì§€ì› */
     & mtclMS932,
     NULL
 };
@@ -70,9 +70,9 @@ const mtlModule* mtlModulesForClient[] = {
     & mtclGB231280,
     & mtclBig5,
     & mtclMS949,
-    /* PROJ-2414 [±â´É¼º] GBK, CP936 character set Ãß°¡ */
+    /* PROJ-2414 [ê¸°ëŠ¥ì„±] GBK, CP936 character set ì¶”ê°€ */
     & mtclMS936,
-    /* PROJ-2590 [±â´É¼º] CP932 database character set Áö¿ø */
+    /* PROJ-2590 [ê¸°ëŠ¥ì„±] CP932 database character set ì§€ì› */
     & mtclMS932,
     NULL
 };
@@ -111,7 +111,7 @@ mtlU16Char mtcl2BNL = { 0x00, '\n'};
 mtlU16Char mtcl2BQT = { 0x00, '\''};
 mtlU16Char mtcl2BBS = { 0x00, '\\'};
 
-// SpecialCharSetÀ» Á¶È¸½Ã »ç¿ëÇÏ´Â index´Â mtl.h¿¡ ÀÖÀ½.
+// SpecialCharSetì„ ì¡°íšŒì‹œ ì‚¬ìš©í•˜ëŠ” indexëŠ” mtl.hì— ìˆìŒ.
 // mtlSpecialCharType.
 
 acp_uint8_t* mtcl1BYTESpecialCharSet[] =
@@ -141,7 +141,7 @@ static acp_sint32_t mtlCompareByName( const mtlNameIndex* aIndex1,
 {
 /***********************************************************************
  *
- * Description : language name ºñ±³
+ * Description : language name ë¹„êµ
  *
  * Implementation :
  *
@@ -156,7 +156,7 @@ acp_bool_t mtlIsQuotedName( acp_char_t * aSrcName, acp_sint32_t aSrcLen )
  *
  * Description :
  *
- *    ÀÔ·ÂµÈ nameÀÌ Quoted NameÀÎÁö ÆÇ´ÜÇÑ´Ù.
+ *    ì…ë ¥ëœ nameì´ Quoted Nameì¸ì§€ íŒë‹¨í•œë‹¤.
  *
  * Implementation :
  *
@@ -175,7 +175,7 @@ acp_bool_t mtlIsQuotedName( acp_char_t * aSrcName, acp_sint32_t aSrcLen )
         else
         {
             // To Fix BUG-17869
-            // Ordinary nameÀ¸·Î single quoted nameÀ» »ç¿ëÇÒ ¼ö ÀÖÀ½.
+            // Ordinary nameìœ¼ë¡œ single quoted nameì„ ì‚¬ìš©í•  ìˆ˜ ìˆìŒ.
             if ( ( (aSrcName[0] == '"') && (aSrcName[aSrcLen-1] == '"') ) ||
                  ( (aSrcName[0] == '\'') && (aSrcName[aSrcLen-1] == '\'') ) )
             {
@@ -202,7 +202,7 @@ ACI_RC mtlInitialize( acp_char_t   * aDefaultNls, acp_bool_t aIsClient )
  *
  * Description : mtl initialize
  *
- * Implementation : language Á¤º¸ ±¸Ãà
+ * Implementation : language ì •ë³´ êµ¬ì¶•
  *
  *   mtlModuleByName
  *    ------------------------
@@ -236,8 +236,8 @@ ACI_RC mtlInitialize( acp_char_t   * aDefaultNls, acp_bool_t aIsClient )
     }
 
     //---------------------------------------------------------
-    // ½ÇÁ¦ mtlModuleÀÇ °³¼ö, mtl module name¿¡ µû¸¥ mtdModule °³¼ö ±¸ÇÔ
-    // mtlModuleÀº ÇÑ°³ ÀÌ»óÀÇ ÀÌ¸§À» °¡Áú ¼ö ÀÖÀ½
+    // ì‹¤ì œ mtlModuleì˜ ê°œìˆ˜, mtl module nameì— ë”°ë¥¸ mtdModule ê°œìˆ˜ êµ¬í•¨
+    // mtlModuleì€ í•œê°œ ì´ìƒì˜ ì´ë¦„ì„ ê°€ì§ˆ ìˆ˜ ìˆìŒ
     //     ex ) English : ENGLISH, ASCII, US7ASCII
     //          Korean  : KOREAN, KSC5601, KO16KSC5601
     //---------------------------------------------------------
@@ -254,13 +254,13 @@ ACI_RC mtlInitialize( acp_char_t   * aDefaultNls, acp_bool_t aIsClient )
         }
     }
 
-    /* BUG-43914 [mt-language] ¼­·Î ´Ù¸¥ °æ·Î·Î mtl ¸ğµâ ÃÊ±âÈ­½Ã memory leak ÀÌ ¹ß»ıÇÕ´Ï´Ù.
-     *  ÀÌ¹Ì ÃÊ±âÈ­ÇÑ »óÅÂ¶ó¸é, ÃÊ±âÈ­ Ã³¸®¸¦ °Ç³Ê¶Ú´Ù.
+    /* BUG-43914 [mt-language] ì„œë¡œ ë‹¤ë¥¸ ê²½ë¡œë¡œ mtl ëª¨ë“ˆ ì´ˆê¸°í™”ì‹œ memory leak ì´ ë°œìƒí•©ë‹ˆë‹¤.
+     *  ì´ë¯¸ ì´ˆê¸°í™”í•œ ìƒíƒœë¼ë©´, ì´ˆê¸°í™” ì²˜ë¦¬ë¥¼ ê±´ë„ˆë›´ë‹¤.
      */
     if ( mtlModulesById == NULL )
     {
         //---------------------------------------------------------
-        // mtlModulesById ¿Í mtlModulesByNameÀ» ±¸¼º
+        // mtlModulesById ì™€ mtlModulesByNameì„ êµ¬ì„±
         //---------------------------------------------------------
 
         ACI_TEST(acpMemAlloc((void**)&mtlModulesById,
@@ -274,8 +274,8 @@ ACI_RC mtlInitialize( acp_char_t   * aDefaultNls, acp_bool_t aIsClient )
     
     sStage = 1;
 
-    /* BUG-43914 [mt-language] ¼­·Î ´Ù¸¥ °æ·Î·Î mtl ¸ğµâ ÃÊ±âÈ­½Ã memory leak ÀÌ ¹ß»ıÇÕ´Ï´Ù.
-     *  ÀÌ¹Ì ÃÊ±âÈ­ÇÑ »óÅÂ¶ó¸é, ÃÊ±âÈ­ Ã³¸®¸¦ °Ç³Ê¶Ú´Ù.
+    /* BUG-43914 [mt-language] ì„œë¡œ ë‹¤ë¥¸ ê²½ë¡œë¡œ mtl ëª¨ë“ˆ ì´ˆê¸°í™”ì‹œ memory leak ì´ ë°œìƒí•©ë‹ˆë‹¤.
+     *  ì´ë¯¸ ì´ˆê¸°í™”í•œ ìƒíƒœë¼ë©´, ì´ˆê¸°í™” ì²˜ë¦¬ë¥¼ ê±´ë„ˆë›´ë‹¤.
      */
     if ( mtlModulesByName == NULL )
     {
@@ -294,12 +294,12 @@ ACI_RC mtlInitialize( acp_char_t   * aDefaultNls, acp_bool_t aIsClient )
     mtlNumberOfModulesByName = 0;
     for( sModule  = sMtlModules; *sModule != NULL; sModule++ )
     {
-        // mtlModuleById ±¸¼º
+        // mtlModuleById êµ¬ì„±
         mtlModulesById[mtlNumberOfModulesById].id = (*sModule)->id;
         mtlModulesById[mtlNumberOfModulesById].module = *sModule;
         mtlNumberOfModulesById++;
         
-        // mtlModuleByName ±¸¼º
+        // mtlModuleByName êµ¬ì„±
         for( sName  = (*sModule)->names; sName != NULL; sName  = sName->next )
         {
             mtlModulesByName[mtlNumberOfModulesByName].name   = sName;
@@ -342,7 +342,7 @@ ACI_RC mtlFinalize( void )
  *
  * Description : mtl finalize
  *
- * Implementation : language Á¤º¸ ÀúÀåµÈ ¸Ş¸ğ¸® °ø°£ ÇØÁ¦
+ * Implementation : language ì •ë³´ ì €ì¥ëœ ë©”ëª¨ë¦¬ ê³µê°„ í•´ì œ
  *
  ***********************************************************************/
     if( mtlModulesByName != NULL )
@@ -371,9 +371,9 @@ const mtlModule* mtlDefaultModule( void )
 {
 /***********************************************************************
  *
- * Description : default mtl module ¹İÈ¯
+ * Description : default mtl module ë°˜í™˜
  *
- * Implementation : ALTIBASE_NLS_USE ¹İÈ¯
+ * Implementation : ALTIBASE_NLS_USE ë°˜í™˜
  *
  ***********************************************************************/
     return mtlDefModule;
@@ -385,10 +385,10 @@ ACI_RC mtlModuleByName( const mtlModule** aModule,
 {
 /***********************************************************************
  *
- * Description : language nameÀ¸·Î mtl module °Ë»ö
+ * Description : language nameìœ¼ë¡œ mtl module ê²€ìƒ‰
  *
  * Implementation :
- *    mtlModuleByName¿¡¼­ ÇØ´ç language name°ú µ¿ÀÏÇÑ mtl moduleÀ» Ã£¾ÆÁÜ
+ *    mtlModuleByNameì—ì„œ í•´ë‹¹ language nameê³¼ ë™ì¼í•œ mtl moduleì„ ì°¾ì•„ì¤Œ
  *
  ***********************************************************************/
 
@@ -443,10 +443,10 @@ ACI_RC mtlModuleById( const mtlModule** aModule,
 {
 /***********************************************************************
  *
- * Description : language id·Î mtl module °Ë»ö
+ * Description : language idë¡œ mtl module ê²€ìƒ‰
  *
  * Implementation :
- *    mtlModuleById¿¡¼­ ÇØ´ç language id°ú µ¿ÀÏÇÑ mtl moduleÀ» Ã£¾ÆÁÜ
+ *    mtlModuleByIdì—ì„œ í•´ë‹¹ language idê³¼ ë™ì¼í•œ mtl moduleì„ ì°¾ì•„ì¤Œ
  *    - ENGLISH = 20000
  *    - KOREAN  = 30000
  *
@@ -500,14 +500,14 @@ void mtlMakeNameInFunc( const mtlModule * aMtlModule,
  *
  * Description :
  *
- *    ÀÔ·ÂµÈ nameÀ» ÇÔ¼ö¿¡¼­ »ç¿ëÇÒ ÀÌ¸§À¸·Î »ı¼ºÇÑ´Ù.
+ *    ì…ë ¥ëœ nameì„ í•¨ìˆ˜ì—ì„œ ì‚¬ìš©í•  ì´ë¦„ìœ¼ë¡œ ìƒì„±í•œë‹¤.
  *
  * Implementation :
  *
- *    - Quoted NameÀÎ °æ¿ì
- *      : ±×´ë·Î »ç¿ë - "Quoted Name" ==> "Quoted Name"
- *    - Non-Quoted NameÀÎ °æ¿ì
- *      : ´ë¹®ÀÚ·Î º¯°æ - NonQuotedName ==> NONQUOTEDNAME
+ *    - Quoted Nameì¸ ê²½ìš°
+ *      : ê·¸ëŒ€ë¡œ ì‚¬ìš© - "Quoted Name" ==> "Quoted Name"
+ *    - Non-Quoted Nameì¸ ê²½ìš°
+ *      : ëŒ€ë¬¸ìë¡œ ë³€ê²½ - NonQuotedName ==> NONQUOTEDNAME
  *
  **********************************************************************/
 
@@ -522,7 +522,7 @@ void mtlMakeNameInFunc( const mtlModule * aMtlModule,
         
         if ( mtlIsQuotedName( aSrcName, aSrcLen ) != ACP_TRUE )
         {
-            // Non-Quoted Name ÀÎ °æ¿ì ´ë¹®ÀÚ·Î º¯°æÇÑ´Ù.
+            // Non-Quoted Name ì¸ ê²½ìš° ëŒ€ë¬¸ìë¡œ ë³€ê²½í•œë‹¤.
             sIndex = aDstName;
             sFence = sIndex + aSrcLen;
 
@@ -550,14 +550,14 @@ ACI_RC mtlMakeNameInSQL( const mtlModule * aMtlModule,
  *
  * Description :
  *
- *    ÀÔ·ÂµÈ nameÀ» SQL ¹®Àå³»¿¡¼­ »ç¿ëÇÒ ÀÌ¸§À¸·Î »ı¼º
+ *    ì…ë ¥ëœ nameì„ SQL ë¬¸ì¥ë‚´ì—ì„œ ì‚¬ìš©í•  ì´ë¦„ìœ¼ë¡œ ìƒì„±
  *
  * Implementation :
  *
- *    - Quoted NameÀÎ °æ¿ì
- *      : QuotationÀ» Á¦°Å - "Quoted Name" ==> Quoted Name
- *    - Non-Quoted NameÀÎ °æ¿ì
- *      : ´ë¹®ÀÚ·Î º¯°æ - NonQuotedName ==> NONQUOTEDNAME
+ *    - Quoted Nameì¸ ê²½ìš°
+ *      : Quotationì„ ì œê±° - "Quoted Name" ==> Quoted Name
+ *    - Non-Quoted Nameì¸ ê²½ìš°
+ *      : ëŒ€ë¬¸ìë¡œ ë³€ê²½ - NonQuotedName ==> NONQUOTEDNAME
  *
  **********************************************************************/
 
@@ -570,7 +570,7 @@ ACI_RC mtlMakeNameInSQL( const mtlModule * aMtlModule,
     {
         if ( mtlIsQuotedName( aSrcName, aSrcLen ) == ACP_TRUE )
         {
-            // Quoted NameÀÎ °æ¿ì QuotationÀ» Á¦°ÅÇÏ°í º¹»çÇÑ´Ù.
+            // Quoted Nameì¸ ê²½ìš° Quotationì„ ì œê±°í•˜ê³  ë³µì‚¬í•œë‹¤.
             aSrcLen = aSrcLen - 2;
 
             acpCStrCpy( aDstName, aSrcLen + 1 , aSrcName + 1, aSrcLen + 1);
@@ -578,7 +578,7 @@ ACI_RC mtlMakeNameInSQL( const mtlModule * aMtlModule,
         else
         {
             acpCStrCpy (  aDstName, aSrcLen + 1, aSrcName, aSrcLen + 1 );
-            // Non-Quoted Name ÀÎ °æ¿ì ´ë¹®ÀÚ·Î º¯°æÇÑ´Ù.
+            // Non-Quoted Name ì¸ ê²½ìš° ëŒ€ë¬¸ìë¡œ ë³€ê²½í•œë‹¤.
 
             sIndex = aDstName;
             sFence = sIndex + aSrcLen;
@@ -586,7 +586,7 @@ ACI_RC mtlMakeNameInSQL( const mtlModule * aMtlModule,
             while (sIndex < sFence)
             {
                 *sIndex = acpCharToUpper( *sIndex );
-                // Àß¸øµÈ ¹®ÀÚ°¡ µé¾î¿Íµµ error Ã³¸®ÇÏÁö ¾Ê°í °è¼Ó ÁøÇà.
+                // ì˜ëª»ëœ ë¬¸ìê°€ ë“¤ì–´ì™€ë„ error ì²˜ë¦¬í•˜ì§€ ì•Šê³  ê³„ì† ì§„í–‰.
                 aMtlModule->nextCharPtr((acp_uint8_t**)&sIndex, (acp_uint8_t*)sFence);
             }
         }
@@ -612,12 +612,12 @@ void mtlMakeQuotedName( acp_char_t * aDstName, acp_char_t * aSrcName, acp_sint32
  *
  * Description :
  *
- *    ÀÔ·ÂµÈ name¿¡ ´ëÇÏ¿© Quoted NameÀ» »ı¼ºÇÑ´Ù.
- *    ¼­¹ö·ÎºÎÅÍ ¾ò¾î¿Â ÀÌ¸§À» Àç»ç¿ëÇÒ ¶§ »ç¿ëÇÑ´Ù.
+ *    ì…ë ¥ëœ nameì— ëŒ€í•˜ì—¬ Quoted Nameì„ ìƒì„±í•œë‹¤.
+ *    ì„œë²„ë¡œë¶€í„° ì–»ì–´ì˜¨ ì´ë¦„ì„ ì¬ì‚¬ìš©í•  ë•Œ ì‚¬ìš©í•œë‹¤.
  *
  * Implementation :
  *
- *    ¾ÕµÚ·Î Double QuotationÀ» ºÙÀÎ´Ù.
+ *    ì•ë’¤ë¡œ Double Quotationì„ ë¶™ì¸ë‹¤.
  *
  **********************************************************************/
 
@@ -688,17 +688,17 @@ aciConvCharSetList mtlGetIdnCharSet( const mtlModule  * aCharSet )
         case MTL_BIG5_ID:
             sCharSet = ACICONV_BIG5_ID;
             break;
-        /* PROJ-2414 [±â´É¼º] GBK, CP936 character set Ãß°¡ */
+        /* PROJ-2414 [ê¸°ëŠ¥ì„±] GBK, CP936 character set ì¶”ê°€ */
         case MTL_MS936_ID:
             sCharSet = ACICONV_MS936_ID;
             break;
-        /* PROJ-2590 [±â´É¼º] CP932 database character set Áö¿ø */
+        /* PROJ-2590 [ê¸°ëŠ¥ì„±] CP932 database character set ì§€ì› */
         case MTL_MS932_ID:
             sCharSet = ACICONV_MS932_ID;
             break;
         default:
             ACE_ASSERT( 0 );
-            // Release ¸ğµå¸¦ À§ÇØ¼­, °¡Àå ÀÛÀº Character SetÀ» ÁöÁ¤ÇÑ´Ù.
+            // Release ëª¨ë“œë¥¼ ìœ„í•´ì„œ, ê°€ì¥ ì‘ì€ Character Setì„ ì§€ì •í•œë‹¤.
             sCharSet = ACICONV_ASCII_ID;
             break;
     }

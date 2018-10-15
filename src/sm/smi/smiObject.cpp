@@ -90,8 +90,8 @@ void smiObject::getObjectInfo( const void   * aTable,
     smcTableHeader *sTable;
     smVCDesc       *sColumnVCDesc;
 
-    /* object info¸¦ ÀúÀåÇÏ±â À§ÇÑ aObjectInfo¿¡ ´ëÇÑ ¸Þ¸ð¸® °ø°£Àº
-     * qp ´Ü¿¡¼­ ÇÒ´ç¹Þ¾Æ¾ß ÇÔ */
+    /* object infoë¥¼ ì €ìž¥í•˜ê¸° ìœ„í•œ aObjectInfoì— ëŒ€í•œ ë©”ëª¨ë¦¬ ê³µê°„ì€
+     * qp ë‹¨ì—ì„œ í• ë‹¹ë°›ì•„ì•¼ í•¨ */
     IDE_ASSERT(*aObjectInfo != NULL);
     sTable = (smcTableHeader*)((UChar*)aTable+SMP_SLOT_HEADER_SIZE);
     sColumnVCDesc = &(sTable->mInfo);

@@ -84,7 +84,7 @@ IDE_RC qsvCursor::validateCursorDeclare(
     }
 
     // BUG-38629
-    // qsvProcStmts::parseCursor¿¡¼­ parameter¿¡ ´ëÇÑ validateÀ» ¼öÇàÇÔ.
+    // qsvProcStmts::parseCursorì—ì„œ parameterì— ëŒ€í•œ validateì„ ìˆ˜í–‰í•¨.
     if (aCursor->paraDecls != NULL)
     {
         // connect parameter list
@@ -133,7 +133,7 @@ IDE_RC qsvCursor::validateCursorDeclare(
                   != IDE_SUCCESS );
 
         // BUG-44615
-        // Package specÀÎ °æ¿ì¿¡´Â table info¸¦ cursor ¼±¾ð½Ã¿¡ ¹Ì¸® ¸¸µç´Ù.
+        // Package specì¸ ê²½ìš°ì—ëŠ” table infoë¥¼ cursor ì„ ì–¸ì‹œì— ë¯¸ë¦¬ ë§Œë“ ë‹¤.
         if ( aStatement->spvEnv->createPkg->objType == QS_PKG )
         {
             IDE_TEST( qmvQuerySet::makeTableInfo(
@@ -168,7 +168,7 @@ IDE_RC qsvCursor::validateCursorDeclare(
     }
 
     // BUG-38767
-    // Cursor¸¦ ¼±¾ðÇÒ ¶§ sqlIdx¸¦ ¼³Á¤ÇÑ´Ù.
+    // Cursorë¥¼ ì„ ì–¸í•  ë•Œ sqlIdxë¥¼ ì„¤ì •í•œë‹¤.
     if ( aStatement->spvEnv->createProc != NULL )
     {
         aCursor->sqlIdx = aStatement->spvEnv->createProc->procSqlCount++;
@@ -212,7 +212,7 @@ IDE_RC qsvCursor::validateCursorDeclare(
         qsxEnv::setErrorCode( QC_QSX_ENV(aStatement) );
 
         // BUG-43998
-        // PSM »ý¼º ¿À·ù ¹ß»ý½Ã ¿À·ù ¹ß»ý À§Ä¡¸¦ ÇÑ ¹ø¸¸ Ãâ·ÂÇÏµµ·Ï ÇÕ´Ï´Ù.
+        // PSM ìƒì„± ì˜¤ë¥˜ ë°œìƒì‹œ ì˜¤ë¥˜ ë°œìƒ ìœ„ì¹˜ë¥¼ í•œ ë²ˆë§Œ ì¶œë ¥í•˜ë„ë¡ í•©ë‹ˆë‹¤.
         if ( ideHasErrorPosition() == ID_FALSE )
         {
             sqlInfo.setSourceInfo( aStatement,
@@ -336,7 +336,7 @@ qsvCursor::validateCursorFor( qcStatement     * aStatement,
         }
         else
         {
-            // package spec¿¡ ¼±¾ðÇÑ cursorÀÌ¸é sqlIdx¸¦ »õ·Î ÇÒ´çÇÑ´Ù.
+            // package specì— ì„ ì–¸í•œ cursorì´ë©´ sqlIdxë¥¼ ìƒˆë¡œ í• ë‹¹í•œë‹¤.
             if ( aStatement->spvEnv->createProc != NULL )
             {
                 sCursorFor->sqlIdx = aStatement->spvEnv->createProc->procSqlCount++;
@@ -364,8 +364,8 @@ qsvCursor::validateCursorFor( qcStatement     * aStatement,
               != IDE_SUCCESS );
 
     // To fix BUG-14279
-    // tableInfo°¡ »ý¼ºµÇ¾î ÀÖÁö ¾ÊÀ¸¸é »ý¼ºÇÑ ÈÄ
-    // rowtype »ý¼º.
+    // tableInfoê°€ ìƒì„±ë˜ì–´ ìžˆì§€ ì•Šìœ¼ë©´ ìƒì„±í•œ í›„
+    // rowtype ìƒì„±.
     if( sCursorDef->tableInfo == NULL )
     {
         IDE_TEST( qmvQuerySet::makeTableInfo(
@@ -381,8 +381,8 @@ qsvCursor::validateCursorFor( qcStatement     * aStatement,
         // Nothing to do.
     }
 
-    // PROJ-1075 cursorFor¸¦ À§ÇÑ rowtypeº¯¼ö¸¦ »ý¼ºÇÏ°í,
-    // counter·Î »ç¿ëÇÒ º¯¼öÀÇ table, columnÀ» ¼¼ÆÃÇÑ´Ù.
+    // PROJ-1075 cursorForë¥¼ ìœ„í•œ rowtypeë³€ìˆ˜ë¥¼ ìƒì„±í•˜ê³ ,
+    // counterë¡œ ì‚¬ìš©í•  ë³€ìˆ˜ì˜ table, columnì„ ì„¸íŒ…í•œë‹¤.
     IDE_TEST( qsvProcVar::makeRowTypeVariable( aStatement,
                                                sCursorDef->tableInfo,
                                                sVariable )
@@ -397,8 +397,8 @@ qsvCursor::validateCursorFor( qcStatement     * aStatement,
              != IDE_SUCCESS);
 
     /* PROJ-2197 PSM Renewal
-     * Cursor Definition¿¡ ÀÖ´Â CursorÀÇ º¯¼ö¸¦ »ç¿ëÇÏ±â À§ÇØ¼­
-     * Variablelist¿¡ Ãß°¡ÇÑ´Ù. */
+     * Cursor Definitionì— ìžˆëŠ” Cursorì˜ ë³€ìˆ˜ë¥¼ ì‚¬ìš©í•˜ê¸° ìœ„í•´ì„œ
+     * Variablelistì— ì¶”ê°€í•œë‹¤. */
     IDE_TEST( qsvProcStmts::connectAllVariables(
                   aStatement,
                   sCursorFor->common.parentLabels,
@@ -408,8 +408,8 @@ qsvCursor::validateCursorFor( qcStatement     * aStatement,
               != IDE_SUCCESS );
 
     // BUG-41262 PSM overloading
-    // PSM overloading Àº parser ´Ü°è¿¡¼­ Ã³¸®ÇÑ´Ù.
-    // ÇÏÁö¸¸ PSM ³»ºÎÀÇ º¯¼ö´Â connectAllVariables ¸¦ È£ÃâÈÄ¿¡ Á¢±ÙÀÌ °¡´ÉÇÏ´Ù. 
+    // PSM overloading ì€ parser ë‹¨ê³„ì—ì„œ ì²˜ë¦¬í•œë‹¤.
+    // í•˜ì§€ë§Œ PSM ë‚´ë¶€ì˜ ë³€ìˆ˜ëŠ” connectAllVariables ë¥¼ í˜¸ì¶œí›„ì— ì ‘ê·¼ì´ ê°€ëŠ¥í•˜ë‹¤. 
     for (sProcStmt = sCursorFor->loopStmts;
          sProcStmt != NULL;
          sProcStmt = sProcStmt->next)
@@ -448,9 +448,9 @@ qsvCursor::validateCursorFor( qcStatement     * aStatement,
         {
             sCurrParamNode = sCurrParam->paramNode;
 
-            // lvalue¿¡ psmº¯¼ö°¡ Á¸ÀçÇÏ¹Ç·Î lvalue flag¸¦ ¾º¿ò.
-            // outÀÎ °æ¿ì¿¡¸¸ ÇØ´çµÊ. array_index_variableÀÎ °æ¿ì
-            // ¾øÀ¸¸é ¸¸µé¾î¾ß ÇÏ±â ¶§¹®.
+            // lvalueì— psmë³€ìˆ˜ê°€ ì¡´ìž¬í•˜ë¯€ë¡œ lvalue flagë¥¼ ì”Œì›€.
+            // outì¸ ê²½ìš°ì—ë§Œ í•´ë‹¹ë¨. array_index_variableì¸ ê²½ìš°
+            // ì—†ìœ¼ë©´ ë§Œë“¤ì–´ì•¼ í•˜ê¸° ë•Œë¬¸.
             if( sCurrParam->inOutType == QS_OUT )
             {
                 sCurrParamNode->lflag |= QTC_NODE_LVALUE_ENABLE;
@@ -502,8 +502,8 @@ qsvCursor::validateCursorFor( qcStatement     * aStatement,
     sCursorFor->counterRowTypeNode->node.objectID = sVariable->common.objectID;
 
     // PROJ-1075
-    // fetch into variableµµ calculate¸¦ ¼öÇàÇÏ±â ¶§¹®¿¡
-    // estimate¸¦ ÇØ¼­ mtcExecute¸¦ ¼¼ÆÃÇØ¾ß ÇÑ´Ù.
+    // fetch into variableë„ calculateë¥¼ ìˆ˜í–‰í•˜ê¸° ë•Œë¬¸ì—
+    // estimateë¥¼ í•´ì„œ mtcExecuteë¥¼ ì„¸íŒ…í•´ì•¼ í•œë‹¤.
     IDE_TEST( qtc::estimate( sCursorFor->counterRowTypeNode,
                              QC_SHARED_TMPLATE( aStatement ),
                              aStatement,
@@ -639,7 +639,7 @@ qsvCursor::validateOpen( qcStatement     * aStatement,
         }
         else
         {
-            // package spec¿¡ ¼±¾ðÇÑ cursorÀÌ¸é sqlIdx¸¦ »õ·Î ÇÒ´çÇÑ´Ù.
+            // package specì— ì„ ì–¸í•œ cursorì´ë©´ sqlIdxë¥¼ ìƒˆë¡œ í• ë‹¹í•œë‹¤.
             if ( aStatement->spvEnv->createProc != NULL )
             {
                 sOPEN->sqlIdx = aStatement->spvEnv->createProc->procSqlCount++;
@@ -703,9 +703,9 @@ qsvCursor::validateOpen( qcStatement     * aStatement,
         {
             sCurrParamNode = sCurrParam->paramNode;
 
-            // lvalue¿¡ psmº¯¼ö°¡ Á¸ÀçÇÏ¹Ç·Î lvalue flag¸¦ ¾º¿ò.
-            // outÀÎ °æ¿ì¿¡¸¸ ÇØ´çµÊ. array_index_variableÀÎ °æ¿ì
-            // ¾øÀ¸¸é ¸¸µé¾î¾ß ÇÏ±â ¶§¹®.
+            // lvalueì— psmë³€ìˆ˜ê°€ ì¡´ìž¬í•˜ë¯€ë¡œ lvalue flagë¥¼ ì”Œì›€.
+            // outì¸ ê²½ìš°ì—ë§Œ í•´ë‹¹ë¨. array_index_variableì¸ ê²½ìš°
+            // ì—†ìœ¼ë©´ ë§Œë“¤ì–´ì•¼ í•˜ê¸° ë•Œë¬¸.
             if( sCurrParam->inOutType == QS_OUT )
             {
                 sCurrParamNode->lflag |= QTC_NODE_LVALUE_ENABLE;
@@ -828,7 +828,7 @@ IDE_RC qsvCursor::validateFetch( qcStatement * aStatement,
               != IDE_SUCCESS );
     
     /* BUG-41242 */
-    // bulk collection¿¡¼­¸¸ limitÀ» »ç¿ëÇÒ ¼ö ÀÖ´Ù.
+    // bulk collectionì—ì„œë§Œ limitì„ ì‚¬ìš©í•  ìˆ˜ ìžˆë‹¤.
     if ( sFETCH->intoVariableNodes->bulkCollect == ID_TRUE )
     {
         if ( sFETCH->limit != NULL )
@@ -927,13 +927,13 @@ IDE_RC qsvCursor::getCursorDefinition(
     qtcNode             * sCursorNode = NULL;
     
     // To fix BUG-14129
-    // ÇöÀç validateÁßÀÎ declare item Àü±îÁö¸¸ °Ë»öÀ» ÇØ¾ß ÇÔ
+    // í˜„ìž¬ validateì¤‘ì¸ declare item ì „ê¹Œì§€ë§Œ ê²€ìƒ‰ì„ í•´ì•¼ í•¨
     sCurrDeclItem = aStatement->spvEnv->currDeclItem;
 
     /* BUG-38164
-       package ³»¿¡ ¼±¾ð cursorÀÇ °æ¿ì, package »ý¼º ½Ã userID¸¦,
-       procedure ³»¿¡ ¼±¾ðµÈ °Ü¿ì, procedure »ý¼º ½Ã userID¸¦
-       sUserID¿¡ ¼³Á¤ÇØ ÁØ´Ù. */
+       package ë‚´ì— ì„ ì–¸ cursorì˜ ê²½ìš°, package ìƒì„± ì‹œ userIDë¥¼,
+       procedure ë‚´ì— ì„ ì–¸ëœ ê²¨ìš°, procedure ìƒì„± ì‹œ userIDë¥¼
+       sUserIDì— ì„¤ì •í•´ ì¤€ë‹¤. */
     if ( aStatement->spvEnv->createProc != NULL )
     {
         sUserID = aStatement->spvEnv->createProc->userID;
@@ -1000,9 +1000,9 @@ IDE_RC qsvCursor::getCursorDefinition(
         }
     } /* end for */
 
-    // packageÀÇ subprogramÀÏ ¶§,
-    // subprogram ³»ºÎ cursor º¯¼ö¸¦ Ã£Áö ¸øÇßÀ¸¸é, 
-    // packageÀÇ body¿Í spec¿¡¼­ Ã£¾ÆºÁ¾ß ÇÑ´Ù.
+    // packageì˜ subprogramì¼ ë•Œ,
+    // subprogram ë‚´ë¶€ cursor ë³€ìˆ˜ë¥¼ ì°¾ì§€ ëª»í–ˆìœ¼ë©´, 
+    // packageì˜ bodyì™€ specì—ì„œ ì°¾ì•„ë´ì•¼ í•œë‹¤.
     IDE_TEST_CONT( aStatement->spvEnv->createPkg == NULL , skip_search_cursor );
 
     if ( sFind == ID_FALSE )
@@ -1154,7 +1154,7 @@ IDE_RC qsvCursor::getCursorDefinition(
         qsxEnv::setErrorCode( QC_QSX_ENV(aStatement) );
 
         // BUG-43998
-        // PSM »ý¼º ¿À·ù ¹ß»ý½Ã ¿À·ù ¹ß»ý À§Ä¡¸¦ ÇÑ ¹ø¸¸ Ãâ·ÂÇÏµµ·Ï ÇÕ´Ï´Ù.
+        // PSM ìƒì„± ì˜¤ë¥˜ ë°œìƒì‹œ ì˜¤ë¥˜ ë°œìƒ ìœ„ì¹˜ë¥¼ í•œ ë²ˆë§Œ ì¶œë ¥í•˜ë„ë¡ í•©ë‹ˆë‹¤.
         if ( ideHasErrorPosition() == ID_FALSE )
         {
             (void)sqlInfo.setSourceInfo( aStatement,
@@ -1208,7 +1208,7 @@ IDE_RC qsvCursor::getPkgCursorDefinition( qcStatement  * aStatement,
 
     if( sExists == ID_TRUE )
     {
-        // synonymÀ¸·Î ÂüÁ¶µÇ´Â procÀÇ ±â·Ï
+        // synonymìœ¼ë¡œ ì°¸ì¡°ë˜ëŠ” procì˜ ê¸°ë¡
         IDE_TEST( qsvPkgStmts::makePkgSynonymList(
                       aStatement,
                       &sSynonymInfo,
@@ -1252,7 +1252,7 @@ IDE_RC qsvCursor::getPkgCursorDefinition( qcStatement  * aStatement,
 
         IDE_DASSERT( sPkgInfo->objType == QS_PKG );
 
-        // package¿¡ ¼±¾ðµÈ cursor¸¦ Ã£´Â´Ù.
+        // packageì— ì„ ì–¸ëœ cursorë¥¼ ì°¾ëŠ”ë‹¤.
         sBLOCK = sPkgInfo->planTree->block;
 
         for( sVariable = sBLOCK->variableItems;
@@ -1320,16 +1320,16 @@ IDE_RC qsvCursor::getPkgLocalCursorDefinition( qcStatement     * aStatement,
 /***********************************************************************
  *
  * Description : BUG-38164 
- *               package spec/body¿¡¼­ ¼±¾ðÇÑ cursor °Ë»ö
+ *               package spec/bodyì—ì„œ ì„ ì–¸í•œ cursor ê²€ìƒ‰
  *
  * Implementation :
  *    (1) cursor_name
  *    (2) my_package_name.cursor_name
- *           (a) package_nameÀÌ µ¿ÀÏÇÑÁö È®ÀÎ
+ *           (a) package_nameì´ ë™ì¼í•œì§€ í™•ì¸
  *    (3) my_user_name.my_package_name.cursor_name
- *           (a) aCursorNode->userName¿¡¼­ userID¸¦ ¾ò¾î¿Â´Ù
- *           (b) pkgParseTreeÀÇ userID¿Í µ¿ÀÏÇÑÁö È®ÀÎ
- *           (c) package_name µ¿ÀÏÇÑÁö È®ÀÎ
+ *           (a) aCursorNode->userNameì—ì„œ userIDë¥¼ ì–»ì–´ì˜¨ë‹¤
+ *           (b) pkgParseTreeì˜ userIDì™€ ë™ì¼í•œì§€ í™•ì¸
+ *           (c) package_name ë™ì¼í•œì§€ í™•ì¸
  **********************************************************************/
 
     qsPkgParseTree      * sPkgParseTree;
@@ -1354,8 +1354,8 @@ IDE_RC qsvCursor::getPkgLocalCursorDefinition( qcStatement     * aStatement,
         }
         else
         {
-            /* tableName°ú package name µ¿ÀÏÇÏ¸é
-               sFind¸¦ ID_TRUE·Î ¼ÂÆÃÇÑ´Ù. */
+            /* tableNameê³¼ package name ë™ì¼í•˜ë©´
+               sFindë¥¼ ID_TRUEë¡œ ì…‹íŒ…í•œë‹¤. */
             if ( QC_IS_NAME_MATCHED( sPkgParseTree->pkgNamePos, aCursorNode->tableName ) )
             {
                 sFind = ID_TRUE;
@@ -1368,8 +1368,8 @@ IDE_RC qsvCursor::getPkgLocalCursorDefinition( qcStatement     * aStatement,
     } /* QC_IS_NULL_NAME(aCursorNode->userName) == ID_TRUE */
     else
     {
-        /* userID°¡ µ¿ÀÏÇÏ°í, tableName°ú package nameÀÌ µ¿ÀÏÇÏ¸é
-           sFindÀ» ID_TRUE·Î ¼ÂÆÃÇÑ´Ù. */
+        /* userIDê°€ ë™ì¼í•˜ê³ , tableNameê³¼ package nameì´ ë™ì¼í•˜ë©´
+           sFindì„ ID_TRUEë¡œ ì…‹íŒ…í•œë‹¤. */
         IDE_TEST( qcmUser::getUserID( aStatement,
                                       aCursorNode->userName,
                                       &sUserID )
@@ -1392,9 +1392,9 @@ IDE_RC qsvCursor::getPkgLocalCursorDefinition( qcStatement     * aStatement,
         }
     } /* QC_IS_NULL_NAME(aCursorNode->userName) == ID_FALSE */
 
-    /* À§ÀÇ¿¡¼­ sFind°¡ ID_TRUEÀÏ °æ¿ì, package ³»ºÎ¿¡ ¼±¾ðµÈ cursorÀÏ ¼öµµ ÀÖ´Ù.
-       package ³»ºÎ¿¡ ¼±¾ðÇÑ variableItems¸¦ µ¹¸é¼­ 
-       columnName°ú µ¿ÀÏÇÑ cursor°¡ Á¸ÀçÇÏ´ÂÁö Ã£´Â´Ù..*/
+    /* ìœ„ì˜ì—ì„œ sFindê°€ ID_TRUEì¼ ê²½ìš°, package ë‚´ë¶€ì— ì„ ì–¸ëœ cursorì¼ ìˆ˜ë„ ìžˆë‹¤.
+       package ë‚´ë¶€ì— ì„ ì–¸í•œ variableItemsë¥¼ ëŒë©´ì„œ 
+       columnNameê³¼ ë™ì¼í•œ cursorê°€ ì¡´ìž¬í•˜ëŠ”ì§€ ì°¾ëŠ”ë‹¤..*/
     if ( sFind == ID_TRUE )
     {
         for ( sVariableItem = aBlock->variableItems;

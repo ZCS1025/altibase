@@ -17,8 +17,8 @@
 package Altibase.jdbc.driver.ex;
 
 /**
- * ÀÌ ¿¡·¯´Â JDBC³ª CM ÇÁ·ÎÅäÄÝ¿¡ ¹ö±×°¡ ÀÖÀ» ¶§ Error¸¦ ´øÁö´Âµ¥ »ç¿ëÇÑ´Ù.
- * Áï, ÀÌ ¿¡·¯°¡ ¶¹´Ù¸é ÄÚµù ½Ç¼ö³ª °í·ÁÇÏÁö ¸øÇÑ »óÈ²À¸·Î ÀÎÇÑ ¹ö±×°¡ ÀÖ´Â °ÍÀÌ´Ù.
+ * ì´ ì—ëŸ¬ëŠ” JDBCë‚˜ CM í”„ë¡œí† ì½œì— ë²„ê·¸ê°€ ìžˆì„ ë•Œ Errorë¥¼ ë˜ì§€ëŠ”ë° ì‚¬ìš©í•œë‹¤.
+ * ì¦‰, ì´ ì—ëŸ¬ê°€ ë–´ë‹¤ë©´ ì½”ë”© ì‹¤ìˆ˜ë‚˜ ê³ ë ¤í•˜ì§€ ëª»í•œ ìƒí™©ìœ¼ë¡œ ì¸í•œ ë²„ê·¸ê°€ ìžˆëŠ” ê²ƒì´ë‹¤.
  */
 class InternalError extends AssertionError
 {

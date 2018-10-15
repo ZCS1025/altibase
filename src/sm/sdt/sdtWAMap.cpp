@@ -62,17 +62,17 @@ sdtWMTypeDesc sdtWAMap::mWMTypeDesc[ SDT_WM_TYPE_MAX ] =
 
 /**************************************************************************
  * Description :
- * WAMapÀ» ¸¸µç´Ù. ÁöÁ¤µÈ Group¿¡ Count¸¸Å­ ¸¸µç´Ù.
- * ¸¸¾à Count°¡ 0ÀÏ °æ¿ì, ÇâÈÄ È®ÀåÇÑ´Ù.
+ * WAMapì„ ë§Œë“ ë‹¤. ì§€ì •ëœ Groupì— Countë§Œí¼ ë§Œë“ ë‹¤.
+ * ë§Œì•½ Countê°€ 0ì¼ ê²½ìš°, í–¥í›„ í™•ì¥í•œë‹¤.
  *
  * <IN>
- * aWASegment     - ´ë»ó WASegment
- * aWAGroupID     - ´ë»ó Group ID
- * aWMType        - WAMapÀÇ Type
- * aSlotCount     - WAMap¿¡ ´ã±æ SlotÀÇ °³¼ö
- * aVersionCount  - VersioningÇÏ±â À§ÇÑ °³¼ö
+ * aWASegment     - ëŒ€ìƒ WASegment
+ * aWAGroupID     - ëŒ€ìƒ Group ID
+ * aWMType        - WAMapì˜ Type
+ * aSlotCount     - WAMapì— ë‹´ê¸¸ Slotì˜ ê°œìˆ˜
+ * aVersionCount  - Versioningí•˜ê¸° ìœ„í•œ ê°œìˆ˜
  * <OUT>
- * aRet           - ¸¸µé¾îÁø WAMap
+ * aRet           - ë§Œë“¤ì–´ì§„ WAMap
  ***************************************************************************/
 IDE_RC sdtWAMap::create( sdtWASegment * aWASegment,
                          sdtWAGroupID   aWAGID,
@@ -122,10 +122,10 @@ IDE_RC sdtWAMap::create( sdtWASegment * aWASegment,
 
 /**************************************************************************
  * Description :
- * ÇØ´ç WAmapÀ» ¹«È¿È­½ÃÅ²´Ù.
+ * í•´ë‹¹ WAmapì„ ë¬´íš¨í™”ì‹œí‚¨ë‹¤.
  *
  * <IN>
- * aWAMap         - ´ë»ó WAMap
+ * aWAMap         - ëŒ€ìƒ WAMap
  ***************************************************************************/
 IDE_RC sdtWAMap::disable( void     * aWAMapHdr )
 {
@@ -139,11 +139,11 @@ IDE_RC sdtWAMap::disable( void     * aWAMapHdr )
 
 /**************************************************************************
  * Description :
- * WAMapÀÇ Pointer¸¦ ¸ğµÎ Àç¼³Á¤ÇÑ´Ù. Dump¿ëÀÌ´Ù.
+ * WAMapì˜ Pointerë¥¼ ëª¨ë‘ ì¬ì„¤ì •í•œë‹¤. Dumpìš©ì´ë‹¤.
  *
  * <IN>
- * aWAMap         - ´ë»ó WAMap
- * aWASegment     - ´ë»ó WASegment
+ * aWAMap         - ëŒ€ìƒ WAMap
+ * aWASegment     - ëŒ€ìƒ WASegment
  ***************************************************************************/
 IDE_RC sdtWAMap::resetPtrAddr( void * aWAMapHdr, sdtWASegment * aWASegment )
 {
@@ -164,15 +164,15 @@ IDE_RC sdtWAMap::resetPtrAddr( void * aWAMapHdr, sdtWASegment * aWASegment )
 
 /**************************************************************************
  * Description :
- * WAMapÀÇ °¡Àå ¿ìÃø¿¡ »õ SlotÀ» Ãß°¡ÇÏ¿© È®ÀåÇÑ´Ù.
- * ¶ÇÇÑ ÀÌ È®ÀåÀº ¿À¸¥ÂÊÀ¸·Î Á¡Á¡ È®ÀåÇÏ´Âµ¥,  aLimitPID Á÷Àü±îÁö
- * È®Àå °¡´ÉÇÏ´Ù. È®ÀåÀÌ ½ÇÆĞÇÏ¸é, idx¿¡ UINT_MAX¸¦ ¹İÈ¯ÇÑ´Ù.
+ * WAMapì˜ ê°€ì¥ ìš°ì¸¡ì— ìƒˆ Slotì„ ì¶”ê°€í•˜ì—¬ í™•ì¥í•œë‹¤.
+ * ë˜í•œ ì´ í™•ì¥ì€ ì˜¤ë¥¸ìª½ìœ¼ë¡œ ì ì  í™•ì¥í•˜ëŠ”ë°,  aLimitPID ì§ì „ê¹Œì§€
+ * í™•ì¥ ê°€ëŠ¥í•˜ë‹¤. í™•ì¥ì´ ì‹¤íŒ¨í•˜ë©´, idxì— UINT_MAXë¥¼ ë°˜í™˜í•œë‹¤.
  *
  * <IN>
- * aWAMap         - ´ë»ó WAMap
- * aLimitPID      - È®ÀåÇÒ ¼ö ÀÖ´Â ÇÑ°è PID
+ * aWAMap         - ëŒ€ìƒ WAMap
+ * aLimitPID      - í™•ì¥í•  ìˆ˜ ìˆëŠ” í•œê³„ PID
  * <OUT>
- * aIdx           - È®ÀåÇÑ SlotÀÇ À§Ä¡
+ * aIdx           - í™•ì¥í•œ Slotì˜ ìœ„ì¹˜
  ***************************************************************************/
 IDE_RC sdtWAMap::expand( void * aWAMapHdr, scPageID   aLimitPID, UInt * aIdx )
 {
@@ -183,7 +183,7 @@ IDE_RC sdtWAMap::expand( void * aWAMapHdr, scPageID   aLimitPID, UInt * aIdx )
     IDE_ERROR( sWAMapHdr->mWAGID != SDT_WAGROUPID_NONE );
 
     sSlotSize = sWAMapHdr->mSlotSize;
-    /* SlotCount¸¦ º¯°æÇÏ¿´À»¶§ Ãß°¡ ÆäÀÌÁö¸¦ ÇÊ¿ä·Î ÇÏ´Â °æ¿ì */
+    /* SlotCountë¥¼ ë³€ê²½í•˜ì˜€ì„ë•Œ ì¶”ê°€ í˜ì´ì§€ë¥¼ í•„ìš”ë¡œ í•˜ëŠ” ê²½ìš° */
     if( ( sWAMapHdr->mSlotCount * sSlotSize * sWAMapHdr->mVersionCount )
         / SD_PAGE_SIZE !=
         ( ( sWAMapHdr->mSlotCount + 1 ) * sSlotSize * sWAMapHdr->mVersionCount

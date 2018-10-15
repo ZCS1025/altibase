@@ -222,7 +222,7 @@ void rpxReceiverApplier::releaseQueue( void )
 {    
     rpdXLog         * sXLog     = NULL;
 
-    /* Queue ¿¡ ³²Àº ¸ğµç XLog ¸¦ Receiver ÀÇ FreeQueue ·Î º¸³½´Ù. */
+    /* Queue ì— ë‚¨ì€ ëª¨ë“  XLog ë¥¼ Receiver ì˜ FreeQueue ë¡œ ë³´ë‚¸ë‹¤. */
     dequeue( &sXLog );
     while( sXLog != NULL )
     {

@@ -59,15 +59,15 @@ IDE_RC smcSequence::createSequence( void*             aTrans,
     SM_SET_SCN_INFINITE_AND_TID( &sInfiniteSCN, sTID );
     
     /* ----------------------------
-     * [1] Catalog Table¿¡ ´ëÇÏ¿© IX lock ¿äÃ»
+     * [1] Catalog Tableì— ëŒ€í•˜ì—¬ IX lock ìš”ì²­
      * ---------------------------*/
     IDE_TEST( smLayerCallback::lockTableModeIX( aTrans,
                                                 SMC_TABLE_LOCK( SMC_CAT_TABLE ) )
               != IDE_SUCCESS );
 
     /* ----------------------------
-     * [2] »õ·Î¿î TableÀ» À§ÇÑ Table Header¿µ¿ªÀ»
-     * Catalog Table¿¡¼­ ÇÒ´ç¹Ş´Â´Ù.
+     * [2] ìƒˆë¡œìš´ Tableì„ ìœ„í•œ Table Headerì˜ì—­ì„
+     * Catalog Tableì—ì„œ í• ë‹¹ë°›ëŠ”ë‹¤.
      * ---------------------------*/
     IDE_TEST( smpFixedPageList::allocSlot( aTrans,
                                            SMI_ID_TABLESPACE_SYSTEM_MEMORY_DIC,
@@ -86,10 +86,10 @@ IDE_RC smcSequence::createSequence( void*             aTrans,
                            SMP_SLOT_GET_OFFSET( (smpSlotHeader*)sNewFixRowPtr ) );
     
     /* ----------------------------
-     * [3] »õ·Î¿î TableÀ» À§ÇÑ Table Header¿µ¿ªÀ»
-     * Catalog Table¿¡¼­ ÇÒ´ç¹Ş¾ÒÀ¸¹Ç·Î,
-     * New Version List¿¡ Ãß°¡ÇÑ´Ù.
-     * ÀÌ ÇÔ¼öÀÇ [2] ÂüÁ¶.
+     * [3] ìƒˆë¡œìš´ Tableì„ ìœ„í•œ Table Headerì˜ì—­ì„
+     * Catalog Tableì—ì„œ í• ë‹¹ë°›ì•˜ìœ¼ë¯€ë¡œ,
+     * New Version Listì— ì¶”ê°€í•œë‹¤.
+     * ì´ í•¨ìˆ˜ì˜ [2] ì°¸ì¡°.
      * ---------------------------*/
     sHeaderPageID = SM_MAKE_PID(sFixOid);
     sState        = 1;
@@ -104,11 +104,11 @@ IDE_RC smcSequence::createSequence( void*             aTrans,
     sSequence.mLstSyncSequence = aStartSequence;
     sSequence.mFlag            = aFlag;
 
-    /* »ç¿ëÇÏÁö ¾Ê´Â ¼Ó¼ºµé ÃÊ±âÈ­¸¸ ÇØÁØ´Ù. */
+    /* ì‚¬ìš©í•˜ì§€ ì•ŠëŠ” ì†ì„±ë“¤ ì´ˆê¸°í™”ë§Œ í•´ì¤€ë‹¤. */
     idlOS::memset( &sSegmentAttr, 0x00, ID_SIZEOF(smiSegAttr));
     idlOS::memset( &sSegmentStoAttr, 0x00, ID_SIZEOF(smiSegStorageAttr));
     
-    /* stack º¯¼ö¿¡ table header °ª ÃÊ±âÈ­ */
+    /* stack ë³€ìˆ˜ì— table header ê°’ ì´ˆê¸°í™” */
     IDE_TEST( smcTable::initTableHeader( aTrans,
                                          SMI_ID_TABLESPACE_SYSTEM_MEMORY_DATA,
                                          0,
@@ -128,7 +128,7 @@ IDE_RC smcSequence::createSequence( void*             aTrans,
                                          &sHeaderArg )
               != IDE_SUCCESS );
 
-    /* ½ÇÁ¦ table header °ªÀ» ¼³Á¤ */
+    /* ì‹¤ì œ table header ê°’ì„ ì„¤ì • */
     idlOS::memcpy( sHeader, &sHeaderArg, ID_SIZEOF(smcTableHeader));
 
     IDE_TEST( smcTable::initLockAndRuntimeItem( sHeader ) != IDE_SUCCESS );
@@ -226,7 +226,7 @@ IDE_RC smcSequence::setSequenceCurr( void*            aTrans,
 
     if ( sCurSequence->mIncSequence > 0 )
     {
-        /* Áõ°¡Ä¡ * SYNC interval °ªÀÌ MAX¸¦ ÃÊ°úÇÏ´ÂÁö ÆÇ´Ü */
+        /* ì¦ê°€ì¹˜ * SYNC interval ê°’ì´ MAXë¥¼ ì´ˆê³¼í•˜ëŠ”ì§€ íŒë‹¨ */
         if ( sIncInterval <= sCurSequence->mMaxSequence - sAfterSequence.mCurSequence )
         {
             sAfterSequence.mLstSyncSequence =
@@ -234,8 +234,8 @@ IDE_RC smcSequence::setSequenceCurr( void*            aTrans,
         }
         else
         {
-            /* MAX ¸¦ ÃÊ°úÇÏ¸é MIN À¸·Î sync */
-            /* BUG-37864 no cycleÀÎ °æ¿ì¿¡´Â mLstSyncSequenceµµ cycleÇÏÁö ¾Ê½À´Ï´Ù. */
+            /* MAX ë¥¼ ì´ˆê³¼í•˜ë©´ MIN ìœ¼ë¡œ sync */
+            /* BUG-37864 no cycleì¸ ê²½ìš°ì—ëŠ” mLstSyncSequenceë„ cycleí•˜ì§€ ì•ŠìŠµë‹ˆë‹¤. */
             if ( sCircular == SMI_SEQUENCE_CIRCULAR_ENABLE )
             {
                 sAfterSequence.mLstSyncSequence = sCurSequence->mMinSequence;
@@ -248,7 +248,7 @@ IDE_RC smcSequence::setSequenceCurr( void*            aTrans,
     }
     else
     {
-        /* Áõ°¡Ä¡ * SYNC interval °ªÀÌ MIN º¸´Ù ÀÛ¾ÆÁö´ÂÁö ÆÇ´Ü */
+        /* ì¦ê°€ì¹˜ * SYNC interval ê°’ì´ MIN ë³´ë‹¤ ì‘ì•„ì§€ëŠ”ì§€ íŒë‹¨ */
         if ( sIncInterval >= sCurSequence->mMinSequence - sAfterSequence.mCurSequence )
         {
             sAfterSequence.mLstSyncSequence =
@@ -256,8 +256,8 @@ IDE_RC smcSequence::setSequenceCurr( void*            aTrans,
         }
         else
         {
-            /* MIN ¹Ì¸¸ÀÌ µÇ¸é MAX ·Î sync */
-            /* BUG-37864 no cycleÀÎ °æ¿ì¿¡´Â mLstSyncSequenceµµ cycleÇÏÁö ¾Ê½À´Ï´Ù. */
+            /* MIN ë¯¸ë§Œì´ ë˜ë©´ MAX ë¡œ sync */
+            /* BUG-37864 no cycleì¸ ê²½ìš°ì—ëŠ” mLstSyncSequenceë„ cycleí•˜ì§€ ì•ŠìŠµë‹ˆë‹¤. */
             if ( sCircular == SMI_SEQUENCE_CIRCULAR_ENABLE )
             {
                 sAfterSequence.mLstSyncSequence = sCurSequence->mMaxSequence;
@@ -340,17 +340,17 @@ IDE_RC smcSequence::readSequenceNext( void*                aTrans,
     sCircular    = sCurSequence->mFlag & SMI_SEQUENCE_CIRCULAR_MASK;
     sSeqTable    = sCurSequence->mFlag & SMI_SEQUENCE_TABLE_MASK;
 
-    /* Áõ°¡Ä¡°¡ 0ÀÎ sequence(constant sequence)´Â SKIP */
+    /* ì¦ê°€ì¹˜ê°€ 0ì¸ sequence(constant sequence)ëŠ” SKIP */
     IDE_TEST_CONT( sCurSequence->mIncSequence == 0, SKIP_INC_SEQUENCE );
 
     sNeedSync      = ID_FALSE;
     sAfterSequence = *sCurSequence;
 
-    /* BUG-31094 SequenceÀÇ NEXTVALÀÌ MAX°ª¸¸Å­ Áõ°¡ÇÑ ÈÄ¿¡´Â
-     * server restartµÉ ¶§¸¶´Ù ÃÊ±âÈ­µË´Ï´Ù.
+    /* BUG-31094 Sequenceì˜ NEXTVALì´ MAXê°’ë§Œí¼ ì¦ê°€í•œ í›„ì—ëŠ”
+     * server restartë  ë•Œë§ˆë‹¤ ì´ˆê¸°í™”ë©ë‹ˆë‹¤.
      *
-     * nocache sequenceÀÇ sync intervalÀº 0À¸·Î ¼³Á¤µÇ±â ¶§¹®¿¡,
-     * cache 1·Î ¼³Á¤ÇØ¼­ ·Î±ëÇØ¾ß ÇÔ
+     * nocache sequenceì˜ sync intervalì€ 0ìœ¼ë¡œ ì„¤ì •ë˜ê¸° ë•Œë¬¸ì—,
+     * cache 1ë¡œ ì„¤ì •í•´ì„œ ë¡œê¹…í•´ì•¼ í•¨
      */
     if ( sAfterSequence.mSyncInterval == 0 )
     {
@@ -367,8 +367,8 @@ IDE_RC smcSequence::readSequenceNext( void*                aTrans,
         {
             sNeedSync = ID_TRUE;
             
-            /* PROJ-2365 nextvalÀ» sequence table¿¡¼­ ¾ò´Â´Ù.
-             * ÁÖÀÇ) selectCurrVal°ú updateLastVal »çÀÌ¿¡ ¿¹¿Ü°¡ ¹ß»ıÇØ¼­´Â ¾ÈµÈ´Ù.
+            /* PROJ-2365 nextvalì„ sequence tableì—ì„œ ì–»ëŠ”ë‹¤.
+             * ì£¼ì˜) selectCurrValê³¼ updateLastVal ì‚¬ì´ì— ì˜ˆì™¸ê°€ ë°œìƒí•´ì„œëŠ” ì•ˆëœë‹¤.
              */
             if ( sSeqTable == SMI_SEQUENCE_TABLE_TRUE )
             {
@@ -381,7 +381,7 @@ IDE_RC smcSequence::readSequenceNext( void*                aTrans,
                 sAfterSequence.mCurSequence = sCurSequence->mStartSequence;
             }
             
-            /* Áõ°¡Ä¡ * SYNC interval °ªÀÌ MAX¸¦ ÃÊ°úÇÏ´ÂÁö ÆÇ´Ü */
+            /* ì¦ê°€ì¹˜ * SYNC interval ê°’ì´ MAXë¥¼ ì´ˆê³¼í•˜ëŠ”ì§€ íŒë‹¨ */
             if ( sIncInterval <= sCurSequence->mMaxSequence - sAfterSequence.mCurSequence )
             {
                 sAfterSequence.mLstSyncSequence =
@@ -389,8 +389,8 @@ IDE_RC smcSequence::readSequenceNext( void*                aTrans,
             }
             else
             {
-                /* MAX ¸¦ ÃÊ°úÇÏ¸é MIN À¸·Î sync */
-                /* BUG-37864 no cycleÀÎ °æ¿ì¿¡´Â mLstSyncSequenceµµ cycleÇÏÁö ¾Ê½À´Ï´Ù. */
+                /* MAX ë¥¼ ì´ˆê³¼í•˜ë©´ MIN ìœ¼ë¡œ sync */
+                /* BUG-37864 no cycleì¸ ê²½ìš°ì—ëŠ” mLstSyncSequenceë„ cycleí•˜ì§€ ì•ŠìŠµë‹ˆë‹¤. */
                 if ( sCircular == SMI_SEQUENCE_CIRCULAR_ENABLE )
                 {
                     sAfterSequence.mLstSyncSequence = sCurSequence->mMinSequence;
@@ -414,22 +414,22 @@ IDE_RC smcSequence::readSequenceNext( void*                aTrans,
         }
         else
         {
-            /* BUG-31094 SequenceÀÇ NEXTVALÀÌ MAX°ª¸¸Å­ Áõ°¡ÇÑ ÈÄ¿¡´Â
-             * server restartµÉ ¶§¸¶´Ù ÃÊ±âÈ­µË´Ï´Ù.
+            /* BUG-31094 Sequenceì˜ NEXTVALì´ MAXê°’ë§Œí¼ ì¦ê°€í•œ í›„ì—ëŠ”
+             * server restartë  ë•Œë§ˆë‹¤ ì´ˆê¸°í™”ë©ë‹ˆë‹¤.
              *
-             * Áõ°¡Ä¡°¡ ¾ç¼öÀÏ ¶§ sequence¸¦ syncÇØ¾ß ÇÏ´Â °æ¿ì´Â ´ÙÀ½°ú °°´Ù.
-             * Ã¹Â°, ÀÌÀü¿¡ syncÇß´ø °ªº¸´Ù current°ªÀÌ Å©°Å³ª °°¾Æ Á³À» ¶§
-             * µÑÂ°, MAX°ªº¸´Ù Ä¿Áú °æ¿ì MIN + SYNC interval·Î ¼³Á¤ÇÏ°í sync    */
+             * ì¦ê°€ì¹˜ê°€ ì–‘ìˆ˜ì¼ ë•Œ sequenceë¥¼ syncí•´ì•¼ í•˜ëŠ” ê²½ìš°ëŠ” ë‹¤ìŒê³¼ ê°™ë‹¤.
+             * ì²«ì§¸, ì´ì „ì— syncí–ˆë˜ ê°’ë³´ë‹¤ currentê°’ì´ í¬ê±°ë‚˜ ê°™ì•„ ì¡Œì„ ë•Œ
+             * ë‘˜ì§¸, MAXê°’ë³´ë‹¤ ì»¤ì§ˆ ê²½ìš° MIN + SYNC intervalë¡œ ì„¤ì •í•˜ê³  sync    */
             if ( sCurSequence->mCurSequence + sCurSequence->mIncSequence >
                  sCurSequence->mMaxSequence )
             {
                 IDE_TEST_RAISE( sCircular == SMI_SEQUENCE_CIRCULAR_DISABLE,
                                 err_max_sequence );
                 
-                /* MAX°ªº¸´Ù Ä¿Áú °æ¿ì MINÀ¸·Î ¼³Á¤ÇÏ°í sync */
+                /* MAXê°’ë³´ë‹¤ ì»¤ì§ˆ ê²½ìš° MINìœ¼ë¡œ ì„¤ì •í•˜ê³  sync */
                 sNeedSync = ID_TRUE;
                 
-                /* PROJ-2365 nextvalÀ» sequence table¿¡¼­ ¾ò´Â´Ù. */
+                /* PROJ-2365 nextvalì„ sequence tableì—ì„œ ì–»ëŠ”ë‹¤. */
                 if ( sSeqTable == SMI_SEQUENCE_TABLE_TRUE )
                 {
                     IDE_TEST( aCallBack->selectCurrVal( & sAfterSequence.mCurSequence,
@@ -441,7 +441,7 @@ IDE_RC smcSequence::readSequenceNext( void*                aTrans,
                     sAfterSequence.mCurSequence = sCurSequence->mMinSequence;
                 }
                 
-                /* Áõ°¡Ä¡ * SYNC interval °ªÀÌ MAX¸¦ ÃÊ°úÇÏ´ÂÁö ÆÇ´Ü */
+                /* ì¦ê°€ì¹˜ * SYNC interval ê°’ì´ MAXë¥¼ ì´ˆê³¼í•˜ëŠ”ì§€ íŒë‹¨ */
                 if ( sIncInterval <= sCurSequence->mMaxSequence - sAfterSequence.mCurSequence )
                 {
                     sAfterSequence.mLstSyncSequence =
@@ -449,8 +449,8 @@ IDE_RC smcSequence::readSequenceNext( void*                aTrans,
                 }
                 else
                 {
-                    /* MAX ¸¦ ÃÊ°úÇÏ¸é MIN À¸·Î sync */
-                    /* BUG-37864 no cycleÀÎ °æ¿ì¿¡´Â mLstSyncSequenceµµ cycleÇÏÁö ¾Ê½À´Ï´Ù. */
+                    /* MAX ë¥¼ ì´ˆê³¼í•˜ë©´ MIN ìœ¼ë¡œ sync */
+                    /* BUG-37864 no cycleì¸ ê²½ìš°ì—ëŠ” mLstSyncSequenceë„ cycleí•˜ì§€ ì•ŠìŠµë‹ˆë‹¤. */
                     if ( sCircular == SMI_SEQUENCE_CIRCULAR_ENABLE )
                     {
                         sAfterSequence.mLstSyncSequence = sCurSequence->mMinSequence;
@@ -474,12 +474,12 @@ IDE_RC smcSequence::readSequenceNext( void*                aTrans,
             }
             else
             {
-                /* server restartÀÎ °æ¿ì */
+                /* server restartì¸ ê²½ìš° */
                 if ( sAfterSequence.mCurSequence == sAfterSequence.mLstSyncSequence )
                 {
                     sNeedSync = ID_TRUE;
                     
-                    /* PROJ-2365 nextvalÀ» sequence table¿¡¼­ ¾ò´Â´Ù. */
+                    /* PROJ-2365 nextvalì„ sequence tableì—ì„œ ì–»ëŠ”ë‹¤. */
                     if ( sSeqTable == SMI_SEQUENCE_TABLE_TRUE )
                     {
                         IDE_TEST( aCallBack->selectCurrVal( & sAfterSequence.mCurSequence,
@@ -494,7 +494,7 @@ IDE_RC smcSequence::readSequenceNext( void*                aTrans,
                             sAfterSequence.mIncSequence;
                     }
                     
-                    /* Áõ°¡Ä¡ * SYNC interval °ªÀÌ MAX¸¦ ÃÊ°úÇÏ´ÂÁö ÆÇ´Ü */
+                    /* ì¦ê°€ì¹˜ * SYNC interval ê°’ì´ MAXë¥¼ ì´ˆê³¼í•˜ëŠ”ì§€ íŒë‹¨ */
                     if ( sIncInterval <= sCurSequence->mMaxSequence - sAfterSequence.mCurSequence )
                     {
                         sAfterSequence.mLstSyncSequence =
@@ -502,8 +502,8 @@ IDE_RC smcSequence::readSequenceNext( void*                aTrans,
                     }
                     else
                     {
-                        /* MAX ¸¦ ÃÊ°úÇÏ¸é MIN À¸·Î sync */
-                        /* BUG-37864 no cycleÀÎ °æ¿ì¿¡´Â mLstSyncSequenceµµ cycleÇÏÁö ¾Ê½À´Ï´Ù. */
+                        /* MAX ë¥¼ ì´ˆê³¼í•˜ë©´ MIN ìœ¼ë¡œ sync */
+                        /* BUG-37864 no cycleì¸ ê²½ìš°ì—ëŠ” mLstSyncSequenceë„ cycleí•˜ì§€ ì•ŠìŠµë‹ˆë‹¤. */
                         if ( sCircular == SMI_SEQUENCE_CIRCULAR_ENABLE )
                         {
                             sAfterSequence.mLstSyncSequence = sCurSequence->mMinSequence;
@@ -529,13 +529,13 @@ IDE_RC smcSequence::readSequenceNext( void*                aTrans,
                 {
                     sAfterSequence.mCurSequence += sAfterSequence.mIncSequence;
                     
-                    /* MAX¸¦ ÃÊ°úÇÏ¿© MINÀÌ µÈ °æ¿ì´Â skip */
+                    /* MAXë¥¼ ì´ˆê³¼í•˜ì—¬ MINì´ ëœ ê²½ìš°ëŠ” skip */
                     if ( ( sAfterSequence.mCurSequence >= sAfterSequence.mLstSyncSequence ) &&
                          ( sCurSequence->mMinSequence != sAfterSequence.mLstSyncSequence ) )
                     {
                         sNeedSync = ID_TRUE;
                         
-                        /* PROJ-2365 nextvalÀ» sequence table¿¡¼­ ¾ò´Â´Ù. */
+                        /* PROJ-2365 nextvalì„ sequence tableì—ì„œ ì–»ëŠ”ë‹¤. */
                         if ( sSeqTable == SMI_SEQUENCE_TABLE_TRUE )
                         {
                             IDE_TEST( aCallBack->selectCurrVal( & sAfterSequence.mCurSequence,
@@ -549,12 +549,12 @@ IDE_RC smcSequence::readSequenceNext( void*                aTrans,
 
                         if ( sCurSequence->mMinSequence == sAfterSequence.mCurSequence )
                         {
-                            /* CYCLEÀÌ ¹ß»ıÇÑ °æ¿ì */
+                            /* CYCLEì´ ë°œìƒí•œ ê²½ìš° */
                             sAfterSequence.mLstSyncSequence = sCurSequence->mMinSequence;
                         }
                         else
                         {
-                            /* Áõ°¡Ä¡ * SYNC interval °ªÀÌ MAX¸¦ ÃÊ°úÇÏ´ÂÁö ÆÇ´Ü */
+                            /* ì¦ê°€ì¹˜ * SYNC interval ê°’ì´ MAXë¥¼ ì´ˆê³¼í•˜ëŠ”ì§€ íŒë‹¨ */
                             if ( sIncInterval <= sCurSequence->mMaxSequence - sAfterSequence.mCurSequence )
                             {
                                 sAfterSequence.mLstSyncSequence =
@@ -562,8 +562,8 @@ IDE_RC smcSequence::readSequenceNext( void*                aTrans,
                             }
                             else
                             {
-                                /* MAX ¸¦ ÃÊ°úÇÏ¸é MIN À¸·Î sync */
-                                /* BUG-37864 no cycleÀÎ °æ¿ì¿¡´Â mLstSyncSequenceµµ cycleÇÏÁö ¾Ê½À´Ï´Ù. */
+                                /* MAX ë¥¼ ì´ˆê³¼í•˜ë©´ MIN ìœ¼ë¡œ sync */
+                                /* BUG-37864 no cycleì¸ ê²½ìš°ì—ëŠ” mLstSyncSequenceë„ cycleí•˜ì§€ ì•ŠìŠµë‹ˆë‹¤. */
                                 if ( sCircular == SMI_SEQUENCE_CIRCULAR_ENABLE )
                                 {
                                     sAfterSequence.mLstSyncSequence = sCurSequence->mMinSequence;
@@ -586,7 +586,7 @@ IDE_RC smcSequence::readSequenceNext( void*                aTrans,
                             /* Nothing to do. */
                         }
                         
-                        /* CYCLEÀÌ ¹ß»ıÇÑ °æ¿ì */
+                        /* CYCLEì´ ë°œìƒí•œ ê²½ìš° */
                         IDE_TEST_RAISE( ( sCurSequence->mMinSequence == sAfterSequence.mCurSequence ) &&
                                         ( sCircular == SMI_SEQUENCE_CIRCULAR_DISABLE ),
                                         err_max_sequence );
@@ -605,7 +605,7 @@ IDE_RC smcSequence::readSequenceNext( void*                aTrans,
         {
             sNeedSync = ID_TRUE;
             
-            /* PROJ-2365 nextvalÀ» sequence table¿¡¼­ ¾ò´Â´Ù. */
+            /* PROJ-2365 nextvalì„ sequence tableì—ì„œ ì–»ëŠ”ë‹¤. */
             if ( sSeqTable == SMI_SEQUENCE_TABLE_TRUE )
             {
                 IDE_TEST( aCallBack->selectCurrVal( & sAfterSequence.mCurSequence,
@@ -617,7 +617,7 @@ IDE_RC smcSequence::readSequenceNext( void*                aTrans,
                 sAfterSequence.mCurSequence = sCurSequence->mStartSequence;
             }
             
-            /* Áõ°¡Ä¡ * SYNC interval °ªÀÌ MIN º¸´Ù ÀÛ¾ÆÁö´ÂÁö ÆÇ´Ü */
+            /* ì¦ê°€ì¹˜ * SYNC interval ê°’ì´ MIN ë³´ë‹¤ ì‘ì•„ì§€ëŠ”ì§€ íŒë‹¨ */
             if ( sIncInterval >= sCurSequence->mMinSequence - sAfterSequence.mCurSequence )
             {
                 sAfterSequence.mLstSyncSequence =
@@ -625,8 +625,8 @@ IDE_RC smcSequence::readSequenceNext( void*                aTrans,
             }
             else
             {
-                /* MIN ¹Ì¸¸ÀÌ µÇ¸é MAX ·Î sync */
-                /* BUG-37864 no cycleÀÎ °æ¿ì¿¡´Â mLstSyncSequenceµµ cycleÇÏÁö ¾Ê½À´Ï´Ù. */
+                /* MIN ë¯¸ë§Œì´ ë˜ë©´ MAX ë¡œ sync */
+                /* BUG-37864 no cycleì¸ ê²½ìš°ì—ëŠ” mLstSyncSequenceë„ cycleí•˜ì§€ ì•ŠìŠµë‹ˆë‹¤. */
                 if ( sCircular == SMI_SEQUENCE_CIRCULAR_ENABLE )
                 {
                     sAfterSequence.mLstSyncSequence = sCurSequence->mMaxSequence;
@@ -650,22 +650,22 @@ IDE_RC smcSequence::readSequenceNext( void*                aTrans,
         }
         else
         {
-            /* BUG-31094 SequenceÀÇ NEXTVALÀÌ MAX°ª¸¸Å­ Áõ°¡ÇÑ ÈÄ¿¡´Â
-             * server restartµÉ ¶§¸¶´Ù ÃÊ±âÈ­µË´Ï´Ù.
+            /* BUG-31094 Sequenceì˜ NEXTVALì´ MAXê°’ë§Œí¼ ì¦ê°€í•œ í›„ì—ëŠ”
+             * server restartë  ë•Œë§ˆë‹¤ ì´ˆê¸°í™”ë©ë‹ˆë‹¤.
              *
-             * Áõ°¡Ä¡°¡ À½¼öÀÏ ¶§ sequence¸¦ syncÇØ¾ß ÇÏ´Â °æ¿ì´Â ´ÙÀ½°ú °°´Ù.
-             * Ã¹Â°, ÀÌÀü¿¡ syncÇß´ø °ªº¸´Ù current°ªÀÌ ÀÛ°Å³ª °°¾Æ Á³À» ¶§
-             * µÑÂ°, MIN°ªº¸´Ù ÀÛ¾ÆÁú °æ¿ì MAX + SYNC interval·Î ¼³Á¤ÇÏ°í sync    */
+             * ì¦ê°€ì¹˜ê°€ ìŒìˆ˜ì¼ ë•Œ sequenceë¥¼ syncí•´ì•¼ í•˜ëŠ” ê²½ìš°ëŠ” ë‹¤ìŒê³¼ ê°™ë‹¤.
+             * ì²«ì§¸, ì´ì „ì— syncí–ˆë˜ ê°’ë³´ë‹¤ currentê°’ì´ ì‘ê±°ë‚˜ ê°™ì•„ ì¡Œì„ ë•Œ
+             * ë‘˜ì§¸, MINê°’ë³´ë‹¤ ì‘ì•„ì§ˆ ê²½ìš° MAX + SYNC intervalë¡œ ì„¤ì •í•˜ê³  sync    */
             if ( sCurSequence->mCurSequence + sCurSequence->mIncSequence <
                  sCurSequence->mMinSequence )
             {
                 IDE_TEST_RAISE( sCircular == SMI_SEQUENCE_CIRCULAR_DISABLE,
                                 err_min_sequence );
 
-                /* MIN°ªº¸´Ù ÀÛ¾ÆÁö´Â °æ¿ì MAXÀ¸·Î ¼³Á¤ÇÏ°í SYNC */
+                /* MINê°’ë³´ë‹¤ ì‘ì•„ì§€ëŠ” ê²½ìš° MAXìœ¼ë¡œ ì„¤ì •í•˜ê³  SYNC */
                 sNeedSync = ID_TRUE;
                 
-                /* PROJ-2365 nextvalÀ» sequence table¿¡¼­ ¾ò´Â´Ù. */
+                /* PROJ-2365 nextvalì„ sequence tableì—ì„œ ì–»ëŠ”ë‹¤. */
                 if ( sSeqTable == SMI_SEQUENCE_TABLE_TRUE )
                 {
                     IDE_TEST( aCallBack->selectCurrVal( & sAfterSequence.mCurSequence,
@@ -677,7 +677,7 @@ IDE_RC smcSequence::readSequenceNext( void*                aTrans,
                     sAfterSequence.mCurSequence = sCurSequence->mMaxSequence;
                 }
                 
-                /* Áõ°¡Ä¡ * SYNC interval °ªÀÌ MIN º¸´Ù ÀÛ¾ÆÁö´ÂÁö ÆÇ´Ü */
+                /* ì¦ê°€ì¹˜ * SYNC interval ê°’ì´ MIN ë³´ë‹¤ ì‘ì•„ì§€ëŠ”ì§€ íŒë‹¨ */
                 if ( sIncInterval >= sCurSequence->mMinSequence - sAfterSequence.mCurSequence )
                 {
                     sAfterSequence.mLstSyncSequence =
@@ -685,8 +685,8 @@ IDE_RC smcSequence::readSequenceNext( void*                aTrans,
                 }
                 else
                 {
-                    /* MIN ¹Ì¸¸ÀÌ µÇ¸é MAX ·Î sync */
-                    /* BUG-37864 no cycleÀÎ °æ¿ì¿¡´Â mLstSyncSequenceµµ cycleÇÏÁö ¾Ê½À´Ï´Ù. */
+                    /* MIN ë¯¸ë§Œì´ ë˜ë©´ MAX ë¡œ sync */
+                    /* BUG-37864 no cycleì¸ ê²½ìš°ì—ëŠ” mLstSyncSequenceë„ cycleí•˜ì§€ ì•ŠìŠµë‹ˆë‹¤. */
                     if ( sCircular == SMI_SEQUENCE_CIRCULAR_ENABLE )
                     {
                         sAfterSequence.mLstSyncSequence = sCurSequence->mMaxSequence;
@@ -710,12 +710,12 @@ IDE_RC smcSequence::readSequenceNext( void*                aTrans,
             }
             else
             {
-                /* server restartÀÎ °æ¿ì */
+                /* server restartì¸ ê²½ìš° */
                 if ( sAfterSequence.mCurSequence == sAfterSequence.mLstSyncSequence )
                 {
                     sNeedSync = ID_TRUE;
                     
-                    /* PROJ-2365 nextvalÀ» sequence table¿¡¼­ ¾ò´Â´Ù. */
+                    /* PROJ-2365 nextvalì„ sequence tableì—ì„œ ì–»ëŠ”ë‹¤. */
                     if ( sSeqTable == SMI_SEQUENCE_TABLE_TRUE )
                     {
                         IDE_TEST( aCallBack->selectCurrVal( & sAfterSequence.mCurSequence,
@@ -730,7 +730,7 @@ IDE_RC smcSequence::readSequenceNext( void*                aTrans,
                             sAfterSequence.mIncSequence;
                     }
                     
-                    /* Áõ°¡Ä¡ * SYNC interval °ªÀÌ MIN º¸´Ù ÀÛ¾ÆÁö´ÂÁö ÆÇ´Ü */
+                    /* ì¦ê°€ì¹˜ * SYNC interval ê°’ì´ MIN ë³´ë‹¤ ì‘ì•„ì§€ëŠ”ì§€ íŒë‹¨ */
                     if ( sIncInterval >= sCurSequence->mMinSequence - sAfterSequence.mCurSequence )
                     {
                         sAfterSequence.mLstSyncSequence =
@@ -738,8 +738,8 @@ IDE_RC smcSequence::readSequenceNext( void*                aTrans,
                     }
                     else
                     {
-                        /* MIN ¹Ì¸¸ÀÌ µÇ¸é MAX ·Î sync */
-                        /* BUG-37864 no cycleÀÎ °æ¿ì¿¡´Â mLstSyncSequenceµµ cycleÇÏÁö ¾Ê½À´Ï´Ù. */
+                        /* MIN ë¯¸ë§Œì´ ë˜ë©´ MAX ë¡œ sync */
+                        /* BUG-37864 no cycleì¸ ê²½ìš°ì—ëŠ” mLstSyncSequenceë„ cycleí•˜ì§€ ì•ŠìŠµë‹ˆë‹¤. */
                         if ( sCircular == SMI_SEQUENCE_CIRCULAR_ENABLE )
                         {
                             sAfterSequence.mLstSyncSequence = sCurSequence->mMaxSequence;
@@ -765,13 +765,13 @@ IDE_RC smcSequence::readSequenceNext( void*                aTrans,
                 {
                     sAfterSequence.mCurSequence += sAfterSequence.mIncSequence;
 
-                    /* MIN ¹Ì¸¸ÀÌ µÇ¾î MAX°¡ µÈ °æ¿ì´Â skip */
+                    /* MIN ë¯¸ë§Œì´ ë˜ì–´ MAXê°€ ëœ ê²½ìš°ëŠ” skip */
                     if ( ( sAfterSequence.mCurSequence <= sAfterSequence.mLstSyncSequence ) &&
                          ( sCurSequence->mMaxSequence != sAfterSequence.mLstSyncSequence ) )
                     {
                         sNeedSync = ID_TRUE;
 
-                        /* PROJ-2365 nextvalÀ» sequence table¿¡¼­ ¾ò´Â´Ù. */
+                        /* PROJ-2365 nextvalì„ sequence tableì—ì„œ ì–»ëŠ”ë‹¤. */
                         if ( sSeqTable == SMI_SEQUENCE_TABLE_TRUE )
                         {
                             IDE_TEST( aCallBack->selectCurrVal( & sAfterSequence.mCurSequence,
@@ -785,12 +785,12 @@ IDE_RC smcSequence::readSequenceNext( void*                aTrans,
                         
                         if ( sCurSequence->mMaxSequence == sAfterSequence.mCurSequence )
                         {
-                            /* CYCLEÀÌ ¹ß»ıÇÑ °æ¿ì */
+                            /* CYCLEì´ ë°œìƒí•œ ê²½ìš° */
                             sAfterSequence.mLstSyncSequence = sCurSequence->mMaxSequence;
                         }
                         else
                         {
-                            /* Áõ°¡Ä¡ * SYNC interval °ªÀÌ MIN º¸´Ù ÀÛ¾ÆÁö´ÂÁö ÆÇ´Ü */
+                            /* ì¦ê°€ì¹˜ * SYNC interval ê°’ì´ MIN ë³´ë‹¤ ì‘ì•„ì§€ëŠ”ì§€ íŒë‹¨ */
                             if ( sIncInterval >= sCurSequence->mMinSequence - sAfterSequence.mCurSequence )
                             {
                                 sAfterSequence.mLstSyncSequence =
@@ -798,8 +798,8 @@ IDE_RC smcSequence::readSequenceNext( void*                aTrans,
                             }
                             else
                             {
-                                /* MIN ¹Ì¸¸ÀÌ µÇ¸é MAX ·Î sync */
-                                /* BUG-37864 no cycleÀÎ °æ¿ì¿¡´Â mLstSyncSequenceµµ cycleÇÏÁö ¾Ê½À´Ï´Ù. */
+                                /* MIN ë¯¸ë§Œì´ ë˜ë©´ MAX ë¡œ sync */
+                                /* BUG-37864 no cycleì¸ ê²½ìš°ì—ëŠ” mLstSyncSequenceë„ cycleí•˜ì§€ ì•ŠìŠµë‹ˆë‹¤. */
                                 if ( sCircular == SMI_SEQUENCE_CIRCULAR_ENABLE )
                                 {
                                     sAfterSequence.mLstSyncSequence = sCurSequence->mMaxSequence;
@@ -822,7 +822,7 @@ IDE_RC smcSequence::readSequenceNext( void*                aTrans,
                             /* Nothing to do. */
                         }
                         
-                        /* CYCLEÀÌ ¹ß»ıÇÑ °æ¿ì */
+                        /* CYCLEì´ ë°œìƒí•œ ê²½ìš° */
                         IDE_TEST_RAISE( ( sCurSequence->mMaxSequence == sAfterSequence.mCurSequence ) &&
                                         ( sCircular == SMI_SEQUENCE_CIRCULAR_DISABLE ),
                                         err_min_sequence );
@@ -909,7 +909,7 @@ IDE_RC smcSequence::alterSequence( void                * aTrans,
     IDE_TEST( smcTable::validateTable(
                   aTrans, 
                   aTableHeader, 
-                  SCT_VAL_DDL_DML, // Å×ÀÌºí½ºÆäÀÌ½º Validation ¿É¼Ç
+                  SCT_VAL_DDL_DML, // í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ Validation ì˜µì…˜
                   SMC_LOCK_MUTEX )
               != IDE_SUCCESS );
     
@@ -928,8 +928,8 @@ IDE_RC smcSequence::alterSequence( void                * aTrans,
     }
     else
     {
-        /* nocache sequenceÀÇ sync intervalÀº 0À¸·Î ¼³Á¤µÇ±â ¶§¹®¿¡,
-         * cache 1·Î ¼³Á¤ÇØ¼­ ·Î±ëÇØ¾ß ÇÔ
+        /* nocache sequenceì˜ sync intervalì€ 0ìœ¼ë¡œ ì„¤ì •ë˜ê¸° ë•Œë¬¸ì—,
+         * cache 1ë¡œ ì„¤ì •í•´ì„œ ë¡œê¹…í•´ì•¼ í•¨
          */
         if ( sAfterSequence.mSyncInterval == 0 )
         {
@@ -942,7 +942,7 @@ IDE_RC smcSequence::alterSequence( void                * aTrans,
         
         if ( sAfterSequence.mIncSequence > 0 )
         {
-            /* Áõ°¡Ä¡ * SYNC interval °ªÀÌ MAX¸¦ ÃÊ°úÇÏ´ÂÁö ÆÇ´Ü */
+            /* ì¦ê°€ì¹˜ * SYNC interval ê°’ì´ MAXë¥¼ ì´ˆê³¼í•˜ëŠ”ì§€ íŒë‹¨ */
             if ( sIncInterval <= sCurSequence->mMaxSequence - sAfterSequence.mCurSequence )
             {
                 sAfterSequence.mLstSyncSequence =
@@ -950,13 +950,13 @@ IDE_RC smcSequence::alterSequence( void                * aTrans,
             }
             else
             {
-                /* MAX ¸¦ ÃÊ°úÇÏ¸é MIN À¸·Î sync */
+                /* MAX ë¥¼ ì´ˆê³¼í•˜ë©´ MIN ìœ¼ë¡œ sync */
                 sAfterSequence.mLstSyncSequence = sCurSequence->mMinSequence;
             }
         }
         else /* if ( sAfterSequence.mIncSequence < 0 ) */
         {
-            /* Áõ°¡Ä¡ * SYNC interval °ªÀÌ MIN º¸´Ù ÀÛ¾ÆÁö´ÂÁö ÆÇ´Ü */
+            /* ì¦ê°€ì¹˜ * SYNC interval ê°’ì´ MIN ë³´ë‹¤ ì‘ì•„ì§€ëŠ”ì§€ íŒë‹¨ */
             if ( sIncInterval >= sCurSequence->mMinSequence - sAfterSequence.mCurSequence )
             {
                 sAfterSequence.mLstSyncSequence =
@@ -964,13 +964,13 @@ IDE_RC smcSequence::alterSequence( void                * aTrans,
             }
             else
             {
-                /* MIN ¹Ì¸¸ÀÌ µÇ¸é MAX ·Î sync */
+                /* MIN ë¯¸ë§Œì´ ë˜ë©´ MAX ë¡œ sync */
                 sAfterSequence.mLstSyncSequence = sCurSequence->mMaxSequence;
             }
         }
     }
 
-    /* last sync seq¸¦ ¹İÈ¯ÇÑ´Ù. */
+    /* last sync seqë¥¼ ë°˜í™˜í•œë‹¤. */
     *aLastSyncSeq = sAfterSequence.mLstSyncSequence;
     
     sPageID = SM_MAKE_PID(aTableHeader->mSelfOID);
@@ -1020,10 +1020,10 @@ IDE_RC smcSequence::refineSequence( smcTableHeader * aTableHeader )
                    err_invalide_sequence);
     
     /* BUG-37874 the functionality to flush a cache of sequence is required.
-     * sequence´Â server start½Ã refine´Ü°è¿¡¼­ sequenceÀÇ cur value´Â
-     * last sync value·Î º¯°æµÈ´Ù. ÀÌ·¸°Ô µÇ¸é server°¡ re-startµÇ¾úÀ½À»
-     * °¨ÁöÇÏ°í ´Ù½Ã Ã¤¹øÀ» ÇÏ°Ô µÈ´Ù. ´Ù½Ã Ã¤¹øÀ» À¯µµÇÏ±â À§ÇØ sequence¿¡ 
-     * ´ëÇØ refineÀ» ¼öÇàÇÏ´Â ÇÔ¼ö¸¦ Ãß°¡ÇÑ´Ù. */
+     * sequenceëŠ” server startì‹œ refineë‹¨ê³„ì—ì„œ sequenceì˜ cur valueëŠ”
+     * last sync valueë¡œ ë³€ê²½ëœë‹¤. ì´ë ‡ê²Œ ë˜ë©´ serverê°€ re-startë˜ì—ˆìŒì„
+     * ê°ì§€í•˜ê³  ë‹¤ì‹œ ì±„ë²ˆì„ í•˜ê²Œ ëœë‹¤. ë‹¤ì‹œ ì±„ë²ˆì„ ìœ ë„í•˜ê¸° ìœ„í•´ sequenceì— 
+     * ëŒ€í•´ refineì„ ìˆ˜í–‰í•˜ëŠ” í•¨ìˆ˜ë¥¼ ì¶”ê°€í•œë‹¤. */
     sSequence->mCurSequence = sSequence->mLstSyncSequence;
     
     return IDE_SUCCESS;

@@ -937,8 +937,8 @@ IDE_RC tempInsert()
         {
             sColumn = (tsmColumn*)smiGetTableColumns(sTable, i);
             
-            // variable typeÀº ÃßÈÄ¿¡ ¼öÁ¤µÇ¾î¾ß ÇÔ bugbug
-            // size°¡ 128ÀÌ ³Ñ¾î°¡´Â °æ¿ì¸¸ varchar°¡ µÊ
+            // variable typeì€ ì¶”í›„ì— ìˆ˜ì •ë˜ì–´ì•¼ í•¨ bugbug
+            // sizeê°€ 128ì´ ë„˜ì–´ê°€ëŠ” ê²½ìš°ë§Œ varcharê°€ ë¨
             
             switch (sColumn->flag & SMI_COLUMN_TYPE_MASK )
             {
@@ -1148,7 +1148,7 @@ IDE_RC tempSelect(UInt aIndexID,  UInt aDirection)
                         break;
 
                     case TSM_TYPE_VARCHAR:
-                        //BUG disk table insertÈÄ¿¡ ÇØ¾ßÇÔ.
+                        //BUG disk table insertí›„ì— í•´ì•¼í•¨.
                         //sValue = tsmGetVarColumn( sRow, (smiColumn*)sColumn
                         //                &sLength,sVarColBuf );
                         break;
@@ -1575,7 +1575,7 @@ IDE_RC tempUpdate()
 
                         break;
                     case TSM_TYPE_VARCHAR:
-                        //BUGBUG disk table¿¡ insertÇÑÈÄ¿¡ ÇØ¾ßÇÔ.
+                        //BUGBUG disk tableì— insertí•œí›„ì— í•´ì•¼í•¨.
                         //sRow = tsmGetVarColumn( sRow, (smiColumn*)sColumn,
                         //                        &sLength, sVarColBuf );
                         break;

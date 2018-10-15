@@ -28,11 +28,11 @@
 
 class mmcSession;
 
-/* PROJ-1381 FAC : AssocFetchList¿¡ ´ãÀ» ±¸Á¶Ã¼ */
+/* PROJ-1381 FAC : AssocFetchListì— ë‹´ì„ êµ¬ì¡°ì²´ */
 typedef struct AssocFetchListItem
 {
-    iduList      mFetchList;    /**< Xid¿Í °ü·ÃµÈ FetchList */
-    mmcSession  *mSession;      /**< FetchList¿Í ¿¬°üµÈ Session */
+    iduList      mFetchList;    /**< Xidì™€ ê´€ë ¨ëœ FetchList */
+    mmcSession  *mSession;      /**< FetchListì™€ ì—°ê´€ëœ Session */
 
     iduListNode  mListNode;     /**< Node for iduList */
 } AssocFetchListItem;
@@ -46,7 +46,7 @@ private:
     idBool       mMutexNeedDestroy;
 
     /* PROJ-1381 Fetch Across Commits */
-    iduList     mAssocFetchList;    /**< °ü·ÃµÈ FetchList. commit, rollback¿¡¼­ Ã³¸®ÇØ¾ß ÇÒ °Íµé */
+    iduList     mAssocFetchList;    /**< ê´€ë ¨ëœ FetchList. commit, rollbackì—ì„œ ì²˜ë¦¬í•´ì•¼ í•  ê²ƒë“¤ */
 
     /* fix BUG-35374 To improve scalability about XA, latch granularity of XID hash should be more better than now.
        that is to say , chanage the granularity from global to bucket level.
@@ -67,15 +67,15 @@ public:
     IDE_RC commitTrans(mmcSession *aSession);
     void   rollbackTrans(mmcSession *aSession);
     //fix BUG-22669 need to XID List performance view.
-    //fix BUG-23656 session,xid ,transactionÀ» ¿¬°èÇÑ performance view¸¦ Á¦°øÇÏ°í,
-    //±×µé°£ÀÇ °ü°è¸¦ Á¤È®È÷ À¯ÁöÇØ¾ß ÇÔ.
+    //fix BUG-23656 session,xid ,transactionì„ ì—°ê³„í•œ performance viewë¥¼ ì œê³µí•˜ê³ ,
+    //ê·¸ë“¤ê°„ì˜ ê´€ê³„ë¥¼ ì •í™•íˆ ìœ ì§€í•´ì•¼ í•¨.
     void  associate(mmcSession *aSession);
     void  disAssociate(mmdXaState aState);  //BUG-26164
-    // fix BUG-23306 XA ¼¼¼Ç Á¾·á½Ã ÀÚ½ÅÀÌ »ı¼ºÇÑ XID¸¸ rollback Ã³¸® ÇØ¾ßÇÕ´Ï´Ù.
+    // fix BUG-23306 XA ì„¸ì…˜ ì¢…ë£Œì‹œ ìì‹ ì´ ìƒì„±í•œ XIDë§Œ rollback ì²˜ë¦¬ í•´ì•¼í•©ë‹ˆë‹¤.
     inline mmcSessID    getAssocSessionID();
     
-    // fix BUG-25020 XA°¡ Active »óÅÂÀÎµ¥, rollbackÀÌ ¿À¸é 
-    // XA_Rollback Timeout±îÁö ±â´Ù¸° ÈÄ¿¡ Query TimeoutÀ¸·Î Ã³¸®
+    // fix BUG-25020 XAê°€ Active ìƒíƒœì¸ë°, rollbackì´ ì˜¤ë©´ 
+    // XA_Rollback Timeoutê¹Œì§€ ê¸°ë‹¤ë¦° í›„ì— Query Timeoutìœ¼ë¡œ ì²˜ë¦¬
     inline mmcSession  *getAssocSession();
 
     /* PROJ-1381 Fetch Across Commits */
@@ -91,20 +91,20 @@ public:
     void        setState(mmdXaState aState);
 
     void        fix();
-    /* BUG-27968 XA Fix/Unfix Scalability¸¦ Çâ»ó½ÃÄÑ¾ß ÇÕ´Ï´Ù.
-     XA fix ½Ã¿¡ xid list latch¸¦ shared °É¶§ xid fix count Á¤ÇÕ¼ºÀ» À§ÇÑ ÇÔ¼ö */
+    /* BUG-27968 XA Fix/Unfix Scalabilityë¥¼ í–¥ìƒì‹œì¼œì•¼ í•©ë‹ˆë‹¤.
+     XA fix ì‹œì— xid list latchë¥¼ shared ê±¸ë•Œ xid fix count ì •í•©ì„±ì„ ìœ„í•œ í•¨ìˆ˜ */
     void        fixWithLatch();
     void        unfix();
-    /* BUG-27968 XA Fix/Unfix Scalability¸¦ Çâ»ó½ÃÄÑ¾ß ÇÕ´Ï´Ù.
-     XA Unfix ½Ã¿¡ latch duarationÀ» ÁÙÀÌ±âÀ§ÇÏ¿© xid fix-Count¸¦ xid list latch releaseÀü¿¡
-     ±¸ÇÑ´Ù.*/
+    /* BUG-27968 XA Fix/Unfix Scalabilityë¥¼ í–¥ìƒì‹œì¼œì•¼ í•©ë‹ˆë‹¤.
+     XA Unfix ì‹œì— latch duarationì„ ì¤„ì´ê¸°ìœ„í•˜ì—¬ xid fix-Countë¥¼ xid list latch releaseì „ì—
+     êµ¬í•œë‹¤.*/
     void        unfix(UInt *aFixCount);
 
     void        lock();
     void        unlock();
 
     mmdXaState  mState;
-    //BUG-25078   State°¡ º¯°æµÈ ½Ã°¢°ú Duration
+    //BUG-25078   Stateê°€ ë³€ê²½ëœ ì‹œê°ê³¼ Duration
     UInt        mStateStartTime;     
     ULong       mStateDuration;      
     
@@ -113,16 +113,16 @@ public:
     //fix BUG-22669 need to XID List performance view. 
     mmcSessID   mAssocSessionID;
     /* BUG-18981 */
-    //fix BUG-23656 session,xid ,transactionÀ» ¿¬°èÇÑ performance view¸¦ Á¦°øÇÏ°í,
-    //±×µé°£ÀÇ °ü°è¸¦ Á¤È®È÷ À¯ÁöÇØ¾ß ÇÔ.
+    //fix BUG-23656 session,xid ,transactionì„ ì—°ê³„í•œ performance viewë¥¼ ì œê³µí•˜ê³ ,
+    //ê·¸ë“¤ê°„ì˜ ê´€ê³„ë¥¼ ì •í™•íˆ ìœ ì§€í•´ì•¼ í•¨.
     ID_XID      mXid;
     
     //BUG-25020
     mmcSession *mAssocSession;
     
     /* BUG-29078 
-     * XA_ACTIVE »óÅÂ¿¡¼­ XA_ROLLBACKÀ» ¼ö½ÅÇÒ °æ¿ì¿¡ Heuristic XA END¸¦ ¼öÇàÇØ¾ß ÇÏ¸ç,
-     * Heuristic XA END¸¦ Ã³¸®ÇØ¾ßÇÏ´ÂÁö ¿©ºÎ
+     * XA_ACTIVE ìƒíƒœì—ì„œ XA_ROLLBACKì„ ìˆ˜ì‹ í•  ê²½ìš°ì— Heuristic XA ENDë¥¼ ìˆ˜í–‰í•´ì•¼ í•˜ë©°,
+     * Heuristic XA ENDë¥¼ ì²˜ë¦¬í•´ì•¼í•˜ëŠ”ì§€ ì—¬ë¶€
      */
     idBool        mHeuristicXaEnd;
     
@@ -170,7 +170,7 @@ inline mmdXaState mmdXid::getState()
 inline void mmdXid::setState(mmdXaState aState)
 {
     mState          = aState;
-    mStateStartTime = mmtSessionManager::getBaseTime();         //BUG-25078 - State°¡ º¯°æµÈ ½Ã°¢ Á¤º¸
+    mStateStartTime = mmtSessionManager::getBaseTime();         //BUG-25078 - Stateê°€ ë³€ê²½ëœ ì‹œê° ì •ë³´
 }
 
 
@@ -200,7 +200,7 @@ inline void mmdXid::unlock()
     IDE_ASSERT(mMutex->mMutex.unlock() == IDE_SUCCESS);
 }
 
-// fix BUG-23306 XA ¼¼¼Ç Á¾·á½Ã ÀÚ½ÅÀÌ »ı¼ºÇÑ XID¸¸ rollback Ã³¸® ÇØ¾ßÇÕ´Ï´Ù.
+// fix BUG-23306 XA ì„¸ì…˜ ì¢…ë£Œì‹œ ìì‹ ì´ ìƒì„±í•œ XIDë§Œ rollback ì²˜ë¦¬ í•´ì•¼í•©ë‹ˆë‹¤.
 inline mmcSessID mmdXid::getAssocSessionID()
 {
     return mAssocSessionID;

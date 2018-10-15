@@ -30,48 +30,48 @@
 #include <smu.h>
 
 /*
-  [Âü°í] SMM¾È¿¡¼­ÀÇ File°£ÀÇ Layer¹× ¿ªÇÒÀº ´ÙÀ½°ú °°´Ù.
-         ÇÏÀ§ LayerÀÇ ÄÚµå¿¡¼­´Â »óÀ§ LayerÀÇ ÄÚµå¸¦ »ç¿ëÇÒ ¼ö ¾ø´Ù.
+  [ì°¸ê³ ] SMMì•ˆì—ì„œì˜ Fileê°„ì˜ Layerë° ì—­í• ì€ ë‹¤ìŒê³¼ ê°™ë‹¤.
+         í•˜ìœ„ Layerì˜ ì½”ë“œì—ì„œëŠ” ìƒìœ„ Layerì˜ ì½”ë“œë¥¼ ì‚¬ìš©í•  ìˆ˜ ì—†ë‹¤.
 
   ----------------------------------------------------------------------------
-  smmTBSCreate          ; Create Tablespace ±¸Çö
-  smmTBSDrop            ; Drop Tablespace ±¸Çö
-  smmTBSAlterAutoExtend ; Alter Tablespace Auto Extend ±¸Çö
-  smmTBSAlterChkptPath  ; Alter Tablespace Add/Rename/Drop Checkpoint Path±¸Çö
-  smmTBSAlterDiscard    ; Alter Tablespace Discard ±¸Çö
-  smmTBSStartupShutdown ; Startup, Shutdown½ÃÀÇ Tablespace°ü·Ã Ã³¸®¸¦ ±¸Çö
+  smmTBSCreate          ; Create Tablespace êµ¬í˜„
+  smmTBSDrop            ; Drop Tablespace êµ¬í˜„
+  smmTBSAlterAutoExtend ; Alter Tablespace Auto Extend êµ¬í˜„
+  smmTBSAlterChkptPath  ; Alter Tablespace Add/Rename/Drop Checkpoint Pathêµ¬í˜„
+  smmTBSAlterDiscard    ; Alter Tablespace Discard êµ¬í˜„
+  smmTBSStartupShutdown ; Startup, Shutdownì‹œì˜ Tablespaceê´€ë ¨ ì²˜ë¦¬ë¥¼ êµ¬í˜„
   ----------------------------------------------------------------------------
-  smmTBSChkptPath  ; TablespaceÀÇ Checkpoint Path °ü¸®
-  smmTBSMultiPhase ; TablespaceÀÇ ´Ù´Ü°è ÃÊ±âÈ­
+  smmTBSChkptPath  ; Tablespaceì˜ Checkpoint Path ê´€ë¦¬
+  smmTBSMultiPhase ; Tablespaceì˜ ë‹¤ë‹¨ê³„ ì´ˆê¸°í™”
   ----------------------------------------------------------------------------
-  smmManager       ; TablespaceÀÇ ³»ºÎ ±¸Çö 
-  smmFPLManager    ; Tablespace Free Page ListÀÇ ³»ºÎ ±¸Çö
-  smmExpandChunk   ; ChunkÀÇ ³»ºÎ±¸Á¶ ±¸Çö
+  smmManager       ; Tablespaceì˜ ë‚´ë¶€ êµ¬í˜„ 
+  smmFPLManager    ; Tablespace Free Page Listì˜ ë‚´ë¶€ êµ¬í˜„
+  smmExpandChunk   ; Chunkì˜ ë‚´ë¶€êµ¬ì¡° êµ¬í˜„
   ----------------------------------------------------------------------------
   
-  c.f> Memory TablespaceÀÇ Alter Online/OfflineÀº smp layer¿¡ ±¸ÇöµÇ¾î ÀÖ´Ù.
+  c.f> Memory Tablespaceì˜ Alter Online/Offlineì€ smp layerì— êµ¬í˜„ë˜ì–´ ìˆë‹¤.
 */
 
 
 /*
-   Create Memory Tablespace ±¸Çö
+   Create Memory Tablespace êµ¬í˜„
  */
 class smmTBSCreate
 {
 public :
-    // »ı¼ºÀÚ (¾Æ¹«°Íµµ ¾ÈÇÔ)
+    // ìƒì„±ì (ì•„ë¬´ê²ƒë„ ì•ˆí•¨)
     smmTBSCreate();
 
     ////////////////////////////////////////////////////////////////////
-    // ÀÎÅÍÆäÀÌ½º ÇÔ¼ö ( smiTableSpace¿¡¼­ ¹Ù·Î È£Ãâ )
+    // ì¸í„°í˜ì´ìŠ¤ í•¨ìˆ˜ ( smiTableSpaceì—ì„œ ë°”ë¡œ í˜¸ì¶œ )
     ////////////////////////////////////////////////////////////////////
     // PROJ-1923 ALTIBASE HDB Disaster Recovery
-    // »ç¿ëÀÚ Å×ÀÌºí ½ºÆäÀÌ½º¸¦ »ı¼ºÇÑ´Ù.
+    // ì‚¬ìš©ì í…Œì´ë¸” ìŠ¤í˜ì´ìŠ¤ë¥¼ ìƒì„±í•œë‹¤.
     static IDE_RC createTBS4Redo( void                 * aTrans,
                                   smiTableSpaceAttr    * aTBSAttr,
                                   smiChkptPathAttrList * aChkptPathList );
  
-    // »ç¿ëÀÚ Å×ÀÌºí ½ºÆäÀÌ½º¸¦ »ı¼ºÇÑ´Ù.
+    // ì‚¬ìš©ì í…Œì´ë¸” ìŠ¤í˜ì´ìŠ¤ë¥¼ ìƒì„±í•œë‹¤.
     static IDE_RC createTBS( void                 * aTrans,
                              SChar                * aDBName,
                              SChar                * aTBSName,
@@ -89,18 +89,18 @@ public :
                              scSpaceID            * aTBSID );
     
 public :
-    // Tablespace¸¦ CreateÇÑ Tx°¡ CommitµÇ¾úÀ» ¶§ ºÒ¸®´Â PendingÇÔ¼ö
+    // Tablespaceë¥¼ Createí•œ Txê°€ Commitë˜ì—ˆì„ ë•Œ ë¶ˆë¦¬ëŠ” Pendingí•¨ìˆ˜
     static IDE_RC createTableSpacePending( idvSQL            * aStatistics, 
                                            sctTableSpaceNode * aTBSNode,
                                            sctPendingOp      * aPendingOp );
     
 private :
-    // »ç¿ëÀÚ°¡ Tablespace»ı¼ºÀ» À§ÇÑ ¿É¼ÇÀ» ÁöÁ¤ÇÏÁö ¾ÊÀº °æ¿ì
-    // ±âº»°ªÀ» ¼³Á¤ÇÏ´Â ÇÔ¼ö
+    // ì‚¬ìš©ìê°€ Tablespaceìƒì„±ì„ ìœ„í•œ ì˜µì…˜ì„ ì§€ì •í•˜ì§€ ì•Šì€ ê²½ìš°
+    // ê¸°ë³¸ê°’ì„ ì„¤ì •í•˜ëŠ” í•¨ìˆ˜
     static IDE_RC makeDefaultArguments( ULong  * aSplitFileSize,
                                         ULong  * aInitSize);
     
-    //  Tablespace Attribute¸¦ ÃÊ±âÈ­ ÇÑ´Ù.
+    //  Tablespace Attributeë¥¼ ì´ˆê¸°í™” í•œë‹¤.
     static IDE_RC initializeTBSAttr( smiTableSpaceAttr    * aTBSAttr,
                                      scSpaceID              aSpaceID,
                                      smiTableSpaceType      aType,
@@ -110,33 +110,33 @@ private :
                                      ULong                  aInitSize);
     
 
-    // Tablespace Attribute¿¡ ´ëÇÑ ¿¡·¯Ã¼Å©¸¦ ½Ç½ÃÇÑ´Ù.
+    // Tablespace Attributeì— ëŒ€í•œ ì—ëŸ¬ì²´í¬ë¥¼ ì‹¤ì‹œí•œë‹¤.
     static IDE_RC checkErrorOfTBSAttr( SChar * aTBSName, 
                                        ULong   aSplitFileSize,
                                        ULong   aInitSize);
 
-    // »ç¿ëÀÚ°¡ ÁöÁ¤ÇÑ, È¤Àº ½Ã½ºÅÛÀÇ ±âº» Checkpoint Path¸¦
-    // Tablespace¿¡ Ãß°¡ÇÑ´Ù.
+    // ì‚¬ìš©ìê°€ ì§€ì •í•œ, í˜¹ì€ ì‹œìŠ¤í…œì˜ ê¸°ë³¸ Checkpoint Pathë¥¼
+    // Tablespaceì— ì¶”ê°€í•œë‹¤.
     static IDE_RC createDefaultOrUserChkptPaths(
                       smmTBSNode           * aTBSNode,
                       smiChkptPathAttrList * aChkptPathAttrList );
     
 
-    // ÇÏ³ª È¤Àº ±× ÀÌ»óÀÇ Checkpoint Path¸¦ TBSNodeÀÇ Tail¿¡ Ãß°¡ÇÑ´Ù.
+    // í•˜ë‚˜ í˜¹ì€ ê·¸ ì´ìƒì˜ Checkpoint Pathë¥¼ TBSNodeì˜ Tailì— ì¶”ê°€í•œë‹¤.
     static IDE_RC createChkptPathNodes( smmTBSNode           * aTBSNode,
                                         smiChkptPathAttrList * aChkptPathList );
     
     
-    // »õ·Î¿î  Tablespace°¡ »ç¿ëÇÒ Tablespace ID¸¦ ÇÒ´ç¹Ş´Â´Ù.
+    // ìƒˆë¡œìš´  Tablespaceê°€ ì‚¬ìš©í•  Tablespace IDë¥¼ í• ë‹¹ë°›ëŠ”ë‹¤.
     static IDE_RC allocNewTBSID( scSpaceID * aSpaceID );
 
-    // Tablespace¸¦ »ı¼ºÇÏ°í »ı¼ºÀÌ ¿Ï·áµÇ¸é NTA·Î ¹­´Â´Ù.
+    // Tablespaceë¥¼ ìƒì„±í•˜ê³  ìƒì„±ì´ ì™„ë£Œë˜ë©´ NTAë¡œ ë¬¶ëŠ”ë‹¤.
     static IDE_RC createTBSWithNTA4Redo(
                     void                  * aTrans,
                     smiTableSpaceAttr     * aTBSAttr,
                     smiChkptPathAttrList  * aChkptPathList );
     
-    // Tablespace¸¦ »ı¼ºÇÏ°í »ı¼ºÀÌ ¿Ï·áµÇ¸é NTA·Î ¹­´Â´Ù.
+    // Tablespaceë¥¼ ìƒì„±í•˜ê³  ìƒì„±ì´ ì™„ë£Œë˜ë©´ NTAë¡œ ë¬¶ëŠ”ë‹¤.
     static IDE_RC createTBSWithNTA(
                       void                  * aTrans,
                       SChar                 * aDBName,
@@ -147,13 +147,13 @@ private :
                       SChar                 * aNationalCharSet,
                       smmTBSNode           ** aCreatedTBSNode);
 
-    // Tablespace¸¦ ½Ã½ºÅÛ¿¡ µî·ÏÇÏ°í ³»ºÎ ÀÚ·á±¸Á¶¸¦ »ı¼ºÇÑ´Ù.
+    // Tablespaceë¥¼ ì‹œìŠ¤í…œì— ë“±ë¡í•˜ê³  ë‚´ë¶€ ìë£Œêµ¬ì¡°ë¥¼ ìƒì„±í•œë‹¤.
     static IDE_RC createTBSInternal4Redo(
                       void                 * aTrans,
                       smmTBSNode           * aTBSNode,
                       smiChkptPathAttrList * aChkptPathAttrList );
    
-    // Tablespace¸¦ ½Ã½ºÅÛ¿¡ µî·ÏÇÏ°í ³»ºÎ ÀÚ·á±¸Á¶¸¦ »ı¼ºÇÑ´Ù.
+    // Tablespaceë¥¼ ì‹œìŠ¤í…œì— ë“±ë¡í•˜ê³  ë‚´ë¶€ ìë£Œêµ¬ì¡°ë¥¼ ìƒì„±í•œë‹¤.
     static IDE_RC createTBSInternal(
                       void                 * aTrans,
                       smmTBSNode           * aTBSNode,
@@ -163,23 +163,23 @@ private :
                       SChar                * aDBCharSet,
                       SChar                * aNationalCharSet);
 
-    // smmTBSNode¸¦ »ı¼ºÇÏ°í X LockÀ» È¹µæÇÑ ÈÄ
-    // sctTableSpaceMgr¿¡ µî·ÏÇÑ´Ù.
+    // smmTBSNodeë¥¼ ìƒì„±í•˜ê³  X Lockì„ íšë“í•œ í›„
+    // sctTableSpaceMgrì— ë“±ë¡í•œë‹¤.
     static IDE_RC allocAndInitTBSNode(
                       void                * aTrans,
                       smiTableSpaceAttr   * aTBSAttr,
                       smmTBSNode         ** aCreatedTBSNode );
 
-    // Tablespace Node¸¦ ´Ù´Ü°è ÇØÁ¦¼öÇàÈÄ freeÇÑ´Ù.
+    // Tablespace Nodeë¥¼ ë‹¤ë‹¨ê³„ í•´ì œìˆ˜í–‰í›„ freeí•œë‹¤.
     static IDE_RC finiAndFreeTBSNode( smmTBSNode * aTBSNode );
     
-    // ´Ù¸¥ TransactionµéÀÌ TablespaceÀÌ¸§À¸·Î Tablespace¸¦ Ã£À» ¼ö ÀÖµµ·Ï
-    // ½Ã½ºÅÛ¿¡ µî·ÏÇÑ´Ù.
+    // ë‹¤ë¥¸ Transactionë“¤ì´ Tablespaceì´ë¦„ìœ¼ë¡œ Tablespaceë¥¼ ì°¾ì„ ìˆ˜ ìˆë„ë¡
+    // ì‹œìŠ¤í…œì— ë“±ë¡í•œë‹¤.
     static IDE_RC registerTBS( smmTBSNode * aTBSNode );
     
 
-    // Tablespace Node¿Í ±×¿¡ ¼ÓÇÑ Checkpoint Path NodeµéÀ» ¸ğµÎ
-    // Log Anchor¿¡ FlushÇÑ´Ù.
+    // Tablespace Nodeì™€ ê·¸ì— ì†í•œ Checkpoint Path Nodeë“¤ì„ ëª¨ë‘
+    // Log Anchorì— Flushí•œë‹¤.
     static IDE_RC flushTBSAndCPaths(smmTBSNode * aTBSNode);
     
 

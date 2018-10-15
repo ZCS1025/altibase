@@ -38,10 +38,10 @@ smSN rpxSender::getNextRestartSN()
     smSN sTmpSN = SM_SN_NULL;
 
     mReplicator.getMinTransFirstSN( &sRestartSN );
-    if(sRestartSN == SM_SN_NULL)    // Transaction TableÀÌ ºñ¾úÀ» °æ¿ì
+    if(sRestartSN == SM_SN_NULL)    // Transaction Tableì´ ë¹„ì—ˆì„ ê²½ìš°
     {
-        // mXSNÀ» »ç¿ëÇÏ¸é, Active TransactionÀÌ ¾øÀ» ¶§ Restart SNÀÌ ¸Å¿ì ºó¹øÇÏ°Ô °»½ÅµÈ´Ù.
-        // (mXSN Áõ°¡ -> mXSN Àü¼Û -> ACK ¼ö½Å -> Restart SN °»½Å -> mXSN Áõ°¡ -> ...)
+        // mXSNì„ ì‚¬ìš©í•˜ë©´, Active Transactionì´ ì—†ì„ ë•Œ Restart SNì´ ë§¤ìš° ë¹ˆë²ˆí•˜ê²Œ ê°±ì‹ ëœë‹¤.
+        // (mXSN ì¦ê°€ -> mXSN ì „ì†¡ -> ACK ìˆ˜ì‹  -> Restart SN ê°±ì‹  -> mXSN ì¦ê°€ -> ...)
         sRestartSN = mCommitXSN;
     }
     if(isParallelParent() == ID_TRUE)
@@ -130,8 +130,8 @@ IDE_RC rpxSender::addXLogKeepAlive()
 }
 
 /***********************************************************************
- * Description : Network¸¦ Á¾·áÇÏÁö ¾Ê°í Handshake¸¦ ´Ù½Ã ¼öÇàÇÔÀ»
- *              Receiver¿¡ ¾Ë¸°´Ù.
+ * Description : Networkë¥¼ ì¢…ë£Œí•˜ì§€ ì•Šê³  Handshakeë¥¼ ë‹¤ì‹œ ìˆ˜í–‰í•¨ì„
+ *              Receiverì— ì•Œë¦°ë‹¤.
  *
  ***********************************************************************/
 IDE_RC rpxSender::addXLogHandshake()
@@ -183,8 +183,8 @@ IDE_RC rpxSender::addXLogHandshake()
 }
 
 /******************************************************************************
- * Description : Incremental Sync Primary Key Begin¸¦ Àü¼ÛÇÏ¿©,
- *               Incremental Sync¸¦ À§ÇÑ Primary Key¸¦ Àü¼ÛÇÒ °ÍÀÓÀ» ¾Ë¸°´Ù.
+ * Description : Incremental Sync Primary Key Beginë¥¼ ì „ì†¡í•˜ì—¬,
+ *               Incremental Syncë¥¼ ìœ„í•œ Primary Keyë¥¼ ì „ì†¡í•  ê²ƒìž„ì„ ì•Œë¦°ë‹¤.
  *               (Failback Slave -> Failback Master)
  *
  ******************************************************************************/
@@ -228,8 +228,8 @@ IDE_RC rpxSender::addXLogSyncPKBegin()
 }
 
 /******************************************************************************
- * Description : Incremental Sync Primary Key End¸¦ Àü¼ÛÇÏ¿©,
- *               Incremental Sync¸¦ À§ÇÑ Primary Key°¡ ´õ ÀÌ»ó ¾øÀ½À» ¾Ë¸°´Ù.
+ * Description : Incremental Sync Primary Key Endë¥¼ ì „ì†¡í•˜ì—¬,
+ *               Incremental Syncë¥¼ ìœ„í•œ Primary Keyê°€ ë” ì´ìƒ ì—†ìŒì„ ì•Œë¦°ë‹¤.
  *               (Failback Slave -> Failback Master)
  *
  ******************************************************************************/
@@ -273,7 +273,7 @@ IDE_RC rpxSender::addXLogSyncPKEnd()
 }
 
 /******************************************************************************
- * Description : Failback End¸¦ Àü¼ÛÇÏ¿©, FailbackÀÌ ¿Ï·áµÇ¾úÀ½À» ¾Ë¸°´Ù.
+ * Description : Failback Endë¥¼ ì „ì†¡í•˜ì—¬, Failbackì´ ì™„ë£Œë˜ì—ˆìŒì„ ì•Œë¦°ë‹¤.
  *               (Failback Master -> Failback Slave)
  *
  ******************************************************************************/
@@ -322,7 +322,7 @@ IDE_RC rpxSender::addXLogAckOnDML()
 }
 
 /*******************************************************************************
- * Description : Incremental Sync RowÀ» Àü¼ÛÇÑ´Ù.
+ * Description : Incremental Sync Rowì„ ì „ì†¡í•œë‹¤.
  *               (Failback Master -> Failback Slave)
  *
  ******************************************************************************/
@@ -340,7 +340,7 @@ IDE_RC rpxSender::addXLogSyncRow(rpdSyncPKEntry *aSyncPKEntry)
 
     IDE_TEST_RAISE( checkHBTFault() != IDE_SUCCESS, NORMAL_EXIT);
 
-    // Delete¸¦ Àü¼ÛÇÑ´Ù.
+    // Deleteë¥¼ ì „ì†¡í•œë‹¤.
     sRC = mMessenger.sendXLogDelete( aSyncPKEntry->mTableOID,
                                      aSyncPKEntry->mPKColCnt,
                                      aSyncPKEntry->mPKCols,
@@ -353,7 +353,7 @@ IDE_RC rpxSender::addXLogSyncRow(rpdSyncPKEntry *aSyncPKEntry)
                         ERR_NETWORK);
         IDE_RAISE(ERR_ETC);
     }
-    // Row°¡ ÀÖÀ¸¸é, Insert(LOB Æ÷ÇÔ)¸¦ Àü¼ÛÇÑ´Ù.
+    // Rowê°€ ìžˆìœ¼ë©´, Insert(LOB í¬í•¨)ë¥¼ ì „ì†¡í•œë‹¤.
     sRC = syncRow(sMetaItem, aSyncPKEntry->mPKCols);
 
     if(sRC != IDE_SUCCESS)
@@ -386,7 +386,7 @@ IDE_RC rpxSender::addXLogSyncRow(rpdSyncPKEntry *aSyncPKEntry)
 }
 
 /*******************************************************************************
- * Description : Incremental Sync CommitÀ» Àü¼ÛÇÑ´Ù.
+ * Description : Incremental Sync Commitì„ ì „ì†¡í•œë‹¤.
  *               (Failback Master -> Failback Slave)
  *
  ******************************************************************************/
@@ -430,7 +430,7 @@ IDE_RC rpxSender::addXLogSyncCommit()
 }
 
 /*******************************************************************************
- * Description : Incremental Sync Abort¸¦ Àü¼ÛÇÑ´Ù.
+ * Description : Incremental Sync Abortë¥¼ ì „ì†¡í•œë‹¤.
  *               (Failback Master -> Failback Slave)
  *
  ******************************************************************************/
@@ -474,7 +474,7 @@ IDE_RC rpxSender::addXLogSyncAbort()
 }
 
 /***********************************************************************
- * Description : Row¸¦ SelectÇÏ°í, ÀÖÀ¸¸é Insert(LOB Æ÷ÇÔ)·Î Àü¼ÛÇÑ´Ù.
+ * Description : Rowë¥¼ Selectí•˜ê³ , ìžˆìœ¼ë©´ Insert(LOB í¬í•¨)ë¡œ ì „ì†¡í•œë‹¤.
  *
  **********************************************************************/
 IDE_RC rpxSender::syncRow(rpdMetaItem *aMetaItem,
@@ -533,7 +533,7 @@ IDE_RC rpxSender::syncRow(rpdMetaItem *aMetaItem,
               != IDE_SUCCESS );
     sTxStage = 3;
 
-    // TableÀ» Á¢±ÙÇÏ±â Àü¿¡ IS LOCKÀ» Àâ´Â´Ù.
+    // Tableì„ ì ‘ê·¼í•˜ê¸° ì „ì— IS LOCKì„ ìž¡ëŠ”ë‹¤.
     IDE_TEST( aMetaItem->lockReplItem( &sTrans,
                                        &sSmiStmt,
                                        SMI_TBSLV_DDL_DML,
@@ -544,7 +544,7 @@ IDE_RC rpxSender::syncRow(rpdMetaItem *aMetaItem,
     sTable = (void *)smiGetTable( (smOID)aMetaItem->mItem.mTableOID );
     sSCN   = smiGetRowSCN(sTable);
 
-    // Table OID¿Í PK·Î Key Range¸¦ ¾ò´Â´Ù.
+    // Table OIDì™€ PKë¡œ Key Rangeë¥¼ ì–»ëŠ”ë‹¤.
     IDE_TEST( getKeyRange( (smOID)aMetaItem->mItem.mTableOID,
                            aPKCols,
                            &sKeyRange,
@@ -558,20 +558,20 @@ IDE_RC rpxSender::syncRow(rpdMetaItem *aMetaItem,
     if((SMI_MISC_TABLE_HEADER(sTable)->mFlag & SMI_TABLE_TYPE_MASK)
        == SMI_TABLE_DISK)
     {
-        /* PROJ-1705 Fetch Column List¸¦ À§ÇÑ ¸Þ¸ð¸® ÇÒ´ç */
+        /* PROJ-1705 Fetch Column Listë¥¼ ìœ„í•œ ë©”ëª¨ë¦¬ í• ë‹¹ */
         IDE_TEST_RAISE(iduMemMgr::malloc(IDU_MEM_RP_RPX_SENDER,
                                          ID_SIZEOF(smiFetchColumnList) * sColCount,
                                          (void **)&sFetchColumnList,
                                          IDU_MEM_IMMEDIATE)
                        != IDE_SUCCESS, ERR_MEMORY_ALLOC_FETCH_COLUMN_LIST);
 
-        // PROJ-1705 Fetch Column List ±¸¼º
+        // PROJ-1705 Fetch Column List êµ¬ì„±
         IDE_TEST(makeFetchColumnList((smOID)aMetaItem->mItem.mTableOID,
                                      sFetchColumnList)
                  != IDE_SUCCESS);
     }
 
-    // smiCursorProperties¿¡ fetch Column List Á¤º¸ ¼³Á¤
+    // smiCursorPropertiesì— fetch Column List ì •ë³´ ì„¤ì •
     sProperty.mFetchColumnList = sFetchColumnList;
 
     sCursor.initialize();
@@ -595,12 +595,12 @@ IDE_RC rpxSender::syncRow(rpdMetaItem *aMetaItem,
     if((SMI_MISC_TABLE_HEADER(sTable)->mFlag & SMI_TABLE_TYPE_MASK)
        == SMI_TABLE_DISK)
     {
-        /* ¸Þ¸ð¸® ÇÒ´çÀ» À§ÇØ¼­, ÇöÀç ÀÐ¾î¾ß ÇÒ RowÀÇ size¸¦ ¸ÕÀú ¾ò¾î¿Í¾ß ÇÔ */
+        /* ë©”ëª¨ë¦¬ í• ë‹¹ì„ ìœ„í•´ì„œ, í˜„ìž¬ ì½ì–´ì•¼ í•  Rowì˜ sizeë¥¼ ë¨¼ì € ì–»ì–´ì™€ì•¼ í•¨ */
         IDE_TEST(qciMisc::getDiskRowSize(sTable,
                                          &sRowSize)
                  != IDE_SUCCESS);
 
-        /* Row¸¦ ÀúÀåÇÒ Memory¸¦ ÇÒ´çÇØ¾ß ÇÔ */
+        /* Rowë¥¼ ì €ìž¥í•  Memoryë¥¼ í• ë‹¹í•´ì•¼ í•¨ */
         IDE_TEST_RAISE(iduMemMgr::calloc(IDU_MEM_RP_RPX_SENDER,
                                          1,
                                          sRowSize,
@@ -611,7 +611,7 @@ IDE_RC rpxSender::syncRow(rpdMetaItem *aMetaItem,
         sRow = (void *)sRealRow;
     }
 
-    /* mtcColumnÀ» À§ÇÑ Memory¸¦ ÇÒ´çÇØ¾ß ÇÔ */
+    /* mtcColumnì„ ìœ„í•œ Memoryë¥¼ í• ë‹¹í•´ì•¼ í•¨ */
     IDE_TEST_RAISE(iduMemMgr::calloc(IDU_MEM_RP_RPX_SENDER,
                                      sColCount,
                                      ID_SIZEOF(mtcColumn),
@@ -619,7 +619,7 @@ IDE_RC rpxSender::syncRow(rpdMetaItem *aMetaItem,
                                      IDU_MEM_IMMEDIATE)
                    != IDE_SUCCESS, ERR_MEMORY_ALLOC_MTC_COL);
 
-    /* mtcColumn Á¤º¸ÀÇ copyº»À» »ý¼º */
+    /* mtcColumn ì •ë³´ì˜ copyë³¸ì„ ìƒì„± */
     IDE_TEST(qciMisc::copyMtcColumns( sTable, sMtcCol ) != IDE_SUCCESS);
 
     if((SMI_MISC_TABLE_HEADER(sTable)->mFlag & SMI_TABLE_TYPE_MASK)
@@ -630,7 +630,7 @@ IDE_RC rpxSender::syncRow(rpdMetaItem *aMetaItem,
         {
             sColumn = sMtcCol + i;
             // To fix BUG-24356
-            // geometry¿¡ ´ëÇØ¼­¸¸ bufferÇÒ´ç
+            // geometryì— ëŒ€í•´ì„œë§Œ bufferí• ë‹¹
             if( ( (sColumn->column.flag & SMI_COLUMN_TYPE_MASK)
                    == SMI_COLUMN_TYPE_VARIABLE_LARGE ) &&
                 (sColumn->module->id == MTD_GEOMETRY_ID) )
@@ -658,7 +658,7 @@ IDE_RC rpxSender::syncRow(rpdMetaItem *aMetaItem,
                 sColumn = sMtcCol + i;
 
                 // To fix BUG-24356
-                // geometry¿¡ ´ëÇØ¼­¸¸ value bufferÇÒ´ç
+                // geometryì— ëŒ€í•´ì„œë§Œ value bufferí• ë‹¹
                 if ( ( (sColumn->column.flag & SMI_COLUMN_TYPE_MASK)
                        == SMI_COLUMN_TYPE_VARIABLE_LARGE ) &&
                      (sColumn->module->id == MTD_GEOMETRY_ID) )

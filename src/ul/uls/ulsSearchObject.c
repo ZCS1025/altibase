@@ -16,7 +16,7 @@
 
 /***********************************************************************
  *
- * Spatio-Temporal Date °Ë»ö ÇÔ¼ö
+ * Spatio-Temporal Date ê²€ìƒ‰ í•¨ìˆ˜
  *
  ***********************************************************************/
 
@@ -34,7 +34,7 @@
  *
  * Description:
  *
- *   Geometry °´Ã¼ Å¸ÀÔÀ» ¾ò¾î¿Â´Ù.
+ *   Geometry ê°ì²´ íƒ€ì…ì„ ì–»ì–´ì˜¨ë‹¤.
  *
  * Implementation:
  *
@@ -58,7 +58,7 @@ ulsGetGeometryType( ulsHandle               * aHandle,
     ACI_TEST_RAISE( aGeometry  == NULL, ERR_NULL_PARAMETER );
     ACI_TEST_RAISE( aGeoType   == NULL, ERR_NULL_PARAMETER );
 
-    /* Type ¾ò¾î¿À±â*/
+    /* Type ì–»ì–´ì˜¤ê¸°*/
     ACI_TEST_RAISE( ulsGetGeoType( aHandle,
                                    (stdGeometryHeader*)aGeometry,
                                    &sGeoType )
@@ -66,7 +66,7 @@ ulsGetGeometryType( ulsHandle               * aHandle,
                     ERR_INVALID_GEOMETRY );
 
 
-    /* °á°ú°ª ¼³Á¤*/
+    /* ê²°ê³¼ê°’ ì„¤ì •*/
     *aGeoType = sGeoType;
     
     return ACS_SUCCESS;
@@ -96,7 +96,7 @@ ulsGetGeometryType( ulsHandle               * aHandle,
  *
  * Description:
  *
- *   Geometry °´Ã¼ÀÇ Å©±â¸¦ ±¸ÇÑ´Ù.
+ *   Geometry ê°ì²´ì˜ í¬ê¸°ë¥¼ êµ¬í•œë‹¤.
  *
  * Implementation:
  *
@@ -228,7 +228,7 @@ ulsGetGeometrySize(  ulsHandle              * aHandle,
  *
  * Description:
  *
- *   Geometry °´Ã¼³»ÀÇ °¹¼ö¸¦ À» ¾ò¾î¿Â´Ù.
+ *   Geometry ê°ì²´ë‚´ì˜ ê°¯ìˆ˜ë¥¼ ì„ ì–»ì–´ì˜¨ë‹¤.
  *
  * Implementation:
  *   NULL or EMPTY Geometry       : [out] 0
@@ -262,7 +262,7 @@ ulsGetNumGeometries( ulsHandle               * aHandle,
 
     ACI_TEST( ulsCheckGeometry( aHandle, aGeometry ) != ACI_SUCCESS );
     
-    /* Type ¾ò¾î¿À±â*/
+    /* Type ì–»ì–´ì˜¤ê¸°*/
     ACI_TEST_RAISE( ulsGetGeoType( aHandle,
                                    (stdGeometryHeader*)aGeometry,
                                    &sGeoType )
@@ -326,7 +326,7 @@ ulsGetNumGeometries( ulsHandle               * aHandle,
  *
  * Description:
  *
- *   N¹øÂ° Geometry °´Ã¼³»ÀÇ ÇÏÀ§ Geomtry¸¦ ¾ò¾î¿Â´Ù.
+ *   Në²ˆì§¸ Geometry ê°ì²´ë‚´ì˜ í•˜ìœ„ Geomtryë¥¼ ì–»ì–´ì˜¨ë‹¤.
  *
  * Implementation:
  *   NULL or EMPTY Geometry       : Error: NOT_APPLCABLE_GEOMETRY_TYPE
@@ -367,7 +367,7 @@ ulsGetGeometryN( ulsHandle               * aHandle,
     ACI_TEST_RAISE( aNth<1 , ERR_INVALID_RANGE_PARAMETER );
 
     
-    /* Type ¾ò¾î¿À±â*/
+    /* Type ì–»ì–´ì˜¤ê¸°*/
     ACI_TEST_RAISE( ulsGetGeoType( aHandle,
                                    (stdGeometryHeader*)aGeometry,
                                    &sGeoType )
@@ -448,7 +448,7 @@ ulsGetGeometryN( ulsHandle               * aHandle,
  *
  * Description:
  *
- *   Polygon Geometry °´Ã¼³»ÀÇ ExteriorRingÀ» ¾ò¾î¿Â´Ù.
+ *   Polygon Geometry ê°ì²´ë‚´ì˜ ExteriorRingì„ ì–»ì–´ì˜¨ë‹¤.
  *
  * Implementation:
  * Return :
@@ -478,14 +478,14 @@ ulsGetExteriorRing2D( ulsHandle                * aHandle,
     
     ACI_TEST_RAISE( aLinearRing == NULL, ERR_NULL_PARAMETER );
                     
-    /* Type ¾ò¾î¿À±â*/
+    /* Type ì–»ì–´ì˜¤ê¸°*/
     ACI_TEST_RAISE( ulsGetGeoType( aHandle,
                                    (stdGeometryHeader*) aPolygon,
                                    &sGeoType )
                     != ACI_SUCCESS,
                     ERR_INVALID_GEOMETRY );
 
-    /* Type°Ë»çÇÏ±â*/
+    /* Typeê²€ì‚¬í•˜ê¸°*/
     ACI_TEST_RAISE( sGeoType != STD_POLYGON_2D_TYPE,
                     ERR_NOT_APPLICABLE_GEOMETRY_TYPE );
 
@@ -524,7 +524,7 @@ ulsGetExteriorRing2D( ulsHandle                * aHandle,
  *
  * Description:
  *
- *   Polygon Geometry °´Ã¼³»ÀÇ ExteriorRing °¹¼ö¸¦ ¾ò¾î¿Â´Ù.
+ *   Polygon Geometry ê°ì²´ë‚´ì˜ ExteriorRing ê°¯ìˆ˜ë¥¼ ì–»ì–´ì˜¨ë‹¤.
  *
  * Implementation:
  * Return :
@@ -554,14 +554,14 @@ ulsGetNumInteriorRing2D( ulsHandle               * aHandle,
     
     ACI_TEST_RAISE( aNumInterinor == NULL, ERR_NULL_PARAMETER );
                     
-    /* Type ¾ò¾î¿À±â*/
+    /* Type ì–»ì–´ì˜¤ê¸°*/
     ACI_TEST_RAISE( ulsGetGeoType( aHandle,
                                    (stdGeometryHeader*)aPolygon,
                                    &sGeoType )
                     != ACI_SUCCESS,
                     ERR_INVALID_GEOMETRY );
 
-    /* Type°Ë»çÇÏ±â*/
+    /* Typeê²€ì‚¬í•˜ê¸°*/
     ACI_TEST_RAISE( sGeoType != STD_POLYGON_2D_TYPE,
                     ERR_NOT_APPLICABLE_GEOMETRY_TYPE );
     
@@ -598,7 +598,7 @@ ulsGetNumInteriorRing2D( ulsHandle               * aHandle,
  *
  * Description:
  *
- *   Polygon Geometry °´Ã¼³»ÀÇ Nth InteriorRingÀ» ¾ò¾î¿Â´Ù.
+ *   Polygon Geometry ê°ì²´ë‚´ì˜ Nth InteriorRingì„ ì–»ì–´ì˜¨ë‹¤.
  *
  * Implementation:
  * Return :
@@ -633,14 +633,14 @@ ulsGetInteriorRingNPolygon2D( ulsHandle                * aHandle,
     
     ACI_TEST_RAISE( aLinearRing == NULL, ERR_NULL_PARAMETER );
                     
-    /* Type ¾ò¾î¿À±â*/
+    /* Type ì–»ì–´ì˜¤ê¸°*/
     ACI_TEST_RAISE( ulsGetGeoType( aHandle,
                                    (stdGeometryHeader*)aPolygon,
                                    &sGeoType )
                     != ACI_SUCCESS,
                     ERR_INVALID_GEOMETRY );
 
-    /* Type°Ë»çÇÏ±â*/
+    /* Typeê²€ì‚¬í•˜ê¸°*/
     ACI_TEST_RAISE( sGeoType != STD_POLYGON_2D_TYPE,
                     ERR_NOT_APPLICABLE_GEOMETRY_TYPE );
     
@@ -693,7 +693,7 @@ ulsGetInteriorRingNPolygon2D( ulsHandle                * aHandle,
  *
  * Description:
  *
- *   LineString GeometryÀÇ Point °¹¼ö¸¦ ¾ò¾î¿Â´Ù.
+ *   LineString Geometryì˜ Point ê°¯ìˆ˜ë¥¼ ì–»ì–´ì˜¨ë‹¤.
  *
  * Implementation:
  * Return :
@@ -723,14 +723,14 @@ ulsGetNumPointsLineString2D( ulsHandle                   * aHandle,
     
     ACI_TEST_RAISE( aNumPoints == NULL, ERR_NULL_PARAMETER );
                     
-    /* Type ¾ò¾î¿À±â*/
+    /* Type ì–»ì–´ì˜¤ê¸°*/
     ACI_TEST_RAISE( ulsGetGeoType( aHandle,
                                    (stdGeometryHeader*)aLineString,
                                    &sGeoType )
                     != ACI_SUCCESS,
                     ERR_INVALID_GEOMETRY );
 
-    /* Type°Ë»çÇÏ±â*/
+    /* Typeê²€ì‚¬í•˜ê¸°*/
     ACI_TEST_RAISE( sGeoType != STD_LINESTRING_2D_TYPE,
                     ERR_NOT_APPLICABLE_GEOMETRY_TYPE );
     
@@ -769,7 +769,7 @@ ulsGetNumPointsLineString2D( ulsHandle                   * aHandle,
  *
  * Description:
  *
- *   LineString N¹øÂ° Point¸¦ ¾ò¾î¿Â´Ù.
+ *   LineString Në²ˆì§¸ Pointë¥¼ ì–»ì–´ì˜¨ë‹¤.
  *
  * Implementation:
  * Return :
@@ -801,14 +801,14 @@ ulsGetPointNLineString2D( ulsHandle                   * aHandle,
     
     ACI_TEST_RAISE( aPoint == NULL, ERR_NULL_PARAMETER );
                     
-    /* Type ¾ò¾î¿À±â*/
+    /* Type ì–»ì–´ì˜¤ê¸°*/
     ACI_TEST_RAISE( ulsGetGeoType( aHandle,
                                    (stdGeometryHeader*)aLineString,
                                    &sGeoType )
                     != ACI_SUCCESS,
                     ERR_INVALID_GEOMETRY );
 
-    /* Type°Ë»çÇÏ±â*/
+    /* Typeê²€ì‚¬í•˜ê¸°*/
     ACI_TEST_RAISE( sGeoType != STD_LINESTRING_2D_TYPE,
                     ERR_NOT_APPLICABLE_GEOMETRY_TYPE );
 
@@ -854,7 +854,7 @@ ulsGetPointNLineString2D( ulsHandle                   * aHandle,
  *
  * Description:
  *
- *   LineString Points pointer¸¦ ¾ò¾î¿Â´Ù.
+ *   LineString Points pointerë¥¼ ì–»ì–´ì˜¨ë‹¤.
  *
  * Implementation:
  * Return :
@@ -884,14 +884,14 @@ ulsGetPointsLineString2D( ulsHandle                   * aHandle,
     
     ACI_TEST_RAISE( aPoints == NULL, ERR_NULL_PARAMETER );
                     
-    /* Type ¾ò¾î¿À±â*/
+    /* Type ì–»ì–´ì˜¤ê¸°*/
     ACI_TEST_RAISE( ulsGetGeoType( aHandle,
                                    (stdGeometryHeader*)aLineString,
                                    &sGeoType )
                     != ACI_SUCCESS,
                     ERR_INVALID_GEOMETRY );
 
-    /* Type°Ë»çÇÏ±â*/
+    /* Typeê²€ì‚¬í•˜ê¸°*/
     ACI_TEST_RAISE( sGeoType != STD_LINESTRING_2D_TYPE,
                     ERR_NOT_APPLICABLE_GEOMETRY_TYPE );
 
@@ -929,7 +929,7 @@ ulsGetPointsLineString2D( ulsHandle                   * aHandle,
  *
  * Description:
  *
- *   LinearRingÀÇ Point °¹¼ö¸¦ ¾ò¾î¿Â´Ù.
+ *   LinearRingì˜ Point ê°¯ìˆ˜ë¥¼ ì–»ì–´ì˜¨ë‹¤.
  *
  * Implementation:
  * Return :
@@ -977,7 +977,7 @@ ulsGetNumPointsLinearRing2D( ulsHandle                   * aHandle,
  *
  * Description:
  *
- *   LinearRingÀÇ N¹øÂ° Point¸¦ ¾ò¾î¿Â´Ù.
+ *   LinearRingì˜ Në²ˆì§¸ Pointë¥¼ ì–»ì–´ì˜¨ë‹¤.
  *
  * Implementation:
  * Return :
@@ -1037,7 +1037,7 @@ ulsGetPointNLinearRing2D( ulsHandle                   * aHandle,
  *
  * Description:
  *
- *   LinearRingÀÇ Points pointer¸¦ ¾ò¾î¿Â´Ù.
+ *   LinearRingì˜ Points pointerë¥¼ ì–»ì–´ì˜¨ë‹¤.
  *
  * Implementation:
  * Return :
@@ -1083,10 +1083,10 @@ ulsGetPointsLinearRing2D( ulsHandle                   * aHandle,
  *
  * Description: BUG-28091
  *
- *   WKB·ÎºÎÅÍ GeometryÀÇ Å©±â¸¦ ¾ò¾î ¿Â´Ù.
- *   ¿©±â¼­ »ç¿ë µÇ´Â Size´Â Precision + Geometry HeaderÀÇ Å©±âÀÌ´Ù.
- *   µû¶ó¼­ ÀÌ ÇÔ¼ö¸¦ ÅëÇØ ¿¹·Î MultiPolygonÀÌ 256ÀÇ Å©±â°¡ ³ª¿Ô´Ù¸é ½ÇÁ¦ÀÇ PRECISIONÀº
- *   Geometry Header Size(56)À» »« 200ÀÌ µÈ´Ù.
+ *   WKBë¡œë¶€í„° Geometryì˜ í¬ê¸°ë¥¼ ì–»ì–´ ì˜¨ë‹¤.
+ *   ì—¬ê¸°ì„œ ì‚¬ìš© ë˜ëŠ” SizeëŠ” Precision + Geometry Headerì˜ í¬ê¸°ì´ë‹¤.
+ *   ë”°ë¼ì„œ ì´ í•¨ìˆ˜ë¥¼ í†µí•´ ì˜ˆë¡œ MultiPolygonì´ 256ì˜ í¬ê¸°ê°€ ë‚˜ì™”ë‹¤ë©´ ì‹¤ì œì˜ PRECISIONì€
+ *   Geometry Header Size(56)ì„ ëº€ 200ì´ ëœë‹¤.
  *
  * Implementation:
  * Return :

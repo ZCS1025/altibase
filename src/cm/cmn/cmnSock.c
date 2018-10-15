@@ -206,12 +206,12 @@ ACI_RC cmnSockRecv(cmbBlock       *aBlock,
     acp_rc_t    sRC;
 
     /*
-     * aSize ÀÌ»ó aBlockÀ¸·Î µ¥ÀÌÅÍ ÀÐÀ½
+     * aSize ì´ìƒ aBlockìœ¼ë¡œ ë°ì´í„° ì½ìŒ
      */
     while (aBlock->mDataSize < aSize)
     {
         /*
-         * Dispatcher¸¦ ÀÌ¿ëÇÏ¿© Timeout ¸¸Å­ ´ë±â
+         * Dispatcherë¥¼ ì´ìš©í•˜ì—¬ Timeout ë§Œí¼ ëŒ€ê¸°
          */
         if (aTimeout != ACP_TIME_INFINITE)
         {
@@ -221,7 +221,7 @@ ACI_RC cmnSockRecv(cmbBlock       *aBlock,
         }
 
         /*
-         * SocketÀ¸·ÎºÎÅÍ ÀÐÀ½
+         * Socketìœ¼ë¡œë¶€í„° ì½ìŒ
          */
         sRC = acpSockRecv(aSock,
                           aBlock->mData + aBlock->mDataSize,
@@ -291,7 +291,7 @@ ACI_RC cmnSockSend(cmbBlock       *aBlock,
     while (aBlock->mCursor < aBlock->mDataSize)
     {
         /*
-         * Dispatcher¸¦ ÀÌ¿ëÇÏ¿© Timeout ¸¸Å­ ´ë±â
+         * Dispatcherë¥¼ ì´ìš©í•˜ì—¬ Timeout ë§Œí¼ ëŒ€ê¸°
          */
         if (aTimeout != ACP_TIME_INFINITE)
         {
@@ -301,7 +301,7 @@ ACI_RC cmnSockSend(cmbBlock       *aBlock,
         }
 
         /*
-         * socketÀ¸·Î µ¥ÀÌÅÍ ¾¸
+         * socketìœ¼ë¡œ ë°ì´í„° ì”€
          */
         sRC = acpSockSend(aSock,
                           aBlock->mData + aBlock->mCursor,

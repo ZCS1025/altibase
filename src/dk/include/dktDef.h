@@ -41,7 +41,7 @@
 #define DKT_2PC_MAXBQUALSIZE                    (4)      /* maximum size in bytes of bqual */
 #define DKT_2PC_XIDDATASIZE                     (DKT_2PC_MAXGTRIDSIZE + DKT_2PC_MAXBQUALSIZE)      /* size in bytes */
 
-#define DKT_2PC_XID_STRING_LEN                  (256)    /* XID_DATA_MAX_LEN ¬¸¡∂ */
+#define DKT_2PC_XID_STRING_LEN                  (256)    /* XID_DATA_MAX_LEN Ï∞∏Ï°∞ */
 
 /* -------------------------------------------------------------
  * Atomic transaction levels
@@ -163,7 +163,7 @@ typedef struct dktErrorInfo
 
 typedef struct dktShardNodeInfo
 {
-    // ¡¢º”¡§∫∏
+    // Ï†ëÏÜçÏ†ïÎ≥¥
     SChar     mNodeName[SDI_NODE_NAME_MAX_SIZE + 1];
     SChar     mUserName[QCI_MAX_OBJECT_NAME_LEN + 1];
     SChar     mUserPassword[IDS_MAX_PASSWORD_LEN + 1];

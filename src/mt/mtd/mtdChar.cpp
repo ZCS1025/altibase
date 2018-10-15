@@ -33,7 +33,7 @@ extern mtdModule mtdDouble;
 
 
 //------------------------------------------------------
-// mtdSelectivityChar()¸¦ À§ÇÑ ¸ÅÅ©·Î ½ÃÀÛ
+// mtdSelectivityChar()ë¥¼ ìœ„í•œ ë§¤í¬ë¡œ ì‹œì‘
 //------------------------------------------------------
 
 // numeric type of string
@@ -222,37 +222,37 @@ mtdModule mtdChar = {
     {
         // Key Comparison
         {
-            // mt valueµé °£ÀÇ compare
+            // mt valueë“¤ ê°„ì˜ compare
             mtdCharFixedMtdFixedMtdKeyAscComp, // Ascending Key Comparison
             mtdCharFixedMtdFixedMtdKeyDescComp // Descending Key Comparison
         }
         ,
         {
-            // mt valueµé °£ÀÇ compare
+            // mt valueë“¤ ê°„ì˜ compare
             mtdCharMtdMtdKeyAscComp, // Ascending Key Comparison
             mtdCharMtdMtdKeyDescComp // Descending Key Comparison
         }
         ,
         {
-            // mt value¿Í stored value°£ÀÇ compare
+            // mt valueì™€ stored valueê°„ì˜ compare
             mtdCharStoredMtdKeyAscComp, // Ascending Key Comparison
             mtdCharStoredMtdKeyDescComp // Descending Key Comparison
         }
         ,
         {
-            // stored valueµé °£ÀÇ compare
+            // stored valueë“¤ ê°„ì˜ compare
             mtdCharStoredStoredKeyAscComp, // Ascending Key Comparison
             mtdCharStoredStoredKeyDescComp // Descending Key Comparison
         }
         ,
         {
-            /* PROJ-2433 : index Direct key¿Í fixed mt valueµé °£ÀÇ compare */
+            /* PROJ-2433 : index Direct keyì™€ fixed mt valueë“¤ ê°„ì˜ compare */
             mtdCharIndexKeyFixedMtdKeyAscComp,
             mtdCharIndexKeyFixedMtdKeyDescComp
         }
         ,
         {
-            /* PROJ-2433 : index Direct key¿Í mt valueµé °£ÀÇ compare */
+            /* PROJ-2433 : index Direct keyì™€ mt valueë“¤ ê°„ì˜ compare */
             mtdCharIndexKeyMtdKeyAscComp,
             mtdCharIndexKeyMtdKeyDescComp
         }
@@ -288,7 +288,7 @@ IDE_RC mtdInitialize( UInt aNo )
 {
     IDE_TEST( mtd::initializeModule( &mtdChar, aNo ) != IDE_SUCCESS );
 
-    // mtdColumnÀÇ ÃÊ±âÈ­
+    // mtdColumnì˜ ì´ˆê¸°í™”
     IDE_TEST( mtc::initializeColumn( & mtdColumn,
                                      & mtdChar,
                                      0,   // arguments
@@ -358,8 +358,8 @@ IDE_RC mtdValue( mtcTemplate* /* aTemplate */,
     *aResult = IDE_SUCCESS;
 
     // To fix BUG-13444
-    // tokenFence¿Í RowFence´Â º°°³ÀÇ °Ë»ç°úÁ¤ÀÌ¹Ç·Î,
-    // ¸ÕÀú RowFence°Ë»ç ÈÄ TokenFence°Ë»ç¸¦ ÇØ¾ß ÇÑ´Ù.
+    // tokenFenceì™€ RowFenceëŠ” ë³„ê°œì˜ ê²€ì‚¬ê³¼ì •ì´ë¯€ë¡œ,
+    // ë¨¼ì € RowFenceê²€ì‚¬ í›„ TokenFenceê²€ì‚¬ë¥¼ í•´ì•¼ í•œë‹¤.
     sIterator = sValue->value;
     sFence    = (UChar*)aValue + aValueSize;
     if( sIterator >= sFence )
@@ -388,13 +388,13 @@ IDE_RC mtdValue( mtcTemplate* /* aTemplate */,
         }
 
         // BUG-40290
-        // ¹öÆÛ°¡ ¸ğÀß¶ó¼­ Àß·Áµµ length ¸¦ ±â·ÏÇØÁÖ¸é ÁÁ´Ù.
+        // ë²„í¼ê°€ ëª¨ì˜ë¼ì„œ ì˜ë ¤ë„ length ë¥¼ ê¸°ë¡í•´ì£¼ë©´ ì¢‹ë‹¤.
         sValue->length = sIterator - sValue->value;
     }
 
     if( *aResult == IDE_SUCCESS )
     {
-        // precision, scale Àç ¼³Á¤ ÈÄ, estimate·Î semantic °Ë»ç
+        // precision, scale ì¬ ì„¤ì • í›„, estimateë¡œ semantic ê²€ì‚¬
         aColumn->flag            = 1;
         aColumn->precision       = sValue->length != 0 ? sValue->length : 1;
         aColumn->scale           = 0;
@@ -464,7 +464,7 @@ SInt mtdCharLogicalAscComp( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd Å¸ÀÔÀÇ Keyµé °£ÀÇ ascending compare
+ * Description : Mtd íƒ€ì…ì˜ Keyë“¤ ê°„ì˜ ascending compare
  *
  * Implementation :
  *
@@ -553,7 +553,7 @@ SInt mtdCharLogicalDescComp( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd Å¸ÀÔÀÇ Keyµé °£ÀÇ descending compare
+ * Description : Mtd íƒ€ì…ì˜ Keyë“¤ ê°„ì˜ descending compare
  *
  * Implementation :
  *
@@ -642,7 +642,7 @@ SInt mtdCharFixedMtdFixedMtdKeyAscComp( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd Å¸ÀÔÀÇ Keyµé °£ÀÇ ascending compare
+ * Description : Mtd íƒ€ì…ì˜ Keyë“¤ ê°„ì˜ ascending compare
  *
  * Implementation :
  *
@@ -731,7 +731,7 @@ SInt mtdCharFixedMtdFixedMtdKeyDescComp( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd Å¸ÀÔÀÇ Keyµé °£ÀÇ descending compare
+ * Description : Mtd íƒ€ì…ì˜ Keyë“¤ ê°„ì˜ descending compare
  *
  * Implementation :
  *
@@ -820,7 +820,7 @@ SInt mtdCharMtdMtdKeyAscComp( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd Å¸ÀÔÀÇ Keyµé °£ÀÇ ascending compare
+ * Description : Mtd íƒ€ì…ì˜ Keyë“¤ ê°„ì˜ ascending compare
  *
  * Implementation :
  *
@@ -919,7 +919,7 @@ SInt mtdCharMtdMtdKeyDescComp( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd Å¸ÀÔÀÇ Keyµé °£ÀÇ descending compare
+ * Description : Mtd íƒ€ì…ì˜ Keyë“¤ ê°„ì˜ descending compare
  *
  * Implementation :
  *
@@ -1018,7 +1018,7 @@ SInt mtdCharStoredMtdKeyAscComp( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd Å¸ÀÔÀÇ Key¿Í Stored Key °£ÀÇ ascending compare
+ * Description : Mtd íƒ€ì…ì˜ Keyì™€ Stored Key ê°„ì˜ ascending compare
  *
  * Implementation :
  *
@@ -1040,8 +1040,8 @@ SInt mtdCharStoredMtdKeyAscComp( mtdValueInfo * aValueInfo1,
     // value1
     //---------    
     // PROJ-2429 Dictionary based data compress for on-disk DB
-    // Dictionary compression columnÀÎ °æ¿ì store typeÀ»mt typeÀ¸·Î
-    // º¯È¯ÇØ¼­ ½ÇÁ¦ µ¥ÀÌÅÍ¸¦ °¡Á®¿Â´Ù.
+    // Dictionary compression columnì¸ ê²½ìš° store typeì„mt typeìœ¼ë¡œ
+    // ë³€í™˜í•´ì„œ ì‹¤ì œ ë°ì´í„°ë¥¼ ê°€ì ¸ì˜¨ë‹¤.
     if ( (((smiColumn*)aValueInfo1->column)->flag & SMI_COLUMN_COMPRESSION_MASK) !=
          SMI_COLUMN_COMPRESSION_TRUE )
     {
@@ -1130,7 +1130,7 @@ SInt mtdCharStoredMtdKeyDescComp( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd Å¸ÀÔÀÇ Key¿Í Stored Key °£ÀÇ descending compare
+ * Description : Mtd íƒ€ì…ì˜ Keyì™€ Stored Key ê°„ì˜ descending compare
  *
  * Implementation :
  *
@@ -1152,8 +1152,8 @@ SInt mtdCharStoredMtdKeyDescComp( mtdValueInfo * aValueInfo1,
     // value1
     //---------    
     // PROJ-2429 Dictionary based data compress for on-disk DB
-    // Dictionary compression columnÀÎ °æ¿ì store typeÀ»mt typeÀ¸·Î
-    // º¯È¯ÇØ¼­ ½ÇÁ¦ µ¥ÀÌÅÍ¸¦ °¡Á®¿Â´Ù.
+    // Dictionary compression columnì¸ ê²½ìš° store typeì„mt typeìœ¼ë¡œ
+    // ë³€í™˜í•´ì„œ ì‹¤ì œ ë°ì´í„°ë¥¼ ê°€ì ¸ì˜¨ë‹¤.
     if ( (((smiColumn*)aValueInfo1->column)->flag & SMI_COLUMN_COMPRESSION_MASK) !=
          SMI_COLUMN_COMPRESSION_TRUE )
     {
@@ -1242,7 +1242,7 @@ SInt mtdCharStoredStoredKeyAscComp( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Stored Keyµé °£ÀÇ ascending compare
+ * Description : Stored Keyë“¤ ê°„ì˜ ascending compare
  *
  * Implementation :
  *
@@ -1363,7 +1363,7 @@ SInt mtdCharStoredStoredKeyDescComp( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Stored Keyµé °£ÀÇ descending compare
+ * Description : Stored Keyë“¤ ê°„ì˜ descending compare
  *
  * Implementation :
  *
@@ -1480,8 +1480,8 @@ SInt mtdCharStoredStoredKeyDescComp( mtdValueInfo * aValueInfo1,
 }
 
 /* PROJ-2433
- * Direct key IndexÀÇ direct key¿Í mtdÀÇ compare ÇÔ¼ö
- * - partial direct key¸¦ Ã³¸®ÇÏ´ÂºÎºĞ Ãß°¡ */
+ * Direct key Indexì˜ direct keyì™€ mtdì˜ compare í•¨ìˆ˜
+ * - partial direct keyë¥¼ ì²˜ë¦¬í•˜ëŠ”ë¶€ë¶„ ì¶”ê°€ */
 SInt mtdCharIndexKeyFixedMtdKeyAscComp( mtdValueInfo * aValueInfo1,
                                         mtdValueInfo * aValueInfo2 )
 {
@@ -1511,19 +1511,19 @@ SInt mtdCharIndexKeyFixedMtdKeyAscComp( mtdValueInfo * aValueInfo1,
 
     /*
      * PROJ-2433 Direct Key Index
-     * Partial Direct Key Ã³¸®
+     * Partial Direct Key ì²˜ë¦¬
      * 
-     * - Direct Key°¡ partial direct keyÀÎ °æ¿ì
-     *   partialµÈ ±æÀÌ¸¸Å­¸¸ ºñ±³ÇÏµµ·Ï length¸¦ ¼öÁ¤ÇÑ´Ù
+     * - Direct Keyê°€ partial direct keyì¸ ê²½ìš°
+     *   partialëœ ê¸¸ì´ë§Œí¼ë§Œ ë¹„êµí•˜ë„ë¡ lengthë¥¼ ìˆ˜ì •í•œë‹¤
      */ 
     if ( ( aValueInfo1->flag & MTD_PARTIAL_KEY_MASK ) == MTD_PARTIAL_KEY_ON )
     {
         sDirectKeyPartialSize = aValueInfo1->length;
 
-        /* partail key ÀÌ¸é */
+        /* partail key ì´ë©´ */
         if ( sDirectKeyPartialSize != 0 )
         {
-            /* direct key ±æÀÌº¸Á¤*/
+            /* direct key ê¸¸ì´ë³´ì •*/
             if ( ( sLength1 + mtdHeaderSize() ) > sDirectKeyPartialSize )
             {
                 sLength1 = (UShort)( sDirectKeyPartialSize - mtdHeaderSize() );
@@ -1533,7 +1533,7 @@ SInt mtdCharIndexKeyFixedMtdKeyAscComp( mtdValueInfo * aValueInfo1,
                 /* nothing todo */
             }
 
-            /* search key µµ partial ±æÀÌ¸¸Å­ º¸Á¤*/
+            /* search key ë„ partial ê¸¸ì´ë§Œí¼ ë³´ì •*/
             if ( ( sLength2 + mtdHeaderSize() ) > sDirectKeyPartialSize )
             {
                 sLength2 = (UShort)( sDirectKeyPartialSize - mtdHeaderSize() );
@@ -1668,19 +1668,19 @@ SInt mtdCharIndexKeyFixedMtdKeyDescComp( mtdValueInfo * aValueInfo1,
 
     /*
      * PROJ-2433 Direct Key Index
-     * Partial Direct Key Ã³¸®
+     * Partial Direct Key ì²˜ë¦¬
      * 
-     * - Direct Key°¡ partial direct keyÀÎ °æ¿ì
-     *   partialµÈ ±æÀÌ¸¸Å­¸¸ ºñ±³ÇÏµµ·Ï length¸¦ ¼öÁ¤ÇÑ´Ù
+     * - Direct Keyê°€ partial direct keyì¸ ê²½ìš°
+     *   partialëœ ê¸¸ì´ë§Œí¼ë§Œ ë¹„êµí•˜ë„ë¡ lengthë¥¼ ìˆ˜ì •í•œë‹¤
      */ 
     if ( ( aValueInfo1->flag & MTD_PARTIAL_KEY_MASK ) == MTD_PARTIAL_KEY_ON )
     {
         sDirectKeyPartialSize = aValueInfo1->length;
 
-        /* partail key ÀÌ¸é */
+        /* partail key ì´ë©´ */
         if ( sDirectKeyPartialSize != 0 )
         {
-            /* direct key ±æÀÌº¸Á¤*/
+            /* direct key ê¸¸ì´ë³´ì •*/
             if ( ( sLength1 + mtdHeaderSize() ) > sDirectKeyPartialSize )
             {
                 sLength1 = (UShort)( sDirectKeyPartialSize - mtdHeaderSize() );
@@ -1690,7 +1690,7 @@ SInt mtdCharIndexKeyFixedMtdKeyDescComp( mtdValueInfo * aValueInfo1,
                 /* nothing todo */
             }
 
-            /* search key µµ partial ±æÀÌ¸¸Å­ º¸Á¤*/
+            /* search key ë„ partial ê¸¸ì´ë§Œí¼ ë³´ì •*/
             if ( ( sLength2 + mtdHeaderSize() ) > sDirectKeyPartialSize )
             {
                 sLength2 = (UShort)( sDirectKeyPartialSize - mtdHeaderSize() );
@@ -1826,19 +1826,19 @@ SInt mtdCharIndexKeyMtdKeyAscComp( mtdValueInfo * aValueInfo1,
 
     /*
      * PROJ-2433 Direct Key Index
-     * Partial Direct Key Ã³¸®
+     * Partial Direct Key ì²˜ë¦¬
      * 
-     * - Direct Key°¡ partial direct keyÀÎ °æ¿ì
-     *   partialµÈ ±æÀÌ¸¸Å­¸¸ ºñ±³ÇÏµµ·Ï length¸¦ ¼öÁ¤ÇÑ´Ù
+     * - Direct Keyê°€ partial direct keyì¸ ê²½ìš°
+     *   partialëœ ê¸¸ì´ë§Œí¼ë§Œ ë¹„êµí•˜ë„ë¡ lengthë¥¼ ìˆ˜ì •í•œë‹¤
      */ 
     if ( ( aValueInfo1->flag & MTD_PARTIAL_KEY_MASK ) == MTD_PARTIAL_KEY_ON )
     {
         sDirectKeyPartialSize = aValueInfo1->length;
 
-        /* partail key ÀÌ¸é */
+        /* partail key ì´ë©´ */
         if ( sDirectKeyPartialSize != 0 )
         {
-            /* direct key ±æÀÌº¸Á¤*/
+            /* direct key ê¸¸ì´ë³´ì •*/
             if ( ( sLength1 + mtdHeaderSize() ) > sDirectKeyPartialSize )
             {
                 sLength1 = (UShort)( sDirectKeyPartialSize - mtdHeaderSize() );
@@ -1848,7 +1848,7 @@ SInt mtdCharIndexKeyMtdKeyAscComp( mtdValueInfo * aValueInfo1,
                 /* nothing todo */
             }
 
-            /* search key µµ partial ±æÀÌ¸¸Å­ º¸Á¤*/
+            /* search key ë„ partial ê¸¸ì´ë§Œí¼ ë³´ì •*/
             if ( ( sLength2 + mtdHeaderSize() ) > sDirectKeyPartialSize )
             {
                 sLength2 = (UShort)( sDirectKeyPartialSize - mtdHeaderSize() );
@@ -1984,19 +1984,19 @@ SInt mtdCharIndexKeyMtdKeyDescComp( mtdValueInfo * aValueInfo1,
 
     /*
      * PROJ-2433 Direct Key Index
-     * Partial Direct Key Ã³¸®
+     * Partial Direct Key ì²˜ë¦¬
      * 
-     * - Direct Key°¡ partial direct keyÀÎ °æ¿ì
-     *   partialµÈ ±æÀÌ¸¸Å­¸¸ ºñ±³ÇÏµµ·Ï length¸¦ ¼öÁ¤ÇÑ´Ù
+     * - Direct Keyê°€ partial direct keyì¸ ê²½ìš°
+     *   partialëœ ê¸¸ì´ë§Œí¼ë§Œ ë¹„êµí•˜ë„ë¡ lengthë¥¼ ìˆ˜ì •í•œë‹¤
      */ 
     if ( ( aValueInfo1->flag & MTD_PARTIAL_KEY_MASK ) == MTD_PARTIAL_KEY_ON )
     {
         sDirectKeyPartialSize = aValueInfo1->length;
 
-        /* partail key ÀÌ¸é */
+        /* partail key ì´ë©´ */
         if ( sDirectKeyPartialSize != 0 )
         {
-            /* direct key ±æÀÌº¸Á¤*/
+            /* direct key ê¸¸ì´ë³´ì •*/
             if ( ( sLength1 + mtdHeaderSize() ) > sDirectKeyPartialSize )
             {
                 sLength1 = (UShort)( sDirectKeyPartialSize - mtdHeaderSize() );
@@ -2006,7 +2006,7 @@ SInt mtdCharIndexKeyMtdKeyDescComp( mtdValueInfo * aValueInfo1,
                 /* nothing todo */
             }
 
-            /* search key µµ partial ±æÀÌ¸¸Å­ º¸Á¤*/
+            /* search key ë„ partial ê¸¸ì´ë§Œí¼ ë³´ì •*/
             if ( ( sLength2 + mtdHeaderSize() ) > sDirectKeyPartialSize )
             {
                 sLength2 = (UShort)( sDirectKeyPartialSize - mtdHeaderSize() );
@@ -2170,7 +2170,7 @@ IDE_RC mtdValidate( mtcColumn * aColumn,
 {
 /***********************************************************************
  *
- * Description : valueÀÇ semantic °Ë»ç ¹× mtcColum ÃÊ±âÈ­
+ * Description : valueì˜ semantic ê²€ì‚¬ ë° mtcColum ì´ˆê¸°í™”
  *
  * Implementation :
  *
@@ -2183,9 +2183,9 @@ IDE_RC mtdValidate( mtcColumn * aColumn,
     IDE_TEST_RAISE( sCharVal->length + ID_SIZEOF(UShort) != aValueSize,
                     ERR_INVALID_LENGTH );
 
-    // ÃÊ±âÈ­µÈ aColumnÀº cannonize() ½Ã¿¡ »ç¿ë
-    // ÀÌ¶§, data type moduleÀÇ precision Á¤º¸¸¸À» »ç¿ëÇÏ¹Ç·Î,
-    // language Á¤º¸ ¼³Á¤ÇÒ ÇÊ¿ä¾øÀ½
+    // ì´ˆê¸°í™”ëœ aColumnì€ cannonize() ì‹œì— ì‚¬ìš©
+    // ì´ë•Œ, data type moduleì˜ precision ì •ë³´ë§Œì„ ì‚¬ìš©í•˜ë¯€ë¡œ,
+    // language ì •ë³´ ì„¤ì •í•  í•„ìš”ì—†ìŒ
     IDE_TEST( mtc::initializeColumn( aColumn,
                                      & mtdChar,
                                      1,                // arguments
@@ -2219,36 +2219,36 @@ SDouble mtdSelectivityChar( void     * aColumnMax,
 /*----------------------------------------------------------------------
   Name:
   mtdSelectivityChar()
-  -- ÃÖ´ë, ÃÖ¼Ò °ªÀ» ÀÌ¿ëÇÏ¿© ¹üÀ§ °ª¿¡ ´ëÇÑ ¼±ÅÃµµ¸¦ ÃßÁ¤,
+  -- ìµœëŒ€, ìµœì†Œ ê°’ì„ ì´ìš©í•˜ì—¬ ë²”ìœ„ ê°’ì— ëŒ€í•œ ì„ íƒë„ë¥¼ ì¶”ì •,
   -- CHAR(n),VARCHAR(n)
 
   Arguments:
-  aColumnMax  -- Ä®·³ÀÇ ÃÖ´ë °ª (MAX)
-  aColumnMin  -- Ä®·³ÀÇ ÃÖ¼Ò °ª (MIN)
-  aValueMax   -- ¹üÀ§ ÃÖ¼Ò °ª   (Y)
-  aValueMin   -- ¹üÀ§ ÃÖ´ë °ª   (X)
+  aColumnMax  -- ì¹¼ëŸ¼ì˜ ìµœëŒ€ ê°’ (MAX)
+  aColumnMin  -- ì¹¼ëŸ¼ì˜ ìµœì†Œ ê°’ (MIN)
+  aValueMax   -- ë²”ìœ„ ìµœì†Œ ê°’   (Y)
+  aValueMin   -- ë²”ìœ„ ìµœëŒ€ ê°’   (X)
 
-  Description: ÃÖ´ë, ÃÖ¼Ò°ªÀ» ÀÌ¿ëÇÏ¿© ¹üÀ§ °ª¿¡ ´ëÇÑ ¼±ÅÃµµ¸¦ ÃßÁ¤ÇÑ´Ù.
-  <, >, <=, >=, BETWEEN, NOT BETWEEN Predicate°¡ ÇØ´çµÇ¸ç,
-  LIKE, NOT LIKEÀÇ °æ¿ì¿¡µµ prefix matchÀÎ °æ¿ì ÀÌ¿¡ ÇØ´çÇÑ´Ù.
+  Description: ìµœëŒ€, ìµœì†Œê°’ì„ ì´ìš©í•˜ì—¬ ë²”ìœ„ ê°’ì— ëŒ€í•œ ì„ íƒë„ë¥¼ ì¶”ì •í•œë‹¤.
+  <, >, <=, >=, BETWEEN, NOT BETWEEN Predicateê°€ í•´ë‹¹ë˜ë©°,
+  LIKE, NOT LIKEì˜ ê²½ìš°ì—ë„ prefix matchì¸ ê²½ìš° ì´ì— í•´ë‹¹í•œë‹¤.
 
-  ¿¹: i1 between X and Y
+  ì˜ˆ: i1 between X and Y
   ==> selectivity = ( Y - X ) / ( MAX - MIN )
 
-  ¼±ÅÃµµ¸¦ °è»êÇÏ´Â °úÁ¤¿¡¼­ ¹®ÀÚ¿­À» DOUBLEÇüÀ¸·Î º¯È¯ÇØ¾ß ÇÑ´Ù.
-  ÀÌ ¶§, 4°³ÀÇ ÀÎÀÚ°¡ ¸ğµÎ 10Áø¼ö·Î ÆÇ´ÜµÇ¸é 10Áø¼ö·Î
-  16Áø¼ö·Î ÆÇ´ÜµÇ¸é 16Áø¼ö·Î º¯È¯ÇÑ´Ù.
-  ±×·¸Áö ¾ÊÀº °æ¿ì ¹®ÀÚ¿­ 52ºñÆ®°¡ Æ÷ÇÔÇÏ´Â °ªÀ» º¯È¯ÇÑ´Ù.
+  ì„ íƒë„ë¥¼ ê³„ì‚°í•˜ëŠ” ê³¼ì •ì—ì„œ ë¬¸ìì—´ì„ DOUBLEí˜•ìœ¼ë¡œ ë³€í™˜í•´ì•¼ í•œë‹¤.
+  ì´ ë•Œ, 4ê°œì˜ ì¸ìê°€ ëª¨ë‘ 10ì§„ìˆ˜ë¡œ íŒë‹¨ë˜ë©´ 10ì§„ìˆ˜ë¡œ
+  16ì§„ìˆ˜ë¡œ íŒë‹¨ë˜ë©´ 16ì§„ìˆ˜ë¡œ ë³€í™˜í•œë‹¤.
+  ê·¸ë ‡ì§€ ì•Šì€ ê²½ìš° ë¬¸ìì—´ 52ë¹„íŠ¸ê°€ í¬í•¨í•˜ëŠ” ê°’ì„ ë³€í™˜í•œë‹¤.
 
   *----------------------------------------------------------------------*/
 
-    // °¢°¢ÀÇ °ª¿¡ ´ëÇÑ mtdCharType
+    // ê°ê°ì˜ ê°’ì— ëŒ€í•œ mtdCharType
     const mtdCharType *    sColumnMax;
     const mtdCharType *    sColumnMin;
     const mtdCharType *    sValueMax;
     const mtdCharType *    sValueMin;
 
-    // °¢°¢ÀÇ °ª¿¡ ´ëÇÑ SDouble º¯¼ö
+    // ê°ê°ì˜ ê°’ì— ëŒ€í•œ SDouble ë³€ìˆ˜
     SDouble          sColMaxDouble;
     SDouble          sColMinDouble;
     SDouble          sValMaxDouble;
@@ -2257,10 +2257,10 @@ SDouble mtdSelectivityChar( void     * aColumnMax,
     // Selectivity
     SDouble          sSelectivity;
 
-    // 10Áø¼ö, 16Áø¼ö, ÀÏ¹İ¹®ÀÚ¿­ ¿©ºÎ¸¦ Ç¥½ÃÇÏ´Â º¯¼ö
+    // 10ì§„ìˆ˜, 16ì§„ìˆ˜, ì¼ë°˜ë¬¸ìì—´ ì—¬ë¶€ë¥¼ í‘œì‹œí•˜ëŠ” ë³€ìˆ˜
     vSLong           sStringType;
 
-    // º¯¼ö ÃÊ±âÈ­
+    // ë³€ìˆ˜ ì´ˆê¸°í™”
     sStringType = 0;
     sColumnMax = (mtdCharType*) aColumnMax;
     sColumnMin = (mtdCharType*) aColumnMin;
@@ -2268,8 +2268,8 @@ SDouble mtdSelectivityChar( void     * aColumnMax,
     sValueMin  = (mtdCharType*) aValueMin;
 
     //------------------------------------------------------
-    // DataÀÇ À¯È¿¼º °Ë»ç
-    //     NULL °Ë»ç : °è»êÇÒ ¼ö ¾øÀ½
+    // Dataì˜ ìœ íš¨ì„± ê²€ì‚¬
+    //     NULL ê²€ì‚¬ : ê³„ì‚°í•  ìˆ˜ ì—†ìŒ
     //------------------------------------------------------
     
     // BUG-22064
@@ -2283,15 +2283,15 @@ SDouble mtdSelectivityChar( void     * aColumnMax,
          ( mtdIsNull( NULL, aValueMax  ) == ID_TRUE ) ||
          ( mtdIsNull( NULL, aValueMin  ) == ID_TRUE ) )
     {
-        // DataÁß NULL ÀÌ ÀÖÀ» °æ¿ì
-        // ºÎµîÈ£ÀÇ Default SelectivityÀÎ 1/3À» SettingÇÔ
+        // Dataì¤‘ NULL ì´ ìˆì„ ê²½ìš°
+        // ë¶€ë“±í˜¸ì˜ Default Selectivityì¸ 1/3ì„ Settingí•¨
         sSelectivity = MTD_DEFAULT_SELECTIVITY;
     }
     else
     {
         //------------------------------------------------------------
-        // ¼ıÀÚ¸¦ ÀÇ¹ÌÇÏ´Â ¹®ÀÚ¿­ÀÎÁö ÆÇ´Ü
-        //  sStringType¿¡ ÀûÀıÇÑ ÇÃ·¡±× ¼³Á¤
+        // ìˆ«ìë¥¼ ì˜ë¯¸í•˜ëŠ” ë¬¸ìì—´ì¸ì§€ íŒë‹¨
+        //  sStringTypeì— ì ì ˆí•œ í”Œë˜ê·¸ ì„¤ì •
         //------------------------------------------------------------
         sStringType |= mtdStringType(sColumnMax);
         sStringType |= mtdStringType(sColumnMin);
@@ -2299,10 +2299,10 @@ SDouble mtdSelectivityChar( void     * aColumnMax,
         sStringType |= mtdStringType(sValueMin);
 
         //---------------------------------------------------
-        // 10Áø¼öÀÇ ÆÇ´Ü
-        //   ¾î¶°ÇÑ ÇÃ·¡±×·Î ¼³Á¤µÇ¾î ÀÖÁö ¾Ê¾Æ¾ß ÇÑ´Ù.
-        // 10Áø¼öÀÇ º¯È¯
-        //   mtdDigitsToDoubleÇÔ¼ö¸¦ ÀÌ¿ëÇÏ¿© 10Áø¼ö·Î º¯È¯ÇÑ´Ù.
+        // 10ì§„ìˆ˜ì˜ íŒë‹¨
+        //   ì–´ë– í•œ í”Œë˜ê·¸ë¡œ ì„¤ì •ë˜ì–´ ìˆì§€ ì•Šì•„ì•¼ í•œë‹¤.
+        // 10ì§„ìˆ˜ì˜ ë³€í™˜
+        //   mtdDigitsToDoubleí•¨ìˆ˜ë¥¼ ì´ìš©í•˜ì—¬ 10ì§„ìˆ˜ë¡œ ë³€í™˜í•œë‹¤.
         //---------------------------------------------------
         if( sStringType == MTD_DECIMAL )
         {
@@ -2312,12 +2312,12 @@ SDouble mtdSelectivityChar( void     * aColumnMax,
             sValMinDouble = mtdDigitsToDouble( sValueMin, 10 );
         }
         //---------------------------------------------------
-        // 16Áø¼öÀÇ ÆÇ´Ü
-        //   MTD_HEXA_LOWER ÀÌ°Å³ª MTD_HEXA_UPPER ÀÎ °æ¿ì
-        //   µÑ ÁßÀÇ ÇÑ ÇÃ·¡±× °ª°ú ÀÏÄ¡ÇØ¾ßÇÏ¸ç,
-        //   µÎ ÇÃ·¡±×°¡ ÇÔ²² ¼³Á¤µÈ °æ¿ì´Â ÀÏ¹İ ¹®ÀÚ¿­·Î ÆÇ´Ü
-        // 16Áø¼öÀÇ º¯È¯
-        //   mtdDigitsToDoubleÇÔ¼ö¸¦ ÀÌ¿ëÇÏ¿© 16Áø¼ö·Î º¯È¯ÇÑ´Ù.
+        // 16ì§„ìˆ˜ì˜ íŒë‹¨
+        //   MTD_HEXA_LOWER ì´ê±°ë‚˜ MTD_HEXA_UPPER ì¸ ê²½ìš°
+        //   ë‘˜ ì¤‘ì˜ í•œ í”Œë˜ê·¸ ê°’ê³¼ ì¼ì¹˜í•´ì•¼í•˜ë©°,
+        //   ë‘ í”Œë˜ê·¸ê°€ í•¨ê»˜ ì„¤ì •ëœ ê²½ìš°ëŠ” ì¼ë°˜ ë¬¸ìì—´ë¡œ íŒë‹¨
+        // 16ì§„ìˆ˜ì˜ ë³€í™˜
+        //   mtdDigitsToDoubleí•¨ìˆ˜ë¥¼ ì´ìš©í•˜ì—¬ 16ì§„ìˆ˜ë¡œ ë³€í™˜í•œë‹¤.
         //---------------------------------------------------
         else if( ( sStringType == MTD_HEXA_LOWER ) ||
                  ( sStringType == MTD_HEXA_UPPER ) )
@@ -2328,7 +2328,7 @@ SDouble mtdSelectivityChar( void     * aColumnMax,
             sValMinDouble = mtdDigitsToDouble( sValueMin, 16 );
         }
         //------------------------------------------------------------
-        // ÀÏ¹İ ¹®ÀÚ¿­ÀÎ °æ¿ì º¯È¯
+        // ì¼ë°˜ ë¬¸ìì—´ì¸ ê²½ìš° ë³€í™˜
         //------------------------------------------------------------
         else
         {
@@ -2339,7 +2339,7 @@ SDouble mtdSelectivityChar( void     * aColumnMax,
         }
 
         //---------------------------------------------------------
-        // selectivity °è»ê
+        // selectivity ê³„ì‚°
         //--------------------------------------------------------
         sSelectivity = mtdDouble.selectivity( (void *)&sColMaxDouble,
                                               (void *)&sColMinDouble,
@@ -2363,13 +2363,13 @@ vSLong mtdStringType( const mtdCharType * aValue )
 /*----------------------------------------------------------------------
   Name:
   mtdStringType()
-  -- ÇØ´ç ¹®ÀÚ¿­ÀÇ Å¸ÀÔÀ» ÆÇ´ÜÇÑ´Ù.
-  10Áø¼ö     : MTD_DECIMAL
-  16Áø¼ö     : MTD_HEXA_LOWER, MTD_HEXA_UPPER
-  ÀÏ¹İ ¹®ÀÚ¿­ : MTD_ORDINARY
+  -- í•´ë‹¹ ë¬¸ìì—´ì˜ íƒ€ì…ì„ íŒë‹¨í•œë‹¤.
+  10ì§„ìˆ˜     : MTD_DECIMAL
+  16ì§„ìˆ˜     : MTD_HEXA_LOWER, MTD_HEXA_UPPER
+  ì¼ë°˜ ë¬¸ìì—´ : MTD_ORDINARY
 
   Arguments:
-  aValue  -- Å¸ÀÔÀ» ÆÇ´ÜÇÒ ¹®ÀÚ¿­
+  aValue  -- íƒ€ì…ì„ íŒë‹¨í•  ë¬¸ìì—´
 
   *----------------------------------------------------------------------*/
     vSLong sLength;
@@ -2412,12 +2412,12 @@ SDouble mtdDigitsToDouble( const mtdCharType * aValue, UInt aBase )
   Name:
   BUG-16401
   mtdDigitsToDouble()
-  -- ÇØ´ç ¹®ÀÚ¿­À» 15ÀÚ¸® ¹®ÀÚ¿­·Î °íÁ¤ÈÄ
-  -- SDboubleÅ¸ÀÔÀ¸·Î º¯È¯ÇÑ´Ù.
+  -- í•´ë‹¹ ë¬¸ìì—´ì„ 15ìë¦¬ ë¬¸ìì—´ë¡œ ê³ ì •í›„
+  -- SDboubleíƒ€ì…ìœ¼ë¡œ ë³€í™˜í•œë‹¤.
 
   Arguments:
-  aValue  -- º¯È¯ÇÒ ¹®ÀÚ¿­
-  aBase   -- Áø¹ı
+  aValue  -- ë³€í™˜í•  ë¬¸ìì—´
+  aBase   -- ì§„ë²•
 
   *----------------------------------------------------------------------*/
 
@@ -2511,28 +2511,28 @@ SDouble mtdConvertToDouble( const mtdCharType * aValue )
 /*----------------------------------------------------------------------
   Name:
   mtdConvertToDouble()
-  -- ÇØ´ç ¹®ÀÚ¿­À» SDboubleÅ¸ÀÔÀ¸·Î º¯È¯ÇÑ´Ù.
+  -- í•´ë‹¹ ë¬¸ìì—´ì„ SDboubleíƒ€ì…ìœ¼ë¡œ ë³€í™˜í•œë‹¤.
 
   Arguments:
-  aValue  -- º¯È¯ÇÒ ¹®ÀÚ¿­
+  aValue  -- ë³€í™˜í•  ë¬¸ìì—´
 
   *----------------------------------------------------------------------*/
 
 #if defined(ENDIAN_IS_BIG_ENDIAN)
     //----------------------------------------------------
-    // Big endian ÀÎ °æ¿ì
+    // Big endian ì¸ ê²½ìš°
     //----------------------------------------------------
-    SDouble    sDoubleVal;       // º¯È¯µÉ Double °ª
-    ULong      sLongVal;         // ULongÀ¸·Î º¯È¯ ½Ã »ç¿ëÇÒ º¯¼ö
+    SDouble    sDoubleVal;       // ë³€í™˜ë  Double ê°’
+    ULong      sLongVal;         // ULongìœ¼ë¡œ ë³€í™˜ ì‹œ ì‚¬ìš©í•  ë³€ìˆ˜
 
-    sLongVal = 0;                // ÃÊ±âÈ­
+    sLongVal = 0;                // ì´ˆê¸°í™”
 
-    // mtdCharTypeÀ» ULongÀ¸·Î º¯È¯
+    // mtdCharTypeì„ ULongìœ¼ë¡œ ë³€í™˜
     idlOS::memcpy( (UChar*)&sLongVal,
                    aValue->value,
                    MTD_MIN( aValue->length, ID_SIZEOF(sLongVal) ) );
 
-    // ¾ÕºÎºĞ 52ºñÆ®¸¸ ´õºí·Î º¯È¯
+    // ì•ë¶€ë¶„ 52ë¹„íŠ¸ë§Œ ë”ë¸”ë¡œ ë³€í™˜
     sLongVal   = sLongVal >> 12;
     sDoubleVal = ID_ULTODB( sLongVal );
 
@@ -2540,22 +2540,22 @@ SDouble mtdConvertToDouble( const mtdCharType * aValue )
 
 #else
     //----------------------------------------------------
-    // Little endian ÀÎ °æ¿ì
+    // Little endian ì¸ ê²½ìš°
     //----------------------------------------------------
-    SDouble    sDoubleVal;       // º¯È¯µÉ Double °ª
-    ULong      sLongVal;         // ULongÀ¸·Î º¯È¯ ½Ã »ç¿ëÇÒ º¯¼ö
-    ULong      sEndian;          // byte ordering º¯È¯½Ã »ç¿ëÇÒ ÀÓ½Ã º¯¼ö
-    UChar    * sSrc;             // byte ordering º¯È¯À» À§ÇÑ Æ÷ÀÎÅÍ
-    UChar    * sDest;            // byte ordering º¯È¯À» À§ÇÑ Æ÷ÀÎÅÍ
+    SDouble    sDoubleVal;       // ë³€í™˜ë  Double ê°’
+    ULong      sLongVal;         // ULongìœ¼ë¡œ ë³€í™˜ ì‹œ ì‚¬ìš©í•  ë³€ìˆ˜
+    ULong      sEndian;          // byte ordering ë³€í™˜ì‹œ ì‚¬ìš©í•  ì„ì‹œ ë³€ìˆ˜
+    UChar    * sSrc;             // byte ordering ë³€í™˜ì„ ìœ„í•œ í¬ì¸í„°
+    UChar    * sDest;            // byte ordering ë³€í™˜ì„ ìœ„í•œ í¬ì¸í„°
 
-    sLongVal = 0;                // ÃÊ±âÈ­
+    sLongVal = 0;                // ì´ˆê¸°í™”
 
-    // mtdCharTypeÀ» ULongÀ¸·Î º¯È¯
+    // mtdCharTypeì„ ULongìœ¼ë¡œ ë³€í™˜
     idlOS::memcpy( (UChar*)&sLongVal,
                    aValue->value,
                    MTD_MIN( aValue->length, ID_SIZEOF(sLongVal) ) );
 
-    // byte ordering Á¶Á¤
+    // byte ordering ì¡°ì •
     sSrc     = (UChar*)&sLongVal;
     sDest    = (UChar*)&sEndian;
     sDest[0] = sSrc[7];
@@ -2567,7 +2567,7 @@ SDouble mtdConvertToDouble( const mtdCharType * aValue )
     sDest[6] = sSrc[1];
     sDest[7] = sSrc[0];
 
-    // ¾ÕºÎºĞ 52ºñÆ®¸¸ ´õºí·Î º¯È¯
+    // ì•ë¶€ë¶„ 52ë¹„íŠ¸ë§Œ ë”ë¸”ë¡œ ë³€í™˜
     sEndian    = sEndian >> 12;
     sDoubleVal = ID_ULTODB( sEndian );
 
@@ -2597,7 +2597,7 @@ IDE_RC mtdValueFromOracle( mtcColumn*  aColumn,
         aOracleLength = 0;
     }
 
-    // aColumnÀÇ ÃÊ±âÈ­
+    // aColumnì˜ ì´ˆê¸°í™”
     IDE_TEST( mtc::initializeColumn( aColumn,
                                      & mtdChar,
                                      1,
@@ -2640,8 +2640,8 @@ static IDE_RC mtdStoredValue2MtdValue( UInt              aColumnSize,
 {
 /*******************************************************************
  * PROJ-1705
- * µğ½ºÅ©Å×ÀÌºíÄÃ·³ÀÇ µ¥ÀÌÅ¸¸¦
- * qp ·¹ÄÚµåÃ³¸®¿µ¿ªÀÇ ÇØ´ç ÄÃ·³À§Ä¡¿¡ º¹»ç
+ * ë””ìŠ¤í¬í…Œì´ë¸”ì»¬ëŸ¼ì˜ ë°ì´íƒ€ë¥¼
+ * qp ë ˆì½”ë“œì²˜ë¦¬ì˜ì—­ì˜ í•´ë‹¹ ì»¬ëŸ¼ìœ„ì¹˜ì— ë³µì‚¬
  *******************************************************************/
 
     mtdCharType* sCharValue;
@@ -2650,7 +2650,7 @@ static IDE_RC mtdStoredValue2MtdValue( UInt              aColumnSize,
     
     if( ( aDestValueOffset == 0 ) && ( aLength == 0 ) )
     {
-        // NULL µ¥ÀÌÅ¸
+        // NULL ë°ì´íƒ€
         sCharValue->length = 0;
     }
     else
@@ -2678,9 +2678,9 @@ UInt mtdNullValueSize()
 {
 /*******************************************************************
  * PROJ-1705
- * °¢ µ¥ÀÌÅ¸Å¸ÀÔÀÇ null ValueÀÇ Å©±â ¹İÈ¯
- * ¿¹ ) mtdCharType( UShort length; UChar value[1] ) ¿¡¼­
- *      lengthÅ¸ÀÔÀÎ UShortÀÇ Å©±â¸¦ ¹İÈ¯
+ * ê° ë°ì´íƒ€íƒ€ì…ì˜ null Valueì˜ í¬ê¸° ë°˜í™˜
+ * ì˜ˆ ) mtdCharType( UShort length; UChar value[1] ) ì—ì„œ
+ *      lengthíƒ€ì…ì¸ UShortì˜ í¬ê¸°ë¥¼ ë°˜í™˜
  *******************************************************************/
     return mtdActualSize( NULL, &mtdCharNull );
 }
@@ -2689,10 +2689,10 @@ static UInt mtdHeaderSize()
 {
 /***********************************************************************
  * PROJ-1705
- * length¸¦ °¡Áö´Â µ¥ÀÌÅ¸Å¸ÀÔÀÇ length Á¤º¸¸¦ ÀúÀåÇÏ´Â º¯¼öÀÇ Å©±â ¹İÈ¯
- * ¿¹ ) mtdCharType( UShort length; UChar value[1] ) ¿¡¼­
- *      lengthÅ¸ÀÔÀÎ UShortÀÇ Å©±â¸¦ ¹İÈ¯
- *  integer¿Í °°Àº °íÁ¤±æÀÌ µ¥ÀÌÅ¸Å¸ÀÔÀº 0 ¹İÈ¯
+ * lengthë¥¼ ê°€ì§€ëŠ” ë°ì´íƒ€íƒ€ì…ì˜ length ì •ë³´ë¥¼ ì €ì¥í•˜ëŠ” ë³€ìˆ˜ì˜ í¬ê¸° ë°˜í™˜
+ * ì˜ˆ ) mtdCharType( UShort length; UChar value[1] ) ì—ì„œ
+ *      lengthíƒ€ì…ì¸ UShortì˜ í¬ê¸°ë¥¼ ë°˜í™˜
+ *  integerì™€ ê°™ì€ ê³ ì •ê¸¸ì´ ë°ì´íƒ€íƒ€ì…ì€ 0 ë°˜í™˜
  **********************************************************************/
 
     return ID_SIZEOF(UShort);
@@ -2702,9 +2702,9 @@ static UInt mtdStoreSize( const smiColumn * aColumn )
 {
 /***********************************************************************
  * PROJ-2399 row tmaplate 
- * sm¿¡ ÀúÀåµÇ´Â µ¥ÀÌÅÍÀÇ Å©±â¸¦ ¹İÈ¯ÇÑ´Ù.
- * variable Å¸ÀÔÀÇ µ¥ÀÌÅÍ Å¸ÀÔÀº ID_UINT_MAX¸¦ ¹İÈ¯
- * mtheader°¡ sm¿¡ ÀúÀåµÈ°æ¿ì°¡ ¾Æ´Ï¸é mtheaderÅ©±â¸¦ »©¼­ ¹İÈ¯
+ * smì— ì €ì¥ë˜ëŠ” ë°ì´í„°ì˜ í¬ê¸°ë¥¼ ë°˜í™˜í•œë‹¤.
+ * variable íƒ€ì…ì˜ ë°ì´í„° íƒ€ì…ì€ ID_UINT_MAXë¥¼ ë°˜í™˜
+ * mtheaderê°€ smì— ì €ì¥ëœê²½ìš°ê°€ ì•„ë‹ˆë©´ mtheaderí¬ê¸°ë¥¼ ë¹¼ì„œ ë°˜í™˜
  **********************************************************************/
 
     return aColumn->size - mtdHeaderSize();

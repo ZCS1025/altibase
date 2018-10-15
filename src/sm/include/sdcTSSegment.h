@@ -20,12 +20,12 @@
  *
  * Description :
  *
- * º» ÆÄÀÏÀº Transaction Status Slot SegmentÀÇ Çì´õÆÄÀÏÀÔ´Ï´Ù.
+ * ë³¸ íŒŒì¼ì€ Transaction Status Slot Segmentì˜ í—¤ë”íŒŒì¼ì…ë‹ˆë‹¤.
  *
- * # °³³ä
+ * # ê°œë…
  *
- *   DRDBÀÇ MVCC°ú °ü·ÃÇÏ¿© Æ®·£Àè¼Ç »óÅÂ¸¦ °ü¸®ÇÏ±â À§ÇÑ
- *   Transaction Status SlotÀ» ÀúÀåÇÏ±â À§ÇÑ ¼¼±×¸ÕÆ®
+ *   DRDBì˜ MVCCê³¼ ê´€ë ¨í•˜ì—¬ íŠ¸ëœì­ì…˜ ìƒíƒœë¥¼ ê´€ë¦¬í•˜ê¸° ìœ„í•œ
+ *   Transaction Status Slotì„ ì €ì¥í•˜ê¸° ìœ„í•œ ì„¸ê·¸ë¨¼íŠ¸
  *
  **********************************************************************/
 
@@ -103,8 +103,8 @@ public:
                               void                * aHeader,
                               iduFixedTableMemory * aMemory );
 
-    /* TASK-4007 [SM] PBT¸¦ À§ÇÑ ±â´É Ãß°¡
-     * TSS DumpÇÒ ¼ö ÀÖ´Â ±â´É Ãß°¡*/
+    /* TASK-4007 [SM] PBTë¥¼ ìœ„í•œ ê¸°ëŠ¥ ì¶”ê°€
+     * TSS Dumpí•  ìˆ˜ ìˆëŠ” ê¸°ëŠ¥ ì¶”ê°€*/
     static IDE_RC dump( UChar *aPage ,
                         SChar *aOutBuf ,
                         UInt   aOutSize );
@@ -131,16 +131,16 @@ private:
 
 public:
 
-    UInt             mSlotSize;            /* TSS ½½·ÔÀÇ ¹ÙÀÌÆ® Å©±â */
-    UInt             mAlignSlotSize;       /* TSS ½½·ÔÀÇ Á¤·ÄµÈ ¹ÙÀÌÆ® Å©±â */
-    sdcTXSegEntry *  mEntryPtr;            /* ÀÚ½ÅÀÌ ¼Ò¼ÓµÈ Æ®·£Àè¼Ç ¼¼±×¸ÕÆ® ¿£Æ®¸® Æ÷ÀÎÅÍ */
+    UInt             mSlotSize;            /* TSS ìŠ¬ë¡¯ì˜ ë°”ì´íŠ¸ í¬ê¸° */
+    UInt             mAlignSlotSize;       /* TSS ìŠ¬ë¡¯ì˜ ì •ë ¬ëœ ë°”ì´íŠ¸ í¬ê¸° */
+    sdcTXSegEntry *  mEntryPtr;            /* ìì‹ ì´ ì†Œì†ëœ íŠ¸ëœì­ì…˜ ì„¸ê·¸ë¨¼íŠ¸ ì—”íŠ¸ë¦¬ í¬ì¸í„° */
 
-    sdpSegmentDesc   mTSSegDesc;           /* Segment ±â¼úÀÚ */
-    sdRID            mCurAllocExtRID;      /* ÇöÀç È¤Àº ¸¶Áö¸· »ç¿ëÇÑ ExtDescÀÇ RID */
-    scPageID         mFstPIDOfCurAllocExt; /* ÇöÀç È¤Àº ¸¶Áö¸· »ç¿ëÇÑ ExtDescÀÇ Ã¹¹øÂ° PageID */
-    scPageID         mCurAllocPID;         /* ÇöÀç È¤Àº ¸¶Áö¸· »ç¿ëÇÑ TSS ÆäÀÌÁöÀÇ PID */
+    sdpSegmentDesc   mTSSegDesc;           /* Segment ê¸°ìˆ ì */
+    sdRID            mCurAllocExtRID;      /* í˜„ì¬ í˜¹ì€ ë§ˆì§€ë§‰ ì‚¬ìš©í•œ ExtDescì˜ RID */
+    scPageID         mFstPIDOfCurAllocExt; /* í˜„ì¬ í˜¹ì€ ë§ˆì§€ë§‰ ì‚¬ìš©í•œ ExtDescì˜ ì²«ë²ˆì§¸ PageID */
+    scPageID         mCurAllocPID;         /* í˜„ì¬ í˜¹ì€ ë§ˆì§€ë§‰ ì‚¬ìš©í•œ TSS í˜ì´ì§€ì˜ PID */
 
-    /* À§ Cache¿¡ ´ëÇØ Mtx RollbackÀÌ ÀÏ¾î³µÀ»¶§ º¹±¸ÇÏ±â À§ÇÑ ¹é¾÷º» */
+    /* ìœ„ Cacheì— ëŒ€í•´ Mtx Rollbackì´ ì¼ì–´ë‚¬ì„ë•Œ ë³µêµ¬í•˜ê¸° ìœ„í•œ ë°±ì—…ë³¸ */
     sdRID            mCurAllocExtRID4MtxRollback;
     scPageID         mFstPIDOfCurAllocExt4MtxRollback;
     scPageID         mCurAllocPID4MtxRollback;
@@ -150,11 +150,11 @@ public:
 
 /***********************************************************************
  *
- * Description : TSS PageÀÇ CntlHdr ÃÊ±âÈ­
+ * Description : TSS Pageì˜ CntlHdr ì´ˆê¸°í™”
  *
- * aPagePtr       - [IN] ÆäÀÌÁö Æ÷ÀÎÅÍ
- * aTransID       - [IN] ÆäÀÌÁö¸¦ ÇÒ´çÇÑ Æ®·£Àè¼Ç ID
- * aFstDskViewSCN - [IN] ÆäÀÌÁö¸¦ ÇÒ´çÇÑ Æ®·£Àè¼ÇÀÇ Begin SCN
+ * aPagePtr       - [IN] í˜ì´ì§€ í¬ì¸í„°
+ * aTransID       - [IN] í˜ì´ì§€ë¥¼ í• ë‹¹í•œ íŠ¸ëœì­ì…˜ ID
+ * aFstDskViewSCN - [IN] í˜ì´ì§€ë¥¼ í• ë‹¹í•œ íŠ¸ëœì­ì…˜ì˜ Begin SCN
  *
  **********************************************************************/
 void sdcTSSegment::initPage( UChar  * aPagePtr,
@@ -178,11 +178,11 @@ void sdcTSSegment::initPage( UChar  * aPagePtr,
 
 /***********************************************************************
  *
- * Description : TSS Page¿¡ X-Latch È¹µæ ¹İÈ¯
+ * Description : TSS Pageì— X-Latch íšë“ ë°˜í™˜
  *
- * aStatistics [IN]  - Åë°èÁ¤º¸
- * aMtx        [IN]  - Mtx Æ÷ÀÎÅÍ
- * aCurPagePtr [OUT] - ÇöÀç »ç¿ëÁßÀÎ TSS ÆäÀÌÁö Æ÷ÀÎÅÍ
+ * aStatistics [IN]  - í†µê³„ì •ë³´
+ * aMtx        [IN]  - Mtx í¬ì¸í„°
+ * aCurPagePtr [OUT] - í˜„ì¬ ì‚¬ìš©ì¤‘ì¸ TSS í˜ì´ì§€ í¬ì¸í„°
  *
  **********************************************************************/
 inline IDE_RC sdcTSSegment::getCurPID4Update( idvSQL    * aStatistics,
@@ -213,11 +213,11 @@ inline IDE_RC sdcTSSegment::getCurPID4Update( idvSQL    * aStatistics,
 
 /***********************************************************************
  *
- * Description : TSS Page¿¡ S-Latch È¹µæ ¹İÈ¯
+ * Description : TSS Pageì— S-Latch íšë“ ë°˜í™˜
  *
- * aStatistics [IN]  - Åë°èÁ¤º¸
- * aMtx        [IN]  - Mtx Æ÷ÀÎÅÍ
- * aCurPagePtr [OUT] - ÇöÀç »ç¿ëÁßÀÎ TSS ÆäÀÌÁö Æ÷ÀÎÅÍ
+ * aStatistics [IN]  - í†µê³„ì •ë³´
+ * aMtx        [IN]  - Mtx í¬ì¸í„°
+ * aCurPagePtr [OUT] - í˜„ì¬ ì‚¬ìš©ì¤‘ì¸ TSS í˜ì´ì§€ í¬ì¸í„°
  *
  **********************************************************************/
 inline IDE_RC sdcTSSegment::getCurPID4Read( idvSQL    * aStatistics,
@@ -248,18 +248,18 @@ inline IDE_RC sdcTSSegment::getCurPID4Read( idvSQL    * aStatistics,
 
 /***********************************************************************
  *
- * Description : ÇöÀç ÇÒ´çÇÑ TSS ÆäÀÌÁöÀÇ Á¤º¸ ¼³Á¤
+ * Description : í˜„ì¬ í• ë‹¹í•œ TSS í˜ì´ì§€ì˜ ì •ë³´ ì„¤ì •
  *
- * [IN] aCurAllocExtRID      - ÇöÀç »ç¿ëÁßÀÎ ExtDesc RID
- * [IN] aFstPIDOfCurAllocExt - ÇöÀç »ç¿ëÁßÀÎ ExtDescÀÇ Ã¹¹øÂ° PID
- * [IN] aCurAllocExtRID      - ÇöÀç »ç¿ëÁßÀÎ ÆäÀÌÁöÀÇ PID
+ * [IN] aCurAllocExtRID      - í˜„ì¬ ì‚¬ìš©ì¤‘ì¸ ExtDesc RID
+ * [IN] aFstPIDOfCurAllocExt - í˜„ì¬ ì‚¬ìš©ì¤‘ì¸ ExtDescì˜ ì²«ë²ˆì§¸ PID
+ * [IN] aCurAllocExtRID      - í˜„ì¬ ì‚¬ìš©ì¤‘ì¸ í˜ì´ì§€ì˜ PID
  *
  **********************************************************************/
 inline void sdcTSSegment::setCurAllocInfo( sdRID     aCurAllocExtRID,
                                            scPageID  aFstPIDOfCurAllocExt,
                                            scPageID  aCurAllocPID )
 {
-    /* Mtx RollbackÀÌ ÀÏ¾î³µÀ»¶§ º¹±¸ÇÏ±â À§ÇÑ ¹é¾÷º» */
+    /* Mtx Rollbackì´ ì¼ì–´ë‚¬ì„ë•Œ ë³µêµ¬í•˜ê¸° ìœ„í•œ ë°±ì—…ë³¸ */
     mCurAllocExtRID4MtxRollback      = mCurAllocExtRID;
     mFstPIDOfCurAllocExt4MtxRollback = mFstPIDOfCurAllocExt;
     mCurAllocPID4MtxRollback         = mCurAllocPID;

@@ -18,7 +18,7 @@
  *
  * Spatio-Temporal Environment Handle
  *
- * TODO - Error °ü¸® Ã¼°è¸¦ ¼ö¸³ÇØ¾ß ÇÔ.
+ * TODO - Error ê´€ë¦¬ ì²´ê³„ë¥¼ ìˆ˜ë¦½í•´ì•¼ í•¨.
  *
  ***********************************************************************/
 
@@ -46,13 +46,13 @@ typedef struct ulsHandle
  *  External Interfaces
  *----------------------------------------------------------------*/
 
-/* Env Handle °ø°£ ÇÒ´ç ¹× ÃÊ±âÈ­ */
+/* Env Handle ê³µê°„ í• ë‹¹ ë° ì´ˆê¸°í™” */
 ACSRETURN ulsAllocEnv( ulsHandle ** aHandle );
 
-/* Env Handle °ø°£ ÇØÁ¦*/
+/* Env Handle ê³µê°„ í•´ì œ*/
 ACSRETURN ulsFreeEnv( ulsHandle * aHandle );
 
-/* Error Á¤º¸ È¹µæ */
+/* Error ì •ë³´ íšë“ */
 ACSRETURN ulsGetError( ulsHandle    * aHandle,
                        acp_uint32_t * aErrorCode,
                        acp_char_t  ** aErrorMessage,
@@ -62,13 +62,13 @@ ACSRETURN ulsGetError( ulsHandle    * aHandle,
  *  Internal Interfaces
  *----------------------------------------------------------------*/
 
-/* Env Handle ÃÊ±âÈ­*/
+/* Env Handle ì´ˆê¸°í™”*/
 ACI_RC  ulsInitEnv( ulsHandle * aHandle );
 
-/* Env Handle °Ë»ç */
+/* Env Handle ê²€ì‚¬ */
 ACI_RC  ulsCheckEnv( ulsHandle * aHandle );
 
-/* Error Code ¼³Á¤*/
+/* Error Code ì„¤ì •*/
 void ulsSetErrorCode( ulsHandle * aHandle, acp_uint32_t aErrorCode, ...);
 
 #endif /* _O_ULS_ENV_HANDLE_H_ */

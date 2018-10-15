@@ -70,7 +70,7 @@ static mtcColumn mtdColumn;
 mtdModule qtc::spCursorModule = {
     mtdTypeName,
     &mtdColumn,
-    MTD_NULL_ID, // ¾ÆÁ÷ Á¤ÇØÁöÁö ¾ÊÀº Data TypeÀ¸·Î ÃßÈÄ °áÁ¤µÊ.
+    MTD_NULL_ID, // ì•„ì§ ì •í•´ì§€ì§€ ì•Šì€ Data Typeìœ¼ë¡œ ì¶”í›„ ê²°ì •ë¨.
     MTD_UDT_MODULE_NO,
     {0,0,0,0,0,0,0,0},
     MTD_SP_CURSOR_ALIGN,
@@ -113,7 +113,7 @@ mtdModule qtc::spCursorModule = {
     mtd::canonizeDefault,
     mtdEndian,
     NULL,
-    NULL, // selectivity ÃßÃâ ÇÔ¼ö
+    NULL, // selectivity ì¶”ì¶œ í•¨ìˆ˜
     NULL,
     NULL,
     NULL,

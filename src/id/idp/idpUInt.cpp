@@ -102,7 +102,7 @@ idpUInt::idpUInt(const SChar *aName,
     mMin          = &mInMin;
     mMax          = &mInMax;
 
-    //default·ÎºÎÅÍ ¿Â °ªÀ» Source Value¿¡ ³Ö´Â´Ù. 
+    //defaultë¡œë¶€í„° ì˜¨ ê°’ì„ Source Valueì— ë„£ëŠ”ë‹¤. 
     mSrcValArr[IDP_VALUE_FROM_DEFAULT].mVal[0] =&mInDefault;
     mSrcValArr[IDP_VALUE_FROM_DEFAULT].mCount++;
 }
@@ -136,8 +136,8 @@ IDE_RC idpUInt::validateRange(void *aVal)
 
     return IDE_SUCCESS;
 
-    // ¿©±â¼­´Â ¿¡·¯ ¹öÆÛ ¹× ¿¡·¯ÄÚµå¸¦ ¸ðµÎ ¼³Á¤ÇÑ´Ù.
-    // ¿Ö³ÄÇÏ¸é, ÀÌ ÇÔ¼ö´Â insert() »Ó ¾Æ´Ï¶ó, update()¿¡¼­µµ È£ÃâµÇ±â ¶§¹®ÀÌ´Ù.
+    // ì—¬ê¸°ì„œëŠ” ì—ëŸ¬ ë²„í¼ ë° ì—ëŸ¬ì½”ë“œë¥¼ ëª¨ë‘ ì„¤ì •í•œë‹¤.
+    // ì™œëƒí•˜ë©´, ì´ í•¨ìˆ˜ëŠ” insert() ë¿ ì•„ë‹ˆë¼, update()ì—ì„œë„ í˜¸ì¶œë˜ê¸° ë•Œë¬¸ì´ë‹¤.
     IDE_EXCEPTION(ERR_RANGE);
     {
         idlOS::memcpy(&sValue, aVal, ID_SIZEOF(UInt)); // preventing SIGBUG
@@ -225,12 +225,12 @@ IDE_RC idpUInt::convertFromString(void *aString, void **aResult)
     IDE_EXCEPTION(data_validation_error);
     {
         /* BUG-17208:
-         * altibase.properties¿¡¼­ ¼ýÀÚÇü °ª µÚ¿¡ ¼¼¹ÌÄÝ·ÐÀÌ ºÙ¾îÀÖÀ» °æ¿ì
-         * ¾Æ¹«·± ¿À·ù ¸Þ½ÃÁö ¾øÀÌ iSQLÀÌ ½ÇÇàµÇÁö ¾Ê´Â ¹ö±×°¡ ÀÖ¾ú´Ù.
-         * ¹ö±×ÀÇ ¿øÀÎÀº iSQLÀÌ mErrorBuf¿¡ µé¾îÀÖ´Â ¿À·ù ¸Þ½ÃÁö¸¦ Ãâ·ÂÇÏ´Âµ¥
-         * mErrorBuf¿¡ ¿À·ù ¸Þ½ÃÁö¸¦ ¼³Á¤ÇÏÁö ¾ÊÀº °ÍÀÌ¾ú´Ù.
-         * ¾Æ·¡¿Í °°ÀÌ mErrorBuf¿¡ ¿À·ù ¸Þ½ÃÁö¸¦ ¼³Á¤ÇÏ´Â ÄÚµå¸¦ Ãß°¡ÇÏ¿©
-         * ¹ö±×¸¦ ¼öÁ¤ÇÑ´Ù. */
+         * altibase.propertiesì—ì„œ ìˆ«ìží˜• ê°’ ë’¤ì— ì„¸ë¯¸ì½œë¡ ì´ ë¶™ì–´ìžˆì„ ê²½ìš°
+         * ì•„ë¬´ëŸ° ì˜¤ë¥˜ ë©”ì‹œì§€ ì—†ì´ iSQLì´ ì‹¤í–‰ë˜ì§€ ì•ŠëŠ” ë²„ê·¸ê°€ ìžˆì—ˆë‹¤.
+         * ë²„ê·¸ì˜ ì›ì¸ì€ iSQLì´ mErrorBufì— ë“¤ì–´ìžˆëŠ” ì˜¤ë¥˜ ë©”ì‹œì§€ë¥¼ ì¶œë ¥í•˜ëŠ”ë°
+         * mErrorBufì— ì˜¤ë¥˜ ë©”ì‹œì§€ë¥¼ ì„¤ì •í•˜ì§€ ì•Šì€ ê²ƒì´ì—ˆë‹¤.
+         * ì•„ëž˜ì™€ ê°™ì´ mErrorBufì— ì˜¤ë¥˜ ë©”ì‹œì§€ë¥¼ ì„¤ì •í•˜ëŠ” ì½”ë“œë¥¼ ì¶”ê°€í•˜ì—¬
+         * ë²„ê·¸ë¥¼ ìˆ˜ì •í•œë‹¤. */
         idlOS::snprintf(mErrorBuf,
                         IDP_ERROR_BUF_SIZE,
                         "idp convertFromString() Error : "
@@ -279,12 +279,12 @@ void idpUInt::normalize3Bytes(UInt aUInt, UChar *aNormalized3Bytes)
 
 /**************************************************************************
  * Description :
- *    aObj °´Ã¼¿Í µ¿ÀÏÇÑ Å¸ÀÔÀÇ °´Ã¼¸¦ »ý¼ºÇÏ¿© idpBase*·Î ¹ÝÈ¯ÇÑ´Ù. 
- *    º¹Á¦½Ã, aSID·Î µé¾î¿Â °ªÀ» SID·Î ¼³Á¤ÇÏ¸ç, "*"·Î ¼³Á¤µÈ °ª¸¸
- *    º¹Á¦ÇÏ°í ±× ¿ÜÀÇ °ªÀº null °ªÀ¸·Î ÃÊ±âÈ­ µÈ´Ù.  
- * aObj      - [IN] º¹Á¦¸¦ À§ÇÑ Source °´Ã¼
- * aSID      - [IN] º¹Á¦µÈ °´Ã¼¿¡ ºÎ¿©ÇÒ »õ·Î¿î SID
- * aCloneObj - [OUT] º¹Á¦µÈ ÈÄ ¹ÝÈ¯µÇ´Â °´Ã¼
+ *    aObj ê°ì²´ì™€ ë™ì¼í•œ íƒ€ìž…ì˜ ê°ì²´ë¥¼ ìƒì„±í•˜ì—¬ idpBase*ë¡œ ë°˜í™˜í•œë‹¤. 
+ *    ë³µì œì‹œ, aSIDë¡œ ë“¤ì–´ì˜¨ ê°’ì„ SIDë¡œ ì„¤ì •í•˜ë©°, "*"ë¡œ ì„¤ì •ëœ ê°’ë§Œ
+ *    ë³µì œí•˜ê³  ê·¸ ì™¸ì˜ ê°’ì€ null ê°’ìœ¼ë¡œ ì´ˆê¸°í™” ëœë‹¤.  
+ * aObj      - [IN] ë³µì œë¥¼ ìœ„í•œ Source ê°ì²´
+ * aSID      - [IN] ë³µì œëœ ê°ì²´ì— ë¶€ì—¬í•  ìƒˆë¡œìš´ SID
+ * aCloneObj - [OUT] ë³µì œëœ í›„ ë°˜í™˜ë˜ëŠ” ê°ì²´
  **************************************************************************/
 IDE_RC idpUInt::clone(idpUInt* aObj, SChar* aSID, void** aCloneObj)
 {
@@ -306,7 +306,7 @@ IDE_RC idpUInt::clone(idpUInt* aObj, SChar* aSID, void** aCloneObj)
 
     sCloneObj->setSID(aSID);
 
-    /*"*"·Î ¼³Á¤µÈ ³»¿ë¸¸ º¹»çÇÑ´Ù.*/
+    /*"*"ë¡œ ì„¤ì •ëœ ë‚´ìš©ë§Œ ë³µì‚¬í•œë‹¤.*/
     sSrc = IDP_VALUE_FROM_SPFILE_BY_ASTERISK;
     
     for(sValNum = 0; sValNum < aObj->mSrcValArr[sSrc].mCount; sValNum++)

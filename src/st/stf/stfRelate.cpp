@@ -52,7 +52,7 @@ IDE_RC stfRelateEstimateRange(
 
 mtfModule stfRelate = {        
     1|MTC_NODE_OPERATOR_EQUAL|MTC_NODE_COMPARISON_TRUE,
-    ~(MTC_NODE_INDEX_MASK), // Relate´Â ÀÎµ¦½º¸¦ Å¸¸é ¾ÈµÊ.
+    ~(MTC_NODE_INDEX_MASK), // RelateëŠ” ì¸ë±ìŠ¤ë¥¼ íƒ€ë©´ ì•ˆë¨.
     1.0/2.0,  // TODO : default selectivity
     stfRelateFunctionName,
     &stfNotRelate,
@@ -189,7 +189,7 @@ IDE_RC stfRelateExtractRange(
     sValueColumn =
         aTemplate->rows[sValueNode->table].columns + sValueNode->column;
 
-    sValue = aTemplate->rows[sValueNode->table].row; //row¿¡ mbr°ªÀº ¾îµğ¿¡?
+    sValue = aTemplate->rows[sValueNode->table].row; //rowì— mbrê°’ì€ ì–´ë””ì—?
 
     sValueTemp = (void*)mtd::valueForModule( (smiColumn*)sValueColumn,
                                              sValue,

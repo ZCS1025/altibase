@@ -107,7 +107,7 @@ private:
 public:
     /************************************************************
      * Build fixed table
-     * FixedTable X$TEMPTABLE_STATS¸¸µå´Âµ¥ »ç¿ëµÈ´Ù.
+     * FixedTable X$TEMPTABLE_STATSë§Œë“œëŠ”ë° ì‚¬ìš©ëœë‹¤.
      ************************************************************/
     static IDE_RC buildTempTableStatsRecord( idvSQL              * /*aStatistics*/,
                                              void                * aHeader,
@@ -116,7 +116,7 @@ public:
 
     /************************************************************
      * Build fixed table
-     * FixedTable X$TEMPINFO¸¦ ¸¸µå´Âµ¥ »ç¿ëµÈ´Ù.
+     * FixedTable X$TEMPINFOë¥¼ ë§Œë“œëŠ”ë° ì‚¬ìš©ëœë‹¤.
      ************************************************************/
     static IDE_RC buildTempInfoRecord( idvSQL              * /*aStatistics*/,
                                        void                * aHeader,
@@ -126,7 +126,7 @@ public:
 
     /************************************************************
      * Build fixed table
-     * FixedTable X$TEMPTABLE_OPER¸¸µå´Âµ¥ »ç¿ëµÈ´Ù.
+     * FixedTable X$TEMPTABLE_OPERë§Œë“œëŠ”ë° ì‚¬ìš©ëœë‹¤.
      ************************************************************/
     static IDE_RC buildTempTableOprRecord( idvSQL              * /*aStatistics*/,
                                            void                * aHeader,
@@ -134,8 +134,8 @@ public:
                                            iduFixedTableMemory * aMemory );
 
 private:
-    /* ¿À·ù ¹ß»ı½Ã TempTableÀÇ ÀÚ¼¼ÇÑ ³»¿ëµéÀ» µû·Î ÆÄÀÏ·Î DumpÇÑ´Ù.
-     * ±×¸®°í DumpÇÑ °´Ã¼¿¡ ´ëÇÑ Á¤º¸¸¦ altibase_dump.trc¿¡µµ Ãâ·ÂÇÑ´Ù. */
+    /* ì˜¤ë¥˜ ë°œìƒì‹œ TempTableì˜ ìì„¸í•œ ë‚´ìš©ë“¤ì„ ë”°ë¡œ íŒŒì¼ë¡œ Dumpí•œë‹¤.
+     * ê·¸ë¦¬ê³  Dumpí•œ ê°ì²´ì— ëŒ€í•œ ì •ë³´ë¥¼ altibase_dump.trcì—ë„ ì¶œë ¥í•œë‹¤. */
     static void   dumpToFile( smiTempTableHeader * aHeader );
     static void   dumpTempTableHeader( void   * aTableHeader, 
                                        SChar  * aOutBuf, 
@@ -165,10 +165,10 @@ private:
 
 /**************************************************************************
  * Description :
- * Åë°è¸¦ ¼³Á¤ÇÏ°í, Session Áö¼Ó ¿©ºÎ¸¦ Ã¼Å©ÇÕ´Ï´Ù.
+ * í†µê³„ë¥¼ ì„¤ì •í•˜ê³ , Session ì§€ì† ì—¬ë¶€ë¥¼ ì²´í¬í•©ë‹ˆë‹¤.
  *
  * <IN>
- * aHeader        - ´ë»ó Table
+ * aHeader        - ëŒ€ìƒ Table
  ***************************************************************************/
 IDE_RC smiTempTable::checkSessionAndStats(smiTempTableHeader * aHeader,
                                           smiTempTableOpr      aOpr )
@@ -181,7 +181,7 @@ IDE_RC smiTempTable::checkSessionAndStats(smiTempTableHeader * aHeader,
     {
         IDV_TIME_GET( &sCurTime );
 
-        // Ã³À½ºÒ·Á¿À´Â Create½Ã¿¡´Â, ÀÌÀü TimeÀÌ ¾øÀ½ 
+        // ì²˜ìŒë¶ˆë ¤ì˜¤ëŠ” Createì‹œì—ëŠ”, ì´ì „ Timeì´ ì—†ìŒ 
         if( aOpr != SMI_TTOPR_CREATE )
         {
             sStats->mOprPrepareTime[ aOpr ] += 
@@ -190,7 +190,7 @@ IDE_RC smiTempTable::checkSessionAndStats(smiTempTableHeader * aHeader,
 
         sStats->mLastOprTime = sCurTime;
 
-        // OperationÀ» NÈ¸ ¼öÇàÇÏ¸é ¿¹¿ÜÃ³¸®ÀÓ. Å×½ºÆ®¿ë
+        // Operationì„ NíšŒ ìˆ˜í–‰í•˜ë©´ ì˜ˆì™¸ì²˜ë¦¬ì„. í…ŒìŠ¤íŠ¸ìš©
         
         IDE_TEST_RAISE( 
             ( aHeader->mCheckCnt == smuProperty::getSmTempOperAbort() ) &&
@@ -202,15 +202,15 @@ IDE_RC smiTempTable::checkSessionAndStats(smiTempTableHeader * aHeader,
     sStats->mTTLastOpr = aOpr;
     aHeader->mCheckCnt ++;
 
-    /* Fetch, Insert, Update, setHitFlagÃ³·³ ¸¹ÀÌ ºÒ¸®´Â ¿¬»êÀÌ ¾Æ´Ï°Å³ª,
-     * °»½ÅÇÒ ¶§°¡ µÇ¾ú´Ù¸é */
+    /* Fetch, Insert, Update, setHitFlagì²˜ëŸ¼ ë§ì´ ë¶ˆë¦¬ëŠ” ì—°ì‚°ì´ ì•„ë‹ˆê±°ë‚˜,
+     * ê°±ì‹ í•  ë•Œê°€ ë˜ì—ˆë‹¤ë©´ */
     if( ( aOpr == SMI_TTOPR_CREATE ) ||
         ( aOpr == SMI_TTOPR_DROP )   ||
         ( aOpr == SMI_TTOPR_SORT )   ||
         ( aOpr == SMI_TTOPR_CLEAR )   ||
         ( ( aHeader->mCheckCnt % SMI_TT_STATS_INTERVAL ) == 0 ) )
     {
-        // DropÀº TimeOutµÇ¾îµµ ÁøÇàÇØ¾ß ÇÏ±â ¶§¹®¿¡ Ã¼Å©¸¦ ¾ÈÇÔ 
+        // Dropì€ TimeOutë˜ì–´ë„ ì§„í–‰í•´ì•¼ í•˜ê¸° ë•Œë¬¸ì— ì²´í¬ë¥¼ ì•ˆí•¨ 
         if( aOpr != SMI_TTOPR_DROP )
         {
             IDE_TEST( iduCheckSessionEvent(aHeader->mStatistics) 
@@ -240,10 +240,10 @@ IDE_RC smiTempTable::checkSessionAndStats(smiTempTableHeader * aHeader,
 
 /**************************************************************************
  * Description :
- * Á¾·á ½Ã°£À» °è»êÇÏ¿©, Åë°è¸¦ °»½ÅÇÕ´Ï´Ù. 
+ * ì¢…ë£Œ ì‹œê°„ì„ ê³„ì‚°í•˜ì—¬, í†µê³„ë¥¼ ê°±ì‹ í•©ë‹ˆë‹¤. 
  *
  * <IN>
- * aHeader        - ´ë»ó Table
+ * aHeader        - ëŒ€ìƒ Table
  ***************************************************************************/
 void smiTempTable::checkEndTime( smiTempTableHeader * aHeader)
 {

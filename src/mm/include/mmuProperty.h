@@ -59,7 +59,7 @@ public:
     static UInt   mMmcMutexpoolMempoolSize;
     static UInt   mMmcStmtpagetableMempoolSize;
 
-    // BUG-19465 : CM_BufferÀÇ pending list¸¦ Á¦ÇÑ
+    // BUG-19465 : CM_Bufferì˜ pending listë¥¼ ì œí•œ
     static UInt   mCmMaxPendingList;
     static UInt   mAutoCommit;
     static UInt   mTxStartMode;
@@ -115,15 +115,15 @@ public:
     /* BUG-36205 Plan Cache On/Off property for PSM */
     static UInt   mSqlPlanCacheUseInPSM;
 
-    //fix BUG-23776, XA ROLLBACK½Ã XID°¡ ACTIVEÀÏ¶§ ´ë±â½Ã°£À»
-    //QueryTime OutÀÌ ¾Æ´Ï¶ó,Property¸¦ Á¦°øÇØ¾ß ÇÔ.
+    //fix BUG-23776, XA ROLLBACKì‹œ XIDê°€ ACTIVEì¼ë•Œ ëŒ€ê¸°ì‹œê°„ì„
+    //QueryTime Outì´ ì•„ë‹ˆë¼,Propertyë¥¼ ì œê³µí•´ì•¼ í•¨.
     static UInt   mXaRollbackTimeOut;
 
     static UInt   mQueryLoggingLevel;
     // bug-19279 remote sysdba enable + sys can kill session
     static UInt   mRemoteSysdbaEnable;
 
-    // BUG-24993 ³×Æ®¿öÅ© ¿¡·¯ ¸Ş½ÃÁö log ¿©ºÎ
+    // BUG-24993 ë„¤íŠ¸ì›Œí¬ ì—ëŸ¬ ë©”ì‹œì§€ log ì—¬ë¶€
     static UInt   mNetworkErrorLog;
     /* TASK-4324  Applying lessons learned from CPBS-CAESE to altibase  */
     static UInt   mServiceThrInitialLifeSpan;
@@ -138,8 +138,8 @@ public:
     static UInt   mShutdownImmediateTimeout;
 
     // fix BUG-30731
-    // V$STATEMENT, V$SQLTEXT, V$PLANTEXT Á¶È¸½Ã
-    // ÀÔ·ÂµÈ °ª¸¸Å­¸¸ ÇÑ¹ø¿¡ °Ë»ö
+    // V$STATEMENT, V$SQLTEXT, V$PLANTEXT ì¡°íšŒì‹œ
+    // ì…ë ¥ëœ ê°’ë§Œí¼ë§Œ í•œë²ˆì— ê²€ìƒ‰
     static UInt   mStatementListPartialScanCount;
     //fix BUG-30949 A waiting time for enqueue event in transformed dedicated thread should not be infinite. 
     static ULong  mMaxEnqWaitTime;
@@ -175,7 +175,7 @@ public:
     /* BUG-41168 SSL extension*/
     static UInt   mTcpEnable;
 
-    /* PROJ-2624 [±â´É¼º] MM - À¯¿¬ÇÑ access_list °ü¸®¹æ¹ı Á¦°ø */
+    /* PROJ-2624 [ê¸°ëŠ¥ì„±] MM - ìœ ì—°í•œ access_list ê´€ë¦¬ë°©ë²• ì œê³µ */
     static SChar* mIPACLFile;
 
     /* PROJ-2626 Snapshot Export */
@@ -216,7 +216,7 @@ public:
     static UInt   getMmcStmtpagetableMempoolSize() { return mMmcStmtpagetableMempoolSize; }
     static UInt   getCmDetectTime(){ return mCmDetectTime; }
 
-    // BUG-19465 : CM_BufferÀÇ pending list¸¦ Á¦ÇÑ
+    // BUG-19465 : CM_Bufferì˜ pending listë¥¼ ì œí•œ
     static UInt   getCmMaxPendingList(){ return mCmMaxPendingList; }
     static UInt   getAutoCommit()     { return mAutoCommit; }
     static UInt   getTxStartMode()    { return mTxStartMode; }
@@ -331,8 +331,8 @@ public:
     /* BUG-41168 SSL extension */
     static UInt   getTcpEnable()      { return mTcpEnable; }
             
-    //fix BUG-23776, XA ROLLBACK½Ã XID°¡ ACTIVEÀÏ¶§ ´ë±â½Ã°£À»
-    //QueryTime OutÀÌ ¾Æ´Ï¶ó,Property¸¦ Á¦°øÇØ¾ß ÇÔ.
+    //fix BUG-23776, XA ROLLBACKì‹œ XIDê°€ ACTIVEì¼ë•Œ ëŒ€ê¸°ì‹œê°„ì„
+    //QueryTime Outì´ ì•„ë‹ˆë¼,Propertyë¥¼ ì œê³µí•´ì•¼ í•¨.
     static UInt   getXaRollbackTimeOut()       {  return mXaRollbackTimeOut; }
             
     // bug-19279 remote sysdba enable + sys can kill session
@@ -398,8 +398,8 @@ public:
                                                void  * /*aArg*/);
                                                 
 
-    //fix BUG-23776, XA ROLLBACK½Ã XID°¡ ACTIVEÀÏ¶§ ´ë±â½Ã°£À»
-    //QueryTime OutÀÌ ¾Æ´Ï¶ó,Property¸¦ Á¦°øÇØ¾ß ÇÔ.
+    //fix BUG-23776, XA ROLLBACKì‹œ XIDê°€ ACTIVEì¼ë•Œ ëŒ€ê¸°ì‹œê°„ì„
+    //QueryTime Outì´ ì•„ë‹ˆë¼,Propertyë¥¼ ì œê³µí•´ì•¼ í•¨.
     static IDE_RC callbackXaRollbackTimeOut(idvSQL * /*aStatistics*/,
                                             SChar * /*aName*/,
                                             void  * /*aOldValue*/,
@@ -411,7 +411,7 @@ public:
     static IDE_RC callbackQueryLoggingLevel(idvSQL * /*aStatistics*/,
                                             SChar *, void *, void *, void *);
 
-    // BUG-24993 ³×Æ®¿öÅ© ¿¡·¯ ¸Ş½ÃÁö log ¿©ºÎ
+    // BUG-24993 ë„¤íŠ¸ì›Œí¬ ì—ëŸ¬ ë©”ì‹œì§€ log ì—¬ë¶€
     static UInt   getNetworkErrorLog() { return mNetworkErrorLog; }
     /* TASK-4324  Applying lessons learned from CPBS-CAESE to altibase  */
     static IDE_RC callbackServiceThrInitialLifeSpan(idvSQL * /*aStatistics*/,

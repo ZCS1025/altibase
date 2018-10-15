@@ -29,7 +29,7 @@ static IDE_RC mmmPhaseActionEndPreProcess(mmmPhase         /*aPhase*/,
 {
     IDE_CALLBACK_SEND_MSG("#OK_STARTUP");
 
-    // ¸Ş½ÃÁö Ãâ·ÂÀ» ¸ğµå¿¡ µû¶ó ¼öÁ¤.
+    // ë©”ì‹œì§€ ì¶œë ¥ì„ ëª¨ë“œì— ë”°ë¼ ìˆ˜ì •.
     //fix PROJ-1749
     if ((mmi::getServerOption() & MMI_DEBUG_MASK) == MMI_DEBUG_TRUE)
     {

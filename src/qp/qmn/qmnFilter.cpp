@@ -21,13 +21,13 @@
  * Description :
  *     FILT(FILTer) Node
  *
- *     °ü°èÇü ¸ğµ¨¿¡¼­ selectionÀ» ¼öÇàÇÏ´Â Plan Node ÀÌ´Ù.
- *     SCAN ³ëµå¿Í ´Ş¸® Storage Manager¿¡ Á÷Á¢ Á¢±ÙÇÏÁö ¾Ê°í,
- *     ÀÌ¹Ì selectionµÈ record¿¡ ´ëÇÑ selectionÀ» ¼öÇàÇÑ´Ù.
+ *     ê´€ê³„í˜• ëª¨ë¸ì—ì„œ selectionì„ ìˆ˜í–‰í•˜ëŠ” Plan Node ì´ë‹¤.
+ *     SCAN ë…¸ë“œì™€ ë‹¬ë¦¬ Storage Managerì— ì§ì ‘ ì ‘ê·¼í•˜ì§€ ì•Šê³ ,
+ *     ì´ë¯¸ selectionëœ recordì— ëŒ€í•œ selectionì„ ìˆ˜í–‰í•œë‹¤.
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  **********************************************************************/
 
@@ -45,13 +45,13 @@ qmnFILT::init( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    FILT ³ëµåÀÇ ÃÊ±âÈ­
+ *    FILT ë…¸ë“œì˜ ì´ˆê¸°í™”
  *
  * Implementation :
- *    - ÃÖÃÊ ÃÊ±âÈ­°¡ µÇÁö ¾ÊÀº °æ¿ì ÃÖÃÊ ÃÊ±âÈ­ ¼öÇà
- *    - Child Plan¿¡ ´ëÇÑ ÃÊ±âÈ­
- *    - Constant FilterÀÇ ¼öÇà °á°ú °Ë»ç
- *    - Constant FilterÀÇ °á°ú¿¡ µû¸¥ ¼öÇà ÇÔ¼ö °áÁ¤
+ *    - ìµœì´ˆ ì´ˆê¸°í™”ê°€ ë˜ì§€ ì•Šì€ ê²½ìš° ìµœì´ˆ ì´ˆê¸°í™” ìˆ˜í–‰
+ *    - Child Planì— ëŒ€í•œ ì´ˆê¸°í™”
+ *    - Constant Filterì˜ ìˆ˜í–‰ ê²°ê³¼ ê²€ì‚¬
+ *    - Constant Filterì˜ ê²°ê³¼ì— ë”°ë¥¸ ìˆ˜í–‰ í•¨ìˆ˜ ê²°ì •
  *
  ***********************************************************************/
 
@@ -65,13 +65,13 @@ qmnFILT::init( qcTemplate * aTemplate,
     sDataPlan->doIt = qmnFILT::doItDefault;
 
     //------------------------------------------------
-    // ÃÖÃÊ ÃÊ±âÈ­ ¼öÇà ¿©ºÎ ÆÇ´Ü
+    // ìµœì´ˆ ì´ˆê¸°í™” ìˆ˜í–‰ ì—¬ë¶€ íŒë‹¨
     //------------------------------------------------
 
     if ( (*sDataPlan->flag & QMND_FILT_INIT_DONE_MASK)
          == QMND_FILT_INIT_DONE_FALSE )
     {
-        // ÃÖÃÊ ÃÊ±âÈ­ ¼öÇà
+        // ìµœì´ˆ ì´ˆê¸°í™” ìˆ˜í–‰
         IDE_TEST( firstInit(sCodePlan, sDataPlan) != IDE_SUCCESS );
     }
     else
@@ -80,7 +80,7 @@ qmnFILT::init( qcTemplate * aTemplate,
     }
 
     //------------------------------------------------
-    // Constant Filter¸¦ ¼öÇà
+    // Constant Filterë¥¼ ìˆ˜í–‰
     //------------------------------------------------
 
     if ( sCodePlan->constantFilter != NULL )
@@ -96,28 +96,28 @@ qmnFILT::init( qcTemplate * aTemplate,
     }
 
     //------------------------------------------------
-    // Constant Filter¿¡ µû¸¥ ¼öÇà ÇÔ¼ö °áÁ¤
+    // Constant Filterì— ë”°ë¥¸ ìˆ˜í–‰ í•¨ìˆ˜ ê²°ì •
     //------------------------------------------------
 
     /*
      * BUG-29551
-     * constant filter °¡ false ÀÌ¸é ÇÏÀ§ plan À» ¼öÇà ¾ÈÇÒ°ÍÀÌ¹Ç·Î
-     * init Á¶Â÷ ÇÏÁö ¾Ê´Â´Ù
+     * constant filter ê°€ false ì´ë©´ í•˜ìœ„ plan ì„ ìˆ˜í–‰ ì•ˆí• ê²ƒì´ë¯€ë¡œ
+     * init ì¡°ì°¨ í•˜ì§€ ì•ŠëŠ”ë‹¤
      */
     if (sJudge == ID_TRUE)
     {
-        /* Child PlanÀÇ ÃÊ±âÈ­ */
+        /* Child Planì˜ ì´ˆê¸°í™” */
         IDE_TEST(aPlan->left->init(aTemplate, aPlan->left) != IDE_SUCCESS);
 
-        /* Constant Filter¸¦ ¸¸Á·ÇÏ´Â °æ¿ì ÀÏ¹İ ¼öÇà ÇÔ¼ö¸¦ ¼³Á¤ */
+        /* Constant Filterë¥¼ ë§Œì¡±í•˜ëŠ” ê²½ìš° ì¼ë°˜ ìˆ˜í–‰ í•¨ìˆ˜ë¥¼ ì„¤ì • */
         sDataPlan->doIt = qmnFILT::doItFirst;
     }
     else
     {
         //-------------------------------------------
-        // Constant Filter¸¦ ¸¸Á·ÇÏÁö ¾Ê´Â °æ¿ì
-        // - Ç×»ó Á¶°ÇÀ» ¸¸Á·ÇÏÁö ¾ÊÀ¸¹Ç·Î
-        //   ¾î¶°ÇÑ °á°úµµ ¸®ÅÏÇÏÁö ¾Ê´Â ÇÔ¼ö¸¦ °áÁ¤ÇÑ´Ù.
+        // Constant Filterë¥¼ ë§Œì¡±í•˜ì§€ ì•ŠëŠ” ê²½ìš°
+        // - í•­ìƒ ì¡°ê±´ì„ ë§Œì¡±í•˜ì§€ ì•Šìœ¼ë¯€ë¡œ
+        //   ì–´ë– í•œ ê²°ê³¼ë„ ë¦¬í„´í•˜ì§€ ì•ŠëŠ” í•¨ìˆ˜ë¥¼ ê²°ì •í•œë‹¤.
         //-------------------------------------------
         sDataPlan->doIt = qmnFILT::doItAllFalse;
     }
@@ -138,10 +138,10 @@ qmnFILT::doIt( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    FILTÀÇ °íÀ¯ ±â´ÉÀ» ¼öÇàÇÑ´Ù.
+ *    FILTì˜ ê³ ìœ  ê¸°ëŠ¥ì„ ìˆ˜í–‰í•œë‹¤.
  *
  * Implementation :
- *    ÁöÁ¤µÈ ÇÔ¼ö Æ÷ÀÎÅÍ¸¦ ¼öÇàÇÑ´Ù.
+ *    ì§€ì •ëœ í•¨ìˆ˜ í¬ì¸í„°ë¥¼ ìˆ˜í–‰í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -169,8 +169,8 @@ qmnFILT::padNull( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    FILT ³ëµå´Â º°µµÀÇ null row¸¦ °¡ÁöÁö ¾ÊÀ¸¸ç,
- *    Child¿¡ ´ëÇÏ¿© padNull()À» È£ÃâÇÑ´Ù.
+ *    FILT ë…¸ë“œëŠ” ë³„ë„ì˜ null rowë¥¼ ê°€ì§€ì§€ ì•Šìœ¼ë©°,
+ *    Childì— ëŒ€í•˜ì—¬ padNull()ì„ í˜¸ì¶œí•œë‹¤.
  *
  * Implementation :
  *
@@ -186,7 +186,7 @@ qmnFILT::padNull( qcTemplate * aTemplate,
     if ( (aTemplate->planFlag[sCodePlan->planID] & QMND_FILT_INIT_DONE_MASK)
          == QMND_FILT_INIT_DONE_FALSE )
     {
-        // ÃÊ±âÈ­µÇÁö ¾ÊÀº °æ¿ì ÃÊ±âÈ­ ¼öÇà
+        // ì´ˆê¸°í™”ë˜ì§€ ì•Šì€ ê²½ìš° ì´ˆê¸°í™” ìˆ˜í–‰
         IDE_TEST( aPlan->init( aTemplate, aPlan ) != IDE_SUCCESS );
     }
     else
@@ -194,7 +194,7 @@ qmnFILT::padNull( qcTemplate * aTemplate,
         // Nothing To Do
     }
 
-    // Child Plan¿¡ ´ëÇÏ¿© Null Padding¼öÇà
+    // Child Planì— ëŒ€í•˜ì—¬ Null Paddingìˆ˜í–‰
     IDE_TEST( aPlan->left->padNull( aTemplate, aPlan->left )
               != IDE_SUCCESS );
 
@@ -217,7 +217,7 @@ qmnFILT::printPlan( qcTemplate   * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    FILT ³ëµåÀÇ ¼öÇà Á¤º¸¸¦ Ãâ·ÂÇÑ´Ù.
+ *    FILT ë…¸ë“œì˜ ìˆ˜í–‰ ì •ë³´ë¥¼ ì¶œë ¥í•œë‹¤.
  *
  * Implementation :
  *
@@ -234,7 +234,7 @@ qmnFILT::printPlan( qcTemplate   * aTemplate,
     UInt  i;
 
     //----------------------------
-    // Display À§Ä¡ °áÁ¤
+    // Display ìœ„ì¹˜ ê²°ì •
     //----------------------------
 
     for ( i = 0; i < aDepth; i++ )
@@ -244,14 +244,14 @@ qmnFILT::printPlan( qcTemplate   * aTemplate,
     }
 
     //----------------------------
-    // FILT ³ëµå Ç¥½Ã
+    // FILT ë…¸ë“œ í‘œì‹œ
     //----------------------------
 
     iduVarStringAppend( aString,
                         "FILTER\n" );
 
     //----------------------------
-    // Predicate Á¤º¸ÀÇ »ó¼¼ Ãâ·Â
+    // Predicate ì •ë³´ì˜ ìƒì„¸ ì¶œë ¥
     //----------------------------
 
     if (QCG_GET_SESSION_TRCLOG_DETAIL_PREDICATE(aTemplate->stmt) == 1)
@@ -267,14 +267,14 @@ qmnFILT::printPlan( qcTemplate   * aTemplate,
     }
 
     //----------------------------
-    // Subquery Á¤º¸ÀÇ Ãâ·Â
-    // Subquery´Â ´ÙÀ½°ú °°Àº predicate¿¡¸¸ Á¸ÀçÇÒ ¼ö ÀÖ´Ù.
+    // Subquery ì •ë³´ì˜ ì¶œë ¥
+    // SubqueryëŠ” ë‹¤ìŒê³¼ ê°™ì€ predicateì—ë§Œ ì¡´ì¬í•  ìˆ˜ ìˆë‹¤.
     //     1. Constant Filter
     //     2. Normal Filter
     //----------------------------
 
     // To Fix PR-8030
-    // Constant FilterÀÇ Subquery Á¤º¸ Ãâ·Â
+    // Constant Filterì˜ Subquery ì •ë³´ ì¶œë ¥
     if ( sCodePlan->constantFilter != NULL )
     {
         IDE_TEST( qmn::printSubqueryPlan( aTemplate,
@@ -288,7 +288,7 @@ qmnFILT::printPlan( qcTemplate   * aTemplate,
         // Nothing To Do
     }
 
-    // Normal FilterÀÇ Subquery Á¤º¸ Ãâ·Â
+    // Normal Filterì˜ Subquery ì •ë³´ ì¶œë ¥
     if ( sCodePlan->filter != NULL )
     {
         IDE_TEST( qmn::printSubqueryPlan( aTemplate,
@@ -299,7 +299,7 @@ qmnFILT::printPlan( qcTemplate   * aTemplate,
     }
 
     //----------------------------
-    // Operatorº° °á°ú Á¤º¸ Ãâ·Â
+    // Operatorë³„ ê²°ê³¼ ì •ë³´ ì¶œë ¥
     //----------------------------
     if ( QCU_TRCLOG_RESULT_DESC == 1 )
     {
@@ -315,7 +315,7 @@ qmnFILT::printPlan( qcTemplate   * aTemplate,
     }
 
     //----------------------------
-    // Child PlanÀÇ Á¤º¸ Ãâ·Â
+    // Child Planì˜ ì •ë³´ ì¶œë ¥
     //----------------------------
 
     IDE_TEST( aPlan->left->printPlan( aTemplate,
@@ -341,7 +341,7 @@ qmnFILT::doItDefault( qcTemplate * /* aTemplate */,
 /***********************************************************************
  *
  * Description :
- *    ÀÌ ÇÔ¼ö°¡ ¼öÇàµÇ¸é ¾ÈµÊ.
+ *    ì´ í•¨ìˆ˜ê°€ ìˆ˜í–‰ë˜ë©´ ì•ˆë¨.
  *
  * Implementation :
  *
@@ -366,13 +366,13 @@ qmnFILT::doItAllFalse( qcTemplate * /* aTemplate */,
 /***********************************************************************
  *
  * Description :
- *    Filter Á¶°ÇÀ» ¸¸Á·ÇÏ´Â Record°¡ ÇÏ³ªµµ ¾ø´Â °æ¿ì »ç¿ë
+ *    Filter ì¡°ê±´ì„ ë§Œì¡±í•˜ëŠ” Recordê°€ í•˜ë‚˜ë„ ì—†ëŠ” ê²½ìš° ì‚¬ìš©
  *
- *    Constant Filter °Ë»çÈÄ¿¡ °áÁ¤µÇ´Â ÇÔ¼ö·Î Àı´ë ¸¸Á·ÇÏ´Â
- *    Record°¡ Á¸ÀçÇÏÁö ¾Ê´Â´Ù.
+ *    Constant Filter ê²€ì‚¬í›„ì— ê²°ì •ë˜ëŠ” í•¨ìˆ˜ë¡œ ì ˆëŒ€ ë§Œì¡±í•˜ëŠ”
+ *    Recordê°€ ì¡´ì¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
  *
  * Implementation :
- *    Ç×»ó record ¾øÀ½À» ¸®ÅÏÇÑ´Ù.
+ *    í•­ìƒ record ì—†ìŒì„ ë¦¬í„´í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -381,10 +381,10 @@ qmnFILT::doItAllFalse( qcTemplate * /* aTemplate */,
 
     qmncFILT * sCodePlan = (qmncFILT*) aPlan;
 
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     IDE_DASSERT( sCodePlan->constantFilter != NULL );
 
-    // µ¥ÀÌÅÍ ¾øÀ½À» Setting
+    // ë°ì´í„° ì—†ìŒì„ Setting
     *aFlag &= ~QMC_ROW_DATA_MASK;
     *aFlag |= QMC_ROW_DATA_NONE;
 
@@ -401,9 +401,9 @@ qmnFILT::doItFirst( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    FILTÀÇ ¼öÇà ÇÔ¼ö
- *    Child¸¦ ¼öÇàÇÏ°í Record°¡ ÀÖÀ» °æ¿ì Á¶°ÇÀ» °Ë»çÇÑ´Ù.
- *    Á¶°ÇÀ» ¸¸Á·ÇÒ ¶§³¢Áö ÀÌ¸¦ ¹İº¹ÇÑ´Ù.
+ *    FILTì˜ ìˆ˜í–‰ í•¨ìˆ˜
+ *    Childë¥¼ ìˆ˜í–‰í•˜ê³  Recordê°€ ìˆì„ ê²½ìš° ì¡°ê±´ì„ ê²€ì‚¬í•œë‹¤.
+ *    ì¡°ê±´ì„ ë§Œì¡±í•  ë•Œë¼ì§€ ì´ë¥¼ ë°˜ë³µí•œë‹¤.
  *
  * Implementation :
  *
@@ -420,22 +420,22 @@ qmnFILT::doItFirst( qcTemplate * aTemplate,
 
     while ( sJudge == ID_FALSE )
     {
-        // Child¸¦ ¼öÇà
+        // Childë¥¼ ìˆ˜í–‰
         IDE_TEST( aPlan->left->doIt( aTemplate, aPlan->left, aFlag )
                   != IDE_SUCCESS );
 
         if ( ( *aFlag & QMC_ROW_DATA_MASK ) == QMC_ROW_DATA_NONE )
         {
-            // Record°¡ ¾ø´Â °æ¿ì
+            // Recordê°€ ì—†ëŠ” ê²½ìš°
             break;
         }
         else
         {
-            // Record°¡ ÀÖÀ» °æ¿ì Á¶°Ç °Ë»ç.
+            // Recordê°€ ìˆì„ ê²½ìš° ì¡°ê±´ ê²€ì‚¬.
 
             // fix BUG-10417
-            // sCodePlan->filter°¡ NULLÀÎ °æ¿ìÀÇ °í·Á°¡ ÇÊ¿äÇÏ¸ç,
-            // sCodePlan->filter == NULL ÀÌ¸é, sJudge = ID_TRUE·Î ¼³Á¤.
+            // sCodePlan->filterê°€ NULLì¸ ê²½ìš°ì˜ ê³ ë ¤ê°€ í•„ìš”í•˜ë©°,
+            // sCodePlan->filter == NULL ì´ë©´, sJudge = ID_TRUEë¡œ ì„¤ì •.
             if( sCodePlan->filter != NULL )
             {
                 IDE_TEST( qtc::judge( & sJudge, sCodePlan->filter, aTemplate )
@@ -464,7 +464,7 @@ qmnFILT::firstInit( qmncFILT   * aCodePlan,
 /***********************************************************************
  *
  * Description :
- *    FILT nodeÀÇ Data ¿µ¿ªÀÇ ¸â¹ö¿¡ ´ëÇÑ ÃÊ±âÈ­¸¦ ¼öÇà
+ *    FILT nodeì˜ Data ì˜ì—­ì˜ ë©¤ë²„ì— ëŒ€í•œ ì´ˆê¸°í™”ë¥¼ ìˆ˜í–‰
  *
  * Implementation :
  *
@@ -473,12 +473,12 @@ qmnFILT::firstInit( qmncFILT   * aCodePlan,
 #define IDE_FN "qmnFILT::firstInit"
     IDE_MSGLOG_FUNC(IDE_MSGLOG_BODY("qmnFILT::firstInit"));
 
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     IDE_DASSERT( aCodePlan->constantFilter != NULL ||
                  aCodePlan->filter != NULL );
 
     //---------------------------------
-    // ÃÊ±âÈ­ ¿Ï·á¸¦ Ç¥±â
+    // ì´ˆê¸°í™” ì™„ë£Œë¥¼ í‘œê¸°
     //---------------------------------
 
     *aDataPlan->flag &= ~QMND_FILT_INIT_DONE_MASK;
@@ -498,7 +498,7 @@ qmnFILT::printPredicateInfo( qcTemplate   * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    PredicateÀÇ »ó¼¼ Á¤º¸¸¦ Ãâ·ÂÇÑ´Ù.
+ *    Predicateì˜ ìƒì„¸ ì •ë³´ë¥¼ ì¶œë ¥í•œë‹¤.
  *
  * Implementation :
  *
@@ -509,7 +509,7 @@ qmnFILT::printPredicateInfo( qcTemplate   * aTemplate,
 
     UInt i;
 
-    // Constant Filter Ãâ·Â
+    // Constant Filter ì¶œë ¥
     if (aCodePlan->constantFilter != NULL)
     {
         for ( i = 0; i < aDepth; i++ )
@@ -531,7 +531,7 @@ qmnFILT::printPredicateInfo( qcTemplate   * aTemplate,
     }
 
 
-    // Normal Filter Ãâ·Â
+    // Normal Filter ì¶œë ¥
     if (aCodePlan->filter != NULL)
     {
         for ( i = 0; i < aDepth; i++ )

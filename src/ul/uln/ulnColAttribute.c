@@ -60,7 +60,7 @@ ACI_RC ulnSFID_06(ulnFnContext *aFnContext)
  * Implementation:
  *
  * To Fix BUG-17521
- *    : win64 ¿¡¼­¸¸ ´ÙÀ½ °ªµéÀ» 64-bit value·Î ¼³Á¤ÇÑ´Ù.
+ *    : win64 ì—ì„œë§Œ ë‹¤ìŒ ê°’ë“¤ì„ 64-bit valueë¡œ ì„¤ì •í•œë‹¤.
  *
  * When the FieldIdentifier parameter has one of the following values,
  * a 64-bit value is returned in *NumericAttribute:
@@ -119,8 +119,8 @@ SQLRETURN ulnColAttribute(ulnStmt      *aStmt,
     /* PROJ-1789 Updatable Scrollable Cursor */
     if(aColumnNumber == 0)
     {
-        /* Ird¿¡ BOOKMARK¿¡ ´ëÇÑ Á¤º¸°¡ ¾ø´Ù.
-         * °ªÀÌ °íÁ¤µÇ¾îÀÖÀ¸¹Ç·Î ±×³É hard coding ÇÑ´Ù. */
+        /* Irdì— BOOKMARKì— ëŒ€í•œ ì •ë³´ê°€ ì—†ë‹¤.
+         * ê°’ì´ ê³ ì •ë˜ì–´ìˆìœ¼ë¯€ë¡œ ê·¸ëƒ¥ hard coding í•œë‹¤. */
 
         switch(aFieldIdentifier)
         {
@@ -152,11 +152,11 @@ SQLRETURN ulnColAttribute(ulnStmt      *aStmt,
         sDescRecIrd = ulnStmtGetIrdRec(aStmt, aColumnNumber);
         ACI_TEST_RAISE(sDescRecIrd == NULL, LABEL_MEM_MAN_ERR2);
 
-        /* BUGBUG : ulnGetDescField ¿Í Áßº¹µÈ ÄÚµå°¡ »ó´ç¼ö Á¸ÀçÇÑ´Ù.
-         *          ¹°·Ğ SQLColAttribute() ÇÔ¼öÀÇ °æ¿ì¿¡´Â ¸ğµç °ªÀ»
-         *          32bit signed-int·Î Ä³½ºÆÃÇØ¼­ »ç¿ëÀÚ¿¡°Ô µ¹·ÁÁÖ¾î¾ß ÇÑ´Ù´Â
-         *          Â÷ÀÌ°¡ ÀÖÁö¸¸, Àû¾îµµ °øÅëµÈ ·çÆ¾À» ÅëÇØ¼­ °ªÀ» °¡Á®¿Â ´ÙÀ½¿¡
-         *          ±× °ªÀ» Ä³½ºÆÃÇÏµµ·Ï ÇØ¾ß ÇÒ °ÍÀÌ´Ù.
+        /* BUGBUG : ulnGetDescField ì™€ ì¤‘ë³µëœ ì½”ë“œê°€ ìƒë‹¹ìˆ˜ ì¡´ì¬í•œë‹¤.
+         *          ë¬¼ë¡  SQLColAttribute() í•¨ìˆ˜ì˜ ê²½ìš°ì—ëŠ” ëª¨ë“  ê°’ì„
+         *          32bit signed-intë¡œ ìºìŠ¤íŒ…í•´ì„œ ì‚¬ìš©ìì—ê²Œ ëŒë ¤ì£¼ì–´ì•¼ í•œë‹¤ëŠ”
+         *          ì°¨ì´ê°€ ìˆì§€ë§Œ, ì ì–´ë„ ê³µí†µëœ ë£¨í‹´ì„ í†µí•´ì„œ ê°’ì„ ê°€ì ¸ì˜¨ ë‹¤ìŒì—
+         *          ê·¸ ê°’ì„ ìºìŠ¤íŒ…í•˜ë„ë¡ í•´ì•¼ í•  ê²ƒì´ë‹¤.
          */
 
         switch(aFieldIdentifier)
@@ -164,12 +164,12 @@ SQLRETURN ulnColAttribute(ulnStmt      *aStmt,
             case SQL_DESC_CONCISE_TYPE:
                 if(aNumericAttributePtr != NULL)
                 {
-                    /* Note : ÀÌÃ³·³ ulnTypes.cpp ¿¡¼­ ±Ùº»ÀûÀ¸·Î ¼öÁ¤ÇÏÁö ¾Ê°í,
-                     * »ç¿ëÀÚ¿¡°Ô Å¸ÀÔÀ» µ¹·ÁÁÖ´Â ÇÔ¼ö¸¶´Ù ±×¶§ ±×¶§ long typeÀ»
-                     * ¸ÅÇÎÇÏ´Â ÇÔ¼ö¸¦ È£ÃâÇÏ´Â °ÍÀº ¹ö±×ÀÇ ¼ÒÁöµµ ÀÖ°í À§ÇèÇÑ
-                     * ÁşÀÌÁö¸¸, ulnTypes.cpp¿¡ function context, dbc, stmt µîÀÇ
-                     * ÁöÀúºĞÇÑ ´Ù¸¥ °ÍµéÀ» ¹Ş´Â ÇÔ¼ö¸¦ ¸¸µé°í ½ÍÁö ¾Ê¾Æ¼­
-                     * ±»ÀÌ ÀÌ¿Í°°ÀÌ Çß´Ù.
+                    /* Note : ì´ì²˜ëŸ¼ ulnTypes.cpp ì—ì„œ ê·¼ë³¸ì ìœ¼ë¡œ ìˆ˜ì •í•˜ì§€ ì•Šê³ ,
+                     * ì‚¬ìš©ìì—ê²Œ íƒ€ì…ì„ ëŒë ¤ì£¼ëŠ” í•¨ìˆ˜ë§ˆë‹¤ ê·¸ë•Œ ê·¸ë•Œ long typeì„
+                     * ë§¤í•‘í•˜ëŠ” í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•˜ëŠ” ê²ƒì€ ë²„ê·¸ì˜ ì†Œì§€ë„ ìˆê³  ìœ„í—˜í•œ
+                     * ì§“ì´ì§€ë§Œ, ulnTypes.cppì— function context, dbc, stmt ë“±ì˜
+                     * ì§€ì €ë¶„í•œ ë‹¤ë¥¸ ê²ƒë“¤ì„ ë°›ëŠ” í•¨ìˆ˜ë¥¼ ë§Œë“¤ê³  ì‹¶ì§€ ì•Šì•„ì„œ
+                     * êµ³ì´ ì´ì™€ê°™ì´ í–ˆë‹¤.
                      */
 
                     sSQLTYPE = ulnMetaGetOdbcConciseType(&sDescRecIrd->mMeta);
@@ -255,11 +255,11 @@ SQLRETURN ulnColAttribute(ulnStmt      *aStmt,
             case SQL_DESC_LENGTH:
                 if(aNumericAttributePtr != NULL)
                 {
-                    /* BUGBUG: IRD ÀÇ ¸ŞÅ¸¸¦ ºôµåÇÏ¸é¼­ length¿Í octet length¸¦
-                     * Ç×»ó °°Àº °ªÀ¸·Î ¼¼ÆÃÇÏ´Âµ¥, ÀÌ°ÍÀÌ ¸Â´ÂÁö Àß ¸ğ¸£°Ú´Ù.
+                    /* BUGBUG: IRD ì˜ ë©”íƒ€ë¥¼ ë¹Œë“œí•˜ë©´ì„œ lengthì™€ octet lengthë¥¼
+                     * í•­ìƒ ê°™ì€ ê°’ìœ¼ë¡œ ì„¸íŒ…í•˜ëŠ”ë°, ì´ê²ƒì´ ë§ëŠ”ì§€ ì˜ ëª¨ë¥´ê² ë‹¤.
                      *
-                     * ¾îÂ·µç, length¸¦ ÀĞ¾î¼­ ±×´ë·Î ³Ñ°ÜÁØ´Ù.
-                     * null Á¾·áÀÚÀÇ ±æÀÌ´Â Á¦¿ÜÇÑ ±æÀÌÀÓ. */
+                     * ì–´ì¨Œë“ , lengthë¥¼ ì½ì–´ì„œ ê·¸ëŒ€ë¡œ ë„˜ê²¨ì¤€ë‹¤.
+                     * null ì¢…ë£Œìì˜ ê¸¸ì´ëŠ” ì œì™¸í•œ ê¸¸ì´ì„. */
 
                     // To Fix BUG-22936
                     *(ulvSLen *)aNumericAttributePtr =
@@ -288,21 +288,21 @@ SQLRETURN ulnColAttribute(ulnStmt      *aStmt,
                 if(aNumericAttributePtr != NULL)
                 {
                     /*
-                     * verbose data type À» ¸®ÅÏÇØ¾ß ÇÑ´Ù.
-                     * ulnMeta ÀÇ odbc type ¿¡´Â verbose type ÀÌ µé¾î°£´Ù.
+                     * verbose data type ì„ ë¦¬í„´í•´ì•¼ í•œë‹¤.
+                     * ulnMeta ì˜ odbc type ì—ëŠ” verbose type ì´ ë“¤ì–´ê°„ë‹¤.
                      *
-                     * Note : BUG-17018 °ü·Ã comment
+                     * Note : BUG-17018 ê´€ë ¨ comment
                      *
-                     *      SQLDescribeCol() ÇÔ¼ö¿¡¼­ ¸®ÅÏÇÏ´Â Å¸ÀÔ °ªÀº
-                     *         µğ½ºÅ©¸³ÅÍÀÇ SQL_DESC_CONCISE_TYPE ÀÌÁö¸¸
+                     *      SQLDescribeCol() í•¨ìˆ˜ì—ì„œ ë¦¬í„´í•˜ëŠ” íƒ€ì… ê°’ì€
+                     *         ë””ìŠ¤í¬ë¦½í„°ì˜ SQL_DESC_CONCISE_TYPE ì´ì§€ë§Œ
                      *
-                     *      SQLColAttribute() ÇÔ¼ö¸¦ SQL_DESC_TYPE À¸·Î È£ÃâÇßÀ»
-                     *         ¶§¿¡´Â µğ½ºÅ©¸³ÅÍÀÇ SQL_DESC_TYPE ÀÇ °ªÀ» ¸®ÅÏÇÑ´Ù.
+                     *      SQLColAttribute() í•¨ìˆ˜ë¥¼ SQL_DESC_TYPE ìœ¼ë¡œ í˜¸ì¶œí–ˆì„
+                     *         ë•Œì—ëŠ” ë””ìŠ¤í¬ë¦½í„°ì˜ SQL_DESC_TYPE ì˜ ê°’ì„ ë¦¬í„´í•œë‹¤.
                      *
-                     *      SQL_DESC_CONCISE_TYPE ¿¡´Â concise type ÀÌ ÀúÀåµÇ°í,
-                     *      SQL_DESC_TYPE ¿¡´Â verbose type ÀÌ ÀúÀåµÈ´Ù.
+                     *      SQL_DESC_CONCISE_TYPE ì—ëŠ” concise type ì´ ì €ì¥ë˜ê³ ,
+                     *      SQL_DESC_TYPE ì—ëŠ” verbose type ì´ ì €ì¥ëœë‹¤.
                      *
-                     *      datetime Å¸ÀÔµé¿¡ ´ëÇØ¼­ À§ÀÇ °ªµéÀº °¢°¢ ¾Æ·¡¿Í °°´Ù.
+                     *      datetime íƒ€ì…ë“¤ì— ëŒ€í•´ì„œ ìœ„ì˜ ê°’ë“¤ì€ ê°ê° ì•„ë˜ì™€ ê°™ë‹¤.
                      *
                      *      concise type           verbose type
                      *      ------------------------------------------------
@@ -311,7 +311,7 @@ SQLRETURN ulnColAttribute(ulnStmt      *aStmt,
                      *      SQL_TYPE_TIMESTAMP     SQL_DATETIME
                      *      ------------------------------------------------
                      *
-                     *      Áï, ¹ö±×ÀÎÁÙ ¾Ë¾Ò´Âµ¥, Á¦´ë·Î ±¸ÇöÇØ µÎ¾ú´ø °Í.
+                     *      ì¦‰, ë²„ê·¸ì¸ì¤„ ì•Œì•˜ëŠ”ë°, ì œëŒ€ë¡œ êµ¬í˜„í•´ ë‘ì—ˆë˜ ê²ƒ.
                      */
 
                     sSQLTYPE = ulnMetaGetOdbcType(&sDescRecIrd->mMeta);
@@ -428,13 +428,13 @@ SQLRETURN ulnColAttribute(ulnStmt      *aStmt,
                 break;
 
             case SQL_DESC_UPDATABLE:
-                /* PROJ-1789 Updatable Scrollable Cursor : DB2¸¦ µû¶ó¼­ Ç×»ó UNKNOWN ¹İÈ¯. */
+                /* PROJ-1789 Updatable Scrollable Cursor : DB2ë¥¼ ë”°ë¼ì„œ í•­ìƒ UNKNOWN ë°˜í™˜. */
                 if(aNumericAttributePtr != NULL)
                 {
                     // fix BUG-23997
-                    // µ¨ÆÄÀÌ ¿¬µ¿À» À§ÇØ ÄÃ·³ ¼Ó¼ºÀ» SQL_ATTR_READONLY¿¡¼­
-                    // SQL_ATTR_READWRITE_UNKNOWNÀ¸·Î º¯°æ
-                    // ¿À¶óÅ¬µµ DB2µµ SQL_ATTR_READWRITE_UNKNOWNÀÓ
+                    // ë¸íŒŒì´ ì—°ë™ì„ ìœ„í•´ ì»¬ëŸ¼ ì†ì„±ì„ SQL_ATTR_READONLYì—ì„œ
+                    // SQL_ATTR_READWRITE_UNKNOWNìœ¼ë¡œ ë³€ê²½
+                    // ì˜¤ë¼í´ë„ DB2ë„ SQL_ATTR_READWRITE_UNKNOWNì„
                     *(acp_sint32_t *)aNumericAttributePtr = SQL_ATTR_READWRITE_UNKNOWN;
                 }
                 break;
@@ -535,7 +535,7 @@ SQLRETURN ulnColAttribute(ulnStmt      *aStmt,
                 }
                 break;
 
-            // fix BUG-24695 altibase4.3.9¿Í µ¿ÀÏÇÏµµ·Ï ±â´É Ãß°¡
+            // fix BUG-24695 altibase4.3.9ì™€ ë™ì¼í•˜ë„ë¡ ê¸°ëŠ¥ ì¶”ê°€
             case SQL_DESC_AUTO_UNIQUE_VALUE:
                 if(aNumericAttributePtr != NULL)
                 {
@@ -543,7 +543,7 @@ SQLRETURN ulnColAttribute(ulnStmt      *aStmt,
                 }
                 break;
 
-            // fix BUG-24695 altibase4.3.9¿Í µ¿ÀÏÇÏµµ·Ï ±â´É Ãß°¡
+            // fix BUG-24695 altibase4.3.9ì™€ ë™ì¼í•˜ë„ë¡ ê¸°ëŠ¥ ì¶”ê°€
             case SQL_DESC_CASE_SENSITIVE:
                 if(aNumericAttributePtr != NULL)
                 {
@@ -567,7 +567,7 @@ SQLRETURN ulnColAttribute(ulnStmt      *aStmt,
                 break;
 
             /*
-             * BUGBUG : SQL_DESC_PARAMETER_TYPE Àº?
+             * BUGBUG : SQL_DESC_PARAMETER_TYPE ì€?
              */
 
             default:
@@ -591,7 +591,7 @@ SQLRETURN ulnColAttribute(ulnStmt      *aStmt,
     ACI_EXCEPTION(LABEL_INVALID_BUFFERSIZE)
     {
         /*
-         * HY090 : ¾ò°íÀÚ ÇÏ´Â Á¤º¸°¡ ¹®ÀÚ Å¸ÀÔÀÎµ¥, aBufferLength ¿¡ À½¼ö¸¦ ÁÖ¾úÀ» °æ¿ì
+         * HY090 : ì–»ê³ ì í•˜ëŠ” ì •ë³´ê°€ ë¬¸ì íƒ€ì…ì¸ë°, aBufferLength ì— ìŒìˆ˜ë¥¼ ì£¼ì—ˆì„ ê²½ìš°
          */
         ulnError(&sFnContext, ulERR_ABORT_INVALID_BUFFER_LEN, aBufferLength);
     }

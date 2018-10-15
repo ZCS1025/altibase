@@ -52,9 +52,9 @@ IDE_RC idrShmTxPendingOp::registerPendingOpFunc( idrPendingOpType   aPendingOpTy
 }
 
 /***********************************************************************
- * Description : PendingOperation List¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+ * Description : PendingOperation Listë¥¼ ì´ˆê¸°í™”í•œë‹¤.
  *
- * [IN]  aShmTxInfo   - PendingOpList¸¦ ÃÊ±âÈ­ÇÏ·Á´Â Shared Memory Tx Info
+ * [IN]  aShmTxInfo   - PendingOpListë¥¼ ì´ˆê¸°í™”í•˜ë ¤ëŠ” Shared Memory Tx Info
  **********************************************************************/
 void idrShmTxPendingOp::initializePendingOpList( iduShmTxInfo * aShmTxInfo )
 {
@@ -78,15 +78,15 @@ void idrShmTxPendingOp::initializePendingOpList( iduShmTxInfo * aShmTxInfo )
 }
 
 /***********************************************************************
- * Description : aShmTxInfoÀÇ PendingOperationList¿¡¼­ aPendingOp Node¸¦
- *               Ãß°¡ÇÑ´Ù.
+ * Description : aShmTxInfoì˜ PendingOperationListì—ì„œ aPendingOp Nodeë¥¼
+ *               ì¶”ê°€í•œë‹¤.
  *
  * [IN]  aStatistics    - Statement
- * [IN]  aShmTxInfo     - PendingOperationÀÌ Ãß°¡µÉ Shared Memory Tx Info
- * [IN]  aPendingOpType - Pending OperationÀÇ ±¸ºĞÀ» À§ÇÑ TypeEnum
- * [IN]  aParam         - Pending Operation ¼öÇà½Ã Àü´ŞµÉ Parameters
- * [IN]  aParamSize     - aParamÀÇ »çÀÌÁî(Byte)
- * [OUT] aPendingOp     - Ãß°¡µÈ PendingOpÀÇ ÁÖ¼Ò¸¦ ¹İÈ¯ÇÑ´Ù.
+ * [IN]  aShmTxInfo     - PendingOperationì´ ì¶”ê°€ë  Shared Memory Tx Info
+ * [IN]  aPendingOpType - Pending Operationì˜ êµ¬ë¶„ì„ ìœ„í•œ TypeEnum
+ * [IN]  aParam         - Pending Operation ìˆ˜í–‰ì‹œ ì „ë‹¬ë  Parameters
+ * [IN]  aParamSize     - aParamì˜ ì‚¬ì´ì¦ˆ(Byte)
+ * [OUT] aPendingOp     - ì¶”ê°€ëœ PendingOpì˜ ì£¼ì†Œë¥¼ ë°˜í™˜í•œë‹¤.
  **********************************************************************/
 IDE_RC idrShmTxPendingOp::addStPendingOp( idvSQL           * aStatistics,
                                           iduShmTxInfo     * aShmTxInfo,
@@ -140,11 +140,11 @@ IDE_RC idrShmTxPendingOp::addStPendingOp( idvSQL           * aStatistics,
 }
 
 /***********************************************************************
- * Description : aShmTxInfoÀÇ PendingOperationList¿¡¼­ aPendingOp Node¸¦
- *               Á¦°ÅÇÑ´Ù.
+ * Description : aShmTxInfoì˜ PendingOperationListì—ì„œ aPendingOp Nodeë¥¼
+ *               ì œê±°í•œë‹¤.
  *
  * [IN]  aShmTxInfo - Shared Memory Tx Info
- * [IN]  aPendingOp - Á¦°ÅÇÏ·Á´Â PendingOperation Node
+ * [IN]  aPendingOp - ì œê±°í•˜ë ¤ëŠ” PendingOperation Node
  **********************************************************************/
 IDE_RC idrShmTxPendingOp::removeStPendingOp( iduShmTxInfo    * aShmTxInfo,
                                              idrStPendingOp  * aPendingOp )
@@ -160,11 +160,11 @@ IDE_RC idrShmTxPendingOp::removeStPendingOp( iduShmTxInfo    * aShmTxInfo,
 }
 
 /***********************************************************************
- * Description : mPendingOpFreeList¿¡¼­ Node¸¦ Á¦°ÅÇÏ°í freeÇÑ´Ù.
+ * Description : mPendingOpFreeListì—ì„œ Nodeë¥¼ ì œê±°í•˜ê³  freeí•œë‹¤.
  *
  * [IN] aStatistics - Statement
  * [IN] aShmTxInfo  - Shared Memory Tx Info
- * [IN] aPendingOp  - freeÇÏ·Á´Â PendingOperation Node
+ * [IN] aPendingOp  - freeí•˜ë ¤ëŠ” PendingOperation Node
  **********************************************************************/
 IDE_RC idrShmTxPendingOp::freeStPendingOp( idvSQL          * aStatistics,
                                            iduShmTxInfo    * aShmTxInfo,
@@ -186,12 +186,12 @@ IDE_RC idrShmTxPendingOp::freeStPendingOp( idvSQL          * aStatistics,
 }
 
 /***********************************************************************
- * Description : aPendingOp¿¡ ÇØ´çÇÏ´Â PendingOperation ÇÔ¼ö¸¦ ¼öÇàÇÑ´Ù.
+ * Description : aPendingOpì— í•´ë‹¹í•˜ëŠ” PendingOperation í•¨ìˆ˜ë¥¼ ìˆ˜í–‰í•œë‹¤.
  *
  * [IN] aStatistics - Statement
  * [IN] aShmTxInfo  - Shared Memory Tx Info
- * [IN] aVSavepoint - ¼öÇà¿Ï·á½Ã commitµÉ VLogÀÇ Savepoint
- * [IN] aPendingOp  - ¼öÇàÇÏ°íÀÚ ÇÏ´Â PendingOperation Node
+ * [IN] aVSavepoint - ìˆ˜í–‰ì™„ë£Œì‹œ commitë  VLogì˜ Savepoint
+ * [IN] aPendingOp  - ìˆ˜í–‰í•˜ê³ ì í•˜ëŠ” PendingOperation Node
  **********************************************************************/
 IDE_RC idrShmTxPendingOp::executePendingOp( idvSQL         * aStatistics,
                                             iduShmTxInfo   * aShmTxInfo,
@@ -225,10 +225,10 @@ IDE_RC idrShmTxPendingOp::executePendingOp( idvSQL         * aStatistics,
 }
 
 /***********************************************************************
- * Description : aShmTxInfo¿¡ ¸Å´Ş¸° ¸ğµç PendingOperationÀ» ¼öÇàÇÑ´Ù.
+ * Description : aShmTxInfoì— ë§¤ë‹¬ë¦° ëª¨ë“  PendingOperationì„ ìˆ˜í–‰í•œë‹¤.
  *
  * [IN] aStatistics - Statement
- * [IN] aShmTxInfo  - Pending OperationÀ» ¼öÇàÇÒ Shared Memory Transaction
+ * [IN] aShmTxInfo  - Pending Operationì„ ìˆ˜í–‰í•  Shared Memory Transaction
  **********************************************************************/
 IDE_RC idrShmTxPendingOp::executePendingOpAll( idvSQL       * aStatistics,
                                                iduShmTxInfo * aShmTxInfo )
@@ -256,8 +256,8 @@ IDE_RC idrShmTxPendingOp::executePendingOpAll( idvSQL       * aStatistics,
                                     (idrStPendingOp *)sOpNode )
                   != IDE_SUCCESS );
 
-        /* PendingOpÇÔ¼ö ³»ºÎÀÇ CommitÀ¸·Î ÀÎÇØ Node´Â Undo½Ã removeµÈ »óÅÂ·Î Á¸ÀçÇÑ´Ù.
-         * ±×·¡¼­ ¿©±â¼­ Á×°Ô µÇ¸é Á¦°ÅµÈ Node¿¡ ´ëÇÑ Memory LeakÀÌ ¹ß»ıÇÒ ¼ö ÀÖ´Ù.  */
+        /* PendingOpí•¨ìˆ˜ ë‚´ë¶€ì˜ Commitìœ¼ë¡œ ì¸í•´ NodeëŠ” Undoì‹œ removeëœ ìƒíƒœë¡œ ì¡´ì¬í•œë‹¤.
+         * ê·¸ë˜ì„œ ì—¬ê¸°ì„œ ì£½ê²Œ ë˜ë©´ ì œê±°ëœ Nodeì— ëŒ€í•œ Memory Leakì´ ë°œìƒí•  ìˆ˜ ìˆë‹¤.  */
         IDE_TEST( iduShmMgr::freeMem( aStatistics,
                                       aShmTxInfo,
                                       NULL,
@@ -277,10 +277,10 @@ IDE_RC idrShmTxPendingOp::executePendingOpAll( idvSQL       * aStatistics,
 
 
 /***********************************************************************
- * Description : Free List¿¡ ¸Å´Ş¸° PendingOpNodeµéÀ» freeÇÑ´Ù.
+ * Description : Free Listì— ë§¤ë‹¬ë¦° PendingOpNodeë“¤ì„ freeí•œë‹¤.
  *
  * [IN] aStatistics - Statement
- * [IN] aShmTxInfo  - Á¤¸®ÇÏ°íÀÚ ÇÏ´Â ShmTxInfo
+ * [IN] aShmTxInfo  - ì •ë¦¬í•˜ê³ ì í•˜ëŠ” ShmTxInfo
  **********************************************************************/
 IDE_RC idrShmTxPendingOp::freeAllStFreePendingOpList( idvSQL       * aStatistics,
                                                       iduShmTxInfo * aShmTxInfo )

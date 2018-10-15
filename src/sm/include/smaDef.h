@@ -45,10 +45,10 @@ typedef struct smaOidList
 {
     smSCN       mSCN;
     smLSN       mLSN;
-    // rowÀÇ free¿Í  index node free°£ÀÇ
-    // sync¸¦ ¸¶Ãß±âÀ§ÇÏ¿© »ç¿ë.
-    // oid¿¡ ´ëÀÀÇÏ´Â  ÀÎµ¦½º key slotµéÀ»
-    // free ¿Ï·áÇÑ ½ÃÁ¡ÀÇ system view scn. 
+    // rowì˜ freeì™€  index node freeê°„ì˜
+    // syncë¥¼ ë§ˆì¶”ê¸°ìœ„í•˜ì—¬ ì‚¬ìš©.
+    // oidì— ëŒ€ì‘í•˜ëŠ”  ì¸ë±ìŠ¤ key slotë“¤ì„
+    // free ì™„ë£Œí•œ ì‹œì ì˜ system view scn. 
     smSCN       mKeyFreeSCN;  
     idBool      mErasable;
     idBool      mFinished;
@@ -64,48 +64,48 @@ typedef struct smaGCStatus
 {
     //GC name :smaLogicalAger, smaDeleteThread.
     SChar  *mGCName;
-    // ÇöÀç systemViewSCN.
+    // í˜„ì¬ systemViewSCN.
     smSCN  mSystemViewSCN;
-    // Active Transaction Áß ÃÖ¼Ò memory view SCN
+    // Active Transaction ì¤‘ ìµœì†Œ memory view SCN
     smSCN  mMiMemSCNInTxs;
-    // BUG-24821 V$TRANSACTION¿¡ LOB°ü·Ã MinSCNÀÌ Ãâ·ÂµÇ¾î¾ß ÇÕ´Ï´Ù. 
-    // mMiMemSCNInTxsÀ» ¼ÒÀ¯ÇÑ Æ®·£Àè¼Ç ¾ÆÀÌµğ(°¡Àå ¿À·¡µÈ Æ®·£Àè¼Ç)
+    // BUG-24821 V$TRANSACTIONì— LOBê´€ë ¨ MinSCNì´ ì¶œë ¥ë˜ì–´ì•¼ í•©ë‹ˆë‹¤. 
+    // mMiMemSCNInTxsì„ ì†Œìœ í•œ íŠ¸ëœì­ì…˜ ì•„ì´ë””(ê°€ì¥ ì˜¤ë˜ëœ íŠ¸ëœì­ì…˜)
     smTID  mOldestTx;
-    // LogicalAger, DeleteThredÀÇ TailÀÇ commitSCN
+    // LogicalAger, DeleteThredì˜ Tailì˜ commitSCN
     smSCN  mSCNOfTail;
-    // OIDList°¡ ºñ¾î ÀÖ´ÂÁö boolean
+    // OIDListê°€ ë¹„ì–´ ìˆëŠ”ì§€ boolean
     idBool mIsEmpty;
-    // addµÈ OID °¹¼ö.
+    // addëœ OID ê°¯ìˆ˜.
     ULong  mAddOIDCnt;
-    // GCÃ³¸®°¡µÈ OID°¹¼ö.
+    // GCì²˜ë¦¬ê°€ëœ OIDê°¯ìˆ˜.
     ULong  mGcOIDCnt;
 
-    /* TransactionÀÌ Commmit/Abort½Ã OID List¿¡ AgingÀ» ¼öÇàÇØ¾ßÇÒ
-     * OID°¹¼ö°¡ ´õÇØÁø´Ù.*/
+    /* Transactionì´ Commmit/Abortì‹œ OID Listì— Agingì„ ìˆ˜í–‰í•´ì•¼í• 
+     * OIDê°¯ìˆ˜ê°€ ë”í•´ì§„ë‹¤.*/
     ULong mAgingRequestOIDCnt;
 
-    /* Ager°¡ OID ListÀÇ OID¸¦ ÇÏ³ª¾¿ Ã³¸®ÇÏ´Âµ¥ ÀÌ¶§ 1½ÄÁõ°¡ */
+    /* Agerê°€ OID Listì˜ OIDë¥¼ í•˜ë‚˜ì”© ì²˜ë¦¬í•˜ëŠ”ë° ì´ë•Œ 1ì‹ì¦ê°€ */
     ULong mAgingProcessedOIDCnt;
 
-    //BUG-17371 [MMDB] AgingÀÌ ¹Ğ¸±°æ¿ì System¿¡ °úºÎÈ­ ¹× AgingÀÌ
-    //                 ¹Ğ¸®´Â Çö»óÀÌ ´õ ½ÉÈ­µÊ.
-    // getMinSCNÇßÀ»¶§, MinSCN¶§¹®¿¡ ÀÛ¾÷ÇÏÁö ¸øÇÑ È½¼ö
+    //BUG-17371 [MMDB] Agingì´ ë°€ë¦´ê²½ìš° Systemì— ê³¼ë¶€í™” ë° Agingì´
+    //                 ë°€ë¦¬ëŠ” í˜„ìƒì´ ë” ì‹¬í™”ë¨.
+    // getMinSCNí–ˆì„ë•Œ, MinSCNë•Œë¬¸ì— ì‘ì—…í•˜ì§€ ëª»í•œ íšŸìˆ˜
     ULong mSleepCountOnAgingCondition;
 
-    /* ÇöÀç ¼öÇàÁßÀÎ Logical Ager Thread, È¤Àº Delete ThreadÀÇ °¹¼ö */
+    /* í˜„ì¬ ìˆ˜í–‰ì¤‘ì¸ Logical Ager Thread, í˜¹ì€ Delete Threadì˜ ê°¯ìˆ˜ */
     UInt  mThreadCount;
 } smaGCStatus;
 
 /*
-    Instant AgingÀÇ Á¶°Ç Filter
+    Instant Agingì˜ ì¡°ê±´ Filter
 
-    Instant AgingÀ» ¼öÇàÇÒ Á¶°ÇÀ» ÀúÀåÇÑ´Ù.
+    Instant Agingì„ ìˆ˜í–‰í•  ì¡°ê±´ì„ ì €ì¥í•œë‹¤.
     
-    [ °¡´ÉÇÑ Filterµé ]
-      1. mTBSID°¡ SC_NULL_SPACEID°¡ ¾Æ´Ñ °æ¿ì
-         => Æ¯Á¤ Tablespace¿¡ ¼ÓÇÑ OIDµé¸¸ Instant Aging½Ç½Ã
-      2. mTableOID°¡ SM_NULL_OID°¡ ¾Æ´Ñ °æ¿ì
-         => Æ¯Á¤ Table¿¡ ¼ÓÇÑ OIDµé¸¸ Instant Aging ½Ç½Ã
+    [ ê°€ëŠ¥í•œ Filterë“¤ ]
+      1. mTBSIDê°€ SC_NULL_SPACEIDê°€ ì•„ë‹Œ ê²½ìš°
+         => íŠ¹ì • Tablespaceì— ì†í•œ OIDë“¤ë§Œ Instant Agingì‹¤ì‹œ
+      2. mTableOIDê°€ SM_NULL_OIDê°€ ì•„ë‹Œ ê²½ìš°
+         => íŠ¹ì • Tableì— ì†í•œ OIDë“¤ë§Œ Instant Aging ì‹¤ì‹œ
  */
 typedef struct smaInstantAgingFilter
 {

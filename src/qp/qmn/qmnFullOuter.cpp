@@ -21,25 +21,25 @@
  * Description :
  *     FOJN(Full Outer JoiN) Node
  *
- *     °ü°èÇü ¸ðµ¨¿¡¼­ Full Outer Join¸¦ ¼öÇàÇÏ´Â Plan Node ÀÌ´Ù.
- *     ´Ù¾çÇÑ Join MethodµéÀº ÇÏÀ§ ³ëµåÀÇ ÇüÅÂ¿¡ µû¶ó °áÁ¤µÈ´Ù.
+ *     ê´€ê³„í˜• ëª¨ë¸ì—ì„œ Full Outer Joinë¥¼ ìˆ˜í–‰í•˜ëŠ” Plan Node ì´ë‹¤.
+ *     ë‹¤ì–‘í•œ Join Methodë“¤ì€ í•˜ìœ„ ë…¸ë“œì˜ í˜•íƒœì— ë”°ë¼ ê²°ì •ëœë‹¤.
  *  
- *     ´ÙÀ½°ú °°Àº ±â´ÉÀ» À§ÇØ »ç¿ëµÈ´Ù.
- *         - Nested Loop Join °è¿­
- *         - Sort-based Join °è¿­
- *         - Hash-based Join °è¿­
+ *     ë‹¤ìŒê³¼ ê°™ì€ ê¸°ëŠ¥ì„ ìœ„í•´ ì‚¬ìš©ëœë‹¤.
+ *         - Nested Loop Join ê³„ì—´
+ *         - Sort-based Join ê³„ì—´
+ *         - Hash-based Join ê³„ì—´
  *
- *     Full Outer JoinÀº Å©°Ô ´ÙÀ½°ú °°Àº µÎ ´Ü°è·Î ¼öÇàµÈ´Ù.
+ *     Full Outer Joinì€ í¬ê²Œ ë‹¤ìŒê³¼ ê°™ì€ ë‘ ë‹¨ê³„ë¡œ ìˆ˜í–‰ëœë‹¤.
  *         - Left Outer Join Phase
- *             : Left Outer Join°ú µ¿ÀÏÇÏ³ª, ¸¸Á·ÇÏ´Â Right Row¿¡ ´ëÇÏ¿©
- *               Hit FlagÀ» SettingÇÏ¿© ´ÙÀ½ Phase¿¡ ´ëÇÑ Ã³¸®¸¦ ÁØºñÇÑ´Ù.
+ *             : Left Outer Joinê³¼ ë™ì¼í•˜ë‚˜, ë§Œì¡±í•˜ëŠ” Right Rowì— ëŒ€í•˜ì—¬
+ *               Hit Flagì„ Settingí•˜ì—¬ ë‹¤ìŒ Phaseì— ëŒ€í•œ ì²˜ë¦¬ë¥¼ ì¤€ë¹„í•œë‹¤.
  *         - Right Outer Join Phase
- *             : Right RowÁß Hit µÇÁö ¾ÊÀº Row¸¸ °ñ¶ó Left¿¡ ´ëÇÑ
- *               Null PaddingÀ» ¼öÇàÇÑ´Ù.
+ *             : Right Rowì¤‘ Hit ë˜ì§€ ì•Šì€ Rowë§Œ ê³¨ë¼ Leftì— ëŒ€í•œ
+ *               Null Paddingì„ ìˆ˜í–‰í•œë‹¤.
  *           
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  **********************************************************************/
 
@@ -60,7 +60,7 @@ qmnFOJN::init( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    FOJN ³ëµåÀÇ ÃÊ±âÈ­
+ *    FOJN ë…¸ë“œì˜ ì´ˆê¸°í™”
  *
  * Implementation :
  *
@@ -89,7 +89,7 @@ qmnFOJN::init( qcTemplate * aTemplate,
     }
 
     //------------------------------------------------
-    // Child PlanÀÇ ÃÊ±âÈ­
+    // Child Planì˜ ì´ˆê¸°í™”
     //------------------------------------------------
 
     IDE_TEST( aPlan->left->init( aTemplate, 
@@ -97,10 +97,10 @@ qmnFOJN::init( qcTemplate * aTemplate,
 
     /*
      * PROJ-2402 Parallel Table Scan
-     * parallel scan ÀÇ °æ¿ì
-     * ÇÊ¿äÇÑÂÊ¿¡ ¸ÕÀú thread ¸¦ ºÐ¹èÇÏ±â À§ÇØ
-     * ¿À¸¥ÂÊ¿¡ PRLQ, HASH(¶Ç´Â SORT) °¡ ÀÖÀ»¶§
-     * ¿À¸¥ÂÊÀ» ¸ÕÀú init ÇÑ´Ù.
+     * parallel scan ì˜ ê²½ìš°
+     * í•„ìš”í•œìª½ì— ë¨¼ì € thread ë¥¼ ë¶„ë°°í•˜ê¸° ìœ„í•´
+     * ì˜¤ë¥¸ìª½ì— PRLQ, HASH(ë˜ëŠ” SORT) ê°€ ìžˆì„ë•Œ
+     * ì˜¤ë¥¸ìª½ì„ ë¨¼ì € init í•œë‹¤.
      */
     if (((aPlan->right->flag & QMN_PLAN_PRLQ_EXIST_MASK) ==
          QMN_PLAN_PRLQ_EXIST_TRUE) &&
@@ -117,7 +117,7 @@ qmnFOJN::init( qcTemplate * aTemplate,
     }
 
     //------------------------------------------------
-    // ¼öÇà ÇÔ¼ö °áÁ¤
+    // ìˆ˜í–‰ í•¨ìˆ˜ ê²°ì •
     //------------------------------------------------
 
     sDataPlan->doIt = qmnFOJN::doItLeftHitPhase;
@@ -140,10 +140,10 @@ qmnFOJN::doIt( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    FOJNÀÇ °íÀ¯ ±â´ÉÀ» ¼öÇàÇÑ´Ù.
+ *    FOJNì˜ ê³ ìœ  ê¸°ëŠ¥ì„ ìˆ˜í–‰í•œë‹¤.
  *
  * Implementation :
- *    ÁöÁ¤µÈ ÇÔ¼ö Æ÷ÀÎÅÍ¸¦ ¼öÇàÇÑ´Ù.
+ *    ì§€ì •ëœ í•¨ìˆ˜ í¬ì¸í„°ë¥¼ ìˆ˜í–‰í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -172,11 +172,11 @@ qmnFOJN::padNull( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    Null PaddingÀ» ¼öÇàÇÑ´Ù.
+ *    Null Paddingì„ ìˆ˜í–‰í•œë‹¤.
  *
  * Implementation :
- *    º°µµÀÇ Null Row¸¦ °¡ÁöÁö ¾ÊÀ¸¸ç,
- *    Child¿¡ ´ëÇÑ Null PaddingÀ» ¼öÇàÇÑ´Ù.
+ *    ë³„ë„ì˜ Null Rowë¥¼ ê°€ì§€ì§€ ì•Šìœ¼ë©°,
+ *    Childì— ëŒ€í•œ Null Paddingì„ ìˆ˜í–‰í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -195,7 +195,7 @@ qmnFOJN::padNull( qcTemplate * aTemplate,
     }
 
     //------------------------------------------------
-    // Child ¿¡ ´ëÇÑ Null Padding
+    // Child ì— ëŒ€í•œ Null Padding
     //------------------------------------------------
     
     IDE_TEST( aPlan->left->padNull( aTemplate, aPlan->left )
@@ -223,7 +223,7 @@ qmnFOJN::printPlan( qcTemplate   * aTemplate,
 /***********************************************************************
  *
  * Description :
- *     ¼öÇà Á¤º¸¸¦ Ãâ·ÂÇÑ´Ù.
+ *     ìˆ˜í–‰ ì •ë³´ë¥¼ ì¶œë ¥í•œë‹¤.
  *
  * Implementation :
  *
@@ -240,7 +240,7 @@ qmnFOJN::printPlan( qcTemplate   * aTemplate,
     ULong  i;
 
     //----------------------------
-    // Display À§Ä¡ °áÁ¤
+    // Display ìœ„ì¹˜ ê²°ì •
     //----------------------------
     
     for ( i = 0; i < aDepth; i++ )
@@ -250,25 +250,25 @@ qmnFOJN::printPlan( qcTemplate   * aTemplate,
     }
 
     //----------------------------
-    // FOJN ³ëµå Ç¥½Ã
+    // FOJN ë…¸ë“œ í‘œì‹œ
     //----------------------------
     
     iduVarStringAppend( aString,
                         "FULL-OUTER-JOIN ( " );
 
     //----------------------------
-    // Join Method Ãâ·Â
+    // Join Method ì¶œë ¥
     //----------------------------
     qmn::printJoinMethod( aString, sCodePlan->plan.flag );
 
     //----------------------------
-    // Cost Ãâ·Â
+    // Cost ì¶œë ¥
     //----------------------------
     qmn::printCost( aString,
                     sCodePlan->plan.qmgAllCost );
 
     //----------------------------
-    // Predicate Á¤º¸ Ç¥½Ã
+    // Predicate ì •ë³´ í‘œì‹œ
     //----------------------------
     if ( sCodePlan->filter != NULL )
     {
@@ -300,7 +300,7 @@ qmnFOJN::printPlan( qcTemplate   * aTemplate,
     }
 
     //----------------------------
-    // Operatorº° °á°ú Á¤º¸ Ãâ·Â
+    // Operatorë³„ ê²°ê³¼ ì •ë³´ ì¶œë ¥
     //----------------------------
     if ( QCU_TRCLOG_RESULT_DESC == 1 )
     {
@@ -316,7 +316,7 @@ qmnFOJN::printPlan( qcTemplate   * aTemplate,
     }
 
     //----------------------------
-    // Child PlanÀÇ Á¤º¸ Ãâ·Â
+    // Child Planì˜ ì •ë³´ ì¶œë ¥
     //----------------------------
     
     IDE_TEST( aPlan->left->printPlan( aTemplate,
@@ -348,7 +348,7 @@ qmnFOJN::doItDefault( qcTemplate * /* aTemplate */,
 /***********************************************************************
  *
  * Description :
- *    ÀÌ ÇÔ¼ö°¡ ¼öÇàµÇ¸é ¾ÈµÊ.
+ *    ì´ í•¨ìˆ˜ê°€ ìˆ˜í–‰ë˜ë©´ ì•ˆë¨.
  *
  * Implementation :
  *
@@ -372,10 +372,10 @@ qmnFOJN::doItLeftHitPhase( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    Left Outer Join Ã³¸® °úÁ¤À¸·Î »õ·Î¿î Left Row¿¡ ´ëÇÑ Ã³¸®
+ *    Left Outer Join ì²˜ë¦¬ ê³¼ì •ìœ¼ë¡œ ìƒˆë¡œìš´ Left Rowì— ëŒ€í•œ ì²˜ë¦¬
  *
  * Implementation :
- *    LOJN°ú ´Þ¸® ¸¸Á·ÇÏ´Â Right Row Á¸Àç ½Ã Hit FlagÀ» ¼³Á¤ÇÑ´Ù.
+ *    LOJNê³¼ ë‹¬ë¦¬ ë§Œì¡±í•˜ëŠ” Right Row ì¡´ìž¬ ì‹œ Hit Flagì„ ì„¤ì •í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -403,7 +403,7 @@ qmnFOJN::doItLeftHitPhase( qcTemplate * aTemplate,
         //------------------------------------
 
         // To Fix PR-9822
-        // Right´Â Left°¡ º¯ÇÒ ¶§¸¶´Ù ÃÊ±âÈ­ÇØ ÁÖ¾î¾ß ÇÑ´Ù.
+        // RightëŠ” Leftê°€ ë³€í•  ë•Œë§ˆë‹¤ ì´ˆê¸°í™”í•´ ì£¼ì–´ì•¼ í•œë‹¤.
         IDE_TEST( aPlan->right->init( aTemplate, 
                                       aPlan->right ) != IDE_SUCCESS);
         
@@ -411,7 +411,7 @@ qmnFOJN::doItLeftHitPhase( qcTemplate * aTemplate,
                   != IDE_SUCCESS );
 
         //------------------------------------
-        // Filter Á¶°ÇÀ» ¸¸Á·ÇÒ ¶§±îÁö ¹Ýº¹
+        // Filter ì¡°ê±´ì„ ë§Œì¡±í•  ë•Œê¹Œì§€ ë°˜ë³µ
         //------------------------------------
         
         while ( (sFlag & QMC_ROW_DATA_MASK) == QMC_ROW_DATA_EXIST )
@@ -439,8 +439,8 @@ qmnFOJN::doItLeftHitPhase( qcTemplate * aTemplate,
         }
 
         //------------------------------------
-        // Right Row°¡ ÀÖÀ» °æ¿ì Hit Flag ¼³Á¤
-        // Right Row°¡ ¾øÀ» °æ¿ì Null Padding
+        // Right Rowê°€ ìžˆì„ ê²½ìš° Hit Flag ì„¤ì •
+        // Right Rowê°€ ì—†ì„ ê²½ìš° Null Padding
         //------------------------------------
         
         if ( (sFlag & QMC_ROW_DATA_MASK) == QMC_ROW_DATA_EXIST )
@@ -459,7 +459,7 @@ qmnFOJN::doItLeftHitPhase( qcTemplate * aTemplate,
     }
     else
     {
-        // ´õ ÀÌ»ó °á°ú°¡ ¾øÀ» °æ¿ì Right Outer JoinÀ¸·Î º¯°æ
+        // ë” ì´ìƒ ê²°ê³¼ê°€ ì—†ì„ ê²½ìš° Right Outer Joinìœ¼ë¡œ ë³€ê²½
         IDE_TEST( doItFirstNonHitPhase( aTemplate, aPlan, aFlag )
                   != IDE_SUCCESS );
     }
@@ -481,10 +481,10 @@ qmnFOJN::doItRightHitPhase( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    Left Outer Join Ã³¸® °úÁ¤À¸·Î »õ·Î¿î Right Row¿¡ ´ëÇÑ Ã³¸®
+ *    Left Outer Join ì²˜ë¦¬ ê³¼ì •ìœ¼ë¡œ ìƒˆë¡œìš´ Right Rowì— ëŒ€í•œ ì²˜ë¦¬
  *
  * Implementation :
- *    LOJN°ú ´Þ¸® ¸¸Á·ÇÏ´Â Right Row Á¸Àç ½Ã Hit FlagÀ» ¼³Á¤ÇÑ´Ù.
+ *    LOJNê³¼ ë‹¬ë¦¬ ë§Œì¡±í•˜ëŠ” Right Row ì¡´ìž¬ ì‹œ Hit Flagì„ ì„¤ì •í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -506,7 +506,7 @@ qmnFOJN::doItRightHitPhase( qcTemplate * aTemplate,
               != IDE_SUCCESS );
 
     //------------------------------------
-    // Filter Á¶°ÇÀ» ¸¸Á·ÇÒ ¶§±îÁö ¹Ýº¹
+    // Filter ì¡°ê±´ì„ ë§Œì¡±í•  ë•Œê¹Œì§€ ë°˜ë³µ
     //------------------------------------
     
     while ( (sFlag & QMC_ROW_DATA_MASK) == QMC_ROW_DATA_EXIST )
@@ -533,7 +533,7 @@ qmnFOJN::doItRightHitPhase( qcTemplate * aTemplate,
     }
 
     //------------------------------------
-    // Right Row°¡ ÀÖÀ» °æ¿ì Hit Flag ¼³Á¤
+    // Right Rowê°€ ìžˆì„ ê²½ìš° Hit Flag ì„¤ì •
     //------------------------------------
     
     if ( (sFlag & QMC_ROW_DATA_MASK) == QMC_ROW_DATA_EXIST )
@@ -546,7 +546,7 @@ qmnFOJN::doItRightHitPhase( qcTemplate * aTemplate,
     }
     else
     {
-        // ÁúÀÇ °á°ú°¡ ¾øÀ» °æ¿ì »õ·Î¿î Left Row¸¦ ÀÌ¿ëÇÑ Ã³¸®
+        // ì§ˆì˜ ê²°ê³¼ê°€ ì—†ì„ ê²½ìš° ìƒˆë¡œìš´ Left Rowë¥¼ ì´ìš©í•œ ì²˜ë¦¬
         IDE_TEST( qmnFOJN::doItLeftHitPhase( aTemplate, aPlan, aFlag ) 
                   != IDE_SUCCESS );
     }
@@ -568,11 +568,11 @@ qmnFOJN::doItFirstNonHitPhase( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    Right Outer Join Ã³¸® °úÁ¤À¸·Î ÃÖÃÊ ¼öÇà ÇÔ¼ö
+ *    Right Outer Join ì²˜ë¦¬ ê³¼ì •ìœ¼ë¡œ ìµœì´ˆ ìˆ˜í–‰ í•¨ìˆ˜
  *
  * Implementation :
- *    Child PlanÀÇ °Ë»ö ¸ðµå¸¦ º¯°æÇÑ´Ù.
- *    Hit FlagÀÌ ¾ø´Â Child Row¸¦ È¹µæÇÏ°Ô µÈ´Ù.
+ *    Child Planì˜ ê²€ìƒ‰ ëª¨ë“œë¥¼ ë³€ê²½í•œë‹¤.
+ *    Hit Flagì´ ì—†ëŠ” Child Rowë¥¼ íšë“í•˜ê²Œ ëœë‹¤.
  *
  ***********************************************************************/
 
@@ -584,12 +584,12 @@ qmnFOJN::doItFirstNonHitPhase( qcTemplate * aTemplate,
         (qmndFOJN *) (aTemplate->tmplate.data + aPlan->offset);
 
     // To Fix PR-9822
-    // Right´Â Left°¡ ¾øÀ» °æ¿ìµµ ÃÊ±âÈ­ÇØ ÁÖ¾î¾ß ÇÑ´Ù.
+    // RightëŠ” Leftê°€ ì—†ì„ ê²½ìš°ë„ ì´ˆê¸°í™”í•´ ì£¼ì–´ì•¼ í•œë‹¤.
     IDE_TEST( aPlan->right->init( aTemplate, 
                                   aPlan->right ) != IDE_SUCCESS);
     
     //------------------------------------
-    // Right¿¡ ´ëÇÏ¿© Non-Hit °Ë»ö ¸ðµå·Î º¯°æ
+    // Rightì— ëŒ€í•˜ì—¬ Non-Hit ê²€ìƒ‰ ëª¨ë“œë¡œ ë³€ê²½
     //------------------------------------
     
     if ( ( sCodePlan->flag & QMNC_FOJN_RIGHT_CHILD_MASK )
@@ -611,14 +611,14 @@ qmnFOJN::doItFirstNonHitPhase( qcTemplate * aTemplate,
     
     if ( ( *aFlag & QMC_ROW_DATA_MASK ) == QMC_ROW_DATA_EXIST )
     {
-        // Left Row¿¡ ´ëÇÑ Null Padding
+        // Left Rowì— ëŒ€í•œ Null Padding
         IDE_TEST( aPlan->left->padNull( aTemplate, aPlan->left )
                   != IDE_SUCCESS );
         sDataPlan->doIt = qmnFOJN::doItNextNonHitPhase;
     }
     else
     {
-        // °á°ú ¾øÀ½
+        // ê²°ê³¼ ì—†ìŒ
         sDataPlan->doIt = qmnFOJN::doItLeftHitPhase;
     }
 
@@ -639,10 +639,10 @@ qmnFOJN::doItNextNonHitPhase( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    Right Outer Join Ã³¸® °úÁ¤À¸·Î ÃÖÃÊ ¼öÇà ÇÔ¼ö
+ *    Right Outer Join ì²˜ë¦¬ ê³¼ì •ìœ¼ë¡œ ìµœì´ˆ ìˆ˜í–‰ í•¨ìˆ˜
  *
  * Implementation :
- *    Hit FlagÀÌ ¾ø´Â Child Row¸¦ È¹µæÇÏ°Ô µÈ´Ù.
+ *    Hit Flagì´ ì—†ëŠ” Child Rowë¥¼ íšë“í•˜ê²Œ ëœë‹¤.
  *
  ***********************************************************************/
 
@@ -667,7 +667,7 @@ qmnFOJN::doItNextNonHitPhase( qcTemplate * aTemplate,
     }
     else
     {
-        // °á°ú ¾øÀ½
+        // ê²°ê³¼ ì—†ìŒ
         sDataPlan->doIt = qmnFOJN::doItLeftHitPhase;
     }
 
@@ -687,7 +687,7 @@ qmnFOJN::firstInit( qmncFOJN   * aCodePlan,
 /***********************************************************************
  *
  * Description :
- *     Data¿µ¿ª¿¡ ´ëÇÑ ÃÊ±âÈ­¸¦ ¼öÇàÇÑ´Ù.
+ *     Dataì˜ì—­ì— ëŒ€í•œ ì´ˆê¸°í™”ë¥¼ ìˆ˜í–‰í•œë‹¤.
  *
  * Implementation :
  *
@@ -697,7 +697,7 @@ qmnFOJN::firstInit( qmncFOJN   * aCodePlan,
     IDE_MSGLOG_FUNC(IDE_MSGLOG_BODY(""));
 
     //---------------------------------
-    // Hit Flag ÇÔ¼ö Æ÷ÀÎÅÍ °áÁ¤
+    // Hit Flag í•¨ìˆ˜ í¬ì¸í„° ê²°ì •
     //---------------------------------
 
     if( (aCodePlan->flag & QMNC_FOJN_RIGHT_CHILD_MASK )
@@ -713,7 +713,7 @@ qmnFOJN::firstInit( qmncFOJN   * aCodePlan,
     }
 
     //---------------------------------
-    // ÃÊ±âÈ­ ¿Ï·á¸¦ Ç¥±â
+    // ì´ˆê¸°í™” ì™„ë£Œë¥¼ í‘œê¸°
     //---------------------------------
 
     *aDataPlan->flag &= ~QMND_FOJN_INIT_DONE_MASK;

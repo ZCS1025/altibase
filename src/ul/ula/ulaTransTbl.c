@@ -84,9 +84,9 @@ acp_bool_t ulaTransTblIsATrans(ulaTransTbl *aTbl, ulaTID aTID)
 }
 
 /***********************************************************************
- * Description : ulaTransTblNode ÃÊ±âÈ­
+ * Description : ulaTransTblNode ì´ˆê¸°í™”
  *
- * aTransNode  - [IN] ÃÊ±âÈ­¸¦ ¼öÇàÇÒ ulaTransTblNode
+ * aTransNode  - [IN] ì´ˆê¸°í™”ë¥¼ ìˆ˜í–‰í•  ulaTransTblNode
  *
  **********************************************************************/
 static void ulaTransTblInitTransNode(ulaTransTblNode *aTransNode)
@@ -97,9 +97,9 @@ static void ulaTransTblInitTransNode(ulaTransTblNode *aTransNode)
 }
 
 /***********************************************************************
- * Description : Transaction Table ÃÊ±âÈ­
+ * Description : Transaction Table ì´ˆê¸°í™”
  *
- * aTblSize - [IN] Log Anallyzer ÃøÀÇ Transaction Table Å©±â
+ * aTblSize - [IN] Log Anallyzer ì¸¡ì˜ Transaction Table í¬ê¸°
  *
  **********************************************************************/
 ACI_RC ulaTransTblInitialize(ulaTransTbl  *aTbl,
@@ -129,7 +129,7 @@ ACI_RC ulaTransTblInitialize(ulaTransTbl  *aTbl,
     {
         ulaTransTblInitTransNode(aTbl->mTransTbl + sIndex);
 
-        /* XLog Linked List¸¦ ÃÊ±âÈ­ÇÑ´Ù. (Transaction ¼öÁı ½Ã¿¡¸¸ »ç¿ë) */
+        /* XLog Linked Listë¥¼ ì´ˆê¸°í™”í•œë‹¤. (Transaction ìˆ˜ì§‘ ì‹œì—ë§Œ ì‚¬ìš©) */
         sRc = ulaXLogLinkedListInitialize
                                     (&aTbl->mTransTbl[sIndex].mCollectionList,
                                      ACP_FALSE,
@@ -186,7 +186,7 @@ ACI_RC ulaTransTblInitialize(ulaTransTbl  *aTbl,
 }
 
 /***********************************************************************
- * Description : Transaction Table Á¦°Å
+ * Description : Transaction Table ì œê±°
  *
  **********************************************************************/
 ACI_RC ulaTransTblDestroy(ulaTransTbl *aTbl, ulaErrorMgr *aOutErrorMgr)
@@ -197,7 +197,7 @@ ACI_RC ulaTransTblDestroy(ulaTransTbl *aTbl, ulaErrorMgr *aOutErrorMgr)
 
     for (sIndex = 0; sIndex < aTbl->mTblSize; sIndex++)
     {
-        /* Active TransactionÀ» Á¦°ÅÇÑ´Ù. */
+        /* Active Transactionì„ ì œê±°í•œë‹¤. */
         if (ulaTransTblIsATransNode(aTbl->mTransTbl + sIndex) == ACP_TRUE)
         {
             sStage = 1;
@@ -207,7 +207,7 @@ ACI_RC ulaTransTblDestroy(ulaTransTbl *aTbl, ulaErrorMgr *aOutErrorMgr)
                      != ACI_SUCCESS);
         }
 
-        /* XLog Linked List¸¦ Á¦°ÅÇÑ´Ù. (Transaction ¼öÁı ½Ã¿¡¸¸ »ç¿ë) */
+        /* XLog Linked Listë¥¼ ì œê±°í•œë‹¤. (Transaction ìˆ˜ì§‘ ì‹œì—ë§Œ ì‚¬ìš©) */
         sStage = 2;
         ACI_TEST(ulaXLogLinkedListDestroy
                                 (&aTbl->mTransTbl[sIndex].mCollectionList,
@@ -218,7 +218,7 @@ ACI_RC ulaTransTblDestroy(ulaTransTbl *aTbl, ulaErrorMgr *aOutErrorMgr)
 
     ACE_DASSERT(aTbl->mATransCnt == 0);
 
-    /* Transaction Table¿¡ ÇÒ´çµÈ ¸ğµç Memory¸¦ ÇØÁ¦ÇÑ´Ù. */
+    /* Transaction Tableì— í• ë‹¹ëœ ëª¨ë“  Memoryë¥¼ í•´ì œí•œë‹¤. */
     if (aTbl->mTransTbl != NULL)
     {
         acpMemFree(aTbl->mTransTbl);
@@ -286,10 +286,10 @@ ACI_RC ulaTransTblDestroy(ulaTransTbl *aTbl, ulaErrorMgr *aOutErrorMgr)
 }
 
 /***********************************************************************
- * Description : aTID¿¡ ÇØ´çÇÏ´Â Transaction SlotÀ» ÇÒ´çÇÏ°í ÃÊ±âÈ­ÇÑ´Ù.
+ * Description : aTIDì— í•´ë‹¹í•˜ëŠ” Transaction Slotì„ í• ë‹¹í•˜ê³  ì´ˆê¸°í™”í•œë‹¤.
  *
  * aTID       - [IN] Transaction ID
- * aBeginSN   - [IN] Transaction ÀÇ Begin SN
+ * aBeginSN   - [IN] Transaction ì˜ Begin SN
  *
  **********************************************************************/
 ACI_RC ulaTransTblInsertTrans(ulaTransTbl *aTbl,
@@ -303,23 +303,23 @@ ACI_RC ulaTransTblInsertTrans(ulaTransTbl *aTbl,
 
     ACE_DASSERT(aBeginSN != ULA_SN_NULL);
 
-    /* aTID°¡ »ç¿ëÇÒ Transaction SlotÀ» Ã£´Â´Ù. */
+    /* aTIDê°€ ì‚¬ìš©í•  Transaction Slotì„ ì°¾ëŠ”ë‹¤. */
     sIndex = ulaTransTblGetTransSlotID(aTbl, aTID);
 
     sRc = acpThrMutexLock(&aTbl->mTransTblNodeMutex);
     ACI_TEST_RAISE(ACP_RC_NOT_SUCCESS(sRc), ERR_MUTEX_LOCK);
     sMutexLock = ACP_TRUE;
 
-    /* ÀÌ¹Ì »ç¿ë ÁßÀÎÁö °Ë»çÇÑ´Ù. */
+    /* ì´ë¯¸ ì‚¬ìš© ì¤‘ì¸ì§€ ê²€ì‚¬í•œë‹¤. */
     ACI_TEST_RAISE(ulaTransTblIsATransNode(&(aTbl->mTransTbl[sIndex]))
                    == ACP_TRUE,
                    ERR_ALREADY_BEGIN);
 
-    /* TID¿Í Begin SNÀ» ¼³Á¤ÇÑ´Ù. */
+    /* TIDì™€ Begin SNì„ ì„¤ì •í•œë‹¤. */
     aTbl->mTransTbl[sIndex].mTID     = aTID;
     aTbl->mTransTbl[sIndex].mBeginSN = aBeginSN;
 
-    /* Active Trans Count¸¦ Áõ°¡½ÃÅ²´Ù. */
+    /* Active Trans Countë¥¼ ì¦ê°€ì‹œí‚¨ë‹¤. */
     aTbl->mATransCnt++;
 
     sMutexLock = ACP_FALSE;
@@ -354,10 +354,10 @@ ACI_RC ulaTransTblInsertTrans(ulaTransTbl *aTbl,
 }
 
 /***********************************************************************
- * Description : aTID¿¡ ÇØ´çÇÏ´Â Transaction SlotÀ» ¹İÈ¯ÇÏ°í °¢°¢ÀÇ
- *               member¿¡ ´ëÇØ¼­ ¼Ò¸êÀÚ¸¦ È£ÃâÇÑ´Ù.
+ * Description : aTIDì— í•´ë‹¹í•˜ëŠ” Transaction Slotì„ ë°˜í™˜í•˜ê³  ê°ê°ì˜
+ *               memberì— ëŒ€í•´ì„œ ì†Œë©¸ìë¥¼ í˜¸ì¶œí•œë‹¤.
  *
- * aTID - [IN] Á¦°ÅÇÒ TransactionÀÇ ID
+ * aTID - [IN] ì œê±°í•  Transactionì˜ ID
  *
  **********************************************************************/
 ACI_RC ulaTransTblRemoveTrans(ulaTransTbl *aTbl,
@@ -368,25 +368,25 @@ ACI_RC ulaTransTblRemoveTrans(ulaTransTbl *aTbl,
     acp_uint32_t   sIndex;
     acp_bool_t     sMutexLock = ACP_FALSE;
 
-    /* aTID°¡ »ç¿ëÇÒ Transaction SlotÀ» Ã£´Â´Ù. */
+    /* aTIDê°€ ì‚¬ìš©í•  Transaction Slotì„ ì°¾ëŠ”ë‹¤. */
     sIndex = ulaTransTblGetTransSlotID(aTbl, aTID);
 
     sRc = acpThrMutexLock(&aTbl->mTransTblNodeMutex);
     ACI_TEST_RAISE(ACP_RC_NOT_SUCCESS(sRc), ERR_MUTEX_LOCK);
     sMutexLock = ACP_TRUE;
 
-    /* »ç¿ë ÁßÀÎÁö °Ë»çÇÑ´Ù. */
+    /* ì‚¬ìš© ì¤‘ì¸ì§€ ê²€ì‚¬í•œë‹¤. */
     ACI_TEST_RAISE(ulaTransTblIsATransNode(&(aTbl->mTransTbl[sIndex]))
                    != ACP_TRUE,
                    ERR_YET_NOT_BEGIN);
 
-    /* Transaction Slot¿¡ ÇÒ´çµÈ ¸Ş¸ğ¸®¸¦ Á¦°ÅÇÑ´Ù. */
+    /* Transaction Slotì— í• ë‹¹ëœ ë©”ëª¨ë¦¬ë¥¼ ì œê±°í•œë‹¤. */
     (void)ulaTransTblRemoveAllLocator(aTbl, aTID, aOutErrorMgr);
 
-    /* Transaction SlotÀ» ÃÊ±âÈ­ÇÑ´Ù. */
+    /* Transaction Slotì„ ì´ˆê¸°í™”í•œë‹¤. */
     ulaTransTblInitTransNode(&(aTbl->mTransTbl[sIndex]));
 
-    /* Active Trans Count¸¦ °¨¼Ò½ÃÅ²´Ù. */
+    /* Active Trans Countë¥¼ ê°ì†Œì‹œí‚¨ë‹¤. */
     aTbl->mATransCnt--;
 
     sMutexLock = ACP_FALSE;
@@ -420,12 +420,12 @@ ACI_RC ulaTransTblRemoveTrans(ulaTransTbl *aTbl,
 }
 
 /***********************************************************************
- * Description : aTID Æ®·£Àè¼Ç Entry¿¡ Remote LOB Locator¿Í
- *               Local LOB Locator¸¦ pair·Î »ğÀÔÇÑ´Ù.
+ * Description : aTID íŠ¸ëœì­ì…˜ Entryì— Remote LOB Locatorì™€
+ *               Local LOB Locatorë¥¼ pairë¡œ ì‚½ì…í•œë‹¤.
  *
- * aTID      - [IN] Æ®·£Àè¼Ç ID
- * aRemoteLL - [IN] »ğÀÔÇÒ Remote LOB Locator
- * aLocalLL  - [IN] »ğÀÔÇÒ Local LOB Locator
+ * aTID      - [IN] íŠ¸ëœì­ì…˜ ID
+ * aRemoteLL - [IN] ì‚½ì…í•  Remote LOB Locator
+ * aLocalLL  - [IN] ì‚½ì…í•  Local LOB Locator
  *
  **********************************************************************/
 ACI_RC ulaTransTblInsertLocator(ulaTransTbl    *aTbl,
@@ -503,11 +503,11 @@ ACI_RC ulaTransTblInsertLocator(ulaTransTbl    *aTbl,
 }
 
 /***********************************************************************
- * Description : Remote LOB Locator¸¦ Key·Î Æ®·£Àè¼Ç Entry¿¡¼­
- *               Locator entry¸¦ »èÁ¦ÇÑ´Ù.
+ * Description : Remote LOB Locatorë¥¼ Keyë¡œ íŠ¸ëœì­ì…˜ Entryì—ì„œ
+ *               Locator entryë¥¼ ì‚­ì œí•œë‹¤.
  *
- * aTID      - [IN] Æ®·£Àè¼Ç ID
- * aRemoteLL - [IN] »èÁ¦ÇÒ Remote LOB Locator
+ * aTID      - [IN] íŠ¸ëœì­ì…˜ ID
+ * aRemoteLL - [IN] ì‚­ì œí•  Remote LOB Locator
  *
  **********************************************************************/
 ACI_RC ulaTransTblRemoveLocator(ulaTransTbl   *aTbl,
@@ -581,9 +581,9 @@ ACI_RC ulaTransTblRemoveLocator(ulaTransTbl   *aTbl,
 }
 
 /***********************************************************************
- * Description : Æ®·£Àè¼Ç Entry¿¡¼­ ¸ğµç Locator entry¸¦ »èÁ¦ÇÑ´Ù.
+ * Description : íŠ¸ëœì­ì…˜ Entryì—ì„œ ëª¨ë“  Locator entryë¥¼ ì‚­ì œí•œë‹¤.
  *
- * aTID      - [IN] Æ®·£Àè¼Ç ID
+ * aTID      - [IN] íŠ¸ëœì­ì…˜ ID
  *
  **********************************************************************/
 ACI_RC ulaTransTblRemoveAllLocator(ulaTransTbl  *aTbl,
@@ -627,13 +627,13 @@ ACI_RC ulaTransTblRemoveAllLocator(ulaTransTbl  *aTbl,
 }
 
 /***********************************************************************
- * Description : aTID Æ®·£Àè¼Ç Entry¿¡¼­ Remote LOB Locator¸¦ Key·Î
- *               Local LOB Locator¸¦ ¹İÈ¯ÇÑ´Ù.
+ * Description : aTID íŠ¸ëœì­ì…˜ Entryì—ì„œ Remote LOB Locatorë¥¼ Keyë¡œ
+ *               Local LOB Locatorë¥¼ ë°˜í™˜í•œë‹¤.
  *
- * aTID        - [IN]  Æ®·£Àè¼Ç ID
- * aRemoteLL   - [IN]  Ã£À» Remote LOB Locator
- * aOutLocalLL - [OUT] ¹İÈ¯ÇÒ Local LOB Locator ÀúÀå º¯¼ö
- * aOutIsFound - [OUT] °Ë»ö ¼º°ø ¿©ºÎ
+ * aTID        - [IN]  íŠ¸ëœì­ì…˜ ID
+ * aRemoteLL   - [IN]  ì°¾ì„ Remote LOB Locator
+ * aOutLocalLL - [OUT] ë°˜í™˜í•  Local LOB Locator ì €ì¥ ë³€ìˆ˜
+ * aOutIsFound - [OUT] ê²€ìƒ‰ ì„±ê³µ ì—¬ë¶€
  *
  **********************************************************************/
 ACI_RC ulaTransTblSearchLocator(ulaTransTbl   *aTbl,

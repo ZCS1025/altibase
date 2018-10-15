@@ -27,7 +27,7 @@ ACI_RC ulpSetStmtAttrParamCore( ulpLibConnNode *aConnNode,
 /***********************************************************************
  *
  * Description :
- *    row / column wise bindingÀ» À§ÇÑ statement ¼Ó¼º ¼³Á¤.
+ *    row / column wise bindingì„ ìœ„í•œ statement ì†ì„± ì„¤ì •.
  *
  * Implementation :
  *
@@ -115,7 +115,7 @@ ACI_RC ulpSetStmtAttrParamCore( ulpLibConnNode *aConnNode,
     ACI_TEST_RAISE( ( sSqlRes == SQL_ERROR ) || ( sSqlRes == SQL_INVALID_HANDLE )
                     , ERR_CLI_SETSTMT );
 */
-    /* stmt Node¿¡ stmt¼Ó¼º Á¤º¸ set*/
+    /* stmt Nodeì— stmtì†ì„± ì •ë³´ set*/
     if ( aStmtNode != NULL )
     {
         aStmtNode -> mBindInfo.mIsArray    = (acp_bool_t) aSqlstmt -> isarr ;
@@ -126,7 +126,7 @@ ACI_RC ulpSetStmtAttrParamCore( ulpLibConnNode *aConnNode,
                 (aSqlstmt -> isstruct == 1)?aSqlstmt -> structsize : 0;
         aStmtNode -> mBindInfo.mIsAtomic   = (acp_bool_t) aSqlstmt -> isatomic ;
         /*aStmtNode -> mStatusPtr            = (void*) aSqlstmt -> statusptr ;*/
-        /* Statement »óÅÂ¸¦ SETSTMTATTR·Î º¯°æÇÔ.*/
+        /* Statement ìƒíƒœë¥¼ SETSTMTATTRë¡œ ë³€ê²½í•¨.*/
         aStmtNode -> mStmtState = S_SETSTMTATTR;
     }
 
@@ -161,7 +161,7 @@ ACI_RC ulpSetStmtAttrRowCore(   ulpLibConnNode *aConnNode,
 /***********************************************************************
  *
  * Description :
- *  array fetch¸¦ À§ÇÑ statement ¼Ó¼º ¼³Á¤.
+ *  array fetchë¥¼ ìœ„í•œ statement ì†ì„± ì„¤ì •.
  *
  * Implementation :
  *
@@ -258,8 +258,8 @@ ACI_RC ulpSetStmtAttrRowCore(   ulpLibConnNode *aConnNode,
 }
 
 /**************************************************************************
- * Description : dynamic sql bind¸¦ À§ÇÑ statement ¼³Á¤
- *               array bindÀº µû·Î ¼³Á¤ÇÑ´Ù.
+ * Description : dynamic sql bindë¥¼ ìœ„í•œ statement ì„¤ì •
+ *               array bindì€ ë”°ë¡œ ì„¤ì •í•œë‹¤.
  *
  **************************************************************************/
 ACI_RC ulpSetStmtAttrDynamicParamCore( ulpLibConnNode *aConnNode,
@@ -307,7 +307,7 @@ ACI_RC ulpSetStmtAttrDynamicParamCore( ulpLibConnNode *aConnNode,
 }
 
 /**************************************************************************
- * Description : dynamic sql fetch¸¦ À§ÇÑ statement ¼³Á¤
+ * Description : dynamic sql fetchë¥¼ ìœ„í•œ statement ì„¤ì •
  *
  **************************************************************************/
 ACI_RC ulpSetStmtAttrDynamicRowCore( ulpLibConnNode *aConnNode,
@@ -382,7 +382,7 @@ ACI_RC ulpBindParamCore( ulpLibConnNode *aConnNode,
 /***********************************************************************
  *
  * Description :
- *    in/out type host º¯¼ö¿¡ ´ëÇÑ bindparamÀ» Ã³¸®ÇÑ´Ù.
+ *    in/out type host ë³€ìˆ˜ì— ëŒ€í•œ bindparamì„ ì²˜ë¦¬í•œë‹¤.
  *
  * Implementation :
  *
@@ -597,32 +597,32 @@ ACI_RC ulpBindParamCore( ulpLibConnNode *aConnNode,
                 sSqlType =
                         (aHostVar->mType == H_NCHAR)? SQL_WCHAR: SQL_WVARCHAR;
 
-                /* utf8Àº Áö¿ø¾ÈÇÏ°í utf16¸¸ Áö¿øÇÑ´Ù.(nchar_utf16 ¿É¼ÇÀ» ÁØ °æ¿ì)*/
+                /* utf8ì€ ì§€ì›ì•ˆí•˜ê³  utf16ë§Œ ì§€ì›í•œë‹¤.(nchar_utf16 ì˜µì…˜ì„ ì¤€ ê²½ìš°)*/
                 if ( gUlpLibOption.mIsNCharUTF16 == ACP_TRUE )
                 {
-                    /* parameter binding½Ã¿¡´Â ¹İµå½Ã indicator°¡ Á¸ÀçÇØ¾ß ÇÑ´Ù*/
+                    /* parameter bindingì‹œì—ëŠ” ë°˜ë“œì‹œ indicatorê°€ ì¡´ì¬í•´ì•¼ í•œë‹¤*/
                     ACI_TEST_RAISE(aHostVar->mHostInd == NULL, ERR_NO_IND_4NCHAR);
                     sCType     = SQL_C_WCHAR;
                     sPrecision = (SQLULEN)(aHostVar->mLen);
                 }
-                /* default (nchar_utf16 ¿É¼ÇÀ» ÁÖÁö ¾ÊÀº °æ¿ì)*/
+                /* default (nchar_utf16 ì˜µì…˜ì„ ì£¼ì§€ ì•Šì€ ê²½ìš°)*/
                 else
                 {
                     sCType     = SQL_C_CHAR;
                     sPrecision = (SQLULEN)(aHostVar->mLen - 1);
                 }
                 /*======================================*/
-                /* binding½Ã ¼­¹ö mtdEstimate()¿¡¼­ °Ë»çÇÏ´Â*/
-                /* national charset ÃÖ´ë precision (¹®ÀÚ¼ö¸¦ ÀÇ¹Ì)*/
+                /* bindingì‹œ ì„œë²„ mtdEstimate()ì—ì„œ ê²€ì‚¬í•˜ëŠ”*/
+                /* national charset ìµœëŒ€ precision (ë¬¸ììˆ˜ë¥¼ ì˜ë¯¸)*/
                 /* utf16: 32767, utf8: 16383.*/
-                /* qtc.cpp:fixAfterBinding()¿¡¼­ crallocÀ» ÇÏ´Âµ¥*/
-                /* ncs°¡ utf16ÀÌ¸é precision *2, utf8ÀÌ¸é *4ÇÑ ¸¸Å­ ÇÒ´ç*/
-                /* ¿ì¸®´Â utf16/utf8ÀÎÁö ¸ğ¸£¹Ç·Î ÀÏ´Ü 2·Î ³ª´©¾î µĞ´Ù*/
-                /* ´Ü, pointer(nchar only)Å¸ÀÔÀÎ °æ¿ì length°¡ SES_MAX_CHAR*/
-                /* (65001)·Î ¼¼ÆÃµÇ´Âµ¥, nchar limit¸¦ ³ÑÁö¾Ê±â À§ÇØ*/
-                /* 4·Î ³ª´« 16250 À» precisionÀ¸·Î ¼¼ÆÃ*/
-                /* cf) nchar utf8¿¡¼­ buffer size°¡ 32767 ÀÌ»óÀÌ¸é*/
-                /*     ¼­¹ö¿¡¼­ error¸¦ ¹ß»ı½ÃÅ³ °ÍÀÌ´Ù*/
+                /* qtc.cpp:fixAfterBinding()ì—ì„œ crallocì„ í•˜ëŠ”ë°*/
+                /* ncsê°€ utf16ì´ë©´ precision *2, utf8ì´ë©´ *4í•œ ë§Œí¼ í• ë‹¹*/
+                /* ìš°ë¦¬ëŠ” utf16/utf8ì¸ì§€ ëª¨ë¥´ë¯€ë¡œ ì¼ë‹¨ 2ë¡œ ë‚˜ëˆ„ì–´ ë‘”ë‹¤*/
+                /* ë‹¨, pointer(nchar only)íƒ€ì…ì¸ ê²½ìš° lengthê°€ SES_MAX_CHAR*/
+                /* (65001)ë¡œ ì„¸íŒ…ë˜ëŠ”ë°, nchar limitë¥¼ ë„˜ì§€ì•Šê¸° ìœ„í•´*/
+                /* 4ë¡œ ë‚˜ëˆˆ 16250 ì„ precisionìœ¼ë¡œ ì„¸íŒ…*/
+                /* cf) nchar utf8ì—ì„œ buffer sizeê°€ 32767 ì´ìƒì´ë©´*/
+                /*     ì„œë²„ì—ì„œ errorë¥¼ ë°œìƒì‹œí‚¬ ê²ƒì´ë‹¤*/
                 /*======================================*/
                 if (aHostVar->mIsDynAlloc != 0)
                 {
@@ -817,7 +817,7 @@ ACI_RC ulpBindColCore( ulpLibConnNode *aConnNode,
 /***********************************************************************
  *
  * Description :
- *    out type host º¯¼ö¿¡´ëÇÑ bindcolÀ» Ã³¸®ÇÑ´Ù.
+ *    out type host ë³€ìˆ˜ì—ëŒ€í•œ bindcolì„ ì²˜ë¦¬í•œë‹¤.
  *    
  *
  * Implementation :
@@ -1042,9 +1042,9 @@ ACI_RC ulpSetDateFmtCore( ulpLibConnNode *aConnNode )
  *
  * Description :
  *
- *      DBCÀÇ ALTIBASE_DATE_FORMATÀ» ¼³Á¤ÇØÁØ´Ù.
- *      È¯°æº¯¼ö ALTIBASE_DATE_FORMATÀÌ ¼³Á¤µÇ¾îÀÖÀ¸¸é È¯°æº¯¼ö·Î ¼³Á¤ÇÏ°í,
- *      ±×·¸Áö ¾ÊÀ¸¸é ±âº»°ªÀ» »ç¿ëÇÑ´Ù.
+ *      DBCì˜ ALTIBASE_DATE_FORMATì„ ì„¤ì •í•´ì¤€ë‹¤.
+ *      í™˜ê²½ë³€ìˆ˜ ALTIBASE_DATE_FORMATì´ ì„¤ì •ë˜ì–´ìˆìœ¼ë©´ í™˜ê²½ë³€ìˆ˜ë¡œ ì„¤ì •í•˜ê³ ,
+ *      ê·¸ë ‡ì§€ ì•Šìœ¼ë©´ ê¸°ë³¸ê°’ì„ ì‚¬ìš©í•œë‹¤.
  *
  * Implementation :
  *
@@ -1076,11 +1076,11 @@ void ulpSetColRowSizeCore( ulpSqlstmt *aSqlstmt )
 /***********************************************************************
  *
  * Description :
- *      ulpSqlstmt ±¸Á¶Ã¼ÀÇ hostº¯¼öµé¿¡ ´ëÇÑ isarr/isstruct Á¤º¸¸¦ ÀĞ¾î array/rowwise
- *      binding¿©ºÎ¸¦ °áÁ¤ÇÏ¿© ulpSqlstmt.isarr ¿Í ulpSqlstmt.arrsize ÇÊµå¸¦ ¼¼ÆÃÇÔ.
+ *      ulpSqlstmt êµ¬ì¡°ì²´ì˜ hostë³€ìˆ˜ë“¤ì— ëŒ€í•œ isarr/isstruct ì •ë³´ë¥¼ ì½ì–´ array/rowwise
+ *      bindingì—¬ë¶€ë¥¼ ê²°ì •í•˜ì—¬ ulpSqlstmt.isarr ì™€ ulpSqlstmt.arrsize í•„ë“œë¥¼ ì„¸íŒ…í•¨.
  *
  * Implementation :
- *      ´Ù¸¥ typeÀÇ È£½ºÆ® º¯¼ö°¡ ¿Ã¶§±îÁö °Ë»öÇÏ¿© arrsize¸¦ ÃÖ¼Ò°ªÀ¸·Î ¼³Á¤ÇÔ.
+ *      ë‹¤ë¥¸ typeì˜ í˜¸ìŠ¤íŠ¸ ë³€ìˆ˜ê°€ ì˜¬ë•Œê¹Œì§€ ê²€ìƒ‰í•˜ì—¬ arrsizeë¥¼ ìµœì†Œê°’ìœ¼ë¡œ ì„¤ì •í•¨.
  ***********************************************************************/
     acp_sint32_t   sI;
     acp_uint32_t   sSize;
@@ -1128,14 +1128,14 @@ void ulpSetColRowSizeCore( ulpSqlstmt *aSqlstmt )
 }
 
 
-/* BUG-31405 : Failover¼º°øÈÄ Failure of finding statement ¿¡·¯ ¹ß»ı. */
+/* BUG-31405 : Failoverì„±ê³µí›„ Failure of finding statement ì—ëŸ¬ ë°œìƒ. */
 void ulpSetFailoverFlag( ulpLibConnNode *aConnNode )
 {
 /***********************************************************************
  *
  * Description :
- *      FailOver¿¡¼­ ¼º°øÇÑµÚ apre¿¡¼­´Â ÇØ´ç Ä¿³Ø¼Ç¿¡ Æ÷ÇÔµÈ stmtµéÀ» ´Ù½Ã prepareÇÑ´Ù.
- *      ³ªÁß¿¡ ÇØ´ç±¸¹®ÀÌ Àç¼öÇàµÉ¶§ reprepareµÇµµ·Ï mNeedReprepare¸¦ true·Î ½êÆÃÇØÁØ´Ù.
+ *      FailOverì—ì„œ ì„±ê³µí•œë’¤ apreì—ì„œëŠ” í•´ë‹¹ ì»¤ë„¥ì…˜ì— í¬í•¨ëœ stmtë“¤ì„ ë‹¤ì‹œ prepareí•œë‹¤.
+ *      ë‚˜ì¤‘ì— í•´ë‹¹êµ¬ë¬¸ì´ ì¬ìˆ˜í–‰ë ë•Œ reprepareë˜ë„ë¡ mNeedReprepareë¥¼ trueë¡œ ì„íŒ…í•´ì¤€ë‹¤.
  *
  * Implementation :
  *
@@ -1176,7 +1176,7 @@ void ulpSetFailoverFlag( ulpLibConnNode *aConnNode )
                       (sStmtNode->mQueryStr    != NULL) )
                 {
                     if ( sStmtNode->mCursorName[0] != '\0' )
-                    {   /* cursorÀÏ °æ¿ì FreestmtÇÔ. */
+                    {   /* cursorì¼ ê²½ìš° Freestmtí•¨. */
                         SQLFreeStmt( sStmtNode->mHstmt, SQL_CLOSE );
                     }
                     sStmtNode->mNeedReprepare = ACP_TRUE;
@@ -1193,8 +1193,8 @@ void ulpSetFailoverFlag( ulpLibConnNode *aConnNode )
             sStmtNode = aConnNode->mCursorHashT.mTable[i].mList;
             for ( ; sStmtNode != NULL ; sStmtNode = sStmtNode->mNextStmt )
             {
-                /* À§¿¡¼­ stmt hash tableÀ» °Ë»öÇÏ¸é¼­ reprepareÀ» ÀÌ¹Ì Çß±â¶§¹®¿¡,
-                   mStmtNameÀÌ ¾ø´Â °æ¿ì¸¸ °í·ÁÇÏ¸é µÈ´Ù. */
+                /* ìœ„ì—ì„œ stmt hash tableì„ ê²€ìƒ‰í•˜ë©´ì„œ reprepareì„ ì´ë¯¸ í–ˆê¸°ë•Œë¬¸ì—,
+                   mStmtNameì´ ì—†ëŠ” ê²½ìš°ë§Œ ê³ ë ¤í•˜ë©´ ëœë‹¤. */
                 if( (sStmtNode->mStmtName[0] == '\0')      &&
                      (sStmtNode->mCurState    != C_INITIAL) &&
                      (sStmtNode->mQueryStr    != NULL) )
@@ -1209,7 +1209,7 @@ void ulpSetFailoverFlag( ulpLibConnNode *aConnNode )
     aConnNode->mFailoveredJustnow = ACP_FALSE;
 }
 
-/* BUG-25643 : apre ¿¡¼­ ONERR ±¸¹®ÀÌ Àß¸ø µ¿ÀÛÇÕ´Ï´Ù. */
+/* BUG-25643 : apre ì—ì„œ ONERR êµ¬ë¬¸ì´ ì˜ëª» ë™ì‘í•©ë‹ˆë‹¤. */
 ACI_RC ulpGetOnerrErrCodeCore( ulpLibConnNode *aConnNode,
                                ulpSqlstmt     *aSqlstmt,
                                SQLHSTMT       *aHstmt,
@@ -1218,11 +1218,11 @@ ACI_RC ulpGetOnerrErrCodeCore( ulpLibConnNode *aConnNode,
 /***********************************************************************
  *
  * Description :
- *      ONERR ±¸¹®ÀÌ »ç¿ëµÇ¾úÀ» °æ¿ì »ç¿ëÀÚ°¡ ÁöÁ¤ÇÑ ¹è¿­¿¡ °¢ row¿¡ ´ëÇÑ
- *      native error code¸¦ ÀúÀåÇØÁØ´Ù.
+ *      ONERR êµ¬ë¬¸ì´ ì‚¬ìš©ë˜ì—ˆì„ ê²½ìš° ì‚¬ìš©ìê°€ ì§€ì •í•œ ë°°ì—´ì— ê° rowì— ëŒ€í•œ
+ *      native error codeë¥¼ ì €ì¥í•´ì¤€ë‹¤.
  *
  * @param[out] aErrCode
- *      »ç¿ëÀÚ ÁöÁ¤ error code ¹è¿­ pointer.
+ *      ì‚¬ìš©ì ì§€ì • error code ë°°ì—´ pointer.
  ***********************************************************************/
 
     acp_sint32_t i;
@@ -1232,7 +1232,7 @@ ACI_RC ulpGetOnerrErrCodeCore( ulpLibConnNode *aConnNode,
     acp_sint16_t sStrLen;
     acp_sint32_t sSQLCODE;
 
-    /* Diag rec. °³¼ö ¾Ë¾Æ³¿. */
+    /* Diag rec. ê°œìˆ˜ ì•Œì•„ëƒ„. */
     sSQLRC = SQLGetDiagField(SQL_HANDLE_STMT,
                              (SQLHANDLE)*aHstmt,
                              0,
@@ -1246,7 +1246,7 @@ ACI_RC ulpGetOnerrErrCodeCore( ulpLibConnNode *aConnNode,
 
     for( i = 1 ; i <= sNDiagRec ; i++ )
     {
-        /* Çà ¹øÈ£ ¾Ë¾Æ³¿. */
+        /* í–‰ ë²ˆí˜¸ ì•Œì•„ëƒ„. */
         sSQLRC = SQLGetDiagField(SQL_HANDLE_STMT,
                                  (SQLHANDLE)*aHstmt,
                                  (SQLSMALLINT)i,
@@ -1258,7 +1258,7 @@ ACI_RC ulpGetOnerrErrCodeCore( ulpLibConnNode *aConnNode,
         ACI_TEST_RAISE( (sSQLRC == SQL_INVALID_HANDLE)||
                         (sSQLRC == SQL_ERROR), ERR_CLI_GETDIAGFIELD );
 
-        /* native error code ¾Ë¾Æ³¿. */
+        /* native error code ì•Œì•„ëƒ„. */
         sSQLRC = SQLGetDiagField(SQL_HANDLE_STMT,
                                  (SQLHANDLE)*aHstmt,
                                  (SQLSMALLINT)i,
@@ -1293,31 +1293,31 @@ ACI_RC ulpGetOnerrErrCodeCore( ulpLibConnNode *aConnNode,
     return ACI_FAILURE;
 }
 
-/* BUG-45448 FOR±¸¹®ÀÌ Æ÷ÇÔµÇ¾úÀ»°æ¿ì arrsize º¸Á¤ÇÏ´Â ·ÎÁ÷À» ÇÔ¼ö·Î Á¤ÀÇ */
+/* BUG-45448 FORêµ¬ë¬¸ì´ í¬í•¨ë˜ì—ˆì„ê²½ìš° arrsize ë³´ì •í•˜ëŠ” ë¡œì§ì„ í•¨ìˆ˜ë¡œ ì •ì˜ */
 ACI_RC ulpAdjustArraySize(ulpSqlstmt *aSqlstmt)
 {
 /***********************************************************************
  *
  * Description :
- *      »ç¿ëÀÚ°¡ FOR±¸¹®À» »ç¿ëÇÏ¿´À»°æ¿ì FOR¿¡ »ç¿ëµÈ °ªÀ» ¿ì¼±ÀûÀ¸·Î 
- *      arrsize¿¡ ÇÒ´çÇÑ´Ù.
+ *      ì‚¬ìš©ìê°€ FORêµ¬ë¬¸ì„ ì‚¬ìš©í•˜ì˜€ì„ê²½ìš° FORì— ì‚¬ìš©ëœ ê°’ì„ ìš°ì„ ì ìœ¼ë¡œ 
+ *      arrsizeì— í• ë‹¹í•œë‹¤.
  *
  * @param aSqlstmt
  *      ulpSqlStmt
  ***********************************************************************/
  
-    /* FORÀı Ã³¸®*/
+    /* FORì ˆ ì²˜ë¦¬*/
     if ( aSqlstmt->iters == 0 )
     {
         ACI_TEST_RAISE( aSqlstmt->isatomic == 1, ERR_ATOMIC_FOR_ZERO );
     }
     else
     {
-        /* BUG-28788 : FORÀıÀ» ÀÌ¿ëÇÏ¿© struct pointer typeÀÇ array insert°¡ ¾ÈµÊ  */
+        /* BUG-28788 : FORì ˆì„ ì´ìš©í•˜ì—¬ struct pointer typeì˜ array insertê°€ ì•ˆë¨  */
         if ( aSqlstmt->isarr == 0 )
         {
-            /* FOR ÀıÀÌ¿Í¼­ iter°¡ 0ÀÌ ¾Æ´Ï¶ó¸é array typeÀÌ ¾Æ´Ï´õ¶óµµ*/
-            /* ¹«Á¶°Ç iter ¸¸Å­ array insertÇØ¶ó ¶ó°í °£ÁÖµÈ´Ù.*/
+            /* FOR ì ˆì´ì™€ì„œ iterê°€ 0ì´ ì•„ë‹ˆë¼ë©´ array typeì´ ì•„ë‹ˆë”ë¼ë„*/
+            /* ë¬´ì¡°ê±´ iter ë§Œí¼ array insertí•´ë¼ ë¼ê³  ê°„ì£¼ëœë‹¤.*/
             aSqlstmt->isarr   = 1;
             aSqlstmt->arrsize = aSqlstmt->iters;
         }

@@ -33,16 +33,16 @@
  ******************************************************************/
 /**************************************************************************
  * Description :
- * Segment¸¦ SizeÅ©±â´ë·Î WExtent¸¦ °¡ÁøÃ¼ »ı¼ºÇÑ´Ù
+ * Segmentë¥¼ Sizeí¬ê¸°ëŒ€ë¡œ WExtentë¥¼ ê°€ì§„ì²´ ìƒì„±í•œë‹¤
  *
  * <IN>
- * aStatistics - Åë°èÁ¤º¸
- * aStatsPtr   - TempTable¿ë Åë°èÁ¤º¸
- * aLogging    - Logging¿©ºÎ (ÇöÀç´Â ¹«È¿ÇÔ)
- * aSpaceID    - Extent¸¦ °¡Á®¿Ã TablespaceID
- * aSize       - »ı¼ºÇÒ WAÀÇ Å©±â
+ * aStatistics - í†µê³„ì •ë³´
+ * aStatsPtr   - TempTableìš© í†µê³„ì •ë³´
+ * aLogging    - Loggingì—¬ë¶€ (í˜„ì¬ëŠ” ë¬´íš¨í•¨)
+ * aSpaceID    - Extentë¥¼ ê°€ì ¸ì˜¬ TablespaceID
+ * aSize       - ìƒì„±í•  WAì˜ í¬ê¸°
  * <OUT>
- * aWASegment  - »ı¼ºµÈ WASegment
+ * aWASegment  - ìƒì„±ëœ WASegment
  ***************************************************************************/
 IDE_RC sdtWASegment::createWASegment(idvSQL             * aStatistics,
                                      smiTempTableStats ** aStatsPtr,
@@ -62,10 +62,10 @@ IDE_RC sdtWASegment::createWASegment(idvSQL             * aStatistics,
     UInt             sHashBucketDensity;
     UInt             sHashBucketCnt;
 
-    /* ¾ÆÁ÷ Logging ±â¹ı »ç¿ë ¾ÈÇÔ */
+    /* ì•„ì§ Logging ê¸°ë²• ì‚¬ìš© ì•ˆí•¨ */
     IDE_ASSERT( aLogging == ID_FALSE );
 
-    /* ¿Ã¸² ÇÏ¿© ÇÒ´ç¹ŞÀ½ */
+    /* ì˜¬ë¦¼ í•˜ì—¬ í• ë‹¹ë°›ìŒ */
     sExtentSize  = ( SD_PAGE_SIZE * SDT_WAEXTENT_PAGECOUNT );
     sExtentCount = ( aSize + sExtentSize - 1 ) / sExtentSize;
     sHashBucketDensity = smuProperty::getTempHashBucketDensity();
@@ -103,9 +103,9 @@ IDE_RC sdtWASegment::createWASegment(idvSQL             * aStatistics,
         sWASeg->mGroup[ i ].mPolicy = SDT_WA_REUSE_NONE;
     }
 
-    /* InitGroupÀ» »ı¼ºÇÑ´Ù. */
+    /* InitGroupì„ ìƒì„±í•œë‹¤. */
     sInitGrpInfo = &sWASeg->mGroup[ 0 ];
-    /* Segment ÀÌÈÄ WAExtentPtr°¡ ¹èÄ¡µÈ ÈÄ RangeÀÇ ½ÃÀÛÀÌ´Ù. */
+    /* Segment ì´í›„ WAExtentPtrê°€ ë°°ì¹˜ëœ í›„ Rangeì˜ ì‹œì‘ì´ë‹¤. */
     sInitGrpInfo->mBeginWPID =
         ( ( ID_SIZEOF( sdtWASegment ) +
             ID_SIZEOF(UChar*) * sWASeg->mWAExtentCount )
@@ -138,13 +138,13 @@ IDE_RC sdtWASegment::createWASegment(idvSQL             * aStatistics,
               != IDE_SUCCESS );
     sState = 3;
     /***************************** Hash Bucket ******************************/
-    /* BUG-37741-¼º´ÉÀÌ½´
-     * NPage¸¦ Ã£´Â HashTableÀÇ Å©±â¸¦ ÇÁ·ÎÆÛÆ¼·Î Á¶Á¤ÇÔ*/
+    /* BUG-37741-ì„±ëŠ¥ì´ìŠˆ
+     * NPageë¥¼ ì°¾ëŠ” HashTableì˜ í¬ê¸°ë¥¼ í”„ë¡œí¼í‹°ë¡œ ì¡°ì •í•¨*/
     sWASeg->mNPageHashBucketCnt =
         (sExtentCount * SDT_WAEXTENT_PAGECOUNT)/sHashBucketDensity;
 
     /* BUG-40608
-     * mNPageHashBucketCnt°¡ ÃÖ¼Ò 1 ÀÌ»óÀÌ µÇµµ·Ï º¸Á¤ */
+     * mNPageHashBucketCntê°€ ìµœì†Œ 1 ì´ìƒì´ ë˜ë„ë¡ ë³´ì • */
     if( sWASeg->mNPageHashBucketCnt < 1 )
     {
         sWASeg->mNPageHashBucketCnt = 1;
@@ -202,7 +202,7 @@ IDE_RC sdtWASegment::createWASegment(idvSQL             * aStatistics,
 
 /**************************************************************************
  * Description :
- * SegmentÀÇ Å©±â¸¦ ¹Ş´Â´Ù.
+ * Segmentì˜ í¬ê¸°ë¥¼ ë°›ëŠ”ë‹¤.
  ***************************************************************************/
 UInt sdtWASegment::getWASegmentPageCount(sdtWASegment * aWASegment )
 {
@@ -211,11 +211,11 @@ UInt sdtWASegment::getWASegmentPageCount(sdtWASegment * aWASegment )
 
 /**************************************************************************
  * Description :
- * Segment¸¦ DropÇÏ°í ¾ÈÀÇ Extentµµ ¹İÈ¯ÇÑ´Ù.
+ * Segmentë¥¼ Dropí•˜ê³  ì•ˆì˜ Extentë„ ë°˜í™˜í•œë‹¤.
  *
  * <IN>
- * aWASegment     - ´ë»ó WASegment
- * aWait4Flush    - DirtyÇÑ PageµéÀ» FlushµÉ¶§±îÁö ±â´Ù¸± °ÍÀÎ°¡.
+ * aWASegment     - ëŒ€ìƒ WASegment
+ * aWait4Flush    - Dirtyí•œ Pageë“¤ì„ Flushë ë•Œê¹Œì§€ ê¸°ë‹¤ë¦´ ê²ƒì¸ê°€.
  ***************************************************************************/
 IDE_RC sdtWASegment::dropWASegment(sdtWASegment * aWASegment,
                                    idBool         aWait4Flush)
@@ -228,8 +228,8 @@ IDE_RC sdtWASegment::dropWASegment(sdtWASegment * aWASegment,
         }
         IDE_TEST( dropAllWAGroup( aWASegment, aWait4Flush ) != IDE_SUCCESS );
 
-        /* FlushQueue¿¡°Ô ÀÏÀÌ ³¡¾ÒÀ½À» ¾Ë¸².
-         * ÀÌÈÄ sdtWASegment::flusherRun¿¡¼­ Á¤¸®ÇØÁÜ. */
+        /* FlushQueueì—ê²Œ ì¼ì´ ëì•˜ìŒì„ ì•Œë¦¼.
+         * ì´í›„ sdtWASegment::flusherRunì—ì„œ ì •ë¦¬í•´ì¤Œ. */
         aWASegment->mFlushQueue->mFQDone = ID_TRUE;
     }
 
@@ -242,11 +242,11 @@ IDE_RC sdtWASegment::dropWASegment(sdtWASegment * aWASegment,
 
 /**************************************************************************
  * Description :
- * WAExtentµéÀ» Segment¿¡ Ãß°¡ÇÑ´Ù.
+ * WAExtentë“¤ì„ Segmentì— ì¶”ê°€í•œë‹¤.
  *
  * <IN>
- * aWASegment     - ´ë»ó WASegment
- * aWAExtentPtr   - Ãß°¡ÇÒ ExtentPtr
+ * aWASegment     - ëŒ€ìƒ WASegment
+ * aWAExtentPtr   - ì¶”ê°€í•  ExtentPtr
  ***************************************************************************/
 IDE_RC sdtWASegment::addWAExtentPtr(sdtWASegment * aWASegment,
                                     UChar        * aWAExtentPtr )
@@ -267,14 +267,14 @@ IDE_RC sdtWASegment::addWAExtentPtr(sdtWASegment * aWASegment,
 
 /**************************************************************************
  * Description :
- * aIdx¹øÂ° WAExtentÀÇ À§Ä¡(Pointer)¸¦ ¼³Á¤ÇÑ´Ù.
- * DumpÀü¿ëÀ¸·Î, DumpÇÑ FileÀ» ºÒ·¯¿ÔÀ»¶§ WAExtentPtr¸¦ ºÒ·¯¿Â ¸Ş¸ğ¸®¿¡ ¸Â°Ô
- * Pointer ÁÖ¼Ò¸¦ ÀçÁ¶Á¤ÇÏ±â À§ÇÔÀÌ´Ù.
+ * aIdxë²ˆì§¸ WAExtentì˜ ìœ„ì¹˜(Pointer)ë¥¼ ì„¤ì •í•œë‹¤.
+ * Dumpì „ìš©ìœ¼ë¡œ, Dumpí•œ Fileì„ ë¶ˆëŸ¬ì™”ì„ë•Œ WAExtentPtrë¥¼ ë¶ˆëŸ¬ì˜¨ ë©”ëª¨ë¦¬ì— ë§ê²Œ
+ * Pointer ì£¼ì†Œë¥¼ ì¬ì¡°ì •í•˜ê¸° ìœ„í•¨ì´ë‹¤.
  *
  * <IN>
- * aWASegment     - ´ë»ó WASegment
+ * aWASegment     - ëŒ€ìƒ WASegment
  * aIdx           - Extent ID
- * aWAExtentPtr   - Ãß°¡ÇÒ ExtentPtr
+ * aWAExtentPtr   - ì¶”ê°€í•  ExtentPtr
  ***************************************************************************/
 IDE_RC sdtWASegment::setWAExtentPtr(sdtWASegment  * aWASegment,
                                     UInt            aIdx,
@@ -285,13 +285,13 @@ IDE_RC sdtWASegment::setWAExtentPtr(sdtWASegment  * aWASegment,
 
     sOffset = ID_SIZEOF( sdtWASegment ) + ID_SIZEOF( UChar* ) * aIdx;
 
-    /* 0¹ø Extent¿¡ µé¾î¾ß ÇÑ´Ù. */
+    /* 0ë²ˆ Extentì— ë“¤ì–´ì•¼ í•œë‹¤. */
     IDE_ERROR( getExtentIdx(sOffset / SD_PAGE_SIZE) == 0 );
     IDE_ERROR( ( sOffset % ID_SIZEOF( UChar *) )  == 0 );
 
-    /* WASegment´Â ¹İµå½Ã WAExtentÀÇ °¡Àå ¾ÕÂÊ¿¡ ¹èÄ¡µÇ°í,
-     * 0¹ø Extent³»¿¡ ¸ğµÎ ¹èÄ¡µÇ¾î ¿¬¼Ó¼ºÀ» °¡Áö±â ¶§¹®¿¡
-     * Å½»öÀÌ °¡´ÉÇÏ´Ù */
+    /* WASegmentëŠ” ë°˜ë“œì‹œ WAExtentì˜ ê°€ì¥ ì•ìª½ì— ë°°ì¹˜ë˜ê³ ,
+     * 0ë²ˆ Extentë‚´ì— ëª¨ë‘ ë°°ì¹˜ë˜ì–´ ì—°ì†ì„±ì„ ê°€ì§€ê¸° ë•Œë¬¸ì—
+     * íƒìƒ‰ì´ ê°€ëŠ¥í•˜ë‹¤ */
     sSlotPtr  = (UChar**)(((UChar*)aWASegment) + sOffset);
     *sSlotPtr = aWAExtentPtr;
 
@@ -307,14 +307,14 @@ IDE_RC sdtWASegment::setWAExtentPtr(sdtWASegment  * aWASegment,
  ******************************************************************/
 /**************************************************************************
  * Description :
- * Segment³» GroupÀ» »ı¼ºÇÑ´Ù. ÀÌ¶§ InitGroupÀ¸·ÎºÎÅÍ Extent¸¦ °¡Á®¿Â´Ù.
- * Size°¡ 0ÀÌ¸é, InitGroupÀüÃ¼Å©±â·Î ¼³Á¤ÇÑ´Ù.
+ * Segmentë‚´ Groupì„ ìƒì„±í•œë‹¤. ì´ë•Œ InitGroupìœ¼ë¡œë¶€í„° Extentë¥¼ ê°€ì ¸ì˜¨ë‹¤.
+ * Sizeê°€ 0ì´ë©´, InitGroupì „ì²´í¬ê¸°ë¡œ ì„¤ì •í•œë‹¤.
  *
  * <IN>
- * aWASegment     - ´ë»ó WASegment
- * aWAGroupID     - »ı¼ºÇÒ Group ID
- * aPageCount     - ´ë»ó GroupÀÌ °¡Áú Page °³¼ö
- * aPolicy        - ´ë»ó GroupÀÌ »ç¿ëÇÒ FreePage ÀçÈ°¿ë Á¤Ã¥
+ * aWASegment     - ëŒ€ìƒ WASegment
+ * aWAGroupID     - ìƒì„±í•  Group ID
+ * aPageCount     - ëŒ€ìƒ Groupì´ ê°€ì§ˆ Page ê°œìˆ˜
+ * aPolicy        - ëŒ€ìƒ Groupì´ ì‚¬ìš©í•  FreePage ì¬í™œìš© ì •ì±…
  ***************************************************************************/
 IDE_RC sdtWASegment::createWAGroup( sdtWASegment     * aWASegment,
                                     sdtWAGroupID       aWAGroupID,
@@ -326,17 +326,17 @@ IDE_RC sdtWASegment::createWAGroup( sdtWASegment     * aWASegment,
 
     IDE_ERROR( sGrpInfo->mPolicy == SDT_WA_REUSE_NONE );
 
-    /* Å©±â¸¦ ÁöÁ¤ÇÏÁö ¾Ê¾ÒÀ¸¸é, ³²Àº ¿ë·®À» ÀüºÎ ºÎ¿©ÇÔ */
+    /* í¬ê¸°ë¥¼ ì§€ì •í•˜ì§€ ì•Šì•˜ìœ¼ë©´, ë‚¨ì€ ìš©ëŸ‰ì„ ì „ë¶€ ë¶€ì—¬í•¨ */
     if( aPageCount == 0 )
     {
         aPageCount = getAllocableWAGroupPageCount( aWASegment,
                                                    SDT_WAGROUPID_INIT );
     }
 
-    /* ´ÙÀ½°ú °°ÀÌ InitGroup¿¡¼­ ¶§¾îÁÜ
+    /* ë‹¤ìŒê³¼ ê°™ì´ InitGroupì—ì„œ ë•Œì–´ì¤Œ
      * <---InitGroup---------------------->
      * <---InitGroup---><----CurGroup----->*/
-    IDE_ERROR( sInitGrpInfo->mEndWPID >= aPageCount );  /* À½¼öÃ¼Å© */
+    IDE_ERROR( sInitGrpInfo->mEndWPID >= aPageCount );  /* ìŒìˆ˜ì²´í¬ */
     sGrpInfo->mBeginWPID = sInitGrpInfo->mEndWPID - aPageCount;
     sGrpInfo->mEndWPID   = sInitGrpInfo->mEndWPID;
     sInitGrpInfo->mEndWPID -= aPageCount;
@@ -357,12 +357,12 @@ IDE_RC sdtWASegment::createWAGroup( sdtWASegment     * aWASegment,
 
 /**************************************************************************
  * Description :
- * WAGroupÀ» ÀçÈ°¿ë ÇÒ ¼ö ÀÖµµ·Ï ¸®¼ÂÇÑ´Ù.
+ * WAGroupì„ ì¬í™œìš© í•  ìˆ˜ ìˆë„ë¡ ë¦¬ì…‹í•œë‹¤.
  *
  * <IN>
- * aWASegment     - ´ë»ó WASegment
- * aWAGroupID     - ´ë»ó Group ID
- * aWait4Flush    - DirtyÇÑ PageµéÀ» FlushµÉ¶§±îÁö ±â´Ù¸± °ÍÀÎ°¡.
+ * aWASegment     - ëŒ€ìƒ WASegment
+ * aWAGroupID     - ëŒ€ìƒ Group ID
+ * aWait4Flush    - Dirtyí•œ Pageë“¤ì„ Flushë ë•Œê¹Œì§€ ê¸°ë‹¤ë¦´ ê²ƒì¸ê°€.
  ***************************************************************************/
 IDE_RC sdtWASegment::resetWAGroup( sdtWASegment      * aWASegment,
                                    sdtWAGroupID        aWAGroupID,
@@ -373,9 +373,9 @@ IDE_RC sdtWASegment::resetWAGroup( sdtWASegment      * aWASegment,
 
     if( sGrpInfo->mPolicy != SDT_WA_REUSE_NONE )
     {
-        /* ¿©±â¼­ HintPage¸¦ ÃÊ±âÈ­ÇÏ¿© UnfixÇÏÁö ¾ÊÀ¸¸é,
-         * ÀÌÈÄ makeInit´Ü°è¿¡¼­ hintPage¸¦ unassignÇÒ ¼ö ¾ø¾î
-         * ¿À·ù°¡ ¹ß»ıÇÑ´Ù. */
+        /* ì—¬ê¸°ì„œ HintPageë¥¼ ì´ˆê¸°í™”í•˜ì—¬ Unfixí•˜ì§€ ì•Šìœ¼ë©´,
+         * ì´í›„ makeInitë‹¨ê³„ì—ì„œ hintPageë¥¼ unassigní•  ìˆ˜ ì—†ì–´
+         * ì˜¤ë¥˜ê°€ ë°œìƒí•œë‹¤. */
         IDE_TEST( setHintWPID( aWASegment, aWAGroupID, SC_NULL_PID )
                   != IDE_SUCCESS );
 
@@ -386,7 +386,7 @@ IDE_RC sdtWASegment::resetWAGroup( sdtWASegment      * aWASegment,
                       != IDE_SUCCESS );
             for( i = sGrpInfo->mBeginWPID ; i < sGrpInfo->mEndWPID ; i ++ )
             {
-                /* ÀüºÎ Init»óÅÂ·Î ¸¸µç´Ù. */
+                /* ì „ë¶€ Initìƒíƒœë¡œ ë§Œë“ ë‹¤. */
                 IDE_TEST( makeInitPage( aWASegment,
                                         i,
                                         aWait4Flush )
@@ -405,11 +405,11 @@ IDE_RC sdtWASegment::resetWAGroup( sdtWASegment      * aWASegment,
 
 /**************************************************************************
  * Description :
- * WAGroupÀ» ±ú²ıÈ÷ ÃÊ±âÈ­ÇÑ´Ù.
+ * WAGroupì„ ê¹¨ë—íˆ ì´ˆê¸°í™”í•œë‹¤.
  *
  * <IN>
- * aWASegment     - ´ë»ó WASegment
- * aWAGroupID     - ´ë»ó Group ID
+ * aWASegment     - ëŒ€ìƒ WASegment
+ * aWAGroupID     - ëŒ€ìƒ Group ID
  ***************************************************************************/
 IDE_RC sdtWASegment::clearWAGroup( sdtWASegment      * aWASegment,
                                    sdtWAGroupID        aWAGroupID )
@@ -420,7 +420,7 @@ IDE_RC sdtWASegment::clearWAGroup( sdtWASegment      * aWASegment,
     IDE_TEST( setHintWPID( aWASegment, aWAGroupID, SC_NULL_PID )
               != IDE_SUCCESS );
 
-    /* ÀçÈ°¿ë Á¤Ã¥¿¡ µû¶ó ÃÊ±â°ª ¼³Á¤ÇÔ. */
+    /* ì¬í™œìš© ì •ì±…ì— ë”°ë¼ ì´ˆê¸°ê°’ ì„¤ì •í•¨. */
     switch( sGrpInfo->mPolicy  )
     {
         case SDT_WA_REUSE_INMEMORY:
@@ -447,43 +447,43 @@ IDE_RC sdtWASegment::clearWAGroup( sdtWASegment      * aWASegment,
 
 /**************************************************************************
  * Description :
- * InMemoryGroup¿¡ ´ëÇÑ ÃÊ±âÈ­. ÆäÀÌÁö ÀçÈ°¿ë ÀÚ·á±¸Á¶¸¦ ¼³Á¤ÇÑ´Ù.
+ * InMemoryGroupì— ëŒ€í•œ ì´ˆê¸°í™”. í˜ì´ì§€ ì¬í™œìš© ìë£Œêµ¬ì¡°ë¥¼ ì„¤ì •í•œë‹¤.
  *
  * <IN>
- * aWASegment     - ´ë»ó WASegment
- * aGrpInfo       - ´ë»ó Group
+ * aWASegment     - ëŒ€ìƒ WASegment
+ * aGrpInfo       - ëŒ€ìƒ Group
  ***************************************************************************/
 void sdtWASegment::initInMemoryGroup( sdtWAGroup     * aGrpInfo )
 {
-    /* µÚ¿¡¼­ ¾ÕÀ¸·Î °¡¸ç ÆäÀÌÁö È°¿ëÇÔ.
-     * ¿Ö³ÄÇÏ¸é InMemoryGroupÀº WAMapÀ» ÀåÂøÇÒ ¼ö ÀÖÀ¸¸ç,
-     * WAMapÀº ¾Õ¿¡¼­ µÚÂÊÀ¸·Î È®ÀåÇÏ¸é¼­ ºÎµúÈú ¼ö ÀÖ±â ¶§¹®ÀÓ */
+    /* ë’¤ì—ì„œ ì•ìœ¼ë¡œ ê°€ë©° í˜ì´ì§€ í™œìš©í•¨.
+     * ì™œëƒí•˜ë©´ InMemoryGroupì€ WAMapì„ ì¥ì°©í•  ìˆ˜ ìˆìœ¼ë©°,
+     * WAMapì€ ì•ì—ì„œ ë’¤ìª½ìœ¼ë¡œ í™•ì¥í•˜ë©´ì„œ ë¶€ë”ªí ìˆ˜ ìˆê¸° ë•Œë¬¸ì„ */
     aGrpInfo->mReuseWPID1 = aGrpInfo->mEndWPID - 1;
     aGrpInfo->mReuseWPID2 = SD_NULL_PID;
 }
 
 /**************************************************************************
  * Description :
- * FIFOGroup¿¡ ´ëÇÑ ÃÊ±âÈ­. ÆäÀÌÁö ÀçÈ°¿ë ÀÚ·á±¸Á¶¸¦ ¼³Á¤ÇÑ´Ù.
+ * FIFOGroupì— ëŒ€í•œ ì´ˆê¸°í™”. í˜ì´ì§€ ì¬í™œìš© ìë£Œêµ¬ì¡°ë¥¼ ì„¤ì •í•œë‹¤.
  *
  * <IN>
- * aWASegment     - ´ë»ó WASegment
- * aGrpInfo       - ´ë»ó Group
+ * aWASegment     - ëŒ€ìƒ WASegment
+ * aGrpInfo       - ëŒ€ìƒ Group
  ***************************************************************************/
 void sdtWASegment::initFIFOGroup( sdtWAGroup     * aGrpInfo )
 {
-    /* ¾Õ¿¡¼­ µÚ·Î °¡¸ç ÆäÀÌÁö È°¿ëÇÔ. MultiBlockWrite¸¦ À¯µµÇÏ±âÀ§ÇØ. */
+    /* ì•ì—ì„œ ë’¤ë¡œ ê°€ë©° í˜ì´ì§€ í™œìš©í•¨. MultiBlockWriteë¥¼ ìœ ë„í•˜ê¸°ìœ„í•´. */
     aGrpInfo->mReuseWPID1 = aGrpInfo->mBeginWPID;
     aGrpInfo->mReuseWPID2 = SD_NULL_PID;
 }
 
 /**************************************************************************
  * Description :
- * LRUGroup¿¡ ´ëÇÑ ÃÊ±âÈ­. ÆäÀÌÁö ÀçÈ°¿ë ÀÚ·á±¸Á¶¸¦ ¼³Á¤ÇÑ´Ù.
+ * LRUGroupì— ëŒ€í•œ ì´ˆê¸°í™”. í˜ì´ì§€ ì¬í™œìš© ìë£Œêµ¬ì¡°ë¥¼ ì„¤ì •í•œë‹¤.
  *
  * <IN>
- * aWASegment     - ´ë»ó WASegment
- * aGrpInfo       - ´ë»ó Group
+ * aWASegment     - ëŒ€ìƒ WASegment
+ * aGrpInfo       - ëŒ€ìƒ Group
  ***************************************************************************/
 void sdtWASegment::initLRUGroup( sdtWASegment   * aWASegment,
                                  sdtWAGroup      * aGrpInfo )
@@ -494,8 +494,8 @@ void sdtWASegment::initLRUGroup( sdtWASegment   * aWASegment,
     aGrpInfo->mReuseWPID1 = aGrpInfo->mEndWPID - 1;
     aGrpInfo->mReuseWPID2 = aGrpInfo->mBeginWPID;
 
-    /* MultiBlockWrite¸¦ À¯µµÇÏ±âÀ§ÇØ ¾Õ¿¡¼­ µÚ·Î °¡¸ç ÆäÀÌÁö È°¿ëÇÏµµ·Ï
-     * ÀÏ´Ü ¸®½ºÆ®¸¦ ±¸¼ºÇØµÒ*/
+    /* MultiBlockWriteë¥¼ ìœ ë„í•˜ê¸°ìœ„í•´ ì•ì—ì„œ ë’¤ë¡œ ê°€ë©° í˜ì´ì§€ í™œìš©í•˜ë„ë¡
+     * ì¼ë‹¨ ë¦¬ìŠ¤íŠ¸ë¥¼ êµ¬ì„±í•´ë‘ */
     for( i = aGrpInfo->mBeginWPID ;
          i < aGrpInfo->mEndWPID ;
          i ++ )
@@ -505,7 +505,7 @@ void sdtWASegment::initLRUGroup( sdtWASegment   * aWASegment,
         sWCBPtr->mLRUNextPID = i - 1;
         sWCBPtr->mLRUPrevPID = i + 1;
     }
-    /* Ã¹/³¡ pageÀÇ Link¸¦ Á¤¸®ÇØÁÜ */
+    /* ì²«/ë pageì˜ Linkë¥¼ ì •ë¦¬í•´ì¤Œ */
     sWCBPtr              = getWCB( aWASegment, aGrpInfo->mBeginWPID );
     sWCBPtr->mLRUNextPID = SC_NULL_PID;
     sWCBPtr              = getWCB( aWASegment, aGrpInfo->mEndWPID - 1);
@@ -514,12 +514,12 @@ void sdtWASegment::initLRUGroup( sdtWASegment   * aWASegment,
 
 /**************************************************************************
  * Description :
- * WCB¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+ * WCBë¥¼ ì´ˆê¸°í™”í•œë‹¤.
  *
  * <IN>
- * aWASegment     - ´ë»ó WASegment
- * aWCBPtr        - ´ë»ó WCBPtr
- * aWPID          - ÇØ´ç WCB°¡ °¡Áú WPAGEID
+ * aWASegment     - ëŒ€ìƒ WASegment
+ * aWCBPtr        - ëŒ€ìƒ WCBPtr
+ * aWPID          - í•´ë‹¹ WCBê°€ ê°€ì§ˆ WPAGEID
  ***************************************************************************/
 void sdtWASegment::initWCB( sdtWASegment * aWASegment,
                             sdtWCB       * aWCBPtr,
@@ -538,12 +538,12 @@ void sdtWASegment::initWCB( sdtWASegment * aWASegment,
 
 /**************************************************************************
  * Description :
- * WCB¸¦ Frame°ú ¿¬°áÇÔ
+ * WCBë¥¼ Frameê³¼ ì—°ê²°í•¨
  *
  * <IN>
- * aWASegment     - ´ë»ó WASegment
- * aWCBPtr        - ´ë»ó WCBPtr
- * aWPID          - ÇØ´ç WCB°¡ °¡Áú WPAGEID
+ * aWASegment     - ëŒ€ìƒ WASegment
+ * aWCBPtr        - ëŒ€ìƒ WCBPtr
+ * aWPID          - í•´ë‹¹ WCBê°€ ê°€ì§ˆ WPAGEID
  ***************************************************************************/
 void sdtWASegment::bindWCB( sdtWASegment * aWASegment,
                             sdtWCB       * aWCBPtr,
@@ -556,18 +556,18 @@ void sdtWASegment::bindWCB( sdtWASegment * aWASegment,
     aWCBPtr->mWAPagePtr =
         getFrameInExtent( sWAExtentPtr, getPageSeqInExtent(aWPID) );
 
-    /* °ËÁõÇØº½ */
+    /* ê²€ì¦í•´ë´„ */
     IDE_DASSERT( getWCBInExtent( sWAExtentPtr, getPageSeqInExtent(aWPID) )
                  == aWCBPtr );
 }
 
 /**************************************************************************
  * Description :
- * GroupÀÇ Å©±â¸¦ Page°³¼ö·Î ¹Ş´Â´Ù.
+ * Groupì˜ í¬ê¸°ë¥¼ Pageê°œìˆ˜ë¡œ ë°›ëŠ”ë‹¤.
  *
  * <IN>
- * aWASegment     - ´ë»ó WASegment
- * aWAGroupID     - ´ë»ó Group ID
+ * aWASegment     - ëŒ€ìƒ WASegment
+ * aWAGroupID     - ëŒ€ìƒ Group ID
  ***************************************************************************/
 UInt sdtWASegment::getWAGroupPageCount( sdtWASegment * aWASegment,
                                         sdtWAGroupID   aWAGroupID )
@@ -579,11 +579,11 @@ UInt sdtWASegment::getWAGroupPageCount( sdtWASegment * aWASegment,
 
 /**************************************************************************
  * Description :
- * MapÀÌ Â÷ÁöÇÏ´Â À§Ä¡¸¦ »«, »ç¿ë °¡´ÉÇÑ GroupÀÇ Å©±â¸¦ Page°³¼ö·Î ¹Ş´Â´Ù.
+ * Mapì´ ì°¨ì§€í•˜ëŠ” ìœ„ì¹˜ë¥¼ ëº€, ì‚¬ìš© ê°€ëŠ¥í•œ Groupì˜ í¬ê¸°ë¥¼ Pageê°œìˆ˜ë¡œ ë°›ëŠ”ë‹¤.
  *
  * <IN>
- * aWASegment     - ´ë»ó WASegment
- * aWAGroupID     - ´ë»ó Group ID
+ * aWASegment     - ëŒ€ìƒ WASegment
+ * aWAGroupID     - ëŒ€ìƒ Group ID
  ***************************************************************************/
 UInt sdtWASegment::getAllocableWAGroupPageCount( sdtWASegment * aWASegment,
                                                  sdtWAGroupID   aWAGroupID )
@@ -597,11 +597,11 @@ UInt sdtWASegment::getAllocableWAGroupPageCount( sdtWASegment * aWASegment,
 
 /**************************************************************************
  * Description :
- * Group³» Ã¹ PageID
+ * Groupë‚´ ì²« PageID
  *
  * <IN>
- * aWASegment     - ´ë»ó WASegment
- * aWAGroupID     - ´ë»ó Group ID
+ * aWASegment     - ëŒ€ìƒ WASegment
+ * aWAGroupID     - ëŒ€ìƒ Group ID
  ***************************************************************************/
 scPageID sdtWASegment::getFirstWPageInWAGroup( sdtWASegment * aWASegment,
                                                sdtWAGroupID   aWAGroupID )
@@ -610,13 +610,13 @@ scPageID sdtWASegment::getFirstWPageInWAGroup( sdtWASegment * aWASegment,
 }
 /**************************************************************************
  * Description :
- * Group³» ¸¶Áö¸· PageID
- * ¿©±â¼­ Last´Â 'ÁøÂ¥'¸¶Áö¸· ÆäÀÌÁö +1 ÀÌ´Ù.
- * (10ÀÏ °æ¿ì, 0,1,2,3,4,5,6,7,8,9¸¦ ÇØ´ç GroupÀÌ ¼ÒÀ¯Çß´Ù´Â ÀÇ¹Ì )
+ * Groupë‚´ ë§ˆì§€ë§‰ PageID
+ * ì—¬ê¸°ì„œ LastëŠ” 'ì§„ì§œ'ë§ˆì§€ë§‰ í˜ì´ì§€ +1 ì´ë‹¤.
+ * (10ì¼ ê²½ìš°, 0,1,2,3,4,5,6,7,8,9ë¥¼ í•´ë‹¹ Groupì´ ì†Œìœ í–ˆë‹¤ëŠ” ì˜ë¯¸ )
  *
  * <IN>
- * aWASegment     - ´ë»ó WASegment
- * aWAGroupID     - ´ë»ó Group ID
+ * aWASegment     - ëŒ€ìƒ WASegment
+ * aWAGroupID     - ëŒ€ìƒ Group ID
  ***************************************************************************/
 scPageID sdtWASegment::getLastWPageInWAGroup( sdtWASegment * aWASegment,
                                               sdtWAGroupID   aWAGroupID )
@@ -626,13 +626,13 @@ scPageID sdtWASegment::getLastWPageInWAGroup( sdtWASegment * aWASegment,
 
 /**************************************************************************
  * Description :
- * µÎ GroupÀ» ÇÏ³ª·Î (aWAGroupID1 ÂÊÀ¸·Î) ÇÕÄ£´Ù.
+ * ë‘ Groupì„ í•˜ë‚˜ë¡œ (aWAGroupID1 ìª½ìœ¼ë¡œ) í•©ì¹œë‹¤.
  *
  * <IN>
- * aWASegment     - ´ë»ó WASegment
- * aWAGroupID1    - ´ë»ó GroupID ( ÀÌÂÊÀ¸·Î ÇÕÃÄÁü )
- * aWAGroupID2    - ´ë»ó GroupID ( ¼Ò¸êµÊ )
- * aPolicy        - ÇÕÃÄÁø groupÀÌ ¼±ÅÃÇÒ Á¤Ã¥
+ * aWASegment     - ëŒ€ìƒ WASegment
+ * aWAGroupID1    - ëŒ€ìƒ GroupID ( ì´ìª½ìœ¼ë¡œ í•©ì³ì§ )
+ * aWAGroupID2    - ëŒ€ìƒ GroupID ( ì†Œë©¸ë¨ )
+ * aPolicy        - í•©ì³ì§„ groupì´ ì„ íƒí•  ì •ì±…
  ***************************************************************************/
 IDE_RC sdtWASegment::mergeWAGroup(sdtWASegment     * aWASegment,
                                   sdtWAGroupID       aWAGroupID1,
@@ -645,22 +645,22 @@ IDE_RC sdtWASegment::mergeWAGroup(sdtWASegment     * aWASegment,
     IDE_ERROR( sGrpInfo1->mPolicy != SDT_WA_REUSE_NONE );
     IDE_ERROR( sGrpInfo2->mPolicy != SDT_WA_REUSE_NONE );
 
-    /* ´ÙÀ½°ú °°Àº »óÅÂ¿©¾ß ÇÔ.
+    /* ë‹¤ìŒê³¼ ê°™ì€ ìƒíƒœì—¬ì•¼ í•¨.
      * <----Group2-----><---Group1--->*/
     IDE_ERROR( sGrpInfo2->mEndWPID == sGrpInfo1->mBeginWPID );
 
     /* <----Group2----->
      *                  <---Group1--->
      *
-     * À§¸¦ ´ÙÀ½°ú °°ÀÌ º¯°æÇÔ.
+     * ìœ„ë¥¼ ë‹¤ìŒê³¼ ê°™ì´ ë³€ê²½í•¨.
      *
      * <----Group2----->
      * <--------------------Group1---> */
     sGrpInfo1->mBeginWPID = sGrpInfo2->mBeginWPID;
 
-    /* Policy Àç¼³Á¤ */
+    /* Policy ì¬ì„¤ì • */
     sGrpInfo1->mPolicy = aPolicy;
-    /* µÎ¹øÂ° GroupÀº ÃÊ±âÈ­½ÃÅ´ */
+    /* ë‘ë²ˆì§¸ Groupì€ ì´ˆê¸°í™”ì‹œí‚´ */
     sGrpInfo2->mPolicy = SDT_WA_REUSE_NONE;
 
     IDE_TEST( clearWAGroup( aWASegment, aWAGroupID1) != IDE_SUCCESS );
@@ -675,13 +675,13 @@ IDE_RC sdtWASegment::mergeWAGroup(sdtWASegment     * aWASegment,
 
 /**************************************************************************
  * Description :
- * ÇÑ GroupÀ» µÎ GroupÀ¸·Î ³ª´«´Ù. ( Å©±â´Â µ¿µî )
+ * í•œ Groupì„ ë‘ Groupìœ¼ë¡œ ë‚˜ëˆˆë‹¤. ( í¬ê¸°ëŠ” ë™ë“± )
  *
  * <IN>
- * aWASegment     - ´ë»ó WASegment
- * aSrcWAGroupID  - ÂÉ°¶ ¿øº» GroupID
- * aDstWAGroupID  - ÂÉ°³Á®¼­ ¸¸µé¾îÁú Group
- * aPolicy        - »õ groupÀÌ ¼±ÅÃÇÒ Á¤Ã¥
+ * aWASegment     - ëŒ€ìƒ WASegment
+ * aSrcWAGroupID  - ìª¼ê°¤ ì›ë³¸ GroupID
+ * aDstWAGroupID  - ìª¼ê°œì ¸ì„œ ë§Œë“¤ì–´ì§ˆ Group
+ * aPolicy        - ìƒˆ groupì´ ì„ íƒí•  ì •ì±…
  ***************************************************************************/
 IDE_RC sdtWASegment::splitWAGroup(sdtWASegment     * aWASegment,
                                   sdtWAGroupID       aSrcWAGroupID,
@@ -699,7 +699,7 @@ IDE_RC sdtWASegment::splitWAGroup(sdtWASegment     * aWASegment,
     IDE_ERROR( sPageCount >= 1 );
 
 
-    /* ´ÙÀ½°ú °°ÀÌ SplitÇÔ
+    /* ë‹¤ìŒê³¼ ê°™ì´ Splití•¨
      * <------------SrcGroup------------>
      * <---DstGroup----><----SrcGroup--->*/
     IDE_ERROR( sSrcGrpInfo->mEndWPID >= sPageCount );
@@ -710,7 +710,7 @@ IDE_RC sdtWASegment::splitWAGroup(sdtWASegment     * aWASegment,
     IDE_ERROR( sSrcGrpInfo->mBeginWPID < sSrcGrpInfo->mEndWPID );
     IDE_ERROR( sDstGrpInfo->mBeginWPID < sDstGrpInfo->mEndWPID );
 
-    /* µÎ¹øÂ° GroupÀÇ °ªÀ» ¼³Á¤ÇÔ */
+    /* ë‘ë²ˆì§¸ Groupì˜ ê°’ì„ ì„¤ì •í•¨ */
     sDstGrpInfo->mHintWPID       = SC_NULL_PID;
     sDstGrpInfo->mPolicy         = aPolicy;
 
@@ -726,11 +726,11 @@ IDE_RC sdtWASegment::splitWAGroup(sdtWASegment     * aWASegment,
 
 /**************************************************************************
  * Description :
- * ¸ğµç GroupÀ» DropÇÑ´Ù.
+ * ëª¨ë“  Groupì„ Dropí•œë‹¤.
  *
  * <IN>
- * aWASegment     - ´ë»ó WASegment
- * aWait4Flush    - DirtyÇÑ PageµéÀ» FlushµÉ¶§±îÁö ±â´Ù¸± °ÍÀÎ°¡.
+ * aWASegment     - ëŒ€ìƒ WASegment
+ * aWait4Flush    - Dirtyí•œ Pageë“¤ì„ Flushë ë•Œê¹Œì§€ ê¸°ë‹¤ë¦´ ê²ƒì¸ê°€.
  ***************************************************************************/
 IDE_RC sdtWASegment::dropAllWAGroup( sdtWASegment * aWASegment,
                                      idBool         aWait4Flush )
@@ -756,13 +756,13 @@ IDE_RC sdtWASegment::dropAllWAGroup( sdtWASegment * aWASegment,
 
 /**************************************************************************
  * Description :
- * GroupÀ» DropÇÏ°í InitGroup¿¡ Extent¸¦ ¹İÈ¯ÇÑ´Ù. ¾îÂ÷ÇÇ
- * dropWASegmentÇÒ°Å¶ó¸é ±»ÀÌ ÇÒ ÇÊ¿ä ¾ø´Ù.
+ * Groupì„ Dropí•˜ê³  InitGroupì— Extentë¥¼ ë°˜í™˜í•œë‹¤. ì–´ì°¨í”¼
+ * dropWASegmentí• ê±°ë¼ë©´ êµ³ì´ í•  í•„ìš” ì—†ë‹¤.
  *
  * <IN>
- * aWASegment     - ´ë»ó WASegment
- * aWAGroupID     - ´ë»ó Group ID
- * aWait4Flush    - DirtyÇÑ PageµéÀ» FlushµÉ¶§±îÁö ±â´Ù¸± °ÍÀÎ°¡.
+ * aWASegment     - ëŒ€ìƒ WASegment
+ * aWAGroupID     - ëŒ€ìƒ Group ID
+ * aWait4Flush    - Dirtyí•œ Pageë“¤ì„ Flushë ë•Œê¹Œì§€ ê¸°ë‹¤ë¦´ ê²ƒì¸ê°€.
  ***************************************************************************/
 IDE_RC sdtWASegment::dropWAGroup(sdtWASegment * aWASegment,
                                  sdtWAGroupID   aWAGroupID,
@@ -775,13 +775,13 @@ IDE_RC sdtWASegment::dropWAGroup(sdtWASegment * aWASegment,
     IDE_TEST( resetWAGroup( aWASegment, aWAGroupID, aWait4Flush )
               != IDE_SUCCESS );
 
-    /* °¡Àå ÃÖ±Ù¿¡ ÇÒ´çÇÑ GroupÀÌ¾î¾ßÇÔ.
-     * Áï ´ÙÀ½°ú °°Àº »óÅÂ¿©¾ß ÇÔ.
+    /* ê°€ì¥ ìµœê·¼ì— í• ë‹¹í•œ Groupì´ì–´ì•¼í•¨.
+     * ì¦‰ ë‹¤ìŒê³¼ ê°™ì€ ìƒíƒœì—¬ì•¼ í•¨.
      * <---InitGroup---><----CurGroup----->*/
     IDE_ERROR( sInitGrpInfo->mEndWPID == sGrpInfo->mBeginWPID );
 
-    /* ¾Æ·¡ ¹®ÀåÀ» ÅëÇØ ´ÙÀ½°ú °°ÀÌ ¸¸µë. ¾îÂ÷ÇÇ ÇöÀçÀÇ GroupÀº
-     * ¹«½ÃµÉ °ÍÀÌ±â¿¡ »ó°ü ¾øÀ½.
+    /* ì•„ë˜ ë¬¸ì¥ì„ í†µí•´ ë‹¤ìŒê³¼ ê°™ì´ ë§Œë“¬. ì–´ì°¨í”¼ í˜„ì¬ì˜ Groupì€
+     * ë¬´ì‹œë  ê²ƒì´ê¸°ì— ìƒê´€ ì—†ìŒ.
      *                  <----CurGroup----->
      * <----------------------InitGroup---> */
     sInitGrpInfo->mEndWPID = sGrpInfo->mEndWPID;
@@ -796,14 +796,14 @@ IDE_RC sdtWASegment::dropWAGroup(sdtWASegment * aWASegment,
 
 /**************************************************************************
  * Description :
- * GroupÀÇ Á¤Ã¥¿¡ µû¶ó Àç»ç¿ëÇÒ ¼ö ÀÖ´Â WAPage¸¦ ¹İÈ¯ÇÑ´Ù. Reuse°¡ True¸é
- * ÀçÈ°¿ëµµ Çã¿ëµÈ´Ù. ½ÇÆĞÇÏ¸é aRetPID·Î 0ÀÌ ReturnµÈ´Ù.
+ * Groupì˜ ì •ì±…ì— ë”°ë¼ ì¬ì‚¬ìš©í•  ìˆ˜ ìˆëŠ” WAPageë¥¼ ë°˜í™˜í•œë‹¤. Reuseê°€ Trueë©´
+ * ì¬í™œìš©ë„ í—ˆìš©ëœë‹¤. ì‹¤íŒ¨í•˜ë©´ aRetPIDë¡œ 0ì´ Returnëœë‹¤.
  *
  * <IN>
- * aWASegment     - ´ë»ó WASegment
- * aWAGroupID     - ´ë»ó Group ID
+ * aWASegment     - ëŒ€ìƒ WASegment
+ * aWAGroupID     - ëŒ€ìƒ Group ID
  * <OUT>
- * aRetPID        - Å½»öÇÑ FreeWAPID
+ * aRetPID        - íƒìƒ‰í•œ FreeWAPID
  ***************************************************************************/
 IDE_RC sdtWASegment::getFreeWAPage( sdtWASegment * aWASegment,
                                     sdtWAGroupID   aWAGroupID,
@@ -829,11 +829,11 @@ IDE_RC sdtWASegment::getFreeWAPage( sdtWASegment * aWASegment,
                 sRetPID = sGrpInfo->mReuseWPID1;
                 sGrpInfo->mReuseWPID1--;
 
-                /* MapÀÌ ÀÖ´Â °÷±îÁö ½èÀ¸¸é, ´Ù ½è´Ù´Â ÀÌ¾ß±â */
+                /* Mapì´ ìˆëŠ” ê³³ê¹Œì§€ ì¼ìœ¼ë©´, ë‹¤ ì¼ë‹¤ëŠ” ì´ì•¼ê¸° */
                 if( sdtWAMap::getEndWPID( sGrpInfo->mMapHdr ) >= sRetPID )
                 {
-                    /* InMemoryGroupÀº victimReplace°¡ ¾ÈµÈ´Ù.
-                     * ÃÊ±âÈ­ ÇÏ°í, NULLÀ» ¹İÈ¯ÇÑ´Ù.*/
+                    /* InMemoryGroupì€ victimReplaceê°€ ì•ˆëœë‹¤.
+                     * ì´ˆê¸°í™” í•˜ê³ , NULLì„ ë°˜í™˜í•œë‹¤.*/
                     sGrpInfo->mReuseWPID1 = sGrpInfo->mEndWPID - 1;
                     sRetPID = SD_NULL_PID;
                 }
@@ -845,7 +845,7 @@ IDE_RC sdtWASegment::getFreeWAPage( sdtWASegment * aWASegment,
                 sRetPID = sGrpInfo->mReuseWPID1;
                 sGrpInfo->mReuseWPID1++;
 
-                /* GroupÀ» ÇÑ¹ø ÀüºÎ ¼øÈ¸ÇÔ */
+                /* Groupì„ í•œë²ˆ ì „ë¶€ ìˆœíšŒí•¨ */
                 if( sGrpInfo->mReuseWPID1 == sGrpInfo->mEndWPID )
                 {
                     sGrpInfo->mReuseWPID1 = sGrpInfo->mBeginWPID;
@@ -868,16 +868,16 @@ IDE_RC sdtWASegment::getFreeWAPage( sdtWASegment * aWASegment,
         if( ( sRetPID != SD_NULL_PID ) &&
             ( isFixedPage( aWASegment, sRetPID ) == ID_FALSE ) )
         {
-            /* Á¦´ë·Î °ñ¶úÀ½ */
+            /* ì œëŒ€ë¡œ ê³¨ëìŒ */
             break;
         }
         else
         {
-            /* »ç¿ëÇÒ ÆäÀÌÁö°¡ ¾øÀ½*/
+            /* ì‚¬ìš©í•  í˜ì´ì§€ê°€ ì—†ìŒ*/
             if( sGrpInfo->mPolicy == SDT_WA_REUSE_INMEMORY )
             {
-                /* InMemoryÀÌ ÀÏ °æ¿ì, ¾øÀ¸¸é È£ÃâÀÚ°¡ Ã³¸®ÇØÁà¾ßÇÔ.
-                 * Á¤»óÀûÀÎ °æ¿ìÀÌ´Ï ¹İÈ¯ÇÔ */
+                /* InMemoryì´ ì¼ ê²½ìš°, ì—†ìœ¼ë©´ í˜¸ì¶œìê°€ ì²˜ë¦¬í•´ì¤˜ì•¼í•¨.
+                 * ì •ìƒì ì¸ ê²½ìš°ì´ë‹ˆ ë°˜í™˜í•¨ */
                 break;
             }
         }
@@ -886,7 +886,7 @@ IDE_RC sdtWASegment::getFreeWAPage( sdtWASegment * aWASegment,
         sRetryCount ++;
     }
 
-    /* ÇÒ´ç¹ŞÀº ÆäÀÌÁö¸¦ ºó ÆäÀÌÁö·Î ¸¸µë */
+    /* í• ë‹¹ë°›ì€ í˜ì´ì§€ë¥¼ ë¹ˆ í˜ì´ì§€ë¡œ ë§Œë“¬ */
     if( sRetPID != SD_NULL_PID )
     {
         IDE_TEST( makeInitPage( aWASegment,
@@ -905,11 +905,11 @@ IDE_RC sdtWASegment::getFreeWAPage( sdtWASegment * aWASegment,
 
 /**************************************************************************
  * Description :
- * Segment³» DirtyFlag°¡ ¼³Á¤µÈ WAPageµéÀ» FlushQueue¿¡ µî·ÏÇÑ´Ù.
+ * Segmentë‚´ DirtyFlagê°€ ì„¤ì •ëœ WAPageë“¤ì„ FlushQueueì— ë“±ë¡í•œë‹¤.
  *
  * <IN>
- * aWASegment     - ´ë»ó WASegment
- * aWAGroupID     - ´ë»ó Group ID
+ * aWASegment     - ëŒ€ìƒ WASegment
+ * aWAGroupID     - ëŒ€ìƒ Group ID
  ***************************************************************************/
 IDE_RC sdtWASegment::writeDirtyWAPages(sdtWASegment * aWASegment,
                                        sdtWAGroupID   aWAGroupID )
@@ -934,12 +934,12 @@ IDE_RC sdtWASegment::writeDirtyWAPages(sdtWASegment * aWASegment,
 
 /**************************************************************************
  * Description :
- * ´ë»ó Page¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+ * ëŒ€ìƒ Pageë¥¼ ì´ˆê¸°í™”í•œë‹¤.
  *
  * <IN>
- * aWASegment     - ´ë»ó WASegment
- * aWPID          - ´ë»ó WPID
- * aWait4Flush    - DirtyÇÑ PageµéÀ» FlushµÉ¶§±îÁö ±â´Ù¸± °ÍÀÎ°¡.
+ * aWASegment     - ëŒ€ìƒ WASegment
+ * aWPID          - ëŒ€ìƒ WPID
+ * aWait4Flush    - Dirtyí•œ Pageë“¤ì„ Flushë ë•Œê¹Œì§€ ê¸°ë‹¤ë¦´ ê²ƒì¸ê°€.
  ***************************************************************************/
 IDE_RC sdtWASegment::makeInitPage( sdtWASegment * aWASegment,
                                    scPageID       aWPID,
@@ -949,8 +949,8 @@ IDE_RC sdtWASegment::makeInitPage( sdtWASegment * aWASegment,
     sdtWAFlusher   * sWAFlusher;
     sdtWCB         * sWCBPtr;
 
-    /* Page¸¦ ÇÒ´ç¹Ş¾ÒÀ»¶§, ÇØ´ç Page´Â ¾ÆÁ÷ WriteµÅÁö ¾Ê¾ÒÀ» ¼ö ÀÖ´Ù.
-     * ±×·¯¸é °­Á¦·Î Write¸¦ ½ÃµµÇÑ´Ù. */
+    /* Pageë¥¼ í• ë‹¹ë°›ì•˜ì„ë•Œ, í•´ë‹¹ PageëŠ” ì•„ì§ Writeë¼ì§€ ì•Šì•˜ì„ ìˆ˜ ìˆë‹¤.
+     * ê·¸ëŸ¬ë©´ ê°•ì œë¡œ Writeë¥¼ ì‹œë„í•œë‹¤. */
     while( isFreeWAPage( aWASegment, aWPID ) == ID_FALSE )
     {
         sWAPageState = getWAPageState( aWASegment, aWPID );
@@ -977,19 +977,19 @@ IDE_RC sdtWASegment::makeInitPage( sdtWASegment * aWASegment,
             switch( sWAPageState )
             {
                 case SDT_WA_PAGESTATE_DIRTY:
-                    /* Dirty »óÅÂÀÌ¸é, ¾ÆÁ÷ Flusher¿Í »ó°ü¾ø±â ¶§¹®¿¡
-                     * ½º½º·Î writeÇØµµ ¹®Á¦ ¾ø´Ù. */
+                    /* Dirty ìƒíƒœì´ë©´, ì•„ì§ Flusherì™€ ìƒê´€ì—†ê¸° ë•Œë¬¸ì—
+                     * ìŠ¤ìŠ¤ë¡œ writeí•´ë„ ë¬¸ì œ ì—†ë‹¤. */
                     IDE_TEST( writeNPage( aWASegment, aWPID )
                               != IDE_SUCCESS );
                     break;
                 case SDT_WA_PAGESTATE_IN_FLUSHQUEUE:
                 case SDT_WA_PAGESTATE_WRITING:
-                    /* Flusher°¡ WriteÇÏ·Á ÇÏ´Â »óÈ²ÀÌ±â¿¡ ´ë±âÇÏ¸é µÈ´Ù. */
+                    /* Flusherê°€ Writeí•˜ë ¤ í•˜ëŠ” ìƒí™©ì´ê¸°ì— ëŒ€ê¸°í•˜ë©´ ëœë‹¤. */
                     break;
                 default:
-                    /* ServiceThrea°¡ »óÅÂ¸¦ °¡Á®¿Â Á÷ÈÄ Flusher°¡ FlushÇÏ¿©
-                     * CleanÀ¸·Î ¸¸µé¸é ÀÌÂÊÀ¸·Î ¿À°Ô µÊ.
-                     * ¾Æ¹«°Íµµ ¾ÈÇÏ°í ´ÙÀ½ Loop·Î °¡¸é µÊ */
+                    /* ServiceThreaê°€ ìƒíƒœë¥¼ ê°€ì ¸ì˜¨ ì§í›„ Flusherê°€ Flushí•˜ì—¬
+                     * Cleanìœ¼ë¡œ ë§Œë“¤ë©´ ì´ìª½ìœ¼ë¡œ ì˜¤ê²Œ ë¨.
+                     * ì•„ë¬´ê²ƒë„ ì•ˆí•˜ê³  ë‹¤ìŒ Loopë¡œ ê°€ë©´ ë¨ */
                     break;
             }
         }
@@ -998,8 +998,8 @@ IDE_RC sdtWASegment::makeInitPage( sdtWASegment * aWASegment,
             switch( sWAPageState )
             {
                 case SDT_WA_PAGESTATE_DIRTY:
-                    /* Dirty »óÅÂÀÌ¸é, ¾ÆÁ÷ Flusher¿Í »ó°ü¾ø±â ¶§¹®¿¡
-                     * Áï½Ã »óÅÂ¸¦ º¯°æÇÏ¸é µÈ´Ù. */
+                    /* Dirty ìƒíƒœì´ë©´, ì•„ì§ Flusherì™€ ìƒê´€ì—†ê¸° ë•Œë¬¸ì—
+                     * ì¦‰ì‹œ ìƒíƒœë¥¼ ë³€ê²½í•˜ë©´ ëœë‹¤. */
                     IDE_TEST( setWAPageState( aWASegment,
                                               aWPID,
                                               SDT_WA_PAGESTATE_CLEAN )
@@ -1007,9 +1007,9 @@ IDE_RC sdtWASegment::makeInitPage( sdtWASegment * aWASegment,
                     break;
                 case SDT_WA_PAGESTATE_IN_FLUSHQUEUE:
                 case SDT_WA_PAGESTATE_WRITING:
-                    /* Flusher¿Í µ¿½Ã¼º ÀÌ½´°¡ ÀÖ´Â »óÅÂ.
-                     * FlushQueue»óÅÂÀÏ °æ¿ì, CleanÀ¸·Î º¯°æÇÑ ÈÄ
-                     * ´ÙÀ½ loop¿¡¼­ ´Ù½Ã Ã¼Å©ÇÔ*/
+                    /* Flusherì™€ ë™ì‹œì„± ì´ìŠˆê°€ ìˆëŠ” ìƒíƒœ.
+                     * FlushQueueìƒíƒœì¼ ê²½ìš°, Cleanìœ¼ë¡œ ë³€ê²½í•œ í›„
+                     * ë‹¤ìŒ loopì—ì„œ ë‹¤ì‹œ ì²´í¬í•¨*/
                     sWCBPtr = getWCB( aWASegment, aWPID );
                     checkAndSetWAPageState( sWCBPtr,
                                             SDT_WA_PAGESTATE_IN_FLUSHQUEUE,
@@ -1017,23 +1017,23 @@ IDE_RC sdtWASegment::makeInitPage( sdtWASegment * aWASegment,
                                             &sWAPageState );
                     break;
                 default:
-                    /* ServiceThrea°¡ »óÅÂ¸¦ °¡Á®¿Â Á÷ÈÄ Flusher°¡ FlushÇÏ¿©
-                     * CleanÀ¸·Î ¸¸µé¸é ÀÌÂÊÀ¸·Î ¿À°Ô µÊ.
-                     * ¾Æ¹«°Íµµ ¾ÈÇÏ°í ´ÙÀ½ Loop·Î °¡¸é µÊ */
+                    /* ServiceThreaê°€ ìƒíƒœë¥¼ ê°€ì ¸ì˜¨ ì§í›„ Flusherê°€ Flushí•˜ì—¬
+                     * Cleanìœ¼ë¡œ ë§Œë“¤ë©´ ì´ìª½ìœ¼ë¡œ ì˜¤ê²Œ ë¨.
+                     * ì•„ë¬´ê²ƒë„ ì•ˆí•˜ê³  ë‹¤ìŒ Loopë¡œ ê°€ë©´ ë¨ */
                     break;
             }
         }
 
-        /* sleepÇß´Ù°¡ ´Ù½Ã ½ÃµµÇÔ */
+        /* sleepí–ˆë‹¤ê°€ ë‹¤ì‹œ ì‹œë„í•¨ */
         (*aWASegment->mStatsPtr)->mWriteWaitCount ++;
         idlOS::thr_yield();
 
-        /* Flusher´Â µ¿ÀÛÁßÀÌ¾î¾ß ÇÔ */
+        /* FlusherëŠ” ë™ì‘ì¤‘ì´ì–´ì•¼ í•¨ */
         sWAFlusher = sdtWorkArea::getWAFlusher( aWASegment->mFlushQueue->mWAFlusherIdx );
         IDE_ERROR( sWAFlusher->mRun == ID_TRUE );
     }
 
-    /* AssignµÇ¾îÀÖÀ¸¸é Assign µÈ ÆäÀÌÁö¸¦ ÃÊ±âÈ­½ÃÄÑÁØ´Ù. */
+    /* Assignë˜ì–´ìˆìœ¼ë©´ Assign ëœ í˜ì´ì§€ë¥¼ ì´ˆê¸°í™”ì‹œì¼œì¤€ë‹¤. */
     if( getWAPageState( aWASegment, aWPID ) == SDT_WA_PAGESTATE_CLEAN )
     {
         aWASegment->mDiscardPage = ID_TRUE;
@@ -1051,11 +1051,11 @@ IDE_RC sdtWASegment::makeInitPage( sdtWASegment * aWASegment,
 
 /**************************************************************************
  * Description :
- * WCB¸¦ ¹ÙÅÁÀ¸·Î PageÀÇ Fix¿©ºÎ¸¦ ¹İÈ¯ÇÑ´Ù.
+ * WCBë¥¼ ë°”íƒ•ìœ¼ë¡œ Pageì˜ Fixì—¬ë¶€ë¥¼ ë°˜í™˜í•œë‹¤.
  *
  * <IN>
- * aWASegment     - ´ë»ó WASegment
- * aWPID          - ´ë»ó WPID
+ * aWASegment     - ëŒ€ìƒ WASegment
+ * aWPID          - ëŒ€ìƒ WPID
  ***************************************************************************/
 idBool sdtWASegment::isFixedPage(sdtWASegment * aWASegment,
                                  scPageID       aWPID )
@@ -1069,11 +1069,11 @@ idBool sdtWASegment::isFixedPage(sdtWASegment * aWASegment,
 
 /**************************************************************************
  * Description :
- * WCB¸¦ ¹ÙÅÁÀ¸·Î PageÀÇ NPID¸¦ ¹İÈ¯ÇÑ´Ù.
+ * WCBë¥¼ ë°”íƒ•ìœ¼ë¡œ Pageì˜ NPIDë¥¼ ë°˜í™˜í•œë‹¤.
  *
  * <IN>
- * aWASegment     - ´ë»ó WASegment
- * aWPID          - ´ë»ó WPID
+ * aWASegment     - ëŒ€ìƒ WASegment
+ * aWPID          - ëŒ€ìƒ WPID
  ***************************************************************************/
 scPageID       sdtWASegment::getNPID( sdtWASegment * aWASegment,
                                       scPageID       aWPID )
@@ -1087,13 +1087,13 @@ scPageID       sdtWASegment::getNPID( sdtWASegment * aWASegment,
 
 /**************************************************************************
  * Description :
- * WCB¿¡ ÇØ´ç SpaceID ¹× PageID¸¦ ¼³Á¤ÇÑ´Ù. Áï Page¸¦ ÀĞ´Â °ÍÀÌ ¾Æ´Ï¶ó
- * ¼³Á¤¸¸ ÇÑ °ÍÀ¸·Î, Disk»ó¿¡ ÀÖ´Â ÀÏ¹İPageÀÇ ³»¿ëÀº '¹«½Ã'µÈ´Ù.
+ * WCBì— í•´ë‹¹ SpaceID ë° PageIDë¥¼ ì„¤ì •í•œë‹¤. ì¦‰ Pageë¥¼ ì½ëŠ” ê²ƒì´ ì•„ë‹ˆë¼
+ * ì„¤ì •ë§Œ í•œ ê²ƒìœ¼ë¡œ, Diskìƒì— ìˆëŠ” ì¼ë°˜Pageì˜ ë‚´ìš©ì€ 'ë¬´ì‹œ'ëœë‹¤.
 
  * <IN>
- * aWASegment     - ´ë»ó WASegment
- * aWPID          - ´ë»ó WPID
- * aNSpaceID,aNPID- ´ë»ó NPageÀÇ ÁÖ¼Ò
+ * aWASegment     - ëŒ€ìƒ WASegment
+ * aWPID          - ëŒ€ìƒ WPID
+ * aNSpaceID,aNPID- ëŒ€ìƒ NPageì˜ ì£¼ì†Œ
  ***************************************************************************/
 IDE_RC sdtWASegment::assignNPage(sdtWASegment * aWASegment,
                                  scPageID       aWPID,
@@ -1103,14 +1103,14 @@ IDE_RC sdtWASegment::assignNPage(sdtWASegment * aWASegment,
     UInt             sHashValue;
     sdtWCB         * sWCBPtr;
 
-    /* °ËÁõ. ÀÌ¹Ì HashÀÌ ¸Å´Ş¸° °ÍÀÌ ¾Æ´Ï¾î¾ß ÇÔ */
+    /* ê²€ì¦. ì´ë¯¸ Hashì´ ë§¤ë‹¬ë¦° ê²ƒì´ ì•„ë‹ˆì–´ì•¼ í•¨ */
     IDE_DASSERT( findWCB( aWASegment, aNSpaceID, aNPageID )
                  == NULL );
-    /* Á¦´ë·ÎµÈ WPID¿©¾ß ÇÔ */
+    /* ì œëŒ€ë¡œëœ WPIDì—¬ì•¼ í•¨ */
     IDE_DASSERT( aWPID < getWASegmentPageCount( aWASegment ) );
 
     sWCBPtr = getWCB( aWASegment, aWPID );
-    /* NPID ·Î ¿¬°áÇÔ */
+    /* NPID ë¡œ ì—°ê²°í•¨ */
     IDE_ERROR( sWCBPtr->mNSpaceID == SC_NULL_SPACEID );
     IDE_ERROR( sWCBPtr->mNPageID  == SC_NULL_PID     );
     sWCBPtr->mNSpaceID = aNSpaceID;
@@ -1118,12 +1118,12 @@ IDE_RC sdtWASegment::assignNPage(sdtWASegment * aWASegment,
     IDE_TEST( setWAPageState( aWASegment, aWPID, SDT_WA_PAGESTATE_CLEAN )
               != IDE_SUCCESS );
 
-    /* Hash¿¡ ¿¬°áÇÏ±â */
+    /* Hashì— ì—°ê²°í•˜ê¸° */
     sHashValue = getNPageHashValue( aWASegment, aNSpaceID, aNPageID );
     sWCBPtr->mNextWCB4Hash = aWASegment->mNPageHashPtr[sHashValue];
     aWASegment->mNPageHashPtr[sHashValue] = sWCBPtr;
 
-    /* Hash¿¡ ¸Å´Ş·Á¼­, Å½»öµÇ¾î¾ß ÇÔ */
+    /* Hashì— ë§¤ë‹¬ë ¤ì„œ, íƒìƒ‰ë˜ì–´ì•¼ í•¨ */
     IDE_DASSERT( findWCB( aWASegment, aNSpaceID, aNPageID )
                  == sWCBPtr );
 
@@ -1136,12 +1136,12 @@ IDE_RC sdtWASegment::assignNPage(sdtWASegment * aWASegment,
 
 /**************************************************************************
  * Description :
- * NPage¸¦ ¶©´Ù. Áï WPage»ó¿¡ ¿Ã·ÁÀú ÀÖ´Â °ÍÀ» ³»¸°´Ù.
- * ÇÏ´Â ÀÏÀº °ªÀ» ÃÊ±âÈ­ÇÏ°í Hash¿¡¼­ Á¦¿ÜÇÏ´Â ÀÏ ¹Û¿¡ ¾ÈÇÑ´Ù.
+ * NPageë¥¼ ë•ë‹¤. ì¦‰ WPageìƒì— ì˜¬ë ¤ì € ìˆëŠ” ê²ƒì„ ë‚´ë¦°ë‹¤.
+ * í•˜ëŠ” ì¼ì€ ê°’ì„ ì´ˆê¸°í™”í•˜ê³  Hashì—ì„œ ì œì™¸í•˜ëŠ” ì¼ ë°–ì— ì•ˆí•œë‹¤.
 
  * <IN>
- * aWASegment     - ´ë»ó WASegment
- * aWPID          - ´ë»ó WPID
+ * aWASegment     - ëŒ€ìƒ WASegment
+ * aWPID          - ëŒ€ìƒ WPID
  ***************************************************************************/
 IDE_RC sdtWASegment::unassignNPage( sdtWASegment * aWASegment,
                                     scPageID       aWPID )
@@ -1154,18 +1154,18 @@ IDE_RC sdtWASegment::unassignNPage( sdtWASegment * aWASegment,
 
     sWCBPtr = getWCB( aWASegment, aWPID );
 
-    /* FixµÇ¾îÀÖÁö ¾Ê¾Æ¾ß ÇÔ */
+    /* Fixë˜ì–´ìˆì§€ ì•Šì•„ì•¼ í•¨ */
     IDE_ERROR( sWCBPtr->mFix == 0 );
     IDE_ERROR( ( sWCBPtr->mNSpaceID != SC_NULL_SPACEID ) &&
                ( sWCBPtr->mNPageID  != SC_NULL_PID ) );
 
-    /* CleanPage¿©¾ß ÇÔ */
+    /* CleanPageì—¬ì•¼ í•¨ */
     IDE_ERROR( getWAPageState( aWASegment, aWPID ) == SDT_WA_PAGESTATE_CLEAN );
 
-    /************************** Hash¿¡¼­ ¶§¾î³»±â *********************/
+    /************************** Hashì—ì„œ ë•Œì–´ë‚´ê¸° *********************/
     sTargetTBSID = sWCBPtr->mNSpaceID;
     sTargetNPID  = sWCBPtr->mNPageID;
-    /* ¸Å´Ş·Á ÀÖ¾î¾ß ÇÏ¸ç, µû¶ó¼­ Å½»öÇÒ ¼ö ÀÖ¾î¾ß ÇÔ */
+    /* ë§¤ë‹¬ë ¤ ìˆì–´ì•¼ í•˜ë©°, ë”°ë¼ì„œ íƒìƒ‰í•  ìˆ˜ ìˆì–´ì•¼ í•¨ */
     IDE_DASSERT( findWCB( aWASegment, sTargetTBSID, sTargetNPID ) == sWCBPtr );
     sHashValue   = getNPageHashValue( aWASegment, sTargetTBSID, sTargetNPID );
 
@@ -1177,7 +1177,7 @@ IDE_RC sdtWASegment::unassignNPage( sdtWASegment * aWASegment,
         if( sWCBPtr->mNPageID == sTargetNPID )
         {
             IDE_ERROR( sWCBPtr->mNSpaceID == sTargetTBSID );
-            /* Ã£¾Ò´Ù, ÀÚ½ÅÀÇ ÀÚ¸®¿¡ ´ÙÀ½ °ÍÀ» ¸Å´ã */
+            /* ì°¾ì•˜ë‹¤, ìì‹ ì˜ ìë¦¬ì— ë‹¤ìŒ ê²ƒì„ ë§¤ë‹´ */
             (*sWCBPtrPtr) = sWCBPtr->mNextWCB4Hash;
             break;
         }
@@ -1186,10 +1186,10 @@ IDE_RC sdtWASegment::unassignNPage( sdtWASegment * aWASegment,
         sWCBPtr    = *sWCBPtrPtr;
     }
 
-    /* ¾ø¾îÁ³¾î¾ß ÇÔ */
+    /* ì—†ì–´ì¡Œì–´ì•¼ í•¨ */
     IDE_DASSERT( findWCB( aWASegment, sTargetTBSID, sTargetNPID ) == NULL );
 
-    /***** Free°¡ ¿¹Á¤µÇ¾úÀ¸¸é, unassignÀ¸·Î ³»·Á°¡´Â ½ÃÁ¡¿¡ FreeÇØÁØ´Ù. ****/
+    /***** Freeê°€ ì˜ˆì •ë˜ì—ˆìœ¼ë©´, unassignìœ¼ë¡œ ë‚´ë ¤ê°€ëŠ” ì‹œì ì— Freeí•´ì¤€ë‹¤. ****/
     if( sWCBPtr->mBookedFree == ID_TRUE )
     {
         IDE_TEST( pushFreePage( aWASegment,
@@ -1214,14 +1214,14 @@ IDE_RC sdtWASegment::unassignNPage( sdtWASegment * aWASegment,
 
 /**************************************************************************
  * Description :
- * WPage¸¦ ´Ù¸¥ °÷À¸·Î ¿Å±ä´Ù. npage, npagehashµîÀ» °í·ÁÇØ¾ß ÇÑ´Ù.
+ * WPageë¥¼ ë‹¤ë¥¸ ê³³ìœ¼ë¡œ ì˜®ê¸´ë‹¤. npage, npagehashë“±ì„ ê³ ë ¤í•´ì•¼ í•œë‹¤.
 
  * <IN>
- * aWASegment     - ´ë»ó WASegment
- * aSrcWAGroupID  - ¿øº» Group ID
- * aSrcWPID       - ¿øº» WPID
- * aDstWAGroupID  - ´ë»ó Group ID
- * aDstWPID       - ´ë»ó WPID
+ * aWASegment     - ëŒ€ìƒ WASegment
+ * aSrcWAGroupID  - ì›ë³¸ Group ID
+ * aSrcWPID       - ì›ë³¸ WPID
+ * aDstWAGroupID  - ëŒ€ìƒ Group ID
+ * aDstWPID       - ëŒ€ìƒ WPID
  ***************************************************************************/
 IDE_RC sdtWASegment::movePage( sdtWASegment * aWASegment,
                                sdtWAGroupID   aSrcGroupID,
@@ -1247,7 +1247,7 @@ IDE_RC sdtWASegment::movePage( sdtWASegment * aWASegment,
         sNSpaceID = sWCBPtr->mNSpaceID;
         sNPageID  = sWCBPtr->mNPageID;
 
-        /* ¿øº» ÆäÀÌÁö¸¦ ºó ÆäÀÌÁö·Î ¸¸µç´Ù. */
+        /* ì›ë³¸ í˜ì´ì§€ë¥¼ ë¹ˆ í˜ì´ì§€ë¡œ ë§Œë“ ë‹¤. */
         IDE_TEST( makeInitPage( aWASegment,
                                 aSrcWPID,
                                 ID_TRUE ) /* wait4flush */
@@ -1255,7 +1255,7 @@ IDE_RC sdtWASegment::movePage( sdtWASegment * aWASegment,
 
         if( ( sNSpaceID != SC_NULL_SPACEID ) && ( sNPageID != SC_NULL_PID ) )
         {
-            /* AssignµÈ ÆäÀÌÁö¿´À¸¸é, Assign ½ÃÅ²´Ù. */
+            /* Assignëœ í˜ì´ì§€ì˜€ìœ¼ë©´, Assign ì‹œí‚¨ë‹¤. */
             IDE_TEST( assignNPage( aWASegment, aDstWPID, sNSpaceID, sNPageID )
                       != IDE_SUCCESS );
         }
@@ -1271,13 +1271,13 @@ IDE_RC sdtWASegment::movePage( sdtWASegment * aWASegment,
 
 /**************************************************************************
  * Description :
- * bindPageÇÏ°í Disk»óÀÇ ÀÏ¹İPage·ÎºÎÅÍ ³»¿ëÀ» ÀĞ¾î ¿Ã¸°´Ù.
+ * bindPageí•˜ê³  Diskìƒì˜ ì¼ë°˜Pageë¡œë¶€í„° ë‚´ìš©ì„ ì½ì–´ ì˜¬ë¦°ë‹¤.
  *
  * <IN>
- * aWASegment     - ´ë»ó WASegment
- * aWAGroupID     - ´ë»ó Group ID
- * aWPID          - ÀĞ¾îµå¸± WPID
- * aNSpaceID,aNPID- ´ë»ó NPageÀÇ ÁÖ¼Ò
+ * aWASegment     - ëŒ€ìƒ WASegment
+ * aWAGroupID     - ëŒ€ìƒ Group ID
+ * aWPID          - ì½ì–´ë“œë¦´ WPID
+ * aNSpaceID,aNPID- ëŒ€ìƒ NPageì˜ ì£¼ì†Œ
  ***************************************************************************/
 IDE_RC sdtWASegment::readNPage(sdtWASegment * aWASegment,
                                sdtWAGroupID   aWAGroupID,
@@ -1294,7 +1294,7 @@ IDE_RC sdtWASegment::readNPage(sdtWASegment * aWASegment,
     sOldWCB = findWCB( aWASegment, aNSpaceID, aNPageID );
     if( sOldWCB == NULL )
     {
-        /* ±âÁ¸¿¡ ¾ø´ø ÆäÀÌÁö¸é ReadÇØ¼­ ¿Ã¸² */
+        /* ê¸°ì¡´ì— ì—†ë˜ í˜ì´ì§€ë©´ Readí•´ì„œ ì˜¬ë¦¼ */
         IDE_TEST( assignNPage( aWASegment,
                                aWPID,
                                aNSpaceID,
@@ -1316,7 +1316,7 @@ IDE_RC sdtWASegment::readNPage(sdtWASegment * aWASegment,
     }
     else
     {
-        /* ±âÁ¸¿¡ ÀÖ´ø ÆäÀÌÁö´Ï, movePage·Î ¿Å±ä´Ù. */
+        /* ê¸°ì¡´ì— ìˆë˜ í˜ì´ì§€ë‹ˆ, movePageë¡œ ì˜®ê¸´ë‹¤. */
         sOldWAGroupID = findGroup( aWASegment, sOldWCB->mWPageID );
         IDE_TEST( movePage( aWASegment,
                             sOldWAGroupID,
@@ -1335,17 +1335,17 @@ IDE_RC sdtWASegment::readNPage(sdtWASegment * aWASegment,
 
 /**************************************************************************
  * Description :
- * ÇØ´ç WAPage¸¦ FlushQueue¿¡ µî·ÏÇÏ°Å³ª Á÷Á¢ WriteÇÑ´Ù.
- * ¹İµå½Ã bindPage,readPageµîÀ¸·Î SpaceID,PageID°¡ ¼³Á¤µÈ WAPage¿©¾ß ÇÑ´Ù.
+ * í•´ë‹¹ WAPageë¥¼ FlushQueueì— ë“±ë¡í•˜ê±°ë‚˜ ì§ì ‘ Writeí•œë‹¤.
+ * ë°˜ë“œì‹œ bindPage,readPageë“±ìœ¼ë¡œ SpaceID,PageIDê°€ ì„¤ì •ëœ WAPageì—¬ì•¼ í•œë‹¤.
  *
  * <IN>
- * aWASegment     - ´ë»ó WASegment
- * aWPID          - ÀĞ¾îµå¸± WPID
+ * aWASegment     - ëŒ€ìƒ WASegment
+ * aWPID          - ì½ì–´ë“œë¦´ WPID
  ***************************************************************************/
 IDE_RC sdtWASegment::writeNPage(sdtWASegment * aWASegment,
                                 scPageID       aWPID )
 {
-    // FlushPageQueue¿¡ ¹Ğ¾î³Ö´Â´Ù.
+    // FlushPageQueueì— ë°€ì–´ë„£ëŠ”ë‹¤.
     IDE_TEST( setWAPageState( aWASegment,
                               aWPID,
                               SDT_WA_PAGESTATE_IN_FLUSHQUEUE )
@@ -1361,11 +1361,11 @@ IDE_RC sdtWASegment::writeNPage(sdtWASegment * aWASegment,
 
 /**************************************************************************
  * Description :
- * ºó Page¸¦ Stack¿¡ º¸°üÇÑ´Ù. ³ªÁß¿¡ allocAndAssignNPage ¿¡¼­ ÀçÈ°¿ëÇÑ´Ù.
+ * ë¹ˆ Pageë¥¼ Stackì— ë³´ê´€í•œë‹¤. ë‚˜ì¤‘ì— allocAndAssignNPage ì—ì„œ ì¬í™œìš©í•œë‹¤.
  *
  * <IN>
- * aWASegment     - ´ë»ó WASegment
- * aWPID          - ÀĞ¾îµå¸± WPID
+ * aWASegment     - ëŒ€ìƒ WASegment
+ * aWPID          - ì½ì–´ë“œë¦´ WPID
  ***************************************************************************/
 IDE_RC sdtWASegment::pushFreePage(sdtWASegment * aWASegment,
                                   scPageID       aNPID)
@@ -1383,11 +1383,11 @@ IDE_RC sdtWASegment::pushFreePage(sdtWASegment * aWASegment,
 
 /**************************************************************************
  * Description :
- * NPage¸¦ ÇÒ´ç¹Ş°í ¼³Á¤ÇÑ´Ù.
+ * NPageë¥¼ í• ë‹¹ë°›ê³  ì„¤ì •í•œë‹¤.
  *
  * <IN>
- * aWASegment     - ´ë»ó WASegment
- * aTargetPID     - ¼³Á¤ÇÒ WPID
+ * aWASegment     - ëŒ€ìƒ WASegment
+ * aTargetPID     - ì„¤ì •í•  WPID
  ***************************************************************************/
 IDE_RC sdtWASegment::allocAndAssignNPage(sdtWASegment * aWASegment,
                                          scPageID       aTargetPID )
@@ -1403,7 +1403,7 @@ IDE_RC sdtWASegment::allocAndAssignNPage(sdtWASegment * aWASegment,
     {
         if( aWASegment->mLastFreeExtent == NULL )
         {
-            /* ÃÖÃÊ Alloc ½Ãµµ */
+            /* ìµœì´ˆ Alloc ì‹œë„ */
             IDE_TEST( allocFreeNExtent( aWASegment ) != IDE_SUCCESS );
         }
         else
@@ -1411,18 +1411,18 @@ IDE_RC sdtWASegment::allocAndAssignNPage(sdtWASegment * aWASegment,
             if( aWASegment->mPageSeqInLFE ==
                 ((sdpExtDesc*)aWASegment->mLastFreeExtent)->mLength )
             {
-                /* ¸¶Áö¸· NExtent¸¦ ´Ù½èÀ½ */
+                /* ë§ˆì§€ë§‰ NExtentë¥¼ ë‹¤ì¼ìŒ */
                 IDE_TEST( allocFreeNExtent( aWASegment ) != IDE_SUCCESS );
             }
             else
             {
-                /* ±âÁ¸¿¡ ÇÒ´çÇØµĞ Extent¿¡¼­ °¡Á®¿È */
+                /* ê¸°ì¡´ì— í• ë‹¹í•´ë‘” Extentì—ì„œ ê°€ì ¸ì˜´ */
             }
         }
 
 /* BUG-37503
-   allocFreeNExtent()¿¡¼­  slot Æ÷ÀÎÅÍ¸¦ °¡Á®¿Â ´ÙÀ½¿¡ IDE_TEST¿¡¼­ ½ÇÆĞÇÏ¸é
-   mLastFreeExten°¡ Àß¸ø¼³Á¤µÉ¼ö ÀÖ´Ù. */
+   allocFreeNExtent()ì—ì„œ  slot í¬ì¸í„°ë¥¼ ê°€ì ¸ì˜¨ ë‹¤ìŒì— IDE_TESTì—ì„œ ì‹¤íŒ¨í•˜ë©´
+   mLastFreeExtenê°€ ì˜ëª»ì„¤ì •ë ìˆ˜ ìˆë‹¤. */
         IDE_TEST_RAISE( aWASegment->mPageSeqInLFE >
                         ((sdpExtDesc*)aWASegment->mLastFreeExtent)->mLength,
                         ERROR_INVALID_EXTENT );
@@ -1434,7 +1434,7 @@ IDE_RC sdtWASegment::allocAndAssignNPage(sdtWASegment * aWASegment,
     }
     else
     {
-        /* StackÀ» ÅëÇØ ÀçÈ°¿ëÇßÀ½ */
+        /* Stackì„ í†µí•´ ì¬í™œìš©í–ˆìŒ */
     }
 
     IDE_TEST( assignNPage( aWASegment,
@@ -1467,11 +1467,11 @@ IDE_RC sdtWASegment::allocAndAssignNPage(sdtWASegment * aWASegment,
 
 /**************************************************************************
  * Description :
- * ÇØ´ç SpaceID·ÎºÎÅÍ ºó NormalExtent¸¦ °¡Á®¿Â´Ù. (sdptbExtent::allocExts
- * »ç¿ë )
+ * í•´ë‹¹ SpaceIDë¡œë¶€í„° ë¹ˆ NormalExtentë¥¼ ê°€ì ¸ì˜¨ë‹¤. (sdptbExtent::allocExts
+ * ì‚¬ìš© )
  *
  * <IN>
- * aWASegment     - ´ë»ó WASegment
+ * aWASegment     - ëŒ€ìƒ WASegment
  ***************************************************************************/
 IDE_RC sdtWASegment::allocFreeNExtent( sdtWASegment * aWASegment )
 {
@@ -1511,8 +1511,8 @@ IDE_RC sdtWASegment::allocFreeNExtent( sdtWASegment * aWASegment )
     IDE_TEST(sdrMiniTrans::commit(&sMtx) != IDE_SUCCESS);
 
     /* BUG-37503
-       slot Æ÷ÀÎÅÍ¸¦ °¡Á®¿Â ´ÙÀ½¿¡ IDE_TEST¿¡¼­ ½ÇÆĞÇÏ¸é
-       mLastFreeExtent¿¡¼­ Àß¸øµÈ°ªÀ» º¸°Ô µÈ´Ù. */
+       slot í¬ì¸í„°ë¥¼ ê°€ì ¸ì˜¨ ë‹¤ìŒì— IDE_TESTì—ì„œ ì‹¤íŒ¨í•˜ë©´
+       mLastFreeExtentì—ì„œ ì˜ëª»ëœê°’ì„ ë³´ê²Œ ëœë‹¤. */
     aWASegment->mLastFreeExtent = (void*)sSlotPtr;
     aWASegment->mNExtentCount ++;
     aWASegment->mPageSeqInLFE = 0;
@@ -1535,10 +1535,10 @@ IDE_RC sdtWASegment::allocFreeNExtent( sdtWASegment * aWASegment )
 
 /**************************************************************************
  * Description :
- * ÀÌ WASegment°¡ »ç¿ëÇÑ ¸ğµç WASegment¸¦ FreeÇÑ´Ù.
+ * ì´ WASegmentê°€ ì‚¬ìš©í•œ ëª¨ë“  WASegmentë¥¼ Freeí•œë‹¤.
  *
  * <IN>
- * aWASegment     - ´ë»ó WASegment
+ * aWASegment     - ëŒ€ìƒ WASegment
  ***************************************************************************/
 IDE_RC sdtWASegment::freeAllNPage( sdtWASegment * aWASegment )
 {
@@ -1591,10 +1591,10 @@ IDE_RC sdtWASegment::freeAllNPage( sdtWASegment * aWASegment )
 
 /**************************************************************************
  * Description :
- * ÀÌ WASegmentÀÇ NPage °³¼ö¸¦ ¹İÈ¯ÇÑ´Ù.
+ * ì´ WASegmentì˜ NPage ê°œìˆ˜ë¥¼ ë°˜í™˜í•œë‹¤.
  *
  * <IN>
- * aWASegment     - ´ë»ó WASegment
+ * aWASegment     - ëŒ€ìƒ WASegment
  ***************************************************************************/
 UInt   sdtWASegment::getNPageCount( sdtWASegment * aWASegment )
 {
@@ -1603,13 +1603,13 @@ UInt   sdtWASegment::getNPageCount( sdtWASegment * aWASegment )
 
 /**************************************************************************
  * Description :
- * Seq¹øÂ°ÀÇ NPID¸¦ ¹İÈ¯ÇÑ´Ù.
+ * Seqë²ˆì§¸ì˜ NPIDë¥¼ ë°˜í™˜í•œë‹¤.
  *
  * <IN>
- * aWASegment     - ´ë»ó WASegment
+ * aWASegment     - ëŒ€ìƒ WASegment
  * aIdx           - Seq
  * <OUT>
- * aPID           - N¹øÂ° NPID
+ * aPID           - Në²ˆì§¸ NPID
  ***************************************************************************/
 IDE_RC sdtWASegment::getNPIDBySeq( sdtWASegment * aWASegment,
                                    UInt           aIdx,
@@ -1622,7 +1622,7 @@ IDE_RC sdtWASegment::getNPIDBySeq( sdtWASegment * aWASegment,
 
     if( getNPageCount( aWASegment ) <= aIdx )
     {
-        /*¸¶Áö¸·±îÁö ´Ù Ã£¾ÒÀ½ */
+        /*ë§ˆì§€ë§‰ê¹Œì§€ ë‹¤ ì°¾ì•˜ìŒ */
         *aPID = SC_NULL_PID;
     }
     else
@@ -1649,12 +1649,12 @@ IDE_RC sdtWASegment::getNPIDBySeq( sdtWASegment * aWASegment,
 
 /**************************************************************************
  * Description :
- * LRU ÀçÈ°¿ë Á¤Ã¥ »ç¿ë½Ã, »ç¿ëÇÑ ÇØ´ç Page¸¦ TopÀ¸·Î ÀÌµ¿½ÃÄÑ DropÀ» ´ÊÃá´Ù.
+ * LRU ì¬í™œìš© ì •ì±… ì‚¬ìš©ì‹œ, ì‚¬ìš©í•œ í•´ë‹¹ Pageë¥¼ Topìœ¼ë¡œ ì´ë™ì‹œì¼œ Dropì„ ëŠ¦ì¶˜ë‹¤.
  *
  * <IN>
- * aWASegment     - ´ë»ó WASegment
- * aWAGroupID     - ´ë»ó Group ID
- * aPID           - ´ë»ó WPID
+ * aWASegment     - ëŒ€ìƒ WASegment
+ * aWAGroupID     - ëŒ€ìƒ Group ID
+ * aPID           - ëŒ€ìƒ WPID
  ***************************************************************************/
 IDE_RC sdtWASegment::moveLRUListToTop( sdtWASegment * aWASegment,
                                        sdtWAGroupID   aWAGroupID,
@@ -1677,7 +1677,7 @@ IDE_RC sdtWASegment::moveLRUListToTop( sdtWASegment * aWASegment,
             ( sGrpInfo->mReuseWPID1 == aPID ) )
 
         {
-            /* ÀÌ¹Ì TopÀÌ°Å³ª LRU°¡ ¾Æ´Ï¶ó ¿òÁ÷ÀÏ ÇÊ¿ä°¡ ¾øÀ½ */
+            /* ì´ë¯¸ Topì´ê±°ë‚˜ LRUê°€ ì•„ë‹ˆë¼ ì›€ì§ì¼ í•„ìš”ê°€ ì—†ìŒ */
         }
         else
         {
@@ -1694,16 +1694,16 @@ IDE_RC sdtWASegment::moveLRUListToTop( sdtWASegment * aWASegment,
 
             if( sPrevPID == SC_NULL_PID )
             {
-                /* Prev°¡ ¾ø´Ù´Â °ÍÀº TopÀÌ¶ó´Â ÀÌ¾ß±â. topÀ¸·Î ´Ù½Ã º¸³¾ ÇÊ¿ä
-                 * ¾øÀ½ */
+                /* Prevê°€ ì—†ë‹¤ëŠ” ê²ƒì€ Topì´ë¼ëŠ” ì´ì•¼ê¸°. topìœ¼ë¡œ ë‹¤ì‹œ ë³´ë‚¼ í•„ìš”
+                 * ì—†ìŒ */
             }
             else
             {
-                /* PrevPage·ÎºÎÅÍ ÇöÀç Page¿¡ ´ëÇÑ ¸µÅ©¸¦ ¶§¾î³¿ */
+                /* PrevPageë¡œë¶€í„° í˜„ì¬ Pageì— ëŒ€í•œ ë§í¬ë¥¼ ë•Œì–´ëƒ„ */
                 sPrevWCBPtr = getWCB( aWASegment, sPrevPID );
                 if( sNextPID == SD_NULL_PID )
                 {
-                    /* ÀÚ½ÅÀÌ ¸¶Áö¸· Page¿´À» °æ¿ì */
+                    /* ìì‹ ì´ ë§ˆì§€ë§‰ Pageì˜€ì„ ê²½ìš° */
                     IDE_ERROR( sGrpInfo->mReuseWPID2 == aPID );
                     sGrpInfo->mReuseWPID2 = sPrevPID;
                 }
@@ -1714,7 +1714,7 @@ IDE_RC sdtWASegment::moveLRUListToTop( sdtWASegment * aWASegment,
                 }
                 sPrevWCBPtr->mLRUNextPID = sNextPID;
 
-                /* ¼±µÎ¿¡ ¸Å´ã */
+                /* ì„ ë‘ì— ë§¤ë‹´ */
                 sWCBPtr->mLRUPrevPID  = SD_NULL_PID;
                 sWCBPtr->mLRUNextPID  = sGrpInfo->mReuseWPID1;
                 sOldTopWCBPtr->mLRUPrevPID = aPID;
@@ -1741,11 +1741,11 @@ IDE_RC sdtWASegment::moveLRUListToTop( sdtWASegment * aWASegment,
 
 /**************************************************************************
  * Description :
- * LRU¸®½ºÆ®¸¦ Á¡°ËÇÑ´Ù. Debugging ¸ğµå ¿ë
+ * LRUë¦¬ìŠ¤íŠ¸ë¥¼ ì ê²€í•œë‹¤. Debugging ëª¨ë“œ ìš©
  *
  * <IN>
- * aWASegment     - ´ë»ó WASegment
- * aWAGroupID     - ´ë»ó Group ID
+ * aWASegment     - ëŒ€ìƒ WASegment
+ * aWAGroupID     - ëŒ€ìƒ Group ID
  ***************************************************************************/
 IDE_RC sdtWASegment::validateLRUList( sdtWASegment * aWASegment,
                                       sdtWAGroupID   aWAGroupID )
@@ -1791,11 +1791,11 @@ IDE_RC sdtWASegment::validateLRUList( sdtWASegment * aWASegment,
 
 /**************************************************************************
  * Description :
- * PID¸¦ ¹ÙÅÁÀ¸·Î ±× PID¸¦ ¼ÒÀ¯ÇÑ GroupÀ» Ã£´Â´Ù.
+ * PIDë¥¼ ë°”íƒ•ìœ¼ë¡œ ê·¸ PIDë¥¼ ì†Œìœ í•œ Groupì„ ì°¾ëŠ”ë‹¤.
  *
  * <IN>
- * aWASegment     - ´ë»ó WASegment
- * aPID           - ´ë»ó PID
+ * aWASegment     - ëŒ€ìƒ WASegment
+ * aPID           - ëŒ€ìƒ PID
  ***************************************************************************/
 sdtWAGroupID sdtWASegment::findGroup( sdtWASegment * aWASegment,
                                       scPageID       aPID )
@@ -1812,16 +1812,16 @@ sdtWAGroupID sdtWASegment::findGroup( sdtWASegment * aWASegment,
         }
     }
 
-    /* Ã£Áö ¸øÇÔ */
+    /* ì°¾ì§€ ëª»í•¨ */
     return SDT_WAGROUPID_MAX;
 }
 
 /**************************************************************************
  * Description :
- * WASegemnt ±¸¼ºÀ» File·Î DumpÇÑ´Ù.
+ * WASegemnt êµ¬ì„±ì„ Fileë¡œ Dumpí•œë‹¤.
  *
  * <IN>
- * aWASegment     - ´ë»ó WASegment
+ * aWASegment     - ëŒ€ìƒ WASegment
  ***************************************************************************/
 void sdtWASegment::exportWASegmentToFile( sdtWASegment * aWASegment )
 {
@@ -1900,14 +1900,14 @@ void sdtWASegment::exportWASegmentToFile( sdtWASegment * aWASegment )
 
 /**************************************************************************
  * Description :
- * File·ÎºÎÅÍ WASegment¸¦ ÀĞ¾îµéÀÎ´Ù.
+ * Fileë¡œë¶€í„° WASegmentë¥¼ ì½ì–´ë“¤ì¸ë‹¤.
  *
  * <IN>
- * aFileName      - ´ë»ó File
+ * aFileName      - ëŒ€ìƒ File
  * <OUT>
- * aWASegment     - ÀĞ¾îµå¸° WASegmentÀÇ À§Ä¡
- * aPtr           - WA°ü·Ã ¹öÆÛÀÇ ¿øº» À§Ä¡
- * aAlignedPtr    - À§ ¹öÆÛ¸¦ Align¿¡ µû¶ó ÀçÁ¶Á¤ÇÑ À§Ä¡
+ * aWASegment     - ì½ì–´ë“œë¦° WASegmentì˜ ìœ„ì¹˜
+ * aPtr           - WAê´€ë ¨ ë²„í¼ì˜ ì›ë³¸ ìœ„ì¹˜
+ * aAlignedPtr    - ìœ„ ë²„í¼ë¥¼ Alignì— ë”°ë¼ ì¬ì¡°ì •í•œ ìœ„ì¹˜
  ***************************************************************************/
 void sdtWASegment::importWASegmentFromFile( SChar         * aFileName,
                                             sdtWASegment ** aWASegment,
@@ -1951,11 +1951,11 @@ void sdtWASegment::importWASegmentFromFile( SChar         * aFileName,
                           NULL ) /* aEmergencyFunc */
               != IDE_SUCCESS );
 
-    /* Pointer °ªµéÀº ±âÁ¸ ¸Ş¸ğ¸® À§Ä¡·Î Àß¸øµÇ¾î ÀÖÀ¸´Ï, ÀçÁ¶Á¤ÇÑ´Ù. */
+    /* Pointer ê°’ë“¤ì€ ê¸°ì¡´ ë©”ëª¨ë¦¬ ìœ„ì¹˜ë¡œ ì˜ëª»ë˜ì–´ ìˆìœ¼ë‹ˆ, ì¬ì¡°ì •í•œë‹¤. */
     sWASegment              =(sdtWASegment*)getFrameInExtent( sAlignedPtr, 0 );
     sWASegment->mHintWCBPtr =getWCBInExtent( sAlignedPtr, 0 );
 
-    /* ExtentÀ§Ä¡ ÀçÁ¶Á¤ */
+    /* Extentìœ„ì¹˜ ì¬ì¡°ì • */
     for( i = 0 ; i < sWASegment->mWAExtentCount ; i ++ )
     {
         IDE_TEST( setWAExtentPtr( sWASegment,
@@ -1964,7 +1964,7 @@ void sdtWASegment::importWASegmentFromFile( SChar         * aFileName,
                   != IDE_SUCCESS );
     }
 
-    /* WCB À§Ä¡ ÀçÁ¶Á¤ */
+    /* WCB ìœ„ì¹˜ ì¬ì¡°ì • */
     for( i = 0 ;
          i < sWASegment->mWAExtentCount * SDT_WAEXTENT_PAGECOUNT ;
          i ++ )
@@ -1973,7 +1973,7 @@ void sdtWASegment::importWASegmentFromFile( SChar         * aFileName,
         bindWCB( sWASegment, sWCBPtr, i );
     }
 
-    /* MapÀÇ SegmentÀ§Ä¡ ¹× Group°úÀÇ Pointer ÀçÁ¶Á¤ */
+    /* Mapì˜ Segmentìœ„ì¹˜ ë° Groupê³¼ì˜ Pointer ì¬ì¡°ì • */
     IDE_TEST( sdtWAMap::resetPtrAddr( (void*)&sWASegment->mNExtentMap,
                                       sWASegment )
               != IDE_SUCCESS );

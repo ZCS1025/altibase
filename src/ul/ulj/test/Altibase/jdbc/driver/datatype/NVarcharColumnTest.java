@@ -56,7 +56,7 @@ public class NVarcharColumnTest extends AltibaseTestCase
         String sInsSql = "INSERT INTO t1 VALUES ('" + sText + "', N'" + sText + "', 3)";
         assertEquals(1, sStmt.executeUpdate(sInsSql));
 
-        ResultSet sRS = sStmt.executeQuery("SELECT * FROM t1 WHERE c2 LIKE N'%¹Ì³×¸£¹Ù%'");
+        ResultSet sRS = sStmt.executeQuery("SELECT * FROM t1 WHERE c2 LIKE N'%ë¯¸ë„¤ë¥´ë°”%'");
         assertEquals(true, sRS.next());
         assertEquals(sText, sRS.getString(1));
         assertEquals(sText, sRS.getString(2));
@@ -76,7 +76,7 @@ public class NVarcharColumnTest extends AltibaseTestCase
         sInsStmt.close();
 
         Statement sSelStmt = connection().createStatement();
-        ResultSet sRS = sSelStmt.executeQuery("SELECT * FROM t1 WHERE c2 LIKE N'%¹Ì³×¸£¹Ù%'");
+        ResultSet sRS = sSelStmt.executeQuery("SELECT * FROM t1 WHERE c2 LIKE N'%ë¯¸ë„¤ë¥´ë°”%'");
         assertEquals(true, sRS.next());
         assertEquals(sText, sRS.getString(1));
         assertEquals(sText, sRS.getString(2));
@@ -104,7 +104,7 @@ public class NVarcharColumnTest extends AltibaseTestCase
 
     public void testIllegalStateException() throws CharacterCodingException
     {
-        // BUG-45156 IBM jdkÀÎ °æ¿ì encode(CharsetBuffer)¸¦ È£ÃâÇÑ ´ÙÀ½ ´Ù½Ã encode¸¦ È£ÃâÇÏ¸é IllegalStateExceptionÀÌ ¹ß»ıÇÑ´Ù.
+        // BUG-45156 IBM jdkì¸ ê²½ìš° encode(CharsetBuffer)ë¥¼ í˜¸ì¶œí•œ ë‹¤ìŒ ë‹¤ì‹œ encodeë¥¼ í˜¸ì¶œí•˜ë©´ IllegalStateExceptionì´ ë°œìƒí•œë‹¤.
         CharsetUtils.newUTF16Encoder().encode(CharBuffer.wrap("test1"));
         try
         {

@@ -21,7 +21,7 @@
 
 /***********************************************************************
  * PROJ-2102  The Fast Secondary Buffer
- * file I/O ¹× µ¥ÀÌÅ¸°¡¸¦ ÀúÀåµÇ´Â ¹°¸®ÀûÀÎ °ø°£À» °ü¸® 
+ * file I/O ë° ë°ì´íƒ€ê°€ë¥¼ ì €ì¥ë˜ëŠ” ë¬¼ë¦¬ì ì¸ ê³µê°„ì„ ê´€ë¦¬ 
  **********************************************************************/
 
 #include <idu.h>
@@ -70,11 +70,11 @@ IDE_RC sdsFile::initializeStatic( UInt aGroupCnt,
 {
     mSBufferDirName = (SChar *)smuProperty::getSBufferDirectoryName();
     mFrameCntInExt = smuProperty::getBufferIOBufferSize();
-    /* Secondary Buffer FileÀ» ±¸¼ºÇÏ´Â Group ÀÇ ¼ö */
+    /* Secondary Buffer Fileì„ êµ¬ì„±í•˜ëŠ” Group ì˜ ìˆ˜ */
     mGroupCnt = aGroupCnt;    
-    /* Group À» ±¸¼ºÇÏ´Â pageÀÇ ¼ö */
+    /* Group ì„ êµ¬ì„±í•˜ëŠ” pageì˜ ìˆ˜ */
     mPageCntInGrp   = aPageCnt;
-    /* Group ´ç ÇÏ³ª¾¿ Á¸ÀçÇÏ´Â MetaTableÀ» ±¸¼ºÇÏ´Â page ¼ö */
+    /* Group ë‹¹ í•˜ë‚˜ì”© ì¡´ì¬í•˜ëŠ” MetaTableì„ êµ¬ì„±í•˜ëŠ” page ìˆ˜ */
     mPageCntInMetaTable = mGroupCnt * SDS_META_TABLE_PAGE_COUNT;
 
     IDE_TEST( mFileMutex.initialize(
@@ -106,11 +106,11 @@ IDE_RC sdsFile::destroyStatic()
 }
 
 /************************************************************************
- * Description : ³ëµå ÇÒ´ç
-   aFilePageCnt - [IN]  »ı¼º ¿äÃ»ÇÏ´Â ÆÄÀÏ Å©±â  
-                        Secondary Buffer Size + MetaTable Å©±â
-   aFileName    - [IN]  »ı¼º ¿äÃ»ÇÏ´Â ÀÌ¸§ 
-   aFileNode    - [OUT] »ı¼ºÇÑ ³ëµå¸¦ ¹İÈ¯
+ * Description : ë…¸ë“œ í• ë‹¹
+   aFilePageCnt - [IN]  ìƒì„± ìš”ì²­í•˜ëŠ” íŒŒì¼ í¬ê¸°  
+                        Secondary Buffer Size + MetaTable í¬ê¸°
+   aFileName    - [IN]  ìƒì„± ìš”ì²­í•˜ëŠ” ì´ë¦„ 
+   aFileNode    - [OUT] ìƒì„±í•œ ë…¸ë“œë¥¼ ë°˜í™˜
  ************************************************************************/
 IDE_RC sdsFile::initFileNode( ULong           aFilePageCnt, 
                               SChar         * aFileName, 
@@ -160,7 +160,7 @@ IDE_RC sdsFile::initFileNode( ULong           aFilePageCnt,
 } 
 
 /************************************************************************
- * Description : ³ëµå »èÁ¦ 
+ * Description : ë…¸ë“œ ì‚­ì œ 
  ************************************************************************/
 IDE_RC sdsFile::freeFileNode()
 {
@@ -176,8 +176,8 @@ IDE_RC sdsFile::freeFileNode()
 
 /*******************************************************************************
  * Description :
-   1. valid ÇÑ node »ı¼º ¹× °Ë»ç 
-   2. Valid ÇÑ ÆÄÀÏ¾øÀ¸¸é »ı¼º 
+   1. valid í•œ node ìƒì„± ë° ê²€ì‚¬ 
+   2. Valid í•œ íŒŒì¼ì—†ìœ¼ë©´ ìƒì„± 
  ******************************************************************************/
 IDE_RC sdsFile::identify( idvSQL  * aStatistics )
 {
@@ -206,7 +206,7 @@ IDE_RC sdsFile::identify( idvSQL  * aStatistics )
 }
 
 /***********************************************************************
- * Description : ½ÇÁ¦ ÆÄÀÏÀ» »ı¼ºÇÑ´Ù. 
+ * Description : ì‹¤ì œ íŒŒì¼ì„ ìƒì„±í•œë‹¤. 
  **********************************************************************/
 IDE_RC sdsFile::create( idvSQL * aStatistics, idBool aIsCreate )
 {
@@ -221,8 +221,8 @@ IDE_RC sdsFile::create( idvSQL * aStatistics, idBool aIsCreate )
 
     sFileNode->mState = SMI_FILE_ONLINE;
 
-    /* ÆÄÀÏ °ü¸®ÀÚ°¡ ½ÃÀÛµÇÁö ¾Ê¾Æ¼­ ·Î±× ¾ŞÄ¿¿¡¼­ ¹Ù·Î LSNÀ» ÀĞ¾î¿Â´Ù
-       restartÁß È£ÃâµÈ´Ù. */
+    /* íŒŒì¼ ê´€ë¦¬ìê°€ ì‹œì‘ë˜ì§€ ì•Šì•„ì„œ ë¡œê·¸ ì•µì»¤ì—ì„œ ë°”ë¡œ LSNì„ ì½ì–´ì˜¨ë‹¤
+       restartì¤‘ í˜¸ì¶œëœë‹¤. */
     smLayerCallback::getEndLSN( &sEndLSN );
     SM_GET_LSN( sCreateLSN, sEndLSN );
 
@@ -241,7 +241,7 @@ IDE_RC sdsFile::create( idvSQL * aStatistics, idBool aIsCreate )
 
     IDE_TEST( sFileNode->mFile.setFileName(sFileNode->mName) != IDE_SUCCESS );
 
-    /* °°Àº ÀÌ¸§ÀÌ ÀÖ´ÂÁö °Ë»ç ¾øÀ¸¸é. ¸¸µé°í ÀÖÀ¸¸é ÀçÈ°¿ë */
+    /* ê°™ì€ ì´ë¦„ì´ ìˆëŠ”ì§€ ê²€ì‚¬ ì—†ìœ¼ë©´. ë§Œë“¤ê³  ìˆìœ¼ë©´ ì¬í™œìš© */
     if( idf::access( sFileNode->mName, F_OK ) == 0 )
     {
         IDE_TEST( open( aStatistics ) != IDE_SUCCESS );
@@ -292,7 +292,7 @@ IDE_RC sdsFile::create( idvSQL * aStatistics, idBool aIsCreate )
 }
 
 /***********************************************************************
- * Description : ·Î±×¾ŞÄ¿¸¦ ÀĞ¾î¼­ node ±¸¼º 
+ * Description : ë¡œê·¸ì•µì»¤ë¥¼ ì½ì–´ì„œ node êµ¬ì„± 
  **********************************************************************/
 IDE_RC sdsFile::load( smiSBufferFileAttr     * aFileAttr,
                       UInt                     aAnchorOffset )
@@ -306,7 +306,7 @@ IDE_RC sdsFile::load( smiSBufferFileAttr     * aFileAttr,
                             aFileAttr->mName,  
                             &sFileNode )
               != IDE_SUCCESS );
-    /* ·Îµå ¾ŞÄ¿¿¡¼­ ÀĞÀ»¼ö ÀÖ´Â °ªÀ» ÀĞ¾î Ã¤¿ò */
+    /* ë¡œë“œ ì•µì»¤ì—ì„œ ì½ì„ìˆ˜ ìˆëŠ” ê°’ì„ ì½ì–´ ì±„ì›€ */
     sFileNode->mState = aFileAttr->mState;
     sFileNode->mFileHdr.mSmVersion = 
         smLayerCallback::getSmVersionFromLogAnchor();
@@ -314,8 +314,8 @@ IDE_RC sdsFile::load( smiSBufferFileAttr     * aFileAttr,
 
     sIOBSize = smuProperty::getBufferIOBufferSize();
 
-    /* ·Îµå¾ŞÄ¿ÀÇ°ª°ú ÇÁ·¯ÆÛÆ¼ °ªÀ¸·Î ³ëµå¸¦ ±¸¼ºÇÏ¿© 
-       identify°úÁ¤Áß¿¡ fileHdr¿Í ¿Í ºñ±³ ÇÑ´Ù */
+    /* ë¡œë“œì•µì»¤ì˜ê°’ê³¼ í”„ëŸ¬í¼í‹° ê°’ìœ¼ë¡œ ë…¸ë“œë¥¼ êµ¬ì„±í•˜ì—¬ 
+       identifyê³¼ì •ì¤‘ì— fileHdrì™€ ì™€ ë¹„êµ í•œë‹¤ */
     setFileHdr( &(sFileNode->mFileHdr),
                 smLayerCallback::getDiskRedoLSN(),
                 &aFileAttr->mCreateLSN,
@@ -340,7 +340,7 @@ IDE_RC sdsFile::load( smiSBufferFileAttr     * aFileAttr,
 }
 
 /***********************************************************************
- * Description : Second Buffer FileÀ» ¿ÀÇÂÇÑ´Ù.
+ * Description : Second Buffer Fileì„ ì˜¤í”ˆí•œë‹¤.
  **********************************************************************/
 IDE_RC sdsFile::open( idvSQL * /*aStatistics*/ )
 {
@@ -365,7 +365,7 @@ IDE_RC sdsFile::open( idvSQL * /*aStatistics*/ )
 }
 
 /***********************************************************************
- * Description : closeÇÑ´Ù.
+ * Description : closeí•œë‹¤.
  **********************************************************************/
 IDE_RC sdsFile::close( idvSQL *  /*aStatistics*/ )
 {
@@ -386,7 +386,7 @@ IDE_RC sdsFile::close( idvSQL *  /*aStatistics*/ )
 }
 
 /***********************************************************************
- * Description : pageoffsetºÎÅÍ readsize¸¸Å­ data ÆÇµ¶
+ * Description : pageoffsetë¶€í„° readsizeë§Œí¼ data íŒë…
  **********************************************************************/
 IDE_RC sdsFile::read( idvSQL      * aStatistics,
                       UInt          aFrameID,
@@ -423,7 +423,7 @@ IDE_RC sdsFile::read( idvSQL      * aStatistics,
 }
 
 /***********************************************************************
- * Description :  pageoffsetºÎÅÍ writesize¸¸Å­ data ±â·Ï
+ * Description :  pageoffsetë¶€í„° writesizeë§Œí¼ data ê¸°ë¡
  **********************************************************************/
 IDE_RC sdsFile::write( idvSQL      * aStatistics,
                        UInt          aFrameID,
@@ -460,7 +460,7 @@ IDE_RC sdsFile::write( idvSQL      * aStatistics,
 }
 
 /***********************************************************************
- * Description : syncÇÑ´Ù.
+ * Description : syncí•œë‹¤.
  **********************************************************************/
 IDE_RC sdsFile::sync()
 {
@@ -479,7 +479,7 @@ IDE_RC sdsFile::sync()
 }
 
 /***********************************************************************
- * Description : checkpoint ½ÃÁ¡¿¡ FileHdrÀÇ redoLSN°ªÀ» °»½ÅÇÑ´Ù.  
+ * Description : checkpoint ì‹œì ì— FileHdrì˜ redoLSNê°’ì„ ê°±ì‹ í•œë‹¤.  
  ***********************************************************************/
 IDE_RC sdsFile::syncAllSB( idvSQL  * aStatistics )
 {
@@ -500,7 +500,7 @@ IDE_RC sdsFile::syncAllSB( idvSQL  * aStatistics )
 }
 
 /***********************************************************************
- * Description : file create ½Ã ÆÄÀÏ ÃÊ±âÈ­  
+ * Description : file create ì‹œ íŒŒì¼ ì´ˆê¸°í™”  
  ***********************************************************************/
 IDE_RC sdsFile::writeEmptyPages( idvSQL         * aStatistics,
                                  sdsFileNode    * aFileNode )
@@ -515,7 +515,7 @@ IDE_RC sdsFile::writeEmptyPages( idvSQL         * aStatistics,
     SInt        sAllocated = 0;
     ULong       i;
     UChar     * sCurPos;
-    UInt        sInitialCheckSum;  // ÃÖÃÊ page write½Ã¿¡ ÀúÀåµÇ´Â checksum
+    UInt        sInitialCheckSum;  // ìµœì´ˆ page writeì‹œì— ì €ì¥ë˜ëŠ” checksum
 
     IDE_DASSERT( aFileNode != NULL );
 
@@ -525,20 +525,20 @@ IDE_RC sdsFile::writeEmptyPages( idvSQL         * aStatistics,
 
     if( sUnitPageCnt > sPageCnt )
     {
-        /* ±â·ÏÇÏ·Á´Â µ¥ÀÌÅÍÆÄÀÏÀÇ Å©±â°¡ ¾²±â ´ÜÀ§º¸´Ù ÀÛÀ¸¸é
-         * ¾²±â ´ÜÀ§´Â µ¥ÀÌÅÍÆÄÀÏ Å©±â°¡ µÈ´Ù. 
+        /* ê¸°ë¡í•˜ë ¤ëŠ” ë°ì´í„°íŒŒì¼ì˜ í¬ê¸°ê°€ ì“°ê¸° ë‹¨ìœ„ë³´ë‹¤ ì‘ìœ¼ë©´
+         * ì“°ê¸° ë‹¨ìœ„ëŠ” ë°ì´í„°íŒŒì¼ í¬ê¸°ê°€ ëœë‹¤. 
          */
         sUnitPageCnt = sPageCnt;
     }
     sUnitNum = sPageCnt / sUnitPageCnt;
 
-    /* CheckSum °è»ê */
+    /* CheckSum ê³„ì‚° */
     for( i = 0, sInitialCheckSum = 0; i < SD_PAGE_SIZE - ID_SIZEOF(UInt); i++ )
     {
         sInitialCheckSum = smuUtility::foldUIntPair(sInitialCheckSum, 0);
     }
 
-    /* 1.¹öÆÛ °ø°£À» ÇÒ´ç¹Ş´Â´Ù. */
+    /* 1.ë²„í¼ ê³µê°„ì„ í• ë‹¹ë°›ëŠ”ë‹¤. */
     IDE_TEST( iduFile::allocBuff4DirectIO( IDU_MEM_SM_SDS,
                                            sUnitPageCnt * SD_PAGE_SIZE,
                                            (void**)&sBufferPtr,
@@ -546,13 +546,13 @@ IDE_RC sdsFile::writeEmptyPages( idvSQL         * aStatistics,
               != IDE_SUCCESS );
     sAllocated = 1;
 
-    /* 2.¹öÆÛ °ø°£À» ÃÊ±âÈ­ÇÑ´Ù. */
-    /* 2-1. ¸ÕÀú Ã¹¹øÂ° ÆäÀÌÁö¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+    /* 2.ë²„í¼ ê³µê°„ì„ ì´ˆê¸°í™”í•œë‹¤. */
+    /* 2-1. ë¨¼ì € ì²«ë²ˆì§¸ í˜ì´ì§€ë¥¼ ì´ˆê¸°í™”í•œë‹¤.
      */
     idlOS::memset( sAlignedBuffer, 0x00, sUnitPageCnt * SD_PAGE_SIZE );
     idlOS::memcpy( sAlignedBuffer, &sInitialCheckSum, ID_SIZEOF(UInt) );
 
-    /* 2-2. µÎ¹øÂ° ÆäÀÌÁöºÎÅÍ´Â Ã¹¹øÂ° ÆäÀÌÁö¸¦ º¹»çÇÑ´Ù. */
+    /* 2-2. ë‘ë²ˆì§¸ í˜ì´ì§€ë¶€í„°ëŠ” ì²«ë²ˆì§¸ í˜ì´ì§€ë¥¼ ë³µì‚¬í•œë‹¤. */
     for (i = 1, sCurPos = sAlignedBuffer + SD_PAGE_SIZE;
          i < sUnitPageCnt;
          i++, sCurPos += SD_PAGE_SIZE)
@@ -560,7 +560,7 @@ IDE_RC sdsFile::writeEmptyPages( idvSQL         * aStatistics,
         idlOS::memcpy( sCurPos, sAlignedBuffer, SD_PAGE_SIZE );
     }
 
-    /* 2-3.sUnitPageCnt ´ÜÀ§·Î ÆÄÀÏ¿¡ ¹öÆÛ¸¦ ±â·ÏÇÑ´Ù */
+    /* 2-3.sUnitPageCnt ë‹¨ìœ„ë¡œ íŒŒì¼ì— ë²„í¼ë¥¼ ê¸°ë¡í•œë‹¤ */
     sWriteOffset = SM_DBFILE_METAHDR_PAGE_OFFSET;
     
     for( sUnitCnt = 0; sUnitCnt < sUnitNum ; sUnitCnt++ )
@@ -574,11 +574,11 @@ IDE_RC sdsFile::writeEmptyPages( idvSQL         * aStatistics,
 
         sWriteOffset += sUnitPageCnt * SD_PAGE_SIZE;
 
-        /* BUG-12754 : session ¿¬°áÀÌ ²÷°å´ÂÁö °Ë»çÇÔ */
+        /* BUG-12754 : session ì—°ê²°ì´ ëŠê²¼ëŠ”ì§€ ê²€ì‚¬í•¨ */
         IDE_TEST( iduCheckSessionEvent(aStatistics) != IDE_SUCCESS );
     }
 
-    /* 2-4.sUnitPageCnt ¹è¼ö·Î ÃÊ±âÈ­ ÇÏ°í ³²Àº Å©±â + 1(file header °ø°£) À»  ±â·ÏÇÑ´Ù. */
+    /* 2-4.sUnitPageCnt ë°°ìˆ˜ë¡œ ì´ˆê¸°í™” í•˜ê³  ë‚¨ì€ í¬ê¸° + 1(file header ê³µê°„) ì„  ê¸°ë¡í•œë‹¤. */
     IDE_TEST( aFileNode->mFile.write( 
                        aStatistics,
                        sWriteOffset,
@@ -610,7 +610,7 @@ IDE_RC sdsFile::writeEmptyPages( idvSQL         * aStatistics,
 }
 
 /***********************************************************************
- * Description : File Header¸¦ ±â·ÏÇÑ´Ù.
+ * Description : File Headerë¥¼ ê¸°ë¡í•œë‹¤.
  ***********************************************************************/
 void sdsFile::getFileAttr( sdsFileNode          * aFileNode,
                            smiSBufferFileAttr   * aFileAttr )
@@ -634,8 +634,8 @@ void sdsFile::getFileAttr( sdsFileNode          * aFileNode,
 }
 
 /***********************************************************************
- * Description :  ÁÖ¾îÁø SBuffer FileÀÇ FileHdr¸¦ ÀĞ¾î ÀÏºÎ Á¤º¸¸¦ ¹İÈ¯ÇÑ´Ù.
- * aLstMetaTableSeqNum [OUT] - ÀúÀåµÈ ¸¶Áö¸· Meta Seq Num
+ * Description :  ì£¼ì–´ì§„ SBuffer Fileì˜ FileHdrë¥¼ ì½ì–´ ì¼ë¶€ ì •ë³´ë¥¼ ë°˜í™˜í•œë‹¤.
+ * aLstMetaTableSeqNum [OUT] - ì €ì¥ëœ ë§ˆì§€ë§‰ Meta Seq Num
  * aRecoveryLSN        [OUT] - 
  * ********************************************************************/
 IDE_RC sdsFile::readHdrInfo( idvSQL * aStatistics,
@@ -648,15 +648,15 @@ IDE_RC sdsFile::readHdrInfo( idvSQL * aStatistics,
     sdsFileHdr    sFileHdr;
 
     getFileNode( &sFileNode );
-    /* Çì´õ ÆäÀÌÁö¸¦ ÀĞ¾î¿Ã ¹öÆÛ »ı¼º */
+    /* í—¤ë” í˜ì´ì§€ë¥¼ ì½ì–´ì˜¬ ë²„í¼ ìƒì„± */
     IDE_TEST( iduFile::allocBuff4DirectIO( IDU_MEM_SM_SDS,
                                            SD_PAGE_SIZE,
                                            (void**)&sHeadPageBuffPtr,
                                            (void**)&sHeadPageBuff )
               != IDE_SUCCESS );
 
-    /* File¿¡ ´ëÇÑ IO´Â Ç×»ó DirectIO¸¦ °í·ÁÇØ¼­ Buffer, Size, OffsetÀ»
-     * DirectIO Page Å©±â·Î Align½ÃÅ²´Ù. */
+    /* Fileì— ëŒ€í•œ IOëŠ” í•­ìƒ DirectIOë¥¼ ê³ ë ¤í•´ì„œ Buffer, Size, Offsetì„
+     * DirectIO Page í¬ê¸°ë¡œ Alignì‹œí‚¨ë‹¤. */
     IDE_TEST( sFileNode->mFile.read( aStatistics,
                                      SM_DBFILE_METAHDR_PAGE_OFFSET,
                                      sHeadPageBuff,
@@ -693,7 +693,7 @@ IDE_RC sdsFile::readHdrInfo( idvSQL * aStatistics,
 }
 
 /***********************************************************************
- * Description :  ÁÖ¾îÁø SBuffer FileÀÇ FileHdr¸¦ ÀĞ´Â´Ù.
+ * Description :  ì£¼ì–´ì§„ SBuffer Fileì˜ FileHdrë¥¼ ì½ëŠ”ë‹¤.
  * aFileHdr [OUT] - 
  * ********************************************************************/
 IDE_RC sdsFile::readFileHdr( idvSQL     * aStatistics,
@@ -706,15 +706,15 @@ IDE_RC sdsFile::readFileHdr( idvSQL     * aStatistics,
     IDE_DASSERT( aFileHdr != NULL );
 
     getFileNode( &sFileNode );
-    /* Çì´õ ÆäÀÌÁö¸¦ ÀĞ¾î¿Ã ¹öÆÛ »ı¼º */
+    /* í—¤ë” í˜ì´ì§€ë¥¼ ì½ì–´ì˜¬ ë²„í¼ ìƒì„± */
     IDE_TEST( iduFile::allocBuff4DirectIO( IDU_MEM_SM_SDS,
                                            SD_PAGE_SIZE,
                                            (void**)&sHeadPageBuffPtr,
                                            (void**)&sHeadPageBuff )
               != IDE_SUCCESS );
 
-    /* File¿¡ ´ëÇÑ IO´Â Ç×»ó DirectIO¸¦ °í·ÁÇØ¼­ Buffer, Size, OffsetÀ»
-     * DirectIO Page Å©±â·Î Align½ÃÅ²´Ù. */
+    /* Fileì— ëŒ€í•œ IOëŠ” í•­ìƒ DirectIOë¥¼ ê³ ë ¤í•´ì„œ Buffer, Size, Offsetì„
+     * DirectIO Page í¬ê¸°ë¡œ Alignì‹œí‚¨ë‹¤. */
     IDE_TEST( sFileNode->mFile.read( aStatistics,
                                      SM_DBFILE_METAHDR_PAGE_OFFSET,
                                      sHeadPageBuff,
@@ -748,7 +748,7 @@ IDE_RC sdsFile::readFileHdr( idvSQL     * aStatistics,
 }
 
 /***********************************************************************
- * Description :  File Header¸¦ ±â·ÏÇÑ´Ù.
+ * Description :  File Headerë¥¼ ê¸°ë¡í•œë‹¤.
  * aFileNode   - [IN] File node
  **********************************************************************/
 IDE_RC sdsFile::writeFileHdr( idvSQL        * aStatistics,
@@ -797,8 +797,8 @@ IDE_RC sdsFile::writeFileHdr( idvSQL        * aStatistics,
 }
 
 /***********************************************************************
- * Description : HEADER¿¡ Ã¼Å©Æ÷ÀÎÆ® Á¤º¸¸¦ ±â·ÏÇÑ´Ù.
- * aRedoSN     [IN] ¹Ìµğ¾îº¹±¸¿¡ ÇÊ¿äÇÑ Redo SN
+ * Description : HEADERì— ì²´í¬í¬ì¸íŠ¸ ì •ë³´ë¥¼ ê¸°ë¡í•œë‹¤.
+ * aRedoSN     [IN] ë¯¸ë””ì–´ë³µêµ¬ì— í•„ìš”í•œ Redo SN
  * aCreateLSN  [IN]  
  * aFrameCnt   [IN]
  * aSeqNum     [IN]
@@ -831,7 +831,7 @@ void sdsFile::setFileHdr( sdsFileHdr    * aFileHdr,
 }
 
 /***********************************************************************
- * Description : Header ±â·Ï¹× ÆÄÀÏ¿¡ ¾²±â
+ * Description : Header ê¸°ë¡ë° íŒŒì¼ì— ì“°ê¸°
  **********************************************************************/
 IDE_RC sdsFile::setAndWriteFileHdr( idvSQL * aStatistics,
                                     smLSN  * aRedoLSN,
@@ -864,12 +864,12 @@ IDE_RC sdsFile::setAndWriteFileHdr( idvSQL * aStatistics,
 }
 
 /***********************************************************************
- * Description : ¹Ìµğ¾î ¸®Ä¿¹ö¸®¸¦ ¼öÇàÇÑµÚ RedoLSN À» ´ç°ÜÁÖ¸ç
-                 MetaTableSeqNum ¸¦ ÃÊ±âÈ­¸¦ ½ÃÄÑ ÁØ´Ù  
-                 MetaTableSeqNum ÀÌ ÃÊ±âÈ­ µÇ¾îÀÖÀ¸¸é secondary Buffer¸¦ 
-                 »ç¿ëÇÏÁö ¾ÊÀº°ÍÀ¸·Î ÀÌÇØÇÏ°í BCB¸¦ rebuild ÇÏÁö ¾Ê´Â´Ù.
- *  aResetLogsLSN  [IN] - ºÒ¿ÏÀüº¹±¸½Ã ¼³Á¤µÇ´Â ResetLogsLSN
- *                        ¿ÏÀüº¹±¸ ½Ã¿¡´Â NULL
+ * Description : ë¯¸ë””ì–´ ë¦¬ì»¤ë²„ë¦¬ë¥¼ ìˆ˜í–‰í•œë’¤ RedoLSN ì„ ë‹¹ê²¨ì£¼ë©°
+                 MetaTableSeqNum ë¥¼ ì´ˆê¸°í™”ë¥¼ ì‹œì¼œ ì¤€ë‹¤  
+                 MetaTableSeqNum ì´ ì´ˆê¸°í™” ë˜ì–´ìˆìœ¼ë©´ secondary Bufferë¥¼ 
+                 ì‚¬ìš©í•˜ì§€ ì•Šì€ê²ƒìœ¼ë¡œ ì´í•´í•˜ê³  BCBë¥¼ rebuild í•˜ì§€ ì•ŠëŠ”ë‹¤.
+ *  aResetLogsLSN  [IN] - ë¶ˆì™„ì „ë³µêµ¬ì‹œ ì„¤ì •ë˜ëŠ” ResetLogsLSN
+ *                        ì™„ì „ë³µêµ¬ ì‹œì—ëŠ” NULL
  * ********************************************************************/
 IDE_RC sdsFile::repairFailureSBufferHdr( idvSQL * aStatistics, 
                                          smLSN  * aResetLogsLSN )
@@ -906,8 +906,8 @@ IDE_RC sdsFile::repairFailureSBufferHdr( idvSQL * aStatistics,
 }
 
 /***********************************************************************
- * Description : »ç¿ë°¡´ÉÇÑ ÆÄÀÏÀÎÁö °Ë»ç  
- *  aFileNode           - [IN]  Loganchor¿¡¼­ ÀĞÀº FileNode
+ * Description : ì‚¬ìš©ê°€ëŠ¥í•œ íŒŒì¼ì¸ì§€ ê²€ì‚¬  
+ *  aFileNode           - [IN]  Loganchorì—ì„œ ì½ì€ FileNode
  *  aCompatibleFrameCnt - [OUT] 
  **********************************************************************/
 IDE_RC sdsFile::checkValidationHdr( idvSQL       * aStatistics,
@@ -936,33 +936,33 @@ IDE_RC sdsFile::checkValidationHdr( idvSQL       * aStatistics,
     sDBVer   = smVersionID & SM_CHECK_VERSION_MASK;
     sFileVer = sFileHdrbyFile.mSmVersion & SM_CHECK_VERSION_MASK;
 
-    /* [1] SM VERSION È®ÀÎ
-     * µ¥ÀÌÅ¸ÆÄÀÏ°ú ¼­¹ö ¹ÙÀÌ³Ê¸®ÀÇ È£È¯¼ºÀ» °Ë»çÇÑ´Ù. 
+    /* [1] SM VERSION í™•ì¸
+     * ë°ì´íƒ€íŒŒì¼ê³¼ ì„œë²„ ë°”ì´ë„ˆë¦¬ì˜ í˜¸í™˜ì„±ì„ ê²€ì‚¬í•œë‹¤. 
      */
     IDE_TEST_RAISE( sDBVer != sFileVer, ERR_INVALID_HDR );
 
-    /* [2] CREATE SN È®ÀÎ 
-     * µ¥ÀÌÅ¸ÆÄÀÏÀÇ Create SNÀº LoganchorÀÇ Create SN°ú µ¿ÀÏÇØ¾ßÇÑ´Ù.
-     * ´Ù¸£¸é ÆÄÀÏ¸í¸¸ µ¿ÀÏÇÑ ¿ÏÀüÈ÷ ´Ù¸¥ µ¥ÀÌÅ¸ÆÄÀÏÀÌ´Ù. 
+    /* [2] CREATE SN í™•ì¸ 
+     * ë°ì´íƒ€íŒŒì¼ì˜ Create SNì€ Loganchorì˜ Create SNê³¼ ë™ì¼í•´ì•¼í•œë‹¤.
+     * ë‹¤ë¥´ë©´ íŒŒì¼ëª…ë§Œ ë™ì¼í•œ ì™„ì „íˆ ë‹¤ë¥¸ ë°ì´íƒ€íŒŒì¼ì´ë‹¤. 
      */
     IDE_TEST_RAISE( smLayerCallback::isLSNEQ( &(sFileHdrbyFile.mCreateLSN),
                                               &(sFileHdrbyNode->mCreateLSN) ) 
                     != ID_TRUE,
                     ERR_INVALID_HDR );
 
-    /* [3] Redo LSN È®ÀÎ
-     * LoganchorÀÇ RedoLSNÀÌ   
-     * ÆÄÀÏÀÇ redoLSNº¸´Ù(Ã¼Å©Æ÷ÀÎ½Ã¿¡ °áÁ¤µÈ DRDB Redo LSN)
-     * ´õ ÀÛ°Å³ª °°¾Æ¾ß ÇÑ´Ù. 
+    /* [3] Redo LSN í™•ì¸
+     * Loganchorì˜ RedoLSNì´   
+     * íŒŒì¼ì˜ redoLSNë³´ë‹¤(ì²´í¬í¬ì¸ì‹œì— ê²°ì •ëœ DRDB Redo LSN)
+     * ë” ì‘ê±°ë‚˜ ê°™ì•„ì•¼ í•œë‹¤. 
      */  
     IDE_TEST_RAISE( smLayerCallback::isLSNLTE( &(sFileHdrbyNode->mRedoLSN),
                                                &(sFileHdrbyFile.mRedoLSN) ) 
                     != ID_TRUE,
                     ERR_INVALID_HDR );
 
-    /* [4] IOBÈ®ÀÎ 
-     * IOB´Â PropertyÀÌ¹Ç·Î ¹Ù²ğ¼ö ÀÖÀ¸¹Ç·Î 
-     * ´Ù¸£¸é Á×ÀÌÁö ¾Ê°í ÆÄÀÏÀ» Àç»ı¼º ÇÑ´Ù.
+    /* [4] IOBí™•ì¸ 
+     * IOBëŠ” Propertyì´ë¯€ë¡œ ë°”ë€”ìˆ˜ ìˆìœ¼ë¯€ë¡œ 
+     * ë‹¤ë¥´ë©´ ì£½ì´ì§€ ì•Šê³  íŒŒì¼ì„ ì¬ìƒì„± í•œë‹¤.
      */
     if( sFileHdrbyNode->mFrameCntInExt != sFileHdrbyFile.mFrameCntInExt )
     {
@@ -1008,8 +1008,8 @@ IDE_RC sdsFile::checkValidationHdr( idvSQL       * aStatistics,
 }
 
 /***********************************************************************
- * Description :  HEADERDÀÇ À¯È¿¼ºÀ» °Ë»çÇÑ´Ù.
- * aFileHdr       [IN] sdsFileHdr Å¸ÀÔÀÇ Æ÷ÀÎÅÍ
+ * Description :  HEADERDì˜ ìœ íš¨ì„±ì„ ê²€ì‚¬í•œë‹¤.
+ * aFileHdr       [IN] sdsFileHdr íƒ€ì…ì˜ í¬ì¸í„°
  **********************************************************************/
 IDE_RC sdsFile::checkValuesOfHdr( sdsFileHdr*  aFileHdr )
 {
@@ -1040,12 +1040,12 @@ IDE_RC sdsFile::checkValuesOfHdr( sdsFileHdr*  aFileHdr )
 }
 
 /***********************************************************************
- * Description : »ó´ë°æ·Î ÀÔ·Â½Ã Àı´ë°æ·Î¸¦ ¸¸µç´Ù
+ * Description : ìƒëŒ€ê²½ë¡œ ì…ë ¥ì‹œ ì ˆëŒ€ê²½ë¡œë¥¼ ë§Œë“ ë‹¤
                  BUGBUG
-                 sctTableSpaceMgr::makeValidABSPath Âü°í
-                 µ¿ÀÏÇÑ ±â´ÉÀº ÇÕÄ¡´Â µî Áßº¹µÈ ºÎºĞÀ» ÁÙÀÌ´Â ÀÛ¾÷ ÇÊ¿ä!!!!
+                 sctTableSpaceMgr::makeValidABSPath ì°¸ê³ 
+                 ë™ì¼í•œ ê¸°ëŠ¥ì€ í•©ì¹˜ëŠ” ë“± ì¤‘ë³µëœ ë¶€ë¶„ì„ ì¤„ì´ëŠ” ì‘ì—… í•„ìš”!!!!
 
-  aValidName   - [IN/OUT] »ó´ë°æ·Î¸¦ ¹Ş¾Æ¼­ Àı´ë°æ·Î·Î º¯°æÇÏ¿© ¹İÈ¯
+  aValidName   - [IN/OUT] ìƒëŒ€ê²½ë¡œë¥¼ ë°›ì•„ì„œ ì ˆëŒ€ê²½ë¡œë¡œ ë³€ê²½í•˜ì—¬ ë°˜í™˜
  **********************************************************************/
 IDE_RC sdsFile::makeValidABSPath( SChar  * aValidName )
 {
@@ -1070,7 +1070,7 @@ IDE_RC sdsFile::makeValidABSPath( SChar  * aValidName )
     sNameLength = idlOS::strlen( aValidName );
 
     /* ------------------------------------------------
-     * datafile ÀÌ¸§¿¡ ´ëÇÑ ½Ã½ºÅÛ ¿¹¾à¾î °Ë»ç
+     * datafile ì´ë¦„ì— ëŒ€í•œ ì‹œìŠ¤í…œ ì˜ˆì•½ì–´ ê²€ì‚¬
      * ----------------------------------------------*/
 #if defined(VC_WIN32)
     SInt  sIterator;
@@ -1084,7 +1084,7 @@ IDE_RC sdsFile::makeValidABSPath( SChar  * aValidName )
     sPtr = idlOS::strrchr(aValidName, IDL_FILE_SEPARATOR);
     if ( sPtr == NULL )
     {
-        sPtr = aValidName; // datafile ¸í¸¸ Á¸Àç
+        sPtr = aValidName; // datafile ëª…ë§Œ ì¡´ì¬
     }
     else
     {
@@ -1096,8 +1096,8 @@ IDE_RC sdsFile::makeValidABSPath( SChar  * aValidName )
     if (sPtr != &aValidName[0])
 #else
     /* BUG-38278 invalid datafile path at windows server
-     * À©µµ¿ìÁî È¯°æ¿¡¼­ '/' ³ª '\' ·Î ½ÃÀÛµÇ´Â
-     * °æ·Î ÀÔ·ÂÀº ¿À·ù·Î Ã³¸®ÇÑ´Ù. */
+     * ìœˆë„ìš°ì¦ˆ í™˜ê²½ì—ì„œ '/' ë‚˜ '\' ë¡œ ì‹œì‘ë˜ëŠ”
+     * ê²½ë¡œ ì…ë ¥ì€ ì˜¤ë¥˜ë¡œ ì²˜ë¦¬í•œë‹¤. */
     IDE_TEST_RAISE( sPtr == &aValidName[0], ERR_INVALID_FILEPATH_ABS );
 
     if ((aValidName[1] == ':' && sPtr != &aValidName[2]) ||
@@ -1105,10 +1105,10 @@ IDE_RC sdsFile::makeValidABSPath( SChar  * aValidName )
 #endif
     {
         /* ------------------------------------------------
-         * »ó´ë°æ·Î(relative-path)ÀÎ °æ¿ì
-         * Disk TBSÀÌ¸é default disk db dirÀ»
-         * Memory TBSÀÌ¸é home dir ($ALTIBASE_HOME)À»
-         * ºÙ¿©¼­ Àı´ë°æ·Î(absolute-path)·Î ¸¸µç´Ù.
+         * ìƒëŒ€ê²½ë¡œ(relative-path)ì¸ ê²½ìš°
+         * Disk TBSì´ë©´ default disk db dirì„
+         * Memory TBSì´ë©´ home dir ($ALTIBASE_HOME)ì„
+         * ë¶™ì—¬ì„œ ì ˆëŒ€ê²½ë¡œ(absolute-path)ë¡œ ë§Œë“ ë‹¤.
          * ----------------------------------------------*/
         sDirLength = idlOS::strlen(aValidName) +
             idlOS::strlen(idp::getHomeDir());
@@ -1142,15 +1142,15 @@ IDE_RC sdsFile::makeValidABSPath( SChar  * aValidName )
     }
 
     /* ------------------------------------------------
-     * ¿µ¹®ÀÚ, ¼ıÀÚ + '/'´Â Çã¿ëÇÏ°í ±×¿Ü ¹®ÀÚ´Â Çã¿ëÇÏÁö ¾Ê´Â´Ù.
-     * (Àı´ë°æ·ÎÀÓ)
+     * ì˜ë¬¸ì, ìˆ«ì + '/'ëŠ” í—ˆìš©í•˜ê³  ê·¸ì™¸ ë¬¸ìëŠ” í—ˆìš©í•˜ì§€ ì•ŠëŠ”ë‹¤.
+     * (ì ˆëŒ€ê²½ë¡œì„)
      * ----------------------------------------------*/
     for (i = 0; i < sNameLength; i++)
     {
         if (smuUtility::isAlNum(aValidName[i]) != ID_TRUE)
         {
-            /* BUG-16283: Windows¿¡¼­ Altibase HomeÀÌ '(', ')' °¡ µé¾î°¥
-               °æ¿ì DB »ı¼º½Ã ¿À·ù°¡ ¹ß»ıÇÕ´Ï´Ù. */
+            /* BUG-16283: Windowsì—ì„œ Altibase Homeì´ '(', ')' ê°€ ë“¤ì–´ê°ˆ
+               ê²½ìš° DB ìƒì„±ì‹œ ì˜¤ë¥˜ê°€ ë°œìƒí•©ë‹ˆë‹¤. */
             IDE_TEST_RAISE( (aValidName[i] != IDL_FILE_SEPARATOR) &&
                             (aValidName[i] != '-') &&
                             (aValidName[i] != '_') &&
@@ -1175,12 +1175,12 @@ IDE_RC sdsFile::makeValidABSPath( SChar  * aValidName )
         }
     }
 
-    // [BUG-29812] IDL_FILE_SEPARATOR°¡ ÇÑ°³µµ ¾ø´Ù¸é Àı´ë°æ·Î°¡ ¾Æ´Ï´Ù.
+    // [BUG-29812] IDL_FILE_SEPARATORê°€ í•œê°œë„ ì—†ë‹¤ë©´ ì ˆëŒ€ê²½ë¡œê°€ ì•„ë‹ˆë‹¤.
     IDE_TEST_RAISE( (sPtr = idlOS::strrchr(aValidName, IDL_FILE_SEPARATOR) )
                      == NULL,
                      ERR_INVALID_FILEPATH_ABS );
 
-    // [BUG-29812] dirÀÌ Á¸ÀçÇÏ´Â È®ÀÎÇÑ´Ù.
+    // [BUG-29812] dirì´ ì¡´ì¬í•˜ëŠ” í™•ì¸í•œë‹¤.
     idlOS::strncpy(sPath, aValidName, SM_MAX_FILE_NAME);
 
     sDirLength = sPtr - aValidName;
@@ -1247,14 +1247,14 @@ IDE_RC sdsFile::makeValidABSPath( SChar  * aValidName )
 
     return IDE_FAILURE;
 #else
-    // Windows CE¿¡¼­´Â ÆÄÀÏÀÇ Àı´ë°æ·Î°¡ C:·Î ½ÃÀÛÇÏÁö ¾Ê´Â´Ù.
+    // Windows CEì—ì„œëŠ” íŒŒì¼ì˜ ì ˆëŒ€ê²½ë¡œê°€ C:ë¡œ ì‹œì‘í•˜ì§€ ì•ŠëŠ”ë‹¤.
     return IDE_SUCCESS;
 #endif
 }
 
 /******************************************************************************
- * Description : Node°¡ ¾øÀ¸¸é »ı¼ºÇÑ´Ù.
-                 Node°¡ ÀÖÀ¸¸é validÇÑ ÆÄÀÏÀÌ Á¸ÀçÇÏ´ÂÁö È®ÀÎ  
+ * Description : Nodeê°€ ì—†ìœ¼ë©´ ìƒì„±í•œë‹¤.
+                 Nodeê°€ ìˆìœ¼ë©´ validí•œ íŒŒì¼ì´ ì¡´ì¬í•˜ëŠ”ì§€ í™•ì¸  
  ******************************************************************************/
 IDE_RC sdsFile::makeSureValidationNode( idvSQL         * aStatistics,
                                         sdsFileNode    * aFileNode,
@@ -1268,7 +1268,7 @@ IDE_RC sdsFile::makeSureValidationNode( idvSQL         * aStatistics,
     IDE_ASSERT( ( idlOS::strcmp(mSBufferDirName, "") != 0 ) &&
                 ( mPageCntInGrp != 0 ) );
  
-    /* ÆÄÀÏÀÌ¸§ ¼³Á¤ */
+    /* íŒŒì¼ì´ë¦„ ì„¤ì • */
     idlOS::memset( sDir, 0x00, ID_SIZEOF(sDir) );
     idlOS::snprintf( sDir, SMI_MAX_SBUFFER_FILE_NAME_LEN,
                      "%s%c%s.sbf", 
@@ -1276,7 +1276,7 @@ IDE_RC sdsFile::makeSureValidationNode( idvSQL         * aStatistics,
                      IDL_FILE_SEPARATOR,
                      SDS_SECONDARY_BUFFER_FILE_NAME_PREFIX );
 
-    /* ÆÄÀÏ »çÀÌÁî´Â Secondary Buffer Size + MetaTable Å©±â */
+    /* íŒŒì¼ ì‚¬ì´ì¦ˆëŠ” Secondary Buffer Size + MetaTable í¬ê¸° */
     sFilePageCnt = mPageCntInGrp + mPageCntInMetaTable;
 
     if( aFileNode == NULL ) 
@@ -1303,15 +1303,15 @@ IDE_RC sdsFile::makeSureValidationNode( idvSQL         * aStatistics,
                }
             }
             else 
-            {   /* ¼Ó¼ºÀº ±×´ë·Î ÀÌ³ª ÆÄÀÏÀÌ ¾ø°Å³ª 
-                   mFrameCntInExt °¡ º¯ÇÑ»óÈ²ÀÌ¶ó¸é 
-                   ÆÄÀÏÀ» »õ·Î »ı¼ºÇØ¾ß ÇÑ´Ù. */ 
+            {   /* ì†ì„±ì€ ê·¸ëŒ€ë¡œ ì´ë‚˜ íŒŒì¼ì´ ì—†ê±°ë‚˜ 
+                   mFrameCntInExt ê°€ ë³€í•œìƒí™©ì´ë¼ë©´ 
+                   íŒŒì¼ì„ ìƒˆë¡œ ìƒì„±í•´ì•¼ í•œë‹¤. */ 
                 aFileNode->mState = SMI_FILE_CREATING;
             }
         } 
         else 
         {   
-            /* °æ·Î°¡ º¯°æÀÌ µÇ¾úÀ» °æ¿ì : */ 
+            /* ê²½ë¡œê°€ ë³€ê²½ì´ ë˜ì—ˆì„ ê²½ìš° : */ 
             if( (idlOS::strncmp(aFileNode->mName,sDir,idlOS::strlen(sDir)) != 0 ) ||
                 (idlOS::strlen(sDir) != idlOS::strlen(aFileNode->mName) ) )
             {
@@ -1319,7 +1319,7 @@ IDE_RC sdsFile::makeSureValidationNode( idvSQL         * aStatistics,
 
                 idlOS::strcpy( aFileNode->mName, sDir );
             }
-            /* ÆÄÀÏ Å©±â°¡ ¹Ù²ï °æ¿ì :  */
+            /* íŒŒì¼ í¬ê¸°ê°€ ë°”ë€ ê²½ìš° :  */
             if( aFileNode->mPageCnt != sFilePageCnt )
             {
                 aFileNode->mPageCnt = sFilePageCnt;

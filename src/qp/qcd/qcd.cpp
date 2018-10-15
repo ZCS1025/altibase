@@ -28,7 +28,7 @@
 void
 qcd::initStmt( QCD_HSTMT * aHstmt )
 {
-    // handle statement ÃÊ±âÈ­
+    // handle statement ì´ˆê¸°í™”
     *aHstmt = NULL;
 }
 
@@ -41,7 +41,7 @@ qcd::allocStmt( qcStatement * aStatement,
  *  Description : alloc mmStatement
  *
  *  Implementation :
- *             session, parent mmStatement¸¦ ³Ñ°Ü¼­ mmStatement¸¦ ÇÒ´ç¹ŞÀ½
+ *             session, parent mmStatementë¥¼ ë„˜ê²¨ì„œ mmStatementë¥¼ í• ë‹¹ë°›ìŒ
  *
  ***********************************************************************/
 
@@ -77,7 +77,7 @@ qcd::prepare( QCD_HSTMT     aHstmt,
  *
  *  Description : prepare
  *
- *  Implementation : direct-execute¸ğµå·Î prepare(execMode = ID_TRUE)
+ *  Implementation : direct-executeëª¨ë“œë¡œ prepare(execMode = ID_TRUE)
  *
  ***********************************************************************/
 
@@ -109,7 +109,7 @@ qcd::bindParamInfoSet( QCD_HSTMT      aHstmt,
 {
 /***********************************************************************
  *
- *  Description : parameter info¸¦ ÇÏ³ª bind
+ *  Description : parameter infoë¥¼ í•˜ë‚˜ bind
  *
  *  Implementation :
  *
@@ -142,7 +142,7 @@ qcd::bindParamData( QCD_HSTMT     aHstmt,
 {
 /***********************************************************************
  *
- *  Description : parameter data¸¦ ÇÏ³ª bind
+ *  Description : parameter dataë¥¼ í•˜ë‚˜ bind
  *
  *  Implementation :
  *
@@ -181,8 +181,8 @@ qcd::execute( QCD_HSTMT     aHstmt,
  *
  *  Description : execute
  *
- *  Implementation : executeÈ£Ãâ ÈÄ resultsetÀÌ ÀÖ´ÂÁö ¿©ºÎ, affected rowcount
- *                   ¸¦ ÀúÀå
+ *  Implementation : executeí˜¸ì¶œ í›„ resultsetì´ ìˆëŠ”ì§€ ì—¬ë¶€, affected rowcount
+ *                   ë¥¼ ì €ì¥
  *
  ***********************************************************************/
 
@@ -203,7 +203,7 @@ qcd::execute( QCD_HSTMT     aHstmt,
                   != IDE_SUCCESS );
 
     qsxEnv::copyStack( sExecQcStmt->spxEnv, aQcStmt->spxEnv );
-    // BUG-45322 execute immediate·Î Àç±ÍÈ£ÃâÀ» ÇÏ¸é ¼­¹ö°¡ ºñÁ¤»ó Á¾·áÇÕ´Ï´Ù.
+    // BUG-45322 execute immediateë¡œ ì¬ê·€í˜¸ì¶œì„ í•˜ë©´ ì„œë²„ê°€ ë¹„ì •ìƒ ì¢…ë£Œí•©ë‹ˆë‹¤.
     sExecQcStmt->spxEnv->mCallDepth = aQcStmt->spxEnv->mCallDepth;
 
     /* BUG-45678 */
@@ -231,7 +231,7 @@ qcd::execute( QCD_HSTMT     aHstmt,
 
     *aAffectedRowCount = sContext.affectedRowCount;
 
-    /* sTmplateÀÇ stack ¹× stmt ¿øº¹ */
+    /* sTmplateì˜ stack ë° stmt ì›ë³µ */
     QC_CONNECT_TEMPLATE_STACK( sTmplate,
                                sTmpStackBuffer,
                                sTmpStack,
@@ -243,7 +243,7 @@ qcd::execute( QCD_HSTMT     aHstmt,
 
     IDE_EXCEPTION_END;
 
-    /* sTmplateÀÇ stack ¹× stmt ¿øº¹ */
+    /* sTmplateì˜ stack ë° stmt ì›ë³µ */
     QC_CONNECT_TEMPLATE_STACK( sTmplate,
                                sTmpStackBuffer,
                                sTmpStack,
@@ -263,7 +263,7 @@ qcd::fetch( qcStatement * aQcStmt,
 {
 /***********************************************************************
  *
- *  Description : ·¹ÄÚµå ÇÑ°Ç fetch+fetchColumn
+ *  Description : ë ˆì½”ë“œ í•œê±´ fetch+fetchColumn
  *
  *  Implementation :
  *
@@ -297,7 +297,7 @@ qcd::fetch( qcStatement * aQcStmt,
 
     *aNextRecordExist = sContext.nextRecordExist;
 
-    /* sTmplateÀÇ stack ¹× stmt ¿øº¹ */
+    /* sTmplateì˜ stack ë° stmt ì›ë³µ */
     QC_CONNECT_TEMPLATE_STACK( sTmplate,
                                sTmpStackBuffer,
                                sTmpStack,
@@ -309,7 +309,7 @@ qcd::fetch( qcStatement * aQcStmt,
 
     IDE_EXCEPTION_END;
 
-    /* sTmplateÀÇ stack ¹× stmt ¿øº¹ */
+    /* sTmplateì˜ stack ë° stmt ì›ë³µ */
     QC_CONNECT_TEMPLATE_STACK( sTmplate,
                                sTmpStackBuffer,
                                sTmpStack,
@@ -601,8 +601,8 @@ qcd::executeNoParent( QCD_HSTMT     aHstmt,
  *
  *  Description : execute
  *
- *  Implementation : executeÈ£Ãâ ÈÄ resultsetÀÌ ÀÖ´ÂÁö ¿©ºÎ, affected rowcount
- *                   ¸¦ ÀúÀå
+ *  Implementation : executeí˜¸ì¶œ í›„ resultsetì´ ìˆëŠ”ì§€ ì—¬ë¶€, affected rowcount
+ *                   ë¥¼ ì €ì¥
  *
  ***********************************************************************/
 
@@ -645,7 +645,7 @@ qcd::bindParamInfoSetByName( QCD_HSTMT      aHstmt,
 {
 /***********************************************************************
  *
- *  Description : parameter info¸¦ ÇÏ³ª bind
+ *  Description : parameter infoë¥¼ í•˜ë‚˜ bind
  *
  *  Implementation :
  *
@@ -678,7 +678,7 @@ qcd::bindParamDataByName( QCD_HSTMT     aHstmt,
 {
 /***********************************************************************
  *
- *  Description : parameter data¸¦ ÇÏ³ª bind
+ *  Description : parameter dataë¥¼ í•˜ë‚˜ bind
  *
  *  Implementation :
  *

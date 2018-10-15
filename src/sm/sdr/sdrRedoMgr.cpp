@@ -20,7 +20,7 @@
  *
  * Description :
  *
- * DRDB º¹±¸°úÁ¤¿¡¼­ÀÇ Àç¼öÇà °ü¸®ÀÚ¿¡ ´ëÇÑ ±¸ÇöÆÄÀÏÀÌ´Ù.
+ * DRDB ë³µêµ¬ê³¼ì •ì—ì„œì˜ ì¬ìˆ˜í–‰ ê´€ë¦¬ìì— ëŒ€í•œ êµ¬í˜„íŒŒì¼ì´ë‹¤.
  *
  **********************************************************************/
 
@@ -52,7 +52,7 @@ smiRecoverType sdrRedoMgr::mRecvType;     /* restart, complete, incomplete */
 /*  for media recovery */
 smuHashBase    sdrRedoMgr::mRecvFileHash;
 UInt           sdrRedoMgr::mNoApplyPageCnt;
-UInt           sdrRedoMgr::mRecvFileCnt; /* º¹±¸ÇÒ ÆÄÀÏ °³¼ö */
+UInt           sdrRedoMgr::mRecvFileCnt; /* ë³µêµ¬í•  íŒŒì¼ ê°œìˆ˜ */
 
 // for properties
 UInt           sdrRedoMgr::mMaxRedoHeapSize;    /* maximum heap memory */
@@ -64,17 +64,17 @@ UChar*          sdrRedoMgr::mCurPagePtr = NULL;
 sdrRedoLogData* sdrRedoMgr::mRedoLogPtr = NULL;
 
 /***********************************************************************
- * Description : Àç¼öÇà °ü¸®ÀÚÀÇ ÃÊ±âÈ­ ÇÔ¼ö
+ * Description : ì¬ìˆ˜í–‰ ê´€ë¦¬ìì˜ ì´ˆê¸°í™” í•¨ìˆ˜
  *
- * restart recoveryÀÇ redoall pass°úÁ¤¿¡¼­ È£ÃâµÈ´Ù. aMaxPageCount´Â
- * ¹öÆÛ°ü¸®ÀÚÀÇ ¹öÆÛÇ®¿¡ fixÇÒ ¼ö ÀÖ´Â ÃÖ´ë page °³¼öÀÌ¸ç, ÀÌ´Â redo ·Î±×ÀÇ
- * ÇØ´ç page¿¡ ´ëÇÏ¿© fixÇÒ ¼ö ÀÖ´Â ÃÖ´ë°³¼ö¸¦ ³ªÅ¸³½´Ù. ÀÌ °ª¿¡ µµ´ŞÇÏ¸é,
- * hash¿¡ ÀúÀåµÈ redo ·Î±×µéÀ» ÆäÀÌÁö¿¡ ¹İ¿µÇÑ ÈÄ, ¹öÆÛÇ®À» flushÇÏ°í, hash¸¦
- * ºñ¿ì¸ç, ±× ÈÄ °è¼ÓÇØ¼­ redo ·Î±×¸¦ ´Ù½Ã hash¿¡ ÀúÀåÇÑ´Ù.
+ * restart recoveryì˜ redoall passê³¼ì •ì—ì„œ í˜¸ì¶œëœë‹¤. aMaxPageCountëŠ”
+ * ë²„í¼ê´€ë¦¬ìì˜ ë²„í¼í’€ì— fixí•  ìˆ˜ ìˆëŠ” ìµœëŒ€ page ê°œìˆ˜ì´ë©°, ì´ëŠ” redo ë¡œê·¸ì˜
+ * í•´ë‹¹ pageì— ëŒ€í•˜ì—¬ fixí•  ìˆ˜ ìˆëŠ” ìµœëŒ€ê°œìˆ˜ë¥¼ ë‚˜íƒ€ë‚¸ë‹¤. ì´ ê°’ì— ë„ë‹¬í•˜ë©´,
+ * hashì— ì €ì¥ëœ redo ë¡œê·¸ë“¤ì„ í˜ì´ì§€ì— ë°˜ì˜í•œ í›„, ë²„í¼í’€ì„ flushí•˜ê³ , hashë¥¼
+ * ë¹„ìš°ë©°, ê·¸ í›„ ê³„ì†í•´ì„œ redo ë¡œê·¸ë¥¼ ë‹¤ì‹œ hashì— ì €ì¥í•œë‹¤.
  *
  * + 2nd. code design
- *   - mutex¸¦ ÃÊ±âÈ­ÇÑ´Ù.
- *   - ÇØ½Ã Å×ÀÌºí¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+ *   - mutexë¥¼ ì´ˆê¸°í™”í•œë‹¤.
+ *   - í•´ì‹œ í…Œì´ë¸”ë¥¼ ì´ˆê¸°í™”í•œë‹¤.
  **********************************************************************/
 IDE_RC sdrRedoMgr::initialize(UInt             aHashTableSize,
                               smiRecoverType   aRecvType)
@@ -129,20 +129,20 @@ IDE_RC sdrRedoMgr::initialize(UInt             aHashTableSize,
 }
 
 /***********************************************************************
- * Description : Àç¼öÇà °ü¸®ÀÚÀÇ ÇØÁ¦ ÇÔ¼ö
+ * Description : ì¬ìˆ˜í–‰ ê´€ë¦¬ìì˜ í•´ì œ í•¨ìˆ˜
  *
- * restart recoveryÀÇ redoall pass°úÁ¤¿¡¼­ ¸ğµç µğ½ºÅ© redo logµéÀ»
- * DB ÆäÀÌÁö¿¡ ¹İ¿µÇÑ ÈÄ ´ÙÀ½ È£ÃâµÈ´Ù.
+ * restart recoveryì˜ redoall passê³¼ì •ì—ì„œ ëª¨ë“  ë””ìŠ¤í¬ redo logë“¤ì„
+ * DB í˜ì´ì§€ì— ë°˜ì˜í•œ í›„ ë‹¤ìŒ í˜¸ì¶œëœë‹¤.
  *
  * + 2nd. code design
- *   - ÇØ½Ã Å×ÀÌºíÀ» ÇØÁ¦ÇÑ´Ù.
- *   - mutex¸¦ ÇØÁ¦ÇÑ´Ù.
+ *   - í•´ì‹œ í…Œì´ë¸”ì„ í•´ì œí•œë‹¤.
+ *   - mutexë¥¼ í•´ì œí•œë‹¤.
  **********************************************************************/
 IDE_RC sdrRedoMgr::destroy()
 {
-    // BUG-28709 Media recovery½Ã disk¿¡ media recoveryÇÏÁö ¾ÊÀ¸¸é
-    //           mApplyPageCount°¡ 0ÀÌ ¾Æ´Ï°í,
-    //           mApplyPageCount - mNoApplyPageCnt °¡ 0 ÀÌ¾î¾ß ÇÔ
+    // BUG-28709 Media recoveryì‹œ diskì— media recoveryí•˜ì§€ ì•Šìœ¼ë©´
+    //           mApplyPageCountê°€ 0ì´ ì•„ë‹ˆê³ ,
+    //           mApplyPageCount - mNoApplyPageCnt ê°€ 0 ì´ì–´ì•¼ í•¨
     IDE_DASSERT( (mApplyPageCount - mNoApplyPageCnt) == 0 );
 
     if (getRecvType() != SMI_RECOVER_RESTART)
@@ -168,10 +168,10 @@ IDE_RC sdrRedoMgr::destroy()
 }
 
 /***********************************************************************
- * Description : BUGBUG - 7983 MRDB runtime memory¿¡ ´ëÇÑ redo
+ * Description : BUGBUG - 7983 MRDB runtime memoryì— ëŒ€í•œ redo
  *
- * ·Î±×°ü¸®ÀÚÀÇ restart recoveryÀÇ Àç¼öÇà ´Ü°è¿¡¼­ runtime memory¿¡ ´ëÇÑ
- * redo°¡ ÇÊ¿äÇÑ drdb Å¸ÀÔÀÇ ·Î±×¸¦ ÆÇµ¶ È£ÃâµÈ´Ù.
+ * ë¡œê·¸ê´€ë¦¬ìì˜ restart recoveryì˜ ì¬ìˆ˜í–‰ ë‹¨ê³„ì—ì„œ runtime memoryì— ëŒ€í•œ
+ * redoê°€ í•„ìš”í•œ drdb íƒ€ì…ì˜ ë¡œê·¸ë¥¼ íŒë… í˜¸ì¶œëœë‹¤.
  **********************************************************************/
 void sdrRedoMgr::redoRuntimeMRDB( void   * aTrans,
                                   SChar  * aLogRec )
@@ -203,9 +203,9 @@ void sdrRedoMgr::redoRuntimeMRDB( void   * aTrans,
 }
 
 /***********************************************************************
- * Description : BUGBUG - 7983 runtime memory¿¡ ´ëÇÑ redo
+ * Description : BUGBUG - 7983 runtime memoryì— ëŒ€í•œ redo
  *
- * redoRuntimeMRDB, applyHashedLogRec ÇÔ¼ö¿¡¼­ È£ÃâµÈ´Ù.
+ * redoRuntimeMRDB, applyHashedLogRec í•¨ìˆ˜ì—ì„œ í˜¸ì¶œëœë‹¤.
  **********************************************************************/
 void sdrRedoMgr::applyLogRecToRuntimeMRDB( void*      aTrans,
                                            sdrLogType aLogType,
@@ -258,14 +258,14 @@ void sdrRedoMgr::applyLogRecToRuntimeMRDB( void*      aTrans,
 }
 
  /***********************************************************************
- * Description : LogBuffer¿¡¼­ DRDB¿ë RedoLog¸¦ ºĞ¸®ÇØ¼­ List·Î ±¸¼ºÇÔ
+ * Description : LogBufferì—ì„œ DRDBìš© RedoLogë¥¼ ë¶„ë¦¬í•´ì„œ Listë¡œ êµ¬ì„±í•¨
  *
- * aTransID       - [IN]  Log¸¦ ¸¸µç TID
- * aLogBuffer     - [IN]  ¿øº» Log
- * aLogBufferSize - [IN]  ¿øº» Log°¡ µé¾îÀÖ´Â BufferÀÇ Å©±â
- * aBeginLSN      - [IN]  ¿øº» LogÀÇ LSN
- * aEndLSN        - [IN]  ¿øº» LogÀÇ LSNÀÇ ³¡À§Ä¡
- * aLogDataList   - [OUT] ParsingµÈ °á°ú ( sdrRedoLogData )
+ * aTransID       - [IN]  Logë¥¼ ë§Œë“  TID
+ * aLogBuffer     - [IN]  ì›ë³¸ Log
+ * aLogBufferSize - [IN]  ì›ë³¸ Logê°€ ë“¤ì–´ìˆëŠ” Bufferì˜ í¬ê¸°
+ * aBeginLSN      - [IN]  ì›ë³¸ Logì˜ LSN
+ * aEndLSN        - [IN]  ì›ë³¸ Logì˜ LSNì˜ ëìœ„ì¹˜
+ * aLogDataList   - [OUT] Parsingëœ ê²°ê³¼ ( sdrRedoLogData )
  ***********************************************************************/
 IDE_RC sdrRedoMgr::generateRedoLogDataList( smTID             aTransID,
                                             SChar           * aLogBuffer,
@@ -307,13 +307,13 @@ IDE_RC sdrRedoMgr::generateRedoLogDataList( smTID             aTransID,
             sValue = NULL;
         }
 
-        // Redo SkipÇÒ TableSpace ÀÎÁö Ã¼Å©ÇÑ´Ù.
+        // Redo Skipí•  TableSpace ì¸ì§€ ì²´í¬í•œë‹¤.
         // 1) Restart Recovery
         // DROPPED, DISCARDED, OFFLINE
-        // 2) Media Recovery ÀÇ °æ¿ì
-        // DROPPED¿Í DISCARDED
+        // 2) Media Recovery ì˜ ê²½ìš°
+        // DROPPEDì™€ DISCARDED
 
-        /* TableSpace¿¡ ´ëÇÑ Ã¼Å©ÀÌ±â ¶§¹®¿¡, RestartRecovery°¡ ¾Æ´Ï¶óµµ ÇÔ*/
+        /* TableSpaceì— ëŒ€í•œ ì²´í¬ì´ê¸° ë•Œë¬¸ì—, RestartRecoveryê°€ ì•„ë‹ˆë¼ë„ í•¨*/
         if ( smLayerCallback::isSkipRedo( SC_MAKE_SPACE(sGRID), ID_FALSE )
              == ID_FALSE )
         {
@@ -370,8 +370,8 @@ IDE_RC sdrRedoMgr::generateRedoLogDataList( smTID             aTransID,
         sParseLen += ID_SIZEOF(sdrLogHdr) + sValueLen;
     }
 
-    /* Mtx°¡ Àß¸ø ±â·ÏµÇ¸é ÀÌ ±æÀÌ°¡ ´Ş¶óÁø´Ù. µû¶ó¼­ Àß¸øµÈ ·Î±×ÀÎµ¥,
-     * ±×·¸´Ù°í Assert·Î Ã³¸®ÇÏ¸é ±¸µ¿ ¹æ¹ıÀÌ ¾ø´Ù. */
+    /* Mtxê°€ ì˜ëª» ê¸°ë¡ë˜ë©´ ì´ ê¸¸ì´ê°€ ë‹¬ë¼ì§„ë‹¤. ë”°ë¼ì„œ ì˜ëª»ëœ ë¡œê·¸ì¸ë°,
+     * ê·¸ë ‡ë‹¤ê³  Assertë¡œ ì²˜ë¦¬í•˜ë©´ êµ¬ë™ ë°©ë²•ì´ ì—†ë‹¤. */
     IDE_ERROR_MSG( sParseLen == aLogBufferSize,
                    "sParseLen      : %"ID_UINT32_FMT"\n"
                    "aLogBufferSize : %"ID_UINT32_FMT"\n"
@@ -404,9 +404,9 @@ IDE_RC sdrRedoMgr::generateRedoLogDataList( smTID             aTransID,
 
 /***********************************************************************
  * PROJ-2162 RestartRiskReduction
- * Description : RedoLogList¸¦ FreeÇÔ
+ * Description : RedoLogListë¥¼ Freeí•¨
  *
- * aLogDataList - [IN/OUT] FreeÇÒ ´ë»ó
+ * aLogDataList - [IN/OUT] Freeí•  ëŒ€ìƒ
  ***********************************************************************/
 IDE_RC sdrRedoMgr::freeRedoLogDataList( void  * aLogDataList )
 {
@@ -434,20 +434,20 @@ IDE_RC sdrRedoMgr::freeRedoLogDataList( void  * aLogDataList )
 }
 
 /***********************************************************************
- * Description : ·Î±×¿¡¼­ drdb ·Î±×¸¦ ÃßÃâÇÏ¿© ÆÄ½ÌÇÏ°í HasingÇÔ
+ * Description : ë¡œê·¸ì—ì„œ drdb ë¡œê·¸ë¥¼ ì¶”ì¶œí•˜ì—¬ íŒŒì‹±í•˜ê³  Hasingí•¨
  *
  * PROJ-2162 RestartRiskReduction
- * OnlineREDO¸¦ ÅëÇØ DRDB Page¸¦ »õ·Î »ı¼ºÇÔ 
+ * OnlineREDOë¥¼ í†µí•´ DRDB Pageë¥¼ ìƒˆë¡œ ìƒì„±í•¨ 
  *
- * aStatistics       - [IN]     dummy Åë°èÁ¤º¸
- * aSpaceID          - [IN]     RedoÇÒ PageÀÇ TablespaceID
- * aPageID           - [IN]     RedoÇÒ PageÀÇ PageID
- * aReadFromDisk     - [IN]     DiskÀÇ File·ÎºÎÅÍ Page¸¦ ÀĞ¾î¼­ ¿Ã¸± °ÍÀÎ°¡?
- * aOnlineTBSLSN4Idx - [OUT]    TBS Online/Offline½Ã Index SMO °ª ¼³Á¤¿¡ ¾²ÀÓ
- * aOutPagePtr       - [IN/OUT] aReadFromDisk°¡ FALSEÀÏ °æ¿ì ÆäÀÌÁö°¡ ÀĞÇô¼­ 
- *                              ¿Í¾ßÇÏ°í, ±×°Ô ¾Æ´Ï´õ¶óµµ AlignµÈ Page¶óµµ 
- *                              ¿Í¾ß ÇÑ´Ù.
- * aSuccess          - [OUT]    ¼º°ø¿©ºÎ
+ * aStatistics       - [IN]     dummy í†µê³„ì •ë³´
+ * aSpaceID          - [IN]     Redoí•  Pageì˜ TablespaceID
+ * aPageID           - [IN]     Redoí•  Pageì˜ PageID
+ * aReadFromDisk     - [IN]     Diskì˜ Fileë¡œë¶€í„° Pageë¥¼ ì½ì–´ì„œ ì˜¬ë¦´ ê²ƒì¸ê°€?
+ * aOnlineTBSLSN4Idx - [OUT]    TBS Online/Offlineì‹œ Index SMO ê°’ ì„¤ì •ì— ì“°ì„
+ * aOutPagePtr       - [IN/OUT] aReadFromDiskê°€ FALSEì¼ ê²½ìš° í˜ì´ì§€ê°€ ì½í˜€ì„œ 
+ *                              ì™€ì•¼í•˜ê³ , ê·¸ê²Œ ì•„ë‹ˆë”ë¼ë„ Alignëœ Pageë¼ë„ 
+ *                              ì™€ì•¼ í•œë‹¤.
+ * aSuccess          - [OUT]    ì„±ê³µì—¬ë¶€
  ***********************************************************************/
 IDE_RC sdrRedoMgr::generatePageUsingOnlineRedo( idvSQL    * aStatistics,
                                                 scSpaceID   aSpaceID,
@@ -494,7 +494,7 @@ IDE_RC sdrRedoMgr::generatePageUsingOnlineRedo( idvSQL    * aStatistics,
                                     &sOnlineTBSLSN4Idx )
                   != IDE_SUCCESS );
 
-        /* Page°¡ ÃÊ±âÈ­µÇÁö ¾Ê°Å³ª InconsistentÇÏ´Ù¸é °ËÁõÇÏÁö ¾Ê´Â´Ù. */
+        /* Pageê°€ ì´ˆê¸°í™”ë˜ì§€ ì•Šê±°ë‚˜ Inconsistentí•˜ë‹¤ë©´ ê²€ì¦í•˜ì§€ ì•ŠëŠ”ë‹¤. */
         IDE_TEST_CONT( ( sdpPhyPage::isPageCorrupted( aSpaceID, aOutPagePtr )
                           == ID_TRUE ),
                         SKIP );
@@ -509,8 +509,8 @@ IDE_RC sdrRedoMgr::generatePageUsingOnlineRedo( idvSQL    * aStatistics,
              != IDE_SUCCESS );
     sState = 1;
 
-    /* ·Î±× ¾ĞÃàÇØÁ¦¿ë ¹öÆÛ ÇÚµéÀÇ ÃÊ±âÈ­
-     * HashÇÏ¿© º¸°üÇÒ °ÍÀÌ ¾Æ´Ï±â ¶§¹®¿¡, Reuse·Î ¹Ù·Î¹Ù·Î »ç¿ëÇÔ */
+    /* ë¡œê·¸ ì••ì¶•í•´ì œìš© ë²„í¼ í•¸ë“¤ì˜ ì´ˆê¸°í™”
+     * Hashí•˜ì—¬ ë³´ê´€í•  ê²ƒì´ ì•„ë‹ˆê¸° ë•Œë¬¸ì—, Reuseë¡œ ë°”ë¡œë°”ë¡œ ì‚¬ìš©í•¨ */
     IDE_TEST( sDecompBufferHandle->initialize( IDU_MEM_SM_SDR )
               != IDE_SUCCESS );
     sState = 2;
@@ -525,25 +525,25 @@ IDE_RC sdrRedoMgr::generatePageUsingOnlineRedo( idvSQL    * aStatistics,
     sState = 3;
 
     /* BUG-42785
-     * MinRecoveryLSNÀ» È¹µæÇÑ ÈÄ¿¡ Checkpoint°¡ ¼öÇàµÉ °æ¿ì
-     * MinRecoveryLSNÀÌ º¯°æµÇ¸ç LogFileÀÌ Áö¿öÁú¼ö ÀÖ´Ù.
-     * ÇöÀç OnlineDRDBRedo¸¦ ¼öÇà ÁßÀÓÀ» ¾Ë·Á
-     * ·Î±×ÆÄÀÏÀÌ Áö¿öÁöÁö ¾Êµµ·Ï ÇÏ¿©¾ß ÇÑ´Ù. */
+     * MinRecoveryLSNì„ íšë“í•œ í›„ì— Checkpointê°€ ìˆ˜í–‰ë  ê²½ìš°
+     * MinRecoveryLSNì´ ë³€ê²½ë˜ë©° LogFileì´ ì§€ì›Œì§ˆìˆ˜ ìˆë‹¤.
+     * í˜„ì¬ OnlineDRDBRedoë¥¼ ìˆ˜í–‰ ì¤‘ì„ì„ ì•Œë ¤
+     * ë¡œê·¸íŒŒì¼ì´ ì§€ì›Œì§€ì§€ ì•Šë„ë¡ í•˜ì—¬ì•¼ í•œë‹¤. */
     IDE_TEST( smrRecoveryMgr::incOnlineDRDBRedoCnt() != IDE_SUCCESS );
     sState = 4;
 
-    /* MinRecoveryLSN°ú PageÀÇ LastModifyLSN Áß Å« °ªÀ» ¼±ÅÃÇÑ´Ù.
-     * - MinRecoveryLSN < PageLSN : ±×³É PageLSNº¸´Ù Å« Log¸¸ ¹İ¿µÇÑ´Ù.
+    /* MinRecoveryLSNê³¼ Pageì˜ LastModifyLSN ì¤‘ í° ê°’ì„ ì„ íƒí•œë‹¤.
+     * - MinRecoveryLSN < PageLSN : ê·¸ëƒ¥ PageLSNë³´ë‹¤ í° Logë§Œ ë°˜ì˜í•œë‹¤.
      * - MinRecoveryLSN > PageLSN :
-     *   ÀÌ PageLSNÀº 'ÀÚ½ÅÀ» °»½Å½ÃÅ² LogÀÇ ´ÙÀ½ LSN'ÀÌ´Ù.
-     *   Áï ÀÌ page¿¡ ´ëÇÑ ´ÙÀ½ °»½Å Log¸¦ °¡¸®Å°´Â °ÍÀÌ ¾Æ´Ï±â ¶§¹®¿¡,
-     *   MinRecoveryLSNÀ» Âü°íÇÏ¿© ¹İ¿µÇÑ´Ù.
-     * ¿©±â¼­ PageRecoveryLSNÀ» ¼±ÅÃÇÏ¸é ¾ÈµÈ´Ù. FlushÇÏ±â À§ÇØ
-     * IOB·Î ¿Å±ä ¼ø°£ ¿©±â¼­ Page¸¦ ReadÇØ¹ö¸®´Â ¹®Á¦°¡ ¹ß»ıÇÒ ¼ö
-     * ÀÖ±â ¶§¹®ÀÌ´Ù. */
+     *   ì´ PageLSNì€ 'ìì‹ ì„ ê°±ì‹ ì‹œí‚¨ Logì˜ ë‹¤ìŒ LSN'ì´ë‹¤.
+     *   ì¦‰ ì´ pageì— ëŒ€í•œ ë‹¤ìŒ ê°±ì‹  Logë¥¼ ê°€ë¦¬í‚¤ëŠ” ê²ƒì´ ì•„ë‹ˆê¸° ë•Œë¬¸ì—,
+     *   MinRecoveryLSNì„ ì°¸ê³ í•˜ì—¬ ë°˜ì˜í•œë‹¤.
+     * ì—¬ê¸°ì„œ PageRecoveryLSNì„ ì„ íƒí•˜ë©´ ì•ˆëœë‹¤. Flushí•˜ê¸° ìœ„í•´
+     * IOBë¡œ ì˜®ê¸´ ìˆœê°„ ì—¬ê¸°ì„œ Pageë¥¼ Readí•´ë²„ë¦¬ëŠ” ë¬¸ì œê°€ ë°œìƒí•  ìˆ˜
+     * ìˆê¸° ë•Œë¬¸ì´ë‹¤. */
     sdbBufferMgr::getMinRecoveryLSN( aStatistics,
                                      &sCurLSN );
-    /* MinRecoveryLSNÀº PBuffer¿Í Secondary Buffer¸¦ ºñ±³ÇØ ´õ ÀÛÀº°ÍÀ¸·Î ¼±ÅÃ */
+    /* MinRecoveryLSNì€ PBufferì™€ Secondary Bufferë¥¼ ë¹„êµí•´ ë” ì‘ì€ê²ƒìœ¼ë¡œ ì„ íƒ */
     sdsBufferMgr::getMinRecoveryLSN( aStatistics,
                                      &sCurSecondaryLSN );
     if ( smrCompareLSN::isGT( &sCurLSN, &sCurSecondaryLSN ) == ID_TRUE )
@@ -594,7 +594,7 @@ IDE_RC sdrRedoMgr::generatePageUsingOnlineRedo( idvSQL    * aStatistics,
                                                &sRedoLogSize,
                                                &sRedoLogBuffer );
 
-            /* ÇÒ°Å ¾øÀ½ */
+            /* í• ê±° ì—†ìŒ */
             if ( sRedoLogSize == 0 )
             {
                 continue;
@@ -607,10 +607,10 @@ IDE_RC sdrRedoMgr::generatePageUsingOnlineRedo( idvSQL    * aStatistics,
                                                (void**)&sRedoLogDataList )
                       != IDE_SUCCESS );
 
-            /* RedoÇØ¾ßÇÒ Tablespace°¡ DropµÇ´Âµî ÇÏ¿©
-             * ÀÇ¹Ì¾ø´Â LogÀÏ ¼ö ÀÖÀ½. ¿Ö³ÄÇÏ¸é ÀÌ Page
-             * ¿Í °ü·ÃµÈ ·Î±×¸¸ÀÌ ¾Æ´Ñ, ¸ğµç ·Î±×¸¦
-             * ÀĞ¾î¿À±â ¶§¹®. */
+            /* Redoí•´ì•¼í•  Tablespaceê°€ Dropë˜ëŠ”ë“± í•˜ì—¬
+             * ì˜ë¯¸ì—†ëŠ” Logì¼ ìˆ˜ ìˆìŒ. ì™œëƒí•˜ë©´ ì´ Page
+             * ì™€ ê´€ë ¨ëœ ë¡œê·¸ë§Œì´ ì•„ë‹Œ, ëª¨ë“  ë¡œê·¸ë¥¼
+             * ì½ì–´ì˜¤ê¸° ë•Œë¬¸. */
             if ( sRedoLogDataList != NULL )
             {
                 IDE_TEST( applyListedLogRec( &sMtx,
@@ -627,10 +627,10 @@ IDE_RC sdrRedoMgr::generatePageUsingOnlineRedo( idvSQL    * aStatistics,
         }
         else
         {
-            /* LogFile EndLogÀÏ °æ¿ì,
-             * ÀÏ¹İÀûÀÎ Recovery¿Í ´Ş¸® LogFileÀÌ È®½ÇÈ÷ Á¸ÀçÇÏ´Â °æ¿ì¿¡
-             * ºÒ¸®¿ì´Â °ÍÀÌ±â ¶§¹®¿¡, ´ÙÀ½ LogfileÀ» ¿­¾î¼­ È®ÀÎÇÏ´Â
-             * smrRecoveryMgr::redo_FILE_END °°Àº ÀÛ¾÷ÀÌ ÇÊ¿ä ¾ø´Ù. */
+            /* LogFile EndLogì¼ ê²½ìš°,
+             * ì¼ë°˜ì ì¸ Recoveryì™€ ë‹¬ë¦¬ LogFileì´ í™•ì‹¤íˆ ì¡´ì¬í•˜ëŠ” ê²½ìš°ì—
+             * ë¶ˆë¦¬ìš°ëŠ” ê²ƒì´ê¸° ë•Œë¬¸ì—, ë‹¤ìŒ Logfileì„ ì—´ì–´ì„œ í™•ì¸í•˜ëŠ”
+             * smrRecoveryMgr::redo_FILE_END ê°™ì€ ì‘ì—…ì´ í•„ìš” ì—†ë‹¤. */
             if ( sLogHead.mType == SMR_LT_FILE_END )
             {
                 sCurLSN.mFileNo++;
@@ -640,8 +640,8 @@ IDE_RC sdrRedoMgr::generatePageUsingOnlineRedo( idvSQL    * aStatistics,
         }
     }
 
-    /* BUG-42785 OnlineDRDBRedo°¡ ¿Ï·áµÇ¾úÀ¸¹Ç·Î
-     * Count¸¦ ÁÙ¿©ÁØ´Ù. */
+    /* BUG-42785 OnlineDRDBRedoê°€ ì™„ë£Œë˜ì—ˆìœ¼ë¯€ë¡œ
+     * Countë¥¼ ì¤„ì—¬ì¤€ë‹¤. */
     sState = 3;
     IDE_TEST( smrRecoveryMgr::decOnlineDRDBRedoCnt() != IDE_SUCCESS );
 
@@ -709,13 +709,13 @@ IDE_RC sdrRedoMgr::applyListedLogRec( sdrMtx         * aMtx,
 
     sPhyPageHdr = (sdpPhyPageHdr*)aPagePtr;
     sData       = aLogDataList;
-    do // List¸¦ ¼øÈ¸ÇÔ.
+    do // Listë¥¼ ìˆœíšŒí•¨.
     {
-        // ÀÌ page¿¡ ´ëÇÑ Log¸¸ Ã£¾Æ¼­ Àû¿ëÇÔ.
+        // ì´ pageì— ëŒ€í•œ Logë§Œ ì°¾ì•„ì„œ ì ìš©í•¨.
         if ( ( sData->mSpaceID == aSpaceID ) &&
              ( sData->mPageID  == aPageID )  &&
-            /* °»½Å¾øÀÌ Logging¸¸ ÇÏ´Â °ÍÀÌ±â ¶§¹®¿¡, OnlineRedo¿¡¼­´Â
-             * ¹İÀÀÇÏ¸é ¾ÈµÊ */
+            /* ê°±ì‹ ì—†ì´ Loggingë§Œ í•˜ëŠ” ê²ƒì´ê¸° ë•Œë¬¸ì—, OnlineRedoì—ì„œëŠ”
+             * ë°˜ì‘í•˜ë©´ ì•ˆë¨ */
              ( sData->mType != SDR_SDC_SET_INITSCN_TO_TSS ) )
         {
             IDE_TEST( applyLogRec( aMtx,
@@ -738,37 +738,37 @@ IDE_RC sdrRedoMgr::applyListedLogRec( sdrMtx         * aMtx,
 }
 
 /***********************************************************************
- * Description : ·Î±×¿¡¼­ drdb ·Î±×¸¦ ÃßÃâÇÏ¿© ÆÄ½ÌÇÏ°í HasingÇÔ
+ * Description : ë¡œê·¸ì—ì„œ drdb ë¡œê·¸ë¥¼ ì¶”ì¶œí•˜ì—¬ íŒŒì‹±í•˜ê³  Hasingí•¨
  *
- * smrLogMgr¿¡¼­ È£ÃâµÇ°Å³ª, redo ·Î±×¸¦ hash¿¡ ÀúÀåÇÏ´Â °úÁ¤¿¡¼­
- * È£ÃâµÇ±âµµ ÇÑ´Ù.
- * hash¿¡¼­ bucketÀ» Â÷·Ê´ë·Î ÆÇµ¶ÇÏ¸é¼­ bucket¿¡ ÀÖ´Â ¸ğµç redo ·Î±×µéÀ»
- * ÇØ´ç tablespaceÀÇ page¿¡ ¹İ¿µÇÑ´Ù. ÀÌ¶§, mtx¸¦ ÀÌ¿ëÇÏ¿© no-logging¸ğµå·Î
- * Ã³¸®ÇÑ´Ù. Àû¿ëÈÄ ¹öÆÛ°ü¸®ÀÚÀÇ flush listÀÇ ¸ğµç BCB¸¦ flush ½ÃÅ²´Ù.
+ * smrLogMgrì—ì„œ í˜¸ì¶œë˜ê±°ë‚˜, redo ë¡œê·¸ë¥¼ hashì— ì €ì¥í•˜ëŠ” ê³¼ì •ì—ì„œ
+ * í˜¸ì¶œë˜ê¸°ë„ í•œë‹¤.
+ * hashì—ì„œ bucketì„ ì°¨ë¡€ëŒ€ë¡œ íŒë…í•˜ë©´ì„œ bucketì— ìˆëŠ” ëª¨ë“  redo ë¡œê·¸ë“¤ì„
+ * í•´ë‹¹ tablespaceì˜ pageì— ë°˜ì˜í•œë‹¤. ì´ë•Œ, mtxë¥¼ ì´ìš©í•˜ì—¬ no-loggingëª¨ë“œë¡œ
+ * ì²˜ë¦¬í•œë‹¤. ì ìš©í›„ ë²„í¼ê´€ë¦¬ìì˜ flush listì˜ ëª¨ë“  BCBë¥¼ flush ì‹œí‚¨ë‹¤.
  *
  * + 2nd. code design
- *   - hash¸¦ traverse ÇÏ±â À§ÇØ openÇÑ´Ù.
- *   - hash·ÎºÎÅÍ Ã¹¹øÂ° ³ëµå¸¦ Àß¶ó¿Â´Ù.
- *   - while( ³ëµå°¡ NULLÀÌ ¾Æ´Ò¶§±îÁö )
+ *   - hashë¥¼ traverse í•˜ê¸° ìœ„í•´ opení•œë‹¤.
+ *   - hashë¡œë¶€í„° ì²«ë²ˆì§¸ ë…¸ë“œë¥¼ ì˜ë¼ì˜¨ë‹¤.
+ *   - while( ë…¸ë“œê°€ NULLì´ ì•„ë‹ë•Œê¹Œì§€ )
  *     {
- *        - ³ëµå »óÅÂ¸¦ recovery ½ÃÀÛ»óÅÂ·Î ¼³Á¤ÇÑ´Ù.
- *        - mtx¸¦ beginÇÑ´Ù.
- *        - ³ëµåÀÇ space ID, page ID¸¦ ÀÌ¿ëÇÏ¿© ¹öÆÛ°ü¸®ÀÚ·ÎºÎÅÍ ÆäÀÌÁö¸¦
- *          ¾ò´Â´Ù. (X-LATCH)
- *        - for ( redo ·Î±× µ¥ÀÌÅ¸ °³¼ö¸¸Å­ )
+ *        - ë…¸ë“œ ìƒíƒœë¥¼ recovery ì‹œì‘ìƒíƒœë¡œ ì„¤ì •í•œë‹¤.
+ *        - mtxë¥¼ beginí•œë‹¤.
+ *        - ë…¸ë“œì˜ space ID, page IDë¥¼ ì´ìš©í•˜ì—¬ ë²„í¼ê´€ë¦¬ìë¡œë¶€í„° í˜ì´ì§€ë¥¼
+ *          ì–»ëŠ”ë‹¤. (X-LATCH)
+ *        - for ( redo ë¡œê·¸ ë°ì´íƒ€ ê°œìˆ˜ë§Œí¼ )
  *          {
- *              ³ëµå°¡ °¡Áø redo ·Î±×µ¥ÀÌÅ¸  ¸®½ºÆ®¸¦ ÇÏ³ª¾¿ ÆäÀÌÁö¿¡ ¹İ¿µÇÑ´Ù.
- *              ¹İ¿µµÈ redo ·Î±×µ¥ÀÌÅ¸ ¸¦ ¸Ş¸ğ¸® ÇØÁ¦ÇÑ´Ù.
- *              ³ëµåÀÇ redo ·Î±× µ¥ÀÌÅ¸ °³¼ö¸¦ °¨¼Ò½ÃÅ²´Ù.
+ *              ë…¸ë“œê°€ ê°€ì§„ redo ë¡œê·¸ë°ì´íƒ€  ë¦¬ìŠ¤íŠ¸ë¥¼ í•˜ë‚˜ì”© í˜ì´ì§€ì— ë°˜ì˜í•œë‹¤.
+ *              ë°˜ì˜ëœ redo ë¡œê·¸ë°ì´íƒ€ ë¥¼ ë©”ëª¨ë¦¬ í•´ì œí•œë‹¤.
+ *              ë…¸ë“œì˜ redo ë¡œê·¸ ë°ì´íƒ€ ê°œìˆ˜ë¥¼ ê°ì†Œì‹œí‚¨ë‹¤.
  *          }
- *        - mtx¸¦ commitÇÑ´Ù.
- *        - hash·ÎºÎÅÍ ´ÙÀ½ ³ëµå¸¦ Àß¶ó¿Â´Ù.
- *        - ÀÌ¹Ì ¹İ¿µµÈ ³ëµå¸¦ ¸Ş¸ğ¸®ÇØÁ¦ ÇÑ´Ù.
- *        - hashÀÇ Àû¿ëÇÒ ³ëµå °³¼ö¸¦ °¨¼Ò½ÃÅ²´Ù.
+ *        - mtxë¥¼ commití•œë‹¤.
+ *        - hashë¡œë¶€í„° ë‹¤ìŒ ë…¸ë“œë¥¼ ì˜ë¼ì˜¨ë‹¤.
+ *        - ì´ë¯¸ ë°˜ì˜ëœ ë…¸ë“œë¥¼ ë©”ëª¨ë¦¬í•´ì œ í•œë‹¤.
+ *        - hashì˜ ì ìš©í•  ë…¸ë“œ ê°œìˆ˜ë¥¼ ê°ì†Œì‹œí‚¨ë‹¤.
  *     }
- *     - hash¸¦ closeÇÑ´Ù.
- *     - Àû¿ëÇÒ ³ëµå °³¼ö°¡ 0ÀÎÁö È®ÀÎÇÑ´Ù.
- *     - ¹öÆÛ°ü¸®ÀÚÀÇ flush¸¦ ¿äÃ»ÇÑ´Ù.
+ *     - hashë¥¼ closeí•œë‹¤.
+ *     - ì ìš©í•  ë…¸ë“œ ê°œìˆ˜ê°€ 0ì¸ì§€ í™•ì¸í•œë‹¤.
+ *     - ë²„í¼ê´€ë¦¬ìì˜ flushë¥¼ ìš”ì²­í•œë‹¤.
  ***********************************************************************/
 IDE_RC sdrRedoMgr::applyHashedLogRec(idvSQL * aStatistics)
 {
@@ -807,7 +807,7 @@ IDE_RC sdrRedoMgr::applyHashedLogRec(idvSQL * aStatistics)
     SM_LSN_INIT(sInitLSN);
     SM_LSN_INIT(sLastModifyLSN);
 
-    // Redo Log°¡ ÀúÀåµÈ Hash Table Open
+    // Redo Logê°€ ì €ì¥ëœ Hash Table Open
     IDE_TEST( smuHash::open(&mHash) != IDE_SUCCESS );
     sHashState = 1;
 
@@ -854,7 +854,7 @@ IDE_RC sdrRedoMgr::applyHashedLogRec(idvSQL * aStatistics)
         sState = 1;
 
         //---------------------
-        // Redo Page ¸¦ ±¸ÇÔ
+        // Redo Page ë¥¼ êµ¬í•¨
         //---------------------
         sSkipRedo = ID_FALSE;
         sIsOverWriteLog = ID_FALSE;
@@ -882,9 +882,9 @@ IDE_RC sdrRedoMgr::applyHashedLogRec(idvSQL * aStatistics)
                 case smERR_ABORT_NotFoundTableSpaceNode :
                 case smERR_ABORT_NotFoundDataFile :
                     // To fix BUG-14949
-                    // Å×ÀÌºí ½ºÆäÀÌ½º´Â Á¸ÀçÇÏÁö¸¸ µ¥ÀÌÅÍÆÄÀÏÀÌ
-                    // ¾ø´Â °æ¿ì°¡ ÀÖ±â ¶§¹®¿¡ ¾Æ·¡¿Í °°Àº µÎ°¡Áö
-                    // Á¶°ÇÀ¸·Î °Ë»çÇØ¾ß¸¸ ÇÑ´Ù.
+                    // í…Œì´ë¸” ìŠ¤í˜ì´ìŠ¤ëŠ” ì¡´ì¬í•˜ì§€ë§Œ ë°ì´í„°íŒŒì¼ì´
+                    // ì—†ëŠ” ê²½ìš°ê°€ ìˆê¸° ë•Œë¬¸ì— ì•„ë˜ì™€ ê°™ì€ ë‘ê°€ì§€
+                    // ì¡°ê±´ìœ¼ë¡œ ê²€ì‚¬í•´ì•¼ë§Œ í•œë‹¤.
                     sSkipRedo = ID_TRUE;
 
                     ideClearError();
@@ -895,14 +895,14 @@ IDE_RC sdrRedoMgr::applyHashedLogRec(idvSQL * aStatistics)
 
                     break;
                 default :
-                    IDE_ASSERT(ID_FALSE); // ´Ù¸¥¿¡·¯´Â ¿ë³³µÇÁö ¾Ê´Â´Ù.
+                    IDE_ASSERT(ID_FALSE); // ë‹¤ë¥¸ì—ëŸ¬ëŠ” ìš©ë‚©ë˜ì§€ ì•ŠëŠ”ë‹¤.
                     break;
             }
         }
         else
         {
             /* PROJ-2118 Bug Reporting
-             * Fatal½Ã ±â·ÏÇÏ±â À§ÇØ Redo ´ë»ó Page¸¦ ¼³Á¤ */
+             * Fatalì‹œ ê¸°ë¡í•˜ê¸° ìœ„í•´ Redo ëŒ€ìƒ Pageë¥¼ ì„¤ì • */
             mCurSpaceID = sNode->mSpaceID;
             mCurPageID  = sNode->mPageID;
             mCurPagePtr = sPagePtr;
@@ -911,18 +911,18 @@ IDE_RC sdrRedoMgr::applyHashedLogRec(idvSQL * aStatistics)
         if ( sIsCorruptPage == ID_TRUE )
         {
             // PROJ-1867
-            // Corrupted page¸¦ ÀĞÀº °æ¿ìÀÌ´Ù.
+            // Corrupted pageë¥¼ ì½ì€ ê²½ìš°ì´ë‹¤.
             //
-            // Page¿¡ Àû¿ëÇØ¾ß ÇÒ Ã¹ Redo Log°¡ Page Image
-            // Log°¡ ¾Æ´Ï¶ó¸é Corrupted Page Hash¿¡ µî·ÏÇÑ´Ù.
+            // Pageì— ì ìš©í•´ì•¼ í•  ì²« Redo Logê°€ Page Image
+            // Logê°€ ì•„ë‹ˆë¼ë©´ Corrupted Page Hashì— ë“±ë¡í•œë‹¤.
             //
-            // ¹İ´ë·Î Page¿¡ Àû¿ëÇØ¾ß ÇÒ Ã¹ Redo Log°¡ Page
-            // Img LogÀÌ¸é Corrupted Page Hash ¿¡ ÀÖ´Ù¸é Á¦°ÅÇÏ°í
-            // Redo Log¸¦ Àû¿ëÇØ¼­ Page Image Log·Î µ¤¾î¾´´Ù.
+            // ë°˜ëŒ€ë¡œ Pageì— ì ìš©í•´ì•¼ í•  ì²« Redo Logê°€ Page
+            // Img Logì´ë©´ Corrupted Page Hash ì— ìˆë‹¤ë©´ ì œê±°í•˜ê³ 
+            // Redo Logë¥¼ ì ìš©í•´ì„œ Page Image Logë¡œ ë®ì–´ì“´ë‹¤.
             //
-            // log hash°úÁ¤¿¡¼­ PILog¸¦ ¸¸³ª¸é ÇØ´ç PageÀÇ
-            // ÀÌÀü Redo Log¸¦ hash¿¡¼­ ¸ğµÎ Áö¿ì±â ¶§¹®¿¡
-            // PageÀÇ Ã¹ Redo Log¸¸ È®ÀÎÇÏ¸é µÈ´Ù.
+            // log hashê³¼ì •ì—ì„œ PILogë¥¼ ë§Œë‚˜ë©´ í•´ë‹¹ Pageì˜
+            // ì´ì „ Redo Logë¥¼ hashì—ì„œ ëª¨ë‘ ì§€ìš°ê¸° ë•Œë¬¸ì—
+            // Pageì˜ ì²« Redo Logë§Œ í™•ì¸í•˜ë©´ ëœë‹¤.
 
             sList = SMU_LIST_GET_FIRST( &sNode->mRedoLogList );
             sData = (sdrRedoLogData*)sList->mData;
@@ -930,9 +930,9 @@ IDE_RC sdrRedoMgr::applyHashedLogRec(idvSQL * aStatistics)
             if ( sdrCorruptPageMgr::isOverwriteLog( sData->mType )
                  == ID_TRUE )
             {
-                // Hash»óÀÇ log Áß Overwrite log°¡ ÀÖ´Ù.
-                // sIsOverWriteLog¸¦ ¼ÂÆÃÇÏ°í ¸¸¾à
-                // Corrupt Page Hash¿¡ ÀÖ´Ù¸é Á¦°ÅÇÑ´Ù.
+                // Hashìƒì˜ log ì¤‘ Overwrite logê°€ ìˆë‹¤.
+                // sIsOverWriteLogë¥¼ ì…‹íŒ…í•˜ê³  ë§Œì•½
+                // Corrupt Page Hashì— ìˆë‹¤ë©´ ì œê±°í•œë‹¤.
 
                 sctTableSpaceMgr::getTBSAttrByID( sNode->mSpaceID,
                                                   &sTBSAttr );
@@ -950,8 +950,8 @@ IDE_RC sdrRedoMgr::applyHashedLogRec(idvSQL * aStatistics)
             }
             else
             {
-                // Hash»óÀÇ log Áß Overwrite log°¡ ¾ø´Ù.
-                // Corrupt Page Hash¿¡ Ãß°¡ÇÑ´Ù.
+                // Hashìƒì˜ log ì¤‘ Overwrite logê°€ ì—†ë‹¤.
+                // Corrupt Page Hashì— ì¶”ê°€í•œë‹¤.
 
                 IDE_TEST( sdrCorruptPageMgr::addCorruptPage( sNode->mSpaceID,
                                                              sNode->mPageID )
@@ -980,11 +980,11 @@ IDE_RC sdrRedoMgr::applyHashedLogRec(idvSQL * aStatistics)
         }
         else
         {
-            // redo ¼öÇà
+            // redo ìˆ˜í–‰
         }
 
         //---------------------
-        // Redo ¼öÇà
+        // Redo ìˆ˜í–‰
         //---------------------
 
         sLastModifyLSN = smLayerCallback::getPageLSN( sPagePtr );
@@ -998,7 +998,7 @@ IDE_RC sdrRedoMgr::applyHashedLogRec(idvSQL * aStatistics)
             mRedoLogPtr = sData;
 
             /* ------------------------------------------------
-             * Redo : PAGEÀÇ update LSNÀÌ ·Î±×ÀÇ LSNº¸´Ù ÀÛÀ» °æ¿ì
+             * Redo : PAGEì˜ update LSNì´ ë¡œê·¸ì˜ LSNë³´ë‹¤ ì‘ì„ ê²½ìš°
              * ----------------------------------------------*/
 
             if ( ( smLayerCallback::isLSNLT( &sLastModifyLSN,
@@ -1008,8 +1008,8 @@ IDE_RC sdrRedoMgr::applyHashedLogRec(idvSQL * aStatistics)
                  ( sIsOverWriteLog == ID_TRUE ) )
             {
                 //------------------------------------------------
-                //  PAGEÀÇ update LSNÀÌ ·Î±×ÀÇ LSNº¸´Ù ÀÛÀ» °æ¿ì,
-                //  Redo ¼öÇà
+                //  PAGEì˜ update LSNì´ ë¡œê·¸ì˜ LSNë³´ë‹¤ ì‘ì„ ê²½ìš°,
+                //  Redo ìˆ˜í–‰
                 //------------------------------------------------
 
                 sApplied = ID_TRUE;
@@ -1020,17 +1020,17 @@ IDE_RC sdrRedoMgr::applyHashedLogRec(idvSQL * aStatistics)
             }
             else
             {
-                // PAGEÀÇ update LSNÀÌ ·Î±×ÀÇ LSNº¸´Ù Å©°Å³ª °°À» °æ¿ì,
-                // ÀÌ¹Ì ·Î±×ÀÇ ³»¿ëÀÌ ¹İ¿µµÇ¾îÀÖÀ½À» ÀÇ¹Ì
+                // PAGEì˜ update LSNì´ ë¡œê·¸ì˜ LSNë³´ë‹¤ í¬ê±°ë‚˜ ê°™ì„ ê²½ìš°,
+                // ì´ë¯¸ ë¡œê·¸ì˜ ë‚´ìš©ì´ ë°˜ì˜ë˜ì–´ìˆìŒì„ ì˜ë¯¸
 
-                /* PROJ-2162 PageLSNÀ» ¹ÙÅÁÀ¸·Î ÃÖ½Å UpdateLSN °»½Å */
+                /* PROJ-2162 PageLSNì„ ë°”íƒ•ìœ¼ë¡œ ìµœì‹  UpdateLSN ê°±ì‹  */
                 smrRecoveryMgr::updateLastPageUpdateLSN( sLastModifyLSN );
             }
 
 
             /* ------------------------------------------------
-             * redo ¼öÇà(nologging ¸ğµå)½Ã page¿¡ ¹İ¿µÇÒ sMaxApplyLSNÀ»
-             * mtx¿¡ ¼³Á¤ÇÑ´Ù.(force)
+             * redo ìˆ˜í–‰(nologging ëª¨ë“œ)ì‹œ pageì— ë°˜ì˜í•  sMaxApplyLSNì„
+             * mtxì— ì„¤ì •í•œë‹¤.(force)
              * ----------------------------------------------*/
             SM_SET_LSN(sMaxApplyLSN,
                        sData->mEndLSN.mFileNo,
@@ -1133,7 +1133,7 @@ IDE_RC sdrRedoMgr::applyHashedLogRec(idvSQL * aStatistics)
                         ( sIsOverWriteLog == ID_TRUE ) );
 
             IDE_TEST( sdrMiniTrans::commit(&sMtx,
-                                           (UInt)0, // SMR_CT_ENDÀ» ÀÇ¹Ì
+                                           (UInt)0, // SMR_CT_ENDì„ ì˜ë¯¸
                                            &sMaxApplyLSN) != IDE_SUCCESS );
         }
         else
@@ -1153,11 +1153,11 @@ IDE_RC sdrRedoMgr::applyHashedLogRec(idvSQL * aStatistics)
         IDE_TEST( smuHash::cutNode(&mHash, (void **)&sNode) != IDE_SUCCESS );
     }
 
-    // Redo Log°¡ ÀúÀåµÈ Hash Table Close
+    // Redo Logê°€ ì €ì¥ëœ Hash Table Close
     sHashState = 0;
     IDE_TEST( smuHash::close(&mHash) != IDE_SUCCESS );
 
-    IDE_DASSERT( mApplyPageCount == 0 ); // ¸ğµÎ Àû¿ëµÇ¾î¾ß ÇÑ´Ù.
+    IDE_DASSERT( mApplyPageCount == 0 ); // ëª¨ë‘ ì ìš©ë˜ì–´ì•¼ í•œë‹¤.
 
     IDE_TEST( sdsBufferMgr::flushDirtyPagesInCPList( aStatistics,
                                                      ID_TRUE ) // FLUSH ALL
@@ -1202,15 +1202,15 @@ IDE_RC sdrRedoMgr::applyHashedLogRec(idvSQL * aStatistics)
 
 /***********************************************************************
  *
- * Description : redo ·Î±×ÀÇ parsing
+ * Description : redo ë¡œê·¸ì˜ parsing
  *
- * À¯È¿ÇÑ ·Î±×ÀÎÁö °Ë»çÇÏ°í, disk ·Î±×ÀÇ Å¸ÀÔ, RID, value±æÀÌ¸¦ ¹İÈ¯ÇÑ´Ù.
+ * ìœ íš¨í•œ ë¡œê·¸ì¸ì§€ ê²€ì‚¬í•˜ê³ , disk ë¡œê·¸ì˜ íƒ€ì…, RID, valueê¸¸ì´ë¥¼ ë°˜í™˜í•œë‹¤.
  *
- * aStatistics - [IN]  Åë°èÁ¤º¸
- * aLogRec     - [IN]  ·Î±×·¹ÄÚµå Æ÷ÀÎÅÍ
- * aLogType    - [OUT] ·Î±×Å¸ÀÔ
- * aLogGRID    - [OUT] º¯°æµÈ ÆäÀÌÁöÀÇ GRID
- * aValueLen   - [OUT] ·Î±×½½·ÔÀÇ ±æÀÌ
+ * aStatistics - [IN]  í†µê³„ì •ë³´
+ * aLogRec     - [IN]  ë¡œê·¸ë ˆì½”ë“œ í¬ì¸í„°
+ * aLogType    - [OUT] ë¡œê·¸íƒ€ì…
+ * aLogGRID    - [OUT] ë³€ê²½ëœ í˜ì´ì§€ì˜ GRID
+ * aValueLen   - [OUT] ë¡œê·¸ìŠ¬ë¡¯ì˜ ê¸¸ì´
  *
  ***********************************************************************/
 void sdrRedoMgr::parseRedoLogHdr( SChar      * aLogRec,
@@ -1225,7 +1225,7 @@ void sdrRedoMgr::parseRedoLogHdr( SChar      * aLogRec,
     IDE_DASSERT( aLogGRID  != NULL );
     IDE_DASSERT( aValueLen != NULL );
 
-    /* ·Î±×°¡ align µÇ¾î ±â·ÏµÇÁö ¾Ê¾Ò±â ¶§¹®¿¡ memcpy¸¦ ÀÌ¿ë */
+    /* ë¡œê·¸ê°€ align ë˜ì–´ ê¸°ë¡ë˜ì§€ ì•Šì•˜ê¸° ë•Œë¬¸ì— memcpyë¥¼ ì´ìš© */
     idlOS::memcpy(&sLogHdr, aLogRec, ID_SIZEOF(sdrLogHdr));
 
     IDE_ASSERT( validateLogRec( &sLogHdr ) == ID_TRUE );
@@ -1237,9 +1237,9 @@ void sdrRedoMgr::parseRedoLogHdr( SChar      * aLogRec,
 
 /***********************************************************************
  *
- * Description : µğ½ºÅ© ·Î±× ½½·ÔÀÇ À¯È¿¼º °ËÁõ
+ * Description : ë””ìŠ¤í¬ ë¡œê·¸ ìŠ¬ë¡¯ì˜ ìœ íš¨ì„± ê²€ì¦
  *
- * aLogHdr - [IN] µğ½ºÅ© ·Î±× ½½·Ô Çì´õ
+ * aLogHdr - [IN] ë””ìŠ¤í¬ ë¡œê·¸ ìŠ¬ë¡¯ í—¤ë”
  *
  ***********************************************************************/
 idBool sdrRedoMgr::validateLogRec( sdrLogHdr * aLogHdr )
@@ -1257,7 +1257,7 @@ idBool sdrRedoMgr::validateLogRec( sdrLogHdr * aLogHdr )
                             (SD_PAGE_SIZE / ID_SIZEOF(sdpSlotEntry)),
                         ERR_INVALID_LOGREC );
     }
-    else /* OFFSET °ªÀ» °®´Â GRIDÀÏ ¶§ */
+    else /* OFFSET ê°’ì„ ê°–ëŠ” GRIDì¼ ë•Œ */
     {
         IDE_TEST_CONT( SC_MAKE_OFFSET(aLogHdr->mGRID) > SD_PAGE_SIZE,
                         ERR_INVALID_LOGREC );
@@ -1389,15 +1389,15 @@ idBool sdrRedoMgr::validateLogRec( sdrLogHdr * aLogHdr )
 
 /***********************************************************************
  *
- * Description : hash¿¡ ÀúÀåµÈ ·Î±×µéÀ» ¸ğµÎ db¿¡ ¹İ¿µ
+ * Description : hashì— ì €ì¥ëœ ë¡œê·¸ë“¤ì„ ëª¨ë‘ dbì— ë°˜ì˜
  *
- * À¯È¿ÇÑ ·Î±× Å¸ÀÔÀÎÁö °Ë»çÇÏ°í, mtx¿Í page offsetÀÌ NULLÀÌ ¾Æ´Ï¸é
- * ÇØ´ç ·Î±× Å¸ÀÔÀÇ redo ÇÔ¼ö¸¦ È£ÃâÇÏ¿© ·Î±×ÀÇ redo¸¦ ¼öÇàÇÑ´Ù.
+ * ìœ íš¨í•œ ë¡œê·¸ íƒ€ì…ì¸ì§€ ê²€ì‚¬í•˜ê³ , mtxì™€ page offsetì´ NULLì´ ì•„ë‹ˆë©´
+ * í•´ë‹¹ ë¡œê·¸ íƒ€ì…ì˜ redo í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•˜ì—¬ ë¡œê·¸ì˜ redoë¥¼ ìˆ˜í–‰í•œë‹¤.
  *
  * aStatistics - [IN] statistics
- * aMtx        - [IN] Mtx Æ÷ÀÎÅÍ
- * aPagePtr    - [IN] ÆäÀÌÁö Æ÷ÀÌÅÍ
- * aData       - [IN] sdrRedoLogData Æ÷ÀÎÅÍ
+ * aMtx        - [IN] Mtx í¬ì¸í„°
+ * aPagePtr    - [IN] í˜ì´ì§€ í¬ì´í„°
+ * aData       - [IN] sdrRedoLogData í¬ì¸í„°
  *
  ***********************************************************************/
 IDE_RC sdrRedoMgr::applyLogRec( sdrMtx         * aMtx,
@@ -1415,7 +1415,7 @@ IDE_RC sdrRedoMgr::applyLogRec( sdrMtx         * aMtx,
     sRedoInfo.mLogType = aLogData->mType;
 
     // PROJ-1705
-    // DATA PAGE´Â SID(Slot ID)¸¦ »ç¿ëÇÏ±â ¶§¹®¿¡ mSlotNum ÇÊµå¸¦ »ç¿ëÇÑ´Ù.
+    // DATA PAGEëŠ” SID(Slot ID)ë¥¼ ì‚¬ìš©í•˜ê¸° ë•Œë¬¸ì— mSlotNum í•„ë“œë¥¼ ì‚¬ìš©í•œë‹¤.
     sRedoInfo.mSlotNum = aLogData->mSlotNum;
 
     smrRecoveryMgr::prepareRTOI( NULL, /*smrLog */
@@ -1429,7 +1429,7 @@ IDE_RC sdrRedoMgr::applyLogRec( sdrMtx         * aMtx,
     smrRecoveryMgr::checkObjectConsistency( &sRTOI, 
                                             &sConsistency );
 
-    /* Redo ÇØµµ µÇ´Â ¹Ù¸¥ °´Ã¼ÀÌ´Ù */
+    /* Redo í•´ë„ ë˜ëŠ” ë°”ë¥¸ ê°ì²´ì´ë‹¤ */
     if ( sConsistency == ID_TRUE )
     {
         if ( sdrUpdate::doRedoFunction( aLogData->mValue,
@@ -1443,7 +1443,7 @@ IDE_RC sdrRedoMgr::applyLogRec( sdrMtx         * aMtx,
         }
     }
 
-    /* ¾î¶² ÀÌÀ¯¿¡¼­°Ç, Redo°¡ ½ÇÆĞÇß´Ù. */
+    /* ì–´ë–¤ ì´ìœ ì—ì„œê±´, Redoê°€ ì‹¤íŒ¨í–ˆë‹¤. */
     if ( sConsistency == ID_FALSE )
     {
         IDE_TEST( smrRecoveryMgr::startupFailure( &sRTOI,
@@ -1459,47 +1459,47 @@ IDE_RC sdrRedoMgr::applyLogRec( sdrMtx         * aMtx,
 }
 
 /***********************************************************************
- * Description : ÇØ½ÃÅ×ÀÌºí¿¡ redo log¸¦ ÀúÀå
+ * Description : í•´ì‹œí…Œì´ë¸”ì— redo logë¥¼ ì €ì¥
  *
- * parsingµÈ hash¿¡ space ID,page ID µû¶ó ÇØ½ÃÅ×ÀÌºí¿¡ ÀúÀåÇÑ´Ù.
- * redo ·Î±×¸¦ ÀúÀåÇÏ´Ùº¸¸é °ü·ÃµÈ page°³¼ö°¡ ¹öÆÛ°ü¸®ÀÚÀÇ
- * MaxPageCount ¿¡ µµ´ŞÇÏ¸é ÀÌ¹Ì hash¿¡ ÀúÀåµÈ redo ·Î±×µéÀ» ¸ğµÎ
- * DB ÆäÀÌÁö¿¡ ¹İ¿µÇÏ¿©, ´Ù¸¥ page¸¦ fix ÇÒ ¼ö ÀÖµµ·Ï ÇÑ´Ù.
+ * parsingëœ hashì— space ID,page ID ë”°ë¼ í•´ì‹œí…Œì´ë¸”ì— ì €ì¥í•œë‹¤.
+ * redo ë¡œê·¸ë¥¼ ì €ì¥í•˜ë‹¤ë³´ë©´ ê´€ë ¨ëœ pageê°œìˆ˜ê°€ ë²„í¼ê´€ë¦¬ìì˜
+ * MaxPageCount ì— ë„ë‹¬í•˜ë©´ ì´ë¯¸ hashì— ì €ì¥ëœ redo ë¡œê·¸ë“¤ì„ ëª¨ë‘
+ * DB í˜ì´ì§€ì— ë°˜ì˜í•˜ì—¬, ë‹¤ë¥¸ pageë¥¼ fix í•  ìˆ˜ ìˆë„ë¡ í•œë‹¤.
  *
  * + 2nd. code design
- *   - Hash¿¡¼­ ÇØ´ç rid¸¦ °®´Â ³ëµå¸¦ °Ë»öÇÑ´Ù.
- *   - if ( ³ëµå¸¦ °Ë»öÇÏÁö ¸øÇÏ¸é )
+ *   - Hashì—ì„œ í•´ë‹¹ ridë¥¼ ê°–ëŠ” ë…¸ë“œë¥¼ ê²€ìƒ‰í•œë‹¤.
+ *   - if ( ë…¸ë“œë¥¼ ê²€ìƒ‰í•˜ì§€ ëª»í•˜ë©´ )
  *     {
- *        - ¸¸¾à Àû¿ëÇÒ ³ëµå°¡ max page count¿Í µ¿ÀÏÇÏ´Ù¸é
- *          Áö±İ±îÁö ÀúÀåµÈ redo ·Î±×µéÀ» ¸ğµÎ db ÆäÀÌÁö¿¡ Àû¿ë½ÃÅ°°í
- *          hash¸¦ ÃÊ±âÈ­ÇÑ´Ù.
- *        - sdrRedoHashNodeÅ¸ÀÔÀÇ ³ëµå¸¦ ÇÒ´çÇÑ´Ù.
- *        - ³ëµå»óÅÂ¸¦ ¼³Á¤ÇÑ´Ù.
- *        - ³ëµåÀÇ space id¸¦ ¼³Á¤ÇÑ´Ù.
- *        - ³ëµåÀÇ page id¸¦ ¼³Á¤ÇÑ´Ù.
- *        - ³ëµåÀÇ redo ·Î±× ¸®½ºÆ®¸¦ ÃÊ±âÈ­ÇÑ´Ù.
- *        - hash¿¡ ³ëµå¸¦ Ãß°¡ÇÑ´Ù.
- *        - Àû¿ëÇÒ ³ëµå °³¼ö¸¦ Áõ°¡½ÃÅ²´Ù.
- *        - media recovery °úÁ¤ÀÇ °æ¿ì´Â
- *          2Â÷ hash¿¡¼­ º¹±¸ÆÄÀÏ³ëµå¸¦ °Ë»öÇÑ´Ù.
- *          : Á¸ÀçÇÑ´Ù¸é, 1Â÷hash³ëµå¿¡ 2Â÷ hash³ëµå Æ÷ÀÎÅÍ¸¦ ¿¬°áÇÑ´Ù.
- *          : Á¸ÀçÇÏÁö ¾Ê´Â´Ù¸é ·Î±×¸¦ ¸Å´ŞÁö ¾Ê´Â´Ù.
+ *        - ë§Œì•½ ì ìš©í•  ë…¸ë“œê°€ max page countì™€ ë™ì¼í•˜ë‹¤ë©´
+ *          ì§€ê¸ˆê¹Œì§€ ì €ì¥ëœ redo ë¡œê·¸ë“¤ì„ ëª¨ë‘ db í˜ì´ì§€ì— ì ìš©ì‹œí‚¤ê³ 
+ *          hashë¥¼ ì´ˆê¸°í™”í•œë‹¤.
+ *        - sdrRedoHashNodeíƒ€ì…ì˜ ë…¸ë“œë¥¼ í• ë‹¹í•œë‹¤.
+ *        - ë…¸ë“œìƒíƒœë¥¼ ì„¤ì •í•œë‹¤.
+ *        - ë…¸ë“œì˜ space idë¥¼ ì„¤ì •í•œë‹¤.
+ *        - ë…¸ë“œì˜ page idë¥¼ ì„¤ì •í•œë‹¤.
+ *        - ë…¸ë“œì˜ redo ë¡œê·¸ ë¦¬ìŠ¤íŠ¸ë¥¼ ì´ˆê¸°í™”í•œë‹¤.
+ *        - hashì— ë…¸ë“œë¥¼ ì¶”ê°€í•œë‹¤.
+ *        - ì ìš©í•  ë…¸ë“œ ê°œìˆ˜ë¥¼ ì¦ê°€ì‹œí‚¨ë‹¤.
+ *        - media recovery ê³¼ì •ì˜ ê²½ìš°ëŠ”
+ *          2ì°¨ hashì—ì„œ ë³µêµ¬íŒŒì¼ë…¸ë“œë¥¼ ê²€ìƒ‰í•œë‹¤.
+ *          : ì¡´ì¬í•œë‹¤ë©´, 1ì°¨hashë…¸ë“œì— 2ì°¨ hashë…¸ë“œ í¬ì¸í„°ë¥¼ ì—°ê²°í•œë‹¤.
+ *          : ì¡´ì¬í•˜ì§€ ì•ŠëŠ”ë‹¤ë©´ ë¡œê·¸ë¥¼ ë§¤ë‹¬ì§€ ì•ŠëŠ”ë‹¤.
  *     }
  *     else
  *     {
- *        - °Ë»öµÈ ³ëµåÀÇ space id¿Í page id°¡ Á¤È®ÇÑÁö °Ë»çÇÑ´Ù.
+ *        - ê²€ìƒ‰ëœ ë…¸ë“œì˜ space idì™€ page idê°€ ì •í™•í•œì§€ ê²€ì‚¬í•œë‹¤.
  *     }
  *
- *   - 2Â÷ hash³ëµå°¡ Á¸ÀçÇÑ´Ù¸é, ÇØ´ç ·Î±×°¡ º¹±¸´ë»óÀÎÁö
- *     °Ë»çÇÑ´Ù. ==> filterRecvRedoLog()
- *   - RECVÅ¸ÀÔÀÌ RESTART ÀÌ°Å³ª filter¸¦ Åë°úÇÑ ·Î±×¿¡ ´ëÇØ¼­´Â ´ÙÀ½
- *     ÀÛ¾÷À» °è¼Ó ÁøÇàÇÑ´Ù.
- *   - sdrRedoLogDataÅ¸ÀÔÀÇ µ¥ÀÌÅ¸³ëµå¸¦ ÇÒ´çÇÑ´Ù.
- *   - µ¥ÀÌÅ¸³ëµå¿¡ redo ·Î±× Å¸ÀÔÀ» ¼³Á¤ÇÑ´Ù.
- *   - µ¥ÀÌÅ¸³ëµå¿¡ offsetÀ» ¼³Á¤ÇÑ´Ù.
- *   - µ¥ÀÌÅ¸³ëµå¿¡ value¸¦ ¼³Á¤ÇÑ´Ù.
- *   - µ¥ÀÌÅ¸³ëµå¿¡ value ±æÀÌ¸¦ ¼³Á¤ÇÑ´Ù.
- *   - ³ëµåÀÇ redo ·Î±× ¸®½ºÆ®¿¡ ³¡¿¡ µ¥ÀÌÅ¸ ³ëµå¸¦ Ãß°¡ÇÑ´Ù.
+ *   - 2ì°¨ hashë…¸ë“œê°€ ì¡´ì¬í•œë‹¤ë©´, í•´ë‹¹ ë¡œê·¸ê°€ ë³µêµ¬ëŒ€ìƒì¸ì§€
+ *     ê²€ì‚¬í•œë‹¤. ==> filterRecvRedoLog()
+ *   - RECVíƒ€ì…ì´ RESTART ì´ê±°ë‚˜ filterë¥¼ í†µê³¼í•œ ë¡œê·¸ì— ëŒ€í•´ì„œëŠ” ë‹¤ìŒ
+ *     ì‘ì—…ì„ ê³„ì† ì§„í–‰í•œë‹¤.
+ *   - sdrRedoLogDataíƒ€ì…ì˜ ë°ì´íƒ€ë…¸ë“œë¥¼ í• ë‹¹í•œë‹¤.
+ *   - ë°ì´íƒ€ë…¸ë“œì— redo ë¡œê·¸ íƒ€ì…ì„ ì„¤ì •í•œë‹¤.
+ *   - ë°ì´íƒ€ë…¸ë“œì— offsetì„ ì„¤ì •í•œë‹¤.
+ *   - ë°ì´íƒ€ë…¸ë“œì— valueë¥¼ ì„¤ì •í•œë‹¤.
+ *   - ë°ì´íƒ€ë…¸ë“œì— value ê¸¸ì´ë¥¼ ì„¤ì •í•œë‹¤.
+ *   - ë…¸ë“œì˜ redo ë¡œê·¸ ë¦¬ìŠ¤íŠ¸ì— ëì— ë°ì´íƒ€ ë…¸ë“œë¥¼ ì¶”ê°€í•œë‹¤.
  ***********************************************************************/
 IDE_RC sdrRedoMgr::addRedoLogToHashTable( void * aLogDataList )
 {
@@ -1521,11 +1521,11 @@ IDE_RC sdrRedoMgr::addRedoLogToHashTable( void * aLogDataList )
     while( sData != NULL )
     {
         sState = 0;
-        /* ´ÙÀ½ Node¸¦ ¾ò¾î³»°í, ÇöÀç Node¸¦ ¶§¾î³¿ */
+        /* ë‹¤ìŒ Nodeë¥¼ ì–»ì–´ë‚´ê³ , í˜„ì¬ Nodeë¥¼ ë•Œì–´ëƒ„ */
         sNext = (sdrRedoLogData*)SMU_LIST_GET_NEXT( 
                                    &(sData->mNode4RedoLog) )->mData;
-        /* circurlarListÀÌ±â ¶§¹®¿¡, ½º½º·Î°¡ ½º½º·Î¸¦ °¡¸®Å°¸é ListÀÇ
-         * ¸¶Áö¸·ÀÌ¶ó´Â ¶æ. */
+        /* circurlarListì´ê¸° ë•Œë¬¸ì—, ìŠ¤ìŠ¤ë¡œê°€ ìŠ¤ìŠ¤ë¡œë¥¼ ê°€ë¦¬í‚¤ë©´ Listì˜
+         * ë§ˆì§€ë§‰ì´ë¼ëŠ” ëœ». */
         if ( sNext == sData )
         {
             sNext = NULL;
@@ -1533,8 +1533,8 @@ IDE_RC sdrRedoMgr::addRedoLogToHashTable( void * aLogDataList )
 
         SMU_LIST_DELETE( &sData->mNode4RedoLog );
 
-        /* Hash Table¿¡¼­ SpaceID¿Í PageID¸¸À» key·Î »ç¿ëÇÏ¹Ç·Î offsetÀº
-         * NULL·Î ¼³Á¤ÇÑ´Ù. */
+        /* Hash Tableì—ì„œ SpaceIDì™€ PageIDë§Œì„ keyë¡œ ì‚¬ìš©í•˜ë¯€ë¡œ offsetì€
+         * NULLë¡œ ì„¤ì •í•œë‹¤. */
         SC_MAKE_GRID( sGRID, sData->mSpaceID, sData->mPageID, SC_NULL_OFFSET );
         IDE_DASSERT( sData->mType >= SDR_SDP_1BYTE ||
                      sData->mType <= SDR_SDC_INSERT_UNDO_REC );
@@ -1569,11 +1569,11 @@ IDE_RC sdrRedoMgr::addRedoLogToHashTable( void * aLogDataList )
 
 
             /* ------------------------------------------------
-             * MEDIAR RECOVERY ¼öÇà ÇØ´ç º¹±¸ÆÄÀÏÀ» 2Â÷ Hash¿¡¼­
-             * °Ë»öÇÏ¿© Á¸ÀçÇÏÁö ¾ÊÀ¸¸é, 1Â÷ HashNodeÀÇ 2Â÷ HashNode
-             * Æ÷ÀÎÅÍ¸¦ NULL·Î ÃÊ±âÈ­ÇÏ°í Á¸ÀçÇÑ´Ù¸é 2Â÷ HashNode
-             * Æ÷ÀÎÅÍ¸¦ ¼³Á¤ÇÑ ÈÄ, 2Â÷ Hash³ëµåÀÇ º¹±¸ ¹üÀ§¾È¿¡
-             * ÇØ´ç ·Î±×°¡ Æ÷ÇÔµÇ´ÂÁö¸¦ ÆÇ´ÜÇÑ´Ù.
+             * MEDIAR RECOVERY ìˆ˜í–‰ í•´ë‹¹ ë³µêµ¬íŒŒì¼ì„ 2ì°¨ Hashì—ì„œ
+             * ê²€ìƒ‰í•˜ì—¬ ì¡´ì¬í•˜ì§€ ì•Šìœ¼ë©´, 1ì°¨ HashNodeì˜ 2ì°¨ HashNode
+             * í¬ì¸í„°ë¥¼ NULLë¡œ ì´ˆê¸°í™”í•˜ê³  ì¡´ì¬í•œë‹¤ë©´ 2ì°¨ HashNode
+             * í¬ì¸í„°ë¥¼ ì„¤ì •í•œ í›„, 2ì°¨ Hashë…¸ë“œì˜ ë³µêµ¬ ë²”ìœ„ì•ˆì—
+             * í•´ë‹¹ ë¡œê·¸ê°€ í¬í•¨ë˜ëŠ”ì§€ë¥¼ íŒë‹¨í•œë‹¤.
              * ----------------------------------------------*/
             if (getRecvType() != SMI_RECOVER_RESTART)
             {
@@ -1586,7 +1586,7 @@ IDE_RC sdrRedoMgr::addRedoLogToHashTable( void * aLogDataList )
 
                 SC_MAKE_GRID(sRecvFileKey, sNode->mSpaceID, sFileID, 0);
 
-                // 2Â÷ hash¿¡¼­ ÇØ´ç ·Î±×°¡ º¹±¸´ë»ó ÆÄÀÏÀÎÁö °Ë»ç
+                // 2ì°¨ hashì—ì„œ í•´ë‹¹ ë¡œê·¸ê°€ ë³µêµ¬ëŒ€ìƒ íŒŒì¼ì¸ì§€ ê²€ì‚¬
                 IDE_TEST( smuHash::findNode(&mRecvFileHash,
                                             &sRecvFileKey,
                                             (void **)&sRecvFileNode) != IDE_SUCCESS );
@@ -1626,8 +1626,8 @@ IDE_RC sdrRedoMgr::addRedoLogToHashTable( void * aLogDataList )
             IDE_DASSERT( SC_MAKE_SPACE(sGRID) == sNode->mSpaceID );
             IDE_DASSERT( SC_MAKE_PID(sGRID) == sNode->mPageID );
 
-            // PROJ-1867 Page Img Log³ª Page Init LogÀÇ °æ¿ì
-            // ÀÌÀüÀÇ Log°¡ ÇÊ¿ä ¾øÀ¸¹Ç·Î Á¦°ÅÇÑ´Ù.
+            // PROJ-1867 Page Img Logë‚˜ Page Init Logì˜ ê²½ìš°
+            // ì´ì „ì˜ Logê°€ í•„ìš” ì—†ìœ¼ë¯€ë¡œ ì œê±°í•œë‹¤.
             if ( sdrCorruptPageMgr::isOverwriteLog( sData->mType )
                 == ID_TRUE )
             {
@@ -1653,9 +1653,9 @@ IDE_RC sdrRedoMgr::addRedoLogToHashTable( void * aLogDataList )
         if ( ( getRecvType() == SMI_RECOVER_RESTART ) ||
              ( (getRecvType() != SMI_RECOVER_RESTART) && (sIsRedo == ID_TRUE ) ) )
         {
-            /* BUG-40107 Media Reocvery ½Ã Recv LSN ±îÁö¸¸ º¹±¸ÇØ¾ß ÇÏ±â ¶§¹®¿¡ Node´Â »ı¼ºµÇ¾úÁö¸¸ 
-             * ÇØ´ç ·Î±×°¡ SkipµÇ¾î Log List¿¡ ·Î±×°¡ ¾ø¾î FATAL ¹ß»ıÇÏ´Â °æ¿ì°¡ ÀÖ½À´Ï´Ù.
-             * Node¸¦ »ı¼ºÇßÀ» °æ¿ì ÇØ´ç ·Î±×ÀÇ Skip¿©ºÎ¸¦ ÆÇº°ÇÑ ÈÄ insert ÇÏµµ·Ï º¯°æÇÕ´Ï´Ù */
+            /* BUG-40107 Media Reocvery ì‹œ Recv LSN ê¹Œì§€ë§Œ ë³µêµ¬í•´ì•¼ í•˜ê¸° ë•Œë¬¸ì— NodeëŠ” ìƒì„±ë˜ì—ˆì§€ë§Œ 
+             * í•´ë‹¹ ë¡œê·¸ê°€ Skipë˜ì–´ Log Listì— ë¡œê·¸ê°€ ì—†ì–´ FATAL ë°œìƒí•˜ëŠ” ê²½ìš°ê°€ ìˆìŠµë‹ˆë‹¤.
+             * Nodeë¥¼ ìƒì„±í–ˆì„ ê²½ìš° í•´ë‹¹ ë¡œê·¸ì˜ Skipì—¬ë¶€ë¥¼ íŒë³„í•œ í›„ insert í•˜ë„ë¡ ë³€ê²½í•©ë‹ˆë‹¤ */
             if ( sState != 0 )
             {
                 IDE_TEST( smuHash::insertNode( &mHash,
@@ -1678,8 +1678,8 @@ IDE_RC sdrRedoMgr::addRedoLogToHashTable( void * aLogDataList )
         }
         else
         {
-            /* BUG-40107 Node¸¦ »ı¼ºÇÏ¿´À¸³ª Skip´ë»ó LogÀÎ °æ¿ì 
-             * »ı¼ºÇÑ Node¸¦ ÇØÁ¦ÇØ ÁÖµµ·Ï º¯°æÇÕ´Ï´Ù. */
+            /* BUG-40107 Nodeë¥¼ ìƒì„±í•˜ì˜€ìœ¼ë‚˜ SkipëŒ€ìƒ Logì¸ ê²½ìš° 
+             * ìƒì„±í•œ Nodeë¥¼ í•´ì œí•´ ì£¼ë„ë¡ ë³€ê²½í•©ë‹ˆë‹¤. */
             if ( sState != 0 )
             {
                 IDE_TEST( iduMemMgr::free( sNode ) != IDE_SUCCESS );
@@ -1709,9 +1709,9 @@ IDE_RC sdrRedoMgr::addRedoLogToHashTable( void * aLogDataList )
 }
 
 /***********************************************************************
- * Description : redoHashNodeÀÇ RedoLogList»óÀÇ log dataµéÀ» ¸ğµÎ Á¦°ÅÇÑ´Ù.
+ * Description : redoHashNodeì˜ RedoLogListìƒì˜ log dataë“¤ì„ ëª¨ë‘ ì œê±°í•œë‹¤.
  *
- * aRedoHashNode - [IN] RedoLogList¿¡¼­ log dataµéÀ» Á¦°ÅÇÒ RedoHashNode
+ * aRedoHashNode - [IN] RedoLogListì—ì„œ log dataë“¤ì„ ì œê±°í•  RedoHashNode
  **********************************************************************/
 IDE_RC sdrRedoMgr::clearRedoLogList( sdrRedoHashNode*  aRedoHashNode )
 {
@@ -1752,7 +1752,7 @@ IDE_RC sdrRedoMgr::clearRedoLogList( sdrRedoHashNode*  aRedoHashNode )
 }
 
 /***********************************************************************
- * Description : º¹±¸ hash³ëµå¿¡ ÇØ´çÇÏ´Â redo ·Î±×ÀÎÁö °Ë»ç
+ * Description : ë³µêµ¬ hashë…¸ë“œì— í•´ë‹¹í•˜ëŠ” redo ë¡œê·¸ì¸ì§€ ê²€ì‚¬
  ***********************************************************************/
 IDE_RC sdrRedoMgr::filterRecvRedoLog(sdrRecvFileHashNode* aHashNode,
                                      smLSN*               aBeginLSN,
@@ -1781,10 +1781,10 @@ IDE_RC sdrRedoMgr::filterRecvRedoLog(sdrRecvFileHashNode* aHashNode,
 }
 
 /*
-   ÆÄÀÏÀ» ¸ğµÎ º¹±¸ÇÏ°í hash·ÎºÎÅÍ RecvFileHashNode¸¦ ¸ğµÎ
-   ÇØÁ¦ÇÑ´Ù.
+   íŒŒì¼ì„ ëª¨ë‘ ë³µêµ¬í•˜ê³  hashë¡œë¶€í„° RecvFileHashNodeë¥¼ ëª¨ë‘
+   í•´ì œí•œë‹¤.
 
-   [IN] aResetLogsLSN - ºÒ¿ÏÀüº¹±¸½Ã ÆÄÀÏÇì´õ¿¡ ¼³Á¤ÇÒ ResetLogsLSN
+   [IN] aResetLogsLSN - ë¶ˆì™„ì „ë³µêµ¬ì‹œ íŒŒì¼í—¤ë”ì— ì„¤ì •í•  ResetLogsLSN
 */
 IDE_RC sdrRedoMgr::repairFailureDBFHdr( smLSN*    aResetLogsLSN )
 {
@@ -1850,7 +1850,7 @@ IDE_RC sdrRedoMgr::repairFailureDBFHdr( smLSN*    aResetLogsLSN )
 
     IDE_TEST( smuHash::close(&mRecvFileHash) != IDE_SUCCESS );
 
-    IDE_DASSERT( mRecvFileCnt == 0 ); // ¸ğµÎ Àû¿ëµÇ¾î¾ß ÇÑ´Ù.
+    IDE_DASSERT( mRecvFileCnt == 0 ); // ëª¨ë‘ ì ìš©ë˜ì–´ì•¼ í•œë‹¤.
 
     return IDE_SUCCESS;
 
@@ -1870,7 +1870,7 @@ IDE_RC sdrRedoMgr::repairFailureDBFHdr( smLSN*    aResetLogsLSN )
 }
 
 /*
-   ÆÄÀÏÀ» hash·ÎºÎÅÍ RecvFileHashNode¸¦ ¸ğµÎ ÇØÁ¦ÇÑ´Ù.
+   íŒŒì¼ì„ hashë¡œë¶€í„° RecvFileHashNodeë¥¼ ëª¨ë‘ í•´ì œí•œë‹¤.
 */
 IDE_RC sdrRedoMgr::removeAllRecvDBFHashNodes()
 {
@@ -1895,7 +1895,7 @@ IDE_RC sdrRedoMgr::removeAllRecvDBFHashNodes()
 
     IDE_TEST( smuHash::close(&mRecvFileHash) != IDE_SUCCESS );
 
-    // ¸ğµÎ Àû¿ëµÇ¾î¾ß ÇÑ´Ù.
+    // ëª¨ë‘ ì ìš©ë˜ì–´ì•¼ í•œë‹¤.
     IDE_DASSERT( mRecvFileCnt == 0 );
 
     return IDE_SUCCESS;
@@ -1906,36 +1906,36 @@ IDE_RC sdrRedoMgr::removeAllRecvDBFHashNodes()
 }
 
 /***********************************************************************
- * Description : º¹±¸ÇÒ datafileÀ» ºĞ¼®ÇÏ¿© RecvFileHash(2Â÷ ÇØ½Ã)¿¡ »ğÀÔ
+ * Description : ë³µêµ¬í•  datafileì„ ë¶„ì„í•˜ì—¬ RecvFileHash(2ì°¨ í•´ì‹œ)ì— ì‚½ì…
  *
- * + ¼³°è
- *   - ÆÄÀÏ¸í¿¡ ´ëÇØ¼­ µğ½ºÅ© °ü¸®ÀÚ·ÎºÎÅÍ DBF³ëµå¸¦ ±¸ÇÑ´Ù.
- *     : ÇØ´ç ÆÄÀÏ¸íÀÌ Á¸ÀçÇÏÁö ¾Ê´Â´Ù¸é º¹±¸´ë»ó ÆÄÀÏÀÌ ¾Æ´Ï´Ù.
- *       -> IDE_FAILURE ¹İÈ¯ (smERR_ABORT_NoRecvDataFile)
+ * + ì„¤ê³„
+ *   - íŒŒì¼ëª…ì— ëŒ€í•´ì„œ ë””ìŠ¤í¬ ê´€ë¦¬ìë¡œë¶€í„° DBFë…¸ë“œë¥¼ êµ¬í•œë‹¤.
+ *     : í•´ë‹¹ íŒŒì¼ëª…ì´ ì¡´ì¬í•˜ì§€ ì•ŠëŠ”ë‹¤ë©´ ë³µêµ¬ëŒ€ìƒ íŒŒì¼ì´ ì•„ë‹ˆë‹¤.
+ *       -> IDE_FAILURE ë°˜í™˜ (smERR_ABORT_NoRecvDataFile)
  *
- *   - °Ë»öµÈ spaceID¸¦ °¡Áö°í ÆÄÀÏ¸í¿¡ ´ëÇÑ À¯È¿¼º °Ë»ç¸¦ ¼öÇà
- *     : À¯È¿ÇÏÁö ¾ÊÀ¸¸é, º¹±¸´ë»ó ÆÄÀÏÀÌ ¾Æ´Ï´Ù.
- *       -> IDE_FAILURE ¹İÈ¯ (smERR_ABORT_NoRecvDataFile)
+ *   - ê²€ìƒ‰ëœ spaceIDë¥¼ ê°€ì§€ê³  íŒŒì¼ëª…ì— ëŒ€í•œ ìœ íš¨ì„± ê²€ì‚¬ë¥¼ ìˆ˜í–‰
+ *     : ìœ íš¨í•˜ì§€ ì•Šìœ¼ë©´, ë³µêµ¬ëŒ€ìƒ íŒŒì¼ì´ ì•„ë‹ˆë‹¤.
+ *       -> IDE_FAILURE ë°˜í™˜ (smERR_ABORT_NoRecvDataFile)
  *
- *   - ÇØ´ç ÆÄÀÏÀÇ file HeaderÀÇ smVersionÀ» ºñ±³ÇÏ°í,
- *     ÆÄÀÏÇì´õ¸¦ ÆÇµ¶ÇÑ´Ù.
- *     : ¹öÀüÀÌ ´Ù¸£´Ù¸é
- *       -> IDE_FAILURE ¹İÈ¯ (smERR_ABORT_NoRecvDataFile)
+ *   - í•´ë‹¹ íŒŒì¼ì˜ file Headerì˜ smVersionì„ ë¹„êµí•˜ê³ ,
+ *     íŒŒì¼í—¤ë”ë¥¼ íŒë…í•œë‹¤.
+ *     : ë²„ì „ì´ ë‹¤ë¥´ë‹¤ë©´
+ *       -> IDE_FAILURE ë°˜í™˜ (smERR_ABORT_NoRecvDataFile)
  *
- *   - ÆÇµ¶µÈ ÆÄÀÏÇì´õ¿Í DBF³ëµå·Î ºÎÅÍ º¹±¸¹üÀ§¸¦ °áÁ¤ÇÑ´Ù.
- *     : DBF ³ëµåÀÇ OldestLSNÀÌ ÆÄÀÏÇì´õÀÇ OldestLSNº¸´Ù Å©°Å³ª °°´Ù¸é
- *       º¹±¸ÇÒ ÇÊ¿ä°¡ ¾ø´Â ÆÄÀÏÀÌ¸ç, SKIPÇÑ´Ù.
- *       -> º¹±¸´ë»óÆÄÀÏ¾Æ´Ô ÇÏÁö¸¸, IDE_SUCCESS ¹İÈ¯
+ *   - íŒë…ëœ íŒŒì¼í—¤ë”ì™€ DBFë…¸ë“œë¡œ ë¶€í„° ë³µêµ¬ë²”ìœ„ë¥¼ ê²°ì •í•œë‹¤.
+ *     : DBF ë…¸ë“œì˜ OldestLSNì´ íŒŒì¼í—¤ë”ì˜ OldestLSNë³´ë‹¤ í¬ê±°ë‚˜ ê°™ë‹¤ë©´
+ *       ë³µêµ¬í•  í•„ìš”ê°€ ì—†ëŠ” íŒŒì¼ì´ë©°, SKIPí•œë‹¤.
+ *       -> ë³µêµ¬ëŒ€ìƒíŒŒì¼ì•„ë‹˜ í•˜ì§€ë§Œ, IDE_SUCCESS ë°˜í™˜
  *
- *     : ÆÄÀÏÀ» »õ·Î»ı¼ºÇÑ °æ¿ì´Â createLSNºÎÅÍ DBF³ëµåÀÇ
- *       OldestLSN±îÁö¸¦ º¹±¸ ¹üÀ§·Î °áÁ¤ÇÏ°í, ±×·¸Áö ¾ÊÀº °æ¿ì¶ó¸é,
- *       DBF³ëµåÀÇ OldestLSN±îÁö º¹±¸¹üÀ§·Î °áÁ¤ÇÑ´Ù.
+ *     : íŒŒì¼ì„ ìƒˆë¡œìƒì„±í•œ ê²½ìš°ëŠ” createLSNë¶€í„° DBFë…¸ë“œì˜
+ *       OldestLSNê¹Œì§€ë¥¼ ë³µêµ¬ ë²”ìœ„ë¡œ ê²°ì •í•˜ê³ , ê·¸ë ‡ì§€ ì•Šì€ ê²½ìš°ë¼ë©´,
+ *       DBFë…¸ë“œì˜ OldestLSNê¹Œì§€ ë³µêµ¬ë²”ìœ„ë¡œ ê²°ì •í•œë‹¤.
  *
- *   - º¹±¸ ¹üÀ§ÀÇ ÃÖ´ë ÃÖ¼Ò LSNÀ» ±¸ÇÑ´Ù.
- *     : ÇÑ¹øÀÇ ·Î±×½ºÄµÀ¸·Î ¸ğµç º¹±¸´ë»ó ÆÄÀÏÀ» º¹±¸ÇÏ±â À§ÇØ¼­ÀÌ´Ù.
+ *   - ë³µêµ¬ ë²”ìœ„ì˜ ìµœëŒ€ ìµœì†Œ LSNì„ êµ¬í•œë‹¤.
+ *     : í•œë²ˆì˜ ë¡œê·¸ìŠ¤ìº”ìœ¼ë¡œ ëª¨ë“  ë³µêµ¬ëŒ€ìƒ íŒŒì¼ì„ ë³µêµ¬í•˜ê¸° ìœ„í•´ì„œì´ë‹¤.
  *
- *   aDBFileHdr   - [IN]  DBFile ¿¡¼­ ÀĞÀº DBFileHeader
- *   aFileName    - [IN]  DBFile¸í
+ *   aDBFileHdr   - [IN]  DBFile ì—ì„œ ì½ì€ DBFileHeader
+ *   aFileName    - [IN]  DBFileëª…
  *   aRedoFromLSN - [OUT] media recovery redo start LSN
  *   aRedoToLSN   - [OUT] media recovery redo end LSN
  **********************************************************************/
@@ -1964,14 +1964,14 @@ IDE_RC sdrRedoMgr::addRecvFileToHash( sddDataFileHdr*     aDBFileHdr,
 
     SM_LSN_INIT( sInitLSN );
 
-    // [0] ±âÁ¸ °æ·Î¿¡ µ¥ÀÌÅ¸ÆÄÀÏÀÌ ÀÌ¹Ì Á¸ÀçÇÏ´ÂÁö °Ë»ç
+    // [0] ê¸°ì¡´ ê²½ë¡œì— ë°ì´íƒ€íŒŒì¼ì´ ì´ë¯¸ ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬
     IDE_TEST_RAISE( idf::access( aFileName, F_OK ) != 0,
                     err_does_not_exist_datafile );
 
 
-    // [1] º» ÇÔ¼ö È£ÃâÀÌÀü¿¡ aFileName¿¡ ´ëÇØ ÀÌ¹Ì ÆÄÀÏÀÌ
-    // Á¸ÀçÇÑ´Ù´Â °ÍÀ» È®ÀÎÇÏ¿´°í, Àı´ë°æ·ÎÀÓÀ» º¸ÀåÇÑ´Ù.
-    // µ¥ÀÌÅ¸ÆÄÀÏÀÇ ÆäÀÌÁö ¹üÀ§... µîÀ» ±¸ÇÑ´Ù.
+    // [1] ë³¸ í•¨ìˆ˜ í˜¸ì¶œì´ì „ì— aFileNameì— ëŒ€í•´ ì´ë¯¸ íŒŒì¼ì´
+    // ì¡´ì¬í•œë‹¤ëŠ” ê²ƒì„ í™•ì¸í•˜ì˜€ê³ , ì ˆëŒ€ê²½ë¡œì„ì„ ë³´ì¥í•œë‹¤.
+    // ë°ì´íƒ€íŒŒì¼ì˜ í˜ì´ì§€ ë²”ìœ„... ë“±ì„ êµ¬í•œë‹¤.
 
     IDE_TEST( sctTableSpaceMgr::getDataFileNodeByName(
                                        aFileName,
@@ -1986,72 +1986,72 @@ IDE_RC sdrRedoMgr::addRecvFileToHash( sddDataFileHdr*     aDBFileHdr,
     IDE_DASSERT( sFileNode->mSpaceID == sSpaceID );
 
     // BUG-24250   PRJ-1867/MustRedoToLSN.sql Diff
-    // ¿ÏÀü È¤Àº ºÒ¿ÏÀü º¹±¸ ÈÄ, FileNodeÀÇ FileHdr¸¦ DBFileÀÇ
-    // FileHdr¿¡ µ¤¾î¾²¸é DBFileÀÇ MustRedoToLSNÀ» ÀĞ¾î¹ö¸®°Ô µË´Ï´Ù.
-    // MustRedoToLSNÀ» À¯ÁöÇÏ±â À§ÇØ DBFileÀÇ MustRedoToLSNÀ»
-    // DBFileNode¿¡ º¹»çÇØµÎµµ·Ï ÇÕ´Ï´Ù.
+    // ì™„ì „ í˜¹ì€ ë¶ˆì™„ì „ ë³µêµ¬ í›„, FileNodeì˜ FileHdrë¥¼ DBFileì˜
+    // FileHdrì— ë®ì–´ì“°ë©´ DBFileì˜ MustRedoToLSNì„ ì½ì–´ë²„ë¦¬ê²Œ ë©ë‹ˆë‹¤.
+    // MustRedoToLSNì„ ìœ ì§€í•˜ê¸° ìœ„í•´ DBFileì˜ MustRedoToLSNì„
+    // DBFileNodeì— ë³µì‚¬í•´ë‘ë„ë¡ í•©ë‹ˆë‹¤.
     sFileNode->mDBFileHdr.mMustRedoToLSN = aDBFileHdr->mMustRedoToLSN;
 
-    // [2] TO REDO LSN °áÁ¤ÇÏ±â
+    // [2] TO REDO LSN ê²°ì •í•˜ê¸°
     if ( mRecvType == SMI_RECOVER_COMPLETE )
     {
-        // loganchorÀÇ DBFileHdrÀÇ DiskRedoLSN
+        // loganchorì˜ DBFileHdrì˜ DiskRedoLSN
         sToLSN = sFileNode->mDBFileHdr.mRedoLSN;
 
         // BUG-24250
-        // MustRedoToLSN ±îÁöÀÇ ÁøÇà À¯¹«´Â Restart Recovery¿¡¼­ °ËÁõÇÕ´Ï´Ù.
-        // ¿ÏÀüº¹±¸¿¡¼­´Â LogAnchorÀÇ RedoLSN±îÁö¸¸ º¹±¸ÇÏ¸é µÇ¹Ç·Î
-        // MustRodoToLSNÀ» ToLSN¿¡ ¹İ¿µÇÏ´Â ÄÚµå¸¦ Á¦°ÅÇÕ´Ï´Ù.
+        // MustRedoToLSN ê¹Œì§€ì˜ ì§„í–‰ ìœ ë¬´ëŠ” Restart Recoveryì—ì„œ ê²€ì¦í•©ë‹ˆë‹¤.
+        // ì™„ì „ë³µêµ¬ì—ì„œëŠ” LogAnchorì˜ RedoLSNê¹Œì§€ë§Œ ë³µêµ¬í•˜ë©´ ë˜ë¯€ë¡œ
+        // MustRodoToLSNì„ ToLSNì— ë°˜ì˜í•˜ëŠ” ì½”ë“œë¥¼ ì œê±°í•©ë‹ˆë‹¤.
     }
     else
     {
-        // ºÒ¿ÏÀü º¹±¸ÀÏ°æ¿ì ÇÒ¼ö ÀÖ´Âµ¥±îÁö
-        // ¹Ìµğ¾î º¹±¸¸¦ ÁøÇàÇÑ´Ù.
+        // ë¶ˆì™„ì „ ë³µêµ¬ì¼ê²½ìš° í• ìˆ˜ ìˆëŠ”ë°ê¹Œì§€
+        // ë¯¸ë””ì–´ ë³µêµ¬ë¥¼ ì§„í–‰í•œë‹¤.
         IDE_ASSERT((mRecvType == SMI_RECOVER_UNTILCANCEL) ||
                    (mRecvType == SMI_RECOVER_UNTILTIME));
         SM_LSN_MAX(sToLSN);
     }
 
     /*
-      [3] FROM REDOLSN °áÁ¤ÇÏ±â
-      ¸¸¾à ÆÄÀÏÇì´õÀÇ REDOLSNÀÌ INITLSNÀÌ¶ó¸é EMPTY
-      µ¥ÀÌÅ¸ÆÄÀÏÀÌ´Ù.
+      [3] FROM REDOLSN ê²°ì •í•˜ê¸°
+      ë§Œì•½ íŒŒì¼í—¤ë”ì˜ REDOLSNì´ INITLSNì´ë¼ë©´ EMPTY
+      ë°ì´íƒ€íŒŒì¼ì´ë‹¤.
     */
     if ( smLayerCallback::isLSNEQ( &aDBFileHdr->mRedoLSN,
                                    &sInitLSN ) == ID_TRUE )
     {
-        // ºÒ¿ÏÀüº¹±¸ ¿ä±¸½Ã EMPTY ÆÄÀÏÀÌ Á¸ÀçÇÑ´Ù¸é
-        // ¿ÏÀüº¹±¸¸¦ ¼öÇàÇÏ¿©¾ßÇÏ±â ¶§¹®¿¡ ¿¡·¯Ã³¸®ÇÑ´Ù.
+        // ë¶ˆì™„ì „ë³µêµ¬ ìš”êµ¬ì‹œ EMPTY íŒŒì¼ì´ ì¡´ì¬í•œë‹¤ë©´
+        // ì™„ì „ë³µêµ¬ë¥¼ ìˆ˜í–‰í•˜ì—¬ì•¼í•˜ê¸° ë•Œë¬¸ì— ì—ëŸ¬ì²˜ë¦¬í•œë‹¤.
         IDE_TEST_RAISE( ( mRecvType == SMI_RECOVER_UNTILTIME ) ||
                         ( mRecvType == SMI_RECOVER_UNTILCANCEL ),
                         err_incomplete_media_recovery);
 
-        // EMPTY µ¥ÀÌÅ¸ÆÄÀÏÀÏ °æ¿ì¿¡´Â CREATELSN
-        // ºÎÅÍ ¹Ìµğ¾îº¹±¸¸¦ ÁøÇàÇÑ´Ù.
+        // EMPTY ë°ì´íƒ€íŒŒì¼ì¼ ê²½ìš°ì—ëŠ” CREATELSN
+        // ë¶€í„° ë¯¸ë””ì–´ë³µêµ¬ë¥¼ ì§„í–‰í•œë‹¤.
 
         sFromLSN = sFileNode->mDBFileHdr.mCreateLSN;
     }
     else
     {
-        // ¿ÏÀüº¹±¸ ¶Ç´Â ºÒ¿ÏÀü º¹±¸¿¡¼­ÀÇ
-        // FROM REDOLSNÀº ÆÄÀÏÇì´õÀÇ REDO LSNºÎÅÍ
-        // ÁøÇàÇÑ´Ù.
+        // ì™„ì „ë³µêµ¬ ë˜ëŠ” ë¶ˆì™„ì „ ë³µêµ¬ì—ì„œì˜
+        // FROM REDOLSNì€ íŒŒì¼í—¤ë”ì˜ REDO LSNë¶€í„°
+        // ì§„í–‰í•œë‹¤.
         sFromLSN = aDBFileHdr->mRedoLSN;
     }
 
-    /* BUG-19272: Àß¸øµÈ ÆÄÀÏ·Î ¿ÏÀü º¹±¸ ½Ãµµ½Ã error°¡ ³ªÁö¾Ê°í core°¡
-     * ¹ß»ıÇÔ.
+    /* BUG-19272: ì˜ëª»ëœ íŒŒì¼ë¡œ ì™„ì „ ë³µêµ¬ ì‹œë„ì‹œ errorê°€ ë‚˜ì§€ì•Šê³  coreê°€
+     * ë°œìƒí•¨.
      *
-     * smERR_ABORT_Invalid_DataFile_Create_LSN °¡ ¹ß»ıÇÏµµ·Ï ¼öÁ¤ÇÔ.
+     * smERR_ABORT_Invalid_DataFile_Create_LSN ê°€ ë°œìƒí•˜ë„ë¡ ìˆ˜ì •í•¨.
      * */
-    // ¹Ìµğ¾îº¹±¸¿¡¼­´Â
-    // FROM REDOLSN < TO REDOLSNÀÇ Á¶°ÇÀ» ¸¸Á·ÇØ¾ßÇÑ´Ù.
+    // ë¯¸ë””ì–´ë³µêµ¬ì—ì„œëŠ”
+    // FROM REDOLSN < TO REDOLSNì˜ ì¡°ê±´ì„ ë§Œì¡±í•´ì•¼í•œë‹¤.
     IDE_TEST_RAISE( smLayerCallback::isLSNGT( &sToLSN, &sFromLSN ) == ID_FALSE,
                     err_datafile_invalid_create_lsn );
 
 
-    // 2Â÷ hashkey´Â GRID°¡ ¾Æ´ÏÁö¸¸ GRID ±¸Á¶¸¦
-    // »ç¿ëÇÏ¿© ±¸ÇöÇÏ¿´´Ù.
+    // 2ì°¨ hashkeyëŠ” GRIDê°€ ì•„ë‹ˆì§€ë§Œ GRID êµ¬ì¡°ë¥¼
+    // ì‚¬ìš©í•˜ì—¬ êµ¬í˜„í•˜ì˜€ë‹¤.
     SC_MAKE_GRID( sHashKey,
                   sFileNode->mSpaceID,
                   sFileNode->mID,
@@ -2061,7 +2061,7 @@ IDE_RC sdrRedoMgr::addRecvFileToHash( sddDataFileHdr*     aDBFileHdr,
                                 &sHashKey,
                                 (void **)&sHashNode) != IDE_SUCCESS );
 
-    // µ¿ÀÏÇÑ ÆÄÀÏÀº ÇÑ¹ø¸¸ µî·ÏµÇ¾î¾ß ÇÑ´Ù.
+    // ë™ì¼í•œ íŒŒì¼ì€ í•œë²ˆë§Œ ë“±ë¡ë˜ì–´ì•¼ í•œë‹¤.
     IDE_ASSERT( sHashNode == NULL );
 
     /* TC/FIT/Limit/sm/sdr/sdrRedoMgr::addRecvFileToHash::malloc.sql */
@@ -2147,10 +2147,10 @@ IDE_RC sdrRedoMgr::addRecvFileToHash( sddDataFileHdr*     aDBFileHdr,
 
 
 /***********************************************************************
- * Description : redo logÀÇ rid¸¦ ÀÌ¿ëÇÑ hash value¸¦ »ı¼º
+ * Description : redo logì˜ ridë¥¼ ì´ìš©í•œ hash valueë¥¼ ìƒì„±
  *
- * space id¿Í page id¸¦ ÀûÀıÈ÷ º¯È¯ÇÏ¿© Á¤¼ö¸¦ ¸¸µé¾î ¸®ÅÏÇÑ´Ù.
- * ÀÌ ÇÔ¼ö´Â redo log¿¡ ´ëÇÑ hash functionÀ¸·Î »ç¿ëµÈ´Ù. hash key´Â RIDÀÌ´Ù.
+ * space idì™€ page idë¥¼ ì ì ˆíˆ ë³€í™˜í•˜ì—¬ ì •ìˆ˜ë¥¼ ë§Œë“¤ì–´ ë¦¬í„´í•œë‹¤.
+ * ì´ í•¨ìˆ˜ëŠ” redo logì— ëŒ€í•œ hash functionìœ¼ë¡œ ì‚¬ìš©ëœë‹¤. hash keyëŠ” RIDì´ë‹¤.
  **********************************************************************/
 UInt sdrRedoMgr::genHashValueFunc(void* aGRID)
 {
@@ -2165,10 +2165,10 @@ UInt sdrRedoMgr::genHashValueFunc(void* aGRID)
 }
 
 /***********************************************************************
- * Description : hash-key ºñ±³ÇÔ¼ö
+ * Description : hash-key ë¹„êµí•¨ìˆ˜
  *
- * 2°³ÀÇ RID°¡ °°ÀºÁö ºñ±³ÇÑ´Ù. °°À¸¸é 0À» ¸®ÅÏÇÑ´Ù.
- * ÀÌ ÇÔ¼ö´Â redo log¿¡ ´ëÇÑ hash compare functionÀ¸·Î »ç¿ëµÈ´Ù.
+ * 2ê°œì˜ RIDê°€ ê°™ì€ì§€ ë¹„êµí•œë‹¤. ê°™ìœ¼ë©´ 0ì„ ë¦¬í„´í•œë‹¤.
+ * ì´ í•¨ìˆ˜ëŠ” redo logì— ëŒ€í•œ hash compare functionìœ¼ë¡œ ì‚¬ìš©ëœë‹¤.
  **********************************************************************/
 SInt sdrRedoMgr::compareFunc(void*  aLhs,
                              void*  aRhs )
@@ -2187,11 +2187,11 @@ SInt sdrRedoMgr::compareFunc(void*  aLhs,
 
 /**********************************************************************
  * Description : PROJ-2118 BUG Reporting
- *               Server Fatal ½ÃÁ¡¿¡ Signal Handler °¡ È£ÃâÇÒ
- *               Debugging Á¤º¸ ±â·ÏÇÔ¼ö
+ *               Server Fatal ì‹œì ì— Signal Handler ê°€ í˜¸ì¶œí• 
+ *               Debugging ì •ë³´ ê¸°ë¡í•¨ìˆ˜
  *
- *               ÀÌ¹Ì altibase_dump.log ¿¡ lockÀ» Àâ°í µé¾î¿À¹Ç·Î
- *               lockÀ» ÀâÁö¾Ê´Â trace ±â·Ï ÇÔ¼öµéÀ» »ç¿ëÇØ¾ß ÇÑ´Ù.
+ *               ì´ë¯¸ altibase_dump.log ì— lockì„ ì¡ê³  ë“¤ì–´ì˜¤ë¯€ë¡œ
+ *               lockì„ ì¡ì§€ì•ŠëŠ” trace ê¸°ë¡ í•¨ìˆ˜ë“¤ì„ ì‚¬ìš©í•´ì•¼ í•œë‹¤.
  *
  **********************************************************************/
 void sdrRedoMgr::writeDebugInfo()

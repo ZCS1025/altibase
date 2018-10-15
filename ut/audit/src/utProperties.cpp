@@ -93,7 +93,7 @@ IDE_RC utProperties::initialize(int argc, char **argv)
     mVerbose   = false; // write report for SYNC
     mAtcIsFirst = true;
 
-    /* TASK-4212: auditÅøÀÇ ´ë¿ë·® Ã³¸®½Ã °³¼± */
+    /* TASK-4212: auditíˆ´ì˜ ëŒ€ìš©ëŸ‰ ì²˜ë¦¬ì‹œ ê°œì„  */
     mMaxArrayFetch =  0;
 
     while((opr = idlOS::getopt(argc, argv, "t:hvVf:d:?:m:s:x:")) != EOF)
@@ -114,7 +114,7 @@ IDE_RC utProperties::initialize(int argc, char **argv)
                 /* 
                  * BUG-32566
                  *
-                 * iloader¿Í °°ÀÌ Version Ãâ·ÂµÇµµ·Ï ¼öÁ¤
+                 * iloaderì™€ ê°™ì´ Version ì¶œë ¥ë˜ë„ë¡ ìˆ˜ì •
                  */
                 printVersion();
                 exit(0);
@@ -685,7 +685,7 @@ IDE_RC utProperties::prepare(const char*,  const char* aConfiguration)
             setProperty(&mDML[SU], "UPDATE_TO_SLAVE" , sKey, sVal);
             setProperty(&mTimeInterval, "CHECK_INTERVAL", sKey, sVal);
             setProperty(&mCountToCommit, "COUNT_TO_COMMIT", sKey, sVal);
-            /* TASK-4212: auditÅøÀÇ ´ë¿ë·® Ã³¸®½Ã °³¼± */
+            /* TASK-4212: auditíˆ´ì˜ ëŒ€ìš©ëŸ‰ ì²˜ë¦¬ì‹œ ê°œì„  */
             setProperty(&mMaxArrayFetch, "FILE_MODE_MAX_ARRAY", sKey, sVal);
         }
         else
@@ -732,7 +732,7 @@ IDE_RC utProperties::prepare(const char*,  const char* aConfiguration)
 
     IDE_EXCEPTION_END;
 
-    // BUG-25228 [CodeSonar] utProperties::prepare() ÇÔ¼ö¿¡¼­ ¿¡·¯ ¹ß»ı½Ã ÆÄÀÏ ´İÁö ¾ÊÀ½.
+    // BUG-25228 [CodeSonar] utProperties::prepare() í•¨ìˆ˜ì—ì„œ ì—ëŸ¬ ë°œìƒì‹œ íŒŒì¼ ë‹«ì§€ ì•ŠìŒ.
     if(sFile != NULL)
     {
         idlOS::fclose(sFile);
@@ -749,7 +749,7 @@ void utProperties::printUsage()
 /* 
  * BUG-32566
  *
- * iloader¿Í °°ÀÌ Version Ãâ·ÂµÇµµ·Ï ¼öÁ¤
+ * iloaderì™€ ê°™ì´ Version ì¶œë ¥ë˜ë„ë¡ ìˆ˜ì •
  */
 void utProperties::printVersion()
 {
@@ -823,7 +823,7 @@ void utProperties::printConfig(FILE * conf)
     }
 
     idlOS::fprintf(conf,"MAX_THREAD = %d\n",mMaxThread);
-    /* TASK-4212: auditÅøÀÇ ´ë¿ë·® Ã³¸®½Ã °³¼± */
+    /* TASK-4212: auditíˆ´ì˜ ëŒ€ìš©ëŸ‰ ì²˜ë¦¬ì‹œ ê°œì„  */
     idlOS::fprintf(conf,"FILE_MODE_MAX_ARRAY = %d\n",mMaxArrayFetch);
 
     idlOS::fprintf(conf,

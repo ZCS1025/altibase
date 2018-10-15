@@ -20,11 +20,11 @@
  *
  * Description : SDSL(SharD SElect) Node
  *
- *     Shard data node ¿¡ ´ëÇÑ scanÀ» ¼öÇàÇÏ´Â Plan Node ÀÌ´Ù.
+ *     Shard data node ì— ëŒ€í•œ scanì„ ìˆ˜í–‰í•˜ëŠ” Plan Node ì´ë‹¤.
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  **********************************************************************/
 
@@ -58,7 +58,7 @@
 typedef struct qmncSDSE
 {
     //---------------------------------
-    // °øÅë Á¤º¸
+    // ê³µí†µ ì •ë³´
     //---------------------------------
 
     qmnPlan          plan;
@@ -66,7 +66,7 @@ typedef struct qmncSDSE
     UInt             planID;
 
     //---------------------------------
-    // °íÀ¯ Á¤º¸
+    // ê³ ìœ  ì •ë³´
     //---------------------------------
 
     qmsTableRef    * tableRef;
@@ -96,7 +96,7 @@ typedef struct qmncSDSE
 typedef struct qmndSDSE
 {
     //---------------------------------
-    // °øÅë Á¤º¸
+    // ê³µí†µ ì •ë³´
     //---------------------------------
 
     qmndPlan       plan;
@@ -104,14 +104,14 @@ typedef struct qmndSDSE
     UInt         * flag;
 
     //---------------------------------
-    // Disk Table °ü·Ã Á¤º¸
+    // Disk Table ê´€ë ¨ ì •ë³´
     //---------------------------------
 
-    void         * nullRow;  // Disk TableÀ» À§ÇÑ null row
+    void         * nullRow;  // Disk Tableì„ ìœ„í•œ null row
     scGRID         nullRID;
 
     //---------------------------------
-    // °íÀ¯ Á¤º¸
+    // ê³ ìœ  ì •ë³´
     //---------------------------------
 
     UShort         mCurrScanNode;
@@ -133,7 +133,7 @@ public:
                         qmnPlan    * aPlan );
 
     //------------------------
-    // ¼öÇà ÇÔ¼ö
+    // ìˆ˜í–‰ í•¨ìˆ˜
     // mapping by doIt() function pointer
     //------------------------
 
@@ -161,7 +161,7 @@ public:
                            qmnPlan    * aPlan );
 
     //------------------------
-    // Plan Á¤º¸ Ãâ·Â
+    // Plan ì •ë³´ ì¶œë ¥
     //------------------------
 
     static IDE_RC printPlan( qcTemplate   * aTemplate,
@@ -173,7 +173,7 @@ public:
 private:
 
     //------------------------
-    // ÃÖÃÊ ÃÊ±âÈ­
+    // ìµœì´ˆ ì´ˆê¸°í™”
     //------------------------
 
     static IDE_RC firstInit( qcTemplate * aTemplate,

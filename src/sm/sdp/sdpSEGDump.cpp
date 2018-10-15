@@ -42,7 +42,7 @@ IDE_RC sdpSEGDump::validateAndGetSegPID( scSpaceID   aSpaceID,
                                          scPageID   *aSegPID,
                                          smiDumpType aType )
 {
-    /* FID, FFPID°¡ ValidÇÑÁö °ËÁõÇÑ´Ù. */
+    /* FID, FFPIDê°€ Validí•œì§€ ê²€ì¦í•œë‹¤. */
     switch( aType )
     {
         case SMI_DUMP_TBL:

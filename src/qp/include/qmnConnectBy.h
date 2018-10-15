@@ -164,31 +164,31 @@ typedef struct qmndCNBY
     qmnCNBYStack  * lastStack;
 
     /*
-     * PROJ-2641 Hierarchy query Index Predicate Á¾·ù
+     * PROJ-2641 Hierarchy query Index Predicate ì¢…ë¥˜
      */
-    smiRange      * mFixKeyRangeArea;  /* Fixed Key Range ¿µ¿ª */
+    smiRange      * mFixKeyRangeArea;  /* Fixed Key Range ì˜ì—­ */
     smiRange      * mFixKeyRange;      /* Fixed Key Range */
-    UInt            mFixKeyRangeSize;  /* Fixed Key Range Å©±â */
+    UInt            mFixKeyRangeSize;  /* Fixed Key Range í¬ê¸° */
 
-    smiRange      * mFixKeyFilterArea; /* Fixed Key Filter ¿µ¿ª */
+    smiRange      * mFixKeyFilterArea; /* Fixed Key Filter ì˜ì—­ */
     smiRange      * mFixKeyFilter;     /* Fixed Key Filter */
-    UInt            mFixKeyFilterSize; /* Fixed Key Filter Å©±â */
+    UInt            mFixKeyFilterSize; /* Fixed Key Filter í¬ê¸° */
 
-    smiRange      * mVarKeyRangeArea;  /* Variable Key Range ¿µ¿ª */
+    smiRange      * mVarKeyRangeArea;  /* Variable Key Range ì˜ì—­ */
     smiRange      * mVarKeyRange;      /* Variable Key Range */
-    UInt            mVarKeyRangeSize;  /* Variable Key Range Å©±â */
+    UInt            mVarKeyRangeSize;  /* Variable Key Range í¬ê¸° */
 
-    smiRange      * mVarKeyFilterArea; /* Variable Key Filter ¿µ¿ª */
+    smiRange      * mVarKeyFilterArea; /* Variable Key Filter ì˜ì—­ */
     smiRange      * mVarKeyFilter;     /* Variable Key Filter */
-    UInt            mVarKeyFilterSize; /* Variable Key Filter Å©±â */
+    UInt            mVarKeyFilterSize; /* Variable Key Filter í¬ê¸° */
 
-    smiRange      * mKeyRange;         /* ÃÖÁ¾ Key Range */
-    smiRange      * mKeyFilter;        /* ÃÖÁ¾ Key Filter */
+    smiRange      * mKeyRange;         /* ìµœì¢… Key Range */
+    smiRange      * mKeyFilter;        /* ìµœì¢… Key Filter */
 
     smiCursorProperties   mCursorProperty;
     smiCallBack           mCallBack;
     qtcSmiCallBackDataAnd mCallBackDataAnd;
-    qtcSmiCallBackData    mCallBackData[3]; /* ¼¼ Á¾·ùÀÇ Filter°¡ °¡´ÉÇÔ. */
+    qtcSmiCallBackData    mCallBackData[3]; /* ì„¸ ì¢…ë¥˜ì˜ Filterê°€ ê°€ëŠ¥í•¨. */
 } qmndCNBY;
 
 class qmnCNBY
@@ -253,12 +253,12 @@ private:
                              qmncCNBY   * aCodePlan,
                              qmndCNBY   * aDataPlan );
 
-    /* CMTR child¸¦ ¼öÇà */
+    /* CMTR childë¥¼ ìˆ˜í–‰ */
     static IDE_RC execChild( qcTemplate * aTemplate,
                              qmncCNBY   * aCodePlan,
                              qmndCNBY   * aDataPlan );
 
-    /* Null Row¸¦ È¹µæ */
+    /* Null Rowë¥¼ íšë“ */
     static IDE_RC getNullRow( qcTemplate * aTemplate,
                               qmncCNBY   * aCodePlan,
                               qmndCNBY   * aDataPlan );
@@ -267,87 +267,87 @@ private:
                                 qmncCNBY   * aCodePlan,
                                 mtcTuple   * aTuple );
 
-    /* Sort Temp Table ÃÊ±âÈ­ */
+    /* Sort Temp Table ì´ˆê¸°í™” */
     static IDE_RC initSortTemp( qcTemplate * aTemplate,
                                 qmndCNBY   * aDataPlan );
 
-    /* Sort Temp Mtr Node ÃÊ±âÈ­ */
+    /* Sort Temp Mtr Node ì´ˆê¸°í™” */
     static IDE_RC initSortMtrNode( qcTemplate * aTemplate,
                                    qmncCNBY   * aCodePlan,
                                    qmcMtrNode * aCodeNode,
                                    qmdMtrNode * aMtrNode );
 
-    /* Sort Temp Table ±¸¼º */
+    /* Sort Temp Table êµ¬ì„± */
     static IDE_RC makeSortTemp( qcTemplate * aTemplate,
                                 qmndCNBY   * aDataPlan );
 
-    /* Sort Temp ¿¡ ½×¿©Áø RowÆ÷ÀÎÅÍ¸¦ º¹¿ø */
+    /* Sort Temp ì— ìŒ“ì—¬ì§„ Rowí¬ì¸í„°ë¥¼ ë³µì› */
     static IDE_RC restoreTupleSet( qcTemplate * aTemplate,
                                    qmdMtrNode * aMtrNode,
                                    void       * aRow );
 
-    /* Item ÃÊ±âÈ­ */
+    /* Item ì´ˆê¸°í™” */
     static IDE_RC initCNBYItem( qmnCNBYItem * aItem );
 
-    /* ½ºÅÃ¿¡¼­ »óÀ§ Plan¿¡ ¿Ã·ÁÁÙ item ÁöÁ¤ */
+    /* ìŠ¤íƒì—ì„œ ìƒìœ„ Planì— ì˜¬ë ¤ì¤„ item ì§€ì • */
     static IDE_RC setCurrentRow( qcTemplate * aTemplate,
                                  qmncCNBY   * aCodePlan,
                                  qmndCNBY   * aDataPlan,
                                  UInt         aPrev );
 
-    /* LoopÀÇ ¹ß»ı ¿©ºÎ Ã¼Å© */
+    /* Loopì˜ ë°œìƒ ì—¬ë¶€ ì²´í¬ */
     static IDE_RC checkLoop( qmncCNBY * aCodePlan,
                              qmndCNBY * aDataPlan,
                              void     * aRow,
                              idBool   * aIsLoop );
 
-    /* LoopÀÇ ¹ß»ı ¿©ºÎ Ã¼Å© */
+    /* Loopì˜ ë°œìƒ ì—¬ë¶€ ì²´í¬ */
     static IDE_RC checkLoopDisk( qmncCNBY * aCodePlan,
                                  qmndCNBY * aDataPlan,
                                  idBool   * aIsLoop );
-    /* Stack Block ÇÒ´ç */
+    /* Stack Block í• ë‹¹ */
     static IDE_RC allocStackBlock( qcTemplate * aTemplate,
                                    qmndCNBY   * aDataPlan );
 
-    /* ½ºÅÃ¿¡ Item Ãß°¡ */
+    /* ìŠ¤íƒì— Item ì¶”ê°€ */
     static IDE_RC pushStack( qcTemplate  * aTemplate,
                              qmncCNBY    * aCodePlan,
                              qmndCNBY    * aDataPlan,
                              qmnCNBYItem * aItem );
 
-    /* ´ÙÀ½ ·¹º§ÀÇ ÀÚ·á Search */
+    /* ë‹¤ìŒ ë ˆë²¨ì˜ ìë£Œ Search */
     static IDE_RC searchNextLevelData( qcTemplate  * aTemplate,
                                        qmncCNBY    * aCodePlan,
                                        qmndCNBY    * aDataPlan,
                                        qmnCNBYItem * aItem,
                                        idBool      * aExist );
 
-    /* °°Àº ·¹º§ÀÇ ÀÚ·á Search */
+    /* ê°™ì€ ë ˆë²¨ì˜ ìë£Œ Search */
     static IDE_RC searchSiblingData( qcTemplate * aTemplate,
                                      qmncCNBY   * aCodePlan,
                                      qmndCNBY   * aDataPlan,
                                      idBool     * aBreak );
 
-    /* baseMTR¿¡¼­ ¼øÂ÷ °Ë»öÀ» ¼öÇà */
+    /* baseMTRì—ì„œ ìˆœì°¨ ê²€ìƒ‰ì„ ìˆ˜í–‰ */
     static IDE_RC searchSequnceRow( qcTemplate  * aTemplate,
                                     qmncCNBY    * aCodePlan,
                                     qmndCNBY    * aDataPlan,
                                     qmnCNBYItem * aOldItem,
                                     qmnCNBYItem * aNewItem );
 
-    /* sortMTR¿¡¼­ KeyRange °Ë»öÀ» ¼öÇà */
+    /* sortMTRì—ì„œ KeyRange ê²€ìƒ‰ì„ ìˆ˜í–‰ */
     static IDE_RC searchKeyRangeRow( qcTemplate  * aTemplate,
                                      qmncCNBY    * aCodePlan,
                                      qmndCNBY    * aDataPlan,
                                      qmnCNBYItem * aOldItem,
                                      qmnCNBYItem * aNewItem );
 
-    /* baseMTR tuple º¹¿ø */
+    /* baseMTR tuple ë³µì› */
     static IDE_RC setBaseTupleSet( qcTemplate * aTemplate,
                                    qmndCNBY   * aDataPlan,
                                    const void * aRow );
 
-    /* myTuple º¹¿ø */
+    /* myTuple ë³µì› */
     static IDE_RC copyTupleSet( qcTemplate * aTemplate,
                                 qmncCNBY   * aCodePlan,
                                 mtcTuple   * aDstTuple );
@@ -356,7 +356,7 @@ private:
                                 qmncCNBY   * aCodePlan,
                                 qmndCNBY   * aDataPlan );
 
-    /* ½ºÅÃ¿¡¼­ »óÀ§ Plan¿¡ ¿Ã·ÁÁÙ item ÁöÁ¤ */
+    /* ìŠ¤íƒì—ì„œ ìƒìœ„ Planì— ì˜¬ë ¤ì¤„ item ì§€ì • */
     static IDE_RC setCurrentRowTable( qmndCNBY   * aDataPlan,
                                       UInt         aPrev );
 
@@ -364,7 +364,7 @@ private:
                                   qmndCNBY    * aDataPlan,
                                   qmnCNBYItem * aItem );
 
-    /* ´ÙÀ½ ·¹º§ÀÇ ÀÚ·á Search */
+    /* ë‹¤ìŒ ë ˆë²¨ì˜ ìë£Œ Search */
     static IDE_RC searchNextLevelDataTable( qcTemplate  * aTemplate,
                                             qmncCNBY    * aCodePlan,
                                             qmndCNBY    * aDataPlan,
@@ -388,7 +388,7 @@ private:
                                           qmncCNBY   * aCodePlan,
                                           qmndCNBY   * aDataPlan,
                                           idBool     * aBreak );
-    /* ´ÙÀ½ ·¹º§ÀÇ ÀÚ·á Search */
+    /* ë‹¤ìŒ ë ˆë²¨ì˜ ìë£Œ Search */
     static IDE_RC searchNextLevelDataSortTemp( qcTemplate  * aTemplate,
                                                qmncCNBY    * aCodePlan,
                                                qmndCNBY    * aDataPlan,

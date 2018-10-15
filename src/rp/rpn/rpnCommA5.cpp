@@ -321,7 +321,7 @@ IDE_RC rpnComm::recvMetaReplA5( cmiProtocolContext * aProtocolContext,
                                   sStrLen )
               != IDE_SUCCESS );
 
-    /* PROJ-1915 OS, Endian, SMVersion, LFGCount, LogFileSize ¼ö½Å */
+    /* PROJ-1915 OS, Endian, SMVersion, LFGCount, LogFileSize ìˆ˜ì‹  */
     sStrLen = cmtVariableGetSize( &sMetaRepl->mOSInfo );
     IDE_TEST( cmtVariableGetData( &sMetaRepl->mOSInfo,
                                   (UChar *)aRepl->mOSInfo,
@@ -491,7 +491,7 @@ IDE_RC rpnComm::sendMetaReplTblA5( void               * /*aHBTResource*/,
     sArgMetaReplTbl->mColumnCnt       = aItem->mColCount;
     sArgMetaReplTbl->mIndexCnt        = aItem->mIndexCount;
 
-    /* PROJ-1915 Invalid Max SN, mConditionStr À» Àü¼Û ÇÑ´Ù. */
+    /* PROJ-1915 Invalid Max SN, mConditionStr ì„ ì „ì†¡ í•œë‹¤. */
     sArgMetaReplTbl->mInvalidMaxSN = aItem->mItem.mInvalidMaxSN;
 
     IDE_TEST( cmtVariableInitialize( &sArgMetaReplTbl->mConditionStr )
@@ -619,7 +619,7 @@ IDE_RC rpnComm::recvMetaReplTblA5( cmiProtocolContext * aProtocolContext,
 
     aItem->mItem.mInvalidMaxSN  = sMetaReplTbl->mInvalidMaxSN;
     
-    /* ±â´É Á¦°ÅµÈ mConditionStrÀº ¹«½ÃÇÑ´Ù. */
+    /* ê¸°ëŠ¥ ì œê±°ëœ mConditionStrì€ ë¬´ì‹œí•œë‹¤. */
 
     /* PROJ-2563 remove to check constraints */
     aItem->mCheckCount = 0;
@@ -2188,8 +2188,8 @@ IDE_RC rpnComm::recvInsertA5( iduMemAllocator    * aAllocator,
     aXLog->mImplSPDepth = sArg->mImplSPDepth;
     aXLog->mTableOID    = sArg->mTableOID;
 
-    /* PROJ-1442 Replication Online Áß DDL Çã¿ë
-     * XLog ³»ÀÇ Column Á¤º¸¸¦ Àç¹è¿­ÇÑ´Ù.
+    /* PROJ-1442 Replication Online ì¤‘ DDL í—ˆìš©
+     * XLog ë‚´ì˜ Column ì •ë³´ë¥¼ ì¬ë°°ì—´í•œë‹¤.
      *
      * Column : mColCnt, mCIDs[], mACols[]
      */
@@ -2211,7 +2211,7 @@ IDE_RC rpnComm::recvInsertA5( iduMemAllocator    * aAllocator,
                     != IDE_SUCCESS, ERR_MEMORY_ALLOC );
 
     /* Recv Value repeatedly */
-    // Column ID ¼ø¼­·Î Column °ªÀ» Àç¹è¿­ÇÑ´Ù.
+    // Column ID ìˆœì„œë¡œ Column ê°’ì„ ì¬ë°°ì—´í•œë‹¤.
     for ( i = 0; i < sArg->mColCnt; i++ )
     {
         if ( sItem->mHasOnlyReplCol == ID_TRUE )
@@ -2247,16 +2247,16 @@ IDE_RC rpnComm::recvInsertA5( iduMemAllocator    * aAllocator,
         }
     }
 
-    // Standby Server¿¡¼­ Replication ´ë»óÀÌ ¾Æ´Ñ Column¿¡ NULLÀ» ÇÒ´çÇÑ´Ù.
+    // Standby Serverì—ì„œ Replication ëŒ€ìƒì´ ì•„ë‹Œ Columnì— NULLì„ í• ë‹¹í•œë‹¤.
     if ( sItem->mHasOnlyReplCol != ID_TRUE )
     {
         for ( i = 0; i < (UInt)sItem->mColCount; i++ )
         {
-            // Àç¹è¿­µÈ ColumnÀ» XLog¿¡ º¹»çÇÑ´Ù.
+            // ì¬ë°°ì—´ëœ Columnì„ XLogì— ë³µì‚¬í•œë‹¤.
             aXLog->mCIDs[i] = i;
 
-            // Replication ´ë»óÀÌ ¾Æ´Ñ ColumnÀº,
-            // DEFAULT °ª ´ë½Å mtdModuleÀÇ staticNullÀ» »ç¿ëÇÑ´Ù.
+            // Replication ëŒ€ìƒì´ ì•„ë‹Œ Columnì€,
+            // DEFAULT ê°’ ëŒ€ì‹  mtdModuleì˜ staticNullì„ ì‚¬ìš©í•œë‹¤.
             if ( sItem->mIsReplCol[i] != ID_TRUE )
             {
                 sColumn = sItem->getRpdColumn( i );
@@ -2400,8 +2400,8 @@ IDE_RC rpnComm::sendUpdateA5( void                * /*aHBTResource*/,
         // PROJ-1705
         sChainedValue = &aBChainedCols[aCIDs[i]];
 
-        // ¸Ş¸ğ¸® Å×ÀÌºí¿¡ ¹ß»ıÇÑ updateÀÇ ºĞ¼® °á°ú´Â BCols¿¡ µé¾îÀÖ´Ù.
-        if ( ( sChainedValue->mAllocMethod == SMI_NON_ALLOCED ) && // mAllocMethodÀÇ ÃÊ±â°ªÀº SMI_NON_ALLOCED
+        // ë©”ëª¨ë¦¬ í…Œì´ë¸”ì— ë°œìƒí•œ updateì˜ ë¶„ì„ ê²°ê³¼ëŠ” BColsì— ë“¤ì–´ìˆë‹¤.
+        if ( ( sChainedValue->mAllocMethod == SMI_NON_ALLOCED ) && // mAllocMethodì˜ ì´ˆê¸°ê°’ì€ SMI_NON_ALLOCED
              ( aBMtdValueLen[aCIDs[i]].lengthSize == 0 ) )
         {
             IDE_TEST( sendValueForA5( NULL,
@@ -2410,7 +2410,7 @@ IDE_RC rpnComm::sendUpdateA5( void                * /*aHBTResource*/,
                                       aBMtdValueLen[aCIDs[i]] )
                       != IDE_SUCCESS );
         }
-        // µğ½ºÅ© Å×ÀÌºí¿¡ ¹ß»ıÇÑ updateÀÇ ºĞ¼® °á°ú´Â BChainedCols¿¡ µé¾îÀÖ´Ù.
+        // ë””ìŠ¤í¬ í…Œì´ë¸”ì— ë°œìƒí•œ updateì˜ ë¶„ì„ ê²°ê³¼ëŠ” BChainedColsì— ë“¤ì–´ìˆë‹¤.
         else
         {
             IDE_TEST( sendChainedValueForA5( NULL,
@@ -2515,10 +2515,10 @@ IDE_RC rpnComm::recvUpdateA5( iduMemAllocator     * aAllocator,
                   != IDE_SUCCESS );
     }
 
-    /* PROJ-1442 Replication Online Áß DDL Çã¿ë
-     * XLog ³»ÀÇ Column Á¤º¸¸¦ Àç¹è¿­ÇÑ´Ù.
-     *   - mPKColCnt´Â º¯ÇÏÁö ¾ÊÀ¸¹Ç·Î, Á¦¿ÜÇÑ´Ù.
-     *   - Primary KeyÀÇ ¼ø¼­°¡ °°À¸¹Ç·Î, mPKCIDs[]¿Í mPKCols[]´Â Á¦¿ÜÇÑ´Ù.
+    /* PROJ-1442 Replication Online ì¤‘ DDL í—ˆìš©
+     * XLog ë‚´ì˜ Column ì •ë³´ë¥¼ ì¬ë°°ì—´í•œë‹¤.
+     *   - mPKColCntëŠ” ë³€í•˜ì§€ ì•Šìœ¼ë¯€ë¡œ, ì œì™¸í•œë‹¤.
+     *   - Primary Keyì˜ ìˆœì„œê°€ ê°™ìœ¼ë¯€ë¡œ, mPKCIDs[]ì™€ mPKCols[]ëŠ” ì œì™¸í•œë‹¤.
      *
      * Column : mColCnt, mCIDs[], mBCols[], mACols[]
      */
@@ -2756,10 +2756,10 @@ IDE_RC rpnComm::recvDeleteA5( iduMemAllocator     * aAllocator,
                   != IDE_SUCCESS );
     }
 
-    /* PROJ-1442 Replication Online Áß DDL Çã¿ë
-     * XLog ³»ÀÇ Column Á¤º¸¸¦ Àç¹è¿­ÇÑ´Ù.
-     *   - mPKColCnt´Â º¯ÇÏÁö ¾ÊÀ¸¹Ç·Î, Á¦¿ÜÇÑ´Ù.
-     *   - Primary KeyÀÇ ¼ø¼­°¡ °°À¸¹Ç·Î, mPKCIDs[]¿Í mPKCols[]´Â Á¦¿ÜÇÑ´Ù.
+    /* PROJ-1442 Replication Online ì¤‘ DDL í—ˆìš©
+     * XLog ë‚´ì˜ Column ì •ë³´ë¥¼ ì¬ë°°ì—´í•œë‹¤.
+     *   - mPKColCntëŠ” ë³€í•˜ì§€ ì•Šìœ¼ë¯€ë¡œ, ì œì™¸í•œë‹¤.
+     *   - Primary Keyì˜ ìˆœì„œê°€ ê°™ìœ¼ë¯€ë¡œ, mPKCIDs[]ì™€ mPKCols[]ëŠ” ì œì™¸í•œë‹¤.
      */
 
     return IDE_SUCCESS;
@@ -3006,8 +3006,8 @@ IDE_RC rpnComm::sendValueForA5( void               * /*aHBTResource*/,
     /* Send mtdValueLength */
     if ( aValueLen.lengthSize > 0 )
     {
-        // UShort¸¦ UChar Æ÷ÀÎÅÍ·Î 1¹ÙÀÌÆ®¸¸ º¸³»´Â °æ¿ì, endian¹®Á¦°¡ ¹ß»ıÇÑ´Ù.
-        // UChar º¯¼ö¿¡ ´ã´Â °úÁ¤À» °ÅÄ¡µµ·ÏÇÑ´Ù.
+        // UShortë¥¼ UChar í¬ì¸í„°ë¡œ 1ë°”ì´íŠ¸ë§Œ ë³´ë‚´ëŠ” ê²½ìš°, endianë¬¸ì œê°€ ë°œìƒí•œë‹¤.
+        // UChar ë³€ìˆ˜ì— ë‹´ëŠ” ê³¼ì •ì„ ê±°ì¹˜ë„ë¡í•œë‹¤.
         if ( aValueLen.lengthSize == 1 )
         {
             sOneByteLenValue = (UChar) aValueLen.lengthValue;
@@ -3030,7 +3030,7 @@ IDE_RC rpnComm::sendValueForA5( void               * /*aHBTResource*/,
                                        (UChar *)aValue->value )
                   != IDE_SUCCESS );
     }
-    // memoryTable, non-divisible value ¶Ç´Â null valueÀÎ °æ¿ì, rpValueLenÁ¤º¸°¡ ÃÊ±â°ªÀÌ´Ù.
+    // memoryTable, non-divisible value ë˜ëŠ” null valueì¸ ê²½ìš°, rpValueLenì •ë³´ê°€ ì´ˆê¸°ê°’ì´ë‹¤.
     else
     {
         IDE_TEST( cmtVariableSetData( &sArgValue->mValue,
@@ -3084,11 +3084,11 @@ IDE_RC rpnComm::sendPKValueForA5( void                * /*aHBTHostResource*/,
     IDE_DASSERT( aValue != NULL );
 
     /*
-     * PROJ-1705·Î ÀÎÇØ,
-     * divisible data typeÀÎ °æ¿ì, null valueÀÌ¸é, ¾Õ¿¡ mtdLength¸¸Å­ÀÇ ±æÀÌ¸¦ length·Î °¡Áö³ª,
-     * value¿¡¼­ ±× ±æÀÌ ¸¸Å­ÀÇ µ¥ÀÌÅÍ¸¦ ÀúÀåÇÏ°í ÀÖÁö´Â ¾ÊÀ¸¹Ç·Î,
-     * (rpLenSize ¿¡¼­ ±× °ªÀ» °¡Áö°í ÀÖ´Ù.) ´Ù¸¥ ÇÔ¼ö¿¡¼­´Â µ¿ÀÏÇÑ ³»¿ëÀÇ ASSERT¸¦ ÇØÁ¦ÇÏ¿´À¸³ª,
-     * PK Value´Â nullÀÌ ¿Ã ¼ö ¾øÀ¸¹Ç·Î À¯Áö½ÃÅ´.
+     * PROJ-1705ë¡œ ì¸í•´,
+     * divisible data typeì¸ ê²½ìš°, null valueì´ë©´, ì•ì— mtdLengthë§Œí¼ì˜ ê¸¸ì´ë¥¼ lengthë¡œ ê°€ì§€ë‚˜,
+     * valueì—ì„œ ê·¸ ê¸¸ì´ ë§Œí¼ì˜ ë°ì´í„°ë¥¼ ì €ì¥í•˜ê³  ìˆì§€ëŠ” ì•Šìœ¼ë¯€ë¡œ,
+     * (rpLenSize ì—ì„œ ê·¸ ê°’ì„ ê°€ì§€ê³  ìˆë‹¤.) ë‹¤ë¥¸ í•¨ìˆ˜ì—ì„œëŠ” ë™ì¼í•œ ë‚´ìš©ì˜ ASSERTë¥¼ í•´ì œí•˜ì˜€ìœ¼ë‚˜,
+     * PK ValueëŠ” nullì´ ì˜¬ ìˆ˜ ì—†ìœ¼ë¯€ë¡œ ìœ ì§€ì‹œí‚´.
      */
     IDE_DASSERT( ( aValue->value != NULL ) || ( aValue->length == 0 ) );
 
@@ -3101,8 +3101,8 @@ IDE_RC rpnComm::sendPKValueForA5( void                * /*aHBTHostResource*/,
     /* Send mtdValueLength */
     if ( aPKLen.lengthSize > 0 )
     {
-        // UShort¸¦ UChar Æ÷ÀÎÅÍ·Î 1¹ÙÀÌÆ®¸¸ º¸³»´Â °æ¿ì, endian¹®Á¦°¡ ¹ß»ıÇÑ´Ù.
-        // UChar º¯¼ö¿¡ ´ã´Â °úÁ¤À» °ÅÄ¡µµ·ÏÇÑ´Ù.
+        // UShortë¥¼ UChar í¬ì¸í„°ë¡œ 1ë°”ì´íŠ¸ë§Œ ë³´ë‚´ëŠ” ê²½ìš°, endianë¬¸ì œê°€ ë°œìƒí•œë‹¤.
+        // UChar ë³€ìˆ˜ì— ë‹´ëŠ” ê³¼ì •ì„ ê±°ì¹˜ë„ë¡í•œë‹¤.
         if ( aPKLen.lengthSize == 1 )
         {
             sOneByteLenValue = (UChar) aPKLen.lengthValue;
@@ -3125,7 +3125,7 @@ IDE_RC rpnComm::sendPKValueForA5( void                * /*aHBTHostResource*/,
                                        (UChar *)aValue->value )
                   != IDE_SUCCESS );
     }
-    // memoryTable, non-divisible value ¶Ç´Â null valueÀÎ °æ¿ì, rpValueLenÁ¤º¸°¡ ¾ø´Ù.
+    // memoryTable, non-divisible value ë˜ëŠ” null valueì¸ ê²½ìš°, rpValueLenì •ë³´ê°€ ì—†ë‹¤.
     else
     {
         IDE_TEST( cmtVariableSetData( &sArgValue->mValue,
@@ -3193,8 +3193,8 @@ IDE_RC rpnComm::sendChainedValueForA5( void               * /*aHBTHostResource*/
         if ( aBMtdValueLen.lengthSize > 0 )
         {
             /*
-             * UShort¸¦ UChar Æ÷ÀÎÅÍ·Î 1¹ÙÀÌÆ®¸¸ º¸³»´Â °æ¿ì, endian¹®Á¦°¡ ¹ß»ıÇÑ´Ù.
-             * UChar º¯¼ö¿¡ ´ã´Â °úÁ¤À» °ÅÄ¡µµ·ÏÇÑ´Ù.
+             * UShortë¥¼ UChar í¬ì¸í„°ë¡œ 1ë°”ì´íŠ¸ë§Œ ë³´ë‚´ëŠ” ê²½ìš°, endianë¬¸ì œê°€ ë°œìƒí•œë‹¤.
+             * UChar ë³€ìˆ˜ì— ë‹´ëŠ” ê³¼ì •ì„ ê±°ì¹˜ë„ë¡í•œë‹¤.
              */
             if ( aBMtdValueLen.lengthSize == 1 )
             {
@@ -3211,8 +3211,8 @@ IDE_RC rpnComm::sendChainedValueForA5( void               * /*aHBTHostResource*/
                                               aBMtdValueLen.lengthSize )
                           != IDE_SUCCESS);
             }
-            /* divisible µ¥ÀÌÅÍÅ¸ÀÔÀÇ ÄÃ·³ value°¡ NULLÀÎ °æ¿ì,
-             * mtdValue°¡ mtdValueLenthÁ¤º¸¸¸À¸·Î ±¸¼ºµÈ´Ù.
+            /* divisible ë°ì´í„°íƒ€ì…ì˜ ì»¬ëŸ¼ valueê°€ NULLì¸ ê²½ìš°,
+             * mtdValueê°€ mtdValueLenthì •ë³´ë§Œìœ¼ë¡œ êµ¬ì„±ëœë‹¤.
              */
             if(sChainedValue->mColumn.value != NULL)
             {
@@ -3225,8 +3225,8 @@ IDE_RC rpnComm::sendChainedValueForA5( void               * /*aHBTHostResource*/
             }
             else
             {
-                /* divisible µ¥ÀÌÅÍÅ¸ÀÔÀÇ ÄÃ·³ value°¡ NULLÀÎ °æ¿ì,
-                 * mtdValue°¡ mtdValueLenthÁ¤º¸¸¸À¸·Î ±¸¼ºµÈ´Ù.
+                /* divisible ë°ì´í„°íƒ€ì…ì˜ ì»¬ëŸ¼ valueê°€ NULLì¸ ê²½ìš°,
+                 * mtdValueê°€ mtdValueLenthì •ë³´ë§Œìœ¼ë¡œ êµ¬ì„±ëœë‹¤.
                  */
                 // Nothing to do.
             }
@@ -3329,12 +3329,12 @@ IDE_RC rpnComm::recvValueA5( iduMemAllocator    * aAllocator,
         aValue->length = cmtVariableGetSize( &sArg->mValue );
 
         /* NOTICE!!!!!
-         * Sync PKÀÇ °æ¿ì, Á÷Á¢ ¸Ş¸ğ¸®¸¦ ÇÒ´ç¹Ş´Â´Ù. free¿¡ ½Å°æ½á¾ß ÇÑ´Ù.
+         * Sync PKì˜ ê²½ìš°, ì§ì ‘ ë©”ëª¨ë¦¬ë¥¼ í• ë‹¹ë°›ëŠ”ë‹¤. freeì— ì‹ ê²½ì¨ì•¼ í•œë‹¤.
          */
         if ( aValue->length != 0 )
         {
-            /* NULL value°¡ Àü¼ÛµÇ´Â °æ¿ì¿¡´Â length°¡ 0À¸·Î ³Ñ¾î¿À°Ô
-             * µÇ¹Ç·Î, ÀÌ °æ¿ì¿¡´Â ¸Ş¸ğ¸® ÇÒ´çÀ» ÇÏÁö ¾Êµµ·Ï ÇÑ´Ù.
+            /* NULL valueê°€ ì „ì†¡ë˜ëŠ” ê²½ìš°ì—ëŠ” lengthê°€ 0ìœ¼ë¡œ ë„˜ì–´ì˜¤ê²Œ
+             * ë˜ë¯€ë¡œ, ì´ ê²½ìš°ì—ëŠ” ë©”ëª¨ë¦¬ í• ë‹¹ì„ í•˜ì§€ ì•Šë„ë¡ í•œë‹¤.
              */
             if ( aMemory != NULL )
             {
@@ -4047,10 +4047,10 @@ IDE_RC rpnComm::recvLobCursorOpenA5( iduMemAllocator     * aAllocator,
                   != IDE_SUCCESS );
     }
 
-    /* PROJ-1442 Replication Online Áß DDL Çã¿ë
-     * XLog ³»ÀÇ Column Á¤º¸¸¦ Àç¹è¿­ÇÑ´Ù.
-     *   - mPKColCnt´Â º¯ÇÏÁö ¾ÊÀ¸¹Ç·Î, Á¦¿ÜÇÑ´Ù.
-     *   - Primary KeyÀÇ ¼ø¼­°¡ °°À¸¹Ç·Î, mPKCIDs[]¿Í mPKCols[]´Â Á¦¿ÜÇÑ´Ù.
+    /* PROJ-1442 Replication Online ì¤‘ DDL í—ˆìš©
+     * XLog ë‚´ì˜ Column ì •ë³´ë¥¼ ì¬ë°°ì—´í•œë‹¤.
+     *   - mPKColCntëŠ” ë³€í•˜ì§€ ì•Šìœ¼ë¯€ë¡œ, ì œì™¸í•œë‹¤.
+     *   - Primary Keyì˜ ìˆœì„œê°€ ê°™ìœ¼ë¯€ë¡œ, mPKCIDs[]ì™€ mPKCols[]ëŠ” ì œì™¸í•œë‹¤.
      *
      * LOB    : mLobColumnID
      */
@@ -4828,19 +4828,19 @@ IDE_RC rpnComm::recvSyncPKA5( idBool             * aExitFlag,
     /* Recv PK Value repeatedly */
     for ( i = 0; i < aXLog->mPKColCnt; i++ )
     {
-        IDE_TEST( recvValueA5( NULL, /* Sender¿¡ Àü´ŞÇÏ±â¿¡ Á÷Á¢ ÇÒ´ç */
+        IDE_TEST( recvValueA5( NULL, /* Senderì— ì „ë‹¬í•˜ê¸°ì— ì§ì ‘ í• ë‹¹ */
                                aExitFlag,
                                aProtocolContext,
-                               NULL, /* aMemory: Sender¿¡ Àü´ŞÇÒ °ÍÀÌ¹Ç·Î, Á÷Á¢ÇÒ´ç */
+                               NULL, /* aMemory: Senderì— ì „ë‹¬í•  ê²ƒì´ë¯€ë¡œ, ì§ì ‘í• ë‹¹ */
                                &aXLog->mPKCols[i],
                                aTimeOutSec )
                   != IDE_SUCCESS );
     }
 
-    /* PROJ-1442 Replication Online Áß DDL Çã¿ë
-     * XLog ³»ÀÇ Column Á¤º¸¸¦ Àç¹è¿­ÇÑ´Ù.
-     *   - mPKColCnt´Â º¯ÇÏÁö ¾ÊÀ¸¹Ç·Î, Á¦¿ÜÇÑ´Ù.
-     *   - Primary KeyÀÇ ¼ø¼­°¡ °°À¸¹Ç·Î, mPKCIDs[]¿Í mPKCols[]´Â Á¦¿ÜÇÑ´Ù.
+    /* PROJ-1442 Replication Online ì¤‘ DDL í—ˆìš©
+     * XLog ë‚´ì˜ Column ì •ë³´ë¥¼ ì¬ë°°ì—´í•œë‹¤.
+     *   - mPKColCntëŠ” ë³€í•˜ì§€ ì•Šìœ¼ë¯€ë¡œ, ì œì™¸í•œë‹¤.
+     *   - Primary Keyì˜ ìˆœì„œê°€ ê°™ìœ¼ë¯€ë¡œ, mPKCIDs[]ì™€ mPKCols[]ëŠ” ì œì™¸í•œë‹¤.
      */
 
     return IDE_SUCCESS;

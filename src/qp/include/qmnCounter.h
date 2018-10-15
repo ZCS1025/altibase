@@ -21,13 +21,13 @@
  * Description :
  *     CNTR(CouNTeR) Node
  *
- *     °ü°èÇü ¸ğµ¨¿¡¼­ selectionÀ» ¼öÇàÇÏ´Â Plan Node ÀÌ´Ù.
- *     SCAN ³ëµå¿Í ´Ş¸® Storage Manager¿¡ Á÷Á¢ Á¢±ÙÇÏÁö ¾Ê°í,
- *     ÀÌ¹Ì selectionµÈ record¿¡ ´ëÇÑ selectionÀ» ¼öÇàÇÑ´Ù..
+ *     ê´€ê³„í˜• ëª¨ë¸ì—ì„œ selectionì„ ìˆ˜í–‰í•˜ëŠ” Plan Node ì´ë‹¤.
+ *     SCAN ë…¸ë“œì™€ ë‹¬ë¦¬ Storage Managerì— ì§ì ‘ ì ‘ê·¼í•˜ì§€ ì•Šê³ ,
+ *     ì´ë¯¸ selectionëœ recordì— ëŒ€í•œ selectionì„ ìˆ˜í–‰í•œë‹¤..
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  **********************************************************************/
 
@@ -56,7 +56,7 @@
 typedef struct qmncCNTR  
 {
     //---------------------------------
-    // Code ¿µ¿ª °øÅë Á¤º¸
+    // Code ì˜ì—­ ê³µí†µ ì •ë³´
     //---------------------------------
 
     qmnPlan        plan;
@@ -64,13 +64,13 @@ typedef struct qmncCNTR
     UInt           planID;
 
     //---------------------------------
-    // Predicate Á¾·ù
+    // Predicate ì¢…ë¥˜
     //---------------------------------
     
     qtcNode      * stopFilter;     // Stop Filter
     
     //---------------------------------
-    // Rownum ³ëµå
+    // Rownum ë…¸ë“œ
     //---------------------------------
 
     UShort         rownumRowID;    // rownum row
@@ -80,14 +80,14 @@ typedef struct qmncCNTR
 typedef struct qmndCNTR
 {
     //---------------------------------
-    // Data ¿µ¿ª °øÅë Á¤º¸
+    // Data ì˜ì—­ ê³µí†µ ì •ë³´
     //---------------------------------
     qmndPlan       plan;
     doItFunc       doIt;
     UInt         * flag;
 
     //---------------------------------
-    // CNTR °íÀ¯ Á¤º¸
+    // CNTR ê³ ìœ  ì •ë³´
     //---------------------------------
 
     mtcTuple     * rownumTuple; // rownum of current row.
@@ -105,11 +105,11 @@ public:
     // Base Function Pointer
     //------------------------
 
-    // ÃÊ±âÈ­
+    // ì´ˆê¸°í™”
     static IDE_RC init( qcTemplate * aTemplate,
                         qmnPlan    * aPlan );
 
-    // ¼öÇà ÇÔ¼ö
+    // ìˆ˜í–‰ í•¨ìˆ˜
     static IDE_RC doIt( qcTemplate * aTemplate,
                         qmnPlan    * aPlan,
                         qmcRowFlag * aFlag );
@@ -118,7 +118,7 @@ public:
     static IDE_RC padNull( qcTemplate * aTemplate,
                            qmnPlan    * aPlan );
 
-    // Plan Á¤º¸ Ãâ·Â
+    // Plan ì •ë³´ ì¶œë ¥
     static IDE_RC printPlan( qcTemplate   * aTemplate,
                              qmnPlan      * aPlan,
                              ULong          aDepth,
@@ -129,22 +129,22 @@ public:
     // mapping by doIt() function pointer
     //------------------------
     
-    // È£ÃâµÇ¾î¼­´Â ¾ÈµÊ.
+    // í˜¸ì¶œë˜ì–´ì„œëŠ” ì•ˆë¨.
     static IDE_RC doItDefault( qcTemplate * aTemplate,
                                qmnPlan    * aPlan,
                                qmcRowFlag * aFlag );
 
-    // Ç×»ó Á¶°ÇÀ» ¸¸Á·ÇÒ ¼ö ¾ø´Â °æ¿ì
+    // í•­ìƒ ì¡°ê±´ì„ ë§Œì¡±í•  ìˆ˜ ì—†ëŠ” ê²½ìš°
     static IDE_RC doItAllFalse( qcTemplate * aTemplate,
                                 qmnPlan    * aPlan,
                                 qmcRowFlag * aFlag );
     
-    // CNTR¸¦ ¼öÇà
+    // CNTRë¥¼ ìˆ˜í–‰
     static IDE_RC doItFirst( qcTemplate * aTemplate,
                              qmnPlan    * aPlan,
                              qmcRowFlag * aFlag );
 
-    // ´ÙÀ½ CNTR¸¦ ¼öÇà
+    // ë‹¤ìŒ CNTRë¥¼ ìˆ˜í–‰
     static IDE_RC doItNext( qcTemplate * aTemplate,
                             qmnPlan    * aPlan,
                             qmcRowFlag * aFlag );
@@ -152,19 +152,19 @@ public:
 private:
 
     //------------------------
-    // ÃÊ±âÈ­ °ü·Ã ÇÔ¼ö
+    // ì´ˆê¸°í™” ê´€ë ¨ í•¨ìˆ˜
     //------------------------
 
-    // ÃÖÃÊ ÃÊ±âÈ­
+    // ìµœì´ˆ ì´ˆê¸°í™”
     static IDE_RC firstInit( qcTemplate * aTemplate,
                              qmncCNTR   * aCodePlan,
                              qmndCNTR   * aDataPlan );
 
     //------------------------
-    // Plan Display °ü·Ã ÇÔ¼ö
+    // Plan Display ê´€ë ¨ í•¨ìˆ˜
     //------------------------
 
-    // PredicateÀÇ »ó¼¼ Á¤º¸¸¦ Ãâ·ÂÇÑ´Ù.
+    // Predicateì˜ ìƒì„¸ ì •ë³´ë¥¼ ì¶œë ¥í•œë‹¤.
     static IDE_RC printPredicateInfo( qcTemplate   * aTemplate,
                                       qmncCNTR     * aCodePlan,
                                       qmndCNTR     * aDataPlan,

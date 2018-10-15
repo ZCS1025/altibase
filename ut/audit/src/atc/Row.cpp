@@ -36,7 +36,7 @@ SInt Row::getSQLType(UInt i)
  return (f) ? f->getSQLType():0;
 }
 
-/* TASK-4212: auditÅøÀÇ ´ë¿ë·® Ã³¸®½Ã °³¼± */
+/* TASK-4212: auditíˆ´ì˜ ëŒ€ìš©ëŸ‰ ì²˜ë¦¬ì‹œ ê°œì„  */
 SInt Row::getRealSqlType(UInt i)
 {
     Field * f = getField(i);
@@ -64,7 +64,7 @@ Row::Row( SInt &aErrNo):Object(),mErrNo(aErrNo)
            mField = NULL;
            mCount = 0;
     mColumnBinded = 0;
-    /* TASK-4212: auditÅøÀÇ ´ë¿ë·® Ã³¸®½Ã °³¼± */
+    /* TASK-4212: auditíˆ´ì˜ ëŒ€ìš©ëŸ‰ ì²˜ë¦¬ì‹œ ê°œì„  */
     mArrayCount = 1;
     mRowsFetched = 0;
     mRowStatusArray = NULL;
@@ -86,7 +86,7 @@ IDE_RC Row::finalize  ()
     }
     mCount = 0;
 
-    /* TASK-4212: auditÅøÀÇ ´ë¿ë·® Ã³¸®½Ã °³¼± */
+    /* TASK-4212: auditíˆ´ì˜ ëŒ€ìš©ëŸ‰ ì²˜ë¦¬ì‹œ ê°œì„  */
     mArrayCount  = 1;
     mRowsFetched = 0;
     if ( mRowStatusArray != NULL )
@@ -154,7 +154,7 @@ IDE_RC Row::initialize()
   return IDE_FAILURE;
 }
 
-/* TASK-4212: auditÅøÀÇ ´ë¿ë·® Ã³¸®½Ã °³¼± */
+/* TASK-4212: auditíˆ´ì˜ ëŒ€ìš©ëŸ‰ ì²˜ë¦¬ì‹œ ê°œì„  */
 void Row::setFileMode4Fields( bool aVal )
 {
     UShort i;

@@ -21,9 +21,9 @@
  * Description :
  *     SDEX(Shard DML EXecutor) Node
  *
- * øÎæÓ º≥∏Ì :
+ * Ïö©Ïñ¥ ÏÑ§Î™Ö :
  *
- * æ‡æÓ :
+ * ÏïΩÏñ¥ :
  *
  **********************************************************************/
 
@@ -40,7 +40,7 @@ IDE_RC qmnSDEX::init( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    SDEX ≥ÎµÂ¿« √ ±‚»≠
+ *    SDEX ÎÖ∏ÎìúÏùò Ï¥àÍ∏∞Ìôî
  *
  * Implementation :
  *
@@ -51,11 +51,11 @@ IDE_RC qmnSDEX::init( qcTemplate * aTemplate,
     qmndSDEX      * sDataPlan = (qmndSDEX*)(aTemplate->tmplate.data + aPlan->offset);
 
     //-------------------------------
-    // ¿˚«’º∫ ∞ÀªÁ
+    // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
     //-------------------------------
 
     //-------------------------------
-    // ±‚∫ª √ ±‚»≠
+    // Í∏∞Î≥∏ Ï¥àÍ∏∞Ìôî
     //-------------------------------
 
     sDataPlan->flag = &aTemplate->planFlag[sCodePlan->planID];
@@ -72,7 +72,7 @@ IDE_RC qmnSDEX::init( qcTemplate * aTemplate,
     }
 
     //-------------------------------
-    // ¿Áºˆ«‡¿ª ¿ß«— √ ±‚»≠
+    // Ïû¨ÏàòÌñâÏùÑ ÏúÑÌïú Ï¥àÍ∏∞Ìôî
     //-------------------------------
 
     sClientInfo = aTemplate->stmt->session->mQPSpecific.mClientInfo;
@@ -80,7 +80,7 @@ IDE_RC qmnSDEX::init( qcTemplate * aTemplate,
     sdi::closeDataNode( sClientInfo, sDataPlan->mDataInfo );
 
     //------------------------------------------------
-    // ºˆ«‡ «‘ºˆ ∞·¡§
+    // ÏàòÌñâ Ìï®Ïàò Í≤∞Ï†ï
     //------------------------------------------------
 
     sDataPlan->doIt = qmnSDEX::doIt;
@@ -99,7 +99,7 @@ IDE_RC qmnSDEX::firstInit( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    Data øµø™ø° ¥Î«— √ ±‚»≠
+ *    Data ÏòÅÏó≠Ïóê ÎåÄÌïú Ï¥àÍ∏∞Ìôî
  *
  * Implementation :
  *
@@ -110,10 +110,10 @@ IDE_RC qmnSDEX::firstInit( qcTemplate * aTemplate,
     sdiDataNode        sDataNodeArg;
 
     //-------------------------------
-    // ºˆ«‡≥ÎµÂ √ ±‚»≠
+    // ÏàòÌñâÎÖ∏Îìú Ï¥àÍ∏∞Ìôî
     //-------------------------------
 
-    // shard linker ∞ÀªÁ & √ ±‚»≠
+    // shard linker Í≤ÄÏÇ¨ & Ï¥àÍ∏∞Ìôî
     IDE_TEST( sdi::checkShardLinker( aTemplate->stmt ) != IDE_SUCCESS );
 
     IDE_TEST_RAISE( aTemplate->shardExecData.execInfo == NULL,
@@ -123,7 +123,7 @@ IDE_RC qmnSDEX::firstInit( qcTemplate * aTemplate,
         + aCodePlan->shardDataIndex;
 
     //-------------------------------
-    // shard ºˆ«‡¿ª ¿ß«— ¡ÿ∫Ò
+    // shard ÏàòÌñâÏùÑ ÏúÑÌïú Ï§ÄÎπÑ
     //-------------------------------
 
     sClientInfo = aTemplate->stmt->session->mQPSpecific.mClientInfo;
@@ -136,7 +136,7 @@ IDE_RC qmnSDEX::firstInit( qcTemplate * aTemplate,
         sDataNodeArg.mBindParams = (sdiBindParam*)
             ( aTemplate->shardExecData.data + aCodePlan->bindParam );
 
-        // √ ±‚»≠
+        // Ï¥àÍ∏∞Ìôî
         IDE_TEST( setParamInfo( aTemplate,
                                 aCodePlan,
                                 sDataNodeArg.mBindParams )
@@ -245,7 +245,7 @@ IDE_RC qmnSDEX::doIt( qcTemplate * aTemplate,
     vSLong           sNumRows = 0;
 
     //-------------------------------
-    // ºˆ«‡≥ÎµÂ ∞·¡§
+    // ÏàòÌñâÎÖ∏Îìú Í≤∞Ï†ï
     //-------------------------------
 
     IDE_TEST( sdi::decideShardDataInfo(
@@ -258,7 +258,7 @@ IDE_RC qmnSDEX::doIt( qcTemplate * aTemplate,
               != IDE_SUCCESS );
 
     //-------------------------------
-    // ºˆ«‡
+    // ÏàòÌñâ
     //-------------------------------
 
     IDE_TEST( sdi::executeDML( aTemplate->stmt,
@@ -283,7 +283,7 @@ IDE_RC qmnSDEX::padNull( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *     Childø° ¥Î«œø© padNull()¿ª »£√‚«—¥Ÿ.
+ *     ChildÏóê ÎåÄÌïòÏó¨ padNull()ÏùÑ Ìò∏Ï∂úÌïúÎã§.
  *
  * Implementation :
  *
@@ -296,7 +296,7 @@ IDE_RC qmnSDEX::padNull( qcTemplate * aTemplate,
     if ( (aTemplate->planFlag[sCodePlan->planID] & QMND_SDEX_INIT_DONE_MASK)
          == QMND_SDEX_INIT_DONE_FALSE )
     {
-        // √ ±‚»≠µ«¡ˆ æ ¿∫ ∞ÊøÏ √ ±‚»≠ ºˆ«‡
+        // Ï¥àÍ∏∞ÌôîÎêòÏßÄ ÏïäÏùÄ Í≤ΩÏö∞ Ï¥àÍ∏∞Ìôî ÏàòÌñâ
         IDE_TEST( aPlan->init( aTemplate, aPlan ) != IDE_SUCCESS );
     }
     else
@@ -304,7 +304,7 @@ IDE_RC qmnSDEX::padNull( qcTemplate * aTemplate,
         // Nothing To Do
     }
 
-    // Child Planø° ¥Î«œø© Null Paddingºˆ«‡
+    // Child PlanÏóê ÎåÄÌïòÏó¨ Null PaddingÏàòÌñâ
     if ( aPlan->left != NULL )
     {
         IDE_TEST( aPlan->left->padNull( aTemplate, aPlan->left )
@@ -331,7 +331,7 @@ IDE_RC qmnSDEX::printPlan( qcTemplate   * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    SDEX≥ÎµÂ¿« ºˆ«‡ ¡§∫∏∏¶ √‚∑¬«—¥Ÿ.
+ *    SDEXÎÖ∏ÎìúÏùò ÏàòÌñâ Ï†ïÎ≥¥Î•º Ï∂úÎ†•ÌïúÎã§.
  *
  * Implementation :
  *
@@ -342,14 +342,14 @@ IDE_RC qmnSDEX::printPlan( qcTemplate   * aTemplate,
     sdiClientInfo * sClientInfo = aTemplate->stmt->session->mQPSpecific.mClientInfo;
 
     //----------------------------
-    // SDEX ≥ÎµÂ «•Ω√
+    // SDEX ÎÖ∏Îìú ÌëúÏãú
     //----------------------------
 
     qmn::printSpaceDepth( aString, aDepth );
     iduVarStringAppend( aString, "SHARD-DML-EXECUTOR\n" );
 
     //----------------------------
-    // ºˆ«‡ ¡§∫∏¿« ªÛºº √‚∑¬
+    // ÏàòÌñâ Ï†ïÎ≥¥Ïùò ÏÉÅÏÑ∏ Ï∂úÎ†•
     //----------------------------
 
     if ( ( QCG_GET_SESSION_TRCLOG_DETAIL_PREDICATE(aTemplate->stmt) == 1 ) &&
@@ -413,7 +413,7 @@ IDE_RC qmnSDEX::printDataInfo( qcTemplate    * /* aTemplate */,
         if ( aMode == QMN_DISPLAY_ALL )
         {
             //----------------------------
-            // explain plan = on; ¿Œ ∞ÊøÏ
+            // explain plan = on; Ïù∏ Í≤ΩÏö∞
             //----------------------------
 
             if ( ( *aInitFlag & QMND_SDEX_INIT_DONE_MASK )
@@ -482,7 +482,7 @@ IDE_RC qmnSDEX::printDataInfo( qcTemplate    * /* aTemplate */,
         else
         {
             //----------------------------
-            // explain plan = only; ¿Œ ∞ÊøÏ
+            // explain plan = only; Ïù∏ Í≤ΩÏö∞
             //----------------------------
 
             qmn::printSpaceDepth( aString, aDepth );

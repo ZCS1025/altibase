@@ -119,7 +119,7 @@ static ACI_RC ulnPDContextAccumulateDataALLOC(ulnPDContext *aPDContext,
     if (aLength > 0)
     {
         /*
-         * ½×À»·Á´Â µ¥ÀÌÅÍ°¡ ¹öÆÛ Å©±â ÃÊ°ú
+         * ìŒ“ì„ë ¤ëŠ” ë°ì´í„°ê°€ ë²„í¼ í¬ê¸° ì´ˆê³¼
          */
         ACI_TEST(aPDContext->mDataLength + aLength > aPDContext->mBufferSize);
 
@@ -185,9 +185,9 @@ static const ulnPDOpSet gUlnPDContextOpSet[ULN_PD_BUFFER_TYPE_MAX] =
 void ulnPDContextCreate(ulnPDContext *aPDContext)
 {
     /*
-     * ulnDescRec °¡ »ý¼ºµÉ ¶§ È£ÃâµÊ.
-     * ÇÔ¼ö ¸í°ú´Â ´Ù¸£°Ô, ½ÇÁ¦ Create °¡ ¾Æ´Ï¶ó, ÀÎ½ºÅÏ½º¸¦ ÃÊ±âÈ­ÇÏ±â¸¸ ÇÔ.
-     * ulnDescRec ¿¡ ulnPDContext °¡ static ÇÏ°Ô µé¾î°¡ ÀÖ¾î¼­ ±×·¯ÇÔ.
+     * ulnDescRec ê°€ ìƒì„±ë  ë•Œ í˜¸ì¶œë¨.
+     * í•¨ìˆ˜ ëª…ê³¼ëŠ” ë‹¤ë¥´ê²Œ, ì‹¤ì œ Create ê°€ ì•„ë‹ˆë¼, ì¸ìŠ¤í„´ìŠ¤ë¥¼ ì´ˆê¸°í™”í•˜ê¸°ë§Œ í•¨.
+     * ulnDescRec ì— ulnPDContext ê°€ static í•˜ê²Œ ë“¤ì–´ê°€ ìžˆì–´ì„œ ê·¸ëŸ¬í•¨.
      */
 
     acpListInitObj(&aPDContext->mList, aPDContext);
@@ -207,7 +207,7 @@ void ulnPDContextCreate(ulnPDContext *aPDContext)
 void ulnPDContextInitialize(ulnPDContext *aPDContext, ulnPDBufferType aBufferType)
 {
     /*
-     * ÁøÂ¥ ÃÊ±âÈ­ÇÏ´Â ÇÔ¼ö.
+     * ì§„ì§œ ì´ˆê¸°í™”í•˜ëŠ” í•¨ìˆ˜.
      */
 
     acpListInitObj(&aPDContext->mList, aPDContext);

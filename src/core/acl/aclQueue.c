@@ -42,10 +42,10 @@
 
 
 /*
- * PARISC CPU´Â spinlockÀ¸·Î »ç¿ëÇÏ´Â atomic operation¸¸ Á¦°øµÇ°í
- * compare and swap°ú °°Àº atomic operationÀ» Áö¿øÇÏÁö ¾Ê±â ¶§¹®¿¡
- * compare and swapÀ» ÀÌ¿ëÇÏ´Â lockfree queue°¡ ´õ ´À¸± ¼ö ¹Û¿¡ ¾ø´Ù.
- * ±×·¯¹Ç·Î, PARISC CPU¿¡¼­´Â lockfree queue¸¦ »ç¿ëÇÏÁö ¾Êµµ·Ï ÇÑ´Ù.
+ * PARISC CPUëŠ” spinlockìœ¼ë¡œ ì‚¬ìš©í•˜ëŠ” atomic operationë§Œ ì œê³µë˜ê³ 
+ * compare and swapê³¼ ê°™ì€ atomic operationì„ ì§€ì›í•˜ì§€ ì•Šê¸° ë•Œë¬¸ì—
+ * compare and swapì„ ì´ìš©í•˜ëŠ” lockfree queueê°€ ë” ëŠë¦´ ìˆ˜ ë°–ì— ì—†ë‹¤.
+ * ê·¸ëŸ¬ë¯€ë¡œ, PARISC CPUì—ì„œëŠ” lockfree queueë¥¼ ì‚¬ìš©í•˜ì§€ ì•Šë„ë¡ í•œë‹¤.
  */
 #if !defined(ALTI_CFG_CPU_PARISC)
 #define ACL_QUEUE_LOCKFREE_ENABLED
@@ -121,12 +121,12 @@ ACP_INLINE void aclQueueFreeSafeNodes(acl_queue_t    *aQueue,
     acp_sint32_t  j;
 
     /*
-     * RetiredNodes List¸¦ NodesToFree List·Î º¹»ç
+     * RetiredNodes Listë¥¼ NodesToFree Listë¡œ ë³µì‚¬
      */
     acpMemCpy(sNodesToFree, aSmrRec->mRetiredNodes, sizeof(sNodesToFree));
 
     /*
-     * NodesToFree List¿¡¼­ Hazardous NodeµéÀ» Nullify
+     * NodesToFree Listì—ì„œ Hazardous Nodeë“¤ì„ Nullify
      */
     ACP_MEM_BARRIER();
 
@@ -142,7 +142,7 @@ ACP_INLINE void aclQueueFreeSafeNodes(acl_queue_t    *aQueue,
     }
 
     /*
-     * NodesToFree ListÀÇ NodeµéÀ» NodePool·Î ¹İÈ¯ ÈÄ RetiredNodes List¿¡¼­ Á¦°Å
+     * NodesToFree Listì˜ Nodeë“¤ì„ NodePoolë¡œ ë°˜í™˜ í›„ RetiredNodes Listì—ì„œ ì œê±°
      */
     sCount = 0;
 

@@ -20,7 +20,7 @@
  *
  * Description :
  * 
- * º» ÆÄÀÏÀº µğ½ºÅ© °ü·Ã redo/undo ÇÔ¼ö¿¡ ´ëÇÑ Çì´õÆÄÀÏÀÌ´Ù.
+ * ë³¸ íŒŒì¼ì€ ë””ìŠ¤í¬ ê´€ë ¨ redo/undo í•¨ìˆ˜ì— ëŒ€í•œ í—¤ë”íŒŒì¼ì´ë‹¤.
  *
  **********************************************************************/
 
@@ -173,7 +173,7 @@ public:
                         SChar         * aValuePtr,
                         idBool          aIsRestart = ID_FALSE );
 
-    // ALTER TABLESPACE TBS1 OFFLINE .... ¿¡ ´ëÇÑ REDO ¼öÇà
+    // ALTER TABLESPACE TBS1 OFFLINE .... ì— ëŒ€í•œ REDO ìˆ˜í–‰
     static IDE_RC redo_SCT_UPDATE_DRDB_ALTER_TBS_OFFLINE(
                         idvSQL        * aStatistics, 
                         void          * aTrans,
@@ -184,7 +184,7 @@ public:
                         SChar         * aValuePtr,
                         idBool          aIsRestart );
 
-    // ALTER TABLESPACE TBS1 OFFLINE .... ¿¡ ´ëÇÑ UNDO ¼öÇà
+    // ALTER TABLESPACE TBS1 OFFLINE .... ì— ëŒ€í•œ UNDO ìˆ˜í–‰
     static IDE_RC undo_SCT_UPDATE_DRDB_ALTER_TBS_OFFLINE(
                         idvSQL        * aStatistics, 
                         void          * aTrans,
@@ -195,7 +195,7 @@ public:
                         SChar         * aValuePtr,
                         idBool          aIsRestart );
 
-    // ALTER TABLESPACE TBS1 ONLINE .... ¿¡ ´ëÇÑ REDO ¼öÇà
+    // ALTER TABLESPACE TBS1 ONLINE .... ì— ëŒ€í•œ REDO ìˆ˜í–‰
     static IDE_RC redo_SCT_UPDATE_DRDB_ALTER_TBS_ONLINE(
                         idvSQL        * aStatistics, 
                         void          * aTrans,
@@ -206,7 +206,7 @@ public:
                         SChar         * aValuePtr,
                         idBool          aIsRestart );
 
-    // ALTER TABLESPACE TBS1 ONLINE .... ¿¡ ´ëÇÑ UNDO ¼öÇà
+    // ALTER TABLESPACE TBS1 ONLINE .... ì— ëŒ€í•œ UNDO ìˆ˜í–‰
     static IDE_RC undo_SCT_UPDATE_DRDB_ALTER_TBS_ONLINE(
                         idvSQL        * aStatistics, 
                         void          * aTrans,
@@ -261,7 +261,7 @@ public:
 public:
 
 private:
-    // ALTER TABLESPACE TBS1 ONLINE/OFFLINE .... ¿¡ ´ëÇÑ Log Image¸¦ ºĞ¼®ÇÑ´Ù.
+    // ALTER TABLESPACE TBS1 ONLINE/OFFLINE .... ì— ëŒ€í•œ Log Imageë¥¼ ë¶„ì„í•œë‹¤.
     static IDE_RC getAlterTBSOnOffImage( UInt       aValueSize,
                                          SChar    * aValuePtr,
                                          UInt     * aState );

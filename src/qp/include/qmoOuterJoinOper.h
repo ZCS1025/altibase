@@ -21,9 +21,9 @@
  * Description :
  *     PROJ-1653 Outer Join Operator (+)
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  **********************************************************************/
 
@@ -36,12 +36,12 @@
 #include <qmsParseTree.h>
 
 //---------------------------------------------------
-// Outer Join Operator °¡ Á¸ÀçÇÏ´Â Çü½Ä Á¤ÀÇ
+// Outer Join Operator ê°€ ì¡´ì¬í•˜ëŠ” í˜•ì‹ ì •ì˜
 //
-// QMO_JOIN_OPER_NONE  : ÃÊ±â°ª
-// QMO_JOIN_OPER_FALSE : Å×ÀÌºí¿¡ (+)°¡ ¾øÀ½.
-// QMO_JOIN_OPER_BOTH  : t1.i1(+) - t1.i2 = 1 °ú °°ÀÌ ÇÑ Å×ÀÌºí¿¡ ºÙ±âµµ ÇÏ°í ¾ÈºÙ±âµµ ÇßÀ½.
-//                       predicate level ¿¡¼­´Â QMO_JOIN_OPER_BOTH ´Â ¿¡·¯°¡ µÈ´Ù.
+// QMO_JOIN_OPER_NONE  : ì´ˆê¸°ê°’
+// QMO_JOIN_OPER_FALSE : í…Œì´ë¸”ì— (+)ê°€ ì—†ìŒ.
+// QMO_JOIN_OPER_BOTH  : t1.i1(+) - t1.i2 = 1 ê³¼ ê°™ì´ í•œ í…Œì´ë¸”ì— ë¶™ê¸°ë„ í•˜ê³  ì•ˆë¶™ê¸°ë„ í–ˆìŒ.
+//                       predicate level ì—ì„œëŠ” QMO_JOIN_OPER_BOTH ëŠ” ì—ëŸ¬ê°€ ëœë‹¤.
 //---------------------------------------------------
 
 #define QMO_JOIN_OPER_MASK   0x03
@@ -52,21 +52,21 @@
                                     // = QMO_JOIN_OPER_FALSE|QMO_JOIN_OPER_TRUE
 
 //---------------------------------------------------
-// Predicate ´ç Outer Join Operator °¡ ÀÖ´Â Å×ÀÌºíÀº 1 °³¸¸ °¡´É
-// (List,Range Type Predicate Á¦¿Ü)
+// Predicate ë‹¹ Outer Join Operator ê°€ ìˆëŠ” í…Œì´ë¸”ì€ 1 ê°œë§Œ ê°€ëŠ¥
+// (List,Range Type Predicate ì œì™¸)
 //---------------------------------------------------
 #define QMO_JOIN_OPER_TABLE_CNT_PER_PRED              (1)
 
 //---------------------------------------------------
-// Outer Join Predicate ÀÇ dependency table Àº 2 °³ÀÌÇÏ
-// (List,Range Type Predicate Á¦¿Ü)
+// Outer Join Predicate ì˜ dependency table ì€ 2 ê°œì´í•˜
+// (List,Range Type Predicate ì œì™¸)
 //---------------------------------------------------
 #define QMO_JOIN_OPER_DEPENDENCY_TABLE_CNT_PER_PRED   (2)
 
 
 //---------------------------------------------------
-// qtcNode.depInfo.depJoinOper[i] °ªÀ» ¹Ş¾Æ¼­
-// Outer Join Operator ÀÇ À¯¹«¸¦ °Ë»ç
+// qtcNode.depInfo.depJoinOper[i] ê°’ì„ ë°›ì•„ì„œ
+// Outer Join Operator ì˜ ìœ ë¬´ë¥¼ ê²€ì‚¬
 //---------------------------------------------------
 # define QMO_JOIN_OPER_EXISTS( joinOper )                                   \
     (                                                                       \
@@ -76,7 +76,7 @@
     )
 
 //---------------------------------------------------
-// Outer Join Operator ÀÇ À¯¹«°¡ ¼­·Î ¹İ´ëÀÎÁö °Ë»ç
+// Outer Join Operator ì˜ ìœ ë¬´ê°€ ì„œë¡œ ë°˜ëŒ€ì¸ì§€ ê²€ì‚¬
 //---------------------------------------------------
 # define QMO_IS_JOIN_OPER_COUNTER( joinOper1, joinOper2 )                  \
     (                                                                      \
@@ -95,9 +95,9 @@
     )
 
 //---------------------------------------------------
-// Outer Join Operator ÀÇ À¯¹«°¡ ¼­·Î °°ÀºÁö °Ë»ç.
-// QMO_JOIN_OPER_TRUE ¿Í QMO_JOIN_OPER_BOTH ´Â µÑ´Ù Predicate ³»¿¡¼­
-// Outer Join Operator °¡ ÀÖ´Ù´Â °Í.
+// Outer Join Operator ì˜ ìœ ë¬´ê°€ ì„œë¡œ ê°™ì€ì§€ ê²€ì‚¬.
+// QMO_JOIN_OPER_TRUE ì™€ QMO_JOIN_OPER_BOTH ëŠ” ë‘˜ë‹¤ Predicate ë‚´ì—ì„œ
+// Outer Join Operator ê°€ ìˆë‹¤ëŠ” ê²ƒ.
 //---------------------------------------------------
 # define QMO_JOIN_OPER_EQUALS( joinOper1, joinOper2 )                      \
     (                                                                      \
@@ -158,20 +158,20 @@
 
 
 //---------------------------------------------------
-// Outer Join Operator ¸¦ »ç¿ëÇÏ´Â Join Predicate À»
-// °ü¸®ÇÏ±â À§ÇÑ ÀÚ·á±¸Á¶
+// Outer Join Operator ë¥¼ ì‚¬ìš©í•˜ëŠ” Join Predicate ì„
+// ê´€ë¦¬í•˜ê¸° ìœ„í•œ ìë£Œêµ¬ì¡°
 //---------------------------------------------------
 
 typedef struct qmoJoinOperPred
 {
-    qtcNode          * node;   // OR³ª ºñ±³¿¬»êÀÚ ´ÜÀ§ÀÇ predicate
+    qtcNode          * node;   // ORë‚˜ ë¹„êµì—°ì‚°ì ë‹¨ìœ„ì˜ predicate
 
-    qmoJoinOperPred  * next;   // qmoJoinOperPred ÀÇ ¿¬°á
+    qmoJoinOperPred  * next;   // qmoJoinOperPred ì˜ ì—°ê²°
 } qmoJoinOperPred;
 
 
 //---------------------------------------------------
-// Join Relation À» °ü¸®ÇÏ±â À§ÇÑ ÀÚ·á±¸Á¶
+// Join Relation ì„ ê´€ë¦¬í•˜ê¸° ìœ„í•œ ìë£Œêµ¬ì¡°
 //---------------------------------------------------
 
 typedef struct qmoJoinOperRel
@@ -182,8 +182,8 @@ typedef struct qmoJoinOperRel
 
 
 //---------------------------------------------------
-// Outer Join Operator ¸¦ »ç¿ëÇÏ´Â Join Predicate µéÀ» 
-// °ü¸®ÇÏ±â À§ÇÑ ÀÚ·á ±¸Á¶
+// Outer Join Operator ë¥¼ ì‚¬ìš©í•˜ëŠ” Join Predicate ë“¤ì„ 
+// ê´€ë¦¬í•˜ê¸° ìœ„í•œ ìë£Œ êµ¬ì¡°
 //---------------------------------------------------
 
 typedef struct qmoJoinOperGroup
@@ -194,47 +194,47 @@ typedef struct qmoJoinOperGroup
     UInt                  joinRelationCnt;
     UInt                  joinRelationCntMax;
 
-    // join group ³»ÀÇ ¸ğµç tableµéÀÇ dependencies¸¦ ORing ÇÑ °ª
+    // join group ë‚´ì˜ ëª¨ë“  tableë“¤ì˜ dependenciesë¥¼ ORing í•œ ê°’
     qcDepInfo             depInfo;
 } qmoJoinOperGroup;
 
 
 //---------------------------------------------------
-// Outer Join Operator ¸¦ »ç¿ëÇÏ´Â ÀÚ·á±¸Á¶¸¦ ANSI Style ·Î º¯°æÇÏ´Â
-// °úÁ¤¿¡¼­ Classifying, Grouping, Relationing À» ¼öÇàÇÏ±â À§ÇØ
-// ÇÊ¿äÇÑ ÀÓ½Ã ¼º°İÀÇ ÀÚ·á ±¸Á¶.
-// º¯È¯ÀÌ ¿Ï·áµÈ ÈÄ Optimization ÀÌÈÄºÎÅÍ´Â ´õ ÀÌ»ó ÀÌ ÀÚ·á±¸Á¶´Â
-// »ç¿ëµÇÁö ¾Ê´Â´Ù.
+// Outer Join Operator ë¥¼ ì‚¬ìš©í•˜ëŠ” ìë£Œêµ¬ì¡°ë¥¼ ANSI Style ë¡œ ë³€ê²½í•˜ëŠ”
+// ê³¼ì •ì—ì„œ Classifying, Grouping, Relationing ì„ ìˆ˜í–‰í•˜ê¸° ìœ„í•´
+// í•„ìš”í•œ ì„ì‹œ ì„±ê²©ì˜ ìë£Œ êµ¬ì¡°.
+// ë³€í™˜ì´ ì™„ë£Œëœ í›„ Optimization ì´í›„ë¶€í„°ëŠ” ë” ì´ìƒ ì´ ìë£Œêµ¬ì¡°ëŠ”
+// ì‚¬ìš©ë˜ì§€ ì•ŠëŠ”ë‹¤.
 //
-// *** Outer Join Operator ¸¦ º¯È¯ÇÏ´Â °úÁ¤¿¡¼­ ¼öÇàÇÏ´Â
-//     Join Grouping °ú Join Relationing Àº ÀÌÈÄ optimization 
-//     °úÁ¤¿¡¼­ ¼öÇàÇÏ´Â ±×°Í°ú °³³äÀº ºñ½ÁÇÏÁö¸¸ ÀüÇô º°°³ÀÌ´Ï
-//     È¥µ¿ÇÏÁö ¾Ê±â¸¦ ¹Ù¶õ´Ù.
-//     ±×·¡¼­, ÀÚ·á±¸Á¶¸í°ú ÇÔ¼ö¸íÀº µÇµµ·Ï ¾Õ¿¡ joinOper ¶ó´Â
-//     °ÍÀ» ºÙ¿©¼­ »ç¿ëÇß°í, ±× ¾ÈÀÇ º¯¼ö¸íµéÀº ¸ğµÎ joinOper ¸¦
-//     ºÙÀÏ ¼ö´Â ¾ø¾î¼­ °³³ä¿¡ ÀÇÇÑ ¿ëµµ¸¦ Áß½ÉÀ¸·Î naming Çß´Ù.
+// *** Outer Join Operator ë¥¼ ë³€í™˜í•˜ëŠ” ê³¼ì •ì—ì„œ ìˆ˜í–‰í•˜ëŠ”
+//     Join Grouping ê³¼ Join Relationing ì€ ì´í›„ optimization 
+//     ê³¼ì •ì—ì„œ ìˆ˜í–‰í•˜ëŠ” ê·¸ê²ƒê³¼ ê°œë…ì€ ë¹„ìŠ·í•˜ì§€ë§Œ ì „í˜€ ë³„ê°œì´ë‹ˆ
+//     í˜¼ë™í•˜ì§€ ì•Šê¸°ë¥¼ ë°”ë€ë‹¤.
+//     ê·¸ë˜ì„œ, ìë£Œêµ¬ì¡°ëª…ê³¼ í•¨ìˆ˜ëª…ì€ ë˜ë„ë¡ ì•ì— joinOper ë¼ëŠ”
+//     ê²ƒì„ ë¶™ì—¬ì„œ ì‚¬ìš©í–ˆê³ , ê·¸ ì•ˆì˜ ë³€ìˆ˜ëª…ë“¤ì€ ëª¨ë‘ joinOper ë¥¼
+//     ë¶™ì¼ ìˆ˜ëŠ” ì—†ì–´ì„œ ê°œë…ì— ì˜í•œ ìš©ë„ë¥¼ ì¤‘ì‹¬ìœ¼ë¡œ naming í–ˆë‹¤.
 //---------------------------------------------------
 
 typedef struct qmoJoinOperTrans
 {
-    qtcNode       * normalCNF;   // normalized µÈ CNF ¸¦ °¡¸®Å´(=qmoCNF->normalCNF)
+    qtcNode       * normalCNF;   // normalized ëœ CNF ë¥¼ ê°€ë¦¬í‚´(=qmoCNF->normalCNF)
 
     //-------------------------------------------------------------------
-    //  transform ¿¡ À¯¿ëÇÏµµ·Ï ´Ü¼øÇÏ°Ô ¼³°èµÈ ¾Æ·¡ÀÇ ÀÚ·á±¸Á¶¸¦ ÀÌ¿ëÇÑ´Ù.
-    //  Predicate ºĞ·ù ½Ã Outer Join Operator °¡ ÀÖÀ¸¸é oneTablePred/joinOperPred ¿¡
-    //  ¿¬°áÇÏ°í, ¾ø°Å³ª constant predicate ÀÌ¸é generalPred ¿¡ ¿¬°áÇÑ´Ù.
-    //  generalPred ¿¡ ¿¬°áµÈ Predicate Àº transform ÈÄ¿¡
-    //  ±×´ë·Î where Àı(normalCNF)¿¡ ³²¾ÆÀÖ°Ô µÈ´Ù.
-    //  µû¶ó¼­, Grouping ÇÒ ´ë»óµµ ¾Æ´Ï´Ù.
+    //  transform ì— ìœ ìš©í•˜ë„ë¡ ë‹¨ìˆœí•˜ê²Œ ì„¤ê³„ëœ ì•„ë˜ì˜ ìë£Œêµ¬ì¡°ë¥¼ ì´ìš©í•œë‹¤.
+    //  Predicate ë¶„ë¥˜ ì‹œ Outer Join Operator ê°€ ìˆìœ¼ë©´ oneTablePred/joinOperPred ì—
+    //  ì—°ê²°í•˜ê³ , ì—†ê±°ë‚˜ constant predicate ì´ë©´ generalPred ì— ì—°ê²°í•œë‹¤.
+    //  generalPred ì— ì—°ê²°ëœ Predicate ì€ transform í›„ì—
+    //  ê·¸ëŒ€ë¡œ where ì ˆ(normalCNF)ì— ë‚¨ì•„ìˆê²Œ ëœë‹¤.
+    //  ë”°ë¼ì„œ, Grouping í•  ëŒ€ìƒë„ ì•„ë‹ˆë‹¤.
     //
-    //   - oneTablePred : Outer Join Operator + one table dependency Á¶°ÇÀÇ pred list
-    //   - joinOperPred : Outer Join Operator + two table Á¶°Ç ÀÌ»óÀÇ pred list
-    //   - generalPred  : constant predicate Æ÷ÇÔÇÏ¿© Outer Join Operator °¡
-    //                    ¾ø´Â ¸ğµç Predicate
+    //   - oneTablePred : Outer Join Operator + one table dependency ì¡°ê±´ì˜ pred list
+    //   - joinOperPred : Outer Join Operator + two table ì¡°ê±´ ì´ìƒì˜ pred list
+    //   - generalPred  : constant predicate í¬í•¨í•˜ì—¬ Outer Join Operator ê°€
+    //                    ì—†ëŠ” ëª¨ë“  Predicate
     //
-    //   - maxJoinOperGroupCnt : ÃÖ´ë joinOperGroupCnt = BaseTableCnt
-    //   - joinOperGroupCnt    : ½ÇÁ¦ joinOperGroupCnt
-    //   - joinOperGroup       : joinOperGroup ¹è¿­
+    //   - maxJoinOperGroupCnt : ìµœëŒ€ joinOperGroupCnt = BaseTableCnt
+    //   - joinOperGroupCnt    : ì‹¤ì œ joinOperGroupCnt
+    //   - joinOperGroup       : joinOperGroup ë°°ì—´
     //-------------------------------------------------------------------
 
     qmoJoinOperPred   * oneTablePred;
@@ -250,27 +250,27 @@ typedef struct qmoJoinOperTrans
 
 
 //---------------------------------------------------
-// Outer Join Operator (+) ±â´É °ü·ÃÇÏ¿© ½Å±Ô·Î Ãß°¡µÈ ÇÔ¼öµéÀ»
-// ¸ğ¾Æ³õÀº class
+// Outer Join Operator (+) ê¸°ëŠ¥ ê´€ë ¨í•˜ì—¬ ì‹ ê·œë¡œ ì¶”ê°€ëœ í•¨ìˆ˜ë“¤ì„
+// ëª¨ì•„ë†“ì€ class
 //---------------------------------------------------
 class qmoOuterJoinOper
 {
 private:
 
-    // qmoJoinOperTrans ÀÚ·á±¸Á¶ ÃÊ±âÈ­
+    // qmoJoinOperTrans ìë£Œêµ¬ì¡° ì´ˆê¸°í™”
     static IDE_RC    initJoinOperTrans( qmoJoinOperTrans * aTrans,
                                         qtcNode          * aNormalForm );
 
-    // qmoJoinOperGroup ÀÚ·á±¸Á¶ ÃÊ±âÈ­
+    // qmoJoinOperGroup ìë£Œêµ¬ì¡° ì´ˆê¸°í™”
     static IDE_RC    initJoinOperGroup( qcStatement      * aStatement,
                                         qmoJoinOperGroup * aJoinGroup,
                                         UInt               aJoinGroupCnt );
 
-    // LIST Type ÀÇ ºñ±³¿¬»êÀÚ¸¦ ÀÏ¹İ¿¬»êÀÚ·Î º¯È¯ ½Ã º¯È¯ÇÒ ÀÏ¹İ¿¬»êÀÚ string return
+    // LIST Type ì˜ ë¹„êµì—°ì‚°ìë¥¼ ì¼ë°˜ì—°ì‚°ìë¡œ ë³€í™˜ ì‹œ ë³€í™˜í•  ì¼ë°˜ì—°ì‚°ì string return
     static IDE_RC    getCompModule4List( mtfModule    * aModule,
                                          mtfModule   ** aCompModule );
 
-    // avaliable ÇÑ Join Relation ÀÎÁö °Ë»ç
+    // avaliable í•œ Join Relation ì¸ì§€ ê²€ì‚¬
     static IDE_RC    isAvailableJoinOperRel( qcDepInfo  * aDepInfo,
                                              idBool     * aIsTrue );
 
@@ -296,60 +296,60 @@ private:
                                           mtfModule    * aCompModule,
                                           qtcNode     ** aOperNode );
 
-    // normalize µÈ Tree ¿¡¼­ LIST/RANGE Type ÀÇ Æ¯¼öºñ±³¿¬»êÀÚ Predicate µéÀ»
-    // ÀÏ¹İ ºñ±³¿¬»êÀÚ ÇüÅÂ·Î º¯È¯
+    // normalize ëœ Tree ì—ì„œ LIST/RANGE Type ì˜ íŠ¹ìˆ˜ë¹„êµì—°ì‚°ì Predicate ë“¤ì„
+    // ì¼ë°˜ ë¹„êµì—°ì‚°ì í˜•íƒœë¡œ ë³€í™˜
     static IDE_RC    transNormalCNF4SpecialPred( qcStatement       * aStatement,
                                                  qmsQuerySet       * aQuerySet,
                                                  qmoJoinOperTrans  * aCNF );
 
-    // º¯È¯µÈ normalCNF Tree ÀÇ Predicate µéÀ» ¼øÈ¸ÇÏ¸ç Á¦¾à»çÇ× °Ë»ç
+    // ë³€í™˜ëœ normalCNF Tree ì˜ Predicate ë“¤ì„ ìˆœíšŒí•˜ë©° ì œì•½ì‚¬í•­ ê²€ì‚¬
     static IDE_RC    validateJoinOperConstraints( qcStatement * aStatement,
                                                   qmsQuerySet * aQuerySet,
                                                   qtcNode     * aNormalCNF );
 
-    // normalCNF ÀÇ Join °ü°è¸¦ °í·ÁÇÏ¿© From Tree ¿Í normalCNF Tree º¯È¯
+    // normalCNF ì˜ Join ê´€ê³„ë¥¼ ê³ ë ¤í•˜ì—¬ From Tree ì™€ normalCNF Tree ë³€í™˜
     static IDE_RC    transformStruct2ANSIStyle( qcStatement       * aStatement,
                                                 qmsQuerySet       * aQuerySet,
                                                 qmoJoinOperTrans  * aTrans );
 
 
-    // constant predicate ÀÎÁö °Ë»ç
+    // constant predicate ì¸ì§€ ê²€ì‚¬
     static IDE_RC    isConstJoinOperPred( qmsQuerySet * aQuerySet,
                                           qtcNode     * aPredicate,
                                           idBool      * aIsTrue );
 
-    // one table predicate ÀÎÁö °Ë»ç
+    // one table predicate ì¸ì§€ ê²€ì‚¬
     static IDE_RC    isOneTableJoinOperPred( qmsQuerySet * aQuerySet,
                                              qtcNode     * aPredicate,
                                              idBool      * aIsTrue );
 
-    // qmoJoinOperPred ÀÚ·á±¸Á¶ »ı¼º
+    // qmoJoinOperPred ìë£Œêµ¬ì¡° ìƒì„±
     static IDE_RC    createJoinOperPred( qcStatement      * aStatement,
                                          qtcNode          * aNode,
                                          qmoJoinOperPred ** aNewPredicate );
 
-    // constant/onetable/join predicate ºĞ·ù
+    // constant/onetable/join predicate ë¶„ë¥˜
     static IDE_RC    classifyJoinOperPredicate( qcStatement       * aStatement,
                                                 qmsQuerySet       * aQuerySet,
                                                 qmoJoinOperTrans  * aTrans );
 
-    // Join Predicate À» Grouping, Relationing, Ordering
+    // Join Predicate ì„ Grouping, Relationing, Ordering
     static IDE_RC    joinOperOrdering( qcStatement       * aStatement,
                                        qmoJoinOperTrans  * aTrans );
 
-    // Join Predicate À» Grouping
+    // Join Predicate ì„ Grouping
     static IDE_RC    joinOperGrouping( qmoJoinOperTrans  * aTrans );
 
-    // Join Predicate À» Relationing
+    // Join Predicate ì„ Relationing
     static IDE_RC    joinOperRelationing( qcStatement      * aStatement,
                                           qmoJoinOperGroup * aJoinGroup );
 
-    // Outer Join Operator °¡  Æ÷ÇÔµÈ Join Predicate µéÀ» ANSI ÇüÅÂ·Î º¯È¯
+    // Outer Join Operator ê°€  í¬í•¨ëœ Join Predicate ë“¤ì„ ANSI í˜•íƒœë¡œ ë³€í™˜
     static IDE_RC    transformJoinOper( qcStatement      * aStatement,
                                         qmsQuerySet      * aQuerySet,
                                         qmoJoinOperTrans * aTrans );
 
-    // Outer Join Operator °ü·Ã From ÀıÀÇ º¯È¯
+    // Outer Join Operator ê´€ë ¨ From ì ˆì˜ ë³€í™˜
     static IDE_RC    transformJoinOper2From( qcStatement      * aStatement,
                                              qmsQuerySet      * aQuerySet,
                                              qmoJoinOperTrans * aTrans,
@@ -357,28 +357,28 @@ private:
                                              qmoJoinOperRel   * sJoinRel,
                                              qmoJoinOperPred  * sJoinPred );
 
-    // Outer Join Operator °ü·Ã onCondition ÀıÀÇ º¯È¯
+    // Outer Join Operator ê´€ë ¨ onCondition ì ˆì˜ ë³€í™˜
     static IDE_RC    movePred2OnCondition( qcStatement      * aStatement,
                                            qmoJoinOperTrans * aTrans,
                                            qmsFrom          * aNewFrom,
                                            qmoJoinOperRel   * aJoinGroupRel,
                                            qmoJoinOperPred  * aJoinGroupPred );
 
-    // From Tree ¸¦ ¼øÈ¸ÇÏ¸ç New From ³ëµå¸¦ Merge
+    // From Tree ë¥¼ ìˆœíšŒí•˜ë©° New From ë…¸ë“œë¥¼ Merge
     static IDE_RC    merge2ANSIStyleFromTree( qmsFrom     * aFromFrom,
                                               qmsFrom     * aToFrom,
                                               idBool        aFirstIsLeft,
                                               qcDepInfo   * aDepInfo,
                                               qmsFrom     * aNewFrom );
 
-    // normalCNF ¿¡¼­ RANGE Type ÀÇ Predicate °æ¿ì º¯È¯ ¼öÇà
+    // normalCNF ì—ì„œ RANGE Type ì˜ Predicate ê²½ìš° ë³€í™˜ ìˆ˜í–‰
     static IDE_RC    transJoinOperBetweenStyle( qcStatement * aStatement,
                                                 qmsQuerySet * aQuerySet,
                                                 qtcNode     * aInNode,
                                                 qtcNode    ** aTransStart,
                                                 qtcNode    ** aTransEnd );
 
-    // normalCNF ¿¡¼­ LIST Type ÀÇ Predicate °æ¿ì º¯È¯ ¼öÇà
+    // normalCNF ì—ì„œ LIST Type ì˜ Predicate ê²½ìš° ë³€í™˜ ìˆ˜í–‰
     static IDE_RC    transJoinOperListArgStyle( qcStatement * aStatement,
                                                 qmsQuerySet * aQuerySet,
                                                 qtcNode     * aInNode,

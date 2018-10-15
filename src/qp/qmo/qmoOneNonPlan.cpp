@@ -21,32 +21,32 @@
  * Description :
  *     Plan Generator
  *
- *     One-child Non-materialized PlanÀ» »ı¼ºÇÏ±â À§ÇÑ °ü¸®ÀÚÀÌ´Ù.
+ *     One-child Non-materialized Planì„ ìƒì„±í•˜ê¸° ìœ„í•œ ê´€ë¦¬ìì´ë‹¤.
  *
- *     ´ÙÀ½°ú °°Àº Plan NodeÀÇ »ı¼ºÀ» °ü¸®ÇÑ´Ù.
- *         - SCAN ³ëµå
- *         - FILT ³ëµå
- *         - PROJ ³ëµå
- *         - GRBY ³ëµå
- *         - AGGR ³ëµå
- *         - CUNT ³ëµå
- *         - VIEW ³ëµå
- *         - VSCN ³ëµå
- *         - SCAN(for Partition) ³ëµå PROJ-1502 PARTITIONED DISK TABLE
- *         - CNTR ³ëµå PROJ-1405 ROWNUM
- *         - SDSE ³ëµå
- *         - SDEX ³ëµå
- *         - SDIN ³ëµå
+ *     ë‹¤ìŒê³¼ ê°™ì€ Plan Nodeì˜ ìƒì„±ì„ ê´€ë¦¬í•œë‹¤.
+ *         - SCAN ë…¸ë“œ
+ *         - FILT ë…¸ë“œ
+ *         - PROJ ë…¸ë“œ
+ *         - GRBY ë…¸ë“œ
+ *         - AGGR ë…¸ë“œ
+ *         - CUNT ë…¸ë“œ
+ *         - VIEW ë…¸ë“œ
+ *         - VSCN ë…¸ë“œ
+ *         - SCAN(for Partition) ë…¸ë“œ PROJ-1502 PARTITIONED DISK TABLE
+ *         - CNTR ë…¸ë“œ PROJ-1405 ROWNUM
+ *         - SDSE ë…¸ë“œ
+ *         - SDEX ë…¸ë“œ
+ *         - SDIN ë…¸ë“œ
  *
- *     ¸ğµç NODEµéÀº ÃÊ±âÈ­ ÀÛ¾÷ , ¸ŞÀÎ ÀÛ¾÷ , ¸¶¹«¸® ÀÛ¾÷ ¼øÀ¸·Î ÀÌ·ç¾î
- *     Áø´Ù. ÃÊ±âÈ­ ÀÛ¾÷¿¡¼­´Â NODEÀÇ ÄÚµå ¿µ¿ªÀÇ ÇÒ´ç ¹× ÃÊ±âÈ­ ÀÛ¾÷À»
- *     ÇÏ¸ç, ¸ŞÀÎÀÛ¾÷¿¡´Â °¢ NODEº°·Î ÀÌ·ç¾îÁ®¾ß ÇÒ ÀÛ¾÷ , ±×¸®°í ¸¶Áö¸·
- *     À¸·Î ¸¶¹«¸® ÀÛ¾÷¿¡¼­´Â data¿µ¿ªÀÇ Å©±â, dependencyÃ³¸®, subqueryÀÇ
- *     Ã³¸® µîÀÌ ÀÌ·ç¾îÁø´Ù.
+ *     ëª¨ë“  NODEë“¤ì€ ì´ˆê¸°í™” ì‘ì—… , ë©”ì¸ ì‘ì—… , ë§ˆë¬´ë¦¬ ì‘ì—… ìˆœìœ¼ë¡œ ì´ë£¨ì–´
+ *     ì§„ë‹¤. ì´ˆê¸°í™” ì‘ì—…ì—ì„œëŠ” NODEì˜ ì½”ë“œ ì˜ì—­ì˜ í• ë‹¹ ë° ì´ˆê¸°í™” ì‘ì—…ì„
+ *     í•˜ë©°, ë©”ì¸ì‘ì—…ì—ëŠ” ê° NODEë³„ë¡œ ì´ë£¨ì–´ì ¸ì•¼ í•  ì‘ì—… , ê·¸ë¦¬ê³  ë§ˆì§€ë§‰
+ *     ìœ¼ë¡œ ë§ˆë¬´ë¦¬ ì‘ì—…ì—ì„œëŠ” dataì˜ì—­ì˜ í¬ê¸°, dependencyì²˜ë¦¬, subqueryì˜
+ *     ì²˜ë¦¬ ë“±ì´ ì´ë£¨ì–´ì§„ë‹¤.
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  **********************************************************************/
 
@@ -172,25 +172,25 @@ IDE_RC qmoOneNonPlan::makeSCAN( qcStatement  * aStatement ,
 {
 /***********************************************************************
  *
- * Description : SCAN ³ëµå¸¦ »ı¼ºÇÑ´Ù.
+ * Description : SCAN ë…¸ë“œë¥¼ ìƒì„±í•œë‹¤.
  *
  * Implementation :
- *     + ÃÊ±âÈ­ ÀÛ¾÷
- *         - data ¿µ¿ªÀÇ Å©±â °è»ê
- *         - qmncSCANÀÇ ÇÒ´ç ¹× ÃÊ±âÈ­ (display Á¤º¸ , index Á¤º¸)
- *         - limit ±¸ÀıÀÇ È®ÀÎ
- *         - select for update¸¦ À§ÇÑ Ã³¸®
- *     + ¸ŞÀÎ ÀÛ¾÷
- *         - PredicateÀÇ ºĞ·ù
- *             - constantÀÇ Ã³¸®
- *             - ÀÔ·ÂPredicateÁ¤º¸¿Í index Á¤º¸·Î ºÎÅÍ Predicate ºĞ·ù
- *             - fixed , variableÀÇ ±¸ºĞ
- *             - qtcNode·Î ÀÇ º¯È¯
- *             - smiRange·ÎÀÇ º¯È¯
- *             - indexable min-maxÀÇ Ã³¸®
- *     + ¸¶¹«¸® ÀÛ¾÷
- *         - dependencyÀÇ Ã³¸®
- *         - subqueryÀÇ Ã³¸®
+ *     + ì´ˆê¸°í™” ì‘ì—…
+ *         - data ì˜ì—­ì˜ í¬ê¸° ê³„ì‚°
+ *         - qmncSCANì˜ í• ë‹¹ ë° ì´ˆê¸°í™” (display ì •ë³´ , index ì •ë³´)
+ *         - limit êµ¬ì ˆì˜ í™•ì¸
+ *         - select for updateë¥¼ ìœ„í•œ ì²˜ë¦¬
+ *     + ë©”ì¸ ì‘ì—…
+ *         - Predicateì˜ ë¶„ë¥˜
+ *             - constantì˜ ì²˜ë¦¬
+ *             - ì…ë ¥Predicateì •ë³´ì™€ index ì •ë³´ë¡œ ë¶€í„° Predicate ë¶„ë¥˜
+ *             - fixed , variableì˜ êµ¬ë¶„
+ *             - qtcNodeë¡œ ì˜ ë³€í™˜
+ *             - smiRangeë¡œì˜ ë³€í™˜
+ *             - indexable min-maxì˜ ì²˜ë¦¬
+ *     + ë§ˆë¬´ë¦¬ ì‘ì—…
+ *         - dependencyì˜ ì²˜ë¦¬
+ *         - subqueryì˜ ì²˜ë¦¬
  *
  ***********************************************************************/
 
@@ -211,7 +211,7 @@ IDE_RC qmoOneNonPlan::makeSCAN( qcStatement  * aStatement ,
     IDU_FIT_POINT_FATAL( "qmoOneNonPlan::makeSCAN::__FT__" );
 
     //----------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //----------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -220,10 +220,10 @@ IDE_RC qmoOneNonPlan::makeSCAN( qcStatement  * aStatement ,
     IDE_DASSERT( aSCANInfo != NULL );
 
     //-------------------------------------------------------------
-    // ÃÊ±âÈ­ ÀÛ¾÷
+    // ì´ˆê¸°í™” ì‘ì—…
     //-------------------------------------------------------------
 
-    //qmncSCANÀÇ ÇÒ´ç¹× ÃÊ±âÈ­
+    //qmncSCANì˜ í• ë‹¹ë° ì´ˆê¸°í™”
     IDU_FIT_POINT("qmoOneNonPlan::makeSCAN::alloc",
                   idERR_ABORT_InsufficientMemory);
     IDE_TEST(QC_QMP_MEM(aStatement)->alloc(ID_SIZEOF(qmncSCAN),
@@ -241,15 +241,15 @@ IDE_RC qmoOneNonPlan::makeSCAN( qcStatement  * aStatement ,
     sSCAN->plan.readyIt = qmnSCAN::readyIt;
 
     // BUG-15816
-    // data ¿µ¿ªÀÇ Å©±â °è»ê
+    // data ì˜ì—­ì˜ í¬ê¸° ê³„ì‚°
     QC_SHARED_TMPLATE(aStatement)->tmplate.dataSize = sDataNodeOffset;
 
-    // PROJ-1446 Host variableÀ» Æ÷ÇÔÇÑ ÁúÀÇ ÃÖÀûÈ­
+    // PROJ-1446 Host variableì„ í¬í•¨í•œ ì§ˆì˜ ìµœì í™”
     sIndices  = aFrom->tableRef->tableInfo->indices;
     sIndexCnt = aFrom->tableRef->tableInfo->indexCount;
 
     //----------------------------------
-    // Table °ü·Ã Á¤º¸ ¼³Á¤
+    // Table ê´€ë ¨ ì •ë³´ ì„¤ì •
     //----------------------------------
 
     sSCAN->tupleRowID = aFrom->tableRef->table;
@@ -264,7 +264,7 @@ IDE_RC qmoOneNonPlan::makeSCAN( qcStatement  * aStatement ,
         aFrom->tableRef->tableInfo->tableHandle;
 
     //----------------------------------
-    // Flag Á¤º¸ ¼³Á¤
+    // Flag ì •ë³´ ì„¤ì •
     //----------------------------------
 
     sSCAN->flag = QMN_PLAN_FLAG_CLEAR;
@@ -282,20 +282,20 @@ IDE_RC qmoOneNonPlan::makeSCAN( qcStatement  * aStatement ,
 
     SMI_CURSOR_PROP_INIT_FOR_FULL_SCAN( &(sSCAN->cursorProperty), NULL );
 
-    //Leaf Node¿¡ tuple·Î ºÎÅÍ memory ÀÎÁö disk tableÀÎÁö¸¦ ¼¼ÆÃ
-    //from tupleÁ¤º¸
+    //Leaf Nodeì— tupleë¡œ ë¶€í„° memory ì¸ì§€ disk tableì¸ì§€ë¥¼ ì„¸íŒ…
+    //from tupleì •ë³´
     IDE_TEST( setTableTypeFromTuple( aStatement ,
                                      sSCAN->tupleRowID ,
                                      &( sSCAN->plan.flag ) )
               != IDE_SUCCESS );
 
-    // Previous Disable ¼³Á¤
+    // Previous Disable ì„¤ì •
     sSCAN->flag &= ~QMNC_SCAN_PREVIOUS_ENABLE_MASK;
     sSCAN->flag |= QMNC_SCAN_PREVIOUS_ENABLE_FALSE;
 
     // fix BUG-12167
-    // ÂüÁ¶ÇÏ´Â Å×ÀÌºíÀÌ fixed or performance viewÀÎÁöÀÇ Á¤º¸¸¦ ÀúÀå
-    // ÂüÁ¶ÇÏ´Â Å×ÀÌºí¿¡ ´ëÇÑ IS LOCKÀ» °ÉÁö¿¡ ´ëÇÑ ÆÇ´Ü ±âÁØ.
+    // ì°¸ì¡°í•˜ëŠ” í…Œì´ë¸”ì´ fixed or performance viewì¸ì§€ì˜ ì •ë³´ë¥¼ ì €ì¥
+    // ì°¸ì¡°í•˜ëŠ” í…Œì´ë¸”ì— ëŒ€í•œ IS LOCKì„ ê±¸ì§€ì— ëŒ€í•œ íŒë‹¨ ê¸°ì¤€.
     if ( ( aFrom->tableRef->tableInfo->tableType == QCM_FIXED_TABLE ) ||
          ( aFrom->tableRef->tableInfo->tableType == QCM_DUMP_TABLE ) ||
          ( aFrom->tableRef->tableInfo->tableType == QCM_PERFORMANCE_VIEW ) )
@@ -311,8 +311,8 @@ IDE_RC qmoOneNonPlan::makeSCAN( qcStatement  * aStatement ,
         else
         {
             /* BUG-43006 FixedTable Indexing Filter
-             * optimizer formance view propery °¡ 0ÀÌ¶ó¸é
-             * FixedTable ÀÇ index´Â ¾ø´Ù°í ¼³Á¤ÇØÁà¾ßÇÑ´Ù
+             * optimizer formance view propery ê°€ 0ì´ë¼ë©´
+             * FixedTable ì˜ indexëŠ” ì—†ë‹¤ê³  ì„¤ì •í•´ì¤˜ì•¼í•œë‹¤
              */
             sIndices  = NULL;
             sIndexCnt = 0;
@@ -349,9 +349,9 @@ IDE_RC qmoOneNonPlan::makeSCAN( qcStatement  * aStatement ,
     }
 
     // PROJ-1705
-    // partition tableÀÎ °æ¿ì, tableRef->tableInfo->rowMovement Á¤º¸°¡ ÇÊ¿äÇÑµ¥,
-    // ÀÌ Á¤º¸¸¸ µû·Î °ü¸®ÇÏÁö ¾Ê°í,
-    // ¸ğµç Å×ÀÌºí¿¡ ´ëÇØ code node¿¡ tableRefÁ¤º¸¸¦ ´Ş¾ÆÁØ´Ù.
+    // partition tableì¸ ê²½ìš°, tableRef->tableInfo->rowMovement ì •ë³´ê°€ í•„ìš”í•œë°,
+    // ì´ ì •ë³´ë§Œ ë”°ë¡œ ê´€ë¦¬í•˜ì§€ ì•Šê³ ,
+    // ëª¨ë“  í…Œì´ë¸”ì— ëŒ€í•´ code nodeì— tableRefì •ë³´ë¥¼ ë‹¬ì•„ì¤€ë‹¤.
     sSCAN->tableRef = aFrom->tableRef;
 
     // PROJ-1618 Online Dump
@@ -367,14 +367,14 @@ IDE_RC qmoOneNonPlan::makeSCAN( qcStatement  * aStatement ,
     }
 
     //----------------------------------
-    // ÀÎµ¦½º ¼³Á¤ ¹× ¹æÇâ ¼³Á¤
+    // ì¸ë±ìŠ¤ ì„¤ì • ë° ë°©í–¥ ì„¤ì •
     //----------------------------------
 
     sSCAN->method.index = aSCANInfo->index;
 
     // Proj-1360 Queue
-    // dequeue ¹®¿¡¼­ ¼öÇàµÈ °æ¿ì, »öÀÎÀÌ ¼³Á¤µÇÁö ¾ÊÀ¸¸é
-    // primary key¿¡ ÇØ´çÇÏ´Â msgid »öÀÎÀ» »ç¿ë
+    // dequeue ë¬¸ì—ì„œ ìˆ˜í–‰ëœ ê²½ìš°, ìƒ‰ì¸ì´ ì„¤ì •ë˜ì§€ ì•Šìœ¼ë©´
+    // primary keyì— í•´ë‹¹í•˜ëŠ” msgid ìƒ‰ì¸ì„ ì‚¬ìš©
     if ( aStatement->myPlan->parseTree->stmtKind == QCI_STMT_DEQUEUE )
     {
         sParseTree = (qmsParseTree*) aStatement->myPlan->parseTree;
@@ -389,7 +389,7 @@ IDE_RC qmoOneNonPlan::makeSCAN( qcStatement  * aStatement ,
             /* nothing to do */
         }
 
-        // fifo ¿É¼ÇÀÌ ¼³Á¤µÇ¾î ÀÖÀ¸¸é Å½»ö ¼øÀ§¸¦ º¯°æÇÑ´Ù.
+        // fifo ì˜µì…˜ì´ ì„¤ì •ë˜ì–´ ìˆìœ¼ë©´ íƒìƒ‰ ìˆœìœ„ë¥¼ ë³€ê²½í•œë‹¤.
         if ( sParseTree->queue->isFifo == ID_TRUE )
         {
             sSCAN->flag &= ~QMNC_SCAN_TRAVERSE_MASK;
@@ -406,21 +406,21 @@ IDE_RC qmoOneNonPlan::makeSCAN( qcStatement  * aStatement ,
         // do nothing.
     }
 
-    // BUG-36760 dequeue ½Ã¿¡ ¹«Á¶°Ç ÀÎµ¦½º¸¦ Å¸¾ßÇÔ
+    // BUG-36760 dequeue ì‹œì— ë¬´ì¡°ê±´ ì¸ë±ìŠ¤ë¥¼ íƒ€ì•¼í•¨
     if ( sSCAN->method.index != NULL )
     {
         // To Fix PR-11562
-        // Indexable MIN-MAX ÃÖÀûÈ­°¡ Àû¿ëµÈ °æ¿ì
-        // Preserved Order´Â ¹æÇâ¼ºÀ» °¡Áü, µû¶ó¼­ ÇØ´ç Á¤º¸¸¦
-        // ¼³Á¤ÇØÁÙ ÇÊ¿ä°¡ ¾øÀ½.
-        // °ü·Ã ÄÚµå Á¦°Å
+        // Indexable MIN-MAX ìµœì í™”ê°€ ì ìš©ëœ ê²½ìš°
+        // Preserved OrderëŠ” ë°©í–¥ì„±ì„ ê°€ì§, ë”°ë¼ì„œ í•´ë‹¹ ì •ë³´ë¥¼
+        // ì„¤ì •í•´ì¤„ í•„ìš”ê°€ ì—†ìŒ.
+        // ê´€ë ¨ ì½”ë“œ ì œê±°
 
-        //index Á¤º¸ ¹× order by¿¡ µû¸¥ traverse ¹æÇâ ¼³Á¤
-        //aSCANInfo->preservedOrder¸¦ º¸°í ÀÎµ¦½º ¹æÇâ°ú ´Ù¸£¸é sSCAN->flag
-        //¸¦ BACKWARD·Î ¼³Á¤ÇØÁÖ¾î¾ß ÇÑ´Ù.
+        //index ì •ë³´ ë° order byì— ë”°ë¥¸ traverse ë°©í–¥ ì„¤ì •
+        //aSCANInfo->preservedOrderë¥¼ ë³´ê³  ì¸ë±ìŠ¤ ë°©í–¥ê³¼ ë‹¤ë¥´ë©´ sSCAN->flag
+        //ë¥¼ BACKWARDë¡œ ì„¤ì •í•´ì£¼ì–´ì•¼ í•œë‹¤.
 
         // fix BUG-31907
-        // queue table¿¡ ´ëÇÑ traverse directionÀº sParseTree->queue->isFifo¿¡ ÀÇÇØ ÀÌ¹Ì °áÁ¤µÇ¾î ÀÖ´Ù.
+        // queue tableì— ëŒ€í•œ traverse directionì€ sParseTree->queue->isFifoì— ì˜í•´ ì´ë¯¸ ê²°ì •ë˜ì–´ ìˆë‹¤.
         if ( aStatement->myPlan->parseTree->stmtKind != QCI_STMT_DEQUEUE )
         {
             IDE_TEST( setDirectionInfo( &( sSCAN->flag ),
@@ -430,7 +430,7 @@ IDE_RC qmoOneNonPlan::makeSCAN( qcStatement  * aStatement ,
         }
 
         // To fix BUG-12742
-        // index scanÀÌ °íÁ¤µÇ¾î ÀÖ´Â °æ¿ì¸¦ ¼¼ÆÃÇÑ´Ù.
+        // index scanì´ ê³ ì •ë˜ì–´ ìˆëŠ” ê²½ìš°ë¥¼ ì„¸íŒ…í•œë‹¤.
         if ( ( aSCANInfo->flag & QMO_SCAN_INFO_FORCE_INDEX_SCAN_MASK ) ==
              QMO_SCAN_INFO_FORCE_INDEX_SCAN_TRUE)
         {
@@ -459,7 +459,7 @@ IDE_RC qmoOneNonPlan::makeSCAN( qcStatement  * aStatement ,
     }
 
     //----------------------------------
-    // Cursor PropertyÀÇ ¼³Á¤
+    // Cursor Propertyì˜ ì„¤ì •
     //----------------------------------
 
     sSCAN->lockMode = SMI_LOCK_READ;
@@ -476,7 +476,7 @@ IDE_RC qmoOneNonPlan::makeSCAN( qcStatement  * aStatement ,
             sSCAN->cursorProperty.mLockWaitMicroSec =
                 sParseTree->forUpdate->lockWaitMicroSec;
             // Proj 1360 Queue
-            // dequeue¹®ÀÇ °æ¿ì, rowÀÇ »èÁ¦¸¦ À§ÇØ exclusive lockÀÌ ¿ä±¸µÊ
+            // dequeueë¬¸ì˜ ê²½ìš°, rowì˜ ì‚­ì œë¥¼ ìœ„í•´ exclusive lockì´ ìš”êµ¬ë¨
             if (sParseTree->forUpdate->isQueue == ID_TRUE)
             {
                 sSCAN->flag   |= QMNC_SCAN_TABLE_QUEUE_TRUE;
@@ -526,7 +526,7 @@ IDE_RC qmoOneNonPlan::makeSCAN( qcStatement  * aStatement ,
         aSCANInfo->mParallelInfo.mSeqNo;
 
     //----------------------------------
-    // Display Á¤º¸ ¼¼ÆÃ
+    // Display ì •ë³´ ì„¸íŒ…
     //----------------------------------
 
     IDE_TEST( qmg::setDisplayInfo( aFrom ,
@@ -535,26 +535,26 @@ IDE_RC qmoOneNonPlan::makeSCAN( qcStatement  * aStatement ,
                                    &( sSCAN->aliasName ) )
               != IDE_SUCCESS );
 
-    /* BUG-44520 ¹Ì»ç¿ë Disk PartitionÀÇ SCAN Node¸¦ Ãâ·ÂÇÏ´Ù°¡,
-     *           Partition Name ºÎºĞ¿¡¼­ ºñÁ¤»ó Á¾·áÇÒ ¼ö ÀÖ½À´Ï´Ù.
-     *  LockÀ» ÀâÁö ¾Ê°í Meta Cache¸¦ »ç¿ëÇÏ¸é, ºñÁ¤»ó Á¾·áÇÒ ¼ö ÀÖ½À´Ï´Ù.
-     *  SCAN Node¿¡¼­ Partition NameÀ» º¸°üÇÏµµ·Ï ¼öÁ¤ÇÕ´Ï´Ù.
+    /* BUG-44520 ë¯¸ì‚¬ìš© Disk Partitionì˜ SCAN Nodeë¥¼ ì¶œë ¥í•˜ë‹¤ê°€,
+     *           Partition Name ë¶€ë¶„ì—ì„œ ë¹„ì •ìƒ ì¢…ë£Œí•  ìˆ˜ ìˆìŠµë‹ˆë‹¤.
+     *  Lockì„ ì¡ì§€ ì•Šê³  Meta Cacheë¥¼ ì‚¬ìš©í•˜ë©´, ë¹„ì •ìƒ ì¢…ë£Œí•  ìˆ˜ ìˆìŠµë‹ˆë‹¤.
+     *  SCAN Nodeì—ì„œ Partition Nameì„ ë³´ê´€í•˜ë„ë¡ ìˆ˜ì •í•©ë‹ˆë‹¤.
      */
     sSCAN->partitionName[0] = '\0';
 
-    /* BUG-44633 ¹Ì»ç¿ë Disk PartitionÀÇ SCAN Node¸¦ Ãâ·ÂÇÏ´Ù°¡,
-     *           Index Name ºÎºĞ¿¡¼­ ºñÁ¤»ó Á¾·áÇÒ ¼ö ÀÖ½À´Ï´Ù.
-     *  LockÀ» ÀâÁö ¾Ê°í Meta Cache¸¦ »ç¿ëÇÏ¸é, ºñÁ¤»ó Á¾·áÇÒ ¼ö ÀÖ½À´Ï´Ù.
-     *  SCAN Node¿¡¼­ Index ID¸¦ º¸°üÇÏµµ·Ï ¼öÁ¤ÇÕ´Ï´Ù.
+    /* BUG-44633 ë¯¸ì‚¬ìš© Disk Partitionì˜ SCAN Nodeë¥¼ ì¶œë ¥í•˜ë‹¤ê°€,
+     *           Index Name ë¶€ë¶„ì—ì„œ ë¹„ì •ìƒ ì¢…ë£Œí•  ìˆ˜ ìˆìŠµë‹ˆë‹¤.
+     *  Lockì„ ì¡ì§€ ì•Šê³  Meta Cacheë¥¼ ì‚¬ìš©í•˜ë©´, ë¹„ì •ìƒ ì¢…ë£Œí•  ìˆ˜ ìˆìŠµë‹ˆë‹¤.
+     *  SCAN Nodeì—ì„œ Index IDë¥¼ ë³´ê´€í•˜ë„ë¡ ìˆ˜ì •í•©ë‹ˆë‹¤.
      */
     sSCAN->partitionIndexId = 0;
 
     //-------------------------------------------------------------
-    // ¸ŞÀÎ ÀÛ¾÷
+    // ë©”ì¸ ì‘ì—…
     //-------------------------------------------------------------
 
     //----------------------------------
-    // PredicateÀÇ Ã³¸®
+    // Predicateì˜ ì²˜ë¦¬
     //----------------------------------
 
     IDE_TEST( processPredicate( aStatement,
@@ -585,13 +585,13 @@ IDE_RC qmoOneNonPlan::makeSCAN( qcStatement  * aStatement ,
                                      & sScanLimit )
               != IDE_SUCCESS );
 
-    // BUG-20403 : table scan»óÀ§¿¡ FILT°¡ Á¸ÀçÇÏ´ÂÁö
+    // BUG-20403 : table scanìƒìœ„ì— FILTê°€ ì¡´ì¬í•˜ëŠ”ì§€
     if ( sSCAN->method.lobFilter != NULL )
     {
         sExistLobFilter = ID_TRUE;
     }
 
-    // queue¿¡´Â nnf, lob, subquery filter¸¦ Áö¿øÇÏÁö ¾Ê´Â´Ù.
+    // queueì—ëŠ” nnf, lob, subquery filterë¥¼ ì§€ì›í•˜ì§€ ì•ŠëŠ”ë‹¤.
     if ( (sSCAN->flag & QMNC_SCAN_TABLE_QUEUE_MASK) == QMNC_SCAN_TABLE_QUEUE_TRUE )
     {
         IDE_TEST_RAISE( ( aSCANInfo->nnfFilter != NULL ) ||
@@ -605,7 +605,7 @@ IDE_RC qmoOneNonPlan::makeSCAN( qcStatement  * aStatement ,
     }
 
     //----------------------------------
-    // Predicate °ü·Ã Flag Á¤º¸ ¼³Á¤
+    // Predicate ê´€ë ¨ Flag ì •ë³´ ì„¤ì •
     //----------------------------------
     if ( sInSubQueryKeyRange == ID_TRUE )
     {
@@ -618,18 +618,18 @@ IDE_RC qmoOneNonPlan::makeSCAN( qcStatement  * aStatement ,
         sSCAN->flag |= QMNC_SCAN_INSUBQ_KEYRANGE_FALSE;
     }
 
-    // PROJ-1446 Host variableÀ» Æ÷ÇÔÇÑ ÁúÀÇ ÃÖÀûÈ­
+    // PROJ-1446 Host variableì„ í¬í•¨í•œ ì§ˆì˜ ìµœì í™”
     sSCAN->sdf = aSCANInfo->sdf;
 
     if ( aSCANInfo->sdf != NULL )
     {
         IDE_DASSERT( sIndexCnt > 0 );
 
-        // sdf¿¡ basePlanÀ» ´Ü´Ù.
+        // sdfì— basePlanì„ ë‹¨ë‹¤.
         aSCANInfo->sdf->basePlan = &sSCAN->plan;
 
-        // sdf¿¡ index °³¼ö¸¸Å­ ÈÄº¸¸¦ »ı¼ºÇÑ´Ù.
-        // °¢°¢ÀÇ ÈÄº¸¿¡ filter/key range/key filter Á¤º¸¸¦ »ı¼ºÇÑ´Ù.
+        // sdfì— index ê°œìˆ˜ë§Œí¼ í›„ë³´ë¥¼ ìƒì„±í•œë‹¤.
+        // ê°ê°ì˜ í›„ë³´ì— filter/key range/key filter ì •ë³´ë¥¼ ìƒì„±í•œë‹¤.
 
         aSCANInfo->sdf->candidateCount = sIndexCnt;
 
@@ -641,9 +641,9 @@ IDE_RC qmoOneNonPlan::makeSCAN( qcStatement  * aStatement ,
               i <sIndexCnt;
               i++ )
         {
-            // selected index¿¡ ´ëÇØ¼­´Â ¾Õ¿¡¼­ sSCAN¿¡ ´ëÇØ ÀÛ¾÷À» ÇßÀ¸¹Ç·Î,
-            // ´Ù½Ã ÀÛ¾÷ÇÒ ÇÊ¿ä°¡ ¾ø´Ù.
-            // ´ë½Å ±×ÀÚ¸®¿£ full scan¿¡ ´ëÇØ¼­ ÀÛ¾÷À» ÇÑ´Ù.
+            // selected indexì— ëŒ€í•´ì„œëŠ” ì•ì—ì„œ sSCANì— ëŒ€í•´ ì‘ì—…ì„ í–ˆìœ¼ë¯€ë¡œ,
+            // ë‹¤ì‹œ ì‘ì—…í•  í•„ìš”ê°€ ì—†ë‹¤.
+            // ëŒ€ì‹  ê·¸ìë¦¬ì—” full scanì— ëŒ€í•´ì„œ ì‘ì—…ì„ í•œë‹¤.
             if ( &sIndices[i] != aSCANInfo->index )
             {
                 aSCANInfo->sdf->candidate[i].index = &sIndices[i];
@@ -678,7 +678,7 @@ IDE_RC qmoOneNonPlan::makeSCAN( qcStatement  * aStatement ,
                                         &( aSCANInfo->sdf->candidate[i].fixKeyRange4Print ),
                                         &( aSCANInfo->sdf->candidate[i].fixKeyFilter4Print ),
                                         &( aSCANInfo->sdf->candidate[i].ridRange ),
-                                        & sInSubQueryKeyRange ) // ÀÇ¹Ì¾ø´Â Á¤º¸ÀÓ.
+                                        & sInSubQueryKeyRange ) // ì˜ë¯¸ì—†ëŠ” ì •ë³´ì„.
                       != IDE_SUCCESS );
 
             IDE_TEST( postProcessScanMethod( aStatement,
@@ -686,7 +686,7 @@ IDE_RC qmoOneNonPlan::makeSCAN( qcStatement  * aStatement ,
                                              & sScanLimit )
                       != IDE_SUCCESS );
 
-            // BUG-20403 : table scan»óÀ§¿¡ FILT°¡ Á¸ÀçÇÏ´ÂÁö
+            // BUG-20403 : table scanìƒìœ„ì— FILTê°€ ì¡´ì¬í•˜ëŠ”ì§€
             if( aSCANInfo->sdf->candidate[i].lobFilter != NULL )
             {
                 sExistLobFilter = ID_TRUE;
@@ -696,7 +696,7 @@ IDE_RC qmoOneNonPlan::makeSCAN( qcStatement  * aStatement ,
                 // Nothing to do...
             }
 
-            // queue¿¡´Â nnf, lob, subquery filter¸¦ Áö¿øÇÏÁö ¾Ê´Â´Ù.
+            // queueì—ëŠ” nnf, lob, subquery filterë¥¼ ì§€ì›í•˜ì§€ ì•ŠëŠ”ë‹¤.
             if ( (sSCAN->flag & QMNC_SCAN_TABLE_QUEUE_MASK) == QMNC_SCAN_TABLE_QUEUE_TRUE )
             {
                 IDE_TEST_RAISE( ( aSCANInfo->nnfFilter != NULL ) ||
@@ -714,7 +714,7 @@ IDE_RC qmoOneNonPlan::makeSCAN( qcStatement  * aStatement ,
 
             // fix BUG-19074
             //----------------------------------
-            // sdfÀÇ dependency Ã³¸®
+            // sdfì˜ dependency ì²˜ë¦¬
             //----------------------------------
 
             sPredicate[0] = aSCANInfo->sdf->candidate[i].fixKeyRange;
@@ -745,17 +745,17 @@ IDE_RC qmoOneNonPlan::makeSCAN( qcStatement  * aStatement ,
     }
 
     //----------------------------------
-    // NNF Filter ±¸¼º
+    // NNF Filter êµ¬ì„±
     //----------------------------------
     sSCAN->nnfFilter = aSCANInfo->nnfFilter;
 
     //----------------------------------
-    // SCAN limitÀÇ Àû¿ë
-    // bug-7792,20403 , »óÀ§ filter°¡ Á¸ÀçÇÏ¸é default°ªÀ» ¼¼ÆÃÇÏ°í
-    // ±×·¸Áö ¾ÊÀº °æ¿ì¿£ limitÁ¤º¸¸¦ ¼¼ÆÃÇÑ´Ù.
+    // SCAN limitì˜ ì ìš©
+    // bug-7792,20403 , ìƒìœ„ filterê°€ ì¡´ì¬í•˜ë©´ defaultê°’ì„ ì„¸íŒ…í•˜ê³ 
+    // ê·¸ë ‡ì§€ ì•Šì€ ê²½ìš°ì—” limitì •ë³´ë¥¼ ì„¸íŒ…í•œë‹¤.
     //----------------------------------
-    // fix BUG-25151 filter°¡ ÀÖ´Â °æ¿ì¿¡µµ SCAN LIMIT Àû¿ë
-    // NNF FILTER°¡ ÀÖ´Â °æ¿ì¿¡µµ scan limitÀû¿ëÇÏÁö ¾Ê´Â´Ù.
+    // fix BUG-25151 filterê°€ ìˆëŠ” ê²½ìš°ì—ë„ SCAN LIMIT ì ìš©
+    // NNF FILTERê°€ ìˆëŠ” ê²½ìš°ì—ë„ scan limitì ìš©í•˜ì§€ ì•ŠëŠ”ë‹¤.
     if( (sScanLimit == ID_FALSE) ||
         (sExistLobFilter == ID_TRUE) ||
         (sSCAN->nnfFilter != NULL) )
@@ -763,8 +763,8 @@ IDE_RC qmoOneNonPlan::makeSCAN( qcStatement  * aStatement ,
         sSCAN->limit = NULL;
 
         // PR-13482
-        // SCAN LimitÀ» Àû¿ëÇÏÁö ¸øÇÑ°æ¿ì,
-        // selection graphÀÇ limitµµ NULL·Î ¸¸µé±â À§ÇÑ Á¤º¸
+        // SCAN Limitì„ ì ìš©í•˜ì§€ ëª»í•œê²½ìš°,
+        // selection graphì˜ limitë„ NULLë¡œ ë§Œë“¤ê¸° ìœ„í•œ ì •ë³´
         aSCANInfo->limit = NULL;
     }
     else
@@ -772,25 +772,25 @@ IDE_RC qmoOneNonPlan::makeSCAN( qcStatement  * aStatement ,
         sSCAN->limit = aSCANInfo->limit;
     }
 
-    // ¾Æ·¡´Â ÀÇ¹Ì ¾ø´Â Á¤º¸ÀÓ.
-    // ¾îÂ÷ÇÇ qmnScanÀÇ firstInit¿¡¼­ qmncSCANÀÇ limit Á¤º¸¸¦ ÂüÁ¶ÇØ,
-    // qmndÀÇ cursorPropertyÀÇ µÎ ¸É¹ö¸¦ ¼¼ÆÃÇÔ.
+    // ì•„ë˜ëŠ” ì˜ë¯¸ ì—†ëŠ” ì •ë³´ì„.
+    // ì–´ì°¨í”¼ qmnScanì˜ firstInitì—ì„œ qmncSCANì˜ limit ì •ë³´ë¥¼ ì°¸ì¡°í•´,
+    // qmndì˜ cursorPropertyì˜ ë‘ ë§´ë²„ë¥¼ ì„¸íŒ…í•¨.
     sSCAN->cursorProperty.mFirstReadRecordPos = 0;
     sSCAN->cursorProperty.mIsUndoLogging = ID_TRUE;
     sSCAN->cursorProperty.mReadRecordCount = ID_ULONG_MAX;
 
     //-------------------------------------------------------------
-    // ¸¶¹«¸® ÀÛ¾÷
+    // ë§ˆë¬´ë¦¬ ì‘ì—…
     //-------------------------------------------------------------
 
     //----------------------------------
     // PROJ-1473
-    // tupleÀÇ column »ç¿ëÁ¤º¸ ÀçÁ¶Á¤. (¿¹:view³»ºÎ·ÎÀÇ push projectionÀû¿ë)
+    // tupleì˜ column ì‚¬ìš©ì •ë³´ ì¬ì¡°ì •. (ì˜ˆ:viewë‚´ë¶€ë¡œì˜ push projectionì ìš©)
     //----------------------------------
 
     sMtcTuple = &(QC_SHARED_TMPLATE(aStatement)->tmplate.rows[sSCAN->tupleRowID]);
 
-    // BUG-43705 lateral view¸¦ simple view mergingÀ» ÇÏÁö¾ÊÀ¸¸é °á°ú°¡ ´Ù¸¨´Ï´Ù.
+    // BUG-43705 lateral viewë¥¼ simple view mergingì„ í•˜ì§€ì•Šìœ¼ë©´ ê²°ê³¼ê°€ ë‹¤ë¦…ë‹ˆë‹¤.
     if ( ( ( sMtcTuple->lflag & MTC_TUPLE_VIEW_PUSH_PROJ_MASK )
            == MTC_TUPLE_VIEW_PUSH_PROJ_TRUE ) &&
          ( ( sMtcTuple->lflag & MTC_TUPLE_LATERAL_VIEW_REF_MASK )
@@ -805,8 +805,8 @@ IDE_RC qmoOneNonPlan::makeSCAN( qcStatement  * aStatement ,
                  == MTC_COLUMN_VIEW_COLUMN_PUSH_FALSE )
             {
                 // BUG-25470
-                // OUTER COLUMN REFERENCE°¡ ÀÖ´Â ÄÃ·³Àº
-                // ÄÃ·³Á¤º¸¸¦ Á¦°ÅÇÏÁö ¾Ê´Â´Ù.
+                // OUTER COLUMN REFERENCEê°€ ìˆëŠ” ì»¬ëŸ¼ì€
+                // ì»¬ëŸ¼ì •ë³´ë¥¼ ì œê±°í•˜ì§€ ì•ŠëŠ”ë‹¤.
                 if ( ( ( sMtcTuple->columns[i].flag &
                          MTC_COLUMN_USE_TARGET_MASK )
                        == MTC_COLUMN_USE_TARGET_TRUE )
@@ -819,9 +819,9 @@ IDE_RC qmoOneNonPlan::makeSCAN( qcStatement  * aStatement ,
                          MTC_COLUMN_OUTER_REFERENCE_MASK )
                        == MTC_COLUMN_OUTER_REFERENCE_FALSE ))
                 {
-                    // ÁúÀÇ¿¡ »ç¿ëµÇÁö ¾Ê´Â ÄÃ·³À¸·Î
-                    // view³»ºÎ·Î push projectionµÈ °æ¿ìÀÓ.
-                    // ÁúÀÇ¿¡ »ç¿ëµÈ ÄÃ·³Á¤º¸Á¦°Å
+                    // ì§ˆì˜ì— ì‚¬ìš©ë˜ì§€ ì•ŠëŠ” ì»¬ëŸ¼ìœ¼ë¡œ
+                    // viewë‚´ë¶€ë¡œ push projectionëœ ê²½ìš°ì„.
+                    // ì§ˆì˜ì— ì‚¬ìš©ëœ ì»¬ëŸ¼ì •ë³´ì œê±°
                     sMtcTuple->columns[i].flag &= ~MTC_COLUMN_USE_COLUMN_MASK;
                     sMtcTuple->columns[i].flag |= MTC_COLUMN_USE_COLUMN_FALSE;
                 }
@@ -832,15 +832,15 @@ IDE_RC qmoOneNonPlan::makeSCAN( qcStatement  * aStatement ,
             }
             else
             {
-                // ÁúÀÇ¿¡ »ç¿ëµÈ ÄÃ·³
+                // ì§ˆì˜ì— ì‚¬ìš©ëœ ì»¬ëŸ¼
                 // Nothing To Do
             }
         }
     }
 
     //----------------------------------
-    // Host º¯¼ö¸¦ Æ÷ÇÔÇÑ
-    // Constant ExpressionÀÇ ÃÖÀûÈ­
+    // Host ë³€ìˆ˜ë¥¼ í¬í•¨í•œ
+    // Constant Expressionì˜ ìµœì í™”
     //----------------------------------
     if ( sSCAN->nnfFilter != NULL )
     {
@@ -854,7 +854,7 @@ IDE_RC qmoOneNonPlan::makeSCAN( qcStatement  * aStatement ,
     }
 
     //----------------------------------
-    //dependency Ã³¸® ¹× subqueryÀÇ Ã³¸®
+    //dependency ì²˜ë¦¬ ë° subqueryì˜ ì²˜ë¦¬
     //----------------------------------
 
     sPredicate[0] = sSCAN->method.fixKeyRange;
@@ -871,7 +871,7 @@ IDE_RC qmoOneNonPlan::makeSCAN( qcStatement  * aStatement ,
 
     //----------------------------------
     // PROJ-1473
-    // dependency ¼³Á¤Àü¿¡ predicateµéÀÇ À§Ä¡Á¤º¸ º¯°æ.
+    // dependency ì„¤ì •ì „ì— predicateë“¤ì˜ ìœ„ì¹˜ì •ë³´ ë³€ê²½.
     //----------------------------------
 
     for ( i  = 0;
@@ -907,8 +907,8 @@ IDE_RC qmoOneNonPlan::makeSCAN( qcStatement  * aStatement ,
                                        & sSCAN->plan.resultDesc )
                   != IDE_SUCCESS );
 
-        // Join predicateÀÌ push downµÈ °æ¿ì, SCANÀÇ depInfo¿¡´Â dependency°¡ ¿©·¯°³ÀÏ ¼ö ÀÖ´Ù.
-        // Result descriptor¸¦ Á¤ÇĞÈ÷ ±¸¼ºÇÏ±â À§ÇØ SCANÀÇ ID·Î filteringÇÑ´Ù.
+        // Join predicateì´ push downëœ ê²½ìš°, SCANì˜ depInfoì—ëŠ” dependencyê°€ ì—¬ëŸ¬ê°œì¼ ìˆ˜ ìˆë‹¤.
+        // Result descriptorë¥¼ ì •í•™íˆ êµ¬ì„±í•˜ê¸° ìœ„í•´ SCANì˜ IDë¡œ filteringí•œë‹¤.
         qtc::dependencySet( sSCAN->tupleRowID, &sDepInfo );
 
         IDE_TEST( qmc::filterResultDesc( aStatement,
@@ -920,7 +920,7 @@ IDE_RC qmoOneNonPlan::makeSCAN( qcStatement  * aStatement ,
     else
     {
         // Nothing to do.
-        // UPDATE ±¸¹® µîÀº parent°¡ NULLÀÏ ¼ö ÀÖ´Ù.
+        // UPDATE êµ¬ë¬¸ ë“±ì€ parentê°€ NULLì¼ ìˆ˜ ìˆë‹¤.
     }
 
     /*
@@ -929,8 +929,8 @@ IDE_RC qmoOneNonPlan::makeSCAN( qcStatement  * aStatement ,
      */
     sSCAN->plan.mParallelDegree = aFrom->tableRef->mParallelDegree;
 
-    // PROJ-2551 simple query ÃÖÀûÈ­
-    // simple index scanÀÎ °æ¿ì fast execute¸¦ ¼öÇàÇÑ´Ù.
+    // PROJ-2551 simple query ìµœì í™”
+    // simple index scanì¸ ê²½ìš° fast executeë¥¼ ìˆ˜í–‰í•œë‹¤.
     IDE_TEST( checkSimpleSCAN( aStatement, sSCAN ) != IDE_SUCCESS );
 
     *aPlan = (qmnPlan *)sSCAN;
@@ -964,24 +964,24 @@ qmoOneNonPlan::makeSCAN4Partition( qcStatement     * aStatement,
 {
 /***********************************************************************
  *
- * Description : SCAN ³ëµå¸¦ »ı¼ºÇÑ´Ù.
+ * Description : SCAN ë…¸ë“œë¥¼ ìƒì„±í•œë‹¤.
  *
  * Implementation :
- *     + ÃÊ±âÈ­ ÀÛ¾÷
- *         - data ¿µ¿ªÀÇ Å©±â °è»ê
- *         - qmncSCANÀÇ ÇÒ´ç ¹× ÃÊ±âÈ­ (display Á¤º¸ , index Á¤º¸)
- *         - limit ±¸ÀıÀÇ È®ÀÎ
- *         - select for update¸¦ À§ÇÑ Ã³¸®
- *     + ¸ŞÀÎ ÀÛ¾÷
- *         - PredicateÀÇ ºĞ·ù
- *             - constantÀÇ Ã³¸®
- *             - ÀÔ·ÂPredicateÁ¤º¸¿Í index Á¤º¸·Î ºÎÅÍ Predicate ºĞ·ù
- *             - fixed , variableÀÇ ±¸ºĞ
- *             - qtcNode·Î ÀÇ º¯È¯
- *             - smiRange·ÎÀÇ º¯È¯
- *             - indexable min-maxÀÇ Ã³¸®
- *     + ¸¶¹«¸® ÀÛ¾÷
- *         - dependencyÀÇ Ã³¸®
+ *     + ì´ˆê¸°í™” ì‘ì—…
+ *         - data ì˜ì—­ì˜ í¬ê¸° ê³„ì‚°
+ *         - qmncSCANì˜ í• ë‹¹ ë° ì´ˆê¸°í™” (display ì •ë³´ , index ì •ë³´)
+ *         - limit êµ¬ì ˆì˜ í™•ì¸
+ *         - select for updateë¥¼ ìœ„í•œ ì²˜ë¦¬
+ *     + ë©”ì¸ ì‘ì—…
+ *         - Predicateì˜ ë¶„ë¥˜
+ *             - constantì˜ ì²˜ë¦¬
+ *             - ì…ë ¥Predicateì •ë³´ì™€ index ì •ë³´ë¡œ ë¶€í„° Predicate ë¶„ë¥˜
+ *             - fixed , variableì˜ êµ¬ë¶„
+ *             - qtcNodeë¡œ ì˜ ë³€í™˜
+ *             - smiRangeë¡œì˜ ë³€í™˜
+ *             - indexable min-maxì˜ ì²˜ë¦¬
+ *     + ë§ˆë¬´ë¦¬ ì‘ì—…
+ *         - dependencyì˜ ì²˜ë¦¬
  *
  ***********************************************************************/
 
@@ -1000,7 +1000,7 @@ qmoOneNonPlan::makeSCAN4Partition( qcStatement     * aStatement,
     IDU_FIT_POINT_FATAL( "qmoOneNonPlan::makeSCAN4Partition::__FT__" );
 
     //----------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //----------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -1009,10 +1009,10 @@ qmoOneNonPlan::makeSCAN4Partition( qcStatement     * aStatement,
     IDE_DASSERT( aSCANInfo!= NULL );
 
     //-------------------------------------------------------------
-    // ÃÊ±âÈ­ ÀÛ¾÷
+    // ì´ˆê¸°í™” ì‘ì—…
     //-------------------------------------------------------------
 
-    //qmncSCANÀÇ ÇÒ´ç¹× ÃÊ±âÈ­
+    //qmncSCANì˜ í• ë‹¹ë° ì´ˆê¸°í™”
     IDU_FIT_POINT("qmoOneNonPlan::makeSCAN4Partition::alloc");
     IDE_TEST( QC_QMP_MEM( aStatement )->alloc( ID_SIZEOF( qmncSCAN ),
                                                (void **)& sSCAN )
@@ -1028,15 +1028,15 @@ qmoOneNonPlan::makeSCAN4Partition( qcStatement     * aStatement,
     sSCAN->plan.readyIt         = qmnSCAN::readyIt;
 
     // BUG-15816
-    // data ¿µ¿ªÀÇ Å©±â °è»ê
+    // data ì˜ì—­ì˜ í¬ê¸° ê³„ì‚°
     QC_SHARED_TMPLATE(aStatement)->tmplate.dataSize = sDataNodeOffset;
 
-    // PROJ-1446 Host variableÀ» Æ÷ÇÔÇÑ ÁúÀÇ ÃÖÀûÈ­
+    // PROJ-1446 Host variableì„ í¬í•¨í•œ ì§ˆì˜ ìµœì í™”
     sIndices = aPartitionRef->partitionInfo->indices;
     sIndexCnt = aPartitionRef->partitionInfo->indexCount;
 
     //----------------------------------
-    // Table / Partition °ü·Ã Á¤º¸ ¼³Á¤
+    // Table / Partition ê´€ë ¨ ì •ë³´ ì„¤ì •
     //----------------------------------
 
     sSCAN->tupleRowID       = aPartitionRef->table;
@@ -1057,32 +1057,32 @@ qmoOneNonPlan::makeSCAN4Partition( qcStatement     * aStatement,
                                       sSCAN->tupleRowID );
 
     //----------------------------------
-    // Flag Á¤º¸ ¼³Á¤
+    // Flag ì •ë³´ ì„¤ì •
     //----------------------------------
 
     sSCAN->flag = QMN_PLAN_FLAG_CLEAR;
     sSCAN->plan.flag = QMN_PLAN_FLAG_CLEAR;
 
-    //Leaf Node¿¡ tuple·Î ºÎÅÍ memory ÀÎÁö disk tableÀÎÁö¸¦ ¼¼ÆÃ
-    //from tupleÁ¤º¸
+    //Leaf Nodeì— tupleë¡œ ë¶€í„° memory ì¸ì§€ disk tableì¸ì§€ë¥¼ ì„¸íŒ…
+    //from tupleì •ë³´
     IDE_TEST( setTableTypeFromTuple( aStatement ,
                                      sSCAN->tupleRowID ,
                                      &( sSCAN->plan.flag ) )
               != IDE_SUCCESS );
 
 
-    // tupleÀÇ flag¿¡ partitionÀ» À§ÇÑ tupleÀÌ¶ó°í ¼¼ÆÃ.
+    // tupleì˜ flagì— partitionì„ ìœ„í•œ tupleì´ë¼ê³  ì„¸íŒ….
     QC_SHARED_TMPLATE(aStatement)->tmplate.rows[sSCAN->tupleRowID].lflag
         &= ~MTC_TUPLE_PARTITION_MASK;
 
     QC_SHARED_TMPLATE(aStatement)->tmplate.rows[sSCAN->tupleRowID].lflag
         |= MTC_TUPLE_PARTITION_TRUE;
 
-    // partition À» À§ÇÑ scanÀÌ¶ó°í flag¼³Á¤
+    // partition ì„ ìœ„í•œ scanì´ë¼ê³  flagì„¤ì •
     sSCAN->flag &= ~QMNC_SCAN_FOR_PARTITION_MASK;
     sSCAN->flag |= QMNC_SCAN_FOR_PARTITION_TRUE;
 
-    // Previous Disable ¼³Á¤
+    // Previous Disable ì„¤ì •
     sSCAN->flag &= ~QMNC_SCAN_PREVIOUS_ENABLE_MASK;
     sSCAN->flag |= QMNC_SCAN_PREVIOUS_ENABLE_FALSE;
 
@@ -1092,7 +1092,7 @@ qmoOneNonPlan::makeSCAN4Partition( qcStatement     * aStatement,
     SMI_CURSOR_PROP_INIT_FOR_FULL_SCAN( &(sSCAN->cursorProperty), NULL );
 
     //----------------------------------
-    // ÀÎµ¦½º ¼³Á¤ ¹× ¹æÇâ ¼³Á¤
+    // ì¸ë±ìŠ¤ ì„¤ì • ë° ë°©í–¥ ì„¤ì •
     //----------------------------------
 
     sSCAN->method.index        = aSCANInfo->index;
@@ -1100,21 +1100,21 @@ qmoOneNonPlan::makeSCAN4Partition( qcStatement     * aStatement,
     if( aSCANInfo->index != NULL )
     {
         // To Fix PR-11562
-        // Indexable MIN-MAX ÃÖÀûÈ­°¡ Àû¿ëµÈ °æ¿ì
-        // Preserved Order´Â ¹æÇâ¼ºÀ» °¡Áü, µû¶ó¼­ ÇØ´ç Á¤º¸¸¦
-        // ¼³Á¤ÇØÁÙ ÇÊ¿ä°¡ ¾øÀ½.
-        // °ü·Ã ÄÚµå Á¦°Å
+        // Indexable MIN-MAX ìµœì í™”ê°€ ì ìš©ëœ ê²½ìš°
+        // Preserved OrderëŠ” ë°©í–¥ì„±ì„ ê°€ì§, ë”°ë¼ì„œ í•´ë‹¹ ì •ë³´ë¥¼
+        // ì„¤ì •í•´ì¤„ í•„ìš”ê°€ ì—†ìŒ.
+        // ê´€ë ¨ ì½”ë“œ ì œê±°
 
-        //index Á¤º¸ ¹× order by¿¡ µû¸¥ traverse ¹æÇâ ¼³Á¤
-        //aSCANInfo->preservedOrder¸¦ º¸°í ÀÎµ¦½º ¹æÇâ°ú ´Ù¸£¸é sSCAN->flag
-        //¸¦ BACKWARD·Î ¼³Á¤ÇØÁÖ¾î¾ß ÇÑ´Ù.
+        //index ì •ë³´ ë° order byì— ë”°ë¥¸ traverse ë°©í–¥ ì„¤ì •
+        //aSCANInfo->preservedOrderë¥¼ ë³´ê³  ì¸ë±ìŠ¤ ë°©í–¥ê³¼ ë‹¤ë¥´ë©´ sSCAN->flag
+        //ë¥¼ BACKWARDë¡œ ì„¤ì •í•´ì£¼ì–´ì•¼ í•œë‹¤.
         IDE_TEST( setDirectionInfo( &( sSCAN->flag ) ,
                                     aSCANInfo->index ,
                                     aSCANInfo->preservedOrder )
                   != IDE_SUCCESS );
 
         // To fix BUG-12742
-        // index scanÀÌ °íÁ¤µÇ¾î ÀÖ´Â °æ¿ì¸¦ ¼¼ÆÃÇÑ´Ù.
+        // index scanì´ ê³ ì •ë˜ì–´ ìˆëŠ” ê²½ìš°ë¥¼ ì„¸íŒ…í•œë‹¤.
         if ( ( aSCANInfo->flag & QMO_SCAN_INFO_FORCE_INDEX_SCAN_MASK )
              == QMO_SCAN_INFO_FORCE_INDEX_SCAN_TRUE )
         {
@@ -1131,7 +1131,7 @@ qmoOneNonPlan::makeSCAN4Partition( qcStatement     * aStatement,
         // nothing to do
     }
 
-    // rid scanÀÌ °íÁ¤µÇ¾î ÀÖ´Â °æ¿ì¸¦ ¼¼ÆÃÇÑ´Ù.
+    // rid scanì´ ê³ ì •ë˜ì–´ ìˆëŠ” ê²½ìš°ë¥¼ ì„¸íŒ…í•œë‹¤.
     if ( ( aSCANInfo->flag & QMO_SCAN_INFO_FORCE_RID_SCAN_MASK )
          == QMO_SCAN_INFO_FORCE_RID_SCAN_TRUE)
     {
@@ -1155,7 +1155,7 @@ qmoOneNonPlan::makeSCAN4Partition( qcStatement     * aStatement,
     }
 
     //----------------------------------
-    // Cursor PropertyÀÇ ¼³Á¤
+    // Cursor Propertyì˜ ì„¤ì •
     //----------------------------------
 
     SMI_CURSOR_PROP_INIT(&sSCAN->cursorProperty, NULL, NULL);
@@ -1174,7 +1174,7 @@ qmoOneNonPlan::makeSCAN4Partition( qcStatement     * aStatement,
             sSCAN->cursorProperty.mLockWaitMicroSec =
                 sParseTree->forUpdate->lockWaitMicroSec;
             // Proj 1360 Queue
-            // dequeue¹®ÀÇ °æ¿ì, rowÀÇ »èÁ¦¸¦ À§ÇØ exclusive lockÀÌ ¿ä±¸µÊ
+            // dequeueë¬¸ì˜ ê²½ìš°, rowì˜ ì‚­ì œë¥¼ ìœ„í•´ exclusive lockì´ ìš”êµ¬ë¨
             if (sParseTree->forUpdate->isQueue == ID_TRUE)
             {
                 sSCAN->flag   |= QMNC_SCAN_TABLE_QUEUE_TRUE;
@@ -1202,7 +1202,7 @@ qmoOneNonPlan::makeSCAN4Partition( qcStatement     * aStatement,
         aSCANInfo->mParallelInfo.mSeqNo;
 
     //----------------------------------
-    // Display Á¤º¸ ¼¼ÆÃ
+    // Display ì •ë³´ ì„¸íŒ…
     //----------------------------------
 
     IDE_TEST( qmg::setDisplayInfo( aFrom ,
@@ -1211,19 +1211,19 @@ qmoOneNonPlan::makeSCAN4Partition( qcStatement     * aStatement,
                                    &( sSCAN->aliasName ) )
               != IDE_SUCCESS );
 
-    /* BUG-44520 ¹Ì»ç¿ë Disk PartitionÀÇ SCAN Node¸¦ Ãâ·ÂÇÏ´Ù°¡,
-     *           Partition Name ºÎºĞ¿¡¼­ ºñÁ¤»ó Á¾·áÇÒ ¼ö ÀÖ½À´Ï´Ù.
-     *  LockÀ» ÀâÁö ¾Ê°í Meta Cache¸¦ »ç¿ëÇÏ¸é, ºñÁ¤»ó Á¾·áÇÒ ¼ö ÀÖ½À´Ï´Ù.
-     *  SCAN Node¿¡¼­ Partition NameÀ» º¸°üÇÏµµ·Ï ¼öÁ¤ÇÕ´Ï´Ù.
+    /* BUG-44520 ë¯¸ì‚¬ìš© Disk Partitionì˜ SCAN Nodeë¥¼ ì¶œë ¥í•˜ë‹¤ê°€,
+     *           Partition Name ë¶€ë¶„ì—ì„œ ë¹„ì •ìƒ ì¢…ë£Œí•  ìˆ˜ ìˆìŠµë‹ˆë‹¤.
+     *  Lockì„ ì¡ì§€ ì•Šê³  Meta Cacheë¥¼ ì‚¬ìš©í•˜ë©´, ë¹„ì •ìƒ ì¢…ë£Œí•  ìˆ˜ ìˆìŠµë‹ˆë‹¤.
+     *  SCAN Nodeì—ì„œ Partition Nameì„ ë³´ê´€í•˜ë„ë¡ ìˆ˜ì •í•©ë‹ˆë‹¤.
      */
     (void)idlOS::memcpy( sSCAN->partitionName,
                          aPartitionRef->partitionInfo->name,
                          idlOS::strlen( aPartitionRef->partitionInfo->name ) + 1 );
 
-    /* BUG-44633 ¹Ì»ç¿ë Disk PartitionÀÇ SCAN Node¸¦ Ãâ·ÂÇÏ´Ù°¡,
-     *           Index Name ºÎºĞ¿¡¼­ ºñÁ¤»ó Á¾·áÇÒ ¼ö ÀÖ½À´Ï´Ù.
-     *  LockÀ» ÀâÁö ¾Ê°í Meta Cache¸¦ »ç¿ëÇÏ¸é, ºñÁ¤»ó Á¾·áÇÒ ¼ö ÀÖ½À´Ï´Ù.
-     *  SCAN Node¿¡¼­ Index ID¸¦ º¸°üÇÏµµ·Ï ¼öÁ¤ÇÕ´Ï´Ù.
+    /* BUG-44633 ë¯¸ì‚¬ìš© Disk Partitionì˜ SCAN Nodeë¥¼ ì¶œë ¥í•˜ë‹¤ê°€,
+     *           Index Name ë¶€ë¶„ì—ì„œ ë¹„ì •ìƒ ì¢…ë£Œí•  ìˆ˜ ìˆìŠµë‹ˆë‹¤.
+     *  Lockì„ ì¡ì§€ ì•Šê³  Meta Cacheë¥¼ ì‚¬ìš©í•˜ë©´, ë¹„ì •ìƒ ì¢…ë£Œí•  ìˆ˜ ìˆìŠµë‹ˆë‹¤.
+     *  SCAN Nodeì—ì„œ Index IDë¥¼ ë³´ê´€í•˜ë„ë¡ ìˆ˜ì •í•©ë‹ˆë‹¤.
      */
     if ( aSCANInfo->index != NULL )
     {
@@ -1235,11 +1235,11 @@ qmoOneNonPlan::makeSCAN4Partition( qcStatement     * aStatement,
     }
 
     //-------------------------------------------------------------
-    // ¸ŞÀÎ ÀÛ¾÷
+    // ë©”ì¸ ì‘ì—…
     //-------------------------------------------------------------
 
     //----------------------------------
-    // PredicateÀÇ Ã³¸®
+    // Predicateì˜ ì²˜ë¦¬
     //----------------------------------
 
     IDE_TEST( processPredicate( aStatement,
@@ -1270,7 +1270,7 @@ qmoOneNonPlan::makeSCAN4Partition( qcStatement     * aStatement,
                                      & sScanLimit )
               != IDE_SUCCESS );
 
-    // queue¿¡´Â nnf, lob, subquery filter¸¦ Áö¿øÇÏÁö ¾Ê´Â´Ù.
+    // queueì—ëŠ” nnf, lob, subquery filterë¥¼ ì§€ì›í•˜ì§€ ì•ŠëŠ”ë‹¤.
     if ( (sSCAN->flag & QMNC_SCAN_TABLE_QUEUE_MASK) == QMNC_SCAN_TABLE_QUEUE_TRUE )
     {
         IDE_TEST_RAISE( ( aSCANInfo->nnfFilter != NULL ) ||
@@ -1284,7 +1284,7 @@ qmoOneNonPlan::makeSCAN4Partition( qcStatement     * aStatement,
     }
 
     //----------------------------------
-    // Predicate °ü·Ã Flag Á¤º¸ ¼³Á¤
+    // Predicate ê´€ë ¨ Flag ì •ë³´ ì„¤ì •
     //----------------------------------
     if ( sInSubQueryKeyRange == ID_TRUE )
     {
@@ -1296,18 +1296,18 @@ qmoOneNonPlan::makeSCAN4Partition( qcStatement     * aStatement,
         sSCAN->flag |= QMNC_SCAN_INSUBQ_KEYRANGE_FALSE;
     }
 
-    // PROJ-1446 Host variableÀ» Æ÷ÇÔÇÑ ÁúÀÇ ÃÖÀûÈ­
+    // PROJ-1446 Host variableì„ í¬í•¨í•œ ì§ˆì˜ ìµœì í™”
     sSCAN->sdf = aSCANInfo->sdf;
 
     if ( aSCANInfo->sdf != NULL )
     {
         IDE_DASSERT( sIndexCnt > 0 );
 
-        // sdf¿¡ basePlanÀ» ´Ü´Ù.
+        // sdfì— basePlanì„ ë‹¨ë‹¤.
         aSCANInfo->sdf->basePlan = &sSCAN->plan;
 
-        // sdf¿¡ index °³¼ö¸¸Å­ ÈÄº¸¸¦ »ı¼ºÇÑ´Ù.
-        // °¢°¢ÀÇ ÈÄº¸¿¡ filter/key range/key filter Á¤º¸¸¦ »ı¼ºÇÑ´Ù.
+        // sdfì— index ê°œìˆ˜ë§Œí¼ í›„ë³´ë¥¼ ìƒì„±í•œë‹¤.
+        // ê°ê°ì˜ í›„ë³´ì— filter/key range/key filter ì •ë³´ë¥¼ ìƒì„±í•œë‹¤.
 
         aSCANInfo->sdf->candidateCount = sIndexCnt;
 
@@ -1320,9 +1320,9 @@ qmoOneNonPlan::makeSCAN4Partition( qcStatement     * aStatement,
               i < sIndexCnt;
               i++ )
         {
-            // selected index¿¡ ´ëÇØ¼­´Â ¾Õ¿¡¼­ sSCAN¿¡ ´ëÇØ ÀÛ¾÷À» ÇßÀ¸¹Ç·Î,
-            // ´Ù½Ã ÀÛ¾÷ÇÒ ÇÊ¿ä°¡ ¾ø´Ù.
-            // ´ë½Å ±×ÀÚ¸®¿£ full scan¿¡ ´ëÇØ¼­ ÀÛ¾÷À» ÇÑ´Ù.
+            // selected indexì— ëŒ€í•´ì„œëŠ” ì•ì—ì„œ sSCANì— ëŒ€í•´ ì‘ì—…ì„ í–ˆìœ¼ë¯€ë¡œ,
+            // ë‹¤ì‹œ ì‘ì—…í•  í•„ìš”ê°€ ì—†ë‹¤.
+            // ëŒ€ì‹  ê·¸ìë¦¬ì—” full scanì— ëŒ€í•´ì„œ ì‘ì—…ì„ í•œë‹¤.
             if ( &sIndices[i] != aSCANInfo->index )
             {
                 aSCANInfo->sdf->candidate[i].index = &sIndices[i];
@@ -1357,7 +1357,7 @@ qmoOneNonPlan::makeSCAN4Partition( qcStatement     * aStatement,
                                         &( aSCANInfo->sdf->candidate[i].fixKeyRange4Print ),
                                         &( aSCANInfo->sdf->candidate[i].fixKeyFilter4Print ),
                                         &( aSCANInfo->sdf->candidate[i].ridRange ),
-                                        & sInSubQueryKeyRange ) // ÀÇ¹Ì¾ø´Â Á¤º¸ÀÓ.
+                                        & sInSubQueryKeyRange ) // ì˜ë¯¸ì—†ëŠ” ì •ë³´ì„.
                       != IDE_SUCCESS );
 
             IDE_TEST( postProcessScanMethod( aStatement,
@@ -1365,7 +1365,7 @@ qmoOneNonPlan::makeSCAN4Partition( qcStatement     * aStatement,
                                              & sScanLimit )
                       != IDE_SUCCESS );
 
-            // queue¿¡´Â nnf, lob, subquery filter¸¦ Áö¿øÇÏÁö ¾Ê´Â´Ù.
+            // queueì—ëŠ” nnf, lob, subquery filterë¥¼ ì§€ì›í•˜ì§€ ì•ŠëŠ”ë‹¤.
             if ( (sSCAN->flag & QMNC_SCAN_TABLE_QUEUE_MASK) == QMNC_SCAN_TABLE_QUEUE_TRUE )
             {
                 IDE_TEST_RAISE( ( aSCANInfo->nnfFilter != NULL ) ||
@@ -1383,7 +1383,7 @@ qmoOneNonPlan::makeSCAN4Partition( qcStatement     * aStatement,
 
             // fix BUG-19074
             //----------------------------------
-            // sdfÀÇ dependency Ã³¸®
+            // sdfì˜ dependency ì²˜ë¦¬
             //----------------------------------
 
             sPredicate[0] = aSCANInfo->sdf->candidate[i].fixKeyRange;
@@ -1414,17 +1414,17 @@ qmoOneNonPlan::makeSCAN4Partition( qcStatement     * aStatement,
     }
 
     //----------------------------------
-    // SCAN limitÀÇ Àû¿ë
-    // bug-7792 , filter°¡ Á¸ÀçÇÏ¸é default°ªÀ» ¼¼ÆÃÇÏ°í
-    // ±×·¸Áö ¾ÊÀº °æ¿ì¿£ limitÁ¤º¸¸¦ ¼¼ÆÃÇÑ´Ù.
+    // SCAN limitì˜ ì ìš©
+    // bug-7792 , filterê°€ ì¡´ì¬í•˜ë©´ defaultê°’ì„ ì„¸íŒ…í•˜ê³ 
+    // ê·¸ë ‡ì§€ ì•Šì€ ê²½ìš°ì—” limitì •ë³´ë¥¼ ì„¸íŒ…í•œë‹¤.
     //----------------------------------
     if ( sScanLimit == ID_FALSE )
     {
         sSCAN->limit = NULL;
 
         // PR-13482
-        // SCAN LimitÀ» Àû¿ëÇÏÁö ¸øÇÑ°æ¿ì,
-        // selection graphÀÇ limitµµ NULL·Î ¸¸µé±â À§ÇÑ Á¤º¸
+        // SCAN Limitì„ ì ìš©í•˜ì§€ ëª»í•œê²½ìš°,
+        // selection graphì˜ limitë„ NULLë¡œ ë§Œë“¤ê¸° ìœ„í•œ ì •ë³´
         aSCANInfo->limit = NULL;
     }
     else
@@ -1432,31 +1432,31 @@ qmoOneNonPlan::makeSCAN4Partition( qcStatement     * aStatement,
         sSCAN->limit = aSCANInfo->limit;
     }
 
-    // ¾Æ·¡´Â ÀÇ¹Ì ¾ø´Â Á¤º¸ÀÓ.
-    // ¾îÂ÷ÇÇ qmnScanÀÇ firstInit¿¡¼­ qmncSCANÀÇ limit Á¤º¸¸¦ ÂüÁ¶ÇØ,
-    // qmndÀÇ cursorPropertyÀÇ µÎ ¸É¹ö¸¦ ¼¼ÆÃÇÔ.
+    // ì•„ë˜ëŠ” ì˜ë¯¸ ì—†ëŠ” ì •ë³´ì„.
+    // ì–´ì°¨í”¼ qmnScanì˜ firstInitì—ì„œ qmncSCANì˜ limit ì •ë³´ë¥¼ ì°¸ì¡°í•´,
+    // qmndì˜ cursorPropertyì˜ ë‘ ë§´ë²„ë¥¼ ì„¸íŒ…í•¨.
     sSCAN->cursorProperty.mFirstReadRecordPos = 0;
     sSCAN->cursorProperty.mIsUndoLogging = ID_TRUE;
     sSCAN->cursorProperty.mReadRecordCount = ID_ULONG_MAX;
 
     //----------------------------------
-    // NNF Filter ±¸¼º
+    // NNF Filter êµ¬ì„±
     //----------------------------------
     sSCAN->nnfFilter = aSCANInfo->nnfFilter;
 
 
     //-------------------------------------------------------------
-    // ¸¶¹«¸® ÀÛ¾÷
+    // ë§ˆë¬´ë¦¬ ì‘ì—…
     //-------------------------------------------------------------
 
     //----------------------------------
     // PROJ-1473
-    // tupleÀÇ column »ç¿ëÁ¤º¸ ÀçÁ¶Á¤. (¿¹:view³»ºÎ·ÎÀÇ push projectionÀû¿ë)
+    // tupleì˜ column ì‚¬ìš©ì •ë³´ ì¬ì¡°ì •. (ì˜ˆ:viewë‚´ë¶€ë¡œì˜ push projectionì ìš©)
     //----------------------------------
 
     sMtcTuple = &(QC_SHARED_TMPLATE(aStatement)->tmplate.rows[sSCAN->tupleRowID]);
 
-    // BUG-43705 lateral view¸¦ simple view mergingÀ» ÇÏÁö¾ÊÀ¸¸é °á°ú°¡ ´Ù¸¨´Ï´Ù.
+    // BUG-43705 lateral viewë¥¼ simple view mergingì„ í•˜ì§€ì•Šìœ¼ë©´ ê²°ê³¼ê°€ ë‹¤ë¦…ë‹ˆë‹¤.
     if ( ( ( sMtcTuple->lflag & MTC_TUPLE_VIEW_PUSH_PROJ_MASK )
            == MTC_TUPLE_VIEW_PUSH_PROJ_TRUE ) &&
          ( ( sMtcTuple->lflag & MTC_TUPLE_LATERAL_VIEW_REF_MASK )
@@ -1471,8 +1471,8 @@ qmoOneNonPlan::makeSCAN4Partition( qcStatement     * aStatement,
                  == MTC_COLUMN_VIEW_COLUMN_PUSH_FALSE )
             {
                 // BUG-25470
-                // OUTER COLUMN REFERENCE°¡ ÀÖ´Â ÄÃ·³Àº
-                // ÄÃ·³Á¤º¸¸¦ Á¦°ÅÇÏÁö ¾Ê´Â´Ù.
+                // OUTER COLUMN REFERENCEê°€ ìˆëŠ” ì»¬ëŸ¼ì€
+                // ì»¬ëŸ¼ì •ë³´ë¥¼ ì œê±°í•˜ì§€ ì•ŠëŠ”ë‹¤.
                 if ( ( ( sMtcTuple->columns[i].flag &
                          MTC_COLUMN_USE_TARGET_MASK )
                        == MTC_COLUMN_USE_TARGET_TRUE )
@@ -1485,9 +1485,9 @@ qmoOneNonPlan::makeSCAN4Partition( qcStatement     * aStatement,
                          MTC_COLUMN_OUTER_REFERENCE_MASK )
                        == MTC_COLUMN_OUTER_REFERENCE_FALSE ))
                 {
-                    // ÁúÀÇ¿¡ »ç¿ëµÇÁö ¾Ê´Â ÄÃ·³À¸·Î
-                    // view³»ºÎ·Î push projectionµÈ °æ¿ìÀÓ.
-                    // ÁúÀÇ¿¡ »ç¿ëµÈ ÄÃ·³Á¤º¸Á¦°Å
+                    // ì§ˆì˜ì— ì‚¬ìš©ë˜ì§€ ì•ŠëŠ” ì»¬ëŸ¼ìœ¼ë¡œ
+                    // viewë‚´ë¶€ë¡œ push projectionëœ ê²½ìš°ì„.
+                    // ì§ˆì˜ì— ì‚¬ìš©ëœ ì»¬ëŸ¼ì •ë³´ì œê±°
 
                     sMtcTuple->columns[i].flag &= ~MTC_COLUMN_USE_COLUMN_MASK;
                     sMtcTuple->columns[i].flag |= MTC_COLUMN_USE_COLUMN_FALSE;
@@ -1499,15 +1499,15 @@ qmoOneNonPlan::makeSCAN4Partition( qcStatement     * aStatement,
             }
             else
             {
-                // ÁúÀÇ¿¡ »ç¿ëµÈ ÄÃ·³
+                // ì§ˆì˜ì— ì‚¬ìš©ëœ ì»¬ëŸ¼
                 // Nothing To Do
             }
         }
     }
 
     //----------------------------------
-    // Host º¯¼ö¸¦ Æ÷ÇÔÇÑ
-    // Constant ExpressionÀÇ ÃÖÀûÈ­
+    // Host ë³€ìˆ˜ë¥¼ í¬í•¨í•œ
+    // Constant Expressionì˜ ìµœì í™”
     //----------------------------------
     if ( sSCAN->nnfFilter != NULL )
     {
@@ -1521,7 +1521,7 @@ qmoOneNonPlan::makeSCAN4Partition( qcStatement     * aStatement,
     }
 
     //----------------------------------
-    //dependency Ã³¸® ¹× subqueryÀÇ Ã³¸®
+    //dependency ì²˜ë¦¬ ë° subqueryì˜ ì²˜ë¦¬
     //----------------------------------
 
     sPredicate[0] = sSCAN->method.fixKeyRange;
@@ -1537,7 +1537,7 @@ qmoOneNonPlan::makeSCAN4Partition( qcStatement     * aStatement,
 
     //----------------------------------
     // PROJ-1473
-    // dependency ¼³Á¤Àü¿¡ predicateµéÀÇ À§Ä¡Á¤º¸ º¯°æ.
+    // dependency ì„¤ì •ì „ì— predicateë“¤ì˜ ìœ„ì¹˜ì •ë³´ ë³€ê²½.
     //----------------------------------
 
     for ( i  = 0;
@@ -1594,7 +1594,7 @@ qmoOneNonPlan::postProcessScanMethod( qcStatement    * aStatement,
 
     IDE_DASSERT( aMethod != NULL );
 
-    // fix BUG-25151 filter°¡ ÀÖ´Â °æ¿ì¿¡µµ SCAN LIMIT Àû¿ë
+    // fix BUG-25151 filterê°€ ìˆëŠ” ê²½ìš°ì—ë„ SCAN LIMIT ì ìš©
     if ( aMethod->subqueryFilter != NULL )
     {
         *aScanLimit = ID_FALSE;
@@ -1677,17 +1677,17 @@ qmoOneNonPlan::initFILT( qcStatement  * aStatement ,
 {
 /***********************************************************************
  *
- * Description : FILT ³ëµå¸¦ »ı¼ºÇÑ´Ù.
+ * Description : FILT ë…¸ë“œë¥¼ ìƒì„±í•œë‹¤.
  *
  * Implementation :
- *     + ÃÊ±âÈ­ ÀÛ¾÷
- *         - qmncFILTÀÇ ÇÒ´ç ¹× ÃÊ±âÈ­
- *     + ¸ŞÀÎ ÀÛ¾÷
- *         - filter , constant PredicateÀÇ ºĞ·ù
- *     + ¸¶¹«¸® ÀÛ¾÷
- *         - data ¿µ¿ªÀÇ Å©±â °è»ê
- *         - dependencyÀÇ Ã³¸®
- *         - subqueryÀÇ Ã³¸®
+ *     + ì´ˆê¸°í™” ì‘ì—…
+ *         - qmncFILTì˜ í• ë‹¹ ë° ì´ˆê¸°í™”
+ *     + ë©”ì¸ ì‘ì—…
+ *         - filter , constant Predicateì˜ ë¶„ë¥˜
+ *     + ë§ˆë¬´ë¦¬ ì‘ì—…
+ *         - data ì˜ì—­ì˜ í¬ê¸° ê³„ì‚°
+ *         - dependencyì˜ ì²˜ë¦¬
+ *         - subqueryì˜ ì²˜ë¦¬
  *
  ***********************************************************************/
 
@@ -1697,16 +1697,16 @@ qmoOneNonPlan::initFILT( qcStatement  * aStatement ,
     IDU_FIT_POINT_FATAL( "qmoOneNonPlan::initFILT::__FT__" );
 
     //----------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //----------------------------------
 
     IDE_DASSERT( aStatement != NULL );
 
     //----------------------------------------------------------------
-    // ÃÊ±âÈ­ ÀÛ¾÷
+    // ì´ˆê¸°í™” ì‘ì—…
     //----------------------------------------------------------------
 
-    //qmncSCANÀÇ ÇÒ´ç¹× ÃÊ±âÈ­
+    //qmncSCANì˜ í• ë‹¹ë° ì´ˆê¸°í™”
     IDE_TEST( QC_QMP_MEM( aStatement )->alloc( ID_SIZEOF( qmncFILT ),
                                                (void **)& sFILT )
               != IDE_SUCCESS );
@@ -1719,7 +1719,7 @@ qmoOneNonPlan::initFILT( qcStatement  * aStatement ,
                         sDataNodeOffset );
 
     //----------------------------------------------------------------
-    // ¸ŞÀÎ ÀÛ¾÷
+    // ë©”ì¸ ì‘ì—…
     //----------------------------------------------------------------
 
     if ( aPredicate != NULL )
@@ -1768,7 +1768,7 @@ qmoOneNonPlan::makeFILT( qcStatement  * aStatement ,
     IDU_FIT_POINT_FATAL( "qmoOneNonPlan::makeFILT::__FT__" );
 
     //----------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //----------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -1777,7 +1777,7 @@ qmoOneNonPlan::makeFILT( qcStatement  * aStatement ,
     IDE_DASSERT( aChildPlan != NULL );
 
     //----------------------------------------------------------------
-    // ÃÊ±âÈ­ ÀÛ¾÷
+    // ì´ˆê¸°í™” ì‘ì—…
     //----------------------------------------------------------------
 
     sFILT->plan.left        = aChildPlan;
@@ -1787,7 +1787,7 @@ qmoOneNonPlan::makeFILT( qcStatement  * aStatement ,
                                      ID_SIZEOF(qmndFILT));
 
     //----------------------------------
-    // Flag ¼³Á¤
+    // Flag ì„¤ì •
     //----------------------------------
 
     sFILT->flag = QMN_PLAN_FLAG_CLEAR;
@@ -1796,7 +1796,7 @@ qmoOneNonPlan::makeFILT( qcStatement  * aStatement ,
     sFILT->plan.flag       |= (aChildPlan->flag & QMN_PLAN_STORAGE_MASK);
 
     //----------------------------------------------------------------
-    // ¸ŞÀÎ ÀÛ¾÷
+    // ë©”ì¸ ì‘ì—…
     //----------------------------------------------------------------
 
     if ( aPredicate != NULL )
@@ -1815,7 +1815,7 @@ qmoOneNonPlan::makeFILT( qcStatement  * aStatement ,
 
     if ( aConstantPredicate != NULL )
     {
-        // constant PredicateÀÇ Ã³¸®
+        // constant Predicateì˜ ì²˜ë¦¬
         IDE_TEST( qmoPred::linkPredicate( aStatement ,
                                           aConstantPredicate ,
                                           & sNode )
@@ -1838,7 +1838,7 @@ qmoOneNonPlan::makeFILT( qcStatement  * aStatement ,
     }
 
     // TO Fix PR-10182
-    // HAVING Àı¿¡ Á¸ÀçÇÏ´Â PRIOR Column¿¡ ´ëÇØ¼­µµ ID¸¦ º¯°æÇÏ¿©¾ß ÇÑ´Ù.
+    // HAVING ì ˆì— ì¡´ì¬í•˜ëŠ” PRIOR Columnì— ëŒ€í•´ì„œë„ IDë¥¼ ë³€ê²½í•˜ì—¬ì•¼ í•œë‹¤.
     if ( sFILT->filter != NULL )
     {
         IDE_TEST( qmoPred::setPriorNodeID( aStatement ,
@@ -1852,15 +1852,15 @@ qmoOneNonPlan::makeFILT( qcStatement  * aStatement ,
     }
 
     //----------------------------------------------------------------
-    // ¸¶¹«¸® ÀÛ¾÷
+    // ë§ˆë¬´ë¦¬ ì‘ì—…
     //----------------------------------------------------------------
 
-    //data ¿µ¿ªÀÇ Å©±â °è»ê
+    //data ì˜ì—­ì˜ í¬ê¸° ê³„ì‚°
     QC_SHARED_TMPLATE(aStatement)->tmplate.dataSize = sDataNodeOffset;
 
     //----------------------------------
-    // Host º¯¼ö¸¦ Æ÷ÇÔÇÑ
-    // Constant ExpressionÀÇ ÃÖÀûÈ­
+    // Host ë³€ìˆ˜ë¥¼ í¬í•¨í•œ
+    // Constant Expressionì˜ ìµœì í™”
     //----------------------------------
 
     if ( sFILT->filter != NULL )
@@ -1892,7 +1892,7 @@ qmoOneNonPlan::makeFILT( qcStatement  * aStatement ,
     }
 
     //----------------------------------
-    //dependency Ã³¸® ¹× subqueryÀÇ Ã³¸®
+    //dependency ì²˜ë¦¬ ë° subqueryì˜ ì²˜ë¦¬
     //----------------------------------
 
     sPredicate[0] = sFILT->constantFilter;
@@ -1900,7 +1900,7 @@ qmoOneNonPlan::makeFILT( qcStatement  * aStatement ,
 
     //----------------------------------
     // PROJ-1473
-    // dependency ¼³Á¤Àü¿¡ predicateµéÀÇ À§Ä¡Á¤º¸ º¯°æ.
+    // dependency ì„¤ì •ì „ì— predicateë“¤ì˜ ìœ„ì¹˜ì •ë³´ ë³€ê²½.
     //----------------------------------
 
     IDE_TEST( qmg::changeColumnLocate( aStatement,
@@ -1956,17 +1956,17 @@ qmoOneNonPlan::initPROJ( qcStatement  * aStatement,
     IDU_FIT_POINT_FATAL( "qmoOneNonPlan::initPROJ::__FT__" );
 
     //----------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //----------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aQuerySet != NULL );
 
     //----------------------------------------------------------------
-    // ÃÊ±âÈ­ ÀÛ¾÷
+    // ì´ˆê¸°í™” ì‘ì—…
     //----------------------------------------------------------------
 
-    //qmncSCANÀÇ ÇÒ´ç¹× ÃÊ±âÈ­
+    //qmncSCANì˜ í• ë‹¹ë° ì´ˆê¸°í™”
     IDE_TEST( QC_QMP_MEM( aStatement )->alloc( ID_SIZEOF( qmncPROJ ),
                                                (void **)& sPROJ )
               != IDE_SUCCESS );
@@ -1980,7 +1980,7 @@ qmoOneNonPlan::initPROJ( qcStatement  * aStatement,
 
     if ( aParent == NULL )
     {
-        // ÀÏ¹İÀûÀÎ query-setÀÇ projection
+        // ì¼ë°˜ì ì¸ query-setì˜ projection
         IDE_TEST( qmc::createResultFromQuerySet( aStatement,
                                                  aQuerySet,
                                                  & sPROJ->plan.resultDesc )
@@ -1988,8 +1988,8 @@ qmoOneNonPlan::initPROJ( qcStatement  * aStatement,
     }
     else
     {
-        // Query-setÀÇ ÃÖ»óÀ§ projectionÀÌ ¾Æ´Ñ °æ¿ì
-        // Ex) viewÀÇ ÇÏÀ§ projection
+        // Query-setì˜ ìµœìƒìœ„ projectionì´ ì•„ë‹Œ ê²½ìš°
+        // Ex) viewì˜ í•˜ìœ„ projection
         IDE_TEST( qmc::copyResultDesc( aStatement,
                                        aParent->resultDesc,
                                        & sPROJ->plan.resultDesc )
@@ -2027,22 +2027,22 @@ qmoOneNonPlan::makePROJ( qcStatement  * aStatement,
 {
 /***********************************************************************
  *
- * Description : PROJ ³ëµå¸¦ »ı¼ºÇÑ´Ù.
+ * Description : PROJ ë…¸ë“œë¥¼ ìƒì„±í•œë‹¤.
  *
  * Implementation :
- *     + ÃÊ±âÈ­ ÀÛ¾÷
- *         - qmncPROJÀÇ ÇÒ´ç ¹× ÃÊ±âÈ­
- *     + ¸ŞÀÎ ÀÛ¾÷
- *         - flagÀÇ ¼³Á¤ (top , non-top || limit || indexable min-max )
- *         - Top PROJ , Non-top PROJÀÏ¶§ÀÇ Ã³¸®
- *     + ¸¶¹«¸® ÀÛ¾÷
- *         - data ¿µ¿ªÀÇ Å©±â °è»ê
- *         - dependencyÀÇ Ã³¸®
- *         - subqueryÀÇ Ã³¸®
+ *     + ì´ˆê¸°í™” ì‘ì—…
+ *         - qmncPROJì˜ í• ë‹¹ ë° ì´ˆê¸°í™”
+ *     + ë©”ì¸ ì‘ì—…
+ *         - flagì˜ ì„¤ì • (top , non-top || limit || indexable min-max )
+ *         - Top PROJ , Non-top PROJì¼ë•Œì˜ ì²˜ë¦¬
+ *     + ë§ˆë¬´ë¦¬ ì‘ì—…
+ *         - data ì˜ì—­ì˜ í¬ê¸° ê³„ì‚°
+ *         - dependencyì˜ ì²˜ë¦¬
+ *         - subqueryì˜ ì²˜ë¦¬
  *
  * TO DO
- *     - PROJ ³ëµå´Â Projection Graph ¶Ç´Â Set Graph·ÎºÎÅÍ »ı¼ºµÈ´Ù.
- *     - Non-topÀÏ¶§ÀÇ Ã³¸®¿¡ ´ëÇÑ °í·Á°¡ ´õ ÇÊ¿äÇÏ´Ù.
+ *     - PROJ ë…¸ë“œëŠ” Projection Graph ë˜ëŠ” Set Graphë¡œë¶€í„° ìƒì„±ëœë‹¤.
+ *     - Non-topì¼ë•Œì˜ ì²˜ë¦¬ì— ëŒ€í•œ ê³ ë ¤ê°€ ë” í•„ìš”í•˜ë‹¤.
  *
  ***********************************************************************/
 
@@ -2064,7 +2064,7 @@ qmoOneNonPlan::makePROJ( qcStatement  * aStatement,
     IDU_FIT_POINT_FATAL( "qmoOneNonPlan::makePROJ::__FT__" );
 
     //----------------------------------------------------------------
-    // ÃÊ±âÈ­ ÀÛ¾÷
+    // ì´ˆê¸°í™” ì‘ì—…
     //----------------------------------------------------------------
 
     aPlan->offset = aStatement->myPlan->sTmplate->tmplate.dataSize;
@@ -2074,7 +2074,7 @@ qmoOneNonPlan::makePROJ( qcStatement  * aStatement,
     sPROJ->myTargetOffset = sDataNodeOffset;
 
     //----------------------------------
-    // Flag ¼³Á¤
+    // Flag ì„¤ì •
     //----------------------------------
 
     sPROJ->flag = QMN_PLAN_FLAG_CLEAR;
@@ -2094,7 +2094,7 @@ qmoOneNonPlan::makePROJ( qcStatement  * aStatement,
     }
     else
     {
-        // limit Á¤º¸ÀÇ ¼¼ÆÃ
+        // limit ì •ë³´ì˜ ì„¸íŒ…
         sPROJ->limit = aLimit;
         if( sPROJ->limit != NULL )
         {
@@ -2107,14 +2107,14 @@ qmoOneNonPlan::makePROJ( qcStatement  * aStatement,
         }
     }
 
-    // loop Á¤º¸ÀÇ ¼¼ÆÃ
+    // loop ì •ë³´ì˜ ì„¸íŒ…
     sPROJ->loopNode = aLoopNode;
     
     //----------------------------------------------------------------
-    // ¸ŞÀÎ ÀÛ¾÷
+    // ë©”ì¸ ì‘ì—…
     //----------------------------------------------------------------
 
-    // indexable min-max flag¼¼ÆÃ
+    // indexable min-max flagì„¸íŒ…
     if( (aFlag & QMO_MAKEPROJ_INDEXABLE_MINMAX_MASK) ==
         QMO_MAKEPROJ_INDEXABLE_MINMAX_TRUE )
     {
@@ -2160,13 +2160,13 @@ qmoOneNonPlan::makePROJ( qcStatement  * aStatement,
     if ( (aFlag & QMO_MAKEPROJ_TOP_MASK ) == QMO_MAKEPROJ_TOP_TRUE )
     {
         //----------------------------------
-        // Top PROJÀÎ °æ¿ì
+        // Top PROJì¸ ê²½ìš°
         //----------------------------------
 
         sPROJ->flag &= ~QMNC_PROJ_TOP_MASK;
         sPROJ->flag |= QMNC_PROJ_TOP_TRUE;
 
-        //TopÀÎ °æ¿ì¿¡´Â ÇöÀçÀÇ QuerySetÀÇ TargetÀ» ´Ş¾ÆÁØ´Ù.
+        //Topì¸ ê²½ìš°ì—ëŠ” í˜„ì¬ì˜ QuerySetì˜ Targetì„ ë‹¬ì•„ì¤€ë‹¤.
         sPROJ->myTarget    = aQuerySet->target;
 
         for ( sItrAttr  = sPROJ->plan.resultDesc, sColumnCount = 0;
@@ -2174,7 +2174,7 @@ qmoOneNonPlan::makePROJ( qcStatement  * aStatement,
               sItrAttr  = sItrAttr->next , sColumnCount++ )
         {
             //----------------------------------
-            // Prior NodeÀÇ Ã³¸®
+            // Prior Nodeì˜ ì²˜ë¦¬
             //----------------------------------
 
             // To Fix BUG-8026
@@ -2194,7 +2194,7 @@ qmoOneNonPlan::makePROJ( qcStatement  * aStatement,
     else
     {
         //----------------------------------
-        // Non-top PROJÀÎ °æ¿ì
+        // Non-top PROJì¸ ê²½ìš°
         //----------------------------------
         sPROJ->flag &= ~QMNC_PROJ_TOP_MASK;
         sPROJ->flag |= QMNC_PROJ_TOP_FALSE;
@@ -2208,7 +2208,7 @@ qmoOneNonPlan::makePROJ( qcStatement  * aStatement,
                   sItrAttr = sItrAttr->next )
         {
             //----------------------------------
-            // Prior NodeÀÇ Ã³¸®
+            // Prior Nodeì˜ ì²˜ë¦¬
             //----------------------------------
             IDE_TEST( qmoPred::setPriorNodeID( aStatement ,
                                                aQuerySet ,
@@ -2217,8 +2217,8 @@ qmoOneNonPlan::makePROJ( qcStatement  * aStatement,
 
             //----------------------------------
             // Bug-7948
-            // TOP-PROJ°¡ ¾Æ´Ñ °æ¿ì¿¡ TargetÀ» º¹»çÇØ¼­ ¿¬°áÇÑ´Ù.
-            // ¿¹¸¦ µé¾î STORE and SEARCHÀÎ °æ¿ì
+            // TOP-PROJê°€ ì•„ë‹Œ ê²½ìš°ì— Targetì„ ë³µì‚¬í•´ì„œ ì—°ê²°í•œë‹¤.
+            // ì˜ˆë¥¼ ë“¤ì–´ STORE and SEARCHì¸ ê²½ìš°
             //
             //            (sub-query)
             //               |
@@ -2227,16 +2227,16 @@ qmoOneNonPlan::makePROJ( qcStatement  * aStatement,
             //               |              |
             // target-> (qmsTarget)  -  (qmsTarget)
             //
-            // À§¿Í °°ÀÌ °¡¸®Å°°í ÀÖ´Â °æ¿ì ÀúÀåÀ» ÇÏ´Â Materialize³ëµå¿¡¼­
-            // targetÀ» º¯°æ ½ÃÅ°¹Ç·Î ÇÏÀ§ÀÇ PROJµµ °á°ú targetÀ» °¡¸®Å°°Ô
-            // µÈ´Ù. (Àß¸øµÈ »óÈ²)
+            // ìœ„ì™€ ê°™ì´ ê°€ë¦¬í‚¤ê³  ìˆëŠ” ê²½ìš° ì €ì¥ì„ í•˜ëŠ” Materializeë…¸ë“œì—ì„œ
+            // targetì„ ë³€ê²½ ì‹œí‚¤ë¯€ë¡œ í•˜ìœ„ì˜ PROJë„ ê²°ê³¼ targetì„ ê°€ë¦¬í‚¤ê²Œ
+            // ëœë‹¤. (ì˜ëª»ëœ ìƒí™©)
             //
-            // µû¶ó¼­, qmsTarget°ú qmsTarget->targetColumÀ» ¸ğµÎ º¹»çÇØ¼­
-            // PROJ->myTraget¿¡ ´Ş¾ÆÁÖµµ·Ï ÇÑ´Ù.
+            // ë”°ë¼ì„œ, qmsTargetê³¼ qmsTarget->targetColumì„ ëª¨ë‘ ë³µì‚¬í•´ì„œ
+            // PROJ->myTragetì— ë‹¬ì•„ì£¼ë„ë¡ í•œë‹¤.
             //
             //----------------------------------
 
-            //±âÁ¸ÀÇ TargetÀ» º¹»çÇÑ´Ù.
+            //ê¸°ì¡´ì˜ Targetì„ ë³µì‚¬í•œë‹¤.
             //alloc
             IDE_TEST( STRUCT_ALLOC( QC_QMP_MEM( aStatement ),
                                     qmsTarget ,
@@ -2246,7 +2246,7 @@ qmoOneNonPlan::makePROJ( qcStatement  * aStatement,
             idlOS::memcpy( sNewTarget , sTarget , ID_SIZEOF(qmsTarget) );
             sNewTarget->next = NULL;
 
-            //±âÁ¸ÀÇ TargetColumnÀ» º¹»çÇÑ´Ù.
+            //ê¸°ì¡´ì˜ TargetColumnì„ ë³µì‚¬í•œë‹¤.
             //alloc
             IDE_TEST( STRUCT_ALLOC( QC_QMP_MEM( aStatement ),
                                     qtcNode ,
@@ -2262,17 +2262,17 @@ qmoOneNonPlan::makePROJ( qcStatement  * aStatement,
             sNewTarget->targetColumn = sNewNode;
 
             // BUG-37204
-            // projÀÇ result desc ¿¡ pass ³ëµå°¡ ´Ş·ÁÀÖ´Â °æ¿ì
-            // view ¿¡¼­ Àß¸øµÈ ³ëµå¸¦ ÂüÁ¶ ÇÏ°Ô µË´Ï´Ù.
+            // projì˜ result desc ì— pass ë…¸ë“œê°€ ë‹¬ë ¤ìˆëŠ” ê²½ìš°
+            // view ì—ì„œ ì˜ëª»ëœ ë…¸ë“œë¥¼ ì°¸ì¡° í•˜ê²Œ ë©ë‹ˆë‹¤.
             if ( sItrAttr->expr->node.module == &qtc::passModule )
             {
-                // proj ÀÇ »óÀ§ ±×·¡ÇÁ¿¡¼­ pass ³ëµå°¡ ÀÌ¹Ì »ı¼ºµÇ¾î ³»·Á¿À´Â °æ¿ì
-                // PASS ³ëµå¸¦ º¹»çÇØ¾ß ÇÏ°í
-                // proj ÀÇ ÇÏÀ§ ±×·¡ÇÁ¿¡¼­ pass ³ëµå¸¦ »ı¼ºÇÏ´Â °æ¿ì
-                // PASS ³ëµåÀÇ ÀÎÀÚ¸¦ º¹»çÇØ¾ß ÇÑ´Ù.
-                // 2°¡Áö °æ¿ì¸¦ ±¸ºĞÇÒ¼ö ¾øÀ¸¹Ç·Î PASS ³ëµå¿Í ÀÎÀÚ¸¦ ¸ğµÎ º¹»çÇÔ.
-                // ¿©±â¼­ º¹»çµÈ º¹»çº»Àº proj ³ëµå°¡ »ç¿ëÇÏ°Ô µÇ¸ç
-                // ¿øº»Àº view ³ëµå°¡ ³»¿ëÀ» º¯°æÇÏ¿© »ç¿ëÇÏ°Ô µÈ´Ù.
+                // proj ì˜ ìƒìœ„ ê·¸ë˜í”„ì—ì„œ pass ë…¸ë“œê°€ ì´ë¯¸ ìƒì„±ë˜ì–´ ë‚´ë ¤ì˜¤ëŠ” ê²½ìš°
+                // PASS ë…¸ë“œë¥¼ ë³µì‚¬í•´ì•¼ í•˜ê³ 
+                // proj ì˜ í•˜ìœ„ ê·¸ë˜í”„ì—ì„œ pass ë…¸ë“œë¥¼ ìƒì„±í•˜ëŠ” ê²½ìš°
+                // PASS ë…¸ë“œì˜ ì¸ìë¥¼ ë³µì‚¬í•´ì•¼ í•œë‹¤.
+                // 2ê°€ì§€ ê²½ìš°ë¥¼ êµ¬ë¶„í• ìˆ˜ ì—†ìœ¼ë¯€ë¡œ PASS ë…¸ë“œì™€ ì¸ìë¥¼ ëª¨ë‘ ë³µì‚¬í•¨.
+                // ì—¬ê¸°ì„œ ë³µì‚¬ëœ ë³µì‚¬ë³¸ì€ proj ë…¸ë“œê°€ ì‚¬ìš©í•˜ê²Œ ë˜ë©°
+                // ì›ë³¸ì€ view ë…¸ë“œê°€ ë‚´ìš©ì„ ë³€ê²½í•˜ì—¬ ì‚¬ìš©í•˜ê²Œ ëœë‹¤.
                 IDE_TEST(STRUCT_ALLOC( QC_QMP_MEM( aStatement ),
                                        qtcNode ,
                                        & sNewNode )
@@ -2313,16 +2313,16 @@ qmoOneNonPlan::makePROJ( qcStatement  * aStatement,
                 sLastNode = sNewNode;
             }
         }
-        //non-TopÀÎ °æ¿ì¿¡´Â º¹»çÇÑ TargetÀ» ´Ş¾ÆÁØ´Ù.
+        //non-Topì¸ ê²½ìš°ì—ëŠ” ë³µì‚¬í•œ Targetì„ ë‹¬ì•„ì¤€ë‹¤.
         sPROJ->myTarget    = sFirstTarget;
     }
 
     //----------------------------------------------------------------
-    // ¸¶¹«¸® ÀÛ¾÷
+    // ë§ˆë¬´ë¦¬ ì‘ì—…
     //----------------------------------------------------------------
 
     sPROJ->targetCount = sColumnCount;
-    //data ¿µ¿ªÀÇ Å©±â °è»ê
+    //data ì˜ì—­ì˜ í¬ê¸° ê³„ì‚°
     QC_SHARED_TMPLATE(aStatement)->tmplate.dataSize = sDataNodeOffset +
         sColumnCount * idlOS::align8( ID_SIZEOF(qmdNode) );
 
@@ -2339,7 +2339,7 @@ qmoOneNonPlan::makePROJ( qcStatement  * aStatement,
     }
 
     //----------------------------------
-    //dependency Ã³¸® ¹× subqueryÀÇ Ã³¸®
+    //dependency ì²˜ë¦¬ ë° subqueryì˜ ì²˜ë¦¬
     //----------------------------------
 
     IDE_TEST( qmoDependency::setDependency( aStatement ,
@@ -2362,8 +2362,8 @@ qmoOneNonPlan::makePROJ( qcStatement  * aStatement,
     sPROJ->plan.flag &= ~QMN_PLAN_NODE_EXIST_MASK;
     sPROJ->plan.flag |= (aChildPlan->flag & QMN_PLAN_NODE_EXIST_MASK);
 
-    // PROJ-2551 simple query ÃÖÀûÈ­
-    // simple targetÀÎ °æ¿ì fast execute¸¦ ¼öÇàÇÑ´Ù.
+    // PROJ-2551 simple query ìµœì í™”
+    // simple targetì¸ ê²½ìš° fast executeë¥¼ ìˆ˜í–‰í•œë‹¤.
     IDE_TEST( checkSimplePROJ( aStatement, sPROJ )
               != IDE_SUCCESS );
 
@@ -2383,28 +2383,28 @@ qmoOneNonPlan::initGRBY( qcStatement       * aStatement ,
 {
 /***********************************************************************
  *
- * Description : GRBY ³ëµå¸¦ »ı¼ºÇÑ´Ù.
+ * Description : GRBY ë…¸ë“œë¥¼ ìƒì„±í•œë‹¤.
  *
  * Implementation :
- *     + ÃÊ±âÈ­ ÀÛ¾÷
- *         - qmncGRBYÀÇ ÇÒ´ç ¹× ÃÊ±âÈ­
- *     + ¸ŞÀÎ ÀÛ¾÷
- *         - Tuple SetÀÇ µî·Ï
- *         - GRBYÄÃ·³ÀÇ ±¸¼º & passNodeÀÇ Ã³¸®
- *         - Tupple SetÀÇ ÄÃ·³ °³¼ö¿¡ ¸Âµµ·Ï ÇÒ´ç
- *     + ¸¶¹«¸® ÀÛ¾÷
- *         - data ¿µ¿ªÀÇ Å©±â °è»ê
- *         - dependencyÀÇ Ã³¸®
- *         - subqueryÀÇ Ã³¸®
+ *     + ì´ˆê¸°í™” ì‘ì—…
+ *         - qmncGRBYì˜ í• ë‹¹ ë° ì´ˆê¸°í™”
+ *     + ë©”ì¸ ì‘ì—…
+ *         - Tuple Setì˜ ë“±ë¡
+ *         - GRBYì»¬ëŸ¼ì˜ êµ¬ì„± & passNodeì˜ ì²˜ë¦¬
+ *         - Tupple Setì˜ ì»¬ëŸ¼ ê°œìˆ˜ì— ë§ë„ë¡ í• ë‹¹
+ *     + ë§ˆë¬´ë¦¬ ì‘ì—…
+ *         - data ì˜ì—­ì˜ í¬ê¸° ê³„ì‚°
+ *         - dependencyì˜ ì²˜ë¦¬
+ *         - subqueryì˜ ì²˜ë¦¬
  *
  * TO DO
- *     -´ÙÀ½ÀÇ µÎ°¡Áö °æ¿ì·Î »ç¿ëÀÌµÈ´Ù.
+ *     -ë‹¤ìŒì˜ ë‘ê°€ì§€ ê²½ìš°ë¡œ ì‚¬ìš©ì´ëœë‹¤.
  *         - Sort-Based Grouping
  *         - Sort-Based Distinction
- *     -µû¶ó¼­, Sort-Based GroupingÀ¸·Î »ç¿ëÀÌ µÉ¶§¿¡´Â group by Á¤º¸·Î
- *      ºÎÅÍ ÀÌ¿ëÀÌ µÇ¹Ç·Î ÀÌ´Â order by ¹× havingÀı¿¡ »ç¿ëÀÌ µÉ¼ö ÀÖÀ¸
- *      ¹Ç·Î, srcNode¸¦ º¹»çÇÏ¿© ÄÃ·³À» ±¸¼ºÇÏ°í, group by¿¡ dstNode¶Ç´Â
- *      passNode·Î ´ëÃ¼ ÇÑ´Ù.
+ *     -ë”°ë¼ì„œ, Sort-Based Groupingìœ¼ë¡œ ì‚¬ìš©ì´ ë ë•Œì—ëŠ” group by ì •ë³´ë¡œ
+ *      ë¶€í„° ì´ìš©ì´ ë˜ë¯€ë¡œ ì´ëŠ” order by ë° havingì ˆì— ì‚¬ìš©ì´ ë ìˆ˜ ìˆìœ¼
+ *      ë¯€ë¡œ, srcNodeë¥¼ ë³µì‚¬í•˜ì—¬ ì»¬ëŸ¼ì„ êµ¬ì„±í•˜ê³ , group byì— dstNodeë˜ëŠ”
+ *      passNodeë¡œ ëŒ€ì²´ í•œë‹¤.
  *
  ***********************************************************************/
     qmncGRBY          * sGRBY;
@@ -2419,16 +2419,16 @@ qmoOneNonPlan::initGRBY( qcStatement       * aStatement ,
     IDU_FIT_POINT_FATAL( "qmoOneNonPlan::initGRBY::__FT__" );
 
     //----------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //----------------------------------
 
     IDE_DASSERT( aStatement != NULL );
 
     //-------------------------------------------------------------
-    // ÃÊ±âÈ­ ÀÛ¾÷
+    // ì´ˆê¸°í™” ì‘ì—…
     //-------------------------------------------------------------
 
-    //qmncSCANÀÇ ÇÒ´ç¹× ÃÊ±âÈ­
+    //qmncSCANì˜ í• ë‹¹ë° ì´ˆê¸°í™”
     IDE_TEST( QC_QMP_MEM( aStatement )->alloc( ID_SIZEOF( qmncGRBY ),
                                                (void **)& sGRBY )
               != IDE_SUCCESS );
@@ -2470,19 +2470,19 @@ qmoOneNonPlan::initGRBY( qcStatement       * aStatement ,
         }
 
         // BUGBUG
-        // Aggregate functionÀÌ ¾Æ´Ñ node°¡ Àü´ŞµÇ´Â °æ¿ì°¡ Á¸ÀçÇÑ´Ù.
-        /* BUG-35193  Window function ÀÌ ¾Æ´Ñ aggregation ¸¸ Ã³¸®ÇØ¾ß ÇÑ´Ù. */
+        // Aggregate functionì´ ì•„ë‹Œ nodeê°€ ì „ë‹¬ë˜ëŠ” ê²½ìš°ê°€ ì¡´ì¬í•œë‹¤.
+        /* BUG-35193  Window function ì´ ì•„ë‹Œ aggregation ë§Œ ì²˜ë¦¬í•´ì•¼ í•œë‹¤. */
         if ( ( QTC_IS_AGGREGATE( sNode ) == ID_TRUE ) &&
              ( sNode->overClause == NULL ) )
         {
-            // ArgumentµéÀ» Ãß°¡ÇÑ´Ù.
+            // Argumentë“¤ì„ ì¶”ê°€í•œë‹¤.
             for ( sArg  = sNode->node.arguments;
                   sArg != NULL;
                   sArg  = sArg->next )
             {
                 // BUG-39975 group_sort improve performence
-                // AGGR ³ëµå¿¡¼­ AGGR ÇÔ¼ö ÀÎÀÚ¿¡ PASS ³ëµå¸¦ »ı¼ºÇÔ
-                // µû¶ó¼­ PASS ³ëµå¸¦ skip ÇØ¾ß ÇÑ´Ù.
+                // AGGR ë…¸ë“œì—ì„œ AGGR í•¨ìˆ˜ ì¸ìì— PASS ë…¸ë“œë¥¼ ìƒì„±í•¨
+                // ë”°ë¼ì„œ PASS ë…¸ë“œë¥¼ skip í•´ì•¼ í•œë‹¤.
                 while ( sArg->module == &qtc::passModule )
                 {
                     sArg = sArg->arguments;
@@ -2511,7 +2511,7 @@ qmoOneNonPlan::initGRBY( qcStatement       * aStatement ,
     return IDE_FAILURE;
 }
 
-// Sort-based distinct¿ë GRBY
+// Sort-based distinctìš© GRBY
 IDE_RC
 qmoOneNonPlan::initGRBY( qcStatement       * aStatement ,
                          qmsQuerySet       * aQuerySet ,
@@ -2527,16 +2527,16 @@ qmoOneNonPlan::initGRBY( qcStatement       * aStatement ,
     IDU_FIT_POINT_FATAL( "qmoOneNonPlan::initGRBY::__FT__" );
 
     //----------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //----------------------------------
 
     IDE_DASSERT( aStatement != NULL );
 
     //-------------------------------------------------------------
-    // ÃÊ±âÈ­ ÀÛ¾÷
+    // ì´ˆê¸°í™” ì‘ì—…
     //-------------------------------------------------------------
 
-    //qmncGRBYÀÇ ÇÒ´ç¹× ÃÊ±âÈ­
+    //qmncGRBYì˜ í• ë‹¹ë° ì´ˆê¸°í™”
     IDE_TEST( QC_QMP_MEM( aStatement )->alloc( ID_SIZEOF( qmncGRBY ),
                                                (void **)& sGRBY )
               != IDE_SUCCESS );
@@ -2566,8 +2566,8 @@ qmoOneNonPlan::initGRBY( qcStatement       * aStatement ,
           sItrAttr != NULL;
           sItrAttr  = sItrAttr->next )
     {
-        // Distinct ´ë»óÀÌ ¾Æ´Ñ °æ¿ì Á¦¿ÜÇÑ´Ù.
-        // Ex) order byÀıÀÇ expression
+        // Distinct ëŒ€ìƒì´ ì•„ë‹Œ ê²½ìš° ì œì™¸í•œë‹¤.
+        // Ex) order byì ˆì˜ expression
         if ( ( sItrAttr->flag & QMC_ATTR_DISTINCT_MASK )
              == QMC_ATTR_DISTINCT_TRUE )
         {
@@ -2626,7 +2626,7 @@ qmoOneNonPlan::makeGRBY( qcStatement      * aStatement ,
     IDU_FIT_POINT_FATAL( "qmoOneNonPlan::makeGRBY::__FT__" );
 
     //----------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //----------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -2634,7 +2634,7 @@ qmoOneNonPlan::makeGRBY( qcStatement      * aStatement ,
     IDE_DASSERT( aChildPlan != NULL );
 
     //-------------------------------------------------------------
-    // ÃÊ±âÈ­ ÀÛ¾÷
+    // ì´ˆê¸°í™” ì‘ì—…
     //-------------------------------------------------------------
 
     sMtcTemplate = & QC_SHARED_TMPLATE(aStatement)->tmplate;
@@ -2647,7 +2647,7 @@ qmoOneNonPlan::makeGRBY( qcStatement      * aStatement ,
     sGRBY->mtrNodeOffset    = sDataNodeOffset;
 
     //----------------------------------
-    // Flag ¼³Á¤
+    // Flag ì„¤ì •
     //----------------------------------
 
     sGRBY->flag             = QMN_PLAN_FLAG_CLEAR;
@@ -2656,11 +2656,11 @@ qmoOneNonPlan::makeGRBY( qcStatement      * aStatement ,
     sGRBY->plan.flag       |= (aChildPlan->flag & QMN_PLAN_STORAGE_MASK);
 
     //-------------------------------------------------------------
-    // ¸ŞÀÎ ÀÛ¾÷
+    // ë©”ì¸ ì‘ì—…
     //-------------------------------------------------------------
 
     //----------------------------------
-    // Æ©ÇÃÀÇ ÇÒ´ç
+    // íŠœí”Œì˜ í• ë‹¹
     //----------------------------------
     IDE_TEST( qtc::nextTable( & sTupleID,
                               aStatement,
@@ -2670,8 +2670,8 @@ qmoOneNonPlan::makeGRBY( qcStatement      * aStatement ,
               != IDE_SUCCESS );
 
     // To Fix PR-8493
-    // GROUP BY ÄÃ·³ÀÇ ´ëÃ¼ ¿©ºÎ¸¦ °áÁ¤ÇÏ±â À§ÇØ¼­´Â
-    // TupleÀÇ ÀúÀå ¸ÅÃ¼ Á¤º¸¸¦ ¹Ì¸® ±â·ÏÇÏ°í ÀÖ¾î¾ß ÇÑ´Ù.
+    // GROUP BY ì»¬ëŸ¼ì˜ ëŒ€ì²´ ì—¬ë¶€ë¥¼ ê²°ì •í•˜ê¸° ìœ„í•´ì„œëŠ”
+    // Tupleì˜ ì €ì¥ ë§¤ì²´ ì •ë³´ë¥¼ ë¯¸ë¦¬ ê¸°ë¡í•˜ê³  ìˆì–´ì•¼ í•œë‹¤.
     sMtcTemplate->rows[sTupleID].lflag      &= ~MTC_TUPLE_STORAGE_MASK;
     sMtcTemplate->rows[sTupleID].lflag      |= MTC_TUPLE_STORAGE_MEMORY;
 
@@ -2706,7 +2706,7 @@ qmoOneNonPlan::makeGRBY( qcStatement      * aStatement ,
           sItrAttr != NULL;
           sItrAttr  = sItrAttr->next )
     {
-        // Grouping keyÀÎ °æ¿ì
+        // Grouping keyì¸ ê²½ìš°
         if ( ( sItrAttr->flag & QMC_ATTR_KEY_MASK )
              == QMC_ATTR_KEY_TRUE )
         {
@@ -2729,8 +2729,8 @@ qmoOneNonPlan::makeGRBY( qcStatement      * aStatement ,
             sNewMtrNode->flag &= ~QMC_MTR_MTR_PLAN_MASK;
             sNewMtrNode->flag |= QMC_MTR_MTR_PLAN_TRUE;
 
-            // PROJ-2362 memory temp ÀúÀå È¿À²¼º °³¼±
-            // GRBY,AGGR,WNST´Â Á¦¿ÜÇÑ´Ù.
+            // PROJ-2362 memory temp ì €ì¥ íš¨ìœ¨ì„± ê°œì„ 
+            // GRBY,AGGR,WNSTëŠ” ì œì™¸í•œë‹¤.
             sNewMtrNode->flag &= ~QMC_MTR_TEMP_VAR_TYPE_ENABLE_MASK;
             sNewMtrNode->flag |= QMC_MTR_TEMP_VAR_TYPE_ENABLE_FALSE;
 
@@ -2761,7 +2761,7 @@ qmoOneNonPlan::makeGRBY( qcStatement      * aStatement ,
     }
 
     //----------------------------------
-    // Tuple columnÀÇ ÇÒ´ç
+    // Tuple columnì˜ í• ë‹¹
     //----------------------------------
     IDE_TEST( qtc::allocIntermediateTuple( aStatement ,
                                            & QC_SHARED_TMPLATE(aStatement)->tmplate,
@@ -2797,14 +2797,14 @@ qmoOneNonPlan::makeGRBY( qcStatement      * aStatement ,
     }
 
     //----------------------------------
-    // mtcColumn , mtcExecute Á¤º¸ÀÇ ±¸Ãà
+    // mtcColumn , mtcExecute ì •ë³´ì˜ êµ¬ì¶•
     //----------------------------------
     IDE_TEST( qmg::copyMtcColumnExecute( aStatement ,
                                          sGRBY->myNode )
               != IDE_SUCCESS);
 
     //----------------------------------
-    // PROJ-1473 column locate ÁöÁ¤.
+    // PROJ-1473 column locate ì§€ì •.
     //----------------------------------
 
     IDE_TEST( qmg::setColumnLocate( aStatement,
@@ -2812,7 +2812,7 @@ qmoOneNonPlan::makeGRBY( qcStatement      * aStatement ,
               != IDE_SUCCESS );
 
     //----------------------------------
-    // PROJ-2179 calculate°¡ ÇÊ¿äÇÑ nodeµéÀÇ °á°ú À§Ä¡¸¦ ¼³Á¤
+    // PROJ-2179 calculateê°€ í•„ìš”í•œ nodeë“¤ì˜ ê²°ê³¼ ìœ„ì¹˜ë¥¼ ì„¤ì •
     //----------------------------------
 
     IDE_TEST( qmg::setCalcLocate( aStatement,
@@ -2820,19 +2820,19 @@ qmoOneNonPlan::makeGRBY( qcStatement      * aStatement ,
               != IDE_SUCCESS );
 
     //------------------------------------------------------------
-    // ¸¶¹«¸® ÀÛ¾÷
+    // ë§ˆë¬´ë¦¬ ì‘ì—…
     //------------------------------------------------------------
 
     for ( sNewMtrNode  = sGRBY->myNode , sColumnCount = 0 ;
           sNewMtrNode != NULL;
           sNewMtrNode  = sNewMtrNode->next , sColumnCount++ ) ;
 
-    //data ¿µ¿ªÀÇ Å©±â °è»ê
+    //data ì˜ì—­ì˜ í¬ê¸° ê³„ì‚°
     QC_SHARED_TMPLATE(aStatement)->tmplate.dataSize = sDataNodeOffset +
         sColumnCount * idlOS::align8( ID_SIZEOF(qmdMtrNode) );
 
     //----------------------------------
-    // dependency Ã³¸® ¹× subqueryÀÇ Ã³¸®
+    // dependency ì²˜ë¦¬ ë° subqueryì˜ ì²˜ë¦¬
     //----------------------------------
 
     sMtrNode[0]  = sGRBY->myNode;
@@ -2877,33 +2877,33 @@ qmoOneNonPlan::initAGGR( qcStatement       * aStatement ,
  * Description :
  *
  * Implementation :
- *     + ÃÊ±âÈ­ ÀÛ¾÷
- *         - qmncAGGRÀÇ ÇÒ´ç ¹× ÃÊ±âÈ­
- *     + ¸ŞÀÎ ÀÛ¾÷
- *         - Tuple SetÀÇ µî·Ï
- *         - AGGR ÄÃ·³ÀÇ ±¸¼º & passNodeÀÇ Ã³¸®
- *             - myNodeÀÇ ±¸¼º
- *               (aggregation¿¡ ´ëÇÑ ÄÃ·³ + grouping¿¡ ´ëÇÑ ÄÃ·³)
- *             - distNodeÀÇ ±¸¼º
- *               (myNodeÁß distinct¿¡ ´ëÇÑ ÄÃ·³,
- *                qmvQTC::isEquivalentExpression()À¸·Î Áßº¹µÈ expression Á¦°Å)
- *              - Tuple SetÀÇ ÄÃ·³ °³¼ö¿¡ ¸Âµµ·Ï ÇÒ´ç
- *     + ¸¶¹«¸® ÀÛ¾÷
- *         - data ¿µ¿ªÀÇ Å©±â °è»ê
- *         - dependencyÀÇ Ã³¸®
- *         - subqueryÀÇ Ã³¸®
+ *     + ì´ˆê¸°í™” ì‘ì—…
+ *         - qmncAGGRì˜ í• ë‹¹ ë° ì´ˆê¸°í™”
+ *     + ë©”ì¸ ì‘ì—…
+ *         - Tuple Setì˜ ë“±ë¡
+ *         - AGGR ì»¬ëŸ¼ì˜ êµ¬ì„± & passNodeì˜ ì²˜ë¦¬
+ *             - myNodeì˜ êµ¬ì„±
+ *               (aggregationì— ëŒ€í•œ ì»¬ëŸ¼ + groupingì— ëŒ€í•œ ì»¬ëŸ¼)
+ *             - distNodeì˜ êµ¬ì„±
+ *               (myNodeì¤‘ distinctì— ëŒ€í•œ ì»¬ëŸ¼,
+ *                qmvQTC::isEquivalentExpression()ìœ¼ë¡œ ì¤‘ë³µëœ expression ì œê±°)
+ *              - Tuple Setì˜ ì»¬ëŸ¼ ê°œìˆ˜ì— ë§ë„ë¡ í• ë‹¹
+ *     + ë§ˆë¬´ë¦¬ ì‘ì—…
+ *         - data ì˜ì—­ì˜ í¬ê¸° ê³„ì‚°
+ *         - dependencyì˜ ì²˜ë¦¬
+ *         - subqueryì˜ ì²˜ë¦¬
  *
  * TO DO
- *    - Aggregation ¼ÓÀÇ DISTINCT column¿¡ ´ëÇØ¼­´Â °¢°¢ÀÇ Temp TableÀÌ
- *      »ı¼ºµÇ¹Ç·Î °¢°¢ TupleÇÒ´çÀÌ ÇÊ¿äÇÏ¸ç, °°Àº expresionÀÌ ÀÖ´ÂÁö
- *      °Ë»çÇØº¸¾Æ¾ß ÇÑ´Ù. ¶ÇÇÑ, grouping ±×·¡ÇÁ·Î ºÎÅÍ distinct column°ú
- *      BucketCnt¸¦ ¹Ş¾Æ µé¿©¾ß ÇÑ´Ù. (ÀÔ·ÂÀÎÀÚ°¡ ºüÁ® ÀÖÀ½)
- *      ÀÌ¸¦ qmcMtrNode.bucketCnt¿¡ ¼¼ÆÃÇÑ´Ù.
+ *    - Aggregation ì†ì˜ DISTINCT columnì— ëŒ€í•´ì„œëŠ” ê°ê°ì˜ Temp Tableì´
+ *      ìƒì„±ë˜ë¯€ë¡œ ê°ê° Tupleí• ë‹¹ì´ í•„ìš”í•˜ë©°, ê°™ì€ expresionì´ ìˆëŠ”ì§€
+ *      ê²€ì‚¬í•´ë³´ì•„ì•¼ í•œë‹¤. ë˜í•œ, grouping ê·¸ë˜í”„ë¡œ ë¶€í„° distinct columnê³¼
+ *      BucketCntë¥¼ ë°›ì•„ ë“¤ì—¬ì•¼ í•œë‹¤. (ì…ë ¥ì¸ìê°€ ë¹ ì ¸ ìˆìŒ)
+ *      ì´ë¥¼ qmcMtrNode.bucketCntì— ì„¸íŒ…í•œë‹¤.
  *
- *     -GroupingÀÇ ÄÃ·³ Á¤º¸´Â group by Á¤º¸·Î
- *      ºÎÅÍ ÀÌ¿ëÀÌ µÇ¹Ç·Î ÀÌ´Â order by ¹× havingÀı¿¡ »ç¿ëÀÌ µÉ¼ö ÀÖÀ¸
- *      ¹Ç·Î, srcNode¸¦ º¹»çÇÏ¿© ÄÃ·³À» ±¸¼ºÇÏ°í, group by¿¡ dstNode¶Ç´Â
- *      passNode·Î ´ëÃ¼ ÇÑ´Ù.
+ *     -Groupingì˜ ì»¬ëŸ¼ ì •ë³´ëŠ” group by ì •ë³´ë¡œ
+ *      ë¶€í„° ì´ìš©ì´ ë˜ë¯€ë¡œ ì´ëŠ” order by ë° havingì ˆì— ì‚¬ìš©ì´ ë ìˆ˜ ìˆìœ¼
+ *      ë¯€ë¡œ, srcNodeë¥¼ ë³µì‚¬í•˜ì—¬ ì»¬ëŸ¼ì„ êµ¬ì„±í•˜ê³ , group byì— dstNodeë˜ëŠ”
+ *      passNodeë¡œ ëŒ€ì²´ í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -2920,17 +2920,17 @@ qmoOneNonPlan::initAGGR( qcStatement       * aStatement ,
     IDU_FIT_POINT_FATAL( "qmoOneNonPlan::initAGGR::__FT__" );
 
     //----------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //----------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aAggrNode  != NULL );
 
     //-------------------------------------------------------------
-    // ÃÊ±âÈ­ ÀÛ¾÷
+    // ì´ˆê¸°í™” ì‘ì—…
     //-------------------------------------------------------------
 
-    //qmncHSDSÀÇ ÇÒ´ç ¹× ÃÊ±âÈ­
+    //qmncHSDSì˜ í• ë‹¹ ë° ì´ˆê¸°í™”
     IDE_TEST( QC_QMP_MEM( aStatement )->alloc( ID_SIZEOF( qmncAGGR ),
                                                (void **)& sAGGR )
               != IDE_SUCCESS );
@@ -2943,22 +2943,22 @@ qmoOneNonPlan::initAGGR( qcStatement       * aStatement ,
                         sDataNodeOffset );
 
     //-------------------------------------------------------------
-    // ¸ŞÀÎ ÀÛ¾÷
+    // ë©”ì¸ ì‘ì—…
     //-------------------------------------------------------------
 
     sFlag &= ~QMC_ATTR_KEY_MASK;
     sFlag |= QMC_ATTR_KEY_TRUE;
 
     // BUG-41565
-    // AGGR ÇÔ¼ö¿¡ ÄÁ¹öÁ¯ÀÌ ´Ş·ÁÀÖÀ¸¸é °á°ú°¡ Æ²·ÁÁı´Ï´Ù.
-    // »óÀ§ ÇÃ·£¿¡¼­ ÄÁ¹öÁ¯ÀÌ ÀÖÀ¸¸é qtcNode ¸¦ »õ·Î »ı¼ºÇÏ±â ¶§¹®¿¡
-    // »óÀ§ ÇÃ·£ÀÇ result desc ÀÇ °ÍÀ» Ãß°¡ÇØ ÁÖ¾î¾ß °°Àº qtcNode ¸¦ °øÀ¯ÇÒ¼ö ÀÖ´Ù.
+    // AGGR í•¨ìˆ˜ì— ì»¨ë²„ì ¼ì´ ë‹¬ë ¤ìˆìœ¼ë©´ ê²°ê³¼ê°€ í‹€ë ¤ì§‘ë‹ˆë‹¤.
+    // ìƒìœ„ í”Œëœì—ì„œ ì»¨ë²„ì ¼ì´ ìˆìœ¼ë©´ qtcNode ë¥¼ ìƒˆë¡œ ìƒì„±í•˜ê¸° ë•Œë¬¸ì—
+    // ìƒìœ„ í”Œëœì˜ result desc ì˜ ê²ƒì„ ì¶”ê°€í•´ ì£¼ì–´ì•¼ ê°™ì€ qtcNode ë¥¼ ê³µìœ í• ìˆ˜ ìˆë‹¤.
     if ( aParent->type != QMN_GRAG )
     {
-        // »óÀ§ ÇÃ·£ÀÌ GRAG ÀÌ¸é Ãß°¡ÇÏÁö ¾Ê´Â´Ù. Àß¸øµÈ AGGR À» Ãß°¡ÇÏ°ÔµÊ
-        // select max(count(i1)), sum(i1) from t1 group by i1; ÀÏ¶§
+        // ìƒìœ„ í”Œëœì´ GRAG ì´ë©´ ì¶”ê°€í•˜ì§€ ì•ŠëŠ”ë‹¤. ì˜ëª»ëœ AGGR ì„ ì¶”ê°€í•˜ê²Œë¨
+        // select max(count(i1)), sum(i1) from t1 group by i1; ì¼ë•Œ
         // GRAG1 -> max(count(i1)), sum(i1)
-        // GRAG2 -> count(i1) °¡ Ã³¸®µÈ´Ù.
+        // GRAG2 -> count(i1) ê°€ ì²˜ë¦¬ëœë‹¤.
         for ( sResultDesc  = aParent->resultDesc;
               sResultDesc != NULL;
               sResultDesc  = sResultDesc->next )
@@ -2992,10 +2992,10 @@ qmoOneNonPlan::initAGGR( qcStatement       * aStatement ,
           sGroupColumn != NULL;
           sGroupColumn  = sGroupColumn->next )
     {
-        // ÇÏÀ§¿¡¼­ groupingµÈ °á°ú¸¦ ¹ŞÀ¸¹Ç·Î expressionÀÌ¶ó ÇÏ´õ¶óµµ
-        // function mask¸¦ ¾º¿ìÁö ¾Ê°í °á°ú¸¦ ÂüÁ¶ÇÏµµ·Ï ÇÑ´Ù.
+        // í•˜ìœ„ì—ì„œ groupingëœ ê²°ê³¼ë¥¼ ë°›ìœ¼ë¯€ë¡œ expressionì´ë¼ í•˜ë”ë¼ë„
+        // function maskë¥¼ ì”Œìš°ì§€ ì•Šê³  ê²°ê³¼ë¥¼ ì°¸ì¡°í•˜ë„ë¡ í•œë‹¤.
 
-        // BUG-43542 group by ÄÃ·³ÀÌ »ó¼öÀÏ¶§µµ result desc ¿¡ ³Ö¾î¾ß ÇÑ´Ù.
+        // BUG-43542 group by ì»¬ëŸ¼ì´ ìƒìˆ˜ì¼ë•Œë„ result desc ì— ë„£ì–´ì•¼ í•œë‹¤.
         IDE_TEST( qmc::appendAttribute( aStatement,
                                         aQuerySet,
                                         & sAGGR->plan.resultDesc,
@@ -3018,8 +3018,8 @@ qmoOneNonPlan::initAGGR( qcStatement       * aStatement ,
         }
 
         // BUGBUG
-        // Aggregate functionÀÌ ¾Æ´Ñ node°¡ Àü´ŞµÇ´Â °æ¿ì°¡ Á¸ÀçÇÑ´Ù.
-        /* BUG-35193  Window function ÀÌ ¾Æ´Ñ aggregation ¸¸ Ã³¸®ÇØ¾ß ÇÑ´Ù. */
+        // Aggregate functionì´ ì•„ë‹Œ nodeê°€ ì „ë‹¬ë˜ëŠ” ê²½ìš°ê°€ ì¡´ì¬í•œë‹¤.
+        /* BUG-35193  Window function ì´ ì•„ë‹Œ aggregation ë§Œ ì²˜ë¦¬í•´ì•¼ í•œë‹¤. */
         if ( ( QTC_IS_AGGREGATE( sNode ) == ID_TRUE ) &&
              ( sNode->overClause == NULL ) )
         {
@@ -3039,13 +3039,13 @@ qmoOneNonPlan::initAGGR( qcStatement       * aStatement ,
     }
 
     // BUG-39975 group_sort improve performence
-    // BUG-39857 ÀÇ ¼öÁ¤»çÇ×Àº group_sort ÀÇ ¼º´ÉÀ» ´Ù¼Ò ¶³¾î¶ß¸®°Ô ÇÑ´Ù.
-    // AGGR ÇÔ¼ö ÀÎÀÚ¿¡ PASS ³ëµå¸¦ »ı¼ºÇÏ¿© ¼º´ÉÀ» Çâ»ó½ÃÅ²´Ù.
+    // BUG-39857 ì˜ ìˆ˜ì •ì‚¬í•­ì€ group_sort ì˜ ì„±ëŠ¥ì„ ë‹¤ì†Œ ë–¨ì–´ëœ¨ë¦¬ê²Œ í•œë‹¤.
+    // AGGR í•¨ìˆ˜ ì¸ìì— PASS ë…¸ë“œë¥¼ ìƒì„±í•˜ì—¬ ì„±ëŠ¥ì„ í–¥ìƒì‹œí‚¨ë‹¤.
     for ( sResultDesc  = sAGGR->plan.resultDesc;
           sResultDesc != NULL;
           sResultDesc  = sResultDesc->next )
     {
-        // count(*) ÀÇ °æ¿ì arguments °¡ null ÀÌ´Ù.
+        // count(*) ì˜ ê²½ìš° arguments ê°€ null ì´ë‹¤.
         if ( (QTC_IS_AGGREGATE( sResultDesc->expr ) == ID_TRUE) &&
              (sResultDesc->expr->node.arguments != NULL) )
         {
@@ -3113,7 +3113,7 @@ qmoOneNonPlan::makeAGGR( qcStatement      * aStatement ,
     IDU_FIT_POINT_FATAL( "qmoOneNonPlan::makeAGGR::__FT__" );
 
     //----------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //----------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -3121,7 +3121,7 @@ qmoOneNonPlan::makeAGGR( qcStatement      * aStatement ,
     IDE_DASSERT( aChildPlan != NULL );
 
     //-------------------------------------------------------------
-    // ÃÊ±âÈ­ ÀÛ¾÷
+    // ì´ˆê¸°í™” ì‘ì—…
     //-------------------------------------------------------------
 
     sMtcTemplate = & QC_SHARED_TMPLATE(aStatement)->tmplate;
@@ -3133,7 +3133,7 @@ qmoOneNonPlan::makeAGGR( qcStatement      * aStatement ,
     sAGGR->plan.left = aChildPlan;
 
     //----------------------------------
-    // Flag Á¤º¸ ¼³Á¤
+    // Flag ì •ë³´ ì„¤ì •
     //----------------------------------
     sAGGR->flag      = QMN_PLAN_FLAG_CLEAR;
     sAGGR->plan.flag = QMN_PLAN_FLAG_CLEAR;
@@ -3141,11 +3141,11 @@ qmoOneNonPlan::makeAGGR( qcStatement      * aStatement ,
     sAGGR->plan.flag       |= (aChildPlan->flag & QMN_PLAN_STORAGE_MASK);
 
     //-------------------------------------------------------------
-    // ¸ŞÀÎ ÀÛ¾÷
+    // ë©”ì¸ ì‘ì—…
     //-------------------------------------------------------------
 
     //----------------------------------
-    // Æ©ÇÃÀÇ ÇÒ´ç
+    // íŠœí”Œì˜ í• ë‹¹
     //----------------------------------
     IDE_TEST( qtc::nextTable( & sTupleID,
                               aStatement,
@@ -3155,8 +3155,8 @@ qmoOneNonPlan::makeAGGR( qcStatement      * aStatement ,
               != IDE_SUCCESS );
 
     // To Fix PR-8493
-    // GROUP BY ÄÃ·³ÀÇ ´ëÃ¼ ¿©ºÎ¸¦ °áÁ¤ÇÏ±â À§ÇØ¼­´Â
-    // TupleÀÇ ÀúÀå ¸ÅÃ¼ Á¤º¸¸¦ ¹Ì¸® ±â·ÏÇÏ°í ÀÖ¾î¾ß ÇÑ´Ù.
+    // GROUP BY ì»¬ëŸ¼ì˜ ëŒ€ì²´ ì—¬ë¶€ë¥¼ ê²°ì •í•˜ê¸° ìœ„í•´ì„œëŠ”
+    // Tupleì˜ ì €ì¥ ë§¤ì²´ ì •ë³´ë¥¼ ë¯¸ë¦¬ ê¸°ë¡í•˜ê³  ìˆì–´ì•¼ í•œë‹¤.
     sMtcTemplate->rows[sTupleID].lflag      &= ~MTC_TUPLE_STORAGE_MASK;
     sMtcTemplate->rows[sTupleID].lflag      |= MTC_TUPLE_STORAGE_MEMORY;
 
@@ -3178,7 +3178,7 @@ qmoOneNonPlan::makeAGGR( qcStatement      * aStatement ,
         // Nothing To Do
     }
 
-    //GRAPH¿¡¼­ ÁöÁ¤ÇÑ ÀúÀå¸ÅÃ¼¸¦ »ç¿ëÇÑ´Ù.
+    //GRAPHì—ì„œ ì§€ì •í•œ ì €ì¥ë§¤ì²´ë¥¼ ì‚¬ìš©í•œë‹¤.
     if ( ( aFlag & QMO_MAKEAGGR_TEMP_TABLE_MASK )
          == QMO_MAKEAGGR_MEMORY_TEMP_TABLE )
     {
@@ -3199,7 +3199,7 @@ qmoOneNonPlan::makeAGGR( qcStatement      * aStatement ,
           sItrAttr != NULL;
           sItrAttr  = sItrAttr->next )
     {
-        // Aggregate functionÀÎ °æ¿ì
+        // Aggregate functionì¸ ê²½ìš°
         if ( ( sItrAttr->flag & QMC_ATTR_KEY_MASK ) == QMC_ATTR_KEY_TRUE )
         {
             sAggrNodeCount++;
@@ -3217,8 +3217,8 @@ qmoOneNonPlan::makeAGGR( qcStatement      * aStatement ,
             sNewMtrNode->flag &= ~QMC_MTR_TYPE_MASK;
             sNewMtrNode->flag |= QMC_MTR_TYPE_CALCULATE;
 
-            // PROJ-2362 memory temp ÀúÀå È¿À²¼º °³¼±
-            // GRBY,AGGR,WNST´Â Á¦¿ÜÇÑ´Ù.
+            // PROJ-2362 memory temp ì €ì¥ íš¨ìœ¨ì„± ê°œì„ 
+            // GRBY,AGGR,WNSTëŠ” ì œì™¸í•œë‹¤.
             sNewMtrNode->flag &= ~QMC_MTR_TEMP_VAR_TYPE_ENABLE_MASK;
             sNewMtrNode->flag |= QMC_MTR_TEMP_VAR_TYPE_ENABLE_FALSE;
 
@@ -3227,7 +3227,7 @@ qmoOneNonPlan::makeAGGR( qcStatement      * aStatement ,
                  == MTC_NODE_DISTINCT_FALSE )
             {
                 //----------------------------------
-                // DistinctionÀÌ Á¸ÀçÇÏÁö ¾ÊÀ» °æ¿ì
+                // Distinctionì´ ì¡´ì¬í•˜ì§€ ì•Šì„ ê²½ìš°
                 //----------------------------------
                 sNewMtrNode->flag &= ~QMC_MTR_DIST_AGGR_MASK;
                 sNewMtrNode->flag |= QMC_MTR_DIST_AGGR_FALSE;
@@ -3236,7 +3236,7 @@ qmoOneNonPlan::makeAGGR( qcStatement      * aStatement ,
             else
             {
                 //----------------------------------
-                // DistinctionÀÌ Á¸Àç ÇÏ´Â °æ¿ì
+                // Distinctionì´ ì¡´ì¬ í•˜ëŠ” ê²½ìš°
                 //----------------------------------
 
                 sNewMtrNode->flag &= ~QMC_MTR_DIST_AGGR_MASK;
@@ -3244,9 +3244,9 @@ qmoOneNonPlan::makeAGGR( qcStatement      * aStatement ,
 
                 //----------------------------------
                 // To Fix BUG-7604
-                // µ¿ÀÏÇÑ Distinct Argument Á¸Àç À¯¹« °Ë»ç
-                //    - µ¿ÀÏÇÑ Distinct Argument°¡ ÀÖÀ» °æ¿ì,
-                //      ÀÌ¸¦ ÅëÇÕÇÏ¿© Ã³¸®ÇÏ±â À§ÇÔ
+                // ë™ì¼í•œ Distinct Argument ì¡´ì¬ ìœ ë¬´ ê²€ì‚¬
+                //    - ë™ì¼í•œ Distinct Argumentê°€ ìˆì„ ê²½ìš°,
+                //      ì´ë¥¼ í†µí•©í•˜ì—¬ ì²˜ë¦¬í•˜ê¸° ìœ„í•¨
                 //----------------------------------
                 IDE_TEST( qmg::makeDistNode( aStatement,
                                              aQuerySet,
@@ -3281,7 +3281,7 @@ qmoOneNonPlan::makeAGGR( qcStatement      * aStatement ,
           sItrAttr != NULL;
           sItrAttr  = sItrAttr->next )
     {
-        // Grouping keyÀÎ °æ¿ì
+        // Grouping keyì¸ ê²½ìš°
         if ( ( sItrAttr->flag & QMC_ATTR_KEY_MASK ) == QMC_ATTR_KEY_FALSE )
         {
             sAGGR->flag &= ~QMNC_AGGR_GROUPED_MASK;
@@ -3306,8 +3306,8 @@ qmoOneNonPlan::makeAGGR( qcStatement      * aStatement ,
             sNewMtrNode->flag &= ~QMC_MTR_MTR_PLAN_MASK;
             sNewMtrNode->flag |= QMC_MTR_MTR_PLAN_TRUE;
 
-            // PROJ-2362 memory temp ÀúÀå È¿À²¼º °³¼±
-            // GRBY,AGGR,WNST´Â Á¦¿ÜÇÑ´Ù.
+            // PROJ-2362 memory temp ì €ì¥ íš¨ìœ¨ì„± ê°œì„ 
+            // GRBY,AGGR,WNSTëŠ” ì œì™¸í•œë‹¤.
             sNewMtrNode->flag &= ~QMC_MTR_TEMP_VAR_TYPE_ENABLE_MASK;
             sNewMtrNode->flag |= QMC_MTR_TEMP_VAR_TYPE_ENABLE_FALSE;
 
@@ -3338,7 +3338,7 @@ qmoOneNonPlan::makeAGGR( qcStatement      * aStatement ,
     sMtcTemplate->rows[sTupleID].lflag &= ~MTC_TUPLE_PLAN_MTR_MASK;
     sMtcTemplate->rows[sTupleID].lflag |= MTC_TUPLE_PLAN_MTR_FALSE;
 
-    //myNode¸¦ À§ÇÑ TupleÀº Ç×»ó ¸Ş¸ğ¸®ÀÌ´Ù.
+    //myNodeë¥¼ ìœ„í•œ Tupleì€ í•­ìƒ ë©”ëª¨ë¦¬ì´ë‹¤.
     sMtcTemplate->rows[sTupleID].lflag      &= ~MTC_TUPLE_STORAGE_MASK;
     sMtcTemplate->rows[sTupleID].lflag      |= MTC_TUPLE_STORAGE_MEMORY;
 
@@ -3360,13 +3360,13 @@ qmoOneNonPlan::makeAGGR( qcStatement      * aStatement ,
         // Nothing To Do
     }
 
-    //ÄÃ·³ Á¤º¸¹× executeÁ¤º¸ÀÇ ¼¼ÆÃ
+    //ì»¬ëŸ¼ ì •ë³´ë° executeì •ë³´ì˜ ì„¸íŒ…
     IDE_TEST( qmg::copyMtcColumnExecute( aStatement ,
                                          sAGGR->myNode )
               != IDE_SUCCESS);
 
     //----------------------------------
-    // PROJ-1473 column locate ÁöÁ¤.
+    // PROJ-1473 column locate ì§€ì •.
     //----------------------------------
 
     IDE_TEST( qmg::setColumnLocate( aStatement,
@@ -3374,30 +3374,30 @@ qmoOneNonPlan::makeAGGR( qcStatement      * aStatement ,
               != IDE_SUCCESS );
 
     //-------------------------------------------------------------
-    // ¸¶¹«¸® ÀÛ¾÷
+    // ë§ˆë¬´ë¦¬ ì‘ì—…
     //-------------------------------------------------------------
 
-    // ÀúÀå ColumnÀÇ data ¿µ¿ª ÁöÁ¤
+    // ì €ì¥ Columnì˜ data ì˜ì—­ ì§€ì •
     sAGGR->mtrNodeOffset  = sDataNodeOffset;
 
     for ( sNewMtrNode  = sAGGR->myNode , sMtrNodeCount = 0 ;
           sNewMtrNode != NULL ;
           sNewMtrNode  = sNewMtrNode->next , sMtrNodeCount++ ) ;
 
-    // aggregation columnÀÇ data ¿µ¿ª ÁöÁ¤
+    // aggregation columnì˜ data ì˜ì—­ ì§€ì •
     sDataNodeOffset += sMtrNodeCount * idlOS::align8( ID_SIZEOF(qmdMtrNode) );
     sAGGR->aggrNodeOffset = sDataNodeOffset;
 
-    // distinct columnÀÇ data¿µ¿ª ÁöÁ¤
+    // distinct columnì˜ dataì˜ì—­ ì§€ì •
     sDataNodeOffset += sAggrNodeCount * idlOS::align8( ID_SIZEOF(qmdAggrNode) );
     sAGGR->distNodeOffset = sDataNodeOffset;
 
-    // data ¿µ¿ªÀÇ Å©±â Á¶Á¤
+    // data ì˜ì—­ì˜ í¬ê¸° ì¡°ì •
     QC_SHARED_TMPLATE(aStatement)->tmplate.dataSize = sDataNodeOffset +
         sDistNodeCount * idlOS::align8( ID_SIZEOF(qmdDistNode) );
 
     //----------------------------------
-    //dependency Ã³¸® ¹× subquery Ã³¸®
+    //dependency ì²˜ë¦¬ ë° subquery ì²˜ë¦¬
     //----------------------------------
 
     sMtrNode[0]  = sAGGR->myNode;
@@ -3437,22 +3437,22 @@ qmoOneNonPlan::initCUNT( qcStatement  * aStatement ,
 {
 /***********************************************************************
  *
- * Description : CUNT ³ëµå¸¦ »ı¼ºÇÑ´Ù.
+ * Description : CUNT ë…¸ë“œë¥¼ ìƒì„±í•œë‹¤.
  *
  * Implementation :
- *     + ÃÊ±âÈ­ ÀÛ¾÷
- *         - data ¿µ¿ªÀÇ Å©±â °è»ê
- *         - qmncCUNTÀÇ ÇÒ´ç ¹× ÃÊ±âÈ­ (display Á¤º¸ , index Á¤º¸)
- *     + ¸ŞÀÎ ÀÛ¾÷
- *         - countNodeÀÇ ¼¼ÆÃ
- *         - PredicateÀÇ ºĞ·ù
- *     + ¸¶¹«¸® ÀÛ¾÷
- *         - dependencyÀÇ Ã³¸®
- *         - subqueryÀÇ Ã³¸®
+ *     + ì´ˆê¸°í™” ì‘ì—…
+ *         - data ì˜ì—­ì˜ í¬ê¸° ê³„ì‚°
+ *         - qmncCUNTì˜ í• ë‹¹ ë° ì´ˆê¸°í™” (display ì •ë³´ , index ì •ë³´)
+ *     + ë©”ì¸ ì‘ì—…
+ *         - countNodeì˜ ì„¸íŒ…
+ *         - Predicateì˜ ë¶„ë¥˜
+ *     + ë§ˆë¬´ë¦¬ ì‘ì—…
+ *         - dependencyì˜ ì²˜ë¦¬
+ *         - subqueryì˜ ì²˜ë¦¬
  *
  * TO DO
- *     - CUNT , HIER , SCANÀÇ ÀÛ¾÷Àº ¸ğµÎ À¯»çÇÏ¹Ç·Î ÀÌ¸¦ ´Ù¸¥ interface·Î
- *       Á¦°ø ÇÏµµ·Ï ÇÑ´Ù.
+ *     - CUNT , HIER , SCANì˜ ì‘ì—…ì€ ëª¨ë‘ ìœ ì‚¬í•˜ë¯€ë¡œ ì´ë¥¼ ë‹¤ë¥¸ interfaceë¡œ
+ *       ì œê³µ í•˜ë„ë¡ í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -3462,16 +3462,16 @@ qmoOneNonPlan::initCUNT( qcStatement  * aStatement ,
     IDU_FIT_POINT_FATAL( "qmoOneNonPlan::initCUNT::__FT__" );
 
     //----------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //----------------------------------
 
     IDE_DASSERT( aStatement       != NULL );
 
     //------------------------------------------------------------
-    // ÃÊ±âÈ­ ÀÛ¾÷
+    // ì´ˆê¸°í™” ì‘ì—…
     //------------------------------------------------------------
 
-    //qmncCUNTÀÇ ÇÒ´ç¹× ÃÊ±âÈ­
+    //qmncCUNTì˜ í• ë‹¹ë° ì´ˆê¸°í™”
     IDE_TEST( QC_QMP_MEM( aStatement )->alloc( ID_SIZEOF( qmncCUNT ),
                                                (void **)& sCUNT )
               != IDE_SUCCESS );
@@ -3521,7 +3521,7 @@ qmoOneNonPlan::makeCUNT( qcStatement  * aStatement ,
     IDU_FIT_POINT_FATAL( "qmoOneNonPlan::makeCUNT::__FT__" );
 
     //----------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //----------------------------------
 
     IDE_DASSERT( aStatement       != NULL );
@@ -3533,10 +3533,10 @@ qmoOneNonPlan::makeCUNT( qcStatement  * aStatement ,
     IDE_DASSERT( aLeafInfo->levelPredicate == NULL );
 
     //------------------------------------------------------------
-    // ÃÊ±âÈ­ ÀÛ¾÷
+    // ì´ˆê¸°í™” ì‘ì—…
     //------------------------------------------------------------
 
-    // PROJ-1446 Host variableÀ» Æ÷ÇÔÇÑ ÁúÀÇ ÃÖÀûÈ­
+    // PROJ-1446 Host variableì„ í¬í•¨í•œ ì§ˆì˜ ìµœì í™”
     sIndices = aFrom->tableRef->tableInfo->indices;
     sIndexCnt = aFrom->tableRef->tableInfo->indexCount;
 
@@ -3547,23 +3547,23 @@ qmoOneNonPlan::makeCUNT( qcStatement  * aStatement ,
                                      ID_SIZEOF(qmndCUNT));
 
     // BUG-15816
-    // data ¿µ¿ªÀÇ Å©±â °è»ê
+    // data ì˜ì—­ì˜ í¬ê¸° ê³„ì‚°
     QC_SHARED_TMPLATE(aStatement)->tmplate.dataSize = sDataNodeOffset;
 
     sCUNT->tupleRowID       = aFrom->tableRef->table;
-    // BUG-17483 ÆÄÆ¼¼Ç Å×ÀÌºí count(*) Áö¿ø
-    // tableHandel ´ë½Å¿¡ tableRef ¸¦ ÀúÀåÇÑ´Ù.
+    // BUG-17483 íŒŒí‹°ì…˜ í…Œì´ë¸” count(*) ì§€ì›
+    // tableHandel ëŒ€ì‹ ì— tableRef ë¥¼ ì €ì¥í•œë‹¤.
     sCUNT->tableRef         = aFrom->tableRef;
     sCUNT->tableSCN         = aFrom->tableRef->tableSCN;
 
     //----------------------------------
-    // ÀÎµ¦½º ¼³Á¤ ¹× ¹æÇâ ¼³Á¤
+    // ì¸ë±ìŠ¤ ì„¤ì • ë° ë°©í–¥ ì„¤ì •
     //----------------------------------
 
     sCUNT->method.index        = aLeafInfo->index;
     
     //----------------------------------
-    // Cursor PropertyÀÇ ¼³Á¤
+    // Cursor Propertyì˜ ì„¤ì •
     //----------------------------------
 
     sCUNT->lockMode                           = SMI_LOCK_READ;
@@ -3571,7 +3571,7 @@ qmoOneNonPlan::makeCUNT( qcStatement  * aStatement ,
     SMI_CURSOR_PROP_INIT_FOR_FULL_SCAN( &(sCUNT->cursorProperty), NULL );
 
     //----------------------------------
-    // Flag Á¤º¸ ¼³Á¤
+    // Flag ì •ë³´ ì„¤ì •
     //----------------------------------
 
     sCUNT->flag = QMN_PLAN_FLAG_CLEAR;
@@ -3580,7 +3580,7 @@ qmoOneNonPlan::makeCUNT( qcStatement  * aStatement ,
     if ( aLeafInfo->index != NULL )
     {
         // To fix BUG-12742
-        // index scanÀÌ °íÁ¤µÇ¾î ÀÖ´Â °æ¿ì¸¦ ¼¼ÆÃÇÑ´Ù.
+        // index scanì´ ê³ ì •ë˜ì–´ ìˆëŠ” ê²½ìš°ë¥¼ ì„¸íŒ…í•œë‹¤.
         if ( aLeafInfo->forceIndexScan == ID_TRUE )
         {
             sCUNT->flag &= ~QMNC_CUNT_FORCE_INDEX_SCAN_MASK;
@@ -3597,30 +3597,30 @@ qmoOneNonPlan::makeCUNT( qcStatement  * aStatement ,
         // Nothing to do.
     }
 
-    //Leaf Node¿¡ tuple·Î ºÎÅÍ memory ÀÎÁö disk tableÀÎÁö¸¦ ¼¼ÆÃ
-    //from tupleÁ¤º¸
+    //Leaf Nodeì— tupleë¡œ ë¶€í„° memory ì¸ì§€ disk tableì¸ì§€ë¥¼ ì„¸íŒ…
+    //from tupleì •ë³´
     IDE_TEST( setTableTypeFromTuple( aStatement ,
                                      sCUNT->tupleRowID ,
                                      &( sCUNT->plan.flag ) )
               != IDE_SUCCESS );
 
     //------------------------------------------------------------
-    // ¸ŞÀÎ ÀÛ¾÷
+    // ë©”ì¸ ì‘ì—…
     //------------------------------------------------------------
 
     //----------------------------------
-    // COUNT(*) ÃÖÀûÈ­ ¹æ¹ı °áÁ¤
+    // COUNT(*) ìµœì í™” ë°©ë²• ê²°ì •
     //----------------------------------
 
     // bug-8337
-    // A3·Î ºÎÅÍÀÇ Æ÷ÆÃÀÌ ÇÊ¿äÇÏ¿© ÇöÀç ¹«Á¶°Ç CURSOR·Î ºÎÅÍ Ã³¸®
+    // A3ë¡œ ë¶€í„°ì˜ í¬íŒ…ì´ í•„ìš”í•˜ì—¬ í˜„ì¬ ë¬´ì¡°ê±´ CURSORë¡œ ë¶€í„° ì²˜ë¦¬
     // sCUNT->flag        &= ~QMNC_CUNT_METHOD_MASK;
     // sCUNT->flag        |= QMNC_CUNT_METHOD_CURSOR;
 
     // To Fix PR-13329
-    // COUNT(*) ÃÖÀûÈ­ ÈÄ HandleÀ» »ç¿ëÇÒ °ÍÀÎÁö Cursor¸¦ »ç¿ëÇÒ °ÍÀÎÁöÀÇ ¿©ºÎ
-    // CURSOR ¸¦ »ç¿ëÇÏ´Â °æ¿ì
-    //    - Á¶°ÇÀÌ Á¸Àç, SETÀÌ Á¸Àç, Fixed TableÀÎ °æ¿ì
+    // COUNT(*) ìµœì í™” í›„ Handleì„ ì‚¬ìš©í•  ê²ƒì¸ì§€ Cursorë¥¼ ì‚¬ìš©í•  ê²ƒì¸ì§€ì˜ ì—¬ë¶€
+    // CURSOR ë¥¼ ì‚¬ìš©í•˜ëŠ” ê²½ìš°
+    //    - ì¡°ê±´ì´ ì¡´ì¬, SETì´ ì¡´ì¬, Fixed Tableì¸ ê²½ìš°
     if ( ( aLeafInfo->constantPredicate  != NULL ) ||
          ( aLeafInfo->predicate          != NULL ) ||
          ( aLeafInfo->ridPredicate       != NULL ) ||
@@ -3636,8 +3636,8 @@ qmoOneNonPlan::makeCUNT( qcStatement  * aStatement ,
     }
 
     // fix BUG-12167
-    // ÂüÁ¶ÇÏ´Â Å×ÀÌºíÀÌ fixed or performance viewÀÎÁöÀÇ Á¤º¸¸¦ ÀúÀå
-    // ÂüÁ¶ÇÏ´Â Å×ÀÌºí¿¡ ´ëÇÑ IS LOCKÀ» °ÉÁö¿¡ ´ëÇÑ ÆÇ´Ü ±âÁØ.
+    // ì°¸ì¡°í•˜ëŠ” í…Œì´ë¸”ì´ fixed or performance viewì¸ì§€ì˜ ì •ë³´ë¥¼ ì €ì¥
+    // ì°¸ì¡°í•˜ëŠ” í…Œì´ë¸”ì— ëŒ€í•œ IS LOCKì„ ê±¸ì§€ì— ëŒ€í•œ íŒë‹¨ ê¸°ì¤€.
     if( ( aFrom->tableRef->tableInfo->tableType == QCM_FIXED_TABLE ) ||
         ( aFrom->tableRef->tableInfo->tableType == QCM_DUMP_TABLE ) ||
         ( aFrom->tableRef->tableInfo->tableType == QCM_PERFORMANCE_VIEW ) )
@@ -3646,7 +3646,7 @@ qmoOneNonPlan::makeCUNT( qcStatement  * aStatement ,
         sCUNT->flag |= QMNC_CUNT_TABLE_FV_TRUE;
 
         // To Fix PR-13329
-        // Fixed TableÀÎ °æ¿ì Handle·ÎºÎÅÍ ±× Á¤º¸¸¦ ¾òÀ¸¸é ¾ÈµÊ.
+        // Fixed Tableì¸ ê²½ìš° Handleë¡œë¶€í„° ê·¸ ì •ë³´ë¥¼ ì–»ìœ¼ë©´ ì•ˆë¨.
         sCUNT->flag &= ~QMNC_CUNT_METHOD_MASK;
         sCUNT->flag |= QMNC_CUNT_METHOD_CURSOR;
 
@@ -3659,8 +3659,8 @@ qmoOneNonPlan::makeCUNT( qcStatement  * aStatement ,
         else
         {
             /* BUG-43006 FixedTable Indexing Filter
-             * optimizer formance view propery °¡ 0ÀÌ¶ó¸é
-             * FixedTable ÀÇ index´Â ¾ø´Ù°í ¼³Á¤ÇØÁà¾ßÇÑ´Ù
+             * optimizer formance view propery ê°€ 0ì´ë¼ë©´
+             * FixedTable ì˜ indexëŠ” ì—†ë‹¤ê³  ì„¤ì •í•´ì¤˜ì•¼í•œë‹¤
              */
             sIndices  = NULL;
             sIndexCnt = 0;
@@ -3694,8 +3694,8 @@ qmoOneNonPlan::makeCUNT( qcStatement  * aStatement ,
         sCUNT->dumpObject = NULL;
     }
 
-    //count(*)³ëµå ¼¼ÆÃ
-    //PR-8784 , º¹»çÇØ¼­ »ç¿ëÇÏµµ·Ï ÇÑ´Ù.
+    //count(*)ë…¸ë“œ ì„¸íŒ…
+    //PR-8784 , ë³µì‚¬í•´ì„œ ì‚¬ìš©í•˜ë„ë¡ í•œë‹¤.
     IDE_TEST( STRUCT_ALLOC( QC_QMP_MEM( aStatement ),
                             qtcNode ,
                             &( sCUNT->countNode ) )
@@ -3723,7 +3723,7 @@ qmoOneNonPlan::makeCUNT( qcStatement  * aStatement ,
     }
 
     //----------------------------------
-    // display Á¤º¸ ¼¼ÆÃ
+    // display ì •ë³´ ì„¸íŒ…
     //----------------------------------
 
     IDE_TEST( qmg::setDisplayInfo( aFrom ,
@@ -3733,7 +3733,7 @@ qmoOneNonPlan::makeCUNT( qcStatement  * aStatement ,
               != IDE_SUCCESS );
 
     //----------------------------------
-    // PredicateÀÇ Ã³¸®
+    // Predicateì˜ ì²˜ë¦¬
     //----------------------------------
 
     sCUNT->method.subqueryFilter = NULL;
@@ -3760,18 +3760,18 @@ qmoOneNonPlan::makeCUNT( qcStatement  * aStatement ,
                                 & sInSubQueryKeyRange )
               != IDE_SUCCESS );
 
-    // PROJ-1446 Host variableÀ» Æ÷ÇÔÇÑ ÁúÀÇ ÃÖÀûÈ­
+    // PROJ-1446 Host variableì„ í¬í•¨í•œ ì§ˆì˜ ìµœì í™”
     sCUNT->sdf = aLeafInfo->sdf;
 
     if ( aLeafInfo->sdf != NULL )
     {
         IDE_DASSERT( sIndexCnt > 0 );
 
-        // sdf¿¡ baskPlanÀ» ´Ü´Ù.
+        // sdfì— baskPlanì„ ë‹¨ë‹¤.
         aLeafInfo->sdf->basePlan = &sCUNT->plan;
 
-        // sdf¿¡ index °³¼ö¸¸Å­ ÈÄº¸¸¦ »ı¼ºÇÑ´Ù.
-        // °¢°¢ÀÇ ÈÄº¸¿¡ filter/key range/key filter Á¤º¸¸¦ »ı¼ºÇÑ´Ù.
+        // sdfì— index ê°œìˆ˜ë§Œí¼ í›„ë³´ë¥¼ ìƒì„±í•œë‹¤.
+        // ê°ê°ì˜ í›„ë³´ì— filter/key range/key filter ì •ë³´ë¥¼ ìƒì„±í•œë‹¤.
 
         aLeafInfo->sdf->candidateCount = sIndexCnt;
 
@@ -3784,9 +3784,9 @@ qmoOneNonPlan::makeCUNT( qcStatement  * aStatement ,
               i < sIndexCnt;
               i++ )
         {
-            // selected index¿¡ ´ëÇØ¼­´Â ¾Õ¿¡¼­ sSCAN¿¡ ´ëÇØ ÀÛ¾÷À» ÇßÀ¸¹Ç·Î,
-            // ´Ù½Ã ÀÛ¾÷ÇÒ ÇÊ¿ä°¡ ¾ø´Ù.
-            // ´ë½Å ±×ÀÚ¸®¿£ full scan¿¡ ´ëÇØ¼­ ÀÛ¾÷À» ÇÑ´Ù.
+            // selected indexì— ëŒ€í•´ì„œëŠ” ì•ì—ì„œ sSCANì— ëŒ€í•´ ì‘ì—…ì„ í–ˆìœ¼ë¯€ë¡œ,
+            // ë‹¤ì‹œ ì‘ì—…í•  í•„ìš”ê°€ ì—†ë‹¤.
+            // ëŒ€ì‹  ê·¸ìë¦¬ì—” full scanì— ëŒ€í•´ì„œ ì‘ì—…ì„ í•œë‹¤.
             if ( &sIndices[i] != aLeafInfo->index )
             {
                 aLeafInfo->sdf->candidate[i].index = &sIndices[i];
@@ -3834,7 +3834,7 @@ qmoOneNonPlan::makeCUNT( qcStatement  * aStatement ,
 
             // fix BUG-19074
             //----------------------------------
-            // sdfÀÇ dependency Ã³¸®
+            // sdfì˜ dependency ì²˜ë¦¬
             //----------------------------------
 
             sPredicate[0] = aLeafInfo->sdf->candidate[i].fixKeyRange;
@@ -3848,7 +3848,7 @@ qmoOneNonPlan::makeCUNT( qcStatement  * aStatement ,
 
             //----------------------------------
             // PROJ-1473
-            // dependency ¼³Á¤Àü¿¡ predicateµéÀÇ À§Ä¡Á¤º¸ º¯°æ.
+            // dependency ì„¤ì •ì „ì— predicateë“¤ì˜ ìœ„ì¹˜ì •ë³´ ë³€ê²½.
             //----------------------------------
             IDE_TEST( qmoDependency::setDependency( aStatement,
                                                     aQuerySet,
@@ -3869,11 +3869,11 @@ qmoOneNonPlan::makeCUNT( qcStatement  * aStatement ,
     }
 
     //------------------------------------------------------------
-    // ¸¶¹«¸® ÀÛ¾÷
+    // ë§ˆë¬´ë¦¬ ì‘ì—…
     //------------------------------------------------------------
 
     //----------------------------------
-    //dependency Ã³¸® ¹× subqueryÀÇ Ã³¸®
+    //dependency ì²˜ë¦¬ ë° subqueryì˜ ì²˜ë¦¬
     //----------------------------------
 
     sPredicate[0] = sCUNT->method.fixKeyRange;
@@ -3888,7 +3888,7 @@ qmoOneNonPlan::makeCUNT( qcStatement  * aStatement ,
 
     //----------------------------------
     // PROJ-1473
-    // dependency ¼³Á¤Àü¿¡ predicateµéÀÇ À§Ä¡Á¤º¸ º¯°æ.
+    // dependency ì„¤ì •ì „ì— predicateë“¤ì˜ ìœ„ì¹˜ì •ë³´ ë³€ê²½.
     //----------------------------------
 
     for ( i  = 0;
@@ -3916,8 +3916,8 @@ qmoOneNonPlan::makeCUNT( qcStatement  * aStatement ,
               != IDE_SUCCESS );
 
     //----------------------------------
-    // Host º¯¼ö¸¦ Æ÷ÇÔÇÑ
-    // Constant ExpressionÀÇ ÃÖÀûÈ­
+    // Host ë³€ìˆ˜ë¥¼ í¬í•¨í•œ
+    // Constant Expressionì˜ ìµœì í™”
     //----------------------------------
 
     // fix BUG-19074
@@ -3925,7 +3925,7 @@ qmoOneNonPlan::makeCUNT( qcStatement  * aStatement ,
                                      & sCUNT->method )
               != IDE_SUCCESS );
 
-    // Dependent Tuple Row ID ¼³Á¤
+    // Dependent Tuple Row ID ì„¤ì •
     sCUNT->depTupleRowID = (UShort)sCUNT->plan.dependency;
 
     return IDE_SUCCESS;
@@ -3997,24 +3997,24 @@ qmoOneNonPlan::initVIEW( qcStatement  * aStatement ,
 {
 /***********************************************************************
  *
- * Description : VIEW ³ëµå¸¦ »ı¼ºÇÑ´Ù.
+ * Description : VIEW ë…¸ë“œë¥¼ ìƒì„±í•œë‹¤.
  *
  * Implementation :
- *     + ÃÊ±âÈ­ ÀÛ¾÷
- *         - qmncVIEWÀÇ ÇÒ´ç ¹× ÃÊ±âÈ­
- *     + ¸ŞÀÎ ÀÛ¾÷
- *         - Store and Search ÀÎ°æ¿ì Tuple SetÀÇ ÇÒ´ç
- *         - VIEWÀÇ ÄÃ·³ÀÇ ±¸¼º (myNode)
- *         - Display¸¦ À§ÇÑ Á¤º¸ ¼¼ÆÃ
- *     + ¸¶¹«¸® ÀÛ¾÷
- *         - data ¿µ¿ªÀÇ Å©±â °è»ê
- *         - dependencyÀÇ Ã³¸®
- *         - subqueryÀÇ Ã³¸®
+ *     + ì´ˆê¸°í™” ì‘ì—…
+ *         - qmncVIEWì˜ í• ë‹¹ ë° ì´ˆê¸°í™”
+ *     + ë©”ì¸ ì‘ì—…
+ *         - Store and Search ì¸ê²½ìš° Tuple Setì˜ í• ë‹¹
+ *         - VIEWì˜ ì»¬ëŸ¼ì˜ êµ¬ì„± (myNode)
+ *         - Displayë¥¼ ìœ„í•œ ì •ë³´ ì„¸íŒ…
+ *     + ë§ˆë¬´ë¦¬ ì‘ì—…
+ *         - data ì˜ì—­ì˜ í¬ê¸° ê³„ì‚°
+ *         - dependencyì˜ ì²˜ë¦¬
+ *         - subqueryì˜ ì²˜ë¦¬
  *
  *
  * TO DO
- *     - myNode´Â qtcNodeÇüÅÂ ÀÌ¹Ç·Î qtc::makeInternalColumn()À¸·Î ÇÒ´ç¶Ç´Â
- *       ¾Ë¾Æ³½ Tuple ID·Î È£Ãâ ÇÑ´Ù.
+ *     - myNodeëŠ” qtcNodeí˜•íƒœ ì´ë¯€ë¡œ qtc::makeInternalColumn()ìœ¼ë¡œ í• ë‹¹ë˜ëŠ”
+ *       ì•Œì•„ë‚¸ Tuple IDë¡œ í˜¸ì¶œ í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -4024,17 +4024,17 @@ qmoOneNonPlan::initVIEW( qcStatement  * aStatement ,
     IDU_FIT_POINT_FATAL( "qmoOneNonPlan::initVIEW::__FT__" );
 
     //----------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //----------------------------------
 
     IDE_FT_ASSERT( aStatement != NULL );
     IDE_FT_ASSERT( aQuerySet  != NULL );
 
     //-------------------------------------------------------------
-    // ÃÊ±âÈ­ ÀÛ¾÷
+    // ì´ˆê¸°í™” ì‘ì—…
     //-------------------------------------------------------------
 
-    //qmncVIEWÀÇ ÇÒ´ç¹× ÃÊ±âÈ­
+    //qmncVIEWì˜ í• ë‹¹ë° ì´ˆê¸°í™”
     IDE_TEST( QC_QMP_MEM( aStatement )->alloc( ID_SIZEOF( qmncVIEW ),
                                                (void **)& sVIEW )
               != IDE_SUCCESS );
@@ -4086,7 +4086,7 @@ qmoOneNonPlan::makeVIEW( qcStatement  * aStatement ,
     IDU_FIT_POINT_FATAL( "qmoOneNonPlan::makeVIEW::__FT__" );
 
     //----------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //----------------------------------
 
     IDE_FT_ASSERT( aStatement != NULL );
@@ -4094,7 +4094,7 @@ qmoOneNonPlan::makeVIEW( qcStatement  * aStatement ,
     IDE_FT_ASSERT( aChildPlan != NULL );
 
     //-------------------------------------------------------------
-    // ÃÊ±âÈ­ ÀÛ¾÷
+    // ì´ˆê¸°í™” ì‘ì—…
     //-------------------------------------------------------------
 
     sMtcTemplate = & QC_SHARED_TMPLATE(aStatement)->tmplate;
@@ -4106,7 +4106,7 @@ qmoOneNonPlan::makeVIEW( qcStatement  * aStatement ,
     sVIEW->plan.left        = aChildPlan;
 
     //----------------------------------
-    // Flag Á¤º¸ ¼³Á¤
+    // Flag ì •ë³´ ì„¤ì •
     //----------------------------------
 
     sVIEW->flag      = QMN_PLAN_FLAG_CLEAR;
@@ -4115,11 +4115,11 @@ qmoOneNonPlan::makeVIEW( qcStatement  * aStatement ,
     sVIEW->plan.flag       |= (aChildPlan->flag & QMN_PLAN_STORAGE_MASK);
 
     //-------------------------------------------------------------
-    // ¸ŞÀÎ ÀÛ¾÷
+    // ë©”ì¸ ì‘ì—…
     //-------------------------------------------------------------
 
     // BUG-37507
-    // ºäÀÇ target ÀÇ °æ¿ì ¿ÜºÎ ÂüÁ¶ ÄÃ·³ÀÌ ¿Ã¼ö ÀÖ´Ù. µû¶ó¼­ ±âÁ¸°ú °°ÀÌ Ã³¸®ÇÑ´Ù.
+    // ë·°ì˜ target ì˜ ê²½ìš° ì™¸ë¶€ ì°¸ì¡° ì»¬ëŸ¼ì´ ì˜¬ìˆ˜ ìˆë‹¤. ë”°ë¼ì„œ ê¸°ì¡´ê³¼ ê°™ì´ ì²˜ë¦¬í•œë‹¤.
     IDE_TEST( qmc::filterResultDesc( aStatement,
                                      & sVIEW->plan.resultDesc,
                                      & aChildPlan->depInfo,
@@ -4127,19 +4127,19 @@ qmoOneNonPlan::makeVIEW( qcStatement  * aStatement ,
               != IDE_SUCCESS );
 
     //----------------------------------
-    // Flag Á¤º¸ ¼³Á¤ ¹× Tuple ID ÇÒ´ç
+    // Flag ì •ë³´ ì„¤ì • ë° Tuple ID í• ë‹¹
     //----------------------------------
 
     switch ( aFlag & QMO_MAKEVIEW_FROM_MASK )
     {
         case QMO_MAKEVIEW_FROM_PROJECTION:
             //----------------------------------
-            // ProjectionÀ¸·Î ºÎÅÍ »ı¼ºµÈ °æ¿ì
-            // - ¾Ï½ÃÀû VIEWÀÌ¹Ç·Î TupleÀ» ÇÒ´ç
-            //   ¹Ş´Â´Ù.
+            // Projectionìœ¼ë¡œ ë¶€í„° ìƒì„±ëœ ê²½ìš°
+            // - ì•”ì‹œì  VIEWì´ë¯€ë¡œ Tupleì„ í• ë‹¹
+            //   ë°›ëŠ”ë‹¤.
             //----------------------------------
 
-            //dependency °ü¸®¿¡ µû¸¥ flag¼¼ÆÃ
+            //dependency ê´€ë¦¬ì— ë”°ë¥¸ flagì„¸íŒ…
             sViewaDependencyFlag    = QMO_VIEW_IMPLICIT_DEPENDENCY;
 
             IDE_TEST( qtc::nextTable( & sTupleID,
@@ -4162,7 +4162,7 @@ qmoOneNonPlan::makeVIEW( qcStatement  * aStatement ,
             }
 
             //----------------------------------
-            // Tuple columnÀÇ ÇÒ´ç
+            // Tuple columnì˜ í• ë‹¹
             //----------------------------------
             IDE_TEST( qtc::allocIntermediateTuple( aStatement,
                                                    & QC_SHARED_TMPLATE( aStatement )->tmplate,
@@ -4177,24 +4177,24 @@ qmoOneNonPlan::makeVIEW( qcStatement  * aStatement ,
             sMtcTemplate->rows[sTupleID].lflag |= MTC_TUPLE_PLAN_MTR_FALSE;
 
             //----------------------------------
-            // mtcTuple.lflag¼¼ÆÃ
+            // mtcTuple.lflagì„¸íŒ…
             //----------------------------------
 
-            // VIEW´Â IntermediateÀÌ´Ù.
+            // VIEWëŠ” Intermediateì´ë‹¤.
             sMtcTemplate->rows[sTupleID].lflag    &= ~MTC_TUPLE_TYPE_MASK;
             sMtcTemplate->rows[sTupleID].lflag    |= MTC_TUPLE_TYPE_INTERMEDIATE;
 
             // To Fix PR-7992
-            // Implicite VIEW¿¡ ´ëÇØ¼­´Â Depedendency °ü¸®¸¦ À§ÇØ
-            // VIEWÀÓÀ» ¼³Á¤ÇÏÁö ¾Ê´Â´Ù.
-            //   ÂüÁ¶) qtcColumn.cppÀÇ qtcEstimate() ÁÖ¼® ÂüÁ¶
-            // ¸ğµç ColumnÀÇ depedency ¼³Á¤ ÈÄ¿¡ VIEWÀÓÀ» ¼³Á¤ÇÑ´Ù.
+            // Implicite VIEWì— ëŒ€í•´ì„œëŠ” Depedendency ê´€ë¦¬ë¥¼ ìœ„í•´
+            // VIEWì„ì„ ì„¤ì •í•˜ì§€ ì•ŠëŠ”ë‹¤.
+            //   ì°¸ì¡°) qtcColumn.cppì˜ qtcEstimate() ì£¼ì„ ì°¸ì¡°
+            // ëª¨ë“  Columnì˜ depedency ì„¤ì • í›„ì— VIEWì„ì„ ì„¤ì •í•œë‹¤.
             sMtcTemplate->rows[sTupleID].lflag    &= ~MTC_TUPLE_VIEW_MASK;
             sMtcTemplate->rows[sTupleID].lflag    |= MTC_TUPLE_VIEW_FALSE;
 
             //----------------------------------
-            // mtcColumnÁ¤º¸ÀÇ ±¸Ãà
-            // - targetÁ¤º¸·Î ºÎÅÍ ±¸ÃàÇÑ´Ù.
+            // mtcColumnì •ë³´ì˜ êµ¬ì¶•
+            // - targetì •ë³´ë¡œ ë¶€í„° êµ¬ì¶•í•œë‹¤.
             //----------------------------------
 
             for( sItrAttr = aPlan->resultDesc, sChildAttr = aChildPlan->resultDesc, sColumnCount = 0;
@@ -4212,14 +4212,14 @@ qmoOneNonPlan::makeVIEW( qcStatement  * aStatement ,
                                    columns[sConvertedNode->node.column]) );
 
                 // PROJ-2179
-                // VIEWÀÇ °á°úµéÀº ¸ğµÎ value node·Î ¹Ù²ãÁØ´Ù.
+                // VIEWì˜ ê²°ê³¼ë“¤ì€ ëª¨ë‘ value nodeë¡œ ë°”ê¿”ì¤€ë‹¤.
                 sItrAttr->expr->node.table      = sTupleID;
                 sItrAttr->expr->node.column     = sColumnCount;
                 sItrAttr->expr->node.module     = &qtc::valueModule;
                 sItrAttr->expr->node.conversion = NULL;
                 sItrAttr->expr->node.lflag      = qtc::valueModule.lflag;
-                // PROJ-1718 Constant°¡ ¾Æ´Ñ expressionÀÌ value module·Î º¯È¯µÈ °æ¿ì
-                //           unparsing½Ã tree¸¦ ¼øÈ¸ÇÏµµ·Ï ÇÏµµ·Ï orgNode¸¦ ¼³Á¤ÇØÁØ´Ù.
+                // PROJ-1718 Constantê°€ ì•„ë‹Œ expressionì´ value moduleë¡œ ë³€í™˜ëœ ê²½ìš°
+                //           unparsingì‹œ treeë¥¼ ìˆœíšŒí•˜ë„ë¡ í•˜ë„ë¡ orgNodeë¥¼ ì„¤ì •í•´ì¤€ë‹¤.
                 sItrAttr->expr->node.orgNode    = (mtcNode *)sChildAttr->expr;
             }
 
@@ -4227,32 +4227,32 @@ qmoOneNonPlan::makeVIEW( qcStatement  * aStatement ,
 
         case QMO_MAKEVIEW_FROM_SELECTION:
             //----------------------------------
-            // SelectionÀ¸·Î ºÎÅÍ »ı¼ºµÈ °æ¿ì
-            // - Created View¶Ç´Â Inline View¿Í °°Àº ¸í½ÃÀû ViewÀÌ´Ù.
+            // Selectionìœ¼ë¡œ ë¶€í„° ìƒì„±ëœ ê²½ìš°
+            // - Created Viewë˜ëŠ” Inline Viewì™€ ê°™ì€ ëª…ì‹œì  Viewì´ë‹¤.
             //----------------------------------
 
-            //dependency °ü¸®¿¡ µû¸¥ flag¼¼ÆÃ
+            //dependency ê´€ë¦¬ì— ë”°ë¥¸ flagì„¸íŒ…
             sViewaDependencyFlag    = QMO_VIEW_EXPLICIT_DEPENDENCY;
 
-            //Æ©ÇÃ ¾Ë¾Æ³»±â
+            //íŠœí”Œ ì•Œì•„ë‚´ê¸°
             sTupleID         = aFrom->tableRef->table;
 
             break;
 
         case QMO_MAKEVIEW_FROM_SET:
             //----------------------------------
-            // SetÀ¸·Î ºÎÅÍ »ı¼ºµÈ °æ¿ì
-            // - SetÀ» ÇÏ³ªÀÇ °³³äÀû Table·Î Ã³¸®ÇÏ±â À§ÇÑ ¾Ï½ÃÀû ViewÀÓ
-            // - ±×·¯³ª optimizer°¡ tupleÀ» ÇÒ´çÇÑ³à¼®ÀÌ ¾Æ´Ï¹Ç·Î explicit
-            //   ÇÏ°Ô Ã³¸® ÇÑ´Ù. (ÀÌ´Â PROJ-1358¿¡ ÀÇÇÏ¿© °³³äÀÌ º¯°æµÊ)
+            // Setìœ¼ë¡œ ë¶€í„° ìƒì„±ëœ ê²½ìš°
+            // - Setì„ í•˜ë‚˜ì˜ ê°œë…ì  Tableë¡œ ì²˜ë¦¬í•˜ê¸° ìœ„í•œ ì•”ì‹œì  Viewì„
+            // - ê·¸ëŸ¬ë‚˜ optimizerê°€ tupleì„ í• ë‹¹í•œë…€ì„ì´ ì•„ë‹ˆë¯€ë¡œ explicit
+            //   í•˜ê²Œ ì²˜ë¦¬ í•œë‹¤. (ì´ëŠ” PROJ-1358ì— ì˜í•˜ì—¬ ê°œë…ì´ ë³€ê²½ë¨)
             //----------------------------------
 
             // To Fix PR-12791
-            // SET À¸·ÎºÎÅÍ »ı¼ºµÇ´Â VIEW ³ëµå´Â ¾Ï½ÃÀû View ÀÓ.
-            //dependency °ü¸®¿¡ µû¸¥ flag¼¼ÆÃ
+            // SET ìœ¼ë¡œë¶€í„° ìƒì„±ë˜ëŠ” VIEW ë…¸ë“œëŠ” ì•”ì‹œì  View ì„.
+            //dependency ê´€ë¦¬ì— ë”°ë¥¸ flagì„¸íŒ…
             sViewaDependencyFlag    = QMO_VIEW_IMPLICIT_DEPENDENCY;
 
-            //Æ©ÇÃ ¾Ë¾Æ³»±â
+            //íŠœí”Œ ì•Œì•„ë‚´ê¸°
             sTupleID         = aQuerySet->target->targetColumn->node.table;
             break;
         default:
@@ -4260,9 +4260,9 @@ qmoOneNonPlan::makeVIEW( qcStatement  * aStatement ,
     }
 
     //----------------------------------
-    // mtcTuple.lflag¼¼ÆÃ
+    // mtcTuple.lflagì„¸íŒ…
     //----------------------------------
-    // ÀúÀå ¸ÅÃ¼ÀÇ Á¤º¸ - VIEW´Â ÇÏ³ªÀÇ memory °ø°£¸¸ »ç¿ë
+    // ì €ì¥ ë§¤ì²´ì˜ ì •ë³´ - VIEWëŠ” í•˜ë‚˜ì˜ memory ê³µê°„ë§Œ ì‚¬ìš©
     sMtcTemplate->rows[sTupleID].lflag    &= ~MTC_TUPLE_STORAGE_MASK;
     sMtcTemplate->rows[sTupleID].lflag    |= MTC_TUPLE_STORAGE_MEMORY;
 
@@ -4270,7 +4270,7 @@ qmoOneNonPlan::makeVIEW( qcStatement  * aStatement ,
     sMtcTemplate->rows[sTupleID].lflag |= MTC_TUPLE_MATERIALIZE_VALUE;
 
     //----------------------------------
-    // myNodeÀÇ »ı¼º
+    // myNodeì˜ ìƒì„±
     //----------------------------------
     sVIEW->myNode = NULL;
 
@@ -4305,12 +4305,12 @@ qmoOneNonPlan::makeVIEW( qcStatement  * aStatement ,
     sPrevNode->node.next = NULL;
 
     // To Fix PR-7992
-    // ¸ğµç ColumnÀÇ ¿Ã¹Ù¸¥ Depedency ¼³Á¤ ÈÄ¿¡ VIEWÀÓÀ» ¼³Á¤ÇÔ.
+    // ëª¨ë“  Columnì˜ ì˜¬ë°”ë¥¸ Depedency ì„¤ì • í›„ì— VIEWì„ì„ ì„¤ì •í•¨.
     sMtcTemplate->rows[sTupleID].lflag    &= ~MTC_TUPLE_VIEW_MASK;
     sMtcTemplate->rows[sTupleID].lflag    |= MTC_TUPLE_VIEW_TRUE;
 
     //----------------------------------
-    // Display Á¤º¸ ¼¼ÆÃ
+    // Display ì •ë³´ ì„¸íŒ…
     //----------------------------------
 
     if ( aFrom != NULL )
@@ -4332,14 +4332,14 @@ qmoOneNonPlan::makeVIEW( qcStatement  * aStatement ,
     }
 
     //-------------------------------------------------------------
-    // ¸¶¹«¸® ÀÛ¾÷
+    // ë§ˆë¬´ë¦¬ ì‘ì—…
     //-------------------------------------------------------------
 
-    //data ¿µ¿ªÀÇ Å©±â °è»ê
+    //data ì˜ì—­ì˜ í¬ê¸° ê³„ì‚°
     QC_SHARED_TMPLATE(aStatement)->tmplate.dataSize = sDataNodeOffset;
 
     //----------------------------------
-    //dependency Ã³¸® ¹× subqueryÀÇ Ã³¸®
+    //dependency ì²˜ë¦¬ ë° subqueryì˜ ì²˜ë¦¬
     //----------------------------------
 
     IDE_TEST( qmoDependency::setDependency( aStatement,
@@ -4378,18 +4378,18 @@ qmoOneNonPlan::initVSCN( qcStatement  * aStatement ,
 {
 /***********************************************************************
  *
- * Description : VSCN ³ëµå¸¦ »ı¼ºÇÑ´Ù.
+ * Description : VSCN ë…¸ë“œë¥¼ ìƒì„±í•œë‹¤.
  *
  * Implementation :
- *     + ÃÊ±âÈ­ ÀÛ¾÷
- *         - qmncVSCNÀÇ ÇÒ´ç ¹× ÃÊ±âÈ­
- *     + ¸ŞÀÎ ÀÛ¾÷
- *         - MTC_TUPLE_TYPE_TABLE ¼¼ÆÃ
- *         - Display¸¦ À§ÇÑ Á¤º¸ ¼¼ÆÃ
- *     + ¸¶¹«¸® ÀÛ¾÷
- *         - data ¿µ¿ªÀÇ Å©±â °è»ê
- *         - dependencyÀÇ Ã³¸®
- *         - subqueryÀÇ Ã³¸®
+ *     + ì´ˆê¸°í™” ì‘ì—…
+ *         - qmncVSCNì˜ í• ë‹¹ ë° ì´ˆê¸°í™”
+ *     + ë©”ì¸ ì‘ì—…
+ *         - MTC_TUPLE_TYPE_TABLE ì„¸íŒ…
+ *         - Displayë¥¼ ìœ„í•œ ì •ë³´ ì„¸íŒ…
+ *     + ë§ˆë¬´ë¦¬ ì‘ì—…
+ *         - data ì˜ì—­ì˜ í¬ê¸° ê³„ì‚°
+ *         - dependencyì˜ ì²˜ë¦¬
+ *         - subqueryì˜ ì²˜ë¦¬
  *
  ***********************************************************************/
 
@@ -4401,16 +4401,16 @@ qmoOneNonPlan::initVSCN( qcStatement  * aStatement ,
     IDU_FIT_POINT_FATAL( "qmoOneNonPlan::initVSCN::__FT__" );
 
     //----------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //----------------------------------
 
     IDE_DASSERT( aStatement != NULL );
 
     //-------------------------------------------------------------
-    // ÃÊ±âÈ­ ÀÛ¾÷
+    // ì´ˆê¸°í™” ì‘ì—…
     //-------------------------------------------------------------
 
-    //qmncSCANÀÇ ÇÒ´ç¹× ÃÊ±âÈ­
+    //qmncSCANì˜ í• ë‹¹ë° ì´ˆê¸°í™”
     IDE_TEST( QC_QMP_MEM( aStatement )->alloc( ID_SIZEOF( qmncVSCN ),
                                                (void **)& sVSCN )
               != IDE_SUCCESS );
@@ -4425,8 +4425,8 @@ qmoOneNonPlan::initVSCN( qcStatement  * aStatement ,
     sTupleID = aFrom->tableRef->table;
 
     // PROJ-2179
-    // Join ½Ã tableÀÇ dependency°¡ Æ÷ÇÔµÉ ¼ö ÀÖÀ¸¹Ç·Î
-    // ÀÌ VSCNÀÌ fetchÇÏ´Â table¿¡ ´ëÇÑ dependency Á¤º¸¸¦ º°µµ·Î ¼³Á¤ÇÑ´Ù.
+    // Join ì‹œ tableì˜ dependencyê°€ í¬í•¨ë  ìˆ˜ ìˆìœ¼ë¯€ë¡œ
+    // ì´ VSCNì´ fetchí•˜ëŠ” tableì— ëŒ€í•œ dependency ì •ë³´ë¥¼ ë³„ë„ë¡œ ì„¤ì •í•œë‹¤.
 
     qtc::dependencySet(sTupleID, &sDepInfo);
 
@@ -4468,7 +4468,7 @@ IDE_RC qmoOneNonPlan::makeVSCN( qcStatement  * aStatement,
     IDU_FIT_POINT_FATAL( "qmoOneNonPlan::makeVSCN::__FT__" );
 
     //----------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //----------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -4476,7 +4476,7 @@ IDE_RC qmoOneNonPlan::makeVSCN( qcStatement  * aStatement,
     IDE_DASSERT( aFrom      != NULL );
 
     //-------------------------------------------------------------
-    // ÃÊ±âÈ­ ÀÛ¾÷
+    // ì´ˆê¸°í™” ì‘ì—…
     //-------------------------------------------------------------
 
     sMtcTemplate = & QC_SHARED_TMPLATE(aStatement)->tmplate;
@@ -4488,14 +4488,14 @@ IDE_RC qmoOneNonPlan::makeVSCN( qcStatement  * aStatement,
     sVSCN->plan.left        = aChildPlan;
 
     //----------------------------------
-    // ±âº» Á¤º¸ ¼³Á¤
+    // ê¸°ë³¸ ì •ë³´ ì„¤ì •
     //----------------------------------
 
     sVSCN->tupleRowID       = aFrom->tableRef->table;
     sTupleID = sVSCN->tupleRowID;
 
     //----------------------------------
-    // Flag ¼³Á¤
+    // Flag ì„¤ì •
     //----------------------------------
 
     sVSCN->flag             = QMN_PLAN_FLAG_CLEAR;
@@ -4515,21 +4515,21 @@ IDE_RC qmoOneNonPlan::makeVSCN( qcStatement  * aStatement,
     }
 
     //-------------------------------------------------------------
-    // ¸ŞÀÎ ÀÛ¾÷
+    // ë©”ì¸ ì‘ì—…
     //-------------------------------------------------------------
 
-    // Tuple.lflagÀÇ ¼¼ÆÃ
+    // Tuple.lflagì˜ ì„¸íŒ…
     sMtcTemplate->rows[sTupleID].lflag    &= ~MTC_TUPLE_TYPE_MASK;
     sMtcTemplate->rows[sTupleID].lflag    |= MTC_TUPLE_TYPE_TABLE;
 
-    // Tuple.lflagÀÇ ¼¼ÆÃ
+    // Tuple.lflagì˜ ì„¸íŒ…
     sMtcTemplate->rows[sTupleID].lflag    &= ~MTC_TUPLE_VSCN_MASK;
     sMtcTemplate->rows[sTupleID].lflag    |= MTC_TUPLE_VSCN_TRUE;
 
     // To Fix PR-8385
-    // VSCNÀÌ »ı¼ºµÇ´Â °æ¿ì¿¡´Â in-line view¶ó ÇÏ´õ¶óµµ
-    // ÀÏ¹İÅ×ÀÌºí·Î Ã³¸®ÇÏ¿©¾ß ÇÑ´Ù. µû¶ó¼­ ÇÏÀ§¿¡ view¶ó°í ¼¼ÆÃµÈ°ÍÀ»
-    // false·Î ¼³Á¤ÇÑ´Ù.
+    // VSCNì´ ìƒì„±ë˜ëŠ” ê²½ìš°ì—ëŠ” in-line viewë¼ í•˜ë”ë¼ë„
+    // ì¼ë°˜í…Œì´ë¸”ë¡œ ì²˜ë¦¬í•˜ì—¬ì•¼ í•œë‹¤. ë”°ë¼ì„œ í•˜ìœ„ì— viewë¼ê³  ì„¸íŒ…ëœê²ƒì„
+    // falseë¡œ ì„¤ì •í•œë‹¤.
     sMtcTemplate->rows[sTupleID].lflag    &= ~MTC_TUPLE_VIEW_MASK;
     sMtcTemplate->rows[sTupleID].lflag    |=  MTC_TUPLE_VIEW_FALSE;
 
@@ -4537,7 +4537,7 @@ IDE_RC qmoOneNonPlan::makeVSCN( qcStatement  * aStatement,
     if ( ( aFrom->tableRef->flag & QMS_TABLE_REF_RECURSIVE_VIEW_MASK )
          != QMS_TABLE_REF_RECURSIVE_VIEW_TRUE )
     {
-        // ÀúÀå ¸ÅÃ¼ÀÇ Á¤º¸ - ÇÏÀ§ÀÇ VMTRÀÇ Á¤º¸¸¦ ÀÌ¿ë
+        // ì €ì¥ ë§¤ì²´ì˜ ì •ë³´ - í•˜ìœ„ì˜ VMTRì˜ ì •ë³´ë¥¼ ì´ìš©
         sChildTupleID = ((qmncVMTR*)aChildPlan)->myNode->dstNode->node.table;
 
         sMtcTemplate->rows[sTupleID].lflag &= ~MTC_TUPLE_STORAGE_MASK;
@@ -4546,7 +4546,7 @@ IDE_RC qmoOneNonPlan::makeVSCN( qcStatement  * aStatement,
     }
     else
     {
-        // recursive with´Â ¸Ş¸ğ¸®¸¸ Áö¿ø
+        // recursive withëŠ” ë©”ëª¨ë¦¬ë§Œ ì§€ì›
         sMtcTemplate->rows[sTupleID].lflag &= ~MTC_TUPLE_STORAGE_MASK;
         sMtcTemplate->rows[sTupleID].lflag |= MTC_TUPLE_STORAGE_MEMORY;
     }
@@ -4567,7 +4567,7 @@ IDE_RC qmoOneNonPlan::makeVSCN( qcStatement  * aStatement,
     }
 
     //----------------------------------
-    // Display Á¤º¸ ¼¼ÆÃ
+    // Display ì •ë³´ ì„¸íŒ…
     //----------------------------------
 
     IDE_TEST( qmg::setDisplayInfo( aFrom ,
@@ -4577,14 +4577,14 @@ IDE_RC qmoOneNonPlan::makeVSCN( qcStatement  * aStatement,
               != IDE_SUCCESS );
 
     //------------------------------------------------------------
-    // ¸¶¹«¸® ÀÛ¾÷
+    // ë§ˆë¬´ë¦¬ ì‘ì—…
     //------------------------------------------------------------
 
-    //data ¿µ¿ªÀÇ Å©±â °è»ê
+    //data ì˜ì—­ì˜ í¬ê¸° ê³„ì‚°
     QC_SHARED_TMPLATE(aStatement)->tmplate.dataSize = sDataNodeOffset;
 
     //----------------------------------
-    // dependency Ã³¸® ¹× subqueryÀÇ Ã³¸®
+    // dependency ì²˜ë¦¬ ë° subqueryì˜ ì²˜ë¦¬
     //----------------------------------
 
     IDE_TEST( qmoDependency::setDependency( aStatement ,
@@ -4630,18 +4630,18 @@ qmoOneNonPlan::initCNTR( qcStatement   * aStatement ,
 {
 /***********************************************************************
  *
- * Description : CNTR ³ëµå¸¦ »ı¼ºÇÑ´Ù.
+ * Description : CNTR ë…¸ë“œë¥¼ ìƒì„±í•œë‹¤.
  *
  * Implementation :
- *     + ÃÊ±âÈ­ ÀÛ¾÷
- *         - qmncCNTRÀÇ ÇÒ´ç ¹× ÃÊ±âÈ­
- *     + ¸ŞÀÎ ÀÛ¾÷
- *         - rownumÀÇ ¼³Á¤
- *         - Stopkey PredicateÀÇ Ã³¸®
- *     + ¸¶¹«¸® ÀÛ¾÷
- *         - data ¿µ¿ªÀÇ Å©±â °è»ê
- *         - dependencyÀÇ Ã³¸®
- *         - subqueryÀÇ Ã³¸®
+ *     + ì´ˆê¸°í™” ì‘ì—…
+ *         - qmncCNTRì˜ í• ë‹¹ ë° ì´ˆê¸°í™”
+ *     + ë©”ì¸ ì‘ì—…
+ *         - rownumì˜ ì„¤ì •
+ *         - Stopkey Predicateì˜ ì²˜ë¦¬
+ *     + ë§ˆë¬´ë¦¬ ì‘ì—…
+ *         - data ì˜ì—­ì˜ í¬ê¸° ê³„ì‚°
+ *         - dependencyì˜ ì²˜ë¦¬
+ *         - subqueryì˜ ì²˜ë¦¬
  *
  ***********************************************************************/
 
@@ -4652,16 +4652,16 @@ qmoOneNonPlan::initCNTR( qcStatement   * aStatement ,
     IDU_FIT_POINT_FATAL( "qmoOneNonPlan::initCNTR::__FT__" );
 
     //----------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //----------------------------------
 
     IDE_DASSERT( aStatement != NULL );
 
     //----------------------------------------------------------------
-    // ÃÊ±âÈ­ ÀÛ¾÷
+    // ì´ˆê¸°í™” ì‘ì—…
     //----------------------------------------------------------------
 
-    //qmncCNTRÀÇ ÇÒ´ç¹× ÃÊ±âÈ­
+    //qmncCNTRì˜ í• ë‹¹ë° ì´ˆê¸°í™”
     IDE_TEST( QC_QMP_MEM( aStatement )->alloc( ID_SIZEOF( qmncCNTR ),
                                                (void **)& sCNTR )
               != IDE_SUCCESS );
@@ -4676,8 +4676,8 @@ qmoOneNonPlan::initCNTR( qcStatement   * aStatement ,
     *aPlan = (qmnPlan *)sCNTR;
 
     /* BUG-39611 support SYS_CONNECT_BY_PATH's expression arguments
-     * »óÀ§ Plan ¿¡¼­ Àü´Ş µÇ´Â result descriptÁß CONNECT_BY¿Í °ü·ÃµÈ FUNCTIONÀ»
-     * ÇÏÀ§·Î Àü´ŞÇÏ±â À§ÇØ CNTR¿¡µµ appendÇÑ´Ù.
+     * ìƒìœ„ Plan ì—ì„œ ì „ë‹¬ ë˜ëŠ” result descriptì¤‘ CONNECT_BYì™€ ê´€ë ¨ëœ FUNCTIONì„
+     * í•˜ìœ„ë¡œ ì „ë‹¬í•˜ê¸° ìœ„í•´ CNTRì—ë„ appendí•œë‹¤.
      */
     for ( sItrAttr = aParent->resultDesc;
           sItrAttr != NULL;
@@ -4748,7 +4748,7 @@ qmoOneNonPlan::makeCNTR( qcStatement  * aStatement ,
     IDU_FIT_POINT_FATAL( "qmoOneNonPlan::makeCNTR::__FT__" );
 
     //----------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //----------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -4756,7 +4756,7 @@ qmoOneNonPlan::makeCNTR( qcStatement  * aStatement ,
     IDE_DASSERT( aChildPlan != NULL );
 
     //----------------------------------------------------------------
-    // ÃÊ±âÈ­ ÀÛ¾÷
+    // ì´ˆê¸°í™” ì‘ì—…
     //----------------------------------------------------------------
 
     sCNTR->plan.left        = aChildPlan;
@@ -4766,7 +4766,7 @@ qmoOneNonPlan::makeCNTR( qcStatement  * aStatement ,
                                      ID_SIZEOF(qmndCNTR));
 
     //----------------------------------
-    // Flag ¼³Á¤
+    // Flag ì„¤ì •
     //----------------------------------
 
     sCNTR->flag = QMN_PLAN_FLAG_CLEAR;
@@ -4775,17 +4775,17 @@ qmoOneNonPlan::makeCNTR( qcStatement  * aStatement ,
     sCNTR->plan.flag       |= (aChildPlan->flag & QMN_PLAN_STORAGE_MASK);
 
     //----------------------------------------------------------------
-    // ¸ŞÀÎ ÀÛ¾÷
+    // ë©”ì¸ ì‘ì—…
     //----------------------------------------------------------------
 
     //----------------------------------
-    // rownumÀÇ tuple row ID Ã³¸®
+    // rownumì˜ tuple row ID ì²˜ë¦¬
     //----------------------------------
 
     sNode = aQuerySet->SFWGH->rownum;
 
     // BUG-17949
-    // group by rownumÀÎ °æ¿ì SFWGH->rownum¿¡ passNode°¡ ´Ş·ÁÀÖ´Ù.
+    // group by rownumì¸ ê²½ìš° SFWGH->rownumì— passNodeê°€ ë‹¬ë ¤ìˆë‹¤.
     if ( sNode->node.module == & qtc::passModule )
     {
         sNode = (qtcNode*) sNode->node.arguments;
@@ -4798,7 +4798,7 @@ qmoOneNonPlan::makeCNTR( qcStatement  * aStatement ,
     sCNTR->rownumRowID = sNode->node.table;
 
     //----------------------------------
-    // stopFilterÀÇ Ã³¸®
+    // stopFilterì˜ ì²˜ë¦¬
     //----------------------------------
 
     if ( aStopkeyPredicate != NULL )
@@ -4825,15 +4825,15 @@ qmoOneNonPlan::makeCNTR( qcStatement  * aStatement ,
     }
 
     //----------------------------------------------------------------
-    // ¸¶¹«¸® ÀÛ¾÷
+    // ë§ˆë¬´ë¦¬ ì‘ì—…
     //----------------------------------------------------------------
 
-    // data ¿µ¿ªÀÇ Å©±â °è»ê
+    // data ì˜ì—­ì˜ í¬ê¸° ê³„ì‚°
     QC_SHARED_TMPLATE(aStatement)->tmplate.dataSize = sDataNodeOffset;
 
     //----------------------------------
-    // Host º¯¼ö¸¦ Æ÷ÇÔÇÑ
-    // Constant ExpressionÀÇ ÃÖÀûÈ­
+    // Host ë³€ìˆ˜ë¥¼ í¬í•¨í•œ
+    // Constant Expressionì˜ ìµœì í™”
     //----------------------------------
 
     if ( sCNTR->stopFilter != NULL )
@@ -4848,14 +4848,14 @@ qmoOneNonPlan::makeCNTR( qcStatement  * aStatement ,
     }
 
     //----------------------------------
-    //dependency Ã³¸® ¹× subqueryÀÇ Ã³¸®
+    //dependency ì²˜ë¦¬ ë° subqueryì˜ ì²˜ë¦¬
     //----------------------------------
 
     sPredicate[0] = sCNTR->stopFilter;
 
     //----------------------------------
     // PROJ-1473
-    // dependency ¼³Á¤Àü¿¡ predicateµéÀÇ À§Ä¡Á¤º¸ º¯°æ.
+    // dependency ì„¤ì •ì „ì— predicateë“¤ì˜ ìœ„ì¹˜ì •ë³´ ë³€ê²½.
     //----------------------------------
 
     IDE_TEST( qmg::changeColumnLocate( aStatement,
@@ -4898,11 +4898,11 @@ qmoOneNonPlan::initINST( qcStatement   * aStatement ,
 {
 /***********************************************************************
  *
- * Description : INST ³ëµå¸¦ »ı¼ºÇÑ´Ù.
+ * Description : INST ë…¸ë“œë¥¼ ìƒì„±í•œë‹¤.
  *
  * Implementation :
- *     + ÃÊ±âÈ­ ÀÛ¾÷
- *         - qmncINSTÀÇ ÇÒ´ç ¹× ÃÊ±âÈ­
+ *     + ì´ˆê¸°í™” ì‘ì—…
+ *         - qmncINSTì˜ í• ë‹¹ ë° ì´ˆê¸°í™”
  *
  ***********************************************************************/
 
@@ -4912,16 +4912,16 @@ qmoOneNonPlan::initINST( qcStatement   * aStatement ,
     IDU_FIT_POINT_FATAL( "qmoOneNonPlan::initINST::__FT__" );
 
     //----------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //----------------------------------
 
     IDE_DASSERT( aStatement != NULL );
 
     //----------------------------------------------------------------
-    // ÃÊ±âÈ­ ÀÛ¾÷
+    // ì´ˆê¸°í™” ì‘ì—…
     //----------------------------------------------------------------
 
-    //qmncSCANÀÇ ÇÒ´ç¹× ÃÊ±âÈ­
+    //qmncSCANì˜ í• ë‹¹ë° ì´ˆê¸°í™”
     IDE_TEST( QC_QMP_MEM( aStatement )->alloc( ID_SIZEOF( qmncINST ),
                                                (void **)& sINST )
               != IDE_SUCCESS );
@@ -4950,13 +4950,13 @@ qmoOneNonPlan::makeINST( qcStatement   * aStatement ,
 {
 /***********************************************************************
  *
- * Description : INST ³ëµå¸¦ »ı¼ºÇÑ´Ù.
+ * Description : INST ë…¸ë“œë¥¼ ìƒì„±í•œë‹¤.
  *
  * Implementation :
- *     + ¸ŞÀÎ ÀÛ¾÷
- *     + ¸¶¹«¸® ÀÛ¾÷
- *         - data ¿µ¿ªÀÇ Å©±â °è»ê
- *         - dependencyÀÇ Ã³¸®
+ *     + ë©”ì¸ ì‘ì—…
+ *     + ë§ˆë¬´ë¦¬ ì‘ì—…
+ *         - data ì˜ì—­ì˜ í¬ê¸° ê³„ì‚°
+ *         - dependencyì˜ ì²˜ë¦¬
  *
  ***********************************************************************/
 
@@ -4967,13 +4967,13 @@ qmoOneNonPlan::makeINST( qcStatement   * aStatement ,
     IDU_FIT_POINT_FATAL( "qmoOneNonPlan::makeINST::__FT__" );
 
     //----------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //----------------------------------
 
     IDE_DASSERT( aStatement != NULL );
 
     //----------------------------------------------------------------
-    // ÃÊ±âÈ­ ÀÛ¾÷
+    // ì´ˆê¸°í™” ì‘ì—…
     //----------------------------------------------------------------
 
     aPlan->offset = aStatement->myPlan->sTmplate->tmplate.dataSize;
@@ -4983,7 +4983,7 @@ qmoOneNonPlan::makeINST( qcStatement   * aStatement ,
     sINST->plan.left = aChildPlan;
 
     //----------------------------------
-    // Flag ¼³Á¤
+    // Flag ì„¤ì •
     //----------------------------------
 
     sINST->flag = QMN_PLAN_FLAG_CLEAR;
@@ -4998,18 +4998,18 @@ qmoOneNonPlan::makeINST( qcStatement   * aStatement ,
         // Nothing to do.
     }
 
-    //Leaf Node¿¡ tuple·Î ºÎÅÍ memory ÀÎÁö disk tableÀÎÁö¸¦ ¼¼ÆÃ
-    //from tupleÁ¤º¸
+    //Leaf Nodeì— tupleë¡œ ë¶€í„° memory ì¸ì§€ disk tableì¸ì§€ë¥¼ ì„¸íŒ…
+    //from tupleì •ë³´
     IDE_TEST( setTableTypeFromTuple( aStatement,
                                      aINSTInfo->tableRef->table,
                                      &( sINST->plan.flag ) )
               != IDE_SUCCESS );
 
     //----------------------------------
-    // Display Á¤º¸ ¼¼ÆÃ
+    // Display ì •ë³´ ì„¸íŒ…
     //----------------------------------
 
-    // tableRef¸¸ ÀÖÀ¸¸é µÊ
+    // tableRefë§Œ ìˆìœ¼ë©´ ë¨
     sFrom.tableRef = aINSTInfo->tableRef;
 
     IDE_TEST( qmg::setDisplayInfo( & sFrom,
@@ -5019,17 +5019,17 @@ qmoOneNonPlan::makeINST( qcStatement   * aStatement ,
                  != IDE_SUCCESS );
 
     //----------------------------------------------------------------
-    // ¸ŞÀÎ ÀÛ¾÷
+    // ë©”ì¸ ì‘ì—…
     //----------------------------------------------------------------
 
     //----------------------------------
-    // insert °ü·Ã Á¤º¸
+    // insert ê´€ë ¨ ì •ë³´
     //----------------------------------
 
-    // insert target ¼³Á¤
+    // insert target ì„¤ì •
     sINST->tableRef = aINSTInfo->tableRef;
 
-    // insert select ¼³Á¤
+    // insert select ì„¤ì •
     if ( aChildPlan != NULL )
     {
         sINST->isInsertSelect = ID_TRUE;
@@ -5039,25 +5039,25 @@ qmoOneNonPlan::makeINST( qcStatement   * aStatement ,
         sINST->isInsertSelect = ID_FALSE;
     }
 
-    // multi-table insert ¼³Á¤
+    // multi-table insert ì„¤ì •
     sINST->isMultiInsertSelect = aINSTInfo->multiInsertSelect;
 
-    // insert columns ¼³Á¤
+    // insert columns ì„¤ì •
     sINST->columns          = aINSTInfo->columns;
     sINST->columnsForValues = aINSTInfo->columnsForValues;
 
-    // insert values ¼³Á¤
+    // insert values ì„¤ì •
     sINST->rows           = aINSTInfo->rows;
     sINST->valueIdx       = aINSTInfo->valueIdx;
     sINST->canonizedTuple = aINSTInfo->canonizedTuple;
     sINST->compressedTuple= aINSTInfo->compressedTuple;
     sINST->queueMsgIDSeq  = aINSTInfo->queueMsgIDSeq;
 
-    // insert hint ¼³Á¤
+    // insert hint ì„¤ì •
     sINST->hints = aINSTInfo->hints;
 
-    /* PROJ-2464 hybrid partitioned table Áö¿ø
-     *  - Simple Query¸¦ Áö¿øÇÏ±â À§ÇØ¼­, PartitionÀ» °í·ÁÇÏÁö ¾Ê°í ¿ì¼± ¼³Á¤ÇÑ´Ù.
+    /* PROJ-2464 hybrid partitioned table ì§€ì›
+     *  - Simple Queryë¥¼ ì§€ì›í•˜ê¸° ìœ„í•´ì„œ, Partitionì„ ê³ ë ¤í•˜ì§€ ì•Šê³  ìš°ì„  ì„¤ì •í•œë‹¤.
      */
     if ( sINST->hints != NULL )
     {
@@ -5069,8 +5069,8 @@ qmoOneNonPlan::makeINST( qcStatement   * aStatement ,
         {
             //---------------------------------------------------
             // PROJ-1566
-            // INSERT°¡ APPEND ¹æ½ÄÀ¸·Î ¼öÇàµÇ¾î¾ß ÇÏ´Â °æ¿ì,
-            // SIX LockÀ» È¹µæÇØ¾ß ÇÔ
+            // INSERTê°€ APPEND ë°©ì‹ìœ¼ë¡œ ìˆ˜í–‰ë˜ì–´ì•¼ í•˜ëŠ” ê²½ìš°,
+            // SIX Lockì„ íšë“í•´ì•¼ í•¨
             //---------------------------------------------------
 
             sINST->isAppend = ID_TRUE;
@@ -5096,50 +5096,50 @@ qmoOneNonPlan::makeINST( qcStatement   * aStatement ,
         sINST->disableTrigger = ID_FALSE;
     }
 
-    // sequence Á¤º¸
+    // sequence ì •ë³´
     sINST->nextValSeqs = aINSTInfo->nextValSeqs;
 
-    // instead of trigger ¼³Á¤
+    // instead of trigger ì„¤ì •
     sINST->insteadOfTrigger = aINSTInfo->insteadOfTrigger;
 
     // BUG-43063 insert nowait
     sINST->lockWaitMicroSec = aINSTInfo->lockWaitMicroSec;
 
     //----------------------------------
-    // parent constraint ¼³Á¤
+    // parent constraint ì„¤ì •
     //----------------------------------
 
     sINST->parentConstraints = aINSTInfo->parentConstraints;
     sINST->checkConstrList   = aINSTInfo->checkConstrList;
 
     //----------------------------------
-    // return into ¼³Á¤
+    // return into ì„¤ì •
     //----------------------------------
 
     sINST->returnInto = aINSTInfo->returnInto;
 
     //----------------------------------
-    // Default Expr ¼³Á¤
+    // Default Expr ì„¤ì •
     //----------------------------------
 
     sINST->defaultExprTableRef = aINSTInfo->defaultExprTableRef;
     sINST->defaultExprColumns  = aINSTInfo->defaultExprColumns;
 
     //----------------------------------------------------------------
-    // ¸¶¹«¸® ÀÛ¾÷
+    // ë§ˆë¬´ë¦¬ ì‘ì—…
     //----------------------------------------------------------------
 
-    //data ¿µ¿ªÀÇ Å©±â °è»ê
+    //data ì˜ì—­ì˜ í¬ê¸° ê³„ì‚°
     QC_SHARED_TMPLATE(aStatement)->tmplate.dataSize = sDataNodeOffset;
 
     //----------------------------------
-    // dependency Ã³¸® ¹× subqueryÀÇ Ã³¸®
+    // dependency ì²˜ë¦¬ ë° subqueryì˜ ì²˜ë¦¬
     //----------------------------------
 
     qtc::dependencyClear( & sINST->plan.depInfo );
 
-    // PROJ-2551 simple query ÃÖÀûÈ­
-    // simple insertÀÎ °æ¿ì fast execute¸¦ ¼öÇàÇÑ´Ù.
+    // PROJ-2551 simple query ìµœì í™”
+    // simple insertì¸ ê²½ìš° fast executeë¥¼ ìˆ˜í–‰í•œë‹¤.
     IDE_TEST( checkSimpleINST( aStatement, sINST )
               != IDE_SUCCESS );
 
@@ -5156,11 +5156,11 @@ qmoOneNonPlan::initUPTE( qcStatement   * aStatement ,
 {
 /***********************************************************************
  *
- * Description : UPTE ³ëµå¸¦ »ı¼ºÇÑ´Ù.
+ * Description : UPTE ë…¸ë“œë¥¼ ìƒì„±í•œë‹¤.
  *
  * Implementation :
- *     + ÃÊ±âÈ­ ÀÛ¾÷
- *         - qmncUPTEÀÇ ÇÒ´ç ¹× ÃÊ±âÈ­
+ *     + ì´ˆê¸°í™” ì‘ì—…
+ *         - qmncUPTEì˜ í• ë‹¹ ë° ì´ˆê¸°í™”
  *
  ***********************************************************************/
 
@@ -5170,16 +5170,16 @@ qmoOneNonPlan::initUPTE( qcStatement   * aStatement ,
     IDU_FIT_POINT_FATAL( "qmoOneNonPlan::initUPTE::__FT__" );
 
     //----------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //----------------------------------
 
     IDE_DASSERT( aStatement != NULL );
 
     //----------------------------------------------------------------
-    // ÃÊ±âÈ­ ÀÛ¾÷
+    // ì´ˆê¸°í™” ì‘ì—…
     //----------------------------------------------------------------
 
-    //qmncSCANÀÇ ÇÒ´ç¹× ÃÊ±âÈ­
+    //qmncSCANì˜ í• ë‹¹ë° ì´ˆê¸°í™”
     IDE_TEST( QC_QMP_MEM( aStatement )->alloc( ID_SIZEOF( qmncUPTE ),
                                                (void **)& sUPTE )
         != IDE_SUCCESS );
@@ -5209,13 +5209,13 @@ qmoOneNonPlan::makeUPTE( qcStatement   * aStatement ,
 {
 /***********************************************************************
  *
- * Description : UPTE ³ëµå¸¦ »ı¼ºÇÑ´Ù.
+ * Description : UPTE ë…¸ë“œë¥¼ ìƒì„±í•œë‹¤.
  *
  * Implementation :
- *     + ¸ŞÀÎ ÀÛ¾÷
- *     + ¸¶¹«¸® ÀÛ¾÷
- *         - data ¿µ¿ªÀÇ Å©±â °è»ê
- *         - dependencyÀÇ Ã³¸®
+ *     + ë©”ì¸ ì‘ì—…
+ *     + ë§ˆë¬´ë¦¬ ì‘ì—…
+ *         - data ì˜ì—­ì˜ í¬ê¸° ê³„ì‚°
+ *         - dependencyì˜ ì²˜ë¦¬
  *
  ***********************************************************************/
 
@@ -5231,7 +5231,7 @@ qmoOneNonPlan::makeUPTE( qcStatement   * aStatement ,
     IDU_FIT_POINT_FATAL( "qmoOneNonPlan::makeUPTE::__FT__" );
 
     //----------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //----------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -5239,7 +5239,7 @@ qmoOneNonPlan::makeUPTE( qcStatement   * aStatement ,
     IDE_DASSERT( aChildPlan != NULL );
 
     //----------------------------------------------------------------
-    // ÃÊ±âÈ­ ÀÛ¾÷
+    // ì´ˆê¸°í™” ì‘ì—…
     //----------------------------------------------------------------
 
     sTableInfo = aUPTEInfo->updateTableRef->tableInfo;
@@ -5250,7 +5250,7 @@ qmoOneNonPlan::makeUPTE( qcStatement   * aStatement ,
     sUPTE->plan.left = aChildPlan;
 
     //----------------------------------
-    // Flag ¼³Á¤
+    // Flag ì„¤ì •
     //----------------------------------
 
     sUPTE->flag = QMN_PLAN_FLAG_CLEAR;
@@ -5258,15 +5258,15 @@ qmoOneNonPlan::makeUPTE( qcStatement   * aStatement ,
 
     sUPTE->plan.flag |= (aChildPlan->flag & QMN_PLAN_STORAGE_MASK);
 
-    //Leaf Node¿¡ tuple·Î ºÎÅÍ memory ÀÎÁö disk tableÀÎÁö¸¦ ¼¼ÆÃ
-    //from tupleÁ¤º¸
+    //Leaf Nodeì— tupleë¡œ ë¶€í„° memory ì¸ì§€ disk tableì¸ì§€ë¥¼ ì„¸íŒ…
+    //from tupleì •ë³´
     IDE_TEST( setTableTypeFromTuple( aStatement,
                                      aUPTEInfo->updateTableRef->table,
                                      &( sUPTE->plan.flag ) )
               != IDE_SUCCESS );
 
     //----------------------------------
-    // Display Á¤º¸ ¼¼ÆÃ
+    // Display ì •ë³´ ì„¸íŒ…
     //----------------------------------
 
     QCP_SET_INIT_QMS_FROM( (&sFrom) );
@@ -5279,7 +5279,7 @@ qmoOneNonPlan::makeUPTE( qcStatement   * aStatement ,
               != IDE_SUCCESS );
 
     /* PROJ-2204 Join Update, Delete
-     * join updateÀÓÀ» Ç¥½ÃÇÑ´Ù. */
+     * join updateì„ì„ í‘œì‹œí•œë‹¤. */
     if ( aQuerySet->SFWGH->from->tableRef->view != NULL )
     {
         sUPTE->flag &= ~QMNC_UPTE_VIEW_MASK;
@@ -5291,17 +5291,17 @@ qmoOneNonPlan::makeUPTE( qcStatement   * aStatement ,
     }
 
     //----------------------------------------------------------------
-    // ¸ŞÀÎ ÀÛ¾÷
+    // ë©”ì¸ ì‘ì—…
     //----------------------------------------------------------------
 
     //----------------------------------
-    // update °ü·Ã Á¤º¸
+    // update ê´€ë ¨ ì •ë³´
     //----------------------------------
 
-    // update target table ¼³Á¤
+    // update target table ì„¤ì •
     sUPTE->tableRef = aUPTEInfo->updateTableRef;
 
-    // update column °ü·Ã Á¤º¸
+    // update column ê´€ë ¨ ì •ë³´
     sUPTE->columns           = aUPTEInfo->columns;
     sUPTE->updateColumnList  = aUPTEInfo->updateColumnList;
     sUPTE->updateColumnCount = aUPTEInfo->updateColumnCount;
@@ -5313,7 +5313,7 @@ qmoOneNonPlan::makeUPTE( qcStatement   * aStatement ,
                   != IDE_SUCCESS );
 
         // To Fix PR-10592
-        // Update ColumnÀÌ ¿©·¯°³ÀÎ °æ¿ì Á¤È®È÷ ID¸¦ ¼³Á¤ÇØ¾ß ÇÔ.
+        // Update Columnì´ ì—¬ëŸ¬ê°œì¸ ê²½ìš° ì •í™•íˆ IDë¥¼ ì„¤ì •í•´ì•¼ í•¨.
         for ( i = 0, sColumn = aUPTEInfo->columns;
               i < aUPTEInfo->updateColumnCount;
               i++, sColumn = sColumn->next )
@@ -5326,7 +5326,7 @@ qmoOneNonPlan::makeUPTE( qcStatement   * aStatement ,
         sUPTE->updateColumnIDs = NULL;
     }
 
-    // update value °ü·Ã Á¤º¸
+    // update value ê´€ë ¨ ì •ë³´
     sUPTE->values         = aUPTEInfo->values;
     sUPTE->subqueries     = aUPTEInfo->subqueries;
     sUPTE->valueIdx       = aUPTEInfo->valueIdx;
@@ -5334,20 +5334,20 @@ qmoOneNonPlan::makeUPTE( qcStatement   * aStatement ,
     sUPTE->compressedTuple= aUPTEInfo->compressedTuple;
     sUPTE->isNull         = aUPTEInfo->isNull;
 
-    // sequence Á¤º¸
+    // sequence ì •ë³´
     sUPTE->nextValSeqs    = aUPTEInfo->nextValSeqs;
 
-    // instead of trigger ¼³Á¤
+    // instead of trigger ì„¤ì •
     sUPTE->insteadOfTrigger = aUPTEInfo->insteadOfTrigger;
 
     //----------------------------------
-    // partition °ü·Ã Á¤º¸
+    // partition ê´€ë ¨ ì •ë³´
     //----------------------------------
 
     sUPTE->insertTableRef      = aUPTEInfo->insertTableRef;
     sUPTE->isRowMovementUpdate = aUPTEInfo->isRowMovementUpdate;
 
-    // partitionº° update column list »ı¼º
+    // partitionë³„ update column list ìƒì„±
     if ( sUPTE->tableRef->partitionRef != NULL )
     {
         sPartitionCount = 0;
@@ -5382,14 +5382,14 @@ qmoOneNonPlan::makeUPTE( qcStatement   * aStatement ,
     sUPTE->updateType = aUPTEInfo->updateType;
 
     //----------------------------------
-    // cursor °ü·Ã Á¤º¸
+    // cursor ê´€ë ¨ ì •ë³´
     //----------------------------------
 
     sUPTE->cursorType    = aUPTEInfo->cursorType;
     sUPTE->inplaceUpdate = aUPTEInfo->inplaceUpdate;
 
     //----------------------------------
-    // limit Á¤º¸ÀÇ ¼¼ÆÃ
+    // limit ì •ë³´ì˜ ì„¸íŒ…
     //----------------------------------
 
     sUPTE->limit = aUPTEInfo->limit;
@@ -5405,10 +5405,10 @@ qmoOneNonPlan::makeUPTE( qcStatement   * aStatement ,
     }
 
     //----------------------------------
-    // constraint ¼³Á¤
+    // constraint ì„¤ì •
     //----------------------------------
 
-    // Foreign Key ReferencingÀ» À§ÇÑ Master TableÀÌ Á¸ÀçÇÏ´Â Áö °Ë»ç
+    // Foreign Key Referencingì„ ìœ„í•œ Master Tableì´ ì¡´ì¬í•˜ëŠ” ì§€ ê²€ì‚¬
     if ( qdnForeignKey::haveToCheckParent( sTableInfo,
                                            sUPTE->updateColumnIDs,
                                            aUPTEInfo->updateColumnCount )
@@ -5421,7 +5421,7 @@ qmoOneNonPlan::makeUPTE( qcStatement   * aStatement ,
         sUPTE->parentConstraints = NULL;
     }
 
-    // Child TableÀÇ Referencing Á¶°Ç °Ë»ç
+    // Child Tableì˜ Referencing ì¡°ê±´ ê²€ì‚¬
     if ( qdnForeignKey::haveToOpenBeforeCursor( aUPTEInfo->childConstraints,
                                                 sUPTE->updateColumnIDs,
                                                 aUPTEInfo->updateColumnCount )
@@ -5437,13 +5437,13 @@ qmoOneNonPlan::makeUPTE( qcStatement   * aStatement ,
     sUPTE->checkConstrList = aUPTEInfo->checkConstrList;
 
     //----------------------------------
-    // return into ¼³Á¤
+    // return into ì„¤ì •
     //----------------------------------
 
     sUPTE->returnInto = aUPTEInfo->returnInto;
 
     //----------------------------------
-    // Default Expr ¼³Á¤
+    // Default Expr ì„¤ì •
     //----------------------------------
 
     sUPTE->defaultExprTableRef    = aUPTEInfo->defaultExprTableRef;
@@ -5464,7 +5464,7 @@ qmoOneNonPlan::makeUPTE( qcStatement   * aStatement ,
                                                   & sUPTE->setColumnList )
               != IDE_SUCCESS );
 
-    // partitionº° where column list »ı¼º
+    // partitionë³„ where column list ìƒì„±
     if ( sUPTE->tableRef->partitionRef != NULL )
     {
         IDE_TEST( QC_QMP_MEM( aStatement )->alloc( sPartitionCount * ID_SIZEOF( smiColumnList* ),
@@ -5479,7 +5479,7 @@ qmoOneNonPlan::makeUPTE( qcStatement   * aStatement ,
               sPartitionRef != NULL;
               sPartitionRef  = sPartitionRef->next, i++ )
         {
-            /* PROJ-2464 hybrid partitioned table Áö¿ø */
+            /* PROJ-2464 hybrid partitioned table ì§€ì› */
             IDE_TEST( qdbCommon::makeWhereClauseColumnList( aStatement,
                                                             sPartitionRef->table,
                                                             &( sUPTE->wherePartColumnList[i] ) )
@@ -5514,14 +5514,14 @@ qmoOneNonPlan::makeUPTE( qcStatement   * aStatement ,
     }
 
     //----------------------------------------------------------------
-    // ¸¶¹«¸® ÀÛ¾÷
+    // ë§ˆë¬´ë¦¬ ì‘ì—…
     //----------------------------------------------------------------
 
-    //data ¿µ¿ªÀÇ Å©±â °è»ê
+    //data ì˜ì—­ì˜ í¬ê¸° ê³„ì‚°
     QC_SHARED_TMPLATE(aStatement)->tmplate.dataSize = sDataNodeOffset;
 
     //----------------------------------
-    // dependency Ã³¸® ¹× subqueryÀÇ Ã³¸®
+    // dependency ì²˜ë¦¬ ë° subqueryì˜ ì²˜ë¦¬
     //----------------------------------
 
     IDE_TEST( qmoDependency::setDependency( aStatement ,
@@ -5536,8 +5536,8 @@ qmoOneNonPlan::makeUPTE( qcStatement   * aStatement ,
                                             NULL )
               != IDE_SUCCESS );
 
-    // PROJ-2551 simple query ÃÖÀûÈ­
-    // simple insertÀÎ °æ¿ì fast execute¸¦ ¼öÇàÇÑ´Ù.
+    // PROJ-2551 simple query ìµœì í™”
+    // simple insertì¸ ê²½ìš° fast executeë¥¼ ìˆ˜í–‰í•œë‹¤.
     IDE_TEST( checkSimpleUPTE( aStatement, sUPTE )
               != IDE_SUCCESS );
 
@@ -5554,11 +5554,11 @@ qmoOneNonPlan::initDETE( qcStatement   * aStatement ,
 {
 /***********************************************************************
  *
- * Description : DETE ³ëµå¸¦ »ı¼ºÇÑ´Ù.
+ * Description : DETE ë…¸ë“œë¥¼ ìƒì„±í•œë‹¤.
  *
  * Implementation :
- *     + ÃÊ±âÈ­ ÀÛ¾÷
- *         - qmncDETEÀÇ ÇÒ´ç ¹× ÃÊ±âÈ­
+ *     + ì´ˆê¸°í™” ì‘ì—…
+ *         - qmncDETEì˜ í• ë‹¹ ë° ì´ˆê¸°í™”
  *
  ***********************************************************************/
 
@@ -5568,16 +5568,16 @@ qmoOneNonPlan::initDETE( qcStatement   * aStatement ,
     IDU_FIT_POINT_FATAL( "qmoOneNonPlan::initDETE::__FT__" );
 
     //----------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //----------------------------------
 
     IDE_DASSERT( aStatement != NULL );
 
     //----------------------------------------------------------------
-    // ÃÊ±âÈ­ ÀÛ¾÷
+    // ì´ˆê¸°í™” ì‘ì—…
     //----------------------------------------------------------------
 
-    //qmncSCANÀÇ ÇÒ´ç¹× ÃÊ±âÈ­
+    //qmncSCANì˜ í• ë‹¹ë° ì´ˆê¸°í™”
     IDE_TEST( QC_QMP_MEM( aStatement )->alloc( ID_SIZEOF( qmncDETE ),
                                                (void **)& sDETE )
               != IDE_SUCCESS );
@@ -5607,13 +5607,13 @@ qmoOneNonPlan::makeDETE( qcStatement   * aStatement ,
 {
 /***********************************************************************
  *
- * Description : DETE ³ëµå¸¦ »ı¼ºÇÑ´Ù.
+ * Description : DETE ë…¸ë“œë¥¼ ìƒì„±í•œë‹¤.
  *
  * Implementation :
- *     + ¸ŞÀÎ ÀÛ¾÷
- *     + ¸¶¹«¸® ÀÛ¾÷
- *         - data ¿µ¿ªÀÇ Å©±â °è»ê
- *         - dependencyÀÇ Ã³¸®
+ *     + ë©”ì¸ ì‘ì—…
+ *     + ë§ˆë¬´ë¦¬ ì‘ì—…
+ *         - data ì˜ì—­ì˜ í¬ê¸° ê³„ì‚°
+ *         - dependencyì˜ ì²˜ë¦¬
  *
  ***********************************************************************/
 
@@ -5627,7 +5627,7 @@ qmoOneNonPlan::makeDETE( qcStatement   * aStatement ,
     IDU_FIT_POINT_FATAL( "qmoOneNonPlan::makeDETE::__FT__" );
 
     //----------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //----------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -5635,7 +5635,7 @@ qmoOneNonPlan::makeDETE( qcStatement   * aStatement ,
     IDE_DASSERT( aChildPlan != NULL );
 
     //----------------------------------------------------------------
-    // ÃÊ±âÈ­ ÀÛ¾÷
+    // ì´ˆê¸°í™” ì‘ì—…
     //----------------------------------------------------------------
     aPlan->offset = aStatement->myPlan->sTmplate->tmplate.dataSize;
     sDataNodeOffset = idlOS::align8( aPlan->offset +
@@ -5644,7 +5644,7 @@ qmoOneNonPlan::makeDETE( qcStatement   * aStatement ,
     sDETE->plan.left = aChildPlan;
 
     //----------------------------------
-    // Flag ¼³Á¤
+    // Flag ì„¤ì •
     //----------------------------------
 
     sDETE->flag = QMN_PLAN_FLAG_CLEAR;
@@ -5652,15 +5652,15 @@ qmoOneNonPlan::makeDETE( qcStatement   * aStatement ,
 
     sDETE->plan.flag |= (aChildPlan->flag & QMN_PLAN_STORAGE_MASK);
 
-    //Leaf Node¿¡ tuple·Î ºÎÅÍ memory ÀÎÁö disk tableÀÎÁö¸¦ ¼¼ÆÃ
-    //from tupleÁ¤º¸
+    //Leaf Nodeì— tupleë¡œ ë¶€í„° memory ì¸ì§€ disk tableì¸ì§€ë¥¼ ì„¸íŒ…
+    //from tupleì •ë³´
     IDE_TEST( setTableTypeFromTuple( aStatement,
                                      aDETEInfo->deleteTableRef->table,
                                      &( sDETE->plan.flag ) )
               != IDE_SUCCESS );
 
     //----------------------------------
-    // Display Á¤º¸ ¼¼ÆÃ
+    // Display ì •ë³´ ì„¸íŒ…
     //----------------------------------
 
     QCP_SET_INIT_QMS_FROM( (&sFrom) );
@@ -5673,7 +5673,7 @@ qmoOneNonPlan::makeDETE( qcStatement   * aStatement ,
                  != IDE_SUCCESS );
 
     /* PROJ-2204 Join Update, Delete
-     * join deleteÀÓÀ» Ç¥½ÃÇÑ´Ù. */
+     * join deleteì„ì„ í‘œì‹œí•œë‹¤. */
     if ( aQuerySet->SFWGH->from->tableRef->view != NULL )
     {
         sDETE->flag &= ~QMNC_DETE_VIEW_MASK;
@@ -5685,21 +5685,21 @@ qmoOneNonPlan::makeDETE( qcStatement   * aStatement ,
     }
 
     //----------------------------------------------------------------
-    // ¸ŞÀÎ ÀÛ¾÷
+    // ë©”ì¸ ì‘ì—…
     //----------------------------------------------------------------
 
     //----------------------------------
-    // delete °ü·Ã Á¤º¸
+    // delete ê´€ë ¨ ì •ë³´
     //----------------------------------
 
-    // delete target table ¼³Á¤
+    // delete target table ì„¤ì •
     sDETE->tableRef = aDETEInfo->deleteTableRef;
 
-    // instead of trigger ¼³Á¤
+    // instead of trigger ì„¤ì •
     sDETE->insteadOfTrigger = aDETEInfo->insteadOfTrigger;
 
     //----------------------------------
-    // limit Á¤º¸ÀÇ ¼¼ÆÃ
+    // limit ì •ë³´ì˜ ì„¸íŒ…
     //----------------------------------
 
     sDETE->limit = aDETEInfo->limit;
@@ -5715,13 +5715,13 @@ qmoOneNonPlan::makeDETE( qcStatement   * aStatement ,
     }
 
     //----------------------------------
-    // check constraint ¼³Á¤
+    // check constraint ì„¤ì •
     //----------------------------------
 
     sDETE->childConstraints = aDETEInfo->childConstraints;
 
     //----------------------------------
-    // return into ¼³Á¤
+    // return into ì„¤ì •
     //----------------------------------
 
     sDETE->returnInto = aDETEInfo->returnInto;
@@ -5735,7 +5735,7 @@ qmoOneNonPlan::makeDETE( qcStatement   * aStatement ,
                                                     & sDETE->whereColumnList )
               != IDE_SUCCESS );
 
-    // partitionº° where column list »ı¼º
+    // partitionë³„ where column list ìƒì„±
     if ( sDETE->tableRef->partitionRef != NULL )
     {
         sPartitionCount = 0;
@@ -5754,7 +5754,7 @@ qmoOneNonPlan::makeDETE( qcStatement   * aStatement ,
               sPartitionRef != NULL;
               sPartitionRef  = sPartitionRef->next, i++ )
         {
-            /* PROJ-2464 hybrid partitioned table Áö¿ø */
+            /* PROJ-2464 hybrid partitioned table ì§€ì› */
             IDE_TEST( qdbCommon::makeWhereClauseColumnList( aStatement,
                                                             sPartitionRef->table,
                                                             &( sDETE->wherePartColumnList[i] ) )
@@ -5783,14 +5783,14 @@ qmoOneNonPlan::makeDETE( qcStatement   * aStatement ,
     }
 
     //----------------------------------------------------------------
-    // ¸¶¹«¸® ÀÛ¾÷
+    // ë§ˆë¬´ë¦¬ ì‘ì—…
     //----------------------------------------------------------------
 
-    //data ¿µ¿ªÀÇ Å©±â °è»ê
+    //data ì˜ì—­ì˜ í¬ê¸° ê³„ì‚°
     QC_SHARED_TMPLATE(aStatement)->tmplate.dataSize = sDataNodeOffset;
 
     //----------------------------------
-    // dependency Ã³¸® ¹× subqueryÀÇ Ã³¸®
+    // dependency ì²˜ë¦¬ ë° subqueryì˜ ì²˜ë¦¬
     //----------------------------------
 
     IDE_TEST( qmoDependency::setDependency( aStatement ,
@@ -5805,8 +5805,8 @@ qmoOneNonPlan::makeDETE( qcStatement   * aStatement ,
                                             NULL )
               != IDE_SUCCESS );
 
-    // PROJ-2551 simple query ÃÖÀûÈ­
-    // simple insertÀÎ °æ¿ì fast execute¸¦ ¼öÇàÇÑ´Ù.
+    // PROJ-2551 simple query ìµœì í™”
+    // simple insertì¸ ê²½ìš° fast executeë¥¼ ìˆ˜í–‰í•œë‹¤.
     IDE_TEST( checkSimpleDETE( aStatement, sDETE )
               != IDE_SUCCESS );
 
@@ -5823,11 +5823,11 @@ qmoOneNonPlan::initMOVE( qcStatement   * aStatement ,
 {
 /***********************************************************************
  *
- * Description : MOVE ³ëµå¸¦ »ı¼ºÇÑ´Ù.
+ * Description : MOVE ë…¸ë“œë¥¼ ìƒì„±í•œë‹¤.
  *
  * Implementation :
- *     + ÃÊ±âÈ­ ÀÛ¾÷
- *         - qmncMOVEÀÇ ÇÒ´ç ¹× ÃÊ±âÈ­
+ *     + ì´ˆê¸°í™” ì‘ì—…
+ *         - qmncMOVEì˜ í• ë‹¹ ë° ì´ˆê¸°í™”
  *
  ***********************************************************************/
 
@@ -5837,16 +5837,16 @@ qmoOneNonPlan::initMOVE( qcStatement   * aStatement ,
     IDU_FIT_POINT_FATAL( "qmoOneNonPlan::initMOVE::__FT__" );
 
     //----------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //----------------------------------
 
     IDE_DASSERT( aStatement != NULL );
 
     //----------------------------------------------------------------
-    // ÃÊ±âÈ­ ÀÛ¾÷
+    // ì´ˆê¸°í™” ì‘ì—…
     //----------------------------------------------------------------
 
-    //qmncSCANÀÇ ÇÒ´ç¹× ÃÊ±âÈ­
+    //qmncSCANì˜ í• ë‹¹ë° ì´ˆê¸°í™”
     IDE_TEST( QC_QMP_MEM( aStatement )->alloc( ID_SIZEOF( qmncMOVE ),
                                                (void **)& sMOVE )
               != IDE_SUCCESS );
@@ -5876,13 +5876,13 @@ qmoOneNonPlan::makeMOVE( qcStatement   * aStatement ,
 {
 /***********************************************************************
  *
- * Description : MOVE ³ëµå¸¦ »ı¼ºÇÑ´Ù.
+ * Description : MOVE ë…¸ë“œë¥¼ ìƒì„±í•œë‹¤.
  *
  * Implementation :
- *     + ¸ŞÀÎ ÀÛ¾÷
- *     + ¸¶¹«¸® ÀÛ¾÷
- *         - data ¿µ¿ªÀÇ Å©±â °è»ê
- *         - dependencyÀÇ Ã³¸®
+ *     + ë©”ì¸ ì‘ì—…
+ *     + ë§ˆë¬´ë¦¬ ì‘ì—…
+ *         - data ì˜ì—­ì˜ í¬ê¸° ê³„ì‚°
+ *         - dependencyì˜ ì²˜ë¦¬
  *
  ***********************************************************************/
 
@@ -5897,7 +5897,7 @@ qmoOneNonPlan::makeMOVE( qcStatement   * aStatement ,
     IDU_FIT_POINT_FATAL( "qmoOneNonPlan::makeMOVE::__FT__" );
 
     //----------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //----------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -5905,7 +5905,7 @@ qmoOneNonPlan::makeMOVE( qcStatement   * aStatement ,
     IDE_DASSERT( aChildPlan != NULL );
 
     //----------------------------------------------------------------
-    // ÃÊ±âÈ­ ÀÛ¾÷
+    // ì´ˆê¸°í™” ì‘ì—…
     //----------------------------------------------------------------
     aPlan->offset = aStatement->myPlan->sTmplate->tmplate.dataSize;
     sDataNodeOffset = idlOS::align8( aPlan->offset +
@@ -5914,7 +5914,7 @@ qmoOneNonPlan::makeMOVE( qcStatement   * aStatement ,
     sMOVE->plan.left = aChildPlan;
 
     //----------------------------------
-    // Flag ¼³Á¤
+    // Flag ì„¤ì •
     //----------------------------------
 
     sMOVE->flag = QMN_PLAN_FLAG_CLEAR;
@@ -5922,18 +5922,18 @@ qmoOneNonPlan::makeMOVE( qcStatement   * aStatement ,
 
     sMOVE->plan.flag |= (aChildPlan->flag & QMN_PLAN_STORAGE_MASK);
 
-    //Leaf Node¿¡ tuple·Î ºÎÅÍ memory ÀÎÁö disk tableÀÎÁö¸¦ ¼¼ÆÃ
-    //from tupleÁ¤º¸
+    //Leaf Nodeì— tupleë¡œ ë¶€í„° memory ì¸ì§€ disk tableì¸ì§€ë¥¼ ì„¸íŒ…
+    //from tupleì •ë³´
     IDE_TEST( setTableTypeFromTuple( aStatement,
                                      aQuerySet->SFWGH->from->tableRef->table,
                                      &( sMOVE->plan.flag ) )
               != IDE_SUCCESS );
 
     //----------------------------------
-    // Display Á¤º¸ ¼¼ÆÃ
+    // Display ì •ë³´ ì„¸íŒ…
     //----------------------------------
 
-    // tableRef¸¸ ÀÖÀ¸¸é µÊ
+    // tableRefë§Œ ìˆìœ¼ë©´ ë¨
     sFrom.tableRef = aMOVEInfo->targetTableRef;
 
     IDE_TEST( qmg::setDisplayInfo( & sFrom,
@@ -5943,31 +5943,31 @@ qmoOneNonPlan::makeMOVE( qcStatement   * aStatement ,
               != IDE_SUCCESS );
 
     //----------------------------------------------------------------
-    // ¸ŞÀÎ ÀÛ¾÷
+    // ë©”ì¸ ì‘ì—…
     //----------------------------------------------------------------
 
     //----------------------------------
-    // move °ü·Ã Á¤º¸
+    // move ê´€ë ¨ ì •ë³´
     //----------------------------------
 
-    // source table ¼³Á¤
+    // source table ì„¤ì •
     sMOVE->tableRef = aQuerySet->SFWGH->from->tableRef;
 
-    // target table ¼³Á¤
+    // target table ì„¤ì •
     sMOVE->targetTableRef = aMOVEInfo->targetTableRef;
 
-    // insert °ü·Ã ¼³Á¤
+    // insert ê´€ë ¨ ì„¤ì •
     sMOVE->columns        = aMOVEInfo->columns;
     sMOVE->values         = aMOVEInfo->values;
     sMOVE->valueIdx       = aMOVEInfo->valueIdx;
     sMOVE->canonizedTuple = aMOVEInfo->canonizedTuple;
     sMOVE->compressedTuple= aMOVEInfo->compressedTuple;
 
-    // sequence ¼³Á¤
+    // sequence ì„¤ì •
     sMOVE->nextValSeqs    = aMOVEInfo->nextValSeqs;
 
     //----------------------------------
-    // limit Á¤º¸ÀÇ ¼¼ÆÃ
+    // limit ì •ë³´ì˜ ì„¸íŒ…
     //----------------------------------
 
     sMOVE->limit = aMOVEInfo->limit;
@@ -5983,7 +5983,7 @@ qmoOneNonPlan::makeMOVE( qcStatement   * aStatement ,
     }
 
     //----------------------------------
-    // constraint ¼³Á¤
+    // constraint ì„¤ì •
     //----------------------------------
 
     sMOVE->parentConstraints = aMOVEInfo->parentConstraints;
@@ -5991,7 +5991,7 @@ qmoOneNonPlan::makeMOVE( qcStatement   * aStatement ,
     sMOVE->checkConstrList   = aMOVEInfo->checkConstrList;
 
     //----------------------------------
-    // Default Expr ¼³Á¤
+    // Default Expr ì„¤ì •
     //----------------------------------
 
     sMOVE->defaultExprTableRef = aMOVEInfo->defaultExprTableRef;
@@ -6006,7 +6006,7 @@ qmoOneNonPlan::makeMOVE( qcStatement   * aStatement ,
                                                     & sMOVE->whereColumnList )
               != IDE_SUCCESS );
 
-    // partitionº° where column list »ı¼º
+    // partitionë³„ where column list ìƒì„±
     if ( sMOVE->tableRef->partitionRef != NULL )
     {
         sPartitionCount = 0;
@@ -6025,7 +6025,7 @@ qmoOneNonPlan::makeMOVE( qcStatement   * aStatement ,
               sPartitionRef != NULL;
               sPartitionRef  = sPartitionRef->next, i++ )
         {
-            /* PROJ-2464 hybrid partitioned table Áö¿ø */
+            /* PROJ-2464 hybrid partitioned table ì§€ì› */
             IDE_TEST( qdbCommon::makeWhereClauseColumnList( aStatement,
                                                             sPartitionRef->table,
                                                             &( sMOVE->wherePartColumnList[i] ) )
@@ -6054,14 +6054,14 @@ qmoOneNonPlan::makeMOVE( qcStatement   * aStatement ,
     }
 
     //----------------------------------------------------------------
-    // ¸¶¹«¸® ÀÛ¾÷
+    // ë§ˆë¬´ë¦¬ ì‘ì—…
     //----------------------------------------------------------------
 
-    //data ¿µ¿ªÀÇ Å©±â °è»ê
+    //data ì˜ì—­ì˜ í¬ê¸° ê³„ì‚°
     QC_SHARED_TMPLATE(aStatement)->tmplate.dataSize = sDataNodeOffset;
 
     //----------------------------------
-    // dependency Ã³¸® ¹× subqueryÀÇ Ã³¸®
+    // dependency ì²˜ë¦¬ ë° subqueryì˜ ì²˜ë¦¬
     //----------------------------------
 
     IDE_TEST( qmoDependency::setDependency( aStatement ,
@@ -6090,10 +6090,10 @@ qmoOneNonPlan::setDirectionInfo( UInt               * aFlag ,
 {
 /***********************************************************************
  *
- * Description : index¿Í preserved order¿¡ µû¸¥ traverse directionÀ»
- *               ¼³Á¤ÇÑ´Ù.
- *               preserved order°¡ not definedÀÎ °æ¿ì full scanÀ»
- *               Çã¿ëÇÏ´Â flag¸¦ ¼¼ÆÃÇÑ´Ù.
+ * Description : indexì™€ preserved orderì— ë”°ë¥¸ traverse directionì„
+ *               ì„¤ì •í•œë‹¤.
+ *               preserved orderê°€ not definedì¸ ê²½ìš° full scanì„
+ *               í—ˆìš©í•˜ëŠ” flagë¥¼ ì„¸íŒ…í•œë‹¤.
  *
  *
  * Implementation :
@@ -6103,12 +6103,12 @@ qmoOneNonPlan::setDirectionInfo( UInt               * aFlag ,
     IDU_FIT_POINT_FATAL( "qmoOneNonPlan::setDirectionInfo::__FT__" );
 
     //----------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //----------------------------------
     IDE_DASSERT( aFlag            != NULL );
     IDE_DASSERT( aIndex           != NULL );
 
-    // HierarchyÀÇ °æ¿ìÃ³·³ preserved order°¡ Á¸ÀçÇÏÁö ¾ÊÀ» °æ¿ì
+    // Hierarchyì˜ ê²½ìš°ì²˜ëŸ¼ preserved orderê°€ ì¡´ì¬í•˜ì§€ ì•Šì„ ê²½ìš°
     if ( aPreservedOrder == NULL )
     {
         *aFlag &= ~QMNC_SCAN_TRAVERSE_MASK;
@@ -6122,7 +6122,7 @@ qmoOneNonPlan::setDirectionInfo( UInt               * aFlag ,
         if ( (aIndex->keyColsFlag[0] & SMI_COLUMN_ORDER_MASK )
              == SMI_COLUMN_ORDER_ASCENDING )
         {
-            // indexÀÇ order°¡ ascendingÀÏ¶§
+            // indexì˜ orderê°€ ascendingì¼ë•Œ
             switch ( aPreservedOrder->direction )
             {
                 case QMG_DIRECTION_NOT_DEFINED:
@@ -6146,7 +6146,7 @@ qmoOneNonPlan::setDirectionInfo( UInt               * aFlag ,
         }
         else
         {
-            // indexÀÇ order°¡ descendingÀÏ¶§
+            // indexì˜ orderê°€ descendingì¼ë•Œ
             switch ( aPreservedOrder->direction )
             {
                 case QMG_DIRECTION_NOT_DEFINED:
@@ -6180,7 +6180,7 @@ qmoOneNonPlan::setTableTypeFromTuple( qcStatement   * aStatement ,
 {
 /***********************************************************************
  *
- * Description : ÇØ´ç Tuple·Î ºÎÅÍ Storage ¼Ó¼ºÀ» Ã£¾Æ ¼¼ÆÃÇÑ´Ù.
+ * Description : í•´ë‹¹ Tupleë¡œ ë¶€í„° Storage ì†ì„±ì„ ì°¾ì•„ ì„¸íŒ…í•œë‹¤.
  *
  *
  * Implementation :
@@ -6190,7 +6190,7 @@ qmoOneNonPlan::setTableTypeFromTuple( qcStatement   * aStatement ,
     IDU_FIT_POINT_FATAL( "qmoOneNonPlan::setTableTypeFromTuple::__FT__" );
 
     //----------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //----------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -6219,7 +6219,7 @@ qmoOneNonPlan::isMemoryTableFromTuple( qcStatement   * aStatement ,
 {
 /***********************************************************************
  *
- * Description : ÇØ´ç Tuple·Î ºÎÅÍ Storage°¡ ¸Ş¸ğ¸® Å×ÀÌºíÀÎÁö Ã£´Â´Ù
+ * Description : í•´ë‹¹ Tupleë¡œ ë¶€í„° Storageê°€ ë©”ëª¨ë¦¬ í…Œì´ë¸”ì¸ì§€ ì°¾ëŠ”ë‹¤
  *
  *
  * Implementation :
@@ -6227,7 +6227,7 @@ qmoOneNonPlan::isMemoryTableFromTuple( qcStatement   * aStatement ,
  ***********************************************************************/
 
     //----------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //----------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -6256,30 +6256,30 @@ qmoOneNonPlan::classifyFixedNVariable( qcStatement    * aStatement ,
 {
 /***********************************************************************
  *
- * Description : FixKey(range ,filter) ¿Í VarKey(range ,filter)¸¦ ±¸ºĞÇÑ´Ù
+ * Description : FixKey(range ,filter) ì™€ VarKey(range ,filter)ë¥¼ êµ¬ë¶„í•œë‹¤
  *
  *
  * Implementation :
- *    - fixed , variableÀÇ ±¸ºĞ
- *        - ÀÌ´Â qmoPredicateÀÇ flag·Î ±¸ºĞÀ» ÇÑ´Ù.
- *    - qtcNode·ÎÀÇ º¯È¯
- *        - qmoPredicate -> qtcNode·ÎÀÇ º¯È¯
- *        - DNF ÇüÅÂÀÇ ³ëµå º¯È¯
+ *    - fixed , variableì˜ êµ¬ë¶„
+ *        - ì´ëŠ” qmoPredicateì˜ flagë¡œ êµ¬ë¶„ì„ í•œë‹¤.
+ *    - qtcNodeë¡œì˜ ë³€í™˜
+ *        - qmoPredicate -> qtcNodeë¡œì˜ ë³€í™˜
+ *        - DNF í˜•íƒœì˜ ë…¸ë“œ ë³€í™˜
  *
- *    - fixed ÀÎ°æ¿ì
- *        - º¯È­µÈ DNF ³ëµå ¼¼ÆÃ
- *        - display¸¦ À§ÇÑ fixXXX4Print¿¡ CNFÇüÅÂÀÇ qtcNode ¼¼ÆÃ
- *    - variable ÀÎ°æ¿ì
- *        - º¯È­µÈ DNF ³ëµå ¼¼ÆÃ
- *        - filter·Î »ç¿ëµÉ °æ¿ì¸¦ À§ÇÑ CNFÇüÅÂÀÇ qtcNode ¼¼ÆÃ
+ *    - fixed ì¸ê²½ìš°
+ *        - ë³€í™”ëœ DNF ë…¸ë“œ ì„¸íŒ…
+ *        - displayë¥¼ ìœ„í•œ fixXXX4Printì— CNFí˜•íƒœì˜ qtcNode ì„¸íŒ…
+ *    - variable ì¸ê²½ìš°
+ *        - ë³€í™”ëœ DNF ë…¸ë“œ ì„¸íŒ…
+ *        - filterë¡œ ì‚¬ìš©ë  ê²½ìš°ë¥¼ ìœ„í•œ CNFí˜•íƒœì˜ qtcNode ì„¸íŒ…
  *
  *    PROJ-1436 SQL Plan Cache
- *    proj-1436ÀÌÀü¿¡´Â fixed key¿¡ ´ëÇÏ¿© prepare ½ÃÁ¡¿¡¼­ ¹Ì¸®
- *    smiRange¸¦ »ı¼ºÇÏ¿´À¸³ª ÀÌ´Â plan cache¿¡ ÀÇÇØ »ı¼ºµÈ
- *    smiRange¸¦ °øÀ¯ÇÏ°ÔµÇ¾î variable column¿¡ ´ëÇÏ¿© smiValue.value¸¦
- *    ÂüÁ¶ÇÏ¹Ç·Î ÀÚÄ© µ¿½Ã¼º ¹®Á¦°¡ ¹ß»ıÇÒ ¼ö ÀÖ´Ù. ±×·¯¹Ç·Î
- *    fixed keyµµ variable key¿Í ¸¶Âù°¡Áö·Î execute ½ÃÁ¡¿¡¼­
- *    smiRange¸¦ »ı¼ºÇÏ¿© ¿À¿°ÀÇ °¡´É¼ºÀÌ ¾øµµ·Ï ÇÑ´Ù.
+ *    proj-1436ì´ì „ì—ëŠ” fixed keyì— ëŒ€í•˜ì—¬ prepare ì‹œì ì—ì„œ ë¯¸ë¦¬
+ *    smiRangeë¥¼ ìƒì„±í•˜ì˜€ìœ¼ë‚˜ ì´ëŠ” plan cacheì— ì˜í•´ ìƒì„±ëœ
+ *    smiRangeë¥¼ ê³µìœ í•˜ê²Œë˜ì–´ variable columnì— ëŒ€í•˜ì—¬ smiValue.valueë¥¼
+ *    ì°¸ì¡°í•˜ë¯€ë¡œ ìì¹« ë™ì‹œì„± ë¬¸ì œê°€ ë°œìƒí•  ìˆ˜ ìˆë‹¤. ê·¸ëŸ¬ë¯€ë¡œ
+ *    fixed keyë„ variable keyì™€ ë§ˆì°¬ê°€ì§€ë¡œ execute ì‹œì ì—ì„œ
+ *    smiRangeë¥¼ ìƒì„±í•˜ì—¬ ì˜¤ì—¼ì˜ ê°€ëŠ¥ì„±ì´ ì—†ë„ë¡ í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -6292,7 +6292,7 @@ qmoOneNonPlan::classifyFixedNVariable( qcStatement    * aStatement ,
 
     IDE_DASSERT( *aKeyPred != NULL );
 
-    // qtcNode·ÎÀÇ º¯È¯
+    // qtcNodeë¡œì˜ ë³€í™˜
     IDE_TEST( qmoPred::linkPredicate( aStatement ,
                                       * aKeyPred ,
                                       & sKey )
@@ -6305,10 +6305,10 @@ qmoOneNonPlan::classifyFixedNVariable( qcStatement    * aStatement ,
     if ( sKey != NULL )
     {
         // To Fix PR-9481
-        // CNF·Î ±¸¼ºµÈ Key Range PredicateÀ» DNF normalizeÇÒ °æ¿ì
-        // ¾öÃ»³ª°Ô ¸¹Àº Node·Î º¯È¯µÉ ¼ö ÀÖ´Ù.
-        // ÀÌ¸¦ °Ë»çÇÏ¿© Áö³ªÄ¡°Ô ¸¹Àº º¯È­°¡ ÇÊ¿äÇÑ °æ¿ì¿¡´Â
-        // Default Key Range¸¸À» »ı¼ºÇÏ°Ô ÇÑ´Ù.
+        // CNFë¡œ êµ¬ì„±ëœ Key Range Predicateì„ DNF normalizeí•  ê²½ìš°
+        // ì—„ì²­ë‚˜ê²Œ ë§ì€ Nodeë¡œ ë³€í™˜ë  ìˆ˜ ìˆë‹¤.
+        // ì´ë¥¼ ê²€ì‚¬í•˜ì—¬ ì§€ë‚˜ì¹˜ê²Œ ë§ì€ ë³€í™”ê°€ í•„ìš”í•œ ê²½ìš°ì—ëŠ”
+        // Default Key Rangeë§Œì„ ìƒì„±í•˜ê²Œ í•œë‹¤.
         IDE_TEST( qmoNormalForm::estimateDNF( sKey, & sEstDNFCnt )
                   != IDE_SUCCESS );
 
@@ -6318,14 +6318,14 @@ qmoOneNonPlan::classifyFixedNVariable( qcStatement    * aStatement ,
         }
         else
         {
-            // DNFÇüÅÂ·Î º¯È¯
+            // DNFí˜•íƒœë¡œ ë³€í™˜
             IDE_TEST( qmoNormalForm::normalizeDNF( aStatement ,
                                                    sKey ,
                                                    & sDNFKey )
                       != IDE_SUCCESS );
         }
 
-        // environmentÀÇ ±â·Ï
+        // environmentì˜ ê¸°ë¡
         qcgPlan::registerPlanProperty( aStatement,
                                        PLAN_PROPERTY_NORMAL_FORM_MAXIMUM );
     }
@@ -6337,8 +6337,8 @@ qmoOneNonPlan::classifyFixedNVariable( qcStatement    * aStatement ,
     if ( sDNFKey == NULL )
     {
         // To Fix PR-9481
-        // Default Key Range¸¦ »ı¼ºÇÏ°í Key Range PredicateÀº
-        // Filter°¡ µÇ¾î¾ß ÇÑ´Ù.
+        // Default Key Rangeë¥¼ ìƒì„±í•˜ê³  Key Range Predicateì€
+        // Filterê°€ ë˜ì–´ì•¼ í•œë‹¤.
 
         if ( *aFilter == NULL )
         {
@@ -6354,9 +6354,9 @@ qmoOneNonPlan::classifyFixedNVariable( qcStatement    * aStatement ,
         }
 
         // fix BUG-10671
-        // keyRange¸¦ »ı¼ºÇÒ ¼ö ¾ø´Â °æ¿ì,
-        // keyRangeÀÇ predicateµéÀ» filter¿¬°á¸®½ºÆ®·Î ¿Å±â°í
-        // keyRange´Â NULL·Î ¼³Á¤ÇØ¾ß ÇÔ.
+        // keyRangeë¥¼ ìƒì„±í•  ìˆ˜ ì—†ëŠ” ê²½ìš°,
+        // keyRangeì˜ predicateë“¤ì„ filterì—°ê²°ë¦¬ìŠ¤íŠ¸ë¡œ ì˜®ê¸°ê³ 
+        // keyRangeëŠ” NULLë¡œ ì„¤ì •í•´ì•¼ í•¨.
         *aKeyPred = NULL;
 
         *aFixKey = NULL;
@@ -6367,29 +6367,29 @@ qmoOneNonPlan::classifyFixedNVariable( qcStatement    * aStatement ,
     }
     else
     {
-        // FixedÀÎÁö , variableÀÎÁö flag¸¦ º¸°í ÆÇ´ÜÇÑ´Ù.
-        // ÀÌ´Â Predicate °ü¸®ÀÚ·Î ºÎÅÍ ¸ğµÎ Ã³¸®µÇ¾î Ã¹ qmoPredicate.flag¿¡
-        // ÃëÇÕµÇ¾î ¼¼ÆÃµÈ´Ù.
+        // Fixedì¸ì§€ , variableì¸ì§€ flagë¥¼ ë³´ê³  íŒë‹¨í•œë‹¤.
+        // ì´ëŠ” Predicate ê´€ë¦¬ìë¡œ ë¶€í„° ëª¨ë‘ ì²˜ë¦¬ë˜ì–´ ì²« qmoPredicate.flagì—
+        // ì·¨í•©ë˜ì–´ ì„¸íŒ…ëœë‹¤.
         if ( ( (*aKeyPred)->flag & QMO_PRED_VALUE_MASK ) == QMO_PRED_FIXED  )
         {
-            // Fixed Key Range/FilterÀÎ °æ¿ì
+            // Fixed Key Range/Filterì¸ ê²½ìš°
 
             *aFixKey = sDNFKey;
             *aVarKey = NULL;
 
-            // Fixed Key Ãâ·ÂÀ» À§ÇÑ ³ëµåÁ¤º¸¸¦ ÀúÀåÇÑ´Ù.
+            // Fixed Key ì¶œë ¥ì„ ìœ„í•œ ë…¸ë“œì •ë³´ë¥¼ ì €ì¥í•œë‹¤.
             *aFixKey4Print = sKey;
             *aVarKey4Filter = NULL;
         }
         else
         {
-            // Variable Key Range/FilterÀÎ °æ¿ì
+            // Variable Key Range/Filterì¸ ê²½ìš°
 
             *aFixKey = NULL;
             *aVarKey = sDNFKey;
 
             *aFixKey4Print = NULL;
-            // Range±¸¼ºÀ» ½ÇÆĞÇÒ °æ¿ì »ç¿ëÇÒ FilterÁ¤º¸¸¦ ÀúÀåÇÑ´Ù.
+            // Rangeêµ¬ì„±ì„ ì‹¤íŒ¨í•  ê²½ìš° ì‚¬ìš©í•  Filterì •ë³´ë¥¼ ì €ì¥í•œë‹¤.
             *aVarKey4Filter = sKey;
         }
     }
@@ -6425,18 +6425,18 @@ IDE_RC qmoOneNonPlan::processPredicate( qcStatement     * aStatement,
 {
 /***********************************************************************
  *
- * Description : ÁÖ¾îÁø Á¤º¸·Î ºÎÅÍ Predicate Ã³¸®¸¦ ÇÑ´Ù.
+ * Description : ì£¼ì–´ì§„ ì •ë³´ë¡œ ë¶€í„° Predicate ì²˜ë¦¬ë¥¼ í•œë‹¤.
  *
  *
  * Implementation :
  *
  ***********************************************************************/
 
-    // 1. constant filter¸¦ Ã³¸®ÇÑ´Ù.
-    // 2. Predicate¸¦ indexÁ¤º¸¿Í ÇÔ°è keyRange , KeyFilter , filter ,
-    //    lob filter, subquery filter·Î ºĞ·ù ÇÑ´Ù.
-    // 3. keyRange ¿Í keyFilter´Â ´Ù½Ã fixed¿Í variable·Î ±¸ºĞÀ» ÇÑ´Ù.
-    // 4. ÀÌ¸¦ qtcNode ¶Ç´Â smiRangeµî ¸Â´Â ÀÚ·á ±¸Á¶·Î º¯È¯ ÇÑ´Ù.
+    // 1. constant filterë¥¼ ì²˜ë¦¬í•œë‹¤.
+    // 2. Predicateë¥¼ indexì •ë³´ì™€ í•¨ê³„ keyRange , KeyFilter , filter ,
+    //    lob filter, subquery filterë¡œ ë¶„ë¥˜ í•œë‹¤.
+    // 3. keyRange ì™€ keyFilterëŠ” ë‹¤ì‹œ fixedì™€ variableë¡œ êµ¬ë¶„ì„ í•œë‹¤.
+    // 4. ì´ë¥¼ qtcNode ë˜ëŠ” smiRangeë“± ë§ëŠ” ìë£Œ êµ¬ì¡°ë¡œ ë³€í™˜ í•œë‹¤.
 
     qmoPredicate      * sKeyRangePred        = NULL;
     qmoPredicate      * sKeyFilterPred       = NULL;
@@ -6454,7 +6454,7 @@ IDE_RC qmoOneNonPlan::processPredicate( qcStatement     * aStatement,
 
     if ( aConstantPredicate != NULL )
     {
-        // constant PredicateÀÇ Ã³¸®
+        // constant Predicateì˜ ì²˜ë¦¬
         IDE_TEST( qmoPred::linkPredicate( aStatement,
                                           aConstantPredicate,
                                           & sNode )
@@ -6491,7 +6491,7 @@ IDE_RC qmoOneNonPlan::processPredicate( qcStatement     * aStatement,
         *aRidRange = NULL;
     }
 
-    // qmoPredicate index·Î ºÎÅÍ Predicate ºĞ·ù
+    // qmoPredicate indexë¡œ ë¶€í„° Predicate ë¶„ë¥˜
     sIsMemory = isMemoryTableFromTuple( aStatement , aTupleRowID );
 
     if ( aPredicate != NULL )
@@ -6518,7 +6518,7 @@ IDE_RC qmoOneNonPlan::processPredicate( qcStatement     * aStatement,
     }
 
 
-    // fixed , variable±¸ºĞ
+    // fixed , variableêµ¬ë¶„
     if ( sKeyRangePred != NULL )
     {
 
@@ -6532,7 +6532,7 @@ IDE_RC qmoOneNonPlan::processPredicate( qcStatement     * aStatement,
             *aInSubQueryKeyRange = ID_FALSE;
         }
 
-        //keyrangeÀÇ ±¸ºĞ
+        //keyrangeì˜ êµ¬ë¶„
         IDE_TEST( classifyFixedNVariable( aStatement,
                                           aQuerySet,
                                           & sKeyRangePred,
@@ -6555,7 +6555,7 @@ IDE_RC qmoOneNonPlan::processPredicate( qcStatement     * aStatement,
         if ( sKeyRangePred != NULL )
         {
             //bug-7165
-            //variable key rangeÀÏ¶§´Â variable key filter¸¸ »ı¼ºÇÑ´Ù.
+            //variable key rangeì¼ë•ŒëŠ” variable key filterë§Œ ìƒì„±í•œë‹¤.
             if ( ( sKeyRangePred->flag & QMO_PRED_VALUE_MASK )
                  == QMO_PRED_VARIABLE )
             {
@@ -6567,7 +6567,7 @@ IDE_RC qmoOneNonPlan::processPredicate( qcStatement     * aStatement,
                 //nothing to do
             }
 
-            //keyFilterÀÇ ±¸ºĞ
+            //keyFilterì˜ êµ¬ë¶„
             IDE_TEST( classifyFixedNVariable( aStatement,
                                               aQuerySet,
                                               & sKeyFilterPred,
@@ -6581,17 +6581,17 @@ IDE_RC qmoOneNonPlan::processPredicate( qcStatement     * aStatement,
         else
         {
             //nothing to do
-            //key filter¸¸ Á¸ÀçÇÏ´Â °æ¿ì
+            //key filterë§Œ ì¡´ì¬í•˜ëŠ” ê²½ìš°
 
             if ( sFilter == NULL )
             {
-                // predicate ºĞ·ù½Ã, keyRange ¾øÀÌ keyFilter¸¸ ºĞ·ùµÈ °æ¿ì
+                // predicate ë¶„ë¥˜ì‹œ, keyRange ì—†ì´ keyFilterë§Œ ë¶„ë¥˜ëœ ê²½ìš°
                 IDE_DASSERT(0);
             }
             else
             {
-                // keyRange°¡ filter·Î ºĞ·ùµÈ °æ¿ì
-                // (keyRange»ı¼º ¸Ş¸ğ¸® Å©±â Á¦ÇÑÀ¸·Î ÀÎÇØ)
+                // keyRangeê°€ filterë¡œ ë¶„ë¥˜ëœ ê²½ìš°
+                // (keyRangeìƒì„± ë©”ëª¨ë¦¬ í¬ê¸° ì œí•œìœ¼ë¡œ ì¸í•´)
                 for ( sLastFilter        = sFilter;
                       sLastFilter->next != NULL;
                       sLastFilter        = sLastFilter->next ) ;
@@ -6615,7 +6615,7 @@ IDE_RC qmoOneNonPlan::processPredicate( qcStatement     * aStatement,
 
     if ( sFilter != NULL )
     {
-        // filterÀÇ Ã³¸®
+        // filterì˜ ì²˜ë¦¬
         IDE_TEST( qmoPred::linkFilterPredicate( aStatement ,
                                                 sFilter ,
                                                 & sNode )
@@ -6641,7 +6641,7 @@ IDE_RC qmoOneNonPlan::processPredicate( qcStatement     * aStatement,
     {
         IDE_FT_ASSERT( aLobFilter != NULL );
 
-        // lobFilterÀÇ Ã³¸®
+        // lobFilterì˜ ì²˜ë¦¬
         IDE_TEST( qmoPred::linkFilterPredicate( aStatement ,
                                                 sLobFilter ,
                                                 aLobFilter)
@@ -6666,7 +6666,7 @@ IDE_RC qmoOneNonPlan::processPredicate( qcStatement     * aStatement,
 
     if ( sSubqueryFilter != NULL )
     {
-        // subqueryFilterÀÇ Ã³¸®
+        // subqueryFilterì˜ ì²˜ë¦¬
         IDE_TEST( qmoPred::linkFilterPredicate( aStatement ,
                                                 sSubqueryFilter ,
                                                 & sNode )
@@ -6683,7 +6683,7 @@ IDE_RC qmoOneNonPlan::processPredicate( qcStatement     * aStatement,
 
         IDE_FT_ASSERT( aSubqueryFilter != NULL );
 
-        // BUG-38971 subQuery filter ¸¦ Á¤·ÄÇÒ ÇÊ¿ä°¡ ÀÖ½À´Ï´Ù.
+        // BUG-38971 subQuery filter ë¥¼ ì •ë ¬í•  í•„ìš”ê°€ ìˆìŠµë‹ˆë‹¤.
         if ( ( sOptimizedNode->node.lflag & MTC_NODE_OPERATOR_MASK )
              == MTC_NODE_OPERATOR_OR )
         {
@@ -6783,12 +6783,12 @@ qmoOneNonPlan::checkSimplePROJ( qcStatement * aStatement,
 {
 /***********************************************************************
  *
- * Description : simple target ÄÃ·³ÀÎÁö °Ë»çÇÑ´Ù.
+ * Description : simple target ì»¬ëŸ¼ì¸ì§€ ê²€ì‚¬í•œë‹¤.
  *
  * Implementation :
- *     - Á¤¼öÇü°ú ¹®ÀÚÇü Å¸ÀÔ¸¸ °¡´ÉÇÏ´Ù.
- *     - ¼ø¼öÄÃ·³°ú »ó¼ö¸¸ °¡´ÉÇÏ´Ù.
- *     - limitÀÌ ¾ø¾î¾ß ÇÑ´Ù.
+ *     - ì •ìˆ˜í˜•ê³¼ ë¬¸ìí˜• íƒ€ì…ë§Œ ê°€ëŠ¥í•˜ë‹¤.
+ *     - ìˆœìˆ˜ì»¬ëŸ¼ê³¼ ìƒìˆ˜ë§Œ ê°€ëŠ¥í•˜ë‹¤.
+ *     - limitì´ ì—†ì–´ì•¼ í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -6810,7 +6810,7 @@ qmoOneNonPlan::checkSimplePROJ( qcStatement * aStatement,
     IDE_TEST_CONT( qciMisc::checkExecFast( aStatement ) == ID_FALSE,
                    NORMAL_EXIT );
 
-    // loop°¡ ¾ø¾î¾ß ÇÑ´Ù.
+    // loopê°€ ì—†ì–´ì•¼ í•œë‹¤.
     if ( sPROJ->loopNode != NULL )
     {
         IDE_CONT( NORMAL_EXIT );
@@ -6820,7 +6820,7 @@ qmoOneNonPlan::checkSimplePROJ( qcStatement * aStatement,
         // Nothing to do.
     }
 
-    // scan limit Àû¿ëµÈ »ó¼ö limit¸¸ °¡´É
+    // scan limit ì ìš©ëœ ìƒìˆ˜ limitë§Œ ê°€ëŠ¥
     if ( sPROJ->limit != NULL )
     {
         if ( ( sPROJ->limit->start.constant != 1 ) ||
@@ -6854,15 +6854,15 @@ qmoOneNonPlan::checkSimplePROJ( qcStatement * aStatement,
 
     sIsSimple = ID_TRUE;
 
-    // simple targetÀÎ °æ¿ì
+    // simple targetì¸ ê²½ìš°
     for ( sTarget  = sPROJ->myTarget, i = 0;
           sTarget != NULL;
           sTarget  = sTarget->next, i++ )
     {
-        // target columnÀÌ ¼ø¼öÄÃ·³ÀÌ°Å³ª »ó¼öÀÌ´Ù.
+        // target columnì´ ìˆœìˆ˜ì»¬ëŸ¼ì´ê±°ë‚˜ ìƒìˆ˜ì´ë‹¤.
         sColumn = QTC_STMT_COLUMN( aStatement, sTarget->targetColumn );
 
-        // Á¤¼öÇü°ú ¹®ÀÚÇü¸¸ °¡´ÉÇÏ´Ù.
+        // ì •ìˆ˜í˜•ê³¼ ë¬¸ìí˜•ë§Œ ê°€ëŠ¥í•˜ë‹¤.
         if ( ( sColumn->module->id == MTD_SMALLINT_ID ) ||
              ( sColumn->module->id == MTD_BIGINT_ID ) ||
              ( sColumn->module->id == MTD_INTEGER_ID ) ||
@@ -6888,7 +6888,7 @@ qmoOneNonPlan::checkSimplePROJ( qcStatement * aStatement,
 
         if ( QTC_IS_COLUMN( aStatement, sTarget->targetColumn ) == ID_TRUE )
         {
-            // ¾ĞÃàÄÃ·³Àº ¾ÈµÈ´Ù.
+            // ì••ì¶•ì»¬ëŸ¼ì€ ì•ˆëœë‹¤.
             if ( ( sColumn->column.flag & SMI_COLUMN_COMPRESSION_MASK )
                  == SMI_COLUMN_COMPRESSION_TRUE )
             {
@@ -6992,15 +6992,15 @@ qmoOneNonPlan::checkSimpleSCAN( qcStatement  * aStatement,
 {
 /***********************************************************************
  *
- * Description : simple scan ³ëµåÀÎÁö °Ë»çÇÑ´Ù.
+ * Description : simple scan ë…¸ë“œì¸ì§€ ê²€ì‚¬í•œë‹¤.
  *
  * Implementation :
- *     - Á¤¼öÇü°ú ¹®ÀÚÇü Å¸ÀÔ¸¸ °¡´ÉÇÏ´Ù.
- *     - »ó¼ö¿Í È£½ºÆ® º¯¼ö¸¸ °¡´ÉÇÏ´Ù.
- *     - fixed key range¿Í variable key range¸¸ °¡´ÉÇÏ´Ù.
- *     - full scanÀÌ³ª index full scan¸¸ °¡´ÉÇÏ´Ù.
- *     - index key¸¦ ¸ğµÎ »ç¿ëÇÏÁö ¾Ê¾Æµµ °¡´ÉÇÏ´Ù.
- *     - limitÀÌ ¾ø¾î¾ß ÇÑ´Ù.
+ *     - ì •ìˆ˜í˜•ê³¼ ë¬¸ìí˜• íƒ€ì…ë§Œ ê°€ëŠ¥í•˜ë‹¤.
+ *     - ìƒìˆ˜ì™€ í˜¸ìŠ¤íŠ¸ ë³€ìˆ˜ë§Œ ê°€ëŠ¥í•˜ë‹¤.
+ *     - fixed key rangeì™€ variable key rangeë§Œ ê°€ëŠ¥í•˜ë‹¤.
+ *     - full scanì´ë‚˜ index full scanë§Œ ê°€ëŠ¥í•˜ë‹¤.
+ *     - index keyë¥¼ ëª¨ë‘ ì‚¬ìš©í•˜ì§€ ì•Šì•„ë„ ê°€ëŠ¥í•˜ë‹¤.
+ *     - limitì´ ì—†ì–´ì•¼ í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -7024,8 +7024,8 @@ qmoOneNonPlan::checkSimpleSCAN( qcStatement  * aStatement,
     IDE_TEST_CONT( qciMisc::checkExecFast( aStatement ) == ID_FALSE,
                    NORMAL_EXIT );
 
-    // limitÀÌ ¾ø¾î¾ß ÇÑ´Ù.
-    // non-partitioned memory table¸¸ °¡´É
+    // limitì´ ì—†ì–´ì•¼ í•œë‹¤.
+    // non-partitioned memory tableë§Œ ê°€ëŠ¥
     if ( ( sSCAN->tableRef->remoteTable != NULL ) ||
          ( sSCAN->tableRef->tableInfo->tablePartitionType
            == QCM_PARTITIONED_TABLE ) ||
@@ -7043,7 +7043,7 @@ qmoOneNonPlan::checkSimpleSCAN( qcStatement  * aStatement,
         // Nothing to do.
     }
 
-    // »ó¼ö limit¸¸ °¡´É
+    // ìƒìˆ˜ limitë§Œ ê°€ëŠ¥
     if ( sSCAN->limit != NULL )
     {
         if ( ( sSCAN->limit->start.constant == QMS_LIMIT_UNKNOWN ) ||
@@ -7064,14 +7064,14 @@ qmoOneNonPlan::checkSimpleSCAN( qcStatement  * aStatement,
         // Nothing to do.
     }
 
-    // simple scanÀÌ ¾Æ´Ñ °æ¿ì
+    // simple scanì´ ì•„ë‹Œ ê²½ìš°
     if ( ( sSCAN->method.fixKeyFilter   != NULL ) ||
          ( sSCAN->method.varKeyFilter   != NULL ) ||
          ( sSCAN->method.constantFilter != NULL ) ||
          ( sSCAN->method.filter         != NULL ) ||
          ( sSCAN->method.subqueryFilter != NULL ) ||
          ( sSCAN->nnfFilter             != NULL ) ||
-         /* BUG-45312 Simple Query ¿¡¼­ Index°¡ ÀÖÀ» °æ¿ì MIN, MAX°ª ¿À·ù */
+         /* BUG-45312 Simple Query ì—ì„œ Indexê°€ ìˆì„ ê²½ìš° MIN, MAXê°’ ì˜¤ë¥˜ */
          ( ( sSCAN->flag & QMNC_SCAN_NOTNULL_RANGE_MASK )
            == QMNC_SCAN_NOTNULL_RANGE_TRUE ) ||
          /* BUG-45372 Simple Query FixedTable Index Bug */
@@ -7089,12 +7089,12 @@ qmoOneNonPlan::checkSimpleSCAN( qcStatement  * aStatement,
 
     if ( sSCAN->method.ridRange == NULL )
     {
-        // simple full scan/index full scanÀÎ °æ¿ì
+        // simple full scan/index full scanì¸ ê²½ìš°
         if ( ( sSCAN->method.fixKeyRange == NULL ) &&
              ( sSCAN->method.varKeyRange == NULL ) )
         {
-            // ·¹ÄÚµå°¡ ¸¹Àº °æ¿ì simple·Î Ã³¸®ÇÏÁö ¾Ê´Â´Ù.
-            // (ÀÏ´ÜÀº 1024000°³ ±îÁö¸¸)
+            // ë ˆì½”ë“œê°€ ë§ì€ ê²½ìš° simpleë¡œ ì²˜ë¦¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
+            // (ì¼ë‹¨ì€ 1024000ê°œ ê¹Œì§€ë§Œ)
             if ( sSCAN->tableRef->statInfo->totalRecordCnt
                  <= QMO_STAT_TABLE_RECORD_COUNT * 100 )
             {
@@ -7112,13 +7112,13 @@ qmoOneNonPlan::checkSimpleSCAN( qcStatement  * aStatement,
             // Nothing to do.
         }
 
-        // index´Â ¹İµå½Ã Á¸ÀçÇØ¾ß ÇÑ´Ù.
+        // indexëŠ” ë°˜ë“œì‹œ ì¡´ì¬í•´ì•¼ í•œë‹¤.
         IDE_FT_ASSERT( sSCAN->method.index != NULL );
 
-        // simple index scanÀÎ °æ¿ì
+        // simple index scanì¸ ê²½ìš°
         sIndex = sSCAN->method.index;
 
-        // ascending index¸¸ °¡´É
+        // ascending indexë§Œ ê°€ëŠ¥
         for ( i = 0; i < sIndex->keyColCount; i++ )
         {
             if ( ( sIndex->keyColsFlag[i] & SMI_COLUMN_ORDER_MASK )
@@ -7139,7 +7139,7 @@ qmoOneNonPlan::checkSimpleSCAN( qcStatement  * aStatement,
                                                    (void **) & sValueInfo )
                   != IDE_SUCCESS );
 
-        // fixed key range¿Í variable key range´Â µ¿½Ã¿¡ Á¸ÀçÇÏÁö ¾Ê´Â´Ù.
+        // fixed key rangeì™€ variable key rangeëŠ” ë™ì‹œì— ì¡´ì¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
         IDE_FT_ASSERT( ( ( sSCAN->method.fixKeyRange != NULL ) &&
                        ( sSCAN->method.varKeyRange == NULL ) ) ||
                      ( ( sSCAN->method.fixKeyRange == NULL ) &&
@@ -7154,11 +7154,11 @@ qmoOneNonPlan::checkSimpleSCAN( qcStatement  * aStatement,
             sORNode = sSCAN->method.varKeyRange;
         }
 
-        // OR¿Í AND·Î¸¸ ÀÌ·ç¾îÁ® ÀÖ´Ù.
+        // ORì™€ ANDë¡œë§Œ ì´ë£¨ì–´ì ¸ ìˆë‹¤.
         IDE_FT_ASSERT( sORNode->node.module == &mtfOr );
         IDE_FT_ASSERT( sORNode->node.arguments->module == &mtfAnd );
 
-        // ÇÏ³ªÀÇ AND¸¸ Á¸ÀçÇØ¾ß ÇÑ´Ù.
+        // í•˜ë‚˜ì˜ ANDë§Œ ì¡´ì¬í•´ì•¼ í•œë‹¤.
         if ( sORNode->node.arguments->next != NULL )
         {
             sIsSimple = ID_FALSE;
@@ -7179,10 +7179,10 @@ qmoOneNonPlan::checkSimpleSCAN( qcStatement  * aStatement,
             // init value
             QMN_INIT_VALUE_INFO( &(sValueInfo[i]) );
 
-            // =ÀÎ °æ¿ì
+            // =ì¸ ê²½ìš°
             if ( sCompareNode->node.module == &mtfEqual )
             {
-                // =ÀÌÀü¿¡ =ÀÌ ¾Æ´Ï¾ú´Ù¸é simpleÀÌ ¾Æ´Ï´Ù.
+                // =ì´ì „ì— =ì´ ì•„ë‹ˆì—ˆë‹¤ë©´ simpleì´ ì•„ë‹ˆë‹¤.
                 if ( sCompareOpCount == 0 )
                 {
                     // set type
@@ -7196,7 +7196,7 @@ qmoOneNonPlan::checkSimpleSCAN( qcStatement  * aStatement,
             }
             else
             {
-                // <, <=, >, >=ÀÎ °æ¿ì
+                // <, <=, >, >=ì¸ ê²½ìš°
                 if ( sCompareNode->node.module == &mtfLessThan )
                 {
                     if ( sCompareNode->indexArgument == 0 )
@@ -7253,7 +7253,7 @@ qmoOneNonPlan::checkSimpleSCAN( qcStatement  * aStatement,
 
                 sCompareOpCount++;
 
-                // 2°³¸¦ ³ÑÀ¸¸é ¿¡·¯
+                // 2ê°œë¥¼ ë„˜ìœ¼ë©´ ì—ëŸ¬
                 if ( sCompareOpCount <= 2 )
                 {
                     // Nothing to do.
@@ -7294,8 +7294,8 @@ qmoOneNonPlan::checkSimpleSCAN( qcStatement  * aStatement,
                 // Nothing to do.
             }
 
-            // ¸¶Áö¸· µÎ°³ÀÇ ºñ±³¿¬»êÀÌ µ¿ÀÏ ÄÃ·³ÀÌ¾î¾ß ÇÏ°í
-            // ºÎÈ£°¡ ´Ù¸¥ ºñ±³¿¬»êÀÌ¾î¾ß ÇÑ´Ù.
+            // ë§ˆì§€ë§‰ ë‘ê°œì˜ ë¹„êµì—°ì‚°ì´ ë™ì¼ ì»¬ëŸ¼ì´ì–´ì•¼ í•˜ê³ 
+            // ë¶€í˜¸ê°€ ë‹¤ë¥¸ ë¹„êµì—°ì‚°ì´ì–´ì•¼ í•œë‹¤.
             if ( sCompareOpCount == 2 )
             {
                 if ( ( sValueInfo[i-1].column.column.id == sValueInfo[i].column.column.id ) &&
@@ -7328,7 +7328,7 @@ qmoOneNonPlan::checkSimpleSCAN( qcStatement  * aStatement,
                 // Nothing to do.
             }
 
-            // =ÀÌÀü¿¡ µ¿ÀÏ ÄÃ·³ÀÌ ¿Ã ¼ö ¾ø°í, <,<=,>,>=ÀÎ °æ¿ì µ¿ÀÏ ÄÃ·³¸¸ °¡´ÉÇÏ´Ù.
+            // =ì´ì „ì— ë™ì¼ ì»¬ëŸ¼ì´ ì˜¬ ìˆ˜ ì—†ê³ , <,<=,>,>=ì¸ ê²½ìš° ë™ì¼ ì»¬ëŸ¼ë§Œ ê°€ëŠ¥í•˜ë‹¤.
             if ( sValueInfo[i].op == QMN_VALUE_OP_EQUAL )
             {
                 if ( i > 0 )
@@ -7351,7 +7351,7 @@ qmoOneNonPlan::checkSimpleSCAN( qcStatement  * aStatement,
             }
             else
             {
-                // 2°³ÀÎ °æ¿ì ÀÌÀü°ú µ¿ÀÏ ÄÃ·³ÀÌ¾î¾ß ÇÑ´Ù.
+                // 2ê°œì¸ ê²½ìš° ì´ì „ê³¼ ë™ì¼ ì»¬ëŸ¼ì´ì–´ì•¼ í•œë‹¤.
                 if ( sCompareOpCount == 2 )
                 {
                     if ( sValueInfo[i - 1].column.column.id ==
@@ -7376,7 +7376,7 @@ qmoOneNonPlan::checkSimpleSCAN( qcStatement  * aStatement,
 
         sValueCount = i;
 
-        // ÃÖ´ë 1°ÇÀÎ °æ¿ì
+        // ìµœëŒ€ 1ê±´ì¸ ê²½ìš°
         if ( ( sIndex->keyColCount == sValueCount ) &&
              ( sIndex->isUnique == ID_TRUE ) &&
              ( sCompareOpCount == 0 ) )
@@ -7411,7 +7411,7 @@ qmoOneNonPlan::checkSimpleSCAN( qcStatement  * aStatement,
     }
     else
     {
-        // rid scanÀÎ °æ¿ì
+        // rid scanì¸ ê²½ìš°
         sORNode = sSCAN->method.ridRange;
 
         // make simple values
@@ -7421,13 +7421,13 @@ qmoOneNonPlan::checkSimpleSCAN( qcStatement  * aStatement,
 
         sValueCount = 1;
 
-        // OR·Î¸¸ ÀÌ·ç¾îÁ® ÀÖ´Ù.
+        // ORë¡œë§Œ ì´ë£¨ì–´ì ¸ ìˆë‹¤.
         IDE_FT_ASSERT( sORNode->node.module == &mtfOr );
 
-        // ORÀÇ argument¿¡ equalÀÌ ÀÖ´Ù.
+        // ORì˜ argumentì— equalì´ ìˆë‹¤.
         sCompareNode = (qtcNode*)(sORNode->node.arguments);
 
-        // ÇÏ³ªÀÇ equal¸¸ Çã¿ëÇÑ´Ù.
+        // í•˜ë‚˜ì˜ equalë§Œ í—ˆìš©í•œë‹¤.
         if ( ( sCompareNode->node.module == &mtfEqual ) &&
              ( sCompareNode->node.next == NULL ) )
         {
@@ -7503,7 +7503,7 @@ qmoOneNonPlan::checkSimpleSCANValue( qcStatement  * aStatement,
 
     IDU_FIT_POINT_FATAL( "qmoOneNonPlan::checkSimpleSCANValue::__FT__" );
 
-    // ¼ø¼öÄÃ·³°ú °ªÀÌ¾î¾ß ÇÑ´Ù.
+    // ìˆœìˆ˜ì»¬ëŸ¼ê³¼ ê°’ì´ì–´ì•¼ í•œë‹¤.
     if ( QTC_IS_COLUMN( aStatement, aColumnNode ) == ID_TRUE )
     {
         // Nothing to do.
@@ -7517,7 +7517,7 @@ qmoOneNonPlan::checkSimpleSCANValue( qcStatement  * aStatement,
 
     sColumn = QTC_STMT_COLUMN( aStatement, aColumnNode );
 
-    // Á¤¼öÇü°ú ¹®ÀÚÇü¸¸ °¡´ÉÇÏ´Ù.
+    // ì •ìˆ˜í˜•ê³¼ ë¬¸ìí˜•ë§Œ ê°€ëŠ¥í•˜ë‹¤.
     if ( ( sColumn->module->id == MTD_SMALLINT_ID ) ||
          ( sColumn->module->id == MTD_BIGINT_ID ) ||
          ( sColumn->module->id == MTD_INTEGER_ID ) ||
@@ -7537,11 +7537,11 @@ qmoOneNonPlan::checkSimpleSCANValue( qcStatement  * aStatement,
 
     aValueInfo->column = *sColumn;
 
-    // ÄÃ·³, »ó¼ö³ª È£½ºÆ®º¯¼ö¸¸ °¡´ÉÇÏ´Ù.
+    // ì»¬ëŸ¼, ìƒìˆ˜ë‚˜ í˜¸ìŠ¤íŠ¸ë³€ìˆ˜ë§Œ ê°€ëŠ¥í•˜ë‹¤.
     if ( QTC_IS_COLUMN( aStatement, aValueNode ) == ID_TRUE )
     {
-        // ÄÃ·³ÀÎ °æ¿ì column node¿Í value node¿¡ conversionÀÌ
-        // ¾ø¾î¾ß ÇÑ´Ù.
+        // ì»¬ëŸ¼ì¸ ê²½ìš° column nodeì™€ value nodeì— conversionì´
+        // ì—†ì–´ì•¼ í•œë‹¤.
         if ( ( aColumnNode->node.conversion != NULL ) ||
              ( aValueNode->node.conversion != NULL ) )
         {
@@ -7556,7 +7556,7 @@ qmoOneNonPlan::checkSimpleSCANValue( qcStatement  * aStatement,
 
         sValueColumn = QTC_STMT_COLUMN( aStatement, aValueNode );
 
-        // µ¿ÀÏ Å¸ÀÔÀÌ¾î¾ß ÇÑ´Ù.
+        // ë™ì¼ íƒ€ì…ì´ì–´ì•¼ í•œë‹¤.
         if ( sColumn->module->id == sValueColumn->module->id )
         {
             aValueInfo->type = QMN_VALUE_TYPE_COLUMN;
@@ -7582,7 +7582,7 @@ qmoOneNonPlan::checkSimpleSCANValue( qcStatement  * aStatement,
                             aValueNode )
          == ID_TRUE )
     {
-        // »ó¼öÀÎ °æ¿ì column node¿¡ conversionÀÌ ¾ø¾î¾ß ÇÑ´Ù.
+        // ìƒìˆ˜ì¸ ê²½ìš° column nodeì— conversionì´ ì—†ì–´ì•¼ í•œë‹¤.
         if ( aColumnNode->node.conversion != NULL )
         {
             sIsSimple = ID_FALSE;
@@ -7596,7 +7596,7 @@ qmoOneNonPlan::checkSimpleSCANValue( qcStatement  * aStatement,
 
         sConstColumn = QTC_STMT_COLUMN( aStatement, aValueNode );
 
-        // »ó¼ö´Â µ¿ÀÏ Å¸ÀÔÀÌ¾î¾ß ÇÑ´Ù.
+        // ìƒìˆ˜ëŠ” ë™ì¼ íƒ€ì…ì´ì–´ì•¼ í•œë‹¤.
         if ( ( sColumn->module->id == sConstColumn->module->id ) ||
              ( ( sColumn->module->id == MTD_NUMERIC_ID ) &&
                ( sConstColumn->module->id == MTD_FLOAT_ID ) ) ||
@@ -7621,7 +7621,7 @@ qmoOneNonPlan::checkSimpleSCANValue( qcStatement  * aStatement,
         // Nothing to do.
     }
 
-    // post process¸¦ ¼öÇàÇßÀ¸¹Ç·Î host const warpper°¡ ´Ş¸± ¼ö ÀÖ´Ù.
+    // post processë¥¼ ìˆ˜í–‰í–ˆìœ¼ë¯€ë¡œ host const warpperê°€ ë‹¬ë¦´ ìˆ˜ ìˆë‹¤.
     if ( aValueNode->node.module == &qtc::hostConstantWrapperModule )
     {
         aValueNode = (qtcNode*) aValueNode->node.arguments;
@@ -7635,16 +7635,16 @@ qmoOneNonPlan::checkSimpleSCANValue( qcStatement  * aStatement,
                               aValueNode )
          == ID_TRUE )
     {
-        // È£½ºÆ® º¯¼öÀÎ °æ¿ì column node¿Í value nodeÀÇ
-        // conversion node´Â µ¿ÀÏ Å¸ÀÔÀ¸·Î¸¸ bindÇÑ´Ù¸é
-        // ¹«½ÃÇÒ ¼ö ÀÖ´Ù.
+        // í˜¸ìŠ¤íŠ¸ ë³€ìˆ˜ì¸ ê²½ìš° column nodeì™€ value nodeì˜
+        // conversion nodeëŠ” ë™ì¼ íƒ€ì…ìœ¼ë¡œë§Œ bindí•œë‹¤ë©´
+        // ë¬´ì‹œí•  ìˆ˜ ìˆë‹¤.
         aValueInfo->type = QMN_VALUE_TYPE_HOST_VALUE;
         aValueInfo->value.id = aValueNode->node.column;
 
         // value buffer size
         (*aOffset) += idlOS::align8( sColumn->column.size );
 
-        // param µî·Ï
+        // param ë“±ë¡
         IDE_TEST( qmv::describeParamInfo( aStatement,
                                           sColumn,
                                           aValueNode )
@@ -7657,7 +7657,7 @@ qmoOneNonPlan::checkSimpleSCANValue( qcStatement  * aStatement,
         // Nothing to do.
     }
 
-    // ¿©±â±îÁö ¿Ô´Ù¸é simpleÀÌ ¾Æ´Ï´Ù.
+    // ì—¬ê¸°ê¹Œì§€ ì™”ë‹¤ë©´ simpleì´ ì•„ë‹ˆë‹¤.
     sIsSimple = ID_FALSE;
 
     IDE_EXCEPTION_CONT( NORMAL_EXIT );
@@ -7677,13 +7677,13 @@ qmoOneNonPlan::checkSimpleINST( qcStatement * aStatement,
 {
 /***********************************************************************
  *
- * Description : simple insert ³ëµåÀÎÁö °Ë»çÇÑ´Ù.
+ * Description : simple insert ë…¸ë“œì¸ì§€ ê²€ì‚¬í•œë‹¤.
  *
  * Implementation :
- *     - insert values¸¸ °¡´ÉÇÏ´Ù.
- *     - ¼ıÀÚÇü, ¹®ÀÚÇü, ³¯Â¥Çü¸¸ °¡´ÉÇÏ´Ù.
- *     - »ó¼ö, È£½ºÆ®º¯¼ö, sysdate¸¸ °¡´ÉÇÏ´Ù.
- *     - trigger, lob column, return intoµîÀº ¾ÈµÈ´Ù.
+ *     - insert valuesë§Œ ê°€ëŠ¥í•˜ë‹¤.
+ *     - ìˆ«ìí˜•, ë¬¸ìí˜•, ë‚ ì§œí˜•ë§Œ ê°€ëŠ¥í•˜ë‹¤.
+ *     - ìƒìˆ˜, í˜¸ìŠ¤íŠ¸ë³€ìˆ˜, sysdateë§Œ ê°€ëŠ¥í•˜ë‹¤.
+ *     - trigger, lob column, return intoë“±ì€ ì•ˆëœë‹¤.
  *
  ***********************************************************************/
 
@@ -7704,7 +7704,7 @@ qmoOneNonPlan::checkSimpleINST( qcStatement * aStatement,
 
     sIsSimple = ID_TRUE;
 
-    // ±âÅ¸ µîµî °Ë»ç
+    // ê¸°íƒ€ ë“±ë“± ê²€ì‚¬
     if ( ( sINST->isInsertSelect == ID_TRUE ) ||
          ( sINST->isMultiInsertSelect == ID_TRUE ) ||
          ( sINST->insteadOfTrigger == ID_TRUE ) ||
@@ -7732,7 +7732,7 @@ qmoOneNonPlan::checkSimpleINST( qcStatement * aStatement,
         // Nothing to do.
     }
 
-    // BUG-43410 foreign key Áö¿ø
+    // BUG-43410 foreign key ì§€ì›
     for ( sParentInfo  = sINST->parentConstraints;
           sParentInfo != NULL;
           sParentInfo  = sParentInfo->next )
@@ -7771,7 +7771,7 @@ qmoOneNonPlan::checkSimpleINST( qcStatement * aStatement,
           ( sValueNode != NULL ) && ( i < sValueCount );
           sValueNode = sValueNode->next, i++ )
     {
-        // simpleÀÌ ¾Æ´Ñ value
+        // simpleì´ ì•„ë‹Œ value
         if ( ( sValueNode->timestamp == ID_TRUE ) ||
              ( sValueNode->value == NULL ) )
         {
@@ -7853,7 +7853,7 @@ qmoOneNonPlan::checkSimpleINSTValue( qcStatement  * aStatement,
 
     IDU_FIT_POINT_FATAL( "qmoOneNonPlan::checkSimpleINSTValue::__FT__" );
 
-    // Á¤¼öÇü°ú ¹®ÀÚÇüÀÌ °¡´ÉÇÏ´Ù.
+    // ì •ìˆ˜í˜•ê³¼ ë¬¸ìí˜•ì´ ê°€ëŠ¥í•˜ë‹¤.
     if ( ( aColumn->module->id == MTD_SMALLINT_ID ) ||
          ( aColumn->module->id == MTD_BIGINT_ID ) ||
          ( aColumn->module->id == MTD_INTEGER_ID ) ||
@@ -7880,7 +7880,7 @@ qmoOneNonPlan::checkSimpleINSTValue( qcStatement  * aStatement,
     {
         sConstColumn = QTC_STMT_COLUMN( aStatement, aValueNode->value );
 
-        // »ó¼ö´Â µ¿ÀÏ Å¸ÀÔÀÌ¾î¾ß ÇÑ´Ù.
+        // ìƒìˆ˜ëŠ” ë™ì¼ íƒ€ì…ì´ì–´ì•¼ í•œë‹¤.
         if ( ( aColumn->module->id == sConstColumn->module->id ) ||
              ( ( aColumn->module->id == MTD_NUMERIC_ID ) &&
                ( sConstColumn->module->id == MTD_FLOAT_ID ) ) ||
@@ -7918,7 +7918,7 @@ qmoOneNonPlan::checkSimpleINSTValue( qcStatement  * aStatement,
         // value buffer size
         (*aOffset) += idlOS::align8( aColumn->column.size );
 
-        // param µî·Ï
+        // param ë“±ë¡
         IDE_TEST( qmv::describeParamInfo( aStatement,
                                           aColumn,
                                           aValueNode->value )
@@ -7931,7 +7931,7 @@ qmoOneNonPlan::checkSimpleINSTValue( qcStatement  * aStatement,
         // Nothing to do.
     }
 
-    // sysdateÀÏ ¼ö ÀÖ´Ù.
+    // sysdateì¼ ìˆ˜ ìˆë‹¤.
     if ( ( aColumn->module->id == MTD_DATE_ID ) &&
          ( QC_SHARED_TMPLATE(aStatement)->sysdate != NULL ) )
     {
@@ -7956,7 +7956,7 @@ qmoOneNonPlan::checkSimpleINSTValue( qcStatement  * aStatement,
         // Nothing to do.
     }
 
-    // ¿©±â±îÁö ¿Ô´Ù¸é simpleÀÌ ¾Æ´Ï´Ù.
+    // ì—¬ê¸°ê¹Œì§€ ì™”ë‹¤ë©´ simpleì´ ì•„ë‹ˆë‹¤.
     sIsSimple = ID_FALSE;
 
     IDE_EXCEPTION_CONT( NORMAL_EXIT );
@@ -7976,10 +7976,10 @@ qmoOneNonPlan::checkSimpleUPTE( qcStatement  * aStatement,
 {
 /***********************************************************************
  *
- * Description : simple update ³ëµåÀÎÁö °Ë»çÇÑ´Ù.
+ * Description : simple update ë…¸ë“œì¸ì§€ ê²€ì‚¬í•œë‹¤.
  *
  * Implementation :
- *     simple updateÀÎ °æ¿ì fast execute¸¦ ¼öÇàÇÑ´Ù.
+ *     simple updateì¸ ê²½ìš° fast executeë¥¼ ìˆ˜í–‰í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -8000,7 +8000,7 @@ qmoOneNonPlan::checkSimpleUPTE( qcStatement  * aStatement,
 
     sIsSimple = ID_TRUE;
 
-    // ±âÅ¸ µîµî °Ë»ç
+    // ê¸°íƒ€ ë“±ë“± ê²€ì‚¬
     if ( ( sUPTE->insteadOfTrigger == ID_TRUE ) ||
          ( sUPTE->tableRef->tableInfo->triggerCount > 0 ) ||
          ( sUPTE->tableRef->tableInfo->tablePartitionType
@@ -8021,7 +8021,7 @@ qmoOneNonPlan::checkSimpleUPTE( qcStatement  * aStatement,
         // Nothing to do.
     }
 
-    // scan limit Àû¿ëµÈ »ó¼ö limit¸¸ °¡´É
+    // scan limit ì ìš©ëœ ìƒìˆ˜ limitë§Œ ê°€ëŠ¥
     if ( sUPTE->limit != NULL )
     {
         if ( ( sUPTE->limit->start.constant != 1 ) ||
@@ -8042,7 +8042,7 @@ qmoOneNonPlan::checkSimpleUPTE( qcStatement  * aStatement,
         // Nothing to do.
     }
 
-    // BUG-43410 foreign key Áö¿ø
+    // BUG-43410 foreign key ì§€ì›
     for ( sParentInfo  = sUPTE->parentConstraints;
           sParentInfo != NULL;
           sParentInfo  = sParentInfo->next )
@@ -8059,7 +8059,7 @@ qmoOneNonPlan::checkSimpleUPTE( qcStatement  * aStatement,
         }
     }
 
-    // BUG-43410 foreign key Áö¿ø
+    // BUG-43410 foreign key ì§€ì›
     for ( sChildInfo  = sUPTE->childConstraints;
           sChildInfo != NULL;
           sChildInfo  = sChildInfo->next )
@@ -8149,7 +8149,7 @@ qmoOneNonPlan::checkSimpleUPTEValue( qcStatement  * aStatement,
 
     IDU_FIT_POINT_FATAL( "qmoOneNonPlan::checkSimpleUPTEValue::__FT__" );
 
-    // simple value°¡ ¾Æ´Ô
+    // simple valueê°€ ì•„ë‹˜
     if ( ( aValueNode->timestamp == ID_TRUE ) ||
          ( aValueNode->msgID == ID_TRUE ) ||
          ( aValueNode->value == NULL ) )
@@ -8165,7 +8165,7 @@ qmoOneNonPlan::checkSimpleUPTEValue( qcStatement  * aStatement,
 
     aValueInfo->column = *aColumn;
 
-    // Á¤¼öÇü°ú ¹®ÀÚÇüÀÌ °¡´ÉÇÏ´Ù.
+    // ì •ìˆ˜í˜•ê³¼ ë¬¸ìí˜•ì´ ê°€ëŠ¥í•˜ë‹¤.
     if ( ( aColumn->module->id == MTD_SMALLINT_ID ) ||
          ( aColumn->module->id == MTD_BIGINT_ID ) ||
          ( aColumn->module->id == MTD_INTEGER_ID ) ||
@@ -8186,7 +8186,7 @@ qmoOneNonPlan::checkSimpleUPTEValue( qcStatement  * aStatement,
 
     sSetValue = aValueNode->value;
 
-    // =, +, -¸¸ °¡´ÉÇÏ´Ù.
+    // =, +, -ë§Œ ê°€ëŠ¥í•˜ë‹¤.
     if ( ( sSetValue->node.module == &qtc::columnModule ) ||
          ( sSetValue->node.module == &qtc::valueModule ) )
     {
@@ -8195,7 +8195,7 @@ qmoOneNonPlan::checkSimpleUPTEValue( qcStatement  * aStatement,
     }
     else if ( sSetValue->node.module == &mtfAdd2 )
     {
-        // ¼ıÀÚÇü¸¸ °¡´ÉÇÏ´Ù.
+        // ìˆ«ìí˜•ë§Œ ê°€ëŠ¥í•˜ë‹¤.
         if ( ( aColumn->module->id == MTD_SMALLINT_ID ) ||
              ( aColumn->module->id == MTD_BIGINT_ID ) ||
              ( aColumn->module->id == MTD_INTEGER_ID ) ||
@@ -8230,7 +8230,7 @@ qmoOneNonPlan::checkSimpleUPTEValue( qcStatement  * aStatement,
     }
     else if ( sSetValue->node.module == &mtfSubtract2 )
     {
-        // ¼ıÀÚÇü¸¸ °¡´ÉÇÏ´Ù.
+        // ìˆ«ìí˜•ë§Œ ê°€ëŠ¥í•˜ë‹¤.
         if ( ( aColumn->module->id == MTD_SMALLINT_ID ) ||
              ( aColumn->module->id == MTD_BIGINT_ID ) ||
              ( aColumn->module->id == MTD_INTEGER_ID ) ||
@@ -8276,7 +8276,7 @@ qmoOneNonPlan::checkSimpleUPTEValue( qcStatement  * aStatement,
     {
         sConstColumn = QTC_STMT_COLUMN( aStatement, sSetValue );
 
-        // »ó¼ö´Â µ¿ÀÏ Å¸ÀÔÀÌ¾î¾ß ÇÑ´Ù.
+        // ìƒìˆ˜ëŠ” ë™ì¼ íƒ€ì…ì´ì–´ì•¼ í•œë‹¤.
         if ( ( aColumn->module->id == sConstColumn->module->id ) ||
              ( ( aColumn->module->id == MTD_NUMERIC_ID ) &&
                ( sConstColumn->module->id == MTD_FLOAT_ID ) ) ||
@@ -8314,7 +8314,7 @@ qmoOneNonPlan::checkSimpleUPTEValue( qcStatement  * aStatement,
         // value buffer size, new value buffer size
         (*aOffset) += idlOS::align8( aColumn->column.size );
 
-        // param µî·Ï
+        // param ë“±ë¡
         IDE_TEST( qmv::describeParamInfo( aStatement,
                                           aColumn,
                                           sSetValue )
@@ -8327,7 +8327,7 @@ qmoOneNonPlan::checkSimpleUPTEValue( qcStatement  * aStatement,
         // Nothing to do.
     }
 
-    // sysdateÀÏ ¼ö ÀÖ´Ù.
+    // sysdateì¼ ìˆ˜ ìˆë‹¤.
     if ( ( aColumn->module->id == MTD_DATE_ID ) &&
          ( QC_SHARED_TMPLATE(aStatement)->sysdate != NULL ) )
     {
@@ -8352,7 +8352,7 @@ qmoOneNonPlan::checkSimpleUPTEValue( qcStatement  * aStatement,
         // Nothing to do.
     }
 
-    // ¿©±â±îÁö ¿Ô´Ù¸é simpleÀÌ ¾Æ´Ï´Ù.
+    // ì—¬ê¸°ê¹Œì§€ ì™”ë‹¤ë©´ simpleì´ ì•„ë‹ˆë‹¤.
     sIsSimple = ID_FALSE;
 
     IDE_EXCEPTION_CONT( NORMAL_EXIT );
@@ -8372,10 +8372,10 @@ qmoOneNonPlan::checkSimpleDETE( qcStatement  * aStatement,
 {
 /***********************************************************************
  *
- * Description : simple delete ³ëµåÀÎÁö °Ë»çÇÑ´Ù.
+ * Description : simple delete ë…¸ë“œì¸ì§€ ê²€ì‚¬í•œë‹¤.
  *
  * Implementation :
- *     simple deleteÀÎ °æ¿ì fast execute¸¦ ¼öÇàÇÑ´Ù.
+ *     simple deleteì¸ ê²½ìš° fast executeë¥¼ ìˆ˜í–‰í•œë‹¤.
  *
  ***********************************************************************/
 
@@ -8405,7 +8405,7 @@ qmoOneNonPlan::checkSimpleDETE( qcStatement  * aStatement,
         // Nothing to do.
     }
 
-    // scan limit Àû¿ëµÈ »ó¼ö limit¸¸ °¡´É
+    // scan limit ì ìš©ëœ ìƒìˆ˜ limitë§Œ ê°€ëŠ¥
     if ( sDETE->limit != NULL )
     {
         if ( ( sDETE->limit->start.constant != 1 ) ||
@@ -8426,7 +8426,7 @@ qmoOneNonPlan::checkSimpleDETE( qcStatement  * aStatement,
         // Nothing to do.
     }
 
-    // BUG-43410 foreign key Áö¿ø
+    // BUG-43410 foreign key ì§€ì›
     for ( sChildInfo  = sDETE->childConstraints;
           sChildInfo != NULL;
           sChildInfo  = sChildInfo->next )
@@ -8460,14 +8460,14 @@ qmoOneNonPlan::initDLAY( qcStatement  * aStatement ,
 {
 /***********************************************************************
  *
- * Description : DLAY ³ëµå¸¦ »ı¼ºÇÑ´Ù.
+ * Description : DLAY ë…¸ë“œë¥¼ ìƒì„±í•œë‹¤.
  *
  * Implementation :
- *     + ÃÊ±âÈ­ ÀÛ¾÷
- *         - qmncDLAYÀÇ ÇÒ´ç ¹× ÃÊ±âÈ­
- *     + ¸¶¹«¸® ÀÛ¾÷
- *         - data ¿µ¿ªÀÇ Å©±â °è»ê
- *         - dependencyÀÇ Ã³¸®
+ *     + ì´ˆê¸°í™” ì‘ì—…
+ *         - qmncDLAYì˜ í• ë‹¹ ë° ì´ˆê¸°í™”
+ *     + ë§ˆë¬´ë¦¬ ì‘ì—…
+ *         - data ì˜ì—­ì˜ í¬ê¸° ê³„ì‚°
+ *         - dependencyì˜ ì²˜ë¦¬
  *
  ***********************************************************************/
 
@@ -8475,17 +8475,17 @@ qmoOneNonPlan::initDLAY( qcStatement  * aStatement ,
     UInt                sDataNodeOffset;
 
     //----------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //----------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aParent != NULL );
 
     //----------------------------------------------------------------
-    // ÃÊ±âÈ­ ÀÛ¾÷
+    // ì´ˆê¸°í™” ì‘ì—…
     //----------------------------------------------------------------
 
-    //qmncDLAYÀÇ ÇÒ´ç¹× ÃÊ±âÈ­
+    //qmncDLAYì˜ í• ë‹¹ë° ì´ˆê¸°í™”
     IDE_TEST( QC_QMP_MEM( aStatement )->alloc( ID_SIZEOF( qmncDLAY ),
                                                (void **)& sDLAY )
               != IDE_SUCCESS );
@@ -8521,14 +8521,14 @@ qmoOneNonPlan::makeDLAY( qcStatement  * aStatement ,
     UInt                sDataNodeOffset;
 
     //----------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //----------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aChildPlan != NULL );
 
     //----------------------------------------------------------------
-    // ÃÊ±âÈ­ ÀÛ¾÷
+    // ì´ˆê¸°í™” ì‘ì—…
     //----------------------------------------------------------------
 
     sDLAY->plan.left = aChildPlan;
@@ -8538,7 +8538,7 @@ qmoOneNonPlan::makeDLAY( qcStatement  * aStatement ,
                                      ID_SIZEOF(qmndDLAY));
 
     //----------------------------------
-    // Flag ¼³Á¤
+    // Flag ì„¤ì •
     //----------------------------------
 
     sDLAY->flag = QMN_PLAN_FLAG_CLEAR;
@@ -8547,14 +8547,14 @@ qmoOneNonPlan::makeDLAY( qcStatement  * aStatement ,
     sDLAY->plan.flag |= (aChildPlan->flag & QMN_PLAN_STORAGE_MASK);
 
     //----------------------------------------------------------------
-    // ¸¶¹«¸® ÀÛ¾÷
+    // ë§ˆë¬´ë¦¬ ì‘ì—…
     //----------------------------------------------------------------
 
-    //data ¿µ¿ªÀÇ Å©±â °è»ê
+    //data ì˜ì—­ì˜ í¬ê¸° ê³„ì‚°
     QC_SHARED_TMPLATE(aStatement)->tmplate.dataSize = sDataNodeOffset;
 
     //----------------------------------
-    //dependency Ã³¸® ¹× subqueryÀÇ Ã³¸®
+    //dependency ì²˜ë¦¬ ë° subqueryì˜ ì²˜ë¦¬
     //----------------------------------
 
     IDE_TEST( qmoDependency::setDependency( aStatement,
@@ -8590,7 +8590,7 @@ IDE_RC qmoOneNonPlan::initSDSE( qcStatement  * aStatement,
 {
 /***********************************************************************
  *
- * Description : SDSE ³ëµå¸¦ »ı¼ºÇÑ´Ù.
+ * Description : SDSE ë…¸ë“œë¥¼ ìƒì„±í•œë‹¤.
  *
  * Implementation :
  *
@@ -8602,7 +8602,7 @@ IDE_RC qmoOneNonPlan::initSDSE( qcStatement  * aStatement,
     IDU_FIT_POINT_FATAL( "qmoOneNonPlan::initSDSE::__FT__" );
 
     //----------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //----------------------------------
 
     IDE_FT_ASSERT( aStatement != NULL );
@@ -8610,10 +8610,10 @@ IDE_RC qmoOneNonPlan::initSDSE( qcStatement  * aStatement,
     IDE_FT_ASSERT( aPlan      != NULL );
 
     //-------------------------------------------------------------
-    // ÃÊ±âÈ­ ÀÛ¾÷
+    // ì´ˆê¸°í™” ì‘ì—…
     //-------------------------------------------------------------
 
-    // qmncSDSE ÀÇ ÇÒ´ç¹× ÃÊ±âÈ­
+    // qmncSDSE ì˜ í• ë‹¹ë° ì´ˆê¸°í™”
     IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF( qmncSDSE ),
                                              (void**)& sSDSE )
               != IDE_SUCCESS );
@@ -8663,7 +8663,7 @@ IDE_RC qmoOneNonPlan::makeSDSE( qcStatement    * aStatement,
     UInt             i = 0;
 
     //----------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //----------------------------------
 
     IDE_FT_ASSERT( aStatement != NULL );
@@ -8672,7 +8672,7 @@ IDE_RC qmoOneNonPlan::makeSDSE( qcStatement    * aStatement,
     IDE_FT_ASSERT( aStatement->session != NULL );
 
     //----------------------------------
-    // ÃÊ±âÈ­ ÀÛ¾÷
+    // ì´ˆê¸°í™” ì‘ì—…
     //----------------------------------
 
     sTemplate       = &QC_SHARED_TMPLATE(aStatement)->tmplate;
@@ -8686,7 +8686,7 @@ IDE_RC qmoOneNonPlan::makeSDSE( qcStatement    * aStatement,
     sSDSE->mShardParamCount = aShardParamCount;
     sSDSE->tupleRowID        = sTupleID = sSDSE->tableRef->table;
 
-    // shard exec data ¼³Á¤
+    // shard exec data ì„¤ì •
     sSDSE->shardDataOffset = idlOS::align8( QC_SHARED_TMPLATE(aStatement)->shardExecData.dataSize );
     sSDSE->shardDataSize = 0;
 
@@ -8708,13 +8708,13 @@ IDE_RC qmoOneNonPlan::makeSDSE( qcStatement    * aStatement,
     QC_SHARED_TMPLATE(aStatement)->shardExecData.dataSize =
         sSDSE->shardDataOffset + sSDSE->shardDataSize;
 
-    // Flag ¼³Á¤
+    // Flag ì„¤ì •
     sSDSE->flag      = QMN_PLAN_FLAG_CLEAR;
     sSDSE->plan.flag = QMN_PLAN_FLAG_CLEAR;
 
     // BUGBUG
-    // SDSE ÀÚÃ¼´Â disk ·Î »ı¼ºÇÏ³ª
-    // SDSE ÀÇ »óÀ§ plan ÀÇ interResultType Àº memory temp ·Î ¼öÇàµÇ¾î¾ß ÇÑ´Ù.
+    // SDSE ìì²´ëŠ” disk ë¡œ ìƒì„±í•˜ë‚˜
+    // SDSE ì˜ ìƒìœ„ plan ì˜ interResultType ì€ memory temp ë¡œ ìˆ˜í–‰ë˜ì–´ì•¼ í•œë‹¤.
     sSDSE->plan.flag &= ~QMN_PLAN_STORAGE_MASK;
     sSDSE->plan.flag |=  QMN_PLAN_STORAGE_DISK;
 
@@ -8726,11 +8726,11 @@ IDE_RC qmoOneNonPlan::makeSDSE( qcStatement    * aStatement,
     // PROJ-1071 Parallel Query
     sSDSE->plan.mParallelDegree = 1;
 
-    //data ¿µ¿ªÀÇ Å©±â °è»ê
+    //data ì˜ì—­ì˜ í¬ê¸° ê³„ì‚°
     QC_SHARED_TMPLATE(aStatement)->tmplate.dataSize = sDataNodeOffset;
 
     //----------------------------------
-    // mtcTuple.flag¼¼ÆÃ
+    // mtcTuple.flagì„¸íŒ…
     //----------------------------------
 
     sTemplate->rows[sTupleID].lflag &= ~MTC_TUPLE_STORAGE_MASK;
@@ -8749,10 +8749,10 @@ IDE_RC qmoOneNonPlan::makeSDSE( qcStatement    * aStatement,
     sTemplate->rows[sTupleID].lflag |=  MTC_TUPLE_MATERIALIZE_VALUE;
 
     //----------------------------------
-    // PredicateÀÇ Ã³¸®
+    // Predicateì˜ ì²˜ë¦¬
     //----------------------------------
 
-    // Host º¯¼ö¸¦ Æ÷ÇÔÇÑ Constant ExpressionÀÇ ÃÖÀûÈ­
+    // Host ë³€ìˆ˜ë¥¼ í¬í•¨í•œ Constant Expressionì˜ ìµœì í™”
     if ( aGraph->nnfFilter != NULL )
     {
         IDE_TEST( qtc::optimizeHostConstExpression( aStatement,
@@ -8814,7 +8814,7 @@ IDE_RC qmoOneNonPlan::makeSDSE( qcStatement    * aStatement,
     sPredicate[2] = sSDSE->nnfFilter;
     sPredicate[3] = sSDSE->filter;
 
-    // PROJ-1437 dependency ¼³Á¤Àü¿¡ predicateµéÀÇ À§Ä¡Á¤º¸¸¦ º¯°æ.
+    // PROJ-1437 dependency ì„¤ì •ì „ì— predicateë“¤ì˜ ìœ„ì¹˜ì •ë³´ë¥¼ ë³€ê²½.
     for ( i = 0; i <= 3; i++ )
     {
         IDE_TEST( qmg::changeColumnLocate( aStatement,
@@ -8826,7 +8826,7 @@ IDE_RC qmoOneNonPlan::makeSDSE( qcStatement    * aStatement,
     }
 
     //----------------------------------
-    // dependency Ã³¸®
+    // dependency ì²˜ë¦¬
     //----------------------------------
 
     IDE_TEST( qmoDependency::setDependency( aStatement,
@@ -8868,17 +8868,17 @@ IDE_RC qmoOneNonPlan::initSDEX( qcStatement  * aStatement,
     UInt       sDataNodeOffset = 0;
 
     //----------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //----------------------------------
 
     IDE_FT_ASSERT( aStatement != NULL );
     IDE_FT_ASSERT( aPlan      != NULL );
 
     //------------------------------------------------------------
-    // ÃÊ±âÈ­ ÀÛ¾÷
+    // ì´ˆê¸°í™” ì‘ì—…
     //------------------------------------------------------------
 
-    // qmncSDEXÀÇ ÇÒ´ç¹× ÃÊ±âÈ­
+    // qmncSDEXì˜ í• ë‹¹ë° ì´ˆê¸°í™”
     IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF( qmncSDEX ),
                                              (void**)& sSDEX)
               != IDE_SUCCESS );
@@ -8914,7 +8914,7 @@ IDE_RC qmoOneNonPlan::makeSDEX( qcStatement    * aStatement,
     UInt       sDataNodeOffset = 0;
 
     //----------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //----------------------------------
 
     IDE_FT_ASSERT( aStatement  != NULL );
@@ -8922,14 +8922,14 @@ IDE_RC qmoOneNonPlan::makeSDEX( qcStatement    * aStatement,
     IDE_FT_ASSERT( aPlan       != NULL );
 
     //----------------------------------
-    // ÃÊ±âÈ­ ÀÛ¾÷
+    // ì´ˆê¸°í™” ì‘ì—…
     //----------------------------------
 
     aPlan->offset = aStatement->myPlan->sTmplate->tmplate.dataSize;
     sDataNodeOffset = idlOS::align8(aPlan->offset + ID_SIZEOF(qmndSDEX));
 
     //----------------------------------------------------------------
-    // ¸ŞÀÎ ÀÛ¾÷
+    // ë©”ì¸ ì‘ì—…
     //----------------------------------------------------------------
 
     sSDEX->shardQuery.stmtText = aShardQuery->stmtText;
@@ -8940,7 +8940,7 @@ IDE_RC qmoOneNonPlan::makeSDEX( qcStatement    * aStatement,
     sSDEX->shardParamOffset = aShardParamOffset;
     sSDEX->shardParamCount = aShardParamCount;
 
-    // shard exec data ¼³Á¤
+    // shard exec data ì„¤ì •
     sSDEX->shardDataOffset = idlOS::align8( QC_SHARED_TMPLATE(aStatement)->shardExecData.dataSize );
     sSDEX->shardDataSize = 0;
 
@@ -8951,17 +8951,17 @@ IDE_RC qmoOneNonPlan::makeSDEX( qcStatement    * aStatement,
         sSDEX->shardDataOffset + sSDEX->shardDataSize;
 
     //----------------------------------
-    // Flag ¼³Á¤
+    // Flag ì„¤ì •
     //----------------------------------
 
     sSDEX->flag      = QMN_PLAN_FLAG_CLEAR;
     sSDEX->plan.flag = QMN_PLAN_FLAG_CLEAR;
 
     //----------------------------------------------------------------
-    // ¸¶¹«¸® ÀÛ¾÷
+    // ë§ˆë¬´ë¦¬ ì‘ì—…
     //----------------------------------------------------------------
 
-    //data ¿µ¿ªÀÇ Å©±â °è»ê
+    //data ì˜ì—­ì˜ í¬ê¸° ê³„ì‚°
     QC_SHARED_TMPLATE(aStatement)->tmplate.dataSize = sDataNodeOffset;
 
     qtc::dependencyClear( & sSDEX->plan.depInfo );
@@ -8974,11 +8974,11 @@ IDE_RC qmoOneNonPlan::initSDIN( qcStatement   * aStatement ,
 {
 /***********************************************************************
  *
- * Description : Shard INST ³ëµå¸¦ »ı¼ºÇÑ´Ù.
+ * Description : Shard INST ë…¸ë“œë¥¼ ìƒì„±í•œë‹¤.
  *
  * Implementation :
- *     + ÃÊ±âÈ­ ÀÛ¾÷
- *         - qmncSDINÀÇ ÇÒ´ç ¹× ÃÊ±âÈ­
+ *     + ì´ˆê¸°í™” ì‘ì—…
+ *         - qmncSDINì˜ í• ë‹¹ ë° ì´ˆê¸°í™”
  *
  ***********************************************************************/
 
@@ -8988,16 +8988,16 @@ IDE_RC qmoOneNonPlan::initSDIN( qcStatement   * aStatement ,
     IDU_FIT_POINT_FATAL( "qmoOneNonPlan::initSDIN::__FT__" );
 
     //----------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //----------------------------------
 
     IDE_FT_ASSERT( aStatement != NULL );
 
     //----------------------------------------------------------------
-    // ÃÊ±âÈ­ ÀÛ¾÷
+    // ì´ˆê¸°í™” ì‘ì—…
     //----------------------------------------------------------------
 
-    //qmncSCANÀÇ ÇÒ´ç¹× ÃÊ±âÈ­
+    //qmncSCANì˜ í• ë‹¹ë° ì´ˆê¸°í™”
     IDE_TEST( QC_QMP_MEM( aStatement )->alloc( ID_SIZEOF( qmncSDIN ),
                                                (void **)& sSDIN )
               != IDE_SUCCESS );
@@ -9031,13 +9031,13 @@ IDE_RC qmoOneNonPlan::makeSDIN( qcStatement    * aStatement ,
 {
 /***********************************************************************
  *
- * Description : SDIN ³ëµå¸¦ »ı¼ºÇÑ´Ù.
+ * Description : SDIN ë…¸ë“œë¥¼ ìƒì„±í•œë‹¤.
  *
  * Implementation :
- *     + ¸ŞÀÎ ÀÛ¾÷
- *     + ¸¶¹«¸® ÀÛ¾÷
- *         - data ¿µ¿ªÀÇ Å©±â °è»ê
- *         - dependencyÀÇ Ã³¸®
+ *     + ë©”ì¸ ì‘ì—…
+ *     + ë§ˆë¬´ë¦¬ ì‘ì—…
+ *         - data ì˜ì—­ì˜ í¬ê¸° ê³„ì‚°
+ *         - dependencyì˜ ì²˜ë¦¬
  *
  ***********************************************************************/
 
@@ -9050,7 +9050,7 @@ IDE_RC qmoOneNonPlan::makeSDIN( qcStatement    * aStatement ,
     IDU_FIT_POINT_FATAL( "qmoOneNonPlan::makeSDIN::__FT__" );
 
     //----------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //----------------------------------
 
     IDE_FT_ASSERT( aStatement != NULL );
@@ -9058,7 +9058,7 @@ IDE_RC qmoOneNonPlan::makeSDIN( qcStatement    * aStatement ,
     IDE_FT_ASSERT( aPlan      != NULL );
 
     //----------------------------------------------------------------
-    // ÃÊ±âÈ­ ÀÛ¾÷
+    // ì´ˆê¸°í™” ì‘ì—…
     //----------------------------------------------------------------
 
     aPlan->offset = aStatement->myPlan->sTmplate->tmplate.dataSize;
@@ -9068,7 +9068,7 @@ IDE_RC qmoOneNonPlan::makeSDIN( qcStatement    * aStatement ,
     sSDIN->plan.left = aChildPlan;
 
     //----------------------------------
-    // Flag ¼³Á¤
+    // Flag ì„¤ì •
     //----------------------------------
 
     sSDIN->flag = QMN_PLAN_FLAG_CLEAR;
@@ -9083,18 +9083,18 @@ IDE_RC qmoOneNonPlan::makeSDIN( qcStatement    * aStatement ,
         // Nothing to do.
     }
 
-    //Leaf Node¿¡ tuple·Î ºÎÅÍ memory ÀÎÁö disk tableÀÎÁö¸¦ ¼¼ÆÃ
-    //from tupleÁ¤º¸
+    //Leaf Nodeì— tupleë¡œ ë¶€í„° memory ì¸ì§€ disk tableì¸ì§€ë¥¼ ì„¸íŒ…
+    //from tupleì •ë³´
     IDE_TEST( setTableTypeFromTuple( aStatement ,
                                      aINSTInfo->tableRef->table ,
                                      &( sSDIN->plan.flag ) )
               != IDE_SUCCESS );
 
     //----------------------------------
-    // Display Á¤º¸ ¼¼ÆÃ
+    // Display ì •ë³´ ì„¸íŒ…
     //----------------------------------
 
-    // tableRef¸¸ ÀÖÀ¸¸é µÊ
+    // tableRefë§Œ ìˆìœ¼ë©´ ë¨
     sFrom.tableRef = aINSTInfo->tableRef;
 
     IDE_TEST( qmg::setDisplayInfo( & sFrom,
@@ -9104,19 +9104,19 @@ IDE_RC qmoOneNonPlan::makeSDIN( qcStatement    * aStatement ,
               != IDE_SUCCESS );
 
     //----------------------------------------------------------------
-    // ¸ŞÀÎ ÀÛ¾÷
+    // ë©”ì¸ ì‘ì—…
     //----------------------------------------------------------------
 
     sTableForInsert = aINSTInfo->tableRef->tableInfo;
 
     //----------------------------------
-    // insert °ü·Ã Á¤º¸
+    // insert ê´€ë ¨ ì •ë³´
     //----------------------------------
 
-    // insert target ¼³Á¤
+    // insert target ì„¤ì •
     sSDIN->tableRef = aINSTInfo->tableRef;
 
-    // insert select ¼³Á¤
+    // insert select ì„¤ì •
     if ( aChildPlan != NULL )
     {
         sSDIN->isInsertSelect = ID_TRUE;
@@ -9126,25 +9126,25 @@ IDE_RC qmoOneNonPlan::makeSDIN( qcStatement    * aStatement ,
         sSDIN->isInsertSelect = ID_FALSE;
     }
 
-    // insert columns ¼³Á¤
+    // insert columns ì„¤ì •
     sSDIN->columns          = aINSTInfo->columns;
     sSDIN->columnsForValues = aINSTInfo->columnsForValues;
 
-    // insert values ¼³Á¤
+    // insert values ì„¤ì •
     sSDIN->rows            = aINSTInfo->rows;
     sSDIN->valueIdx        = aINSTInfo->valueIdx;
     sSDIN->canonizedTuple  = aINSTInfo->canonizedTuple;
     sSDIN->queueMsgIDSeq   = aINSTInfo->queueMsgIDSeq;
 
-    // sequence Á¤º¸
+    // sequence ì •ë³´
     sSDIN->nextValSeqs = aINSTInfo->nextValSeqs;
 
-    // shard query Á¤º¸
+    // shard query ì •ë³´
     sSDIN->shardQuery.stmtText = aShardQuery->stmtText;
     sSDIN->shardQuery.offset   = aShardQuery->offset;
     sSDIN->shardQuery.size     = aShardQuery->size;
 
-    // shard analysis Á¤º¸
+    // shard analysis ì •ë³´
     sSDIN->shardAnalysis = aShardAnalysis;
     sSDIN->shardParamCount = 0;
     for ( i = 0; i < sTableForInsert->columnCount; i++ )
@@ -9160,7 +9160,7 @@ IDE_RC qmoOneNonPlan::makeSDIN( qcStatement    * aStatement ,
         }
     }
 
-    // shard exec data ¼³Á¤
+    // shard exec data ì„¤ì •
     sSDIN->shardDataOffset = idlOS::align8( QC_SHARED_TMPLATE(aStatement)->shardExecData.dataSize );
     sSDIN->shardDataSize = 0;
 
@@ -9171,14 +9171,14 @@ IDE_RC qmoOneNonPlan::makeSDIN( qcStatement    * aStatement ,
         sSDIN->shardDataOffset + sSDIN->shardDataSize;
 
     //----------------------------------------------------------------
-    // ¸¶¹«¸® ÀÛ¾÷
+    // ë§ˆë¬´ë¦¬ ì‘ì—…
     //----------------------------------------------------------------
 
-    // data ¿µ¿ªÀÇ Å©±â °è»ê
+    // data ì˜ì—­ì˜ í¬ê¸° ê³„ì‚°
     QC_SHARED_TMPLATE(aStatement)->tmplate.dataSize = sDataNodeOffset;
 
     //----------------------------------
-    // dependency Ã³¸® ¹× subqueryÀÇ Ã³¸®
+    // dependency ì²˜ë¦¬ ë° subqueryì˜ ì²˜ë¦¬
     //----------------------------------
 
     qtc::dependencyClear( & sSDIN->plan.depInfo );

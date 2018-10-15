@@ -233,7 +233,7 @@ void rpi::applyStatisticsForSystem()
 {
     if(smiGetStartupPhase() == SMI_STARTUP_SERVICE)
     {
-        /* ¸ğµç sender¿Í receiver ¾²·¹µåµéÀÇ ¼¼¼Ç¿¡ ÀÖ´Â Åë°èÁ¤º¸¸¦ ½Ã½ºÅÛ¿¡ ¹İ¿µ */
+        /* ëª¨ë“  senderì™€ receiver ì“°ë ˆë“œë“¤ì˜ ì„¸ì…˜ì— ìˆëŠ” í†µê³„ì •ë³´ë¥¼ ì‹œìŠ¤í…œì— ë°˜ì˜ */
         rpcManager::applyStatisticsForSystem();
     }
 }

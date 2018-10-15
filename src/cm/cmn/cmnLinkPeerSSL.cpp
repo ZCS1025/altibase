@@ -169,7 +169,7 @@ IDE_RC cmnLinkPeerInitializeSSL(cmnLink *aLink)
     cmnLinkPeerSSL *sLink = (cmnLinkPeerSSL *)aLink;
 
     /*
-     * ¸â¹ö ÃÊ±âÈ­
+     * ë©¤ë²„ ì´ˆê¸°í™”
      */
     sLink->mDesc.mHandle = PDL_INVALID_SOCKET;
     sLink->mDispatchInfo = 0;
@@ -188,10 +188,10 @@ IDE_RC cmnLinkPeerFinalizeSSL(cmnLink *aLink)
     cmnLinkPeerSSL *sLink = (cmnLinkPeerSSL *)aLink;
     cmbPool              *sPool = sLink->mLinkPeer.mPool;
 
-    /* socketÀÌ ¿­·ÁÀÖÀ¸¸é ´ÝÀ½ */
+    /* socketì´ ì—´ë ¤ìžˆìœ¼ë©´ ë‹«ìŒ */
     IDE_TEST(aLink->mOp->mClose(aLink) != IDE_SUCCESS);
 
-    /* Pending BlockÀÌ ÇÒ´çµÇ¾î ÀÖÀ¸¸é ÇØÁ¦ */
+    /* Pending Blockì´ í• ë‹¹ë˜ì–´ ìžˆìœ¼ë©´ í•´ì œ */
     if (sLink->mPendingBlock != NULL)
     {
         IDE_TEST(sPool->mOp->mFreeBlock(sPool, sLink->mPendingBlock) != IDE_SUCCESS);
@@ -261,7 +261,7 @@ IDE_RC cmnLinkPeerGetHandleSSL(cmnLink *aLink, void *aHandle)
     cmnLinkPeerSSL *sLink = (cmnLinkPeerSSL *)aLink;
 
     /*
-     * socketÀ» µ¹·ÁÁÜ
+     * socketì„ ëŒë ¤ì¤Œ
      */
     *(PDL_SOCKET *)aHandle = sLink->mDesc.mHandle;
 
@@ -273,7 +273,7 @@ IDE_RC cmnLinkPeerGetDispatchInfoSSL(cmnLink *aLink, void *aDispatchInfo)
     cmnLinkPeerSSL *sLink = (cmnLinkPeerSSL *)aLink;
 
     /*
-     * DispatcherInfo¸¦ µ¹·ÁÁÜ
+     * DispatcherInfoë¥¼ ëŒë ¤ì¤Œ
      */
     *(UInt *)aDispatchInfo = sLink->mDispatchInfo;
 
@@ -285,7 +285,7 @@ IDE_RC cmnLinkPeerSetDispatchInfoSSL(cmnLink *aLink, void *aDispatchInfo)
     cmnLinkPeerSSL *sLink = (cmnLinkPeerSSL *)aLink;
 
     /*
-     * DispatcherInfo¸¦ ¼¼ÆÃ
+     * DispatcherInfoë¥¼ ì„¸íŒ…
      */
     sLink->mDispatchInfo = *(UInt *)aDispatchInfo;
 
@@ -587,7 +587,7 @@ IDE_RC cmnLinkPeerGetDescSSL(cmnLinkPeer *aLink, void *aDesc)
     cmnLinkPeerSSL *sLink = (cmnLinkPeerSSL *)aLink;
 
     /*
-     * Desc¸¦ µ¹·ÁÁÜ
+     * Descë¥¼ ëŒë ¤ì¤Œ
      */
     *(cmnLinkDescSSL **)aDesc = &sLink->mDesc;
 
@@ -897,7 +897,7 @@ static IDE_RC cmnLinkPeerConnByIP(cmnLinkPeer*       aLink,
     idlOS::memcpy(&sLink->mDesc.mAddr, aAddr->ai_addr, aAddr->ai_addrlen);
     sLink->mDesc.mAddrLen = aAddr->ai_addrlen;
 
-    /* socket ÃÊ±âÈ­ */
+    /* socket ì´ˆê¸°í™” */
     IDE_TEST(aLink->mPeerOp->mSetOptions(aLink, aOption) != IDE_SUCCESS);
 
     return IDE_SUCCESS;
@@ -921,7 +921,7 @@ static IDE_RC cmnLinkPeerConnByIP(cmnLinkPeer*       aLink,
     }
     IDE_EXCEPTION_END;
 
-    // BUG-24170 [CM] cmiConnect ½ÇÆÐ ½Ã, cmiConnect ³»¿¡¼­ close
+    // BUG-24170 [CM] cmiConnect ì‹¤íŒ¨ ì‹œ, cmiConnect ë‚´ì—ì„œ close
     if (sHandle != PDL_INVALID_SOCKET)
     {
         (void)idlOS::closesocket(sHandle);
@@ -1063,7 +1063,7 @@ static IDE_RC cmnLinkPeerConnByName(cmnLinkPeer*       aLink,
     idlOS::memcpy(&sLink->mDesc.mAddr, sAddr->ai_addr, sAddr->ai_addrlen);
     sLink->mDesc.mAddrLen = sAddr->ai_addrlen;
 
-    /* socket ÃÊ±âÈ­ */
+    /* socket ì´ˆê¸°í™” */
     IDE_TEST(aLink->mPeerOp->mSetOptions(aLink, aOption) != IDE_SUCCESS);
 
     return IDE_SUCCESS;
@@ -1087,7 +1087,7 @@ static IDE_RC cmnLinkPeerConnByName(cmnLinkPeer*       aLink,
     }
     IDE_EXCEPTION_END;
 
-    // BUG-24170 [CM] cmiConnect ½ÇÆÐ ½Ã, cmiConnect ³»¿¡¼­ close
+    // BUG-24170 [CM] cmiConnect ì‹¤íŒ¨ ì‹œ, cmiConnect ë‚´ì—ì„œ close
     if (sHandle != PDL_INVALID_SOCKET)
     {
         (void)idlOS::closesocket(sHandle);
@@ -1118,7 +1118,7 @@ IDE_RC cmnLinkPeerSetOptionsSSL(cmnLinkPeer *aLink, SInt aOption)
     linger                sLingerOption;
 
     /*
-     * SO_KEEPALIVE ¼¼ÆÃ
+     * SO_KEEPALIVE ì„¸íŒ…
      */
     sOption = 1;
 
@@ -1135,14 +1135,14 @@ IDE_RC cmnLinkPeerSetOptionsSSL(cmnLinkPeer *aLink, SInt aOption)
         /* do nothing */
     }
 
-    // BUG-26484: Ãß°¡·Î ¼³Á¤ÇÒ ¼ÒÄÏ ¿É¼ÇÀ» ÁöÁ¤
+    // BUG-26484: ì¶”ê°€ë¡œ ì„¤ì •í•  ì†Œì¼“ ì˜µì…˜ì„ ì§€ì •
     if (aOption == SO_LINGER)
     {
-        // ¿¬¼ÓÀ¸·Î ¿¬°áÇß´Ù ²÷±â¸¦ ¹Ýº¹ÇÏ¸é ´õ ÀÌ»ó ¿¬°áÇÒ ¼ö ¾ø°ÔµÈ´Ù.
-        // ÀÏ¹ÝÀûÀ¸·Î ¼ÒÄÏÀº closeÇØµµ TIME_WAIT »óÅÂ·Î ÀÏÁ¤½Ã°£ ´ë±âÇÏ±â ¶§¹®ÀÌ´Ù.
-        // SO_LINGER ¿É¼Ç Ãß°¡. (SO_REUSEADDR ¿É¼ÇÀ¸·Î´Â Àß ¾ÈµÉ ¼öµµ ÀÖ´Ù;)
+        // ì—°ì†ìœ¼ë¡œ ì—°ê²°í–ˆë‹¤ ëŠê¸°ë¥¼ ë°˜ë³µí•˜ë©´ ë” ì´ìƒ ì—°ê²°í•  ìˆ˜ ì—†ê²Œëœë‹¤.
+        // ì¼ë°˜ì ìœ¼ë¡œ ì†Œì¼“ì€ closeí•´ë„ TIME_WAIT ìƒíƒœë¡œ ì¼ì •ì‹œê°„ ëŒ€ê¸°í•˜ê¸° ë•Œë¬¸ì´ë‹¤.
+        // SO_LINGER ì˜µì…˜ ì¶”ê°€. (SO_REUSEADDR ì˜µì…˜ìœ¼ë¡œëŠ” ìž˜ ì•ˆë  ìˆ˜ë„ ìžˆë‹¤;)
         /*
-        * SO_LINGER ¼¼ÆÃ
+        * SO_LINGER ì„¸íŒ…
         */
         sLingerOption.l_onoff  = 1;
         sLingerOption.l_linger = 0;
@@ -1163,7 +1163,7 @@ IDE_RC cmnLinkPeerSetOptionsSSL(cmnLinkPeer *aLink, SInt aOption)
     else if (aOption == SO_REUSEADDR)
     {
         /*
-         * SO_REUSEADDR ¼¼ÆÃ
+         * SO_REUSEADDR ì„¸íŒ…
          */
         sOption = 1;
 
@@ -1186,7 +1186,7 @@ IDE_RC cmnLinkPeerSetOptionsSSL(cmnLinkPeer *aLink, SInt aOption)
     }
 
     /*
-     * TCP_NODELAY ¼¼ÆÃ
+     * TCP_NODELAY ì„¸íŒ…
      */
     sOption = 1;
 
@@ -1204,7 +1204,7 @@ IDE_RC cmnLinkPeerSetOptionsSSL(cmnLinkPeer *aLink, SInt aOption)
     }
 
     /* BUG-22028
-     * SO_SNDBUF ¼¼ÆÃ (´ë¿ªÆø * Áö¿¬À²) * 2
+     * SO_SNDBUF ì„¸íŒ… (ëŒ€ì—­í­ * ì§€ì—°ìœ¨) * 2
      */
     sOption = CMB_BLOCK_DEFAULT_SIZE * 2;
 
@@ -1222,7 +1222,7 @@ IDE_RC cmnLinkPeerSetOptionsSSL(cmnLinkPeer *aLink, SInt aOption)
     }
 
     /* BUG-22028
-     * SO_RCVBUF ¼¼ÆÃ (´ë¿ªÆø * Áö¿¬À²) * 2
+     * SO_RCVBUF ì„¸íŒ… (ëŒ€ì—­í­ * ì§€ì—°ìœ¨) * 2
      */
     sOption = CMB_BLOCK_DEFAULT_SIZE * 2;
 
@@ -1299,12 +1299,12 @@ static IDE_RC cmnSslSockRecv(SSL            *aSslHandle,
     IDE_TEST(aBlock == NULL);
 
     /*  
-     * aSize ÀÌ»ó aBlockÀ¸·Î µ¥ÀÌÅÍ ÀÐÀ½
+     * aSize ì´ìƒ aBlockìœ¼ë¡œ ë°ì´í„° ì½ìŒ
      */
     while (aBlock->mDataSize < aSize)
     {   
         /*
-         * Dispatcher¸¦ ÀÌ¿ëÇÏ¿© Timeout ¸¸Å­ ´ë±â
+         * Dispatcherë¥¼ ì´ìš©í•˜ì—¬ Timeout ë§Œí¼ ëŒ€ê¸°
          */
         if (aTimeout != NULL)
         {
@@ -1409,7 +1409,7 @@ static IDE_RC cmnSslSockSend(SSL            *aSSL,
     while (aBlock->mCursor < aBlock->mDataSize)
     {
         /*
-         * Dispatcher¸¦ ÀÌ¿ëÇÏ¿© Timeout ¸¸Å­ ´ë±â
+         * Dispatcherë¥¼ ì´ìš©í•˜ì—¬ Timeout ë§Œí¼ ëŒ€ê¸°
          */
         if (aTimeout != NULL)
         {
@@ -1491,7 +1491,7 @@ IDE_RC cmnLinkPeerRecvSSL(cmnLinkPeer *aLink,
     IDE_TEST_RAISE(sPacketType == CMP_PACKET_TYPE_A5, UnsupportedNetworkProtocol);
 
     /*
-     * Pending BlockÀÖÀ¸¸é »ç¿ë ±×·¸Áö ¾ÊÀ¸¸é Block ÇÒ´ç
+     * Pending Blockìžˆìœ¼ë©´ ì‚¬ìš© ê·¸ë ‡ì§€ ì•Šìœ¼ë©´ Block í• ë‹¹
      */
     /* proj_2160 cm_type removal */
     /* A7 or CMP_PACKET_TYPE_UNKNOWN: block already allocated. */
@@ -1515,7 +1515,7 @@ IDE_RC cmnLinkPeerRecvSSL(cmnLinkPeer *aLink,
     }
 
     /*
-     * Protocol Header Size Å©±â ÀÌ»ó ÀÐÀ½
+     * Protocol Header Size í¬ê¸° ì´ìƒ ì½ìŒ
      */
     IDE_TEST_RAISE(cmnSslSockRecv(sLink->mDesc.mSslHandle, 
                                   sBlock,
@@ -1525,13 +1525,13 @@ IDE_RC cmnLinkPeerRecvSSL(cmnLinkPeer *aLink,
                                   IDV_STAT_INDEX_RECV_TCP_BYTE) != IDE_SUCCESS, SockRecvError);
 
     /*
-     * Protocol Header ÇØ¼®
+     * Protocol Header í•´ì„
      */
     IDE_TEST(cmpHeaderRead(aLink, &sHeader, sBlock) != IDE_SUCCESS);
     sPacketSize = sHeader.mA7.mPayloadLength + CMP_HEADER_SIZE;
 
     /*
-     * ÆÐÅ¶ Å©±â ÀÌ»ó ÀÐÀ½
+     * íŒ¨í‚· í¬ê¸° ì´ìƒ ì½ìŒ
      */
     IDE_TEST_RAISE(cmnSslSockRecv(sLink->mDesc.mSslHandle,
                                   sBlock,
@@ -1541,7 +1541,7 @@ IDE_RC cmnLinkPeerRecvSSL(cmnLinkPeer *aLink,
                                   IDV_STAT_INDEX_RECV_TCP_BYTE) != IDE_SUCCESS, SockRecvError);
 
     /*
-     * ÆÐÅ¶ Å©±â ÀÌ»ó ÀÐÇûÀ¸¸é ÇöÀç ÆÐÅ¶ ÀÌÈÄÀÇ µ¥ÀÌÅÍ¸¦ Pending BlockÀ¸·Î ¿Å±è
+     * íŒ¨í‚· í¬ê¸° ì´ìƒ ì½í˜”ìœ¼ë©´ í˜„ìž¬ íŒ¨í‚· ì´í›„ì˜ ë°ì´í„°ë¥¼ Pending Blockìœ¼ë¡œ ì˜®ê¹€
      */
     if (sBlock->mDataSize > sPacketSize)
     {
@@ -1554,7 +1554,7 @@ IDE_RC cmnLinkPeerRecvSSL(cmnLinkPeer *aLink,
     }
 
     /*
-     * Block°ú Header¸¦ µ¹·ÁÁÜ
+     * Blockê³¼ Headerë¥¼ ëŒë ¤ì¤Œ
      */
     /* proj_2160 cm_type removal
      *  Do not use mLink.mPacketType. instead, use sPacketType.
@@ -1612,7 +1612,7 @@ IDE_RC cmnLinkPeerSendSSL(cmnLinkPeer *aLink, cmbBlock *aBlock)
     cmnLinkPeerSSL *sLink = (cmnLinkPeerSSL *)aLink;
 
     /*
-     * Block Àü¼Û
+     * Block ì „ì†¡
      */
     IDE_TEST(cmnSslSockSend(sLink->mDesc.mSslHandle,
                             aBlock,
@@ -1648,13 +1648,13 @@ IDE_RC cmnLinkPeerAllocBlockSSL(cmnLinkPeer *aLink, cmbBlock **aBlock)
     IDE_TEST(aLink->mPool->mOp->mAllocBlock(aLink->mPool, &sBlock) != IDE_SUCCESS);
 
     /*
-     * Write Block ÃÊ±âÈ­
+     * Write Block ì´ˆê¸°í™”
      */
     sBlock->mDataSize = CMP_HEADER_SIZE;
     sBlock->mCursor   = CMP_HEADER_SIZE;
 
     /*
-     * Write BlockÀ» µ¹·ÁÁÜ
+     * Write Blockì„ ëŒë ¤ì¤Œ
      */
     *aBlock = sBlock;
 
@@ -1668,7 +1668,7 @@ IDE_RC cmnLinkPeerAllocBlockSSL(cmnLinkPeer *aLink, cmbBlock **aBlock)
 IDE_RC cmnLinkPeerFreeBlockSSL(cmnLinkPeer *aLink, cmbBlock *aBlock)
 {
     /*
-     * Block ÇØÁ¦
+     * Block í•´ì œ
      */
     IDE_TEST(aLink->mPool->mOp->mFreeBlock(aLink->mPool, aBlock) != IDE_SUCCESS);
 
@@ -1743,25 +1743,25 @@ IDE_RC cmnLinkPeerMapSSL(cmnLink *aLink)
     cmnLinkPeer *sLink = (cmnLinkPeer *)aLink;
 
     /*
-     * Link °Ë»ç
+     * Link ê²€ì‚¬
      */
     IDE_ASSERT((aLink->mType == CMN_LINK_TYPE_PEER_SERVER) ||
                (aLink->mType == CMN_LINK_TYPE_PEER_CLIENT));
     IDE_ASSERT(aLink->mImpl == CMN_LINK_IMPL_SSL);
 
     /*
-     * Shared Pool È¹µæ
+     * Shared Pool íšë“
      */
     IDE_TEST(cmbPoolGetSharedPool(&sLink->mPool, CMB_POOL_IMPL_LOCAL) != IDE_SUCCESS);
 
     /*
-     * ÇÔ¼ö Æ÷ÀÎÅÍ ¼¼ÆÃ
+     * í•¨ìˆ˜ í¬ì¸í„° ì„¸íŒ…
      */
     aLink->mOp     = &gCmnLinkPeerOpSSL;
     sLink->mPeerOp = &gCmnLinkPeerPeerOpSSL;
 
     /*
-     * ¸â¹ö ÃÊ±âÈ­
+     * ë©¤ë²„ ì´ˆê¸°í™”
      */
     sLink->mStatistics = NULL;
     sLink->mUserPtr    = NULL;

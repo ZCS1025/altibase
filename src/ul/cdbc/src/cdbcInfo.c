@@ -19,14 +19,14 @@
 
 
 /**
- * Äõ¸®¹®ÀÇ À¯ÇüÀ» È®ÀÎÇÑ´Ù.
+ * ì¿¼ë¦¬ë¬¸ì˜ ìœ í˜•ì„ í™•ì¸í•œë‹¤.
  *
- * Äõ¸®¹®ÀÌ ¾î¶»°Ô ½ÃÀÛÇÏ´ÂÁö·Î ¾î¶² À¯ÇüÀÎÁö ÆÇ´ÜÇÏ¹Ç·Î
- * ´Ü¼øÇÑ Äõ¸®¿¡ ´ëÇØ¼­¸¸ °¡´ÉÇÏ´Ù.
- * procedure³ª function¿¡ ´ëÇØ¼­´Â È®ÀÎÇÒ ¼ö ¾ø´Ù.
+ * ì¿¼ë¦¬ë¬¸ì´ ì–´ë–»ê²Œ ì‹œìž‘í•˜ëŠ”ì§€ë¡œ ì–´ë–¤ ìœ í˜•ì¸ì§€ íŒë‹¨í•˜ë¯€ë¡œ
+ * ë‹¨ìˆœí•œ ì¿¼ë¦¬ì— ëŒ€í•´ì„œë§Œ ê°€ëŠ¥í•˜ë‹¤.
+ * procedureë‚˜ functionì— ëŒ€í•´ì„œëŠ” í™•ì¸í•  ìˆ˜ ì—†ë‹¤.
  *
- * @param[in] aQstr Á¾·ù¸¦ È®ÀÎÇÒ Äõ¸®¹®
- * @return Äõ¸®¹®ÀÇ Á¾·ù
+ * @param[in] aQstr ì¢…ë¥˜ë¥¼ í™•ì¸í•  ì¿¼ë¦¬ë¬¸
+ * @return ì¿¼ë¦¬ë¬¸ì˜ ì¢…ë¥˜
  */
 CDBC_INTERNAL
 cdbcABQueryType altibase_query_type (const acp_char_t *aQstr)
@@ -88,10 +88,10 @@ cdbcABQueryType altibase_query_type (const acp_char_t *aQstr)
 }
 
 /**
- * SQL Å¸ÀÔ¿¡ ÇØ´çÇÏ´Â ALTIBASE_FIELD_TYPEÀ» ¾ò´Â´Ù.
+ * SQL íƒ€ìž…ì— í•´ë‹¹í•˜ëŠ” ALTIBASE_FIELD_TYPEì„ ì–»ëŠ”ë‹¤.
  *
- * @param[in] aSqlType SQL Å¸ÀÔ
- * @return SQL Å¸ÀÔ¿¡ ÇØ´çÇÏ´Â ALTIBASE_FIELD_TYPE
+ * @param[in] aSqlType SQL íƒ€ìž…
+ * @return SQL íƒ€ìž…ì— í•´ë‹¹í•˜ëŠ” ALTIBASE_FIELD_TYPE
  */
 CDBC_INTERNAL
 ALTIBASE_FIELD_TYPE altibase_typeconv_sql2alti (SQLSMALLINT aSqlType)
@@ -122,7 +122,7 @@ ALTIBASE_FIELD_TYPE altibase_typeconv_sql2alti (SQLSMALLINT aSqlType)
         case SQL_NIBBLE:         sType = ALTIBASE_TYPE_NIBBLE; break;
         case SQL_BIT:            sType = ALTIBASE_TYPE_BIT; break;
         case SQL_VARBIT:         sType = ALTIBASE_TYPE_VARBIT; break;
-        case SQL_BINARY:         /* GEOMETRY ÄÃ·³À» descÇÏ¸é SQL_BINARYÀ» ÁÜ */
+        case SQL_BINARY:         /* GEOMETRY ì»¬ëŸ¼ì„ descí•˜ë©´ SQL_BINARYì„ ì¤Œ */
         case SQL_GEOMETRY:       sType = ALTIBASE_TYPE_GEOMETRY; break;
         default:                 sType = ALTIBASE_TYPE_UNKNOWN; break;
     }
@@ -135,10 +135,10 @@ ALTIBASE_FIELD_TYPE altibase_typeconv_sql2alti (SQLSMALLINT aSqlType)
 }
 
 /**
- * ALTIBASE_FIELD_TYPE¿¡ ÇØ´çÇÏ´Â SQL Å¸ÀÔÀ» ¾ò´Â´Ù.
+ * ALTIBASE_FIELD_TYPEì— í•´ë‹¹í•˜ëŠ” SQL íƒ€ìž…ì„ ì–»ëŠ”ë‹¤.
  *
- * @param[in] aAbType ALTIBASE_FIELD_TYPE °ª
- * @return ALTIBASE_FIELD_TYPE¿¡ ÇØ´çÇÏ´Â SQL Å¸ÀÔ
+ * @param[in] aAbType ALTIBASE_FIELD_TYPE ê°’
+ * @return ALTIBASE_FIELD_TYPEì— í•´ë‹¹í•˜ëŠ” SQL íƒ€ìž…
  */
 CDBC_INTERNAL
 SQLSMALLINT altibase_typeconv_alti2sql (ALTIBASE_FIELD_TYPE aAbType)
@@ -181,10 +181,10 @@ SQLSMALLINT altibase_typeconv_alti2sql (ALTIBASE_FIELD_TYPE aAbType)
 }
 
 /**
- * ¿¬°á Á¤º¸ ¹®ÀÚ¿­À» ¾ò´Â´Ù.
+ * ì—°ê²° ì •ë³´ ë¬¸ìžì—´ì„ ì–»ëŠ”ë‹¤.
  *
- * @param[in] aABConn ¿¬°á ÇÚµé
- * @return "type/host:port/app_info" Çü½ÄÀÇ ¿¬°á Á¤º¸ ¹®ÀÚ¿­, ½ÇÆÐÇÏ¸é NULL
+ * @param[in] aABConn ì—°ê²° í•¸ë“¤
+ * @return "type/host:port/app_info" í˜•ì‹ì˜ ì—°ê²° ì •ë³´ ë¬¸ìžì—´, ì‹¤íŒ¨í•˜ë©´ NULL
  */
 CDBC_EXPORT
 const acp_char_t * altibase_host_info (ALTIBASE aABConn)
@@ -204,7 +204,7 @@ const acp_char_t * altibase_host_info (ALTIBASE aABConn)
 
     altibase_init_errinfo(&(sABConn->mDiagRec));
 
-    /* BUGBUG: (CLI) type, host Á¤º¸¸¦ ¾òÀ» ¼ö ¾ø´Ù */
+    /* BUGBUG: (CLI) type, host ì •ë³´ë¥¼ ì–»ì„ ìˆ˜ ì—†ë‹¤ */
     CDBC_RAISE(NotSupported);
 
     sRC = SQLGetConnectAttr(sABConn->mHdbc, SQL_ATTR_PORT,

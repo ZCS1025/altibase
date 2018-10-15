@@ -52,7 +52,7 @@ ACI_RC ulnCharSetValidOn(const mtlModule *aSrcCharSet,
 
     return ACI_SUCCESS;
 
-    // error¸¦ ÀÌ ÇÔ¼ö¸¦ È£ÃâÇÏ´Â °÷¿¡¼­ µ¤¾î¾º¿î´Ù.
+    // errorë¥¼ ì´ í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•˜ëŠ” ê³³ì—ì„œ ë®ì–´ì”Œìš´ë‹¤.
     ACI_EXCEPTION(ERR_INVALID_CHARACTER);
 
     ACI_EXCEPTION_END;
@@ -107,8 +107,8 @@ ACI_RC ulnCharSetConvertNLiteral(ulnCharSet      *aCharSet,
             }
 
             sDestRemain = aCharSet->mSrcLen * 2;
-            // BUG-24878 iloader ¿¡¼­ NULL µ¥ÀÌÅ¸ Ã³¸®½Ã ¿À·ù.
-            // sDestRemain ÀÌ 0ÀÏ¶§ malloc À» ÇÏ¸é ¾ÈµË´Ï´Ù.
+            // BUG-24878 iloader ì—ì„œ NULL ë°ì´íƒ€ ì²˜ë¦¬ì‹œ ì˜¤ë¥˜.
+            // sDestRemain ì´ 0ì¼ë•Œ malloc ì„ í•˜ë©´ ì•ˆë©ë‹ˆë‹¤.
             if(sDestRemain > 0)
             {
                 /* BUG-30336 */
@@ -137,7 +137,7 @@ ACI_RC ulnCharSetConvertNLiteral(ulnCharSet      *aCharSet,
                                                    sSourceFence,
                                                    aSrcCharSet );
 
-                // Nliteral Prefix (N'..') ½ÃÀÛÁöÁ¡ÀÎÁö¸¦ °Ë»ç
+                // Nliteral Prefix (N'..') ì‹œìž‘ì§€ì ì¸ì§€ë¥¼ ê²€ì‚¬
                 if (sNCharFlag == ACP_FALSE)
                 {
                     sIsSame_N = mtcCompareOneChar( sSourceIndex,
@@ -155,11 +155,11 @@ ACI_RC ulnCharSetConvertNLiteral(ulnCharSet      *aCharSet,
                         sNCharFlag = ACP_TRUE;
                     }
                 }
-                // N prefix (N'..')¸¦ ÀÌ¹Ì Ã£Àº »óÅÂ¿¡¼­ quote(') ¹®ÀÚ °Ë»ç
+                // N prefix (N'..')ë¥¼ ì´ë¯¸ ì°¾ì€ ìƒíƒœì—ì„œ quote(') ë¬¸ìž ê²€ì‚¬
                 else
                 {
-                    // N-literalÀÇ open quote ¹®ÀÚ¸¦ ¾ÆÁ÷ ¸øÃ£Àº °æ¿ì
-                    // open quote ¹®ÀÚÀÎÁö °Ë»ç(N'...')
+                    // N-literalì˜ open quote ë¬¸ìžë¥¼ ì•„ì§ ëª»ì°¾ì€ ê²½ìš°
+                    // open quote ë¬¸ìžì¸ì§€ ê²€ì‚¬(N'...')
                     if (sQuoteFlag == ACP_FALSE)
                     {
                         sIsSame_Quote = mtcCompareOneChar( sSourceIndex,
@@ -167,7 +167,7 @@ ACI_RC ulnCharSetConvertNLiteral(ulnCharSet      *aCharSet,
                                                            (acp_uint8_t*)"\'",
                                                            1 );
 
-                        // N-literalÀÇ open quote¸¦ Ã£Àº °æ¿ì (N')
+                        // N-literalì˜ open quoteë¥¼ ì°¾ì€ ê²½ìš° (N')
                         if (sIsSame_Quote == ACP_TRUE)
                         {
                             sTempRemain = sDestRemain;
@@ -181,7 +181,7 @@ ACI_RC ulnCharSetConvertNLiteral(ulnCharSet      *aCharSet,
                                                                  -1 /* mNlsNcharConvExcp */ )
                                            != ACI_SUCCESS, LABEL_INVALID_DATA_LENGTH);
 
-                            // aciConvConvertCharSet ¿¡¼­ ÄÁ¹öÁ¯ÀÌ ¾ÈÀÏ¾î³¯¼ö ÀÖ±â ¶§¹®¿¡ sDestRemain À» º¸°í ¿òÁ÷ÀÎ´Ù.
+                            // aciConvConvertCharSet ì—ì„œ ì»¨ë²„ì ¼ì´ ì•ˆì¼ì–´ë‚ ìˆ˜ ìžˆê¸° ë•Œë¬¸ì— sDestRemain ì„ ë³´ê³  ì›€ì§ì¸ë‹¤.
                             sResultValue += (sTempRemain - sDestRemain);
 
                             sTempIndex = sSourceIndex;
@@ -191,19 +191,19 @@ ACI_RC ulnCharSetConvertNLiteral(ulnCharSet      *aCharSet,
                             sSrcRemain -= (sSourceIndex - sTempIndex);
                             sQuoteFlag = ACP_TRUE;
                         }
-                        // N ¹®ÀÚ µÚ¿¡ quote ¹®ÀÚ°¡ ¿ÀÁö ¾ÊÀ¸¸é N ¹®ÀÚ´Â
-                        // N-literal prefix°¡ ¾Æ´Ï¹Ç·Î ¹«½Ã
+                        // N ë¬¸ìž ë’¤ì— quote ë¬¸ìžê°€ ì˜¤ì§€ ì•Šìœ¼ë©´ N ë¬¸ìžëŠ”
+                        // N-literal prefixê°€ ì•„ë‹ˆë¯€ë¡œ ë¬´ì‹œ
                         else
                         {
                             sNCharFlag = ACP_FALSE;
                         }
                     }
 
-                    // N-literalÀÇ close quote ¹®ÀÚÀÎÁö °Ë»ç(N'...')
-                    // À§ÀÇ if¿Í sQuoteFlag°ª¿¡ µû¶ó if-else °ü°è¿¡ ÀÖÀ¸¹Ç·Î
-                    // else·Î ¹­¾îµµ µÇÁö¸¸, N'' ÀÇ °æ¿ì open quote µÚ¿¡
-                    // close quote°¡ ¿¬¼ÓÀ¸·Î ¿À¹Ç·Î ÀÌ¸¦ Ã³¸®ÇÏ±â À§ÇØ
-                    // º°µµÀÇ if ·Î °Ë»çÇÑ´Ù
+                    // N-literalì˜ close quote ë¬¸ìžì¸ì§€ ê²€ì‚¬(N'...')
+                    // ìœ„ì˜ ifì™€ sQuoteFlagê°’ì— ë”°ë¼ if-else ê´€ê³„ì— ìžˆìœ¼ë¯€ë¡œ
+                    // elseë¡œ ë¬¶ì–´ë„ ë˜ì§€ë§Œ, N'' ì˜ ê²½ìš° open quote ë’¤ì—
+                    // close quoteê°€ ì—°ì†ìœ¼ë¡œ ì˜¤ë¯€ë¡œ ì´ë¥¼ ì²˜ë¦¬í•˜ê¸° ìœ„í•´
+                    // ë³„ë„ì˜ if ë¡œ ê²€ì‚¬í•œë‹¤
                     if (sQuoteFlag == ACP_TRUE)
                     {
                         sSrcCharSize =  mtlGetOneCharSize( sSourceIndex,
@@ -225,7 +225,7 @@ ACI_RC ulnCharSetConvertNLiteral(ulnCharSet      *aCharSet,
 
                 sTempIndex = sSourceIndex;
 
-                // ÀÏ¹Ý ¹®ÀÚ¿­ÀÎ °æ¿ì DB charsetÀ¸·Î º¯È¯
+                // ì¼ë°˜ ë¬¸ìžì—´ì¸ ê²½ìš° DB charsetìœ¼ë¡œ ë³€í™˜
                 if (sQuoteFlag != ACP_TRUE)
                 {
                     sTempRemain = sDestRemain;
@@ -239,14 +239,14 @@ ACI_RC ulnCharSetConvertNLiteral(ulnCharSet      *aCharSet,
                                                          -1 /* mNlsNcharConvExcp */ )
                                    != ACI_SUCCESS, LABEL_INVALID_DATA_LENGTH);
 
-                    // aciConvConvertCharSet ¿¡¼­ ÄÁ¹öÁ¯ÀÌ ¾ÈÀÏ¾î³¯¼ö ÀÖ±â ¶§¹®¿¡ sDestRemain À» º¸°í ¿òÁ÷ÀÎ´Ù.
+                    // aciConvConvertCharSet ì—ì„œ ì»¨ë²„ì ¼ì´ ì•ˆì¼ì–´ë‚ ìˆ˜ ìžˆê¸° ë•Œë¬¸ì— sDestRemain ì„ ë³´ê³  ì›€ì§ì¸ë‹¤.
                     sResultValue += (sTempRemain - sDestRemain);
 
                     (void)aSrcCharSet->nextCharPtr(&sSourceIndex, sSourceFence);
 
                     sSrcRemain -= (sSourceIndex - sTempIndex);
                 }
-                // N-literal ¹®ÀÚ¿­ÀÎ °æ¿ì (N'..') client charset ±×´ë·Î À¯Áö
+                // N-literal ë¬¸ìžì—´ì¸ ê²½ìš° (N'..') client charset ê·¸ëŒ€ë¡œ ìœ ì§€
                 else
                 {
                     (void)aSrcCharSet->nextCharPtr(&sSourceIndex, sSourceFence);
@@ -262,9 +262,9 @@ ACI_RC ulnCharSetConvertNLiteral(ulnCharSet      *aCharSet,
         }
         else
         {
-            // TASK-3420 ¹®ÀÚ Ã³¸® Á¤Ã¥ °³¼±
-            // µ¿ÀÏÇÑ Ä³¸¯ÅÍ¼ÂÀÏ°æ¿ì °Ë»çÇÏÁö ¾Ê´Â´Ù.
-            // È¯°æº¯¼ö ALTIBASE_NLS_CHARACTERSET_VALIDATION Àû¿ëµÇÁö ¾Ê´Â´Ù.
+            // TASK-3420 ë¬¸ìž ì²˜ë¦¬ ì •ì±… ê°œì„ 
+            // ë™ì¼í•œ ìºë¦­í„°ì…‹ì¼ê²½ìš° ê²€ì‚¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
+            // í™˜ê²½ë³€ìˆ˜ ALTIBASE_NLS_CHARACTERSET_VALIDATION ì ìš©ë˜ì§€ ì•ŠëŠ”ë‹¤.
         }
     }
 
@@ -294,7 +294,7 @@ ACI_RC ulnCharSetConvertNLiteral(ulnCharSet      *aCharSet,
 }
 
 // bug-21918: fnContext arg is NULL
-// object type¿¡ µû¶ó Dbc ±¸ÇÏ±â
+// object typeì— ë”°ë¼ Dbc êµ¬í•˜ê¸°
 // dbc object : self return
 // stmt object: parent dbc return
 // desc object: parent dbc or parent stmt's parent dbc return
@@ -314,7 +314,7 @@ ulnDbc* getDbcFromObj(ulnObject* aObj)
         case ULN_OBJ_TYPE_STMT:
             sDbc = (ulnDbc *)(((ulnStmt *)aObj)->mParentDbc);
             break;
-        // desc ÀÇ parent obj´Â stmtÀÌ°Å³ª dbcÀÏ ¼ö ÀÖ´Ù
+        // desc ì˜ parent objëŠ” stmtì´ê±°ë‚˜ dbcì¼ ìˆ˜ ìžˆë‹¤
         case ULN_OBJ_TYPE_DESC:
             sParentObj = ((ulnDesc *)aObj)->mParentObject;
             // desc's parent: Dbc
@@ -364,14 +364,14 @@ ACI_RC ulnCharSetConvert(ulnCharSet      *aCharSet,
     ulnObject* sObj = (ulnObject *)aObj;
 
 // =================================================================
-// bug-21918(fnContext null) °ü·Ã ¼öÁ¤»çÇ×
-// 1¹øÂ° ÀÎÀÚ¿Í 2¹øÂ° ÀÎÀÚ´Â µÑÁß¿¡ ÇÏ³ª¸é ¹ÞÀ¸¸é µÈ´Ù(ÇÏ³ª´Â NULL)
-// 1¹øÂ° ÀÎÀÚ¸¦(fnContext) ¹ÞÀ¸¸é ³»ºÎ¿¡¼­ DBC °ªÀ» ±¸ÇÑ´Ù
-// 1¹øÂ° ÀÎÀÚ°¡(fnContext) NULL ÀÎ °æ¿ì(SQLCWrapper¿¡¼­ Á÷Á¢ È£ÃâÇÑ °æ¿ì)
-// 2¹øÂ° ÀÎÀÚ(object)¸¦ ¹Þ¾Æ¼­ object Å¸ÀÔ¿¡ µû¶ó(dbc, stmt, desc)
-// dbc¸¦ Á÷Á¢ ±¸ÇÑ´Ù
-// Âü°í·Î FnContext´Â error msg¸¦ Ãâ·ÂÇÏ±â À§ÇØ »ç¿ëÇÏ´Â °ÍÀÌ´Ù
-// dbc¸¦ ±¸ÇÏ´Â ÀÌÀ¯´Â mNlsCharactersetValidation¸¦ »ç¿ëÇÏ±â À§ÇØ¼­ÀÓ
+// bug-21918(fnContext null) ê´€ë ¨ ìˆ˜ì •ì‚¬í•­
+// 1ë²ˆì§¸ ì¸ìžì™€ 2ë²ˆì§¸ ì¸ìžëŠ” ë‘˜ì¤‘ì— í•˜ë‚˜ë©´ ë°›ìœ¼ë©´ ëœë‹¤(í•˜ë‚˜ëŠ” NULL)
+// 1ë²ˆì§¸ ì¸ìžë¥¼(fnContext) ë°›ìœ¼ë©´ ë‚´ë¶€ì—ì„œ DBC ê°’ì„ êµ¬í•œë‹¤
+// 1ë²ˆì§¸ ì¸ìžê°€(fnContext) NULL ì¸ ê²½ìš°(SQLCWrapperì—ì„œ ì§ì ‘ í˜¸ì¶œí•œ ê²½ìš°)
+// 2ë²ˆì§¸ ì¸ìž(object)ë¥¼ ë°›ì•„ì„œ object íƒ€ìž…ì— ë”°ë¼(dbc, stmt, desc)
+// dbcë¥¼ ì§ì ‘ êµ¬í•œë‹¤
+// ì°¸ê³ ë¡œ FnContextëŠ” error msgë¥¼ ì¶œë ¥í•˜ê¸° ìœ„í•´ ì‚¬ìš©í•˜ëŠ” ê²ƒì´ë‹¤
+// dbcë¥¼ êµ¬í•˜ëŠ” ì´ìœ ëŠ” mNlsCharactersetValidationë¥¼ ì‚¬ìš©í•˜ê¸° ìœ„í•´ì„œìž„
 // =================================================================
     if (aFnContext == NULL)
     {
@@ -393,8 +393,8 @@ ACI_RC ulnCharSetConvert(ulnCharSet      *aCharSet,
         aCharSet->mDest = NULL;
     }
 
-    // BUG-24831 À¯´ÏÄÚµå µå¶óÀÌ¹ö¿¡¼­ mtl::defaultModule() À» È£ÃâÇÏ¸é ¾ÈµË´Ï´Ù.
-    // ÀÎÀÚ·Î NULL ÀÌ ³Ñ¾î¿Ã°æ¿ì Å¬¶óÀÌ¾ðÆ® Ä³¸¯ÅÍ ¼ÂÀ¸·Î ¼³Á¤ÇÑ´Ù.
+    // BUG-24831 ìœ ë‹ˆì½”ë“œ ë“œë¼ì´ë²„ì—ì„œ mtl::defaultModule() ì„ í˜¸ì¶œí•˜ë©´ ì•ˆë©ë‹ˆë‹¤.
+    // ì¸ìžë¡œ NULL ì´ ë„˜ì–´ì˜¬ê²½ìš° í´ë¼ì´ì–¸íŠ¸ ìºë¦­í„° ì…‹ìœ¼ë¡œ ì„¤ì •í•œë‹¤.
     if(aSrcCharSet == NULL)
     {
         aSrcCharSet = sDbc->mClientCharsetLangModule;
@@ -416,8 +416,8 @@ ACI_RC ulnCharSetConvert(ulnCharSet      *aCharSet,
         sSourceFence = sSourceIndex + sSrcRemain;
 
         // bug-23311: utf-16 little-endian error in ODBC unicode driver
-        // utf16 little-endianÀÎ °æ¿ì big-endianÀ¸·Î º¯È¯
-        // ex) windows ODBC unicode driver(SQL..Set..W()°è¿­ ÇÔ¼ö)·Î µé¾î¿Â ¹®ÀÚ¿­µé
+        // utf16 little-endianì¸ ê²½ìš° big-endianìœ¼ë¡œ ë³€í™˜
+        // ex) windows ODBC unicode driver(SQL..Set..W()ê³„ì—´ í•¨ìˆ˜)ë¡œ ë“¤ì–´ì˜¨ ë¬¸ìžì—´ë“¤
 #ifndef ENDIAN_IS_BIG_ENDIAN
         if ((aSrcCharSet->id == MTL_UTF16_ID) &&
             ((aOption & CONV_DATA_IN) == CONV_DATA_IN) &&
@@ -438,8 +438,8 @@ ACI_RC ulnCharSetConvert(ulnCharSet      *aCharSet,
             // ex) 0xb1 (shift-jis) => 0x ef bd b1 (utf8)
             sDestRemain = aCharSet->mSrcLen * (aDestCharSet->maxPrecision(1));
 
-            // BUG-24878 iloader ¿¡¼­ NULL µ¥ÀÌÅ¸ Ã³¸®½Ã ¿À·ù.
-            // sDestRemain ÀÌ 0ÀÏ¶§ malloc À» ÇÏ¸é ¾ÈµË´Ï´Ù.
+            // BUG-24878 iloader ì—ì„œ NULL ë°ì´íƒ€ ì²˜ë¦¬ì‹œ ì˜¤ë¥˜.
+            // sDestRemain ì´ 0ì¼ë•Œ malloc ì„ í•˜ë©´ ì•ˆë©ë‹ˆë‹¤.
             if(sDestRemain > 0)
             {
                 /* BUG-30336 */
@@ -474,12 +474,12 @@ ACI_RC ulnCharSetConvert(ulnCharSet      *aCharSet,
                                                      &sDestRemain,
                                                      -1 /* mNlsNcharConvExcp */ )
                                != ACI_SUCCESS, LABEL_INVALID_DATA_LENGTH);
-                // aciConvConvertCharSet ¿¡¼­ ÄÁ¹öÁ¯ÀÌ ¾ÈÀÏ¾î³¯¼ö ÀÖ±â ¶§¹®¿¡ sDestRemain À» º¸°í ¿òÁ÷ÀÎ´Ù.
+                // aciConvConvertCharSet ì—ì„œ ì»¨ë²„ì ¼ì´ ì•ˆì¼ì–´ë‚ ìˆ˜ ìžˆê¸° ë•Œë¬¸ì— sDestRemain ì„ ë³´ê³  ì›€ì§ì¸ë‹¤.
                 sResultValue += (sTempRemain - sDestRemain);
 
                 sTempIndex = sSourceIndex;
-                // TASK-3420 ¹®ÀÚ Ã³¸® Á¤Ã¥ °³¼±
-                // ´Ù¸¥ Ä³¸¯ÅÍ ¼ÂÀÏ °æ¿ì ¿¡·¯¸¦ ¹ß»ýÇÏÁö ¾Ê´Â´Ù.
+                // TASK-3420 ë¬¸ìž ì²˜ë¦¬ ì •ì±… ê°œì„ 
+                // ë‹¤ë¥¸ ìºë¦­í„° ì…‹ì¼ ê²½ìš° ì—ëŸ¬ë¥¼ ë°œìƒí•˜ì§€ ì•ŠëŠ”ë‹¤.
                 (void)aSrcCharSet->nextCharPtr(&sSourceIndex, sSourceFence);
                 sSrcRemain -= (sSourceIndex - sTempIndex);
             }
@@ -488,25 +488,25 @@ ACI_RC ulnCharSetConvert(ulnCharSet      *aCharSet,
         }
         else
         {
-            // TASK-3420 ¹®ÀÚ Ã³¸® Á¤Ã¥ °³¼±
-            // µ¿ÀÏÇÑ Ä³¸¯ÅÍ¼ÂÀÏ°æ¿ì °Ë»çÇÏÁö ¾Ê´Â´Ù.
-            // È¯°æº¯¼ö ALTIBASE_NLS_CHARACTERSET_VALIDATION Àû¿ëµÇÁö ¾Ê´Â´Ù.
+            // TASK-3420 ë¬¸ìž ì²˜ë¦¬ ì •ì±… ê°œì„ 
+            // ë™ì¼í•œ ìºë¦­í„°ì…‹ì¼ê²½ìš° ê²€ì‚¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
+            // í™˜ê²½ë³€ìˆ˜ ALTIBASE_NLS_CHARACTERSET_VALIDATION ì ìš©ë˜ì§€ ì•ŠëŠ”ë‹¤.
         }
 
         // bug-23311: utf-16 little-endian error in ODBC unicode driver
-        // ¼­¹ö·ÎºÎÅÍ ¹ÝÈ¯µÈ utf16 big-endianÀÎ °æ¿ì little-endianÀ¸·Î º¯È¯
-        // ex) windows ODBC unicode driver(SQL..Get..W()°è¿­ ÇÔ¼ö)·Î ¹ÝÈ¯ÇÏ´Â ¹®ÀÚ¿­µé
+        // ì„œë²„ë¡œë¶€í„° ë°˜í™˜ëœ utf16 big-endianì¸ ê²½ìš° little-endianìœ¼ë¡œ ë³€í™˜
+        // ex) windows ODBC unicode driver(SQL..Get..W()ê³„ì—´ í•¨ìˆ˜)ë¡œ ë°˜í™˜í•˜ëŠ” ë¬¸ìžì—´ë“¤
 #ifndef ENDIAN_IS_BIG_ENDIAN
         if ((aDestCharSet->id == MTL_UTF16_ID) &&
             ((aOption & CONV_DATA_OUT) == CONV_DATA_OUT))
         {
-            // utf16 to utf16ÀÎ °æ¿ì src endian Á÷Á¢ º¯°æ
+            // utf16 to utf16ì¸ ê²½ìš° src endian ì§ì ‘ ë³€ê²½
             if (aSrcCharSet == aDestCharSet)
             {
                 ACI_TEST( aSrc == NULL );     //BUG-28561 [CodeSonar] Null Pointer Dereference
                 ulnConvEndian_ADJUST((acp_uint8_t*)aSrc, aSrcLen);
             }
-            // À§¿¡¼­ mallocÀ» ÇÏ¹Ç·Î ±×³É µÚÁý±â¸¸ ÇÏ¸é µÊ
+            // ìœ„ì—ì„œ mallocì„ í•˜ë¯€ë¡œ ê·¸ëƒ¥ ë’¤ì§‘ê¸°ë§Œ í•˜ë©´ ë¨
             else
             {
                 ulnConvEndian_ADJUST(aCharSet->mDest, aCharSet->mDestLen);
@@ -562,18 +562,18 @@ ACI_RC ulnCharSetConvertUseBuffer(ulnCharSet      *aCharSet,
     acp_sint32_t  sDestRemain = 0;
     acp_sint32_t  sTempRemain = 0;
     acp_uint8_t  *sConvBufPtr;
-    acp_uint8_t   sConvBuffer[ULN_MAX_CHARSIZE] = {0, };  // »ç¿ëÀÚ ¹öÆÛ°¡ ºÎÁ·ÇÒ¶§ º¯È¯ÇÏ´Âµ¥ »ç¿ë
-    acp_sint32_t  sConvSrcSize = 0;                       // º¯È¯µÈ ¿øº» ±æÀÌ
-    acp_sint32_t  sConvDesSize = 0;                       // º¯È¯µÈ ±æÀÌ
+    acp_uint8_t   sConvBuffer[ULN_MAX_CHARSIZE] = {0, };  // ì‚¬ìš©ìž ë²„í¼ê°€ ë¶€ì¡±í• ë•Œ ë³€í™˜í•˜ëŠ”ë° ì‚¬ìš©
+    acp_sint32_t  sConvSrcSize = 0;                       // ë³€í™˜ëœ ì›ë³¸ ê¸¸ì´
+    acp_sint32_t  sConvDesSize = 0;                       // ë³€í™˜ëœ ê¸¸ì´
 
     aciConvCharSetList sSrcCharSet;
     aciConvCharSetList sDestCharSet;
 
     ulnObject* sObj = (ulnObject *)aObj;
 
-    // bug-21918: FnContext°¡ NULLÀÎ °æ¿ì error
-    // FnContext ÀÎÀÚ·Î NULLÀ» ¹ÞÀ¸¸é 2¹øÂ° ÀÎÀÚ·Î ³Ñ°Ü¹ÞÀº
-    // Dbc¸¦ ±¸ÇÒ ÇÊ¿ä ¾øÀÌ ±×³É »ç¿ëÇÏµµ·Ï ÇÑ´Ù
+    // bug-21918: FnContextê°€ NULLì¸ ê²½ìš° error
+    // FnContext ì¸ìžë¡œ NULLì„ ë°›ìœ¼ë©´ 2ë²ˆì§¸ ì¸ìžë¡œ ë„˜ê²¨ë°›ì€
+    // Dbcë¥¼ êµ¬í•  í•„ìš” ì—†ì´ ê·¸ëƒ¥ ì‚¬ìš©í•˜ë„ë¡ í•œë‹¤
     if (aFnContext == NULL)
     {
         sDbc = getDbcFromObj(sObj);
@@ -597,8 +597,8 @@ ACI_RC ulnCharSetConvertUseBuffer(ulnCharSet      *aCharSet,
         aCharSet->mDest = NULL;
     }
 
-    // BUG-24831 À¯´ÏÄÚµå µå¶óÀÌ¹ö¿¡¼­ mtl::defaultModule() À» È£ÃâÇÏ¸é ¾ÈµË´Ï´Ù.
-    // ÀÎÀÚ·Î NULL ÀÌ ³Ñ¾î¿Ã°æ¿ì Å¬¶óÀÌ¾ðÆ® Ä³¸¯ÅÍ ¼ÂÀ¸·Î ¼³Á¤ÇÑ´Ù.
+    // BUG-24831 ìœ ë‹ˆì½”ë“œ ë“œë¼ì´ë²„ì—ì„œ mtl::defaultModule() ì„ í˜¸ì¶œí•˜ë©´ ì•ˆë©ë‹ˆë‹¤.
+    // ì¸ìžë¡œ NULL ì´ ë„˜ì–´ì˜¬ê²½ìš° í´ë¼ì´ì–¸íŠ¸ ìºë¦­í„° ì…‹ìœ¼ë¡œ ì„¤ì •í•œë‹¤.
     if(aSrcCharSet == NULL)
     {
         aSrcCharSet = sDbc->mClientCharsetLangModule;
@@ -618,8 +618,8 @@ ACI_RC ulnCharSetConvertUseBuffer(ulnCharSet      *aCharSet,
         sSrcFence  = sSrcCurPtr + sSrcRemain;
 
         // bug-23311: utf-16 little-endian error in ODBC unicode driver
-        // utf16 little-endianÀÎ °æ¿ì big-endianÀ¸·Î º¯È¯
-        // ex) windows ODBC unicode driver(SQL..Set..W()°è¿­ ÇÔ¼ö)·Î µé¾î¿Â ¹®ÀÚ¿­µé
+        // utf16 little-endianì¸ ê²½ìš° big-endianìœ¼ë¡œ ë³€í™˜
+        // ex) windows ODBC unicode driver(SQL..Set..W()ê³„ì—´ í•¨ìˆ˜)ë¡œ ë“¤ì–´ì˜¨ ë¬¸ìžì—´ë“¤
 #ifndef ENDIAN_IS_BIG_ENDIAN
         if ((aSrcCharSet->id == MTL_UTF16_ID) &&
             ((aOption & CONV_DATA_IN) == CONV_DATA_IN) &&
@@ -651,7 +651,7 @@ ACI_RC ulnCharSetConvertUseBuffer(ulnCharSet      *aCharSet,
                 ACI_TEST_RAISE(sResultCurPtr >= sResultFence,
                                LABEL_STRING_RIGHT_TRUNCATED);
 
-                // »ç¿ëÀÚ ¹öÆÛ°¡ º°·Î ¾È³²¾ÒÀ¸¸é ·ÎÄÃ ¹öÆÛ·Î º¯È¯
+                // ì‚¬ìš©ìž ë²„í¼ê°€ ë³„ë¡œ ì•ˆë‚¨ì•˜ìœ¼ë©´ ë¡œì»¬ ë²„í¼ë¡œ ë³€í™˜
                 sDestRemain = (sResultFence - sResultCurPtr);
                 if (sDestRemain < ULN_MAX_CHARSIZE)
                 {
@@ -674,10 +674,10 @@ ACI_RC ulnCharSetConvertUseBuffer(ulnCharSet      *aCharSet,
 
                 sConvDesSize = ULN_MAX_CHARSIZE - sTempRemain;
 
-                // º¯È¯µÈ aDest buffef ÀÇ endian º¯°æ
-                // BUG-27515: string right truncatedµÇ°Å³ª
-                // ¹®ÀÚ°¡ Àß·Á¼­ º¹»çµÉ °æ¿ì¿¡µµ Á¦´ë·Î º¯È¯ÇÏ±â À§ÇØ¼­
-                // charset º¯È¯ ÈÄ ¹Ù·Î endianÀ» º¯È¯ÇÑ´Ù.
+                // ë³€í™˜ëœ aDest buffef ì˜ endian ë³€ê²½
+                // BUG-27515: string right truncatedë˜ê±°ë‚˜
+                // ë¬¸ìžê°€ ìž˜ë ¤ì„œ ë³µì‚¬ë  ê²½ìš°ì—ë„ ì œëŒ€ë¡œ ë³€í™˜í•˜ê¸° ìœ„í•´ì„œ
+                // charset ë³€í™˜ í›„ ë°”ë¡œ endianì„ ë³€í™˜í•œë‹¤.
 #ifndef ENDIAN_IS_BIG_ENDIAN
                 if ((aDestCharSet->id == MTL_UTF16_ID) &&
                     ((aOption & CONV_DATA_OUT) == CONV_DATA_OUT))
@@ -687,8 +687,8 @@ ACI_RC ulnCharSetConvertUseBuffer(ulnCharSet      *aCharSet,
 #endif
 
                 sSrcPrePtr = sSrcCurPtr;
-                // TASK-3420 ¹®ÀÚ Ã³¸® Á¤Ã¥ °³¼±
-                // ´Ù¸¥ Ä³¸¯ÅÍ ¼ÂÀÏ °æ¿ì ¿¡·¯¸¦ ¹ß»ýÇÏÁö ¾Ê´Â´Ù.
+                // TASK-3420 ë¬¸ìž ì²˜ë¦¬ ì •ì±… ê°œì„ 
+                // ë‹¤ë¥¸ ìºë¦­í„° ì…‹ì¼ ê²½ìš° ì—ëŸ¬ë¥¼ ë°œìƒí•˜ì§€ ì•ŠëŠ”ë‹¤.
                 (void)aSrcCharSet->nextCharPtr(&sSrcCurPtr, sSrcFence);
                 sConvSrcSize = sSrcCurPtr - sSrcPrePtr;
 
@@ -696,7 +696,7 @@ ACI_RC ulnCharSetConvertUseBuffer(ulnCharSet      *aCharSet,
                 aCharSet->mConvedSrcLen += sConvSrcSize;
                 aCharSet->mDestLen      += sConvDesSize;
 
-                // ¹öÆÛ°¡ ¸ðÀÚ¶ó¸é mRemainText¿¡ ³Ö¾îµÐ´Ù.
+                // ë²„í¼ê°€ ëª¨ìžë¼ë©´ mRemainTextì— ë„£ì–´ë‘”ë‹¤.
                 if ((sResultCurPtr + sConvDesSize) > sResultFence)
                 {
                     sTempRemain = sResultFence - sResultCurPtr;
@@ -710,7 +710,7 @@ ACI_RC ulnCharSetConvertUseBuffer(ulnCharSet      *aCharSet,
                 }
                 else if (sConvDesSize > 0)
                 {
-                    // ·ÎÄÃ ¹öÆÛ¸¦ ÀÌ¿ëÇØ¼­ º¯È¯ÇÑ °æ¿ì, »ç¿ëÀÚ ¹öÆÛ¿¡ º¹»ç
+                    // ë¡œì»¬ ë²„í¼ë¥¼ ì´ìš©í•´ì„œ ë³€í™˜í•œ ê²½ìš°, ì‚¬ìš©ìž ë²„í¼ì— ë³µì‚¬
                     if (sDestRemain < ULN_MAX_CHARSIZE)
                     {
                         acpMemCpy(sResultCurPtr, sConvBuffer, sConvDesSize);
@@ -721,31 +721,31 @@ ACI_RC ulnCharSetConvertUseBuffer(ulnCharSet      *aCharSet,
                 }
                 else
                 {
-                    // do nothing: ÄÁ¹öÀüÀÌ ÀÏ¾î³ªÁö ¾ÊÀº °æ¿ì
+                    // do nothing: ì»¨ë²„ì „ì´ ì¼ì–´ë‚˜ì§€ ì•Šì€ ê²½ìš°
                 }
             }
         }
         else
         {
-            // TASK-3420 ¹®ÀÚ Ã³¸® Á¤Ã¥ °³¼±
-            // µ¿ÀÏÇÑ Ä³¸¯ÅÍ¼ÂÀÏ°æ¿ì °Ë»çÇÏÁö ¾Ê´Â´Ù.
-            // È¯°æº¯¼ö ALTIBASE_NLS_CHARACTERSET_VALIDATION Àû¿ëµÇÁö ¾Ê´Â´Ù.
+            // TASK-3420 ë¬¸ìž ì²˜ë¦¬ ì •ì±… ê°œì„ 
+            // ë™ì¼í•œ ìºë¦­í„°ì…‹ì¼ê²½ìš° ê²€ì‚¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
+            // í™˜ê²½ë³€ìˆ˜ ALTIBASE_NLS_CHARACTERSET_VALIDATION ì ìš©ë˜ì§€ ì•ŠëŠ”ë‹¤.
 
             // bug-23311: utf-16 little-endian error in ODBC unicode driver
-            // ¼­¹ö·ÎºÎÅÍ ¹ÝÈ¯µÈ utf16 big-endianÀÎ °æ¿ì little-endianÀ¸·Î º¯È¯
-            // ex) windows ODBC unicode driver(SQL..Get..W()°è¿­ ÇÔ¼ö)·Î ¹ÝÈ¯ÇÏ´Â ¹®ÀÚ¿­µé
+            // ì„œë²„ë¡œë¶€í„° ë°˜í™˜ëœ utf16 big-endianì¸ ê²½ìš° little-endianìœ¼ë¡œ ë³€í™˜
+            // ex) windows ODBC unicode driver(SQL..Get..W()ê³„ì—´ í•¨ìˆ˜)ë¡œ ë°˜í™˜í•˜ëŠ” ë¬¸ìžì—´ë“¤
 #ifndef ENDIAN_IS_BIG_ENDIAN
             ACI_TEST( aCharSet->mSrc == NULL );     //BUG-28561 [CodeSonar] Null Pointer Dereference
 
             if ((aDestCharSet->id == MTL_UTF16_ID) &&
                 ((aOption & CONV_DATA_OUT) == CONV_DATA_OUT))
             {
-                // utf16 to utf16ÀÎ °æ¿ì src endian Á÷Á¢ º¯°æ
+                // utf16 to utf16ì¸ ê²½ìš° src endian ì§ì ‘ ë³€ê²½
                 ulnConvEndian_ADJUST((acp_uint8_t*)aCharSet->mSrc, aCharSet->mSrcLen);
             }
 #endif
 
-            // BUG-27515: µ¿ÀÏÇÑ ÄÉ¸¯ÅÍ¼ÂÀÏ °æ¿ì¿¡µµ »ç¿ëÀÚ ¹öÆÛ¿¡ º¹»çÇØ¾ßÇÑ´Ù.
+            // BUG-27515: ë™ì¼í•œ ì¼€ë¦­í„°ì…‹ì¼ ê²½ìš°ì—ë„ ì‚¬ìš©ìž ë²„í¼ì— ë³µì‚¬í•´ì•¼í•œë‹¤.
             sConvDesSize = ACP_MIN(aCharSet->mSrcLen, aDestLen);
             acpMemCpy(aDest, aCharSet->mSrc, sConvDesSize);
             aCharSet->mConvedSrcLen = aCharSet->mCopiedDesLen = sConvDesSize;
@@ -760,7 +760,7 @@ ACI_RC ulnCharSetConvertUseBuffer(ulnCharSet      *aCharSet,
 
     ACI_EXCEPTION(LABEL_STRING_RIGHT_TRUNCATED)
     {
-        // ³²Àº ¹®ÀÚ¿­ ±æÀÌ °è»ê
+        // ë‚¨ì€ ë¬¸ìžì—´ ê¸¸ì´ ê³„ì‚°
         if ((aOption & CONV_CALC_TOTSIZE) == CONV_CALC_TOTSIZE)
         {
             sConvBufPtr = sConvBuffer;
@@ -823,18 +823,18 @@ ACI_RC ulnCharSetConvertUseBuffer(ulnCharSet      *aCharSet,
 
 //==============================================================
 // bug-23311: utf-16 little-endian error in ODBC unicode driver
-// utf-16 little-endian À» big-endianÀ¸·Î º¯È¯½ÃÅ´ (¼­¹ö·Î º¸³¾¶§¸¸ »ç¿ë)
-// mallocÇÑ ÈÄ mSrc°¡ °¡¸®Å°µµ·Ï ÇÔ.
-// ulnCharSetÀÌ ÀüºÎ Áö¿ªº¯¼ö·Î »ç¿ëµÇ¹Ç·Î ´ëºÎºÐÀº ¼Ò¸êÀÚ È£Ãâ½Ã freeµÊ
-// parameter inÀÌ ¿©·¯¹ø µÇ´Â °æ¿ì È£Ãâ½Ã¸¶´Ù ¹Ù·Î¹Ù·Î feeÈÄ ´Ù½Ã malloc µÊ
-// directionÀÌ CONV_DATA_INÀÎ °æ¿ì¸¸ È£ÃâµÊ
+// utf-16 little-endian ì„ big-endianìœ¼ë¡œ ë³€í™˜ì‹œí‚´ (ì„œë²„ë¡œ ë³´ë‚¼ë•Œë§Œ ì‚¬ìš©)
+// mallocí•œ í›„ mSrcê°€ ê°€ë¦¬í‚¤ë„ë¡ í•¨.
+// ulnCharSetì´ ì „ë¶€ ì§€ì—­ë³€ìˆ˜ë¡œ ì‚¬ìš©ë˜ë¯€ë¡œ ëŒ€ë¶€ë¶„ì€ ì†Œë©¸ìž í˜¸ì¶œì‹œ freeë¨
+// parameter inì´ ì—¬ëŸ¬ë²ˆ ë˜ëŠ” ê²½ìš° í˜¸ì¶œì‹œë§ˆë‹¤ ë°”ë¡œë°”ë¡œ feeí›„ ë‹¤ì‹œ malloc ë¨
+// directionì´ CONV_DATA_INì¸ ê²½ìš°ë§Œ í˜¸ì¶œë¨
 //==============================================================
 ACI_RC ulnCharSetConvWcharEndian(ulnCharSet   *aCharSet,
                                  acp_uint8_t  *aSrcPtr,
                                  acp_sint32_t  aSrcLen)
 {
-    // ÀÌÀü¿¡ ÇÒ´çÇß´ø ¸Þ¸ð¸® ÇØÁ¦
-    // nchar parameter¸¦ ¿©·¯¹ø bindingÇÏ´Â °æ¿ì ÀÌÀü memory°¡ ³²¾ÆÀÖÀ» °ÍÀÌ´Ù
+    // ì´ì „ì— í• ë‹¹í–ˆë˜ ë©”ëª¨ë¦¬ í•´ì œ
+    // nchar parameterë¥¼ ì—¬ëŸ¬ë²ˆ bindingí•˜ëŠ” ê²½ìš° ì´ì „ memoryê°€ ë‚¨ì•„ìžˆì„ ê²ƒì´ë‹¤
     if (aCharSet->mWcharEndianBuf != NULL)
     {
         acpMemFree(aCharSet->mWcharEndianBuf);
@@ -849,8 +849,8 @@ ACI_RC ulnCharSetConvWcharEndian(ulnCharSet   *aCharSet,
     // switch endian
     ulnConvEndian_ADJUST(aCharSet->mWcharEndianBuf, aSrcLen);
 
-    // mSrc°¡ endianÀ» ¹Ù²Û ¿µ¿ªÀ» °¡¸®Å°µµ·Ï ÇÑ´Ù.
-    // ³ªÁß¿¡ getConvertedText()¸¦ È£ÃâÇÏ¸é ½ÇÁ¦ mWcharEndianBuf À§Ä¡¸¦ ¹ÝÈ¯ÇÒ °ÍÀÓ
+    // mSrcê°€ endianì„ ë°”ê¾¼ ì˜ì—­ì„ ê°€ë¦¬í‚¤ë„ë¡ í•œë‹¤.
+    // ë‚˜ì¤‘ì— getConvertedText()ë¥¼ í˜¸ì¶œí•˜ë©´ ì‹¤ì œ mWcharEndianBuf ìœ„ì¹˜ë¥¼ ë°˜í™˜í•  ê²ƒìž„
     aCharSet->mSrc = aCharSet->mWcharEndianBuf;
 
     return ACI_SUCCESS;

@@ -21,24 +21,24 @@
  * Description :
  *     MGJN(MerGe JoiN) Node
  *
- *     °ü°èÇü ¸ğµ¨¿¡¼­ Merge Join ¿¬»êÀ» ¼öÇàÇÏ´Â Plan Node ÀÌ´Ù.
+ *     ê´€ê³„í˜• ëª¨ë¸ì—ì„œ Merge Join ì—°ì‚°ì„ ìˆ˜í–‰í•˜ëŠ” Plan Node ì´ë‹¤.
  *
- *     Join MethodÁß Merge Join¸¸À» ´ã´çÇÏ¸ç, Left¹× Right Child·Î´Â
- *     ´ÙÀ½°ú °°Àº Plan Node¸¸ÀÌ Á¸ÀçÇÒ ¼ö ÀÖ´Ù.
+ *     Join Methodì¤‘ Merge Joinë§Œì„ ë‹´ë‹¹í•˜ë©°, Leftë° Right Childë¡œëŠ”
+ *     ë‹¤ìŒê³¼ ê°™ì€ Plan Nodeë§Œì´ ì¡´ì¬í•  ìˆ˜ ìˆë‹¤.
  *
  *         - SCAN Node
  *         - SORT Node
  *         - MGJN Node
  *
  *     To Fix PR-11944
- *     Right ¿¡´Â MGJNÀÌ Á¸ÀçÇÒ ¼ö ¾øÀ¸¸ç ´ÙÀ½°ú °°Àº Node¸¸ÀÌ Á¸ÀçÇÒ ¼ö ÀÖ´Ù.
+ *     Right ì—ëŠ” MGJNì´ ì¡´ì¬í•  ìˆ˜ ì—†ìœ¼ë©° ë‹¤ìŒê³¼ ê°™ì€ Nodeë§Œì´ ì¡´ì¬í•  ìˆ˜ ìˆë‹¤.
  *
  *         - SCAN Node
  *         - SORT Node
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  **********************************************************************/
 
@@ -54,7 +54,7 @@
 //-----------------
 
 // qmncMGJN.flag
-// Left Child PlanÀÇ Á¾·ù
+// Left Child Planì˜ ì¢…ë¥˜
 #define QMNC_MGJN_LEFT_CHILD_MASK          (0x00000007)
 #define QMNC_MGJN_LEFT_CHILD_NONE          (0x00000000)
 #define QMNC_MGJN_LEFT_CHILD_SCAN          (0x00000001)
@@ -63,7 +63,7 @@
 #define QMNC_MGJN_LEFT_CHILD_PCRD          (0x00000004)
 
 // qmncMGJN.flag
-// Right Child PlanÀÇ Á¾·ù
+// Right Child Planì˜ ì¢…ë¥˜
 #define QMNC_MGJN_RIGHT_CHILD_MASK         (0x00000030)
 #define QMNC_MGJN_RIGHT_CHILD_NONE         (0x00000000)
 #define QMNC_MGJN_RIGHT_CHILD_SCAN         (0x00000010)
@@ -72,7 +72,7 @@
 
 // qmncMGJN.flag
 // PROJ-1718 Subquery unnesting
-// JoinÀÇ Á¾·ù
+// Joinì˜ ì¢…ë¥˜
 #define QMNC_MGJN_TYPE_MASK                (0x00000300)
 #define QMNC_MGJN_TYPE_INNER               (0x00000000)
 #define QMNC_MGJN_TYPE_SEMI                (0x00000100)
@@ -90,8 +90,8 @@
 #define QMND_MGJN_INIT_DONE_TRUE           (0x00000001)
 
 // qmndMGJN.flag
-// Cursor°¡ ÀúÀåµÇ¾î ÀÖ´Â ÁöÀÇ ¿©ºÎ
-// Áï, ÀÌÀü¿¡ ¸¸Á·ÇÑ Data°¡ Á¸ÀçÇß¾ú´ÂÁöÀÇ ¿©ºÎ
+// Cursorê°€ ì €ì¥ë˜ì–´ ìˆëŠ” ì§€ì˜ ì—¬ë¶€
+// ì¦‰, ì´ì „ì— ë§Œì¡±í•œ Dataê°€ ì¡´ì¬í–ˆì—ˆëŠ”ì§€ì˜ ì—¬ë¶€
 #define QMND_MGJN_CURSOR_STORED_MASK       (0x00000002)
 #define QMND_MGJN_CURSOR_STORED_FALSE      (0x00000000)
 #define QMND_MGJN_CURSOR_STORED_TRUE       (0x00000002)
@@ -110,36 +110,36 @@
  *                [SCAN] [SCAN]
  *                  T1     T2
  *
- *   qmncMGJN ÀÇ ±¸¼º
+ *   qmncMGJN ì˜ êµ¬ì„±
  *
- *       - myNode : Join PredicateÀÇ Right ColumnÀ» ÀúÀå
- *                  Ex) T2.i1À» ÀúÀå
+ *       - myNode : Join Predicateì˜ Right Columnì„ ì €ì¥
+ *                  Ex) T2.i1ì„ ì €ì¥
  *
- *       - mergeJoinPredicate : Merge Joinable PredicateÀ» ÀúÀå
+ *       - mergeJoinPredicate : Merge Joinable Predicateì„ ì €ì¥
  *                  Ex) T1.i1 = T2.i1
  *
- *       - storedJoinPredicate : Merge Joinable PredicateÀ» ÀúÀå Column°ú
- *                  ºñ±³ÇÒ ¼ö ÀÖµµ·Ï ÀúÀå
+ *       - storedJoinPredicate : Merge Joinable Predicateì„ ì €ì¥ Columnê³¼
+ *                  ë¹„êµí•  ìˆ˜ ìˆë„ë¡ ì €ì¥
  *                  Ex) T1.i1 = Stored[T2.i1]
  *
- *       - compareLeftRight : Merge Joinable PredicateÀÇ ¿¬»êÀÚ°¡ µîÈ£ÀÏ
- *                  °æ¿ì »ı¼ºÇÏ¸ç ´ë¼Ò ºñ±³°¡ °¡´ÉÇÏµµ·Ï ±¸¼º
- *                  Ex) T1.i1 >= T2.i1  (>=)·Î »ı¼ºÇØ¾ß ÇÔ
+ *       - compareLeftRight : Merge Joinable Predicateì˜ ì—°ì‚°ìê°€ ë“±í˜¸ì¼
+ *                  ê²½ìš° ìƒì„±í•˜ë©° ëŒ€ì†Œ ë¹„êµê°€ ê°€ëŠ¥í•˜ë„ë¡ êµ¬ì„±
+ *                  Ex) T1.i1 >= T2.i1  (>=)ë¡œ ìƒì„±í•´ì•¼ í•¨
  *
- *       - joinFilter : Merge Joinable PredicateÀÌ ¾Æ´Ñ Join Filter
+ *       - joinFilter : Merge Joinable Predicateì´ ì•„ë‹Œ Join Filter
  *                  Ex) T1.i2 + T2.i2 > 0
  *
- *   Merge Join ¾Ë°í¸®ÁòÀº ´ÙÀ½ ¹®¼­¸¦ ÂüÁ¶
+ *   Merge Join ì•Œê³ ë¦¬ì¦˜ì€ ë‹¤ìŒ ë¬¸ì„œë¥¼ ì°¸ì¡°
  *       - "4.2.2.2 Query Executor Design - Part 2.doc"
- *           : Merge Join ÂüÁ¶
+ *           : Merge Join ì°¸ì¡°
  *       - "4.2.2.3 Query Executor Design - Part 3.doc"
- *           : MGJN Node ÂüÁ¶
+ *           : MGJN Node ì°¸ì¡°
  ----------------------------------------------------------------------*/
 
 typedef struct qmncMGJN
 {
     //---------------------------------
-    // Code ¿µ¿ª °øÅë Á¤º¸
+    // Code ì˜ì—­ ê³µí†µ ì •ë³´
     //---------------------------------
 
     qmnPlan        plan;
@@ -147,31 +147,31 @@ typedef struct qmncMGJN
     UInt           planID;
 
     //---------------------------------
-    // MGJN °íÀ¯ Á¤º¸
+    // MGJN ê³ ìœ  ì •ë³´
     //---------------------------------
 
-    qmcMtrNode    * myNode;               // ÀúÀåÇÒ Right Column Á¤º¸
+    qmcMtrNode    * myNode;               // ì €ì¥í•  Right Column ì •ë³´
 
-    // Merge Joinable Predicate °ü·Ã Á¤º¸
+    // Merge Joinable Predicate ê´€ë ¨ ì •ë³´
     qtcNode       * mergeJoinPred;        // Merge Join Predicate
     
-    qtcNode       * storedMergeJoinPred;  // ÀúÀå µ¥ÀÌÅÍ¿Í ºñ±³ÇÏ´Â Predicate
-    qtcNode       * compareLeftRight;     // ºÎµîÈ£ ¿¬»êÀÚÀÎ °æ¿ìÀÇ ´ë¼Òºñ±³
+    qtcNode       * storedMergeJoinPred;  // ì €ì¥ ë°ì´í„°ì™€ ë¹„êµí•˜ëŠ” Predicate
+    qtcNode       * compareLeftRight;     // ë¶€ë“±í˜¸ ì—°ì‚°ìì¸ ê²½ìš°ì˜ ëŒ€ì†Œë¹„êµ
 
-    qtcNode       * joinFilter;           // ±âÅ¸ Join Predicate
+    qtcNode       * joinFilter;           // ê¸°íƒ€ Join Predicate
 
     //---------------------------------
-    // Data ¿µ¿ª Á¤º¸
+    // Data ì˜ì—­ ì •ë³´
     //---------------------------------
 
-    UInt            mtrNodeOffset;        // ÀúÀå ColumnÀÇ À§Ä¡
+    UInt            mtrNodeOffset;        // ì €ì¥ Columnì˜ ìœ„ì¹˜
     
 } qmncMGJN;
 
 typedef struct qmndMGJN
 {
     //---------------------------------
-    // Data ¿µ¿ª °øÅë Á¤º¸
+    // Data ì˜ì—­ ê³µí†µ ì •ë³´
     //---------------------------------
 
     qmndPlan            plan;
@@ -179,11 +179,11 @@ typedef struct qmndMGJN
     UInt              * flag;        
 
     //---------------------------------
-    // MGJN °íÀ¯ Á¤º¸
+    // MGJN ê³ ìœ  ì •ë³´
     //---------------------------------
 
-    qmdMtrNode        * mtrNode;        // ÀúÀå Right ColumnÀÇ Á¤º¸
-    UInt                mtrRowSize;     // ÀúÀå Right ColumnÀÇ Å©±â
+    qmdMtrNode        * mtrNode;        // ì €ì¥ Right Columnì˜ ì •ë³´
+    UInt                mtrRowSize;     // ì €ì¥ Right Columnì˜ í¬ê¸°
     
 } qmndMGJN;
 
@@ -194,11 +194,11 @@ public:
     // Base Function Pointer
     //------------------------
 
-    // ÃÊ±âÈ­
+    // ì´ˆê¸°í™”
     static IDE_RC init( qcTemplate * aTemplate,
                         qmnPlan    * aPlan );
 
-    // ¼öÇà ÇÔ¼ö
+    // ìˆ˜í–‰ í•¨ìˆ˜
     static IDE_RC doIt( qcTemplate * aTemplate,
                         qmnPlan    * aPlan,
                         qmcRowFlag * aFlag );
@@ -207,7 +207,7 @@ public:
     static IDE_RC padNull( qcTemplate * aTemplate,
                            qmnPlan    * aPlan );
 
-    // Plan Á¤º¸ Ãâ·Â
+    // Plan ì •ë³´ ì¶œë ¥
     static IDE_RC printPlan( qcTemplate   * aTemplate,
                              qmnPlan      * aPlan,
                              ULong          aDepth,
@@ -218,7 +218,7 @@ public:
     // mapping by doIt() function pointer
     //------------------------
 
-    // È£ÃâµÇ¸é ¾ÈµÊ
+    // í˜¸ì¶œë˜ë©´ ì•ˆë¨
     static IDE_RC doItDefault( qcTemplate * aTemplate,
                                qmnPlan    * aPlan,
                                qmcRowFlag * aFlag );
@@ -227,12 +227,12 @@ public:
                              qmnPlan    * aPlan,
                              qmcRowFlag * aFlag );
 
-    // ÃÖÃÊ ¼öÇà ÇÔ¼ö
+    // ìµœì´ˆ ìˆ˜í–‰ í•¨ìˆ˜
     static IDE_RC doItFirst( qcTemplate * aTemplate,
                              qmnPlan    * aPlan,
                              qmcRowFlag * aFlag );
 
-    // ´ÙÀ½ ¼öÇà ÇÔ¼ö
+    // ë‹¤ìŒ ìˆ˜í–‰ í•¨ìˆ˜
     static IDE_RC doItNext( qcTemplate * aTemplate,
                             qmnPlan    * aPlan,
                             qmcRowFlag * aFlag );
@@ -248,81 +248,81 @@ public:
 private:
 
     //------------------------
-    // ÃÊ±âÈ­ °ü·Ã ÇÔ¼ö
+    // ì´ˆê¸°í™” ê´€ë ¨ í•¨ìˆ˜
     //------------------------
 
-    // ÃÖÃÊ ÃÊ±âÈ­
+    // ìµœì´ˆ ì´ˆê¸°í™”
     static IDE_RC firstInit( qcTemplate * aTemplate,
                              qmncMGJN   * aCodePlan,
                              qmndMGJN   * aDataPlan );
 
-    // ÀúÀå ColumnÀÇ ÃÊ±âÈ­
+    // ì €ì¥ Columnì˜ ì´ˆê¸°í™”
     static IDE_RC initMtrNode( qcTemplate * aTemplate,
                                qmncMGJN   * aCodePlan,
                                qmndMGJN   * aDataPlan );
 
     //------------------------
-    // ¼öÇà °ü·Ã ÇÔ¼ö
+    // ìˆ˜í–‰ ê´€ë ¨ í•¨ìˆ˜
     //------------------------
 
-    // Merge Join AlgorithmÀ» ¼öÇà
+    // Merge Join Algorithmì„ ìˆ˜í–‰
     static IDE_RC mergeJoin( qcTemplate * aTemplate,
                              qmncMGJN   * aCodePlan,
                              qmndMGJN   * aDataPlan,
                              idBool       aRightExist,
                              qmcRowFlag * aFlag );
 
-    // Merge JoinÀ» °á°ú°¡ ÀÖ°Å³ª ¾øÀ» ¶§±îÁö ¹İº¹ ¼öÇà
+    // Merge Joinì„ ê²°ê³¼ê°€ ìˆê±°ë‚˜ ì—†ì„ ë•Œê¹Œì§€ ë°˜ë³µ ìˆ˜í–‰
     static IDE_RC loopMerge( qcTemplate * aTemplate,
                              qmncMGJN   * aCodePlan,
                              qmndMGJN   * aDataPlan,
                              qmcRowFlag * aFlag );
 
-    // Merge Join Á¶°ÇÀ» °Ë»çÇÏ°í ÁøÇà ¿©ºÎ¸¦ °áÁ¤.
+    // Merge Join ì¡°ê±´ì„ ê²€ì‚¬í•˜ê³  ì§„í–‰ ì—¬ë¶€ë¥¼ ê²°ì •.
     static IDE_RC checkMerge( qcTemplate * aTemplate,
                               qmncMGJN   * aCodePlan,
                               qmndMGJN   * aDataPlan,
                               idBool     * aContinueNeed,
                               qmcRowFlag * aFlag );
     
-    // ÃÖÃÊ Stored Merge Á¶°Ç °Ë»ç
+    // ìµœì´ˆ Stored Merge ì¡°ê±´ ê²€ì‚¬
     static IDE_RC checkFirstStoredMerge( qcTemplate * aTemplate,
                                          qmncMGJN   * aCodePlan,
                                          qmndMGJN   * aDataPlan,
                                          qmcRowFlag * aFlag );
 
-    // Stored Merge Join Á¶°ÇÀ» °Ë»çÇÏ°í ÁøÇà ¿©ºÎ¸¦ °áÁ¤.
+    // Stored Merge Join ì¡°ê±´ì„ ê²€ì‚¬í•˜ê³  ì§„í–‰ ì—¬ë¶€ë¥¼ ê²°ì •.
     static IDE_RC checkStoredMerge( qcTemplate * aTemplate,
                                     qmncMGJN   * aCodePlan,
                                     qmndMGJN   * aDataPlan,
                                     idBool     * aContinueNeed,
                                     qmcRowFlag * aFlag );
     
-    // Merge Join Predicate ¸¸Á· ½Ã Cursor °ü¸®
+    // Merge Join Predicate ë§Œì¡± ì‹œ Cursor ê´€ë¦¬
     static IDE_RC manageCursor( qcTemplate * aTemplate,
                                 qmncMGJN   * aCodePlan,
                                 qmndMGJN   * aDataPlan );
 
-    // ÀûÀıÇÑ Left ¶Ç´Â Right Row¸¦ È¹µæÇÑ´Ù.
+    // ì ì ˆí•œ Left ë˜ëŠ” Right Rowë¥¼ íšë“í•œë‹¤.
     static IDE_RC readNewRow( qcTemplate * aTemplate,
                               qmncMGJN   * aCodePlan,
                               idBool     * aReadLeft,
                               qmcRowFlag * aFlag );
 
-    // Join FilterÀÇ ¸¸Á· ¿©ºÎ °Ë»ç
+    // Join Filterì˜ ë§Œì¡± ì—¬ë¶€ ê²€ì‚¬
     static IDE_RC checkJoinFilter( qcTemplate * aTemplate,
                                    qmncMGJN   * aCodePlan,
                                    idBool     * aResult );
     
     //------------------------
-    // Ä¿¼­ °ü¸® ÇÔ¼ö
+    // ì»¤ì„œ ê´€ë¦¬ í•¨ìˆ˜
     //------------------------
 
-    // Right ChildÀÇ Ä¿¼­¸¦ ÀúÀå
+    // Right Childì˜ ì»¤ì„œë¥¼ ì €ì¥
     static IDE_RC storeRightCursor( qcTemplate * aTemplate,
                                     qmncMGJN   * aCodePlan );
 
-    // Right ChildÀÇ Ä¿¼­¸¦ º¹¿ø
+    // Right Childì˜ ì»¤ì„œë¥¼ ë³µì›
     static IDE_RC restoreRightCursor( qcTemplate * aTemplate,
                                     qmncMGJN   * aCodePlan,
                                     qmndMGJN   * aDataPlan );

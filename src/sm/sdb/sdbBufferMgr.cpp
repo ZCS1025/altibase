@@ -53,7 +53,7 @@ sdbBufferPool sdbBufferMgr::mBufferPool;
 
 /******************************************************************************
  * Description :
- *  BufferManager¸¦ ÃÊ±âÈ­ ÇÑ´Ù.
+ *  BufferManagerë¥¼ ì´ˆê¸°í™” í•œë‹¤.
  ******************************************************************************/
 IDE_RC sdbBufferMgr::initialize()
 {
@@ -84,9 +84,9 @@ IDE_RC sdbBufferMgr::initialize()
 
     sdbBCB::mTouchUSecInterval = (ULong)smuProperty::getTouchTimeInterval() * (ULong)1000000;
 
-    // ÇÏ³ªÀÇ hash bucket¿¡ µé¾î°¡´Â BCB°³¼ö
+    // í•˜ë‚˜ì˜ hash bucketì— ë“¤ì–´ê°€ëŠ” BCBê°œìˆ˜
     sHashBucketDensity  = smuProperty::getBufferHashBucketDensity();
-    // ÇÏ³ªÀÇ hash chains latch´ç BCB°³¼ö
+    // í•˜ë‚˜ì˜ hash chains latchë‹¹ BCBê°œìˆ˜
     sHashLatchDensity   = smuProperty::getBufferHashChainLatchDensity();
     sLRUListCnt         = smuProperty::getBufferLRUListCnt();
     sPrepareListCnt     = smuProperty::getBufferPrepareListCnt();
@@ -101,8 +101,8 @@ IDE_RC sdbBufferMgr::initialize()
         sAreaChunkSize = sAreaSize;
     }
 
-    // »ç¿ëÀÚ°¡ ¿øÇÑ sAreaSize°¡ ±×´ë·Î ¹öÆÛ¸Å´ÏÀúÀÇ Å©±â°¡ µÇÁö ¾Ê°í,
-    // ÆäÀÌÁö size¿Í buffer area chunkÅ©±â·Î align downµÈ´Ù.
+    // ì‚¬ìš©ìê°€ ì›í•œ sAreaSizeê°€ ê·¸ëŒ€ë¡œ ë²„í¼ë§¤ë‹ˆì €ì˜ í¬ê¸°ê°€ ë˜ì§€ ì•Šê³ ,
+    // í˜ì´ì§€ sizeì™€ buffer area chunkí¬ê¸°ë¡œ align downëœë‹¤.
     sTotalBCBCnt    = sAreaSize / sPageSize;
     sHashBucketCnt  = sTotalBCBCnt / sHashBucketDensity;
 
@@ -113,9 +113,9 @@ IDE_RC sdbBufferMgr::initialize()
     sTotalBCBCnt    = sAreaChunkCnt * sBCBCntPerAreaChunk;
     mPageCount      = sAreaChunkCnt * sBCBCntPerAreaChunk;
 
-    // ¸®½ºÆ® °³¼ö º¸Á¤: ½ÇÁ¦ »ı¼ºµÇ´Â BCB°¹¼ö¿¡ ºñÇØ
-    // ¸®½ºÆ®ÀÇ °¹¼ö°¡ Áö³ªÄ¡°Ô ¸¹À» °æ¿ì¿¡ °¢ ¸®½ºÆ® °¹¼ö¸¦ ºñ·ÊÇØ¼­ ÁÙÀÓ.
-    // ¸®½ºÆ® ÇÏ³ª´ç ÃÖ¼Ò SDB_BCB_LIST_MIN_LENGTH ¸¸Å­ BCB¸¦ °¡Á®¾ß ÇÑ´Ù.
+    // ë¦¬ìŠ¤íŠ¸ ê°œìˆ˜ ë³´ì •: ì‹¤ì œ ìƒì„±ë˜ëŠ” BCBê°¯ìˆ˜ì— ë¹„í•´
+    // ë¦¬ìŠ¤íŠ¸ì˜ ê°¯ìˆ˜ê°€ ì§€ë‚˜ì¹˜ê²Œ ë§ì„ ê²½ìš°ì— ê° ë¦¬ìŠ¤íŠ¸ ê°¯ìˆ˜ë¥¼ ë¹„ë¡€í•´ì„œ ì¤„ì„.
+    // ë¦¬ìŠ¤íŠ¸ í•˜ë‚˜ë‹¹ ìµœì†Œ SDB_BCB_LIST_MIN_LENGTH ë§Œí¼ BCBë¥¼ ê°€ì ¸ì•¼ í•œë‹¤.
     if (mPageCount <= SDB_SMALL_BUFFER_SIZE)
     {
         sLRUListCnt     = 1;
@@ -157,10 +157,10 @@ IDE_RC sdbBufferMgr::initialize()
               != IDE_SUCCESS );
     sState =1;
 
-    // mBufferPoolÀ» Ã³À½¿¡ »ı¼ºÇÏ¸é ÀüÇô BCB°¡ Á¸ÀçÇÏÁö ¾Ê´Â´Ù.
-    // ±×·¯¹Ç·Î mBufferArea¿¡¼­ °¡Á®´Ù°¡ mBufferPool¿¡ ³Ö¾îÁØ´Ù.
-    // ÀÌ°ÍÀº Â÷ÈÄ¿¡ Buffer PoolÀÌ multiple buffer pool·Î
-    // °¥ °æ¿ì¸¦ ´ëºñÇÑ °ÍÀÌ´Ù.(ÇöÀç´Â buffer poolÀº ¹«Á¶°Ç ÇÑ°³ÀÌ´Ù.)
+    // mBufferPoolì„ ì²˜ìŒì— ìƒì„±í•˜ë©´ ì „í˜€ BCBê°€ ì¡´ì¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
+    // ê·¸ëŸ¬ë¯€ë¡œ mBufferAreaì—ì„œ ê°€ì ¸ë‹¤ê°€ mBufferPoolì— ë„£ì–´ì¤€ë‹¤.
+    // ì´ê²ƒì€ ì°¨í›„ì— Buffer Poolì´ multiple buffer poolë¡œ
+    // ê°ˆ ê²½ìš°ë¥¼ ëŒ€ë¹„í•œ ê²ƒì´ë‹¤.(í˜„ì¬ëŠ” buffer poolì€ ë¬´ì¡°ê±´ í•œê°œì´ë‹¤.)
     IDE_TEST( sdbBufferMgr::mBufferArea.initialize( sBCBCntPerAreaChunk,
                                                     sAreaChunkCnt,
                                                     sPageSize )
@@ -214,7 +214,7 @@ IDE_RC sdbBufferMgr::initialize()
 
 /******************************************************************************
  * Description :
- *  BufferManager¸¦ Á¾·áÇÑ´Ù.
+ *  BufferManagerë¥¼ ì¢…ë£Œí•œë‹¤.
  ******************************************************************************/
 IDE_RC sdbBufferMgr::destroy(void)
 {
@@ -228,14 +228,14 @@ IDE_RC sdbBufferMgr::destroy(void)
 
 /******************************************************************************
  * Description :
- *  BufferManager Å©±â¸¦ º¯°æÇÑ´Ù.
- *  ÇöÀç ¹öÆÛ¸Å´ÏÀúÀÇ Å©±â¸¦ ÁÙÀÌ´Â ±â´ÉÀº Á¦°øÇÏÁö ¾Ê´Â´Ù.
- *  ¸¸¾à ÁÙÀÌ°í ½Í´Ù¸é ¼­¹ö¸¦ ³»¸®°í, ÁÙÀÎ ÈÄ ´Ù½Ã ¼­¹ö¸¦ ¿Ã·Á¾ß ÇÑ´Ù.
+ *  BufferManager í¬ê¸°ë¥¼ ë³€ê²½í•œë‹¤.
+ *  í˜„ì¬ ë²„í¼ë§¤ë‹ˆì €ì˜ í¬ê¸°ë¥¼ ì¤„ì´ëŠ” ê¸°ëŠ¥ì€ ì œê³µí•˜ì§€ ì•ŠëŠ”ë‹¤.
+ *  ë§Œì•½ ì¤„ì´ê³  ì‹¶ë‹¤ë©´ ì„œë²„ë¥¼ ë‚´ë¦¬ê³ , ì¤„ì¸ í›„ ë‹¤ì‹œ ì„œë²„ë¥¼ ì˜¬ë ¤ì•¼ í•œë‹¤.
  *
- *  aStatistics - [IN]  Åë°èÁ¤º¸
- *  aAskedSize  - [IN]  »ç¿ëÀÚ°¡ ¿äÃ»ÇÑ Å©±â
- *  aTrans      - [IN]  ÇØ´ç ¿¬»êÀ» ¼öÇàÇÑ Æ®·£Àè¼Ç
- *  aNewSize    - [OUT] resizeµÇ°í ³­ ÀÌÈÄ ½ÇÁ¦ buffer manager Å©±â
+ *  aStatistics - [IN]  í†µê³„ì •ë³´
+ *  aAskedSize  - [IN]  ì‚¬ìš©ìê°€ ìš”ì²­í•œ í¬ê¸°
+ *  aTrans      - [IN]  í•´ë‹¹ ì—°ì‚°ì„ ìˆ˜í–‰í•œ íŠ¸ëœì­ì…˜
+ *  aNewSize    - [OUT] resizeë˜ê³  ë‚œ ì´í›„ ì‹¤ì œ buffer manager í¬ê¸°
  ******************************************************************************/
 IDE_RC sdbBufferMgr::resize( idvSQL *aStatistics,
                              ULong   aAskedSize,
@@ -275,22 +275,22 @@ IDE_RC sdbBufferMgr::resize( idvSQL *aStatistics,
 
 /******************************************************************************
  * Description :
- *  BufferManagerÀÇ Å©±â¸¦ Áõ°¡ ÇÑ´Ù.
+ *  BufferManagerì˜ í¬ê¸°ë¥¼ ì¦ê°€ í•œë‹¤.
  *
  * Implementation :
- *  1. "aAddedSize+ÇöÀç Å©±â"¸¦ ÅëÇØ ½ÇÁ¦ È®ÀåµÇ¾îÁú Å©±â¸¦ ±¸ÇÑ´Ù.
- *  2. buffer poolÀÇ hash tableÀÇ Å©±â¸¦ ½ÇÁ¦ È®ÀåµÇ¾îÁú Å©±â¿¡ ¸Â°Ô
- *      ¸ÕÀú Áõ°¡ ½ÃÅ²´Ù. hash tableÀ» Áõ°¡½ÃÅ°±âÀü¿¡ hash table¿¡
- *      Á¢±ÙÇÒ °¡´É¼ºÀÌ ÀÖ´Â ¸ğµç Æ®·£Àè¼Ç ¹× gcÀÇ µ¿ÀÛÀ» ¸·´Â´Ù.
- *  3. buffer area¿¡ aAddedSize¸¸Å­À» ¿äÃ»ÇÑ´Ù.
- *  4. buffer area¿¡ »ı±ä BCBµéÀ» Buffer Pool¿¡ ³Ö¾îÁØ´Ù.
+ *  1. "aAddedSize+í˜„ì¬ í¬ê¸°"ë¥¼ í†µí•´ ì‹¤ì œ í™•ì¥ë˜ì–´ì§ˆ í¬ê¸°ë¥¼ êµ¬í•œë‹¤.
+ *  2. buffer poolì˜ hash tableì˜ í¬ê¸°ë¥¼ ì‹¤ì œ í™•ì¥ë˜ì–´ì§ˆ í¬ê¸°ì— ë§ê²Œ
+ *      ë¨¼ì € ì¦ê°€ ì‹œí‚¨ë‹¤. hash tableì„ ì¦ê°€ì‹œí‚¤ê¸°ì „ì— hash tableì—
+ *      ì ‘ê·¼í•  ê°€ëŠ¥ì„±ì´ ìˆëŠ” ëª¨ë“  íŠ¸ëœì­ì…˜ ë° gcì˜ ë™ì‘ì„ ë§‰ëŠ”ë‹¤.
+ *  3. buffer areaì— aAddedSizeë§Œí¼ì„ ìš”ì²­í•œë‹¤.
+ *  4. buffer areaì— ìƒê¸´ BCBë“¤ì„ Buffer Poolì— ë„£ì–´ì¤€ë‹¤.
  *
- *  aStatistics - [IN]  Åë°èÁ¤º¸
- *  aAddedSize  - [IN]  ÇöÀç BufferManager¿¡ Áõ°¡µÇ´Â Å©±â. ½ÇÁ¦·Ğ
- *                      sdbBufferAreaÀÇ chunkÅ©±â¿¡ ¸ÂÃß¾î aling down
- *                      µÇ¾î¼­ ´õÇØÁø´Ù.
- *  aTrans      - [IN]  ÇØ´ç ¿¬»êÀ» ¼öÇàÇÑ Æ®·£Àè¼Ç
- *  aNewSize    - [OUT] expandµÇ°í ³­ ÈÄÀÇ BufferManagerÀÇ Å©±â¸¦ ¸®ÅÏ
+ *  aStatistics - [IN]  í†µê³„ì •ë³´
+ *  aAddedSize  - [IN]  í˜„ì¬ BufferManagerì— ì¦ê°€ë˜ëŠ” í¬ê¸°. ì‹¤ì œë¡ 
+ *                      sdbBufferAreaì˜ chunkí¬ê¸°ì— ë§ì¶”ì–´ aling down
+ *                      ë˜ì–´ì„œ ë”í•´ì§„ë‹¤.
+ *  aTrans      - [IN]  í•´ë‹¹ ì—°ì‚°ì„ ìˆ˜í–‰í•œ íŠ¸ëœì­ì…˜
+ *  aNewSize    - [OUT] expandë˜ê³  ë‚œ í›„ì˜ BufferManagerì˜ í¬ê¸°ë¥¼ ë¦¬í„´
  ******************************************************************************/
 IDE_RC sdbBufferMgr::expand( idvSQL *aStatistics,
                              ULong   aAddedSize ,
@@ -329,18 +329,18 @@ IDE_RC sdbBufferMgr::expand( idvSQL *aStatistics,
     }
     else
     {
-        //  1. "aAddedSize+ÇöÀç Å©±â"¸¦ ÅëÇØ ½ÇÁ¦ È®ÀåµÇ¾îÁú Å©±â¸¦ ±¸ÇÑ´Ù.
+        //  1. "aAddedSize+í˜„ì¬ í¬ê¸°"ë¥¼ í†µí•´ ì‹¤ì œ í™•ì¥ë˜ì–´ì§ˆ í¬ê¸°ë¥¼ êµ¬í•œë‹¤.
         sTotalBCBCnt   = sCurrBCBCnt + sAddedChunkCnt * sChunkPageCnt;
         sHashBucketCnt = sTotalBCBCnt / smuProperty::getBufferHashBucketDensity();
         sHashBucketCntPerLatch = smuProperty::getBufferHashChainLatchDensity();
 
-        // 2. buffer poolÀÇ hash tableÀÇ Å©±â¸¦ ½ÇÁ¦ È®ÀåµÇ¾îÁú Å©±â¿¡ ¸Â°Ô
-        //    ¸ÕÀú Áõ°¡ ½ÃÅ²´Ù. hash tableÀ» Áõ°¡½ÃÅ°±âÀü¿¡ hash table¿¡
-        //    Á¢±ÙÇÒ °¡´É¼ºÀÌ ÀÖ´Â ¸ğµç Æ®·£Àè¼Ç ¹× gcÀÇ µ¿ÀÛÀ» ¸·´Â´Ù.
+        // 2. buffer poolì˜ hash tableì˜ í¬ê¸°ë¥¼ ì‹¤ì œ í™•ì¥ë˜ì–´ì§ˆ í¬ê¸°ì— ë§ê²Œ
+        //    ë¨¼ì € ì¦ê°€ ì‹œí‚¨ë‹¤. hash tableì„ ì¦ê°€ì‹œí‚¤ê¸°ì „ì— hash tableì—
+        //    ì ‘ê·¼í•  ê°€ëŠ¥ì„±ì´ ìˆëŠ” ëª¨ë“  íŠ¸ëœì­ì…˜ ë° gcì˜ ë™ì‘ì„ ë§‰ëŠ”ë‹¤.
         blockAllApprochBufHash( aTrans, &sSuccess );
 
-        // Æ®·£Àè¼Ç blockÀÌ ½ÇÆĞÇÑ´Ù¸é ¿¡·¯¸¦ ¸®ÅÏÇÏ°í ´õÀÌ»ó
-        // resize¸¦ ¼öÇàÇÏÁö ¾Ê´Â´Ù.
+        // íŠ¸ëœì­ì…˜ blockì´ ì‹¤íŒ¨í•œë‹¤ë©´ ì—ëŸ¬ë¥¼ ë¦¬í„´í•˜ê³  ë”ì´ìƒ
+        // resizeë¥¼ ìˆ˜í–‰í•˜ì§€ ì•ŠëŠ”ë‹¤.
         IDE_TEST_RAISE ( sSuccess == ID_FALSE, buffer_manager_busy );
         sState = 1;
 
@@ -348,11 +348,11 @@ IDE_RC sdbBufferMgr::expand( idvSQL *aStatistics,
                                                              sHashBucketCntPerLatch)
                   != IDE_SUCCESS );
 
-        // 3. buffer area¿¡ aAddedSize¸¸Å­À» ¿äÃ»ÇÑ´Ù.
+        // 3. buffer areaì— aAddedSizeë§Œí¼ì„ ìš”ì²­í•œë‹¤.
         IDE_TEST( sdbBufferMgr::mBufferArea.expandArea( aStatistics, sAddedChunkCnt)
                   != IDE_SUCCESS );
 
-        // 4. buffer area¿¡ »ı±ä BCBµéÀ» Buffer Pool¿¡ ³Ö¾îÁØ´Ù.
+        // 4. buffer areaì— ìƒê¸´ BCBë“¤ì„ Buffer Poolì— ë„£ì–´ì¤€ë‹¤.
         IDE_ASSERT( sdbBufferMgr::mBufferArea.getTotalCount() == sTotalBCBCnt );
 
         if( aNewSize != NULL )
@@ -372,13 +372,13 @@ IDE_RC sdbBufferMgr::expand( idvSQL *aStatistics,
 
         unblockAllApprochBufHash();
         sState = 0;
-        /* ÁÖÀÇ!!
-         * ÀÏ´Ü bufferPool¿¡ distributBCB¸¦ ¼öÇàÇÏ°í ³ª¸é,
-         * rollbackÀ» ÇÒ ¼ö°¡ ¾ø´Ù. ¿Ö³Ä¸é, bufferPool¿¡ »ğÀÔÀ» ÇÏ°í ³ª¸é,
-         * ´Ù¸¥ Æ®·£Àè¼ÇµéÀÌ ¹Ù·Î °¡Á®°¡¼­ ½á¹ö¸®±â ¶§¹®ÀÌ´Ù. ±×·¸±â ¶§¹®¿¡
-         * distributeBCBÀÌÈÄ¿¡ abort°¡ ³ª¸é ¼­¹ö¸¦ Á×¿©¾ß ÇÑ´Ù.
-         * ÀÌ°ÍÀº ¹öÆÛ¸Å´ÏÀú Ãà¼Ò±â´É°ú ¹ĞÁ¢ÇÑ °ü·ÃÀÌ ÀÖ´Â ºÎºĞÀ¸·Î,
-         * ¹öÆÛ¸Å´ÏÀú Ãà¼Ò ±â´ÉÀÌ Ãß°¡µÇ¸é ÇØ°áµÈ´Ù.
+        /* ì£¼ì˜!!
+         * ì¼ë‹¨ bufferPoolì— distributBCBë¥¼ ìˆ˜í–‰í•˜ê³  ë‚˜ë©´,
+         * rollbackì„ í•  ìˆ˜ê°€ ì—†ë‹¤. ì™œëƒë©´, bufferPoolì— ì‚½ì…ì„ í•˜ê³  ë‚˜ë©´,
+         * ë‹¤ë¥¸ íŠ¸ëœì­ì…˜ë“¤ì´ ë°”ë¡œ ê°€ì ¸ê°€ì„œ ì¨ë²„ë¦¬ê¸° ë•Œë¬¸ì´ë‹¤. ê·¸ë ‡ê¸° ë•Œë¬¸ì—
+         * distributeBCBì´í›„ì— abortê°€ ë‚˜ë©´ ì„œë²„ë¥¼ ì£½ì—¬ì•¼ í•œë‹¤.
+         * ì´ê²ƒì€ ë²„í¼ë§¤ë‹ˆì € ì¶•ì†Œê¸°ëŠ¥ê³¼ ë°€ì ‘í•œ ê´€ë ¨ì´ ìˆëŠ” ë¶€ë¶„ìœ¼ë¡œ,
+         * ë²„í¼ë§¤ë‹ˆì € ì¶•ì†Œ ê¸°ëŠ¥ì´ ì¶”ê°€ë˜ë©´ í•´ê²°ëœë‹¤.
          * */
         return IDE_SUCCESS;
     }
@@ -402,13 +402,13 @@ IDE_RC sdbBufferMgr::expand( idvSQL *aStatistics,
 }
 /******************************************************************************
  * Description :
- *  BufferManager¿¡ Á¸ÀçÇÏ´Â Dirty BCBµéÀ» flushÇÏ¿© clean»óÅÂ·Î ¸¸µç´Ù.
- *  ÀÌ¶§, ¸ğµç BCB¿¡ ´ëÇØ¼­ ÇÏ´Â °ÍÀÌ ¾Æ´Ï°í, checkpoint ¸®½ºÆ®¿¡ ´Ş·ÁÀÖ°í,
- *  restart recovery LSNÀÌ ³·Àº °ÍºÎÅÍ ¼ø¼­´ë·Î flushÇÑ´Ù.
- *  ÁÖ·Î ÁÖ±âÀûÀÎ Ã¼Å© Æ÷ÀÎÆ®¸¦ À§ÇØ È£ÃâµÈ´Ù.
+ *  BufferManagerì— ì¡´ì¬í•˜ëŠ” Dirty BCBë“¤ì„ flushí•˜ì—¬ cleanìƒíƒœë¡œ ë§Œë“ ë‹¤.
+ *  ì´ë•Œ, ëª¨ë“  BCBì— ëŒ€í•´ì„œ í•˜ëŠ” ê²ƒì´ ì•„ë‹ˆê³ , checkpoint ë¦¬ìŠ¤íŠ¸ì— ë‹¬ë ¤ìˆê³ ,
+ *  restart recovery LSNì´ ë‚®ì€ ê²ƒë¶€í„° ìˆœì„œëŒ€ë¡œ flushí•œë‹¤.
+ *  ì£¼ë¡œ ì£¼ê¸°ì ì¸ ì²´í¬ í¬ì¸íŠ¸ë¥¼ ìœ„í•´ í˜¸ì¶œëœë‹¤.
  *
- *  aStatistics - [IN]  Åë°èÁ¤º¸
- *  aFlushAll   - [IN]  ¸ğµç ÆäÀÌÁö¸¦ flush ÇØ¾ßÇÏ´ÂÁö ¿©ºÎ
+ *  aStatistics - [IN]  í†µê³„ì •ë³´
+ *  aFlushAll   - [IN]  ëª¨ë“  í˜ì´ì§€ë¥¼ flush í•´ì•¼í•˜ëŠ”ì§€ ì—¬ë¶€
  ******************************************************************************/
 IDE_RC sdbBufferMgr::flushDirtyPagesInCPList( idvSQL  * aStatistics,
                                               idBool    aFlushAll)
@@ -443,11 +443,11 @@ IDE_RC sdbBufferMgr::flushDirtyPagesInCPListByCheckpoint( idvSQL  * aStatistics,
 
 /****************************************************************
  * Description :
- *  ´ÜÁö sdbBufferPoolÀÇ °ü·Ã ÇÔ¼ö¸¦ È£ÃâÇÏ´Â ²®µ¥±â ¿ªÈ°¸¸ ÇÑ´Ù.
- *  ÀÚ¼¼ÇÑ ¼³¸íÀº sdbBufferPoolÀÇ °ü·Ã ÇÔ¼ö¸¦ ÂüÁ¶
+ *  ë‹¨ì§€ sdbBufferPoolì˜ ê´€ë ¨ í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•˜ëŠ” ê»ë°ê¸° ì—­í™œë§Œ í•œë‹¤.
+ *  ìì„¸í•œ ì„¤ëª…ì€ sdbBufferPoolì˜ ê´€ë ¨ í•¨ìˆ˜ë¥¼ ì°¸ì¡°
  *
- *  aBCB        - [IN]  ÇØ´ç BCB
- *  aMtx        - [IN]  ÇØ´ç aMtx
+ *  aBCB        - [IN]  í•´ë‹¹ BCB
+ *  aMtx        - [IN]  í•´ë‹¹ aMtx
  ****************************************************************/
 IDE_RC sdbBufferMgr::setDirtyPage( void *aBCB,
                                    void *aMtx )
@@ -463,12 +463,12 @@ IDE_RC sdbBufferMgr::setDirtyPage( void *aBCB,
 
 /****************************************************************
  * Description :
- *  ´ÜÁö sdbBufferPoolÀÇ °ü·Ã ÇÔ¼ö¸¦ È£ÃâÇÏ´Â ²®µ¥±â ¿ªÈ°¸¸ ÇÑ´Ù.
- *  ÀÚ¼¼ÇÑ ¼³¸íÀº sdbBufferPoolÀÇ °ü·Ã ÇÔ¼ö¸¦ ÂüÁ¶
+ *  ë‹¨ì§€ sdbBufferPoolì˜ ê´€ë ¨ í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•˜ëŠ” ê»ë°ê¸° ì—­í™œë§Œ í•œë‹¤.
+ *  ìì„¸í•œ ì„¤ëª…ì€ sdbBufferPoolì˜ ê´€ë ¨ í•¨ìˆ˜ë¥¼ ì°¸ì¡°
  *
- *  aBCB        - [IN]  ÇØ´ç BCB
- *  aLatchMode  - [IN]  ·¡Ä¡ ¸ğµå
- *  aMtx        - [IN]  ÇØ´ç Mini transaction
+ *  aBCB        - [IN]  í•´ë‹¹ BCB
+ *  aLatchMode  - [IN]  ë˜ì¹˜ ëª¨ë“œ
+ *  aMtx        - [IN]  í•´ë‹¹ Mini transaction
  ****************************************************************/
 IDE_RC sdbBufferMgr::releasePage( void            *aBCB,
                                   UInt             aLatchMode,
@@ -485,11 +485,11 @@ IDE_RC sdbBufferMgr::releasePage( void            *aBCB,
 
 /****************************************************************
  * Description :
- *  ´ÜÁö sdbBufferPoolÀÇ °ü·Ã ÇÔ¼ö¸¦ È£ÃâÇÏ´Â ²®µ¥±â ¿ªÈ°¸¸ ÇÑ´Ù.
- *  ÀÚ¼¼ÇÑ ¼³¸íÀº sdbBufferPoolÀÇ °ü·Ã ÇÔ¼ö¸¦ ÂüÁ¶
+ *  ë‹¨ì§€ sdbBufferPoolì˜ ê´€ë ¨ í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•˜ëŠ” ê»ë°ê¸° ì—­í™œë§Œ í•œë‹¤.
+ *  ìì„¸í•œ ì„¤ëª…ì€ sdbBufferPoolì˜ ê´€ë ¨ í•¨ìˆ˜ë¥¼ ì°¸ì¡°
  *
- *  aStatistics - [IN]  Åë°èÁ¤º¸
- *  aPagePtr    - [IN]  ÇØ´ç ÆäÀÌÁö frame pointer
+ *  aStatistics - [IN]  í†µê³„ì •ë³´
+ *  aPagePtr    - [IN]  í•´ë‹¹ í˜ì´ì§€ frame pointer
  ****************************************************************/
 IDE_RC sdbBufferMgr::releasePage( idvSQL * aStatistics,
                                   UChar  * aPagePtr )
@@ -505,12 +505,12 @@ IDE_RC sdbBufferMgr::releasePage( idvSQL * aStatistics,
 
 /****************************************************************
  * Description :
- *  ´ÜÁö sdbBufferPoolÀÇ °ü·Ã ÇÔ¼ö¸¦ È£ÃâÇÏ´Â ²®µ¥±â ¿ªÈ°¸¸ ÇÑ´Ù.
- *  ÀÚ¼¼ÇÑ ¼³¸íÀº sdbBufferPoolÀÇ °ü·Ã ÇÔ¼ö¸¦ ÂüÁ¶
+ *  ë‹¨ì§€ sdbBufferPoolì˜ ê´€ë ¨ í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•˜ëŠ” ê»ë°ê¸° ì—­í™œë§Œ í•œë‹¤.
+ *  ìì„¸í•œ ì„¤ëª…ì€ sdbBufferPoolì˜ ê´€ë ¨ í•¨ìˆ˜ë¥¼ ì°¸ì¡°
  *
- *  aBCB        - [IN]  ÇØ´ç BCB
- *  aLatchMode  - [IN]  ·¡Ä¡ ¸ğµå
- *  aMtx        - [IN]  ÇØ´ç Mini transaction
+ *  aBCB        - [IN]  í•´ë‹¹ BCB
+ *  aLatchMode  - [IN]  ë˜ì¹˜ ëª¨ë“œ
+ *  aMtx        - [IN]  í•´ë‹¹ Mini transaction
  ****************************************************************/
 IDE_RC sdbBufferMgr::releasePageForRollback( void         *aBCB,
                                              UInt          aLatchMode,
@@ -533,9 +533,9 @@ void sdbBufferMgr::setDiskAgerStatResetFlag(idBool  )
 
 /****************************************************************
  * Description :
- *  ÆäÀÌÁö ÇÁ·¹ÀÓ Æ÷ÀÎÅÍ¸¦ ³Ñ°Ü ¹Ş¾Æ ±×°Í¿¡ ÇØ´çÇÏ´Â BCB¸¦ ¸®ÅÏÇÑ´Ù.
+ *  í˜ì´ì§€ í”„ë ˆì„ í¬ì¸í„°ë¥¼ ë„˜ê²¨ ë°›ì•„ ê·¸ê²ƒì— í•´ë‹¹í•˜ëŠ” BCBë¥¼ ë¦¬í„´í•œë‹¤.
  *
- *  aPage       - [IN]  ÇØ´ç ÆäÀÌÁö frame pointer
+ *  aPage       - [IN]  í•´ë‹¹ í˜ì´ì§€ frame pointer
  ****************************************************************/
 sdbBCB* sdbBufferMgr::getBCBFromPagePtr( UChar * aPage )
 {
@@ -549,10 +549,10 @@ sdbBCB* sdbBufferMgr::getBCBFromPagePtr( UChar * aPage )
 
     if( mBufferArea.isValidBCBPtrRange( sBCB ) == ID_FALSE )
     {
-        /* BUG-32528 disk page headerÀÇ BCB Pointer °¡ ±ÜÇûÀ» °æ¿ì¿¡ ´ëÇÑ
-         * µğ¹ö±ë Á¤º¸ Ãß°¡.
-         * Disk Page HeaderÀÇ BCB Pointer °¡ ±ú¾îÁ³´Ù¸é
-         * ¾Õ page¿¡¼­ ±Ü¾úÀ» °¡´É¼ºÀÌ ³ô´Ù. */
+        /* BUG-32528 disk page headerì˜ BCB Pointer ê°€ ê¸í˜”ì„ ê²½ìš°ì— ëŒ€í•œ
+         * ë””ë²„ê¹… ì •ë³´ ì¶”ê°€.
+         * Disk Page Headerì˜ BCB Pointer ê°€ ê¹¨ì–´ì¡Œë‹¤ë©´
+         * ì• pageì—ì„œ ê¸ì—ˆì„ ê°€ëŠ¥ì„±ì´ ë†’ë‹¤. */
 
         smLayerCallback::traceDiskPage( IDE_DUMP_0,
                                         sPagePtr - SD_PAGE_SIZE,
@@ -592,13 +592,13 @@ sdbBCB* sdbBufferMgr::getBCBFromPagePtr( UChar * aPage )
 #if 0 // not used
 /****************************************************************
  * Description :
- *  GRID¿¡ ÇØ´çÇÏ´Â page frameÀÇ Æ÷ÀÎÅÍ¸¦ ¸®ÅÏÇÑ´Ù.
- *  ÀÌ¶§, ¹İµå½Ã ¹öÆÛ¿¡ Á¸ÀçÇÏ´Â °æ¿ì¿¡¸¸ ¸®ÅÏÇÏ°í, ±×·¸Áö ¾ÊÀº°æ¿ì¿¡´Â
- *  µğ½ºÅ©¿¡¼­ ÀĞÁö ¾Ê°í NULLÀ» ¸®ÅÏÇÑ´Ù.
+ *  GRIDì— í•´ë‹¹í•˜ëŠ” page frameì˜ í¬ì¸í„°ë¥¼ ë¦¬í„´í•œë‹¤.
+ *  ì´ë•Œ, ë°˜ë“œì‹œ ë²„í¼ì— ì¡´ì¬í•˜ëŠ” ê²½ìš°ì—ë§Œ ë¦¬í„´í•˜ê³ , ê·¸ë ‡ì§€ ì•Šì€ê²½ìš°ì—ëŠ”
+ *  ë””ìŠ¤í¬ì—ì„œ ì½ì§€ ì•Šê³  NULLì„ ë¦¬í„´í•œë‹¤.
  *
- *  aStatistics - [IN]  Åë°èÁ¤º¸
+ *  aStatistics - [IN]  í†µê³„ì •ë³´
  *  aGRID       - [IN]  GRID
- *  aPagePtr    - [OUT] ¿äÃ»ÇÑ ÆäÀÌÁö
+ *  aPagePtr    - [OUT] ìš”ì²­í•œ í˜ì´ì§€
  ****************************************************************/
 IDE_RC sdbBufferMgr::getPagePtrFromGRID( idvSQL     *aStatistics,
                                          scGRID      aGRID,
@@ -650,11 +650,11 @@ IDE_RC sdbBufferMgr::getPagePtrFromGRID( idvSQL     *aStatistics,
 
 /****************************************************************
  * Description :
- *  ÇöÀç ¹öÆÛ¿¡ Á¸ÀçÇÏ´Â BCBµéÀÇ recoveryLSNÁß °¡Àå ÀÛÀº °ªÀ»
- *  ¸®ÅÏÇÑ´Ù.
+ *  í˜„ì¬ ë²„í¼ì— ì¡´ì¬í•˜ëŠ” BCBë“¤ì˜ recoveryLSNì¤‘ ê°€ì¥ ì‘ì€ ê°’ì„
+ *  ë¦¬í„´í•œë‹¤.
  *
- *  aStatistics - [IN]  Åë°èÁ¤º¸
- *  aRet        - [OUT] ¿äÃ»ÇÑ min recoveryLSN
+ *  aStatistics - [IN]  í†µê³„ì •ë³´
+ *  aRet        - [OUT] ìš”ì²­í•œ min recoveryLSN
  ****************************************************************/
 void sdbBufferMgr::getMinRecoveryLSN(idvSQL *aStatistics,
                                      smLSN  *aRet)
@@ -665,7 +665,7 @@ void sdbBufferMgr::getMinRecoveryLSN(idvSQL *aStatistics,
 
     sCPL = mBufferPool.getCPListSet();
 
-    //ÁÖÀÇ!! µ¿½Ã¼º ¹®Á¦ ¶§¹®¿¡ ¾Æ·¡ 2¿¬»êÀÇ ¼ø¼­´Â ¹İµå½Ã º¸ÀåÇØ¾ß ÇÑ´Ù.
+    //ì£¼ì˜!! ë™ì‹œì„± ë¬¸ì œ ë•Œë¬¸ì— ì•„ë˜ 2ì—°ì‚°ì˜ ìˆœì„œëŠ” ë°˜ë“œì‹œ ë³´ì¥í•´ì•¼ í•œë‹¤.
     sCPL->getMinRecoveryLSN(aStatistics, &sCPListMinLSN);
     sdbFlushMgr::getMinRecoveryLSN(aStatistics, &sFlusherMinLSN);
 
@@ -683,7 +683,7 @@ void sdbBufferMgr::getMinRecoveryLSN(idvSQL *aStatistics,
 
 /******************************************************************************
  * Description :
- *    Åë°è Á¤º¸¸¦ ½Ã½ºÅÛ¿¡ ¹İ¿µÇÑ´Ù.
+ *    í†µê³„ ì •ë³´ë¥¼ ì‹œìŠ¤í…œì— ë°˜ì˜í•œë‹¤.
  ******************************************************************************/
 void sdbBufferMgr::applyStatisticsForSystem()
 {
@@ -693,23 +693,23 @@ void sdbBufferMgr::applyStatisticsForSystem()
 
 /*****************************************************************
  * Description:
- *  [BUG-20861] ¹öÆÛ hash resize¸¦ ÇÏ±âÀ§ÇØ¼­ ´Ù¸¥ Æ®·£Àè¼ÇµéÀ» ¸ğµÎ Á¢±ÙÇÏÁö
- *  ¸øÇÏ°Ô ÇØ¾ß ÇÕ´Ï´Ù.
+ *  [BUG-20861] ë²„í¼ hash resizeë¥¼ í•˜ê¸°ìœ„í•´ì„œ ë‹¤ë¥¸ íŠ¸ëœì­ì…˜ë“¤ì„ ëª¨ë‘ ì ‘ê·¼í•˜ì§€
+ *  ëª»í•˜ê²Œ í•´ì•¼ í•©ë‹ˆë‹¤.
  *
- *  hash table¿¡ Á¢±ÙÇÒ¼ö ÀÖ´Â ¾²·¹µåµéÀ» ¸ğµÎ ¸·´Â´Ù.
- *  ÀÌ ÇÔ¼ö ¼öÇàÈÄ hash¿¡ Á¢±ÙÇÏ´Â ¾²·¹µå°¡ (ÀÌ ÇÔ¼ö¸¦ ¼öÇàÇÑ ¾²·¹µå ¿Ü¿¡)
- *  ¾Æ¹«µµ ¾øÀ½À» º¸Àå ÇÒ ¼ö ÀÖ´Ù.
+ *  hash tableì— ì ‘ê·¼í• ìˆ˜ ìˆëŠ” ì“°ë ˆë“œë“¤ì„ ëª¨ë‘ ë§‰ëŠ”ë‹¤.
+ *  ì´ í•¨ìˆ˜ ìˆ˜í–‰í›„ hashì— ì ‘ê·¼í•˜ëŠ” ì“°ë ˆë“œê°€ (ì´ í•¨ìˆ˜ë¥¼ ìˆ˜í–‰í•œ ì“°ë ˆë“œ ì™¸ì—)
+ *  ì•„ë¬´ë„ ì—†ìŒì„ ë³´ì¥ í•  ìˆ˜ ìˆë‹¤.
  *
- *  aStatistics - [IN]  Åë°èÁ¤º¸
- *  aTrans      - [IN]  º» ÇÔ¼ö È£ÃâÇÑ Æ®·£Àè¼Ç
- *  aSuccess    - [OUT] ¼º°ø¿©ºÎ ¸®ÅÏ
+ *  aStatistics - [IN]  í†µê³„ì •ë³´
+ *  aTrans      - [IN]  ë³¸ í•¨ìˆ˜ í˜¸ì¶œí•œ íŠ¸ëœì­ì…˜
+ *  aSuccess    - [OUT] ì„±ê³µì—¬ë¶€ ë¦¬í„´
  ****************************************************************/
 void  sdbBufferMgr::blockAllApprochBufHash( void     * aTrans,
                                             idBool   * aSuccess )
 {
     ULong  sWaitTimeMicroSec = smuProperty::getBlockAllTxTimeOut() *1000*1000;
 
-    /* Æ®·£Àè¼ÇÀÇ Á¢±ÙÀ» ¸·´Â´Ù. */
+    /* íŠ¸ëœì­ì…˜ì˜ ì ‘ê·¼ì„ ë§‰ëŠ”ë‹¤. */
     smLayerCallback::blockAllTx( aTrans,
                                  sWaitTimeMicroSec,
                                  aSuccess );
@@ -724,13 +724,13 @@ void  sdbBufferMgr::blockAllApprochBufHash( void     * aTrans,
 
 /*****************************************************************
  * Description:
- *  [BUG-20861] ¹öÆÛ hash resize¸¦ ÇÏ±âÀ§ÇØ¼­ ´Ù¸¥ Æ®·£Àè¼ÇµéÀ» ¸ğµÎ Á¢±ÙÇÏÁö
- *  ¸øÇÏ°Ô ÇØ¾ß ÇÕ´Ï´Ù.
+ *  [BUG-20861] ë²„í¼ hash resizeë¥¼ í•˜ê¸°ìœ„í•´ì„œ ë‹¤ë¥¸ íŠ¸ëœì­ì…˜ë“¤ì„ ëª¨ë‘ ì ‘ê·¼í•˜ì§€
+ *  ëª»í•˜ê²Œ í•´ì•¼ í•©ë‹ˆë‹¤.
  *
- *  sdbBufferMgr::blockAllApprochBufHash ¿¡¼­ ¸·¾Æ³õ¾Ò´ø
- *  ¾²·¹µåµéÀ» ÇØÁ¦ÇÑ´Ù. ÀÌ ÇÔ¼ö È£ÃâÀÌÈÄ¿¡ hash¿¡ ¾²·¹µåµéÀÌ Á¢±ÙÇÒ ¼ö ÀÖ´Ù.
+ *  sdbBufferMgr::blockAllApprochBufHash ì—ì„œ ë§‰ì•„ë†“ì•˜ë˜
+ *  ì“°ë ˆë“œë“¤ì„ í•´ì œí•œë‹¤. ì´ í•¨ìˆ˜ í˜¸ì¶œì´í›„ì— hashì— ì“°ë ˆë“œë“¤ì´ ì ‘ê·¼í•  ìˆ˜ ìˆë‹¤.
  *
- *  aTrans      - [IN]  º» ÇÔ¼ö È£ÃâÇÑ Æ®·£Àè¼Ç
+ *  aTrans      - [IN]  ë³¸ í•¨ìˆ˜ í˜¸ì¶œí•œ íŠ¸ëœì­ì…˜
  ****************************************************************/
 void  sdbBufferMgr::unblockAllApprochBufHash()
 {
@@ -739,7 +739,7 @@ void  sdbBufferMgr::unblockAllApprochBufHash()
 
 /*****************************************************************
  * Description :
- *  ¾î¶² BCB¸¦ ÀÔ·ÂÀ¸·Î ¹Ş¾Æµµ Ç×»ó ID_TRUE¸¦ ¸®ÅÏÇÑ´Ù.
+ *  ì–´ë–¤ BCBë¥¼ ì…ë ¥ìœ¼ë¡œ ë°›ì•„ë„ í•­ìƒ ID_TRUEë¥¼ ë¦¬í„´í•œë‹¤.
  ****************************************************************/
 idBool sdbBufferMgr::filterAllBCBs( void   */*aBCB*/,
                                     void   */*aObj*/)
@@ -749,11 +749,11 @@ idBool sdbBufferMgr::filterAllBCBs( void   */*aBCB*/,
 
 /*****************************************************************
  * Description :
- *  aObj¿¡´Â spaceID°¡ µé¾îÀÖ´Ù. spaceID°¡ °°Àº BCB¿¡ ´ëÇØ¼­
- *  ID_TRUE¸¦ ¸®ÅÏ
+ *  aObjì—ëŠ” spaceIDê°€ ë“¤ì–´ìˆë‹¤. spaceIDê°€ ê°™ì€ BCBì— ëŒ€í•´ì„œ
+ *  ID_TRUEë¥¼ ë¦¬í„´
  *
  *  aBCB        - [IN]  BCB
- *  aObj        - [IN]  ÇÔ¼ö ¼öÇàÇÒ¶§ ÇÊ¿äÇÑ ÀÚ·á±¸Á¶. spaceID·Î Ä³½ºÆÃÇØ¼­ »ç¿ë
+ *  aObj        - [IN]  í•¨ìˆ˜ ìˆ˜í–‰í• ë•Œ í•„ìš”í•œ ìë£Œêµ¬ì¡°. spaceIDë¡œ ìºìŠ¤íŒ…í•´ì„œ ì‚¬ìš©
  ****************************************************************/
 idBool sdbBufferMgr::filterTBSBCBs( void   *aBCB,
                                     void   *aObj )
@@ -773,12 +773,12 @@ idBool sdbBufferMgr::filterTBSBCBs( void   *aBCB,
 
 /*****************************************************************
  * Description :
- *  aObj¿¡´Â Æ¯Á¤ pidÀÇ ¹üÀ§°¡ µé¾îÀÖ´Ù.
- *  BCB°¡ ±× ¹üÀ§¿¡ ¼ÓÇÒ¶§¸¸ ID_TRUE ¸®ÅÏ.
+ *  aObjì—ëŠ” íŠ¹ì • pidì˜ ë²”ìœ„ê°€ ë“¤ì–´ìˆë‹¤.
+ *  BCBê°€ ê·¸ ë²”ìœ„ì— ì†í• ë•Œë§Œ ID_TRUE ë¦¬í„´.
  *
  *  aBCB        - [IN]  BCB
- *  aObj        - [IN]  ÇÔ¼ö ¼öÇàÇÒ¶§ ÇÊ¿äÇÑ ÀÚ·á±¸Á¶. sdbBCBRange·Î Ä³½ºÆÃÇØ¼­
- *                      »ç¿ë
+ *  aObj        - [IN]  í•¨ìˆ˜ ìˆ˜í–‰í• ë•Œ í•„ìš”í•œ ìë£Œêµ¬ì¡°. sdbBCBRangeë¡œ ìºìŠ¤íŒ…í•´ì„œ
+ *                      ì‚¬ìš©
  ****************************************************************/
 idBool sdbBufferMgr::filterBCBRange( void   *aBCB,
                                      void   *aObj )
@@ -798,10 +798,10 @@ idBool sdbBufferMgr::filterBCBRange( void   *aBCB,
 }
 
 /****************************************************************
- * ÁÖ¾îÁø Á¶°Ç¿¡ ¸Â´Â ´Ü ÇÏ³ªÀÇ BCB¸¦ ¼±ÅÃÇÏ±â À§ÇÑ ÇÔ¼ö,
+ * ì£¼ì–´ì§„ ì¡°ê±´ì— ë§ëŠ” ë‹¨ í•˜ë‚˜ì˜ BCBë¥¼ ì„ íƒí•˜ê¸° ìœ„í•œ í•¨ìˆ˜,
  *
  *  aBCB        - [IN]  BCB
- *  aObj        - [IN]  ÇÔ¼ö ¼öÇàÇÒ¶§ ÇÊ¿äÇÑ ÀÚ·á±¸Á¶. Æ¯Á¤ BCBÁ¤º¸¸¦ °¡Áø´Ù.
+ *  aObj        - [IN]  í•¨ìˆ˜ ìˆ˜í–‰í• ë•Œ í•„ìš”í•œ ìë£Œêµ¬ì¡°. íŠ¹ì • BCBì •ë³´ë¥¼ ê°€ì§„ë‹¤.
  ****************************************************************/
 idBool sdbBufferMgr::filterTheBCB( void   *aBCB,
                                    void   *aObj )
@@ -823,11 +823,11 @@ idBool sdbBufferMgr::filterTheBCB( void   *aBCB,
 
 /****************************************************************
  * Description :
- *  ÆäÀÌÁö¸¦ ¹öÆÛ³»¿¡¼­ Á¦°ÅÇÑ´Ù. ¸¸¾à BCB°¡ dirty¶ó¸é flushÇÏÁö¾Ê°í
- *  ³»¿ëÀ» ³¯·Á ¹ö¸°´Ù. Å×ÀÌºí drop¶Ç´Â Å×ÀÌºí ½ºÆäÀÌ½º drop¿¬»ê¿¡
- *  ÇØ´çÇÏ´Â BCB´Â ÀÌ¿¬»êÀ» ÅëÇØ¼­ ¹öÆÛ³»¿¡¼­ »èÁ¦ÇÏ´Â °ÍÀÌ ÁÁ´Ù.
+ *  í˜ì´ì§€ë¥¼ ë²„í¼ë‚´ì—ì„œ ì œê±°í•œë‹¤. ë§Œì•½ BCBê°€ dirtyë¼ë©´ flushí•˜ì§€ì•Šê³ 
+ *  ë‚´ìš©ì„ ë‚ ë ¤ ë²„ë¦°ë‹¤. í…Œì´ë¸” dropë˜ëŠ” í…Œì´ë¸” ìŠ¤í˜ì´ìŠ¤ dropì—°ì‚°ì—
+ *  í•´ë‹¹í•˜ëŠ” BCBëŠ” ì´ì—°ì‚°ì„ í†µí•´ì„œ ë²„í¼ë‚´ì—ì„œ ì‚­ì œí•˜ëŠ” ê²ƒì´ ì¢‹ë‹¤.
  *
- *  aStatistics - [IN]  Åë°èÁ¤º¸
+ *  aStatistics - [IN]  í†µê³„ì •ë³´
  *  aSpaceID    - [IN]  table space ID
  *  aPageID     - [IN]  page ID
  ****************************************************************/
@@ -851,8 +851,8 @@ IDE_RC sdbBufferMgr::removePageInBuffer( idvSQL     *aStatistics,
         sCmpBCB.mSpaceID = aSpaceID;
         sCmpBCB.mPageID  = aPageID;
 
-        // Á¶°ÇÀÌ ¹Ù²ğ¼ö ÀÖÀ¸¹Ç·Î filterÁ¶°ÇÀ» ³Ñ°ÜÁÖ°í,
-        // ³»ºÎ¿¡¼­ LockÀâ°í ´Ù½Ã °Ë»ç
+        // ì¡°ê±´ì´ ë°”ë€”ìˆ˜ ìˆìœ¼ë¯€ë¡œ filterì¡°ê±´ì„ ë„˜ê²¨ì£¼ê³ ,
+        // ë‚´ë¶€ì—ì„œ Lockì¡ê³  ë‹¤ì‹œ ê²€ì‚¬
         mBufferPool.discardBCB( aStatistics,
                                 sBCB,
                                 filterTheBCB,
@@ -878,10 +878,10 @@ IDE_RC sdbBufferMgr::removePageInBuffer( idvSQL     *aStatistics,
 
 /****************************************************************
  * Description :
- *  ÆäÀÌÁö¸¦ ¹Ş¾Æ¼­ ±× ÆäÀÌÁö¿¡ ÇØ´çÇÏ´Â BCB¿¡ pageTypeÀ» ¼³Á¤ÇÑ´Ù.
+ *  í˜ì´ì§€ë¥¼ ë°›ì•„ì„œ ê·¸ í˜ì´ì§€ì— í•´ë‹¹í•˜ëŠ” BCBì— pageTypeì„ ì„¤ì •í•œë‹¤.
  *
  *  aPagePtr    - [IN]  page frame pointer
- *  aPageType   - [IN]  ¼³Á¤ÇÒ page type
+ *  aPageType   - [IN]  ì„¤ì •í•  page type
  ****************************************************************/
 void sdbBufferMgr::setPageTypeToBCB( UChar *aPagePtr, UInt aPageType )
 {
@@ -908,15 +908,15 @@ void sdbBufferMgr::setDirtyPageToBCB( idvSQL * aStatistics,
 /************************************************************
  * Description :
  *  Discard:
- *  ÆäÀÌÁö¸¦ ¹öÆÛ³»¿¡¼­ Á¦°ÅÇÑ´Ù. ¸¸¾à BCB°¡ dirty¶ó¸é flushÇÏÁö¾Ê°í
- *  ³»¿ëÀ» ³¯·Á ¹ö¸°´Ù. Å×ÀÌºí drop¶Ç´Â Å×ÀÌºí ½ºÆäÀÌ½º drop¿¬»ê¿¡
- *  ÇØ´çÇÏ´Â BCB´Â ÀÌ¿¬»êÀ» ÅëÇØ¼­ ¹öÆÛ³»¿¡¼­ »èÁ¦ÇÏ´Â °ÍÀÌ ÁÁ´Ù.
+ *  í˜ì´ì§€ë¥¼ ë²„í¼ë‚´ì—ì„œ ì œê±°í•œë‹¤. ë§Œì•½ BCBê°€ dirtyë¼ë©´ flushí•˜ì§€ì•Šê³ 
+ *  ë‚´ìš©ì„ ë‚ ë ¤ ë²„ë¦°ë‹¤. í…Œì´ë¸” dropë˜ëŠ” í…Œì´ë¸” ìŠ¤í˜ì´ìŠ¤ dropì—°ì‚°ì—
+ *  í•´ë‹¹í•˜ëŠ” BCBëŠ” ì´ì—°ì‚°ì„ í†µí•´ì„œ ë²„í¼ë‚´ì—ì„œ ì‚­ì œí•˜ëŠ” ê²ƒì´ ì¢‹ë‹¤.
  *
  *  aBCB    - [IN]  BCB
- *  aObj    - [IN]  ¹İµå½Ã sdbDiscardPageObj°¡ µé¾îÀÖ¾î¾ß ÇÑ´Ù.
- *                  ÀÌ µ¥ÀÌÅÍ ±¸Á¶¿¡´Â aBCB¸¦ discardÇÒÁö ¸»Áö °áÁ¤ÇÏ´Â
- *                  ÇÔ¼ö ¹× µ¥ÀÌÅÍ, ±×¸®°í discard¸¦ ½ÇÆĞÇßÀ»¶§ ÇØ´ç BCB¸¦
- *                  »ğÀÔÇÒ Å¥¸¦ °¡Áö°í ÀÖ´Ù.
+ *  aObj    - [IN]  ë°˜ë“œì‹œ sdbDiscardPageObjê°€ ë“¤ì–´ìˆì–´ì•¼ í•œë‹¤.
+ *                  ì´ ë°ì´í„° êµ¬ì¡°ì—ëŠ” aBCBë¥¼ discardí• ì§€ ë§ì§€ ê²°ì •í•˜ëŠ”
+ *                  í•¨ìˆ˜ ë° ë°ì´í„°, ê·¸ë¦¬ê³  discardë¥¼ ì‹¤íŒ¨í–ˆì„ë•Œ í•´ë‹¹ BCBë¥¼
+ *                  ì‚½ì…í•  íë¥¼ ê°€ì§€ê³  ìˆë‹¤.
  ************************************************************/
 IDE_RC sdbBufferMgr::discardNoWaitModeFunc( sdbBCB    *aBCB,
                                             void      *aObj)
@@ -945,10 +945,10 @@ IDE_RC sdbBufferMgr::discardNoWaitModeFunc( sdbBCB    *aBCB,
 
         if( sMakeFree == ID_TRUE )
         {
-            /* [BUG-20630] alter system flush buffer_poolÀ» ¼öÇàÇÏ¿´À»¶§,
-             * hot¿µ¿ªÀº freeBCBµé·Î °¡µæÂ÷ ÀÖ½À´Ï´Ù.
-             * free·Î ¸¸µç BCB¿¡ ´ëÇØ¼­´Â ¸®½ºÆ®¿¡¼­ Á¦°ÅÇÏ¿©
-             * sdbPrepareList·Î »ğÀÔÇÑ´Ù.*/
+            /* [BUG-20630] alter system flush buffer_poolì„ ìˆ˜í–‰í•˜ì˜€ì„ë•Œ,
+             * hotì˜ì—­ì€ freeBCBë“¤ë¡œ ê°€ë“ì°¨ ìˆìŠµë‹ˆë‹¤.
+             * freeë¡œ ë§Œë“  BCBì— ëŒ€í•´ì„œëŠ” ë¦¬ìŠ¤íŠ¸ì—ì„œ ì œê±°í•˜ì—¬
+             * sdbPrepareListë¡œ ì‚½ì…í•œë‹¤.*/
             if( sPool->removeBCBFromList(sStat, aBCB ) == ID_TRUE )
             {
                 IDE_ASSERT( sPool->addBCB2PrepareLst( sStat, aBCB )
@@ -960,12 +960,12 @@ IDE_RC sdbBufferMgr::discardNoWaitModeFunc( sdbBCB    *aBCB,
 
         if( sIsSuccess == ID_FALSE)
         {
-            /* discard°¡ NoWait·Î µ¿ÀÛÇÏ±â ¶§¹®¿¡, ½ÇÆĞÇÒ ¼öÀÖ´Ù.
-             * ÀÌ°æ¿ì¿¡´Â waitingQueue¿¡ »ğÀÔÇÏ´Âµ¥, ³ªÁß¿¡ ÀÌ Å¥¿¡ »ğÀÔµÈ BCB¸¦
-             * ´Ù½Ã discardÇÏ±â¸¦ ½ÃµµÇÏµçÁö.. ¾Æ´Ô µı°ÅÇÏ´øÁö.. ¾îÂ¶µç »ğÀÔÇÑ´Ù.
-             * ¼º°øÇÏ¸é waitingQueue¿¡ »ğÀÔÇÏÁö ¾Ê´Â´Ù.
+            /* discardê°€ NoWaitë¡œ ë™ì‘í•˜ê¸° ë•Œë¬¸ì—, ì‹¤íŒ¨í•  ìˆ˜ìˆë‹¤.
+             * ì´ê²½ìš°ì—ëŠ” waitingQueueì— ì‚½ì…í•˜ëŠ”ë°, ë‚˜ì¤‘ì— ì´ íì— ì‚½ì…ëœ BCBë¥¼
+             * ë‹¤ì‹œ discardí•˜ê¸°ë¥¼ ì‹œë„í•˜ë“ ì§€.. ì•„ë‹˜ ë”´ê±°í•˜ë˜ì§€.. ì–´ì¨‹ë“  ì‚½ì…í•œë‹¤.
+             * ì„±ê³µí•˜ë©´ waitingQueueì— ì‚½ì…í•˜ì§€ ì•ŠëŠ”ë‹¤.
              * */
-            IDE_ASSERT( sWaitingQueue->enqueue( ID_FALSE,//mutexÀâÀ»Áö ¸»Áö ¿©ºÎ
+            IDE_ASSERT( sWaitingQueue->enqueue( ID_FALSE,//mutexì¡ì„ì§€ ë§ì§€ ì—¬ë¶€
                                                 (void*)&aBCB )
                         == IDE_SUCCESS );
         }
@@ -976,25 +976,25 @@ IDE_RC sdbBufferMgr::discardNoWaitModeFunc( sdbBCB    *aBCB,
 
 /************************************************************
  * Description :
- *  BCB°¡ ´ã°ÜÁ® ÀÖ´Â Queue¸¦ ÀÔ·ÂÀ¸·Î ¹Ş¾Æ ±× queue³»¿¡ Á¸ÀçÇÏ´Â ¸ğµç BCB¿¡
- *  ´ëÇØ¼­ discard¸¦ ¼öÇàÇÑ´Ù. ÀÌ¶§, aFilterÁ¶°Ç¿¡ ¸Â´Â°Í¸¸ discard½ÃÅ°°í,
- *  ±×·¸Áö ¾ÊÀº BCB´Â Å¥¿¡¼­ ±×³É Á¦°ÅÇÑ´Ù.
+ *  BCBê°€ ë‹´ê²¨ì ¸ ìˆëŠ” Queueë¥¼ ì…ë ¥ìœ¼ë¡œ ë°›ì•„ ê·¸ queueë‚´ì— ì¡´ì¬í•˜ëŠ” ëª¨ë“  BCBì—
+ *  ëŒ€í•´ì„œ discardë¥¼ ìˆ˜í–‰í•œë‹¤. ì´ë•Œ, aFilterì¡°ê±´ì— ë§ëŠ”ê²ƒë§Œ discardì‹œí‚¤ê³ ,
+ *  ê·¸ë ‡ì§€ ì•Šì€ BCBëŠ” íì—ì„œ ê·¸ëƒ¥ ì œê±°í•œë‹¤.
  *
- *  Wait mode¶õ? BCB°¡ aFilterÁ¶°ÇÀ» ¸¸Á·ÇÏÁö¸¸, ³»ºÎÀûÀ¸·Î ¹Ù·Î »èÁ¦ÇÒ ¼ö
- *  ¾ø´Â °æ¿ì°¡ ÀÖ´Ù. ¿¹¸¦ µé¸é, BCB»óÅÂ°¡ inIOB¶Ç´Â Redirty»óÅÂÀÎ °æ¿ì¿£
- *  »èÁ¦ÇÒ ¼ö ¾ø´Ù.
- *  [µ¿½Ã¼º] ¿Ö³Ä¸é, inIOB¶Ç´Â redirty»óÅÂÀÎ °æ¿ì¿£ ÇÃ·¯¼Å°¡ µğ½ºÅ©¿¡
- *  ¾²±â¸¦ ´ë±âÇÏ°í ÀÖ´Ù´Â ¶æÀÌµÈ´Ù. ±×·¸±â ¶§¹®¿¡, ¼²ºÒ¸® discard¸¦ ½ÃÄÑ
- *  ¹ö¸®¸é, ÇöÀç pid¸¦ °¡Áø BCB´Â ¹öÆÛ³»¿¡¼­ »èÁ¦µÇ¾ú´Ù°¡, ´Ù¸¥ Æ®·£Àè¼Ç
- *  ¿¡ ÀÇÇØ ¹öÆÛ·Î ´Ù½Ã ¿Ã¶ó¿Ã ¼öÀÖ°í, ±× Æ®·£Àè¼ÇÀÌ BCB¿¡ ³»¿ëÀ» ±â·ÏÇÏ°í
- *  Á¾·á ÇÑ ÀÌÈÄ¿¡, flusher°¡ ÀÚ½ÅÀÇ IOBÀÇ ³»¿ëÀ» ±â·ÏÇØ ¹ö¸± ¼ö ÀÖ±â ¶§¹®¿¡
- *  µ¿½Ã¼ºÀÌ ±úÁú ¿ì·Á°¡ ÀÖ´Ù.
- *  ±×·¡¼­ ±×³É Á¦°ÅÇÏÁö ¾Ê°í, »óÅÂ°¡ º¯°æµÇ±â¸¦ ±â´Ù¸°´Ù.
+ *  Wait modeë€? BCBê°€ aFilterì¡°ê±´ì„ ë§Œì¡±í•˜ì§€ë§Œ, ë‚´ë¶€ì ìœ¼ë¡œ ë°”ë¡œ ì‚­ì œí•  ìˆ˜
+ *  ì—†ëŠ” ê²½ìš°ê°€ ìˆë‹¤. ì˜ˆë¥¼ ë“¤ë©´, BCBìƒíƒœê°€ inIOBë˜ëŠ” Redirtyìƒíƒœì¸ ê²½ìš°ì—”
+ *  ì‚­ì œí•  ìˆ˜ ì—†ë‹¤.
+ *  [ë™ì‹œì„±] ì™œëƒë©´, inIOBë˜ëŠ” redirtyìƒíƒœì¸ ê²½ìš°ì—” í”ŒëŸ¬ì…”ê°€ ë””ìŠ¤í¬ì—
+ *  ì“°ê¸°ë¥¼ ëŒ€ê¸°í•˜ê³  ìˆë‹¤ëŠ” ëœ»ì´ëœë‹¤. ê·¸ë ‡ê¸° ë•Œë¬¸ì—, ì„£ë¶ˆë¦¬ discardë¥¼ ì‹œì¼œ
+ *  ë²„ë¦¬ë©´, í˜„ì¬ pidë¥¼ ê°€ì§„ BCBëŠ” ë²„í¼ë‚´ì—ì„œ ì‚­ì œë˜ì—ˆë‹¤ê°€, ë‹¤ë¥¸ íŠ¸ëœì­ì…˜
+ *  ì— ì˜í•´ ë²„í¼ë¡œ ë‹¤ì‹œ ì˜¬ë¼ì˜¬ ìˆ˜ìˆê³ , ê·¸ íŠ¸ëœì­ì…˜ì´ BCBì— ë‚´ìš©ì„ ê¸°ë¡í•˜ê³ 
+ *  ì¢…ë£Œ í•œ ì´í›„ì—, flusherê°€ ìì‹ ì˜ IOBì˜ ë‚´ìš©ì„ ê¸°ë¡í•´ ë²„ë¦´ ìˆ˜ ìˆê¸° ë•Œë¬¸ì—
+ *  ë™ì‹œì„±ì´ ê¹¨ì§ˆ ìš°ë ¤ê°€ ìˆë‹¤.
+ *  ê·¸ë˜ì„œ ê·¸ëƒ¥ ì œê±°í•˜ì§€ ì•Šê³ , ìƒíƒœê°€ ë³€ê²½ë˜ê¸°ë¥¼ ê¸°ë‹¤ë¦°ë‹¤.
  *
- *  aStatistics - [IN]  Åë°èÁ¤º¸
- *  aFilter     - [IN]  aQueue¿¡ ÀÖ´Â BCBÁß aFilterÁ¶°Ç¿¡ ¸Â´Â BCB¸¸ discard
- *  aFiltAgr    - [IN]  aFilter¿¡ ÆÄ¶ó¹ÌÅÍ·Î ³Ö¾îÁÖ´Â °ª
- *  aQueue      - [IN]  BCBµéÀÌ µé¾î ÀÖ´Â queue
+ *  aStatistics - [IN]  í†µê³„ì •ë³´
+ *  aFilter     - [IN]  aQueueì— ìˆëŠ” BCBì¤‘ aFilterì¡°ê±´ì— ë§ëŠ” BCBë§Œ discard
+ *  aFiltAgr    - [IN]  aFilterì— íŒŒë¼ë¯¸í„°ë¡œ ë„£ì–´ì£¼ëŠ” ê°’
+ *  aQueue      - [IN]  BCBë“¤ì´ ë“¤ì–´ ìˆëŠ” queue
  ************************************************************/
 void sdbBufferMgr::discardWaitModeFromQueue( idvSQL      *aStatistics,
                                              sdbFiltFunc  aFilter,
@@ -1008,7 +1008,7 @@ void sdbBufferMgr::discardWaitModeFromQueue( idvSQL      *aStatistics,
 
     while(1)
     {
-        IDE_ASSERT( aQueue->dequeue( ID_FALSE, // mutex¸¦ ÀâÁö ¾Ê´Â´Ù.
+        IDE_ASSERT( aQueue->dequeue( ID_FALSE, // mutexë¥¼ ì¡ì§€ ì•ŠëŠ”ë‹¤.
                                      (void*)&sBCB, &sEmpty)
                     == IDE_SUCCESS );
 
@@ -1029,10 +1029,10 @@ void sdbBufferMgr::discardWaitModeFromQueue( idvSQL      *aStatistics,
         
         if( sMakeFree == ID_TRUE )
         {
-            /* [BUG-20630] alter system flush buffer_poolÀ» ¼öÇàÇÏ¿´À»¶§,
-             * hot¿µ¿ªÀº freeBCBµé·Î °¡µæÂ÷ ÀÖ½À´Ï´Ù.
-             * free·Î ¸¸µç BCB¿¡ ´ëÇØ¼­´Â ¸®½ºÆ®¿¡¼­ Á¦°ÅÇÏ¿©
-             * sdbPrepareList·Î »ğÀÔÇÑ´Ù.*/
+            /* [BUG-20630] alter system flush buffer_poolì„ ìˆ˜í–‰í•˜ì˜€ì„ë•Œ,
+             * hotì˜ì—­ì€ freeBCBë“¤ë¡œ ê°€ë“ì°¨ ìˆìŠµë‹ˆë‹¤.
+             * freeë¡œ ë§Œë“  BCBì— ëŒ€í•´ì„œëŠ” ë¦¬ìŠ¤íŠ¸ì—ì„œ ì œê±°í•˜ì—¬
+             * sdbPrepareListë¡œ ì‚½ì…í•œë‹¤.*/
             if( mBufferPool.removeBCBFromList( aStatistics, sBCB ) == ID_TRUE )
             {
                 IDE_ASSERT( mBufferPool.addBCB2PrepareLst( aStatistics, sBCB )
@@ -1046,23 +1046,23 @@ void sdbBufferMgr::discardWaitModeFromQueue( idvSQL      *aStatistics,
 
 /****************************************************************
  * Description :
- *  BufferManager¿¡ Á¸ÀçÇÏ´Â ¸ğµç BCB¿¡ ´ëÇØ¼­, FiltÁ¶°ÇÀ» ¸¸Á·ÇÏ´Â BCBµéÀ»
- *  ¸ğµÎ discard½ÃÅ²´Ù.
+ *  BufferManagerì— ì¡´ì¬í•˜ëŠ” ëª¨ë“  BCBì— ëŒ€í•´ì„œ, Filtì¡°ê±´ì„ ë§Œì¡±í•˜ëŠ” BCBë“¤ì„
+ *  ëª¨ë‘ discardì‹œí‚¨ë‹¤.
  * Implementation:
- *  bufferArea¿¡ ¸ğµç BCB°¡ ÀÖ´Ù. ÀÌ °¢ BCB¿¡ ´ëÇØ discard¸¦ ¼ø¼­´ë·Î Àû¿ëÇÑ´Ù.
- *  ±×·¸±â ¶§¹®¿¡, bufferArea¿¡¼­ µŞºÎºĞ¿¡ ÀÖ´Â BCBÀÇ °æ¿ì¿£ discard¸¦
- *  Àû¿ëÇÏ´Âµ¥ ½Ã°£ÀÌ °É¸°´Ù. ±×·¸±â ¶§¹®¿¡, Ã³À½¿£ filtÁ¶°ÇÀ» ¸¸Á·ÇÏ´Ù°¡µµ,
- *  discard¸¦ Àû¿ëÇÒ¶§´Â filt¸¦ ¸¸Á·ÇÏÁö ¾ÊÀ» ¼ö ÀÖ´Ù.  ÀÌ°æ¿ì¿£ ¹«½ÃÇÏ¸é µÈ´Ù.
+ *  bufferAreaì— ëª¨ë“  BCBê°€ ìˆë‹¤. ì´ ê° BCBì— ëŒ€í•´ discardë¥¼ ìˆœì„œëŒ€ë¡œ ì ìš©í•œë‹¤.
+ *  ê·¸ë ‡ê¸° ë•Œë¬¸ì—, bufferAreaì—ì„œ ë’·ë¶€ë¶„ì— ìˆëŠ” BCBì˜ ê²½ìš°ì—” discardë¥¼
+ *  ì ìš©í•˜ëŠ”ë° ì‹œê°„ì´ ê±¸ë¦°ë‹¤. ê·¸ë ‡ê¸° ë•Œë¬¸ì—, ì²˜ìŒì—” filtì¡°ê±´ì„ ë§Œì¡±í•˜ë‹¤ê°€ë„,
+ *  discardë¥¼ ì ìš©í• ë•ŒëŠ” filtë¥¼ ë§Œì¡±í•˜ì§€ ì•Šì„ ìˆ˜ ìˆë‹¤.  ì´ê²½ìš°ì—” ë¬´ì‹œí•˜ë©´ ëœë‹¤.
  *
- *  ¹İ´ëÀÇ °æ¿ì¶ó¸é?
- *  bufferAreaÀÇ ¾ÕºÎºĞ¿¡ ÀÖ´Â BCB°¡ Ã³À½¿£ filtÁ¶°ÇÀ» ¸¸Á·ÇÏÁö ¾Ê´Ù°¡
- *  (È¤Àº ¸¸Á·ÇÏ´Ù°¡) discardÇÔ¼ö Àû¿ëÀÌ ³¡³­ ÀÌÈÄ¿¡ filtÁ¶°ÇÀ» ¸¸Á·ÇÏ°Ô µÈ´Ù¸é
- *  ¾î¶»°Ô µÇ´Â°¡? ÀÌ·± ÀÏÀÌ Àı´ë ¹ß»ıÇÏÁö ¾Ê±â¸¦ ¿øÇÑ´Ù¸é, »óÀ§
- *  (ÀÌ ÇÔ¼ö¸¦ È£ÃâÇÏ´Â ºÎºĞ)¿¡¼­ º¸ÀåÀ» ÇØÁÖ¾î¾ß ÇÑ´Ù.
+ *  ë°˜ëŒ€ì˜ ê²½ìš°ë¼ë©´?
+ *  bufferAreaì˜ ì•ë¶€ë¶„ì— ìˆëŠ” BCBê°€ ì²˜ìŒì—” filtì¡°ê±´ì„ ë§Œì¡±í•˜ì§€ ì•Šë‹¤ê°€
+ *  (í˜¹ì€ ë§Œì¡±í•˜ë‹¤ê°€) discardí•¨ìˆ˜ ì ìš©ì´ ëë‚œ ì´í›„ì— filtì¡°ê±´ì„ ë§Œì¡±í•˜ê²Œ ëœë‹¤ë©´
+ *  ì–´ë–»ê²Œ ë˜ëŠ”ê°€? ì´ëŸ° ì¼ì´ ì ˆëŒ€ ë°œìƒí•˜ì§€ ì•Šê¸°ë¥¼ ì›í•œë‹¤ë©´, ìƒìœ„
+ *  (ì´ í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•˜ëŠ” ë¶€ë¶„)ì—ì„œ ë³´ì¥ì„ í•´ì£¼ì–´ì•¼ í•œë‹¤.
  *
- *  aStatistics - [IN]  Åë°èÁ¤º¸
- *  aFilter     - [IN]  aFilterÁ¶°Ç¿¡ ¸Â´Â BCB¸¸ discard
- *  aFiltAgr    - [IN]  aFilter¿¡ ÆÄ¶ó¹ÌÅÍ·Î ³Ö¾îÁÖ´Â °ª
+ *  aStatistics - [IN]  í†µê³„ì •ë³´
+ *  aFilter     - [IN]  aFilterì¡°ê±´ì— ë§ëŠ” BCBë§Œ discard
+ *  aFiltAgr    - [IN]  aFilterì— íŒŒë¼ë¯¸í„°ë¡œ ë„£ì–´ì£¼ëŠ” ê°’
  ****************************************************************/
 IDE_RC sdbBufferMgr::discardPages( idvSQL        *aStatistics,
                                    sdbFiltFunc    aFilter,
@@ -1077,22 +1077,22 @@ IDE_RC sdbBufferMgr::discardPages( idvSQL        *aStatistics,
 
     sObj.mQueue.initialize(IDU_MEM_SM_SDB, ID_SIZEOF( sdbBCB*));
 
-    /* sdbBufferArea¿¡ ÀÖ´Â ¸ğµç BCB¿¡ ´ëÇØ¼­ discardNoWaitModeFuncÀ» Àû¿ëÇÑ´Ù.
-     * ÀÌ¶§, noWailtMode·Î µ¿ÀÛ½ÃÅ²´Ù. ±×¸®°í ¹ÌÃ³ discardµÇÁö ¸øÇÑ BCB´Â
-     * Å¥¿¡ ¸ğ¾ÆµÎ¾ú´Ù°¡ wait mode·Î discard½ÃÅ²´Ù.
+    /* sdbBufferAreaì— ìˆëŠ” ëª¨ë“  BCBì— ëŒ€í•´ì„œ discardNoWaitModeFuncì„ ì ìš©í•œë‹¤.
+     * ì´ë•Œ, noWailtModeë¡œ ë™ì‘ì‹œí‚¨ë‹¤. ê·¸ë¦¬ê³  ë¯¸ì²˜ discardë˜ì§€ ëª»í•œ BCBëŠ”
+     * íì— ëª¨ì•„ë‘ì—ˆë‹¤ê°€ wait modeë¡œ discardì‹œí‚¨ë‹¤.
      *
-     * µÎ¹ø¿¡ ³ª´©¾î¼­ ÇÏ´Â ÀÌÀ¯? ¿¹¸¦ µé¾î¼­ ¼³¸íÇÏ¸é..
-     * ¹öÆÛ¿¡ 1 ~ 100±îÁö BCB°¡ ÀÖ´Âµ¥, Â¦¼ö ¹øÈ£ÀÎ BCB´Â ¸ğµÎ dirty»óÅÂÀÌ¸é¼­
-     * filtÁ¶°ÇÀ» ¸¸Á·ÇÑ´Ù.
-     * ÀÌ¶§, 1¹øÀÌ inIOB»óÅÂÀÌ´Ù.
-     * ¸¸¾à wait¸ğµå·Î discard¸¦ ½ÃÅ²´Ù¸é, 1¹ø¿¡¼­ »óÅÂ°¡ cleanÀ¸·Î º¯ÇÒ¶§°¡Áö
-     * ´ë±âÇÑ´Ù.  ÀÌ¶§, dirtyÀÎ BCBµéÀº ´Ù¸¥ flusher¿¡ ÀÇÇØ¼­ µğ½ºÅ©¿¡ ¾²¿©Áú ¼ö
-     * ÀÖ´Ù. ÀÌ¶§ µğ½ºÅ©¿¡ ¾²¿© Áö¸é Áú ¼ö·Ï ¼ÕÇØ´Ù. ¿Ö³Ä¸é discardÀÇ °æ¿ì¿£
-     * dirty¸¦ flush¾øÀÌ Á¦°ÅÇÏ±â ¶§¹®ÀÌ´Ù.
-     * ¸¸¾à À§ÀÇ ¿¹¿¡¼­ nowait¸ğµå·Î µ¿ÀÛÇÏ¸é,
-     * 1¹ø BCB¸¦ skipÇÑ ÀÌÈÄ(Å¥¿¡ »ğÀÔ)¿¡ Àçºü¸£°Ô ¸ğµç Â¦¼ö BCBÀÇ dirty¸¦
-     * »èÁ¦ÇÏ±â ¶§¹®¿¡ ÀüÇô disk IO¸¦ À¯¹ß ½ÃÅ°Áö ¾Ê´Â´Ù.
-     * ±×¸®°í ³²Àº 1¹ø BCB¸¦ wait¸ğµå·Î Ã³¸®ÇÏ°Ô µÈ´Ù.
+     * ë‘ë²ˆì— ë‚˜ëˆ„ì–´ì„œ í•˜ëŠ” ì´ìœ ? ì˜ˆë¥¼ ë“¤ì–´ì„œ ì„¤ëª…í•˜ë©´..
+     * ë²„í¼ì— 1 ~ 100ê¹Œì§€ BCBê°€ ìˆëŠ”ë°, ì§ìˆ˜ ë²ˆí˜¸ì¸ BCBëŠ” ëª¨ë‘ dirtyìƒíƒœì´ë©´ì„œ
+     * filtì¡°ê±´ì„ ë§Œì¡±í•œë‹¤.
+     * ì´ë•Œ, 1ë²ˆì´ inIOBìƒíƒœì´ë‹¤.
+     * ë§Œì•½ waitëª¨ë“œë¡œ discardë¥¼ ì‹œí‚¨ë‹¤ë©´, 1ë²ˆì—ì„œ ìƒíƒœê°€ cleanìœ¼ë¡œ ë³€í• ë•Œê°€ì§€
+     * ëŒ€ê¸°í•œë‹¤.  ì´ë•Œ, dirtyì¸ BCBë“¤ì€ ë‹¤ë¥¸ flusherì— ì˜í•´ì„œ ë””ìŠ¤í¬ì— ì“°ì—¬ì§ˆ ìˆ˜
+     * ìˆë‹¤. ì´ë•Œ ë””ìŠ¤í¬ì— ì“°ì—¬ ì§€ë©´ ì§ˆ ìˆ˜ë¡ ì†í•´ë‹¤. ì™œëƒë©´ discardì˜ ê²½ìš°ì—”
+     * dirtyë¥¼ flushì—†ì´ ì œê±°í•˜ê¸° ë•Œë¬¸ì´ë‹¤.
+     * ë§Œì•½ ìœ„ì˜ ì˜ˆì—ì„œ nowaitëª¨ë“œë¡œ ë™ì‘í•˜ë©´,
+     * 1ë²ˆ BCBë¥¼ skipí•œ ì´í›„(íì— ì‚½ì…)ì— ì¬ë¹ ë¥´ê²Œ ëª¨ë“  ì§ìˆ˜ BCBì˜ dirtyë¥¼
+     * ì‚­ì œí•˜ê¸° ë•Œë¬¸ì— ì „í˜€ disk IOë¥¼ ìœ ë°œ ì‹œí‚¤ì§€ ì•ŠëŠ”ë‹¤.
+     * ê·¸ë¦¬ê³  ë‚¨ì€ 1ë²ˆ BCBë¥¼ waitëª¨ë“œë¡œ ì²˜ë¦¬í•˜ê²Œ ëœë‹¤.
      * */
     IDE_ASSERT( mBufferArea.applyFuncToEachBCBs( aStatistics,
                                                  discardNoWaitModeFunc,
@@ -1113,13 +1113,13 @@ IDE_RC sdbBufferMgr::discardPages( idvSQL        *aStatistics,
 
 /****************************************************************
  * Description :
- *  ¹öÆÛ¸Å´ÏÀúÀÇ Æ¯Á¤ pid¹üÀ§¿¡ ¼ÓÇÏ´Â ¸ğµç BCB¸¦ discardÇÑ´Ù.
- *  ÀÌ¶§, pid¹üÀ§¿¡ ¼ÓÇÏ¸é¼­ µ¿½Ã¿¡ aSpaceIDµµ °°¾Æ¾ß ÇÑ´Ù.
+ *  ë²„í¼ë§¤ë‹ˆì €ì˜ íŠ¹ì • pidë²”ìœ„ì— ì†í•˜ëŠ” ëª¨ë“  BCBë¥¼ discardí•œë‹¤.
+ *  ì´ë•Œ, pidë²”ìœ„ì— ì†í•˜ë©´ì„œ ë™ì‹œì— aSpaceIDë„ ê°™ì•„ì•¼ í•œë‹¤.
  *
- *  aStatistics - [IN]  Åë°èÁ¤º¸
+ *  aStatistics - [IN]  í†µê³„ì •ë³´
  *  aSpaceID    - [IN]  table space ID
- *  aStartPID   - [IN]  pid ¹üÀ§Áß ½ÃÀÛ
- *  aEndPID     - [IN]  pid ¹üÀ§Áß ³¡
+ *  aStartPID   - [IN]  pid ë²”ìœ„ì¤‘ ì‹œì‘
+ *  aEndPID     - [IN]  pid ë²”ìœ„ì¤‘ ë
  ****************************************************************/
 IDE_RC sdbBufferMgr::discardPagesInRange( idvSQL    *aStatistics,
                                           scSpaceID  aSpaceID,
@@ -1139,27 +1139,27 @@ IDE_RC sdbBufferMgr::discardPagesInRange( idvSQL    *aStatistics,
 
 /****************************************************************
  * Description :
- *  ¹öÆÛ¸Å´ÏÀú¿¡ ÀÖ´Â ¸ğµç BCB¸¦ discard½ÃÅ²´Ù.
+ *  ë²„í¼ë§¤ë‹ˆì €ì— ìˆëŠ” ëª¨ë“  BCBë¥¼ discardì‹œí‚¨ë‹¤.
  *
- *  aStatistics - [IN]  Åë°èÁ¤º¸
+ *  aStatistics - [IN]  í†µê³„ì •ë³´
  ****************************************************************/
 IDE_RC sdbBufferMgr::discardAllPages(idvSQL     *aStatistics)
 {
     return sdbBufferMgr::discardPages( aStatistics,
                                        filterAllBCBs,
-                                       NULL );// ÁÖ¼®Ãß°¡
+                                       NULL );// ì£¼ì„ì¶”ê°€
 }
 
 
 /****************************************************************
  * Description :
- *  ÀÌ ÇÔ¼ö¿¡¼­´Â pageOutÀ» ÇÏ±âÀ§ÇÑ ÀüÃ³¸® ÀÛ¾÷À» ¼öÇàÇÑ´Ù. Áï,
- *  ½ÇÁ¦ pageOutÀ» ÇÏÁö ¾Ê°í BCB°¡ ¾î¶² »óÅÂÀÌ³Ä¿¡ µû¶ó ÇØ´ç Queue¿¡ »ğÀÔÇÑ´Ù.
- *  Áï, ÀÌÇÔ¼ö´Â PageOutTargetQueue ¸¦ makeÇÏ´Âµ¥ »ç¿ëÇÏ´Â FunctionÀÌ´Ù.
+ *  ì´ í•¨ìˆ˜ì—ì„œëŠ” pageOutì„ í•˜ê¸°ìœ„í•œ ì „ì²˜ë¦¬ ì‘ì—…ì„ ìˆ˜í–‰í•œë‹¤. ì¦‰,
+ *  ì‹¤ì œ pageOutì„ í•˜ì§€ ì•Šê³  BCBê°€ ì–´ë–¤ ìƒíƒœì´ëƒì— ë”°ë¼ í•´ë‹¹ Queueì— ì‚½ì…í•œë‹¤.
+ *  ì¦‰, ì´í•¨ìˆ˜ëŠ” PageOutTargetQueue ë¥¼ makeí•˜ëŠ”ë° ì‚¬ìš©í•˜ëŠ” Functionì´ë‹¤.
  *
  *  aBCB        - [IN]  BCB
- *  aObj        - [IN]  º» ÇÔ¼ö ¼öÇàÇÏ´Âµ¥ ÇÊ¿äÇÑ ÀÚ·á.
- *                      sdbPageOutObj·Î Ä³½ºÆÃÇØ¼­ »ç¿ëÇÑ´Ù.
+ *  aObj        - [IN]  ë³¸ í•¨ìˆ˜ ìˆ˜í–‰í•˜ëŠ”ë° í•„ìš”í•œ ìë£Œ.
+ *                      sdbPageOutObjë¡œ ìºìŠ¤íŒ…í•´ì„œ ì‚¬ìš©í•œë‹¤.
  ****************************************************************/
 IDE_RC sdbBufferMgr::makePageOutTargetQueueFunc( sdbBCB *aBCB,
                                                  void   *aObj)
@@ -1171,19 +1171,19 @@ IDE_RC sdbBufferMgr::makePageOutTargetQueueFunc( sdbBCB *aBCB,
     {
         sState = aBCB->mState;
         if( (sState == SDB_BCB_DIRTY) ||
-            // BUG-21135 flusher°¡ flushÀÛ¾÷À» ¿Ï·áÇÏ±â À§ÇØ¼­´Â
-            // INIOB»óÅÂÀÇ BCB»óÅÂ°¡ º¯°æµÇ±æ ±â´Ù·Á¾ß ÇÕ´Ï´Ù.
+            // BUG-21135 flusherê°€ flushì‘ì—…ì„ ì™„ë£Œí•˜ê¸° ìœ„í•´ì„œëŠ”
+            // INIOBìƒíƒœì˜ BCBìƒíƒœê°€ ë³€ê²½ë˜ê¸¸ ê¸°ë‹¤ë ¤ì•¼ í•©ë‹ˆë‹¤.
             (sState == SDB_BCB_INIOB) ||
             (sState == SDB_BCB_REDIRTY))
         {
             IDE_ASSERT(
-                sObj->mQueueForFlush.enqueue( ID_FALSE, //mutex¸¦ ÀâÁö ¾Ê´Â´Ù.
+                sObj->mQueueForFlush.enqueue( ID_FALSE, //mutexë¥¼ ì¡ì§€ ì•ŠëŠ”ë‹¤.
                                               (void*)&aBCB)
                         == IDE_SUCCESS );
         }
 
         IDE_ASSERT(
-            sObj->mQueueForMakeFree.enqueue( ID_FALSE, // mutex¸¦ ÀâÁö ¾Ê´Â´Ù.
+            sObj->mQueueForMakeFree.enqueue( ID_FALSE, // mutexë¥¼ ì¡ì§€ ì•ŠëŠ”ë‹¤.
                                              (void*)&aBCB)
             == IDE_SUCCESS );
     }
@@ -1193,30 +1193,30 @@ IDE_RC sdbBufferMgr::makePageOutTargetQueueFunc( sdbBCB *aBCB,
 
 /****************************************************************
  * Description :
- *  PageOut : ¹öÆÛ¿¡ Á¸ÀçÇÏ´Â ÆäÀÌÁö¸¦ ¹öÆÛ¸Å´ÏÀú¿¡¼­ Á¦°ÅÇÏ´Â ±â´É. discard¿Í
- *  ´Ù¸¥°Ç pageOutÀÎ °æ¿ì¿¡ flush¸¦ ÇÑ ÀÌÈÄ¿¡ Á¦°Å¸¦ ÇÑ´Ù´Â Á¡ÀÌ´Ù.
+ *  PageOut : ë²„í¼ì— ì¡´ì¬í•˜ëŠ” í˜ì´ì§€ë¥¼ ë²„í¼ë§¤ë‹ˆì €ì—ì„œ ì œê±°í•˜ëŠ” ê¸°ëŠ¥. discardì™€
+ *  ë‹¤ë¥¸ê±´ pageOutì¸ ê²½ìš°ì— flushë¥¼ í•œ ì´í›„ì— ì œê±°ë¥¼ í•œë‹¤ëŠ” ì ì´ë‹¤.
  *
- *  ÀÌ ÇÔ¼ö´Â ¹öÆÛ¸Å´ÏÀú¿¡ Á¸ÀçÇÏ´Â ÆäÀÌÁö Áß filt Á¶°Ç¿¡ ÇØ´çÇÏ´Â ÆäÀÌÁö¿¡ ´ëÇØ¼­
- *  pageOut ½ÃÅ²´Ù.
+ *  ì´ í•¨ìˆ˜ëŠ” ë²„í¼ë§¤ë‹ˆì €ì— ì¡´ì¬í•˜ëŠ” í˜ì´ì§€ ì¤‘ filt ì¡°ê±´ì— í•´ë‹¹í•˜ëŠ” í˜ì´ì§€ì— ëŒ€í•´ì„œ
+ *  pageOut ì‹œí‚¨ë‹¤.
  *
  * Implementation:
- *  Å¥´Â 2°¡Áö Á¾·ù°¡ ÀÖ´Ù.
- *  1. flush°¡ ÇÊ¿äÇÑ BCB¸¦ ¸ğ¾Æ³õÀº Å¥:
- *  2. flush°¡ ÇÊ¿äÄ¡ ¾Ê°í, makeFree¸¦ ÇÏ¿©¾ß BCB¸¦ ¸ğ¾Æ³õÀº Å¥:
+ *  íëŠ” 2ê°€ì§€ ì¢…ë¥˜ê°€ ìˆë‹¤.
+ *  1. flushê°€ í•„ìš”í•œ BCBë¥¼ ëª¨ì•„ë†“ì€ í:
+ *  2. flushê°€ í•„ìš”ì¹˜ ì•Šê³ , makeFreeë¥¼ í•˜ì—¬ì•¼ BCBë¥¼ ëª¨ì•„ë†“ì€ í:
  *
- *  ¸¸¾à BCB°¡ dirtyÀÌ°Å³ª redirtyÀÎ °æ¿ì¿£ 1¹ø°ú 2¹ø ¸ğµÎ¿¡ »ğÀÔÇÑ´Ù.
- *  1¹ø¿¡ »ğÀÔÇÏ´Â ÀÌÀ¯´Â dirty¸¦ ¾ø¾Ö±â À§ÇØ¼­ ÀÌ°í, 2¹ø¿¡µµ »ğÀÔÇÏ´Â
- *  ÀÌÀ¯´Â, ÀÌ BCBµµ ¿ª½Ã makeFree ÇØ¾ß ÇÏ±â ¶§¹®ÀÌ´Ù.
+ *  ë§Œì•½ BCBê°€ dirtyì´ê±°ë‚˜ redirtyì¸ ê²½ìš°ì—” 1ë²ˆê³¼ 2ë²ˆ ëª¨ë‘ì— ì‚½ì…í•œë‹¤.
+ *  1ë²ˆì— ì‚½ì…í•˜ëŠ” ì´ìœ ëŠ” dirtyë¥¼ ì—†ì• ê¸° ìœ„í•´ì„œ ì´ê³ , 2ë²ˆì—ë„ ì‚½ì…í•˜ëŠ”
+ *  ì´ìœ ëŠ”, ì´ BCBë„ ì—­ì‹œ makeFree í•´ì•¼ í•˜ê¸° ë•Œë¬¸ì´ë‹¤.
  *
- *  dirtyµµ redirtyµµ ¾Æ´Ñ BCBÀÎ °æ¿ì¿£ 2¹ø Å¥¿¡¸¸ »ğÀÔÇÑ´Ù.
+ *  dirtyë„ redirtyë„ ì•„ë‹Œ BCBì¸ ê²½ìš°ì—” 2ë²ˆ íì—ë§Œ ì‚½ì…í•œë‹¤.
  *
- *  ¸¸¾à Ã³À½¿£ dirty°¡ ¾Æ´Ï¾ú´Ù°¡ Å¥¿¡ »ğÀÔÇÏ°í ³­ ÀÌÈÄ¿¡ dirty°¡ µÇ¸é ¾îÂ¼Áö?
- *  ÀÌ·± ÀÏÀº ¹ß»ıÇØ¼­´Â ¾ÈµÈ´Ù.  ÀÌ°ÍÀº »óÀ§(ÀÌ ÇÔ¼ö¸¦ ÀÌ¿ëÇÏ´Â ºÎºĞ)¿¡¼­
- *  º¸ÀåÇØ ÁÖ¾î¾ß ÇÑ´Ù.
+ *  ë§Œì•½ ì²˜ìŒì—” dirtyê°€ ì•„ë‹ˆì—ˆë‹¤ê°€ íì— ì‚½ì…í•˜ê³  ë‚œ ì´í›„ì— dirtyê°€ ë˜ë©´ ì–´ì©Œì§€?
+ *  ì´ëŸ° ì¼ì€ ë°œìƒí•´ì„œëŠ” ì•ˆëœë‹¤.  ì´ê²ƒì€ ìƒìœ„(ì´ í•¨ìˆ˜ë¥¼ ì´ìš©í•˜ëŠ” ë¶€ë¶„)ì—ì„œ
+ *  ë³´ì¥í•´ ì£¼ì–´ì•¼ í•œë‹¤.
  *
- *  aStatistics - [IN]  Åë°èÁ¤º¸
- *  aFilter     - [IN]  BCBÁß aFilterÁ¶°Ç¿¡ ¸Â´Â BCB¸¸ flush
- *  aFiltArg    - [IN]  aFilter¿¡ ÆÄ¶ó¹ÌÅÍ·Î ³Ö¾îÁÖ´Â °ª
+ *  aStatistics - [IN]  í†µê³„ì •ë³´
+ *  aFilter     - [IN]  BCBì¤‘ aFilterì¡°ê±´ì— ë§ëŠ” BCBë§Œ flush
+ *  aFiltArg    - [IN]  aFilterì— íŒŒë¼ë¯¸í„°ë¡œ ë„£ì–´ì£¼ëŠ” ê°’
  ****************************************************************/
 IDE_RC sdbBufferMgr::pageOut( idvSQL            *aStatistics,
                               sdbFiltFunc        aFilter,
@@ -1229,7 +1229,7 @@ IDE_RC sdbBufferMgr::pageOut( idvSQL            *aStatistics,
     idBool        sEmpty;
 
     // BUG-26476
-    // ¸ğµç flusherµéÀÌ stop »óÅÂÀÌ¸é abort ¿¡·¯¸¦ ¹İÈ¯ÇÑ´Ù.
+    // ëª¨ë“  flusherë“¤ì´ stop ìƒíƒœì´ë©´ abort ì—ëŸ¬ë¥¼ ë°˜í™˜í•œë‹¤.
     IDE_TEST_RAISE(sdbFlushMgr::getActiveFlusherCount() == 0,
                    ERR_ALL_FLUSHERS_STOPPED);
 
@@ -1239,14 +1239,14 @@ IDE_RC sdbBufferMgr::pageOut( idvSQL            *aStatistics,
     sObj.mQueueForFlush.initialize( IDU_MEM_SM_SDB, ID_SIZEOF(sdbBCB *));
     sObj.mQueueForMakeFree.initialize( IDU_MEM_SM_SDB, ID_SIZEOF(sdbBCB *));
 
-    /* buffer Area¿¡ Á¸ÀçÇÏ´Â ¸ğµç BCB¸¦ µ¹¸é¼­ filtÁ¶°Ç¿¡ ÇØ´çÇÏ´Â BCB´Â ¸ğµÎ
-     * queue¿¡ ¸ğÀº´Ù.*/
+    /* buffer Areaì— ì¡´ì¬í•˜ëŠ” ëª¨ë“  BCBë¥¼ ëŒë©´ì„œ filtì¡°ê±´ì— í•´ë‹¹í•˜ëŠ” BCBëŠ” ëª¨ë‘
+     * queueì— ëª¨ì€ë‹¤.*/
     IDE_ASSERT( mBufferArea.applyFuncToEachBCBs( aStatistics,
                                                  makePageOutTargetQueueFunc,
                                                  &sObj)
                 == IDE_SUCCESS );
 
-    /*¸ÕÀú flush°¡ ÇÊ¿äÇÑ queue¿¡´ëÇØ flush¸¦ ¼öÇàÇÑ´Ù.*/
+    /*ë¨¼ì € flushê°€ í•„ìš”í•œ queueì—ëŒ€í•´ flushë¥¼ ìˆ˜í–‰í•œë‹¤.*/
     IDE_TEST( sdbFlushMgr::flushObjectDirtyPages( aStatistics,
                                                   &(sObj.mQueueForFlush),
                                                   aFilter,
@@ -1257,7 +1257,7 @@ IDE_RC sdbBufferMgr::pageOut( idvSQL            *aStatistics,
     sQueue = &(sObj.mQueueForMakeFree);
     while(1)
     {
-        IDE_ASSERT( sQueue->dequeue( ID_FALSE, // mutex¸¦ ÀâÁö ¾Ê´Â´Ù.
+        IDE_ASSERT( sQueue->dequeue( ID_FALSE, // mutexë¥¼ ì¡ì§€ ì•ŠëŠ”ë‹¤.
                                      (void*)&sBCB, &sEmpty)
                     == IDE_SUCCESS );
 
@@ -1265,11 +1265,11 @@ IDE_RC sdbBufferMgr::pageOut( idvSQL            *aStatistics,
         {
             break;
         }
-        /* BCB¸¦ free»óÅÂ·Î ¸¸µç´Ù. free»óÅÂÀÎ BCB´Â ÇØ½Ã¸¦ ÅëÇØ¼­ Á¢±ÙÇÒ ¼ö
-         * ¾øÀ¸¸ç, ÇØ´ç pid°¡ ¹«È¿ÀÌ´Ù.  ±×·¸±â ¶§¹®¿¡, ¹öÆÛ¿¡¼­ »èÁ¦µÈ°ÍÀ¸·Î
-         * º¼ ¼ö ÀÖ´Ù. */
+        /* BCBë¥¼ freeìƒíƒœë¡œ ë§Œë“ ë‹¤. freeìƒíƒœì¸ BCBëŠ” í•´ì‹œë¥¼ í†µí•´ì„œ ì ‘ê·¼í•  ìˆ˜
+         * ì—†ìœ¼ë©°, í•´ë‹¹ pidê°€ ë¬´íš¨ì´ë‹¤.  ê·¸ë ‡ê¸° ë•Œë¬¸ì—, ë²„í¼ì—ì„œ ì‚­ì œëœê²ƒìœ¼ë¡œ
+         * ë³¼ ìˆ˜ ìˆë‹¤. */
 
-        /* ¿¬°áµÈ SBCB°¡ ÀÖ´Ù¸é delink */
+        /* ì—°ê²°ëœ SBCBê°€ ìˆë‹¤ë©´ delink */
         sSBCB = sBCB->mSBCB;
         if( sSBCB != NULL )
         {
@@ -1281,10 +1281,10 @@ IDE_RC sdbBufferMgr::pageOut( idvSQL            *aStatistics,
         if( mBufferPool.makeFreeBCB( aStatistics, sBCB, aFilter, aFiltAgr )
             == ID_TRUE )
         {
-            /* [BUG-20630] alter system flush buffer_poolÀ» ¼öÇàÇÏ¿´À»¶§,
-             * hot¿µ¿ªÀº freeBCBµé·Î °¡µæÂ÷ ÀÖ½À´Ï´Ù.
-             * makeFreeBCB¸¦ ¼öÇàÇÏ¿© free·Î ¸¸µç BCB¿¡ ´ëÇØ¼­´Â ¸®½ºÆ®¿¡¼­ Á¦°ÅÇÏ¿©
-             * sdbPrepareList·Î »ğÀÔÇÑ´Ù.*/
+            /* [BUG-20630] alter system flush buffer_poolì„ ìˆ˜í–‰í•˜ì˜€ì„ë•Œ,
+             * hotì˜ì—­ì€ freeBCBë“¤ë¡œ ê°€ë“ì°¨ ìˆìŠµë‹ˆë‹¤.
+             * makeFreeBCBë¥¼ ìˆ˜í–‰í•˜ì—¬ freeë¡œ ë§Œë“  BCBì— ëŒ€í•´ì„œëŠ” ë¦¬ìŠ¤íŠ¸ì—ì„œ ì œê±°í•˜ì—¬
+             * sdbPrepareListë¡œ ì‚½ì…í•œë‹¤.*/
             if( mBufferPool.removeBCBFromList( aStatistics, sBCB ) == ID_TRUE )
             {
                 IDE_ASSERT( mBufferPool.addBCB2PrepareLst( aStatistics, sBCB )
@@ -1307,12 +1307,12 @@ IDE_RC sdbBufferMgr::pageOut( idvSQL            *aStatistics,
 
 /****************************************************************
  * Description :
- *  ÇØ´ç pid¹üÀ§¿¡ ÀÖ´Â ¸ğµç BCBµé¿¡°Ô pageoutÀ» Àû¿ëÇÑ´Ù.
+ *  í•´ë‹¹ pidë²”ìœ„ì— ìˆëŠ” ëª¨ë“  BCBë“¤ì—ê²Œ pageoutì„ ì ìš©í•œë‹¤.
  *
- *  aStatistics - [IN]  Åë°èÁ¤º¸
+ *  aStatistics - [IN]  í†µê³„ì •ë³´
  *  aSpaceID    - [IN]  table space ID
- *  aStartPID   - [IN]  pid ¹üÀ§Áß ½ÃÀÛ
- *  aEndPID     - [IN]  pid ¹üÀ§Áß ³¡
+ *  aStartPID   - [IN]  pid ë²”ìœ„ì¤‘ ì‹œì‘
+ *  aEndPID     - [IN]  pid ë²”ìœ„ì¤‘ ë
  ****************************************************************/
 IDE_RC sdbBufferMgr::pageOutInRange( idvSQL         *aStatistics,
                                      scSpaceID       aSpaceID,
@@ -1332,9 +1332,9 @@ IDE_RC sdbBufferMgr::pageOutInRange( idvSQL         *aStatistics,
 
 /****************************************************************
  * Description :
- *  ÇØ´ç spaceID¿¡ ÇØ´çÇÏ´Â ¸ğµç BCBµé¿¡°Ô pageoutÀ» Àû¿ëÇÑ´Ù.
+ *  í•´ë‹¹ spaceIDì— í•´ë‹¹í•˜ëŠ” ëª¨ë“  BCBë“¤ì—ê²Œ pageoutì„ ì ìš©í•œë‹¤.
  *
- *  aStatistics - [IN]  Åë°èÁ¤º¸
+ *  aStatistics - [IN]  í†µê³„ì •ë³´
  *  aSpaceID    - [IN]  table space ID
  ****************************************************************/
 IDE_RC sdbBufferMgr::pageOutTBS( idvSQL          *aStatistics,
@@ -1347,9 +1347,9 @@ IDE_RC sdbBufferMgr::pageOutTBS( idvSQL          *aStatistics,
 
 /****************************************************************
  * Description :
- *  ¹öÆÛ¸Å´ÏÀú¿¡ ÀÖ´Â ¸ğµç BCBµé¿¡ pageOutÀ» Àû¿ëÇÑ´Ù.
+ *  ë²„í¼ë§¤ë‹ˆì €ì— ìˆëŠ” ëª¨ë“  BCBë“¤ì— pageOutì„ ì ìš©í•œë‹¤.
  *
- *  aStatistics - [IN]  Åë°èÁ¤º¸
+ *  aStatistics - [IN]  í†µê³„ì •ë³´
  ****************************************************************/
 IDE_RC sdbBufferMgr::pageOutAll(idvSQL     *aStatistics)
 {
@@ -1360,13 +1360,13 @@ IDE_RC sdbBufferMgr::pageOutAll(idvSQL     *aStatistics)
 
 /****************************************************************
  * Description :
- *  FlushTargetQueue¸¦ MakeÇÏ´Â Function
+ *  FlushTargetQueueë¥¼ Makeí•˜ëŠ” Function
  * Implementation:
- *  ÇØ´ç filtÁ¶°ÇÀ» ¸¸Á·ÇÏ¸é¼­ dirty, redirtyÀÎ BCB¸¦ Å¥¿¡ »ğÀÔÇÑ´Ù.
+ *  í•´ë‹¹ filtì¡°ê±´ì„ ë§Œì¡±í•˜ë©´ì„œ dirty, redirtyì¸ BCBë¥¼ íì— ì‚½ì…í•œë‹¤.
  *
  *  aBCB        - [IN]  BCB
- *  aObj        - [IN]  º» ÇÔ¼ö ¼öÇà¿¡ ÇÊ¿äÇÑ ÀÚ·á¸¦ °¡Áö°í ÀÖ´Ù.
- *                      sdbFlushObj·Î Ä³½ºÆÃÇØ¼­ »ç¿ë.
+ *  aObj        - [IN]  ë³¸ í•¨ìˆ˜ ìˆ˜í–‰ì— í•„ìš”í•œ ìë£Œë¥¼ ê°€ì§€ê³  ìˆë‹¤.
+ *                      sdbFlushObjë¡œ ìºìŠ¤íŒ…í•´ì„œ ì‚¬ìš©.
  ****************************************************************/
 IDE_RC sdbBufferMgr::makeFlushTargetQueueFunc( sdbBCB *aBCB,
                                                void   *aObj)
@@ -1378,12 +1378,12 @@ IDE_RC sdbBufferMgr::makeFlushTargetQueueFunc( sdbBCB *aBCB,
     {
         sState = aBCB->mState;
         if( (sState == SDB_BCB_DIRTY) ||
-            // BUG-21135 flusher°¡ flushÀÛ¾÷À» ¿Ï·áÇÏ±â À§ÇØ¼­´Â
-            // INIOB»óÅÂÀÇ BCB»óÅÂ°¡ º¯°æµÇ±æ ±â´Ù·Á¾ß ÇÕ´Ï´Ù.
+            // BUG-21135 flusherê°€ flushì‘ì—…ì„ ì™„ë£Œí•˜ê¸° ìœ„í•´ì„œëŠ”
+            // INIOBìƒíƒœì˜ BCBìƒíƒœê°€ ë³€ê²½ë˜ê¸¸ ê¸°ë‹¤ë ¤ì•¼ í•©ë‹ˆë‹¤.
             (sState == SDB_BCB_INIOB) ||
             (sState == SDB_BCB_REDIRTY))
         {
-            IDE_ASSERT( sObj->mQueue.enqueue( ID_FALSE, // mutex¸¦ ÀâÁö ¾Ê´Â´Ù.
+            IDE_ASSERT( sObj->mQueue.enqueue( ID_FALSE, // mutexë¥¼ ì¡ì§€ ì•ŠëŠ”ë‹¤.
                                               (void*)&aBCB)
                         == IDE_SUCCESS );
         }
@@ -1394,15 +1394,15 @@ IDE_RC sdbBufferMgr::makeFlushTargetQueueFunc( sdbBCB *aBCB,
 
 /****************************************************************
  * Description :
- *  filt¿¡ ÇØ´çÇÏ´Â ÆäÀÌÁö¸¦ flushÇÑ´Ù.
+ *  filtì— í•´ë‹¹í•˜ëŠ” í˜ì´ì§€ë¥¼ flushí•œë‹¤.
  * Implementation:
- *  sdbFlushMgr::flushObjectDirtyPagesÇÔ¼ö¸¦ ÀÌ¿ëÇÏ±â À§ÇØ¼­,
- *  ¸ÕÀú flush¸¦ ÇØ¾ßÇÒ BCBµéÀ» queue¿¡ ¸ğ¾Æ³õ´Â´Ù.
- *  ±×¸®°í sdbFlushMgr::flushObjectDirtyPagesÇÔ¼ö¸¦ ÀÌ¿ëÇØ flush.
+ *  sdbFlushMgr::flushObjectDirtyPagesí•¨ìˆ˜ë¥¼ ì´ìš©í•˜ê¸° ìœ„í•´ì„œ,
+ *  ë¨¼ì € flushë¥¼ í•´ì•¼í•  BCBë“¤ì„ queueì— ëª¨ì•„ë†“ëŠ”ë‹¤.
+ *  ê·¸ë¦¬ê³  sdbFlushMgr::flushObjectDirtyPagesí•¨ìˆ˜ë¥¼ ì´ìš©í•´ flush.
  *
- *  aStatistics - [IN]  Åë°èÁ¤º¸
- *  aFilter     - [IN]  BCBÁß aFilterÁ¶°Ç¿¡ ¸Â´Â BCB¸¸ flush
- *  aFiltArg    - [IN]  aFilter¿¡ ÆÄ¶ó¹ÌÅÍ·Î ³Ö¾îÁÖ´Â °ª
+ *  aStatistics - [IN]  í†µê³„ì •ë³´
+ *  aFilter     - [IN]  BCBì¤‘ aFilterì¡°ê±´ì— ë§ëŠ” BCBë§Œ flush
+ *  aFiltArg    - [IN]  aFilterì— íŒŒë¼ë¯¸í„°ë¡œ ë„£ì–´ì£¼ëŠ” ê°’
  ****************************************************************/
 IDE_RC sdbBufferMgr::flushPages( idvSQL            *aStatistics,
                                  sdbFiltFunc        aFilter,
@@ -1411,7 +1411,7 @@ IDE_RC sdbBufferMgr::flushPages( idvSQL            *aStatistics,
     sdbFlushObj sObj;
 
     // BUG-26476
-    // ¸ğµç flusherµéÀÌ stop »óÅÂÀÌ¸é abort ¿¡·¯¸¦ ¹İÈ¯ÇÑ´Ù.
+    // ëª¨ë“  flusherë“¤ì´ stop ìƒíƒœì´ë©´ abort ì—ëŸ¬ë¥¼ ë°˜í™˜í•œë‹¤.
     IDE_TEST_RAISE(sdbFlushMgr::getActiveFlusherCount() == 0,
                    ERR_ALL_FLUSHERS_STOPPED);
 
@@ -1446,12 +1446,12 @@ IDE_RC sdbBufferMgr::flushPages( idvSQL            *aStatistics,
 
 /****************************************************************
  * Description :
- *  ¹öÆÛ¸Å´ÏÀú¿¡¼­ ÇØ´ç pid¹üÀ§¿¡ ÇØ´çÇÏ´Â BCB¸¦ ¸ğµÎ flushÇÑ´Ù.
+ *  ë²„í¼ë§¤ë‹ˆì €ì—ì„œ í•´ë‹¹ pidë²”ìœ„ì— í•´ë‹¹í•˜ëŠ” BCBë¥¼ ëª¨ë‘ flushí•œë‹¤.
  *
- *  aStatistics - [IN]  Åë°èÁ¤º¸
+ *  aStatistics - [IN]  í†µê³„ì •ë³´
  *  aSpaceID    - [IN]  table space ID
- *  aStartPID   - [IN]  pid ¹üÀ§Áß ½ÃÀÛ
- *  aEndPID     - [IN]  pid ¹üÀ§Áß ³¡
+ *  aStartPID   - [IN]  pid ë²”ìœ„ì¤‘ ì‹œì‘
+ *  aEndPID     - [IN]  pid ë²”ìœ„ì¤‘ ë
  ****************************************************************/
 IDE_RC sdbBufferMgr::flushPagesInRange( idvSQL         *aStatistics,
                                         scSpaceID       aSpaceID,
@@ -1576,9 +1576,9 @@ IDE_RC sdbBufferMgr::getPageBySID( idvSQL             *aStatistics,
     return IDE_FAILURE;
 }
 
-/* BUG-43844 : ÀÌ¹Ì freeµÈ ½½·Ô(unused ÇÃ·¡±× Ã¼Å©µÈ)¿¡ Á¢±ÙÇÏ¿© fetch¸¦ 
- * ½Ãµµ ÇÒ °æ¿ì ½ºÅµÇÏµµ·Ï ÇÑ´Ù. getPageByGRID, getPageBySID ÇÔ¼ö¿¡ skipFetch 
- * ÀÎÀÚ Ãß°¡. 
+/* BUG-43844 : ì´ë¯¸ freeëœ ìŠ¬ë¡¯(unused í”Œë˜ê·¸ ì²´í¬ëœ)ì— ì ‘ê·¼í•˜ì—¬ fetchë¥¼ 
+ * ì‹œë„ í•  ê²½ìš° ìŠ¤í‚µí•˜ë„ë¡ í•œë‹¤. getPageByGRID, getPageBySID í•¨ìˆ˜ì— skipFetch 
+ * ì¸ì ì¶”ê°€. 
  */
 IDE_RC sdbBufferMgr::getPageByGRID( idvSQL             *aStatistics,
                                     scGRID              aGRID,
@@ -1654,8 +1654,8 @@ IDE_RC sdbBufferMgr::getPageBySID( idvSQL             *aStatistics,
 
     sSlotDirPtr = smLayerCallback::getSlotDirStartPtr( *aRetPage );
 
-    /* BUG-43844: ÀÌ¹Ì freeµÈ ½½·Ô(unused ÇÃ·¡±× Ã¼Å©µÈ)¿¡ Á¢±ÙÇÏ¿© fetch¸¦
-     * ½Ãµµ ÇÒ °æ¿ì ½ºÅµ */
+    /* BUG-43844: ì´ë¯¸ freeëœ ìŠ¬ë¡¯(unused í”Œë˜ê·¸ ì²´í¬ëœ)ì— ì ‘ê·¼í•˜ì—¬ fetchë¥¼
+     * ì‹œë„ í•  ê²½ìš° ìŠ¤í‚µ */
     if ( SDP_IS_UNUSED_SLOT_ENTRY( SDP_GET_SLOT_ENTRY( sSlotDirPtr, 
                                                        SD_MAKE_SLOTNUM( aPageSID ) ) )
                                    == ID_TRUE )
@@ -1690,8 +1690,8 @@ IDE_RC sdbBufferMgr::getPageBySID( idvSQL             *aStatistics,
 }
 /****************************************************************
  * Description :
- *  PinningÀ» À§ÇØ ¾²ÀÌ´Â ±â´É, aEnv³»¿¡ ÇØ´ç page°¡ Á¸ÀçÇÏ´ÂÁö °Ë»çÇÏ¿©
- *  ÀÖ´Ù¸é ÇØ´ç BCB¸¦ ¸®ÅÏÇÏ°í, ±×·¸Áö ¾Ê´Ù¸é NULLÀ» ¸®ÅÏÇÑ´Ù.
+ *  Pinningì„ ìœ„í•´ ì“°ì´ëŠ” ê¸°ëŠ¥, aEnvë‚´ì— í•´ë‹¹ pageê°€ ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬í•˜ì—¬
+ *  ìˆë‹¤ë©´ í•´ë‹¹ BCBë¥¼ ë¦¬í„´í•˜ê³ , ê·¸ë ‡ì§€ ì•Šë‹¤ë©´ NULLì„ ë¦¬í„´í•œë‹¤.
  *
  *  aEnv        - [IN]  pinning env
  *  aSpaceID    - [IN]  table space ID
@@ -1725,23 +1725,23 @@ sdbBCB* sdbBufferMgr::findPinnedPage( sdbPinningEnv *aEnv,
 
 /****************************************************************
  * Description :
- *  Pinning ±â´ÉÀ» À§ÇØ ¾²ÀÌ´Â ÇÔ¼ö.
- *  mAccessHistory¿¡ ¾ø´Ù¸é, ¸ÕÀú mAccessHistory¿¡ »ğÀÔÇÑ´Ù.
- *  ±âÁ¸ÀÇ mAccessHistroy¿¡ Á¸ÀçÇÑ´Ù¸é, mPinningList¿¡ »ğÀÔÇÑ´Ù.
- *  »ğÀÔÀü¿¡, (¹®Á¦´Â µÇÁö¾ÊÁö¸¸) ÇöÀç mPinningList¿¡ °°Àº pid°¡ ¾øÀ½À»
- *  º¸ÀåÇÏ±â À§ÇØ findPinnedPage¸¦ ¸ÕÀú È£ÃâÇÑ´Ù.
+ *  Pinning ê¸°ëŠ¥ì„ ìœ„í•´ ì“°ì´ëŠ” í•¨ìˆ˜.
+ *  mAccessHistoryì— ì—†ë‹¤ë©´, ë¨¼ì € mAccessHistoryì— ì‚½ì…í•œë‹¤.
+ *  ê¸°ì¡´ì˜ mAccessHistroyì— ì¡´ì¬í•œë‹¤ë©´, mPinningListì— ì‚½ì…í•œë‹¤.
+ *  ì‚½ì…ì „ì—, (ë¬¸ì œëŠ” ë˜ì§€ì•Šì§€ë§Œ) í˜„ì¬ mPinningListì— ê°™ì€ pidê°€ ì—†ìŒì„
+ *  ë³´ì¥í•˜ê¸° ìœ„í•´ findPinnedPageë¥¼ ë¨¼ì € í˜¸ì¶œí•œë‹¤.
  *
- *  ¸¸¾à mPinningList°¡ °¡µæÂù °æ¿ì¿£ ±âÁ¸¿¡ Á¸ÀçÇÏ´Â BCB¸¦ unPin½ÃÅ°°í,
- *  ÇöÀç BCB¸¦ pinning½ÃÄÑ¾ß ÇÑ´Ù.
+ *  ë§Œì•½ mPinningListê°€ ê°€ë“ì°¬ ê²½ìš°ì—” ê¸°ì¡´ì— ì¡´ì¬í•˜ëŠ” BCBë¥¼ unPinì‹œí‚¤ê³ ,
+ *  í˜„ì¬ BCBë¥¼ pinningì‹œì¼œì•¼ í•œë‹¤.
  *
  *  aEnv        - [IN]  pinning env
  *  aBCB        - [IN]  BCB
- *  aBCBPinned  - [IN]  mAccessHistory¿¡¸¸ »ğÀÔÇÏ°í, Pinning½ÃÅ°Áö
- *                      ¾Ê¾Ò´Ù¸é ID_FALSE¸¦ ¸®ÅÏ, mPinningList¿¡ »ğÀÔÇß´Ù¸é
- *                      ID_TRUE¸¦ ¸®ÅÏÇÑ´Ù.
- *  aBCBToUnpin - [OUT] mPinningList¿¡ »ğÀÔÇÒ¶§, ÀÌ¹Ì °¡µæÂù mPinningList¶ó¸é
- *                      ±âÁ¸¿¡ Á¸ÀçÇÏ´Â BCB¸¦ Unpin½ÃÄÑ¾ß ÇÑ´Ù. ÀÌ Unpin½ÃÄÑ¾ß
- *                      ÇÏ´Â BCB¸¦ ¸®ÅÏÇÑ´Ù.
+ *  aBCBPinned  - [IN]  mAccessHistoryì—ë§Œ ì‚½ì…í•˜ê³ , Pinningì‹œí‚¤ì§€
+ *                      ì•Šì•˜ë‹¤ë©´ ID_FALSEë¥¼ ë¦¬í„´, mPinningListì— ì‚½ì…í–ˆë‹¤ë©´
+ *                      ID_TRUEë¥¼ ë¦¬í„´í•œë‹¤.
+ *  aBCBToUnpin - [OUT] mPinningListì— ì‚½ì…í• ë•Œ, ì´ë¯¸ ê°€ë“ì°¬ mPinningListë¼ë©´
+ *                      ê¸°ì¡´ì— ì¡´ì¬í•˜ëŠ” BCBë¥¼ Unpinì‹œì¼œì•¼ í•œë‹¤. ì´ Unpinì‹œì¼œì•¼
+ *                      í•˜ëŠ” BCBë¥¼ ë¦¬í„´í•œë‹¤.
  ****************************************************************/
 void sdbBufferMgr::addToHistory( sdbPinningEnv     *aEnv,
                                  sdbBCB            *aBCB,
@@ -1919,18 +1919,18 @@ IDE_RC sdbBufferMgr::getPageByRID( idvSQL             *aStatistics,
 
 /****************************************************************
  * Description :
- *  pinning ±â´É°ú ÇÔ²² ¾²ÀÌ´Â getPage.
- *  sdbPinningEnv¸¦ ¹İµå½Ã ÀÎÀÚ·Î ³Ñ°Ü ÁÖ¾î¾ß ÇÑ´Ù.
- *  ¸ÕÀú findPinnedPage¸¦ ÅëÇØ¼­ ÇØ´ç pid°¡ mPinningList¿¡ Á¸ÀçÇÏ´ÂÁö
- *  È®ÀÎÇÑ´Ù.
- *  ÀÖ´Ù¸é ±×°ÍÀ» ¸®ÅÏÇÏ°í, ¾ø´Ù¸é, ¹öÆÛ Ç®·ÎºÎÅÍ ÇØ´ç BCB¸¦ °¡Á®¿Í¼­
- *  mAccessHistoryµî·ÏÇÏ°í,
- *  ¸¸¾à ±âÁ¸¿¡ mAccessHistory¿¡ ÇØ´ç pid¿¡ ´ëÇÑ ±â·ÏÀÌ ÀÖ´Ù¸é
- *  mPinningList¿¡µµ µî·ÏÇÑ´Ù. ÀÌ¶§, mPinningList°¡ °¡µæÃ¡´Ù¸é,
- *  ±âÁ¸¿¡ Á¸ÀçÇÏ´Â BCB¸¦ unpin½ÃÅ°°í, ÇöÀçÀÇ BCB¸¦ »ğÀÔÇÑ´Ù.
+ *  pinning ê¸°ëŠ¥ê³¼ í•¨ê»˜ ì“°ì´ëŠ” getPage.
+ *  sdbPinningEnvë¥¼ ë°˜ë“œì‹œ ì¸ìë¡œ ë„˜ê²¨ ì£¼ì–´ì•¼ í•œë‹¤.
+ *  ë¨¼ì € findPinnedPageë¥¼ í†µí•´ì„œ í•´ë‹¹ pidê°€ mPinningListì— ì¡´ì¬í•˜ëŠ”ì§€
+ *  í™•ì¸í•œë‹¤.
+ *  ìˆë‹¤ë©´ ê·¸ê²ƒì„ ë¦¬í„´í•˜ê³ , ì—†ë‹¤ë©´, ë²„í¼ í’€ë¡œë¶€í„° í•´ë‹¹ BCBë¥¼ ê°€ì ¸ì™€ì„œ
+ *  mAccessHistoryë“±ë¡í•˜ê³ ,
+ *  ë§Œì•½ ê¸°ì¡´ì— mAccessHistoryì— í•´ë‹¹ pidì— ëŒ€í•œ ê¸°ë¡ì´ ìˆë‹¤ë©´
+ *  mPinningListì—ë„ ë“±ë¡í•œë‹¤. ì´ë•Œ, mPinningListê°€ ê°€ë“ì°¼ë‹¤ë©´,
+ *  ê¸°ì¡´ì— ì¡´ì¬í•˜ëŠ” BCBë¥¼ unpinì‹œí‚¤ê³ , í˜„ì¬ì˜ BCBë¥¼ ì‚½ì…í•œë‹¤.
  *
- *  ÁÖÀÇ!!
- *  pinning ±â´ÉÀº ¾ÆÁ÷ Å×½ºÆÃÀÌ µÇÁö ¾Ê¾Ò´Ù.
+ *  ì£¼ì˜!!
+ *  pinning ê¸°ëŠ¥ì€ ì•„ì§ í…ŒìŠ¤íŒ…ì´ ë˜ì§€ ì•Šì•˜ë‹¤.
  *
  * Implementation:
  ****************************************************************/
@@ -1979,14 +1979,14 @@ IDE_RC sdbBufferMgr::getPage( idvSQL               *aStatistics,
                                 NULL /*IsCorruptPage*/ )
                   != IDE_SUCCESS );
 
-        // ¾òÀº ÆäÀÌÁö·ÎºÎÅÍ BCB Æ÷ÀÎÅÍ¸¦ ¾ò´Â´Ù.
-        // ÁöÀúºĞÇÏÁö¸¸ ¾îÂ¿¼ö°¡ ¾ø´Ù.
-        // ÀÌ·¸°Ô¶óµµ ¾òÀÚ.
+        // ì–»ì€ í˜ì´ì§€ë¡œë¶€í„° BCB í¬ì¸í„°ë¥¼ ì–»ëŠ”ë‹¤.
+        // ì§€ì €ë¶„í•˜ì§€ë§Œ ì–´ì©”ìˆ˜ê°€ ì—†ë‹¤.
+        // ì´ë ‡ê²Œë¼ë„ ì–»ì.
         sBCB = (sdbBCB*)((sdbFrameHdr*)*aRetPage)->mBCBPtr;
         addToHistory(sPinningEnv, sBCB, &sPinned, &sOldBCB);
         if ( sPinned == ID_TRUE )
         {
-            // pin ½ÃÅ°±â À§ÇØ fix count¸¦ ÇÏ³ª ¿Ã¸°´Ù.
+            // pin ì‹œí‚¤ê¸° ìœ„í•´ fix countë¥¼ í•˜ë‚˜ ì˜¬ë¦°ë‹¤.
             sBCB->lockBCBMutex(aStatistics);
             sBCB->incFixCnt();
             sBCB->unlockBCBMutex();
@@ -2142,13 +2142,13 @@ IDE_RC sdbBufferMgr::fixPageByPID( idvSQL             * aStatistics,
 //
 ///******************************************************************************
 // * Description :
-// *  PinningÀ» ±¸ÇöÇÑ ÇÔ¼ö.. (ÀÚ¼¼ÇÑ°ÍÀº proj-1568 ¼³°è ¸Ş´º¾ó ÂüÁ¶)
-// *  Pin ±â´ÉÀ» »ç¿ëÇÏ°íÀÚ ÇÏ´Â ÂÊ¿¡¼­ ¾Æ·¡¸¦ È£ÃâÇÏ¿© aEnv¸¦ ¼¼ÆÃÇÑ´ÙÀ½,
-// *  ´ÙÀ½ Á¢±Ù¶§ ºÎÅÍ´Â aEnv¸¦ ÅëÇØ¼­ Á¢±ÙÇÑ´Ù.
-// *  ÁÖÀÇ!!
-// *      ¾ÆÁ÷ Å×½ºÆ®°¡ ¾ÈµÇ¾î ÀÖ´Â ÄÚµåÀÌ´Ù.
+// *  Pinningì„ êµ¬í˜„í•œ í•¨ìˆ˜.. (ìì„¸í•œê²ƒì€ proj-1568 ì„¤ê³„ ë©”ë‰´ì–¼ ì°¸ì¡°)
+// *  Pin ê¸°ëŠ¥ì„ ì‚¬ìš©í•˜ê³ ì í•˜ëŠ” ìª½ì—ì„œ ì•„ë˜ë¥¼ í˜¸ì¶œí•˜ì—¬ aEnvë¥¼ ì„¸íŒ…í•œë‹¤ìŒ,
+// *  ë‹¤ìŒ ì ‘ê·¼ë•Œ ë¶€í„°ëŠ” aEnvë¥¼ í†µí•´ì„œ ì ‘ê·¼í•œë‹¤.
+// *  ì£¼ì˜!!
+// *      ì•„ì§ í…ŒìŠ¤íŠ¸ê°€ ì•ˆë˜ì–´ ìˆëŠ” ì½”ë“œì´ë‹¤.
 // *
-// *  aEnv    - [OUT] »ı¼ºµÈ sdbPinningEnv
+// *  aEnv    - [OUT] ìƒì„±ëœ sdbPinningEnv
 // ******************************************************************************/
 //IDE_RC sdbBufferMgr::createPinningEnv(void **aEnv)
 //{
@@ -2158,7 +2158,7 @@ IDE_RC sdbBufferMgr::fixPageByPID( idvSQL             * aStatistics,
 //
 //    if (sPinningCount > 0)
 //    {
-//        // º»ÇÔ¼ö´Â È£ÃâµÇÁö ¾ÊÀ¸¹Ç·Î limit point ¼³Á¤¾ÈÇÔ.
+//        // ë³¸í•¨ìˆ˜ëŠ” í˜¸ì¶œë˜ì§€ ì•Šìœ¼ë¯€ë¡œ limit point ì„¤ì •ì•ˆí•¨.
 //        IDE_TEST(iduMemMgr::malloc(IDU_MEM_SM_SDB,
 //                                   ID_SIZEOF(sdbPinningEnv),
 //                                   aEnv)
@@ -2171,19 +2171,19 @@ IDE_RC sdbBufferMgr::fixPageByPID( idvSQL             * aStatistics,
 //        sPinningEnv->mPinningInsPos = 0;
 //        sPinningEnv->mPinningCount = sPinningCount;
 //
-//        // º»ÇÔ¼ö´Â È£ÃâµÇÁö ¾ÊÀ¸¹Ç·Î limit point ¼³Á¤¾ÈÇÔ.
+//        // ë³¸í•¨ìˆ˜ëŠ” í˜¸ì¶œë˜ì§€ ì•Šìœ¼ë¯€ë¡œ limit point ì„¤ì •ì•ˆí•¨.
 //        IDE_TEST(iduMemMgr::malloc(IDU_MEM_SM_SDB,
 //                                   ID_SIZEOF(sdbPageID) * sPinningEnv->mAccessHistoryCount,
 //                                   (void**)&sPinningEnv->mAccessHistory)
 //                 != IDE_SUCCESS);
 //
-//        // º»ÇÔ¼ö´Â È£ÃâµÇÁö ¾ÊÀ¸¹Ç·Î limit point ¼³Á¤¾ÈÇÔ.
+//        // ë³¸í•¨ìˆ˜ëŠ” í˜¸ì¶œë˜ì§€ ì•Šìœ¼ë¯€ë¡œ limit point ì„¤ì •ì•ˆí•¨.
 //        IDE_TEST(iduMemMgr::malloc(IDU_MEM_SM_SDB,
 //                                   ID_SIZEOF(sdbPageID) * sPinningEnv->mPinningCount,
 //                                   (void**)&sPinningEnv->mPinningList)
 //                 != IDE_SUCCESS);
 //
-//        // º»ÇÔ¼ö´Â È£ÃâµÇÁö ¾ÊÀ¸¹Ç·Î limit point ¼³Á¤¾ÈÇÔ.
+//        // ë³¸í•¨ìˆ˜ëŠ” í˜¸ì¶œë˜ì§€ ì•Šìœ¼ë¯€ë¡œ limit point ì„¤ì •ì•ˆí•¨.
 //        IDE_TEST(iduMemMgr::malloc(IDU_MEM_SM_SDB,
 //                                   ID_SIZEOF(sdbBCB*) * sPinningEnv->mPinningCount,
 //                                   (void**)&sPinningEnv->mPinningBCBList)
@@ -2215,14 +2215,14 @@ IDE_RC sdbBufferMgr::fixPageByPID( idvSQL             * aStatistics,
 //
 ///******************************************************************************
 // * Description :
-// *  PinningÀ» ±¸ÇöÇÑ ÇÔ¼ö.. (ÀÚ¼¼ÇÑ°ÍÀº proj-1568 ¼³°è ¸Ş´º¾ó ÂüÁ¶)
-// *  createPinningEnv¿¡¼­ ¼¼ÆÃÇÑ aEnv¸¦ destroyÇÏ´Â ÄÚµå.
-// *  createPinningEnvÇÑ°ÍÀº "¹İµå½Ã" destroyPinningEnvÈ£ÃâÇØ¼­ destroyÇØ¾ß ÇÑ´Ù.
-// *  ±×·¸Áö ¾ÊÀ¸¸é ½É°¢ÇÑ »óÈ² ÃÊ·¡(ÇØ´ç BCB¸¦ ´Ù¸¥Tx°¡ replace ÇÒ ¼ö ¾ø°Ô µÈ´Ù.)
-// *  ÁÖÀÇ!!
-// *      ¾ÆÁ÷ Å×½ºÆ®°¡ ¾ÈµÇ¾î ÀÖ´Â ÄÚµåÀÌ´Ù.
-// *  aStatistics - [IN]  Åë°èÁ¤º¸
-// *  aEnv        - [IN]  createPinningEnv ÅëÇØ »ı¼ºÇÑ Á¤º¸
+// *  Pinningì„ êµ¬í˜„í•œ í•¨ìˆ˜.. (ìì„¸í•œê²ƒì€ proj-1568 ì„¤ê³„ ë©”ë‰´ì–¼ ì°¸ì¡°)
+// *  createPinningEnvì—ì„œ ì„¸íŒ…í•œ aEnvë¥¼ destroyí•˜ëŠ” ì½”ë“œ.
+// *  createPinningEnví•œê²ƒì€ "ë°˜ë“œì‹œ" destroyPinningEnví˜¸ì¶œí•´ì„œ destroyí•´ì•¼ í•œë‹¤.
+// *  ê·¸ë ‡ì§€ ì•Šìœ¼ë©´ ì‹¬ê°í•œ ìƒí™© ì´ˆë˜(í•´ë‹¹ BCBë¥¼ ë‹¤ë¥¸Txê°€ replace í•  ìˆ˜ ì—†ê²Œ ëœë‹¤.)
+// *  ì£¼ì˜!!
+// *      ì•„ì§ í…ŒìŠ¤íŠ¸ê°€ ì•ˆë˜ì–´ ìˆëŠ” ì½”ë“œì´ë‹¤.
+// *  aStatistics - [IN]  í†µê³„ì •ë³´
+// *  aEnv        - [IN]  createPinningEnv í†µí•´ ìƒì„±í•œ ì •ë³´
 // ******************************************************************************/
 //IDE_RC sdbBufferMgr::destroyPinningEnv(idvSQL *aStatistics, void *aEnv)
 //{
@@ -2263,22 +2263,22 @@ IDE_RC sdbBufferMgr::fixPageByPID( idvSQL             * aStatistics,
 //
 ///****************************************************************
 // * Description :
-// *  full scanÀÎ °æ¿ì¿¡´Â LRU°¡ ¾û¸ÁÀÌ µÉ °¡´É¼ºÀÌ ÀÖ´Ù. ±×·¯¹Ç·Î,
-// *  ÀÌ°æ¿ì¿¡´Â LRUº¸´Ù´Â MRU·Î È£ÃâÀ» ÇÏ°Ô µÈ´Ù.
-// *  ÀÌ ÇÔ¼ö¸¦ ÅëÇØ¼­ ¾òÀº BCB´Â ´ÙÀ½ Æ®·£Àè¼ÇÀÌ replace¸¦ ¿äÃ»ÇÒ¶§,
-// *  victimÀ¸·Î ¼±Á¤µÉ È®·üÀÌ ³ô´Ù.
+// *  full scanì¸ ê²½ìš°ì—ëŠ” LRUê°€ ì—‰ë§ì´ ë  ê°€ëŠ¥ì„±ì´ ìˆë‹¤. ê·¸ëŸ¬ë¯€ë¡œ,
+// *  ì´ê²½ìš°ì—ëŠ” LRUë³´ë‹¤ëŠ” MRUë¡œ í˜¸ì¶œì„ í•˜ê²Œ ëœë‹¤.
+// *  ì´ í•¨ìˆ˜ë¥¼ í†µí•´ì„œ ì–»ì€ BCBëŠ” ë‹¤ìŒ íŠ¸ëœì­ì…˜ì´ replaceë¥¼ ìš”ì²­í• ë•Œ,
+// *  victimìœ¼ë¡œ ì„ ì •ë  í™•ë¥ ì´ ë†’ë‹¤.
 // *
-// *  ÀÌ ±â´ÉÀº ¹öÆÛ¸Å´ÏÀúÀÇ Multiple Buffer Read(MBR)±â´ÉÀ» ÅëÇØ¼­ ±¸Çö
-// *  µÉ ¿¹Á¤. ¾ÆÁ÷ MBR°ú ¿¬°áµÇ¾î ÀÖÁö ¾Ê´Ù.
+// *  ì´ ê¸°ëŠ¥ì€ ë²„í¼ë§¤ë‹ˆì €ì˜ Multiple Buffer Read(MBR)ê¸°ëŠ¥ì„ í†µí•´ì„œ êµ¬í˜„
+// *  ë  ì˜ˆì •. ì•„ì§ MBRê³¼ ì—°ê²°ë˜ì–´ ìˆì§€ ì•Šë‹¤.
 // *
-// *  aStatistics - [IN]  Åë°èÁ¤º¸
+// *  aStatistics - [IN]  í†µê³„ì •ë³´
 // *  aSpaceID    - [IN]  table space ID
 // *  aPageID     - [IN]  page ID
-// *  aLatchMode  - [IN]  ·¡Ä¡ ¸ğµå, shared, exclusive, nolatch°¡ ÀÖ´Ù.
-// *  aWaitMode   - [IN]  ·¡Ä¡¸¦ Àâ±â À§ÇØ ´ë±â ÇÒÁö ¸»Áö ¼³Á¤
+// *  aLatchMode  - [IN]  ë˜ì¹˜ ëª¨ë“œ, shared, exclusive, nolatchê°€ ìˆë‹¤.
+// *  aWaitMode   - [IN]  ë˜ì¹˜ë¥¼ ì¡ê¸° ìœ„í•´ ëŒ€ê¸° í• ì§€ ë§ì§€ ì„¤ì •
 // *  aMtx        - [IN]  Mini transaction
-// *  aRetPage    - [OUT] ¿äÃ»ÇÑ ÆäÀÌÁö
-// *  aTrySuccess - [OUT] Latch mode°¡ tryÀÎ°æ¿ì¿¡ ¼º°ø¿©ºÎ¸®ÅÏ
+// *  aRetPage    - [OUT] ìš”ì²­í•œ í˜ì´ì§€
+// *  aTrySuccess - [OUT] Latch modeê°€ tryì¸ê²½ìš°ì— ì„±ê³µì—¬ë¶€ë¦¬í„´
 // ****************************************************************/
 //IDE_RC sdbBufferMgr::getPageWithMRU( idvSQL             *aStatistics,
 //                                     scSpaceID           aSpaceID,

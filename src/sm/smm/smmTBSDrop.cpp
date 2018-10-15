@@ -33,7 +33,7 @@
 #include <smmTBSMultiPhase.h>
 
 /*
-  »ı¼ºÀÚ (¾Æ¹«°Íµµ ¾ÈÇÔ)
+  ìƒì„±ì (ì•„ë¬´ê²ƒë„ ì•ˆí•¨)
 */
 smmTBSDrop::smmTBSDrop()
 {
@@ -42,18 +42,18 @@ smmTBSDrop::smmTBSDrop()
 
 
 /*
-    »ç¿ëÀÚ°¡ »ı¼ºÇÑ ¸Ş¸ğ¸® Tablespace¸¦ dropÇÑ´Ù.
+    ì‚¬ìš©ìê°€ ìƒì„±í•œ ë©”ëª¨ë¦¬ Tablespaceë¥¼ dropí•œë‹¤.
 
-  [IN] aTrans      - Tablespace¸¦ DropÇÏ·Á´Â Transaction
-  [IN] aTBSNode    - DropÇÏ·Á´Â Tablespace node
-  [IN] aTouchMode  - Drop½Ã Checkpoint Image File»èÁ¦ ¿©ºÎ 
+  [IN] aTrans      - Tablespaceë¥¼ Dropí•˜ë ¤ëŠ” Transaction
+  [IN] aTBSNode    - Dropí•˜ë ¤ëŠ” Tablespace node
+  [IN] aTouchMode  - Dropì‹œ Checkpoint Image Fileì‚­ì œ ì—¬ë¶€ 
  */
 IDE_RC smmTBSDrop::dropTBS(void         * aTrans,
                               smmTBSNode   * aTBSNode,
                               smiTouchMode   aTouchMode)
                               
 {
-    // aStatistics´Â NULL·Î µé¾î¿Â´Ù.
+    // aStatisticsëŠ” NULLë¡œ ë“¤ì–´ì˜¨ë‹¤.
     IDE_DASSERT( aTrans != NULL );
     IDE_DASSERT( aTBSNode != NULL );
 
@@ -70,44 +70,44 @@ IDE_RC smmTBSDrop::dropTBS(void         * aTrans,
 
 
 /*
-  ¸Ş¸ğ¸® Å×ÀÌºí ½ºÆäÀÌ½º¸¦ DROPÇÑ´Ù.
+  ë©”ëª¨ë¦¬ í…Œì´ë¸” ìŠ¤í˜ì´ìŠ¤ë¥¼ DROPí•œë‹¤.
 
-[IN] aTrans      - Tablespace¸¦ DropÇÏ·Á´Â Transaction
-[IN] aTBSNode    - DropÇÏ·Á´Â Tablespace node
-[IN] aTouchMode  - Drop½Ã Checkpoint Image File»èÁ¦ ¿©ºÎ 
+[IN] aTrans      - Tablespaceë¥¼ Dropí•˜ë ¤ëŠ” Transaction
+[IN] aTBSNode    - Dropí•˜ë ¤ëŠ” Tablespace node
+[IN] aTouchMode  - Dropì‹œ Checkpoint Image Fileì‚­ì œ ì—¬ë¶€ 
   
 [ PROJ-1548 User Memory Tablespace ]
 
-Drop Tablespace ÀüÃ¼ ¾Ë°í¸®Áò ================================================
+Drop Tablespace ì „ì²´ ì•Œê³ ë¦¬ì¦˜ ================================================
 
-* Restart Recovery´Â Disk Tablespace¿Í ±âº»ÀûÀ¸·Î µ¿ÀÏÇÏ°Ô Ã³¸®ÇÑ´Ù.
+* Restart RecoveryëŠ” Disk Tablespaceì™€ ê¸°ë³¸ì ìœ¼ë¡œ ë™ì¼í•˜ê²Œ ì²˜ë¦¬í•œë‹¤.
 
 (010) lock TBSNode in X
 
-(020) DROP-TBS-LOG ·Î±ë½Ç½Ã
+(020) DROP-TBS-LOG ë¡œê¹…ì‹¤ì‹œ
 
 (030) TBSNode.Status |= Dropping
 
-(040) Drop Tablespace Pending µî·Ï
+(040) Drop Tablespace Pending ë“±ë¡
 
-- commit : ( pending Ã³¸® )
-           ÀÚ¼¼ÇÑ ¾Ë°í¸®ÁòÀº smmTBSDrop::dropTableSpacePendingÀ» Âü°í
+- commit : ( pending ì²˜ë¦¬ )
+           ìì„¸í•œ ì•Œê³ ë¦¬ì¦˜ì€ smmTBSDrop::dropTableSpacePendingì„ ì°¸ê³ 
 
-- abort  : Log¸¦ µû¶ó°¡¸ç Undo½Ç½Ã
+- abort  : Logë¥¼ ë”°ë¼ê°€ë©° Undoì‹¤ì‹œ
 
-           (a-010) DROP-TBS-LOGÀÇ UNDO ½Ç½Ã 
-              - ¼öÇàµÇ´Â ³»¿ë : TBSNode.Status &= ~Dropping
-           // Log Anchor¿¡ TBSNode¸¦ FlushÇÒ ÇÊ¿ä°¡ ¾ø´Ù
-           // Status |= Dropping ¼³Á¤µÈ Ã¤·Î Flush¸¦ ¾ÈÇß±â ¶§¹®
+           (a-010) DROP-TBS-LOGì˜ UNDO ì‹¤ì‹œ 
+              - ìˆ˜í–‰ë˜ëŠ” ë‚´ìš© : TBSNode.Status &= ~Dropping
+           // Log Anchorì— TBSNodeë¥¼ Flushí•  í•„ìš”ê°€ ì—†ë‹¤
+           // Status |= Dropping ì„¤ì •ëœ ì±„ë¡œ Flushë¥¼ ì•ˆí–ˆê¸° ë•Œë¬¸
 
-- restart recoverÁ¾·áÈÄ : # (ÁÖ3)
+- restart recoverì¢…ë£Œí›„ : # (ì£¼3)
            if TBSNode.Status == Dropped then
               remove TBSNode from TBS List
            fi
 
--(ÁÖ3) : redo/undo³¡³ª°í ½Ã½ºÅÛÀÇ ¸ğµç TBS¸¦ Log Anchor¿¡ flushÇÏ¸é¼­ 
-         Status°¡ DroppedÀÎ TBS¸¦ ±â·ÏÇÏÁö ¾Ê´Â´Ù.
-         ¶ÇÇÑ, ½Ã½ºÅÛÀÇ TBS List¿¡¼­µµ Á¦°ÅÇÑ´Ù.
+-(ì£¼3) : redo/undoëë‚˜ê³  ì‹œìŠ¤í…œì˜ ëª¨ë“  TBSë¥¼ Log Anchorì— flushí•˜ë©´ì„œ 
+         Statusê°€ Droppedì¸ TBSë¥¼ ê¸°ë¡í•˜ì§€ ì•ŠëŠ”ë‹¤.
+         ë˜í•œ, ì‹œìŠ¤í…œì˜ TBS Listì—ì„œë„ ì œê±°í•œë‹¤.
  */
 IDE_RC smmTBSDrop::dropTableSpace(void             * aTrans,
                                      smmTBSNode       * aTBSNode,
@@ -131,7 +131,7 @@ IDE_RC smmTBSDrop::dropTableSpace(void             * aTrans,
 
     
     ////////////////////////////////////////////////////////////////
-    // (020) DROP-TBS-LOG ·Î±ë½Ç½Ã
+    // (020) DROP-TBS-LOG ë¡œê¹…ì‹¤ì‹œ
     IDE_TEST( smLayerCallback::writeMemoryTBSDrop( NULL, /* idvSQL* */
                                                    aTrans,
                                                    aTBSNode->mHeader.mID,
@@ -140,26 +140,26 @@ IDE_RC smmTBSDrop::dropTableSpace(void             * aTrans,
 
     ////////////////////////////////////////////////////////////////
     // (030) TBSNode.Status |= Dropping
-    // Tx CommitÀÌÀü¿¡´Â DROPPINGÀ¸·Î ¼³Á¤ÇÏ°í
-    // Commit½Ã¿¡ PendingÀ¸·Î DROPPED·Î ¼³Á¤µÈ´Ù.
+    // Tx Commitì´ì „ì—ëŠ” DROPPINGìœ¼ë¡œ ì„¤ì •í•˜ê³ 
+    // Commitì‹œì— Pendingìœ¼ë¡œ DROPPEDë¡œ ì„¤ì •ëœë‹¤.
     //
     aTBSNode->mHeader.mState |= SMI_TBS_DROPPING;
 
     
     ////////////////////////////////////////////////////////////////
-    // (040) Drop Tablespace Pending µî·Ï
+    // (040) Drop Tablespace Pending ë“±ë¡
     //
-    // Transaction Commit½Ã¿¡ ¼öÇàÇÒ Pending Operationµî·Ï 
+    // Transaction Commitì‹œì— ìˆ˜í–‰í•  Pending Operationë“±ë¡ 
     IDE_TEST( sctTableSpaceMgr::addPendingOperation(
                   aTrans,
                   aTBSNode->mHeader.mID,
-                  ID_TRUE, /* Pending ¿¬»ê ¼öÇà ½ÃÁ¡ : Commit ½Ã */
+                  ID_TRUE, /* Pending ì—°ì‚° ìˆ˜í–‰ ì‹œì  : Commit ì‹œ */
                   SCT_POP_DROP_TBS,
                   & sPendingOp )
               != IDE_SUCCESS );
 
-    // Commit½Ã sctTableSpaceMgr::executePendingOperation¿¡¼­
-    // ¼öÇàÇÒ PendingÇÔ¼ö ¼³Á¤
+    // Commitì‹œ sctTableSpaceMgr::executePendingOperationì—ì„œ
+    // ìˆ˜í–‰í•  Pendingí•¨ìˆ˜ ì„¤ì •
     sPendingOp->mPendingOpFunc = smmTBSDrop::dropTableSpacePending;
     sPendingOp->mTouchMode     = aTouchMode;
     
@@ -172,9 +172,9 @@ IDE_RC smmTBSDrop::dropTableSpace(void             * aTrans,
 }
 
 /*
-   Tablespace¸¦ DROPÇÑ Tx°¡ CommitµÇ¾úÀ» ¶§ ºÒ¸®´Â PendingÇÔ¼ö
+   Tablespaceë¥¼ DROPí•œ Txê°€ Commitë˜ì—ˆì„ ë•Œ ë¶ˆë¦¬ëŠ” Pendingí•¨ìˆ˜
    
-   [Âü°í] sctTableSpaceMgr::executePendingOperation ¿¡¼­ È£ÃâµÈ´Ù.
+   [ì°¸ê³ ] sctTableSpaceMgr::executePendingOperation ì—ì„œ í˜¸ì¶œëœë‹¤.
  */
 IDE_RC smmTBSDrop::dropTableSpacePending( idvSQL*        /* aStatistics */,
                                           sctTableSpaceNode * aTBSNode,
@@ -195,58 +195,58 @@ IDE_RC smmTBSDrop::dropTableSpacePending( idvSQL*        /* aStatistics */,
 }
 
 /*
-    ½ÇÁ¦ Drop Tablespace¼öÇà ÄÚµå 
+    ì‹¤ì œ Drop Tablespaceìˆ˜í–‰ ì½”ë“œ 
   
    PROJ-1548 User Memory Tablespace
  
-   Tablespace¿Í °ü·ÃµÈ ¸ğµç ¸Ş¸ğ¸®¿Í ¸®¼Ò½º¸¦ ¹İ³³ÇÑ´Ù.
-   - ¿¹¿Ü : TablespaceÀÇ LockÁ¤º¸´Â ´Ù¸¥ TxµéÀÌ ´ë±âÇÏ¸é¼­
-             ÂüÁ¶ÇÒ ¼ö ÀÖ±â ¶§¹®¿¡ ÇØÁ¦ÇØ¼­´Â ¾ÈµÈ´Ù.
+   Tablespaceì™€ ê´€ë ¨ëœ ëª¨ë“  ë©”ëª¨ë¦¬ì™€ ë¦¬ì†ŒìŠ¤ë¥¼ ë°˜ë‚©í•œë‹¤.
+   - ì˜ˆì™¸ : Tablespaceì˜ Lockì •ë³´ëŠ” ë‹¤ë¥¸ Txë“¤ì´ ëŒ€ê¸°í•˜ë©´ì„œ
+             ì°¸ì¡°í•  ìˆ˜ ìˆê¸° ë•Œë¬¸ì— í•´ì œí•´ì„œëŠ” ì•ˆëœë‹¤.
 
-   - È£ÃâµÇ´Â °æ¿ì           
-      - Drop TablespaceÀÇ Commit Pending Operation
-      - Create TablespaceÀÇ NTA Undo
+   - í˜¸ì¶œë˜ëŠ” ê²½ìš°           
+      - Drop Tablespaceì˜ Commit Pending Operation
+      - Create Tablespaceì˜ NTA Undo
              
-   [ ¾Ë°í¸®Áò ] ======================================================
+   [ ì•Œê³ ë¦¬ì¦˜ ] ======================================================
    
-   (c-010) TBSNode.Status := Dropped (ÁÖ3)
-   (c-020) flush TBSNode  (ÁÖ2)
+   (c-010) TBSNode.Status := Dropped (ì£¼3)
+   (c-020) flush TBSNode  (ì£¼2)
 
    
-   (c-030) latch TBSNode.SyncMutex // Checkpoint¿Í °æÇÕ
+   (c-030) latch TBSNode.SyncMutex // Checkpointì™€ ê²½í•©
    (c-040) unlatch TBSNode.SyncMutex
    
-   (c-050) Memory Garbage Collector¸¦ BlockÇÑ´Ù. // Ager¿Í °æÇÕ
-   (c-060) Memory Garbage Collector¸¦ UnblockÇÑ´Ù.
+   (c-050) Memory Garbage Collectorë¥¼ Blockí•œë‹¤. // Agerì™€ ê²½í•©
+   (c-060) Memory Garbage Collectorë¥¼ Unblockí•œë‹¤.
   
    (c-070) close all Checkpoint Image Files
    
-   # (ÁÖ1)
+   # (ì£¼1)
    # DROP TABLESPACE INCLUDING CONTENTS 
    # AND CHECKPOINT IMAGES
    if DropCheckpointImages then
    (c-080) delete Checkpoint Image Files
    fi
    
-   (c-090) LockÁ¤º¸(STATE´Ü°è) Á¦¿ÜÇÑ ¸ğµç °´Ã¼ ÆÄ±«, ¸Ş¸ğ¸® ¹İ³³
+   (c-090) Lockì •ë³´(STATEë‹¨ê³„) ì œì™¸í•œ ëª¨ë“  ê°ì²´ íŒŒê´´, ë©”ëª¨ë¦¬ ë°˜ë‚©
 
              
-   (c-100) RuntimeÁ¤º¸ °»½Å => TablespaceÀÇ ¼ö Counting 
+   (c-100) Runtimeì •ë³´ ê°±ì‹  => Tablespaceì˜ ìˆ˜ Counting 
 
 
--(ÁÖ1) : Checkpoint Image´Â Áö¿öÁö¸é ´Ù½Ã ¿øº¹ÀÌ ºÒ°¡ÇÏ¹Ç·Î
-         Commit½Ã PendingÃ³¸®ÇÑ´Ù.
+-(ì£¼1) : Checkpoint ImageëŠ” ì§€ì›Œì§€ë©´ ë‹¤ì‹œ ì›ë³µì´ ë¶ˆê°€í•˜ë¯€ë¡œ
+         Commitì‹œ Pendingì²˜ë¦¬í•œë‹¤.
          
--(ÁÖ2) : TBSNodeÀÇ Status¸¦ Dropped·Î ÇÏ¿© Log Anchor¿¡ ³»¸°´Ù.
-         - Normal Processing½Ã checkpoint´Â 
-           DropµÈ TBSÀÇ Page¸¦ FlushÇÏÁö ¾Ê´Â´Ù.
-         - Restart Recovery½Ã DropµÈ TBS¾ÈÀÇ Page¿¡ Redo/Undo¸¦ ¹«½ÃÇÑ´Ù.
+-(ì£¼2) : TBSNodeì˜ Statusë¥¼ Droppedë¡œ í•˜ì—¬ Log Anchorì— ë‚´ë¦°ë‹¤.
+         - Normal Processingì‹œ checkpointëŠ” 
+           Dropëœ TBSì˜ Pageë¥¼ Flushí•˜ì§€ ì•ŠëŠ”ë‹¤.
+         - Restart Recoveryì‹œ Dropëœ TBSì•ˆì˜ Pageì— Redo/Undoë¥¼ ë¬´ì‹œí•œë‹¤.
          
--(ÁÖ3) : Checkpoint Image File Node¿Í Checkpoint Path NodeÀÇ °æ¿ì
-         Log Anchor¿¡ ±×´ë·Î ³²¾ÆÀÖ°Ô µÈ´Ù.
-         Server±âµ¿ÈÄ TablespaceÀÇ »óÅÂ°¡ DROPPEDÀÌ¸é
-         ·Î±×¾ŞÄ¿¾È¿¡ Á¸ÀçÇÏ´Â Checkpoint Image File Node¿Í
-         Checkpoint Path Node¸¦ ¸ğµÎ ¹«½ÃÇÑ´Ù.
+-(ì£¼3) : Checkpoint Image File Nodeì™€ Checkpoint Path Nodeì˜ ê²½ìš°
+         Log Anchorì— ê·¸ëŒ€ë¡œ ë‚¨ì•„ìˆê²Œ ëœë‹¤.
+         Serverê¸°ë™í›„ Tablespaceì˜ ìƒíƒœê°€ DROPPEDì´ë©´
+         ë¡œê·¸ì•µì»¤ì•ˆì— ì¡´ì¬í•˜ëŠ” Checkpoint Image File Nodeì™€
+         Checkpoint Path Nodeë¥¼ ëª¨ë‘ ë¬´ì‹œí•œë‹¤.
          
 */
 
@@ -259,13 +259,13 @@ IDE_RC smmTBSDrop::doDropTableSpace( sctTableSpaceNode * aTBSNode,
     idBool                      sPageCountLocked = ID_FALSE;
     
 
-    // ¿©±â µé¾î¿À´Â Tablespace´Â Ç×»ó Memory Tablespace¿©¾ß ÇÑ´Ù.
+    // ì—¬ê¸° ë“¤ì–´ì˜¤ëŠ” TablespaceëŠ” í•­ìƒ Memory Tablespaceì—¬ì•¼ í•œë‹¤.
     IDE_ASSERT( sctTableSpaceMgr::isMemTableSpace( aTBSNode->mID )
                 == ID_TRUE );
     
 
-    // Checkpoint Thread°¡ ÀÌ Tablespace¿¡ ´ëÇØ CheckpointÇÏÁö ¾Êµµ·Ï
-    // ÇÏ±â À§ÇØ FLAG¸¦ ¼³Á¤ÇÑ´Ù.
+    // Checkpoint Threadê°€ ì´ Tablespaceì— ëŒ€í•´ Checkpointí•˜ì§€ ì•Šë„ë¡
+    // í•˜ê¸° ìœ„í•´ FLAGë¥¼ ì„¤ì •í•œë‹¤.
     IDE_TEST( smmTBSDrop::flushTBSStatus(
                   aTBSNode,
                   aTBSNode->mState | SMI_TBS_DROP_PENDING )
@@ -276,16 +276,16 @@ IDE_RC smmTBSDrop::doDropTableSpace( sctTableSpaceNode * aTBSNode,
     // - latch TBSNode.SyncMutex 
     // - unlatch TBSNode.SyncMutex
     //
-    // ÇöÀç Checkpoint°¡ Dirty Page Flush¸¦ ÇÏ°í ÀÖ´Ù¸é TBSNode.SyncMutex
-    // ¸¦ Àâ°í ÀÖÀ» °ÍÀÌ´Ù. 
-    // ==> Mutex¸¦ Àâ¾Ò´Ù°¡ Ç®¾î¼­ Dirty Page Flush°¡ Á¾·áµÇ±â¸¦ ±â´Ù¸°´Ù.
+    // í˜„ì¬ Checkpointê°€ Dirty Page Flushë¥¼ í•˜ê³  ìˆë‹¤ë©´ TBSNode.SyncMutex
+    // ë¥¼ ì¡ê³  ìˆì„ ê²ƒì´ë‹¤. 
+    // ==> Mutexë¥¼ ì¡ì•˜ë‹¤ê°€ í’€ì–´ì„œ Dirty Page Flushê°€ ì¢…ë£Œë˜ê¸°ë¥¼ ê¸°ë‹¤ë¦°ë‹¤.
     //
-    // unlatchÈÄ Checkpoint°¡ ¹ß»ıÇÏ¸é TBSNodeÀÇ »óÅÂ°¡
+    // unlatchí›„ Checkpointê°€ ë°œìƒí•˜ë©´ TBSNodeì˜ ìƒíƒœê°€
     // EXECUTING_DROP_PENDING
-    // Dirty Page Flush¸¦ ½Ç½ÃÇÏÁö ¾Ê°í SkipÇÏ°Ô µÈ´Ù.
+    // Dirty Page Flushë¥¼ ì‹¤ì‹œí•˜ì§€ ì•Šê³  Skipí•˜ê²Œ ëœë‹¤.
     //
-    // ( À§ÀÇ »çÇ×ÀÌ Checkpoint Image Header¸¦ º¯°æÇÏ´Â
-    //   ´ÙÀ½ ÄÚµå¿¡µµ ¶È°°ÀÌ Àû¿ëµÈ´Ù.
+    // ( ìœ„ì˜ ì‚¬í•­ì´ Checkpoint Image Headerë¥¼ ë³€ê²½í•˜ëŠ”
+    //   ë‹¤ìŒ ì½”ë“œì—ë„ ë˜‘ê°™ì´ ì ìš©ëœë‹¤.
     //   smmTBSMediaRecovery::doActUpdateAllDBFileHdr )
     IDE_TEST( sctTableSpaceMgr::latchSyncMutex( aTBSNode )
               != IDE_SUCCESS );
@@ -294,53 +294,53 @@ IDE_RC smmTBSDrop::doDropTableSpace( sctTableSpaceNode * aTBSNode,
               != IDE_SUCCESS );
 
     /////////////////////////////////////////////////////////////////////
-    // - Memory Garbage Collector¸¦ BlockÇÑ´Ù.
-    // - Memory Garbage Collector¸¦ UnblockÇÑ´Ù.
+    // - Memory Garbage Collectorë¥¼ Blockí•œë‹¤.
+    // - Memory Garbage Collectorë¥¼ Unblockí•œë‹¤.
     //
-    // ÇöÀç Ager°¡ ¼öÇàÁßÀÌ¶ó¸é blockMemGC¿¡¼­ AgerÀÇ ¼öÇàÀÌ ¿Ï·áµÇ±â¸¦
-    // ±â´Ù¸¦ °ÍÀÌ´Ù.
+    // í˜„ì¬ Agerê°€ ìˆ˜í–‰ì¤‘ì´ë¼ë©´ blockMemGCì—ì„œ Agerì˜ ìˆ˜í–‰ì´ ì™„ë£Œë˜ê¸°ë¥¼
+    // ê¸°ë‹¤ë¥¼ ê²ƒì´ë‹¤.
     //
-    // ==> Mutex¸¦ Àâ¾Ò´Ù°¡ Ç®¾î¼­ Ager°¡ ÇÑ¹ø ´Ù µ¹¶§±îÁö ±â´Ù¸°´Ù.
+    // ==> Mutexë¥¼ ì¡ì•˜ë‹¤ê°€ í’€ì–´ì„œ Agerê°€ í•œë²ˆ ë‹¤ ëŒë•Œê¹Œì§€ ê¸°ë‹¤ë¦°ë‹¤.
     //
-    // unblockÈÄ Ager°¡ ¼öÇàµÇ¸é ÇÏ¸é TBSNodeÀÇ »óÅÂ°¡ DROPPED¿©¼­
-    // AgingÀ» ½Ç½ÃÇÏÁö ¾Ê°í SkipÇÏ°Ô µÈ´Ù.
+    // unblockí›„ Agerê°€ ìˆ˜í–‰ë˜ë©´ í•˜ë©´ TBSNodeì˜ ìƒíƒœê°€ DROPPEDì—¬ì„œ
+    // Agingì„ ì‹¤ì‹œí•˜ì§€ ì•Šê³  Skipí•˜ê²Œ ëœë‹¤.
 
-    // METAÀÌÀü ´Ü°è¿¡¼­´Â AGER°¡ ÃÊ±âÈ­Á¶Â÷ µÇ¾îÀÖÁö ¾ÊÀº »óÅÂÀÌ´Ù
-    // AGER°¡ ÃÊ±âÈ­µÇ¾ú´ÂÁö È®ÀÎÈÄ BLOCK/UNBLOCKÇÑ´Ù.
+    // METAì´ì „ ë‹¨ê³„ì—ì„œëŠ” AGERê°€ ì´ˆê¸°í™”ì¡°ì°¨ ë˜ì–´ìˆì§€ ì•Šì€ ìƒíƒœì´ë‹¤
+    // AGERê°€ ì´ˆê¸°í™”ë˜ì—ˆëŠ”ì§€ í™•ì¸í›„ BLOCK/UNBLOCKí•œë‹¤.
     
     // BUG-32237 Free lock node when dropping table.
     //
-    // DropTablespacePending ¿¬»ê¿¡¼­´Â Ager¸¦ Àá½Ã blockÇß´Ù°¡ UnlockÀ» ÇÕ´Ï´Ù.
-    // ÀÌ´Â AgerÂÊ¿¡¼­ Tablespace°¡ Drop ¾ÈµÆ´Ù°í »ı°¢ÇÏ°í ÀÛ¾÷À» ÇÏ´Â °ÍÀ»
-    // ¹æÁöÇÏ±â À§ÇÔÀÔ´Ï´Ù.
+    // DropTablespacePending ì—°ì‚°ì—ì„œëŠ” Agerë¥¼ ì ì‹œ blockí–ˆë‹¤ê°€ Unlockì„ í•©ë‹ˆë‹¤.
+    // ì´ëŠ” Agerìª½ì—ì„œ Tablespaceê°€ Drop ì•ˆëë‹¤ê³  ìƒê°í•˜ê³  ì‘ì—…ì„ í•˜ëŠ” ê²ƒì„
+    // ë°©ì§€í•˜ê¸° ìœ„í•¨ì…ë‹ˆë‹¤.
     //  
-    // ±×·±µ¥ ÀÌ ·ÎÁ÷ÀÌ ¾ø¾îµµ, ÇöÀç ÀÌ¹Ì DropTable ¿¬»ê°ú Aging°ú °ü·ÃµÈ
-    // µ¿½Ã¼º Ã³¸® ·ÎÁ÷ÀÌ ÀÖ½À´Ï´Ù.
+    // ê·¸ëŸ°ë° ì´ ë¡œì§ì´ ì—†ì–´ë„, í˜„ì¬ ì´ë¯¸ DropTable ì—°ì‚°ê³¼ Agingê³¼ ê´€ë ¨ëœ
+    // ë™ì‹œì„± ì²˜ë¦¬ ë¡œì§ì´ ìˆìŠµë‹ˆë‹¤.
     //   
-    // ±×°ÍÀº smaDeleteThread::waitForNoAccessAftDropTbl ÇÔ¼öÀÔ´Ï´Ù.
-    // ÀÌ°ÍÀº DropTablespacePending¿¬»ê¿¡ ÀÖ´Â Ager Block ¿¬»ê°ú µ¿ÀÏÇÑ
-    // ¿ªÇÒÀÔ´Ï´Ù. Áï ½ÇÁ¦·Î DropÇÏ±â Àü¿¡ ager¿ÍÀÇ µ¿½Ã¼ºÀ» Á¦¾îÇØÁÖ´Â ¿ªÇÒÀ»
-    // ÇÕ´Ï´Ù.
+    // ê·¸ê²ƒì€ smaDeleteThread::waitForNoAccessAftDropTbl í•¨ìˆ˜ì…ë‹ˆë‹¤.
+    // ì´ê²ƒì€ DropTablespacePendingì—°ì‚°ì— ìˆëŠ” Ager Block ì—°ì‚°ê³¼ ë™ì¼í•œ
+    // ì—­í• ì…ë‹ˆë‹¤. ì¦‰ ì‹¤ì œë¡œ Dropí•˜ê¸° ì „ì— agerì™€ì˜ ë™ì‹œì„±ì„ ì œì–´í•´ì£¼ëŠ” ì—­í• ì„
+    // í•©ë‹ˆë‹¤.
     //    
-    // Áï ´ÙÀ½°ú °°ÀÌ ¼öÇàµË´Ï´Ù.
+    // ì¦‰ ë‹¤ìŒê³¼ ê°™ì´ ìˆ˜í–‰ë©ë‹ˆë‹¤.
     // a. Tx.commit
-    // b. Tx.ProcessOIDList => TableHeader¿¡ DeleteSCN ¼³Á¤
+    // b. Tx.ProcessOIDList => TableHeaderì— DeleteSCN ì„¤ì •
     // c. waitForNoAccessAftDropTbl
     // d. DropTablePending
     // e. Tx.End
     //     
-    // b, c¹øÀÇ ¼ø¼­ ¶§¹®¿¡ Ager°¡ TableÀÌ DropµÇ¾ú´Ù´Â °ÍÀ» È®ÀÎ ¸øÇÏ°í
-    // Row¸¦ AgingÇÏ·Á´Âµ¥ DropTablePending¿¡ ÀÇÇØ Page°¡ ³¯¶ó°¡´Â ÀÏÀº
-    // ¾ø½À´Ï´Ù.
+    // b, cë²ˆì˜ ìˆœì„œ ë•Œë¬¸ì— Agerê°€ Tableì´ Dropë˜ì—ˆë‹¤ëŠ” ê²ƒì„ í™•ì¸ ëª»í•˜ê³ 
+    // Rowë¥¼ Agingí•˜ë ¤ëŠ”ë° DropTablePendingì— ì˜í•´ Pageê°€ ë‚ ë¼ê°€ëŠ” ì¼ì€
+    // ì—†ìŠµë‹ˆë‹¤.
     //  
-    // 1) TableÀÌ DropµÇ¾ú´Ù´Â °ÍÀ» Ager°¡ ºÃÀ» °æ¿ì => ¹®Á¦ ¾ø½À´Ï´Ù.
-    // 2) TableÀÌ DropµÇ¾ú´Ù´Â °ÍÀ» Ager°¡ ¸øºÃÀ» °æ¿ì => TransactionÀÌ c¹ø
-    // °úÁ¤À» ÅëÇØ ´ë±âÇÕ´Ï´Ù. 
+    // 1) Tableì´ Dropë˜ì—ˆë‹¤ëŠ” ê²ƒì„ Agerê°€ ë´¤ì„ ê²½ìš° => ë¬¸ì œ ì—†ìŠµë‹ˆë‹¤.
+    // 2) Tableì´ Dropë˜ì—ˆë‹¤ëŠ” ê²ƒì„ Agerê°€ ëª»ë´¤ì„ ê²½ìš° => Transactionì´ cë²ˆ
+    // ê³¼ì •ì„ í†µí•´ ëŒ€ê¸°í•©ë‹ˆë‹¤. 
     //  
-    // ¶ÇÇÑ e¹ø, Tx.End°¡ µÇ¾î¾ß¸¸ Ager°¡ ÇØ´ç Transactionµµ AgingÇÏ±â
-    // ¶§¹®¿¡, DropTablePendingÀÇ ÈÄ¼ÓÀÛ¾÷ÀÎ LockItemÀ» Áö¿ì´Â ÀÛ¾÷ÀÌ
-    // ¸ÕÀúµÉ ±î´ßµµ ¾ø½À´Ï´Ù.
-    // À§¿Í °°ÀÌ µÇ±â ¶§¹®ÀÔ´Ï´Ù.
+    // ë˜í•œ eë²ˆ, Tx.Endê°€ ë˜ì–´ì•¼ë§Œ Agerê°€ í•´ë‹¹ Transactionë„ Agingí•˜ê¸°
+    // ë•Œë¬¸ì—, DropTablePendingì˜ í›„ì†ì‘ì—…ì¸ LockItemì„ ì§€ìš°ëŠ” ì‘ì—…ì´
+    // ë¨¼ì €ë  ê¹Œë‹­ë„ ì—†ìŠµë‹ˆë‹¤.
+    // ìœ„ì™€ ê°™ì´ ë˜ê¸° ë•Œë¬¸ì…ë‹ˆë‹¤.
     
     
 
@@ -351,18 +351,18 @@ IDE_RC smmTBSDrop::doDropTableSpace( sctTableSpaceNode * aTBSNode,
                     (smmTBSNode *) aTBSNode,
                     ( (aTouchMode == SMI_ALL_TOUCH ) ?
                       ID_TRUE /* REMOVE */ :
-                      ID_FALSE /* »èÁ¦¾ÈÇÔ */ ) )
+                      ID_FALSE /* ì‚­ì œì•ˆí•¨ */ ) )
                 != IDE_SUCCESS );
 
 
 
     // To Fix BUG-17267
-    //    Tablespace DropµµÁß Dirty Page°¡ Á¸ÀçÇÏ¿© ¼­¹ö»ç¸Á
-    // => ¹®Á¦ : finiToStatePhase¿¡¼­ PCH Entry¸¦ destroyÇÏ´Âµ¥,
-    //            PageÀÇ Dirty StatÀÌ SMM_PCH_DIRTY_STAT_INIT°¡
-    //            ¾Æ´Ï¾î¼­ »ç¸Á 
-    // => ÇØ°á : Drop Tablespace½Ã ¸ğµç Page¿¡ ´ëÇØ PCHÀÇ Dirty StatÀ» 
-    //            SMM_PCH_DIRTY_STAT_INITÀ¸·Î ¼³Á¤ÇÑ´Ù.
+    //    Tablespace Dropë„ì¤‘ Dirty Pageê°€ ì¡´ì¬í•˜ì—¬ ì„œë²„ì‚¬ë§
+    // => ë¬¸ì œ : finiToStatePhaseì—ì„œ PCH Entryë¥¼ destroyí•˜ëŠ”ë°,
+    //            Pageì˜ Dirty Statì´ SMM_PCH_DIRTY_STAT_INITê°€
+    //            ì•„ë‹ˆì–´ì„œ ì‚¬ë§ 
+    // => í•´ê²° : Drop Tablespaceì‹œ ëª¨ë“  Pageì— ëŒ€í•´ PCHì˜ Dirty Statì„ 
+    //            SMM_PCH_DIRTY_STAT_INITìœ¼ë¡œ ì„¤ì •í•œë‹¤.
     if ( sctTableSpaceMgr::isStateInSet( aTBSNode->mState,
                                          SCT_SS_NEED_PAGE_PHASE )
          == ID_TRUE )
@@ -372,16 +372,16 @@ IDE_RC smmTBSDrop::doDropTableSpace( sctTableSpaceNode * aTBSNode,
     }
 
 
-    // ChunkÈ®Àå½Ã ¸ğµç TablespaceÀÇ Total Page Count¸¦ ¼¼´Âµ¥
-    // ÀÌ ¿ÍÁß¿¡ Page´Ü°è¸¦ ³»·Á¼­´Â ¾ÈµÈ´Ù.
-    // ÀÌÀ¯ : Total Page Count¸¦ ¼¼´Â smpTBSAlterOnOff::alterTBSonline°¡
-    //         µé¾îÀÖ´Â Alloc Page Count¸¦ ¾ò±âÀ§ÇØ Membase¸¦ Á¢±ÙÇÑ´Ù.
-    //         ±×·±µ¥, Membase´Â Page´Ü°è¸¦ ³»¸®¸é¼­ NULL·Î º¯ÇÑ´Ù.
+    // Chunkí™•ì¥ì‹œ ëª¨ë“  Tablespaceì˜ Total Page Countë¥¼ ì„¸ëŠ”ë°
+    // ì´ ì™€ì¤‘ì— Pageë‹¨ê³„ë¥¼ ë‚´ë ¤ì„œëŠ” ì•ˆëœë‹¤.
+    // ì´ìœ  : Total Page Countë¥¼ ì„¸ëŠ” smpTBSAlterOnOff::alterTBSonlineê°€
+    //         ë“¤ì–´ìˆëŠ” Alloc Page Countë¥¼ ì–»ê¸°ìœ„í•´ Membaseë¥¼ ì ‘ê·¼í•œë‹¤.
+    //         ê·¸ëŸ°ë°, MembaseëŠ” Pageë‹¨ê³„ë¥¼ ë‚´ë¦¬ë©´ì„œ NULLë¡œ ë³€í•œë‹¤.
     IDE_TEST( smmFPLManager::lockGlobalPageCountCheckMutex() != IDE_SUCCESS );
     sPageCountLocked = ID_TRUE;
     
     /////////////////////////////////////////////////////////////////
-    // LockÁ¤º¸(STATE´Ü°è) Á¦¿ÜÇÑ ¸ğµç °´Ã¼ ÆÄ±«, ¸Ş¸ğ¸® ¹İ³³
+    // Lockì •ë³´(STATEë‹¨ê³„) ì œì™¸í•œ ëª¨ë“  ê°ì²´ íŒŒê´´, ë©”ëª¨ë¦¬ ë°˜ë‚©
     IDE_TEST( smmTBSMultiPhase::finiToStatePhase( (smmTBSNode*) aTBSNode  )
               != IDE_SUCCESS );
 
@@ -390,13 +390,13 @@ IDE_RC smmTBSDrop::doDropTableSpace( sctTableSpaceNode * aTBSNode,
     IDE_TEST( smmFPLManager::unlockGlobalPageCountCheckMutex() != IDE_SUCCESS );
     
     
-    // To Fix BUG-17258     [PROJ-1548-test] Drop TablespaceµµÁß »ç¸ÁÇÒ °æ¿ì
-    //                      Checkpoint Image¸¦ Á¦°ÅÇÏÁö ¾ÊÀ» ¼ö ÀÖÀ½
+    // To Fix BUG-17258     [PROJ-1548-test] Drop Tablespaceë„ì¤‘ ì‚¬ë§í•  ê²½ìš°
+    //                      Checkpoint Imageë¥¼ ì œê±°í•˜ì§€ ì•Šì„ ìˆ˜ ìˆìŒ
     //
-    // => Checkpoint ImageÁ¦°Å ÈÄ¿¡ Tablespace»óÅÂ¸¦ DROPPED·Î ¼³Á¤ÇÑ´Ù.
+    // => Checkpoint Imageì œê±° í›„ì— Tablespaceìƒíƒœë¥¼ DROPPEDë¡œ ì„¤ì •í•œë‹¤.
     /////////////////////////////////////////////////////////////////////
     // - TBSNode.Status := Dropped
-    // - flush TBSNode  (ÁÖ2)
+    // - flush TBSNode  (ì£¼2)
     IDE_TEST( flushTBSStatusDropped(aTBSNode) != IDE_SUCCESS );
 
     
@@ -414,7 +414,7 @@ IDE_RC smmTBSDrop::doDropTableSpace( sctTableSpaceNode * aTBSNode,
 }
 
 /*
-    TablespaceÀÇ »óÅÂ¸¦ DROPPED·Î ¼³Á¤ÇÏ°í Log Anchor¿¡ Flush!
+    Tablespaceì˜ ìƒíƒœë¥¼ DROPPEDë¡œ ì„¤ì •í•˜ê³  Log Anchorì— Flush!
  */
 IDE_RC smmTBSDrop::flushTBSStatusDropped( sctTableSpaceNode * aSpaceNode )
 {
@@ -433,39 +433,39 @@ IDE_RC smmTBSDrop::flushTBSStatusDropped( sctTableSpaceNode * aSpaceNode )
 
 
 /*
-    TablespaceÀÇ »óÅÂ¸¦ º¯°æÇÏ°í Log Anchor¿¡ FlushÇÑ´Ù.
+    Tablespaceì˜ ìƒíƒœë¥¼ ë³€ê²½í•˜ê³  Log Anchorì— Flushí•œë‹¤.
     
-    aSpaceNode     [IN] TablespaceÀÇ Node
-    aNewSpaceState [IN] TablespaceÀÇ »õ·Î¿î »óÅÂ
+    aSpaceNode     [IN] Tablespaceì˜ Node
+    aNewSpaceState [IN] Tablespaceì˜ ìƒˆë¡œìš´ ìƒíƒœ
     
-    [¾Ë°í¸®Áò]
+    [ì•Œê³ ë¦¬ì¦˜]
      (010) latch TableSpace Manager
-     (020) TBSNode.Status := »õ·Î¿î »óÅÂ
+     (020) TBSNode.Status := ìƒˆë¡œìš´ ìƒíƒœ
      (030) flush TBSNode 
      (040) unlatch TableSpace Manager
 
-   [ Âü°í ]
-     º» ÇÔ¼ö´Â DROP TABLESPACEÀÇ Commit Pending¿¡¼­ È£ÃâµÈ´Ù.
-     Commit PendingÇÔ¼ö´Â ½ÇÆĞÇØ¼­´Â ¾ÈµÇ±â ¶§¹®¿¡
-     ºü¸¥ ¿¡·¯ Detect¸¦ À§ÇØ IDE_ASSERT·Î ¿¡·¯Ã³¸®¸¦ ½Ç½ÃÇÏ¿´´Ù.
+   [ ì°¸ê³  ]
+     ë³¸ í•¨ìˆ˜ëŠ” DROP TABLESPACEì˜ Commit Pendingì—ì„œ í˜¸ì¶œëœë‹¤.
+     Commit Pendingí•¨ìˆ˜ëŠ” ì‹¤íŒ¨í•´ì„œëŠ” ì•ˆë˜ê¸° ë•Œë¬¸ì—
+     ë¹ ë¥¸ ì—ëŸ¬ Detectë¥¼ ìœ„í•´ IDE_ASSERTë¡œ ì—ëŸ¬ì²˜ë¦¬ë¥¼ ì‹¤ì‹œí•˜ì˜€ë‹¤.
  */
 IDE_RC smmTBSDrop::flushTBSStatus( sctTableSpaceNode * aSpaceNode,
                                    UInt                aNewSpaceState)
 {
     /////////////////////////////////////////////////////////////////////
     // (010) latch TableSpace Manager
-    //       ´Ù¸¥ Tablespace°¡ º¯°æµÇ´Â °ÍÀ» BlockÇÏ±â À§ÇÔ
-    //       ÇÑ¹ø¿¡ ÇÏ³ªÀÇ Tablespace¸¸ º¯°æ/FlushÇÑ´Ù.
+    //       ë‹¤ë¥¸ Tablespaceê°€ ë³€ê²½ë˜ëŠ” ê²ƒì„ Blockí•˜ê¸° ìœ„í•¨
+    //       í•œë²ˆì— í•˜ë‚˜ì˜ Tablespaceë§Œ ë³€ê²½/Flushí•œë‹¤.
     IDE_ASSERT ( sctTableSpaceMgr::lock(NULL) == IDE_SUCCESS );
     
     /////////////////////////////////////////////////////////////////////
-    // (020) TBSNode.Status := »õ·Î¿î »óÅÂ
+    // (020) TBSNode.Status := ìƒˆë¡œìš´ ìƒíƒœ
     aSpaceNode->mState = aNewSpaceState;
     
     /////////////////////////////////////////////////////////////////////
-    // (c-030) flush TBSNode  (ÁÖ2)
+    // (c-030) flush TBSNode  (ì£¼2)
     /* PROJ-2386 DR
-     * standby ¿¡¼­µµ active¿Í µ¿ÀÏÇÑ ½ÃÁ¡¿¡ loganchor¸¦ ³²±ä´Ù. */
+     * standby ì—ì„œë„ activeì™€ ë™ì¼í•œ ì‹œì ì— loganchorë¥¼ ë‚¨ê¸´ë‹¤. */
     IDE_ASSERT( smLayerCallback::updateTBSNodeAndFlush( aSpaceNode ) 
                 == IDE_SUCCESS );
 

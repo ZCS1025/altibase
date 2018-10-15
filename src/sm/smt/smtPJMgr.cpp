@@ -54,7 +54,7 @@ IDE_RC smtPJMgr::initialize(SInt         aChildCount,
                                IDU_MUTEX_KIND_POSIX,
                                IDV_WAIT_INDEX_NULL) != IDE_SUCCESS);
 
-    for (i = 0; i < aChildCount; i++) // client ÃÊ±âÈ­
+    for (i = 0; i < aChildCount; i++) // client ì´ˆê¸°í™”
     {
         IDE_TEST(aChildArray[i]->initialize(this,
                                             i) != IDE_SUCCESS);
@@ -96,9 +96,9 @@ void smtPJMgr::run()
 
     for (i = 0; i <  mChildCount; i++)
     {
-        /* BUG-40933 thread ÇÑ°è»óÈ²¿¡¼­ FATAL¿¡·¯ ³»Áö ¾Êµµ·Ï ¼öÁ¤
-         * smtPJMgrÀÇ °æ¿ì¿¡´Â mChildCount¿¡ ´ëÇÑ ÂüÁ¶°¡ smtPJChild::run¿¡¼­ ¾øÀ¸¹Ç·Î
-         * »ý¼ºµÈ thread¸¸À¸·Î ÁøÇàÇÏ´Â °ÍÀÌ °¡´ÉÇÏ´Ù. */
+        /* BUG-40933 thread í•œê³„ìƒí™©ì—ì„œ FATALì—ëŸ¬ ë‚´ì§€ ì•Šë„ë¡ ìˆ˜ì •
+         * smtPJMgrì˜ ê²½ìš°ì—ëŠ” mChildCountì— ëŒ€í•œ ì°¸ì¡°ê°€ smtPJChild::runì—ì„œ ì—†ìœ¼ë¯€ë¡œ
+         * ìƒì„±ëœ threadë§Œìœ¼ë¡œ ì§„í–‰í•˜ëŠ” ê²ƒì´ ê°€ëŠ¥í•˜ë‹¤. */
         if( mChildArray[i]->start() != IDE_SUCCESS )
         {
             ideLog::log( SM_TRC_LOG_LEVEL_THREAD,
@@ -113,13 +113,13 @@ void smtPJMgr::run()
     
     IDE_TEST(unlock() != IDE_SUCCESS);
 
-    /* BUG-40933 thread ÇÑ°è»óÈ²¿¡¼­ FATAL¿¡·¯ ³»Áö ¾Êµµ·Ï ¼öÁ¤
-     * thread°¡ ÇÏ³ªµµ »ý¼ºµÇÁö ¸øÇÑ °æ¿ì¿¡´Â ABORTÇÏµµ·Ï ÇÑ´Ù. */
+    /* BUG-40933 thread í•œê³„ìƒí™©ì—ì„œ FATALì—ëŸ¬ ë‚´ì§€ ì•Šë„ë¡ ìˆ˜ì •
+     * threadê°€ í•˜ë‚˜ë„ ìƒì„±ë˜ì§€ ëª»í•œ ê²½ìš°ì—ëŠ” ABORTí•˜ë„ë¡ í•œë‹¤. */
     IDE_TEST(sChildCount == 0);
 
     
     /* ------------------------------------------------
-     * ¸ðµç ÀÛ¾÷À» ³¡³¯¶§ ±îÁö ´ë±â
+     * ëª¨ë“  ìž‘ì—…ì„ ëë‚ ë•Œ ê¹Œì§€ ëŒ€ê¸°
      * ----------------------------------------------*/
         
     while(ID_TRUE)
@@ -133,7 +133,7 @@ void smtPJMgr::run()
                 sDeadSum++;
             }
         }
-        if (sDeadSum == sChildCount) // ¸ðµÎ°¡ Á¾·áÇÑ »óÅÂÀÓ
+        if (sDeadSum == sChildCount) // ëª¨ë‘ê°€ ì¢…ë£Œí•œ ìƒíƒœìž„
         {
             break;
         }
@@ -159,8 +159,8 @@ void smtPJMgr::run()
     {
         if(mIgnoreError == ID_FALSE)
         {
-            /* BUG-40933 thread ÇÑ°è»óÈ²¿¡¼­ FATAL¿¡·¯ ³»Áö ¾Êµµ·Ï ¼öÁ¤
-             * thread°¡ ÇÏ³ªµµ »ý¼ºµÇÁö ¸øÇÑ °æ¿ì¿¡´Â FATALÀÌ ¾Æ´Ñ ABORT¿¡·¯¸¦ ³»µµ·Ï ÇÑ´Ù. */
+            /* BUG-40933 thread í•œê³„ìƒí™©ì—ì„œ FATALì—ëŸ¬ ë‚´ì§€ ì•Šë„ë¡ ìˆ˜ì •
+             * threadê°€ í•˜ë‚˜ë„ ìƒì„±ë˜ì§€ ëª»í•œ ê²½ìš°ì—ëŠ” FATALì´ ì•„ë‹Œ ABORTì—ëŸ¬ë¥¼ ë‚´ë„ë¡ í•œë‹¤. */
             if(sChildCount != 0)
             {
                 IDE_CALLBACK_FATAL("error");

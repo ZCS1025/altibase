@@ -51,7 +51,7 @@ static IDE_RC mtfGreatestEstimate( mtcNode*     aNode,
 mtfModule mtfGreatest = {
     1|MTC_NODE_OPERATOR_FUNCTION,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
+    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìê°€ ì•„ë‹˜)
     mtfGreatestFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -121,8 +121,8 @@ IDE_RC mtfGreatestEstimate( mtcNode*     aNode,
     else if( sGroups[MTD_GROUP_TEXT] != 0 )
     {
         /* BUG-34341 
-         * ÀÎÀÚ¿¡ NCHAR/NVARCHAR°¡ ÇÏ³ª¶óµµ ÀÖ´Ù¸é,
-         * NVARCHAR Å¸ÀÔÀ¸·Î ¸®ÅÏÇÑ´Ù. */
+         * ì¸ìì— NCHAR/NVARCHARê°€ í•˜ë‚˜ë¼ë„ ìˆë‹¤ë©´,
+         * NVARCHAR íƒ€ì…ìœ¼ë¡œ ë¦¬í„´í•œë‹¤. */
 
         for ( sCount = 1 ; sCount <= sFence ; sCount ++ )
         {
@@ -182,7 +182,7 @@ IDE_RC mtfGreatestEstimate( mtcNode*     aNode,
     }
 
     // BUG-23102
-    // mtcColumnÀ¸·Î ÃÊ±âÈ­ÇÑ´Ù.
+    // mtcColumnìœ¼ë¡œ ì´ˆê¸°í™”í•œë‹¤.
     mtc::initializeColumn( aStack[0].column, aStack[1].column );
     for( sCount = 2; sCount <= sFence; sCount++ )
     {

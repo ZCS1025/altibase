@@ -19,7 +19,7 @@ package Altibase.jdbc.driver.logging;
 import java.sql.Connection;
 
 /**
- * java.sql.CallableStatement ÀÎÅÍÆäÀÌ½º¸¦ hookingÇÏ´Â ProxyÅ¬·¡½º
+ * java.sql.CallableStatement ì¸í„°í˜ì´ìŠ¤ë¥¼ hookingí•˜ëŠ” Proxyí´ë˜ìŠ¤
  * 
  * @author yjpark
  *

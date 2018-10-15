@@ -47,8 +47,8 @@ IDE_RC iduVarMemList::destroyStatic( void )
 }
 
 /*
- * ¸Þ¸ð¸® ¸Þ´ÏÀúÀÇ ÃÊ±âÈ­ ÀÛ¾÷À» ¼öÇàÇÑ´Ù.
- * ST ÇÔ¼ö ³»¿¡¼­´Â ÀÌ¹Ì ÃÊ±âÈ­µÈ ¸Þ¸ð¸® ¸Å´ÏÀú¿¡ ´ëÇÑ Æ÷ÀÎÅÍ¸¦ ¾ò¾î¼­ »ç¿ëÇÏ±â ¶§¹®¿¡ ½Å°æ¾µ ÇÊ¿ä°¡ ¾ø´Ù. QP¿¡¼­´Â ÇöÀç aIndexÀÇ °ªÀ¸·Î IDU_MEM_QMT¸¦ »ç¿ëÇÏ°í ÀÖ´Ù.
+ * ë©”ëª¨ë¦¬ ë©”ë‹ˆì €ì˜ ì´ˆê¸°í™” ìž‘ì—…ì„ ìˆ˜í–‰í•œë‹¤.
+ * ST í•¨ìˆ˜ ë‚´ì—ì„œëŠ” ì´ë¯¸ ì´ˆê¸°í™”ëœ ë©”ëª¨ë¦¬ ë§¤ë‹ˆì €ì— ëŒ€í•œ í¬ì¸í„°ë¥¼ ì–»ì–´ì„œ ì‚¬ìš©í•˜ê¸° ë•Œë¬¸ì— ì‹ ê²½ì“¸ í•„ìš”ê°€ ì—†ë‹¤. QPì—ì„œëŠ” í˜„ìž¬ aIndexì˜ ê°’ìœ¼ë¡œ IDU_MEM_QMTë¥¼ ì‚¬ìš©í•˜ê³  ìžˆë‹¤.
  */
 IDE_RC iduVarMemList::init( iduMemoryClientIndex aIndex,
                             ULong                aMaxSize )
@@ -96,9 +96,9 @@ IDE_RC iduVarMemList::init( iduMemoryClientIndex aIndex,
 }
 
 /*
- * ¸Þ¸ð¸® ¸Å´ÏÀúÀÇ »èÁ¦ ÀÛ¾÷À» ¼öÇàÇÑ´Ù.
- * allocÀÌ³ª realloc ÇÔ¼ö¸¦ »ç¿ëÇØ¼­ ÀÌ¹Ì ÇÒ´ç µÇ¾úÁö¸¸ ¾ÆÁ÷ ÇØÁ¦µÇÁö ¾ÊÀº ¸Þ¸ð¸®¿¡ ´ëÇÑ ÇØÁ¦ ÀÛ¾÷ ¹× ³»ºÎÀûÀ¸·Î »ç¿ëµÇ´Â ¸Þ¸ð¸® Ç®¿¡ ´ëÇÑ »èÁ¦ ÀÛ¾÷À» ¼öÇàÇÑ´Ù.
- * ST ÇÔ¼ö ³»¿¡¼­´Â destroy ÇÔ¼ö¸¦ Àý´ë·Î È£ÃâÇØ¼­´Â ¾ÈµÈ´Ù.
+ * ë©”ëª¨ë¦¬ ë§¤ë‹ˆì €ì˜ ì‚­ì œ ìž‘ì—…ì„ ìˆ˜í–‰í•œë‹¤.
+ * allocì´ë‚˜ realloc í•¨ìˆ˜ë¥¼ ì‚¬ìš©í•´ì„œ ì´ë¯¸ í• ë‹¹ ë˜ì—ˆì§€ë§Œ ì•„ì§ í•´ì œë˜ì§€ ì•Šì€ ë©”ëª¨ë¦¬ì— ëŒ€í•œ í•´ì œ ìž‘ì—… ë° ë‚´ë¶€ì ìœ¼ë¡œ ì‚¬ìš©ë˜ëŠ” ë©”ëª¨ë¦¬ í’€ì— ëŒ€í•œ ì‚­ì œ ìž‘ì—…ì„ ìˆ˜í–‰í•œë‹¤.
+ * ST í•¨ìˆ˜ ë‚´ì—ì„œëŠ” destroy í•¨ìˆ˜ë¥¼ ì ˆëŒ€ë¡œ í˜¸ì¶œí•´ì„œëŠ” ì•ˆëœë‹¤.
  */
 IDE_RC iduVarMemList::destroy()
 {
@@ -126,7 +126,7 @@ IDE_RC iduVarMemList::destroy()
 }
 
 /*
- * aSize¿¡ ÁöÁ¤µÈ Å©±â ¸¸Å­ÀÇ ¸Þ¸ð¸® °ø°£À» ÇÒ´çÇÑ´Ù.
+ * aSizeì— ì§€ì •ëœ í¬ê¸° ë§Œí¼ì˜ ë©”ëª¨ë¦¬ ê³µê°„ì„ í• ë‹¹í•œë‹¤.
  */
 IDE_RC iduVarMemList::alloc( ULong aSize, void **aBuffer )
 {
@@ -204,8 +204,8 @@ IDE_RC iduVarMemList::cralloc( ULong aSize, void **aBuffer )
 }
 
 /*
- * ÇÒ´çµÈ ¸Þ¸ð¸® °ø°£À» ÇØÁ¦ÇÑ´Ù.
- * alloc ÇÔ¼ö¸¦ ÅëÇØ¼­ ÇÒ´çµÇÁö ¾ÊÀº Æ÷ÀÎÅÍ¸¦ ³Ñ±â´Â °æ¿ì ASSERT Ã³¸® ÇÑ´Ù.
+ * í• ë‹¹ëœ ë©”ëª¨ë¦¬ ê³µê°„ì„ í•´ì œí•œë‹¤.
+ * alloc í•¨ìˆ˜ë¥¼ í†µí•´ì„œ í• ë‹¹ë˜ì§€ ì•Šì€ í¬ì¸í„°ë¥¼ ë„˜ê¸°ëŠ” ê²½ìš° ASSERT ì²˜ë¦¬ í•œë‹¤.
  */
 IDE_RC iduVarMemList::free( void *aBuffer )
 {
@@ -240,8 +240,8 @@ IDE_RC iduVarMemList::free( void *aBuffer )
 }
 
 /*
- * ÇÒ´çµÈ ¸ðµç ¸Þ¸ð¸®¿¡ ´ëÇÑ ÇØÁ¦ ÀÛ¾÷À» ¼öÇàÇÑ´Ù.
- * ÇÏÁö¸¸ ³»ºÎÀûÀ¸·Î »ç¿ëµÇ´Â ¸Þ¸ð¸® Ç®¿¡ ´ëÇÑ ÇØÁ¦ ÀÛ¾÷Àº ¼öÇàµÇÁö ¾Ê´Â´Ù.
+ * í• ë‹¹ëœ ëª¨ë“  ë©”ëª¨ë¦¬ì— ëŒ€í•œ í•´ì œ ìž‘ì—…ì„ ìˆ˜í–‰í•œë‹¤.
+ * í•˜ì§€ë§Œ ë‚´ë¶€ì ìœ¼ë¡œ ì‚¬ìš©ë˜ëŠ” ë©”ëª¨ë¦¬ í’€ì— ëŒ€í•œ í•´ì œ ìž‘ì—…ì€ ìˆ˜í–‰ë˜ì§€ ì•ŠëŠ”ë‹¤.
  */
 IDE_RC iduVarMemList::freeAll()
 {
@@ -352,7 +352,7 @@ IDE_RC iduVarMemList::setStatus( iduVarMemListStatus *aStatus )
                                     sIterator, 
                                     sNodeNext )
             {
-                // ÀÚ±â ÀÚ½Å¿¡ ´ëÇØ¼­´Â free ÇÏÁö ¾Ê¾Æ¾ß ÇÑ´Ù.
+                // ìžê¸° ìžì‹ ì— ëŒ€í•´ì„œëŠ” free í•˜ì§€ ì•Šì•„ì•¼ í•œë‹¤.
                 if( sIterator == sNodeList )
                 {
                     continue;

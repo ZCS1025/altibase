@@ -23,19 +23,19 @@
 
 #include <aciConv.h>
 
-// PROJ-2590 [±â´É¼º] CP932 database character set Áö¿ø
+// PROJ-2590 [ê¸°ëŠ¥ì„±] CP932 database character set ì§€ì›
 #define ACI_CP932EXT_XOR_VALUE ( 23739 )
 
 ACP_EXTERN_C_BEGIN
 
-// PROJ-2590 [±â´É¼º] CP932 database character set Áö¿ø
+// PROJ-2590 [ê¸°ëŠ¥ì„±] CP932 database character set ì§€ì›
 ACP_EXPORT
 acp_sint32_t aciConvConvertMbToWc4Cp932ext( void         * aSrc,
                                             acp_sint32_t   aSrcRemain,
                                             acp_sint32_t * aSrcAdvance,
                                             void         * aDest );
 
-// PROJ-2590 [±â´É¼º] CP932 database character set Áö¿ø
+// PROJ-2590 [ê¸°ëŠ¥ì„±] CP932 database character set ì§€ì›
 ACP_EXPORT
 acp_sint32_t aciConvConvertWcToMb4Cp932ext( void         * aSrc,
                                             acp_sint32_t * aSrcAdvance,

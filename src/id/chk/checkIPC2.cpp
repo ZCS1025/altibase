@@ -18,7 +18,7 @@
 #define TEST_DOUBLE
 
 /* ------------------------------------------------
- *  ¼¼¸¶ÆÛ Å×½ºÆ®
+ *  ì„¸ë§ˆí¼ í…ŒìŠ¤íŠ¸
  * ----------------------------------------------*/
 #define TEST_SEMA
 //#define TEST_MUTEX
@@ -80,7 +80,7 @@ IDE_RC IPC::initialize(SInt aSemKey, SInt aShmKey)
     mSemID  = idlOS::semget(aSemKey, 2, 0666 | IPC_CREAT/* | IPC_EXCL*/);
     assert(mSemID >= 0);
 
-    // ÃÊ±âÈ­
+    // ì´ˆê¸°í™”
     s_sem_arg.val = 0;
     assert( idlOS::semctl( mSemID, 0, SETVAL, s_sem_arg) == 0);
     assert( idlOS::semctl( mSemID, 1, SETVAL, s_sem_arg) == 0);
@@ -159,7 +159,7 @@ int main()
 
     childPID = idlOS::fork();
 
-    if ( childPID == 0) // mutex¸¦ Àâ°í Á¾·áÇÏ´Â thread
+    if ( childPID == 0) // mutexë¥¼ ìž¡ê³  ì¢…ë£Œí•˜ëŠ” thread
     {
         for (i = 0; i < TEST_COUNT; i++)
         {

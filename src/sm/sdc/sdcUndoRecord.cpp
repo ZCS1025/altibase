@@ -20,12 +20,12 @@
 #include <sdcUndoRecord.h>
 
 /***********************************************************************
- * Description : TableOID ¹ÝÈ¯
+ * Description : TableOID ë°˜í™˜
  *
- * [ ¼³¸í ]
- * Undo ·¹ÄÚµå Çì´õ ´ÙÀ½¿¡ ÀúÀåµÈ TableOID¸¦ ¹ÝÈ¯ÇÑ´Ù.
- * Data RowÀÇ Ã¹¹øÂ° Head Row Piece¿¡ ´ëÇÑ SDC_UNDO_INSERT_ROW_PIECE¿Í
- * SDC_UNDO_DELETE_ROW_PIECE, SDC_UNDO_UPDATE_LOBDESC Å¸ÀÔ¿¡¸¸ ÀúÀåµÈ´Ù.
+ * [ ì„¤ëª… ]
+ * Undo ë ˆì½”ë“œ í—¤ë” ë‹¤ìŒì— ì €ìž¥ëœ TableOIDë¥¼ ë°˜í™˜í•œë‹¤.
+ * Data Rowì˜ ì²«ë²ˆì§¸ Head Row Pieceì— ëŒ€í•œ SDC_UNDO_INSERT_ROW_PIECEì™€
+ * SDC_UNDO_DELETE_ROW_PIECE, SDC_UNDO_UPDATE_LOBDESC íƒ€ìž…ì—ë§Œ ì €ìž¥ëœë‹¤.
  *
  **********************************************************************/
 void sdcUndoRecord::getTableOID( UChar    * aUndoRecHdr,

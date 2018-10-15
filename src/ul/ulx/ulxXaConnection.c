@@ -272,9 +272,9 @@ void ulxConnInitRecover(ulxXaConnection *aConn)
     }
 }
 
-//fix BUG-25597 APRE¿¡¼­ AIXÇÃ·§Æû ÅÎ½Ãµµ ¿¬µ¿¹®Á¦¸¦ ÇØ°áÇØ¾ß ÇÕ´Ï´Ù.
-// APREÀÇ ulConnMgr ÃÊ±âÈ­Àü¿¡ ÀÌ¹Ì »ý¼ºµÈ CLI ÀÇ XA ConnectionµéÀ»
-// LoadingÇÏ´Â ÇÔ¼öÀÌ´Ù.
+//fix BUG-25597 APREì—ì„œ AIXí”Œëž«í¼ í„±ì‹œë„ ì—°ë™ë¬¸ì œë¥¼ í•´ê²°í•´ì•¼ í•©ë‹ˆë‹¤.
+// APREì˜ ulConnMgr ì´ˆê¸°í™”ì „ì— ì´ë¯¸ ìƒì„±ëœ CLI ì˜ XA Connectionë“¤ì„
+// Loadingí•˜ëŠ” í•¨ìˆ˜ì´ë‹¤.
 void  ulxXaRegisterOpenedConnections2APRE()
 {
     ulxXaConnection *sConnHeader;

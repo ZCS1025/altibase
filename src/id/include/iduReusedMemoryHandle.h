@@ -27,24 +27,24 @@
 /*
    Reused Memory Handle : 
 
-   °°Àº ¿µ¿ªÀÇ ¸Ş¸ğ¸®¸¦ ¿©·¯¹ø Àç»ç¿ë°¡´ÉÇÑ °æ¿ì »ç¿ëÇÏ´Â Memory Handle
+   ê°™ì€ ì˜ì—­ì˜ ë©”ëª¨ë¦¬ë¥¼ ì—¬ëŸ¬ë²ˆ ì¬ì‚¬ìš©ê°€ëŠ¥í•œ ê²½ìš° ì‚¬ìš©í•˜ëŠ” Memory Handle
    
-   ¿ëµµ :
-      <prepare¸¦ ÅëÇØ Àü´Ş¹ŞÀº ¸Ş¸ğ¸®¸¦ ÀÏÈ¸¿ëÀ¸·Î »ç¿ëÇÏ´Â °æ¿ì>
+   ìš©ë„ :
+      <prepareë¥¼ í†µí•´ ì „ë‹¬ë°›ì€ ë©”ëª¨ë¦¬ë¥¼ ì¼íšŒìš©ìœ¼ë¡œ ì‚¬ìš©í•˜ëŠ” ê²½ìš°>
       
-      1. Logging½Ã¿¡ ¾ĞÃàÀ» ¼öÇàÇÒ ¸Ş¸ğ¸®·Î »ç¿ë.
+      1. Loggingì‹œì— ì••ì¶•ì„ ìˆ˜í–‰í•  ë©”ëª¨ë¦¬ë¡œ ì‚¬ìš©.
       
-         ·Î±×¸¦ ·Î±×ÆÄÀÏ¿¡ ±â·ÏÇÏ±â Àü¿¡ ¾ĞÃàÀ» ÇÏ±âÀ§ÇÑ ÀÓ½Ã ¹öÆÛ·Î
-         »ç¿ëÇÏ´Â °æ¿ì, ¾ĞÃàµÈ ·Î±×¸¦ ·Î±×ÆÄÀÏ¿¡ ±â·ÏÇÑ ÈÄ¿¡´Â
-         ¾ĞÃà·Î±× ¹öÆÛ¸¦ ´Ù½Ã ¾µ ÀÏÀÌ ¾ø±â ¶§¹®¿¡
-         Reused Memory HandleÀÌ Áö´Ï°í ÀÖ´Â ¸Ş¸ğ¸®¸¦ ÀçÈ°¿ëÇÑ´Ù.
+         ë¡œê·¸ë¥¼ ë¡œê·¸íŒŒì¼ì— ê¸°ë¡í•˜ê¸° ì „ì— ì••ì¶•ì„ í•˜ê¸°ìœ„í•œ ì„ì‹œ ë²„í¼ë¡œ
+         ì‚¬ìš©í•˜ëŠ” ê²½ìš°, ì••ì¶•ëœ ë¡œê·¸ë¥¼ ë¡œê·¸íŒŒì¼ì— ê¸°ë¡í•œ í›„ì—ëŠ”
+         ì••ì¶•ë¡œê·¸ ë²„í¼ë¥¼ ë‹¤ì‹œ ì“¸ ì¼ì´ ì—†ê¸° ë•Œë¬¸ì—
+         Reused Memory Handleì´ ì§€ë‹ˆê³  ìˆëŠ” ë©”ëª¨ë¦¬ë¥¼ ì¬í™œìš©í•œë‹¤.
 
-      2. Transaction Rollback½Ã UndoÇÒ ·Î±×¸¦ ¾ĞÃàÇØÁ¦ÇÏ´Âµ¥ »ç¿ë.
+      2. Transaction Rollbackì‹œ Undoí•  ë¡œê·¸ë¥¼ ì••ì¶•í•´ì œí•˜ëŠ”ë° ì‚¬ìš©.
       
-         Transaction Rollback½Ã ¾ĞÃàµÈ ·Î±×ÀÇ ¾ĞÃàÇØÁ¦¸¦ ÇÏ´Â °æ¿ì,
-         Undo½Ã¿¡ »ç¿ëÇÑ ·Î±×ÀÇ ÁÖ¼Ò´Â ´ÙÀ½ Undo·Î±× ¼öÇàÁß¿¡´Â
-         ÂüÁ¶ÇÒ ÀÏÀÌ ¾øÀ¸¹Ç·Î, Reused Memory HandleÀ» ÀÌ¿ëÇÏ¿©
-         HandleÀÌ Áö´Ï°í ÀÖ´Â ¸Ş¸ğ¸®¸¦ ÀçÈ°¿ëÇÑ´Ù.
+         Transaction Rollbackì‹œ ì••ì¶•ëœ ë¡œê·¸ì˜ ì••ì¶•í•´ì œë¥¼ í•˜ëŠ” ê²½ìš°,
+         Undoì‹œì— ì‚¬ìš©í•œ ë¡œê·¸ì˜ ì£¼ì†ŒëŠ” ë‹¤ìŒ Undoë¡œê·¸ ìˆ˜í–‰ì¤‘ì—ëŠ”
+         ì°¸ì¡°í•  ì¼ì´ ì—†ìœ¼ë¯€ë¡œ, Reused Memory Handleì„ ì´ìš©í•˜ì—¬
+         Handleì´ ì§€ë‹ˆê³  ìˆëŠ” ë©”ëª¨ë¦¬ë¥¼ ì¬í™œìš©í•œë‹¤.
 */
 class iduReusedMemoryHandle : public iduMemoryHandle
 {
@@ -53,44 +53,44 @@ public :
     virtual ~iduReusedMemoryHandle();
     
     ///
-    /// Reused Memory HandleÀ» ÃÊ±âÈ­ ÇÑ´Ù.
-    /// @param aMemoryClient Å¬·¡½º¸¦ »ç¿ëÇÒ ¸ğµâ ÀÎµ¦½º
+    /// Reused Memory Handleì„ ì´ˆê¸°í™” í•œë‹¤.
+    /// @param aMemoryClient í´ë˜ìŠ¤ë¥¼ ì‚¬ìš©í•  ëª¨ë“ˆ ì¸ë±ìŠ¤
     IDE_RC initialize( iduMemoryClientIndex   aMemoryClient );
     
     ///
-    /// Reused Memory HandleÀ» ÆÄ±« ÇÑ´Ù.
+    /// Reused Memory Handleì„ íŒŒê´´ í•œë‹¤.
     ///
     IDE_RC destroy();
     
     ///
-    /// Reused Memory Handle¿¡ aSizeÀÌ»óÀÇ ¸Ş¸ğ¸®¸¦ ÇÒ´çÇÑ´Ù.
-    /// ÀÌ¹Ì aSizeÀÌ»ó ¸Ş¸ğ¸®°¡ ÇÒ´çµÇ¾î ÀÖ´Ù¸é ¾Æ¹«ÀÏµµ ÇÏÁö ¾Ê´Â´Ù.
-    /// Áï, ¸Ş¸ğ¸®´Â Ä¿Áö±â¸¸ÇÏ°í ÀÛ¾ÆÁöÁö ¾Ê´Â´Ù.
-    /// @param aSize ¸Ş¸ğ¸® ÇÒ´ç Å©±â. 2ÀÇ Á¦°ö½ÂÀ¸·Î Á¤·ÄµÊ (1000->1024)
-    /// @param aPrepareMemory »õ·Ó°Ô ÇÒ´çµÈ ¸Ş¸ğ¸®ÀÇ ÁÖ¼Ò ¹İÈ¯
+    /// Reused Memory Handleì— aSizeì´ìƒì˜ ë©”ëª¨ë¦¬ë¥¼ í• ë‹¹í•œë‹¤.
+    /// ì´ë¯¸ aSizeì´ìƒ ë©”ëª¨ë¦¬ê°€ í• ë‹¹ë˜ì–´ ìˆë‹¤ë©´ ì•„ë¬´ì¼ë„ í•˜ì§€ ì•ŠëŠ”ë‹¤.
+    /// ì¦‰, ë©”ëª¨ë¦¬ëŠ” ì»¤ì§€ê¸°ë§Œí•˜ê³  ì‘ì•„ì§€ì§€ ì•ŠëŠ”ë‹¤.
+    /// @param aSize ë©”ëª¨ë¦¬ í• ë‹¹ í¬ê¸°. 2ì˜ ì œê³±ìŠ¹ìœ¼ë¡œ ì •ë ¬ë¨ (1000->1024)
+    /// @param aPrepareMemory ìƒˆë¡­ê²Œ í• ë‹¹ëœ ë©”ëª¨ë¦¬ì˜ ì£¼ì†Œ ë°˜í™˜
     virtual IDE_RC prepareMemory( UInt    aSize,
                                   void ** aPreparedMemory);
 
     ///
-    /// ÀÌ Memory HandleÀ» ÅëÇØ OS·ÎºÎÅÍ ÇÒ´ç¹ŞÀº ¸Ş¸ğ¸®ÀÇ ÃÑ·®À» ¸®ÅÏ
+    /// ì´ Memory Handleì„ í†µí•´ OSë¡œë¶€í„° í• ë‹¹ë°›ì€ ë©”ëª¨ë¦¬ì˜ ì´ëŸ‰ì„ ë¦¬í„´
     ///
     virtual ULong getSize( void );
     
 private:
     /*
-       Reused Memory HandleÀÇ ÀûÇÕ¼º °ËÅä(ASSERT)
+       Reused Memory Handleì˜ ì í•©ì„± ê²€í† (ASSERT)
      */
     void assertConsistency();
 
     /*
-       aSize¸¦ 2ÀÇ N½ÂÀÇ Å©±â·Î Align upÇÑ´Ù.
+       aSizeë¥¼ 2ì˜ NìŠ¹ì˜ í¬ê¸°ë¡œ Align upí•œë‹¤.
      */
     static UInt alignUpPowerOfTwo( UInt aSize );
 
 private:
-    UInt                     mSize;        /// ÇÒ´çµÈ Å©±â
-    void                 * mMemory;        /// ÇÒ´çµÈ ¸Ş¸ğ¸®
-    iduMemoryClientIndex   mMemoryClient;  /// ¸Ş¸ğ¸® ÇÒ´ç Client ÀÎ½Ä¹øÈ£
+    UInt                     mSize;        /// í• ë‹¹ëœ í¬ê¸°
+    void                 * mMemory;        /// í• ë‹¹ëœ ë©”ëª¨ë¦¬
+    iduMemoryClientIndex   mMemoryClient;  /// ë©”ëª¨ë¦¬ í• ë‹¹ Client ì¸ì‹ë²ˆí˜¸
 };
 
     

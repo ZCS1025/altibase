@@ -23,40 +23,40 @@
  * IMPORTANT Note
  * ==============
  *
- * SQLDecribeParam() «‘ºˆ∏¶ »£√‚«ÿº≠ ªÁøÎ¿⁄∞° æÚ∞‘ µ«¥¬ ¡§∫∏¥¬ IPD ∑πƒ⁄µÂø° ¿÷¥¬ ¡§∫∏∞°
- * µ«æÓæﬂ «—¥Ÿ.
+ * SQLDecribeParam() Ìï®ÏàòÎ•º Ìò∏Ï∂úÌï¥ÏÑú ÏÇ¨Ïö©ÏûêÍ∞Ä ÏñªÍ≤å ÎêòÎäî Ï†ïÎ≥¥Îäî IPD Î†àÏΩîÎìúÏóê ÏûàÎäî Ï†ïÎ≥¥Í∞Ä
+ * ÎêòÏñ¥Ïïº ÌïúÎã§.
  *
- * æÓ∑¡øÓ πÆ¡¶¥¬,
- *  1. ªÁøÎ¿⁄∞° ¿ÃπÃ πŸ¿ŒµÂ«— ∆ƒ∂ÛπÃ≈Õø° SQLDescribeParam() ¿ª »£√‚«“ ∞ÊøÏ æÓ∂ª∞‘ «“∞Õ¿Œ∞°?
+ * Ïñ¥Î†§Ïö¥ Î¨∏Ï†úÎäî,
+ *  1. ÏÇ¨Ïö©ÏûêÍ∞Ä Ïù¥ÎØ∏ Î∞îÏù∏ÎìúÌïú ÌååÎùºÎØ∏ÌÑ∞Ïóê SQLDescribeParam() ÏùÑ Ìò∏Ï∂úÌï† Í≤ΩÏö∞ Ïñ¥ÎñªÍ≤å Ìï†Í≤ÉÏù∏Í∞Ä?
  *
- * ¿Œµ•, æ∆∑°øÕ ∞∞¿Ã ¡§√•¿ª ∞·¡§«œø¥¥Ÿ :
+ * Ïù∏Îç∞, ÏïÑÎûòÏôÄ Í∞ôÏù¥ Ï†ïÏ±ÖÏùÑ Í≤∞Ï†ïÌïòÏòÄÎã§ :
  *
- *  1. ¿ÃπÃ πŸ¿ŒµÂ«— ∆ƒ∂ÛπÃ≈Õ∂Û∏È IPD record ø° ¿÷¥¬ ¡§∫∏∏¶ ¿–æÓº≠ ±◊¥Î∑Œ ªÁøÎ¿⁄ø°∞‘ ≥—∞‹¡ÿ¥Ÿ.
+ *  1. Ïù¥ÎØ∏ Î∞îÏù∏ÎìúÌïú ÌååÎùºÎØ∏ÌÑ∞ÎùºÎ©¥ IPD record Ïóê ÏûàÎäî Ï†ïÎ≥¥Î•º ÏùΩÏñ¥ÏÑú Í∑∏ÎåÄÎ°ú ÏÇ¨Ïö©ÏûêÏóêÍ≤å ÎÑòÍ≤®Ï§ÄÎã§.
  *
- *  2. æ∆¡˜ πŸ¿ŒµÂµ«¡ˆ æ ¿∫ ∆ƒ∂ÛπÃ≈Õ∂Û∏È º≠πˆø°º≠ ∫∏≥ªø¬ ¡§∫∏∏¶ ¿ÃøÎ«ÿ ∏∏µÁ IPD record ∏¶
- *     IPD ø° ∏≈¥ﬁæ∆πˆ∏∞¥Ÿ. ¿Ã∑∏∞‘ ∏∏µÈæÓ¡¯ IPD record ¥¬ ªÁøÎ¿⁄∞° πŸ¿ŒµÂ∏¶ «“ ∂ß µ§æÓæ∫ø©¡¯¥Ÿ.
- *     µ§æÓæ∫ø©¡˙ IPD record ∏¶ IPD ø° ∏≈¥Ÿ¥¬ ¿Ã¿Ø¥¬, ªÁøÎ¿⁄∞° SQLGetDescField() «‘ºˆ∏¶ »£√‚«“
- *     ∞ÊøÏ ¡§∫∏∏¶ ¿ÁªÁøÎ«œ±‚ ¿ß«ÿº≠¿Ã¥Ÿ.
+ *  2. ÏïÑÏßÅ Î∞îÏù∏ÎìúÎêòÏßÄ ÏïäÏùÄ ÌååÎùºÎØ∏ÌÑ∞ÎùºÎ©¥ ÏÑúÎ≤ÑÏóêÏÑú Î≥¥ÎÇ¥Ïò® Ï†ïÎ≥¥Î•º Ïù¥Ïö©Ìï¥ ÎßåÎì† IPD record Î•º
+ *     IPD Ïóê Îß§Îã¨ÏïÑÎ≤ÑÎ¶∞Îã§. Ïù¥Î†áÍ≤å ÎßåÎì§Ïñ¥ÏßÑ IPD record Îäî ÏÇ¨Ïö©ÏûêÍ∞Ä Î∞îÏù∏ÎìúÎ•º Ìï† Îïå ÎçÆÏñ¥ÏîåÏó¨ÏßÑÎã§.
+ *     ÎçÆÏñ¥ÏîåÏó¨Ïßà IPD record Î•º IPD Ïóê Îß§Îã§Îäî Ïù¥Ïú†Îäî, ÏÇ¨Ïö©ÏûêÍ∞Ä SQLGetDescField() Ìï®ÏàòÎ•º Ìò∏Ï∂úÌï†
+ *     Í≤ΩÏö∞ Ï†ïÎ≥¥Î•º Ïû¨ÏÇ¨Ïö©ÌïòÍ∏∞ ÏúÑÌï¥ÏÑúÏù¥Îã§.
  *
- *  3. SQLGetDescField() «‘ºˆ∏¶ ¿ÃøÎ«ÿº≠ IPD record ¿« « µÂµÈ¿ª ªÁøÎ¿⁄∞° æÚæÓø¿∞Ì¿⁄ «ﬂ¿ª ∞ÊøÏ,
- *     «ÿ¥Á IPD record ∞° ¡∏¿Á«œ¡ˆ æ ¿∏∏È SQLDescribeParam() ¿« ∑Á∆æµÈ¿ª ¿ÃøÎ«ÿº≠ IPD record ∏¶
- *     ª˝º∫«œµµ∑œ «—¥Ÿ.
+ *  3. SQLGetDescField() Ìï®ÏàòÎ•º Ïù¥Ïö©Ìï¥ÏÑú IPD record Ïùò ÌïÑÎìúÎì§ÏùÑ ÏÇ¨Ïö©ÏûêÍ∞Ä ÏñªÏñ¥Ïò§Í≥†Ïûê ÌñàÏùÑ Í≤ΩÏö∞,
+ *     Ìï¥Îãπ IPD record Í∞Ä Ï°¥Ïû¨ÌïòÏßÄ ÏïäÏúºÎ©¥ SQLDescribeParam() Ïùò Î£®Ìã¥Îì§ÏùÑ Ïù¥Ïö©Ìï¥ÏÑú IPD record Î•º
+ *     ÏÉùÏÑ±ÌïòÎèÑÎ°ù ÌïúÎã§.
  *
- *  4. ªÁøÎ¿⁄∞° SQLBindParameter() ∏¶ «œ∞‘ µ«∏È IPD record ¿« ¡§∫∏∏¶ ∞ªΩ≈«œµµ∑œ «—¥Ÿ.
+ *  4. ÏÇ¨Ïö©ÏûêÍ∞Ä SQLBindParameter() Î•º ÌïòÍ≤å ÎêòÎ©¥ IPD record Ïùò Ï†ïÎ≥¥Î•º Í∞±Ïã†ÌïòÎèÑÎ°ù ÌïúÎã§.
  *
- * ¿ß¿« ¡§√•¿∫, SQLDescribeParam() «‘ºˆ∞° "º≠πˆø°º≠ « ø‰∑Œ «œ¥¬" ∆ƒ∂ÛπÃ≈Õ¿« ∏ﬁ≈∏∂Û∞Ì ª˝∞¢«“ ∂ß
- * æ‡∞£ ¿ÃªÛ«“ ºˆ ¿÷¥Ÿ.
- * ±◊∑Ø≥™, SQLBindParameter() «‘ºˆ¿« ¡÷ø‰ ø™«“ ¡ﬂø° «œ≥™∞° IPD record ∏¶ "∞ªΩ≈" «œ¥¬ ∞Õ¿Ã∂Û¥¬
- * ªÁΩ«¿ª ª˝∞¢«ÿ ∫º ∂ß ¿¸«Ù ¿ÃªÛ«œ¡ˆ æ ¥Ÿ.
+ * ÏúÑÏùò Ï†ïÏ±ÖÏùÄ, SQLDescribeParam() Ìï®ÏàòÍ∞Ä "ÏÑúÎ≤ÑÏóêÏÑú ÌïÑÏöîÎ°ú ÌïòÎäî" ÌååÎùºÎØ∏ÌÑ∞Ïùò Î©îÌÉÄÎùºÍ≥† ÏÉùÍ∞ÅÌï† Îïå
+ * ÏïΩÍ∞Ñ Ïù¥ÏÉÅÌï† Ïàò ÏûàÎã§.
+ * Í∑∏Îü¨ÎÇò, SQLBindParameter() Ìï®ÏàòÏùò Ï£ºÏöî Ïó≠Ìï† Ï§ëÏóê ÌïòÎÇòÍ∞Ä IPD record Î•º "Í∞±Ïã†" ÌïòÎäî Í≤ÉÏù¥ÎùºÎäî
+ * ÏÇ¨Ïã§ÏùÑ ÏÉùÍ∞ÅÌï¥ Î≥º Îïå Ï†ÑÌòÄ Ïù¥ÏÉÅÌïòÏßÄ ÏïäÎã§.
  *
- * SQLGetDescField() ∏¶ ≈Î«ÿ æÚ¥¬ IRD record ¿« ¡§∫∏øÕ
- * SQLDescribeCol() ¿ª ≈Î«ÿ æÚ¥¬ ¡§∫∏¥¬ ¿œƒ°«ÿæﬂ «œ∏Á, «ˆ¿Á ¿œƒ°«œµµ∑œ ±∏«ˆµ«æÓ ¿÷¥Ÿ.
+ * SQLGetDescField() Î•º ÌÜµÌï¥ ÏñªÎäî IRD record Ïùò Ï†ïÎ≥¥ÏôÄ
+ * SQLDescribeCol() ÏùÑ ÌÜµÌï¥ ÏñªÎäî Ï†ïÎ≥¥Îäî ÏùºÏπòÌï¥Ïïº ÌïòÎ©∞, ÌòÑÏû¨ ÏùºÏπòÌïòÎèÑÎ°ù Íµ¨ÌòÑÎêòÏñ¥ ÏûàÎã§.
  *
- * ∏∂¬˘∞°¡ˆ∑Œ,
- * SQLGetDescField() ∏¶ ≈Î«ÿ æÚ¥¬ IPD record ¿« ¡§∫∏øÕ
- * SQLDescribeParam() ¿ª ≈Î«ÿ æÚ¥¬ ¡§∫∏¥¬ ¿œƒ°«ÿæﬂ «—¥Ÿ.
- * ---> SQLDescribeParam() Ω√ IPD record ∞° ¡∏¿Á«‘ø°µµ ∫“±∏«œ∞Ì º≠πˆø°º≠ ¡§∫∏∏¶
- * æÚæÓøÕº≠ IPD record ¿« ≥ªøÎ∞˙ ¥Ÿ∏• ≥ªøÎ¿ª ∏Æ≈œ«ÿº≠¥¬ æ»µ»¥Ÿ.
+ * ÎßàÏ∞¨Í∞ÄÏßÄÎ°ú,
+ * SQLGetDescField() Î•º ÌÜµÌï¥ ÏñªÎäî IPD record Ïùò Ï†ïÎ≥¥ÏôÄ
+ * SQLDescribeParam() ÏùÑ ÌÜµÌï¥ ÏñªÎäî Ï†ïÎ≥¥Îäî ÏùºÏπòÌï¥Ïïº ÌïúÎã§.
+ * ---> SQLDescribeParam() Ïãú IPD record Í∞Ä Ï°¥Ïû¨Ìï®ÏóêÎèÑ Î∂àÍµ¨ÌïòÍ≥† ÏÑúÎ≤ÑÏóêÏÑú Ï†ïÎ≥¥Î•º
+ * ÏñªÏñ¥ÏôÄÏÑú IPD record Ïùò ÎÇ¥Ïö©Í≥º Îã§Î•∏ ÎÇ¥Ïö©ÏùÑ Î¶¨ÌÑ¥Ìï¥ÏÑúÎäî ÏïàÎêúÎã§.
  */
 
 ACI_RC ulnDescribeParamGetIpdInfoFromServer(ulnFnContext *aFnContext, ulnPtContext *aPtContext)
@@ -114,7 +114,7 @@ static ACI_RC ulnDescribeParamCore(ulnFnContext *aFnContext,
 
     sDescRecIpd = ulnStmtGetIpdRec(aStmt, aParamNumber);
 
-    /* BUG-44296 ipd∞° «œ≥™∂Ûµµ æ¯¿∏∏È º≠πˆø°º≠ ¡§∫∏∏¶ ∞°¡ÆøÕ æ¯¥¬ ipd∏¶ ∏∏µÁ¥Ÿ. */
+    /* BUG-44296 ipdÍ∞Ä ÌïòÎÇòÎùºÎèÑ ÏóÜÏúºÎ©¥ ÏÑúÎ≤ÑÏóêÏÑú Ï†ïÎ≥¥Î•º Í∞ÄÏ†∏ÏôÄ ÏóÜÎäî ipdÎ•º ÎßåÎì†Îã§. */
     if (sDescRecIpd == NULL)
     {
         ACI_TEST(ulnDescribeParamGetIpdInfoFromServer(aFnContext, aPtContext) != ACI_SUCCESS);
@@ -122,13 +122,13 @@ static ACI_RC ulnDescribeParamCore(ulnFnContext *aFnContext,
         sDescRecIpd = ulnStmtGetIpdRec(aStmt, aParamNumber);
 
         /*
-         * ∆ƒ∂ÛπÃ≈Õ¿« ∞πºˆ∫∏¥Ÿ ≈´ ParamNumber ∏¶ ≥—∞‹¡·±‚ ∂ßπÆø° IPD record ∞° πﬂ∞ﬂµ«¡ˆ æ ¿ª
-         * ∞°¥…º∫µµ ¿÷¥Ÿ. ±◊∑Ø≥™, SQLDescribeParam() «‘ºˆ¥¬ Prepared ªÛ≈¬(S2, S3)ø°º≠∏∏
-         * ¿Ø¿œ«œ∞‘ »£√‚µ… ºˆ ¿÷¥Ÿ. µ˚∂Ûº≠, ¿Ã «‘ºˆ∞° »£√‚µ… Ω√¡°ø°º≠¥¬,
-         * « ø‰«— ∆ƒ∂ÛπÃ≈Õ¿« ∞πºˆ∏¶ ¿ÃπÃ æÀ∞Ì ¿÷¥¬ ªÛ≈¬¿Ã∏Á, «‘ºˆ ¡¯¿‘Ω√ø° ∆ƒ∂ÛπÃ≈Õ ≥—πˆ∏¶
-         * √º≈©«ÿº≠ π¸¿ßø° µÈæÓø√ ∂ßø°∏∏ ≈Î∞˙Ω√≈≤¥Ÿ.
-         * ±◊∑Øπ«∑Œ ¡ˆ±› º≠πˆø°º≠ parameter ¡§∫∏µÈ¿ª ∞°¡Æ ø‘¥¬µ•, IPD record ∞° æ¯¥Ÿ¥¬ ∞Õ¿∫
-         * ∏ﬁ∏∏Æ corruption ¿∏∑Œ ¥‹¡§¡ˆæÓµµ ¡¡¿∫ ªÛ»≤¿Ã¥Ÿ.
+         * ÌååÎùºÎØ∏ÌÑ∞Ïùò Í∞ØÏàòÎ≥¥Îã§ ÌÅ∞ ParamNumber Î•º ÎÑòÍ≤®Ï§¨Í∏∞ ÎïåÎ¨∏Ïóê IPD record Í∞Ä Î∞úÍ≤¨ÎêòÏßÄ ÏïäÏùÑ
+         * Í∞ÄÎä•ÏÑ±ÎèÑ ÏûàÎã§. Í∑∏Îü¨ÎÇò, SQLDescribeParam() Ìï®ÏàòÎäî Prepared ÏÉÅÌÉú(S2, S3)ÏóêÏÑúÎßå
+         * Ïú†ÏùºÌïòÍ≤å Ìò∏Ï∂úÎê† Ïàò ÏûàÎã§. Îî∞ÎùºÏÑú, Ïù¥ Ìï®ÏàòÍ∞Ä Ìò∏Ï∂úÎê† ÏãúÏ†êÏóêÏÑúÎäî,
+         * ÌïÑÏöîÌïú ÌååÎùºÎØ∏ÌÑ∞Ïùò Í∞ØÏàòÎ•º Ïù¥ÎØ∏ ÏïåÍ≥† ÏûàÎäî ÏÉÅÌÉúÏù¥Î©∞, Ìï®Ïàò ÏßÑÏûÖÏãúÏóê ÌååÎùºÎØ∏ÌÑ∞ ÎÑòÎ≤ÑÎ•º
+         * Ï≤¥ÌÅ¨Ìï¥ÏÑú Î≤îÏúÑÏóê Îì§Ïñ¥Ïò¨ ÎïåÏóêÎßå ÌÜµÍ≥ºÏãúÌÇ®Îã§.
+         * Í∑∏Îü¨ÎØÄÎ°ú ÏßÄÍ∏à ÏÑúÎ≤ÑÏóêÏÑú parameter Ï†ïÎ≥¥Îì§ÏùÑ Í∞ÄÏ†∏ ÏôîÎäîÎç∞, IPD record Í∞Ä ÏóÜÎã§Îäî Í≤ÉÏùÄ
+         * Î©îÎ™®Î¶¨ corruption ÏúºÎ°ú Îã®Ï†ïÏßÄÏñ¥ÎèÑ Ï¢ãÏùÄ ÏÉÅÌô©Ïù¥Îã§.
          */
         ACI_TEST_RAISE(sDescRecIpd == NULL, LABEL_MEM_MAN_ERR);
     }
@@ -145,7 +145,7 @@ static ACI_RC ulnDescribeParamCore(ulnFnContext *aFnContext,
     if (aParamSizePtr != NULL)
     {
         /*
-         * Note : ulnMeta ¿« octet length ø°¥¬ «◊ªÛ æÁºˆ∞° µÈæÓ∞£¥Ÿ.
+         * Note : ulnMeta Ïùò octet length ÏóêÎäî Ìï≠ÏÉÅ ÏñëÏàòÍ∞Ä Îì§Ïñ¥Í∞ÑÎã§.
          */
         *aParamSizePtr = (ulvULen)ulnMetaGetOctetLength(&sDescRecIpd->mMeta);
     }
@@ -212,12 +212,12 @@ SQLRETURN ulnDescribeParam(ulnStmt      *aStmt,
     }   
 
     /*
-     * ≥—∞‹πﬁ¿∫ ¿Œ¿⁄µÈ √º≈©
+     * ÎÑòÍ≤®Î∞õÏùÄ Ïù∏ÏûêÎì§ Ï≤¥ÌÅ¨
      */
     ACI_TEST(ulnDescribeParamCheckArgs(&sFnContext, aParamNumber) != ACI_SUCCESS);
 
     /*
-     * Protocol Context √ ±‚»≠
+     * Protocol Context Ï¥àÍ∏∞Ìôî
      */
     // fix BUG-17722
     ACI_TEST(ulnInitializeProtocolContext(&sFnContext,
@@ -236,7 +236,7 @@ SQLRETURN ulnDescribeParam(ulnStmt      *aStmt,
                                   aNullablePtr) != ACI_SUCCESS);
 
     /*
-     * Protocol Context ¡§∏Æ
+     * Protocol Context Ï†ïÎ¶¨
      */
     ULN_FLAG_DOWN(sNeedFinPtContext);
     // fix BUG-17722

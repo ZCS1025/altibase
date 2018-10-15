@@ -164,7 +164,7 @@ public class AltibaseDatabaseMetaData implements DatabaseMetaData
     public synchronized ResultSet getColumns(String aCatalog, String aSchemaPattern, String aTableNamePattern, String aColumnNamePattern) throws SQLException
     {
         mSql.setLength(0);
-        // BUG-44466 ORDINAL_POSITION Àº 1ºÎÅÍ ½ÃÀÛÇÏ±â ¶§¹®¿¡ Äõ¸®¸¦ º¸Á¤ÇÑ´Ù.
+        // BUG-44466 ORDINAL_POSITION ì€ 1ë¶€í„° ì‹œì‘í•˜ê¸° ë•Œë¬¸ì— ì¿¼ë¦¬ë¥¼ ë³´ì •í•œë‹¤.
         mSql.append("SELECT '' as TABLE_CAT, c.user_name as TABLE_SCHEM, b.table_name as TABLE_NAME, a.column_name as COLUMN_NAME, nvl2(d.column_id,3010,decode(a.data_type, 9, 93, a.data_type)) as DATA_TYPE, ");
         mSql.append("nvl2(d.column_id,'TIMESTAMP', decode(a.data_type, 60, CHAR'CHAR', 61, VARCHAR'VARCHAR', t.type_name)) as TYPE_NAME, ");
         mSql.append("decode(a.precision,0,decode(a.data_type, 1, a.precision, 12, a.precision, -8, a.precision, -9, a.precision, 60, a.precision, 61, a.precision, t.column_size),a.precision) as COLUMN_SIZE, decode(a.size, 4294967295, 2147483647, a.size ) as BUFFER_LENGTH,");
@@ -592,7 +592,7 @@ public class AltibaseDatabaseMetaData implements DatabaseMetaData
         mSql.append(aProcedureNamePattern);
         mSql.append(aColumnNamePattern);
         mSql.append(" ORDER BY PROCEDURE_SCHEM,PROCEDURE_NAME");
-        mSql.append(",ORDINAL_POSITION"); // ¿ä°Ç spec¿¡ ÀÖ´Â°Ç ¾Æ´Ñµ¥, ÆíÀÇ¸¦ À§ÇØ Ãß°¡
+        mSql.append(",ORDINAL_POSITION"); // ìš”ê±´ specì— ìˆëŠ”ê±´ ì•„ë‹Œë°, í¸ì˜ë¥¼ ìœ„í•´ ì¶”ê°€
 
         Statement stmt = mConn.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
         ResultSet rs = stmt.executeQuery(mSql.toString());
@@ -667,7 +667,7 @@ public class AltibaseDatabaseMetaData implements DatabaseMetaData
         mSql.setLength(0);
         mSql.append("select user_name as TABLE_SCHEM, (SELECT DB_NAME FROM V$DATABASE LIMIT 1) as TABLE_CATALOG");
         mSql.append(" from system_.sys_users_");
-        mSql.append(" where system_.sys_users_.user_type = 'U'");  // BUG-45071 username¸¸ Æ÷ÇÔ½ÃÅ²´Ù.
+        mSql.append(" where system_.sys_users_.user_type = 'U'");  // BUG-45071 usernameë§Œ í¬í•¨ì‹œí‚¨ë‹¤.
         mSql.append(" order by TABLE_SCHEM");
 
         Statement stmt = mConn.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
@@ -851,7 +851,7 @@ public class AltibaseDatabaseMetaData implements DatabaseMetaData
         }
         if ((aTypes == null) || (aTypes.length == 0))
         {
-            // ¸ğµÎ º¸±â·Î ÇßÀ» ¶§, non-visibleÇÑ °´Ã¼¸¦ °É·¯³»¾ß ÇÑ´Ù.
+            // ëª¨ë‘ ë³´ê¸°ë¡œ í–ˆì„ ë•Œ, non-visibleí•œ ê°ì²´ë¥¼ ê±¸ëŸ¬ë‚´ì•¼ í•œë‹¤.
             mSql.append(" and (b.table_type IN ('T','V') OR (a.user_name<>'SYSTEM_' AND b.table_type IN ('S','M','Q')))");
             sNeedGetSynonym = true;
         }
@@ -894,7 +894,7 @@ public class AltibaseDatabaseMetaData implements DatabaseMetaData
                 }
                 else if (StringUtils.compareIgnoreCase(aTypes[i], sTypeCmpStartIdx, "SYNONYM") == 0)
                 {
-                    // SYS_TABLES_ ¸»°í SYS_SYNONYMS_¿¡¼­ Á¶È¸ÇØ¾ß ÇÏ¹Ç·Î flag¸¸ ¼³Á¤ÇØµĞ´Ù.
+                    // SYS_TABLES_ ë§ê³  SYS_SYNONYMS_ì—ì„œ ì¡°íšŒí•´ì•¼ í•˜ë¯€ë¡œ flagë§Œ ì„¤ì •í•´ë‘”ë‹¤.
                     sNeedGetSynonym = true;
                 }
                 else
@@ -929,7 +929,7 @@ public class AltibaseDatabaseMetaData implements DatabaseMetaData
         }
         if (sNeedGetSynonym == true)
         {
-            // SYNONYM¸¸ Á¶È¸ÇÒ °æ¿ì
+            // SYNONYMë§Œ ì¡°íšŒí•  ê²½ìš°
             if (aTypes != null && aTypes.length == 1)
             {
                 mSql.setLength(0);

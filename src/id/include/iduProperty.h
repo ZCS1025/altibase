@@ -81,7 +81,7 @@ public:
                                                         void  *aNewValue,
                                                         void  * /*aArg*/);
 
-    /* PROJ-2473 SNMP Áö¿ø */
+    /* PROJ-2473 SNMP ì§€ì› */
     static IDE_RC callbackSNMPTrcFlag(idvSQL * /*aStatistics*/,
                                       SChar * /*aName*/,
                                       void  * /*aOldValue*/,
@@ -515,7 +515,7 @@ public:
         return mProperties->mQueryProfLogDir;
     }
 
-    // Direct I/O½Ã file offset¹× data size¸¦ AlignÇÒ PageÅ©±â
+    // Direct I/Oì‹œ file offsetë° data sizeë¥¼ Aligní•  Pageí¬ê¸°
     static UInt getDirectIOPageSize()
     {
         return mProperties->mDirectIOPageSize;
@@ -772,7 +772,7 @@ public:
         return mProperties->mQueryHashStringLengthMax;
     }
 
-    /* PROJ-2473 SNMP Áö¿ø */
+    /* PROJ-2473 SNMP ì§€ì› */
     static UInt getPortNo()
     {
         return mProperties->mPortNo;
@@ -938,9 +938,9 @@ private:
     struct iduPropertyStore
     {
         /* BUG-20789
-         * SM ¼Ò½º¿¡¼­ contentionÀÌ ¹ß»ıÇÒ ¼ö ÀÖ´Â ºÎºĞ¿¡
-         * ´ÙÁßÈ­¸¦ ÇÒ °æ¿ì CPUÇÏ³ª´ç ¸î Å¬¶óÀÌ¾ğÆ®¸¦ ¿¹»óÇÒ Áö¸¦ ³ªÅ¸³»´Â »ó¼ö
-         * SM_SCALABILITY´Â CPU°³¼ö °öÇÏ±â ÀÌ°ªÀÌ´Ù. */
+         * SM ì†ŒìŠ¤ì—ì„œ contentionì´ ë°œìƒí•  ìˆ˜ ìˆëŠ” ë¶€ë¶„ì—
+         * ë‹¤ì¤‘í™”ë¥¼ í•  ê²½ìš° CPUí•˜ë‚˜ë‹¹ ëª‡ í´ë¼ì´ì–¸íŠ¸ë¥¼ ì˜ˆìƒí•  ì§€ë¥¼ ë‚˜íƒ€ë‚´ëŠ” ìƒìˆ˜
+         * SM_SCALABILITYëŠ” CPUê°œìˆ˜ ê³±í•˜ê¸° ì´ê°’ì´ë‹¤. */
         UInt    mScalabilityPerCPU;
 
         UInt    mMaxScalability;
@@ -1020,12 +1020,12 @@ private:
         UInt    mAuditOutputMethod;
         SChar   mAuditTagNameInSyslog[ IDP_MAX_PROP_STRING_LEN ];
 
-        // Direct I/O½Ã file offset¹× data size¸¦ AlignÇÒ PageÅ©±â
+        // Direct I/Oì‹œ file offsetë° data sizeë¥¼ Aligní•  Pageí¬ê¸°
         UInt    mDirectIOPageSize;
         UInt    mEnableRecoveryTest;
 
         /*
-         * BUG-21487    Mutex Leak ListÃâ·ÂÀ» propertyÈ­ ÇØ¾ßÇÕ´Ï´Ù.
+         * BUG-21487    Mutex Leak Listì¶œë ¥ì„ propertyí™” í•´ì•¼í•©ë‹ˆë‹¤.
          */
         UInt    mShowMutexLeakList;
 
@@ -1038,7 +1038,7 @@ private:
         SChar   mServerMsglogDir[ ID_MAX_FILE_NAME ];
         SChar   mLogAnchorDir[ ID_MAX_FILE_NAME ];
 
-        /* PROJ-2473 SNMP Áö¿ø */
+        /* PROJ-2473 SNMP ì§€ì› */
         UInt    mPortNo;
 
         UInt    mSNMPEnable;
@@ -1055,7 +1055,7 @@ private:
 
         ULong   mDiskMaxDBSize;
 
-        // BUG-40492 iduMemPoolÀÇ Chunk ´ç Slot Size ÃÖ¼Ò°ª
+        // BUG-40492 iduMemPoolì˜ Chunk ë‹¹ Slot Size ìµœì†Œê°’
         UInt    mMinMemPoolChunkSlotCnt;
 
         UInt    mShmMemoryPolicy;

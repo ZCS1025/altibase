@@ -100,7 +100,7 @@ int main(int argc, char **argv)
     IDE_TEST( sHandle->m_memmgr == NULL );
     sState = 7;
 
-    //Thread»ý¼º½Ã »ý¼ºµÇ¾î¾ßÇÔ 
+    //Threadìƒì„±ì‹œ ìƒì„±ë˜ì–´ì•¼í•¨ 
     sHandle->mLoad = new iloLoad( sHandle );
     IDE_TEST( sHandle->mLoad == NULL );
     sState = 8;
@@ -128,7 +128,7 @@ int main(int argc, char **argv)
         ShowCopyRight();
     }
 
-    /* BUG-31387: ConnTypeÀ» Á¶Á¤ÇÏ°í °æ¿ì¿¡ µû¶ó °æ°í Ãâ·Â */
+    /* BUG-31387: ConnTypeì„ ì¡°ì •í•˜ê³  ê²½ìš°ì— ë”°ë¼ ê²½ê³  ì¶œë ¥ */
     sHandle->mProgOption->AdjustConnType(sHandle);
 
     if (gCommandCompiler->IsNullCommand(gszCommand) == SQL_FALSE)
@@ -146,7 +146,7 @@ int main(int argc, char **argv)
 
     sHandle->mProgOption->ReadEnvironment();
 
-    // BUG-26287: ÀÖÀ¸¸é altibase.propertiesµµ ÂüÁ¶ (for server)
+    // BUG-26287: ìžˆìœ¼ë©´ altibase.propertiesë„ ì°¸ì¡° (for server)
     sHandle->mProgOption->ReadServerProperties();
 
     IDE_TEST_RAISE( sHandle->mProgOption->ReadProgOptionInteractive()
@@ -173,7 +173,7 @@ int main(int argc, char **argv)
                 idlOS::printf(ENV_ISQL_CONNECTION" : IPCDA\n");
                 break;
             default:
-                /* ¹º°¡ Å©°Ô Àß¸øµÆ´Ù! */
+                /* ë­”ê°€ í¬ê²Œ ìž˜ëª»ëë‹¤! */
                 IDE_ASSERT(0);
                 break;
         }
@@ -202,18 +202,18 @@ int main(int argc, char **argv)
     //PROJ-1714
     sHandle->mLoad->SetConnType(sConnType);
 
-    /* iLoader¿¡¼­ AUTOCOMMITÀº »ç¿ëÇÏÁö ¾Ê´Â´Ù.
-     * LOB ÄÃ·³ÀÌ ÀÖÀ» °æ¿ì AUTOCOMMITÀº »ç¿ëÇØ¼­´Â ¾ÈµÊ¿¡ ÁÖÀÇ. */
+    /* iLoaderì—ì„œ AUTOCOMMITì€ ì‚¬ìš©í•˜ì§€ ì•ŠëŠ”ë‹¤.
+     * LOB ì»¬ëŸ¼ì´ ìžˆì„ ê²½ìš° AUTOCOMMITì€ ì‚¬ìš©í•´ì„œëŠ” ì•ˆë¨ì— ì£¼ì˜. */
     IDE_TEST_RAISE( sHandle->mSQLApi->AutoCommit(ILO_FALSE) != IDE_SUCCESS,
                     SetAutoCommitError);
     IDE_TEST_RAISE( sHandle->mSQLApi->setQueryTimeOut( 0 ) != SQL_TRUE,
                     err_set_timeout );
 
-    /* BUG-30693 : table ÀÌ¸§µé°ú owner ÀÌ¸§À» mtlMakeNameInFunc ÇÔ¼ö¸¦ ÀÌ¿ëÇÏ¿©
-    ´ë¹®ÀÚ·Î º¯°æÇØ¾ß ÇÒ °æ¿ì º¯°æÇÔ.
-    CommandParser¿¡¼­ º¯È¯ÇÏ¸é ¾ÈµÈ´Ù. ±× ÀÌÀ¯´Â ulnDbcInitialize ÇÔ¼ö°¡ È£ÃâµÇ±â ÀüÀÌ¶ó
-    ¹«Á¶°Ç ASCII ¶ó°í °£ÁÖµÇ±â ¶§¹®¿¡, SHIFTJIS¿Í °°Àº ÀÎÄÚµùÀÇ ¹®ÀÚ¿­ÀÌ ¿ÔÀ»°æ¿ì ´ë¹®ÀÚ º¯È¯ÀÌ
-    Àß¸øµÉ ¼ö ÀÖ´Ù.
+    /* BUG-30693 : table ì´ë¦„ë“¤ê³¼ owner ì´ë¦„ì„ mtlMakeNameInFunc í•¨ìˆ˜ë¥¼ ì´ìš©í•˜ì—¬
+    ëŒ€ë¬¸ìžë¡œ ë³€ê²½í•´ì•¼ í•  ê²½ìš° ë³€ê²½í•¨.
+    CommandParserì—ì„œ ë³€í™˜í•˜ë©´ ì•ˆëœë‹¤. ê·¸ ì´ìœ ëŠ” ulnDbcInitialize í•¨ìˆ˜ê°€ í˜¸ì¶œë˜ê¸° ì „ì´ë¼
+    ë¬´ì¡°ê±´ ASCII ë¼ê³  ê°„ì£¼ë˜ê¸° ë•Œë¬¸ì—, SHIFTJISì™€ ê°™ì€ ì¸ì½”ë”©ì˜ ë¬¸ìžì—´ì´ ì™”ì„ê²½ìš° ëŒ€ë¬¸ìž ë³€í™˜ì´
+    ìž˜ëª»ë  ìˆ˜ ìžˆë‹¤.
     */
     sHandle->mProgOption->makeTableNameInCLI();
 
@@ -244,7 +244,7 @@ int main(int argc, char **argv)
             sHandle->mLoad->SetSQLApi(sHandle->mSQLApi);
 
             /* PROJ-1714 Parallel iLoader
-             * ÀÔ·ÂÇÑ µ¥ÀÌÅÍ ÆÄÀÏ¸¸Å­ ¹Ýº¹ÇØ¼­ uploadingÇÑ´Ù.
+             * ìž…ë ¥í•œ ë°ì´í„° íŒŒì¼ë§Œí¼ ë°˜ë³µí•´ì„œ uploadingí•œë‹¤.
              */
             for ( i = 0 ; i < sHandle->mProgOption->m_DataFileNum ; i++ )
             {
@@ -269,7 +269,7 @@ int main(int argc, char **argv)
             
             if ( sHandle->mProgOption->m_bExist_NST != SQL_TRUE)
             {
-                // BUG-24096 : iloader °æ°ú ½Ã°£ Ç¥½Ã
+                // BUG-24096 : iloader ê²½ê³¼ ì‹œê°„ í‘œì‹œ
                 g_qcuTimeCheck.showAutoScale4Wall();
             }
             break;
@@ -290,7 +290,7 @@ int main(int argc, char **argv)
 
         gEdo = el_init(*argv, stdin, stdout, stderr);
 
-        /* BUG-29932 : [WIN] iloader µµ noprompt ¿É¼ÇÀÌ ÇÊ¿äÇÕ´Ï´Ù. */
+        /* BUG-29932 : [WIN] iloader ë„ noprompt ì˜µì…˜ì´ í•„ìš”í•©ë‹ˆë‹¤. */
         if( sHandle->mProgOption->mNoPrompt == ILO_TRUE )
         {
             el_set(gEdo, EL_PROMPT, ilonoprompt);
@@ -351,8 +351,8 @@ int main(int argc, char **argv)
             idlOS::printf("Input Option is Valid\n");
 #endif
 
-            /* BUG-30693 : table ÀÌ¸§µé°ú owner ÀÌ¸§À» mtlMakeNameInFunc ÇÔ¼ö¸¦ ÀÌ¿ëÇÏ¿©
-            ´ë¹®ÀÚ·Î º¯°æÇØ¾ß ÇÒ °æ¿ì º¯°æÇÔ.*/
+            /* BUG-30693 : table ì´ë¦„ë“¤ê³¼ owner ì´ë¦„ì„ mtlMakeNameInFunc í•¨ìˆ˜ë¥¼ ì´ìš©í•˜ì—¬
+            ëŒ€ë¬¸ìžë¡œ ë³€ê²½í•´ì•¼ í•  ê²½ìš° ë³€ê²½í•¨.*/
             sHandle->mProgOption->makeTableNameInCLI();
 
             switch ( sHandle->mProgOption->m_CommandType)
@@ -376,7 +376,7 @@ int main(int argc, char **argv)
                 sHandle->mLoad->SetProgOption(sHandle->mProgOption);
                 sHandle->mLoad->SetSQLApi(sHandle->mSQLApi);
                 sHandle->mSQLApi->alterReplication( sHandle->mProgOption->mReplication );                       /* PROJ-1714
-                 * ÀÔ·ÂÇÑ µ¥ÀÌÅÍ ÆÄÀÏ¸¸Å­ ¹Ýº¹ÇØ¼­ uploadingÇÑ´Ù.
+                 * ìž…ë ¥í•œ ë°ì´í„° íŒŒì¼ë§Œí¼ ë°˜ë³µí•´ì„œ uploadingí•œë‹¤.
                  */
                 for ( i = 0 ; i < sHandle->mProgOption->m_DataFileNum ; i++ )
                 {
@@ -393,7 +393,7 @@ int main(int argc, char **argv)
                
                 if ( sHandle->mProgOption->m_bExist_NST != SQL_TRUE)
                 {
-                    // BUG-24096 : iloader °æ°ú ½Ã°£ Ç¥½Ã
+                    // BUG-24096 : iloader ê²½ê³¼ ì‹œê°„ í‘œì‹œ
                     g_qcuTimeCheck.showAutoScale4Wall();
                 }
                 break;
@@ -442,7 +442,7 @@ exit_pos:
     {
         /* do nothing */
     }
-    // ÀÏ¹Ý ¼öÇàÁß ¹ß»ýÇÑ ¿¡·¯¸Þ½ÃÁö Ãâ·Â
+    // ì¼ë°˜ ìˆ˜í–‰ì¤‘ ë°œìƒí•œ ì—ëŸ¬ë©”ì‹œì§€ ì¶œë ¥
     IDE_EXCEPTION( err_command1 );
     {
         if ( sHandle->mUseApi != SQL_TRUE )
@@ -450,7 +450,7 @@ exit_pos:
             utePrintfErrorCode(stdout, sHandle->mErrorMgr);
         }
     }
-    // ÆÄ½Ì¿¡·¯°¡ ¹ß»ýÇÑ °æ¿ì
+    // íŒŒì‹±ì—ëŸ¬ê°€ ë°œìƒí•œ ê²½ìš°
     IDE_EXCEPTION( err_command2 );
     {
         uteSetErrorCode(sHandle->mErrorMgr, utERR_ABORT_Parse_Command_Error);
@@ -464,7 +464,7 @@ exit_pos:
         idlOS::printf("Use help. iLoader> help \n");
 #endif /* COMPILE_SHARDCLI */
     }
-    // ÆÄ½ÌÁß Áßº¹µÈ ¿É¼Ç »ç¿ëÀÌ³ª Àß¸øµÈ ¿É¼Ç°ªÀ» ÀÔ·ÂÇßÀ» °æ¿ì
+    // íŒŒì‹±ì¤‘ ì¤‘ë³µëœ ì˜µì…˜ ì‚¬ìš©ì´ë‚˜ ìž˜ëª»ëœ ì˜µì…˜ê°’ì„ ìž…ë ¥í–ˆì„ ê²½ìš°
     IDE_EXCEPTION( err_command3 );
     {
         // bug-20637

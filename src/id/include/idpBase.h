@@ -6,7 +6,7 @@
 /***********************************************************************
  * $Id: idpBase.h 76072 2016-06-30 06:11:50Z khkwak $
  * Description:
- * ¼³¸íÀº idpBase.cpp ÂüÁ¶.
+ * ì„¤ëª…ì€ idpBase.cpp ì°¸ì¡°.
  * 
  **********************************************************************/
 
@@ -17,8 +17,8 @@
 
 /*
  * for user or internal only
- * LC_EXTERNAL : °ø°³ÇÏ´Â property. X$PROPERTY ¹× V$PROPERTY ¿¡¼­ È®ÀÎ °¡´É.
- * LC_INTERNAL : »ç¿ëÀÚ¿¡°Ô´Â °ø°³ÇÏÁö ¾Ê´Â property. X$PROPERTY ¿¡¼­¸¸ È®ÀÎ °¡´É.
+ * LC_EXTERNAL : ê³µê°œí•˜ëŠ” property. X$PROPERTY ë° V$PROPERTY ì—ì„œ í™•ì¸ ê°€ëŠ¥.
+ * LC_INTERNAL : ì‚¬ìš©ìžì—ê²ŒëŠ” ê³µê°œí•˜ì§€ ì•ŠëŠ” property. X$PROPERTY ì—ì„œë§Œ í™•ì¸ ê°€ëŠ¥.
  */
 #define    IDP_ATTR_LC_MASK        0x00000001
 #define    IDP_ATTR_LC_EXTERNAL    0x00000000 /* default : internal */
@@ -26,8 +26,8 @@
 
 /*
  * read/write attributes
- * RD_WRITABLE : alter system À¸·Î º¯°æ °¡´ÉÇÑ property
- * RD_READONLY : alter system À¸·Î º¯°æ ºÒ°¡´ÉÇÑ property
+ * RD_WRITABLE : alter system ìœ¼ë¡œ ë³€ê²½ ê°€ëŠ¥í•œ property
+ * RD_READONLY : alter system ìœ¼ë¡œ ë³€ê²½ ë¶ˆê°€ëŠ¥í•œ property
  */
 #define    IDP_ATTR_RD_MASK        0x00000002
 #define    IDP_ATTR_RD_WRITABLE    0x00000000 /* default : writable */
@@ -35,47 +35,47 @@
 
 /*
  * Set Location flag
- * ¿¹Àü RAC ÇÁ·ÎÁ§Æ®¸¦ ÇÒ ¶§, DB file °ú DB instance °¡ 1:1 ·Î ´ëÀÀµÇÁö ¾ÊÀ» °æ¿ì¸¦
- * »ý°¢ÇÏ¿© SL_PFILE °ú SL_SPFILE ÀÌ »ý°åÀ½.
- * ±×·¯³ª RAC ÇÁ·ÎÁ§Æ®°¡ drop µÇ¸é¼­ ÀÇ¹Ì ¾ø¾îÁü.
+ * ì˜ˆì „ RAC í”„ë¡œì íŠ¸ë¥¼ í•  ë•Œ, DB file ê³¼ DB instance ê°€ 1:1 ë¡œ ëŒ€ì‘ë˜ì§€ ì•Šì„ ê²½ìš°ë¥¼
+ * ìƒê°í•˜ì—¬ SL_PFILE ê³¼ SL_SPFILE ì´ ìƒê²¼ìŒ.
+ * ê·¸ëŸ¬ë‚˜ RAC í”„ë¡œì íŠ¸ê°€ drop ë˜ë©´ì„œ ì˜ë¯¸ ì—†ì–´ì§.
  */
 #define    IDP_ATTR_SL_MASK        0x07000000
 #define    IDP_ATTR_SL_ALL         (IDP_ATTR_SL_PFILE |  \
                                     IDP_ATTR_SL_SPFILE | \
-                                    IDP_ATTR_SL_ENV)        /*±âº» °ªÀ¸·Î, ENV/PFILE/SPFILE ¸ðµÎ¿¡¼­ ¼³Á¤°¡´É*/
-#define    IDP_ATTR_SL_PFILE       0x01000000               /* PFILE¿¡ ¼³Á¤ °¡´ÉÇÔ  */
-#define    IDP_ATTR_SL_SPFILE      0x02000000               /* SPFILE¿¡ ¼³Á¤ °¡´ÉÇÔ */
-#define    IDP_ATTR_SL_ENV         0x04000000               /* È¯°æº¯¼ö¿¡ ¼³Á¤°¡´ÉÇÔ */
+                                    IDP_ATTR_SL_ENV)        /*ê¸°ë³¸ ê°’ìœ¼ë¡œ, ENV/PFILE/SPFILE ëª¨ë‘ì—ì„œ ì„¤ì •ê°€ëŠ¥*/
+#define    IDP_ATTR_SL_PFILE       0x01000000               /* PFILEì— ì„¤ì • ê°€ëŠ¥í•¨  */
+#define    IDP_ATTR_SL_SPFILE      0x02000000               /* SPFILEì— ì„¤ì • ê°€ëŠ¥í•¨ */
+#define    IDP_ATTR_SL_ENV         0x04000000               /* í™˜ê²½ë³€ìˆ˜ì— ì„¤ì •ê°€ëŠ¥í•¨ */
 
 /* Must Shared flag */
 #define    IDP_ATTR_MS_MASK        0x08000000 
-#define    IDP_ATTR_MS_ANY         0x00000000 /* ±âº» °ªÀ¸·Î, Cluster¿¡¼­ °øÀ¯ÇÏÁö ¾Ê¾Æµµ °ü°è¾ø´Â ÇÁ·ÎÆÛÆ¼¸¦ ³ªÅ¸³¿ */
-#define    IDP_ATTR_MS_SHARE       0x08000000 /* Cluster¿¡¼­ °øÀ¯ÇÏÁö ¾ÊÀ¸¸é ¾ÈµÇ´Â ÇÁ·ÎÆÛÆ¼¸¦ ³ªÅ¸³¿ */
+#define    IDP_ATTR_MS_ANY         0x00000000 /* ê¸°ë³¸ ê°’ìœ¼ë¡œ, Clusterì—ì„œ ê³µìœ í•˜ì§€ ì•Šì•„ë„ ê´€ê³„ì—†ëŠ” í”„ë¡œí¼í‹°ë¥¼ ë‚˜íƒ€ëƒ„ */
+#define    IDP_ATTR_MS_SHARE       0x08000000 /* Clusterì—ì„œ ê³µìœ í•˜ì§€ ì•Šìœ¼ë©´ ì•ˆë˜ëŠ” í”„ë¡œí¼í‹°ë¥¼ ë‚˜íƒ€ëƒ„ */
 
 /* Identical/Unique flag */
-#define    IDP_ATTR_IU_MASK        0x0000000C /* Identical/Unique ¸¶½ºÅ© */ 
-#define    IDP_ATTR_IU_ANY         0x00000000 /* ±âº» °ªÀ¸·Î, Cluster¿¡¼­ ¾î¶°ÇÑ °ªÀ» °¡Á®µµ °ü°è¾ø´Â ÇÁ·ÎÆÛÆ¼¸¦ ³ªÅ¸³¿ */
-#define    IDP_ATTR_IU_UNIQUE      0x00000004 /* Cluster³»¿¡¼­ À¯ÀÏÇØ¾ßÇÑ´Ù´Â °ÍÀ» ³ªÅ¸³¿ */
-#define    IDP_ATTR_IU_IDENTICAL   0x00000008 /* Cluster³»ÀÇ ¸ðµç ³ëµåÀÇ °ªÀÌ µ¿ÀÏÇØ¾ßÇÑ´Ù´Â °ÍÀ» ³ªÅ¸³¿ */
+#define    IDP_ATTR_IU_MASK        0x0000000C /* Identical/Unique ë§ˆìŠ¤í¬ */ 
+#define    IDP_ATTR_IU_ANY         0x00000000 /* ê¸°ë³¸ ê°’ìœ¼ë¡œ, Clusterì—ì„œ ì–´ë– í•œ ê°’ì„ ê°€ì ¸ë„ ê´€ê³„ì—†ëŠ” í”„ë¡œí¼í‹°ë¥¼ ë‚˜íƒ€ëƒ„ */
+#define    IDP_ATTR_IU_UNIQUE      0x00000004 /* Clusterë‚´ì—ì„œ ìœ ì¼í•´ì•¼í•œë‹¤ëŠ” ê²ƒì„ ë‚˜íƒ€ëƒ„ */
+#define    IDP_ATTR_IU_IDENTICAL   0x00000008 /* Clusterë‚´ì˜ ëª¨ë“  ë…¸ë“œì˜ ê°’ì´ ë™ì¼í•´ì•¼í•œë‹¤ëŠ” ê²ƒì„ ë‚˜íƒ€ëƒ„ */
 
 /* multiple attri */
 #define    IDP_ATTR_ML_MASK        0x00000F00
 #define    IDP_ATTR_ML_JUSTONE     0x00000000 /* default : only one set */
-#define    IDP_ATTR_ML_MULTIPLE    0x00000100 /* ÀÓÀÇÀÇ °¹¼ö°¡ ¿Ã ¼ö ÀÖÀ½ */
-#define    IDP_ATTR_ML_EXACT_2     0x00000200 // 2 °³¸¸ °¡´É  
-#define    IDP_ATTR_ML_EXACT_3     0x00000300 // 3 °³¸¸ °¡´É  
-#define    IDP_ATTR_ML_EXACT_4     0x00000400 // 4 °³¸¸ °¡´É  
-#define    IDP_ATTR_ML_EXACT_5     0x00000500 // 5 °³¸¸ °¡´É  
-#define    IDP_ATTR_ML_EXACT_6     0x00000600 // 6 °³¸¸ °¡´É  
-#define    IDP_ATTR_ML_EXACT_7     0x00000700 // 7 °³¸¸ °¡´É  
-#define    IDP_ATTR_ML_EXACT_8     0x00000800 // 8 °³¸¸ °¡´É  
-#define    IDP_ATTR_ML_EXACT_9     0x00000900 // 9 °³¸¸ °¡´É  
-#define    IDP_ATTR_ML_EXACT_10    0x00000a00 // 10°³¸¸ °¡´É  
-#define    IDP_ATTR_ML_EXACT_11    0x00000b00 // 11°³¸¸ °¡´É  
-#define    IDP_ATTR_ML_EXACT_12    0x00000c00 // 12°³¸¸ °¡´É  
-#define    IDP_ATTR_ML_EXACT_13    0x00000d00 // 13°³¸¸ °¡´É  
-#define    IDP_ATTR_ML_EXACT_14    0x00000e00 // 14°³¸¸ °¡´É  
-#define    IDP_ATTR_ML_EXACT_15    0x00000f00 // 15°³¸¸ °¡´É  
+#define    IDP_ATTR_ML_MULTIPLE    0x00000100 /* ìž„ì˜ì˜ ê°¯ìˆ˜ê°€ ì˜¬ ìˆ˜ ìžˆìŒ */
+#define    IDP_ATTR_ML_EXACT_2     0x00000200 // 2 ê°œë§Œ ê°€ëŠ¥  
+#define    IDP_ATTR_ML_EXACT_3     0x00000300 // 3 ê°œë§Œ ê°€ëŠ¥  
+#define    IDP_ATTR_ML_EXACT_4     0x00000400 // 4 ê°œë§Œ ê°€ëŠ¥  
+#define    IDP_ATTR_ML_EXACT_5     0x00000500 // 5 ê°œë§Œ ê°€ëŠ¥  
+#define    IDP_ATTR_ML_EXACT_6     0x00000600 // 6 ê°œë§Œ ê°€ëŠ¥  
+#define    IDP_ATTR_ML_EXACT_7     0x00000700 // 7 ê°œë§Œ ê°€ëŠ¥  
+#define    IDP_ATTR_ML_EXACT_8     0x00000800 // 8 ê°œë§Œ ê°€ëŠ¥  
+#define    IDP_ATTR_ML_EXACT_9     0x00000900 // 9 ê°œë§Œ ê°€ëŠ¥  
+#define    IDP_ATTR_ML_EXACT_10    0x00000a00 // 10ê°œë§Œ ê°€ëŠ¥  
+#define    IDP_ATTR_ML_EXACT_11    0x00000b00 // 11ê°œë§Œ ê°€ëŠ¥  
+#define    IDP_ATTR_ML_EXACT_12    0x00000c00 // 12ê°œë§Œ ê°€ëŠ¥  
+#define    IDP_ATTR_ML_EXACT_13    0x00000d00 // 13ê°œë§Œ ê°€ëŠ¥  
+#define    IDP_ATTR_ML_EXACT_14    0x00000e00 // 14ê°œë§Œ ê°€ëŠ¥  
+#define    IDP_ATTR_ML_EXACT_15    0x00000f00 // 15ê°œë§Œ ê°€ëŠ¥  
 
 #define    IDP_ATTR_ML_COUNT(a)   ((a & IDP_ATTR_ML_MASK) >> 8)
 
@@ -92,8 +92,8 @@
 /* String Kind Mask */
 #define    IDP_ATTR_SK_MASK           0x00F00000
 #define    IDP_ATTR_SK_PATH           0x00000000 /* Directory or File Path*/
-#define    IDP_ATTR_SK_ALNUM          0x00100000 /* alphanumeric(A~Z, a~z, 0~9)ÀÇ °ªÀ» °®´Â ¹®ÀÚµé·ÎµÈ ÀÌ¸§*/
-#define    IDP_ATTR_SK_ASCII          0x00200000 /* ASCII °ªÀ» °®´Â ¹®ÀÚµé·ÎµÈ ÀÌ¸§*/
+#define    IDP_ATTR_SK_ALNUM          0x00100000 /* alphanumeric(A~Z, a~z, 0~9)ì˜ ê°’ì„ ê°–ëŠ” ë¬¸ìžë“¤ë¡œëœ ì´ë¦„*/
+#define    IDP_ATTR_SK_ASCII          0x00200000 /* ASCII ê°’ì„ ê°–ëŠ” ë¬¸ìžë“¤ë¡œëœ ì´ë¦„*/
 #define    IDP_ATTR_SK_MULTI_BYTE     0x00300000 /* PROJ-2208 Multi Byte Type */
 
 /* type of prop. */
@@ -107,11 +107,11 @@
 #define    IDP_ATTR_TP_Special     0x70000000
 
 /* for align value
- * ÇÁ·ÎÆÛÆ¼ÀÇ °ª¿¡ ´ëÇÑ alignÀ» ¸ÂÃß¾î ÁÖ´Â ¸ÅÅ©·ÎÀÌ¸ç, 
- * »óÀ§ 8¹ÙÀÌÆ®¸¦ »ç¿ëÇÏ¿© ¼³Á¤ÇÒ ¼ö ÀÖ´Ù.
- * ÀÌ ¸ÅÅ©·Î¸¦ »ç¿ëÇÏ±â À§ÇØ¼­´Â IDP_ATTR_AL_SET_VALUE¸¦ ÀÌ¿ëÇÏ¿©
- * »óÀ§ 8¹ÙÀÌÆ®¿¡ align ÇÏ°íÀÚÇÏ´Â ´ÜÀ§ °ªÀ» ¼³Á¤ÇÒ ¼ö ÀÖ´Ù. 
- * ¼ýÀÚ Å¸ÀÔÀÇ ÇÁ·ÎÆÛÆ¼¿¡(ULong,SLong,UInt,SInt) ´ëÇØ¼­¸¸ Áö¿øµÈ´Ù.
+ * í”„ë¡œí¼í‹°ì˜ ê°’ì— ëŒ€í•œ alignì„ ë§žì¶”ì–´ ì£¼ëŠ” ë§¤í¬ë¡œì´ë©°, 
+ * ìƒìœ„ 8ë°”ì´íŠ¸ë¥¼ ì‚¬ìš©í•˜ì—¬ ì„¤ì •í•  ìˆ˜ ìžˆë‹¤.
+ * ì´ ë§¤í¬ë¡œë¥¼ ì‚¬ìš©í•˜ê¸° ìœ„í•´ì„œëŠ” IDP_ATTR_AL_SET_VALUEë¥¼ ì´ìš©í•˜ì—¬
+ * ìƒìœ„ 8ë°”ì´íŠ¸ì— align í•˜ê³ ìží•˜ëŠ” ë‹¨ìœ„ ê°’ì„ ì„¤ì •í•  ìˆ˜ ìžˆë‹¤. 
+ * ìˆ«ìž íƒ€ìž…ì˜ í”„ë¡œí¼í‹°ì—(ULong,SLong,UInt,SInt) ëŒ€í•´ì„œë§Œ ì§€ì›ëœë‹¤.
  */
 #define    IDP_ATTR_AL_MASK             ID_ULONG(0xFFFFFFFF00000000)
 #define    IDP_ATTR_AL_SET_VALUE(val)   ((idpAttr)(val) << ID_ULONG(32))
@@ -159,7 +159,7 @@ typedef struct
 } idpValArray;
 
 /*
- * Fixed TableÀÇ Ãâ·ÂÀ» À§ÇÑ °ÍÀÓ.
+ * Fixed Tableì˜ ì¶œë ¥ì„ ìœ„í•œ ê²ƒìž„.
  */
 typedef struct idpBaseInfo
 {
@@ -170,7 +170,7 @@ typedef struct idpBaseInfo
     void *       mMin;
     void *       mMax;
     void*        mMemVal[IDP_FIXED_TBL_VALUE_COUNT];
-    /*¾Æ·¡´Â °¢ Source º° ÀúÀåµÈ °ªÀ» ³ªÅ¸³»´Â ÇÊµåÀÓ*/
+    /*ì•„ëž˜ëŠ” ê° Source ë³„ ì €ìž¥ëœ ê°’ì„ ë‚˜íƒ€ë‚´ëŠ” í•„ë“œìž„*/
     UInt         mDefaultCount;
     void*        mDefaultVal[IDP_FIXED_TBL_VALUE_COUNT];
     UInt         mEnvCount;
@@ -182,13 +182,13 @@ typedef struct idpBaseInfo
     UInt         mSPFileBySIDCount;
     void*        mSPFileBySIDVal[IDP_FIXED_TBL_VALUE_COUNT];
 
-    void *       mBase; // convert ¿¬»êÀ» À§ÇØ ÀÚ½ÅÀÇ Base¿¡ ´ëÇÑ Æ÷ÀÎÅÍ°¡ ÇÊ¿äÇÔ
+    void *       mBase; // convert ì—°ì‚°ì„ ìœ„í•´ ìžì‹ ì˜ Baseì— ëŒ€í•œ í¬ì¸í„°ê°€ í•„ìš”í•¨
 }idpBaseInfo;
 
 /*
- * ±âÁ¸¿¡ idpBase¿¡ virtual functionÀ¸·Î ±¸ÇöµÇ¾îÀÖ´ø ÇÔ¼öµéÀ»
- * ÇÔ¼öÆ÷ÀÎÅÍ¹æ½ÄÀ¸·Î º¯°æÇÏ¿´À½
- * Å¬¶óÀÌ¾ðÆ® ¶óÀÌºê·¯¸®ÀÇ C++ dependency¸¦ ¾ø¾Ö±â À§ÇÔÀÓ: BUG-11362
+ * ê¸°ì¡´ì— idpBaseì— virtual functionìœ¼ë¡œ êµ¬í˜„ë˜ì–´ìžˆë˜ í•¨ìˆ˜ë“¤ì„
+ * í•¨ìˆ˜í¬ì¸í„°ë°©ì‹ìœ¼ë¡œ ë³€ê²½í•˜ì˜€ìŒ
+ * í´ë¼ì´ì–¸íŠ¸ ë¼ì´ë¸ŒëŸ¬ë¦¬ì˜ C++ dependencyë¥¼ ì—†ì• ê¸° ìœ„í•¨ìž„: BUG-11362
  */
 typedef struct idpVirtualFunction
 {
@@ -235,35 +235,35 @@ class idpBase
 protected:
     idpVirtualFunction *mVirtFunc;
 
-// protected¿¡¼­ fixed tableÀÇ Á¢±ÙÀ» À§ÇØ publicÀ» º¯°æÇÔ.
-// protected·Î ¼³Á¤ÇÏ°í, Á¢±ÙÇÒ ¼ö ÀÖ´Â ¹æ¹ýÀÌ ÀÖ³ª?
+// protectedì—ì„œ fixed tableì˜ ì ‘ê·¼ì„ ìœ„í•´ publicì„ ë³€ê²½í•¨.
+// protectedë¡œ ì„¤ì •í•˜ê³ , ì ‘ê·¼í•  ìˆ˜ ìžˆëŠ” ë°©ë²•ì´ ìžˆë‚˜?
 public: 
     static SChar       *mErrorBuf;    // pointing to idp::mErroBuf()
 
-    // To Fix BUG-18324 alter system set LOGICAL_AGER_COUNT¼öÇà ÇÏ´Âµ¿¾È
-    //                  client Á¢¼ÓÀÌ ¾ÈµÊ
+    // To Fix BUG-18324 alter system set LOGICAL_AGER_COUNTìˆ˜í–‰ í•˜ëŠ”ë™ì•ˆ
+    //                  client ì ‘ì†ì´ ì•ˆë¨
     //
-    // Property°ª ÀÐ±â/¾²±âÀÇ µ¿½Ã¼º Á¦¾î¸¦ À§ÇÑ Mutex
+    // Propertyê°’ ì½ê¸°/ì“°ê¸°ì˜ ë™ì‹œì„± ì œì–´ë¥¼ ìœ„í•œ Mutex
     PDL_thread_mutex_t  mMutex;
     
-    idpChangeCallback mUpdateBefore; // ÇÁ·ÎÆÛÆ¼°¡ º¯°æµÉ ¶§ º¯°æ Á÷Àü È£ÃâµÊ.
-    idpChangeCallback mUpdateAfter;  // ÇÁ·ÎÆÛÆ¼°¡ º¯°æµÈ Á÷ÈÄ¿¡ È£ÃâµÊ.
+    idpChangeCallback mUpdateBefore; // í”„ë¡œí¼í‹°ê°€ ë³€ê²½ë  ë•Œ ë³€ê²½ ì§ì „ í˜¸ì¶œë¨.
+    idpChangeCallback mUpdateAfter;  // í”„ë¡œí¼í‹°ê°€ ë³€ê²½ëœ ì§í›„ì— í˜¸ì¶œë¨.
     
     IDE_RC checkRange(void * aValue);
     
     static IDE_RC defaultChangeCallback(
         idvSQL *, SChar *aName, void *, void *, void *);
     
-    /*ÇÏ³ªÀÇ ÇÁ·ÎÆÛÆ¼¿¡ ´ëÇÑ data ¿µ¿ª
-     *¾Æ·¡ º¯¼öµé¿¡ ´ëÇÑ Á¤º¸¸¦ fixed table·Î º¯È¯ÇÑ´Ù. 
+    /*í•˜ë‚˜ì˜ í”„ë¡œí¼í‹°ì— ëŒ€í•œ data ì˜ì—­
+     *ì•„ëž˜ ë³€ìˆ˜ë“¤ì— ëŒ€í•œ ì •ë³´ë¥¼ fixed tableë¡œ ë³€í™˜í•œë‹¤. 
      */
     SChar         mSID[IDP_MAX_SID_LEN];
     SChar        *mName;
     idpAttr       mAttr;
     void         *mMin;
     void         *mMax;
-    idpValArray   mMemVal; //local Instance ¿î¿µÁß¿¡ »ç¿ëµÇ´Â Value List
-    idpValArray   mSrcValArr[IDP_MAX_VALUE_SOURCE_COUNT];//Source·Î ºÎÅÍ ÀÐ¾îµéÀÎ ÇÁ·ÎÆÛÆ¼ °ª
+    idpValArray   mMemVal; //local Instance ìš´ì˜ì¤‘ì— ì‚¬ìš©ë˜ëŠ” Value List
+    idpValArray   mSrcValArr[IDP_MAX_VALUE_SOURCE_COUNT];//Sourceë¡œ ë¶€í„° ì½ì–´ë“¤ì¸ í”„ë¡œí¼í‹° ê°’
 
 public:
 
@@ -289,7 +289,7 @@ public:
     
     IDE_RC read    (void  *aOut, UInt aNum);
     IDE_RC readBySrc (void *aOut, idpValueSource aSrc, UInt aNum);
-    IDE_RC readPtr (void **aOut, UInt aNum); // ReadOnly &&  String Å¸ÀÔÀÇ °æ¿ì¿¡¸¸
+    IDE_RC readPtr (void **aOut, UInt aNum); // ReadOnly &&  String íƒ€ìž…ì˜ ê²½ìš°ì—ë§Œ
     IDE_RC readPtrBySrc (UInt aNum, idpValueSource aSrc, void **aOut);
 
     IDE_RC readPtr4Internal(UInt aNum, void **aOut);

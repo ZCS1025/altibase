@@ -47,7 +47,7 @@ static IDE_RC mtfMinKeepEstimate( mtcNode     * aNode,
 mtfModule mtfMinKeep = {
     2 | MTC_NODE_OPERATOR_AGGREGATION,
     ~( MTC_NODE_INDEX_MASK ),
-    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
+    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìžê°€ ì•„ë‹˜)
     mtfMinKeepFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -103,13 +103,13 @@ IDE_RC mtfMinKeepEstimate( mtcNode      * aNode,
                     ERR_INVALID_FUNCTION_ARGUMENT );
 
     // PROJ-2002 Column Security
-    // MinKeepÇÔ¼ö´Â ºñ±³¸¸À» ¼öÇàÇÏ¹Ç·Î MinKeepÇÔ¼ö ÀÚÃ¼´Â º¹È£È­°¡
-    // ÇÊ¿äÇÏÁö ¾Ê´Ù. ±×·¯³ª MinKeepÇÔ¼ö°¡ º¹È£È­ÇÑ °ªÀ» ¸®ÅÏÇÏ±â
-    // À§ÇØ¼­´Â ¸¶Áö¸· MinKeep°ª¿¡ ´ëÇØ º¹È£È­¸¦ ¼öÇàÇÒ ¼ö µµ ÀÖÁö¸¸
-    // ÀÌ °æ¿ì ¾ÏÈ£ Å¸ÀÔÀÇ ÀÓ½Ã º¯¼ö¸¦ ÀúÀåÇÒ °ø°£ÀÌ ÇÊ¿äÇÏ°í
-    // ¶Ç MinKeepÀÌ ÁßÃ¸µÇ´Â °æ¿ìµµ ÀÖÀ¸¹Ç·Î MinKeepÇÔ¼ö¿¡ º¸¾È Å¸ÀÔÀÌ
-    // ¿À´Â °æ¿ì º¸¾È Å¸ÀÔÀ¸·Î ¸®ÅÏÇÑ´Ù. ´Ü, º¹È£È­¸¦ À§ÇØ
-    // ÀÎÀÚÀÇ source¸¦ MinKeepÇÔ¼öÀÇ source·Î ¼³Á¤ÇÑ´Ù.
+    // MinKeepí•¨ìˆ˜ëŠ” ë¹„êµë§Œì„ ìˆ˜í–‰í•˜ë¯€ë¡œ MinKeepí•¨ìˆ˜ ìžì²´ëŠ” ë³µí˜¸í™”ê°€
+    // í•„ìš”í•˜ì§€ ì•Šë‹¤. ê·¸ëŸ¬ë‚˜ MinKeepí•¨ìˆ˜ê°€ ë³µí˜¸í™”í•œ ê°’ì„ ë¦¬í„´í•˜ê¸°
+    // ìœ„í•´ì„œëŠ” ë§ˆì§€ë§‰ MinKeepê°’ì— ëŒ€í•´ ë³µí˜¸í™”ë¥¼ ìˆ˜í–‰í•  ìˆ˜ ë„ ìžˆì§€ë§Œ
+    // ì´ ê²½ìš° ì•”í˜¸ íƒ€ìž…ì˜ ìž„ì‹œ ë³€ìˆ˜ë¥¼ ì €ìž¥í•  ê³µê°„ì´ í•„ìš”í•˜ê³ 
+    // ë˜ MinKeepì´ ì¤‘ì²©ë˜ëŠ” ê²½ìš°ë„ ìžˆìœ¼ë¯€ë¡œ MinKeepí•¨ìˆ˜ì— ë³´ì•ˆ íƒ€ìž…ì´
+    // ì˜¤ëŠ” ê²½ìš° ë³´ì•ˆ íƒ€ìž…ìœ¼ë¡œ ë¦¬í„´í•œë‹¤. ë‹¨, ë³µí˜¸í™”ë¥¼ ìœ„í•´
+    // ì¸ìžì˜ sourceë¥¼ MinKeepí•¨ìˆ˜ì˜ sourceë¡œ ì„¤ì •í•œë‹¤.
     //
     // ex) select _decrypt(MinKeep(i1)) from t1;
     //     select _decrypt(max(MinKeep(i2))) from t1 group by i1;
@@ -126,7 +126,7 @@ IDE_RC mtfMinKeepEstimate( mtcNode      * aNode,
     aTemplate->rows[aNode->table].execute[aNode->column] = mtfExecute;
 
     // BUG-23102
-    // mtcColumnÀ¸·Î ÃÊ±âÈ­ÇÑ´Ù.
+    // mtcColumnìœ¼ë¡œ ì´ˆê¸°í™”í•œë‹¤.
     mtc::initializeColumn( aStack[0].column, aStack[1].column );
 
     IDE_TEST( mtc::initializeColumn( aStack[0].column + 1,
@@ -136,7 +136,7 @@ IDE_RC mtfMinKeepEstimate( mtcNode      * aNode,
                                      0 )
               != IDE_SUCCESS );
 
-    // funcData »ç¿ë
+    // funcData ì‚¬ìš©
     aNode->info = aTemplate->funcDataCnt;
     aTemplate->funcDataCnt++;
 
@@ -180,7 +180,7 @@ IDE_RC mtfMinKeepInitialize( mtcNode     * aNode,
     sBinary = (mtdBinaryType*)((UChar*)aTemplate->rows[aNode->table].row +
                                sColumn[1].column.offset);
 
-    // ÃÖÃÊ µî·Ï
+    // ìµœì´ˆ ë“±ë¡
     if ( aTemplate->funcData[aNode->info] == NULL )
     {
         IDE_TEST( mtf::allocFuncDataMemory( &sMemoryMgr )
@@ -198,7 +198,7 @@ IDE_RC mtfMinKeepInitialize( mtcNode     * aNode,
                                                     sMemoryMgr )
                   != IDE_SUCCESS );
 
-        // µî·Ï
+        // ë“±ë¡
         aTemplate->funcData[aNode->info] = sFuncData;
     }
     else

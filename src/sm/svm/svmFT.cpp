@@ -33,8 +33,8 @@
  * D$VOL_TBS_PCH
  *----------------------------------------- */
 
-/* TASK-4007 [SM] PBT¸¦ À§ÇÑ ±â´É Ãß°¡
- * PCH¸¦ DumpÇÒ ¼ö ÀÖ´Â ±â´É Ãß°¡ */
+/* TASK-4007 [SM] PBTë¥¼ ìœ„í•œ ê¸°ëŠ¥ ì¶”ê°€
+ * PCHë¥¼ Dumpí•  ìˆ˜ ìžˆëŠ” ê¸°ëŠ¥ ì¶”ê°€ */
 
 static iduFixedTableColDesc gDumpVolTBSPCHColDesc[] =
 {
@@ -97,7 +97,7 @@ static iduFixedTableColDesc gDumpVolTBSPCHColDesc[] =
 };
 
 // D$VOL_TBS_PCH
-// ÇÑ TBSÀÇ ¸ðµç PCH¸¦ DumpÇÑ´Ù.
+// í•œ TBSì˜ ëª¨ë“  PCHë¥¼ Dumpí•œë‹¤.
 static IDE_RC buildRecordVolTBSPCHDump(idvSQL              * /*aStatistics*/,
                                        void                *aHeader,
                                        void                *aDumpObj,
@@ -115,13 +115,13 @@ static IDE_RC buildRecordVolTBSPCHDump(idvSQL              * /*aStatistics*/,
 
     IDE_TEST_RAISE( aDumpObj == NULL, ERR_EMPTY_OBJECT );
 
-    /* BUG-28678  [SM] qmsDumpObjList::mObjInfo¿¡ ¼³Á¤µÉ ¸Þ¸ð¸® ÁÖ¼Ò´Â 
-     * ¹Ýµå½Ã °ø°£À» ÇÒ´çÇØ¼­ ¼³Á¤ÇØ¾ßÇÕ´Ï´Ù. 
+    /* BUG-28678  [SM] qmsDumpObjList::mObjInfoì— ì„¤ì •ë  ë©”ëª¨ë¦¬ ì£¼ì†ŒëŠ” 
+     * ë°˜ë“œì‹œ ê³µê°„ì„ í• ë‹¹í•´ì„œ ì„¤ì •í•´ì•¼í•©ë‹ˆë‹¤. 
      * 
-     * aDumpObj´Â Pointer·Î µ¥ÀÌÅÍ°¡ ¿À±â ¶§¹®¿¡ °ªÀ» °¡Á®¿Í¾ß ÇÕ´Ï´Ù. */
+     * aDumpObjëŠ” Pointerë¡œ ë°ì´í„°ê°€ ì˜¤ê¸° ë•Œë¬¸ì— ê°’ì„ ê°€ì ¸ì™€ì•¼ í•©ë‹ˆë‹¤. */
     sSpaceID  = *( (scSpaceID*)aDumpObj );
 
-    // VOL_TABLESPACE°¡ ¸Â´ÂÁö °Ë»çÇÑ´Ù.
+    // VOL_TABLESPACEê°€ ë§žëŠ”ì§€ ê²€ì‚¬í•œë‹¤.
     IDE_ASSERT( sctTableSpaceMgr::isVolatileTableSpace( sSpaceID ) == ID_TRUE );
 
 
@@ -260,7 +260,7 @@ static iduFixedTableColDesc gVolTablespaceDescColDesc[] =
     }
 };
 
-/* Tablespace Node·ÎºÎÅÍ X$VOL_TABLESPACE_DESCÀÇ ±¸Á¶Ã¼ ±¸¼º
+/* Tablespace Nodeë¡œë¶€í„° X$VOL_TABLESPACE_DESCì˜ êµ¬ì¡°ì²´ êµ¬ì„±
  */
    
 IDE_RC constructTBSDesc( svmTBSNode     * aTBSNode,
@@ -271,8 +271,8 @@ IDE_RC constructTBSDesc( svmTBSNode     * aTBSNode,
     
     smiVolTableSpaceAttr * sVolAttr = & aTBSNode->mTBSAttr.mVolAttr;
 
-    // TablespaceÀÇ Performance View±¸ÃàÁß
-    // Offline, DropÀ¸·ÎÀÇ »óÅÂÀüÀÌ¸¦ ¸·±â À§ÇÔ
+    // Tablespaceì˜ Performance Viewêµ¬ì¶•ì¤‘
+    // Offline, Dropìœ¼ë¡œì˜ ìƒíƒœì „ì´ë¥¼ ë§‰ê¸° ìœ„í•¨
     IDE_ASSERT( sctTableSpaceMgr::lock(NULL /* idvSQL * */)
                 == IDE_SUCCESS );
     
@@ -301,11 +301,11 @@ IDE_RC constructTBSDesc( svmTBSNode     * aTBSNode,
 
     return IDE_SUCCESS;
 
-    // ¿¡·¯Ã³¸® ÇØ¾ßÇÒ °æ¿ì lock/unlock¿¡ ´ëÇÑ »óÅÂÃ³¸® ÇÊ¿ä
+    // ì—ëŸ¬ì²˜ë¦¬ í•´ì•¼í•  ê²½ìš° lock/unlockì— ëŒ€í•œ ìƒíƒœì²˜ë¦¬ í•„ìš”
 }
 
 /*
-     X$VOL_TABLESPACE_DESC ÀÇ ·¹ÄÚµå¸¦ ±¸ÃàÇÑ´Ù.
+     X$VOL_TABLESPACE_DESC ì˜ ë ˆì½”ë“œë¥¼ êµ¬ì¶•í•œë‹¤.
  */
 
 IDE_RC buildRecordForVolTablespaceDesc(
@@ -342,7 +342,7 @@ IDE_RC buildRecordForVolTablespaceDesc(
                      (void *) &sTBSDesc )
                  != IDE_SUCCESS);
 
-        // DropµÈ Tablespace´Â SKIPÇÑ´Ù
+        // Dropëœ TablespaceëŠ” SKIPí•œë‹¤
         sctTableSpaceMgr::getNextSpaceNode((void*)sCurTBS, (void**)&sCurTBS);
     }
 
@@ -422,7 +422,7 @@ static iduFixedTableColDesc gVolTBSFreePageListTableColDesc[] =
 };
 
 /*
- * X$VOL_TABLESPACE_FREE_PAGE_LIST Performance View ÀÇ ·¹ÄÚµå¸¦ ¸¸µé¾î³½´Ù.
+ * X$VOL_TABLESPACE_FREE_PAGE_LIST Performance View ì˜ ë ˆì½”ë“œë¥¼ ë§Œë“¤ì–´ë‚¸ë‹¤.
  */
 IDE_RC buildRecordForVolTBSFreePageList(
     idvSQL              * /*aStatistics*/,
@@ -461,7 +461,7 @@ IDE_RC buildRecordForVolTBSFreePageList(
             sPerfVolTBSFreeList.mFreePageCount   =
                 sCurTBS->mMemBase.mFreePageLists[i].mFreePageCount;
 
-            /* BUG-31881 ¿¹¾àµÈ »ç¿ëºÒ°¡ ÆäÀÌÁöÀÇ °³¼ö¸¦ Ãâ·ÂÇÔ */
+            /* BUG-31881 ì˜ˆì•½ëœ ì‚¬ìš©ë¶ˆê°€ íŽ˜ì´ì§€ì˜ ê°œìˆ˜ë¥¼ ì¶œë ¥í•¨ */
             IDE_TEST( svmFPLManager::getUnusablePageCount(
                     & sCurTBS->mArrPageReservation[i],
                     NULL, // Transaction

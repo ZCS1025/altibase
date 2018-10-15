@@ -75,7 +75,7 @@ void * alloca(unsigned int);
 %token TR_FULL
 %token TR_NO
 
-%token TR_PARALLEL // PROJ-1665 Parallel Hint Ãß°¡ 
+%token TR_PARALLEL // PROJ-1665 Parallel Hint ì¶”ê°€ 
 %token TR_NOPARALLEL /* PROJ-1071 */
 %token TR_NO_PARALLEL
 
@@ -220,7 +220,7 @@ all_hints
                 if ($<hints>2->joinMethod != NULL)
                 {
                     // To Fix PR-10496
-                    // »ç¿ëÀÚ°¡ ±â¼úÇÑ ¼ø¼­´ë·Î Hint¸¦ ¹èÄ¡ÇÏ¿©¾ß ÇÔ.
+                    // ì‚¬ìš©ìê°€ ê¸°ìˆ í•œ ìˆœì„œëŒ€ë¡œ Hintë¥¼ ë°°ì¹˜í•˜ì—¬ì•¼ í•¨.
                     // $<hints>2->joinMethod->next = $<hints>$->joinMethod;
                     // $<hints>$->joinMethod = $<hints>2->joinMethod;
 
@@ -241,7 +241,7 @@ all_hints
                 if ($<hints>2->tableAccess != NULL)
                 {
                     // To Fix PR-10496
-                    // »ç¿ëÀÚ°¡ ±â¼úÇÑ ¼ø¼­´ë·Î Hint¸¦ ¹èÄ¡ÇÏ¿©¾ß ÇÔ.
+                    // ì‚¬ìš©ìê°€ ê¸°ìˆ í•œ ìˆœì„œëŒ€ë¡œ Hintë¥¼ ë°°ì¹˜í•˜ì—¬ì•¼ í•¨.
                     // $<hints>2->tableAccess->next = $<hints>$->tableAccess;
                     // $<hints>$->tableAccess = $<hints>2->tableAccess;
 
@@ -1254,7 +1254,7 @@ hint_method
             QCP_SET_INIT_LEADING_HINTS($<hints>$->leading);
             $<hints>$->leading->mLeadingTables = $<hintTables>3;
 
-            // ORDERED ÈùÆ®¸¦ °°ÀÌ Àû¿ëÇÑ´Ù.
+            // ORDERED íŒíŠ¸ë¥¼ ê°™ì´ ì ìš©í•œë‹¤.
             $<hints>$->joinOrderType = QMO_JOIN_ORDER_TYPE_ORDERED;
         }
         else
@@ -1763,8 +1763,8 @@ hint_no_parameter
             QCP_SET_INIT_HINTS( $<hints>$ );
             
             // BUG-41944
-            // high precision hint´Â parsing Áï½Ã µ¿ÀÛÇØ¾ß ÇÏ´Â hint·Î
-            // template¿¡ Á÷Á¢ µî·ÏÇÑ´Ù.
+            // high precision hintëŠ” parsing ì¦‰ì‹œ ë™ì‘í•´ì•¼ í•˜ëŠ” hintë¡œ
+            // templateì— ì§ì ‘ ë“±ë¡í•œë‹¤.
             QC_SHARED_TMPLATE(STATEMENT)->tmplate.arithmeticOpMode =
                 MTC_ARITHMETIC_OPERATION_PRECISION;
         }
@@ -1970,7 +1970,7 @@ hint_with_parameter
                      QTEXT+$<position>1.offset,
                      $<position>1.size) == 0)
         {
-            // È£È¯¼ºÀ» À§ÇØ ³²°ÜµĞ´Ù.
+            // í˜¸í™˜ì„±ì„ ìœ„í•´ ë‚¨ê²¨ë‘”ë‹¤.
             QCP_STRUCT_ALLOC($<hints>$, qmsHints);
             QCP_SET_INIT_HINTS($<hints>$);
         }

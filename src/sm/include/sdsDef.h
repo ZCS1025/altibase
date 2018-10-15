@@ -91,13 +91,13 @@ typedef struct sdsFlusherStatData
     UInt  mAlive;
     UInt  mCurrentJob; // 0: sleep, 1: replacement flush, 2: checkpoint flush
     UInt  mIOing;      // 0: memory, 1: IO
-    /* Áö±İ IOB¿¡ µé¾î ÀÖ´Â ÆäÀÌÁöÀÇ ¼ö */
+    /* ì§€ê¸ˆ IOBì— ë“¤ì–´ ìˆëŠ” í˜ì´ì§€ì˜ ìˆ˜ */
     UInt  mINIOBCount;
-    /* replacement jobÀ» ¿Ï·áÇÑ È½¼ö */
+    /* replacement jobì„ ì™„ë£Œí•œ íšŸìˆ˜ */
     ULong mReplacementFlushJobs;
-    /* replacement jobÀ» ÅëÇØ ³»·Á°£ ´©Àû pages */
+    /* replacement jobì„ í†µí•´ ë‚´ë ¤ê°„ ëˆ„ì  pages */
     ULong mReplacementFlushPages;
-    /* replacement jobÁß skip µÈ ´©Àû pages  */
+    /* replacement jobì¤‘ skip ëœ ëˆ„ì  pages  */
     ULong mReplacementSkipPages;
     ULong mCheckpointFlushJobs;
     ULong mCheckpointFlushPages;
@@ -134,41 +134,41 @@ typedef struct sdsBufferMgrStatData
     UInt      mHashBucketCount;
     UInt      mHashChainLatchCount;
     UInt      mCheckpointListCount;
-    /* Hash Table¿¡ °É¸° ÆäÀÌÁöÀÇ ¼ö */
+    /* Hash Tableì— ê±¸ë¦° í˜ì´ì§€ì˜ ìˆ˜ */
     UInt      mHashPages;
-    /* ¾²¿©Áö°í ÀÖ´Â ÆäÀÌÁö ¼ö */
+    /* ì“°ì—¬ì§€ê³  ìˆëŠ” í˜ì´ì§€ ìˆ˜ */
     UInt      mMovedoweIngPages;
-    /* Flush ´ë»ó ÆäÀÌÁöÀÇ ¼ö */
+    /* Flush ëŒ€ìƒ í˜ì´ì§€ì˜ ìˆ˜ */
     UInt      mMovedownDonePages;
-    /* Flush ÁßÀÎ ÆäÀÌÁöÀÇ ¼ö */     
+    /* Flush ì¤‘ì¸ í˜ì´ì§€ì˜ ìˆ˜ */     
     UInt      mFlushIngPages;
-    /* Flush ¿Ï·áÇÑ ÆäÀÌÁöÀÇ ¼ö */
+    /* Flush ì™„ë£Œí•œ í˜ì´ì§€ì˜ ìˆ˜ */
     UInt      mFlushDonePages;
-    /* checkpoint list ÀÇ ¼ö  */
+    /* checkpoint list ì˜ ìˆ˜  */
     UInt      mCheckpointListPages;
-    /* secondary Buffer¿¡ ÆäÀÌÁö¸¦ ¿äÃ»ÇÑ È½¼ö */
+    /* secondary Bufferì— í˜ì´ì§€ë¥¼ ìš”ì²­í•œ íšŸìˆ˜ */
     ULong     mGetPages;
-    /* secondary Buffer¿¡¼­ ÆäÀÌÁö¸¦ ÀĞ¾î°£ È½¼ö */
+    /* secondary Bufferì—ì„œ í˜ì´ì§€ë¥¼ ì½ì–´ê°„ íšŸìˆ˜ */
     ULong     mReadPages;
-    /* single page  Read½Ã ReadÇÑ ½Ã°£ */
+    /* single page  Readì‹œ Readí•œ ì‹œê°„ */
     ULong     mReadTime;
-    /* single page  Read½Ã Checksum ÇÑ ½Ã°£ */
+    /* single page  Readì‹œ Checksum í•œ ì‹œê°„ */
     ULong     mReadChecksumTime;
-    /* secondary Buffer¿¡ ÆäÀÌÁö¸¦ ³»¸° È½¼ö*/
+    /* secondary Bufferì— í˜ì´ì§€ë¥¼ ë‚´ë¦° íšŸìˆ˜*/
     ULong     mWritePages;
-    /* single page  Write ½Ã°£ */
+    /* single page  Write ì‹œê°„ */
     ULong     mWriteTime;
-    /* single page  Checksum ½Ã°£ */
+    /* single page  Checksum ì‹œê°„ */
     ULong     mWriteChecksumTime;
     /* */
     SDouble   mHitRatio;
-    /* victimÀ» Ã£±â À§ÇØ flusher¸¦ ±â´Ù¸° È½¼ö */
+    /* victimì„ ì°¾ê¸° ìœ„í•´ flusherë¥¼ ê¸°ë‹¤ë¦° íšŸìˆ˜ */
     ULong     mVictimWaits;
-    /* Fullscan Read½Ã chechsum ½Ã°£ */
+    /* Fullscan Readì‹œ chechsum ì‹œê°„ */
     ULong     mMPRChecksumTime;
-    /* Fullscan Read½Ã ReadÇÑ ½Ã°£ */
+    /* Fullscan Readì‹œ Readí•œ ì‹œê°„ */
     ULong     mMPRReadTime;
-    /* Fullscan Read½Ã ReadÇÑ Page °³¼ö  */
+    /* Fullscan Readì‹œ Readí•œ Page ê°œìˆ˜  */
     ULong     mMPRReadPages;
 } sdsBufferMgrStatData;
 

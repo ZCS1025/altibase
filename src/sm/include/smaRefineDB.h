@@ -73,17 +73,17 @@ public:
                                 SChar          * aNxtPtr );
 
     /*
-     * BUG-24518 [MDB] Shutdown Phase¿¡¼­ ¸Ş¸ğ¸® Å×ÀÌºí CompactionÀÌ ÇÊ¿äÇÕ´Ï´Ù.
+     * BUG-24518 [MDB] Shutdown Phaseì—ì„œ ë©”ëª¨ë¦¬ í…Œì´ë¸” Compactionì´ í•„ìš”í•©ë‹ˆë‹¤.
      */
     static IDE_RC compactTables( );
 
     /* PROJ-1594 Volatile TBS */
-    /* ¸ğµç volatile tableµéÀ» ÃÊ±âÈ­ÇÑ´Ù. */
+    /* ëª¨ë“  volatile tableë“¤ì„ ì´ˆê¸°í™”í•œë‹¤. */
     static IDE_RC initAllVolatileTables();
 
 private:
 
-    // Catalog TableÀÇ  SlotÀ» FreeÇÏ°í Free Slot List¿¡ ¸Å´Ü´Ù.
+    // Catalog Tableì˜  Slotì„ Freeí•˜ê³  Free Slot Listì— ë§¤ë‹¨ë‹¤.
     static IDE_RC freeCatalogSlot( smxTrans  * aTrans,
                                    SChar     * aSlotPtr );
 

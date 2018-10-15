@@ -213,9 +213,9 @@ ACI_RC hbpDetachConsole()
     ACI_TEST_RAISE( ACP_RC_NOT_SUCCESS( sAcpRC ), ERR_PROC_DETACH_CONSOLE );
 #if defined( ALTI_CFG_OS_WINDOWS )   
     /*
-     * acpProcLaunchDaemon ÇÔ¼ö´Â Windows¿¡¼­ detach consoleÀ» ÇÏÁö ¾Ê´Â´Ù. 
-     * µû¶ó¼­ parent console¿¡ Á¾¼ÓµÇ¸ç ÀÌ¸¦ ¾ø¾Ö±â À§ÇØ ´ÙÀ½ ÇÔ¼ö¸¦ ºÎ¸¥´Ù.
-     * ´ÙÀ½ ÇÔ¼ö¿¡¼­´Â FreeConsole ÇÔ¼ö¸¦ ºÒ·¯ console°ú detach¸¦ ÇØÁØ´Ù.
+     * acpProcLaunchDaemon í•¨ìˆ˜ëŠ” Windowsì—ì„œ detach consoleì„ í•˜ì§€ ì•ŠëŠ”ë‹¤. 
+     * ë”°ë¼ì„œ parent consoleì— ì¢…ì†ë˜ë©° ì´ë¥¼ ì—†ì• ê¸° ìœ„í•´ ë‹¤ìŒ í•¨ìˆ˜ë¥¼ ë¶€ë¥¸ë‹¤.
+     * ë‹¤ìŒ í•¨ìˆ˜ì—ì„œëŠ” FreeConsole í•¨ìˆ˜ë¥¼ ë¶ˆëŸ¬ consoleê³¼ detachë¥¼ í•´ì¤€ë‹¤.
      */
     sAcpRC = acpProcDaemonize( sHome,
                                ACP_FALSE );

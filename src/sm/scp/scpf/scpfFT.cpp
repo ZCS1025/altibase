@@ -20,7 +20,7 @@
  *
  * Description :
  *
- * º» ÆÄÀÏÀº Common-DataPort File LayerÀÇ Fixed Table ±¸ÇöÆÄÀÏ ÀÔ´Ï´Ù.
+ * ë³¸ íŒŒì¼ì€ Common-DataPort File Layerì˜ Fixed Table êµ¬í˜„íŒŒì¼ ì…ë‹ˆë‹¤.
  *
  **********************************************************************/
 
@@ -31,7 +31,7 @@
 #include <scpManager.h>
 
 /***********************************************************************
- * Description : X$DATAPORT_FILE_HEADERÀÇ ·¹ÄÚµå¸¦ ±¸¼ºÇÑ´Ù.
+ * Description : X$DATAPORT_FILE_HEADERì˜ ë ˆì½”ë“œë¥¼ êµ¬ì„±í•œë‹¤.
  ***********************************************************************/
 
 IDE_RC scpfFT::buildRecord4DataPortFileHeader( 
@@ -61,7 +61,7 @@ IDE_RC scpfFT::buildRecord4DataPortFileHeader(
         sHandle = (scpfHandle*) sOpNode->mData;
         sHeader = &sHandle->mFileHeader;
 
-        // FileType¸¸ Ãë±ŞÇÑ´Ù.
+        // FileTypeë§Œ ì·¨ê¸‰í•œë‹¤.
         if( sHandle->mCommonHandle.mType != SMI_DATAPORT_TYPE_FILE )
         {
             continue;
@@ -187,17 +187,17 @@ iduFixedTableDesc gDataPortFileHeader =
 
 
 /***********************************************************************
- * Description : X$DATAPORT_FILE_CURSORÀÇ ·¹ÄÚµå¸¦ ±¸¼ºÇÑ´Ù.
+ * Description : X$DATAPORT_FILE_CURSORì˜ ë ˆì½”ë“œë¥¼ êµ¬ì„±í•œë‹¤.
  ***********************************************************************/
 
 typedef struct scpfCursorRow4Dump
 {
-    UInt       mBlockSeq;       // ÀĞ°íÀÖ´Â Block Info³» Block ¹øÈ£.
-    UInt       mBlockID;        // ÇöÀç ÀĞ°íÀÖ´Â BlockÀÇ File³» ¹øÈ£.
-    UInt       mBlockOffset;    // Block³» Offset 
-    UInt       mBlockSlotSeq;   // Block³» Slot¹øÈ£
-    UInt       mFileIdx;        // ÇöÀç ´Ù·ç°í ÀÖ´Â ÆÄÀÏÀÇ ¹øÈ£
-    ULong      mFileOffset;     // ÇöÀç±îÁö ÀĞ°Å³ª ¾´ FileOffset
+    UInt       mBlockSeq;       // ì½ê³ ìˆëŠ” Block Infoë‚´ Block ë²ˆí˜¸.
+    UInt       mBlockID;        // í˜„ì¬ ì½ê³ ìˆëŠ” Blockì˜ Fileë‚´ ë²ˆí˜¸.
+    UInt       mBlockOffset;    // Blockë‚´ Offset 
+    UInt       mBlockSlotSeq;   // Blockë‚´ Slotë²ˆí˜¸
+    UInt       mFileIdx;        // í˜„ì¬ ë‹¤ë£¨ê³  ìˆëŠ” íŒŒì¼ì˜ ë²ˆí˜¸
+    ULong      mFileOffset;     // í˜„ì¬ê¹Œì§€ ì½ê±°ë‚˜ ì“´ FileOffset
 } scpfCursorRow4Dump;
 
 
@@ -227,7 +227,7 @@ IDE_RC scpfFT::buildRecord4DataPortFileCursor(
     {
         sHandle = (scpfHandle*) sOpNode->mData;
 
-        // FileType¸¸ Ãë±ŞÇÑ´Ù.
+        // FileTypeë§Œ ì·¨ê¸‰í•œë‹¤.
         if( sHandle->mCommonHandle.mType != SMI_DATAPORT_TYPE_FILE )
         {
             continue;

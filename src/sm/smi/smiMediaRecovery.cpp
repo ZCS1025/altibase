@@ -21,16 +21,16 @@
 /**********************************************************************
  * FILE DESCRIPTION : smiMediaRecovery.cpp                            *
  * -------------------------------------------------------------------*
- * media recovey¸¦ À§ÇÑ inteface ¸ğµâÀÌ¸ç, ´ÙÀ½°ú °°Àº ±â´ÉÀ» Á¦°øÇÑ´Ù.
+ * media recoveyë¥¼ ìœ„í•œ inteface ëª¨ë“ˆì´ë©°, ë‹¤ìŒê³¼ ê°™ì€ ê¸°ëŠ¥ì„ ì œê³µí•œë‹¤.
  *
- * (1) backupÀÌ ¾ø´Â µ¥ÀÌÅ¸ ÆÄÀÏÀÌ ¼Õ»ó, À¯½ÇÀÌ µÈ °æ¿ì¿¡ »õ·Î¿î empty
- *     µ¥ÀÌÅ¸ÆÄÀÏ »ı¼ºÇÑ´Ù.
- * (2) disk °¡ ±úÁ®¼­, ´Ù¸¥ À§Ä¡¿¡ µ¥ÀÌÅ¸ ÆÄÀÏÀ» ¿Å±â´Â °æ¿ì¸¦ À§ÇÑ
- *     µ¥ÀÌÅ¸ÆÄÀÏ ÀÌ¸§ º¯°æ.
- * (3) incompleted recovery ¶§¹®¿¡ ±âÁ¸ redo logÆÄÀÏµé¿¡ ´ëÇÑ redo all/undo
- *     allÀ» skipÇÏ±â À§ÇÏ¿©, ·Î±× ÆÄÀÏµéÀ» ÃÊ±âÈ­ ÀÛ¾÷.
- * (4) database/tablespace/datafile´ÜÀ§ media recovery
- *     ´Ü, datafile´ÜÀ§´Â completed media recovery¸¸ °¡´ÉÇÏ´Ù.
+ * (1) backupì´ ì—†ëŠ” ë°ì´íƒ€ íŒŒì¼ì´ ì†ìƒ, ìœ ì‹¤ì´ ëœ ê²½ìš°ì— ìƒˆë¡œìš´ empty
+ *     ë°ì´íƒ€íŒŒì¼ ìƒì„±í•œë‹¤.
+ * (2) disk ê°€ ê¹¨ì ¸ì„œ, ë‹¤ë¥¸ ìœ„ì¹˜ì— ë°ì´íƒ€ íŒŒì¼ì„ ì˜®ê¸°ëŠ” ê²½ìš°ë¥¼ ìœ„í•œ
+ *     ë°ì´íƒ€íŒŒì¼ ì´ë¦„ ë³€ê²½.
+ * (3) incompleted recovery ë•Œë¬¸ì— ê¸°ì¡´ redo logíŒŒì¼ë“¤ì— ëŒ€í•œ redo all/undo
+ *     allì„ skipí•˜ê¸° ìœ„í•˜ì—¬, ë¡œê·¸ íŒŒì¼ë“¤ì„ ì´ˆê¸°í™” ì‘ì—….
+ * (4) database/tablespace/datafileë‹¨ìœ„ media recovery
+ *     ë‹¨, datafileë‹¨ìœ„ëŠ” completed media recoveryë§Œ ê°€ëŠ¥í•˜ë‹¤.
  **********************************************************************/
 
 #include <ideErrorMgr.h>
@@ -43,43 +43,43 @@
 #include <sct.h>
 
 /*
-  BACKUPÀÌ ¾ø´Â µğ½ºÅ© µ¥ÀÌÅ¸ ÆÄÀÏÀÌ ¼Õ»ó, À¯½ÇÀÌ
-  µÈ °æ¿ì¿¡ »õ·Î¿î ºó µ¥ÀÌÅ¸ ÆÄÀÏ »ı¼ºÇÑ´Ù.
+  BACKUPì´ ì—†ëŠ” ë””ìŠ¤í¬ ë°ì´íƒ€ íŒŒì¼ì´ ì†ìƒ, ìœ ì‹¤ì´
+  ëœ ê²½ìš°ì— ìƒˆë¡œìš´ ë¹ˆ ë°ì´íƒ€ íŒŒì¼ ìƒì„±í•œë‹¤.
 
-  SQL±¸¹® : ALTER DATABASE CREATE DATAFILE 'OLD-FILESPEC' [ AS 'NEW-FILESPEC' ];
+  SQLêµ¬ë¬¸ : ALTER DATABASE CREATE DATAFILE 'OLD-FILESPEC' [ AS 'NEW-FILESPEC' ];
 
-  - aNewFileSpecÀÌ nullÀÎ °æ¿ì¿¡´Â  ÀÌÀü µ¥ÀÌÅ¸ÆÄÀÏ°ú
-  µ¿ÀÏÇÑ ÀÌ¸§°ú ¼Ó¼ºÀ» °¡Áö´Â ºó µ¥ÀÌÅ¸ ÆÄÀÏÀ»»ı¼ºÇÑ´Ù.
+  - aNewFileSpecì´ nullì¸ ê²½ìš°ì—ëŠ”  ì´ì „ ë°ì´íƒ€íŒŒì¼ê³¼
+  ë™ì¼í•œ ì´ë¦„ê³¼ ì†ì„±ì„ ê°€ì§€ëŠ” ë¹ˆ ë°ì´íƒ€ íŒŒì¼ì„ìƒì„±í•œë‹¤.
 
-  - aNewFileSpecÀÌ nullÀÌ ¾Æ´Ñ °æ¿ì¿¡´Â ÀÌÀü µ¥ÀÌÅ¸ ÆÄÀÏ°ú
-  µ¿ÀÏÇÑ¼Ó¼ºÀÌÁö¸¸ , »ı¼º À§Ä¡°¡ ´Ù¸¥ °æ¿ìÀÌ´Ù.
+  - aNewFileSpecì´ nullì´ ì•„ë‹Œ ê²½ìš°ì—ëŠ” ì´ì „ ë°ì´íƒ€ íŒŒì¼ê³¼
+  ë™ì¼í•œì†ì„±ì´ì§€ë§Œ , ìƒì„± ìœ„ì¹˜ê°€ ë‹¤ë¥¸ ê²½ìš°ì´ë‹¤.
 
-  [ ¾Ë°í¸®Áò ]
+  [ ì•Œê³ ë¦¬ì¦˜ ]
 
-  ±âÁ¸ ÆÄÀÏÀÌ¸§À¸·Î hash¿¡¼­ µ¥ÀÌÅ¸ ÆÄÀÏ³ëµå¸¦ °Ë»ö;
-  if(°Ë»öÀÌ fail )  then
+  ê¸°ì¡´ íŒŒì¼ì´ë¦„ìœ¼ë¡œ hashì—ì„œ ë°ì´íƒ€ íŒŒì¼ë…¸ë“œë¥¼ ê²€ìƒ‰;
+  if(ê²€ìƒ‰ì´ fail )  then
       return failure
   fi
 
-  if( »õ·Î¿î À§Ä¡°¡ ÁöÁ¤µÇ¾úÀ¸¸é ) // aNewFileSpec !=NULL
+  if( ìƒˆë¡œìš´ ìœ„ì¹˜ê°€ ì§€ì •ë˜ì—ˆìœ¼ë©´ ) // aNewFileSpec !=NULL
   then
-      µ¥ÀÌÅ¸ ÆÄÀÏ ³ëµåÀÇ fileÀÌ¸§À» °»½ÅÇÑ´Ù.
-      »õ·Î¿î µ¥ÀÌÅ¸  ÆÄÀÏÀ§Ä¡·Î »ı¼º
-      // BUGBUG- logAnchor  sync´Â restart recovery
-      // ÈÄ¿¡ ÇÏ´Â°ÍÀ¸·Î °áÁ¤.
+      ë°ì´íƒ€ íŒŒì¼ ë…¸ë“œì˜ fileì´ë¦„ì„ ê°±ì‹ í•œë‹¤.
+      ìƒˆë¡œìš´ ë°ì´íƒ€  íŒŒì¼ìœ„ì¹˜ë¡œ ìƒì„±
+      // BUGBUG- logAnchor  syncëŠ” restart recovery
+      // í›„ì— í•˜ëŠ”ê²ƒìœ¼ë¡œ ê²°ì •.
   else
-      // ±âÁ¸ À§Ä¡¿¡ °°Àº ÆÄÀÏÀ¸·Î »ı¼ºÇÑ´Ù.
-      if( ±âÁ¸ ÆÄÀÏÀÌ Á¸ÀçÇÏ´ÂÁö È®ÀÎ) // aSrcFileName.
+      // ê¸°ì¡´ ìœ„ì¹˜ì— ê°™ì€ íŒŒì¼ìœ¼ë¡œ ìƒì„±í•œë‹¤.
+      if( ê¸°ì¡´ íŒŒì¼ì´ ì¡´ì¬í•˜ëŠ”ì§€ í™•ì¸) // aSrcFileName.
       then
           return failure
       fi
-      »õ·Î¿î µ¥ÀÌÅ¸ ÆÄÀÏ »ı¼º;
+      ìƒˆë¡œìš´ ë°ì´íƒ€ íŒŒì¼ ìƒì„±;
   fi //else
 
-  [ÀÎÀÚ]
+  [ì¸ì]
 
-  [IN] aOldFileSpec - ·Î±×¾ŞÄ¿»óÀÇ ÆÄÀÏ°æ·Î [ FILESPEC ]
-  [IN] aNewFileSpec - ´Ù¸¥°÷¿¡ ÆÄÀÏÀ» »ı¼ºÇÏ´Â °æ¿ì ÆÄÀÏ°æ·Î [ FILESPEC ]
+  [IN] aOldFileSpec - ë¡œê·¸ì•µì»¤ìƒì˜ íŒŒì¼ê²½ë¡œ [ FILESPEC ]
+  [IN] aNewFileSpec - ë‹¤ë¥¸ê³³ì— íŒŒì¼ì„ ìƒì„±í•˜ëŠ” ê²½ìš° íŒŒì¼ê²½ë¡œ [ FILESPEC ]
 */
 IDE_RC smiMediaRecovery::createDatafile( SChar* aOldFileSpec,
                                          SChar* aNewFileSpec )
@@ -98,11 +98,11 @@ IDE_RC smiMediaRecovery::createDatafile( SChar* aOldFileSpec,
     idlOS::memset( sOldFileSpec, 0x00, SMI_MAX_DATAFILE_NAME_LEN + 1 );
     idlOS::memset( sNewFileSpec, 0x00, SMI_MAX_DATAFILE_NAME_LEN + 1 );
 
-    // ´Ù´Ü°èstartup´Ü°èÁß control ´Ü°è¿¡¼­¸¸ ºÒ¸±¼ö ÀÖ´Ù.
+    // ë‹¤ë‹¨ê³„startupë‹¨ê³„ì¤‘ control ë‹¨ê³„ì—ì„œë§Œ ë¶ˆë¦´ìˆ˜ ìˆë‹¤.
     IDE_TEST_RAISE( smiGetStartupPhase() != SMI_STARTUP_CONTROL,
                     err_startup_phase );
 
-    // [1] ±âÁ¸ FILESPECÀ» º¹»çÇÑ´Ù.
+    // [1] ê¸°ì¡´ FILESPECì„ ë³µì‚¬í•œë‹¤.
     idlOS::strncpy( sOldFileSpec,
                     aOldFileSpec,
                     SMI_MAX_DATAFILE_NAME_LEN );
@@ -110,14 +110,14 @@ IDE_RC smiMediaRecovery::createDatafile( SChar* aOldFileSpec,
 
     sStrLen = idlOS::strlen( sOldFileSpec );
 
-    // [2] ÆÄÀÏ ÆÛ¹Ì¼Ç È®ÀÎ ¹× Àı´ë°æ·Î·Î ¹İÈ¯ÇÑ´Ù.
+    // [2] íŒŒì¼ í¼ë¯¸ì…˜ í™•ì¸ ë° ì ˆëŒ€ê²½ë¡œë¡œ ë°˜í™˜í•œë‹¤.
     IDE_TEST( sctTableSpaceMgr::makeValidABSPath( ID_TRUE,
                                                   sOldFileSpec,
                                                   &sStrLen,
                                                   SMI_TBS_DISK )
               != IDE_SUCCESS );
 
-    // [3] ±âÁ¸ ÆÄÀÏÀÌ¸§À¸·Î hash¿¡¼­ µ¥ÀÌÅ¸ ÆÄÀÏ³ëµå¸¦ °Ë»öÇÑ´Ù.
+    // [3] ê¸°ì¡´ íŒŒì¼ì´ë¦„ìœ¼ë¡œ hashì—ì„œ ë°ì´íƒ€ íŒŒì¼ë…¸ë“œë¥¼ ê²€ìƒ‰í•œë‹¤.
     IDE_TEST(sctTableSpaceMgr::getDataFileNodeByName(sOldFileSpec,
                                                      &sOldFileNode,
                                                      &sSpaceID)
@@ -125,16 +125,16 @@ IDE_RC smiMediaRecovery::createDatafile( SChar* aOldFileSpec,
 
     IDE_TEST_RAISE( sOldFileNode == NULL, err_not_found_filenode );
 
-    // [4] Empty µ¥ÀÌÅ¸ÆÄÀÏÀÇ Çì´õ¸¦ ¼³Á¤ÇÏ±â À§ÇÑ ÆÄÀÏÇì´õ¸¦ ¼³Á¤ÇÑ´Ù.
+    // [4] Empty ë°ì´íƒ€íŒŒì¼ì˜ í—¤ë”ë¥¼ ì„¤ì •í•˜ê¸° ìœ„í•œ íŒŒì¼í—¤ë”ë¥¼ ì„¤ì •í•œë‹¤.
     idlOS::memset(&sDBFileHdr, 0x00, ID_SIZEOF(sddDataFileHdr));
     sDBFileHdr.mSmVersion = smVersionID;
     SM_GET_LSN( sDBFileHdr.mCreateLSN,
                 sOldFileNode->mDBFileHdr.mCreateLSN );
 
     /* BUG-40371
-     * »ı¼ºµÈ Empty FileÀÇ CreateLSN °ªÀÌ LogAnchorÀÇ RedoLSN °ªº¸´Ù Å« °æ¿ì
-     * Empty FileÀÇ RedoLSN À» CreateLSN°ú °°°Ô ¼³Á¤ÇÏ¿©
-     * Restart Recovery°¡ ¼öÇàµÉ¼ö ÀÖµµ·Ï ÇÑ´Ù. */
+     * ìƒì„±ëœ Empty Fileì˜ CreateLSN ê°’ì´ LogAnchorì˜ RedoLSN ê°’ë³´ë‹¤ í° ê²½ìš°
+     * Empty Fileì˜ RedoLSN ì„ CreateLSNê³¼ ê°™ê²Œ ì„¤ì •í•˜ì—¬
+     * Restart Recoveryê°€ ìˆ˜í–‰ë ìˆ˜ ìˆë„ë¡ í•œë‹¤. */
     smrRecoveryMgr::getDiskRedoLSNFromLogAnchor( &sDiskRedoLSN );
     if ( smrCompareLSN::isGT( &sDBFileHdr.mCreateLSN , &sDiskRedoLSN ) == ID_TRUE )
     {
@@ -146,11 +146,11 @@ IDE_RC smiMediaRecovery::createDatafile( SChar* aOldFileSpec,
         /* nothing to do ... */
     }
 
-    // [5] Empty µ¥ÀÌÅ¸ÆÄÀÏÀ» »ı¼ºÇÑ´Ù.
+    // [5] Empty ë°ì´íƒ€íŒŒì¼ì„ ìƒì„±í•œë‹¤.
     if( aNewFileSpec != NULL)
     {
-        // »õ·Î¿î °æ·Î¿¡ µ¥ÀÌÅ¸ÆÄÀÏÀ» »ı¼ºÇÑ´Ù.
-        // [5-1] »õ·Î¿î FILESPECÀ» º¹»çÇÑ´Ù.
+        // ìƒˆë¡œìš´ ê²½ë¡œì— ë°ì´íƒ€íŒŒì¼ì„ ìƒì„±í•œë‹¤.
+        // [5-1] ìƒˆë¡œìš´ FILESPECì„ ë³µì‚¬í•œë‹¤.
         idlOS::strncpy( sNewFileSpec,
                         aNewFileSpec,
                         SMI_MAX_DATAFILE_NAME_LEN );
@@ -158,7 +158,7 @@ IDE_RC smiMediaRecovery::createDatafile( SChar* aOldFileSpec,
 
         sStrLen = idlOS::strlen(sNewFileSpec);
 
-        // [5-2] ÆÄÀÏ ÆÛ¹Ì¼Ç È®ÀÎ ¹× Àı´ë°æ·Î·Î ¹İÈ¯ÇÑ´Ù.
+        // [5-2] íŒŒì¼ í¼ë¯¸ì…˜ í™•ì¸ ë° ì ˆëŒ€ê²½ë¡œë¡œ ë°˜í™˜í•œë‹¤.
         IDE_TEST( sctTableSpaceMgr::makeValidABSPath(
                                     ID_TRUE,
                                     sNewFileSpec,
@@ -166,7 +166,7 @@ IDE_RC smiMediaRecovery::createDatafile( SChar* aOldFileSpec,
                                     SMI_TBS_DISK )
                  != IDE_SUCCESS );
 
-        // [5-3] »õ·Î¿î ÆÄÀÏÀÌ¸§À¸·Î hash¿¡¼­ µ¥ÀÌÅ¸ ÆÄÀÏ³ëµå¸¦ °Ë»öÇÑ´Ù.
+        // [5-3] ìƒˆë¡œìš´ íŒŒì¼ì´ë¦„ìœ¼ë¡œ hashì—ì„œ ë°ì´íƒ€ íŒŒì¼ë…¸ë“œë¥¼ ê²€ìƒ‰í•œë‹¤.
         IDE_TEST(sctTableSpaceMgr::getDataFileNodeByName(sNewFileSpec,
                                                          &sNewFileNode,
                                                          &sSpaceID)
@@ -174,7 +174,7 @@ IDE_RC smiMediaRecovery::createDatafile( SChar* aOldFileSpec,
 
         IDE_TEST_RAISE(sNewFileNode != NULL, err_inuse_filename );
 
-        // [5-4] »õ·Î¿î ÆÄÀÏÀÌ¸§À¸·Î °»½Å.
+        // [5-4] ìƒˆë¡œìš´ íŒŒì¼ì´ë¦„ìœ¼ë¡œ ê°±ì‹ .
         IDE_TEST(sddDataFile::setDataFileName( sOldFileNode,
                                                sNewFileSpec,
                                                ID_FALSE )
@@ -182,15 +182,15 @@ IDE_RC smiMediaRecovery::createDatafile( SChar* aOldFileSpec,
     }
     else
     {
-        // ±âÁ¸ °æ·Î¿¡ µ¥ÀÌÅ¸ÆÄÀÏÀ» »ı¼ºÇÑ´Ù.
+        // ê¸°ì¡´ ê²½ë¡œì— ë°ì´íƒ€íŒŒì¼ì„ ìƒì„±í•œë‹¤.
 
-        // ±âÁ¸ °æ·Î¿¡ µ¥ÀÌÅ¸ÆÄÀÏÀÌ ÀÌ¹Ì Á¸ÀçÇÏ´ÂÁö °Ë»ç
+        // ê¸°ì¡´ ê²½ë¡œì— ë°ì´íƒ€íŒŒì¼ì´ ì´ë¯¸ ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬
         IDE_TEST_RAISE( idf::access(sOldFileSpec, F_OK) == 0,
                         err_already_exist_datafile );
     }
 
-    // [6] ÀÌÀü ÆÄÀÏ·Î µ¿ÀÏÇÑ Á¤º¸¸¦°¡Áö°í ,
-    // »õ·Î¿î µ¥ÀÌÅ¸ÆÄÀÏÀ» »ı¼ºÇÑ´Ù.
+    // [6] ì´ì „ íŒŒì¼ë¡œ ë™ì¼í•œ ì •ë³´ë¥¼ê°€ì§€ê³  ,
+    // ìƒˆë¡œìš´ ë°ì´íƒ€íŒŒì¼ì„ ìƒì„±í•œë‹¤.
     IDE_TEST( sddDataFile::create( NULL, sOldFileNode, &sDBFileHdr )
               != IDE_SUCCESS );
 
@@ -222,17 +222,17 @@ IDE_RC smiMediaRecovery::createDatafile( SChar* aOldFileSpec,
 }
 
 /*
-  BACKUPÀÌ ¾ø´Â µğ½ºÅ© µ¥ÀÌÅ¸ ÆÄÀÏÀÌ ¼Õ»ó, À¯½ÇÀÌ
-  µÈ °æ¿ì¿¡ »õ·Î¿î ºó µ¥ÀÌÅ¸ ÆÄÀÏ »ı¼ºÇÑ´Ù.
+  BACKUPì´ ì—†ëŠ” ë””ìŠ¤í¬ ë°ì´íƒ€ íŒŒì¼ì´ ì†ìƒ, ìœ ì‹¤ì´
+  ëœ ê²½ìš°ì— ìƒˆë¡œìš´ ë¹ˆ ë°ì´íƒ€ íŒŒì¼ ìƒì„±í•œë‹¤.
 
-  SQL±¸¹® : ALTER DATABASE CREATE CHECKPOINT IMAGE 'FILESPEC';
+  SQLêµ¬ë¬¸ : ALTER DATABASE CREATE CHECKPOINT IMAGE 'FILESPEC';
 
-  [IN] aOldFileSpec - ·Î±×¾ŞÄ¿»óÀÇ ÆÄÀÏ°æ·Î [ FILESPEC ]
-  [IN] aNewFileSpec - ´Ù¸¥°÷¿¡ ÆÄÀÏÀ» »ı¼ºÇÏ´Â °æ¿ì ÆÄÀÏ°æ·Î [ FILESPEC ]
+  [IN] aOldFileSpec - ë¡œê·¸ì•µì»¤ìƒì˜ íŒŒì¼ê²½ë¡œ [ FILESPEC ]
+  [IN] aNewFileSpec - ë‹¤ë¥¸ê³³ì— íŒŒì¼ì„ ìƒì„±í•˜ëŠ” ê²½ìš° íŒŒì¼ê²½ë¡œ [ FILESPEC ]
 
-  [ °í·Á»çÇ× ]
-  STABLEÇÑ Ã¼Å©Æ÷ÀÎÆ® ÀÌ¹ÌÁö¸¦ ÀÔ·Â¹Ş¾Æ¼­ 2°³ÀÇ Ã¼Å©Æ÷ÀÎÆ® ÀÌ¹ÌÁö¸¦
-  »ı¼ºÇÑ´Ù.
+  [ ê³ ë ¤ì‚¬í•­ ]
+  STABLEí•œ ì²´í¬í¬ì¸íŠ¸ ì´ë¯¸ì§€ë¥¼ ì…ë ¥ë°›ì•„ì„œ 2ê°œì˜ ì²´í¬í¬ì¸íŠ¸ ì´ë¯¸ì§€ë¥¼
+  ìƒì„±í•œë‹¤.
 */
 IDE_RC smiMediaRecovery::createChkptImage( SChar * aFileName )
 {
@@ -263,27 +263,27 @@ IDE_RC smiMediaRecovery::createChkptImage( SChar * aFileName )
 
     SM_LSN_INIT( sInitLSN );
 
-    // ´Ù´Ü°èstartup´Ü°èÁß control ´Ü°è¿¡¼­¸¸ ºÒ¸±¼ö ÀÖ´Ù.
+    // ë‹¤ë‹¨ê³„startupë‹¨ê³„ì¤‘ control ë‹¨ê³„ì—ì„œë§Œ ë¶ˆë¦´ìˆ˜ ìˆë‹¤.
     IDE_TEST_RAISE( smiGetStartupPhase() != SMI_STARTUP_CONTROL,
                     err_startup_phase );
 
-    idlOS::memset( sSpaceName,  // Å×ÀÌºí½ºÆäÀÌ½º ¸í
+    idlOS::memset( sSpaceName,  // í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ëª…
                    0x00,
                    SMI_MAX_TABLESPACE_NAME_LEN + 1 );
 
-    idlOS::memset( sFileName, // Ã¼Å©Æ÷ÀÎÆ® ÀÌ¹ÌÁö ¸í
+    idlOS::memset( sFileName, // ì²´í¬í¬ì¸íŠ¸ ì´ë¯¸ì§€ ëª…
                    0x00,
                    SM_MAX_FILE_NAME + 1 );
 
-    idlOS::memset( sCreateDir, // µğ·ºÅä¸® ¸í
+    idlOS::memset( sCreateDir, // ë””ë ‰í† ë¦¬ ëª…
                    0x00,
                    SM_MAX_FILE_NAME + 1 );
 
-    idlOS::memset( sFullPath, // Ã¼Å©Æ÷ÀÎÆ® ÀÌ¹ÌÁö °æ·Î
+    idlOS::memset( sFullPath, // ì²´í¬í¬ì¸íŠ¸ ì´ë¯¸ì§€ ê²½ë¡œ
                    0x00,
                    SM_MAX_FILE_NAME + 1 );
 
-    // [1] ÀÔ·ÂµÈ FileSpecÀ» ÀúÀåÇÑ´Ù.
+    // [1] ì…ë ¥ëœ FileSpecì„ ì €ì¥í•œë‹¤.
     idlOS::strncpy( sFileName,
                     aFileName,
                     SM_MAX_FILE_NAME );
@@ -291,7 +291,7 @@ IDE_RC smiMediaRecovery::createChkptImage( SChar * aFileName )
 
     sStrLength = idlOS::strlen( sFileName );
 
-    // [2] Å×ÀÌºí½ºÆäÀÌ½º ÀÌ¸§À» º¹»çÇÑ´Ù.
+    // [2] í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ì´ë¦„ì„ ë³µì‚¬í•œë‹¤.
     sChrPtr1 = idlOS::strchr( sFileName, '-' );
     IDE_TEST_RAISE( sChrPtr1 == NULL, err_invalie_filespec_format );
 
@@ -300,7 +300,7 @@ IDE_RC smiMediaRecovery::createChkptImage( SChar * aFileName )
 
     sChrPtr1++;
 
-    // [3] FILESPECÀ¸·ÎºÎÅÍ ÇÎÆş¹øÈ£¸¦ ¾ò´Â´Ù.
+    // [3] FILESPECìœ¼ë¡œë¶€í„° í•‘íë²ˆí˜¸ë¥¼ ì–»ëŠ”ë‹¤.
     sChrPtr2 = idlOS::strchr( sChrPtr1, '-' );
     IDE_TEST_RAISE( sChrPtr2 == NULL, err_invalie_filespec_format );
 
@@ -317,7 +317,7 @@ IDE_RC smiMediaRecovery::createChkptImage( SChar * aFileName )
 
     sChrPtr2++;
 
-    // [4] FILESPECÀ¸·ÎºÎÅÍ ÆÄÀÏ¹øÈ£¸¦ ¾ò´Â´Ù.
+    // [4] FILESPECìœ¼ë¡œë¶€í„° íŒŒì¼ë²ˆí˜¸ë¥¼ ì–»ëŠ”ë‹¤.
     idlOS::memset( sNumberStr, 0x00, SM_MAX_FILE_NAME + 1 );
     idlOS::strncpy( sNumberStr,
                     sChrPtr2, (sStrLength - (UInt)(sChrPtr2 - sFileName)) );
@@ -332,25 +332,25 @@ IDE_RC smiMediaRecovery::createChkptImage( SChar * aFileName )
 
     sFileNum = (UInt)idlOS::atoi( sNumberStr );
 
-    // [5] Å×ÀÌºí½ºÆäÀÌ½º °Ë»ö
+    // [5] í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ê²€ìƒ‰
     IDE_TEST( sctTableSpaceMgr::findSpaceNodeByName( sSpaceName,
                                                      (void**)&sSpaceNode )
              != IDE_SUCCESS );
 
     IDE_TEST_RAISE( sSpaceNode == NULL, err_not_found_tablespace_by_name );
 
-    // ¸Ş¸ğ¸®Å×ÀÌºí½ºÆäÀÌ½ºÀÎÁö È®ÀÎ => ¿¡·¯ : ÆÄÀÏ¾øÀ½
+    // ë©”ëª¨ë¦¬í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì¸ì§€ í™•ì¸ => ì—ëŸ¬ : íŒŒì¼ì—†ìŒ
     IDE_TEST_RAISE( sctTableSpaceMgr::isMemTableSpace( sSpaceNode->mID )
                     != ID_TRUE,
                     err_not_found_tablespace_by_name );
 
-    // ÇÎÆş¹øÈ£ È®ÀÎ => ¿¡·¯ : ÆÄÀÏ ¾øÀ½
+    // í•‘íë²ˆí˜¸ í™•ì¸ => ì—ëŸ¬ : íŒŒì¼ ì—†ìŒ
     IDE_TEST_RAISE( sPingPongNum >= SMM_PINGPONG_COUNT,
             err_not_exist_datafile );
 
     for ( sLoop = 0 ; sLoop < SMM_PINGPONG_COUNT ; sLoop ++ )
     {
-        // CREATE LSN È®ÀÎ => ¿¡·¯ : ÆÄÀÏ ¾øÀ½
+        // CREATE LSN í™•ì¸ => ì—ëŸ¬ : íŒŒì¼ ì—†ìŒ
         IDE_TEST( smmManager::getDBFile( (smmTBSNode*)sSpaceNode,
                                                 sLoop,
                                                 sFileNum,
@@ -364,7 +364,7 @@ IDE_RC smiMediaRecovery::createChkptImage( SChar * aFileName )
            sDatabaseFile[sLoop]->checkValuesOfDBFHdr( &sChkptImageHdr ),
            err_not_exist_datafile );
 
-        // [6] µ¥ÀÌÅ¸ÆÄÀÏÀÌ Á¸ÀçÇÏ´ÂÁö °Ë»çÇÑ´Ù.
+        // [6] ë°ì´íƒ€íŒŒì¼ì´ ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬í•œë‹¤.
         IDE_TEST( smmDatabaseFile::makeDBDirForCreate(
                                    (smmTBSNode*)sSpaceNode,
                                    sFileNum,
@@ -378,33 +378,33 @@ IDE_RC smiMediaRecovery::createChkptImage( SChar * aFileName )
                                     sLoop,
                                     sFileNum );
 
-        // [7] ±âÁ¸ °æ·Î¿¡ µ¥ÀÌÅ¸ÆÄÀÏÀÌ ÀÌ¹Ì Á¸ÀçÇÏ´ÂÁö °Ë»ç
+        // [7] ê¸°ì¡´ ê²½ë¡œì— ë°ì´íƒ€íŒŒì¼ì´ ì´ë¯¸ ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬
         IDE_TEST_RAISE( idf::access( sFullPath, F_OK ) == 0,
                 err_already_exist_datafile );
     }
 
-    // STABLE DB È®ÀÎ => ¿¡·¯ : STABLEÇÑ ÆÄÀÏ¸í ÀÔ·Â ¿ä±¸
+    // STABLE DB í™•ì¸ => ì—ëŸ¬ : STABLEí•œ íŒŒì¼ëª… ì…ë ¥ ìš”êµ¬
     IDE_TEST_RAISE( sPingPongNum !=
             smmManager::getCurrentDB( (smmTBSNode*)sSpaceNode ),
             err_input_unstable_chkpt_image );
 
-    // [8] ÀÌÀü ÆÄÀÏ·Î µ¿ÀÏÇÑ Á¤º¸¸¦°¡Áö°í, Empty µ¥ÀÌÅ¸ÆÄÀÏÀ»
-    // »ı¼ºÇÑ´Ù. µ¥ÀÌÅ¸ÆÄÀÏÀÇ Çì´õ´Â RedoLSN¸¸ ¸ğµÎ INITÀ¸·Î
-    // ¼³Á¤ÇÏ°í, ³ª¸ÓÁö´Â ·Î±×¾ŞÄ¿¿¡ ÀúÀåµÈ ³»¿ëÀ¸·Î ¼³Á¤ÇÑ´Ù.
+    // [8] ì´ì „ íŒŒì¼ë¡œ ë™ì¼í•œ ì •ë³´ë¥¼ê°€ì§€ê³ , Empty ë°ì´íƒ€íŒŒì¼ì„
+    // ìƒì„±í•œë‹¤. ë°ì´íƒ€íŒŒì¼ì˜ í—¤ë”ëŠ” RedoLSNë§Œ ëª¨ë‘ INITìœ¼ë¡œ
+    // ì„¤ì •í•˜ê³ , ë‚˜ë¨¸ì§€ëŠ” ë¡œê·¸ì•µì»¤ì— ì €ì¥ëœ ë‚´ìš©ìœ¼ë¡œ ì„¤ì •í•œë‹¤.
     /* BUG-39354 
-     * Empty Memory Checkpoint Image ÆÄÀÏÀÇ RedoLSNÀ» INITÀ¸·Î ¼³Á¤ÇÏ¸é
-     * µ¥ÀÌÅÍÆÄÀÏ À¯È¿¼º °Ë»ç¸¦ Åë°úÇÏÁö ¸øÇÕ´Ï´Ù.
-     * Empty ÆÄÀÏÀÇ RedoLSNÀ» CreateLSN°ú °°Àº °ªÀ¸·Î ¼³Á¤ÇÏ¿©
-     * RedoLSN°ú CreateLSNÀÌ °°À¸¸é Empty ÆÄÀÏ·Î ¾Ë¼ö ÀÖ°Ô ÇÕ´Ï´Ù. */
+     * Empty Memory Checkpoint Image íŒŒì¼ì˜ RedoLSNì„ INITìœ¼ë¡œ ì„¤ì •í•˜ë©´
+     * ë°ì´í„°íŒŒì¼ ìœ íš¨ì„± ê²€ì‚¬ë¥¼ í†µê³¼í•˜ì§€ ëª»í•©ë‹ˆë‹¤.
+     * Empty íŒŒì¼ì˜ RedoLSNì„ CreateLSNê³¼ ê°™ì€ ê°’ìœ¼ë¡œ ì„¤ì •í•˜ì—¬
+     * RedoLSNê³¼ CreateLSNì´ ê°™ìœ¼ë©´ Empty íŒŒì¼ë¡œ ì•Œìˆ˜ ìˆê²Œ í•©ë‹ˆë‹¤. */
     SM_GET_LSN( sChkptImageHdr.mMemRedoLSN, sChkptImageHdr.mMemCreateLSN );
 
     for ( sLoop = 0 ; sLoop < SMM_PINGPONG_COUNT ; sLoop ++ )
     {
         /* BUG-39354
-         * ·Î±×¾ŞÄ¿ÀÇ ³»¿ëÀ» ±×´ë·Î »ç¿ëÇÒ °æ¿ì
-         * µ¥ÀÌÅ¸ÆÄÀÏÀÌ Á¸ÀçÇÑ´Ù°í ±â·ÏµÇ¾î ÀÖ±â ¶§¹®¿¡
-         * ½ÇÁ¦ µ¥ÀÌÅ¸ÆÄÀÏÀº Á¸ÀçÇÏÁö ¾Ê¾Æ ¹®Á¦°¡ ¹ß»ıÇÕ´Ï´Ù.
-         * »õ·Î »ı¼ºÇÒ ÆÄÀÏÀÌ Á¸ÀçÇÏÁö ¾Ê´Ù°í Á¤º¸¸¦ º¯°æÇØ ÁÖ¾î¾ßÇÕ´Ï´Ù. */
+         * ë¡œê·¸ì•µì»¤ì˜ ë‚´ìš©ì„ ê·¸ëŒ€ë¡œ ì‚¬ìš©í•  ê²½ìš°
+         * ë°ì´íƒ€íŒŒì¼ì´ ì¡´ì¬í•œë‹¤ê³  ê¸°ë¡ë˜ì–´ ìˆê¸° ë•Œë¬¸ì—
+         * ì‹¤ì œ ë°ì´íƒ€íŒŒì¼ì€ ì¡´ì¬í•˜ì§€ ì•Šì•„ ë¬¸ì œê°€ ë°œìƒí•©ë‹ˆë‹¤.
+         * ìƒˆë¡œ ìƒì„±í•  íŒŒì¼ì´ ì¡´ì¬í•˜ì§€ ì•Šë‹¤ê³  ì •ë³´ë¥¼ ë³€ê²½í•´ ì£¼ì–´ì•¼í•©ë‹ˆë‹¤. */
         smmManager::setCreateDBFileOnDisk( (smmTBSNode*)sSpaceNode,
                                            sLoop,
                                            sFileNum,
@@ -414,16 +414,16 @@ IDE_RC smiMediaRecovery::createChkptImage( SChar * aFileName )
                                             (smmTBSNode*)sSpaceNode,
                                             sLoop,
                                             sFileNum,
-                                            0 /* ÆÄÀÏÇì´õÆäÀÌÁö¸¸ ±â·Ï */,
+                                            0 /* íŒŒì¼í—¤ë”í˜ì´ì§€ë§Œ ê¸°ë¡ */,
                                             &sChkptImageHdr )
                   != IDE_SUCCESS );
     }
 
     /* BUG-39354
-     * Memory Checkpoint Image ÆÄÀÏÀº 0¹ø ÆäÀÌÁö¿¡ Membase Á¤º¸¸¦ °¡Áö°í ÀÖ½À´Ï´Ù.
-     * Membase¿¡ Á¤»óÀûÀÎ °ªÀÌ ÀÖ¾î¾ß¸¸ Media Recovery¸¦ ¼öÇàÇÒ ¼ö ÀÖ±â ¶§¹®¿¡
-     * Membase¸¦ »ı¼ºÇØ ÁÖ¾î¾ßÇÕ´Ï´Ù.
-     * DicMemBase¸¦ ÀĞ¾î¿Í¼­ ÇÊ¿äÇÑ °ªÀ» º¹»çÇÏ°í ÃÊ±â°ªÀÌ ÇÊ¿äÇÑ °ª¸¸ ÃÊ±âÈ­ ½ÃÄÑÁİ´Ï´Ù. */
+     * Memory Checkpoint Image íŒŒì¼ì€ 0ë²ˆ í˜ì´ì§€ì— Membase ì •ë³´ë¥¼ ê°€ì§€ê³  ìˆìŠµë‹ˆë‹¤.
+     * Membaseì— ì •ìƒì ì¸ ê°’ì´ ìˆì–´ì•¼ë§Œ Media Recoveryë¥¼ ìˆ˜í–‰í•  ìˆ˜ ìˆê¸° ë•Œë¬¸ì—
+     * Membaseë¥¼ ìƒì„±í•´ ì£¼ì–´ì•¼í•©ë‹ˆë‹¤.
+     * DicMemBaseë¥¼ ì½ì–´ì™€ì„œ í•„ìš”í•œ ê°’ì„ ë³µì‚¬í•˜ê³  ì´ˆê¸°ê°’ì´ í•„ìš”í•œ ê°’ë§Œ ì´ˆê¸°í™” ì‹œì¼œì¤ë‹ˆë‹¤. */
     sctTableSpaceMgr::getFirstSpaceNode((void**)&sDicTBSNode);
     IDE_TEST( smmManager::readMemBaseFromFile( sDicTBSNode,
                                                &sDicMemBase )
@@ -444,9 +444,9 @@ IDE_RC smiMediaRecovery::createChkptImage( SChar * aFileName )
     sTBSNode->mMemBase = (smmMemBase *)(sBasePage + SMM_MEMBASE_OFFSET);
 
     /* BUG-39354
-     * DataFile SignatureÀÇ Á¤º¸´Â °¢ TBS º°·Î °íÀ¯ÇÑ °ªÀÌ³ª
-     * Valid Check½Ã¿¡ »ç¿ëµÇ´Â °ªÀº Ç×»ó DicMemBase°ªÀÌ±â ¶§¹®¿¡
-     * ±×³É º¹»çÇØÁÖ¾ú½À´Ï´Ù. */
+     * DataFile Signatureì˜ ì •ë³´ëŠ” ê° TBS ë³„ë¡œ ê³ ìœ í•œ ê°’ì´ë‚˜
+     * Valid Checkì‹œì— ì‚¬ìš©ë˜ëŠ” ê°’ì€ í•­ìƒ DicMemBaseê°’ì´ê¸° ë•Œë¬¸ì—
+     * ê·¸ëƒ¥ ë³µì‚¬í•´ì£¼ì—ˆìŠµë‹ˆë‹¤. */
     idlOS::memcpy( sTBSNode->mMemBase,
                    &sDicMemBase,
                    ID_SIZEOF(smmMemBase) );
@@ -513,18 +513,18 @@ IDE_RC smiMediaRecovery::createChkptImage( SChar * aFileName )
 
 /*********************************************************
  * function description:
- * - disk °¡ ±úÁ®¼­, ´Ù¸¥ À§Ä¡¿¡ µ¥ÀÌÅ¸ ÆÄÀÏÀ» ¿Å±â´Â
- *   °æ¿ì¸¦ À§ÇÑ µ¥ÀÌÅ¸ ÆÄÀÏ ÀÌ¸§ º¯°æ.
+ * - disk ê°€ ê¹¨ì ¸ì„œ, ë‹¤ë¥¸ ìœ„ì¹˜ì— ë°ì´íƒ€ íŒŒì¼ì„ ì˜®ê¸°ëŠ”
+ *   ê²½ìš°ë¥¼ ìœ„í•œ ë°ì´íƒ€ íŒŒì¼ ì´ë¦„ ë³€ê²½.
  *
  *   alter database rename file 'old-file-name' to 'new_file_name'
  *
  * - pseudo code
- *   ±âÁ¸ ÆÄÀÏÀÌ¸§À¸·Î hash¿¡¼­ µ¥ÀÌÅ¸ ÆÄÀÏ³ëµå¸¦ °Ë»ö;
- *   if(°Ë»öÀÌ ¼º°ø)
+ *   ê¸°ì¡´ íŒŒì¼ì´ë¦„ìœ¼ë¡œ hashì—ì„œ ë°ì´íƒ€ íŒŒì¼ë…¸ë“œë¥¼ ê²€ìƒ‰;
+ *   if(ê²€ìƒ‰ì´ ì„±ê³µ)
  *   then
- *       µ¥ÀÌÅ¸ ÆÄÀÏ ³ëµåÀÇ fileÀÌ¸§À» °»½ÅÇÑ´Ù.
- *      // BUGBUG- logAnchor  sync´Â restart recovery
- *     // ÈÄ¿¡ ÇÏ´Â°ÍÀ¸·Î °áÁ¤.
+ *       ë°ì´íƒ€ íŒŒì¼ ë…¸ë“œì˜ fileì´ë¦„ì„ ê°±ì‹ í•œë‹¤.
+ *      // BUGBUG- logAnchor  syncëŠ” restart recovery
+ *     // í›„ì— í•˜ëŠ”ê²ƒìœ¼ë¡œ ê²°ì •.
  *   else
  *    return failture
  *   fi
@@ -543,14 +543,14 @@ IDE_RC smiMediaRecovery::renameDataFile(SChar* aOldFileSpec,
     IDE_ASSERT( aOldFileSpec != NULL);
     IDE_ASSERT( aNewFileSpec != NULL);
 
-    // ´Ù´Ü°èstartup´Ü°èÁß control ´Ü°è¿¡¼­¸¸ ºÒ¸±¼ö ÀÖ´Ù.
+    // ë‹¤ë‹¨ê³„startupë‹¨ê³„ì¤‘ control ë‹¨ê³„ì—ì„œë§Œ ë¶ˆë¦´ìˆ˜ ìˆë‹¤.
     IDE_TEST_RAISE(smiGetStartupPhase() != SMI_STARTUP_CONTROL,
                    err_startup_phase);
 
     idlOS::memset(sOldFileSpec, 0x00,SMI_MAX_DATAFILE_NAME_LEN);
     idlOS::memset(sNewFileSpec, 0x00,SMI_MAX_DATAFILE_NAME_LEN);
 
-    // [1] ±âÁ¸ FILESPECÀ» º¹»çÇÑ´Ù.
+    // [1] ê¸°ì¡´ FILESPECì„ ë³µì‚¬í•œë‹¤.
     idlOS::strncpy( sOldFileSpec,
                     aOldFileSpec,
                     SMI_MAX_DATAFILE_NAME_LEN );
@@ -565,7 +565,7 @@ IDE_RC smiMediaRecovery::renameDataFile(SChar* aOldFileSpec,
                                 SMI_TBS_DISK )
               != IDE_SUCCESS );
 
-    // [2] »õ FILESPECÀ» º¹»çÇÑ´Ù.
+    // [2] ìƒˆ FILESPECì„ ë³µì‚¬í•œë‹¤.
     idlOS::strncpy( sNewFileSpec,
                     aNewFileSpec,
                     SMI_MAX_DATAFILE_NAME_LEN );
@@ -580,7 +580,7 @@ IDE_RC smiMediaRecovery::renameDataFile(SChar* aOldFileSpec,
                                 SMI_TBS_DISK )
               != IDE_SUCCESS );
 
-    //±âÁ¸ ÆÄÀÏÀÌ¸§À¸·Î hash¿¡¼­ µ¥ÀÌÅ¸ ÆÄÀÏ³ëµå¸¦ °Ë»ö.
+    //ê¸°ì¡´ íŒŒì¼ì´ë¦„ìœ¼ë¡œ hashì—ì„œ ë°ì´íƒ€ íŒŒì¼ë…¸ë“œë¥¼ ê²€ìƒ‰.
     IDE_TEST(sctTableSpaceMgr::getDataFileNodeByName(sOldFileSpec,
                                                      &sOldFileNode,
                                                      &sSpaceID)
@@ -625,11 +625,11 @@ IDE_RC smiMediaRecovery::renameDataFile(SChar* aOldFileSpec,
 
 /*********************************************************
  * function description: smiMediaRecovery::recoverDatabase
- * - ÇöÀç ½ÃÁ¡±îÁö media recovery ÇÏ·Á¸é aUntilTimeÀ»
- *   ULong max·Î.
+ * - í˜„ì¬ ì‹œì ê¹Œì§€ media recovery í•˜ë ¤ë©´ aUntilTimeì„
+ *   ULong maxë¡œ.
  *
- * - °ú°ÅÀÇ Æ¯Á¤½ÃÁ¡À¸·Î DBÀ¸·Î µ¹¸±¶§´Â
- *   date¸¦ idlOS::time(0)À¸·Î º¯È¯ÇÑ °ªÀ» ³Ñ±ä´Ù.
+ * - ê³¼ê±°ì˜ íŠ¹ì •ì‹œì ìœ¼ë¡œ DBìœ¼ë¡œ ëŒë¦´ë•ŒëŠ”
+ *   dateë¥¼ idlOS::time(0)ìœ¼ë¡œ ë³€í™˜í•œ ê°’ì„ ë„˜ê¸´ë‹¤.
  *   recover database recover database until time '2005-01-29:17:55:00'
  *
  *********************************************************/
@@ -691,16 +691,16 @@ IDE_RC smiMediaRecovery::recoverDB(idvSQL*        aStatistics,
 /*********************************************************
  * PROJ-2133 incremental backup
  * function description: smiMediaRecovery::restoreDatabase
- * - ÇöÀç ½ÃÁ¡±îÁö media restore ÇÏ·Á¸é aUntilTimeÀ»
- *   ULong max·Î, aUntilTag´Â NULL·Î ÇÑ´Ù.
+ * - í˜„ì¬ ì‹œì ê¹Œì§€ media restore í•˜ë ¤ë©´ aUntilTimeì„
+ *   ULong maxë¡œ, aUntilTagëŠ” NULLë¡œ í•œë‹¤.
  *
- * - °ú°ÅÀÇ Æ¯Á¤½ÃÁ¡À¸·Î DBÀ¸·Î µ¹¸±¶§´Â
- *   date¸¦ idlOS::time(0)À¸·Î º¯È¯ÇÑ °ªÀ» ³Ñ±ä´Ù.
+ * - ê³¼ê±°ì˜ íŠ¹ì •ì‹œì ìœ¼ë¡œ DBìœ¼ë¡œ ëŒë¦´ë•ŒëŠ”
+ *   dateë¥¼ idlOS::time(0)ìœ¼ë¡œ ë³€í™˜í•œ ê°’ì„ ë„˜ê¸´ë‹¤.
  *   recover database restore database until time '2005-01-29:17:55:00'
  *
  *  or
  *
- *   tag¸¦ ±¸¹®À» »ç¿ëÇÑ´Ù.
+ *   tagë¥¼ êµ¬ë¬¸ì„ ì‚¬ìš©í•œë‹¤.
  *   recover database restore database from tag 'tag_name'
  *
  *********************************************************/
@@ -737,8 +737,8 @@ IDE_RC smiMediaRecovery::restoreDB( smiRestoreType    aRestoreType,
 /*********************************************************
  * PROJ-2133 incremental backup
  * function description: smiMediaRecovery::restoreDatabase
- * TBSÀÇ º¹¿ø¹× º¹±¸´Â ¿ÏÀüº¹±¸¸¸ °¡´ÉÇÏ±â ¶§¹®¿¡
- * ºÒ¿ÏÀüº¹±¸¿Í °ü·ÃµÈ Á¤º¸°¡ ÇÊ¿ä ¾ø´Ù.
+ * TBSì˜ ë³µì›ë° ë³µêµ¬ëŠ” ì™„ì „ë³µêµ¬ë§Œ ê°€ëŠ¥í•˜ê¸° ë•Œë¬¸ì—
+ * ë¶ˆì™„ì „ë³µêµ¬ì™€ ê´€ë ¨ëœ ì •ë³´ê°€ í•„ìš” ì—†ë‹¤.
  *
  *
  *********************************************************/

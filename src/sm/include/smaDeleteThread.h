@@ -38,8 +38,8 @@ public:
     static IDE_RC destroyStatic();
     static IDE_RC shutdownAll();
 
-    // Æ¯Á¤ Table¾ÈÀÇ OID³ª Æ¯Á¤ Tablespace¾ÈÀÇ OID¿¡ ´ëÇØ¼­¸¸
-    // Áï½Ã AgingÀ» ½Ç½ÃÇÑ´Ù.
+    // íŠ¹ì • Tableì•ˆì˜ OIDë‚˜ íŠ¹ì • Tablespaceì•ˆì˜ OIDì— ëŒ€í•´ì„œë§Œ
+    // ì¦‰ì‹œ Agingì„ ì‹¤ì‹œí•œë‹¤.
     static IDE_RC deleteInstantly( smaInstantAgingFilter * aAgingFilter );
 
     static IDE_RC processJob( smxTrans    * aTransPtr,
@@ -88,21 +88,21 @@ public:
     static smxTrans        *mTrans;
     static ULong            mAgingCntAfterATransBegin;
     
-    /* BUG-17417 V$AgerÁ¤º¸ÀÇ Add OID°¹¼ö´Â ½ÇÁ¦ Ager°¡
-     *           ÇØ¾ßÇÒ ÀÛ¾÷ÀÇ °¹¼ö°¡ ¾Æ´Ï´Ù.
+    /* BUG-17417 V$Agerì •ë³´ì˜ Add OIDê°¯ìˆ˜ëŠ” ì‹¤ì œ Agerê°€
+     *           í•´ì•¼í•  ì‘ì—…ì˜ ê°¯ìˆ˜ê°€ ì•„ë‹ˆë‹¤.
      *
-     * mAgingProcessedOIDCnt Ãß°¡ÇÔ.  */
+     * mAgingProcessedOIDCnt ì¶”ê°€í•¨.  */
 
-    /* Ager°¡ OID ListÀÇ OID¸¦ ÇÏ³ª¾¿ Ã³¸®ÇÏ´Âµ¥ ÀÌ¶§ 1½ÄÁõ°¡ */
+    /* Agerê°€ OID Listì˜ OIDë¥¼ í•˜ë‚˜ì”© ì²˜ë¦¬í•˜ëŠ”ë° ì´ë•Œ 1ì‹ì¦ê°€ */
     static ULong  mAgingProcessedOIDCnt;
 
     UInt                mTimeOut;
     idBool              mFinished;
     idBool              mHandled;
 
-    //BUG-17371 [MMDB] AgingÀÌ ¹Ğ¸±°æ¿ì System¿¡ °úºÎÇÏ ¹× AgingÀÌ
-    //                  ¹Ğ¸®´Â Çö»óÀÌ ´õ ½ÉÈ­µÊ
-    // getMinSCNÇßÀ»¶§, MinSCN¶§¹®¿¡ ÀÛ¾÷ÇÏÁö ¸øÇÑ È½¼ö
+    //BUG-17371 [MMDB] Agingì´ ë°€ë¦´ê²½ìš° Systemì— ê³¼ë¶€í•˜ ë° Agingì´
+    //                  ë°€ë¦¬ëŠ” í˜„ìƒì´ ë” ì‹¬í™”ë¨
+    // getMinSCNí–ˆì„ë•Œ, MinSCNë•Œë¬¸ì— ì‘ì—…í•˜ì§€ ëª»í•œ íšŸìˆ˜
     static ULong        mSleepCountOnAgingCondition;
 private:
     static iduMutex         mMutex;
@@ -110,10 +110,10 @@ private:
 };
 
 /*
- * aOIDHead°¡ Aging´ë»óÀÎÁö Á¶»çÇÑ´Ù. 
+ * aOIDHeadê°€ AgingëŒ€ìƒì¸ì§€ ì¡°ì‚¬í•œë‹¤. 
  *
- * aOIDHead     - [IN] Aging´ë»ó OID ListÀÇ Head
- * aDeleteAll   - [IN] ID_TRUEÀÌ¸é ¹«Á¶°Ç Aging ´ë»óÀ¸·Î Ã³¸®ÇÑ´Ù.
+ * aOIDHead     - [IN] AgingëŒ€ìƒ OID Listì˜ Head
+ * aDeleteAll   - [IN] ID_TRUEì´ë©´ ë¬´ì¡°ê±´ Aging ëŒ€ìƒìœ¼ë¡œ ì²˜ë¦¬í•œë‹¤.
  * aMinViewSCN  - [IN] Transaction Minimum SCN
  */
 idBool smaDeleteThread::isAgingTarget( smaOidList  *aOIDHead,
@@ -130,40 +130,40 @@ idBool smaDeleteThread::isAgingTarget( smaOidList  *aOIDHead,
                 return ID_FALSE;
             }
 
-            /* Aging Node List¿¡ ÀÖ´Â Aging´ë»ó Row¸¦ ´Ù¸¥ TransactionÀÌ
-               º¼¼ö ÀÖ´ÂÁö Á¶»çÇÑ´Ù. Logical Ager°¡ Index¿¡¼­ ÇØ´ç Row¸¦
-               Áö¿ì´Âµ¥, ÇØ´ç Row°¡ Index¿¡¼­ Áö¿ü´Ù°í ÇØ¼­ ¹Ù·Î Row¸¦ Table¿¡¼­
-               Áö¿ï¼ö°¡ ¾ø´Ù. ¿Ö³ÄÇÏ¸é Index Å½»ö½Ã Latch¸¦ ÀâÁö ¾Ê°í ÇÏ±â ¶§¹®¿¡
-               Row¸¦ Index Node¸¦ ÅëÇØ¼­ Á¢±ÙÇÒ¼ö ÀÖ±â¶§¹®ÀÌ´Ù.
-               ÀÌ¶§¹®¿¡ Node Header¿¡ Index¿¡¼­ »èÁ¦ÀÛ¾÷À» ¿Ï·áÈÄ¿¡ mKeyFreeSCNÀ»
-               ¼³Á¤ÇÏ°í TransactionÀÇ Minimum View SCN°ú ºñ±³ÇØ¼­ °áÄÚ Á¢±ÙÇÏÁö
-               ¾Ê´Â´Ù´Â °ÍÀ» Á¶»çÇÏ±â À§ÇØ µÎ°¡Áö Á¶°ÇÀ» °Ë»çÇÑ´Ù.
+            /* Aging Node Listì— ìˆëŠ” AgingëŒ€ìƒ Rowë¥¼ ë‹¤ë¥¸ Transactionì´
+               ë³¼ìˆ˜ ìˆëŠ”ì§€ ì¡°ì‚¬í•œë‹¤. Logical Agerê°€ Indexì—ì„œ í•´ë‹¹ Rowë¥¼
+               ì§€ìš°ëŠ”ë°, í•´ë‹¹ Rowê°€ Indexì—ì„œ ì§€ì› ë‹¤ê³  í•´ì„œ ë°”ë¡œ Rowë¥¼ Tableì—ì„œ
+               ì§€ìš¸ìˆ˜ê°€ ì—†ë‹¤. ì™œëƒí•˜ë©´ Index íƒìƒ‰ì‹œ Latchë¥¼ ì¡ì§€ ì•Šê³  í•˜ê¸° ë•Œë¬¸ì—
+               Rowë¥¼ Index Nodeë¥¼ í†µí•´ì„œ ì ‘ê·¼í• ìˆ˜ ìˆê¸°ë•Œë¬¸ì´ë‹¤.
+               ì´ë•Œë¬¸ì— Node Headerì— Indexì—ì„œ ì‚­ì œì‘ì—…ì„ ì™„ë£Œí›„ì— mKeyFreeSCNì„
+               ì„¤ì •í•˜ê³  Transactionì˜ Minimum View SCNê³¼ ë¹„êµí•´ì„œ ê²°ì½” ì ‘ê·¼í•˜ì§€
+               ì•ŠëŠ”ë‹¤ëŠ” ê²ƒì„ ì¡°ì‚¬í•˜ê¸° ìœ„í•´ ë‘ê°€ì§€ ì¡°ê±´ì„ ê²€ì‚¬í•œë‹¤.
 
                1. mKeyFreeSCN < MinViewSCN
 
-               À§ Á¶°ÇÀ» ¸¸Á·ÇÑ´Ù¸é AgingÀ» ¼öÇàÇÒ ¼ö°¡ ÀÖ´Ù.
+               ìœ„ ì¡°ê±´ì„ ë§Œì¡±í•œë‹¤ë©´ Agingì„ ìˆ˜í–‰í•  ìˆ˜ê°€ ìˆë‹¤.
 
             */
-            /* BUG-18343 ÀĞ°í ÀÖ´Â Row°¡ Ager¿¡ ÀÇÇØ¼­ »èÁ¦µÇ°í ÀÖ½À´Ï´Ù.
+            /* BUG-18343 ì½ê³  ìˆëŠ” Rowê°€ Agerì— ì˜í•´ì„œ ì‚­ì œë˜ê³  ìˆìŠµë‹ˆë‹¤.
              *
-             * mKeyFreeSCN: OID List HeaderÀÇ Key Free SCN
+             * mKeyFreeSCN: OID List Headerì˜ Key Free SCN
              *
-             * smxTransMgr::getMemoryMinSCN¿¡¼­ ±¸ÇØÁø
+             * smxTransMgr::getMemoryMinSCNì—ì„œ êµ¬í•´ì§„
              * MinViewSCN:  Minimum View SCN
-             * MinViewTID:  MinViewSCNÀ» °¡Áö´Â Transaction ID.
+             * MinViewTID:  MinViewSCNì„ ê°€ì§€ëŠ” Transaction ID.
              *
-             * Delete Thread¿¡¼­´Â OID List HeaderÀÇ Key Free SCNÀÌ MIN SCNº¸´Ù
-             * ÀÛÀ¸¸é AgingÀ» ¼öÇàÇÏµµ·Ï °íÃÆ´Ù. ÀÌÀü¿¡´Â
+             * Delete Threadì—ì„œëŠ” OID List Headerì˜ Key Free SCNì´ MIN SCNë³´ë‹¤
+             * ì‘ìœ¼ë©´ Agingì„ ìˆ˜í–‰í•˜ë„ë¡ ê³ ì³¤ë‹¤. ì´ì „ì—ëŠ”
              *    1. mKeyFreeSCN < MinViewSCN
              *    2. mKeyFreeSCN = MinViewSCN, MinViewTID = 0
-             * µÎ°¡Áö Á¶°ÇÁß ÇÏ³ª¸¸ ¸¸Á·ÇÏ¸é AgingÀ» ¼öÇàÇÏµµ·Ï ÇÏ¿´´Ù. ±×·¯³ª
-             * MinViewTID°¡ 0ÀÏ¶§ ÀÓÀÇÀÇ Æ®·£Àè¼Çµµ MinViewSCNÀ» ÀÚ½ÅÀÇ ViewSCNÀ» °¡Áú¼ö ÀÖ´Ù.
-             * ¿Ö³Ä¸é smxTransMgr::getMemoryMinSCN¿¡¼­ ÇöÀç system scn°ú TransactionÀÇ
-             * min scnÁß ÀÛÀº °ÍÀ» ¼±ÅÃÇÏ´Âµ¥ ¸¸¾à °°À¸¸é MinViewTID°¡ 0ÀÌ µÈ´Ù. ÀÌ¶§ AgingÀ»
-             * ¼öÇàÇÏ°Ô µÇ¸é TransactionÀÌ checkÇÏ°í ÀÖ´Â Row¿¡ ´ëÇØ¼­ AgingÀÌ ¹ß»ıÇÏ°Ô µÈ´Ù.
-             * ¶§¹®¿¡ À§ Á¶°ÇÀ»
+             * ë‘ê°€ì§€ ì¡°ê±´ì¤‘ í•˜ë‚˜ë§Œ ë§Œì¡±í•˜ë©´ Agingì„ ìˆ˜í–‰í•˜ë„ë¡ í•˜ì˜€ë‹¤. ê·¸ëŸ¬ë‚˜
+             * MinViewTIDê°€ 0ì¼ë•Œ ì„ì˜ì˜ íŠ¸ëœì­ì…˜ë„ MinViewSCNì„ ìì‹ ì˜ ViewSCNì„ ê°€ì§ˆìˆ˜ ìˆë‹¤.
+             * ì™œëƒë©´ smxTransMgr::getMemoryMinSCNì—ì„œ í˜„ì¬ system scnê³¼ Transactionì˜
+             * min scnì¤‘ ì‘ì€ ê²ƒì„ ì„ íƒí•˜ëŠ”ë° ë§Œì•½ ê°™ìœ¼ë©´ MinViewTIDê°€ 0ì´ ëœë‹¤. ì´ë•Œ Agingì„
+             * ìˆ˜í–‰í•˜ê²Œ ë˜ë©´ Transactionì´ checkí•˜ê³  ìˆëŠ” Rowì— ëŒ€í•´ì„œ Agingì´ ë°œìƒí•˜ê²Œ ëœë‹¤.
+             * ë•Œë¬¸ì— ìœ„ ì¡°ê±´ì„
              *    1. mKeyFreeSCN < MinViewSCN
-             * ÀÎ °æ¿ì·Î¸¸ º¯°æÇÑ´Ù.
+             * ì¸ ê²½ìš°ë¡œë§Œ ë³€ê²½í•œë‹¤.
              */
             if( SM_SCN_IS_LT( &( aOIDHead->mKeyFreeSCN ), aMinViewSCN ) )
             {
@@ -171,9 +171,9 @@ idBool smaDeleteThread::isAgingTarget( smaOidList  *aOIDHead,
             }
             else
             {
-                /* BUG-17371  [MMDB] AgingÀÌ ¹Ğ¸±°æ¿ì System¿¡ °úºÎÇÏ ¹× AgingÀÌ
-                   ¹Ğ¸®´Â Çö»óÀÌ ´õ ½ÉÈ­µÊ.getMinSCNÇßÀ»¶§, MinSCN¶§¹®¿¡ ÀÛ¾÷ÇÏÁö
-                   ¸øÇÑ È½¼ö */
+                /* BUG-17371  [MMDB] Agingì´ ë°€ë¦´ê²½ìš° Systemì— ê³¼ë¶€í•˜ ë° Agingì´
+                   ë°€ë¦¬ëŠ” í˜„ìƒì´ ë” ì‹¬í™”ë¨.getMinSCNí–ˆì„ë•Œ, MinSCNë•Œë¬¸ì— ì‘ì—…í•˜ì§€
+                   ëª»í•œ íšŸìˆ˜ */
                 mSleepCountOnAgingCondition++;
                 return ID_FALSE;
             }
@@ -186,7 +186,7 @@ idBool smaDeleteThread::isAgingTarget( smaOidList  *aOIDHead,
 }
 
 /*
- * Aging TransactionÀ» ½ÃÀÛÇÑ´Ù.
+ * Aging Transactionì„ ì‹œì‘í•œë‹¤.
  *
  */
 void smaDeleteThread::beginATrans()
@@ -205,7 +205,7 @@ void smaDeleteThread::beginATrans()
 }
 
 /*
- * Aging TransactionÀ» CommitÇÑ´Ù.
+ * Aging Transactionì„ Commití•œë‹¤.
  *
  */
 void smaDeleteThread::commitATrans()
@@ -216,8 +216,8 @@ void smaDeleteThread::commitATrans()
 }
 
 /*
- * AgingÀ» Ã³¸®ÇÑ È½¼ö°¡ smuProperty::getAgerCommitInterval
- * º¸´Ù Å©¸é Aging TransactionÀ» CommitÇÏ°í »õ·Î ½ÃÀÛÇÑ´Ù.
+ * Agingì„ ì²˜ë¦¬í•œ íšŸìˆ˜ê°€ smuProperty::getAgerCommitInterval
+ * ë³´ë‹¤ í¬ë©´ Aging Transactionì„ Commití•˜ê³  ìƒˆë¡œ ì‹œì‘í•œë‹¤.
  *
  */
 void smaDeleteThread::commitAndBeginATransIfNeed()
@@ -231,7 +231,7 @@ void smaDeleteThread::commitAndBeginATransIfNeed()
 }
 
 /*
- * aOIDHead°¡ °¡¸®Å°´Â OID List Head¸¦ FreeÇÑ´Ù.
+ * aOIDHeadê°€ ê°€ë¦¬í‚¤ëŠ” OID List Headë¥¼ Freeí•œë‹¤.
  *
  * aOIDHead - [IN] OID List Header
  */

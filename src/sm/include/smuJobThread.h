@@ -18,14 +18,14 @@
 /***********************************************************************
  * $Id: smuJobThread.h
  *
- * TASK-6887 Improve index rebuild efficiency at server startup ¿¡¼­ Ãß°¡µÊ
+ * TASK-6887 Improve index rebuild efficiency at server startup ì—ì„œ ì¶”ê°€ë¨
  *
  * Description :
- * smuWorkerThread ÀÇ Queue Interface ¼öÁ¤ ¹öÀü
+ * smuWorkerThread ì˜ Queue Interface ìˆ˜ì • ë²„ì „
  *
  * Algorithm  :
- * JobQueue¸¦ SingleWriterMulterReader ·Î »ç¿ëÇÏ¿©, ¾÷¹«¸¦ ºĞ¹èÇÑ´Ù.
- * Queue Pop ½Ã Thread µéÀÌ Lock º¸È£¾Æ·¡ °æÀïÀûÀ¸·Î Pop ÇÑ´Ù
+ * JobQueueë¥¼ SingleWriterMulterReader ë¡œ ì‚¬ìš©í•˜ì—¬, ì—…ë¬´ë¥¼ ë¶„ë°°í•œë‹¤.
+ * Queue Pop ì‹œ Thread ë“¤ì´ Lock ë³´í˜¸ì•„ë˜ ê²½ìŸì ìœ¼ë¡œ Pop í•œë‹¤
  *
  * Issue :
  *
@@ -43,13 +43,13 @@
  *  smuJobThreadMgr sThreadMgr;
  *
  *  IDE_TEST( smuJobThread::initialize( 
- *        <¾÷¹«¸¦ Ã³¸®ÇÏ´Â ÇÔ¼ö>,
- *        <ChildThread°³¼ö>,
- *        <QueueÅ©±â>,
+ *        <ì—…ë¬´ë¥¼ ì²˜ë¦¬í•˜ëŠ” í•¨ìˆ˜>,
+ *        <ChildThreadê°œìˆ˜>,
+ *        <Queueí¬ê¸°>,
  *        &sThreadMgr )
  *    != IDE_SUCCESS );
  *
- *  IDE_TEST( smuJobThread::addJob( &sThreadMgr, <¾÷¹«º¯¼ö> ) != IDE_SUCCESS );
+ *  IDE_TEST( smuJobThread::addJob( &sThreadMgr, <ì—…ë¬´ë³€ìˆ˜> ) != IDE_SUCCESS );
  *  IDE_TEST( smuJobThread::finalize( &sThreadMgr ) != IDE_SUCCESS );
 */
 
@@ -64,11 +64,11 @@ class smuJobThread;
 
 typedef struct smuJobThreadMgr
 {
-    smuJobThreadFunc   mThreadFunc;     /* ¾÷¹« Ã³¸®¿ë ÇÔ¼ö */
+    smuJobThreadFunc   mThreadFunc;     /* ì—…ë¬´ ì²˜ë¦¬ìš© í•¨ìˆ˜ */
                     
-    UInt               mJobHead;        /* QueueÀÇ Head */
-    UInt               mJobTail;        /* QueueÀÇ Tail */
-    UInt               mQueueSize;      /* QueueÀÇ Å©±â */
+    UInt               mJobHead;        /* Queueì˜ Head */
+    UInt               mJobTail;        /* Queueì˜ Tail */
+    UInt               mQueueSize;      /* Queueì˜ í¬ê¸° */
     iduMutex           mQueueLock;      /* Queue Lock */
     void            ** mJobQueue;       /* Job Queue. */
 
@@ -76,17 +76,17 @@ typedef struct smuJobThreadMgr
     iduMutex           mWaitLock;       
     iduCond            mConsumeCondVar; /* Thread signals to AddJob */
 
-    idBool             mDone;           /* ´õÀÌ»ó ÇÒÀÏÀÌ ¾ø´Â°¡? */
-    UInt               mThreadCnt;      /* Thread °³¼ö */
-    smuJobThread     * mThreadArray;    /* ChildThreadµé */
+    idBool             mDone;           /* ë”ì´ìƒ í• ì¼ì´ ì—†ëŠ”ê°€? */
+    UInt               mThreadCnt;      /* Thread ê°œìˆ˜ */
+    smuJobThread     * mThreadArray;    /* ChildThreadë“¤ */
 } smuJobThreadMgr;
 
 class smuJobThread : public idtBaseThread
 {
 public:
     static UInt       mWaitIntvMsec;
-    UInt              mJobIdx;          /* ÀÚ½ÅÀÌ °¡Á®¿Ã JobÀÇ Index */
-    smuJobThreadMgr * mThreadMgr;       /* ÀÚ½ÅÀ» °ü¸®ÇÏ´Â °ü¸®ÀÚ */
+    UInt              mJobIdx;          /* ìì‹ ì´ ê°€ì ¸ì˜¬ Jobì˜ Index */
+    smuJobThreadMgr * mThreadMgr;       /* ìì‹ ì„ ê´€ë¦¬í•˜ëŠ” ê´€ë¦¬ì */
 
     smuJobThread() : idtBaseThread() {}
 
@@ -98,7 +98,7 @@ public:
     static IDE_RC addJob(     smuJobThreadMgr   * aThreadMgr, void * aParam );
     static void   wait(       smuJobThreadMgr   * aThreadMgr );
 
-    virtual void run(); /* »ó¼Ó¹ŞÀº main ½ÇÇà ·çÆ¾ */
+    virtual void run(); /* ìƒì†ë°›ì€ main ì‹¤í–‰ ë£¨í‹´ */
 };
 
 #endif 

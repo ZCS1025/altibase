@@ -13,22 +13,22 @@
 # init
 #
 # Revision 1.2  2000/04/25 02:56:38  sjkim
-# gcc Ãß°¡ ¹× µð·ºÅä¸® º¯°æ ¹× ACE ÄÄÆÄÀÏ ±â´É Ãß°¡
+# gcc ì¶”ê°€ ë° ë””ë ‰í† ë¦¬ ë³€ê²½ ë° ACE ì»´íŒŒì¼ ê¸°ëŠ¥ ì¶”ê°€
 #
 
-ÄÄÆÄÀÏ ¹æ¹ý :
+ì»´íŒŒì¼ ë°©ë²• :
 
 
-¼Ö¶ó¸®½º 2.7ÀÇ CC ¹× GCC¸¦ À§ÇØ ±¸¼ºµÊ 
+ì†”ë¼ë¦¬ìŠ¤ 2.7ì˜ CC ë° GCCë¥¼ ìœ„í•´ êµ¬ì„±ë¨ 
 
-1. ¼Ö¶ó¸®½º CC ÄÄÆÄÀÏ
+1. ì†”ë¼ë¦¬ìŠ¤ CC ì»´íŒŒì¼
 make -f ACE_sol27_CC.mk [INLINE=0|1]
 
-2. ¼Ö¶ó¸®½º gcc ÄÄÆÄÀÏ
+2. ì†”ë¼ë¦¬ìŠ¤ gcc ì»´íŒŒì¼
 make -f ACE_sol27_gcc.mk [INLINE=0|1]
 
-Âü°í]
-ÀÎ¶óÀÎ ±â´ÉÀ» »ç¿ëÇÒ °æ¿ì
+ì°¸ê³ ]
+ì¸ë¼ì¸ ê¸°ëŠ¥ì„ ì‚¬ìš©í•  ê²½ìš°
 INLINE=1
 
 

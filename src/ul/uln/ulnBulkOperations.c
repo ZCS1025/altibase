@@ -50,7 +50,7 @@ ACI_RC ulnSFID_02(ulnFnContext *aFnContext)
             /* [s] */
             case SQL_SUCCESS:
             case SQL_SUCCESS_WITH_INFO:
-                /* ±‚¡∏ state ¿Ø¡ˆ */
+                /* Í∏∞Ï°¥ state Ïú†ÏßÄ */
                 break;
 
             /* [d] */
@@ -73,13 +73,13 @@ ACI_RC ulnSFID_02(ulnFnContext *aFnContext)
 }
 
 /**
- * 0π¯¬∞ BindColø° ¡ˆ¡§«— «‡¿ª FETCH «—¥Ÿ.
+ * 0Î≤àÏß∏ BindColÏóê ÏßÄÏ†ïÌïú ÌñâÏùÑ FETCH ÌïúÎã§.
  *
  * @param[in] aFnContext  function context
  * @param[in] aPtContext  protocol context
  * @param[in] aKeysetStmt statement handle
  *
- * @return º∫∞¯«œ∏È ACI_SUCCESS, æ∆¥œ∏È ACI_FAILURE
+ * @return ÏÑ±Í≥µÌïòÎ©¥ ACI_SUCCESS, ÏïÑÎãàÎ©¥ ACI_FAILURE
  */
 ACI_RC ulnBulkFetchByBookmark(ulnFnContext *aFnContext,
                               ulnPtContext *aPtContext,
@@ -100,7 +100,7 @@ ACI_RC ulnBulkFetchByBookmark(ulnFnContext *aFnContext,
 
     sFetchCount = ulnStmtGetAttrRowArraySize(aKeysetStmt);
 
-    /* Sensitive¿Ã∏È ªı µ•¿Ã≈∏∏¶ Fetch, æ∆¥œ∏È Cacheø° ¿÷¥¬∞… π›»Ø */
+    /* SensitiveÏù¥Î©¥ ÏÉà Îç∞Ïù¥ÌÉÄÎ•º Fetch, ÏïÑÎãàÎ©¥ CacheÏóê ÏûàÎäîÍ±∏ Î∞òÌôò */
     if (ulnStmtGetAttrCursorSensitivity(aKeysetStmt) == SQL_SENSITIVE)
     {
         sRowsetStmt = aKeysetStmt->mRowsetStmt;
@@ -123,7 +123,7 @@ ACI_RC ulnBulkFetchByBookmark(ulnFnContext *aFnContext,
     }
 
     sDescRecArd = ulnStmtGetArdRec(aKeysetStmt, 0);
-    ACE_ASSERT(sDescRecArd != NULL); /* ¿ßø°º≠ »Æ¿Œ«œ∞Ì µÈæÓø¬¥Ÿ. */
+    ACE_ASSERT(sDescRecArd != NULL); /* ÏúÑÏóêÏÑú ÌôïÏù∏ÌïòÍ≥† Îì§Ïñ¥Ïò®Îã§. */
 
     for (i = 0; i < sFetchCount; i++)
     {
@@ -143,9 +143,9 @@ ACI_RC ulnBulkFetchByBookmark(ulnFnContext *aFnContext,
         {
             ulnStmtSetAttrRowStatusValue(aKeysetStmt, i, SQL_ROW_DELETED);
 
-            /* row-status indicators∞° º≥¡§µ«¡ˆ æ æ“æÓµµ,
-             * ¿Ø»ø«— row µ•¿Ã≈∏¥¬ ªÁøÎ¿⁄ πˆ∆€ø° ∫πªÁ«ÿ¡Ÿ∞≈¥Ÿ.
-             * ±◊∏¶ ¿ß«ÿ, ø©±‚º≠¥¬ Hole πﬂª˝ ø©∫Œ∏∏ ±‚æÔ«ÿµ–¥Ÿ. */
+            /* row-status indicatorsÍ∞Ä ÏÑ§Ï†ïÎêòÏßÄ ÏïäÏïòÏñ¥ÎèÑ,
+             * Ïú†Ìö®Ìïú row Îç∞Ïù¥ÌÉÄÎäî ÏÇ¨Ïö©Ïûê Î≤ÑÌçºÏóê Î≥µÏÇ¨Ìï¥Ï§ÑÍ±∞Îã§.
+             * Í∑∏Î•º ÏúÑÌï¥, Ïó¨Í∏∞ÏÑúÎäî Hole Î∞úÏÉù Ïó¨Î∂ÄÎßå Í∏∞ÏñµÌï¥ÎëîÎã§. */
             ULN_FLAG_UP(sHoleExistFlag);
         }
         else
@@ -197,16 +197,16 @@ ACI_RC ulnBulkFetchByBookmark(ulnFnContext *aFnContext,
     return ACI_FAILURE;
 }
 
-/* BUGBUG: KEYSET_DRIVEN¿œ ∂ß∏∏ ¡§ªÛ µø¿€«—¥Ÿ.
- *         FORWARD_ONLY/STATIC¿∏∑Œ¥¬ UPDATABLE¿ª ¡ˆø¯«œ¡ˆ æ ±‚ ∂ßπÆ. */
+/* BUGBUG: KEYSET_DRIVENÏùº ÎïåÎßå Ï†ïÏÉÅ ÎèôÏûëÌïúÎã§.
+ *         FORWARD_ONLY/STATICÏúºÎ°úÎäî UPDATABLEÏùÑ ÏßÄÏõêÌïòÏßÄ ÏïäÍ∏∞ ÎïåÎ¨∏. */
 /**
- * 0π¯¬∞ BindColø° ¡ˆ¡§«— «‡¿ª UPDATE «—¥Ÿ.
+ * 0Î≤àÏß∏ BindColÏóê ÏßÄÏ†ïÌïú ÌñâÏùÑ UPDATE ÌïúÎã§.
  *
  * @param[in] aFnContext  function context
  * @param[in] aPtContext  protocol context
  * @param[in] aKeysetStmt statement handle
  *
- * @return º∫∞¯«œ∏È ACI_SUCCESS, æ∆¥œ∏È ACI_FAILURE
+ * @return ÏÑ±Í≥µÌïòÎ©¥ ACI_SUCCESS, ÏïÑÎãàÎ©¥ ACI_FAILURE
  */
 ACI_RC ulnBulkUpdateByBookmark(ulnFnContext *aFnContext,
                                ulnPtContext *aPtContext,
@@ -342,7 +342,7 @@ ACI_RC ulnBulkUpdateByBookmark(ulnFnContext *aFnContext,
                             aKeysetStmt->mQstrForInsUpdLen,
                             CMP_DB_PREPARE_MODE_EXEC_PREPARE) != ACI_SUCCESS);
 
-    /* Param πˆ∆€ ª˝º∫ */
+    /* Param Î≤ÑÌçº ÏÉùÏÑ± */
     ACI_TEST_RAISE(ulnStmtEnsureAllocRowsetParamBuf(sRowsetStmt,
                                                     sMaxRowSize * sRowActCount)
                    != ACI_SUCCESS, NOT_ENOUGH_MEM_EXCEPTION);
@@ -351,7 +351,7 @@ ACI_RC ulnBulkUpdateByBookmark(ulnFnContext *aFnContext,
                    != ACI_SUCCESS, NOT_ENOUGH_MEM_EXCEPTION);
     sParamStatusBuf = ulnStmtGetRowsetParamStatusBuf(sRowsetStmt);
 
-    /* Param ¡§∫∏ ª˝º∫ */
+    /* Param Ï†ïÎ≥¥ ÏÉùÏÑ± */
     sCurrRowPtr = ulnStmtGetRowsetParamBuf(sRowsetStmt);
     sColIdx = 1;
     for (i = 1; i <= sColTotCount; i++)
@@ -373,7 +373,7 @@ ACI_RC ulnBulkUpdateByBookmark(ulnFnContext *aFnContext,
         sCurrRowPtr = ACP_ALIGN8_PTR(sCurrRowPtr);
         sCurrIndPtr = ACP_ALIGN8_PTR(sCurrRowPtr + (sBufLen * sRowActCount));
 
-        /* sCurrBufPtr, sBufLenæø ¿Ãµø«ÿ∞°∏Á µ•¿Ã≈∏ ∫πªÁ */
+        /* sCurrBufPtr, sBufLenÏî© Ïù¥ÎèôÌï¥Í∞ÄÎ©∞ Îç∞Ïù¥ÌÉÄ Î≥µÏÇ¨ */
         sBindColIndPtr = ulnDescRecGetIndicatorPtr(sDescRecArd);
         sCurrColPtr = sCurrRowPtr;
         for (sRowIdx = 0; sRowIdx < sRowActCount; sRowIdx++)
@@ -409,7 +409,7 @@ ACI_RC ulnBulkUpdateByBookmark(ulnFnContext *aFnContext,
             sIndPtr = sCurrIndPtr;
         }
 
-        /* BUGBUG: Precision, Scale¿ª ¡¶¥Î∑Œ º≥¡§«ÿ¡‡æﬂ µ…±Ó? */
+        /* BUGBUG: Precision, ScaleÏùÑ Ï†úÎåÄÎ°ú ÏÑ§Ï†ïÌï¥Ï§òÏïº Îê†Íπå? */
         ACI_TEST(ulnBindParamBody(&sTmpFnContext,
                                   sColIdx,
                                   NULL,
@@ -430,7 +430,7 @@ ACI_RC ulnBulkUpdateByBookmark(ulnFnContext *aFnContext,
     /* _PROWID */
     {
         sDescRecArd = ulnStmtGetArdRec(aKeysetStmt, 0);
-        ACE_ASSERT(sDescRecArd != NULL); /* ¿ßø°º≠ »Æ¿Œ«œ∞Ì µÈæÓø¬¥Ÿ. */
+        ACE_ASSERT(sDescRecArd != NULL); /* ÏúÑÏóêÏÑú ÌôïÏù∏ÌïòÍ≥† Îì§Ïñ¥Ïò®Îã§. */
 
         sCurrRowPtr = ACP_ALIGN8_PTR(sCurrRowPtr);
         sCurrColPtr = sCurrRowPtr;
@@ -527,7 +527,7 @@ ACI_RC ulnBulkUpdateByBookmark(ulnFnContext *aFnContext,
         }
         else
         {
-            /* BUGBUG: ¿Ã∑± ¿œ¿Ã ª˝±Ê ºˆ ¿÷¥¬ ªÛ»≤¿∫ πª±Ó? */
+            /* BUGBUG: Ïù¥Îü∞ ÏùºÏù¥ ÏÉùÍ∏∏ Ïàò ÏûàÎäî ÏÉÅÌô©ÏùÄ Î≠òÍπå? */
             ulnStmtSetAttrRowStatusValue(aKeysetStmt, sRowIdx, SQL_ROW_ERROR);
         }
     }
@@ -578,16 +578,16 @@ ACI_RC ulnBulkUpdateByBookmark(ulnFnContext *aFnContext,
     return ACI_FAILURE;
 }
 
-/* BUGBUG: KEYSET_DRIVEN¿œ ∂ß∏∏ ¡§ªÛ µø¿€«—¥Ÿ.
- *         FORWARD_ONLY/STATIC¿∏∑Œ¥¬ UPDATABLE¿ª ¡ˆø¯«œ¡ˆ æ ±‚ ∂ßπÆ. */
+/* BUGBUG: KEYSET_DRIVENÏùº ÎïåÎßå Ï†ïÏÉÅ ÎèôÏûëÌïúÎã§.
+ *         FORWARD_ONLY/STATICÏúºÎ°úÎäî UPDATABLEÏùÑ ÏßÄÏõêÌïòÏßÄ ÏïäÍ∏∞ ÎïåÎ¨∏. */
 /**
- * 0π¯¬∞ BindColø° ¡ˆ¡§«— «‡¿ª DELETE «—¥Ÿ.
+ * 0Î≤àÏß∏ BindColÏóê ÏßÄÏ†ïÌïú ÌñâÏùÑ DELETE ÌïúÎã§.
  *
  * @param[in] aFnContext  function context
  * @param[in] aPtContext  protocol context
  * @param[in] aKeysetStmt statement handle
  *
- * @return º∫∞¯«œ∏È ACI_SUCCESS, æ∆¥œ∏È ACI_FAILURE
+ * @return ÏÑ±Í≥µÌïòÎ©¥ ACI_SUCCESS, ÏïÑÎãàÎ©¥ ACI_FAILURE
  */
 ACI_RC ulnBulkDeleteByBookmark(ulnFnContext *aFnContext,
                                ulnPtContext *aPtContext,
@@ -640,7 +640,7 @@ ACI_RC ulnBulkDeleteByBookmark(ulnFnContext *aFnContext,
     ACI_TEST(ulnFreeStmtUnbind(&sTmpFnContext, sRowsetStmt) != ACI_SUCCESS);
     ACI_TEST(ulnFreeStmtResetParams(&sTmpFnContext, sRowsetStmt) != ACI_SUCCESS);
 
-    /* Param πˆ∆€ ª˝º∫ */
+    /* Param Î≤ÑÌçº ÏÉùÏÑ± */
     ACI_TEST_RAISE(ulnStmtEnsureAllocRowsetParamBuf(sRowsetStmt,
                                                     ULN_KEYSET_MAX_KEY_SIZE * sRowActCount)
                    != ACI_SUCCESS, NOT_ENOUGH_MEM_EXCEPTION);
@@ -649,7 +649,7 @@ ACI_RC ulnBulkDeleteByBookmark(ulnFnContext *aFnContext,
                    != ACI_SUCCESS, NOT_ENOUGH_MEM_EXCEPTION);
     sParamStatusBuf = ulnStmtGetRowsetParamStatusBuf(sRowsetStmt);
 
-    /* Param ¡§∫∏ ª˝º∫ (_PROWID) */
+    /* Param Ï†ïÎ≥¥ ÏÉùÏÑ± (_PROWID) */
     if (ulnStmtGetAttrCursorType(aKeysetStmt) == SQL_CURSOR_KEYSET_DRIVEN)
     {
         sMaxBookmark = ulnKeysetGetKeyCount(ulnStmtGetKeyset(aKeysetStmt));
@@ -659,7 +659,7 @@ ACI_RC ulnBulkDeleteByBookmark(ulnFnContext *aFnContext,
         sMaxBookmark = ulnCacheGetTotalRowCnt(ulnStmtGetCache(sRowsetStmt));
     }
     sDescRecArd = ulnStmtGetArdRec(aKeysetStmt, 0);
-    ACE_ASSERT(sDescRecArd != NULL); /* ¿ßø°º≠ »Æ¿Œ«œ∞Ì µÈæÓø¬¥Ÿ. */
+    ACE_ASSERT(sDescRecArd != NULL); /* ÏúÑÏóêÏÑú ÌôïÏù∏ÌïòÍ≥† Îì§Ïñ¥Ïò®Îã§. */
     sCurrColPtr = ulnStmtGetRowsetParamBuf(sRowsetStmt);
     for (i = 0; i < sRowActCount; i++)
     {
@@ -759,7 +759,7 @@ ACI_RC ulnBulkDeleteByBookmark(ulnFnContext *aFnContext,
         }
         else
         {
-            /* BUGBUG: ¿Ã∑± ¿œ¿Ã ª˝±Ê ºˆ ¿÷¥¬ ªÛ»≤¿∫ πª±Ó? */
+            /* BUGBUG: Ïù¥Îü∞ ÏùºÏù¥ ÏÉùÍ∏∏ Ïàò ÏûàÎäî ÏÉÅÌô©ÏùÄ Î≠òÍπå? */
             ulnStmtSetAttrRowStatusValue(aKeysetStmt, i, SQL_ROW_ERROR);
         }
     }
@@ -816,16 +816,16 @@ ACI_RC ulnBulkDeleteByBookmark(ulnFnContext *aFnContext,
     return ACI_FAILURE;
 }
 
-/* BUGBUG: KEYSET_DRIVEN¿œ ∂ß∏∏ ¡§ªÛ µø¿€«—¥Ÿ.
- *         FORWARD_ONLY/STATIC¿∏∑Œ¥¬ UPDATABLE¿ª ¡ˆø¯«œ¡ˆ æ ±‚ ∂ßπÆ. */
+/* BUGBUG: KEYSET_DRIVENÏùº ÎïåÎßå Ï†ïÏÉÅ ÎèôÏûëÌïúÎã§.
+ *         FORWARD_ONLY/STATICÏúºÎ°úÎäî UPDATABLEÏùÑ ÏßÄÏõêÌïòÏßÄ ÏïäÍ∏∞ ÎïåÎ¨∏. */
 /**
- * BindCol«— µ•¿Ã≈∏∏¶ √ﬂ∞°«—¥Ÿ.
+ * BindColÌïú Îç∞Ïù¥ÌÉÄÎ•º Ï∂îÍ∞ÄÌïúÎã§.
  *
  * @param[in] aFnContext  function context
  * @param[in] aPtContext  protocol context
  * @param[in] aKeysetStmt statement handle
  *
- * @return º∫∞¯«œ∏È ACI_SUCCESS, æ∆¥œ∏È ACI_FAILURE
+ * @return ÏÑ±Í≥µÌïòÎ©¥ ACI_SUCCESS, ÏïÑÎãàÎ©¥ ACI_FAILURE
  */
 ACI_RC ulnBulkInsert(ulnFnContext *aFnContext,
                      ulnPtContext *aPtContext,
@@ -949,7 +949,7 @@ ACI_RC ulnBulkInsert(ulnFnContext *aFnContext,
                             aKeysetStmt->mQstrForInsUpdLen,
                             CMP_DB_PREPARE_MODE_EXEC_PREPARE) != ACI_SUCCESS);
 
-    /* Param πˆ∆€ ª˝º∫ */
+    /* Param Î≤ÑÌçº ÏÉùÏÑ± */
     ACI_TEST_RAISE(ulnStmtEnsureAllocRowsetParamBuf(sRowsetStmt,
                                                     sMaxRowSize * sRowActCount)
                    != ACI_SUCCESS, NOT_ENOUGH_MEM_EXCEPTION);
@@ -958,7 +958,7 @@ ACI_RC ulnBulkInsert(ulnFnContext *aFnContext,
                    != ACI_SUCCESS, NOT_ENOUGH_MEM_EXCEPTION);
     sParamStatusBuf = ulnStmtGetRowsetParamStatusBuf(sRowsetStmt);
 
-    /* Param ¡§∫∏ ª˝º∫ */
+    /* Param Ï†ïÎ≥¥ ÏÉùÏÑ± */
     sCurrRowPtr = ulnStmtGetRowsetParamBuf(sRowsetStmt);
     sColIdx = 1;
     for (i = 1; i <= sColTotCount; i++)
@@ -980,7 +980,7 @@ ACI_RC ulnBulkInsert(ulnFnContext *aFnContext,
         sCurrRowPtr = ACP_ALIGN8_PTR(sCurrRowPtr);
         sCurrIndPtr = ACP_ALIGN8_PTR(sCurrRowPtr + (sBufLen * sRowActCount));
 
-        /* sCurrBufPtr, sBufLenæø ¿Ãµø«ÿ∞°∏Á µ•¿Ã≈∏ ∫πªÁ */
+        /* sCurrBufPtr, sBufLenÏî© Ïù¥ÎèôÌï¥Í∞ÄÎ©∞ Îç∞Ïù¥ÌÉÄ Î≥µÏÇ¨ */
         sBindColIndPtr = ulnDescRecGetIndicatorPtr(sDescRecArd);
         sCurrColPtr = sCurrRowPtr;
         for (sRowIdx = 0; sRowIdx < sRowActCount; sRowIdx++)
@@ -1016,7 +1016,7 @@ ACI_RC ulnBulkInsert(ulnFnContext *aFnContext,
             sIndPtr = sCurrIndPtr;
         }
 
-        /* BUGBUG: Precision, Scale¿ª ¡¶¥Î∑Œ º≥¡§«ÿ¡‡æﬂ µ…±Ó? */
+        /* BUGBUG: Precision, ScaleÏùÑ Ï†úÎåÄÎ°ú ÏÑ§Ï†ïÌï¥Ï§òÏïº Îê†Íπå? */
         ACI_TEST(ulnBindParamBody(&sTmpFnContext,
                                   sColIdx,
                                   NULL,
@@ -1094,7 +1094,7 @@ ACI_RC ulnBulkInsert(ulnFnContext *aFnContext,
         }
         else
         {
-            /* BUGBUG: ¿Ã∑± ¿œ¿Ã ª˝±Ê ºˆ ¿÷¥¬ ªÛ»≤¿∫ πª±Ó? */
+            /* BUGBUG: Ïù¥Îü∞ ÏùºÏù¥ ÏÉùÍ∏∏ Ïàò ÏûàÎäî ÏÉÅÌô©ÏùÄ Î≠òÍπå? */
             ulnStmtSetAttrRowStatusValue(aKeysetStmt, sRowIdx, SQL_ROW_ERROR);
             sRowErrCount++;
         }
@@ -1150,16 +1150,16 @@ ACI_RC ulnBulkInsert(ulnFnContext *aFnContext,
 }
 
 /**
- * BulkOperations ∞¸∑√ º”º∫∞˙ ¿Œ¿⁄∞° ¿Ø»ø«—¡ˆ »Æ¿Œ«—¥Ÿ.
+ * BulkOperations Í¥ÄÎ†® ÏÜçÏÑ±Í≥º Ïù∏ÏûêÍ∞Ä Ïú†Ìö®ÌïúÏßÄ ÌôïÏù∏ÌïúÎã§.
  *
  * @param[in] aFnContext function context
- * @param[in] aOperation ºˆ«‡«“ ¿€æ˜:
+ * @param[in] aOperation ÏàòÌñâÌï† ÏûëÏóÖ:
  *                       SQL_ADD
  *                       SQL_UPDATE_BY_BOOKMARK
  *                       SQL_DELETE_BY_BOOKMARK
  *                       SQL_FETCH_BY_BOOKMARK
  *
- * @return ¿Ø»ø«œ∏È ACI_SUCCESS, æ∆¥œ∏È ACI_FAILURE
+ * @return Ïú†Ìö®ÌïòÎ©¥ ACI_SUCCESS, ÏïÑÎãàÎ©¥ ACI_FAILURE
  */
 ACI_RC ulnBulkOperationsCheckArgs(ulnFnContext *aFnContext,
                                   acp_uint16_t  aOperation)
@@ -1190,7 +1190,7 @@ ACI_RC ulnBulkOperationsCheckArgs(ulnFnContext *aFnContext,
             break;
 
         case SQL_FETCH_BY_BOOKMARK:
-            /* staticµµ fetch¥¬ ∞°¥…«œ¥Ÿ. */
+            /* staticÎèÑ fetchÎäî Í∞ÄÎä•ÌïòÎã§. */
             ACI_TEST_RAISE((ulnStmtGetAttrUseBookMarks(sStmt) == SQL_UB_OFF) ||
                            (ulnStmtGetArdRec(sStmt, 0) == NULL) ||
                            (ulnStmtGetAttrCursorScrollable(sStmt) != SQL_SCROLLABLE),
@@ -1219,10 +1219,10 @@ ACI_RC ulnBulkOperationsCheckArgs(ulnFnContext *aFnContext,
 }
 
 /**
- * BOOKMARK∑Œ ¡ˆ¡§«— Rowø° ∆Ø¡§ ¿€æ˜¿ª ºˆ«‡«—¥Ÿ.
+ * BOOKMARKÎ°ú ÏßÄÏ†ïÌïú RowÏóê ÌäπÏ†ï ÏûëÏóÖÏùÑ ÏàòÌñâÌïúÎã§.
  *
  * @param[in] aStmt      statement handle
- * @param[in] aOperation ºˆ«‡«“ ¿€æ˜:
+ * @param[in] aOperation ÏàòÌñâÌï† ÏûëÏóÖ:
  *                       SQL_ADD
  *                       SQL_UPDATE_BY_BOOKMARK
  *                       SQL_DELETE_BY_BOOKMARK
@@ -1305,7 +1305,7 @@ SQLRETURN ulnBulkOperations(ulnStmt      *aStmt,
             break;
 
         default:
-            /* æ’ø°º≠ »Æ¿Œ«œ∞Ì µÈæÓø‘¿∏π«∑Œ ¿Ã∑±¿œ¿Ã ª˝∞‹º≠¥¬ æ»µ»¥Ÿ. */
+            /* ÏïûÏóêÏÑú ÌôïÏù∏ÌïòÍ≥† Îì§Ïñ¥ÏôîÏúºÎØÄÎ°ú Ïù¥Îü∞ÏùºÏù¥ ÏÉùÍ≤®ÏÑúÎäî ÏïàÎêúÎã§. */
             ACE_ASSERT(ACP_FALSE);
             break;
     }

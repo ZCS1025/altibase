@@ -19,13 +19,13 @@
 
 
 /**
- * °á°ú¼Â¿¡¼­ °ü¸®ÇÏ´Â ¹öÆÛ¸¦ ÇÏ³ª »ý¼ºÇÑ´Ù.
+ * ê²°ê³¼ì…‹ì—ì„œ ê´€ë¦¬í•˜ëŠ” ë²„í¼ë¥¼ í•˜ë‚˜ ìƒì„±í•œë‹¤.
  *
- * @param[in] aBufMng  ¹öÆÛ °ü¸® ±¸Á¶Ã¼
- * @param[in] aBufSize »ý¼ºÇÒ ¹öÆÛ Å©±â
- * @param[in] aWhence  »ý¼ºÇÑ ¹öÆÛ¸¦ ¹öÆÛ ¸ñ·Ï ¾îµð¿¡ ³ÖÀ»Áö¸¦ ³ªÅ¸³»´Â °ª.
- *                     CDBC_BUFFER_HEAD, CDBC_BUFFER_TAIL Áß ÇÏ³ª.
- * @return »ý¼ºµÈ ¹öÆÛÀÇ Æ÷ÀÎÅÍ. ¸Þ¸ð¸®°¡ ºÎÁ·ÇÏ¸é NULL
+ * @param[in] aBufMng  ë²„í¼ ê´€ë¦¬ êµ¬ì¡°ì²´
+ * @param[in] aBufSize ìƒì„±í•  ë²„í¼ í¬ê¸°
+ * @param[in] aWhence  ìƒì„±í•œ ë²„í¼ë¥¼ ë²„í¼ ëª©ë¡ ì–´ë””ì— ë„£ì„ì§€ë¥¼ ë‚˜íƒ€ë‚´ëŠ” ê°’.
+ *                     CDBC_BUFFER_HEAD, CDBC_BUFFER_TAIL ì¤‘ í•˜ë‚˜.
+ * @return ìƒì„±ëœ ë²„í¼ì˜ í¬ì¸í„°. ë©”ëª¨ë¦¬ê°€ ë¶€ì¡±í•˜ë©´ NULL
  */
 CDBC_INTERNAL
 cdbcBufferItm * altibase_new_buffer (cdbcBufferMng *aBufMng, acp_sint32_t aBufSize, acp_sint32_t aWhence)
@@ -40,11 +40,11 @@ cdbcBufferItm * altibase_new_buffer (cdbcBufferMng *aBufMng, acp_sint32_t aBufSi
     CDBCLOG_IN();
 
     CDBC_DASSERT(aBufMng != NULL);
-    CDBC_DASSERT(aBufSize >= 0); /* µ¥ÀÌÅ¸ÀÇ ±æÀÌ°¡ 0ÀÎ ¹öÆÛ Çã¿ë */
+    CDBC_DASSERT(aBufSize >= 0); /* ë°ì´íƒ€ì˜ ê¸¸ì´ê°€ 0ì¸ ë²„í¼ í—ˆìš© */
     CDBC_DASSERT((aWhence == CDBC_BUFFER_HEAD) || (aWhence == CDBC_BUFFER_TAIL));
     CDBCLOG_PRINT_VAL("%d", aBufSize);
 
-    /* cdbcBufferItm.mBuffer±îÁö ÇÑ¹ø¿¡ ÇÒ´ç */
+    /* cdbcBufferItm.mBufferê¹Œì§€ í•œë²ˆì— í• ë‹¹ */
     sBufSize = ACI_SIZEOF(cdbcBufferItm);
     CDBC_ADJUST_ALIGN(sBufSize);
     CDBCLOG_CALL("acpMemCalloc");
@@ -87,7 +87,7 @@ cdbcBufferItm * altibase_new_buffer (cdbcBufferMng *aBufMng, acp_sint32_t aBufSi
 
     CDBC_EXCEPTION(MAllocError);
     {
-        /* »óÀ§ ÀÎÅÍÆäÀÌ½º¿¡¼­ ¿¡·¯ Ã³¸® */
+        /* ìƒìœ„ ì¸í„°íŽ˜ì´ìŠ¤ì—ì„œ ì—ëŸ¬ ì²˜ë¦¬ */
     }
     CDBC_EXCEPTION_END;
 
@@ -101,10 +101,10 @@ cdbcBufferItm * altibase_new_buffer (cdbcBufferMng *aBufMng, acp_sint32_t aBufSi
 }
 
 /**
- * °á°ú¼Â ÇÚµéÀ» À§ÇØ »ý¼ºÇÑ ¹öÆÛ¸¦ ¸ðµÎ ÇØÁ¦ÇÑ´Ù.
+ * ê²°ê³¼ì…‹ í•¸ë“¤ì„ ìœ„í•´ ìƒì„±í•œ ë²„í¼ë¥¼ ëª¨ë‘ í•´ì œí•œë‹¤.
  *
- * @param[in] aBufMng ¹öÆÛ
- * @return ÇÚµéÀÌ À¯È¿ÇÏ¸é ALTIBASE_SUCCESS, ±×·¸Áö ¾ÊÀ¸¸é ALTIBASE_ERROR
+ * @param[in] aBufMng ë²„í¼
+ * @return í•¸ë“¤ì´ ìœ íš¨í•˜ë©´ ALTIBASE_SUCCESS, ê·¸ë ‡ì§€ ì•Šìœ¼ë©´ ALTIBASE_ERROR
  */
 CDBC_INTERNAL
 void altibase_clean_buffer (cdbcBufferMng *aBufMng)

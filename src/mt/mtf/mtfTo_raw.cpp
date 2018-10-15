@@ -44,7 +44,7 @@ static IDE_RC mtfTo_rawEstimate( mtcNode*     aNode,
 mtfModule mtfTo_raw = {
     1|MTC_NODE_OPERATOR_FUNCTION|MTC_NODE_EAT_NULL_TRUE,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (∫Ò±≥ ø¨ªÍ¿⁄∞° æ∆¥‘)
+    1.0,  // default selectivity (ÎπÑÍµê Ïó∞ÏÇ∞ÏûêÍ∞Ä ÏïÑÎãò)
     mtfTo_rawFunctionName,
     NULL,
     mtf::initializeDefault,

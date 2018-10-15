@@ -42,23 +42,23 @@ IDE_RC qdtCommon::validateFilesSpec(
 /***********************************************************************
  *
  * Description :
- *    file specification validation ÇÔ¼ö
+ *    file specification validation í•¨ìˆ˜
  *
  * Implementation :
  *    for (each file spec)
  *    {
- *    1.1 SIZE ¸¦ ¸í½ÃÇÏÁö ¾ÊÀº °æ¿ì ±âº» Å©±â 100M ¸¦ ÆÄ½ºÆ®¸®¿¡ ¼³Á¤
- *    1.2 AUTOEXTEND ON À» ¸í½ÃÇÑ °æ¿ì
- *      1.2.1 NEXT size ¸¦ ¸í½ÃÇÏÁö ¾ÊÀº °æ¿ì size of extent * n °ªÀ¸·Î
- *              ¼³Á¤ÇÑ´Ù. N °ªÀº ÇÁ·ÎÆÛÆ¼ ÆÄÀÏ¿¡ Á¤ÀÇµÈ °ªÀ» ÀĞ¾î¿Â´Ù.
- *      1.2.2 MAXSIZE ¸¦ ¸í½ÃÇÏÁö ¾ÊÀº °æ¿ì : Property °ªÀ¸·Î ¼³Á¤
- *            MAXSIZE¸¦ ¸í½ÃÇÑ °æ¿ì : ¸í½ÃÇÑ °ªÀ¸·Î ¼³Á¤
- *            MAXSIZE°¡ UNLIMITED ÀÎ °æ¿ì : MAXSIZE = UNLIMITED ¼³Á¤
- *    1.3 AUTOEXTEND OFF ¸í½ÃÇÑ °æ¿ì
- *      1.3.1 MAXSIZE = 0 ¼³Á¤
- *    1.4 AUTOEXTEND ¸í½ÃÇÏÁö ¾ÊÀº °æ¿ì OFF °ªÀÌ ±âº»°ª
+ *    1.1 SIZE ë¥¼ ëª…ì‹œí•˜ì§€ ì•Šì€ ê²½ìš° ê¸°ë³¸ í¬ê¸° 100M ë¥¼ íŒŒìŠ¤íŠ¸ë¦¬ì— ì„¤ì •
+ *    1.2 AUTOEXTEND ON ì„ ëª…ì‹œí•œ ê²½ìš°
+ *      1.2.1 NEXT size ë¥¼ ëª…ì‹œí•˜ì§€ ì•Šì€ ê²½ìš° size of extent * n ê°’ìœ¼ë¡œ
+ *              ì„¤ì •í•œë‹¤. N ê°’ì€ í”„ë¡œí¼í‹° íŒŒì¼ì— ì •ì˜ëœ ê°’ì„ ì½ì–´ì˜¨ë‹¤.
+ *      1.2.2 MAXSIZE ë¥¼ ëª…ì‹œí•˜ì§€ ì•Šì€ ê²½ìš° : Property ê°’ìœ¼ë¡œ ì„¤ì •
+ *            MAXSIZEë¥¼ ëª…ì‹œí•œ ê²½ìš° : ëª…ì‹œí•œ ê°’ìœ¼ë¡œ ì„¤ì •
+ *            MAXSIZEê°€ UNLIMITED ì¸ ê²½ìš° : MAXSIZE = UNLIMITED ì„¤ì •
+ *    1.3 AUTOEXTEND OFF ëª…ì‹œí•œ ê²½ìš°
+ *      1.3.1 MAXSIZE = 0 ì„¤ì •
+ *    1.4 AUTOEXTEND ëª…ì‹œí•˜ì§€ ì•Šì€ ê²½ìš° OFF ê°’ì´ ê¸°ë³¸ê°’
  *    }
- *    2 file °³¼ö counting ÇÑ °ªÀ» smiTableSpaceAttr->mDataFileCount ¿¡ ¼³Á¤
+ *    2 file ê°œìˆ˜ counting í•œ ê°’ì„ smiTableSpaceAttr->mDataFileCount ì— ì„¤ì •
  *
  ***********************************************************************/
 
@@ -132,7 +132,7 @@ IDE_RC qdtCommon::validateFilesSpec(
 
         if ( sFileAttr->mMaxSize == ID_ULONG_MAX )
         {
-            // Max Size¸¦ ¸í½ÃÇÏÁö ¾ÊÀº °æ¿ì, Property¸¦ º¸°í ¼³Á¤ÇÔ
+            // Max Sizeë¥¼ ëª…ì‹œí•˜ì§€ ì•Šì€ ê²½ìš°, Propertyë¥¼ ë³´ê³  ì„¤ì •í•¨
             switch( aType )
             {
                 case SMI_DISK_SYSTEM_DATA:
@@ -173,20 +173,20 @@ IDE_RC qdtCommon::validateFilesSpec(
         }
         else
         {
-            // Max Size¸¦ ¸í½ÃÇÑ °æ¿ì : ¸í½ÃÇÑ °ªÀ¸·Î ¼³Á¤µÊ 
-            // unlimited ·Î ¸í½ÃÇÑ °æ¿ì : mMaxSize°¡ 0ÀÓ
+            // Max Sizeë¥¼ ëª…ì‹œí•œ ê²½ìš° : ëª…ì‹œí•œ ê°’ìœ¼ë¡œ ì„¤ì •ë¨ 
+            // unlimited ë¡œ ëª…ì‹œí•œ ê²½ìš° : mMaxSizeê°€ 0ì„
         }
 
         //------------------------------------------------
         // To Fix BUG-10415
-        // Init Size°¡ ÁÖ¾îÁöÁö ¾Ê¾ÒÀ» °æ¿ì, property¿¡¼­ init sizeÀ»
-        // ÀĞ¾î¿Í¾ßÇÔ
+        // Init Sizeê°€ ì£¼ì–´ì§€ì§€ ì•Šì•˜ì„ ê²½ìš°, propertyì—ì„œ init sizeì„
+        // ì½ì–´ì™€ì•¼í•¨
         //------------------------------------------------
         
         if ( sFileAttr->mInitSize == 0 )
         {
-            // Init Size°¡ ÁÖ¾îÁöÁö ¾Ê¾ÒÀ» °æ¿ì,
-            // Property ¿¡¼­ ÀĞ¾î¿Â Init Size ·Î ¼³Á¤ÇÔ
+            // Init Sizeê°€ ì£¼ì–´ì§€ì§€ ì•Šì•˜ì„ ê²½ìš°,
+            // Property ì—ì„œ ì½ì–´ì˜¨ Init Size ë¡œ ì„¤ì •í•¨
             switch( aType )
             {
                 case SMI_DISK_SYSTEM_DATA:
@@ -240,9 +240,9 @@ IDE_RC qdtCommon::validateFilesSpec(
         if ( sMaxSize != 0 )
         {
             //------------------------------------------------
-            // MaxSize°¡ 0ÀÌ ¾Æ´Ñ °æ¿ì
-            // - Max Size°¡ ¸í½ÃµÈ °æ¿ì
-            // - Max Size°¡ ¸í½ÃµÇÁö ¾Ê¾Æ Property°ªÀ¸·Î ¼³Á¤µÈ °æ¿ì
+            // MaxSizeê°€ 0ì´ ì•„ë‹Œ ê²½ìš°
+            // - Max Sizeê°€ ëª…ì‹œëœ ê²½ìš°
+            // - Max Sizeê°€ ëª…ì‹œë˜ì§€ ì•Šì•„ Propertyê°’ìœ¼ë¡œ ì„¤ì •ëœ ê²½ìš°
             //------------------------------------------------
             
             sMaxSize =  sMaxSize / (ULong)smiGetPageSize(aType);
@@ -252,9 +252,9 @@ IDE_RC qdtCommon::validateFilesSpec(
         else
         {
             //------------------------------------------------
-            // Max Size°¡ 0ÀÎ °æ¿ì
-            // - Auto Extend Off ÀÎ °æ¿ì
-            // - Max Size¸¦ unlimited·Î ¼³Á¤ÇÑ °æ¿ìÀÓ
+            // Max Sizeê°€ 0ì¸ ê²½ìš°
+            // - Auto Extend Off ì¸ ê²½ìš°
+            // - Max Sizeë¥¼ unlimitedë¡œ ì„¤ì •í•œ ê²½ìš°ì„
             //------------------------------------------------
         }
 
@@ -289,8 +289,8 @@ IDE_RC qdtCommon::validateFilesSpec(
     {
         /*
          * TASK-6327 Community Edition License
-         * »õ·Î »ı¼ºÇÏ´Â tablespace ·Î ÀÎÇÏ¿©
-         * ÃÑ maxsize °¡ DISK_MAX_DB_SIZE ¸¦ ³Ñ¾î°¥ °æ¿ì ¿¡·¯
+         * ìƒˆë¡œ ìƒì„±í•˜ëŠ” tablespace ë¡œ ì¸í•˜ì—¬
+         * ì´ maxsize ê°€ DISK_MAX_DB_SIZE ë¥¼ ë„˜ì–´ê°ˆ ê²½ìš° ì—ëŸ¬
          */
         sCurTotalDiskDBPageCnt = smiGetDiskDBFullSize();
 
@@ -314,7 +314,7 @@ IDE_RC qdtCommon::validateFilesSpec(
     IDE_EXCEPTION(ERR_DB_MAXSIZE_EXCEED)
     {
         // BUG-44570
-        // DISK_MAX_DB_SIZE ÃÊ°ú·Î ¿¡·¯ ¹ß»ı½Ã »ç¿ëÀÚ¿¡°Ô ºÎ°¡ÀûÀÎ Á¤º¸¸¦ ¾Ë·ÁÁÖµµ·Ï ÇÕ´Ï´Ù.
+        // DISK_MAX_DB_SIZE ì´ˆê³¼ë¡œ ì—ëŸ¬ ë°œìƒì‹œ ì‚¬ìš©ìì—ê²Œ ë¶€ê°€ì ì¸ ì •ë³´ë¥¼ ì•Œë ¤ì£¼ë„ë¡ í•©ë‹ˆë‹¤.
         IDE_SET(ideSetErrorCode(qpERR_ABORT_QDT_DB_MAXSIZE_EXCEED,
                                 (sDiskMaxDBSize/1024/1024),
                                 ((sDiskMaxDBSize - (sCurTotalDiskDBPageCnt*smiGetPageSize(aType)))/1024/1024)));
@@ -336,8 +336,8 @@ qdtCommon::getAndValidateIndexTBS( qcStatement       * aStatement,
 /***********************************************************************
  *
  * Description :
- *     INDEX TABLESPACE tbs_name¿¡ ´ëÇÑ ValidationÀ» ÇÏ°í
- *     Index TablespaceÀÇ ID¿Í TypeÀ» È¹µæÇÑ´Ù.
+ *     INDEX TABLESPACE tbs_nameì— ëŒ€í•œ Validationì„ í•˜ê³ 
+ *     Index Tablespaceì˜ IDì™€ Typeì„ íšë“í•œë‹¤.
  *
  * Implementation :
  *
@@ -348,7 +348,7 @@ qdtCommon::getAndValidateIndexTBS( qcStatement       * aStatement,
     smiTableSpaceAttr     sIndexTBSAttr;
     
     //-----------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //-----------------------------------------
     
     IDE_DASSERT( aStatement != NULL );
@@ -377,9 +377,9 @@ qdtCommon::getAndValidateIndexTBS( qcStatement       * aStatement,
             ERR_INVALID_INDEX_TABLESPACE_MEDIA );
 
         // To Fix PR-9770
-        // Memory Table¿¡ Disk Index¸¦ ¶Ç´Â
-        // Disk Table¿¡ Memory Index¸¦ »ı¼ºÇÒ ¼ö ¾ø´Ù.
-        // ÀúÀå ¸ÅÃ¼°¡ µ¿ÀÏÇÑÁö °Ë»çÇÏ¿© ÀúÀå ¸ÅÃ¼°¡ ´Ù¸£¸é ¿À·ù
+        // Memory Tableì— Disk Indexë¥¼ ë˜ëŠ”
+        // Disk Tableì— Memory Indexë¥¼ ìƒì„±í•  ìˆ˜ ì—†ë‹¤.
+        // ì €ì¥ ë§¤ì²´ê°€ ë™ì¼í•œì§€ ê²€ì‚¬í•˜ì—¬ ì €ì¥ ë§¤ì²´ê°€ ë‹¤ë¥´ë©´ ì˜¤ë¥˜
         IDE_TEST_RAISE( isSameTBSType( aTableTBSType,
                                        sIndexTBSAttr.mType ) == ID_FALSE,
                         ERR_INVALID_INDEX_TABLESPACE_MEDIA );
@@ -387,7 +387,7 @@ qdtCommon::getAndValidateIndexTBS( qcStatement       * aStatement,
         *aIndexTBSID   = sIndexTBSAttr.mID;
         *aIndexTBSType = sIndexTBSAttr.mType;
     }
-    else // TABLESPACENAME ¸í½ÃÇÏÁö ¾ÊÀº °æ¿ì
+    else // TABLESPACENAME ëª…ì‹œí•˜ì§€ ì•Šì€ ê²½ìš°
     {
         *aIndexTBSID   = aTableTBSID;
         *aIndexTBSType = aTableTBSType;
@@ -425,17 +425,17 @@ qdtCommon::getAndValidateTBSOfIndexPartition(
  * Description :
  *      PROJ-1502 PARTITIONED DISK TABLE
  *
- *    °¢ Å×ÀÌºí ÆÄÆ¼¼ÇÀÇ TABLESPACE¿¡ ´ëÇÑ validation
+ *    ê° í…Œì´ë¸” íŒŒí‹°ì…˜ì˜ TABLESPACEì— ëŒ€í•œ validation
  *
  * Implementation :
- *    1. TABLESPACE ¸í½ÃÇÑ °æ¿ì
- *      1.1 SM ¿¡¼­ Á¸ÀçÇÏ´Â Å×ÀÌºí½ºÆäÀÌ½ºÀÎÁö Ã¼Å©
- *      1.2 Å×ÀÌºí½ºÆäÀÌ½ºÀÇ Á¾·ù°¡ UNDO tablespace ¶Ç´Â 
- *          temporary tablespace ÀÌ¸é ¿À·ù
+ *    1. TABLESPACE ëª…ì‹œí•œ ê²½ìš°
+ *      1.1 SM ì—ì„œ ì¡´ì¬í•˜ëŠ” í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì¸ì§€ ì²´í¬
+ *      1.2 í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì˜ ì¢…ë¥˜ê°€ UNDO tablespace ë˜ëŠ” 
+ *          temporary tablespace ì´ë©´ ì˜¤ë¥˜
  *
- *    2. TABLESPACE ¸í½ÃÇÏÁö ¾ÊÀº °æ¿ì
- *      2.1 USER_ID ·Î SYS_USERS_ °Ë»öÇØ¼­ DEFAULT_TBS_ID °ªÀ» ÀĞ¾î Å×ÀÌºíÀ»
- *          À§ÇÑ Å×ÀÌºí½ºÆäÀÌ½º·Î ÁöÁ¤
+ *    2. TABLESPACE ëª…ì‹œí•˜ì§€ ì•Šì€ ê²½ìš°
+ *      2.1 USER_ID ë¡œ SYS_USERS_ ê²€ìƒ‰í•´ì„œ DEFAULT_TBS_ID ê°’ì„ ì½ì–´ í…Œì´ë¸”ì„
+ *          ìœ„í•œ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ë¡œ ì§€ì •
  *
  *
  ***********************************************************************/
@@ -443,7 +443,7 @@ qdtCommon::getAndValidateTBSOfIndexPartition(
     smiTableSpaceAttr     sIndexTBSAttr;
     
     //-----------------------------------------
-    // ÀûÇÕ¼º °Ë»ç
+    // ì í•©ì„± ê²€ì‚¬
     //-----------------------------------------
     
     IDE_DASSERT( aStatement != NULL );
@@ -451,7 +451,7 @@ qdtCommon::getAndValidateTBSOfIndexPartition(
     IDE_DASSERT( aIndexTBSType != NULL );
 
     //-----------------------------------------
-    // 1. TABLESPACE ¸í½ÃÇÑ °æ¿ì
+    // 1. TABLESPACE ëª…ì‹œí•œ ê²½ìš°
     //-----------------------------------------
     if (QC_IS_NULL_NAME( aIndexTBSName ) == ID_FALSE )
     {
@@ -471,8 +471,8 @@ qdtCommon::getAndValidateTBSOfIndexPartition(
                                            sIndexTBSAttr.mID)
                   != IDE_SUCCESS );
 
-        // Å×ÀÌºí ÆÄÆ¼¼ÇÀÇ TBS¿Í ÀÎµ¦½º ÆÄÆ¼¼ÇÀÇ TBSÀÇ Á¾·ù°¡ ´Ù¸£¸é ¿À·ù
-        // ÀúÀå ¸ÅÃ¼°¡ µ¿ÀÏÇÑÁö °Ë»çÇÏ¿© ÀúÀå ¸ÅÃ¼°¡ ´Ù¸£¸é ¿À·ù
+        // í…Œì´ë¸” íŒŒí‹°ì…˜ì˜ TBSì™€ ì¸ë±ìŠ¤ íŒŒí‹°ì…˜ì˜ TBSì˜ ì¢…ë¥˜ê°€ ë‹¤ë¥´ë©´ ì˜¤ë¥˜
+        // ì €ì¥ ë§¤ì²´ê°€ ë™ì¼í•œì§€ ê²€ì‚¬í•˜ì—¬ ì €ì¥ ë§¤ì²´ê°€ ë‹¤ë¥´ë©´ ì˜¤ë¥˜
         IDE_TEST_RAISE( isSameTBSType( aTablePartTBSType,
                                        sIndexTBSAttr.mType ) == ID_FALSE,
                         ERR_INVALID_INDEX_TABLESPACE_MEDIA );
@@ -481,8 +481,8 @@ qdtCommon::getAndValidateTBSOfIndexPartition(
         *aIndexTBSType = sIndexTBSAttr.mType;
     }
     //-----------------------------------------
-    // 2. TABLESPACENAME ¸í½ÃÇÏÁö ¾ÊÀº °æ¿ì
-    //    Å×ÀÌºí ÆÄÆ¼¼ÇÀÇ TBS¸¦ µû¸¥´Ù.
+    // 2. TABLESPACENAME ëª…ì‹œí•˜ì§€ ì•Šì€ ê²½ìš°
+    //    í…Œì´ë¸” íŒŒí‹°ì…˜ì˜ TBSë¥¼ ë”°ë¥¸ë‹¤.
     //-----------------------------------------
     else
     {
@@ -505,11 +505,11 @@ qdtCommon::getAndValidateTBSOfIndexPartition(
     return IDE_FAILURE;
 }
 
-/* ¿©·¯ °³ÀÇ Attribute Flag ListÀÇ Flag°ªÀ»
-   Bitwise Or¿¬»ê ÇÏ¿© ÇÏ³ªÀÇ UInt ÇüÀÇ Flag °ªÀ» ¸¸µç´Ù
+/* ì—¬ëŸ¬ ê°œì˜ Attribute Flag Listì˜ Flagê°’ì„
+   Bitwise Orì—°ì‚° í•˜ì—¬ í•˜ë‚˜ì˜ UInt í˜•ì˜ Flag ê°’ì„ ë§Œë“ ë‹¤
 
-   [IN] aAttrFlagList - Tablespace Attribute FlagÀÇ List
-   [OUT] aAttrFlag - Bitwise ORµÈ Flag
+   [IN] aAttrFlagList - Tablespace Attribute Flagì˜ List
+   [OUT] aAttrFlag - Bitwise ORëœ Flag
 */
 IDE_RC qdtCommon::getTBSAttrFlagFromList(qdTBSAttrFlagList * aAttrFlagList,
                                          UInt              * aAttrFlag )
@@ -531,17 +531,17 @@ IDE_RC qdtCommon::getTBSAttrFlagFromList(qdTBSAttrFlagList * aAttrFlagList,
 
 
 /*
-    TablespaceÀÇ Attribute Flag List¿¡ ´ëÇÑ Validation¼öÇà
+    Tablespaceì˜ Attribute Flag Listì— ëŒ€í•œ Validationìˆ˜í–‰
 
-   [IN] qcStatement - Tablespace Attribute°¡ »ç¿ëµÈ Statement
-   [IN] aAttrFlagList - Tablespace Attribute FlagÀÇ List
+   [IN] qcStatement - Tablespace Attributeê°€ ì‚¬ìš©ëœ Statement
+   [IN] aAttrFlagList - Tablespace Attribute Flagì˜ List
  */
 IDE_RC qdtCommon::validateTBSAttrFlagList(qcStatement       * aStatement,
                                           qdTBSAttrFlagList * aAttrFlagList)
 {
     IDE_DASSERT( aAttrFlagList != NULL );
     
-    // °°Àº ÀÌ¸§ÀÇ Attribute Flag°¡ Á¸Àç ÇÏ¸é ¿¡·¯ Ã³¸®
+    // ê°™ì€ ì´ë¦„ì˜ Attribute Flagê°€ ì¡´ì¬ í•˜ë©´ ì—ëŸ¬ ì²˜ë¦¬
     IDE_TEST( checkTBSAttrIsUnique( aStatement,
                                     aAttrFlagList ) != IDE_SUCCESS );
 
@@ -554,17 +554,17 @@ IDE_RC qdtCommon::validateTBSAttrFlagList(qcStatement       * aStatement,
 
                                   
 /*
-    TablespaceÀÇ Attribute Flag List¿¡¼­ µ¿ÀÏÇÑ
-    Attribute List°¡ Á¸ÀçÇÒ °æ¿ì ¿¡·¯Ã³¸®
+    Tablespaceì˜ Attribute Flag Listì—ì„œ ë™ì¼í•œ
+    Attribute Listê°€ ì¡´ì¬í•  ê²½ìš° ì—ëŸ¬ì²˜ë¦¬
 
-    ex>  µ¿ÀÏÇÑ Attribute°¡ ´Ù¸¥ °ªÀ¸·Î µÎ ¹ø ³ª¿À¸é ¿¡·¯
+    ex>  ë™ì¼í•œ Attributeê°€ ë‹¤ë¥¸ ê°’ìœ¼ë¡œ ë‘ ë²ˆ ë‚˜ì˜¤ë©´ ì—ëŸ¬
          COMPRESSED LOGGING UNCOMPRESSED LOGGING 
 
-    DetectÇÒ ¹æ¹ı :
-         Mask°¡ °ãÄ¡´Â Attribute°¡ Á¸ÀçÇÏ´ÂÁö Ã¼Å©ÇÑ´Ù.
+    Detectí•  ë°©ë²• :
+         Maskê°€ ê²¹ì¹˜ëŠ” Attributeê°€ ì¡´ì¬í•˜ëŠ”ì§€ ì²´í¬í•œë‹¤.
 
-   [IN] qcStatement - Tablespace Attribute°¡ »ç¿ëµÈ Statement
-   [IN] aAttrFlagList - Tablespace Attribute FlagÀÇ List
+   [IN] qcStatement - Tablespace Attributeê°€ ì‚¬ìš©ëœ Statement
+   [IN] aAttrFlagList - Tablespace Attribute Flagì˜ List
  */
 IDE_RC qdtCommon::checkTBSAttrIsUnique(qcStatement       * aStatement,
                                        qdTBSAttrFlagList * aAttrFlagList)
@@ -612,7 +612,7 @@ idBool qdtCommon::isSameTBSType( smiTableSpaceType  aTBSType1,
     
     if ( smiTableSpace::isMemTableSpaceType( aTBSType1 ) == ID_TRUE )
     {
-        // Memory TableÀÎ °æ¿ì
+        // Memory Tableì¸ ê²½ìš°
         if ( smiTableSpace::isMemTableSpaceType( aTBSType2 ) == ID_FALSE )
         {
             sIsSame = ID_FALSE;
@@ -626,7 +626,7 @@ idBool qdtCommon::isSameTBSType( smiTableSpaceType  aTBSType1,
     {
         if ( smiTableSpace::isVolatileTableSpaceType( aTBSType1 ) == ID_TRUE )
         {
-            // Volatile TableÀÎ °æ¿ì
+            // Volatile Tableì¸ ê²½ìš°
             if ( smiTableSpace::isVolatileTableSpaceType( aTBSType2 ) == ID_FALSE )
             {
                 sIsSame = ID_FALSE;
@@ -638,7 +638,7 @@ idBool qdtCommon::isSameTBSType( smiTableSpaceType  aTBSType1,
         }
         else
         {
-            // Disk TableÀÎ °æ¿ì
+            // Disk Tableì¸ ê²½ìš°
             IDE_DASSERT( smiTableSpace::isDiskTableSpaceType( aTBSType1 )
                          == ID_TRUE );
         

@@ -39,11 +39,11 @@ typedef enum
 } sdbMPRBCBType;
 
 /****************************************************************
- * MPR¿¡¼­ ¿©·¯¹ø¿¡ °ÉÃÄ¼­ ÀÐ´Â °æ¿ì¿¡µµ ¿¬¼ÓµÇ´Â ÆäÀÌÁö´Â ¿¬¼ÓÀ¸·Î ÀÐ´Â´Ù.
- * ÀÌ¶§, ÇÑ¹ø¿¡ readÇÏ°Ô µÇ´Â ´ÜÀ§¸¦ sdbReadUnitÀÌ¶ó°í ÇÑ´Ù.
+ * MPRì—ì„œ ì—¬ëŸ¬ë²ˆì— ê±¸ì³ì„œ ì½ëŠ” ê²½ìš°ì—ë„ ì—°ì†ë˜ëŠ” íŽ˜ì´ì§€ëŠ” ì—°ì†ìœ¼ë¡œ ì½ëŠ”ë‹¤.
+ * ì´ë•Œ, í•œë²ˆì— readí•˜ê²Œ ë˜ëŠ” ë‹¨ìœ„ë¥¼ sdbReadUnitì´ë¼ê³  í•œë‹¤.
  *
- * ¿©±â¿£ FirstPID¿Í ¿¬¼ÓµÈ ÆäÀÌÁö °¹¼ö, ±×¸®°í ½ÇÁ¦ BCB¸¦ °¡¸®Å°´Â
- * Æ÷ÀÎÅÍ º¯¼ö¸¦ °¡Áö°í ÀÖ´Ù.
+ * ì—¬ê¸°ì—” FirstPIDì™€ ì—°ì†ëœ íŽ˜ì´ì§€ ê°¯ìˆ˜, ê·¸ë¦¬ê³  ì‹¤ì œ BCBë¥¼ ê°€ë¦¬í‚¤ëŠ”
+ * í¬ì¸í„° ë³€ìˆ˜ë¥¼ ê°€ì§€ê³  ìžˆë‹¤.
  ****************************************************************/
 typedef struct sdbMPRBCB
 {
@@ -64,9 +64,9 @@ typedef enum
     SDB_MPR_KEY_FETCHED
 } sdbMPRKeyState;
 /****************************************************************
- * PROJ-1568 ¼³°è¹®¼­ÀÇ 3.3 ÂüÁ¶.
- * Multi Page Read¸¦ À§ÇØ À¯ÁöÇÏ´Â ÀÚ·á±¸Á¶.
- * MPR¿¡¼­ ÀÐ¾î¾ß ÇÏ´Â ÆäÀÌÁö¿Í ÀÐÁö ¸»¾Æ¾ß ÇÏ´Â ÆäÀÌÁö¿¡ °üÇÑ Á¤º¸¸¦ À¯ÁöÇÔ.
+ * PROJ-1568 ì„¤ê³„ë¬¸ì„œì˜ 3.3 ì°¸ì¡°.
+ * Multi Page Readë¥¼ ìœ„í•´ ìœ ì§€í•˜ëŠ” ìžë£Œêµ¬ì¡°.
+ * MPRì—ì„œ ì½ì–´ì•¼ í•˜ëŠ” íŽ˜ì´ì§€ì™€ ì½ì§€ ë§ì•„ì•¼ í•˜ëŠ” íŽ˜ì´ì§€ì— ê´€í•œ ì •ë³´ë¥¼ ìœ ì§€í•¨.
  ****************************************************************/
 class sdbMPRKey 
 { 
@@ -92,25 +92,25 @@ public:
     SInt           mReadUnitCount;
     sdbReadUnit    mReadUnit[SDB_MAX_MPR_PAGE_COUNT/2];
    
-    // MPR¿¡ targetÀÌ µÈ BCBµéÀº ½ÇÁ¦ read¸¦ Çß°Ç ¾ÈÇß°Ç ¸ðµÎ ¹öÆÛ¿¡ ÀÖ¾î¾ß
-    // ÇÑ´Ù. ±×¸®°í ±×µéÀº ¸ðµÎ mBCBs¿¡¼­ Æ÷ÀÎÆÃÇÏ°í ÀÖ´Ù.
-    // MPRKey¸¦ ÀÌ¿ëÇÏ¿© getPage¸¦ ÇÒ¶§´Â ¹Ýµå½Ã ¼ø¼­´ë·Î Á¢±ÙÀ» ÇØ¾ß ÇÑ´Ù.
-    // ÀÌ¶§, ÇöÀç Á¢±Ù Áß¿£ BCB¿¡ ´ëÇÑ Á¤º¸´Â mCurrentIndex¿¡¼­ À¯ÁöÇÑ´Ù.
+    // MPRì— targetì´ ëœ BCBë“¤ì€ ì‹¤ì œ readë¥¼ í–ˆê±´ ì•ˆí–ˆê±´ ëª¨ë‘ ë²„í¼ì— ìžˆì–´ì•¼
+    // í•œë‹¤. ê·¸ë¦¬ê³  ê·¸ë“¤ì€ ëª¨ë‘ mBCBsì—ì„œ í¬ì¸íŒ…í•˜ê³  ìžˆë‹¤.
+    // MPRKeyë¥¼ ì´ìš©í•˜ì—¬ getPageë¥¼ í• ë•ŒëŠ” ë°˜ë“œì‹œ ìˆœì„œëŒ€ë¡œ ì ‘ê·¼ì„ í•´ì•¼ í•œë‹¤.
+    // ì´ë•Œ, í˜„ìž¬ ì ‘ê·¼ ì¤‘ì—” BCBì— ëŒ€í•œ ì •ë³´ëŠ” mCurrentIndexì—ì„œ ìœ ì§€í•œë‹¤.
     sdbMPRBCB      mBCBs[SDB_MAX_MPR_PAGE_COUNT];
     SInt           mCurrentIndex;
     
-    /* MPR¿¡¼­ ¿¬¼ÓÀûÀÎ °ø°£À» ÀÐ¾î µéÀÌ±â À§ÇØ¼±, ¿¬¼ÓÀûÀÎ ¸Þ¸ð¸®°¡ ÇÊ¿äÇÏ´Ù.
-     * ÀÌ°ÍÀ» À§ÇØ¼­ ¹Ì¸® °ø°£À» ÇÒ´çÇÑ´Ù. ÀÌ °ø°£ÀÇ Å©±â´Â ÇÑ¹ø¿¡ ÀÐ¾î µéÀÌ´Â
-     * °æ¿ì¸¦ ´ëºñÇÑ Å©±âÀÌ´Ù.
+    /* MPRì—ì„œ ì—°ì†ì ì¸ ê³µê°„ì„ ì½ì–´ ë“¤ì´ê¸° ìœ„í•´ì„ , ì—°ì†ì ì¸ ë©”ëª¨ë¦¬ê°€ í•„ìš”í•˜ë‹¤.
+     * ì´ê²ƒì„ ìœ„í•´ì„œ ë¯¸ë¦¬ ê³µê°„ì„ í• ë‹¹í•œë‹¤. ì´ ê³µê°„ì˜ í¬ê¸°ëŠ” í•œë²ˆì— ì½ì–´ ë“¤ì´ëŠ”
+     * ê²½ìš°ë¥¼ ëŒ€ë¹„í•œ í¬ê¸°ì´ë‹¤.
      * */
     UChar        * mReadIOB;
     
-    /* MPR¿¡¼­´Â frameÀ¸·Î »ç¿ëµÇ´Â ¸Þ¸ð¸®¸¦ µû·Î ÇÒ´çÇÏÁö ¾Ê°í, ±âÁ¸¿¡ Á¸ÀçÇÏ´Â
-     * BCB¸¦ ÀÌ¿ëÇÑ´Ù. ÀÌ°ÍÀº getVictimÀ» ÅëÇØ¼­ ¾ò¾î¿À±â ¶§¹®¿¡, ¹öÆÛ ¸Å´ÏÀú¿¡
-     * overhead¸¦ ÁÙ ¼ö ÀÖ´Ù.  ±×·¸±â ¶§¹®¿¡, µû·Î mFreeList¸¦ À¯ÁöÇÑ´Ù.
-     * ±âº»ÀûÀ¸·Î MPRÀÌ »ç¿ëÇÏ°í ³­ BCB´Â ¹öÆÛ¸Å´ÏÀú¿¡ ¹Ý³³ÇÏÁö ¾Ê°í,
-     * mFreeList¿¡ ¹Ý³³ÇÑ´Ù. ¹öÆÛ¸Å´ÏÀú¿¡ ¹Ý³³ÇÏ´Â °æ¿ì´Â, ´Ù¸¥ ´©±º°¡¿¡ ÀÇÇØ
-     * hit(fix)°¡ µÈ °æ¿ìÀÌ´Ù. */
+    /* MPRì—ì„œëŠ” frameìœ¼ë¡œ ì‚¬ìš©ë˜ëŠ” ë©”ëª¨ë¦¬ë¥¼ ë”°ë¡œ í• ë‹¹í•˜ì§€ ì•Šê³ , ê¸°ì¡´ì— ì¡´ìž¬í•˜ëŠ”
+     * BCBë¥¼ ì´ìš©í•œë‹¤. ì´ê²ƒì€ getVictimì„ í†µí•´ì„œ ì–»ì–´ì˜¤ê¸° ë•Œë¬¸ì—, ë²„í¼ ë§¤ë‹ˆì €ì—
+     * overheadë¥¼ ì¤„ ìˆ˜ ìžˆë‹¤.  ê·¸ë ‡ê¸° ë•Œë¬¸ì—, ë”°ë¡œ mFreeListë¥¼ ìœ ì§€í•œë‹¤.
+     * ê¸°ë³¸ì ìœ¼ë¡œ MPRì´ ì‚¬ìš©í•˜ê³  ë‚œ BCBëŠ” ë²„í¼ë§¤ë‹ˆì €ì— ë°˜ë‚©í•˜ì§€ ì•Šê³ ,
+     * mFreeListì— ë°˜ë‚©í•œë‹¤. ë²„í¼ë§¤ë‹ˆì €ì— ë°˜ë‚©í•˜ëŠ” ê²½ìš°ëŠ”, ë‹¤ë¥¸ ëˆ„êµ°ê°€ì— ì˜í•´
+     * hit(fix)ê°€ ëœ ê²½ìš°ì´ë‹¤. */
     smuList        mFreeListBase;
     SInt           mFreeBCBCount;
     sdbMPRKeyState mState;
@@ -124,7 +124,7 @@ void sdbMPRKey::initFreeBCBList()
 
 /****************************************************************
  * Description:
- *  mFreeList¿¡¼­ FreeBCBÇÏ³ª¸¦ ¸®ÅÏÇÑ´Ù.
+ *  mFreeListì—ì„œ FreeBCBí•˜ë‚˜ë¥¼ ë¦¬í„´í•œë‹¤.
  ****************************************************************/
 sdbBCB* sdbMPRKey::removeLastFreeBCB()
 {
@@ -151,7 +151,7 @@ sdbBCB* sdbMPRKey::removeLastFreeBCB()
 
 /****************************************************************
  * Description:
- *  mFreeList¿¡ FreeBCBÇÏ³ª¸¦ Ãß°¡ÇÑ´Ù.
+ *  mFreeListì— FreeBCBí•˜ë‚˜ë¥¼ ì¶”ê°€í•œë‹¤.
  ****************************************************************/
 void sdbMPRKey::addFreeBCB(sdbBCB *aBCB)
 {
@@ -161,7 +161,7 @@ void sdbMPRKey::addFreeBCB(sdbBCB *aBCB)
 
 /****************************************************************
  * Description:
- *  mFreeList¿¡ ÀÖ´Â ¸ðµç Free BCB µéÀ» ListÇüÅÂ·Î ¸®ÅÏÇÑ´Ù.
+ *  mFreeListì— ìžˆëŠ” ëª¨ë“  Free BCB ë“¤ì„ Listí˜•íƒœë¡œ ë¦¬í„´í•œë‹¤.
  ****************************************************************/
 void sdbMPRKey::removeAllBCB(sdbBCB **aFirstBCB,
                              sdbBCB **aLastBCB,
@@ -184,7 +184,7 @@ void sdbMPRKey::removeAllBCB(sdbBCB **aFirstBCB,
 
 /****************************************************************
  * Description:
- *  ´õÀÌ»ó MPR¿¡¼­ getPageÇÒ ¼ö ÀÖ´Â ÆäÀÌÁö°¡ ³²¾Æ ÀÖ´ÂÁö È®ÀÎÇÑ´Ù.
+ *  ë”ì´ìƒ MPRì—ì„œ getPageí•  ìˆ˜ ìžˆëŠ” íŽ˜ì´ì§€ê°€ ë‚¨ì•„ ìžˆëŠ”ì§€ í™•ì¸í•œë‹¤.
  ****************************************************************/
 idBool sdbMPRKey::hasNextPage()
 {
@@ -193,7 +193,7 @@ idBool sdbMPRKey::hasNextPage()
 
 /****************************************************************
  * Description:
- *  ´ÙÀ½ ÆäÀÌÁö¿¡ ´ëÇØ¼­ getPageÇÏ±â À§ÇØ È£ÃâÇÑ´Ù.
+ *  ë‹¤ìŒ íŽ˜ì´ì§€ì— ëŒ€í•´ì„œ getPageí•˜ê¸° ìœ„í•´ í˜¸ì¶œí•œë‹¤.
  ****************************************************************/
 void sdbMPRKey::moveToNext()
 {

@@ -100,9 +100,9 @@ IDE_RC rpdTransEntry::setSavepoint( smTID aTID, rpSavepointType  aType, SChar * 
             {
                 /* Nothing to do */
             }
-            /* BUG-21800 [RP] PSM SAVEPIONTÀÏ °æ¿ì µû·Î Ã³¸®ÇØÁÝ´Ï´Ù
-             * PSM SVP´Â ½ÃÀÛ ºÎºÐ¿¡¼­ reserve¸¸ ÇØµÎ¾ú´Ù°¡ DMLÀÌ ÀÏ¾î³ª´Â ºÎºÐ¿¡¼­
-             * ½ÇÁ¦ write°¡ µÇ¾î ±â·Ï µÇ¹Ç·Î ÀÌ °÷¿¡¼­ reserve¸¸ È£ÃâÇÑ´Ù.
+            /* BUG-21800 [RP] PSM SAVEPIONTì¼ ê²½ìš° ë”°ë¡œ ì²˜ë¦¬í•´ì¤ë‹ˆë‹¤
+             * PSM SVPëŠ” ì‹œìž‘ ë¶€ë¶„ì—ì„œ reserveë§Œ í•´ë‘ì—ˆë‹¤ê°€ DMLì´ ì¼ì–´ë‚˜ëŠ” ë¶€ë¶„ì—ì„œ
+             * ì‹¤ì œ writeê°€ ë˜ì–´ ê¸°ë¡ ë˜ë¯€ë¡œ ì´ ê³³ì—ì„œ reserveë§Œ í˜¸ì¶œí•œë‹¤.
              */
             mRpdTrans->mSmiTrans.reservePsmSvp();
             mSetPSMSavepoint = ID_TRUE;;
@@ -179,9 +179,9 @@ IDE_RC rpdTransEntry::abortSavepoint( rpSavepointType  aType, SChar * aSavepoint
                      != IDE_SUCCESS )
                 {
                      IDE_ERRLOG( IDE_RP_0 );
-                    /* savepoint¸¦ Ã£À» ¼ö ¾øÀ» °æ¿ì, ÀüÃ¼ rollback ½ÃÅ²´Ù. conflict resolution ½ÃÀÛ
-                       ÀÌÀü¿¡ set savepoint Çß´ø °Í¿¡ ´ëÇØ¼­´Â mTransForConflictResolution¿¡ SVPÁ¤º¸°¡
-                       ÀúÀåµÇÁö ¾Ê´Â´Ù */
+                    /* savepointë¥¼ ì°¾ì„ ìˆ˜ ì—†ì„ ê²½ìš°, ì „ì²´ rollback ì‹œí‚¨ë‹¤. conflict resolution ì‹œìž‘
+                       ì´ì „ì— set savepoint í–ˆë˜ ê²ƒì— ëŒ€í•´ì„œëŠ” mTransForConflictResolutionì— SVPì •ë³´ê°€
+                       ì €ìž¥ë˜ì§€ ì•ŠëŠ”ë‹¤ */
                     IDE_TEST_RAISE( mTransForConflictResolution->mSmiTrans.rollback(
                                         RP_CONFLICT_RESOLUTION_BEGIN_SVP_NAME )
                                     != IDE_SUCCESS, ERR_ABORT_SVP );

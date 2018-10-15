@@ -58,7 +58,7 @@ IDE_RC mmdXidManager::initialize()
                               ID_TRUE) != IDE_SUCCESS);			/* HWCacheLine */
 
     // bug-35382: mutex optimization during alloc and dealloc
-    // ÃÖÁ¾ pool size ´Â XaHashSize * XidMutexPoolSize
+    // ìµœì¢… pool size ëŠ” XaHashSize * XidMutexPoolSize
     IDE_TEST(mXidMutexPool.initialize(IDU_MEM_MMD,
                               (SChar *)"MMD_XID_MUTEX_POOL",
                               ID_SCALABILITY_SYS,
@@ -110,7 +110,7 @@ IDE_RC  mmdXidManager::initBucket(mmdXidHashBucket* aBucket)
     IDE_ASSERT( aBucket->mXidMutexBucketLatch.initialize( (SChar *)"MMD_XID_MUTEX_LATCH" )
                 == IDE_SUCCESS );
 
-    // mutex poolÀ» hash Å×ÀÌºí¿¡ ±¸¼ºÇÑ´Ù
+    // mutex poolì„ hash í…Œì´ë¸”ì— êµ¬ì„±í•œë‹¤
     for(sCnt = 0; sCnt < sXidMutexPoolSize ; sCnt++)
     {
         IDU_FIT_POINT( "mmdXidManager::initBucket::alloc::Mutex" );
@@ -150,7 +150,7 @@ IDE_RC mmdXidManager::finalize()
 
 
     // bug-35382: mutex optimization during alloc and dealloc
-    // mutex pool (hash chain)À» ³¯·Á ¹ö¸°´Ù
+    // mutex pool (hash chain)ì„ ë‚ ë ¤ ë²„ë¦°ë‹¤
     for(i = 0; i < mmuProperty::getXAHashSize() ; i++)
     {
         // PROJ-2408
@@ -285,9 +285,9 @@ IDE_RC mmdXidManager::remove(mmdXid *aXid,UInt *aFixCount)
   that is to say , chanage the granularity from global to bucket level. */           
     IDU_LIST_REMOVE(aXid->getLstNode());
     
-    /* BUG-27968 XA Fix/Unfix Scalability¸¦ Çâ»ó½ÃÄÑ¾ß ÇÕ´Ï´Ù.
-     XA Unfix ½Ã¿¡ latch duarationÀ» ÁÙÀÌ±âÀ§ÇÏ¿© xid fix-Count¸¦ xid list latch releaseÀü¿¡
-     ±¸ÇÑ´Ù.*/
+    /* BUG-27968 XA Fix/Unfix Scalabilityë¥¼ í–¥ìƒì‹œì¼œì•¼ í•©ë‹ˆë‹¤.
+     XA Unfix ì‹œì— latch duarationì„ ì¤„ì´ê¸°ìœ„í•˜ì—¬ xid fix-Countë¥¼ xid list latch releaseì „ì—
+     êµ¬í•œë‹¤.*/
     aXid->unfix(aFixCount);
 
     ideLog::logLine(IDE_XA_2, "XID REMOVE -> 0x%x", aXid);
@@ -366,7 +366,7 @@ UInt mmdXidManager::getBucketPos(ID_XID *aXid)
     return (sHashVal % mmuProperty::getXAHashSize());
 }
 
-//fix BUG-22669 XID list¿¡ ´ëÇÑ performance view ÇÊ¿ä.
+//fix BUG-22669 XID listì— ëŒ€í•œ performance view í•„ìš”.
 IDE_RC  mmdXidManager::buildRecordForXID(idvSQL               * /* aStatistics */,
                                          void                 *aHeader,
                                          void                 */*aDummyObj*/,
@@ -391,9 +391,9 @@ IDE_RC  mmdXidManager::buildRecordForXID(idvSQL               * /* aStatistics *
         IDU_LIST_ITERATE(&(mHash[i].mChain),sIterator)
         {
             sXid = (mmdXid*)sIterator->mObj;
-            //fix BUG-23656 session,xid ,transactionÀ» ¿¬°èÇÑ performance view¸¦ Á¦°øÇÏ°í,
-            //±×µé°£ÀÇ °ü°è¸¦ Á¤È®È÷ À¯ÁöÇØ¾ß ÇÔ.
-            // build record¿¡¼­ XIDÀÇ Æ®·£Àè¼Ç ID¸¦ assignÇÔ.
+            //fix BUG-23656 session,xid ,transactionì„ ì—°ê³„í•œ performance viewë¥¼ ì œê³µí•˜ê³ ,
+            //ê·¸ë“¤ê°„ì˜ ê´€ê³„ë¥¼ ì •í™•íˆ ìœ ì§€í•´ì•¼ í•¨.
+            // build recordì—ì„œ XIDì˜ íŠ¸ëœì­ì…˜ IDë¥¼ assigní•¨.
             sTrans = sXid->getTrans();
             if(sTrans != NULL)
             {
@@ -408,7 +408,7 @@ IDE_RC  mmdXidManager::buildRecordForXID(idvSQL               * /* aStatistics *
             sXidInfo.mAssocSessionID = sXid->mAssocSessionID;
             sXidInfo.mState          = sXid->mState;
             
-            //BUG-25078 - State°¡  ½ÃÀÛµÈ ½Ã°¢°ú Duration 
+            //BUG-25078 - Stateê°€  ì‹œì‘ëœ ì‹œê°ê³¼ Duration 
             sXidInfo.mStateStartTime = sXid->mStateStartTime;
             sXidInfo.mStateDuration  = mmtSessionManager::getBaseTime() - sXid->mStateStartTime;
             
@@ -443,8 +443,8 @@ IDE_RC  mmdXidManager::buildRecordForXID(idvSQL               * /* aStatistics *
 static iduFixedTableColDesc gXidColDesc[]=
 {
     //XID VALUE
-    //fix BUG-23656 session,xid ,transactionÀ» ¿¬°èÇÑ performance view¸¦ Á¦°øÇÏ°í,
-    //±×µé°£ÀÇ °ü°è¸¦ Á¤È®È÷ À¯ÁöÇØ¾ß ÇÔ.
+    //fix BUG-23656 session,xid ,transactionì„ ì—°ê³„í•œ performance viewë¥¼ ì œê³µí•˜ê³ ,
+    //ê·¸ë“¤ê°„ì˜ ê´€ê³„ë¥¼ ì •í™•íˆ ìœ ì§€í•´ì•¼ í•¨.
     {
         (SChar *)"XID_VALUE",
         offsetof(mmdXidInfo4PerfV,mXIDValue),
@@ -481,7 +481,7 @@ static iduFixedTableColDesc gXidColDesc[]=
         0, 0, NULL // for internal use
     },
     
-    //BUG-25078 ÇöÀç State°¡ ½ÃÀÛµÈ ½Ã°¢
+    //BUG-25078 í˜„ì¬ Stateê°€ ì‹œì‘ëœ ì‹œê°
     {
         (SChar *)"STATE_START_TIME",
         offsetof(mmdXidInfo4PerfV,mStateStartTime),

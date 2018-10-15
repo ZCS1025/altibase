@@ -260,12 +260,12 @@ static void finalizeAdapter( oaConfigHandle *aConfigHandle )
 }
 
 /**
- * @breif  process¸¦ daemonÀ¸·Î ¸¸µç´Ù.
+ * @breif  processë¥¼ daemonìœ¼ë¡œ ë§Œë“ ë‹¤.
  *
- *         ²®µ¥±â Parent°¡ ÀÌ ÇÔ¼ö¸¦ È£ÃâÇÏ¿©,
- *         (--daemon ¿É¼ÇÀ¸·Î) Child¸¦ daemonized process·Î »ı¼ºÇÑ´Ù.
+ *         ê»ë°ê¸° Parentê°€ ì´ í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•˜ì—¬,
+ *         (--daemon ì˜µì…˜ìœ¼ë¡œ) Childë¥¼ daemonized processë¡œ ìƒì„±í•œë‹¤.
  *
- * @return ¼º°ø ¿©ºÎ
+ * @return ì„±ê³µ ì—¬ë¶€
  *
  */
 static ace_rc_t daemonize()
@@ -313,9 +313,9 @@ static ace_rc_t daemonize()
 }
 
 /**
- * @breif  daemonized process°¡ ÀÌ ÇÔ¼ö¸¦ È£ÃâÇÏ¿©, working directory µîÀ» ¼³Á¤ÇÑ´Ù.
+ * @breif  daemonized processê°€ ì´ í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•˜ì—¬, working directory ë“±ì„ ì„¤ì •í•œë‹¤.
  *
- * @return ¼º°ø ¿©ºÎ
+ * @return ì„±ê³µ ì—¬ë¶€
  *
  */
 static ace_rc_t detachConsole()
@@ -387,7 +387,7 @@ static ace_rc_t handleOption( oaContext  * aContext,
         }
     }
 
-    /* BUG-32379 oraAdater´Â µ¥¸óÀ¸·Î ½ÇÇàµÉ ÇÊ¿ä°¡ ÀÖ½À´Ï´Ù. */
+    /* BUG-32379 oraAdaterëŠ” ë°ëª¬ìœ¼ë¡œ ì‹¤í–‰ë  í•„ìš”ê°€ ìˆìŠµë‹ˆë‹¤. */
     if ( sIsDaemonChild == ACP_TRUE )
     {
         ACE_TEST( detachConsole() != ACE_RC_SUCCESS );
@@ -517,11 +517,11 @@ static void doFinalizeJob( oaAlaReceiverHandle     * aAlaReceiverHandle,
     }
 }
 /**
- * @breif  Adapter for OracleÀÇ ÁÖ ÀÛ¾÷À» ¼öÇàÇÑ´Ù.
+ * @breif  Adapter for Oracleì˜ ì£¼ ì‘ì—…ì„ ìˆ˜í–‰í•œë‹¤.
  *
  * @param aContext oaContext
  *
- * @return ¼º°ø ¿©ºÎ
+ * @return ì„±ê³µ ì—¬ë¶€
  *
  */
 static ace_rc_t doMainJob( oaContext               * aContext, 
@@ -719,7 +719,7 @@ int main(int argc, char *argv[])
                             &sIsDaemonChild )
               != ACE_RC_SUCCESS );
 
-    /* BUG-32379 oraAdater´Â µ¥¸óÀ¸·Î ½ÇÇàµÉ ÇÊ¿ä°¡ ÀÖ½À´Ï´Ù. */
+    /* BUG-32379 oraAdaterëŠ” ë°ëª¬ìœ¼ë¡œ ì‹¤í–‰ë  í•„ìš”ê°€ ìˆìŠµë‹ˆë‹¤. */
     if ( sIsDaemonChild != ACP_TRUE )
     {
         ACE_TEST( daemonize() != ACE_RC_SUCCESS );

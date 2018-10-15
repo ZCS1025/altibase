@@ -19,8 +19,8 @@
  *
  * $Id: sdpstFindPage.h 27220 2008-07-23 14:56:22Z newdaily $
  *
- * º» ÆÄÀÏÀº Treelist Managed Segment¿¡¼­ °¡¿ë°ø°£ Å½»ö ¿¬»ê °ü·Ã
- * Çì´õ ÆÄÀÏÀÌ´Ù.
+ * ë³¸ íŒŒì¼ì€ Treelist Managed Segmentì—ì„œ ê°€ìš©ê³µê°„ íƒìƒ‰ ì—°ì‚° ê´€ë ¨
+ * í—¤ë” íŒŒì¼ì´ë‹¤.
  *
  ***********************************************************************/
 
@@ -148,7 +148,7 @@ private:
 
 };
 
-// Å½»ö´ë»ó¿¡ ºÎÇÕÇÏ´Â leaf slotÀÌ Á¸ÀçÇÏ´ÂÁö ÆÇ´ÜÇÑ´Ù.
+// íƒìƒ‰ëŒ€ìƒì— ë¶€í•©í•˜ëŠ” leaf slotì´ ì¡´ì¬í•˜ëŠ”ì§€ íŒë‹¨í•œë‹¤.
 inline idBool sdpstFindPage::isAvailable( sdpstMFNL  aSrcMFNL,
                                           sdpstMFNL  aTargetMFNL )
 {
@@ -156,7 +156,7 @@ inline idBool sdpstFindPage::isAvailable( sdpstMFNL  aSrcMFNL,
 }
 
 /***********************************************************************
- * Page »óÅÂ°¡ Insert High Limit ÀÌÇÏ·Î ¶³¾îÁ³´ÂÁö CheckÇÑ´Ù.
+ * Page ìƒíƒœê°€ Insert High Limit ì´í•˜ë¡œ ë–¨ì–´ì¡ŒëŠ”ì§€ Checkí•œë‹¤.
  ***********************************************************************/
 inline idBool sdpstFindPage::isPageInsertable( sdpPhyPageHdr *aPageHdr,
                                                UInt           aPctUsed )
@@ -187,7 +187,7 @@ inline idBool sdpstFindPage::isPageInsertable( sdpPhyPageHdr *aPageHdr,
     return sIsInsertable;
 }
 
-/* Page »óÅÂ°¡ Update OnlyÀÎÁö¸¦ CheckÇÑ´Ù. */
+/* Page ìƒíƒœê°€ Update Onlyì¸ì§€ë¥¼ Checkí•œë‹¤. */
 inline idBool sdpstFindPage::isPageUpdateOnly( sdpPhyPageHdr *aPageHdr,
                                                UInt           aPctFree )
 {

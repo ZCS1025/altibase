@@ -340,19 +340,19 @@ IDE_RC sdl::allocConnect( sdiConnectInfo * aConnectInfo )
  * Implementation : alloc dbc and connect to data node.
  *
  * Arguments
- *     - aUserName      : data node ¿¡ ´ëÇÑ connect user name
- *     - aPassword      : data node ¿¡ ´ëÇÑ connect password
- *     - aConnectType   : data node ¿¡ ´ëÇÑ connect type
- *     - aConnectInfo   : data nodeÀÇ Á¢¼Ó °á°ú
+ *     - aUserName      : data node ì— ëŒ€í•œ connect user name
+ *     - aPassword      : data node ì— ëŒ€í•œ connect password
+ *     - aConnectType   : data node ì— ëŒ€í•œ connect type
+ *     - aConnectInfo   : data nodeì˜ ì ‘ì† ê²°ê³¼
  *           mNodeId
  *           mNodeName
  *           mServerIP
  *           mPortNo
  *           mDbc
- *           mLinkFailure : data node ¿¡ ´ëÇÑ link failure
+ *           mLinkFailure : data node ì— ëŒ€í•œ link failure
  *
  * Return value
- *     - aConnectInfo->mDbc : data node ¿¡ ´ëÇÑ connection
+ *     - aConnectInfo->mDbc : data node ì— ëŒ€í•œ connection
  *
  * Error handle
  *     - SQL_SUCCESS
@@ -539,8 +539,8 @@ IDE_RC sdl::disconnect( void   *aDbc,
  * Implementation : SQLDisconnect
  *
  * Arguments
- *     - aDbc : data node ¿¡ ´ëÇÑ connection
- *     - aIsLinkFailure : Link-½ÇÆĞ ¿©ºÎ¿¡ ´ëÇÑ ÇÃ·¡±×.
+ *     - aDbc : data node ì— ëŒ€í•œ connection
+ *     - aIsLinkFailure : Link-ì‹¤íŒ¨ ì—¬ë¶€ì— ëŒ€í•œ í”Œë˜ê·¸.
  *
  * Return value
  *
@@ -589,8 +589,8 @@ IDE_RC sdl::disconnectLocal( void   *aDbc,
  * Implementation : SQLDisconnect
  *
  * Arguments
- *     - aDbc : data node ¿¡ ´ëÇÑ connection
- *     - aIsLinkFailure : Link-½ÇÆĞ ¿©ºÎ¿¡ ´ëÇÑ ÇÃ·¡±×.
+ *     - aDbc : data node ì— ëŒ€í•œ connection
+ *     - aIsLinkFailure : Link-ì‹¤íŒ¨ ì—¬ë¶€ì— ëŒ€í•œ í”Œë˜ê·¸.
  *
  * Return value
  *
@@ -639,8 +639,8 @@ IDE_RC sdl::freeConnect( void   *aDbc,
  * Implementation : SQLFreeConnect
  *
  * Arguments
- *     - aDbc : data node ¿¡ ´ëÇÑ connect
- *     - aIsLinkFailure : Link-½ÇÆĞ ¿©ºÎ¿¡ ´ëÇÑ ÇÃ·¡±×.
+ *     - aDbc : data node ì— ëŒ€í•œ connect
+ *     - aIsLinkFailure : Link-ì‹¤íŒ¨ ì—¬ë¶€ì— ëŒ€í•œ í”Œë˜ê·¸.
  *
  * Return value
  *
@@ -684,13 +684,13 @@ IDE_RC sdl::allocStmt( void    *aDbc,
  * Implementation : SQLAllocStmt
  *
  * Arguments
- *  - aDbc           : data node ¿¡ ´ëÇÑ connect
+ *  - aDbc           : data node ì— ëŒ€í•œ connect
  *  - aStmt          : Statement Handler
- *  - aNodeName      : ³ëµå ÀÌ¸§.
- *  - aIsLinkFailure : Link-½ÇÆĞ ¿©ºÎ¿¡ ´ëÇÑ ÇÃ·¡±×.
+ *  - aNodeName      : ë…¸ë“œ ì´ë¦„.
+ *  - aIsLinkFailure : Link-ì‹¤íŒ¨ ì—¬ë¶€ì— ëŒ€í•œ í”Œë˜ê·¸.
  *
  * Return value
- *     - aStmt : data node ¿¡ ´ëÇÑ stmt pointer
+ *     - aStmt : data node ì— ëŒ€í•œ stmt pointer
  *
  * Error handle
  *     - SQL_SUCCESS
@@ -743,11 +743,11 @@ IDE_RC sdl::freeStmt( void   *aStmt,
  * Implementation : SQLFreeStmt
  *
  * Arguments
- *  - aStmt   : data node ¿¡ ´ëÇÑ stmt pointer
+ *  - aStmt   : data node ì— ëŒ€í•œ stmt pointer
  *  - aOption : SQLFreeStmt option
  *                 SQL_CLOSE
  *                 SQL_DROP
- *  - aIsLinkFailure : Link-½ÇÆĞ ¿©ºÎ¿¡ ´ëÇÑ ÇÃ·¡±×.
+ *  - aIsLinkFailure : Link-ì‹¤íŒ¨ ì—¬ë¶€ì— ëŒ€í•œ í”Œë˜ê·¸.
  *
  * Return value
  *
@@ -799,11 +799,11 @@ IDE_RC sdl::prepare( void   *aStmt,
  * Implementation : SQLPrepare
  *
  * Arguments
- *  - aStmt   : data node ¿¡ ´ëÇÑ stmt
+ *  - aStmt   : data node ì— ëŒ€í•œ stmt
  *  - aQuery  : query string
  *  - aLength : query string size
- *  - aNodeName : ³ëµå ÀÌ¸§.
- *  - aIsLinkFailure : Link-½ÇÆĞ ¿©ºÎ¿¡ ´ëÇÑ ÇÃ·¡±×.
+ *  - aNodeName : ë…¸ë“œ ì´ë¦„.
+ *  - aIsLinkFailure : Link-ì‹¤íŒ¨ ì—¬ë¶€ì— ëŒ€í•œ í”Œë˜ê·¸.
  *
  * Return value
  *
@@ -858,11 +858,11 @@ IDE_RC sdl::addPrepareCallback( void ** aCallback,
  * Implementation : SQLPrepare
  *
  * Arguments
- *  - aStmt   : data node ¿¡ ´ëÇÑ stmt
+ *  - aStmt   : data node ì— ëŒ€í•œ stmt
  *  - aQuery  : query string
  *  - aLength : query string size
- *  - aNodeName : ³ëµå ÀÌ¸§.
- *  - aIsLinkFailure : Link-½ÇÆĞ ¿©ºÎ¿¡ ´ëÇÑ ÇÃ·¡±×.
+ *  - aNodeName : ë…¸ë“œ ì´ë¦„.
+ *  - aIsLinkFailure : Link-ì‹¤íŒ¨ ì—¬ë¶€ì— ëŒ€í•œ í”Œë˜ê·¸.
  *
  * Return value
  *
@@ -916,7 +916,7 @@ IDE_RC sdl::getParamsCount( void   * aStmt,
  * Implementation : Get count of parameters.
  *
  * Arguments
- *     - aStmt           [IN] : data node ¿¡ ´ëÇÑ stmt
+ *     - aStmt           [IN] : data node ì— ëŒ€í•œ stmt
  *     - aParamCount     [OUT]:
  *     - aIsLinkFailure  [OUT]:
  *
@@ -971,7 +971,7 @@ IDE_RC sdl::bindParam( void   * aStmt,
  * Implementation : SQLBindParameter
  *
  * Arguments
- *     - aStmt           [IN] : data node ¿¡ ´ëÇÑ stmt
+ *     - aStmt           [IN] : data node ì— ëŒ€í•œ stmt
  *     - aParamNum       [IN] :
  *     - aInOutType      [IN] :
  *     - aValueType      [IN] :
@@ -1050,7 +1050,7 @@ IDE_RC sdl::describeCol( void   * aStmt,
  * Implementation : SQLDescribeCol
  *
  * Arguments
- *     - aStmt    : data node ¿¡ ´ëÇÑ stmt
+ *     - aStmt    : data node ì— ëŒ€í•œ stmt
  *     - aColNo   : column position
  *     - aColSize : column size (mtType)
  *
@@ -1116,13 +1116,13 @@ IDE_RC sdl::bindCol( void   *aStmt,
  * Implementation : SQLBindCol
  *
  * Arguments
- *     - aStmt    : data node ¿¡ ´ëÇÑ stmt
+ *     - aStmt    : data node ì— ëŒ€í•œ stmt
  *     - aColNo   : column position
  *     - aColtype : column type (mtType)
  *     - aColSize : column size (mtType)
  *
  * Return value
- *     - aBuffer : SQLFetch ÀÌÈÄ ¹İÈ¯µÉ ÁÖ¼Ò
+ *     - aBuffer : SQLFetch ì´í›„ ë°˜í™˜ë  ì£¼ì†Œ
  *
  * Error handle
  *     - SQL_SUCCESS
@@ -1164,11 +1164,11 @@ IDE_RC sdl::execDirect( void    * aStmt,
  * Implementation : SQLExecDirect
  *
  * Arguments
- *     - aStmt          [IN] : data node ¿¡ ´ëÇÑ Statement Handle
+ *     - aStmt          [IN] : data node ì— ëŒ€í•œ Statement Handle
  *     - aNodeName      [IN] : NodeName
  *     - aQuery         [IN] : Query String
  *     - aQueryLen      [IN] : Query String Length
- *     - aIsLinkFailure [OUT]: Link-½ÇÆĞ ¿©ºÎ¿¡ ´ëÇÑ ÇÃ·¡±×.
+ *     - aIsLinkFailure [OUT]: Link-ì‹¤íŒ¨ ì—¬ë¶€ì— ëŒ€í•œ í”Œë˜ê·¸.
  *
  * Return value
  *
@@ -1220,16 +1220,16 @@ IDE_RC sdl::execute( UInt           aNodeIndex,
  * Implementation : SQLExecuteForMtDataRows
  *
  * Arguments
- *     - aNode [IN]          : data node ¿¡ ´ëÇÑ info
+ *     - aNode [IN]          : data node ì— ëŒ€í•œ info
  *           mStmt            : data node stmt
  *           mBuffer          : data node fetch buffer
  *           mBufferLength    : data node fetch buffer length
  *           mColumnCount     : data node column count
  *           mOffset          : meta node column length array
  *           mMaxByteSize     : meta node column max byte size array
- *       cf) mBuffer °¡ NULL ÀÌ¸é DML
- *     - aNodeName      [IN] : ³ëµå ÀÌ¸§. ¿¡·¯ Ã³¸® ¿ë.
- *     - aIsLinkFailure [OUT]: Link-½ÇÆĞ ¿©ºÎ¿¡ ´ëÇÑ ÇÃ·¡±×.
+ *       cf) mBuffer ê°€ NULL ì´ë©´ DML
+ *     - aNodeName      [IN] : ë…¸ë“œ ì´ë¦„. ì—ëŸ¬ ì²˜ë¦¬ ìš©.
+ *     - aIsLinkFailure [OUT]: Link-ì‹¤íŒ¨ ì—¬ë¶€ì— ëŒ€í•œ í”Œë˜ê·¸.
  *
  * Return value
  *
@@ -1503,13 +1503,13 @@ IDE_RC sdl::fetch( void   *aStmt,
  * Implementation : SQLFetch
  *
  * Arguments
- *     - aStmt          [IN] : data node ¿¡ ´ëÇÑ stmt
- *     - aResult        [OUT]: ¼öÇà °á°ú¿¡ ´ëÇÑ value
- *     - aNodeName      [IN] : ³ëµå ÀÌ¸§. ¿¡·¯ Ã³¸® ¿ë.
- *     - aIsLinkFailure [OUT]: Link-½ÇÆĞ ¿©ºÎ¿¡ ´ëÇÑ ÇÃ·¡±×.
+ *     - aStmt          [IN] : data node ì— ëŒ€í•œ stmt
+ *     - aResult        [OUT]: ìˆ˜í–‰ ê²°ê³¼ì— ëŒ€í•œ value
+ *     - aNodeName      [IN] : ë…¸ë“œ ì´ë¦„. ì—ëŸ¬ ì²˜ë¦¬ ìš©.
+ *     - aIsLinkFailure [OUT]: Link-ì‹¤íŒ¨ ì—¬ë¶€ì— ëŒ€í•œ í”Œë˜ê·¸.
  *
  * Return value
- *     - aResult : ¼öÇà °á°ú¿¡ ´ëÇÑ value
+ *     - aResult : ìˆ˜í–‰ ê²°ê³¼ì— ëŒ€í•œ value
  *
  * Error handle
  *     - SQL_SUCCESS
@@ -1565,12 +1565,12 @@ IDE_RC sdl::rowCount( void   *aStmt,
  * Implementation : SQLRowCount for DML
  *
  * Arguments
- *     - aStmt          [IN] : data node ¿¡ ´ëÇÑ stmt
- *     - aNumRows       [OUT]: ·ÎÀÇ ¼ö¸¦ ¹İÈ¯ÇÏ±â À§ÇÑ Æ÷ÀÎÅÍ
- *     - aNodeName      [IN] : ³ëµå ÀÌ¸§. ¿¡·¯ Ã³¸® ¿ë.
- *     - aIsLinkFailure [OUT]: Link-½ÇÆĞ ¿©ºÎ¿¡ ´ëÇÑ ÇÃ·¡±×.
+ *     - aStmt          [IN] : data node ì— ëŒ€í•œ stmt
+ *     - aNumRows       [OUT]: ë¡œì˜ ìˆ˜ë¥¼ ë°˜í™˜í•˜ê¸° ìœ„í•œ í¬ì¸í„°
+ *     - aNodeName      [IN] : ë…¸ë“œ ì´ë¦„. ì—ëŸ¬ ì²˜ë¦¬ ìš©.
+ *     - aIsLinkFailure [OUT]: Link-ì‹¤íŒ¨ ì—¬ë¶€ì— ëŒ€í•œ í”Œë˜ê·¸.
  * Return value
- *     - aNumRows : DML ¼öÇà °á°ú Çà ¼ö
+ *     - aNumRows : DML ìˆ˜í–‰ ê²°ê³¼ í–‰ ìˆ˜
  *
  * Error handle
  *     - SQL_SUCCESS
@@ -1626,13 +1626,13 @@ IDE_RC sdl::getPlan( void    *aStmt,
  * Implementation : SQLGetPlan
  *
  * Arguments
- *     - aStmt          [IN] : data node ¿¡ ´ëÇÑ stmt
- *     - aNodeName      [IN] : ³ëµå ÀÌ¸§. ¿¡·¯ Ã³¸® ¿ë.
- *     - aPlan          [OUT]: Plan °á°ú
- *     - aIsLinkFailure [OUT]: Link-½ÇÆĞ ¿©ºÎ¿¡ ´ëÇÑ ÇÃ·¡±×.
+ *     - aStmt          [IN] : data node ì— ëŒ€í•œ stmt
+ *     - aNodeName      [IN] : ë…¸ë“œ ì´ë¦„. ì—ëŸ¬ ì²˜ë¦¬ ìš©.
+ *     - aPlan          [OUT]: Plan ê²°ê³¼
+ *     - aIsLinkFailure [OUT]: Link-ì‹¤íŒ¨ ì—¬ë¶€ì— ëŒ€í•œ í”Œë˜ê·¸.
  *
  * Return value
- *     - aNumRows : DML ¼öÇà °á°ú, PLAN
+ *     - aNumRows : DML ìˆ˜í–‰ ê²°ê³¼, PLAN
  *
  * Error handle
  *     - SQL_SUCCESS
@@ -1681,11 +1681,11 @@ IDE_RC sdl::setConnAttr( void   *aDbc,
  * Implementation : SQLSetConnectOption.
  *
  * Arguments
- *     - aDbc           [IN] : data node ¿¡ ´ëÇÑ DBC
- *     - aNodeName      [IN] : ³ëµå ÀÌ¸§. ¿¡·¯ Ã³¸® ¿ë.
+ *     - aDbc           [IN] : data node ì— ëŒ€í•œ DBC
+ *     - aNodeName      [IN] : ë…¸ë“œ ì´ë¦„. ì—ëŸ¬ ì²˜ë¦¬ ìš©.
  *     - aAttyType      [IN] : Attribute Type
  *     - aValue         [IN] : Attribute's Value.
- *     - aIsLinkFailure [OUT]: Link-½ÇÆĞ ¿©ºÎ¿¡ ´ëÇÑ ÇÃ·¡±×.
+ *     - aIsLinkFailure [OUT]: Link-ì‹¤íŒ¨ ì—¬ë¶€ì— ëŒ€í•œ í”Œë˜ê·¸.
  *
  * Return value
  *     -
@@ -1734,15 +1734,15 @@ IDE_RC sdl::getConnAttr( void   * aDbc,
  * Implementation : SQLGetConnectOption.
  *
  * Arguments
- *     - aDbc          [IN] : data node ¿¡ ´ëÇÑ DBC
- *     - aNodeName     [IN] : ³ëµå ÀÌ¸§. ¿¡·¯ Ã³¸® ¿ë.
+ *     - aDbc          [IN] : data node ì— ëŒ€í•œ DBC
+ *     - aNodeName     [IN] : ë…¸ë“œ ì´ë¦„. ì—ëŸ¬ ì²˜ë¦¬ ìš©.
  *     - aAttyType     [IN] : Attribute Type
  *     - aValue        [OUT]: Pointer for returned attribute's value.
- *     - aBuffLength   [IN] : aValueÀÇ ±æÀÌ
- *     - aStringLength [OUT]: ¹İÈ¯ µÈ µ¥ÀÌÅÍÀÇ ±æ
+ *     - aBuffLength   [IN] : aValueì˜ ê¸¸ì´
+ *     - aStringLength [OUT]: ë°˜í™˜ ëœ ë°ì´í„°ì˜ ê¸¸
  *
  * Return value
- *     - Attribute¿¡ ´ëÇÑ °á°ú °ª.
+ *     - Attributeì— ëŒ€í•œ ê²°ê³¼ ê°’.
  *
  * Error handle
  *     - SQL_SUCCESS
@@ -1842,9 +1842,9 @@ IDE_RC sdl::commit( void   *aDbc,
  * Implementation : SQLTransact for Commit.
  *
  * Arguments
- *     - aDbc           [IN] : data node ¿¡ ´ëÇÑ DBC
- *     - aNodeName      [IN] : ³ëµå ÀÌ¸§. ¿¡·¯ Ã³¸® ¿ë.
- *     - aIsLinkFailure [OUT]: Link-½ÇÆĞ ¿©ºÎ¿¡ ´ëÇÑ ÇÃ·¡±×.
+ *     - aDbc           [IN] : data node ì— ëŒ€í•œ DBC
+ *     - aNodeName      [IN] : ë…¸ë“œ ì´ë¦„. ì—ëŸ¬ ì²˜ë¦¬ ìš©.
+ *     - aIsLinkFailure [OUT]: Link-ì‹¤íŒ¨ ì—¬ë¶€ì— ëŒ€í•œ í”Œë˜ê·¸.
  *
  * Return value
  *
@@ -1892,11 +1892,11 @@ IDE_RC sdl::rollback( void        *aDbc,
  * Implementation : SQLTransact for rollback.
  *
  * Arguments
- *     - aDbc           [IN] : data node ¿¡ ´ëÇÑ DBC
- *     - aStmt          [IN] : data node ¿¡ ´ëÇÑ Statement
- *     - aNodeName      [IN] : ³ëµå ÀÌ¸§. ¿¡·¯ Ã³¸® ¿ë.
+ *     - aDbc           [IN] : data node ì— ëŒ€í•œ DBC
+ *     - aStmt          [IN] : data node ì— ëŒ€í•œ Statement
+ *     - aNodeName      [IN] : ë…¸ë“œ ì´ë¦„. ì—ëŸ¬ ì²˜ë¦¬ ìš©.
  *     - aSavePoint     [IN] : SavePoint
- *     - aIsLinkFailure [OUT]: Link-½ÇÆĞ ¿©ºÎ¿¡ ´ëÇÑ ÇÃ·¡±×.
+ *     - aIsLinkFailure [OUT]: Link-ì‹¤íŒ¨ ì—¬ë¶€ì— ëŒ€í•œ í”Œë˜ê·¸.
  *
  * Return value
  *
@@ -1980,11 +1980,11 @@ IDE_RC sdl::setSavePoint( void        *aStmt,
  * Implementation : Set savepoint.
  *
  * Arguments
- *     - aStmt          [IN] : data node ¿¡ ´ëÇÑ Statement
- *     - aNodeName      [IN] : ³ëµå ÀÌ¸§. ¿¡·¯ Ã³¸® ¿ë.
+ *     - aStmt          [IN] : data node ì— ëŒ€í•œ Statement
+ *     - aNodeName      [IN] : ë…¸ë“œ ì´ë¦„. ì—ëŸ¬ ì²˜ë¦¬ ìš©.
  *     - aSavePoint     [IN] : SavePoint
- *     - aSavePointLen  [IN] : aSavePointÀÇ ±æÀÌ
- *     - aIsLinkFailure [OUT]: Link-½ÇÆĞ ¿©ºÎ¿¡ ´ëÇÑ ÇÃ·¡±×.
+ *     - aSavePointLen  [IN] : aSavePointì˜ ê¸¸ì´
+ *     - aIsLinkFailure [OUT]: Link-ì‹¤íŒ¨ ì—¬ë¶€ì— ëŒ€í•œ í”Œë˜ê·¸.
  *
  * Return value
  *
@@ -2050,13 +2050,13 @@ IDE_RC sdl::checkDbcAlive( void   *aDbc,
  * Implementation : Check dbc is alive.
  *
  * Arguments
- *     - aStmt              [IN] : data node ¿¡ ´ëÇÑ DBC
- *     - aNodeName          [IN] : ³ëµå ÀÌ¸§. ¿¡·¯ Ã³¸® ¿ë.
- *     - aIsAliveConnection [OUT]: DBC°¡ »ì¾Æ ÀÖ´ÂÁö¿¡ ´ëÇÑ °á°ú °ª
- *     - aIsLinkFailure     [OUT]: Link-½ÇÆĞ ¿©ºÎ¿¡ ´ëÇÑ ÇÃ·¡±×.
+ *     - aStmt              [IN] : data node ì— ëŒ€í•œ DBC
+ *     - aNodeName          [IN] : ë…¸ë“œ ì´ë¦„. ì—ëŸ¬ ì²˜ë¦¬ ìš©.
+ *     - aIsAliveConnection [OUT]: DBCê°€ ì‚´ì•„ ìˆëŠ”ì§€ì— ëŒ€í•œ ê²°ê³¼ ê°’
+ *     - aIsLinkFailure     [OUT]: Link-ì‹¤íŒ¨ ì—¬ë¶€ì— ëŒ€í•œ í”Œë˜ê·¸.
  *
  * Return value
- *  - DBC°¡ »ì¾Æ ÀÖ´ÂÁö¿¡ ´ëÇÑ °á°ú °ª
+ *  - DBCê°€ ì‚´ì•„ ìˆëŠ”ì§€ì— ëŒ€í•œ ê²°ê³¼ ê°’
  * Error handle
  *     - SQL_SUCCESS
  *     - SQL_SUCCESS_WITH_INFO
@@ -2125,13 +2125,13 @@ IDE_RC sdl::getLinkInfo( void   *aDbc,
  * Implementation : Get link information for dbc.
  *
  * Arguments
- *     - aDbc           [IN] : data node ¿¡ ´ëÇÑ DBC
- *     - aNodeName      [IN] : ³ëµå ÀÌ¸§. ¿¡·¯ Ã³¸® ¿ë.
- *     - aBuf           [OUT]: DBCÀÇ ¸µÅ© Á¤º¸
- *     - aIsLinkFailure [OUT]: Link-½ÇÆĞ ¿©ºÎ¿¡ ´ëÇÑ ÇÃ·¡±×.
+ *     - aDbc           [IN] : data node ì— ëŒ€í•œ DBC
+ *     - aNodeName      [IN] : ë…¸ë“œ ì´ë¦„. ì—ëŸ¬ ì²˜ë¦¬ ìš©.
+ *     - aBuf           [OUT]: DBCì˜ ë§í¬ ì •ë³´
+ *     - aIsLinkFailure [OUT]: Link-ì‹¤íŒ¨ ì—¬ë¶€ì— ëŒ€í•œ í”Œë˜ê·¸.
  *
  * Return value
- *  - DBCÀÇ ¸µÅ© Á¤º¸
+ *  - DBCì˜ ë§í¬ ì •ë³´
  * Error handle
  *     - SQL_SUCCESS
  *     - SQL_SUCCESS_WITH_INFO
@@ -2158,11 +2158,11 @@ IDE_RC sdl::isDataNode( void   * aDbc,
  *
  * Description :
  *
- * Implementation : DataNode¿¡ ´ëÇÑ Á¤º¸¸¦ °¡Á®¿Â´Ù.
+ * Implementation : DataNodeì— ëŒ€í•œ ì •ë³´ë¥¼ ê°€ì ¸ì˜¨ë‹¤.
  *
  * Arguments
- *     - aDbc         [IN] : data node ¿¡ ´ëÇÑ DBC
- *     - aIsDataNode [OUT] : data_node ÀÎÁö ¾Æ´ÑÁö¿¡ ´ëÇÑ ÇÃ·¡±×
+ *     - aDbc         [IN] : data node ì— ëŒ€í•œ DBC
+ *     - aIsDataNode [OUT] : data_node ì¸ì§€ ì•„ë‹Œì§€ì— ëŒ€í•œ í”Œë˜ê·¸
  *
  * Return value
  *  - IDE_FAILURE/IDE_SUCCESS
@@ -2201,7 +2201,7 @@ void sdl::setIdeError( SShort  aHandleType,
 /***********************************************************************
  *
  * Description :
- *     SQLÇÔ¼öµéÀÇ ¿¡·¯¸¦ ideError·Î º¯°æÇÑ´Ù. ÀÏ´ÜÀº 4°³¸¸
+ *     SQLí•¨ìˆ˜ë“¤ì˜ ì—ëŸ¬ë¥¼ ideErrorë¡œ ë³€ê²½í•œë‹¤. ì¼ë‹¨ì€ 4ê°œë§Œ
  *
  * Implementation :
  *
@@ -2283,7 +2283,7 @@ void sdl::setIdeError( SShort  aHandleType,
         }
         else
         {
-            // SQL_NO_DATAµî
+            // SQL_NO_DATAë“±
             break;
         }
     }

@@ -85,18 +85,18 @@ static ACI_RC uluArrayCreateNewBlock(uluArray       *aArray,
 
 /*
  * --------------------------------------------
- * Ã£°íÀÚ ÇÏ´Â index ÀÇ element °¡ /¾ø/À»/ °æ¿ì
+ * ì°¾ê³ ì í•˜ëŠ” index ì˜ element ê°€ /ì—†/ì„/ ê²½ìš°
  * --------------------------------------------
- * aAllocNewBlock ÀÌ
+ * aAllocNewBlock ì´
  *
- *      ULU_ARRAY_IGNORE ÀÌ¸é,
- *          ACI_SUCCESS ¿Í *aElementOut = NULL À» ¸®ÅÏ.
+ *      ULU_ARRAY_IGNORE ì´ë©´,
+ *          ACI_SUCCESS ì™€ *aElementOut = NULL ì„ ë¦¬í„´.
  *
- *      ULU_ARRAY_NEW ÀÌ¸é,
- *          ÇØ´ç index ÀÇ element ¸¦ Æ÷ÇÔÇÏ´Â block À» ÇÏ³ª »ı¼ºÇÏ·Á°í ½ÃµµÇØ¼­
- *          »ı¼ºÀÌ ½ÇÆĞÇÏ¸é ACI_FAILURE °ú *aElementOut = NULL À» ¸®ÅÏ
- *          »ı¼ºÀÌ ¼º°øÇÏ¸é ACI_SUCCESS ¿Í *aElementOut =
- *                                          ¿øÇÏ´Â index ÀÇ element ¸¦ °¡¸®Å°´Â Æ÷ÀÎÅÍ¸¦ ¸®ÅÏ
+ *      ULU_ARRAY_NEW ì´ë©´,
+ *          í•´ë‹¹ index ì˜ element ë¥¼ í¬í•¨í•˜ëŠ” block ì„ í•˜ë‚˜ ìƒì„±í•˜ë ¤ê³  ì‹œë„í•´ì„œ
+ *          ìƒì„±ì´ ì‹¤íŒ¨í•˜ë©´ ACI_FAILURE ê³¼ *aElementOut = NULL ì„ ë¦¬í„´
+ *          ìƒì„±ì´ ì„±ê³µí•˜ë©´ ACI_SUCCESS ì™€ *aElementOut =
+ *                                          ì›í•˜ëŠ” index ì˜ element ë¥¼ ê°€ë¦¬í‚¤ëŠ” í¬ì¸í„°ë¥¼ ë¦¬í„´
  */
 ACI_RC uluArrayGetElement(uluArray          *aArray,
                           acp_uint32_t       aIndex,
@@ -117,7 +117,7 @@ ACI_RC uluArrayGetElement(uluArray          *aArray,
                                   aIndex <= sBlock->mFirstIndex + sBlock->mElementCount - 1)
         {
             /*
-             * aIndex °¡ ÇØ´ç Çì´õÀÇ array ÀÇ ¹üÀ§¿¡ µé¾î°£´Ù.
+             * aIndex ê°€ í•´ë‹¹ í—¤ë”ì˜ array ì˜ ë²”ìœ„ì— ë“¤ì–´ê°„ë‹¤.
              */
             sRetElement = sBlock->mData +
                           ((aIndex - sBlock->mFirstIndex) * aArray->mElementSize);
@@ -195,7 +195,7 @@ ACI_RC uluArrayCreate(uluMemory        *aMemory,
 }
 
 /*
- * Array ÀÇ ¸ğµç element µéÀ» ¸ğµÎ 0 À¸·Î ¸¸µé¾îº¸¸°´Ù.
+ * Array ì˜ ëª¨ë“  element ë“¤ì„ ëª¨ë‘ 0 ìœ¼ë¡œ ë§Œë“¤ì–´ë³´ë¦°ë‹¤.
  */
 void uluArrayInitializeContent(uluArray *aArray)
 {
@@ -208,8 +208,8 @@ void uluArrayInitializeContent(uluArray *aArray)
 }
 
 /*
- * Array ¿¡ ÀÖ´Â ºí·ÏÀÇ °¹¼ö¿Í ºí·Ï ¸®½ºÆ®¸¸ ÃÊ±âÈ­½ÃÄÑÁØ´Ù.
- * Áï, »ı¼ºµÈ ½ÃÁ¡ÀÇ »óÅÂ·Î µÇµ¹¸°´Ù. ´Ù¸¥ ÀÎÀÚµéÀº ±×´ë·Î À¯ÁöÇÑ´Ù.
+ * Array ì— ìˆëŠ” ë¸”ë¡ì˜ ê°¯ìˆ˜ì™€ ë¸”ë¡ ë¦¬ìŠ¤íŠ¸ë§Œ ì´ˆê¸°í™”ì‹œì¼œì¤€ë‹¤.
+ * ì¦‰, ìƒì„±ëœ ì‹œì ì˜ ìƒíƒœë¡œ ë˜ëŒë¦°ë‹¤. ë‹¤ë¥¸ ì¸ìë“¤ì€ ê·¸ëŒ€ë¡œ ìœ ì§€í•œë‹¤.
  */
 void uluArrayInitializeToInitial(uluArray *aArray)
 {

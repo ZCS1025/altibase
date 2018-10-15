@@ -19,11 +19,11 @@
  * $Id: qmvShardTransform.h 23857 2008-03-19 02:36:53Z sungminee $
  *
  * Description :
- *     Shard View TransformÀ» À§ÇÑ ÀÚ·á ±¸Á¶ Á¤ÀÇ
+ *     Shard View Transformì„ ìœ„í•œ ìë£Œ êµ¬ì¡° ì •ì˜
  *
- * ¿ë¾î ¼³¸í :
+ * ìš©ì–´ ì„¤ëª… :
  *
- * ¾à¾î :
+ * ì•½ì–´ :
  *
  **********************************************************************/
 
@@ -40,7 +40,7 @@ class qmvShardTransform
 public:
 
     //------------------------------------------
-    // transform shard viewÀÇ ¼öÇà
+    // transform shard viewì˜ ìˆ˜í–‰
     //------------------------------------------
 
     static IDE_RC  doTransform( qcStatement  * aStatement );
@@ -53,31 +53,31 @@ public:
 private:
 
     //------------------------------------------
-    // transform shard viewÀÇ ¼öÇà
+    // transform shard viewì˜ ìˆ˜í–‰
     //------------------------------------------
 
-    // query blockÀ» ¼øÈ¸ÇÏ¸ç transform ¼öÇà
+    // query blockì„ ìˆœíšŒí•˜ë©° transform ìˆ˜í–‰
     static IDE_RC  processTransform( qcStatement  * aStatement );
 
-    // query setÀ» ¼øÈ¸ÇÏ¸ç transform ¼öÇà
+    // query setì„ ìˆœíšŒí•˜ë©° transform ìˆ˜í–‰
     static IDE_RC  processTransformForQuerySet( qcStatement  * aStatement,
                                                 qmsQuerySet  * aQuerySet );
 
-    // from shard tableÀÇ transform ¼öÇà
+    // from shard tableì˜ transform ìˆ˜í–‰
     static IDE_RC  processTransformForFrom( qcStatement  * aStatement,
                                             qmsFrom      * aFrom );
 
-    // expressionÀ» ¼øÈ¸ÇÏ¸ç subqueryÀÇ transform ¼öÇà
+    // expressionì„ ìˆœíšŒí•˜ë©° subqueryì˜ transform ìˆ˜í–‰
     static IDE_RC  processTransformForExpr( qcStatement  * aStatement,
                                             qtcNode      * aExpr );
 
     static IDE_RC  processTransformForDML( qcStatement  * aStatement );
 
     //------------------------------------------
-    // shard query °Ë»ç
+    // shard query ê²€ì‚¬
     //------------------------------------------
 
-    // query blockÀÌ shard queryÀÎÁö °Ë»ç
+    // query blockì´ shard queryì¸ì§€ ê²€ì‚¬
     static IDE_RC  isShardQuery( qcStatement     * aStatement,
                                  qcNamePosition  * aParsePosition,
                                  idBool          * aIsShardQuery,
@@ -86,7 +86,7 @@ private:
                                  UShort          * aShardParamCount );
 
     //------------------------------------------
-    // shard view »ı¼º
+    // shard view ìƒì„±
     //------------------------------------------
 
     // for qcStatement

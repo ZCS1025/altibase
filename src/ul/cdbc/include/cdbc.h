@@ -20,7 +20,7 @@
 
 
 #if defined(DEBUG)
-    /* ACE_DASSERT()¸¦ ¾²±â À§ÇØ¼­ DEBUG ¸ðµåÀÏ ¶§ ACP_CFG_DEBUG°¡ ¾øÀ¸¸é ¸¸µç´Ù. */
+    /* ACE_DASSERT()ë¥¼ ì“°ê¸° ìœ„í•´ì„œ DEBUG ëª¨ë“œì¼ ë•Œ ACP_CFG_DEBUGê°€ ì—†ìœ¼ë©´ ë§Œë“ ë‹¤. */
     #if !defined(ACP_CFG_DEBUG)
         #define ACP_CFG_DEBUG   1
     #endif
@@ -31,8 +31,8 @@
 #include <sqlcli.h>
 
 /*
- * alticdbc.h¿¡¼­ °°Àº ÀÌ¸§À» ¾²´Â°Íµé undef. warning Á¦°Å¸¦ À§ÇÔ.
- * °ª ÀÚÃ¼´Â sqlcli.h¿¡ Á¤ÀÇµÈ °Í°ú °°´Ù.
+ * alticdbc.hì—ì„œ ê°™ì€ ì´ë¦„ì„ ì“°ëŠ”ê²ƒë“¤ undef. warning ì œê±°ë¥¼ ìœ„í•¨.
+ * ê°’ ìžì²´ëŠ” sqlcli.hì— ì •ì˜ëœ ê²ƒê³¼ ê°™ë‹¤.
  */
 #undef ALTIBASE_DATE_FORMAT
 #undef ALTIBASE_NLS_USE
@@ -64,7 +64,7 @@
 
 
 /**
- * aIdx°¡ aMin ~ (aMax - 1) »çÀÌ¿¡ ÀÖ´ÂÁö È®ÀÎÇÑ´Ù.
+ * aIdxê°€ aMin ~ (aMax - 1) ì‚¬ì´ì— ìžˆëŠ”ì§€ í™•ì¸í•œë‹¤.
  */
 #define INDEX_IS_VALID(aIdx,aMin,aMax)      ( ! INDEX_NOT_VALID(aIdx, aMin, aMax) )
 #define INDEX_NOT_VALID(aIdx,aMin,aMax)     ( ((aIdx) < (aMin)) || ((aMax) <= (aIdx)) )

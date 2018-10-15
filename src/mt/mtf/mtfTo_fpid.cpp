@@ -43,7 +43,7 @@ static IDE_RC mtfTo_fpidEstimate( mtcNode     * aNode,
 mtfModule mtfTo_fpid = {
     1|MTC_NODE_OPERATOR_FUNCTION,
     ~(MTC_NODE_INDEX_MASK),
-    1.0, // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
+    1.0, // default selectivity (ë¹„êµ ì—°ì‚°ìê°€ ì•„ë‹˜)
     mtfTo_fpidFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -136,7 +136,7 @@ IDE_RC mtfTo_fpidCalculate( mtcNode     * aNode,
 
     sInteger = *(mtdIntegerType*)aStack[1].value;
 
-    // XXX SD_MAKE_FID¸¦ smi·Î ¹Ù²Ù¾î¾ß ÇÑ´Ù.
+    // XXX SD_MAKE_FIDë¥¼ smië¡œ ë°”ê¾¸ì–´ì•¼ í•œë‹¤.
     *(mtdIntegerType*)aStack[0].value = SD_MAKE_FPID( sInteger );
 
     return IDE_SUCCESS;

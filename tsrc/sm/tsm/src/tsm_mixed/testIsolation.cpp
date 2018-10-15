@@ -94,17 +94,17 @@ void * tsm_dml_del_sel_A( void *data );
 void * tsm_dml_del_sel_B( void *data );
 
 //=========================================================================
-// ÃÊ±â ¼³Á¤ ÇÔ¼ö
+// ì´ˆê¸° ì„¤ì • í•¨ìˆ˜
 IDE_RC ins_sel_environment();
 IDE_RC upt_sel_environment();
 IDE_RC del_sel_environment();
 
-// ½Ã³ª¸®¿À ±¸µ¿À» À§ÇÑ ¾²·¹µå »ı¼º ÇÔ¼ö
+// ì‹œë‚˜ë¦¬ì˜¤ êµ¬ë™ì„ ìœ„í•œ ì“°ë ˆë“œ ìƒì„± í•¨ìˆ˜
 IDE_RC ins_sel_doIt( UInt data1, UInt data2 );
 IDE_RC upt_sel_doIt( UInt data1, UInt data2 );
 IDE_RC del_sel_doIt( UInt data1, UInt data2 );
 
-// ½Ã³ª¸®¿À ¼öÇàÈÄ È¯°æ º¹±¸ ÇÔ¼ö
+// ì‹œë‚˜ë¦¬ì˜¤ ìˆ˜í–‰í›„ í™˜ê²½ ë³µêµ¬ í•¨ìˆ˜
 IDE_RC ins_sel_clear();
 IDE_RC upt_sel_clear();
 IDE_RC del_sel_clear();

@@ -246,8 +246,8 @@ IDE_RC rpcExecute::executeStart(void * aQcStatement)
         sTryHandshakeOnce = ID_TRUE;
     }
 
-    //BUG-22703 : Begin Statement¸¦ ¼öÇàÇÑ ÈÄ¿¡ HangÀÌ °É¸®Áö ¾Ê¾Æ¾ß ÇÕ´Ï´Ù.
-    // mStatistics Åë°è Á¤º¸¸¦ Àü´Ş ÇÕ´Ï´Ù.
+    //BUG-22703 : Begin Statementë¥¼ ìˆ˜í–‰í•œ í›„ì— Hangì´ ê±¸ë¦¬ì§€ ì•Šì•„ì•¼ í•©ë‹ˆë‹¤.
+    // mStatistics í†µê³„ ì •ë³´ë¥¼ ì „ë‹¬ í•©ë‹ˆë‹¤.
     IDE_TEST(rpi::startSenderThread(QCI_SMI_STMT( aQcStatement ),
                                     sReplName,
                                     sParseTree->startType,
@@ -279,8 +279,8 @@ IDE_RC rpcExecute::executeQuickStart(void * aQcStatement)
         sTryHandshakeOnce = ID_FALSE;
     }
 
-    //BUG-22703 : Begin Statement¸¦ ¼öÇàÇÑ ÈÄ¿¡ HangÀÌ °É¸®Áö ¾Ê¾Æ¾ß ÇÕ´Ï´Ù.
-    // mStatistics Åë°è Á¤º¸¸¦ Àü´Ş ÇÕ´Ï´Ù.
+    //BUG-22703 : Begin Statementë¥¼ ìˆ˜í–‰í•œ í›„ì— Hangì´ ê±¸ë¦¬ì§€ ì•Šì•„ì•¼ í•©ë‹ˆë‹¤.
+    // mStatistics í†µê³„ ì •ë³´ë¥¼ ì „ë‹¬ í•©ë‹ˆë‹¤.
     IDE_TEST(rpi::startSenderThread(QCI_SMI_STMT(aQcStatement),
                                     sReplName,
                                     RP_QUICK,
@@ -436,8 +436,8 @@ IDE_RC rpcExecute::executeSync(void * aQcStatement)
 
     }
 
-    //BUG-22703 : Begin Statement¸¦ ¼öÇàÇÑ ÈÄ¿¡ HangÀÌ °É¸®Áö ¾Ê¾Æ¾ß ÇÕ´Ï´Ù.
-    // mStatistics Åë°è Á¤º¸¸¦ Àü´Ş ÇÕ´Ï´Ù.
+    //BUG-22703 : Begin Statementë¥¼ ìˆ˜í–‰í•œ í›„ì— Hangì´ ê±¸ë¦¬ì§€ ì•Šì•„ì•¼ í•©ë‹ˆë‹¤.
+    // mStatistics í†µê³„ ì •ë³´ë¥¼ ì „ë‹¬ í•©ë‹ˆë‹¤.
     IDE_TEST( rpi::startSenderThread( QCI_SMI_STMT( aQcStatement ),
                                       sReplName,
                                       sParseTree->startType,
@@ -459,8 +459,8 @@ IDE_RC rpcExecute::executeStop( smiStatement * aSmiStmt,
                                 SChar        * aReplName,
                                 idvSQL       * aStatistics )
 {
-    //BUG-22703 : Begin Statement¸¦ ¼öÇàÇÑ ÈÄ¿¡ HangÀÌ °É¸®Áö ¾Ê¾Æ¾ß ÇÕ´Ï´Ù.
-    // mStatistics Åë°è Á¤º¸¸¦ Àü´Ş ÇÕ´Ï´Ù.
+    //BUG-22703 : Begin Statementë¥¼ ìˆ˜í–‰í•œ í›„ì— Hangì´ ê±¸ë¦¬ì§€ ì•Šì•„ì•¼ í•©ë‹ˆë‹¤.
+    // mStatistics í†µê³„ ì •ë³´ë¥¼ ì „ë‹¬ í•©ë‹ˆë‹¤.
     IDE_TEST( rpi::stopSenderThread( aSmiStmt,
                                      aReplName,
                                      aStatistics )
@@ -481,8 +481,8 @@ IDE_RC rpcExecute::executeReset(void * aQcStatement)
 
     QCI_STR_COPY( sReplName, sParseTree->replName );
 
-    //BUG-22703 : Begin Statement¸¦ ¼öÇàÇÑ ÈÄ¿¡ HangÀÌ °É¸®Áö ¾Ê¾Æ¾ß ÇÕ´Ï´Ù.
-    // mStatistics Åë°è Á¤º¸¸¦ Àü´Ş ÇÕ´Ï´Ù.
+    //BUG-22703 : Begin Statementë¥¼ ìˆ˜í–‰í•œ í›„ì— Hangì´ ê±¸ë¦¬ì§€ ì•Šì•„ì•¼ í•©ë‹ˆë‹¤.
+    // mStatistics í†µê³„ ì •ë³´ë¥¼ ì „ë‹¬ í•©ë‹ˆë‹¤.
     IDE_TEST(rpi::resetReplication(QCI_SMI_STMT(aQcStatement),
                                    sReplName,
                                    QCI_STATISTIC( aQcStatement ))
@@ -505,7 +505,7 @@ rpcExecute::executeFlush( smiStatement  * aSmiStmt,
  *
  * Description :
  *    To Fix PR-10590
- *    ALTER REPLICATION name FLUSH ¿¡ ´ëÇÑ Execution
+ *    ALTER REPLICATION name FLUSH ì— ëŒ€í•œ Execution
  *
  * Implementation :
  *

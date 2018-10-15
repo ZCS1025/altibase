@@ -33,7 +33,7 @@
 #define SDI_HASH_MAX_VALUE                     (1000)
 #define SDI_HASH_MAX_VALUE_FOR_TEST            (100)
 
-// range, list shardingÀÇ varchar shard key columnÀÇ max precision
+// range, list shardingì˜ varchar shard key columnì˜ max precision
 #define SDI_RANGE_VARCHAR_MAX_PRECISION        (100)
 #define SDI_RANGE_VARCHAR_MAX_PRECISION_STR    "100"
 #define SDI_RANGE_VARCHAR_MAX_SIZE             (MTD_CHAR_TYPE_STRUCT_SIZE(SDI_RANGE_VARCHAR_MAX_PRECISION))
@@ -60,41 +60,41 @@ typedef enum
 {
     /*
      * PROJ-2646 shard analyzer enhancement
-     * boolean array¿¡ shard CAN-MERGE falseÀÎ ÀÌÀ¯¸¦ Ã¼Å©ÇÑ´Ù.
+     * boolean arrayì— shard CAN-MERGE falseì¸ ì´ìœ ë¥¼ ì²´í¬í•œë‹¤.
      */
 
-    SDI_MULTI_NODES_JOIN_EXISTS       =  0, // ³ëµå °£ JOINÀÌ ÇÊ¿äÇÔ
-    SDI_MULTI_SHARD_INFO_EXISTS       =  1, // ºĞ»ê Á¤ÀÇ°¡ ´Ù¸¥ SHARD TABLEµéÀÌ »ç¿ë µÊ
-    SDI_HIERARCHY_EXISTS              =  2, // CONNECT BY°¡ »ç¿ë µÊ
-    SDI_DISTINCT_EXISTS               =  3, // ³ëµå °£ ¿¬»êÀÌ ÇÊ¿äÇÑ DISTINCT°¡ »ç¿ë µÊ
-    SDI_GROUP_AGGREGATION_EXISTS      =  4, // ³ëµå °£ ¿¬»êÀÌ ÇÊ¿äÇÑ GROUP BY°¡ »ç¿ë µÊ
-    SDI_SHARD_SUBQUERY_EXISTS         =  5, // SHARD SUBQUERY°¡ »ç¿ë µÊ
-    SDI_ORDER_BY_EXISTS               =  6, // ³ëµå °£ ¿¬»êÀÌ ÇÊ¿äÇÑ ORDER BY°¡ »ç¿ë µÊ
-    SDI_LIMIT_EXISTS                  =  7, // ³ëµå °£ ¿¬»êÀÌ ÇÊ¿äÇÑ LIMIT°¡ »ç¿ë µÊ
-    SDI_MULTI_NODES_SET_OP_EXISTS     =  8, // ³ëµå °£ ¿¬»êÀÌ ÇÊ¿äÇÑ SET operator°¡ »ç¿ë µÊ
-    SDI_NO_SHARD_TABLE_EXISTS         =  9, // SHARD TABLEÀÌ ÇÏ³ªµµ ¾øÀ½
-    SDI_NON_SHARD_TABLE_EXISTS        = 10, // SHARD META¿¡ µî·ÏµÇÁö ¾ÊÀº TABLEÀÌ »ç¿ë µÊ
-    SDI_LOOP_EXISTS                   = 11, // ³ëµå °£ ¿¬»êÀÌ ÇÊ¿äÇÑ LOOP°¡ »ç¿ë µÊ
-    SDI_INVALID_OUTER_JOIN_EXISTS     = 12, // CLONE tableÀÌ left-side¿¡°í, HASH,RANGE,LIST tableÀÌ right-side¿¡ ¿À´Â outer joinÀÌ Á¸ÀçÇÑ´Ù.
-    SDI_INVALID_SEMI_ANTI_JOIN_EXISTS = 13, // HASH,RANGE,LIST tableÀÌ inner(subquery table)·Î ¿À´Â semi/anti-joinÀÌ Á¸ÀçÇÑ´Ù.
-    SDI_NESTED_AGGREGATION_EXISTS     = 14, // ³ëµå °£ ¿¬»êÀÌ ÇÊ¿äÇÑ GROUP BY°¡ »ç¿ë µÊ
-    SDI_GROUP_BY_EXTENSION_EXISTS     = 15, // Group by extension(ROLLUP,CUBE,GROUPING SETS)°¡ Á¸ÀçÇÑ´Ù.
-    SDI_SUB_KEY_EXISTS                = 16  // Sub-shard key¸¦ °¡Áø tableÀÌ ÂüÁ¶ µÊ
-                                             // (Can't merge reasonÀº ¾Æ´ÏÁö¸¸, query block °£ Àü´ŞÀÌ ÇÊ¿äÇØ ³Ö¾îµĞ´Ù.)
-                                             // SDI_SUB_KEY_EXISTS°¡ ¸¶Áö¸·¿¡ ¿Í¾ßÇÑ´Ù.
+    SDI_MULTI_NODES_JOIN_EXISTS       =  0, // ë…¸ë“œ ê°„ JOINì´ í•„ìš”í•¨
+    SDI_MULTI_SHARD_INFO_EXISTS       =  1, // ë¶„ì‚° ì •ì˜ê°€ ë‹¤ë¥¸ SHARD TABLEë“¤ì´ ì‚¬ìš© ë¨
+    SDI_HIERARCHY_EXISTS              =  2, // CONNECT BYê°€ ì‚¬ìš© ë¨
+    SDI_DISTINCT_EXISTS               =  3, // ë…¸ë“œ ê°„ ì—°ì‚°ì´ í•„ìš”í•œ DISTINCTê°€ ì‚¬ìš© ë¨
+    SDI_GROUP_AGGREGATION_EXISTS      =  4, // ë…¸ë“œ ê°„ ì—°ì‚°ì´ í•„ìš”í•œ GROUP BYê°€ ì‚¬ìš© ë¨
+    SDI_SHARD_SUBQUERY_EXISTS         =  5, // SHARD SUBQUERYê°€ ì‚¬ìš© ë¨
+    SDI_ORDER_BY_EXISTS               =  6, // ë…¸ë“œ ê°„ ì—°ì‚°ì´ í•„ìš”í•œ ORDER BYê°€ ì‚¬ìš© ë¨
+    SDI_LIMIT_EXISTS                  =  7, // ë…¸ë“œ ê°„ ì—°ì‚°ì´ í•„ìš”í•œ LIMITê°€ ì‚¬ìš© ë¨
+    SDI_MULTI_NODES_SET_OP_EXISTS     =  8, // ë…¸ë“œ ê°„ ì—°ì‚°ì´ í•„ìš”í•œ SET operatorê°€ ì‚¬ìš© ë¨
+    SDI_NO_SHARD_TABLE_EXISTS         =  9, // SHARD TABLEì´ í•˜ë‚˜ë„ ì—†ìŒ
+    SDI_NON_SHARD_TABLE_EXISTS        = 10, // SHARD METAì— ë“±ë¡ë˜ì§€ ì•Šì€ TABLEì´ ì‚¬ìš© ë¨
+    SDI_LOOP_EXISTS                   = 11, // ë…¸ë“œ ê°„ ì—°ì‚°ì´ í•„ìš”í•œ LOOPê°€ ì‚¬ìš© ë¨
+    SDI_INVALID_OUTER_JOIN_EXISTS     = 12, // CLONE tableì´ left-sideì—ê³ , HASH,RANGE,LIST tableì´ right-sideì— ì˜¤ëŠ” outer joinì´ ì¡´ì¬í•œë‹¤.
+    SDI_INVALID_SEMI_ANTI_JOIN_EXISTS = 13, // HASH,RANGE,LIST tableì´ inner(subquery table)ë¡œ ì˜¤ëŠ” semi/anti-joinì´ ì¡´ì¬í•œë‹¤.
+    SDI_NESTED_AGGREGATION_EXISTS     = 14, // ë…¸ë“œ ê°„ ì—°ì‚°ì´ í•„ìš”í•œ GROUP BYê°€ ì‚¬ìš© ë¨
+    SDI_GROUP_BY_EXTENSION_EXISTS     = 15, // Group by extension(ROLLUP,CUBE,GROUPING SETS)ê°€ ì¡´ì¬í•œë‹¤.
+    SDI_SUB_KEY_EXISTS                = 16  // Sub-shard keyë¥¼ ê°€ì§„ tableì´ ì°¸ì¡° ë¨
+                                             // (Can't merge reasonì€ ì•„ë‹ˆì§€ë§Œ, query block ê°„ ì „ë‹¬ì´ í•„ìš”í•´ ë„£ì–´ë‘”ë‹¤.)
+                                             // SDI_SUB_KEY_EXISTSê°€ ë§ˆì§€ë§‰ì— ì™€ì•¼í•œë‹¤.
 
     /*
-     * ¾Æ·¡ ³»¿ëÀº shard analyze Áß ¹ß°ß Áï½Ã ¿¡·¯¸¦ ¹ß»ı ½ÃÅ²´Ù.
+     * ì•„ë˜ ë‚´ìš©ì€ shard analyze ì¤‘ ë°œê²¬ ì¦‰ì‹œ ì—ëŸ¬ë¥¼ ë°œìƒ ì‹œí‚¨ë‹¤.
      *
-     * + Pivot ¶Ç´Â UnpivotÀÌ Á¸Àç
-     * + Recursive with°¡ Á¸Àç
-     * + Lateral view°¡ Á¸Àç
+     * + Pivot ë˜ëŠ” Unpivotì´ ì¡´ì¬
+     * + Recursive withê°€ ì¡´ì¬
+     * + Lateral viewê°€ ì¡´ì¬
      *
-     * ¾Æ·¡ ³»¿ëÀº º°µµ Ã³¸®ÇÏÁö ¾Ê´Â´Ù.
+     * ì•„ë˜ ë‚´ìš©ì€ ë³„ë„ ì²˜ë¦¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
      *
-     * + User-defined functionÀÌ Á¸Àç( local functionÀ¸·Î µ¿ÀÛ )
-     * + Nested aggregationÀÌ Á¸Àç
-     * + Analytic functionÀÌ Á¸Àç
+     * + User-defined functionì´ ì¡´ì¬( local functionìœ¼ë¡œ ë™ì‘ )
+     * + Nested aggregationì´ ì¡´ì¬
+     * + Analytic functionì´ ì¡´ì¬
      */
 
 } sdiCanMergeReason;
@@ -152,18 +152,18 @@ typedef struct sdiNodeInfo
 
 typedef union sdiValue
 {
-    // hash shardÀÎ °æ¿ì
+    // hash shardì¸ ê²½ìš°
     UInt        mHashMax;
 
-    // range shardÀÎ °æ¿ì
-    UChar       mMax[1];      // ´ëÇ¥°ª
-    SShort      mSmallintMax; // shard key°¡ smallint typeÀÎ °æ¿ì
-    SInt        mIntegerMax;  // shard key°¡ integer typeÀÎ °æ¿ì
-    SLong       mBigintMax;   // shard key°¡ bigint typeÀÎ °æ¿ì
-    mtdCharType mCharMax;     // shard key°¡ char/varchar typeÀÎ °æ¿ì
+    // range shardì¸ ê²½ìš°
+    UChar       mMax[1];      // ëŒ€í‘œê°’
+    SShort      mSmallintMax; // shard keyê°€ smallint typeì¸ ê²½ìš°
+    SInt        mIntegerMax;  // shard keyê°€ integer typeì¸ ê²½ìš°
+    SLong       mBigintMax;   // shard keyê°€ bigint typeì¸ ê²½ìš°
+    mtdCharType mCharMax;     // shard keyê°€ char/varchar typeì¸ ê²½ìš°
     UShort      mCharMaxBuf[(SDI_RANGE_VARCHAR_MAX_SIZE + 1) / 2];  // 2byte align
 
-    // bind parameterÀÎ °æ¿ì
+    // bind parameterì¸ ê²½ìš°
     UShort      mBindParamId;
 
 } sdiValue;
@@ -188,14 +188,14 @@ typedef struct sdiTableInfo
     SChar           mObjectName[QC_MAX_OBJECT_NAME_LEN + 1];
     SChar           mObjectType;
     SChar           mKeyColumnName[QC_MAX_OBJECT_NAME_LEN + 1];
-    UInt            mKeyDataType;   // shard keyÀÇ mt type id
+    UInt            mKeyDataType;   // shard keyì˜ mt type id
     UShort          mKeyColOrder;
     sdiSplitMethod  mSplitMethod;
 
     /* PROJ-2655 Composite shard key */
     idBool          mSubKeyExists;
     SChar           mSubKeyColumnName[QC_MAX_OBJECT_NAME_LEN + 1];
-    UInt            mSubKeyDataType;   // shard keyÀÇ mt type id
+    UInt            mSubKeyDataType;   // shard keyì˜ mt type id
     UShort          mSubKeyColOrder;
     sdiSplitMethod  mSubSplitMethod;
 
@@ -231,7 +231,7 @@ typedef struct sdiObjectInfo
     sdiTableInfo    mTableInfo;
     sdiRangeInfo    mRangeInfo;
 
-    // viewÀÎ °æ¿ì key°¡ ¿©·¯°³ÀÏ ¼ö ÀÖ¾î ÄÃ·³ °¹¼ö¸¸Å­ ÇÒ´çÇÏ¿© »ç¿ëÇÑ´Ù.
+    // viewì¸ ê²½ìš° keyê°€ ì—¬ëŸ¬ê°œì¼ ìˆ˜ ìˆì–´ ì»¬ëŸ¼ ê°¯ìˆ˜ë§Œí¼ í• ë‹¹í•˜ì—¬ ì‚¬ìš©í•œë‹¤.
     UChar           mKeyFlags[1];
 } sdiObjectInfo;
 
@@ -247,19 +247,19 @@ typedef struct sdiAnalyzeInfo
     UShort             mValueCount;
     sdiValueInfo       mValue[SDI_VALUE_MAX_COUNT];
     UChar              mIsCanMerge;
-    UChar              mIsTransformAble; // aggr transformation ¼öÇà¿©ºÎ
-    sdiSplitMethod     mSplitMethod;  // shard keyÀÇ split method
-    UInt               mKeyDataType;  // shard keyÀÇ mt type id
+    UChar              mIsTransformAble; // aggr transformation ìˆ˜í–‰ì—¬ë¶€
+    sdiSplitMethod     mSplitMethod;  // shard keyì˜ split method
+    UInt               mKeyDataType;  // shard keyì˜ mt type id
 
     /* PROJ-2655 Composite shard key */
     UChar              mSubKeyExists;
     UShort             mSubValueCount;
     sdiValueInfo       mSubValue[SDI_VALUE_MAX_COUNT];
-    sdiSplitMethod     mSubSplitMethod;  // sub sub keyÀÇ split method
-    UInt               mSubKeyDataType;  // sub shard keyÀÇ mt type id
+    sdiSplitMethod     mSubSplitMethod;  // sub sub keyì˜ split method
+    UInt               mSubKeyDataType;  // sub shard keyì˜ mt type id
 
-    UShort             mDefaultNodeId;// shard queryÀÇ default node id
-    sdiRangeInfo       mRangeInfo;    // shard queryÀÇ ºĞ»êÁ¤º¸
+    UShort             mDefaultNodeId;// shard queryì˜ default node id
+    sdiRangeInfo       mRangeInfo;    // shard queryì˜ ë¶„ì‚°ì •ë³´
 
     // BUG-45359
     qcShardNodes     * mNodeNames;
@@ -383,20 +383,20 @@ typedef struct sdiDataNode
     UShort         mBindParamCount;
     idBool         mBindParamChanged;
 
-    SChar        * mPlanText;            // data node plan text (alloc&free´Â cli library¿¡¼­ÇÑ´Ù.)
+    SChar        * mPlanText;            // data node plan text (alloc&freeëŠ” cli libraryì—ì„œí•œë‹¤.)
     UInt           mExecCount;           // data node execution count
 
     UChar          mState;               // date node state
 } sdiDataNode;
 
-#define SDI_NODE_STATE_NONE               0    // ÃÊ±â»óÅÂ
-#define SDI_NODE_STATE_PREPARE_CANDIDATED 1    // prepare ÈÄº¸³ëµå°¡ ¼±Á¤µÈ »óÅÂ
-#define SDI_NODE_STATE_PREPARE_SELECTED   2    // prepare ÈÄº¸³ëµå¿¡¼­ prepare ³ëµå·Î ¼±ÅÃµÈ »ıÅÂ
-#define SDI_NODE_STATE_PREPARED           3    // prepared »óÅÂ
-#define SDI_NODE_STATE_EXECUTE_CANDIDATED 4    // execute ÈÄº¸³ëµå°¡ ¼±Á¤µÈ »óÅÂ
-#define SDI_NODE_STATE_EXECUTE_SELECTED   5    // execute ÈÄº¸³ëµå¿¡¼­ execute ³ëµå·Î ¼±ÅÃµÈ »óÅÂ
-#define SDI_NODE_STATE_EXECUTED           6    // executed »óÅÂ
-#define SDI_NODE_STATE_FETCHED            7    // fetch ¿Ï·á »óÅÂ (only SELECT)
+#define SDI_NODE_STATE_NONE               0    // ì´ˆê¸°ìƒíƒœ
+#define SDI_NODE_STATE_PREPARE_CANDIDATED 1    // prepare í›„ë³´ë…¸ë“œê°€ ì„ ì •ëœ ìƒíƒœ
+#define SDI_NODE_STATE_PREPARE_SELECTED   2    // prepare í›„ë³´ë…¸ë“œì—ì„œ prepare ë…¸ë“œë¡œ ì„ íƒëœ ìƒíƒœ
+#define SDI_NODE_STATE_PREPARED           3    // prepared ìƒíƒœ
+#define SDI_NODE_STATE_EXECUTE_CANDIDATED 4    // execute í›„ë³´ë…¸ë“œê°€ ì„ ì •ëœ ìƒíƒœ
+#define SDI_NODE_STATE_EXECUTE_SELECTED   5    // execute í›„ë³´ë…¸ë“œì—ì„œ execute ë…¸ë“œë¡œ ì„ íƒëœ ìƒíƒœ
+#define SDI_NODE_STATE_EXECUTED           6    // executed ìƒíƒœ
+#define SDI_NODE_STATE_FETCHED            7    // fetch ì™„ë£Œ ìƒíƒœ (only SELECT)
 
 typedef struct sdiDataNodes
 {
@@ -445,7 +445,7 @@ typedef struct sdiMessageCallbackStruct
 
 typedef struct sdiConnectInfo
 {
-    // Á¢¼ÓÁ¤º¸
+    // ì ‘ì†ì •ë³´
     qcSession * mSession;
     void      * mDkiSession;
     sdiNode     mNodeInfo;
@@ -454,16 +454,16 @@ typedef struct sdiConnectInfo
     SChar       mUserName[QCI_MAX_OBJECT_NAME_LEN + 1];
     SChar       mUserPassword[IDS_MAX_PASSWORD_LEN + 1];
 
-    // Á¢¼Ó°á°ú
+    // ì ‘ì†ê²°ê³¼
     void      * mDbc;           // client connection
     idBool      mLinkFailure;   // client connection state
     UInt        mTouchCount;
     UInt        mNodeId;
     SChar       mNodeName[SDI_NODE_NAME_MAX_SIZE + 1];
-    SChar       mServerIP[SDI_SERVER_IP_SIZE];  // ½ÇÁ¦ Á¢¼ÓÇÑ data node ip
-    UShort      mPortNo;                        // ½ÇÁ¦ Á¢¼ÓÇÑ data node port
+    SChar       mServerIP[SDI_SERVER_IP_SIZE];  // ì‹¤ì œ ì ‘ì†í•œ data node ip
+    UShort      mPortNo;                        // ì‹¤ì œ ì ‘ì†í•œ data node port
 
-    // ·±Å¸ÀÓÁ¤º¸
+    // ëŸ°íƒ€ì„ì •ë³´
     sdiMessageCallbackStruct  mMessageCallback;
     UInt        mFlag;
     UChar       mPlanAttr;
@@ -498,7 +498,7 @@ class sdi
 public:
 
     /*************************************************************************
-     * ¸ğµâ ÃÊ±âÈ­ ÇÔ¼ö
+     * ëª¨ë“ˆ ì´ˆê¸°í™” í•¨ìˆ˜
      *************************************************************************/
 
     static IDE_RC addExtMT_Module( void );
@@ -506,7 +506,7 @@ public:
     static IDE_RC initSystemTables( void );
 
     /*************************************************************************
-     * shard query ºĞ¼®
+     * shard query ë¶„ì„
      *************************************************************************/
 
     static IDE_RC checkStmt( qcStatement * aStatement );
@@ -684,21 +684,21 @@ public:
     static void clearDataInfo( qcStatement     * aStatement,
                                qcShardExecData * aExecData );
 
-    // ¼öÇàÁ¤º¸ ÃÊ±âÈ­
+    // ìˆ˜í–‰ì •ë³´ ì´ˆê¸°í™”
     static IDE_RC initShardDataInfo( qcTemplate     * aTemplate,
                                      sdiAnalyzeInfo * aShardAnalysis,
                                      sdiClientInfo  * aClientInfo,
                                      sdiDataNodes   * aDataInfo,
                                      sdiDataNode    * aDataArg );
 
-    // ¼öÇàÁ¤º¸ ÀçÃÊ±âÈ­
+    // ìˆ˜í–‰ì •ë³´ ì¬ì´ˆê¸°í™”
     static IDE_RC reuseShardDataInfo( qcTemplate     * aTemplate,
                                       sdiClientInfo  * aClientInfo,
                                       sdiDataNodes   * aDataInfo,
                                       sdiBindParam   * aBindParams,
                                       UShort           aBindParamCount );
 
-    // ¼öÇà³ëµå °áÁ¤
+    // ìˆ˜í–‰ë…¸ë“œ ê²°ì •
     static IDE_RC decideShardDataInfo( qcTemplate     * aTemplate,
                                        mtcTuple       * aShardKeyTuple,
                                        sdiAnalyzeInfo * aShardAnalysis,

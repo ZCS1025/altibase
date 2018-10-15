@@ -107,9 +107,9 @@ class AltibaseFailoverContext
     }
 
     /**
-     * STF¸¦ »ç¿ëÇÏµµ·Ï ¼³Á¤Çß´ÂÁö ¾ò´Â´Ù.
+     * STFë¥¼ ì‚¬ìš©í•˜ë„ë¡ ì„¤ì •í–ˆëŠ”ì§€ ì–»ëŠ”ë‹¤.
      *
-     * @return STF¸¦ »ç¿ëÇÒÁö ¿©ºÎ
+     * @return STFë¥¼ ì‚¬ìš©í• ì§€ ì—¬ë¶€
      */
     public boolean useSessionFailover()
     {
@@ -117,11 +117,11 @@ class AltibaseFailoverContext
     }
 
     /**
-     * Failover¸¦ ¼öÇàÇÒ ¶§, ¼­¹ö¿¡ ÀüÇØÁÙ Failover source¸¦ ¼³Á¤ÇÑ´Ù.
+     * Failoverë¥¼ ìˆ˜í–‰í•  ë•Œ, ì„œë²„ì— ì „í•´ì¤„ Failover sourceë¥¼ ì„¤ì •í•œë‹¤.
      * <p>
-     * ÀÌ Á¤º¸´Â V$SESSION.FAILOVER_SOURCE·Î Ãâ·ÂµÈ´Ù. 
+     * ì´ ì •ë³´ëŠ” V$SESSION.FAILOVER_SOURCEë¡œ ì¶œë ¥ëœë‹¤. 
      *
-     * @param aFailoverSource ¼³Á¤ÇÒ Failover source ¹®ÀÚ¿­
+     * @param aFailoverSource ì„¤ì •í•  Failover source ë¬¸ìì—´
      */
     public void setFailoverSource(String aFailoverSource)
     {

@@ -32,7 +32,7 @@ static IDE_RC mmmSetupFD()
     SInt CurMaxHandle, MaxHandle;
 
     /* ------------------------------------------------------------------
-     *  Maximum File Descriptor º≥¡§
+     *  Maximum File Descriptor ÏÑ§Ï†ï
      * -----------------------------------------------------------------*/
 
     CurMaxHandle = idlVA::max_handles();
@@ -60,7 +60,7 @@ static IDE_RC mmmSetupFD()
     IDE_TEST_RAISE(CurMaxHandle == -1, error_get_max_handle);
     IDE_TEST_RAISE(MaxHandle < 0, error_set_max_handle);
 
-    // «⁄µÈ¿« ºˆ∫∏¥Ÿ æ≤∑πµÂ ∞πºˆ∞° ¥ı ∏π¿Ω (∞≥∑´√¯¡§)
+    // Ìï∏Îì§Ïùò ÏàòÎ≥¥Îã§ Ïì∞Î†àÎìú Í∞ØÏàòÍ∞Ä Îçî ÎßéÏùå (Í∞úÎûµÏ∏°Ï†ï)
     if ((UInt)MaxHandle < mmuProperty::getMaxClient())
     {
         ideLog::log(IDE_SERVER_0, MM_TRC_MAX_HANDLE_EXCEED_MAX_CLIENT);
@@ -84,14 +84,14 @@ static IDE_RC mmmSetupFD()
 
 /************************************************************************ 
    BUG-16958
-   file size limit ¡§√•
-   getrlimit(RLIMIT_FSIZE, ...)ø° ¥Î«ÿ 32-bit systemø°º≠¥¬
-   4G∞° æ∆¥— 2G∏¶ ∏Æ≈œ«ÿæﬂ «—¥Ÿ. ø÷≥ƒ«œ∏È 32-bit linux Ω√Ω∫≈€ø°º≠¥¬
-   getrlimit¿Ã 4G±Ó¡ˆ ªÁøÎ«“ ºˆ ¿÷¥Ÿ«ÿµµ Ω«¡¶∑Œ¥¬ 2Gπ€ø° ªÁøÎ«“ ºˆ∞° æ¯¥Ÿ.
-   ¥‹, ƒƒ∆ƒ¿œø…º«ø° _FILE_OFFSET_BITS=64∏¶ ¡÷∏È 32bit system¿Ã∂Û «œ¥ı∂Ûµµ
-   2G ¿ÃªÛ¿« ∆ƒ¿œ¿ª ªÁøÎ«“ ºˆ ¿÷¥Ÿ.
-   µ˚∂Ûº≠ system¿Ã 32-bit¿Ã≥ƒ, _FILE_OFFSET_BITS definition¿Ã ¿÷¥¿≥ƒø° µ˚∂Û
-   ¿˚¥Á«— RLIMIT_FSIZE ∞™¿ª ºº∆√«—¥Ÿ.
+   file size limit Ï†ïÏ±Ö
+   getrlimit(RLIMIT_FSIZE, ...)Ïóê ÎåÄÌï¥ 32-bit systemÏóêÏÑúÎäî
+   4GÍ∞Ä ÏïÑÎãå 2GÎ•º Î¶¨ÌÑ¥Ìï¥Ïïº ÌïúÎã§. ÏôúÎÉêÌïòÎ©¥ 32-bit linux ÏãúÏä§ÌÖúÏóêÏÑúÎäî
+   getrlimitÏù¥ 4GÍπåÏßÄ ÏÇ¨Ïö©Ìï† Ïàò ÏûàÎã§Ìï¥ÎèÑ Ïã§Ï†úÎ°úÎäî 2GÎ∞ñÏóê ÏÇ¨Ïö©Ìï† ÏàòÍ∞Ä ÏóÜÎã§.
+   Îã®, Ïª¥ÌååÏùºÏòµÏÖòÏóê _FILE_OFFSET_BITS=64Î•º Ï£ºÎ©¥ 32bit systemÏù¥Îùº ÌïòÎçîÎùºÎèÑ
+   2G Ïù¥ÏÉÅÏùò ÌååÏùºÏùÑ ÏÇ¨Ïö©Ìï† Ïàò ÏûàÎã§.
+   Îî∞ÎùºÏÑú systemÏù¥ 32-bitÏù¥ÎÉê, _FILE_OFFSET_BITS definitionÏù¥ ÏûàÎäêÎÉêÏóê Îî∞Îùº
+   Ï†ÅÎãπÌïú RLIMIT_FSIZE Í∞íÏùÑ ÏÑ∏ÌåÖÌïúÎã§.
 **************************************************************************/
 static IDE_RC mmmSetupOSFileSize()
 {
@@ -129,16 +129,16 @@ static IDE_RC mmmCheckFileSize()
 {
     struct rlimit  limit;
     /* ------------------------------------------------------------------
-     *  [4] Log(DB) File Size ∞ÀªÁ
+     *  [4] Log(DB) File Size Í≤ÄÏÇ¨
      * -----------------------------------------------------------------*/
     IDE_TEST_RAISE(idlOS::getrlimit(RLIMIT_FSIZE, &limit) != 0,
                    getrlimit_error);
 
-    // PROJ-1490 ∆‰¿Ã¡ˆ∏ÆΩ∫∆Æ ¥Ÿ¡ﬂ»≠π◊ ∏ﬁ∏∏Æπ›≥≥
+    // PROJ-1490 ÌéòÏù¥ÏßÄÎ¶¨Ïä§Ìä∏ Îã§Ï§ëÌôîÎ∞è Î©îÎ™®Î¶¨Î∞òÎÇ©
     //
-    // ¿Ã «‘ºˆ¥¬ pre process¥‹∞Ëø° √º≈©µ«¥¬ ±‚¥…µÈ¿ª ∏æ∆≥ı¿∫ ∞Õ¿Ã¥Ÿ.
-    // µ•¿Ã≈Õ∫£¿ÃΩ∫ ∆ƒ¿œ ≈©±‚ø° ¥Î«— limit √º≈©¥¬ smmManagerø°º≠ √≥∏Æ«—¥Ÿ.
-    // smmManager::initialize¬¸∞Ì
+    // Ïù¥ Ìï®ÏàòÎäî pre processÎã®Í≥ÑÏóê Ï≤¥ÌÅ¨ÎêòÎäî Í∏∞Îä•Îì§ÏùÑ Î™®ÏïÑÎÜìÏùÄ Í≤ÉÏù¥Îã§.
+    // Îç∞Ïù¥ÌÑ∞Î≤†Ïù¥Ïä§ ÌååÏùº ÌÅ¨Í∏∞Ïóê ÎåÄÌïú limit Ï≤¥ÌÅ¨Îäî smmManagerÏóêÏÑú Ï≤òÎ¶¨ÌïúÎã§.
+    // smmManager::initializeÏ∞∏Í≥†
 
     IDE_TEST_RAISE( mmuProperty::getLogFileSize() - 1 > limit.rlim_cur ,
                     check_OSFileLimit);
@@ -159,9 +159,9 @@ static IDE_RC mmmCheckFileSize()
 static IDE_RC mmmCheckOSenv()
 {
     /* ------------------------------------------------------------------
-     *  [5] AIXø°º≠¿« »Ø∞Ê∫Øºˆ ∞ÀªÁ π◊ Messasge ≥≤±‚±‚
-     *      ∞¸∑√πˆ±◊ : PR-3900
-     *       => »Ø∞Ê∫Øºˆ ∏ÆΩ∫∆Æ
+     *  [5] AIXÏóêÏÑúÏùò ÌôòÍ≤ΩÎ≥ÄÏàò Í≤ÄÏÇ¨ Î∞è Messasge ÎÇ®Í∏∞Í∏∞
+     *      Í¥ÄÎ†®Î≤ÑÍ∑∏ : PR-3900
+     *       => ÌôòÍ≤ΩÎ≥ÄÏàò Î¶¨Ïä§Ìä∏
      *          AIXTHREAD_MNRATIO=1:1
      *          AIXTHREAD_SCOPE=S
      *          AIXTHREAD_MUTEX_DEBUG=OFF
@@ -171,8 +171,8 @@ static IDE_RC mmmCheckOSenv()
      *          YIELDLOOPTIME=50
      *          MALLOCMULTIHEAP=1
      *
-     *   [5] HPø°º≠¿« »Ø∞Ê∫Øºˆ ∞ÀªÁ
-     *       => _M_ARENA_OPTS : 8 »§¿∫ 16¿∏∑Œ º≥¡§ ø‰∏¡. (BUG-13294, TASK-1733)
+     *   [5] HPÏóêÏÑúÏùò ÌôòÍ≤ΩÎ≥ÄÏàò Í≤ÄÏÇ¨
+     *       => _M_ARENA_OPTS : 8 ÌòπÏùÄ 16ÏúºÎ°ú ÏÑ§Ï†ï ÏöîÎßù. (BUG-13294, TASK-1733)
      *
      * -----------------------------------------------------------------*/
     {

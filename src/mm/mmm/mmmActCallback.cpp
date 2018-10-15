@@ -33,7 +33,7 @@ idBool assertSystemError(SChar *aFile, SInt aLine, idBool aAcceptFaultTolerance)
 
     sLog.appendFormat(MM_TRC_ASSERT, aFile, aLine);
     /* fix BUG-28226 ,
-       IDE_ASSERT¿¡¼­ last altibase error code, error message¸¦ Âï¾úÀ¸¸é ÁÁ°Ú½À´Ï´Ù. */
+       IDE_ASSERTì—ì„œ last altibase error code, error messageë¥¼ ì°ì—ˆìœ¼ë©´ ì¢‹ê² ìŠµë‹ˆë‹¤. */
     ideLog::logErrorMsgInternal(sLog);
 
     sLog.write();

@@ -50,7 +50,7 @@ mtdModule mtdNumber = {
       SMI_BUILTIN_B_TREE2_INDEXTYPE_ID,
       0, 0, 0, 0, 0 },
     0,
-    0|  // MTD_SELECTIVITY_DISABLE(Float ¶Ç´Â NumericÀ¸·Î Ã³¸®)
+    0|  // MTD_SELECTIVITY_DISABLE(Float ë˜ëŠ” Numericìœ¼ë¡œ ì²˜ë¦¬)
     MTD_CREATE_ENABLE|
     MTD_CREATE_PARAM_PRECISIONSCALE|
     MTD_SEARCHABLE_PRED_BASIC|
@@ -65,7 +65,7 @@ mtdModule mtdNumber = {
     MTD_NUMERIC_SCALE_MAXIMUM,
     NULL, // staticNull
     mtdInitialize,
-    NULL, // mtdEstimate : Ä®·³ »ı¼º ½Ã, Float/NumericÀ¸·Î ÃÊ±âÈ­µÇ¹Ç·Î »ç¿ë X
+    NULL, // mtdEstimate : ì¹¼ëŸ¼ ìƒì„± ì‹œ, Float/Numericìœ¼ë¡œ ì´ˆê¸°í™”ë˜ë¯€ë¡œ ì‚¬ìš© X
     mtdFloat.value,
     NULL,
     NULL,
@@ -114,7 +114,7 @@ mtdModule mtdNumber = {
     NULL,
     NULL,
     mtdValidate,
-    mtd::selectivityNA, // NUMBER ModuleÀº Float/Numeric Module·Î º¯È¯µÊ.
+    mtd::selectivityNA, // NUMBER Moduleì€ Float/Numeric Moduleë¡œ ë³€í™˜ë¨.
     mtd::encodeNumericDefault,
     mtd::decodeDefault,
     mtd::compileFmtDefault,
@@ -167,9 +167,9 @@ static UInt mtdStoreSize( const smiColumn * /*aColumn*/ )
 {
 /***********************************************************************
  * PROJ-2399 row tmaplate 
- * sm¿¡ ÀúÀåµÇ´Â µ¥ÀÌÅÍÀÇ Å©±â¸¦ ¹İÈ¯ÇÑ´Ù. 
- * varchar¿Í °°Àº variable Å¸ÀÔÀÇ µ¥ÀÌÅÍ Å¸ÀÔÀº ID_UINT_MAX¸¦ ¹İÈ¯
- * mtheader°¡ sm¿¡ ÀúÀåµÈ°æ¿ì°¡ ¾Æ´Ï¸é mtheaderÅ©±â¸¦ »©¼­ ¹İÈ¯ 
+ * smì— ì €ì¥ë˜ëŠ” ë°ì´í„°ì˜ í¬ê¸°ë¥¼ ë°˜í™˜í•œë‹¤. 
+ * varcharì™€ ê°™ì€ variable íƒ€ì…ì˜ ë°ì´í„° íƒ€ì…ì€ ID_UINT_MAXë¥¼ ë°˜í™˜
+ * mtheaderê°€ smì— ì €ì¥ëœê²½ìš°ê°€ ì•„ë‹ˆë©´ mtheaderí¬ê¸°ë¥¼ ë¹¼ì„œ ë°˜í™˜ 
  **********************************************************************/
 
     return ID_UINT_MAX;

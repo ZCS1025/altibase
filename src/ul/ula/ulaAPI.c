@@ -36,7 +36,7 @@
 #include <ulaConvNumeric.h>
 #include <alaTypes.h>
 
-/* NOTICE : MTDø°º≠ ªÁøÎµ«¥¬ Date Format «¸Ωƒ¿Ã 4.5.1 BranchøÕ Main Trunk¿Ã ¥Ÿ∏ß */
+/* NOTICE : MTDÏóêÏÑú ÏÇ¨Ïö©ÎêòÎäî Date Format ÌòïÏãùÏù¥ 4.5.1 BranchÏôÄ Main TrunkÏù¥ Îã§Î¶Ñ */
 #define ALA_MTD_DATE_FORMAT         "YYYY-MM-DD HH:MI:SS.SSSSSS"
 #define ALA_MTD_DATE_FORMAT_LEN     (26)
 
@@ -98,7 +98,7 @@ ACI_RC ulaGetAltibaseSQLColumn(ALA_Column   *aColumn,
                                  aBufferSize - sUsedSize,
                                  "UNISTR",
                                  6);
-                /* BUGBUG : ETRUNC ∞° √≥∏Æµ«∞Ì ¿÷¡ˆ æ ¥Ÿ. */
+                /* BUGBUG : ETRUNC Í∞Ä Ï≤òÎ¶¨ÎêòÍ≥† ÏûàÏßÄ ÏïäÎã§. */
                 ACI_TEST_RAISE(ACP_RC_NOT_SUCCESS(sRc), ERR_PARAMETER_INVALID);
                 sUsedSize += 6;
 
@@ -117,7 +117,7 @@ ACI_RC ulaGetAltibaseSQLColumn(ALA_Column   *aColumn,
                                  aBufferSize - sUsedSize,
                                  "BIT",
                                  3);
-                /* BUGBUG : ETRUNC ∞° √≥∏Æµ«∞Ì ¿÷¡ˆ æ ¥Ÿ. */
+                /* BUGBUG : ETRUNC Í∞Ä Ï≤òÎ¶¨ÎêòÍ≥† ÏûàÏßÄ ÏïäÎã§. */
                 ACI_TEST_RAISE(ACP_RC_NOT_SUCCESS(sRc), ERR_PARAMETER_INVALID);
                 sUsedSize += 3;
 
@@ -129,7 +129,7 @@ ACI_RC ulaGetAltibaseSQLColumn(ALA_Column   *aColumn,
                                  aBufferSize - sUsedSize,
                                  "VARBIT",
                                  6);
-                /* BUGBUG : ETRUNC ∞° √≥∏Æµ«∞Ì ¿÷¡ˆ æ ¥Ÿ. */
+                /* BUGBUG : ETRUNC Í∞Ä Ï≤òÎ¶¨ÎêòÍ≥† ÏûàÏßÄ ÏïäÎã§. */
                 ACI_TEST_RAISE(ACP_RC_NOT_SUCCESS(sRc), ERR_PARAMETER_INVALID);
                 sUsedSize += 6;
 
@@ -153,7 +153,7 @@ ACI_RC ulaGetAltibaseSQLColumn(ALA_Column   *aColumn,
                              aBufferSize - sUsedSize,
                              "TO_DATE(",
                              8);
-            /* BUGBUG : ETRUNC ∞° √≥∏Æµ«∞Ì ¿÷¡ˆ æ ¥Ÿ. */
+            /* BUGBUG : ETRUNC Í∞Ä Ï≤òÎ¶¨ÎêòÍ≥† ÏûàÏßÄ ÏïäÎã§. */
             ACI_TEST_RAISE(ACP_RC_NOT_SUCCESS(sRc), ERR_PARAMETER_INVALID);
             sUsedSize += 8;
         }
@@ -163,7 +163,7 @@ ACI_RC ulaGetAltibaseSQLColumn(ALA_Column   *aColumn,
             if (sNeedParentthesis == ACP_TRUE)
             {
                 /*
-                 * BUGBUG : ∞Ê∞Ë√º≈©∞° ¿Ã∑ÁæÓ¡ˆ∞Ì ¿÷¡ˆ æ ¥Ÿ
+                 * BUGBUG : Í≤ΩÍ≥ÑÏ≤¥ÌÅ¨Í∞Ä Ïù¥Î£®Ïñ¥ÏßÄÍ≥† ÏûàÏßÄ ÏïäÎã§
                  */
                 aOutBuffer[sUsedSize++] = '(';
                 aOutBuffer[sUsedSize]   = '\0';
@@ -172,7 +172,7 @@ ACI_RC ulaGetAltibaseSQLColumn(ALA_Column   *aColumn,
             if (sNeedSingleQuote == ACP_TRUE)
             {
                 /*
-                 * BUGBUG : ∞Ê∞Ë√º≈©∞° ¿Ã∑ÁæÓ¡ˆ∞Ì ¿÷¡ˆ æ ¥Ÿ
+                 * BUGBUG : Í≤ΩÍ≥ÑÏ≤¥ÌÅ¨Í∞Ä Ïù¥Î£®Ïñ¥ÏßÄÍ≥† ÏûàÏßÄ ÏïäÎã§
                  */
                 aOutBuffer[sUsedSize++] = '\'';
                 aOutBuffer[sUsedSize]   = '\0';
@@ -225,7 +225,7 @@ ACI_RC ulaGetAltibaseSQLColumn(ALA_Column   *aColumn,
                                  aBufferSize - sUsedSize,
                                  "\'",
                                  1);
-                /* BUGBUG : ETRUNC ∞° √≥∏Æµ«∞Ì ¿÷¡ˆ æ ¥Ÿ. */
+                /* BUGBUG : ETRUNC Í∞Ä Ï≤òÎ¶¨ÎêòÍ≥† ÏûàÏßÄ ÏïäÎã§. */
                 ACI_TEST_RAISE(ACP_RC_NOT_SUCCESS(sRc), ERR_PARAMETER_INVALID);
                 sUsedSize += 1;
             }
@@ -236,7 +236,7 @@ ACI_RC ulaGetAltibaseSQLColumn(ALA_Column   *aColumn,
                                  aBufferSize - sUsedSize,
                                  ")",
                                  1);
-                /* BUGBUG : ETRUNC ∞° √≥∏Æµ«∞Ì ¿÷¡ˆ æ ¥Ÿ. */
+                /* BUGBUG : ETRUNC Í∞Ä Ï≤òÎ¶¨ÎêòÍ≥† ÏûàÏßÄ ÏïäÎã§. */
                 ACI_TEST_RAISE(ACP_RC_NOT_SUCCESS(sRc), ERR_PARAMETER_INVALID);
                 sUsedSize += 1;
             }
@@ -248,7 +248,7 @@ ACI_RC ulaGetAltibaseSQLColumn(ALA_Column   *aColumn,
                              aBufferSize - sUsedSize,
                              "NULL",
                              4);
-            /* BUGBUG : ETRUNC ∞° √≥∏Æµ«∞Ì ¿÷¡ˆ æ ¥Ÿ. */
+            /* BUGBUG : ETRUNC Í∞Ä Ï≤òÎ¶¨ÎêòÍ≥† ÏûàÏßÄ ÏïäÎã§. */
             ACI_TEST_RAISE(ACP_RC_NOT_SUCCESS(sRc), ERR_PARAMETER_INVALID);
             sUsedSize += 4;
         }
@@ -260,7 +260,7 @@ ACI_RC ulaGetAltibaseSQLColumn(ALA_Column   *aColumn,
                              aBufferSize - sUsedSize,
                              ", \'"ALA_DEFAULT_DATE_FORMAT"\')",
                              ALA_DEFAULT_DATE_FORMAT_LEN + 5);
-            /* BUGBUG : ETRUNC ∞° √≥∏Æµ«∞Ì ¿÷¡ˆ æ ¥Ÿ. */
+            /* BUGBUG : ETRUNC Í∞Ä Ï≤òÎ¶¨ÎêòÍ≥† ÏûàÏßÄ ÏïäÎã§. */
             ACI_TEST_RAISE(ACP_RC_NOT_SUCCESS(sRc), ERR_PARAMETER_INVALID);
             sUsedSize += ALA_DEFAULT_DATE_FORMAT_LEN + 5;
         }
@@ -317,7 +317,7 @@ ACI_RC ulaGetAltibaseSQLInsert(ALA_Table    *aTable,
                       "INSERT INTO \"%s\".\"%s\" VALUES (", // BUG-18609
                       aTable->mToUserName,
                       aTable->mToTableName);
-    /* BUGBUG : ETRUNC ¥¬ µ˚∑Œ √≥∏Æ«ÿæﬂ «œ¥¬µ•... */
+    /* BUGBUG : ETRUNC Îäî Îî∞Î°ú Ï≤òÎ¶¨Ìï¥Ïïº ÌïòÎäîÎç∞... */
     ACI_TEST_RAISE(ACP_RC_NOT_SUCCESS(sRc), ERR_PARAMETER_INVALID);
 
     sUsedSize = acpCStrLen((acp_char_t*)aOutBuffer, aBufferSize);
@@ -334,20 +334,20 @@ ACI_RC ulaGetAltibaseSQLInsert(ALA_Table    *aTable,
         ACE_DASSERT(sColumn != NULL);
         ACI_TEST_RAISE(sColumn == NULL, ERR_PARAMETER_INVALID);
 
-        /* hidden column¿Ã æ∆¥œ∏È ≥ªøÎ¿ª √‚∑¬«—¥Ÿ. */
+        /* hidden columnÏù¥ ÏïÑÎãàÎ©¥ ÎÇ¥Ïö©ÏùÑ Ï∂úÎ†•ÌïúÎã§. */
         sIsHiddenColumn = ulaMetaIsHiddenColumn( (ulaColumn *)sColumn );
         if ( sIsHiddenColumn != ACP_TRUE )
         {
             if ( sIndex > 0 ) 
             {
                 /*
-                 * acpCStrCat ≥ª∫Œø°º≠ ∫Œ∏£¥¬ strlen ¿ª «««œ±‚ ¿ß«ÿº≠ + sUsedSize«‘
+                 * acpCStrCat ÎÇ¥Î∂ÄÏóêÏÑú Î∂ÄÎ•¥Îäî strlen ÏùÑ ÌîºÌïòÍ∏∞ ÏúÑÌï¥ÏÑú + sUsedSizeÌï®
                  */
                 sRc = acpCStrCat((acp_char_t*)aOutBuffer + sUsedSize,
                                  aBufferSize - sUsedSize,
                                  ", ",
                                  2);
-                /* BUGBUG : ETRUNC ∞° √≥∏Æµ«∞Ì ¿÷¡ˆ æ ¥Ÿ. */
+                /* BUGBUG : ETRUNC Í∞Ä Ï≤òÎ¶¨ÎêòÍ≥† ÏûàÏßÄ ÏïäÎã§. */
                 ACI_TEST_RAISE(ACP_RC_NOT_SUCCESS(sRc), ERR_PARAMETER_INVALID);
                 sUsedSize = acpCStrLen( (acp_char_t*)aOutBuffer, aBufferSize);
             }
@@ -373,13 +373,13 @@ ACI_RC ulaGetAltibaseSQLInsert(ALA_Table    *aTable,
     }
 
     /*
-     * acpCStrCat ≥ª∫Œø°º≠ ∫Œ∏£¥¬ strlen ¿ª «««œ±‚ ¿ß«ÿº≠ + sUsedSize«‘
+     * acpCStrCat ÎÇ¥Î∂ÄÏóêÏÑú Î∂ÄÎ•¥Îäî strlen ÏùÑ ÌîºÌïòÍ∏∞ ÏúÑÌï¥ÏÑú + sUsedSizeÌï®
      */
     sRc = acpCStrCat((acp_char_t*)(aOutBuffer + sUsedSize),
                      aBufferSize - sUsedSize,
                      ")",
                      1);
-    /* BUGBUG : ETRUNC ∞° √≥∏Æµ«∞Ì ¿÷¡ˆ æ ¥Ÿ. */
+    /* BUGBUG : ETRUNC Í∞Ä Ï≤òÎ¶¨ÎêòÍ≥† ÏûàÏßÄ ÏïäÎã§. */
     ACI_TEST_RAISE(ACP_RC_NOT_SUCCESS(sRc), ERR_PARAMETER_INVALID);
     sUsedSize = acpCStrLen((acp_char_t*)aOutBuffer, aBufferSize);
 
@@ -447,7 +447,7 @@ ALA_RC ALA_GetErrorCode(const ALA_ErrorMgr *aErrorMgr,
 {
     ACI_TEST_RAISE(aErrorMgr == NULL, ERR_ERROR_MGR_NULL);
 
-    // ≥ª∫Œ ¿Œµ¶Ω∫ ¡§∫∏(∏∂¡ˆ∏∑ 12∫Ò∆Æ)∏¶ ¡¶∞≈«’¥œ¥Ÿ.
+    // ÎÇ¥Î∂Ä Ïù∏Îç±Ïä§ Ï†ïÎ≥¥(ÎßàÏßÄÎßâ 12ÎπÑÌä∏)Î•º Ï†úÍ±∞Ìï©ÎãàÎã§.
     *aOutErrorCode = ACI_E_ERROR_CODE(aErrorMgr->mErrorCode);
 
     return ALA_SUCCESS;
@@ -1465,9 +1465,9 @@ ALA_RC ALA_GetXLogCollectorStatus
     return ALA_FAILURE;
 }
 
-/* ulnDataBuildColumnFromMT«‘ºˆ∏¶ ∫πªÁ«ÿø¬ ∞Õ¿∏∑Œ uln∞˙ ulaµŒ «‘ºˆ¿« ¬˜¿Ã¥¬
-   endian assign¿Ã æ∆¥— memcpy∑Œ √≥∏Æµ»¥Ÿ¥¬ ¡°¿‘¥œ¥Ÿ.
-   ala¿« ∞ÊøÏ Endian√≥∏Æ∞° recvXLog«œ∏Á ¿ÃπÃ µ«æÓ¿÷æÓ endian assign¿Ã « ø‰ æ¯Ω¿¥œ¥Ÿ.
+/* ulnDataBuildColumnFromMTÌï®ÏàòÎ•º Î≥µÏÇ¨Ìï¥Ïò® Í≤ÉÏúºÎ°ú ulnÍ≥º ulaÎëê Ìï®ÏàòÏùò Ï∞®Ïù¥Îäî
+   endian assignÏù¥ ÏïÑÎãå memcpyÎ°ú Ï≤òÎ¶¨ÎêúÎã§Îäî Ï†êÏûÖÎãàÎã§.
+   alaÏùò Í≤ΩÏö∞ EndianÏ≤òÎ¶¨Í∞Ä recvXLogÌïòÎ©∞ Ïù¥ÎØ∏ ÎêòÏñ¥ÏûàÏñ¥ endian assignÏù¥ ÌïÑÏöî ÏóÜÏäµÎãàÎã§.
 */
 ACI_RC ulaDataBuildColumnFromMT( ulnFnContext * aFnContext,
                                  acp_uint8_t  * aSrc,
@@ -1728,9 +1728,9 @@ ACI_RC ulaDataBuildColumnFromMT( ulnFnContext * aFnContext,
 
 /* Data Type Conversion API
  *
- * PROJ-2160 CM≈∏¿‘¡¶∞≈∑Œ ¿Œ«ÿ MT≈∏¿‘=>ODBC∫Ø»Ø¿Ã ∞°¥…«œ¥Ÿ.
- * PROJ-2160 ¿Ã¿¸ : MT -> CMT -> ulnColumn -> ODBC
- * PROJ-2160 ¿Ã»ƒ : MT -> ulnColumn -> ODBC
+ * PROJ-2160 CMÌÉÄÏûÖÏ†úÍ±∞Î°ú Ïù∏Ìï¥ MTÌÉÄÏûÖ=>ODBCÎ≥ÄÌôòÏù¥ Í∞ÄÎä•ÌïòÎã§.
+ * PROJ-2160 Ïù¥Ï†Ñ : MT -> CMT -> ulnColumn -> ODBC
+ * PROJ-2160 Ïù¥ÌõÑ : MT -> ulnColumn -> ODBC
  */
 ALA_RC ALA_GetODBCCValue(ALA_Column   *aColumn,
                          ALA_Value    *aAltibaseValue,
@@ -1750,8 +1750,8 @@ ALA_RC ALA_GetODBCCValue(ALA_Column   *aColumn,
     acp_bool_t       sIsColumnInit     = ACP_FALSE;
 
     ulnFnContext     sFnContext;
-    ulnStmt          sStmt;              // CMT->ODBC ∫Ø»Ø Ω√¿« øπø‹ ∏ﬁΩ√¡ˆ ∆˜«‘
-    ulnDbc           sDbc;               // DATE Format ∆˜«‘
+    ulnStmt          sStmt;              // CMT->ODBC Î≥ÄÌôò ÏãúÏùò ÏòàÏô∏ Î©îÏãúÏßÄ Ìè¨Ìï®
+    ulnDbc           sDbc;               // DATE Format Ìè¨Ìï®
     acp_bool_t       sIsDiagHeaderInit = ACP_FALSE;
 
     ulnAppBuffer     sUserBuffer;        // ODBC
@@ -1767,7 +1767,7 @@ ALA_RC ALA_GetODBCCValue(ALA_Column   *aColumn,
     acp_char_t       sDefaultAlaNcharSet[] = "UTF16";
 
     //BUG-24226
-    acp_bool_t       sIsAlloc           = ACP_FALSE; //∏ﬁ∏∏Æ∞° «“¥Á µ«æ˙¥¬¡ˆ
+    acp_bool_t       sIsAlloc           = ACP_FALSE; //Î©îÎ™®Î¶¨Í∞Ä Ìï†Îãπ ÎêòÏóàÎäîÏßÄ
 
     ACI_TEST_RAISE(aColumn == NULL, ERR_PARAMETER_NULL);
     ACI_TEST_RAISE(aAltibaseValue == NULL, ERR_PARAMETER_NULL);
@@ -1775,7 +1775,7 @@ ALA_RC ALA_GetODBCCValue(ALA_Column   *aColumn,
     ACI_TEST_RAISE(aOutIsNull == NULL, ERR_PARAMETER_NULL);
     ACI_TEST_RAISE(aOutODBCCValueSize == NULL, ERR_PARAMETER_NULL);
 
-    // ¡ˆø¯«œ¡ˆ æ ¥¬ ≈∏¿‘¿ª ∞ÀªÁ«’¥œ¥Ÿ.
+    // ÏßÄÏõêÌïòÏßÄ ÏïäÎäî ÌÉÄÏûÖÏùÑ Í≤ÄÏÇ¨Ìï©ÎãàÎã§.
     ACI_TEST_RAISE((aColumn->mDataType == MTD_BLOB_ID)     ||
                    (aColumn->mDataType == MTD_CLOB_ID)     ||
                    (aColumn->mDataType == MTD_GEOMETRY_ID),
@@ -1788,7 +1788,7 @@ ALA_RC ALA_GetODBCCValue(ALA_Column   *aColumn,
 
     *aOutODBCCValueSize = 0;
 
-    // Null Value¿Œ¡ˆ ∞ÀªÁ«’¥œ¥Ÿ.
+    // Null ValueÏù∏ÏßÄ Í≤ÄÏÇ¨Ìï©ÎãàÎã§.
     if (aAltibaseValue->value != NULL)
     {
         *aOutIsNull = ALA_FALSE;
@@ -1800,15 +1800,15 @@ ALA_RC ALA_GetODBCCValue(ALA_Column   *aColumn,
         goto exit_success;
     }
 
-    /* [MT -> CMT] ∫Ø»Ø : ¿Ã ¿€æ˜¿∫ PROJ-2160ø° ¿««ÿ π´¿«πÃ«ÿ¡≥¿∏≥™ sColumnBufferLength∏¶ ±∏«œ±‚ ¿ß«ÿ ≥≤∞‹µ”¥œ¥Ÿ. */
+    /* [MT -> CMT] Î≥ÄÌôò : Ïù¥ ÏûëÏóÖÏùÄ PROJ-2160Ïóê ÏùòÌï¥ Î¨¥ÏùòÎØ∏Ìï¥Ï°åÏúºÎÇò sColumnBufferLengthÎ•º Íµ¨ÌïòÍ∏∞ ÏúÑÌï¥ ÎÇ®Í≤®Îë°ÎãàÎã§. */
 
-    // CMT∏¶ √ ±‚»≠«’¥œ¥Ÿ.
+    // CMTÎ•º Ï¥àÍ∏∞ÌôîÌï©ÎãàÎã§.
     ACI_TEST_RAISE(cmtAnyInitialize(&sCMTValue) != ACI_SUCCESS,
                    ERR_CMT_INITIALIZE);
     sIsCMTInit = ACP_TRUE;
 
-    // MT∏¶ CMT∑Œ ∫Ø»Ø«’¥œ¥Ÿ. (MTD_XXXX_ID -> CMT_ID_XXXX)
-    // Numericø° ¿˚øÎµ… Byte Order∏¶ º≥¡§«’¥œ¥Ÿ. ODBC¥¬ Little Endian¿‘¥œ¥Ÿ.
+    // MTÎ•º CMTÎ°ú Î≥ÄÌôòÌï©ÎãàÎã§. (MTD_XXXX_ID -> CMT_ID_XXXX)
+    // NumericÏóê Ï†ÅÏö©Îê† Byte OrderÎ•º ÏÑ§Ï†ïÌï©ÎãàÎã§. ODBCÎäî Little EndianÏûÖÎãàÎã§.
     ACI_TEST_RAISE(ulaConvConvertFromMTToCMT(&sCMTValue,
                                              (void *)aAltibaseValue->value,
                                              aColumn->mDataType,
@@ -1817,7 +1817,7 @@ ALA_RC ALA_GetODBCCValue(ALA_Column   *aColumn,
                    != ACI_SUCCESS, ERR_MT_TO_CMT_CONVERT);
 
     /* [CMT -> ODBC] */
-    // ulnColumn¿ª √ ±‚»≠«’¥œ¥Ÿ.
+    // ulnColumnÏùÑ Ï¥àÍ∏∞ÌôîÌï©ÎãàÎã§.
 
     switch (sCMTValue.mType)
     {
@@ -1837,7 +1837,7 @@ ALA_RC ALA_GetODBCCValue(ALA_Column   *aColumn,
                 cmtVariableGetSize(&(sCMTValue.mValue.mVariable));
             break;
 
-            // PROJ-1697 [»ø¿≤º∫] 2∞°¡ˆ ≈ÎΩ≈ «¡∑Œ≈‰ƒ› ∞≥º± (A4∏¶ ¿Ã∞‹∂Û)
+            // PROJ-1697 [Ìö®Ïú®ÏÑ±] 2Í∞ÄÏßÄ ÌÜµÏã† ÌîÑÎ°úÌÜ†ÏΩú Í∞úÏÑ† (A4Î•º Ïù¥Í≤®Îùº)
         case CMT_ID_IN_BIT :
         case CMT_ID_IN_NIBBLE :
         case CMT_ID_IN_VARIABLE :
@@ -1845,7 +1845,7 @@ ALA_RC ALA_GetODBCCValue(ALA_Column   *aColumn,
             ACE_ASSERT(0);
 
         default :
-            sColumnBufferLength = 64;   // ¥Ÿ∏• ≈∏¿‘¿∫ 64πŸ¿Ã∆Æ πÃ∏∏¿‘¥œ¥Ÿ.
+            sColumnBufferLength = 64;   // Îã§Î•∏ ÌÉÄÏûÖÏùÄ 64Î∞îÏù¥Ìä∏ ÎØ∏ÎßåÏûÖÎãàÎã§.
             break;
     }
 
@@ -1854,7 +1854,7 @@ ALA_RC ALA_GetODBCCValue(ALA_Column   *aColumn,
         (acp_uint16_t)ulnTypeMap_MTD_MTYPE(aColumn->mDataType);
     ACI_TEST_RAISE(sColumnValue.mMtype == ULN_MTYPE_MAX, ERR_PARAMETER_INVALID);
 
-    // Dummy ulnFnContext∏¶ ª˝º∫«’¥œ¥Ÿ.
+    // Dummy ulnFnContextÎ•º ÏÉùÏÑ±Ìï©ÎãàÎã§.
     acpMemSet(&sFnContext, 0x00, ACI_SIZEOF(ulnFnContext));
     acpMemSet(&sStmt,      0x00, ACI_SIZEOF(ulnStmt));
     acpMemSet(&sDbc,       0x00, ACI_SIZEOF(ulnDbc));
@@ -1885,14 +1885,14 @@ ALA_RC ALA_GetODBCCValue(ALA_Column   *aColumn,
         ACE_ASSERT(ACP_RC_IS_SUCCESS(sRc));
     }
 
-    //≥ª∫Œ¿˚¿∏∑Œ malloc«‘ µŒπ¯¬∞ ∆ƒ∂Û∏ﬁ≈Õ∏¶ NULL ≥÷æÓ «ÿ¡¶ «ÿæﬂ «‘
+    //ÎÇ¥Î∂ÄÏ†ÅÏúºÎ°ú mallocÌï® ÎëêÎ≤àÏß∏ ÌååÎùºÎ©îÌÑ∞Î•º NULL ÎÑ£Ïñ¥ Ìï¥Ï†ú Ìï¥Ïïº Ìï®
     ACI_TEST_RAISE(ulnDbcSetNlsCharsetString(&sDbc, sNlsUse, acpCStrLen(sNlsUse, ACP_SINT32_MAX))
                    != ACI_SUCCESS , ALA_ERR_MEM_ALLOC) ;
 
     ACI_TEST_RAISE(ulnDbcSetNlsNcharCharsetString(&sDbc, sAlaNcharSet, acpCStrLen(sAlaNcharSet, ACP_SINT32_MAX))
                    != ACI_SUCCESS , ALA_ERR_MEM_ALLOC) ;
 
-    // Memory «“¥Á¿Ã µ«æ˙¥¬¡ˆ »Æ¿Œ
+    // Memory Ìï†ÎãπÏù¥ ÎêòÏóàÎäîÏßÄ ÌôïÏù∏
     sIsAlloc = ACP_TRUE;
 
     ACE_ASSERT(sDbc.mNlsCharsetString != NULL);
@@ -1923,7 +1923,7 @@ ALA_RC ALA_GetODBCCValue(ALA_Column   *aColumn,
                    != ACI_SUCCESS, ERR_DIAG_HEADER_CREATE);
     sIsDiagHeaderInit = ACP_TRUE;
 
-    /* æ∆∑°¿« ≈∏¿‘¿∫ memcopy∞° πﬂª˝«œ∏Á, ±◊ ø‹¿« ≈∏¿‘¿∫ ±◊≥… ¡÷º“∞™¿ª ∞°¡¯¥Ÿ. */
+    /* ÏïÑÎûòÏùò ÌÉÄÏûÖÏùÄ memcopyÍ∞Ä Î∞úÏÉùÌïòÎ©∞, Í∑∏ Ïô∏Ïùò ÌÉÄÏûÖÏùÄ Í∑∏ÎÉ• Ï£ºÏÜåÍ∞íÏùÑ Í∞ÄÏßÑÎã§. */
     switch ( (&sColumnValue)->mMtype )
     {
         case ULN_MTYPE_FLOAT :
@@ -1952,7 +1952,7 @@ ALA_RC ALA_GetODBCCValue(ALA_Column   *aColumn,
                                               &sColumnValue )
                    != ACI_SUCCESS, ERR_CMT_TO_COLUMN_COPY );
 
-    // ªÁøÎ¿⁄ πˆ∆€∏¶ º≥¡§«’¥œ¥Ÿ.
+    // ÏÇ¨Ïö©Ïûê Î≤ÑÌçºÎ•º ÏÑ§Ï†ïÌï©ÎãàÎã§.
     acpMemSet(&sUserBuffer, 0x00, ACI_SIZEOF(ulnAppBuffer));
     sUserBuffer.mCTYPE = ulnTypeMap_SQLC_CTYPE((acp_sint16_t)aODBCCTypeID);
     ACI_TEST_RAISE(sUserBuffer.mCTYPE == ULN_CTYPE_MAX,
@@ -1961,13 +1961,13 @@ ALA_RC ALA_GetODBCCValue(ALA_Column   *aColumn,
     sUserBuffer.mBufferSize   = (ulvULen)aODBCCValueBufferSize;
     sUserBuffer.mColumnStatus = ULN_ROW_SUCCESS;
 
-    // ±‚≈∏ ¡§∫∏∏¶ √ ±‚»≠«’¥œ¥Ÿ.
+    // Í∏∞ÌÉÄ Ï†ïÎ≥¥Î•º Ï¥àÍ∏∞ÌôîÌï©ÎãàÎã§.
     sPairIndicator = 0;
     sPairLength    = 0;
     sIndLenPtrPair.mIndicatorPtr = &sPairIndicator;
     sIndLenPtrPair.mLengthPtr    = &sPairLength;
 
-    // ulnColumn¿ª ODBC∑Œ ∫Ø»Ø«’¥œ¥Ÿ. (CMT_ID_XXXX -> SQL_C_XXXX)
+    // ulnColumnÏùÑ ODBCÎ°ú Î≥ÄÌôòÌï©ÎãàÎã§. (CMT_ID_XXXX -> SQL_C_XXXX)
     ACI_TEST_RAISE(ulnConvert(&sFnContext,
                               &sUserBuffer,
                               &sColumnValue,
@@ -1976,7 +1976,7 @@ ALA_RC ALA_GetODBCCValue(ALA_Column   *aColumn,
                    != ACI_SUCCESS, ERR_COLUMN_TO_ODBC_CONVERT);
 
     //BUG-22342
-    //≥ª∫Œ¿˚¿∏∑Œ malloc«‘ µŒπ¯¬∞ ∆ƒ∂Û∏ﬁ≈Õ∏¶ NULL ≥÷æÓ «ÿ¡¶ «ÿæﬂ «‘
+    //ÎÇ¥Î∂ÄÏ†ÅÏúºÎ°ú mallocÌï® ÎëêÎ≤àÏß∏ ÌååÎùºÎ©îÌÑ∞Î•º NULL ÎÑ£Ïñ¥ Ìï¥Ï†ú Ìï¥Ïïº Ìï®
     (void)ulnDbcSetNlsCharsetString(&sDbc, NULL, 0);
 
     (void)ulnDbcSetNlsNcharCharsetString(&sDbc, NULL, 0);
@@ -1990,7 +1990,7 @@ ALA_RC ALA_GetODBCCValue(ALA_Column   *aColumn,
     ACI_TEST_RAISE(sUserBuffer.mColumnStatus != ULN_ROW_SUCCESS,
                    ERR_COLUMN_TO_ODBC_CONVERT);
 
-    // ∏ﬁ∏∏Æ∏¶ ¡§∏Æ«’¥œ¥Ÿ.
+    // Î©îÎ™®Î¶¨Î•º Ï†ïÎ¶¨Ìï©ÎãàÎã§.
     sIsDiagHeaderInit = ACP_FALSE;
     ACI_TEST_RAISE(ulnDestroyDiagHeader(&(sStmt.mObj.mDiagHeader),
                                         ULN_DIAG_HDR_DESTROY_CHUNKPOOL)
@@ -2084,12 +2084,12 @@ ALA_RC ALA_GetODBCCValue(ALA_Column   *aColumn,
     ACI_EXCEPTION_END;
 
     //BUG-22342
-    //≥ª∫Œ¿˚¿∏∑Œ malloc«‘ µŒπ¯¬∞ ∆ƒ∂Û∏ﬁ≈Õ∏¶ NULL ≥÷æÓ «ÿ¡¶ «ÿæﬂ «‘
+    //ÎÇ¥Î∂ÄÏ†ÅÏúºÎ°ú mallocÌï® ÎëêÎ≤àÏß∏ ÌååÎùºÎ©îÌÑ∞Î•º NULL ÎÑ£Ïñ¥ Ìï¥Ï†ú Ìï¥Ïïº Ìï®
     if (sIsAlloc != ACP_FALSE)
     {
         (void)ulnDbcSetNlsCharsetString(&sDbc, NULL, 0);
     }
-    // ∏ﬁ∏∏Æ∏¶ ¡§∏Æ«’¥œ¥Ÿ.
+    // Î©îÎ™®Î¶¨Î•º Ï†ïÎ¶¨Ìï©ÎãàÎã§.
     if (sIsDiagHeaderInit != ACP_FALSE)
     {
         (void)ulnDestroyDiagHeader(&(sStmt.mObj.mDiagHeader),
@@ -2127,14 +2127,14 @@ ALA_RC ALA_GetInternalNumericInfo(ALA_Column   *aColumn,
     sNumeric = (mtdNumericType *)aAltibaseValue->value;
 
     if ((sNumeric->signExponent & 0x80) != 0)
-    {   // æÁºˆ
+    {   // ÏñëÏàò
         *aOutSign = 1;
 
         *aOutExponent = ((acp_sint32_t)(sNumeric->signExponent & 0x7F) - 64) * 2
                       + ((sNumeric->mantissa[0] < 10) ? -1 : 0);
     }
     else
-    {   // ¿Ωºˆ
+    {   // ÏùåÏàò
         *aOutSign = 0;
 
         *aOutExponent = (64 - (acp_sint32_t)(sNumeric->signExponent & 0x7F)) * 2
@@ -2166,7 +2166,7 @@ ALA_RC ALA_GetInternalNumericInfo(ALA_Column   *aColumn,
     return ALA_FAILURE;
 }
 
-// MT Module¿ª ªÁøÎ«’¥œ¥Ÿ.
+// MT ModuleÏùÑ ÏÇ¨Ïö©Ìï©ÎãàÎã§.
 ALA_RC ALA_GetAltibaseText(ALA_Column   *aColumn,
                            ALA_Value    *aValue,
                            UInt          aBufferSize,
@@ -2198,8 +2198,8 @@ ALA_RC ALA_GetAltibaseText(ALA_Column   *aColumn,
     mtlModule       *sSrcCharSet;
     mtlModule       *sDestCharSet;
 
-    // BUG-22609 AIX √÷¿˚»≠ ø¿∑˘ ºˆ¡§
-    // switch ø° acp_uint32_t «¸¿∏∑Œ ¿Ωºˆ∞™¿Ã 2π¯¿ÃªÛø√∂ß º≠πˆ ¡◊¿Ω
+    // BUG-22609 AIX ÏµúÏ†ÅÌôî Ïò§Î•ò ÏàòÏ†ï
+    // switch Ïóê acp_uint32_t ÌòïÏúºÎ°ú ÏùåÏàòÍ∞íÏù¥ 2Î≤àÏù¥ÏÉÅÏò¨Îïå ÏÑúÎ≤Ñ Ï£ΩÏùå
     acp_sint32_t     sType;//BUG-22816
 
     ACI_TEST_RAISE(aColumn == NULL, ERR_PARAMETER_NULL);
@@ -2324,7 +2324,7 @@ ALA_RC ALA_GetAltibaseText(ALA_Column   *aColumn,
                                != ACI_SUCCESS,
                                ERR_PARAMETER_INVALID);
 
-                //utf16¿∏∑Œ ∫Ø»Ø «—¥Ÿ.
+                //utf16ÏúºÎ°ú Î≥ÄÌôò ÌïúÎã§.
                 ACI_TEST_RAISE(mtlModuleByName
                                         ((const mtlModule **)&sDestCharSet,
                                          sDefaultAlaNcharSet,
@@ -2406,8 +2406,8 @@ ALA_RC ALA_GetAltibaseText(ALA_Column   *aColumn,
                                != ACI_SUCCESS,
                                ERR_MODULE_GET);
 
-                /* BUG-31539 Nibble¿« ±Ê¿Ã∞° 255¿Ã∏È NULL ∞™¿Ãπ«∑Œ,
-                 * ªÁøÎ¿⁄ø°∞‘ ±Ê¿Ã∏¶ 0¿∏∑Œ ∫∏ø©¡‡æﬂ «’¥œ¥Ÿ.
+                /* BUG-31539 NibbleÏùò Í∏∏Ïù¥Í∞Ä 255Ïù¥Î©¥ NULL Í∞íÏù¥ÎØÄÎ°ú,
+                 * ÏÇ¨Ïö©ÏûêÏóêÍ≤å Í∏∏Ïù¥Î•º 0ÏúºÎ°ú Î≥¥Ïó¨Ï§òÏïº Ìï©ÎãàÎã§.
                  */
                 if ((*sMtd->isNull)(NULL,
                                     (const void *)aValue->value,
@@ -2432,7 +2432,7 @@ ALA_RC ALA_GetAltibaseText(ALA_Column   *aColumn,
                                            ? (sTargetChar + '0')
                                            : (sTargetChar + 'A' - 10);
 
-                    // ∏∂¡ˆ∏∑ø°¥¬ '\0'¿∏∑Œ µ§æÓæ≤π«∑Œ ∞ÀªÁ πÃ« ø‰
+                    // ÎßàÏßÄÎßâÏóêÎäî '\0'ÏúºÎ°ú ÎçÆÏñ¥Ïì∞ÎØÄÎ°ú Í≤ÄÏÇ¨ ÎØ∏ÌïÑÏöî
 
                     sTargetChar = (acp_char_t)(sNibble->value[sIndex] & 0x0F);
                     aOutBuffer[sIndex * 2 + 1] = (sTargetChar < 10)
@@ -2534,14 +2534,14 @@ ALA_RC ALA_GetAltibaseText(ALA_Column   *aColumn,
 }
 
 /*******************************************************************************
- * @breif  ƒ√∑≥∞™¿Ã NULL¿Œ¡ˆ »Æ¿Œ«—¥Ÿ.
+ * @breif  Ïª¨ÎüºÍ∞íÏù¥ NULLÏù∏ÏßÄ ÌôïÏù∏ÌïúÎã§.
  *
- * @param  aColumn      : ƒ√∑≥¿« ∏ﬁ≈∏ ¡§∫∏¿Ã¥Ÿ.
- * @param  aValue       : NULL¿Œ¡ˆ »Æ¿Œ«œ∞Ì¿⁄ «œ¥¬ ƒ√∑≥∞™¿Ã¥Ÿ.
- * @param  aOutIsNull   : NULL∞™ ø©∫Œ∏¶ »Æ¿Œ«— ∞·∞˙¿Ã¥Ÿ.
- * @param  aOutErrorMgr : ø°∑Ø ∏ﬁºº¡ˆ∏¶ º≥¡§«—¥Ÿ.
+ * @param  aColumn      : Ïª¨ÎüºÏùò Î©îÌÉÄ Ï†ïÎ≥¥Ïù¥Îã§.
+ * @param  aValue       : NULLÏù∏ÏßÄ ÌôïÏù∏ÌïòÍ≥†Ïûê ÌïòÎäî Ïª¨ÎüºÍ∞íÏù¥Îã§.
+ * @param  aOutIsNull   : NULLÍ∞í Ïó¨Î∂ÄÎ•º ÌôïÏù∏Ìïú Í≤∞Í≥ºÏù¥Îã§.
+ * @param  aOutErrorMgr : ÏóêÎü¨ Î©îÏÑ∏ÏßÄÎ•º ÏÑ§Ï†ïÌïúÎã§.
  *
- * @remark ƒ√∑≥∞™¿Ã NULL¿Œ¡ˆ »Æ¿Œ«œø© boolean«¸ ∞·∞˙∏¶ ≥—∞‹¡ÿ¥Ÿ.
+ * @remark Ïª¨ÎüºÍ∞íÏù¥ NULLÏù∏ÏßÄ ÌôïÏù∏ÌïòÏó¨ booleanÌòï Í≤∞Í≥ºÎ•º ÎÑòÍ≤®Ï§ÄÎã§.
  *
  ******************************************************************************/
 ALA_RC ALA_IsNullValue( ALA_Column   * aColumn,
@@ -2759,7 +2759,7 @@ ALA_RC ALA_IsHiddenColumn( const ALA_Column    * aColumn,
     return ALA_FAILURE;
 }
 
-// TODO : πÆ¡¶∞° ª˝±‚∏È ¡÷ºÆ ¡¶∞≈
+// TODO : Î¨∏Ï†úÍ∞Ä ÏÉùÍ∏∞Î©¥ Ï£ºÏÑù Ï†úÍ±∞
 // #ifdef __cplusplus
 //     }
 // #endif
@@ -2789,7 +2789,7 @@ ACI_RC ulaGetAltibaseSQLDelete(ALA_Table    *aTable,
                       "DELETE FROM \"%s\".\"%s\" WHERE ",     // BUG-18609
                       aTable->mToUserName,
                       aTable->mToTableName);
-    /* BUGBUG : ETRUNC ¥¬ µ˚∑Œ √≥∏Æ«ÿæﬂ «œ¥¬µ•... */
+    /* BUGBUG : ETRUNC Îäî Îî∞Î°ú Ï≤òÎ¶¨Ìï¥Ïïº ÌïòÎäîÎç∞... */
     
     ACI_TEST_RAISE(ACP_RC_NOT_SUCCESS(sRc), ERR_PARAMETER_INVALID);
 
@@ -2809,7 +2809,7 @@ ACI_RC ulaGetAltibaseSQLDelete(ALA_Table    *aTable,
                           aBufferSize - sUsedSize,
                           "\"%s\" = ",            // BUG-18609
                           sColumn->mColumnName);
-        /* BUGBUG : ETRUNC ∞° √≥∏Æµ«∞Ì ¿÷¡ˆ æ ¥Ÿ. */
+        /* BUGBUG : ETRUNC Í∞Ä Ï≤òÎ¶¨ÎêòÍ≥† ÏûàÏßÄ ÏïäÎã§. */
         ACI_TEST_RAISE(ACP_RC_NOT_SUCCESS(sRc), ERR_PARAMETER_INVALID);
         sUsedSize = acpCStrLen((acp_char_t*)aOutBuffer, aBufferSize);
 
@@ -2827,7 +2827,7 @@ ACI_RC ulaGetAltibaseSQLDelete(ALA_Table    *aTable,
                              aBufferSize - sUsedSize,
                              " AND ",
                              5);
-            /* BUGBUG : ETRUNC ∞° √≥∏Æµ«∞Ì ¿÷¡ˆ æ ¥Ÿ. */
+            /* BUGBUG : ETRUNC Í∞Ä Ï≤òÎ¶¨ÎêòÍ≥† ÏûàÏßÄ ÏïäÎã§. */
             ACI_TEST_RAISE(ACP_RC_NOT_SUCCESS(sRc), ERR_PARAMETER_INVALID);
             sUsedSize = acpCStrLen((acp_char_t*)aOutBuffer, aBufferSize);
         }
@@ -2879,7 +2879,7 @@ ACI_RC ulaGetAltibaseSQLUpdate(ALA_Table    *aTable,
                       "UPDATE \"%s\".\"%s\" SET ",            // BUG-18609
                       aTable->mToUserName,
                       aTable->mToTableName);
-    /* BUGBUG : ETRUNC ¥¬ µ˚∑Œ √≥∏Æ«ÿæﬂ «œ¥¬µ•... */
+    /* BUGBUG : ETRUNC Îäî Îî∞Î°ú Ï≤òÎ¶¨Ìï¥Ïïº ÌïòÎäîÎç∞... */
 
     ACI_TEST_RAISE(ACP_RC_NOT_SUCCESS(sRc), ERR_PARAMETER_INVALID);
 
@@ -2896,7 +2896,7 @@ ACI_RC ulaGetAltibaseSQLUpdate(ALA_Table    *aTable,
         ACE_DASSERT(sColumn != NULL);
         ACI_TEST_RAISE(sColumn == NULL, ERR_PARAMETER_INVALID);
 
-        /* hidden column¿Ã æ∆¥œ∏È ≥ªøÎ¿ª √‚∑¬«—¥Ÿ. */
+        /* hidden columnÏù¥ ÏïÑÎãàÎ©¥ ÎÇ¥Ïö©ÏùÑ Ï∂úÎ†•ÌïúÎã§. */
         sIsHiddenColumn = ulaMetaIsHiddenColumn( (ulaColumn *)sColumn );
         if ( sIsHiddenColumn != ACP_TRUE )
         {
@@ -2906,7 +2906,7 @@ ACI_RC ulaGetAltibaseSQLUpdate(ALA_Table    *aTable,
                                  aBufferSize - sUsedSize,
                                  ", ",
                                  2);
-                /* BUGBUG : ETRUNC ∞° √≥∏Æµ«∞Ì ¿÷¡ˆ æ ¥Ÿ. */
+                /* BUGBUG : ETRUNC Í∞Ä Ï≤òÎ¶¨ÎêòÍ≥† ÏûàÏßÄ ÏïäÎã§. */
                 ACI_TEST_RAISE(ACP_RC_NOT_SUCCESS(sRc), ERR_PARAMETER_INVALID);
                 sUsedSize = acpCStrLen( (acp_char_t*)aOutBuffer, aBufferSize);
             }
@@ -2922,7 +2922,7 @@ ACI_RC ulaGetAltibaseSQLUpdate(ALA_Table    *aTable,
                               aBufferSize - sUsedSize,
                               "\"%s\" = ",            // BUG-18609
                               sColumn->mColumnName);
-            /* BUGBUG : ETRUNC ∞° √≥∏Æµ«∞Ì ¿÷¡ˆ æ ¥Ÿ. */
+            /* BUGBUG : ETRUNC Í∞Ä Ï≤òÎ¶¨ÎêòÍ≥† ÏûàÏßÄ ÏïäÎã§. */
 
             ACI_TEST_RAISE(ACP_RC_NOT_SUCCESS(sRc), ERR_PARAMETER_INVALID);
             sUsedSize = acpCStrLen((acp_char_t*)aOutBuffer, aBufferSize);
@@ -2946,7 +2946,7 @@ ACI_RC ulaGetAltibaseSQLUpdate(ALA_Table    *aTable,
                      " WHERE ",
                      7);
 
-    /* BUGBUG : ETRUNC ∞° √≥∏Æµ«∞Ì ¿÷¡ˆ æ ¥Ÿ. */
+    /* BUGBUG : ETRUNC Í∞Ä Ï≤òÎ¶¨ÎêòÍ≥† ÏûàÏßÄ ÏïäÎã§. */
     ACI_TEST_RAISE(ACP_RC_NOT_SUCCESS(sRc), ERR_PARAMETER_INVALID);
     sUsedSize = acpCStrLen((acp_char_t*)aOutBuffer, aBufferSize);
 
@@ -2965,7 +2965,7 @@ ACI_RC ulaGetAltibaseSQLUpdate(ALA_Table    *aTable,
                           "\"%s\" = ",            // BUG-18609
                           sColumn->mColumnName);
 
-        /* BUGBUG : ETRUNC ∞° √≥∏Æµ«∞Ì ¿÷¡ˆ æ ¥Ÿ. */
+        /* BUGBUG : ETRUNC Í∞Ä Ï≤òÎ¶¨ÎêòÍ≥† ÏûàÏßÄ ÏïäÎã§. */
         ACI_TEST_RAISE(ACP_RC_NOT_SUCCESS(sRc), ERR_PARAMETER_INVALID);
         sUsedSize = acpCStrLen((acp_char_t*)aOutBuffer, aBufferSize);
 
@@ -2984,7 +2984,7 @@ ACI_RC ulaGetAltibaseSQLUpdate(ALA_Table    *aTable,
                              " AND ",
                              5);
 
-            /* BUGBUG : ETRUNC ∞° √≥∏Æµ«∞Ì ¿÷¡ˆ æ ¥Ÿ. */
+            /* BUGBUG : ETRUNC Í∞Ä Ï≤òÎ¶¨ÎêòÍ≥† ÏûàÏßÄ ÏïäÎã§. */
             ACI_TEST_RAISE(ACP_RC_NOT_SUCCESS(sRc), ERR_PARAMETER_INVALID);
             sUsedSize = acpCStrLen( (acp_char_t*)aOutBuffer, aBufferSize);
         }
